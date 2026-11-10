@@ -58,9 +58,16 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	else
 		no_region = TRUE
 	GLOB.stealth_groups += src
+	RegisterSignal(SSdcs, COMSIG_GLOB_EXPLOSION, PROC_REF(on_explosion))
 
 /datum/stealth_group/Destroy()
 	GLOB.stealth_groups -= src
+	UnregisterSignal(SSdcs, COMSIG_GLOB_EXPLOSION)
+	noise_stamps = null
+	lures = null
+	alarms = null
+	checks = null
+	noise_notes = null
 	if(marker)
 		marker.group = null
 		marker = null
@@ -327,6 +334,14 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	if(guard.stat != CONSCIOUS)
 		return
 	if(controller.stealth_state() == STEALTH_UNAWARE && !controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		// Glancing at a noise, or holding for one: it stops and faces it, then carries on.
+		if(world.time < controller.glance_until)
+			controller.stealth_drop_walk()
+			controller.next_turn = controller.glance_until
+			if(guard.dir != controller.glance_dir)
+				guard.setDir(controller.glance_dir)
+			controller.queue_behavior(/datum/ai_behavior/stealth_stand)
+			return SUBTREE_RETURN_FINISH_PLANNING
 		if(length(controller.stealth_stops()))
 			controller.stealth_plan_route()
 		else

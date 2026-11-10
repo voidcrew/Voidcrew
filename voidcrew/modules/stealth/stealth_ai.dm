@@ -228,6 +228,9 @@
 	search_center = null
 	search_queue = null
 	hidden_spots = null
+	pending_call = null
+	heard_map = null
+	heard_now = null
 	return ..()
 
 // With the AI off (nobody on the level, stunned, in crit, a player in the body) nothing scans, so no mark.
@@ -239,6 +242,7 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/on_sentience_gained()
 	. = ..()
 	QDEL_NULL(meter)
+	stealth_drop_call()
 
 // The player has left the body: it is a guard again, with nothing on its mind.
 /datum/ai_controller/basic_controller/human_npc/stealth/on_sentience_lost()
@@ -291,6 +295,9 @@
 	look_until = 0
 	lost_since = 0
 	calm_until = 0
+	suspicion_heard = FALSE
+	if(new_state != STEALTH_UNAWARE)
+		glance_until = 0
 	if(new_state == STEALTH_ALERT || new_state == STEALTH_SEARCHING)
 		stealth_set_wary()
 	stealth_drop_walk()
@@ -374,14 +381,15 @@
 	stealth_set_state(STEALTH_UNAWARE)
 	stealth_rejoin_route()
 
-/// Suspicious of something at `where`. `purpose` is STEALTH_GOTO_INVESTIGATE or STEALTH_GOTO_BODY.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_suspicious(turf/where, purpose = STEALTH_GOTO_INVESTIGATE)
+/// Suspicious of something at `where`. `purpose` is STEALTH_GOTO_INVESTIGATE or STEALTH_GOTO_BODY. `line` is
+/// the bark kind it says, or null for the usual one.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_suspicious(turf/where, purpose = STEALTH_GOTO_INVESTIGATE, line = null)
 	stealth_set_state(STEALTH_SUSPICIOUS)
 	goto_purpose = purpose
 	investigated = FALSE
 	last_gain = world.time
 	stealth_aim_at(where)
-	stealth_bark(purpose == STEALTH_GOTO_BODY ? STEALTH_BARK_BODY : STEALTH_BARK_SUSPICIOUS)
+	stealth_bark(line || (purpose == STEALTH_GOTO_BODY ? STEALTH_BARK_BODY : STEALTH_BARK_SUSPICIOUS))
 
 /// Suspicious: turns to `where` and makes it the place to walk over to.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_aim_at(turf/where)
@@ -411,7 +419,8 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_alert(atom/target)
 	if(QDELETED(target))
 		return
-	if(stealth_state() != STEALTH_ALERT)
+	var/news = stealth_state() != STEALTH_ALERT
+	if(news)
 		stealth_set_state(STEALTH_ALERT)
 	stealth_set_wary()
 	lost_since = 0
@@ -419,6 +428,9 @@
 	last_seen_turf = get_turf(target)
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 	set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+	// It has seen or felt them itself: it calls for help (decision 8).
+	if(news)
+		stealth_first_hand(last_seen_turf)
 
 /// Alert: turns from its target to `new_target`, and remembers the old one for when this fight ends.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_switch_target(atom/new_target)
@@ -468,17 +480,28 @@
 		. += spot
 		picked++
 
-/// Says a stealth line, at most once per STEALTH_BARK_KIND_COOLDOWN for each kind (abuse P14).
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_bark(kind)
+/**
+ * Says a stealth line, at most once per STEALTH_BARK_KIND_COOLDOWN for each kind (abuse P14). `about` is the
+ * place the line is about: a line can name its side of the den. `name` is the friend a line asks after.
+ * `always` skips the cooldown (a radio call is said every time it is made).
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_bark(kind, turf/about, name, always = FALSE)
 	var/mob/living/carbon/human/npc/body = pawn
 	if(!ishumannpc(body) || body.stat != CONSCIOUS || body.client)
 		return FALSE
-	if(world.time < bark_ready_at[kind])
+	if(!always && world.time < bark_ready_at[kind])
 		return FALSE
-	if(!body.npc_bark(kind, force = TRUE))
-		return FALSE
-	bark_ready_at[kind] = world.time + STEALTH_BARK_KIND_COOLDOWN
-	return TRUE
+	var/datum/human_npc_voice/scav/voice = ispath(body.npc_voice, /datum/human_npc_voice/scav) ? human_npc_singleton(body.npc_voice) : null
+	if(voice)
+		var/turf/centre = group?.home
+		voice.fill_side = (about && centre && about.z == centre.z && about != centre) ? dir2text(get_dir(centre, about)) : null
+		voice.fill_name = name
+	. = body.npc_bark(kind, force = TRUE)
+	if(voice)
+		voice.fill_side = null
+		voice.fill_name = null
+	if(.)
+		bark_ready_at[kind] = world.time + STEALTH_BARK_KIND_COOLDOWN
 
 /// Moves every awareness timestamp back by `time`, as if that long had passed (unit tests, admin tools).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_rewind(time)
@@ -501,6 +524,11 @@
 	next_harm_at -= time
 	home_retry_at -= time
 	health_mark_at -= time
+	glance_until -= time
+	next_shout -= time
+	next_recentre -= time
+	if(pending_call)
+		pending_call[STEALTH_CALL_DUE] -= time
 	if(explained_at)
 		explained_at -= time
 	for(var/kind in bark_ready_at)
@@ -533,6 +561,10 @@
 	else if(state == STEALTH_SUSPICIOUS && world.time - last_gain >= STEALTH_SUSPICIOUS_TIMEOUT)
 		stealth_bark(STEALTH_BARK_GIVE_UP)
 		stealth_go_unaware()
+	// Its ears, its radio and its missing friends (stealth_hearing.dm, stealth_radio.dm, stealth_noise.dm).
+	stealth_hear_footsteps()
+	stealth_deliver_call()
+	group?.check_overdue()
 	if(stealth_state() == STEALTH_ALERT)
 		stealth_keep_target()
 		// Still fighting: it weighs everyone else. (Losing or downing its target has already looked round.)
@@ -542,6 +574,7 @@
 		stealth_look()
 		if(stealth_state() != STEALTH_ALERT && world.time >= next_body_scan)
 			stealth_check_bodies()
+	heard_now = null
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
 	stealth_meter_update()
@@ -639,10 +672,8 @@
 			continue
 		judged++
 		var/rate = 0
-		var/felt = FALSE
 		if(boxed)
 			rate = STEALTH_NOTICE_RATE
-			felt = TRUE
 		else if(eyes && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
 			var/cap = stealth_range_onto(where)
 			if(dist <= cap)
@@ -652,20 +683,15 @@
 		if(!rate && dist <= STEALTH_CLOSE_RANGE)
 			// At its shoulder: light doesn't matter (abuse P7).
 			rate = STEALTH_BEHIND_RATE
-			felt = TRUE
 		if(!rate)
 			continue
 		var/list/entry = notice[key]
 		if(isnull(entry))
 			entry = list(0, null, 0)
 			notice[key] = entry
-		// First seen counts as moving: it just came into view.
-		var/moved = entry[STEALTH_ENTRY_TURF] != where
-		// STEP 2 STAND-IN: move intent stands in for "running is loud" until real footstep hearing lands.
-		var/running = moved && candidate.move_intent == MOVE_INTENT_RUN
-		if(running)
-			rate *= STEALTH_RUN_MULT
-		else if(!moved)
+		// First seen counts as moving: it just came into view. Sight knows moved or still, nothing more:
+		// running is heard, not seen (stealth_hear_footsteps()).
+		if(entry[STEALTH_ENTRY_TURF] == where)
 			rate *= STEALTH_STILL_MULT
 		if(candidate.body_position == LYING_DOWN)
 			rate *= STEALTH_LYING_MULT
@@ -677,10 +703,6 @@
 			rate *= STEALTH_WARY_MULT
 			wary_at = world.time
 		entry[STEALTH_ENTRY_NOTICE] = min(entry[STEALTH_ENTRY_NOTICE] + rate * scan_seconds, STEALTH_NOTICE_MAX)
-		if(felt && running)
-			entry[STEALTH_ENTRY_NOTICE] = max(entry[STEALTH_ENTRY_NOTICE], STEALTH_SUSPICIOUS_AT)
-			if(!alert && where != guard.loc)
-				guard.setDir(stealth_dir_to(guard, where))
 		entry[STEALTH_ENTRY_TURF] = where
 		entry[STEALTH_ENTRY_SEEN_AT] = world.time
 		perceived[key] = candidate
@@ -701,7 +723,8 @@
 			if(entry[STEALTH_ENTRY_NOTICE] > seen_notice)
 				seen_notice = entry[STEALTH_ENTRY_NOTICE]
 				seen_key = key
-		else
+		else if(!heard_now?[key])
+			// Unseen and unheard this scan.
 			entry[STEALTH_ENTRY_NOTICE] = max(0, entry[STEALTH_ENTRY_NOTICE] - STEALTH_NOTICE_DECAY * scan_seconds)
 			if(world.time - entry[STEALTH_ENTRY_SEEN_AT] > STEALTH_NOTICE_FORGET)
 				notice -= key
@@ -735,6 +758,8 @@
 		if(STEALTH_SUSPICIOUS)
 			if(!seen_now)
 				return
+			// It has someone in sight now: their own "?" takes over from the heard one.
+			suspicion_heard = FALSE
 			if(level >= STEALTH_ALERT_AT && in_reach)
 				stealth_go_alert(best)
 				return
@@ -809,6 +834,8 @@
 		lost_since = 0
 		last_seen_turf = get_turf(remembered)
 		blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
+		// Still has them in view: it keeps calling.
+		stealth_shout()
 		if(!target)
 			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, remembered)
 		return
@@ -924,6 +951,7 @@
 		else
 			group.reported_bodies += key
 			stealth_go_suspicious(where, STEALTH_GOTO_BODY)
+		stealth_first_hand(where)
 		return
 
 // ===== Touches, hits and recovery =====
@@ -961,6 +989,7 @@
 		return TRUE
 	stealth_go_searching(get_turf(source))
 	stealth_bark(STEALTH_BARK_HIT_UNSEEN)
+	stealth_first_hand(get_turf(source))
 	return FALSE
 
 /datum/ai_controller/basic_controller/human_npc/stealth/on_pawn_attacked(mob/living/source, atom/attacker, attack_flags)
@@ -1026,6 +1055,8 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_stunned(datum/source, amount)
 	SIGNAL_HANDLER
 	if(amount > 0)
+		// Whatever it was about to say on the radio is lost.
+		stealth_drop_call()
 		stealth_note_harm()
 
 /**
@@ -1060,6 +1091,8 @@
 	next_harm_at = world.time + STEALTH_HARM_COOLDOWN
 	stealth_setup()
 	stealth_trouble_at(where)
+	if(guard.stat == CONSCIOUS)
+		stealth_first_hand(where)
 	for(var/mob/living/friend as anything in group?.living_members())
 		if(friend == guard)
 			continue
@@ -1112,6 +1145,7 @@
 	last_stat = new_stat
 	if(new_stat != CONSCIOUS)
 		QDEL_NULL(meter)
+		stealth_drop_call()
 	if(new_stat == CONSCIOUS && was != CONSCIOUS && was != DEAD)
 		stealth_came_round()
 

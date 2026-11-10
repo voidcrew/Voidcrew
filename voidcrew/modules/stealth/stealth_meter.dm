@@ -8,6 +8,9 @@
  * - Searching: a yellow "?" everyone sees, draining from the top over the search (or until calm_until
  *   after it put its target down). Empty: gone.
  * - While alert or searching, nobody sees their own "?" on that guard.
+ * - Suspicious of a noise (stealth_hearing.dm): an empty grey "?" for every player near who has no fill of
+ *   their own on that guard. Someone it has started to see gets their own filling "?" instead, so nothing
+ *   stacks. A glance, a hold and a radio call show no mark: the turn, the raised hand and the line are the read.
  *
  * Both are drawn on the guard (vis_contents for the public mark, an image located on the guard for the
  * private one), so they show only when the guard itself is in view, never through walls; above the
@@ -64,7 +67,7 @@
 	// Alert and searching own the mark even once it has drained: no private "?" in the moment before the scan
 	// sends it back to unaware (and clears its notice).
 	var/public_owned = new_public || state == STEALTH_ALERT || state == STEALTH_SEARCHING
-	update_private(public_owned ? null : controller.notice_map)
+	update_private(public_owned ? null : controller.notice_map, !public_owned && stealth_meter_heard(state, controller.suspicion_heard))
 	schedule_drain()
 
 /datum/stealth_meter/proc/set_public(new_state)
@@ -83,12 +86,36 @@
 		guard.vis_contents += mark
 	mark.icon_state = new_state
 
+/// The players near the guard who get the empty grey "?" of a heard noise: every living player within
+/// STEALTH_METER_RANGE with no fill of their own in `notice`.
+/datum/stealth_meter/proc/heard_viewers(list/notice)
+	. = list()
+	var/turf/here = get_turf(guard)
+	if(isnull(here) || here.z > length(SSmobs.clients_by_zlevel))
+		return
+	for(var/mob/living/viewer as anything in SSmobs.clients_by_zlevel[here.z])
+		if(viewer == guard || get_dist(get_turf(viewer), here) > STEALTH_METER_RANGE)
+			continue
+		var/list/entry = notice?[REF(viewer)]
+		if(entry && stealth_meter_notice_state(entry[STEALTH_ENTRY_NOTICE]))
+			continue
+		. += viewer
+
 /// Gives each nearby player their own "?" for their notice entry, and takes away the rest. An admin watching
-/// the guard's sight gets the fullest one, whoever it is for.
-/datum/stealth_meter/proc/update_private(list/notice)
+/// the guard's sight gets the fullest one, whoever it is for. `heard`: the guard is suspicious of a noise, so
+/// everyone near without a fill of their own gets the empty "?".
+/datum/stealth_meter/proc/update_private(list/notice, heard = FALSE)
 	// key => list(icon_state, client to show it to)
 	var/list/wanted = list()
 	var/turf/here = get_turf(guard)
+	if(heard && here)
+		for(var/mob/living/viewer as anything in heard_viewers(notice))
+			if(viewer.client)
+				wanted[REF(viewer)] = list(STEALTH_METER_HEARD_STATE, viewer.client)
+		for(var/datum/stealth_sight_overlay/overlay as anything in controller.watchers)
+			var/client/admin = overlay.user_ref?.resolve()
+			if(admin && !wanted[REF(admin.mob)])
+				wanted["watch:[admin.ckey]"] = list(STEALTH_METER_HEARD_STATE, admin)
 	if(length(notice) && here)
 		var/top_state
 		var/top_notice = 0
@@ -111,7 +138,7 @@
 		if(top_state)
 			for(var/datum/stealth_sight_overlay/overlay as anything in controller.watchers)
 				var/client/admin = overlay.user_ref?.resolve()
-				if(isnull(admin) || wanted[REF(admin.mob)])
+				if(isnull(admin) || (wanted[REF(admin.mob)] && wanted[REF(admin.mob)][1] != STEALTH_METER_HEARD_STATE))
 					continue
 				wanted["watch:[admin.ckey]"] = list(top_state, admin)
 	for(var/key in private_marks.Copy())
@@ -218,6 +245,10 @@
 			. += offsets[1]
 
 // ===== Pure: state to icon_state =====
+
+/// Whether a guard in `state` shows the heard "?".
+/proc/stealth_meter_heard(state, suspicion_heard)
+	return suspicion_heard && state == STEALTH_SUSPICIOUS
 
 /// The private "?" for a notice level, or null for none. Fills round to the nearest row.
 /proc/stealth_meter_notice_state(notice)
