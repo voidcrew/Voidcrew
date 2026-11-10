@@ -138,8 +138,13 @@
 		if(top_state)
 			for(var/datum/stealth_sight_overlay/overlay as anything in controller.watchers)
 				var/client/admin = overlay.user_ref?.resolve()
-				if(isnull(admin) || (wanted[REF(admin.mob)] && wanted[REF(admin.mob)][1] != STEALTH_METER_HEARD_STATE))
+				if(isnull(admin))
 					continue
+				var/list/own = wanted[REF(admin.mob)]
+				if(own && own[1] != STEALTH_METER_HEARD_STATE)
+					continue
+				// The fullest fill takes the place of the admin's empty heard "?": one glyph at a time.
+				wanted -= REF(admin.mob)
 				wanted["watch:[admin.ckey]"] = list(top_state, admin)
 	for(var/key in private_marks.Copy())
 		var/list/held = private_marks[key]
