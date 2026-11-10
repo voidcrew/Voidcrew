@@ -49,7 +49,6 @@
 		/obj/item/stack/ore/bluespace_crystal/artificial = 4,
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/antenna = 3,
-		/obj/item/dnainjector/loot/biotech = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/plasma/thirty = 10,
@@ -94,6 +93,7 @@
 		/obj/item/dnainjector/loot/pyrokinesis = 2,
 		/obj/item/dnainjector/loot/elastic_arms = 2,
 		/obj/item/dnainjector/loot/chem_spike = 1,
+		/obj/item/dnainjector/loot/biotech = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

@@ -230,8 +230,8 @@
    "hash": "",
    "name": "DNA injector (Biotech Compatibility)",
    "rank": 1,
-   "reason": "One more point of skillchip room. Loot only.",
-   "tier": "none"
+   "reason": "Adds 15 neural load and a point of skillchip room, with no slot or load spent. Loot only.",
+   "tier": "red"
   },
   "/obj/item/dnainjector/loot/breathless": {
    "confidence": "medium",

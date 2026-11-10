@@ -115,3 +115,16 @@
 	shock.cast_on_hand_hit(null, victim, attacker)
 	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[attacker.mind], 1, "Shock Touch on a visitor did not count as an attack")
 	TEST_ASSERT_NULL(outpost.aggressor_strikes[victim.mind], "The shocked visitor was given a strike")
+
+/// Biotech Compatibility raises neural capacity while held and drops it when lost.
+/datum/unit_test/voidcrew_gene_injector_biotech_capacity
+
+/datum/unit_test/voidcrew_gene_injector_biotech_capacity/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human/consistent)
+	var/base = get_chrome_capacity(subject)
+	var/obj/item/dnainjector/loot/biotech/injector = allocate(/obj/item/dnainjector/loot/biotech)
+	injector.attack(subject, subject)
+	TEST_ASSERT(injector.used, "The biotech injector did not take")
+	TEST_ASSERT_EQUAL(get_chrome_capacity(subject), base + 15, "Biotech Compatibility did not raise neural capacity")
+	subject.dna.remove_mutation(/datum/mutation/biotechcompat, list(MUTATION_SOURCE_ACTIVATED, MUTATION_SOURCE_MUTATOR))
+	TEST_ASSERT_EQUAL(get_chrome_capacity(subject), base, "Losing Biotech Compatibility kept the neural capacity")

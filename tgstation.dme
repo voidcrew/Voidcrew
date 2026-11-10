@@ -6840,6 +6840,7 @@
 #include "voidcrew\edits\datums\components\spawner.dm"
 #include "voidcrew\edits\datums\elements\decals\_decal.dm"
 #include "voidcrew\edits\datums\mapgen\CaveGenerator.dm"
+#include "voidcrew\edits\datums\mutations\passive.dm"
 #include "voidcrew\edits\datums\mutations\sight.dm"
 #include "voidcrew\edits\datums\weather\weather.dm"
 #include "voidcrew\edits\datums\weather\weather_types\rain_storm.dm"
