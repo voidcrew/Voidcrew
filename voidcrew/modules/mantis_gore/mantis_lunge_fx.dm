@@ -116,9 +116,9 @@
 		half.pixel_y += (dash_dir & NORTH) ? 16 : ((dash_dir & SOUTH) ? -16 : 0)
 	new /obj/effect/temp_visual/mantis_trail(spot, dash_dir, model)
 
-/// The lunge lands: one impact, a flash and a puff of dust, as the gliding body reaches them, [delay] from
-/// now (the glide mantis_lunge_dash_fx() gave; none for a body already there). A [pounce] lands with both
-/// blades, the second mirrored a beat later.
+/// The lunge lands: one impact and a puff of dust, as the gliding body reaches them, [delay] from now (the
+/// glide mantis_lunge_dash_fx() gave; none for a body already there). A [pounce] lands with both blades, the
+/// second mirrored a beat later. The flash comes with the knockdown (mantis_lunge_knockdown()).
 /proc/mantis_lunge_arrival_fx(mob/living/lunger, mob/living/victim, impact_state, pounce = FALSE, delay = MANTIS_LUNGE_GLIDE)
 	if(QDELETED(victim))
 		return
@@ -128,12 +128,13 @@
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_land_fx), WEAKREF(lunger), WEAKREF(victim), impact_state, pounce), delay)
 
 /// Knocks [victim] down when the lunging body lands on them, with the impact, rather than as the lunge
-/// starts its glide in: [delay] from now, as for the impact.
+/// starts its glide in: [delay] from now, as for the impact. They flash as they go: after the fall has begun,
+/// because tg's fall is a plain animate() and would end a flash already running.
 /proc/mantis_lunge_knockdown(mob/living/victim, amount, delay = MANTIS_LUNGE_GLIDE)
 	if(QDELETED(victim))
 		return
 	if(delay <= 0)
-		victim.Knockdown(amount)
+		mantis_lunge_knockdown_now(WEAKREF(victim), amount)
 		return
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_knockdown_now), WEAKREF(victim), amount), delay)
 
@@ -142,6 +143,7 @@
 	if(QDELETED(victim))
 		return
 	victim.Knockdown(amount)
+	cyberware_flash_fx(victim, 0.2 SECONDS)
 
 /proc/mantis_lunge_land_fx(datum/weakref/lunger_ref, datum/weakref/victim_ref, impact_state, pounce)
 	var/mob/living/lunger = lunger_ref?.resolve()
@@ -154,7 +156,6 @@
 	cyberware_play_impact(lunger, victim, impact_state)
 	if(pounce)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_mirrored_impact), lunger_ref, victim_ref, impact_state), 0.4)
-	cyberware_flash_fx(victim, 0.2 SECONDS)
 	var/obj/effect/temp_visual/mook_dust/dust = cyberware_grey_dust(get_turf(victim))
 	if(dust)
 		dust.transform = matrix(0.5, 0, 0, 0, 0.5, 0)

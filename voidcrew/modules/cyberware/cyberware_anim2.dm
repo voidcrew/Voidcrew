@@ -91,7 +91,9 @@
 		return
 	var/static/list/flash = list(0.4, 0, 0, 0, 0, 0.4, 0, 0, 0, 0, 0.4, 0, 0, 0, 0, 1, 0.6, 0.6, 0.62, 0)
 	target.add_filter(CHROME_FLASH_FILTER, 43, color_matrix_filter(flash))
-	animate(target.get_filter(CHROME_FLASH_FILTER), color = COLOR_MATRIX_IDENTITY, time = fade_time)
+	// Beside whatever else is moving the target: a plain animate() on its filter would end a fall or a shove
+	// already under way, and they would snap to the floor.
+	animate(target.get_filter(CHROME_FLASH_FILTER), color = COLOR_MATRIX_IDENTITY, time = fade_time, flags = ANIMATION_PARALLEL)
 	// A rebuild of the target's filters lands on the faded end, not the flash.
 	target.filter_data[CHROME_FLASH_FILTER]["color"] = COLOR_MATRIX_IDENTITY
 	addtimer(CALLBACK(target, TYPE_PROC_REF(/datum, remove_filter), CHROME_FLASH_FILTER), fade_time + 0.5)
