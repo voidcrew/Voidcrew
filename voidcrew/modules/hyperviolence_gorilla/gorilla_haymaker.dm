@@ -203,7 +203,8 @@
 		var/turf/swing_at = isturf(target) ? target : get_step(bearer, bearer.dir)
 		if(swing_at)
 			bearer.face_atom(swing_at)
-			bearer.do_attack_animation(swing_at, ATTACK_EFFECT_SMASH)
+			// The lunge only: a fist that met nothing leaves no mark on the floor
+			bearer.do_attack_animation(swing_at)
 		playsound(bearer, 'sound/items/weapons/punchmiss.ogg', 50, TRUE)
 		bearer.visible_message(span_danger("[bearer]'s fist hits nothing but air!"), span_userdanger("Your fist hits nothing but air!"))
 		bearer.adjust_staggered_up_to(1 SECONDS, 1 SECONDS)
@@ -236,7 +237,8 @@
 	var/reach = charge >= 1 ? GORILLA_HAYMAKER_MAX_RANGE : GORILLA_HAYMAKER_MIN_RANGE
 	var/direction = get_dir(bearer, victim) || bearer.dir
 	bearer.face_atom(victim)
-	bearer.do_attack_animation(victim, ATTACK_EFFECT_SMASH)
+	// The lunge only, as with the piston punch: the sparks are the blow's mark and stay where it landed
+	bearer.do_attack_animation(victim)
 	if(ishuman(victim))
 		var/mob/living/carbon/human/human_victim = victim
 		if(human_victim.check_block(bearer, damage, "[bearer]'s haymaker"))
