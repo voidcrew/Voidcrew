@@ -262,6 +262,9 @@
 /datum/hv_finisher_stage/kill/rip_limb/gore(spray_dir)
 	var/obj/item/bodypart/part = host.victim.get_bodypart(host.target_zone)
 	host.victim.hv_blood_spray(spray_dir, spray_strength)
+	// Torn off toward whoever tore it: it comes away with the pull and falls between the two of them,
+	// not off in whatever direction tg picks.
+	part?.hv_vis_fling_dir = REVERSE_DIR(spray_dir)
 	part?.dismember(BRUTE, TRUE, WOUND_SLASH)
 
 /// Takes the head off and leaves it at the victim's feet, brain and all
