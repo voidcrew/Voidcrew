@@ -224,6 +224,8 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	home_turf = spawn_turf
 	sentry_dir = stealth_facing(guard)
 	stand_dir = sentry_dir
+	// A sentry's first look aside comes after a full turn at its post, not on its first step.
+	next_turn = world.time + STEALTH_SENTRY_TURN_INTERVAL
 	group = stealth_group_for(spawn_turf)
 	if(isnull(group))
 		group = new(spawn_turf)
@@ -255,6 +257,7 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 		home_turf = where
 	sentry_dir = stealth_facing(pawn)
 	stand_dir = sentry_dir
+	next_turn = world.time + STEALTH_SENTRY_TURN_INTERVAL
 
 /// Its route's stops, or null.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_stops()

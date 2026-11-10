@@ -118,8 +118,8 @@
 /// One tile of error per this many tiles past exact
 #define STEALTH_NOISE_FUZZ_STEP 3
 #define STEALTH_NOISE_FUZZ_MAX 3
-/// The same kind of noise this soon and this near an earlier one is the same noise
-#define STEALTH_NOISE_COALESCE (0.5 SECONDS)
+/// The same kind of noise this soon and this near an earlier one is the same noise (a volley is one event, decision 31)
+#define STEALTH_NOISE_COALESCE (3 SECONDS)
 #define STEALTH_NOISE_COALESCE_RANGE 3
 #define STEALTH_GLANCE_TIME (3 SECONDS)
 /// How long a guard told to hold faces the noise before it goes back to its round

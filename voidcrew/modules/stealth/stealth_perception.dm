@@ -57,18 +57,21 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
  * Whether `tile` is dark enough to hide in. A turf with no lighting object (planet ground lit only by its
  * area's ambient light) reads its area's base light, which get_lumcount() skips (it returns 1 there).
  * Same rule as the bounty AI's ai_tile_is_dark() (bounty_ai_meek.dm), which is a type proc.
+ * A flashlight's light counts like any other (tg adds it to dynamic_lumcount). `own_light` leaves out what
+ * that one light adds, so a guard can tell whether it needs its own (stealth_light.dm).
  */
-/proc/stealth_tile_is_dark(turf/tile)
+/proc/stealth_tile_is_dark(turf/tile, obj/item/flashlight/own_light)
 	if(!isturf(tile))
 		return FALSE
 #ifdef UNIT_TESTS
 	if(tile in GLOB.stealth_test_dark_turfs)
 		return GLOB.stealth_test_dark_turfs[tile]
 #endif
+	var/own = own_light ? stealth_light_share(own_light, tile) : 0
 	if(!tile.lighting_object)
 		var/area/tile_area = tile.loc
-		return (tile_area.base_lighting_alpha / 255) + tile.dynamic_lumcount < STEALTH_DARK_LUMCOUNT
-	return tile.get_lumcount() < STEALTH_DARK_LUMCOUNT
+		return (tile_area.base_lighting_alpha / 255) + tile.dynamic_lumcount - own < STEALTH_DARK_LUMCOUNT
+	return tile.get_lumcount() - own < STEALTH_DARK_LUMCOUNT
 
 /**
  * What `who` is shut inside, as it stands on a turf: the box, locker, bag or car, or the outermost of them.

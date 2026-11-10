@@ -93,6 +93,11 @@
 	npc_voice = /datum/human_npc_voice/scav
 	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/sword
 
+/// Every scav guard carries a seclite it switches on in the dark (stealth_light.dm, decision 31).
+/mob/living/carbon/human/npc/ruin/trooper/scav/npc_dress(datum/human_npc_order/order)
+	. = ..()
+	stealth_give_light()
+
 /mob/living/carbon/human/npc/ruin/trooper/scav/gunner
 	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/pistol
 

@@ -53,6 +53,8 @@
 #define STEALTH_DARK_LUMCOUNT 0.2
 #define STEALTH_DARK_MULT 0.5
 #define STEALTH_CLOSE_RANGE 2
+/// Elbow to elbow: someone this close in its cone is seen whatever the light (decision 31)
+#define STEALTH_ADJACENT_RANGE 1
 #define STEALTH_CONE_HALF_ANGLE 60
 #define STEALTH_WARY_HALF_ANGLE 75
 #define STEALTH_SEARCH_HALF_ANGLE 90
@@ -91,6 +93,8 @@
 #define STEALTH_LOOK_TURN_CHANCE 50
 #define STEALTH_LOOK_TURN_ARC 90
 #define STEALTH_SENTRY_TURN_INTERVAL (8 SECONDS)
+/// How long a sentry looks aside before it faces its post again
+#define STEALTH_SENTRY_GLANCE_TIME (2 SECONDS)
 #define STEALTH_CHATTER_RANGE 3
 #define STEALTH_CHATTER_COOLDOWN (45 SECONDS)
 #define STEALTH_PATROL_MAX_FAILS 3
@@ -127,4 +131,12 @@
 #define STEALTH_METER_LYING_Z 29
 
 /// The scav den's side
+// ===== Flashlights (decision 31, stealth_light.dm) =====
+/// It keeps its light on this long after it last wanted it
+#define STEALTH_LIGHT_HOLD (5 SECONDS)
+/// A heavy EMP cuts a guard's seclite out for this long
+#define STEALTH_LIGHT_EMP_HEAVY (40 SECONDS)
+/// A light EMP cuts a guard's seclite out for this long
+#define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
+
 #define FACTION_SCAV "scav"

@@ -154,6 +154,8 @@
 	var/next_scan = 0
 	/// world.time of its next look for fallen friends
 	var/next_body_scan = 0
+	/// Whether its search is over a fallen friend (it doesn't end it with "Nothing.")
+	var/search_for_body = FALSE
 	/// Bark kind => world.time it may say that kind again
 	var/list/bark_ready_at = list()
 	/// Its stat at the last change, to tell recovery from crit
@@ -304,6 +306,7 @@
 	if(!stealth_driven())
 		stealth_set_pace(new_state == STEALTH_ALERT || new_state == STEALTH_SEARCHING)
 	human_npc_set_ai_movement(src, new_state == STEALTH_ALERT ? /datum/ai_movement/basic_avoidance : /datum/ai_movement/jps/stealth)
+	stealth_update_light()
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
 	stealth_meter_update()
@@ -408,6 +411,7 @@
 	if(isnull(where))
 		where = get_turf(pawn)
 	stealth_set_state(STEALTH_SEARCHING)
+	search_for_body = FALSE
 	search_center = stealth_leash(where) || get_turf(pawn)
 	search_queue = stealth_search_spots(search_center)
 	search_looking = FALSE
@@ -556,7 +560,9 @@
 		if(world.time >= calm_until)
 			stealth_go_unaware()
 	else if(state == STEALTH_SEARCHING && world.time - blackboard[BB_STEALTH_STATE_SINCE] >= STEALTH_SEARCH_TIME)
-		stealth_bark(STEALTH_BARK_GIVE_UP)
+		// "Nothing." over a dead friend reads wrong: a search over a body ends without a word.
+		if(!search_for_body)
+			stealth_bark(STEALTH_BARK_GIVE_UP)
 		stealth_go_unaware()
 	else if(state == STEALTH_SUSPICIOUS && world.time - last_gain >= STEALTH_SUSPICIOUS_TIMEOUT)
 		stealth_bark(STEALTH_BARK_GIVE_UP)
@@ -575,6 +581,7 @@
 		if(stealth_state() != STEALTH_ALERT && world.time >= next_body_scan)
 			stealth_check_bodies()
 	heard_now = null
+	stealth_update_light()
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
 	stealth_meter_update()
@@ -675,7 +682,9 @@
 		if(boxed)
 			rate = STEALTH_NOTICE_RATE
 		else if(eyes && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
-			var/cap = stealth_range_onto(where)
+			// Elbow to elbow in front of it: seen whatever the light (decision 31). Behind or side-on, the
+			// close radius below still applies.
+			var/cap = dist <= STEALTH_ADJACENT_RANGE ? STEALTH_SIGHT_RANGE : stealth_range_onto(where)
 			if(dist <= cap)
 				rate = STEALTH_NOTICE_RATE * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < STEALTH_SIGHT_RANGE)
@@ -946,10 +955,17 @@
 		if(!in_sight || !can_see(guard, where, STEALTH_SIGHT_RANGE))
 			continue
 		seen += key
-		if((key in group.reported_bodies) || stealth_state() == STEALTH_SEARCHING)
-			stealth_go_searching(where)
-		else
+		var/news = !(key in group.reported_bodies)
+		if(news)
 			group.reported_bodies += key
+		if(!news || stealth_state() == STEALTH_SEARCHING)
+			stealth_go_searching(where)
+			search_for_body = TRUE
+			// Already searching, it still says what it found (decision 31: guards that searched beside a
+			// body without a word looked blind).
+			if(news)
+				stealth_bark(STEALTH_BARK_BODY)
+		else
 			stealth_go_suspicious(where, STEALTH_GOTO_BODY)
 		stealth_first_hand(where)
 		return
@@ -1234,6 +1250,7 @@
 				controller.stealth_drop_walk()
 				if(controller.goto_purpose == STEALTH_GOTO_BODY)
 					controller.stealth_go_searching(get_turf(guard))
+					controller.search_for_body = TRUE
 					return SUBTREE_RETURN_FINISH_PLANNING
 				controller.stand_dir = stealth_facing(guard)
 				controller.look_until = world.time + STEALTH_LOOK_AROUND_TIME
@@ -1396,12 +1413,16 @@
 	if(state == STEALTH_SUSPICIOUS && !controller.investigated)
 		guard.setDir(controller.stand_dir)
 		return AI_BEHAVIOR_DELAY
+	// A sentry faces its post and only glances aside now and then (decision 31: it used to spend half its
+	// time, the first eight seconds included, facing sideways).
 	var/sentry = isnull(controller.route_id)
 	controller.next_turn = world.time + (sentry ? STEALTH_SENTRY_TURN_INTERVAL : STEALTH_LOOK_TURN_INTERVAL)
 	if(guard.dir != controller.stand_dir)
 		guard.setDir(controller.stand_dir)
 	else if(sentry || prob(STEALTH_LOOK_TURN_CHANCE))
 		guard.setDir(turn(controller.stand_dir, pick(STEALTH_LOOK_TURN_ARC, -STEALTH_LOOK_TURN_ARC)))
+		if(sentry)
+			controller.next_turn = world.time + STEALTH_SENTRY_GLANCE_TIME
 	return AI_BEHAVIOR_DELAY
 
 #undef STEALTH_HANDLED_SIGNALS

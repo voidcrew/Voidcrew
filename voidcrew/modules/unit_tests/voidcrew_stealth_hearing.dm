@@ -186,11 +186,11 @@
 	TEST_ASSERT_EQUAL(second.dir, WEST, "A glancing guard didn't turn to the noise")
 	// The same noise at once is the same noise.
 	TEST_ASSERT_EQUAL(stealth_noise(spot, "knock"), 0, "The same noise in the same moment was heard twice")
-	group.rewind(2 SECONDS)
+	group.rewind(4 SECONDS)
 	stealth_noise(spot, "knock")
 	TEST_ASSERT_EQUAL(second_ai.stealth_state(), "suspicious", "Two guards didn't go to the second noise")
 	TEST_ASSERT_EQUAL(third_ai.stealth_state(), "unaware", "Three guards went to the second noise")
-	group.rewind(2 SECONDS)
+	group.rewind(4 SECONDS)
 	stealth_noise(spot, "knock")
 	for(var/mob/living/guard as anything in list(first, second, third))
 		TEST_ASSERT_EQUAL(state_of(guard), "searching", "Not every guard searched at the third noise")
@@ -198,7 +198,7 @@
 	// Ten tiles off it is a new spot.
 	for(var/mob/living/guard as anything in list(first, second, third))
 		settle(guard)
-	group.rewind(2 SECONDS)
+	group.rewind(4 SECONDS)
 	TEST_ASSERT_EQUAL(stealth_noise(at(15, 1), "glass"), 2, "A smash 6 and 8 tiles off wasn't heard by two")
 	TEST_ASSERT_EQUAL(third_ai.stealth_state(), "suspicious", "Nobody went to a noise somewhere new")
 	TEST_ASSERT_EQUAL(second_ai.stealth_state(), "unaware", "Two went to the first noise at a new spot")
@@ -290,7 +290,7 @@
 	for(var/round_number in 2 to 3)
 		for(var/mob/living/guard as anything in route_guards + sentries)
 			settle(guard)
-		group.rewind(2 SECONDS)
+		group.rewind(4 SECONDS)
 		stealth_noise(spot, "gun_long")
 	searching = 0
 	for(var/mob/living/guard as anything in route_guards)
