@@ -1763,10 +1763,26 @@
 			lay = (facing || user.dir) == WEST ? -1 : 1
 			victim_rig = new(victim, SOUTH)
 			if(victim_rig.snapshot())
+				// A body lying with its head the other way from how he will hold it comes up head first: turned to that in one
+				// straight step it would shrink away to nothing half way and grow back
+				var/lying_turn = arctan(victim.transform.a, victim.transform.b)
+				var/turn_over = abs(lay * 90 - lying_turn) > 90 ? lay * 90 - lying_turn : 0
 				for(var/half in list("upper", "lower"))
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.add_puppet(half, victim_rig.cut("rig_[half]"), TRUE, user.layer + 0.05)
 					// Overhead on his back, flat, held clear above the bearer's head
-					animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 29, transform = laid(), time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT)
+					if(turn_over)
+						var/steps = bearer_rig?.swing_steps(0, turn_over) || 15
+						for(var/i in 1 to steps)
+							// Fast off the floor, slow into his hands
+							var/progress = sin(90 * i / steps)
+							var/matrix/turned = chrome_rig_turn(lying_turn + turn_over * progress, 0, BACK_WAIST_PIVOT_Y * progress)
+							if(i == 1)
+								animate(part, transform = turned, time = 0.55 SECONDS / steps)
+							else
+								animate(transform = turned, time = 0.55 SECONDS / steps)
+						animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 29, time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+					else
+						animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 29, transform = laid(), time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT)
 				victim_rig.conceal()
 			else
 				QDEL_NULL(victim_rig)
