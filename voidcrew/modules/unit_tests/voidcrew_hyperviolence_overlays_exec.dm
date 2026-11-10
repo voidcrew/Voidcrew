@@ -14,6 +14,11 @@
 	for(var/prefix in prefixes)
 		for(var/part in list("blood", "bone"))
 			TEST_ASSERT(icon_exists(gore_icon, "[prefix]_[part]"), "Gore sheet is missing [prefix]_[part]")
+	// The neck the garrote cuts swaps in the wire's own stump (hyperviolence/wire/wire_seams.dm).
+	var/wire_icon = 'voidcrew/modules/hyperviolence/wire/icons/wire_gore.dmi' // WIRE_GORE_ICON
+	for(var/zone in GLOB.hv_wire_stump_zones)
+		for(var/part in list("blood", "bone"))
+			TEST_ASSERT(icon_exists(wire_icon, "stump_[zone]_wire_[part]"), "Wire sheet is missing stump_[zone]_wire_[part]")
 
 /// A torn-off limb leaves a wet stump, a clean removal a healed one, and a limb put back clears it.
 /datum/unit_test/hv_stump_overlays
@@ -47,6 +52,24 @@
 	var/obj/item/bodypart/head = dummy.get_bodypart(BODY_ZONE_HEAD)
 	TEST_ASSERT(head.dismember(), "The head would not come off")
 	TEST_ASSERT("stump_head_blood" in dummy.hv_gore_states(), "Decapitation drew no neck stump")
+	TEST_ASSERT(!LAZYACCESS(dummy.hv_stump_wire_cut, BODY_ZONE_HEAD), "A head torn off without the wire drew the wire's stump")
+
+	// A head the wire takes (the garrote) leaves the wire's clean cut, seared dark by a hot wire.
+	var/mob/living/carbon/human/consistent/garroted = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(hv_wire_take_part(garroted.get_bodypart(BODY_ZONE_HEAD)), "The wire would not take the head")
+	var/list/neck = garroted.hv_gore_states()
+	TEST_ASSERT("stump_head_wire_blood" in neck, "A head the wire took drew no wire stump: [english_list(neck)]")
+	TEST_ASSERT("stump_head_wire_bone" in neck, "A head the wire took drew no bone in its stump")
+	TEST_ASSERT(!("stump_head_blood" in neck), "A head the wire took drew the ragged stump too")
+	LAZYSET(garroted.hv_stump_burnt, BODY_ZONE_HEAD, TRUE)
+	garroted.hv_gore_key = null
+	garroted.hv_update_gore_overlays()
+	var/image/neck_blood
+	for(var/image/gore_image as anything in garroted.hv_gore_overlays)
+		if(gore_image.icon_state == "stump_head_wire_blood")
+			neck_blood = gore_image
+	TEST_ASSERT_NOTNULL(neck_blood, "A seared wire stump lost its picture")
+	TEST_ASSERT_EQUAL(neck_blood.color, "#2a1b15", "A seared wire stump wasn't charred") // WIRE_BURNT_STUMP_COLOR
 
 /// One heavy hit opens a skull wound, more damage widens it, healing closes it; small hits never open one.
 /datum/unit_test/hv_skull_wound

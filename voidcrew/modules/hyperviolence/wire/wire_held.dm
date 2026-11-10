@@ -151,11 +151,12 @@
 // ---- Out of the spool and back ----
 
 /obj/item/melee/cyberware_monowire/proc/hide_inhand_for(duration)
-	inhand_hidden_until = world.time + duration
+	// A shorter hide (a swing out of the spool) never cuts a longer one (a garrote's) short.
+	inhand_hidden_until = max(inhand_hidden_until, world.time + duration)
 	var/mob/holder = loc
 	if(ismob(holder))
 		holder.update_held_items()
-	addtimer(CALLBACK(src, PROC_REF(show_inhand)), duration, TIMER_UNIQUE | TIMER_OVERRIDE)
+	addtimer(CALLBACK(src, PROC_REF(show_inhand)), inhand_hidden_until - world.time, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_NO_HASH_WAIT)
 
 /obj/item/melee/cyberware_monowire/proc/show_inhand()
 	if(!inhand_hidden_until)
