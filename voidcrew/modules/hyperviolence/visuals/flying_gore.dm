@@ -27,6 +27,9 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	/// Where on the body it was, in pixels from the middle of the tile (list(x, y)): the flight starts
 	/// there. Used up by the flight.
 	var/list/hv_vis_fling_from
+	/// Set when it was drawn in front of the body it comes off (the near arm of a body seen side-on):
+	/// it stays in front of that body until it is clear of it. Used up by the flight.
+	var/hv_vis_fling_over
 
 /// Forgets a fling that was marked on this part.
 /obj/item/proc/hv_vis_forget_fling()
@@ -34,6 +37,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	hv_vis_fling_dir = null
 	hv_vis_tumble_dna = null
 	hv_vis_fling_from = null
+	hv_vis_fling_over = null
 
 /// How this kind of part tumbles when nothing marked it (HV_VIS_TUMBLE_*).
 /obj/item/proc/hv_vis_tumble_style()
@@ -58,6 +62,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/style = hv_vis_tumble
 	var/list/blood_dna = hv_vis_tumble_dna
 	var/list/from = hv_vis_fling_from
+	var/starts_over = hv_vis_fling_over
 	hv_vis_forget_fling()
 	if(QDELETED(src) || !isturf(loc))
 		return FALSE
@@ -75,7 +80,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		else
 			pixel_x = base_pixel_x + HV_VIS_DX(fling_dir) * 7 + rand(-3, 3)
 			pixel_y = base_pixel_y + HV_VIS_DY(fling_dir) * 7 + rand(-3, 3)
-	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from)
+	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from, starts_over)
 	tumble.launch()
 	return TRUE
 
@@ -146,8 +151,14 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/stepping = FALSE
 	/// The layer it had before it took off.
 	var/rest_layer
+	/// The layer it flies at.
+	var/flight_layer = HV_VIS_TUMBLE_LAYER
+	/// Whether it leaves the body drawn in front of it, until its first step is done.
+	var/starts_over = FALSE
+	/// How many of its own steps it has taken.
+	var/steps_taken = 0
 
-/datum/component/hv_tumble/Initialize(style, list/blood_dna, fling_dir, list/turf/path, datum/callback/on_landed, list/from)
+/datum/component/hv_tumble/Initialize(style, list/blood_dna, fling_dir, list/turf/path, datum/callback/on_landed, list/from, starts_over = FALSE)
 	if(!isitem(parent))
 		return COMPONENT_INCOMPATIBLE
 	var/obj/item/part = parent
@@ -157,6 +168,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	src.path = path || list()
 	src.on_landed = on_landed
 	src.from = from
+	src.starts_over = starts_over
 	grounded = part.has_gravity() > 0
 	// A slide along the floor is slower than a flight, and so is a drift with nothing to pull it down.
 	if(style == HV_VIS_TUMBLE_SLIDE)
@@ -177,7 +189,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		deltimer(step_timer)
 		step_timer = null
 	var/obj/item/part = parent
-	if(!QDELETED(part) && !isnull(rest_layer) && part.layer == HV_VIS_TUMBLE_LAYER)
+	if(!QDELETED(part) && !isnull(rest_layer) && part.layer == flight_layer)
 		part.layer = rest_layer
 	blood_dna = null
 	path = null
@@ -239,9 +251,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, 2, 30, pick(-1, 1)))
 		return
 	// In the air it passes over bodies on the floor and behind anyone standing. A part tg already draws
-	// over everyone (a brain, so it can be found) keeps its own layer.
-	if(part.layer < HV_VIS_TUMBLE_LAYER)
-		part.layer = HV_VIS_TUMBLE_LAYER
+	// over everyone (a brain, so it can be found) keeps its own layer. One that was in front of the body
+	// it came off stays in front of it until its first step is done.
+	if(starts_over)
+		flight_layer = ABOVE_MOB_LAYER
+	if(part.layer < flight_layer)
+		part.layer = flight_layer
 	var/height = arc_height()
 	// From where it was on the body, over the top of the arc, down onto its own spot on the last tile.
 	part.hv_vis_play(HV_VIS_TAG_ARC, list(
@@ -266,6 +281,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	if(!next || !hv_vis_can_fly_onto(part.loc, next))
 		land()
 		return
+	// Clear of the body it came off: from here it flies behind anyone standing.
+	if(steps_taken && flight_layer != HV_VIS_TUMBLE_LAYER)
+		if(part.layer == flight_layer)
+			part.layer = HV_VIS_TUMBLE_LAYER
+		flight_layer = HV_VIS_TUMBLE_LAYER
+	steps_taken++
 	path.Cut(1, 2)
 	stepping = TRUE
 	part.set_glide_size(DELAY_TO_GLIDE_SIZE(step_time))
@@ -295,7 +316,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 /// It comes down: the bounce, a head's roll, and whoever asked to know.
 /datum/component/hv_tumble/proc/land()
 	var/obj/item/part = parent
-	if(part.layer == HV_VIS_TUMBLE_LAYER)
+	if(part.layer == flight_layer)
 		part.layer = rest_layer
 	if(grounded && isturf(part.loc))
 		switch(style)
@@ -407,6 +428,8 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			hv_vis_tumble_dna = limb_owner.get_blood_dna_list()
 		if(!hv_vis_fling_from)
 			hv_vis_fling_from = limb_owner.hv_vis_part_offset(body_zone)
+		if(isnull(hv_vis_fling_over))
+			hv_vis_fling_over = limb_owner.hv_vis_part_in_front(body_zone)
 	. = ..()
 	// Not sent flying after all (it burned away, or it was never let go): forget the fling.
 	if(marked && !QDELETED(src))
@@ -441,6 +464,18 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		else
 			. = list(x, y)
 	.[2] += pixel_y - base_pixel_y
+
+/// Whether the part at `zone` is drawn in front of the rest of this body as it stands now: the arm and
+/// leg on our side of a body seen side-on (its right ones facing east, its left ones facing west).
+/mob/living/carbon/proc/hv_vis_part_in_front(zone)
+	if(body_position == LYING_DOWN)
+		return FALSE
+	switch(dir)
+		if(EAST)
+			return zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG
+		if(WEST)
+			return zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_L_LEG
+	return FALSE
 
 // ---- Burst heads ----
 
