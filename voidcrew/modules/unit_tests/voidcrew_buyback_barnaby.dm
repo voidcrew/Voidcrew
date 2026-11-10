@@ -92,6 +92,7 @@
 		/datum/outpost_shop/black_market,
 		/datum/outpost_shop/vendor/dregs_bar,
 		/datum/outpost_shop/vendor/patchup_clinic,
+		/datum/outpost_shop/vendor/ripperdoc,
 		/datum/outpost_shop/general,
 		/datum/outpost_shop/vendor/potting_shed,
 		/datum/outpost_shop/vendor/bait_shop,
