@@ -259,7 +259,8 @@
 	// wall: the points are in it.
 	var/dip = (new_beat == "hold" && !wall_pin) ? sag : 0
 	// Facing south the victim is held up in front of the bearer, back to the camera, high enough to hide them
-	// whole. The bearer draws up tall behind them as they heave, head and shoulders over the victim's head.
+	// whole. The bearer draws up tall behind them as they heave, head and shoulders over the victim's head, the
+	// fists with them; the points out of the victim's back stay where they are.
 	var/rise = (facing == SOUTH) ? max(0, spec[MANTIS_RIG_TARGET_Z] - MANTIS_IMPALE_SOUTH_RISE_FROM) : 0
 	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z, ride_z = dip, body_z = rise)
 	// The bar over the bearer goes up with them, so it sits over their head rather than across their face.
