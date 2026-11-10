@@ -11,7 +11,7 @@
 /obj/machinery/computer/mission_board/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	var/obj/structure/overmap/ship/ship = get_ship()
-	if(length(ship?.active_missions))
+	if(length(ship?.active_missions) && user?.mind && (user.mind in ship.ship_team?.members))
 		tutorial_credit(user, TUTORIAL_STEP_CONTRACT_TAKE)
 
 /datum/mission/on_objective_completed(datum/mission_objective/objective)

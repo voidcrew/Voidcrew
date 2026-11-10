@@ -9,7 +9,7 @@
 /// Lockers and crates aboard a ship. Hot path: one ckey lookup once the step is done.
 /obj/structure/closet/open(mob/living/user, force = FALSE, special_effects = TRUE)
 	. = ..()
-	if(. != TRUE || !user)
+	if(. != TRUE || !ismob(user))
 		return
 	var/user_ckey = user.ckey
 	if(!user_ckey || SSvc_tutorials.has_key(user_ckey, TUTORIAL_STEP_SHIP_SEARCH))
@@ -24,16 +24,21 @@
 	if(viewer)
 		tutorial_credit(viewer, TUTORIAL_STEP_SHIP_SEARCH)
 
+/// Only a course this click actually changed counts, so refused clicks (viewer helms,
+/// non-crew, a busy ship) never credit a course someone else set.
 /obj/machinery/computer/helm/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	var/obj/structure/overmap/ship/ship_before = current_ship
+	var/course_before = current_ship?.commanded_course
+	var/autopilot_before = current_ship?.autopilot_engaged
 	. = ..()
-	if(!current_ship)
+	if(!current_ship || current_ship != ship_before)
 		return
 	var/plotted = FALSE
 	switch(action)
 		if("change_heading", "set_course")
-			plotted = current_ship.commanded_course != BURN_NONE
+			plotted = current_ship.commanded_course != BURN_NONE && current_ship.commanded_course != course_before
 		if("autopilot")
-			plotted = current_ship.autopilot_engaged
+			plotted = current_ship.autopilot_engaged && !autopilot_before
 	if(!plotted)
 		return
 	var/mob/pilot = ui?.user || usr
