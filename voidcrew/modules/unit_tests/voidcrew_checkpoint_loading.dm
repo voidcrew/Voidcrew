@@ -118,8 +118,6 @@
 		original.shuttle.admin_delete_shuttle()
 		return "not saved: [denial]"
 	snapshot.outpost = home
-	home.checkpoints += snapshot
-	original.checkpoint_ref = WEAKREF(snapshot)
 	return snapshot
 
 /// Moves the saved original off its bay and deletes it, as a lost hull would be.
@@ -168,7 +166,6 @@
 		. += "\n    stock:  [stock.load_summary]\n    spread: [spread.load_summary]"
 	qdel(stock)
 	qdel(spread)
-	home.checkpoints -= snapshot
 	qdel(snapshot)
 	if(original && !QDELETED(original.shuttle))
 		original.shuttle.admin_delete_shuttle()
@@ -428,7 +425,7 @@
 
 /**
  * A rebuild that cannot get the shared loader waits for it, well past the old 30 second limit,
- * keeping its bay. One deleted while it waits releases everything and keeps its checkpoint.
+ * keeping its bay. One deleted while it waits releases everything and cleans up its snapshot.
  */
 /datum/unit_test/voidcrew_checkpoints/queued_rebuild
 	var/datum/shuttle_template_load/held
@@ -460,10 +457,13 @@
 	var/mob/living/carbon/human/captain = make_player(run_loc_floor_bottom_left, "queuedcaptain")
 	var/datum/ship_checkpoint/snapshot = save_class(home, captain, smallest)
 	TEST_ASSERT(istype(snapshot), "[smallest] could not be saved: [snapshot]")
+	// Each job owns its snapshot, and the original is gone before the second one starts.
+	var/datum/ship_checkpoint/second_snapshot = capture_copy(home, snapshot.source_ship.resolve(), captain.ckey)
+	TEST_ASSERT_NOTNULL(second_snapshot, "The second snapshot could not be taken")
 	TEST_ASSERT(lose_original(home, snapshot.source_ship.resolve()), "The original could not be removed")
 	var/datum/outpost_berth/ship_bay/bay = home.bay_berths[1]
 
-	// Deleted while waiting: nothing is kept but the checkpoint.
+	// Deleted while waiting: nothing is kept.
 	held = SSshuttle.acquire_template_load()
 	var/datum/checkpoint_construction/cancelled = new(null, snapshot, captain, TRUE)
 	INVOKE_ASYNC(src, PROC_REF(prepare_job), cancelled)
@@ -471,17 +471,16 @@
 	TEST_ASSERT_EQUAL(cancelled.status_line(), "Waiting for the shipyard", "A waiting rebuild reported the wrong status")
 	TEST_ASSERT_EQUAL(bay.status_text(), "Queued", "A waiting rebuild's bay sign is wrong")
 	TEST_ASSERT(!bay.is_available(), "A waiting rebuild released its bay")
-	TEST_ASSERT(snapshot.busy, "A waiting rebuild left its checkpoint free for another")
 	qdel(cancelled)
 	var/deadline = world.time + 10 SECONDS
 	UNTIL(!length(SSshuttle.background_template_waiters) || world.time > deadline)
 	TEST_ASSERT(!length(SSshuttle.background_template_waiters), "A deleted rebuild stayed in the loader queue")
 	TEST_ASSERT(bay.is_available(), "A deleted rebuild kept its bay")
-	TEST_ASSERT(!QDELETED(snapshot) && (snapshot in home.checkpoints) && !snapshot.busy, "A deleted rebuild lost or held its checkpoint")
+	TEST_ASSERT(QDELETED(snapshot), "A deleted rebuild left its snapshot behind")
 	TEST_ASSERT_EQUAL(SSshuttle.active_template_load, held, "A deleted rebuild disturbed the loader's owner")
 
 	// Waits as long as it takes, then starts.
-	var/datum/checkpoint_construction/patient = new(null, snapshot, captain, TRUE)
+	var/datum/checkpoint_construction/patient = new(null, second_snapshot, captain, TRUE)
 	INVOKE_ASYNC(src, PROC_REF(prepare_job), patient)
 	TEST_ASSERT(patient.queued, "The second rebuild did not wait for the busy loader")
 	sleep(35 SECONDS)
@@ -492,9 +491,9 @@
 	UNTIL(prepared[patient] || world.time > deadline)
 	TEST_ASSERT_EQUAL(prepared[patient], "started", "The waiting rebuild did not start once the loader was free: [patient.error]")
 	TEST_ASSERT_NULL(SSshuttle.active_template_load, "A started rebuild kept the loader")
-	// Stopped before its first piece: the checkpoint survives.
+	// Stopped before its first piece: the bay is free and the snapshot cleaned up.
 	patient.abort("Test cancelled.")
-	TEST_ASSERT(!QDELETED(snapshot) && (snapshot in home.checkpoints) && !snapshot.busy, "A rebuild stopped before its first piece lost its checkpoint")
+	TEST_ASSERT(QDELETED(second_snapshot), "A rebuild stopped before its first piece left its snapshot behind")
 	TEST_ASSERT(bay.is_available(), "A stopped rebuild kept its bay")
 
 /datum/unit_test/voidcrew_checkpoints/queued_rebuild/proc/prepare_job(datum/checkpoint_construction/job)

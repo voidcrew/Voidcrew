@@ -2,7 +2,7 @@
  * # Shipyard orders
  *
  * A new ship bought for credits at the shipyard console and built in the ship bay by its
- * drones, through the same staged construction that rebuilds checkpoints. The catalog is the
+ * drones, through the same staged construction that builds saved ships. The catalog is the
  * lobby shipyard's: every hull, theme and module a player could pick there, with the same
  * previews. Credits replace parts entirely: nothing needs unlocking.
  *
@@ -155,7 +155,7 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 
 // ===== CONSTRUCTION =====
 
-/// Builds a new ship from an order. Everything but the source is the checkpoint rebuild's.
+/// Builds a new ship from an order. Everything but the source is the base construction's.
 /datum/checkpoint_construction/order
 	status_verb = "Building"
 	build_noun = "Construction"
@@ -178,7 +178,6 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 
 /datum/checkpoint_construction/order/New(datum/ship_checkpoint_ui/terminal, obj/structure/overmap/dynamic/player_outpost/site, datum/ship_order/new_order, mob/living/buyer, datum/bank_account/payer, obj/structure/overmap/ship/payer_ship, manual_drive = FALSE, free_build = FALSE)
 	panel_ref = terminal ? WEAKREF(terminal) : null
-	operator_ref = WEAKREF(buyer)
 	order = new_order
 	home = site
 	captain_ckey = buyer?.ckey

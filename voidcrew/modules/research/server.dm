@@ -109,16 +109,20 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		if(!attacking_item.forceMove(src))
 			balloon_alert(user, "won't fit!")
 			return
-		source_code_hdd = attacking_item
-		RegisterSignal(source_code_hdd, COMSIG_QDELETING, PROC_REF(on_source_disk_deleted))
-		stored_research = source_code_hdd.stored_research
-		stored_research.techweb_servers |= src
+		adopt_source_disk(attacking_item)
 		record_source_disk_installed(user) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 		balloon_alert(user, "disk uploaded!")
 		claim_unlinked_experiment_handlers()
 		claim_unlinked_survey_console()
 		return
 	return ..()
+
+/// Runs this server off a disk that is already inside it.
+/obj/machinery/rnd/server/ship/proc/adopt_source_disk(obj/item/computer_disk/ship_disk/disk)
+	source_code_hdd = disk
+	RegisterSignal(source_code_hdd, COMSIG_QDELETING, PROC_REF(on_source_disk_deleted))
+	stored_research = source_code_hdd.stored_research
+	stored_research.techweb_servers |= src
 
 /**
  * Adopts every experiment handler aboard this ship that has no techweb link.
