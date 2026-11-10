@@ -496,7 +496,7 @@
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Burnt chrome test", null, 1, FALSE)
 	id.registered_account = account
 	TEST_ASSERT(seller.put_in_hands(id), "The seller could not hold their ID")
-	var/datum/shop_buyback/ripperdoc/burnt_chrome/ledger = allocate(/datum/shop_buyback/ripperdoc/burnt_chrome)
+	var/datum/shop_buyback/burnt_chrome/ledger = allocate(/datum/shop_buyback/burnt_chrome)
 	ledger.demand = 2
 	var/datum/outpost_shop/vendor/ripperdoc/splice = allocate(/datum/outpost_shop/vendor/ripperdoc)
 	var/takes_burnt = FALSE
@@ -504,6 +504,12 @@
 		if(intake.type == ledger.type)
 			takes_burnt = TRUE
 	TEST_ASSERT(takes_burnt, "Splice doesn't take burnt-out chrome")
+	var/datum/outpost_shop/vendor/street_doc/ratchet = allocate(/datum/outpost_shop/vendor/street_doc)
+	var/ratchet_takes_burnt = FALSE
+	for(var/datum/shop_buyback/intake as anything in ratchet.buybacks)
+		if(istype(intake, /datum/shop_buyback/burnt_chrome))
+			ratchet_takes_burnt = TRUE
+	TEST_ASSERT(ratchet_takes_burnt, "Ratchet doesn't take burnt-out chrome")
 	for(var/datum/shop_sku/sku as anything in subtypesof(/datum/shop_sku/ripperdoc))
 		var/price = initial(sku.price_credits)
 		if(price > 0)

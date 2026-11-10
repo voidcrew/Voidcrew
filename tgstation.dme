@@ -7833,6 +7833,7 @@
 #include "voidcrew\modules\throwing\diagnostics.dm"
 #include "voidcrew\modules\trade\anomaly_charts.dm"
 #include "voidcrew\modules\trade\bag_rift_protection.dm"
+#include "voidcrew\modules\trade\buyback_listed.dm"
 #include "voidcrew\modules\trade\modsuit_bench.dm"
 #include "voidcrew\modules\trade\outpost.dm"
 #include "voidcrew\modules\trade\outpost_amenities.dm"
