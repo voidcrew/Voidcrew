@@ -179,10 +179,10 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	from = null
 	return ..()
 
-/// How long the whole flight takes. With nowhere to go (someone or something right in its way) it
-/// only drops where the body stands.
+/// How long the whole flight takes: the moment it hangs where it came off, then its steps. With nowhere
+/// to go (someone or something right in its way) it only drops where the body stands.
 /datum/component/hv_tumble/proc/flight_time()
-	return length(path) ? length(path) * step_time : HV_VIS_TUMBLE_DROP
+	return length(path) ? world.tick_lag + length(path) * step_time : HV_VIS_TUMBLE_DROP
 
 /// How high it rises on the way. A part that only drops barely rises at all.
 /datum/component/hv_tumble/proc/arc_height()
@@ -198,14 +198,13 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			height = 7
 	return length(path) ? height : round(height * 0.3)
 
-/// Takes off: starts the arc and the spin, and takes the first step. With nowhere to go it comes down
+/// Takes off: starts the arc and the spin, and takes the first step a tick later. A part stepped in the
+/// tick it comes off is first seen a whole tile from the body, already on its way; one that waits a tick
+/// is seen where it was on the body first, and glides out from there. With nowhere to go it comes down
 /// where it is once it has dropped.
 /datum/component/hv_tumble/proc/launch()
 	start_flight()
-	if(length(path))
-		take_step()
-	else
-		step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), flight_time(), TIMER_STOPPABLE|TIMER_DELETE_ME)
+	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), length(path) ? world.tick_lag : flight_time(), TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /datum/component/hv_tumble/proc/start_flight()
 	var/obj/item/part = parent
