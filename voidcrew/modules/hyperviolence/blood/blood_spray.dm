@@ -35,13 +35,24 @@
 	. = ..()
 	if(!isliving(target))
 		return ELEMENT_INCOMPATIBLE
+	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_hit))
 	RegisterSignal(target, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
 	if(iscarbon(target))
 		RegisterSignal(target, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(on_limb_removed))
 
 /datum/element/hv_blood_hooks/Detach(datum/source)
-	UnregisterSignal(source, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_CARBON_REMOVE_LIMB))
+	UnregisterSignal(source, list(COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_CARBON_REMOVE_LIMB))
 	return ..()
+
+/// A brute hit is about to land: its direction is noted now, before its damage. tg takes a limb off in
+/// the middle of the hit that severs it, so the limb and its spray would otherwise go the way of the hit
+/// before, or any way at all.
+/datum/element/hv_blood_hooks/proc/on_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
+	SIGNAL_HANDLER
+	if(damagetype != BRUTE || !attack_direction)
+		return
+	source.hv_blood_hit_dir = attack_direction
+	source.hv_blood_hit_time = world.time
 
 /datum/element/hv_blood_hooks/proc/on_damaged(mob/living/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
 	SIGNAL_HANDLER
@@ -152,7 +163,13 @@
 		pixel_x = -32
 
 /// tg's wound spray: note the tick, so the heavy-hit spray does not add a second one to the same hit.
+/// tg rolls a limb off without saying which way the blow went, and its spray with no direction flies
+/// south whatever happened: it goes the way of the hit being resolved, or is left out.
 /mob/living/carbon/spray_blood(splatter_direction, splatter_strength = 3)
+	if(!splatter_direction)
+		splatter_direction = hv_blood_recent_hit_dir()
+		if(!splatter_direction)
+			return
 	hv_blood_tg_spray_tick = world.time
 	return ..()
 
@@ -313,5 +330,4 @@
 	SIGNAL_HANDLER
 	if(special || !dismembered || !removed_limb.can_bleed())
 		return
-	var/spray_dir = (world.time - hv_blood_hit_time <= HV_BLOOD_HIT_MEMORY) ? hv_blood_hit_dir : pick(GLOB.alldirs)
-	hv_blood_throw(spray_dir, HV_BLOOD_DISMEMBER_STRENGTH)
+	hv_blood_throw(hv_blood_recent_hit_dir() || pick(GLOB.alldirs), HV_BLOOD_DISMEMBER_STRENGTH)
