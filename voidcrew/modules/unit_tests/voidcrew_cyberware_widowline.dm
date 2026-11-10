@@ -375,6 +375,24 @@
 			under++
 	TEST_ASSERT(over == 1 && under == 1, "The lash of a through-cut should cross the first body in two pieces, over it then under it: [over] over, [under] under")
 
+/// A through-cut that also takes a limb off its target still draws its line on through to the body behind.
+/datum/unit_test/voidcrew_widowline/wire_through_sever
+
+/datum/unit_test/voidcrew_widowline/wire_through_sever/Run()
+	var/mob/living/carbon/human/user = wielder(spot(0, 1))
+	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/mob/living/carbon/human/consistent/behind = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/obj/item/bodypart/arm = target.get_bodypart(BODY_ZONE_L_ARM)
+	arm.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, target, BODY_ZONE_L_ARM)
+	TEST_ASSERT_NULL(target.get_bodypart(BODY_ZONE_L_ARM), "Fixture: the arm didn't come off")
+	TEST_ASSERT(behind.getBruteLoss() > 0, "Fixture: the cut didn't carry through")
+	TEST_ASSERT_EQUAL(wire.lash_through?.resolve(), behind, "A cut that took a limb off doesn't lash on through to the body behind")
+	wire.wire_lash_at(user, target, BODY_ZONE_L_ARM)
+	var/obj/effect/abstract/wire_reach/lash_end = locate() in get_turf(behind)
+	TEST_ASSERT_NOTNULL(lash_end, "The lash of a through-cut that took a limb off stopped short of the body behind")
+
 /// A cut wets the wire with the victim's blood, which drips, dries and flicks off on stowing; the DNA stays. The Arc stays clean.
 /datum/unit_test/voidcrew_widowline/wire_bloody
 

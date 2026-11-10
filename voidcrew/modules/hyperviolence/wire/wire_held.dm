@@ -357,8 +357,9 @@
 	lash_through = null
 	if(!from || !hit || from == hit || from.z != hit.z)
 		return
-	// The swing carried on into someone right behind its target: the one line runs on to them.
-	if(through && !cross && isliving(target) && wire_lash_through(user, target, through))
+	// The swing carried on into someone right behind its target: the one line runs on to them, past a limb it took off
+	// or the middle of a crossing cut, so they see what cut them. The other wire of a crossing cut still crosses.
+	if(through && isliving(target) && wire_lash_through(user, target, through))
 		return
 	zone = zone || check_zone(user.zone_selected)
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")

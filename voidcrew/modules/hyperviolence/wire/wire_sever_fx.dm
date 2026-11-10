@@ -547,7 +547,7 @@
  * `clean`: `target` throws none here, its own cut showing another way (a limb coming off, a crossing cut).
  */
 /obj/item/melee/cyberware_monowire/proc/wire_through_fx(mob/living/user, mob/living/target, mob/living/behind, direction, clean = FALSE)
-	var/list/cuts = clean ? null : wire_through_cuts(user, target, behind)
+	var/list/cuts = wire_through_cuts(user, target, behind)
 	if(!clean)
 		target.hv_wire_spray(direction, 2, from = cuts ? cuts[1] : null)
 	behind.hv_wire_spray(direction, 2, from = cuts ? cuts[2] : wire_zone_point(behind, BODY_ZONE_CHEST))

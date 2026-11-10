@@ -91,7 +91,7 @@
 		addtimer(CALLBACK(src, PROC_REF(wire_bloody), source), WIRE_CUT_DELAY)
 	else
 		wire_bloody(source, def_zone)
-	wire_cleave(source, user, !severed && !cross)
+	wire_cleave(source, user, clean = !isnull(severed) || cross)
 
 // ---- The crossing cut ----
 
@@ -245,11 +245,11 @@
 
 /**
  * The wire carries on past the target: whoever stands right behind it (along the swing) takes the through-cut, and
- * the swing's lash runs on through the target to them (`lash`; wire_lash_through()), unless the target's own cut
- * shows another way (a limb coming off, a crossing cut); anyone else beside the target takes the plain cleave. Both
- * deal the wire's cleave share and cut clean. Lines join the hit's message.
+ * the swing's lash runs on through the target to them (wire_lash_through()), even when the target's own cut shows
+ * as well (`clean`: a limb coming off, a crossing cut), so whoever is behind sees what cut them; anyone else beside
+ * the target takes the plain cleave. Both deal the wire's cleave share and cut clean. Lines join the hit's message.
  */
-/obj/item/melee/cyberware_monowire/proc/wire_cleave(mob/living/target, mob/living/user, lash = TRUE)
+/obj/item/melee/cyberware_monowire/proc/wire_cleave(mob/living/target, mob/living/user, clean = FALSE)
 	var/direction = get_dir(user, target) || user.dir
 	var/turf/target_turf = get_step(target, direction)
 	var/mob/living/behind
@@ -270,8 +270,8 @@
 			to_chat(nearby, span_userdanger("[user]'s monowire carries through into you!"))
 			cleaved = TRUE
 	if(behind)
-		wire_through_fx(user, target, behind, direction, !lash)
-		lash_through = lash ? WEAKREF(behind) : null
+		wire_through_fx(user, target, behind, direction, clean)
+		lash_through = WEAKREF(behind)
 		target.hv_add_hit_line("The wire carries through into [behind]!", HV_LINE_BOLD)
 		to_chat(behind, span_userdanger("The wire carries through into you!"))
 	if(cleaved)
