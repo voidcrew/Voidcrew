@@ -367,6 +367,25 @@
 	TEST_ASSERT_EQUAL(victim.pixel_z, 0, "A finisher left the victim lifted")
 	qdel(finisher)
 
+/// A pool creeping out to its new size keeps creeping when tg stops the decal's animations (it does each
+/// time the blood dries a little or more lands on it), and forgets the creep once it is done
+/datum/unit_test/voidcrew_hv_visuals/paint_survives_drying
+
+/datum/unit_test/voidcrew_hv_visuals/paint_survives_drying/Run()
+	var/obj/effect/decal/cleanable/blood/pool = allocate(/obj/effect/decal/cleanable/blood, spot(2, 2))
+	var/matrix/rest = matrix(pool.transform)
+	var/rest_alpha = pool.alpha
+	pool.hv_vis_pool_creep(0.5)
+	TEST_ASSERT_NOTNULL(pool.hv_vis_painting, "A creeping pool does not remember its creep")
+	pool.update_blood_color()
+	TEST_ASSERT_NOTNULL(pool.hv_vis_painting, "tg working the colour out again made the pool forget its creep")
+	TEST_ASSERT(same_matrix(pool.transform, rest), "The creep left the pool's transform changed")
+	TEST_ASSERT_EQUAL(pool.alpha, rest_alpha, "The creep left the pool's alpha changed")
+	// HV_VIS_POOL_CREEP is 1.8 seconds
+	sleep(2.5 SECONDS)
+	pool.update_blood_color()
+	TEST_ASSERT_NULL(pool.hv_vis_painting, "A finished creep was kept")
+
 /// The hit-stop flash goes on, and comes off on a timer that dies with the body
 /datum/unit_test/voidcrew_hv_visuals/flash
 
