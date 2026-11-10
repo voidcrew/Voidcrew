@@ -753,7 +753,7 @@
 					var/list/spec = mantis_rig_beat(move, beat, facing)
 					TEST_ASSERT(spec, "The rig has no [move] [beat] facing [dir2text(facing)]")
 					for(var/piece in spec[MANTIS_RIG_ORDER])
-						if(piece == "T" || piece == "body")
+						if(piece == "T" || piece == "body" || piece == "whole")
 							continue
 						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
 	// The beats only the side views draw: the hoist, the pull-back in steps and the scissor's swing (also seen from the front).
@@ -765,7 +765,7 @@
 					var/list/spec = mantis_rig_beat(move, beat, facing)
 					TEST_ASSERT(spec, "The rig has no [move] [beat] facing [dir2text(facing)]")
 					for(var/piece in spec[MANTIS_RIG_ORDER])
-						if(piece == "T" || piece == "body")
+						if(piece == "T" || piece == "body" || piece == "whole")
 							continue
 						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
 

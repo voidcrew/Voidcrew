@@ -36,9 +36,10 @@
 /**
  * One beat of [move] seen facing [facing], from the approved storyboards (S/mantis-storyboard): list(order,
  * bearer_w, bearer_z, target_w, target_z, tilt, raise). Order is the stack back to front: "T" is the victim,
- * "body" the bearer's flat picture, anything else a piece. Bearer and target are pixel offsets from their own
- * tiles; tilt turns the victim about the feet (degrees, clockwise); raise is how high the fists ride in the
- * body picture (0 leaves it). West is east mirrored.
+ * "body" the bearer's flat picture without the held blades, "whole" that picture as the bearer is held (blades
+ * and all), anything else a piece. Bearer and target are pixel offsets from their own tiles; tilt turns the
+ * victim about the feet (degrees, clockwise); raise is how high the fists ride in the body picture (0 leaves
+ * it). West is east mirrored.
  */
 /proc/mantis_rig_beat(move, beat, facing)
 	var/view = (facing & (EAST|WEST)) ? "E" : (facing == NORTH ? "N" : "S")
@@ -90,20 +91,33 @@
 			spec = list(list("T", "arms", "body"), 0, 15, 0, 0, 0, 0)
 		if("impale_drop_N")
 			spec = list(list("T", "arms", "body"), 0, 0, 0, 0, 0, 0)
+		// Seen from the front the target is on the row before the bearer, their back to the camera, and covers the
+		// bearer's arms and the steel going in. "tips" is the two points out of their back, over them.
 		if("impale_arrive_S")
 			spec = list(list("body", "arms", "T"), 0, -2, 0, 0, 0, 0)
 		if("impale_contact_S")
 			spec = list(list("body", "arms", "T"), 0, 0, 0, 24, 0, 0)
 		if("impale_enter_S")
 			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 24, 0, 0)
+		if("impale_lift1_S")
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 26, 0, 0)
+		if("impale_lift2_S")
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 27, 0, 0)
 		if("impale_hold_S")
 			spec = list(list("body", "arms", "T", "wound", "tips", "drip"), 0, 0, 0, 28, 0, 0)
 		if("impale_pull_S")
 			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 23, 0, 0)
+		if("impale_pull1_S")
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 27, 0, 0)
+		if("impale_pull2_S")
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 25, 0, 0)
+		if("impale_pull3_S")
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 23, 0, 0)
 		if("impale_rip_S")
 			spec = list(list("body", "arms", "T"), 0, -2, 0, 13, 0, 0)
+		// They fall in front of the bearer, and are drawn over them all the way down.
 		if("impale_drop_S")
-			spec = list(list("T", "body", "arms"), 0, 0, 0, 0, 0, 0)
+			spec = list(list("whole", "T"), 0, 0, 0, 0, 0, 0)
 		// ---- The scissor.
 		if("scissor_raise_E")
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 3)
@@ -211,6 +225,8 @@
 	var/coat_color
 	/// TRUE while the pictures fade out and the real bearer fades back in (hand_back())
 	var/handing_back = FALSE
+	/// TRUE while the body picture is the bearer as they are held, blades and all ("whole")
+	var/whole = FALSE
 
 /datum/mantis_rig/New(mob/living/carbon/bearer, mob/living/victim, facing, model, move)
 	. = ..()
@@ -271,13 +287,18 @@
  * Draws the body puppet as the bearer looks now, without the held blades: a copy of the bearer's own
  * appearance, so the client already has every icon in it and it never blinks while one downloads. Seen from
  * the front or back the hands and gloves are left off: the forearms of the blades start at the elbows.
+ * [as_held]: the bearer exactly as they are held, blades, hands and all, for a beat that ends on the held art.
  */
-/datum/mantis_rig/proc/snapshot()
+/datum/mantis_rig/proc/snapshot(as_held = FALSE)
+	whole = as_held
 	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
-		blade.hide_inhand_for(10 SECONDS)
+		if(as_held)
+			blade.show_inhand()
+		else
+			blade.hide_inhand_for(10 SECONDS)
 	var/mutable_appearance/look = new(bearer.appearance)
 	look.filters = null
-	if(facing & (NORTH|SOUTH))
+	if(!as_held && (facing & (NORTH|SOUTH)))
 		for(var/image/part as anything in look.overlays.Copy())
 			if(part.layer == -GLOVES_LAYER || findtext("[part.icon_state]", "_hand"))
 				look.overlays -= part
@@ -312,7 +333,7 @@
 		var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = blade.housing_ref?.resolve()
 		housing?.set_stance_raise(new_raise)
 	if(puppets["body"])
-		snapshot()
+		snapshot(whole)
 
 /// The puppet under [key], made on the bearer's tile at the lean drawn now if there isn't one.
 /datum/mantis_rig/proc/puppet(key)
@@ -383,6 +404,11 @@
 		var/bloody = (key == "wound" || key == "drip")
 		if(bloody && !victim_color)
 			continue
+		// The body picture, with or without the held blades.
+		if(key == "whole" || key == "body")
+			if((key == "whole") != whole)
+				snapshot(key == "whole")
+			key = "body"
 		var/obj/effect/abstract/mantis_puppet/picture = puppet(key)
 		if(key != "body")
 			var/state = "[model]_[move]_[beat]_[key]"
