@@ -56,6 +56,8 @@
 #define GORILLA_HAYMAKER_VENT_AFTER (3 SECONDS)
 /// A press of Use chrome shorter than this is a tap: the charge waits for a click.
 #define GORILLA_HAYMAKER_TAP (0.3 SECONDS)
+/// Pixels the bearer leans back at full charge, seen from the side. The lean builds to it over the wind-up.
+#define GORILLA_HAYMAKER_LEAN 4
 #define GORILLA_HAYMAKER_MIN_DAMAGE 20
 #define GORILLA_HAYMAKER_MAX_DAMAGE 30
 #define GORILLA_HAYMAKER_MIN_RANGE 3
