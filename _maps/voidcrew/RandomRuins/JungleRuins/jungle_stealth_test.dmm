@@ -1,7 +1,42 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/obj/effect/spawner/human_npc/ruin/scav{
+/obj/effect/spawner/human_npc/ruin/scav/lookout{
 	dir = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"b" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"c" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"d" = (
+/obj/structure/closet/crate,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/suppressor,
+/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/gun/ballistic/bow/longbow,
+/obj/item/storage/bag/quiver/full,
+/obj/item/jammer,
+/obj/item/grenade/flashbang,
+/obj/item/grenade/empgrenade,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"e" = (
+/obj/machinery/door/airlock/security{
+	name = "Strongroom";
+	req_access = list("armory")
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -12,6 +47,9 @@
 	dir = 1
 	},
 /turf/open/floor/plating,
+/area/ruin/powered)
+"g" = (
+/turf/open/floor/carpet,
 /area/ruin/powered)
 "h" = (
 /obj/effect/landmark/stealth_patrol{
@@ -93,7 +131,7 @@
 	order = 2;
 	dir = 4
 	},
-/obj/effect/spawner/human_npc/ruin/scav/gunner{
+/obj/effect/spawner/human_npc/ruin/scav/lookout{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -367,8 +405,8 @@ i
 (11,1,1) = {"
 i
 J
-x
-x
+g
+g
 J
 P
 P
@@ -391,9 +429,9 @@ i
 (12,1,1) = {"
 i
 J
-x
-x
-J
+g
+g
+p
 P
 P
 P
@@ -415,8 +453,8 @@ i
 (13,1,1) = {"
 i
 J
-x
-x
+g
+g
 J
 P
 P
@@ -494,7 +532,7 @@ J
 J
 J
 J
-J
+e
 J
 J
 J
@@ -511,8 +549,8 @@ i
 (17,1,1) = {"
 i
 J
-x
-x
+P
+P
 J
 x
 x
@@ -535,8 +573,8 @@ i
 (18,1,1) = {"
 i
 J
-x
-x
+P
+P
 J
 l
 x
@@ -559,8 +597,8 @@ i
 (19,1,1) = {"
 i
 J
-x
-x
+P
+P
 p
 x
 x
@@ -599,7 +637,7 @@ x
 x
 x
 x
-x
+b
 J
 i
 i
@@ -623,7 +661,7 @@ x
 x
 x
 x
-x
+c
 J
 i
 i
@@ -695,7 +733,7 @@ x
 x
 x
 x
-x
+d
 J
 i
 i
