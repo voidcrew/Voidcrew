@@ -396,9 +396,11 @@
 /**
  * A chrome weapon's hit drawn over what it hit: a short slash, flash or
  * crackle, upright even on someone lying down, and turned to come from the
- * attacker's side. Returns the holder, or null if there was nothing to draw on.
+ * attacker's side. [mirrored] TRUE or FALSE turns it that way instead (the
+ * Mantis swing turns it by the hand that swung). Returns the holder, or null
+ * if there was nothing to draw on.
  */
-/proc/cyberware_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state)
+/proc/cyberware_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state, mirrored = null)
 	if(!impact_state || !ismovable(attacked_atom))
 		return null
 	var/obj/effect/abstract/cyberware_anim/impact = cyberware_anim_play(attacked_atom, CYBERWARE_ANIM_ICON, impact_state, CHROME_ANIM_TOP_LAYER, 0.4 SECONDS, glow = impact_state != "impact_shiv")
@@ -406,8 +408,10 @@
 		return null
 	impact.appearance_flags |= RESET_TRANSFORM
 	// The art swings in from the left; a blow from the right is mirrored, one from above or below either way.
-	var/direction = get_dir(attacker, attacked_atom)
-	if((direction & WEST) || (!(direction & EAST) && prob(50)))
+	if(isnull(mirrored))
+		var/direction = get_dir(attacker, attacked_atom)
+		mirrored = (direction & WEST) || (!(direction & EAST) && prob(50))
+	if(mirrored)
 		impact.transform = matrix(-1, 0, 0, 0, 1, 0)
 	return impact
 

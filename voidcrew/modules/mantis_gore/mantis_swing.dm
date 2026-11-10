@@ -66,11 +66,35 @@
 			other.mantis_swing()?.fit_to_facing()
 	return swing
 
-/// The impact over [attacked_atom], when the swing's strike frame is up.
+/// The impact over [attacked_atom], when the swing's strike frame is up, its slash cut the way this blade swings.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_swing_impact(atom/movable/attacker, atom/attacked_atom)
 	if(!impact_state || !ismovable(attacked_atom))
 		return
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_play_impact), attacker, attacked_atom, impact_state), MANTIS_SWING_IMPACT_DELAY)
+	var/obj/effect/abstract/cyberware_anim/mantis_swing/swing = mantis_swing()
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_swing_play_impact), attacker, attacked_atom, impact_state, swing?.side), MANTIS_SWING_IMPACT_DELAY)
+
+/**
+ * The impact over [attacked_atom] for a swing of the [side] hand's blade, its slash cut the way that blade
+ * crosses the target in the strike frame, for the way [attacker] faces now. Without a side, or without the
+ * attacker, it is turned as any chrome hit's is.
+ */
+/proc/mantis_swing_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state, side)
+	var/mirrored = (side && !QDELETED(attacker)) ? mantis_swing_impact_mirrored(attacker.dir, side) : null
+	return cyberware_play_impact(attacker, attacked_atom, impact_state, mirrored)
+
+/**
+ * Whether the [side] hand's swing, its bearer facing [facing], shows the impact art mirrored. The art cuts
+ * clockwise: in along the top from the left, then down on the right. In mantis_swing.dmi, from the cock frame
+ * to the strike frame, facing south or north each hand cuts across the body toward the other: facing south the
+ * right hand cuts clockwise and the left anticlockwise, facing north the other way round. Side on both hands
+ * chop down in front, clockwise facing east and anticlockwise facing west.
+ */
+/proc/mantis_swing_impact_mirrored(facing, side)
+	if(facing & WEST)
+		return TRUE
+	if(facing & EAST)
+		return FALSE
+	return (facing == NORTH) == (side == "right")
 
 /**
  * The X-slash as it looks: the other blade swings a beat behind this one and the crossed slash lands with its

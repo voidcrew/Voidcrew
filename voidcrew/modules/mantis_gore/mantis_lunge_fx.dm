@@ -196,17 +196,20 @@
 		return null
 	return cyberware_anim_play(victim, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 1.5 SECONDS, glow = TRUE)
 
-/// The X-slash: both impacts at once, bigger, and a flash of light off the blades.
+/**
+ * The X-slash: both blades' impacts at once, bigger, and a flash of light off the blades. Facing north or south
+ * the two hands cut toward each other, so each blade's slash is its own swing's and they cross; side on both
+ * chop the same way, and the second is turned to cross the first.
+ */
 /proc/mantis_xslash_fx(mob/living/user, mob/living/victim, impact_state)
 	if(QDELETED(victim))
 		return
-	for(var/flip in list(FALSE, TRUE))
-		var/obj/effect/abstract/cyberware_anim/impact = cyberware_play_impact(user, victim, impact_state)
+	var/right_mirrored = mantis_swing_impact_mirrored(user?.dir, "right")
+	for(var/mirrored in list(right_mirrored, !right_mirrored))
+		var/obj/effect/abstract/cyberware_anim/impact = cyberware_play_impact(user, victim, impact_state, mirrored)
 		if(!impact)
 			continue
 		var/matrix/bigger = matrix(impact.transform)
-		if(flip)
-			bigger.a = -bigger.a
 		bigger.Scale(1.4, 1.4)
 		impact.transform = bigger
 	cyberware_flash_fx(victim, 0.15 SECONDS)

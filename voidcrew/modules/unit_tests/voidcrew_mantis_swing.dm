@@ -1,5 +1,6 @@
 /// An ordinary hit swings the hand that hit (voidcrew/modules/mantis_gore/mantis_swing.dm): the swing plays on
-/// the bearer, the held blade hides under it, and putting the blade away ends it.
+/// the bearer, the held blade hides under it, and putting the blade away ends it. Each hand's slash over the target
+/// runs the way its own blade cuts.
 /datum/unit_test/voidcrew_mantis_gore/swing
 
 /datum/unit_test/voidcrew_mantis_gore/swing/Run()
@@ -20,6 +21,14 @@
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/right = housings(user)[1]
 	right.Retract()
 	TEST_ASSERT(QDELETED(swing), "Putting the blade away left its swing playing")
+
+	// Facing south the two hands cut toward each other, so their slashes are mirror images.
+	TEST_ASSERT(mantis_swing_impact_mirrored(SOUTH, "right") != mantis_swing_impact_mirrored(SOUTH, "left"), "Facing south both hands' swings show the same slash")
+	// The swing's say goes over the side the target is on (east of the user here, which draws it plain).
+	var/obj/effect/abstract/cyberware_anim/impact = cyberware_play_impact(user, target, "impact_mantis", TRUE)
+	TEST_ASSERT(impact, "No impact was drawn on the target")
+	var/matrix/turned = impact.transform
+	TEST_ASSERT(turned.a < 0, "An impact told to mirror was drawn plain")
 
 /// The name of the mask on a far arm's swing (MANTIS_SWING_COVER_FILTER).
 #define MANTIS_TEST_SWING_COVER "mantis_swing_cover"
