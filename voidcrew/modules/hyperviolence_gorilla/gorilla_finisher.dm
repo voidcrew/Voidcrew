@@ -10,7 +10,8 @@
  *   off at the shoulder with the spray running back over the bearer, and one blow to the head with it.
  *   Armour on the arm wrenches the shoulder out instead.
  * - Chest: the backbreaker. Pressed overhead, brought down across a knee, the back breaks and the body
- *   is rolled off still bent. Armour on the chest cracks the ribs instead.
+ *   is shoved off it, still bent, onto the tile he faces (at his feet if that tile is blocked). Armour on
+ *   the chest cracks the ribs instead.
  * The Atlas frame beats all three: nothing bursts, tears or breaks.
  * A synced pair of Brawler myomers has the limb rip only, the same rip on the same terms.
  *
@@ -1612,6 +1613,9 @@
 	)
 	/// TRUE once the back broke: the body is rolled off still bent
 	var/broke = FALSE
+	/// Which way the body lies in his hands and on the floor after: 1 head east, -1 head west. Away from a bearer
+	/// facing east or west, so it goes off his knee head first; tg lays no body head north or south.
+	var/lay = 1
 
 /datum/hv_finisher_stage/hold/gorilla/back_hoist
 	key = "hoist"
@@ -1661,12 +1665,13 @@
 	switch(key)
 		if("hoist")
 			rig_bearer()
+			lay = (facing || user.dir) == WEST ? -1 : 1
 			victim_rig = new(victim, SOUTH)
 			if(victim_rig.snapshot())
 				for(var/half in list("upper", "lower"))
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.add_puppet(half, victim_rig.cut("rig_[half]"), TRUE, user.layer + 0.05)
 					// Overhead on his back, flat, held clear above the bearer's head
-					animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 29, transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT)
+					animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 29, transform = laid(), time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT)
 				victim_rig.conceal()
 			else
 				QDEL_NULL(victim_rig)
@@ -1684,18 +1689,18 @@
 				var/kick = (i % 2) ? 1 : -1
 				if(upper)
 					if(i == 1)
-						animate(upper, transform = chrome_rig_turn(90 + 6 * kick, 0, BACK_WAIST_PIVOT_Y), time = 0.12 SECONDS)
+						animate(upper, transform = laid(6 * kick), time = 0.12 SECONDS)
 					else
-						animate(transform = chrome_rig_turn(90 + 6 * kick, 0, BACK_WAIST_PIVOT_Y), time = 0.24 SECONDS)
+						animate(transform = laid(6 * kick), time = 0.24 SECONDS)
 				if(lower)
 					if(i == 1)
-						animate(lower, transform = chrome_rig_turn(90 - 12 * kick, 0, BACK_WAIST_PIVOT_Y), time = 0.12 SECONDS)
+						animate(lower, transform = laid(-(12 * kick)), time = 0.12 SECONDS)
 					else
-						animate(transform = chrome_rig_turn(90 - 12 * kick, 0, BACK_WAIST_PIVOT_Y), time = 0.24 SECONDS)
+						animate(transform = laid(-(12 * kick)), time = 0.24 SECONDS)
 			if(upper)
-				animate(transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = 0.1 SECONDS)
+				animate(transform = laid(), time = 0.1 SECONDS)
 			if(lower)
-				animate(transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = 0.1 SECONDS)
+				animate(transform = laid(), time = 0.1 SECONDS)
 		if("slam")
 			// Down to one knee, and the body comes down across it
 			arms_to(120, 0.15 SECONDS, 2)
@@ -1705,41 +1710,108 @@
 				if(part)
 					animate(part, pixel_z = 2, time = 0.16 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 		if("roll")
-			arms_to(0, 0.5 SECONDS)
-			bearer_rig?.crouch(1, 0, 0.4 SECONDS, SINE_EASING | EASE_OUT)
-			// Off the knee and down where it happened, on the bearer's tile (a body on the floor shares it).
-			// The halves stay drawn where they are as the body moves under them.
+			// Off the knee and forward, onto the tile he faces (owner). If something is in the way there, it comes
+			// down at his feet instead, on his own tile (a body on the floor shares it).
 			var/turf/knee = get_turf(user)
 			var/turf/from = get_turf(victim)
-			if(knee && from && knee != from && victim.body_position == LYING_DOWN && victim.Move(knee, get_dir(from, knee)))
+			var/turf/ahead = get_step(user, facing || user.dir)
+			var/shoved = can_lay_on(ahead)
+			var/turf/lands = shoved ? ahead : knee
+			if(lands && from && lands != from && victim.body_position == LYING_DOWN)
+				// The real body is hidden under its halves, which stay drawn where they are as it moves under them
+				if(shoved)
+					victim.forceMove(lands)
+				else
+					victim.Move(lands, get_dir(from, lands))
+				lands = get_turf(victim)
 				for(var/key_name in victim_rig?.puppets)
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.puppets[key_name]
-					part.forceMove(knee)
-					part.pixel_x -= (knee.x - from.x) * ICON_SIZE_X
-					part.pixel_y -= (knee.y - from.y) * ICON_SIZE_Y
-			// It lands in front of him, toward the viewer, where he doesn't hide it (owner): the real body too, for when the halves come down
-			if(get_turf(victim) == knee)
-				victim.AddComponent(/datum/component/gorilla_laid_in_front)
-			// The halves lie head east (turned 90). tg turns a lying body to the way it last crawled, so the move
-			// above can leave it head west: lay it as the halves are, or it flips over when they come down.
+					part.forceMove(lands)
+					part.pixel_x -= (lands.x - from.x) * ICON_SIZE_X
+					part.pixel_y -= (lands.y - from.y) * ICON_SIZE_Y
+			// At his feet it lies in front of him, toward the viewer, where he doesn't hide it: the real body too, for
+			// when the halves come down. Shoved clear of him it lies as tg lays any body.
+			var/at_feet = get_turf(victim) == knee
+			if(at_feet)
+				victim.AddComponent(/datum/component/gorilla_laid_in_front, lay)
+			// tg turns a lying body to the way it last crawled: lay it as the halves are, or it flips over when
+			// they come down.
 			if(victim.body_position == LYING_DOWN)
-				victim.set_lying_angle(LYING_ANGLE_EAST)
-			// Still bent if the back broke. A broken back hangs folded over the knee for a moment first. The
-			// halves turn about the belt, seven pixels under the middle, so they sit a pixel up to lie where a
-			// lying body lies.
+				victim.set_lying_angle(lay > 0 ? LYING_ANGLE_EAST : LYING_ANGLE_WEST)
+			// Where the halves come to rest, from the middle of the tile they are on. They turn about the belt, seven
+			// pixels under the middle of the picture, so they sit that far back along the body and a pixel up to lie
+			// exactly where tg draws the lying body; at his feet the body is drawn out to them instead (the component).
+			var/rest_x = at_feet ? 0 : lay * BACK_WAIST_PIVOT_Y
+			var/rest_y = at_feet ? 1 - GORILLA_BACK_IN_FRONT : 1
+			// Still bent if the back broke. A broken back hangs folded over the knee for a moment first.
 			var/bend = broke ? 33 : 0
 			var/hold = broke ? GORILLA_BACK_FOLD_HOLD : 0
-			var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
-			var/obj/effect/abstract/chrome_puppet/lower = victim_rig?.puppet("lower")
-			if(upper)
-				animate(upper, transform = chrome_rig_turn(90 + (broke ? 38 : 0), 0, BACK_WAIST_PIVOT_Y), time = hold)
-				animate(pixel_x = 0, pixel_y = 1 - GORILLA_BACK_IN_FRONT, pixel_z = 0, transform = chrome_rig_turn(90 + bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
-			if(lower)
-				animate(lower, transform = chrome_rig_turn(90 - (broke ? 38 : 0), 0, BACK_WAIST_PIVOT_Y), time = hold)
-				animate(pixel_x = 0, pixel_y = 1 - GORILLA_BACK_IN_FRONT, pixel_z = 0, transform = chrome_rig_turn(90 - bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
+			if(at_feet)
+				// He lets it down and stands
+				arms_to(0, 0.5 SECONDS)
+				bearer_rig?.crouch(1, 0, 0.4 SECONDS, SINE_EASING | EASE_OUT)
+			else if(hold)
+				// He stays down on the knee under it until he shoves it off
+				addtimer(CALLBACK(src, PROC_REF(shove_off)), hold, TIMER_DELETE_ME)
+			else
+				shove_off()
+			for(var/half in list("upper", "lower"))
+				var/obj/effect/abstract/chrome_puppet/part = victim_rig?.puppet(half)
+				if(!part)
+					continue
+				var/way = half == "upper" ? 1 : -1
+				animate(part, transform = laid(way * (broke ? 38 : 0)), time = hold)
+				if(at_feet)
+					animate(pixel_x = rest_x, pixel_y = rest_y, pixel_z = 0, transform = laid(way * bend), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
+				else
+					// Shoved: up off the knee and over, then down onto the floor ahead
+					animate(pixel_x = (part.pixel_x + rest_x) / 2, pixel_y = (part.pixel_y + rest_y) / 2, pixel_z = GORILLA_BACK_SHOVE_RISE, transform = laid(way * bend), time = GORILLA_BACK_SHOVE_TIME * 0.45, easing = SINE_EASING | EASE_OUT)
+					animate(pixel_x = rest_x, pixel_y = rest_y, pixel_z = 0, time = GORILLA_BACK_SHOVE_TIME * 0.55, easing = SINE_EASING | EASE_IN)
 			// No blood of the move's own where he lands (owner): a broken back doesn't bleed, and a pool on the middle
-			// of the tile never lined up with a body laid in front of it. What the body really bleeds is tg's.
-			// The halves stay drawn over him (user.layer + 0.05, from the hoist) while they lie there
+			// of the tile never lined up with the body. What the body really bleeds is tg's.
+			// At his feet the halves stay drawn over him (user.layer + 0.05, from the hoist) while they lie there
+
+/// The bearer shoves the body off his knee: both arms push out after it, then he lets them down and stands.
+/datum/hv_finisher/chrome/gorilla/backbreaker/proc/shove_off()
+	if(!running || !bearer_rig)
+		return
+	// Away from the viewer the body goes on past him: behind him from here on, not over his head
+	if(facing == NORTH)
+		for(var/half in list("upper", "lower"))
+			var/obj/effect/abstract/chrome_puppet/part = victim_rig?.puppet(half)
+			if(part)
+				part.layer = user.layer - 0.05
+	arms_to(side_view() ? 70 : 60, GORILLA_BACK_SHOVE_PUSH, 4)
+	addtimer(CALLBACK(src, PROC_REF(stand_up)), GORILLA_BACK_SHOVE_PUSH + 0.05 SECONDS, TIMER_DELETE_ME)
+
+/// He lets his arms down and stands off the knee.
+/datum/hv_finisher/chrome/gorilla/backbreaker/proc/stand_up()
+	if(!running || !bearer_rig)
+		return
+	arms_to(0, 0.3 SECONDS)
+	bearer_rig.crouch(1, 0, 0.3 SECONDS, SINE_EASING | EASE_OUT)
+
+/// A half of the body as it is held and laid: flat on its back, head the way [var/lay] says, bent [bend] degrees at the belt.
+/datum/hv_finisher/chrome/gorilla/backbreaker/proc/laid(bend = 0)
+	return chrome_rig_turn(lay * (90 + bend), 0, BACK_WAIST_PIVOT_Y)
+
+/**
+ * Whether the body can be shoved off the knee onto [ahead], the tile the bearer faces: open floor he can reach, with
+ * nothing solid on it and nobody else on their feet there. The body's own tile is fine: it was lifted off it.
+ */
+/datum/hv_finisher/chrome/gorilla/backbreaker/proc/can_lay_on(turf/ahead)
+	var/turf/here = get_turf(user)
+	if(QDELETED(victim) || !isopenturf(ahead) || !here || !here.Adjacent(ahead))
+		return FALSE
+	// Nowhere to lie, unless it lay there already
+	if(get_turf(victim) != ahead && (isgroundlessturf(ahead) || ischasm(ahead) || islava(ahead)))
+		return FALSE
+	if(ahead.is_blocked_turf(exclude_mobs = TRUE, source_atom = victim))
+		return FALSE
+	for(var/mob/living/other in ahead)
+		if(other != victim && other != user && other.density && other.body_position == STANDING_UP)
+			return FALSE
+	return TRUE
 
 /datum/hv_finisher/chrome/gorilla/backbreaker/beat(key)
 	if(key != "slam" || QDELETED(victim))
@@ -1763,9 +1835,9 @@
 		var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
 		var/obj/effect/abstract/chrome_puppet/lower = victim_rig?.puppet("lower")
 		if(upper)
-			animate(upper, transform = chrome_rig_turn(90 + 38, 0, BACK_WAIST_PIVOT_Y), time = 0.06 SECONDS)
+			animate(upper, transform = laid(38), time = 0.06 SECONDS)
 		if(lower)
-			animate(lower, transform = chrome_rig_turn(90 - 38, 0, BACK_WAIST_PIVOT_Y), time = 0.06 SECONDS)
+			animate(lower, transform = laid(-(38)), time = 0.06 SECONDS)
 	else
 		// Nothing gives: the body bounces off the knee
 		for(var/half in list("upper", "lower"))
@@ -1777,7 +1849,7 @@
 /datum/hv_finisher/chrome/gorilla/backbreaker/cleanup_rigs()
 	// A broken back stays drawn bent for a while after
 	if(broke && victim_rig && !QDELETED(victim) && victim.get_bodypart(BODY_ZONE_CHEST))
-		victim.AddComponent(/datum/component/gorilla_fold, victim_rig)
+		victim.AddComponent(/datum/component/gorilla_fold, victim_rig, lay)
 		victim_rig = null
 	return ..()
 
@@ -1856,12 +1928,15 @@
 /datum/component/gorilla_fold
 	/// The victim's rig, handed over by the finisher
 	var/datum/chrome_rig/rig
+	/// 1 if the body lies head east, -1 head west
+	var/lay = 1
 	var/fold_timer
 
-/datum/component/gorilla_fold/Initialize(datum/chrome_rig/rig)
+/datum/component/gorilla_fold/Initialize(datum/chrome_rig/rig, lay = 1)
 	if(!iscarbon(parent) || !istype(rig))
 		return COMPONENT_INCOMPATIBLE
 	src.rig = rig
+	src.lay = lay
 	fold_timer = addtimer(CALLBACK(src, PROC_REF(settle)), GORILLA_FOLD_TIME, TIMER_STOPPABLE)
 
 /// The fold's time is up: the halves ease out flat, where the real body lies, and it shows once they are.
@@ -1869,7 +1944,7 @@
 	for(var/half in list("upper", "lower"))
 		var/obj/effect/abstract/chrome_puppet/part = rig?.puppet(half)
 		if(part)
-			animate(part, transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = GORILLA_FOLD_SETTLE, easing = SINE_EASING)
+			animate(part, transform = chrome_rig_turn(lay * 90, 0, BACK_WAIST_PIVOT_Y), time = GORILLA_FOLD_SETTLE, easing = SINE_EASING)
 	fold_timer = QDEL_IN_STOPPABLE(src, GORILLA_FOLD_SETTLE)
 
 /datum/component/gorilla_fold/RegisterWithParent()
@@ -1890,8 +1965,8 @@
 	qdel(src)
 
 /**
- * A body the backbreaker dropped on the bearer's own tile, drawn [GORILLA_BACK_IN_FRONT] pixels toward the viewer so
- * the one standing over it doesn't hide it. Comes off when it is moved, strapped in or gets up.
+ * A body the backbreaker dropped on the bearer's own tile (the tile he faced was blocked), drawn [GORILLA_BACK_IN_FRONT]
+ * pixels toward the viewer so the one standing over it doesn't hide it. Comes off when it is moved, strapped in or gets up.
  *
  * It lies where its halves were laid. They turn about the belt, which is under the middle of the picture, so they lie
  * that many pixels along toward the head from where tg draws a lying body (turned about its middle): the real body is
@@ -1899,11 +1974,12 @@
  */
 /datum/component/gorilla_laid_in_front
 
-/datum/component/gorilla_laid_in_front/Initialize()
+/// [lay] is 1 for a body lying head east, -1 head west.
+/datum/component/gorilla_laid_in_front/Initialize(lay = 1)
 	if(!isliving(parent))
 		return COMPONENT_INCOMPATIBLE
 	var/mob/living/body = parent
-	body.add_offsets(GORILLA_LAID_IN_FRONT_OFFSET, x_add = -BACK_WAIST_PIVOT_Y, y_add = -GORILLA_BACK_IN_FRONT, animate = FALSE)
+	body.add_offsets(GORILLA_LAID_IN_FRONT_OFFSET, x_add = lay * -BACK_WAIST_PIVOT_Y, y_add = -GORILLA_BACK_IN_FRONT, animate = FALSE)
 
 /datum/component/gorilla_laid_in_front/RegisterWithParent()
 	RegisterSignals(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BUCKLED, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(moved_off))
