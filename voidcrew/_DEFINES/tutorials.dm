@@ -14,6 +14,9 @@
 #define TUTORIAL_ITEM_CHROME "vc/chrome"
 #define TUTORIAL_ITEM_SURGERY "vc/surgery"
 #define TUTORIAL_ITEM_ZONES "vc/zones"
+#define TUTORIAL_ITEM_STORAGE "vc/storage"
+#define TUTORIAL_ITEM_REPAIR_DRONES "vc/repair_drones"
+#define TUTORIAL_ITEM_SHIP_SAVE "vc/ship_save"
 #define TUTORIAL_ITEM_VESTIGE "vc/vestige"
 
 // Your ship
@@ -66,6 +69,23 @@
 #define TUTORIAL_STEP_ZONES_YELLOW "vc/zones/yellow"
 #define TUTORIAL_STEP_ZONES_WARFARE "vc/zones/warfare"
 #define TUTORIAL_STEP_ZONES_RED "vc/zones/red"
+
+// Storage
+#define TUTORIAL_STEP_STORAGE_SHELF "vc/storage/shelf"
+#define TUTORIAL_STEP_STORAGE_CRATE "vc/storage/crate"
+#define TUTORIAL_STEP_STORAGE_LOCKER "vc/storage/locker"
+#define TUTORIAL_STEP_STORAGE_STORE "vc/storage/store"
+
+// Repair drones
+#define TUTORIAL_STEP_REPAIR_DRONES_RESEARCH "vc/repair_drones/research"
+#define TUTORIAL_STEP_REPAIR_DRONES_ASSEMBLE "vc/repair_drones/assemble"
+#define TUTORIAL_STEP_REPAIR_DRONES_LINK "vc/repair_drones/link"
+#define TUTORIAL_STEP_REPAIR_DRONES_REPAIR "vc/repair_drones/repair"
+
+// Save your ship
+#define TUTORIAL_STEP_SHIP_SAVE_DOCK "vc/ship_save/dock"
+#define TUTORIAL_STEP_SHIP_SAVE_SAVE "vc/ship_save/save"
+#define TUTORIAL_STEP_SHIP_SAVE_LOAD "vc/ship_save/load"
 
 // Vestige pact
 #define TUTORIAL_STEP_VESTIGE_FIND "vc/vestige/find"

@@ -403,13 +403,131 @@
 	optional = TRUE
 
 // ---------------------------------------------------------------------------
+// Storage
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/storage
+	id = TUTORIAL_ITEM_STORAGE
+	name = "Storage"
+	order = 10
+	steps = list(
+		/datum/vc_tutorial_step/storage_shelf,
+		/datum/vc_tutorial_step/storage_crate,
+		/datum/vc_tutorial_step/storage_locker,
+		/datum/vc_tutorial_step/storage_store,
+	)
+
+/datum/vc_tutorial_step/storage_shelf
+	key = TUTORIAL_STEP_STORAGE_SHELF
+	name = "Build a cargo shelf"
+	text = "Make cargo shelf parts from four iron sheets, then use them where the shelf should stand."
+
+/datum/vc_tutorial_step/storage_crate
+	key = TUTORIAL_STEP_STORAGE_CRATE
+	name = "Shelve a crate"
+	text = "Drag a crate onto a cargo shelf to lift it up."
+
+/datum/vc_tutorial_step/storage_locker
+	key = TUTORIAL_STEP_STORAGE_LOCKER
+	name = "Build a smart locker"
+	text = "Print a Smart Locker board and build it in a machine frame."
+
+/datum/vc_tutorial_step/storage_store
+	key = TUTORIAL_STEP_STORAGE_STORE
+	name = "Fill a smart locker"
+	text = "Put an item in a smart locker, or drag a bag onto it to empty the bag."
+
+// ---------------------------------------------------------------------------
+// Repair drones
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/repair_drones
+	id = TUTORIAL_ITEM_REPAIR_DRONES
+	name = "Repair drones"
+	order = 11
+	steps = list(
+		/datum/vc_tutorial_step/repair_drones_research,
+		/datum/vc_tutorial_step/repair_drones_assemble,
+		/datum/vc_tutorial_step/repair_drones_link,
+		/datum/vc_tutorial_step/repair_drones_repair,
+	)
+
+/datum/vc_tutorial_step/repair_drones_research
+	key = TUTORIAL_STEP_REPAIR_DRONES_RESEARCH
+	name = "Research Shuttle Repair Swarm"
+	text = "At the R&D console, after Shuttle Automation, Robotics and Mech Assembly."
+
+/datum/vc_tutorial_step/repair_drones_research/state_satisfied(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/datum/techweb/web = ship?.get_research_web()
+	return web && (TECHWEB_NODE_SHIP_REPAIR_SWARM in web.researched_nodes)
+
+/datum/vc_tutorial_step/repair_drones_assemble
+	key = TUTORIAL_STEP_REPAIR_DRONES_ASSEMBLE
+	name = "Assemble a drone"
+	text = "Print the four drone parts at an exosuit fabricator and fit them to the chassis."
+
+/datum/vc_tutorial_step/repair_drones_link
+	key = TUTORIAL_STEP_REPAIR_DRONES_LINK
+	name = "Link the drone"
+	text = "Install the repair swarm disk, then use a multitool on the construction console and the drone."
+
+/datum/vc_tutorial_step/repair_drones_repair
+	key = TUTORIAL_STEP_REPAIR_DRONES_REPAIR
+	name = "Watch it repair"
+	text = "Take hull damage while flying. Linked drones rebuild it from the ore silo."
+
+// ---------------------------------------------------------------------------
+// Save your ship
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/ship_save
+	id = TUTORIAL_ITEM_SHIP_SAVE
+	name = "Save your ship"
+	order = 12
+	steps = list(
+		/datum/vc_tutorial_step/ship_save_dock,
+		/datum/vc_tutorial_step/ship_save_save,
+		/datum/vc_tutorial_step/ship_save_load,
+	)
+
+/datum/vc_tutorial_step/ship_save_dock
+	key = TUTORIAL_STEP_SHIP_SAVE_DOCK
+	name = "Dock in a ship bay"
+	text = "Dock at a crew outpost that has ship bays."
+
+/// Only the captain can save or load a ship.
+/datum/vc_tutorial_step/proc/captain_only_note(mob/user)
+	if(excused(user))
+		return "Captain only."
+	return null
+
+/datum/vc_tutorial_step/ship_save_save
+	key = TUTORIAL_STEP_SHIP_SAVE_SAVE
+	name = "Save the ship"
+	text = "At the bay's shipyard console, open Saved ships and save your ship to a slot."
+
+/datum/vc_tutorial_step/ship_save_save/availability(mob/user)
+	return captain_only_note(user)
+
+/datum/vc_tutorial_step/ship_save_save/excused(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && !ship.is_ship_captain(user)
+
+/datum/vc_tutorial_step/ship_save_load
+	key = TUTORIAL_STEP_SHIP_SAVE_LOAD
+	name = "Load a saved ship"
+	text = "Pick a saved ship when you join, or build it at a shipyard console once the old hull is gone."
+	optional = TRUE
+
+// ---------------------------------------------------------------------------
 // Vestige pact
 // ---------------------------------------------------------------------------
 
 /datum/vc_tutorial/vestige
 	id = TUTORIAL_ITEM_VESTIGE
 	name = "Vestige pact"
-	order = 10
+	order = 13
 	steps = list(
 		/datum/vc_tutorial_step/vestige_find,
 		/datum/vc_tutorial_step/vestige_pact,

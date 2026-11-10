@@ -68,7 +68,7 @@
 /// credits is a step in the catalog.
 /datum/unit_test/voidcrew_tutorials/catalog/Run()
 	SSvc_tutorials.build_catalog()
-	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 10, "The checklist does not have its ten items")
+	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 13, "The checklist does not have its thirteen items")
 	var/list/seen = list()
 	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
 		check_key(item.id, seen)
@@ -321,6 +321,55 @@
 	TEST_ASSERT(done("vc/vestige/claim"), "Claiming a boon was not credited")
 	GLOB.vestige_records -= ckey(keeper.key)
 	qdel(record)
+
+/// A smart locker counts once a player finishes building one and once they put something in it.
+/// Shelf assembly and crate loading wait in do_after, so they are not driven here.
+/datum/unit_test/voidcrew_tutorials/smart_locker/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/machinery/smartfridge/storage/locker = allocate(/obj/machinery/smartfridge/storage, get_step(run_loc_floor_bottom_left, EAST))
+	TEST_ASSERT(!done("vc/storage/locker"), "A spawned smart locker counted as building one")
+	locker.on_construction(player)
+	TEST_ASSERT(done("vc/storage/locker"), "Building a smart locker was not credited")
+	var/obj/item/wrench/stored = allocate(/obj/item/wrench)
+	TEST_ASSERT(player.put_in_hands(stored), "The player could not hold the item")
+	TEST_ASSERT(locker.load(stored, player), "The smart locker refused the item")
+	TEST_ASSERT_EQUAL(stored.loc, locker, "The item did not go into the smart locker")
+	TEST_ASSERT(done("vc/storage/store"), "Storing an item in a smart locker was not credited")
+
+/// Researching Shuttle Repair Swarm credits the crew whose techweb did it.
+/datum/unit_test/voidcrew_tutorials/repair_swarm_research/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(get_step(deck, EAST))
+	make_crewed_ship(deck, player)
+	var/datum/techweb/web = allocate(/datum/techweb)
+	var/obj/machinery/rnd/server/server = allocate(/obj/machinery/rnd/server, deck)
+	web.techweb_servers |= server
+	// TECHWEB_NODE_SHIP_REPAIR_SWARM
+	TEST_ASSERT(web.research_node(SSresearch.techweb_node_by_id("ship_repair_swarm"), TRUE, FALSE, FALSE), "The repair swarm node could not be researched")
+	TEST_ASSERT(done("vc/repair_drones/research"), "Researching Shuttle Repair Swarm was not credited to the crew")
+	web.techweb_servers -= server
+
+/// A save being used, from the lobby or a shipyard console, credits whoever saved it.
+/datum/unit_test/voidcrew_tutorials/ship_save_load/Run()
+	var/datum/ship_save_store/old_store = GLOB.ship_save_store
+	var/datum/ship_saves/old_saves = GLOB.ship_saves
+	var/datum/ship_economy_db/old_economy = GLOB.ship_economy_db
+	var/datum/ship_save_store/fake/store = new
+	store.saved["[TUTORIAL_TEST_CKEY]|1"] = list("meta" = list(), "payload" = null)
+	GLOB.ship_save_store = store
+	GLOB.ship_saves = new /datum/ship_saves
+	GLOB.ship_economy_db = new /datum/ship_economy_db/fake
+	GLOB.ship_saves.spend(TUTORIAL_TEST_CKEY, 1)
+	var/credited = done("vc/ship_save/load")
+	var/removed = !store.saved["[TUTORIAL_TEST_CKEY]|1"]
+	qdel(GLOB.ship_saves)
+	qdel(GLOB.ship_economy_db)
+	qdel(store)
+	GLOB.ship_save_store = old_store
+	GLOB.ship_saves = old_saves
+	GLOB.ship_economy_db = old_economy
+	TEST_ASSERT(removed, "The spent save was not removed")
+	TEST_ASSERT(credited, "Using a saved ship was not credited")
 
 /// Taking a contract credits whoever accepted it; work and turn-in credit the crew.
 /datum/unit_test/voidcrew_tutorials_contract
