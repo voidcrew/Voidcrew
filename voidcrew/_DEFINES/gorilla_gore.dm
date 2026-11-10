@@ -186,8 +186,9 @@
 #define GORILLA_RIP_LIFT 3
 /// Melee cover on the chest that turns the broken back into cracked ribs.
 #define GORILLA_BACK_ARMOUR 40
-/// How long a broken back's fold stays drawn after the finisher.
+/// How long a broken back's fold stays drawn after the finisher, and how long it then takes to ease out flat.
 #define GORILLA_FOLD_TIME (10 SECONDS)
+#define GORILLA_FOLD_SETTLE (0.6 SECONDS)
 /// The head clap's burst: one short line of blood this many tiles long.
 #define GORILLA_CLAP_SPRAY_TILES 2
 /// How far the head clap throws the brain (the eyes, ears and tongue drop on the spot or a tile out).
