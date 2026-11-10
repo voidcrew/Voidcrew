@@ -8,7 +8,8 @@
  *
  * - Wind-up (1 s): the wire loops round the neck and glints. No mark over the victim (owner D34): the loop
  *   and the struggle are the tell. It holds nobody, so pulling the victim clear, or them coming round, ends it.
- * - Hold (1.5 s): the grab, the wire goes taut and bites, the victim thrashes.
+ * - Hold (1.5 s): the grab, the wire goes taut and bites, the victim thrashes. The garroter stays leaned in over
+ *   them from the throw to the cut, and leans further in for the kill: never back.
  * - Kill (0.5 s into the stage): in hard crit the head comes off (an Atlas frame keeps it); otherwise the
  *   throat is slit, #509's carotid crit. A sealed helmet, an armoured collar or plating that would stop
  *   the throat crit turns the wire, and it lands as an ordinary blow at the head instead.
@@ -1306,8 +1307,8 @@
 
 /datum/hv_finisher_stage/hold/garrote
 	duration = 1.5 SECONDS
-	// Stands back up to pull.
-	lunge = 0
+	// Stays leaned in over the body, into the pull.
+	lunge = 3
 	enter_sound = 'voidcrew/sound/monowire2.ogg'
 	enter_volume = 50
 	enter_range = COMBAT_MESSAGE_RANGE
@@ -1331,14 +1332,14 @@
 /datum/hv_finisher_stage/kill/garrote
 	duration = 1 SECONDS
 	effect_delay = 0.5 SECONDS
-	// Leans back on the wire.
-	lunge = -2
+	// Leans further in as the wire goes through.
+	lunge = 5
 
 /datum/hv_finisher_stage/kill/garrote/enter()
 	var/datum/hv_finisher/garrote/garrote = host
 	var/list/before_lean = garrote.drawn_offsets()
 	. = ..()
-	// The strands stay on the hands as the lean takes them back.
+	// The strands stay on the hands as the lean takes them forward.
 	if(garrote.running)
 		garrote.draw_wire(effect_delay + 0.1 SECONDS, before_lean)
 
