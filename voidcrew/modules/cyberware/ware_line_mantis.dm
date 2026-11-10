@@ -40,7 +40,7 @@
 	desc = "A dull grey sliver of hardlight with no shine to it. It still cuts."
 	icon_state = "mantis_street"
 	base_icon_state = "mantis_street"
-	inhand_icon_state = "mantis_street"
+	inhand_icon_state = "mantis_street_guard"
 	force = 14
 
 /**
@@ -52,16 +52,12 @@
 	desc = "A forearm's length of hardlight gone orange along the edge. The air above it shimmers."
 	icon_state = "mantis_scorch"
 	base_icon_state = "mantis_scorch"
-	inhand_icon_state = "mantis_scorch"
+	inhand_icon_state = "mantis_scorch_guard"
 	light_range = 2
 	light_power = 1
 	light_color = LIGHT_COLOR_FIRE
 	/// Fire stacks each landed cut puts on its target.
 	var/fire_stacks_per_hit = 2
-	/// Set by afterattack() during attack()'s parent call, which only a swing that
-	/// connected reaches. attack()'s own FALSE can't tell a cut from a pacifist's
-	/// pulled swing or a signal-skipped one. The Widowline does the same.
-	var/swing_landed = FALSE
 
 // The glow is only for a blade that is out. Stowed inside the housing it is dark.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/equipped(mob/user, slot, initial = FALSE)
@@ -72,23 +68,13 @@
 	. = ..()
 	set_light_on(FALSE)
 
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	swing_landed = FALSE
+// Only a cut that landed burns (the parent's attack() decides that), never the wielder.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/on_cut_landed(mob/living/target, mob/living/user)
 	. = ..()
-	var/landed = swing_landed
-	swing_landed = FALSE
-	// Only a cut that landed burns: not a blocked or cancelled swing, not a pulled
-	// one. Never the wielder, whoever is in the way.
-	if(. || !landed || QDELETED(target) || target == user)
-		return
 	// Embers off the cut; the blade's impact is the slash (cyberware_anim2.dm).
 	cyberware_scorch_trail_fx(user, target)
 	if(cyberware_scorch_target(target, fire_stacks_per_hit))
 		log_combat(user, target, "set alight", src, "(scorch blade)")
-
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
-	. = ..()
-	swing_landed = TRUE
 
 // ---- Shiv Blades (street) ------------------------------------------------
 

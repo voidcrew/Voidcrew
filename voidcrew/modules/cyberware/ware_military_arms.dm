@@ -352,9 +352,10 @@
  * along the forearm. The organ's worn overlay (the housing with the blade
  * folded in) hides while the blade is out, see hide_worn_while_deployed.
  *
- * base_icon_state comes along for the ride purely so it cannot disagree with
- * icon_state; update_icon_state() only consults it when sword_color_icon is
- * set, which it never is here.
+ * base_icon_state names the blade's model for its held poses: the held sprite
+ * is "[base_icon_state]_[pose]" (voidcrew/modules/mantis_gore/), the raised
+ * guard while nothing else is going on. update_icon_state() only consults it
+ * when sword_color_icon is set, which it never is here.
  */
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	name = "mantis blade"
@@ -362,12 +363,41 @@
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "mantis"
 	base_icon_state = "mantis"
-	inhand_icon_state = "mantis"
-	lefthand_file = 'voidcrew/modules/cyberware/icons/cyberware_lefthand.dmi'
-	righthand_file = 'voidcrew/modules/cyberware/icons/cyberware_righthand.dmi'
+	inhand_icon_state = "mantis_guard"
+	lefthand_file = MANTIS_LEFTHAND_ICON
+	righthand_file = MANTIS_RIGHTHAND_ICON
 	force = 20
 	armour_penetration = 10
 	wound_bonus = 10
+	/// Set by afterattack() during attack()'s parent call, which only a swing that
+	/// connected reaches. attack()'s own FALSE can't tell a cut from a pacifist's
+	/// pulled swing or a signal-skipped one. The Widowline does the same.
+	var/swing_landed = FALSE
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	// A head swing at someone dying is the scissor, not a cut (mantis_gore/mantis_scissor.dm).
+	if(mantis_swing_taken(target, user))
+		return TRUE
+	swing_landed = FALSE
+	// What the cut does to the body is read while the hit resolves, so its lines join the attack line.
+	mantis_watch_cut(target, user)
+	. = ..()
+	mantis_unwatch_cut(target)
+	var/landed = swing_landed
+	swing_landed = FALSE
+	// Only a cut that landed counts: not a blocked or cancelled swing, not a pulled
+	// one. Never the wielder, whoever is in the way.
+	if(. || !landed || QDELETED(target) || target == user)
+		return
+	on_cut_landed(target, user)
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	swing_landed = TRUE
+
+/// A swing with this blade connected with [target]. The line's models add to it.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/on_cut_landed(mob/living/target, mob/living/user)
+	return
 
 /**
  * # Mantis Blades (T3, arms, aug slots, load 3 per arm / 6 the pair)
@@ -491,39 +521,61 @@
 		span_boldwarning("[lunger] drops low, mantis blade[both_blades ? "s" : ""] laid flat along [lunger.p_their()] [both_blades ? "arms" : "arm"]!"),
 		span_warning("You coil for the lunge."),
 	)
+	// The blades go flat along the arms for the wind-up (mantis_gore/mantis_poses.dm).
+	mantis_pose_blades(get_extended_housings(), MANTIS_POSE_LUNGE)
 	playsound(lunger, 'sound/items/weapons/sear.ogg', 50, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim)), housing.lunge_telegraph)
 	return TRUE
 
-/// The dash itself: walk the line to the target with a decoy per tile,
-/// stop adjacent, land the bonus cut once per blade and floor them.
-/datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref)
+/// The dash itself: walk the line to the target, stop adjacent, land the bonus
+/// cut once per blade and floor them. [range] is how far it may reach (a charged
+/// leap reaches further, mantis_gore/mantis_charge.dm); [charged] is TRUE for a
+/// leap out of a crouch.
+/datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref, range, charged = FALSE)
 	var/mob/living/lunger = owner
-	if(QDELETED(lunger) || lunger.incapacitated || !isturf(lunger.loc))
+	if(QDELETED(lunger))
 		return
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = organ
 	if(!istype(housing))
 		return
+	// The blades go back to the guard however the dash ends.
+	var/list/posed = get_extended_housings()
+	if(lunger.incapacitated || !isturf(lunger.loc))
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+		return
+	if(isnull(range))
+		range = housing.lunge_range
 	var/mob/living/victim = victim_ref?.resolve()
 	if(QDELETED(victim) || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "target lost!")
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
 	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf || get_dist(lunger, victim_turf) > housing.lunge_range + 1)
+	if(!victim_turf || get_dist(lunger, victim_turf) > range + 1)
 		lunger.balloon_alert(lunger, "target lost!")
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
 	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
-	for(var/turf/step_turf as anything in get_line(get_turf(lunger), victim_turf))
-		if(step_turf == get_turf(lunger))
+	var/turf/start = get_turf(lunger)
+	var/list/passed = list()
+	for(var/turf/step_turf as anything in get_line(start, victim_turf))
+		if(step_turf == start)
 			continue
 		if(step_turf == victim_turf)
 			break
 		if(step_turf.is_blocked_turf(exclude_mobs = TRUE))
 			break
-		new /obj/effect/temp_visual/decoy/fading/halfsecond(lunger.loc, lunger)
+		// Never over a drop, into lava or out into space: the dash stops at the edge.
+		if(mantis_lunge_unsafe_turf(step_turf))
+			break
+		passed += lunger.loc
 		lunger.forceMove(step_turf)
+	// Hardlight afterimages and a streak down the line, and the body glides into place (mantis_gore/mantis_lunge_fx.dm).
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade = housing.active_item
+	mantis_lunge_dash_fx(lunger, start, passed, charged, istype(lunge_blade) ? lunge_blade.base_icon_state : "mantis")
 	if(!lunger.Adjacent(victim))
 		lunger.balloon_alert(lunger, "fell short!")
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
 	// Both housings deployed means both blades arrive. Floored at one: a blade
 	// stowed during the 0.3s telegraph shouldn't eat the whole cooldown for
@@ -532,12 +584,15 @@
 	if(!length(blade_housings))
 		blade_housings = list(housing)
 	var/blades = length(blade_housings)
+	// Judged as they arrive, before the arrival cut: someone already hurt or down.
+	var/skewer = mantis_can_impale(lunger, victim, blade_housings)
 
 	lunger.face_atom(victim)
 	lunger.do_attack_animation(victim, no_effect = TRUE)
-	// The blade's own impact over the target (cyberware_anim.dm).
-	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade = housing.active_item
-	cyberware_play_impact(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis")
+	// The blade's own impact over the target (both blades for a pounce), and a burst of light and dust (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_arrival_fx(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis", charged && blades > 1)
+	// The arrival counts toward the lunger's kill (mantis_gore/mantis_cuts.dm).
+	mantis_note_hit(victim, lunger)
 	// One armor roll for the arrival, reused per blade. Both land in the same
 	// instant on the same plate, and it keeps the armor message to one line.
 	var/armor_block = victim.run_armor_check(BODY_ZONE_CHEST, MELEE)
@@ -552,10 +607,29 @@
 			sharpness = SHARP_EDGED,
 		)
 		lunge_fire = max(lunge_fire, blade_housing.lunge_fire_stacks)
-	victim.Knockdown(housing.lunge_knockdown)
 	if(lunge_fire)
 		cyberware_scorch_target(victim, lunge_fire)
-	if(blades > 1)
+	// Both blades into someone already hurt: held up on them, then ripped free (mantis_gore/mantis_impale.dm).
+	// The knockdown waits for the rip.
+	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown))
+		log_combat(lunger, victim, "mantis-lunged and impaled", "mantis blades ([blades] landed)")
+		playsound(victim, 'sound/effects/wounds/pierce3.ogg', 70, TRUE)
+		return
+	mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+	// They go down as the gliding body reaches them, with the impact (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_knockdown(victim, housing.lunge_knockdown)
+	if(charged)
+		if(blades > 1)
+			victim.visible_message(
+				span_danger("[lunger] springs at [victim] and shuts both blades on [victim.p_them()], dropping [victim.p_them()]!"),
+				span_userdanger("[lunger] springs at you. Both blades land at once and your legs go out from under you!"),
+			)
+		else
+			victim.visible_message(
+				span_danger("[lunger] springs at [victim], opens [victim.p_them()] up and puts [victim.p_them()] down!"),
+				span_userdanger("[lunger] springs at you. The blade is already in you, and the floor comes up fast!"),
+			)
+	else if(blades > 1)
 		victim.visible_message(
 			span_danger("[lunger] flickers across the gap and shuts both blades on [victim] like a trap, dropping [victim.p_them()]!"),
 			span_userdanger("[lunger] flickers across the gap. Both blades land at once and your legs go out from under you!"),
@@ -565,7 +639,7 @@
 			span_danger("[lunger] flickers across the gap, opens [victim] up on arrival and puts [victim.p_them()] down!"),
 			span_userdanger("[lunger] flickers across the gap. The blade is already in you, and the floor comes up fast!"),
 		)
-	log_combat(lunger, victim, "mantis-lunged", "mantis blades ([blades] landed)")
+	log_combat(lunger, victim, charged ? "mantis-leapt" : "mantis-lunged", "mantis blades ([blades] landed)")
 	playsound(victim, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 
 // =========================================================================

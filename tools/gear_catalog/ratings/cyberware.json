@@ -84,7 +84,7 @@
    "group": "Arm weapons and fists",
    "hash": "b190c2719a5d40f7",
    "name": "Mantis Blade housing (right)",
-   "note": "Each housing extends a hardlight blade into the hand (it can't be dropped; retract stows it). An ability, usable from either housing with its blade out, dashes up to 5 tiles to a living target after a 0.3 s wind-up, lands 10 brute (armor applies, wounding) per extended blade on arrival and floors the target for 2 s. The 20 s cooldown is shared by both housings and is spent even if the dash falls short.",
+   "note": "Each housing extends a hardlight blade into the hand (it can't be dropped; retract stows it). An ability, usable from either housing with its blade out, dashes up to 5 tiles to a living target after a 0.3 s wind-up, lands 10 brute (armor applies, wounding) per extended blade on arrival and floors the target for 2 s; held as a rooted, telegraphed crouch (broken by one 10-damage hit or a stun, costing the full cooldown) it leaps up to 7 tiles. The dash never crosses chasms, lava or space. The 20 s cooldown is shared by both housings and is spent even if the dash falls short; a credited kill of a person or anything with 100+ max health drops it to 3 s, at most once per 8 s, once per body per 2 min. Gore (D31): 3 cuts on one limb within 8 s (5 under cover 15-34, never at 35+) tear its artery; with both blades out every 3rd cut adds a 10 brute follow-through and a 1.5 s stagger; a two-blade lunge into someone at 70% health or down holds them 0.8 s (1.5 s against a wall) and rips out for 2x8 brute; a head swing at someone in crit takes the head off after a 1.2 s interruptible wind-up (Atlas: 25 brute instead).",
    "rank": 5,
    "reason": "Half of a pair: 20-force blades that can't be disarmed, plus a 5-tile lunge every 20 s that adds 20 damage and floors the target for 2 s. Load 6 the pair, 4 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
@@ -94,7 +94,7 @@
    "group": "Arm weapons and fists",
    "hash": "91733b8b4ac9435a",
    "name": "Mantis Blade housing (left)",
-   "note": "Each housing extends a hardlight blade into the hand (it can't be dropped; retract stows it). An ability, usable from either housing with its blade out, dashes up to 5 tiles to a living target after a 0.3 s wind-up, lands 10 brute (armor applies, wounding) per extended blade on arrival and floors the target for 2 s. The 20 s cooldown is shared by both housings and is spent even if the dash falls short.",
+   "note": "Each housing extends a hardlight blade into the hand (it can't be dropped; retract stows it). An ability, usable from either housing with its blade out, dashes up to 5 tiles to a living target after a 0.3 s wind-up, lands 10 brute (armor applies, wounding) per extended blade on arrival and floors the target for 2 s; held as a rooted, telegraphed crouch (broken by one 10-damage hit or a stun, costing the full cooldown) it leaps up to 7 tiles. The dash never crosses chasms, lava or space. The 20 s cooldown is shared by both housings and is spent even if the dash falls short; a credited kill of a person or anything with 100+ max health drops it to 3 s, at most once per 8 s, once per body per 2 min. Gore (D31): 3 cuts on one limb within 8 s (5 under cover 15-34, never at 35+) tear its artery; with both blades out every 3rd cut adds a 10 brute follow-through and a 1.5 s stagger; a two-blade lunge into someone at 70% health or down holds them 0.8 s (1.5 s against a wall) and rips out for 2x8 brute; a head swing at someone in crit takes the head off after a 1.2 s interruptible wind-up (Atlas: 25 brute instead).",
    "rank": 6,
    "reason": "Left half of the Mantis pair: 20-force blades that can't be disarmed, plus a 5-tile lunge every 20 s that adds 20 damage and floors the target for 2 s.",
    "tier": "red"
@@ -104,7 +104,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Scorch Blade housing (right)",
-   "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
+   "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out. Its torn arteries are seared half shut (2 flow, clotting) instead of the Mantis's 3.5 that never clots; otherwise the Mantis lunge, leap, kill reset, impale, X-slash and scissor.",
    "rank": 3,
    "reason": "Half of a pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight. Load 8 the pair, 4 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
@@ -114,7 +114,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Scorch Blade housing (left)",
-   "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
+   "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out. Its torn arteries are seared half shut (2 flow, clotting) instead of the Mantis's 3.5 that never clots; otherwise the Mantis lunge, leap, kill reset, impale, X-slash and scissor.",
    "rank": 4,
    "reason": "Left half of the Scorch pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight.",
    "tier": "red"
@@ -124,6 +124,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (right)",
+   "note": "No lunge, and none of the Mantis gore moves: its cuts bleed like any knife (no torn arteries, X-slash, impale or scissor).",
    "rank": 15,
    "reason": "Half of a pair: 14-force blades that can't be disarmed, no lunge. Load 4 the pair, 2,400 cr at yellow reputation. Splice takes a pulled housing back for 600 cr.",
    "tier": "yellow"
@@ -133,6 +134,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (left)",
+   "note": "No lunge, and none of the Mantis gore moves: its cuts bleed like any knife (no torn arteries, X-slash, impale or scissor).",
    "rank": 16,
    "reason": "Left half of the Shiv pair: 14-force blades that can't be disarmed, no lunge.",
    "tier": "yellow"

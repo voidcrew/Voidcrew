@@ -277,6 +277,21 @@
 	blade_flash(0.7, BLADE_UNFOLD_SWING)
 
 /**
+ * The unfold ends on the guard and keeps it under its last sparks, so a blade is drawn while the held blade
+ * comes back, whenever that reaches the client. If the blade takes another pose or swings while the unfold is
+ * still on it, the unfold stops, so its guard is never drawn over the new picture, and the held blade shows at
+ * once unless something else is hiding it for longer.
+ */
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/unfold_overtaken(obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade)
+	var/obj/effect/abstract/cyberware_anim/unfold = blade_anim()
+	if(isnull(unfold) || unfold.icon_state != blade_anim_state("unfold"))
+		return FALSE
+	stop_blade_anim()
+	if(blade.inhand_hidden_until <= world.time + BLADE_UNFOLD_SWING)
+		blade.show_inhand()
+	return TRUE
+
+/**
  * The blade folds back into the housing. Called once it is stowed; the
  * folded housing stays see-through until the swing has played.
  */
@@ -307,11 +322,20 @@
 	var/inhand_hidden_until = 0
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/hide_inhand_for(duration)
+	// A longer hide already running (the impale's or the scissor's blade art) is never cut short by a swing.
+	if(world.time + duration <= inhand_hidden_until)
+		return
 	inhand_hidden_until = world.time + duration
 	var/mob/holder = loc
 	if(ismob(holder))
 		holder.update_held_items()
-	addtimer(CALLBACK(src, PROC_REF(show_inhand)), duration, TIMER_UNIQUE | TIMER_OVERRIDE)
+	// Each hide ends on its own timer, and a timer ends nothing while a later hide still runs.
+	addtimer(CALLBACK(src, PROC_REF(inhand_hide_expired)), duration, TIMER_DELETE_ME)
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/inhand_hide_expired()
+	if(world.time < inhand_hidden_until)
+		return
+	show_inhand()
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/show_inhand()
 	if(!inhand_hidden_until)
@@ -352,6 +376,11 @@
 
 // The swinger's lunge stays; only the picture over the target changes.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
+	// The arm swings the blade (mantis_gore/mantis_swing.dm), and the impact waits for its strike. The swing is the
+	// picture on its own where there is no impact (a wall), never tg's flying blade beside it.
+	if(mantis_play_swing(attacker, attacked_atom))
+		mantis_swing_impact(attacker, attacked_atom)
+		return
 	if(!cyberware_play_impact(attacker, attacked_atom, impact_state))
 		return ..()
 
@@ -367,9 +396,11 @@
 /**
  * A chrome weapon's hit drawn over what it hit: a short slash, flash or
  * crackle, upright even on someone lying down, and turned to come from the
- * attacker's side. Returns the holder, or null if there was nothing to draw on.
+ * attacker's side. [mirrored] TRUE or FALSE turns it that way instead (the
+ * Mantis swing turns it by the hand that swung). Returns the holder, or null
+ * if there was nothing to draw on.
  */
-/proc/cyberware_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state)
+/proc/cyberware_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state, mirrored = null)
 	if(!impact_state || !ismovable(attacked_atom))
 		return null
 	var/obj/effect/abstract/cyberware_anim/impact = cyberware_anim_play(attacked_atom, CYBERWARE_ANIM_ICON, impact_state, CHROME_ANIM_TOP_LAYER, 0.4 SECONDS, glow = impact_state != "impact_shiv")
@@ -377,8 +408,10 @@
 		return null
 	impact.appearance_flags |= RESET_TRANSFORM
 	// The art swings in from the left; a blow from the right is mirrored, one from above or below either way.
-	var/direction = get_dir(attacker, attacked_atom)
-	if((direction & WEST) || (!(direction & EAST) && prob(50)))
+	if(isnull(mirrored))
+		var/direction = get_dir(attacker, attacked_atom)
+		mirrored = (direction & WEST) || (!(direction & EAST) && prob(50))
+	if(mirrored)
 		impact.transform = matrix(-1, 0, 0, 0, 1, 0)
 	return impact
 
