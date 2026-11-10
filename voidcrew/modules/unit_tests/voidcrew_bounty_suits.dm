@@ -58,6 +58,35 @@
 	TEST_ASSERT(npc.can_breathe_internals(), "[label] has nothing to breathe its tank through")
 	TEST_ASSERT(human_npc_gear_locked(suit) && human_npc_gear_locked(helmet), "[label]'s suit isn't locked to it")
 
+/**
+ * Checks `npc` wears a running MODsuit of `suit_type` on its back, every piece deployed and sealed, and
+ * that none of it can become loot: the control unit, its pieces, core, cell and modules are locked to it
+ * and hidden from the strip menu, and what its storage holds is locked or a consumable it can reach.
+ */
+/datum/unit_test/voidcrew_bounty_suits/proc/check_modsuit(mob/living/carbon/human/npc/npc, suit_type, label)
+	var/obj/item/mod/control/suit = npc.back
+	TEST_ASSERT(istype(suit, suit_type), "[label] wears [suit?.type] on its back, not its MODsuit [suit_type]")
+	TEST_ASSERT(suit.active, "[label]'s MODsuit isn't running")
+	TEST_ASSERT(suit.get_charge() > 0, "[label]'s MODsuit has no charge")
+	TEST_ASSERT_EQUAL(suit.wearer, npc, "[label]'s MODsuit doesn't know its wearer")
+	for(var/obj/item/part as anything in suit.get_parts())
+		TEST_ASSERT_EQUAL(part.loc, npc, "[label]'s [part] isn't deployed")
+		var/datum/mod_part/part_datum = suit.get_part_datum(part)
+		TEST_ASSERT(part_datum?.sealed, "[label]'s [part] isn't sealed")
+	TEST_ASSERT(istype(npc.wear_suit, /obj/item/clothing/suit/mod) && istype(npc.head, /obj/item/clothing/head/mod), "[label] isn't sealed in its MODsuit's chestplate and helmet")
+	var/list/pieces = suit.get_parts(all = TRUE) + suit.modules + suit.core
+	var/obj/item/mod/core/standard/core = suit.core
+	TEST_ASSERT(istype(core) && istype(core.cell, /obj/item/stock_parts/power_store/cell), "[label]'s MODsuit has no cell in its core")
+	pieces += core.cell
+	for(var/obj/item/piece as anything in pieces)
+		TEST_ASSERT(human_npc_gear_locked(piece), "[label]'s [piece] isn't locked to it")
+		TEST_ASSERT(HAS_TRAIT(piece, TRAIT_NO_STRIP), "[label]'s [piece] shows in the strip menu")
+	var/obj/item/mod/module/storage/pouch = locate() in suit.modules
+	TEST_ASSERT_NOTNULL(pouch, "[label]'s MODsuit has no storage")
+	for(var/obj/item/carried in pouch.contents)
+		TEST_ASSERT(human_npc_gear_locked(carried) || human_npc_gear_consumable(carried), "[label]'s [carried] in its MODsuit isn't locked or issued to it")
+		TEST_ASSERT(human_npc_can_draw(npc, carried), "[label] can't take its [carried] out of its MODsuit")
+
 // ===== WHERE THEY ARE DRESSED FOR =====
 
 /// At a space ruin a criminal and its companions arrive sealed up even on a tile with good air: a soft suit for a Petty one, an armoured one for a Wanted one
@@ -95,11 +124,22 @@
 		TEST_ASSERT(!armoured(buddy.wear_suit), "A companion's soft suit is armoured ([buddy.wear_suit.type])")
 		TEST_ASSERT_EQUAL(buddy.company_site_kind, "ruin", "A companion doesn't know its criminal is at a ruin") // BOUNTY_PLACEMENT_RUIN
 
-/// Each mini-boss kit seals up in a suit of its own armour class: what protects it in good air protects it in vacuum about as well
+/**
+ * Each mini-boss kit seals up in a running MODsuit of its own theme, of its own armour class: what protects
+ * it in good air protects it in vacuum about as well. What its bag holds rides in the suit's storage, where
+ * it reaches it, and none of the suit can be stripped or looted.
+ */
 /datum/unit_test/voidcrew_bounty_suits/kits
 
 /datum/unit_test/voidcrew_bounty_suits/kits/Run()
-	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")) // BOUNTY_KIT_*
+	var/list/suit_types = list(
+		"juggernaut" = /obj/item/mod/control/pre_equipped/bounty_boss/security,
+		"pyromaniac" = /obj/item/mod/control/pre_equipped/bounty_boss/atmospheric,
+		"demolitionist" = /obj/item/mod/control/pre_equipped/bounty_boss/engineering,
+		"ghost" = /obj/item/mod/control/pre_equipped/bounty_boss/civilian,
+		"heavy" = /obj/item/mod/control/pre_equipped/bounty_boss/magnate,
+	)
+	for(var/kit in suit_types) // BOUNTY_KIT_*
 		var/mob/living/carbon/human/npc/bounty_criminal/boss/in_air = new_criminal("boss", 3, kit) // BOUNTY_TIER_MOST_WANTED
 		var/mob/living/carbon/human/npc/bounty_criminal/boss/in_vacuum = new_criminal("boss", 3, kit, /obj/structure/overmap/space_ruin)
 		TEST_ASSERT(istype(in_air) && istype(in_vacuum), "No [kit] was made")
@@ -107,15 +147,98 @@
 		check_sealed(in_vacuum, "The [kit] at a space ruin")
 		TEST_ASSERT_EQUAL(kit_armoured(in_vacuum.wear_suit), kit_armoured(in_air.wear_suit), "The [kit]'s space suit ([in_vacuum.wear_suit.type]) isn't in the armour class of its own suit ([in_air.wear_suit?.type])")
 		TEST_ASSERT_EQUAL(kit_armoured(in_vacuum.head), kit_armoured(in_air.head), "The [kit]'s space helmet ([in_vacuum.head.type]) isn't in the armour class of its own headgear ([in_air.head?.type])")
-		TEST_ASSERT(in_vacuum.boss_gear_text(), "The [kit] in its space suit has no gear line on examine")
+		TEST_ASSERT(in_vacuum.boss_gear_text(), "The [kit] in its MODsuit has no gear line on examine")
 		var/list/gear = bounty_vacuum_gear(in_vacuum)
-		TEST_ASSERT(length(gear) == 2 && istype(in_vacuum.wear_suit, gear[1]), "The [kit] doesn't wear the suit it was given for vacuum")
+		TEST_ASSERT(length(gear) == 1 && gear[1] == suit_types[kit], "The [kit] was given [jointext(gear, ", ")] for vacuum")
+		check_modsuit(in_vacuum, suit_types[kit], "The [kit] at a space ruin")
+		// Everything its bag holds in good air, it carries in vacuum too
+		var/obj/item/bag = in_air.back
+		TEST_ASSERT(bag?.atom_storage, "Test fixture: the [kit] carries no bag in good air")
+		for(var/obj/item/packed as anything in bag.get_all_contents_type(/obj/item))
+			if(packed == bag)
+				continue
+			TEST_ASSERT(length(in_vacuum.get_all_contents_type(packed.type)) >= length(bag.get_all_contents_type(packed.type)), "The [kit] left its [packed] behind for vacuum")
+		TEST_ASSERT_EQUAL(exact_count(in_vacuum, /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor), 1, "The [kit] doesn't carry its combat stimpack in vacuum") // BOUNTY_BOSS_COMBAT_STIMULANT
+		// Paused while it is dormant, so its core doesn't run flat before anyone comes, and running again when it wakes
+		var/obj/item/mod/control/suit = in_vacuum.back
+		in_vacuum.npc_set_suit_heating(FALSE)
+		TEST_ASSERT(!(suit.datum_flags & DF_ISPROCESSING), "The [kit]'s MODsuit runs while it is dormant")
+		in_vacuum.npc_set_suit_heating(TRUE)
+		TEST_ASSERT(suit.datum_flags & DF_ISPROCESSING, "The [kit]'s MODsuit didn't start again when it woke")
 		if(kit == "heavy")
-			// Its ablative coat and hood hold no pressure: out there it seals up in an armoured suit and helmet (C8)
+			// Its ablative coat and hood hold no pressure, and nothing goes over a MODsuit: out there it has the magnate suit's energy armour (C8)
 			TEST_ASSERT(istype(in_air.head, /obj/item/clothing/head/hooded/ablative), "The Heavy's ablative hood isn't up in good air")
-			TEST_ASSERT(istype(in_vacuum.head, /obj/item/clothing/head/helmet/space/syndicate/black), "The Heavy has no armoured helmet in vacuum")
+			TEST_ASSERT(in_vacuum.wear_suit.get_armor_rating(ENERGY) >= in_air.wear_suit.get_armor_rating(ENERGY), "The Heavy's MODsuit has less energy armour than its coat")
+		if(kit == "pyromaniac")
+			// Its gas mask and ID stay on under the suit, and its spare tanks are where it changes them from
+			var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = in_vacuum
+			TEST_ASSERT(istype(pyro.wear_mask, /obj/item/clothing/mask/gas), "The Pyromaniac took its gas mask off for its MODsuit")
+			TEST_ASSERT(istype(pyro.wear_id, /obj/item/card/id), "The Pyromaniac has no ID in its MODsuit")
+			TEST_ASSERT(pyro.wear_suit.resistance_flags & FIRE_PROOF, "The Pyromaniac's MODsuit isn't fireproof")
+			TEST_ASSERT_NOTNULL(pyro.boss_spare_tank(), "The Pyromaniac can't reach a spare tank in its MODsuit")
 		qdel(in_air)
 		qdel(in_vacuum)
+
+/// How many of exactly `item_type` (not its subtypes) `holder` carries
+/datum/unit_test/voidcrew_bounty_suits/proc/exact_count(mob/living/holder, item_type)
+	. = 0
+	for(var/obj/item/thing as anything in holder.get_all_contents_type(item_type))
+		if(thing.type == item_type)
+			.++
+
+/**
+ * A mini-boss's MODsuit never becomes loot: a core, cell or module forced out of it (the only way one
+ * leaves it on a body nobody can open) is gone by the next tick, and what spills from its storage is
+ * gone too, a consumable once it is in anyone's hands. A hunter suiting up a cuffed boss takes the whole
+ * MODsuit off with its helmet or chestplate, and it is gone, the gloves and boots it covered going back on.
+ */
+/datum/unit_test/voidcrew_bounty_suits/modsuit_loot
+
+/datum/unit_test/voidcrew_bounty_suits/modsuit_loot/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = new_criminal("boss", 3, "juggernaut", /obj/structure/overmap/space_ruin) // BOUNTY_TIER_MOST_WANTED, BOUNTY_KIT_JUGGERNAUT
+	TEST_ASSERT_NOTNULL(boss, "No Juggernaut was made")
+	var/obj/item/mod/control/suit = boss.back
+	TEST_ASSERT(istype(suit), "Test fixture: the Juggernaut wears no MODsuit")
+	var/turf/floor = get_turf(boss)
+	var/obj/item/mod/core/standard/core = suit.core
+	var/obj/item/cell = core.cell
+	var/obj/item/mod/module/storage/pouch = locate() in suit.modules
+	var/list/spilled = pouch.contents.Copy()
+	for(var/obj/item/piece as anything in list(cell, core, pouch))
+		piece.forceMove(floor)
+		human_npc_gear_settle(piece)
+		TEST_ASSERT(QDELETED(piece), "A [piece] taken out of the Juggernaut's MODsuit is still about")
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, get_step(floor, EAST))
+	for(var/obj/item/thing as anything in spilled)
+		if(QDELETED(thing))
+			continue
+		if(isturf(thing.loc) && human_npc_gear_consumable(thing))
+			hunter.put_in_active_hand(thing)
+		human_npc_gear_settle(thing)
+		TEST_ASSERT(QDELETED(thing), "The [thing] from the Juggernaut's MODsuit storage became loot")
+	qdel(boss)
+
+	// Suiting up a cuffed boss: its MODsuit comes off whole and is gone
+	boss = new_criminal("boss", 3, "juggernaut", /obj/structure/overmap/space_ruin)
+	suit = boss.back
+	var/list/parts = suit.get_parts(all = TRUE)
+	var/obj/item/chestplate = boss.wear_suit
+	TEST_ASSERT(chestplate in parts, "Test fixture: the Juggernaut's chestplate isn't its MODsuit's")
+	var/obj/item/clothing/suit/space/hunter_suit = allocate(/obj/item/clothing/suit/space)
+	hunter.put_in_active_hand(hunter_suit)
+	TEST_ASSERT_EQUAL(boss.suits_garment_offered(hunter, chestplate), hunter_suit, "A space suit in hand wasn't offered for the MODsuit's chestplate")
+	TEST_ASSERT(!boss.suits_swap_now(hunter, chestplate, hunter_suit), "A space suit went on a free boss")
+	TEST_ASSERT_EQUAL(boss.back, suit, "A free boss lost its MODsuit")
+	board_test_cuff(boss)
+	TEST_ASSERT(boss.suits_swap_now(hunter, chestplate, hunter_suit), "A space suit wouldn't go on a cuffed boss in a MODsuit")
+	TEST_ASSERT_EQUAL(boss.wear_suit, hunter_suit, "The hunter's suit isn't on the boss")
+	for(var/obj/item/part as anything in parts)
+		TEST_ASSERT(QDELETED(part), "The boss's [part] is still about after its MODsuit came off")
+	TEST_ASSERT_NULL(boss.back, "The boss still wears [boss.back] on its back")
+	TEST_ASSERT_NULL(boss.head, "The boss still wears [boss.head] after its MODsuit came off")
+	TEST_ASSERT(istype(boss.gloves, /obj/item/clothing/gloves/combat) && human_npc_gear_locked(boss.gloves), "The Juggernaut's own gloves didn't go back on")
+	TEST_ASSERT(istype(boss.shoes, /obj/item/clothing/shoes/jackboots) && human_npc_gear_locked(boss.shoes), "The Juggernaut's own boots didn't go back on")
+	TEST_ASSERT(!human_npc_gear_locked(hunter_suit), "The hunter's suit was locked to the boss")
 
 // ===== SUITING UP A CATCH =====
 

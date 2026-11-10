@@ -38,10 +38,12 @@
  *   spin-up, then a burst of real rounds into a cone (a hit while it aims spoils the shot); throws real
  *   barrier grenades for cover (CB-26); changes its own belts.
  *
- * Where the air would kill it, each kit seals up in its own space suit, in the armour class of what it
- * wears in good air (bounty_sealed_gear(), bounty_suits.dm): the Juggernaut and the Heavy in armoured
- * ones, the Pyromaniac, the Demolitionist and the Ghost in soft ones. The Heavy's coat doesn't hold
- * pressure, so out there it has no reflection, only the armoured suit.
+ * Where the air would kill it, each kit seals up in a real MODsuit of its own theme, close to the armour
+ * of what it wears in good air (bounty_sealed_gear(), bounty_suits.dm): the Juggernaut a security suit,
+ * the Pyromaniac an atmospherics one, the Demolitionist an engineering one, the Ghost a civilian one and
+ * the Heavy a magnate one. The suit takes its bag's place on its back, the bag's things in its storage.
+ * A coat or riot plates don't go over a MODsuit: the Juggernaut keeps its buckler, and the Heavy has the
+ * magnate suit's energy armour (its coat's) but no reflection out there.
  *
  * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
  * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
@@ -116,9 +118,9 @@
 	if(!succeeded)
 		controller.set_blackboard_key(BB_HUMAN_NPC_ARMING_RETRY_AT, world.time + 5 SECONDS)
 
-// Out where the air kills: a black and red space suit, as heavy as its riot plates
+// Out where the air kills: a security MODsuit, the nearest to its riot plates
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/bounty_sealed_gear()
-	return list(/obj/item/clothing/suit/space/syndicate/black/red, /obj/item/clothing/head/helmet/space/syndicate/black/red)
+	return list(/obj/item/mod/control/pre_equipped/bounty_boss/security)
 
 // Its charge goes straight through a table, a chair, a plain window or a grille
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_goes_through(atom/barrier)
@@ -498,9 +500,9 @@
 		return "[p_Their()] fire suit is scorched black."
 	return "[p_They()] reek[p_s()] of fuel."
 
-// Out where the air kills: an EVA suit, as light as its fire suit. Nothing burns in vacuum.
+// Out where the air kills: an atmospherics MODsuit, fireproof like its fire suit, its gas mask on under the helmet. Nothing burns in vacuum.
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/bounty_sealed_gear()
-	return list(/obj/item/clothing/suit/space/eva, /obj/item/clothing/head/helmet/space/eva)
+	return list(/obj/item/mod/control/pre_equipped/bounty_boss/atmospheric)
 
 // A molotov goes over anything a thrown bottle gets past (a table, a railing, a gap), never through glass or a door
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_goes_through(atom/barrier)
@@ -932,9 +934,9 @@
 		return
 	visible_message(span_warning("[src] jerks back to [p_their()] feet, sparks spitting from the back of [p_their()] neck!"))
 
-// Out where the air kills: a plain grey space suit over its work clothes
+// Out where the air kills: an engineering MODsuit over its work clothes, as tough as its hard hat
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/bounty_sealed_gear()
-	return list(/obj/item/clothing/suit/space, /obj/item/clothing/head/helmet/space)
+	return list(/obj/item/mod/control/pre_equipped/bounty_boss/engineering)
 // A grenade goes over anything a thrown grenade gets past (a table, a railing, a gap), and a breaching charge through an interior wall or door
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_goes_through(atom/barrier)
 	if(..() || boss_throw_passes(barrier))
@@ -1300,9 +1302,9 @@
 /mob/living/carbon/human/npc/bounty_criminal/boss/ghost/boss_gear_text()
 	return "[p_They()] move[p_s()] quick and light, and the knife is never still."
 
-// Out where the air kills: a dark red voidsuit, no more armour than its hood
+// Out where the air kills: a civilian MODsuit, hardly more armour than its hood and no slower
 /mob/living/carbon/human/npc/bounty_criminal/boss/ghost/bounty_sealed_gear()
-	return list(/obj/item/clothing/suit/space/nasavoid, /obj/item/clothing/head/helmet/space/nasavoid)
+	return list(/obj/item/mod/control/pre_equipped/bounty_boss/civilian)
 
 /**
  * The Ghost's answer to stun fire (C8): from beyond its dash, it breaks the shooter's line, running a few
@@ -1545,9 +1547,9 @@
 		return "[p_Their()] coat and hood are lined with reflective panels."
 	return "[p_They()] [p_are()] in heavy armour."
 
-// Out where the air kills: a black armoured space suit and helmet (its coat and hood hold no pressure)
+// Out where the air kills: a magnate MODsuit (its coat and hood hold no pressure), with the coat's energy armour but no reflection
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/bounty_sealed_gear()
-	return list(/obj/item/clothing/suit/space/syndicate/black, /obj/item/clothing/head/helmet/space/syndicate/black)
+	return list(/obj/item/mod/control/pre_equipped/bounty_boss/magnate)
 // Its rounds chip through a window or grille it may break, and fly over a gap
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_goes_through(atom/barrier)
 	if(..())

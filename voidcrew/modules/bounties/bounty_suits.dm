@@ -11,13 +11,16 @@
  *   their criminal was (bounty_companions.dm).
  * - What they seal up in (bounty_vacuum_gear()): a suit in the armour class of what they wear in good air,
  *   so the vacuum neither strips nor gives armour. Petty and meek criminals and companions wear a soft
- *   suit; a Wanted or Most Wanted criminal, who wears an armour vest, an armoured space suit; a mini-boss
- *   its kit's own (bounty_boss_kits.dm). It is real gear, locked to them like the rest (D3,
- *   human_npc_gear.dm): it can't be stripped and never becomes loot.
+ *   suit; a Wanted criminal, who wears an armour vest, an armoured space suit; a mini-boss (every Most
+ *   Wanted is one) a MODsuit of its kit's own theme (bounty_boss_kits.dm), put on and sealed by tg's own
+ *   outfit path (quick_activation()) and running on a charged core. It is real gear, locked to them like
+ *   the rest (D3, human_npc_gear.dm): it can't be stripped and never becomes loot, and that goes for a
+ *   MODsuit's pieces, core, cell, modules and what its storage holds, all inside the body's contents.
  * - Suiting up a catch. A hunter can put their own pressure suit or helmet on a criminal that is down,
  *   cuffed, stunned or dead, through the strip menu: it goes on in place of the locked piece in that slot,
  *   which is gone, taking as long as taking one off a person and putting the other on. It is the hunter's
- *   and can come off again like on anyone. An empty slot takes one the ordinary way.
+ *   and can come off again like on anyone. An empty slot takes one the ordinary way. A MODsuit's helmet or
+ *   chestplate is the whole suit's: the suit comes off as one and is gone, everything in it with it.
  * - The pad gives the crew back everything they put on the body (bounty_return_crew_items()).
  */
 
@@ -100,11 +103,41 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 
 /**
  * The suit and helmet a bounty NPC seals up in where the air would kill it: list(suit, helmet) typepaths,
- * a null helmet keeping its own (already sealed). Null for the human NPC base's plain EVA layer. Each
+ * a null helmet keeping its own (already sealed), or list(MODsuit control unit typepath). Null for the
+ * human NPC base's plain EVA layer. Each
  * family overrides it; a random pick is fine, as it is asked once per body (bounty_vacuum_gear()).
  */
 /mob/living/carbon/human/npc/proc/bounty_sealed_gear()
 	return null
+
+/**
+ * A mini-boss's MODsuit (bounty_sealed_gear()): a real tg suit of one theme, a BOUNTY_BOSS_MODSUIT_CELL in its
+ * standard core, and an expanded storage module for what its bag would hold, the suit taking the bag's place
+ * on its back. No other modules than the theme's own built-in ones.
+ */
+/obj/item/mod/control/pre_equipped/bounty_boss
+	applied_cell = BOUNTY_BOSS_MODSUIT_CELL
+	applied_modules = list(/obj/item/mod/module/storage/large_capacity)
+
+/// The Juggernaut's: a security suit, the nearest to its riot plates
+/obj/item/mod/control/pre_equipped/bounty_boss/security
+	theme = /datum/mod_theme/security
+
+/// The Pyromaniac's: an atmospherics suit, fireproof like its fire suit
+/obj/item/mod/control/pre_equipped/bounty_boss/atmospheric
+	theme = /datum/mod_theme/atmospheric
+
+/// The Demolitionist's: an engineering suit, as tough as its hard hat
+/obj/item/mod/control/pre_equipped/bounty_boss/engineering
+	theme = /datum/mod_theme/engineering
+
+/// The Ghost's and the cyberpsycho's: a civilian suit, as light as what they wear in good air
+/obj/item/mod/control/pre_equipped/bounty_boss/civilian
+	theme = /datum/mod_theme/civilian
+
+/// The Heavy's: a magnate suit, its energy armour that of the ablative coat it can't wear out there
+/obj/item/mod/control/pre_equipped/bounty_boss/magnate
+	theme = /datum/mod_theme/magnate
 
 /// A soft suit or an armoured one for a criminal of `tier` (BOUNTY_TIER_*): armoured for those who wear an armour vest (bounty_add_tier_armour())
 /proc/bounty_tier_sealed_gear(tier)
@@ -118,9 +151,25 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 /mob/living/carbon/human/npc/bounty_criminal/meek/bounty_sealed_gear()
 	return bounty_tier_sealed_gear(record?.tier)
 
-// A mini-boss's kit sets its own (bounty_boss_kits.dm); one with none wears plain clothes, so a soft suit
+// A mini-boss's kit sets its own MODsuit (bounty_boss_kits.dm); one with none (the cyberpsycho) wears plain clothes, so a civilian one
 /mob/living/carbon/human/npc/bounty_criminal/boss/bounty_sealed_gear()
-	return pick(GLOB.bounty_soft_suits)
+	return list(/obj/item/mod/control/pre_equipped/bounty_boss/civilian)
+
+/**
+ * A MODsuit draws on its core while it runs (tg's MOD processing), and a dormant body is frozen in time
+ * (human_npc.dm): like a space suit's thermal regulator, the suit is paused while its wearer is dormant
+ * and runs again when it wakes, so its core doesn't run flat before anyone arrives. Performance only: a
+ * waking boss's suit is the same suit with the same charge, sealed all along.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/npc_set_suit_heating(on)
+	. = ..()
+	var/obj/item/mod/control/suit = back
+	if(!istype(suit))
+		return
+	if(on)
+		START_PROCESSING(SSobj, suit)
+	else
+		STOP_PROCESSING(SSobj, suit)
 
 /mob/living/carbon/human/npc/bounty_companion/bounty_sealed_gear()
 	return pick(GLOB.bounty_soft_suits)
@@ -141,22 +190,33 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 /**
  * `outfit` (a typepath or an instance) with `npc`'s own sealed suit and helmet on, if it is about to be
  * sealed up for vacuum (bounty_dressing_sealed()): the human NPC base then finds it sealed, and only adds
- * the air tank. Anything the old suit held moves to the backpack, as the base's layers do. Returns the
- * outfit unchanged when nothing is needed, else an instance (one passed in is changed in place).
+ * the air tank. Anything the old suit held moves to the backpack, as the base's layers do. A MODsuit goes
+ * on its back in place of its bag, what the bag held going in the suit's storage, and its suit and head
+ * slots are left for the chestplate and helmet it deploys (its gauntlets and boots go on over gloves and
+ * shoes). Returns the outfit unchanged when nothing is needed, else an instance (one passed in is changed
+ * in place).
  */
 /proc/bounty_seal_outfit(mob/living/carbon/human/npc/npc, outfit, datum/human_npc_outfit_table/table)
 	if(isnull(outfit) || !bounty_dressing_sealed(npc, table))
 		return outfit
 	var/list/gear = bounty_vacuum_gear(npc)
-	if(length(gear) < 2 || !ispath(gear[1], /obj/item/clothing/suit))
+	if(!length(gear))
+		return outfit
+	var/modsuit = ispath(gear[1], /obj/item/mod/control)
+	if(!modsuit && (length(gear) < 2 || !ispath(gear[1], /obj/item/clothing/suit)))
 		return outfit
 	var/datum/outfit/dressed = ispath(outfit, /datum/outfit) ? new outfit() : outfit
 	if(!istype(dressed))
 		return outfit
 	if(dressed.suit_store)
-		if(dressed.back)
+		if(dressed.back || modsuit)
 			LAZYADDASSOC(dressed.backpack_contents, dressed.suit_store, 1)
 		dressed.suit_store = null
+	if(modsuit)
+		dressed.back = gear[1]
+		dressed.suit = null
+		dressed.head = null
+		return dressed
 	dressed.suit = gear[1]
 	var/obj/item/clothing/own_head = dressed.head
 	if(ispath(gear[2], /obj/item/clothing/head))
@@ -185,6 +245,13 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
  * pieces in the suit or head slot, or null when this isn't that (any other reach goes to tg's strip menu
  * as it is). A hood belongs to its suit, and goes with it.
  */
+/// The MODsuit on its back, if `worn` is one of that suit's pieces
+/mob/living/carbon/human/npc/bounty_criminal/proc/suits_modsuit_of(obj/item/worn)
+	var/obj/item/mod/control/suit = back
+	if(istype(suit) && (worn in suit.get_parts(all = TRUE)))
+		return suit
+	return null
+
 /mob/living/carbon/human/npc/bounty_criminal/proc/suits_garment_offered(mob/user, obj/item/worn)
 	if(!ismob(user) || !istype(worn) || worn.loc != src || !human_npc_gear_locked(worn))
 		return null
@@ -227,6 +294,9 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 /**
  * Puts `garment`, from `user`'s hands, on it in place of `worn`, now: the locked piece is gone (it never
  * leaves the body as loot), and the garment is the hunter's, an ordinary item that can come off again.
+ * A MODsuit's helmet or chestplate takes the whole suit with it: it comes off its back (tg's own clean
+ * up unseals it and pulls its pieces back in, the gloves and shoes it covered going back on) and is gone,
+ * its core, modules and storage with it.
  * Only while it is still the same reach: `worn` in its slot, `garment` in the hunter's hand, the hunter
  * beside it, and it down, cuffed, stunned or dead. Returns TRUE if it went on. Doesn't sleep.
  */
@@ -241,7 +311,12 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 		return FALSE
 	if(!user.temporarilyRemoveItemFromInventory(garment))
 		return FALSE
-	qdel(worn)
+	var/obj/item/mod/control/modsuit = suits_modsuit_of(worn)
+	if(modsuit)
+		temporarilyRemoveItemFromInventory(modsuit, force = TRUE)
+		qdel(modsuit)
+	else
+		qdel(worn)
 	if(!equip_to_slot_if_possible(garment, slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
 		user.put_in_hands(garment)
 		return FALSE

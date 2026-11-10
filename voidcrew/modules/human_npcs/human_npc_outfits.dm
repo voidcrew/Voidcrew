@@ -14,7 +14,8 @@
  * and defaults 1.12: real suits and tanks, never immunity traits). human_npc_site_at() reads the air on
  * the spawn turf:
  * - HUMAN_NPC_SITE_VACUUM (too little pressure): if the outfit's suit and helmet aren't both sealed,
- *   the table's vacuum_layer replaces them with a sealed suit and helmet; it also gets a tank.
+ *   the table's vacuum_layer replaces them with a sealed suit and helmet; it also gets a tank. A MODsuit
+ *   on its back counts as sealed: tg's outfit path deploys and seals it (quick_activation()).
  * - HUMAN_NPC_SITE_BAD_AIR (pressure fine, air not): a breath mask if nothing it wears takes internals,
  *   and a tank.
  * - HUMAN_NPC_SITE_COLD: the table's cold_layer fills the slots the outfit leaves empty with cold-weather
@@ -136,6 +137,9 @@
 /// suit keeps it out with its thermal regulator, which comes on as an outfit puts it on if it has a cell
 /// (on_outfit_equip()).
 /proc/human_npc_outfit_sealed(datum/outfit/outfit)
+	// A MODsuit on its back deploys and seals head to toe as the outfit puts it on (quick_activation())
+	if(ispath(outfit.back, /obj/item/mod/control))
+		return TRUE
 	// Typed as a space suit only to read its cell; any suit that holds pressure is checked
 	var/obj/item/clothing/suit/space/suit = outfit.suit
 	var/obj/item/clothing/head = outfit.head
@@ -149,6 +153,9 @@
 
 /// Whether it wears something it can breathe a tank through: a mask or a helmet that takes internals.
 /proc/human_npc_outfit_can_breathe(datum/outfit/outfit)
+	// A MODsuit's helmet takes internals once sealed
+	if(ispath(outfit.back, /obj/item/mod/control))
+		return TRUE
 	var/obj/item/clothing/mask = outfit.mask
 	var/obj/item/clothing/head = outfit.head
 	if(ispath(mask, /obj/item/clothing) && (initial(mask.clothing_flags) & MASKINTERNALS))
@@ -164,10 +171,10 @@
 			return TRUE
 	return FALSE
 
-/// Gives the outfit an air tank and opens it: in a space suit's storage, else a pocket, else the back
-/// or the belt. Returns TRUE if it found a place.
+/// Gives the outfit an air tank and opens it: in a space suit's or a MODsuit chestplate's storage, else a
+/// pocket, else the back or the belt. Returns TRUE if it found a place.
 /proc/human_npc_outfit_add_tank(datum/outfit/outfit)
-	if(isnull(outfit.suit_store) && ispath(outfit.suit, /obj/item/clothing/suit/space))
+	if(isnull(outfit.suit_store) && (ispath(outfit.suit, /obj/item/clothing/suit/space) || ispath(outfit.back, /obj/item/mod/control)))
 		outfit.suit_store = /obj/item/tank/internals/oxygen
 		outfit.internals_slot = ITEM_SLOT_SUITSTORE
 		return TRUE
