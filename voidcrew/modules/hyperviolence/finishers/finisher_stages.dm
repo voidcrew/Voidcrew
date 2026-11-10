@@ -131,14 +131,14 @@
 	pins = FALSE
 	duration = 1.5 SECONDS
 	rise = 6
-	/// Something the attacker says as it winds up, or null
+	/// Something the attacker says as it winds up, or null. Its runechat is cut short so it doesn't hang over the move.
 	var/say_line
 
 /datum/hv_finisher_stage/windup/enter()
 	. = ..()
 	host.on_windup(duration)
 	if(say_line)
-		INVOKE_ASYNC(host.user, TYPE_PROC_REF(/atom/movable, say), say_line)
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(hv_say_briefly), host.user, say_line)
 
 // ===== Hold =====
 

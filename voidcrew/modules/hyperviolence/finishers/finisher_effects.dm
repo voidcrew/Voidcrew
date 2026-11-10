@@ -100,3 +100,39 @@
 
 /datum/status_effect/hv_finisher_reeling/on_remove()
 	owner.remove_traits(list(TRAIT_AI_PAUSED, TRAIT_IMMOBILIZED), TRAIT_STATUS_EFFECT(id))
+
+/**
+ * Says `line` aloud like any other speech, but the words over the speaker's head fade after `show_time`
+ * instead of runechat's usual five seconds, so a line opening a finisher doesn't sit over the move.
+ * The chat log is untouched.
+ */
+/proc/hv_say_briefly(atom/movable/speaker, line, show_time = 1 SECONDS)
+	var/said_at = REALTIMEOFDAY
+	speaker.say(line)
+	if(!QDELETED(speaker))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(hv_cut_runechat), WEAKREF(speaker), said_at), show_time, TIMER_DELETE_ME)
+
+/// Fades every viewer's runechat over the speaker that appeared since `said_at`.
+/proc/hv_cut_runechat(datum/weakref/speaker_ref, said_at)
+	var/atom/movable/speaker = speaker_ref?.resolve()
+	if(QDELETED(speaker))
+		return
+	var/atom/message_loc = get_atom_on_turf(speaker)
+	for(var/client/viewer as anything in GLOB.clients)
+		for(var/datum/chatmessage/bubble as anything in LAZYACCESS(viewer.seen_messages, message_loc))
+			if(bubble.animate_start >= said_at)
+				bubble.hv_fade_now()
+
+/// Starts this message's fade-out now, if it isn't already fading.
+/datum/chatmessage/proc/hv_fade_now()
+	if(isnull(message) || !destruction_timer)
+		return
+	var/time_spent = REALTIMEOFDAY - animate_start
+	if(time_spent >= animate_lifespan - translate_eol_fade)
+		return
+	message.alpha = get_current_alpha(time_spent)
+	animate(message, alpha = 0, time = translate_eol_fade)
+	animate_lifespan = time_spent + translate_eol_fade
+	// The timer lives on SSrunechat (see extend_lifespan() in autotranslate/runechat.dm).
+	deltimer(destruction_timer, SSrunechat)
+	destruction_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), translate_eol_fade + translate_grace_period, TIMER_DELETE_ME | TIMER_STOPPABLE, SSrunechat)
