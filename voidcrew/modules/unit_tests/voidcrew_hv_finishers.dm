@@ -120,7 +120,6 @@
 	var/datum/hv_finisher/finisher = allocate(/datum/hv_finisher/hoarfrost, matriarch, victim)
 	TEST_ASSERT(finisher.start(), "the finisher didn't start")
 	TEST_ASSERT(!finisher.gripped, "the wind-up already holds the victim")
-	TEST_ASSERT_NOTNULL(finisher.mark, "the wind-up didn't mark the victim")
 	TEST_ASSERT(HAS_TRAIT(matriarch, TRAIT_AI_PAUSED), "the matriarch's AI runs during the finisher")
 	TEST_ASSERT(matriarch.has_status_effect(/datum/status_effect/hv_finishing), "the matriarch isn't marked as finishing")
 	var/zone = finisher.target_zone
@@ -267,3 +266,36 @@
 	TEST_ASSERT(findtext("[initial(growl.enter_sound)]", "non-humanoids"), "The matriarch's wind-up is not a beast sound")
 	var/slowed = initial(growl.enter_frequency)
 	TEST_ASSERT(slowed > 0 && slowed < 1, "The matriarch's growl is not slowed")
+
+/// A finisher puts a bar over the one doing it that a bystander in view sees too, full at the kill, failed when called off
+/datum/unit_test/voidcrew_hv_finisher/exec_bar
+
+/datum/unit_test/voidcrew_hv_finisher/exec_bar/Run()
+	var/mob/living/basic/hoarfrost_matriarch/matriarch = allocate(/mob/living/basic/hoarfrost_matriarch, spot(1, 1))
+	var/mob/living/carbon/human/consistent/victim = downed_human(spot(2, 1))
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, spot(4, 1))
+	var/datum/hv_finisher/finisher = allocate(/datum/hv_finisher/hoarfrost, matriarch, victim)
+	TEST_ASSERT(finisher.start(), "the finisher didn't start")
+	var/obj/effect/abstract/hv_exec_bar/bar = finisher.exec_bar
+	TEST_ASSERT_NOTNULL(bar, "the finisher put up no bar")
+	TEST_ASSERT_EQUAL(bar.loc, get_turf(matriarch), "the bar isn't over the matriarch")
+	TEST_ASSERT_EQUAL(bar.owner, matriarch, "the bar follows the wrong mob")
+	// A map object, not a client image: whoever has the tile in view sees it
+	TEST_ASSERT(bar.invisibility <= bystander.see_invisible, "a bystander can't see the bar")
+	TEST_ASSERT(can_see(bystander, bar, world.view), "the bar is out of the bystander's sight")
+	TEST_ASSERT(findtext(bar.icon_state, "prog_bar_") == 1, "the bar isn't tg's progress bar")
+	TEST_ASSERT_EQUAL(bar.total, finisher.time_to_kill(), "the bar doesn't run to the kill")
+	run_to_end(finisher)
+	TEST_ASSERT(bar.ending, "the bar outlived the kill")
+	TEST_ASSERT_EQUAL(bar.icon_state, "prog_bar_100", "the bar wasn't full at the kill")
+	TEST_ASSERT_NULL(finisher.exec_bar, "the finisher kept its bar")
+
+	// Called off before the kill: tg's failed look
+	var/mob/living/carbon/human/consistent/second = downed_human(spot(1, 2))
+	var/datum/hv_finisher/again = allocate(/datum/hv_finisher/hoarfrost, matriarch, second)
+	TEST_ASSERT(again.start(), "the second finisher didn't start")
+	var/obj/effect/abstract/hv_exec_bar/second_bar = again.exec_bar
+	TEST_ASSERT_NOTNULL(second_bar, "the second finisher put up no bar")
+	again.interrupt(3) // HV_FINISHER_DAMAGED
+	TEST_ASSERT(second_bar.ending, "the bar outlived the interrupt")
+	TEST_ASSERT(findtext(second_bar.icon_state, "_fail"), "an interrupted bar doesn't look failed")

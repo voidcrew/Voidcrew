@@ -19,7 +19,7 @@ Outside the parlors, ordinary organ-manipulation surgery at any operating table 
 
 ## The Back Bay
 
-Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled chrome back on the same terms as Splice, even the pieces only Splice sells. His shelf carries the newer street pieces too: the cheap optics, the junk and street decks, and the quiet passives below.
+Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled chrome back on the same terms as Splice, even the pieces only Splice sells. His shelf carries the newer street pieces too: the cheap optics and the quiet passives below.
 
 ## Neural load
 
@@ -88,7 +88,7 @@ Prices are the same at both counters, stock is limited per round, and load is th
 |---|---|---|---|
 | Governor Delete | 5 | 0 | +15 capacity. Occupies the chest OS slot, competing with Cascade and Redline |
 | Redline core | 6 | 10 | Twelve seconds of stun immunity, 40% less brute and burn taken, +8 unarmed damage and a roar that staggers everyone nearby, then the crash |
-| Cascade lattice | 8 | 12 | Eight seconds at double time with halved melee cooldowns and 40% projectile dodge while moving, then the crash. An EMP mid-window ends it early and eats the cooldown |
+| Cascade lattice | 8 | 12 | Eight seconds at double time with halved melee cooldowns and 60% dodge against blows, or against projectiles while moving, and harder-hitting strikes, then the crash. An EMP mid-window ends it early and eats the cooldown |
 | Meteor Piledriver frame | *never sold* | 8 | An eight-tile leap that crushes whoever is standing on the landing tile and hurls everyone around them. A rare guarded-mission completion prize; see [Missions](missions.md) |
 
 ### Cheaper models
@@ -101,9 +101,9 @@ Six of the big pieces come in cheaper models from other makers. Each takes the s
 | Shiv Blades (pair) | 2,400 cr | 2/arm | Deployable hardlight blades, duller than the Mantis, with no lunge and none of its tricks. They still bleed people |
 | Governor Patch | 2,500 cr | 0 | +5 capacity. Occupies the chest OS slot |
 | Hothead core | 3,000 cr | 4 | Eight seconds of 20% less brute and burn and +3 unarmed damage, then the crash. No stun immunity and no roar |
-| Spliced reflex rig | 3,600 cr | 6 | Six seconds of quicker movement, melee cooldowns cut by a quarter and 15% projectile dodge while moving, then a long crash |
+| Spliced reflex rig | 3,600 cr | 6 | Six seconds of quicker movement, melee cooldowns cut by a quarter and 30% dodge against blows, or against projectiles while moving, and harder-hitting strikes, then a long crash |
 | Governor Bypass | 3 vouchers | 0 | +10 capacity. Occupies the chest OS slot |
-| Service reflex lattice | 4 vouchers | 9 | Seven seconds of quicker movement, melee cooldowns cut by 40% and 25% projectile dodge while moving, then the crash |
+| Service reflex lattice | 4 vouchers | 9 | Seven seconds of quicker movement, melee cooldowns cut by 40% and 45% dodge against blows, or against projectiles while moving, and harder-hitting strikes, then the crash |
 | Vanguard core | 4 vouchers | 8 | Ten seconds of stun immunity, 30% less brute and burn and +5 unarmed damage, opened by a roar that staggers people nearby, then the crash |
 | Scorch Blades (pair) | 4 vouchers | 4/arm | Mantis Blades that set whoever they cut on fire. The lunge lights them harder, and the heat half-seals the arteries they open |
 | Widowline Arc | 5 vouchers | 6 | A Widowline that shocks on every hit, cuts robots and mechs much harder, and briefly knocks out turrets, consoles and cameras it strikes |
@@ -127,12 +127,6 @@ The newer makers fill in the gaps under the big names. Each takes the same slot 
 ## Optics and zoom
 
 Every pair of chrome eyes can zoom: focus on something far off and your view pulls toward it. Better eyes see further, and cheap ones make you slow while you look. Nobody shoots straight through a zoom, so you have to look up before you fire. A flash, a stun or an EMP snaps you out of it. Spyglass and assay optics are the cheap way in; the Longsight, the marksman link and the Lookout are what scouts and sharpshooters save for.
-
-## Cyberdecks
-
-A cyberdeck sits in the back of the skull and talks to machines and other people's gear. Use it, pick something you can see, and the deck offers only what that target will take: doors, lights, a room's power, turrets, radios, a person's gear and the chrome inside them. Pick yourself and it offers what it can do to the room around you. A deck works through your zoom, too.
-
-Every push draws a trace line to the target and makes their gear chirp, and it fails if you move, lose sight or get stunned. No deck opens a locked door, outpost security ignores them all, and inside a prison wing a deck does nothing. Jamming the radios or running a door live at a trader outpost counts as an attack there. The Junker deck and the Street deck sell for credits at both counters; the Facilities and Breacher decks, one for doors, radios and turrets and one for people and their gear, are vouchers from Splice; and the Blackbox deck, which does both, is legend chrome.
 
 ## Finding chrome in the wild
 

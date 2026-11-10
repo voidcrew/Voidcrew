@@ -63,6 +63,25 @@
 		/datum/shop_sku/black_market/cutlass,
 		/datum/shop_sku/black_market/c20r,
 		/datum/shop_sku/black_market/wt550,
+		/datum/shop_sku/black_market/rapier,
+		/datum/shop_sku/black_market/zashch,
+		/datum/shop_sku/black_market/nt_m96,
+		/datum/shop_sku/black_market/battle_rifle,
+		/datum/shop_sku/black_market/ansem,
+		/datum/shop_sku/black_market/ansem_sc,
+		/datum/shop_sku/black_market/lethal_cycler,
+		/datum/shop_sku/black_market/rattlesnake,
+		/datum/shop_sku/black_market/resolution,
+		/datum/shop_sku/black_market/heater,
+		/datum/shop_sku/black_market/scorcher,
+		/datum/shop_sku/black_market/woodsman,
+		/datum/shop_sku/black_market/skm,
+		/datum/shop_sku/black_market/skm_drum,
+		/datum/shop_sku/black_market/brimstone,
+		/datum/shop_sku/black_market/flaming_arrow,
+		/datum/shop_sku/black_market/slammer,
+		/datum/shop_sku/black_market/absolution,
+		/datum/shop_sku/black_market/conflagration,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -99,6 +118,7 @@
 		/datum/shop_sku/black_market/ew_fire_control_freeze,
 		/datum/shop_sku/black_market/ew_shield_collapse,
 		/datum/shop_sku/black_market/ew_breaker_trip,
+		/datum/shop_sku/black_market/ew_pattern_bleed,
 		// Infiltration
 		/datum/shop_sku/black_market/emag,
 		/datum/shop_sku/black_market/thermals,
@@ -539,6 +559,16 @@
 	stock_min = 0
 	stock_max = 1
 
+/datum/shop_sku/black_market/ew_pattern_bleed
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Exploit Software"
+	name = "Pattern Bleed exploit cartridge"
+	desc = "Knocks the target's bluespace dampers offline for the duration."
+	item_path = /obj/item/ew_exploit/pattern_bleed
+	price_credits = 2000
+	stock_min = 0
+	stock_max = 1
+
 // ===== INFILTRATION =====
 // What's left of the old shelf. Every door on every player ship and every
 // outpost has req_access stripped, so nothing here is priced as an access tool.
@@ -879,6 +909,236 @@
 	item_path = /obj/item/gun/ballistic/automatic/wt550
 	price_credits = 4200
 	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/rapier
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/rapier
+	price_credits = 2400
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/zashch
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/pistol/zashch
+	price_credits = 1200
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/nt_m96
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/rifle/nt_m96
+	price_credits = 1800
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/battle_rifle
+	category = "Weapons"
+	desc = "Nanotrasen's prototype security rifle, chambered in .38."
+	item_path = /obj/item/gun/ballistic/automatic/battle_rifle
+	price_credits = 2200
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/ansem
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/pistol/clandestine
+	price_credits = 2000
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/ansem_sc
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "An Ansem with the suppressor built in and a light disruptor under the barrel. Chambered in 10mm."
+	item_path = /obj/item/gun/ballistic/automatic/pistol/clandestine/fisher
+	price_credits = 2800
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/lethal_cycler
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A cycler shotgun with buckshot in one tube and slugs in the other."
+	item_path = /obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly
+	price_credits = 2400
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/rattlesnake
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Weapons"
+	desc = "A 9mm machine pistol with a long magazine and a fire selector."
+	item_path = /obj/item/gun/ballistic/automatic/pistol/rattlesnake
+	price_credits = 4800
+	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/brimstone
+	category = "Weapons"
+	desc = "A plain pump-action shotgun. Chambered in 12 gauge."
+	item_path = /obj/item/gun/ballistic/shotgun/brimstone
+	price_credits = 900
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/woodsman
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A scoped semi-automatic hunting rifle. Chambered in 8x50mmR."
+	item_path = /obj/item/gun/ballistic/automatic/woodsman
+	price_credits = 2600
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/flaming_arrow
+	category = "Weapons"
+	desc = "A light lever-action rifle. Chambered in .38."
+	item_path = /obj/item/gun/ballistic/shotgun/flaming_arrow
+	price_credits = 1200
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/slammer
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A pump shotgun that feeds from box magazines. Chambered in 12 gauge."
+	item_path = /obj/item/gun/ballistic/shotgun/slammer
+	price_credits = 2400
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/absolution
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A big lever-action rifle. Chambered in .357."
+	item_path = /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution
+	price_credits = 2600
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/resolution
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A 4.6x30mm personal defense weapon with a folding stock."
+	item_path = /obj/item/gun/ballistic/automatic/resolution
+	price_credits = 4200
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/skm
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A surplus automatic rifle. Chambered in 7.62x40mm."
+	item_path = /obj/item/gun/ballistic/automatic/skm
+	price_credits = 3600
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/heater
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A compact frontier PDW. Chambered in 5.7x39mm."
+	item_path = /obj/item/gun/ballistic/automatic/heater
+	price_credits = 3000
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/scorcher
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Weapons"
+	desc = "A Heater with a flamethrower bolted underneath. Chambered in 5.7x39mm."
+	item_path = /obj/item/gun/ballistic/automatic/heater/scorcher
+	price_credits = 4000
+	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/skm_drum
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Weapons"
+	name = "skm drum"
+	desc = "A loaded 75-round 7.62x40mm drum for an SKM rifle."
+	item_path = /obj/item/ammo_box/magazine/skm/drum
+	price_credits = 1500
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 2
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/conflagration
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A lever-action shotgun. Chambered in 12 gauge."
+	item_path = /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration
+	price_credits = 2200
+	price_vouchers = 1
 	stock_min = 1
 	stock_max = 1
 	restock_interval = 1 HOURS

@@ -603,7 +603,6 @@
 	TEST_ASSERT(wire.wire_try_garrote(victim, user), "A garrote didn't start on a stunned person")
 	var/datum/hv_finisher/garrote/garrote = wire.garrote_running
 	TEST_ASSERT_NOTNULL(garrote, "The wire doesn't know its garrote")
-	TEST_ASSERT_NULL(garrote.mark, "The garrote put a mark over its victim")
 	TEST_ASSERT_EQUAL(length(garrote.reach_refs), 1, "No wire thrown at the neck in the wind-up")
 	TEST_ASSERT(user.wire_garrote_ready_at > world.time, "The garrote started with no wait after it")
 	TEST_ASSERT(!wire.wire_try_garrote(victim, user), "A second garrote started at once")
@@ -735,6 +734,92 @@
 	// The crit gates never count the wire's penetration; its cuts still do.
 	TEST_ASSERT_EQUAL(hv_crit_armour_pen(wire), 0, "The wire's penetration counts at the crit gates")
 	TEST_ASSERT_EQUAL(wire.armour_penetration, 100, "The wire lost its penetration for its cuts")
+
+/// The Widowline Arc's garrote takes the head whatever state the victim is in, not only in hard crit; a pair with one
+/// Arc wire does too. A sealed helmet still turns it.
+/datum/unit_test/voidcrew_widowline/garrote_arc
+
+/// Runs a garrote by `user`'s held wire on `victim` to its end. Returns TRUE if it started.
+/datum/unit_test/voidcrew_widowline/garrote_arc/proc/garrote_through(mob/living/carbon/human/user, mob/living/carbon/human/victim)
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	user.wire_garrote_ready_at = 0
+	user.zone_selected = BODY_ZONE_HEAD
+	if(!wire.wire_try_garrote(victim, user))
+		return FALSE
+	var/datum/hv_finisher/garrote/garrote = wire.garrote_running
+	for(var/i in 1 to 10)
+		if(!garrote.running)
+			break
+		garrote.advance()
+	return TRUE
+
+/datum/unit_test/voidcrew_widowline/garrote_arc/Run()
+	var/mob/living/carbon/human/user = wielder(spot(1, 1), /obj/item/melee/cyberware_monowire/live)
+
+	// Soft crit, nowhere near hard crit: the Arc takes the head.
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	victim.apply_damage(110, OXY)
+	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Fixture: not in soft crit")
+	victim.set_body_position(LYING_DOWN)
+	TEST_ASSERT(garrote_through(user, victim), "The Arc's garrote didn't start on someone in soft crit")
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The Arc's garrote didn't take the head off someone in soft crit")
+
+	// Only stunned: the head too.
+	var/mob/living/carbon/human/consistent/stunned = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	stunned.Paralyze(100 SECONDS)
+	TEST_ASSERT(garrote_through(user, stunned), "The Arc's garrote didn't start on someone stunned")
+	TEST_ASSERT_NULL(stunned.get_bodypart(BODY_ZONE_HEAD), "The Arc's garrote didn't take the head off someone stunned")
+
+	// A sealed helmet turns it, as it turns the plain wire: the head stays, the throat isn't slit.
+	var/mob/living/carbon/human/consistent/helmeted = allocate(/mob/living/carbon/human/consistent, spot(2, 2))
+	helmeted.equip_to_slot_or_del(new /obj/item/clothing/head/helmet/space(helmeted), ITEM_SLOT_HEAD)
+	helmeted.Paralyze(100 SECONDS)
+	TEST_ASSERT(garrote_through(user, helmeted), "Fixture: no garrote on the helmeted victim")
+	var/obj/item/bodypart/head = helmeted.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT_NOTNULL(head, "The Arc's garrote took the head off through a sealed helmet")
+	TEST_ASSERT_NULL(locate(/datum/wound/slash/flesh/critical/hv_carotid) in head.wounds, "The Arc's wire slit a throat under a sealed helmet")
+
+	// A plain wire garroting, an Arc wire in the other hand: the pair takes the head.
+	var/mob/living/carbon/human/pair = wielder(spot(0, 1))
+	var/obj/item/melee/cyberware_monowire/live/arc = allocate(/obj/item/melee/cyberware_monowire/live)
+	TEST_ASSERT(pair.put_in_inactive_hand(arc), "Fixture: the garroter couldn't hold the Arc wire")
+	var/mob/living/carbon/human/consistent/paired = allocate(/mob/living/carbon/human/consistent, spot(0, 2))
+	paired.Paralyze(100 SECONDS)
+	TEST_ASSERT(garrote_through(pair, paired), "The paired garrote didn't start")
+	TEST_ASSERT_NULL(paired.get_bodypart(BODY_ZONE_HEAD), "A plain wire with an Arc wire in the other hand didn't take the head")
+
+	// The plain wire alone on someone stunned: the throat, the head stays.
+	qdel(arc)
+	var/mob/living/carbon/human/consistent/plain = allocate(/mob/living/carbon/human/consistent, spot(3, 1))
+	plain.Paralyze(100 SECONDS)
+	pair.forceMove(spot(3, 2))
+	TEST_ASSERT(garrote_through(pair, plain), "The plain garrote didn't start")
+	head = plain.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT_NOTNULL(head, "The plain wire took the head off someone only stunned")
+	TEST_ASSERT_NOTNULL(locate(/datum/wound/slash/flesh/critical/hv_carotid) in head.wounds, "The plain wire didn't slit the throat")
+
+/// A leg cut from someone on their feet puts them down (tg's knockdown) once it has dropped; an arm doesn't.
+/datum/unit_test/voidcrew_widowline/wire_leg_fall
+
+/datum/unit_test/voidcrew_widowline/wire_leg_fall/Run()
+	var/mob/living/carbon/human/user = wielder(spot(0, 1))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/obj/item/bodypart/leg = victim.get_bodypart(BODY_ZONE_L_LEG)
+	leg.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, victim, BODY_ZONE_L_LEG)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_LEG), "Fixture: the leg didn't come off")
+	TEST_ASSERT_EQUAL(victim.body_position, STANDING_UP, "The body went down before the leg dropped")
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "Someone on their feet stayed up after losing a leg")
+	TEST_ASSERT(victim.IsKnockdown(), "The fall after losing a leg isn't tg's knockdown")
+
+	var/mob/living/carbon/human/consistent/armless = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	var/obj/item/bodypart/arm = armless.get_bodypart(BODY_ZONE_L_ARM)
+	arm.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, armless, BODY_ZONE_L_ARM)
+	TEST_ASSERT_NULL(armless.get_bodypart(BODY_ZONE_L_ARM), "Fixture: the arm didn't come off")
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(armless.body_position, STANDING_UP, "Losing an arm put someone down")
 
 /// Every stump: the jumpsuit is cut away where the lost limb was, and comes back with the limb.
 /datum/unit_test/voidcrew_widowline/hv_mask_sleeves

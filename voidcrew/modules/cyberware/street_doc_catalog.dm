@@ -20,6 +20,8 @@
  * (subtypes of Splice's buybacks, with his own wording). Like Splice's, and
  * unlike every other ledger, it takes chrome bought at a counter and pulled
  * again (buys_shop_stock on /datum/shop_buyback/ripperdoc, ripperdoc_catalog.dm).
+ * Of Splice's found-chrome bands he runs only the two that pay credits: his
+ * counter never deals in vouchers either way.
  *
  * Catalog and NPC only: the organs live in ware_*.dm, the cradle in
  * chrome_cradle.dm, the room on the Quartermain map
@@ -79,8 +81,8 @@
 		/datum/shop_sku/ripperdoc/governor_street,
 		/datum/shop_sku/ripperdoc/redline_street,
 		/datum/shop_sku/ripperdoc/cascade_street,
-		// Phase 2: the street models, street passives, optics and the two
-		// credit decks. Nothing priced in vouchers belongs here.
+		// Phase 2: the street models, street passives and optics. Nothing
+		// priced in vouchers belongs here.
 		/datum/shop_sku/ripperdoc/spyglass,
 		/datum/shop_sku/ripperdoc/cuffer_wrists,
 		/datum/shop_sku/ripperdoc/medic_palms,
@@ -93,7 +95,6 @@
 		/datum/shop_sku/ripperdoc/frostline,
 		/datum/shop_sku/ripperdoc/atlas_street,
 		/datum/shop_sku/ripperdoc/doppler_street,
-		/datum/shop_sku/ripperdoc/deck_junker,
 		/datum/shop_sku/ripperdoc/second_wind_deep,
 		/datum/shop_sku/ripperdoc/slipwire_street,
 		/datum/shop_sku/ripperdoc/hopper_street,
@@ -103,10 +104,10 @@
 		/datum/shop_sku/ripperdoc/ronin_holdout,
 		/datum/shop_sku/ripperdoc/longsight,
 		/datum/shop_sku/ripperdoc/hardweave,
-		/datum/shop_sku/ripperdoc/deck_street,
 		// CYBERWARE LINES: T2 SKUS END
 	)
 	buyback_types = list(
+		/datum/shop_buyback/burnt_chrome/street_doc,
 		/datum/shop_buyback/ripperdoc/nightshade/street_doc,
 		/datum/shop_buyback/ripperdoc/shock_coils/street_doc,
 		/datum/shop_buyback/ripperdoc/second_wind/street_doc,
@@ -130,7 +131,6 @@
 		/datum/shop_buyback/ripperdoc/frostline/street_doc,
 		/datum/shop_buyback/ripperdoc/atlas_street/street_doc,
 		/datum/shop_buyback/ripperdoc/doppler_street/street_doc,
-		/datum/shop_buyback/ripperdoc/deck_junker/street_doc,
 		/datum/shop_buyback/ripperdoc/second_wind_deep/street_doc,
 		/datum/shop_buyback/ripperdoc/slipwire_street/street_doc,
 		/datum/shop_buyback/ripperdoc/hopper_street/street_doc,
@@ -140,7 +140,6 @@
 		/datum/shop_buyback/ripperdoc/ronin_holdout/street_doc,
 		/datum/shop_buyback/ripperdoc/longsight/street_doc,
 		/datum/shop_buyback/ripperdoc/hardweave/street_doc,
-		/datum/shop_buyback/ripperdoc/deck_street/street_doc,
 		// CYBERWARE LINES: T2 BUYBACKS END
 		// The rest of Splice's credit shelf, which Ratchet buys back even where he
 		// doesn't sell it (owner D7).
@@ -155,6 +154,9 @@
 		/datum/shop_buyback/ripperdoc/cargo_cavity/street_doc,
 		/datum/shop_buyback/ripperdoc/gastro/street_doc,
 		/datum/shop_buyback/ripperdoc/chromatic_dermis/street_doc,
+		// Found chrome with no trade-in row, on Splice's credit bands only.
+		/datum/shop_buyback/found_chrome/fitted/street_doc,
+		/datum/shop_buyback/found_chrome/pro/street_doc,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -267,6 +269,12 @@
 
 /datum/shop_buyback/ripperdoc/chromatic_dermis/street_doc
 	desc = "Old circuit ink."
+
+/datum/shop_buyback/found_chrome/fitted/street_doc
+	desc = "Tool arms and field optics, pulled. He'll find them a new home."
+
+/datum/shop_buyback/found_chrome/pro/street_doc
+	desc = "Combat chrome, pulled. One blade or one fist is fine."
 
 // =========================================================================
 // THE NPC

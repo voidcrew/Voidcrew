@@ -160,6 +160,12 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 				puppet.picture = icon(puppet.icon, puppet.icon_state)
 			var/state = "puppet_[length(states) + 1]"
 			file.Insert(puppet.picture, state)
+			// BYOND drops an Insert whose picture is pixel for pixel one already in the file while the file's inserts
+			// are still pending (a back view's arm is often the front view's), and the puppet would show the file's
+			// first state, the white box. Reading the file's states after each Insert makes every one land. One that
+			// still didn't keeps the picture it has.
+			if(!(state in icon_states(file)))
+				continue
 			states[puppet] = state
 	pictures = file
 	for(var/obj/effect/abstract/chrome_puppet/puppet as anything in states)

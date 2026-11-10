@@ -31,6 +31,10 @@
 /// The slide along the cut, and the fall after it.
 #define WIRE_SLIDE_TIME (0.2 SECONDS)
 #define WIRE_FALL_TIME (0.15 SECONDS)
+/// Someone on their feet whose leg the wire took goes down once the leg is on the floor...
+#define WIRE_LEG_FALL_DELAY (WIRE_CUT_DELAY + WIRE_SLIDE_TIME + WIRE_FALL_TIME)
+/// ...knocked down as long as a shove knocks a person down.
+#define WIRE_LEG_KNOCKDOWN SHOVE_KNOCKDOWN_HUMAN
 /// Blood the Arc's seared cut loses, as a fraction of a plain sever's.
 #define WIRE_ARC_BLEED_MULT 0.25
 /// How long a seared stump smokes.

@@ -92,6 +92,8 @@
 	var/ripping = FALSE
 	/// Pixels they hang up from where the hold has them: -1 while they sag on the blades (set_sag()).
 	var/sag = 0
+	/// The bar over the bearer that everyone sees fill until the rip (finisher_bar.dm)
+	var/obj/effect/abstract/hv_exec_bar/exec_bar
 
 /datum/mantis_impale/New(mob/living/carbon/bearer, mob/living/carbon/victim, list/housings, knockdown)
 	. = ..()
@@ -120,6 +122,8 @@
 	hold_time = wall_pin ? MANTIS_IMPALE_PIN_HOLD : MANTIS_IMPALE_HOLD
 	running = TRUE
 	started_at = world.time
+	// Everyone in view sees the hold count down to the rip (finisher_bar.dm)
+	exec_bar = hv_exec_bar_start(bearer, hold_time)
 	bearer.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), MANTIS_IMPALE_TRAIT)
 	ADD_TRAIT(victim, TRAIT_IMMOBILIZED, MANTIS_IMPALE_TRAIT)
 	// Turned onto the blades and brought up off the floor if they were on it. The rig draws the lunging body
@@ -254,7 +258,14 @@
 	// Sagging in the hold (set_sag()): the steel in them and the arms holding them go with them. Not against a
 	// wall: the points are in it.
 	var/dip = (new_beat == "hold" && !wall_pin) ? sag : 0
-	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z, ride_z = dip)
+	// Facing south the victim is held up in front of the bearer, back to the camera, high enough to hide them
+	// whole. The bearer draws up tall behind them as they heave, head and shoulders over the victim's head, the
+	// fists with them; the points out of the victim's back stay where they are.
+	var/rise = (facing == SOUTH) ? max(0, spec[MANTIS_RIG_TARGET_Z] - MANTIS_IMPALE_SOUTH_RISE_FROM) : 0
+	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z, ride_z = dip, body_z = rise)
+	// The bar over the bearer goes up with them, so it sits over their head rather than across their face.
+	if(!QDELETED(exec_bar) && !exec_bar.ending)
+		animate(exec_bar, pixel_z = exec_bar.rest_z + rise, time = time, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 	place_victim(target_w, target_z + dip, time)
 	set_tilt(spec[MANTIS_RIG_TILT])
 
@@ -395,6 +406,12 @@
 		return blade.base_icon_state
 	return "mantis"
 
+/// Ends the bar over the bearer: full when the rip comes on time, failed otherwise
+/datum/mantis_impale/proc/end_exec_bar(success)
+	if(!QDELETED(exec_bar))
+		exec_bar.finish(success)
+	exec_bar = null
+
 /datum/mantis_impale/proc/schedule_tick()
 	tick_timer = addtimer(CALLBACK(src, PROC_REF(tick)), 0.2 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
@@ -428,6 +445,7 @@
 /datum/mantis_impale/proc/rip(half = FALSE)
 	if(!running || ripping)
 		return
+	end_exec_bar(!half)
 	// A lost grip is a jolt, not a pull: they come straight off.
 	if(half)
 		tear_out(TRUE)
@@ -552,6 +570,7 @@
 	if(!running)
 		return
 	running = FALSE
+	end_exec_bar(FALSE)
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null

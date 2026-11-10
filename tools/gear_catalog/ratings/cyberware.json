@@ -153,9 +153,9 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Widowline Arc spool housing",
-   "note": "The Widowline wire with a shock on every landed hit. A living target takes 5 more burn and a 2 s stagger (stacking to 4 s) unless it is shock immune or its suit is insulated; gloves do not matter. Silicons, mechs and robotic mobs take 25 more burn. A hit on a turret, ship laser turret, console or camera knocks it out for 5 s, once per 15 s per wire; outpost property is immune. The cleave does not shock.",
+   "note": "The Widowline wire with a shock on every landed hit. A living target takes 5 more burn and a 2 s stagger (stacking to 4 s) unless it is shock immune or its suit is insulated; gloves do not matter. Silicons, mechs and robotic mobs take 25 more burn. A hit on a turret, ship laser turret, console or camera knocks it out for 5 s, once per 15 s per wire; outpost property is immune. The cleave does not shock. Its garrote always takes the head off, not only in hard crit; an Atlas frame, a sealed helmet, an armoured collar or plating still stops it. A wire pair counts as Arc if either wire is.",
    "rank": 1,
-   "reason": "The Widowline's 20 a swing through all armor and reach 2, plus 5 burn and a stagger on the target, 25 extra burn on robots and mechs, and a turret or console shorted out for 5 s. Load 6, 5 vouchers at reputation 22, one on the shelf per round.",
+   "reason": "The Widowline's 20 a swing through all armor and reach 2, plus 5 burn and a stagger on the target, 25 extra burn on robots and mechs, and a turret or console shorted out for 5 s, and a garrote that always beheads. Load 6, 5 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw": {
@@ -362,10 +362,10 @@
   "/obj/item/organ/cyberimp/cyberware/cascade": {
    "confidence": "high",
    "group": "Operating system",
-   "hash": "875de17ed8afaa7f",
+   "hash": "",
    "name": "Cascade lattice",
    "rank": 1,
-   "reason": "Eight seconds a minute at about double speed, melee twice as fast and 40% dodge while moving, then six seconds of crash and 80 stamina. Load 12 of 20, 8 vouchers at reputation 22. An EMP mid-burst ends it.",
+   "reason": "Eight seconds a minute at about double speed, melee twice as fast, 60% dodge against blows (and shots while moving) and a bigger crit roll on its own hits, then six seconds of crash and 80 stamina. Load 12 of 20, 8 vouchers at reputation 22. An EMP mid-burst ends it.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/cascade/milspec": {
@@ -374,7 +374,7 @@
    "hash": "",
    "name": "Service reflex lattice",
    "rank": 4,
-   "reason": "Seven seconds in every 90 at close to the lattice's speed, melee 40% quicker and 25% dodge while moving, then seven seconds of crash and 90 stamina. Load 9, 4 vouchers at reputation 11. An EMP mid-burst ends it.",
+   "reason": "Seven seconds in every 90 at close to the lattice's speed, melee 40% quicker, 45% dodge against blows (and shots while moving) and a bigger crit roll on its own hits, then seven seconds of crash and 90 stamina. Load 9, 4 vouchers at reputation 11. An EMP mid-burst ends it.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/cascade/street": {
@@ -383,7 +383,7 @@
    "hash": "",
    "name": "Spliced reflex rig",
    "rank": 7,
-   "reason": "Six seconds in every 120 at a clear speed boost, melee a quarter quicker and 15% dodge while moving, then eight seconds of crash and 100 stamina. Load 6, 3,600 cr at reputation 4. An EMP mid-burst ends it.",
+   "reason": "Six seconds in every 120 at a clear speed boost, melee a quarter quicker, 30% dodge against blows (and shots while moving) and a small crit roll bonus on its own hits, then eight seconds of crash and 90 stamina. A short window on a long cooldown keeps it below the service lattice. Load 6, 3,600 cr at reputation 4. An EMP mid-burst ends it.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/chromatic_dermis": {
@@ -445,51 +445,6 @@
    "rank": 1,
    "reason": "You stay on your feet down to -30 health instead of 0, stamina damage is halved, and damage never slows you, but your health display lies. About 30 more health and half of every disabler, for load 4 and 2 vouchers with no reputation.",
    "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Junker deck",
-   "rank": 8,
-   "reason": "From 5 tiles with a clear line, after a 2 s upload with a visible trace line: bolt or unbolt a door, burst an area's lights, or ping nearby cameras, turrets and powered doors through walls. 12 to 45 s cooldowns. No access bypass. Load 2, 1,500 cr; Splice takes it back for 750.",
-   "tier": "green"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/assault": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Breacher deck",
-   "rank": 2,
-   "reason": "People from 7 tiles after a 1 s upload: Feedback Surge for up to 60 burn, a knockdown and dropped hands; Overload a machine into a small explosion; Glitch one piece of a target's chrome into a 9 s reboot, heavier pieces likelier. Plus the Street deck's hacks. One shared cooldown, 45 to 60 s on the big ones. Load 6, 4 vouchers at reputation 11.",
-   "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/control": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Facilities deck",
-   "rank": 3,
-   "reason": "Doors, radios and turrets from 7 tiles after a 1 s upload: electrify a door for 30 s (20 burn and a stun), jam radios in a 9-tile bubble for 45 s, knock a turret off for 8 s, and Cutout, which empties every cell a person carries (energy guns, MOD suit) and kills their radios for 45 s. Plus the Street deck's hacks. One shared cooldown of 8 to 40 s. Load 6, 4 vouchers at reputation 11.",
-   "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/flagship": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Blackbox deck",
-   "rank": 1,
-   "reason": "Both service decks' hacks from 8 tiles with a 0.5 s upload, plus Arc Flash: five volleys of 14 burn on everyone near a powered machine in the room, two minutes apart. Still no access bypass, no emag and no woken machines, unlike the Machine Communion boon. Load 9 of 20, 7 vouchers at reputation 22.",
-   "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/street": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Street deck",
-   "rank": 7,
-   "reason": "The Junker deck at 6 tiles and 1.5 s, plus Kill the Power: flip an APC's breaker and the whole area goes dark and unpowered. No hack that touches a person. Load 3, 2,400 cr at yellow reputation; buys back at 1,200.",
-   "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/dermal_mesh": {
    "confidence": "high",
@@ -606,20 +561,20 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Brawler myomers (right)",
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 32 to structures every 1.5 s, which dents plain and reinforced airlocks; breaks rock. A mob held in an aggressive grab is slammed into the floor (18 brute, 20 stamina) or onto a table (22 brute, 30 stamina, 30 to the table) with a 1 s knockdown, once per 15 s grab-move cooldown; it is never hurled. The synced pair forces powered airlocks open in 7 s (instant if unpowered, refused if bolted or welded, and refused at trader outposts, where a pry or punch at a door counts as aggression), adds Ground pound (stagger up to 6 s and 10 stamina on everything adjacent bar crew, no daze, nothing moved, 60 s) and the limb rip finisher on a target in crit or stunned. No haymaker, head clap, backbreaker or flex. A Brawler arm beside a Gorilla arm syncs neither pair.",
    "rank": 12,
    "reason": "Half of a pair: a 14 damage punch every 5 s that snaps a limb on the fourth hit, a grab slam for 18 to 22 with a 1 s knockdown every 15 s, and 32 to structures, enough to break down an airlock. The pair forces powered airlocks in 7 s, staggers everything adjacent every 60 s and tears an arm off a downed target. Above the Strong-Arm, which slams a little harder but has no finisher or door damage; below Gorilla Arms, which hurl, hit harder, pry faster and have three finishers. Load 4 the pair, 2,000 cr at reputation 4. Either ripperdoc takes a pulled arm back for 500 cr.",
-   "tier": "yellow",
-   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 32 to structures every 1.5 s, which dents plain and reinforced airlocks; breaks rock. A mob held in an aggressive grab is slammed into the floor (18 brute, 20 stamina) or onto a table (22 brute, 30 stamina, 30 to the table) with a 1 s knockdown, once per 15 s grab-move cooldown; it is never hurled. The synced pair forces powered airlocks open in 7 s (instant if unpowered, refused if bolted or welded, and refused at trader outposts, where a pry or punch at a door counts as aggression), adds Ground pound (stagger up to 6 s and 10 stamina on everything adjacent bar crew, no daze, nothing moved, 60 s) and the limb rip finisher on a target in crit or stunned. No haymaker, head clap, backbreaker or flex. A Brawler arm beside a Gorilla arm syncs neither pair."
+   "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left": {
    "confidence": "medium",
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Brawler myomers (left)",
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 32 to structures every 1.5 s, which dents plain and reinforced airlocks; breaks rock. A mob held in an aggressive grab is slammed into the floor (18 brute, 20 stamina) or onto a table (22 brute, 30 stamina, 30 to the table) with a 1 s knockdown, once per 15 s grab-move cooldown; it is never hurled. The synced pair forces powered airlocks open in 7 s (instant if unpowered, refused if bolted or welded, and refused at trader outposts, where a pry or punch at a door counts as aggression), adds Ground pound (stagger up to 6 s and 10 stamina on everything adjacent bar crew, no daze, nothing moved, 60 s) and the limb rip finisher on a target in crit or stunned. No haymaker, head clap, backbreaker or flex. A Brawler arm beside a Gorilla arm syncs neither pair.",
    "rank": 13,
    "reason": "Left half of the Brawler pair: a 14 damage punch every 5 s, an 18 to 22 grab slam every 15 s, 32 to structures. The pair forces airlocks, has a light ground pound and the limb rip.",
-   "tier": "yellow",
-   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 32 to structures every 1.5 s, which dents plain and reinforced airlocks; breaks rock. A mob held in an aggressive grab is slammed into the floor (18 brute, 20 stamina) or onto a table (22 brute, 30 stamina, 30 to the table) with a 1 s knockdown, once per 15 s grab-move cooldown; it is never hurled. The synced pair forces powered airlocks open in 7 s (instant if unpowered, refused if bolted or welded, and refused at trader outposts, where a pry or punch at a door counts as aggression), adds Ground pound (stagger up to 6 s and 10 stamina on everything adjacent bar crew, no daze, nothing moved, 60 s) and the limb rip finisher on a target in crit or stunned. No haymaker, head clap, backbreaker or flex. A Brawler arm beside a Gorilla arm syncs neither pair."
+   "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/governor_delete": {
    "confidence": "medium",

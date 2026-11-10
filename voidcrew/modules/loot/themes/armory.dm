@@ -64,6 +64,7 @@
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/automatic/m90/unrestricted = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/energy/e_gun/hos = 1,
 			/obj/item/gun/energy/e_gun/nuclear = 1,
 			/obj/item/gun/energy/laser/carbine/cybersun/unrestricted = 1,
@@ -150,7 +151,6 @@
 		/datum/shop_sku/ripperdoc/hardweave,
 		/datum/shop_sku/ripperdoc/deadeye_milspec,
 		/datum/shop_sku/ripperdoc/lookout,
-		/datum/shop_sku/ripperdoc/deck_control,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/armor/vest = 10,
@@ -197,10 +197,9 @@
 		// surplus service chrome with the unit numbers still on it
 		/obj/item/organ/cyberimp/cyberware/governor_delete/milspec = 2,
 		/obj/item/organ/cyberimp/cyberware/redline/milspec = 2,
-		// the service optics, and the facilities deck a garrison ran its doors with
+		// the service optics
 		/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec = 2,
 		/obj/item/organ/eyes/robotic/cyberware/lookout = 2,
-		/obj/item/organ/cyberimp/cyberware/deck/control = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

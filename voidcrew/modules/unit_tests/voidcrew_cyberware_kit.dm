@@ -10,7 +10,7 @@
 /datum/unit_test/voidcrew_cyberware_kit_loadouts
 
 /datum/unit_test/voidcrew_cyberware_kit_loadouts/Run()
-	TEST_ASSERT(length(GLOB.chrome_test_loadouts) >= 4, "The kit offers only [length(GLOB.chrome_test_loadouts)] builds")
+	TEST_ASSERT(length(GLOB.chrome_test_loadouts) >= 3, "The kit offers only [length(GLOB.chrome_test_loadouts)] builds")
 	for(var/loadout_name in GLOB.chrome_test_loadouts)
 		var/list/ware_types = GLOB.chrome_test_loadouts[loadout_name]
 		TEST_ASSERT(length(ware_types), "The [loadout_name] build is empty")

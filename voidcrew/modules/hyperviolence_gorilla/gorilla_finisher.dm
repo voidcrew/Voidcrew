@@ -99,6 +99,9 @@
 	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in arms)
 		if(!arm.gorilla_running())
 			return FALSE
+	// Square on only: from a corner the punch is just a punch
+	if(!finisher_square_on(user, victim))
+		return FALSE
 	return can_start_on(victim)
 
 /// Whether the bearer's arms are synced for this finisher: a Gorilla pair, or a Brawler pair where it allows one.
@@ -113,6 +116,8 @@
 	. = ..()
 	if(!. && !completed && !pair_synced())
 		return HV_FINISHER_ATTACKER_DOWN
+	if(!. && !completed && finisher_on_corner(user, victim))
+		return HV_FINISHER_LOST_GRIP
 
 /datum/hv_finisher/chrome/gorilla/stop(reason)
 	if(!running)

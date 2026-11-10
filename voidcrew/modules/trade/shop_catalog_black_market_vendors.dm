@@ -85,6 +85,10 @@
 		/datum/shop_buyback/dregs/hooch,
 		/datum/shop_buyback/dregs/kong,
 		/datum/shop_buyback/dregs/ritual_wine,
+		/datum/shop_buyback/dregs/cocktail/house,
+		/datum/shop_buyback/dregs/cocktail/fancy,
+		/datum/shop_buyback/dregs/cocktail/hot_ice_coffee,
+		/datum/shop_buyback/dregs/cocktail/the_juice,
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -310,6 +314,97 @@
 	demand_min = 1
 	demand_max = 2
 
+// Mixed drinks, sold by the glass. A glass counts when it holds at least
+// min_volume of one wanted drink and that drink is most of what's in it, so a
+// splash of The Juice topped up with water doesn't pass. Every one of these can
+// be mixed aboard a ship, so only the two hardest pay vouchers, at small demand.
+/datum/shop_buyback/dregs/cocktail
+	category = "The Bar"
+	item_path = /obj/item/reagent_containers/cup/glass/drinkingglass
+	icon_override = 'icons/obj/drinks/mixed_drinks.dmi'
+	/// Drink reagent types this entry pays for (exact types)
+	var/list/wanted_drinks
+	/// Least amount of the drink one glass must hold
+	var/min_volume = 30
+	/// Share of the glass's contents the drink must make up
+	var/min_share = 0.8
+
+/datum/shop_buyback/dregs/cocktail/matches(obj/item/offered)
+	if(!..() || !offered.reagents)
+		return FALSE
+	var/datum/reagents/holder = offered.reagents
+	if(holder.total_volume < min_volume)
+		return FALSE
+	for(var/drink in wanted_drinks)
+		var/poured = holder.get_reagent_amount(drink)
+		if(poured >= min_volume && poured >= holder.total_volume * min_share)
+			return TRUE
+	return FALSE
+
+/datum/shop_buyback/dregs/cocktail/get_wanted_text()
+	return "a full glass of [name]"
+
+/datum/shop_buyback/dregs/cocktail/house
+	name = "a proper cocktail"
+	desc = "Gargle Blasters, Long Islands, Demon's Blood. Anything with a real recipe."
+	icon_state_override = "gargleblasterglass"
+	wanted_drinks = list(
+		/datum/reagent/consumable/ethanol/gargle_blaster,
+		/datum/reagent/consumable/ethanol/longislandicedtea,
+		/datum/reagent/consumable/ethanol/b52,
+		/datum/reagent/consumable/ethanol/quintuple_sec,
+		/datum/reagent/consumable/ethanol/demonsblood,
+		/datum/reagent/consumable/ethanol/devilskiss,
+		/datum/reagent/consumable/ethanol/narsour,
+		/datum/reagent/consumable/ethanol/hippies_delight,
+		/datum/reagent/consumable/ethanol/atomicbomb,
+		/datum/reagent/consumable/ethanol/threemileisland,
+		/datum/reagent/consumable/ethanol/manhattan_proj,
+		/datum/reagent/consumable/ethanol/toxins_special,
+		/datum/reagent/consumable/ethanol/beepsky_smash,
+		/datum/reagent/consumable/ethanol/turbo,
+		/datum/reagent/consumable/ethanol/helianthus,
+		/datum/reagent/consumable/doctor_delight,
+	)
+	pay_credits = 80
+	demand_min = 3
+	demand_max = 5
+
+/datum/shop_buyback/dregs/cocktail/fancy
+	name = "a top-shelf cocktail"
+	desc = "Neurotoxin, Singulo, Planet Cracker. What the Undertow's big spenders order."
+	icon_state_override = "neurotoxinglass"
+	wanted_drinks = list(
+		/datum/reagent/consumable/ethanol/neurotoxin,
+		/datum/reagent/consumable/ethanol/singulo,
+		/datum/reagent/consumable/ethanol/planet_cracker,
+		/datum/reagent/consumable/ethanol/triumphal_arch,
+		/datum/reagent/consumable/ethanol/salt_and_swell,
+		/datum/reagent/consumable/red_queen,
+	)
+	pay_credits = 200
+	demand_min = 2
+	demand_max = 3
+
+/datum/shop_buyback/dregs/cocktail/hot_ice_coffee
+	name = "Hot Ice Coffee"
+	desc = "Coffee brewed over hot ice. One of Dram's regulars drinks nothing else."
+	icon_override = 'icons/obj/drinks/coffee.dmi'
+	icon_state_override = "hoticecoffee"
+	wanted_drinks = list(/datum/reagent/consumable/hot_ice_coffee)
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/dregs/cocktail/the_juice
+	name = "The Juice"
+	desc = "Dram has one regular who orders it and still walks out."
+	icon_state_override = "thejuice"
+	wanted_drinks = list(/datum/reagent/consumable/ethanol/the_juice)
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 2
+
 // =========================================================================
 // PATCH-UP CLINIC: Sawbones, practitioner (license pending since forever)
 // =========================================================================
@@ -391,6 +486,9 @@
 		/datum/shop_buyback/clinic/liver,
 		/datum/shop_buyback/clinic/lungs,
 		/datum/shop_buyback/clinic/monster_gland,
+		/datum/shop_buyback/clinic_exotic/species,
+		/datum/shop_buyback/clinic_exotic/voltaic_heart,
+		/datum/shop_buyback/clinic_exotic/meridian_heart,
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -637,12 +735,34 @@
 	price_vouchers = 0
 
 // ===== SAWBONES' INTAKE LEDGER (buybacks) =====
-// Natural donor organs and monster glands only.
+// Natural donor organs and monster glands, plus the exotic intake below.
+
+/// Organs from the off-world playable species. Sawbones prices these on their own
+/// line, so the plain donor heart/liver/lungs lines never take one cheap.
+GLOBAL_LIST_INIT(clinic_species_organs, typecacheof(list(
+	/obj/item/organ/brain/lizard,
+	/obj/item/organ/eyes/lizard,
+	/obj/item/organ/tongue/lizard,
+	/obj/item/organ/eyes/moth,
+	/obj/item/organ/tongue/moth,
+	/obj/item/organ/ears/cat,
+	/obj/item/organ/tongue/cat,
+	/obj/item/organ/lungs/plasmaman,
+	/obj/item/organ/liver/bone/plasmaman,
+	/obj/item/organ/stomach/bone/plasmaman,
+	/obj/item/organ/tongue/bone/plasmaman,
+	/obj/item/organ/heart/ethereal,
+	/obj/item/organ/lungs/ethereal,
+	/obj/item/organ/stomach/ethereal,
+	/obj/item/organ/tongue/ethereal,
+)))
 
 /datum/shop_buyback/clinic/matches(obj/item/offered)
 	if(!..() || !istype(offered, /obj/item/organ))
 		return FALSE
 	var/obj/item/organ/organ = offered
+	if(is_type_in_typecache(organ, GLOB.clinic_species_organs))
+		return FALSE
 	return (organ.organ_flags & ORGAN_ORGANIC) && !(organ.organ_flags & ORGAN_ROBOTIC) && !HAS_TRAIT(organ, TRAIT_PRINTED_ORGAN)
 
 /datum/shop_buyback/clinic/heart
@@ -692,3 +812,55 @@
 			if(istype(offered, item_path) && is_dead_monster_core(offered) && !is_trader_good(offered))
 				return "That core's gone dead."
 	return ..()
+
+// Exotic intake. Never a limbgrower print (TRAIT_PRINTED_ORGAN), and never a
+// dead or broken organ. Species organs come off any body of that species, so
+// they pay credits. The voucher lines are organs a ship can't make:
+// the voltaic heart's shell prints in a lathe, but the flux core inside comes
+// out of a live anomaly, and the Meridian heart only turns up in ruin caches.
+/datum/shop_buyback/clinic_exotic
+	category = "Exotic Intake"
+	item_path = /obj/item/organ
+
+/datum/shop_buyback/clinic_exotic/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	var/obj/item/organ/organ = offered
+	return !HAS_TRAIT(organ, TRAIT_PRINTED_ORGAN) && !(organ.organ_flags & ORGAN_FAILING)
+
+/datum/shop_buyback/clinic_exotic/species
+	name = "off-world donor organ"
+	desc = "Lizard, moth, felinid, plasmaman or ethereal. Sawbones has clients who need a match."
+	icon_override = 'icons/obj/medical/organs/organs.dmi'
+	icon_state_override = "tonguelizard"
+	pay_credits = 200
+	demand_min = 2
+	demand_max = 4
+
+/datum/shop_buyback/clinic_exotic/species/matches(obj/item/offered)
+	if(!..() || !is_type_in_typecache(offered, GLOB.clinic_species_organs))
+		return FALSE
+	var/obj/item/organ/organ = offered
+	return !(organ.organ_flags & ORGAN_ROBOTIC)
+
+/datum/shop_buyback/clinic_exotic/voltaic_heart
+	name = "voltaic heart, cored"
+	desc = "A voltaic cyberheart with a live flux core seated. Sawbones won't say who it's for."
+	item_path = /obj/item/organ/heart/cybernetic/anomalock
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/clinic_exotic/voltaic_heart/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	var/obj/item/organ/heart/cybernetic/anomalock/heart = offered
+	return istype(heart.core, heart.required_anomaly) && !is_trader_good(heart.core)
+
+/datum/shop_buyback/clinic_exotic/meridian_heart
+	name = "Meridian heart"
+	desc = "The cold-chain heart with its own defib charge. Sawbones has a buyer and a cooler waiting."
+	item_path = /obj/item/organ/heart/cybernetic/meridian
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 1

@@ -870,7 +870,6 @@
 	var/datum/hv_finisher/chrome/gorilla/clap/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "A head aim didn't pick the head clap")
 	TEST_ASSERT(puppets_left() > 0, "The head clap put up no rig")
-	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/telegraphing/hv_finisher_mark) in get_turf(victim), "A chrome finisher marked its victim")
 	run_to_end(finisher)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The head clap didn't burst the head")
 	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The burst moved the bearer (a thrown head knocks a body back)")
@@ -1048,6 +1047,39 @@
 	TEST_ASSERT(!wake_finisher.running, "A victim out of the stun didn't twist free")
 	TEST_ASSERT_NOTNULL(waking.get_bodypart(BODY_ZONE_HEAD), "A victim who twisted free lost the head")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "Twisting free left puppets")
+
+/// From a corner the punch is only a punch: the finisher starts square on. A body dragged onto a corner mid-move lets go.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_square_on
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_square_on/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 2))
+	var/hurt_before = victim.getBruteLoss()
+	TEST_ASSERT_EQUAL(punch(bearer, victim), COMPONENT_CANCEL_ATTACK_CHAIN, "The Gorilla arm didn't take the corner punch")
+	TEST_ASSERT_NULL(bearer.chrome_finisher, "A finisher started on someone on a corner")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/hv_finisher_hold), "Someone on a corner was held for a finisher")
+	// The blow lands when the fist is there: 0.1 s (GORILLA_THRUST_LANDS)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() > hurt_before, "The corner punch did no damage")
+	for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_R_ARM))
+		bearer.zone_selected = zone
+		TEST_ASSERT(!gorilla_try_finisher(bearer, victim), "A [zone] finisher started on someone on a corner")
+
+	// Square on, the same punch starts it
+	victim.forceMove(spot(2, 1))
+	bearer.zone_selected = BODY_ZONE_CHEST
+	punch(bearer, victim)
+	var/datum/hv_finisher/chrome/gorilla/backbreaker/finisher = bearer.chrome_finisher
+	TEST_ASSERT(istype(finisher) && finisher.running, "The backbreaker didn't start square on")
+
+	// Dragged onto a corner before the kill: lets go
+	finisher.advance()
+	victim.forceMove(spot(2, 2))
+	TEST_ASSERT(QDELETED(finisher) || !finisher.running, "The backbreaker went on with the body on a corner")
+	TEST_ASSERT_NULL(bearer.chrome_finisher, "The bearer is still finishing a body on a corner")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A finisher stopped on a corner left puppets")
+	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A finisher stopped on a corner left the victim hidden")
 
 /// Each new move can be started without a mouse or an aimed zone, for an AI later.
 /datum/unit_test/voidcrew_gorilla_gore/ai_entry_points

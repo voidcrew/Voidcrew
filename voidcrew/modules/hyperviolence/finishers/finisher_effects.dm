@@ -1,5 +1,5 @@
 /**
- * # Finisher status effects and telegraph
+ * # Finisher status effects
  *
  * The finisher (finisher.dm) puts one status effect on each mob and takes it off when it ends.
  * Each effect also runs out on its own after the finisher's longest possible length, so a broken
@@ -101,35 +101,38 @@
 /datum/status_effect/hv_finisher_reeling/on_remove()
 	owner.remove_traits(list(TRAIT_AI_PAUSED, TRAIT_IMMOBILIZED), TRAIT_STATUS_EFFECT(id))
 
-/// The wind-up's mark over the victim: jaws or a skull in a red box, following them if they are dragged
-/obj/effect/temp_visual/telegraphing/hv_finisher_mark
-	icon = 'icons/mob/telegraphing/telegraph.dmi'
-	icon_state = "skull"
-	// Over the victim and the boss leaning across them, and lit, so it reads in a dark derelict
-	layer = ABOVE_MOB_LAYER
-	light_color = COLOR_RED
-	randomdir = FALSE
-	duration = 1.5 SECONDS
+/**
+ * Says `line` aloud like any other speech, but the words over the speaker's head fade after `show_time`
+ * instead of runechat's usual five seconds, so a line opening a finisher doesn't sit over the move.
+ * The chat log is untouched.
+ */
+/proc/hv_say_briefly(atom/movable/speaker, line, show_time = 1 SECONDS)
+	var/said_at = REALTIMEOFDAY
+	speaker.say(line)
+	if(!QDELETED(speaker))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(hv_cut_runechat), WEAKREF(speaker), said_at), show_time, TIMER_DELETE_ME)
 
-/obj/effect/temp_visual/telegraphing/hv_finisher_mark/Initialize(mapload, atom/movable/followed, state, new_duration)
-	if(isnum(new_duration))
-		duration = new_duration
-	if(state)
-		icon_state = state
-	. = ..()
-	if(isnull(followed))
+/// Fades every viewer's runechat over the speaker that appeared since `said_at`.
+/proc/hv_cut_runechat(datum/weakref/speaker_ref, said_at)
+	var/atom/movable/speaker = speaker_ref?.resolve()
+	if(QDELETED(speaker))
 		return
-	RegisterSignal(followed, COMSIG_MOVABLE_MOVED, PROC_REF(on_followed_moved))
-	RegisterSignal(followed, COMSIG_QDELETING, PROC_REF(on_followed_deleted))
+	var/atom/message_loc = get_atom_on_turf(speaker)
+	for(var/client/viewer as anything in GLOB.clients)
+		for(var/datum/chatmessage/bubble as anything in LAZYACCESS(viewer.seen_messages, message_loc))
+			if(bubble.animate_start >= said_at)
+				bubble.hv_fade_now()
 
-/obj/effect/temp_visual/telegraphing/hv_finisher_mark/proc/on_followed_moved(atom/movable/source)
-	SIGNAL_HANDLER
-	var/turf/spot = get_turf(source)
-	if(isnull(spot))
-		qdel(src)
+/// Starts this message's fade-out now, if it isn't already fading.
+/datum/chatmessage/proc/hv_fade_now()
+	if(isnull(message) || !destruction_timer)
 		return
-	forceMove(spot)
-
-/obj/effect/temp_visual/telegraphing/hv_finisher_mark/proc/on_followed_deleted(datum/source)
-	SIGNAL_HANDLER
-	qdel(src)
+	var/time_spent = REALTIMEOFDAY - animate_start
+	if(time_spent >= animate_lifespan - translate_eol_fade)
+		return
+	message.alpha = get_current_alpha(time_spent)
+	animate(message, alpha = 0, time = translate_eol_fade)
+	animate_lifespan = time_spent + translate_eol_fade
+	// The timer lives on SSrunechat (see extend_lifespan() in autotranslate/runechat.dm).
+	deltimer(destruction_timer, SSrunechat)
+	destruction_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), translate_eol_fade + translate_grace_period, TIMER_DELETE_ME | TIMER_STOPPABLE, SSrunechat)

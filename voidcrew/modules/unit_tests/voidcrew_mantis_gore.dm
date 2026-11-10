@@ -380,7 +380,6 @@
 	TEST_ASSERT(blade.attack(victim, user, list(), list()), "A head swing at someone dying didn't start the scissor")
 	var/datum/hv_finisher/mantis_scissor/scissor = user.mantis_state?.scissor
 	TEST_ASSERT(scissor?.running, "The scissor isn't running")
-	TEST_ASSERT(isnull(scissor?.mark), "The scissor marked the victim")
 	TEST_ASSERT_EQUAL(blade.mantis_pose, "raise", "The blades didn't rise for the wind-up")
 
 	// Hurt it: it reels back.
@@ -439,6 +438,33 @@
 	crit(npc_victim)
 	var/datum/hv_finisher/mantis_scissor/npc_try = allocate(/datum/hv_finisher/mantis_scissor, grunt, npc_victim)
 	TEST_ASSERT(!grunt.hv_can_execute() && !npc_try.can_start(), "An ordinary NPC can scissor")
+
+/// From a corner a head swing at someone dying is only a swing: the scissor starts square on.
+/datum/unit_test/voidcrew_mantis_gore/scissor_square_on
+
+/datum/unit_test/voidcrew_mantis_gore/scissor_square_on/Run()
+	var/mob/living/carbon/human/user = bearer(spot(1, 1))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 2))
+	crit(victim)
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade = right_blade(user)
+	user.set_combat_mode(TRUE)
+	user.zone_selected = BODY_ZONE_HEAD
+	TEST_ASSERT(!blade.mantis_try_scissor(victim, user), "The scissor started on someone on a corner")
+	var/hurt_before = victim.getBruteLoss() + victim.getFireLoss()
+	blade.attack(victim, user, list(), list())
+	TEST_ASSERT(isnull(user.mantis_state?.scissor), "A corner swing started the scissor")
+	TEST_ASSERT(victim.getBruteLoss() + victim.getFireLoss() > hurt_before, "The corner swing didn't cut")
+
+	// Square on, it starts; dragged onto a corner before the cut, it stops
+	victim.forceMove(spot(2, 1))
+	user.next_move = 0
+	TEST_ASSERT(blade.mantis_try_scissor(victim, user), "The scissor didn't start square on")
+	var/datum/hv_finisher/mantis_scissor/scissor = user.mantis_state.scissor
+	TEST_ASSERT(scissor?.running, "The scissor isn't running")
+	victim.forceMove(spot(2, 2))
+	TEST_ASSERT(QDELETED(scissor) || !scissor.running, "The scissor went on with the body on a corner")
+	TEST_ASSERT(isnull(user.mantis_state.scissor), "The stopped scissor is still on the bearer")
+	TEST_ASSERT(!length(rig_pictures(user)), "A scissor stopped on a corner left the bearer drawn by the rig")
 
 /// Who counts, at most once per bearer per 8 s and per body per 2 min, never prisoners, only kills
 /// within 5 s of the bearer's cut, and never under 3 s.

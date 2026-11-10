@@ -24,6 +24,12 @@
   "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
  },
  {
+  "path": "/obj/item/ammo_box/magazine/m10mm",
+  "rule": "below_reputation",
+  "route": "/datum/design/vc_mag_m10mm",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
   "path": "/obj/item/ammo_box/magazine/m50",
   "rule": "below_reputation",
   "route": "/datum/design/vc_ammo/m50",

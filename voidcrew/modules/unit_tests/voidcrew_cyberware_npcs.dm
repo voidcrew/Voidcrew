@@ -5,7 +5,7 @@
  * a player, but an NPC's chrome burns out to scrap (/obj/item/burnt_chrome) when it dies or a piece
  * leaves its body by any route. These tests pin that the burn-out beats the chrome salvage (gib,
  * dust, a lost limb), that the scrap is no chrome (nothing reinstalls it, no ledger buys it), and
- * that Chrome Read and a deck's Glitch work on an NPC. The kit's chrome dummy is such a body.
+ * that Chrome Read works on an NPC. The kit's chrome dummy is such a body.
  *
  * The gore layer (voidcrew/modules/hyperviolence/): the Atlas frame's dismember immunity stops head
  * bursts; the street Strut frame holds the bones only, so it stops fractures (the skull and jaw
@@ -47,7 +47,7 @@
 		for(var/obj/item/burnt_chrome/scrap in floor.get_all_contents())
 			.++
 
-/// An NPC's chrome burns out when it dies; Chrome Read and Glitch work on it while it lives; the
+/// An NPC's chrome burns out when it dies; Chrome Read works on it while it lives; the
 /// scrap is not chrome and no ledger buys it.
 /datum/unit_test/voidcrew_cyberware_npcs/burn_out
 
@@ -72,21 +72,6 @@
 	TEST_ASSERT(read.PreActivate(dummy), "The chrome read didn't run on an NPC in reach")
 	TEST_ASSERT_NOTNULL(read.current_readout, "The chrome read drew nothing over an NPC")
 
-	// A deck's Glitch drops a piece of an NPC's chrome into a reboot.
-	var/datum/machine_quickhack/glitch/glitch
-	for(var/datum/machine_quickhack/hack as anything in get_machine_quickhacks())
-		if(istype(hack, /datum/machine_quickhack/glitch))
-			glitch = hack
-	TEST_ASSERT_NOTNULL(glitch, "Glitch is not a quickhack")
-	TEST_ASSERT(glitch.valid_for(dummy, reader), "Glitch was not offered on a chromed NPC")
-	TEST_ASSERT(glitch.execute(dummy, reader), "Glitch did not land on an NPC")
-	var/rebooting = 0
-	for(var/obj/item/organ/ware as anything in get_installed_cyberware(dummy))
-		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-		if(chrome?.emp_down)
-			rebooting++
-	TEST_ASSERT_EQUAL(rebooting, 1, "Glitch didn't reboot exactly one piece of an NPC's chrome")
-
 	// Death: every piece comes out as scrap, nothing intact is left anywhere.
 	dummy.death()
 	TEST_ASSERT(!length(get_installed_cyberware(dummy)), "A dead NPC kept chrome in its body")
@@ -94,12 +79,14 @@
 	TEST_ASSERT(!length(loose_chrome()), "A dead NPC left working chrome behind")
 	TEST_ASSERT_EQUAL(scrap_count(), 3, "A dead NPC didn't leave one burnt-out scrap per piece")
 
-	// The scrap is no chrome: nothing can install it, and no ledger anywhere buys it.
+	// The scrap is no chrome: nothing can install it, and only the scrap rows buy it.
 	var/obj/item/burnt_chrome/scrap = locate() in range(6, run_loc_floor_bottom_left)
 	TEST_ASSERT_NOTNULL(scrap, "Fixture: no scrap to offer")
 	TEST_ASSERT(!istype(scrap, /obj/item/organ), "Burnt-out chrome is still an organ")
 	TEST_ASSERT_NULL(scrap.GetComponent(/datum/component/cyberware), "Burnt-out chrome still counts as chrome")
 	for(var/buyback_type in subtypesof(/datum/shop_buyback))
+		if(ispath(buyback_type, /datum/shop_buyback/burnt_chrome))
+			continue
 		var/datum/shop_buyback/ledger = new buyback_type
 		if(ledger.item_path && ledger.matches(scrap))
 			TEST_FAIL("[buyback_type] buys burnt-out chrome")

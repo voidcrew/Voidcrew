@@ -56,6 +56,7 @@
 	var/static/list/stump_zones = list(BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	var/list/stumps // zone -> TRUE if the stump is wet
 	var/skull = 0
+	var/burn_hole = FALSE
 	var/obj/item/bodypart/chest = get_bodypart(BODY_ZONE_CHEST)
 	if(ishuman(src) && chest?.hv_shows_gore())
 		for(var/zone in stump_zones)
@@ -67,17 +68,18 @@
 			if(zone == BODY_ZONE_HEAD && part.hv_shows_gore())
 				var/obj/item/bodypart/head/head = part
 				skull = head.hv_skull_wound
+				burn_hole = head.hv_burn_hole
 
 	var/new_key
 	var/blood_color
-	if(stumps || skull)
+	if(stumps || skull || burn_hole)
 		if(can_bleed())
 			blood_color = get_bloodtype()?.get_damage_color(src) || BLOOD_COLOR_RED
 		var/height = HUMAN_HEIGHT_MEDIUM
 		if(ishuman(src))
 			var/mob/living/carbon/human/as_human = src
 			height = as_human.mob_height
-		new_key = "[skull]"
+		new_key = "[skull][burn_hole ? "b" : ""]"
 		for(var/zone in stumps)
 			new_key += "|[zone][stumps[zone] ? "+" : "-"]"
 		new_key += "|[islist(blood_color) ? jointext(blood_color, ",") : blood_color]|[height]"
@@ -91,6 +93,15 @@
 	if(isnull(new_key))
 		return
 	hv_gore_overlays = hv_build_gore_images(stumps, skull, blood_color)
+	// A burn hole shows only while no skull wound is drawn over the same spot.
+	if(burn_hole && !skull)
+		var/list/hole = hv_gore_image_pair(HV_BURN_HOLE_STATE, HV_SKULL_WOUND_LAYER, HV_BURN_HOLE_COLOR)
+		if(ishuman(src))
+			var/mob/living/carbon/human/as_human = src
+			if(as_human.mob_height != HUMAN_HEIGHT_MEDIUM)
+				for(var/image/gore_image as anything in hole)
+					as_human.apply_height_filters(gore_image)
+		hv_gore_overlays += hole
 	add_overlay(hv_gore_overlays)
 
 /// Builds the overlay images for `stumps` (zone -> wet) and a skull wound of level `skull`.
@@ -153,6 +164,8 @@
 	var/hv_skull_open = FALSE
 	/// Hyperviolence: the skull wound shown now, 0 (none) to 3 (heavy).
 	var/hv_skull_wound = 0
+	/// Hyperviolence: a laser execution burnt a hole through this skull. Heals shut with the burns.
+	var/hv_burn_hole = FALSE
 
 /obj/item/bodypart/head/receive_damage(brute = 0, burn = 0, blocked = 0, updating_health = TRUE, forced = FALSE, required_bodytype = null, wound_bonus = 0, exposed_wound_bonus = 0, sharpness = NONE, attack_direction = null, damage_source, wound_clothing = TRUE)
 	var/brute_before = brute_dam
@@ -166,6 +179,9 @@
 
 /obj/item/bodypart/head/update_bodypart_damage_state()
 	. = ..()
+	if(hv_burn_hole && burn_dam < HV_SKULL_LIGHT_BRUTE)
+		hv_burn_hole = FALSE
+		. = TRUE
 	if(hv_update_skull_wound())
 		return TRUE
 
@@ -198,7 +214,11 @@
 /obj/item/bodypart/head/get_limb_icon(dropped, mob/living/carbon/update_on)
 	. = ..()
 	// On a body the mob draws the wound (hv_update_gore_overlays); a severed head carries its own.
-	if(!dropped || !hv_skull_wound || !islist(.))
+	if(!dropped || !islist(.))
+		return
+	if(!hv_skull_wound)
+		if(hv_burn_hole)
+			. += hv_gore_image_pair(HV_BURN_HOLE_STATE, HV_SKULL_WOUND_LAYER, HV_BURN_HOLE_COLOR, gore_dir = SOUTH)
 		return
 	var/blood_color = get_color_from_blood_list(blood_dna_info)
 	. += hv_gore_image_pair(hv_skull_wound_state(hv_skull_wound), HV_SKULL_WOUND_LAYER, blood_color, gore_dir = SOUTH)

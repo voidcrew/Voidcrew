@@ -230,7 +230,7 @@
 /**
  * The supply convoy came through: tops core stock back up, swaps one sold-out
  * rotating slot for a fresh pool pick, rerolls the special and softens the
- * buyback demand caps. Driven by the outpost's restock timer.
+ * credit buyback demand caps. Driven by the outpost's restock timer.
  */
 /datum/outpost_shop/proc/convoy_restock()
 	// Core shelves creep back toward full
@@ -273,8 +273,11 @@
 		sku.discount_pct = initial(sku.discount_pct)
 	roll_special()
 
-	// The trader found room in the warehouse for a bit more of everything
+	// The trader found room in the warehouse for a bit more of everything.
+	// Voucher rows keep their round-start roll: that roll is the round's whole supply.
 	for(var/datum/shop_buyback/buyback as anything in buybacks)
+		if(buyback.pay_vouchers > 0)
+			continue
 		if(buyback.demand < buyback.demand_max)
 			buyback.demand = min(buyback.demand_max, buyback.demand + max(1, round(buyback.demand_max / 2)))
 

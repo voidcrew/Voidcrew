@@ -13,10 +13,15 @@
  * the same at every rung (the activation, the afterimages, the crash), just
  * duller and sparser on the cheap chrome.
  *
- *   model        window  gait   dodge  melee  crash  stamina  cooldown  load
- *   street       6 s     -0.5   15     x0.75  8 s    100      120 s     6
- *   service      7 s     -0.75  25     x0.6   7 s    90       90 s      9
- *   Cascade T4   8 s     -1     40     x0.5   6 s    80       60 s      12
+ *   model        window  gait   dodge  crit  melee  crash  stamina  cooldown  load
+ *   street       6 s     -0.5   30     +9    x0.75  8 s    90       120 s     6
+ *   service      7 s     -0.75  45     +14   x0.6   7 s    90       90 s      9
+ *   Cascade T4   8 s     -1     60     +18   x0.5   6 s    80       60 s      12
+ *
+ * The dodge covers ranged fire while moving and blows whether moving or not
+ * (the shared arbiter in ware_pro_combat.dm). The crit column is added to the
+ * aimed-crit roll of the bearer's own hits (crit_roll.dm): on a 25+ damage
+ * hit's 1 to 90 roll that is about +10, +15 and +20 points of chance.
  *
  * Sold at Splice's counter. The street model is credits, behind the yellow
  * step, and trades in at the Intake ledger; the service model is vouchers
@@ -38,7 +43,8 @@
 	window_duration = 6 SECONDS
 	crash_duration = 8 SECONDS
 	crash_stamina = 90
-	window_dodge = 15
+	window_dodge = 30
+	window_crit_bonus = 9
 	window_speed = /datum/movespeed_modifier/cyberware_cascade/street
 	window_melee_mult = 0.75
 	window_colour = /datum/client_colour/cyberware_cascade/street
@@ -49,7 +55,7 @@
 
 /datum/action/cooldown/cyberware/cascade_surge/street
 	name = "Reflex Surge"
-	desc = "Six seconds of speed: melee cooldowns cut by a quarter, 15% chance to dodge ranged fire while moving. Then eight seconds of crash."
+	desc = "Six seconds of speed: melee cooldowns cut by a quarter, hits land harder, and a 30% chance to dodge blows, or ranged fire on the move. Then eight seconds of crash."
 	cooldown_time = 120 SECONDS
 
 /datum/movespeed_modifier/cyberware_cascade/street
@@ -74,7 +80,8 @@
 	window_duration = 7 SECONDS
 	crash_duration = 7 SECONDS
 	crash_stamina = 90
-	window_dodge = 25
+	window_dodge = 45
+	window_crit_bonus = 14
 	window_speed = /datum/movespeed_modifier/cyberware_cascade/milspec
 	window_melee_mult = 0.6
 	window_colour = /datum/client_colour/cyberware_cascade/milspec
@@ -85,7 +92,7 @@
 
 /datum/action/cooldown/cyberware/cascade_surge/milspec
 	name = "Reflex Surge"
-	desc = "Seven seconds of speed: melee cooldowns cut by 40%, 25% chance to dodge ranged fire while moving. Then seven seconds of crash."
+	desc = "Seven seconds of speed: melee cooldowns cut by 40%, hits land harder, and a 45% chance to dodge blows, or ranged fire on the move. Then seven seconds of crash."
 	cooldown_time = 90 SECONDS
 
 /datum/movespeed_modifier/cyberware_cascade/milspec
