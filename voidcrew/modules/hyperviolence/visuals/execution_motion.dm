@@ -26,14 +26,17 @@
 	// Read before the shot, which can drop the body or take the head off.
 	var/turf/head_turf
 	var/list/head_at
+	var/behind_head = FALSE
 	if(!QDELETED(target))
 		target.hv_vis_execution_time = world.time
 		head_turf = get_turf(target)
 		head_at = target.hv_vis_head_offset()
+		// A shot from the far side of someone on their feet goes off behind their head.
+		behind_head = target.body_position == STANDING_UP && (get_dir(user, target) & SOUTH)
 	. = ..()
 	if(!. || QDELETED(user))
 		return
-	hv_vis_muzzle_flash(user, head_turf || target, head_at)
+	hv_vis_muzzle_flash(user, head_turf || target, head_at, behind_head)
 	if(!QDELETED(target))
 		target.hv_vis_big_hit(get_dir(user, target), user)
 
@@ -73,27 +76,33 @@
  * A muzzle flash much bigger than a normal shot's, with a flash of light. It is where the barrel's end
  * is: just short of the head it is pressed to, `head_at` pixels from the middle of the target's tile
  * (list(x, y)). It stands on the target's tile, so it sorts with the target: a shooter standing nearer
- * the camera than the victim is drawn over it, as their body is between us and the gun.
+ * the camera than the victim is drawn over it, as their body is between us and the gun. `behind_target`
+ * draws it under the target too: the barrel is on the far side of their head.
  */
-/proc/hv_vis_muzzle_flash(mob/living/shooter, atom/target, list/head_at)
+/proc/hv_vis_muzzle_flash(mob/living/shooter, atom/target, list/head_at, behind_target = FALSE)
 	var/turf/shooter_turf = get_turf(shooter)
 	var/turf/spot = get_turf(target) || shooter_turf
 	if(!shooter_turf || !spot)
 		return
-	new /obj/effect/temp_visual/hv_muzzle_flash(spot, get_dir(shooter_turf, spot) || shooter.dir, head_at)
+	new /obj/effect/temp_visual/hv_muzzle_flash(spot, get_dir(shooter_turf, spot) || shooter.dir, head_at, behind_target)
 	shooter_turf.flash_lighting_fx(3, 2, LIGHT_COLOR_ORANGE, 2)
 
+/// The flash is one still picture, tg's muzzle flash at its brightest, grown and faded here. tg's own
+/// state is a short loop that every flash on screen plays in step, so a flash borrowed from it began
+/// on whatever frame the loop had reached: sometimes the bright one, sometimes the last few sparks.
 /obj/effect/temp_visual/hv_muzzle_flash
 	name = "muzzle flash"
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "firing_effect"
+	icon = 'voidcrew/modules/hyperviolence/overlays_exec/icons/muzzle_flash.dmi'
+	icon_state = "flash"
 	plane = GAME_PLANE
 	layer = ABOVE_MOB_LAYER
 	randomdir = FALSE
 	duration = 4
 
-/obj/effect/temp_visual/hv_muzzle_flash/Initialize(mapload, shot_dir, list/head_at)
+/obj/effect/temp_visual/hv_muzzle_flash/Initialize(mapload, shot_dir, list/head_at, behind_target = FALSE)
 	. = ..()
+	if(behind_target)
+		layer = BELOW_MOB_LAYER
 	setDir(shot_dir || SOUTH)
 	var/dx = HV_VIS_DX(dir)
 	var/dy = HV_VIS_DY(dir)
