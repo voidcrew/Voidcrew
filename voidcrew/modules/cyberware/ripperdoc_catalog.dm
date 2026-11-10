@@ -188,7 +188,7 @@
 		/datum/shop_buyback/ripperdoc/cargo_cavity,
 		/datum/shop_buyback/ripperdoc/gastro,
 		/datum/shop_buyback/ripperdoc/chromatic_dermis,
-		/datum/shop_buyback/ripperdoc/burnt_chrome,
+		/datum/shop_buyback/burnt_chrome,
 		// Found chrome that has no trade-in row, by price band.
 		/datum/shop_buyback/found_chrome/fitted,
 		/datum/shop_buyback/found_chrome/pro,
@@ -745,9 +745,10 @@
 /**
  * Dead chrome off a dead (or opened-up) human NPC (/obj/item/burnt_chrome, human_npc.dm). Scrap money only:
  * 50 cr is a fifth of the cheapest piece Splice sells for credits, so burning out bought chrome in a captive
- * to sell the husk is always a loss, and the round's demand caps it.
+ * to sell the husk is always a loss, and the round's demand caps it. Not a ripperdoc trade-in row: those
+ * buy back shelf stock, and no shelf sells burnt chrome.
  */
-/datum/shop_buyback/ripperdoc/burnt_chrome
+/datum/shop_buyback/burnt_chrome
 	name = "Burnt-out chrome"
 	desc = "Dead implants. Splice strips them for the parts that didn't melt."
 	category = "Scrap"
@@ -755,6 +756,9 @@
 	pay_credits = 50
 	demand_min = 4
 	demand_max = 8
+
+/datum/shop_buyback/burnt_chrome/street_doc
+	desc = "Dead implants. Ratchet melts them down for the metal."
 
 // =========================================================================
 // FOUND CHROME: the pieces no trade-in row takes

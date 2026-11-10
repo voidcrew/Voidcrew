@@ -107,6 +107,7 @@
 		// CYBERWARE LINES: T2 SKUS END
 	)
 	buyback_types = list(
+		/datum/shop_buyback/burnt_chrome/street_doc,
 		/datum/shop_buyback/ripperdoc/nightshade/street_doc,
 		/datum/shop_buyback/ripperdoc/shock_coils/street_doc,
 		/datum/shop_buyback/ripperdoc/second_wind/street_doc,
