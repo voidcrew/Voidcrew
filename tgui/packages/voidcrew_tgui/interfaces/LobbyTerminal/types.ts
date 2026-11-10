@@ -148,6 +148,8 @@ export type Hull = {
   finishes: Finish[];
   slots: HullSlot[];
   modules: Module[];
+  /** Crew of a hull with no finishes (template job_slots). Hulls with finishes use Finish.jobs. */
+  jobs?: CrewLine[];
   /** build_ship_preview_data(hull), unchanged. */
   preview: unknown;
 };
