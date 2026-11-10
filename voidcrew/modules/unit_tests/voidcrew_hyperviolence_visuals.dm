@@ -217,6 +217,9 @@
 	var/datum/component/hv_tumble/tumble = arm.GetComponent(/datum/component/hv_tumble)
 	TEST_ASSERT_NOTNULL(tumble, "A severed arm did not tumble")
 	TEST_ASSERT_EQUAL(tumble.fling_dir, EAST, "The arm was not flung the way the blow went")
+	// Its first step waits a tick: stepped at once, it would first be seen a tile from the body
+	TEST_ASSERT_EQUAL(get_turf(arm), start, "The arm left the body's tile in the tick it came off")
+	TEST_ASSERT_NOTNULL(tumble.from, "The arm's flight does not start from its place on the body")
 	check_rest(victim, standing, "Losing an arm")
 	TEST_ASSERT_NOTNULL(victim.get_filter("hv_vis_flash"), "Losing an arm got no hit-stop flash")
 	// Wait for the landing rather than a fixed time: a busy server flies it slower.
