@@ -109,9 +109,9 @@
 #define GORILLA_THRUST_LUNGE_MAX 16
 /// Degrees the body tips into a piston punch, as tg's lunge tips it.
 #define GORILLA_THRUST_TIP 15
-/// How long a punching arm is drawn, as a share of its own length: the body steps in until the fist lands with the arm no longer than the first, and the arm is never drawn longer than the second.
+/// How long a punching arm is drawn, as a share of its own length: the body steps in until the fist lands with the arm no longer than the first, and the arm is never drawn longer than the second (what a fist takes to reach the shin of a body beside its bearer).
 #define GORILLA_SWING_EASY_LENGTH 1.9
-#define GORILLA_SWING_MAX_LENGTH 2.3
+#define GORILLA_SWING_MAX_LENGTH 3.3
 /// The most pixels a body steps in behind a fist thrown up or down the screen: further, and it stands on whoever it hits.
 #define GORILLA_SWING_STEP_UPRIGHT 12
 /// Pixels from the middle of a stretched fist to its knuckles: it stops this far short of the body it lands on.

@@ -647,6 +647,17 @@
 	TEST_ASSERT_EQUAL(gorilla_thrust(fresh, dummy, BODY_ZONE_R_ARM, BODY_ZONE_CHEST), first_wait, "A later punch lands at another time than the first")
 	sleep(0.6 SECONDS)
 
+	// The fist reaches the part it is thrown at, down to the leg of a body beside its bearer
+	var/datum/gorilla_arm_look/fresh_look = fresh.gorilla_arm_looks?["[EAST]"]
+	var/datum/chrome_rig/fresh_rig = fresh_look?.rig
+	TEST_ASSERT_NOTNULL(fresh_rig, "Test fixture: the punch kept no picture")
+	for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_LEG))
+		var/list/point = gorilla_fist_target(fresh, dummy, zone)
+		// GORILLA_THRUST_LUNGE_MIN, GORILLA_THRUST_LUNGE_MAX, GORILLA_THRUST_TIP, GORILLA_SWING_EASY_LENGTH, GORILLA_SWING_MAX_LENGTH
+		var/list/reach = chrome_swing_reach(fresh_rig, "r", point[1], point[2], list(1, 0), 8, 16, 15, 1.9, 3.3, -90)
+		var/list/fist_at = fresh_rig.hand_at("r", list(reach[2], reach[3], chrome_swing_base(reach[1], 0, 15)))
+		TEST_ASSERT(abs(fist_at[1] - point[1]) <= 1 && abs(fist_at[2] - point[2]) <= 1, "The fist stops short of the [zone] of a body beside its bearer")
+
 /**
  * The haymaker's arm: a bearer who stands still winds up on the rig, whose puppets lean with the hidden body; the blow
  * lands when the thrown fist does, and the rig comes down when the arms are back at rest. A step or a turn mid
