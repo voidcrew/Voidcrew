@@ -9,6 +9,9 @@
 // THE LUNGE
 // =========================================================================
 
+/// How long a charged leap's body takes to arc in: longer than the lunge's glide (MANTIS_LUNGE_GLIDE).
+#define MANTIS_LEAP_GLIDE 2
+
 /// Whether a dash must stop before [step]: a drop, lava or open space. Never crossed, whatever the reach.
 /proc/mantis_lunge_unsafe_turf(turf/step)
 	if(isnull(step))
@@ -44,18 +47,26 @@
 
 /**
  * The dash, drawn after the lunger has already arrived: the body glides in from where it started, and
- * each afterimage and streak shows as the body passes it, so the line trails behind.
+ * each afterimage and streak shows as the body passes it, so the line trails behind. Returns how long the
+ * body takes to glide in, 0 if it went nowhere: what the dash does to its target waits that long, to land
+ * as the body does.
  */
 /proc/mantis_lunge_dash_fx(mob/living/lunger, turf/start, list/passed, charged, model)
 	var/turf/finish = get_turf(lunger)
 	if(isnull(finish) || isnull(start) || !length(passed))
-		return
+		return 0
 	var/dash_dir = get_dir(start, finish)
 	var/count = length(passed)
-	var/glide = charged ? 2 : MANTIS_LUNGE_GLIDE
+	var/glide = charged ? MANTIS_LEAP_GLIDE : MANTIS_LUNGE_GLIDE
 	// The body is already there: draw it back where it started and let it slide in.
 	var/back_w = (start.x - finish.x) * ICON_SIZE_X
 	var/back_z = (start.y - finish.y) * ICON_SIZE_Y
+	// The client glides a move of one tile by itself. Drawn back a tile on top of that, the body would start a
+	// tile behind where it stood, so here it is not drawn back: its own glide is only made to take as long.
+	if(get_dist(start, finish) <= 1)
+		lunger.set_glide_size(DELAY_TO_GLIDE_SIZE(glide))
+		back_w = 0
+		back_z = 0
 	animate(lunger, pixel_w = back_w, pixel_z = back_z, time = 0, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
 	if(charged)
 		// A pounce arcs, higher the further it goes.
@@ -70,38 +81,61 @@
 		spots += WEAKREF(spot)
 	for(var/i in 1 to count)
 		var/delay = round(glide * (i - 1) / count, world.tick_lag)
+		// Dashing away from the viewer, the last half-step afterimage would stand in front of the body it trails,
+		// over its legs: that one is left out.
+		var/half_step = !(i == count && (dash_dir & NORTH))
 		if(delay <= 0)
-			mantis_dash_ghost(WEAKREF(lunger), spots[i], dash_dir, i / (count + 1), model)
+			mantis_dash_ghost(WEAKREF(lunger), spots[i], dash_dir, i / (count + 1), model, half_step)
 		else
-			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_dash_ghost), WEAKREF(lunger), spots[i], dash_dir, i / (count + 1), model), delay)
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_dash_ghost), WEAKREF(lunger), spots[i], dash_dir, i / (count + 1), model, half_step), delay)
+	return glide
 
-/// One step of the dash's wake: two afterimages half a tile apart and the streak, on the tile the body just crossed.
-/proc/mantis_dash_ghost(datum/weakref/lunger_ref, datum/weakref/spot_ref, dash_dir, fade, model)
+/**
+ * The blades of [housings], laid flat for the dash, come back to the guard once the body has glided in, [delay]
+ * from now. A blade that has taken another pose since (a crouch, a raise) keeps it.
+ */
+/proc/mantis_lunge_settle(list/housings, delay = 0)
+	if(delay > 0)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_settle), housings), delay)
+		return
+	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_housing_blades(housings))
+		if(blade.mantis_pose == MANTIS_POSE_LUNGE)
+			blade.set_mantis_pose(MANTIS_POSE_GUARD)
+
+/// One step of the dash's wake: two afterimages half a tile apart (one without [half_step]) and the streak, on
+/// the tile the body just crossed.
+/proc/mantis_dash_ghost(datum/weakref/lunger_ref, datum/weakref/spot_ref, dash_dir, fade, model, half_step = TRUE)
 	var/mob/living/lunger = lunger_ref?.resolve()
 	var/turf/spot = spot_ref?.resolve()
 	if(QDELETED(lunger) || isnull(spot))
 		return
-	var/step_x = (dash_dir & EAST) ? 16 : ((dash_dir & WEST) ? -16 : 0)
-	var/step_y = (dash_dir & NORTH) ? 16 : ((dash_dir & SOUTH) ? -16 : 0)
 	new /obj/effect/temp_visual/decoy/fading/mantis_afterimage(spot, lunger, model, fade * 0.7)
-	var/obj/effect/temp_visual/decoy/fading/mantis_afterimage/half = new(spot, lunger, model, fade)
-	half.pixel_x += step_x
-	half.pixel_y += step_y
+	if(half_step)
+		var/obj/effect/temp_visual/decoy/fading/mantis_afterimage/half = new(spot, lunger, model, fade)
+		half.pixel_x += (dash_dir & EAST) ? 16 : ((dash_dir & WEST) ? -16 : 0)
+		half.pixel_y += (dash_dir & NORTH) ? 16 : ((dash_dir & SOUTH) ? -16 : 0)
 	new /obj/effect/temp_visual/mantis_trail(spot, dash_dir, model)
 
-/// The lunge lands: one impact, a flash and a puff of dust, as the gliding body reaches them. A [pounce]
-/// lands with both blades, the second mirrored a beat later.
-/proc/mantis_lunge_arrival_fx(mob/living/lunger, mob/living/victim, impact_state, pounce = FALSE)
+/// The lunge lands: one impact, a flash and a puff of dust, as the gliding body reaches them, [delay] from
+/// now (the glide mantis_lunge_dash_fx() gave; none for a body already there). A [pounce] lands with both
+/// blades, the second mirrored a beat later.
+/proc/mantis_lunge_arrival_fx(mob/living/lunger, mob/living/victim, impact_state, pounce = FALSE, delay = MANTIS_LUNGE_GLIDE)
 	if(QDELETED(victim))
 		return
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_land_fx), WEAKREF(lunger), WEAKREF(victim), impact_state, pounce), MANTIS_LUNGE_GLIDE)
+	if(delay <= 0)
+		mantis_lunge_land_fx(WEAKREF(lunger), WEAKREF(victim), impact_state, pounce)
+		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_land_fx), WEAKREF(lunger), WEAKREF(victim), impact_state, pounce), delay)
 
 /// Knocks [victim] down when the lunging body lands on them, with the impact, rather than as the lunge
-/// starts its glide in.
-/proc/mantis_lunge_knockdown(mob/living/victim, amount)
+/// starts its glide in: [delay] from now, as for the impact.
+/proc/mantis_lunge_knockdown(mob/living/victim, amount, delay = MANTIS_LUNGE_GLIDE)
 	if(QDELETED(victim))
 		return
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_knockdown_now), WEAKREF(victim), amount), MANTIS_LUNGE_GLIDE)
+	if(delay <= 0)
+		victim.Knockdown(amount)
+		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_knockdown_now), WEAKREF(victim), amount), delay)
 
 /proc/mantis_lunge_knockdown_now(datum/weakref/victim_ref, amount)
 	var/mob/living/victim = victim_ref?.resolve()
@@ -264,3 +298,5 @@
 	glow.alpha = 0
 	animate(glow, alpha = 255, time = MANTIS_CHARGE_FULL - MANTIS_CHARGE_TAP)
 	return glow
+
+#undef MANTIS_LEAP_GLIDE
