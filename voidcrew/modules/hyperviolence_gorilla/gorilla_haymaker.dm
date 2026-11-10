@@ -268,7 +268,7 @@
 	victim.hv_flush_hit()
 	gorilla_register_aggression(victim, bearer)
 	gorilla_haymaker_impact_sound(victim)
-	arm.gorilla_punch_fx(bearer, victim, TRUE)
+	arm.gorilla_punch_fx(bearer, victim, TRUE, zone)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
 	shake_camera(victim, 3, 2)
 	if(flies && !QDELETED(victim))
