@@ -123,6 +123,7 @@
 		/datum/techweb_node/nanite_remotes = 1,
 		/datum/techweb_node/restricted_tech = 2,
 		/datum/techweb_node/desynchronization = 2,
+		/datum/techweb_node/xenoarch_exotic_particles = 1,
 	)
 	var/gated = 0
 	for(var/node_id in SSresearch.techweb_nodes)
@@ -131,7 +132,7 @@
 		if(node.zone_permission)
 			gated++
 	TEST_ASSERT_EQUAL(gated, length(expected), "The direct-research gate covers the wrong number of nodes")
-	TEST_ASSERT_EQUAL(gated, 45, "The direct-research gate must cover exactly forty-five nodes")
+	TEST_ASSERT_EQUAL(gated, 46, "The direct-research gate must cover exactly forty-six nodes")
 	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("nanite_military").type, /datum/techweb_node/nanite_combat, "Military nanites changed id")
 
 /// Gated gear left the open nodes it used to share, and only sits on its new node.
@@ -155,8 +156,8 @@
 		"nanite_remotes" = list("nanite_remote", "nanite_comm_remote"),
 		"restricted_tech" = list("largecrossbow", "borg_syndicate_module"),
 		"desynchronization" = list("desynchronizer"),
-		"automatic_ammo" = list("vc_strilka310_clip", "suppressor"),
-		"specialist_ammo" = list("sec_Islug", "vc_ammo_smartgun", "c38_flare", "c38_flare_mag"),
+		"automatic_ammo" = list("vc_strilka310_clip", "suppressor", "vc_ammo_harpoon", "vc_mag_m9mm_rattlesnake", "vc_ammo_a8x50r_clip", "vc_ammo_a762x40_clip"),
+		"specialist_ammo" = list("sec_Islug", "vc_ammo_smartgun", "c38_flare", "c38_flare_mag", "vc_ammo_m10mm_ap", "vc_ammo_m10mm_hp", "vc_ammo_m10mm_fire"),
 		TECHWEB_NODE_ELECTRIC_WEAPONS = list("nuclear_gun"),
 		TECHWEB_NODE_BEAM_WEAPONS = list("stunrevolver"),
 	)
@@ -192,7 +193,7 @@
 	for(var/design_id in list("pin_testing", "pin_explorer"))
 		var/datum/design/design = SSresearch.techweb_designs[design_id]
 		TEST_ASSERT_EQUAL(length(design.unlocked_by), 0, "[design_id] came back on a research node")
-	for(var/design_id in list("vc_ammo_harpoon", "vc_ammo_gyrojet", "vc_ammo_m10mm_ap", "vc_ammo_m10mm_hp", "vc_ammo_m10mm_fire"))
+	for(var/design_id in list("vc_ammo_gyrojet"))
 		TEST_ASSERT_NULL(SSresearch.techweb_designs[design_id], "[design_id] came back")
 	var/datum/design/incendiary = SSresearch.techweb_designs["incendiary_slug"]
 	TEST_ASSERT(!(RND_CATEGORY_HACKED in incendiary.category), "A hacked autolathe goes around Specialist Ammunition for incendiary slugs")

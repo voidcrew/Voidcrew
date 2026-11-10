@@ -1447,7 +1447,7 @@
 		PATROL_LOG("[pawn] not adjacent to assembly [assembly.name] (dist=[assembly_dist]), cannot attack")
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
-	pawn.melee_attack(assembly)
+	patrol_melee_attack(controller, assembly)
 	PATROL_LOG("[pawn] smashing door assembly [assembly.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
@@ -1480,7 +1480,7 @@
 		PATROL_LOG("[pawn] not adjacent to obstacle [obstacle.name], cannot attack")
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
-	pawn.melee_attack(obstacle)
+	patrol_melee_attack(controller, obstacle)
 	PATROL_LOG("[pawn] smashing blocking obstacle [obstacle.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
@@ -1520,7 +1520,7 @@
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED  // Keep running until adjacent
 
 	// Adjacent - attack it
-	pawn.melee_attack(assembly)
+	patrol_melee_attack(controller, assembly)
 	PATROL_LOG("[pawn] smashing patrol target assembly [assembly.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
@@ -1626,7 +1626,7 @@
 
 	// Always use melee attack for door breaking (like blobbernauts/standard troopers)
 	// This is more reliable than ranged attacks and saves ammo for combat
-	pawn.melee_attack(door)
+	patrol_melee_attack(controller, door)
 	PATROL_LOG("[pawn] smashing blocking door [door.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
@@ -1805,7 +1805,7 @@
 
 	// Always use melee attack for door breaking (like blobbernauts/standard troopers)
 	// This is more reliable than ranged attacks and saves ammo for combat
-	pawn.melee_attack(door)
+	patrol_melee_attack(controller, door)
 	PATROL_LOG("[pawn] smashing door [door.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
@@ -1947,7 +1947,7 @@
 
 	// If locked or welded, attack it to break it open
 	if(closet.locked || closet.welded)
-		pawn.melee_attack(closet)
+		patrol_melee_attack(controller, closet)
 		PATROL_LOG("[pawn] attacking locked/welded closet [closet.name]")
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED  // Keep attacking until it opens
 
@@ -1962,7 +1962,11 @@
 	// Scan for crew hiding inside - they'll be on/near the closet's turf now
 	var/turf/closet_turf = get_turf(closet)
 	if(closet_turf)
+		var/datum/targeting_strategy/targeting = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
 		for(var/mob/living/carbon/hiding_crew in range(1, closet_turf))
+			// Not the patroller itself, a person breaking out of an outpost prison, or anyone it won't fight
+			if(hiding_crew == pawn || (targeting && !targeting.can_attack(pawn, hiding_crew)))
+				continue
 			if(hiding_crew.stat != DEAD)
 				// Found a live crew member! Target them immediately
 				controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hiding_crew)
@@ -2152,3 +2156,14 @@
 		/datum/ai_planning_subtree/try_open_door_in_path,
 		/datum/ai_planning_subtree/attack_patrol_door,
 	)
+
+/**
+ * One blow from a patroller at `target`: a basic mob's own melee attack, or, for a person on a patrol (a
+ * prisoner breaking out of an outpost prison is a real human body), a click with combat mode on through
+ * their own hands.
+ */
+/proc/patrol_melee_attack(datum/ai_controller/controller, atom/target)
+	var/mob/living/basic/basic_pawn = controller?.pawn
+	if(isbasicmob(basic_pawn))
+		return basic_pawn.melee_attack(target)
+	return controller?.ai_interact(target = target, combat_mode = TRUE)

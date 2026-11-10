@@ -54,7 +54,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "n" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
+/obj/effect/spawner/human_npc/ruin/hermit{
 	dir = 4
 	},
 /turf/open/floor/wood{

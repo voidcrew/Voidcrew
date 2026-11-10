@@ -8,42 +8,54 @@
  * declared in bounty_lair_types.dm; this file sets their values and behaviour. Its numbers are in the P12
  * section of voidcrew/_DEFINES/bounty_lairs.dm, its lines in strings/bounty_lair_mafia.json.
  *
+ * The goons, the lieutenants and the don are real human NPCs (voidcrew/modules/human_npcs/, phase D of the human NPC
+ * migration): a person's body, crit, wounds, cuffs and death, dressed in their Club Volga clothes, holding real guns
+ * with real spare magazines, reloading them by hand. Their kit is locked to them (owner decision D3), so a corpse
+ * leaves no gun. Only the don's mech is a mob of its own: it is a machine (owner call OC-5).
+ *
  * How the club fights:
- * - **Goons** (/mob/living/basic/trooper/russian/mafia: knife, /pistol, /smg) keep to the room (area) they
- *   spawned in: they never walk out of it, and come to its door to get a line. A room is alerted by what its
- *   own goons see or what hits them: the one who spots a hunter shouts, the room's first shots follow a
+ * - **Goons** (/mob/living/carbon/human/npc/bounty_mafia: a kitchen knife, /pistol a Stechkin, /smg an Uzi) keep to
+ *   the room (area) they spawned in: they never walk out of it, and come to its door to get a line. A room is alerted
+ *   by what its own goons see or what hits them: the one who spots a hunter shouts, the room's first shots follow a
  *   second later and spread over another second, and gunmen kick a wood table over for cover. At most
  *   BOUNTY_MOBSTER_MAX_ON_ONE goons of a room go after one hunter standing in a doorway, however many are shot at.
- *   Grabbed, a goon breaks free and fights its grabber; dragged or thrown out of its room it still fights, and
- *   only walks back once there's nobody to fight. Nobody in the club targets a hunter who is down. Polymorph and
- *   type changes are refused. They leave a corpse in club clothes and never a gun.
- * - **Lieutenants** (/lieutenant, /lieutenant/tommy, /lieutenant/brute) are tougher goons that hold the
- *   arena gate. The base type takes whichever role its room doesn't have yet, so two plain gatekeeper
- *   landmarks give one of each. They die like any trooper: COMSIG_LIVING_DEATH, then deletion.
- * - **The mech** (/mob/living/basic/bounty_lair_boss/mafia_mech) is a mob that looks like a Mauler, not a tg
- *   mecha and not /mob/living/basic/boss. Its health follows the hunters engaged (P4's posse rule), counting
- *   exosuit pilots and harmless shots such as ion bolts. Anyone who hurts it is fair game at any range: it closes
- *   in as far as its arena lets it and answers from there, so it can't be sniped from past its sight. Every
- *   ability winds up where everyone can see it: the rocket volley puts a marker under each hunter it sees,
- *   then fires one non-breaching rocket per marker; the LMG shows a red cone out to its target that stays until
- *   the burst ends. An EMP stalls it (the ability it cut off is ready again as the stall ends) rather than
- *   killing it. With nobody left to fight for BOUNTY_MECH_RESET_AFTER it resets. It never leaves its arena.
- * - **The don** (/mob/living/basic/bounty_lair_boss/mafia_don) climbs out when the mech breaks, next to a
- *   burnt-out wreck he uses for cover, holding the mech's grudges. He can't be cuffed and fights to the death;
- *   his death drops the gold signet ring (/obj/item/bounty_proof/trophy/mafia_don) with the posting on it, which
- *   P10 pays on.
+ *   Grabbed, a goon resists the tg way and fights its grabber; dragged, carried, shoved or thrown out of its room it
+ *   still fights, and only walks back once there's nobody to fight. Someone starting to cuff a goon who can still
+ *   move sees it step away. Nobody in the club picks a hunter who is down as a target (only the choice: a round in
+ *   flight hits whoever is in the way). Polymorph and type changes are refused.
+ * - **Lieutenants** (/lieutenant, /lieutenant/tommy, /lieutenant/brute) are elite goons in real armour that hold the
+ *   arena gate. The base type takes whichever role its room doesn't have yet, so two plain gatekeeper landmarks give
+ *   one of each. They die in place like anyone: P10 opens the gate on COMSIG_LIVING_DEATH. Tommy fires a Thompson;
+ *   Brute punches, and a landed punch now and then knocks the hunter down (a tg Knockdown).
+ * - **The mech** (/mob/living/basic/bounty_lair_boss/mafia_mech) is a mob that looks like a Mauler, not a tg mecha
+ *   and not /mob/living/basic/boss. Its health follows the hunters engaged (P4's posse rule), counting exosuit pilots
+ *   and harmless shots such as ion bolts. Anyone who hurts it is fair game at any range: it closes in as far as its
+ *   arena lets it and answers from there, so it can't be sniped from past its sight. Every ability winds up where
+ *   everyone can see it: the rocket volley puts a marker under each hunter it sees, then fires one rocket per marker,
+ *   whose burst is tg's light blast on everyone standing there, whatever their state, and never explosion(); the LMG
+ *   shows a red cone out to its target that stays until the burst ends, and its rounds hit whoever is in the way. An
+ *   EMP stalls it (the ability it cut off is ready again as the stall ends) rather than killing it. With nobody left
+ *   to fight for BOUNTY_MECH_RESET_AFTER it repairs itself. It never leaves its arena.
+ * - **The don** (/mob/living/carbon/human/npc/bounty_mafia/don) climbs out when the mech breaks, next to a burnt-out
+ *   wreck he uses for cover while he reloads, holding the mech's grudges. He never gives up: someone starting to cuff
+ *   him while he can still move hears about it and sees him step away; cuffed, he works at the cuffs. A cuffed don
+ *   still pays nothing: the lair is kill-only, and only his ring pays. His death drops the gold signet ring
+ *   (/obj/item/bounty_proof/trophy/mafia_don) with the posting on it, once, which P10 pays on.
  *
- * For P10: a gatekeeper's death is COMSIG_LIVING_DEATH (the lieutenant is deleted right after, so watch
- * COMSIG_QDELETING too for an admin delete). The mech hands its posting_ref to the don and sends
- * COMSIG_BOUNTY_MAFIA_DON_EJECTED with him before its own death; the don's death drops the ring through P10's
- * bounty_lair_drop_trophy() and sends COMSIG_BOUNTY_MAFIA_TROPHY_DROPPED with it. Everyone keeps to their room by
- * bounty_mafia_leash_allows(), the same rule as P10's /datum/element/bounty_lair_room_leash.
+ * For P10: a gatekeeper's death is COMSIG_LIVING_DEATH (watch COMSIG_QDELETING too, for an admin delete). The mech
+ * hands its posting_ref to the don and sends COMSIG_BOUNTY_MAFIA_DON_EJECTED with him before its own death; the don's
+ * death drops the ring through P10's bounty_lair_drop_trophy() and sends COMSIG_BOUNTY_MAFIA_TROPHY_DROPPED with it.
+ * Everyone keeps to their room by bounty_mafia_leash_allows(), the same rule as P10's
+ * /datum/element/bounty_lair_room_leash, which a lair also puts on its mobs.
+ *
+ * The club is built a body at a time (spawn_human_npc(), queued): its markers queue their goons, the lair queues the
+ * lieutenants, and only the don, one body the fight needs at once, is built on the spot.
  *
  * Nothing here scans turfs on a tick: targets come from SSmobs' list of players on the level, and every
  * telegraph and timer is tracked and cleaned up.
  */
 
-/// Trait source for a club mob standing still while it winds up, fires or reels
+/// Trait source for the mech standing still while it winds up, fires or reels
 #define BOUNTY_MAFIA_BUSY_TRAIT "bounty_mafia_busy"
 
 // ===== SHARED =====
@@ -59,7 +71,10 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return FALSE
 	return !isnull(candidate.mind) || !isnull(candidate.client)
 
-/// Whether a club mob may shoot or hit `target` now: a hunter on their feet, never anyone already down (spec 12.3 C4)
+/**
+ * Whether a club mob may pick `target` to go after: a hunter on their feet, never anyone already down (spec 12.3 C4).
+ * Only the choice of target: what is fired hits whoever it hits (defaults 1.11, CB-11).
+ */
 /proc/bounty_mafia_may_hurt(mob/living/target)
 	if(!bounty_mafia_is_hunter(target) || target.stat != CONSCIOUS)
 		return FALSE
@@ -89,9 +104,15 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/list/lines = GLOB.string_cache?[BOUNTY_MAFIA_STRINGS_FILE]?[context]
 	return length(lines) ? pick(lines) : null
 
-/// `speaker` says a line for `context`, off the caller's stack (safe from signal handlers). TRUE if there was one.
+/**
+ * `speaker` says a line for `context`, off the caller's stack (safe from signal handlers). TRUE if there was one.
+ * A person speaks on their feet or whispers in soft crit (tg's say() does the whisper), never deeper down.
+ */
 /proc/bounty_mafia_say(mob/living/speaker, context)
-	if(QDELETED(speaker) || speaker.stat != CONSCIOUS)
+	if(QDELETED(speaker))
+		return FALSE
+	var/can_talk = ishuman(speaker) ? human_npc_can_talk(speaker) : (speaker.stat == CONSCIOUS)
+	if(!can_talk)
 		return FALSE
 	var/line = bounty_mafia_line(context)
 	if(!line)
@@ -100,45 +121,14 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return TRUE
 
 /**
- * Fires one round of `weapon` (a /datum/bounty_real_weapon) from `shooter` at `target` (a mob or a turf) as
- * `projectile_type`: every pellet of a shell, each with the real round's numbers and spread, plus `spread` degrees
- * more (full width) if given, and no farther than `max_range` tiles if given. The club's own faction is never hit by
- * it. Returns the first projectile still flying, or null.
- */
-/proc/bounty_mafia_shoot(mob/living/shooter, projectile_type, atom/target, datum/bounty_real_weapon/weapon, spread = 0, max_range)
-	var/turf/start = get_turf(shooter)
-	var/turf/aim = get_turf(target)
-	if(!start || !aim || start == aim || !weapon)
-		return null
-	var/obj/projectile/first
-	for(var/pellet in 1 to weapon.pellets)
-		var/obj/projectile/bullet = new projectile_type(start)
-		weapon.load(bullet)
-		if(max_range)
-			bullet.range = max_range
-			bullet.maximum_range = max_range
-		bullet.firer = shooter
-		bullet.fired_from = shooter
-		bullet.ignored_factions = shooter.faction?.Copy()
-		bullet.spread = spread
-		bullet.aim_projectile(target, shooter, null, weapon.shot_spread())
-		if(QDELETED(bullet))
-			continue
-		bullet.fire()
-		if(!first && !QDELETED(bullet))
-			first = bullet
-	if(weapon.fire_sound)
-		playsound(shooter, weapon.fire_sound, 60, TRUE)
-	return first
-
-/**
  * Whether `mover`, kept to the room (area) `home`, may step onto `new_loc` on its own: anywhere in its room, never
  * out of it, so it fights from its doorway and a fight never drags the next room in (lairs.md 9.2). The same rule as
  * P10's /datum/element/bounty_lair_room_leash, which a lair also puts on its mobs at load, so the two always agree:
- * moves it doesn't make itself (pulled, thrown, dead) are never stopped, and once out of its room it walks freely.
+ * moves it doesn't make itself (pulled, carried or wheeled on what it is buckled to, thrown, `shoved`, dead) are never
+ * stopped, and once out of its room it walks freely.
  */
-/proc/bounty_mafia_leash_allows(mob/living/mover, area/home, atom/new_loc)
-	if(!home || !new_loc || mover.stat == DEAD || mover.pulledby || mover.throwing)
+/proc/bounty_mafia_leash_allows(mob/living/mover, area/home, atom/new_loc, shoved = FALSE)
+	if(!home || !new_loc || mover.stat == DEAD || mover.pulledby || mover.buckled || mover.throwing || shoved)
 		return TRUE
 	if(get_area(mover) != home)
 		return TRUE
@@ -167,19 +157,19 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  */
 /proc/bounty_mafia_room_crew(area_type)
 	var/type_text = "[area_type]"
-	var/static/marker = "/mafia_club/"
+	var/marker = "/mafia_club/"
 	var/at = findtext(type_text, marker)
 	if(!at)
 		return null
 	var/static/list/crews = list(
-		"foyer" = list(/mob/living/basic/trooper/russian/mafia = 2, /mob/living/basic/trooper/russian/mafia/pistol = 1),
-		"cloakroom" = list(/mob/living/basic/trooper/russian/mafia/pistol = 1, /mob/living/basic/trooper/russian/mafia = 1, /mob/living/basic/trooper/russian/mafia/smg = 1),
-		"casino" = list(/mob/living/basic/trooper/russian/mafia/pistol = 2, /mob/living/basic/trooper/russian/mafia = 2, /mob/living/basic/trooper/russian/mafia/smg = 1),
-		"bar" = list(/mob/living/basic/trooper/russian/mafia/pistol = 2, /mob/living/basic/trooper/russian/mafia/smg = 1, /mob/living/basic/trooper/russian/mafia = 1),
-		"kitchen" = list(/mob/living/basic/trooper/russian/mafia = 2, /mob/living/basic/trooper/russian/mafia/pistol = 1),
-		"vip" = list(/mob/living/basic/trooper/russian/mafia/smg = 1, /mob/living/basic/trooper/russian/mafia/pistol = 2, /mob/living/basic/trooper/russian/mafia = 1),
-		"counting" = list(/mob/living/basic/trooper/russian/mafia/pistol = 1, /mob/living/basic/trooper/russian/mafia = 1, /mob/living/basic/trooper/russian/mafia/smg = 1),
-		"back_office" = list(/mob/living/basic/trooper/russian/mafia/pistol = 1),
+		"foyer" = list(/mob/living/carbon/human/npc/bounty_mafia = 2, /mob/living/carbon/human/npc/bounty_mafia/pistol = 1),
+		"cloakroom" = list(/mob/living/carbon/human/npc/bounty_mafia/pistol = 1, /mob/living/carbon/human/npc/bounty_mafia = 1, /mob/living/carbon/human/npc/bounty_mafia/smg = 1),
+		"casino" = list(/mob/living/carbon/human/npc/bounty_mafia/pistol = 2, /mob/living/carbon/human/npc/bounty_mafia = 2, /mob/living/carbon/human/npc/bounty_mafia/smg = 1),
+		"bar" = list(/mob/living/carbon/human/npc/bounty_mafia/pistol = 2, /mob/living/carbon/human/npc/bounty_mafia/smg = 1, /mob/living/carbon/human/npc/bounty_mafia = 1),
+		"kitchen" = list(/mob/living/carbon/human/npc/bounty_mafia = 2, /mob/living/carbon/human/npc/bounty_mafia/pistol = 1),
+		"vip" = list(/mob/living/carbon/human/npc/bounty_mafia/smg = 1, /mob/living/carbon/human/npc/bounty_mafia/pistol = 2, /mob/living/carbon/human/npc/bounty_mafia = 1),
+		"counting" = list(/mob/living/carbon/human/npc/bounty_mafia/pistol = 1, /mob/living/carbon/human/npc/bounty_mafia = 1, /mob/living/carbon/human/npc/bounty_mafia/smg = 1),
+		"back_office" = list(/mob/living/carbon/human/npc/bounty_mafia/pistol = 1),
 	)
 	return crews[copytext(type_text, at + length(marker))]
 
@@ -213,7 +203,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/room_key
 	/// Its area
 	var/datum/weakref/area_ref
-	/// Weakrefs to its goons (/mob/living/basic/trooper/russian/mafia)
+	/// Weakrefs to its goons (/mob/living/carbon/human/npc/bounty_mafia)
 	var/list/members = list()
 	/// Someone has seen or been hit by a hunter: the shout has gone up
 	var/alerted = FALSE
@@ -271,26 +261,26 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 				break
 	return room_exits
 
-/datum/bounty_mafia_room/proc/join(mob/living/basic/trooper/russian/mafia/goon)
+/datum/bounty_mafia_room/proc/join(mob/living/carbon/human/npc/bounty_mafia/goon)
 	members |= WEAKREF(goon)
 
-/datum/bounty_mafia_room/proc/leave(mob/living/basic/trooper/russian/mafia/goon)
+/datum/bounty_mafia_room/proc/leave(mob/living/carbon/human/npc/bounty_mafia/goon)
 	members -= WEAKREF(goon)
 	if(!length(members))
 		qdel(src)
 
-/// Its goons still standing
+/// Its goons still alive
 /datum/bounty_mafia_room/proc/goons()
 	. = list()
 	for(var/datum/weakref/ref as anything in members)
-		var/mob/living/basic/trooper/russian/mafia/goon = ref.resolve()
+		var/mob/living/carbon/human/npc/bounty_mafia/goon = ref.resolve()
 		if(!QDELETED(goon) && goon.stat != DEAD)
 			. += goon
 
 /// How many of its goons, besides `except`, are going after `hunter`
 /datum/bounty_mafia_room/proc/attackers_on(mob/living/hunter, mob/living/except)
 	. = 0
-	for(var/mob/living/basic/trooper/russian/mafia/goon as anything in goons())
+	for(var/mob/living/carbon/human/npc/bounty_mafia/goon as anything in goons())
 		if(goon != except && goon.ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET] == hunter)
 			.++
 
@@ -304,221 +294,28 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  * BOUNTY_MOBSTER_ALERT, the others spread over the next BOUNTY_MOBSTER_FIRST_SHOT_SPREAD. Returns TRUE if this
  * alerted it.
  */
-/datum/bounty_mafia_room/proc/raise_alarm(mob/living/basic/trooper/russian/mafia/spotter, mob/living/hunter)
+/datum/bounty_mafia_room/proc/raise_alarm(mob/living/carbon/human/npc/bounty_mafia/spotter, mob/living/hunter)
 	if(hunter)
 		hunter_ref = WEAKREF(hunter)
 	if(alerted)
 		return FALSE
 	alerted = TRUE
-	for(var/mob/living/basic/trooper/russian/mafia/goon as anything in goons())
+	for(var/mob/living/carbon/human/npc/bounty_mafia/goon as anything in goons())
 		goon.mafia_on_alarm(spotter, goon == spotter ? 0 : rand(0, BOUNTY_MOBSTER_FIRST_SHOT_SPREAD), hunter)
 	return TRUE
 
-// ===== GUNS =====
-
-/**
- * A club mob's gun, simulated: no item, nothing to drop, but every round is the real gun's
- * (`gun_type`, bounty_real_weapon()): its damage, wounds, armour penetration, spread and magazine.
- * try_fire() spins it up first if it has a wind-up, then fires a burst of real projectiles, and
- * reloads when the magazine is spent. A hit during the wind-up can spoil it (fumble()). Its timers
- * check `serial`, so a cancelled shot does nothing.
- */
-/datum/bounty_mafia_gun
-	/// What it's called in messages
-	var/gun_name = "pistol"
-	/// The real gun: the one in its owner's hand
-	var/gun_type = BOUNTY_MOBSTER_PISTOL_GUN
-	var/projectile_type = /obj/projectile/bullet/bounty_mafia
-	/// Shots in one burst, and the time between them. A pistol fires a quick string of shots each time.
-	var/burst = BOUNTY_MOBSTER_PISTOL_BURST
-	var/burst_delay = BOUNTY_MOBSTER_PISTOL_BURST_GAP
-	/// From the start of one burst (or wind-up) to the next
-	var/cooldown = BOUNTY_MOBSTER_PISTOL_COOLDOWN
-	var/reload_time = BOUNTY_MOBSTER_PISTOL_RELOAD
-	/// The spin-up before a burst, if any
-	var/windup = 0
-	/// The wind-up comes once per magazine (the don raises his pistol before each string), not before every burst
-	var/windup_once_per_magazine = FALSE
-	var/windup_sound
-	var/reload_sound = 'sound/items/weapons/gun/pistol/mag_insert.ogg'
-	/// Dialogue context its owner may say on reloading, and the chance they do
-	var/reload_context = "goon_reload"
-	var/reload_bark_chance = 35
-	/// A hit during the wind-up spoils it
-	var/fumbles = FALSE
-	/// The real gun's numbers (/datum/bounty_real_weapon)
-	var/datum/bounty_real_weapon/weapon
-	/// Rounds in a full magazine: the real gun's
-	var/magazine = 0
-	/// Rounds left in the magazine
-	var/ammo
-	/// world.time it may start the next burst or wind-up
-	var/next_fire_at = 0
-	/// world.time the reload is done
-	var/reloading_until = 0
-	/// Spinning up now
-	var/winding = FALSE
-	/// Raised this magazine (windup_once_per_magazine)
-	var/raised = FALSE
-	/// Goes up with every burst or wind-up, and on a fumble, so stale timers do nothing
-	var/serial = 0
-	/// Its owner (/mob/living)
-	var/datum/weakref/owner_ref
-	/// What it's aimed at
-	var/datum/weakref/aim_ref
-
-/datum/bounty_mafia_gun/New(mob/living/owner)
-	. = ..()
-	owner_ref = WEAKREF(owner)
-	weapon = bounty_real_weapon(gun_type)
-	magazine = max(1, weapon.magazine)
-	ammo = magazine
-
-/datum/bounty_mafia_gun/Destroy()
-	serial++
-	owner_ref = null
-	aim_ref = null
-	weapon = null
-	return ..()
-
-/datum/bounty_mafia_gun/proc/owner()
-	var/mob/living/owner = owner_ref?.resolve()
-	return QDELETED(owner) ? null : owner
-
-/// Ready to start a burst or a wind-up
-/datum/bounty_mafia_gun/proc/ready()
-	return !winding && world.time >= next_fire_at
-
-/datum/bounty_mafia_gun/proc/is_reloading()
-	return world.time < reloading_until
-
-/datum/bounty_mafia_gun/proc/owner_can_fire(mob/living/owner)
-	return owner && owner.stat == CONSCIOUS && isturf(owner.loc) && !HAS_TRAIT(owner, TRAIT_INCAPACITATED)
-
-/// Starts a burst at `target`, after the wind-up if it has one. Returns TRUE if it started.
-/datum/bounty_mafia_gun/proc/try_fire(atom/target)
-	var/mob/living/owner = owner()
-	if(!owner_can_fire(owner) || !ready() || QDELETED(target))
-		return FALSE
-	aim_ref = WEAKREF(target)
-	serial++
-	owner.face_atom(target)
-	if(windup && !(windup_once_per_magazine && raised))
-		winding = TRUE
-		next_fire_at = world.time + windup + cooldown
-		if(windup_sound)
-			playsound(owner, windup_sound, 50, TRUE)
-		owner.balloon_alert_to_viewers("aiming!")
-		addtimer(CALLBACK(src, PROC_REF(finish_windup), serial), windup, TIMER_DELETE_ME)
-		return TRUE
-	fire_burst()
-	return TRUE
-
-/// The wind-up under `fire_serial` is over: the burst goes, unless it was spoiled. Returns TRUE if it fired.
-/datum/bounty_mafia_gun/proc/finish_windup(fire_serial)
-	if(fire_serial != serial || !winding)
-		return FALSE
-	winding = FALSE
-	raised = TRUE
-	if(!owner_can_fire(owner()))
-		return FALSE
-	fire_burst()
-	return TRUE
-
-/// A burst: as many of its shots as the magazine has rounds left, then a reload if it's spent
-/datum/bounty_mafia_gun/proc/fire_burst()
-	var/shots = clamp(burst, 1, ammo)
-	ammo -= shots
-	next_fire_at = max(next_fire_at, world.time + cooldown)
-	var/fire_serial = serial
-	shoot_once(fire_serial)
-	for(var/i in 2 to shots)
-		addtimer(CALLBACK(src, PROC_REF(shoot_once), fire_serial), (i - 1) * burst_delay, TIMER_DELETE_ME)
-	if(ammo <= 0)
-		start_reload((shots - 1) * burst_delay)
-
-/// One shot of the burst under `fire_serial`. Never at someone who went down meanwhile.
-/datum/bounty_mafia_gun/proc/shoot_once(fire_serial)
-	if(fire_serial != serial)
-		return null
-	var/mob/living/owner = owner()
-	var/atom/target = aim_ref?.resolve()
-	if(!owner_can_fire(owner) || QDELETED(target))
-		return null
-	if(isliving(target) && !bounty_mafia_may_hurt(target))
-		return null
-	owner.face_atom(target)
-	return bounty_mafia_shoot(owner, projectile_type, target, weapon)
-
-/// A fresh magazine, ready `delay` + reload_time from now
-/datum/bounty_mafia_gun/proc/start_reload(delay = 0)
-	ammo = magazine
-	raised = FALSE
-	reloading_until = world.time + delay + reload_time
-	next_fire_at = max(next_fire_at, reloading_until)
-	var/mob/living/owner = owner()
-	if(!owner)
-		return
-	if(reload_sound)
-		playsound(owner, reload_sound, 40, TRUE)
-	if(reload_context && prob(reload_bark_chance))
-		bounty_mafia_say(owner, reload_context)
-
-/// The wind-up is spoiled: nothing fires, and the next try waits `delay`
-/datum/bounty_mafia_gun/proc/fumble(delay)
-	serial++
-	winding = FALSE
-	next_fire_at = max(next_fire_at, world.time + delay)
-
-/datum/bounty_mafia_gun/smg
-	gun_name = "SMG"
-	gun_type = BOUNTY_MOBSTER_SMG_GUN
-	burst = BOUNTY_MOBSTER_SMG_BURST
-	burst_delay = BOUNTY_MOBSTER_SMG_BURST_GAP
-	cooldown = BOUNTY_MOBSTER_SMG_COOLDOWN
-	reload_time = BOUNTY_MOBSTER_SMG_RELOAD
-	windup = BOUNTY_MOBSTER_SMG_WINDUP
-	windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
-	reload_sound = 'sound/items/weapons/gun/general/magazine_insert_full.ogg'
-	fumbles = TRUE
-
-/datum/bounty_mafia_gun/tommy
-	gun_name = "Tommy gun"
-	gun_type = BOUNTY_LIEUTENANT_TOMMY_GUN
-	burst = BOUNTY_LIEUTENANT_TOMMY_BURST
-	burst_delay = BOUNTY_LIEUTENANT_TOMMY_BURST_GAP
-	cooldown = BOUNTY_LIEUTENANT_TOMMY_COOLDOWN
-	reload_time = BOUNTY_LIEUTENANT_TOMMY_RELOAD
-	windup = BOUNTY_LIEUTENANT_TOMMY_WINDUP
-	windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
-	reload_sound = 'sound/items/weapons/gun/general/magazine_insert_full.ogg'
-
-/datum/bounty_mafia_gun/don
-	gun_name = "gold pistol"
-	gun_type = BOUNTY_DON_GUN
-	cooldown = BOUNTY_DON_COOLDOWN
-	reload_time = BOUNTY_DON_RELOAD
-	windup = BOUNTY_DON_RAISE
-	windup_once_per_magazine = TRUE
-	windup_sound = 'sound/items/weapons/gun/pistol/rack_small.ogg'
-	reload_context = "don_reload"
-	reload_bark_chance = 50
-
-// ===== PROJECTILES =====
-
-/// A club bullet: the real round of the gun that fires it (bounty_mafia_shoot())
-/obj/projectile/bullet/bounty_mafia
-	name = "bullet"
+// ===== THE MECH'S ROUNDS =====
+// The club's people fire the real guns in their hands; only the machine fires rounds of its own.
 
 /// The mech's machine gun: its real exosuit gun's rounds (BOUNTY_MECH_LMG_GUN), which barely scratch furniture
-/obj/projectile/bullet/bounty_mafia/lmg
+/obj/projectile/bullet/bounty_mafia_lmg
 	name = "machine gun round"
 	demolition_mod = BOUNTY_MECH_LMG_DEMOLITION
 
 /**
  * The mech's rocket: the cyberware buster's pattern, never tg's rocket and never explosion(). It flies through
- * people to the marker it was fired at, and there does BOUNTY_MECH_ROCKET_DAMAGE brute and a knockdown to each
- * hunter still standing on it, once a volley each. A player's exosuit in its way takes
+ * people to the marker it was fired at, and there it bursts: tg's light blast (ex_act(EXPLODE_LIGHT)) on everyone
+ * standing on it, whatever their state, once a volley each. A player's exosuit in its way takes
  * BOUNTY_MECH_ROCKET_EXOSUIT_DAMAGE, never the anti-structure multiplier. It bursts harmlessly on a wall, a pillar
  * or anything else in its way; it breaks tables, windows and doors only inside the club's garage.
  */
@@ -535,7 +332,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	projectile_phasing = PASSMOB
 	/// The marker it flies to
 	var/turf/rocket_target
-	/// REF() of each hunter this volley has hit -> TRUE, shared by the volley's rockets
+	/// REF() of each mob this volley has hit -> TRUE, shared by the volley's rockets
 	var/list/rocket_volley
 	/// The arena (/area), the only place it breaks things
 	var/datum/weakref/rocket_area_ref
@@ -590,7 +387,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return FALSE
 	return get_area(spot) == arena
 
-/// The bang, and nothing else: the fake explosion and its sound
+/// The look and sound of the burst, and nothing else
 /obj/projectile/bullet/bounty_mafia_rocket/proc/rocket_burst(turf/spot)
 	if(rocket_done || !spot)
 		return FALSE
@@ -599,53 +396,46 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	playsound(spot, 'sound/effects/explosion/explosion1.ogg', 60, TRUE)
 	return TRUE
 
-/// It reached its marker on `spot`: the bang, and the hit on each hunter standing there not yet hit this volley. Returns who it hit.
+/**
+ * It reached its marker on `spot`: the burst, and tg's light blast on each mob standing there that this volley hasn't
+ * caught yet, whatever its state (CB-10: the blast is ex_act's, which spreads the damage, wounds, deafens and knocks
+ * down by the victim's bomb armour; no explosion(), so nothing is breached). Returns who it caught.
+ */
 /obj/projectile/bullet/bounty_mafia_rocket/proc/rocket_detonate(turf/spot)
 	. = list()
 	if(rocket_done || !spot)
 		return
 	rocket_burst(spot)
 	for(var/mob/living/victim in spot)
-		if(!bounty_mafia_may_hurt(victim))
+		if(victim == firer)
 			continue
 		var/key = REF(victim)
 		if(rocket_volley?[key])
 			continue
 		if(rocket_volley)
 			rocket_volley[key] = TRUE
-		var/blocked = victim.run_armor_check(BODY_ZONE_CHEST, BULLET, silent = TRUE)
-		victim.apply_damage(npc_zone_damage(damage, npc_zone_damage_factor, npc_zone_damage_scaled), BRUTE, BODY_ZONE_CHEST, blocked)
-		victim.Knockdown(BOUNTY_MECH_ROCKET_KNOCKDOWN)
+		victim.ex_act(EXPLODE_LIGHT, null, src)
 		to_chat(victim, span_userdanger("A rocket bursts right at your feet!"))
 		. += victim
 	if(!QDELETED(src))
 		qdel(src)
 
-// ===== GOONS =====
+// ===== THE CLUB'S PEOPLE =====
 
 /**
- * A club mobster. The base is the knife man; /pistol and /smg carry guns. Every blow and round is the real
- * item's in its hand (`r_hand`, bounty_real_weapon()), at the club's own pace (lairs.md 3.1).
+ * A club mobster, a person. The base is the knife man; /pistol and /smg carry guns, /lieutenant holds the gate and
+ * /don runs the family. Each holds its real weapon from the start (they are on the clock in a mob club), with its
+ * spare magazines in its pockets, and fights with it through its hands (the AI's clicks).
  */
-/mob/living/basic/trooper/russian/mafia
-	name = "mobster"
-	desc = "A heavy in a tracksuit, working for the family that runs this club. He has a knife out."
-	maxHealth = BOUNTY_MOBSTER_KNIFE_HEALTH
-	health = BOUNTY_MOBSTER_KNIFE_HEALTH
-	speed = BOUNTY_MOBSTER_KNIFE_SPEED
-	melee_attack_cooldown = BOUNTY_MOBSTER_KNIFE_COOLDOWN
+/mob/living/carbon/human/npc/bounty_mafia
+	npc_name = "mobster"
+	npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia
+	npc_outfit = /datum/outfit/bounty_mafia_goon/armed
+	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
 	faction = list(FACTION_RUSSIAN, BOUNTY_MAFIA_FACTION)
-	sentience_type = SENTIENCE_BOSS
-	// They talk to the hunters, so they speak Common
-	initial_language_holder = /datum/language_holder/atom_basic
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/bounty_mafia
-	corpse = /obj/effect/mob_spawn/corpse/human/bounty_mafia
-	r_hand = BOUNTY_MOBSTER_KNIFE
-	loot = null
 	ai_controller = /datum/ai_controller/basic_controller/bounty_mafia
-	/// The gun it fights with (a /datum/bounty_mafia_gun type), or null for a knife
-	var/mafia_gun_type
-	var/datum/bounty_mafia_gun/mafia_gun
+	/// A line on examine: who they are, never how to fight them
+	var/mafia_examine_line = "He works for the family that runs this club."
 	/// Its room: the area it spawned in, which it never walks out of
 	var/datum/weakref/mafia_home_ref
 	/// Where it spawned, to walk back to if it's ever pushed out of its room
@@ -658,46 +448,97 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/mafia_next_bark_at = 0
 	/// Prefix of its dialogue contexts; lines it has none of come from "goon"
 	var/mafia_voice = "goon"
+	/// It chats about the club while nobody is fighting (the don doesn't)
+	var/mafia_idle_chatter = TRUE
+	/// Percent chance it says something when it's hurt
+	var/mafia_hurt_bark_chance = 20
 	/// world.time it first found itself out of its room with nobody to fight, or 0
 	var/mafia_away_since = 0
 	/// It has kicked a table over for cover this fight
 	var/mafia_took_cover = FALSE
+	/// world.time someone last shoved it: that tick's push is someone else's move, which its room never holds back
+	var/mafia_shoved_at = -1
 
-/mob/living/basic/trooper/russian/mafia/Initialize(mapload)
+	// ----- how it fires its gun (a volley: the aim, then the pulls, then a pause) -----
+	/// The aim before a volley ("aiming!"), or 0 for none
+	var/mafia_windup = 0
+	/// The aim comes once per magazine (the don raises his pistol before the first string), not before every volley
+	var/mafia_windup_once = FALSE
+	var/mafia_windup_sound
+	/// A hit during the aim spoils it
+	var/mafia_fumbles = FALSE
+	/// Pulls of the trigger in a volley, and the time between them
+	var/mafia_volley = BOUNTY_MOBSTER_PISTOL_VOLLEY
+	var/mafia_volley_gap = BOUNTY_MOBSTER_PISTOL_VOLLEY_GAP
+	/// From the end of one volley to the start of the next
+	var/mafia_cooldown = BOUNTY_MOBSTER_PISTOL_STRING_PAUSE
+	/// Its gun is set to single shots with its own fire selector before it fires (a pistol: a string of single shots)
+	var/mafia_single_fire = FALSE
+	/// What it says as it reloads ("[voice]_[context]"), how often, and the sound of its hand going for a magazine
+	var/mafia_reload_context = "reload"
+	var/mafia_reload_chance = 35
+	var/mafia_reload_sound = 'sound/items/weapons/gun/pistol/mag_insert.ogg'
+	/// world.time the aim under way is done, or 0
+	var/mafia_aim_until = 0
+	/// A hit spoiled the aim under way
+	var/mafia_aim_spoiled = FALSE
+	/// Raised this magazine (mafia_windup_once)
+	var/mafia_raised = FALSE
+	/// Pulls left in the volley under way
+	var/mafia_volley_left = 0
+	/// world.time of its next pull in the volley, and of its next volley
+	var/mafia_next_pull_at = 0
+	var/mafia_next_volley_at = 0
+
+/mob/living/carbon/human/npc/bounty_mafia/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
-	// Its blows are the real item's in its hand (bare fists without one)
-	bounty_real_weapon(r_hand).apply_melee(src)
-	if(mafia_gun_type)
-		mafia_gun = new mafia_gun_type(src)
-	mafia_home_turf = get_turf(src)
-	var/area/home = get_area(src)
-	if(home)
-		mafia_home_ref = WEAKREF(home)
-		mafia_room_key = REF(home)
-		var/datum/bounty_mafia_room/room = bounty_mafia_room_for(home)
-		room.join(src)
+	mafia_settle_home()
 	AddElement(/datum/element/relay_attackers)
-	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(mafia_on_attacked))
-	RegisterSignal(src, COMSIG_ATOM_BULLET_ACT, PROC_REF(mafia_on_bullet_act))
-	RegisterSignal(src, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(mafia_on_pre_move))
-	RegisterSignal(src, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(mafia_on_damaged))
-	// A polymorph or a type change deletes it without a death: a free kill, and for a lieutenant a free gate
-	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(mafia_refuse_polymorph))
-	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(mafia_refuse_type_change))
+	AddElement(/datum/element/bounty_mafia_body)
 
-/mob/living/basic/trooper/russian/mafia/Destroy()
+/mob/living/carbon/human/npc/bounty_mafia/Destroy()
 	var/datum/bounty_mafia_room/room = mafia_room()
 	room?.leave(src)
-	QDEL_NULL(mafia_gun)
 	mafia_home_ref = null
 	mafia_home_turf = null
-	// The shout's "!" (do_alert_animation) forgets itself on a timer that dies with us: let it go now, or it hard-deletes
-	update_on_z = null
+	// The shout's "!" (do_alert_animation) forgets itself on a timer that dies with us: let it go now
+	for(var/atom/movable/flick_visual/visual in update_on_z)
+		LAZYREMOVE(update_on_z, visual)
 	return ..()
 
-/mob/living/basic/trooper/russian/mafia/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/// Takes the room it stands in as its home: its leash, its shout and its doorway cap
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_settle_home()
+	mafia_home_turf = get_turf(src)
+	var/area/home = get_area(src)
+	if(!home)
+		return
+	mafia_home_ref = WEAKREF(home)
+	mafia_room_key = REF(home)
+	bounty_mafia_room_for(home).join(src)
+
+// Club Volga's men: the face and hair of their look, always a man's build
+/mob/living/carbon/human/npc/bounty_mafia/npc_apply_spawner_look(obj/effect/mob_spawn/spawner)
 	. = ..()
-	if(stat != CONSCIOUS || world.time < mafia_next_bark_at || !SPT_PROB(BOUNTY_MAFIA_IDLE_BARK_CHANCE, seconds_per_tick))
+	if(gender == MALE)
+		return
+	gender = MALE
+	physique = MALE
+	update_body(is_creating = TRUE)
+
+/mob/living/carbon/human/npc/bounty_mafia/examine(mob/user)
+	. = ..()
+	if(mafia_examine_line && stat != DEAD)
+		. += span_notice(mafia_examine_line)
+
+// OC-9: no deliberate executions are built this phase, so the club never executes anyone by accident
+/mob/living/carbon/human/npc/bounty_mafia/hv_can_execute()
+	return !isnull(client)
+
+/mob/living/carbon/human/npc/bounty_mafia/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+	. = ..()
+	if(!mafia_idle_chatter || stat != CONSCIOUS || npc_dormant())
+		return
+	if(world.time < mafia_next_bark_at || !SPT_PROB(BOUNTY_MAFIA_IDLE_BARK_CHANCE, seconds_per_tick))
 		return
 	var/datum/bounty_mafia_room/room = mafia_room()
 	if(room?.alerted || !mafia_player_nearby())
@@ -705,7 +546,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	mafia_bark("idle")
 
 /// Whether a player is close enough to hear it chat
-/mob/living/basic/trooper/russian/mafia/proc/mafia_player_nearby()
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_player_nearby()
 	var/turf/here = get_turf(src)
 	if(!here || here.z > length(SSmobs.clients_by_zlevel))
 		return FALSE
@@ -715,28 +556,112 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return FALSE
 
 /// Its room (/datum/bounty_mafia_room), or null
-/mob/living/basic/trooper/russian/mafia/proc/mafia_room()
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_room()
 	return mafia_room_key ? GLOB.bounty_mafia_rooms[mafia_room_key] : null
 
 /// Says a line for "<voice>_<context>" (or the plain goon one) unless it spoke recently or `force`. TRUE if it spoke.
-/mob/living/basic/trooper/russian/mafia/proc/mafia_bark(context, force = FALSE)
-	if(stat != CONSCIOUS || (!force && world.time < mafia_next_bark_at))
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_bark(context, force = FALSE)
+	if(!human_npc_can_talk(src) || (!force && world.time < mafia_next_bark_at))
 		return FALSE
 	if(!bounty_mafia_say(src, "[mafia_voice]_[context]") && (mafia_voice == "goon" || !bounty_mafia_say(src, "goon_[context]")))
 		return FALSE
 	mafia_next_bark_at = world.time + BOUNTY_MAFIA_BARK_COOLDOWN
 	return TRUE
 
-/mob/living/basic/trooper/russian/mafia/proc/mafia_refuse_polymorph(datum/source, what_to_randomize)
-	SIGNAL_HANDLER
-	return STOP_WABBAJACK
+/**
+ * The base reactions (human_npc_barks.dm) speak the club's lines: going down is a hurt line, breaking a grab is
+ * "Hands off." Everything else they react to (cuffs on and off, working at them, death) is left to tg's messages.
+ */
+/mob/living/carbon/human/npc/bounty_mafia/npc_bark(kind, force = FALSE)
+	switch(kind)
+		if(HUMAN_NPC_BARK_DOWNED)
+			return mafia_bark("hurt", force = TRUE)
+		if(HUMAN_NPC_BARK_PULLED_FREE)
+			return mafia_bark("shoved", force = TRUE)
+	return FALSE
 
-/mob/living/basic/trooper/russian/mafia/proc/mafia_refuse_type_change(datum/source)
-	SIGNAL_HANDLER
-	return COMPONENT_BLOCK_MOB_CHANGE
+// It broke a hunter's grab by resisting: the hunter feels it shove them off
+/mob/living/carbon/human/npc/bounty_mafia/npc_check_pulled_free(atom/movable/holder, within = 0)
+	var/broke_free = npc_resisted_at && world.time <= npc_resisted_at + within
+	var/mob/living/resisted = npc_resisted_hold?.resolve()
+	. = ..()
+	if(!broke_free || !isliving(resisted) || (holder && resisted != holder))
+		return
+	balloon_alert(resisted, "[p_they()] shove[p_s()] you off!")
+
+// ----- what happens to it (/datum/element/bounty_mafia_body relays these) -----
+
+/**
+ * `attacker` (a player, or an exosuit's pilots) went for it: its room is alerted, and it turns on them if it has no
+ * one else, and only while the doorway cap has room (so shooting a goon held back never pulls it in).
+ */
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_answer_attack(atom/attacker)
+	if(stat == DEAD || !attacker)
+		return
+	for(var/mob/living/hunter as anything in bounty_mafia_attackers(attacker))
+		mafia_raise_alarm(hunter)
+		if(ai_controller && !ai_controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && mafia_target_ok(hunter) && mafia_room_has_space(hunter))
+			ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
+
+/**
+ * A hunter has hold of it (a grab, a carry, the cuffs coming out): that's an attack. The room is alerted and the
+ * hunter is its target, doorway cap or not. Its AI resists the hold the tg way (escape_captivity). TRUE if it answered.
+ */
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_answer_grab(mob/living/grabber)
+	if(stat == DEAD || !bounty_mafia_is_hunter(grabber) || faction_check_atom(grabber))
+		return FALSE
+	mafia_raise_alarm(grabber)
+	if(ai_controller && ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] != grabber && mafia_target_ok(grabber))
+		ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, grabber)
+	return TRUE
+
+/// Whether it can still answer cuffs on its own feet: up, awake, free, and nobody holding it
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_can_answer_cuffs()
+	if(stat != CONSCIOUS || !isturf(loc) || buckled || pulledby || body_position != STANDING_UP)
+		return FALSE
+	return !HAS_TRAIT(src, TRAIT_INCAPACITATED) && !HAS_TRAIT(src, TRAIT_FLOORED) && !HAS_TRAIT(src, TRAIT_IMMOBILIZED) && !HAS_TRAIT(src, TRAIT_RESTRAINED)
+
+/**
+ * tg's attempt_to_cuff() has begun on it (COMSIG_CARBON_CUFF_ATTEMPTED, defaults 1.4, CB-15). The cuffer is its target,
+ * and if it can still move it says so and, a moment into the cuffer's four seconds, steps away: a real step, which
+ * breaks their do_after. Down, paralysed or held, it can't, and the cuffs go on. Never COMSIG_CARBON_CUFF_PREVENT.
+ */
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_on_cuff_attempt(mob/living/user)
+	if(stat == DEAD || !isliving(user))
+		return
+	mafia_answer_grab(user)
+	if(!mafia_can_answer_cuffs())
+		return
+	mafia_bark("cuffed", force = TRUE)
+	addtimer(CALLBACK(src, PROC_REF(mafia_dodge_cuffs), WEAKREF(user)), BOUNTY_MAFIA_CUFF_REACTION, TIMER_DELETE_ME)
+
+/// One step away from `user_ref`'s cuffer, if it still can. TRUE if it stepped.
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_dodge_cuffs(datum/weakref/user_ref)
+	var/mob/living/user = user_ref?.resolve()
+	if(QDELETED(user) || !mafia_can_answer_cuffs() || !Adjacent(user))
+		return FALSE
+	var/turf/here = get_turf(src)
+	var/away = get_dir(user, src) || pick(GLOB.cardinals)
+	for(var/direction in list(away, turn(away, 45), turn(away, -45), turn(away, 90), turn(away, -90)))
+		var/turf/spot = get_step(here, direction)
+		if(!spot || spot.is_blocked_turf())
+			continue
+		// A real step: its room's leash and everything else on a move apply
+		if(Move(spot, direction) && get_turf(src) == spot)
+			return TRUE
+	return FALSE
+
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_on_damaged(damage, damagetype)
+	if(damage <= 0 || stat != CONSCIOUS)
+		return
+	if(mafia_fumbles && mafia_aim_until && !mafia_aim_spoiled)
+		mafia_aim_spoiled = TRUE
+		visible_message(span_notice("[src] flinches and loses [p_their()] aim."))
+	if(prob(mafia_hurt_bark_chance))
+		mafia_bark("hurt")
 
 /// Its room was alerted by `spotter` over `hunter`; it may attack `delay` after the shout, and a gunman takes cover
-/mob/living/basic/trooper/russian/mafia/proc/mafia_on_alarm(mob/living/basic/trooper/russian/mafia/spotter, delay = 0, mob/living/hunter)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_on_alarm(mob/living/carbon/human/npc/bounty_mafia/spotter, delay = 0, mob/living/hunter)
 	mafia_ready_at = world.time + BOUNTY_MOBSTER_ALERT + delay
 	if(spotter == src)
 		do_alert_animation()
@@ -748,8 +673,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  * A gunman kicks over a wood table beside it, on its side toward `hunter`, once a fight (lairs.md 3.1). The table's
  * top faces the hunter, so their shots hit it and the gunman's pass over it. Returns the table, or null.
  */
-/mob/living/basic/trooper/russian/mafia/proc/mafia_take_cover(mob/living/hunter)
-	if(mafia_took_cover || !mafia_gun || stat != CONSCIOUS || QDELETED(hunter))
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_take_cover(mob/living/hunter)
+	if(mafia_took_cover || !human_npc_held_gun(src) || !mafia_can_act() || QDELETED(hunter))
 		return null
 	var/turf/here = get_turf(src)
 	var/toward = here ? get_dir(here, hunter) : NONE
@@ -777,7 +702,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return cover
 
 /// Raises its room's alarm over `hunter`, or just its own with no room. TRUE if this raised it.
-/mob/living/basic/trooper/russian/mafia/proc/mafia_raise_alarm(mob/living/hunter)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_raise_alarm(mob/living/hunter)
 	var/datum/bounty_mafia_room/room = mafia_room()
 	if(room?.raise_alarm(src, hunter))
 		return TRUE
@@ -787,34 +712,28 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	mafia_on_alarm(room ? null : src, room ? rand(0, BOUNTY_MOBSTER_FIRST_SHOT_SPREAD) : 0)
 	return TRUE
 
-/// Whether it can do anything at all
-/mob/living/basic/trooper/russian/mafia/proc/mafia_can_act()
+/// Whether it can do anything at all on its feet
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_can_act()
 	return !QDELETED(src) && stat == CONSCIOUS && isturf(loc) && !HAS_TRAIT(src, TRAIT_INCAPACITATED)
 
 // ----- its room -----
 
 /// Whether it stands in its own room
-/mob/living/basic/trooper/russian/mafia/proc/mafia_at_home()
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_at_home()
 	var/area/home = mafia_home_ref?.resolve()
 	return !home || get_area(src) == home
 
 /// Whether it may step onto `spot` on its own: anywhere in its room, never out of it (bounty_mafia_leash_allows())
-/mob/living/basic/trooper/russian/mafia/proc/mafia_leash_allows(turf/spot)
-	return bounty_mafia_leash_allows(src, mafia_home_ref?.resolve(), spot)
-
-/mob/living/basic/trooper/russian/mafia/proc/mafia_on_pre_move(datum/source, atom/new_loc)
-	SIGNAL_HANDLER
-	if(!mafia_leash_allows(get_turf(new_loc)))
-		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
-	return NONE
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_leash_allows(turf/spot)
+	return bounty_mafia_leash_allows(src, mafia_home_ref?.resolve(), spot, mafia_shoved_at == world.time)
 
 /// Whether its next step toward `target` stays in its room
-/mob/living/basic/trooper/russian/mafia/proc/mafia_step_ok(atom/target)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_step_ok(atom/target)
 	var/turf/next = get_step_towards(src, target)
 	return next && mafia_leash_allows(next)
 
 /// Its room's door tile nearest `target`: where it goes to get a line on someone outside, when a straight step won't do
-/mob/living/basic/trooper/russian/mafia/proc/mafia_exit_toward(atom/target)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_exit_toward(atom/target)
 	var/datum/bounty_mafia_room/room = mafia_room()
 	if(!room || !target)
 		return null
@@ -831,7 +750,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  * Out of its room with nobody to fight: it walks back. If it hasn't made it in BOUNTY_MOBSTER_ROOM_GIVE_UP (another
  * leash keeps it where it is), the room it stands in becomes its room. Returns the turf it walks to, or null.
  */
-/mob/living/basic/trooper/russian/mafia/proc/mafia_head_home()
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_head_home()
 	if(mafia_at_home())
 		mafia_away_since = 0
 		return null
@@ -843,7 +762,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return mafia_home_turf
 
 /// `new_home` is its room from now on: its leash, its shout and its doorway cap
-/mob/living/basic/trooper/russian/mafia/proc/mafia_adopt_room(area/new_home)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_adopt_room(area/new_home)
 	if(!new_home)
 		return
 	var/datum/bounty_mafia_room/old_room = mafia_room()
@@ -857,14 +776,16 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 // ----- targets -----
 
 /// Whether it may go after `target`: a hunter on their feet, on its level and near
-/mob/living/basic/trooper/russian/mafia/proc/mafia_target_ok(mob/living/target)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_target_ok(mob/living/target)
 	if(!bounty_mafia_may_hurt(target) || faction_check_atom(target))
+		return FALSE
+	if(cyberware_camo_hides(target, src)) // optical camo (cyberware_stealth.dm)
 		return FALSE
 	var/turf/spot = get_turf(target)
 	return spot && spot.z == z && get_dist(src, spot) <= BOUNTY_MOBSTER_CHASE
 
 /// Whether `hunter` is in a doorway as its room sees it: outside the room, or on a door tile
-/mob/living/basic/trooper/russian/mafia/proc/mafia_in_doorway(mob/living/hunter)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_in_doorway(mob/living/hunter)
 	var/turf/spot = get_turf(hunter)
 	if(!spot)
 		return FALSE
@@ -874,7 +795,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return !isnull(locate(/obj/machinery/door) in spot)
 
 /// Whether it may take `hunter` on: fewer than BOUNTY_MOBSTER_MAX_ON_ONE of its room already on a hunter in a doorway
-/mob/living/basic/trooper/russian/mafia/proc/mafia_room_has_space(mob/living/hunter)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_room_has_space(mob/living/hunter)
 	if(!mafia_in_doorway(hunter))
 		return TRUE
 	var/datum/bounty_mafia_room/room = mafia_room()
@@ -885,7 +806,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  * room's alarm), else the one its alerted room knows about, to get a line on from inside the room. Only
  * players on its level with a client are looked at, from SSmobs' list.
  */
-/mob/living/basic/trooper/russian/mafia/proc/mafia_find_target()
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_find_target()
 	var/datum/ai_controller/controller = ai_controller
 	if(!controller)
 		return null
@@ -921,130 +842,114 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, best)
 	return best
 
-/**
- * A hunter is pulling or grabbing it: that's an attack. The room is alerted and the grabber is its target, doorway cap
- * or not. Returns TRUE while it is held, so it resists before anything else.
- */
-/mob/living/basic/trooper/russian/mafia/proc/mafia_answer_grab()
-	var/mob/living/grabber = pulledby
-	if(!bounty_mafia_is_hunter(grabber) || faction_check_atom(grabber))
-		return FALSE
-	mafia_raise_alarm(grabber)
-	if(ai_controller && ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] != grabber && mafia_target_ok(grabber))
-		ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, grabber)
-	return TRUE
-
 /// Whether it's past the shout and may attack
-/mob/living/basic/trooper/russian/mafia/proc/mafia_is_ready()
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_is_ready()
 	var/datum/bounty_mafia_room/room = mafia_room()
 	if(room && !room.alerted)
 		return FALSE
 	return mafia_ready_at && world.time >= mafia_ready_at
 
-/// One attack on `target`: a burst if it has a gun and a line, a stab if it's next to them. TRUE if it attacked.
-/mob/living/basic/trooper/russian/mafia/proc/mafia_attack(mob/living/target)
-	if(!mafia_can_act() || !mafia_is_ready() || !mafia_target_ok(target))
-		return FALSE
-	face_atom(target)
-	if(mafia_gun)
-		if(!can_see(src, target, BOUNTY_MOBSTER_SIGHT))
-			return FALSE
-		return mafia_gun.try_fire(target)
-	if(!Adjacent(target) || world.time < next_move)
-		return FALSE
-	return melee_attack(target)
-
-// ----- what happens to it -----
-
-/mob/living/basic/trooper/russian/mafia/proc/mafia_on_attacked(datum/source, atom/attacker, attack_flags)
-	SIGNAL_HANDLER
-	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
-		return
-	mafia_answer_attack(attacker)
-
-// Every shot that hits it, the ones relay_attackers skips too: an exosuit's guns fire as the suit
-/mob/living/basic/trooper/russian/mafia/proc/mafia_on_bullet_act(datum/source, obj/projectile/shot, def_zone, piercing_hit, blocked)
-	SIGNAL_HANDLER
-	mafia_answer_attack(shot?.firer)
+// ----- fighting, through its hands -----
 
 /**
- * `attacker` (a player, or an exosuit's pilots) went for it: its room is alerted, and it turns on them if it has no
- * one else, and only while the doorway cap has room (so shooting a goon held back never pulls it in).
+ * Queues its next move against `target` on `controller`: a reload from its pockets when its gun is dry, a volley
+ * when it has a loaded gun and a line, its knife or fists when it's next to them. TRUE if it queued one (or is
+ * between volleys, standing its ground); FALSE if it has to move to get at them.
  */
-/mob/living/basic/trooper/russian/mafia/proc/mafia_answer_attack(atom/attacker)
-	if(stat == DEAD || !attacker)
-		return
-	for(var/mob/living/hunter as anything in bounty_mafia_attackers(attacker))
-		mafia_raise_alarm(hunter)
-		if(ai_controller && !ai_controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && mafia_target_ok(hunter) && mafia_room_has_space(hunter))
-			ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_plan_attack(datum/ai_controller/controller, mob/living/target)
+	if(HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))
+		return FALSE
+	var/obj/item/gun/gun = human_npc_held_gun(src)
+	if(gun && !gun.can_shoot() && !LAZYLEN(do_afters) && world.time >= controller.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT] && human_npc_can_reload(src, gun))
+		controller.queue_behavior(/datum/ai_behavior/human_npc_reload/bounty_mafia)
+		return TRUE
+	if(human_npc_loaded_gun(src))
+		if(!can_see(src, target, mafia_sight()))
+			return FALSE
+		controller.queue_behavior(/datum/ai_behavior/bounty_mafia_fire, BB_BASIC_MOB_CURRENT_TARGET)
+		return TRUE
+	if(!Adjacent(target))
+		return FALSE
+	controller.queue_behavior(mafia_melee_behavior(), BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+	return TRUE
 
-/mob/living/basic/trooper/russian/mafia/proc/mafia_on_damaged(datum/source, damage, damagetype)
-	SIGNAL_HANDLER
-	if(damage <= 0 || stat != CONSCIOUS)
-		return
-	if(mafia_gun?.fumbles && mafia_gun.winding)
-		mafia_gun.fumble(BOUNTY_MOBSTER_FUMBLE)
-		visible_message(span_notice("[src] flinches and loses [p_their()] aim."))
-	if(prob(20))
-		mafia_bark("hurt")
+/// How far it sees and shoots
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_sight()
+	return BOUNTY_MOBSTER_SIGHT
 
-/// A gunman with a pistol
-/mob/living/basic/trooper/russian/mafia/pistol
-	name = "mobster gunman"
-	desc = "A heavy in a balaclava and a leather jacket, working for the family that runs this club. He has a pistol."
-	maxHealth = BOUNTY_MOBSTER_PISTOL_HEALTH
-	health = BOUNTY_MOBSTER_PISTOL_HEALTH
-	speed = BOUNTY_MOBSTER_PISTOL_SPEED
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/bounty_mafia/pistol
-	corpse = /obj/effect/mob_spawn/corpse/human/bounty_mafia/pistol
-	r_hand = BOUNTY_MOBSTER_PISTOL_GUN
-	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	mafia_gun_type = /datum/bounty_mafia_gun
+/// The behaviour it hits with up close: tg's melee, with the best thing it holds or its fist
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_melee_behavior()
+	return /datum/ai_behavior/basic_melee_attack/human_npc
 
-/// An enforcer with an SMG that spins up before each burst
-/mob/living/basic/trooper/russian/mafia/smg
-	name = "mobster enforcer"
-	desc = "A heavy in a balaclava and a leather jacket, working for the family that runs this club. He has an SMG."
-	maxHealth = BOUNTY_MOBSTER_SMG_HEALTH
-	health = BOUNTY_MOBSTER_SMG_HEALTH
-	speed = BOUNTY_MOBSTER_SMG_SPEED
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/bounty_mafia/smg
-	corpse = /obj/effect/mob_spawn/corpse/human/bounty_mafia/smg
-	r_hand = BOUNTY_MOBSTER_SMG_GUN
-	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	mafia_gun_type = /datum/bounty_mafia_gun/smg
+/// It starts aiming at `target`: the "aiming!" telegraph, its gun's sound, and nothing fires until mafia_aim_until
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_start_aim(atom/target)
+	mafia_aim_until = world.time + mafia_windup
+	mafia_aim_spoiled = FALSE
+	face_atom(target)
+	if(mafia_windup_sound)
+		playsound(src, mafia_windup_sound, 50, TRUE)
+	balloon_alert_to_viewers("aiming!")
+
+/// It reaches for a fresh magazine (its AI's reload, human_npc_reload): the sound, maybe a line, and the next magazine needs raising again
+/mob/living/carbon/human/npc/bounty_mafia/proc/mafia_on_reload()
+	mafia_raised = FALSE
+	if(mafia_reload_sound)
+		playsound(src, mafia_reload_sound, 40, TRUE)
+	if(mafia_reload_context && prob(mafia_reload_chance))
+		mafia_bark(mafia_reload_context)
+
+/// A gunman with a Stechkin, fired a single shot at a time
+/mob/living/carbon/human/npc/bounty_mafia/pistol
+	npc_name = "mobster gunman"
+	npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia/pistol
+	npc_outfit = /datum/outfit/bounty_mafia_goon/pistol/armed
+	mafia_single_fire = TRUE
+
+/// An enforcer with an Uzi that spins up before each volley
+/mob/living/carbon/human/npc/bounty_mafia/smg
+	npc_name = "mobster enforcer"
+	npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia/smg
+	npc_outfit = /datum/outfit/bounty_mafia_goon/smg/armed
+	mafia_windup = BOUNTY_MOBSTER_SMG_WINDUP
+	mafia_windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
+	mafia_fumbles = TRUE
+	mafia_volley = BOUNTY_MOBSTER_SMG_VOLLEY
+	mafia_volley_gap = BOUNTY_MOBSTER_SMG_VOLLEY_GAP
+	mafia_cooldown = BOUNTY_MOBSTER_SMG_COOLDOWN
+	mafia_reload_sound = 'sound/items/weapons/gun/general/magazine_insert_full.ogg'
 
 // ===== LIEUTENANTS =====
 
 /**
- * The two who hold the arena gate: "Tommy" with a Tommy gun and "Brute" with his fists. Both take
- * BOUNTY_LIEUTENANT_DAMAGE_MOD of any brute or burn. The base type takes the role its room doesn't have yet,
- * so the first is Tommy and the second Brute; /tommy and /brute fix it. P10 opens the gate on their deaths
- * (COMSIG_LIVING_DEATH; they are deleted right after, as troopers are).
+ * The two who hold the arena gate: "Tommy" with a Thompson and "Brute" with his fists. Elites (aimed crits, fire
+ * from the floor), in real armour, and they take BOUNTY_LIEUTENANT_DAMAGE_TAKEN of any brute or burn through their
+ * bodies. The base type takes the role its room doesn't have yet, so the first is Tommy and the second Brute;
+ * /tommy and /brute fix it. P10 opens the gate on their deaths (COMSIG_LIVING_DEATH).
  */
-/mob/living/basic/trooper/russian/mafia/lieutenant
-	name = "lieutenant"
-	desc = "One of the don's lieutenants."
-	maxHealth = BOUNTY_LIEUTENANT_TOMMY_HEALTH
-	health = BOUNTY_LIEUTENANT_TOMMY_HEALTH
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant
+	npc_name = "lieutenant"
+	npc_rank = HUMAN_NPC_RANK_ELITE
+	npc_damage_taken = BOUNTY_LIEUTENANT_DAMAGE_TAKEN
+	mafia_examine_line = "One of the don's lieutenants."
 	/// BOUNTY_LIEUTENANT_TOMMY or BOUNTY_LIEUTENANT_BRUTE; null picks one at Initialize
 	var/mafia_lieutenant_role
+	/// Percent chance a punch of Brute's that lands knocks them down
+	var/mafia_punch_knockdown_chance = BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN_CHANCE
 
-/mob/living/basic/trooper/russian/mafia/lieutenant/Initialize(mapload)
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/Initialize(mapload, datum/human_npc_order/order)
 	if(!mafia_lieutenant_role)
 		mafia_lieutenant_role = mafia_pick_lieutenant_role()
 	mafia_apply_lieutenant_role()
 	return ..()
 
 /// The role its room doesn't have yet: Tommy first, then Brute
-/mob/living/basic/trooper/russian/mafia/lieutenant/proc/mafia_pick_lieutenant_role()
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/proc/mafia_pick_lieutenant_role()
 	var/area/home = get_area(loc)
 	var/datum/bounty_mafia_room/room = home ? GLOB.bounty_mafia_rooms[REF(home)] : null
 	var/has_tommy = FALSE
 	var/has_brute = FALSE
 	if(room)
-		for(var/mob/living/basic/trooper/russian/mafia/lieutenant/other in room.goons())
+		for(var/mob/living/carbon/human/npc/bounty_mafia/lieutenant/other in room.goons())
 			if(other.mafia_lieutenant_role == BOUNTY_LIEUTENANT_TOMMY)
 				has_tommy = TRUE
 			else if(other.mafia_lieutenant_role == BOUNTY_LIEUTENANT_BRUTE)
@@ -1057,94 +962,187 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return pick(BOUNTY_LIEUTENANT_TOMMY, BOUNTY_LIEUTENANT_BRUTE)
 	return BOUNTY_LIEUTENANT_TOMMY
 
-/// Its role's body, gun and look. Before the parent Initialize, which dresses it and makes its AI.
-/mob/living/basic/trooper/russian/mafia/lieutenant/proc/mafia_apply_lieutenant_role()
-	damage_coeff = list(BRUTE = BOUNTY_LIEUTENANT_DAMAGE_MOD, BURN = BOUNTY_LIEUTENANT_DAMAGE_MOD, TOX = 1, STAMINA = 1, OXY = 1)
+/// Its role's look, clothes, gun and voice. Before the parent Initialize, which dresses it and makes its AI.
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/proc/mafia_apply_lieutenant_role()
 	if(mafia_lieutenant_role == BOUNTY_LIEUTENANT_BRUTE)
-		name = "Brute"
-		desc = "A mountain of a man in a tracksuit and a bear-pelt hat, knuckles taped for work. The family's muscle."
-		maxHealth = BOUNTY_LIEUTENANT_BRUTE_HEALTH
-		health = BOUNTY_LIEUTENANT_BRUTE_HEALTH
-		speed = BOUNTY_LIEUTENANT_BRUTE_SPEED
-		melee_attack_cooldown = BOUNTY_LIEUTENANT_BRUTE_COOLDOWN
-		attack_vis_effect = ATTACK_EFFECT_PUNCH
-		mafia_gun_type = null
-		mob_spawner = /obj/effect/mob_spawn/corpse/human/bounty_mafia/brute
-		corpse = /obj/effect/mob_spawn/corpse/human/bounty_mafia/brute
-		r_hand = null
+		npc_name = "Brute"
+		npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia/brute
+		npc_outfit = /datum/outfit/bounty_mafia_brute/armed
+		mafia_examine_line = "One of the don's lieutenants: the family's muscle, knuckles taped for work."
 		mafia_voice = "brute"
 		return
 	mafia_lieutenant_role = BOUNTY_LIEUTENANT_TOMMY
-	name = "Tommy"
-	desc = "A lieutenant in a long coat and a fedora, with a drum-fed Tommy gun. He runs the back office."
-	maxHealth = BOUNTY_LIEUTENANT_TOMMY_HEALTH
-	health = BOUNTY_LIEUTENANT_TOMMY_HEALTH
-	speed = BOUNTY_LIEUTENANT_TOMMY_SPEED
-	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	mafia_gun_type = /datum/bounty_mafia_gun/tommy
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/bounty_mafia/tommy
-	corpse = /obj/effect/mob_spawn/corpse/human/bounty_mafia/tommy
-	r_hand = BOUNTY_LIEUTENANT_TOMMY_GUN
+	npc_name = "Tommy"
+	npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia/tommy
+	npc_outfit = /datum/outfit/bounty_mafia_tommy/armed
+	mafia_examine_line = "One of the don's lieutenants. He runs the back office."
 	mafia_voice = "tommy"
+	mafia_windup = BOUNTY_LIEUTENANT_TOMMY_WINDUP
+	mafia_windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
+	mafia_volley = BOUNTY_LIEUTENANT_TOMMY_VOLLEY
+	mafia_volley_gap = BOUNTY_LIEUTENANT_TOMMY_VOLLEY_GAP
+	mafia_cooldown = BOUNTY_LIEUTENANT_TOMMY_COOLDOWN
+	mafia_reload_sound = 'sound/items/weapons/gun/general/magazine_insert_full.ogg'
 
-// Brute's blows knock people down now and then
-/mob/living/basic/trooper/russian/mafia/lieutenant/melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
-	. = ..()
-	if(!. || mafia_lieutenant_role != BOUNTY_LIEUTENANT_BRUTE || !isliving(target))
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/mafia_melee_behavior()
+	if(mafia_lieutenant_role == BOUNTY_LIEUTENANT_BRUTE)
+		return /datum/ai_behavior/basic_melee_attack/human_npc/bounty_mafia_brute
+	return ..()
+
+/**
+ * Brute's punch landed on `victim` (COMSIG_HUMAN_GOT_PUNCHED, which his melee listens to on its target for the length
+ * of the blow): now and then it knocks them off their feet. A designed weapon effect, through tg's Knockdown.
+ */
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/proc/mafia_on_punch_landed(mob/living/carbon/human/victim, mob/living/attacker, damage, attack_type, obj/item/bodypart/affecting, final_armor_block, kicking, limb_sharpness)
+	SIGNAL_HANDLER
+	if(attacker != src || mafia_lieutenant_role != BOUNTY_LIEUTENANT_BRUTE || QDELETED(victim) || victim.stat == DEAD)
 		return
-	if(!prob(BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN_CHANCE))
+	if(!prob(mafia_punch_knockdown_chance))
 		return
-	var/mob/living/victim = target
 	victim.Knockdown(BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN)
 	victim.visible_message(span_danger("[src]'s punch knocks [victim] off [victim.p_their()] feet!"), span_userdanger("[src]'s punch knocks you off your feet!"))
 
-/mob/living/basic/trooper/russian/mafia/lieutenant/tommy
-	name = "Tommy"
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/tommy
+	npc_name = "Tommy"
 	mafia_lieutenant_role = BOUNTY_LIEUTENANT_TOMMY
 
-/mob/living/basic/trooper/russian/mafia/lieutenant/brute
-	name = "Brute"
-	maxHealth = BOUNTY_LIEUTENANT_BRUTE_HEALTH
-	health = BOUNTY_LIEUTENANT_BRUTE_HEALTH
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant/brute
+	npc_name = "Brute"
 	mafia_lieutenant_role = BOUNTY_LIEUTENANT_BRUTE
+
+/**
+ * Listens to a club member's body for it: hits, shots, steps, damage, grabs, cuffs, shoves, and the polymorph and
+ * type changes it refuses. An element, so nothing else registering the same signals on the mob replaces these.
+ */
+/datum/element/bounty_mafia_body
+	element_flags = ELEMENT_DETACH_ON_HOST_DESTROY
+
+/datum/element/bounty_mafia_body/Attach(datum/target)
+	. = ..()
+	if(!istype(target, /mob/living/carbon/human/npc/bounty_mafia))
+		return ELEMENT_INCOMPATIBLE
+	RegisterSignal(target, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
+	RegisterSignal(target, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet_act))
+	RegisterSignal(target, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move))
+	RegisterSignal(target, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
+	RegisterSignal(target, COMSIG_LIVING_GET_PULLED, PROC_REF(on_grabbed))
+	RegisterSignal(target, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempt))
+	RegisterSignal(target, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_shoved))
+	// A polymorph or a type change deletes it without a death: a free kill, and for a lieutenant a free gate
+	RegisterSignal(target, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
+	RegisterSignal(target, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
+
+/datum/element/bounty_mafia_body/Detach(datum/source)
+	UnregisterSignal(source, list(
+		COMSIG_ATOM_WAS_ATTACKED,
+		COMSIG_ATOM_BULLET_ACT,
+		COMSIG_MOVABLE_PRE_MOVE,
+		COMSIG_MOB_AFTER_APPLY_DAMAGE,
+		COMSIG_LIVING_GET_PULLED,
+		COMSIG_CARBON_CUFF_ATTEMPTED,
+		COMSIG_LIVING_DISARM_HIT,
+		COMSIG_LIVING_PRE_WABBAJACKED,
+		COMSIG_PRE_MOB_CHANGED_TYPE,
+	))
+	return ..()
+
+/datum/element/bounty_mafia_body/proc/on_attacked(mob/living/carbon/human/npc/bounty_mafia/source, atom/attacker, attack_flags)
+	SIGNAL_HANDLER
+	if(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK))
+		source.mafia_answer_attack(attacker)
+
+// Every shot that hits it, the ones relay_attackers skips too: an exosuit's guns fire as the suit
+/datum/element/bounty_mafia_body/proc/on_bullet_act(mob/living/carbon/human/npc/bounty_mafia/source, obj/projectile/shot, def_zone, piercing_hit, blocked)
+	SIGNAL_HANDLER
+	source.mafia_answer_attack(shot?.firer)
+
+/datum/element/bounty_mafia_body/proc/on_pre_move(mob/living/carbon/human/npc/bounty_mafia/source, atom/new_loc)
+	SIGNAL_HANDLER
+	if(!source.mafia_leash_allows(get_turf(new_loc)))
+		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
+	return NONE
+
+/datum/element/bounty_mafia_body/proc/on_damaged(mob/living/carbon/human/npc/bounty_mafia/source, damage, damagetype)
+	SIGNAL_HANDLER
+	source.mafia_on_damaged(damage, damagetype)
+
+/datum/element/bounty_mafia_body/proc/on_grabbed(mob/living/carbon/human/npc/bounty_mafia/source, mob/living/puller)
+	SIGNAL_HANDLER
+	source.mafia_answer_grab(puller)
+
+/datum/element/bounty_mafia_body/proc/on_cuff_attempt(mob/living/carbon/human/npc/bounty_mafia/source, mob/living/user)
+	SIGNAL_HANDLER
+	source.mafia_on_cuff_attempt(user)
+	return NONE
+
+/datum/element/bounty_mafia_body/proc/on_shoved(mob/living/carbon/human/npc/bounty_mafia/source, mob/living/attacker, zone, obj/item/weapon)
+	SIGNAL_HANDLER
+	source.mafia_shoved_at = world.time
+
+/datum/element/bounty_mafia_body/proc/refuse_polymorph(datum/source, what_to_randomize)
+	SIGNAL_HANDLER
+	return STOP_WABBAJACK
+
+/datum/element/bounty_mafia_body/proc/refuse_type_change(datum/source)
+	SIGNAL_HANDLER
+	return COMPONENT_BLOCK_MOB_CHANGE
 
 // ===== THE ROOM SPAWNER =====
 
 /**
  * The club's goons. On P11's map every room has one of these; its room (the marker's area) fixes the crew
- * (bounty_mafia_room_crew()). Each marker rolls 1-2 from its room's weighted roster. Goons
- * only spawn on tiles of the marker's own room.
+ * (bounty_mafia_room_crew()). Each marker rolls 1-2 from its room's weighted roster, anywhere else 1-2 from its zone
+ * table. Goons only spawn on tiles of the marker's own room. They are people, so they are queued
+ * (spawn_human_npc()): a club of two dozen is built a body at a time, never in one tick.
  */
 /obj/effect/zone_mobs/mafia
 	name = "zone mob spawner (mafia)"
 	scatter_radius = 3
 	mobs_green = list(
-		/mob/living/basic/trooper/russian/mafia = 4,
-		/mob/living/basic/trooper/russian/mafia/pistol = 3,
-		/mob/living/basic/trooper/russian/mafia/smg = 1,
+		/mob/living/carbon/human/npc/bounty_mafia = 4,
+		/mob/living/carbon/human/npc/bounty_mafia/pistol = 3,
+		/mob/living/carbon/human/npc/bounty_mafia/smg = 1,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/russian/mafia = 3,
-		/mob/living/basic/trooper/russian/mafia/pistol = 4,
-		/mob/living/basic/trooper/russian/mafia/smg = 2,
+		/mob/living/carbon/human/npc/bounty_mafia = 3,
+		/mob/living/carbon/human/npc/bounty_mafia/pistol = 4,
+		/mob/living/carbon/human/npc/bounty_mafia/smg = 2,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/russian/mafia = 2,
-		/mob/living/basic/trooper/russian/mafia/pistol = 4,
-		/mob/living/basic/trooper/russian/mafia/smg = 3,
+		/mob/living/carbon/human/npc/bounty_mafia = 2,
+		/mob/living/carbon/human/npc/bounty_mafia/pistol = 4,
+		/mob/living/carbon/human/npc/bounty_mafia/smg = 3,
 	)
 
+/// Queues its goons. Returns their orders (/datum/human_npc_order).
 /obj/effect/zone_mobs/mafia/do_spawn(zone_type)
+	. = list()
 	var/area/room = get_area(src)
 	var/list/crew = room ? bounty_mafia_room_crew(room.type) : null
-	if(!crew)
-		return ..()
+	var/amount
+	if(crew)
+		amount = rand(1, 2)
+	else
+		var/list/count_range = count_green
+		crew = mobs_green
+		switch(zone_type)
+			if(ZONE_YELLOW)
+				crew = mobs_yellow || crew
+				count_range = count_yellow
+			if(ZONE_RED)
+				crew = mobs_red || mobs_yellow || crew
+				count_range = count_red
+		amount = rand(count_range[1], count_range[2])
+	if(!length(crew) || amount < 1)
+		return
 	var/list/open_turfs = get_scatter_turfs()
-	for(var/i in 1 to rand(1, 2))
+	for(var/i in 1 to amount)
 		var/mob_path = pick_weight(crew)
+		if(!ispath(mob_path, /mob/living/carbon/human/npc))
+			continue
 		var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
 		var/datum/npc_spawn_context/context = new(src, zone_type, "ordinary")
-		spawn_npc_in_zone(mob_path, spot, context)
+		. += spawn_human_npc(mob_path, spot, context = context)
 
 /obj/effect/zone_mobs/mafia/get_scatter_turfs()
 	var/area/room = get_area(src)
@@ -1153,9 +1151,10 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		if(get_area(spot) == room)
 			. += spot
 
-// ===== LOOKS AND CORPSES =====
-// The goons wear what the corpse leaves behind: club clothes, and never a gun (the gun in the living mob's
-// hand is only a picture).
+// ===== CLOTHES AND LOOKS =====
+// The club's clothes, as their corpses used to wear them; the /armed outfits are what the living wear: the same
+// clothes, their real gun or knife in hand and spare magazines in their pockets, and the lieutenants' real armour.
+// All of it is locked to them (D3): none of it is loot.
 
 /// A Ratnik tracksuit and an ushanka: the doormen and knife men
 /datum/outfit/bounty_mafia_goon
@@ -1165,11 +1164,21 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/sneakers/black
 
+/datum/outfit/bounty_mafia_goon/armed
+	name = "Club Volga mobster (armed)"
+	r_hand = BOUNTY_MOBSTER_KNIFE
+
 /// The gunmen hide their faces under the ushanka and keep a leather jacket over the tracksuit
 /datum/outfit/bounty_mafia_goon/pistol
 	name = "Club Volga gunman"
 	suit = /obj/item/clothing/suit/jacket/leather
 	mask = /obj/item/clothing/mask/russian_balaclava
+
+/datum/outfit/bounty_mafia_goon/pistol/armed
+	name = "Club Volga gunman (armed)"
+	r_hand = BOUNTY_MOBSTER_PISTOL_GUN
+	l_pocket = BOUNTY_MOBSTER_PISTOL_MAGAZINE
+	r_pocket = BOUNTY_MOBSTER_PISTOL_MAGAZINE
 
 /// The enforcers: a military tracksuit, a black balaclava, heavy boots
 /datum/outfit/bounty_mafia_goon/smg
@@ -1180,6 +1189,12 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	suit = /obj/item/clothing/suit/jacket/leather
 	shoes = /obj/item/clothing/shoes/russian
 
+/datum/outfit/bounty_mafia_goon/smg/armed
+	name = "Club Volga enforcer (armed)"
+	r_hand = BOUNTY_MOBSTER_SMG_GUN
+	l_pocket = BOUNTY_MOBSTER_SMG_MAGAZINE
+	r_pocket = BOUNTY_MOBSTER_SMG_MAGAZINE
+
 /// Tommy dresses like the old films: a black suit, a long coat, a fedora
 /datum/outfit/bounty_mafia_tommy
 	name = "Club Volga lieutenant (Tommy)"
@@ -1189,6 +1204,14 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/laceup
 
+/// His long coat is a lined noir trenchcoat (real armour), the Thompson in his hands and two drums in his pockets
+/datum/outfit/bounty_mafia_tommy/armed
+	name = "Club Volga lieutenant (Tommy, armed)"
+	suit = /obj/item/clothing/suit/toggle/jacket/det_trench/noir
+	r_hand = BOUNTY_LIEUTENANT_TOMMY_GUN
+	l_pocket = BOUNTY_LIEUTENANT_TOMMY_MAGAZINE
+	r_pocket = BOUNTY_LIEUTENANT_TOMMY_MAGAZINE
+
 /// Brute: a tracksuit, a bear-pelt hat and taped knuckles
 /datum/outfit/bounty_mafia_brute
 	name = "Club Volga lieutenant (Brute)"
@@ -1196,6 +1219,11 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	head = /obj/item/clothing/head/costume/bearpelt
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/russian
+
+/// And a bulletproof vest over the tracksuit (real armour)
+/datum/outfit/bounty_mafia_brute/armed
+	name = "Club Volga lieutenant (Brute, armed)"
+	suit = /obj/item/clothing/suit/armor/vest/russian
 
 /// The don: a black suit, a fur coat, a gold chain and dark glasses
 /datum/outfit/bounty_mafia_don
@@ -1207,6 +1235,13 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/laceup
 
+/datum/outfit/bounty_mafia_don/armed
+	name = "Club Volga don (armed)"
+	r_hand = BOUNTY_DON_GUN
+	l_pocket = BOUNTY_DON_MAGAZINE
+	r_pocket = BOUNTY_DON_MAGAZINE
+
+// The club's looks: hair and faces for the people (npc_look), and the plain clothes outfits above
 /obj/effect/mob_spawn/corpse/human/bounty_mafia
 	name = "Club Volga mobster"
 	outfit = /datum/outfit/bounty_mafia_goon
@@ -1295,7 +1330,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	/// What its volley fires: never tg's rocket (explosion()), always this
 	var/mech_rocket_type = /obj/projectile/bullet/bounty_mafia_rocket
 	/// What its machine gun fires
-	var/mech_lmg_type = /obj/projectile/bullet/bounty_mafia/lmg
+	var/mech_lmg_type = /obj/projectile/bullet/bounty_mafia_lmg
 	/// What keeps it still with its AI quiet ("rockets", "lmg_windup", "lmg_fire", "stall"), or null
 	var/mech_busy
 	/// Goes up each time it becomes busy, so a stale timer does nothing
@@ -1399,7 +1434,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
 	return NONE
 
-/// Dragged or thrown out of its arena somehow: it's put back where it started
+/// Dragged or thrown out of its arena somehow: the machine is put back where it started (OC-5)
 /mob/living/basic/bounty_lair_boss/mafia_mech/proc/mech_check_home()
 	var/area/arena = mech_home_ref?.resolve()
 	if(!arena || !mech_home_turf || get_area(src) == arena)
@@ -1575,7 +1610,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 /**
  * After BOUNTY_MECH_RESET_AFTER with nobody in its arena, in sight or shooting at it, a fight it was in resets:
  * full health, the one-hunter table and an empty posse, so a second crew never finishes a wounded mech (lairs.md
- * 9.5). Its Life() calls this. TRUE if it reset.
+ * 9.5). A machine with repair arms (OC-5, CB-18). Its Life() calls this. TRUE if it reset.
  */
 /mob/living/basic/bounty_lair_boss/mafia_mech/proc/mech_check_reset()
 	if(stat == DEAD)
@@ -1695,9 +1730,10 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return FALSE
 
 /**
- * The rocket volley's lock-on: a red marker under each of `targets` (by default each hunter it can see), a
- * rising tone, and BOUNTY_MECH_ROCKET_LOCK later one rocket per marker (mech_fire_rockets()). Nothing is hurt
- * before then. Returns the serial the launch checks, or 0 if it didn't start.
+ * The rocket volley's lock-on: a red marker under each of `targets` (by default each hunter it can see; it never
+ * picks one who is down), a rising tone, and BOUNTY_MECH_ROCKET_LOCK later one rocket per marker
+ * (mech_fire_rockets()). Nothing is hurt before then, and the burst then catches whoever stands on the marker.
+ * Returns the serial the launch checks, or 0 if it didn't start.
  */
 /mob/living/basic/bounty_lair_boss/mafia_mech/proc/mech_start_rockets(list/targets)
 	if(!mech_can_start_ability())
@@ -1754,7 +1790,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	rocket.rocket_area_ref = mech_home_ref
 	rocket.firer = src
 	rocket.fired_from = src
-	rocket.ignored_factions = faction.Copy()
+	rocket.npc_shot_hits_allies = TRUE
 	rocket.range = get_dist(start, spot) + 3
 	rocket.maximum_range = rocket.range
 	rocket.aim_projectile(spot, src)
@@ -1805,7 +1841,39 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 /mob/living/basic/bounty_lair_boss/mafia_mech/proc/mech_lmg_round(serial)
 	if(!mech_still("lmg_fire", serial) || !mech_lmg_aim)
 		return null
-	return bounty_mafia_shoot(src, mech_lmg_type, mech_lmg_aim, bounty_real_weapon(BOUNTY_MECH_LMG_GUN), BOUNTY_MECH_LMG_ARC, mech_lmg_range + 1)
+	return mech_shoot_round(mech_lmg_aim, bounty_real_weapon(BOUNTY_MECH_LMG_GUN), BOUNTY_MECH_LMG_ARC, mech_lmg_range + 1)
+
+/**
+ * The machine fires one round of `weapon` (a /datum/bounty_real_weapon, its exosuit gun) at `target` (a turf):
+ * every pellet with the real round's numbers and spread, `spread` degrees more (full width), no farther than
+ * `max_range` tiles. A real round from a machine: it hits whoever is in its way, the club's own people included.
+ * Returns the first projectile still flying, or null.
+ */
+/mob/living/basic/bounty_lair_boss/mafia_mech/proc/mech_shoot_round(atom/target, datum/bounty_real_weapon/weapon, spread = 0, max_range)
+	var/turf/start = get_turf(src)
+	var/turf/aim = get_turf(target)
+	if(!start || !aim || start == aim || !weapon)
+		return null
+	var/obj/projectile/first
+	for(var/pellet in 1 to weapon.pellets)
+		var/obj/projectile/bullet = new mech_lmg_type(start)
+		weapon.load(bullet)
+		if(max_range)
+			bullet.range = max_range
+			bullet.maximum_range = max_range
+		bullet.firer = src
+		bullet.fired_from = src
+		bullet.npc_shot_hits_allies = TRUE
+		bullet.spread = spread
+		bullet.aim_projectile(target, src, null, weapon.shot_spread())
+		if(QDELETED(bullet))
+			continue
+		bullet.fire()
+		if(!first && !QDELETED(bullet))
+			first = bullet
+	if(weapon.fire_sound)
+		playsound(src, weapon.fire_sound, 60, TRUE)
+	return first
 
 /**
  * A stomp on someone right next to it, which throws them (their exosuit and all) BOUNTY_MECH_STOMP_THROW tiles
@@ -1862,7 +1930,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 
 /**
  * The mech breaks: a burnt-out wreck where it stood (decoration and cover, nothing to salvage) and the don
- * climbing out beside it, on the side away from the hunters, with the mech's posting. Returns the don.
+ * climbing out beside it, on the side away from the hunters, with the mech's posting. He is one body the fight
+ * needs at once, so he is built now (spawn_human_npc(immediate = TRUE)). Returns the don.
  */
 /mob/living/basic/bounty_lair_boss/mafia_mech/proc/mech_eject()
 	if(mech_ejected)
@@ -1877,22 +1946,21 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/obj/structure/bounty_mafia_wreck/wreck = new(spot)
 	wreck.setDir(dir)
 	var/turf/exit = mech_exit_turf(spot)
+	var/datum/criminal_bounty/posting = posting_ref?.resolve()
 	var/datum/npc_spawn_context/context = new(src, null, "boss")
-	var/mob/living/basic/bounty_lair_boss/mafia_don/don = spawn_npc_in_zone(/mob/living/basic/bounty_lair_boss/mafia_don, exit || spot, context, FALSE)
+	var/datum/human_npc_order/order = spawn_human_npc(/mob/living/carbon/human/npc/bounty_mafia/don, exit || spot, name = posting?.record?.name, context = context, immediate = TRUE)
+	var/mob/living/carbon/human/npc/bounty_mafia/don/don = order?.spawned_ref?.resolve()
+	if(QDELETED(don))
+		return null
 	don.posting_ref = posting_ref
 	don.don_wreck_ref = WEAKREF(wreck)
 	// Whoever broke his machine, he knows
 	don.don_grudge = mech_grudge.Copy()
 	if(mech_home_ref)
-		don.don_home_ref = mech_home_ref
-		don.don_home_turf = mech_home_turf
-	var/datum/criminal_bounty/posting = posting_ref?.resolve()
-	if(posting?.record?.name)
-		don.name = posting.record.name
-		don.real_name = posting.record.name
+		don.mafia_home_ref = mech_home_ref
+		don.mafia_home_turf = mech_home_turf
 	SEND_SIGNAL(src, COMSIG_BOUNTY_MAFIA_DON_EJECTED, don)
 	don.don_on_eject()
-	context.finalize()
 	return don
 
 /// The open tile beside `wreck_spot`, in its arena, farthest from the hunters
@@ -1933,155 +2001,78 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 // ===== THE DON =====
 
 /**
- * The don on foot (phase two), out of his wreck. A pistol, the wreck for cover while he reloads, and no
- * surrender: cuffs are refused and he fights until he dies. His death drops the gold signet ring with his
- * posting on it and leaves a corpse in his clothes.
+ * The don on foot (phase two), out of his wreck: a person, the boss of the club. His gold Desert Eagle and two
+ * spare magazines, the wreck for cover while he reloads, and no surrender: he fights until he dies, and resists
+ * cuffs the tg way. Dragged out of his garage he can be taken anywhere; on his feet with nobody to fight he walks
+ * back. His death drops the gold signet ring with his posting on it, once, and leaves his body in his clothes.
  */
-/mob/living/basic/bounty_lair_boss/mafia_don
-	name = BOUNTY_DON_NAME
-	desc = "The don himself, head of the family that runs this club: a fur coat, a gold chain, and a gold pistol in his hand. He looks furious."
-	icon = 'icons/mob/simple/simple_human.dmi'
-	gender = MALE
-	// Nobody drags the don out of his garage
-	move_resist = MOVE_FORCE_STRONG
-	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
-	maxHealth = BOUNTY_DON_HEALTH
-	health = BOUNTY_DON_HEALTH
-	speed = BOUNTY_DON_SPEED
-	melee_attack_cooldown = 1.2 SECONDS
-	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	combat_mode = TRUE
-	faction = list(FACTION_RUSSIAN, BOUNTY_MAFIA_FACTION)
-	sentience_type = SENTIENCE_BOSS
-	basic_mob_flags = DEL_ON_DEATH
-	initial_language_holder = /datum/language_holder/atom_basic
-	unsuitable_atmos_damage = 7.5
-	unsuitable_cold_damage = 7.5
-	unsuitable_heat_damage = 7.5
-	ai_controller = /datum/ai_controller/basic_controller/bounty_mafia_don
-	/// His gold pistol (/datum/bounty_mafia_gun/don)
-	var/datum/bounty_mafia_gun/don/don_gun
-	/// His arena, which he never leaves, and where he's put back if dragged out
-	var/datum/weakref/don_home_ref
-	var/turf/don_home_turf
+/mob/living/carbon/human/npc/bounty_mafia/don
+	npc_name = BOUNTY_DON_NAME
+	npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia/don
+	npc_outfit = /datum/outfit/bounty_mafia_don/armed
+	npc_rank = HUMAN_NPC_RANK_BOSS
+	npc_damage_taken = BOUNTY_DON_DAMAGE_TAKEN
+	ai_controller = /datum/ai_controller/basic_controller/bounty_mafia/don
+	mafia_examine_line = "The don himself, head of the family that runs this club. He looks furious."
+	mafia_voice = "don"
+	mafia_idle_chatter = FALSE
+	mafia_hurt_bark_chance = 15
+	mafia_windup = BOUNTY_DON_RAISE
+	mafia_windup_once = TRUE
+	mafia_windup_sound = 'sound/items/weapons/gun/pistol/rack_small.ogg'
+	mafia_volley = BOUNTY_DON_VOLLEY
+	mafia_volley_gap = BOUNTY_DON_VOLLEY_GAP
+	mafia_cooldown = BOUNTY_DON_STRING_PAUSE
+	mafia_single_fire = TRUE
+	mafia_reload_chance = 50
 	/// The wreck he hides behind (/obj/structure/bounty_mafia_wreck)
 	var/datum/weakref/don_wreck_ref
-	/// What keeps him still with his AI quiet ("stagger"), or null
-	var/don_busy
-	var/don_busy_serial = 0
-	var/don_busy_timer
-	/// The ring has dropped
-	var/don_trophy_dropped = FALSE
-	/// world.time he may say another line
-	var/don_next_bark_at = 0
 	/// Weakrefs to the hunters who have hurt him or his mech: fair game at any range, seen or not
 	var/list/don_grudge = list()
+	/// world.time he has his bearings after climbing out of the wreck
+	var/don_dazed_until = 0
+	/// The ring has dropped
+	var/don_trophy_dropped = FALSE
 
-/mob/living/basic/bounty_lair_boss/mafia_don/Initialize(mapload)
-	. = ..()
-	don_gun = new(src)
-	// Up close he pistol-whips with it, as hard as the real thing
-	bounty_real_weapon(BOUNTY_DON_GUN).apply_melee(src)
-	apply_dynamic_human_appearance(src, mob_spawn_path = /obj/effect/mob_spawn/corpse/human/bounty_mafia/don, r_hand = BOUNTY_DON_GUN)
-	AddElement(/datum/element/death_drops, string_list(list(/obj/effect/mob_spawn/corpse/human/bounty_mafia/don)))
-	AddElement(/datum/element/footstep, footstep_type = FOOTSTEP_MOB_SHOE)
-	AddElement(/datum/element/relay_attackers)
-	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(don_on_attacked))
-	RegisterSignal(src, COMSIG_ATOM_BULLET_ACT, PROC_REF(don_on_bullet_act))
-	RegisterSignal(src, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(don_on_pre_move))
-	RegisterSignal(src, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(don_on_damaged))
-	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(don_refuse_polymorph))
-	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(don_refuse_type_change))
-	ban_from_containment()
-	don_home_turf = get_turf(src)
-	var/area/home = get_area(src)
-	if(home)
-		don_home_ref = WEAKREF(home)
-
-/mob/living/basic/bounty_lair_boss/mafia_don/Destroy()
-	QDEL_NULL(don_gun)
-	deltimer(don_busy_timer)
-	don_busy_timer = null
-	don_home_ref = null
-	don_home_turf = null
+/mob/living/carbon/human/npc/bounty_mafia/don/Destroy()
 	don_wreck_ref = null
 	don_grudge = null
 	return ..()
 
-/mob/living/basic/bounty_lair_boss/mafia_don/Life(seconds_per_tick = SSMOBS_DT, times_fired)
-	. = ..()
-	if(stat == DEAD)
-		return
-	var/area/arena = don_home_ref?.resolve()
-	if(arena && don_home_turf && get_area(src) != arena)
-		forceMove(don_home_turf)
+// His garage is his arena: no room, no shout, no doorway cap
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_settle_home()
+	mafia_home_turf = get_turf(src)
+	var/area/home = get_area(src)
+	if(home)
+		mafia_home_ref = WEAKREF(home)
 
-/mob/living/basic/bounty_lair_boss/mafia_don/death(gibbed)
-	if(stat != DEAD)
-		don_clear_busy()
-		don_drop_trophy()
-	return ..()
-
-// He won't be taken alive (kill-only, spec 14.1)
-/mob/living/basic/bounty_lair_boss/mafia_don/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(istype(tool, /obj/item/restraints))
-		if(stat != DEAD)
-			balloon_alert(user, "he won't be taken alive!")
-		return ITEM_INTERACT_BLOCKING
-	return ..()
-
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_refuse_polymorph(datum/source, what_to_randomize)
-	SIGNAL_HANDLER
-	return STOP_WABBAJACK
-
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_refuse_type_change(datum/source)
-	SIGNAL_HANDLER
-	return COMPONENT_BLOCK_MOB_CHANGE
-
-/// Says a line for "don_<context>" unless he spoke recently or `force`
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_bark(context, force = FALSE)
-	if(stat != CONSCIOUS || (!force && world.time < don_next_bark_at))
-		return FALSE
-	if(!bounty_mafia_say(src, "don_[context]"))
-		return FALSE
-	don_next_bark_at = world.time + BOUNTY_MAFIA_BARK_COOLDOWN
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_is_ready()
 	return TRUE
 
-/// Climbing out of the wreck: dazed for BOUNTY_DON_EJECT_STAGGER, and a word about his machine
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_on_eject()
-	don_set_busy("stagger", BOUNTY_DON_EJECT_STAGGER)
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_raise_alarm(mob/living/hunter)
+	return FALSE
+
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_sight()
+	return BOUNTY_MECH_SIGHT
+
+/mob/living/carbon/human/npc/bounty_mafia/don/death(gibbed)
+	var/was_alive = stat != DEAD
+	. = ..()
+	if(was_alive && stat == DEAD)
+		don_drop_trophy()
+
+/// Climbing out of the wreck: he takes BOUNTY_DON_EJECT_STAGGER to get his bearings, and has a word about his machine
+/mob/living/carbon/human/npc/bounty_mafia/don/proc/don_on_eject()
+	don_dazed_until = world.time + BOUNTY_DON_EJECT_STAGGER
 	Shake(2, 1, BOUNTY_DON_EJECT_STAGGER)
 	visible_message(span_danger("The canopy blows off the wreck and [src] climbs out, coughing!"))
-	don_bark("eject", force = TRUE)
-
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_set_busy(state, duration)
-	don_busy = state
-	don_busy_serial++
-	deltimer(don_busy_timer)
-	don_busy_timer = null
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, BOUNTY_MAFIA_BUSY_TRAIT)
-	ai_controller?.CancelActions()
-	if(duration)
-		don_busy_timer = addtimer(CALLBACK(src, PROC_REF(don_clear_busy), don_busy_serial), duration, TIMER_STOPPABLE | TIMER_DELETE_ME)
-	return don_busy_serial
-
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_clear_busy(serial)
-	if(serial && serial != don_busy_serial)
-		return FALSE
-	don_busy = null
-	deltimer(don_busy_timer)
-	don_busy_timer = null
-	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, BOUNTY_MAFIA_BUSY_TRAIT)
-	return TRUE
-
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_can_act()
-	return !QDELETED(src) && stat == CONSCIOUS && isturf(loc) && !HAS_TRAIT(src, TRAIT_INCAPACITATED)
+	mafia_bark("eject", force = TRUE)
 
 /**
- * The trophy: the gold signet ring, where he fell, with his posting and its record on it. Once only.
- * Returns the ring, or null.
+ * The trophy: the gold signet ring, where he fell, with his posting and its record on it. Once only, however often
+ * he dies. A designed death drop: it is not his gear. Returns the ring, or null.
  */
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_drop_trophy()
+/mob/living/carbon/human/npc/bounty_mafia/don/proc/don_drop_trophy()
 	if(don_trophy_dropped)
 		return null
 	var/turf/spot = get_turf(src)
@@ -2102,39 +2093,23 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	SEND_SIGNAL(src, COMSIG_BOUNTY_MAFIA_TROPHY_DROPPED, ring)
 	return ring
 
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_on_pre_move(datum/source, atom/new_loc)
-	SIGNAL_HANDLER
-	if(!bounty_mafia_leash_allows(src, don_home_ref?.resolve(), new_loc))
-		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
-	return NONE
-
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_on_attacked(datum/source, atom/attacker, attack_flags)
-	SIGNAL_HANDLER
-	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
-		return
-	don_answer_attack(attacker)
-
-// Every shot that hits him, the ones relay_attackers skips too (an exosuit's guns fire as the suit)
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_on_bullet_act(datum/source, obj/projectile/shot, def_zone, piercing_hit, blocked)
-	SIGNAL_HANDLER
-	don_answer_attack(shot?.firer)
-
-/// `attacker` (a player, or an exosuit's pilots) went for him, from any range: a grudge, and his target if he has none
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_answer_attack(atom/attacker)
+// He holds a grudge against whoever hurts him, from any range, and takes them on if he has nobody else
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_answer_attack(atom/attacker)
 	if(stat == DEAD || !attacker)
 		return
 	for(var/mob/living/hunter as anything in bounty_mafia_attackers(attacker))
 		don_grudge |= WEAKREF(hunter)
-		if(ai_controller && !ai_controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && don_target_ok(hunter))
+		if(ai_controller && !ai_controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && mafia_target_ok(hunter))
 			ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
 
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_on_damaged(datum/source, damage, damagetype)
-	SIGNAL_HANDLER
-	if(damage > 0 && stat == CONSCIOUS && prob(15))
-		don_bark("hurt")
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_answer_grab(mob/living/grabber)
+	if(stat == DEAD || !bounty_mafia_is_hunter(grabber) || faction_check_atom(grabber))
+		return FALSE
+	don_grudge |= WEAKREF(grabber)
+	return ..()
 
 /// Whether he may go after `target`: a hunter on their feet in his arena, in his sight, or who has hurt him or his mech (any range up to BOUNTY_MECH_GRUDGE_RANGE)
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_target_ok(mob/living/target)
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_target_ok(mob/living/target)
 	if(!bounty_mafia_may_hurt(target) || faction_check_atom(target))
 		return FALSE
 	var/turf/spot = get_turf(target)
@@ -2145,16 +2120,16 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return TRUE
 	if(distance > BOUNTY_MECH_SIGHT)
 		return FALSE
-	var/area/arena = don_home_ref?.resolve()
+	var/area/arena = mafia_home_ref?.resolve()
 	return (arena && get_area(spot) == arena) || can_see(src, target, BOUNTY_MECH_SIGHT)
 
-/// His target: the one he has while they're fair game, else the nearest he can see, else the nearest in his arena
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_find_target()
+/// His target: the one he has while they're fair game, else the nearest he can see, else the nearest in his arena or holding his grudge
+/mob/living/carbon/human/npc/bounty_mafia/don/mafia_find_target()
 	var/datum/ai_controller/controller = ai_controller
 	if(!controller)
 		return null
 	var/mob/living/current = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(don_target_ok(current))
+	if(mafia_target_ok(current))
 		return current
 	current = null
 	var/turf/here = get_turf(src)
@@ -2167,7 +2142,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 			if(grudged)
 				candidates |= grudged
 		for(var/mob/living/person in candidates)
-			if(!don_target_ok(person))
+			if(!mafia_target_ok(person))
 				continue
 			var/seen = can_see(src, person, BOUNTY_MECH_SIGHT)
 			var/distance = get_dist(src, person)
@@ -2182,7 +2157,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return current
 
 /// The tile behind his wreck from `threat`, if it's open and in his arena
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_cover_turf(atom/threat)
+/mob/living/carbon/human/npc/bounty_mafia/don/proc/don_cover_turf(atom/threat)
 	var/obj/structure/bounty_mafia_wreck/wreck = don_wreck_ref?.resolve()
 	if(QDELETED(wreck) || !threat)
 		return null
@@ -2190,7 +2165,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/away = get_dir(threat, wreck_spot)
 	if(!wreck_spot || !away)
 		return null
-	var/area/arena = don_home_ref?.resolve()
+	var/area/arena = mafia_home_ref?.resolve()
 	for(var/direction in list(away, turn(away, 45), turn(away, -45)))
 		var/turf/spot = get_step(wreck_spot, direction)
 		if(!spot || isclosedturf(spot) || spot.is_blocked_turf(exclude_mobs = TRUE))
@@ -2200,16 +2175,11 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return spot
 	return null
 
-/// One attack on `target`: a shot if he has a line, the pistol butt if he's next to them. TRUE if he attacked.
-/mob/living/basic/bounty_lair_boss/mafia_don/proc/don_attack(mob/living/target)
-	if(!don_can_act() || don_busy || !don_target_ok(target))
-		return FALSE
-	face_atom(target)
-	if(don_gun.ready() && can_see(src, target, BOUNTY_MECH_SIGHT) && don_gun.try_fire(target))
-		return TRUE
-	if(Adjacent(target) && world.time >= next_move && !don_gun.winding)
-		return melee_attack(target)
-	return FALSE
+/// Out of his garage on his own feet with nobody to fight: he walks back to where he climbed out. Returns that turf, or null.
+/mob/living/carbon/human/npc/bounty_mafia/don/proc/don_head_home()
+	if(mafia_at_home() || !mafia_home_turf)
+		return null
+	return mafia_home_turf
 
 // ===== THE TROPHY =====
 
@@ -2245,29 +2215,165 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	. = ..()
 	controller.clear_blackboard_key(target_key)
 
+/**
+ * A club gunman's volley at its target, through its hands: the aim first if its gun has one (mafia_start_aim(),
+ * "aiming!"), then mafia_volley pulls of the trigger (controller.ai_interact(), the gun's own fire path, burst and
+ * fire rate) mafia_volley_gap apart, then mafia_cooldown before the next. A hit during the aim spoils it for a gun
+ * that fumbles. It checks its line of fire before each pull and steps aside rather than shoot through a friend.
+ */
+/datum/ai_behavior/bounty_mafia_fire
+	action_cooldown = 0.1 SECONDS
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/bounty_mafia_fire/setup(datum/ai_controller/controller, target_key)
+	. = ..()
+	var/mob/living/carbon/human/npc/bounty_mafia/shooter = controller.pawn
+	var/atom/target = controller.blackboard[target_key]
+	if(!istype(shooter) || QDELETED(target) || isnull(human_npc_loaded_gun(shooter)))
+		return FALSE
+	if(world.time < shooter.mafia_next_volley_at)
+		return FALSE
+	shooter.mafia_aim_until = 0
+	shooter.mafia_aim_spoiled = FALSE
+	shooter.mafia_volley_left = 0
+	shooter.mafia_next_pull_at = 0
+	if(shooter.mafia_windup && !(shooter.mafia_windup_once && shooter.mafia_raised))
+		shooter.mafia_start_aim(target)
+	else
+		shooter.mafia_volley_left = shooter.mafia_volley
+	return TRUE
+
+/datum/ai_behavior/bounty_mafia_fire/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+	var/mob/living/carbon/human/npc/bounty_mafia/shooter = controller.pawn
+	var/atom/target = controller.blackboard[target_key]
+	if(QDELETED(target) || !shooter.mafia_can_act() || HAS_TRAIT(shooter, TRAIT_HANDS_BLOCKED))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	shooter.face_atom(target)
+	if(shooter.mafia_aim_until)
+		if(shooter.mafia_aim_spoiled)
+			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+		if(world.time < shooter.mafia_aim_until)
+			return AI_BEHAVIOR_DELAY
+		shooter.mafia_aim_until = 0
+		shooter.mafia_raised = TRUE
+		shooter.mafia_volley_left = shooter.mafia_volley
+	var/obj/item/gun/gun = human_npc_loaded_gun(shooter)
+	if(isnull(gun) || shooter.mafia_volley_left <= 0)
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	if(world.time < shooter.mafia_next_pull_at)
+		return AI_BEHAVIOR_DELAY
+	if(human_npc_ally_in_line(shooter, target))
+		human_npc_sidestep(shooter, target)
+		return AI_BEHAVIOR_DELAY
+	if(!human_npc_ready_item(shooter, gun))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(shooter.mafia_single_fire)
+		bounty_gun_single_fire(shooter, gun)
+	shooter.zone_selected = human_npc_pick_aim_zone()
+	controller.ai_interact(target = target, combat_mode = TRUE)
+	shooter.mafia_volley_left--
+	shooter.mafia_next_pull_at = world.time + shooter.mafia_volley_gap
+	if(shooter.mafia_volley_left <= 0)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY
+
+/datum/ai_behavior/bounty_mafia_fire/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	. = ..()
+	var/mob/living/carbon/human/npc/bounty_mafia/shooter = controller.pawn
+	if(!istype(shooter))
+		return
+	var/pause = shooter.mafia_aim_spoiled ? BOUNTY_MOBSTER_FUMBLE : shooter.mafia_cooldown
+	shooter.mafia_next_volley_at = max(shooter.mafia_next_volley_at, world.time + pause)
+	shooter.mafia_aim_until = 0
+	shooter.mafia_aim_spoiled = FALSE
+	shooter.mafia_volley_left = 0
+
+/// The player's reload (human_npc_reload), with the club's sound and lines as the hand goes for the magazine
+/datum/ai_behavior/human_npc_reload/bounty_mafia
+
+/datum/ai_behavior/human_npc_reload/bounty_mafia/setup(datum/ai_controller/controller)
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/carbon/human/npc/bounty_mafia/member = controller.pawn
+	if(istype(member))
+		member.mafia_on_reload()
+
+/// Brute's fists: tg's melee, listening for his punch landing on the target for the length of the blow
+/datum/ai_behavior/basic_melee_attack/human_npc/bounty_mafia_brute
+
+/datum/ai_behavior/basic_melee_attack/human_npc/bounty_mafia_brute/perform(seconds_per_tick, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
+	var/mob/living/carbon/human/npc/bounty_mafia/lieutenant/brute = controller.pawn
+	var/mob/living/carbon/human/victim = controller.blackboard[target_key]
+	if(!istype(brute) || !ishuman(victim) || QDELETED(victim))
+		return ..()
+	brute.RegisterSignal(victim, COMSIG_HUMAN_GOT_PUNCHED, TYPE_PROC_REF(/mob/living/carbon/human/npc/bounty_mafia/lieutenant, mafia_on_punch_landed), override = TRUE)
+	. = ..()
+	brute.UnregisterSignal(victim, COMSIG_HUMAN_GOT_PUNCHED)
+
+/**
+ * The bounty AI's breaking free (bounty_escape_captivity: cuffs, a locker, a hard grab, a carry), and any hold a
+ * hunter has on a club member, a passive grab included: grabbed, a goon breaks free. It resists the tg way (resist()).
+ */
+/datum/ai_planning_subtree/bounty_escape_captivity/bounty_mafia
+
+/datum/ai_planning_subtree/bounty_escape_captivity/bounty_mafia/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	. = ..()
+	if(. == SUBTREE_RETURN_FINISH_PLANNING)
+		return
+	var/mob/living/carbon/human/npc/bounty_mafia/member = controller.pawn
+	if(!istype(member) || member.stat != CONSCIOUS)
+		return
+	var/mob/living/holder = member.pulledby || (ismob(member.buckled) ? member.buckled : null)
+	if(!holder || !member.mafia_answer_grab(holder))
+		return
+	controller.queue_behavior(/datum/ai_behavior/resist)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
 // ----- goons -----
 
+/**
+ * The club's people on human bodies: soft crit first (crawl, plead, a boss fires wild from the floor), then breaking
+ * free of whatever holds them, then the family's own mind.
+ */
 /datum/ai_controller/basic_controller/bounty_mafia
-	blackboard = list()
+	blackboard = list(
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/human_npc,
+		BB_TARGET_MINIMUM_STAT = HUMAN_NPC_SPARES_DOWNED,
+		BB_AGGRO_RANGE = BOUNTY_MOBSTER_SIGHT,
+		BB_HUMAN_NPC_SHOT_DELAY = BOUNTY_MOBSTER_PISTOL_COOLDOWN,
+		BB_HUMAN_NPC_FIRE_RANGE = BOUNTY_MOBSTER_SIGHT,
+	)
 	ai_movement = /datum/ai_movement/basic_avoidance
 	idle_behavior = null
 	planning_subtrees = list(
+		/datum/ai_planning_subtree/human_npc_soft_crit,
+		/datum/ai_planning_subtree/bounty_escape_captivity/bounty_mafia,
 		/datum/ai_planning_subtree/bounty_mafia_goon,
 	)
 
+/datum/ai_controller/basic_controller/bounty_mafia/TryPossessPawn(atom/new_pawn)
+	if(!ishumannpc(new_pawn))
+		return AI_CONTROLLER_INCOMPATIBLE
+	return ..()
+
+// Cuffs and soft crit don't stop a person's AI (human_npc_soft_crit.dm)
+/datum/ai_controller/basic_controller/bounty_mafia/get_able_to_run()
+	return human_npc_ai_able_to_run(src)
+
+/datum/ai_controller/basic_controller/bounty_mafia/on_stat_changed(mob/living/source, new_stat)
+	. = ..()
+	human_npc_ai_stat_changed(src, new_stat)
+
 /**
- * A goon's whole mind: back into its room if it's out; its target; nothing until its room's shout is over;
- * then shoot with a line (or stab when next to them), else close in as far as its room lets it.
+ * A goon's whole mind: its target; nothing until its room's shout is over; then reload, shoot with a line (or stab
+ * or punch when next to them), else close in as far as its room lets it; with nobody to fight, back into its room.
  */
 /datum/ai_planning_subtree/bounty_mafia_goon
 
 /datum/ai_planning_subtree/bounty_mafia_goon/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/trooper/russian/mafia/goon = controller.pawn
+	var/mob/living/carbon/human/npc/bounty_mafia/goon = controller.pawn
 	if(!istype(goon) || goon.stat != CONSCIOUS)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	// Grabbed by a hunter: that's a fight. He's the target, and it breaks free first.
-	if(goon.mafia_answer_grab())
-		controller.queue_behavior(/datum/ai_behavior/resist)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	if(!goon.mafia_can_act())
 		return SUBTREE_RETURN_FINISH_PLANNING
@@ -2278,10 +2384,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		goon.face_atom(target)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	if(target)
-		var/has_line = goon.mafia_gun ? can_see(goon, target, BOUNTY_MOBSTER_SIGHT) : goon.Adjacent(target)
-		if(has_line)
+		if(goon.mafia_plan_attack(controller, target))
 			goon.mafia_away_since = 0
-			controller.queue_behavior(/datum/ai_behavior/bounty_mafia_goon_attack, BB_BASIC_MOB_CURRENT_TARGET)
 			return SUBTREE_RETURN_FINISH_PLANNING
 		if(at_home)
 			if(goon.mafia_step_ok(target))
@@ -2293,21 +2397,12 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 				controller.set_blackboard_key(BB_BOUNTY_MAFIA_MOVE_TO, exit)
 				controller.queue_behavior(/datum/ai_behavior/bounty_mafia_approach/onto, BB_BOUNTY_MAFIA_MOVE_TO)
 			return SUBTREE_RETURN_FINISH_PLANNING
+	// Nobody it can get at from here: out of its room, it walks back
 	var/turf/home = goon.mafia_head_home()
 	if(home)
 		controller.set_blackboard_key(BB_BOUNTY_MAFIA_MOVE_TO, home)
 		controller.queue_behavior(/datum/ai_behavior/bounty_mafia_approach/onto, BB_BOUNTY_MAFIA_MOVE_TO)
 	return SUBTREE_RETURN_FINISH_PLANNING
-
-/datum/ai_behavior/bounty_mafia_goon_attack
-
-/datum/ai_behavior/bounty_mafia_goon_attack/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/mob/living/basic/trooper/russian/mafia/goon = controller.pawn
-	var/mob/living/target = controller.blackboard[target_key]
-	if(!istype(goon) || QDELETED(target))
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	goon.mafia_attack(target)
-	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 
 // ----- the mech -----
 
@@ -2358,44 +2453,50 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 
 // ----- the don -----
 
-/datum/ai_controller/basic_controller/bounty_mafia_don
-	blackboard = list()
-	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = null
+/datum/ai_controller/basic_controller/bounty_mafia/don
+	blackboard = list(
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/human_npc,
+		BB_TARGET_MINIMUM_STAT = HUMAN_NPC_SPARES_DOWNED,
+		BB_AGGRO_RANGE = BOUNTY_MECH_SIGHT,
+		BB_HUMAN_NPC_SHOT_DELAY = BOUNTY_DON_COOLDOWN,
+		BB_HUMAN_NPC_FIRE_RANGE = BOUNTY_MECH_SIGHT,
+	)
 	planning_subtrees = list(
+		/datum/ai_planning_subtree/human_npc_soft_crit,
+		/datum/ai_planning_subtree/bounty_escape_captivity/bounty_mafia,
 		/datum/ai_planning_subtree/bounty_mafia_don,
 	)
 
-/// The don's mind: nothing while he reels; his target; behind the wreck while he reloads; shoot with a line; else closer
+/**
+ * The don's mind: nothing while he gets his bearings; his target; behind the wreck to reload; shoot with a line, or
+ * his fists up close; else closer. With nobody to fight, back into his garage if he was taken out of it.
+ */
 /datum/ai_planning_subtree/bounty_mafia_don
 
 /datum/ai_planning_subtree/bounty_mafia_don/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/bounty_lair_boss/mafia_don/don = controller.pawn
-	if(!istype(don) || don.don_busy || !don.don_can_act())
+	var/mob/living/carbon/human/npc/bounty_mafia/don/don = controller.pawn
+	if(!istype(don) || don.stat != CONSCIOUS)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	var/mob/living/target = don.don_find_target()
+	if(world.time < don.don_dazed_until || !don.mafia_can_act())
+		return SUBTREE_RETURN_FINISH_PLANNING
+	var/mob/living/target = don.mafia_find_target()
 	if(!target)
+		var/turf/home = don.don_head_home()
+		if(home)
+			controller.set_blackboard_key(BB_BOUNTY_MAFIA_MOVE_TO, home)
+			controller.queue_behavior(/datum/ai_behavior/bounty_mafia_approach/onto, BB_BOUNTY_MAFIA_MOVE_TO)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	if(don.don_gun.is_reloading())
+	var/obj/item/gun/gun = human_npc_held_gun(don)
+	if(gun && !gun.can_shoot() && !LAZYLEN(don.do_afters) && world.time >= controller.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT] && human_npc_can_reload(don, gun))
+		// Behind the wreck first, then the fresh magazine
 		var/turf/cover = don.don_cover_turf(target)
 		if(cover && get_turf(don) != cover)
 			controller.set_blackboard_key(BB_BOUNTY_MAFIA_MOVE_TO, cover)
 			controller.queue_behavior(/datum/ai_behavior/bounty_mafia_approach/onto, BB_BOUNTY_MAFIA_MOVE_TO)
 			return SUBTREE_RETURN_FINISH_PLANNING
-	if(don.Adjacent(target) || can_see(don, target, BOUNTY_MECH_SIGHT))
-		controller.queue_behavior(/datum/ai_behavior/bounty_mafia_don_attack, BB_BASIC_MOB_CURRENT_TARGET)
-	else
-		controller.queue_behavior(/datum/ai_behavior/bounty_mafia_approach, BB_BASIC_MOB_CURRENT_TARGET)
+	if(don.mafia_plan_attack(controller, target))
+		return SUBTREE_RETURN_FINISH_PLANNING
+	controller.queue_behavior(/datum/ai_behavior/bounty_mafia_approach, BB_BASIC_MOB_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
-
-/datum/ai_behavior/bounty_mafia_don_attack
-
-/datum/ai_behavior/bounty_mafia_don_attack/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/mob/living/basic/bounty_lair_boss/mafia_don/don = controller.pawn
-	var/mob/living/target = controller.blackboard[target_key]
-	if(!istype(don) || QDELETED(target))
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	don.don_attack(target)
-	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 
 #undef BOUNTY_MAFIA_BUSY_TRAIT

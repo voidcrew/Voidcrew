@@ -26,7 +26,7 @@
 	pixel_y = 9
 	},
 /obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
+/obj/effect/spawner/human_npc/ruin/hermit/hunter,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "ae" = (
@@ -92,7 +92,7 @@
 /area/ruin/powered)
 "ew" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
+/obj/effect/spawner/human_npc/ruin/hermit,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "eH" = (
@@ -184,7 +184,7 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "hw" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
+/obj/effect/spawner/human_npc/ruin/hermit/hunter,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "hA" = (
@@ -470,7 +470,7 @@
 /turf/open/floor/material,
 /area/ruin/powered)
 "EC" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
+/obj/effect/spawner/human_npc/ruin/hermit/hunter,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Fi" = (
@@ -596,7 +596,7 @@
 /area/ruin/powered)
 "NU" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
+/obj/effect/spawner/human_npc/ruin/hermit,
 /turf/open/floor/material,
 /area/ruin/powered)
 "Oo" = (

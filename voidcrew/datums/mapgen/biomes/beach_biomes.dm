@@ -94,7 +94,7 @@
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/carp/beach = 3,
 		/mob/living/basic/carp/mega/beach = 1,
-		/mob/living/basic/trooper/pirate/melee/beach/boat = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/beach = 1,
 	)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/beach = 1,
@@ -111,12 +111,12 @@
 		/mob/living/basic/carp/beach = 6,
 		/mob/living/basic/carp/beach/small = 5,
 		/mob/living/basic/carp/mega/beach = 2,
-		/mob/living/basic/trooper/pirate/melee/beach/boat = 3,
-		/mob/living/basic/trooper/pirate/ranged/beach/boat = 1
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/beach = 3,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/beach/gunner = 1
 	)
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/carp/mega/beach = 2,
-		/mob/living/basic/trooper/pirate/ranged/beach/boat = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/beach/gunner = 1,
 	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(

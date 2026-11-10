@@ -48,6 +48,10 @@ GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 	/obj/structure/headpike,
 	// Outpost property that works a ship bay's side rooms, never a ship's fitting.
 	/obj/structure/outpost_yard_droid,
+	// Dug finds live for the round only: rebuilding one would reroll its effects and refill its
+	// harvests (voidcrew/modules/xenoarch/).
+	/obj/machinery/artifact,
+	/obj/machinery/power/charged_crystal,
 )))
 
 /**

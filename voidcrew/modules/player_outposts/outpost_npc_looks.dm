@@ -1,8 +1,13 @@
 /**
  * # Outpost NPC looks
  *
- * Human-looking basic mobs on outposts (prisoners, guards, and ambient NPCs) wear an outfit on
- * a human body. tg's set_dynamic_human_appearance() builds that body on a fixed, bald, pale dummy
+ * Two kinds of look live here.
+ *
+ * Faces for real bodies (/datum/outpost_npc_look, at the bottom of the file): ambient NPCs are real
+ * human bodies and wear one randomly rolled face for life; what they hold is a real item in hand.
+ *
+ * Dressed appearances for the basic mobs that still copy a picture of a person onto themselves
+ * (the rest of the file): they wear an outfit on a human body. tg's set_dynamic_human_appearance() builds that body on a fixed, bald, pale dummy
  * and caches one appearance per outfit, so everyone in the same outfit has the same face and a
  * male body whatever their gender.
  *
@@ -192,6 +197,83 @@ GLOBAL_LIST_EMPTY(outpost_npc_looks)
 		if(style?.icon_state && style.natural_spawn && !style.locked)
 			return style_name
 	return null
+
+// =========================================================================
+// FACES FOR REAL BODIES
+// =========================================================================
+
+/**
+ * One person's face, kept as the features a real human body needs to look like them: gender and
+ * physique, skin tone, hair and facial hair (styles and colours) and eye colour. Ambient NPCs are
+ * human bodies (voidcrew/modules/ambient_npcs/); each rolls one of these when it is made and wears
+ * it for life, so the same person shows idle, holding a mop, welding, and dead. Strays keep theirs
+ * across visits (stray_identity()), so the same person comes back. The appearance cache above is
+ * for the basic mobs that still copy a dressed look onto themselves (bounty companions and goons).
+ */
+/datum/outpost_npc_look
+	/// MALE or FEMALE (also the body's physique)
+	var/gender = MALE
+	var/skin_tone = "caucasian1"
+	var/hairstyle = "Bald"
+	var/hair_color = "#000000"
+	var/facial_hairstyle = "Shaved"
+	var/facial_hair_color = "#000000"
+	var/eye_color = "#000000"
+
+/// A random person of `gender` (MALE or FEMALE; anything else is male), rolled the way randomize_human_normie() rolls one
+/proc/new_outpost_npc_person(gender = MALE)
+	var/datum/outpost_npc_look/person = new
+	person.gender = gender == FEMALE ? FEMALE : MALE
+	person.skin_tone = pick(GLOB.skin_tones)
+	person.hairstyle = outpost_npc_hairstyle(person.gender) || "Bald"
+	if(person.gender == MALE && prob(OUTPOST_NPC_FACIAL_HAIR_CHANCE))
+		person.facial_hairstyle = outpost_npc_facial_hairstyle() || "Shaved"
+	person.hair_color = random_hair_color()
+	person.facial_hair_color = person.hair_color
+	person.eye_color = random_eye_color()
+	return person
+
+/// The face `body` wears now, as a look that can be put on another body
+/proc/outpost_npc_look_of(mob/living/carbon/human/body)
+	var/datum/outpost_npc_look/person = new
+	person.gender = body.gender == FEMALE ? FEMALE : MALE
+	person.skin_tone = body.skin_tone
+	person.hairstyle = body.hairstyle
+	person.hair_color = body.hair_color
+	person.facial_hairstyle = body.facial_hairstyle
+	person.facial_hair_color = body.facial_hair_color
+	person.eye_color = body.eye_color_left
+	return person
+
+/// A copy, so two bodies never share one look datum
+/datum/outpost_npc_look/proc/copy()
+	var/datum/outpost_npc_look/twin = new
+	twin.gender = gender
+	twin.skin_tone = skin_tone
+	twin.hairstyle = hairstyle
+	twin.hair_color = hair_color
+	twin.facial_hairstyle = facial_hairstyle
+	twin.facial_hair_color = facial_hair_color
+	twin.eye_color = eye_color
+	return twin
+
+/// Puts this face on `body`, undressed parts bare (no underwear), and redraws it
+/datum/outpost_npc_look/proc/apply_to(mob/living/carbon/human/body)
+	if(QDELETED(body))
+		return
+	body.gender = gender
+	body.physique = gender
+	body.skin_tone = skin_tone
+	body.set_hairstyle(hairstyle, update = FALSE)
+	body.set_haircolor(hair_color, update = FALSE)
+	body.set_facial_hairstyle(facial_hairstyle, update = FALSE)
+	body.set_facial_haircolor(facial_hair_color, update = FALSE)
+	body.set_eye_color(eye_color)
+	body.underwear = "Nude"
+	body.undershirt = "Nude"
+	body.socks = "Nude"
+	// Without is_creating the limbs keep the skin tone they were made with
+	body.update_body(is_creating = TRUE)
 
 #undef OUTPOST_NPC_LOOK_COUNT
 #undef OUTPOST_NPC_FACIAL_HAIR_CHANCE

@@ -1749,7 +1749,7 @@
 /area/ruin/space/has_grav/powered/mafia_club/back_office)
 "FW" = (
 /obj/effect/landmark/bounty_lair_gatekeeper{
-	gatekeeper_type = /mob/living/basic/trooper/russian/mafia/lieutenant
+	gatekeeper_type = /mob/living/carbon/human/npc/bounty_mafia/lieutenant
 	},
 /turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/powered/mafia_club/back_office)
@@ -2653,7 +2653,7 @@
 /area/ruin/space/has_grav/powered/mafia_club/staff)
 "ZX" = (
 /obj/effect/landmark/bounty_lair_gatekeeper{
-	gatekeeper_type = /mob/living/basic/trooper/russian/mafia/lieutenant
+	gatekeeper_type = /mob/living/carbon/human/npc/bounty_mafia/lieutenant
 	},
 /turf/open/floor/iron/dark/textured,
 /area/ruin/space/has_grav/powered/mafia_club/back_office)

@@ -749,6 +749,69 @@
    "reason": "Wheels a patient along. Faster than dragging.",
    "tier": "none"
   },
+  "/obj/item/excavation/brush": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "excavation brush",
+   "rank": 24,
+   "reason": "Brushes the last grit off a dig find. Work tool only.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/brush/quick": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "quick brush",
+   "rank": 25,
+   "reason": "Excavation brush that works in a third of the time. Saves minutes at a dig, nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/core_sampler": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "core sampler",
+   "rank": 28,
+   "reason": "Draws a rock core from a dig find for the spectrometer. Work tool only.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/depth_scanner": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "depth scanner",
+   "rank": 26,
+   "reason": "Reads roughly how deep a dig find sits and how much has been cut. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/depth_scanner/advanced": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "advanced depth scanner",
+   "rank": 27,
+   "reason": "Reads a dig find exactly, and the field it needs, so a crew skips the trip back to the spectrometer. Speeds artifact digging; no use in a fight.",
+   "tier": "green"
+  },
+  "/obj/item/excavation/hammer": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "rock hammer",
+   "rank": 23,
+   "reason": "Rock hammer with swappable heads for cutting dig finds down. Hits for 6. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/stabiliser": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "field stabiliser",
+   "rank": 29,
+   "reason": "Lays the field that keeps a large dig find whole as it comes out. Needed to get full value from artifacts; harmless otherwise.",
+   "tier": "green"
+  },
   "/obj/item/experi_scanner": {
    "confidence": "high",
    "group": "Scanners and trackers",
@@ -1446,7 +1509,7 @@
    "group": "Mining tools",
    "hash": "16ae32694e632739",
    "name": "manual mining scanner",
-   "rank": 19,
+   "rank": 20,
    "reason": "Manual ore scanner. Click for a look at nearby ore. Common on hulls.",
    "tier": "none"
   },
@@ -1539,7 +1602,7 @@
    "group": "Mining tools",
    "hash": "c2024f595b1ac958",
    "name": "ore sensor",
-   "rank": 20,
+   "rank": 21,
    "reason": "Crafted bone ore sensor. Small range and it needs brimdust to make.",
    "tier": "none"
   },
@@ -1557,7 +1620,7 @@
    "group": "Mining tools",
    "hash": "971c85bf93572b1b",
    "name": "pickaxe",
-   "rank": 14,
+   "rank": 15,
    "reason": "Plain pick. Prints at round start and hits for 15, but it's heavy to carry.",
    "tier": "none"
   },
@@ -1566,7 +1629,7 @@
    "group": "Mining tools",
    "hash": "b938dac87ca2790e",
    "name": "diamond-tipped pickaxe",
-   "rank": 7,
+   "rank": 8,
    "reason": "Digs in about a third of the normal time. 1,200 cr at the green waystation, a fair first upgrade.",
    "tier": "green"
   },
@@ -1584,7 +1647,7 @@
    "group": "Mining tools",
    "hash": "a8467bba7110047c",
    "name": "mining drill",
-   "rank": 10,
+   "rank": 11,
    "reason": "Digs at a little over half the normal time. Cheap and printable after 40 research points. The usual first upgrade.",
    "tier": "green"
   },
@@ -1593,8 +1656,17 @@
    "group": "Mining tools",
    "hash": "093655e5e5394734",
    "name": "rockjaw drill",
-   "rank": 8,
+   "rank": 9,
    "reason": "Implant drill. Half-time digging with your hands free. The implant is the real purchase.",
+   "tier": "green"
+  },
+  "/obj/item/pickaxe/drill/cyberware/deepcore": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "deepcore drill",
+   "rank": 7,
+   "reason": "Implant drill. Digs in under a third of the usual time with your hands free, between the rockjaw drill and a diamond drill. The implant is the real purchase.",
    "tier": "green"
   },
   "/obj/item/pickaxe/drill/diamonddrill": {
@@ -1620,7 +1692,7 @@
    "group": "Mining tools",
    "hash": "971c85bf93572b1b",
    "name": "emergency disembarkation tool",
-   "rank": 15,
+   "rank": 16,
    "reason": "Plain-speed pick from emergency kits. Hits for 15, but it's heavy to carry.",
    "tier": "none"
   },
@@ -1629,7 +1701,7 @@
    "group": "Mining tools",
    "hash": "e44656dab7dcaa9d",
    "name": "improvised pickaxe",
-   "rank": 17,
+   "rank": 18,
    "reason": "Taped-together pick at a third of the normal speed. Better than bare hands.",
    "tier": "none"
   },
@@ -1638,7 +1710,7 @@
    "group": "Mining tools",
    "hash": "f0d10d8ea21ed503",
    "name": "compact pickaxe",
-   "rank": 14,
+   "rank": 15,
    "reason": "Plain-speed pick in a smaller size.",
    "tier": "none"
   },
@@ -1647,7 +1719,7 @@
    "group": "Mining tools",
    "hash": "0dc2d79772498eca",
    "name": "rusty pickaxe",
-   "rank": 16,
+   "rank": 17,
    "reason": "Plain-speed pick from a scrap crate.",
    "tier": "none"
   },
@@ -1656,7 +1728,7 @@
    "group": "Mining tools",
    "hash": "d955462ef7f3820e",
    "name": "silver-plated pickaxe",
-   "rank": 9,
+   "rank": 10,
    "reason": "Half-time digging for 1,000 mining points.",
    "tier": "green"
   },
@@ -1674,7 +1746,7 @@
    "group": "Mining tools",
    "hash": "dab2a22ec6f7f472",
    "name": "material sniffer",
-   "rank": 22,
+   "rank": 23,
    "reason": "Crafted from an analyzer and some cable. Points at loose sheets of iron and glass. Minor.",
    "tier": "none"
   },
@@ -1701,7 +1773,7 @@
    "group": "Mining tools",
    "hash": "adad44b7c8924f21",
    "name": "ventpointer",
-   "rank": 21,
+   "rank": 22,
    "reason": "Points at nearby ore vents. 800 mining points for a shortcut you can walk.",
    "tier": "none"
   },
@@ -2195,7 +2267,7 @@
    "group": "Mining tools",
    "hash": "a8c7ee47f9855f4e",
    "name": "shovel",
-   "rank": 18,
+   "rank": 19,
    "reason": "Plain shovel, 8 force. Prints at round start.",
    "tier": "none"
   },
@@ -2215,7 +2287,7 @@
    "hash": "39a661a6f4799dbe",
    "name": "dull bone shovel",
    "note": "With combat mode on, each hit on an organic mob (and each thrown hit) adds a second hit equal to its own force (10; 8 for the dull version) to the same limb, and does nothing extra to robots or other non-organic mobs. Digs at tool speed 0.3 (0.8 dull).",
-   "rank": 11,
+   "rank": 12,
    "reason": "Dull bone shovel: each hit on an organic lands twice for 16. Slower dig. One ruin.",
    "tier": "green"
   },
@@ -2224,7 +2296,7 @@
    "group": "Mining tools",
    "hash": "6d36ec3489795240",
    "name": "spade",
-   "rank": 18,
+   "rank": 19,
    "reason": "Garden spade.",
    "tier": "none"
   },
@@ -2386,7 +2458,7 @@
    "group": "Mining tools",
    "hash": "949739cf35df0bb0",
    "name": "advanced automatic mining scanner",
-   "rank": 12,
+   "rank": 13,
    "reason": "Shows ore within 7 tiles on its own. 300 cr at the green waystation. Right price, right place.",
    "tier": "green"
   },
@@ -2395,7 +2467,7 @@
    "group": "Mining tools",
    "hash": "7c5b6654d9cb653b",
    "name": "automatic mining scanner",
-   "rank": 13,
+   "rank": 14,
    "reason": "Shows ore within 4 tiles on its own, more slowly. Common on hulls.",
    "tier": "green"
   },
@@ -2993,6 +3065,7 @@
   "/obj/item/door_remote/head_of_security": "no route",
   "/obj/item/door_remote/omni": "no route",
   "/obj/item/emergency_bed/silicon": "no route",
+  "/obj/item/excavation": "abstract",
   "/obj/item/extendohand/acme": "no route",
   "/obj/item/extinguisher/anti": "no route",
   "/obj/item/extinguisher/mini/nozzle": "uncreatable",

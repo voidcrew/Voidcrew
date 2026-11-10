@@ -53,7 +53,7 @@
 		SSambient_npcs.update_outpost(place, 0, roles, 2)
 	TEST_ASSERT_EQUAL(place.count_role(/datum/ambient_outpost_role/recruiter/nanotrasen), 1, "An empty Quartermain has [place.count_role(/datum/ambient_outpost_role/recruiter/nanotrasen)] Nanotrasen recruiters, not one")
 	TEST_ASSERT_EQUAL(place.count_role(/datum/ambient_outpost_role/recruiter/syndicate), 1, "An empty Quartermain has [place.count_role(/datum/ambient_outpost_role/recruiter/syndicate)] Syndicate recruiters, not one")
-	for(var/mob/living/basic/ambient_npc/recruiter/recruiter in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/recruiter/recruiter in place.npcs)
 		TEST_ASSERT(get_dist(recruiter, run_loc_floor_top_right) > 1, "[recruiter] was made on or beside the lift, not at their post")
 		TEST_ASSERT(recruiter.activity?.arrived, "[recruiter] was made at the outpost with nothing to do")
 		TEST_ASSERT(HAS_TRAIT(recruiter, TRAIT_AI_PAUSED), "[recruiter] at an empty outpost is not holding still")
@@ -62,7 +62,7 @@
 	for(var/i in 1 to 10)
 		place.arrivals_at = world.time
 		SSambient_npcs.update_outpost(place, 1, roles)
-		for(var/mob/living/basic/ambient_npc/recruiter/newcomer in run_loc_floor_top_right)
+		for(var/mob/living/carbon/human/npc/ambient_npc/recruiter/newcomer in run_loc_floor_top_right)
 			newcomer.forceMove(run_loc_floor_bottom_left)
 
 	var/nt_count = place.count_role(/datum/ambient_outpost_role/recruiter/nanotrasen)
@@ -70,16 +70,16 @@
 	TEST_ASSERT_EQUAL(nt_count, 1, "Quartermain has [nt_count] Nanotrasen recruiters, not one")
 	TEST_ASSERT_EQUAL(syn_count, 1, "Quartermain has [syn_count] Syndicate recruiters, not one")
 
-	var/mob/living/basic/ambient_npc/recruiter/nanotrasen/nt_npc = locate() in place.npcs
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen/nt_npc = locate() in place.npcs
 	TEST_ASSERT(istype(nt_npc), "No Nanotrasen recruiter came")
-	TEST_ASSERT_EQUAL(nt_npc.rival_type, /mob/living/basic/ambient_npc/recruiter/syndicate, "A Nanotrasen recruiter does not know their rival")
+	TEST_ASSERT_EQUAL(nt_npc.rival_type, /mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate, "A Nanotrasen recruiter does not know their rival")
 	TEST_ASSERT(!HAS_TRAIT(nt_npc, TRAIT_AI_PAUSED), "A recruiter still holds still with a player on the concourse")
 
 /// Talking to a recruiter gets a pitch line and, once per ten minutes, a pamphlet with nothing recorded about the player (D2)
 /datum/unit_test/voidcrew_ambient_recruiters_pamphlet
 
 /datum/unit_test/voidcrew_ambient_recruiters_pamphlet/Run()
-	var/mob/living/basic/ambient_npc/recruiter/nanotrasen/recruiter = allocate(/mob/living/basic/ambient_npc/recruiter/nanotrasen, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen/recruiter = allocate(/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 
 	TEST_ASSERT(length(recruiter.get_lines("talk")), "A Nanotrasen recruiter has no talk line") // AMBIENT_LINE_TALK
@@ -101,7 +101,7 @@
 /datum/unit_test/voidcrew_ambient_recruiters_posters
 
 /datum/unit_test/voidcrew_ambient_recruiters_posters/Run()
-	var/mob/living/basic/ambient_npc/recruiter/nanotrasen/recruiter = allocate(/mob/living/basic/ambient_npc/recruiter/nanotrasen, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen/recruiter = allocate(/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen, run_loc_floor_bottom_left)
 	var/turf/nearby = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 
 	// A rival poster nearby is torn down, not put up over
@@ -126,9 +126,9 @@
 /datum/unit_test/voidcrew_ambient_recruiters_barbs
 
 /datum/unit_test/voidcrew_ambient_recruiters_barbs/Run()
-	var/mob/living/basic/ambient_npc/recruiter/nanotrasen/nt_npc = allocate(/mob/living/basic/ambient_npc/recruiter/nanotrasen, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen/nt_npc = allocate(/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen, run_loc_floor_bottom_left)
 	var/turf/beside = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
-	var/mob/living/basic/ambient_npc/recruiter/syndicate/syn_npc = allocate(/mob/living/basic/ambient_npc/recruiter/syndicate, beside)
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate/syn_npc = allocate(/mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate, beside)
 
 	var/list/barb = nt_npc.pick_barb()
 	TEST_ASSERT(islist(barb) && length(barb) == 2 && istext(barb[1]), "Nanotrasen has no usable barb")

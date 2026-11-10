@@ -462,6 +462,7 @@
   "/obj/item/grenade/hypnotic": "no route",
   "/obj/item/grenade/primer": "no route",
   "/obj/item/grenade/primer/stingbang": "no route",
+  "/obj/item/grenade/smokebomb/bounty_boss": "no route",
   "/obj/item/grenade/spawnergrenade": "no route",
   "/obj/item/grenade/spawnergrenade/buzzkill": "no route",
   "/obj/item/grenade/spawnergrenade/cat": "no route",

@@ -1118,7 +1118,7 @@
 		return TRUE
 	if(HAS_TRAIT(src, TRAIT_DUMB))
 		return TRUE
-	if(mob_mood.sanity < SANITY_UNSTABLE)
+	if(mob_mood && mob_mood.sanity < SANITY_UNSTABLE) // VOIDCREW EDIT CHANGE: human NPCs have no mood datum (voidcrew/modules/human_npcs)
 		return TRUE
 
 /mob/living/carbon/wash(clean_types)

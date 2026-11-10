@@ -18,8 +18,8 @@
  * player's preferences savefile. Closing the window without answering (or
  * disconnecting mid-prompt, which is exactly what the six-second player did)
  * leaves the flag unset, so their next visit asks again. This is distinct from
- * the orientation briefing in orientation.dm, which is per-round and only
- * fires after a spawn - a player who bounces off the lobby never reaches it.
+ * the tutorial checklist (voidcrew/modules/tutorials), which only opens after a
+ * spawn - a player who bounces off the lobby never reaches it.
  */
 
 /// Preferences-savefile key marking that this player has answered the notice.

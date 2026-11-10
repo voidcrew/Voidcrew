@@ -8,6 +8,8 @@
 // Cyberware: chrome a garrison would have issued rather than bought, light
 // weave and knuckle plate on the line, and in the back room the ceramic
 // plating, the targeting optics and the frame that stops a limb coming off.
+// The governor and rage-core lines ride here too: the taped-over street
+// models on the line, the surplus service models in the back room.
 // TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune against the outfitter armor/gun prices
 // in theme_skus.
@@ -62,6 +64,7 @@
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/automatic/m90/unrestricted = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/energy/e_gun/hos = 1,
 			/obj/item/gun/energy/e_gun/nuclear = 1,
 			/obj/item/gun/energy/laser/carbine/cybersun/unrestricted = 1,
@@ -139,6 +142,15 @@
 		/datum/shop_sku/ripperdoc/slabskin,
 		/datum/shop_sku/ripperdoc/deadeye,
 		/datum/shop_sku/ripperdoc/atlas,
+		/datum/shop_sku/ripperdoc/governor_street,
+		/datum/shop_sku/ripperdoc/governor_milspec,
+		/datum/shop_sku/ripperdoc/redline_street,
+		/datum/shop_sku/ripperdoc/redline_milspec,
+		/datum/shop_sku/ripperdoc/cuffer_wrists,
+		/datum/shop_sku/ripperdoc/muffler_ear,
+		/datum/shop_sku/ripperdoc/hardweave,
+		/datum/shop_sku/ripperdoc/deadeye_milspec,
+		/datum/shop_sku/ripperdoc/lookout,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/armor/vest = 10,
@@ -149,6 +161,12 @@
 		/obj/item/clothing/glasses/hud/security/sunglasses = 5,
 		/obj/item/melee/baton/security/loaded = 4,
 		/obj/item/clothing/mask/balaclava = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/strength = 3,
+		// guard-post chrome: faster hands with the cuffs, and an ear that
+		// shuts out a flashbang
+		/obj/item/organ/cyberimp/cyberware/cuffer_wrists = 4,
+		/obj/item/organ/cyberimp/cyberware/muffler_ear = 4,
 	)
 	loot_uncommon = list(
 		/obj/item/clothing/suit/armor/bulletproof = 10,
@@ -160,6 +178,11 @@
 		/obj/item/ship_parts/combat = 7,
 		// Issue chrome: subdermal impact weave.
 		/obj/item/organ/cyberimp/cyberware/dermal_mesh = 4,
+		// a patched limiter and a cheap rage core, both off a deserter
+		/obj/item/organ/cyberimp/cyberware/governor_delete/street = 2,
+		/obj/item/organ/cyberimp/cyberware/redline/street = 2,
+		// the heavier issue weave
+		/obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave = 3,
 	)
 	loot_prime = list(
 		/obj/item/clothing/suit/armor/vest/marine = 9,
@@ -173,6 +196,14 @@
 		/obj/item/organ/cyberimp/cyberware/slabskin = 3,
 		/obj/item/organ/eyes/robotic/cyberware/deadeye = 3,
 		/obj/item/organ/cyberimp/cyberware/atlas = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/quick_recovery = 1,
+		// surplus service chrome with the unit numbers still on it
+		/obj/item/organ/cyberimp/cyberware/governor_delete/milspec = 2,
+		/obj/item/organ/cyberimp/cyberware/redline/milspec = 2,
+		// the service optics
+		/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec = 2,
+		/obj/item/organ/eyes/robotic/cyberware/lookout = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -182,6 +213,9 @@
 		/obj/item/handloaders_vise = 3,
 		/obj/item/clothing/glasses/sunglasses/marksmans_cant = 2,
 		/obj/item/garrison_standard = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/hulk = 1,
+		/obj/item/dnainjector/loot/tough = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/armory
