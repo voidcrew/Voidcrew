@@ -114,6 +114,16 @@
 	victim.hv_blood_on_damaged(victim, 40, BRUTE, chest, 0, 0, 0, NONE, EAST, null, TRUE)
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray) in east, "A heavy hit did not spray")
 
+/// The blow that kills always sprays, even a light one, though the body counts as dead by the time it is checked.
+/datum/unit_test/hv_blood_killing_blow/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
+	var/turf/east = get_step(run_loc_floor_bottom_left, EAST)
+	victim.adjustToxLoss(195, forced = TRUE)
+	TEST_ASSERT(victim.stat != DEAD, "Fixture: the victim died before the blow")
+	victim.apply_damage(13, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND, attack_direction = EAST)
+	TEST_ASSERT_EQUAL(victim.stat, DEAD, "Fixture: the blow did not kill")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray) in east, "The killing blow did not spray")
+
 /// A limb torn off throws blood the way the blow that took it travelled.
 /datum/unit_test/hv_blood_dismember_spray/Run()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)

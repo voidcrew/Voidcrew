@@ -19,6 +19,8 @@
 	/// Direction of the last brute hit this mob took, and when.
 	var/hv_blood_hit_dir = 0
 	var/hv_blood_hit_time = -100000
+	/// Whether this mob was alive when the hit landing now began, so the hit that kills it is known as one.
+	var/hv_blood_alive_at_hit = FALSE
 	/// World time before which this mob is not told again that blood spattered across it.
 	var/hv_blood_drench_until = 0
 
@@ -49,6 +51,7 @@
 /// before, or any way at all.
 /datum/element/hv_blood_hooks/proc/on_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
 	SIGNAL_HANDLER
+	source.hv_blood_alive_at_hit = source.stat != DEAD
 	if(damagetype != BRUTE || !attack_direction)
 		return
 	source.hv_blood_hit_dir = attack_direction
@@ -204,16 +207,17 @@
  * hyperviolence parts call for a spray; hit and dismember triggers are at the bottom of this file.
  *
  * spray_dir is the way the blow or shot travelled, away from the attacker. strength is how many
- * tiles the line reaches; big sprays also throw two flanking lines.
+ * tiles the line reaches; big sprays also throw two flanking lines. killing: the blow that killed src, which
+ * sprays even right after another spray.
  * Returns TRUE if anything was sprayed.
  */
-/mob/living/proc/hv_blood_throw(spray_dir, strength = 3)
+/mob/living/proc/hv_blood_throw(spray_dir, strength = 3, killing = FALSE)
 	if(QDELETED(src) || !isturf(loc))
 		return FALSE
 	if(can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return FALSE
 	strength = clamp(round(strength), 1, HV_BLOOD_MAX_RANGE)
-	if(world.time < hv_blood_spray_until && strength <= hv_blood_spray_strength)
+	if(!killing && world.time < hv_blood_spray_until && strength <= hv_blood_spray_strength)
 		return FALSE
 	hv_blood_spray_until = world.time + HV_BLOOD_SPRAY_WINDOW
 	hv_blood_spray_strength = strength
@@ -297,17 +301,20 @@
 	hv_blood_drench_until = world.time + 3 SECONDS
 	to_chat(src, span_warning("Blood spatters across you."))
 
-/// Big brute hits throw blood the way they travelled.
+/// Big brute hits, and the one that kills, throw blood the way they travelled.
 /mob/living/proc/hv_blood_on_damaged(datum/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
 	SIGNAL_HANDLER
+	// The blow that kills always sprays. By now, after the damage, the body already counts as dead.
+	var/killing = hv_blood_alive_at_hit && stat == DEAD
+	hv_blood_alive_at_hit = FALSE
 	if(damagetype != BRUTE || !attack_direction)
 		return
 	// Remembered for any limb this hit takes off a moment later.
 	hv_blood_hit_dir = attack_direction
 	hv_blood_hit_time = world.time
-	if(damage_dealt < HV_BLOOD_MIN_HIT)
+	if(damage_dealt < HV_BLOOD_MIN_HIT && !killing)
 		return
-	if(hv_blood_tg_spray_tick == world.time || world.time < hv_blood_spray_until)
+	if(hv_blood_tg_spray_tick == world.time || (world.time < hv_blood_spray_until && !killing))
 		return
 	if(blood_volume <= BLOOD_VOLUME_BAD || !isturf(loc))
 		return
@@ -319,9 +326,9 @@
 	var/chance = clamp((damage_dealt - 8) * 4, 0, 100)
 	if(stat == DEAD)
 		chance *= 0.5
-	if(!prob(chance))
+	if(!killing && !prob(chance))
 		return
-	hv_blood_throw(attack_direction, round(damage_dealt / HV_BLOOD_DAMAGE_PER_TILE))
+	hv_blood_throw(attack_direction, round(damage_dealt / HV_BLOOD_DAMAGE_PER_TILE), killing)
 
 /// The way the last brute hit travelled if it landed a moment ago, else null.
 /mob/living/proc/hv_blood_recent_hit_dir()
