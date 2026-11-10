@@ -5,7 +5,8 @@
  * presses them up and drives them down onto it (gorilla_arms/proc/try_slam(), gorilla_punch.dm). The lift is drawn
  * with the puppet rig (chrome_puppet_rig.dm), so neither real body is moved or turned by it.
  *
- * - Grip: he leans in and both fists take the body, by belt and collar seen from the side.
+ * - Grip: he leans in and both fists take the body, by belt and collar seen from the side. For the first moment of it
+ *   the real bodies still show, while the puppets' pictures reach the client: hidden at once, both would blink.
  * - Hoist: up and over, turning flat. Gorilla Arms press it overhead; Brawler myomers bring it to the shoulder.
  * - Top: one held beat. A body taken from behind or beside him is turned to the table or tile here.
  * - Slam: driven down with his fists still on it. Seen from the side he bends at the belt; from the front or back he
@@ -47,6 +48,8 @@
 
 /// Where the belt sits, from the middle of the picture: seen from the side the bearer bends about it.
 #define SLAM_WAIST_Y -7
+/// The puppet rig's filter that hides a real body (CHROME_RIG_HIDE_FILTER in chrome_puppet_rig.dm).
+#define SLAM_RIG_HIDE_FILTER "chrome_rig_hide"
 
 /// [progress] (0 to 1) eased as [kind] (SLAM_EASE_*).
 /proc/gorilla_slam_ease(kind, progress)
@@ -356,6 +359,8 @@
 		var/turf/from = way == taking ? victim_spot : spot
 		var/turf/onto = way == facing ? spot : victim_spot
 		var/body_row = min(from.y, onto.y) < bearer_spot.y ? -1 : 0
+		// The body's picture first: it is the one that changes on screen the moment the puppets come on
+		stand(victim_rig, "body_[way]", victim_rig.flat, way == NORTH ? 0 : body_row, way == NORTH ? base - 0.02 : base + 0.02)
 		var/icon/whole = rig.cut_without_arms("both")
 		if(way & (EAST|WEST))
 			// Split at the belt, the halves sharing three rows so no gap opens behind the bend
@@ -369,21 +374,32 @@
 			stand(rig, "arm_[near]", rig.arm_picture(near), body_row, base + 0.03)
 			var/far = near == "l" ? "r" : "l"
 			stand(rig, "arm_[far]", rig.arm_picture(far), 0, base - 0.02)
-			stand(victim_rig, "body_[way]", victim_rig.flat, body_row, base + 0.02)
 		else if(way == NORTH)
 			stand(rig, "body", whole, 0, base)
 			for(var/side in list("l", "r"))
 				stand(rig, "arm_[side]", rig.arm_picture(side), 0, base + 0.02)
-			stand(victim_rig, "body_[way]", victim_rig.flat, 0, base - 0.02)
 		else
 			stand(rig, "body", whole, 0, base)
 			for(var/side in list("l", "r"))
 				stand(rig, "arm_[side]", rig.arm_picture(side), body_row, base + 0.03)
-			stand(victim_rig, "body_[way]", victim_rig.flat, body_row, base + 0.02)
-	var/datum/chrome_rig/first = rigs["[taking]"]
-	first.conceal()
-	victim_rig.conceal()
+	conceal_after_hold(rigs["[taking]"])
+	conceal_after_hold(victim_rig)
 	return TRUE
+
+/**
+ * Hides [rig]'s real body as the rig does, but only when the hold is over by the client's own clock, in step with the
+ * puppets. Until then the bearer's puppets stand exactly over him and the body's is unseen, so nothing changes on screen
+ * while their pictures arrive.
+ */
+/datum/gorilla_slam/proc/conceal_after_hold(datum/chrome_rig/rig)
+	rig.conceal()
+	var/hide = rig.body.get_filter(SLAM_RIG_HIDE_FILTER)
+	if(!hide)
+		return
+	var/static/list/hidden = list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+	animate(hide, color = COLOR_MATRIX_IDENTITY, time = 0)
+	animate(color = COLOR_MATRIX_IDENTITY, time = GORILLA_SLAM_HOLD_TIME)
+	animate(color = hidden, time = GORILLA_SLAM_SWAP)
 
 // =========================================================================
 // THE POSES
@@ -528,7 +544,7 @@
 /datum/gorilla_slam/proc/arms_down()
 	return list("l" = list(SLAM_ARM_SWING, 0, 0), "r" = list(SLAM_ARM_SWING, 0, 0))
 
-/// Builds the key poses: standing, the grip, the top (the end of the hoist in the rig that takes the body, then held in the rig that brings it down), the impact, half way up, and upright.
+/// Builds the key poses: standing through the hold, the grip, the top (the end of the hoist in the rig that takes the body, then held in the rig that brings it down), the impact, half way up, and upright.
 /datum/gorilla_slam/proc/build_keys()
 	var/datum/chrome_rig/take_rig = rigs["[taking]"]
 	var/datum/chrome_rig/slam_rig = rigs["[facing]"]
@@ -537,6 +553,8 @@
 
 	var/datum/gorilla_slam_pose/stood = new(0, taking)
 	stood.arms = arms_down()
+	var/datum/gorilla_slam_pose/waited = new(GORILLA_SLAM_HOLD_TIME, taking)
+	waited.arms = arms_down()
 
 	// The grip. A body on its feet: he leans in and takes its near side by belt and collar, or its sides seen from the
 	// front or back. A body on the floor: he goes down to it as he will at the impact.
@@ -617,7 +635,7 @@
 	var/datum/gorilla_slam_pose/still = new(t_end, facing)
 	still.arms = arms_down()
 
-	keys = list(stood, grip, hoisted, top, top_held, impact, rising, upright, still)
+	keys = list(stood, waited, grip, hoisted, top, top_held, impact, rising, upright, still)
 	for(var/datum/gorilla_slam_pose/pose as anything in keys)
 		if(pose != top)
 			settle_arms(pose)
@@ -679,6 +697,8 @@
 		var/first_time = way == taking ? 0 : t_top
 		var/list/poses = pose_at(first_time, way)
 		var/obj/effect/abstract/chrome_puppet/held = victim_rig.puppet("body_[way]")
+		// Unseen at first: through the hold in the rig that takes the body, until the top in the rig that brings it down
+		held.alpha = 0
 		if(way == taking)
 			// Exactly as the real body is drawn, whatever its size
 			var/matrix/as_held = matrix(victim.transform)
@@ -686,7 +706,6 @@
 			held.transform = as_held
 		else
 			held.transform = body_matrix(first_time)
-			held.alpha = 0
 		for(var/key in poses)
 			var/obj/effect/abstract/chrome_puppet/puppet = rig.puppet(key)
 			puppet.transform = poses[key]
@@ -718,9 +737,17 @@
 					chains[key] = list()
 				chains[key] += poses[key]
 		for(var/key in chains)
-			var/obj/effect/abstract/chrome_puppet/puppet = key == "body_[way]" ? victim_rig.puppet(key) : rig.puppet(key)
-			if(puppet)
-				send_through(puppet, chains[key], step_time, on_from - from_time, on_to < to_time)
+			var/of_body = key == "body_[way]"
+			var/obj/effect/abstract/chrome_puppet/puppet = of_body ? victim_rig.puppet(key) : rig.puppet(key)
+			if(!puppet)
+				continue
+			var/list/poses = chains[key]
+			var/wait = on_from - from_time
+			if(of_body && way == taking && on_from < GORILLA_SLAM_HOLD_TIME)
+				// The body's own puppet comes on when the hold ends, as the real body goes
+				poses.Cut(1, round((GORILLA_SLAM_HOLD_TIME - on_from) / step_time) + 1)
+				wait = GORILLA_SLAM_HOLD_TIME - from_time
+			send_through(puppet, poses, step_time, wait, on_to < to_time)
 
 /**
  * Sends [puppet] through [poses] (transforms), [step_time] each. With a [wait] it stays unseen that long first; with
@@ -1027,3 +1054,4 @@
 #undef SLAM_EASE_IN
 #undef SLAM_EASE_SINE
 #undef SLAM_WAIST_Y
+#undef SLAM_RIG_HIDE_FILTER
