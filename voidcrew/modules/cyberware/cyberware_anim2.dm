@@ -8,8 +8,9 @@
  *
  * - Redline Burn: nodes flash white and run red-hot, eyes flood red, a red
  *   halo breathes round the body and the roar rolls a ring across the floor.
- *   The crash vents steam from the back, cools the nodes to grey and slumps
- *   the body a little.
+ *   In the crash the outline gutters out, the spine runs white and the charge
+ *   earths through the deck in arcs that fade; the nodes cool to grey and the
+ *   body slumps a little.
  * - Lazarus Node: a magenta charge crawls over the body through the windup,
  *   then a white jolt, a burst and a little spring as they come up.
  * - Leaps: the Hopper crouches, kicks up dust and arcs over to where it lands,
@@ -150,19 +151,38 @@
 // =========================================================================
 
 #define REDLINE_LOOK_FLASH "flash"
+/// The crash's first instant: the whole core lit white down the spine.
+#define REDLINE_LOOK_SURGE "surge"
 #define REDLINE_LOOK_HOT "hot"
 #define REDLINE_LOOK_COOL1 "cool1"
 #define REDLINE_LOOK_COOL2 "cool2"
 #define REDLINE_SAG_FILTER "cyberware_redline_sag"
 /// How long the white kick-in flash holds before the nodes run red.
 #define REDLINE_FLASH_TIME (0.15 SECONDS)
-/// From the crash to the nodes going grey.
-#define REDLINE_COOL_STEP (0.6 SECONDS)
-/// How long the back vents steam, and how long the last of it hangs.
-#define REDLINE_STEAM_TIME (1.2 SECONDS)
-#define REDLINE_STEAM_LIFE (2.4 SECONDS)
+/// The crash: how long the spine runs white before the charge leaves it for the floor.
+#define REDLINE_SPINE_FLASH (0.1 SECONDS)
+/// From the discharge to the nodes going grey.
+#define REDLINE_COOL_STEP (0.35 SECONDS)
+/// The outline's last stutters, drawn by a filter of its own once the window has taken its outline away.
+#define REDLINE_GUTTER_FILTER "cyberware_redline_gutter"
+/// The window's outline colour (CYBERWARE_REDLINE_OUTLINE_COLOR, ware_legend.dm), lit and out.
+#define REDLINE_GUTTER_ON "#ff2a2a"
+#define REDLINE_GUTTER_OUT "#ff2a2a00"
+/// How long that outline stands at full strength before its first stutter.
+#define REDLINE_GUTTER_HOLD (0.1 SECONDS)
+/// How long the arcs stand on the deck, how often they change, and how long their tracks take to glow, cool and
+/// fade after them.
+#define REDLINE_ARC_TIME (0.15 SECONDS)
+#define REDLINE_ARC_FLICKER (0.05 SECONDS)
+#define REDLINE_GLOW_TIME (2.2 SECONDS)
+/// How long the body takes to straighten up out of the slump when the crash ends.
+#define REDLINE_STRAIGHTEN_TIME (0.3 SECONDS)
+/// The sheet of deck effects, 96 px and centred on the bearer's tile.
+#define CYBERWARE_GROUND_ICON 'voidcrew/modules/cyberware/icons/cyberware_ground.dmi'
 /// The eyes during the burn.
 #define REDLINE_EYE_COLOR "#ff2a1a"
+/// The eyes as the red drains out of them.
+#define REDLINE_EYE_DYING "#8a2420"
 
 /obj/item/organ/cyberimp/cyberware/redline
 	/// The node look drawn over the core, or null for the plain one.
@@ -173,8 +193,6 @@
 	var/datum/weakref/burn_fx_ref
 	/// The red light the burn throws.
 	var/datum/weakref/burn_light_ref
-	/// The steam venting off the back in the crash.
-	var/datum/weakref/burn_steam_ref
 
 /obj/item/organ/cyberimp/cyberware/redline/cyberware_worn_key()
 	return "[..()]-[burn_look]"
@@ -193,12 +211,15 @@
 		dressed += part
 	// Nodes that still glow shine through whatever is worn on the back; cold ones stay under it.
 	dressed += cyberware_spine_node_images(CYBERWARE_ANIM2_ICON, state, burn_look != REDLINE_LOOK_COOL2, image_layer, limb?.owner || limb)
-	if(burn_look == REDLINE_LOOK_HOT || burn_look == REDLINE_LOOK_FLASH)
+	if(burn_look == REDLINE_LOOK_HOT || burn_look == REDLINE_LOOK_FLASH || burn_look == REDLINE_LOOK_SURGE)
 		dressed += redline_eyes(limb, image_layer)
+	else if(burn_look == REDLINE_LOOK_COOL1)
+		// The crash: the red drains out of them.
+		dressed += redline_eyes(limb, image_layer, REDLINE_EYE_DYING, FALSE)
 	return dressed
 
 /// Red eyes for the burn, drawn from the bearer's own eye sprites so they sit where their eyes are.
-/obj/item/organ/cyberimp/cyberware/redline/proc/redline_eyes(obj/item/bodypart/limb, image_layer)
+/obj/item/organ/cyberimp/cyberware/redline/proc/redline_eyes(obj/item/bodypart/limb, image_layer, eye_color = REDLINE_EYE_COLOR, glow = TRUE)
 	var/mob/living/carbon/human/bearer = limb?.owner
 	if(!istype(bearer))
 		return list()
@@ -211,12 +232,15 @@
 	var/list/eye_images = list()
 	for(var/side in list("_l", "_r"))
 		var/mutable_appearance/eye = mutable_appearance('icons/mob/human/human_face.dmi', "[eyes.eye_icon_state][side]", image_layer, bearer)
-		eye.color = REDLINE_EYE_COLOR
-		var/mutable_appearance/eye_glow = emissive_appearance(eye.icon, eye.icon_state, bearer, image_layer)
+		eye.color = eye_color
 		if(head.worn_face_offset)
 			head.worn_face_offset.apply_offset(eye)
-			head.worn_face_offset.apply_offset(eye_glow)
 		eye_images += eye
+		if(!glow)
+			continue
+		var/mutable_appearance/eye_glow = emissive_appearance(eye.icon, eye.icon_state, bearer, image_layer)
+		if(head.worn_face_offset)
+			head.worn_face_offset.apply_offset(eye_glow)
 		eye_images += eye_glow
 	return eye_images
 
@@ -249,19 +273,71 @@
 	if(here && reach > 0)
 		new /obj/effect/temp_visual/circle_wave/cyberware_roar(here, reach)
 
-/// The crash: the halo goes out, the nodes cool, steam vents from the back and the body slumps.
+/**
+ * The crash. The governor slams shut and the charge it was holding has to go somewhere: the outline gutters out,
+ * the red drains from the eyes, the spine runs white from neck to hips, and then the charge earths through the
+ * deck (see [/obj/item/organ/cyberimp/cyberware/redline/proc/ground_burn]). The body slumps.
+ */
 /obj/item/organ/cyberimp/cyberware/redline/proc/play_burn_crash(mob/living/carbon/bearer)
 	if(QDELETED(bearer) || bearer != owner)
 		return
 	stop_burn_glow(bearer)
 	watch_burn_bearer(bearer)
-	set_burn_look(REDLINE_LOOK_COOL1)
-	queue_burn_look(REDLINE_LOOK_COOL2, REDLINE_COOL_STEP)
-	qdel(burn_steam_ref?.resolve())
-	burn_steam_ref = WEAKREF(cyberware_anim_particles(bearer, /particles/smoke/steam/cyberware_vent, CHROME_ANIM2_TOP_LAYER, REDLINE_STEAM_TIME, REDLINE_STEAM_LIFE))
+	if(burn_look_timer)
+		deltimer(burn_look_timer)
+	set_burn_look(REDLINE_LOOK_SURGE)
+	burn_look_timer = addtimer(CALLBACK(src, PROC_REF(ground_burn)), REDLINE_SPINE_FLASH, TIMER_STOPPABLE)
+	// The window took its outline with it. Ours holds for a beat, then stutters out (gutter_burn). Both filters go
+	// on before the slump starts to move: adding a filter rebuilds every filter on the body from its stored values
+	// and drops whatever was animating.
+	bearer.add_filter(REDLINE_GUTTER_FILTER, 2, outline_filter(1, REDLINE_GUTTER_ON))
 	bearer.add_filter(REDLINE_SAG_FILTER, 31, displacement_map_filter(icon(CYBERWARE_ANIM2_ICON, "sag_map"), size = 0))
 	animate(bearer.get_filter(REDLINE_SAG_FILTER), size = 2, time = 0.3 SECONDS, easing = QUAD_EASING | EASE_OUT)
 	bearer.filter_data[REDLINE_SAG_FILTER]["size"] = 2
+	addtimer(CALLBACK(src, PROC_REF(gutter_burn), WEAKREF(bearer), 1), REDLINE_GUTTER_HOLD)
+
+/**
+ * The outline's last stutters, one a call: out, back dimmer, out, back dimmer still, gone.
+ *
+ * Stepped on a timer and stored as it goes, not animated. A second filter animation started on a body in the same
+ * instant as the slump's does not play, and an outline left lit in its stored values comes back at full strength
+ * the next time anything rebuilds the body's filters.
+ */
+/obj/item/organ/cyberimp/cyberware/redline/proc/gutter_burn(datum/weakref/bearer_ref, step)
+	var/static/list/colours = list(REDLINE_GUTTER_OUT, "#ff2a2ab4", REDLINE_GUTTER_OUT, "#ff2a2a70")
+	var/static/list/holds = list(0.05 SECONDS, 0.1 SECONDS, 0.05 SECONDS, 0.05 SECONDS)
+	var/mob/living/carbon/bearer = bearer_ref?.resolve()
+	if(QDELETED(bearer) || !bearer.get_filter(REDLINE_GUTTER_FILTER))
+		return
+	if(step > length(colours))
+		bearer.remove_filter(REDLINE_GUTTER_FILTER)
+		return
+	bearer.modify_filter(REDLINE_GUTTER_FILTER, list("color" = colours[step]))
+	addtimer(CALLBACK(src, PROC_REF(gutter_burn), bearer_ref, step + 1), holds[step])
+
+/**
+ * The charge leaves the spine for the floor. The nodes cool behind it, arcs crawl out across the deck under
+ * everybody's feet, and on a bearer still standing it runs down the legs first: behind the body, and in front of
+ * it only when the back is to the camera.
+ */
+/obj/item/organ/cyberimp/cyberware/redline/proc/ground_burn()
+	burn_look_timer = null
+	var/mob/living/carbon/bearer = burn_fx_ref?.resolve()
+	if(QDELETED(bearer) || bearer != owner)
+		return
+	set_burn_look(REDLINE_LOOK_COOL1)
+	queue_burn_look(REDLINE_LOOK_COOL2, REDLINE_COOL_STEP)
+	var/turf/deck = get_turf(bearer)
+	if(!isturf(bearer.loc) || isgroundlessturf(deck))
+		return
+	var/lying = bearer.body_position == LYING_DOWN
+	new /obj/effect/temp_visual/cyberware_redline_ground(deck, lying)
+	playsound(deck, SFX_SPARKS, 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	if(lying)
+		return
+	var/obj/effect/abstract/cyberware_anim/leg = cyberware_anim_play(bearer, CYBERWARE_ANIM2_ICON, "redline_legarc", CHROME_ANIM2_TOP_LAYER, REDLINE_ARC_TIME, glow = TRUE)
+	if(leg && !(bearer.dir & NORTH))
+		leg.vis_flags |= VIS_UNDERLAY
 
 /// Takes the light off; the nodes and the slump stay.
 /obj/item/organ/cyberimp/cyberware/redline/proc/stop_burn_glow(mob/living/carbon/bearer)
@@ -276,24 +352,37 @@
 	SIGNAL_HANDLER
 	clear_burn_fx()
 
-/// Back to the plain core: no node look, no halo, light, steam or slump.
-/obj/item/organ/cyberimp/cyberware/redline/proc/clear_burn_fx()
+/// Back to the plain core: no node look, no halo, light or slump. [straighten] eases a living body up out of the
+/// slump (the crash running its course); otherwise the slump goes at once.
+/obj/item/organ/cyberimp/cyberware/redline/proc/clear_burn_fx(straighten = FALSE)
 	if(burn_look_timer)
 		deltimer(burn_look_timer)
 		burn_look_timer = null
-	qdel(burn_steam_ref?.resolve())
-	burn_steam_ref = null
 	var/mob/living/carbon/bearer = burn_fx_ref?.resolve()
 	burn_fx_ref = null
 	stop_burn_glow(bearer)
 	if(!QDELETED(bearer))
 		UnregisterSignal(bearer, COMSIG_LIVING_DEATH)
-		bearer.remove_filter(REDLINE_SAG_FILTER)
+		bearer.remove_filter(REDLINE_GUTTER_FILTER)
+		var/sag = bearer.get_filter(REDLINE_SAG_FILTER)
+		if(sag && straighten && bearer.stat != DEAD)
+			animate(sag, size = 0, time = REDLINE_STRAIGHTEN_TIME, easing = QUAD_EASING | EASE_OUT)
+			bearer.filter_data[REDLINE_SAG_FILTER]["size"] = 0
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_redline_straightened), WEAKREF(bearer)), REDLINE_STRAIGHTEN_TIME)
+		else
+			bearer.remove_filter(REDLINE_SAG_FILTER)
 	if(isnull(burn_look))
 		return
 	burn_look = null
 	if(!QDELETED(bearer))
 		bearer.update_body_parts()
+
+/// The body is upright again: the slump's filter, flat by now, comes off. A slump put on since is left alone.
+/proc/cyberware_redline_straightened(datum/weakref/bearer_ref)
+	var/mob/living/carbon/bearer = bearer_ref?.resolve()
+	if(QDELETED(bearer) || bearer.filter_data?[REDLINE_SAG_FILTER]?["size"])
+		return
+	bearer.remove_filter(REDLINE_SAG_FILTER)
 
 /// The core in the bearer's OS slot, if it is a Redline model.
 /proc/cyberware_bearer_redline(mob/living/bearer)
@@ -323,7 +412,7 @@
 
 /// Hook for the crash's on_remove().
 /proc/cyberware_redline_crash_end_fx(mob/living/bearer)
-	cyberware_bearer_redline(bearer)?.clear_burn_fx()
+	cyberware_bearer_redline(bearer)?.clear_burn_fx(straighten = TRUE)
 
 /obj/item/organ/cyberimp/cyberware/redline/cyberware_anim_clear(mob/living/carbon/old_owner)
 	. = ..()
@@ -343,30 +432,71 @@
 	amount_to_scale = reach + 0.5
 	return ..()
 
-/// Steam off the back of a crashing core.
-/particles/smoke/steam/cyberware_vent
-	icon_state = list("steam_1" = 1, "steam_2" = 1, "steam_3" = 2)
-	count = 50
-	spawning = 3
-	lifespan = 1 SECONDS
-	fade = 0.6 SECONDS
-	position = generator(GEN_BOX, list(-7, 2, 0), list(7, 8, 0), UNIFORM_RAND)
-	velocity = generator(GEN_VECTOR, list(-0.6, 0.8, 0), list(0.6, 1.5, 0), NORMAL_RAND)
-	gravity = list(0, 0.2)
-	friction = 0.15
-	drift = generator(GEN_SPHERE, 0, 0.3, NORMAL_RAND)
-	grow = 0.05
-	scale = 0.75
+/**
+ * The Redline's charge earthing through the deck. Arcs crawl out across the floor under everybody's feet and
+ * flicker; the tracks they leave glow, cool to a scorch and fade to nothing. Nothing of it outlasts its duration.
+ *
+ * It is floor: on the floor plane, and shifted with pixel_w and pixel_z so the 96 px picture stays on its own
+ * tile's row. Shifted with pixel_y it would sort a row forward, and its glow would light the bearer through.
+ */
+/obj/effect/temp_visual/cyberware_redline_ground
+	icon = CYBERWARE_GROUND_ICON
+	icon_state = "redline_arcs_standing_1"
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
+	pixel_w = -32
+	pixel_z = -32
+	randomdir = FALSE
+	duration = REDLINE_ARC_TIME + REDLINE_GLOW_TIME
+	light_range = 2
+	light_power = 0.9
+	light_color = "#ff5a3a"
+	/// Where on the tile the charge reaches the deck: "standing" at the feet, "lying" along the length of the back.
+	var/shape = "standing"
+
+/obj/effect/temp_visual/cyberware_redline_ground/Initialize(mapload, lying = FALSE)
+	. = ..()
+	shape = lying ? "lying" : "standing"
+	show_arcs(1)
+	addtimer(CALLBACK(src, PROC_REF(show_arcs), 2), REDLINE_ARC_FLICKER)
+	addtimer(CALLBACK(src, PROC_REF(show_arcs), 1), REDLINE_ARC_FLICKER * 2)
+	addtimer(CALLBACK(src, PROC_REF(leave_glow)), REDLINE_ARC_TIME)
+
+/// One of the two arc pictures, and the same picture again as its glow, so the two are never out of step.
+/obj/effect/temp_visual/cyberware_redline_ground/proc/show_arcs(picture)
+	icon_state = "redline_arcs_[shape]_[picture]"
+	cut_overlays()
+	add_overlay(emissive_appearance(icon, icon_state, src))
+
+/// The arcs are gone: their tracks glow, cool and fade.
+/obj/effect/temp_visual/cyberware_redline_ground/proc/leave_glow()
+	icon_state = "redline_glow_[shape]"
+	cut_overlays()
+	add_overlay(emissive_appearance(icon, icon_state, src, alpha = 150))
+	set_light(0)
+	animate(src, alpha = 255, time = REDLINE_GLOW_TIME * 0.15)
+	animate(color = "#6a5350", time = REDLINE_GLOW_TIME * 0.3)
+	animate(alpha = 0, time = REDLINE_GLOW_TIME * 0.5)
 
 #undef REDLINE_LOOK_FLASH
+#undef REDLINE_LOOK_SURGE
 #undef REDLINE_LOOK_HOT
 #undef REDLINE_LOOK_COOL1
 #undef REDLINE_LOOK_COOL2
 #undef REDLINE_SAG_FILTER
 #undef REDLINE_FLASH_TIME
 #undef REDLINE_COOL_STEP
-#undef REDLINE_STEAM_TIME
-#undef REDLINE_STEAM_LIFE
+#undef REDLINE_SPINE_FLASH
+#undef REDLINE_GUTTER_FILTER
+#undef REDLINE_GUTTER_ON
+#undef REDLINE_GUTTER_OUT
+#undef REDLINE_GUTTER_HOLD
+#undef REDLINE_ARC_TIME
+#undef REDLINE_ARC_FLICKER
+#undef REDLINE_STRAIGHTEN_TIME
+#undef REDLINE_GLOW_TIME
+#undef REDLINE_EYE_DYING
+#undef CYBERWARE_GROUND_ICON
 #undef REDLINE_EYE_COLOR
 
 // =========================================================================
