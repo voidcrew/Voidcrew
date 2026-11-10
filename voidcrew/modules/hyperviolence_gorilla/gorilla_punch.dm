@@ -11,8 +11,8 @@
  * - The knockback rides the safe path (gorilla_throw.dm). A grabbed body is hurled, once per grab-move
  *   cooldown shared with the slam, so a held body can't be thrown into a wall over and over.
  * - Grab and slam: with someone in an aggressive grab, a click on the floor under them, an open floor
- *   beside you or a table lifts them and brings them down. Brawler myomers slam lighter, with a lower
- *   lift and a body-fall thud. A table click while grabbing slams instead of caving the table in.
+ *   beside you or a table lifts them and brings them down (gorilla_slam.dm). Brawler myomers slam lighter,
+ *   with a lower lift and a body-fall thud. A table click while grabbing slams instead of caving the table in.
  * - Every Gorilla blow on a person counts as PvP aggression at a trader outpost: the punch cancels the
  *   attack chain before the outpost's own unarmed-attack listener ever hears it.
  */
@@ -37,8 +37,8 @@
 	var/slam_table_break = GORILLA_SLAM_TABLE_BREAK
 	/// The bearer-wide wait after a slam or a hurl before the next one.
 	var/grab_move_cooldown = GORILLA_GRAB_MOVE_COOLDOWN
-	/// How high a slammed body is lifted, in pixels.
-	var/slam_lift = GORILLA_SLAM_LIFT
+	/// Whether a slammed body is pressed overhead first. Off: brought to the shoulder.
+	var/slam_overhead = TRUE
 	/// The Gorilla's floor slam: the meteor crash, the big ring and the cracks. Off: a body-fall thud, a small ring.
 	var/slam_full_fx = TRUE
 	/// What drives the fist, in the attack line.
@@ -294,7 +294,7 @@
 
 /**
  * With someone in an aggressive grab, a click on the floor under them, an open floor beside the bearer
- * or a table brings them down onto it. Returns GORILLA_SLAM_*.
+ * or a table starts the slam that brings them down onto it (gorilla_slam.dm). Returns GORILLA_SLAM_*.
  */
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/try_slam(mob/living/carbon/human/source, atom/target, obj/item/bodypart/active_hand)
 	var/mob/living/victim = source.pulling
@@ -307,32 +307,17 @@
 		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
 	if(!TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE))
 		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
-	var/turf/victim_spot = get_turf(victim)
 	var/turf/spot = table ? get_turf(table) : target
 	if(!source.Adjacent(spot))
 		return GORILLA_SLAM_NO
 	if(!table && !gorilla_slam_floor_ok(spot))
 		return GORILLA_SLAM_NO
-	source.stop_pulling()
-	if(spot != victim_spot)
-		var/passtable_key = REF(source)
-		if(table)
-			passtable_on(victim, passtable_key)
-		victim.Move(spot, get_dir(victim, spot))
-		if(table)
-			passtable_off(victim, passtable_key)
-		if(victim.loc != spot)
-			// Something stopped them getting there: no slam, but the grab is gone
-			return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
+	var/datum/gorilla_slam/slam = new(source, victim, spot, table, src, active_hand)
+	if(!slam.start())
+		qdel(slam)
+		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
 	gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, grab_move_cooldown)
 	source.changeNext_move(CLICK_CD_MELEE)
-	source.face_atom(victim)
-	// Up, then down: the blow lands as the body comes down.
-	animate(victim, pixel_z = slam_lift, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
-	animate(pixel_z = 0, time = 0.06 SECONDS, flags = ANIMATION_RELATIVE)
-	animate(pixel_z = -slam_lift, time = 0.06 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_RELATIVE)
-	source.do_attack_animation(victim, ATTACK_EFFECT_SMASH)
-	addtimer(CALLBACK(src, PROC_REF(slam_down), source, victim, spot, table ? WEAKREF(table) : null, active_hand), 0.24 SECONDS)
 	return GORILLA_SLAM_DONE
 
 /**
@@ -361,51 +346,3 @@
 		if(thing.density && !(thing.flags_1 & ON_BORDER_1))
 			return FALSE
 	return TRUE
-
-/// The slam lands, if the body is still where it was brought down.
-/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/slam_down(mob/living/carbon/human/source, mob/living/victim, turf/spot, datum/weakref/table_ref, obj/item/bodypart/active_hand)
-	if(QDELETED(source) || QDELETED(victim) || victim.loc != spot || owner != source)
-		return
-	var/obj/structure/table/table = table_ref?.resolve()
-	if(table && table.loc != spot)
-		table = null
-	var/aimed = source.zone_selected
-	var/obj/item/bodypart/limb = victim.get_bodypart(check_zone(aimed)) || victim.get_bodypart(BODY_ZONE_CHEST)
-	var/face_first = check_zone(aimed) == BODY_ZONE_HEAD
-	var/damage = table ? slam_table_damage : slam_floor_damage
-	var/stamina = table ? slam_table_stamina : slam_floor_stamina
-	var/others
-	var/self
-	if(table)
-		others = face_first ? "[source] slams [victim] face first into [table]!" : "[source] slams [victim] onto [table]!"
-		self = face_first ? "[source] slams you face first into [table]!" : "[source] slams you onto [table]!"
-	else
-		others = "[source] slams [victim] into the floor!"
-		self = "[source] slams you into the floor!"
-	victim.hv_hold_attack_message(others, self, null, source, vision_range = DEFAULT_MESSAGE_RANGE)
-	var/armour = victim.run_armor_check(limb, MELEE)
-	victim.apply_damage(damage, BRUTE, limb || BODY_ZONE_CHEST, armour, wound_bonus = punch_wound_bonus, attack_direction = get_dir(source, victim) || source.dir, attacking_item = active_hand)
-	victim.hv_flush_hit()
-	if(QDELETED(victim))
-		return
-	victim.apply_damage(stamina, STAMINA)
-	victim.Knockdown(slam_knockdown)
-	gorilla_register_aggression(victim, source)
-	shake_camera(victim, slam_full_fx ? 3 : 2, slam_full_fx ? 2 : 1)
-	cyberware_flash_fx(victim, 0.2 SECONDS)
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, slam_full_fx ? 0.8 : 0.5)
-	if(table)
-		playsound(victim, 'sound/effects/tableslam.ogg', 90, TRUE)
-		var/datum/component/table_smash/smash = table.GetComponent(/datum/component/table_smash)
-		table.take_damage(slam_table_break)
-		// Glass tables break as they do under any slammed body
-		if(!QDELETED(table))
-			smash?.after_smash?.Invoke(victim)
-	else if(slam_full_fx)
-		playsound(spot, 'sound/effects/meteorimpact.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 220)
-		cyberware_grey_dust(spot)
-	else
-		playsound(spot, SFX_BODYFALL, 70, TRUE)
-		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 70)
-	log_combat(source, victim, table ? "piston-slammed onto a table" : "piston-slammed into the floor", "gorilla arms")

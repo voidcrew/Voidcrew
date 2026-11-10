@@ -70,8 +70,49 @@
 #define GORILLA_SLAM_TABLE_STAMINA 40
 #define GORILLA_SLAM_KNOCKDOWN (2 SECONDS)
 #define GORILLA_SLAM_TABLE_BREAK 50
-/// How high a slammed body goes up before it comes down, in pixels.
-#define GORILLA_SLAM_LIFT 12
+// The slam's beats (gorilla_slam.dm), each a whole number of GORILLA_SLAM_STEPs. From the click: the grip, the hoist, the held
+// beat at the top and the drive down, then the impact. Gorilla Arms: 0.44 s to the impact and 0.70 s in all.
+#define GORILLA_SLAM_GRIP_TIME (0.08 SECONDS)
+/// The start of the grip, when nothing shows yet: the puppets' pictures are on their way to the client, so the real bodies
+/// stay on screen this long and the puppets stand unseen, or exactly over them.
+#define GORILLA_SLAM_HOLD_TIME (0.04 SECONDS)
+#define GORILLA_SLAM_HOIST_TIME (0.2 SECONDS)
+#define GORILLA_SLAM_TOP_TIME (0.06 SECONDS)
+#define GORILLA_SLAM_DRIVE_TIME (0.1 SECONDS)
+/// After the impact: how long the body takes to come to rest, the bearer to stand back up, and the puppets to go.
+#define GORILLA_SLAM_REBOUND_TIME (0.12 SECONDS)
+#define GORILLA_SLAM_RISE_TIME (0.18 SECONDS)
+#define GORILLA_SLAM_SETTLE_TIME (0.26 SECONDS)
+/// How long a body takes to come down on its feet when the slam is called off.
+#define GORILLA_SLAM_SET_DOWN_TIME (0.15 SECONDS)
+/// The length of one straight step of the slam's puppets, and of the swap between the bearer's two rigs when he turns.
+#define GORILLA_SLAM_STEP (0.02 SECONDS)
+#define GORILLA_SLAM_SWAP (0.01 SECONDS)
+/// The most and the least his piston arms are drawn to keep a fist on the body, as shares of their length.
+#define GORILLA_SLAM_MAX_REACH 2.2
+#define GORILLA_SLAM_MIN_REACH 0.4
+/// Where the middle of the body is at the top of the lift, in pixels from the bearer: in front of him and up, seen from the
+/// side; aside and up, seen from the front or back. Gorilla Arms press it overhead, flat.
+#define GORILLA_SLAM_TOP_SIDE_X 4
+#define GORILLA_SLAM_TOP_SIDE_Y 22
+#define GORILLA_SLAM_TOP_FRONT_X 3
+#define GORILLA_SLAM_TOP_FRONT_Y 28
+/// Seen from behind, the floor in front of him is up the screen too, about where a body held overhead is drawn. So he goes
+/// up on his toes at the top and holds it this high, and it has somewhere to come down from.
+#define GORILLA_SLAM_TOP_BACK_Y 34
+#define GORILLA_SLAM_TOP_BACK_RISE 4
+/// How far up tg draws a body lying on a table.
+#define GORILLA_SLAM_TABLE_TOP 12
+/// Pixels a slammed body bounces off what it lands on, and the degrees it tips as it does.
+#define GORILLA_SLAM_BOUNCE 4
+#define GORILLA_SLAM_BOUNCE_TIP 6
+/// Drops of blood thrown out round a body the slam cut open: the fewest and the most, and how far from it they land.
+#define GORILLA_SLAM_DROPS_MIN 5
+#define GORILLA_SLAM_DROPS_MAX 7
+#define GORILLA_SLAM_DROPS_NEAR 9
+#define GORILLA_SLAM_DROPS_FAR 19
+/// What holds the bearer where he stands for the slam.
+#define GORILLA_SLAM_TRAIT "gorilla_slam"
 
 // ---- Brawler myomers (ware_line_models_a.dm): the street slam, pound, smash and pry ----
 
@@ -81,7 +122,14 @@
 #define BRAWLER_SLAM_TABLE_STAMINA 30
 #define BRAWLER_SLAM_KNOCKDOWN (1 SECONDS)
 #define BRAWLER_SLAM_TABLE_BREAK 30
-#define BRAWLER_SLAM_LIFT 8
+/// The Brawler's shorter haul: 0.40 s to the impact. It brings the body to the shoulder, tipped back and not yet flat.
+#define BRAWLER_SLAM_HOIST_TIME (0.16 SECONDS)
+#define BRAWLER_SLAM_TOP_SIDE_X 11
+#define BRAWLER_SLAM_TOP_SIDE_Y 13
+#define BRAWLER_SLAM_TOP_FRONT_X 2
+#define BRAWLER_SLAM_TOP_FRONT_Y 18
+#define BRAWLER_SLAM_TOP_TURN 62
+#define BRAWLER_SLAM_BOUNCE 2
 #define BRAWLER_GRAB_MOVE_COOLDOWN (15 SECONDS)
 /// Damage per structure smash: over a plain airlock's deflection (21) and a reinforced one's (30).
 #define BRAWLER_STRUCTURE_DAMAGE 32
