@@ -314,7 +314,7 @@
 		TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "[wire_type] drew tg's flying spool")
 
 	// Its shock is a small crackle where the wire touched: never a bolt from the wielder, nor sparks thrown about.
-	var/obj/item/melee/cyberware_monowire/live/arc = wire
+	var/obj/item/melee/cyberware_monowire/live/arc = allocate(/obj/item/melee/cyberware_monowire/live)
 	arc.arc_visuals(east, west)
 	TEST_ASSERT(locate(/obj/effect/temp_visual/cyberware_arc_crackle) in get_turf(east), "The Arc's shock drew no crackle where it touched")
 	TEST_ASSERT(!(locate(/obj/effect/ebeam) in get_turf(west)), "The Arc's shock drew a beam from the wielder")
