@@ -53,6 +53,8 @@
 	var/board_next_sighting = 0
 	/// "[REF(ship)]" -> warrants that ship printed for it (AR-G2)
 	var/list/board_warrants = list()
+	/// Weakrefs to every warrant printed for it, burned when it closes
+	var/list/board_printed_warrants = list()
 	/// Timer deciding, a moment after its criminal was deleted, whether anything is left to turn in
 	var/board_lost_timer
 
@@ -282,6 +284,7 @@
 	claimants.Cut()
 	board_hunt_started.Cut()
 	board_clear_gps()
+	board_burn_warrants()
 
 	// Listeners get the criminal and decoys first: P6 detaches the ones at a trader outpost and walks them out
 	SEND_SIGNAL(src, COMSIG_BOUNTY_POSTING_CLOSED, reason, winner)
@@ -623,7 +626,16 @@
 	warrant.name = "warrant ([record?.name || "unknown"])"
 	warrant.add_raw_text(board_warrant_text(), advanced_html = TRUE)
 	warrant.update_appearance()
+	board_printed_warrants += WEAKREF(warrant)
 	return warrant
+
+/// Burns every warrant printed for it that is still around: a closed bounty's warrant is only litter
+/datum/criminal_bounty/proc/board_burn_warrants()
+	for(var/datum/weakref/warrant_ref as anything in board_printed_warrants)
+		var/obj/item/paper/bounty_warrant/warrant = warrant_ref?.resolve()
+		if(!QDELETED(warrant))
+			warrant.burn_up()
+	board_printed_warrants.Cut()
 
 /// The reward as a poster says it: "1000 cr and 1 trade voucher"
 /datum/criminal_bounty/proc/board_reward_text()
