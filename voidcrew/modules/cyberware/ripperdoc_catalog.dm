@@ -10,8 +10,10 @@
  * ware, vouchers gate everything that changes how you fight. Splice's intake
  * ledger buys back every piece he sells for credits (owner D7), at half list,
  * credits only, so climbing a slot ladder feels like climbing and never becomes
- * an arbitrage loop (voucher chrome is never bought back, and a removed piece
- * resold at 50% is always a loss).
+ * an arbitrage loop (voucher chrome bought at a counter is never bought back,
+ * and a removed piece resold at 50% is always a loss). Found chrome with no
+ * trade-in row (voucher-shelf pieces and loot-only ones) sells on four price
+ * bands instead, which refuse anything bought at a counter.
  *
  * Splice is not the only source any more. The roster also rides the zone loot
  * tables (modules/loot/themes/) at the tier that matches what he charges for
@@ -186,7 +188,12 @@
 		/datum/shop_buyback/ripperdoc/cargo_cavity,
 		/datum/shop_buyback/ripperdoc/gastro,
 		/datum/shop_buyback/ripperdoc/chromatic_dermis,
-		/datum/shop_buyback/ripperdoc/burnt_chrome,
+		/datum/shop_buyback/burnt_chrome,
+		// Found chrome that has no trade-in row, by price band.
+		/datum/shop_buyback/found_chrome/fitted,
+		/datum/shop_buyback/found_chrome/pro,
+		/datum/shop_buyback/found_chrome/military,
+		/datum/shop_buyback/found_chrome/legend,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -738,9 +745,10 @@
 /**
  * Dead chrome off a dead (or opened-up) human NPC (/obj/item/burnt_chrome, human_npc.dm). Scrap money only:
  * 50 cr is a fifth of the cheapest piece Splice sells for credits, so burning out bought chrome in a captive
- * to sell the husk is always a loss, and the round's demand caps it.
+ * to sell the husk is always a loss, and the round's demand caps it. Not a ripperdoc trade-in row: those
+ * buy back shelf stock, and no shelf sells burnt chrome.
  */
-/datum/shop_buyback/ripperdoc/burnt_chrome
+/datum/shop_buyback/burnt_chrome
 	name = "Burnt-out chrome"
 	desc = "Dead implants. Splice strips them for the parts that didn't melt."
 	category = "Scrap"
@@ -748,3 +756,112 @@
 	pay_credits = 50
 	demand_min = 4
 	demand_max = 8
+
+/datum/shop_buyback/burnt_chrome/street_doc
+	desc = "Dead implants. Ratchet melts them down for the metal."
+
+// =========================================================================
+// FOUND CHROME: the pieces no trade-in row takes
+// Voucher-shelf chrome and loot-only chrome, out of caches or off the dead.
+// Priced by band against the shelf: 1-voucher pieces pay 400 cr, 2-voucher
+// pieces 900 cr (a paired arm counts as half its pair), 3-voucher and dearer
+// pieces 1 voucher, the loot-only Piledriver 2. Each band names exact types,
+// none of which any trade-in row matches, so no piece fits two rows.
+//
+// Not a /datum/shop_buyback/ripperdoc subtype on purpose: those take shop
+// stock and pay credits only (voidcrew_ripperdoc_resale pins that). These
+// refuse anything bought at a counter, so a voucher payout here only ever
+// buys chrome nobody paid a shop for.
+// =========================================================================
+
+/datum/shop_buyback/found_chrome
+	category = "Found Chrome"
+	item_path = /obj/item/organ
+	icon_override = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	/// Exact chrome types this band pays for
+	var/list/wanted_chrome
+
+/datum/shop_buyback/found_chrome/buyback_wanted_kind(obj/item/offered)
+	return (offered.type in wanted_chrome) && !shop_buyback_inside_body(offered)
+
+/datum/shop_buyback/found_chrome/matches(obj/item/offered)
+	if(!..() || !(offered.type in wanted_chrome))
+		return FALSE
+	var/obj/item/organ/ware = offered
+	return !(ware.organ_flags & ORGAN_FAILING)
+
+/// The stock refusal keys off item_path, which here is every organ (buyback_listed.dm).
+/datum/shop_buyback/found_chrome/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/found_chrome/fitted
+	name = "fitted chrome"
+	desc = "Icepicks, sonar, field optics, grave hooks. Clean them up and they sell again."
+	icon_state_override = "icepick"
+	wanted_chrome = list(
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick,
+		/obj/item/organ/cyberimp/cyberware/doppler,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber,
+		/obj/item/organ/eyes/robotic/cyberware/prospector,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook,
+	)
+	pay_credits = 400
+	demand_min = 2
+	demand_max = 3
+
+/datum/shop_buyback/found_chrome/pro
+	name = "pro chrome"
+	desc = "Combat optics, reflex wiring, one arm of a matched pair. Splice knows who's shopping."
+	icon_state_override = "mantis"
+	wanted_chrome = list(
+		/obj/item/organ/eyes/robotic/cyberware/deadeye,
+		/obj/item/organ/cyberimp/cyberware/slipwire,
+		/obj/item/organ/cyberimp/cyberware/dead_channel,
+		/obj/item/organ/cyberimp/cyberware/atlas,
+		/obj/item/organ/cyberimp/cyberware/gorilla_arms,
+		/obj/item/organ/cyberimp/cyberware/gorilla_arms/left,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch/left,
+	)
+	pay_credits = 900
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/found_chrome/military
+	name = "military chrome"
+	desc = "Monowire, gun arms, slab plating, milspec builds. The big names too, if they still work."
+	icon_state_override = "ronin"
+	wanted_chrome = list(
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
+		/obj/item/organ/cyberimp/cyberware/rigger,
+		/obj/item/organ/cyberimp/cyberware/slabskin,
+		/obj/item/organ/cyberimp/cyberware/ghostskin,
+		/obj/item/organ/cyberimp/cyberware/lazarus,
+		/obj/item/organ/eyes/robotic/cyberware/lookout,
+		/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec,
+		/obj/item/organ/cyberimp/cyberware/slipwire/milspec,
+		/obj/item/organ/cyberimp/cyberware/hopper/milspec,
+		/obj/item/organ/cyberimp/cyberware/governor_delete/milspec,
+		/obj/item/organ/cyberimp/cyberware/redline/milspec,
+		/obj/item/organ/cyberimp/cyberware/cascade/milspec,
+		/obj/item/organ/cyberimp/cyberware/governor_delete,
+		/obj/item/organ/cyberimp/cyberware/redline,
+		/obj/item/organ/cyberimp/cyberware/cascade,
+	)
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/found_chrome/legend
+	name = "Piledriver"
+	desc = "Splice has never had one on the bench. He'd like to."
+	icon_state_override = "piledriver"
+	wanted_chrome = list(/obj/item/organ/cyberimp/cyberware/piledriver)
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 1

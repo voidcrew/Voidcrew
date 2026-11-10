@@ -6,11 +6,14 @@
  *
  * - /datum/component/cyberware_dodge: THE one projectile-dodge arbiter.
  *   Slipwire registers a 15% source here, Cascade Lattice (ware_legend.dm)
- *   registers a 40% source during its window, and the component rolls the
+ *   registers a 60% source during its window, and the component rolls the
  *   single HIGHEST live source. Never additive: Slipwire + Cascade together
- *   is still 40%, not 49%. Any future dodge chrome must register a source
+ *   is still 60%, not 75%. Any future dodge chrome must register a source
  *   through cyberware_register_dodge_source() rather than hanging its own
- *   COMSIG_ATOM_PRE_BULLET_ACT handler.
+ *   COMSIG_ATOM_PRE_BULLET_ACT handler. A source registered with melee = TRUE
+ *   (the Cascade line's windows) also dodges blows, through tg's own
+ *   check_block() via COMSIG_LIVING_CHECK_BLOCK, so a dodged blow is a real
+ *   miss and never fake damage.
  * - cyberware_is_ally(): the crew filter for auto-targeting ware (Deadeye's
  *   tag, Widowline's cleave). Allies are people who share a ship team with
  *   you; NPC boarders standing on your deck are NOT allies, and rival players
@@ -38,11 +41,18 @@
  *   fading decoy and a bullet-miss crack. Dodging reads to the shooter.
  * - COMPONENT_BULLET_PIERCED means the round keeps flying into whoever is
  *   behind; accepted as flavor.
+ * - Melee sources dodge damaging blows (weapons, fists, claws and bites)
+ *   whether moving or not, but never grabs, tackles or shoves (zero-damage
+ *   attempts), and never once the bearer is pinned: lying down, stunned,
+ *   cuffed, buckled, held in an aggressive grab or in a finisher's hold.
+ *   A melee dodge blurs in place; it never steps the bearer out of reach.
  */
 /datum/component/cyberware_dodge
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	/// key -> /datum/callback returning that source's live dodge chance.
 	var/list/dodge_sources = list()
+	/// key -> /datum/callback for the sources that also dodge blows. Each is in dodge_sources too.
+	var/list/melee_sources = list()
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
 	/// world.time a dodge was last announced: an NPC under fire says it at most once every CYBERWARE_DODGE_LINE_GAP, so chat isn't flooded
@@ -55,12 +65,14 @@
 /datum/component/cyberware_dodge/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_ATOM_PRE_BULLET_ACT, PROC_REF(on_pre_bullet_act))
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
+	RegisterSignal(parent, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(on_check_block))
 
 /datum/component/cyberware_dodge/UnregisterFromParent()
-	UnregisterSignal(parent, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_MOVABLE_MOVED))
+	UnregisterSignal(parent, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_CHECK_BLOCK))
 
 /datum/component/cyberware_dodge/Destroy()
 	dodge_sources = null
+	melee_sources = null
 	return ..()
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: timestamp the movement window.
@@ -82,16 +94,74 @@
 	var/atom/shooter = hitting_projectile.firer
 	if(shooter && shooter != source && get_dist(source, shooter) <= 1)
 		return NONE
-	var/best_chance = 0
-	for(var/key in dodge_sources)
-		var/datum/callback/chance_callback = dodge_sources[key]
-		var/chance = chance_callback?.Invoke()
-		if(isnum(chance))
-			best_chance = max(best_chance, chance)
+	var/best_chance = best_chance(dodge_sources)
 	if(best_chance <= 0 || !prob(best_chance))
 		return NONE
 	INVOKE_ASYNC(src, PROC_REF(perform_sidestep), source, hitting_projectile)
 	return COMPONENT_BULLET_PIERCED
+
+/// The highest live chance among these sources. Never additive.
+/datum/component/cyberware_dodge/proc/best_chance(list/sources)
+	. = 0
+	for(var/key in sources)
+		var/datum/callback/chance_callback = sources[key]
+		var/chance = chance_callback?.Invoke()
+		if(isnum(chance))
+			. = max(., chance)
+
+/// Signal proc for [COMSIG_LIVING_CHECK_BLOCK]: the melee dodge roll, from tg's own check_block().
+/datum/component/cyberware_dodge/proc/on_check_block(mob/living/source, atom/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
+	SIGNAL_HANDLER
+	if(!length(melee_sources) || !cyberware_can_dodge_blow(source, hit_by, damage, attack_text, attack_type))
+		return FAILED_BLOCK
+	var/best_chance = best_chance(melee_sources)
+	if(best_chance <= 0 || !prob(best_chance))
+		return FAILED_BLOCK
+	INVOKE_ASYNC(src, PROC_REF(perform_blow_dodge), source, attack_text)
+	return SUCCESSFUL_BLOCK
+
+/// The visible half of a dodged blow: the same blur decoy, a whiff, and a line. No step.
+/datum/component/cyberware_dodge/proc/perform_blow_dodge(mob/living/source, attack_text)
+	if(QDELETED(source))
+		return
+	new /obj/effect/temp_visual/decoy/fading/halfsecond(source.loc, source)
+	playsound(source, 'sound/items/weapons/punchmiss.ogg', 50, TRUE)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("[source] blurs out of the way of [attack_text]!"),
+			span_danger("You blur out of the way of [attack_text]!"),
+		)
+
+/**
+ * Whether the bearer can dodge this blow at all. Only damaging melee and
+ * unarmed blows from someone else; never while the bearer is down, stunned,
+ * cuffed, buckled, held tight, or in a finisher's hold, so grabs, finishers,
+ * the garrote and executions are never dodged once they have started.
+ */
+/proc/cyberware_can_dodge_blow(mob/living/bearer, atom/hit_by, damage, attack_text, attack_type)
+	if(attack_type != MELEE_ATTACK && attack_type != UNARMED_ATTACK)
+		return FALSE
+	if(!isnum(damage) || damage <= 0)
+		// tg checks a person's bare hands before it knows what they do, with no damage and the
+		// attacker's name as the text. Only a hand thrown in combat mode counts; a grab
+		// ("[name]'s grab"), a tackle and a friendly touch never do.
+		if(!isliving(hit_by))
+			return FALSE
+		var/mob/living/attacker = hit_by
+		if(!attacker.combat_mode || attack_text != attacker.name)
+			return FALSE
+	if(hit_by == bearer || (isitem(hit_by) && hit_by.loc == bearer))
+		return FALSE
+	if(bearer.stat != CONSCIOUS || bearer.body_position == LYING_DOWN || bearer.buckled)
+		return FALSE
+	if(HAS_TRAIT(bearer, TRAIT_INCAPACITATED) || HAS_TRAIT(bearer, TRAIT_FLOORED) || HAS_TRAIT(bearer, TRAIT_RESTRAINED) || HAS_TRAIT(bearer, TRAIT_IMMOBILIZED))
+		return FALSE
+	if(bearer.pulledby && bearer.pulledby.grab_state >= GRAB_AGGRESSIVE)
+		return FALSE
+	if(bearer.has_status_effect(/datum/status_effect/hv_finisher_hold))
+		return FALSE
+	return TRUE
 
 /// The visible half of a successful dodge: blur decoy, bullet-miss crack,
 /// and a one-tile sidestep perpendicular to the shot when the floor allows.
@@ -117,12 +187,17 @@
  * arbiter component on first use. The callback is polled per incoming
  * projectile and must return the source's CURRENT chance, return 0 while
  * disabled (ORGAN_FAILING etc.) rather than unregistering per-flicker.
+ * With melee = TRUE the same chance also dodges blows (see on_check_block()).
  */
-/proc/cyberware_register_dodge_source(mob/living/bearer, key, datum/callback/chance_callback)
+/proc/cyberware_register_dodge_source(mob/living/bearer, key, datum/callback/chance_callback, melee = FALSE)
 	if(!istype(bearer) || !key || !chance_callback)
 		return
 	var/datum/component/cyberware_dodge/arbiter = bearer.LoadComponent(/datum/component/cyberware_dodge)
 	arbiter.dodge_sources[key] = chance_callback
+	if(melee)
+		arbiter.melee_sources[key] = chance_callback
+	else
+		arbiter.melee_sources -= key
 
 /// Removes a keyed dodge source; the arbiter cleans itself up with the last one.
 /proc/cyberware_unregister_dodge_source(mob/living/bearer, key)
@@ -130,6 +205,7 @@
 	if(!arbiter)
 		return
 	arbiter.dodge_sources -= key
+	arbiter.melee_sources -= key
 	if(!length(arbiter.dodge_sources))
 		qdel(arbiter)
 

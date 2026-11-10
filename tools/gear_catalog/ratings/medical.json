@@ -13,7 +13,8 @@
   "advanced surgery",
   "basic surgery",
   "scanners",
-  "blood"
+  "blood",
+  "gene injectors"
  ],
  "items": {
   "/obj/item/autopsy_scanner": {
@@ -186,6 +187,456 @@
    "rank": 8,
    "reason": "Anchor. Revives a fresh corpse at the cost of your back slot, and thick chest clothing blocks it. Common on hulls, and a cargo crate of two costs 1,000 cr.",
    "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/adrenaline_rush": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Adrenaline Rush)",
+   "rank": 35,
+   "reason": "A stun-shortening chemical burst every two minutes. Like Anti-Stun. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/antenna": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Antenna)",
+   "rank": 10,
+   "reason": "A permanent hands-free radio. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/anti_glow": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Anti-Glow)",
+   "rank": 16,
+   "reason": "A pocket of darkness around the user; players only. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/autotomy": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Autotomy)",
+   "rank": 18,
+   "reason": "Drop a random limb on demand, can slip cuffs. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/biotech": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Biotech Compatibility)",
+   "rank": 1,
+   "reason": "One more point of skillchip room. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/breathless": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Breathless)",
+   "rank": 48,
+   "reason": "Never needs to breathe. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/chameleon": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Chameleon)",
+   "rank": 31,
+   "reason": "Fades to invisible while still; players only. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/chem_spike": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Chem Spike)",
+   "rank": 28,
+   "reason": "Ranged tongue that injects the user's own blood chemicals. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/cindikinesis": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Cindikinesis)",
+   "rank": 2,
+   "reason": "Makes ash. Flavour. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/cold_adaptation": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Cold Adaptation)",
+   "rank": 23,
+   "reason": "No cold damage and no slipping on ice; beats snow storms. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/cryokinesis": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Cryokinesis)",
+   "rank": 26,
+   "reason": "A ranged freezing beam on a cooldown. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/dextrous": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Dextrous)",
+   "rank": 46,
+   "reason": "Halves every click cooldown. Above Cascade. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/dwarfism": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Dwarfism)",
+   "rank": 19,
+   "reason": "Walk over tables, like Gecko cyberware. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/elastic_arms": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Elastic Arms)",
+   "rank": 37,
+   "reason": "Melee reach of two tiles, but no normal guns. Monowire-class. Loot only.",
+   "tier": "red"
+  },
+  "/obj/item/dnainjector/loot/farsight": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Farsight)",
+   "rank": 13,
+   "reason": "A slightly wider view without a power chromosome. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/fiery_sweat": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Fiery Sweat)",
+   "rank": 39,
+   "reason": "Halves burn damage, with random self-ignition. Half of Coolant. Loot only.",
+   "tier": "red"
+  },
+  "/obj/item/dnainjector/loot/fire_breath": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Fire Breath)",
+   "rank": 32,
+   "reason": "A burning cone on a long cooldown. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/fire_immunity": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Fire Immunity)",
+   "rank": 49,
+   "reason": "Half burn damage and never catches fire. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/geladikinesis": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Geladikinesis)",
+   "rank": 5,
+   "reason": "Makes snow for snow walls. Flavour. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/gigantism": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Gigantism)",
+   "rank": 4,
+   "reason": "Bigger sprite and a small tackle edge. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/glowy": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Glowy)",
+   "rank": 3,
+   "reason": "A coloured light around the user. Flavour. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/heat_adaptation": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Heat Adaptation)",
+   "rank": 24,
+   "reason": "No heat damage and ash storm immunity. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/hulk": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Hulk)",
+   "rank": 44,
+   "reason": "Permanent stun and stamina immunity for humans. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/hypermetabolic": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Hypermetabolic Blood)",
+   "rank": 21,
+   "reason": "Six times blood regeneration, more bleeding. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/inexorable": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Inexorable)",
+   "rank": 40,
+   "reason": "Stays up below crit with no pain. Same traits as Dead Channel. Loot only.",
+   "tier": "red"
+  },
+  "/obj/item/dnainjector/loot/insulated": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Insulated)",
+   "rank": 14,
+   "reason": "Shock immunity. Like insulated gloves that never come off. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/laser_eyes": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Laser Eyes)",
+   "rank": 43,
+   "reason": "An endless laser with no ammo and nothing to disarm. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/martyrdom": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Martyrdom)",
+   "rank": 9,
+   "reason": "Gibs and blasts the holder at hard crit. Never route it.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/mending_touch": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Mending Touch)",
+   "rank": 34,
+   "reason": "Moves a patient's wounds onto the healer. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/mind_reader": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Mind Reader)",
+   "rank": 15,
+   "reason": "Reads recent speech, intent and true identity of a player. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/olfaction": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Olfaction)",
+   "rank": 12,
+   "reason": "Tracks whoever touched an item on the same level. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/plasmocile": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Plasmocile)",
+   "rank": 22,
+   "reason": "No plasma breath damage and no viruses. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/pressure_adaptation": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Pressure Adaptation)",
+   "rank": 29,
+   "reason": "Immune to low and high pressure; still needs air and warmth. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/pyrokinesis": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Pyrokinesis)",
+   "rank": 27,
+   "reason": "A ranged igniting heat blast on a cooldown. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/quick": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Quick)",
+   "rank": 47,
+   "reason": "A permanent speed boost. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/quick_recovery": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Quick Recovery)",
+   "rank": 36,
+   "reason": "Halves stun lengths permanently. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/rock_absorber": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Rock Absorber)",
+   "rank": 50,
+   "reason": "Mineral sheets give golem buffs, gold reflects lasers. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/rock_eater": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Rock Eater)",
+   "rank": 8,
+   "reason": "Eat ore and sheets as food. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/shock_touch": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Shock Touch)",
+   "rank": 30,
+   "reason": "A touch every 7 s that disarms both hands and confuses. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/stimmed": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Stimmed)",
+   "rank": 7,
+   "reason": "Only speeds the exercise buff. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/strength": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Strength)",
+   "rank": 6,
+   "reason": "Only touches exercise and boxing. Loot only.",
+   "tier": "none"
+  },
+  "/obj/item/dnainjector/loot/telekinesis": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Telekinesis)",
+   "rank": 42,
+   "reason": "Works items, consoles and guns from 15 tiles away. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/telepathy": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Telepathy)",
+   "rank": 11,
+   "reason": "Private messages to someone in view. Flavour. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/thermal_adaptation": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Thermal Adaptation)",
+   "rank": 38,
+   "reason": "No heat or cold damage at all. Coolant-class without a slot. Loot only.",
+   "tier": "red"
+  },
+  "/obj/item/dnainjector/loot/thermal_vision": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Thermal Vision)",
+   "rank": 25,
+   "reason": "Sees mobs through walls for ten seconds, hurting the eyes. Doppler-class. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/tongue_spike": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Tongue Spike)",
+   "rank": 20,
+   "reason": "A thrown tongue for 25 damage that has to be picked back up. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/tough": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Tough)",
+   "rank": 45,
+   "reason": "30% less brute and nothing can pierce the skin. Never sell.",
+   "tier": "above"
+  },
+  "/obj/item/dnainjector/loot/void_magnet": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Void Magnet)",
+   "rank": 33,
+   "reason": "Ten seconds of invulnerability a minute, with random triggers. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/dnainjector/loot/webbing": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (Webbing)",
+   "rank": 17,
+   "reason": "Lays webs that slow everyone else. Loot only.",
+   "tier": "green"
+  },
+  "/obj/item/dnainjector/loot/xray": {
+   "confidence": "medium",
+   "group": "gene injectors",
+   "hash": "",
+   "name": "DNA injector (X-Ray Vision)",
+   "rank": 41,
+   "reason": "Permanent sight through walls; no other way to get it. Never sell.",
+   "tier": "above"
   },
   "/obj/item/healthanalyzer": {
    "confidence": "high",
@@ -1698,6 +2149,7 @@
   "/obj/item/circular_saw/cruel": "no route",
   "/obj/item/circular_saw/cyborg": "no route",
   "/obj/item/defibrillator/compact/combat": "no route",
+  "/obj/item/dnainjector/loot": "abstract",
   "/obj/item/healthanalyzer/rad_laser": "no route",
   "/obj/item/hemostat/cruel": "no route",
   "/obj/item/hemostat/cyborg": "no route",

@@ -189,7 +189,7 @@
 		return
 	alarm_tripped = TRUE
 	var/turf/site = get_turf(cargo)
-	new wave_theme(site, list(1, 2))
+	new wave_theme(site, list(1, 2), TRUE)
 	second_wave_timer = addtimer(CALLBACK(src, PROC_REF(second_wave), site), EXTRACTION_SECOND_WAVE_DELAY, TIMER_STOPPABLE)
 	servant?.ship_notify("[name]: site security alarm triggered.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
@@ -197,7 +197,7 @@
 	second_wave_timer = null
 	if(failed || completed || !site)
 		return
-	new wave_theme(site, list(1, 2))
+	new wave_theme(site, list(1, 2), TRUE)
 
 /**
  * # Anchored Recovery Cargo

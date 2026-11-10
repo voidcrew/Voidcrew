@@ -22,12 +22,14 @@
 	gun_pool = LOOT_GUN_POOL_SYNDICATE
 	gun_extras = list(
 		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher = 1,
 			/obj/item/gun/ballistic/automatic/pistol/deagle = 1,
 			/obj/item/gun/ballistic/revolver = 1,
 			/obj/item/gun/ballistic/revolver/c38/housecall = 1,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/rifle/sniper_rifle = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/ballistic/shotgun/automatic/combat = 1,
 		),
 	)
@@ -82,6 +84,9 @@
 		// a wrist spike for door motors and turret IFF
 		/obj/item/organ/cyberimp/cyberware/cargo_cavity = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/mind_reader = 2,
+		/obj/item/dnainjector/loot/anti_glow = 2,
 		// knockoff operative chrome: a patchy camo weave and a taped reflex rig
 		/obj/item/organ/cyberimp/cyberware/ghostskin/street = 2,
 		/obj/item/organ/cyberimp/cyberware/cascade/street = 1,
@@ -108,6 +113,9 @@
 		/obj/item/radio/listening_coin = 3,
 		/obj/item/static_cuff = 2,
 		/obj/item/clothing/suit/hooded/cloak/second_shadow = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/martyrdom = 1,
+		/obj/item/dnainjector/loot/laser_eyes = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/syndicate
@@ -120,6 +128,7 @@
 /// Syndicate holdouts: operatives left guarding whatever the base was for.
 /obj/effect/zone_mobs/syndicate
 	name = "zone mob spawner (syndicate)"
+	wave_pod_style = /datum/pod_style/syndicate
 	mobs_green = list(
 		/mob/living/carbon/human/npc/ruin/trooper/syndicate = 14,
 	)

@@ -341,6 +341,24 @@
 			list(/datum/shop_sku/black_market/rare/energy_sword, /obj/item/melee/energy/sword/saber, 1, 4000, 4),
 			list(/datum/shop_sku/black_market/c20r, /obj/item/gun/ballistic/automatic/c20r/unrestricted, 1, 3600, 2),
 			list(/datum/shop_sku/black_market/wt550, /obj/item/gun/ballistic/automatic/wt550, 1, 4200, 2),
+			list(/datum/shop_sku/black_market/rapier, /obj/item/gun/ballistic/automatic/rapier, 1, 2400, 0),
+			list(/datum/shop_sku/black_market/zashch, /obj/item/gun/ballistic/automatic/pistol/zashch, 1, 1200, 0),
+			list(/datum/shop_sku/black_market/nt_m96, /obj/item/gun/ballistic/rifle/nt_m96, 1, 1800, 0),
+			list(/datum/shop_sku/black_market/battle_rifle, /obj/item/gun/ballistic/automatic/battle_rifle, 1, 2200, 0),
+			list(/datum/shop_sku/black_market/ansem, /obj/item/gun/ballistic/automatic/pistol/clandestine, 1, 2000, 1),
+			list(/datum/shop_sku/black_market/ansem_sc, /obj/item/gun/ballistic/automatic/pistol/clandestine/fisher, 1, 2800, 1),
+			list(/datum/shop_sku/black_market/lethal_cycler, /obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly, 1, 2400, 1),
+			list(/datum/shop_sku/black_market/rattlesnake, /obj/item/gun/ballistic/automatic/pistol/rattlesnake, 1, 4800, 3),
+			list(/datum/shop_sku/black_market/resolution, /obj/item/gun/ballistic/automatic/resolution, 1, 4200, 2),
+			list(/datum/shop_sku/black_market/heater, /obj/item/gun/ballistic/automatic/heater, 1, 3000, 2),
+			list(/datum/shop_sku/black_market/scorcher, /obj/item/gun/ballistic/automatic/heater/scorcher, 1, 4000, 3),
+			list(/datum/shop_sku/black_market/woodsman, /obj/item/gun/ballistic/automatic/woodsman, 1, 2600, 1),
+			list(/datum/shop_sku/black_market/skm, /obj/item/gun/ballistic/automatic/skm, 1, 3600, 2),
+			list(/datum/shop_sku/black_market/brimstone, /obj/item/gun/ballistic/shotgun/brimstone, 1, 900, 0),
+			list(/datum/shop_sku/black_market/flaming_arrow, /obj/item/gun/ballistic/shotgun/flaming_arrow, 1, 1200, 0),
+			list(/datum/shop_sku/black_market/slammer, /obj/item/gun/ballistic/shotgun/slammer, 1, 2400, 1),
+			list(/datum/shop_sku/black_market/absolution, /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution, 1, 2600, 1),
+			list(/datum/shop_sku/black_market/conflagration, /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration, 1, 2200, 1),
 			list(/datum/shop_sku/black_market/rotating/mateba, /obj/item/gun/ballistic/revolver/mateba, 1, 3000, 1),
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
@@ -393,6 +411,24 @@
 		/obj/item/gun/ballistic/shotgun/riot,
 		/obj/item/gun/ballistic/automatic/c20r/unrestricted,
 		/obj/item/gun/ballistic/automatic/wt550,
+		/obj/item/gun/ballistic/automatic/rapier,
+		/obj/item/gun/ballistic/automatic/pistol/zashch,
+		/obj/item/gun/ballistic/rifle/nt_m96,
+		/obj/item/gun/ballistic/automatic/battle_rifle,
+		/obj/item/gun/ballistic/automatic/pistol/clandestine,
+		/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher,
+		/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
+		/obj/item/gun/ballistic/automatic/pistol/rattlesnake,
+		/obj/item/gun/ballistic/automatic/resolution,
+		/obj/item/gun/ballistic/automatic/heater,
+		/obj/item/gun/ballistic/automatic/heater/scorcher,
+		/obj/item/gun/ballistic/automatic/woodsman,
+		/obj/item/gun/ballistic/automatic/skm,
+		/obj/item/gun/ballistic/shotgun/brimstone,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow,
+		/obj/item/gun/ballistic/shotgun/slammer,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 		/obj/item/gun/ballistic/revolver/mateba,
 	)
 	var/list/printed_gear = list(
@@ -513,6 +549,12 @@
 		/datum/shop_sku/general/surplus_rifle, /datum/shop_sku/outfitter/disabler,
 		/datum/shop_sku/outfitter/laser_gun, /datum/shop_sku/outfitter/energy_gun, /datum/shop_sku/outfitter/riot_shotgun,
 		/datum/shop_sku/black_market/c20r, /datum/shop_sku/black_market/wt550, /datum/shop_sku/black_market/rotating/mateba,
+		/datum/shop_sku/black_market/rapier, /datum/shop_sku/black_market/zashch, /datum/shop_sku/black_market/nt_m96,
+		/datum/shop_sku/black_market/battle_rifle, /datum/shop_sku/black_market/ansem, /datum/shop_sku/black_market/ansem_sc,
+		/datum/shop_sku/black_market/lethal_cycler, /datum/shop_sku/black_market/rattlesnake, /datum/shop_sku/black_market/resolution,
+		/datum/shop_sku/black_market/heater, /datum/shop_sku/black_market/scorcher,
+		/datum/shop_sku/black_market/woodsman, /datum/shop_sku/black_market/skm,
+		/datum/shop_sku/black_market/brimstone, /datum/shop_sku/black_market/flaming_arrow, /datum/shop_sku/black_market/slammer, /datum/shop_sku/black_market/absolution, /datum/shop_sku/black_market/conflagration,
 		/datum/shop_sku/black_market/cutlass, /datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis,
 		/datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/mantis_street,
@@ -644,6 +686,7 @@
 				for(var/item_path in pool)
 					TEST_ASSERT(!(item_path in weapon_paths) && !ispath(item_path, /obj/item/gun) && !ispath(item_path, /obj/item/knife), "Supplies can pay an extra weapon")
 					TEST_ASSERT(!ispath(item_path, /obj/item/organ/cyberimp), "Bought cargo can pay chrome")
+					TEST_ASSERT(!ispath(item_path, /obj/item/dnainjector), "Bought cargo can pay a gene injector")
 				pool.Cut() // A caller may consume every working pool safely.
 			var/weapon_count = 0
 			cache.PopulateContents()

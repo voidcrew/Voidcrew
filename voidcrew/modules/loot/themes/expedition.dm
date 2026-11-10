@@ -62,6 +62,8 @@
 		// prospector's chrome, cheapest rung: pistons that get you off the
 		// ground fast and hold your footing on bad decking
 		/obj/item/organ/cyberimp/cyberware/shock_coils = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/geladikinesis = 3,
 		// a cold lining for the ice worlds, and cheap eyes that see a long way
 		/obj/item/organ/cyberimp/cyberware/frostline = 3,
 		/obj/item/organ/eyes/robotic/cyberware/spyglass = 3,
@@ -81,6 +83,10 @@
 		// and hoppers its own ore, and a harpoon winch for everything else
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/angler = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/olfaction = 3,
+		/obj/item/dnainjector/loot/farsight = 2,
+		/obj/item/dnainjector/loot/cold_adaptation = 2,
 		// claim chrome a step up: calf springs, the heavy drill fist and long
 		// optics
 		/obj/item/organ/cyberimp/cyberware/hopper/street = 3,
@@ -99,6 +105,8 @@
 		/obj/item/organ/eyes/robotic/cyberware/prospector = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook = 3,
 		/obj/item/organ/cyberimp/cyberware/hopper = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/pressure_adaptation = 1,
 		// the survey team's jump pistons
 		/obj/item/organ/cyberimp/cyberware/hopper/milspec = 2,
 	)
@@ -112,6 +120,9 @@
 		/obj/item/pickaxe/divining = 2,
 		/obj/item/deepwell_sampler = 1,
 		/obj/item/longwalk_rig = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/quick = 1,
+		/obj/item/dnainjector/loot/breathless = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/expedition
@@ -124,6 +135,7 @@
 /// Planet fauna: territorial wildlife around and inside surface ruins.
 /obj/effect/zone_mobs/wildlife
 	name = "zone mob spawner (wildlife)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/mining/bileworm = 8,
 		/mob/living/basic/mining/lobstrosity = 6,
@@ -167,6 +179,7 @@
 /// asteroid ruin, everything in these tables survives space.
 /obj/effect/zone_mobs/asteroid
 	name = "zone mob spawner (asteroid)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/mining/goldgrub = 8,
 		/mob/living/basic/mining/hivelord = 6,

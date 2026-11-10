@@ -587,9 +587,11 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	RegisterSignal(parent, COMSIG_LIVING_LIFE, PROC_REF(on_life))
 	RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp))
 	RegisterSignals(parent, list(COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM), PROC_REF(on_hands_changed))
+	// A stun drops whatever chrome was armed, like death or passing out does.
+	RegisterSignal(parent, SIGNAL_ADDTRAIT(TRAIT_INCAPACITATED), PROC_REF(on_incapacitated))
 
 /datum/component/chrome_wheel/UnregisterFromParent()
-	UnregisterSignal(parent, list(COMSIG_MOB_LOGOUT, COMSIG_MOB_STATCHANGE, COMSIG_LIVING_LIFE, COMSIG_ATOM_EMP_ACT, COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM))
+	UnregisterSignal(parent, list(COMSIG_MOB_LOGOUT, COMSIG_MOB_STATCHANGE, COMSIG_LIVING_LIFE, COMSIG_ATOM_EMP_ACT, COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM, SIGNAL_ADDTRAIT(TRAIT_INCAPACITATED)))
 
 /datum/component/chrome_wheel/Destroy(force)
 	close_wheel()
@@ -607,8 +609,22 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 
 /datum/component/chrome_wheel/proc/on_stat_change(datum/source, new_stat, old_stat)
 	SIGNAL_HANDLER
+	if(new_stat != CONSCIOUS)
+		disarm()
 	if(new_stat >= UNCONSCIOUS)
 		close_wheel()
+	refresh_button()
+
+/datum/component/chrome_wheel/proc/on_incapacitated(datum/source)
+	SIGNAL_HANDLER
+	disarm()
+
+/// Drops the aim of a chrome ability armed and waiting for its click. The cooldown is untouched.
+/datum/component/chrome_wheel/proc/disarm()
+	var/mob/living/carbon/bearer = parent
+	var/datum/action/cooldown/cyberware/armed = bearer.click_intercept
+	if(istype(armed) && armed.owner == bearer)
+		armed.unset_click_ability(bearer, refund_cooldown = TRUE)
 	refresh_button()
 
 /datum/component/chrome_wheel/proc/on_life(datum/source, seconds_per_tick, times_fired)
@@ -656,8 +672,14 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	syncing = FALSE
 	refresh_button(force = TRUE)
 
-/// The ability the Chrome button shows: the pick, while its chrome is still in this body.
+/// The ability the Chrome button shows: a chrome ability armed and waiting for
+/// its click (Use OS chrome can arm one that isn't the pick), else the pick,
+/// while its chrome is still in this body.
 /datum/component/chrome_wheel/proc/get_button_pick()
+	var/mob/living/carbon/bearer = parent
+	var/datum/action/cooldown/cyberware/armed = bearer?.click_intercept
+	if(istype(armed) && armed.owner == bearer && !QDELETED(armed))
+		return armed
 	var/datum/action/ability = selected_ref?.resolve()
 	if(!ability || QDELETED(ability) || ability.owner != parent)
 		return null
@@ -665,7 +687,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 
 /// A chrome ability's button would have redrawn: so does the Chrome button, if it shows that one.
 /datum/component/chrome_wheel/proc/on_ability_changed(datum/action/ability)
-	if(ability == get_button_pick())
+	// Or the one it showed until now: a disarmed ability hands the button back to the pick.
+	if(ability == get_button_pick() || (button_state && findtext(button_state, REF(ability))))
 		refresh_button()
 
 /// Redraws the Chrome button when what it shows has changed, or always with [force].
