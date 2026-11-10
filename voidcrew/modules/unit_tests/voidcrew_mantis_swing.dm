@@ -30,8 +30,8 @@
 	var/matrix/turned = impact.transform
 	TEST_ASSERT(turned.a < 0, "An impact told to mirror was drawn plain")
 
-/// The name of the mask on a far arm's swing (MANTIS_SWING_COVER_FILTER).
-#define MANTIS_TEST_SWING_COVER "mantis_swing_cover"
+/// The name of the mask on a far arm's picture (CHROME_ANIM_ARM_COVER_FILTER, cyberware_anim.dm).
+#define MANTIS_TEST_SWING_COVER "chrome_arm_cover"
 
 /// [body]'s other held Mantis blade, not [blade].
 /datum/unit_test/voidcrew_mantis_gore/proc/other_blade(mob/living/carbon/body, obj/item/blade)

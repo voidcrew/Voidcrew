@@ -6,9 +6,8 @@
 // overlay does not), the held blade hidden under it while it plays. Its last frame is the guard itself, so the
 // held blade comes back under an exact copy of itself whichever reaches the client first.
 //
-// A picture in vis_contents draws over every overlay of its bearer whatever its own float layer, held items
-// included. The art already leaves out the body where it hides a far arm; what the near hand holds is cut out
-// of a far arm's swing in game, with a mask of that item's held sprite, for as long as it is drawn there.
+// Side on, the arm on the far side of the body swings under the near arm's swing, and whatever the near hand
+// holds is cut out of it (sort_as_arm(), voidcrew/modules/cyberware/cyberware_anim.dm).
 
 /// 64x64 frames on the bearer's tile: "[model]_swing_[side]" and its "_blood" and "_soak" coats.
 #define MANTIS_SWING_ICON 'voidcrew/modules/mantis_gore/icons/mantis_swing.dmi'
@@ -20,10 +19,6 @@
 #define MANTIS_SWING_IMPACT_DELAY (0.5 DECISECONDS)
 /// The X-slash's other blade swings one beat behind the first, so the two cross.
 #define MANTIS_XSLASH_SWING_DELAY (0.5 DECISECONDS)
-/// The arm on the far side of the body swings under the near arm's swing.
-#define MANTIS_SWING_FAR_LAYER (-(HANDS_LAYER + 0.5))
-/// The mask on a far arm's swing: the near hand's held item, cut out of it.
-#define MANTIS_SWING_COVER_FILTER "mantis_swing_cover"
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	/// The swing playing for this blade right now, if any. Weak: it deletes itself.
@@ -58,12 +53,9 @@
 		if(icon_exists(MANTIS_SWING_ICON, coat_state))
 			swing.add_coat(coat_state, get_blood_dna_color())
 	swing_ref = WEAKREF(swing)
+	// This blade leaves its guard, so a far swing behind it is no longer cut around it: its own swing is in
+	// front now. The hands redraw, and every arm's picture on the bearer sorts itself again.
 	hide_inhand_for(MANTIS_SWING_TIME)
-	// This blade has left its guard, so a far swing behind it is no longer cut around it: its own swing is in
-	// front now.
-	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/other as anything in mantis_held_blades(attacker))
-		if(other != src)
-			other.mantis_swing()?.fit_to_facing()
 	return swing
 
 /// The impact over [attacked_atom], when the swing's strike frame is up, its slash cut the way this blade swings.
@@ -127,22 +119,18 @@
 	// the picture stays on the bearer's row, so it sorts against other mobs as the bearer does.
 	pixel_w = -16
 	pixel_z = -16
+	layer = MANTIS_ANIM_BLADE_LAYER
 	/// The blade swinging.
 	var/obj/item/blade
 	/// The hand it swings in: "left" or "right".
 	var/side
 	/// The blood on it, a picture of its own so its frames start with the swing's.
 	var/obj/effect/abstract/cyberware_anim/mantis_swing/coat
-	/// What the near hand holds while this is a far arm's swing: it is cut out of the swing.
-	var/obj/item/cover
 
 /obj/effect/abstract/cyberware_anim/mantis_swing/Destroy()
 	if(blade)
 		UnregisterSignal(blade, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 		blade = null
-	if(bearer)
-		UnregisterSignal(bearer, COMSIG_ATOM_POST_DIR_CHANGE)
-	set_cover(null)
 	QDEL_NULL(coat)
 	return ..()
 
@@ -153,8 +141,7 @@
 	blade = swung
 	RegisterSignals(blade, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_blade_gone))
 	attach(bearer)
-	RegisterSignal(bearer, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_bearer_turned))
-	fit_to_facing()
+	sort_as_arm(side)
 
 /// Lays the blood coat [coat_state] in [blood_color] over the swing.
 /obj/effect/abstract/cyberware_anim/mantis_swing/proc/add_coat(coat_state, blood_color)
@@ -163,95 +150,15 @@
 	coat.icon_state = coat_state
 	coat.pixel_w = pixel_w
 	coat.pixel_z = pixel_z
+	coat.layer = initial(layer) + 0.01
 	coat.color = blood_color
 	coat.appearance_flags |= RESET_COLOR
 	coat.attach(bearer)
-	fit_to_facing()
-
-/**
- * Sorts the swing for the way its bearer faces now. Side on, the arm on the far side of the body swings
- * under the near arm's swing, and whatever the near hand holds is cut out of it while that is drawn in the
- * hand. A near blade's own swing hides it from the hand; the cut comes back when the blade does.
- */
-/obj/effect/abstract/cyberware_anim/mantis_swing/proc/fit_to_facing()
-	if(QDELETED(bearer))
-		return
-	var/far = (bearer.dir == EAST && side == "left") || (bearer.dir == WEST && side == "right")
-	layer = far ? MANTIS_SWING_FAR_LAYER : MANTIS_ANIM_BLADE_LAYER
-	if(coat)
-		coat.layer = layer + 0.01
-	var/obj/item/near_item = far ? near_held_item() : null
-	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/near_blade = near_item
-	if(istype(near_blade) && world.time < near_blade.inhand_hidden_until)
-		// Not drawn in the hand right now: nothing to cut out until it is back.
-		addtimer(CALLBACK(src, PROC_REF(fit_to_facing)), near_blade.inhand_hidden_until - world.time, TIMER_DELETE_ME)
-		near_item = null
-	set_cover(near_item)
-
-/// What the bearer holds in a hand on the other side from this swing.
-/obj/effect/abstract/cyberware_anim/mantis_swing/proc/near_held_item()
-	var/mob/living/holder = bearer
-	if(!isliving(holder))
-		return null
-	for(var/obj/item/held in holder.held_items)
-		if(held == blade)
-			continue
-		if(IS_LEFT_INDEX(holder.get_held_index_of_item(held)) != (side == "left"))
-			return held
-	return null
-
-/// Cuts [item]'s held sprite out of the swing and its coat, or nothing out of them if null.
-/obj/effect/abstract/cyberware_anim/mantis_swing/proc/set_cover(obj/item/item)
-	if(cover)
-		UnregisterSignal(cover, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
-	var/icon/mask = item && mantis_held_mask(item, bearer)
-	cover = mask ? item : null
-	if(cover)
-		RegisterSignals(cover, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_cover_gone))
-	for(var/obj/effect/abstract/cyberware_anim/mantis_swing/picture as anything in list(src, coat))
-		if(isnull(picture))
-			continue
-		if(mask)
-			picture.add_filter(MANTIS_SWING_COVER_FILTER, 1, alpha_mask_filter(icon = mask, flags = MASK_INVERSE))
-		else
-			picture.remove_filter(MANTIS_SWING_COVER_FILTER)
-
-/obj/effect/abstract/cyberware_anim/mantis_swing/proc/on_cover_gone(datum/source)
-	SIGNAL_HANDLER
-	set_cover(null)
-
-/obj/effect/abstract/cyberware_anim/mantis_swing/proc/on_bearer_turned(datum/source, old_dir, new_dir)
-	SIGNAL_HANDLER
-	fit_to_facing()
+	coat.sort_as_arm(side)
 
 /obj/effect/abstract/cyberware_anim/mantis_swing/proc/on_blade_gone(datum/source)
 	SIGNAL_HANDLER
 	qdel(src)
-
-/**
- * The shape [item] has in [holder]'s hand, facing the way [holder] faces now, as a mask: the first frame of
- * its held sprite. Null if it has none. Each sprite and facing is made once.
- */
-/proc/mantis_held_mask(obj/item/item, mob/living/holder)
-	if(!isliving(holder))
-		return null
-	var/index = holder.get_held_index_of_item(item)
-	if(!index)
-		return null
-	var/file = IS_RIGHT_INDEX(index) ? item.righthand_file : item.lefthand_file
-	var/state = item.inhand_icon_state || item.icon_state
-	if(!file || !state || !icon_exists(file, state))
-		return null
-	var/static/list/masks = list()
-	var/list/by_state = masks[file]
-	if(!by_state)
-		by_state = list()
-		masks[file] = by_state
-	var/key = "[state]-[holder.dir]"
-	. = by_state[key]
-	if(!.)
-		. = icon(file, state, holder.dir, 1)
-		by_state[key] = .
 
 /// Puts this picture on [target] for the swing's lifetime.
 /obj/effect/abstract/cyberware_anim/mantis_swing/proc/attach(atom/movable/target)
@@ -265,5 +172,3 @@
 #undef MANTIS_SWING_LIFETIME
 #undef MANTIS_SWING_IMPACT_DELAY
 #undef MANTIS_XSLASH_SWING_DELAY
-#undef MANTIS_SWING_FAR_LAYER
-#undef MANTIS_SWING_COVER_FILTER
