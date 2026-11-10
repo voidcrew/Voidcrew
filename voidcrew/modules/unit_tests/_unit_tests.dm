@@ -86,6 +86,7 @@
 #include "voidcrew_fresh_cores.dm"
 #include "voidcrew_gear_behaviour.dm"
 #include "voidcrew_gear_fixes.dm"
+#include "voidcrew_gene_injector_loot.dm"
 #include "voidcrew_helm_access.dm"
 #include "voidcrew_helpers.dm"
 #include "voidcrew_hull_containment.dm"
