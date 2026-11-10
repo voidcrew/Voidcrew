@@ -841,12 +841,13 @@
 	TEST_ASSERT_EQUAL(mantis_spurt_lean(FALSE, EAST, 1), 0, "Drops thrown sideways lean")
 	// Every spurt's drops are still in its picture where they come down, on the last frame it holds. The neck's,
 	// thrown down the screen, fall furthest: the wound sits above the picture's middle to leave them the room.
+	// And its first frame is empty: the half beat a swinging blade cocks back, so no drop is out ahead of the cut.
 	var/icon/spurt_sheet = icon(MANTIS_TEST_ARTERY_ICON)
 	for(var/spurt_height in list("low", "mid", "high"))
 		for(var/spurt_weak in list(FALSE, TRUE))
 			var/list/spurt_shape = mantis_spurt_shape(spurt_height, spurt_weak)
 			var/spurt_state = "spurt_[spurt_height][spurt_weak ? "_weak" : ""]"
-			var/last_frame = spurt_shape[3] / 0.5 + 1
+			var/last_frame = spurt_shape[3] / 0.5 + 2
 			for(var/way in GLOB.alldirs)
 				var/list/landing = mantis_spurt_spot(list(0, 0), spurt_height, spurt_weak, way)
 				var/landed = FALSE
@@ -855,6 +856,12 @@
 						if(spurt_sheet.GetPixel(49 + landing[1] + across, 48 + MG_ARTERY_WOUND_RISE + landing[2] + up, spurt_state, way, last_frame))
 							landed = TRUE
 				TEST_ASSERT(landed, "The [spurt_state] thrown [dir2text(way)] has left its picture before its drops come down")
+				var/early = FALSE
+				for(var/across in -2 to 2)
+					for(var/up in -2 to 2)
+						if(spurt_sheet.GetPixel(49 + across, 48 + MG_ARTERY_WOUND_RISE + up, spurt_state, way, 1))
+							early = TRUE
+				TEST_ASSERT(!early, "The [spurt_state] thrown [dir2text(way)] has drops out of the wound before the blade has cut")
 
 	// The blood runs down the body, and goes when the wound does.
 	var/obj/effect/abstract/cyberware_anim/mantis_run/run = mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, torn)
