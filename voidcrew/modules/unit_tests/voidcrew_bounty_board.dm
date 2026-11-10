@@ -1071,6 +1071,22 @@
 		TEST_ASSERT(!findtext(text, features[length(features)]), "The warrant lists every feature")
 	qdel(warrant)
 
+/// A closed bounty's warrants burn away, on the floor or in a hand; a relist keeps them
+/datum/unit_test/voidcrew_bounty_board/warrant_burns
+
+/datum/unit_test/voidcrew_bounty_board/warrant_burns/Run()
+	var/datum/criminal_bounty/posting = board_test_posting()
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/paper/bounty_warrant/on_floor = posting.print_warrant(run_loc_floor_bottom_left)
+	var/obj/item/paper/bounty_warrant/in_hand = posting.print_warrant(run_loc_floor_bottom_left)
+	hunter.put_in_hands(in_hand)
+	TEST_ASSERT(hunter.is_holding(in_hand), "The hunter isn't holding the warrant")
+	posting.relist("slipped away")
+	TEST_ASSERT(!QDELETED(on_floor) && !QDELETED(in_hand), "A relist burned the warrants")
+	posting.close("admin") // BOUNTY_CLOSE_ADMIN
+	TEST_ASSERT(QDELETED(on_floor), "A closed bounty's warrant on the floor is still there")
+	TEST_ASSERT(QDELETED(in_hand), "A closed bounty's warrant in a hand is still there")
+
 // ===== THE POLISH ROUND =====
 
 /// The card and the warrant read like a poster: the terms, the old photo, one reward and no rules, and a ruin's real name (BUG-9)

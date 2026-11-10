@@ -137,6 +137,15 @@
    "reason": "Electrifies every enemy airlock for 30 seconds. Slows a crew moving between rooms and hurts anyone without insulated gloves. Four uses, needs a suite.",
    "tier": "yellow"
   },
+  "/obj/item/ew_exploit/pattern_bleed": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "",
+   "name": "exploit cartridge (Pattern Bleed)",
+   "rank": 4,
+   "reason": "Knocks every bluespace damper on an enemy ship offline for 40 seconds, so a transporter or hand teleporter can reach the hull. Useless against a ship with no damper. Three uses, needs a suite.",
+   "tier": "red"
+  },
   "/obj/item/ew_exploit/phantom_klaxons": {
    "confidence": "medium",
    "group": "ship hacking cartridges",

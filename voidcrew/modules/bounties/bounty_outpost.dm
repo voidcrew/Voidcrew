@@ -1405,6 +1405,15 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	show_warrant(interacting_with, user)
 	return ITEM_INTERACT_SUCCESS
 
+/// Its bounty closed: it burns away, wherever it is. Whoever carries it is told; on the floor, the room sees it.
+/obj/item/paper/bounty_warrant/proc/burn_up()
+	var/mob/living/holder = get(src, /mob/living)
+	if(holder)
+		to_chat(holder, span_notice("[src] curls up and burns away."))
+	else if(isturf(loc))
+		visible_message(span_notice("[src] curls up and burns away."), vision_distance = COMBAT_MESSAGE_RANGE)
+	qdel(src)
+
 /**
  * `user` holds the warrant up to `target`.
  * - The fugitive it is for: exposed (outpost_confront()).
