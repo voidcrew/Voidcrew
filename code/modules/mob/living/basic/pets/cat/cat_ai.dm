@@ -165,7 +165,7 @@
 
 /datum/ai_planning_subtree/find_and_hunt_target/hunt_mice/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	var/mob/living/living_pawn = controller.pawn
-	var/list/items_we_carry = typecache_filter_list(living_pawn, controller.blackboard[BB_HUNTABLE_PREY])
+	var/list/items_we_carry = typecache_filter_list(living_pawn.contents, controller.blackboard[BB_HUNTABLE_PREY]) // VOIDCREW EDIT: pass contents, not the mob; our guarded typecache_filter_list rejects non-lists (ai fix)
 	if(length(items_we_carry))
 		return
 	return ..()

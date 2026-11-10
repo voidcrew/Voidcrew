@@ -122,6 +122,7 @@
 #include "voidcrew_helpers.dm"
 #include "voidcrew_hull_containment.dm"
 #include "voidcrew_hull_survey.dm"
+#include "voidcrew_human_npc_gc.dm"
 #include "voidcrew_human_npcs.dm"
 #include "voidcrew_human_npcs_combat_sense.dm"
 #include "voidcrew_human_npcs_nt_customs.dm"

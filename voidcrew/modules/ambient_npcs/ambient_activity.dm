@@ -429,6 +429,10 @@
 	var/datum/ambient_activity/current = npc.next_activity()
 	if(!current)
 		return
+	// A spot can be someone they follow, who may be gone by now
+	if(current.spot && QDELETED(current.spot))
+		current.spot_unreachable()
+		return
 	if(!current.at_spot())
 		controller.set_blackboard_key(BB_AMBIENT_DESTINATION, current.spot)
 		controller.queue_behavior(current.spot_distance ? /datum/ai_behavior/travel_towards/ambient/adjacent : /datum/ai_behavior/travel_towards/ambient, BB_AMBIENT_DESTINATION)
