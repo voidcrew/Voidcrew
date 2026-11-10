@@ -24,6 +24,8 @@
 #define MANTIS_TEST_RIGHTHAND 'voidcrew/modules/mantis_gore/icons/mantis_righthand.dmi'
 /// MANTIS_GORE_REACH_ICON
 #define MANTIS_TEST_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'
+/// MANTIS_RIG_ORDER
+#define MG_RIG_ORDER 1
 
 /datum/unit_test/voidcrew_mantis_gore
 	abstract_type = /datum/unit_test/voidcrew_mantis_gore
@@ -749,7 +751,7 @@
 				for(var/facing in GLOB.cardinals)
 					var/list/spec = mantis_rig_beat(move, beat, facing)
 					TEST_ASSERT(spec, "The rig has no [move] [beat] facing [dir2text(facing)]")
-					for(var/piece in spec[MANTIS_RIG_ORDER])
+					for(var/piece in spec[MG_RIG_ORDER])
 						if(piece == "T" || piece == "body")
 							continue
 						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
@@ -766,3 +768,4 @@
 #undef MANTIS_TEST_LEFTHAND
 #undef MANTIS_TEST_RIGHTHAND
 #undef MANTIS_TEST_REACH_ICON
+#undef MG_RIG_ORDER
