@@ -167,7 +167,7 @@
 		host.real_blow(blow_zone)
 		return
 	host.victim.hv_blood_spray(away_dir(), spray_strength)
-	host.victim.Shake(2, 1, 0.6 SECONDS)
+	host.victim.hv_vis_shudder(2, 1, 0.6 SECONDS)
 
 // ===== The kill =====
 

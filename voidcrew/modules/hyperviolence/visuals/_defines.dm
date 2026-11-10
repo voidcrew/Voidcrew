@@ -29,6 +29,7 @@
 #define HV_VIS_TAG_LIFT "hv_lift"
 #define HV_VIS_TAG_SHAKE "hv_shake"
 #define HV_VIS_TAG_REAR "hv_rear"
+#define HV_VIS_TAG_SHUDDER "hv_shudder"
 
 /// What ends a held animation (/datum/component/hv_motion_hold).
 #define HV_VIS_END_MOVE (1<<0)
@@ -153,3 +154,5 @@
 #define HV_VIS_KILL_SHAKE_TIME 4
 #define HV_VIS_KILL_SHAKE_STRENGTH 0.12
 #define HV_VIS_KILL_SHAKE_RANGE 7
+/// How long each jolt of a mauled body's shudder lasts.
+#define HV_VIS_SHUDDER_BEAT (0.02 SECONDS)

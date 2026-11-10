@@ -82,6 +82,7 @@
 			user.hv_vis_release(HV_VIS_TAG_SHAKE, 1)
 		if(victim && !QDELETED(victim))
 			victim.hv_vis_release(HV_VIS_TAG_LIFT, 2)
+			victim.hv_vis_release(HV_VIS_TAG_SHUDDER, 1)
 	return ..()
 
 /// Where this mob's feet are, from the middle of its icon, so it grows up from the floor.
@@ -117,6 +118,21 @@
 		list(pixel_w, pixel_z + height, base, hold, LINEAR_EASING),
 		list(pixel_w, pixel_z, base, 2, QUAD_EASING|EASE_IN),
 	))
+
+/**
+ * A short hard shudder round where the body is drawn now, up to `shift_x` and `shift_y` pixels each way for
+ * `duration`, ending where it began. Not tg's Shake(): its first beat takes pixel_y from pixel_x, which throws
+ * a body drawn off the middle of its tile (anyone lying down) up the screen for a frame.
+ */
+/mob/living/proc/hv_vis_shudder(shift_x, shift_y, duration)
+	if(!isturf(loc))
+		return
+	var/matrix/base = matrix(transform)
+	var/list/steps = list()
+	for(var/i in 1 to max(round(duration / HV_VIS_SHUDDER_BEAT) - 1, 2))
+		steps += list(list(pixel_w + rand(-shift_x, shift_x), pixel_z + rand(-shift_y, shift_y), base, HV_VIS_SHUDDER_BEAT, LINEAR_EASING))
+	steps += list(list(pixel_w, pixel_z, base, HV_VIS_SHUDDER_BEAT, LINEAR_EASING))
+	hv_vis_play(HV_VIS_TAG_SHUDDER, steps)
 
 /// Shaken hard from side to side, as a dog shakes a rat, across the line from the beast holding it.
 /mob/living/proc/hv_vis_dog_shake(beast_dir)
