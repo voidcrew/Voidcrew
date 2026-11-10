@@ -13,6 +13,9 @@
  * - Kill (0.5 s into the stage): in hard crit the head comes off (an Atlas frame keeps it); otherwise the
  *   throat is slit, #509's carotid crit. A sealed helmet, an armoured collar or plating that would stop
  *   the throat crit turns the wire, and it lands as an ordinary blow at the head instead.
+ * - The Widowline Arc's wire takes the head off whatever state the victim is in, unless an Atlas frame keeps it
+ *   or a helmet, collar or plating turns the wire as above. A garroter with a wire in each hand counts as the
+ *   Arc's if either wire is (arc_wire()).
  * - Broken by #509's rules: the grab broken or pulled apart, the garroter hurt (WIRE_GARROTE_INTERRUPT
  *   health), stunned, cuffed or out of their wire, the victim dying first, the timeout. Also by the victim
  *   getting up off the floor or being strapped to something, at any point before the kill.
@@ -956,9 +959,17 @@
 	clear_strands()
 	show_hands()
 
+/// TRUE if the garrote is the Arc's: the wire round the neck, or the one in the garroter's other hand. A pair with
+/// one Arc wire beheads as the Arc does.
+/datum/hv_finisher/garrote/proc/arc_wire()
+	if(istype(wire, /obj/item/melee/cyberware_monowire/live))
+		return TRUE
+	return !isnull(locate(/obj/item/melee/cyberware_monowire/live) in user?.held_items)
+
 /**
- * The kill: the head off in hard crit, else the throat slit, else (turned by a helmet, collar or plating) an
- * ordinary blow with the wire. Lines go out while the head is still on, since they name it.
+ * The kill: the head off in hard crit (with the Arc's wire, whenever no helmet, collar or plating turns it), else
+ * the throat slit, else (turned by a helmet, collar or plating) an ordinary blow with the wire. Lines go out while
+ * the head is still on, since they name it.
  */
 /datum/hv_finisher/garrote/proc/kill(spray_dir)
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
@@ -977,7 +988,9 @@
 	var/list/rest_neck = neck_on_tile()
 	// Facing away, the snap is between the two bodies, not over the garroter's head.
 	cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_snap[wire_suffix()]", facing == NORTH ? WIRE_BETWEEN_LAYER : ABOVE_MOB_LAYER, 0.6 SECONDS, glow = TRUE)
-	if(victim.stat >= HARD_CRIT && head.can_dismember())
+	var/datum/hv_crit/throat/throat = locate() in GLOB.hv_crits
+	var/blocker = wire_turned_by(head, throat)
+	if(head.can_dismember() && (victim.stat >= HARD_CRIT || (!blocker && arc_wire())))
 		victim.hv_add_hit_line("[user] draws the wire through [victim]'s neck!", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
 		if(seared)
 			LAZYSET(victim.hv_stump_burnt, BODY_ZONE_HEAD, TRUE)
@@ -1001,8 +1014,6 @@
 			log_combat(user, victim, "garroted the head off", wire)
 			return
 		LAZYREMOVE(victim.hv_stump_burnt, BODY_ZONE_HEAD)
-	var/datum/hv_crit/throat/throat = locate() in GLOB.hv_crits
-	var/blocker = wire_turned_by(head, throat)
 	if(!blocker && throat)
 		// No direction: tg would throw its flying splatter down a straight line. The garrote's blood is finish_blood().
 		var/datum/wound/slit = hv_crit_apply_wound(head, throat.wound_type, null, wire)
