@@ -22,6 +22,13 @@
 	var/cut = FALSE
 	/// World time the next tug is allowed to hurt.
 	var/next_yank = 0
+	/// The tiles the victim has left since the guts last lay beside them, oldest first: the way the guts
+	/// are dragged in when the strand pulls tight.
+	var/list/turf/trail = list()
+	/// The timer of the guts' next step along the trail while they are being dragged in.
+	var/drag_timer
+	/// Set while the tether itself moves the guts, to tell that from anyone else moving them.
+	var/dragging = FALSE
 
 /datum/hv_gut_tether/New(mob/living/carbon/victim, obj/item/hv_intestines/guts)
 	src.victim = victim
@@ -34,6 +41,8 @@
 	refresh()
 
 /datum/hv_gut_tether/Destroy()
+	stop_drag()
+	trail = null
 	drop_strand()
 	if(victim)
 		UnregisterSignal(victim, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
@@ -79,6 +88,9 @@
 	SIGNAL_HANDLER
 	if(cut)
 		return
+	// Someone else has moved them: the way the victim went no longer leads to where they lie.
+	if(!dragging)
+		stop_drag()
 	if(connected() && get_dist(victim, guts) > HV_GUT_TETHER_SNAP_RANGE)
 		INVOKE_ASYNC(src, PROC_REF(tear), FALSE)
 		return
@@ -98,12 +110,71 @@
 	if(distance > HV_GUT_TETHER_SNAP_RANGE)
 		INVOKE_ASYNC(src, PROC_REF(tear), TRUE)
 		return
+	note_step(old_loc)
 	if(distance > HV_GUT_TETHER_RANGE)
 		// the guts follow where the victim was, so they trail a few steps behind
-		var/atom/behind = isturf(old_loc) ? old_loc : victim.loc
-		guts.forceMove(behind)
+		var/turf/behind = isturf(old_loc) ? old_loc : victim.loc
+		if(!length(trail))
+			trail += behind
+		drag_guts()
 		INVOKE_ASYNC(src, PROC_REF(yank), behind)
 	refresh()
+
+/// Remembers the tile the victim has just left. Beside the guts again the strand is slack and there is
+/// nothing to remember; a victim who doubles back takes the loop out of the way.
+/datum/hv_gut_tether/proc/note_step(atom/old_loc)
+	if(get_dist(victim, guts) <= 1)
+		trail.Cut()
+		return
+	var/doubled_back = trail.Find(victim.loc)
+	if(doubled_back)
+		trail.Cut(doubled_back)
+		return
+	if(!isturf(old_loc) || old_loc == guts.loc)
+		return
+	trail += old_loc
+	if(length(trail) > HV_GUT_TETHER_SNAP_RANGE)
+		trail.Cut(1, 2)
+
+/// The strand has pulled tight: the guts are dragged in along the way the victim went, to the tile behind
+/// them. Their first step is taken at once and the rest follow a tile at a time, so they are seen sliding
+/// across the floor (a move of more than one tile has no glide: the guts used to vanish from where they
+/// lay and appear behind the victim).
+/datum/hv_gut_tether/proc/drag_guts()
+	if(drag_timer)
+		return
+	drag_step()
+
+/// One tile further along the trail.
+/datum/hv_gut_tether/proc/drag_step()
+	drag_timer = null
+	if(QDELETED(src) || cut || !connected())
+		return
+	// Tiles they already lie on are behind them.
+	while(length(trail) && trail[1] == guts.loc)
+		trail.Cut(1, 2)
+	if(!length(trail))
+		return
+	var/turf/next = trail[1]
+	if(get_dist(guts, next) > 1)
+		// Not beside the start of the trail (someone moved them): straight toward it.
+		next = get_step_towards(guts, next)
+	else
+		trail.Cut(1, 2)
+	dragging = TRUE
+	guts.set_glide_size(DELAY_TO_GLIDE_SIZE(HV_GUT_DRAG_STEP))
+	guts.forceMove(next)
+	dragging = FALSE
+	if(QDELETED(src) || cut || !length(trail))
+		return
+	drag_timer = addtimer(CALLBACK(src, PROC_REF(drag_step)), HV_GUT_DRAG_STEP, TIMER_STOPPABLE|TIMER_DELETE_ME)
+
+/// Stops dragging the guts in and forgets the way the victim went.
+/datum/hv_gut_tether/proc/stop_drag()
+	if(drag_timer)
+		deltimer(drag_timer)
+		drag_timer = null
+	trail?.Cut()
 
 /// A tug on the strand: it hurts, at most once per cooldown, and a standing victim is pulled off their feet.
 /datum/hv_gut_tether/proc/yank(turf/behind)

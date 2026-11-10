@@ -1,8 +1,9 @@
 // Hyperviolence visuals: gun executions (overlays_exec/executions.dm).
 // 17. The press: the shooter leans in over the victim, the victim trembles, and both go still for a
-//     short, deliberate moment before the shot. The shot: a big muzzle flash, a hit-stop on both, and
-//     a burst head throws its gibs in arcs (flying_gore.dm). The body holds for a beat, then slumps
-//     forward along the shot (death_falls.dm).
+//     short, deliberate moment before the shot. The shot: a big muzzle flash at the head the barrel is
+//     pressed to, a hit-stop on both (the shooter rocks back from it), and a burst head throws its gibs
+//     in arcs (flying_gore.dm). The body holds for a beat, then slumps forward along the shot
+//     (death_falls.dm).
 // The press is only drawn over the wind-up the execution already has; nothing here changes its timing.
 
 /obj/item/gun/hv_start_execution(mob/living/user, mob/living/target, params)
@@ -21,14 +22,30 @@
 		target.hv_vis_release(HV_VIS_TAG_TREMBLE, 1)
 
 /obj/item/gun/hv_fire_execution(mob/living/user, mob/living/target, params)
+	// Where the barrel is: against the head, wherever that is on a body on its feet or on the floor.
+	// Read before the shot, which can drop the body or take the head off.
+	var/turf/head_turf
+	var/list/head_at
+	var/behind_head = FALSE
 	if(!QDELETED(target))
 		target.hv_vis_execution_time = world.time
+		head_turf = get_turf(target)
+		head_at = target.hv_vis_head_offset()
+		// A shot from the far side of someone on their feet goes off behind their head.
+		behind_head = target.body_position == STANDING_UP && (get_dir(user, target) & SOUTH)
 	. = ..()
 	if(!. || QDELETED(user))
 		return
-	hv_vis_muzzle_flash(user, target)
+	hv_vis_muzzle_flash(user, head_turf || target, head_at, behind_head)
 	if(!QDELETED(target))
 		target.hv_vis_big_hit(get_dir(user, target), user)
+
+/// Where this mob's head is drawn, in pixels from the middle of its tile: list(x, y).
+/mob/living/proc/hv_vis_head_offset()
+	return list(0, 8 * current_size)
+
+/mob/living/carbon/hv_vis_head_offset()
+	return hv_vis_part_offset(BODY_ZONE_HEAD)
 
 /// Leans in toward `target` and stays there for `hold`, as if pressing something to their head.
 /mob/living/proc/hv_vis_press_in(atom/target, hold)
@@ -55,32 +72,53 @@
 	animate(pixel_w = base_w - strength, pixel_z = base_z, transform = base, time = 1)
 	animate(pixel_w = base_w, pixel_z = base_z, transform = base, time = 0.5)
 
-/// A muzzle flash much bigger than a normal shot's, with a flash of light.
-/proc/hv_vis_muzzle_flash(mob/living/shooter, atom/target)
-	var/turf/spot = get_turf(shooter)
-	if(!spot)
+/**
+ * A muzzle flash much bigger than a normal shot's, with a flash of light. It is where the barrel's end
+ * is: just short of the head it is pressed to, `head_at` pixels from the middle of the target's tile
+ * (list(x, y)). It stands on the target's tile, so it sorts with the target: a shooter standing nearer
+ * the camera than the victim is drawn over it, as their body is between us and the gun. `behind_target`
+ * draws it under the target too: the barrel is on the far side of their head.
+ */
+/proc/hv_vis_muzzle_flash(mob/living/shooter, atom/target, list/head_at, behind_target = FALSE)
+	var/turf/shooter_turf = get_turf(shooter)
+	var/turf/spot = get_turf(target) || shooter_turf
+	if(!shooter_turf || !spot)
 		return
-	new /obj/effect/temp_visual/hv_muzzle_flash(spot, get_dir(shooter, target) || shooter.dir)
-	spot.flash_lighting_fx(3, 2, LIGHT_COLOR_ORANGE, 2)
+	new /obj/effect/temp_visual/hv_muzzle_flash(spot, get_dir(shooter_turf, spot) || shooter.dir, head_at, behind_target)
+	shooter_turf.flash_lighting_fx(3, 2, LIGHT_COLOR_ORANGE, 2)
 
+/// The flash is one still picture, tg's muzzle flash at its brightest, grown and faded here. tg's own
+/// state is a short loop that every flash on screen plays in step, so a flash borrowed from it began
+/// on whatever frame the loop had reached: sometimes the bright one, sometimes the last few sparks.
 /obj/effect/temp_visual/hv_muzzle_flash
 	name = "muzzle flash"
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "firing_effect"
+	icon = 'voidcrew/modules/hyperviolence/overlays_exec/icons/muzzle_flash.dmi'
+	icon_state = "flash"
 	plane = GAME_PLANE
 	layer = ABOVE_MOB_LAYER
 	randomdir = FALSE
 	duration = 4
 
-/obj/effect/temp_visual/hv_muzzle_flash/Initialize(mapload, shot_dir)
+/obj/effect/temp_visual/hv_muzzle_flash/Initialize(mapload, shot_dir, list/head_at, behind_target = FALSE)
 	. = ..()
+	if(behind_target)
+		layer = BELOW_MOB_LAYER
 	setDir(shot_dir || SOUTH)
-	// At the end of the barrel, between the two of them.
-	pixel_w = HV_VIS_DX(dir) * 14
-	pixel_z = HV_VIS_DY(dir) * 14
-	var/matrix/big = matrix()
-	big.Scale(2.2)
-	transform = big
-	var/matrix/bigger = matrix()
-	bigger.Scale(2.8)
-	animate(src, transform = bigger, alpha = 0, time = duration, easing = QUAD_EASING|EASE_OUT)
+	var/dx = HV_VIS_DX(dir)
+	var/dy = HV_VIS_DY(dir)
+	// tg's flash art sits off the middle of its tile, toward the way it faces. It grows about that
+	// point, and that point goes at the end of the barrel.
+	var/core_w = dx * HV_VIS_FLASH_CORE
+	var/core_z = dy * HV_VIS_FLASH_CORE
+	pixel_w = (head_at ? head_at[1] : 0) - dx * HV_VIS_FLASH_SHORT - core_w
+	pixel_z = (head_at ? head_at[2] : 0) - dy * HV_VIS_FLASH_SHORT - core_z
+	transform = hv_vis_scaled_about(2.2, core_w, core_z)
+	animate(src, transform = hv_vis_scaled_about(2.8, core_w, core_z), alpha = 0, time = duration, easing = QUAD_EASING|EASE_OUT)
+
+/// A matrix that scales by `scale` about the point (x, y) pixels from the middle of the icon.
+/proc/hv_vis_scaled_about(scale, x, y)
+	var/matrix/scaled = matrix()
+	scaled.Translate(-x, -y)
+	scaled.Scale(scale)
+	scaled.Translate(x, y)
+	return scaled

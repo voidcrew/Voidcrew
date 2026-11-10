@@ -98,7 +98,8 @@
 	TEST_ASSERT_NOTNULL(mark, "The tile it aims at isn't lit")
 	sleep(0.4 SECONDS)
 	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "The punch landed before the tell was over")
-	sleep(0.6 SECONDS)
+	// The tell, then the fist's own travel (hyperviolence_gorilla/gorilla_thrust.dm)
+	sleep(0.8 SECONDS)
 	TEST_ASSERT(hunter.getBruteLoss() >= 15, "The piston punch did [hunter.getBruteLoss()] brute, not the implant's 20") // CYBERWARE_GORILLA_PUNCH_DAMAGE
 	var/spent = 0
 	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in arms)

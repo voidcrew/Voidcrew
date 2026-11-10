@@ -151,7 +151,24 @@
 	for(var/image/part as anything in images)
 		if(part.icon_state == "cascade_boot1")
 			found_nodes = TRUE
+			// CYBERWARE_SPINE_SHINE_LAYER; the chrome itself sits at CYBERWARE_WORN_LAYER, 27.6. Both are defined after the tests.
+			TEST_ASSERT_EQUAL(part.layer, -13.7, "Lit nodes don't shine through what is worn on the back")
 	TEST_ASSERT(found_nodes, "The node frame isn't drawn over the lattice")
+	// A dying frame is split: what still glows shines through, the dead nodes stay under the clothes.
+	lattice.node_look = "crash3"
+	var/found_lit = FALSE
+	var/found_dark = FALSE
+	for(var/image/part as anything in lattice.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		if(part.icon_state == "cascade_crash3_lit" && part.layer == -13.7)
+			found_lit = TRUE
+		if(part.icon_state == "cascade_crash3_dark" && part.layer == -27.6)
+			found_dark = TRUE
+	TEST_ASSERT(found_lit, "The nodes still lit in a dying frame don't shine through")
+	TEST_ASSERT(found_dark, "The dead nodes of a dying frame aren't under the clothes")
+	lattice.node_look = "dead"
+	for(var/image/part as anything in lattice.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		TEST_ASSERT(part.layer != -13.7, "A dead spine still draws over what is worn on the back")
+	lattice.node_look = "boot1"
 
 	bearer.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	TEST_ASSERT(bearer.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "Test fixture: no crash after the window")
@@ -212,3 +229,15 @@
 	TEST_ASSERT(next_bearer.GetComponent(/datum/component/chrome_emp_show), "Test fixture: no show on the second bearer")
 	left_arm.Remove(next_bearer, special = TRUE)
 	TEST_ASSERT_NULL(left_chrome.emp_look, "A piece pulled mid-EMP kept its static")
+
+/// Skin plating is skin: it draws under the clothes with stock augments, while the rest of the chrome stays over
+/// the jumpsuit.
+/datum/unit_test/voidcrew_cyberware_anim_skin_plating
+
+/datum/unit_test/voidcrew_cyberware_anim_skin_plating/Run()
+	for(var/plating_type in list(/obj/item/organ/cyberimp/cyberware/slabskin, /obj/item/organ/cyberimp/cyberware/dermal_mesh, /obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave))
+		var/obj/item/organ/cyberimp/cyberware/plating = allocate(plating_type)
+		TEST_ASSERT_EQUAL(plating.bodypart_aug.bitflag_to_layer(EXTERNAL_ADJACENT), -BODY_ADJ_LAYER, "[plating_type] draws over clothes")
+	// CYBERWARE_WORN_LAYER, which is defined after the tests.
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	TEST_ASSERT_EQUAL(lattice.bodypart_aug.bitflag_to_layer(EXTERNAL_ADJACENT), -27.6, "The spine rig dropped under the jumpsuit")

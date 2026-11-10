@@ -340,8 +340,8 @@
 	var/result = lines(target)
 	TEST_ASSERT(findtext(result, "carries through into [behind]"), "The through-cut's line didn't join the hit: [result]")
 	TEST_ASSERT(findtext(result, "sings through everything beside"), "The cleave's line didn't join the hit: [result]")
-	var/streak = locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in get_turf(behind)
-	TEST_ASSERT_NOTNULL(streak, "The through-cut left no streak through the second body's tile")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in get_turf(behind), "The through-cut laid a streak on the floor")
+	TEST_ASSERT_NULL(locate(/obj/effect/ebeam) in range(3, target), "The through-cut drew a beam of its own")
 	TEST_ASSERT(!HAS_TRAIT(behind, "hv_clean_cut"), "TRAIT_HV_CLEAN_CUT outlived the cleave")
 
 	// A real swing does all of it in one message.
@@ -351,6 +351,47 @@
 	wire.melee_attack_chain(user, target)
 	TEST_ASSERT(target.getBruteLoss() > 0, "The swing didn't land")
 	TEST_ASSERT(behind.getBruteLoss() > 0, "A landed swing didn't carry through")
+	// The swing's one lash runs on to the body behind and ends there; it goes into the first body over it and comes
+	// out under it.
+	var/obj/effect/abstract/wire_reach/lash_end = locate() in get_turf(behind)
+	TEST_ASSERT_NOTNULL(lash_end, "The lash of a through-cut stopped short of the body behind")
+	TEST_ASSERT_EQUAL(lash_end.icon_state, wire.lash_state(), "The lash of a through-cut has no bright end on the body behind")
+	// Each body's drops leave from where that line cuts it: level with the first body's chest as it passes, and in the
+	// middle of the chest of the body behind, where it ends.
+	var/list/cuts = wire.wire_through_cuts(user, target, behind)
+	TEST_ASSERT_NOTNULL(cuts, "No line runs from the wielder through two bodies in a row")
+	var/list/passed = cuts[1]
+	var/list/chest = wire_zone_point(target, BODY_ZONE_CHEST)
+	TEST_ASSERT(abs(passed[1] - chest[1]) <= 1 && abs(passed[2] - chest[2]) <= 8, "The through-cut's line passes the first body away from its chest: [passed[1]], [passed[2]]")
+	var/list/ended = cuts[2]
+	var/list/end = wire_zone_point(behind, BODY_ZONE_CHEST)
+	TEST_ASSERT(ended[1] == end[1] && ended[2] == end[2], "The through-cut's line doesn't end in the middle of the chest of the body behind")
+	var/over = 0
+	var/under = 0
+	for(var/obj/effect/abstract/wire_reach/piece in get_turf(target))
+		if(piece.layer == ABOVE_MOB_LAYER)
+			over++
+		else if(piece.layer == BELOW_MOB_LAYER)
+			under++
+	TEST_ASSERT(over == 1 && under == 1, "The lash of a through-cut should cross the first body in two pieces, over it then under it: [over] over, [under] under")
+
+/// A through-cut that also takes a limb off its target still draws its line on through to the body behind.
+/datum/unit_test/voidcrew_widowline/wire_through_sever
+
+/datum/unit_test/voidcrew_widowline/wire_through_sever/Run()
+	var/mob/living/carbon/human/user = wielder(spot(0, 1))
+	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/mob/living/carbon/human/consistent/behind = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/obj/item/bodypart/arm = target.get_bodypart(BODY_ZONE_L_ARM)
+	arm.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, target, BODY_ZONE_L_ARM)
+	TEST_ASSERT_NULL(target.get_bodypart(BODY_ZONE_L_ARM), "Fixture: the arm didn't come off")
+	TEST_ASSERT(behind.getBruteLoss() > 0, "Fixture: the cut didn't carry through")
+	TEST_ASSERT_EQUAL(wire.lash_through?.resolve(), behind, "A cut that took a limb off doesn't lash on through to the body behind")
+	wire.wire_lash_at(user, target, BODY_ZONE_L_ARM)
+	var/obj/effect/abstract/wire_reach/lash_end = locate() in get_turf(behind)
+	TEST_ASSERT_NOTNULL(lash_end, "The lash of a through-cut that took a limb off stopped short of the body behind")
 
 /// A cut wets the wire with the victim's blood, which drips, dries and flicks off on stowing; the DNA stays. The Arc stays clean.
 /datum/unit_test/voidcrew_widowline/wire_bloody
@@ -450,6 +491,43 @@
 			TEST_ASSERT_EQUAL(lash_end.layer, BELOW_MOB_LAYER, "A lash down to a body nearer the viewer drew over it")
 		else if(facing == NORTH)
 			TEST_ASSERT_EQUAL(lash_end.layer, ABOVE_MOB_LAYER, "A lash up to a body further off drew under it")
+		for(var/obj/effect/abstract/wire_reach/lash in range(1, user))
+			qdel(lash)
+
+/// The wire leaves the hand at the pixel its spool lights: the hand table against the held art, facing by facing; a
+/// lash's line placed on that pixel; and the spool left in the hand while the line is out.
+/datum/unit_test/voidcrew_widowline/wire_hand_point
+
+/datum/unit_test/voidcrew_widowline/wire_hand_point/Run()
+	var/mob/living/carbon/human/consistent/user = wielder(spot(2, 2))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	var/icon/spools = icon('voidcrew/modules/hyperviolence/wire/icons/wire_spool.dmi') // WIRE_SPOOL_ICON
+	for(var/facing in GLOB.cardinals)
+		user.setDir(facing)
+		for(var/side in list("left", "right"))
+			var/list/hand = wire_hand_point(user, side)
+			// A hand behind the body shows no lit pixel: its line comes out from behind the body.
+			if(hand[3])
+				continue
+			// Icon pixels count from 1 at the lower left corner; the table counts from the middle of the tile.
+			var/icon/held_art = icon(side == "left" ? wire.lefthand_file : wire.righthand_file)
+			var/lit = held_art.GetPixel(hand[1] + 17, hand[2] + 17, wire.inhand_icon_state, facing)
+			TEST_ASSERT_EQUAL(lit, "#f86cfa", "Facing [dir2text(facing)], the [side] hand's wire isn't drawn from the spool's lit pixel ([hand[1]], [hand[2]])")
+			var/spool = spools.GetPixel(hand[1] + 17, hand[2] + 17, "[wire.inhand_icon_state]_[side]", facing)
+			TEST_ASSERT_EQUAL(spool, lit, "Facing [dir2text(facing)], the [side] hand's spool on its own has no lit pixel where the wire leaves it")
+		var/turf/stand = get_step(user, facing)
+		victim.forceMove(stand)
+		victim.setDir(REVERSE_DIR(facing))
+		wire.show_inhand()
+		wire.wire_lash_at(user, victim, BODY_ZONE_CHEST)
+		var/list/grip = wire_hand_point(user, wire.held_side(user))
+		var/on_grip = FALSE
+		for(var/obj/effect/abstract/wire_reach/piece in get_turf(user))
+			if(piece.pixel_w == user.pixel_x + grip[1] && piece.pixel_y + piece.pixel_z == user.pixel_y + grip[2])
+				on_grip = TRUE
+		TEST_ASSERT(on_grip, "A lash facing [dir2text(facing)] doesn't start on the pixel the wire leaves the hand from")
+		TEST_ASSERT(wire.inhand_hidden_until > world.time && wire.inhand_bare_until <= world.time, "A lash facing [dir2text(facing)] took the spool out of the hand with the wire")
 		for(var/obj/effect/abstract/wire_reach/lash in range(1, user))
 			qdel(lash)
 

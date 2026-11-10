@@ -8,7 +8,8 @@
  *
  * - Wind-up (1 s): the wire loops round the neck and glints. No mark over the victim (owner D34): the loop
  *   and the struggle are the tell. It holds nobody, so pulling the victim clear, or them coming round, ends it.
- * - Hold (1.5 s): the grab, the wire goes taut and bites, the victim thrashes.
+ * - Hold (1.5 s): the grab, the wire goes taut and bites, the victim thrashes. The garroter stays leaned in over
+ *   them from the throw to the cut, and leans further in for the kill: never back.
  * - Kill (0.5 s into the stage): in hard crit the head comes off (an Atlas frame keeps it); otherwise the
  *   throat is slit, #509's carotid crit. A sealed helmet, an armoured collar or plating that would stop
  *   the throat crit turns the wire, and it lands as an ordinary blow at the head instead.
@@ -30,6 +31,8 @@
 #define WIRE_GARROTE_WIND_TIME (0.3 SECONDS)
 /// Steps the flying wire is drawn out in.
 #define WIRE_GARROTE_THROW_BEATS 6
+/// Steps a strand slides in with the body in, as the hold pulls it to the garroter's feet.
+#define WIRE_GARROTE_SLIDE_BEATS 8
 /// A body turned end for end at the wind-up swings round over this long, not in one frame.
 #define WIRE_GARROTE_TURN_TIME (0.24 SECONDS)
 /// The pool under the neck spreads from a spot to its full size over this long.
@@ -40,6 +43,10 @@
 #define WIRE_GARROTE_POOL_DROP_NORTH 6
 /// One beat of the victim's thrashing in the hold.
 #define WIRE_GARROTE_JOLT_TIME (0.05 SECONDS)
+/// A garroted body's last twitches begin this long after it has slumped back onto its tile.
+#define WIRE_GARROTE_TWITCH_WAIT (0.6 SECONDS)
+/// A line of wire starts this far before the middle of the pixel at its base, so that pixel is always drawn.
+#define WIRE_LINE_BACK 0.5
 /// Trait source: a body held still from bobbing while wire_shake() shakes it.
 #define WIRE_SHAKE_TRAIT "wire_shake"
 
@@ -338,8 +345,8 @@
 	RegisterSignal(user, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_user_equipped))
 
 /datum/hv_finisher/garrote/proc/hide_held_wire(obj/item/melee/cyberware_monowire/held)
-	// The timeout only backs show_hands() up.
-	held.hide_inhand_for(longest_duration())
+	// The timeout only backs show_hands() up. Its spool stays in the hand: the wire runs out of it.
+	held.hide_inhand_for(longest_duration(), spool = TRUE)
 	if(held != wire)
 		LAZYOR(off_hand_refs, WEAKREF(held))
 
@@ -381,23 +388,14 @@
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), rest - turn_time), turn_time, TIMER_STOPPABLE | TIMER_DELETE_ME))
 
 /**
- * Where the garroter's `side` hand is drawn, the hand the wire leaves from: where the held wire's grip sits in that
- * hand for each facing (cyberware_lefthand.dmi and cyberware_righthand.dmi, the "monowire" states). The pixel a line
- * of wire leaves from, by its lower left corner, in pixels from the middle of the tile. The hands hang at the hips;
- * in profile the near hand is at the middle of the body and the far one just shows at its front edge, behind the
- * torso. Facing the viewer both hands show at the sides. Facing away they show at the sides too, but the wire runs
- * forward from them, through the garroter's body, so both count as behind it. list(x, y, behind)
+ * The pixel the wire leaves the garroter's `side` hand from (wire_hand_point(), wire_held.dm): the one the held wire's
+ * spool lights for each facing, by its lower left corner in pixels from the middle of the tile. A line of wire is
+ * drawn from the middle of this pixel. Facing the viewer both hands show at the sides. Facing away they show at the
+ * sides too, but the wire runs forward from them, through the garroter's body, so both count as behind it; in profile
+ * the far hand does. list(x, y, behind)
  */
 /datum/hv_finisher/garrote/proc/hand_point(side)
-	var/right = side != "left"
-	switch(user.dir)
-		if(EAST)
-			return right ? list(-1, -3, FALSE) : list(5, -3, TRUE)
-		if(WEST)
-			return right ? list(-4, -3, TRUE) : list(2, -3, FALSE)
-		if(NORTH)
-			return right ? list(7, -3, TRUE) : list(-7, -3, TRUE)
-	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
+	return wire_hand_point(user, side)
 
 /**
  * Where a line of wire from the garroter's `side` hand is drawn from: the hand (hand_point()), except facing away.
@@ -496,23 +494,18 @@
 		qdel(line_ref.resolve())
 	reach_refs = null
 
-/// The flying wire's line drawn from its start to (`span_x`, `span_y`) pixels away, or `length` pixels along that
-/// bearing: the sprite is half a tile of line running up from the middle, so it is stretched and turned.
-/proc/wire_reach_shape(span_x, span_y, length)
-	var/matrix/shape = matrix()
-	shape.Scale(1, max(isnull(length) ? sqrt(span_x ** 2 + span_y ** 2) : length, 1) / 16)
-	shape.Turn(arctan(span_y, span_x))
-	return shape
-
 /**
  * The garrote's thrown wire (wire_reach, half a tile of line running up a half pixel left of the middle) drawn from
  * the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away and half a pixel on, so it
- * covers the pixel it lands on. `length` draws only that much of it along the same bearing.
+ * covers the pixel it lands on. `length` draws only that much of it along the same bearing. It starts half a pixel
+ * before the middle of its base pixel too: a line that starts on the middle itself draws that pixel on some bearings
+ * and not on others, and the wire would leave the hand a pixel out.
  */
 /proc/wire_throw_shape(span_x, span_y, length)
 	var/matrix/shape = matrix()
 	shape.Translate(0.5, 0)
-	shape.Scale(1, max(isnull(length) ? wire_line_length(span_x, span_y) : length, 1) / 16)
+	shape.Scale(1, (max(isnull(length) ? wire_line_length(span_x, span_y) : length, 1) + WIRE_LINE_BACK) / 16)
+	shape.Translate(0, -WIRE_LINE_BACK)
 	shape.Turn(arctan(span_y, span_x))
 	shape.Translate(0.5, 0.5)
 	return shape
@@ -562,6 +555,8 @@
 	appearance_flags = PIXEL_SCALE | TILE_BOUND
 	/// A taut strand's far end, on the neck, from its base in the hand: list(x, y) pixels. Null for any other line.
 	var/list/span
+	/// "left" or "right": the hand a taut strand runs from. Null for any other line.
+	var/hand_side
 
 /**
  * A taut strand on a neck that thrashes: its far end jolts by each of `jolts` (wire_jolts()) in turn, a beat apart,
@@ -882,28 +877,67 @@
 		strand.pixel_x = start_hand_x
 		strand.pixel_y = start_hand_y
 		strand.span = list(span_x, span_y)
+		strand.hand_side = side
 		strand.transform = wire_strand_shape(start_span_x, start_span_y)
 		if(start_hand_x != hand_x || start_hand_y != hand_y || start_span_x != span_x || start_span_y != span_y)
-			// Linear, as the body's slide in is (slide_in()), and the matrix blended straight too, so the far end keeps
-			// step with the neck all the way.
-			animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(span_x, span_y), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
+			// Linear, as the body's slide in is (slide_in()), so the far end keeps step with the neck all the way. In beats:
+			// each beat ends on the strand's true shape for where its two ends are by then, and the matrix is blended
+			// straight from one beat's shape to the next. Blended in one go from the first shape to the last, a strand that
+			// turns far on the way (40 degrees, facing the viewer) is drawn thinner than a pixel in between, and recorded
+			// it showed a pixel missing for the first frames of the pull.
+			var/beat_time = UPDATE_TRANSFORM_ANIMATION_TIME / WIRE_GARROTE_SLIDE_BEATS
+			for(var/beat in 1 to WIRE_GARROTE_SLIDE_BEATS)
+				var/done = beat / WIRE_GARROTE_SLIDE_BEATS
+				var/beat_x = start_hand_x + (hand_x - start_hand_x) * done
+				var/beat_y = start_hand_y + (hand_y - start_hand_y) * done
+				var/matrix/shape = wire_strand_shape(start_span_x + (span_x - start_span_x) * done, start_span_y + (span_y - start_span_y) * done)
+				if(beat == 1)
+					animate(strand, pixel_x = beat_x, pixel_y = beat_y, transform = shape, time = beat_time, flags = ANIMATION_LINEAR_TRANSFORM)
+				else
+					animate(pixel_x = beat_x, pixel_y = beat_y, transform = shape, time = beat_time, flags = ANIMATION_LINEAR_TRANSFORM)
 		LAZYADD(strand_refs, WEAKREF(strand))
 		QDEL_IN(strand, duration)
 
 /**
- * A taut strand of wire from the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away
- * and half a pixel on, so it covers the pixel it ends on. The sprite is a tile-long line running up a half pixel left
- * of the middle: it is moved onto the middle and up to start there, stretched and turned, then moved to the middle of
- * the base pixel. That end stays put under any blend of two of these, so a strand tweened between two keeps its base in
- * the hand and runs its far end straight from one spot to the other.
+ * A taut strand of wire from the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away,
+ * and half a pixel past each, so it covers the pixel it starts on and the pixel it ends on whatever its bearing (a line
+ * that starts on the middle of a pixel draws that pixel on some bearings and not on others: recorded, the strand's end
+ * in the hand blinked a pixel off the hand as its other end thrashed with the neck). The sprite is a tile-long line
+ * running up a half pixel left of the middle: it is moved onto the middle and up to start there, stretched, moved back
+ * half a pixel and turned, then moved to the middle of the base pixel. The base pixel stays covered under any blend of
+ * two of these, so a strand tweened between two keeps its base in the hand and runs its far end straight from one spot
+ * to the other.
  */
 /proc/wire_strand_shape(span_x, span_y)
 	var/matrix/shape = matrix()
 	shape.Translate(0.5, ICON_SIZE_Y / 2)
-	shape.Scale(1, wire_line_length(span_x, span_y) / ICON_SIZE_Y)
+	shape.Scale(1, (wire_line_length(span_x, span_y) + WIRE_LINE_BACK) / ICON_SIZE_Y)
+	shape.Translate(0, -WIRE_LINE_BACK)
 	shape.Turn(arctan(span_y, span_x))
 	shape.Translate(0.5, 0.5)
 	return shape
+
+/**
+ * The garroter has just been leaned somewhere else (the kill's lean), sliding there over tg's offset time: each strand's
+ * end in the hand slides with the hand, and its end on the neck stays put. The strands already up are moved, not taken
+ * down and drawn again. Returns FALSE if there are none to move.
+ */
+/datum/hv_finisher/garrote/proc/lean_wire()
+	if(QDELETED(user) || QDELETED(victim))
+		return FALSE
+	var/moved = FALSE
+	for(var/datum/weakref/strand_ref as anything in strand_refs)
+		var/obj/effect/abstract/wire_reach/strand = strand_ref.resolve()
+		if(QDELETED(strand) || !strand.hand_side)
+			continue
+		var/list/hand = line_origin(strand.hand_side)
+		var/hand_x = user.pixel_x + hand[1]
+		var/hand_y = user.pixel_y + hand[2]
+		var/list/meet = loop_point(strand.hand_side)
+		strand.span = list(meet[1] - (hand_x + 0.5), meet[2] - (hand_y + 0.5))
+		animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(strand.span[1], strand.span[2]), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
+		moved = TRUE
+	return moved
 
 /datum/hv_finisher/garrote/proc/clear_strands()
 	for(var/datum/weakref/strand_ref as anything in strand_refs)
@@ -954,6 +988,10 @@
 		// Dropped, brain and all, as #509's finishers drop a head: where the neck was, at the garroter's feet. None of
 		// tg's own blood on the floor (a seared neck doesn't bleed there at all); the garrote lays its own.
 		if(hv_wire_take_part(head, seared ? WOUND_BURN : WOUND_SLASH, 0, FALSE))
+			// The animation pass twitches a fresh corpse a few times, starting at once. Not while the body is still
+			// slumping back onto its tile: its twitches begin once it lies still.
+			if(victim.stat == DEAD)
+				victim.hv_vis_twitches(2, settle_time + WIRE_GARROTE_TWITCH_WAIT)
 			wire_neck_blood_loss(victim, seared)
 			wire_drop_head(head, victim, body_offsets, head_side, facing, worn, list(rest_neck[1] - cut_neck[1], rest_neck[2] - cut_neck[2]))
 			// Facing away, the head lies against the stump, below the body's line, with the garroter just beyond it: a pool
@@ -1290,6 +1328,14 @@
 	lunge = 3
 	enter_range = COMBAT_MESSAGE_RANGE
 
+// The gore pass rears every finisher's attacker up for its wind-up, bigger and tipped back away from the victim
+// (visuals/finisher_motion.dm): a beast looming over its kill. A garroter leans in to throw the wire, and the wire
+// leaves the hand where the hand is drawn, so that picture is taken straight back off, before any client sees it.
+/datum/hv_finisher_stage/windup/garrote/enter()
+	. = ..()
+	if(host && !QDELETED(host.user))
+		host.user.hv_vis_stop(list(HV_VIS_TAG_REAR))
+
 /datum/hv_finisher_stage/windup/garrote/enter_message()
 	return "[host.user] loops the wire around [host.victim]'s neck."
 
@@ -1298,8 +1344,8 @@
 
 /datum/hv_finisher_stage/hold/garrote
 	duration = 1.5 SECONDS
-	// Stands back up to pull.
-	lunge = 0
+	// Stays leaned in over the body, into the pull.
+	lunge = 3
 	enter_sound = 'voidcrew/sound/monowire2.ogg'
 	enter_volume = 50
 	enter_range = COMBAT_MESSAGE_RANGE
@@ -1309,8 +1355,9 @@
 	var/datum/hv_finisher/garrote/garrote = host
 	garrote.pull_close()
 	garrote.show_loop("tight")
-	// Taut until the kill beat cuts it, sliding in with the bodies from where they were before the grab.
-	garrote.draw_wire(duration + 0.5 SECONDS, garrote.pull_from)
+	// Taut until the kill beat cuts it (kill() takes them down; the time is only the garrote's own backstop), sliding in
+	// with the bodies from where they were before the grab.
+	garrote.draw_wire(garrote.longest_duration(), garrote.pull_from)
 	// Drawn in to the hands first, then the thrashing.
 	garrote.struggle(UPDATE_TRANSFORM_ANIMATION_TIME, duration - UPDATE_TRANSFORM_ANIMATION_TIME)
 
@@ -1323,15 +1370,15 @@
 /datum/hv_finisher_stage/kill/garrote
 	duration = 1 SECONDS
 	effect_delay = 0.5 SECONDS
-	// Leans back on the wire.
-	lunge = -2
+	// Leans further in as the wire goes through.
+	lunge = 5
 
 /datum/hv_finisher_stage/kill/garrote/enter()
 	var/datum/hv_finisher/garrote/garrote = host
 	var/list/before_lean = garrote.drawn_offsets()
 	. = ..()
-	// The strands stay on the hands as the lean takes them back.
-	if(garrote.running)
+	// The strands stay on the hands as the lean takes them forward: the hold's own strands, which last until the cut.
+	if(garrote.running && !garrote.lean_wire())
 		garrote.draw_wire(effect_delay + 0.1 SECONDS, before_lean)
 
 /datum/hv_finisher_stage/kill/garrote/effect()
@@ -1343,9 +1390,12 @@
 #undef WIRE_GARROTE_LEAN_TIME
 #undef WIRE_GARROTE_WIND_TIME
 #undef WIRE_GARROTE_THROW_BEATS
+#undef WIRE_GARROTE_SLIDE_BEATS
 #undef WIRE_GARROTE_TURN_TIME
 #undef WIRE_GARROTE_POOL_TIME
 #undef WIRE_GARROTE_HEAD_FALL_TIME
 #undef WIRE_GARROTE_POOL_DROP_NORTH
 #undef WIRE_GARROTE_JOLT_TIME
+#undef WIRE_GARROTE_TWITCH_WAIT
+#undef WIRE_LINE_BACK
 #undef WIRE_SHAKE_TRAIT
