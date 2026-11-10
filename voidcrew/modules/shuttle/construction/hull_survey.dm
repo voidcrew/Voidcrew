@@ -1520,13 +1520,7 @@
  */
 /atom/movable/screen/hull_survey
 	name = "Survey Hull"
-	desc = "Adds the room you are standing in to a ship.<br><br>\
-		Seal a room off - walls, windows, a closed airlock, anything air cannot get \
-		through - then stand inside it and press this. If the room touches a docked ship \
-		it is welded on and becomes part of that hull. If it touches nothing but contains \
-		a helm console, it is registered as a ship of its own.<br><br>\
-		The room may share a wall with the ship, or open straight into it through a door. \
-		The ship has to be docked and stationary."
+	desc = "Build or extend a ship."
 	// icon is assigned from the hud's ui_style at construction, like every other button
 	// here, so it follows the player's chosen HUD skin instead of hardcoding one.
 	// act_survey exists in all nine sheets in GLOB.available_ui_styles.
