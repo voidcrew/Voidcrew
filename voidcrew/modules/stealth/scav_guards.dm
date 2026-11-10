@@ -31,20 +31,24 @@
 	)
 	chances = list(RUIN_NPC_BARK_SPOT = 100)
 
-// A line and an emote together read as a script: for the stealth kinds, now one and now the other.
-/datum/human_npc_voice/scav/emotes_for(kind)
-	. = ..()
-	if(length(.) && length(lines_for(kind)) && prob(60))
-		return null
+/datum/human_npc_voice/scav
+	/// For the bark being said now: "line" or "emote" when its kind has both, else null
+	var/say_as
 
+// A line and an emote together read as a script: a kind with both gets one or the other, picked once a bark.
 // The spot line always comes, even right after a stealth line.
 /datum/human_npc_voice/scav/bark(mob/living/carbon/human/npc/speaker, kind, force = FALSE)
-	return ..(speaker, kind, force || kind == RUIN_NPC_BARK_SPOT)
+	say_as = null
+	if(length(lines[kind]) && length(emotes[kind]))
+		say_as = (human_npc_can_talk(speaker) && prob(70)) ? "line" : "emote"
+	. = ..(speaker, kind, force || kind == RUIN_NPC_BARK_SPOT)
+	say_as = null
+
+/datum/human_npc_voice/scav/emotes_for(kind)
+	return say_as == "line" ? null : ..()
 
 /datum/human_npc_voice/scav/lines_for(kind)
-	. = ..()
-	if(length(.) && length(emotes[kind]) && prob(30))
-		return null
+	return say_as == "emote" ? null : ..()
 
 /mob/living/carbon/human/npc/ruin/trooper/scav
 	name = "scav guard"
