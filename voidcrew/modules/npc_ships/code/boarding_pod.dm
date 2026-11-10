@@ -85,77 +85,30 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	if(landing_cancelled)
 		return
 	. = ..()
-	log_shuttle("PATROL: open_pod called, holder=[holder], target_ship=[target_ship], boarder_ref=[boarder_ref]")
 
 	// Announce the boarder emerging
 	var/turf/T = get_turf(holder)
 	for(var/mob/living/emerged_mob in T)
 		emerged_mob.visible_message(span_danger("[emerged_mob] emerges from the boarding pod!"))
 
-	// Assign patrol behavior to the boarder
+	// Send the boarder after the crew
 	var/mob/living/boarder = boarder_ref?.resolve()
-	log_shuttle("PATROL: Resolved boarder_ref to: [boarder]")
-
 	if(boarder && target_ship && !QDELETED(target_ship))
-		log_shuttle("PATROL: Calling setup_boarder_patrol...")
 		setup_boarder_patrol(boarder, target_ship, spawn_index)
-	else
-		log_shuttle("PATROL: NOT calling setup_boarder_patrol - boarder=[boarder], target_ship=[target_ship], QDELETED=[QDELETED(target_ship)]")
 
 	// Signal that boarders have arrived
 	if(target_ship && !QDELETED(target_ship))
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_BOARDED, src, source_ship)
 
 /**
- * Set up patrol behavior for a boarder mob.
- * Swaps their AI controller to a patrolling variant and assigns the ship's patrol path.
+ * Puts a boarder in the raid on the ship it landed on (pirate_crew.dm): every boarder of every
+ * wave, from any pirate, hunts that ship's crew together.
  */
 /obj/structure/closet/supplypod/boarding/proc/setup_boarder_patrol(mob/living/boarder, obj/structure/overmap/ship/target_ship, spawn_index)
-	log_shuttle("PATROL: setup_boarder_patrol called: boarder=[boarder], target_ship=[target_ship], spawn_index=[spawn_index]")
-
-	if(!boarder)
-		log_shuttle("PATROL: FAILED - boarder is null")
+	if(QDELETED(boarder))
 		return
-
-	log_shuttle("PATROL: Boarder current AI controller: [boarder.ai_controller] ([boarder.ai_controller?.type])")
-
-	// Determine the patrolling AI controller type based on current controller
-	var/new_controller_type
-	if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
-		log_shuttle("PATROL: Detected ranged trooper, will swap to ranged/patrolling")
-	else if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper))
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
-		log_shuttle("PATROL: Detected melee trooper, will swap to patrolling")
-	else
-		log_shuttle("PATROL: Unknown AI controller type, no swap will occur")
-
-	// Swap to patrolling controller if we found a valid type
-	// PossessPawn automatically handles cleanup of the old controller
-	if(new_controller_type)
-		log_shuttle("PATROL: Creating new controller of type [new_controller_type]")
-		new new_controller_type(boarder)
-
-		// Issue 1: Verify controller was properly assigned
-		var/datum/ai_controller/new_ctrl = boarder.ai_controller
-		if(!new_ctrl || !istype(new_ctrl, new_controller_type))
-			log_shuttle("PATROL: ERROR - Controller swap failed! Expected [new_controller_type], got [new_ctrl?.type]")
-			return
-
-		log_shuttle("PATROL: New AI controller: [new_ctrl] ([new_ctrl?.type])")
-		log_shuttle("PATROL: Controller details - ai_movement=[new_ctrl.ai_movement?.type], able_to_run=[new_ctrl.able_to_run], movement_delay=[new_ctrl.movement_delay], ai_status=[new_ctrl.ai_status]")
-
-		// Issue 2: Force AI activation immediately instead of waiting for subsystem tick
-		new_ctrl.reset_ai_status()
-		log_shuttle("PATROL: Force-activated AI, new ai_status=[new_ctrl.ai_status]")
-
-		var/turf/boarder_turf = get_turf(boarder)
-		var/clients_on_z = boarder_turf ? length(SSmobs.clients_by_zlevel[boarder_turf.z]) : 0
-		log_shuttle("PATROL: Pawn details - loc=[boarder.loc], on_turf=[isturf(boarder.loc)], z=[boarder_turf?.z], clients_on_z=[clients_on_z], mobility_flags=[boarder.mobility_flags], MOBILITY_MOVE=[(boarder.mobility_flags & MOBILITY_MOVE) ? "YES" : "NO"]")
-
-	// Assign patrol path (works even if controller wasn't swapped)
-	var/result = assign_mob_to_patrol(boarder, target_ship, spawn_index, GLOB.boarding_spawn_total)
-	log_shuttle("PATROL: assign_mob_to_patrol returned: [result]")
+	if(!pirate_crew_enlist_raider(boarder, target_ship))
+		log_shuttle("PIRATE_CREW: boarder [boarder] ([boarder.type]) could not join the raid on [target_ship]")
 
 /**
  * Boarding Pod Landing Zone - Handles the falling animation and notifications
@@ -266,31 +219,3 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	// Extra dramatic sound for boss arrival
 	if(target_ship)
 		playsound_ship(get_turf(src), 'sound/effects/explosion/explosion1.ogg', 80, TRUE, 10, target_ship)
-
-/obj/structure/closet/supplypod/boarding/boss/setup_boarder_patrol(mob/living/boarder, obj/structure/overmap/ship/target_ship, spawn_index)
-	log_shuttle("PATROL: Boss setup_boarder_patrol called: boarder=[boarder], target_ship=[target_ship]")
-
-	if(!boarder)
-		log_shuttle("PATROL: FAILED - boarder is null")
-		return
-
-	// Determine the boss-specific patrolling AI controller type
-	var/new_controller_type
-	if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
-		log_shuttle("PATROL: Detected ranged boss, will swap to ranged/patrolling/boss")
-	else
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
-		log_shuttle("PATROL: Detected melee boss, will swap to patrolling/boss")
-
-	// Swap to boss patrolling controller
-	if(new_controller_type)
-		log_shuttle("PATROL: Creating new boss controller of type [new_controller_type]")
-		boarder.ai_controller.set_ai_status(AI_STATUS_OFF)
-		qdel(boarder.ai_controller)
-		boarder.ai_controller = new new_controller_type(boarder)
-		boarder.ai_controller.set_ai_status(AI_STATUS_ON)
-
-	// Assign patrol path
-	var/result = assign_mob_to_patrol(boarder, target_ship)
-	log_shuttle("PATROL: Boss assign_mob_to_patrol returned: [result]")

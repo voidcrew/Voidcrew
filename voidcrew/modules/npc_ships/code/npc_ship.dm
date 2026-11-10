@@ -383,6 +383,8 @@
 		// Track captain and register death signal
 		tracked_crew += captain
 		RegisterSignal(captain, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
+		// The captain holds the helm with one guard (pirate_crew.dm)
+		pirate_crew_enlist_defender(captain, src, PIRATE_ROLE_CAPTAIN)
 		crew_count--  // Captain counts toward crew count
 
 	// Spawn rest of crew from configured types
@@ -394,6 +396,7 @@
 		// Track crew and register death signal
 		tracked_crew += crewmember
 		RegisterSignal(crewmember, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
+		pirate_crew_enlist_defender(crewmember, src)
 
 	// A roster exists; the pool may now treat this roster emptying as a crew wipe
 	if(length(tracked_crew))

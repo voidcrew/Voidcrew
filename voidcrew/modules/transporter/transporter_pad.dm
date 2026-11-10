@@ -337,6 +337,8 @@
 	playsound(source, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
 	playsound(destination, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
 
+	// A pad keyed to its ship's bluespace damper carries the whole beam through it (voidcrew/modules/teleport_blocker)
+	var/obj/structure/overmap/ship/field_beam_ship = get_field_beam_ship()
 	for(var/atom/movable/thing as anything in arrived)
 		// Not forced. Encounter areas carry no blanket teleport block any more, so an
 		// ordinary teleport reaches a planet surface on its own - which means the
@@ -344,7 +346,7 @@
 		// They cover TRAIT_NO_TELEPORT, shielded areas at both ends, and the
 		// reservation boundary, and they balloon-alert the passenger on refusal.
 		var/list/record = manifest[thing]
-		if(!do_teleport(thing, destination, channel = TELEPORT_CHANNEL_QUANTUM, no_effects = TRUE))
+		if(!field_beam_teleport(thing, destination, field_beam_ship))
 			// Refused at the last moment - put it back the way it looked.
 			transporter_restore(thing, record[2])
 			continue

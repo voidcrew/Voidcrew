@@ -88,6 +88,7 @@
 		/datum/shop_sku/black_market/ew_fire_control_freeze = 2,
 		/datum/shop_sku/black_market/ew_shield_collapse = 2,
 		/datum/shop_sku/black_market/ew_breaker_trip = 2,
+		/datum/shop_sku/black_market/ew_pattern_bleed = 2,
 		/datum/shop_sku/black_market/rotating/ew_runaway_burn = 2,
 		/datum/shop_sku/black_market/rotating/ew_helm_poltergeist = 2,
 		/datum/shop_sku/ripperdoc/atlas = 2,
@@ -128,7 +129,7 @@
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 98, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 99, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
