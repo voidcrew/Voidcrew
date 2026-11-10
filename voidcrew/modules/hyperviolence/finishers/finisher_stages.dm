@@ -7,7 +7,7 @@
  *
  * The kinds here carry the mechanics. Each boss subtypes them in finisher_users.dm for its own
  * words, sounds and timing:
- * - windup: rears up and marks the victim. Holds nobody, so the victim can still be pulled clear.
+ * - windup: rears up over the victim. Holds nobody, so the victim can still be pulled clear.
  * - hold: the pin. From here the victim is held down.
  * - maul: a bite or a blow, with blood. Deals no damage, so the victim lives to the end. When a person
  *   does it (host.real_hits) it is a real blow with the weapon in hand instead, at [var/blow_zone].
@@ -126,7 +126,7 @@
 
 // ===== Wind-up =====
 
-/// Rears up over the victim and marks them. Holds nobody yet.
+/// Rears up over the victim. Holds nobody yet.
 /datum/hv_finisher_stage/windup
 	pins = FALSE
 	duration = 1.5 SECONDS
@@ -136,7 +136,7 @@
 
 /datum/hv_finisher_stage/windup/enter()
 	. = ..()
-	host.place_mark(duration)
+	host.on_windup(duration)
 	if(say_line)
 		INVOKE_ASYNC(host.user, TYPE_PROC_REF(/atom/movable, say), say_line)
 

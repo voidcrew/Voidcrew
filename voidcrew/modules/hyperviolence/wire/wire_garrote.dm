@@ -314,8 +314,7 @@
  * hand to the neck. Once it is there it drags the body round head first to them, if it lay the other way, and winds
  * round the neck; then it hangs there loose, glinting, while they struggle.
  */
-/datum/hv_finisher/garrote/place_mark(duration)
-	QDEL_NULL(mark)
+/datum/hv_finisher/garrote/on_windup(duration)
 	// Thrown once the lean has carried the hand to where the throw starts.
 	throw_wire(WIRE_GARROTE_LEAN_TIME)
 	// The wire leaves its hand: from then on it is drawn in flight and round the neck, not hanging there. A wire in the

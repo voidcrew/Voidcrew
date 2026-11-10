@@ -380,7 +380,6 @@
 	TEST_ASSERT(blade.attack(victim, user, list(), list()), "A head swing at someone dying didn't start the scissor")
 	var/datum/hv_finisher/mantis_scissor/scissor = user.mantis_state?.scissor
 	TEST_ASSERT(scissor?.running, "The scissor isn't running")
-	TEST_ASSERT(isnull(scissor?.mark), "The scissor marked the victim")
 	TEST_ASSERT_EQUAL(blade.mantis_pose, "raise", "The blades didn't rise for the wind-up")
 
 	// Hurt it: it reels back.

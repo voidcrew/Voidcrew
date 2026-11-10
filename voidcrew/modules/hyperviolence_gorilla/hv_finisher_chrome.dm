@@ -21,7 +21,6 @@
 /datum/hv_finisher/chrome
 	name = "chrome finisher"
 	interrupt_damage = GORILLA_FINISHER_INTERRUPT
-	telegraph_state = null
 	/// Set when the victim came out of their stun before the kill
 	var/twisted_free = FALSE
 
@@ -80,10 +79,6 @@
 		end_early(HV_FINISHER_LOST_GRIP)
 		return
 	return ..()
-
-// No mark (owner D34).
-/datum/hv_finisher/chrome/place_mark(duration)
-	return
 
 /datum/hv_finisher/chrome/interrupt(reason)
 	if(running && !completed && reason == HV_FINISHER_LOST_GRIP && twisted_free && !QDELETED(victim) && !QDELETED(user))

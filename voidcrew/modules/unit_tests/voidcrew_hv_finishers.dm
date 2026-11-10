@@ -120,7 +120,6 @@
 	var/datum/hv_finisher/finisher = allocate(/datum/hv_finisher/hoarfrost, matriarch, victim)
 	TEST_ASSERT(finisher.start(), "the finisher didn't start")
 	TEST_ASSERT(!finisher.gripped, "the wind-up already holds the victim")
-	TEST_ASSERT_NOTNULL(finisher.mark, "the wind-up didn't mark the victim")
 	TEST_ASSERT(HAS_TRAIT(matriarch, TRAIT_AI_PAUSED), "the matriarch's AI runs during the finisher")
 	TEST_ASSERT(matriarch.has_status_effect(/datum/status_effect/hv_finishing), "the matriarch isn't marked as finishing")
 	var/zone = finisher.target_zone

@@ -43,7 +43,6 @@
 
 /datum/hv_finisher/mantis_scissor
 	name = "mantis scissor"
-	telegraph_state = null
 	interrupt_damage = 15
 	vulnerability = 1.25
 	stagger_time = 1 SECONDS
@@ -71,10 +70,6 @@
 /datum/hv_finisher/mantis_scissor/New(mob/living/user, mob/living/carbon/victim, datum/callback/on_end)
 	. = ..()
 	real_hits = FALSE
-
-// No mark over the victim.
-/datum/hv_finisher/mantis_scissor/place_mark(duration)
-	return
 
 /**
  * #509's check, made for people: it refuses anyone of the attacker's faction, and every player shares

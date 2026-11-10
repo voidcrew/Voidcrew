@@ -603,7 +603,6 @@
 	TEST_ASSERT(wire.wire_try_garrote(victim, user), "A garrote didn't start on a stunned person")
 	var/datum/hv_finisher/garrote/garrote = wire.garrote_running
 	TEST_ASSERT_NOTNULL(garrote, "The wire doesn't know its garrote")
-	TEST_ASSERT_NULL(garrote.mark, "The garrote put a mark over its victim")
 	TEST_ASSERT_EQUAL(length(garrote.reach_refs), 1, "No wire thrown at the neck in the wind-up")
 	TEST_ASSERT(user.wire_garrote_ready_at > world.time, "The garrote started with no wait after it")
 	TEST_ASSERT(!wire.wire_try_garrote(victim, user), "A second garrote started at once")

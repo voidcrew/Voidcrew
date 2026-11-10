@@ -870,7 +870,6 @@
 	var/datum/hv_finisher/chrome/gorilla/clap/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "A head aim didn't pick the head clap")
 	TEST_ASSERT(puppets_left() > 0, "The head clap put up no rig")
-	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/telegraphing/hv_finisher_mark) in get_turf(victim), "A chrome finisher marked its victim")
 	run_to_end(finisher)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The head clap didn't burst the head")
 	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The burst moved the bearer (a thrown head knocks a body back)")

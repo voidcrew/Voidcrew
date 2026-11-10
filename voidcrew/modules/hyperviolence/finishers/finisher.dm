@@ -75,10 +75,6 @@
 	var/list/zone_preference = list(BODY_ZONE_HEAD)
 	/// The zone picked at the start, or null if the victim has none of them to lose
 	var/target_zone
-	/// telegraph.dmi state marking the victim during the wind-up
-	var/telegraph_state = "skull"
-	/// The wind-up's mark on the victim
-	var/obj/effect/temp_visual/telegraphing/hv_finisher_mark/mark
 	/// Timer id of the next tick
 	var/tick_timer
 	/// How it ended (HV_FINISHER_*), once it has
@@ -109,7 +105,6 @@
 	on_end = null
 	current_stage = null
 	QDEL_LIST(stages)
-	QDEL_NULL(mark)
 	user = null
 	victim = null
 	return ..()
@@ -263,7 +258,6 @@
 		return FALSE
 	gripped = TRUE
 	ever_gripped = TRUE
-	QDEL_NULL(mark)
 	var/datum/status_effect/hv_finisher_hold/hold = victim.has_status_effect(/datum/status_effect/hv_finisher_hold)
 	hold?.set_gripped(TRUE)
 	return TRUE
@@ -340,7 +334,6 @@
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null
-	QDEL_NULL(mark)
 	if(gripped && real_hits)
 		hv_finisher_let_go(user, victim)
 	if(user)
@@ -402,12 +395,10 @@
 		user.changeNext_move(CLICK_CD_MELEE)
 	return TRUE
 
-/// Puts the wind-up's mark on the victim, following them until it is taken off
-/datum/hv_finisher/proc/place_mark(duration)
-	QDEL_NULL(mark)
-	var/turf/spot = get_turf(victim)
-	if(spot)
-		mark = new(spot, victim, telegraph_state, duration)
+/// Called as the wind-up begins, for a finisher with something of its own to start then. Nothing marks the victim:
+/// the wind-up reads from the bodies alone.
+/datum/hv_finisher/proc/on_windup(duration)
+	return
 
 // ===== Signal handlers =====
 

@@ -25,7 +25,6 @@
 	name = "hoarfrost maul"
 	// She has 800 health; the crew need a real volley to make her let go
 	interrupt_damage = 60
-	telegraph_state = "bite"
 	zone_preference = list(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
 	stages = list(
 		/datum/hv_finisher_stage/windup/hoarfrost,
@@ -89,7 +88,6 @@
 
 /datum/hv_finisher/black_knight
 	name = "black knight cleave"
-	telegraph_state = "skull"
 	stages = list(
 		/datum/hv_finisher_stage/windup/black_knight,
 		/datum/hv_finisher_stage/hold/black_knight,
@@ -146,7 +144,6 @@
 
 /datum/hv_finisher/alien_empress
 	name = "empress bite"
-	telegraph_state = "bite"
 	stages = list(
 		/datum/hv_finisher_stage/windup/alien_empress,
 		/datum/hv_finisher_stage/hold/alien_empress,
@@ -203,7 +200,6 @@
 
 /datum/hv_finisher/robust_one
 	name = "toolbox curb stomp"
-	telegraph_state = "skull"
 	stages = list(
 		/datum/hv_finisher_stage/windup/robust_one,
 		/datum/hv_finisher_stage/hold/robust_one,
