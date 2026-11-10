@@ -12,7 +12,8 @@
  * - "body": a copy of the bearer's appearance without the held blades, and without the hands seen from the
  *   front or back, where the blades' forearms take their place.
  * - The arms and blades of each beat, from mantis_gore_reach.dmi: "<model>_<move>_<beat>_<piece>", 96x96 with
- *   the bearer's tile in the middle, already cut where a body hides them. Blood on the blades is a coat over
+ *   the bearer's tile in the middle. Steel inside the victim on the camera's side of them is cut out of its
+ *   piece; steel on their far side is drawn under them and left to their outline. Blood on the blades is a coat over
  *   each piece ("<piece>_blood" or "_soak", the held art's two coats) tinted by the blood, read off the held
  *   blades, so a blade already wet stays wet and one drenched in the move turns red as it happens. The impale
  *   also has wet points from the moment they come out of the back, in the victim's blood.
@@ -43,14 +44,16 @@
 	var/view = (facing & (EAST|WEST)) ? "E" : (facing == NORTH ? "N" : "S")
 	var/list/spec
 	switch("[move]_[beat]_[view]")
-		// ---- The impale. "arrive" glides in with the lunging body; at "contact" the points touch the target's
-		// front; then they go in. The steel inside the target is cut out of the pieces.
+		// ---- The impale. "arrive" glides in with the lunging body. "contact" is the slide onto the blades: whole
+		// blades, and everything on the far side of the target (the near blade past the fist, "nrest", in the side
+		// view) drawn under them, so the target itself covers the steel it has slid onto. Then they are in: "enter".
 		if("impale_arrive_E")
 			spec = list(list("T", "far", "body", "near"), 2, 0, 0, 0, 0, 2)
-		// The stab goes in at the chest of the target as it stands; the blades rise with it as it is lifted
-		// ("lift1", "lift2"), so they go through the same place on the body from the stab to the hold.
 		if("impale_contact_E")
-			spec = list(list("far", "body", "T", "narm", "near"), 7, 0, -17, 0, 0, 1)
+			spec = list(list("far", "body", "nrest", "T", "narm", "near"), 7, 0, -17, 0, 0, 1)
+		// From the stab to the hold the blades go through the same place on the target: "enter", "lift1" and "lift2"
+		// are the hold's blades 4, 2 and 1 px lower, with the target. The steel inside them is cut out of the near
+		// blade; the far blade is under them.
 		if("impale_enter_E")
 			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 0, 0, 1)
 		if("impale_lift1_E")

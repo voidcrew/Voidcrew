@@ -98,8 +98,8 @@
 // The beats of the impale (mantis_impale.dm), from the approved storyboard. The bearer's lunge pose shows
 // while the lunging body glides in; the blades go in as it lands, and the hold, the pull-back, the rip and
 // the drop follow. Where the two bodies sit in each beat is mantis_rig_beat()'s.
-/// The points at their front, nothing in yet, after the lunging body lands.
-#define MANTIS_IMPALE_CONTACT_BEAT (0.1 SECONDS)
+/// The victim sliding onto the blades, after the lunging body lands.
+#define MANTIS_IMPALE_CONTACT_BEAT (0.05 SECONDS)
 /// From the blades going in to the hoist, held up. Short, so the hold fills the 0.8 s.
 #define MANTIS_IMPALE_ENTER_BEAT (0.1 SECONDS)
 /// Each step of the hoist from the stab up to the hold, and of the pull-back (side views).

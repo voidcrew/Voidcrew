@@ -161,23 +161,23 @@
 	if(!rig.start())
 		QDEL_NULL(rig)
 
-/// The lunging body has landed: the points are at their front.
+/// The lunging body has landed: the two are drawn together, and the victim slides onto the blades.
 /datum/mantis_impale/proc/begin_rig()
 	rig_timer = null
 	if(!running || ripping)
 		return
 	put_up_rig()
-	// Drawn onto the points in a frame, so the short blades are never seen apart from them.
-	show_beat("contact", MANTIS_IMPALE_STEP)
+	// Whole blades, the victim over the steel they have slid onto: they cover it as they come.
+	show_beat("contact", MANTIS_IMPALE_CONTACT_BEAT)
 	addtimer(CALLBACK(src, PROC_REF(stab)), MANTIS_IMPALE_CONTACT_BEAT, TIMER_DELETE_ME)
 
-/// The blades go in: the points come out of the back wet, with a burst of blood and a crackle of their light.
+/// The blades are in: the points come out of the back wet, with a burst of blood and a crackle of their light.
 /datum/mantis_impale/proc/stab()
 	if(!running || ripping)
 		return
 	if(rig)
 		rig.wet = TRUE
-	show_beat("enter")
+	show_beat("enter", 0)
 	switch(facing)
 		if(NORTH)
 			rig?.burst("enter_puff", 0.25 SECONDS, "T", under = TRUE)
