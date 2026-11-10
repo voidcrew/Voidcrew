@@ -268,6 +268,10 @@
 /// it takes to fall back flat when the arm gives.
 #define GORILLA_RIP_RAISE 22
 #define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
+/// The limb rip's blood: how many drops burst from the socket as the arm comes away, and the furthest (pixels) the pool
+/// under the shoulder is laid from the middle of the body's tile.
+#define GORILLA_RIP_BURST_DROPS 12
+#define GORILLA_RIP_POOL_REACH 10
 /// The limb rip's blow with the torn arm: up over his head, then down on theirs. The hit lands as it comes down.
 #define GORILLA_CLUB_RAISE (0.2 SECONDS)
 #define GORILLA_CLUB_STRIKE (0.1 SECONDS)
