@@ -1,7 +1,10 @@
 // Stealth guards (voidcrew/modules/stealth/). Unit tests compile before voidcrew/_DEFINES, so values from
 // there are written out: states "unaware", "suspicious", "alert", "searching"; blackboard keys
-// "stealth_state", "stealth_wary", "stealth_last_seen_turf"; STEALTH_PATROL_MAX_FAILS 3,
-// STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_SEARCH_TIME 40 s, STEALTH_CALM_LOOK_TIME 6 s, STEALTH_WARY_TIME 60 s.
+// "stealth_state", "stealth_wary"; STEALTH_PATROL_MAX_FAILS 3, STEALTH_LOSE_TARGET_TIME 4 s,
+// STEALTH_SEARCH_TIME 40 s, STEALTH_CALM_LOOK_TIME 6 s, STEALTH_WARY_TIME 60 s, STEALTH_SWITCH_COOLDOWN 4 s.
+//
+// The tests down to voidcrew_stealth_body_again call the scan and the state procs directly, with the AI off. The
+// voidcrew_stealth_live tests at the bottom run the real AI: planning, the scan and real walking.
 
 #define STEALTH_TEST_GUARD /mob/living/carbon/human/npc/ruin/trooper/scav
 
@@ -150,7 +153,7 @@
 	stealth_ai.stealth_rewind(5 SECONDS)
 	stealth_scans(guard, 1)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "searching", "A guard that lost its target isn't searching")
-	TEST_ASSERT_EQUAL(stealth_ai.blackboard["stealth_last_seen_turf"], last_seen, "The search isn't at the last place it saw them")
+	TEST_ASSERT_EQUAL(stealth_ai.last_seen_turf, last_seen, "The search isn't at the last place it saw them")
 	TEST_ASSERT_NULL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "A searching guard still has a target")
 	qdel(block)
 
@@ -165,7 +168,7 @@
 	var/mob/living/carbon/human/person = stealth_person(block, 1, 2)
 	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, person, ATTACKER_DAMAGING_ATTACK)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "searching", "A guard hit from out of sight isn't searching")
-	TEST_ASSERT_EQUAL(stealth_ai.blackboard["stealth_last_seen_turf"], get_turf(person), "The search isn't at the attacker's turf")
+	TEST_ASSERT_EQUAL(stealth_ai.last_seen_turf, get_turf(person), "The search isn't at the attacker's turf")
 	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A guard that was hit isn't wary")
 	qdel(guard)
 	// Pulled.
@@ -356,18 +359,21 @@
 	qdel(guard)
 	qdel(target)
 	qdel(bystander)
-	// Someone behind it hit it during the fight: it turns on them.
+	// Someone behind it hits it during the fight: it turns on them, and not straight back when the first one hits it.
 	guard = stealth_guard(block, 6, 2)
 	stealth_ai = stealth_ai(guard)
 	target = stealth_person(block, 8, 2)
 	var/mob/living/carbon/human/flanker = stealth_person(block, 3, 2)
 	stealth_ai.stealth_go_alert(target)
 	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, flanker, ATTACKER_DAMAGING_ATTACK)
-	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], target, "A hit from someone else pulled the guard off its target")
-	target.death()
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], flanker, "A guard didn't turn on someone else who hit it")
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, target, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], flanker, "A guard hit by two people flapped straight back to the first")
+	// The one it turned on dies: the other is still there, and remembered.
+	flanker.death()
 	stealth_scans(guard, 1)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard calmed down while someone else was hurting it")
-	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], flanker, "The guard didn't turn on whoever else hit it")
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], target, "The guard didn't go back to whoever else hit it")
 	qdel(block)
 
 /// Wary fades after STEALTH_WARY_TIME with nothing new; a notice gain starts the clock again.
@@ -488,5 +494,385 @@
 	TEST_ASSERT_NULL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "An ally's stray shot made the guard target them")
 	TEST_ASSERT(!stealth_ai.blackboard["stealth_wary"], "An ally's stray shot made the guard wary")
 	qdel(block)
+
+/// The candidate cap counts only those it could perceive: a crowd of its own side at its feet doesn't hide someone further off.
+/datum/unit_test/voidcrew_stealth_cap
+
+/datum/unit_test/voidcrew_stealth_cap/Run()
+	var/datum/turf_reservation/block = stealth_block(10, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	// More than STEALTH_MAX_CANDIDATES (8) of its own side, all nearer than the person.
+	for(var/i in 1 to 10)
+		var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, stealth_at(block, 3, 2))
+		mouse.faction = list("scav") // FACTION_SCAV
+	stealth_person(block, 5, 2)
+	stealth_scans(guard, 3)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A crowd of its own side hid someone 3 tiles in front of a guard")
+	qdel(block)
+
+/// Notice stops at STEALTH_ALERT_AT (2.5), so someone out of reach can't bank a lead that hides a second person.
+/datum/unit_test/voidcrew_stealth_notice_cap
+
+/datum/unit_test/voidcrew_stealth_notice_cap/Run()
+	var/datum/turf_reservation/block = stealth_block(20, 7)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 6, 3)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	// Eight tiles off: noticed, never alert (STEALTH_ALERT_MAX_RANGE 7).
+	var/mob/living/carbon/human/far = stealth_person(block, 14, 3)
+	stealth_scans(guard, 30)
+	var/list/entry = stealth_ai.notice_map[REF(far)]
+	TEST_ASSERT_NOTNULL(entry, "A guard never noticed someone 8 tiles in front of it")
+	TEST_ASSERT(entry[1] <= 2.5, "Notice climbed past the alert level ([entry[1]])")
+	// They step out of sight behind it; someone else walks up in front.
+	far.forceMove(stealth_at(block, 0, 3))
+	var/mob/living/carbon/human/near = stealth_person(block, 8, 3)
+	stealth_scans(guard, 5)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "Someone it could no longer see kept a guard from alerting on the person in front of it")
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], near, "The guard isn't after the person in front of it")
+	qdel(block)
+
+/// A friend who went down, got up and went down again is news again.
+/datum/unit_test/voidcrew_stealth_body_again
+
+/datum/unit_test/voidcrew_stealth_body_again/Run()
+	var/datum/turf_reservation/block = stealth_block(12, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, stealth_at(block, 6, 4))
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 5, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/friend_ai = stealth_ai(friend)
+	stealth_ai.stealth_setup()
+	friend_ai.stealth_setup()
+	friend.set_body_position(LYING_DOWN)
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't react to a friend on the floor")
+	stealth_ai.stealth_go_unaware()
+	friend.set_body_position(STANDING_UP)
+	stealth_ai.next_body_scan = 0
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A friend back on its feet set a guard off")
+	friend.death()
+	stealth_ai.next_body_scan = 0
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard ignored a friend killed after getting back up")
+	qdel(block)
+
+// ===== The real AI =====
+
+/**
+ * Tests that run the guard's real AI: planning, the scan and real walking, over a few seconds of game time. A
+ * person on SSmobs' list of players keeps the level awake, as a player there does. Every wait is on game time
+ * with a long deadline and ends as soon as the thing happens, so a slow machine only makes them slower.
+ */
+/datum/unit_test/voidcrew_stealth_live
+	abstract_type = /datum/unit_test/voidcrew_stealth_live
+	/// The walled room this test runs in
+	var/datum/turf_reservation/room
+	/// person => the z-level they were listed on
+	var/list/players = list()
+
+/datum/unit_test/voidcrew_stealth_live/Destroy()
+	for(var/mob/living/person as anything in players)
+		SSmobs.clients_by_zlevel[players[person]] -= person
+	players = null
+	. = ..()
+	QDEL_NULL(room)
+
+/// Builds a lit, walled, floored room `width` x `height` inside (walls keep its air in). FALSE if there is no room.
+/datum/unit_test/voidcrew_stealth_live/proc/make_room(width, height)
+	room = SSmapping.request_turf_block_reservation(width + 2, height + 2, 1)
+	if(isnull(room))
+		return FALSE
+	var/turf/corner = room.bottom_left_turfs[1]
+	for(var/turf/spot as anything in block(corner.x, corner.y, corner.z, corner.x + width + 1, corner.y + height + 1, corner.z))
+		var/edge = spot.x == corner.x || spot.y == corner.y || spot.x == corner.x + width + 1 || spot.y == corner.y + height + 1
+		spot.ChangeTurf(edge ? /turf/closed/wall : /turf/open/floor/iron)
+		GLOB.stealth_test_dark_turfs[spot] = FALSE
+	return TRUE
+
+/// The floor (dx, dy) from the room's inside corner.
+/datum/unit_test/voidcrew_stealth_live/proc/at(dx, dy)
+	var/turf/corner = room.bottom_left_turfs[1]
+	return locate(corner.x + 1 + dx, corner.y + 1 + dy, corner.z)
+
+/datum/unit_test/voidcrew_stealth_live/proc/guard_at(dx, dy, facing = EAST)
+	var/mob/living/carbon/human/npc/guard = allocate(STEALTH_TEST_GUARD, at(dx, dy))
+	guard.setDir(facing)
+	guard.AddElement(/datum/element/forced_gravity, 1)
+	return guard
+
+/// A walking person the guards can't hurt (the tests are about what the guards do, not how the fight goes).
+/// `listed` puts them on SSmobs' list of players.
+/datum/unit_test/voidcrew_stealth_live/proc/person_at(dx, dy, listed = TRUE)
+	var/mob/living/carbon/human/consistent/person = allocate(/mob/living/carbon/human/consistent, at(dx, dy))
+	if(person.move_intent == MOVE_INTENT_RUN)
+		person.toggle_move_intent()
+	person.AddElement(/datum/element/forced_gravity, 1)
+	person.physiology.brute_mod = 0
+	person.physiology.burn_mod = 0
+	person.physiology.stamina_mod = 0
+	if(listed)
+		var/turf/where = get_turf(person)
+		SSmobs.clients_by_zlevel[where.z] += person
+		players[person] = where.z
+	return person
+
+/// Switches a guard's AI on, as someone arriving on its level does.
+/datum/unit_test/voidcrew_stealth_live/proc/wake(mob/living/guard)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard.ai_controller
+	stealth_ai.reset_ai_status()
+	return stealth_ai
+
+/// A stop on route "a".
+/datum/unit_test/voidcrew_stealth_live/proc/stop_at(dx, dy, order, wait = 5)
+	var/obj/effect/landmark/stealth_patrol/stop = allocate(/obj/effect/landmark/stealth_patrol, at(dx, dy))
+	stop.order = order
+	stop.wait = wait
+	return stop
+
+/// A route leg longer than tg's 14-tile walk limit, with the only player far off behind a wall: it gets there.
+/datum/unit_test/voidcrew_stealth_live/patrol
+
+/datum/unit_test/voidcrew_stealth_live/patrol/Run()
+	TEST_ASSERT(make_room(40, 5), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 4))
+	stop_at(1, 2, 1)
+	stop_at(26, 2, 2)
+	// A wall between the far stop and the player, who is 37 tiles from the guard: past tg's idle radius.
+	for(var/dy in 0 to 4)
+		var/turf/wall_spot = at(32, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	person_at(38, 2)
+	var/mob/living/carbon/human/npc/guard = guard_at(1, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = wake(guard)
+	TEST_ASSERT_EQUAL(stealth_ai.ai_status, AI_STATUS_ON, "A guard with a player far off on its level isn't fully awake")
+	var/turf/far_stop = at(26, 2)
+	var/deadline = world.time + 90 SECONDS
+	while(get_turf(guard) != far_stop && world.time < deadline)
+		sleep(2)
+	TEST_ASSERT_EQUAL(stealth_ai.route_id, "a", "The guard never claimed its route")
+	TEST_ASSERT_EQUAL(get_turf(guard), far_stop, "A guard didn't finish a 25-tile route leg (it is [get_dist(guard, far_stop)] tiles short)")
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A patrolling guard with nobody in sight isn't unaware")
+	// And back: the route goes on.
+	var/turf/near_stop = at(1, 2)
+	deadline = world.time + 90 SECONDS
+	while(get_turf(guard) != near_stop && world.time < deadline)
+		sleep(2)
+	TEST_ASSERT_EQUAL(get_turf(guard), near_stop, "A guard didn't walk back along its route")
+	TEST_ASSERT_NOTNULL(stealth_ai.route_id, "A guard gave up its route")
+
+/// Left far from its route by a chase, a guard walks back to it; a sentry walks back to its post.
+/datum/unit_test/voidcrew_stealth_live/walk_home
+
+/datum/unit_test/voidcrew_stealth_live/walk_home/Run()
+	TEST_ASSERT(make_room(52, 5), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 2))
+	stop_at(1, 0, 1, 50)
+	stop_at(4, 0, 2, 50)
+	for(var/dy in 0 to 4)
+		var/turf/wall_spot = at(49, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	person_at(50, 2)
+	var/mob/living/carbon/human/npc/walker = guard_at(1, 0)
+	// Four tiles from the nearest stop: past STEALTH_ROUTE_CLAIM_RANGE (2), so a sentry.
+	var/mob/living/carbon/human/npc/sentry = guard_at(1, 4, SOUTH)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/walker_ai = wake(walker)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/sentry_ai = wake(sentry)
+	walker_ai.stealth_setup()
+	sentry_ai.stealth_setup()
+	TEST_ASSERT_EQUAL(walker_ai.route_id, "a", "The guard on the route didn't claim it")
+	TEST_ASSERT_NULL(sentry_ai.route_id, "The guard off the route claimed it")
+	var/turf/post = at(1, 4)
+	// Where a long chase ends: 43 tiles from the route. Further than STEALTH_LEASH_RANGE (24), and than one walk
+	// (STEALTH_WALK_LEG 40), so the way back is in two legs.
+	walker.forceMove(at(47, 0))
+	sentry.forceMove(at(47, 4))
+	walker_ai.stealth_go_searching(at(47, 0))
+	sentry_ai.stealth_go_searching(at(47, 4))
+	walker_ai.stealth_rewind(41 SECONDS)
+	sentry_ai.stealth_rewind(41 SECONDS)
+	var/deadline = world.time + 120 SECONDS
+	while(world.time < deadline && !(get_turf(sentry) == post && walker_ai.at_stop))
+		sleep(2)
+	TEST_ASSERT_EQUAL(walker_ai.route_id, "a", "A guard left far from its route became a sentry")
+	TEST_ASSERT(walker_ai.at_stop, "A guard left far from its route never got back to a stop (it is at [walker.x - at(0, 0).x], [walker.y - at(0, 0).y])")
+	TEST_ASSERT(get_dist(walker, at(4, 0)) <= 3, "The guard is at a stop that isn't on its route")
+	TEST_ASSERT_EQUAL(get_turf(sentry), post, "A sentry left far from its post didn't walk back (it is [get_dist(sentry, post)] tiles off)")
+	TEST_ASSERT_EQUAL(sentry_ai.home_turf, post, "A sentry's post moved")
+
+/// Searching, it goes straight to alert on someone it glimpses, never down to suspicious.
+/datum/unit_test/voidcrew_stealth_live/search_to_alert
+
+/datum/unit_test/voidcrew_stealth_live/search_to_alert/Run()
+	TEST_ASSERT(make_room(14, 5), "No room for the test")
+	var/mob/living/carbon/human/npc/guard = guard_at(3, 2)
+	var/mob/living/carbon/human/person = person_at(12, 0)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = wake(guard)
+	stealth_ai.stealth_go_searching(at(3, 2))
+	// Three tiles in front of it: one scan's worth of notice is past suspicious but short of alert.
+	person.forceMove(at(6, 2))
+	var/went_suspicious = FALSE
+	var/deadline = world.time + 20 SECONDS
+	while(stealth_ai.stealth_state() != "alert" && world.time < deadline)
+		if(stealth_ai.stealth_state() == "suspicious")
+			went_suspicious = TRUE
+		sleep(1)
+	TEST_ASSERT(!went_suspicious, "A searching guard that glimpsed someone dropped to suspicious")
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A searching guard didn't go alert on someone three tiles in front of it")
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The guard isn't after the person it glimpsed")
+
+/// Alert on a decoy it can't reach, it still notices someone nearer and turns on them; it doesn't flap back.
+/datum/unit_test/voidcrew_stealth_live/switch_target
+
+/datum/unit_test/voidcrew_stealth_live/switch_target/Run()
+	TEST_ASSERT(make_room(14, 5), "No room for the test")
+	// A glass wall: the decoy beyond it is in plain sight and out of reach.
+	for(var/dy in 0 to 4)
+		allocate(/obj/structure/window/reinforced/fulltile, at(8, dy))
+	var/mob/living/carbon/human/npc/guard = guard_at(3, 2)
+	var/mob/living/carbon/human/decoy = person_at(11, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = wake(guard)
+	stealth_ai.stealth_go_alert(decoy)
+	sleep(3 SECONDS)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard gave up on someone standing in plain sight behind glass")
+	// tg drops the target key each time the walk at the glass fails; the next scan takes it back. Its focus stays.
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard["stealth_focus"], decoy, "A guard forgot the person behind the glass")
+	// Someone else beside it, on its side of the glass.
+	var/mob/living/carbon/human/intruder = person_at(1, 2, FALSE)
+	intruder.forceMove(get_step(guard, WEST) || at(1, 2))
+	var/deadline = world.time + 30 SECONDS
+	while(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET] != intruder && world.time < deadline)
+		// Kept at its shoulder, wherever it has got to.
+		if(get_dist(intruder, guard) > 1)
+			var/turf/beside = get_step(guard, WEST)
+			if(beside && !beside.is_blocked_turf())
+				intruder.forceMove(beside)
+		sleep(2)
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], intruder, "A guard busy with a decoy never turned on someone at its shoulder")
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard that changed target isn't alert")
+	// The decoy hits it at once: too soon to turn back (STEALTH_SWITCH_COOLDOWN 4 s), and the decoy is no nearer.
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, decoy, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], intruder, "A guard flapped back to its old target the moment it was hit")
+	var/flapped = FALSE
+	deadline = world.time + 3 SECONDS
+	while(world.time < deadline)
+		if(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET] == decoy)
+			flapped = TRUE
+		sleep(2)
+	TEST_ASSERT(!flapped, "A guard flapped back to the decoy while someone stood nearer")
+	// Later, a hit from the decoy does turn it.
+	stealth_ai.stealth_rewind(5 SECONDS)
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, decoy, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], decoy, "A guard didn't turn on someone who hit it once the cooldown had passed")
+
+/// Someone in a cardboard box: unseen while it sits still, noticed when it moves at the guard's shoulder, found when it bumps it.
+/datum/unit_test/voidcrew_stealth_live/box
+
+/datum/unit_test/voidcrew_stealth_live/box/Run()
+	TEST_ASSERT(make_room(16, 7), "No room for the test")
+	person_at(15, 6)
+	var/mob/living/carbon/human/npc/guard = guard_at(3, 3, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = wake(guard)
+	var/mob/living/carbon/human/stowaway = person_at(6, 3, FALSE)
+	var/obj/structure/closet/cardboard/box = allocate(/obj/structure/closet/cardboard, at(6, 3))
+	stowaway.forceMove(box)
+	// Still, three tiles behind it, then still at two.
+	sleep(3 SECONDS)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard noticed a box that never moved")
+	TEST_ASSERT(LAZYACCESS(stealth_ai.hidden_spots, REF(stowaway)), "The guard's scan never found the person in the box (the test can't tell hidden from missing)")
+	// It shuffles about within two tiles.
+	var/list/spots = list(at(5, 3), at(5, 4), at(5, 3), at(5, 2))
+	var/spot_index = 0
+	var/deadline = world.time + 30 SECONDS
+	while(stealth_ai.stealth_state() == "unaware" && world.time < deadline)
+		spot_index = (spot_index % length(spots)) + 1
+		box.forceMove(spots[spot_index])
+		sleep(1.2 SECONDS)
+	TEST_ASSERT(stealth_ai.stealth_state() != "unaware", "A guard ignored a box shuffling about at its shoulder")
+	// A second guard, and a box that walks into it.
+	var/mob/living/carbon/human/npc/second = guard_at(12, 1, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/second_ai = wake(second)
+	second_ai.stealth_setup()
+	var/mob/living/carbon/human/second_person = person_at(14, 1, FALSE)
+	var/obj/structure/closet/cardboard/second_box = allocate(/obj/structure/closet/cardboard, at(13, 1))
+	second_person.forceMove(second_box)
+	step(second_box, WEST)
+	TEST_ASSERT_EQUAL(second_ai.stealth_state(), "alert", "A box that walked into a guard wasn't found out")
+	TEST_ASSERT_EQUAL(second_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], second_person, "The guard isn't after whoever is in the box")
+
+/// A blast with nobody to blame: the guard it hits and the friend near it both go looking there. A hit with a name doesn't rouse the friend.
+/datum/unit_test/voidcrew_stealth_live/blast
+
+/datum/unit_test/voidcrew_stealth_live/blast/Run()
+	TEST_ASSERT(make_room(30, 5), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 4))
+	for(var/dy in 0 to 4)
+		var/turf/wall_spot = at(20, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/person = person_at(25, 2)
+	var/mob/living/carbon/human/npc/struck = guard_at(3, 2, WEST)
+	var/mob/living/carbon/human/npc/friend = guard_at(8, 2, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/struck_ai = wake(struck)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/friend_ai = wake(friend)
+	sleep(2 SECONDS)
+	TEST_ASSERT_EQUAL(struck_ai.group, friend_ai.group, "Two guards by one marker aren't in one group")
+	TEST_ASSERT_EQUAL(friend_ai.stealth_state(), "unaware", "A guard with nothing going on isn't unaware")
+	// A named hit first: the friend, facing away, hears nothing of it.
+	SEND_SIGNAL(struck, COMSIG_ATOM_WAS_ATTACKED, person, ATTACKER_DAMAGING_ATTACK)
+	struck.Stun(0.5 SECONDS)
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(struck_ai.stealth_state(), "searching", "A guard hit from out of sight isn't searching")
+	TEST_ASSERT_EQUAL(friend_ai.stealth_state(), "unaware", "A hit with a name on it roused the guard's friend")
+	// Now a blast.
+	struck_ai.stealth_go_unaware()
+	struck_ai.stealth_clear_wary()
+	struck_ai.stealth_rewind(30 SECONDS)
+	var/turf/where_hit = get_turf(struck)
+	EX_ACT(struck, EXPLODE_LIGHT)
+	var/deadline = world.time + 5 SECONDS
+	while(friend_ai.stealth_state() != "searching" && world.time < deadline)
+		sleep(1)
+	TEST_ASSERT_EQUAL(friend_ai.stealth_state(), "searching", "A blast on a guard didn't send its friend looking")
+	TEST_ASSERT_EQUAL(friend_ai.last_seen_turf, where_hit, "The friend isn't looking where the blast was")
+	TEST_ASSERT(friend_ai.blackboard["stealth_wary"], "The friend isn't wary after the blast")
+	TEST_ASSERT(struck_ai.blackboard["stealth_wary"], "A guard caught in a blast isn't wary")
+	TEST_ASSERT(struck.stat != CONSCIOUS || struck_ai.stealth_state() == "searching", "A guard caught in a blast went back to its post")
+
+/// The mark over an alert guard's head goes when it is cuffed, and stays gone while it is.
+/datum/unit_test/voidcrew_stealth_live/cuffed_mark
+
+/datum/unit_test/voidcrew_stealth_live/cuffed_mark/Run()
+	TEST_ASSERT(make_room(10, 5), "No room for the test")
+	var/mob/living/carbon/human/npc/guard = guard_at(3, 2)
+	var/mob/living/carbon/human/person = person_at(5, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = wake(guard)
+	stealth_ai.stealth_go_alert(person)
+	var/deadline = world.time + 10 SECONDS
+	while(isnull(stealth_ai.meter?.mark) && world.time < deadline)
+		sleep(1)
+	TEST_ASSERT_NOTNULL(stealth_ai.meter?.mark, "An alert guard with someone beside it has no mark")
+	var/obj/effect/abstract/stealth_mark/mark = stealth_ai.meter.mark
+	TEST_ASSERT(mark in guard.vis_contents, "The mark isn't drawn on the guard")
+	guard.set_handcuffed(new /obj/item/restraints/handcuffs(guard))
+	guard.update_handcuffed()
+	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_RESTRAINED), "The cuffs didn't go on")
+	deadline = world.time + 5 SECONDS
+	while(!isnull(stealth_ai.meter) && world.time < deadline)
+		sleep(1)
+	TEST_ASSERT_NULL(stealth_ai.meter, "A cuffed guard kept its mark")
+	TEST_ASSERT(!(mark in guard.vis_contents), "A cuffed guard still draws its mark")
+	// Hitting it while it is cuffed doesn't bring the mark back.
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, person, ATTACKER_DAMAGING_ATTACK)
+	var/came_back = FALSE
+	deadline = world.time + 3 SECONDS
+	while(world.time < deadline)
+		if(stealth_ai.meter)
+			came_back = TRUE
+		sleep(1)
+	TEST_ASSERT(!came_back, "A mark came back over a cuffed guard")
 
 #undef STEALTH_TEST_GUARD
