@@ -7,7 +7,8 @@
 // held blade comes back under an exact copy of itself whichever reaches the client first.
 //
 // Side on, the arm on the far side of the body swings under the near arm's swing, and whatever the near hand
-// holds is cut out of it (sort_as_arm(), voidcrew/modules/cyberware/cyberware_anim.dm).
+// holds is cut out of it (sort_as_arm(), voidcrew/modules/cyberware/cyberware_anim.dm). The blood coat goes on
+// after its swing, so it draws over it.
 
 /// 64x64 frames on the bearer's tile: "[model]_swing_[side]" and its "_blood" and "_soak" coats.
 #define MANTIS_SWING_ICON 'voidcrew/modules/mantis_gore/icons/mantis_swing.dmi'
@@ -150,7 +151,6 @@
 	coat.icon_state = coat_state
 	coat.pixel_w = pixel_w
 	coat.pixel_z = pixel_z
-	coat.layer = initial(layer) + 0.01
 	coat.color = blood_color
 	coat.appearance_flags |= RESET_COLOR
 	coat.attach(bearer)
