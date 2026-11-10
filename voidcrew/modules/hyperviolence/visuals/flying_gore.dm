@@ -317,7 +317,9 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 /datum/component/hv_tumble/proc/land()
 	var/obj/item/part = parent
 	if(part.layer == flight_layer)
-		part.layer = rest_layer
+		part.layer = lands_on_a_body() ? HV_VIS_TUMBLE_LAYER : rest_layer
+	// Settled here: Destroy() leaves the layer alone.
+	rest_layer = null
 	if(grounded && isturf(part.loc))
 		switch(style)
 			if(HV_VIS_TUMBLE_HEAD)
@@ -333,6 +335,16 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	on_landed = null
 	qdel(src)
 	landed?.Invoke()
+
+/// Whether someone lies on the tile it has come down on. tg draws anything on the floor under a body lying
+/// there, so a head dropped beside its own body would be out of sight: it stays drawn over them instead, as
+/// tg's brain always is. Picking it up puts its layer back.
+/datum/component/hv_tumble/proc/lands_on_a_body()
+	var/obj/item/part = parent
+	for(var/mob/living/lying in part.loc)
+		if(lying.body_position == LYING_DOWN)
+			return TRUE
+	return FALSE
 
 /// Something else has the part now, or the flight never ended: let it go as it is.
 /datum/component/hv_tumble/proc/give_up()
