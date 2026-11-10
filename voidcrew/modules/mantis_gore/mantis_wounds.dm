@@ -23,7 +23,9 @@
 	var/next_pulse = 0
 
 /datum/wound/slash/flesh/critical/hv_carotid/limb/wound_injury(datum/wound/old_wound = null, attack_direction = null)
-	. = ..()
+	// tg's own wound is told no direction. With one it throws its spray along it, a line of blood three tiles
+	// long, and this artery throws its own drops instead (mantis_spurt_fx()).
+	. = ..(old_wound, null)
 	spurt_dir = attack_direction || pick(GLOB.alldirs)
 	next_pulse = world.time + rand(2 SECONDS, 3 SECONDS)
 	// The throat's own pulse throws blood every which way. This one has its own, along the cut.

@@ -799,6 +799,9 @@
 	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_L_ARM)
 	var/datum/wound/slash/flesh/critical/hv_carotid/limb/torn = hv_crit_apply_wound(arm, /datum/wound/slash/flesh/critical/hv_carotid/limb, EAST, null)
 	TEST_ASSERT(torn, "The limb artery wound would not apply")
+	// The artery throws its own drops: tg's wound spray, a line of blood three tiles long, stays out of it.
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/hitsplatter) in range(1, victim)), "The limb artery threw tg's own wound spray as well")
+	TEST_ASSERT_EQUAL(torn.spurt_dir, EAST, "The limb artery forgot the cut's direction")
 	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_L_ARM), "mid", "An arm's artery is not at arm height")
 	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_R_LEG), "low", "A leg's artery is not near the floor")
 	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_HEAD), "high", "The neck's artery is not at neck height")

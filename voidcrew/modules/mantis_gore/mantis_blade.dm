@@ -159,7 +159,10 @@
 	var/datum/wound_pregen_data/pregen = GLOB.all_wound_pregen_data[wound_type]
 	if(!pregen?.can_be_applied_to(limb, list(WOUND_SLASH)))
 		return FALSE
-	var/datum/wound/torn = hv_crit_apply_wound(limb, wound_type, attack_direction, src)
+	// The throat's and the aorta's wounds are #509's and tg's: given the cut's direction they throw tg's wound
+	// spray along it, a line of blood three tiles long. The tear throws its own drops instead, so they get none.
+	var/own_wound = ispath(wound_type, /datum/wound/slash/flesh/critical/hv_carotid/limb)
+	var/datum/wound/torn = hv_crit_apply_wound(limb, wound_type, own_wound ? attack_direction : null, src)
 	if(!torn)
 		return FALSE
 	var/seared = ispath(artery_wound_type, /datum/wound/slash/flesh/critical/hv_carotid/limb/seared)
