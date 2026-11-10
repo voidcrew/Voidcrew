@@ -341,6 +341,8 @@
 #define CYBERWARE_MANTIS_LUNGE_KNOCKDOWN (2 SECONDS)
 /// How long a shown-line dash (dash_aim) takes per tile: a real run down the line, one tick a step.
 #define CYBERWARE_MANTIS_LUNGE_STEP (0.5)
+/// How long tg's attack lunge takes to reach its target (do_attack_animation()): the arrival's cut lands no sooner.
+#define CYBERWARE_MANTIS_LUNGE_THRUST (0.1 SECONDS)
 
 /**
  * The blade itself: hardlight, ~20 force (cap 22), sharp, wounding. Only
@@ -591,12 +593,13 @@
 		lunger.forceMove(step_turf)
 	// Hardlight afterimages and a streak down the line, and the body glides into place (mantis_gore/mantis_lunge_fx.dm).
 	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade = housing.active_item
-	mantis_lunge_dash_fx(lunger, start, passed, charged, istype(lunge_blade) ? lunge_blade.base_icon_state : "mantis")
+	var/glide = mantis_lunge_dash_fx(lunger, start, passed, charged, istype(lunge_blade) ? lunge_blade.base_icon_state : "mantis")
 	if(!lunger.Adjacent(victim))
 		lunger.balloon_alert(lunger, "fell short!")
-		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+		// The blades stay flat while the body is still gliding in.
+		mantis_lunge_settle(posed, glide)
 		return
-	land_lunge(lunger, victim, housing, lunge_blade, charged, posed)
+	land_lunge(lunger, victim, housing, lunge_blade, charged, posed, start, glide)
 
 /**
  * A shown-line dash (dash_aim, a bounty NPC's tell): a real run down the line it showed, a tile a tick with
@@ -651,12 +654,16 @@
 		lunger.balloon_alert(lunger, "fell short!")
 		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
-	land_lunge(lunger, victim, housing, lunge_blade, charged, posed)
+	// The run was real movement: the body is already there.
+	land_lunge(lunger, victim, housing, lunge_blade, charged, posed, null, 0)
 
 /// The arrival: the bonus cut once per blade, and they go down. [housing] is the housing that lunged and
 /// [lunge_blade] its blade, [charged] is TRUE for a leap out of a crouch, and [posed] are the blades laid
-/// flat for the wind-up.
-/datum/action/cooldown/cyberware/mantis_lunge/proc/land_lunge(mob/living/lunger, mob/living/victim, obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing, obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade, charged = FALSE, list/posed)
+/// flat for the wind-up. [from] is where the ordinary lunge set out, for the impale's glide in; a shown-line
+/// dash ran here on its own feet and gives none. [glide] is how long the body still takes to glide in
+/// (mantis_lunge_dash_fx()): the impact, the knockdown and the blades' return to the guard wait for it, and for
+/// the body's thrust at the target when it is already there.
+/datum/action/cooldown/cyberware/mantis_lunge/proc/land_lunge(mob/living/lunger, mob/living/victim, obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing, obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade, charged = FALSE, list/posed, turf/from, glide = 0)
 	// Both housings deployed means both blades arrive. Floored at one: a blade
 	// stowed during the 0.3s telegraph shouldn't eat the whole cooldown for
 	// nothing when the dash still connected.
@@ -669,8 +676,10 @@
 
 	lunger.face_atom(victim)
 	lunger.do_attack_animation(victim, no_effect = TRUE)
+	// The cut lands as the body does, and not before its thrust has reached them.
+	var/lands_in = max(glide, CYBERWARE_MANTIS_LUNGE_THRUST)
 	// The blade's own impact over the target (both blades for a pounce), and a burst of light and dust (mantis_gore/mantis_lunge_fx.dm).
-	mantis_lunge_arrival_fx(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis", charged && blades > 1)
+	mantis_lunge_arrival_fx(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis", charged && blades > 1, lands_in)
 	// The arrival counts toward the lunger's kill (mantis_gore/mantis_cuts.dm).
 	mantis_note_hit(victim, lunger)
 	// One armor roll for the arrival, reused per blade. Both land in the same
@@ -691,13 +700,14 @@
 		cyberware_scorch_target(victim, lunge_fire)
 	// Both blades into someone already hurt: held up on them, then ripped free (mantis_gore/mantis_impale.dm).
 	// The knockdown waits for the rip.
-	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown))
+	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown, from, charged ? 2 : MANTIS_LUNGE_GLIDE))
 		log_combat(lunger, victim, "mantis-lunged and impaled", "mantis blades ([blades] landed)")
 		playsound(victim, 'sound/effects/wounds/pierce3.ogg', 70, TRUE)
 		return
-	mantis_pose_blades(posed, MANTIS_POSE_GUARD)
-	// They go down as the gliding body reaches them, with the impact (mantis_gore/mantis_lunge_fx.dm).
-	mantis_lunge_knockdown(victim, housing.lunge_knockdown)
+	// The blades stay flat through the glide and come back to the guard as the body lands, and they go down
+	// then, with the impact (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_settle(posed, lands_in)
+	mantis_lunge_knockdown(victim, housing.lunge_knockdown, lands_in)
 	if(charged)
 		if(blades > 1)
 			victim.visible_message(
@@ -1046,6 +1056,7 @@
 #undef CYBERWARE_MANTIS_LUNGE_TELEGRAPH
 #undef CYBERWARE_MANTIS_LUNGE_KNOCKDOWN
 #undef CYBERWARE_MANTIS_LUNGE_STEP
+#undef CYBERWARE_MANTIS_LUNGE_THRUST
 #undef CYBERWARE_MONOWIRE_CLEAVE_MULT
 #undef CYBERWARE_MONOWIRE_BURN
 #undef CYBERWARE_CALIBER_RONIN

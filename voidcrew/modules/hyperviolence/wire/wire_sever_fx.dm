@@ -11,7 +11,7 @@
  *   meanwhile, it just fades.
  * - The seam: a white flash across the limb that cools to the wire's colour and beads with blood, or on a
  *   seared cut glows white to orange to embers, with a little light and smoke.
- * - The through-cut: a line of the wire's light through both bodies, then a line of blood.
+ * - The through-cut: a fan of drops from each of the two bodies. Its line is the lash's own (wire_lash_through()).
  */
 
 /// The colour a body's blood is drawn in, as the gore overlays draw it.
@@ -540,31 +540,16 @@
 
 // ---- Through two bodies ----
 
-/// The line of the wire through `target` and `behind`, and on past them; then the same line in blood.
-/obj/item/melee/cyberware_monowire/proc/wire_through_fx(mob/living/target, mob/living/behind, direction)
-	var/turf/start = get_turf(target)
-	var/turf/target_turf = get_turf(behind)
-	if(!start || !target_turf)
-		return
-	var/turf/finish = get_step(target_turf, direction) || target_turf
-	var/dx = (direction & EAST) ? 1 : ((direction & WEST) ? -1 : 0)
-	var/dy = (direction & NORTH) ? 1 : ((direction & SOUTH) ? -1 : 0)
-	// From half a tile before the target, at chest height.
-	start.Beam(finish, icon_state = through_state(), icon = WIRE_GORE_ICON, time = 0.15 SECONDS, override_origin_pixel_x = -dx * 12, override_origin_pixel_y = -dy * 12 + 2, override_target_pixel_y = 2)
-	if(behind.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
-		return
-	start.Beam(finish, icon_state = "blood_line", icon = WIRE_GORE_ICON, time = 0.7 SECONDS, beam_color = wire_blood_color(behind), emissive = FALSE, override_origin_pixel_x = -dx * 12, override_origin_pixel_y = -dy * 12 + 2, override_target_pixel_y = 2)
-	// One streak through both tiles and on.
-	if(target.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER && !isgroundlessturf(start))
-		hv_blood_lay_spray(start, /obj/effect/decal/cleanable/blood/hv_spray/streak, direction, target.get_blood_dna_list(), target.get_static_viruses())
-	if(!isgroundlessturf(target_turf))
-		hv_blood_lay_spray(target_turf, /obj/effect/decal/cleanable/blood/hv_spray/streak, direction, behind.get_blood_dna_list(), behind.get_static_viruses())
-	behind.hv_wire_spray(direction, 2)
-
-/obj/item/melee/cyberware_monowire/proc/through_state()
-	return "wire_through"
-
-/obj/item/melee/cyberware_monowire/live/through_state()
-	return "wire_through_live"
+/**
+ * The wire of `user` went through `target` and on into `behind`: each throws a short fan of drops the way it went, from
+ * where it was cut: the pixel the swing's lash passes on `target` and the one it ends on in `behind`'s chest
+ * (wire_through_cuts()). No line of light and no line of blood: that lash runs on to `behind` (wire_lash_through()).
+ * `clean`: `target` throws none here, its own cut showing another way (a limb coming off, a crossing cut).
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_through_fx(mob/living/user, mob/living/target, mob/living/behind, direction, clean = FALSE)
+	var/list/cuts = wire_through_cuts(user, target, behind)
+	if(!clean)
+		target.hv_wire_spray(direction, 2, from = cuts ? cuts[1] : null)
+	behind.hv_wire_spray(direction, 2, from = cuts ? cuts[2] : wire_zone_point(behind, BODY_ZONE_CHEST))
 
 #undef WIRE_SHOE_SCALE

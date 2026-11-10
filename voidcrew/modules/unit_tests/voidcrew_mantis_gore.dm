@@ -20,6 +20,9 @@
 /// MANTIS_GORE_ICON, MANTIS_GORE_LARGE_ICON and the held-blade files
 #define MANTIS_TEST_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
 #define MANTIS_TEST_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
+#define MANTIS_TEST_ARTERY_ICON 'voidcrew/modules/mantis_gore/icons/mantis_artery.dmi'
+/// MANTIS_ARTERY_WOUND_RISE
+#define MG_ARTERY_WOUND_RISE 16
 #define MANTIS_TEST_LEFTHAND 'voidcrew/modules/mantis_gore/icons/mantis_lefthand.dmi'
 #define MANTIS_TEST_RIGHTHAND 'voidcrew/modules/mantis_gore/icons/mantis_righthand.dmi'
 /// MANTIS_GORE_REACH_ICON
@@ -245,12 +248,15 @@
 	TEST_ASSERT(HAS_TRAIT_FROM(fresh, TRAIT_IMMOBILIZED, MG_IMPALE_TRAIT), "The victim isn't held")
 	TEST_ASSERT(!HAS_TRAIT(fresh, TRAIT_HANDS_BLOCKED), "The victim's hands are tied")
 	TEST_ASSERT_EQUAL(fresh.dir, WEST, "The victim wasn't turned onto the blades")
-	// The lunging body lands, and the bearer is drawn around them: under them and over them.
+	// The bearer is drawn by the rig from the glide in; the lunging body lands and the blades go in: drawn
+	// under them and over them.
+	TEST_ASSERT(skewer.rig, "The lunging body isn't drawn by the rig")
 	skewer.begin_rig()
+	skewer.stab()
 	TEST_ASSERT(skewer.rig, "The bearer isn't drawn around the victim")
 	TEST_ASSERT(fresh.has_offset(MG_IMPALE_TRAIT, PIXEL_W_OFFSET) < 0, "The victim isn't drawn onto the blades")
 	var/list/pictures = rig_pictures(user)
-	TEST_ASSERT_EQUAL(length(pictures), 5, "The blades going in aren't drawn in five pieces")
+	TEST_ASSERT_EQUAL(length(pictures), 5, "The blades going in aren't drawn in four pieces and the wounds")
 	var/under = 0
 	var/over = 0
 	for(var/obj/effect/abstract/mantis_puppet/picture as anything in pictures)
@@ -258,7 +264,7 @@
 			under++
 		else if(picture.layer > fresh.layer)
 			over++
-	TEST_ASSERT(under == 3 && over == 2, "The bearer isn't split around the victim ([under] under, [over] over)")
+	TEST_ASSERT(under == 2 && over == 3, "The bearer isn't split around the victim ([under] under, [over] over)")
 	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/held_blade = right_blade(user)
 	TEST_ASSERT(held_blade.inhand_hidden_until > world.time, "The held blade is drawn over the blades going in")
 	skewer.show_beat("hold")
@@ -693,7 +699,13 @@
 		if(part.icon_state == "mantis_right_stain")
 			stain_drawn = TRUE
 	TEST_ASSERT(stain_drawn, "The stained housing draws no stain")
-	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in spot(2, 1), "The flick left no streak ahead")
+	// The flicked blood is in the air for a moment before it lands.
+	sleep(0.4 SECONDS)
+	var/obj/effect/decal/cleanable/blood/mantis_flick/spatter = locate() in spot(2, 1)
+	TEST_ASSERT_NOTNULL(spatter, "The flick left no spatter ahead")
+	TEST_ASSERT_EQUAL(spatter.dir, user.dir, "The flick's spatter doesn't point the way it was thrown")
+	TEST_ASSERT(icon_exists(spatter.icon, spatter.icon_state), "The flick's spatter has no picture")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in spot(2, 1)), "The flick still lays a streak")
 	user.wash(CLEAN_TYPE_BLOOD)
 	TEST_ASSERT(!right.stained, "Washing didn't clear the housing")
 
@@ -739,12 +751,15 @@
 		for(var/pose in poses_by_model[model])
 			for(var/hand_file in list(MANTIS_TEST_LEFTHAND, MANTIS_TEST_RIGHTHAND))
 				TEST_ASSERT(icon_exists(hand_file, "[model]_[pose]"), "[hand_file] has no [model]_[pose]")
-	for(var/state in list("mantis_trail", "mantis_scorch_trail", "mantis_impale", "mantis_scorch_impale", "mantis_coil_glow_right", "mantis_scorch_coil_glow_left", "mantis_guard_glint_right", "mantis_raise_glint_left", "scorch_gash_l_arm", "scorch_gash_head"))
+	for(var/state in list("mantis_trail", "mantis_scorch_trail", "mantis_impale", "mantis_scorch_impale", "mantis_coil_glow_right", "mantis_scorch_coil_glow_left", "mantis_guard_glint_right", "mantis_raise_glint_left", "scorch_gash_l_arm", "scorch_gash_head", "flick_spatter_right", "flick_spatter_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, state), "The gore sheet has no [state]")
-	for(var/state in list("mantis_spurt", "mantis_flick_right", "mantis_flick_left"))
+	for(var/state in list("mantis_flick_right", "mantis_flick_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_LARGE_ICON, state), "The large gore sheet has no [state]")
 	// Every piece the blade rig draws, for every model that can impale and scissor.
-	var/list/moves = list("impale" = list("enter", "hold", "pull", "rip", "drop"), "scissor" = list("raise", "glint", "close", "cut", "recover"))
+	var/list/moves = list(
+		"impale" = list("arrive", "contact", "enter", "lift1", "lift2", "hold", "pull1", "pull2", "pull3", "rip", "drop"),
+		"scissor" = list("raise", "glint", "close", "cut", "recover"),
+	)
 	for(var/model in list("mantis", "mantis_scorch"))
 		for(var/move in moves)
 			for(var/beat in moves[move])
@@ -752,9 +767,136 @@
 					var/list/spec = mantis_rig_beat(move, beat, facing)
 					TEST_ASSERT(spec, "The rig has no [move] [beat] facing [dir2text(facing)]")
 					for(var/piece in spec[MG_RIG_ORDER])
-						if(piece == "T" || piece == "body")
+						if(piece == "T" || piece == "body" || piece == "whole")
 							continue
 						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
+	// The beat only some views draw: the scissor's swing, seen from the side and the front.
+	var/list/side_moves = list("scissor" = list("swing"))
+	for(var/model in list("mantis", "mantis_scorch"))
+		for(var/move in side_moves)
+			for(var/beat in side_moves[move])
+				for(var/facing in list(EAST, WEST, SOUTH))
+					var/list/spec = mantis_rig_beat(move, beat, facing)
+					TEST_ASSERT(spec, "The rig has no [move] [beat] facing [dir2text(facing)]")
+					for(var/piece in spec[MG_RIG_ORDER])
+						if(piece == "T" || piece == "body" || piece == "whole")
+							continue
+						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
+
+/// What a torn artery looks like: drops thrown the way the cut went that land as spots, and the blood running
+/// down the body for as long as the wound is open.
+/datum/unit_test/voidcrew_mantis_gore/artery_look
+
+/datum/unit_test/voidcrew_mantis_gore/artery_look/Run()
+	for(var/height in list("low", "mid", "high"))
+		for(var/strength in list("", "_weak"))
+			TEST_ASSERT(icon_exists(MANTIS_TEST_ARTERY_ICON, "spurt_[height][strength]"), "The artery sheet has no spurt_[height][strength]")
+			TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_drops_[height][strength]"), "The gore sheet has no artery_drops_[height][strength]")
+	for(var/zone in GLOB.all_body_zones)
+		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_run_[zone]"), "The gore sheet has no artery_run_[zone]")
+		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_ran_[zone]"), "The gore sheet has no artery_ran_[zone]")
+	for(var/drips in 1 to 3)
+		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_feet_[drips]"), "The gore sheet has no artery_feet_[drips]")
+
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	victim.setDir(SOUTH)
+	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_L_ARM)
+	var/datum/wound/slash/flesh/critical/hv_carotid/limb/torn = hv_crit_apply_wound(arm, /datum/wound/slash/flesh/critical/hv_carotid/limb, EAST, null)
+	TEST_ASSERT(torn, "The limb artery wound would not apply")
+	// The artery throws its own drops: tg's wound spray, a line of blood three tiles long, stays out of it.
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/hitsplatter) in range(1, victim)), "The limb artery threw tg's own wound spray as well")
+	TEST_ASSERT_EQUAL(torn.spurt_dir, EAST, "The limb artery forgot the cut's direction")
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_L_ARM), "mid", "An arm's artery is not at arm height")
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_R_LEG), "low", "A leg's artery is not near the floor")
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_HEAD), "high", "The neck's artery is not at neck height")
+
+	// One spurt: drops in the air the way the cut went, then spots where they come down, a tile east.
+	var/obj/effect/abstract/cyberware_anim/jet = mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST)
+	TEST_ASSERT_NOTNULL(jet, "A torn artery throws nothing")
+	TEST_ASSERT_EQUAL(jet.icon_state, "spurt_mid", "An arm's spurt isn't the arm-height one")
+	TEST_ASSERT_EQUAL(jet.dir, EAST, "The spurt doesn't fly the way the cut went")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/drip/mantis_drops) in spot(2, 1)), "The drops are on the floor before they have flown")
+	sleep(0.5 SECONDS)
+	var/obj/effect/decal/cleanable/blood/drip/mantis_drops/drops = locate() in spot(2, 1)
+	TEST_ASSERT_NOTNULL(drops, "The spurt's drops left no spots where they came down")
+	TEST_ASSERT_EQUAL(drops.icon_state, "artery_drops_mid", "The spots are not the spurt's own")
+	TEST_ASSERT_EQUAL(drops.dir, EAST, "The spots don't lie the way the drops flew")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/hv_spray) in spot(2, 1)), "A spurt still lays a spray")
+	// The next beat comes down on the same spots.
+	mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST)
+	sleep(0.5 SECONDS)
+	var/spots = 0
+	for(var/obj/effect/decal/cleanable/blood/drip/mantis_drops/laid in spot(2, 1))
+		spots++
+	TEST_ASSERT_EQUAL(spots, 1, "A second beat stacked its spots on the first's")
+	// A weak one falls close by.
+	var/obj/effect/abstract/cyberware_anim/weak_jet = mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST, TRUE)
+	TEST_ASSERT_EQUAL(weak_jet?.icon_state, "spurt_mid_weak", "A weak spurt isn't the weak one")
+	// Thrown straight up or down the screen out of an arm, the drops lean out to that arm's side and land clear
+	// of the body. Thrown sideways they don't lean.
+	var/list/straight = mantis_spurt_spot(list(6, 1), "mid", FALSE, NORTH)
+	var/list/leaning = mantis_spurt_spot(list(6, 1), "mid", FALSE, NORTH, 1)
+	TEST_ASSERT(leaning[1] > straight[1], "Drops thrown up the screen out of an arm on the right don't lean out to the right")
+	TEST_ASSERT_EQUAL(leaning[2], straight[2], "Leaning out changed how far the drops fly")
+	TEST_ASSERT_EQUAL(mantis_spurt_lean(FALSE, EAST, 1), 0, "Drops thrown sideways lean")
+	// Every spurt's drops are still in its picture where they come down, on the last frame it holds. The neck's,
+	// thrown down the screen, fall furthest: the wound sits above the picture's middle to leave them the room.
+	// And its first frame is empty: the half beat a swinging blade cocks back, so no drop is out ahead of the cut.
+	var/icon/spurt_sheet = icon(MANTIS_TEST_ARTERY_ICON)
+	for(var/spurt_height in list("low", "mid", "high"))
+		for(var/spurt_weak in list(FALSE, TRUE))
+			var/list/spurt_shape = mantis_spurt_shape(spurt_height, spurt_weak)
+			var/spurt_state = "spurt_[spurt_height][spurt_weak ? "_weak" : ""]"
+			var/last_frame = spurt_shape[3] / 0.5 + 2
+			for(var/way in GLOB.alldirs)
+				var/list/landing = mantis_spurt_spot(list(0, 0), spurt_height, spurt_weak, way)
+				var/landed = FALSE
+				for(var/across in -3 to 3)
+					for(var/up in -3 to 3)
+						if(spurt_sheet.GetPixel(49 + landing[1] + across, 48 + MG_ARTERY_WOUND_RISE + landing[2] + up, spurt_state, way, last_frame))
+							landed = TRUE
+				TEST_ASSERT(landed, "The [spurt_state] thrown [dir2text(way)] has left its picture before its drops come down")
+				var/early = FALSE
+				for(var/across in -2 to 2)
+					for(var/up in -2 to 2)
+						if(spurt_sheet.GetPixel(49 + across, 48 + MG_ARTERY_WOUND_RISE + up, spurt_state, way, 1))
+							early = TRUE
+				TEST_ASSERT(!early, "The [spurt_state] thrown [dir2text(way)] has drops out of the wound before the blade has cut")
+
+	// The blood runs down the body, and goes when the wound does.
+	var/obj/effect/abstract/cyberware_anim/mantis_run/run = mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, torn)
+	TEST_ASSERT_NOTNULL(run, "A torn artery doesn't run down the body")
+	TEST_ASSERT(run in victim.vis_contents, "The run isn't drawn on the body")
+	TEST_ASSERT_EQUAL(run.icon_state, "artery_run_l_arm", "The run isn't the arm's")
+	sleep(0.9 SECONDS)
+	TEST_ASSERT_EQUAL(run.icon_state, "artery_ran_l_arm", "The run isn't held once it has run its length")
+	// Three drips fall off its lower end and make a small pool at the feet, just under the body's own tile.
+	sleep(0.5 SECONDS)
+	var/obj/effect/decal/cleanable/blood/drip/mantis_drops/pool
+	for(var/obj/effect/decal/cleanable/blood/drip/mantis_drops/found in get_step(victim, SOUTH))
+		if(found.feet_drips)
+			pool = found
+	TEST_ASSERT_NOTNULL(pool, "The run dripped nothing at the feet")
+	TEST_ASSERT_EQUAL(pool.icon_state, "artery_feet_3", "Three drips at the feet did not make the small pool")
+	TEST_ASSERT_NOTNULL(mantis_artery_run_foot(BODY_ZONE_L_ARM, EAST), "The blood off a far arm comes down to no sole")
+	// tg's own bleeding still drips onto a tile that holds the artery's spots, and makes its pool there in the end.
+	var/turf/spotted = spot(2, 1)
+	for(var/drips in 1 to 6)
+		victim.get_bloodtype()?.make_blood_splatter(victim, spotted, TRUE)
+	var/pooled = FALSE
+	for(var/obj/effect/decal/cleanable/blood/splatter in spotted)
+		if(!istype(splatter, /obj/effect/decal/cleanable/blood/drip))
+			pooled = TRUE
+	TEST_ASSERT(pooled, "Blood dripping onto the artery's spots never made a pool")
+	qdel(torn)
+	TEST_ASSERT(QDELETED(run), "The run outlived its wound")
+
+	// Lying down the blood goes to the floor: low drops, and nothing runs down the body.
+	victim.set_body_position(LYING_DOWN)
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_L_ARM), "low", "A body lying down still bleeds from arm height")
+	var/datum/wound/slash/flesh/critical/hv_carotid/limb/again = hv_crit_apply_wound(arm, /datum/wound/slash/flesh/critical/hv_carotid/limb, EAST, null)
+	TEST_ASSERT(again, "The limb artery wound would not apply a second time")
+	TEST_ASSERT_NULL(mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, again), "Blood runs down a body lying flat")
 
 #undef MG_MOVE_IMPALE
 #undef MG_MOVE_XSLASH
@@ -765,6 +907,8 @@
 #undef MG_FINISHER_DAMAGED
 #undef MANTIS_TEST_ICON
 #undef MANTIS_TEST_LARGE_ICON
+#undef MANTIS_TEST_ARTERY_ICON
+#undef MG_ARTERY_WOUND_RISE
 #undef MANTIS_TEST_LEFTHAND
 #undef MANTIS_TEST_RIGHTHAND
 #undef MANTIS_TEST_REACH_ICON

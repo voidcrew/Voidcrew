@@ -14,6 +14,11 @@
 /// Fractional on purpose, it must never collide with a real layer index, nor
 /// with a fresh stump (HV_STUMP_FRESH_LAYER, 27.5).
 #define CYBERWARE_WORN_LAYER 27.6
+/// Mob layer the lit nodes of a spine rig (Cascade, Redline) shine at: just over
+/// whatever is worn on the back (BACK_LAYER 14, and every suit and cloak under
+/// it), still under hair (HAIR_LAYER 13) and headgear. Only what glows goes up
+/// here; the housing and dark nodes stay at CYBERWARE_WORN_LAYER.
+#define CYBERWARE_SPINE_SHINE_LAYER 13.7
 
 // ---- Organ slots -------------------------------------------------------
 // Minted here, never in DNA.dm. Slot uniqueness is global per mob, so

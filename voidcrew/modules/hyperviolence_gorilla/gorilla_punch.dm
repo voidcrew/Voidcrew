@@ -2,6 +2,8 @@
  * # The Gorilla punch, through #509
  *
  * The piston punch of Gorilla Arms and Brawler myomers (ware_military_arms.dm on_punch()) lands here:
+ * - The arm throws it: the fist draws back and drives out onto the part it hits (gorilla_thrust.dm), and the blow
+ *   lands when the fist gets there, a tenth of a second after the click. What it hits was settled at the click.
  * - The blow goes through #509 like any weapon: the punching hand is the attacking item and the blow
  *   has a direction, so aimed crits roll, blood sprays the way it went, and every wound line joins
  *   the attack line in one message.
@@ -11,8 +13,8 @@
  * - The knockback rides the safe path (gorilla_throw.dm). A grabbed body is hurled, once per grab-move
  *   cooldown shared with the slam, so a held body can't be thrown into a wall over and over.
  * - Grab and slam: with someone in an aggressive grab, a click on the floor under them, an open floor
- *   beside you or a table lifts them and brings them down. Brawler myomers slam lighter, with a lower
- *   lift and a body-fall thud. A table click while grabbing slams instead of caving the table in.
+ *   beside you or a table lifts them and brings them down (gorilla_slam.dm). Brawler myomers slam lighter,
+ *   with a lower lift and a body-fall thud. A table click while grabbing slams instead of caving the table in.
  * - Every Gorilla blow on a person counts as PvP aggression at a trader outpost: the punch cancels the
  *   attack chain before the outpost's own unarmed-attack listener ever hears it.
  */
@@ -37,8 +39,8 @@
 	var/slam_table_break = GORILLA_SLAM_TABLE_BREAK
 	/// The bearer-wide wait after a slam or a hurl before the next one.
 	var/grab_move_cooldown = GORILLA_GRAB_MOVE_COOLDOWN
-	/// How high a slammed body is lifted, in pixels.
-	var/slam_lift = GORILLA_SLAM_LIFT
+	/// Whether a slammed body is pressed overhead first. Off: brought to the shoulder.
+	var/slam_overhead = TRUE
 	/// The Gorilla's floor slam: the meteor crash, the big ring and the cracks. Off: a body-fall thud, a small ring.
 	var/slam_full_fx = TRUE
 	/// What drives the fist, in the attack line.
@@ -123,17 +125,30 @@
 // =========================================================================
 
 /**
- * A landed piston punch on [living_target]: the damage through #509 as one line, strain, the
- * knockback or the hurl, aggression, and the look. Returns the brute it dealt.
+ * A piston punch on [living_target] that can no longer miss: the arm throws it (gorilla_thrust()), and it lands when
+ * the fist gets there (piston_land()). It lands on [aimed_zone] if one is given, else on a part rolled from the one
+ * [source] aims at, settled now so the fist goes to it. Returns TRUE.
  */
-/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/piston_hit(mob/living/carbon/human/source, mob/living/living_target, obj/item/bodypart/active_hand)
+/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/piston_hit(mob/living/carbon/human/source, mob/living/living_target, obj/item/bodypart/active_hand, aimed_zone)
+	var/target_zone = aimed_zone || living_target.get_random_valid_zone(source.zone_selected)
+	// The arm and the lunge. No attack ring from tg: it is drawn over the middle of the target and rides it wherever
+	// it is knocked; the knuckle sparks (gorilla_punch_fx()) are this blow's mark, on the part it landed on
+	var/lands_in = gorilla_thrust(source, living_target, zone, target_zone)
+	addtimer(CALLBACK(src, PROC_REF(piston_land), source, living_target, active_hand, target_zone), lands_in)
+	return TRUE
+
+/**
+ * The fist of a piston punch arrives on [target_zone] of [living_target]: the damage through #509 as one line, strain,
+ * the knockback or the hurl, aggression, and the look. Returns the brute it dealt.
+ */
+/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/piston_land(mob/living/carbon/human/source, mob/living/living_target, obj/item/bodypart/active_hand, target_zone)
+	if(QDELETED(source) || QDELETED(living_target) || QDELETED(active_hand))
+		return 0
 	var/grabbed = living_target.pulledby == source && source.grab_state >= GRAB_AGGRESSIVE
 	var/standing = source.body_position != LYING_DOWN
 	var/hurl = heavy_moves && hurl_range > 0 && grabbed && standing && TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE)
 	var/direction = get_dir(source, living_target) || source.dir
-	source.do_attack_animation(living_target, ATTACK_EFFECT_SMASH)
 	gorilla_punch_impact_sound(living_target)
-	var/target_zone = living_target.get_random_valid_zone(source.zone_selected)
 	var/armor_block = living_target.run_armor_check(target_zone, MELEE, armour_penetration = active_hand.unarmed_effectiveness)
 	if(hurl)
 		living_target.hv_hold_attack_message("[source] hurls [living_target] across the room!", "[source] hurls you across the room!", "You hurl [living_target] across the room!", source)
@@ -152,13 +167,14 @@
 		wounded = gorilla_new_wound(carbon_target, wounds_before)
 	living_target.hv_flush_hit()
 	gorilla_register_aggression(living_target, source)
+	// Before the launch: a throw's first step is taken at once, and the sparks belong where the blow fell
+	gorilla_punch_fx(source, living_target, wounded, target_zone)
 	if(standing && !QDELETED(living_target))
 		if(hurl)
 			gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, grab_move_cooldown)
 			gorilla_launch(living_target, source, direction, hurl_range, 2, FALSE, FALSE, wounded)
 		else if(!grabbed)
 			gorilla_launch(living_target, source, direction, 1, rand(1, 4), TRUE, FALSE, wounded)
-	gorilla_punch_fx(source, living_target, wounded)
 	log_combat(source, living_target, hurl ? "piston-hurled" : "piston-punched", "gorilla arms")
 	return dealt
 
@@ -170,14 +186,28 @@
 	return FALSE
 
 /**
- * What a piston punch looks like: knuckle sparks over the target, and on a heavy hit a small ring.
+ * What a piston punch looks like: knuckle sparks on the part of the target it landed on ([zone]), and on a heavy
+ * hit a small ring.
  */
-/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/gorilla_punch_fx(mob/living/carbon/human/source, mob/living/target, heavy = FALSE)
-	gorilla_play_impact(source, target, impact_state)
+/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/gorilla_punch_fx(mob/living/carbon/human/source, mob/living/target, heavy = FALSE, zone)
+	gorilla_punch_sparks(source, target, impact_state, zone, gorilla_far_fist(source, src.zone))
 	if(heavy)
-		var/turf/spot = get_turf(target)
-		if(spot)
-			new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, 0.4)
+		gorilla_floor_ring(target, 0.4)
+
+/**
+ * A shockwave ring on the floor under [target], out to [reach]. On the floor plane, so it passes under whoever stands
+ * in it or beyond it up the screen. Laid where the body is drawn: one hit mid-stride is short of its turf, as the
+ * sparks are (gorilla_glide_lag()).
+ */
+/proc/gorilla_floor_ring(atom/movable/target, reach)
+	var/turf/spot = get_turf(target)
+	if(isnull(spot))
+		return null
+	var/obj/effect/temp_visual/circle_wave/cyberware_slam/floor/ring = new(spot, reach)
+	var/list/lag = gorilla_glide_lag(target)
+	ring.pixel_w += round(lag[1])
+	ring.pixel_z += round(lag[2])
+	return ring
 
 /// The sound of a landed piston punch on [target]. The one place to swap it.
 /proc/gorilla_punch_impact_sound(atom/target)
@@ -215,6 +245,131 @@
 	if((direction & WEST) || (!(direction & EAST) && prob(50)))
 		impact.transform = matrix(-1, 0, 0, 0, 1, 0)
 	return impact
+
+/**
+ * Where each body zone sits on tg's human sprite, in pixels from the middle of the icon (x right, y up), by the way
+ * the body faces: zone -> list("[dir]" = list(x, y)). Measured on icons/mob/human/bodyparts_greyscale.dmi. Left and
+ * right swap sides on screen as the body turns, and the far arm of a body seen from the side is behind its chest.
+ */
+GLOBAL_LIST_INIT(gorilla_zone_points, list(
+	BODY_ZONE_HEAD = list("[SOUTH]" = list(0, 9), "[NORTH]" = list(0, 9), "[EAST]" = list(1, 9), "[WEST]" = list(-1, 9)),
+	BODY_ZONE_CHEST = list("[SOUTH]" = list(0, 2), "[NORTH]" = list(0, 2), "[EAST]" = list(0, 2), "[WEST]" = list(0, 2)),
+	BODY_ZONE_L_ARM = list("[SOUTH]" = list(6, 0), "[NORTH]" = list(-7, 0), "[EAST]" = list(0, 0), "[WEST]" = list(3, 0)),
+	BODY_ZONE_R_ARM = list("[SOUTH]" = list(-7, 0), "[NORTH]" = list(6, 0), "[EAST]" = list(-3, 0), "[WEST]" = list(0, 0)),
+	BODY_ZONE_L_LEG = list("[SOUTH]" = list(3, -10), "[NORTH]" = list(-4, -10), "[EAST]" = list(1, -10), "[WEST]" = list(0, -10)),
+	BODY_ZONE_R_LEG = list("[SOUTH]" = list(-4, -10), "[NORTH]" = list(3, -10), "[EAST]" = list(0, -10), "[WEST]" = list(-1, -10)),
+))
+
+/**
+ * Where [zone] of [target] is drawn right now, in pixels from the middle of its icon: list(x, y). The part's place for
+ * the way the body faces, turned with the body when it lies. The middle of the icon for anything that isn't a human.
+ */
+/proc/gorilla_zone_point(atom/movable/target, zone)
+	var/mob/living/carbon/human/body = target
+	if(!ishuman(body) || !zone)
+		return list(0, 0)
+	var/facing = body.dir
+	if(ISDIAGONALDIR(facing))
+		facing = (facing & EAST) ? EAST : WEST
+	var/list/point = GLOB.gorilla_zone_points[check_zone(zone)]?["[facing]"]
+	if(!point)
+		return list(0, 0)
+	return chrome_rig_apply(body.transform, point[1], point[2])
+
+/**
+ * How far short of its tile [target] is still drawn while its last step glides: list(x, y), pixels from the middle
+ * of its turf. A client eases each step over the time the step takes, so a body hit mid-stride is drawn behind the
+ * turf it already stands on, and a mark left on the turf would miss it. Worked out from when its next step is due:
+ * a player's move delay, or an AI's move loop. Nothing when neither says (a body standing still, or dragged).
+ */
+/proc/gorilla_glide_lag(atom/movable/target)
+	. = list(0, 0)
+	if(!ismovable(target) || !target.last_move || !isturf(target.loc))
+		return
+	var/due_in = 0
+	var/mob/as_mob = target
+	if(ismob(as_mob) && as_mob.client)
+		due_in = as_mob.client.move_delay - world.time
+	else if(target.move_packet?.running_loop)
+		due_in = target.move_packet.running_loop.timer - world.time
+	if(due_in <= 0)
+		return
+	var/short_by = target.glide_size * due_in / world.tick_lag
+	// Longer than a step's glide: something else is holding its next move, and it has long since arrived
+	if(short_by > ICON_SIZE_ALL)
+		return
+	var/came_from = REVERSE_DIR(target.last_move)
+	.[1] = (came_from & EAST) ? short_by : ((came_from & WEST) ? -short_by : 0)
+	.[2] = (came_from & NORTH) ? short_by : ((came_from & SOUTH) ? -short_by : 0)
+
+/// Knuckle sparks where a piston punch landed (gorilla_gore.dmi). They stay where the blow fell.
+/obj/effect/temp_visual/gorilla_punch_sparks
+	name = "sparks"
+	icon = GORILLA_GORE_ICON
+	icon_state = "impact_gorilla"
+	plane = GAME_PLANE
+	layer = ABOVE_MOB_LAYER
+	appearance_flags = PIXEL_SCALE | TILE_BOUND | LONG_GLIDE
+	randomdir = FALSE
+	duration = 0.4 SECONDS
+
+/obj/effect/temp_visual/gorilla_punch_sparks/Initialize(mapload, state, glow = FALSE)
+	if(state)
+		icon_state = state
+	. = ..()
+	if(glow)
+		add_overlay(emissive_appearance(icon, icon_state, src))
+
+/// Whether the fist of [bearer]'s arm on [arm_zone] is the far one for the way they face: seen from the side, the arm behind their own body.
+/proc/gorilla_far_fist(mob/living/bearer, arm_zone)
+	return ((bearer.dir & EAST) && arm_zone == BODY_ZONE_L_ARM) || ((bearer.dir & WEST) && arm_zone == BODY_ZONE_R_ARM)
+
+/**
+ * Knuckle sparks where a piston punch from [attacker] lands on [target]: on the part that was hit ([zone], else the
+ * middle of the body), for the way the body faces and lies, where the body is drawn (mid-stride it is short of its
+ * turf). They are left where the blow fell, so a body knocked away doesn't carry them off. They are drawn where the
+ * fist is: over the body, but
+ * - thrown from beyond a standing body (the attacker further from the viewer), or by the far fist of an attacker beside
+ *   it ([behind]), they are behind that body and show round it;
+ * - thrown from nearer the viewer, they are in front of the body with the fist, and so under the attacker's own body,
+ *   which that fist passes behind.
+ */
+/proc/gorilla_punch_sparks(atom/movable/attacker, atom/movable/target, impact_state, zone, behind = FALSE)
+	var/turf/spot = get_turf(target)
+	if(!impact_state || isnull(spot) || !ismovable(target))
+		return null
+	var/list/point = gorilla_zone_point(target, zone)
+	var/direction = get_dir(attacker, target)
+	// From nearer the viewer: on the attacker's own screen row (rows sort before layers), reaching a tile up it
+	var/turf/from = get_turf(attacker)
+	var/from_below = (direction & NORTH) && ismob(attacker) && from && from.z == spot.z
+	var/turf/row = from_below ? from : spot
+	var/obj/effect/temp_visual/gorilla_punch_sparks/sparks = new(row, impact_state, impact_state == "impact_gorilla")
+	// On the side of the part the fist came in on
+	var/near_side = (direction & EAST) ? -2 : ((direction & WEST) ? 2 : 0)
+	// On the body's own screen row (pixel_y sorts before layer), then moved over the part without leaving it
+	sparks.pixel_x = target.pixel_x
+	sparks.pixel_y = from_below ? attacker.pixel_y : target.pixel_y
+	// ...and back along its last step if it was hit mid-stride, to where it is drawn
+	var/list/lag = gorilla_glide_lag(target)
+	sparks.pixel_w = target.pixel_w + round(point[1] + lag[1]) + near_side + (spot.x - row.x) * ICON_SIZE_X
+	sparks.pixel_z = target.pixel_z + round(point[2] + lag[2]) + (spot.y - row.y) * ICON_SIZE_Y + (target.pixel_y - sparks.pixel_y)
+	var/mob/living/struck = target
+	var/standing = !isliving(struck) || struck.body_position != LYING_DOWN
+	if(from_below)
+		sparks.plane = attacker.plane
+		sparks.layer = attacker.layer - 0.005
+	else
+		sparks.plane = target.plane
+		sparks.layer = target.layer + 0.02
+		if(standing && (direction & SOUTH))
+			sparks.layer = target.layer - 0.02
+		else if(standing && behind && (direction & (EAST|WEST)))
+			// Behind the body, and still in front of the far arm that threw it (a hair under its own body)
+			sparks.layer = target.layer - 0.005
+	if((direction & WEST) || (!(direction & EAST) && prob(50)))
+		sparks.transform = matrix(-1, 0, 0, 0, 1, 0)
+	return sparks
 
 // =========================================================================
 // BONE BREAKERS
@@ -282,9 +437,7 @@
 		victim.hv_add_hit_line("The bone in [victim]'s [limb.plaintext_zone] snaps!", HV_LINE_HUGE, "The bone in your [limb.plaintext_zone] snaps!", DEFAULT_MESSAGE_RANGE)
 	playsound(victim, 'sound/effects/wounds/crack2.ogg', 80, TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2, ignore_walls = FALSE, falloff_distance = 0)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
-	var/turf/spot = get_turf(victim)
-	if(spot)
-		new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, 0.5)
+	gorilla_floor_ring(victim, 0.5)
 	log_combat(attacker, victim, "snapped the [limb.plaintext_zone] of", source_item, "(gorilla arms)")
 	return TRUE
 
@@ -294,7 +447,7 @@
 
 /**
  * With someone in an aggressive grab, a click on the floor under them, an open floor beside the bearer
- * or a table brings them down onto it. Returns GORILLA_SLAM_*.
+ * or a table starts the slam that brings them down onto it (gorilla_slam.dm). Returns GORILLA_SLAM_*.
  */
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/try_slam(mob/living/carbon/human/source, atom/target, obj/item/bodypart/active_hand)
 	var/mob/living/victim = source.pulling
@@ -307,32 +460,17 @@
 		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
 	if(!TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE))
 		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
-	var/turf/victim_spot = get_turf(victim)
 	var/turf/spot = table ? get_turf(table) : target
 	if(!source.Adjacent(spot))
 		return GORILLA_SLAM_NO
 	if(!table && !gorilla_slam_floor_ok(spot))
 		return GORILLA_SLAM_NO
-	source.stop_pulling()
-	if(spot != victim_spot)
-		var/passtable_key = REF(source)
-		if(table)
-			passtable_on(victim, passtable_key)
-		victim.Move(spot, get_dir(victim, spot))
-		if(table)
-			passtable_off(victim, passtable_key)
-		if(victim.loc != spot)
-			// Something stopped them getting there: no slam, but the grab is gone
-			return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
+	var/datum/gorilla_slam/slam = new(source, victim, spot, table, src, active_hand)
+	if(!slam.start())
+		qdel(slam)
+		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
 	gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, grab_move_cooldown)
 	source.changeNext_move(CLICK_CD_MELEE)
-	source.face_atom(victim)
-	// Up, then down: the blow lands as the body comes down.
-	animate(victim, pixel_z = slam_lift, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
-	animate(pixel_z = 0, time = 0.06 SECONDS, flags = ANIMATION_RELATIVE)
-	animate(pixel_z = -slam_lift, time = 0.06 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_RELATIVE)
-	source.do_attack_animation(victim, ATTACK_EFFECT_SMASH)
-	addtimer(CALLBACK(src, PROC_REF(slam_down), source, victim, spot, table ? WEAKREF(table) : null, active_hand), 0.24 SECONDS)
 	return GORILLA_SLAM_DONE
 
 /**
@@ -361,51 +499,3 @@
 		if(thing.density && !(thing.flags_1 & ON_BORDER_1))
 			return FALSE
 	return TRUE
-
-/// The slam lands, if the body is still where it was brought down.
-/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/slam_down(mob/living/carbon/human/source, mob/living/victim, turf/spot, datum/weakref/table_ref, obj/item/bodypart/active_hand)
-	if(QDELETED(source) || QDELETED(victim) || victim.loc != spot || owner != source)
-		return
-	var/obj/structure/table/table = table_ref?.resolve()
-	if(table && table.loc != spot)
-		table = null
-	var/aimed = source.zone_selected
-	var/obj/item/bodypart/limb = victim.get_bodypart(check_zone(aimed)) || victim.get_bodypart(BODY_ZONE_CHEST)
-	var/face_first = check_zone(aimed) == BODY_ZONE_HEAD
-	var/damage = table ? slam_table_damage : slam_floor_damage
-	var/stamina = table ? slam_table_stamina : slam_floor_stamina
-	var/others
-	var/self
-	if(table)
-		others = face_first ? "[source] slams [victim] face first into [table]!" : "[source] slams [victim] onto [table]!"
-		self = face_first ? "[source] slams you face first into [table]!" : "[source] slams you onto [table]!"
-	else
-		others = "[source] slams [victim] into the floor!"
-		self = "[source] slams you into the floor!"
-	victim.hv_hold_attack_message(others, self, null, source, vision_range = DEFAULT_MESSAGE_RANGE)
-	var/armour = victim.run_armor_check(limb, MELEE)
-	victim.apply_damage(damage, BRUTE, limb || BODY_ZONE_CHEST, armour, wound_bonus = punch_wound_bonus, attack_direction = get_dir(source, victim) || source.dir, attacking_item = active_hand)
-	victim.hv_flush_hit()
-	if(QDELETED(victim))
-		return
-	victim.apply_damage(stamina, STAMINA)
-	victim.Knockdown(slam_knockdown)
-	gorilla_register_aggression(victim, source)
-	shake_camera(victim, slam_full_fx ? 3 : 2, slam_full_fx ? 2 : 1)
-	cyberware_flash_fx(victim, 0.2 SECONDS)
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, slam_full_fx ? 0.8 : 0.5)
-	if(table)
-		playsound(victim, 'sound/effects/tableslam.ogg', 90, TRUE)
-		var/datum/component/table_smash/smash = table.GetComponent(/datum/component/table_smash)
-		table.take_damage(slam_table_break)
-		// Glass tables break as they do under any slammed body
-		if(!QDELETED(table))
-			smash?.after_smash?.Invoke(victim)
-	else if(slam_full_fx)
-		playsound(spot, 'sound/effects/meteorimpact.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 220)
-		cyberware_grey_dust(spot)
-	else
-		playsound(spot, SFX_BODYFALL, 70, TRUE)
-		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 70)
-	log_combat(source, victim, table ? "piston-slammed onto a table" : "piston-slammed into the floor", "gorilla arms")

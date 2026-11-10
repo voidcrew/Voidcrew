@@ -44,7 +44,7 @@
 
 /obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave
 	name = "\improper Hardweave plating"
-	desc = "Layered polymer weave sewn in under the skin, a size up from the usual mesh. The scarring is the part nobody mentions."
+	desc = "Rib plates over the chest and back with a layered polymer weave sewn in below them, a size up from the usual mesh. The scarring is the part nobody mentions."
 	icon_state = "dermal_mesh_hardweave"
 	aug_overlay = "dermal_mesh_hardweave"
 	chrome_load = 3

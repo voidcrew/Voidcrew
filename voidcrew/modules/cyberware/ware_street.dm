@@ -756,6 +756,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
 	aug_overlay = "dermal_mesh"
+	worn_under_clothes = TRUE
 	/// Armor mixed into the bearer's physiology while installed and running.
 	var/datum/armor/mesh_armor = /datum/armor/cyberware_dermal_mesh
 	/// TRUE while mesh_armor is mixed in; guards against double add/subtract.

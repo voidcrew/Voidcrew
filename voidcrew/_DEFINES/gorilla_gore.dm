@@ -56,11 +56,66 @@
 #define GORILLA_HAYMAKER_VENT_AFTER (3 SECONDS)
 /// A press of Use chrome shorter than this is a tap: the charge waits for a click.
 #define GORILLA_HAYMAKER_TAP (0.3 SECONDS)
+/// Pixels the bearer leans back at full charge, seen from the side. The lean builds to it over the wind-up.
+#define GORILLA_HAYMAKER_LEAN 4
 #define GORILLA_HAYMAKER_MIN_DAMAGE 20
 #define GORILLA_HAYMAKER_MAX_DAMAGE 30
 #define GORILLA_HAYMAKER_MIN_RANGE 3
 #define GORILLA_HAYMAKER_MAX_RANGE 4
 #define GORILLA_HAYMAKER_SPEED 3
+/// The real body stays on show this long as the wind-up's puppets come up (chrome_rig/conceal_after()).
+#define GORILLA_HAYMAKER_RIG_HOLD (0.04 SECONDS)
+/// The punching arm is half drawn back this far into the wind-up...
+#define GORILLA_HAYMAKER_DRAW (0.4 SECONDS)
+/// ...and all the way back by this, a throw's length before the earliest blow.
+#define GORILLA_HAYMAKER_DRAWN (0.75 SECONDS)
+/// The throw: the blow lands this long after the fist is thrown. One server tick.
+#define GORILLA_HAYMAKER_THROW (0.05 SECONDS)
+/// The thrown fist is on what it hits this soon, a moment before the blow is due...
+#define GORILLA_HAYMAKER_OUT (0.03 SECONDS)
+/// ...stays there while the blow lands, so the blow's sparks find it there whichever reaches a client first...
+#define GORILLA_HAYMAKER_DWELL (0.15 SECONDS)
+/// ...carries on past it...
+#define GORILLA_HAYMAKER_FOLLOW (0.15 SECONDS)
+/// ...and the arms come back to rest.
+#define GORILLA_HAYMAKER_RETURN (0.22 SECONDS)
+/// A wind-up held too long or called off: the arms come down.
+#define GORILLA_HAYMAKER_LOWER (0.25 SECONDS)
+/// Pixels the body steps in behind the throw: as few as put the fist on the body.
+#define GORILLA_HAYMAKER_STEP_MIN 12
+#define GORILLA_HAYMAKER_STEP_MAX 16
+
+// ---- The punching arm (gorilla_swing.dm, gorilla_thrust.dm) ----
+
+/// The pace of one beat of a swing: even, fast then settling, or eased in and out.
+#define CHROME_SWING_LINEAR 0
+#define CHROME_SWING_EASE_OUT 1
+#define CHROME_SWING_EASE_IN_OUT 2
+
+/// A piston punch: the fist draws back...
+#define GORILLA_THRUST_BACK (0.04 SECONDS)
+/// ...the piston drives it out...
+#define GORILLA_THRUST_OUT (0.04 SECONDS)
+/// ...and it stays on what it hit while the blow lands, so the sparks find it there whichever reaches a client first.
+#define GORILLA_THRUST_DWELL (0.08 SECONDS)
+/// The arm comes back to rest.
+#define GORILLA_THRUST_REST (0.14 SECONDS)
+/// How long after the click a piston punch lands: every punch, with the fist a moment into its stay.
+#define GORILLA_THRUST_LANDS (0.1 SECONDS)
+/// The first time an arm's picture is shown it may still be on its way to a client: the real arm stays on show this long, in place of the draw-back, and the fist is driven out in what is left before it is due.
+#define GORILLA_THRUST_HOLD (0.05 SECONDS)
+/// Pixels the body lunges behind a piston punch: tg's lunge at the least, further when the fist would stop short.
+#define GORILLA_THRUST_LUNGE_MIN 8
+#define GORILLA_THRUST_LUNGE_MAX 16
+/// Degrees the body tips into a piston punch, as tg's lunge tips it.
+#define GORILLA_THRUST_TIP 15
+/// How long a punching arm is drawn, as a share of its own length: the body steps in until the fist lands with the arm no longer than the first, and the arm is never drawn longer than the second (what a fist takes to reach the shin of a body beside its bearer).
+#define GORILLA_SWING_EASY_LENGTH 1.9
+#define GORILLA_SWING_MAX_LENGTH 3.3
+/// The most pixels a body steps in behind a fist thrown up or down the screen: further, and it stands on whoever it hits.
+#define GORILLA_SWING_STEP_UPRIGHT 12
+/// Pixels from the middle of a stretched fist to its knuckles: it stops this far short of the body it lands on.
+#define GORILLA_FIST_KNUCKLES 2.5
 
 // ---- Grab and slam ----
 
@@ -70,8 +125,46 @@
 #define GORILLA_SLAM_TABLE_STAMINA 40
 #define GORILLA_SLAM_KNOCKDOWN (2 SECONDS)
 #define GORILLA_SLAM_TABLE_BREAK 50
-/// How high a slammed body goes up before it comes down, in pixels.
-#define GORILLA_SLAM_LIFT 12
+// The slam's beats (gorilla_slam.dm), each a whole number of GORILLA_SLAM_STEPs. From the click: the grip, the hoist, the held
+// beat at the top and the drive down, then the impact. Gorilla Arms: 0.44 s to the impact and 0.70 s in all.
+#define GORILLA_SLAM_GRIP_TIME (0.08 SECONDS)
+#define GORILLA_SLAM_HOIST_TIME (0.2 SECONDS)
+#define GORILLA_SLAM_TOP_TIME (0.06 SECONDS)
+#define GORILLA_SLAM_DRIVE_TIME (0.1 SECONDS)
+/// After the impact: how long the body takes to come to rest, the bearer to stand back up, and the puppets to go.
+#define GORILLA_SLAM_REBOUND_TIME (0.12 SECONDS)
+#define GORILLA_SLAM_RISE_TIME (0.18 SECONDS)
+#define GORILLA_SLAM_SETTLE_TIME (0.26 SECONDS)
+/// How long a body takes to come down on its feet when the slam is called off.
+#define GORILLA_SLAM_SET_DOWN_TIME (0.15 SECONDS)
+/// The length of one straight step of the slam's puppets, and of the swap between the bearer's two rigs when he turns.
+#define GORILLA_SLAM_STEP (0.02 SECONDS)
+#define GORILLA_SLAM_SWAP (0.01 SECONDS)
+/// The most and the least his piston arms are drawn to keep a fist on the body, as shares of their length.
+#define GORILLA_SLAM_MAX_REACH 2.2
+#define GORILLA_SLAM_MIN_REACH 0.4
+/// Where the middle of the body is at the top of the lift, in pixels from the bearer: in front of him and up, seen from the
+/// side; aside and up, seen from the front or back. Gorilla Arms press it overhead, flat.
+#define GORILLA_SLAM_TOP_SIDE_X 4
+#define GORILLA_SLAM_TOP_SIDE_Y 22
+#define GORILLA_SLAM_TOP_FRONT_X 3
+#define GORILLA_SLAM_TOP_FRONT_Y 28
+/// Seen from behind, the floor in front of him is up the screen too, about where a body held overhead is drawn. So he goes
+/// up on his toes at the top and holds it this high, and it has somewhere to come down from.
+#define GORILLA_SLAM_TOP_BACK_Y 34
+#define GORILLA_SLAM_TOP_BACK_RISE 4
+/// How far up tg draws a body lying on a table.
+#define GORILLA_SLAM_TABLE_TOP 12
+/// Pixels a slammed body bounces off what it lands on, and the degrees it tips as it does.
+#define GORILLA_SLAM_BOUNCE 4
+#define GORILLA_SLAM_BOUNCE_TIP 6
+/// Drops of blood thrown out round a body the slam cut open: the fewest and the most, and how far from it they land.
+#define GORILLA_SLAM_DROPS_MIN 5
+#define GORILLA_SLAM_DROPS_MAX 7
+#define GORILLA_SLAM_DROPS_NEAR 9
+#define GORILLA_SLAM_DROPS_FAR 19
+/// What holds the bearer where he stands for the slam.
+#define GORILLA_SLAM_TRAIT "gorilla_slam"
 
 // ---- Brawler myomers (ware_line_models_a.dm): the street slam, pound, smash and pry ----
 
@@ -81,7 +174,14 @@
 #define BRAWLER_SLAM_TABLE_STAMINA 30
 #define BRAWLER_SLAM_KNOCKDOWN (1 SECONDS)
 #define BRAWLER_SLAM_TABLE_BREAK 30
-#define BRAWLER_SLAM_LIFT 8
+/// The Brawler's shorter haul: 0.40 s to the impact. It brings the body to the shoulder, tipped back and not yet flat.
+#define BRAWLER_SLAM_HOIST_TIME (0.16 SECONDS)
+#define BRAWLER_SLAM_TOP_SIDE_X 11
+#define BRAWLER_SLAM_TOP_SIDE_Y 13
+#define BRAWLER_SLAM_TOP_FRONT_X 2
+#define BRAWLER_SLAM_TOP_FRONT_Y 18
+#define BRAWLER_SLAM_TOP_TURN 62
+#define BRAWLER_SLAM_BOUNCE 2
 #define BRAWLER_GRAB_MOVE_COOLDOWN (15 SECONDS)
 /// Damage per structure smash: over a plain airlock's deflection (21) and a reinforced one's (30).
 #define BRAWLER_STRUCTURE_DAMAGE 32
@@ -186,8 +286,9 @@
 #define GORILLA_RIP_LIFT 3
 /// Melee cover on the chest that turns the broken back into cracked ribs.
 #define GORILLA_BACK_ARMOUR 40
-/// How long a broken back's fold stays drawn after the finisher.
+/// How long a broken back's fold stays drawn after the finisher, and how long it then takes to ease out flat.
 #define GORILLA_FOLD_TIME (10 SECONDS)
+#define GORILLA_FOLD_SETTLE (0.6 SECONDS)
 /// The head clap's burst: one short line of blood this many tiles long.
 #define GORILLA_CLAP_SPRAY_TILES 2
 /// How far the head clap throws the brain (the eyes, ears and tongue drop on the spot or a tile out).
@@ -220,6 +321,17 @@
 /// it takes to fall back flat when the arm gives.
 #define GORILLA_RIP_RAISE 22
 #define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
+/// How long the let-go body takes to slide back to where tg lays it (tg's own offset slide).
+#define GORILLA_RIP_LET_GO (0.2 SECONDS)
+/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The plant's own
+/// 0.3 s still ends inside its stage.
+#define GORILLA_RIP_START_HOLD (0.15 SECONDS)
+/// Seen from behind, how long the torn arm takes to come down with his fist and hang beside him.
+#define GORILLA_RIP_HANG_TIME (0.25 SECONDS)
+/// The limb rip's blood: how many drops burst from the socket as the arm comes away, and the furthest (pixels) the pool
+/// under the shoulder is laid from the middle of the body's tile.
+#define GORILLA_RIP_BURST_DROPS 12
+#define GORILLA_RIP_POOL_REACH 10
 /// The limb rip's blow with the torn arm: up over his head, then down on theirs. The hit lands as it comes down.
 #define GORILLA_CLUB_RAISE (0.2 SECONDS)
 #define GORILLA_CLUB_STRIKE (0.1 SECONDS)
@@ -233,6 +345,11 @@
 #define GORILLA_LAID_IN_FRONT_OFFSET "gorilla_laid_in_front"
 /// How long a broken back stays folded over the knee before it is rolled off.
 #define GORILLA_BACK_FOLD_HOLD (0.3 SECONDS)
+/// The shove off the knee onto the tile ahead: how long the body is in the air, and how many pixels it rises on the way.
+#define GORILLA_BACK_SHOVE_TIME (0.45 SECONDS)
+#define GORILLA_BACK_SHOVE_RISE 6
+/// How long the bearer's arms take to push out after it.
+#define GORILLA_BACK_SHOVE_PUSH (0.12 SECONDS)
 
 // The landed piston punch, the haymaker's hit and the backbreaker's break (gorilla_punch.dm's sound procs).
 /// A sound key (/datum/sound_effect/gorilla_piston_punch): one of three punches at random.
