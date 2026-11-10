@@ -132,7 +132,7 @@
 	slam_knockdown = BRAWLER_SLAM_KNOCKDOWN
 	slam_table_break = BRAWLER_SLAM_TABLE_BREAK
 	grab_move_cooldown = BRAWLER_GRAB_MOVE_COOLDOWN
-	slam_lift = BRAWLER_SLAM_LIFT
+	slam_overhead = FALSE
 	slam_full_fx = FALSE
 	fist_word = "myomer-driven"
 	snap_strain = 4
