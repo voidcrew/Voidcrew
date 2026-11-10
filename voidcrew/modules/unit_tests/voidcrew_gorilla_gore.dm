@@ -742,7 +742,10 @@
 	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The backbreaker didn't start")
 	var/datum/hv_finisher/chrome/gorilla/backbreaker/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "A chest aim didn't pick the backbreaker")
+	// Whatever blood earlier tests left where the body comes down
+	clear_mess(spot(1, 1))
 	run_to_end(finisher)
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(1, 1), "The backbreaker laid blood of its own where the body landed")
 	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
 	var/datum/wound/spine = chest.get_wound_type(/datum/wound/blunt/bone/critical/gorilla_spine)
 	TEST_ASSERT_NOTNULL(spine, "The back didn't break")

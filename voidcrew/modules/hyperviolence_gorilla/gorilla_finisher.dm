@@ -1737,9 +1737,8 @@
 			if(lower)
 				animate(lower, transform = chrome_rig_turn(90 - (broke ? 38 : 0), 0, BACK_WAIST_PIVOT_Y), time = hold)
 				animate(pixel_x = 0, pixel_y = 1 - GORILLA_BACK_IN_FRONT, pixel_z = 0, transform = chrome_rig_turn(90 - bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
-			if(broke && !QDELETED(victim))
-				// A pool from the mouth where he lands
-				addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(gorilla_mouth_pool), victim), hold + 0.45 SECONDS)
+			// No blood of the move's own where he lands (owner): a broken back doesn't bleed, and a pool on the middle
+			// of the tile never lined up with a body laid in front of it. What the body really bleeds is tg's.
 			// The halves stay drawn over him (user.layer + 0.05, from the hoist) while they lie there
 
 /datum/hv_finisher/chrome/gorilla/backbreaker/beat(key)
@@ -1754,9 +1753,11 @@
 		cyberware_grey_dust(knee)
 	var/outcome = gorilla_backbreak(victim, user, fist())
 	broke = outcome == "broken"
-	if(broke && !QDELETED(victim))
-		// A trickle from the mouth, under where his head hangs over the knee
-		victim.add_splatter_floor(get_turf(user), TRUE)
+	// What the blow did to the body (the snapped bone, tg's wounds) is drawn on the hidden one: the halves take it on
+	// now, or it would only show when they come down
+	if(!QDELETED(victim) && victim_rig?.snapshot())
+		for(var/half in list("upper", "lower"))
+			victim_rig.repaint(half, victim_rig.cut("rig_[half]"))
 	if(broke)
 		// The body folds over the knee
 		var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
@@ -1773,20 +1774,12 @@
 				animate(part, pixel_z = 6, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 				animate(pixel_z = 2, time = 0.12 SECONDS, easing = SINE_EASING | EASE_IN)
 
-/// A pool of [victim]'s blood where a broken back lands.
-/proc/gorilla_mouth_pool(mob/living/carbon/victim)
-	if(QDELETED(victim) || !isturf(victim.loc) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
-		return
-	new /obj/effect/decal/cleanable/blood(victim.loc, victim.get_static_viruses(), victim.get_blood_dna_list())
-
 /datum/hv_finisher/chrome/gorilla/backbreaker/cleanup_rigs()
 	// A broken back stays drawn bent for a while after
 	if(broke && victim_rig && !QDELETED(victim) && victim.get_bodypart(BODY_ZONE_CHEST))
 		victim.AddComponent(/datum/component/gorilla_fold, victim_rig)
 		victim_rig = null
 	return ..()
-
-#undef BACK_WAIST_PIVOT_Y
 
 /**
  * Brings [victim] down across a knee: heavy brute to the chest, then a broken back, or cracked ribs under
@@ -1857,7 +1850,8 @@
 
 /**
  * The fold a broken back leaves: the victim's puppets stay bent for a while after the backbreaker, until
- * the body is moved, buckled or the back is set.
+ * the body is moved, buckled or the back is set. Left alone, it eases out flat when its time is up, to lie as
+ * the real body does, which then shows in its place.
  */
 /datum/component/gorilla_fold
 	/// The victim's rig, handed over by the finisher
@@ -1868,7 +1862,15 @@
 	if(!iscarbon(parent) || !istype(rig))
 		return COMPONENT_INCOMPATIBLE
 	src.rig = rig
-	fold_timer = QDEL_IN_STOPPABLE(src, GORILLA_FOLD_TIME)
+	fold_timer = addtimer(CALLBACK(src, PROC_REF(settle)), GORILLA_FOLD_TIME, TIMER_STOPPABLE)
+
+/// The fold's time is up: the halves ease out flat, where the real body lies, and it shows once they are.
+/datum/component/gorilla_fold/proc/settle()
+	for(var/half in list("upper", "lower"))
+		var/obj/effect/abstract/chrome_puppet/part = rig?.puppet(half)
+		if(part)
+			animate(part, transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = GORILLA_FOLD_SETTLE, easing = SINE_EASING)
+	fold_timer = QDEL_IN_STOPPABLE(src, GORILLA_FOLD_SETTLE)
 
 /datum/component/gorilla_fold/RegisterWithParent()
 	RegisterSignals(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BUCKLED, COMSIG_CARBON_LOSE_WOUND, COMSIG_LIVING_REVIVE, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(unfold))
@@ -1890,6 +1892,10 @@
 /**
  * A body the backbreaker dropped on the bearer's own tile, drawn [GORILLA_BACK_IN_FRONT] pixels toward the viewer so
  * the one standing over it doesn't hide it. Comes off when it is moved, strapped in or gets up.
+ *
+ * It lies where its halves were laid. They turn about the belt, which is under the middle of the picture, so they lie
+ * that many pixels along toward the head from where tg draws a lying body (turned about its middle): the real body is
+ * drawn as far along, or it would jump back when the halves come down.
  */
 /datum/component/gorilla_laid_in_front
 
@@ -1897,7 +1903,7 @@
 	if(!isliving(parent))
 		return COMPONENT_INCOMPATIBLE
 	var/mob/living/body = parent
-	body.add_offsets(GORILLA_LAID_IN_FRONT_OFFSET, y_add = -GORILLA_BACK_IN_FRONT, animate = FALSE)
+	body.add_offsets(GORILLA_LAID_IN_FRONT_OFFSET, x_add = -BACK_WAIST_PIVOT_Y, y_add = -GORILLA_BACK_IN_FRONT, animate = FALSE)
 
 /datum/component/gorilla_laid_in_front/RegisterWithParent()
 	RegisterSignals(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BUCKLED, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(moved_off))
@@ -1910,3 +1916,5 @@
 /datum/component/gorilla_laid_in_front/proc/moved_off(datum/source)
 	SIGNAL_HANDLER
 	qdel(src)
+
+#undef BACK_WAIST_PIVOT_Y
