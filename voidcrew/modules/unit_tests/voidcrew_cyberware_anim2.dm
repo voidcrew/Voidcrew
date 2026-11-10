@@ -38,6 +38,7 @@
 	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
 		if(part.icon_state == "redline_hot")
 			found_nodes = TRUE
+			TEST_ASSERT_EQUAL(part.layer, -13.7, "Red-hot nodes don't shine through what is worn on the back")
 		if(part.icon_state == "eyes_l")
 			found_eyes = TRUE
 	TEST_ASSERT(found_nodes, "The red-hot nodes aren't drawn over the core")

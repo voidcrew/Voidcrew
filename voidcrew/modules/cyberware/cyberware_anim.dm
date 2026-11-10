@@ -546,9 +546,30 @@
 		if(PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE)
 			continue
 		dressed += part
-	dressed += image(icon = CYBERWARE_ANIM_ICON, icon_state = state, layer = image_layer)
-	dressed += emissive_appearance(CYBERWARE_ANIM_ICON, "[state]_e", limb?.owner || limb, image_layer)
+	dressed += cyberware_spine_node_images(CYBERWARE_ANIM_ICON, state, node_look != "dead", image_layer, limb?.owner || limb)
 	return dressed
+
+/**
+ * The images of one spine node frame. Lit nodes shine through whatever is worn on the back: they draw at
+ * CYBERWARE_SPINE_SHINE_LAYER, just over the backpack. Dark nodes stay with the housing, under the clothes. A
+ * frame with lit and dark nodes both is split in its sheet into "[state]_lit" and "[state]_dark".
+ */
+/proc/cyberware_spine_node_images(icon_file, state, lit, image_layer, atom/glow_owner)
+	var/list/images = list()
+	var/has_glow = icon_exists(icon_file, "[state]_e")
+	if(!lit)
+		images += image(icon = icon_file, icon_state = state, layer = image_layer)
+		if(has_glow)
+			images += emissive_appearance(icon_file, "[state]_e", glow_owner, image_layer)
+		return images
+	var/lit_state = state
+	if(icon_exists(icon_file, "[state]_lit"))
+		lit_state = "[state]_lit"
+		images += image(icon = icon_file, icon_state = "[state]_dark", layer = image_layer)
+	images += image(icon = icon_file, icon_state = lit_state, layer = -CYBERWARE_SPINE_SHINE_LAYER)
+	if(has_glow)
+		images += emissive_appearance(icon_file, "[state]_e", glow_owner, -CYBERWARE_SPINE_SHINE_LAYER)
+	return images
 
 /// Plays node frames one after another, then holds the last.
 /obj/item/organ/cyberimp/cyberware/cascade/proc/play_node_looks(list/looks)

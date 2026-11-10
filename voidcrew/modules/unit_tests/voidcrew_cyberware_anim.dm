@@ -151,7 +151,24 @@
 	for(var/image/part as anything in images)
 		if(part.icon_state == "cascade_boot1")
 			found_nodes = TRUE
+			// CYBERWARE_SPINE_SHINE_LAYER; the chrome itself sits at CYBERWARE_WORN_LAYER, 27.6. Both are defined after the tests.
+			TEST_ASSERT_EQUAL(part.layer, -13.7, "Lit nodes don't shine through what is worn on the back")
 	TEST_ASSERT(found_nodes, "The node frame isn't drawn over the lattice")
+	// A dying frame is split: what still glows shines through, the dead nodes stay under the clothes.
+	lattice.node_look = "crash3"
+	var/found_lit = FALSE
+	var/found_dark = FALSE
+	for(var/image/part as anything in lattice.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		if(part.icon_state == "cascade_crash3_lit" && part.layer == -13.7)
+			found_lit = TRUE
+		if(part.icon_state == "cascade_crash3_dark" && part.layer == -27.6)
+			found_dark = TRUE
+	TEST_ASSERT(found_lit, "The nodes still lit in a dying frame don't shine through")
+	TEST_ASSERT(found_dark, "The dead nodes of a dying frame aren't under the clothes")
+	lattice.node_look = "dead"
+	for(var/image/part as anything in lattice.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		TEST_ASSERT(part.layer != -13.7, "A dead spine still draws over what is worn on the back")
+	lattice.node_look = "boot1"
 
 	bearer.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	TEST_ASSERT(bearer.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "Test fixture: no crash after the window")

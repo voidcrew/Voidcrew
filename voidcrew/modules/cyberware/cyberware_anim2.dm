@@ -189,10 +189,8 @@
 		if(PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE)
 			continue
 		dressed += part
-	var/atom/glow_owner = limb?.owner || limb
-	dressed += image(icon = CYBERWARE_ANIM2_ICON, icon_state = state, layer = image_layer)
-	if(icon_exists(CYBERWARE_ANIM2_ICON, "[state]_e"))
-		dressed += emissive_appearance(CYBERWARE_ANIM2_ICON, "[state]_e", glow_owner, image_layer)
+	// Nodes that still glow shine through whatever is worn on the back; cold ones stay under it.
+	dressed += cyberware_spine_node_images(CYBERWARE_ANIM2_ICON, state, burn_look != REDLINE_LOOK_COOL2, image_layer, limb?.owner || limb)
 	if(burn_look == REDLINE_LOOK_HOT || burn_look == REDLINE_LOOK_FLASH)
 		dressed += redline_eyes(limb, image_layer)
 	return dressed
