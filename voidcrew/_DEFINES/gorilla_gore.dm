@@ -198,14 +198,28 @@
 #define GORILLA_CLAP_HOLD_SIDE 0.875
 #define GORILLA_CLAP_HOLD_FRONT 0.7
 #define GORILLA_CLAP_HOLD_BACK 0.85
-#define GORILLA_CLAP_LIFT_SIDE 4
+#define GORILLA_CLAP_LIFT_SIDE 1
 #define GORILLA_CLAP_LIFT_FRONT 15
-#define GORILLA_CLAP_LIFT_BACK 6
+#define GORILLA_CLAP_LIFT_BACK 3
 /// The most his piston arms push out to reach the head, as a share of their length, and the pixels they come off it before the clap.
 #define GORILLA_CLAP_MAX_REACH 2.1
 #define GORILLA_CLAP_WIND 3
 /// How long the burst body takes to fall from where it was held.
 #define GORILLA_CLAP_DROP_TIME (0.2 SECONDS)
+/// The head clap's hold: the fists work the head and the body hangs from it, so it goes wherever they take it. Pixels they shake
+/// it side to side and lift it in the squeeze, lift it on for the toss, and drive it back down on the clap. Cut back wherever his
+/// arms couldn't stay on the head.
+#define GORILLA_CLAP_SHAKE 3
+#define GORILLA_CLAP_HEAVE 2
+#define GORILLA_CLAP_TOSS_LIFT 2
+#define GORILLA_CLAP_SLAM 2
+/// Degrees the hanging body swings behind its head for each pixel the head is shaken aside, and the most it swings.
+#define GORILLA_CLAP_SWAY 2.5
+#define GORILLA_CLAP_MAX_SWAY 7
+/// The limb rip's haul: the most degrees the body turns up about its feet toward his fists as the arm is pulled, and how long
+/// it takes to fall back flat when the arm gives.
+#define GORILLA_RIP_RAISE 22
+#define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
 /// The limb rip's blow with the torn arm: up over his head, then down on theirs. The hit lands as it comes down.
 #define GORILLA_CLUB_RAISE (0.2 SECONDS)
 #define GORILLA_CLUB_STRIKE (0.1 SECONDS)

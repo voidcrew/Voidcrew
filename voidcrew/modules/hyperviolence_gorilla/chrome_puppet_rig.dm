@@ -362,6 +362,15 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 /proc/chrome_rig_apply(matrix/transform, x, y)
 	return list(transform.a * x + transform.b * y + transform.c, transform.d * x + transform.e * y + transform.f)
 
+/// [flat] (a body's own turn, a lying one's) turned on by [angle] degrees (clockwise) about the body's feet as drawn under it.
+/proc/chrome_rig_turn_about_feet(matrix/flat, angle)
+	var/matrix/turned = matrix(flat)
+	if(!angle)
+		return turned
+	var/list/feet = chrome_rig_apply(turned, 0, CHROME_RIG_FEET_Y)
+	turned.Multiply(chrome_rig_turn(angle, feet[1], feet[2]))
+	return turned
+
 /// Where the shoulder on [side] is drawn under [base] (else base_transform): pixels from the middle of the puppet, before its offsets.
 /datum/chrome_rig/proc/shoulder_point(side, matrix/base)
 	var/list/pivot = shoulder(side)
@@ -501,9 +510,11 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		var/list/pivot = shoulder(side)
 		animate(arm, pixel_z = round(pivot[2] * squash - drop - pivot[2]), time = time, easing = easing, flags = ANIMATION_PARALLEL)
 
-/// Every puppet trembles a pixel for [time], and ends where it began.
-/datum/chrome_rig/proc/tremble(time = 0.4 SECONDS)
+/// Every puppet (but those under the keys in [skip]: one drawn on another moves with it) trembles a pixel for [time], and ends where it began.
+/datum/chrome_rig/proc/tremble(time = 0.4 SECONDS, list/skip)
 	for(var/key in puppets)
+		if(key in skip)
+			continue
 		var/obj/effect/abstract/chrome_puppet/puppet = puppets[key]
 		var/moved = 0
 		for(var/i in 1 to max(1, round(time / (0.1 SECONDS))))
