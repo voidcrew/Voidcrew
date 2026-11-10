@@ -151,9 +151,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	src.path = path || list()
 	src.on_landed = on_landed
 	src.from = from
+	grounded = part.has_gravity() > 0
+	// A slide along the floor is slower than a flight, and so is a drift with nothing to pull it down.
 	if(style == HV_VIS_TUMBLE_SLIDE)
 		step_time *= 2
-	grounded = part.has_gravity() > 0
+	else if(!grounded)
+		step_time *= 3
 	rest_layer = part.layer
 	addtimer(CALLBACK(src, PROC_REF(give_up)), 5 SECONDS, TIMER_DELETE_ME)
 
@@ -176,28 +179,33 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	from = null
 	return ..()
 
-/// How long the whole flight takes.
+/// How long the whole flight takes. With nowhere to go (someone or something right in its way) it
+/// only drops where the body stands.
 /datum/component/hv_tumble/proc/flight_time()
-	return max(length(path), 1) * step_time
+	return length(path) ? length(path) * step_time : HV_VIS_TUMBLE_DROP
 
-/// How high it rises on the way.
+/// How high it rises on the way. A part that only drops barely rises at all.
 /datum/component/hv_tumble/proc/arc_height()
+	var/height = 0
 	switch(style)
 		if(HV_VIS_TUMBLE_HEAD)
-			return 12
+			height = 12
 		if(HV_VIS_TUMBLE_BRAIN)
-			return 14
+			height = 14
 		if(HV_VIS_TUMBLE_LIMB)
-			return 10
+			height = 10
 		if(HV_VIS_TUMBLE_ORGAN)
-			return 7
-	return 0
+			height = 7
+	return length(path) ? height : round(height * 0.3)
 
-/// Takes off: starts the arc and the spin, and takes the first step.
+/// Takes off: starts the arc and the spin, and takes the first step. With nowhere to go it comes down
+/// where it is once it has dropped.
 /datum/component/hv_tumble/proc/launch()
+	start_flight()
 	if(length(path))
-		start_flight()
-	take_step()
+		take_step()
+	else
+		step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), flight_time(), TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /datum/component/hv_tumble/proc/start_flight()
 	var/obj/item/part = parent
@@ -225,6 +233,9 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		list(part.pixel_w + from_w / 2, part.pixel_z + from_z / 2 + height, base, time / 2, QUAD_EASING|EASE_OUT),
 		list(part.pixel_w, part.pixel_z, base, time / 2, QUAD_EASING|EASE_IN),
 	))
+	// It tumbles as it flies; a part that only drops keeps the way it lies.
+	if(!length(path))
+		return
 	var/turns = style == HV_VIS_TUMBLE_ORGAN ? 1 : 2
 	part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, turns, time, HV_VIS_DX(fling_dir) || pick(-1, 1)))
 

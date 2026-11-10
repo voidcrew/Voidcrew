@@ -115,6 +115,8 @@
 #define HV_VIS_TUMBLE_NONE 6
 /// How long a tumbling part takes to cross a tile, slow enough to see the arc.
 #define HV_VIS_TUMBLE_STEP (0.1 SECONDS)
+/// How long a part with nowhere to fly takes to drop to the floor.
+#define HV_VIS_TUMBLE_DROP (0.2 SECONDS)
 /// The layer of a part in the air: over bodies on the floor, under anyone on their feet.
 #define HV_VIS_TUMBLE_LAYER (LYING_MOB_LAYER + 0.05)
 /// Most blood streaks one tumbling part leaves along its way.
