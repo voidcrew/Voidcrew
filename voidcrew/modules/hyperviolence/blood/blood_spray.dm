@@ -256,7 +256,11 @@
 			continue
 		if(!current.has_gravity())
 			// With nothing to pull it down the blood hangs in the air; the floating blood part takes over.
-			new /obj/effect/decal/cleanable/blood(current, viruses, blood_dna)
+			// At once: left to its tick's grace it is drawn as a whole splatter on the floor for two frames
+			// before it turns into beads.
+			var/obj/effect/decal/cleanable/blood/hanging = new(current, viruses, blood_dna)
+			if(!QDELETED(hanging))
+				hanging.hv_blood_float_begin()
 			continue
 		var/obj/effect/decal/cleanable/blood/hv_spray/laid = hv_blood_lay_spray(current, step < tiles ? /obj/effect/decal/cleanable/blood/hv_spray/streak/drops : /obj/effect/decal/cleanable/blood/hv_spray, spray_dir, blood_dna, viruses)
 		if(istype(laid, /obj/effect/decal/cleanable/blood/hv_spray/streak))
