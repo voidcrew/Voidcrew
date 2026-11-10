@@ -75,9 +75,6 @@
 // The slam's beats (gorilla_slam.dm), each a whole number of GORILLA_SLAM_STEPs. From the click: the grip, the hoist, the held
 // beat at the top and the drive down, then the impact. Gorilla Arms: 0.44 s to the impact and 0.70 s in all.
 #define GORILLA_SLAM_GRIP_TIME (0.08 SECONDS)
-/// The start of the grip, when nothing shows yet: the puppets' pictures are on their way to the client, so the real bodies
-/// stay on screen this long and the puppets stand unseen, or exactly over them.
-#define GORILLA_SLAM_HOLD_TIME (0.04 SECONDS)
 #define GORILLA_SLAM_HOIST_TIME (0.2 SECONDS)
 #define GORILLA_SLAM_TOP_TIME (0.06 SECONDS)
 #define GORILLA_SLAM_DRIVE_TIME (0.1 SECONDS)
@@ -271,6 +268,13 @@
 /// it takes to fall back flat when the arm gives.
 #define GORILLA_RIP_RAISE 22
 #define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
+/// How long the let-go body takes to slide back to where tg lays it (tg's own offset slide).
+#define GORILLA_RIP_LET_GO (0.2 SECONDS)
+/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The plant's own
+/// 0.3 s still ends inside its stage.
+#define GORILLA_RIP_START_HOLD (0.15 SECONDS)
+/// Seen from behind, how long the torn arm takes to come down with his fist and hang beside him.
+#define GORILLA_RIP_HANG_TIME (0.25 SECONDS)
 /// The limb rip's blood: how many drops burst from the socket as the arm comes away, and the furthest (pixels) the pool
 /// under the shoulder is laid from the middle of the body's tile.
 #define GORILLA_RIP_BURST_DROPS 12

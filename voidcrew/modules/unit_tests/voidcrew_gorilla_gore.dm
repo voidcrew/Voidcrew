@@ -89,11 +89,13 @@
 			return
 		finisher.advance()
 
-/// Every chrome puppet left anywhere in the test room
+/// Every chrome puppet left anywhere in the test room, and every body's stand-in (what shows until a client has the puppets' pictures)
 /datum/unit_test/voidcrew_gorilla_gore/proc/puppets_left()
 	. = 0
 	for(var/turf/floor in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
 		for(var/obj/effect/abstract/chrome_puppet/puppet in floor)
+			.++
+		for(var/obj/effect/abstract/chrome_rig_stand_in/stand_in in floor)
 			.++
 
 // =========================================================================
