@@ -43,6 +43,8 @@
 #define WIRE_GARROTE_POOL_DROP_NORTH 6
 /// One beat of the victim's thrashing in the hold.
 #define WIRE_GARROTE_JOLT_TIME (0.05 SECONDS)
+/// A garroted body's last twitches begin this long after it has slumped back onto its tile.
+#define WIRE_GARROTE_TWITCH_WAIT (0.6 SECONDS)
 /// A line of wire starts this far before the middle of the pixel at its base, so that pixel is always drawn.
 #define WIRE_LINE_BACK 0.5
 /// Trait source: a body held still from bobbing while wire_shake() shakes it.
@@ -1005,6 +1007,10 @@
 		// Dropped, brain and all, as #509's finishers drop a head: where the neck was, at the garroter's feet. None of
 		// tg's own blood on the floor (a seared neck doesn't bleed there at all); the garrote lays its own.
 		if(hv_wire_take_part(head, seared ? WOUND_BURN : WOUND_SLASH, 0, FALSE))
+			// The animation pass twitches a fresh corpse a few times, starting at once. Not while the body is still
+			// slumping back onto its tile: its twitches begin once it lies still.
+			if(victim.stat == DEAD)
+				victim.hv_vis_twitches(2, settle_time + WIRE_GARROTE_TWITCH_WAIT)
 			wire_neck_blood_loss(victim, seared)
 			wire_drop_head(head, victim, body_offsets, head_side, facing, worn, list(rest_neck[1] - cut_neck[1], rest_neck[2] - cut_neck[2]))
 			// Facing away, the head lies against the stump, below the body's line, with the garroter just beyond it: a pool
@@ -1409,5 +1415,6 @@
 #undef WIRE_GARROTE_HEAD_FALL_TIME
 #undef WIRE_GARROTE_POOL_DROP_NORTH
 #undef WIRE_GARROTE_JOLT_TIME
+#undef WIRE_GARROTE_TWITCH_WAIT
 #undef WIRE_LINE_BACK
 #undef WIRE_SHAKE_TRAIT
