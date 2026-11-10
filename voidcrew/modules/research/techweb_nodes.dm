@@ -657,6 +657,8 @@
 		"transporter_pad",
 		"transporter_console",
 		"transporter_transponder",
+		"teleport_blocker",
+		"field_pass",
 	)
 	required_surveyed_objects = list(planets = 3)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)

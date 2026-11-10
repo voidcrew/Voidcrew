@@ -224,6 +224,7 @@
 #include "voidcrew_survey_capabilities.dm"
 #include "voidcrew_survey_identity.dm"
 #include "voidcrew_survey_research_links.dm"
+#include "voidcrew_teleport_blocker.dm"
 #include "voidcrew_trader_checkpoint.dm"
 #include "voidcrew_trader_rental_locker.dm"
 #include "voidcrew_vestige.dm"

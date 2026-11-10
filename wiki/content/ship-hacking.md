@@ -47,10 +47,11 @@ All durations revert on their own, every exploit goes on a 60-second cooldown af
 | Drive Lockout | 3 | All thrust cut: helm, autopilot and engines refuse | 25s | 35 | 3 | 2,200 cr |
 | Fire-Control Freeze | 3 | Missile launchers and laser turrets refuse to fire | 20s | 35 | 3 | 2,400 cr |
 | Shield Collapse | 3 | Forces a full shield break and blocks reactivation | 30s | 35 | 3 | 2,600 cr |
+| Pattern Bleed | 3 | Holds every [bluespace damper](transporters.md#bluespace-dampers) down, so teleports reach the hull | 40s | 35 | 3 | 2,000 cr |
 | Runaway Burn | 4 | Throttle pinned at full burn on the current heading; autopilot disengaged | 15s | 45 | 2 | 3 vouchers |
 | Poltergeist | 4 | The ship is shoved onto a random heading every 3 seconds | 20s | 40 | 2 | 2 vouchers |
 
-Comms Blackout and Ghost Contacts only work on player ships. NPC crews have no ship channel to jam and no helm to fool. Shield Collapse and Scrambler require the target to actually have the systems they attack, and Runaway Burn and Poltergeist require the target to be flying.
+Comms Blackout and Ghost Contacts only work on player ships. NPC crews have no ship channel to jam and no helm to fool. Shield Collapse, Scrambler and Pattern Bleed require the target to actually have the systems they attack, and Runaway Burn and Poltergeist require the target to be flying.
 
 !!! tip "What a hack window looks like"
     Drive Lockout so they cannot run, Fire-Control Freeze so they cannot shoot back, then close and board while the cooldowns tick. Two tier-3 executions cost 70 signature. One more cheap exploit and you are risking the trace.

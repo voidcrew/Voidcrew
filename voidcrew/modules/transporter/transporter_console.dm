@@ -246,6 +246,13 @@
 	if(site_area.area_flags & (LOCAL_TELEPORT | NOTELEPORT))
 		return TRANSPORTER_SITE_SHIELDED
 
+	// A bluespace damper aboard another ship refuses beams onto or off it (voidcrew/modules/teleport_blocker).
+	// Only the far end is judged here: a damper on this console's own ship is the pad's business,
+	// since a keyed pad beams through it and anything else bounces in do_teleport().
+	var/obj/structure/overmap/ship/far_ship = get_teleport_blocked_ship(tile)
+	if(far_ship && far_ship != get_teleport_blocked_ship(get_turf(src)))
+		return TRANSPORTER_SITE_SHIELDED
+
 	// A raw pattern lock can only find open sky. Threading a beam through a roof is
 	// what the targeting node buys.
 	if(!has_research(TECHWEB_NODE_TRANSPORTER_TARGETING) && !is_open_ground(site_area))
