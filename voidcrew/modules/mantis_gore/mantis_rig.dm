@@ -75,9 +75,9 @@
 			spec = list(list("far", "body", "T", "near"), 6, 0, -12, 2, 14, 1)
 		if("impale_drop_E")
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 2)
-		// Seen from behind the target is on the row beyond the bearer, facing the camera. "arms" is the forearms,
-		// the fists and the steel up to where it goes into the target's front; "tips" is the whole blade past the
-		// fists, drawn behind the target: what shows of it is the points past the shoulders.
+		// Seen from behind the target is on the row beyond the bearer, facing the camera. The blades go into the
+		// chest a torso's width apart: "arms" is the forearms and the fists, which the bearer's back hides; "tips"
+		// is the blades, drawn behind the target: what shows of them is the points past the shoulders by the neck.
 		if("impale_arrive_N")
 			spec = list(list("T", "arms", "body"), 0, 2, 0, 0, 0, 0)
 		if("impale_contact_N", "impale_enter_N")
