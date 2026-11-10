@@ -9,7 +9,7 @@
  *   model               parent           tier  load       price               where
  *   Spring calves       Hopper pistons   T1    2          1,800 cr            yellow
  *   Vaulter pistons     Hopper pistons   T3    4          3 vouchers          advanced
- *   Brawler myomers     Gorilla Arms     T2    2 per arm  1,600 cr the pair   yellow
+ *   Brawler myomers     Gorilla Arms     T2    2 per arm  2,000 cr the pair   yellow
  *   Tinker's fingers    Fixer's Fingers  T1    1          700 cr              public
  *   Deepcore drill fist Rockjaw          T2    3          2,400 cr            public
  *   Holdout housing     Popup Ronin      T2    3          2,400 cr            yellow
@@ -99,9 +99,16 @@
  * # Brawler myomers (T2, arms, arm hardware slots, load 2 per arm / 4 the pair)
  *
  * Gorilla Arms bought cheap: lighter punches, slower, a lighter smash on
- * structures. Rock still breaks, and a grabbed victim takes the ordinary slam,
- * not a throw across the room. The pair never pries a door: the set bonus is
- * never attached, so even one of these beside a real Gorilla arm gets nothing.
+ * structures (still enough to dent an airlock, plain or reinforced). Rock still
+ * breaks. A grabbed victim is never hurled; a grab-click on the floor or a table
+ * slams them, lighter and on a longer clock than the Gorilla's
+ * (hyperviolence_gorilla/gorilla_punch.dm). No haymaker, no flex.
+ *
+ * Both arms sync into their own set bonus (cyberware_brawler below), never the
+ * Gorilla's, so one of these beside a real Gorilla arm syncs nothing. The synced
+ * pair forces powered airlocks slower than the Gorilla, gets a lighter ground
+ * pound with no daze (gorilla_pound.dm), and has the limb rip as its only
+ * finisher (gorilla_finisher.dm). Trader outpost doors refuse a pry or a punch.
  */
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/street
 	name = "\improper Brawler myomers (right)"
@@ -111,17 +118,45 @@
 	tier = CYBERWARE_TIER_2
 	aug_overlay = "gorilla_street_right"
 	punch_damage = 14
-	structure_damage = 20
+	structure_damage = BRAWLER_STRUCTURE_DAMAGE
 	punch_cooldown_time = 5 SECONDS
 	smash_cooldown_time = 1.5 SECONDS
 	hurl_range = 0
-	pries_doors = FALSE
+	pair_bonus = /datum/status_effect/organ_set_bonus/cyberware_brawler
+	// No hurl, haymaker or flex; the pair's pound and finisher are its own (hyperviolence_gorilla/)
+	heavy_moves = FALSE
+	slam_floor_damage = BRAWLER_SLAM_FLOOR_DAMAGE
+	slam_floor_stamina = BRAWLER_SLAM_FLOOR_STAMINA
+	slam_table_damage = BRAWLER_SLAM_TABLE_DAMAGE
+	slam_table_stamina = BRAWLER_SLAM_TABLE_STAMINA
+	slam_knockdown = BRAWLER_SLAM_KNOCKDOWN
+	slam_table_break = BRAWLER_SLAM_TABLE_BREAK
+	grab_move_cooldown = BRAWLER_GRAB_MOVE_COOLDOWN
+	slam_lift = BRAWLER_SLAM_LIFT
+	slam_full_fx = FALSE
+	fist_word = "myomer-driven"
+	snap_strain = 4
+	punch_wound_bonus = BRAWLER_PUNCH_WOUND_BONUS
+	impact_state = "impact_brawler"
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left
 	name = "\improper Brawler myomers (left)"
 	zone = BODY_ZONE_L_ARM
 	slot = ORGAN_SLOT_LEFT_ARM_AUG
 	aug_overlay = "gorilla_street_left"
+
+/**
+ * The synced Brawler pair: forces powered airlocks slower than the Gorilla and grants the light ground
+ * pound. No flex. Its own id, so gorilla_synced() never counts it and a mixed pair syncs into neither.
+ */
+/datum/status_effect/organ_set_bonus/cyberware_brawler
+	parent_type = /datum/status_effect/organ_set_bonus/cyberware_gorilla
+	id = "organ_set_bonus_cyberware_brawler"
+	bonus_activate_text = span_notice("Your myomers sync up.")
+	bonus_deactivate_text = span_notice("Your myomers fall out of sync.")
+	pry_time = BRAWLER_PRY_TIME
+	pound_type = /datum/action/cooldown/cyberware/gorilla_pound/brawler
+	flexes = FALSE
 
 /obj/item/cyberware_pair_case/gorilla_arms/street
 	name = "\improper Brawler myomers case"
@@ -284,7 +319,7 @@
 	name = "Brawler Myomers (pair)"
 	desc = "A cased pair of cheap myomer forearms."
 	item_path = /obj/item/cyberware_pair_case/gorilla_arms/street
-	price_credits = 1600
+	price_credits = 2000
 	stock_min = 1
 	stock_max = 2
 	fixed_price = TRUE
@@ -336,7 +371,7 @@
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/gorilla_arms/street
 	match_subtypes = TRUE
-	pay_credits = 400
+	pay_credits = 500
 	demand_min = 2
 	demand_max = 4
 

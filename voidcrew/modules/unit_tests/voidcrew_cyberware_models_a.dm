@@ -104,7 +104,8 @@
 
 /// The Gorilla line: the parent keeps every number and the door-pry bonus. The
 /// Brawler myomers punch lighter and slower, smash lighter, hurl nobody, and
-/// never pry a door, alone or beside a real Gorilla arm. The case holds a pair.
+/// sync into their own bonus, never the Gorilla's: one beside a real Gorilla arm
+/// syncs nothing. The case holds a pair.
 /datum/unit_test/voidcrew_cyberware_models_a_gorilla
 
 /datum/unit_test/voidcrew_cyberware_models_a_gorilla/Run()
@@ -125,11 +126,12 @@
 
 	// The model.
 	TEST_ASSERT_EQUAL(brawler_right.punch_damage, 14, "Brawler punch isn't 14")
-	TEST_ASSERT_EQUAL(brawler_right.structure_damage, 20, "Brawler smash isn't 20")
+	TEST_ASSERT_EQUAL(brawler_right.structure_damage, 32, "Brawler smash isn't 32") // BRAWLER_STRUCTURE_DAMAGE
 	TEST_ASSERT_EQUAL(brawler_right.punch_cooldown_time, 5 SECONDS, "Brawler punch clock isn't five seconds")
 	TEST_ASSERT_EQUAL(brawler_right.smash_cooldown_time, 1.5 SECONDS, "Brawler smash clock isn't a second and a half")
 	TEST_ASSERT(brawler_right.hurl_range <= 0, "Brawler myomers can hurl a grabbed victim")
-	TEST_ASSERT(!brawler_right.pries_doors, "Brawler myomers pry doors")
+	TEST_ASSERT_EQUAL(brawler_right.pair_bonus, /datum/status_effect/organ_set_bonus/cyberware_brawler, "Brawler myomers don't sync into their own bonus")
+	TEST_ASSERT(!brawler_right.heavy_moves, "Brawler myomers have the Gorilla's heavy moves")
 	TEST_ASSERT_EQUAL(brawler_right.chrome_load, 2, "Brawler load isn't 2 per arm")
 	TEST_ASSERT_EQUAL(brawler_right.tier, 2, "Brawler myomers aren't tier 2")
 	TEST_ASSERT_EQUAL(brawler_left.chrome_load, 2, "Left Brawler load isn't 2")
@@ -146,7 +148,7 @@
 	TEST_ASSERT(locate(/obj/item/organ/cyberimp/cyberware/gorilla_arms/left) in real_case.contents, "The Gorilla case lost its left arm")
 	TEST_ASSERT(!(locate(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street) in real_case.contents), "The Gorilla case holds Brawler myomers")
 
-	// A real pair pries doors. Brawler myomers never do, alone or beside a real arm.
+	// A real pair pries doors; a Brawler pair syncs into its own bonus; a mixed pair syncs into neither.
 	var/mob/living/carbon/human/real_pair = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 	TEST_ASSERT(real_right.Insert(real_pair, special = TRUE), "The right Gorilla arm wouldn't go in")
 	TEST_ASSERT(real_left.Insert(real_pair, special = TRUE), "The left Gorilla arm wouldn't go in")
@@ -159,7 +161,9 @@
 	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left/pair_left = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left)
 	TEST_ASSERT(pair_right.Insert(brawler_pair, special = TRUE), "The right Brawler arm wouldn't go in")
 	TEST_ASSERT(pair_left.Insert(brawler_pair, special = TRUE), "The left Brawler arm wouldn't go in")
-	TEST_ASSERT_NULL(brawler_pair.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_gorilla), "A Brawler pair got the door-pry set bonus")
+	TEST_ASSERT_NULL(brawler_pair.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_gorilla), "A Brawler pair got the Gorilla's set bonus")
+	var/datum/status_effect/organ_set_bonus/brawler_bonus = brawler_pair.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_brawler)
+	TEST_ASSERT(brawler_bonus?.bonus_active, "A Brawler pair didn't sync")
 
 	var/mob/living/carbon/human/mixed_pair = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/mixed_real = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms)
@@ -168,6 +172,8 @@
 	TEST_ASSERT(mixed_street.Insert(mixed_pair, special = TRUE), "The Brawler arm wouldn't go in beside a real arm")
 	var/datum/status_effect/organ_set_bonus/mixed_bonus = mixed_pair.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_gorilla)
 	TEST_ASSERT(!mixed_bonus?.bonus_active, "A real Gorilla arm and a Brawler arm pry doors")
+	var/datum/status_effect/organ_set_bonus/mixed_brawler = mixed_pair.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_brawler)
+	TEST_ASSERT(!mixed_brawler?.bonus_active, "A real Gorilla arm and a Brawler arm synced as Brawlers")
 
 	// A punch lands for the model's damage and starts the model's clock.
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
@@ -325,7 +331,7 @@
 	var/list/shelf = list(
 		list(/datum/shop_sku/ripperdoc/hopper_street, /obj/item/organ/cyberimp/cyberware/hopper/street, 1800, 0, 1, 1),
 		list(/datum/shop_sku/ripperdoc/hopper_milspec, /obj/item/organ/cyberimp/cyberware/hopper/milspec, 0, 3, 2, 1),
-		list(/datum/shop_sku/ripperdoc/gorilla_street, /obj/item/cyberware_pair_case/gorilla_arms/street, 1600, 0, 1, 2),
+		list(/datum/shop_sku/ripperdoc/gorilla_street, /obj/item/cyberware_pair_case/gorilla_arms/street, 2000, 0, 1, 2),
 		list(/datum/shop_sku/ripperdoc/fixers_street, /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street, 700, 0, 0, 1),
 		list(/datum/shop_sku/ripperdoc/rockjaw_deepcore, /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore, 2400, 0, 0, 1),
 		list(/datum/shop_sku/ripperdoc/ronin_holdout, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, 2400, 0, 1, 1),
@@ -349,14 +355,14 @@
 	TEST_ASSERT(quote && quote["vouchers"] == 3 && !quote["credits"], "Vaulter pistons quote the wrong price")
 	for(var/pair_half in list(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left))
 		quote = GLOB.cyberware_price_index[pair_half]
-		TEST_ASSERT(quote && quote["credits"] == 1600 && quote["paired"], "[pair_half] doesn't quote the pair's price")
+		TEST_ASSERT(quote && quote["credits"] == 2000 && quote["paired"], "[pair_half] doesn't quote the pair's price")
 	quote = GLOB.cyberware_price_index[/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout]
 	TEST_ASSERT(quote && quote["credits"] == 2400, "The Holdout quotes the wrong price")
 
 	// Ledger: half the shelf price of one piece, credits only, either side of a pair.
 	var/list/ledgers = list(
 		list(/datum/shop_buyback/ripperdoc/hopper_street, /datum/shop_buyback/ripperdoc/hopper_street/street_doc, /obj/item/organ/cyberimp/cyberware/hopper/street, 900),
-		list(/datum/shop_buyback/ripperdoc/gorilla_street, /datum/shop_buyback/ripperdoc/gorilla_street/street_doc, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street, 400),
+		list(/datum/shop_buyback/ripperdoc/gorilla_street, /datum/shop_buyback/ripperdoc/gorilla_street/street_doc, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street, 500),
 		list(/datum/shop_buyback/ripperdoc/fixers_street, /datum/shop_buyback/ripperdoc/fixers_street/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street, 350),
 		list(/datum/shop_buyback/ripperdoc/ronin_holdout, /datum/shop_buyback/ripperdoc/ronin_holdout/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, 1200),
 		list(/datum/shop_buyback/ripperdoc/rockjaw_deepcore, /datum/shop_buyback/ripperdoc/rockjaw_deepcore/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore, 1200),
