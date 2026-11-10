@@ -481,8 +481,9 @@
 	return spray
 
 /**
- * The move is over: the pictures fade out over [time] while the real bearer, held blades and all, fades back in
- * where they stand, so a pose that differs from the held art eases over instead of jumping. Then the rig goes.
+ * The move is over: the real bearer, held blades and all, is drawn again at once, and the pictures, lifted
+ * over it in the same order, fade out over [time]. A pose that differs from the held art eases into it
+ * instead of jumping, and nothing is ever see-through: the real bearer underneath is whole. Then the rig goes.
  */
 /datum/mantis_rig/proc/hand_back(time = MANTIS_RIG_HANDBACK)
 	if(handing_back || QDELETED(src))
@@ -493,10 +494,16 @@
 		return
 	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
 		blade.show_inhand()
-	if(hidden && bearer.get_filter(MANTIS_RIG_HIDE_FILTER))
-		bearer.transition_filter(MANTIS_RIG_HIDE_FILTER, list("color" = list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0)), time)
+	reveal()
+	var/lowest
 	for(var/key in puppets)
-		animate(puppets[key], alpha = 0, time = time, flags = ANIMATION_PARALLEL)
+		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
+		lowest = isnull(lowest) ? picture.layer : min(lowest, picture.layer)
+	var/lift = isnull(lowest) ? 0 : max(0, bearer.layer - lowest + MANTIS_RIG_LAYER_STEP)
+	for(var/key in puppets)
+		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
+		picture.layer += lift
+		animate(picture, alpha = 0, time = time, flags = ANIMATION_PARALLEL)
 	QDEL_IN(src, time)
 
 /// Hides the real bearer. Its whole tile still takes clicks.
