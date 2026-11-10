@@ -186,7 +186,7 @@
 	var/datum/outpost_shop/vendor/patchup_clinic/clinic = allocate(/datum/outpost_shop/vendor/patchup_clinic)
 	for(var/datum/shop_buyback/intake as anything in clinic.buybacks)
 		TEST_ASSERT(!ispath(intake.item_path, /obj/item/defibrillator), "The clinic still buys defibrillators")
-	TEST_ASSERT_EQUAL(length(clinic.buybacks), 4, "The clinic lost another intake line")
+	TEST_ASSERT_EQUAL(length(clinic.buybacks), 7, "The clinic lost another intake line")
 
 /datum/unit_test/voidcrew_resale/market_floor/Run()
 	save_economy()
