@@ -777,21 +777,18 @@
 	/// Exact chrome types this band pays for
 	var/list/wanted_chrome
 
+/datum/shop_buyback/found_chrome/buyback_wanted_kind(obj/item/offered)
+	return (offered.type in wanted_chrome) && !shop_buyback_inside_body(offered)
+
 /datum/shop_buyback/found_chrome/matches(obj/item/offered)
 	if(!..() || !(offered.type in wanted_chrome))
 		return FALSE
 	var/obj/item/organ/ware = offered
 	return !(ware.organ_flags & ORGAN_FAILING)
 
-/// The base refusal checks item_path, which here is every organ. Only name shop
-/// stock when the stock in question is chrome this band would otherwise take.
+/// The stock refusal keys off item_path, which here is every organ (buyback_listed.dm).
 /datum/shop_buyback/found_chrome/get_denial_reason(mob/living/user)
-	if(demand > 0 && count_carried_units(user) < 1)
-		for(var/obj/item/offered in user.get_all_contents())
-			if((offered.type in wanted_chrome) && is_trader_good(offered) && !shop_buyback_inside_body(offered))
-				return "I don't buy back shop stock."
-		return "Carrying none of the goods: [get_wanted_text()]."
-	return ..()
+	return buyback_listed_denial(src, user)
 
 /datum/shop_buyback/found_chrome/fitted
 	name = "fitted chrome"
