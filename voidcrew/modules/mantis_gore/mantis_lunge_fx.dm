@@ -256,6 +256,8 @@
 	var/obj/effect/abstract/cyberware_anim/glow = cyberware_anim_play(bearer, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, MANTIS_CHARGE_MAX_HOLD + 1 SECONDS, glow = TRUE)
 	if(!glow)
 		return null
+	// Side on, the far blade's glow stays behind the near blade.
+	glow.sort_as_arm(blade.hand_side())
 	glow.alpha = 0
 	animate(glow, alpha = 255, time = MANTIS_CHARGE_FULL - MANTIS_CHARGE_TAP)
 	return glow

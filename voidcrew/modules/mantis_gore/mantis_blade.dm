@@ -276,7 +276,10 @@
 	var/state = "[base_icon_state]_[pose]_glint_[hand_side()]"
 	if(!icon_exists(MANTIS_GORE_ICON, state))
 		return null
-	return cyberware_anim_play(holder, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 0.3 SECONDS, glow = TRUE)
+	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(holder, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 0.3 SECONDS, glow = TRUE)
+	// Side on, the far blade's light stays behind the near blade.
+	glint?.sort_as_arm(hand_side())
+	return glint
 
 // =========================================================================
 // BLOOD
