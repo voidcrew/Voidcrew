@@ -54,7 +54,7 @@
 	var/obj/effect/abstract/cyberware_anim/mantis_swing/swing = new(null)
 	swing.start(attacker, src, state, side)
 	if(is_bloody())
-		var/coat_state = "[state]_[world.time < drenched_until ? "soak" : "blood"]"
+		var/coat_state = "[state]_[world.time < soaked_until ? "soak" : "blood"]"
 		if(icon_exists(MANTIS_SWING_ICON, coat_state))
 			swing.add_coat(coat_state, get_blood_dna_color())
 	swing_ref = WEAKREF(swing)
