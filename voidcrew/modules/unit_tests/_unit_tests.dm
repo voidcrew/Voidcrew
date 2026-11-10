@@ -55,6 +55,7 @@
 #include "voidcrew_cargo_cart.dm"
 #include "voidcrew_cargo_docking.dm"
 #include "voidcrew_cargo_load_queue.dm"
+#include "voidcrew_cargo_shelf.dm"
 #include "voidcrew_checkpoint_loading.dm"
 #include "voidcrew_checkpoint_mergers.dm"
 #include "voidcrew_checkpoints.dm"
