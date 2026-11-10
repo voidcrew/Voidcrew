@@ -57,9 +57,12 @@
 		user.put_in_hands(knife)
 
 // Corpse and ghost-role outfits are also fixed starting placements.
+// Appearance dummies are left alone: get_dynamic_human_appearance() dresses one through the
+// spawner to draw an NPC's look (a gunner holding its gun) and deletes it straight after, so
+// nothing on it can ever be picked up.
 /obj/effect/mob_spawn/equip(mob/living/spawned_mob)
 	. = ..()
-	if(ishuman(spawned_mob))
+	if(ishuman(spawned_mob) && !istype(spawned_mob, /mob/living/carbon/human/dummy))
 		remove_ladder_starting_weapons(spawned_mob, list())
 
 /datum/voucher_set/mining/crusher_kit

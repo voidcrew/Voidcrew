@@ -286,3 +286,107 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 #define PIRATE_BOUNTY_REST (20 MINUTES)
 /// Between two new bounties once the round is running
 #define PIRATE_BOUNTY_POST_GAP (3 MINUTES)
+
+// ========== PIRATE CREW AI (pirate_crew.dm, pirate_crew_ai.dm) ==========
+// The crew an NPC hull spawns with, and the boarders a pirate puts on a player ship, share one
+// /datum/pirate_crew per side of the fight. Unit tests can't see these; they use the literals.
+
+/// The /datum/pirate_crew this mob fights for
+#define BB_PIRATE_CREW "pirate_crew"
+/// PIRATE_ROLE_* for this mob
+#define BB_PIRATE_ROLE "pirate_role"
+/// Where this mob spawned or landed; it wanders near it and walks back to it when the crew calms down
+#define BB_PIRATE_HOME_TURF "pirate_home_turf"
+/// The hostile the crew sent this mob after
+#define BB_PIRATE_HUNT_TARGET "pirate_hunt_target"
+/// The turf this mob is walking to on the hunt
+#define BB_PIRATE_HUNT_TURF "pirate_hunt_turf"
+/// A stop part way along a route too long for one path
+#define BB_PIRATE_WAYPOINT "pirate_waypoint"
+/// Where a post holder is walking back to
+#define BB_PIRATE_POST_TURF "pirate_post_turf"
+/// Where a mob that strayed is walking back to
+#define BB_PIRATE_RETURN_TURF "pirate_return_turf"
+/// The door (or wrecked door frame) this mob is breaking through
+#define BB_PIRATE_BREACH_TARGET "pirate_breach_target"
+/// The turf it breaks the door from
+#define BB_PIRATE_BREACH_STAND "pirate_breach_stand"
+/// The turf the door stands on, so a frame left behind by the door is broken too
+#define BB_PIRATE_BREACH_TURF "pirate_breach_turf"
+/// world.time the current breach started
+#define BB_PIRATE_BREACH_STARTED "pirate_breach_started"
+/// world.time the pathfinder last found no way to the movement target
+#define BB_PIRATE_NO_PATH_AT "pirate_no_path_at"
+/// The turf it found no way to
+#define BB_PIRATE_NO_PATH_DEST "pirate_no_path_dest"
+
+#define PIRATE_ROLE_CAPTAIN "captain"
+#define PIRATE_ROLE_GUARD "guard"
+#define PIRATE_ROLE_HUNTER "hunter"
+
+/// How far a pirate may take a fight (see target_reach() in pirate_crew_ai.dm)
+#define PIRATE_TARGET_OUT 0
+#define PIRATE_TARGET_CHASE 1
+#define PIRATE_TARGET_HOLD 2
+
+#define PIRATE_BARK_ALERT "alert"
+#define PIRATE_BARK_SPOT "spot"
+#define PIRATE_BARK_CROSS "cross"
+#define PIRATE_BARK_CAPTAIN "captain"
+
+/// How often an alerted crew re-reads where every hostile on its battlefield is
+#define PIRATE_CREW_INTEL_INTERVAL (5 SECONDS)
+/// How often a crew re-reads which ships make up its battlefield
+#define PIRATE_CREW_BATTLEFIELD_INTERVAL (5 SECONDS)
+/// A defending crew stands down after this long with no hostile on its battlefield
+#define PIRATE_CREW_CALM_DELAY (90 SECONDS)
+/// Members still walking home this long after standing down are let idle where they are
+#define PIRATE_CREW_SETTLE_TIMEOUT (60 SECONDS)
+/// How far a pirate looks for someone to fight
+#define PIRATE_CREW_SIGHT_RANGE 9
+/// How far from their post the captain and the guard will chase someone
+#define PIRATE_CREW_POST_LEASH 7
+/// How far past the edge of its battlefield a pirate keeps chasing someone it can see
+#define PIRATE_CREW_CHASE_MARGIN 3
+/// How far a calm pirate wanders from home
+#define PIRATE_CREW_IDLE_LEASH 5
+/// A hunt is re-routed only when its quarry has moved this far from where it was headed
+#define PIRATE_CREW_HUNT_REQUEUE_DIST 2
+/// Longest path the pirate movement datum asks for; two docked hulls run past tg's default 30
+#define PIRATE_CREW_MAX_PATH 64
+/// How far along a long route a waypoint is put
+#define PIRATE_CREW_WAYPOINT_STEPS 40
+/// How long a waypoint is followed before it's dropped
+#define PIRATE_CREW_WAYPOINT_TIMEOUT (20 SECONDS)
+/// Time between blows on a door
+#define PIRATE_CREW_BREACH_COOLDOWN (1.2 SECONDS)
+/// A door that still stands after this long is given up on
+#define PIRATE_CREW_BREACH_GIVE_UP (30 SECONDS)
+/// And left alone for this long
+#define PIRATE_CREW_BREACH_SKIP_TIME (60 SECONDS)
+/// Per mob, between searches for the door in the way
+#define PIRATE_CREW_BREACH_SEARCH_COOLDOWN (5 SECONDS)
+/// A search looks at no more turfs than this. Two of the largest hulls docked together are about 4500.
+#define PIRATE_CREW_BREACH_SEARCH_LIMIT 6000
+/// How often one pirate may log that it found no way to its quarry
+#define PIRATE_CREW_NO_WAY_LOG_COOLDOWN (30 SECONDS)
+/// A "no path" older than this no longer starts a search
+#define PIRATE_CREW_NO_PATH_WINDOW (3 SECONDS)
+/// After a search finds no way at all, the hunt waits this long before trying the same place again
+#define PIRATE_CREW_UNREACHABLE_BACKOFF (5 SECONDS)
+/// A door that should open for a pirate but stays shut this long while it keeps walking into it is treated as refusing
+#define PIRATE_CREW_STUCK_DOOR_TIME (3 SECONDS)
+/// Bumps further apart than this start the stuck-door clock again
+#define PIRATE_CREW_STUCK_DOOR_RESET (10 SECONDS)
+/// Per mob, between swapping places with an ally
+#define PIRATE_CREW_SWAP_COOLDOWN (1 SECONDS)
+/// Per mob, between "there he is" lines
+#define PIRATE_CREW_SPOT_BARK_MOB (20 SECONDS)
+/// Percent chance a pirate shouts as it reloads (pirate_guns.dm)
+#define PIRATE_CREW_RELOAD_BARK_CHANCE 35
+/// Per crew, between "there he is" lines
+#define PIRATE_CREW_SPOT_BARK_CREW (6 SECONDS)
+/// Per crew, between "into their ship" lines
+#define PIRATE_CREW_CROSS_BARK_CREW (30 SECONDS)
+/// How often a pirate with no target looks around for one
+#define PIRATE_CREW_SCAN_COOLDOWN (1 SECONDS)

@@ -99,6 +99,7 @@
 		/datum/shop_sku/black_market/ew_fire_control_freeze,
 		/datum/shop_sku/black_market/ew_shield_collapse,
 		/datum/shop_sku/black_market/ew_breaker_trip,
+		/datum/shop_sku/black_market/ew_pattern_bleed,
 		// Infiltration
 		/datum/shop_sku/black_market/emag,
 		/datum/shop_sku/black_market/thermals,
@@ -536,6 +537,16 @@
 	desc = "Trips the equipment and lighting breakers on every APC aboard the target."
 	item_path = /obj/item/ew_exploit/breaker_trip
 	price_credits = 1800
+	stock_min = 0
+	stock_max = 1
+
+/datum/shop_sku/black_market/ew_pattern_bleed
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Exploit Software"
+	name = "Pattern Bleed exploit cartridge"
+	desc = "Knocks the target's bluespace dampers offline for the duration."
+	item_path = /obj/item/ew_exploit/pattern_bleed
+	price_credits = 2000
 	stock_min = 0
 	stock_max = 1
 
