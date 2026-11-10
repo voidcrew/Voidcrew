@@ -696,6 +696,8 @@
 		if(part.icon_state == "mantis_right_stain")
 			stain_drawn = TRUE
 	TEST_ASSERT(stain_drawn, "The stained housing draws no stain")
+	// The flicked blood is in the air for a moment before it lands.
+	sleep(0.4 SECONDS)
 	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in spot(2, 1), "The flick left no streak ahead")
 	user.wash(CLEAN_TYPE_BLOOD)
 	TEST_ASSERT(!right.stained, "Washing didn't clear the housing")

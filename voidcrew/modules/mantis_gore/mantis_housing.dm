@@ -133,6 +133,9 @@
 
 // ---- Blood -----------------------------------------------------------------
 
+/// How long flicked blood is in the air: the flick's three frames.
+#define MANTIS_FLICK_FLIGHT (0.3 SECONDS)
+
 /// The blade snaps back in bloody: the blood flies off ahead in a streak, and some stays on the housing.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/proc/flick_blood(mob/living/carbon/bearer, obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade)
 	var/blood_color = blade.get_blood_dna_color()
@@ -144,7 +147,8 @@
 		fling.color = blood_color
 	var/turf/ahead = get_step(bearer, bearer.dir)
 	if(isturf(bearer.loc) && ahead && length(blood_dna) && !hv_blood_spray_blocked(ahead) && !isgroundlessturf(ahead) && ahead.has_gravity())
-		hv_blood_lay_spray(ahead, /obj/effect/decal/cleanable/blood/hv_spray/streak, bearer.dir, blood_dna, null)
+		// It lands once the flick has crossed to it, not as the blade starts back in.
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(hv_blood_lay_spray), ahead, /obj/effect/decal/cleanable/blood/hv_spray/streak, bearer.dir, blood_dna, null), MANTIS_FLICK_FLIGHT)
 	blade.wash(CLEAN_TYPE_BLOOD)
 	stained = TRUE
 	stain_color = blood_color
@@ -181,3 +185,5 @@
 	stain.appearance_flags |= RESET_COLOR
 	stain.color = stain_color
 	. += stain
+
+#undef MANTIS_FLICK_FLIGHT
