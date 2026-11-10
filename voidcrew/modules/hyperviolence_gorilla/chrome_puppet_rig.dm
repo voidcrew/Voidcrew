@@ -5,7 +5,9 @@
  * collar or folded over a knee draws one: the real body is hidden for a few seconds and stand-ins
  * ("puppets") cut from one flat picture of it are posed in its place.
  *
- * - One getFlatIcon() of the body, facing the way the finisher needs, at the start.
+ * - One getFlatIcon() of the body, facing the way the finisher needs, at the start. Whatever tg draws on the
+ *   hidden body after that (blood on its clothes, a stump) is hidden with it, so a move that bloodies or
+ *   wounds a rigged body takes the picture again at that moment (snapshot(), redraw_arms()).
  * - The picture is cut with masks drawn from tg's human base sprite (gorilla_gore.dmi, rig_*): the arms
  *   (with their sleeves, gloves and chrome, whatever is worn), the body without one or both arms, and
  *   the upper and lower halves at the belt. In a side view the near arm covers the torso, so the torso
@@ -274,6 +276,31 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		arm.layer = body.layer + (behind_body(side) ? -0.01 : 0.01)
 	conceal()
 	return TRUE
+
+/**
+ * Takes the flat picture again and gives the standard bearer puppets their new cuts, where they stand and as
+ * they are posed. Blood that lands on the hidden body mid-move shows on its stand-ins at once, not only when
+ * the rig comes down. Returns FALSE if the picture can't be taken; the old one stays.
+ */
+/datum/chrome_rig/proc/redraw_arms()
+	if(!snapshot())
+		return FALSE
+	repaint("body", cut_without_arms("both"))
+	for(var/side in list("l", "r"))
+		repaint("arm_[side]", arm_picture(side))
+	return TRUE
+
+/**
+ * Draws [picture] over the puppet under [key], in place of anything drawn over it before. Not a swap of its icon:
+ * a picture made at runtime takes a moment to reach each client, and a puppet whose only picture is still on its
+ * way is drawn as nothing, so it would blink out. The old picture stays under the new one until that lands.
+ */
+/datum/chrome_rig/proc/repaint(key, icon/picture)
+	var/obj/effect/abstract/chrome_puppet/puppet = puppets?[key]
+	if(!puppet || !picture)
+		return
+	puppet.cut_overlays()
+	puppet.add_overlay(mutable_appearance(picture))
 
 /// Whether the arm on [side] is the far one in a side view, under the body. Seen from the front or back both arms are over it.
 /datum/chrome_rig/proc/behind_body(side)
