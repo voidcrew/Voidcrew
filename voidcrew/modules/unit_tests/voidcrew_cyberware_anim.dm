@@ -212,3 +212,15 @@
 	TEST_ASSERT(next_bearer.GetComponent(/datum/component/chrome_emp_show), "Test fixture: no show on the second bearer")
 	left_arm.Remove(next_bearer, special = TRUE)
 	TEST_ASSERT_NULL(left_chrome.emp_look, "A piece pulled mid-EMP kept its static")
+
+/// Skin plating is skin: it draws under the clothes with stock augments, while the rest of the chrome stays over
+/// the jumpsuit.
+/datum/unit_test/voidcrew_cyberware_anim_skin_plating
+
+/datum/unit_test/voidcrew_cyberware_anim_skin_plating/Run()
+	for(var/plating_type in list(/obj/item/organ/cyberimp/cyberware/slabskin, /obj/item/organ/cyberimp/cyberware/dermal_mesh, /obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave))
+		var/obj/item/organ/cyberimp/cyberware/plating = allocate(plating_type)
+		TEST_ASSERT_EQUAL(plating.bodypart_aug.bitflag_to_layer(EXTERNAL_ADJACENT), -BODY_ADJ_LAYER, "[plating_type] draws over clothes")
+	// CYBERWARE_WORN_LAYER, which is defined after the tests.
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	TEST_ASSERT_EQUAL(lattice.bodypart_aug.bitflag_to_layer(EXTERNAL_ADJACENT), -27.6, "The spine rig dropped under the jumpsuit")

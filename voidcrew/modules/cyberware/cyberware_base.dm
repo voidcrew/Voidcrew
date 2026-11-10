@@ -26,11 +26,17 @@
  * gloves, shoes and suits. One override covers the images, the emissive twins
  * and the emissive blockers alike, because they all take their layer from
  * bitflag_to_layer().
+ *
+ * Plating grown into the skin (worn_under_clothes) is skin: it stays where
+ * stock augments sit, under everything that is worn.
  */
 /datum/bodypart_overlay/augment/cyberware
 
 /datum/bodypart_overlay/augment/cyberware/bitflag_to_layer(layer)
 	if(layer == EXTERNAL_ADJACENT)
+		var/obj/item/organ/cyberimp/cyberware/ware = implant
+		if(istype(ware) && ware.worn_under_clothes)
+			return ..()
 		return -CYBERWARE_WORN_LAYER
 	return ..()
 
@@ -94,6 +100,8 @@
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed (the Governor hook).
 	var/chrome_capacity_bonus = 0
+	/// TRUE for ware that is part of the skin: its worn look draws under clothes, not over the jumpsuit.
+	var/worn_under_clothes = FALSE
 
 /obj/item/organ/cyberimp/cyberware/Initialize(mapload)
 	. = ..()
