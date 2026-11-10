@@ -264,7 +264,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/slabskin
 	name = "\improper Slabskin plate"
-	desc = "Sintered ceramic scales grown into the skin in overlapping courses. Bullets leave scuffs and a noise like a dropped pan, and not a great deal else."
+	desc = "A keel and rib plates of sintered ceramic, grown into the skin of the chest and back. Bullets leave scuffs and a noise like a dropped pan."
 	icon_state = "slabskin"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_DERMAL
