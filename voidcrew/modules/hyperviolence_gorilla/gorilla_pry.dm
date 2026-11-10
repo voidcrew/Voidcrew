@@ -7,7 +7,8 @@
  *   ground. Trying counts as aggression against the outpost. A combat-mode punch at one is refused the
  *   same way (ware_military_arms.dm on_punch()).
  * - A powered pry strains: every half second the bearer trembles, the door shakes, the seam opens a
- *   little wider and throws sparks.
+ *   little wider and throws sparks. The sparks are for show (gorilla_pry_sparks()): they heat nothing and set
+ *   nothing alight.
  */
 /datum/element/door_pryer/gorilla
 
@@ -115,8 +116,38 @@
 	animate(pixel_w = -side, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
 	door.Shake(1, 0, 0.3 SECONDS)
 	seam.set_width((world.time - started) / max(pry_time, 1))
-	do_sparks(2, TRUE, door)
+	gorilla_pry_sparks(2, TRUE, door)
 	beat_timer = addtimer(CALLBACK(src, PROC_REF(beat)), 0.5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+
+/**
+ * Sparks off a door being forced, thrown and spread as do_sparks() throws tg's. They look and sound like tg's sparks
+ * and do nothing else: tg's are hot (they light fuel gas, fuel pools and plasma floors, and heat what they touch),
+ * and a pry is not meant to set a room alight.
+ */
+/proc/gorilla_pry_sparks(number, cardinal_only, datum/source)
+	var/datum/effect_system/gorilla_pry_sparks/sparks = new
+	sparks.set_up(number, cardinal_only, source)
+	sparks.autocleanup = TRUE
+	sparks.start()
+
+/datum/effect_system/gorilla_pry_sparks
+	effect_type = /obj/effect/particle_effect/gorilla_pry_sparks
+
+/// A cold spark. Not a subtype of tg's sparks on purpose: a fuel pool lights when anything of that type enters it.
+/obj/effect/particle_effect/gorilla_pry_sparks
+	name = "sparks"
+	icon_state = "sparks"
+	// The glow of tg's sparks. It is this effect's own and goes with it.
+	light_system = OVERLAY_LIGHT
+	light_range = 1.5
+	light_power = 0.8
+	light_color = LIGHT_COLOR_FIRE
+
+/obj/effect/particle_effect/gorilla_pry_sparks/Initialize(mapload)
+	. = ..()
+	flick(icon_state, src)
+	playsound(src, SFX_SPARKS, 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	QDEL_IN(src, 2 SECONDS)
 
 /// The crack forced open down an airlock's middle seam: a dark gap with lit edges.
 /obj/effect/abstract/gorilla_pry_seam
