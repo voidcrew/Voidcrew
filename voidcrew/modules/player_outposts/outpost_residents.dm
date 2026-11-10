@@ -179,7 +179,7 @@
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, job.title)
 	log_shuttle("[character.ckey] arrived as a resident of [home.name]")
 	to_chat(character, span_boldnotice("You are a resident of [home.name]."))
-	try_show_orientation_briefing(character)
+	try_show_tutorial_checklist(character)
 	return TRUE
 
 /// Called before create_character transfers the lobby mind, after appearance prompts.
