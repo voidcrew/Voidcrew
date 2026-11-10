@@ -257,6 +257,20 @@ SUBSYSTEM_DEF(vc_tutorials)
 	// Trader outposts only: the trade steps after this one (elevator, shops) are theirs.
 	else if(istype(docked, /obj/structure/overmap/trader_outpost))
 		tutorial_credit_crew(src, TUTORIAL_STEP_TRADE_TRAVEL, aboard_only = TRUE)
+	if(tutorial_docked_with_pirate())
+		tutorial_credit_crew(src, TUTORIAL_STEP_PIRATES_BOARD, aboard_only = TRUE)
+
+/// TRUE if this ship is docked to a pirate ship, or to the empty space a pirate ship is docked at.
+/// Both ships of a ship-to-ship dock have `docked` set from dock(), before either arrives.
+/obj/structure/overmap/ship/proc/tutorial_docked_with_pirate()
+	if(istype(docked, /obj/structure/overmap/ship))
+		return tutorial_is_pirate_ship(docked)
+	if(!istype(docked, /obj/structure/overmap/planet/empty))
+		return FALSE
+	for(var/obj/structure/overmap/ship/npc/other in SSovermap.simulated_ships)
+		if(other != src && other.docked == docked && tutorial_is_pirate_ship(other))
+			return TRUE
+	return FALSE
 
 /obj/structure/overmap/ship/proc/tutorial_on_undocked(datum/source)
 	SIGNAL_HANDLER

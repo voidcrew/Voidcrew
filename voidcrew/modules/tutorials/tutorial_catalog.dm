@@ -585,6 +585,189 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	highlight_types = list(/obj/machinery/computer/helm)
 
 // ---------------------------------------------------------------------------
+// Ship weapons
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/weapons
+	id = TUTORIAL_ITEM_WEAPONS
+	name = "Ship weapons"
+	category = TUTORIAL_CATEGORY_FIGHT
+	order = 2
+	intro = "Ship weapons come from Shuttle Warfare Systems research and only fire in red space. Shields, the interdictor and electronic warfare also need crew reputation to research."
+	steps = list(
+		/datum/vc_tutorial_step/weapons_console,
+		/datum/vc_tutorial_step/weapons_launcher,
+		/datum/vc_tutorial_step/weapons_missile,
+		/datum/vc_tutorial_step/weapons_laser,
+		/datum/vc_tutorial_step/weapons_shield,
+		/datum/vc_tutorial_step/weapons_interdictor,
+		/datum/vc_tutorial_step/weapons_ew,
+	)
+
+/// A note while the viewer's crew is below the reputation that ZONE_PERMISSION_ADVANCED
+/// research needs. Reads the crew record without creating one.
+/datum/vc_tutorial_step/proc/crew_reputation_note(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/datum/voidcrew_crew_record/record = ship?.ship_team?.crew_record
+	if(QDELETED(record) || record.get_zone_permission() < ZONE_PERMISSION_ADVANCED)
+		return "Needs more crew reputation."
+	return null
+
+/datum/vc_tutorial_step/weapons_console
+	key = TUTORIAL_STEP_WEAPONS_CONSOLE
+	name = "Build a weapons console"
+	text = "Print the weapons console board and build it in a computer frame."
+	highlight_types = list(/obj/structure/frame/computer)
+
+/datum/vc_tutorial_step/weapons_launcher
+	key = TUTORIAL_STEP_WEAPONS_LAUNCHER
+	name = "Build a missile launcher"
+	text = "Print the launcher board, build it in a machine frame, then drag it onto an outer wall."
+	highlight_types = list(/obj/structure/frame/machine)
+
+/datum/vc_tutorial_step/weapons_missile
+	key = TUTORIAL_STEP_WEAPONS_MISSILE
+	name = "Arm a missile"
+	text = "Print a missile frame, wire it, add a tracking circuit and a warhead, then screwdriver it shut."
+	highlight_types = list(/obj/structure/ship_missile)
+
+/datum/vc_tutorial_step/weapons_laser
+	key = TUTORIAL_STEP_WEAPONS_LASER
+	name = "Build a laser turret"
+	text = "Print the turret board, build it in a machine frame, then drag it onto an outer wall."
+	highlight_types = list(/obj/structure/frame/machine)
+
+/datum/vc_tutorial_step/weapons_shield
+	key = TUTORIAL_STEP_WEAPONS_SHIELD
+	name = "Build a shield generator"
+	text = "Print the shield generator board and build it in a machine frame."
+	highlight_types = list(/obj/structure/frame/machine)
+
+/datum/vc_tutorial_step/weapons_shield/availability(mob/user)
+	return crew_reputation_note(user)
+
+/datum/vc_tutorial_step/weapons_interdictor
+	key = TUTORIAL_STEP_WEAPONS_INTERDICTOR
+	name = "Build an interdictor"
+	text = "Print the interdictor board and build it in a machine frame."
+	highlight_types = list(/obj/structure/frame/machine)
+
+/datum/vc_tutorial_step/weapons_interdictor/availability(mob/user)
+	return crew_reputation_note(user)
+
+/datum/vc_tutorial_step/weapons_ew
+	key = TUTORIAL_STEP_WEAPONS_EW
+	name = "Build an EW suite"
+	text = "Print the EW suite board and build it in a machine frame. Link it to the weapons console with a multitool and load a cartridge."
+	highlight_types = list(/obj/structure/frame/machine)
+
+/datum/vc_tutorial_step/weapons_ew/availability(mob/user)
+	return crew_reputation_note(user)
+
+// ---------------------------------------------------------------------------
+// Ship combat
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/combat
+	id = TUTORIAL_ITEM_COMBAT
+	name = "Ship combat"
+	category = TUTORIAL_CATEGORY_FIGHT
+	order = 3
+	intro = "Ship weapons and hacking only work in red space. The interdictor also works in yellow space and holds a ship so you can hit it or board it."
+	steps = list(
+		/datum/vc_tutorial_step/combat_interdict,
+		/datum/vc_tutorial_step/combat_missile,
+		/datum/vc_tutorial_step/combat_shields,
+		/datum/vc_tutorial_step/combat_hack,
+		/datum/vc_tutorial_step/combat_force_dock,
+	)
+
+/datum/vc_tutorial_step/combat_interdict
+	key = TUTORIAL_STEP_COMBAT_INTERDICT
+	name = "Interdict a ship"
+	text = "Lock the interdictor onto a ship close by. It slows them down and stops them docking."
+	highlight_types = list(/obj/machinery/ship_combat/interdictor)
+
+/datum/vc_tutorial_step/combat_missile
+	key = TUTORIAL_STEP_COMBAT_MISSILE
+	name = "Launch a missile"
+	text = "Load an armed missile into the launcher, pick a ship at the weapons console and fire."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+
+/datum/vc_tutorial_step/combat_shields
+	key = TUTORIAL_STEP_COMBAT_SHIELDS
+	name = "Bring down their shields"
+	text = "Keep hitting a shielded ship with missiles or lasers until its shield fails."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+
+/datum/vc_tutorial_step/combat_hack
+	key = TUTORIAL_STEP_COMBAT_HACK
+	name = "Hack a ship"
+	text = "Lock onto a ship at the weapons console and run a cartridge from the EW suite."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+
+/datum/vc_tutorial_step/combat_force_dock
+	key = TUTORIAL_STEP_COMBAT_FORCE_DOCK
+	name = "Force-dock a ship"
+	text = "Fly onto the ship you're holding and force it to dock with you from the interdictor."
+	optional = TRUE
+	highlight_types = list(/obj/machinery/ship_combat/interdictor)
+
+// ---------------------------------------------------------------------------
+// Hunting pirates
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/pirates
+	id = TUTORIAL_ITEM_PIRATES
+	name = "Hunting pirates"
+	category = TUTORIAL_CATEGORY_FIGHT
+	order = 4
+	intro = "Pirate ships hunt crews in red space. You can let them board and then take the fight to their ship, or shoot their ship down from yours. In yellow space they only board a crew that's broke."
+	steps = list(
+		/datum/vc_tutorial_step/pirates_boarders,
+		/datum/vc_tutorial_step/pirates_commander,
+		/datum/vc_tutorial_step/pirates_board,
+		/datum/vc_tutorial_step/pirates_shoot,
+		/datum/vc_tutorial_step/pirates_claim,
+	)
+
+/datum/vc_tutorial_step/pirates_boarders
+	key = TUTORIAL_STEP_PIRATES_BOARDERS
+	name = "Hold off the boarders"
+	text = "They board in one wave sized to your crew. Kill or cuff every one of them."
+	route = "board"
+	route_name = "Let them board"
+
+/datum/vc_tutorial_step/pirates_commander
+	key = TUTORIAL_STEP_PIRATES_COMMANDER
+	name = "Beat their commander"
+	text = "In red space their commander pods in after the wave. Kill them, put them down or cuff them."
+	route = "board"
+	route_name = "Let them board"
+
+/datum/vc_tutorial_step/pirates_board
+	key = TUTORIAL_STEP_PIRATES_BOARD
+	name = "Board their ship"
+	text = "Dock with their ship from the helm, or force-dock it with the interdictor."
+	route = "board"
+	route_name = "Let them board"
+	highlight_types = list(/obj/machinery/computer/helm)
+
+/datum/vc_tutorial_step/pirates_shoot
+	key = TUTORIAL_STEP_PIRATES_SHOOT
+	name = "Shoot them down"
+	text = "Hit their hull with missiles and lasers until it fails."
+	route = "shoot"
+	route_name = "Fight ship to ship"
+	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+
+/datum/vc_tutorial_step/pirates_claim
+	key = TUTORIAL_STEP_PIRATES_CLAIM
+	name = "Claim the hull"
+	text = "Clear out their crew, then claim the ship at its helm."
+	optional = TRUE
+
+// ---------------------------------------------------------------------------
 // Storage
 // ---------------------------------------------------------------------------
 
