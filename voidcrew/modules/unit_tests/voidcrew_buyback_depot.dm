@@ -55,8 +55,8 @@
 	var/obj/item/practice = allocate(/obj/item/gun/energy/laser/practice, user)
 	TEST_ASSERT(!service.matches(practice), "Service arms bought a practice laser")
 
-	var/obj/item/club = allocate(/obj/item/hierophant_club, user)
-	TEST_ASSERT(pieces.matches(club), "One-of-a-kind pieces refused the hierophant club")
+	var/obj/item/club = allocate(/obj/item/melee/cleaving_saw, user)
+	TEST_ASSERT(pieces.matches(club), "One-of-a-kind pieces refused the cleaving saw")
 
 /datum/unit_test/voidcrew_buyback_depot/boffin/Run()
 	var/mob/living/carbon/human/user = seller()
@@ -118,7 +118,7 @@
 /datum/unit_test/voidcrew_buyback_depot/wick/Run()
 	var/mob/living/carbon/human/user = seller()
 	var/datum/shop_buyback/scrap = allocate(/datum/shop_buyback/fitter/scrap_control)
-	var/datum/shop_buyback/armored = allocate(/datum/shop_buyback/fitter/rare_suit)
+	var/datum/shop_buyback/armored = allocate(/datum/shop_buyback/fitter/rare_suit/security)
 	var/datum/shop_buyback/syndicate = allocate(/datum/shop_buyback/fitter/rare_suit/syndicate)
 	var/datum/shop_buyback/elite = allocate(/datum/shop_buyback/fitter/rare_suit/elite)
 
@@ -128,8 +128,19 @@
 	TEST_ASSERT(!syndicate.matches(elite_suit) && !armored.matches(elite_suit), "Another suit row bought an elite suit")
 
 	var/obj/item/mod/control/civilian = allocate(/obj/item/mod/control/pre_equipped/civilian, user)
-	TEST_ASSERT(scrap.matches(civilian), "The scrap row refused a civilian suit")
-	TEST_ASSERT(!elite.matches(civilian) && !armored.matches(civilian) && !syndicate.matches(civilian), "A rare suit row bought a civilian suit")
+	TEST_ASSERT(!scrap.matches(civilian), "The scrap row bought a civilian suit")
+	TEST_ASSERT(!elite.matches(civilian) && !armored.matches(civilian) && !syndicate.matches(civilian), "Another suit row bought a civilian suit")
+	var/datum/shop_buyback/civilian_row = allocate(/datum/shop_buyback/fitter/rare_suit/civilian)
+	TEST_ASSERT(civilian_row.matches(civilian), "Wick refused a civilian suit")
+	TEST_ASSERT(!civilian_row.matches(elite_suit), "The civilian row bought an elite suit")
+	// Every theme row must list at least one theme, and no theme may sit on two rows
+	var/list/seen = list()
+	for(var/row_type in subtypesof(/datum/shop_buyback/fitter/rare_suit))
+		var/datum/shop_buyback/fitter/rare_suit/row = allocate(row_type)
+		TEST_ASSERT(length(row.theme_types), "[row_type] lists no theme")
+		for(var/theme in row.theme_types)
+			TEST_ASSERT(!seen[theme], "[theme] is on two of Wick's suit rows")
+			seen[theme] = TRUE
 
 	// The hull's own elite suit only sells as scrap
 	var/obj/item/mod/control/issued = allocate(/obj/item/mod/control/pre_equipped/empty/elite, user)
