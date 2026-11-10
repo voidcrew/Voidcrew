@@ -334,4 +334,9 @@
 		return FALSE
 	// VOIDCREW EDIT ADDITION END
 
+	// VOIDCREW EDIT ADDITION START: a ship's bluespace damper refuses teleports onto or off its hull (voidcrew/modules/teleport_blocker)
+	if(teleport_blocked_by_ship(teleported_atom, destination_turf, teleported_atom))
+		return FALSE
+	// VOIDCREW EDIT ADDITION END
+
 	return TRUE

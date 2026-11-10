@@ -13,7 +13,7 @@ Three nodes, in order. Each needs surveys from your [orbital survey console](shi
 
 | Node | Points | Also requires | What it gives you |
 | --- | --- | --- | --- |
-| Molecular Transporter | 160 | 3 planets surveyed | The pad, console and transponder designs. Beam down to open ground the computer picks; beam up transponder carriers standing in the open. |
+| Molecular Transporter | 160 | 3 planets surveyed | The pad, console and transponder designs, plus the bluespace damper and field pass. Beam down to open ground the computer picks; beam up transponder carriers standing in the open. |
 | Transporter Pattern Targeting | 200 | 5 planets, 2 asteroids surveyed | The targeting scanner: pick the exact tile at either end, beam through a roof, and pull up anything standing on the coordinates. |
 | Transporter Biofilter Matrix | 200 | - | Stops passengers taking damage in transit, cuts 20 seconds off the pad's recharge, and lets the console detect a sabotaged pad. |
 
@@ -97,3 +97,18 @@ An emagged pad shows nothing. No message, no icon change, no alarm. It looks and
     A console with the **biofilter matrix** researched reports pattern integrity as *corrupted*. Below that tier it reads *unknown* and a cut interlock is indistinguishable from a healthy pad. If you have people beaming down and back regularly, that node is a safety device, not a luxury.
 
 Replacing or rebuilding the pad clears it.
+
+## Bluespace dampers
+
+A **bluespace damper** keeps other people's transporters off your hull. While it is switched on and powered, nothing teleports onto or off the ship it stands on: not a transporter beam, not a hand teleporter portal, not a quantum pad. Teleporting from one part of your own ship to another still works. Its board comes with the Molecular Transporter node, and it needs two bluespace crystals to assemble.
+
+Click it, or alt-click it, to raise or drop the field. It draws a lot of power while it runs.
+
+The field also stops your own crew, so the damper keys two things through it:
+
+- **Field passes.** Print one, use it on the damper to key it, and clip it to your jumpsuit. Whoever wears it teleports through the field along with everything they carry. A pass in a pocket or a bag does nothing, and a crate sent on its own still bounces.
+- **Your transporter pad.** Use a multitool on the pad, then on the damper. That pad's beams go through the field both ways, crates and passengers included. Any other pad aboard is blocked like everything else.
+
+A multitool on the damper with no pad stored resets its codes after a few seconds. Every pass and pad keyed before stops working, which is how you shut out a stolen pass.
+
+The field goes down when the damper loses power, is unbolted, has its panel open, or is hit by an EMP (for up to a minute). A **Pattern Bleed** [ship hack](ship-hacking.md) holds every damper on the target ship down for 40 seconds, and its lights flicker red while it lasts. A transporter's scanner shows red over a shielded ship.
