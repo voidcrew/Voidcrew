@@ -25,6 +25,15 @@
    "reason": "A dogtag that adds a line of text when people examine you. Nothing reads it.",
    "tier": "none"
   },
+  "/obj/item/clothing/accessory/field_pass": {
+   "confidence": "medium",
+   "group": "pins and trophies",
+   "hash": "",
+   "name": "field pass",
+   "rank": 1,
+   "reason": "Clipped to a uniform, lets the wearer teleport onto and off a ship through the bluespace damper it was keyed to. Works only for that one damper, and its crew can revoke every pass at once.",
+   "tier": "green"
+  },
   "/obj/item/clothing/accessory/medal/plasma/nobel_science": {
    "confidence": "high",
    "group": "medals and tags",

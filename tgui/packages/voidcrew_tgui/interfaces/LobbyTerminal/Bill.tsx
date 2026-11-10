@@ -217,15 +217,20 @@ export function Bill(props: {
       disabled={blocked}
       onClick={commission}
     />,
-    <Key
-      key="chg"
-      x={x + 20}
-      y={by}
-      label="CHANGE FIT"
-      cls="dim"
-      onClick={() => set({ screen: 'fit' })}
-    />,
   );
+  // A hull with nothing to fit has no CHANGE FIT.
+  if (fit.hull.finishes.length || fit.hull.slots.length) {
+    out.push(
+      <Key
+        key="chg"
+        x={x + 20}
+        y={by}
+        label="CHANGE FIT"
+        cls="dim"
+        onClick={() => set({ screen: 'fit' })}
+      />,
+    );
+  }
 
   return <>{out}</>;
 }

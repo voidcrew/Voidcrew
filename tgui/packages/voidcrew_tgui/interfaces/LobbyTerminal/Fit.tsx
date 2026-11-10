@@ -3,7 +3,7 @@
  * crew on the left, the viewscreen and this step's options on the right. Narrow: the
  * viewscreen above the options, PREV/NEXT between steps.
  */
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 import { ShipPic } from './ShipPic';
 import {
@@ -81,6 +81,12 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   const h = rows - 1 - TOP;
   const fit = fitOf(hull, view.finish, view.picks);
   const steps = stepsOf(fit);
+  // Nothing to fit (no finishes, no rooms): show the bill instead of a blank screen.
+  useEffect(() => {
+    if (!steps.length) {
+      set({ screen: 'bill' });
+    }
+  }, [steps.length]);
   if (!steps.length) {
     return null;
   }

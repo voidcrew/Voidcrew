@@ -358,7 +358,9 @@ function Crumbs(props: { ctx: YardCtx; screen: YardScreen }) {
   if (hull && screen !== 'hulls') {
     seg.push([hull.short.toUpperCase(), () => set({ screen: 'hulls' })]);
   }
-  if (screen === 'fit' || screen === 'bill') {
+  // A hull with no finishes and no rooms skips FIT entirely.
+  const fittable = !hull || !!hull.finishes.length || !!hull.slots.length;
+  if ((screen === 'fit' || screen === 'bill') && fittable) {
     seg.push(['FIT', () => set({ screen: 'fit' })]);
   }
   if (screen === 'bill') {
@@ -375,7 +377,7 @@ function Crumbs(props: { ctx: YardCtx; screen: YardScreen }) {
     home: {},
     hulls: view.hull ? { hull: null } : { screen: 'home', hull: null },
     fit: { screen: 'hulls' },
-    bill: { screen: 'fit' },
+    bill: { screen: fittable ? 'fit' : 'hulls' },
   };
   const out: ReactNode[] = [];
   let x = cols - 1 - (showCrumbs ? width() : 0);

@@ -177,6 +177,9 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	SIGNAL_HANDLER
 	if(istype(new_mob, /mob/dead/new_player))
 		return
+	// Leaving the lobby ends whatever was under way ("Preparing your ship"), so it must
+	// not greet the player again when they come back.
+	notice = null
 	hide()
 
 /datum/lobby_terminal/proc/on_load_timeout()
