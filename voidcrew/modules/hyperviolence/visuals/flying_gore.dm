@@ -222,8 +222,10 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	if(!grounded)
 		part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, 2, 30, pick(-1, 1)))
 		return
-	// In the air it passes over bodies on the floor and behind anyone standing.
-	part.layer = HV_VIS_TUMBLE_LAYER
+	// In the air it passes over bodies on the floor and behind anyone standing. A part tg already draws
+	// over everyone (a brain, so it can be found) keeps its own layer.
+	if(part.layer < HV_VIS_TUMBLE_LAYER)
+		part.layer = HV_VIS_TUMBLE_LAYER
 	var/height = arc_height()
 	// From where it was on the body, over the top of the arc, down onto its own spot on the last tile.
 	var/from_w = from ? from[1] - (part.pixel_x - part.base_pixel_x) : 0
