@@ -172,6 +172,8 @@
 	GLOB.outpost_pvp_enforcement = spy
 	var/hurt_before = victim.getBruteLoss()
 	var/punched = punch(bearer, victim)
+	// The blow lands when the fist gets there: 0.1 s (GORILLA_THRUST_BACK + GORILLA_THRUST_OUT), and a tick more the first time an arm is drawn
+	sleep(0.3 SECONDS)
 	GLOB.outpost_pvp_enforcement = real_enforcement
 	real_enforcement = null
 	TEST_ASSERT_EQUAL(punched, COMPONENT_CANCEL_ATTACK_CHAIN, "The Gorilla arm didn't take the punch")
@@ -256,6 +258,7 @@
 	victim.grabbedby(bearer, supress_message = TRUE)
 	TEST_ASSERT(bearer.grab_state >= GRAB_AGGRESSIVE, "Test fixture: no aggressive grab")
 	punch(bearer, victim)
+	sleep(0.3 SECONDS) // the fist arrives
 	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(bearer, "gorilla_grab_move"), "A hurl didn't start the grab-move cooldown") // COOLDOWN_GORILLA_GRAB_MOVE
 	sleep(1 SECONDS)
 	TEST_ASSERT_NOTEQUAL(victim.loc, spot(1, 0), "A grabbed body wasn't hurled")
@@ -265,7 +268,7 @@
 	victim.grabbedby(bearer, supress_message = TRUE)
 	victim.grabbedby(bearer, supress_message = TRUE)
 	punch(bearer, victim)
-	sleep(0.5 SECONDS)
+	sleep(0.8 SECONDS)
 	TEST_ASSERT_EQUAL(victim.loc, spot(1, 0), "A grabbed body was hurled twice inside the cooldown")
 
 /// A human at `where` in [bearer]'s aggressive grab
@@ -563,6 +566,70 @@
 	TEST_ASSERT(!vent.charging(), "Calling the haymaker off left it winding up")
 	var/left = S_TIMER_COOLDOWN_TIMELEFT(venter, "gorilla_pistons")
 	TEST_ASSERT(left > 0 && left <= 5 SECONDS, "A vent cost the wrong cooldown ([left])") // GORILLA_PISTONS_VENTED
+
+/**
+ * The piston punch's arm: the blow waits for the fist; for the punch and no longer, the punching arm is a puppet over a
+ * body with that arm masked out; a bearer who looks the same is not pictured again; the arm steps with a bearer who
+ * steps and comes down when they turn; and a bearer who can't be drawn still lands the blow.
+ */
+/datum/unit_test/voidcrew_gorilla_gore/punch_thrust
+
+/datum/unit_test/voidcrew_gorilla_gore/punch_thrust/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	bearer.setDir(EAST)
+	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/fist = arm(bearer)
+	var/obj/item/bodypart/hand = bearer.get_bodypart(BODY_ZONE_R_ARM)
+	var/filters_before = length(bearer.filters)
+	var/hurt_before = victim.getBruteLoss()
+	TEST_ASSERT(fist.piston_hit(bearer, victim, hand, BODY_ZONE_CHEST), "The piston punch wasn't thrown")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The piston punch landed before its fist did")
+	TEST_ASSERT_NOTNULL(bearer.gorilla_thrust, "The punch drew no arm")
+	TEST_ASSERT_EQUAL(puppets_left(), 2, "A punch seen from the side isn't an arm and the torso under it")
+	TEST_ASSERT_EQUAL(length(bearer.filters), filters_before + 1, "The real arm wasn't masked out under its puppet")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() > hurt_before, "The piston punch never landed")
+	sleep(0.4 SECONDS)
+	TEST_ASSERT_NULL(bearer.gorilla_thrust, "The punch's arm outlived the punch")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The punch left a puppet behind")
+	TEST_ASSERT_EQUAL(length(bearer.filters), filters_before, "The mask on the real arm outlived the punch")
+	var/matrix/rested = bearer.transform
+	TEST_ASSERT(rested.a == 1 && !rested.b && !rested.c && !rested.d && rested.e == 1 && !rested.f, "The lunge left the bearer off their feet")
+
+	// The same look is not pictured twice; the arm walks with its bearer and comes down on a turn
+	var/mob/living/carbon/human/walker = gorilla(spot(0, 2))
+	var/mob/living/carbon/human/consistent/bag = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	ADD_TRAIT(bag, TRAIT_GODMODE, TRAIT_SOURCE_UNIT_TESTS)
+	bag.anchored = TRUE
+	walker.setDir(EAST)
+	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/walker_fist = arm(walker)
+	var/obj/item/bodypart/walker_hand = walker.get_bodypart(BODY_ZONE_R_ARM)
+	walker_fist.piston_hit(walker, bag, walker_hand, BODY_ZONE_HEAD)
+	var/datum/gorilla_arm_look/look = walker.gorilla_arm_looks?["[EAST]"]
+	TEST_ASSERT_NOTNULL(look, "The punch kept no picture of its bearer")
+	sleep(0.6 SECONDS)
+	walker_fist.piston_hit(walker, bag, walker_hand, BODY_ZONE_HEAD)
+	TEST_ASSERT_EQUAL(walker.gorilla_arm_looks["[EAST]"], look, "A second punch pictured a bearer who hadn't changed")
+	var/datum/gorilla_thrust/thrust = walker.gorilla_thrust
+	TEST_ASSERT_NOTNULL(thrust, "The second punch drew no arm")
+	walker.forceMove(spot(0, 3))
+	TEST_ASSERT_EQUAL(walker.gorilla_thrust, thrust, "A step took the arm down")
+	for(var/obj/effect/abstract/chrome_puppet/puppet as anything in thrust.pieces)
+		TEST_ASSERT_EQUAL(puppet.loc, walker.loc, "The arm didn't step with its bearer")
+	walker.setDir(NORTH)
+	TEST_ASSERT_NULL(walker.gorilla_thrust, "A turn left the old facing's arm up")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A turn left a puppet behind")
+	sleep(0.6 SECONDS)
+
+	// A bearer on the floor can't be drawn: tg's lunge, and the blow still lands
+	var/mob/living/carbon/human/floored = gorilla(spot(2, 4))
+	var/mob/living/carbon/human/consistent/kicked = allocate(/mob/living/carbon/human/consistent, spot(3, 4))
+	floored.set_resting(TRUE, silent = TRUE, instant = TRUE)
+	var/kicked_before = kicked.getBruteLoss()
+	arm(floored).piston_hit(floored, kicked, floored.get_bodypart(BODY_ZONE_R_ARM), BODY_ZONE_CHEST)
+	TEST_ASSERT_NULL(floored.gorilla_thrust, "A bearer lying down drew an arm")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(kicked.getBruteLoss() > kicked_before, "A punch from the floor never landed")
 
 // =========================================================================
 // GROUND POUND
@@ -923,7 +990,7 @@
 	punched.grabbedby(hurler, supress_message = TRUE)
 	punched.grabbedby(hurler, supress_message = TRUE)
 	TEST_ASSERT_EQUAL(punch(hurler, punched), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: the Brawler punch didn't land")
-	sleep(0.5 SECONDS)
+	sleep(0.8 SECONDS)
 	TEST_ASSERT_EQUAL(punched.loc, spot(4, 0), "Brawler myomers hurled a held body")
 
 	// A pacifist never slams; neither does an arm that's down

@@ -7339,6 +7339,7 @@
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_slam.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_swing.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_throw.dm"
+#include "voidcrew\modules\hyperviolence_gorilla\gorilla_thrust.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\hv_finisher_chrome.dm"
 #include "voidcrew\modules\intents\_defines.dm"
 #include "voidcrew\modules\intents\hud_integration.dm"
