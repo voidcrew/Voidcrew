@@ -455,13 +455,18 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 /// Gibs thrown by a burst head leave from the head, rise and fall as they fly, and turn over once.
 /obj/effect/decal/cleanable/blood/gibs/streak(list/directions, mapload = FALSE)
 	var/list/head_at = mapload ? null : GLOB.hv_vis_arcing_gibs
+	var/turf/thrown_from = head_at ? get_turf(src) : null
 	. = ..()
 	if(head_at && !QDELETED(src) && isturf(loc) && has_gravity() > 0)
 		var/matrix/base = matrix(transform)
 		var/height = rand(8, 14)
+		// tg steps a gib off its tile the moment it is made, so it is first seen on the next one: the arc
+		// starts back at the head it came out of.
+		var/from_w = head_at[1] + (thrown_from ? (thrown_from.x - x) * ICON_SIZE_X : 0)
+		var/from_z = head_at[2] + (thrown_from ? (thrown_from.y - y) * ICON_SIZE_Y : 0)
 		hv_vis_play(HV_VIS_TAG_ARC, list(
-			list(pixel_w + head_at[1], pixel_z + head_at[2], base, 0, LINEAR_EASING),
-			list(pixel_w + head_at[1] / 2, pixel_z + head_at[2] / 2 + height, base, 2, QUAD_EASING|EASE_OUT),
+			list(pixel_w + from_w, pixel_z + from_z, base, 0, LINEAR_EASING),
+			list(pixel_w + from_w / 2, pixel_z + from_z / 2 + height, base, 2, QUAD_EASING|EASE_OUT),
 			list(pixel_w, pixel_z, base, 2.5, QUAD_EASING|EASE_IN),
 			list(pixel_w, pixel_z + 2, base, 0.7, QUAD_EASING|EASE_OUT),
 			list(pixel_w, pixel_z, base, 1.5, BOUNCE_EASING),
