@@ -148,7 +148,9 @@
 /proc/gorilla_ground_pound(mob/living/carbon/human/bearer, turf/where, stagger = GORILLA_POUND_STAGGER, daze = GORILLA_POUND_DAZE, stamina = GORILLA_POUND_STAMINA, full = TRUE)
 	. = list()
 	cyberware_camo_drop(bearer, "ground pound")
-	bearer.do_attack_animation(where, ATTACK_EFFECT_SMASH)
+	// No attack ring from tg: it is drawn over everything on the tile, the bearer's head included, and the pound has
+	// its own ring, cracks and dust on the floor under him
+	bearer.do_attack_animation(where)
 	bearer.visible_message(span_danger("[bearer] drives both fists into the floor!"), span_danger("You drive both fists into the floor!"), vision_distance = DEFAULT_MESSAGE_RANGE)
 	playsound(where, 'sound/effects/meteorimpact.ogg', full ? 80 : 50, TRUE, full ? 8 : 2)
 	gorilla_pound_impact_fx(where, full ? 1.5 : 1, full)
