@@ -306,6 +306,8 @@
 	)
 	/// The held body's offsets at rest in the hold, list(pixel_x, pixel_y, pixel_z): the fists move it about from there
 	var/list/held_at
+	/// Where the held head is as the fists meet on it, list(x, y) in pixels from the middle of its tile: what comes out of it starts there
+	var/list/burst_at
 
 /datum/hv_finisher_stage/hold/gorilla/clap_hoist
 	key = "hoist"
@@ -554,6 +556,8 @@
 			var/list/shift = within_reach(0, GORILLA_CLAP_HEAVE + GORILLA_CLAP_TOSS_LIFT - GORILLA_CLAP_SLAM, -1, width, height)
 			fists_to(fists_on_head(-1, width, height, shift[1], shift[2]), 0.08 SECONDS)
 			move_held(list(shift), list(0.08 SECONDS), SINE_EASING | EASE_IN)
+			if(held_at)
+				burst_at = list(held_at[1] + shift[1], held_at[2] + held_at[3] + shift[2] + CHROME_RIG_NECK_PIVOT_Y + CLAP_HEAD_RISE * height)
 			var/obj/effect/abstract/chrome_puppet/head = victim_rig?.puppet("head")
 			if(head)
 				animate(head, transform = chrome_rig_turn(0, 0, CHROME_RIG_NECK_PIVOT_Y, 0, 0, width, height), time = 0.08 SECONDS, easing = SINE_EASING | EASE_IN)
@@ -567,7 +571,7 @@
 		return
 	playsound(victim, 'sound/effects/wounds/crack2.ogg', 80, TRUE)
 	// Blood and pieces go on out ahead of him
-	var/outcome = gorilla_head_clap(victim, user, fist(), facing)
+	var/outcome = gorilla_head_clap(victim, user, fist(), facing, burst_at)
 	drop_held_body(outcome == "burst")
 
 /**
@@ -621,10 +625,11 @@
 
 /**
  * Both fists meet on [victim]'s head. Bursts it (#509), or on a helmet or plating crumples the helmet and
- * caves the skull in, or on the Atlas frame does heavy damage and nothing breaks. Returns what happened:
- * "burst", "helmet", "frame" or "crit".
+ * caves the skull in, or on the Atlas frame does heavy damage and nothing breaks. [head_at] is where a held
+ * head is drawn (list(x, y), pixels from the middle of its tile), for gorilla_clap_burst(). Returns what
+ * happened: "burst", "helmet", "frame" or "crit".
  */
-/proc/gorilla_head_clap(mob/living/carbon/victim, mob/living/user, obj/item/fist, direction)
+/proc/gorilla_head_clap(mob/living/carbon/victim, mob/living/user, obj/item/fist, direction, list/head_at)
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	if(isnull(head))
 		return null
@@ -657,7 +662,7 @@
 		victim.apply_damage(30, BRUTE, head, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND)
 		if(QDELETED(victim) || isnull(victim.get_bodypart(BODY_ZONE_HEAD)))
 			. = "burst"
-		else if(!gorilla_clap_burst(victim, direction))
+		else if(!gorilla_clap_burst(victim, direction, head_at))
 			// A head that can't come off: the skull caves in instead
 			if(hv_crit_apply_wound(head, /datum/wound/blunt/bone/critical/hv_skull, direction, fist))
 				victim.hv_add_hit_line("[victim]'s skull caves in!", HV_LINE_HUGE, "Your skull caves in!", DEFAULT_MESSAGE_RANGE)
@@ -670,10 +675,11 @@
 /**
  * #509's head burst (hv_burst_head_apart()) sized for two fists at arm's length: the gibs and splatter
  * stay round the head, one short line of blood goes out along [burst_dir], the eyes, ears and tongue
- * drop on the spot or a tile out and the brain lands a tile or two away, whole, for revival.
- * Returns TRUE if the head burst.
+ * drop on the spot or a tile out and the brain lands a tile or two away, whole, for revival. They leave
+ * from [head_at] (list(x, y), pixels from the middle of the tile), where the head is held, or from where
+ * the body's own head is drawn if that isn't given. Returns TRUE if the head burst.
  */
-/proc/gorilla_clap_burst(mob/living/carbon/victim, burst_dir)
+/proc/gorilla_clap_burst(mob/living/carbon/victim, burst_dir, list/head_at)
 	if(HAS_TRAIT(victim, TRAIT_GODMODE))
 		return FALSE
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
@@ -686,6 +692,9 @@
 	var/bleeds = head.can_bleed()
 	var/list/blood_dna = bleeds ? victim.get_blood_dna_list() : null
 	var/blood_color = bleeds ? victim.get_bloodtype()?.get_color() : null
+	// Read before the head comes off
+	if(!head_at)
+		head_at = victim.hv_vis_part_offset(BODY_ZONE_HEAD)
 	var/list/obj/item/organ/loose = list()
 	for(var/obj/item/organ/organ in head)
 		if(!(organ.organ_flags & ORGAN_UNREMOVABLE))
@@ -713,11 +722,15 @@
 	for(var/obj/item/organ/organ as anything in loose)
 		if(QDELETED(organ) || !isturf(organ.loc))
 			continue
+		// Flown, not thrown (hv_fling()): nobody is hit by it, the bearer least of all. It starts at the head.
 		if(istype(organ, /obj/item/organ/brain))
 			var/datum/callback/landed = blood_dna ? CALLBACK(organ, TYPE_PROC_REF(/obj/item/organ, hv_landed), blood_dna) : null
+			organ.hv_vis_fling_from = head_at
 			hv_fling_organ(organ, burst_dir, GORILLA_CLAP_BRAIN_MIN, GORILLA_CLAP_BRAIN_MAX, landed)
 		else if(prob(50))
+			organ.hv_vis_fling_from = head_at
 			hv_fling_organ(organ, turn(burst_dir, pick(-45, 0, 45)), 1, 1)
+		organ.hv_vis_forget_fling()
 	victim.hv_add_hit_line(pick("[victim]'s head bursts apart!", "[victim]'s skull bursts open!"), HV_LINE_HUGE, range = DEFAULT_MESSAGE_RANGE)
 	return TRUE
 
