@@ -14,11 +14,14 @@
  * lighting so they read in the dark. Fills round to the nearest row; drains round up, so the last row
  * stays lit until the time really runs out.
  *
- * Cost: the meter is built only while a living player is within STEALTH_METER_RANGE of a conscious guard,
- * updated by the guard's 1 s scan and its state changes, and changes an icon_state only when the step
- * changes. A drain steps on a timer at each row change (at most STEALTH_METER_ROWS per drain); animate()
- * is not used, because a chained icon_state animation can't snap back when the target is seen again.
- * Dormant guards don't scan, so they build nothing.
+ * Cost: the meter is built only while a living player is within STEALTH_METER_RANGE of a guard whose scan
+ * is running (or an admin is watching its sight), updated by the guard's 1 s scan and its state changes,
+ * and changes an icon_state only when the step changes. A drain steps on a timer at each row change (at
+ * most STEALTH_METER_ROWS per drain); animate() is not used, because a chained icon_state animation can't
+ * snap back when the target is seen again.
+ *
+ * The mark lives only while the scan that feeds it runs. A guard that is cuffed, held, stunned, down, asleep
+ * with its level, or driven by a player has no mark, so none is ever left stale over its head.
  */
 /datum/stealth_meter
 	/// The guard's controller, which owns this meter
@@ -28,7 +31,7 @@
 	var/obj/effect/abstract/stealth_mark/mark
 	/// icon_state of the public mark, or null
 	var/public_state
-	/// REF(player) => list(image, client it was given to)
+	/// REF(player), or "watch:ckey" for an admin watching its sight => list(image, client it was given to)
 	var/list/private_marks = list()
 	/// Timer for the next drain step
 	var/drain_timer
@@ -80,40 +83,58 @@
 		guard.vis_contents += mark
 	mark.icon_state = new_state
 
-/// Gives each nearby player their own "?" for their notice entry, and takes away the rest.
+/// Gives each nearby player their own "?" for their notice entry, and takes away the rest. An admin watching
+/// the guard's sight gets the fullest one, whoever it is for.
 /datum/stealth_meter/proc/update_private(list/notice)
+	// key => list(icon_state, client to show it to)
 	var/list/wanted = list()
 	var/turf/here = get_turf(guard)
 	if(length(notice) && here)
+		var/top_state
+		var/top_notice = 0
 		for(var/key in notice)
 			var/list/entry = notice[key]
 			var/state = stealth_meter_notice_state(entry[STEALTH_ENTRY_NOTICE])
 			if(isnull(state))
 				continue
+			if(entry[STEALTH_ENTRY_NOTICE] > top_notice)
+				top_notice = entry[STEALTH_ENTRY_NOTICE]
+				top_state = state
 			var/mob/viewer = locate(key)
-			if(!ismob(viewer) || isnull(viewer.client) || viewer.z != here.z || get_dist(viewer, here) > STEALTH_METER_RANGE)
+			if(!ismob(viewer) || isnull(viewer.client))
 				continue
-			wanted[key] = state
+			// By its turf: someone hiding in a box has no z of their own.
+			var/turf/viewer_turf = get_turf(viewer)
+			if(viewer_turf?.z != here.z || get_dist(viewer_turf, here) > STEALTH_METER_RANGE)
+				continue
+			wanted[key] = list(state, viewer.client)
+		if(top_state)
+			for(var/datum/stealth_sight_overlay/overlay as anything in controller.watchers)
+				var/client/admin = overlay.user_ref?.resolve()
+				if(isnull(admin) || wanted[REF(admin.mob)])
+					continue
+				wanted["watch:[admin.ckey]"] = list(top_state, admin)
 	for(var/key in private_marks.Copy())
 		var/list/held = private_marks[key]
-		var/mob/viewer = locate(key)
-		if(!wanted[key] || !ismob(viewer) || viewer.client != held[2])
+		var/list/want = wanted[key]
+		if(isnull(want) || want[2] != held[2])
 			remove_private(key)
 	for(var/key in wanted)
+		var/list/want = wanted[key]
 		var/list/held = private_marks[key]
 		if(held)
 			var/image/shown = held[1]
-			if(shown.icon_state != wanted[key])
-				shown.icon_state = wanted[key]
+			if(shown.icon_state != want[1])
+				shown.icon_state = want[1]
 			continue
-		var/mob/viewer = locate(key)
-		var/image/shown = image('voidcrew/icons/effects/stealth_meter.dmi', guard, wanted[key])
+		var/client/viewer = want[2]
+		var/image/shown = image('voidcrew/icons/effects/stealth_meter.dmi', guard, want[1])
 		shown.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART
 		shown.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		SET_PLANE_EXPLICIT(shown, ABOVE_LIGHTING_PLANE, guard)
 		shown.pixel_z = stealth_meter_offset(guard)
-		viewer.client.images += shown
-		private_marks[key] = list(shown, viewer.client)
+		viewer.images += shown
+		private_marks[key] = list(shown, viewer)
 
 /datum/stealth_meter/proc/remove_private(key)
 	var/list/held = private_marks[key]
@@ -163,10 +184,11 @@
 	/// The mark over its head while anyone is near to see it (stealth_meter.dm)
 	var/datum/stealth_meter/meter
 
-/// Builds, updates or drops the mark. Nothing while it isn't conscious or nobody living is near.
+/// Builds, updates or drops the mark. Nothing while its scan isn't running (stealth_scanning()), or with no
+/// living player near and no admin watching its sight.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_meter_update()
 	var/mob/living/guard = pawn
-	if(QDELETED(guard) || guard.stat != CONSCIOUS || !stealth_meter_viewers_near(guard))
+	if(!stealth_scanning() || (!length(watchers) && !stealth_meter_viewers_near(guard)))
 		QDEL_NULL(meter)
 		return
 	if(isnull(meter))

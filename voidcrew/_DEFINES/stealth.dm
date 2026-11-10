@@ -17,14 +17,10 @@
 #define BB_STEALTH_WARY "stealth_wary"
 /// The candidate with the highest notice
 #define BB_STEALTH_FOCUS "stealth_focus"
-/// Where it last saw (or was hit from) whoever it is after
-#define BB_STEALTH_LAST_SEEN_TURF "stealth_last_seen_turf"
-/// world.time of that sighting
+/// world.time it last saw (or was hit from) whoever it is after; the turf is the controller's last_seen_turf
 #define BB_STEALTH_LAST_SEEN_AT "stealth_last_seen_at"
 /// REFs of fallen group members it has already reacted to
 #define BB_STEALTH_BODIES_SEEN "stealth_bodies_seen"
-/// Its claimed stop, or the sentry's post
-#define BB_STEALTH_HOME_TURF "stealth_home_turf"
 
 // Notice entry fields (the controller's notice_map)
 #define STEALTH_ENTRY_NOTICE 1
@@ -64,6 +60,8 @@
 #define STEALTH_NOTICE_MIN_FALLOFF 0.25
 #define STEALTH_SUSPICIOUS_AT 1.0
 #define STEALTH_ALERT_AT 2.5
+/// Notice never climbs past this, so nobody banks a lead that hides someone else
+#define STEALTH_NOTICE_MAX STEALTH_ALERT_AT
 #define STEALTH_NOTICE_DECAY 0.34
 #define STEALTH_NOTICE_FORGET (20 SECONDS)
 #define STEALTH_BEHIND_RATE 0.4
@@ -100,6 +98,21 @@
 #define STEALTH_PATROL_SKIP_TIME (2 MINUTES)
 #define STEALTH_PATROL_MAX_PATH 60
 #define STEALTH_LEASH_RANGE 24
+/// Tiles a single walk covers; a destination further off is walked in legs
+#define STEALTH_WALK_LEG 40
+/// A sentry that can't get back to its post tries again this often
+#define STEALTH_HOME_RETRY_TIME (30 SECONDS)
+/// Alert: someone else must be this many tiles nearer than its target before it turns on them
+#define STEALTH_SWITCH_MARGIN 2
+/// Alert: the shortest time between two changes of target
+#define STEALTH_SWITCH_COOLDOWN (4 SECONDS)
+/// Health lost within STEALTH_HARM_WINDOW, with nobody to blame, that sends it looking
+#define STEALTH_HARM_HEALTH 10
+#define STEALTH_HARM_WINDOW (10 SECONDS)
+/// The shortest time between two reactions to harm nobody can be blamed for
+#define STEALTH_HARM_COOLDOWN (10 SECONDS)
+/// How far its group hears it being blown up, burned, gassed or stunned
+#define STEALTH_HARM_ALERT_RANGE 9
 #define STEALTH_ADMIN_OVERLAY_TIME (5 MINUTES)
 /// Seconds of search between "Come on out." lines
 #define STEALTH_SEARCH_BARK_INTERVAL (12 SECONDS)

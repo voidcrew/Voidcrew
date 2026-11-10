@@ -1,3 +1,23 @@
+/// Signals that mean someone has their hands on it: each names them first.
+#define STEALTH_HANDLED_SIGNALS list(\
+	COMSIG_CARBON_HELP_ACT,\
+	COMSIG_CARBON_CUFF_ATTEMPTED,\
+	COMSIG_LIVING_TRY_SYRINGE_INJECT,\
+	COMSIG_LIVING_TRY_SYRINGE_WITHDRAW,\
+	COMSIG_BEING_STRIPPED,\
+	COMSIG_ATOM_ITEM_INTERACTION,\
+	COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,\
+)
+/// tg's signals for a stun, knockdown or sleep about to land: each carries its length first.
+#define STEALTH_STUN_SIGNALS list(\
+	COMSIG_LIVING_STATUS_STUN,\
+	COMSIG_LIVING_STATUS_KNOCKDOWN,\
+	COMSIG_LIVING_STATUS_IMMOBILIZE,\
+	COMSIG_LIVING_STATUS_PARALYZE,\
+	COMSIG_LIVING_STATUS_UNCONSCIOUS,\
+	COMSIG_LIVING_STATUS_SLEEP,\
+)
+
 /**
  * # Stealth guards: awareness
  *
@@ -11,8 +31,11 @@
  * - Suspicious: saw something. Turns to it, says so, stares a moment, walks over and looks around, then
  *   gives up and goes back to its route.
  * - Alert: has a target and fights as every human NPC does. It keeps the target all round with tg's
- *   can_attack() (no cone, no darkness); out of sight for STEALTH_LOSE_TARGET_TIME, it searches.
- * - Searching: runs to where it last saw someone and sweeps the spots round it, then gives up.
+ *   can_attack() (no cone, no darkness); out of sight for STEALTH_LOSE_TARGET_TIME, it searches. It still
+ *   notices others, and turns on someone clearly nearer or on anyone who hits it, at most once per
+ *   STEALTH_SWITCH_COOLDOWN (decision 29).
+ * - Searching: runs to where it last saw someone and sweeps the spots round it, then gives up. A glimpse
+ *   of anyone within STEALTH_ALERT_MAX_RANGE while it searches is an alert at once.
  *
  * Wary (BB_STEALTH_WARY) is set by any alert, search, hit or surrender: a wider cone and quicker notice
  * (abuse review P4). It fades after STEALTH_WARY_TIME with nothing new: every notice gain, hit, touch and
@@ -22,10 +45,16 @@
  * round where it stands for STEALTH_CALM_LOOK_TIME, then back to its route (decision 23).
  *
  * Every attack or touch gets a reaction, even from out of sight (P3): alert on the attacker if it can see
- * them, otherwise a search at their turf. Detection is a once-a-second scan owned by this controller, never
- * tg's movement-triggered target field (P1). Nothing here runs while the AI is off (no player on the
- * level); timers are world.time stamps, so a guard that wakes after its search ran out steps straight
- * back to unaware and stays wary (T1).
+ * them, otherwise a search at their turf. Harm that names nobody (a blast, fire, gas, a flashbang) sends
+ * it and the friends near it searching where it happened. Detection is a once-a-second scan owned by this
+ * controller, never tg's movement-triggered target field (P1).
+ *
+ * The AI runs while any living player is on its level (can_idle is off: tg's idle mode starved its walks).
+ * With no player on the level tg switches it off and nothing here runs; timers are world.time stamps, so a
+ * guard that wakes after its search ran out steps straight back to unaware and stays wary (T1).
+ *
+ * A player in the body (an admin driving it) gets none of this: no reactions, no forced run, no marks. The
+ * guard picks up again, unaware, when they leave.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth
 	blackboard = list(
@@ -40,12 +69,16 @@
 	// The patrol subtree decides what an unaware guard does; no random walk.
 	idle_behavior = null
 	ai_movement = /datum/ai_movement/jps/stealth
+	// tg drops every action, on each step, while the walk's end is further off than this. Its 14 is shorter
+	// than a patrol leg or a walk home. The alert chase never leaned on it: stealth_keep_target() ends a chase.
+	max_target_distance = STEALTH_PATROL_MAX_PATH
+	can_idle = FALSE
 	planning_subtrees = list(
+		/datum/ai_planning_subtree/stealth_perception,
 		/datum/ai_planning_subtree/human_npc_soft_crit,
 		/datum/ai_planning_subtree/escape_captivity,
 		/datum/ai_planning_subtree/human_npc_walk_out,
 		/datum/ai_planning_subtree/human_npc_surrender,
-		/datum/ai_planning_subtree/stealth_perception,
 		/datum/ai_planning_subtree/stealth_react,
 		/datum/ai_planning_subtree/human_npc_arm,
 		/datum/ai_planning_subtree/human_npc_shoot,
@@ -64,6 +97,11 @@
 	var/route_step = 1
 	/// The way a sentry faces at its post
 	var/sentry_dir = SOUTH
+	/// The stop it last reached, or the sentry's post. Investigations and searches stay within
+	/// STEALTH_LEASH_RANGE of it. A var, not a blackboard key: the blackboard drops a turf when it changes.
+	var/turf/home_turf
+	/// world.time a sentry next tries to walk back to a post it couldn't reach
+	var/home_retry_at = 0
 	/// Stop index => failed tries to reach it
 	var/list/stop_fails = list()
 	/// Stop index => world.time it may be tried again
@@ -72,11 +110,13 @@
 	var/wait_until = 0
 	/// Whether it has done its arrival at the current stop
 	var/at_stop = FALSE
-	/// Where its current stealth walk goes
+	/// Where its current stealth walk ends
+	var/turf/goto_dest
+	/// The turf it is walking to now: goto_dest, an open tile beside it, or the end of one leg of a long walk
 	var/turf/goto_turf
 	/// What that walk is for (STEALTH_GOTO_*)
 	var/goto_purpose
-	/// "arrived" or "failed" once the walk is over, else null
+	/// "arrived" or "failed" once the walk to goto_dest is over, else null
 	var/goto_result
 	/// Set while it drops its own walk, so a dropped walk doesn't count as a failure
 	var/dropping_walk = FALSE
@@ -94,8 +134,10 @@
 	var/turf/investigate_turf
 	/// Suspicious: whether it has walked over and looked
 	var/investigated = FALSE
-	/// world.time of the last notice gain on its focus (suspicion holds STEALTH_SUSPICIOUS_TIMEOUT after it)
+	/// world.time of the last notice gain it saw (suspicion holds STEALTH_SUSPICIOUS_TIMEOUT after it)
 	var/last_gain = 0
+	/// Where it last saw (or was hit from) whoever it is after
+	var/turf/last_seen_turf
 	/// Searching: the spot it searches round
 	var/turf/search_center
 	/// Searching: the spots still to check
@@ -106,6 +148,10 @@
 	var/next_search_bark = 0
 	/// Alert: world.time it first failed to see its target in this stretch, or 0
 	var/lost_since = 0
+	/// Alert: world.time it may next change target
+	var/next_switch_at = 0
+	/// world.time of its next scan
+	var/next_scan = 0
 	/// world.time of its next look for fallen friends
 	var/next_body_scan = 0
 	/// Bark kind => world.time it may say that kind again
@@ -117,10 +163,25 @@
 	/// REF(mob) => list(notice, turf last scan, world.time last perceived). Not a blackboard key: the
 	/// blackboard's qdel sweep indexes every nested list by its values, and these hold plain numbers.
 	var/list/notice_map
+	/// REF(mob) => the turf the box, locker or bag it hides in stood on at the last scan (only those close by)
+	var/list/hidden_spots
 	/// world.time wary was last set or refreshed
 	var/wary_at = 0
 	/// Searching after putting its target down: world.time it calms down, or 0
 	var/calm_until = 0
+	/// world.time someone last touched or hit it: harm at about that time is theirs, not a mystery
+	var/explained_at = 0
+	/// Whether harm with nobody named is waiting to be judged
+	var/harm_pending = FALSE
+	/// How long before that harm a touch still explains it
+	var/harm_window = 0
+	/// Where it stood when that harm landed
+	var/turf/harm_turf
+	/// world.time it may next react to harm with nobody named
+	var/next_harm_at = 0
+	/// Its health when it last had nothing to explain, and when that was
+	var/health_mark
+	var/health_mark_at = 0
 
 /datum/ai_controller/basic_controller/human_npc/stealth/TryPossessPawn(atom/new_pawn)
 	. = ..()
@@ -131,8 +192,11 @@
 	blackboard[BB_STEALTH_STATE_SINCE] = world.time
 	RegisterSignal(new_pawn, COMSIG_LIVING_GET_PULLED, PROC_REF(on_pulled))
 	RegisterSignal(new_pawn, COMSIG_ATOM_BUMPED, PROC_REF(on_bumped))
-	RegisterSignal(new_pawn, COMSIG_CARBON_HELP_ACT, PROC_REF(on_helped))
+	RegisterSignals(new_pawn, STEALTH_HANDLED_SIGNALS, PROC_REF(on_handled))
+	RegisterSignal(new_pawn, COMSIG_ATOM_PREHITBY, PROC_REF(on_prehitby))
 	RegisterSignal(new_pawn, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_projectile_prehit))
+	RegisterSignals(new_pawn, list(COMSIG_ATOM_EX_ACT, COMSIG_LIVING_IGNITED, COMSIG_MOB_FLASHED), PROC_REF(on_harmed))
+	RegisterSignals(new_pawn, STEALTH_STUN_SIGNALS, PROC_REF(on_stunned))
 	RegisterSignal(new_pawn, COMSIG_LIVING_STATUS_REMOVED, PROC_REF(on_status_removed))
 	RegisterSignal(new_pawn, COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET), PROC_REF(on_target_set))
 
@@ -141,27 +205,81 @@
 		UnregisterSignal(pawn, list(
 			COMSIG_LIVING_GET_PULLED,
 			COMSIG_ATOM_BUMPED,
-			COMSIG_CARBON_HELP_ACT,
+			COMSIG_ATOM_PREHITBY,
 			COMSIG_PROJECTILE_PREHIT,
+			COMSIG_ATOM_EX_ACT,
+			COMSIG_LIVING_IGNITED,
+			COMSIG_MOB_FLASHED,
 			COMSIG_LIVING_STATUS_REMOVED,
 			COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET),
-		))
+		) + STEALTH_HANDLED_SIGNALS + STEALTH_STUN_SIGNALS)
 	group?.remove_member(pawn)
 	group = null
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers?.Copy())
 		qdel(overlay)
 	watchers = null
 	QDEL_NULL(meter)
+	home_turf = null
+	last_seen_turf = null
+	harm_turf = null
 	goto_turf = null
+	goto_dest = null
 	investigate_turf = null
 	search_center = null
 	search_queue = null
+	hidden_spots = null
 	return ..()
+
+// With the AI off (nobody on the level, stunned, in crit, a player in the body) nothing scans, so no mark.
+/datum/ai_controller/basic_controller/human_npc/stealth/set_ai_status(new_ai_status, additional_flags = NONE)
+	. = ..()
+	if(ai_status == AI_STATUS_OFF)
+		QDEL_NULL(meter)
+
+/datum/ai_controller/basic_controller/human_npc/stealth/on_sentience_gained()
+	. = ..()
+	QDEL_NULL(meter)
+
+// The player has left the body: it is a guard again, with nothing on its mind.
+/datum/ai_controller/basic_controller/human_npc/stealth/on_sentience_lost()
+	. = ..()
+	addtimer(CALLBACK(src, PROC_REF(stealth_take_back)), 1)
+
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_take_back()
+	var/mob/living/guard = pawn
+	if(QDELETED(guard) || guard.client)
+		return
+	clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	if(stealth_ready && guard.stat != DEAD)
+		stealth_go_unaware()
+	reset_ai_status()
 
 // ===== State =====
 
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_state()
 	return blackboard[BB_STEALTH_STATE]
+
+/// Whether a player is in the body. Nothing here reacts, moves or marks it then.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_driven()
+	var/mob/living/guard = pawn
+	return !isnull(guard?.client)
+
+/// Cuffed, held hard, strapped to something or shut in something: tg's escape_captivity has it and it doesn't scan.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_captive()
+	var/mob/living/guard = pawn
+	if(!isturf(guard.loc) || HAS_TRAIT(guard, TRAIT_RESTRAINED))
+		return TRUE
+	if(guard.buckled && !ismob(guard.buckled))
+		return TRUE
+	var/mob/living/holder = guard.pulledby
+	return istype(holder) && holder.grab_state > GRAB_PASSIVE
+
+/// Whether its scan is running. Its head mark shows only then, so a mark never outlives the scan that feeds it.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_scanning()
+	var/mob/living/guard = pawn
+	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client || ai_status == AI_STATUS_OFF)
+		return FALSE
+	return !stealth_captive()
 
 /// Changes state, stamping the time, and drops whatever walk it was on.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_set_state(new_state)
@@ -176,8 +294,8 @@
 	if(new_state == STEALTH_ALERT || new_state == STEALTH_SEARCHING)
 		stealth_set_wary()
 	stealth_drop_walk()
-	var/run = (new_state == STEALTH_ALERT || new_state == STEALTH_SEARCHING)
-	stealth_set_pace(run)
+	if(!stealth_driven())
+		stealth_set_pace(new_state == STEALTH_ALERT || new_state == STEALTH_SEARCHING)
 	human_npc_set_ai_movement(src, new_state == STEALTH_ALERT ? /datum/ai_movement/basic_avoidance : /datum/ai_movement/jps/stealth)
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
@@ -210,27 +328,43 @@
 	if(run != (body.move_intent == MOVE_INTENT_RUN))
 		body.toggle_move_intent()
 
-/// Ends its own stealth walk, if it has one, without counting it as a failed path.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_drop_walk()
-	var/datum/ai_behavior/walk = GET_AI_BEHAVIOR(/datum/ai_behavior/stealth_goto)
-	if(walk && current_behaviors[walk])
-		dropping_walk = TRUE
-		fail_behavior(walk)
-		dropping_walk = FALSE
-	goto_turf = null
-	goto_result = null
+/// The way `guard` faces, as one of the four ways its sprite can show (a walk can leave it on a diagonal).
+/proc/stealth_facing(atom/guard)
+	var/facing = guard.dir
+	if(facing & (facing - 1))
+		return facing & (EAST | WEST)
+	return facing
+
+/// The way from `origin` to `goal`, as one of the four ways a sprite can face: along the longer side.
+/proc/stealth_dir_to(atom/origin, atom/goal)
+	var/turf/start = get_turf(origin)
+	var/turf/end = get_turf(goal)
+	var/dx = end.x - start.x
+	var/dy = end.y - start.y
+	if(abs(dx) >= abs(dy))
+		return dx >= 0 ? EAST : WEST
+	return dy > 0 ? NORTH : SOUTH
+
+/// The nearest open tile to `spot` within `reach` tiles (`spot` itself if it is open), or null.
+/proc/stealth_open_near(turf/spot, reach = 2)
+	if(isnull(spot))
+		return null
+	if(isopenturf(spot) && !spot.is_blocked_turf(exclude_mobs = TRUE))
+		return spot
+	for(var/ring in 1 to reach)
+		for(var/turf/open/near in RANGE_TURFS(ring, spot))
+			if(get_dist(near, spot) == ring && !near.is_blocked_turf(exclude_mobs = TRUE))
+				return near
+	return null
 
 /// `where` pulled back to within STEALTH_LEASH_RANGE of home (abuse R3). Null if nowhere sensible.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_leash(turf/where)
-	var/turf/home = blackboard[BB_STEALTH_HOME_TURF]
+	var/turf/home = home_turf
 	if(isnull(where) || isnull(home) || where.z != home.z)
 		return where
 	if(get_dist(home, where) <= STEALTH_LEASH_RANGE)
 		return where
-	var/turf/clamped = get_ranged_target_turf_direct(home, where, STEALTH_LEASH_RANGE)
-	if(isnull(clamped) || clamped.is_blocked_turf(exclude_mobs = TRUE))
-		return null
-	return clamped
+	return stealth_open_near(get_ranged_target_turf_direct(home, where, STEALTH_LEASH_RANGE))
 
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_unaware()
 	var/list/notice = notice_map
@@ -242,18 +376,23 @@
 
 /// Suspicious of something at `where`. `purpose` is STEALTH_GOTO_INVESTIGATE or STEALTH_GOTO_BODY.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_suspicious(turf/where, purpose = STEALTH_GOTO_INVESTIGATE)
-	var/mob/living/body = pawn
 	stealth_set_state(STEALTH_SUSPICIOUS)
 	goto_purpose = purpose
-	investigate_turf = stealth_leash(where)
 	investigated = FALSE
 	last_gain = world.time
-	set_blackboard_key(BB_STEALTH_LAST_SEEN_TURF, where)
+	stealth_aim_at(where)
+	stealth_bark(purpose == STEALTH_GOTO_BODY ? STEALTH_BARK_BODY : STEALTH_BARK_SUSPICIOUS)
+
+/// Suspicious: turns to `where` and makes it the place to walk over to.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_aim_at(turf/where)
+	var/mob/living/body = pawn
+	investigate_turf = stealth_leash(where)
+	last_seen_turf = where
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 	if(where && get_turf(body) != where)
-		stand_dir = get_dir(body, where)
+		// Never a diagonal: the sprite can't show one, and the cone would point where the guard doesn't look.
+		stand_dir = stealth_dir_to(body, where)
 		body.setDir(stand_dir)
-	stealth_bark(purpose == STEALTH_GOTO_BODY ? STEALTH_BARK_BODY : STEALTH_BARK_SUSPICIOUS)
 
 /// Searching round `where`.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_searching(turf/where)
@@ -265,20 +404,44 @@
 	search_queue = stealth_search_spots(search_center)
 	search_looking = FALSE
 	next_search_bark = world.time + STEALTH_SEARCH_BARK_INTERVAL
-	set_blackboard_key(BB_STEALTH_LAST_SEEN_TURF, where)
+	last_seen_turf = where
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 
-/// Alert on `target` (a mob, or the mech or vehicle someone sits in).
+/// Alert on `target` (a mob, or the mech someone sits in).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_alert(atom/target)
 	if(QDELETED(target))
 		return
 	if(stealth_state() != STEALTH_ALERT)
 		stealth_set_state(STEALTH_ALERT)
 	stealth_set_wary()
+	lost_since = 0
 	set_blackboard_key(BB_STEALTH_FOCUS, target)
-	set_blackboard_key(BB_STEALTH_LAST_SEEN_TURF, get_turf(target))
+	last_seen_turf = get_turf(target)
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 	set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+
+/// Alert: turns from its target to `new_target`, and remembers the old one for when this fight ends.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_switch_target(atom/new_target)
+	var/atom/old_target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/mob/living/old_mob = ismecha(old_target) ? bounty_ai_pilot_of(old_target) : old_target
+	if(isliving(old_mob) && !QDELETED(old_mob))
+		stealth_remember(old_mob)
+	next_switch_at = world.time + STEALTH_SWITCH_COOLDOWN
+	// What it was doing was aimed at the old one.
+	CancelActions()
+	stealth_go_alert(new_target)
+
+/// Notes `who` as someone it knows is there and hostile, at alert-level notice.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_remember(mob/living/who)
+	var/list/notice = notice_map
+	var/key = REF(who)
+	var/list/entry = notice[key]
+	if(isnull(entry))
+		entry = list(0, null, 0)
+		notice[key] = entry
+	entry[STEALTH_ENTRY_NOTICE] = max(entry[STEALTH_ENTRY_NOTICE], STEALTH_ALERT_AT)
+	entry[STEALTH_ENTRY_TURF] = get_turf(who)
+	entry[STEALTH_ENTRY_SEEN_AT] = world.time
 
 /// The spots a search checks: the centre first, then a few open tiles round it in its line of sight.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_search_spots(turf/center)
@@ -288,10 +451,13 @@
 	. += center
 	var/list/pool = list()
 	var/datum/region = map_region_for_turf(center)
+	var/turf/home = home_turf
+	// No spot further from home than the leash, or than the centre if that is already past it.
+	var/reach = (home && home.z == center.z) ? max(STEALTH_LEASH_RANGE, get_dist(home, center)) : INFINITY
 	for(var/turf/open/spot in RANGE_TURFS(STEALTH_SEARCH_RADIUS, center))
 		if(spot == center || spot.is_blocked_turf(exclude_mobs = TRUE))
 			continue
-		if(map_region_excludes_turf(region, spot) || !stealth_leash(spot))
+		if(map_region_excludes_turf(region, spot) || (home && get_dist(home, spot) > reach))
 			continue
 		pool += spot
 	var/picked = 0
@@ -305,12 +471,14 @@
 /// Says a stealth line, at most once per STEALTH_BARK_KIND_COOLDOWN for each kind (abuse P14).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_bark(kind)
 	var/mob/living/carbon/human/npc/body = pawn
-	if(!ishumannpc(body) || body.stat != CONSCIOUS)
+	if(!ishumannpc(body) || body.stat != CONSCIOUS || body.client)
 		return FALSE
 	if(world.time < bark_ready_at[kind])
 		return FALSE
+	if(!body.npc_bark(kind, force = TRUE))
+		return FALSE
 	bark_ready_at[kind] = world.time + STEALTH_BARK_KIND_COOLDOWN
-	return body.npc_bark(kind, force = TRUE)
+	return TRUE
 
 /// Moves every awareness timestamp back by `time`, as if that long had passed (unit tests, admin tools).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_rewind(time)
@@ -327,22 +495,34 @@
 		lost_since -= time
 	wait_until -= time
 	look_until -= time
+	next_scan -= time
 	next_body_scan -= time
+	next_switch_at -= time
+	next_harm_at -= time
+	home_retry_at -= time
+	health_mark_at -= time
+	if(explained_at)
+		explained_at -= time
 	for(var/kind in bark_ready_at)
 		bark_ready_at[kind] -= time
+	for(var/key in stop_skip_until)
+		stop_skip_until[key] -= time
 
 // ===== The scan =====
 
 /**
  * One scan: expires a suspicion or search whose time has run out (also how a guard catches up after
- * sleeping), keeps an alert guard's target, or looks for someone new and for fallen friends.
+ * sleeping), keeps an alert guard's target, and looks for someone new and for fallen friends.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_scan_once()
 	var/mob/living/carbon/human/guard = pawn
-	if(QDELETED(guard) || guard.stat != CONSCIOUS)
+	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client)
 		return
+	next_scan = world.time + STEALTH_SCAN_INTERVAL
 	stealth_setup()
 	stealth_update_wary()
+	stealth_uncover_eyes()
+	stealth_check_health()
 	var/state = stealth_state()
 	if(state == STEALTH_SEARCHING && calm_until)
 		if(world.time >= calm_until)
@@ -355,6 +535,9 @@
 		stealth_go_unaware()
 	if(stealth_state() == STEALTH_ALERT)
 		stealth_keep_target()
+		// Still fighting: it weighs everyone else. (Losing or downing its target has already looked round.)
+		if(stealth_state() == STEALTH_ALERT)
+			stealth_look()
 	else
 		stealth_look()
 		if(stealth_state() != STEALTH_ALERT && world.time >= next_body_scan)
@@ -376,13 +559,25 @@
 	var/mob/living/guard = pawn
 	return !guard.is_blind() && guard.body_position != LYING_DOWN
 
+/// Something over its eyes that blinds it (a blindfold someone put on it): with a hand free it pulls it off, as anyone would.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_uncover_eyes()
+	var/mob/living/carbon/human/guard = pawn
+	if(!ishuman(guard) || !guard.is_blind_from(EYES_COVERED) || HAS_TRAIT(guard, TRAIT_HANDS_BLOCKED))
+		return
+	for(var/obj/item/clothing/worn in list(guard.glasses, guard.wear_mask, guard.head))
+		if(worn.tint >= TINT_BLIND && guard.dropItemToGround(worn))
+			return
+
 /// How far it sees onto `tile` in its cone: shorter in the dark unless it sees in the dark.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_range_onto(turf/tile)
 	if(!HAS_TRAIT(pawn, TRAIT_NIGHT_VISION) && stealth_tile_is_dark(tile))
 		return STEALTH_DARK_SIGHT_RANGE
 	return STEALTH_SIGHT_RANGE
 
-/// Looks for someone new: raises notice on whoever it perceives, decays the rest, changes state.
+/**
+ * Looks for people: raises notice on whoever it perceives, decays the rest, changes state. Alert, it leaves
+ * its own target alone (stealth_keep_target() has it) and weighs everyone else as someone to turn on.
+ */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_look()
 	var/mob/living/carbon/human/guard = pawn
 	var/list/notice = notice_map
@@ -390,44 +585,76 @@
 	if(isnull(strategy) || !isturf(guard.loc))
 		return
 	var/state = stealth_state()
+	var/alert = state == STEALTH_ALERT
+	var/atom/target = alert ? blackboard[BB_BASIC_MOB_CURRENT_TARGET] : null
 	var/wary = blackboard[BB_STEALTH_WARY]
 	var/atom/focus = blackboard[BB_STEALTH_FOCUS]
 	var/eyes = stealth_eyes_open()
 	var/half_angle = stealth_half_angle()
 	var/scan_seconds = STEALTH_SCAN_INTERVAL / (1 SECONDS)
 	var/list/perceived = list()
+	var/list/was_hidden = hidden_spots
+	var/list/now_hidden
+	var/judged = 0
 	for(var/mob/living/candidate as anything in stealth_candidates(guard, HUMAN_NPC_SIGHT_RANGE))
-		// A mech or vehicle is never hidden: seen all round, no darkness, straight to alert (abuse P9).
-		var/atom/vehicle = stealth_vehicle_of(candidate)
-		if(vehicle)
-			if(strategy.can_attack(guard, vehicle, HUMAN_NPC_SIGHT_RANGE))
-				stealth_go_alert(vehicle)
-				return
-			continue
-		// In a locker, a crate or anything else: unseen.
-		if(!isturf(candidate.loc))
-			continue
+		// Only those it could perceive count toward the cap, so bystanders it can't see never crowd a player out.
+		if(judged >= STEALTH_MAX_CANDIDATES)
+			break
+		var/key = REF(candidate)
 		var/turf/where = candidate.loc
+		var/boxed = FALSE
+		if(!isturf(where))
+			var/atom/movable/shell = candidate.loc
+			// A mech is never hidden: seen all round, no darkness, straight to alert (abuse P9).
+			if(ismecha(shell))
+				if(shell == target || !strategy.can_attack(guard, shell, HUMAN_NPC_SIGHT_RANGE))
+					continue
+				judged++
+				if(!alert)
+					stealth_go_alert(shell)
+					return
+				stealth_remember(candidate)
+				perceived[key] = candidate
+				continue
+			shell = stealth_shell_of(candidate)
+			if(isnull(shell))
+				continue
+			where = shell.loc
+			// Any other vehicle is as plain as its driver would be on that tile. A box, a locker or a bag hides them.
+			boxed = !isvehicle(shell)
+		if(candidate == target)
+			continue
 		var/dist = get_dist(guard, where)
 		if(dist > STEALTH_SIGHT_RANGE)
 			continue
+		if(boxed)
+			// Hidden, unless the thing they hide in moves at its shoulder (decision 29).
+			if(dist > STEALTH_CLOSE_RANGE + 1)
+				continue
+			LAZYSET(now_hidden, key, where)
+			var/turf/stood = was_hidden?[key]
+			if(dist > STEALTH_CLOSE_RANGE || isnull(stood) || stood == where)
+				continue
 		if(!strategy.can_attack(guard, candidate, STEALTH_SIGHT_RANGE))
 			continue
+		judged++
 		var/rate = 0
-		if(eyes && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
+		var/felt = FALSE
+		if(boxed)
+			rate = STEALTH_NOTICE_RATE
+			felt = TRUE
+		else if(eyes && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
 			var/cap = stealth_range_onto(where)
 			if(dist <= cap)
 				rate = STEALTH_NOTICE_RATE * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < STEALTH_SIGHT_RANGE)
 					rate *= STEALTH_DARK_MULT
-		var/felt = FALSE
 		if(!rate && dist <= STEALTH_CLOSE_RANGE)
 			// At its shoulder: light doesn't matter (abuse P7).
 			rate = STEALTH_BEHIND_RATE
 			felt = TRUE
 		if(!rate)
 			continue
-		var/key = REF(candidate)
 		var/list/entry = notice[key]
 		if(isnull(entry))
 			entry = list(0, null, 0)
@@ -449,19 +676,32 @@
 		if(wary)
 			rate *= STEALTH_WARY_MULT
 			wary_at = world.time
-		entry[STEALTH_ENTRY_NOTICE] += rate * scan_seconds
+		entry[STEALTH_ENTRY_NOTICE] = min(entry[STEALTH_ENTRY_NOTICE] + rate * scan_seconds, STEALTH_NOTICE_MAX)
 		if(felt && running)
 			entry[STEALTH_ENTRY_NOTICE] = max(entry[STEALTH_ENTRY_NOTICE], STEALTH_SUSPICIOUS_AT)
-			guard.setDir(get_dir(guard, where))
+			if(!alert && where != guard.loc)
+				guard.setDir(stealth_dir_to(guard, where))
 		entry[STEALTH_ENTRY_TURF] = where
 		entry[STEALTH_ENTRY_SEEN_AT] = world.time
 		perceived[key] = candidate
+	hidden_spots = now_hidden
 	// Decay whoever it didn't perceive; forget anyone unseen for long enough.
 	var/best_key
 	var/best_notice = 0
+	var/seen_key
+	var/seen_notice = 0
+	// What it knows of its own target keeps while it fights them.
+	var/mob/living/target_mob = ismecha(target) ? bounty_ai_pilot_of(target) : target
+	var/target_key = isliving(target_mob) ? REF(target_mob) : null
 	for(var/key in notice)
 		var/list/entry = notice[key]
-		if(!perceived[key])
+		if(key == target_key)
+			continue
+		if(perceived[key])
+			if(entry[STEALTH_ENTRY_NOTICE] > seen_notice)
+				seen_notice = entry[STEALTH_ENTRY_NOTICE]
+				seen_key = key
+		else
 			entry[STEALTH_ENTRY_NOTICE] = max(0, entry[STEALTH_ENTRY_NOTICE] - STEALTH_NOTICE_DECAY * scan_seconds)
 			if(world.time - entry[STEALTH_ENTRY_SEEN_AT] > STEALTH_NOTICE_FORGET)
 				notice -= key
@@ -469,35 +709,89 @@
 		if(entry[STEALTH_ENTRY_NOTICE] > best_notice)
 			best_notice = entry[STEALTH_ENTRY_NOTICE]
 			best_key = key
-	if(isnull(best_key))
+	if(alert)
+		stealth_weigh_switch(perceived, strategy)
+		return
+	// Whoever it sees now decides what it does; a higher entry it can't see no longer speaks for them.
+	var/judged_key = seen_key || best_key
+	if(isnull(judged_key))
 		clear_blackboard_key(BB_STEALTH_FOCUS)
 		return
-	var/mob/living/best = perceived[best_key] || locate(best_key)
+	var/mob/living/best = perceived[judged_key] || locate(judged_key)
 	if(!isliving(best) || QDELETED(best))
-		notice -= best_key
+		notice -= judged_key
 		return
 	set_blackboard_key(BB_STEALTH_FOCUS, best)
-	var/list/best_entry = notice[best_key]
+	var/list/best_entry = notice[judged_key]
+	var/level = best_entry[STEALTH_ENTRY_NOTICE]
 	var/turf/best_turf = best_entry[STEALTH_ENTRY_TURF]
-	var/seen_now = !!perceived[best_key]
+	var/seen_now = !isnull(seen_key)
+	// No alert by sight from off-screen (abuse P8).
+	var/in_reach = get_dist(guard, best_turf) <= STEALTH_ALERT_MAX_RANGE
 	switch(state)
 		if(STEALTH_UNAWARE)
-			if(best_notice >= STEALTH_SUSPICIOUS_AT)
+			if(level >= STEALTH_SUSPICIOUS_AT)
 				stealth_go_suspicious(best_turf)
-		if(STEALTH_SUSPICIOUS, STEALTH_SEARCHING)
+		if(STEALTH_SUSPICIOUS)
 			if(!seen_now)
 				return
-			// No alert by sight from off-screen (abuse P8).
-			if(best_notice >= STEALTH_ALERT_AT && get_dist(guard, best_turf) <= STEALTH_ALERT_MAX_RANGE)
+			if(level >= STEALTH_ALERT_AT && in_reach)
 				stealth_go_alert(best)
 				return
-			if(state == STEALTH_SEARCHING)
-				if(best_notice >= STEALTH_SUSPICIOUS_AT)
-					stealth_go_suspicious(best_turf)
-				return
 			last_gain = world.time
-			set_blackboard_key(BB_STEALTH_LAST_SEEN_TURF, best_turf)
-			blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
+			// It looks at, and walks to, where they are now, not where it first saw them.
+			if(!investigated && level >= STEALTH_SUSPICIOUS_AT && last_seen_turf != best_turf)
+				stealth_aim_at(best_turf)
+			else
+				last_seen_turf = best_turf
+				blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
+		if(STEALTH_SEARCHING)
+			if(!seen_now || level < STEALTH_SUSPICIOUS_AT)
+				return
+			// It is primed: a glimpse is enough.
+			if(in_reach)
+				stealth_go_alert(best)
+				return
+			// Too far to be sure: the search moves to where it saw them.
+			var/turf/new_center = stealth_leash(best_turf)
+			if(calm_until || (new_center && get_dist(new_center, search_center) > 1))
+				stealth_go_searching(best_turf)
+
+/**
+ * Alert: whether to turn on someone else it has noticed. They must be at alert-level notice, in reach, and
+ * either clearly nearer than its target or in view while the target is not. Never more than once per
+ * STEALTH_SWITCH_COOLDOWN, so two people can't make it flap between them.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_weigh_switch(list/perceived, datum/targeting_strategy/strategy)
+	if(world.time < next_switch_at || !length(perceived))
+		return
+	var/mob/living/guard = pawn
+	var/list/notice = notice_map
+	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(QDELETED(target))
+		return
+	var/target_dist = get_dist(guard, target)
+	var/target_unseen = !!lost_since
+	var/atom/pick
+	var/pick_dist = INFINITY
+	for(var/key in perceived)
+		var/list/entry = notice[key]
+		if(isnull(entry) || entry[STEALTH_ENTRY_NOTICE] < STEALTH_ALERT_AT)
+			continue
+		var/atom/thing = bounty_ai_target_for(perceived[key])
+		if(thing == target)
+			continue
+		var/dist = get_dist(guard, thing)
+		if(dist > STEALTH_ALERT_MAX_RANGE || dist >= pick_dist)
+			continue
+		if(!target_unseen && dist + STEALTH_SWITCH_MARGIN > target_dist)
+			continue
+		if(!strategy.can_attack(guard, thing, HUMAN_NPC_SIGHT_RANGE))
+			continue
+		pick = thing
+		pick_dist = dist
+	if(pick)
+		stealth_switch_target(pick)
 
 /**
  * Alert: keeps its target with tg's all-round can_attack() at the NPC's sight range (abuse P2). Out of
@@ -508,12 +802,12 @@
 	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	var/atom/remembered = target || blackboard[BB_STEALTH_FOCUS]
 	if(QDELETED(remembered))
-		stealth_go_searching(blackboard[BB_STEALTH_LAST_SEEN_TURF])
+		stealth_go_searching(last_seen_turf)
 		return
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
 	if(strategy?.can_attack(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
 		lost_since = 0
-		set_blackboard_key(BB_STEALTH_LAST_SEEN_TURF, get_turf(remembered))
+		last_seen_turf = get_turf(remembered)
 		blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 		if(!target)
 			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, remembered)
@@ -535,7 +829,7 @@
 		return
 	clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	stealth_bark(STEALTH_BARK_LOST)
-	stealth_go_searching(blackboard[BB_STEALTH_LAST_SEEN_TURF])
+	stealth_go_searching(last_seen_turf)
 
 /**
  * Its target is down (decision 23). Anyone else it has noticed keeps the alarm going as usual: alert on
@@ -553,7 +847,7 @@
 	search_looking = FALSE
 	calm_until = world.time + STEALTH_CALM_LOOK_TIME
 	look_until = calm_until
-	stand_dir = guard.dir
+	stand_dir = stealth_facing(guard)
 	// Anyone it noticed lately or who hit it during the fight, read before this look decays them.
 	var/best_notice = 0
 	var/turf/best_turf
@@ -570,7 +864,7 @@
 		best_notice = entry[STEALTH_ENTRY_NOTICE]
 		best_turf = entry[STEALTH_ENTRY_TURF]
 		best = someone
-	// One look now: anyone else in view goes the normal way (suspicious or alert).
+	// One look now: anyone else in view goes the normal way (alert, or the search moves to them).
 	stealth_look()
 	if(stealth_state() != STEALTH_SEARCHING || !calm_until)
 		return
@@ -587,8 +881,9 @@
 
 /**
  * Fallen friends (abuse P13): group members that are dead, in crit, cuffed or lying down, in its sight.
- * It reacts to each body once. The first guard to find one is suspicious and walks over; a guard that
- * finds a body someone already reported just searches there.
+ * It reacts to each fall once: a friend who gets back up and goes down again is news again. The first
+ * guard to find one is suspicious and walks over; a guard that finds a body someone already reported just
+ * searches there.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_check_bodies()
 	next_body_scan = world.time + STEALTH_BODY_SCAN_INTERVAL
@@ -601,9 +896,12 @@
 	for(var/mob/living/member as anything in group.living_members())
 		if(member == guard)
 			continue
-		if(!(member.stat == DEAD || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(member, TRAIT_RESTRAINED) || member.body_position == LYING_DOWN))
-			continue
 		var/key = REF(member)
+		if(!(member.stat == DEAD || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(member, TRAIT_RESTRAINED) || member.body_position == LYING_DOWN))
+			// On its feet again.
+			seen -= key
+			group.reported_bodies -= key
+			continue
 		if(key in seen)
 			continue
 		// A body stuffed in a locker, a crate or a bag is hidden, as a living person there is.
@@ -632,29 +930,32 @@
 
 /**
  * Anyone touching or hurting it (abuse P3): alert on them if it can see them, otherwise a search at
- * their turf. Always wary. Allies are ignored. Returns TRUE if it took a target.
+ * their turf. Always wary. Allies are ignored. Alert on someone else already, it turns on whoever hit it
+ * (at most once per STEALTH_SWITCH_COOLDOWN, unless they are clearly nearer) and otherwise remembers them
+ * for when that fight ends. Returns TRUE if it took a target.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_touched(atom/source)
 	var/mob/living/guard = pawn
-	if(QDELETED(source) || QDELETED(guard) || source == guard || guard.stat == DEAD)
+	if(QDELETED(source) || QDELETED(guard) || source == guard || guard.stat == DEAD || guard.client)
 		return FALSE
+	// Whatever hurts it at this moment has a name, an ally's stray shot included.
+	explained_at = world.time
 	if(ismovable(source) && guard.faction_check_atom(source))
 		return FALSE
 	stealth_set_wary()
-	if(stealth_state() == STEALTH_ALERT && blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
-		// Busy with someone else: it remembers who else is hurting it for when that fight ends.
-		if(isliving(source) && source != blackboard[BB_BASIC_MOB_CURRENT_TARGET])
-			var/list/notice = notice_map
-			var/list/entry = notice[REF(source)]
-			if(isnull(entry))
-				entry = list(0, null, 0)
-				notice[REF(source)] = entry
-			entry[STEALTH_ENTRY_NOTICE] = max(entry[STEALTH_ENTRY_NOTICE], STEALTH_ALERT_AT)
-			entry[STEALTH_ENTRY_TURF] = get_turf(source)
-			entry[STEALTH_ENTRY_SEEN_AT] = world.time
-		return FALSE
 	var/atom/who = isliving(source) ? bounty_ai_target_for(source) : source
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
+	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(stealth_state() == STEALTH_ALERT && !QDELETED(target))
+		if(who == target)
+			return FALSE
+		if(isliving(source))
+			stealth_remember(source)
+		var/nearer = get_dist(guard, who) + STEALTH_SWITCH_MARGIN <= get_dist(guard, target)
+		if((nearer || world.time >= next_switch_at) && strategy?.can_attack(guard, who))
+			stealth_switch_target(who)
+			return TRUE
+		return FALSE
 	if(strategy?.can_attack(guard, who))
 		stealth_go_alert(who)
 		return TRUE
@@ -663,6 +964,8 @@
 	return FALSE
 
 /datum/ai_controller/basic_controller/human_npc/stealth/on_pawn_attacked(mob/living/source, atom/attacker, attack_flags)
+	if(source.client)
+		return
 	if(stealth_touched(attacker))
 		return
 	if(!blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
@@ -672,14 +975,30 @@
 	SIGNAL_HANDLER
 	stealth_touched(puller)
 
+/// Someone walked into it, or something with someone inside did (a box on the move).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_bumped(atom/source, atom/movable/bumper)
 	SIGNAL_HANDLER
 	if(isliving(bumper))
 		stealth_touched(bumper)
+		return
+	if(!ismovable(bumper))
+		return
+	for(var/mob/living/inside in bumper.get_all_contents())
+		stealth_touched(inside)
+		return
 
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_helped(mob/living/source, mob/living/helper)
+/// A help-click, cuffs, a syringe, a hand in its pockets or anything else used on it.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_handled(mob/living/source, mob/living/toucher)
 	SIGNAL_HANDLER
-	stealth_touched(helper)
+	if(ismob(toucher))
+		stealth_touched(toucher)
+
+/// Anything thrown that lands on it, harmless or not (relay_attackers only reports what hurts).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_prehitby(atom/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	var/mob/thrower = throwingdatum?.get_thrower()
+	if(ismob(thrower))
+		stealth_touched(thrower)
 
 /// relay_attackers only reports a mob firer; a turret or other machine shooting it counts the same.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_projectile_prehit(atom/source, obj/projectile/hit_projectile)
@@ -692,11 +1011,91 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_target_set(datum/source)
 	SIGNAL_HANDLER
 	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(isnull(target) || stealth_state() == STEALTH_ALERT)
+	if(isnull(target) || stealth_state() == STEALTH_ALERT || stealth_driven())
 		return
 	stealth_set_state(STEALTH_ALERT)
 	stealth_set_wary()
 	set_blackboard_key(BB_STEALTH_FOCUS, target)
+
+/// A blast, flames or a flash on it.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_harmed(datum/source)
+	SIGNAL_HANDLER
+	stealth_note_harm()
+
+/// A stun, a knockdown or sleep about to land on it.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_stunned(datum/source, amount)
+	SIGNAL_HANDLER
+	if(amount > 0)
+		stealth_note_harm()
+
+/**
+ * Something hurt or stunned it. Judged a moment later, once the blow behind it has had the chance to name
+ * who dealt it (tg reports an item hit's attacker after its damage). Harm someone is named for within
+ * `window` is theirs and stealth_touched() has dealt with it.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_note_harm(window = 0.2 SECONDS)
+	var/mob/living/carbon/human/npc/guard = pawn
+	if(harm_pending || QDELETED(guard) || guard.stat == DEAD || guard.client)
+		return
+	// Its own surrender puts it on the floor.
+	if(ishumannpc(guard) && guard.npc_surrendering)
+		return
+	harm_pending = TRUE
+	harm_window = window
+	harm_turf = get_turf(guard)
+	addtimer(CALLBACK(src, PROC_REF(stealth_judge_harm)), 0.2 SECONDS)
+
+/// Harm nobody was named for (a blast, fire, gas, a flashbang): it and the friends near it go looking there.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_judge_harm()
+	harm_pending = FALSE
+	var/turf/where = harm_turf
+	harm_turf = null
+	var/mob/living/guard = pawn
+	if(QDELETED(guard) || guard.stat == DEAD || guard.client || isnull(where))
+		return
+	if(explained_at && world.time - explained_at <= harm_window + 0.2 SECONDS)
+		return
+	if(world.time < next_harm_at)
+		return
+	next_harm_at = world.time + STEALTH_HARM_COOLDOWN
+	stealth_setup()
+	stealth_trouble_at(where)
+	for(var/mob/living/friend as anything in group?.living_members())
+		if(friend == guard)
+			continue
+		var/turf/friend_turf = get_turf(friend)
+		if(friend_turf?.z != where.z || get_dist(friend_turf, where) > STEALTH_HARM_ALERT_RANGE)
+			continue
+		var/datum/ai_controller/basic_controller/human_npc/stealth/friend_ai = friend.ai_controller
+		if(istype(friend_ai))
+			friend_ai.stealth_trouble_at(where)
+
+/// Trouble at `where` it can't put a face to: wary, and searching there unless it already has someone to fight.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_trouble_at(turf/where)
+	var/mob/living/guard = pawn
+	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client)
+		return
+	stealth_set_wary()
+	if(blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
+	if(stealth_state() == STEALTH_SEARCHING && !calm_until)
+		return
+	stealth_go_searching(where)
+	stealth_bark(STEALTH_BARK_HIT_UNSEEN)
+
+/// Each scan: health lost with nobody to blame (gas, acid, bleeding, anything without a signal of its own).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_check_health()
+	var/mob/living/guard = pawn
+	var/health = guard.health
+	if(isnull(health_mark) || health > health_mark || world.time - health_mark_at > STEALTH_HARM_WINDOW)
+		health_mark = health
+		health_mark_at = world.time
+		return
+	if(health_mark - health < STEALTH_HARM_HEALTH)
+		return
+	health_mark = health
+	health_mark_at = world.time
+	stealth_note_harm(STEALTH_HARM_WINDOW)
 
 /// Carried off the level: drops its route and holds where it is (abuse R3). The base controller already
 /// listens for the level change.
@@ -718,16 +1117,19 @@
 
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_status_removed(mob/living/source, datum/status_effect/effect)
 	SIGNAL_HANDLER
-	if(istype(effect, /datum/status_effect/incapacitating/stamcrit))
+	if(istype(effect, /datum/status_effect/incapacitating))
 		stealth_came_round()
 
-/// Back on its feet after crit or stamcrit: it knows something happened.
+/// Back on its feet after crit, a stun, a knockdown or sleep: it knows something happened.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_came_round()
 	var/mob/living/guard = pawn
-	if(QDELETED(guard) || guard.stat == DEAD)
+	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client)
 		return
 	stealth_set_wary()
 	if(blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
+	// Already looking, and only just: one stun often ends as several effects.
+	if(stealth_state() == STEALTH_SEARCHING && !calm_until && world.time - blackboard[BB_STEALTH_STATE_SINCE] < STEALTH_LOSE_TARGET_TIME)
 		return
 	stealth_go_searching(get_turf(guard))
 
@@ -758,24 +1160,22 @@
 /datum/ai_movement/jps/stealth
 	maximum_length = STEALTH_PATROL_MAX_PATH
 
-/// Queues the scan every plan. Never ends planning.
+/**
+ * Runs the scan once a second, straight from planning: it never waits in the behaviour queue, where a walk
+ * or tg's idle mode could starve it or be starved by it. First in the list, and never ends planning. With
+ * the scan stopped (cuffed, held, a player in the body) it takes the head mark down.
+ */
 /datum/ai_planning_subtree/stealth_perception
 
 /datum/ai_planning_subtree/stealth_perception/SelectBehaviors(datum/ai_controller/basic_controller/human_npc/stealth/controller, seconds_per_tick)
-	var/mob/living/guard = controller.pawn
-	if(guard.stat != CONSCIOUS || !istype(controller))
+	if(!istype(controller))
+		return
+	if(!controller.stealth_scanning())
+		QDEL_NULL(controller.meter)
 		return
 	controller.stealth_setup()
-	controller.queue_behavior(/datum/ai_behavior/stealth_scan)
-
-/datum/ai_behavior/stealth_scan
-	action_cooldown = STEALTH_SCAN_INTERVAL
-	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
-
-/datum/ai_behavior/stealth_scan/perform(seconds_per_tick, datum/ai_controller/basic_controller/human_npc/stealth/controller)
-	if(istype(controller))
+	if(world.time >= controller.next_scan && !controller.blackboard_key_exists(BB_HUMAN_NPC_EXIT))
 		controller.stealth_scan_once()
-	return AI_BEHAVIOR_DELAY
 
 /// Suspicious: stare, walk over, look round. Searching: sweep the spots. Ends planning while it acts.
 /datum/ai_planning_subtree/stealth_react
@@ -784,6 +1184,8 @@
 	if(!istype(controller) || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
 		return
 	var/mob/living/guard = controller.pawn
+	if(guard.stat != CONSCIOUS)
+		return
 	switch(controller.stealth_state())
 		if(STEALTH_SUSPICIOUS)
 			if(world.time < controller.blackboard[BB_STEALTH_STATE_SINCE] + STEALTH_INVESTIGATE_DELAY)
@@ -791,7 +1193,7 @@
 				return SUBTREE_RETURN_FINISH_PLANNING
 			if(!controller.investigated)
 				var/turf/dest = controller.investigate_turf
-				if(dest && get_turf(guard) != dest && controller.goto_result != "failed")
+				if(dest && !controller.stealth_walk_over(dest))
 					controller.stealth_walk(dest, controller.goto_purpose)
 					return SUBTREE_RETURN_FINISH_PLANNING
 				controller.investigated = TRUE
@@ -799,6 +1201,7 @@
 				if(controller.goto_purpose == STEALTH_GOTO_BODY)
 					controller.stealth_go_searching(get_turf(guard))
 					return SUBTREE_RETURN_FINISH_PLANNING
+				controller.stand_dir = stealth_facing(guard)
 				controller.look_until = world.time + STEALTH_LOOK_AROUND_TIME
 			controller.queue_behavior(/datum/ai_behavior/stealth_stand)
 			return SUBTREE_RETURN_FINISH_PLANNING
@@ -823,25 +1226,67 @@
 				controller.queue_behavior(/datum/ai_behavior/stealth_stand)
 				return SUBTREE_RETURN_FINISH_PLANNING
 			var/turf/spot = controller.search_queue[1]
-			if(get_turf(guard) == spot || (controller.goto_turf == spot && controller.goto_result))
+			if(controller.stealth_walk_over(spot))
 				controller.stealth_drop_walk()
 				controller.search_looking = TRUE
+				controller.stand_dir = stealth_facing(guard)
 				controller.look_until = world.time + STEALTH_LOOK_AROUND_TIME
 				controller.queue_behavior(/datum/ai_behavior/stealth_stand)
 				return SUBTREE_RETURN_FINISH_PLANNING
 			controller.stealth_walk(spot, STEALTH_GOTO_SEARCH)
 			return SUBTREE_RETURN_FINISH_PLANNING
 
-/// Starts (or keeps) its stealth walk to `dest`.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_walk(turf/dest, purpose)
+// ===== Walking =====
+
+/// Whether its walk to `dest` got there: on the tile, or as near as it could stand.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_walk_arrived(turf/dest)
+	return get_turf(pawn) == dest || (goto_dest == dest && goto_result == "arrived")
+
+/// Whether its walk to `dest` is over, there or not.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_walk_over(turf/dest)
+	return get_turf(pawn) == dest || (goto_dest == dest && !isnull(goto_result))
+
+/// Whether the pathfinder gave up on its walk to `dest`.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_walk_gave_up(turf/dest)
+	return goto_dest == dest && goto_result == "failed"
+
+/// Ends its own stealth walk, if it has one, without counting it as a failed path.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_drop_walk()
 	var/datum/ai_behavior/walk = GET_AI_BEHAVIOR(/datum/ai_behavior/stealth_goto)
-	if(goto_turf != dest && current_behaviors[walk])
+	if(walk && current_behaviors[walk])
+		dropping_walk = TRUE
+		fail_behavior(walk)
+		dropping_walk = FALSE
+	goto_turf = null
+	goto_dest = null
+	goto_result = null
+
+/// Starts (or keeps) its stealth walk to `dest`. A walk already over stays over until it is dropped.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_walk(turf/dest, purpose)
+	if(goto_dest != dest)
 		stealth_drop_walk()
-	if(goto_turf != dest)
-		goto_result = null
-	goto_turf = dest
+		goto_dest = dest
 	goto_purpose = purpose
+	if(goto_result)
+		return
+	if(isnull(goto_turf))
+		goto_turf = stealth_next_leg(dest)
 	queue_behavior(/datum/ai_behavior/stealth_goto)
+
+/**
+ * The turf to walk to now on the way to `dest`: `dest`, an open tile beside it when something stands on it
+ * (a crate dropped on a patrol stop), or, when it is more than STEALTH_WALK_LEG off, a point part of the
+ * way there. A guard drawn a long way out comes home in legs instead of asking for a path too long to find.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_next_leg(turf/dest)
+	var/turf/here = get_turf(pawn)
+	if(isnull(here) || here.z != dest.z)
+		return dest
+	if(get_dist(here, dest) > STEALTH_WALK_LEG)
+		return stealth_open_near(get_ranged_target_turf_direct(here, dest, STEALTH_WALK_LEG - 10), 3) || dest
+	if(dest.is_blocked_turf(exclude_mobs = TRUE))
+		return stealth_open_near(dest, 1) || dest
+	return dest
 
 /**
  * Walks to the controller's goto_turf with its pathfinding movement. Ends on arrival, or as a failure
@@ -856,28 +1301,34 @@
 	. = ..()
 	if(!istype(controller) || isnull(controller.goto_turf))
 		return FALSE
+	// Stamped each time the walk starts or starts again (after a stun, or the level waking), so time spent
+	// not walking never counts against it.
 	controller.goto_started = world.time
 	set_movement_target(controller, controller.goto_turf)
 
 /datum/ai_behavior/stealth_goto/perform(seconds_per_tick, datum/ai_controller/basic_controller/human_npc/stealth/controller)
 	var/turf/dest = controller.goto_turf
 	if(isnull(dest))
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	var/turf/here = get_turf(controller.pawn)
 	if(here == dest)
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	// Someone stands on the spot: next to it will do.
 	if(get_dist(here, dest) <= 1 && dest.is_blocked_turf(exclude_mobs = FALSE) && !dest.is_blocked_turf(exclude_mobs = TRUE))
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	if(world.time - controller.goto_started > STEALTH_PATROL_MAX_PATH * max(controller.movement_delay, 0.4 SECONDS) * 1.5)
 		controller.goto_timed_out = TRUE
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	return AI_BEHAVIOR_INSTANT
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	return AI_BEHAVIOR_DELAY
 
 /datum/ai_behavior/stealth_goto/finish_action(datum/ai_controller/basic_controller/human_npc/stealth/controller, succeeded)
 	if(istype(controller) && !controller.dropping_walk)
 		if(succeeded)
-			controller.goto_result = "arrived"
+			if(controller.goto_turf == controller.goto_dest || get_dist(controller.goto_turf, controller.goto_dest) <= 1)
+				controller.goto_result = "arrived"
+			else
+				// One leg of a long walk: the next plan sets out on the next.
+				controller.goto_turf = null
 		else
 			// Only a real path failure counts; being re-planned away from a walk does not.
 			var/path_failed = controller.goto_timed_out || controller.consecutive_pathing_attempts >= controller.ai_movement.max_pathing_attempts
@@ -918,3 +1369,6 @@
 	else if(sentry || prob(STEALTH_LOOK_TURN_CHANCE))
 		guard.setDir(turn(controller.stand_dir, pick(STEALTH_LOOK_TURN_ARC, -STEALTH_LOOK_TURN_ARC)))
 	return AI_BEHAVIOR_DELAY
+
+#undef STEALTH_HANDLED_SIGNALS
+#undef STEALTH_STUN_SIGNALS

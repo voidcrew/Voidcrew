@@ -6,10 +6,12 @@
  * can_attack(), so an alert guard keeps tg's all-round check and an attack from behind still lands on a
  * guard that can turn round (abuse review P1, P2).
  *
- * A scan, once a second while the AI is awake: the nearest few living mobs on the HEARING grid (every mob
- * is hearing-sensitive, so SSD bodies and other NPCs count), each passed through the guard's own
- * can_attack() first (faction, stat, line of sight, invisibility, the packed-level cordon, Ghostskin
- * camo), then the cone, light and movement rules below raise or decay its "notice".
+ * A scan, once a second while the AI is awake: the living mobs near it on the HEARING grid (every mob is
+ * hearing-sensitive, so SSD bodies and other NPCs count), nearest first, without its own side or the dead.
+ * Each goes through the guard's own can_attack() (faction, stat, line of sight, invisibility, the
+ * packed-level cordon, Ghostskin camo), and the first STEALTH_MAX_CANDIDATES that pass get the cone, light
+ * and movement rules that raise or decay its "notice". Only mobs it could perceive count toward that cap,
+ * so a pile of corpses, mice or its own friends can't crowd a player out.
  */
 
 #ifdef UNIT_TESTS
@@ -68,12 +70,21 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		return (tile_area.base_lighting_alpha / 255) + tile.dynamic_lumcount < STEALTH_DARK_LUMCOUNT
 	return tile.get_lumcount() < STEALTH_DARK_LUMCOUNT
 
-/// The vehicle `who` sits in (a mech or another vehicle), or null.
-/proc/stealth_vehicle_of(mob/living/who)
-	var/atom/holder = who.loc
-	if(ismecha(holder) || isvehicle(holder))
-		return holder
-	return null
+/**
+ * What `who` is shut inside, as it stands on a turf: the box, locker, bag or car, or the outermost of them.
+ * Null on a turf of their own, or when someone is carrying them (the carrier is the one to see).
+ */
+/proc/stealth_shell_of(mob/living/who)
+	if(isturf(who.loc))
+		return null
+	var/atom/movable/shell = who.loc
+	while(shell && !isturf(shell.loc))
+		shell = shell.loc
+		if(!ismovable(shell))
+			return null
+	if(isnull(shell) || ismob(shell))
+		return null
+	return shell
 
 /**
  * Whether a cloak hides `who` from a guard's sight beyond the close radius (owner decision 20: cyberware
@@ -86,8 +97,8 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 	return !!who.has_status_effect(/datum/status_effect/shadow_cloak)
 
 /**
- * The living mobs a guard might see, nearest first, at most STEALTH_MAX_CANDIDATES. Uses the spatial
- * grid, never view() or hearers().
+ * The living mobs a guard might notice within `range`, nearest first: not itself, not its own side, not the
+ * dead. Uses the spatial grid, never view() or hearers(). The caller caps how many it judges.
  */
 /proc/stealth_candidates(mob/living/guard, range)
 	var/turf/center = get_turf(guard)
@@ -95,7 +106,7 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		return list()
 	var/list/buckets = new /list(range + 1)
 	for(var/mob/living/found in SSspatial_grid.orthogonal_range_search(center, SPATIAL_GRID_CONTENTS_TYPE_HEARING, range))
-		if(found == guard)
+		if(found == guard || found.stat == DEAD)
 			continue
 		var/turf/found_turf = get_turf(found)
 		if(isnull(found_turf) || found_turf.z != center.z)
@@ -103,13 +114,12 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		var/dist = get_dist(center, found_turf)
 		if(dist > range)
 			continue
+		if(guard.faction_check_atom(found))
+			continue
 		var/list/bucket = buckets[dist + 1]
 		if(isnull(bucket))
 			buckets[dist + 1] = bucket = list()
 		bucket += found
 	. = list()
 	for(var/list/bucket in buckets)
-		for(var/mob/living/found as anything in bucket)
-			. += found
-			if(length(.) >= STEALTH_MAX_CANDIDATES)
-				return .
+		. += bucket

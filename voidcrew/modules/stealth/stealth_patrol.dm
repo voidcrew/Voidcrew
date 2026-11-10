@@ -8,6 +8,9 @@
  *
  * A guard claims the route with a stop within STEALTH_ROUTE_CLAIM_RANGE of where it spawned, starting at
  * that stop. With none in range it is a sentry at its spawn turf, facing the way the spawner faced.
+ *
+ * A guard drawn off its route or post (a chase, a search) walks back, however far. One that can't get back
+ * waits and tries again. Only being carried to another level or map region makes it a sentry where it is.
  */
 
 /// Every live patrol group
@@ -211,9 +214,9 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	stealth_ready = TRUE
 	var/mob/living/guard = pawn
 	var/turf/spawn_turf = get_turf(guard)
-	set_blackboard_key(BB_STEALTH_HOME_TURF, spawn_turf)
-	sentry_dir = guard.dir
-	stand_dir = guard.dir
+	home_turf = spawn_turf
+	sentry_dir = stealth_facing(guard)
+	stand_dir = sentry_dir
 	group = stealth_group_for(spawn_turf)
 	if(isnull(group))
 		group = new(spawn_turf)
@@ -232,16 +235,19 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 			route_index = index
 	if(route_id)
 		var/datum/stealth_stop/start = group.routes[route_id][route_index]
-		set_blackboard_key(BB_STEALTH_HOME_TURF, start.spot)
+		home_turf = start.spot
 
-/// Drops its route and holds `where` as a sentry from now on (abuse R2, R3).
+/// Drops its route and holds `where` as a sentry from now on: it was carried off its level or out of its
+/// region (abuse R3). A guard that only walked or was chased away keeps its route and walks back.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_become_sentry(turf/where)
 	route_id = null
 	at_stop = FALSE
+	home_retry_at = 0
+	stealth_drop_walk()
 	if(where)
-		set_blackboard_key(BB_STEALTH_HOME_TURF, where)
-	sentry_dir = pawn.dir
-	stand_dir = pawn.dir
+		home_turf = where
+	sentry_dir = stealth_facing(pawn)
+	stand_dir = sentry_dir
 
 /// Its route's stops, or null.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_stops()
@@ -249,16 +255,19 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 		return null
 	return group.routes[route_id]
 
-/// Back from a suspicion or a search: heads for the nearest stop of its route.
+/// Back from a suspicion, a search or a chase: heads for the nearest stop of its route it can still try.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_rejoin_route()
 	at_stop = FALSE
 	wait_until = 0
+	home_retry_at = 0
 	var/list/stops = stealth_stops()
 	if(!length(stops))
 		return
 	var/turf/here = get_turf(pawn)
 	var/best_dist = INFINITY
 	for(var/index in 1 to length(stops))
+		if(world.time < stop_skip_until["[index]"])
+			continue
 		var/datum/stealth_stop/stop = stops[index]
 		var/dist = get_dist(stop.spot, here)
 		if(dist < best_dist)
@@ -285,11 +294,15 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 			return index
 	return 0
 
-/// A walk the pathfinder gave up on (abuse R2): a stop that fails often enough is skipped for a while.
+/**
+ * A walk the pathfinder gave up on (abuse R2). A stop that fails often enough is skipped for a while; with
+ * every stop skipped it waits where it is and tries again when the first skip runs out. A sentry that can't
+ * reach its post waits and tries again too. Neither gives up its route or post for good: only being carried
+ * off does that.
+ */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_walk_failed()
 	if(goto_purpose == STEALTH_GOTO_HOME)
-		// It can't get back to its post: this is its post now.
-		stealth_become_sentry(get_turf(pawn))
+		home_retry_at = world.time + STEALTH_HOME_RETRY_TIME
 		return
 	if(goto_purpose != STEALTH_GOTO_PATROL || isnull(route_id))
 		return
@@ -300,59 +313,92 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	stop_fails[key] = 0
 	stop_skip_until[key] = world.time + STEALTH_PATROL_SKIP_TIME
 	var/next = stealth_next_index()
-	if(!next)
-		stealth_become_sentry(get_turf(pawn))
-		return
-	route_index = next
+	if(next)
+		route_index = next
 
-/// Unaware with no target: walks its route or holds its post.
+/// Unaware with no target: walks its route or holds its post. Last in the list: it always leaves the guard
+/// something to do, so planning never comes up empty.
 /datum/ai_planning_subtree/stealth_patrol
 
 /datum/ai_planning_subtree/stealth_patrol/SelectBehaviors(datum/ai_controller/basic_controller/human_npc/stealth/controller, seconds_per_tick)
-	if(!istype(controller) || controller.stealth_state() != STEALTH_UNAWARE || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(!istype(controller))
 		return
 	var/mob/living/guard = controller.pawn
 	if(guard.stat != CONSCIOUS)
 		return
-	var/turf/here = get_turf(guard)
-	var/list/stops = controller.stealth_stops()
-	if(!length(stops))
-		controller.route_id = null
-		var/turf/post = controller.blackboard[BB_STEALTH_HOME_TURF]
-		if(post && here != post && controller.goto_result != "failed")
-			controller.stealth_walk(post, STEALTH_GOTO_HOME)
-			return SUBTREE_RETURN_FINISH_PLANNING
-		controller.stand_dir = controller.sentry_dir
+	if(controller.stealth_state() == STEALTH_UNAWARE && !controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		if(length(controller.stealth_stops()))
+			controller.stealth_plan_route()
+		else
+			controller.stealth_plan_post()
+	// Alert with nobody in reach of the fighting subtrees, or holding: it stands and looks about.
+	if(!length(controller.planned_behaviors))
 		controller.queue_behavior(/datum/ai_behavior/stealth_stand)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(controller.at_stop)
-		if(world.time < controller.wait_until)
-			controller.queue_behavior(/datum/ai_behavior/stealth_stand)
-			return SUBTREE_RETURN_FINISH_PLANNING
-		controller.at_stop = FALSE
-		var/next = controller.stealth_next_index()
-		if(!next)
-			controller.stealth_become_sentry(here)
-			return
-		controller.route_index = next
-	var/datum/stealth_stop/stop = stops[controller.route_index]
-	// Leash (abuse R3): a stop outside its region or too far from it means it was carried off.
-	if(!controller.group.region_matches(stop.spot) || stop.spot.z != here.z || get_dist(stop.spot, here) > STEALTH_LEASH_RANGE)
-		controller.stealth_become_sentry(here)
-		return
-	if(here == stop.spot || (controller.goto_turf == stop.spot && controller.goto_result == "arrived"))
-		controller.stealth_drop_walk()
-		controller.stealth_arrive(stop)
-		controller.queue_behavior(/datum/ai_behavior/stealth_stand)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(controller.goto_turf == stop.spot && controller.goto_result == "failed")
-		controller.goto_result = null
-	controller.stealth_walk(stop.spot, STEALTH_GOTO_PATROL)
 	return SUBTREE_RETURN_FINISH_PLANNING
+
+/// A sentry: stands its post, or walks back to it.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_plan_post()
+	var/mob/living/guard = pawn
+	var/turf/here = get_turf(guard)
+	route_id = null
+	var/turf/post = home_turf
+	if(post && here != post)
+		if(post.z != here.z || map_region_for_turf(post) != map_region_for_turf(here))
+			// Carried off: this is its post now.
+			stealth_become_sentry(here)
+		else if(world.time >= home_retry_at)
+			if(stealth_walk_gave_up(post))
+				stealth_drop_walk()
+			if(!stealth_walk_arrived(post))
+				stealth_walk(post, STEALTH_GOTO_HOME)
+				return
+	stand_dir = sentry_dir
+	queue_behavior(/datum/ai_behavior/stealth_stand)
+
+/// A route guard: waits at its stop, then walks to the next one it can reach.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_plan_route()
+	var/mob/living/guard = pawn
+	var/turf/here = get_turf(guard)
+	var/list/stops = stealth_stops()
+	if(at_stop)
+		if(world.time < wait_until)
+			queue_behavior(/datum/ai_behavior/stealth_stand)
+			return
+		var/next = stealth_next_index()
+		if(!next)
+			// Every other stop is shut off: it stays here until one opens.
+			queue_behavior(/datum/ai_behavior/stealth_stand)
+			return
+		at_stop = FALSE
+		route_index = next
+	if(world.time < stop_skip_until["[route_index]"])
+		var/next = stealth_next_index()
+		if(!next)
+			// Shut in: it waits, and tries again when the first skip runs out.
+			stand_dir = stealth_facing(guard)
+			queue_behavior(/datum/ai_behavior/stealth_stand)
+			return
+		route_index = next
+	var/datum/stealth_stop/stop = stops[route_index]
+	// Leash (abuse R3): a stop on another level or in another region means it was carried off.
+	if(stop.spot.z != here.z || !group.region_matches(here))
+		stealth_become_sentry(here)
+		queue_behavior(/datum/ai_behavior/stealth_stand)
+		return
+	if(stealth_walk_arrived(stop.spot))
+		stealth_drop_walk()
+		stealth_arrive(stop)
+		queue_behavior(/datum/ai_behavior/stealth_stand)
+		return
+	// A failed try that hasn't yet shut the stop off: it tries again.
+	if(stealth_walk_gave_up(stop.spot))
+		stealth_drop_walk()
+	stealth_walk(stop.spot, STEALTH_GOTO_PATROL)
 
 /// At a stop: faces its way, waits, and talks if it's a chatter stop and a friend is near.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_arrive(datum/stealth_stop/stop)
 	at_stop = TRUE
+	home_turf = stop.spot
 	stop_fails["[route_index]"] = 0
 	wait_until = world.time + stop.wait
 	stand_dir = stop.dir
