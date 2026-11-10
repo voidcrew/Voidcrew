@@ -60,8 +60,10 @@
 	if(!rig.rig_arms())
 		QDEL_NULL(rig)
 		return FALSE
-	// Moved, knocked down or gone: the drawing comes down at once
-	RegisterSignals(bearer, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_QDELETING), PROC_REF(drop_rig))
+	// Moved or knocked down: the drawing comes down at once (a deleted body takes its rig with it). The rig does the
+	// listening: this chip already hears the bearer lie down and be deleted, and a second listener here would
+	// replace those and then remove them with the rig.
+	rig.watch_body(CALLBACK(src, PROC_REF(drop_rig)))
 	// Arms first: a crouch runs alongside, and a swing started after it would cut it short
 	for(var/side in list("l", "r"))
 		rig.swing_arm(side, 150, GORILLA_POUND_CROUCH, 0, SINE_EASING)
@@ -69,10 +71,7 @@
 	return TRUE
 
 /// Takes the rig down and shows the real body.
-/datum/action/cooldown/cyberware/gorilla_pound/proc/drop_rig(datum/source)
-	SIGNAL_HANDLER
-	if(rig?.body)
-		UnregisterSignal(rig.body, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_QDELETING))
+/datum/action/cooldown/cyberware/gorilla_pound/proc/drop_rig()
 	QDEL_NULL(rig)
 
 /datum/action/cooldown/cyberware/gorilla_pound/IsAvailable(feedback = FALSE)

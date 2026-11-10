@@ -124,6 +124,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	var/matrix/base_transform
 	/// Degrees the body is bent forward from the feet (negative: leaning back), seen from the side
 	var/bend_angle = 0
+	/// Called when the hidden body moves or changes posture, for an owner that asked (watch_body())
+	var/datum/callback/on_disturbed
 
 /datum/chrome_rig/New(mob/living/body, facing)
 	. = ..()
@@ -139,14 +141,29 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		qdel(puppets[key])
 	puppets = null
 	if(body)
-		UnregisterSignal(body, COMSIG_QDELETING)
+		UnregisterSignal(body, list(COMSIG_QDELETING, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION))
 	body = null
 	flat = null
+	on_disturbed = null
 	return ..()
 
 /datum/chrome_rig/proc/on_body_deleted(datum/source)
 	SIGNAL_HANDLER
 	qdel(src)
+
+/**
+ * Calls [disturbed] when the hidden body moves or is knocked down, so its owner can take the rig down. The rig
+ * listens itself: an owner that already listens to the body for its own reasons (an action does) keeps its handlers.
+ */
+/datum/chrome_rig/proc/watch_body(datum/callback/disturbed)
+	if(QDELETED(body))
+		return
+	on_disturbed = disturbed
+	RegisterSignals(body, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(on_body_disturbed))
+
+/datum/chrome_rig/proc/on_body_disturbed(datum/source)
+	SIGNAL_HANDLER
+	on_disturbed?.InvokeAsync()
 
 /// Takes the flat picture. Returns FALSE if the body can't be rigged (gone, or not a 32x32 picture).
 /datum/chrome_rig/proc/snapshot()
