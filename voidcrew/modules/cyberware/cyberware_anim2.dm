@@ -329,12 +329,14 @@
 	. = ..()
 	clear_burn_fx()
 
-/// The roar's ring, out as far as the roar reaches.
+/// The roar's ring, out as far as the roar reaches. It rolls across the floor, so it is drawn on the floor: under
+/// everyone and everything standing in its way, whichever side of the bearer they are on.
 /obj/effect/temp_visual/circle_wave/cyberware_roar
 	color = "#ff4a2a"
 	max_alpha = 200
 	duration = 0.5 SECONDS
-	layer = BELOW_MOB_LAYER
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
 
 /obj/effect/temp_visual/circle_wave/cyberware_roar/Initialize(mapload, reach = 5)
 	// The 64 px ring, scaled so its edge lands [reach] tiles out.
