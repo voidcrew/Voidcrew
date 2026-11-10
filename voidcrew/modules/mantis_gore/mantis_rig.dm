@@ -77,20 +77,33 @@
 			spec = list(list("far", "body", "T", "near"), 6, 0, -12, 2, 14, 1)
 		if("impale_drop_E")
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 2)
+		// Seen from behind the target is on the row beyond the bearer, facing the camera. "arms" is the forearms,
+		// the fists and the steel up to where it goes into the target's front; "tips" is the whole blade past the
+		// fists, drawn behind the target: what shows of it is the points past the shoulders.
 		if("impale_arrive_N")
 			spec = list(list("T", "arms", "body"), 0, 2, 0, 0, 0, 0)
-		if("impale_contact_N")
-			spec = list(list("T", "arms", "body"), 0, 24, 0, 0, 0, 0)
-		if("impale_enter_N")
+		if("impale_contact_N", "impale_enter_N")
 			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 0, 0, 0)
+		if("impale_lift1_N")
+			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 2, 0, 0)
+		if("impale_lift2_N")
+			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 3, 0, 0)
 		if("impale_hold_N")
 			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 4, 0, 0)
 		if("impale_pull_N")
 			spec = list(list("tips", "T", "arms", "body"), 0, 23, 0, 0, 0, 0)
+		if("impale_pull1_N")
+			spec = list(list("tips", "T", "arms", "body"), 0, 23, 0, 3, 0, 0)
+		if("impale_pull2_N")
+			spec = list(list("tips", "T", "arms", "body"), 0, 22, 0, 2, 0, 0)
+		if("impale_pull3_N")
+			spec = list(list("tips", "T", "arms", "body"), 0, 21, 0, 1, 0, 0)
 		if("impale_rip_N")
 			spec = list(list("T", "arms", "body"), 0, 15, 0, 0, 0, 0)
+		// The drop from the front and the back is the bearer as they are held again ("whole": the guard, blood and
+		// all), so nothing changes when the real bearer comes back.
 		if("impale_drop_N")
-			spec = list(list("T", "arms", "body"), 0, 0, 0, 0, 0, 0)
+			spec = list(list("T", "whole"), 0, 0, 0, 0, 0, 0)
 		// Seen from the front the target is on the row before the bearer, their back to the camera, and covers the
 		// bearer's arms and the steel going in. "tips" is the two points out of their back, over them.
 		if("impale_arrive_S")
