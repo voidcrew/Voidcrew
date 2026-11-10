@@ -105,6 +105,10 @@
 /// Each step of the hoist from the stab up to the hold, and of the pull-back (side views).
 #define MANTIS_IMPALE_STEP (0.05 SECONDS)
 #define MANTIS_IMPALE_PULL_STEP (0.1 SECONDS)
+/// Held up they sag a pixel this long into the hold, for this long, and once more this long after the first.
+#define MANTIS_IMPALE_SAG_AFTER (0.15 SECONDS)
+#define MANTIS_IMPALE_SAG_FOR (0.1 SECONDS)
+#define MANTIS_IMPALE_SAG_EVERY (0.2 SECONDS)
 /// From the pull-back to the rip-out.
 #define MANTIS_IMPALE_RIP_BEAT (0.2 SECONDS)
 /// How long the bearer holds the last pose after the blades are out, before they are drawn as usual again,

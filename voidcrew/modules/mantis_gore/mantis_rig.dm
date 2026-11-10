@@ -396,8 +396,10 @@
  * doesn't use go, and the whole bearer leans to the beat's lean, plus [extra_w] and [extra_z], over [time].
  * With [from_w] or [from_z] every picture starts that far off and glides into place over [time] instead, the
  * way the lunging body glides in (mantis_lunge_dash_fx()): one animation, so the client sees the start.
+ * [ride_z] lifts everything but the bearer's body that far: the arms and the blades riding with someone who
+ * sags on them, so the steel in them stays where it is in them.
  */
-/datum/mantis_rig/proc/show(new_beat, extra_w = 0, extra_z = 0, time = 0.1 SECONDS, from_w = 0, from_z = 0, easing = SINE_EASING)
+/datum/mantis_rig/proc/show(new_beat, extra_w = 0, extra_z = 0, time = 0.1 SECONDS, from_w = 0, from_z = 0, easing = SINE_EASING, ride_z = 0)
 	if(QDELETED(bearer))
 		return
 	var/list/spec = mantis_rig_beat(move, new_beat, facing)
@@ -444,13 +446,13 @@
 	for(var/key in puppets)
 		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
 		var/to_w = base_w + lean_w + picture.shift_w
-		var/to_z = base_z + lean_z + picture.shift_z
+		var/to_z = base_z + lean_z + picture.shift_z + (key == "body" ? 0 : ride_z)
 		if(from_w || from_z)
 			picture.pixel_w = to_w + from_w
 			picture.pixel_z = to_z + from_z
+		// At once, ending whatever was still moving it.
 		if(!time)
-			picture.pixel_w = to_w
-			picture.pixel_z = to_z
+			animate(picture, pixel_w = to_w, pixel_z = to_z, time = 0)
 			continue
 		animate(picture, pixel_w = to_w, pixel_z = to_z, time = time, easing = easing)
 

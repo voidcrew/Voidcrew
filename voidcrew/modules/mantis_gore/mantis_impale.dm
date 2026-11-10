@@ -90,6 +90,8 @@
 	var/running = FALSE
 	/// TRUE from the pull-back until the blades are out.
 	var/ripping = FALSE
+	/// Pixels they hang up from where the hold has them: -1 while they sag on the blades (set_sag()).
+	var/sag = 0
 
 /datum/mantis_impale/New(mob/living/carbon/bearer, mob/living/carbon/victim, list/housings, knockdown)
 	. = ..()
@@ -204,18 +206,24 @@
 	addtimer(CALLBACK(src, PROC_REF(lift), step + 1), MANTIS_IMPALE_STEP, TIMER_DELETE_ME)
 
 /**
- * Held up: the victim is drawn up onto the blades, then hangs there, sagging and jerking on them until the
- * pull-back. The sag is relative and ends where it began.
+ * Held up: the victim hangs on the blades until the pull-back. Twice they sag a pixel and are heaved back up,
+ * and the blades and the arms holding them dip with them in the same frame (set_sag()).
  */
 /datum/mantis_impale/proc/hang()
-	show_beat("hold", rig && mantis_rig_beat("impale", "lift1", facing) ? 0 : 0.1 SECONDS)
+	show_beat("hold", 0)
 	if(!running || ripping || QDELETED(victim))
 		return
-	animate(victim, time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_PARALLEL)
-	animate(pixel_z = -1, time = 0.2 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
-	animate(pixel_z = 1, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
-	animate(pixel_z = -1, time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
-	animate(pixel_z = 1, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
+	for(var/again in 0 to 1)
+		var/at = MANTIS_IMPALE_SAG_AFTER + again * MANTIS_IMPALE_SAG_EVERY
+		addtimer(CALLBACK(src, PROC_REF(set_sag), -1), at, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(set_sag), 0), at + MANTIS_IMPALE_SAG_FOR, TIMER_DELETE_ME)
+
+/// In the hold they hang [new_sag] pixels up from where the hold has them (a sag is negative).
+/datum/mantis_impale/proc/set_sag(new_sag)
+	if(!running || ripping || beat != "hold" || sag == new_sag)
+		return
+	sag = new_sag
+	show_beat("hold", 0)
 
 /**
  * Draws [new_beat] (mantis_rig_beat()): the bearer's arms and lean, and the victim drawn onto the blades.
@@ -242,8 +250,11 @@
 		extra_z -= target_z
 		target_w = 0
 		target_z = 0
-	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z)
-	place_victim(target_w, target_z, time)
+	// Sagging in the hold (set_sag()): the steel in them and the arms holding them go with them. Not against a
+	// wall: the points are in it.
+	var/dip = (new_beat == "hold" && !wall_pin) ? sag : 0
+	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z, ride_z = dip)
+	place_victim(target_w, target_z + dip, time)
 	set_tilt(spec[MANTIS_RIG_TILT])
 
 /// Draws the victim [w], [z] pixels off their tile (and upright, if brought up off the floor), over [time].
