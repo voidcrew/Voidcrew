@@ -5,8 +5,10 @@
 #define MANTIS_GORE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
 /// 64x64 pictures: the flick.
 #define MANTIS_GORE_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
-/// 96x96 pictures centred on the wound: the drops a torn artery throws, for each of the eight ways they fly.
+/// 96x96 pictures of the drops a torn artery throws, for each of the eight ways they fly. The wound is in the
+/// middle across and MANTIS_ARTERY_WOUND_RISE pixels above the middle: the drops fall further than they rise.
 #define MANTIS_ARTERY_ICON 'voidcrew/modules/mantis_gore/icons/mantis_artery.dmi'
+#define MANTIS_ARTERY_WOUND_RISE 16
 /// 96x96 pictures centred on the bearer: the arms and blades of each beat of the impale and the scissor, drawn
 /// around the victim by the blade rig (mantis_rig.dm).
 #define MANTIS_GORE_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'

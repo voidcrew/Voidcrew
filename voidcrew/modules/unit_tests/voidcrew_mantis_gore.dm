@@ -21,6 +21,8 @@
 #define MANTIS_TEST_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
 #define MANTIS_TEST_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
 #define MANTIS_TEST_ARTERY_ICON 'voidcrew/modules/mantis_gore/icons/mantis_artery.dmi'
+/// MANTIS_ARTERY_WOUND_RISE
+#define MG_ARTERY_WOUND_RISE 16
 #define MANTIS_TEST_LEFTHAND 'voidcrew/modules/mantis_gore/icons/mantis_lefthand.dmi'
 #define MANTIS_TEST_RIGHTHAND 'voidcrew/modules/mantis_gore/icons/mantis_righthand.dmi'
 /// MANTIS_GORE_REACH_ICON
@@ -837,6 +839,22 @@
 	TEST_ASSERT(leaning[1] > straight[1], "Drops thrown up the screen out of an arm on the right don't lean out to the right")
 	TEST_ASSERT_EQUAL(leaning[2], straight[2], "Leaning out changed how far the drops fly")
 	TEST_ASSERT_EQUAL(mantis_spurt_lean(FALSE, EAST, 1), 0, "Drops thrown sideways lean")
+	// Every spurt's drops are still in its picture where they come down, on the last frame it holds. The neck's,
+	// thrown down the screen, fall furthest: the wound sits above the picture's middle to leave them the room.
+	var/icon/spurt_sheet = icon(MANTIS_TEST_ARTERY_ICON)
+	for(var/spurt_height in list("low", "mid", "high"))
+		for(var/spurt_weak in list(FALSE, TRUE))
+			var/list/spurt_shape = mantis_spurt_shape(spurt_height, spurt_weak)
+			var/spurt_state = "spurt_[spurt_height][spurt_weak ? "_weak" : ""]"
+			var/last_frame = spurt_shape[3] / 0.5 + 1
+			for(var/way in GLOB.alldirs)
+				var/list/landing = mantis_spurt_spot(list(0, 0), spurt_height, spurt_weak, way)
+				var/landed = FALSE
+				for(var/across in -3 to 3)
+					for(var/up in -3 to 3)
+						if(spurt_sheet.GetPixel(49 + landing[1] + across, 48 + MG_ARTERY_WOUND_RISE + landing[2] + up, spurt_state, way, last_frame))
+							landed = TRUE
+				TEST_ASSERT(landed, "The [spurt_state] thrown [dir2text(way)] has left its picture before its drops come down")
 
 	// The blood runs down the body, and goes when the wound does.
 	var/obj/effect/abstract/cyberware_anim/mantis_run/run = mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, torn)
@@ -883,6 +901,7 @@
 #undef MANTIS_TEST_ICON
 #undef MANTIS_TEST_LARGE_ICON
 #undef MANTIS_TEST_ARTERY_ICON
+#undef MG_ARTERY_WOUND_RISE
 #undef MANTIS_TEST_LEFTHAND
 #undef MANTIS_TEST_RIGHTHAND
 #undef MANTIS_TEST_REACH_ICON

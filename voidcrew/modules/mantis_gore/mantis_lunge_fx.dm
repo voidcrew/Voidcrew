@@ -245,9 +245,10 @@
 	jet.setDir(spurt_dir)
 	// Blood in the air is no part of the body: drawn apart from it, so its layer sorts it against the whole body.
 	jet.appearance_flags |= RESET_TRANSFORM|RESET_COLOR|KEEP_APART
-	// 96x96 around the wound. Drawn elsewhere, not moved: it stays on the body's own row.
+	// 96x96, the wound above its middle so the drops that fall furthest (the neck's, thrown down the screen) stay
+	// in the picture until they land. Drawn elsewhere, not moved: it stays on the body's own row.
 	jet.pixel_w = -32 + point[1]
-	jet.pixel_z = -32 + point[2]
+	jet.pixel_z = -32 - MANTIS_ARTERY_WOUND_RISE + point[2]
 	jet.color = victim.get_blood_dna_color() || BLOOD_COLOR_RED
 	jet.layer = ((spurt_dir & NORTH) || wire_limb_far(zone, victim.dir)) ? BELOW_MOB_LAYER : MANTIS_OVER_VICTIM_LAYER
 	var/lean = mantis_spurt_lean(weak, spurt_dir, side)
