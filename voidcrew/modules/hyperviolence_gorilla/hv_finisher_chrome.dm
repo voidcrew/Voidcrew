@@ -132,3 +132,16 @@
 /// Down, for a chrome finisher: in crit, or stunned. Lying there isn't enough.
 /proc/chrome_finisher_is_down(mob/living/victim)
 	return victim.stat >= SOFT_CRIT || HAS_TRAIT(victim, TRAIT_INCAPACITATED)
+
+/**
+ * Whether [victim] is square on to [user]: straight north, south, east or west, never on a corner. The
+ * Gorilla finishers and the Mantis scissor draw both bodies along one straight line, so they only start
+ * square on; from a corner the click is an ordinary blow and the bearer steps round to finish.
+ */
+/proc/finisher_square_on(atom/user, atom/victim)
+	return (get_dir(user, victim) in GLOB.cardinals)
+
+/// Whether [victim] has ended up on a corner from [user] mid-move: dragged there or the like. The rigs above
+/// can't draw that, so it lets go. The same tile is fine (the clap brings the body in).
+/proc/finisher_on_corner(atom/user, atom/victim)
+	return (get_dir(user, victim) in GLOB.diagonals)

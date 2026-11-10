@@ -98,7 +98,8 @@
 		return FALSE
 	if(length(mantis_held_blades(user, MANTIS_MOVE_SCISSOR)) < 2)
 		return FALSE
-	return get_dist(user, victim) <= 1 && user.Adjacent(victim)
+	// Square on only: from a corner the swing is just a swing
+	return get_dist(user, victim) <= 1 && user.Adjacent(victim) && finisher_square_on(user, victim)
 
 // A blade stowed (an EMP, a retract) or the hands bound: it can't close.
 /datum/hv_finisher/mantis_scissor/safety_check()
@@ -107,6 +108,8 @@
 		return
 	if(length(mantis_held_blades(user, MANTIS_MOVE_SCISSOR)) < 2 || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED))
 		return HV_FINISHER_ATTACKER_DOWN
+	if(finisher_on_corner(user, victim))
+		return HV_FINISHER_LOST_GRIP
 
 // #509's wording, but the bearer reels back rather than letting go of a grip they never took.
 /datum/hv_finisher/mantis_scissor/interrupt(reason)
