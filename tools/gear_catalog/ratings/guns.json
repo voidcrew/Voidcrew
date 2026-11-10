@@ -1918,6 +1918,7 @@
  },
  "method": "Placed against the pilot's gun ratings with the same score: the formula where a gun has stats, and a judged score where its power is not in the stats. Bands: green under 40, yellow 40 to 109, red 110 and up.",
  "unrated": {
+  "/obj/item/flamethrower/full/tank/bounty_boss": "no route",
   "/obj/item/gun": "abstract",
   "/obj/item/gun/ballistic": "abstract",
   "/obj/item/gun/ballistic/automatic": "abstract",
