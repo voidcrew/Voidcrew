@@ -650,7 +650,8 @@
 	TEST_ASSERT_NOTNULL(armoured.get_bodypart(BODY_ZONE_R_ARM).get_wound_type(/datum/wound/blunt/bone/moderate), "An armoured arm didn't dislocate")
 	qdel(armoured_rip)
 
-/// The backbreaker breaks the back (they can't stand), and the fold comes off when the body is moved.
+/// The backbreaker breaks the back (they can't stand) and shoves the body onto the tile the bearer faces, or drops it
+/// at his feet if that tile is blocked; the fold comes off when the body is moved.
 /datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker
 
 /datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker/Run()
@@ -660,27 +661,43 @@
 	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The backbreaker didn't start")
 	var/datum/hv_finisher/chrome/gorilla/backbreaker/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "A chest aim didn't pick the backbreaker")
-	// Whatever blood earlier tests left where the body comes down
+	// Whatever blood earlier tests left where the body is broken and where it comes down
 	clear_mess(spot(1, 1))
+	clear_mess(spot(2, 1))
 	run_to_end(finisher)
-	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(1, 1), "The backbreaker laid blood of its own where the body landed")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(1, 1), "The backbreaker laid blood of its own at the knee")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(2, 1), "The backbreaker laid blood of its own where the body landed")
 	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
 	var/datum/wound/spine = chest.get_wound_type(/datum/wound/blunt/bone/critical/gorilla_spine)
 	TEST_ASSERT_NOTNULL(spine, "The back didn't break")
 	TEST_ASSERT(HAS_TRAIT_FROM(victim, TRAIT_FLOORED, REF(spine)), "A broken back can still stand")
-	TEST_ASSERT_EQUAL(victim.loc, spot(1, 1), "The body didn't come down off the knee where it broke")
+	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The backbreaker moved the bearer")
+	TEST_ASSERT_EQUAL(victim.loc, spot(2, 1), "The body wasn't shoved off the knee onto the tile the bearer faces")
 	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_EAST, "The body lies the other way from its bent halves, so it flips when they come down")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_fold), "The broken back isn't drawn bent")
 	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The bent body isn't the one shown")
-	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "The body isn't drawn in front of the bearer standing over it")
+	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "A body shoved clear of the bearer is drawn off its tile")
 	victim.forceMove(spot(3, 3))
 	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_fold), "The fold stayed on a moved body")
-	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "A moved body is still drawn off its tile")
 	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A moved body stayed hidden")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold left puppets behind")
 	var/spine_ref = REF(spine)
 	spine.remove_wound()
 	TEST_ASSERT(!HAS_TRAIT_FROM(victim, TRAIT_FLOORED, spine_ref), "A set back still can't stand")
+
+	// Something solid on the tile he faces: the body comes down at his feet, drawn in front of him
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3))
+	second.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/boxed_in = downed(spot(2, 3))
+	allocate(/obj/structure/closet/crate, spot(2, 3))
+	var/datum/hv_finisher/chrome/gorilla/backbreaker/blocked = new(second, boxed_in)
+	TEST_ASSERT(blocked.start(), "Test fixture: the backbreaker wouldn't start beside a crate")
+	run_to_end(blocked)
+	TEST_ASSERT_EQUAL(boxed_in.loc, spot(1, 3), "With the tile ahead blocked the body didn't come down at the bearer's feet")
+	TEST_ASSERT_NOTNULL(boxed_in.GetComponent(/datum/component/gorilla_laid_in_front), "The body at his feet isn't drawn in front of the bearer standing over it")
+	boxed_in.forceMove(spot(3, 3))
+	TEST_ASSERT_NULL(boxed_in.GetComponent(/datum/component/gorilla_laid_in_front), "A moved body is still drawn off its tile")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold at his feet left puppets behind")
 
 /// Damage on the bearer, the bearer moving, or the victim coming out of the stun stops it, with the
 /// shorter cooldown, and nothing is left hidden or posed.

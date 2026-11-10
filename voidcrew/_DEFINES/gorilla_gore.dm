@@ -238,6 +238,11 @@
 #define GORILLA_LAID_IN_FRONT_OFFSET "gorilla_laid_in_front"
 /// How long a broken back stays folded over the knee before it is rolled off.
 #define GORILLA_BACK_FOLD_HOLD (0.3 SECONDS)
+/// The shove off the knee onto the tile ahead: how long the body is in the air, and how many pixels it rises on the way.
+#define GORILLA_BACK_SHOVE_TIME (0.45 SECONDS)
+#define GORILLA_BACK_SHOVE_RISE 6
+/// How long the bearer's arms take to push out after it.
+#define GORILLA_BACK_SHOVE_PUSH (0.12 SECONDS)
 
 // The landed piston punch, the haymaker's hit and the backbreaker's break (gorilla_punch.dm's sound procs).
 /// A sound key (/datum/sound_effect/gorilla_piston_punch): one of three punches at random.
