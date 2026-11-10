@@ -695,6 +695,56 @@
 	demand_min = 5
 	demand_max = 8
 
+// Barnaby sends anything Pike wants for the wall next door, so a trophy fish
+// never goes in the chowder for less by accident.
+/datum/shop_buyback/general/fresh_catch/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return !claimed_by_buyback_family(offered, /datum/shop_buyback/bait)
+
+/**
+ * Whether any ledger entry under `family` (a /datum/shop_buyback base type)
+ * would take `offered`. A catch-all entry ("any fish", "any produce", "any
+ * dish") calls this to step aside for the specific entries that pay more, so
+ * a rare item can't be sold cheap by surprise and the two lists never drift:
+ * adding a rare entry excludes it from the catch-all automatically.
+ *
+ * Asks real matches() on one cached prototype per entry, so conditions like a
+ * potency floor or an excluded subtype carry over exactly.
+ */
+/proc/claimed_by_buyback_family(obj/item/offered, family)
+	var/static/list/prototypes_by_family = list()
+	var/list/prototypes = prototypes_by_family[family]
+	if(isnull(prototypes))
+		prototypes = list()
+		for(var/datum/shop_buyback/entry_type as anything in subtypesof(family))
+			if(!initial(entry_type.item_path))
+				continue
+			prototypes += new entry_type
+		prototypes_by_family[family] = prototypes
+	for(var/datum/shop_buyback/prototype as anything in prototypes)
+		if(prototype.matches(offered))
+			return TRUE
+	return FALSE
+
+/**
+ * Voucher-paying buybacks keep the demand they rolled at round start: the
+ * supply convoy refills only the credit entries. A ship can grow, cook or
+ * breed its rare goods without end, so a short demand that refilled every
+ * convoy would put no cap on them at all. Returns entry -> demand for
+ * restore_voucher_buyback_demand() after the convoy has run.
+ */
+/proc/hold_voucher_buyback_demand(datum/outpost_shop/shop)
+	var/list/held = list()
+	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
+		if(buyback.pay_vouchers > 0)
+			held[buyback] = buyback.demand
+	return held
+
+/proc/restore_voucher_buyback_demand(list/held)
+	for(var/datum/shop_buyback/buyback as anything in held)
+		buyback.demand = held[buyback]
+
 /datum/shop_buyback/general/bear_pelt
 	name = "bear hide"
 	desc = "Cave bear hide off the green worlds. Barnaby says it's for the guest bunks. There are no guest bunks."
