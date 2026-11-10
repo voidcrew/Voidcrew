@@ -362,10 +362,10 @@
   "/obj/item/organ/cyberimp/cyberware/cascade": {
    "confidence": "high",
    "group": "Operating system",
-   "hash": "875de17ed8afaa7f",
+   "hash": "",
    "name": "Cascade lattice",
    "rank": 1,
-   "reason": "Eight seconds a minute at about double speed, melee twice as fast and 40% dodge while moving, then six seconds of crash and 80 stamina. Load 12 of 20, 8 vouchers at reputation 22. An EMP mid-burst ends it.",
+   "reason": "Eight seconds a minute at about double speed, melee twice as fast, 60% dodge against blows (and shots while moving) and a bigger crit roll on its own hits, then six seconds of crash and 80 stamina. Load 12 of 20, 8 vouchers at reputation 22. An EMP mid-burst ends it.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/cascade/milspec": {
@@ -374,7 +374,7 @@
    "hash": "",
    "name": "Service reflex lattice",
    "rank": 4,
-   "reason": "Seven seconds in every 90 at close to the lattice's speed, melee 40% quicker and 25% dodge while moving, then seven seconds of crash and 90 stamina. Load 9, 4 vouchers at reputation 11. An EMP mid-burst ends it.",
+   "reason": "Seven seconds in every 90 at close to the lattice's speed, melee 40% quicker, 45% dodge against blows (and shots while moving) and a bigger crit roll on its own hits, then seven seconds of crash and 90 stamina. Load 9, 4 vouchers at reputation 11. An EMP mid-burst ends it.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/cascade/street": {
@@ -383,7 +383,7 @@
    "hash": "",
    "name": "Spliced reflex rig",
    "rank": 7,
-   "reason": "Six seconds in every 120 at a clear speed boost, melee a quarter quicker and 15% dodge while moving, then eight seconds of crash and 100 stamina. Load 6, 3,600 cr at reputation 4. An EMP mid-burst ends it.",
+   "reason": "Six seconds in every 120 at a clear speed boost, melee a quarter quicker, 30% dodge against blows (and shots while moving) and a small crit roll bonus on its own hits, then eight seconds of crash and 90 stamina. A short window on a long cooldown keeps it below the service lattice. Load 6, 3,600 cr at reputation 4. An EMP mid-burst ends it.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/chromatic_dermis": {

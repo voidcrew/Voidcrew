@@ -19,9 +19,11 @@
 #define CYBERWARE_CASCADE_WINDOW (8 SECONDS)
 /// The price.
 #define CYBERWARE_CASCADE_CRASH (6 SECONDS)
-/// Ranged dodge chance while moving during the window (shared arbiter;
-/// highest-wins with Slipwire's 15, never additive).
-#define CYBERWARE_CASCADE_DODGE_CHANCE 40
+/// Dodge chance during the window (shared arbiter; highest-wins with
+/// Slipwire's 15, never additive): ranged fire while moving, blows any time.
+#define CYBERWARE_CASCADE_DODGE_CHANCE 60
+/// Crit roll bonus for the bearer's own aimed hits during the window (crit_roll.dm).
+#define CYBERWARE_CASCADE_CRIT_BONUS 18
 /// Stamina dumped by the crash.
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
 /// Degrees the afterimage hue moves per step of the trail.
@@ -37,8 +39,9 @@
  * The sandevistan-class flagship. Eight seconds where the world happens at
  * your speed: a full -1 gait (with reagent-modifier immunity for the
  * duration, no meth stacking, no sub-tick movement), melee cooldowns
- * halved, and 40% ranged dodge while moving through the shared arbiter in
- * ware_pro_combat.dm. Everyone nearby sees it: afterimages peel off every
+ * halved, 60% dodge through the shared arbiter in ware_pro_combat.dm (ranged
+ * fire while moving, blows whether moving or not), and +18 on the crit roll
+ * for the bearer's own aimed hits (crit_roll.dm). Everyone nearby sees it: afterimages peel off every
  * step, your victim's screen never had a chance, and the activation is an
  * audible time-tear.
  *
@@ -69,8 +72,10 @@
 	var/crash_duration = CYBERWARE_CASCADE_CRASH
 	/// Stamina dumped on the bearer by the crash.
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
-	/// Ranged dodge chance while moving during the window.
+	/// Dodge chance during the window: ranged fire while moving, blows any time.
 	var/window_dodge = CYBERWARE_CASCADE_DODGE_CHANCE
+	/// Crit roll bonus for the bearer's own aimed hits during the window.
+	var/window_crit_bonus = CYBERWARE_CASCADE_CRIT_BONUS
 	/// The gait the window grants.
 	var/datum/movespeed_modifier/window_speed = /datum/movespeed_modifier/cyberware_cascade
 	/// Melee-cooldown multiplier during the window (lower is faster).
@@ -114,7 +119,7 @@
 
 /datum/action/cooldown/cyberware/cascade_surge
 	name = "Cascade Surge"
-	desc = "Eight seconds of overwhelming speed: melee cooldowns halved, 40% chance to dodge ranged fire while moving. Then six seconds of crash."
+	desc = "Eight seconds of overwhelming speed: melee cooldowns halved, hits land harder, and a 60% chance to dodge blows, or ranged fire on the move. Then six seconds of crash."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_cascade"
 	cooldown_time = 60 SECONDS
@@ -146,8 +151,10 @@
 	var/trail_hue = 0
 	// The numbers below default to the T4 lattice and are overwritten from the
 	// organ that opened the window (see on_creation). Copied, never referenced.
-	/// Ranged dodge chance while the window lives.
+	/// Dodge chance while the window lives: ranged fire while moving, blows any time.
 	var/dodge_chance = CYBERWARE_CASCADE_DODGE_CHANCE
+	/// Crit roll bonus for the bearer's own aimed hits while the window lives.
+	var/crit_bonus = CYBERWARE_CASCADE_CRIT_BONUS
 	/// The gait the window grants.
 	var/datum/movespeed_modifier/speed_type = /datum/movespeed_modifier/cyberware_cascade
 	/// Melee-cooldown multiplier (lower is faster).
@@ -172,6 +179,7 @@
 		duration = lattice.window_duration
 		alert_type = lattice.window_alert
 		dodge_chance = lattice.window_dodge
+		crit_bonus = lattice.window_crit_bonus
 		speed_type = lattice.window_speed
 		melee_mult = lattice.window_melee_mult
 		colour_type = lattice.window_colour
@@ -186,7 +194,8 @@
 	trail_hue = rand(0, 359)
 	owner.add_movespeed_modifier(speed_type)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
-	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)))
+	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)), melee = TRUE)
+	owner.hv_crit_set_attacker_bonus(id, crit_bonus)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
 	owner.add_client_colour(colour_type, id)
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
@@ -202,6 +211,7 @@
 	owner.remove_movespeed_modifier(speed_type)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
+	owner.hv_crit_set_attacker_bonus(id, null)
 	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
@@ -215,7 +225,8 @@
 	return melee_mult
 
 /// Dodge-source callback for the shared arbiter: flat chance while the window
-/// lives (the arbiter itself enforces moving-only and point-blank rules).
+/// lives (the arbiter itself enforces the moving-only and point-blank rules
+/// for shots, and the pinned rules for blows).
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
 	return dodge_chance
 

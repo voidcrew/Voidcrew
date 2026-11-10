@@ -1562,7 +1562,7 @@
 	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, lattice)
 	var/datum/status_effect/cyberware_cascade_window/window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	TEST_ASSERT_NOTNULL(window, "The lattice didn't open a window")
-	TEST_ASSERT_EQUAL(window.dodge_chance, 40, "The lattice window lost its dodge")
+	TEST_ASSERT_EQUAL(window.dodge_chance, 60, "The lattice window lost its dodge")
 	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 0.5, "The lattice window lost its melee boost")
 	TEST_ASSERT_EQUAL(window.duration, world.time + 8 SECONDS, "The lattice window lost its length")
 	TEST_ASSERT(patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade), "The lattice window lost its gait")
@@ -1578,7 +1578,7 @@
 	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, street)
 	window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	TEST_ASSERT_NOTNULL(window, "The street rig didn't open a window")
-	TEST_ASSERT_EQUAL(window.dodge_chance, 15, "The street window kept the wrong dodge")
+	TEST_ASSERT_EQUAL(window.dodge_chance, 30, "The street window kept the wrong dodge")
 	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 0.75, "The street window kept the wrong melee boost")
 	TEST_ASSERT_EQUAL(window.duration, world.time + 6 SECONDS, "The street window kept the wrong length")
 	TEST_ASSERT(patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade/street), "The street window lost its gait")
@@ -1599,6 +1599,67 @@
 	var/list/milspec_price = GLOB.cyberware_price_index[milspec.type]
 	TEST_ASSERT(street_price && street_price["credits"] > 0 && !street_price["vouchers"], "The street rig isn't a credit-priced SKU")
 	TEST_ASSERT(milspec_price && milspec_price["vouchers"] > 0, "The service lattice isn't a voucher-priced SKU")
+
+/// A reflex window dodges blows through tg's own check_block(): a dodged knife
+/// is a real miss that deals nothing. It never dodges once the bearer is down,
+/// never a grab, and never in the crash. The window also raises the crit roll
+/// of the bearer's own hits on a standing target, and only during the window.
+/datum/unit_test/voidcrew_cascade_blow_dodge
+
+/datum/unit_test/voidcrew_cascade_blow_dodge/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/attacker = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	var/obj/item/organ/cyberimp/cyberware/cascade/milspec/milspec = allocate(/obj/item/organ/cyberimp/cyberware/cascade/milspec)
+	var/obj/item/organ/cyberimp/cyberware/cascade/street/street = allocate(/obj/item/organ/cyberimp/cyberware/cascade/street)
+	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
+	TEST_ASSERT(attacker.put_in_active_hand(knife), "Attacker fixture failed")
+	attacker.set_combat_mode(TRUE)
+	attacker.zone_selected = BODY_ZONE_CHEST
+
+	TEST_ASSERT_EQUAL(street.window_dodge, 30, "The street rig dodges at the wrong chance")
+	TEST_ASSERT_EQUAL(milspec.window_dodge, 45, "The service lattice dodges at the wrong chance")
+	TEST_ASSERT_EQUAL(lattice.window_dodge, 60, "The lattice dodges at the wrong chance")
+	TEST_ASSERT(street.window_crit_bonus < milspec.window_crit_bonus && milspec.window_crit_bonus < lattice.window_crit_bonus, "The crit bonus doesn't climb the Cascade line")
+
+	TEST_ASSERT_EQUAL(attacker.hv_crit_attacker_bonus(patient), 0, "A crit bonus with no window open")
+	attacker.apply_status_effect(/datum/status_effect/cyberware_cascade_window, lattice)
+	TEST_ASSERT_EQUAL(attacker.hv_crit_attacker_bonus(patient), lattice.window_crit_bonus, "The window didn't raise its bearer's crit roll")
+	patient.Knockdown(2 SECONDS)
+	TEST_ASSERT_EQUAL(attacker.hv_crit_attacker_bonus(patient), 0, "The window's crit bonus reached a helpless victim")
+	patient.SetKnockdown(0)
+	patient.set_body_position(STANDING_UP)
+	attacker.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_EQUAL(attacker.hv_crit_attacker_bonus(patient), 0, "The crit bonus outlived the window")
+	attacker.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	attacker.setStaminaLoss(0)
+
+	// The window, forced to always dodge.
+	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, lattice)
+	var/datum/status_effect/cyberware_cascade_window/window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_NOTNULL(window, "The lattice didn't open a window")
+	window.dodge_chance = 100
+	TEST_ASSERT_EQUAL(patient.check_block(knife, knife.force, "the [knife]", MELEE_ATTACK), SUCCESSFUL_BLOCK, "The window didn't dodge a knife")
+	patient.attacked_by(knife, attacker)
+	TEST_ASSERT_EQUAL(patient.getBruteLoss(), 0, "A dodged knife still cut")
+	TEST_ASSERT_EQUAL(patient.check_block(attacker, 0, "[attacker]'s grab", UNARMED_ATTACK), FAILED_BLOCK, "The window dodged a grab")
+	TEST_ASSERT_EQUAL(patient.check_block(knife, knife.force, "the [knife]", PROJECTILE_ATTACK), FAILED_BLOCK, "The blow dodge took a projectile check")
+	patient.Knockdown(2 SECONDS)
+	TEST_ASSERT_EQUAL(patient.check_block(knife, knife.force, "the [knife]", MELEE_ATTACK), FAILED_BLOCK, "The window dodged a blow while knocked down")
+	patient.SetKnockdown(0)
+	patient.set_body_position(STANDING_UP)
+	patient.Stun(2 SECONDS)
+	TEST_ASSERT_EQUAL(patient.check_block(knife, knife.force, "the [knife]", MELEE_ATTACK), FAILED_BLOCK, "The window dodged a blow while stunned")
+	patient.SetStun(0)
+
+	// The crash dodges nothing.
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_NOTNULL(patient.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The window ended without a crash")
+	TEST_ASSERT_NULL(patient.GetComponent(/datum/component/cyberware_dodge), "The crash kept a dodge source")
+	for(var/i in 1 to 10)
+		TEST_ASSERT_EQUAL(patient.check_block(knife, knife.force, "the [knife]", MELEE_ATTACK), FAILED_BLOCK, "The crash dodged a blow")
+	patient.attacked_by(knife, attacker)
+	TEST_ASSERT(patient.getBruteLoss() > 0, "A knife in the crash dealt nothing")
 
 /// The ripperdoc trade-in, the one ledger that takes chrome bought over a
 /// counter. No entry may pay more than half the cheapest shelf price of the
