@@ -214,8 +214,9 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	if(style == HV_VIS_TUMBLE_SLIDE)
 		// The legs of a body cut in half: a slide across the floor with a slight turn.
 		var/turn = pick(-1, 1) * 20
+		var/list/pivot = part.hv_vis_spin_pivot()
 		part.hv_vis_play(HV_VIS_TAG_SPIN, list(
-			list(part.pixel_w, part.pixel_z, hv_vis_turned(base, turn), time, CUBIC_EASING|EASE_OUT),
+			list(part.pixel_w, part.pixel_z, hv_vis_turned(base, turn, pivot[2], pivot[1]), time, CUBIC_EASING|EASE_OUT),
 			list(part.pixel_w, part.pixel_z, base, 4, SINE_EASING),
 		))
 		return
@@ -306,13 +307,24 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		part.hv_vis_stop(list(HV_VIS_TAG_ARC, HV_VIS_TAG_SPIN))
 	qdel(src)
 
+/// Where this thing's picture sits inside its icon, in pixels from the middle: list(x, y). A turn has to be
+/// about that point, or the picture swings round the middle of the icon instead of turning on the spot.
+/atom/movable/proc/hv_vis_spin_pivot()
+	return list(0, 0)
+
+/// tg draws a severed limb shifted (px_x, px_y) so that it sits on the middle of its tile: the limb
+/// itself is drawn that far the other way inside its icon.
+/obj/item/bodypart/hv_vis_spin_pivot()
+	return list(-px_x, -px_y)
+
 /// `turns` whole turns over `time`, clockwise for `spin_sign` 1, ending where the part started.
 /proc/hv_vis_spin_steps(atom/movable/part, turns, time, spin_sign = 1)
 	var/matrix/base = matrix(part.transform)
+	var/list/pivot = part.hv_vis_spin_pivot()
 	var/list/steps = list()
 	var/segments = max(3, turns * 3)
 	for(var/i in 1 to segments)
-		var/matrix/turned = i == segments ? matrix(base) : hv_vis_turned(base, spin_sign * 120 * i)
+		var/matrix/turned = i == segments ? matrix(base) : hv_vis_turned(base, spin_sign * 120 * i, pivot[2], pivot[1])
 		steps += list(list(part.pixel_w, part.pixel_z, turned, time / segments, LINEAR_EASING))
 	return steps
 
@@ -347,11 +359,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/end_x = clamp(part.pixel_x + dx * 6, -12, 12)
 	var/end_y = clamp(part.pixel_y + dy * 6, -12, 12)
 	var/matrix/base = matrix(part.transform)
+	var/list/pivot = part.hv_vis_spin_pivot()
 	var/start_x = part.pixel_x
 	var/start_y = part.pixel_y
 	animate(part, pixel_x = start_x, pixel_y = start_y, transform = base, time = 2.5, tag = HV_VIS_TAG_SPIN)
-	animate(pixel_x = start_x + (end_x - start_x) / 3, pixel_y = start_y + (end_y - start_y) / 3, transform = hv_vis_turned(base, spin * 120), time = 1.5, easing = LINEAR_EASING)
-	animate(pixel_x = start_x + (end_x - start_x) * 2 / 3, pixel_y = start_y + (end_y - start_y) * 2 / 3, transform = hv_vis_turned(base, spin * 240), time = 2, easing = LINEAR_EASING)
+	animate(pixel_x = start_x + (end_x - start_x) / 3, pixel_y = start_y + (end_y - start_y) / 3, transform = hv_vis_turned(base, spin * 120, pivot[2], pivot[1]), time = 1.5, easing = LINEAR_EASING)
+	animate(pixel_x = start_x + (end_x - start_x) * 2 / 3, pixel_y = start_y + (end_y - start_y) * 2 / 3, transform = hv_vis_turned(base, spin * 240, pivot[2], pivot[1]), time = 2, easing = LINEAR_EASING)
 	animate(pixel_x = end_x, pixel_y = end_y, transform = base, time = 3, easing = QUAD_EASING|EASE_OUT)
 
 // ---- Limbs and heads coming off ----

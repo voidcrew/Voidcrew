@@ -235,14 +235,14 @@
 		animate(src, tag = tag)
 
 /// A copy of `base` turned `angle` degrees clockwise about a point `pivot_y` pixels above (or below)
-/// the middle of the icon, as drawn.
-/proc/hv_vis_turned(matrix/base, angle, pivot_y = 0)
+/// and `pivot_x` pixels right (or left) of the middle of the icon, as drawn.
+/proc/hv_vis_turned(matrix/base, angle, pivot_y = 0, pivot_x = 0)
 	var/matrix/turned = matrix(base)
 	if(!angle)
 		return turned
-	turned.Translate(0, -pivot_y)
+	turned.Translate(-pivot_x, -pivot_y)
 	turned.Turn(angle)
-	turned.Translate(0, pivot_y)
+	turned.Translate(pivot_x, pivot_y)
 	return turned
 
 /// `base` with a change made in the body's own frame first: scaled, then moved, then turned, before
