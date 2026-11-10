@@ -1,7 +1,9 @@
 // Widowline x hyperviolence: the hooks the wire needs in the gore parts, chained here rather than edited
 // into them. Everything a wire sever changes about blood and stumps is in this file:
 // - A clean cut (TRAIT_HV_CLEAN_CUT, held only while a wire's damage is being applied) throws no flying
-//   hitsplatter and no heavy-hit spray, and leaves drips where tg would splatter the floor.
+//   hitsplatter, no heavy-hit or crit spray and no puff off a wound it reopens, puts no blood on the floor or on
+//   the wielder at the hit. The wounds and the blood lost are tg's as ever. A limb it takes
+//   off bleeds when it slides off (wire_sever_fx.dm); otherwise the wound bleeds as any does.
 // - tg's own wound roll never tears a limb off mid wire cut; the wire takes that limb off clean after.
 // - A limb taken by the wire sprays nothing when it leaves (hv_sever_spray); the wire lays its own streak.
 // - A wire stump can be held back for the beat the severed arm is still drawn on, and can be seared shut.
@@ -41,8 +43,28 @@ GLOBAL_LIST_INIT(hv_wire_stump_zones, list(BODY_ZONE_HEAD))
 
 /mob/living/add_splatter_floor(turf/splatter_turf, small_drip = FALSE)
 	if(HAS_TRAIT(src, TRAIT_HV_CLEAN_CUT))
-		small_drip = TRUE
-	return ..(splatter_turf, small_drip)
+		return null
+	return ..()
+
+// tg's puff of blood off a wound that is hit again (an open puncture), and the heavy spray of a crit landing.
+/mob/living/create_splatter(splatter_dir = pick(GLOB.cardinals))
+	if(HAS_TRAIT(src, TRAIT_HV_CLEAN_CUT))
+		return
+	return ..()
+
+/mob/living/hv_blood_throw(spray_dir, strength = 3)
+	if(HAS_TRAIT(src, TRAIT_HV_CLEAN_CUT))
+		return FALSE
+	return ..()
+
+// tg's hit puts blood on the floor and on whoever stands next to the body at the moment of the blow. The wire is a
+// pace away and cuts clean: the blood comes after (wire_sever_fx.dm), and the wire carries its own (wire_held.dm).
+/mob/living/attack_effects(damage_done, hit_zone, armor_block, obj/item/attacking_item, mob/living/attacker)
+	if(HAS_TRAIT(src, TRAIT_HV_CLEAN_CUT) && istype(attacking_item, /obj/item/melee/cyberware_monowire))
+		// The hit's message still reads before what follows it (hit_lines.dm).
+		hv_flush_hit()
+		return FALSE
+	return ..()
 
 /mob/living/carbon/hv_blood_on_limb_removed(datum/source, obj/item/bodypart/removed_limb, special, dismembered)
 	SIGNAL_HANDLER
@@ -66,9 +88,10 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 /**
  * The short spray of a clean cut: a few drops thrown from src toward spray_dir, landing within a tile or so in a
  * narrow fan. No streak along the floor; the shared spray (hv_blood_throw()) lays a straight line, a wire's never
- * does. `tiles` sets how far the furthest drops reach. Returns TRUE if anything was sprayed.
+ * does. `tiles` sets how far the furthest drops reach. From the stump of `zone` if given, shorter, and never straight
+ * away from the viewer: drops thrown that way would read as leaving the head. Returns TRUE if anything was sprayed.
  */
-/mob/living/proc/hv_wire_spray(spray_dir, tiles = 2)
+/mob/living/proc/hv_wire_spray(spray_dir, tiles = 2, zone)
 	if(QDELETED(src) || !isturf(loc) || can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return FALSE
 	tiles = clamp(round(tiles), 1, 2)
@@ -76,9 +99,63 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 		spray_dir = pick(GLOB.alldirs)
 	hv_blood_spray_until = world.time + 0.4 SECONDS
 	hv_blood_spray_strength = max(hv_blood_spray_strength, tiles)
-	var/list/reach = tiles > 1 ? list(10, 16, 22, 30, 38) : list(8, 12, 16, 20)
-	wire_blood_burst(loc, pixel_x, pixel_y - 2, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 28, reach)
+	if(!zone)
+		var/list/reach = tiles > 1 ? list(10, 16, 22, 30, 38) : list(8, 12, 16, 20)
+		wire_blood_burst(loc, pixel_x, pixel_y - 2, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 45, reach)
+		return TRUE
+	// From the stump: drops only, no splat; a clean cut. Short, so they land by the body, on the floor round the feet
+	// of a body standing.
+	var/list/stump = wire_zone_point(src, zone)
+	var/lying = body_position == LYING_DOWN
+	var/floor_y = lying ? stump[2] : -10
+	// A limb on the far side of a body side on: its stump is behind the body, and so are the drops leaving it.
+	var/behind = !lying && wire_limb_far(zone, dir)
+	if(!(spray_dir & NORTH))
+		hv_wire_drops(stump, floor_y, 6, dir2angle(spray_dir), 50, tiles > 1 ? 22 : 14, behind)
+		return TRUE
+	// Away from the viewer: out to the sides instead, short, landing on the floor beside the feet.
+	if(!lying)
+		floor_y = -13
+	if(spray_dir & (EAST | WEST))
+		hv_wire_drops(stump, floor_y, 6, (spray_dir & EAST) ? 90 : 270, 20, 16, behind)
+		return TRUE
+	hv_wire_drops(stump, floor_y, 3, 95, 15, 16, behind)
+	hv_wire_drops(stump, floor_y, 3, 265, 15, 16, behind)
 	return TRUE
+
+/// How far from the middle of a body side on drops leaving a stump behind it first show: past its back or chest.
+#define WIRE_DROPS_CLEAR_X 10
+
+/**
+ * `count` drops thrown from `from` (x, y pixels off the middle of src's tile) on `bearing` (degrees from north), give
+ * or take `spread`, each landing as a drop on the floor up to `reach` pixels from (from x, `floor_y`). Spread evenly
+ * over the cone and over the reach, each with a little give, and dealt out at random so that no two neighbours in
+ * the cone are also neighbours in reach: they land as a scatter, not a line. They leave a beat apart. `behind` draws
+ * them all behind the bodies they pass.
+ */
+/mob/living/proc/hv_wire_drops(list/from, floor_y, count, bearing, spread, reach, behind = FALSE)
+	// From a stump behind a body side on, they come out past its back or front, not over its outline: a drop crossing
+	// the edge of the body, half hidden, reads as a speck on it.
+	if(behind && round(sin(bearing), 0.01))
+		from = list(pixel_x + SIGN(sin(bearing)) * WIRE_DROPS_CLEAR_X, from[2])
+	var/blood_color = wire_blood_color(src)
+	var/list/blood_dna = get_blood_dna_list()
+	var/list/reaches = list()
+	for(var/i in 1 to count)
+		reaches += round(reach * (0.3 + 0.7 * i / count))
+	shuffle_inplace(reaches)
+	var/slice = count > 1 ? 2 * spread / count : 0
+	for(var/i in 1 to count)
+		var/angle = bearing - spread + slice * (i - 0.5) + rand(-slice, slice) / 2
+		var/distance = reaches[i] + rand(-3, 3)
+		var/land_x = from[1] + round(sin(angle) * distance) + rand(-3, 3)
+		var/land_y = floor_y + round(cos(angle) * distance) + rand(-3, 3)
+		var/flight = round(1.5 + distance / 14, 0.5)
+		// Never all at once: a burst of drops leaving one point at once reads as a red star on the stump.
+		var/delay = pick(0.05, 0.1, 0.15, 0.2) SECONDS
+		new /obj/effect/temp_visual/wire_blood_drop(loc, list(from[1], from[2], land_x, land_y, 2 + rand(0, 4), flight, delay, behind || cos(angle) > 0.3), blood_color, blood_dna)
+
+#undef WIRE_DROPS_CLEAR_X
 
 // ---- Stumps: held back, and seared ----
 

@@ -203,7 +203,8 @@
 		qdel(old_lash)
 	cut(user, victim, BODY_ZONE_L_ARM)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The crossing cut didn't take an arm at 30%")
-	// The other hand's wire lashes out too; nothing is drawn over the target.
+	// The other hand's wire lashes out too, a beat later; nothing is drawn over the target.
+	sleep(0.2 SECONDS)
 	TEST_ASSERT(locate(/obj/effect/abstract/wire_reach) in get_turf(user), "The crossing cut didn't lash the other wire")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in victim.vis_contents), "The crossing cut drew over its target")
 	TEST_ASSERT_EQUAL(user.wire_cross_hits, 0, "The count didn't start again after the crossing cut")
@@ -400,7 +401,13 @@
 	wire.flick_blood(user, "right")
 	TEST_ASSERT(locate(/obj/effect/temp_visual/wire_blood_drop) in get_turf(user), "The fan threw no drops")
 	sleep(1 SECONDS)
-	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/drip) in ahead, "The fan landed no blood ahead")
+	// It scatters over the floor ahead: a row nearer or further as well as level with the wielder.
+	var/landed_ahead = FALSE
+	for(var/obj/effect/decal/cleanable/blood/drip/drop in range(2, user))
+		if(drop.x == ahead.x)
+			landed_ahead = TRUE
+			break
+	TEST_ASSERT(landed_ahead, "The fan landed no blood ahead")
 	var/after = 0
 	for(var/obj/effect/decal/cleanable/blood/drip/drop in range(2, user))
 		if(get_turf(drop) != get_turf(user))
@@ -420,6 +427,31 @@
 	var/obj/item/melee/cyberware_monowire/arc = held(attacker)
 	cut(attacker, victim, BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(arc.blood_stage(), 0, "The Arc shows blood")
+
+/// A lash hides the wire hanging in the hand that throws it whichever way the wielder faces, and is drawn behind a
+/// body standing a row nearer the viewer and over one a row further off.
+/datum/unit_test/voidcrew_widowline/wire_lash_look
+
+/datum/unit_test/voidcrew_widowline/wire_lash_look/Run()
+	var/mob/living/carbon/human/consistent/user = wielder(spot(2, 2))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	for(var/facing in GLOB.cardinals)
+		var/turf/stand = get_step(user, facing)
+		victim.forceMove(stand)
+		victim.setDir(REVERSE_DIR(facing))
+		user.setDir(facing)
+		wire.show_inhand()
+		wire.wire_lash_at(user, victim, BODY_ZONE_R_LEG)
+		TEST_ASSERT(wire.inhand_hidden_until > world.time, "A lash facing [dir2text(facing)] left the hanging wire drawn")
+		var/obj/effect/abstract/wire_reach/lash_end = locate() in stand
+		TEST_ASSERT_NOTNULL(lash_end, "A lash facing [dir2text(facing)] drew nothing on its target's tile")
+		if(facing == SOUTH)
+			TEST_ASSERT_EQUAL(lash_end.layer, BELOW_MOB_LAYER, "A lash down to a body nearer the viewer drew over it")
+		else if(facing == NORTH)
+			TEST_ASSERT_EQUAL(lash_end.layer, ABOVE_MOB_LAYER, "A lash up to a body further off drew under it")
+		for(var/obj/effect/abstract/wire_reach/lash in range(1, user))
+			qdel(lash)
 
 /// The wire swings out of the spool and reels back in, the held wire hidden for the swing; a wet one flicks.
 /datum/unit_test/voidcrew_widowline/play_deploy
@@ -675,3 +707,58 @@
 	var/before = victim.getBruteLoss()
 	TEST_ASSERT(wire.wire_aimed_swing(npc, victim, BODY_ZONE_CHEST), "A human NPC couldn't swing the wire at all")
 	TEST_ASSERT(victim.getBruteLoss() > before, "A human NPC's wire swing did nothing")
+
+/// A second housing through the cradle goes on the free arm, one wire per arm, and both deploy. A third, with
+/// both arms taken, replaces the right one and racks it in the tray: nothing lost, nothing doubled.
+/datum/unit_test/voidcrew_widowline/cradle_second_arm
+
+/datum/unit_test/voidcrew_widowline/cradle_second_arm/Run()
+	var/obj/machinery/chrome_cradle/rig = allocate(/obj/machinery/chrome_cradle, spot(1, 1))
+	var/mob/living/carbon/human/consistent/patient = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	rig.buckle_mob(patient, force = TRUE)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/first = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/second = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	first.forceMove(rig)
+	rig.begin_install(first)
+	TEST_ASSERT(rig.busy, "The first housing's install didn't begin")
+	rig.finish_install()
+	TEST_ASSERT_EQUAL(first.owner, patient, "The first housing didn't go in")
+	TEST_ASSERT_EQUAL(first.zone, BODY_ZONE_R_ARM, "The first housing didn't take its own arm")
+
+	second.forceMove(rig)
+	rig.begin_install(second)
+	TEST_ASSERT(rig.busy, "The second housing's install didn't begin")
+	rig.finish_install()
+	TEST_ASSERT_EQUAL(second.owner, patient, "The second housing didn't go in")
+	TEST_ASSERT_EQUAL(first.owner, patient, "The second housing evicted the first")
+	TEST_ASSERT(!(first in rig.tray), "The first housing was racked in the tray")
+	TEST_ASSERT_EQUAL(second.zone, BODY_ZONE_L_ARM, "The second housing didn't go on the free arm")
+	TEST_ASSERT_EQUAL(second.slot, ORGAN_SLOT_LEFT_ARM_AUG, "The second housing's slot didn't follow its arm")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(ORGAN_SLOT_RIGHT_ARM_AUG), first, "The right arm doesn't hold the first housing")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(ORGAN_SLOT_LEFT_ARM_AUG), second, "The left arm doesn't hold the second housing")
+
+	rig.unbuckle_mob(patient, force = TRUE)
+	first.ui_action_click()
+	second.ui_action_click()
+	var/obj/item/melee/cyberware_monowire/right_wire = first.active_item
+	var/obj/item/melee/cyberware_monowire/left_wire = second.active_item
+	TEST_ASSERT(istype(right_wire) && patient.is_holding(right_wire), "The right wire didn't deploy")
+	TEST_ASSERT(istype(left_wire) && patient.is_holding(left_wire), "The left wire didn't deploy")
+	TEST_ASSERT(IS_RIGHT_INDEX(patient.get_held_index_of_item(right_wire)), "The right housing's wire isn't in the right hand")
+	TEST_ASSERT(IS_LEFT_INDEX(patient.get_held_index_of_item(left_wire)), "The left housing's wire isn't in the left hand")
+	first.ui_action_click()
+	second.ui_action_click()
+	TEST_ASSERT(right_wire.loc == first && left_wire.loc == second, "The wires didn't stow")
+
+	// Both arms taken: a third replaces the one on its own arm, which goes to the tray.
+	rig.buckle_mob(patient, force = TRUE)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/third = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	third.forceMove(rig)
+	rig.begin_install(third)
+	TEST_ASSERT(rig.busy, "The third housing's install didn't begin")
+	rig.finish_install()
+	TEST_ASSERT_EQUAL(third.owner, patient, "The third housing didn't go in")
+	TEST_ASSERT_EQUAL(third.zone, BODY_ZONE_R_ARM, "With both arms taken, the third housing left its own arm")
+	TEST_ASSERT(!first.owner && first.loc == rig && (first in rig.tray), "The replaced housing wasn't racked in the tray")
+	TEST_ASSERT_EQUAL(second.owner, patient, "The left housing was disturbed")
+	TEST_ASSERT(!QDELETED(first) && !QDELETED(second) && !QDELETED(third), "A housing was consumed")

@@ -46,6 +46,13 @@
 
 /// The swing out of the spool and back in.
 #define WIRE_SWING_TIME (0.4 SECONDS)
+/// A lash's line fades out over this long.
+#define WIRE_LASH_FADE (0.5 SECONDS)
+/// The wire hanging in the hand isn't drawn for this long into a lash, while the line out of the grip stands in for it,
+/// and is back as the line fades: never two wires from one hand, never an empty one.
+#define WIRE_LASH_HIDE (0.45 SECONDS)
+/// The alpha a lash's line is down to by then, held until it goes.
+#define WIRE_LASH_TRACE 40
 
 /// The garrote's wait after an attempt that got a grip, and after one that didn't.
 #define WIRE_GARROTE_COOLDOWN (20 SECONDS)

@@ -33,6 +33,8 @@
 	var/force_cross = FALSE
 	/// The body zone the last landed cut went into, for the lash drawn after the hit (wire_lash_at()).
 	var/lash_zone
+	/// The next lash this wire draws is its half of a crossing cut, through the middle of the chest (wire_lash_at()).
+	var/lash_crossing = FALSE
 
 /mob/living
 	/// Landed Widowline hits in a row with a wire out in each hand, and when the last one landed.
@@ -47,6 +49,8 @@
 	cut_on_corpse = target.stat == DEAD
 	cut_on_downed = hv_finisher_is_down(target)
 	cut_aim = user.zone_selected
+	// A crossing cut whose lash was never drawn (its target gone) doesn't carry over to this swing.
+	lash_crossing = FALSE
 	ADD_TRAIT(target, TRAIT_HV_CLEAN_CUT, REF(src))
 	RegisterSignal(target, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_cut), override = TRUE)
 
@@ -72,10 +76,17 @@
 	var/obj/item/bodypart/cut_part = isbodypart(def_zone) ? def_zone : null
 	lash_zone = cut_part ? cut_part.body_zone : check_zone(def_zone)
 	var/cross = wire_count_landed(user)
+	var/obj/item/bodypart/severed = wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross)
+	// The lash meets the limb that comes off, whichever part the blow landed on.
+	if(severed)
+		lash_zone = severed.body_zone
 	if(cross)
 		wire_cross_lash(user, source)
-	wire_bloody(source, def_zone)
-	wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross)
+	if(severed)
+		// The cut shows when the limb slides off (wire_sever_fx.dm), and the wire comes away wet then too.
+		addtimer(CALLBACK(src, PROC_REF(wire_bloody), source), WIRE_CUT_DELAY)
+	else
+		wire_bloody(source, def_zone)
 	wire_cleave(source, user)
 
 // ---- The crossing cut ----
@@ -111,12 +122,20 @@
 	user.wire_cross_hits = 0
 	return TRUE
 
-/// The crossing cut: the other hand's wire lashes into the target beside this one's.
+/// The other wire's lash in a crossing cut follows this wire's by this much.
+#define WIRE_CROSS_LASH_LAG (0.1 SECONDS)
+
+/**
+ * The crossing cut: the other hand's wire lashes into the target a beat after this one's. Each line runs from its own
+ * hand through the middle of the target's chest and a little past it, so the two cross there (wire_lash_at()).
+ */
 /obj/item/melee/cyberware_monowire/proc/wire_cross_lash(mob/living/swinger, mob/living/target)
 	swinger.mob_light(2, 1, cross_light_color(), 0.3 SECONDS)
+	lash_crossing = TRUE
 	for(var/obj/item/melee/cyberware_monowire/other in swinger.held_items)
-		if(other != src)
-			other.wire_lash_at(swinger, target, lash_zone)
+		if(other == src)
+			continue
+		addtimer(CALLBACK(other, PROC_REF(wire_lash_at), swinger, target, lash_zone, TRUE), WIRE_CROSS_LASH_LAG)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 
 /obj/item/melee/cyberware_monowire/proc/cross_light_color()
@@ -194,7 +213,10 @@
 		LAZYSET(victim.hv_stump_burnt, zone, TRUE)
 	// tg pulls the shoes off a leg that comes off; they go with the leg.
 	var/obj/item/shoes = (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG) && ishuman(victim) ? victim.get_item_by_slot(ITEM_SLOT_FEET) : null
-	var/obj/item/bodypart/severed = hv_wire_take_part(limb, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, !seared)
+	// No blood on the floor yet: it starts when the limb slides off (wire_ghost/slide()).
+	ADD_TRAIT(victim, TRAIT_HV_CLEAN_CUT, "wire_sever")
+	var/obj/item/bodypart/severed = hv_wire_take_part(limb, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, splatter = FALSE)
+	REMOVE_TRAIT(victim, TRAIT_HV_CLEAN_CUT, "wire_sever")
 	if(!severed)
 		LAZYREMOVE(victim.hv_stump_reveal_at, zone)
 		LAZYREMOVE(victim.hv_stump_burnt, zone)
@@ -202,6 +224,8 @@
 		return null
 	if(seared)
 		severed.wire_char()
+	else
+		severed.wire_clean_look()
 	ghost?.hold_severed(severed)
 	if(shoes)
 		ghost?.hold_shoes(shoes)
@@ -266,3 +290,5 @@
 	nearby.hv_wire_owed_sever = null
 	if(owed?.owner == nearby && wire_can_sever(owed, user, corpse = FALSE))
 		wire_sever(owed, user, get_dir(user, nearby), FALSE)
+
+#undef WIRE_CROSS_LASH_LAG

@@ -224,6 +224,32 @@
 	playsound(src, 'sound/machines/click.ogg', 40, TRUE)
 	SStgui.update_uis(src)
 
+// ---- Arm choice --------------------------------------------------------
+
+/**
+ * Seats an uninstalled arm housing on the patient's free arm when its own arm
+ * already holds one of the same kind, so a second Widowline goes on the other
+ * arm instead of racking the first. Starts from the housing's own arm every
+ * time, so a housing the cradle moved once doesn't stay moved for the next
+ * patient. With both arms taken (or no free arm to take it), it stays on its
+ * own arm and replaces as before. Cradle only: surgery picks its arm by
+ * the surgeon's target zone (pre_surgical_insertion()).
+ */
+/obj/machinery/chrome_cradle/proc/pick_cradle_arm(obj/item/organ/ware, mob/living/carbon/patient)
+	if(!istype(ware, /obj/item/organ/cyberimp/arm/toolkit/cyberware) || ware.owner || !istype(patient))
+		return
+	var/home_zone = initial(ware.zone)
+	var/other_zone = home_zone == BODY_ZONE_R_ARM ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM
+	if(!length(ware.valid_zones) || !ware.valid_zones[home_zone] || !ware.valid_zones[other_zone])
+		return
+	var/target_zone = home_zone
+	var/obj/item/organ/home_incumbent = patient.get_organ_slot(ware.valid_zones[home_zone])
+	if(home_incumbent && home_incumbent.type == ware.type \
+		&& !patient.get_organ_slot(ware.valid_zones[other_zone]) && patient.get_bodypart(other_zone))
+		target_zone = other_zone
+	if(ware.zone != target_zone)
+		ware.swap_zone(target_zone)
+
 // ---- Sequences ---------------------------------------------------------
 
 /**
@@ -237,7 +263,10 @@
 	if(!istype(patient) || QDELETED(ware))
 		return
 	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-	if(!chrome || !cyberware_insert_check(ware, patient))
+	if(!chrome)
+		return
+	pick_cradle_arm(ware, patient)
+	if(!cyberware_insert_check(ware, patient))
 		return
 	if(ware.loc != src && !patient.transferItemToLoc(ware, src))
 		balloon_alert(patient, "[ware.name] is stuck to you!")
@@ -286,6 +315,8 @@
 	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 	if(!chrome)
 		return
+	// The arms may have changed during the sequence; choose again before the recheck.
+	pick_cradle_arm(ware, patient)
 	// Recheck the final set after the sequence delay, while every incumbent is
 	// still installed. An intervening install or lost Governor must not evict it.
 	if(!cyberware_insert_check(ware, patient))
@@ -664,6 +695,8 @@
 	else
 		projected_load += chrome.chrome_load
 		projected_capacity += chrome.capacity_bonus
+		// Show the arm the install would actually use (an uninstalled housing only).
+		pick_cradle_arm(selected_ware, patient)
 		for(var/obj/item/organ/incumbent in selected_ware.cyberware_get_incumbents(patient))
 			evicts += incumbent.name
 			projected_load -= get_installed_capacity_cost(incumbent)
@@ -780,6 +813,7 @@
 			if(!ware.GetComponent(/datum/component/cyberware))
 				balloon_alert(patient, "not chrome!")
 				return TRUE
+			pick_cradle_arm(ware, patient)
 			if(!cyberware_insert_check(ware, patient, feedback_to = patient))
 				return TRUE
 			begin_install(ware)

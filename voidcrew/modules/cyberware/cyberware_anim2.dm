@@ -677,27 +677,36 @@
 		return
 	user.Beam(target, icon_state = state, icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS, beam_type = /obj/effect/ebeam/wire_line, override_origin_pixel_x = user.pixel_x + origin_offset_x, override_origin_pixel_y = user.pixel_y + origin_offset_y, layer = beam_layer)
 
-/// The Arc's shock: a small crackle runs along the wire and sparks burst where
-/// it touched. It's a wire, so there is no bolt of its own.
-/proc/cyberware_arc_crackle_fx(mob/living/user, atom/target)
+/**
+ * The Arc's shock: a small crackle where the wire touched. No bolt, no flash, no sparks thrown about: the lash out to
+ * the target is the wire (wire_lash_at()). On a body it crackles at the part the wire cut (`zone`, else the middle);
+ * a body nearer the viewer than the wielder is touched on its far side, so it crackles behind that body.
+ */
+/proc/cyberware_arc_crackle_fx(mob/living/user, atom/target, zone)
 	if(QDELETED(user) || QDELETED(target))
 		return
-	if(get_turf(user) != get_turf(target))
-		user.Beam(target, icon_state = "arc_crackle", icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS)
 	var/turf/there = get_turf(target)
-	if(there)
-		new /obj/effect/temp_visual/cyberware_arc_hit(there)
+	var/turf/here = get_turf(user)
+	if(!there || !here)
+		return
+	var/obj/effect/temp_visual/cyberware_arc_crackle/crackle = new(there)
+	var/list/point = list(target.pixel_x, target.pixel_y)
+	if(isliving(target))
+		point = wire_zone_point(target, zone || BODY_ZONE_CHEST)
+	// A visual shift only (pixel_w/pixel_z): it stays on the target's tile in the map's front-to-back order.
+	crackle.pixel_w = point[1]
+	crackle.pixel_z = point[2]
+	if(there.y < here.y && isliving(target))
+		crackle.layer = BELOW_MOB_LAYER
 
-/obj/effect/temp_visual/cyberware_arc_hit
-	icon = CYBERWARE_ANIM2_LARGE_ICON
-	icon_state = "arc_hit"
-	pixel_x = -16
-	pixel_y = -16
+/obj/effect/temp_visual/cyberware_arc_crackle
+	icon = CYBERWARE_ANIM2_ICON
+	icon_state = "arc_crackle"
 	layer = ABOVE_MOB_LAYER
 	randomdir = FALSE
-	duration = 0.4 SECONDS
+	duration = 0.3 SECONDS
 
-/obj/effect/temp_visual/cyberware_arc_hit/Initialize(mapload)
+/obj/effect/temp_visual/cyberware_arc_crackle/Initialize(mapload)
 	. = ..()
 	add_overlay(emissive_appearance(icon, icon_state, src))
 

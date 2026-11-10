@@ -76,11 +76,18 @@
 	else if(ismachinery(target))
 		discharge_into_machine(target, user)
 
-/// The shock on whatever it went into: a crackle along the wire and sparks
-/// where it touched (cyberware_anim2.dm). The wire is the picture, never a bolt.
+/// On a body while the Arc's charge goes into it: no shock shake (do_jitter_animation()).
+#define TRAIT_ARC_NO_SHAKE "arc_no_shake"
+
+/mob/living/do_jitter_animation(jitter_amount = 100)
+	if(HAS_TRAIT(src, TRAIT_ARC_NO_SHAKE))
+		return
+	return ..()
+
+/// The shock on whatever it went into: a small crackle where the wire touched
+/// (cyberware_anim2.dm). The lash is the picture, never a bolt or a shower of sparks.
 /obj/item/melee/cyberware_monowire/live/proc/arc_visuals(atom/target, mob/living/user)
-	cyberware_arc_crackle_fx(user, target)
-	do_sparks(2, TRUE, target)
+	cyberware_arc_crackle_fx(user, target, lash_zone || check_zone(user?.zone_selected))
 	playsound(target, SFX_SPARKS, 50, TRUE)
 	cyberware_ink_pulse(user, CYBERWARE_INK_SOFT)
 
@@ -94,10 +101,14 @@
 		return FALSE
 	var/jolted = FALSE
 	var/is_silicon = issilicon(target)
-	// No stun, no message, no skeleton flash, no jitter: the beam and the
-	// sparks are the tell, and the stagger is the whole effect on the body.
-	if(!is_silicon && target.electrocute_act(shock_burn, user, 1, SHOCK_NOGLOVES | SHOCK_NOSTUN | SHOCK_SUPPRESS_MESSAGE | SHOCK_NO_HUMAN_ANIM, 0, 0, 0))
-		jolted = TRUE
+	// No stun, no message, no skeleton flash, no jitter: the lash and its
+	// crackle are the tell, and the stagger is the whole effect on the body.
+	// tg's shock shakes a body for over two seconds whatever jitter it is
+	// given, so the shake is held off while the charge goes in.
+	if(!is_silicon)
+		ADD_TRAIT(target, TRAIT_ARC_NO_SHAKE, REF(src))
+		jolted = target.electrocute_act(shock_burn, user, 1, SHOCK_NOGLOVES | SHOCK_NOSTUN | SHOCK_SUPPRESS_MESSAGE | SHOCK_NO_HUMAN_ANIM, 0, 0, 0) ? TRUE : FALSE
+		REMOVE_TRAIT(target, TRAIT_ARC_NO_SHAKE, REF(src))
 	if(is_silicon || (target.mob_biotypes & MOB_ROBOTIC))
 		var/bonus_zone = target.get_random_valid_zone(user.zone_selected)
 		target.apply_damage(
@@ -220,3 +231,4 @@
 #undef CYBERWARE_ARC_ROBOTIC_BONUS
 #undef CYBERWARE_ARC_JAM_DURATION
 #undef CYBERWARE_ARC_JAM_RECHARGE
+#undef TRAIT_ARC_NO_SHAKE
