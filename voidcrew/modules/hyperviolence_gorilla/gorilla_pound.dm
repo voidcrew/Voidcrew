@@ -177,7 +177,8 @@
 /proc/gorilla_pound_impact_fx(turf/where, reach, cross = TRUE)
 	if(isnull(where))
 		return
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
+	// On the floor: a ring on the game plane is drawn over anyone standing further up the screen than the bearer
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(where, reach)
 	new /obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound(where, "damaged1", cross ? 255 : 180)
 	if(!cross)
 		return
