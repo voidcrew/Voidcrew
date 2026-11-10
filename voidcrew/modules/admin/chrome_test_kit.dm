@@ -4,8 +4,8 @@
  * One admin verb for trying the cyberware lines without a shopping trip. It drops a Chrome
  * Cradle beside the admin with a stack of trade vouchers and a holochip of credits, then offers
  * a short list of ready-made builds (see GLOB.chrome_test_loadouts) that either go straight into
- * the admin's own body or into a crate at their feet, plus a chromed human to point Chrome Read,
- * a cyberdeck or Glitch at. The dummy is a human NPC body (voidcrew/modules/human_npcs/) with no
+ * the admin's own body or into a crate at their feet, plus a chromed human to point Chrome Read
+ * at. The dummy is a human NPC body (voidcrew/modules/human_npcs/) with no
  * AI, so it is the same kind of body as the NPCs players meet: its chrome works, and burns out
  * to scrap when it dies or a piece leaves it.
  *
@@ -31,11 +31,6 @@ GLOBAL_LIST_INIT(chrome_test_loadouts, list(
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left,
 		/obj/item/organ/cyberimp/cyberware/cascade,
 		/obj/item/organ/cyberimp/cyberware/slipwire,
-	),
-	"Hacker" = list(
-		/obj/item/organ/cyberimp/cyberware/deck/flagship,
-		/obj/item/organ/eyes/robotic/cyberware/lookout,
-		/obj/item/organ/cyberimp/cyberware/ghostskin,
 	),
 	"Tank" = list(
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms,

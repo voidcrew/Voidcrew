@@ -268,30 +268,6 @@
 	TEST_ASSERT_NULL(chrome.brownout_look, "Death left a stutter look")
 	TEST_ASSERT_NULL(lattice.cyberware_worn_look(), "Recovered chrome isn't drawn plain")
 
-/// Cyberdeck: a door glitch comes off on its own, and a Ping mark's outline
-/// goes with its mark.
-/datum/unit_test/voidcrew_cyberware_anim2_deck
-
-/datum/unit_test/voidcrew_cyberware_anim2_deck/Run()
-	var/mob/living/carbon/human/hacker = allocate(/mob/living/carbon/human/consistent)
-	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, get_step(run_loc_floor_bottom_left, NORTH))
-
-	cyberware_glitch_fx(door)
-	TEST_ASSERT(door.get_filter("cyberware_glitch_slices"), "The door doesn't tear into slices")
-	TEST_ASSERT(door.get_filter("cyberware_glitch_red") && door.get_filter("cyberware_glitch_cyan"), "The door doesn't split its colours")
-	TEST_ASSERT(voidcrew_test_anim_state(door, "glitch_tear"), "The door has no static")
-	cyberware_glitch_end(WEAKREF(door))
-	TEST_ASSERT(!door.get_filter("cyberware_glitch_slices") && !door.get_filter("cyberware_glitch_red"), "The glitch stayed on the door")
-
-	var/datum/cyberware_hud_mark/plain = cyberware_hud_mark(hacker, door, "#4dd8e6", 5 SECONDS)
-	TEST_ASSERT_NULL(plain.outline, "A plain mark grew an outline")
-	var/datum/cyberware_hud_mark/outlined = cyberware_hud_mark(hacker, door, "#4dd8e6", 5 SECONDS, outline = TRUE, outline_delay = 3)
-	TEST_ASSERT(outlined.outline, "A Ping mark has no outline")
-	TEST_ASSERT(outlined.outline.filter_data?["cyberware_mark_outline"], "The outline isn't outlined")
-	qdel(outlined)
-	TEST_ASSERT_NULL(outlined.outline, "A deleted mark kept its outline")
-	qdel(plain)
-
 /// Chrome cradle: the rig follows the install's beats and pulls back and parks
 /// when the sequence is cancelled, with nothing left in the gripper.
 /datum/unit_test/voidcrew_cyberware_anim2_cradle

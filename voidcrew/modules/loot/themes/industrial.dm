@@ -47,7 +47,6 @@
 		/datum/shop_sku/ripperdoc/gorilla,
 		/datum/shop_sku/ripperdoc/coolant_street,
 		/datum/shop_sku/ripperdoc/fixers_street,
-		/datum/shop_sku/ripperdoc/deck_junker,
 		/datum/shop_sku/ripperdoc/atlas_street,
 		/datum/shop_sku/ripperdoc/gorilla_street,
 	)
@@ -64,11 +63,9 @@
 		/obj/item/weldingtool/largetank = 5,
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
-		// line-worker chrome: a heat-sink lining, loose fingertip tools, and a
-		// deck soldered out of a dead terminal
+		// line-worker chrome: a heat-sink lining and loose fingertip tools
 		/obj/item/organ/cyberimp/cyberware/coolant/street = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street = 4,
-		/obj/item/organ/cyberimp/cyberware/deck = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/titanium/fifty = 8,

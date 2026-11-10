@@ -3,33 +3,20 @@
  *
  * Every chrome optic zooms by tier, a zoomed bearer can't shoot, the zoom drops
  * whenever the eyes or the bearer stop working, and a click on the zoomed view
- * goes only to the cyberdeck seam. There is no client here, so tg's scope never
+ * goes nowhere. There is no client here, so tg's scope never
  * starts: these tests drive the optics' own half of a zoom (engage_zoom()) and
  * stand in a hand-made cursor catcher for the scope's.
  *
  * Unit-test files compile before voidcrew/_DEFINES/, so fork defines are
- * literals: TRAIT_CYBER_ZOOMED "cyber_zoomed", COMSIG_CYBERWARE_ZOOM_CLICK
- * "cyberware_zoom_click", COMPONENT_CYBERWARE_ZOOM_CLICK_HANDLED 1,
+ * literals: TRAIT_CYBER_ZOOMED "cyber_zoomed",
  * CYBERWARE_SCAN_SILHOUETTE 1 / _ITEMIZED 2, CYBERWARE_TIER_n n, and zone
  * permissions Public/Yellow/Advanced 0/1/2.
  */
 
-/// Listens for zoomed clicks and stands in for an armed click-to-target ability.
+/// Stands in for an armed click-to-target ability.
 /datum/zoom_click_probe
-	/// What the last zoomed click handed over.
-	var/atom/clicked
-	/// How many zoom clicks arrived.
-	var/zoom_clicks = 0
-	/// Whether to claim the click, as a cyberdeck firing a hack would.
-	var/handle = TRUE
 	/// How many clicks reached us as a click intercept.
 	var/intercepted = 0
-
-/datum/zoom_click_probe/proc/on_zoom_click(mob/living/carbon/source, atom/target, list/modifiers)
-	SIGNAL_HANDLER
-	clicked = target
-	zoom_clicks++
-	return handle ? 1 : 0
 
 /datum/zoom_click_probe/proc/InterceptClickOn(mob/user, params, atom/target)
 	intercepted++
@@ -249,8 +236,7 @@
 	TEST_ASSERT(!bearer.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_zoom), "The walk tax survived [cause]")
 	TEST_ASSERT(!(SEND_SIGNAL(bearer, COMSIG_MOB_TRYING_TO_FIRE_GUN, null, null, FALSE, null) & COMPONENT_CANCEL_GUN_FIRE), "The gun block survived [cause]")
 
-/// The cyberdeck seam: a zoomed click goes to COMSIG_CYBERWARE_ZOOM_CLICK with
-/// what is under the cursor, never to a click intercept, and only while zoomed.
+/// A zoomed click never reaches a click intercept, and only while zoomed.
 /datum/unit_test/voidcrew_cyberware_zoom_click
 
 /datum/unit_test/voidcrew_cyberware_zoom_click/Run()
@@ -268,33 +254,15 @@
 	optics.engage_zoom(bearer)
 
 	var/datum/zoom_click_probe/probe = allocate(/datum/zoom_click_probe)
-	probe.RegisterSignal(bearer, "cyberware_zoom_click", TYPE_PROC_REF(/datum/zoom_click_probe, on_zoom_click))
 	bearer.click_intercept = probe
 
 	bearer.ClickOn(catcher, "")
-	TEST_ASSERT_EQUAL(probe.clicked, far_body, "A zoomed click didn't hand over the body under the cursor")
 	TEST_ASSERT_EQUAL(probe.intercepted, 0, "An armed click intercept saw a zoomed click")
-
-	// Unclaimed, the click still goes nowhere else.
-	probe.handle = FALSE
-	probe.clicked = null
-	bearer.next_click = 0
-	bearer.ClickOn(catcher, "")
-	TEST_ASSERT_EQUAL(probe.zoom_clicks, 2, "An unclaimed zoomed click never reached the seam")
-	TEST_ASSERT_EQUAL(probe.intercepted, 0, "An unclaimed zoomed click fell through to a click intercept")
-
-	// Nothing on the tile: the tile itself.
-	var/turf/empty_tile = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
-	catcher.given_turf = empty_tile
-	bearer.next_click = 0
-	bearer.ClickOn(catcher, "")
-	TEST_ASSERT_EQUAL(probe.clicked, empty_tile, "A zoomed click on an empty tile didn't hand over the tile")
 
 	// Out of the zoom, clicks are ordinary again.
 	optics.stop_zoom(bearer)
 	bearer.next_click = 0
 	bearer.ClickOn(catcher, "")
-	TEST_ASSERT_EQUAL(probe.zoom_clicks, 3, "A click after the zoom ended still went to the seam")
 	TEST_ASSERT_EQUAL(probe.intercepted, 1, "Clicks stayed swallowed after the zoom ended")
 
 	bearer.click_intercept = null

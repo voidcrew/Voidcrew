@@ -16,8 +16,6 @@
  * - Leaps: the Hopper crouches, kicks up dust and arcs over to where it lands,
  *   with a shadow running along the floor under it. The Piledriver glides to
  *   its mark and slams down with a ring and a cracked floor.
- * - Cyberdeck: packets run up the trace, a door glitches when a hack lands on
- *   it, and Ping sweeps a ring out and outlines what answered.
  * - Weapon trails: a Scorch cut throws embers; the Widowline Arc's wire
  *   lashes out, a small crackle runs along it and sparks burst where it hit.
  * - Brownout: worn chrome stutters, warms and dims together, and stutters
@@ -32,7 +30,6 @@
 
 #define CYBERWARE_ANIM2_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim2.dmi'
 #define CYBERWARE_ANIM2_LARGE_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim2_large.dmi'
-#define CYBERWARE_ANIM_PING_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim_ping.dmi'
 #define CHROME_CRADLE_RIG_ICON 'voidcrew/modules/cyberware/icons/chrome_cradle_rig.dmi'
 
 /// Layer for flashes, arcs and bursts: over everything the bearer wears.
@@ -102,7 +99,7 @@
 #undef CHROME_FLASH_FILTER
 
 // =========================================================================
-// GLITCH (doors, and a patient booting new chrome)
+// GLITCH (a patient booting new chrome)
 // =========================================================================
 
 #define CHROME_GLITCH_SLICES "cyberware_glitch_slices"
@@ -742,84 +739,6 @@
 	animate(alpha = 0, time = 2 SECONDS)
 
 // =========================================================================
-// CYBERDECK
-// =========================================================================
-
-/// Packets running up the trace while a hack uploads, drawn over it.
-/proc/cyberware_deck_packets(mob/living/bearer, atom/target, time, maxdistance)
-	if(QDELETED(bearer) || QDELETED(target))
-		return null
-	return bearer.Beam(target, icon_state = "deck_packets", icon = CYBERWARE_ANIM2_ICON, time = time, maxdistance = maxdistance)
-
-/// How long after a Ping the sweep reaches [machine] from [center].
-/proc/cyberware_ping_reveal_delay(turf/center, atom/machine)
-	var/turf/there = get_turf(machine)
-	if(isnull(center) || isnull(there))
-		return 0
-	var/distance = sqrt((there.x - center.x) ** 2 + (there.y - center.y) ** 2) * ICON_SIZE_X
-	// The ring's radius is 6 + 224 * (1 - (1 - t)^2) over the sweep; solve for t.
-	var/progress = clamp((distance - 6) / 224, 0, 1)
-	return round((1 - sqrt(1 - progress)) * 0.72 SECONDS, 0.5)
-
-/// The Ping sweep: a ring rolls out from the hacker, for the hacker alone.
-/proc/cyberware_ping_sweep_fx(mob/living/viewer)
-	var/turf/here = get_turf(viewer)
-	if(isnull(here) || !viewer.client)
-		return
-	var/image/sweep = image(CYBERWARE_ANIM_PING_ICON, here, "ping_sweep", ABOVE_ALL_MOB_LAYER)
-	sweep.pixel_w = -224
-	sweep.pixel_z = -224
-	sweep.appearance_flags = RESET_COLOR | RESET_TRANSFORM | RESET_ALPHA
-	SET_PLANE_EXPLICIT(sweep, ABOVE_LIGHTING_PLANE, here)
-	viewer.client.images += sweep
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_ping_sweep_end), WEAKREF(viewer), sweep), 0.9 SECONDS)
-
-/proc/cyberware_ping_sweep_end(datum/weakref/viewer_ref, image/sweep)
-	var/mob/living/viewer = viewer_ref?.resolve()
-	viewer?.client?.images -= sweep
-
-/**
- * A tinted copy of [target] with an outline in [mark_color], for a HUD mark
- * to draw through walls. Only the target's own drawing comes along: its
- * lights and emissive blockers stay behind.
- */
-/proc/cyberware_mark_outline(atom/target, mark_color)
-	var/mutable_appearance/look = new(target)
-	var/list/kept = list()
-	for(var/mutable_appearance/part as anything in look.overlays)
-		if(part.plane == FLOAT_PLANE)
-			kept += part
-	look.overlays = kept
-	look.underlays = list()
-	look.filters = null
-	look.alpha = 210
-	look.layer = ABOVE_ALL_MOB_LAYER - 0.01
-	look.appearance_flags = KEEP_TOGETHER | PIXEL_SCALE | RESET_COLOR | RESET_ALPHA
-	look.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	var/list/rgb = rgb2num(mark_color)
-	var/red = rgb[1] / 255 * 1.3
-	var/green = rgb[2] / 255 * 1.3
-	var/blue = rgb[3] / 255 * 1.3
-	look.color = list(
-		0.3 * red, 0.3 * green, 0.3 * blue,
-		0.59 * red, 0.59 * green, 0.59 * blue,
-		0.11 * red, 0.11 * green, 0.11 * blue,
-		0.12 * rgb[1] / 255, 0.12 * rgb[2] / 255, 0.12 * rgb[3] / 255,
-	)
-	var/image/outline = new
-	outline.appearance = look
-	outline.add_filter("cyberware_mark_outline", 1, outline_filter(1, mark_color))
-	return outline
-
-/// The outline fades in when the sweep reaches it and out before the mark goes.
-/proc/cyberware_mark_outline_reveal(image/outline, delay, duration)
-	outline.alpha = 0
-	animate(outline, alpha = 0, time = max(delay, 0))
-	animate(alpha = 210, time = 1)
-	animate(alpha = 210, time = max(duration - delay - 5, 0))
-	animate(alpha = 0, time = 4)
-
-// =========================================================================
 // WEAPON TRAILS
 // =========================================================================
 
@@ -1111,7 +1030,6 @@
 #undef CYBERWARE_LEAP_SLAM
 #undef CYBERWARE_ANIM2_ICON
 #undef CYBERWARE_ANIM2_LARGE_ICON
-#undef CYBERWARE_ANIM_PING_ICON
 #undef CHROME_CRADLE_RIG_ICON
 #undef CHROME_ANIM2_TOP_LAYER
 #undef CHROME_LOOK_BROWN

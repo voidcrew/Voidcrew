@@ -153,7 +153,7 @@
 	SEND_SIGNAL(pitcher, COMSIG_MOB_THROW, spot(0, 0))
 	TEST_ASSERT(!HAS_TRAIT(pitcher, "cyber_camo"), "Throwing didn't drop the field")
 
-	// A weave knocked into a reboot (a deck's Glitch) drops its field too.
+	// A weave knocked into a reboot drops its field too.
 	var/mob/living/carbon/human/consistent/glitched = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin, spot(4, 4))
 	var/obj/item/organ/cyberimp/cyberware/ghostskin/weave = locate() in glitched.organs
 	var/datum/component/cyberware/chrome = weave?.GetComponent(/datum/component/cyberware)

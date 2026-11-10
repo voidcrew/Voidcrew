@@ -17,10 +17,7 @@
  *   and a burst already under autofire stops when the zoom starts).
  * - Their clicks on the zoomed view reach nothing on the map. The scope's
  *   fullscreen cursor catcher already eats them; check_click_intercept() below
- *   takes them before any click intercept or ClickOn() sees them, and offers
- *   each one to COMSIG_CYBERWARE_ZOOM_CLICK. That signal is the cyberdeck's way
- *   in (owner decision D10: hacks reach targets seen through the zoom). The
- *   contract is on the define in voidcrew/_DEFINES/cyberware.dm.
+ *   takes them before any click intercept or ClickOn() sees them.
  *
  * The zoom drops on its own when the eyes stop working or the bearer can't
  * look: EMP, brownout or damage failure (chrome_passives_off()), the eyes
@@ -194,22 +191,13 @@
 // ---- Clicking through the zoom -------------------------------------------
 
 /**
- * A click on the zoomed view. Works out what is under the cursor, offers it to
- * COMSIG_CYBERWARE_ZOOM_CLICK listeners (the cyberdeck), and swallows the click
- * whether or not one took it. Returns FALSE only for a click that isn't on our
- * zoom, which the caller then handles as normal.
+ * A click on the zoomed view, swallowed. Returns FALSE only for a click that
+ * isn't on our zoom, which the caller then handles as normal.
  */
-/obj/item/organ/eyes/robotic/cyberware/proc/zoom_click(mob/living/carbon/bearer, atom/movable/screen/fullscreen/cursor_catcher/scope/tracker, params)
+/obj/item/organ/eyes/robotic/cyberware/proc/zoom_click(mob/living/carbon/bearer, atom/movable/screen/fullscreen/cursor_catcher/scope/tracker)
 	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
 	if(!is_zoomed() || !scope || scope.tracker != tracker)
 		return FALSE
-	var/list/modifiers = params2list(params)
-	// The scope worked out the turf under the cursor when the click landed
-	// (scope/Click() runs calculate_params() before anything else).
-	var/turf/target_turf = tracker.given_turf
-	var/atom/target = isturf(target_turf) ? scope.get_target(target_turf) : null
-	if(target && (SEND_SIGNAL(bearer, COMSIG_CYBERWARE_ZOOM_CLICK, target, modifiers) & COMPONENT_CYBERWARE_ZOOM_CLICK_HANDLED))
-		return TRUE
 	if(isgun(bearer.get_active_held_item()))
 		refuse_zoomed_aim(bearer)
 	return TRUE
@@ -222,7 +210,7 @@
 /mob/living/carbon/check_click_intercept(params, atom/A)
 	if(HAS_TRAIT(src, TRAIT_CYBER_ZOOMED) && istype(A, /atom/movable/screen/fullscreen/cursor_catcher/scope))
 		var/obj/item/organ/eyes/robotic/cyberware/optics = get_organ_slot(ORGAN_SLOT_EYES)
-		if(istype(optics) && optics.zoom_click(src, A, params))
+		if(istype(optics) && optics.zoom_click(src, A))
 			return TRUE
 	return ..()
 
