@@ -11,7 +11,10 @@
  * - Slam: driven down with his fists still on it. Seen from the side he bends at the belt; from the front or back he
  *   drops and lunges.
  * - Impact: the damage, the knockdown and the grab letting go all land here, and the real body is put on the tile.
- * - Rebound: he comes up, hands off. The puppets go once both are still, with the real body lying in the same pixels.
+ *   A ring, and on a floor cracks (and dust and the heavy crash, for Gorilla Arms); both cameras shake and the body
+ *   flashes white. Blood only if the blow opened a wound that bleeds, as a few drops thrown out round the body.
+ * - Rebound: the body bounces once and he comes up, hands off. The puppets go once both are still, with the real body
+ *   lying in the same pixels.
  *
  * Until the impact nothing has happened to anyone. The bearer can't step, the grab is held, and the slam is called off
  * if he is stunned or knocked down, loses the grab, or either of them is moved: the body comes down on its feet, unhurt.
@@ -400,9 +403,15 @@
 		// Straight down, faster all the way
 		var/down = gorilla_slam_ease(SLAM_EASE_IN, (time - t_drive) / (t_hit - t_drive))
 		return list(top_x + (land_x - top_x) * down, top_y + (land_y - top_y) * down, top_angle + (land_angle - top_angle) * down)
-	// Onto where the real body lies
+	// It bounces once, tipping, and drops back onto where the real body lies
 	var/settled = clamp((time - t_hit) / GORILLA_SLAM_REBOUND_TIME, 0, 1)
-	return list(land_x + (final_x - land_x) * settled, land_y + (final_y - land_y) * settled, land_angle + (final_angle - land_angle) * settled)
+	var/hop = sin(180 * settled)
+	var/tip = (land_angle < 0 ? GORILLA_SLAM_BOUNCE_TIP : -GORILLA_SLAM_BOUNCE_TIP) * hop
+	return list(
+		land_x + (final_x - land_x) * settled,
+		land_y + (final_y - land_y) * settled + (arm?.slam_overhead ? GORILLA_SLAM_BOUNCE : BRAWLER_SLAM_BOUNCE) * hop,
+		land_angle + (final_angle - land_angle) * settled + tip,
+	)
 
 /// The body puppet's transform at [time].
 /datum/gorilla_slam/proc/body_matrix(time)
@@ -867,7 +876,10 @@
 	// On its back, or face down for a head-aimed table slam: tg's fall keeps a body facing north or south as it is
 	if(victim.rotate_on_lying)
 		victim.setDir(face_down ? NORTH : SOUTH)
-	strike(table)
+	var/on_table = !isnull(table)
+	var/bled = strike(table)
+	if(!QDELETED(src) && !QDELETED(victim) && !QDELETED(bearer))
+		impact_fx(on_table, bled)
 	if(QDELETED(src) || QDELETED(victim) || QDELETED(bearer))
 		if(!QDELETED(src))
 			finish()
@@ -886,7 +898,10 @@
 	play(t_hit, t_end)
 	end_timer = addtimer(CALLBACK(src, PROC_REF(finish)), t_end - t_hit, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/// The blow itself on the body, now on the tile: the damage through #509 as one line, the stamina, the knockdown, and what the table takes.
+/**
+ * The blow itself on the body, now on the tile: the damage through #509 as one line, the stamina, the knockdown, and what
+ * the table takes. Returns TRUE if it opened a wound that bleeds.
+ */
 /datum/gorilla_slam/proc/strike(obj/structure/table/table)
 	var/obj/item/bodypart/limb = victim.get_bodypart(aimed_zone) || victim.get_bodypart(BODY_ZONE_CHEST)
 	var/others
@@ -901,10 +916,21 @@
 	var/armour = victim.run_armor_check(limb, MELEE)
 	// No attack direction: a body driven into the floor throws no blood across the room (#509's heavy-hit spray)
 	gorilla_hold_spray(victim)
+	var/mob/living/carbon/carbon_victim = iscarbon(victim) ? victim : null
+	var/list/wounds_before = carbon_victim?.gorilla_wound_snapshot()
+	var/list/bursts_before = list()
+	for(var/obj/effect/temp_visual/dir_setting/bloodsplatter/burst in spot)
+		bursts_before += burst
 	victim.apply_damage(table ? arm.slam_table_damage : arm.slam_floor_damage, BRUTE, limb || BODY_ZONE_CHEST, armour, wound_bonus = arm.punch_wound_bonus, attacking_item = fist)
 	victim.hv_flush_hit()
 	if(QDELETED(victim))
-		return
+		return FALSE
+	. = !isnull(carbon_victim) && gorilla_slam_opened_wound(carbon_victim, wounds_before)
+	// A chest that bleeds inside from the blow coughs it up (tg's cracked ribs). That blood is real and tg lays it on the
+	// floor itself; only its burst, thrown one way over the top of a body lying on its back, is taken away.
+	for(var/obj/effect/temp_visual/dir_setting/bloodsplatter/burst in spot)
+		if(!(burst in bursts_before))
+			qdel(burst)
 	victim.apply_damage(table ? arm.slam_table_stamina : arm.slam_floor_stamina, STAMINA)
 	victim.Knockdown(arm.slam_knockdown)
 	gorilla_register_aggression(victim, bearer)
@@ -915,6 +941,82 @@
 		if(!QDELETED(table))
 			smash?.after_smash?.Invoke(victim)
 	log_combat(bearer, victim, table ? "piston-slammed onto a table" : "piston-slammed into the floor", "gorilla arms")
+
+/**
+ * What the impact looks and sounds like. Both cameras shake and the body flashes white. A ring spreads from under it: on
+ * the table top for a table slam, with the table's own crash; on a floor with cracks, and for Gorilla Arms dust and the
+ * heavy crash. With [bled], a few drops of blood are thrown out round it.
+ */
+/datum/gorilla_slam/proc/impact_fx(on_table, bled)
+	var/heavy = arm.slam_full_fx
+	for(var/mob/living/shaken in list(bearer, victim))
+		shake_camera(shaken, heavy ? 3 : 2, heavy ? 2 : 1)
+	cyberware_flash_fx((posed && victim_rig?.puppet("body_[facing]")) || victim, 0.2 SECONDS)
+	// Level with the middle of the body: a table top is half way up to where tg draws a body lying on it
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam/under_body(spot, heavy ? 0.8 : 0.5, on_table ? GORILLA_SLAM_TABLE_TOP / 2 : 0)
+	if(on_table)
+		playsound(victim, 'sound/effects/tableslam.ogg', 90, TRUE)
+	else if(heavy)
+		playsound(spot, 'sound/effects/meteorimpact.ogg', 40, TRUE)
+		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 220)
+		var/obj/effect/temp_visual/mook_dust/dust = cyberware_grey_dust(spot)
+		if(dust)
+			// On the tile's own row, as the ring is, so the body lying there draws over it
+			dust.pixel_x = 0
+			dust.pixel_y = 0
+			dust.pixel_w = -ICON_SIZE_X / 2
+			dust.pixel_z = -ICON_SIZE_Y / 2
+	else
+		playsound(spot, SFX_BODYFALL, 70, TRUE)
+		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 70)
+	if(bled && iscarbon(victim))
+		gorilla_slam_blood(victim, spot)
+
+/**
+ * The slam's ring. tg's ring is drawn from half a tile toward the viewer, which puts it on the row in front of its own
+ * tile and over anybody lying there; this one stays on its tile's row and is centred by eye only, so the body draws over it.
+ */
+/obj/effect/temp_visual/circle_wave/cyberware_slam/under_body
+	pixel_x = 0
+	pixel_y = 0
+	pixel_w = -16
+	pixel_z = -16
+
+/obj/effect/temp_visual/circle_wave/cyberware_slam/under_body/Initialize(mapload, reach = 2, rise = 0)
+	pixel_z += rise
+	return ..()
+
+/// Whether [victim] has a wound that bleeds which it didn't have, or had milder, at [before] (gorilla_wound_snapshot()): a cut, a stab, or bone through the skin.
+/proc/gorilla_slam_opened_wound(mob/living/carbon/victim, list/before)
+	for(var/datum/wound/wound as anything in victim.all_wounds)
+		if((wound in before) && before[wound] >= wound.severity)
+			continue
+		if(wound.blood_flow > 0 || (istype(wound, /datum/wound/blunt/bone) && wound.severity >= WOUND_SEVERITY_CRITICAL))
+			return TRUE
+	return FALSE
+
+/// A few drops of [victim]'s blood thrown out round where it lies on [floor], in a ragged ring: no two the same size or the same way up.
+/proc/gorilla_slam_blood(mob/living/carbon/victim, turf/floor)
+	if(!isturf(floor) || isgroundlessturf(floor) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
+		return
+	var/list/blood_dna = victim.get_blood_dna_list()
+	var/list/viruses = victim.get_static_viruses()
+	var/drops = rand(GORILLA_SLAM_DROPS_MIN, GORILLA_SLAM_DROPS_MAX)
+	var/first = rand(0, 359)
+	for(var/i in 1 to drops)
+		var/obj/effect/decal/cleanable/blood/splatter/gorilla_skid/drop = new(floor, viruses, blood_dna)
+		if(QDELETED(drop))
+			continue
+		var/way = first + i * 360 / drops + rand(-18, 18)
+		var/far = rand(GORILLA_SLAM_DROPS_NEAR, GORILLA_SLAM_DROPS_FAR)
+		var/matrix/shape = matrix()
+		shape.Scale(pick(0.45, 0.55, 0.7))
+		shape.Turn(pick(0, 90, 180, 270))
+		drop.transform = shape
+		// From under the body outward. The floor is seen from above and a little from the front, so the ring is flattened.
+		drop.pixel_x = 0
+		drop.pixel_y = PIXEL_Y_OFFSET_LYING
+		animate(drop, pixel_x = round(cos(way) * far), pixel_y = round(sin(way) * far * 0.75) + PIXEL_Y_OFFSET_LYING, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 
 #undef SLAM_ARM_GRIP
 #undef SLAM_ARM_POINT

@@ -100,6 +100,14 @@
 #define GORILLA_SLAM_TOP_BACK_RISE 4
 /// How far up tg draws a body lying on a table.
 #define GORILLA_SLAM_TABLE_TOP 12
+/// Pixels a slammed body bounces off what it lands on, and the degrees it tips as it does.
+#define GORILLA_SLAM_BOUNCE 4
+#define GORILLA_SLAM_BOUNCE_TIP 6
+/// Drops of blood thrown out round a body the slam cut open: the fewest and the most, and how far from it they land.
+#define GORILLA_SLAM_DROPS_MIN 5
+#define GORILLA_SLAM_DROPS_MAX 7
+#define GORILLA_SLAM_DROPS_NEAR 9
+#define GORILLA_SLAM_DROPS_FAR 19
 /// What holds the bearer where he stands for the slam.
 #define GORILLA_SLAM_TRAIT "gorilla_slam"
 
@@ -118,6 +126,7 @@
 #define BRAWLER_SLAM_TOP_FRONT_X 2
 #define BRAWLER_SLAM_TOP_FRONT_Y 18
 #define BRAWLER_SLAM_TOP_TURN 62
+#define BRAWLER_SLAM_BOUNCE 2
 #define BRAWLER_GRAB_MOVE_COOLDOWN (15 SECONDS)
 /// Damage per structure smash: over a plain airlock's deflection (21) and a reinforced one's (30).
 #define BRAWLER_STRUCTURE_DAMAGE 32
