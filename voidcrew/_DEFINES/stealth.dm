@@ -109,10 +109,10 @@
 #define STEALTH_METER_ROWS 7
 /// Tiles from the guard within which a living player makes the mark worth drawing
 #define STEALTH_METER_RANGE 10
-/// pixel_z of the glyph's bottom over a standing, medium-height guard: 1 px clear of the head
-#define STEALTH_METER_HEAD_Z 30
-/// pixel_z of the glyph's bottom over a guard lying down
-#define STEALTH_METER_LYING_Z 17
+/// pixel_z of the glyph's bottom over a standing, medium-height guard: a clear gap over the hair
+#define STEALTH_METER_HEAD_Z 36
+/// pixel_z of the glyph's bottom over a guard lying down (its sprite also drops PIXEL_Y_OFFSET_LYING)
+#define STEALTH_METER_LYING_Z 29
 
 /// The scav den's side
 #define FACTION_SCAV "scav"

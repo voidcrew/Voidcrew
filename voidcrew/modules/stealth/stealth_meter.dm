@@ -7,7 +7,7 @@
  *   STEALTH_LOSE_TARGET_TIME and refills when it sees them again.
  * - Searching: a yellow "?" everyone sees, draining from the top over the search (or until calm_until
  *   after it put its target down). Empty: gone.
- * - While a public mark shows, nobody sees their own "?" on that guard.
+ * - While alert or searching, nobody sees their own "?" on that guard.
  *
  * Both are drawn on the guard (vis_contents for the public mark, an image located on the guard for the
  * private one), so they show only when the guard itself is in view, never through walls; above the
@@ -55,9 +55,13 @@
 /datum/stealth_meter/proc/update()
 	if(QDELETED(guard) || isnull(controller))
 		return
-	var/new_public = stealth_meter_public_state(controller.stealth_state(), world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until)
+	var/state = controller.stealth_state()
+	var/new_public = stealth_meter_public_state(state, world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until)
 	set_public(new_public)
-	update_private(new_public ? null : controller.notice_map)
+	// Alert and searching own the mark even once it has drained: no private "?" in the moment before the scan
+	// sends it back to unaware (and clears its notice).
+	var/public_owned = new_public || state == STEALTH_ALERT || state == STEALTH_SEARCHING
+	update_private(public_owned ? null : controller.notice_map)
 	schedule_drain()
 
 /datum/stealth_meter/proc/set_public(new_state)
@@ -186,9 +190,10 @@
 	. = STEALTH_METER_HEAD_Z
 	if(ishuman(guard))
 		var/mob/living/carbon/human/person = guard
+		// The head rides the upper body offset (measured in a live client: a dwarf's head sits 5 px lower, not 9).
 		var/list/offsets = GLOB.human_heights_to_offsets["[person.mob_height]"]
 		if(length(offsets))
-			. += offsets[1] + offsets[2]
+			. += offsets[1]
 
 // ===== Pure: state to icon_state =====
 
