@@ -26,6 +26,9 @@
 #define TUTORIAL_ITEM_REPAIR_DRONES "vc/repair_drones"
 #define TUTORIAL_ITEM_SHIP_SAVE "vc/ship_save"
 #define TUTORIAL_ITEM_VESTIGE "vc/vestige"
+#define TUTORIAL_ITEM_WEAPONS "vc/weapons"
+#define TUTORIAL_ITEM_COMBAT "vc/combat"
+#define TUTORIAL_ITEM_PIRATES "vc/pirates"
 
 // Your ship
 #define TUTORIAL_STEP_SHIP_MANAGE "vc/ship/manage"
@@ -108,6 +111,29 @@
 #define TUTORIAL_STEP_VESTIGE_PACT "vc/vestige/pact"
 #define TUTORIAL_STEP_VESTIGE_TRIAL "vc/vestige/trial"
 #define TUTORIAL_STEP_VESTIGE_CLAIM "vc/vestige/claim"
+
+// Ship weapons
+#define TUTORIAL_STEP_WEAPONS_CONSOLE "vc/weapons/console"
+#define TUTORIAL_STEP_WEAPONS_LAUNCHER "vc/weapons/launcher"
+#define TUTORIAL_STEP_WEAPONS_MISSILE "vc/weapons/missile"
+#define TUTORIAL_STEP_WEAPONS_LASER "vc/weapons/laser"
+#define TUTORIAL_STEP_WEAPONS_SHIELD "vc/weapons/shield"
+#define TUTORIAL_STEP_WEAPONS_INTERDICTOR "vc/weapons/interdictor"
+#define TUTORIAL_STEP_WEAPONS_EW "vc/weapons/ew"
+
+// Ship combat
+#define TUTORIAL_STEP_COMBAT_INTERDICT "vc/combat/interdict"
+#define TUTORIAL_STEP_COMBAT_MISSILE "vc/combat/missile"
+#define TUTORIAL_STEP_COMBAT_SHIELDS "vc/combat/shields"
+#define TUTORIAL_STEP_COMBAT_HACK "vc/combat/hack"
+#define TUTORIAL_STEP_COMBAT_FORCE_DOCK "vc/combat/force_dock"
+
+// Hunting pirates
+#define TUTORIAL_STEP_PIRATES_BOARDERS "vc/pirates/boarders"
+#define TUTORIAL_STEP_PIRATES_COMMANDER "vc/pirates/commander"
+#define TUTORIAL_STEP_PIRATES_BOARD "vc/pirates/board"
+#define TUTORIAL_STEP_PIRATES_SHOOT "vc/pirates/shoot"
+#define TUTORIAL_STEP_PIRATES_CLAIM "vc/pirates/claim"
 
 /// Prefix shared by every Voidcrew tutorial key in `tutorial_completions`.
 #define TUTORIAL_KEY_PREFIX "vc/"

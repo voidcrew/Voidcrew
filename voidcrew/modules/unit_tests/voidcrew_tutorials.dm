@@ -68,7 +68,7 @@
 /// route steps come in two or more routes, and every key a hook credits is a step in the catalog.
 /datum/unit_test/voidcrew_tutorials/catalog/Run()
 	SSvc_tutorials.build_catalog()
-	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 14, "The checklist does not have its fourteen items")
+	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 17, "The checklist does not have its seventeen items")
 	var/list/seen = list()
 	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
 		check_key(item.id, seen)
@@ -617,5 +617,179 @@
 	TEST_ASSERT(SSvc_tutorials.has_key(TUTORIAL_TEST_CKEY, "vc/contract/work"), "Doing the contract was not credited to the crew")
 	TEST_ASSERT(SSvc_tutorials.has_key(TUTORIAL_TEST_CKEY, "vc/contract/turn_in"), "Turning in the contract was not credited to the crew")
 	TEST_ASSERT(SSvc_tutorials.has_key(TUTORIAL_TEST_CKEY, "vc/contract"), "Finishing every contract step did not complete the item")
+
+/// A hostile NPC hull with no AI and no spawner record. The overrides keep a hull failure
+/// from crash-landing a ship that has no interior.
+/obj/structure/overmap/ship/npc/tutorial_test
+	name = "tutorial test pirate"
+	spawner_resolved = TRUE
+
+/obj/structure/overmap/ship/npc/tutorial_test/crash_land()
+	return
+
+/obj/structure/overmap/ship/npc/tutorial_test/get_random_ship_turf()
+	return null
+
+/obj/structure/overmap/ship/npc/tutorial_test/start_critical_alert()
+	return
+
+/obj/structure/overmap/ship/npc/tutorial_test/stop_critical_alert()
+	return
+
+/// A player hull whose ship-to-ship dock always succeeds without moving anything.
+/obj/structure/overmap/ship/tutorial_dock_test
+
+/obj/structure/overmap/ship/tutorial_dock_test/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user, instant = FALSE)
+	return null
+
+/// Stands in for a missile in flight; gone a moment after the launcher's delayed spawn.
+/obj/effect/temp_visual/tutorial_test_missile
+	duration = 1
+
+/// A launcher that can always fire, with a harmless missile loaded.
+/obj/machinery/ship_combat/missile_launcher/tutorial_test
+
+/obj/machinery/ship_combat/missile_launcher/tutorial_test/can_fire()
+	return TRUE
+
+/obj/machinery/ship_combat/missile_launcher/tutorial_test/get_missile_spawn_turf(turf/target, obj/structure/overmap/tgt_ship, approach_dir = null)
+	return target
+
+/// Like make_crewed_ship(), but with a chosen hull type.
+/datum/unit_test/voidcrew_tutorials/proc/make_crewed_ship_of_type(turf/ship_turf, mob/living/player, ship_type)
+	var/area/shuttle/voidcrew/ship_area = new
+	ship_areas += ship_area
+	original_areas[ship_turf] = get_area(ship_turf)
+	ship_turf.change_area(get_area(ship_turf), ship_area)
+	var/obj/docking_port/mobile/voidcrew/port = new(ship_turf)
+	port.shuttle_areas[ship_area] = TRUE
+	port.register()
+	ship_area.shuttle_port = port
+	var/obj/structure/overmap/ship/ship = allocate(ship_type, run_loc_floor_top_right)
+	ship.shuttle = port
+	port.current_ship = ship
+	ships += ship
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	team.join_member(player.mind)
+	crew_records |= ship.get_crew_record()
+	return ship
+
+/// Building a ship weapon from a frame credits the builder; a mapped one doesn't.
+/datum/unit_test/voidcrew_tutorials/weapon_build/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/machinery/ship_combat/interdictor/interdictor = allocate(/obj/machinery/ship_combat/interdictor, get_step(run_loc_floor_bottom_left, EAST))
+	TEST_ASSERT(!done("vc/weapons/interdictor"), "A spawned interdictor counted as building one")
+	interdictor.on_construction(player)
+	TEST_ASSERT(done("vc/weapons/interdictor"), "Building an interdictor was not credited")
+	TEST_ASSERT(!done("vc/weapons/shield"), "Building an interdictor counted as a shield generator")
+
+/// Sealing a loaded missile credits whoever armed it; unsealing it doesn't.
+/datum/unit_test/voidcrew_tutorials/missile_arm/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/structure/ship_missile/missile = allocate(/obj/structure/ship_missile, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/item/screwdriver/tool = allocate(/obj/item/screwdriver)
+	TEST_ASSERT(player.put_in_active_hand(tool), "The player could not hold the screwdriver")
+	missile.construction_state = 3 // MISSILE_STATE_PAYLOAD
+	missile.attackby(tool, player)
+	TEST_ASSERT_EQUAL(missile.construction_state, 4, "The screwdriver did not arm the missile") // MISSILE_STATE_ARMED
+	TEST_ASSERT(done("vc/weapons/missile"), "Arming a missile was not credited")
+	reset_progress()
+	missile.attackby(tool, player)
+	TEST_ASSERT_EQUAL(missile.construction_state, 3, "The screwdriver did not unseal the missile") // MISSILE_STATE_PAYLOAD
+	TEST_ASSERT(!done("vc/weapons/missile"), "Unsealing a missile was credited")
+
+/// A launch at a ship credits the player who fired; an NPC launch has no player to credit.
+/datum/unit_test/voidcrew_tutorials/missile_fire/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/machinery/ship_combat/missile_launcher/tutorial_test/launcher = allocate(/obj/machinery/ship_combat/missile_launcher/tutorial_test, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/structure/overmap/ship/target_ship = allocate(/obj/structure/overmap/ship, get_step(run_loc_floor_top_right, WEST))
+	var/turf/target_turf = get_step(run_loc_floor_top_right, SOUTH)
+	launcher.loaded_missile = list("effect_type" = /obj/effect/temp_visual/tutorial_test_missile)
+	TEST_ASSERT(launcher.fire(target_turf, target_ship, null, null), "The NPC launch failed")
+	TEST_ASSERT(!done("vc/combat/missile"), "A launch with no player was credited")
+	launcher.loaded_missile = list("effect_type" = /obj/effect/temp_visual/tutorial_test_missile)
+	TEST_ASSERT(launcher.fire(target_turf, target_ship, null, player), "The launch failed")
+	TEST_ASSERT(done("vc/combat/missile"), "Launching a missile at a ship was not credited")
+	// Let the delayed missile spawns land and clear inside the test.
+	sleep(2 SECONDS)
+
+/// Force-docking a held pirate credits the user, and boarding it to the crew aboard.
+/datum/unit_test/voidcrew_tutorials/force_dock/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/obj/structure/overmap/ship/our_ship = make_crewed_ship_of_type(deck, player, /obj/structure/overmap/ship/tutorial_dock_test)
+	var/obj/structure/overmap/ship/npc/tutorial_test/pirate = allocate(/obj/structure/overmap/ship/npc/tutorial_test, get_turf(our_ship))
+	pirate.state = "flying" // OVERMAP_SHIP_FLYING
+	var/obj/machinery/ship_combat/interdictor/interdictor = allocate(/obj/machinery/ship_combat/interdictor, get_step(run_loc_floor_top_right, SOUTH))
+	interdictor.linked_ship_ref = WEAKREF(our_ship)
+	TEST_ASSERT(!interdictor.force_dock_target(player), "Force-docking with no lock succeeded")
+	TEST_ASSERT(!done("vc/combat/force_dock"), "A failed force-dock was credited")
+	interdictor.interdicted_ship_ref = WEAKREF(pirate)
+	interdictor.interdiction_active = TRUE
+	TEST_ASSERT(interdictor.force_dock_target(player), "The force-dock failed")
+	TEST_ASSERT(done("vc/combat/force_dock"), "Force-docking was not credited")
+	TEST_ASSERT(done("vc/pirates/board"), "Force-docking a pirate was not credited as boarding it")
+
+/// Hunting pirates: finishing "Let them board" excuses "Fight ship to ship" and completes the
+/// item. The boss and the dock go through their real procs; the wave handler is called directly.
+/datum/unit_test/voidcrew_tutorials/pirate_routes/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/obj/structure/overmap/ship/our_ship = make_crewed_ship(deck, player)
+	var/obj/structure/overmap/ship/npc/tutorial_test/pirate = allocate(/obj/structure/overmap/ship/npc/tutorial_test, get_turf(our_ship))
+	var/datum/ai_controller/npc_ship/controller = new(pirate)
+	pirate.ai_controller = controller
+	// The ship controller has no movement type, and the base Destroy() it calls into reads one.
+	controller.change_ai_movement_type(/datum/ai_movement/dumb)
+	controller.set_blackboard_key("npc_target", our_ship) // BB_NPC_TARGET
+
+	controller.tutorial_on_wave_complete(controller, 1)
+	TEST_ASSERT(done("vc/pirates/boarders"), "Clearing the boarding wave was not credited")
+	controller.handle_boss_killed()
+	TEST_ASSERT(pirate.is_disabled, "Beating the commander did not disable the pirate ship")
+	TEST_ASSERT(done("vc/pirates/commander"), "Beating the commander was not credited")
+	reset_progress()
+	controller.handle_boss_killed()
+	TEST_ASSERT(!done("vc/pirates/commander"), "A second boss call on a disabled ship was credited")
+	tutorial_credit(player, "vc/pirates/boarders")
+	tutorial_credit(player, "vc/pirates/commander")
+
+	var/datum/vc_tutorial_step/shoot = SSvc_tutorials.steps_by_key["vc/pirates/shoot"]
+	var/datum/vc_tutorial/item = SSvc_tutorials.item_by_step["vc/pirates/shoot"]
+	TEST_ASSERT(!shoot.excused(player), "Fight ship to ship was excused with Let them board unfinished")
+	var/obj/structure/overmap/planet/empty/space = allocate(/obj/structure/overmap/planet/empty, get_step(run_loc_floor_top_right, WEST))
+	var/list/saved_ships = SSovermap.simulated_ships
+	SSovermap.simulated_ships = list(our_ship, pirate)
+	pirate.docked = space
+	our_ship.docked = space
+	SEND_SIGNAL(our_ship, "voidcrew_ship_docked") // COMSIG_VOIDCREW_SHIP_DOCKED
+	our_ship.docked = null
+	pirate.docked = null
+	SSovermap.simulated_ships = saved_ships
+	TEST_ASSERT(done("vc/pirates/board"), "Docking beside a pirate ship was not credited as boarding it")
+	TEST_ASSERT(shoot.excused(player), "Finishing Let them board did not excuse Fight ship to ship")
+	TEST_ASSERT(SSvc_tutorials.item_complete(item, TUTORIAL_TEST_CKEY, player), "Finishing Let them board did not complete Hunting pirates")
+	TEST_ASSERT(done("vc/pirates"), "Finishing Let them board did not save the item key")
+	TEST_ASSERT(!done("vc/pirates/shoot"), "Fight ship to ship was marked done")
+
+/// A pirate hull failing credits the crew it was fighting, once.
+/datum/unit_test/voidcrew_tutorials/pirate_shot_down/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/obj/structure/overmap/ship/our_ship = make_crewed_ship(deck, player)
+	var/obj/structure/overmap/ship/npc/tutorial_test/pirate = allocate(/obj/structure/overmap/ship/npc/tutorial_test, get_step(run_loc_floor_top_right, WEST))
+	var/datum/ai_controller/npc_ship/controller = new(pirate)
+	pirate.ai_controller = controller
+	// The ship controller has no movement type, and the base Destroy() it calls into reads one.
+	controller.change_ai_movement_type(/datum/ai_movement/dumb)
+	controller.set_blackboard_key("npc_target", our_ship) // BB_NPC_TARGET
+	pirate.on_ship_destroyed()
+	TEST_ASSERT(pirate.has_crash_landed, "The pirate hull did not fail")
+	TEST_ASSERT(done("vc/pirates/shoot"), "Shooting down a pirate was not credited to its target's crew")
+	reset_progress()
+	pirate.on_ship_destroyed()
+	TEST_ASSERT(!done("vc/pirates/shoot"), "A hull that had already failed was credited again")
 
 #undef TUTORIAL_TEST_CKEY
