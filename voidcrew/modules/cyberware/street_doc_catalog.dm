@@ -20,6 +20,8 @@
  * (subtypes of Splice's buybacks, with his own wording). Like Splice's, and
  * unlike every other ledger, it takes chrome bought at a counter and pulled
  * again (buys_shop_stock on /datum/shop_buyback/ripperdoc, ripperdoc_catalog.dm).
+ * Of Splice's found-chrome bands he runs only the two that pay credits: his
+ * counter never deals in vouchers either way.
  *
  * Catalog and NPC only: the organs live in ware_*.dm, the cradle in
  * chrome_cradle.dm, the room on the Quartermain map
@@ -151,6 +153,9 @@
 		/datum/shop_buyback/ripperdoc/cargo_cavity/street_doc,
 		/datum/shop_buyback/ripperdoc/gastro/street_doc,
 		/datum/shop_buyback/ripperdoc/chromatic_dermis/street_doc,
+		// Found chrome with no trade-in row, on Splice's credit bands only.
+		/datum/shop_buyback/found_chrome/fitted/street_doc,
+		/datum/shop_buyback/found_chrome/pro/street_doc,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -263,6 +268,12 @@
 
 /datum/shop_buyback/ripperdoc/chromatic_dermis/street_doc
 	desc = "Old circuit ink."
+
+/datum/shop_buyback/found_chrome/fitted/street_doc
+	desc = "Tool arms and field optics, pulled. He'll find them a new home."
+
+/datum/shop_buyback/found_chrome/pro/street_doc
+	desc = "Combat chrome, pulled. One blade or one fist is fine."
 
 // =========================================================================
 // THE NPC
