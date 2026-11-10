@@ -181,7 +181,8 @@
 	if(heavy)
 		var/turf/spot = get_turf(target)
 		if(spot)
-			new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, 0.4)
+			// On the floor, under whoever stands in it or beyond it up the screen
+			new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, 0.4)
 
 /// The sound of a landed piston punch on [target]. The one place to swap it.
 /proc/gorilla_punch_impact_sound(atom/target)
@@ -392,7 +393,7 @@ GLOBAL_LIST_INIT(gorilla_zone_points, list(
 	cyberware_flash_fx(victim, 0.2 SECONDS)
 	var/turf/spot = get_turf(victim)
 	if(spot)
-		new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, 0.5)
+		new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, 0.5)
 	log_combat(attacker, victim, "snapped the [limb.plaintext_zone] of", source_item, "(gorilla arms)")
 	return TRUE
 
