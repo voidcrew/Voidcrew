@@ -111,8 +111,12 @@
 #define HV_VIS_TUMBLE_BRAIN 3
 #define HV_VIS_TUMBLE_ORGAN 4
 #define HV_VIS_TUMBLE_SLIDE 5
-/// Throw speed (tiles a decisecond) of a tumbling part, slow enough to see the arc.
-#define HV_VIS_TUMBLE_SPEED 1
+/// A part that comes off but goes nowhere (a head that bursts where it is).
+#define HV_VIS_TUMBLE_NONE 6
+/// How long a tumbling part takes to cross a tile, slow enough to see the arc.
+#define HV_VIS_TUMBLE_STEP (0.1 SECONDS)
+/// The layer of a part in the air: over bodies on the floor, under anyone on their feet.
+#define HV_VIS_TUMBLE_LAYER (LYING_MOB_LAYER + 0.05)
 /// Most blood streaks one tumbling part leaves along its way.
 #define HV_VIS_TUMBLE_MAX_STREAKS 4
 

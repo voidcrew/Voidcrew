@@ -1,63 +1,117 @@
 // Hyperviolence visuals: flying gore.
-// 8. A severed limb or head flies the way the blow went (tg throws it in a random direction), slowly
-//    enough to see: up in an arc, spinning, leaving a blood streak on each tile it crosses; it bounces
-//    once where it lands, and a head rolls on.
+// 8. A severed limb or head flies the way the blow went (tg sends it off in a random direction), slowly
+//    enough to see: up in an arc from where it was on the body, spinning, leaving a blood streak on each
+//    tile it crosses; it bounces once where it lands, and a head rolls on.
 // 9. A burst head's brain arcs out spinning and lands with a wet bounce. Its gibs arc as they fly.
-// In zero gravity nothing arcs or bounces: a part just turns slowly as it drifts, and leaves no streak.
+// In zero gravity nothing arcs or bounces: a part just turns slowly as it goes, and leaves no streak.
+//
+// None of it is thrown. tg's throw hits whatever is in the way: a limb hurts whoever it lands on and
+// shoves them a tile, a head can knock its own killer off the body, and anyone in throw mode catches a
+// brain. A part here flies by plain steps along a path worked out as it comes off (hv_vis_fling_path()):
+// it stops short of anything solid and of anyone on their feet, and touches nobody. tg's dismember()
+// still asks for its throw at the end; a part marked to tumble turns that into a flight
+// (/obj/item/bodypart/throw_at() below).
 
 /// Set while a burst head throws its gibs, so they arc.
 GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 
 /obj/item
-	/// Hyperviolence visuals: set just before a body part or organ is thrown off a body, so the throw
-	/// tumbles it (HV_VIS_TUMBLE_*). Used up by the throw.
+	/// Hyperviolence visuals: set just before a body part or organ comes off a body, so it tumbles as
+	/// it flies (HV_VIS_TUMBLE_*). Used up by the flight.
 	var/hv_vis_tumble
-	/// The way to fling it, in place of the throw's own target. Used up by the throw.
+	/// The way to fling it. Used up by the flight.
 	var/hv_vis_fling_dir
-	/// The blood it streaks along its way. Used up by the throw.
+	/// The blood it streaks along its way. Used up by the flight.
 	var/list/hv_vis_tumble_dna
+	/// Where on the body it was, in pixels from the middle of the tile (list(x, y)): the flight starts
+	/// there. Used up by the flight.
+	var/list/hv_vis_fling_from
 
-/obj/item/throw_at(atom/target, range, speed, mob/thrower, spin = 1, diagonals_first = 0, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE, throw_type_path = /datum/thrownthing)
-	if(!hv_vis_tumble)
-		return ..()
-	var/style = hv_vis_tumble
-	var/list/blood_dna = hv_vis_tumble_dna
-	var/fling_dir = hv_vis_fling_dir
+/// Forgets a fling that was marked on this part.
+/obj/item/proc/hv_vis_forget_fling()
 	hv_vis_tumble = null
-	hv_vis_tumble_dna = null
 	hv_vis_fling_dir = null
-	if(fling_dir)
-		target = hv_vis_fling_target(target, fling_dir, style == HV_VIS_TUMBLE_SLIDE ? 1 : 0)
-	speed = style == HV_VIS_TUMBLE_SLIDE ? 0.5 : min(speed, HV_VIS_TUMBLE_SPEED)
-	// Our own spin replaces tg's single quick turn. No quick start: the tumble has to be listening
-	// before the first step, to streak the tile the part leaves.
-	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback, force, gentle, FALSE, throw_type_path)
-	if(throwing && !QDELETED(src))
-		AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir || get_dir(src, target))
+	hv_vis_tumble_dna = null
+	hv_vis_fling_from = null
 
-/// Where to fling this along `fling_dir`, as far as `original` was (or `distance` tiles): the farthest
-/// open tile on the way. Stops before space, lava or a chasm, and at the first wall, as tg's own fling
-/// does. Falls back to `original` if there is nowhere to go.
-/obj/item/proc/hv_vis_fling_target(atom/original, fling_dir, distance = 0)
-	var/turf/start = get_turf(src)
-	if(!start)
-		return original
-	if(!distance)
-		distance = max(get_dist(start, original), 2)
-	var/turf/landing
-	var/turf/ahead = start
-	for(var/i in 1 to distance)
-		ahead = get_step(ahead, fling_dir)
-		if(!ahead || isgroundlessturf(ahead) || islava(ahead) || ischasm(ahead))
-			break
-		landing = ahead
-		if(ahead.density)
-			break
-	return landing || original
+/// How this kind of part tumbles when nothing marked it (HV_VIS_TUMBLE_*).
+/obj/item/proc/hv_vis_tumble_style()
+	return HV_VIS_TUMBLE_ORGAN
+
+/obj/item/bodypart/hv_vis_tumble_style()
+	return HV_VIS_TUMBLE_LIMB
+
+/obj/item/bodypart/head/hv_vis_tumble_style()
+	return HV_VIS_TUMBLE_HEAD
+
+/obj/item/organ/brain/hv_vis_tumble_style()
+	return HV_VIS_TUMBLE_BRAIN
 
 /**
- * A part flying off a body: the arc, the spin, the blood along the way, the landing. On the thrown
- * item for the length of the throw only; gone once it lands, or after a few seconds whatever happens.
+ * Flies this loose part up to `distance` tiles along `fling_dir`, tumbling. Not a throw (see the top of
+ * this file): nothing on the way is hit. How it tumbles and the blood it streaks come from the marks
+ * on it, or from what it is. `on_landed` is called when it comes to rest. The body of hv_fling()
+ * (_core.dm). Returns TRUE if it took off.
+ */
+/obj/item/proc/hv_vis_fly(fling_dir, distance = 2, datum/callback/on_landed)
+	var/style = hv_vis_tumble
+	var/list/blood_dna = hv_vis_tumble_dna
+	var/list/from = hv_vis_fling_from
+	hv_vis_forget_fling()
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
+	if(!style || style == HV_VIS_TUMBLE_NONE)
+		style = hv_vis_tumble_style()
+	if(!fling_dir)
+		fling_dir = pick(GLOB.alldirs)
+	// Where it will lie on its last tile is settled now, so nothing jumps when it lands.
+	if(!pixel_x && !pixel_y && !(item_flags & NO_PIXEL_RANDOM_DROP))
+		pixel_x = base_pixel_x + rand(-6, 6)
+		pixel_y = base_pixel_y + rand(-6, 6)
+	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, hv_vis_fling_path(loc, fling_dir, distance), on_landed, from)
+	tumble.launch()
+	return TRUE
+
+/// The tiles a part flung from `start` along `fling_dir` crosses, nearest first, up to `distance` of them.
+/proc/hv_vis_fling_path(turf/start, fling_dir, distance)
+	var/list/turf/path = list()
+	var/turf/here = start
+	for(var/i in 1 to distance)
+		var/turf/next = get_step(here, fling_dir)
+		if(!hv_vis_can_fly_onto(here, next))
+			break
+		path += next
+		here = next
+	return path
+
+/// Whether a flying part can go from `here` onto `next`: open floor on the same level, not space, lava
+/// or a chasm, nothing solid on it or between the two (a window, a door, a table), and nobody on their feet.
+/proc/hv_vis_can_fly_onto(turf/here, turf/next)
+	if(!here || !next || next.z != here.z || isgroundlessturf(next) || islava(next) || ischasm(next))
+		return FALSE
+	if(next.is_blocked_turf(exclude_mobs = TRUE) || !here.Adjacent(next))
+		return FALSE
+	for(var/mob/living/in_the_way in next)
+		if(in_the_way.density)
+			return FALSE
+	return TRUE
+
+/// tg's dismember() ends by throwing the limb. One marked to tumble flies instead; one marked to stay
+/// put (a head that bursts where it is) goes nowhere.
+/obj/item/bodypart/throw_at(atom/target, range, speed, mob/thrower, spin = 1, diagonals_first = 0, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE, throw_type_path = /datum/thrownthing)
+	if(!hv_vis_tumble)
+		return ..()
+	if(hv_vis_tumble == HV_VIS_TUMBLE_NONE)
+		hv_vis_forget_fling()
+		return FALSE
+	var/fling_dir = hv_vis_fling_dir || get_dir(src, target) || pick(GLOB.cardinals)
+	var/distance = hv_vis_tumble == HV_VIS_TUMBLE_SLIDE ? 1 : max(get_dist(src, target), 2)
+	return hv_vis_fly(fling_dir, distance, callback)
+
+/**
+ * A part flying off a body: the steps along its path, the arc, the spin, the blood along the way, the
+ * landing. On the part for the length of the flight only; gone once it lands, if anything else moves it
+ * (someone picks it up), or after a few seconds whatever happens.
  */
 /datum/component/hv_tumble
 	dupe_mode = COMPONENT_DUPE_HIGHLANDER
@@ -67,41 +121,63 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 	var/list/blood_dna
 	/// The way it was flung.
 	var/fling_dir
+	/// The tiles still ahead of it, nearest first.
+	var/list/turf/path
+	/// Called when it comes to rest.
+	var/datum/callback/on_landed
+	/// Where on the body it came from, in pixels from the middle of the tile, or null.
+	var/list/from
+	/// How long it takes to cross a tile.
+	var/step_time = HV_VIS_TUMBLE_STEP
 	/// Streaks left so far.
 	var/streaks = 0
-	/// Whether it was thrown where gravity pulls it down.
+	/// Whether it flies where gravity pulls it down.
 	var/grounded = TRUE
+	/// The timer of its next step.
+	var/step_timer
+	/// Set while it takes one of its own steps, to tell those from anything else moving it.
+	var/stepping = FALSE
+	/// The layer it had before it took off.
+	var/rest_layer
 
-/datum/component/hv_tumble/Initialize(style, list/blood_dna, fling_dir)
+/datum/component/hv_tumble/Initialize(style, list/blood_dna, fling_dir, list/turf/path, datum/callback/on_landed, list/from)
 	if(!isitem(parent))
 		return COMPONENT_INCOMPATIBLE
 	var/obj/item/part = parent
 	src.style = style
 	src.blood_dna = blood_dna
 	src.fling_dir = fling_dir
+	src.path = path || list()
+	src.on_landed = on_landed
+	src.from = from
+	if(style == HV_VIS_TUMBLE_SLIDE)
+		step_time *= 2
 	grounded = part.has_gravity() > 0
+	rest_layer = part.layer
 	addtimer(CALLBACK(src, PROC_REF(give_up)), 5 SECONDS, TIMER_DELETE_ME)
-	start_flight()
 
 /datum/component/hv_tumble/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	RegisterSignal(parent, COMSIG_MOVABLE_THROW_LANDED, PROC_REF(on_landed))
 
 /datum/component/hv_tumble/UnregisterFromParent()
-	UnregisterSignal(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_THROW_LANDED))
+	UnregisterSignal(parent, COMSIG_MOVABLE_MOVED)
 
 /datum/component/hv_tumble/Destroy(force)
+	if(step_timer)
+		deltimer(step_timer)
+		step_timer = null
+	var/obj/item/part = parent
+	if(!QDELETED(part) && !isnull(rest_layer) && part.layer == HV_VIS_TUMBLE_LAYER)
+		part.layer = rest_layer
 	blood_dna = null
+	path = null
+	on_landed = null
+	from = null
 	return ..()
 
-/// How long the flight should take, from the throw under way.
+/// How long the whole flight takes.
 /datum/component/hv_tumble/proc/flight_time()
-	var/obj/item/part = parent
-	var/datum/thrownthing/flight = part.throwing
-	if(!flight)
-		return 2
-	var/distance = max(get_dist(part, flight.target_turf), 1)
-	return max(distance / max(flight.speed, 0.5), 1.5)
+	return max(length(path), 1) * step_time
 
 /// How high it rises on the way.
 /datum/component/hv_tumble/proc/arc_height()
@@ -115,6 +191,12 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 		if(HV_VIS_TUMBLE_ORGAN)
 			return 7
 	return 0
+
+/// Takes off: starts the arc and the spin, and takes the first step.
+/datum/component/hv_tumble/proc/launch()
+	if(length(path))
+		start_flight()
+	take_step()
 
 /datum/component/hv_tumble/proc/start_flight()
 	var/obj/item/part = parent
@@ -131,41 +213,80 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 	if(!grounded)
 		part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, 2, 30, pick(-1, 1)))
 		return
+	// In the air it passes over bodies on the floor and behind anyone standing.
+	part.layer = HV_VIS_TUMBLE_LAYER
 	var/height = arc_height()
+	// From where it was on the body, over the top of the arc, down onto its own spot on the last tile.
+	var/from_w = from ? from[1] - (part.pixel_x - part.base_pixel_x) : 0
+	var/from_z = from ? from[2] - (part.pixel_y - part.base_pixel_y) : 0
 	part.hv_vis_play(HV_VIS_TAG_ARC, list(
-		list(part.pixel_w, part.pixel_z + height, base, time / 2, QUAD_EASING|EASE_OUT),
+		list(part.pixel_w + from_w, part.pixel_z + from_z, base, 0, LINEAR_EASING),
+		list(part.pixel_w + from_w / 2, part.pixel_z + from_z / 2 + height, base, time / 2, QUAD_EASING|EASE_OUT),
 		list(part.pixel_w, part.pixel_z, base, time / 2, QUAD_EASING|EASE_IN),
 	))
 	var/turns = style == HV_VIS_TUMBLE_ORGAN ? 1 : 2
-	part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, turns, time + 1, HV_VIS_DX(fling_dir) || pick(-1, 1)))
+	part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, turns, time, HV_VIS_DX(fling_dir) || pick(-1, 1)))
 
-/// Blood on each tile it crosses, until it lands.
+/// One tile further along its path, or down if there is no more of it or something got in the way.
+/datum/component/hv_tumble/proc/take_step()
+	step_timer = null
+	var/obj/item/part = parent
+	if(QDELETED(part) || !isturf(part.loc))
+		give_up()
+		return
+	var/turf/next = length(path) ? path[1] : null
+	if(!next || !hv_vis_can_fly_onto(part.loc, next))
+		land()
+		return
+	path.Cut(1, 2)
+	stepping = TRUE
+	part.set_glide_size(DELAY_TO_GLIDE_SIZE(step_time))
+	part.forceMove(next)
+	stepping = FALSE
+	if(QDELETED(src))
+		return
+	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), step_time, TIMER_STOPPABLE|TIMER_DELETE_ME)
+
+/// Blood on each tile it crosses. Anything else moving it (a hand, a conveyor) ends the flight.
 /datum/component/hv_tumble/proc/on_moved(obj/item/source, atom/old_loc, movement_dir, forced, list/old_locs)
 	SIGNAL_HANDLER
-	if(!grounded || !length(blood_dna) || streaks >= HV_VIS_TUMBLE_MAX_STREAKS || !source.throwing)
+	if(!stepping)
+		give_up()
+		return
+	if(!grounded || !length(blood_dna) || streaks >= HV_VIS_TUMBLE_MAX_STREAKS)
 		return
 	var/turf/crossed = old_loc
 	if(!isturf(crossed) || isgroundlessturf(crossed) || crossed.has_gravity() <= 0)
 		return
 	streaks++
-	hv_blood_lay_spray(crossed, /obj/effect/decal/cleanable/blood/hv_spray/streak, movement_dir || fling_dir, blood_dna)
+	hv_blood_lay_spray(crossed, /obj/effect/decal/cleanable/blood/hv_spray/streak, fling_dir, blood_dna)
 
-/datum/component/hv_tumble/proc/on_landed(obj/item/source, datum/thrownthing/flight)
-	SIGNAL_HANDLER
-	if(grounded && isturf(source.loc))
+/// It comes down: the bounce, a head's roll, and whoever asked to know.
+/datum/component/hv_tumble/proc/land()
+	var/obj/item/part = parent
+	if(part.layer == HV_VIS_TUMBLE_LAYER)
+		part.layer = rest_layer
+	if(grounded && isturf(part.loc))
 		switch(style)
 			if(HV_VIS_TUMBLE_HEAD)
-				source.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_bounce_steps(source, 4))
-				hv_vis_roll(source, fling_dir)
+				part.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_bounce_steps(part, 4))
+				hv_vis_roll(part, fling_dir)
 			if(HV_VIS_TUMBLE_BRAIN)
-				source.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_wet_bounce_steps(source))
+				part.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_wet_bounce_steps(part))
 			if(HV_VIS_TUMBLE_LIMB)
-				source.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_bounce_steps(source, 4))
+				part.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_bounce_steps(part, 4))
 			if(HV_VIS_TUMBLE_ORGAN)
-				source.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_bounce_steps(source, 2))
+				part.hv_vis_play(HV_VIS_TAG_ARC, hv_vis_bounce_steps(part, 2))
+	var/datum/callback/landed = on_landed
+	on_landed = null
 	qdel(src)
+	landed?.Invoke()
 
+/// Something else has the part now, or the flight never ended: let it go as it is.
 /datum/component/hv_tumble/proc/give_up()
+	var/obj/item/part = parent
+	if(!QDELETED(part))
+		part.hv_vis_stop(list(HV_VIS_TAG_ARC, HV_VIS_TAG_SPIN))
 	qdel(src)
 
 /// `turns` whole turns over `time`, clockwise for `spin_sign` 1, ending where the part started.
@@ -218,6 +339,14 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 
 // ---- Limbs and heads coming off ----
 
+/// Whether this part, coming off, stays where the body is rather than flying.
+/obj/item/bodypart/proc/hv_vis_stays_put()
+	return FALSE
+
+/// A head that bursts comes apart where it is (braingut/brain_burst.dm).
+/obj/item/bodypart/head/hv_vis_stays_put()
+	return hv_bursting
+
 /// A limb or head taken off whole flies the way the blow went, tumbling. Burned-off parts and the
 /// chest (which spills, braingut/gut_spill.dm) are left to tg.
 /obj/item/bodypart/dismember(dam_type = BRUTE, silent = TRUE, wounding_type)
@@ -225,18 +354,48 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 	var/marked = FALSE
 	if(limb_owner && dam_type != BURN && body_zone != BODY_ZONE_CHEST)
 		marked = TRUE
-		if(!hv_vis_tumble)
-			hv_vis_tumble = body_zone == BODY_ZONE_HEAD ? HV_VIS_TUMBLE_HEAD : HV_VIS_TUMBLE_LIMB
+		if(hv_vis_stays_put())
+			hv_vis_tumble = HV_VIS_TUMBLE_NONE
+		else if(!hv_vis_tumble)
+			hv_vis_tumble = hv_vis_tumble_style()
 		if(!hv_vis_fling_dir)
 			hv_vis_fling_dir = limb_owner.hv_blood_recent_hit_dir()
 		if(!hv_vis_tumble_dna && can_bleed())
 			hv_vis_tumble_dna = limb_owner.get_blood_dna_list()
+		if(!hv_vis_fling_from)
+			hv_vis_fling_from = limb_owner.hv_vis_part_offset(body_zone)
 	. = ..()
-	// Not thrown after all (it burned away, or it was never let go): forget the fling.
-	if(marked && !QDELETED(src) && !throwing)
-		hv_vis_tumble = null
-		hv_vis_fling_dir = null
-		hv_vis_tumble_dna = null
+	// Not sent flying after all (it burned away, or it was never let go): forget the fling.
+	if(marked && !QDELETED(src))
+		hv_vis_forget_fling()
+
+/**
+ * Where the part at `zone` is drawn on this body as it faces and lies now, in pixels from the middle of
+ * its tile: list(x, y). Left and right swap on screen when a body turns, a body seen side-on has both
+ * arms and legs on its middle line, and a body on the floor is turned onto its side.
+ */
+/mob/living/carbon/proc/hv_vis_part_offset(zone)
+	var/x = 0
+	var/y = 0
+	var/side = hv_vis_zone_side(zone)
+	switch(zone)
+		if(BODY_ZONE_HEAD)
+			y = 10
+		if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+			x = side * 6
+			y = 1
+		if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+			x = side * 3
+			y = -11
+	// tg lays a body down by turning it clockwise.
+	switch(lying_angle)
+		if(90)
+			. = list(y, -x)
+		if(270)
+			. = list(-y, x)
+		else
+			. = list(x, y)
+	.[2] += pixel_y - base_pixel_y
 
 // ---- Burst heads ----
 
@@ -256,9 +415,8 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 	. = ..()
 	GLOB.hv_vis_arcing_gibs = FALSE
 	for(var/obj/item/organ/organ as anything in marked)
-		if(!QDELETED(organ) && !organ.throwing)
-			organ.hv_vis_tumble = null
-			organ.hv_vis_tumble_dna = null
+		if(!QDELETED(organ))
+			organ.hv_vis_forget_fling()
 
 /// Gibs thrown by a burst head rise and fall as they fly, turning over.
 /obj/effect/decal/cleanable/blood/gibs/streak(list/directions, mapload = FALSE)

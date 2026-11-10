@@ -14,6 +14,12 @@
 /mob/living/carbon/proc/hv_burst_head(burst_dir)
 	return hv_burst_head_apart(burst_dir)
 
+/// Sends a loose part (a severed limb or head, a brain, an eye) up to `distance` tiles along `fling_dir`,
+/// tumbling, and calls `on_landed` when it comes to rest. Never tg's throw: a thrown part hurts and shoves
+/// whoever it hits, and can be caught. The body is in visuals/flying_gore.dm. Returns TRUE if it took off.
+/obj/item/proc/hv_fling(fling_dir, distance = 2, datum/callback/on_landed)
+	return hv_vis_fly(fling_dir, distance, on_landed)
+
 /**
  * A body shudders as it dies. With `rise` (a body that has just fallen) it is first drawn upright over
  * its lying pose, seizing, then falls the way tg lays a body down. Human NPCs give it from their death

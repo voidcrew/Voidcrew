@@ -212,7 +212,8 @@
 	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_L_ARM)
 	var/turf/start = get_turf(victim)
 	TEST_ASSERT(arm.dismember(BRUTE, TRUE, WOUND_SLASH), "Test fixture: the arm did not come off")
-	TEST_ASSERT_NULL(arm.hv_vis_tumble, "The throw did not use up the arm's fling")
+	TEST_ASSERT_NULL(arm.hv_vis_tumble, "The flight did not use up the arm's fling")
+	TEST_ASSERT_NULL(arm.throwing, "The severed arm was thrown with tg's throw")
 	var/datum/component/hv_tumble/tumble = arm.GetComponent(/datum/component/hv_tumble)
 	TEST_ASSERT_NOTNULL(tumble, "A severed arm did not tumble")
 	TEST_ASSERT_EQUAL(tumble.fling_dir, EAST, "The arm was not flung the way the blow went")
@@ -254,6 +255,41 @@
 	TEST_ASSERT_EQUAL(brain.pixel_w, 0, "The landed brain is drawn off to the side")
 	TEST_ASSERT_EQUAL(brain.pixel_z, 0, "The landed brain is drawn in the air")
 	TEST_ASSERT(same_matrix(brain.transform, matrix()), "The landed brain is left squashed or turned")
+
+/// Flying gore is never thrown: someone standing in its way is not hit, hurt or moved, and the part
+/// comes down short of them
+/datum/unit_test/voidcrew_hv_visuals/flying_gore_touches_nobody
+
+/datum/unit_test/voidcrew_hv_visuals/flying_gore_touches_nobody/Run()
+	var/mob/living/carbon/human/consistent/attacker = allocate(/mob/living/carbon/human/consistent, spot(0, 1))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, spot(3, 1))
+	// An arm cut off by a blow going east, toward the bystander two tiles on
+	victim.hv_blood_hit_dir = EAST
+	victim.hv_blood_hit_time = world.time
+	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT(arm.dismember(BRUTE, TRUE, WOUND_SLASH), "Test fixture: the arm did not come off")
+	TEST_ASSERT_NULL(arm.throwing, "A severed arm was thrown")
+	TEST_ASSERT_NOTNULL(arm.GetComponent(/datum/component/hv_tumble), "A severed arm did not fly")
+	for(var/i in 1 to 50)
+		if(!arm.GetComponent(/datum/component/hv_tumble))
+			break
+		sleep(1)
+	TEST_ASSERT_EQUAL(get_turf(arm), spot(2, 1), "The arm did not come down on the tile before the person in its way")
+	TEST_ASSERT_EQUAL(get_turf(bystander), spot(3, 1), "A flying arm moved someone")
+	TEST_ASSERT_EQUAL(bystander.getBruteLoss(), 0, "A flying arm hurt someone")
+
+	// A head burst by a blow going west, at the attacker standing right there
+	var/obj/item/organ/brain/brain = victim.get_organ_slot(ORGAN_SLOT_BRAIN)
+	TEST_ASSERT(victim.hv_burst_head(WEST), "Test fixture: the head did not burst")
+	TEST_ASSERT_NULL(brain.throwing, "A burst head's brain was thrown")
+	for(var/i in 1 to 50)
+		if(!brain.GetComponent(/datum/component/hv_tumble))
+			break
+		sleep(1)
+	TEST_ASSERT_EQUAL(get_turf(brain), spot(1, 1), "The brain did not drop short of the person in its way")
+	TEST_ASSERT_EQUAL(get_turf(attacker), spot(0, 1), "A burst head moved the attacker")
+	TEST_ASSERT_EQUAL(attacker.getBruteLoss(), 0, "A burst head hurt the attacker")
 
 /// One leg gone: a limp while it is gone, none once it is back
 /datum/unit_test/voidcrew_hv_visuals/limp

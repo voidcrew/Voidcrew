@@ -2,13 +2,15 @@
 // comes apart in gibs and the brain is thrown out intact, still holding its owner's mind, so the
 // victim can be revived later like any other loose brain.
 // The idea is Septic Shock's brain spill (modular_septic wounds/organic/spilling.dm). Nothing of its
-// code, art or sound is used: the burst is built from tg's gibs, blood splatter and throwing.
+// code, art or sound is used: the burst is built from tg's gibs and blood splatter.
 
 /obj/item/bodypart/head
 	/// Set while a blow that is allowed to burst this head instead of knocking it off is being resolved.
 	var/hv_burst_pending = FALSE
 	/// Direction of the blow being resolved, from the attacker toward this head.
 	var/hv_blow_dir
+	/// Set while this head bursts: it comes apart where it is, so taking it off must not send it anywhere.
+	var/hv_bursting = FALSE
 
 /// Bursts the head: gibs, a spray of blood, a burst of splatter, and the brain thrown intact along burst_dir.
 /// announce is off when the caller has already said what happened. Called by hv_burst_head() in _core.dm.
@@ -33,11 +35,15 @@
 			loose += organ
 
 	hv_blood_spray(burst_dir, 4)
-	if(!head.dismember(BRUTE, silent = TRUE))
+	// A burst head comes apart where it was. Taking it off must not fling it (hv_bursting): tg's
+	// dismember() throws the part, and a thrown head shoves whoever it hits, the attacker included.
+	head.hv_bursting = TRUE
+	var/came_off = head.dismember(BRUTE, silent = TRUE)
+	if(!QDELETED(head))
+		head.hv_bursting = FALSE
+	if(!came_off)
 		return FALSE
-	// dismember() throws the head off in a random direction, and the throw takes its first step at once.
-	// A burst head comes apart where it was, so it goes back before its insides fall out: otherwise the
-	// brain starts its fling a tile off (one to four tiles along the blow, or off its line altogether).
+	// Its insides fall out where the body is, whatever else moved the head in the meantime.
 	if(isturf(here) && head.loc != here)
 		head.forceMove(here)
 	// no violent_removal: that would damage the brain, and it has to stay good for revival
@@ -65,22 +71,14 @@
 		hv_add_hit_line(pick("[src]'s head bursts apart!", "[src]'s skull bursts open!"), HV_LINE_HUGE, range = DEFAULT_MESSAGE_RANGE)
 	return TRUE
 
-/// Throws a loose organ min_dist to max_dist tiles along fling_dir. It lands as an ordinary item.
-/// It never goes over a hole or lava: a brain lost in either is a player lost for good, so the throw stops short.
+/// Flings a loose organ min_dist to max_dist tiles along fling_dir. It lands as an ordinary item.
+/// Never tg's throw (hv_fling(), _core.dm): nobody is hit by it and nobody catches it. It never goes over
+/// a hole or lava either: a brain lost in one is a player lost for good, so it stops short.
 /proc/hv_fling_organ(obj/item/organ/organ, fling_dir, min_dist, max_dist, datum/callback/on_landed)
 	var/turf/start = get_turf(organ)
 	if(!start || isgroundlessturf(start))
 		return
-	var/distance = 0
-	var/turf/ahead = start
-	for(var/tile in 1 to rand(min_dist, max_dist))
-		ahead = get_step(ahead, fling_dir)
-		if(!ahead || isgroundlessturf(ahead) || islava(ahead))
-			break
-		distance = tile
-	if(!distance)
-		return
-	organ.throw_at(get_ranged_target_turf(start, fling_dir, distance), distance, 2, callback = on_landed)
+	organ.hv_fling(fling_dir, rand(min_dist, max_dist), on_landed)
 
 /// A thrown organ has come down: it hits the floor with a wet sound and leaves a smear of the victim's blood.
 /obj/item/organ/proc/hv_landed(list/blood_dna)

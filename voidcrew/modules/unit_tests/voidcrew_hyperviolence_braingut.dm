@@ -8,7 +8,7 @@
 		if(check.Invoke(blow))
 			return blow
 
-/// A head that bursts must throw its brain out whole, still holding the mind, and destroy the head.
+/// A head that bursts must fling its brain out whole, still holding the mind, and destroy the head.
 /datum/unit_test/voidcrew_hv_head_burst
 
 /datum/unit_test/voidcrew_hv_head_burst/Run()
@@ -26,7 +26,8 @@
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The victim kept a head after it burst")
 	TEST_ASSERT(QDELETED(head), "The burst head was left lying around")
 	TEST_ASSERT(!QDELETED(brain), "The brain was destroyed by the burst")
-	TEST_ASSERT_NOTNULL(brain.throwing, "The brain was not thrown")
+	TEST_ASSERT_NOTNULL(brain.GetComponent(/datum/component/hv_tumble), "The brain was not flung out")
+	TEST_ASSERT_NULL(brain.throwing, "The brain was thrown with tg's throw, which hits whoever is in the way")
 	TEST_ASSERT(isturf(brain.loc), "The brain was left inside something instead of on the floor")
 	TEST_ASSERT(!victim.hv_burst_head(NORTH), "A headless victim burst a head that is not there")
 
@@ -39,7 +40,7 @@
 	TEST_ASSERT(brain.damage < brain.maxHealth, "The burst killed the brain outright, so the victim could not be revived")
 	TEST_ASSERT(brain.damage < 1, "The burst damaged a brain it had no reason to touch (got [brain.damage]; only out-of-body decay is expected)")
 	TEST_ASSERT(!(brain.organ_flags & ORGAN_FAILING), "The burst left the brain failing")
-	TEST_ASSERT_EQUAL(brain.brainmob?.mind, victim_mind, "The mind did not stay with the thrown brain")
+	TEST_ASSERT_EQUAL(brain.brainmob?.mind, victim_mind, "The mind did not stay with the brain")
 	if(eyes)
 		TEST_ASSERT(!QDELETED(eyes) && !istype(eyes.loc, /obj/item/bodypart), "The eyes stayed in a head that no longer exists")
 
