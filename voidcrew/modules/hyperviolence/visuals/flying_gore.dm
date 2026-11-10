@@ -260,7 +260,10 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	if(!isturf(crossed) || isgroundlessturf(crossed) || crossed.has_gravity() <= 0)
 		return
 	streaks++
-	hv_blood_lay_spray(crossed, /obj/effect/decal/cleanable/blood/hv_spray/streak, fling_dir, blood_dna)
+	// A few drops under it as it passes, not a line.
+	var/obj/effect/decal/cleanable/blood/hv_spray/streak/trail = hv_blood_lay_spray(crossed, /obj/effect/decal/cleanable/blood/hv_spray/streak/drops, fling_dir, blood_dna)
+	if(istype(trail))
+		trail.hv_set_look(TRUE, rand(-3, 3))
 
 /// It comes down: the bounce, a head's roll, and whoever asked to know.
 /datum/component/hv_tumble/proc/land()
