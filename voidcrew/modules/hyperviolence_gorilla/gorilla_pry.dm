@@ -75,7 +75,9 @@
 	RegisterSignal(door, COMSIG_QDELETING, PROC_REF(on_deleted))
 	RegisterSignal(door, COMSIG_AIRLOCK_OPEN, PROC_REF(on_opening))
 	RegisterSignal(bearer, COMSIG_QDELETING, PROC_REF(on_deleted))
-	beat()
+	// The first beat waits a tick. Every beat asks whether the pry is still going, and the pry's do_after only
+	// starts once this strain is made: asked here the answer was always no, and no beat ever ran.
+	beat_timer = addtimer(CALLBACK(src, PROC_REF(beat)), 1, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /datum/gorilla_pry_strain/Destroy()
 	if(beat_timer)
@@ -106,7 +108,11 @@
 	if(QDELETED(bearer) || QDELETED(door) || !DOING_INTERACTION_WITH_TARGET(bearer, door))
 		return
 	beats++
-	bearer.do_jitter_animation(20)
+	// A tremble that is over before the next beat: a pixel each way, twice. tg's jitter runs on for more than two
+	// seconds, so the bearer would still be shaking long after the door had opened, and it can roll no movement at all.
+	var/side = pick(-1, 1)
+	animate(bearer, pixel_w = side, time = 0.1 SECONDS, loop = 2, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
+	animate(pixel_w = -side, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
 	door.Shake(1, 0, 0.3 SECONDS)
 	seam.set_width((world.time - started) / max(pry_time, 1))
 	do_sparks(2, TRUE, door)
