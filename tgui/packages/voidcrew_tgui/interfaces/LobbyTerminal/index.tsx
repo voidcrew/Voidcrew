@@ -16,7 +16,7 @@ import { BEZEL_EXTRA_CSS, Bezel } from './Bezel';
 import { CrewsTab } from './CrewsTab';
 import { Header } from './Header';
 import { HousingTab } from './HousingTab';
-import { computeLayout } from './layout';
+import { computeLayout, START_KEY_W } from './layout';
 import { Confirmed, NoticeLine } from './Notice';
 import { type Grid, GridContext, TERM_CSS } from './term';
 import type { LobbyData, TabId } from './types';
@@ -104,9 +104,19 @@ export function LobbyTerminal() {
   const { data, act } = useBackend<LobbyData>();
   const pane = usePaneSize();
   const advance = useTerminalFont();
+  const startKey =
+    !!data.localhost_admin &&
+    (data.phase === 'loading' || data.phase === 'pregame');
   const layout = useMemo(
-    () => computeLayout(pane.w, pane.h, pane.dpr, advance),
-    [pane.w, pane.h, pane.dpr, advance],
+    () =>
+      computeLayout(
+        pane.w,
+        pane.h,
+        pane.dpr,
+        advance,
+        startKey ? START_KEY_W : 0,
+      ),
+    [pane.w, pane.h, pane.dpr, advance, startKey],
   );
   const grid: Grid = useMemo(
     () => ({

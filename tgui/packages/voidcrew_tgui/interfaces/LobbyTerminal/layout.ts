@@ -16,6 +16,9 @@ export const BEZEL = {
   deck: 49,
 } as const;
 
+/** 1x width the localhost START key adds to the deck (52 px key plus its 4 px gap). */
+export const START_KEY_W = 56;
+
 /** Below this many columns or rows, tabs use their narrow (one panel at a time) layout. */
 export const NARROW_COLS = 96;
 export const NARROW_ROWS = 22;
@@ -49,12 +52,14 @@ export function computeLayout(
   paneH: number,
   dpr: number,
   advance: number,
+  /** Extra 1x deck width (the START key), so the deck still fits the pane. */
+  extraW = 0,
 ): Layout {
   const ratio = dpr > 0 ? dpr : 1;
   const sCss = clamp(
     Math.min(
       Math.floor(paneH / BEZEL.baseHeight),
-      Math.floor(paneW / BEZEL.minWidth),
+      Math.floor(paneW / (BEZEL.minWidth + extraW)),
     ),
     1,
     4,

@@ -171,10 +171,11 @@
 	// Enough parts: one spend for the whole bill, every line unlocked, lock released.
 	for(var/part_class in total)
 		ledger.balance[part_class] = total[part_class] + 1
+	terminal.notice = null
 	GLOB.lobby_join_locks[test_ckey] = world.time
 	terminal.run_commission(null, test_ckey, hull, finish, selections, FALSE, ledger)
 	TEST_ASSERT(!GLOB.lobby_join_locks[test_ckey], "A paid bill kept the join lock")
-	TEST_ASSERT_EQUAL(length(ledger.spent_calls), 1, "The bill was not charged once")
+	TEST_ASSERT_EQUAL(length(ledger.spent_calls), 1, "The bill was not charged once ([terminal.notice?["text"] || "no notice"])")
 	for(var/part_class in total)
 		TEST_ASSERT_EQUAL(ledger.balance[part_class], 1, "Wrong [part_class] charge")
 	TEST_ASSERT(("hull|[hull.type]" in ledger.unlocked), "The hull was not unlocked")

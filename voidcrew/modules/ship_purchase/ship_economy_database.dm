@@ -17,11 +17,7 @@
  * - ship_extraction_log: Audit trail for part extractions
  */
 
-// Part class defines
-#define PART_CLASS_COMBAT "combat"
-#define PART_CLASS_SCIENCE "science"
-#define PART_CLASS_TRADE "trade"
-#define PART_CLASS_MISC "misc"
+// Part class defines (PART_CLASS_*) live in voidcrew/_DEFINES/ship_defines.dm.
 
 // List of all valid part classes
 GLOBAL_LIST_INIT(ship_part_classes, list(
