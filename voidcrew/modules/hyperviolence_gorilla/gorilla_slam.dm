@@ -385,6 +385,10 @@
 				stand(rig, "arm_[side]", rig.arm_picture(side), body_row, base + 0.03)
 	conceal_after_hold(rigs["[taking]"])
 	conceal_after_hold(victim_rig)
+	// The rig he turns into hides no body of its own: its puppets still go in the same file as the rest
+	if(taking != facing)
+		var/datum/chrome_rig/turned = rigs["[facing]"]
+		turned.pack()
 	return TRUE
 
 /**

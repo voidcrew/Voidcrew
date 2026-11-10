@@ -457,7 +457,9 @@
 				head.moveToNullspace()
 				var/obj/effect/abstract/chrome_puppet/body_puppet = victim_rig.puppet("body")
 				body_puppet.vis_contents += head
-				victim_rig.conceal()
+				// Its puppets start where it lay before the grab (below): so does what stands in for them
+				var/list/lay_at = grab_pull_back()
+				victim_rig.conceal(lay_at[1], lay_at[2])
 				var/list/toward = to_bearer()
 				// Held up in close, and kept there until the burst: seen from the side chest to chest, from the front
 				// up to his face, from the back just past his head, so its head is where his fists can close on it

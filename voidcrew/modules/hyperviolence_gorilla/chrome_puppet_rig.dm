@@ -17,6 +17,12 @@
  *   height filters stay right. A puppet turns about a pivot (a shoulder, the belt) with chrome_rig_turn().
  * - The real body is hidden with a colour filter, and made clickable over its whole tile while hidden,
  *   so the crew can still click the body to stop it. Puppets never take clicks.
+ * - The pictures are made at runtime, and each client has to fetch them before it can draw a puppet. Until
+ *   they land a puppet is drawn as nothing: a body hidden at once was simply gone for that moment, and a
+ *   bearer whose body had landed stood there with no arms. So a copy of the body's own look, which needs
+ *   no new picture, stands where it was drawn (the stand-in), cut out by a solid box kept in the same
+ *   file as the puppets' pictures. Every rig that goes up in one tick shares one file (the sheet), so on
+ *   each client the stand-ins go and all the puppets show in the same frame, the frame the file lands.
  * - Off: the filter and the click area come back and every puppet is deleted. That happens when the rig
  *   is deleted, which its owner does on every way a finisher ends, and which the rig does itself if the
  *   body is deleted.
@@ -27,6 +33,10 @@
 
 /// Mask states and pivots below are for tg's human base body, medium height.
 #define CHROME_RIG_HIDE_FILTER "chrome_rig_hide"
+/// The filter that cuts a body's stand-in out once the puppets' pictures have reached a client.
+#define CHROME_RIG_SWAP_FILTER "chrome_rig_swap"
+/// The solid box's name in a sheet.
+#define CHROME_RIG_BOX_STATE "box"
 
 /**
  * Shoulder pivots (pixels from the icon's centre, x right, y up) per facing, from the human base
@@ -92,6 +102,72 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	turned.Translate(pivot_x + shift_x, pivot_y + shift_y)
 	return turned
 
+/// A hidden body's own look, standing where it was drawn until its puppets' pictures reach a client (conceal()).
+/obj/effect/abstract/chrome_rig_stand_in
+	name = "body"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	animate_movement = NO_STEPS
+
+/// The solid box a stand-in is cut out by, riding on it and never drawn itself. It comes from the puppets' file.
+/obj/effect/abstract/chrome_rig_cutout
+	name = ""
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	// Upright whatever the stand-in's own turn: a filter cuts it before it is turned
+	appearance_flags = RESET_TRANSFORM | RESET_COLOR | RESET_ALPHA
+	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_LAYER
+
+/**
+ * The one picture file every puppet of the rigs that go up in the same tick is drawn from: a solid box (what
+ * the stand-ins are cut out by) and each puppet's picture, every one under a name of its own. One file lands
+ * on a client at one moment, so nothing of those rigs is drawn before the rest.
+ */
+/datum/chrome_rig_sheet
+	/// The world.time it was started in
+	var/made_at
+	/// The rigs drawn from it
+	var/list/datum/chrome_rig/rigs = list()
+	/// The file
+	var/icon/pictures
+
+/// The sheet for rigs going up in this tick.
+/proc/chrome_rig_sheet_now()
+	var/static/datum/chrome_rig_sheet/current
+	if(isnull(current) || current.made_at != world.time)
+		current = new
+		current.made_at = world.time
+	return current
+
+/// Builds the file again from every puppet its rigs have now, and points them and the stand-ins' cut-outs at it.
+/datum/chrome_rig_sheet/proc/redraw()
+	var/static/icon/box
+	if(isnull(box))
+		box = icon('icons/blanks/32x32.dmi', "nothing")
+		box.DrawBox("#ffffff", 1, 1, ICON_SIZE_X, ICON_SIZE_Y)
+	var/icon/file = icon(box)
+	file.Insert(box, CHROME_RIG_BOX_STATE)
+	var/list/states = list()
+	for(var/datum/chrome_rig/rig as anything in rigs)
+		for(var/key in rig.puppets)
+			var/obj/effect/abstract/chrome_puppet/puppet = rig.puppets[key]
+			if(QDELETED(puppet) || (isnull(puppet.picture) && isnull(puppet.icon)))
+				continue
+			// One stood up by its owner, not add_puppet(): its picture is whatever it shows
+			if(isnull(puppet.picture))
+				puppet.picture = icon(puppet.icon, puppet.icon_state)
+			var/state = "puppet_[length(states) + 1]"
+			file.Insert(puppet.picture, state)
+			states[puppet] = state
+	pictures = file
+	for(var/obj/effect/abstract/chrome_puppet/puppet as anything in states)
+		puppet.icon = file
+		puppet.icon_state = states[puppet]
+	for(var/datum/chrome_rig/rig as anything in rigs)
+		if(rig.cutout)
+			rig.cutout.icon = file
+			rig.cutout.icon_state = CHROME_RIG_BOX_STATE
+
 /// One stand-in picture on a hidden body's tile.
 /obj/effect/abstract/chrome_puppet
 	name = "body"
@@ -103,6 +179,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	plane = GAME_PLANE
 	layer = MOB_LAYER
 	vis_flags = NONE
+	/// The picture it was given, as it was before it went into a sheet
+	var/icon/picture
 
 /// Hides a body and stands puppets in its place.
 /datum/chrome_rig
@@ -118,6 +196,12 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	var/old_mouse_opacity
 	/// TRUE while the body is hidden
 	var/hidden = FALSE
+	/// The body's own look, standing in for it until the puppets' pictures reach a client
+	var/obj/effect/abstract/chrome_rig_stand_in/stand_in
+	/// What the stand-in is cut out by
+	var/obj/effect/abstract/chrome_rig_cutout/cutout
+	/// The file this rig's puppets are drawn from
+	var/datum/chrome_rig_sheet/sheet
 	/// Side -> list(turn, length) the arm was last sent to
 	var/list/arm_poses = list()
 	/// The body's own transform (a lying body's turn) under every pose of its arms, or null for none
@@ -135,6 +219,11 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 
 /datum/chrome_rig/Destroy()
 	reveal()
+	QDEL_NULL(stand_in)
+	QDEL_NULL(cutout)
+	if(sheet)
+		sheet.rigs -= src
+		sheet = null
 	for(var/key in puppets)
 		qdel(puppets[key])
 	puppets = null
@@ -189,20 +278,57 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		piece.DrawBox(null, 1, CHROME_RIG_NECK_Y, ICON_SIZE_X, ICON_SIZE_Y)
 	return piece
 
-/// Hides the real body. Its whole tile still takes clicks.
-/datum/chrome_rig/proc/conceal()
+/**
+ * Hides the real body. Its whole tile still takes clicks. Call it once the rig's puppets are up: they go into
+ * the tick's sheet here. Until that file reaches a client the body's stand-in shows, [shift_x], [shift_y]
+ * pixels from where the body is drawn: where its puppets start, if not on the body.
+ */
+/datum/chrome_rig/proc/conceal(shift_x = 0, shift_y = 0)
 	if(hidden || QDELETED(body))
 		return
 	hidden = TRUE
+	var/turf/spot = get_turf(body)
+	if(spot)
+		// Taken before the body is hidden, or it would be a copy of nothing
+		stand_in = new(spot)
+		stand_in.appearance = body.appearance
+		// A look carries no facing: without the body's own it would stand facing the viewer
+		stand_in.dir = body.dir
+		stand_in.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		stand_in.pixel_x = body.pixel_x + shift_x
+		stand_in.pixel_y = body.pixel_y + shift_y
+		stand_in.pixel_w = body.pixel_w
+		stand_in.pixel_z = body.pixel_z
+		// The body's own filters stay on its copy when the cut-out goes on
+		stand_in.filter_data = body.filter_data?.Copy()
+		cutout = new(null)
+		cutout.render_target = "*chrome_rig_[REF(src)]"
+		stand_in.vis_contents += cutout
+		stand_in.add_filter(CHROME_RIG_SWAP_FILTER, 1, alpha_mask_filter(render_source = cutout.render_target, flags = MASK_INVERSE))
 	old_mouse_opacity = body.mouse_opacity
 	body.mouse_opacity = MOUSE_OPACITY_OPAQUE
 	body.add_filter(CHROME_RIG_HIDE_FILTER, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+	pack()
+
+/**
+ * Puts this rig's puppets in the sheet of the tick it goes up in (conceal() does). A rig that is never
+ * concealed, because another rig of the same body is, calls this itself.
+ */
+/datum/chrome_rig/proc/pack()
+	if(sheet && sheet.made_at != world.time)
+		// Its file has gone out: a puppet added now is a picture of its own
+		return
+	sheet = chrome_rig_sheet_now()
+	sheet.rigs |= src
+	sheet.redraw()
 
 /// Shows the real body again.
 /datum/chrome_rig/proc/reveal()
 	if(!hidden)
 		return
 	hidden = FALSE
+	QDEL_NULL(stand_in)
+	QDEL_NULL(cutout)
 	if(QDELETED(body))
 		return
 	body.mouse_opacity = old_mouse_opacity
@@ -220,6 +346,7 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	var/obj/effect/abstract/chrome_puppet/puppet = new(spot)
 	puppet.name = body.name
 	puppet.icon = picture
+	puppet.picture = picture
 	puppet.dir = SOUTH
 	puppet.pixel_x = body.pixel_x
 	puppet.pixel_y = body.pixel_y
@@ -229,6 +356,9 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	if(copy_transform)
 		puppet.transform = body.transform
 	puppets[key] = puppet
+	// Stood up after the rig was packed, in the same tick: into the same file
+	if(sheet?.made_at == world.time)
+		sheet.redraw()
 	return puppet
 
 /// The puppet under [key], or null.
@@ -564,5 +694,7 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		cyberware_flash_fx(puppets[key], 0.2 SECONDS)
 
 #undef CHROME_RIG_HIDE_FILTER
+#undef CHROME_RIG_SWAP_FILTER
+#undef CHROME_RIG_BOX_STATE
 #undef CHROME_RIG_SWING_STEP
 #undef CHROME_RIG_MIN_ARM_LENGTH
