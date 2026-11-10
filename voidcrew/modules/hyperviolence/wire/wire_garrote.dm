@@ -139,7 +139,7 @@
 	/// Where the two were drawn as the grip was taken, before the hold drew them into place:
 	/// list(garroter pixel_x, pixel_y, victim pixel_x, pixel_y)
 	var/list/pull_from
-	/// TRUE from the throw until the wire comes off the neck: no wire is drawn hanging in the garroter's hands
+	/// TRUE from the hold's strands until the wire comes off the neck: no wire is drawn hanging in the garroter's hands
 	var/hands_hidden = FALSE
 	/// Other Widowlines the garroter holds, hidden from their hands meanwhile
 	var/list/off_hand_refs
@@ -308,14 +308,26 @@
 	QDEL_NULL(mark)
 	// Thrown once the lean has carried the hand to where the throw starts.
 	throw_wire(WIRE_GARROTE_LEAN_TIME)
-	// The wire leaves the hand: from then on it is drawn in flight, round the neck and from both hands, not hanging.
-	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(hide_hands)), WIRE_GARROTE_LEAN_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
+	// The wire leaves its hand: from then on it is drawn in flight and round the neck, not hanging there. A wire in the
+	// other hand hangs on until the hold runs a strand from that hand too (draw_wire()).
+	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(hide_thrown_wire)), WIRE_GARROTE_LEAN_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wire_arrives), duration - WIRE_GARROTE_LEAN_TIME - WIRE_GARROTE_REACH_TIME), WIRE_GARROTE_LEAN_TIME + WIRE_GARROTE_REACH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 
 /**
- * From the throw on, the wire is drawn in flight, round the neck and then as a strand from each hand, so neither hand
- * draws a wire hanging in it: not the one thrown, nor a second Widowline in the other hand, held now or taken up
- * while the garrote lasts. show_hands() puts them back, however the garrote ends.
+ * The throw: the thrown wire is drawn in flight and then round the neck, so its hand doesn't draw it hanging there. Only
+ * that hand's: a second Widowline in the other hand hangs there through the throw and the wind-up, until the hold runs a
+ * strand from that hand too (hide_hands()). show_hands() puts it back, however the garrote ends.
+ */
+/datum/hv_finisher/garrote/proc/hide_thrown_wire()
+	if(hands_hidden || !running || QDELETED(user) || QDELETED(wire) || !user.is_holding(wire))
+		return
+	hide_held_wire(wire)
+
+/**
+ * From the hold on, a strand runs from each hand to the neck, so neither hand draws a wire hanging in it: not the one
+ * thrown, nor a second Widowline in the other hand, held now or taken up while the garrote lasts. Hidden as the strands
+ * go up (draw_wire()), so a wire never shows in a hand and as a strand from it at once, nor in neither. show_hands()
+ * puts them back, however the garrote ends.
  */
 /datum/hv_finisher/garrote/proc/hide_hands()
 	if(hands_hidden || !running || QDELETED(user))
@@ -331,7 +343,7 @@
 	if(held != wire)
 		LAZYOR(off_hand_refs, WEAKREF(held))
 
-/// A Widowline swung out into a hand mid-garrote isn't drawn there either: a strand runs from that hand.
+/// A Widowline swung out into a hand while the strands run isn't drawn there either: a strand runs from that hand.
 /datum/hv_finisher/garrote/proc/on_user_equipped(mob/living/source, obj/item/equipped, slot)
 	SIGNAL_HANDLER
 	if((slot & ITEM_SLOT_HANDS) && istype(equipped, /obj/item/melee/cyberware_monowire))

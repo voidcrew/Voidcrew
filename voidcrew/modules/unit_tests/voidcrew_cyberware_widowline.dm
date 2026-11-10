@@ -622,9 +622,14 @@
 	saved.Paralyze(100 SECONDS)
 	TEST_ASSERT(wire.wire_try_garrote(saved, user), "Fixture: no garrote on the last victim")
 	garrote = wire.garrote_running
-	// The wire thrown (its wind-up timer), then broken off: the second wire comes back to its hand.
+	// The wire thrown (its wind-up timer): only the thrown wire leaves its hand. The second hangs on until the hold runs a
+	// strand from its hand too.
+	garrote.hide_thrown_wire()
+	TEST_ASSERT(wire.inhand_hidden_until > world.time, "The thrown wire still hangs in its hand")
+	TEST_ASSERT(second.inhand_hidden_until <= world.time, "The throw hid the second wire before a strand runs from it")
+	// The strands (as the hold draws them), then broken off: both wires come back to their hands.
 	garrote.hide_hands()
-	TEST_ASSERT(second.inhand_hidden_until > world.time, "The thrown wire left the second wire hanging in its hand")
+	TEST_ASSERT(second.inhand_hidden_until > world.time, "The strands left the second wire hanging in its hand")
 	user.apply_damage(25, BRUTE, BODY_ZONE_CHEST)
 	TEST_ASSERT(!garrote.running, "25 damage on the garroter didn't break the garrote")
 	TEST_ASSERT_EQUAL(garrote.result, 3, "The garrote ended for the wrong reason") // HV_FINISHER_DAMAGED
