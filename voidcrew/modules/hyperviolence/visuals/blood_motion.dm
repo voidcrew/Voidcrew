@@ -155,8 +155,17 @@ GLOBAL_VAR(hv_vis_spray_origin)
 /// How big each pool size is drawn, by its longest reach from the middle, for spreading from one to the next.
 GLOBAL_LIST_INIT(hv_vis_pool_reach, list(10, 15, 26, 29))
 
+/obj/effect/decal/cleanable/blood
+	/// Hyperviolence visuals: the share of its full size the pool's last spread started from, and when it
+	/// started, so a pool that grows again before it has finished spreading goes on from the size it is
+	/// drawn at.
+	var/hv_vis_creep_from = 1
+	var/hv_vis_creep_started
+
 /obj/effect/decal/cleanable/blood/hv_pool_show(state)
 	var/old_tier = icon == HV_BLOOD_POOL_ICON ? hv_vis_pool_state_tier(icon_state) : 0
+	// How much of that size it has spread to so far.
+	var/old_shown = old_tier ? hv_vis_pool_shown() : 1
 	// A pool is shown again every time more blood lands on it; only a picture that changed animates.
 	var/was_shown = icon == HV_BLOOD_POOL_ICON && icon_state == state
 	var/was_lobe = icon == HV_BLOOD_POOL_ICON && findtext(icon_state, "lobe") == 1
@@ -172,8 +181,10 @@ GLOBAL_LIST_INIT(hv_vis_pool_reach, list(10, 15, 26, 29))
 	var/new_tier = hv_vis_pool_state_tier(state)
 	if(!new_tier || new_tier <= old_tier)
 		return
-	// A plain splatter reaches about as far as the smallest pool's middle.
-	var/old_reach = old_tier ? GLOB.hv_vis_pool_reach[old_tier] : 7
+	// A plain splatter reaches about as far as the smallest pool's middle. A pool still spreading to its
+	// last size has only got part of the way: the new picture starts at the size that one is drawn at, or a
+	// pool fed quickly jumps out to the last size before it goes on.
+	var/old_reach = old_tier ? GLOB.hv_vis_pool_reach[old_tier] * old_shown : 7
 	hv_vis_pool_creep(old_reach / GLOB.hv_vis_pool_reach[new_tier])
 
 /// The pool size a pool_art state shows, or 0.
@@ -182,8 +193,19 @@ GLOBAL_LIST_INIT(hv_vis_pool_reach, list(10, 15, 26, 29))
 		return 0
 	return clamp(text2num(copytext(state, 5, 6)) || 0, 0, length(GLOB.hv_vis_pool_reach))
 
+/// How much of its full size the pool is drawn at right now: less than 1 while it is still spreading out.
+/obj/effect/decal/cleanable/blood/proc/hv_vis_pool_shown()
+	if(isnull(hv_vis_creep_started))
+		return 1
+	var/progress = (world.time - hv_vis_creep_started) / HV_VIS_POOL_CREEP
+	if(progress >= 1)
+		return 1
+	return hv_vis_creep_from + (1 - hv_vis_creep_from) * hv_vis_eased(max(progress, 0), SINE_EASING|EASE_OUT)
+
 /// Spreads the pool out from `start_scale` of its size.
 /obj/effect/decal/cleanable/blood/proc/hv_vis_pool_creep(start_scale)
+	hv_vis_creep_from = start_scale
+	hv_vis_creep_started = world.time
 	var/matrix/base = matrix(transform)
 	hv_vis_paint(list(
 		list(hv_vis_local(base, start_scale, start_scale), alpha, 0, LINEAR_EASING),
