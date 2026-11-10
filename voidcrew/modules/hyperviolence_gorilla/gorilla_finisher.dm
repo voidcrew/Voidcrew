@@ -1781,8 +1781,13 @@
 				// straight step it would shrink away to nothing half way and grow back
 				var/lying_turn = arctan(victim.transform.a, victim.transform.b)
 				var/turn_over = abs(lay * 90 - lying_turn) > 90 ? lay * 90 - lying_turn : 0
+				// Draw order, the same from the floor to the floor, so nothing changes places mid-move:
+				// - Facing away he lifts the body on his far side, holds it there and breaks it over a knee that is
+				//   beyond him too: the body, then his own back, head and arms over it wherever they cross.
+				// - Any other way it comes up on the viewer's side of him and stays there: he is under it.
+				var/halves_layer = user.layer + ((facing || user.dir) == NORTH ? -0.05 : 0.05)
 				for(var/half in list("upper", "lower"))
-					var/obj/effect/abstract/chrome_puppet/part = victim_rig.add_puppet(half, victim_rig.cut("rig_[half]"), TRUE, user.layer + 0.05)
+					var/obj/effect/abstract/chrome_puppet/part = victim_rig.add_puppet(half, victim_rig.cut("rig_[half]"), TRUE, halves_layer)
 					// Overhead on his back, flat, held clear above the bearer's head
 					if(turn_over)
 						var/steps = bearer_rig?.swing_steps(0, turn_over) || 15
@@ -1894,18 +1899,14 @@
 					animate(pixel_x = rest_x, pixel_y = rest_y, pixel_z = 0, time = GORILLA_BACK_SHOVE_TIME * 0.55, easing = SINE_EASING | EASE_IN)
 			// No blood of the move's own where he lands (owner): a broken back doesn't bleed, and a pool on the middle
 			// of the tile never lined up with the body. What the body really bleeds is tg's.
-			// At his feet the halves stay drawn over him (user.layer + 0.05, from the hoist) while they lie there
+			// At his feet the halves stay drawn as they were hoisted while they lie there: over him, or under him seen
+			// from behind, where tg draws the lying body too
 
 /// The bearer shoves the body off his knee: both arms push out after it, then he lets them down and stands.
 /datum/hv_finisher/chrome/gorilla/backbreaker/proc/shove_off()
 	if(!running || !bearer_rig)
 		return
-	// Away from the viewer the body goes on past him: behind him from here on, not over his head
-	if(facing == NORTH)
-		for(var/half in list("upper", "lower"))
-			var/obj/effect/abstract/chrome_puppet/part = victim_rig?.puppet(half)
-			if(part)
-				part.layer = user.layer - 0.05
+	// Away from the viewer the body goes on past him, behind him as it has been since the hoist
 	arms_to(side_view() ? 70 : 60, GORILLA_BACK_SHOVE_PUSH, 4)
 	addtimer(CALLBACK(src, PROC_REF(stand_up)), GORILLA_BACK_SHOVE_PUSH + 0.05 SECONDS, TIMER_DELETE_ME)
 
