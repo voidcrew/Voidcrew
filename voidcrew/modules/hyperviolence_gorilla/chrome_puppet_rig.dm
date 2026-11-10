@@ -79,6 +79,8 @@ GLOBAL_LIST_INIT(chrome_rig_hands, list(
 
 /// Most degrees an arm turns in one animation step.
 #define CHROME_RIG_SWING_STEP 12
+/// How long a body takes to go once its puppets are certain to be drawn (conceal_after()).
+#define CHROME_RIG_SWAP (0.01 SECONDS)
 /// The shortest an arm is drawn, as a share of its length.
 #define CHROME_RIG_MIN_ARM_LENGTH 0.4
 
@@ -230,7 +232,7 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		qdel(puppets[key])
 	puppets = null
 	if(body)
-		UnregisterSignal(body, list(COMSIG_QDELETING, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION))
+		UnregisterSignal(body, list(COMSIG_QDELETING, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_ATOM_POST_DIR_CHANGE))
 	body = null
 	flat = null
 	on_disturbed = null
@@ -244,15 +246,23 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
  * Calls [disturbed] when the hidden body moves or is knocked down, so its owner can take the rig down. The rig
  * listens itself: an owner that already listens to the body for its own reasons (an action does) keeps its handlers.
  */
-/datum/chrome_rig/proc/watch_body(datum/callback/disturbed)
+/datum/chrome_rig/proc/watch_body(datum/callback/disturbed, turns = FALSE)
 	if(QDELETED(body))
 		return
 	on_disturbed = disturbed
 	RegisterSignals(body, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(on_body_disturbed))
+	// With [turns], a body that turns to face another way too: its puppets are pictures of the old facing
+	if(turns)
+		RegisterSignal(body, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_body_turned))
 
 /datum/chrome_rig/proc/on_body_disturbed(datum/source)
 	SIGNAL_HANDLER
 	on_disturbed?.InvokeAsync()
+
+/datum/chrome_rig/proc/on_body_turned(datum/source, old_dir, new_dir)
+	SIGNAL_HANDLER
+	if(old_dir != new_dir)
+		on_disturbed?.InvokeAsync()
 
 /// Takes the flat picture. Returns FALSE if the body can't be rigged (gone, or not a 32x32 picture).
 /datum/chrome_rig/proc/snapshot()
@@ -339,6 +349,23 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	sheet.rigs |= src
 	sheet.redraw()
 
+/**
+ * Hides the real body [hold] from now by the client's own clock, in step with its puppets. Until then the puppets must
+ * stand exactly over the body, so nothing changes on screen while their pictures are still on their way to a client,
+ * and a late picture never shows a missing body.
+ */
+/datum/chrome_rig/proc/conceal_after(hold)
+	conceal()
+	if(hold <= 0 || QDELETED(body))
+		return
+	var/hide = body.get_filter(CHROME_RIG_HIDE_FILTER)
+	if(!hide)
+		return
+	var/static/list/hidden = list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+	animate(hide, color = COLOR_MATRIX_IDENTITY, time = 0)
+	animate(color = COLOR_MATRIX_IDENTITY, time = hold)
+	animate(color = hidden, time = CHROME_RIG_SWAP)
+
 /// Shows the real body again.
 /datum/chrome_rig/proc/reveal()
 	if(!hidden)
@@ -369,6 +396,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	puppet.pixel_y = body.pixel_y
 	puppet.pixel_w = body.pixel_w
 	puppet.pixel_z = body.pixel_z
+	// The body's own plane: a level drawn on offset planes has its bodies on one of those
+	puppet.plane = body.plane
 	puppet.layer = puppet_layer || body.layer
 	if(copy_transform)
 		puppet.transform = body.transform
@@ -388,6 +417,10 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	if(puppet)
 		puppets -= key
 		qdel(puppet)
+
+/// The pose (list(turn, length)) of the arm on [side] raised [angle] degrees from hanging with [reach] pixels of piston, as swing_arm() takes them.
+/datum/chrome_rig/proc/pose_of(side, angle, reach = 0)
+	return list(angle * raise_sign(side), max(CHROME_RIG_MIN_ARM_LENGTH, 1 + reach / (GLOB.chrome_rig_arm_length["[facing]"] || 10)))
 
 /// The pivot of the shoulder on [side] ("l" or "r") in this rig's facing.
 /datum/chrome_rig/proc/shoulder(side)
@@ -414,14 +447,15 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
  * Builds the standard bearer rig: the body without arms and both arms on their own puppets. Hides the
  * real body. Returns TRUE if it is up.
  */
-/datum/chrome_rig/proc/rig_arms()
+/datum/chrome_rig/proc/rig_arms(hold = 0)
 	if(!snapshot())
 		return FALSE
 	add_puppet("body", cut_without_arms("both"))
 	for(var/side in list("l", "r"))
 		var/obj/effect/abstract/chrome_puppet/arm = add_puppet("arm_[side]", arm_picture(side))
 		arm.layer = body.layer + (behind_body(side) ? -0.01 : 0.01)
-	conceal()
+	// With a [hold], the body stays on show that long under its puppets (conceal_after())
+	conceal_after(hold)
 	return TRUE
 
 /**
@@ -464,6 +498,38 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	picture.Shift(facing == EAST ? WEST : EAST, 1)
 	picture.Blend(rgb(170, 170, 178), ICON_MULTIPLY)
 	return picture
+
+/**
+ * The torso that shows where the arm on [side] hangs once that arm is gone: filled from the torso just beside it, as
+ * cut_without_arms() fills it. Null when nothing is under the arm (seen from the front or back, or the far arm).
+ */
+/datum/chrome_rig/proc/fill_picture(side)
+	var/shift = GLOB.chrome_rig_fill_shift["[facing]"]
+	if(!shift || behind_body(side))
+		return null
+	var/icon/fill = icon(flat)
+	fill.Shift(shift > 0 ? EAST : WEST, abs(shift))
+	fill.Blend(icon(GORILLA_GORE_ICON, "rig_fill_[side]", facing), ICON_MULTIPLY)
+	return fill
+
+/**
+ * Every puppet takes the offsets the hidden body has now: eased as tg eases a tracked offset (add_offsets()) with
+ * [eased], else at once. For a body that leans or trembles under its puppets, so it is where they are when they go.
+ */
+/datum/chrome_rig/proc/follow_offsets(eased = TRUE)
+	if(QDELETED(body))
+		return
+	for(var/key in puppets)
+		var/obj/effect/abstract/chrome_puppet/puppet = puppets[key]
+		if(puppet.pixel_w == body.pixel_w && puppet.pixel_x == body.pixel_x && puppet.pixel_y == body.pixel_y && puppet.pixel_z == body.pixel_z)
+			continue
+		if(eased)
+			animate(puppet, pixel_w = body.pixel_w, pixel_x = body.pixel_x, pixel_y = body.pixel_y, pixel_z = body.pixel_z, easing = (EASE_IN|EASE_OUT), flags = ANIMATION_PARALLEL, time = UPDATE_TRANSFORM_ANIMATION_TIME)
+		else
+			puppet.pixel_w = body.pixel_w
+			puppet.pixel_x = body.pixel_x
+			puppet.pixel_y = body.pixel_y
+			puppet.pixel_z = body.pixel_z
 
 /// Pixels from the shoulder pivot on [side] to the middle of its hand, on a hanging arm.
 /datum/chrome_rig/proc/hand_offset(side)
@@ -727,4 +793,5 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 #undef CHROME_RIG_SWAP_FILTER
 #undef CHROME_RIG_BOX_STATE
 #undef CHROME_RIG_SWING_STEP
+#undef CHROME_RIG_SWAP
 #undef CHROME_RIG_MIN_ARM_LENGTH

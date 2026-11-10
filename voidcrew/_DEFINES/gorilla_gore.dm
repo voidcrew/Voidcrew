@@ -63,6 +63,51 @@
 #define GORILLA_HAYMAKER_MIN_RANGE 3
 #define GORILLA_HAYMAKER_MAX_RANGE 4
 #define GORILLA_HAYMAKER_SPEED 3
+/// The real body stays on show this long as the wind-up's puppets come up (chrome_rig/conceal_after()).
+#define GORILLA_HAYMAKER_RIG_HOLD (0.04 SECONDS)
+/// The punching arm is half drawn back this far into the wind-up...
+#define GORILLA_HAYMAKER_DRAW (0.4 SECONDS)
+/// ...and all the way back by this, a throw's length before the earliest blow.
+#define GORILLA_HAYMAKER_DRAWN (0.75 SECONDS)
+/// The throw: the blow lands as it ends. One server tick, so the sparks come up on the frame the fist arrives.
+#define GORILLA_HAYMAKER_THROW (0.05 SECONDS)
+/// The fist carries on past the blow...
+#define GORILLA_HAYMAKER_FOLLOW (0.15 SECONDS)
+/// ...and the arms come back to rest.
+#define GORILLA_HAYMAKER_RETURN (0.35 SECONDS)
+/// A wind-up held too long or called off: the arms come down.
+#define GORILLA_HAYMAKER_LOWER (0.25 SECONDS)
+/// Pixels the body steps in behind the throw: as few as put the fist on the body.
+#define GORILLA_HAYMAKER_STEP_MIN 12
+#define GORILLA_HAYMAKER_STEP_MAX 16
+
+// ---- The punching arm (gorilla_swing.dm, gorilla_thrust.dm) ----
+
+/// The pace of one beat of a swing: even, fast then settling, or eased in and out.
+#define CHROME_SWING_LINEAR 0
+#define CHROME_SWING_EASE_OUT 1
+#define CHROME_SWING_EASE_IN_OUT 2
+
+/// A piston punch: the fist draws back...
+#define GORILLA_THRUST_BACK (0.04 SECONDS)
+/// ...and the piston drives it out. The blow lands as this ends.
+#define GORILLA_THRUST_OUT (0.06 SECONDS)
+/// The arm comes back to rest.
+#define GORILLA_THRUST_REST (0.2 SECONDS)
+/// The first time an arm's picture is shown it may still be on its way to a client: the punch waits this long first, the real arm on show.
+#define GORILLA_THRUST_HOLD (0.05 SECONDS)
+/// Pixels the body lunges behind a piston punch: tg's lunge at the least, further when the fist would stop short.
+#define GORILLA_THRUST_LUNGE_MIN 8
+#define GORILLA_THRUST_LUNGE_MAX 16
+/// Degrees the body tips into a piston punch, as tg's lunge tips it.
+#define GORILLA_THRUST_TIP 15
+/// How long a punching arm is drawn, as a share of its own length: the body steps in until the fist lands with the arm no longer than the first, and the arm is never drawn longer than the second.
+#define GORILLA_SWING_EASY_LENGTH 1.9
+#define GORILLA_SWING_MAX_LENGTH 2.3
+/// The most pixels a body steps in behind a fist thrown up or down the screen: further, and it stands on whoever it hits.
+#define GORILLA_SWING_STEP_UPRIGHT 12
+/// Pixels from the middle of a stretched fist to its knuckles: it stops this far short of the body it lands on.
+#define GORILLA_FIST_KNUCKLES 2.5
 
 // ---- Grab and slam ----
 
