@@ -15,6 +15,21 @@
 	var/area/voidcrew/player_outpost/prison/wing = get_area(thing)
 	return istype(wing) ? wing.prison : null
 
+/// Whether this is a prison wing's area, or a cell block extension's while it is still joining the wing
+/proc/is_outpost_prison_area(area/place)
+	return istype(place, /area/voidcrew/player_outpost/prison) || istype(place, /area/voidcrew/player_outpost/prison_extension)
+
+/// Whether this is the power or lighting of a prison wing: its APC, or any light in it. The cyberdeck
+/// leaves these alone along with the doors (cyberware/ware_line_deck.dm).
+/proc/is_outpost_prison_fixture(atom/thing)
+	if(isapc(thing))
+		var/obj/machinery/power/apc/apc = thing
+		if(is_outpost_prison_area(apc.area))
+			return TRUE
+	else if(!istype(thing, /obj/machinery/light))
+		return FALSE
+	return is_outpost_prison_area(get_area(thing))
+
 /// Authored with its entrance on the south edge; placement rotates it. One map per outpost style
 /// (outpost_styles.dm), all the same wing tile for tile: the prison code and its tests read its layout.
 /datum/map_template/outpost_upgrade/prison

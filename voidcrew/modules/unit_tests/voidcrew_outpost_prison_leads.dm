@@ -76,7 +76,7 @@
 	)
 
 /// Whether `prisoner` last said one of `context`'s lines, filled with `values`
-/datum/unit_test/voidcrew_outpost_management/proc/leads_said(mob/living/basic/outpost_prisoner/prisoner, context, list/values)
+/datum/unit_test/voidcrew_outpost_management/proc/leads_said(mob/living/carbon/human/npc/outpost_prisoner/prisoner, context, list/values)
 	var/list/entry = outpost_prisoner_context_lines(context)
 	if(!islist(entry) || !prisoner.last_line)
 		return FALSE
@@ -103,7 +103,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	var/carriers = 0
 	for(var/i in 1 to 200)
 		prisoner.carries_lead = FALSE
@@ -140,8 +140,8 @@
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	TEST_ASSERT(istype(outpost_lead_overmap_turf(30, 30), /turf/open/overmap), "The test world has no overmap to point at")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 11, 8))
 	var/mob/living/carbon/human/asker = make_player(prison_spot(home, 9, 8), "leadsowner")
 	var/obj/structure/overmap/ship/ship = leads_test_ship(10, 10)
 	leads_test_field()
@@ -205,7 +205,7 @@
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	TEST_ASSERT(istype(outpost_lead_overmap_turf(30, 30), /turf/open/overmap), "The test world has no overmap to point at")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/asker = make_player(prison_spot(home, 9, 8), "leadsowner")
 	var/obj/structure/overmap/ship/ship = leads_test_ship(10, 10)
 	leads_test_field()
@@ -278,9 +278,9 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/sour = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/struck = test_prisoner(prison, prison_spot(home, 11, 8))
-	var/mob/living/basic/outpost_prisoner/asked = test_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/sour = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/struck = test_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/asked = test_prisoner(prison, prison_spot(home, 13, 8))
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 9, 8), "leadsowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 12, 8), "leadsvisitor")
 	var/obj/structure/overmap/ship/ship = leads_test_ship(10, 10)
@@ -393,10 +393,10 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/voucher = test_prisoner(prison, prison_spot(home, 11, 8))
-	var/mob/living/basic/outpost_prisoner/unsure = test_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prisoner/newcomer = test_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/voucher = test_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/unsure = test_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/newcomer = test_prisoner(prison, prison_spot(home, 13, 8))
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 9, 8), "leadsowner")
 
 	var/datum/outpost_prison_lead/lie = new

@@ -41,7 +41,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 
 // ===== STATE =====
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Whether a letter has come for them this stay; one each
 	var/mail_had_letter = FALSE
 
@@ -205,7 +205,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return waiting
 
 /// The letter waiting for `prisoner`, if any
-/datum/outpost_prison/proc/mail_waiting_for(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/mail_waiting_for(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	for(var/obj/item/paper/outpost_prison_letter/letter in mail_waiting_letters())
 		if(letter.letter_prisoner_ref?.resolve() == prisoner)
 			return letter
@@ -220,7 +220,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 /datum/outpost_prison/proc/mail_wave_recipients()
 	var/present = 0
 	var/list/eligible = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD)
 			continue
 		present++
@@ -251,7 +251,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 		return 0
 	var/obj/structure/closet/supplypod/outpost_prison_mail/pod = new()
 	var/obj/structure/closet/crate/mail/crate = new(pod)
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in recipients)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in recipients)
 		mail_make_letter(prisoner, null, null, crate)
 	crate.update_appearance()
 	RegisterSignal(crate, COMSIG_MOVABLE_MOVED, PROC_REF(mail_crate_moved))
@@ -472,7 +472,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
  * waves (the admin panel's prison_mail): `kind` (by weight when not given), and for a contraband
  * letter `enclosure_type` (a razor blade or yeast by chance when not given). Returns the letter, or null.
  */
-/datum/outpost_prison/proc/mail_send(mob/living/basic/outpost_prisoner/prisoner, kind, enclosure_type)
+/datum/outpost_prison/proc/mail_send(mob/living/carbon/human/npc/outpost_prisoner/prisoner, kind, enclosure_type)
 	if(QDELETED(prisoner) || !(prisoner in prisoners))
 		return null
 	var/turf/spot = mail_letter_drop_turf()
@@ -492,7 +492,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
  * not given), and for a contraband letter `enclosure_type` (a razor blade or yeast by chance when not
  * given). That is their one letter this stay. The caller tracks it (mail_letters). Returns the letter.
  */
-/datum/outpost_prison/proc/mail_make_letter(mob/living/basic/outpost_prisoner/prisoner, kind, enclosure_type, atom/destination)
+/datum/outpost_prison/proc/mail_make_letter(mob/living/carbon/human/npc/outpost_prisoner/prisoner, kind, enclosure_type, atom/destination)
 	if(!(kind in GLOB.outpost_prison_mail_kinds))
 		kind = pick_weight(GLOB.outpost_prison_mail_kinds)
 	var/obj/item/mail/envelope/outpost_prison/envelope = new(destination)
@@ -514,7 +514,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return letter
 
 /// Writes a letter of `kind` to `prisoner` from the extras' templates
-/datum/outpost_prison/proc/mail_write(obj/item/paper/outpost_prison_letter/letter, mob/living/basic/outpost_prisoner/prisoner, kind)
+/datum/outpost_prison/proc/mail_write(obj/item/paper/outpost_prison_letter/letter, mob/living/carbon/human/npc/outpost_prisoner/prisoner, kind)
 	var/list/by_kind = outpost_prisoner_extra_dialogue(MAIL_STRINGS_FILE, "letters")
 	var/list/templates = by_kind[kind]
 	var/list/senders = outpost_prisoner_extra_dialogue(MAIL_STRINGS_FILE, "senders")
@@ -538,7 +538,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 /datum/outpost_prison/proc/mail_check()
 	var/z = wing_z()
 	for(var/obj/item/paper/outpost_prison_letter/letter in mail_waiting_letters())
-		var/mob/living/basic/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
 		if(QDELETED(addressee) || !(addressee in prisoners))
 			mail_discard(letter)
 			continue
@@ -555,7 +555,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	if(QDELETED(letter))
 		return
 	mail_letters -= WEAKREF(letter)
-	var/mob/living/basic/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
 	if(lost && !QDELETED(addressee) && (addressee in prisoners) && addressee.stat != DEAD)
 		addressee.adjust_mood(-OUTPOST_MAIL_EXPIRED_MOOD)
 		add_log("[addressee.real_name]'s mail was sent back.")
@@ -564,7 +564,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 /// Someone opened a letter before its prisoner got it
 /datum/outpost_prison/proc/mail_opened(obj/item/paper/outpost_prison_letter/letter, mob/user)
 	add_log("[user ? user.name : "Someone"] opened [letter.letter_addressee]'s mail.")
-	var/mob/living/basic/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
 	if(user && addressee)
 		note_staff_event(user, addressee, "mail_opened")
 
@@ -576,7 +576,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
  * the level they read it where they stand if the hatch is in their reach, as fend_for_self() does
  * with food. Returns TRUE if they went for it or read it.
  */
-/datum/outpost_prison/proc/mail_collect_from_hatch(mob/living/basic/outpost_prisoner/addressee, obj/item/thing)
+/datum/outpost_prison/proc/mail_collect_from_hatch(mob/living/carbon/human/npc/outpost_prisoner/addressee, obj/item/thing)
 	if(addressee.stat != CONSCIOUS || addressee.phase != PRISONER_PRESENT || !isturf(thing.loc))
 		return FALSE
 	if(addressee.ai_running())
@@ -591,7 +591,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 			return FALSE
 		addressee.start_activity(fetch)
 		return TRUE
-	if(addressee.in_trouble() || addressee.cuffs)
+	if(addressee.in_trouble() || addressee.handcuffed)
 		return FALSE
 	if(!addressee.reachable)
 		refresh_prisoner_reach(addressee)
@@ -608,7 +608,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 		if(!letter)
 			only_mail = FALSE
 			continue
-		var/mob/living/basic/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
 		if(!QDELETED(addressee) && (addressee in prisoners))
 			mail_collect_from_hatch(addressee, thing)
 	return only_mail
@@ -618,21 +618,21 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
  * anyone else says it isn't theirs, and a prisoner who won't listen refuses it. Runs inside a
  * signal handler: never sleeps. Returns the item interaction result.
  */
-/datum/outpost_prison/proc/mail_hand_over(mob/living/basic/outpost_prisoner/prisoner, mob/living/user, obj/item/thing, obj/item/paper/outpost_prison_letter/letter)
+/datum/outpost_prison/proc/mail_hand_over(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user, obj/item/thing, obj/item/paper/outpost_prison_letter/letter)
 	if(prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT)
 		return NONE
 	if(letter.letter_prisoner_ref?.resolve() != prisoner)
 		prisoner.balloon_alert(user, "not theirs")
-		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "mail_not_mine")
+		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "mail_not_mine")
 		return ITEM_INTERACT_BLOCKING
 	// Cuffed hands take nothing, as with food and uniforms (outpost_prison_capture.dm)
-	if(prisoner.cuffs)
+	if(prisoner.handcuffed)
 		prisoner.balloon_alert(user, "cuffed")
 		return ITEM_INTERACT_BLOCKING
 	// Fighting, squaring up, climbing, lying beaten, or already busy with staff: they won't take it
 	if(prisoner.in_trouble() || !prisoner.will_listen())
 		prisoner.balloon_alert(user, "not listening")
-		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "talk_refuse")
+		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "talk_refuse")
 		return ITEM_INTERACT_BLOCKING
 	if(!user.temporarilyRemoveItemFromInventory(thing))
 		return ITEM_INTERACT_BLOCKING
@@ -649,7 +649,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
  * unless `instant`, then the letter takes effect. Bad news sends them to sit in their cell a while.
  * Returns the kind read, or null. Sleeps unless `instant`.
  */
-/datum/outpost_prison/proc/mail_read(mob/living/basic/outpost_prisoner/prisoner, obj/item/thing, instant = FALSE)
+/datum/outpost_prison/proc/mail_read(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/thing, instant = FALSE)
 	if(QDELETED(prisoner) || QDELETED(thing))
 		return null
 	mail_reading_emote(prisoner, thing)
@@ -667,7 +667,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 		mail_start_mull(prisoner)
 	return kind
 
-/datum/outpost_prison/proc/mail_reading_emote(mob/living/basic/outpost_prisoner/prisoner, obj/item/thing)
+/datum/outpost_prison/proc/mail_reading_emote(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/thing)
 	if(istype(thing, /obj/item/mail/envelope/outpost_prison))
 		prisoner.manual_emote("tears open the envelope and reads the letter.")
 		playsound(prisoner, 'sound/items/poster/poster_ripped.ogg', 30, TRUE)
@@ -681,7 +681,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
  * sealed in with it is kept hidden (contraband, 4.14). The letter and its envelope are then gone
  * (they keep it). Never sleeps. Returns the kind, or null.
  */
-/datum/outpost_prison/proc/mail_finish_reading(mob/living/basic/outpost_prisoner/prisoner, obj/item/thing)
+/datum/outpost_prison/proc/mail_finish_reading(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/thing)
 	var/obj/item/paper/outpost_prison_letter/letter = outpost_prison_letter_in(thing)
 	if(!letter || QDELETED(prisoner))
 		return null
@@ -705,7 +705,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return kind
 
 /// Bad news: they go and sit in their cell's chair (or on its bed) for a while, if they can
-/datum/outpost_prison/proc/mail_start_mull(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/mail_start_mull(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || !prisoner.ai_running() || !prisoner.routine_allowed())
 		return FALSE
 	var/datum/prisoner_activity/mull_letter/mull = new(prisoner)
@@ -718,7 +718,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 // ===== THE PRISON: SPEECH, CONSOLES, CLEAN-UP =====
 
 /// "Any mail for me?", from a prisoner with a letter waiting and a member in sight, as list(context, other, values), or null
-/datum/outpost_prison/proc/mail_extra_speech(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/mail_extra_speech(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!mail_waiting_for(prisoner) || !contraband_roll(OUTPOST_MAIL_ASK_CHANCE))
 		return null
 	for(var/mob/living/person in view(OUTPOST_MAIL_ASK_RANGE, prisoner))
@@ -729,7 +729,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return null
 
 /// A prisoner is leaving: their undelivered letters go
-/datum/outpost_prison/proc/mail_prisoner_leaving(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/mail_prisoner_leaving(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	for(var/obj/item/paper/outpost_prison_letter/letter in mail_waiting_letters())
 		if(letter.letter_prisoner_ref?.resolve() == prisoner)
 			mail_discard(letter)
@@ -743,7 +743,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 /datum/outpost_prison/proc/mail_admin_payload()
 	var/list/rows = list()
 	for(var/obj/item/paper/outpost_prison_letter/letter in mail_waiting_letters())
-		var/mob/living/basic/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
 		rows += list(list(
 			"ref" = REF(letter),
 			"to_ref" = addressee ? REF(addressee) : null,
@@ -769,7 +769,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 		return "call a prison mail pod with [sent] letter\s"
 	if(action != "prison_mail")
 		return null
-	var/mob/living/basic/outpost_prisoner/prisoner = locate(params?["ref"]) in prisoners
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = locate(params?["ref"]) in prisoners
 	if(QDELETED(prisoner))
 		return list("error" = "That prisoner is gone.")
 	var/kind = params["kind"]
@@ -791,7 +791,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 
 /datum/element/outpost_prison_mail_handover/Attach(datum/target)
 	. = ..()
-	if(!istype(target, /mob/living/basic/outpost_prisoner))
+	if(!istype(target, /mob/living/carbon/human/npc/outpost_prisoner))
 		return ELEMENT_INCOMPATIBLE
 	RegisterSignal(target, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_item_interaction))
 
@@ -799,7 +799,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	UnregisterSignal(source, COMSIG_ATOM_ITEM_INTERACTION)
 	return ..()
 
-/datum/element/outpost_prison_mail_handover/proc/on_item_interaction(mob/living/basic/outpost_prisoner/source, mob/living/user, obj/item/tool, list/modifiers)
+/datum/element/outpost_prison_mail_handover/proc/on_item_interaction(mob/living/carbon/human/npc/outpost_prisoner/source, mob/living/user, obj/item/tool, list/modifiers)
 	SIGNAL_HANDLER
 	if(!istype(user) || user.combat_mode || is_outpost_prisoner(user) || !source.prison)
 		return NONE
@@ -823,7 +823,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	var/read_for = 0
 	var/datum/weakref/seat_ref
 
-/datum/prisoner_activity/fetch_mail/New(mob/living/basic/outpost_prisoner/doer, obj/item/thing)
+/datum/prisoner_activity/fetch_mail/New(mob/living/carbon/human/npc/outpost_prisoner/doer, obj/item/thing)
 	. = ..(doer)
 	mail_ref = WEAKREF(thing)
 

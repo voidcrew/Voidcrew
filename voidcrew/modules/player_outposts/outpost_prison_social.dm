@@ -103,7 +103,7 @@
 	var/rep_greet_chance = PRISON_REP_GREET_CHANCE
 	var/rep_word_chance = PRISON_REP_WORD_CHANCE
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Record key -> world.time they last greeted that person
 	var/list/rep_greeted
 	/// Record keys already thanked for bringing them mail this stay
@@ -200,7 +200,7 @@
 // note_staff_care() and note_staff_hit() run inside signal handlers: nothing here may sleep.
 
 /// `person` fed, clothed or treated `prisoner` by hand: once per prisoner per PRISON_REP_CARE_GAP
-/datum/outpost_prison/proc/note_staff_care(mob/person, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/note_staff_care(mob/person, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner || !ismob(person))
 		return FALSE
 	// note_carer() runs as a dressing is offered, so a dressing held to someone unhurt is not care.
@@ -229,7 +229,7 @@
 	return TRUE
 
 /// `person` talked `prisoner` down
-/datum/outpost_prison/proc/note_staff_talk(mob/person, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/note_staff_talk(mob/person, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return rep_adjust(person, PRISON_REP_TALK)
 
 /// `person` sank a shot while prisoners played
@@ -243,7 +243,7 @@
 	return rep_adjust(person, min(amount, PRISON_REP_KINDNESS_MAX))
 
 /// An unprovoked hit on `prisoner` that cost them mood (hit_by_staff() has already ruled out deserved ones)
-/datum/outpost_prison/proc/note_staff_hit(atom/attacker, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/note_staff_hit(atom/attacker, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/counted = FALSE
 	for(var/mob/person in rep_people_behind(attacker))
 		if(rep_adjust(person, PRISON_REP_HIT))
@@ -254,7 +254,7 @@
  * Staff got the blame for `prisoner`: `event` is "beaten" (an unprovoked beating down, on top of
  * the hits) or "killed" (the score goes to PRISON_REP_MIN). The blame goes to whoever last hit them.
  */
-/datum/outpost_prison/proc/note_staff_blamed(mob/living/basic/outpost_prisoner/prisoner, event)
+/datum/outpost_prison/proc/note_staff_blamed(mob/living/carbon/human/npc/outpost_prisoner/prisoner, event)
 	if(event != "beaten" && event != "killed")
 		return FALSE
 	var/atom/attacker = prisoner?.last_staff_attacker_ref?.resolve()
@@ -277,7 +277,7 @@
  * prisoner per stay), "mail_opened", "search_found", "search_empty", "patdown_found",
  * "patdown_empty". Events it does not know, and anyone who is not a member, are ignored.
  */
-/datum/outpost_prison/proc/note_staff_event(mob/person, mob/living/basic/outpost_prisoner/prisoner, event)
+/datum/outpost_prison/proc/note_staff_event(mob/person, mob/living/carbon/human/npc/outpost_prisoner/prisoner, event)
 	var/amount
 	switch(event)
 		if("mail_delivered")
@@ -307,7 +307,7 @@
 // ===== WHAT IT DOES =====
 
 /// Below this mood `prisoner` squares up to `person`: lower for a fair member, higher for a brute, and higher for some bounty prisoners (outpost_prison_bounty.dm)
-/datum/outpost_prison/proc/threat_mood_for(mob/living/basic/outpost_prisoner/prisoner, mob/person)
+/datum/outpost_prison/proc/threat_mood_for(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/person)
 	. = PRISONER_THREAT_MOOD
 	switch(staff_label(person))
 		if("fair")
@@ -317,29 +317,29 @@
 	. += prisoner ? prisoner.bounty_threat_bonus() : 0
 
 /// The highest line threat_mood_for() can return (for `prisoner`, when given), so a prisoner above it looks for nobody
-/datum/outpost_prison/proc/threat_mood_ceiling(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/threat_mood_ceiling(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return max(PRISONER_THREAT_MOOD, PRISON_REP_THREAT_BRUTE) + (prisoner ? prisoner.bounty_threat_bonus() : 0)
 
 /// The mood a talk-down from `person` gives `prisoner`
-/datum/outpost_prison/proc/talk_mood_for(mob/living/basic/outpost_prisoner/prisoner, mob/person)
+/datum/outpost_prison/proc/talk_mood_for(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/person)
 	return staff_label(person) == "fair" ? PRISON_REP_TALK_MOOD_FAIR : PRISONER_MOOD_TALK
 
 /// Whether `prisoner` refuses to be talked down by `person`: a brute, below PRISON_REP_REFUSE_BRUTE_BELOW. It says so itself (async).
-/datum/outpost_prison/proc/refuses_talk_from(mob/living/basic/outpost_prisoner/prisoner, mob/person)
+/datum/outpost_prison/proc/refuses_talk_from(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/person)
 	if(!prisoner || prisoner.mood >= PRISON_REP_REFUSE_BRUTE_BELOW || staff_label(person) != "brute")
 		return FALSE
 	prisoner.balloon_alert(person, "not listening")
-	INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, turn_away_brute), person)
+	INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, turn_away_brute), person)
 	return TRUE
 
 /// Won't hear a word from a brute
-/mob/living/basic/outpost_prisoner/proc/turn_away_brute(mob/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/turn_away_brute(mob/person)
 	if(!QDELETED(person))
 		face_atom(person)
 	say_to_staff("talk_refuse_brute", person)
 
 /// How far `person` seems to a rioter picking whom to go for: a brute nearer, a fair member farther
-/datum/outpost_prison/proc/riot_victim_distance(mob/living/basic/outpost_prisoner/prisoner, mob/person, distance)
+/datum/outpost_prison/proc/riot_victim_distance(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/person, distance)
 	switch(staff_label(person))
 		if("brute")
 			return distance - PRISON_REP_RIOT_BRUTE_NEARER
@@ -355,7 +355,7 @@
  * PRISON_REP_GREET_RANGE tiles in view gets greet_<label>, with {staff} filled, once per person
  * per PRISON_REP_GREET_GAP. Visitors let in are strangers; a masked face gets greet_masked.
  */
-/datum/outpost_prison/proc/social_extra_speech(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/social_extra_speech(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner || prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT || prisoner.in_trouble())
 		return null
 	if(!prob(rep_greet_chance))
@@ -393,11 +393,11 @@
 		for(var/key in staff_records)
 			var/datum/prison_staff_record/record = staff_records[key]
 			record.decay(PRISON_REP_DECAY)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		rep_word_tick(prisoner, seconds)
 
 /// One arrival's word on staff: rolled when first seen, said after the delay in a quiet moment, or let go
-/datum/outpost_prison/proc/rep_word_tick(mob/living/basic/outpost_prisoner/prisoner, seconds)
+/datum/outpost_prison/proc/rep_word_tick(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds)
 	if(!prisoner.rep_noticed)
 		prisoner.rep_noticed = TRUE
 		if(prisoner.phase != PRISONER_LEAVING && prob(rep_word_chance))
@@ -454,7 +454,7 @@
 	return null
 
 /// `prisoner` says what they heard about the member behind `record`. Returns TRUE if they said it.
-/datum/outpost_prison/proc/rep_say_word(mob/living/basic/outpost_prisoner/prisoner, datum/prison_staff_record/record)
+/datum/outpost_prison/proc/rep_say_word(mob/living/carbon/human/npc/outpost_prisoner/prisoner, datum/prison_staff_record/record)
 	if(!prisoner || !record?.name)
 		return FALSE
 	var/context = rep_word_context(record)

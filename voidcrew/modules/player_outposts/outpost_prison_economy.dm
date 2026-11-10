@@ -61,7 +61,7 @@
  * long enough to stop paying. Not while it is for their own safety, or they are hiding in their own
  * cell from a creature (outpost_prison_panic.dm), or for lockdown they owe.
  */
-/datum/outpost_prison/proc/confined_unpaid(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/confined_unpaid(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return (prisoner.locked_in_seconds > OUTPOST_PRISON_CONFINED_PAY_AFTER && !protective_custody() && !prisoner.sheltering_from_creature()) || prisoner.cuffs_souring()
 
 /**
@@ -69,7 +69,7 @@
  * Nothing while they are dead, arriving or leaving, not earning (fighting, rioting, loose and the
  * like), or confined to their cell too long.
  */
-/datum/outpost_prison/proc/pay_factor(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/pay_factor(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || prisoner.stat == DEAD || prisoner.phase != PRISONER_PRESENT || !prisoner.earning_pay())
 		return 0
 	if(confined_unpaid(prisoner))
@@ -77,7 +77,7 @@
 	return care_grade(prisoner.care()) * conditions_pay_factor()
 
 /// A prisoner served `served` seconds of their sentence: their stipend for it, and the seconds served and kept for the release bonus
-/datum/outpost_prison/proc/accrue_pay(mob/living/basic/outpost_prisoner/prisoner, served)
+/datum/outpost_prison/proc/accrue_pay(mob/living/carbon/human/npc/outpost_prisoner/prisoner, served)
 	var/factor = pay_factor(prisoner)
 	pay_owed += OUTPOST_PRISON_BASE_PAY * bounty_pay_mult(prisoner) * factor * served / 60
 	prisoner.served_seconds += served
@@ -116,13 +116,13 @@
 	return 0
 
 /// What a prisoner earns the treasury per minute right now
-/datum/outpost_prison/proc/prisoner_pay_rate(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/prisoner_pay_rate(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return OUTPOST_PRISON_BASE_PAY * bounty_pay_mult(prisoner) * pay_factor(prisoner)
 
 /// What every prisoner earns the treasury per minute right now
 /datum/outpost_prison/proc/pay_rate()
 	var/total = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		total += prisoner_pay_rate(prisoner)
 	return total
 
@@ -201,8 +201,8 @@
 /datum/outpost_prison/proc/incident_ongoing()
 	if(riot_active)
 		return TRUE
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
-		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && (prisoner.is_rioting() || (prisoner.trouble == PRISONER_TROUBLE_LOOSE && !prisoner.cuffs)))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
+		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && (prisoner.is_rioting() || (prisoner.trouble == PRISONER_TROUBLE_LOOSE && !prisoner.handcuffed)))
 			return TRUE
 	return FALSE
 
@@ -213,7 +213,7 @@
  * OUTPOST_PRISON_LOST_TO_SUSPEND lost within OUTPOST_PRISON_LOST_WINDOW, the corrections service
  * suspends transfers until a manager reopens intake.
  */
-/datum/outpost_prison/proc/note_prisoner_lost(mob/living/basic/outpost_prisoner/prisoner, reason)
+/datum/outpost_prison/proc/note_prisoner_lost(mob/living/carbon/human/npc/outpost_prisoner/prisoner, reason)
 	lost_log += world.time
 	var/lost = lost_recently()
 	log_game("PLAYER OUTPOST PRISON: '[outpost?.name]' lost [prisoner?.real_name || "a prisoner"] ([reason || "lost"]), [lost] lost recently")
@@ -401,7 +401,7 @@
 		if(!spot)
 			continue
 		// An ordinary arrival may be a caught bounty criminal from the pool; the admin panel's never is (outpost_prison_bounty.dm).
-		var/mob/living/basic/outpost_prisoner/prisoner = new(spot, forced ? null : bounty_pool_take(src))
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot, forced ? null : bounty_pool_take(src))
 		admit(prisoner, cell)
 		prisoner.beam_in()
 		start_arrival_gap(lane || soonest_lane())
@@ -410,7 +410,7 @@
 	return null
 
 /// Books a prisoner into a cell (the first free one when none is given), in the mood the yard puts newcomers in
-/datum/outpost_prison/proc/admit(mob/living/basic/outpost_prisoner/prisoner, datum/outpost_prison_cell/into)
+/datum/outpost_prison/proc/admit(mob/living/carbon/human/npc/outpost_prisoner/prisoner, datum/outpost_prison_cell/into)
 	if(!into)
 		for(var/datum/outpost_prison_cell/cell as anything in cells)
 			if(!cell.occupant)
@@ -435,7 +435,7 @@
  * After a tick of a prisoner's sentence: released once it has run out, and sent back to their
  * cell in its last OUTPOST_PRISON_RELEASE_WALK seconds.
  */
-/datum/outpost_prison/proc/check_release(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/check_release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.sentence_left <= 0)
 		release(prisoner)
 	else if(prisoner.sentence_left <= OUTPOST_PRISON_RELEASE_WALK && !istype(prisoner.activity, /datum/prisoner_activity/go_home) && !prisoner.in_trouble())
@@ -443,7 +443,7 @@
 		prisoner.end_activity()
 
 /// Sentence served: pays the release bonus and beams the prisoner out of wherever they stand
-/datum/outpost_prison/proc/release(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD)
 		return 0
 	var/average = prisoner.served_seconds ? prisoner.kept_seconds / prisoner.served_seconds : 0
@@ -461,7 +461,7 @@
  * A prisoner died. Nobody comes for the body (body_tick()): it keeps its cell until staff carry it
  * out of the cell block. A death blamed on staff costs no fine, but the yard takes it hard (blame_death()).
  */
-/datum/outpost_prison/proc/on_prisoner_death(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/on_prisoner_death(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	add_log("[prisoner.real_name] died.")
 	close_bounty_record(prisoner, BOUNTY_RECORD_DEAD)
 	prisoner.died_at = world.time
@@ -478,7 +478,7 @@
  * it leaves the roster, and its cell waits a refill. An experiment under way that still needs it,
  * a specimen host about to burst, keeps it on the roster wherever it is.
  */
-/datum/outpost_prison/proc/body_tick(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/body_tick(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(in_cell_block(prisoner) || held_for_experiment(prisoner))
 		return
 	add_log("[prisoner.real_name]'s body is out of the cell block.")
@@ -487,7 +487,7 @@
 /// Prisoners' bodies lying in the cell block, which nobody comes for
 /datum/outpost_prison/proc/bodies_in_cell_block()
 	. = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.stat == DEAD && prisoner.phase == PRISONER_PRESENT && in_cell_block(prisoner))
 			.++
 
@@ -512,7 +512,7 @@
  */
 /datum/outpost_prison/proc/on_outpost_abandoned()
 	var/out_of_hand = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && (prisoner.is_rioting() || prisoner.trouble == PRISONER_TROUBLE_LOOSE))
 			out_of_hand++
 	if(out_of_hand)
@@ -524,7 +524,7 @@
 	lost_log.Cut()
 	pay_owed = 0
 	var/transferred = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase == PRISONER_LEAVING)
 			continue
 		close_bounty_record(prisoner, BOUNTY_RECORD_CLOSED)

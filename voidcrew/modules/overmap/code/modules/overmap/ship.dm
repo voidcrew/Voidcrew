@@ -3767,25 +3767,85 @@
 	if(!ship_port_clear_to_berth(shuttle_b, "exit-to-exit with [shuttle_a]"))
 		return FALSE
 
-	// Centre of the ENCOUNTER'S OWN FOOTPRINT, not of the z-level. The old world.maxx/2
-	// pick predates bounds tracking entirely; on a packed level it lands squarely in the
-	// gutter between slots - indestructible cordon, so both hulls would be sealed in - or
-	// on a neighbouring encounter's ground. Two maximum-size hulls berthed exit-to-exit
-	// span ~112 turfs, which fits inside a MAP_SLOT_SIDE (123) square.
+	// The ENCOUNTER'S OWN FOOTPRINT, not the z-level: on a packed level the level's middle is the
+	// gutter between slots - indestructible cordon - or a neighbouring encounter's ground.
 	var/datum/map_footprint/footprint = empty_planet.footprint
-	var/turf/center_turf = footprint?.get_center_turf()
-	if(!center_turf)
-		center_turf = locate(round((zlevel.low_x + zlevel.high_x) / 2), round((zlevel.low_y + zlevel.high_y) / 2), zlevel.z_value)
-	if(!center_turf)
-		log_shuttle("WARNING: No centre turf for ship-to-ship docking on z[zlevel.z_value]")
+	var/site_low_x = isnull(footprint?.low_x) ? zlevel.low_x : footprint.low_x
+	var/site_low_y = isnull(footprint?.low_x) ? zlevel.low_y : footprint.low_y
+	var/site_high_x = isnull(footprint?.low_x) ? zlevel.high_x : footprint.high_x
+	var/site_high_y = isnull(footprint?.low_x) ? zlevel.high_y : footprint.high_y
+
+	// Lay the PAIR out in the middle of the site.
+	// The anchor used to be dropped on the site's centre and then re-oriented by
+	// adjust_dock_to_shuttle(), which keeps a corner of the reserve dock's big rectangle fixed
+	// and so slides the port up to ~45 turfs off centre. Only a small hull then fitted across
+	// from it, and every bigger pairing fell back to separate berths with no airlock contact.
+	// Instead: size both berths to their own hulls, lay them exit-to-exit, and shift the two
+	// together so their combined footprint sits in the middle. Two maximum hulls exit-to-exit
+	// span 113 turfs (56 + 1 + 56), inside the 123-turf MAP_SLOT_SIDE, so any two legal hulls fit.
+	var/old_a_width = dock_a.width
+	var/old_a_height = dock_a.height
+	var/old_a_dwidth = dock_a.dwidth
+	var/old_a_dheight = dock_a.dheight
+	var/old_b_width = dock_b.width
+	var/old_b_height = dock_b.height
+	var/old_b_dwidth = dock_b.dwidth
+	var/old_b_dheight = dock_b.dheight
+
+	// dock_a.dir points INTO the anchor hull, so the second berth is one turf the other way and
+	// faces back at it - the same layout position_dock_across_from() uses
+	var/dir_a = reserve_dock_facing_for(shuttle_a)
+	var/dir_b = REVERSE_DIR(dir_a)
+	size_berth_to_shuttle(dock_a, shuttle_a)
+	size_berth_to_shuttle(dock_b, shuttle_b)
+
+	var/a_x = round((site_low_x + site_high_x) / 2)
+	var/a_y = round((site_low_y + site_high_y) / 2)
+	var/turf/step_across = get_step(locate(a_x, a_y, zlevel.z_value), dir_b)
+	var/b_x = step_across ? step_across.x : a_x
+	var/b_y = step_across ? step_across.y : a_y
+
+	var/list/rect_a = dock_a.return_coords(a_x, a_y, dir_a)
+	var/list/rect_b = dock_b.return_coords(b_x, b_y, dir_b)
+	var/pair_low_x = min(rect_a[1], rect_a[3], rect_b[1], rect_b[3])
+	var/pair_high_x = max(rect_a[1], rect_a[3], rect_b[1], rect_b[3])
+	var/pair_low_y = min(rect_a[2], rect_a[4], rect_b[2], rect_b[4])
+	var/pair_high_y = max(rect_a[2], rect_a[4], rect_b[2], rect_b[4])
+	var/shift_x = round(((site_low_x + site_high_x) - (pair_low_x + pair_high_x)) / 2)
+	var/shift_y = round(((site_low_y + site_high_y) - (pair_low_y + pair_high_y)) / 2)
+	a_x += shift_x
+	b_x += shift_x
+	a_y += shift_y
+	b_y += shift_y
+
+	var/turf/berth_a = locate(a_x, a_y, zlevel.z_value)
+	var/turf/berth_b = locate(b_x, b_y, zlevel.z_value)
+	if(!berth_a || !berth_b || pair_low_x + shift_x < site_low_x || pair_high_x + shift_x > site_high_x \
+		|| pair_low_y + shift_y < site_low_y || pair_high_y + shift_y > site_high_y)
+		dock_a.width = old_a_width
+		dock_a.height = old_a_height
+		dock_a.dwidth = old_a_dwidth
+		dock_a.dheight = old_a_dheight
+		dock_b.width = old_b_width
+		dock_b.height = old_b_height
+		dock_b.dwidth = old_b_dwidth
+		dock_b.dheight = old_b_dheight
+		log_shuttle("WARNING: [shuttle_a] and [shuttle_b] don't fit exit-to-exit inside [empty_planet] ([pair_high_x - pair_low_x + 1]x[pair_high_y - pair_low_y + 1] turfs), using separate berths instead")
 		return FALSE
 
-	// Position dock_a at center, let adjust_dock_to_shuttle handle orientation
-	dock_a.forceMove(center_turf)
-	empty_planet.adjust_dock_to_shuttle(dock_a, shuttle_a)
+	dock_a.dir = dir_a
+	dock_a.forceMove(berth_a)
+	dock_b.dir = dir_b
+	dock_b.forceMove(berth_b)
+	return TRUE
 
-	// Put dock_b right across from it so the two shuttles end up exit-to-exit
-	return position_dock_across_from(empty_planet, dock_a, dock_b, shuttle_b)
+/// Sizes stationary `dock` to a square around `shuttle`'s hull, so it fits whichever way the dock faces
+/proc/size_berth_to_shuttle(obj/docking_port/stationary/dock, obj/docking_port/mobile/shuttle)
+	var/side = max(shuttle.width, shuttle.height)
+	dock.width = side
+	dock.height = side
+	dock.dwidth = round((side - shuttle.width) / 2) + shuttle.dwidth
+	dock.dheight = round((side - shuttle.height) / 2) + shuttle.dheight
 
 /**
   * Places a free stationary dock exit-to-exit against another dock, so a shuttle sent

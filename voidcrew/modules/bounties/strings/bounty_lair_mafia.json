@@ -33,6 +33,16 @@
 		"I'm bleeding here!",
 		"Somebody shoot them!"
 	],
+	"goon_shoved": [
+		"Hands off.",
+		"Back up, pal.",
+		"Don't touch me."
+	],
+	"goon_cuffed": [
+		"Get off me!",
+		"Not a chance.",
+		"You're not putting those on me."
+	],
 	"tommy_alert": [
 		"Nobody goes through this door. Boss's orders.",
 		"You picked the wrong club, friend.",
@@ -83,5 +93,10 @@
 		"You'll pay for that.",
 		"My family will find you.",
 		"Not like this. Not in my own club."
+	],
+	"don_cuffed": [
+		"Nobody takes me alive.",
+		"You'll have to kill me first.",
+		"Cuffs? On me?"
 	]
 }

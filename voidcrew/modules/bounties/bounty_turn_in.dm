@@ -36,7 +36,7 @@
 // ===== TURNING IN =====
 
 /// Bind field work before the criminal or its proof can be carried to another band.
-/datum/criminal_bounty/proc/board_note_work_zone(mob/living/basic/bounty_criminal/target)
+/datum/criminal_bounty/proc/board_note_work_zone(mob/living/carbon/human/npc/bounty_criminal/target)
 	if(!is_open() || !record || record.board_work_zone || target != criminal() || record.status != BOUNTY_RECORD_WANTED)
 		return
 	var/band = get_zone_type_for_player_turf(get_turf(target))
@@ -112,7 +112,7 @@
 /datum/criminal_bounty/proc/board_target_on_pad(obj/machinery/mission_pad/pad)
 	if(!pad || !isturf(pad.loc))
 		return null
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	if(criminal && criminal.loc == pad.loc)
 		return criminal
 	var/obj/item/bounty_proof/proof = board_proof()
@@ -129,13 +129,13 @@
 /datum/criminal_bounty/proc/board_target_refusal(obj/machinery/mission_pad/pad, list/found)
 	var/atom/movable/target = board_target_on_pad(pad)
 	if(!target)
-		var/mob/living/basic/bounty_criminal/criminal = criminal()
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 		if(criminal && get_turf(criminal) == get_turf(pad))
 			return "they're inside [criminal.loc]"
 		return "nothing on the pad for this bounty"
 	var/state = BOUNTY_STATE_DEAD
-	if(istype(target, /mob/living/basic/bounty_criminal))
-		var/mob/living/basic/bounty_criminal/criminal = target
+	if(istype(target, /mob/living/carbon/human/npc/bounty_criminal))
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = target
 		if(criminal.client || criminal.mind)
 			return "the pad won't take them"
 		state = criminal.capture_state()
@@ -147,9 +147,11 @@
 
 /**
  * Pays `ship` for `target` (this bounty's criminal or its proof) in `state` at `pad`, and ends the
- * bounty for everyone. No yield from start to end. The share is the worse of `state` and the worst
- * state the criminal ever reached (12.1); a live catch gets its hurt, its captor and its preferred
- * prison and goes to the prisoner pool. Returns list(credits, vouchers), or why not.
+ * bounty for everyone. No yield from start to end, and it pays once: the posting is closed before
+ * anything else can press. The share is the criminal's condition on the pad, read at the press (owner
+ * ruling 2026-11-08: dead 25%, in crit 60%, cuffed or stunned 100%; what it went through on the way
+ * doesn't count). A live catch gets its hurt, its captor and its preferred prison and goes to the
+ * prisoner pool. Returns list(credits, vouchers), or why not.
  */
 /datum/criminal_bounty/proc/board_claim(obj/structure/overmap/ship/ship, obj/machinery/mission_pad/pad, atom/movable/target, state, mob/user)
 	// Everything after this line runs once: a second press, or a second ship, finds it closed
@@ -157,13 +159,13 @@
 		return "that bounty is closed"
 	if(QDELETED(target) || QDELETED(ship))
 		return "nothing on the pad for this bounty"
-	var/mob/living/basic/bounty_criminal/criminal = istype(target, /mob/living/basic/bounty_criminal) ? target : null
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = istype(target, /mob/living/carbon/human/npc/bounty_criminal) ? target : null
 	var/obj/item/bounty_proof/proof = istype(target, /obj/item/bounty_proof) ? target : null
 	if(!criminal && !proof)
 		return "nothing on the pad for this bounty"
 	if(proof)
 		state = BOUNTY_STATE_DEAD
-	var/share = board_share_for(state, criminal ? criminal.worst_state : BOUNTY_STATE_DEAD)
+	var/share = board_share_for(state)
 	if(!share)
 		return "they're standing free"
 	var/list/pay = board_payout(share)
@@ -266,8 +268,8 @@
 	var/state = null
 	if(target)
 		state = "proof"
-		if(istype(target, /mob/living/basic/bounty_criminal))
-			var/mob/living/basic/bounty_criminal/criminal = target
+		if(istype(target, /mob/living/carbon/human/npc/bounty_criminal))
+			var/mob/living/carbon/human/npc/bounty_criminal/criminal = target
 			state = criminal.capture_state()
 	var/refusal
 	if(private_to && offered_to() != ship)
@@ -316,8 +318,8 @@
 /// What the pad says about `arrived` on it, or null if it says nothing (not a bounty target, or not this ship's to turn in)
 /obj/machinery/mission_pad/proc/bounty_pad_line(atom/movable/arrived)
 	var/datum/criminal_bounty/posting
-	if(istype(arrived, /mob/living/basic/bounty_criminal))
-		var/mob/living/basic/bounty_criminal/criminal = arrived
+	if(istype(arrived, /mob/living/carbon/human/npc/bounty_criminal))
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = arrived
 		posting = criminal.posting()
 	else if(istype(arrived, /obj/item/bounty_proof))
 		var/obj/item/bounty_proof/proof = arrived
@@ -343,18 +345,19 @@
 // ===== THE BEAM =====
 
 /**
- * The pad takes them: held still, harmless and untouchable, and fading out in the prisoner's
- * beam (outpost_prison_prisoner.dm beam_out()), then deleted. Never a teleport (AR-A1). Nothing
- * they leave behind counts as proof of death.
+ * The pad takes them: held still and harmless, fading out in the prisoner's beam
+ * (outpost_prison_prisoner.dm beam_out()), then deleted. Never a teleport (AR-A1). The pay was settled
+ * before the beam starts, so nothing that happens to them during it changes it; there is no godmode
+ * (defaults 1.8, CR-18). Their locked kit goes with them (D3); anything on them that isn't kit (papers,
+ * a key, the crew's own cuffs) is left on the pad. Nothing they leave behind counts as proof of death.
  */
-/mob/living/basic/bounty_criminal/proc/board_beam_out()
+/mob/living/carbon/human/npc/bounty_criminal/proc/board_beam_out()
 	// Their last words as the pad takes them (P1's beamed_out lines), said before the beam holds them still
 	if(stat == CONSCIOUS)
 		INVOKE_ASYNC(src, TYPE_PROC_REF(/mob/living, bounty_say), "beamed_out", null, TRUE)
 	ADD_TRAIT(src, TRAIT_BOUNTY_REMOVED, BOUNTY_PAD_TRAIT)
 	ADD_TRAIT(src, TRAIT_IMMOBILIZED, BOUNTY_PAD_TRAIT)
 	ADD_TRAIT(src, TRAIT_INCAPACITATED, BOUNTY_PAD_TRAIT)
-	ADD_TRAIT(src, TRAIT_GODMODE, BOUNTY_PAD_TRAIT)
 	REMOVE_TRAIT(src, TRAIT_MISSION_FIELD_MOB, BOUNTY_TRAIT)
 	ai_controller?.set_ai_status(AI_STATUS_OFF)
 	pulledby?.stop_pulling()
@@ -368,8 +371,11 @@
 	transporter_dematerialise(src, BOUNTY_BEAM_TIME)
 	addtimer(CALLBACK(src, PROC_REF(board_finish_beam_out)), BOUNTY_BEAM_TIME, TIMER_DELETE_ME)
 
-/mob/living/basic/bounty_criminal/proc/board_finish_beam_out()
+/mob/living/carbon/human/npc/bounty_criminal/proc/board_finish_beam_out()
 	var/turf/spot = get_turf(src)
+	npc_drop_not_gear()
+	// What the crew put on them stays with the crew: their restraints, and any suit, helmet or tank they put on for the trip (bounty_suits.dm)
+	bounty_return_crew_items(src, spot)
 	if(spot)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
 		transporter_sparks(spot)
@@ -445,13 +451,13 @@
  * the criminal away (TRAIT_BOUNTY_REMOVED), when its bounty is closed or relisting, or when the
  * criminal went with its site's interior (it comes back at the next load). One proof per bounty.
  */
-/proc/bounty_drop_proof(mob/living/basic/bounty_criminal/criminal)
+/proc/bounty_drop_proof(mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(!criminal || HAS_TRAIT(criminal, TRAIT_BOUNTY_REMOVED))
 		return null
 	var/datum/criminal_bounty/posting = criminal.posting_ref?.resolve()
 	if(!posting || !posting.is_open() || posting.board_relisting)
 		return null
-	var/mob/living/basic/bounty_criminal/current = posting.criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/current = posting.criminal()
 	if(current && current != criminal)
 		return null
 	var/turf/spot = get_turf(criminal)
@@ -526,13 +532,15 @@
 
 /**
  * Called from the bluespace body bag's attempt_fold(): TRUE stops `folder` folding `bag`, because
- * a living bounty criminal is inside (AR-E7). Tells `folder` why.
+ * a bounty criminal inside is alive and struggling (AR-E7, PL-20). One in crit or dead is a body, and
+ * folds like anyone's; the bag still never rides a transporter beam with a live one in it
+ * (bounty_blocks_transport()). Tells `folder` why.
  */
 /proc/bounty_blocks_bag_fold(obj/structure/closet/body_bag/bag, mob/living/folder)
 	if(!bag)
 		return FALSE
-	for(var/mob/living/basic/bounty_criminal/criminal in bag.get_all_contents())
-		if(criminal.stat == DEAD)
+	for(var/mob/living/carbon/human/npc/bounty_criminal/criminal in bag.get_all_contents())
+		if(!bounty_body_bound(criminal) || criminal.is_downed())
 			continue
 		if(folder)
 			to_chat(folder, span_warning("[bag] won't fold with someone alive and struggling inside."))
@@ -555,11 +563,21 @@
 	if(QDELETED(thing))
 		return FALSE
 	for(var/mob/living/passenger in thing.get_all_contents())
-		if(passenger == thing || passenger.stat == DEAD)
-			continue
-		if(istype(passenger, /mob/living/basic/bounty_criminal) || istype(passenger, /mob/living/basic/bounty_companion))
+		if(passenger != thing && bounty_body_bound(passenger))
 			return TRUE
 	return FALSE
+
+/**
+ * Whether `body` is a living bounty person the pad is the only way out for: a criminal still held to its
+ * site (its body's TRAIT_NO_TELEPORT; a convict a crew talked down loses it and is free to go), or a
+ * companion. Dead bodies are proof, and travel like any body.
+ */
+/proc/bounty_body_bound(mob/living/body)
+	if(!isliving(body) || QDELETED(body) || body.stat == DEAD)
+		return FALSE
+	if(istype(body, /mob/living/carbon/human/npc/bounty_criminal))
+		return HAS_TRAIT_FROM(body, TRAIT_NO_TELEPORT, BOUNTY_BODY_TRAIT)
+	return istype(body, /mob/living/carbon/human/npc/bounty_companion)
 
 /**
  * Called from the transporter pad's gather_payload(): TRUE keeps `thing` off the beam. A criminal
@@ -570,7 +588,6 @@
 /proc/bounty_blocks_transport(atom/movable/thing)
 	if(QDELETED(thing))
 		return FALSE
-	if(istype(thing, /mob/living/basic/bounty_criminal) || istype(thing, /mob/living/basic/bounty_companion))
-		var/mob/living/rider = thing
-		return rider.stat != DEAD
+	if(ismob(thing))
+		return bounty_body_bound(thing)
 	return bounty_holds_living_criminal(thing)

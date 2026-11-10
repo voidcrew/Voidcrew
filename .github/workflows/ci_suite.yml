@@ -17,6 +17,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          # The PR merge commit and its base, so the XSS check can see what the PR adds.
+          fetch-depth: 2
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -59,6 +62,12 @@ jobs:
 
       - name: Check gear ratings
         run: python -m tools.ci.check_gear_ratings --github
+
+      - name: Test XSS check
+        run: python -m unittest tools.ci.test_xss
+
+      - name: Check new code for XSS
+        run: python -m tools.ci.check_xss --base HEAD^1 --github
 
       - name: Setup Bun
         uses: ./.github/actions/setup_bun

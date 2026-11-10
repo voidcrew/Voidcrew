@@ -155,7 +155,7 @@
 	if(!spot)
 		return null
 	roll_offer()
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = new(spot, src)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = new(spot, src)
 	researcher = doctor
 	researcher_stay = 0
 	pitch_left = OUTPOST_KESSLER_BEAM_TIME / (1 SECONDS) + 2
@@ -184,7 +184,7 @@
  * checked again once it returns. Returns what they got: the item, TRUE for a decline, or FALSE.
  */
 /datum/outpost_prison/proc/present_offer(mob/living/user)
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = researcher
 	if(QDELETED(doctor) || doctor.leaving || doctor.beaming || !outpost?.can_manage(user))
 		return FALSE
 	var/mob/holder = offer_claim?.resolve()
@@ -217,7 +217,7 @@
  * to 0, and the researcher leaves. Refused if the wing could not run it now. Returns the item.
  */
 /datum/outpost_prison/proc/accept_offer(mob/living/user)
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = researcher
 	if(QDELETED(doctor) || doctor.leaving || !outpost?.can_manage(user))
 		return FALSE
 	var/needed = offer_kind == "specimen" ? 2 : 1
@@ -243,7 +243,7 @@
 
 /// `user` turns the offer down: the next one pays more, and the researcher leaves
 /datum/outpost_prison/proc/decline_offer(mob/living/user)
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = researcher
 	if(QDELETED(doctor) || doctor.leaving)
 		return FALSE
 	sweetener = min(sweetener + OUTPOST_EXPERIMENT_SWEETENER, OUTPOST_EXPERIMENT_SWEETENER_MAX)
@@ -255,7 +255,7 @@
 
 /// Nobody took the offer in time: the researcher leaves, and the next offer pays more
 /datum/outpost_prison/proc/researcher_lapse()
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = researcher
 	if(QDELETED(doctor))
 		researcher = null
 		return FALSE
@@ -265,21 +265,37 @@
 	send_researcher_away(doctor)
 	return TRUE
 
-/// Someone hurt the researcher: gone at once, with no sweetener for the next visit
+/**
+ * Someone hurt the researcher: "I'm leaving!", and the corporate beam takes them a couple of seconds
+ * later (OUTPOST_KESSLER_ASSAULT_BEAM_DELAY), with no sweetener for the next visit. The hit was real;
+ * the beam is only a way out.
+ */
 /datum/outpost_prison/proc/researcher_assaulted()
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = researcher
 	if(QDELETED(doctor))
 		return FALSE
 	// Hit while still beaming in: they just go, without a word from thin air.
-	if(!doctor.beaming && !doctor.departing)
+	if(!doctor.beaming && !doctor.departing && doctor.stat == CONSCIOUS)
 		doctor.say("I'm leaving!")
 	add_log("[doctor.real_name] was attacked and left.")
 	log_game("PLAYER OUTPOST PRISON: the Kessler researcher at '[outpost?.name]' was attacked and left")
-	send_researcher_away(doctor, 0)
+	send_researcher_away(doctor, OUTPOST_KESSLER_ASSAULT_BEAM_DELAY)
 	return TRUE
 
+/**
+ * The researcher was killed before Kessler's beam got them out. Kessler takes the body back, and
+ * doesn't come again for a long while (OUTPOST_KESSLER_KILLED_WAIT_MIN to _MAX).
+ */
+/datum/outpost_prison/proc/researcher_killed(mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor, mob/killer)
+	add_log("[doctor.real_name] of Kessler Biolabs was killed. Kessler wants a word about that.")
+	log_game("PLAYER OUTPOST PRISON: the Kessler researcher at '[outpost?.name]' was killed[killer ? " (last hit by [key_name(killer)])" : ""]")
+	if(researcher == doctor)
+		researcher = null
+		offer_claim = null
+	researcher_wait = max(researcher_wait || 0, rand(OUTPOST_KESSLER_KILLED_WAIT_MIN, OUTPOST_KESSLER_KILLED_WAIT_MAX))
+
 /// The researcher leaves after `delay`; the next visit is 35-50 minutes off
-/datum/outpost_prison/proc/send_researcher_away(mob/living/basic/outpost_kessler_staff/researcher/doctor, delay = 2 SECONDS)
+/datum/outpost_prison/proc/send_researcher_away(mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor, delay = 2 SECONDS)
 	researcher = null
 	offer_claim = null
 	researcher_wait = rand(OUTPOST_EXPERIMENT_GAP_MIN, OUTPOST_EXPERIMENT_GAP_MAX)
@@ -291,39 +307,28 @@
 	if(!spot)
 		return null
 	// Not the wing's researcher: nobody can take an offer from them, and they hold no reference to the prison.
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = new(spot, null)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = new(spot, null)
 	doctor.beam_in()
 	// A second after they are all the way in, not while they are still knitting together.
-	addtimer(CALLBACK(doctor, TYPE_PROC_REF(/mob/living/basic/outpost_kessler_staff/researcher, refuse_wing)), OUTPOST_KESSLER_BEAM_TIME + 1 SECONDS, TIMER_DELETE_ME)
+	addtimer(CALLBACK(doctor, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, refuse_wing)), OUTPOST_KESSLER_BEAM_TIME + 1 SECONDS, TIMER_DELETE_ME)
 	add_log("[doctor.real_name] of Kessler Biolabs came, but would not work in the wing as it is.")
 	return doctor
 
 // ===== KESSLER STAFF =====
 
-/// Someone from Kessler Biolabs: beams in and out, cannot be hurt, boxed, teleported or taken over
-/mob/living/basic/outpost_kessler_staff
+/**
+ * Someone from Kessler Biolabs, a real human body (owner ruling OC-3): they can be hurt, bled, cuffed
+ * and killed like anyone. The first real hit sends them away: "I'm leaving!" and Kessler's beam a
+ * couple of seconds later. Teleporters, polymorph and bluespace bags don't take them while they are
+ * alive. Their kit is locked to them (D3). They have no AI: they stand where they beamed in.
+ */
+/mob/living/carbon/human/npc/outpost_kessler_staff
 	name = "Kessler Biolabs employee"
 	desc = "Someone from Kessler Biolabs."
-	icon = 'icons/mob/simple/simple_human.dmi'
-	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
-	sentience_type = SENTIENCE_HUMANOID
-	basic_mob_flags = NONE
-	status_flags = NONE
-	move_resist = INFINITY
-	// tg's human deathgasp
-	death_message = "seizes up and falls limp, their eyes dead and lifeless..."
-	density = TRUE
-	maxHealth = 100
-	health = 100
-	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, STAMINA = 0, OXY = 0)
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	speak_emote = list("says")
-	response_help_continuous = "taps"
-	response_help_simple = "tap"
-	/// What they wear
-	var/outfit = /datum/outfit/outpost_kessler_researcher
+	faction = list(FACTION_NEUTRAL)
+	ai_controller = null
+	npc_outfit = /datum/outfit/outpost_kessler_researcher
+	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
 	/// The prison they came to
 	var/datum/outpost_prison/prison
 	/// On the way out
@@ -335,52 +340,78 @@
 	/// A line of dialogue to say once they have fully materialised, if any
 	var/arrival_line
 
-/mob/living/basic/outpost_kessler_staff/Initialize(mapload, datum/outpost_prison/owner)
-	gender = pick(MALE, FEMALE)
-	. = ..()
-	prison = owner
-	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
-	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
+/**
+ * The second argument is the prison they come to (or null for a visit that isn't the wing's), never a
+ * human NPC spawn order. Made one at a time as they visit, so they don't go through the spawn queue.
+ */
+/mob/living/carbon/human/npc/outpost_kessler_staff/Initialize(mapload, datum/outpost_prison/owner)
+	. = ..(mapload)
+	prison = istype(owner) ? owner : null
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, OUTPOST_KESSLER_TRAIT)
+	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, OUTPOST_KESSLER_TRAIT)
 	ADD_TRAIT(src, TRAIT_OUTPOST_EXPERIMENT, INNATE_TRAIT)
-	ADD_TRAIT(src, TRAIT_PUSHIMMUNE, INNATE_TRAIT)
-	AddElement(/datum/element/footstep, footstep_type = FOOTSTEP_MOB_SHOE)
+	AddElement(/datum/element/relay_attackers)
+	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
+	RegisterSignal(src, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
 	RegisterSignal(src, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport))
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
 	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
-	apply_dynamic_human_appearance(src, outfit, /datum/species/human)
 
-/mob/living/basic/outpost_kessler_staff/Destroy()
+/mob/living/carbon/human/npc/outpost_kessler_staff/Destroy()
 	if(prison?.researcher == src)
 		prison.researcher = null
 		prison.offer_claim = null
 	prison = null
 	return ..()
 
-/// Nothing Kessler sends can be hurt: a blow makes them leave instead
-/mob/living/basic/outpost_kessler_staff/adjust_health(amount, updating_health = TRUE, forced = FALSE)
-	if(amount > 0 && !forced)
-		INVOKE_ASYNC(src, PROC_REF(hurt_by_someone))
-		return 0
-	return ..()
-
-/mob/living/basic/outpost_kessler_staff/proc/hurt_by_someone()
-	leave()
-
-/mob/living/basic/outpost_kessler_staff/proc/refuse_teleport(datum/source, atom/destination, channel)
+/// A real blow from someone: they leave
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
+	if(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK))
+		INVOKE_ASYNC(src, PROC_REF(hurt_by_someone))
+
+/// Hurt any other way (a fire, a blast, a stray shot): they leave too
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/on_damaged(datum/source, damage_dealt, damagetype)
+	SIGNAL_HANDLER
+	if(damage_dealt > 0 && damagetype != OXY)
+		INVOKE_ASYNC(src, PROC_REF(hurt_by_someone))
+
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/hurt_by_someone()
+	leave(OUTPOST_KESSLER_ASSAULT_BEAM_DELAY)
+
+/mob/living/carbon/human/npc/outpost_kessler_staff/death(gibbed)
+	var/datum/outpost_prison/visited = prison
+	var/was_alive = stat != DEAD
+	. = ..()
+	if(!was_alive || stat != DEAD)
+		return
+	REMOVE_TRAIT(src, TRAIT_NO_CONTAINMENT, OUTPOST_KESSLER_TRAIT)
+	REMOVE_TRAIT(src, TRAIT_NO_STORAGE_INSERT, OUTPOST_KESSLER_TRAIT)
+	killed_on_visit(visited)
+	// Kessler takes its own people back, alive or not.
+	leave(OUTPOST_KESSLER_ASSAULT_BEAM_DELAY)
+
+/// Killed while visiting `visited`
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/killed_on_visit(datum/outpost_prison/visited)
+	return
+
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/refuse_teleport(datum/source, atom/destination, channel)
+	SIGNAL_HANDLER
+	if(stat == DEAD)
+		return FALSE
 	return TRUE
 
-/mob/living/basic/outpost_kessler_staff/proc/refuse_polymorph(datum/source, what_to_randomize)
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/refuse_polymorph(datum/source, what_to_randomize)
 	SIGNAL_HANDLER
 	return STOP_WABBAJACK
 
-/mob/living/basic/outpost_kessler_staff/proc/refuse_type_change(datum/source)
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/refuse_type_change(datum/source)
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_MOB_CHANGE
 
-/// Says a line of `context` from the dialogue file. Never while beaming in or out, invisible or half there.
-/mob/living/basic/outpost_kessler_staff/proc/say_line(context)
-	if(beaming || departing)
+/// Says a line of `context` from the dialogue file. Never while beaming in or out, invisible or half there, or unable to talk.
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/say_line(context)
+	if(beaming || departing || !human_npc_can_talk(src))
 		return null
 	var/line = outpost_experiment_line(context)
 	if(line)
@@ -391,7 +422,7 @@
  * Materialises where they stand: they knit together inside the transporter's column over the
  * whole beam. They stay `beaming` (held still, silent) until finish_beam_in() as the beam ends.
  */
-/mob/living/basic/outpost_kessler_staff/proc/beam_in()
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/beam_in()
 	beaming = TRUE
 	ADD_TRAIT(src, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT)
 	var/turf/spot = get_turf(src)
@@ -404,7 +435,7 @@
 	addtimer(CALLBACK(src, PROC_REF(finish_beam_in)), OUTPOST_KESSLER_BEAM_TIME, TIMER_DELETE_ME)
 
 /// Fully there as the beam ends: the flash, and only now do they talk
-/mob/living/basic/outpost_kessler_staff/proc/finish_beam_in()
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/finish_beam_in()
 	if(!beaming || departing)
 		return
 	var/turf/spot = get_turf(src)
@@ -420,7 +451,7 @@
 		say_line(arrival_line)
 
 /// Leaves after `delay`: beams out and is gone
-/mob/living/basic/outpost_kessler_staff/proc/leave(delay = 0)
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/leave(delay = 0)
 	if(leaving)
 		return
 	leaving = TRUE
@@ -433,9 +464,13 @@
 	else
 		beam_out()
 
-/mob/living/basic/outpost_kessler_staff/proc/beam_out()
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/beam_out()
+	if(departing || QDELETED(src))
+		return
 	beaming = FALSE
 	departing = TRUE
+	pulledby?.stop_pulling()
+	buckled?.unbuckle_mob(src, force = TRUE)
 	ADD_TRAIT(src, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT)
 	var/turf/spot = get_turf(src)
 	if(spot)
@@ -444,7 +479,7 @@
 	transporter_dematerialise(src, OUTPOST_KESSLER_BEAM_TIME)
 	addtimer(CALLBACK(src, PROC_REF(finish_beam_out)), OUTPOST_KESSLER_BEAM_TIME, TIMER_DELETE_ME)
 
-/mob/living/basic/outpost_kessler_staff/proc/finish_beam_out()
+/mob/living/carbon/human/npc/outpost_kessler_staff/proc/finish_beam_out()
 	var/turf/spot = get_turf(src)
 	if(spot)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
@@ -454,34 +489,36 @@
 
 // ----- the researcher -----
 
-/mob/living/basic/outpost_kessler_staff/researcher
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher
 	name = "researcher"
 	desc = "A researcher from Kessler Biolabs, with a clipboard and a labcoat that has never seen a stain."
-	outfit = /datum/outfit/outpost_kessler_researcher
+	npc_outfit = /datum/outfit/outpost_kessler_researcher
 	COOLDOWN_DECLARE(brush_off_cooldown)
 
-/mob/living/basic/outpost_kessler_staff/researcher/Initialize(mapload, datum/outpost_prison/owner)
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/Initialize(mapload, datum/outpost_prison/owner)
 	. = ..()
-	real_name = "Dr. [pick(GLOB.last_names)]"
-	name = real_name
+	fully_replace_character_name(real_name, "Dr. [pick(GLOB.last_names)]")
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_hand))
 
-/mob/living/basic/outpost_kessler_staff/researcher/hurt_by_someone()
-	if(prison?.researcher == src)
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/hurt_by_someone()
+	if(prison?.researcher == src && !leaving)
 		prison.researcher_assaulted()
 		return
-	leave()
+	leave(OUTPOST_KESSLER_ASSAULT_BEAM_DELAY)
 
-/// An empty hand, not in combat mode: a word with the researcher instead of a pat
-/mob/living/basic/outpost_kessler_staff/researcher/proc/on_hand(datum/source, mob/living/user, list/modifiers)
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/killed_on_visit(datum/outpost_prison/visited)
+	visited?.researcher_killed(src, lastattackerckey ? get_mob_by_ckey(lastattackerckey) : null)
+
+/// An empty hand, not in combat mode: a word with the researcher instead of a pat. Down or out cold, tg's own help.
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/proc/on_hand(datum/source, mob/living/user, list/modifiers)
 	SIGNAL_HANDLER
-	if(!istype(user) || user.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK))
+	if(!istype(user) || user.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK) || stat != CONSCIOUS || on_fire)
 		return NONE
 	INVOKE_ASYNC(src, PROC_REF(talk_to), user)
 	return COMPONENT_CANCEL_ATTACK_CHAIN
 
 /// Managers get the offer; everyone else gets told who the researcher deals with
-/mob/living/basic/outpost_kessler_staff/researcher/proc/talk_to(mob/living/user)
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/proc/talk_to(mob/living/user)
 	if(leaving || beaming || !prison || prison.researcher != src)
 		return FALSE
 	face_atom(user)
@@ -493,17 +530,17 @@
 	return prison.present_offer(user)
 
 /// The offer card as a prompt: "Accept", "Decline", or null if it was closed
-/mob/living/basic/outpost_kessler_staff/researcher/proc/ask_offer(mob/living/user, text, timeout)
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/proc/ask_offer(mob/living/user, text, timeout)
 	return tgui_alert(user, text, "[real_name], Kessler Biolabs", list("Accept", "Decline"), timeout)
 
 /// A pitch to whoever is about, pushier after declines
-/mob/living/basic/outpost_kessler_staff/researcher/proc/pitch(sweetened = FALSE)
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/proc/pitch(sweetened = FALSE)
 	if(leaving || beaming)
 		return null
 	return say_line(sweetened ? "researcher_sweetened" : "researcher_offer")
 
 /// A short visit to a wing in no state for an experiment
-/mob/living/basic/outpost_kessler_staff/researcher/proc/refuse_wing()
+/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/proc/refuse_wing()
 	if(QDELETED(src) || leaving)
 		return
 	say_line("researcher_pigsty")
@@ -511,15 +548,30 @@
 
 // ----- the recovery team -----
 
-/mob/living/basic/outpost_kessler_staff/agent
+/mob/living/carbon/human/npc/outpost_kessler_staff/agent
 	name = "Kessler recovery agent"
 	desc = "A Kessler Biolabs recovery agent in a hazmat suit, carrying a tranquilliser gun."
-	outfit = /datum/outfit/outpost_kessler_agent
+	npc_outfit = /datum/outfit/outpost_kessler_agent
+
+/// Fires the real chloral hydrate dart in its syringe gun at `target`, the way anyone fires one. Returns TRUE if it fired.
+/mob/living/carbon/human/npc/outpost_kessler_staff/agent/proc/dart(mob/living/target)
+	if(QDELETED(target) || stat != CONSCIOUS || departing)
+		return FALSE
+	var/obj/item/gun/syringe/gun = locate() in held_items
+	if(!gun || !length(gun.syringes) || !human_npc_ready_item(src, gun))
+		return FALSE
+	face_atom(target)
+	var/old_combat_mode = combat_mode
+	set_combat_mode(TRUE, silent = TRUE)
+	ClickOn(target)
+	set_combat_mode(old_combat_mode, silent = TRUE)
+	return TRUE
 
 /**
  * Two agents beam in around `creature`, one says a line of `context` once they are all the way in,
- * and they all beam out after OUTPOST_KESSLER_TEAM_TIME. A creature still on its feet is
- * `tranquilise`d; one already down is simply collected.
+ * and they all beam out after OUTPOST_KESSLER_TEAM_TIME. With `tranquilise`, the first agent fires the
+ * real chloral hydrate dart in its syringe gun at the creature once it is all the way in, to keep it
+ * down while they work (owner ruling OC-3: they collect only what is already down).
  */
 /proc/outpost_kessler_team(mob/living/creature, context = "kessler_recovery", tranquilise = TRUE)
 	var/turf/center = get_turf(creature)
@@ -529,9 +581,9 @@
 	for(var/turf/open/tile in orange(1, center))
 		if(!tile.is_blocked_turf(TRUE) && !(locate(/mob/living) in tile))
 			spots += tile
-	var/mob/living/basic/outpost_kessler_staff/agent/speaker
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/speaker
 	for(var/i in 1 to min(2, length(spots)))
-		var/mob/living/basic/outpost_kessler_staff/agent/agent = new(pick_n_take(spots), null)
+		var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = new(pick_n_take(spots), null)
 		agent.face_atom(creature)
 		agent.beam_in()
 		agent.leave(OUTPOST_KESSLER_TEAM_TIME)
@@ -543,20 +595,10 @@
 	if(tranquilise)
 		creature.visible_message(span_warning("Kessler Biolabs agents beam in around [creature], and a tranquilliser dart drops [creature.p_them()]."))
 		playsound(center, 'sound/items/syringeproj.ogg', 50, TRUE)
+		if(speaker)
+			addtimer(CALLBACK(speaker, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, dart), creature), OUTPOST_KESSLER_BEAM_TIME + 0.2 SECONDS, TIMER_DELETE_ME)
 	else
 		creature.visible_message(span_notice("Kessler Biolabs agents beam in to collect [creature]."))
-
-/// Kessler's beam takes `target` away for good
-/proc/outpost_kessler_beam_away(mob/living/target)
-	if(QDELETED(target))
-		return
-	var/turf/spot = get_turf(target)
-	if(spot)
-		target.visible_message(span_notice("A transporter beam takes [target] away."))
-		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_KESSLER_BEAM_TIME + 0.5 SECONDS)
-	transporter_dematerialise(target, OUTPOST_KESSLER_BEAM_TIME)
-	QDEL_IN(target, OUTPOST_KESSLER_BEAM_TIME)
 
 // ===== LOOKS =====
 
@@ -578,3 +620,16 @@
 	gloves = /obj/item/clothing/gloves/latex
 	shoes = /obj/item/clothing/shoes/sneakers/white
 	r_hand = /obj/item/gun/syringe
+
+/datum/outfit/outpost_kessler_agent/post_equip(mob/living/carbon/human/agent, visuals_only = FALSE)
+	. = ..()
+	if(visuals_only)
+		return
+	var/obj/item/gun/syringe/gun = locate() in agent.held_items
+	if(!gun)
+		return
+	var/obj/item/reagent_containers/syringe/dart = new(gun)
+	dart.reagents.add_reagent(/datum/reagent/toxin/chloralhydrate, dart.volume)
+	dart.name = "tranquilliser syringe"
+	gun.syringes += dart
+	gun.update_appearance()

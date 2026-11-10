@@ -19,30 +19,32 @@
 
 /// Where a lair's boss appears when the interior loads. Placed on the map (P11); P10 spawns boss_type there.
 /obj/effect/landmark/bounty_lair_boss
-	/// The boss to spawn here (a /mob/living/basic/bounty_lair_boss path), set on the map
+	/// The boss to spawn here, set on the map: a /mob/living/basic/bounty_lair_boss path, or a human NPC boss (built at once, it is one body)
 	var/boss_type
 
 /// A lair's gatekeeper spot. P10 spawns gatekeeper_type here at load; when every gatekeeper in the lair is dead, P10 opens the lair's gate poddoors (mapped with id "bounty_lair_gate").
 /obj/effect/landmark/bounty_lair_gatekeeper
-	/// The mob to spawn here as a gatekeeper, set on the map (the mafia lieutenant for the club)
+	/// The mob to spawn here as a gatekeeper, set on the map (the mafia lieutenant for the club). A human NPC is queued (spawn_human_npc()).
 	var/gatekeeper_type
 
-/// The base of lair bosses: never under /mob/living/basic/boss (megafauna are banned from ruins and outposts). P12 sets the mafia ones.
+/// The base of lair bosses that aren't people: never under /mob/living/basic/boss (megafauna are banned from ruins and outposts). P12 sets the mafia one.
 /mob/living/basic/bounty_lair_boss
 	/// Weakref to the posting (/datum/criminal_bounty), or null for an admin spawn
 	var/datum/weakref/posting_ref
 
-/// The don in his mech (phase one). P12.
+/// The don in his mech (phase one): a machine, so it stays a mob of its own (owner call OC-5). P12.
 /mob/living/basic/bounty_lair_boss/mafia_mech
-/// The don on foot after the mech breaks (phase two). His death drops the trophy. P12.
-/mob/living/basic/bounty_lair_boss/mafia_don
 
-/// Mafia goons for the club. P12 sets them (lootless, club outfits); P11 places their markers.
-/mob/living/basic/trooper/russian/mafia
-/mob/living/basic/trooper/russian/mafia/pistol
-/mob/living/basic/trooper/russian/mafia/smg
+/// The club's people: real human NPCs. The base is the knife man; P12 sets them (club outfits, real guns); P11 places their markers.
+/mob/living/carbon/human/npc/bounty_mafia
+/mob/living/carbon/human/npc/bounty_mafia/pistol
+/mob/living/carbon/human/npc/bounty_mafia/smg
 /// Tougher; their deaths open the arena (P10's gate rule). P12.
-/mob/living/basic/trooper/russian/mafia/lieutenant
+/mob/living/carbon/human/npc/bounty_mafia/lieutenant
+/// The don on foot after the mech breaks (phase two), a person. His death drops the trophy. P12.
+/mob/living/carbon/human/npc/bounty_mafia/don
+	/// Weakref to the posting (/datum/criminal_bounty) he is wanted on, or null for an admin spawn
+	var/datum/weakref/posting_ref
 
 /// Room spawner for the club's goons. P12 sets its tables; P11 places it on the map (the loot test requires every zone_mobs subtype to appear in a ruin map).
 /obj/effect/zone_mobs/mafia

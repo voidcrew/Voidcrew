@@ -966,9 +966,11 @@ GLOBAL_LIST_EMPTY(features_by_species)
 		atk_verb = attacking_bodypart.grappled_attack_verb
 		atk_verb_continuous = attacking_bodypart.grappled_attack_verb_continuous
 
-	target.visible_message(span_danger("[user] [atk_verb_continuous] [target]!"), \
-					span_userdanger("[user] [atk_verb_continuous] you!"), span_hear("You hear a sickening sound of flesh hitting flesh!"), COMBAT_MESSAGE_RANGE, user)
-	to_chat(user, span_danger("You [atk_verb] [target]!"))
+	// VOIDCREW EDIT CHANGE START: hold the attack line so the wound lines of this blow join it (voidcrew/modules/hyperviolence/hitlines)
+	// original: target.visible_message(span_danger("[user] [atk_verb_continuous] [target]!"), span_userdanger("[user] [atk_verb_continuous] you!"), span_hear("You hear a sickening sound of flesh hitting flesh!"), COMBAT_MESSAGE_RANGE, user)
+	// original: to_chat(user, span_danger("You [atk_verb] [target]!"))
+	target.hv_hold_attack_message("[user] [atk_verb_continuous] [target]!", "[user] [atk_verb_continuous] you!", "You [atk_verb] [target]!", user, "You hear a sickening sound of flesh hitting flesh!")
+	// VOIDCREW EDIT CHANGE END
 
 	target.lastattacker = user.real_name
 	target.lastattackerckey = user.ckey
