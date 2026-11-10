@@ -48,6 +48,9 @@
 		// somebody's unused parlor appointment: tattoo ink you wear under
 		// the skin, colour and pattern set at a Cradle
 		/obj/item/organ/cyberimp/cyberware/chromatic_dermis = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/glowy = 3,
+		/obj/item/dnainjector/loot/gigantism = 2,
 	)
 	loot_uncommon = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 10,
@@ -63,6 +66,8 @@
 		// black eyes that see in the dark. Half the reason anyone buys them
 		// is that everyone can tell you have them
 		/obj/item/organ/eyes/robotic/cyberware/nightshade = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/dwarfism = 3,
 	)
 	loot_prime = list(
 		/obj/item/clothing/head/cowboy/bounty = 9,
@@ -75,6 +80,8 @@
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/clothing/shoes/clown_shoes/banana_shoes/combat = 2,
 		/obj/item/megaphone/clown = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/chameleon = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

@@ -55,6 +55,8 @@
 		/obj/item/weldingtool/largetank = 5,
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/rock_eater = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/titanium/fifty = 8,
@@ -74,6 +76,9 @@
 		// the maintenance crew's chrome: driver, wrench and cutters folded
 		// into the knuckles, and faster hands behind them
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/heat_adaptation = 2,
+		/obj/item/dnainjector/loot/insulated = 3,
 	)
 	loot_prime = list(
 		/obj/item/stack/sheet/plasteel/fifty = 9,
@@ -89,6 +94,9 @@
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
 		// Hot-work chrome: a body-wide coolant loop.
 		/obj/item/organ/cyberimp/cyberware/coolant = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/thermal_adaptation = 2,
+		/obj/item/dnainjector/loot/shock_touch = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -100,6 +108,9 @@
 		/obj/item/weldingtool/slagmaw = 2,
 		/obj/item/stamp/helios_pattern = 1,
 		/obj/item/stock_parts/power_store/cell/forge_heart = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/fire_immunity = 1,
+		/obj/item/dnainjector/loot/rock_absorber = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/industrial

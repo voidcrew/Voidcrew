@@ -55,6 +55,8 @@
 		// prospector's chrome, cheapest rung: pistons that get you off the
 		// ground fast and hold your footing on bad decking
 		/obj/item/organ/cyberimp/cyberware/shock_coils = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/geladikinesis = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
@@ -70,6 +72,10 @@
 		// and hoppers its own ore, and a harpoon winch for everything else
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/angler = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/olfaction = 3,
+		/obj/item/dnainjector/loot/farsight = 2,
+		/obj/item/dnainjector/loot/cold_adaptation = 2,
 	)
 	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,
@@ -83,6 +89,8 @@
 		/obj/item/organ/eyes/robotic/cyberware/prospector = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook = 3,
 		/obj/item/organ/cyberimp/cyberware/hopper = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/pressure_adaptation = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -94,6 +102,9 @@
 		/obj/item/pickaxe/divining = 2,
 		/obj/item/deepwell_sampler = 1,
 		/obj/item/longwalk_rig = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/quick = 1,
+		/obj/item/dnainjector/loot/breathless = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/expedition

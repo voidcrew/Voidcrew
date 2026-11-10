@@ -943,7 +943,8 @@
 				|| ispath(loot_path, /obj/item/claymore) || ispath(loot_path, /obj/item/katana) || ispath(loot_path, /obj/item/fireaxe) \
 				|| ispath(loot_path, /obj/item/spear) || ispath(loot_path, /obj/item/hatchet) || ispath(loot_path, /obj/item/mjollnir) \
 				|| ispath(loot_path, /obj/item/organ/cyberimp) || ispath(loot_path, /obj/item/organ/eyes/robotic/cyberware) \
-				|| ispath(loot_path, /obj/item/cyberware_pair_case) || ispath(loot_path, /obj/item/storage/case/cyberware))
+				|| ispath(loot_path, /obj/item/cyberware_pair_case) || ispath(loot_path, /obj/item/storage/case/cyberware) \
+				|| ispath(loot_path, /obj/item/dnainjector))
 				pool -= loot_path
 	return pools
 
