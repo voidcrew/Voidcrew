@@ -193,6 +193,7 @@
 		/datum/shop_buyback/ripperdoc/cargo_cavity,
 		/datum/shop_buyback/ripperdoc/gastro,
 		/datum/shop_buyback/ripperdoc/chromatic_dermis,
+		/datum/shop_buyback/ripperdoc/burnt_chrome,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -740,3 +741,17 @@
 	pay_credits = 200
 	demand_min = 2
 	demand_max = 3
+
+/**
+ * Dead chrome off a dead (or opened-up) human NPC (/obj/item/burnt_chrome, human_npc.dm). Scrap money only:
+ * 50 cr is a fifth of the cheapest piece Splice sells for credits, so burning out bought chrome in a captive
+ * to sell the husk is always a loss, and the round's demand caps it.
+ */
+/datum/shop_buyback/ripperdoc/burnt_chrome
+	name = "Burnt-out chrome"
+	desc = "Dead implants. Splice strips them for the parts that didn't melt."
+	category = "Scrap"
+	item_path = /obj/item/burnt_chrome
+	pay_credits = 50
+	demand_min = 4
+	demand_max = 8

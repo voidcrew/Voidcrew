@@ -374,10 +374,8 @@
 /mob/living/carbon/human/npc/bounty_criminal/proc/board_finish_beam_out()
 	var/turf/spot = get_turf(src)
 	npc_drop_not_gear()
-	// The crew's restraints stay with the crew: they are theirs, not the criminal's.
-	if(spot)
-		for(var/obj/item/restraints/worn in list(handcuffed, legcuffed))
-			transferItemToLoc(worn, spot, force = TRUE)
+	// What the crew put on them stays with the crew: their restraints, and any suit, helmet or tank they put on for the trip (bounty_suits.dm)
+	bounty_return_crew_items(src, spot)
 	if(spot)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
 		transporter_sparks(spot)

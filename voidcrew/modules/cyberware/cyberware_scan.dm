@@ -255,6 +255,8 @@
 				to_chat(subject, span_warning("[bearer] is reading your hardware. Every piece you have just answered a handshake you never authorized."))
 			else
 				to_chat(subject, span_warning("Your hardware answers a handshake you never authorized. Someone nearby is reading you."))
+			// Whoever is read can answer it: a bounty NPC turns and tells the reader off (voidcrew/modules/bounties/bounty_chrome.dm)
+			SEND_SIGNAL(subject, COMSIG_CARBON_CHROME_READ, bearer)
 	StartCooldown()
 	return TRUE
 

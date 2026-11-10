@@ -86,8 +86,9 @@
 #define BOUNTY_GOON_SHOTGUN_AMMO /obj/item/ammo_casing/shotgun/buckshot
 #define BOUNTY_GOON_SHOTGUN_SHELLS 8
 
-/// Between two trigger pulls of a goon's pistol (each pull is the Stechkin's own three-round burst)
-#define BOUNTY_GOON_PISTOL_COOLDOWN (1 SECONDS)
+/// Between two trigger pulls of a goon's pistol: the Stechkin set to single shots with its own selector, in strings of
+/// BOUNTY_PISTOL_STRING_SHOTS with BOUNTY_PISTOL_STRING_PAUSE on top between them, as every bounty pistol fires
+#define BOUNTY_GOON_PISTOL_COOLDOWN (0.5 SECONDS)
 
 /// Trigger pulls in a burst (each pull is the Uzi's own two-round burst), and the gap between them
 #define BOUNTY_GOON_SMG_BURST 2

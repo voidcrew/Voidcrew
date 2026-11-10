@@ -11,8 +11,9 @@
 /// a spine rig read over normal clothes while hands (BODYPARTS_HIGH_LAYER 25),
 /// gloves, shoes and every suit, vest or armour layer (SUIT_LAYER 19 and up)
 /// still cover them. Mob layers count down: a lower number draws on top.
-/// Fractional on purpose, it must never collide with a real layer index.
-#define CYBERWARE_WORN_LAYER 27.5
+/// Fractional on purpose, it must never collide with a real layer index, nor
+/// with a fresh stump (HV_STUMP_FRESH_LAYER, 27.5).
+#define CYBERWARE_WORN_LAYER 27.6
 
 // ---- Organ slots -------------------------------------------------------
 // Minted here, never in DNA.dm. Slot uniqueness is global per mob, so

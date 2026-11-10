@@ -86,15 +86,20 @@
 #define BB_BOUNTY_MAFIA_MOVE_TO "BB_bounty_mafia_move_to"
 
 // ----- mobsters -----
-// A volley is one aim (if the gun has one), then VOLLEY pulls of the trigger VOLLEY_GAP apart, then COOLDOWN before
-// the next. The gun's own burst and fire rate apply to every pull: a Stechkin pull is its three-round burst.
+// A volley is one aim (if the gun has one), then VOLLEY pulls of the trigger VOLLEY_GAP apart, then a pause before
+// the next. The gun's own burst and fire rate apply to every pull: an Uzi pull is its two-round burst. A pistol's
+// volley is a string of single shots, as every bounty pistol fires: the Stechkin is set to single fire with its own
+// selector, BOUNTY_PISTOL_STRING_SHOTS shots BOUNTY_PISTOL_INTERVAL apart, then BOUNTY_PISTOL_STRING_PAUSE on top.
 
 #define BOUNTY_MOBSTER_KNIFE /obj/item/knife/kitchen
 
 #define BOUNTY_MOBSTER_PISTOL_GUN /obj/item/gun/ballistic/automatic/pistol/aps
 #define BOUNTY_MOBSTER_PISTOL_MAGAZINE /obj/item/ammo_box/magazine/m9mm_aps
-#define BOUNTY_MOBSTER_PISTOL_VOLLEY 1
-#define BOUNTY_MOBSTER_PISTOL_VOLLEY_GAP (0.3 SECONDS)
+#define BOUNTY_MOBSTER_PISTOL_VOLLEY BOUNTY_PISTOL_STRING_SHOTS
+#define BOUNTY_MOBSTER_PISTOL_VOLLEY_GAP BOUNTY_PISTOL_INTERVAL
+/// From a string's last shot to the next string's first
+#define BOUNTY_MOBSTER_PISTOL_STRING_PAUSE (BOUNTY_PISTOL_INTERVAL + BOUNTY_PISTOL_STRING_PAUSE)
+/// Between the human NPC base's own shots for a club member (an elite firing wild from the floor)
 #define BOUNTY_MOBSTER_PISTOL_COOLDOWN (0.8 SECONDS)
 
 #define BOUNTY_MOBSTER_SMG_GUN /obj/item/gun/ballistic/automatic/mini_uzi
@@ -211,10 +216,14 @@
 /// His gold pistol, and the magazines he carries for it
 #define BOUNTY_DON_GUN /obj/item/gun/ballistic/automatic/pistol/deagle/gold
 #define BOUNTY_DON_MAGAZINE /obj/item/ammo_box/magazine/m50
-/// He raises the pistol this long before the first volley of each magazine
+/// He raises the pistol this long before the first string of each magazine
 #define BOUNTY_DON_RAISE (0.2 SECONDS)
-#define BOUNTY_DON_VOLLEY 2
-#define BOUNTY_DON_VOLLEY_GAP (0.25 SECONDS)
+/// Strings of single shots, as every bounty pistol fires (the gold Desert Eagle has no burst)
+#define BOUNTY_DON_VOLLEY BOUNTY_PISTOL_STRING_SHOTS
+#define BOUNTY_DON_VOLLEY_GAP BOUNTY_PISTOL_INTERVAL
+/// From a string's last shot to the next string's first
+#define BOUNTY_DON_STRING_PAUSE (BOUNTY_PISTOL_INTERVAL + BOUNTY_PISTOL_STRING_PAUSE)
+/// Between the human NPC base's own shots for him (firing wild from the floor)
 #define BOUNTY_DON_COOLDOWN (0.5 SECONDS)
 /// Climbing out of the wreck, he takes this long to get his bearings before he acts
 #define BOUNTY_DON_EJECT_STAGGER (2 SECONDS)

@@ -151,7 +151,6 @@
 #define REDLINE_LOOK_HOT "hot"
 #define REDLINE_LOOK_COOL1 "cool1"
 #define REDLINE_LOOK_COOL2 "cool2"
-#define REDLINE_GLOW_FILTER "cyberware_redline_glow"
 #define REDLINE_SAG_FILTER "cyberware_redline_sag"
 /// How long the white kick-in flash holds before the nodes run red.
 #define REDLINE_FLASH_TIME (0.15 SECONDS)
@@ -233,7 +232,8 @@
 		deltimer(burn_look_timer)
 	burn_look_timer = addtimer(CALLBACK(src, PROC_REF(set_burn_look), look), delay, TIMER_STOPPABLE)
 
-/// The window opens: white-hot nodes, then red, red eyes, a red halo and light.
+/// The window opens: white-hot nodes, then red, red eyes and a red light. The red outline around the
+/// body is the window's own (ware_legend.dm).
 /obj/item/organ/cyberimp/cyberware/redline/proc/play_burn_window(mob/living/carbon/bearer)
 	if(QDELETED(bearer) || bearer != owner)
 		return
@@ -241,9 +241,6 @@
 	watch_burn_bearer(bearer)
 	set_burn_look(REDLINE_LOOK_FLASH)
 	queue_burn_look(REDLINE_LOOK_HOT, REDLINE_FLASH_TIME)
-	bearer.add_filter(REDLINE_GLOW_FILTER, 30, drop_shadow_filter(x = 0, y = 0, size = 1.5, color = "#ff2a1470"))
-	animate(bearer.get_filter(REDLINE_GLOW_FILTER), size = 2.5, color = "#ff2a14b0", time = 0.35 SECONDS, loop = -1, easing = SINE_EASING)
-	animate(size = 1.5, color = "#ff2a1470", time = 0.35 SECONDS, easing = SINE_EASING)
 	burn_light_ref = WEAKREF(bearer.mob_light(2, 0.7, "#ff3b22", burn_window + 2 SECONDS))
 
 /// The roar: a red ring rolls out as far as it reaches.
@@ -266,12 +263,10 @@
 	animate(bearer.get_filter(REDLINE_SAG_FILTER), size = 2, time = 0.3 SECONDS, easing = QUAD_EASING | EASE_OUT)
 	bearer.filter_data[REDLINE_SAG_FILTER]["size"] = 2
 
-/// Takes the halo and the light off; the nodes and the slump stay.
+/// Takes the light off; the nodes and the slump stay.
 /obj/item/organ/cyberimp/cyberware/redline/proc/stop_burn_glow(mob/living/carbon/bearer)
 	qdel(burn_light_ref?.resolve())
 	burn_light_ref = null
-	if(!QDELETED(bearer))
-		bearer.remove_filter(REDLINE_GLOW_FILTER)
 
 /obj/item/organ/cyberimp/cyberware/redline/proc/watch_burn_bearer(mob/living/carbon/bearer)
 	burn_fx_ref = WEAKREF(bearer)
@@ -365,7 +360,6 @@
 #undef REDLINE_LOOK_HOT
 #undef REDLINE_LOOK_COOL1
 #undef REDLINE_LOOK_COOL2
-#undef REDLINE_GLOW_FILTER
 #undef REDLINE_SAG_FILTER
 #undef REDLINE_FLASH_TIME
 #undef REDLINE_COOL_STEP

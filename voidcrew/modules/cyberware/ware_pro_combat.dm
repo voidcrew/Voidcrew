@@ -22,6 +22,8 @@
 
 /// A dodge source only fires while its bearer moved within this window.
 #define CYBERWARE_DODGE_MOVE_WINDOW (1 SECONDS)
+/// The shortest gap between two dodge lines from a bearer nobody is playing (an NPC under fire).
+#define CYBERWARE_DODGE_LINE_GAP (1.5 SECONDS)
 
 /**
  * The one dodge roll for all cyberware. Lives on the mob; wares and status
@@ -43,6 +45,8 @@
 	var/list/dodge_sources = list()
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
+	/// world.time a dodge was last announced: an NPC under fire says it at most once every CYBERWARE_DODGE_LINE_GAP, so chat isn't flooded
+	var/last_message_at = -INFINITY
 
 /datum/component/cyberware_dodge/Initialize()
 	if(!isliving(parent))
@@ -96,10 +100,12 @@
 		return
 	new /obj/effect/temp_visual/decoy/fading/halfsecond(source.loc, source)
 	playsound(source, SFX_BULLET_MISS, 60, TRUE)
-	source.visible_message(
-		span_danger("[source] blurs sideways out of [dodged]'s path!"),
-		span_danger("You blur out of [dodged]'s path!"),
-	)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("[source] blurs sideways out of [dodged]'s path!"),
+			span_danger("You blur out of [dodged]'s path!"),
+		)
 	var/incoming_dir = QDELETED(dodged) ? source.dir : dodged.dir
 	var/list/side_dirs = shuffle(list(turn(incoming_dir, 90), turn(incoming_dir, -90)))
 	for(var/step_dir in side_dirs)
@@ -158,6 +164,9 @@
 		return TRUE
 	if(!istype(user) || !istype(target))
 		return FALSE
+	// A bounty criminal's own companions and creatures (voidcrew/modules/bounties)
+	if(bounty_ai_same_gang(user, target))
+		return TRUE
 	var/datum/team/user_team = cyberware_crew_team(user)
 	if(!user_team)
 		return FALSE
@@ -725,6 +734,7 @@
 	playsound(final, 'sound/effects/gravhit.ogg', 50, TRUE)
 
 #undef CYBERWARE_DODGE_MOVE_WINDOW
+#undef CYBERWARE_DODGE_LINE_GAP
 #undef CYBERWARE_DEADEYE_TAG_RANGE
 #undef CYBERWARE_DEADEYE_TAG_SHOTS
 #undef CYBERWARE_DEADEYE_TAG_DURATION

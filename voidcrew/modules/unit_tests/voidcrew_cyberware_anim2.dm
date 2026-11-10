@@ -29,7 +29,7 @@
 	TEST_ASSERT_EQUAL(core.burn_look, "flash", "The nodes didn't flash when the burn kicked in")
 	TEST_ASSERT(core.burn_look_timer, "The nodes flashed and never ran red")
 	TEST_ASSERT(findtext(bearer.icon_render_keys[BODY_ZONE_CHEST], "flash"), "The chest wasn't redrawn for the flash")
-	TEST_ASSERT(bearer.get_filter("cyberware_redline_glow"), "The burn has no halo")
+	TEST_ASSERT(bearer.get_filter("cyberware_redline_window"), "The burn has no red outline")
 	TEST_ASSERT(core.burn_light_ref?.resolve(), "The burn throws no light")
 	TEST_ASSERT((locate(/obj/effect/temp_visual/circle_wave/cyberware_roar) in get_turf(bearer)), "The roar rolled no ring")
 	core.set_burn_look("hot")
@@ -46,7 +46,7 @@
 	bearer.remove_status_effect(/datum/status_effect/cyberware_redline_window)
 	TEST_ASSERT(bearer.has_status_effect(/datum/status_effect/cyberware_redline_crash), "Test fixture: no crash after the window")
 	TEST_ASSERT_EQUAL(core.burn_look, "cool1", "The nodes didn't start cooling in the crash")
-	TEST_ASSERT(!bearer.get_filter("cyberware_redline_glow"), "The halo outlived the window")
+	TEST_ASSERT(!bearer.get_filter("cyberware_redline_window"), "The red outline outlived the window")
 	TEST_ASSERT(!core.burn_light_ref?.resolve(), "The red light outlived the window")
 	TEST_ASSERT(bearer.get_filter("cyberware_redline_sag"), "The crash doesn't slump the body")
 	var/obj/effect/abstract/cyberware_anim/steam = core.burn_steam_ref?.resolve()
@@ -62,7 +62,7 @@
 	bearer.apply_status_effect(/datum/status_effect/cyberware_redline_window, core)
 	bearer.death()
 	TEST_ASSERT_NULL(core.burn_look, "A dead body kept its red-hot nodes")
-	TEST_ASSERT(!bearer.get_filter("cyberware_redline_glow"), "A dead body kept the halo")
+	TEST_ASSERT(!bearer.get_filter("cyberware_redline_window"), "A dead body kept the red outline")
 	TEST_ASSERT(!core.burn_light_ref?.resolve(), "A dead body kept the red light")
 
 	// Pulled mid-crash: nothing stays on the old bearer.

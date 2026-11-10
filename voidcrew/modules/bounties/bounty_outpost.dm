@@ -856,6 +856,9 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	if(QDELETED(owner))
 		return
 	owner.blended = FALSE
+	// Out of the act, the coat over its chrome comes off and the chrome shows (C0, bounty_chrome.dm). Decoys never drop the act.
+	if(!decoy && !leaving)
+		bounty_chrome_bare(owner)
 	REMOVE_TRAIT(owner, TRAIT_NO_CONTAINMENT, BOUNTY_OUTPOST_TRAIT)
 	REMOVE_TRAIT(owner, TRAIT_NO_STORAGE_INSERT, BOUNTY_OUTPOST_TRAIT)
 	if(added_turret_faction)
