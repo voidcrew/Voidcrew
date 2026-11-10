@@ -2,7 +2,8 @@
  * # The piston punch's arm
  *
  * A piston punch is thrown by its arm: the fist draws back, drives out onto the part it hits with the body lunging
- * behind it, and comes back to rest, in three tenths of a second (the swing is gorilla_swing.dm's).
+ * behind it, stays there as the blow lands, and comes back to rest, in three tenths of a second (the swing is
+ * gorilla_swing.dm's).
  *
  * The punch comes about once a second, so it does not take the whole body's picture each time and stand puppets for
  * all of it, as a finisher does. The punching arm alone is cut from one picture of the bearer, kept until their look
@@ -187,28 +188,26 @@
 /**
  * [bearer] throws a piston punch at [zone] of [target] with the arm on [arm_zone]: the fist draws back and drives out
  * onto the part, the body lunging behind it, and comes back to rest. Only the picture. Returns how long the fist takes
- * to land, for the blow to wait on. A bearer who can't be drawn that way (lying, turned or resized, something huge
- * worn) lunges as tg has them lunge, and the wait is the same.
+ * to land, for the blow to wait on: the same for every punch. A bearer who can't be drawn that way (lying, turned or
+ * resized, something huge worn) lunges as tg has them lunge.
  */
 /proc/gorilla_thrust(mob/living/carbon/human/bearer, atom/movable/target, arm_zone, zone)
-	var/hold = gorilla_thrust_arm(bearer, target, arm_zone, zone)
-	if(isnull(hold))
+	if(!gorilla_thrust_arm(bearer, target, arm_zone, zone))
 		bearer.do_attack_animation(target)
-		hold = 0
-	return hold + GORILLA_THRUST_BACK + GORILLA_THRUST_OUT
+	return GORILLA_THRUST_LANDS
 
-/// Draws gorilla_thrust()'s arm and lunge. Returns how long it waits before it moves, or null if it can't be drawn.
+/// Draws gorilla_thrust()'s arm and lunge. Returns TRUE, or FALSE if it can't be drawn.
 /proc/gorilla_thrust_arm(mob/living/carbon/human/bearer, atom/movable/target, arm_zone, zone)
 	if(!ishuman(bearer) || !ismovable(target) || QDELETED(target) || !isturf(bearer.loc))
-		return null
+		return FALSE
 	if(bearer.body_position == LYING_DOWN || !(bearer.dir in GLOB.cardinals) || bearer.mob_height != HUMAN_HEIGHT_MEDIUM)
-		return null
+		return FALSE
 	// Faded (a camo field, a cloak): a puppet would be an arm in plain sight
 	if(bearer.alpha < 255 || bearer.invisibility)
-		return null
+		return FALSE
 	var/matrix/own = bearer.transform
 	if(own && (own.a != 1 || own.b || own.c || own.d || own.e != 1 || own.f))
-		return null
+		return FALSE
 	// One punch drawn at a time
 	if(bearer.gorilla_thrust)
 		qdel(bearer.gorilla_thrust)
@@ -216,10 +215,11 @@
 	var/datum/gorilla_arm_look/look = point && gorilla_arm_look(bearer)
 	var/datum/chrome_rig/rig = look?.rig
 	if(isnull(rig))
-		return null
+		return FALSE
 	var/facing = rig.facing
 	var/side = arm_zone == BODY_ZONE_L_ARM ? "l" : "r"
-	// A picture no client has drawn yet may reach one late: the real arm stays on show a beat under its puppet
+	// A picture no client has drawn yet may reach one late. The real arm stays on show under its puppet for the beat the
+	// fist would have drawn back in, and the fist is driven straight out in what is left: it lands when it always does
 	var/hold = look.shown[side] ? 0 : GORILLA_THRUST_HOLD
 	look.shown[side] = TRUE
 
@@ -253,36 +253,33 @@
 	var/under = bearer.layer - 0.01
 	var/datum/gorilla_thrust/thrust = new(bearer)
 	var/obj/effect/abstract/chrome_puppet/arm
-	var/datum/chrome_swing_beat/back_beat = new(GORILLA_THRUST_BACK, CHROME_SWING_LINEAR, -way[1], -way[2])
-	var/datum/chrome_swing_beat/out_beat = new(GORILLA_THRUST_OUT, CHROME_SWING_LINEAR, way[1] * lunge, way[2] * lunge, tip)
+	// The body leans back a pixel as the fist draws back (or waits, the first time). The fist is out a moment before the
+	// blow is due and stays there a moment after it
+	var/datum/chrome_swing_beat/back_beat = new(hold || GORILLA_THRUST_BACK, CHROME_SWING_LINEAR, -way[1], -way[2])
+	var/datum/chrome_swing_beat/out_beat = new(GORILLA_THRUST_BACK + GORILLA_THRUST_OUT - back_beat.time, CHROME_SWING_LINEAR, way[1] * lunge, way[2] * lunge, tip)
+	var/datum/chrome_swing_beat/dwell_beat = new(GORILLA_THRUST_DWELL, CHROME_SWING_LINEAR, way[1] * lunge, way[2] * lunge, tip)
 	var/datum/chrome_swing_beat/rest_beat = new(GORILLA_THRUST_REST, CHROME_SWING_EASE_IN_OUT)
+	if(!hold)
+		back_beat.arm(side, back)
 	switch(facing)
 		if(EAST, WEST)
 			arm = thrust.stand(look.arm_picture(side), rig.behind_body(side) ? under : max(bearer.layer, target.layer) + 0.01)
-			back_beat.arm(side, back)
 			out_beat.arm(side, out)
 			rest_beat.arm(side, list(0, 1))
 		if(NORTH)
 			arm = thrust.stand(look.arm_picture(side), over)
-			back_beat.arm(side, back)
 			out_beat.arm(side, out, under)
 			rest_beat.arm(side, list(0, 1))
 			rest_beat.layer_once_under = list()
 			rest_beat.layer_once_under[side] = list(120, over)
 		else
 			arm = thrust.stand(look.arm_picture(side), under)
-			back_beat.arm(side, back)
 			out_beat.arm(side, out, over)
 			rest_beat.arm(side, list(0, 1))
 	var/icon/fill_picture = look.fill_picture(side)
 	var/obj/effect/abstract/chrome_puppet/fill = fill_picture ? thrust.stand(fill_picture, bearer.layer - 0.005) : null
 
-	var/list/beats = list()
-	if(hold)
-		beats += new /datum/chrome_swing_beat(hold)
-	beats += back_beat
-	beats += out_beat
-	beats += rest_beat
+	var/list/beats = list(back_beat, out_beat, dwell_beat, rest_beat)
 	// The real arm goes: at once, or when the hold is over by the client's own clock, in step with the puppet. The
 	// mask starts off to one side of the body, where it cuts nothing. Before the lunge, and alongside whatever else is
 	// moving the bearer: an animation of a filter is one of its owner's, and a new one would end the rest
@@ -300,7 +297,7 @@
 	arms[side] = arm
 	chrome_swing_play(rig, chrome_swing_frames(beats, arms_from), fill ? list(fill) : null, arms, bearer)
 	play_fov_effect(target, 5, "attack")
-	thrust.end_timer = addtimer(CALLBACK(thrust, TYPE_PROC_REF(/datum/gorilla_thrust, finish)), hold + GORILLA_THRUST_BACK + GORILLA_THRUST_OUT + GORILLA_THRUST_REST, TIMER_STOPPABLE | TIMER_DELETE_ME)
-	return hold
+	thrust.end_timer = addtimer(CALLBACK(thrust, TYPE_PROC_REF(/datum/gorilla_thrust, finish)), GORILLA_THRUST_BACK + GORILLA_THRUST_OUT + GORILLA_THRUST_DWELL + GORILLA_THRUST_REST, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	return TRUE
 
 #undef GORILLA_THRUST_FILTER

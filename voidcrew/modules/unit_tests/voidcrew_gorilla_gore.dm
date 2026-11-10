@@ -172,7 +172,7 @@
 	GLOB.outpost_pvp_enforcement = spy
 	var/hurt_before = victim.getBruteLoss()
 	var/punched = punch(bearer, victim)
-	// The blow lands when the fist gets there: 0.1 s (GORILLA_THRUST_BACK + GORILLA_THRUST_OUT), and a tick more the first time an arm is drawn
+	// The blow lands when the fist is there: 0.1 s (GORILLA_THRUST_LANDS)
 	sleep(0.3 SECONDS)
 	GLOB.outpost_pvp_enforcement = real_enforcement
 	real_enforcement = null
@@ -633,6 +633,19 @@
 	TEST_ASSERT_NULL(floored.gorilla_thrust, "A bearer lying down drew an arm")
 	sleep(0.3 SECONDS)
 	TEST_ASSERT(kicked.getBruteLoss() > kicked_before, "A punch from the floor never landed")
+
+	// The first punch a picture is taken for lands as soon as any other
+	var/mob/living/carbon/human/fresh = gorilla(spot(3, 2))
+	var/mob/living/carbon/human/consistent/dummy = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
+	ADD_TRAIT(dummy, TRAIT_GODMODE, TRAIT_SOURCE_UNIT_TESTS)
+	dummy.anchored = TRUE
+	fresh.setDir(EAST)
+	var/first_wait = gorilla_thrust(fresh, dummy, BODY_ZONE_R_ARM, BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(fresh.gorilla_thrust, "Test fixture: the first punch drew no arm")
+	TEST_ASSERT_EQUAL(first_wait, 0.1 SECONDS, "The first punch of a new look lands late") // GORILLA_THRUST_LANDS
+	sleep(0.6 SECONDS)
+	TEST_ASSERT_EQUAL(gorilla_thrust(fresh, dummy, BODY_ZONE_R_ARM, BODY_ZONE_CHEST), first_wait, "A later punch lands at another time than the first")
+	sleep(0.6 SECONDS)
 
 /**
  * The haymaker's arm: a bearer who stands still winds up on the rig, whose puppets lean with the hidden body; the blow

@@ -92,11 +92,15 @@
 
 /// A piston punch: the fist draws back...
 #define GORILLA_THRUST_BACK (0.04 SECONDS)
-/// ...and the piston drives it out. The blow lands as this ends.
-#define GORILLA_THRUST_OUT (0.06 SECONDS)
+/// ...the piston drives it out...
+#define GORILLA_THRUST_OUT (0.04 SECONDS)
+/// ...and it stays on what it hit while the blow lands, so the sparks find it there whichever reaches a client first.
+#define GORILLA_THRUST_DWELL (0.08 SECONDS)
 /// The arm comes back to rest.
-#define GORILLA_THRUST_REST (0.2 SECONDS)
-/// The first time an arm's picture is shown it may still be on its way to a client: the punch waits this long first, the real arm on show.
+#define GORILLA_THRUST_REST (0.14 SECONDS)
+/// How long after the click a piston punch lands: every punch, with the fist a moment into its stay.
+#define GORILLA_THRUST_LANDS (0.1 SECONDS)
+/// The first time an arm's picture is shown it may still be on its way to a client: the real arm stays on show this long, in place of the draw-back, and the fist is driven out in what is left before it is due.
 #define GORILLA_THRUST_HOLD (0.05 SECONDS)
 /// Pixels the body lunges behind a piston punch: tg's lunge at the least, further when the fist would stop short.
 #define GORILLA_THRUST_LUNGE_MIN 8
