@@ -903,7 +903,9 @@
 	desc = "Something very heavy is about to land on this exact spot."
 	icon = 'icons/mob/telegraphing/telegraph_96x96.dmi'
 	icon_state = "target_largebox"
-	layer = BELOW_MOB_LAYER
+	// Painted on the floor: under whoever stands in it, on every row it covers.
+	plane = FLOOR_PLANE
+	layer = LOWER_RUNE_LAYER
 	pixel_x = -32
 	pixel_y = -32
 	alpha = 0

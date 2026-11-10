@@ -497,7 +497,7 @@
 /proc/cyberware_piledriver_impact_fx(turf/where, reach)
 	if(isnull(where))
 		return
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(where, reach)
 	new /obj/effect/temp_visual/cyberware_impact_cracks(where, "damaged1", 255)
 	for(var/direction in GLOB.cardinals)
 		var/turf/next = get_step(where, direction)
@@ -529,6 +529,12 @@
 /obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2)
 	amount_to_scale = reach + 0.5
 	return ..()
+
+/// The same ring drawn on the floor, under everyone and everything standing in its way, whichever side of the
+/// landing they are on. The Piledriver's own; the plain one is also what a Gorilla fist throws.
+/obj/effect/temp_visual/circle_wave/cyberware_slam/floor
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
 
 /// Cracks the Piledriver leaves in the floor. They fade on their own.
 /obj/effect/temp_visual/cyberware_impact_cracks
