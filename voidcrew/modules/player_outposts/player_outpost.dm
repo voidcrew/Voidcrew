@@ -90,9 +90,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	for(var/key in level_zones)
 		var/datum/outpost_zone/zone = level_zones[key]
 		zone.retired = TRUE
-	var/list/retired_registrations = checkpoints
-	checkpoints = list()
-	QDEL_LIST(retired_registrations)
 	QDEL_LIST_ASSOC_VAL(outpost_upgrades)
 	GLOB.player_outposts -= src
 	for(var/datum/outpost_berth/ship_bay/bay as anything in bay_berths.Copy())

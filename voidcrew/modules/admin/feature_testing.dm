@@ -840,3 +840,54 @@ ADMIN_VERB(spawn_contested_cache_now, R_ADMIN|R_DEBUG, "Overmap: Spawn Contested
 	message_admins("[key_name_admin(user)] surfaced a contested cache at overmap ([coords[1]], [coords[2]]).")
 	log_admin("[key_name(user)] surfaced a contested cache.")
 	BLACKBOX_LOG_ADMIN_VERB("Spawn Contested Cache")
+
+// ===== RESEARCH =====
+
+ADMIN_VERB(give_ship_research, R_ADMIN|R_DEBUG, "Research: Give Ship Research", "Research nodes on a ship's R&D server for free, without points, rewards or gates.", ADMIN_CATEGORY_DEBUG)
+	var/obj/structure/overmap/ship/ship = voidcrew_admin_pick_ship(user, "Give Ship Research")
+	if(!ship)
+		return
+	var/obj/machinery/rnd/server/ship/server
+	for(var/obj/machinery/rnd/server/ship/candidate as anything in GLOB.ship_research_servers)
+		if(!QDELETED(candidate) && candidate.stored_research && (get_area(candidate) in ship.shuttle?.shuttle_areas))
+			server = candidate
+			break
+	if(!server)
+		to_chat(user, span_warning("[ship.display_name || ship.name] has no ship R&D server with a disk installed."))
+		return
+	var/datum/techweb/web = server.stored_research
+	var/mode = tgui_alert(user, "[web.researched_nodes.len] nodes researched. Give how many?", "Give Ship Research", list("Some", "All", "Cancel"))
+	if(!mode || mode == "Cancel")
+		return
+	var/amount = INFINITY
+	if(mode == "Some")
+		amount = tgui_input_number(user, "How many nodes, following the tree from what is already researched?", "Give Ship Research", 20, length(SSresearch.techweb_nodes), 1)
+		if(!amount)
+			return
+	if(QDELETED(server) || server.stored_research != web)
+		to_chat(user, span_warning("The server or its disk changed."))
+		return
+	var/given = 0
+	if(mode == "All")
+		for(var/node_id in SSresearch.techweb_nodes)
+			if(web.researched_nodes[node_id])
+				continue
+			web.hidden_nodes -= node_id
+			web.research_node(SSresearch.techweb_nodes[node_id], TRUE, FALSE, FALSE)
+			given++
+	else
+		// Researching a node makes its children available, so the tree fills in order.
+		var/list/refused = list()
+		while(given < amount)
+			var/list/open = web.available_nodes - refused
+			if(!length(open))
+				break
+			var/node_id = pick(open)
+			if(web.research_node(SSresearch.techweb_nodes[node_id], TRUE, FALSE, FALSE))
+				given++
+			else
+				refused[node_id] = TRUE
+	to_chat(user, span_notice("Gave [given] nodes to [ship.display_name || ship.name]. It now has [server.saved_research_count()] beyond the starting tree."))
+	message_admins("[key_name_admin(user)] gave [given] research nodes to [ship.display_name || ship.name].")
+	log_admin("[key_name(user)] gave [given] research nodes to [ship.display_name || ship.name].")
+	BLACKBOX_LOG_ADMIN_VERB("Give Ship Research")
