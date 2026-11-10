@@ -258,7 +258,13 @@
 	// Sagging in the hold (set_sag()): the steel in them and the arms holding them go with them. Not against a
 	// wall: the points are in it.
 	var/dip = (new_beat == "hold" && !wall_pin) ? sag : 0
-	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z, ride_z = dip)
+	// Facing south the victim is held up in front of the bearer, back to the camera, high enough to hide them
+	// whole. The bearer draws up tall behind them as they heave, head and shoulders over the victim's head.
+	var/rise = (facing == SOUTH) ? max(0, spec[MANTIS_RIG_TARGET_Z] - MANTIS_IMPALE_SOUTH_RISE_FROM) : 0
+	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z, ride_z = dip, body_z = rise)
+	// The bar over the bearer goes up with them, so it sits over their head rather than across their face.
+	if(!QDELETED(exec_bar) && !exec_bar.ending)
+		animate(exec_bar, pixel_z = exec_bar.rest_z + rise, time = time, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 	place_victim(target_w, target_z + dip, time)
 	set_tilt(spec[MANTIS_RIG_TILT])
 

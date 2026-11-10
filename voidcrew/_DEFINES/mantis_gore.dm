@@ -112,6 +112,9 @@
 /// Held up they sag a pixel this long into the hold, for this long, and once more this long after the first.
 #define MANTIS_IMPALE_SAG_AFTER (0.15 SECONDS)
 #define MANTIS_IMPALE_SAG_FOR (0.1 SECONDS)
+/// Facing south, how high (pixels) the victim is drawn up onto the blades before the bearer's body rises with them,
+/// a pixel for a pixel, so the bearer's head and shoulders show over the victim's head.
+#define MANTIS_IMPALE_SOUTH_RISE_FROM 14
 #define MANTIS_IMPALE_SAG_EVERY (0.2 SECONDS)
 /// From the pull-back to the rip-out.
 #define MANTIS_IMPALE_RIP_BEAT (0.2 SECONDS)
