@@ -231,25 +231,11 @@
 		return null
 	return cyberware_anim_play(victim, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 1.5 SECONDS, glow = TRUE)
 
-/**
- * The X-slash lands: a flash of light off the blades. The two crossed strokes are the blades' own slashes, each
- * up with its swing (mantis_xslash_cross(), mantis_swing.dm). With [strokes] they are drawn here instead, both
- * at once and bigger, for a cross that lands with no swing playing: facing north or south the two hands cut
- * toward each other, so each blade's slash is its own swing's and they cross; side on both chop the same way,
- * and the second is turned to cross the first.
- */
-/proc/mantis_xslash_fx(mob/living/user, mob/living/victim, impact_state, strokes = TRUE)
+/// The X-slash lands: a flash of light off the blades. The two crossed strokes are drawn with the blades' own
+/// swings (mantis_xslash_cross(), mantis_swing.dm).
+/proc/mantis_xslash_fx(mob/living/user, mob/living/victim, impact_state)
 	if(QDELETED(victim))
 		return
-	if(strokes)
-		var/right_mirrored = mantis_swing_impact_mirrored(user?.dir, "right")
-		for(var/mirrored in list(right_mirrored, !right_mirrored))
-			var/obj/effect/abstract/cyberware_anim/impact = cyberware_play_impact(user, victim, impact_state, mirrored)
-			if(!impact)
-				continue
-			var/matrix/bigger = matrix(impact.transform)
-			bigger.Scale(1.4, 1.4)
-			impact.transform = bigger
 	cyberware_flash_fx(victim, 0.15 SECONDS)
 	victim.mob_light(2, 1.5, impact_state == "impact_scorch" ? LIGHT_COLOR_FIRE : "#bfe6ff", 0.2 SECONDS)
 

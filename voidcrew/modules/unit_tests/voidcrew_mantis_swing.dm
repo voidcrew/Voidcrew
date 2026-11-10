@@ -163,5 +163,19 @@
 		cut(blade, user, crossed, BODY_ZONE_CHEST)
 	TEST_ASSERT(crossed.has_status_effect(/datum/status_effect/staggered), "Fixture: the third cut was no X-slash")
 	TEST_ASSERT(other.drenched_until > world.time, "The X-slash left the other blade clean")
+	// The cross is two strokes on the target, one the mirror of the other, both set on the part cut.
+	var/list/strokes = list()
+	for(var/obj/effect/abstract/cyberware_anim/picture in crossed.vis_contents)
+		if(picture.icon_state == "xslash_mantis")
+			strokes += picture
+	TEST_ASSERT_EQUAL(length(strokes), 2, "The X-slash didn't draw its two strokes")
+	var/obj/effect/abstract/cyberware_anim/one = strokes[1]
+	var/obj/effect/abstract/cyberware_anim/two = strokes[2]
+	var/matrix/one_way = one.transform
+	var/matrix/other_way = two.transform
+	TEST_ASSERT_EQUAL(one_way.a, -other_way.a, "The two strokes run the same way")
+	TEST_ASSERT(one.pixel_w == two.pixel_w && one.pixel_z == two.pixel_z, "The two strokes don't cross on the same point")
+	var/list/chest = mantis_part_point(crossed, BODY_ZONE_CHEST)
+	TEST_ASSERT(one.pixel_w == -16 + chest[1] && one.pixel_z == -16 + chest[2], "The cross isn't on the part cut")
 
 #undef MANTIS_TEST_SWING_COVER
