@@ -29,9 +29,7 @@
 /area/template_noop)
 "ah" = (
 /obj/structure/lattice/catwalk,
-/mob/living/basic/trooper/pirate/ranged/space{
-	environment_smash = 0
-	},
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/template_noop,
 /area/template_noop)
 "ai" = (
@@ -60,7 +58,7 @@
 /area/shuttle/ruin/caravan/freighter2)
 "al" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /turf/open/floor/iron/airless,
 /area/shuttle/ruin/caravan/freighter3)
 "am" = (
@@ -74,7 +72,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /turf/open/floor/iron/airless,
 /area/shuttle/ruin/caravan/freighter3)
 "ao" = (
@@ -85,7 +83,7 @@
 /obj/effect/turf_decal/box/white/corners{
 	dir = 4
 	},
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /turf/open/floor/iron/dark/airless,
 /area/shuttle/ruin/caravan/freighter3)
 "aD" = (
@@ -623,9 +621,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/mob/living/basic/trooper/pirate/ranged/space{
-	environment_smash = 0
-	},
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/open/floor/iron/airless,
 /area/shuttle/ruin/caravan/freighter2)
 "wC" = (
@@ -755,9 +751,7 @@
 /area/ruin/space/has_grav)
 "Fr" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/basic/trooper/pirate/ranged/space{
-	environment_smash = 0
-	},
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/open/floor/plating/airless,
 /area/shuttle/ruin/caravan/freighter2)
 "FG" = (
@@ -956,9 +950,7 @@
 "Nm" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/effect/decal/cleanable/dirt,
-/mob/living/basic/trooper/pirate/ranged/space{
-	environment_smash = 0
-	},
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/open/floor/iron/airless,
 /area/shuttle/ruin/caravan/freighter2)
 "NJ" = (

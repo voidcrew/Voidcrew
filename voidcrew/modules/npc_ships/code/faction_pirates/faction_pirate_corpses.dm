@@ -168,7 +168,9 @@
 	outfit = /datum/outfit/piratecorpse/faction/lustrous
 
 /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/special(mob/living/carbon/human/spawned_human)
-	// Prevent the ethereal heart's crystal revival mechanic from reviving NPC pirate corpses
+	// Only for bodies that start dead: the corpse a basic lustrous pirate leaves, and appearance dummies. A
+	// clientless prop revived by its crystal would be nobody. Living lustrous pirates are human NPCs that
+	// take only this spawner's look, never this proc, and crystallise as players do (defaults PI-6).
 	ADD_TRAIT(spawned_human, TRAIT_CANNOT_CRYSTALIZE, TRAIT_GENERIC)
 	return ..()
 

@@ -190,13 +190,11 @@ SUBSYSTEM_DEF(ambient_npcs)
 	if(place.players)
 		if(!place.occupied)
 			wake_outpost(place)
-		clear_bodies(place)
 		if(world.time >= place.arrivals_at && arrive_next(place, roles))
 			place.arrivals_at = world.time + AMBIENT_OUTPOST_ARRIVAL_EVERY
 		return 0
 	if(place.occupied)
 		still_outpost(place)
-	clear_bodies(place)
 	// A killed person's place has opened again
 	if(place.refill_at && world.time >= place.refill_at)
 		place.refill_at = 0
@@ -206,7 +204,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 /// A player reached `place`'s concourse: everyone there carries on from where they stopped
 /datum/controller/subsystem/ambient_npcs/proc/wake_outpost(datum/ambient_place/outpost/place)
 	place.occupied = TRUE
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
 		if(!QDELETED(npc))
 			npc.resume_routine()
 	var/obj/structure/overmap/trader_outpost/outpost = place.outpost()
@@ -218,26 +216,12 @@ SUBSYSTEM_DEF(ambient_npcs)
 	place.occupied = FALSE
 	// Anyone who went while players were here is made up in place
 	place.needs_settling = TRUE
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
 		if(!QDELETED(npc))
 			npc.pause_routine()
 	var/obj/structure/overmap/trader_outpost/outpost = place.outpost()
 	if(outpost)
 		SEND_SIGNAL(outpost, COMSIG_AMBIENT_OUTPOST_EMPTIED, place)
-
-/**
- * Takes the bodies at `place` away: at once while nobody is on the concourse to see, or
- * AMBIENT_OUTPOST_BODY_TIME after the death while players are (they fade, as if carried off).
- * Never one an admin is in.
- */
-/datum/controller/subsystem/ambient_npcs/proc/clear_bodies(datum/ambient_place/outpost/place)
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs.Copy())
-		if(QDELETED(npc) || npc.stat != DEAD || npc.fading || npc.ckey)
-			continue
-		if(!place.occupied)
-			npc.fade_out(instant = TRUE)
-		else if(world.time >= npc.timeofdeath + AMBIENT_OUTPOST_BODY_TIME)
-			npc.fade_out()
 
 /**
  * The next person off the lift at `place`: one role that is due (short of its count, less anyone
@@ -307,11 +291,11 @@ SUBSYSTEM_DEF(ambient_npcs)
 	var/turf/refuge = ambient_kingpin_refuge(place.outpost())
 	if(refuge && !place.shootout_refuge)
 		place.shootout_refuge = refuge
-		for(var/mob/living/basic/ambient_npc/npc as anything in place.living_npcs())
+		for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.living_npcs())
 			npc.react_shootout(refuge)
 	else if(!refuge && place.shootout_refuge)
 		place.shootout_refuge = null
-		for(var/mob/living/basic/ambient_npc/npc as anything in place.living_npcs())
+		for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.living_npcs())
 			npc.shootout_over()
 
 /**
@@ -529,7 +513,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 		if(!storm_hits(record, storm))
 			continue
 		for(var/datum/ambient_place/site/site as anything in record.sites)
-			for(var/mob/living/basic/ambient_npc/npc as anything in site.living_npcs())
+			for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in site.living_npcs())
 				npc.react_storm(storm)
 
 /// Whether `storm` falls on `record`'s planet: its weather site when it came from one, its level otherwise
@@ -546,49 +530,49 @@ SUBSYSTEM_DEF(ambient_npcs)
 // =========================================================================
 
 /datum/ambient_place/Destroy()
-	for(var/mob/living/basic/ambient_npc/npc as anything in npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in npcs.Copy())
 		if(npc.place == src)
 			npc.place = null
 	npcs.Cut()
 	return ..()
 
-/// `npc` belongs here now. Use /mob/living/basic/ambient_npc/proc/set_place(), which calls this.
-/datum/ambient_place/proc/add_npc(mob/living/basic/ambient_npc/npc)
+/// `npc` belongs here now. Use /mob/living/carbon/human/npc/ambient_npc/proc/set_place(), which calls this.
+/datum/ambient_place/proc/add_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	npcs |= npc
 
 /// `npc` is gone from here (deleted, or moved elsewhere)
-/datum/ambient_place/proc/remove_npc(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/proc/remove_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	npcs -= npc
 
 /// `npc` died here
-/datum/ambient_place/proc/npc_died(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/proc/npc_died(mob/living/carbon/human/npc/ambient_npc/npc)
 	return
 
 /// `attacker` went for `npc` here (`attack_flags`: ATTACKER_*), the blow already landed. Override. Never sleeps.
-/datum/ambient_place/proc/npc_attacked(mob/living/basic/ambient_npc/npc, atom/attacker, attack_flags)
+/datum/ambient_place/proc/npc_attacked(mob/living/carbon/human/npc/ambient_npc/npc, atom/attacker, attack_flags)
 	return
 
 /// How much of `amount` cash `npc` drops, killed here. Override to cap it.
-/datum/ambient_place/proc/cash_for(mob/living/basic/ambient_npc/npc, amount)
+/datum/ambient_place/proc/cash_for(mob/living/carbon/human/npc/ambient_npc/npc, amount)
 	return amount
 
 /// Its NPCs who are alive and not leaving
 /datum/ambient_place/proc/living_npcs()
 	. = list()
-	for(var/mob/living/basic/ambient_npc/npc as anything in npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in npcs)
 		if(!QDELETED(npc) && npc.stat != DEAD && !npc.fading)
 			. += npc
 
 /// Whether its NPCs may be on `tile` by their own steps (their leash). Override.
-/datum/ambient_place/proc/leash_ok(turf/tile, mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/proc/leash_ok(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
 	return TRUE
 
 /// Whether an activity may send `npc` to `tile` (an outpost's public floor). Override.
-/datum/ambient_place/proc/spot_allowed(turf/tile, mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/proc/spot_allowed(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
 	return TRUE
 
 /// Whether `npc` may stand about on `tile` here (idle, a stroll, a queue). Override.
-/datum/ambient_place/proc/loiter_ok(turf/tile, mob/living/basic/ambient_npc/npc, atom/ignore)
+/datum/ambient_place/proc/loiter_ok(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc, atom/ignore)
 	return TRUE
 
 /**
@@ -596,11 +580,11 @@ SUBSYSTEM_DEF(ambient_npcs)
  * yet), within AMBIENT_CROWD_RADIUS of `tile`; `asker` and `ignore` are never counted. INFINITY if
  * anyone is on `tile` itself.
  */
-/datum/ambient_place/proc/crowd_count(turf/tile, mob/living/basic/ambient_npc/asker, atom/ignore)
+/datum/ambient_place/proc/crowd_count(turf/tile, mob/living/carbon/human/npc/ambient_npc/asker, atom/ignore)
 	if(!tile)
 		return INFINITY
 	var/nearby = 0
-	for(var/mob/living/basic/ambient_npc/npc as anything in living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in living_npcs())
 		if(npc == asker || npc == ignore)
 			continue
 		var/datum/ambient_activity/current = npc.activity
@@ -614,11 +598,11 @@ SUBSYSTEM_DEF(ambient_npcs)
 	return nearby
 
 /// Whether `tile` is crowded for `asker`: someone on it, or AMBIENT_CROWD_MAX or more of its NPCs within AMBIENT_CROWD_RADIUS
-/datum/ambient_place/proc/crowded(turf/tile, mob/living/basic/ambient_npc/asker, atom/ignore)
+/datum/ambient_place/proc/crowded(turf/tile, mob/living/carbon/human/npc/ambient_npc/asker, atom/ignore)
 	return crowd_count(tile, asker, ignore) >= AMBIENT_CROWD_MAX
 
 /// Where `npc` leaves from (a lift), or null to fade where they stand. Override.
-/datum/ambient_place/proc/exit_turf(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/proc/exit_turf(mob/living/carbon/human/npc/ambient_npc/npc)
 	return null
 
 /**
@@ -626,17 +610,8 @@ SUBSYSTEM_DEF(ambient_npcs)
  * stand there if given; within `radius` of `near` if given. Override: places with no floor to settle
  * on have none.
  */
-/datum/ambient_place/proc/settle_turf(mob/living/basic/ambient_npc/npc, atom/near, radius = 6)
+/datum/ambient_place/proc/settle_turf(mob/living/carbon/human/npc/ambient_npc/npc, atom/near, radius = 6)
 	return null
-
-/// The band's health multiplier for a killable NPC here
-/datum/ambient_place/proc/health_multiplier()
-	switch(band)
-		if(ZONE_YELLOW)
-			return AMBIENT_HEALTH_MULT_YELLOW
-		if(ZONE_RED)
-			return AMBIENT_HEALTH_MULT_RED
-	return 1
 
 /// One line for the admin verb
 /datum/ambient_place/proc/describe()
@@ -662,7 +637,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
 	if(outpost)
 		UnregisterSignal(outpost, list(COMSIG_TRADER_OUTPOST_VIOLENCE, COMSIG_TRADER_OUTPOST_CONVOY, COMSIG_QDELETING))
-	for(var/mob/living/basic/ambient_npc/npc as anything in npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in npcs.Copy())
 		if(!QDELETED(npc))
 			qdel(npc)
 	public_floor = null
@@ -685,7 +660,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 /// A fight at the outpost: everyone near it ducks and heads off
 /datum/ambient_place/outpost/proc/on_violence(datum/source, mob/living/offender)
 	SIGNAL_HANDLER
-	for(var/mob/living/basic/ambient_npc/npc as anything in living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in living_npcs())
 		if(get_dist(npc, offender) <= AMBIENT_VIOLENCE_RANGE)
 			npc.react_violence(offender)
 
@@ -695,25 +670,25 @@ SUBSYSTEM_DEF(ambient_npcs)
 	if(!occupied)
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
-	for(var/mob/living/basic/ambient_npc/npc as anything in living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in living_npcs())
 		npc.react_convoy(outpost)
 
 // Its turrets never shoot its own people; with nobody on the concourse, whoever joins holds still until someone comes
-/datum/ambient_place/outpost/add_npc(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/add_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	. = ..()
 	npc.faction |= FACTION_TURRET
 	if(!occupied)
 		npc.pause_routine()
 
 // Gone from here (moved elsewhere): none of this place's cover any more
-/datum/ambient_place/outpost/remove_npc(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/remove_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	. = ..()
 	if(!QDELETED(npc))
 		npc.faction -= FACTION_TURRET
 		npc.resume_routine()
 
 // Killed here: their place in their role stays empty a good while (AMBIENT_OUTPOST_KILLED_SLOT_TIME)
-/datum/ambient_place/outpost/npc_died(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/npc_died(mob/living/carbon/human/npc/ambient_npc/npc)
 	if(!npc.role)
 		return
 	var/opens_at = world.time + AMBIENT_OUTPOST_KILLED_SLOT_TIME
@@ -725,14 +700,14 @@ SUBSYSTEM_DEF(ambient_npcs)
 	refill_at = refill_at ? min(refill_at, opens_at) : opens_at
 
 // A real blow is violence at the outpost, as against a visitor: its strikes, and everyone near ducks (register_aggression())
-/datum/ambient_place/outpost/npc_attacked(mob/living/basic/ambient_npc/npc, atom/attacker, attack_flags)
+/datum/ambient_place/outpost/npc_attacked(mob/living/carbon/human/npc/ambient_npc/npc, atom/attacker, attack_flags)
 	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
 	outpost?.register_aggression(attacker)
 
 // Its people drop no more than AMBIENT_OUTPOST_CASH_CAP between them in a round
-/datum/ambient_place/outpost/cash_for(mob/living/basic/ambient_npc/npc, amount)
+/datum/ambient_place/outpost/cash_for(mob/living/carbon/human/npc/ambient_npc/npc, amount)
 	. = clamp(AMBIENT_OUTPOST_CASH_CAP - cash_dropped, 0, amount)
 	cash_dropped += .
 
@@ -763,7 +738,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 /// How many of its living NPCs came as role `role_type`
 /datum/ambient_place/outpost/proc/count_role(role_type)
 	. = 0
-	for(var/mob/living/basic/ambient_npc/npc as anything in living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in living_npcs())
 		if(npc.role == role_type)
 			.++
 
@@ -827,11 +802,11 @@ SUBSYSTEM_DEF(ambient_npcs)
 	return loiter_floor
 
 // On the concourse: the lift alcove included, so someone just off the lift is not off their leash
-/datum/ambient_place/outpost/leash_ok(turf/tile, mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/leash_ok(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
 	return ambient_in_bounds(tile, concourse_bounds())
 
 // The public floor, never the lift itself (it carries off whoever stands on it)
-/datum/ambient_place/outpost/spot_allowed(turf/tile, mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/spot_allowed(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
 	if(!outpost || (tile in outpost.lobby_alcove_turfs))
 		return FALSE
@@ -839,14 +814,14 @@ SUBSYSTEM_DEF(ambient_npcs)
 	return !!floor[tile]
 
 // The loiter floor, less anyone standing about within AMBIENT_CROWD_RADIUS. Sites keep the base TRUE.
-/datum/ambient_place/outpost/loiter_ok(turf/tile, mob/living/basic/ambient_npc/npc, atom/ignore)
+/datum/ambient_place/outpost/loiter_ok(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc, atom/ignore)
 	return !!get_loiter_floor()[tile] && !crowded(tile, npc, ignore)
 
-/datum/ambient_place/outpost/exit_turf(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/exit_turf(mob/living/carbon/human/npc/ambient_npc/npc)
 	return bounty_outpost_exit_turf(npc, outpost())
 
 /// Whether `tile` is free to settle someone on: real ground, nothing on it, not on or right beside the lift (people step off there), and standable for `npc` if given
-/datum/ambient_place/outpost/proc/settle_free(turf/tile, obj/structure/overmap/trader_outpost/outpost, mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/outpost/proc/settle_free(turf/tile, obj/structure/overmap/trader_outpost/outpost, mob/living/carbon/human/npc/ambient_npc/npc)
 	if(!tile || !ambient_ground_ok(tile) || tile.is_blocked_turf(exclude_mobs = FALSE))
 		return FALSE
 	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
@@ -859,7 +834,7 @@ SUBSYSTEM_DEF(ambient_npcs)
  * least crowded free loiter tile seen if none is uncrowded, and the old public-floor sampling
  * (tiny test rooms and odd maps) only when the loiter floor itself is empty.
  */
-/datum/ambient_place/outpost/settle_turf(mob/living/basic/ambient_npc/npc, atom/near, radius = 6)
+/datum/ambient_place/outpost/settle_turf(mob/living/carbon/human/npc/ambient_npc/npc, atom/near, radius = 6)
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
 	var/list/floor = get_public_floor()
 	if(!outpost || !length(floor))
@@ -922,13 +897,13 @@ SUBSYSTEM_DEF(ambient_npcs)
 	data.Cut()
 	return ..()
 
-/datum/ambient_place/site/remove_npc(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/site/remove_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	. = ..()
 	if(state == AMBIENT_SITE_ACTIVE && !length(living_npcs()))
 		state = AMBIENT_SITE_DORMANT
 
 /// One of its NPCs was killed: once they all are, it is spent for the round
-/datum/ambient_place/site/npc_died(mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/site/npc_died(mob/living/carbon/human/npc/ambient_npc/npc)
 	dead++
 	if(dead >= npc_total)
 		state = AMBIENT_SITE_SPENT
@@ -940,14 +915,19 @@ SUBSYSTEM_DEF(ambient_npcs)
 		return 0
 	return max(0, npc_total - dead - length(living_npcs()))
 
-/// Makes one of its NPCs, of `npc_type`, at `where`: theirs, leashed here, health scaled by band when killable
-/datum/ambient_place/site/proc/spawn_npc(npc_type, turf/where)
+/**
+ * Makes one of its NPCs, of `npc_type`, at `where`: theirs and leashed here, dressed for the site's
+ * band (the kit their outfit table gives in yellow and red, and whatever the air there needs).
+ * `identity` (a stray's stray_identity()) makes them someone who was here before.
+ */
+/datum/ambient_place/site/proc/spawn_npc(npc_type, turf/where, list/identity)
 	where = get_turf(where) || center
-	if(!where || !ispath(npc_type, /mob/living/basic/ambient_npc))
+	if(!where || !ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc))
 		return null
-	var/mob/living/basic/ambient_npc/npc = new npc_type(where)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = ambient_build_npc(npc_type, where, band, identity)
+	if(QDELETED(npc))
+		return null
 	npc.set_place(src)
-	npc.scale_health(health_multiplier())
 	state = AMBIENT_SITE_ACTIVE
 	return npc
 
@@ -966,7 +946,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 	return null
 
 // On its planet's ground above the dock strip and off any ship; on a field, on the field
-/datum/ambient_place/site/leash_ok(turf/tile, mob/living/basic/ambient_npc/npc)
+/datum/ambient_place/site/leash_ok(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
 	if(!tile || istype(get_area(tile), /area/shuttle))
 		return FALSE
 	if(planet)
@@ -1070,7 +1050,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 	return TRUE
 
 /// One of `site`'s NPCs was killed. Override.
-/datum/ambient_site_kind/proc/on_npc_died(datum/ambient_place/site/site, mob/living/basic/ambient_npc/npc)
+/datum/ambient_site_kind/proc/on_npc_died(datum/ambient_place/site/site, mob/living/carbon/human/npc/ambient_npc/npc)
 	return
 
 /// The planet was swept: `site`'s NPCs are gone until the next visit (a fire burns down). Override.
@@ -1093,7 +1073,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 /datum/ambient_outpost_role/proc/arrive(datum/ambient_place/outpost/place, turf/where)
 	if(!npc_type)
 		return null
-	var/mob/living/basic/ambient_npc/npc = new npc_type(where)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = new npc_type(where)
 	npc.role = type
 	npc.set_place(place)
 	npc.fade_in()
@@ -1113,7 +1093,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 	var/turf/start = place.settle_turf()
 	if(!start)
 		return null
-	var/mob/living/basic/ambient_npc/npc = new npc_type(start)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = new npc_type(start)
 	npc.role = type
 	npc.set_place(place)
 	npc.settle_in()
@@ -1122,6 +1102,23 @@ SUBSYSTEM_DEF(ambient_npcs)
 // =========================================================================
 // HELPERS
 // =========================================================================
+
+/**
+ * Builds an ambient NPC of `npc_type` at `where` now, through the human NPC base's spawn order
+ * (voidcrew/modules/human_npcs/human_npc_spawning.dm), dressed for `zone` (ZONE_*, or null for the
+ * zone of `where`). `identity` (a stray's stray_identity()) rides in the order's look and makes them
+ * someone who was here before. Built at once rather than queued, since every caller sets them up
+ * straight after; the callers bound how many come at once (AMBIENT_PLANET_NPCS_MAX for a planet, one
+ * a fire for an outpost). Returns the NPC, or null.
+ */
+/proc/ambient_build_npc(npc_type, turf/where, zone, list/identity)
+	if(!ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc) || isnull(get_turf(where)))
+		return null
+	var/datum/human_npc_order/order = new /datum/human_npc_order(npc_type, where)
+	order.zone = zone
+	if(islist(identity))
+		order.look = identity
+	return order.fulfil()
 
 /// `deadline` (a world.time) brought forward to somewhere between a quarter and all of what is left of it: someone who has been at it a while
 /proc/ambient_part_way(deadline)

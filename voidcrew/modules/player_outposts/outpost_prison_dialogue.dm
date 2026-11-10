@@ -33,7 +33,7 @@
 	return islist(entry) ? entry : list()
 
 /// Scales a prisoner's pause between spontaneous lines
-/mob/living/basic/outpost_prisoner/proc/speech_pace()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/speech_pace()
 	switch(personality)
 		if("chatty")
 			return 0.6
@@ -46,7 +46,7 @@
 	return 1
 
 /// Their sentence left in words, for {time_left}
-/mob/living/basic/outpost_prisoner/proc/time_left_text()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/time_left_text()
 	var/seconds = max(0, round(sentence_left))
 	var/minutes = round(seconds / 60 + 0.5)
 	if(minutes >= 2)
@@ -56,7 +56,7 @@
 	return "[max(seconds, 1)] seconds"
 
 /// Fills a line's placeholders for this speaker, talking to `other`
-/mob/living/basic/outpost_prisoner/proc/fill_line(line, mob/living/basic/outpost_prisoner/other)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/fill_line(line, mob/living/carbon/human/npc/outpost_prisoner/other)
 	line = replacetext(line, "{name}", speech_name())
 	line = replacetext(line, "{other}", other ? other.speech_name() : "pal")
 	line = replacetext(line, "{crime}", crime)
@@ -70,7 +70,7 @@
  * A line for `context`, filled in, or null when the file has none that fits. Personality lines
  * come up more often than the shared ones; lines naming {other} need someone to talk to.
  */
-/mob/living/basic/outpost_prisoner/proc/pick_line(context, mob/living/basic/outpost_prisoner/other)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/pick_line(context, mob/living/carbon/human/npc/outpost_prisoner/other)
 	// The main file first, then the extras' files (outpost_prison_extras.dm)
 	var/list/by_personality = outpost_prisoner_context_lines(context)
 	if(!islist(by_personality))
@@ -86,7 +86,7 @@
 	return fill_line(pick(usable), other)
 
 /// The lines of `pool` they can say now: not the last thing they said, naming nobody when alone, and no extra placeholder they have no value for
-/mob/living/basic/outpost_prisoner/proc/usable_lines(list/pool, mob/living/basic/outpost_prisoner/other)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/usable_lines(list/pool, mob/living/carbon/human/npc/outpost_prisoner/other)
 	var/list/usable = list()
 	for(var/line in pool)
 		if(!istext(line) || line == last_line || (!other && findtext(line, "{other}")))
@@ -97,7 +97,7 @@
 	return usable
 
 /// Whether `line` names an extra placeholder ({staff}, {place}, ...) that extra_line_values has no value for
-/mob/living/basic/outpost_prisoner/proc/missing_extra_value(line)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/missing_extra_value(line)
 	for(var/placeholder in GLOB.outpost_prisoner_extra_placeholders)
 		if(findtext(line, placeholder) && isnull(LAZYACCESS(extra_line_values, placeholder)))
 			return TRUE
@@ -107,11 +107,11 @@
  * Whether they may say anything now: awake and all the way here. Never while beaming in or out,
  * when they are invisible or only half there.
  */
-/mob/living/basic/outpost_prisoner/proc/may_speak()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/may_speak()
 	return !QDELETED(src) && stat == CONSCIOUS && phase == PRISONER_PRESENT
 
 /// Says a line for `context`. Returns TRUE if they said something.
-/mob/living/basic/outpost_prisoner/proc/say_context(context, mob/living/basic/outpost_prisoner/other)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/say_context(context, mob/living/carbon/human/npc/outpost_prisoner/other)
 	if(!may_speak())
 		return FALSE
 	var/line = pick_line(context, other)
@@ -122,7 +122,7 @@
 	return TRUE
 
 /// Thanks whoever fed, clothed or treated them, no more than every 20 seconds
-/mob/living/basic/outpost_prisoner/proc/thank(context)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/thank(context)
 	if(phase != PRISONER_PRESENT || !COOLDOWN_FINISHED(src, thanks_cooldown))
 		return FALSE
 	if(!say_context(context))
@@ -134,7 +134,7 @@
  * Opens a two-person exchange with `partner`, who answers a few seconds later with one of the
  * opener's replies. Returns TRUE if it started.
  */
-/mob/living/basic/outpost_prisoner/proc/start_conversation(mob/living/basic/outpost_prisoner/partner)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/start_conversation(mob/living/carbon/human/npc/outpost_prisoner/partner)
 	if(!may_speak() || QDELETED(partner) || !partner.may_speak())
 		return FALSE
 	var/list/conversations = outpost_prisoner_dialogue("conversations")
@@ -153,8 +153,8 @@
 	return TRUE
 
 /// The second half of a conversation
-/mob/living/basic/outpost_prisoner/proc/reply_in_conversation(line, datum/weakref/opener_ref)
-	var/mob/living/basic/outpost_prisoner/opener = opener_ref?.resolve()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/reply_in_conversation(line, datum/weakref/opener_ref)
+	var/mob/living/carbon/human/npc/outpost_prisoner/opener = opener_ref?.resolve()
 	if(!may_speak() || QDELETED(opener) || get_dist(src, opener) > 5)
 		return FALSE
 	face_atom(opener)
@@ -163,15 +163,15 @@
 	return TRUE
 
 /// Whether a member of staff (see is_outpost_prison_staff()) is in sight, borgs included
-/mob/living/basic/outpost_prisoner/proc/staff_in_view()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/staff_in_view()
 	for(var/mob/living/person in view(5, src))
 		if(is_outpost_prison_staff(person))
 			return TRUE
 	return FALSE
 
 /// Another prisoner close by, to talk at
-/mob/living/basic/outpost_prisoner/proc/nearby_prisoner()
-	for(var/mob/living/basic/outpost_prisoner/other in view(3, src))
+/mob/living/carbon/human/npc/outpost_prisoner/proc/nearby_prisoner()
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in view(3, src))
 		if(other != src && other.stat == CONSCIOUS && other.phase == PRISONER_PRESENT)
 			return other
 	return null
@@ -180,18 +180,18 @@
  * What to talk about now, as list(context, other), most pressing first: cuffs, trouble, lockdown,
  * being locked in, needs, the state of the wing, staff in sight, what they are doing, then small talk.
  */
-/mob/living/basic/outpost_prisoner/proc/pick_speech()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/pick_speech()
 	if(activity?.sleeping)
 		return prob(25) ? list("sleeping", null) : null
 	// Cuffed, they complain about it (outpost_prison_capture.dm).
-	if(cuffs && prob(50))
+	if(handcuffed && prob(50))
 		return list("cuffed", null)
 	// Trouble has its own lines, said as it happens (outpost_prison_trouble.dm).
 	if(trouble == PRISONER_TROUBLE_LOOSE)
 		return prob(50) ? list("breakout", null) : null
 	if(is_rioting())
 		return list("riot", null)
-	if(trouble || beaten_left > 0 || threat_ref || climb_ref)
+	if(trouble || beaten || threat_ref || climb_ref)
 		return null
 	// Running from a creature, they shout about that instead (outpost_prison_panic.dm).
 	if(is_panicking())
@@ -230,7 +230,7 @@
 		return extra
 	if(prob(30) && staff_in_view())
 		return list("staff_near", null)
-	var/mob/living/basic/outpost_prisoner/partner = activity?.chat_partner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/partner = activity?.chat_partner()
 	if(activity?.context && prob(60))
 		return list(activity.context, partner)
 	return list("idle", partner || nearby_prisoner())
@@ -239,7 +239,7 @@
  * Called about once a second by the prison. Most seconds they say nothing; once their own and
  * the wing's cooldowns are up there is a small chance each second.
  */
-/mob/living/basic/outpost_prisoner/proc/speech_tick()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/speech_tick()
 	if(stat != CONSCIOUS || phase != PRISONER_PRESENT || !prison)
 		return FALSE
 	if(!said_release_soon && sentence_left <= 90)
@@ -290,7 +290,7 @@
 	return 1
 
 /// A piece of mess on the worst tile of the cell block's floor they can see nearby, or null
-/mob/living/basic/outpost_prisoner/proc/worst_mess_in_view()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/worst_mess_in_view()
 	var/list/tile_load = list()
 	var/atom/movable/worst
 	var/worst_load = 0
@@ -308,7 +308,7 @@
 	return worst
 
 /// The nearest light in the wing they can see that gives no light, or null
-/mob/living/basic/outpost_prisoner/proc/dead_light_in_view()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/dead_light_in_view()
 	var/obj/machinery/light/nearest
 	var/nearest_distance = INFINITY
 	for(var/obj/machinery/light/fixture in view(PRISONER_POINT_RANGE, src))
@@ -326,7 +326,7 @@
  * After a dirty_prison or dark line, with staff in sight, points at what they mean: the worst mess
  * or the dead light near them. Returns what they pointed at, or null.
  */
-/mob/living/basic/outpost_prisoner/proc/show_complaint(context)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/show_complaint(context)
 	if(context != "dirty_prison" && context != "dark")
 		return null
 	if(stat != CONSCIOUS || !isturf(loc) || !staff_in_view())

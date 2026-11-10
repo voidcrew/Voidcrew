@@ -194,19 +194,25 @@
 			ship.call_election(usr)
 
 		if("setMemo")
-			if(!("newName" in params) || params["newName"] == ship.memo)
+			if(!("newName" in params))
 				return
-			ship.memo = params["newName"]
+			ship.set_memo(params["newName"])
 
 		if("adjustJobSlot")
 			if(!("toAdjust" in params) || !("delta" in params) || !COOLDOWN_FINISHED(ship, job_slot_adjustment_cooldown))
 				return
-			var/datum/job/target_job = locate(params["toAdjust"])
-			if(!target_job)
+			// Only this ship's crew jobs, one slot at a time, up to the cap the console shows.
+			var/datum/job/target_job = locate(params["toAdjust"]) in ship.job_slots
+			if(!target_job || target_job.officer)
 				return
-			if(ship.job_slots[target_job] + params["delta"] < 0 || ship.job_slots[target_job] + params["delta"] > 6)
+			var/delta = params["delta"]
+			if(delta != 1 && delta != -1)
 				return
-			ship.job_slots[target_job] += params["delta"]
+			var/max_slots = min((ship.initial_job_slots?[target_job] || 1) * 2, 6)
+			var/new_slots = ship.job_slots[target_job] + delta
+			if(new_slots < 0 || new_slots > max_slots)
+				return
+			ship.job_slots[target_job] = new_slots
 			COOLDOWN_START(ship, job_slot_adjustment_cooldown, DEFAULT_JOB_SLOT_ADJUSTMENT_COOLDOWN)
 			update_static_data(usr)
 

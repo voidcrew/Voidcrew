@@ -82,6 +82,20 @@
 	lair.loaded = TRUE
 	return lair
 
+/**
+ * Calls off every person still queued to be built inside `footprint` (spawn_human_npc()), and deletes the club's people
+ * already built there: a lair the test tears down must not have bodies built into it afterwards.
+ */
+/datum/unit_test/voidcrew_bounty_lairs/proc/test_clear_people(datum/map_footprint/footprint)
+	if(!footprint)
+		return
+	for(var/datum/human_npc_order/order as anything in SShuman_npcs.queue.Copy())
+		if(order.where && footprint.contains_turf(order.where))
+			qdel(order)
+	for(var/mob/living/carbon/human/npc/bounty_mafia/member as anything in GLOB.mob_living_list)
+		if(istype(member) && footprint.contains_turf(get_turf(member)))
+			qdel(member)
+
 /// Sends the load signal to `lair` and waits for it to finish linking
 /datum/unit_test/voidcrew_bounty_lairs/proc/test_link(obj/structure/overmap/space_ruin/bounty_lair/lair)
 	SEND_SIGNAL(lair, "voidcrew_planet_loaded", TRUE) // COMSIG_VOIDCREW_PLANET_LOADED
@@ -101,10 +115,10 @@
 	var/obj/structure/overmap/ship/ship = board_test_ship()
 	var/datum/criminal_bounty/kill_only/posting = test_posting(5000, 3)
 
-	// Dead or nothing: no capture state pays
+	// Dead or nothing: no capture state pays, the state read at the pad being the only thing it looks at
 	for(var/state in list("restrained", "stunned", "downed", "free")) // BOUNTY_STATE_*
-		TEST_ASSERT_EQUAL(posting.board_share_for(state, state), 0, "A kill-only bounty pays for a [state] boss")
-	TEST_ASSERT_EQUAL(posting.board_share_for("dead", "dead"), 100, "A kill-only bounty doesn't pay in full on the kill") // BOUNTY_STATE_DEAD
+		TEST_ASSERT_EQUAL(posting.board_share_for(state), 0, "A kill-only bounty pays for a [state] boss")
+	TEST_ASSERT_EQUAL(posting.board_share_for("dead"), 100, "A kill-only bounty doesn't pay in full on the kill") // BOUNTY_STATE_DEAD
 
 	// The card says wanted dead, with the full value as its one figure; the warrant says WANTED: DEAD
 	var/list/card = posting.board_ui_entry(ship, pad)
@@ -122,6 +136,16 @@
 	TEST_ASSERT(istext(posting.board_target_refusal(pad, found)), "The pad took a boss's body")
 	var/list/preview = posting.board_pad_preview(ship, pad)
 	TEST_ASSERT(!preview[1], "The card offers to turn in a body")
+
+	// Nor the don on foot, a person: wanted on it, cuffed on the pad or dead on it, he is never what pays
+	var/mob/living/carbon/human/npc/bounty_mafia/don/person = allocate(/mob/living/carbon/human/npc/bounty_mafia/don, pad_turf)
+	person.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	person.posting_ref = WEAKREF(posting)
+	TEST_ASSERT_EQUAL(bounty_kill_posting_of(person), posting, "The don on foot isn't wanted on his bounty")
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	TEST_ASSERT(person.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED), "Test fixture: the don could not be cuffed")
+	TEST_ASSERT(istext(posting.board_target_refusal(pad, found)), "The pad took the don cuffed on it")
+	qdel(person)
 
 	// The trophy drops where the boss fell, bound to the bounty, and there is only ever one
 	var/obj/item/bounty_proof/trophy/trophy = posting.kill_drop_trophy(aside)
@@ -373,6 +397,55 @@
 	TEST_ASSERT(!lair.mission_locked, "Closing the bounty didn't unlock its lair")
 	TEST_ASSERT_NULL(lair.posting_ref, "The released lair still points at its bounty")
 
+/**
+ * Gatekeepers that are people are queued, never built in one tick: until each is built it holds the gate, once built
+ * it is watched like any gatekeeper, and an order that never builds a body (cancelled) stops holding it.
+ */
+/datum/unit_test/voidcrew_bounty_lairs/queued_gatekeepers
+
+/datum/unit_test/voidcrew_bounty_lairs/queued_gatekeepers/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/datum/criminal_bounty/kill_only/lair/posting = test_posting(5000, 3, /datum/criminal_bounty/kill_only/lair)
+	var/obj/structure/overmap/space_ruin/bounty_lair/lair = test_fake_lair(posting, 3)
+	for(var/offset in 0 to 1)
+		var/obj/effect/landmark/bounty_lair_gatekeeper/keeper_mark = new(locate(origin.x + offset, origin.y + 2, origin.z))
+		keeper_mark.gatekeeper_type = /mob/living/carbon/human/npc/bounty_mafia/lieutenant
+		lair_test_made += keeper_mark
+	var/obj/machinery/door/poddoor/gate = allocate(/obj/machinery/door/poddoor, locate(origin.x + 2, origin.y, origin.z))
+	gate.id = "bounty_lair_gate" // BOUNTY_LAIR_GATE_ID
+
+	TEST_ASSERT(test_link(lair), "The lair never finished linking")
+	TEST_ASSERT_EQUAL(length(lair.lair_gatekeepers), 0, "A gatekeeper who is a person was built at the link, not queued")
+	TEST_ASSERT_EQUAL(lair.lair_pending_gatekeeper_count(), 2, "The two queued gatekeepers aren't on their way")
+	TEST_ASSERT(!lair.lair_gate_open, "The gate opened while its gatekeepers were still on their way")
+	TEST_ASSERT(!lair.lair_check_gate(), "The gate opened on a check while its gatekeepers were still on their way")
+
+	// The first is built: it holds the gate, kept to its room, and its order is done
+	var/list/keys = lair.lair_pending_gatekeepers.Copy()
+	var/datum/human_npc_order/first_order = lair.lair_pending_gatekeepers[keys[1]]
+	var/datum/human_npc_order/second_order = lair.lair_pending_gatekeepers[keys[2]]
+	var/mob/living/carbon/human/npc/bounty_mafia/lieutenant/keeper = first_order.fulfil()
+	TEST_ASSERT(istype(keeper), "The queued gatekeeper built [keeper || "nothing"]")
+	allocated += keeper
+	keeper.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	TEST_ASSERT(keeper.weak_reference && (keeper.weak_reference in lair.lair_gatekeepers), "The built gatekeeper isn't watched")
+	TEST_ASSERT_EQUAL(lair.lair_pending_gatekeeper_count(), 1, "The built gatekeeper is still counted as on its way")
+
+	// The second is called off: it stops holding the gate, but the first still does
+	qdel(second_order)
+	TEST_ASSERT(!lair.lair_check_gate(), "The gate opened with its built gatekeeper standing")
+	TEST_ASSERT_EQUAL(lair.lair_pending_gatekeeper_count(), 0, "A cancelled gatekeeper is still counted as on its way")
+
+	// The built one dies in place: the gate opens
+	keeper.death()
+	TEST_ASSERT(lair.lair_gate_open, "The gate didn't open when the last gatekeeper died")
+	TEST_ASSERT(!QDELETED(keeper), "The dead gatekeeper's body went")
+
+	// Gone (faked footprint dropped first: it holds no slot)
+	lair.footprint = null
+	lair.loaded = FALSE
+	posting.close("admin") // BOUNTY_CLOSE_ADMIN
+
 /// The boss's next phase takes over from it; a boss deleted alive (an admin) ends the bounty instead of paying out
 /datum/unit_test/voidcrew_bounty_lairs/phases
 
@@ -458,6 +531,26 @@
 	var/deadline = world.time + 5 SECONDS
 	UNTIL(!goon.throwing || world.time >= deadline)
 	TEST_ASSERT(get_area(goon) != leash_test_home, "A thrown mob was held in its room")
+	goon.forceMove(locate(origin.x + 1, origin.y + 3, origin.z))
+
+	// Buckled to something someone moves (a wheeled chair, a carrier's shoulders), it goes with it
+	var/mob/living/carbon/human/consistent/seated = allocate(/mob/living/carbon/human/consistent, home_spot)
+	seated.AddElement(/datum/element/bounty_lair_room_leash, leash_test_home.type)
+	var/obj/structure/chair/office/chair = allocate(/obj/structure/chair/office, home_spot)
+	TEST_ASSERT(chair.buckle_mob(seated, force = TRUE), "Test fixture: the leashed person couldn't be buckled")
+	chair.Move(door_spot, EAST)
+	TEST_ASSERT_EQUAL(get_turf(seated), door_spot, "A leashed person buckled to a chair held the chair in their room")
+	chair.unbuckle_mob(seated)
+	seated.forceMove(locate(origin.x + 2, origin.y + 3, origin.z))
+	qdel(chair)
+
+	// Shoved out of its room, it goes: the push is the shover's move (a leash that held it would knock it down instead)
+	var/mob/living/carbon/human/consistent/shoved = allocate(/mob/living/carbon/human/consistent, home_spot)
+	shoved.AddElement(/datum/element/bounty_lair_room_leash, leash_test_home.type)
+	var/mob/living/carbon/human/consistent/shover = allocate(/mob/living/carbon/human/consistent, locate(origin.x, origin.y + 1, origin.z))
+	shover.disarm(shoved)
+	TEST_ASSERT_EQUAL(get_turf(shoved), door_spot, "A shove couldn't push a leashed person out of their room")
+	TEST_ASSERT(!shoved.IsKnockdown(), "A shove at a room's door knocked a leashed person down as if into a wall")
 
 /// Where a trophy lands: on the floor it fell on, the nearest floor reached past a hole, and never in space or outside its lair
 /datum/unit_test/voidcrew_bounty_lairs/trophy_spot
@@ -512,7 +605,14 @@
 	sleep(1)
 	TEST_ASSERT_EQUAL(test_count(/mob/living/basic/bounty_lair_boss/mafia_mech, lair.footprint), 1, "Loading the club again spawned a second mech")
 
-	// The gate: two lieutenants, three closed doors that open when both are dead
+	// The gate: two lieutenants, queued as people (never built in one tick), holding it from the start; three closed
+	// doors that open when both are dead
+	TEST_ASSERT(!lair.lair_gate_open, "The garage opened before its lieutenants were built")
+	TEST_ASSERT_EQUAL(length(lair.lair_gatekeepers) + lair.lair_pending_gatekeeper_count(), 2, "Club Volga should have two gatekeepers, built or on their way")
+	for(var/key in lair.lair_pending_gatekeepers.Copy())
+		var/datum/human_npc_order/order = lair.lair_pending_gatekeepers[key]
+		order?.fulfil()
+	TEST_ASSERT_EQUAL(lair.lair_pending_gatekeeper_count(), 0, "A lieutenant is still on its way after its order was built")
 	TEST_ASSERT_EQUAL(length(lair.lair_gatekeepers), 2, "Club Volga should have two gatekeepers")
 	TEST_ASSERT_EQUAL(length(lair.lair_gate_doors), 3, "Club Volga's gate should be three doors")
 	var/list/gate_doors = list()
@@ -526,11 +626,16 @@
 		keeper.ai_controller?.set_ai_status(AI_STATUS_OFF)
 		keepers += keeper
 	var/mob/living/first_keeper = keepers[1]
-	TEST_ASSERT(istype(first_keeper, /mob/living/basic/trooper/russian/mafia/lieutenant), "The gatekeepers aren't the lieutenants")
+	var/mob/living/second_keeper = keepers[2]
+	TEST_ASSERT(istype(first_keeper, /mob/living/carbon/human/npc/bounty_mafia/lieutenant), "The gatekeepers aren't the lieutenants")
 	TEST_ASSERT(istype(get_area(first_keeper), /area/ruin/space/has_grav/powered/mafia_club/back_office), "A lieutenant isn't in the back office")
+	var/list/roles = list()
+	for(var/mob/living/carbon/human/npc/bounty_mafia/lieutenant/lieutenant as anything in keepers)
+		roles |= lieutenant.mafia_lieutenant_role
+	TEST_ASSERT(("tommy" in roles) && ("brute" in roles), "The gate isn't held by one Tommy and one Brute") // BOUNTY_LIEUTENANT_TOMMY, _BRUTE
 	first_keeper.death()
 	TEST_ASSERT(!lair.lair_gate_open, "The garage opened with a lieutenant still standing")
-	var/mob/living/second_keeper = keepers[2]
+	TEST_ASSERT(!QDELETED(first_keeper), "A dead lieutenant's body went")
 	second_keeper.death()
 	TEST_ASSERT(lair.lair_gate_open, "The garage didn't open when both lieutenants died")
 	sleep(3 SECONDS)
@@ -539,6 +644,7 @@
 
 	// Closed: torn down once empty, and nothing replaces it (a rare ruin never respawns)
 	TEST_ASSERT(lair.rare, "The club is not rare, so tearing it down would spawn a replacement")
+	test_clear_people(lair.footprint)
 	posting.close("admin") // BOUNTY_CLOSE_ADMIN
 	deadline = world.time + 2 MINUTES
 	UNTIL(QDELETED(lair) || world.time >= deadline)

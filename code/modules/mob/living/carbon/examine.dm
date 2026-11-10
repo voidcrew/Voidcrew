@@ -211,7 +211,7 @@
 					. += "[t_He] seem[p_s()] winded."
 				if (getToxLoss() >= 10)
 					. += "[t_He] seem[p_s()] sickly."
-				if(mob_mood.sanity <= SANITY_DISTURBED)
+				if(mob_mood && mob_mood.sanity <= SANITY_DISTURBED) // VOIDCREW EDIT CHANGE: human NPCs have no mood datum (voidcrew/modules/human_npcs)
 					. += "[t_He] seem[p_s()] distressed."
 					living_user.add_mood_event("empath", /datum/mood_event/sad_empath, src)
 				if(is_blind())

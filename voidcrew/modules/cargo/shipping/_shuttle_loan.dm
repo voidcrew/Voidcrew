@@ -210,13 +210,14 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 			qdel(item)
 	return delivery
 
-/// The cargo bay can be off-map; its host ship supplies the encounter band.
+/// The cargo bay can be off-map; its host ship supplies the encounter band. People (human NPCs) are queued
+/// and built a body a tick (spawn_npc_in_zone_or_queue()).
 /datum/voidcrew_shuttle_loan/proc/spawn_hostile(mob_type, turf/location, datum/voidcrew_cargo_shuttle/shuttle)
 	if(!npc_source)
 		var/turf/source_turf = get_turf(shuttle.target_ship)
 		npc_source = new(shuttle, SSovermap_zones.get_zone_type_anywhere(source_turf) || ZONE_GREEN, source_turf = source_turf)
 	var/datum/npc_spawn_context/context = new(shuttle, npc_source.zone_type, "ordinary", source_turf = npc_source.source_turf)
-	return spawn_npc_in_zone(mob_type, location, context)
+	return spawn_npc_in_zone_or_queue(mob_type, location, context)
 
 /// Department resupply - free supplies, no bonus
 /datum/voidcrew_shuttle_loan/department_resupply
@@ -449,13 +450,13 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	for(var/i in 1 to 2)
 		if(!length(cargo_turfs))
 			break
-		spawn_hostile(/mob/living/basic/trooper/syndicate/ranged/infiltrator, pick_n_take(cargo_turfs), shuttle)
+		spawn_hostile(/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/infiltrator, pick_n_take(cargo_turfs), shuttle)
 
 	// Chance for more
 	if(prob(75) && length(cargo_turfs))
-		spawn_hostile(/mob/living/basic/trooper/syndicate/ranged/infiltrator, pick_n_take(cargo_turfs), shuttle)
+		spawn_hostile(/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/infiltrator, pick_n_take(cargo_turfs), shuttle)
 	if(prob(50) && length(cargo_turfs))
-		spawn_hostile(/mob/living/basic/trooper/syndicate/ranged/infiltrator, pick_n_take(cargo_turfs), shuttle)
+		spawn_hostile(/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/infiltrator, pick_n_take(cargo_turfs), shuttle)
 
 /// Lots of bees - Toxic bees and beekeeping equipment
 /datum/voidcrew_shuttle_loan/lots_of_bees
@@ -580,15 +581,15 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 
 	// The Russians
 	if(length(cargo_turfs))
-		spawn_hostile(/mob/living/basic/trooper/russian, pick_n_take(cargo_turfs), shuttle)
+		spawn_hostile(/mob/living/carbon/human/npc/ruin/trooper/russian, pick_n_take(cargo_turfs), shuttle)
 	if(length(cargo_turfs))
-		spawn_hostile(/mob/living/basic/trooper/russian/ranged, pick_n_take(cargo_turfs), shuttle) // This one drops a mateba
+		spawn_hostile(/mob/living/carbon/human/npc/ruin/trooper/russian/gunner, pick_n_take(cargo_turfs), shuttle) // This one drops a Nagant
 	if(length(cargo_turfs))
 		spawn_hostile(/mob/living/basic/bear/russian, pick_n_take(cargo_turfs), shuttle)
 
 	// Chance for more
 	if(prob(75) && length(cargo_turfs))
-		spawn_hostile(/mob/living/basic/trooper/russian, pick_n_take(cargo_turfs), shuttle)
+		spawn_hostile(/mob/living/carbon/human/npc/ruin/trooper/russian, pick_n_take(cargo_turfs), shuttle)
 	if(prob(50) && length(cargo_turfs))
 		spawn_hostile(/mob/living/basic/bear/russian, pick_n_take(cargo_turfs), shuttle)
 

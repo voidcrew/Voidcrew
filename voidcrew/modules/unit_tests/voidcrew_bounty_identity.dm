@@ -9,8 +9,8 @@
 /datum/unit_test/voidcrew_bounty_identity_records
 
 /datum/unit_test/voidcrew_bounty_identity_records/Run()
-	var/list/styles = list("brawler", "knife", "pistol", "shotgun", "club", "bottle") // BOUNTY_STYLE_*, normal
-	var/list/kits = list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy") // BOUNTY_KIT_*
+	var/list/styles = list("brawler", "knife", "pistol", "shotgun", "smg", "revolver", "club", "bottle") // BOUNTY_STYLE_*, normal
+	var/list/kits = list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho") // BOUNTY_KIT_*
 	var/list/labels = bounty_feature_labels()
 	// BOUNTY_TIER_*, BOUNTY_ARCHETYPE_*, BOUNTY_PLACEMENT_*
 	for(var/tier in list(1, 2, 3))
@@ -475,7 +475,7 @@
 
 	// Each archetype speaks its own lines and the shared ones, never another's.
 	for(var/archetype in list("meek", "normal", "boss")) // BOUNTY_ARCHETYPE_*
-		var/mob/living/basic/bounty_criminal/criminal = allocate(/mob/living/basic/bounty_criminal/normal)
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/normal)
 		criminal.record = generate_bounty_record(archetype == "boss" ? 3 : 2, archetype, "planet")
 		TEST_ASSERT_EQUAL(criminal.identity_voice(), archetype, "A [archetype] criminal doesn't talk like one")
 		var/list/allowed = pool_of(lines, "hurt", archetype)
@@ -487,14 +487,14 @@
 		TEST_ASSERT(own_heard, "A [archetype] criminal never used its own lines")
 
 	// Blended in, a fugitive talks like its decoys; a decoy never names a crime, blended or not.
-	var/mob/living/basic/bounty_criminal/fugitive = allocate(/mob/living/basic/bounty_criminal/meek)
+	var/mob/living/carbon/human/npc/bounty_criminal/fugitive = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek)
 	fugitive.record = generate_bounty_record(1, "meek", "trader_outpost")
 	fugitive.blended = TRUE
 	TEST_ASSERT_NULL(fugitive.identity_voice(), "A blended fugitive talks differently from its decoys")
 	TEST_ASSERT_EQUAL(fugitive.identity_line_values()?["{crime}"], fugitive.record.crime, "A fugitive doesn't know its own crime")
 	for(var/line in sample(fugitive, "hurt", 20))
 		TEST_ASSERT(line in lines["hurt"]["any"], "A blended fugitive said a voiced line: [line]")
-	var/mob/living/basic/bounty_criminal/decoy/decoy = allocate(/mob/living/basic/bounty_criminal/decoy)
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = allocate(/mob/living/carbon/human/npc/bounty_criminal/decoy)
 	decoy.record = make_decoy_record(fugitive.record, 1)
 	TEST_ASSERT_NULL(decoy.identity_voice(), "A decoy speaks in an archetype's voice")
 	TEST_ASSERT_NULL(decoy.identity_line_values(), "A decoy fills in a crime")
@@ -502,6 +502,6 @@
 		TEST_ASSERT(!findtext(line, decoy.record.crime) && !findtext(line, fugitive.record.crime), "A decoy owned up to a crime: [line]")
 
 	// A Most Wanted criminal never tosses off its crime.
-	var/mob/living/basic/bounty_criminal/boss = allocate(/mob/living/basic/bounty_criminal/normal)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss = allocate(/mob/living/carbon/human/npc/bounty_criminal/normal)
 	boss.record = generate_bounty_record(3, "boss", "planet")
 	TEST_ASSERT_NULL(boss.identity_line_values(), "A Most Wanted criminal fills in its crime")

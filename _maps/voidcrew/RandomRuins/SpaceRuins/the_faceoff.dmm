@@ -189,7 +189,7 @@
 	pixel_x = -1;
 	pixel_y = 5
 	},
-/mob/living/basic/trooper/syndicate/melee/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando,
 /turf/open/floor/iron/dark/airless,
 /area/ruin/space)
 "eU" = (

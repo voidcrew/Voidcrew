@@ -258,12 +258,18 @@ SUBSYSTEM_DEF(npc_ships)
 		if(ship.spawner_resolved || ship.abandoned)
 			continue
 		if(!ship.crew_ever_spawned)
+			// Human crews are built a body at a time (spawn_human_npc()); still queued is not malformed
+			if(ship.crew_pending())
+				continue
 			if(!(REF(ship) in logged_malformed))
 				logged_malformed += REF(ship)
 				log_world("SSnpc_ships: [ship.name] has no crew roster (spawn_crew failed?) - it holds its pool slot and will never auto-resolve")
 			continue
-		// Put spaced survivors out of their misery before the census reads them
-		ship.sweep_spaced_crew()
+		// A crewman spaced off the hull no longer counts as aboard; the space kills him or it doesn't
+		// (no death is forced, defaults PI-3), and one adrift with nobody to see him is cleaned up by
+		// his crew (pirate_crew.dm). Crew still queued to be built keep the hull's slot.
+		if(ship.crew_pending())
+			continue
 		if(ship.count_live_crew_aboard() <= 0)
 			ship.notify_spawner_resolved("crew wiped (reconcile)")
 			continue

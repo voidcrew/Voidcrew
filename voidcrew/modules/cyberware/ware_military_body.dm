@@ -10,7 +10,7 @@
 // GHOSTSKIN WEAVE
 // =========================================================================
 
-/// Cloak alpha. NEVER 0: a shimmer stays readable point-blank.
+/// Cloak alpha. NEVER 0: a faint outline stays readable point-blank.
 #define CYBERWARE_GHOSTSKIN_ALPHA 40
 /// How long a camo field holds before it collapses on its own.
 #define CYBERWARE_GHOSTSKIN_DURATION (10 SECONDS)
@@ -19,17 +19,17 @@
  * # Ghostskin Weave (T3, chest, skin slot, load 5)
  *
  * A dermal mesh of refraction cells: ten seconds of optical camo on a
- * 30-second clock. Players see a heat-shimmer outline (alpha 40, never full
- * invisibility) that ripples brighter when you move; NPC targeting honors
+ * 30-second clock. Players see a faint outline (alpha 40, never full
+ * invisibility) that flashes brighter when you move; NPC targeting honors
  * TRAIT_CYBER_CAMO through the hook in cyberware_stealth.dm, but anything
  * within two tiles spots you anyway. The field collapses the instant you
- * attack, shoot, get struck, get cuffed, or eat an EMP, the break-trigger
- * list is the MOD stealth module's, plus gunfire (nothing uncounterable
+ * attack, shoot, throw, get struck, get cuffed, or eat an EMP, the break-trigger
+ * list is the MOD stealth module's, plus gunfire and throws (nothing uncounterable
  * fires from inside a cloak on this server).
  */
 /obj/item/organ/cyberimp/cyberware/ghostskin
 	name = "\improper Ghostskin weave"
-	desc = "A subdermal lattice of refraction cells. Switched on, you're a faint heat-shimmer and not much else. Swing at anyone and the field drops, mid-swing, out in the open."
+	desc = "A subdermal lattice of refraction cells. Switched on, you flicker out until there's barely anything of you left to see."
 	icon_state = "ghostskin"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SKIN
@@ -41,10 +41,27 @@
 	var/camo_active = FALSE
 	/// Timer for the field's natural collapse.
 	var/camo_timer
+	/// Alpha the bearer fades to while the field is up. Never 0.
+	var/field_alpha = CYBERWARE_GHOSTSKIN_ALPHA
+	/// How long the field holds before it collapses on its own.
+	var/field_duration = CYBERWARE_GHOSTSKIN_DURATION
+	/// Alpha the bearer flashes up to for a step when moving under the field.
+	/// Must stay above field_alpha, motion is meant to make you MORE visible.
+	var/ripple_alpha = 90
+	/// Whether the field takes the bearer out of NPC targeting and scatters a
+	/// chrome read (TRAIT_CYBER_CAMO). Cheaper weaves only fool players.
+	var/hides_from_mobs = TRUE
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	break_camo(organ_owner, silent = TRUE)
+
+/// The field runs on the weave: it collapses the moment the weave goes offline,
+/// a deck's Glitch, a brownout or damage, the same as an EMP drops it.
+/obj/item/organ/cyberimp/cyberware/ghostskin/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(camo_active)
+		break_camo(bearer, reason = "weave offline", silent = (owner != bearer))
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/emp_act(severity)
 	. = ..()
@@ -53,22 +70,26 @@
 	if(camo_active)
 		break_camo(owner, reason = "EMP discharge")
 
-/// Raises the field: shimmer alpha, camo trait, break triggers, expiry clock.
+/// Raises the field: field alpha, camo trait, break triggers, expiry clock.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/engage_camo(mob/living/carbon/wearer)
 	if(camo_active || !wearer)
 		return
 	camo_active = TRUE
-	ADD_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
-	animate(wearer, alpha = CYBERWARE_GHOSTSKIN_ALPHA, time = 1 SECONDS)
-	playsound(wearer, 'voidcrew/sound/machines/cloaking/on.ogg', 60, TRUE)
-	wearer.visible_message(
-		span_warning("[wearer] ripples and thins to a heat-shimmer outline!"),
-		span_notice("The weave bends the light around you. Ten seconds."),
-	)
+	if(hides_from_mobs)
+		ADD_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
+	// Flickers down to field_alpha over 0.6 s (cyberware_anim.dm). The var holds field_alpha at once.
+	cloak_flicker_in(wearer)
+	engage_feedback(wearer)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
-	// gunfire, shooting from inside a cloak breaks it here.
-	RegisterSignal(wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
+	// gunfire and throwing: shooting or throwing from inside a cloak breaks it here.
+	// The early signal too: a fist that takes over the attack (Gorilla, Scrapper) cancels the
+	// chain before the late one is ever sent.
+	RegisterSignals(wearer, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK), PROC_REF(on_unarmed_attack))
 	RegisterSignal(wearer, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet_act))
+	RegisterSignal(wearer, COMSIG_LIVING_ELECTROCUTE_ACT, PROC_REF(on_shocked))
+	// Being mauled by an animal, a mob, a mech or a xeno is being hit too: the
+	// field is what keeps those mobs off you (cyberware_stealth.dm), so a bite at
+	// point-blank range has to drop it.
 	RegisterSignals(wearer, list(
 		COMSIG_MOB_ITEM_ATTACK,
 		COMSIG_ATOM_ATTACKBY,
@@ -76,19 +97,38 @@
 		COMSIG_ATOM_HITBY,
 		COMSIG_ATOM_HULK_ATTACK,
 		COMSIG_ATOM_ATTACK_PAW,
+		COMSIG_ATOM_ATTACK_ANIMAL,
+		COMSIG_ATOM_ATTACK_BASIC_MOB,
+		COMSIG_ATOM_ATTACK_MECH,
+		COMSIG_MOB_ATTACK_ALIEN,
 		COMSIG_CARBON_CUFF_ATTEMPTED,
 		COMSIG_MOB_FIRED_GUN,
+		COMSIG_MOB_THROW,
 		COMSIG_LIVING_DEATH,
 	), PROC_REF(on_break_trigger))
 	RegisterSignal(wearer, COMSIG_MOVABLE_MOVED, PROC_REF(on_camo_move))
-	camo_timer = addtimer(CALLBACK(src, PROC_REF(on_field_expired)), CYBERWARE_GHOSTSKIN_DURATION, TIMER_STOPPABLE)
+	camo_timer = addtimer(CALLBACK(src, PROC_REF(on_field_expired)), field_duration, TIMER_STOPPABLE)
+
+/// The sound and chat lines that go with the field coming up. Split out so a
+/// cheaper weave can tell it differently.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/engage_feedback(mob/living/carbon/wearer)
+	playsound(wearer, 'voidcrew/sound/machines/cloaking/on.ogg', 60, TRUE)
+	wearer.visible_message(
+		span_warning("[wearer] flickers and fades almost out of sight!"),
+		span_notice("The weave bends the light around you."),
+	)
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_field_expired()
 	camo_timer = null
-	break_camo(owner, reason = "field capacity spent")
+	break_camo(owner, reason = "field capacity spent", gentle = TRUE)
 
-/// Collapses the field and returns the bearer to full visibility.
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/break_camo(mob/living/carbon/wearer, reason, silent = FALSE)
+/**
+ * Collapses the field and returns the bearer to full visibility. A [gentle]
+ * drop (the field ran out or was switched off) flickers back out; anything
+ * that knocks it down stutters back with sparks; a [silent] one just snaps
+ * back.
+ */
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/break_camo(mob/living/carbon/wearer, reason, silent = FALSE, gentle = FALSE)
 	if(!camo_active)
 		return
 	camo_active = FALSE
@@ -99,6 +139,7 @@
 		return
 	REMOVE_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
 	UnregisterSignal(wearer, list(
+		COMSIG_LIVING_EARLY_UNARMED_ATTACK,
 		COMSIG_LIVING_UNARMED_ATTACK,
 		COMSIG_ATOM_BULLET_ACT,
 		COMSIG_MOB_ITEM_ATTACK,
@@ -107,16 +148,28 @@
 		COMSIG_ATOM_HITBY,
 		COMSIG_ATOM_HULK_ATTACK,
 		COMSIG_ATOM_ATTACK_PAW,
+		COMSIG_ATOM_ATTACK_ANIMAL,
+		COMSIG_ATOM_ATTACK_BASIC_MOB,
+		COMSIG_ATOM_ATTACK_MECH,
+		COMSIG_MOB_ATTACK_ALIEN,
+		COMSIG_LIVING_ELECTROCUTE_ACT,
 		COMSIG_CARBON_CUFF_ATTEMPTED,
 		COMSIG_MOB_FIRED_GUN,
+		COMSIG_MOB_THROW,
 		COMSIG_LIVING_DEATH,
 		COMSIG_MOVABLE_MOVED,
 	))
-	animate(wearer, alpha = 255, time = 0.5 SECONDS)
-	if(!silent)
+	// The way back to full view is the exit's own (cyberware_anim.dm).
+	if(silent)
+		cloak_reset(wearer)
+	else if(gentle)
+		cloak_flicker_out(wearer)
+	else
+		cloak_flicker_break(wearer)
 		do_sparks(2, TRUE, wearer)
+	if(!silent)
 		wearer.visible_message(
-			span_danger("[wearer] shimmers back into full view!"),
+			span_danger("[wearer] flickers back into full view!"),
 			span_warning("The weave collapses[reason ? ", [reason]" : ""]. You are visible."),
 		)
 
@@ -133,6 +186,15 @@
 		return
 	break_camo(owner, reason = "field contact")
 
+/// Signal proc for [COMSIG_LIVING_ELECTROCUTE_ACT]: a real jolt (a live door,
+/// a deck's Feedback Surge or Arc Flash) drops the field. Hallucinated shocks and
+/// ones the gloves fully insulate don't.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_shocked(datum/source, shock_damage, shock_source, siemens_coeff, flags)
+	SIGNAL_HANDLER
+	if((flags & SHOCK_ILLUSION) || shock_damage <= 0 || siemens_coeff <= 0)
+		return
+	break_camo(owner, reason = "field shorted")
+
 /// Signal proc for [COMSIG_ATOM_BULLET_ACT]: hostile rounds pop the field.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_bullet_act(datum/source, obj/projectile/projectile)
 	SIGNAL_HANDLER
@@ -140,19 +202,22 @@
 		return
 	break_camo(owner, reason = "field disrupted")
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: the moving-shimmer ripple.
+/// Signal proc for [COMSIG_MOVABLE_MOVED]: the moving flash.
 /// Motion makes you briefly MORE visible. Free counterplay for sharp eyes.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_camo_move(datum/source)
 	SIGNAL_HANDLER
 	var/mob/living/wearer = owner
 	if(!wearer || !camo_active)
 		return
-	animate(wearer, alpha = 90, time = 0.15 SECONDS)
-	animate(alpha = CYBERWARE_GHOSTSKIN_ALPHA, time = 0.35 SECONDS)
+	// Still flickering in; the bearer is more visible than this already.
+	if(world.time < cloak_enter_until)
+		return
+	animate(wearer, alpha = ripple_alpha, time = 0.15 SECONDS)
+	animate(alpha = field_alpha, time = 0.35 SECONDS)
 
 /datum/action/cooldown/cyberware/ghostskin_cloak
 	name = "Ghostskin Field"
-	desc = "Ten seconds of optical camo. Attacking, shooting, taking a hit or an EMP drops the field. Anyone standing right next to you still sees you."
+	desc = "Ten seconds of optical camo."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_ghostskin"
 	cooldown_time = 30 SECONDS
@@ -164,7 +229,7 @@
 		return FALSE
 	if(weave.camo_active)
 		// Manual early collapse; the cooldown was already paid.
-		weave.break_camo(owner, reason = "disengaged")
+		weave.break_camo(owner, reason = "disengaged", gentle = TRUE)
 		return TRUE
 	StartCooldown()
 	weave.engage_camo(owner)
@@ -285,7 +350,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/lazarus
 	name = "\improper Lazarus node"
-	desc = "A capacitor bank sunk fist-deep in the chest, wired straight across the heart. When you go down it spends a second charging up, then shocks you back onto your feet. Rebuilding that charge takes a lot longer."
+	desc = "A capacitor bank sunk fist-deep in the chest, wired straight across the heart. It has strong views on you staying down."
 	icon_state = "lazarus"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_HEART_AID
@@ -304,7 +369,7 @@
 	if(COOLDOWN_FINISHED(src, jolt_cooldown))
 		. += span_notice("The charge bank reads <b>READY</b>.")
 	else
-		. += span_notice("The charge bank reads <b>RECHARGING</b>, [DisplayTimeText(COOLDOWN_TIMELEFT(src, jolt_cooldown))] left.")
+		. += span_notice("The charge bank reads <b>RECHARGING</b>.")
 
 /obj/item/organ/cyberimp/cyberware/lazarus/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -320,6 +385,7 @@
 	. = ..()
 	jolting = FALSE
 	jolt_generation++
+	clear_charge_fx()
 
 /**
  * Signal proc for [COMSIG_MOB_STATCHANGE]: fires the windup on the
@@ -328,6 +394,8 @@
  */
 /obj/item/organ/cyberimp/cyberware/lazarus/proc/on_stat_change(mob/living/carbon/source, new_stat, old_stat)
 	SIGNAL_HANDLER
+	if(new_stat == DEAD)
+		clear_charge_fx()
 	if(jolting)
 		return
 	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
@@ -348,6 +416,8 @@
 	playsound(source, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
 	source.set_jitter_if_lower(4 SECONDS)
 	source.do_jitter_animation(200)
+	// Magenta charge and arcs crawling over the body (cyberware_anim2.dm).
+	play_charge_fx(source, CYBERWARE_LAZARUS_WINDUP)
 	addtimer(CALLBACK(src, PROC_REF(jolt), jolt_generation, WEAKREF(source)), CYBERWARE_LAZARUS_WINDUP)
 
 /// The discharge: heal to 30%, clear the floor out from under every stun,
@@ -357,6 +427,8 @@
 	if(!jolting || windup_generation != jolt_generation)
 		return
 	jolting = FALSE
+	// The windup is over whether or not the jolt fires: a patient who got up on their own keeps no glow.
+	clear_charge_fx()
 	var/mob/living/carbon/patient = intended_patient?.resolve()
 	if(QDELETED(src) || QDELETED(patient) || patient != owner)
 		return
@@ -390,6 +462,7 @@
 	patient.set_resting(FALSE, silent = TRUE, instant = TRUE)
 	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 100, TRUE)
 	do_sparks(3, TRUE, patient)
+	play_jolt_fx(patient)
 	patient.emote("gasp")
 	patient.set_jitter_if_lower(20 SECONDS)
 	patient.visible_message(
@@ -402,11 +475,8 @@
 // ATLAS FRAME
 // =========================================================================
 
-/// Held by a bearer whose skeleton simply does not break. Blocks the whole
-/// bone wound series, dislocations, hairline fractures, compound fractures,
-/// at the wound system's own gate, and nothing else. Every other wound series
-/// lands on its bearer exactly as it lands on anyone.
-#define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
+// TRAIT_CYBERWARE_UNBREAKABLE_BONES lives in voidcrew/_DEFINES/cyberware.dm
+// so the street frame (ware_models_b.dm) can name it too.
 
 /**
  * # Atlas Frame (T3, chest, frame slot, load 4)
@@ -423,7 +493,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/atlas
 	name = "\improper Atlas frame"
-	desc = "A titanium truss bolted through the spine and ribs. Nothing breaks your bones and nothing takes a limb off you. Everything softer than bone is still your problem, and anything you throw leaves your hand like it was fired."
+	desc = "A titanium truss bolted through the spine and ribs, so the skeleton stops being the weak point."
 	icon_state = "atlas"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_FRAME
@@ -431,15 +501,27 @@
 	chrome_load = 4
 	tier = CYBERWARE_TIER_3
 	organ_traits = list(TRAIT_NODISMEMBER, TRAIT_CYBERWARE_UNBREAKABLE_BONES)
+	/// Tiles added to the range of anything the bearer throws. With no speed
+	/// bonus either, the throw hook is never armed.
+	var/throw_range_bonus = 2
+	/// Speed added to anything the bearer throws.
+	var/throw_speed_bonus = 1
+	/// Whether a throw of the bearer by something else travels half as far.
+	var/resists_knockback = TRUE
+	/// The line examine adds on top of the organ's own. Null for none.
+	var/frame_examine = null
 
 /obj/item/organ/cyberimp/cyberware/atlas/examine(mob/user)
 	. = ..()
-	. += span_notice("Covers the skeleton only: no dislocations, no fractures, and no losing a limb. Slashes, punctures, burns and bleeding are untouched.")
+	if(frame_examine)
+		. += span_notice(frame_examine)
 
 /obj/item/organ/cyberimp/cyberware/atlas/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	RegisterSignal(organ_owner, COMSIG_MOB_THROW, PROC_REF(on_owner_throws))
-	RegisterSignal(organ_owner, COMSIG_MOVABLE_PRE_THROW, PROC_REF(on_owner_thrown))
+	if(throw_range_bonus || throw_speed_bonus)
+		RegisterSignal(organ_owner, COMSIG_MOB_THROW, PROC_REF(on_owner_throws))
+	if(resists_knockback)
+		RegisterSignal(organ_owner, COMSIG_MOVABLE_PRE_THROW, PROC_REF(on_owner_thrown))
 
 /obj/item/organ/cyberimp/cyberware/atlas/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -472,8 +554,8 @@
 	SIGNAL_HANDLER
 	if(throw_args[4] != owner) // someone else's throw, somehow
 		return
-	throw_args[2] += 2 // range
-	throw_args[3] += 1 // speed
+	throw_args[2] += throw_range_bonus // range
+	throw_args[3] += throw_speed_bonus // speed
 
 /obj/item/organ/cyberimp/cyberware/atlas/proc/clear_throw_hooks(list/candidates)
 	for(var/atom/movable/candidate as anything in candidates)
@@ -565,7 +647,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/rigger
 	name = "\improper Rigger socket"
-	desc = "A skull jack that patches a ship's helm straight into your head. Anywhere aboard, you can fly it, as long as the ship still has a helm console for the socket to talk to, and as long as you don't mind walking while you do it."
+	desc = "A skull jack that patches a ship's helm straight into your head."
 	icon_state = "rigger"
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_CYBERWARE_RIGGER
@@ -580,7 +662,6 @@
 
 /obj/item/organ/cyberimp/cyberware/rigger/examine(mob/user)
 	. = ..()
-	. += span_notice("Opens the helm of whatever ship its bearer stands on, from anywhere on it. It borrows a real console. A hull with no helm left has nothing to answer with.")
 	if(!owner)
 		return
 	if(!linked_ship)
@@ -727,12 +808,12 @@
 		return FALSE
 	if(!linked_ship)
 		pilot.balloon_alert(pilot, "no hull to reach")
-		to_chat(pilot, span_warning("The socket casts around for a hull and finds solid ground. You have to be aboard a ship."))
+		to_chat(pilot, span_warning("The socket casts around for a hull and finds solid ground."))
 		return FALSE
 	var/obj/machinery/computer/helm/console = find_console()
 	if(!console)
 		pilot.balloon_alert(pilot, "no helm answering!")
-		to_chat(pilot, span_warning("Nothing aboard [linked_ship] answers the uplink. The socket borrows a helm console, and there isn't a working one left on the ship."))
+		to_chat(pilot, span_warning("Nothing aboard [linked_ship] answers the uplink."))
 		return FALSE
 	if(!console.check_crew_access(pilot))
 		return FALSE
@@ -743,7 +824,7 @@
 	cyberware_ink_pulse(pilot, CYBERWARE_INK_HARD)
 	pilot.visible_message(
 		span_notice("The jack behind [pilot]'s ear lights up, and [pilot.p_their()] eyes go somewhere else."),
-		span_notice("The uplink catches [console] aboard [linked_ship]. You are flying the ship from here, at a walk."),
+		span_notice("The uplink catches [console] aboard [linked_ship]. You are flying the ship from here."),
 	)
 	console.ui_interact(pilot)
 	return TRUE
@@ -778,7 +859,7 @@
 
 /datum/action/cooldown/cyberware/rigger_uplink
 	name = "Helm Uplink"
-	desc = "Open the ship's helm from wherever you're standing. You move at a walk while it's up, and it drops if you leave the hull, black out, or lose the socket."
+	desc = "Open the ship's helm from wherever you're standing. You walk slowly while it's up."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "rigger"
 	cooldown_time = 5 SECONDS
@@ -847,5 +928,4 @@
 #undef CYBERWARE_LAZARUS_COOLDOWN
 #undef CYBERWARE_LAZARUS_WINDUP
 #undef CYBERWARE_LAZARUS_HEAL_TO
-#undef TRAIT_CYBERWARE_UNBREAKABLE_BONES
 #undef CYBERWARE_RIGGER_SLOWDOWN

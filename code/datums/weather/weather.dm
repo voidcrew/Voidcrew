@@ -425,7 +425,8 @@
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/can_weather_act_mob(mob/living/mob_to_check)
 	// Preserve effects on abandoned player bodies while excluding ordinary fauna.
-	if(!mob_to_check.mind && !mob_to_check.ever_had_mind)
+	// Human NPCs (voidcrew/modules/human_npcs/) are weathered like players while awake.
+	if(!mob_to_check.mind && !mob_to_check.ever_had_mind && !human_npc_weathered(mob_to_check))
 		return
 
 	var/turf/mob_turf = get_turf(mob_to_check)

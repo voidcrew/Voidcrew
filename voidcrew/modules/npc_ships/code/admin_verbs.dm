@@ -2,53 +2,53 @@
  * Admin verbs for NPC pirate mob spawning
  */
 
-/// Mapping of faction names to their mob types
+/// Mapping of faction names to their mob types: the human NPC ship crews (faction_pirate_humans.dm)
 GLOBAL_LIST_INIT(npc_pirate_factions, list(
 	"Silverscale" = list(
-		"Melee (Duelist)" = /mob/living/basic/trooper/pirate/faction/silverscale/melee,
-		"Ranged (Marksman)" = /mob/living/basic/trooper/pirate/faction/silverscale/ranged,
-		"Captain (Noble)" = /mob/living/basic/trooper/pirate/faction/silverscale/captain,
-		"Boss (Highlord)" = /mob/living/basic/trooper/pirate/faction/boss/silverscale,
+		"Melee (Duelist)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/melee,
+		"Ranged (Marksman)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/ranged,
+		"Captain (Noble)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/captain,
+		"Boss (Highlord)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/boss,
 	),
 	"Skeleton" = list(
-		"Melee (Swashbuckler)" = /mob/living/basic/trooper/pirate/faction/skeleton/melee,
-		"Ranged (Gunner)" = /mob/living/basic/trooper/pirate/faction/skeleton/ranged,
-		"Captain" = /mob/living/basic/trooper/pirate/faction/skeleton/captain,
-		"Boss (Davy Jones)" = /mob/living/basic/trooper/pirate/faction/boss/skeleton,
+		"Melee (Swashbuckler)" = /mob/living/carbon/human/npc/faction_pirate/skeleton/melee,
+		"Ranged (Gunner)" = /mob/living/carbon/human/npc/faction_pirate/skeleton/ranged,
+		"Captain" = /mob/living/carbon/human/npc/faction_pirate/skeleton/captain,
+		"Boss (Davy Jones)" = /mob/living/carbon/human/npc/faction_pirate/skeleton/boss,
 	),
 	"Grey Tide" = list(
-		"Melee (Grey Tider)" = /mob/living/basic/trooper/pirate/faction/grey/melee,
-		"Ranged (Gunner)" = /mob/living/basic/trooper/pirate/faction/grey/ranged,
-		"Captain (Tidemaster)" = /mob/living/basic/trooper/pirate/faction/grey/captain,
-		"Boss (The Robust One)" = /mob/living/basic/trooper/pirate/faction/boss/grey,
+		"Melee (Grey Tider)" = /mob/living/carbon/human/npc/faction_pirate/grey/melee,
+		"Ranged (Gunner)" = /mob/living/carbon/human/npc/faction_pirate/grey/ranged,
+		"Captain (Tidemaster)" = /mob/living/carbon/human/npc/faction_pirate/grey/captain,
+		"Boss (The Robust One)" = /mob/living/carbon/human/npc/faction_pirate/grey/boss,
 	),
 	"Lustrous" = list(
-		"Melee (Scintillant)" = /mob/living/basic/trooper/pirate/faction/lustrous/melee,
-		"Ranged (Coruscant)" = /mob/living/basic/trooper/pirate/faction/lustrous/ranged,
-		"Captain (Radiant)" = /mob/living/basic/trooper/pirate/faction/lustrous/captain,
-		"Boss (The Radiant One)" = /mob/living/basic/trooper/pirate/faction/boss/lustrous,
+		"Melee (Scintillant)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/melee,
+		"Ranged (Coruscant)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/ranged,
+		"Captain (Radiant)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/captain,
+		"Boss (The Radiant One)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/boss,
 	),
 	"Interdyne" = list(
-		"Melee (Enforcer)" = /mob/living/basic/trooper/pirate/faction/interdyne/melee,
-		"Ranged (Pharmacist)" = /mob/living/basic/trooper/pirate/faction/interdyne/ranged,
-		"Captain (Director)" = /mob/living/basic/trooper/pirate/faction/interdyne/captain,
-		"Boss (Director Prime)" = /mob/living/basic/trooper/pirate/faction/boss/interdyne,
+		"Melee (Enforcer)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/melee,
+		"Ranged (Pharmacist)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/ranged,
+		"Captain (Director)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/captain,
+		"Boss (Director Prime)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/boss,
 	),
 	"IRS" = list(
-		"Melee (Enforcer)" = /mob/living/basic/trooper/pirate/faction/irs/melee,
-		"Ranged (Agent)" = /mob/living/basic/trooper/pirate/faction/irs/ranged,
-		"Captain (Head Auditor)" = /mob/living/basic/trooper/pirate/faction/irs/captain,
-		"Boss (Chief Auditor)" = /mob/living/basic/trooper/pirate/faction/boss/irs,
+		"Melee (Enforcer)" = /mob/living/carbon/human/npc/faction_pirate/irs/melee,
+		"Ranged (Agent)" = /mob/living/carbon/human/npc/faction_pirate/irs/ranged,
+		"Captain (Head Auditor)" = /mob/living/carbon/human/npc/faction_pirate/irs/captain,
+		"Boss (Chief Auditor)" = /mob/living/carbon/human/npc/faction_pirate/irs/boss,
 	),
 	"Medieval" = list(
-		"Melee (Footsoldier)" = /mob/living/basic/trooper/pirate/faction/medieval/melee,
-		"Ranged (Crossbowman)" = /mob/living/basic/trooper/pirate/faction/medieval/ranged,
-		"Captain (Warlord)" = /mob/living/basic/trooper/pirate/faction/medieval/captain,
-		"Boss (The Black Knight)" = /mob/living/basic/trooper/pirate/faction/boss/medieval,
+		"Melee (Footsoldier)" = /mob/living/carbon/human/npc/faction_pirate/medieval/melee,
+		"Ranged (Crossbowman)" = /mob/living/carbon/human/npc/faction_pirate/medieval/ranged,
+		"Captain (Warlord)" = /mob/living/carbon/human/npc/faction_pirate/medieval/captain,
+		"Boss (The Black Knight)" = /mob/living/carbon/human/npc/faction_pirate/medieval/boss,
 	),
 ))
 
-ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC pirate mob with patrol AI.", ADMIN_CATEGORY_DEBUG)
+ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC pirate mob, optionally as a boarder hunting the crew of the ship you stand on.", ADMIN_CATEGORY_DEBUG)
 	var/mob/admin_mob = user.mob
 	if(!admin_mob)
 		to_chat(user, span_warning("You need a mob to spawn pirates."))
@@ -87,66 +87,152 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 		to_chat(user, span_warning("Invalid pirate type selected."))
 		return
 
-	// Step 3: Ask about patrol AI setup
-	var/setup_patrol = tgui_alert(user, "Set up door-to-door patrol AI? (Requires being on a ship)", "Patrol AI", list("Yes", "No"))
+	// Step 3: Ask whether it boards the ship we're standing on
+	var/setup_raid = tgui_alert(user, "Send it after the crew of the ship you're standing on, as a boarder?", "Boarder AI", list("Yes", "No"))
 
-	// Spawn the pirate
+	// Spawn the pirate: a human NPC is built at once, dressed as a boarder if it is boarding
 	var/datum/npc_spawn_context/context = new(spawn_turf, null, "ordinary")
-	var/mob/living/basic/trooper/pirate/spawned_pirate = spawn_npc_in_zone(mob_path, spawn_turf, context, FALSE)
+	var/mob/living/spawned_pirate
+	if(ispath(mob_path, /mob/living/carbon/human/npc))
+		var/datum/human_npc_order/order = spawn_human_npc(mob_path, spawn_turf, outfit = (setup_raid == "Yes" ? boarding_outfit_for(mob_path) : null), context = context, immediate = TRUE)
+		spawned_pirate = order?.spawned_ref?.resolve()
+		if(spawned_pirate)
+			spawned_pirate.flags_1 |= ADMIN_SPAWNED_1
+	else
+		spawned_pirate = spawn_npc_in_zone(mob_path, spawn_turf, context, FALSE)
 	if(!spawned_pirate)
 		to_chat(user, span_warning("Failed to spawn pirate."))
 		return
 
-	// Set up patrol AI if requested
-	if(setup_patrol == "Yes")
-		// Find the ship we're on
-		var/area/current_area = get_area(spawn_turf)
-		var/obj/structure/overmap/ship/found_ship = null
-
-		if(current_area)
-			for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-				if(!S.shuttle?.shuttle_areas)
-					continue
-				if(current_area in S.shuttle.shuttle_areas)
-					found_ship = S
+	// Enlist it in the raid on this ship, exactly as a pod boarder would be (pirate_crew.dm)
+	if(setup_raid == "Yes")
+		var/obj/structure/overmap/ship/found_ship = pirate_crew_ship_at(spawn_turf)
+		if(!found_ship)
+			var/area/current_area = get_area(spawn_turf)
+			for(var/obj/structure/overmap/ship/candidate in SSovermap.simulated_ships)
+				var/list/candidate_areas = candidate.shuttle?.shuttle_areas
+				if(candidate_areas && candidate_areas[current_area])
+					found_ship = candidate
 					break
 
 		if(found_ship)
-			// Swap to patrolling AI controller
-			var/is_ranged = istype(spawned_pirate.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged)
-			var/is_boss = istype(spawned_pirate, /mob/living/basic/trooper/pirate/faction/boss)
-
-			var/new_controller_type
-			if(is_boss)
-				if(is_ranged)
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
-				else
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
+			if(pirate_crew_enlist_raider(spawned_pirate, found_ship))
+				to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) as a boarder on [found_ship.name]."))
 			else
-				if(is_ranged)
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
-				else
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
-
-			// Replace the AI controller
-			if(spawned_pirate.ai_controller)
-				QDEL_NULL(spawned_pirate.ai_controller)
-			spawned_pirate.ai_controller = new new_controller_type(spawned_pirate)
-
-			// Assign patrol path
-			if(assign_mob_to_patrol(spawned_pirate, found_ship))
-				to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) with patrol AI on [found_ship.name]."))
-			else
-				to_chat(user, span_warning("Spawned [spawned_pirate.name] but failed to assign patrol path. Ship may not have enough doors."))
+				to_chat(user, span_warning("Spawned [spawned_pirate.name] but it could not join a raid on [found_ship.name]."))
 		else
-			to_chat(user, span_warning("Spawned [spawned_pirate.name] but could not find a ship to patrol. Standing on a ship area is required for patrol AI."))
+			to_chat(user, span_warning("Spawned [spawned_pirate.name] but could not find a ship here. Stand on a ship to spawn a boarder."))
 	else
-		to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) without patrol AI."))
+		to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) with its own AI."))
 
-	context.finalize()
+	if(!ispath(mob_path, /mob/living/carbon/human/npc))
+		context.finalize()
 	message_admins("[key_name_admin(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	log_admin("[key_name(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	BLACKBOX_LOG_ADMIN_VERB("Spawn NPC Pirate")
+
+/**
+ * Force-docks the ship the admin stands on to a live NPC pirate, wherever it is on the overmap:
+ * the pirate is moved onto our tile and docked exactly as an interdictor's force dock would
+ * (exit-to-exit, reserve berths if that fails), with the same undock lockout on the pirate.
+ * For testing boarding fights without the chase and the interdiction.
+ */
+ADMIN_VERB(force_dock_npc_pirate, R_DEBUG, "Force Dock NPC Pirate", "Force-dock the ship you're standing on to an NPC pirate, ignoring distance.", ADMIN_CATEGORY_DEBUG)
+	var/turf/here = get_turf(user.mob)
+	var/obj/structure/overmap/ship/our_ship = here && pirate_crew_ship_at(here)
+	if(!our_ship)
+		to_chat(user, span_warning("Stand on a ship first."))
+		return
+	if(istype(our_ship, /obj/structure/overmap/ship/npc) && our_ship.ai_controller)
+		to_chat(user, span_warning("[our_ship.name] is an NPC ship. Stand on a player ship."))
+		return
+	if(our_ship.state != OVERMAP_SHIP_FLYING)
+		to_chat(user, span_warning("[our_ship.name] has to be flying, not docked or in transit."))
+		return
+
+	var/list/choices = list()
+	for(var/obj/structure/overmap/ship/npc/pirate as anything in SSnpc_ships.active_ships)
+		if(QDELETED(pirate) || pirate == our_ship || pirate.player_controlled || !pirate.ai_controller)
+			continue
+		if(pirate.state != OVERMAP_SHIP_FLYING || pirate.count_live_crew_aboard() <= 0)
+			continue
+		choices["[pirate.name] ([length(pirate.tracked_crew)] crew)"] = pirate
+	if(!length(choices))
+		to_chat(user, span_warning("No flying NPC pirate with a live crew to dock with."))
+		return
+	var/list/options = list("Random") + choices
+	var/picked = tgui_input_list(user, "Which pirate?", "Force Dock NPC Pirate", options, "Random")
+	if(!picked)
+		return
+	var/obj/structure/overmap/ship/npc/pirate = picked == "Random" ? choices[pick(choices)] : choices[picked]
+	// Everything can change while the list was open
+	if(QDELETED(pirate) || QDELETED(our_ship) || pirate.state != OVERMAP_SHIP_FLYING || our_ship.state != OVERMAP_SHIP_FLYING)
+		to_chat(user, span_warning("One of the ships stopped flying. Try again."))
+		return
+
+	// Each overmap tile has one ship-to-ship meeting point. A pirate from an earlier dock stays
+	// berthed there after we undock (NPC hulls only leave after a few minutes), so move to
+	// clear space nearby rather than fail.
+	var/turf/spot = get_turf(our_ship)
+	if(!pirate_dock_spot_free(spot))
+		spot = find_free_pirate_dock_spot(our_ship)
+		if(!spot)
+			to_chat(user, span_warning("The meeting point here is taken and there's no clear space within 5 tiles. Fly somewhere emptier and try again."))
+			return
+		our_ship.forceMove(spot)
+		our_ship.update_screen()
+		our_ship.push_helm_frame()
+		to_chat(user, span_notice("The meeting point here was taken, so [our_ship.name] moved to clear space nearby."))
+	pirate.forceMove(spot)
+	var/result = our_ship.dock_ships_directly(pirate, null, TRUE)
+	// The meeting point loads its level on first use; give it a few seconds
+	for(var/attempt in 1 to 10)
+		if(!result || !findtext(result, "loading"))
+			break
+		sleep(1 SECONDS)
+		if(QDELETED(pirate) || QDELETED(our_ship))
+			return
+		result = our_ship.dock_ships_directly(pirate, null, TRUE)
+	if(result)
+		var/fallback = our_ship.dock_ships_to_reserve_ports(pirate, null, TRUE)
+		if(fallback)
+			to_chat(user, span_warning("Docking failed: [result] Reserve berths: [fallback]"))
+			return
+		to_chat(user, span_notice("Docked [our_ship.name] to [pirate.name] at separate berths (the airlocks don't touch)."))
+	else
+		to_chat(user, span_notice("Docked [our_ship.name] to [pirate.name], airlock to airlock."))
+	COOLDOWN_START(pirate, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
+	our_ship.ship_notify("Forced docking with [pirate.display_name].", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	message_admins("[key_name_admin(user)] force-docked [our_ship.name] to NPC pirate [pirate.name]. [ADMIN_COORDJMP(pirate)]")
+	log_admin("[key_name(user)] force-docked [our_ship.name] to NPC pirate [pirate.name]")
+	BLACKBOX_LOG_ADMIN_VERB("Force Dock NPC Pirate")
+
+/// Whether the ship-to-ship meeting point on overmap tile `spot`, if it has one, has both berths free
+/proc/pirate_dock_spot_free(turf/spot)
+	var/obj/structure/overmap/planet/empty/meeting = locate() in spot
+	if(!meeting)
+		return TRUE
+	if(meeting.first_dock_taken || meeting.second_dock_taken || meeting.loading)
+		return FALSE
+	if(meeting.reserve_dock?.get_docked() || meeting.reserve_dock_secondary?.get_docked())
+		return FALSE
+	return TRUE
+
+/// The nearest empty overmap tile within 5 of `ship`, on the same side of any zone line
+/proc/find_free_pirate_dock_spot(obj/structure/overmap/ship/ship)
+	var/turf/origin = get_turf(ship)
+	if(!origin)
+		return null
+	for(var/radius in 1 to 5)
+		for(var/turf/open/overmap/candidate in orange(radius, origin))
+			if(get_dist(candidate, origin) != radius)
+				continue
+			if(locate(/obj/structure/overmap) in candidate)
+				continue
+			if(ship.zone_crossing(origin, candidate))
+				continue
+			return candidate
+	return null
 
 /// Global list of dummy mobs keeping z-levels active for debugging
 GLOBAL_LIST_EMPTY(z_level_activator_dummies)
@@ -465,3 +551,28 @@ ADMIN_VERB(colorize_rooms_direct, R_DEBUG, "Colorize Ship Rooms (Direct)", "Togg
 			T.color = null
 
 	GLOB.room_colored_ships -= ship_ref
+
+/**
+ * What every NPC pirate crew and each of its members is doing right now: alert state, known
+ * hostiles, and per pirate its AI status, behaviours, target, quarry and any door it is breaking.
+ * Also written to the shuttle log, so a playtest's report can be read afterwards.
+ */
+ADMIN_VERB(pirate_crew_status, R_DEBUG, "Pirate Crew Status", "Show what every NPC pirate crew and its members are doing.", ADMIN_CATEGORY_DEBUG)
+	var/list/crews = list()
+	for(var/key in GLOB.pirate_defending_crews)
+		crews += GLOB.pirate_defending_crews[key]
+	for(var/key in GLOB.pirate_raiding_crews)
+		crews += GLOB.pirate_raiding_crews[key]
+	var/list/lines = list()
+	for(var/datum/pirate_crew/crew as anything in crews)
+		if(!QDELETED(crew))
+			lines += crew.status_report()
+	if(!length(lines))
+		lines += "No pirate crews."
+	var/list/shown = list()
+	for(var/line in lines)
+		shown += html_encode(line)
+	to_chat(user, boxed_message(jointext(shown, "<br>")))
+	for(var/line in lines)
+		log_shuttle("PIRATE_CREW_STATUS: [line]")
+	BLACKBOX_LOG_ADMIN_VERB("Pirate Crew Status")
