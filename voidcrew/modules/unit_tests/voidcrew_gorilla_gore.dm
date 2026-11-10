@@ -541,6 +541,9 @@
 	TEST_ASSERT(!bearer.has_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup), "The wind-up's slow outlived it")
 	TEST_ASSERT(!bearer.has_offset("gorilla_windup"), "The wind-up's lean outlived it")
 	TEST_ASSERT(!bearer.has_offset("gorilla_windup_tremble"), "The wind-up's tremble outlived it")
+	// The blow lands when the thrown fist does (GORILLA_HAYMAKER_THROW)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The haymaker landed before its fist was thrown")
+	sleep(0.2 SECONDS)
 	TEST_ASSERT(victim.getBruteLoss() - hurt_before >= 20, "A full haymaker hit for too little") // GORILLA_HAYMAKER_MIN_DAMAGE
 	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(bearer, "gorilla_pistons"), "The haymaker didn't spend the pistons") // COOLDOWN_GORILLA_PISTONS
 	TEST_ASSERT(!left_haymaker.IsAvailable(), "The other arm's haymaker didn't share the cooldown")
@@ -630,6 +633,75 @@
 	TEST_ASSERT_NULL(floored.gorilla_thrust, "A bearer lying down drew an arm")
 	sleep(0.3 SECONDS)
 	TEST_ASSERT(kicked.getBruteLoss() > kicked_before, "A punch from the floor never landed")
+
+/**
+ * The haymaker's arm: a bearer who stands still winds up on the rig, whose puppets lean with the hidden body; the blow
+ * lands when the thrown fist does, and the rig comes down when the arms are back at rest. A step or a turn mid
+ * wind-up takes the rig down and the wind-up goes on; a wind-up called off lowers the arms and then the rig.
+ */
+/datum/unit_test/voidcrew_gorilla_gore/haymaker_swing
+
+/datum/unit_test/voidcrew_gorilla_gore/haymaker_swing/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	bearer.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/haymaker = locate() in arm(bearer, BODY_ZONE_R_ARM).actions
+	haymaker.Trigger(bearer)
+	TEST_ASSERT_NOTNULL(haymaker.rig, "A wind-up standing still raised no rig")
+	TEST_ASSERT_EQUAL(puppets_left(), 3, "The wind-up's rig isn't a body and two arms")
+	var/datum/status_effect/gorilla_windup/windup = bearer.has_status_effect(/datum/status_effect/gorilla_windup)
+	haymaker.charge_started = world.time - 2 SECONDS
+	windup.tick(0.2)
+	var/obj/effect/abstract/chrome_puppet/body_puppet = haymaker.rig.puppet("body")
+	TEST_ASSERT_EQUAL(body_puppet.pixel_x, bearer.pixel_x, "The puppets didn't lean with the hidden body")
+	TEST_ASSERT_EQUAL(body_puppet.pixel_w, bearer.pixel_w, "The puppets didn't tremble with the hidden body")
+	var/hurt_before = victim.getBruteLoss()
+	haymaker.InterceptClickOn(bearer, null, victim)
+	TEST_ASSERT_NOTNULL(haymaker.rig, "The rig came down before the swing")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The haymaker landed before its fist was thrown")
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() - hurt_before >= 20, "The thrown haymaker never landed") // GORILLA_HAYMAKER_MIN_DAMAGE
+	TEST_ASSERT_NOTNULL(haymaker.rig, "The rig came down before the follow-through")
+	sleep(0.6 SECONDS)
+	TEST_ASSERT_NULL(haymaker.rig, "The rig outlived the swing")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The swing left a puppet behind")
+	TEST_ASSERT(!bearer.get_filter("chrome_rig_hide"), "The swing left its bearer hidden") // CHROME_RIG_HIDE_FILTER
+
+	// A step: the lean alone from there, and the wind-up goes on
+	var/mob/living/carbon/human/walker = gorilla(spot(0, 2))
+	walker.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/walking = locate() in arm(walker, BODY_ZONE_R_ARM).actions
+	walking.Trigger(walker)
+	TEST_ASSERT_NOTNULL(walking.rig, "Test fixture: the second wind-up raised no rig")
+	walker.forceMove(spot(0, 3))
+	TEST_ASSERT_NULL(walking.rig, "A step left the rig standing where the bearer was")
+	TEST_ASSERT(walking.charging(), "A step ended the wind-up")
+	TEST_ASSERT_NOTNULL(walker.has_status_effect(/datum/status_effect/gorilla_windup), "A step ended the wind-up's lean")
+	walking.unset_click_ability(walker, refund_cooldown = TRUE)
+
+	// A turn does the same
+	var/mob/living/carbon/human/turner = gorilla(spot(2, 2))
+	turner.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/turning = locate() in arm(turner, BODY_ZONE_R_ARM).actions
+	turning.Trigger(turner)
+	TEST_ASSERT_NOTNULL(turning.rig, "Test fixture: the third wind-up raised no rig")
+	turner.setDir(SOUTH)
+	TEST_ASSERT_NULL(turning.rig, "A turn left the old facing's puppets up")
+	TEST_ASSERT(turning.charging(), "A turn ended the wind-up")
+	turning.unset_click_ability(turner, refund_cooldown = TRUE)
+
+	// Called off: the arms come down first, then the rig
+	var/mob/living/carbon/human/venter = gorilla(spot(2, 4))
+	venter.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/vented = locate() in arm(venter, BODY_ZONE_R_ARM).actions
+	vented.Trigger(venter)
+	TEST_ASSERT_NOTNULL(vented.rig, "Test fixture: the fourth wind-up raised no rig")
+	vented.unset_click_ability(venter, refund_cooldown = TRUE)
+	TEST_ASSERT(!vented.charging(), "Test fixture: the wind-up wasn't called off")
+	TEST_ASSERT_NOTNULL(vented.rig, "A wind-up called off dropped its arms in one frame")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_NULL(vented.rig, "The rig outlived a wind-up called off")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A wind-up called off left a puppet behind")
 
 // =========================================================================
 // GROUND POUND
