@@ -77,6 +77,6 @@ Give the item to the recipient so they can put it in their case and extract it. 
 
 ## Spending banked parts
 
-Open the **Shipyard** from the join menu to see your balance and the prices of hulls, themes and modules. Purchases use your banked parts; you do not carry physical parts into the shipyard. Free options need no parts.
+Open the **SHIPYARD** tab on the lobby's dock terminal to see your balance and the prices of hulls, themes and modules. The bill for a ship adds up everything on it you don't own yet, and **COMMISSION** pays it from your banked parts in one go. You do not carry physical parts into the shipyard. Free options need no parts.
 
 Unlocks are permanent. Buying a theme or module lets you select it for future launches of that hull without paying again, and losing a ship does not erase your purchases. See [Buying & Upgrading Ships](ship-upgrades.md) for choosing a loadout and [Ship Catalog](ship-catalog.md) for the available hulls.
