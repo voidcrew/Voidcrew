@@ -106,6 +106,7 @@
 /// Cult remnants: constructs still bound to a dead master's wards.
 /obj/effect/zone_mobs/cult
 	name = "zone mob spawner (cult)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/construct/proteon/hostile = 10,
 	)
@@ -134,6 +135,7 @@
 /// The restless dead: graves, derelicts, plague sites.
 /obj/effect/zone_mobs/undead
 	name = "zone mob spawner (undead)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/skeleton = 10,
 		/mob/living/basic/zombie = 6,

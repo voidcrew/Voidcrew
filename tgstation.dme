@@ -7370,6 +7370,7 @@
 #include "voidcrew\modules\loot\loot_guns.dm"
 #include "voidcrew\modules\loot\zone_loot.dm"
 #include "voidcrew\modules\loot\zone_mobs.dm"
+#include "voidcrew\modules\loot\zone_mobs_arrival.dm"
 #include "voidcrew\modules\loot\zone_resolution.dm"
 #include "voidcrew\modules\loot\themes\_theme.dm"
 #include "voidcrew\modules\loot\themes\armory.dm"

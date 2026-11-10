@@ -51,13 +51,24 @@
 	var/npc_role = "auto"
 	/// How far spawns scatter from the marker
 	var/scatter_radius = 2
+	/// How a runtime wave gets on scene: ZONE_MOBS_ARRIVE_POD or ZONE_MOBS_ARRIVE_EMERGE
+	var/wave_arrival = ZONE_MOBS_ARRIVE_POD
+	/// Pod look for ZONE_MOBS_ARRIVE_POD waves
+	var/datum/pod_style/wave_pod_style = /datum/pod_style
+	/// Set for runtime waves: the pack shows up on screen instead of appearing in place
+	var/wave = FALSE
 
 /**
  * Runtime spawns (mission waves) can pass a count override:
  * new /obj/effect/zone_mobs/pirate(T, list(1, 2)) guarantees 1-2 spawns in
  * every band, regardless of the theme's defaults.
+ * Pass wave = TRUE when players may be watching: the pack drops in by pod or
+ * digs out of the ground (wave_arrival) instead of appearing next to them.
  */
-/obj/effect/zone_mobs/Initialize(mapload, list/count_override)
+/obj/effect/zone_mobs/Initialize(mapload, list/count_override, wave = FALSE)
+	src.wave = wave
+	if(wave)
+		scatter_radius = max(scatter_radius, ZONE_MOBS_WAVE_SCATTER)
 	if(npc_role == "auto" && npc_zone_boss_type(type))
 		npc_role = "boss"
 	if(islist(count_override) && length(count_override) >= 2)
@@ -107,7 +118,12 @@
 			continue
 		var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
 		var/datum/npc_spawn_context/context = new(src, zone_type, npc_role)
-		spawn_npc_in_zone_or_queue(mob_path, spot, context)
+		if(!wave)
+			spawn_npc_in_zone_or_queue(mob_path, spot, context)
+		else if(wave_arrival == ZONE_MOBS_ARRIVE_EMERGE)
+			zone_mobs_emerge(mob_path, spot, context)
+		else
+			zone_mobs_pod_drop(mob_path, spot, context, wave_pod_style)
 
 /**
  * Open, unblocked turfs around the marker the pack can scatter onto.
@@ -115,7 +131,8 @@
 /obj/effect/zone_mobs/proc/get_scatter_turfs()
 	var/list/result = list()
 	for(var/turf/open/tile in RANGE_TURFS(scatter_radius, src))
-		if(tile.is_blocked_turf(exclude_mobs = TRUE))
+		// A wave never lands a pod or digs up under someone's feet
+		if(tile.is_blocked_turf(exclude_mobs = !wave))
 			continue
 		result += tile
 	return result
