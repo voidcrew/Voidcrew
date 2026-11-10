@@ -658,6 +658,14 @@
 		var/list/fist_at = fresh_rig.hand_at("r", list(reach[2], reach[3], chrome_swing_base(reach[1], 0, 15)))
 		TEST_ASSERT(abs(fist_at[1] - point[1]) <= 1 && abs(fist_at[2] - point[2]) <= 1, "The fist stops short of the [zone] of a body beside its bearer")
 
+	// A body a corner away gets tg's lunge: the arm is thrown the way its bearer faces
+	var/mob/living/carbon/human/consistent/cornered = allocate(/mob/living/carbon/human/consistent, spot(4, 3))
+	var/cornered_before = cornered.getBruteLoss()
+	arm(fresh).piston_hit(fresh, cornered, fresh.get_bodypart(BODY_ZONE_R_ARM), BODY_ZONE_CHEST)
+	TEST_ASSERT_NULL(fresh.gorilla_thrust, "A punch at a corner tile threw its arm past the body")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(cornered.getBruteLoss() > cornered_before, "A punch at a corner tile never landed")
+
 /**
  * The haymaker's arm: a bearer who stands still winds up on the rig, whose puppets lean with the hidden body; the blow
  * lands when the thrown fist does, and the rig comes down when the arms are back at rest. A step or a turn mid
@@ -726,6 +734,21 @@
 	sleep(0.5 SECONDS)
 	TEST_ASSERT_NULL(vented.rig, "The rig outlived a wind-up called off")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "A wind-up called off left a puppet behind")
+
+	// Thrown at a body a corner away: the rig comes down, the lunge is tg's, and the blow still lands
+	var/mob/living/carbon/human/cornerer = gorilla(spot(3, 3))
+	var/mob/living/carbon/human/consistent/cornered = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
+	cornerer.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/corner_swing = locate() in arm(cornerer, BODY_ZONE_R_ARM).actions
+	corner_swing.Trigger(cornerer)
+	TEST_ASSERT_NOTNULL(corner_swing.rig, "Test fixture: the fifth wind-up raised no rig")
+	corner_swing.charge_started = world.time - 1 SECONDS
+	var/cornered_before = cornered.getBruteLoss()
+	corner_swing.InterceptClickOn(cornerer, null, cornered)
+	TEST_ASSERT_NULL(corner_swing.rig, "A haymaker at a corner tile threw its arm past the body")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A haymaker at a corner tile left a puppet behind")
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(cornered.getBruteLoss() - cornered_before >= 20, "A haymaker at a corner tile never landed") // GORILLA_HAYMAKER_MIN_DAMAGE
 
 // =========================================================================
 // GROUND POUND

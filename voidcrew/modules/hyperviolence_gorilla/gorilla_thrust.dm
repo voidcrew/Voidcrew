@@ -189,7 +189,7 @@
  * [bearer] throws a piston punch at [zone] of [target] with the arm on [arm_zone]: the fist draws back and drives out
  * onto the part, the body lunging behind it, and comes back to rest. Only the picture. Returns how long the fist takes
  * to land, for the blow to wait on: the same for every punch. A bearer who can't be drawn that way (lying, turned or
- * resized, something huge worn) lunges as tg has them lunge.
+ * resized, something huge worn, a target that isn't straight ahead) lunges as tg has them lunge.
  */
 /proc/gorilla_thrust(mob/living/carbon/human/bearer, atom/movable/target, arm_zone, zone)
 	if(!gorilla_thrust_arm(bearer, target, arm_zone, zone))
@@ -201,6 +201,9 @@
 	if(!ishuman(bearer) || !ismovable(target) || QDELETED(target) || !isturf(bearer.loc))
 		return FALSE
 	if(bearer.body_position == LYING_DOWN || !(bearer.dir in GLOB.cardinals) || bearer.mob_height != HUMAN_HEIGHT_MEDIUM)
+		return FALSE
+	// The arm is thrown the way the bearer faces. A target a corner away, or on the bearer's own tile, isn't there
+	if(get_turf(target) != get_step(bearer.loc, bearer.dir))
 		return FALSE
 	// Faded (a camo field, a cloak): a puppet would be an arm in plain sight
 	if(bearer.alpha < 255 || bearer.invisibility)

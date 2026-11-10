@@ -360,12 +360,16 @@
 /**
  * The swing on the rig, from where the wind-up left the arms: the fist thrown onto [zone] of [victim] (or through the
  * empty tile ahead) with a step in behind it, the follow-through, and back to rest; then the rig comes down. Called
- * once the wind-up has ended. Returns FALSE, with the rig down, if it can't be drawn: no rig, or a bearer who has
- * turned away from the way it faces.
+ * once the wind-up has ended. Returns FALSE, with the rig down, if it can't be drawn: no rig, a bearer who has
+ * turned away from the way it faces, or a victim who isn't straight ahead.
  */
 /datum/action/cooldown/cyberware/gorilla_haymaker/proc/swing(mob/living/victim, zone)
 	var/mob/living/carbon/human/bearer = owner
 	if(isnull(rig) || rig.body != bearer || rig.facing != bearer.dir || !isturf(bearer.loc))
+		drop_rig()
+		return FALSE
+	// The arm is thrown the way the rig faces. A body a corner away, or on the bearer's own tile, isn't there
+	if(victim && get_turf(victim) != get_step(bearer.loc, rig.facing))
 		drop_rig()
 		return FALSE
 	var/list/leant = rig_leant()
