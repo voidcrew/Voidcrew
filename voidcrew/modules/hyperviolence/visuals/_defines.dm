@@ -145,6 +145,10 @@
 #define HV_VIS_PRESS_LEAN 4
 /// The still moment at the end of the press, after the trembling stops.
 #define HV_VIS_PRESS_PAUSE (0.3 SECONDS)
+/// How far off the middle of its tile tg's muzzle flash art sits, toward the way it faces, in pixels.
+#define HV_VIS_FLASH_CORE 9
+/// How far short of the head the barrel's end, and so the flash, sits.
+#define HV_VIS_FLASH_SHORT 6
 /// Screen shake of a finisher's killing blow, for everyone who sees it: length and strength in tiles.
 #define HV_VIS_KILL_SHAKE_TIME 4
 #define HV_VIS_KILL_SHAKE_STRENGTH 0.12

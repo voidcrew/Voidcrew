@@ -32,6 +32,8 @@
 	var/hv_vis_hit_damage = 0
 	/// Weak reference to whoever landed it, for the hit-stop.
 	var/datum/weakref/hv_vis_hit_by
+	/// Whether it was a shot, which rocks a shooter back, rather than a blow, which they lean into.
+	var/hv_vis_hit_ranged = FALSE
 	/// How many hits are being resolved on this mob right now, and the tick that count is for.
 	var/hv_vis_resolving = 0
 	var/hv_vis_resolving_time = -1
@@ -117,6 +119,9 @@
 		hv_vis_hit_damage = 0
 		hv_vis_hit_dir = 0
 		hv_vis_hit_by = null
+		hv_vis_hit_ranged = FALSE
+	if(isprojectile(attacking_item))
+		hv_vis_hit_ranged = TRUE
 	// A baton or disabler hit makes a body jerk, but less than a bullet.
 	hv_vis_hit_damage += damagetype == STAMINA ? damage * 0.5 : damage
 	if(attack_direction)
@@ -274,7 +279,7 @@
 		attacker = hv_vis_hit_by?.resolve()
 	if(!attacker || attacker == src || QDELETED(attacker) || attacker.z != z || get_dist(attacker, src) > 9)
 		return
-	attacker.hv_vis_hold_blow(src)
+	attacker.hv_vis_hold_blow(src, hv_vis_hit_time == world.time && hv_vis_hit_ranged)
 
 /// A pale flash over the body for the frames of a hit-stop. A colour filter, gone again half a second later.
 /mob/living/proc/hv_vis_flash()
@@ -289,12 +294,12 @@
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, remove_filter), HV_VIS_FLASH_FILTER), 0.5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
 
 /// The attacker's side of a hit-stop: the blow sticks for a few frames. A melee attacker stays leaned
-/// into the victim, a shooter stays rocked back.
-/mob/living/proc/hv_vis_hold_blow(atom/victim)
+/// into the victim; a shooter stays rocked back, even with the barrel against them (`shot`).
+/mob/living/proc/hv_vis_hold_blow(atom/victim, shot = FALSE)
 	if(!isturf(loc))
 		return
 	var/toward = get_dir(src, victim)
-	var/lean = get_dist(src, victim) <= 1 ? 3 : -2
+	var/lean = (shot || get_dist(src, victim) > 1) ? -2 : 3
 	var/dx = HV_VIS_DX(toward) * lean
 	var/dy = HV_VIS_DY(toward) * lean
 	var/matrix/base = matrix(transform)
