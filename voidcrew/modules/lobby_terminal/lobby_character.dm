@@ -524,9 +524,14 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	for(var/item_path in loadout)
 		var/list/details = loadout[item_path]
 		var/list/entry = list()
+		if(islist(details) && details[INFO_GREYSCALE])
+			entry["greyscale"] = details[INFO_GREYSCALE]
+		else if(ispath(item_path, /obj/item))
+			// The item's own colours, so the swatches show what an untouched slot really is.
+			var/obj/item/kit_item = item_path
+			if(initial(kit_item.greyscale_colors))
+				entry["greyscale"] = initial(kit_item.greyscale_colors)
 		if(islist(details))
-			if(details[INFO_GREYSCALE])
-				entry["greyscale"] = details[INFO_GREYSCALE]
 			if(details[INFO_NAMED])
 				entry["name"] = details[INFO_NAMED]
 			if(details[INFO_RESKIN])

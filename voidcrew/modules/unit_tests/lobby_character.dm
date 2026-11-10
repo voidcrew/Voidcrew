@@ -6,6 +6,10 @@
  * on the game tab.
  */
 
+/// The mock client has no playtime: the veteran cloak preference asks for it while the char block is built.
+/datum/client_interface/proc/is_veteran()
+	return FALSE
+
 /// A terminal with no client or tgui window, editing a mock client's prefs.
 /datum/lobby_terminal/lobby_char_test
 	var/datum/preferences/test_prefs

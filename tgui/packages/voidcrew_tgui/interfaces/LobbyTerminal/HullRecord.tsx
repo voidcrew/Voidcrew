@@ -101,8 +101,7 @@ export function HullRecord(props: {
       onClick={() =>
         ctx.set({
           // A hull with no finishes and no rooms has nothing to fit: straight to the bill.
-          screen:
-            hull.finishes.length || hull.slots.length ? 'fit' : 'bill',
+          screen: hull.finishes.length || hull.slots.length ? 'fit' : 'bill',
           finish: null,
           picks: {},
           step: 0,

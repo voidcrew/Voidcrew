@@ -11,18 +11,39 @@ import { fetchRetry } from 'tgui-core/http';
 let cached: ServerData | null = null;
 let pending: Promise<ServerData | null> | null = null;
 
+/** Tries this many times, a second and a half apart: the asset can arrive after the first fetch (char_open sends it). */
+const TRIES = 20;
+const RETRY_MS = 1500;
+
+function attempt(left: number): Promise<ServerData | null> {
+  return fetchRetry(resolveAsset('preferences.json'))
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`preferences.json: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data: ServerData) => {
+      cached = data;
+      return data;
+    })
+    .catch(() =>
+      left > 1
+        ? new Promise<ServerData | null>((resolve) =>
+            setTimeout(() => resolve(attempt(left - 1)), RETRY_MS),
+          )
+        : null,
+    );
+}
+
 function load(): Promise<ServerData | null> {
   if (!pending) {
-    pending = fetchRetry(resolveAsset('preferences.json'))
-      .then((response) => response.json())
-      .then((data: ServerData) => {
-        cached = data;
-        return data;
-      })
-      .catch(() => {
-        pending = null;
-        return null;
-      });
+    pending = attempt(TRIES).then((data) => {
+      if (!data) {
+        pending = null; // the next mount tries again
+      }
+      return data;
+    });
   }
   return pending;
 }
