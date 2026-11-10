@@ -105,9 +105,11 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
  * The short spray of a clean cut: a few drops thrown from src toward spray_dir, landing within a tile or so in a
  * narrow fan. No streak along the floor; the shared spray (hv_blood_throw()) lays a straight line, a wire's never
  * does. `tiles` sets how far the furthest drops reach. From the stump of `zone` if given, shorter, and never straight
- * away from the viewer: drops thrown that way would read as leaving the head. Returns TRUE if anything was sprayed.
+ * away from the viewer: drops thrown that way would read as leaving the head. With no `zone`, from the pixel `from`
+ * (x, y of its lower left corner, off the middle of src's tile), where a line of wire cut the body, or from the middle
+ * of the body if that isn't given either. Returns TRUE if anything was sprayed.
  */
-/mob/living/proc/hv_wire_spray(spray_dir, tiles = 2, zone)
+/mob/living/proc/hv_wire_spray(spray_dir, tiles = 2, zone, list/from)
 	if(QDELETED(src) || !isturf(loc) || can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return FALSE
 	tiles = clamp(round(tiles), 1, 2)
@@ -117,7 +119,10 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 	hv_blood_spray_strength = max(hv_blood_spray_strength, tiles)
 	if(!zone)
 		var/list/reach = tiles > 1 ? list(10, 16, 22, 30, 38) : list(8, 12, 16, 20)
-		wire_blood_burst(loc, pixel_x, pixel_y - 2, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 45, reach)
+		// A drop's picture is the pixel under the one it is placed on.
+		var/from_x = from ? from[1] : pixel_x
+		var/from_y = from ? from[2] + 1 : pixel_y - 2
+		wire_blood_burst(loc, from_x, from_y, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 45, reach)
 		return TRUE
 	// From the stump: drops only, no splat; a clean cut. Short, so they land by the body, on the floor round the feet
 	// of a body standing.

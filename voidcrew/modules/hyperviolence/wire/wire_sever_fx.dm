@@ -541,13 +541,15 @@
 // ---- Through two bodies ----
 
 /**
- * The wire went through `target` and on into `behind`: each throws a short fan of drops the way it went, from where it
- * was cut. No line of light and no line of blood: the swing's own lash runs on to `behind` (wire_lash_through()).
+ * The wire of `user` went through `target` and on into `behind`: each throws a short fan of drops the way it went, from
+ * where it was cut: the pixel the swing's lash passes on `target` and the one it ends on in `behind`'s chest
+ * (wire_through_cuts()). No line of light and no line of blood: that lash runs on to `behind` (wire_lash_through()).
  * `clean`: `target` throws none here, its own cut showing another way (a limb coming off, a crossing cut).
  */
-/obj/item/melee/cyberware_monowire/proc/wire_through_fx(mob/living/target, mob/living/behind, direction, clean = FALSE)
+/obj/item/melee/cyberware_monowire/proc/wire_through_fx(mob/living/user, mob/living/target, mob/living/behind, direction, clean = FALSE)
+	var/list/cuts = clean ? null : wire_through_cuts(user, target, behind)
 	if(!clean)
-		target.hv_wire_spray(direction, 2)
-	behind.hv_wire_spray(direction, 2)
+		target.hv_wire_spray(direction, 2, from = cuts ? cuts[1] : null)
+	behind.hv_wire_spray(direction, 2, from = cuts ? cuts[2] : wire_zone_point(behind, BODY_ZONE_CHEST))
 
 #undef WIRE_SHOE_SCALE

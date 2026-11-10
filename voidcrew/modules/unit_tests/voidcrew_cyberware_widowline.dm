@@ -356,6 +356,16 @@
 	var/obj/effect/abstract/wire_reach/lash_end = locate() in get_turf(behind)
 	TEST_ASSERT_NOTNULL(lash_end, "The lash of a through-cut stopped short of the body behind")
 	TEST_ASSERT_EQUAL(lash_end.icon_state, wire.lash_state(), "The lash of a through-cut has no bright end on the body behind")
+	// Each body's drops leave from where that line cuts it: level with the first body's chest as it passes, and in the
+	// middle of the chest of the body behind, where it ends.
+	var/list/cuts = wire.wire_through_cuts(user, target, behind)
+	TEST_ASSERT_NOTNULL(cuts, "No line runs from the wielder through two bodies in a row")
+	var/list/passed = cuts[1]
+	var/list/chest = wire_zone_point(target, BODY_ZONE_CHEST)
+	TEST_ASSERT(abs(passed[1] - chest[1]) <= 1 && abs(passed[2] - chest[2]) <= 8, "The through-cut's line passes the first body away from its chest: [passed[1]], [passed[2]]")
+	var/list/ended = cuts[2]
+	var/list/end = wire_zone_point(behind, BODY_ZONE_CHEST)
+	TEST_ASSERT(ended[1] == end[1] && ended[2] == end[2], "The through-cut's line doesn't end in the middle of the chest of the body behind")
 	var/over = 0
 	var/under = 0
 	for(var/obj/effect/abstract/wire_reach/piece in get_turf(target))

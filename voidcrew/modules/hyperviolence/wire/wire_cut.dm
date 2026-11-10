@@ -270,7 +270,7 @@
 			to_chat(nearby, span_userdanger("[user]'s monowire carries through into you!"))
 			cleaved = TRUE
 	if(behind)
-		wire_through_fx(target, behind, direction, !lash)
+		wire_through_fx(user, target, behind, direction, !lash)
 		lash_through = lash ? WEAKREF(behind) : null
 		target.hv_add_hit_line("The wire carries through into [behind]!", HV_LINE_BOLD)
 		to_chat(behind, span_userdanger("The wire carries through into you!"))
