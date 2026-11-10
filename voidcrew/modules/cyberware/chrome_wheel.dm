@@ -971,6 +971,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		chip.pixel_y = point[2]
 		chips += chip
 		draw_chip(chip)
+	// Nothing is pointed at yet: the arcs start dim, as they are whenever the pointer leaves a chip.
+	light_up(null)
 	build_readout()
 	update_readout()
 
