@@ -226,6 +226,9 @@ SUBSYSTEM_DEF(vc_tutorials)
 	tutorial_credit_crew(src, TUTORIAL_STEP_SHIP_DOCK, aboard_only = TRUE)
 	if(istype(docked, /obj/structure/overmap/planet) && !istype(docked, /obj/structure/overmap/planet/empty))
 		tutorial_credit_crew(src, TUTORIAL_STEP_RUIN_LAND, aboard_only = TRUE)
+	// Trader outposts only: the trade steps after this one (elevator, shops) are theirs.
+	else if(istype(docked, /obj/structure/overmap/trader_outpost))
+		tutorial_credit_crew(src, TUTORIAL_STEP_TRADE_TRAVEL, aboard_only = TRUE)
 
 /obj/structure/overmap/ship/proc/tutorial_on_undocked(datum/source)
 	SIGNAL_HANDLER
@@ -236,6 +239,6 @@ SUBSYSTEM_DEF(vc_tutorials)
 
 /obj/structure/overmap/ship/proc/tutorial_on_survey(datum/source, celestial_type)
 	SIGNAL_HANDLER
-	tutorial_credit_crew(src, TUTORIAL_STEP_RESEARCH_SURVEY)
+	tutorial_credit_crew(src, TUTORIAL_STEP_SURVEYS_SURVEY)
 
 #undef TUTORIAL_MACHINE_CACHE_TIME

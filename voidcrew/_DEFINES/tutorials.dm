@@ -8,6 +8,7 @@
 #define TUTORIAL_ITEM_SHIP "vc/ship"
 #define TUTORIAL_ITEM_CONTRACT "vc/contract"
 #define TUTORIAL_ITEM_RESEARCH "vc/research"
+#define TUTORIAL_ITEM_SURVEYS "vc/surveys"
 #define TUTORIAL_ITEM_RUIN "vc/ruin"
 #define TUTORIAL_ITEM_TRADE "vc/trade"
 #define TUTORIAL_ITEM_POWER "vc/power"
@@ -32,13 +33,20 @@
 #define TUTORIAL_STEP_CONTRACT_WORK "vc/contract/work"
 #define TUTORIAL_STEP_CONTRACT_TURN_IN "vc/contract/turn_in"
 
-// Research and surveys
+// R&D setup
+#define TUTORIAL_STEP_RESEARCH_KIT "vc/research/kit"
+#define TUTORIAL_STEP_RESEARCH_SERVER "vc/research/server"
+#define TUTORIAL_STEP_RESEARCH_DISK "vc/research/disk"
 #define TUTORIAL_STEP_RESEARCH_CONSOLE "vc/research/console"
-#define TUTORIAL_STEP_RESEARCH_LATHE "vc/research/lathe"
-#define TUTORIAL_STEP_RESEARCH_NODE "vc/research/node"
-#define TUTORIAL_STEP_RESEARCH_BUILD "vc/research/build"
-#define TUTORIAL_STEP_RESEARCH_SURVEY "vc/research/survey"
-#define TUTORIAL_STEP_RESEARCH_NOTES "vc/research/notes"
+#define TUTORIAL_STEP_RESEARCH_PROTOLATHE "vc/research/protolathe"
+#define TUTORIAL_STEP_RESEARCH_MULTITOOL "vc/research/multitool"
+#define TUTORIAL_STEP_RESEARCH_LINK "vc/research/link"
+
+// Surveys
+#define TUTORIAL_STEP_SURVEYS_NODE "vc/surveys/node"
+#define TUTORIAL_STEP_SURVEYS_BUILD "vc/surveys/build"
+#define TUTORIAL_STEP_SURVEYS_SURVEY "vc/surveys/survey"
+#define TUTORIAL_STEP_SURVEYS_NOTES "vc/surveys/notes"
 
 // Planet ruin
 #define TUTORIAL_STEP_RUIN_LAND "vc/ruin/land"
@@ -46,6 +54,7 @@
 #define TUTORIAL_STEP_RUIN_CACHE "vc/ruin/cache"
 
 // Outpost trade
+#define TUTORIAL_STEP_TRADE_TRAVEL "vc/trade/travel"
 #define TUTORIAL_STEP_TRADE_ELEVATOR "vc/trade/elevator"
 #define TUTORIAL_STEP_TRADE_BUY "vc/trade/buy"
 #define TUTORIAL_STEP_TRADE_SELL "vc/trade/sell"

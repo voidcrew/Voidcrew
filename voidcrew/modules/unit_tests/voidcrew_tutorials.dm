@@ -68,7 +68,7 @@
 /// credits is a step in the catalog.
 /datum/unit_test/voidcrew_tutorials/catalog/Run()
 	SSvc_tutorials.build_catalog()
-	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 13, "The checklist does not have its thirteen items")
+	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 14, "The checklist does not have its fourteen items")
 	var/list/seen = list()
 	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
 		check_key(item.id, seen)
@@ -182,7 +182,7 @@
 	web.techweb_servers |= server
 	// TECHWEB_NODE_SURVEY_CONSOLE and TECHWEB_NODE_SHIP_COMBAT
 	TEST_ASSERT(web.research_node(SSresearch.techweb_node_by_id("survey_console"), TRUE, FALSE, FALSE), "The survey console node could not be researched")
-	TEST_ASSERT(done("vc/research/node"), "Researching the survey console was not credited to the crew")
+	TEST_ASSERT(done("vc/surveys/node"), "Researching the survey console was not credited to the crew")
 	TEST_ASSERT(!done("vc/zones/warfare"), "The survey node counted as warfare research")
 	TEST_ASSERT(web.research_node(SSresearch.techweb_node_by_id("ship_combat"), TRUE, FALSE, FALSE), "The warfare node could not be researched")
 	TEST_ASSERT(done("vc/zones/warfare"), "Researching Shuttle Warfare Systems was not credited to the crew")
@@ -263,8 +263,54 @@
 	notes.value = 10
 	console.attackby(notes, player)
 	TEST_ASSERT(QDELETED(notes), "The console did not take the notes")
-	TEST_ASSERT(done("vc/research/notes"), "Turning in research notes was not credited")
+	TEST_ASSERT(done("vc/surveys/notes"), "Turning in research notes was not credited")
 	console.stored_research = null
+
+/// R&D setup: kit, built ship server, disk, multitool, built console and protolathe, then links.
+/// The link step waits until both the console and the protolathe are on the server's web.
+/datum/unit_test/voidcrew_tutorials/rnd_setup/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/obj/structure/overmap/ship/ship = make_crewed_ship(deck, player)
+
+	var/obj/item/storage/box/rndboards/all/kit = allocate(/obj/item/storage/box/rndboards/all, deck)
+	kit.pickup(player)
+	TEST_ASSERT(done("vc/research/kit"), "Picking up the R&D kit was not credited")
+
+	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship, deck)
+	TEST_ASSERT(!done("vc/research/server"), "A spawned server counted as building one")
+	server.on_construction(player)
+	TEST_ASSERT(done("vc/research/server"), "Building the ship server was not credited")
+
+	var/obj/item/computer_disk/ship_disk/disk = allocate(/obj/item/computer_disk/ship_disk, deck)
+	server.attacked_by(disk, player)
+	TEST_ASSERT_EQUAL(server.source_code_hdd, disk, "The server did not take the disk")
+	TEST_ASSERT(done("vc/research/disk"), "Adding the ship disk was not credited")
+
+	var/obj/item/multitool/tool = allocate(/obj/item/multitool, deck)
+	server.multitool_act(player, tool)
+	TEST_ASSERT_EQUAL(tool.buffer, disk.stored_research, "The multitool did not store the server's techweb")
+	TEST_ASSERT(done("vc/research/multitool"), "Multitooling the server was not credited")
+
+	var/obj/machinery/computer/rdconsole/console = allocate(/obj/machinery/computer/rdconsole, deck)
+	console.on_construction(player)
+	TEST_ASSERT(done("vc/research/console"), "Building the R&D console was not credited")
+	var/obj/machinery/rnd/production/protolathe/lathe = allocate(/obj/machinery/rnd/production/protolathe, deck)
+	lathe.on_construction(player)
+	TEST_ASSERT(done("vc/research/protolathe"), "Building the protolathe was not credited")
+	console.unsync_research_servers()
+	lathe.unsync_research_servers()
+
+	console.multitool_act(player, tool)
+	TEST_ASSERT_EQUAL(console.stored_research, disk.stored_research, "The console did not link to the server")
+	TEST_ASSERT(!done("vc/research/link"), "Linking only the console counted as linking everything")
+	TEST_ASSERT(!tutorial_ship_rnd_linked(ship), "The ship counted as linked with the protolathe unlinked")
+	lathe.multitool_act(player, tool)
+	TEST_ASSERT_EQUAL(lathe.stored_research, disk.stored_research, "The protolathe did not link to the server")
+	TEST_ASSERT(done("vc/research/link"), "Linking the console and protolathe was not credited")
+	TEST_ASSERT(done("vc/research"), "Finishing every R&D step did not complete the item")
+	console.unsync_research_servers()
+	lathe.unsync_research_servers()
 
 /// Starting a PACMAN counts; stopping one doesn't.
 /datum/unit_test/voidcrew_tutorials/generator/Run()
@@ -295,6 +341,12 @@
 	TEST_ASSERT(!done("vc/ruin/land"), "Docking at a ship counted as landing on a planet")
 	SEND_SIGNAL(ship, "voidcrew_ship_undocked") // COMSIG_VOIDCREW_SHIP_UNDOCKED
 	TEST_ASSERT(done("vc/ship/undock"), "Undocking was not credited to the crew aboard")
+	TEST_ASSERT(!done("vc/trade/travel"), "Docking at a ship counted as reaching an outpost")
+	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost, get_step(run_loc_floor_top_right, WEST))
+	ship.docked = outpost
+	SEND_SIGNAL(ship, "voidcrew_ship_docked") // COMSIG_VOIDCREW_SHIP_DOCKED
+	ship.docked = null
+	TEST_ASSERT(done("vc/trade/travel"), "Docking at a trader outpost was not credited to the crew aboard")
 
 /// Pact, completed trial and claimed boon.
 /datum/unit_test/voidcrew_tutorials/vestige/Run()

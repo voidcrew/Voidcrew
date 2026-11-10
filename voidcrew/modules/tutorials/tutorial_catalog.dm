@@ -159,58 +159,127 @@
 	text = "Bring the goods to the contract pad and press Turn In on the board."
 
 // ---------------------------------------------------------------------------
-// Research and surveys
+// R&D setup
 // ---------------------------------------------------------------------------
 
 /datum/vc_tutorial/research
 	id = TUTORIAL_ITEM_RESEARCH
-	name = "Research and surveys"
+	name = "R&D setup"
 	order = 3
 	steps = list(
+		/datum/vc_tutorial_step/research_kit,
+		/datum/vc_tutorial_step/research_server,
+		/datum/vc_tutorial_step/research_disk,
 		/datum/vc_tutorial_step/research_console,
-		/datum/vc_tutorial_step/research_lathe,
-		/datum/vc_tutorial_step/research_node,
-		/datum/vc_tutorial_step/research_build,
-		/datum/vc_tutorial_step/research_survey,
-		/datum/vc_tutorial_step/research_notes,
+		/datum/vc_tutorial_step/research_protolathe,
+		/datum/vc_tutorial_step/research_multitool,
+		/datum/vc_tutorial_step/research_link,
 	)
+
+/datum/vc_tutorial_step/research_kit
+	key = TUTORIAL_STEP_RESEARCH_KIT
+	name = "Get the R&D kit"
+	text = "Print the Research & Development Kit at the autolathe and pick it up."
+
+/// A hull that already has a ship server is past needing the kit.
+/datum/vc_tutorial_step/research_kit/state_satisfied(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/server/ship)
+
+/datum/vc_tutorial_step/research_server
+	key = TUTORIAL_STEP_RESEARCH_SERVER
+	name = "Build the R&D server"
+	text = "Set the server flatpack on the floor and use a multitool on it."
+
+/datum/vc_tutorial_step/research_server/state_satisfied(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/server/ship)
+
+/datum/vc_tutorial_step/research_disk
+	key = TUTORIAL_STEP_RESEARCH_DISK
+	name = "Add the ship disk"
+	text = "Put the R&D server source code disk into the server."
+
+/datum/vc_tutorial_step/research_disk/state_satisfied(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return !!ship?.get_research_web()
 
 /datum/vc_tutorial_step/research_console
 	key = TUTORIAL_STEP_RESEARCH_CONSOLE
-	name = "Open the R&D console"
-	text = "No R&D aboard? Print the R&D Kit at the autolathe and set it up."
+	name = "Set up the R&D console"
+	text = "Make a computer frame from the kit's iron, then add the console board, cable and glass."
 
-/datum/vc_tutorial_step/research_lathe
-	key = TUTORIAL_STEP_RESEARCH_LATHE
-	name = "Use the protolathe"
-	text = "This is where researched gear gets printed."
+/datum/vc_tutorial_step/research_console/state_satisfied(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/computer/rdconsole)
 
-/datum/vc_tutorial_step/research_node
-	key = TUTORIAL_STEP_RESEARCH_NODE
+/datum/vc_tutorial_step/research_protolathe
+	key = TUTORIAL_STEP_RESEARCH_PROTOLATHE
+	name = "Set up the protolathe"
+	text = "Set the protolathe flatpack on the floor and use a multitool on it."
+
+/datum/vc_tutorial_step/research_protolathe/state_satisfied(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/production/protolathe)
+
+/datum/vc_tutorial_step/research_multitool
+	key = TUTORIAL_STEP_RESEARCH_MULTITOOL
+	name = "Multitool the server"
+	text = "Use a multitool on the server to copy its link."
+
+/// A hull whose console and protolathe already run off its server got here some other way.
+/datum/vc_tutorial_step/research_multitool/state_satisfied(mob/user)
+	return tutorial_ship_rnd_linked(get_crew_ship(user))
+
+/datum/vc_tutorial_step/research_link
+	key = TUTORIAL_STEP_RESEARCH_LINK
+	name = "Link all the devices"
+	text = "Use that multitool on the R&D console and the protolathe."
+
+/datum/vc_tutorial_step/research_link/state_satisfied(mob/user)
+	return tutorial_ship_rnd_linked(get_crew_ship(user))
+
+// ---------------------------------------------------------------------------
+// Surveys
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/surveys
+	id = TUTORIAL_ITEM_SURVEYS
+	name = "Surveys"
+	order = 4
+	steps = list(
+		/datum/vc_tutorial_step/surveys_node,
+		/datum/vc_tutorial_step/surveys_build,
+		/datum/vc_tutorial_step/surveys_survey,
+		/datum/vc_tutorial_step/surveys_notes,
+	)
+
+/datum/vc_tutorial_step/surveys_node
+	key = TUTORIAL_STEP_SURVEYS_NODE
 	name = "Research the survey console"
 	text = "At the R&D console, research Orbital Survey Console."
 
-/datum/vc_tutorial_step/research_node/state_satisfied(mob/user)
+/datum/vc_tutorial_step/surveys_node/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	var/datum/techweb/web = ship?.get_research_web()
 	return !!web?.researched_nodes[TECHWEB_NODE_SURVEY_CONSOLE]
 
-/datum/vc_tutorial_step/research_build
-	key = TUTORIAL_STEP_RESEARCH_BUILD
+/datum/vc_tutorial_step/surveys_build
+	key = TUTORIAL_STEP_SURVEYS_BUILD
 	name = "Build a survey console"
 	text = "Print its board at the circuit imprinter and build it like any computer."
 
-/datum/vc_tutorial_step/research_build/state_satisfied(mob/user)
+/datum/vc_tutorial_step/surveys_build/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/computer/camera_advanced/shuttle_docker/survey)
 
-/datum/vc_tutorial_step/research_survey
-	key = TUTORIAL_STEP_RESEARCH_SURVEY
+/datum/vc_tutorial_step/surveys_survey
+	key = TUTORIAL_STEP_SURVEYS_SURVEY
 	name = "Survey a planet"
 	text = "Fly next to a planet and start a survey at the console."
 
-/datum/vc_tutorial_step/research_notes
-	key = TUTORIAL_STEP_RESEARCH_NOTES
+/datum/vc_tutorial_step/surveys_notes
+	key = TUTORIAL_STEP_SURVEYS_NOTES
 	name = "Turn in the notes"
 	text = "Print the notes at the survey console and use them on the R&D console."
 
@@ -221,7 +290,7 @@
 /datum/vc_tutorial/ruin
 	id = TUTORIAL_ITEM_RUIN
 	name = "Planet ruin"
-	order = 4
+	order = 5
 	steps = list(
 		/datum/vc_tutorial_step/ruin_land,
 		/datum/vc_tutorial_step/ruin_find,
@@ -250,12 +319,18 @@
 /datum/vc_tutorial/trade
 	id = TUTORIAL_ITEM_TRADE
 	name = "Outpost trade"
-	order = 5
+	order = 6
 	steps = list(
+		/datum/vc_tutorial_step/trade_travel,
 		/datum/vc_tutorial_step/trade_elevator,
 		/datum/vc_tutorial_step/trade_buy,
 		/datum/vc_tutorial_step/trade_sell,
 	)
+
+/datum/vc_tutorial_step/trade_travel
+	key = TUTORIAL_STEP_TRADE_TRAVEL
+	name = "Travel to an outpost and dock"
+	text = "Fly to a trading outpost and press Dock at the helm."
 
 /datum/vc_tutorial_step/trade_elevator
 	key = TUTORIAL_STEP_TRADE_ELEVATOR
@@ -279,7 +354,7 @@
 /datum/vc_tutorial/power
 	id = TUTORIAL_ITEM_POWER
 	name = "Ship power"
-	order = 6
+	order = 7
 	steps = list(
 		/datum/vc_tutorial_step/power_smes,
 		/datum/vc_tutorial_step/power_generator,
@@ -317,7 +392,7 @@
 /datum/vc_tutorial/chrome
 	id = TUTORIAL_ITEM_CHROME
 	name = "Cyberware"
-	order = 7
+	order = 8
 	steps = list(
 		/datum/vc_tutorial_step/chrome_buy,
 		/datum/vc_tutorial_step/chrome_install,
@@ -346,7 +421,7 @@
 /datum/vc_tutorial/surgery
 	id = TUTORIAL_ITEM_SURGERY
 	name = "First surgery"
-	order = 8
+	order = 9
 	steps = list(
 		/datum/vc_tutorial_step/surgery_start,
 		/datum/vc_tutorial_step/surgery_finish,
@@ -356,7 +431,7 @@
 /datum/vc_tutorial_step/surgery_start
 	key = TUTORIAL_STEP_SURGERY_START
 	name = "Start an operation"
-	text = "Lay a hurt crewmate down, cover them with a bedsheet and pick Tend Wounds. The autolathe prints the tools."
+	text = "Lay a hurt crewmate down, cover them with a bedsheet or surgical drapes and pick Tend Wounds. The autolathe prints the tools."
 
 /datum/vc_tutorial_step/surgery_finish
 	key = TUTORIAL_STEP_SURGERY_FINISH
@@ -366,7 +441,7 @@
 /datum/vc_tutorial_step/surgery_dissect
 	key = TUTORIAL_STEP_SURGERY_DISSECT
 	name = "Dissect a body"
-	text = "Lay a corpse or dead creature on a table, cover it with a bedsheet and pick Dissection. What you learn goes into your ship's research."
+	text = "Lay a corpse or dead creature on a table, cover it with a bedsheet or surgical drapes and pick Dissection. What you learn goes into your ship's research."
 
 // ---------------------------------------------------------------------------
 // Zones (replaces the old orientation briefing)
@@ -375,7 +450,7 @@
 /datum/vc_tutorial/zones
 	id = TUTORIAL_ITEM_ZONES
 	name = "Zones"
-	order = 9
+	order = 10
 	steps = list(
 		/datum/vc_tutorial_step/zones_yellow,
 		/datum/vc_tutorial_step/zones_warfare,
@@ -409,7 +484,7 @@
 /datum/vc_tutorial/storage
 	id = TUTORIAL_ITEM_STORAGE
 	name = "Storage"
-	order = 10
+	order = 11
 	steps = list(
 		/datum/vc_tutorial_step/storage_shelf,
 		/datum/vc_tutorial_step/storage_crate,
@@ -444,7 +519,7 @@
 /datum/vc_tutorial/repair_drones
 	id = TUTORIAL_ITEM_REPAIR_DRONES
 	name = "Repair drones"
-	order = 11
+	order = 12
 	steps = list(
 		/datum/vc_tutorial_step/repair_drones_research,
 		/datum/vc_tutorial_step/repair_drones_assemble,
@@ -484,7 +559,7 @@
 /datum/vc_tutorial/ship_save
 	id = TUTORIAL_ITEM_SHIP_SAVE
 	name = "Save your ship"
-	order = 12
+	order = 13
 	steps = list(
 		/datum/vc_tutorial_step/ship_save_dock,
 		/datum/vc_tutorial_step/ship_save_save,
@@ -527,7 +602,7 @@
 /datum/vc_tutorial/vestige
 	id = TUTORIAL_ITEM_VESTIGE
 	name = "Vestige pact"
-	order = 13
+	order = 14
 	steps = list(
 		/datum/vc_tutorial_step/vestige_find,
 		/datum/vc_tutorial_step/vestige_pact,
