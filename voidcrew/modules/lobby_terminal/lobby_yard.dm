@@ -582,6 +582,11 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	if(!QDELETED(player))
 		player.lobby_form_new = null
 	release_join_lock(player_ckey)
+	// The fleet opened a berth while the request ran: requisition_free_hull() refused it.
+	if(!QDELETED(src) && !QDELETED(player) && player.client && istype(player.client.mob, /mob/dead/new_player) && !player.spawning_ship && !can_requisition_hull(player))
+		goto_tab("crews")
+		set_notice("A berth has opened aboard the fleet.", "warn")
+		return
 	yard_report_failed_launch(player)
 
 /datum/lobby_terminal/proc/yard_load(mob/dead/new_player/player, list/params)
