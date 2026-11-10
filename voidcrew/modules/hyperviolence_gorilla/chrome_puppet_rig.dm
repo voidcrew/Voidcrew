@@ -503,17 +503,18 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	bend_angle = to_bend
 	base_transform = bend_matrix(to_bend)
 
-/// Sends the body puppet through [bases] (matrices, null for upright), one straight step of [step_time] each, as its arms go through theirs.
+/// Sends the body puppet through [bases] (matrices, null for upright), one straight step of [step_time] each (or of step_time[i], given a list), as its arms go through theirs.
 /datum/chrome_rig/proc/body_through(list/bases, step_time)
 	var/obj/effect/abstract/chrome_puppet/body_puppet = puppet("body")
 	if(!body_puppet)
 		return
 	for(var/i in 1 to length(bases))
 		var/matrix/base = bases[i] || matrix()
+		var/this_step = islist(step_time) ? step_time[i] : step_time
 		if(i == 1)
-			animate(body_puppet, transform = base, time = step_time)
+			animate(body_puppet, transform = base, time = this_step)
 		else
-			animate(transform = base, time = step_time)
+			animate(transform = base, time = this_step)
 
 /// [x], [y] (pixels from the middle of the picture) put through [transform].
 /proc/chrome_rig_apply(matrix/transform, x, y)
@@ -619,6 +620,18 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 			step_times += times[i] / steps
 		from = to_pose
 	pose_arm_through(side, poses, step_times)
+
+/**
+ * Counts each arm's turn the short way round from hanging, without moving it (a full turn more or less is the same
+ * pose). An arm swung on past straight up then comes down the way it points, not back up over the head.
+ */
+/datum/chrome_rig/proc/unwind_arms()
+	for(var/side in arm_poses)
+		var/list/pose = arm_poses[side]
+		while(pose[1] > 180)
+			pose[1] -= 360
+		while(pose[1] <= -180)
+			pose[1] += 360
 
 /// The arm nearer the viewer in a side view ("l" or "r"); the right arm in other views.
 /datum/chrome_rig/proc/near_side()

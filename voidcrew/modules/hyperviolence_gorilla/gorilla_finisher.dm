@@ -201,12 +201,13 @@
 /datum/hv_finisher/chrome/gorilla/proc/enter_self_line(key)
 	return null
 
-/// The flash, sparks, ring and shake of a killing blow on [where]. Only the victim flashes; the arms keep their look.
-/datum/hv_finisher/chrome/gorilla/proc/hit_stop(atom/movable/where, heavy = TRUE, spark_z = 0)
+/// The flash, sparks, ring and shake of a killing blow on [where], the sparks [spark_w], [spark_z] pixels from its middle. Only the victim flashes; the arms keep their look.
+/datum/hv_finisher/chrome/gorilla/proc/hit_stop(atom/movable/where, heavy = TRUE, spark_z = 0, spark_w = 0)
 	victim_rig?.flash()
 	var/obj/effect/abstract/cyberware_anim/sparks = gorilla_play_impact(user, where, "impact_gorilla")
-	if(sparks && spark_z)
+	if(sparks)
 		sparks.pixel_z += spark_z
+		sparks.pixel_w += spark_w
 	var/turf/spot = get_turf(where)
 	if(spot)
 		new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, heavy ? 1 : 0.6)
@@ -839,13 +840,28 @@
 	switch(key)
 		if("plant")
 			rig_bearer()
+			if(bearer_rig && facing == NORTH)
+				// Seen from behind, everything he does here is on his far side: his arms reach out past his own
+				// back and head, which hide them where they cross
+				for(var/arm_side in list("l", "r"))
+					var/obj/effect/abstract/chrome_puppet/own_arm = bearer_rig.puppet("arm_[arm_side]")
+					own_arm?.layer = user.layer - 0.01
 			lean_out = list(-round(toward[1] / ICON_SIZE_X * GORILLA_RIP_LEAN), -round(toward[2] / ICON_SIZE_Y * GORILLA_RIP_LEAN))
 			lean = lean_out.Copy()
 			victim_rig = new(victim, victim.dir)
 			if(bearer_rig && victim_rig.snapshot())
 				// The arm turns with the lying body, about its own shoulder
 				victim_rig.base_transform = matrix(victim.transform)
-				victim_rig.add_puppet("body", victim_rig.cut_without_arms(side), TRUE)
+				var/obj/effect/abstract/chrome_puppet/laid_body = victim_rig.add_puppet("body", victim_rig.cut_without_arms(side), TRUE)
+				// Draw order, back to front, the same from the plant to the let-go:
+				// - Facing the viewer the body lies nearer than he stands: his body, the body on the floor, its
+				//   hauled arm, his arms (they reach toward the viewer), the torn arm.
+				// - From the side: his far arm, a far hauled arm, the body, his body (a boot on it), a near hauled
+				//   arm, his near arm, the torn arm.
+				// - Facing away the body is beyond him, and so is all he does to it: the body, its hauled arm, his
+				//   arms, the torn arm in his fists, and over them all his own back and head.
+				if(laid_body && facing == SOUTH)
+					laid_body.layer = user.layer + 0.004
 				var/obj/effect/abstract/chrome_puppet/hauled = victim_rig.add_puppet("arm_[side]", victim_rig.arm_picture(side), TRUE)
 				// The far arm seen from the side comes out from behind the body. Any other arm is hauled up in front of the
 				// bearer, over his body and under his near fist, unless he faces away and it is beyond him.
@@ -861,16 +877,22 @@
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.puppets[key_name]
 					part.pixel_x += body_shift[1]
 					part.pixel_y += body_shift[2]
-				victim_rig.conceal()
-				take_wrist(0.3 SECONDS)
+				// What stands in for it until its puppets can be drawn stands where they do
+				victim_rig.conceal(body_shift[1], body_shift[2])
+				take_wrist(0.3 SECONDS, GORILLA_RIP_START_HOLD)
 			else
 				QDEL_NULL(victim_rig)
 				arms_to(side_view() ? 45 : 30, 0.3 SECONDS, 3)
 			// A boot on the body: the bearer leans over them, arms and all (after the swings, which would cut
-			// the lean short on the arms)
+			// the lean short on the arms). Nothing moves through the hold, while the puppets' pictures reach the
+			// client: they come on as the bodies stood, and then he steps in.
 			for(var/key_name in bearer_rig?.puppets)
 				var/obj/effect/abstract/chrome_puppet/part = bearer_rig.puppets[key_name]
-				animate(part, pixel_x = part.pixel_x + lean[1], pixel_y = part.pixel_y + lean[2], time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+				if(victim_rig)
+					animate(part, pixel_x = part.pixel_x, time = GORILLA_RIP_START_HOLD, flags = ANIMATION_PARALLEL)
+					animate(pixel_x = part.pixel_x + lean[1], pixel_y = part.pixel_y + lean[2], time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
+				else
+					animate(part, pixel_x = part.pixel_x + lean[1], pixel_y = part.pixel_y + lean[2], time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 		if("strain")
 			if(victim_rig && grip)
 				haul(1.3 SECONDS)
@@ -892,7 +914,15 @@
 			bearer_rig?.drop_puppet("club")
 			// The arm goes down with the body as he lets it go
 			drop_held_limb()
+			// Down the way they point: not back up over his head the way they came
+			bearer_rig?.unwind_arms()
 			arms_to(0, 0.5 SECONDS)
+			// Let go, the body slides back to where tg lays it; its stand-ins go with it, and the real one shows there
+			if(victim_rig && !QDELETED(victim))
+				for(var/key_name in victim_rig.puppets)
+					var/obj/effect/abstract/chrome_puppet/part = victim_rig.puppets[key_name]
+					animate(part, pixel_x = victim.pixel_x, pixel_y = victim.pixel_y, pixel_w = victim.pixel_w, pixel_z = victim.pixel_z, time = GORILLA_RIP_LET_GO, easing = EASE_IN | EASE_OUT, flags = ANIMATION_PARALLEL)
+				addtimer(CALLBACK(src, PROC_REF(fallen)), GORILLA_RIP_LET_GO + 0.05 SECONDS, TIMER_DELETE_ME)
 			// Straightens up off the body, so the real one shows where he stands (after the swing, as the lean was)
 			for(var/key_name in bearer_rig?.puppets)
 				var/obj/effect/abstract/chrome_puppet/part = bearer_rig.puppets[key_name]
@@ -959,7 +989,7 @@
 	var/list/body_pose = victim_rig.pose_reaching(side, wrist[1] - body_at[1], wrist[2] - body_at[2], from["body"])
 	.["body"] = list(body_pose[1], body_pose[2], victim_rig.base_transform)
 
-/// Sends the bearer's arms and body and the hauled arm through [all_poses] (a list of poses_on() lists), [step_time] a step.
+/// Sends the bearer's arms and body and the hauled arm through [all_poses] (a list of poses_on() lists), [step_time] a step (or step_time[i] for the i-th, given a list).
 /datum/hv_finisher/chrome/gorilla/rip/proc/pose_through(list/all_poses, step_time)
 	var/list/bends = list()
 	for(var/key_name in list("bearer_l", "bearer_r", "body"))
@@ -987,9 +1017,9 @@
 
 /**
  * The plant, over [time]: the bearer's piston arms push out, both fists close on the wrist and the arm comes
- * up off the floor into them.
+ * up off the floor into them. Every part stays as it is for [hold] first.
  */
-/datum/hv_finisher/chrome/gorilla/rip/proc/take_wrist(time)
+/datum/hv_finisher/chrome/gorilla/rip/proc/take_wrist(time, hold = 0)
 	var/bend = 0
 	var/matrix/bent = null
 	var/list/line = haul_line(GORILLA_RIP_TILT, bent)
@@ -1021,6 +1051,14 @@
 		var/list/pose = there[key_name]
 		steps = max(steps, bearer_rig.swing_steps(now[key_name], pose[1]))
 	var/list/all_poses = list()
+	var/list/step_times = list()
+	if(hold)
+		var/list/still = list()
+		for(var/key_name in start)
+			var/list/was = start[key_name]
+			still[key_name] = list(was[1], was[2], null)
+		all_poses += list(still)
+		step_times += hold
 	for(var/i in 1 to steps)
 		var/progress = (1 - cos(180 * i / steps)) / 2
 		var/matrix/bent_now = bearer_rig.bend_matrix(bend * progress)
@@ -1030,7 +1068,8 @@
 			var/list/was = start[key_name]
 			poses[key_name] = list(was[1] + (pose[1] - was[1]) * progress, was[2] + (pose[2] - was[2]) * progress, key_name == "body" ? null : bent_now)
 		all_poses += list(poses)
-	pose_through(all_poses, time / steps)
+		step_times += time / steps
+	pose_through(all_poses, step_times)
 
 /**
  * The strain, over [time]: the bearer leans back from his feet (seen from the side) with his arms out and steps back to
@@ -1109,12 +1148,14 @@
 
 /**
  * The arm gives: the body drops back flat from its turn about the feet, faster and faster, the arm falling back to its
- * side with it if it held. The real body shows once it is down.
+ * side with it if it held. It stays on its stand-ins, in their draw order, until he lets go (the recover).
  */
 /datum/hv_finisher/chrome/gorilla/rip/proc/fall_back()
 	var/obj/effect/abstract/chrome_puppet/body_puppet = victim_rig?.puppet("body")
-	if(!body_puppet || !raised || QDELETED(victim))
+	if(!body_puppet || QDELETED(victim))
 		QDEL_NULL(victim_rig)
+		return
+	if(!raised)
 		return
 	var/matrix/flat = matrix(victim.transform)
 	var/list/arm_from = victim_rig.puppet("arm_[side]") ? (victim_rig.arm_poses[side] || list(0, 1)) : null
@@ -1135,9 +1176,8 @@
 		victim_rig.pose_arm_through(side, arm_steps, GORILLA_RIP_FALL_TIME / steps)
 	raised = 0
 	victim_rig.base_transform = flat
-	addtimer(CALLBACK(src, PROC_REF(fallen)), GORILLA_RIP_FALL_TIME, TIMER_DELETE_ME)
 
-/// The body is down after the arm gave: the real one shows in its place.
+/// He has let the body go and it lies where tg lays it: the real one shows in its place.
 /datum/hv_finisher/chrome/gorilla/rip/proc/fallen()
 	QDEL_NULL(victim_rig)
 
@@ -1295,7 +1335,13 @@
 		return
 	switch(key)
 		if("tear")
-			hit_stop(victim_rig?.puppet("arm_[side]") || victim)
+			// The sparks at the shoulder the arm leaves, on the body: on the arm they would go off with it in his fists
+			var/obj/effect/abstract/chrome_puppet/torn_from = victim_rig?.puppet("body")
+			if(torn_from)
+				var/list/socket = victim_rig.shoulder_point(side)
+				hit_stop(torn_from, TRUE, round(socket[2]), round(socket[1]))
+			else
+				hit_stop(victim)
 			var/outcome = gorilla_limb_rip(victim, target_zone, user, fist(), pool_spot())
 			// Both bodies are hidden behind their stand-ins, and so is what this just did to them (the stump, the blood
 			// that ran back over him): the stand-ins take it on now, or it would only show when they come down
@@ -1317,8 +1363,14 @@
 					arm.pixel_x -= toward[1]
 					arm.pixel_y -= toward[2]
 					arm.forceMove(get_turf(user))
-					arm.layer = user.layer + 0.03
-					if(grip)
+					// In his fists, over them. Seen from behind he holds it on his far side, so his body hides it
+					arm.layer = facing == NORTH ? user.layer - 0.005 : user.layer + 0.03
+					if(grip && facing == NORTH)
+						// Yanked back lying as it was hauled, it would cross the back of his legs and reach past his feet.
+						// It comes down in his fist, back to its own length, and hangs from it beside him
+						var/list/origin = bearer_origin()
+						hang_club(arm, list(grip[1] - origin[1], grip[2] - origin[2]), bearer_rig.hand_point(grip_side))
+					else if(grip)
 						// ...and yanked back with the fist that held it
 						var/list/fist_at = bearer_rig.hand_point(grip_side)
 						var/list/origin = bearer_origin()
@@ -1334,6 +1386,37 @@
 					animate(pixel_w = 2, time = 0.3 SECONDS, flags = ANIMATION_RELATIVE)
 			// It drops back to the floor as the arm gives
 			fall_back()
+
+/**
+ * The torn arm ([club]) goes with the fist that holds its hand, from [from_fist] to [fist_at] (pixels from the middle of
+ * his puppets), swinging about it in short steps to hang straight down. The fist is at his side, and the arm back at
+ * its own length, by half way.
+ */
+/datum/hv_finisher/chrome/gorilla/rip/proc/hang_club(obj/effect/abstract/chrome_puppet/club, list/from_fist, list/fist_at)
+	var/held_length = club_length()
+	if(!held_length)
+		return
+	var/matrix/drawn = club.transform
+	var/list/hand_now = chrome_rig_apply(drawn, club_ends[1], club_ends[2])
+	var/list/stump_now = chrome_rig_apply(drawn, club_ends[3], club_ends[4])
+	var/angle_now = arctan(stump_now[1] - hand_now[1], stump_now[2] - hand_now[2])
+	var/stretch_now = sqrt((stump_now[1] - hand_now[1]) ** 2 + (stump_now[2] - hand_now[2]) ** 2) / held_length
+	var/turn = -90 - angle_now
+	while(turn > 180)
+		turn -= 360
+	while(turn <= -180)
+		turn += 360
+	var/steps = max(4, bearer_rig.swing_steps(0, turn))
+	var/obj/effect/abstract/chrome_puppet/own_arm = bearer_rig.puppet("arm_[grip_side]")
+	for(var/i in 1 to steps)
+		var/progress = i / steps
+		var/yanked = min(1, progress * 2)
+		var/matrix/hung = club_matrix(from_fist[1] + (fist_at[1] - from_fist[1]) * yanked, from_fist[2] + (fist_at[2] - from_fist[2]) * yanked, angle_now + turn * progress, stretch_now + (1 - stretch_now) * yanked)
+		if(i == 1)
+			// From here on its transform alone puts it in his fist, from where his own arm stands
+			animate(club, transform = hung, pixel_x = own_arm?.pixel_x || 0, pixel_y = own_arm?.pixel_y || 0, pixel_z = own_arm?.pixel_z || 0, time = GORILLA_RIP_HANG_TIME / steps)
+		else
+			animate(transform = hung, time = GORILLA_RIP_HANG_TIME / steps)
 
 /// The middle of the victim's head as drawn, lying or not: pixels from the middle of the bearer's tile.
 /datum/hv_finisher/chrome/gorilla/rip/proc/victim_head_at()
@@ -1389,8 +1472,8 @@
 	var/blow_stretch = held_length ? clamp((apart - fist_along) / held_length, 1, GORILLA_CLUB_MAX_STRETCH) : 1
 	var/fist_x = from_x + fist_along * cos(blow_angle)
 	var/fist_y = from_y + fist_along * sin(blow_angle)
-	// Overhead: seen from the side up and back, the arm hanging back over his head; from the front straight up; from
-	// behind with his fists down behind his head, the arm down his back
+	// Overhead: seen from the side up and back, the arm hanging back over his head; from the front or from behind
+	// straight up, where both his arms and the arm in them show over his head
 	var/club_up
 	var/list/poses_now = list()
 	var/list/poses_up = list()
@@ -1401,9 +1484,6 @@
 		if(side_view())
 			up = list(200 * bearer_rig.raise_sign(arm_side), 1.2)
 			club_up = facing == EAST ? 145 : 35
-		else if(facing == NORTH)
-			up = list(170 * bearer_rig.raise_sign(arm_side), 0.6)
-			club_up = -90
 		else
 			up = list(170 * bearer_rig.raise_sign(arm_side), 1.1)
 			club_up = 90
@@ -1475,13 +1555,26 @@
 	victim.apply_damage(15, BRUTE, head || BODY_ZONE_CHEST, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND, attack_direction = get_dir(user, victim), attacking_item = fist())
 	victim.hv_flush_hit()
 	playsound(victim, 'sound/effects/wounds/splatter.ogg', 60, TRUE)
-	var/obj/effect/abstract/cyberware_anim/impact = gorilla_play_impact(user, victim, "impact_gorilla")
-	if(impact)
-		// On the head, where the arm lands. It rides on the body, so its offset turns with a lying one: up is the head.
+	// The blow's wound is drawn on the hidden body: its stand-in takes it on, and takes the hit
+	var/obj/effect/abstract/chrome_puppet/body_puppet = victim_rig?.puppet("body")
+	if(body_puppet && victim_rig.snapshot())
+		victim_rig.repaint("body", victim_rig.puppet("arm_[side]") ? victim_rig.cut_without_arms(side) : victim_rig.flat)
+	var/obj/effect/abstract/cyberware_anim/impact = gorilla_play_impact(user, body_puppet || victim, "impact_gorilla")
+	if(impact && body_puppet)
+		// On the head, where the arm lands. On a puppet it keeps the puppet's place but not its turn: the head as it lies
+		var/list/head_at = chrome_rig_apply(victim.transform, 0, CHROME_RIG_NECK_PIVOT_Y + 3.5)
+		impact.pixel_w += round(head_at[1])
+		impact.pixel_z += round(head_at[2])
+	else if(impact)
+		// It rides on the body, so its offset turns with a lying one: up is the head
 		impact.pixel_y += round(CHROME_RIG_NECK_PIVOT_Y + 3.5)
 	// Not tg's Shake(): its first step takes pixel_y from pixel_x, which throws a body pulled in by a grab a third of a
 	// tile aside for a frame
-	gorilla_shudder(victim, 2, 1, 0.2 SECONDS)
+	if(body_puppet)
+		for(var/key_name in victim_rig.puppets)
+			gorilla_shudder(victim_rig.puppets[key_name], 2, 1, 0.2 SECONDS)
+	else
+		gorilla_shudder(victim, 2, 1, 0.2 SECONDS)
 	if(held_limb.can_bleed())
 		victim.add_splatter_floor(get_turf(victim), small_drip = TRUE)
 

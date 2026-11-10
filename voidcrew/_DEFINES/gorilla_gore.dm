@@ -269,6 +269,13 @@
 /// it takes to fall back flat when the arm gives.
 #define GORILLA_RIP_RAISE 22
 #define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
+/// How long the let-go body takes to slide back to where tg lays it (tg's own offset slide).
+#define GORILLA_RIP_LET_GO (0.2 SECONDS)
+/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The plant's own
+/// 0.3 s still ends inside its stage.
+#define GORILLA_RIP_START_HOLD (0.15 SECONDS)
+/// Seen from behind, how long the torn arm takes to come down with his fist and hang beside him.
+#define GORILLA_RIP_HANG_TIME (0.25 SECONDS)
 /// The limb rip's blood: how many drops burst from the socket as the arm comes away, and the furthest (pixels) the pool
 /// under the shoulder is laid from the middle of the body's tile.
 #define GORILLA_RIP_BURST_DROPS 12
