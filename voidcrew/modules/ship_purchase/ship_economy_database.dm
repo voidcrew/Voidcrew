@@ -292,16 +292,6 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	qdel(query)
 	return success
 
-/// Puts back parts a failed spend_parts() already took: class -> amount.
-/datum/ship_economy_db/proc/refund_parts(ckey, list/taken)
-	for(var/part_class in taken)
-		var/amount = taken[part_class]
-		if(add_part(ckey, part_class, amount, "refund"))
-			log_game("SHIP_ECONOMY: [ckey] refunded [amount] [part_class] parts after a failed spend")
-			continue
-		log_game("SHIP_ECONOMY ERROR: [ckey] lost [amount] [part_class] parts: the refund after a failed spend did not go through")
-		message_admins("Ship parts refund failed for [ckey]: [amount] [part_class] parts were taken but not returned. Check the game log.")
-
 /**
  * Spend a total number of parts from any class, largest stack first.
  * Reads fresh from the database, and can sleep.
@@ -353,6 +343,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	for(var/part_class in plan)
 		if(!add_part(ckey, part_class, plan[part_class], "refund"))
 			log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
+			message_admins("Ship parts refund failed for [ckey]: [plan[part_class]] [part_class] parts were taken but not returned. Check the game log.")
 			. = FALSE
 
 /// Parts held by class, from the cache alone so it never sleeps. Null until something has loaded them.
