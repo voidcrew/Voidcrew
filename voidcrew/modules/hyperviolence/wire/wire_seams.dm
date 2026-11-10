@@ -82,6 +82,14 @@ GLOBAL_LIST_INIT(hv_wire_stump_zones, list(BODY_ZONE_HEAD))
 		return FALSE
 	return ..()
 
+// The gore's animation pass (visuals/hit_reactions.dm) reels a body that loses a limb: a stagger along the blow, held
+// for a hit-stop with a pale flash while whoever landed it holds a lean in, and a lurch toward the missing side. None
+// of that plays for a head the wire takes (hv_wire_take_part()): the garrote lets its own body go in its own one move
+// (let_go_at_kill()).
+/mob/living/carbon/hv_vis_on_limb_lost(obj/item/bodypart/lost_limb, special, dismembered)
+	if(isnull(hv_sever_spray) || lost_limb.body_zone != BODY_ZONE_HEAD)
+		return ..()
+
 /// The limbs a wire takes off. The head is the garrote's; the chest never comes off.
 GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 

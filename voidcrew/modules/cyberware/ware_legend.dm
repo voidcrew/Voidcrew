@@ -903,7 +903,9 @@
 	desc = "Something very heavy is about to land on this exact spot."
 	icon = 'icons/mob/telegraphing/telegraph_96x96.dmi'
 	icon_state = "target_largebox"
-	layer = BELOW_MOB_LAYER
+	// Painted on the floor: under whoever stands in it, on every row it covers.
+	plane = FLOOR_PLANE
+	layer = LOWER_RUNE_LAYER
 	pixel_x = -32
 	pixel_y = -32
 	alpha = 0
@@ -988,7 +990,7 @@
 	if(QDELETED(jumper))
 		return
 	jumper.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), REF(src))
-	cyberware_leap_touchdown_fx(jumper, 64, 0.1 SECONDS)
+	cyberware_leap_touchdown_fx(jumper)
 	if(jumper.stat == DEAD)
 		return
 	// The marked tile can stop existing mid-flight (someone blows the floor out

@@ -329,12 +329,14 @@
 	. = ..()
 	clear_burn_fx()
 
-/// The roar's ring, out as far as the roar reaches.
+/// The roar's ring, out as far as the roar reaches. It rolls across the floor, so it is drawn on the floor: under
+/// everyone and everything standing in its way, whichever side of the bearer they are on.
 /obj/effect/temp_visual/circle_wave/cyberware_roar
 	color = "#ff4a2a"
 	max_alpha = 200
 	duration = 0.5 SECONDS
-	layer = BELOW_MOB_LAYER
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
 
 /obj/effect/temp_visual/circle_wave/cyberware_roar/Initialize(mapload, reach = 5)
 	// The 64 px ring, scaled so its edge lands [reach] tiles out.
@@ -437,18 +439,38 @@
 /// Set at take-off to when the leap should be down. A leap whose landing never
 /// runs is put back on the floor shortly after.
 /mob/living/var/cyberware_leap_until = 0
+/// How the body's steps were animated before a leap switched that off, to put back once it has landed.
+/mob/living/var/cyberware_leap_steps
+
+/// Where a leaping body draws among the things on its row: over anyone standing there, since it is above them.
+#define CYBERWARE_LEAP_LAYER (ABOVE_MOB_LAYER + 0.05)
+/// How long a leap that holds its height takes to come down at the end.
+#define CYBERWARE_LEAP_SLAM (0.1 SECONDS)
 
 /// Where the body sits at rest, before any leap offset.
 /proc/cyberware_leap_rest(mob/living/jumper, pixel)
-	var/base = pixel == PIXEL_W_OFFSET ? jumper.base_pixel_w : jumper.base_pixel_z
+	var/base = jumper.base_pixel_z
+	switch(pixel)
+		if(PIXEL_W_OFFSET)
+			base = jumper.base_pixel_w
+		if(PIXEL_Y_OFFSET)
+			base = jumper.base_pixel_y
 	return base + jumper.has_offset(pixel = pixel)
 
 /**
- * Take-off. The body arcs from [launch] over to [landing] during [airtime], rising
- * to [peak] halfway and ending [height] over the landing tile, where the
- * landing drops it. The body stays on its own tile until the landing moves
- * it; only the drawing travels. A one-tile leap hops in place, since moving
- * one tile glides.
+ * Take-off. The body arcs from [launch] over to [landing] and is down on the landing tile when [airtime] ends, so
+ * the landing's dust, ring and sound meet it there. With [height] under [peak] it rises to [peak] halfway and
+ * falls; with [height] at [peak] it climbs, holds that height over to its mark and drops in the last
+ * CYBERWARE_LEAP_SLAM of the flight. The body stays on its own tile until the landing moves it; only the drawing
+ * travels.
+ *
+ * The fall is started by a timer of its own, on the same clock as the landing: a server running slow holds the
+ * body up until its landing is nearly due, and never stands it on the tile ahead of its own impact.
+ *
+ * The run along the floor goes at an even pace and only the height eases, so the body never hangs at the top of
+ * its arc. The run up and down the screen is pixel_y, which carries the body's place in the front-to-back order
+ * along with it: it draws in front of what it has passed and behind what it hasn't. The height is pixel_z, which
+ * changes nothing but the drawing. On its row it draws over whoever stands there.
  */
 /proc/cyberware_leap_takeoff_fx(mob/living/jumper, turf/launch, turf/landing, airtime, height, peak, obj/effect/afterimage)
 	if(QDELETED(jumper))
@@ -462,40 +484,75 @@
 	cyberware_grey_dust(launch)
 	var/dx = 0
 	var/dy = 0
-	if(launch && landing && get_dist(launch, landing) >= 2)
+	if(launch && landing)
 		dx = (landing.x - launch.x) * ICON_SIZE_X
 		dy = (landing.y - launch.y) * ICON_SIZE_Y
 	var/rest_w = cyberware_leap_rest(jumper, PIXEL_W_OFFSET)
+	var/rest_y = cyberware_leap_rest(jumper, PIXEL_Y_OFFSET)
 	var/rest_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET)
-	animate(jumper, pixel_w = rest_w + dx * 0.5, pixel_z = rest_z + dy * 0.5 + peak, time = airtime * 0.5, easing = SINE_EASING | EASE_OUT)
-	animate(pixel_w = rest_w + dx, pixel_z = rest_z + dy + height, time = airtime * 0.5, easing = SINE_EASING | EASE_IN)
+	if(jumper.layer == initial(jumper.layer) || jumper.layer == LYING_MOB_LAYER)
+		jumper.layer = CYBERWARE_LEAP_LAYER
+	// The landing moves the body onto a tile its drawing has already reached, so that move must not glide. The
+	// client only honours this for moves that come after it has heard of it, so it is set here, not at the landing.
+	if(jumper.animate_movement != NO_STEPS)
+		jumper.cyberware_leap_steps = jumper.animate_movement
+		jumper.animate_movement = NO_STEPS
+	animate(jumper, pixel_w = rest_w + dx, pixel_y = rest_y + dy, time = airtime, flags = ANIMATION_PARALLEL)
+	var/fall = airtime * 0.5
+	var/rise = airtime * 0.5
+	if(height >= peak)
+		fall = min(CYBERWARE_LEAP_SLAM, airtime * 0.5)
+		rise = (airtime - fall) * 0.4
+	animate(jumper, pixel_z = rest_z + peak, time = rise, easing = QUAD_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_leap_fall_fx), WEAKREF(jumper), fall), airtime - fall)
 	if(dx || dy)
 		new /obj/effect/temp_visual/cyberware_leap_shadow(launch, dx, dy, airtime)
 	jumper.cyberware_leap_until = world.time + airtime
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_leap_failsafe), WEAKREF(jumper)), airtime + 0.5 SECONDS)
 
-/// Touchdown: the body is over its landing tile and drops [height] onto it.
-/proc/cyberware_leap_touchdown_fx(mob/living/jumper, height, drop_time)
+/// The last of a leap: the body comes down over its landing tile, arriving as the landing is due.
+/proc/cyberware_leap_fall_fx(datum/weakref/jumper_ref, fall)
+	var/mob/living/jumper = jumper_ref?.resolve()
+	if(QDELETED(jumper) || !jumper.cyberware_leap_until)
+		return
+	animate(jumper, pixel_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET), time = fall, easing = QUAD_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+
+/**
+ * Touchdown: the arc has brought the body down over its landing tile, and the drawing goes back to the body. The
+ * move onto that tile, which the caller makes right after this, must not glide: the drawing is already there.
+ */
+/proc/cyberware_leap_touchdown_fx(mob/living/jumper)
 	if(QDELETED(jumper))
 		return
 	jumper.cyberware_leap_until = 0
-	var/rest_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET)
-	jumper.pixel_w = cyberware_leap_rest(jumper, PIXEL_W_OFFSET)
-	jumper.pixel_z = rest_z + height
-	animate(jumper, pixel_z = rest_z, time = drop_time)
+	if(jumper.layer == CYBERWARE_LEAP_LAYER)
+		jumper.layer = jumper.body_position == LYING_DOWN ? LYING_MOB_LAYER : initial(jumper.layer)
+	// Ends every track of the arc where it stands.
+	animate(jumper, pixel_w = cyberware_leap_rest(jumper, PIXEL_W_OFFSET), pixel_y = cyberware_leap_rest(jumper, PIXEL_Y_OFFSET), pixel_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET), time = 0, flags = ANIMATION_END_NOW)
+	// Steps glide again once the landing's own move has gone out.
+	if(!isnull(jumper.cyberware_leap_steps))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_leap_steps_back), WEAKREF(jumper)), 0.2 SECONDS)
+
+/// Gives a landed body its step animation back, unless it is already in the air again.
+/proc/cyberware_leap_steps_back(datum/weakref/jumper_ref)
+	var/mob/living/jumper = jumper_ref?.resolve()
+	if(QDELETED(jumper) || jumper.cyberware_leap_until || isnull(jumper.cyberware_leap_steps))
+		return
+	jumper.animate_movement = jumper.cyberware_leap_steps
+	jumper.cyberware_leap_steps = null
 
 /// A leap whose landing never ran (the pistons were pulled mid-air) is put back down.
 /proc/cyberware_leap_failsafe(datum/weakref/jumper_ref)
 	var/mob/living/jumper = jumper_ref?.resolve()
 	if(QDELETED(jumper) || !jumper.cyberware_leap_until || world.time < jumper.cyberware_leap_until)
 		return
-	cyberware_leap_touchdown_fx(jumper, 0, 0)
+	cyberware_leap_touchdown_fx(jumper)
 
 /// The Piledriver's impact: a ring rolls out over the shockwave and the floor cracks.
 /proc/cyberware_piledriver_impact_fx(turf/where, reach)
 	if(isnull(where))
 		return
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(where, reach)
 	new /obj/effect/temp_visual/cyberware_impact_cracks(where, "damaged1", 255)
 	for(var/direction in GLOB.cardinals)
 		var/turf/next = get_step(where, direction)
@@ -527,6 +584,12 @@
 /obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2)
 	amount_to_scale = reach + 0.5
 	return ..()
+
+/// The same ring drawn on the floor, under everyone and everything standing in its way, whichever side of the
+/// landing they are on. The Piledriver's own; the plain one is also what a Gorilla fist throws.
+/obj/effect/temp_visual/circle_wave/cyberware_slam/floor
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
 
 /// Cracks the Piledriver leaves in the floor. They fade on their own.
 /obj/effect/temp_visual/cyberware_impact_cracks
@@ -914,6 +977,8 @@
 #undef RIG_PRESS_TIME
 #undef RIG_RETRACT_TIME
 
+#undef CYBERWARE_LEAP_LAYER
+#undef CYBERWARE_LEAP_SLAM
 #undef CYBERWARE_ANIM2_ICON
 #undef CYBERWARE_ANIM2_LARGE_ICON
 #undef CYBERWARE_ANIM_PING_ICON

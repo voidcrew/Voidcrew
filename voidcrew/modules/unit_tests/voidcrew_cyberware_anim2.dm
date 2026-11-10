@@ -118,8 +118,9 @@
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in donor.vis_contents), "A pulled node left its charge")
 	TEST_ASSERT(!donor.get_filter("cyberware_lazarus_charge"), "A pulled node left the charge's halo")
 
-/// Leaps: take-off offsets the drawing toward the landing and only the drawing,
-/// touchdown puts it back, and a leap that never lands is put down anyway.
+/// Leaps: take-off carries the drawing over to the landing and only the drawing, drawn over whoever stands on its
+/// row; the fall brings it down as the landing is due; touchdown gives it back without a glide; a leap up or down
+/// the screen moves its place in the front-to-back order with it; a leap that never lands is put down anyway.
 /datum/unit_test/voidcrew_cyberware_anim2_leap
 
 /datum/unit_test/voidcrew_cyberware_anim2_leap/Run()
@@ -128,22 +129,36 @@
 	TEST_ASSERT(landing && landing.x <= run_loc_floor_top_right.x, "Test fixture: the test room is too narrow for a two-tile leap")
 	var/mob/living/carbon/human/jumper = allocate(/mob/living/carbon/human/consistent, start)
 
+	var/ground_layer = jumper.layer
 	cyberware_leap_takeoff_fx(jumper, start, landing, 0.2 SECONDS, 20, 26)
 	TEST_ASSERT_EQUAL(jumper.loc, start, "The take-off moved the body")
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 64, "The leap's drawing doesn't end over the landing")
-	TEST_ASSERT_EQUAL(jumper.pixel_z, 20, "The leap's drawing doesn't end in the air")
+	TEST_ASSERT_EQUAL(jumper.pixel_z, 26, "The leap's drawing doesn't rise")
+	cyberware_leap_fall_fx(WEAKREF(jumper), 0.1 SECONDS)
+	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "The leap's drawing isn't down on the floor when its landing is due")
+	TEST_ASSERT(jumper.layer > ground_layer, "A leaping body doesn't draw over the people on its row")
 	TEST_ASSERT((locate(/obj/effect/temp_visual/cyberware_leap_shadow) in start), "The leap has no floor shadow")
 	TEST_ASSERT(jumper.cyberware_leap_until, "Nothing watches for a leap that never lands")
 
-	cyberware_leap_touchdown_fx(jumper, 20, 0.1 SECONDS)
+	cyberware_leap_touchdown_fx(jumper)
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "The landing left the drawing to one side")
 	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "The landing left the drawing in the air")
+	TEST_ASSERT_EQUAL(jumper.layer, ground_layer, "The landing left the body drawn over everyone")
+	TEST_ASSERT_EQUAL(jumper.animate_movement, NO_STEPS, "The move onto the landing tile would glide after the arc")
+	cyberware_leap_steps_back(WEAKREF(jumper))
+	TEST_ASSERT_EQUAL(jumper.animate_movement, SLIDE_STEPS, "A landed body's steps never glide again")
 	TEST_ASSERT(!jumper.cyberware_leap_until, "A landed leap is still watched")
 
-	// One tile hops in place: a one-tile move glides.
+	// One tile arcs like any other: the landing never glides, so there is nothing to hide by hopping in place.
 	cyberware_leap_takeoff_fx(jumper, start, get_step(start, EAST), 0.2 SECONDS, 20, 26)
-	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "A one-tile leap slid sideways")
-	cyberware_leap_touchdown_fx(jumper, 20, 0.1 SECONDS)
+	TEST_ASSERT_EQUAL(jumper.pixel_w, 32, "A one-tile leap doesn't travel")
+	cyberware_leap_touchdown_fx(jumper)
+
+	// Up the screen the run is pixel_y, so the body's place in the front-to-back order goes with it.
+	cyberware_leap_takeoff_fx(jumper, start, get_step(start, NORTH), 0.2 SECONDS, 20, 26)
+	TEST_ASSERT_EQUAL(jumper.pixel_y, 32, "A leap up the screen keeps its launch row's place in the draw order")
+	cyberware_leap_touchdown_fx(jumper)
+	TEST_ASSERT_EQUAL(jumper.pixel_y, 0, "The landing left the drawing up the screen")
 
 	// The pistons pulled mid-air: no landing ever runs, the failsafe puts the body down.
 	cyberware_leap_takeoff_fx(jumper, start, landing, 0.2 SECONDS, 20, 26)
@@ -151,6 +166,7 @@
 	cyberware_leap_failsafe(WEAKREF(jumper))
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "A leap that never landed stayed to one side")
 	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "A leap that never landed stayed in the air")
+	TEST_ASSERT_EQUAL(jumper.layer, ground_layer, "A leap that never landed stayed drawn over everyone")
 
 	// The real button, end to end.
 	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = allocate(/obj/item/organ/cyberimp/cyberware/hopper)
@@ -163,6 +179,7 @@
 	TEST_ASSERT_EQUAL(jumper.loc, landing, "The leap landed somewhere else")
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "The Hopper landed off to one side")
 	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "The Hopper landed in the air")
+	TEST_ASSERT_EQUAL(jumper.layer, ground_layer, "The Hopper landed still drawn over everyone")
 
 	// The Piledriver's impact cracks the floor and leaves it alone afterwards.
 	cyberware_piledriver_impact_fx(landing, 2)

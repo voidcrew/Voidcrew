@@ -596,7 +596,7 @@
 		lunger.balloon_alert(lunger, "fell short!")
 		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
-	land_lunge(lunger, victim, housing, lunge_blade, charged, posed)
+	land_lunge(lunger, victim, housing, lunge_blade, charged, posed, start)
 
 /**
  * A shown-line dash (dash_aim, a bounty NPC's tell): a real run down the line it showed, a tile a tick with
@@ -655,8 +655,9 @@
 
 /// The arrival: the bonus cut once per blade, and they go down. [housing] is the housing that lunged and
 /// [lunge_blade] its blade, [charged] is TRUE for a leap out of a crouch, and [posed] are the blades laid
-/// flat for the wind-up.
-/datum/action/cooldown/cyberware/mantis_lunge/proc/land_lunge(mob/living/lunger, mob/living/victim, obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing, obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade, charged = FALSE, list/posed)
+/// flat for the wind-up. [from] is where the ordinary lunge set out, for the impale's glide in; a shown-line
+/// dash ran here on its own feet and gives none.
+/datum/action/cooldown/cyberware/mantis_lunge/proc/land_lunge(mob/living/lunger, mob/living/victim, obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing, obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade, charged = FALSE, list/posed, turf/from)
 	// Both housings deployed means both blades arrive. Floored at one: a blade
 	// stowed during the 0.3s telegraph shouldn't eat the whole cooldown for
 	// nothing when the dash still connected.
@@ -691,7 +692,7 @@
 		cyberware_scorch_target(victim, lunge_fire)
 	// Both blades into someone already hurt: held up on them, then ripped free (mantis_gore/mantis_impale.dm).
 	// The knockdown waits for the rip.
-	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown))
+	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown, from, charged ? 2 : MANTIS_LUNGE_GLIDE))
 		log_combat(lunger, victim, "mantis-lunged and impaled", "mantis blades ([blades] landed)")
 		playsound(victim, 'sound/effects/wounds/pierce3.ogg', 70, TRUE)
 		return
