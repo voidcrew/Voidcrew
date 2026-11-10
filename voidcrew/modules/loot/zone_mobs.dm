@@ -119,7 +119,7 @@
 		var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
 		var/datum/npc_spawn_context/context = new(src, zone_type, npc_role)
 		if(!wave)
-			spawn_npc_in_zone(mob_path, spot, context)
+			spawn_npc_in_zone_or_queue(mob_path, spot, context)
 		else if(wave_arrival == ZONE_MOBS_ARRIVE_EMERGE)
 			zone_mobs_emerge(mob_path, spot, context)
 		else

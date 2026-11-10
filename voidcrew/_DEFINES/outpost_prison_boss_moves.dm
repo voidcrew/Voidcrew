@@ -59,13 +59,12 @@
 
 /// Cuffed this long before they start on the cuffs
 #define PRISON_BOSS_SLIP_DELAY (3 SECONDS)
-/// Working at the cuffs
+/// The telegraph before they work at the cuffs (tg breakout time follows)
 #define PRISON_BOSS_SLIP_TIME (5 SECONDS)
 /// Stopped before they were free: they may try again after this
 #define PRISON_BOSS_SLIP_RETRY (15 SECONDS)
-/// The shimmer afterwards (field cloak: 6 seconds, half of all hits miss)
+/// The shimmer afterwards: a look only; a Ghost dodges with real chrome
 #define PRISON_BOSS_SHIMMER_TIME (6 SECONDS)
-#define PRISON_BOSS_SHIMMER_MISS 50
 #define PRISON_BOSS_SHIMMER_ALPHA 90
 
 // ===== HEAVY: A BARRICADE =====

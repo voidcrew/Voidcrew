@@ -3,15 +3,24 @@
  *
  * Uses the existing supplypod/landing zone system for the dramatic drop-from-above effect.
  * Pod lands, opens to reveal the boarder, then vanishes.
+ *
+ * Human NPC boarders (the NPC ship crews, faction_pirate_humans.dm) are built through the spawn queue
+ * (spawn_human_npc(), a body at a time) aboard the pirate's own hull, dressed from their faction's
+ * boarding table (a sealed suit and air), and only then put in their pod and launched
+ * (boarding_pod_launch()). A basic-mob boarder is built straight into its pod as before. Either way the
+ * caller hears about the boarder through `on_boarder`, called with it once it is in its pod.
  */
 
 /// Tracks spawn index for distributing boarders along patrol path
 GLOBAL_VAR_INIT(boarding_spawn_index, 0)
 GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 
-/// Global proc to create a boarding pod drop at a target location
-/// Returns the boarder mob so the caller can register signals (e.g. death tracking)
-/proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type, datum/npc_spawn_context/encounter, budget_reserved = FALSE)
+/**
+ * Launches a boarding pod at `target_turf` carrying a `mob_type`. Returns the boarder (a basic mob, built
+ * now), the /datum/human_npc_order of a human boarder still in the spawn queue, or null if nothing was
+ * sent. `on_boarder` is called with the boarder once it is in its pod.
+ */
+/proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type, datum/npc_spawn_context/encounter, budget_reserved = FALSE, datum/callback/on_boarder)
 	if(!target_turf || !mob_type)
 		return null
 	// Combat volleys call this on a timer; the target may have docked since firing.
@@ -28,6 +37,12 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 		return null
 	var/datum/npc_spawn_context/context = new(target_ship, controller.boarding_context.zone_type, "ordinary", source_turf = controller.boarding_context.source_turf)
 
+	if(ispath(mob_type, /mob/living/carbon/human/npc))
+		var/datum/callback/launch = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(boarding_pod_launch), /obj/structure/closet/supplypod/boarding, target_turf, target_ship, source_ship, on_boarder)
+		var/datum/human_npc_order/order = spawn_human_npc(mob_type, boarding_pod_build_turf(source_ship, target_turf), launch, outfit = boarding_outfit_for(mob_type), context = context)
+		controller.track_boarding_order(order)
+		return order
+
 	// Create the boarding pod with the mob inside
 	var/obj/structure/closet/supplypod/boarding/pod = new()
 
@@ -37,16 +52,51 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 		qdel(pod)
 		return null
 
-	// Store references for the pod
+	boarding_pod_send(pod, boarder, target_turf, target_ship, source_ship)
+	on_boarder?.Invoke(boarder)
+	return boarder
+
+/// Where a human boarder is built before it goes in its pod: aboard the pirate's own hull, where it
+/// climbs into the pod, else (a hull with no dock) the landing spot itself. It is in its pod the same tick.
+/proc/boarding_pod_build_turf(obj/structure/overmap/ship/npc/source_ship, turf/target_turf)
+	return get_turf(source_ship?.shuttle) || target_turf
+
+/// The boarding outfit table for a human ship crewman (its faction's table sealed for vacuum), or null
+/// for anything else.
+/proc/boarding_outfit_for(mob_type)
+	if(!ispath(mob_type, /mob/living/carbon/human/npc/faction_pirate))
+		return null
+	var/mob/living/carbon/human/npc/faction_pirate/crew_type = mob_type
+	return initial(crew_type.boarding_outfit_table)
+
+/**
+ * A human boarder is built (the spawn queue's callback): if the raid it was sent on still stands, it goes
+ * in its pod and the pod launches; if the target docked or the raid ended meanwhile, the delivery is
+ * cancelled and the boarder deleted before anyone saw it. A boss learns which hull it boarded for.
+ */
+/proc/boarding_pod_launch(pod_type, turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, datum/callback/on_boarder, mob/living/boarder)
+	if(QDELETED(boarder))
+		return
+	var/datum/ai_controller/npc_ship/controller = source_ship?.ai_controller
+	if(QDELETED(target_ship) || QDELETED(source_ship) || target_ship.state != OVERMAP_SHIP_FLYING || source_ship.state != OVERMAP_SHIP_FLYING || !istype(controller) || controller.get_target() != target_ship)
+		qdel(boarder)
+		return
+	var/obj/structure/closet/supplypod/boarding/pod = new pod_type()
+	boarder.forceMove(pod)
+	var/mob/living/carbon/human/npc/faction_pirate/crewman = boarder
+	if(istype(crewman) && ispath(pod_type, /obj/structure/closet/supplypod/boarding/boss))
+		crewman.parent_ship = source_ship
+	boarding_pod_send(pod, boarder, target_turf, target_ship, source_ship)
+	on_boarder?.Invoke(boarder)
+
+/// Sends `pod`, with `boarder` already inside, falling onto `target_turf`.
+/proc/boarding_pod_send(obj/structure/closet/supplypod/boarding/pod, mob/living/boarder, turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship)
 	pod.target_ship = target_ship
 	pod.source_ship = source_ship
 	pod.boarder_ref = WEAKREF(boarder)
 	pod.spawn_index = GLOB.boarding_spawn_index++
-
 	// Create the landing zone - this handles the whole falling animation
 	new /obj/effect/pod_landingzone/boarding(target_turf, pod, target_ship, source_ship)
-
-	return boarder
 
 /**
  * Boarding Pod - A supplypod variant for delivering hostile boarders
@@ -85,77 +135,30 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	if(landing_cancelled)
 		return
 	. = ..()
-	log_shuttle("PATROL: open_pod called, holder=[holder], target_ship=[target_ship], boarder_ref=[boarder_ref]")
 
 	// Announce the boarder emerging
 	var/turf/T = get_turf(holder)
 	for(var/mob/living/emerged_mob in T)
 		emerged_mob.visible_message(span_danger("[emerged_mob] emerges from the boarding pod!"))
 
-	// Assign patrol behavior to the boarder
+	// Send the boarder after the crew
 	var/mob/living/boarder = boarder_ref?.resolve()
-	log_shuttle("PATROL: Resolved boarder_ref to: [boarder]")
-
 	if(boarder && target_ship && !QDELETED(target_ship))
-		log_shuttle("PATROL: Calling setup_boarder_patrol...")
 		setup_boarder_patrol(boarder, target_ship, spawn_index)
-	else
-		log_shuttle("PATROL: NOT calling setup_boarder_patrol - boarder=[boarder], target_ship=[target_ship], QDELETED=[QDELETED(target_ship)]")
 
 	// Signal that boarders have arrived
 	if(target_ship && !QDELETED(target_ship))
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_BOARDED, src, source_ship)
 
 /**
- * Set up patrol behavior for a boarder mob.
- * Swaps their AI controller to a patrolling variant and assigns the ship's patrol path.
+ * Puts a boarder in the raid on the ship it landed on (pirate_crew.dm): every boarder of every
+ * wave, from any pirate, hunts that ship's crew together.
  */
 /obj/structure/closet/supplypod/boarding/proc/setup_boarder_patrol(mob/living/boarder, obj/structure/overmap/ship/target_ship, spawn_index)
-	log_shuttle("PATROL: setup_boarder_patrol called: boarder=[boarder], target_ship=[target_ship], spawn_index=[spawn_index]")
-
-	if(!boarder)
-		log_shuttle("PATROL: FAILED - boarder is null")
+	if(QDELETED(boarder))
 		return
-
-	log_shuttle("PATROL: Boarder current AI controller: [boarder.ai_controller] ([boarder.ai_controller?.type])")
-
-	// Determine the patrolling AI controller type based on current controller
-	var/new_controller_type
-	if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
-		log_shuttle("PATROL: Detected ranged trooper, will swap to ranged/patrolling")
-	else if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper))
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
-		log_shuttle("PATROL: Detected melee trooper, will swap to patrolling")
-	else
-		log_shuttle("PATROL: Unknown AI controller type, no swap will occur")
-
-	// Swap to patrolling controller if we found a valid type
-	// PossessPawn automatically handles cleanup of the old controller
-	if(new_controller_type)
-		log_shuttle("PATROL: Creating new controller of type [new_controller_type]")
-		new new_controller_type(boarder)
-
-		// Issue 1: Verify controller was properly assigned
-		var/datum/ai_controller/new_ctrl = boarder.ai_controller
-		if(!new_ctrl || !istype(new_ctrl, new_controller_type))
-			log_shuttle("PATROL: ERROR - Controller swap failed! Expected [new_controller_type], got [new_ctrl?.type]")
-			return
-
-		log_shuttle("PATROL: New AI controller: [new_ctrl] ([new_ctrl?.type])")
-		log_shuttle("PATROL: Controller details - ai_movement=[new_ctrl.ai_movement?.type], able_to_run=[new_ctrl.able_to_run], movement_delay=[new_ctrl.movement_delay], ai_status=[new_ctrl.ai_status]")
-
-		// Issue 2: Force AI activation immediately instead of waiting for subsystem tick
-		new_ctrl.reset_ai_status()
-		log_shuttle("PATROL: Force-activated AI, new ai_status=[new_ctrl.ai_status]")
-
-		var/turf/boarder_turf = get_turf(boarder)
-		var/clients_on_z = boarder_turf ? length(SSmobs.clients_by_zlevel[boarder_turf.z]) : 0
-		log_shuttle("PATROL: Pawn details - loc=[boarder.loc], on_turf=[isturf(boarder.loc)], z=[boarder_turf?.z], clients_on_z=[clients_on_z], mobility_flags=[boarder.mobility_flags], MOBILITY_MOVE=[(boarder.mobility_flags & MOBILITY_MOVE) ? "YES" : "NO"]")
-
-	// Assign patrol path (works even if controller wasn't swapped)
-	var/result = assign_mob_to_patrol(boarder, target_ship, spawn_index, GLOB.boarding_spawn_total)
-	log_shuttle("PATROL: assign_mob_to_patrol returned: [result]")
+	if(!pirate_crew_enlist_raider(boarder, target_ship))
+		log_shuttle("PIRATE_CREW: boarder [boarder] ([boarder.type]) could not join the raid on [target_ship]")
 
 /**
  * Boarding Pod Landing Zone - Handles the falling animation and notifications
@@ -209,9 +212,12 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 
 // ========== BOSS BOARDING POD ==========
 
-/// Global proc to create a boss boarding pod drop at a target location
-/// Returns the boss mob so the caller can register signals and track it
-/proc/create_boss_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
+/**
+ * Launches the boss's heavy boarding pod at `target_turf`. Returns the boss (a basic mob), the order of a
+ * human boss still in the spawn queue, or null. `on_boss` is called with the boss once it is in its pod.
+ * A human boss keeps its own look (it is dressed from its faction's ordinary table, with a mask and air).
+ */
+/proc/create_boss_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type, datum/callback/on_boss)
 	if(!target_turf || !mob_type)
 		return null
 	if(QDELETED(target_ship) || QDELETED(source_ship) || target_ship.state != OVERMAP_SHIP_FLYING || source_ship.state != OVERMAP_SHIP_FLYING)
@@ -226,6 +232,12 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	controller.boarding_boss_sent = TRUE
 	var/datum/npc_spawn_context/context = new(target_ship, controller.boarding_context.zone_type, "boss", source_turf = controller.boarding_context.source_turf)
 
+	if(ispath(mob_type, /mob/living/carbon/human/npc))
+		var/datum/callback/launch = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(boarding_pod_launch), /obj/structure/closet/supplypod/boarding/boss, target_turf, target_ship, source_ship, on_boss)
+		var/datum/human_npc_order/order = spawn_human_npc(mob_type, boarding_pod_build_turf(source_ship, target_turf), launch, context = context)
+		controller.track_boarding_order(order)
+		return order
+
 	// Create the boss boarding pod
 	var/obj/structure/closet/supplypod/boarding/boss/pod = new()
 
@@ -239,14 +251,8 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	boss.parent_ship = source_ship
 	context.finalize()
 
-	// Store references for the pod
-	pod.target_ship = target_ship
-	pod.source_ship = source_ship
-	pod.boarder_ref = WEAKREF(boss)
-
-	// Create the landing zone - this handles the whole falling animation
-	new /obj/effect/pod_landingzone/boarding(target_turf, pod, target_ship, source_ship)
-
+	boarding_pod_send(pod, boss, target_turf, target_ship, source_ship)
+	on_boss?.Invoke(boss)
 	return boss
 
 /**
@@ -266,31 +272,3 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	// Extra dramatic sound for boss arrival
 	if(target_ship)
 		playsound_ship(get_turf(src), 'sound/effects/explosion/explosion1.ogg', 80, TRUE, 10, target_ship)
-
-/obj/structure/closet/supplypod/boarding/boss/setup_boarder_patrol(mob/living/boarder, obj/structure/overmap/ship/target_ship, spawn_index)
-	log_shuttle("PATROL: Boss setup_boarder_patrol called: boarder=[boarder], target_ship=[target_ship]")
-
-	if(!boarder)
-		log_shuttle("PATROL: FAILED - boarder is null")
-		return
-
-	// Determine the boss-specific patrolling AI controller type
-	var/new_controller_type
-	if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
-		log_shuttle("PATROL: Detected ranged boss, will swap to ranged/patrolling/boss")
-	else
-		new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
-		log_shuttle("PATROL: Detected melee boss, will swap to patrolling/boss")
-
-	// Swap to boss patrolling controller
-	if(new_controller_type)
-		log_shuttle("PATROL: Creating new boss controller of type [new_controller_type]")
-		boarder.ai_controller.set_ai_status(AI_STATUS_OFF)
-		qdel(boarder.ai_controller)
-		boarder.ai_controller = new new_controller_type(boarder)
-		boarder.ai_controller.set_ai_status(AI_STATUS_ON)
-
-	// Assign patrol path
-	var/result = assign_mob_to_patrol(boarder, target_ship)
-	log_shuttle("PATROL: Boss assign_mob_to_patrol returned: [result]")

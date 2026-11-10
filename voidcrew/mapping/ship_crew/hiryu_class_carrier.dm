@@ -135,6 +135,7 @@
 	name = "Hiryu-class Carrier — Medical Doctor"
 	uniform = /obj/item/clothing/under/rank/medical/scrubs/purple
 	suit = null
+	suit_store = null
 	head = /obj/item/clothing/head/beret/medical
 	neck = /obj/item/clothing/neck/scarf/pink
 
@@ -142,6 +143,7 @@
 	. = ..()
 	uniform = /obj/item/clothing/under/rank/medical/scrubs/purple
 	suit = null
+	suit_store = null
 	head = /obj/item/clothing/head/beret/medical
 	neck = /obj/item/clothing/neck/scarf/pink
 
@@ -390,6 +392,7 @@
 	back = null
 	belt = null
 	suit_store = null
+	box = null
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_27/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -399,3 +402,4 @@
 	back = null
 	belt = null
 	suit_store = null
+	box = null

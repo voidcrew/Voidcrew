@@ -48,12 +48,18 @@
 
 /// The posting's criminal, spawned at `spot` and adopted by hand, its AI off so it stays where a test puts it
 /datum/unit_test/proc/board_test_criminal(datum/criminal_bounty/posting, turf/spot)
-	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(posting.record, spot, posting)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_bounty_criminal(posting.record, spot, posting)
 	if(!criminal)
 		return null
 	posting.board_adopt_criminal(criminal, null, "explore", null) // BOUNTY_ACTIVITY_EXPLORE
 	criminal.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	return criminal
+
+/// Puts real tg handcuffs on `target`, as a person would (tg's apply_cuffs() without the do_after). Returns the cuffs it wears.
+/datum/unit_test/proc/board_test_cuff(mob/living/carbon/target)
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	cuffs.apply_cuffs(target, allocate(/mob/living/carbon/human/consistent), dispense = TRUE)
+	return target.handcuffed
 
 /// A bare ship record with an account holding `balance`
 /datum/unit_test/proc/board_test_ship(balance = 0)
@@ -348,7 +354,7 @@
 	var/turf/aside = locate(pad_turf.x + 2, pad_turf.y, pad_turf.z)
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, aside)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, aside)
 	TEST_ASSERT_NOTNULL(criminal, "No criminal was spawned")
 	var/list/found = list()
 
@@ -366,7 +372,7 @@
 
 	// Another bounty's criminal is the wrong mob
 	var/datum/criminal_bounty/other_posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/wrong = board_test_criminal(other_posting, aside)
+	var/mob/living/carbon/human/npc/bounty_criminal/wrong = board_test_criminal(other_posting, aside)
 	wrong.forceMove(pad_turf)
 	TEST_ASSERT(istext(posting.board_target_refusal(pad, found)), "The pad took another bounty's criminal for this one")
 	TEST_ASSERT(!QDELETED(wrong), "The wrong criminal was deleted")
@@ -405,38 +411,36 @@
 
 // ===== PAY =====
 
-/// Pay by the worst state reached: 100 / 100 / 60 / 25%, vouchers only on a full share (12.1)
+/// Pay by the criminal's condition on the pad: 100 / 100 / 60 / 25%, vouchers only on a full share (owner ruling 2026-11-08)
 /datum/unit_test/voidcrew_bounty_board/pay
 
 /datum/unit_test/voidcrew_bounty_board/pay/Run()
 	var/turf/pad_turf = run_loc_floor_bottom_left
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
 	var/obj/structure/overmap/ship/ship = board_test_ship()
-	// state, worst state, credits, vouchers: a value of 1000 and 1 voucher (VOUCHER_CREDIT_VALUE 1200)
+	// state at the pad, credits, vouchers: a value of 1000 and 1 voucher (VOUCHER_CREDIT_VALUE 1200)
 	var/list/cases = list(
-		list("restrained", "free", 1000, 1),
-		list("stunned", "stunned", 1000, 1),
-		list("downed", "downed", 1320, 0),
-		list("dead", "dead", 550, 0),
-		list("restrained", "downed", 1320, 0),
-		list("stunned", "dead", 550, 0),
+		list("restrained", 1000, 1),
+		list("stunned", 1000, 1),
+		list("downed", 1320, 0),
+		list("dead", 550, 0),
 	)
 	for(var/list/pay_case as anything in cases)
 		var/datum/criminal_bounty/posting = board_test_posting()
 		var/datum/bounty_record/record = posting.record
-		var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
-		criminal.worst_state = pay_case[2]
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
 		var/balance_before = ship.ship_account.account_balance
 		var/vouchers_before = board_test_vouchers(pad_turf)
 		var/list/paid = posting.board_claim(ship, pad, criminal, pay_case[1])
-		TEST_ASSERT(islist(paid), "A [pay_case[1]] criminal (worst [pay_case[2]]) was refused: [paid]")
-		TEST_ASSERT_EQUAL(paid[1], pay_case[3], "A [pay_case[1]] criminal (worst [pay_case[2]]) paid the wrong credits")
-		TEST_ASSERT_EQUAL(paid[2], pay_case[4], "A [pay_case[1]] criminal (worst [pay_case[2]]) paid the wrong vouchers")
-		TEST_ASSERT_EQUAL(ship.ship_account.account_balance - balance_before, pay_case[3], "The ship's account didn't get the credits")
-		TEST_ASSERT_EQUAL(board_test_vouchers(pad_turf) - vouchers_before, pay_case[4], "The pad didn't get the vouchers")
+		TEST_ASSERT(islist(paid), "A [pay_case[1]] criminal was refused: [paid]")
+		TEST_ASSERT_EQUAL(paid[1], pay_case[2], "A [pay_case[1]] criminal paid the wrong credits")
+		TEST_ASSERT_EQUAL(paid[2], pay_case[3], "A [pay_case[1]] criminal paid the wrong vouchers")
+		TEST_ASSERT_EQUAL(ship.ship_account.account_balance - balance_before, pay_case[2], "The ship's account didn't get the credits")
+		TEST_ASSERT_EQUAL(board_test_vouchers(pad_turf) - vouchers_before, pay_case[3], "The pad didn't get the vouchers")
 		TEST_ASSERT(QDELETED(posting), "A claimed bounty stayed up")
 		TEST_ASSERT(HAS_TRAIT(criminal, "bounty_removed"), "The claimed criminal isn't marked taken") // TRAIT_BOUNTY_REMOVED
-		TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_GODMODE), "The criminal isn't held still for the beam")
+		TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_IMMOBILIZED), "The criminal isn't held still for the beam")
+		TEST_ASSERT(!HAS_TRAIT(criminal, TRAIT_GODMODE), "The beam put the criminal in godmode")
 		TEST_ASSERT_NULL(bounty_drop_proof(criminal), "A criminal the pad took left proof of death")
 		TEST_ASSERT_EQUAL(record.captor_name, ship.name, "The record doesn't name its captor")
 		if(pay_case[1] == "dead")
@@ -448,7 +452,7 @@
 
 	// A second press finds it closed: one payment, one record (AR-A7)
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
 	var/balance_before = ship.ship_account.account_balance
 	TEST_ASSERT(islist(posting.board_claim(ship, pad, criminal, "restrained")), "The first press was refused")
 	TEST_ASSERT(istext(posting.board_claim(ship, pad, criminal, "restrained")), "A second press paid again")
@@ -462,7 +466,7 @@
 
 	// A free criminal pays nothing
 	var/datum/criminal_bounty/free_posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/free_criminal = board_test_criminal(free_posting, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/free_criminal = board_test_criminal(free_posting, pad_turf)
 	TEST_ASSERT(istext(free_posting.board_claim(ship, pad, free_criminal, "free")), "A free criminal was paid for")
 	TEST_ASSERT(free_posting.is_open(), "Refusing a free criminal closed the bounty")
 
@@ -500,7 +504,7 @@
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
 	var/datum/criminal_bounty/posting = board_test_posting()
 	var/datum/bounty_record/record = posting.record
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
 	criminal.adjustBruteLoss(round(criminal.maxHealth * 0.1))
 	var/hurt = clamp(1 - criminal.health / criminal.maxHealth, 0, 1)
 	TEST_ASSERT(islist(posting.board_claim(ship, pad, criminal, "restrained")), "The live catch was refused")
@@ -517,7 +521,7 @@
 	ship.board_test_heard.Cut()
 	var/datum/criminal_bounty/refused_posting = board_test_posting()
 	var/datum/bounty_record/refused_record = refused_posting.record
-	var/mob/living/basic/bounty_criminal/refused_criminal = board_test_criminal(refused_posting, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/refused_criminal = board_test_criminal(refused_posting, pad_turf)
 	TEST_ASSERT(islist(refused_posting.board_claim(ship, pad, refused_criminal, "restrained")), "The second live catch was refused")
 	TEST_ASSERT(!ship.board_test_heard("headed for your prison at"), "The notice promised a prison that takes no bounty transfers")
 	TEST_ASSERT(!ship.board_test_heard("transfer pool"), "The notice explains the prisoner transfers")
@@ -542,7 +546,7 @@
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
 	var/obj/structure/overmap/ship/ship = board_test_ship()
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, aside)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, aside)
 
 	// Taken away on purpose (the pad, the board): no proof, even with the bounty still open (L9)
 	ADD_TRAIT(criminal, "bounty_removed", "bounty_pad") // TRAIT_BOUNTY_REMOVED, BOUNTY_PAD_TRAIT
@@ -591,7 +595,7 @@
 	TEST_ASSERT_EQUAL(posting.hunt(ship), TRUE, "The ship could not hunt the bounty")
 	TEST_ASSERT_NOTNULL(ship.get_waypoint("wanted_[REF(posting)]"), "Hunting didn't chart the site on the helm")
 	var/turf/aside = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, aside)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, aside)
 	var/expires_before = posting.expires_at
 	// Deleted, the body leaves proof (P2 asks for it); gone too, nothing is left
 	qdel(criminal)
@@ -636,11 +640,11 @@
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/datum/criminal_bounty/posting = board_test_posting()
 	TEST_ASSERT_EQUAL(posting.hunt(ship), TRUE, "The ship could not hunt the bounty")
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, spot)
 	ADD_TRAIT(criminal, "mission_field_mob", "bounty") // TRAIT_MISSION_FIELD_MOB, BOUNTY_TRAIT
-	var/mob/living/basic/bounty_companion/companion = new(spot)
+	var/mob/living/carbon/human/npc/bounty_companion/companion = new(spot)
 	posting.companions |= WEAKREF(companion)
-	var/mob/living/basic/bounty_criminal/decoy/decoy = new(spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = new(spot)
 	posting.decoys |= WEAKREF(decoy)
 	TEST_ASSERT(posting.board_move_sighting(TRUE), "The sighting marker wasn't placed")
 	var/obj/effect/bounty_sighting/marker = posting.marker
@@ -697,7 +701,7 @@
 
 /datum/unit_test/voidcrew_bounty_board/direct_delete/Run()
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, run_loc_floor_bottom_left)
 	qdel(posting)
 	TEST_ASSERT(QDELETED(posting), "The posting wasn't deleted")
 	TEST_ASSERT_EQUAL(posting.status, "closed", "Deleting an open posting didn't close it") // BOUNTY_POSTING_CLOSED
@@ -721,7 +725,7 @@
 		bag.close()
 	TEST_ASSERT(bag.attempt_fold(folder), "An empty bag won't fold")
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, spot)
 	criminal.forceMove(bag)
 	TEST_ASSERT(!bag.attempt_fold(folder), "A bag folded with a living criminal inside")
 	TEST_ASSERT(bounty_blocks_bag_fold(bag, null), "The guard doesn't see a living criminal in the bag")
@@ -737,11 +741,11 @@
 	var/obj/item/mmi/posibrain/brain = allocate(/obj/item/mmi/posibrain, spot)
 	TEST_ASSERT_NULL(bounty_offer_refusal(list(brain)), "An offer refused a positronic brain")
 	var/datum/criminal_bounty/other_posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/bagged = board_test_criminal(other_posting, spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/bagged = board_test_criminal(other_posting, spot)
 	bagged.forceMove(folded)
 	TEST_ASSERT(istext(bounty_offer_refusal(list(brain, folded))), "An offer sent a living criminal inside an item")
 	bagged.forceMove(spot)
-	var/mob/living/basic/bounty_companion/companion = allocate(/mob/living/basic/bounty_companion, spot)
+	var/mob/living/carbon/human/npc/bounty_companion/companion = allocate(/mob/living/carbon/human/npc/bounty_companion, spot)
 	companion.forceMove(folded)
 	TEST_ASSERT(istext(bounty_offer_refusal(list(folded))), "An offer sent a living companion inside an item")
 	companion.forceMove(spot)
@@ -834,7 +838,7 @@
 	pad.set_anchored(TRUE)
 
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, deck)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, deck)
 	criminal.death()
 	criminal.forceMove(deck)
 	var/balance_before = ship.ship_account.account_balance
@@ -847,9 +851,8 @@
 	// A live one, cuffed with its own restraints: full pay and the voucher, and the record goes on to the prisons
 	var/datum/criminal_bounty/live_posting = board_test_posting()
 	var/datum/bounty_record/live_record = live_posting.record
-	var/mob/living/basic/bounty_criminal/cuffed = board_test_criminal(live_posting, deck)
-	var/obj/item/restraints/handcuffs/cuffs = new(deck)
-	TEST_ASSERT(cuffed.body_apply_cuffs(cuffs, null), "The criminal could not be cuffed")
+	var/mob/living/carbon/human/npc/bounty_criminal/cuffed = board_test_criminal(live_posting, deck)
+	TEST_ASSERT_NOTNULL(board_test_cuff(cuffed), "The criminal could not be cuffed")
 	cuffed.forceMove(deck)
 	TEST_ASSERT_EQUAL(cuffed.capture_state(), "restrained", "A cuffed criminal doesn't read restrained") // BOUNTY_STATE_RESTRAINED
 	balance_before = ship.ship_account.account_balance
@@ -865,26 +868,27 @@
 
 // ===== SITES UNLOADING =====
 
-/// The worst state a criminal reached outlives its site unloading: it never pays more on the next body, and a dead one comes back as proof (12.1, M2)
+/// A criminal's site unloading: a living one comes back on the next load and pays by its condition then; a dead one comes back as proof (M2)
 /datum/unit_test/voidcrew_bounty_board/worst_state
 
 /datum/unit_test/voidcrew_bounty_board/worst_state/Run()
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, spot)
-	criminal.worst_state = "downed" // BOUNTY_STATE_DOWNED
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, spot)
+	bounty_test_hurt_to(criminal, -10)
+	TEST_ASSERT(criminal.is_downed(), "The criminal didn't go into crit")
 	posting.board_site_took_criminal(criminal)
 	TEST_ASSERT(QDELETED(criminal), "The unloading site didn't take the criminal")
 	TEST_ASSERT(posting.is_open() && !posting.board_relisting, "The bounty didn't stay up for the next load")
-	TEST_ASSERT_EQUAL(posting.board_worst_state, "downed", "The bounty forgot its criminal was downed")
+	TEST_ASSERT_EQUAL(posting.board_worst_state, "free", "A criminal alive when its site unloaded counts as dead") // BOUNTY_STATE_FREE
 	TEST_ASSERT_NULL(posting.board_proof(), "A criminal taken by its site left proof of death")
 
-	// The next load: the same record, still paying no more than the downed share
-	var/mob/living/basic/bounty_criminal/again = posting.board_place_at(spot, "explore", null, null) // BOUNTY_ACTIVITY_EXPLORE
+	// The next load: the same record, paid by its condition on the pad (no ratchet)
+	var/mob/living/carbon/human/npc/bounty_criminal/again = posting.board_place_at(spot, "explore", null, null) // BOUNTY_ACTIVITY_EXPLORE
 	TEST_ASSERT(istype(again), "The criminal didn't come back")
 	TEST_ASSERT_EQUAL(again.record, posting.record, "Someone else came back")
-	TEST_ASSERT_EQUAL(again.worst_state, "downed", "The criminal came back with a clean slate")
-	TEST_ASSERT_EQUAL(posting.board_share_for("restrained", again.worst_state), 60, "A criminal downed before the unload pays in full") // BOUNTY_SHARE_DOWNED
+	TEST_ASSERT(!again.is_downed(), "The criminal came back still in crit")
+	TEST_ASSERT_EQUAL(posting.board_share_for("restrained"), 100, "A cuffed criminal doesn't pay the full share") // BOUNTY_SHARE_RESTRAINED
 
 	// Dead when its site unloaded: it comes back as its proof of death, never alive
 	again.death()
@@ -922,7 +926,7 @@
 
 	var/datum/criminal_bounty/posting = board_test_posting()
 	var/turf/brink = locate(pit.x - 1, pit.y, pit.z)
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, brink)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, brink)
 	criminal.forceMove(pit)
 	sleep(3 SECONDS)
 	TEST_ASSERT(QDELETED(criminal) || istype(criminal.loc, /obj/effect/abstract/chasm_storage), "The criminal didn't fall into the chasm")
@@ -952,7 +956,7 @@
 
 /datum/unit_test/voidcrew_bounty_board/unreachable/Run()
 	var/datum/criminal_bounty/posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, run_loc_floor_bottom_left)
 	TEST_ASSERT(!posting.board_check_unreachable(), "A criminal standing on the floor counts as unreachable")
 	criminal.moveToNullspace()
 	TEST_ASSERT(posting.board_check_unreachable(), "A criminal in nullspace still holds the bounty")
@@ -1161,7 +1165,7 @@
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
 	var/datum/criminal_bounty/posting = board_test_posting(3)
 	TEST_ASSERT_EQUAL(posting.hunt(hunter), TRUE, "The hunter could not hunt the bounty")
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
 	var/wanted_name = posting.record.name
 	listener.board_test_heard.Cut()
 	hunter.board_test_heard.Cut()
@@ -1183,7 +1187,7 @@
 	var/obj/structure/overmap/ship/ship = board_test_ship()
 	var/datum/criminal_bounty/posting = board_test_posting()
 	var/wanted_name = posting.record.name
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, pad_turf)
 	TEST_ASSERT(islist(posting.board_claim(ship, pad, criminal, "restrained")), "The clean catch was refused")
 	var/obj/item/paper/bounty_captured/poster = locate() in pad_turf
 	TEST_ASSERT_NOTNULL(poster, "A clean Wanted catch left no poster")
@@ -1197,10 +1201,9 @@
 	qdel(poster)
 
 	var/datum/criminal_bounty/downed_posting = board_test_posting()
-	var/mob/living/basic/bounty_criminal/downed_criminal = board_test_criminal(downed_posting, pad_turf)
-	downed_criminal.worst_state = "downed" // BOUNTY_STATE_DOWNED
-	TEST_ASSERT(islist(downed_posting.board_claim(ship, pad, downed_criminal, "restrained")), "The downed catch was refused")
-	TEST_ASSERT_NULL(locate(/obj/item/paper/bounty_captured) in pad_turf, "A catch downed earlier left a poster")
+	var/mob/living/carbon/human/npc/bounty_criminal/downed_criminal = board_test_criminal(downed_posting, pad_turf)
+	TEST_ASSERT(islist(downed_posting.board_claim(ship, pad, downed_criminal, "downed")), "The downed catch was refused")
+	TEST_ASSERT_NULL(locate(/obj/item/paper/bounty_captured) in pad_turf, "A catch in crit left a poster")
 	for(var/datum/bounty_record/pooled as anything in GLOB.bounty_prisoner_pool.Copy())
 		bounty_pool_remove(pooled)
 
@@ -1214,7 +1217,7 @@
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
 	var/datum/criminal_bounty/posting = board_test_posting()
 	var/wanted_name = posting.record.name
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, aside)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, aside)
 
 	// Nothing there: the card says so
 	var/list/preview = posting.board_pad_preview(ship, pad)
@@ -1230,11 +1233,9 @@
 	var/line = pad.bounty_pad_line(criminal)
 	TEST_ASSERT_EQUAL(line, "On the pad: [wanted_name], standing free.", "The pad's line for a free criminal")
 
-	// Cuffed, but downed earlier: the pad names the state and why Turn In won't work (the bare pad isn't aboard), never the pay
-	var/obj/item/restraints/handcuffs/cuffs = new(pad_turf)
-	TEST_ASSERT(criminal.body_apply_cuffs(cuffs, null), "The criminal could not be cuffed")
+	// Cuffed: the pad names the state and why Turn In won't work (the bare pad isn't aboard), never the pay
+	TEST_ASSERT_NOTNULL(board_test_cuff(criminal), "The criminal could not be cuffed")
 	criminal.forceMove(pad_turf)
-	criminal.worst_state = "downed" // BOUNTY_STATE_DOWNED
 	preview = posting.board_pad_preview(ship, pad)
 	TEST_ASSERT_EQUAL(preview[3], "the pad must be aboard your ship", "The card doesn't say the pad isn't aboard")
 	line = pad.bounty_pad_line(criminal)
@@ -1243,9 +1244,17 @@
 	TEST_ASSERT(!findtext(line, "1320") && !findtextEx(line, " cr") && !findtextEx(line, "pays"), "The pad says what the catch pays: [line]")
 	var/list/entry = posting.board_ui_entry(ship, pad)
 	TEST_ASSERT_EQUAL(entry["turn_in_refusal"], "the pad must be aboard your ship", "The card entry doesn't carry the refusal")
-	// The pay itself is unchanged: downed earlier, the downed share (60% of 1000 + 1200)
-	var/list/downed_pay = posting.board_payout(posting.board_share_for(criminal.capture_state(), criminal.worst_state))
-	TEST_ASSERT_EQUAL(downed_pay[1], 1320, "A catch downed earlier doesn't pay the downed share")
+	// The pay is the condition on the pad: cuffed, the full share; in crit, the downed share (60% of 1000 + 1200)
+	var/list/cuffed_pay = posting.board_payout(posting.board_share_for(criminal.capture_state()))
+	TEST_ASSERT_EQUAL(cuffed_pay[1], 1000, "A cuffed catch doesn't pay the full share")
+	TEST_ASSERT_EQUAL(cuffed_pay[2], 1, "A cuffed catch doesn't pay its voucher")
+	bounty_test_hurt_to(criminal, -10)
+	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A cuffed criminal in crit doesn't read downed")
+	var/list/downed_pay = posting.board_payout(posting.board_share_for(criminal.capture_state()))
+	TEST_ASSERT_EQUAL(downed_pay[1], 1320, "A catch in crit doesn't pay the downed share")
+	// Patched up out of crit and still cuffed: the full share again (owner ruling 2026-11-08)
+	criminal.adjustBruteLoss(-110)
+	TEST_ASSERT_EQUAL(posting.board_share_for(criminal.capture_state()), 100, "A criminal patched up after a fall doesn't pay in full")
 
 	// Once per few seconds, however often they're dragged on and off (dragging them on above already spoke)
 	COOLDOWN_RESET(pad, bounty_announce_cooldown)
@@ -1254,9 +1263,9 @@
 
 	// Another crew's offer, or a decoy: nothing
 	var/datum/criminal_bounty/offer = board_test_posting(1, board_test_ship())
-	var/mob/living/basic/bounty_criminal/offered = board_test_criminal(offer, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/offered = board_test_criminal(offer, pad_turf)
 	TEST_ASSERT_NULL(pad.bounty_pad_line(offered), "The pad spoke about another crew's offer")
-	var/mob/living/basic/bounty_criminal/decoy/decoy = allocate(/mob/living/basic/bounty_criminal/decoy, pad_turf)
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = allocate(/mob/living/carbon/human/npc/bounty_criminal/decoy, pad_turf)
 	TEST_ASSERT_NULL(pad.bounty_pad_line(decoy), "The pad spoke about a decoy")
 
 	// Its proof of death: the pad names it, and it pays the dead share (25% of 1000 + 1200)
@@ -1268,7 +1277,7 @@
 	TEST_ASSERT(findtext(line, "Evidence tag for [wanted_name]"), "The pad's line for the proof: [line]")
 	preview = posting.board_pad_preview(ship, pad)
 	TEST_ASSERT_EQUAL(preview[2], "proof", "The card doesn't see the proof on the pad")
-	var/list/dead_pay = posting.board_payout(posting.board_share_for("dead", "dead")) // BOUNTY_STATE_DEAD
+	var/list/dead_pay = posting.board_payout(posting.board_share_for("dead")) // BOUNTY_STATE_DEAD
 	TEST_ASSERT_EQUAL(dead_pay[1], 550, "The proof doesn't pay the dead share")
 	// The body the proof stands for is no longer the bounty's, so closing it won't take the body away
 	qdel(criminal)
@@ -1281,7 +1290,7 @@
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/datum/criminal_bounty/posting = board_test_posting()
 	TEST_ASSERT_EQUAL(posting.hunt(ship), TRUE, "The ship could not hunt the bounty")
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, spot)
 	TEST_ASSERT_NOTNULL(criminal, "No criminal to track")
 	var/mob/living/carbon/human/consistent/holder = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 	var/obj/item/gps/gps = allocate(/obj/item/gps, run_loc_floor_bottom_left)

@@ -3,7 +3,9 @@
  *
  * The person a rescue contract sends a crew to fetch. They are an ambient NPC (the world population
  * core in voidcrew/modules/ambient_npcs/), so they get its looks, its walking, its activities and
- * its dialogue cooldowns, and they behave like a frightened person:
+ * its dialogue cooldowns, and a real human body (voidcrew/modules/human_npcs/): wounds, bleeding,
+ * crit, death and revival are a person's, and a crew can fireman-carry, drag, bag or treat them
+ * like anyone. They behave like a frightened person:
  *
  * - placed somewhere sheltered in the wreck (a locker, a corner, an alcove), out of sight of
  *   whatever is loose in there (mission_survivor_hiding_place());
@@ -21,8 +23,10 @@
  * - removed by the contract (delivered, timed out, abandoned, re-targeted), they are taken up from
  *   orbit in the transporter's column of light (beam_out()), or deleted at once if nobody sees.
  *
- * Immune to air, cold and heat on purpose (see the old note in the rescue contract's history):
- * the contract puts them inside airless wrecks, and only violence should kill them.
+ * The contract puts them inside wrecks, which are airless and near absolute zero: they have been
+ * living in their emergency softsuit, helmet on and a tank on their back, and breathe from the tank
+ * when the air is bad, as a person does. Their body is the mission's: the corpse cleanup never takes
+ * it, since a dead survivor can still be brought back (the escort objective's revival window).
  */
 
 /// How far they see people and threats
@@ -78,23 +82,15 @@
 // THE SURVIVOR
 // =========================================================================
 
-/mob/living/basic/ambient_npc/mission_survivor
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor
 	name = "survivor"
 	desc = "Somebody who has had a very long week and would love to see a ship interior again. Their emergency suit is patched in three places and still holding."
-	maxHealth = 60
-	health = 60
-	// Quick on their feet: they keep up with whoever is getting them out
-	speed = 1
-	// Carried out like anyone else: pulled, bagged, boxed or beamed (the ambient core forbids all of that)
-	move_resist = MOVE_RESIST_DEFAULT
 	death_cash_low = 0
 	death_cash_high = 0
-	speak_emote = list("says")
 	speech_pace = 1.5
-	outfit_choices = list(
-		/datum/outfit/mission_survivor,
-		/datum/outfit/mission_survivor/bareheaded,
-	)
+	outfit = /datum/outfit/mission_survivor
+	// Their body is the contract's until it lets go of them (corpse_lifetime())
+	npc_corpse_lifetime = 0
 	routine = list(/datum/ambient_activity/survivor_hide = 1)
 	ai_controller = /datum/ai_controller/basic_controller/ambient_npc/mission_survivor
 	/// The contract they belong to (a /datum/mission), for the distress call and to know its crew
@@ -122,25 +118,24 @@
 	/// world.time they last saw a threat
 	var/last_threat_at = 0
 
-/mob/living/basic/ambient_npc/mission_survivor/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
-	// The ambient core makes its people fixtures of their place. A survivor has no place: let them
-	// be put in a locker or a body bag, drag-dropped and teleported, the way the contract always
-	// allowed. They still refuse polymorph and type changes, which would only lose the contract.
-	REMOVE_TRAIT(src, TRAIT_NO_CONTAINMENT, AMBIENT_NPC_TRAIT)
-	UnregisterSignal(src, list(COMSIG_MOUSEDROP_ONTO, COMSIG_MOVABLE_TELEPORTING))
 	hide_spot = get_turf(src)
 	next_fidget = world.time + rand(20 SECONDS, 40 SECONDS)
 
-/mob/living/basic/ambient_npc/mission_survivor/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/Destroy()
 	contract_ref = null
 	hide_spot = null
 	hid_in_ref = null
 	greeted = null
 	return ..()
 
+// A dead survivor can be brought back inside the contract's window: the corpse cleanup leaves them be
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/corpse_lifetime()
+	return 0
+
 /// Ties them to `contract`: its crew hear their distress call, and they take its story
-/mob/living/basic/ambient_npc/mission_survivor/proc/join_contract(datum/mission/contract)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/join_contract(datum/mission/contract)
 	if(!contract)
 		return
 	contract_ref = WEAKREF(contract)
@@ -153,7 +148,7 @@
  * Puts them in their hiding place: into `locker` (shut) if there is one, or down in a crouch where
  * they stand. Where they stand is where they come back to.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/take_shelter(obj/structure/closet/locker)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/take_shelter(obj/structure/closet/locker)
 	hide_spot = get_turf(src)
 	if(QDELETED(locker))
 		crouch()
@@ -166,7 +161,7 @@
 	if(loc == locker)
 		hid_in_ref = WEAKREF(locker)
 
-/mob/living/basic/ambient_npc/mission_survivor/examine(mob/user)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/examine(mob/user)
 	. = ..()
 	if(stat != CONSCIOUS)
 		return
@@ -181,7 +176,7 @@
 // FOLLOWING
 // =========================================================================
 
-/mob/living/basic/ambient_npc/mission_survivor/talked_to(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/talked_to(mob/living/user)
 	if(beaming_out || !talk_ready(user))
 		return
 	if(!buckled)
@@ -200,7 +195,7 @@
 		speak_context("follow", user, force = TRUE)
 
 /// They follow `leader` from now on. Returns the activity, or null.
-/mob/living/basic/ambient_npc/mission_survivor/proc/start_following(mob/living/leader)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/start_following(mob/living/leader)
 	if(beaming_out || !isliving(leader))
 		return null
 	rescued = TRUE
@@ -208,34 +203,34 @@
 	return start_activity(new /datum/ambient_activity/survivor_follow(src, leader))
 
 /// They stop following and wait where they are
-/mob/living/basic/ambient_npc/mission_survivor/proc/stop_following()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/stop_following()
 	hide_spot = get_turf(src)
 	if(is_following())
 		end_activity()
 
-/mob/living/basic/ambient_npc/mission_survivor/proc/is_following()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/is_following()
 	return istype(activity, /datum/ambient_activity/survivor_follow)
 
 /// Their rescuer is out of reach: they wait where they are. Called by the follow activity as it ends.
-/mob/living/basic/ambient_npc/mission_survivor/proc/lose_leader()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/lose_leader()
 	hide_spot = get_turf(src)
 
 /// Their rescuer went down in front of them
-/mob/living/basic/ambient_npc/mission_survivor/proc/leader_fell(mob/living/leader)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/leader_fell(mob/living/leader)
 	hide_spot = get_turf(src)
 	if(!buckled)
 		face_atom(leader)
 	speak_context("leader_down", leader, force = TRUE)
 
 /// Whether `person` is crew of the ship that took their contract
-/mob/living/basic/ambient_npc/mission_survivor/proc/is_contract_crew(mob/living/person)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/is_contract_crew(mob/living/person)
 	var/datum/mission/contract = contract_ref?.resolve()
 	if(!contract?.servant || !isliving(person))
 		return FALSE
 	return ambient_crew_ship(person) == contract.servant
 
 /// Shut in something while following: they push it open, or bang on it if it won't
-/mob/living/basic/ambient_npc/mission_survivor/proc/climb_out()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/climb_out()
 	var/obj/structure/closet/container = loc
 	if(!istype(container) || !reaction_ready("climb_out", 3 SECONDS))
 		return
@@ -246,14 +241,14 @@
 		speak_context("trapped", null, force = TRUE)
 
 /// Bangs on the inside of `container`
-/mob/living/basic/ambient_npc/mission_survivor/proc/bang_on(obj/structure/closet/container)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/bang_on(obj/structure/closet/container)
 	if(QDELETED(container))
 		return
 	container.Shake(2, 1, 0.5 SECONDS)
 	playsound(container, 'sound/effects/bang.ogg', 30, TRUE, -2)
 
 /// The first time they step aboard a crew's ship
-/mob/living/basic/ambient_npc/mission_survivor/proc/check_aboard()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/check_aboard()
 	if(said_aboard || !istype(get_area(src), /area/shuttle/voidcrew))
 		return
 	said_aboard = TRUE
@@ -267,7 +262,7 @@
  * About once a second while their AI is on: who and what can they see, and what do they do about
  * it. Starts reactions (calling out, running) as activities; never sleeps.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/look_around()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/look_around()
 	if(beaming_out || !can_act() || world.time < next_look)
 		return
 	next_look = world.time + SURVIVOR_LOOK_INTERVAL
@@ -306,7 +301,7 @@
  * A threat in sight, while nobody is leading them out. Close, or after them: they run. Further off:
  * they keep still, and warn anyone there.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/react_threat(mob/living/threat, turf/here)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/react_threat(mob/living/threat, turf/here)
 	var/after_us = threat.ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET] == src
 	if(get_dist(here, threat) <= SURVIVOR_FLEE_DISTANCE || after_us)
 		if(!istype(activity, /datum/ambient_activity/survivor_flee))
@@ -334,7 +329,7 @@
 		manual_emote(pick("freezes.", "holds [p_their()] breath.", "presses [p_themselves()] against the wall."))
 
 /// Following, and something is coming: they duck down and yelp, and stay with their rescuer
-/mob/living/basic/ambient_npc/mission_survivor/proc/duck(mob/living/threat)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/duck(mob/living/threat)
 	if(!isturf(loc))
 		return
 	speak_context("duck", threat, force = TRUE)
@@ -343,20 +338,20 @@
 	crouch()
 	addtimer(CALLBACK(src, PROC_REF(stop_ducking)), SURVIVOR_DUCK_TIME, TIMER_UNIQUE | TIMER_OVERRIDE)
 
-/mob/living/basic/ambient_npc/mission_survivor/proc/stop_ducking()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/stop_ducking()
 	if(crouching && is_following())
 		stand_up()
 
 /// Whether `thing` is something they should be afraid of: awake, nobody's player, not a person, and out to hurt someone
-/mob/living/basic/ambient_npc/mission_survivor/proc/is_threat(mob/living/thing)
-	if(thing == src || thing.stat != CONSCIOUS || thing.client || istype(thing, /mob/living/basic/ambient_npc))
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/is_threat(mob/living/thing)
+	if(thing == src || thing.stat != CONSCIOUS || thing.client || istype(thing, /mob/living/carbon/human/npc/ambient_npc))
 		return FALSE
 	if(faction_check_atom(thing))
 		return FALSE
 	return mission_survivor_dangerous(thing)
 
 /// The nearest threat they can see from `here`, or null
-/mob/living/basic/ambient_npc/mission_survivor/proc/nearest_threat(turf/here)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/nearest_threat(turf/here)
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/thing in hearers(SURVIVOR_SIGHT, here))
@@ -373,7 +368,7 @@
  * From inside a locker they can't see out, so it goes by ear: anyone close enough counts.
  * `skip_greeted` leaves out people they already called out to.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/nearest_person(turf/here, range, by_ear = FALSE, skip_greeted = FALSE)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/nearest_person(turf/here, range, by_ear = FALSE, skip_greeted = FALSE)
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/person in SSspatial_grid.orthogonal_range_search(here, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, range))
@@ -394,13 +389,13 @@
 	return nearest
 
 /// Someone they have not called out to yet, in sight (or in earshot from a locker), or null. They count as called out to from now.
-/mob/living/basic/ambient_npc/mission_survivor/proc/new_person_in_sight(turf/here, obj/structure/closet/container)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/new_person_in_sight(turf/here, obj/structure/closet/container)
 	var/mob/living/person = container ? nearest_person(here, SURVIVOR_HEARING_RANGE, by_ear = TRUE, skip_greeted = TRUE) : nearest_person(here, SURVIVOR_SIGHT, skip_greeted = TRUE)
 	if(person)
 		mark_greeted(person)
 	return person
 
-/mob/living/basic/ambient_npc/mission_survivor/proc/mark_greeted(mob/living/person)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/mark_greeted(mob/living/person)
 	var/key = REF(person)
 	if(LAZYFIND(greeted, key))
 		return
@@ -412,7 +407,7 @@
  * Nobody has found them yet: their beacon picks up the contract crew's ship and they talk into it.
  * Heard on the radios of that crew within SURVIVOR_DISTRESS_RANGE, as a weak signal.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/distress_call(turf/here)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/distress_call(turf/here)
 	if(world.time < next_distress)
 		return
 	var/datum/mission/contract = contract_ref?.resolve()
@@ -444,7 +439,7 @@
  * Their hiding activity's tick: up on their feet when someone is right there, down again when
  * they are alone; a plea to whoever is close; otherwise a fidget now and then.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/hide_tick()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/hide_tick()
 	var/turf/here = get_turf(src)
 	if(!here)
 		return
@@ -481,7 +476,7 @@
  * on their own side of it (so the way there doesn't pass it), in sight from where they stand (so
  * the way there is short), best out of its sight with a wall at their back. Null if nowhere.
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/flee_tile(mob/living/threat, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/flee_tile(mob/living/threat, list/avoid)
 	var/turf/here = get_turf(src)
 	var/turf/danger = get_turf(threat)
 	if(!here || !danger || here.z != danger.z)
@@ -505,7 +500,7 @@
 			best_score = score
 	return best
 
-/mob/living/basic/ambient_npc/mission_survivor/react_attacked(atom/attacker)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/react_attacked(atom/attacker)
 	if(stat != CONSCIOUS || fading || beaming_out || !reaction_ready("attacked", 4 SECONDS))
 		return
 	var/mob/living/hitter = isliving(attacker) ? attacker : null
@@ -523,11 +518,11 @@
 
 /**
  * Taken up from orbit: a column of light comes down on them, they lift and come apart in it, and
- * they are gone. Nothing happens to them meanwhile. Somewhere nobody can see, they just go.
+ * they are gone. They are held still meanwhile. Somewhere nobody can see, they just go.
  * `farewell` has them say goodbye first (delivered home). `force_visual` draws the beam even
  * with nobody about (unit tests).
  */
-/mob/living/basic/ambient_npc/mission_survivor/proc/beam_out(farewell = FALSE, force_visual = FALSE)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/beam_out(farewell = FALSE, force_visual = FALSE)
 	if(beaming_out || QDELETED(src))
 		return
 	var/turf/spot = get_turf(src)
@@ -547,7 +542,7 @@
 	fading = TRUE
 	end_activity()
 	stand_up()
-	add_traits(list(TRAIT_AI_PAUSED, TRAIT_GODMODE, TRAIT_IMMOBILIZED, TRAIT_NO_FLOATING_ANIM), SURVIVOR_TRAIT)
+	add_traits(list(TRAIT_AI_PAUSED, TRAIT_IMMOBILIZED, TRAIT_NO_FLOATING_ANIM), SURVIVOR_TRAIT)
 	pulledby?.stop_pulling()
 	stop_pulling()
 	buckled?.unbuckle_mob(src, force = TRUE)
@@ -560,7 +555,7 @@
 	addtimer(CALLBACK(src, PROC_REF(beam_gone)), SURVIVOR_BEAM_TIME)
 
 /// The column is down: they lift a little and come apart in it, head first
-/mob/living/basic/ambient_npc/mission_survivor/proc/beam_dissolve()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/beam_dissolve()
 	if(!isturf(loc))
 		return // shut in a locker: the column takes them through it
 	var/dissolve_time = SURVIVOR_BEAM_TIME - SURVIVOR_BEAM_DROP
@@ -569,7 +564,7 @@
 	animate(src, pixel_z = pixel_z + 8, time = dissolve_time, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 
 /// Gone: the last flash where they stood, and the column lifts back up without them
-/mob/living/basic/ambient_npc/mission_survivor/proc/beam_gone()
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/proc/beam_gone()
 	var/turf/spot = get_turf(src)
 	if(spot)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
@@ -591,7 +586,7 @@
 // =========================================================================
 
 // Their own lines only: none of the ambient core's chatter fits someone in this state
-/mob/living/basic/ambient_npc/mission_survivor/get_lines(context)
+/mob/living/carbon/human/npc/ambient_npc/mission_survivor/get_lines(context)
 	var/static/list/lines = list(
 		// Hiding alone, under their breath
 		"hide" = list(
@@ -728,23 +723,23 @@
 // THEIR LOOK
 // =========================================================================
 
-/// What they have been living in: an orange emergency suit over their work clothes
+/// What they have been living in: an orange emergency suit over their work clothes, helmet on and a tank of air
 /datum/outfit/mission_survivor
 	name = "Rescue Survivor"
 	uniform = /obj/item/clothing/under/color/grey
 	suit = /obj/item/clothing/suit/space/fragile
 	head = /obj/item/clothing/head/helmet/space/fragile
+	mask = /obj/item/clothing/mask/breath
+	back = /obj/item/tank/internals/oxygen
 	shoes = /obj/item/clothing/shoes/workboots
-
-/datum/outfit/mission_survivor/bareheaded
-	name = "Rescue Survivor (Helmet Off)"
-	head = null
+	internals_slot = ITEM_SLOT_BACK
 
 // =========================================================================
 // THEIR BRAIN
 // =========================================================================
 
-/// The ambient routine runner, with their senses in front of it
+/// The ambient routine runner, with their senses in front of it. Unlike the rest of the ambient
+/// core they never resist being pulled, carried, buckled or shut in: that is how a crew gets them out.
 /datum/ai_controller/basic_controller/ambient_npc/mission_survivor
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/mission_survivor_senses,
@@ -757,7 +752,7 @@
 /datum/ai_planning_subtree/mission_survivor_senses
 
 /datum/ai_planning_subtree/mission_survivor_senses/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = controller.pawn
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = controller.pawn
 	if(istype(survivor) && controller.ai_status == AI_STATUS_ON)
 		survivor.look_around()
 
@@ -770,21 +765,21 @@
 	name = "hiding"
 
 /datum/ambient_activity/survivor_hide/setup()
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	var/turf/hide_at = istype(survivor) ? survivor.hide_spot : null
 	if(isturf(doer.loc) && hide_at && hide_at != doer.loc && hide_at.z == doer.z && get_dist(doer, hide_at) <= SURVIVOR_FOLLOW_RANGE && doer.standable(hide_at, failed_spots))
 		go_to(hide_at)
 	return TRUE
 
 /datum/ambient_activity/survivor_hide/act(seconds)
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(istype(survivor))
 		survivor.hide_tick()
 	return AMBIENT_STEP_CONTINUE
 
 /datum/ambient_activity/survivor_hide/spot_unreachable()
 	. = ..()
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(istype(survivor))
 		survivor.hide_spot = get_turf(doer)
 
@@ -797,7 +792,7 @@
 
 /datum/ambient_activity/survivor_call/setup()
 	var/mob/living/person = anchor()
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(!isliving(person) || !istype(survivor))
 		return FALSE
 	set_duration()
@@ -821,7 +816,7 @@
 		return AMBIENT_STEP_DONE
 	var/obj/structure/closet/container = doer.loc
 	if(istype(container))
-		var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+		var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 		// Right outside: they push it open themselves
 		if(get_dist(container, person) <= 1 && container.open())
 			return AMBIENT_STEP_DONE
@@ -838,7 +833,7 @@
 	return AMBIENT_STEP_DONE
 
 /datum/ambient_activity/survivor_call/finish()
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(istype(survivor) && isturf(survivor.loc))
 		survivor.hide_spot = survivor.loc
 	return ..()
@@ -852,10 +847,11 @@
 
 /datum/ambient_activity/survivor_flee/setup()
 	var/mob/living/threat = anchor()
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(!isliving(threat) || !istype(survivor))
 		return FALSE
 	ends_at = world.time + SURVIVOR_FLEE_TIME
+	doer.set_pace(running = TRUE)
 	if(survivor.reaction_ready("flee_line", 6 SECONDS))
 		doer.speak_context("flee", threat, force = TRUE)
 	var/turf/away = isturf(doer.loc) ? survivor.flee_tile(threat, failed_spots) : null
@@ -875,7 +871,7 @@
 	if(!threat || threat.stat != CONSCIOUS)
 		return AMBIENT_STEP_DONE
 	if(runs_left > 0 && get_dist(doer, threat) <= 2 && isturf(doer.loc))
-		var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+		var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 		var/turf/away = survivor.flee_tile(threat, failed_spots)
 		if(away)
 			runs_left--
@@ -885,7 +881,9 @@
 	return AMBIENT_STEP_CONTINUE
 
 /datum/ambient_activity/survivor_flee/finish()
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	if(!QDELETED(doer))
+		doer.set_pace(running = FALSE)
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(istype(survivor) && isturf(survivor.loc))
 		survivor.hide_spot = survivor.loc
 	return ..()
@@ -904,7 +902,14 @@
 	if(!isliving(anchor()))
 		return FALSE
 	next_line = world.time + rand(40 SECONDS, 80 SECONDS)
+	// They keep up with whoever is getting them out
+	doer.set_pace(running = TRUE)
 	return TRUE
+
+/datum/ambient_activity/survivor_follow/finish()
+	if(!QDELETED(doer))
+		doer.set_pace(running = FALSE)
+	return ..()
 
 /// Whether `leader` can still be followed: alive, on this level, near enough
 /datum/ambient_activity/survivor_follow/proc/in_reach(mob/living/leader)
@@ -927,7 +932,7 @@
 	return FALSE
 
 /datum/ambient_activity/survivor_follow/act(seconds)
-	var/mob/living/basic/ambient_npc/mission_survivor/survivor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/survivor = doer
 	if(!istype(survivor))
 		return AMBIENT_STEP_DONE
 	if(!isturf(doer.loc))

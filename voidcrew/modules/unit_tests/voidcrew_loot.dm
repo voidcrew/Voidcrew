@@ -504,11 +504,12 @@
 	TEST_ASSERT_EQUAL(spawned, 1, "Contraband did not pay exactly one green melee weapon")
 	for(var/marker_path in list(/obj/effect/zone_mobs/syndicate, /obj/effect/zone_mobs/syndicate/boss))
 		var/obj/effect/zone_mobs/marker = new marker_path()
+		// Human NPC operatives (voidcrew/modules/human_npcs/ruins/); their tables also hold SMGs and shotguns back to the red zone.
 		TEST_ASSERT_EQUAL(length(marker.mobs_green), 1, "Green syndicate pool still includes sword guards")
-		TEST_ASSERT(marker.mobs_green[/mob/living/basic/trooper/syndicate/melee], "Green syndicate guards lost their knives")
+		TEST_ASSERT(marker.mobs_green[/mob/living/carbon/human/npc/ruin/trooper/syndicate], "Green syndicate guards lost their knives")
 		for(var/entry in marker.mobs_yellow)
-			TEST_ASSERT(!ispath(entry, /mob/living/basic/trooper/syndicate/ranged/smg) && !ispath(entry, /mob/living/basic/trooper/syndicate/ranged/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
-		TEST_ASSERT(marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg] || marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper], "Red syndicate pool lost its SMG guards")
+			TEST_ASSERT(!ispath(entry, /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg) && !ispath(entry, /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
+		TEST_ASSERT(marker.mobs_red[/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg] || marker.mobs_red[/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper], "Red syndicate pool lost its SMG guards")
 		qdel(marker)
 
 /**
@@ -734,6 +735,8 @@
 			/obj/item/claymore/cutlass/old,
 			/obj/item/claymore/weak,
 			/obj/item/crowbar/large/twenty_force,
+			/obj/item/cyberware_pair_case/gorilla_arms/street,
+			/obj/item/cyberware_pair_case/mantis_street,
 			/obj/item/fireaxe/boardingaxe,
 			/obj/item/fireaxe/boneaxe,
 			/obj/item/gun/ballistic/automatic/ar,
@@ -790,6 +793,7 @@
 			/obj/item/nullrod/vibro,
 			/obj/item/nullrod/vibro/spellblade,
 			/obj/item/nullrod/vibro/talking,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout,
 			/obj/item/pen/edagger,
 			/obj/item/shield/buckler,
 			/obj/item/shield/buckler/parmula,
@@ -811,6 +815,7 @@
 			/obj/item/cursed_katana,
 			/obj/item/cyberware_pair_case/gorilla_arms,
 			/obj/item/cyberware_pair_case/mantis_blades,
+			/obj/item/cyberware_pair_case/mantis_scorch,
 			/obj/item/energy_katana,
 			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
 			/obj/item/gun/ballistic/automatic/m90/unrestricted,
@@ -841,6 +846,7 @@
 			/obj/item/mjollnir,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
 			/obj/item/shield/energy,
 			/obj/item/singularityhammer,

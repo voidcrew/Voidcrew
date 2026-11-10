@@ -1,5 +1,8 @@
 /**
- * Bounty hunting: P3 AI's tests, for voidcrew/modules/bounties/bounty_ai*.dm, bounty_activities.dm and bounty_companions.dm.
+ * Bounty hunting: P3 AI's tests, for voidcrew/modules/bounties/bounty_ai*.dm, bounty_styles.dm,
+ * bounty_activities.dm and bounty_companions.dm. Criminals and companions are real human bodies (phase D
+ * of the human NPC migration): these tests check that they draw, fire, throw and shove with the real
+ * items they carry, hide by real moves, sit and drink for real, and give up through tg's *surrender.
  * The blend test uses P6's blend component and the companion tests P2's may_attack_scope(), as
  * production does.
  *
@@ -15,11 +18,36 @@
 /datum/unit_test/voidcrew_bounty_ai/proc/tile(dx, dy)
 	return locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y + dy, run_loc_floor_bottom_left.z)
 
-/// Hiding in a locker and in a crate; opening either finds them, and they bolt
+/**
+ * A criminal of `criminal_type` at `where`, made the way production makes one (the human NPC spawn
+ * order, with its record as its look), so it is dressed by its record: `style` (BOUNTY_STYLE_*) and
+ * `tier` (BOUNTY_TIER_*, 1 Petty).
+ */
+/datum/unit_test/voidcrew_bounty_ai/proc/make_criminal(criminal_type, turf/where, style, tier = 1)
+	var/archetype = ispath(criminal_type, /mob/living/carbon/human/npc/bounty_criminal/meek) ? "meek" : "normal" // BOUNTY_ARCHETYPE_*
+	var/datum/bounty_record/record = generate_bounty_record(tier, archetype, "planet", /datum/species/human) // BOUNTY_PLACEMENT_PLANET
+	record.tier = tier
+	if(style)
+		record.style = style
+	var/datum/human_npc_order/order = spawn_human_npc(criminal_type, where, look = record, immediate = TRUE)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = order?.spawned_ref?.resolve()
+	qdel(order)
+	TEST_ASSERT_NOTNULL(criminal, "Test fixture: no [criminal_type] was made")
+	allocated += criminal
+	criminal.ai_update_style()
+	return criminal
+
+/// The first `item_type` `body` carries anywhere on it, held or not
+/datum/unit_test/voidcrew_bounty_ai/proc/carried(mob/living/carbon/body, item_type)
+	for(var/obj/item/thing as anything in body.get_all_contents_type(item_type))
+		return thing
+	return null
+
+/// Hiding in a locker and in a crate (a real move in, and out when it opens); opening either finds them, and they bolt
 /datum/unit_test/voidcrew_bounty_ai/containers
 
 /datum/unit_test/voidcrew_bounty_ai/containers/Run()
-	var/mob/living/basic/bounty_criminal/meek/criminal = allocate(/mob/living/basic/bounty_criminal/meek, tile(1, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(1, 1))
 	var/obj/structure/closet/locker = allocate(/obj/structure/closet, tile(2, 1))
 	TEST_ASSERT(criminal.ai_hide_in(locker), "The meek criminal would not hide in the locker beside them")
 	TEST_ASSERT(criminal.hidden, "Hiding in a locker did not set hidden")
@@ -31,9 +59,11 @@
 	TEST_ASSERT(!criminal.hidden, "Opening the locker did not find them")
 	TEST_ASSERT(isturf(criminal.loc), "Found, they are still in the locker")
 	TEST_ASSERT_EQUAL(criminal.ai_mode, "fleeing", "Found, they did not bolt") // BOUNTY_AI_FLEEING
+	TEST_ASSERT_EQUAL(criminal.move_intent, MOVE_INTENT_RUN, "Found, they bolted at a walk")
 	TEST_ASSERT_EQUAL(criminal.ai_last_hide_ref?.resolve(), locker, "They would hide in the same locker again")
 
 	criminal.ai_calm_down()
+	TEST_ASSERT_EQUAL(criminal.move_intent, MOVE_INTENT_WALK, "Calm again, they still run")
 	criminal.forceMove(tile(1, 1))
 	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, tile(1, 2))
 	TEST_ASSERT(criminal.ai_hide_in(crate), "The meek criminal would not hide in the crate beside them")
@@ -49,43 +79,41 @@
 	locker.welded = TRUE
 	TEST_ASSERT(!criminal.ai_container_usable(locker), "A welded locker counts as a hiding place")
 
-/// Passing as a potted plant, and their own look back after
+/// Behind a potted plant: tg's own disguise (the plant held up in both hands), and their own name back when it is put down
 /datum/unit_test/voidcrew_bounty_ai/plant
 
 /datum/unit_test/voidcrew_bounty_ai/plant/Run()
-	var/mob/living/basic/bounty_criminal/meek/criminal = allocate(/mob/living/basic/bounty_criminal/meek, tile(1, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(1, 1))
 	var/obj/item/kirbyplants/plant = allocate(/obj/item/kirbyplants, tile(2, 1))
-	var/old_name = criminal.name
-	var/old_desc = criminal.desc
-	var/old_icon = criminal.icon
-	var/old_state = criminal.icon_state
-	var/old_layer = criminal.layer
+	var/old_name = criminal.get_visible_name()
 
-	TEST_ASSERT(criminal.ai_hide_in(plant), "The meek criminal would not pass as the plant beside them")
+	TEST_ASSERT(criminal.ai_hide_in(plant), "The meek criminal would not hide behind the plant beside them")
 	TEST_ASSERT_EQUAL(criminal.loc, tile(2, 1), "They did not step onto the plant's tile")
-	TEST_ASSERT_EQUAL(plant.loc, criminal, "They did not take the plant")
-	TEST_ASSERT_EQUAL(criminal.name, plant.name, "They do not go by the plant's name")
-	TEST_ASSERT_EQUAL(criminal.desc, plant.desc, "They do not read as the plant")
-	TEST_ASSERT_EQUAL(criminal.icon, plant.icon, "They do not look like the plant")
-	TEST_ASSERT_EQUAL(criminal.icon_state, plant.icon_state, "They do not look like the plant")
+	TEST_ASSERT(criminal.is_holding(plant), "They are not holding the plant up")
+	TEST_ASSERT_EQUAL(criminal.get_visible_name(), plant.name, "Behind the plant, they don't go by the plant's name")
+	TEST_ASSERT_EQUAL(criminal.ai_hide_mode, "plant", "The wrong hiding mode") // BOUNTY_HIDE_PLANT
 
 	// Someone touching the plant finds them
 	var/mob/living/carbon/human/consistent/finder = allocate(/mob/living/carbon/human/consistent, tile(3, 1))
 	criminal.ai_touched_by(finder)
 	TEST_ASSERT(!criminal.hidden, "Touching the plant did not find them")
-	TEST_ASSERT_EQUAL(criminal.name, old_name, "Their name did not come back")
-	TEST_ASSERT_EQUAL(criminal.desc, old_desc, "Their description did not come back")
-	TEST_ASSERT_EQUAL(criminal.icon, old_icon, "Their look did not come back")
-	TEST_ASSERT_EQUAL(criminal.icon_state, old_state, "Their look did not come back")
-	TEST_ASSERT_EQUAL(criminal.layer, old_layer, "Their layer did not come back")
-	TEST_ASSERT_EQUAL(plant.loc, tile(2, 1), "The plant was not put back")
+	TEST_ASSERT(!criminal.is_holding(plant), "Found, they still hold the plant")
+	TEST_ASSERT(isturf(plant.loc), "Found, the plant was not put down")
+	TEST_ASSERT_EQUAL(criminal.get_visible_name(), old_name, "Their own name did not come back")
 	TEST_ASSERT(criminal.ai_has_grudge(finder), "The finder is not on their grudge list")
+
+	// Knocked out of their hands, the plant gives them away
+	criminal.ai_calm_down()
+	criminal.forceMove(get_turf(plant))
+	TEST_ASSERT(criminal.ai_hide_in(plant), "They would not hide behind the plant a second time")
+	criminal.dropItemToGround(plant)
+	TEST_ASSERT(!criminal.hidden, "The plant left their hands, but they still count as hidden")
 
 /// Picking a dark tile, standing in it faded, and a light finding them
 /datum/unit_test/voidcrew_bounty_ai/dark
 
 /datum/unit_test/voidcrew_bounty_ai/dark/Run()
-	var/mob/living/basic/bounty_criminal/meek/criminal = allocate(/mob/living/basic/bounty_criminal/meek, tile(2, 2))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(2, 2))
 	var/turf/dark = tile(3, 3)
 	// The test room is fullbright: mark one tile dark
 	GLOB.bounty_ai_test_dark_turfs += dark
@@ -109,19 +137,30 @@
 /datum/unit_test/voidcrew_bounty_ai/hide_choice
 
 /datum/unit_test/voidcrew_bounty_ai/hide_choice/Run()
-	var/mob/living/basic/bounty_criminal/meek/criminal = allocate(/mob/living/basic/bounty_criminal/meek, tile(2, 2))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(2, 2))
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(0, 2))
 	var/obj/structure/closet/near_hunter = allocate(/obj/structure/closet, tile(1, 3))
 	var/obj/structure/closet/far_side = allocate(/obj/structure/closet, tile(4, 2))
 	TEST_ASSERT_EQUAL(criminal.ai_pick_hide_spot(hunter), far_side, "They picked the locker by the hunter over the one away from them")
 	TEST_ASSERT(near_hunter, "The test's locker was not made")
 
-/// Cornered: the aim (hand, mark, message), and a stamina hit during it makes them fumble
+/**
+ * Meek kit and cornering: they carry a real Makarov, a spare magazine and a stimpack, and a Slipwire
+ * implant; cornered, they shout, take the holdout out of their pocket and aim (the telegraph); a hit
+ * during the aim makes them fumble it; a clean aim fires real rounds, one trigger pull at a time.
+ */
 /datum/unit_test/voidcrew_bounty_ai/cornered
 
 /datum/unit_test/voidcrew_bounty_ai/cornered/Run()
-	var/mob/living/basic/bounty_criminal/meek/criminal = allocate(/mob/living/basic/bounty_criminal/meek, tile(0, 0))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(0, 0))
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(1, 1))
+	var/obj/item/gun/ballistic/automatic/pistol/holdout = criminal.ai_holdout()
+	TEST_ASSERT_NOTNULL(holdout, "The meek criminal carries no holdout pistol")
+	TEST_ASSERT(!criminal.is_holding(holdout), "The holdout is out before anything happened")
+	TEST_ASSERT(human_npc_gear_locked(holdout), "The holdout isn't locked to the body")
+	TEST_ASSERT_NOTNULL(carried(criminal, /obj/item/ammo_box/magazine/m9mm), "The meek criminal carries no spare magazine")
+	TEST_ASSERT_NOTNULL(carried(criminal, /obj/item/reagent_containers/hypospray/medipen/stimpack), "The meek criminal carries no stimpack")
+	TEST_ASSERT_NOTNULL(criminal.get_organ_by_type(/obj/item/organ/cyberimp/cyberware/slipwire), "The meek criminal has no Slipwire implant to dodge with")
 	TEST_ASSERT(criminal.ai_ways_out(hunter) < 2, "In the corner with the hunter on them, they have [criminal.ai_ways_out(hunter)] ways out")
 
 	// The first moment cornered: a warning, and no gun yet
@@ -131,44 +170,57 @@
 	TEST_ASSERT(voice.last_line in lines["cornered"]["any"], "Cornered, they warned nobody ([voice.last_line || "nothing said"])")
 	// The draw is said even inside the cooldown of that warning (BUG-2: draw_gun was never said)
 	voice.last_line = null
-	criminal.ai_update_style()
 	TEST_ASSERT(criminal.ai_start_aim(hunter), "Cornered, they did not aim")
 	TEST_ASSERT(voice.last_line in lines["draw_gun"]["any"], "Drawing the holdout, they said [voice.last_line || "nothing"]")
 	TEST_ASSERT(criminal.ai_aim_until > world.time, "The aim has no wind-up")
-	TEST_ASSERT_NOTNULL(criminal.ai_hand, "No gun in their hand while aiming")
+	TEST_ASSERT(criminal.is_holding(holdout), "The holdout is not in their hand while aiming")
 	TEST_ASSERT(locate(/obj/effect/temp_visual/telegraphing/bounty_aim) in get_turf(hunter), "No aim mark on the hunter")
-	TEST_ASSERT(!HAS_TRAIT(criminal, "bounty_sprinting"), "Aiming, they still count as sprinting") // TRAIT_BOUNTY_SPRINTING
 
+	// A stamina hit during the aim: fumbled, and the gun goes back in the pocket
 	criminal.adjustStaminaLoss(20)
 	criminal.ai_aim_until = world.time
 	TEST_ASSERT(!criminal.ai_fire_holdout(), "A stamina hit during the aim did not make them fumble")
 	TEST_ASSERT(!criminal.ai_aim_until, "Still aiming after the fumble")
-	TEST_ASSERT_NULL(criminal.ai_hand, "The gun is still in their hand after the fumble")
+	TEST_ASSERT(!criminal.is_holding(holdout), "The gun is still in their hand after the fumble")
 	TEST_ASSERT(criminal.ai_holdout_ready_at > world.time, "No cooldown after the fumble")
 
-	// Ready again, a clean aim fires
+	// Ready again, a clean aim fires: a real round leaves the real gun
 	criminal.setStaminaLoss(0)
 	criminal.ai_holdout_ready_at = 0
+	criminal.next_click = 0
 	TEST_ASSERT(criminal.ai_start_aim(hunter), "They would not aim a second time")
 	criminal.ai_aim_until = world.time
+	var/rounds = holdout.get_ammo(TRUE)
+	TEST_ASSERT(rounds >= 2, "Test fixture: the holdout holds [rounds] rounds")
 	TEST_ASSERT(criminal.ai_fire_holdout(), "A clean aim did not fire")
-	TEST_ASSERT_EQUAL(criminal.ai_volley_left, 7, "After the first shot, seven of the volley should be left") // BOUNTY_MEEK_PISTOL_SHOTS - 1
-	var/datum/component/ranged_attacks/gun = criminal.GetComponent(/datum/component/ranged_attacks)
-	TEST_ASSERT_NOTNULL(gun, "The meek criminal has no ranged_attacks component")
-	TEST_ASSERT_EQUAL(gun.projectile_type, /obj/projectile/bullet/bounty/holdout, "The holdout fires the wrong thing")
-	TEST_ASSERT(gun.cooldown_time < 5, "The holdout's gun is not ready between the volley's shots") // BOUNTY_MEEK_PISTOL_GAP
+	TEST_ASSERT_EQUAL(holdout.get_ammo(TRUE), rounds - 1, "The first pull of the volley did not fire a round from the gun")
+	TEST_ASSERT_EQUAL(criminal.ai_volley_left, min(8, rounds) - 1, "After the first pull, the rest of the volley should be left") // BOUNTY_MEEK_PISTOL_SHOTS
 
-	// Cuffed or down mid-volley, the rest of it never comes
-	ADD_TRAIT(criminal, "bounty_held", "test") // TRAIT_BOUNTY_HELD
-	TEST_ASSERT(!criminal.ai_volley_shot(), "A held criminal fired the rest of the volley")
+	// Cuffed mid-volley, the rest of it never comes
+	board_test_cuff(criminal)
+	TEST_ASSERT(criminal.is_restrained(), "Test fixture: the cuffs did not go on")
+	TEST_ASSERT(!criminal.ai_volley_shot(), "A cuffed criminal fired the rest of the volley")
 	TEST_ASSERT(!criminal.ai_volley_left, "The volley was not cut short")
-	REMOVE_TRAIT(criminal, "bounty_held", "test")
 
-/// A normal criminal notices someone armed, fights when they close in, and surrenders
+/// A meek criminal winded by real stamina loss says so, once
+/datum/unit_test/voidcrew_bounty_ai/winded
+
+/datum/unit_test/voidcrew_bounty_ai/winded/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(2, 2))
+	criminal.ai_check_winded()
+	TEST_ASSERT(!criminal.ai_winded, "Fresh, they count as winded")
+	criminal.adjustStaminaLoss(50)
+	criminal.ai_check_winded()
+	TEST_ASSERT(criminal.ai_winded, "Worn out by real stamina loss, they are not winded")
+	criminal.setStaminaLoss(0)
+	criminal.ai_check_winded()
+	TEST_ASSERT(!criminal.ai_winded, "Rested, they are still winded")
+
+/// A normal criminal notices someone armed, fights when they close in, and gives up through tg's *surrender
 /datum/unit_test/voidcrew_bounty_ai/normal
 
 /datum/unit_test/voidcrew_bounty_ai/normal/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 2))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 2), "brawler") // BOUNTY_STYLE_BRAWLER
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(3, 2))
 	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
 	hunter.put_in_hands(knife)
@@ -181,162 +233,207 @@
 	criminal.ai_notice(hunter)
 	TEST_ASSERT_EQUAL(criminal.ai_mode, "fighting", "Someone armed two tiles off did not start the fight") // BOUNTY_AI_FIGHTING
 	TEST_ASSERT(criminal.ai_has_grudge(hunter), "The armed hunter is not on their grudge list")
-	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_style"], "brawler", "With no record, they did not fight as a brawler") // BB_BOUNTY_STYLE, BOUNTY_STYLE_BRAWLER
+	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_style"], "brawler", "They did not fight as a brawler") // BB_BOUNTY_STYLE, BOUNTY_STYLE_BRAWLER
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], hunter, "They are not targeting the hunter")
 	TEST_ASSERT_EQUAL(criminal.ai_pick_fight_target(), hunter, "In the fight, they do not pick the hunter from their grudge list")
+	TEST_ASSERT_EQUAL(criminal.move_intent, MOVE_INTENT_RUN, "In a fight, they walk")
 
 	// One companion standing: less chance to give up
-	var/list/buddies = criminal.spawn_companions(1)
+	var/list/buddies = criminal.spawn_companions(1, TRUE)
+	TEST_ASSERT_EQUAL(length(buddies), 1, "Test fixture: no companion was made")
 	TEST_ASSERT_EQUAL(criminal.ai_surrender_chance(), 40, "One standing companion should take the chance from 60 to 40") // BOUNTY_SURRENDER_CHANCE - BOUNTY_SURRENDER_PER_COMPANION
 	QDEL_LIST(buddies)
 	TEST_ASSERT_EQUAL(criminal.ai_surrender_chance(), 60, "With no companion the chance should be 60") // BOUNTY_SURRENDER_CHANCE
 
-	// Giving up is said even right after another line, inside the cooldown (BUG-1)
+	// Giving up: tg's *surrender (a real paralysis, the cuff window), said even right after another line (BUG-1)
 	var/datum/component/bounty_identity_voice/voice = criminal.LoadComponent(/datum/component/bounty_identity_voice)
 	COOLDOWN_START(voice, line_cooldown, 8 SECONDS) // BOUNTY_SAY_COOLDOWN
 	voice.last_line = null
-	criminal.ai_surrender()
+	TEST_ASSERT(criminal.ai_surrender(), "The criminal would not give up")
 	TEST_ASSERT(voice.last_line in bounty_identity_strings("lines")["surrender"]["any"], "Giving up, they said [voice.last_line || "nothing"]")
-	TEST_ASSERT(HAS_TRAIT(criminal, "bounty_surrendered"), "Surrendering did not set the trait") // TRAIT_BOUNTY_SURRENDERED
+	TEST_ASSERT(criminal.npc_surrendering && criminal.IsParalyzed(), "Giving up is not tg's *surrender")
+	TEST_ASSERT_EQUAL(criminal.capture_state(), "stunned", "A criminal lying there with its hands on its head is not stunned") // BOUNTY_STATE_STUNNED
 	TEST_ASSERT(!criminal.ai_can_act(), "A surrendered criminal can still act")
-	TEST_ASSERT_NOTNULL(criminal.ai_over_head, "No hands-up mark over a surrendered criminal")
 	TEST_ASSERT_NULL(criminal.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "A surrendered criminal kept a target")
 	var/datum/ai_controller/basic_controller/bounty/brain = criminal.ai_controller
 	TEST_ASSERT(!brain.may_shoot(hunter), "A surrendered criminal may still shoot")
 	TEST_ASSERT(!brain.may_strike(hunter), "A surrendered criminal may still hit")
-	// Hitting them afterwards does not undo it
-	criminal.ai_attacked_by(hunter)
-	TEST_ASSERT(HAS_TRAIT(criminal, "bounty_surrendered"), "A hit undid the surrender") // TRAIT_BOUNTY_SURRENDERED
+	TEST_ASSERT(locate(/datum/ai_planning_subtree/human_npc_surrender) in brain.planning_subtrees, "The normal criminal's tree never gives up")
+	var/datum/human_npc_surrender/rules = criminal.npc_surrender_rules()
+	TEST_ASSERT(istype(rules, /datum/human_npc_surrender/bounty), "The normal criminal gives up by the wrong rules")
 
-/// Styles: each carries a real weapon; the pistol reloads through the Stechkin's magazine, the club is a bat, fists are a punch
+/**
+ * Every style is a real item they carry, not hold, until the fight: the pistol in a holster with a spare
+ * magazine, the shotgun on the back with shells on a bandolier, the knife in a pocket, bottles in a bag,
+ * the bat in hand (it has nowhere else to go), fists for a brawler. A bruise pack for treating themselves.
+ * The tier picks the weapon (a combat knife, a combat shotgun) and the armour; it never scales them.
+ */
 /datum/unit_test/voidcrew_bounty_ai/styles
 
 /datum/unit_test/voidcrew_bounty_ai/styles/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "pistol"), "The pistol style would not apply") // BOUNTY_STYLE_PISTOL
-	var/datum/component/ranged_attacks/gun = criminal.GetComponent(/datum/component/ranged_attacks)
-	TEST_ASSERT_EQUAL(gun.projectile_type, /obj/projectile/bullet/bounty, "The pistol fires the wrong thing")
-	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun/ballistic/automatic/pistol/aps, "The pistol style isn't the Stechkin") // BB_BOUNTY_WEAPON
-	var/obj/item/ammo_box/magazine/m9mm_aps/magazine = /obj/item/ammo_box/magazine/m9mm_aps
-	var/rounds = initial(magazine.max_ammo)
-	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], rounds, "The pistol's magazine isn't a full Stechkin magazine") // BB_BOUNTY_AMMO
-	var/datum/bounty_style/pistol = bounty_ai_style(criminal)
-	for(var/shot in 1 to rounds)
-		pistol.after_shot(criminal)
-	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], 0, "A magazine's worth of shots did not empty the magazine") // BB_BOUNTY_AMMO
-	TEST_ASSERT(bounty_style_health_mult("brawler") > 1, "The brawler is not sturdier") // BOUNTY_STYLE_BRAWLER
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/pistol = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(0, 0), "pistol") // BOUNTY_STYLE_PISTOL
+	var/obj/item/gun/ballistic/automatic/pistol/aps/stechkin = carried(pistol, /obj/item/gun/ballistic/automatic/pistol/aps)
+	TEST_ASSERT_NOTNULL(stechkin, "The pistol criminal carries no Stechkin")
+	TEST_ASSERT(!pistol.is_holding(stechkin), "The Stechkin is in hand before the fight")
+	TEST_ASSERT(istype(stechkin.loc, /obj/item/storage/belt/holster), "The Stechkin isn't in a holster")
+	TEST_ASSERT_NOTNULL(carried(pistol, /obj/item/ammo_box/magazine/m9mm_aps), "The pistol criminal carries no spare magazine")
+	TEST_ASSERT_NOTNULL(carried(pistol, /obj/item/stack/medical/bruise_pack), "The criminal carries nothing to treat themselves with")
+	var/datum/bounty_style/pistol_style = bounty_ai_style(pistol)
+	TEST_ASSERT_EQUAL(pistol_style?.carried_ranged(pistol), stechkin, "The pistol style would not draw the holstered Stechkin")
+	TEST_ASSERT(human_npc_take_in_hand(pistol, stechkin), "The Stechkin can't be drawn")
+	TEST_ASSERT_EQUAL(pistol_style.ready_in_hand(pistol), stechkin, "The drawn Stechkin isn't ready to fire")
 
-	// The club is a baseball bat; a Wanted criminal's is the metal one. The tier picks the bat, never scales it.
-	var/obj/item/melee/baseball_bat/bat = /obj/item/melee/baseball_bat
-	var/obj/item/melee/baseball_bat/ablative/metal_bat = /obj/item/melee/baseball_bat/ablative
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "club"), "The club style would not apply") // BOUNTY_STYLE_CLUB
-	TEST_ASSERT_EQUAL(criminal.melee_damage_upper, initial(bat.force), "The club doesn't hit like a baseball bat")
-	TEST_ASSERT_EQUAL(criminal.wound_bonus, initial(bat.wound_bonus), "The club doesn't wound like a baseball bat")
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "club", TRUE), "The heavy club style would not apply")
-	TEST_ASSERT_EQUAL(criminal.melee_damage_upper, initial(metal_bat.force), "A Wanted criminal's club doesn't hit like a metal bat")
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/shotgunner = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 0), "shotgun") // BOUNTY_STYLE_SHOTGUN
+	TEST_ASSERT(istype(shotgunner.back, /obj/item/gun/ballistic/shotgun/lethal), "A petty shotgun criminal has no pump shotgun on the back")
+	TEST_ASSERT(istype(shotgunner.belt, /obj/item/storage/belt/bandolier), "The shotgun criminal has no bandolier")
+	var/shells = length(shotgunner.belt.get_all_contents_type(/obj/item/ammo_casing/shotgun/buckshot))
+	TEST_ASSERT_EQUAL(shells, 8, "The bandolier holds [shells] buckshot shells") // BOUNTY_SHOTGUN_SHELLS
 
-	// Bare fists are a human's punch
-	var/obj/item/bodypart/arm/right/arm = /obj/item/bodypart/arm/right
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "brawler"), "The brawler style would not apply") // BOUNTY_STYLE_BRAWLER
-	TEST_ASSERT_EQUAL(criminal.melee_damage_lower, initial(arm.unarmed_damage_low), "A brawler's weakest punch isn't a human's")
-	TEST_ASSERT_EQUAL(criminal.melee_damage_upper, initial(arm.unarmed_damage_high), "A brawler's hardest punch isn't a human's")
-	TEST_ASSERT_NULL(criminal.ai_controller.blackboard["bb_bounty_weapon"], "A brawler has something in their hand") // BB_BOUNTY_WEAPON
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/heavy = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(2, 0), "shotgun", 2) // BOUNTY_STYLE_SHOTGUN, BOUNTY_TIER_WANTED
+	var/obj/item/gun/ballistic/shotgun/automatic/combat/combat = heavy.back
+	TEST_ASSERT(istype(combat), "A Wanted shotgun criminal has no combat shotgun")
+	TEST_ASSERT(istype(combat.chambered, /obj/item/ammo_casing/shotgun/buckshot), "The Wanted criminal's combat shotgun isn't loaded with buckshot")
+	TEST_ASSERT(istype(heavy.wear_suit, /obj/item/clothing/suit/armor/vest), "A Wanted criminal wears no armour vest")
 
-/// Their weapons are the real thing: a pistol's shot is a 9mm round, a shotgun fires a whole shell of buckshot, a knife cuts like a knife
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/knifer = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(3, 0), "knife") // BOUNTY_STYLE_KNIFE
+	var/obj/item/knife/blade = carried(knifer, /obj/item/knife)
+	TEST_ASSERT_NOTNULL(blade, "The knife criminal carries no knife")
+	TEST_ASSERT(!knifer.is_holding(blade), "The knife is out before the fight")
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/wanted_knifer = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(4, 0), "knife", 2) // BOUNTY_STYLE_KNIFE, BOUNTY_TIER_WANTED
+	TEST_ASSERT_NOTNULL(carried(wanted_knifer, /obj/item/knife/combat), "A Wanted knife criminal carries no combat knife")
+
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/clubber = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(0, 1), "club") // BOUNTY_STYLE_CLUB
+	var/obj/item/melee/baseball_bat/bat = carried(clubber, /obj/item/melee/baseball_bat)
+	TEST_ASSERT(bat && clubber.is_holding(bat), "The club criminal holds no baseball bat")
+
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/thrower = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 1), "bottle") // BOUNTY_STYLE_BOTTLE
+	var/list/bottles = thrower.get_all_contents_type(/obj/item/reagent_containers/cup/glass/bottle/beer)
+	TEST_ASSERT_EQUAL(length(bottles), 4, "A petty bottle thrower carries [length(bottles)] bottles") // BOUNTY_BOTTLES_PETTY
+	var/obj/item/reagent_containers/cup/glass/bottle/beer/bottle = bottles[1]
+	TEST_ASSERT(human_npc_gear_consumable(bottle), "The bottles aren't consumables that may leave the body")
+
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/brawler = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(2, 1), "brawler") // BOUNTY_STYLE_BRAWLER
+	TEST_ASSERT_NULL(carried(brawler, /obj/item/gun), "A brawler carries a gun")
+	TEST_ASSERT_NULL(carried(brawler, /obj/item/knife), "A brawler carries a knife")
+	TEST_ASSERT_EQUAL(brawler.npc_damage_taken, 1, "A petty criminal takes other than a person's damage") // BOUNTY_TOUGHNESS_PETTY
+
+/**
+ * Real weapons used for real: the shotgun's pump is its telegraph, a hit during it fumbles the blast, a
+ * clean blast fires the chambered shell; a bottle leaves the hand in a real throw; a knife cuts; a
+ * brawler's shove is a real shove; nobody fires through their own gang.
+ */
 /datum/unit_test/voidcrew_bounty_ai/real_weapons
-	/// How many projectiles the criminal fired (counted, never kept: they fly off and are deleted)
-	var/shots_fired = 0
-	/// The last hit the hunter took: damage, sharpness, wound bonus, exposed wound bonus
+	/// The last hit the hunter took: damage, sharpness
 	var/list/last_hit
-
-/datum/unit_test/voidcrew_bounty_ai/real_weapons/proc/on_fired(datum/source, obj/projectile/shot, atom/fired_from, atom/original)
-	SIGNAL_HANDLER
-	shots_fired++
+	/// How many times the hunter was shoved
+	var/shoves = 0
 
 /datum/unit_test/voidcrew_bounty_ai/real_weapons/proc/on_hit(datum/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
 	SIGNAL_HANDLER
-	last_hit = list(damage, sharpness, wound_bonus, exposed_wound_bonus)
+	last_hit = list(damage, sharpness)
+
+/datum/unit_test/voidcrew_bounty_ai/real_weapons/proc/on_shoved(datum/source, mob/living/shover, zone, obj/item/weapon)
+	SIGNAL_HANDLER
+	shoves++
 
 /datum/unit_test/voidcrew_bounty_ai/real_weapons/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 2))
-	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(2, 2))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 2), "shotgun") // BOUNTY_STYLE_SHOTGUN
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(3, 2))
 	criminal.ai_add_grudge(hunter)
-	RegisterSignal(criminal, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_fired))
-	RegisterSignal(hunter, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_hit))
-
-	// The pistol: the Stechkin's 9mm round, wounds and embedding and all
-	var/obj/projectile/bullet/c9mm/nine = /obj/projectile/bullet/c9mm
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "pistol"), "The pistol style would not apply") // BOUNTY_STYLE_PISTOL
-	var/obj/projectile/bullet/bounty/bullet = fire_at(criminal, hunter)
-	TEST_ASSERT_EQUAL(shots_fired, 1, "A pistol shot fired [shots_fired] projectiles")
-	TEST_ASSERT_EQUAL(bullet.damage, initial(nine.damage), "A pistol shot doesn't do a 9mm round's damage")
-	TEST_ASSERT_EQUAL(bullet.wound_bonus, initial(nine.wound_bonus), "A pistol shot doesn't wound like a 9mm round")
-	TEST_ASSERT_EQUAL(bullet.armour_penetration, initial(nine.armour_penetration), "A pistol shot doesn't pierce armour like a 9mm round")
-	TEST_ASSERT_EQUAL(bullet.sharpness, initial(nine.sharpness), "A pistol shot isn't as sharp as a 9mm round")
-	TEST_ASSERT_EQUAL(bullet.embed_type, initial(nine.embed_type), "A pistol shot doesn't embed like a 9mm round")
-	TEST_ASSERT_NOTNULL(bullet.get_embed(), "A pistol shot can't embed")
-	TEST_ASSERT_NOTNULL(bullet.shrapnel_type, "A pistol shot leaves nothing to embed")
-
-	// The shotgun: every pellet of a buckshot shell, one shell from the tube
-	var/obj/item/ammo_casing/shotgun/buckshot/shell = /obj/item/ammo_casing/shotgun/buckshot
-	var/obj/projectile/bullet/pellet/shotgun_buckshot/pellet = /obj/projectile/bullet/pellet/shotgun_buckshot
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "shotgun"), "The shotgun style would not apply") // BOUNTY_STYLE_SHOTGUN
-	shots_fired = 0
-	var/obj/projectile/bullet/bounty/first_pellet = fire_at(criminal, hunter)
-	TEST_ASSERT_EQUAL(shots_fired, initial(shell.pellets), "A shotgun blast wasn't a whole shell of buckshot")
-	TEST_ASSERT_EQUAL(first_pellet.damage, initial(pellet.damage), "A pellet doesn't do buckshot's damage")
-	TEST_ASSERT_EQUAL(first_pellet.sharpness, initial(pellet.sharpness), "A pellet isn't as sharp as buckshot")
-	var/datum/bounty_style/shotgun = bounty_ai_style(criminal)
-	shotgun.after_shot(criminal)
-	var/obj/item/ammo_box/magazine/internal/shot/tube = /obj/item/ammo_box/magazine/internal/shot
-	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], initial(tube.max_ammo) - 1, "A blast took more than one shell") // BB_BOUNTY_AMMO
-	// A Wanted criminal's combat shotgun hits harder, as the real one does
-	var/obj/item/gun/ballistic/shotgun/automatic/combat/combat = /obj/item/gun/ballistic/shotgun/automatic/combat
-	var/datum/bounty_real_weapon/heavy = bounty_real_weapon(/obj/item/gun/ballistic/shotgun/automatic/combat, /obj/item/ammo_casing/shotgun/buckshot)
-	TEST_ASSERT_EQUAL(heavy.round_damage, initial(pellet.damage) * initial(combat.projectile_damage_multiplier), "The combat shotgun's pellets don't take its damage multiplier")
-
-	// The knife: a kitchen knife's force, edge and wounds, through the mob's own blow
-	var/obj/item/knife/kitchen/knife = /obj/item/knife/kitchen
-	TEST_ASSERT(bounty_ai_apply_style(criminal, "knife"), "The knife style would not apply") // BOUNTY_STYLE_KNIFE
-	last_hit = null
-	TEST_ASSERT(criminal.melee_attack(hunter, ignore_cooldown = TRUE), "The knife didn't land")
-	TEST_ASSERT_NOTNULL(last_hit, "The knife hit did no damage")
-	TEST_ASSERT_EQUAL(last_hit[1], initial(knife.force), "A knife hit doesn't do the kitchen knife's force")
-	TEST_ASSERT_EQUAL(last_hit[2], SHARP_EDGED, "A knife hit isn't edged")
-	TEST_ASSERT_EQUAL(last_hit[3], initial(knife.wound_bonus), "A knife hit doesn't wound like the kitchen knife")
-	TEST_ASSERT_EQUAL(last_hit[4], initial(knife.exposed_wound_bonus), "A knife hit doesn't wound bare skin like the kitchen knife")
-
-/// Loads a shot from `criminal` at `target` as it leaves the gun, as the ranged_attacks component's shot does, and returns it
-/datum/unit_test/voidcrew_bounty_ai/real_weapons/proc/fire_at(mob/living/basic/bounty_criminal/criminal, mob/living/target)
+	var/datum/ai_controller/controller = criminal.ai_controller
 	var/datum/bounty_style/style = bounty_ai_style(criminal)
-	var/obj/projectile/bullet/bounty/shot = allocate(style.projectile_type, get_turf(criminal))
-	shot.firer = criminal
-	shot.fired_from = criminal
-	shot.original = target
-	SEND_SIGNAL(criminal, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, shot, criminal, target)
-	return shot
+	var/obj/item/gun/ballistic/shotgun/gun = criminal.back
+	TEST_ASSERT(istype(gun), "Test fixture: no shotgun on their back")
+	TEST_ASSERT(human_npc_take_in_hand(criminal, gun), "The shotgun can't be drawn off their back")
+	TEST_ASSERT_EQUAL(style.ready_in_hand(criminal), gun, "The drawn shotgun isn't ready")
+	TEST_ASSERT_NOTNULL(gun.chambered?.loaded_projectile, "Test fixture: the shotgun has no shell chambered")
 
-/// Every activity kind starts with its anchor in place
+	// The pump is the telegraph: no blast on the first step
+	TEST_ASSERT(!style.windup_step(criminal, controller, hunter, gun), "The shotgun fired with no pump first")
+	TEST_ASSERT(controller.blackboard["bb_bounty_windup_until"], "No wind-up began") // BB_BOUNTY_WINDUP_UNTIL
+	// A hit during it: fumbled
+	controller.set_blackboard_key("bb_bounty_hit_at", world.time) // BB_BOUNTY_HIT_AT
+	controller.set_blackboard_key("bb_bounty_windup_until", world.time) // BB_BOUNTY_WINDUP_UNTIL
+	TEST_ASSERT(!style.windup_step(criminal, controller, hunter, gun), "A hit during the pump did not spoil the blast")
+	TEST_ASSERT(controller.blackboard["bb_bounty_next_shot"] > world.time, "A fumble did not hold the next blast back") // BB_BOUNTY_NEXT_SHOT
+	// Clean: the chambered shell is fired, the player's way
+	controller.clear_blackboard_key("bb_bounty_hit_at") // BB_BOUNTY_HIT_AT
+	TEST_ASSERT(!style.windup_step(criminal, controller, hunter, gun), "The shotgun fired with no pump first")
+	controller.set_blackboard_key("bb_bounty_windup_until", world.time) // BB_BOUNTY_WINDUP_UNTIL
+	TEST_ASSERT(style.windup_step(criminal, controller, hunter, gun), "A clean pump did not let the blast go")
+	criminal.next_click = 0
+	TEST_ASSERT(style.attack(criminal, controller, hunter, gun), "The blast didn't go")
+	TEST_ASSERT_NULL(gun.chambered?.loaded_projectile, "The blast did not fire the chambered shell")
+	TEST_ASSERT(bounty_ai_gun_ready(gun, TRUE), "A pump shotgun with shells in its tube isn't ready for the next pump")
+
+	// Nobody fires through their own gang
+	var/list/buddies = criminal.spawn_companions(1, TRUE)
+	var/mob/living/carbon/human/npc/bounty_companion/buddy = buddies[1]
+	buddy.forceMove(tile(2, 2))
+	TEST_ASSERT(bounty_ai_line_blocked(criminal, hunter), "A companion in the line of fire doesn't block the shot")
+	buddy.forceMove(tile(0, 4))
+	TEST_ASSERT(!bounty_ai_line_blocked(criminal, hunter), "A clear line of fire counts as blocked")
+	QDEL_LIST(buddies)
+
+	// A bottle, thrown for real: it leaves the hand
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/thrower = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 4), "bottle") // BOUNTY_STYLE_BOTTLE
+	var/datum/bounty_style/bottle_style = bounty_ai_style(thrower)
+	var/obj/item/reagent_containers/cup/glass/bottle/bottle = bottle_style.carried_ranged(thrower)
+	TEST_ASSERT_NOTNULL(bottle, "The bottle thrower has no bottle to draw")
+	TEST_ASSERT(human_npc_take_in_hand(thrower, bottle), "A bottle can't be drawn from the bag")
+	TEST_ASSERT(bottle_style.attack(thrower, thrower.ai_controller, hunter, bottle), "The bottle wasn't thrown")
+	TEST_ASSERT(!thrower.is_holding(bottle), "The thrown bottle is still in their hand")
+	TEST_ASSERT(!thrower.throw_mode, "Throw mode was left on after the throw")
+
+	// A knife cuts, through the body's own blow
+	RegisterSignal(hunter, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_hit))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/knifer = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(4, 2), "knife") // BOUNTY_STYLE_KNIFE
+	knifer.ai_add_grudge(hunter)
+	var/obj/item/knife/blade = carried(knifer, /obj/item/knife)
+	TEST_ASSERT(human_npc_take_in_hand(knifer, blade) && human_npc_ready_item(knifer, blade), "The knife can't be drawn")
+	last_hit = null
+	knifer.next_click = 0
+	knifer.ai_controller.ai_interact(target = hunter, combat_mode = TRUE)
+	TEST_ASSERT_NOTNULL(last_hit, "The knife did no damage")
+	TEST_ASSERT_EQUAL(last_hit[2], SHARP_EDGED, "A knife's cut isn't edged")
+
+	// A brawler's shove is a right click with an empty hand
+	RegisterSignal(hunter, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_shoved))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/brawler = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(4, 3), "brawler") // BOUNTY_STYLE_BRAWLER
+	brawler.forceMove(get_step(hunter, NORTH))
+	TEST_ASSERT(human_npc_ready_empty_hand(brawler), "Test fixture: the brawler has no free hand")
+	brawler.next_click = 0
+	brawler.next_move = 0
+	brawler.ai_controller.ai_interact(target = hunter, combat_mode = TRUE, modifiers = list("right" = TRUE)) // RIGHT_CLICK
+	TEST_ASSERT_EQUAL(shoves, 1, "The brawler's shove didn't shove")
+
+/// Every activity kind starts with its anchor in place; the bar is a real seat and a real glass, really drunk from
 /datum/unit_test/voidcrew_bounty_ai/activities
 
 /datum/unit_test/voidcrew_bounty_ai/activities/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 1), "brawler") // BOUNTY_STYLE_BRAWLER
 	var/obj/structure/chair/stool/stool = allocate(/obj/structure/chair/stool, tile(2, 2))
 	var/obj/structure/table/table = allocate(/obj/structure/table, tile(3, 2))
 
-	// bar: the stool, sitting, a drink; put away, the drink goes on the table
+	// bar: the stool, sitting (a buckle), a glass in hand, a real sip; put away, the glass goes on the table
 	var/datum/bounty_activity/activity = criminal.start_activity("bar", stool) // BOUNTY_ACTIVITY_BAR
 	TEST_ASSERT(istype(activity, /datum/bounty_activity/bar), "The bar activity did not start")
 	TEST_ASSERT_EQUAL(activity.spot, get_turf(stool), "The bar activity is not headed for the stool")
 	criminal.forceMove(get_turf(stool))
 	criminal.ai_activity_step(1)
 	TEST_ASSERT_EQUAL(criminal.buckled, stool, "At the bar, they did not sit on the stool")
-	TEST_ASSERT_NOTNULL(criminal.ai_drink, "At the bar, they have no drink")
-	TEST_ASSERT_NOTNULL(criminal.ai_hand, "At the bar, the drink is not in their hand")
-	var/obj/item/glass = criminal.ai_drink
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = criminal.ai_drink
+	TEST_ASSERT_NOTNULL(glass, "At the bar, they have no drink")
+	TEST_ASSERT(criminal.is_holding(glass), "At the bar, the glass is not in their hand")
+	var/before = glass.reagents.total_volume
+	TEST_ASSERT(criminal.ai_sip(), "They would not drink")
+	TEST_ASSERT(glass.reagents.total_volume < before, "A sip left the glass as full as it was")
+	// A drink goes into the stomach first, as anyone's does, and into the blood as it digests
+	var/obj/item/organ/stomach/belly = criminal.get_organ_slot(ORGAN_SLOT_STOMACH)
+	TEST_ASSERT((belly?.reagents?.total_volume || 0) + criminal.reagents.total_volume > 0, "A sip put nothing in them")
 	criminal.ai_suspend_activity()
 	TEST_ASSERT_NULL(criminal.buckled, "Done at the bar, they are still sitting")
-	TEST_ASSERT_EQUAL(glass.loc, get_turf(table), "Done at the bar, the drink was not put down on the table")
+	TEST_ASSERT_EQUAL(glass.loc, get_turf(table), "Done at the bar, the glass was not put down on the table")
 	TEST_ASSERT_EQUAL(criminal.ai_activity_kind, "bar", "Putting the activity away forgot what it was") // BOUNTY_ACTIVITY_BAR
 	qdel(glass)
 	criminal.forceMove(tile(1, 1))
@@ -362,7 +459,7 @@
 	TEST_ASSERT(length(exploring.points) >= 1, "Exploring, they found nothing to look at")
 
 	// chat: with a companion
-	var/list/buddies = criminal.spawn_companions(1)
+	var/list/buddies = criminal.spawn_companions(1, TRUE)
 	activity = criminal.start_activity("chat", buddies[1]) // BOUNTY_ACTIVITY_CHAT
 	TEST_ASSERT(istype(activity, /datum/bounty_activity/chat), "The chat activity did not start")
 	var/datum/bounty_activity/chat/talking = activity
@@ -370,7 +467,7 @@
 	criminal.ai_end_activity()
 	QDEL_LIST(buddies)
 
-	// camp: a fire (or a fixed lamp), a mattress and a crate around the spot
+	// camp: a fire (or a fixed lamp), a mattress and a crate around the spot; sat at on the ground (tg's resting)
 	activity = criminal.start_activity("camp", tile(2, 3)) // BOUNTY_ACTIVITY_CAMP
 	TEST_ASSERT(istype(activity, /datum/bounty_activity/camp), "The camp activity did not start")
 	var/atom/movable/fire = criminal.ai_camp_fire()
@@ -378,42 +475,74 @@
 	TEST_ASSERT(fire.density || fire.anchored, "The camp's fire can be walked through, or its lamp carried off")
 	var/list/camp = criminal.ai_camp.Copy()
 	TEST_ASSERT_EQUAL(criminal.ai_make_camp(tile(2, 3)), fire, "A second camp was made")
+	criminal.ai_crouch()
+	TEST_ASSERT(criminal.resting, "Sitting down at the camp isn't tg's resting")
+	criminal.ai_stand_up()
+	TEST_ASSERT(!criminal.resting, "Getting up from the camp left them resting")
 	criminal.ai_end_activity()
 	for(var/datum/weakref/ref as anything in camp)
 		qdel(ref.resolve())
 
-	// blend: a patron now
+	// blend: a patron now, at a walk
 	activity = criminal.start_activity("blend", stool) // BOUNTY_ACTIVITY_BLEND
 	TEST_ASSERT(istype(activity, /datum/bounty_activity/blend), "The blend activity did not start")
 	TEST_ASSERT(criminal.blended, "Blending in did not make them a patron")
+	TEST_ASSERT_EQUAL(criminal.move_intent, MOVE_INTENT_WALK, "Blended in, they don't walk")
 	criminal.start_activity(null)
 	TEST_ASSERT(!criminal.blended, "Stopping the blend left them a patron")
 
-/// Companions spawn beside their criminal, fight in their style, and delete cleanly in any order
+/**
+ * Companions are made through the human NPC spawn queue (or at once for a test), join their criminal,
+ * fight in their style with the real weapon they carry, give up through tg's *surrender, and delete
+ * cleanly in any order.
+ */
 /datum/unit_test/voidcrew_bounty_ai/companions
 
 /datum/unit_test/voidcrew_bounty_ai/companions/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(2, 2))
-	var/list/buddies = criminal.spawn_companions(5)
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(2, 2), "brawler") // BOUNTY_STYLE_BRAWLER
+	// Queued, a companion is not there yet
+	var/datum/human_npc_order/order = bounty_spawn_companion(criminal, tile(1, 1))
+	TEST_ASSERT_NOTNULL(order, "No companion was queued")
+	TEST_ASSERT_NULL(order.spawned_ref?.resolve(), "A queued companion was made at once")
+	qdel(order)
+
+	var/list/buddies = criminal.spawn_companions(5, TRUE)
 	TEST_ASSERT_EQUAL(length(buddies), 2, "Asked for five, [length(buddies)] companions came; the most is two") // BOUNTY_COMPANIONS_MAX
 	TEST_ASSERT_EQUAL(length(criminal.ai_companions()), 2, "The criminal does not know its companions")
-	for(var/mob/living/basic/bounty_companion/buddy as anything in buddies)
+	for(var/mob/living/carbon/human/npc/bounty_companion/buddy as anything in buddies)
 		TEST_ASSERT_EQUAL(buddy.ai_leader(), criminal, "A companion does not know its criminal")
 		TEST_ASSERT(get_dist(buddy, criminal) <= 2, "A companion spawned too far off")
 		TEST_ASSERT_NOTNULL(buddy.ai_controller.blackboard["bb_bounty_style"], "A companion has no style") // BB_BOUNTY_STYLE
+		TEST_ASSERT_EQUAL(buddy.ai_controller.blackboard["bb_bounty_style"], buddy.ai_style, "A companion fights in another style than it was dressed for") // BB_BOUNTY_STYLE
 		TEST_ASSERT(bounty_ai_same_gang(buddy, criminal), "A companion is not on its criminal's side")
 		TEST_ASSERT(!length(buddy.faction - criminal.faction) && !length(criminal.faction - buddy.faction), "A companion does not share its criminal's faction")
+		TEST_ASSERT_EQUAL(buddy.npc_damage_taken, 1, "A companion takes other than a person's damage")
+		var/datum/bounty_style/style = GLOB.bounty_styles[buddy.ai_style]
+		if(style.weapon_type)
+			TEST_ASSERT_NOTNULL(bounty_ai_carried(buddy, style.weapon_type), "A [buddy.ai_style] companion doesn't carry its weapon")
 
 	// Called into a fight
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(4, 4))
 	criminal.ai_rally_companions(hunter)
-	var/mob/living/basic/bounty_companion/first = buddies[1]
+	var/mob/living/carbon/human/npc/bounty_companion/first = buddies[1]
 	TEST_ASSERT(hunter in first.ai_controller.blackboard[BB_BASIC_MOB_RETALIATE_LIST], "Rallied, a companion did not take the hunter on")
+	TEST_ASSERT_EQUAL(first.move_intent, MOVE_INTENT_RUN, "In the fight, a companion walks")
+
+	// A companion gives up the way its criminal does: tg's *surrender
+	var/mob/living/carbon/human/npc/bounty_companion/second = buddies[2]
+	TEST_ASSERT(istype(second.npc_surrender_rules(), /datum/human_npc_surrender/bounty), "A companion gives up by the wrong rules")
+	TEST_ASSERT(second.npc_surrender(), "A companion would not give up")
+	TEST_ASSERT(second.IsParalyzed() && !second.ai_can_fight(), "A companion that gave up can still fight")
+
+	// Up from a real stamina crit with nobody about, it carries on
+	first.adjustStaminaLoss(200)
+	TEST_ASSERT(first.ai_stamcritted, "A real stamina crit went unnoticed")
+	first.setStaminaLoss(0)
+	TEST_ASSERT(!first.ai_stamcritted, "Up from stamina crit, the companion never decided what to do")
 
 	// Deleting one, then the criminal, then the last
 	qdel(first)
 	TEST_ASSERT_EQUAL(length(criminal.ai_companions()), 1, "A deleted companion is still counted")
-	var/mob/living/basic/bounty_companion/second = buddies[2]
 	qdel(criminal)
 	TEST_ASSERT_NULL(second.ai_leader(), "A companion still has a deleted criminal")
 	second.ai_join_fight(hunter)
@@ -421,15 +550,14 @@
 
 /**
  * The blend routine, with the fugitive and a decoy made as P6 makes them: the decoy runs the
- * fugitive's own controller, and both carry P6's act. They share a routine and a pace, can't be
- * pulled, and let shots aimed at someone else through. Nothing but P6's rules exposes the fugitive
- * (C1), and once exposed, `blended` and P6's act agree.
+ * fugitive's own controller, and both carry P6's act. They share a routine and a pace. Confronted, the
+ * fugitive stops blending in, and `blended` and P6's act agree.
  */
 /datum/unit_test/voidcrew_bounty_ai/blend
 
 /datum/unit_test/voidcrew_bounty_ai/blend/Run()
-	var/mob/living/basic/bounty_criminal/meek/fugitive = allocate(/mob/living/basic/bounty_criminal/meek, tile(1, 1))
-	var/mob/living/basic/bounty_criminal/decoy/decoy = allocate(/mob/living/basic/bounty_criminal/decoy, tile(3, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/fugitive = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(1, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = allocate(/mob/living/carbon/human/npc/bounty_criminal/decoy, tile(3, 1))
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(2, 3))
 	hunter.mind_initialize()
 	QDEL_NULL(decoy.ai_controller)
@@ -438,57 +566,29 @@
 	TEST_ASSERT_EQUAL(decoy.ai_controller?.type, controller_type, "The decoy does not run its fugitive's controller")
 	fugitive.AddComponent(/datum/component/bounty_outpost_blend, null, FALSE)
 	decoy.AddComponent(/datum/component/bounty_outpost_blend, null, TRUE)
-	var/datum/component/bounty_outpost_blend/act = fugitive.GetComponent(/datum/component/bounty_outpost_blend)
 	fugitive.start_activity("blend") // BOUNTY_ACTIVITY_BLEND
 	decoy.start_activity("blend") // BOUNTY_ACTIVITY_BLEND
 	TEST_ASSERT(fugitive.blended && decoy.blended, "Blending in did not make both patrons")
 	TEST_ASSERT_EQUAL(fugitive.ai_activity?.type, decoy.ai_activity?.type, "The fugitive and the decoy do not share one routine")
-	TEST_ASSERT_EQUAL(fugitive.speed, decoy.speed, "The fugitive and the decoy move at different speeds")
-	TEST_ASSERT_EQUAL(fugitive.speed, 2.5, "Blended in, they do not move at the calm pace") // BOUNTY_CALM_SPEED
+	TEST_ASSERT_EQUAL(fugitive.move_intent, decoy.move_intent, "The fugitive and the decoy move at different paces")
+	TEST_ASSERT_EQUAL(fugitive.move_intent, MOVE_INTENT_WALK, "Blended in, they do not walk")
 
-	TEST_ASSERT(!fugitive.can_be_pulled(hunter, MOVE_FORCE_EXTREMELY_STRONG), "A blended fugitive can be pulled")
-	TEST_ASSERT(!decoy.can_be_pulled(hunter, MOVE_FORCE_EXTREMELY_STRONG), "A decoy can be pulled")
-
-	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet, tile(2, 2))
-	shot.original = hunter
-	TEST_ASSERT(SEND_SIGNAL(decoy, COMSIG_PROJECTILE_PREHIT, shot) & PROJECTILE_INTERRUPT_HIT_PHASE, "A shot aimed at someone else hit the decoy")
-	TEST_ASSERT(SEND_SIGNAL(fugitive, COMSIG_PROJECTILE_PREHIT, shot) & PROJECTILE_INTERRUPT_HIT_PHASE, "A shot aimed at someone else hit the blended fugitive")
-	QDEL_NULL(shot)
-
-	// Nothing P6 does not count gives the fugitive away: a stray throw, a creature, getting up, cuffs slipping
+	// Nothing P6 does not count gives the fugitive away: a stray blow, a creature, getting up, cuffs slipping
 	var/datum/ai_controller/basic_controller/bounty/fugitive_brain = fugitive.ai_controller
 	var/datum/ai_controller/basic_controller/bounty/decoy_brain = decoy.ai_controller
 	var/mob/living/carbon/human/consistent/thrower = allocate(/mob/living/carbon/human/consistent, tile(4, 4))
 	fugitive_brain.pawn_attacked(thrower)
-	var/mob/living/basic/carp/creature = allocate(/mob/living/basic/carp, tile(0, 2))
-	SEND_SIGNAL(fugitive, COMSIG_ATOM_ATTACK_ANIMAL, creature)
 	fugitive.ai_add_grudge(hunter)
 	fugitive.ai_on_recovered()
 	fugitive.ai_on_unrestrained(null)
-	TEST_ASSERT(fugitive.blended && act.blending, "Something P6 does not count as a hit exposed the fugitive")
+	TEST_ASSERT(fugitive.blended, "Something P6 does not count as a hit exposed the fugitive")
 	TEST_ASSERT_EQUAL(fugitive.ai_mode, "calm", "The blended fugitive reacted on its own") // BOUNTY_AI_CALM
 	TEST_ASSERT(istype(fugitive.ai_activity, /datum/bounty_activity/blend), "The blended fugitive stopped blending in")
 	decoy_brain.pawn_attacked(thrower)
 	TEST_ASSERT_EQUAL(decoy.ai_mode, "calm", "A blended decoy reacted to a blow on its own") // BOUNTY_AI_CALM
 
-	// Walking out, not even a blow from a person gives it away
-	act.leaving = TRUE
-	hunter.set_combat_mode(TRUE)
-	SEND_SIGNAL(fugitive, COMSIG_ATOM_ATTACK_HAND, hunter, null)
-	fugitive_brain.pawn_attacked(hunter)
-	TEST_ASSERT(fugitive.blended, "A blow while walking out exposed the fugitive")
-	TEST_ASSERT_EQUAL(fugitive.ai_mode, "calm", "Walking out, the fugitive reacted to a blow") // BOUNTY_AI_CALM
-	act.leaving = FALSE
-
-	// A hit P6 counts exposes it, and its act and `blended` end together
-	act.handle_hit(hunter)
-	TEST_ASSERT(!fugitive.blended, "A hit P6 counts did not expose the fugitive")
-	TEST_ASSERT(!act.blending, "Exposed, the fugitive is still blending in by P6's act")
-	TEST_ASSERT_EQUAL(fugitive.ai_mode, "fleeing", "The exposed meek fugitive did not bolt") // BOUNTY_AI_FLEEING
-	TEST_ASSERT(fugitive.ai_activity_kind != "blend", "The exposed fugitive would go back to blending in") // BOUNTY_ACTIVITY_BLEND
-
 	// Confronted directly (any package's on_confronted()), P6's act ends too
-	var/mob/living/basic/bounty_criminal/normal/other = allocate(/mob/living/basic/bounty_criminal/normal, tile(0, 4))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/other = allocate(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(0, 4))
 	other.AddComponent(/datum/component/bounty_outpost_blend, null, FALSE)
 	other.start_activity("blend") // BOUNTY_ACTIVITY_BLEND
 	var/datum/component/bounty_outpost_blend/other_act = other.GetComponent(/datum/component/bounty_outpost_blend)
@@ -509,27 +609,39 @@
 	TEST_ASSERT_EQUAL(decoy.ai_mode, "calm", "Out of sight long enough, the decoy did not calm down") // BOUNTY_AI_CALM
 	TEST_ASSERT(istype(decoy.ai_resume_activity(), /datum/bounty_activity/blend), "Calm again, the decoy did not go back to blending in")
 
-/// A normal fugitive's decoy runs the normal tree, which can run it off and calm it down (M3)
-/datum/unit_test/voidcrew_bounty_ai/normal_decoy
+/// Every bounty tree runs on a human: soft crit first, then breaking free and walking out, before anything of its own (contract 2.4)
+/datum/unit_test/voidcrew_bounty_ai/trees
 
-/datum/unit_test/voidcrew_bounty_ai/normal_decoy/Run()
-	var/mob/living/basic/bounty_criminal/normal/fugitive = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
-	var/mob/living/basic/bounty_criminal/decoy/decoy = allocate(/mob/living/basic/bounty_criminal/decoy, tile(3, 1))
-	QDEL_NULL(decoy.ai_controller)
-	var/controller_type = fugitive.ai_controller.type
-	new controller_type(decoy)
-	var/datum/ai_controller/basic_controller/bounty/brain = decoy.ai_controller
-	TEST_ASSERT(locate(/datum/ai_planning_subtree/bounty_flee_and_calm) in brain.planning_subtrees, "The normal tree cannot run a fleeing decoy")
+/datum/unit_test/voidcrew_bounty_ai/trees/Run()
+	var/list/pawn_types = list(
+		/mob/living/carbon/human/npc/bounty_criminal = /datum/ai_controller/basic_controller/bounty/criminal,
+		/mob/living/carbon/human/npc/bounty_criminal/meek = /datum/ai_controller/basic_controller/bounty/criminal/meek,
+		/mob/living/carbon/human/npc/bounty_criminal/normal = /datum/ai_controller/basic_controller/bounty/criminal/normal,
+		/mob/living/carbon/human/npc/bounty_criminal/decoy = /datum/ai_controller/basic_controller/bounty/criminal/decoy,
+		/mob/living/carbon/human/npc/bounty_companion = /datum/ai_controller/basic_controller/bounty/companion,
+	)
+	var/spot = 0
+	for(var/pawn_type in pawn_types)
+		var/mob/living/carbon/human/npc/pawn = allocate(pawn_type, tile(spot++, 2))
+		var/datum/ai_controller/brain = pawn.ai_controller
+		TEST_ASSERT(istype(brain, pawn_types[pawn_type]), "[pawn_type]'s AI didn't take its human body")
+		TEST_ASSERT_EQUAL(brain.blackboard[BB_TARGET_MINIMUM_STAT], CONSCIOUS, "[pawn_type] fights people who are down")
+		TEST_ASSERT(length(brain.planning_subtrees) >= 3, "[pawn_type] has no planning list")
+		var/datum/first = brain.planning_subtrees[1]
+		var/datum/second = brain.planning_subtrees[2]
+		var/datum/third = brain.planning_subtrees[3]
+		TEST_ASSERT_EQUAL(first.type, /datum/ai_planning_subtree/human_npc_soft_crit, "[pawn_type] doesn't plan soft crit first")
+		TEST_ASSERT_EQUAL(second.type, /datum/ai_planning_subtree/bounty_escape_captivity, "[pawn_type] doesn't break free second")
+		TEST_ASSERT_EQUAL(third.type, /datum/ai_planning_subtree/human_npc_walk_out, "[pawn_type] doesn't walk out third")
 
 /// Knocked down is the cuff window (H2): no blows, no shots, no aim, no climbing into hiding
 /datum/unit_test/voidcrew_bounty_ai/knockdown
 
 /datum/unit_test/voidcrew_bounty_ai/knockdown/Run()
-	var/mob/living/basic/bounty_criminal/meek/meek = allocate(/mob/living/basic/bounty_criminal/meek, tile(0, 0))
-	var/mob/living/basic/bounty_criminal/normal/normal = allocate(/mob/living/basic/bounty_criminal/normal, tile(3, 3))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/meek = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(0, 0))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/normal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(3, 3), "brawler") // BOUNTY_STYLE_BRAWLER
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(1, 1))
 	var/obj/structure/closet/locker = allocate(/obj/structure/closet, tile(1, 0))
-	meek.ai_update_style()
 	normal.ai_add_grudge(hunter)
 	var/datum/ai_controller/basic_controller/bounty/meek_brain = meek.ai_controller
 	var/datum/ai_controller/basic_controller/bounty/normal_brain = normal.ai_controller
@@ -552,8 +664,8 @@
 	TEST_ASSERT(meek_brain, "The meek criminal has no AI")
 
 	// A companion on the floor can't fight either
-	var/list/buddies = normal.spawn_companions(1)
-	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	var/list/buddies = normal.spawn_companions(1, TRUE)
+	var/mob/living/carbon/human/npc/bounty_companion/buddy = buddies[1]
 	var/datum/ai_controller/basic_controller/bounty/buddy_brain = buddy.ai_controller
 	buddy.Knockdown(5 SECONDS)
 	TEST_ASSERT(!buddy.ai_can_fight(), "A knocked-down companion can still fight")
@@ -567,25 +679,26 @@
 	TEST_ASSERT(buddy.ai_can_fight(), "Up again, the companion still can't fight")
 	QDEL_LIST(buddies)
 
-/// A companion fights on when its criminal is down, cuffed, surrendered or gone (H3)
+/// A companion fights on when its criminal is down, cuffed, gave up or is gone (H3)
 /datum/unit_test/voidcrew_bounty_ai/companion_fights_on
 
 /datum/unit_test/voidcrew_bounty_ai/companion_fights_on/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(2, 2))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(2, 2), "brawler") // BOUNTY_STYLE_BRAWLER
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(4, 4))
-	var/list/buddies = criminal.spawn_companions(1)
-	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	var/list/buddies = criminal.spawn_companions(1, TRUE)
+	var/mob/living/carbon/human/npc/bounty_companion/buddy = buddies[1]
 	var/datum/ai_controller/basic_controller/bounty/buddy_brain = buddy.ai_controller
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(buddy_brain.blackboard[BB_TARGETING_STRATEGY])
 	criminal.ai_add_grudge(hunter)
 
-	ADD_TRAIT(criminal, "bounty_surrendered", "test") // TRAIT_BOUNTY_SURRENDERED
-	TEST_ASSERT(!criminal.may_attack(hunter), "A surrendered criminal may still attack")
-	TEST_ASSERT(criminal.may_attack_scope(hunter), "Surrendering took the hunter out of the criminal's scope")
-	TEST_ASSERT(buddy_brain.may_strike(hunter), "With its criminal surrendered, the companion may not hit the hunter")
-	TEST_ASSERT(strategy.can_attack(buddy, hunter, 9), "With its criminal surrendered, the companion will not target the hunter") // BOUNTY_FIGHT_VISION
-	TEST_ASSERT(bounty_ai_may_hit(buddy, hunter), "With its criminal surrendered, the companion's shots pass the hunter")
-	REMOVE_TRAIT(criminal, "bounty_surrendered", "test") // TRAIT_BOUNTY_SURRENDERED
+	// Its criminal lying there giving up (the human NPC base's state; the roll to run is left out of this test)
+	criminal.npc_surrendering = TRUE
+	TEST_ASSERT(!criminal.may_attack(hunter), "A surrendering criminal may still attack")
+	TEST_ASSERT(criminal.may_attack_scope(hunter), "Giving up took the hunter out of the criminal's scope")
+	TEST_ASSERT(buddy_brain.may_strike(hunter), "With its criminal giving up, the companion may not hit the hunter")
+	TEST_ASSERT(strategy.can_attack(buddy, hunter, 9), "With its criminal giving up, the companion will not target the hunter") // BOUNTY_FIGHT_VISION
+	TEST_ASSERT(bounty_ai_may_hit(buddy, hunter), "With its criminal giving up, the companion may not hit the hunter")
+	criminal.npc_surrendering = FALSE
 
 	// Hit by the hunter, it takes them on itself: no tg element needed
 	buddy_brain.pawn_attacked(hunter)
@@ -600,9 +713,9 @@
 /datum/unit_test/voidcrew_bounty_ai/friendly_fire
 
 /datum/unit_test/voidcrew_bounty_ai/friendly_fire/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(2, 2))
-	var/list/buddies = criminal.spawn_companions(1)
-	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(2, 2), "brawler") // BOUNTY_STYLE_BRAWLER
+	var/list/buddies = criminal.spawn_companions(1, TRUE)
+	var/mob/living/carbon/human/npc/bounty_companion/buddy = buddies[1]
 	var/mob/living/basic/carp/crewmate = allocate(/mob/living/basic/carp, tile(4, 4))
 	crewmate.faction = criminal.faction.Copy()
 	var/datum/ai_controller/basic_controller/bounty/brain = criminal.ai_controller
@@ -613,13 +726,18 @@
 	TEST_ASSERT_EQUAL(criminal.ai_mode, "calm", "A stray blow from its own side started a fight") // BOUNTY_AI_CALM
 	var/list/retaliate = buddy_brain.blackboard[BB_BASIC_MOB_RETALIATE_LIST]
 	TEST_ASSERT(!LAZYLEN(retaliate) || !(crewmate in retaliate), "A stray blow from its own side turned the companion on a crewmate")
+	// Their own side in the line of fire stops a shot
+	crewmate.forceMove(tile(3, 2))
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(4, 2))
+	criminal.ai_add_grudge(hunter)
+	TEST_ASSERT(bounty_ai_line_blocked(criminal, hunter), "A crewmate in the line of fire doesn't block the shot")
 	QDEL_LIST(buddies)
 
 /// Someone in a mech is seen, fought and run from like anyone else (H4)
 /datum/unit_test/voidcrew_bounty_ai/mech_hunter
 
 /datum/unit_test/voidcrew_bounty_ai/mech_hunter/Run()
-	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = make_criminal(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 1), "brawler") // BOUNTY_STYLE_BRAWLER
 	var/mob/living/carbon/human/consistent/pilot = allocate(/mob/living/carbon/human/consistent, tile(3, 3))
 	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, tile(3, 3))
 	mech.mob_enter(pilot, silent = TRUE)
@@ -639,7 +757,7 @@
 	TEST_ASSERT_EQUAL(criminal.ai_pick_fight_target(), mech, "In the fight, the criminal does not pick the mech")
 
 	// The mech's gunfire is the pilot's: a meek one runs from it
-	var/mob/living/basic/bounty_criminal/meek/meek = allocate(/mob/living/basic/bounty_criminal/meek, tile(0, 4))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/meek = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(0, 4))
 	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet, tile(0, 3))
 	shot.firer = mech
 	SEND_SIGNAL(meek, COMSIG_ATOM_BULLET_ACT, shot, BODY_ZONE_CHEST, FALSE, 0)
@@ -656,7 +774,7 @@
 	var/obj/item/kirbyplants/plant = allocate(/obj/item/kirbyplants, tile(4, 4))
 	allocate(/obj/structure/window/fulltile, tile(3, 4))
 	allocate(/obj/structure/window/fulltile, tile(4, 3))
-	var/mob/living/basic/bounty_criminal/meek/criminal = allocate(/mob/living/basic/bounty_criminal/meek, tile(3, 3))
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/meek, tile(3, 3))
 	TEST_ASSERT(!criminal.Adjacent(plant), "The test's panes do not wall the plant off")
 	TEST_ASSERT(!criminal.ai_at_hide_spot(plant), "A walled-off plant counts as right beside them")
 	TEST_ASSERT(!criminal.ai_hide_in(plant), "They got onto the plant through the glass")
@@ -679,3 +797,19 @@
 	TEST_ASSERT_EQUAL(criminal.ai_pick_hide_spot(null), locker, "They did not pick the locker they can walk round to")
 	var/turf/stand = criminal.ai_hide_approach(locker)
 	TEST_ASSERT(stand && stand != tile(0, 0) && stand.Adjacent(locker), "The locker is to be climbed into through the window")
+
+/// The leash (CR-19): the AI's own steps never leave their site; there is no Move() override on the body
+/datum/unit_test/voidcrew_bounty_ai/leash
+
+/datum/unit_test/voidcrew_bounty_ai/leash/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = allocate(/mob/living/carbon/human/npc/bounty_criminal/normal, tile(1, 1))
+	var/turf/home = tile(1, 1)
+	criminal.site_bounds = list(home.x - 1, home.y - 1, home.x + 1, home.y + 1, home.z)
+	TEST_ASSERT(bounty_ai_step(criminal, tile(2, 1)), "A step inside their site was refused")
+	TEST_ASSERT_EQUAL(criminal.loc, tile(2, 1), "The step inside their site didn't move them")
+	TEST_ASSERT(!bounty_ai_step(criminal, tile(3, 1)), "A step off their site was taken")
+	TEST_ASSERT_EQUAL(criminal.loc, tile(2, 1), "A refused step moved them anyway")
+	// Their body is anyone's to move: only their own steps are held to the leash
+	criminal.Move(tile(3, 1), EAST)
+	TEST_ASSERT_EQUAL(criminal.loc, tile(3, 1), "Their body can't be moved off their site (a Move() override)")
+	criminal.site_bounds = null

@@ -440,9 +440,9 @@
 	var/expected_vouchers = 0
 	var/list/delivery_cases = list(
 		list("healthy", 0, FALSE, 1250),
-		list("80% health", 12, FALSE, 1250),
-		list("injured", 13, FALSE, 1000),
-		list("revived and healed", 13, TRUE, 1000),
+		list("80% health", 20, FALSE, 1250), // a human survivor: 100 health, 80 is the line
+		list("injured", 21, FALSE, 1000),
+		list("revived and healed", 21, TRUE, 1000),
 	)
 	for(var/list/delivery_case as anything in delivery_cases)
 		var/datum/mission/mission = allocate(/datum/mission)
@@ -454,7 +454,8 @@
 		mission.add_objective(escort)
 		escort.spawn_field_objects(pad_turf)
 		var/mob/living/survivor = escort.survivor
-		survivor.adjustBruteLoss(delivery_case[2])
+		// On the chest: spread over the limbs, damage counts for less of a human's health (limbs count 0.75)
+		survivor.apply_damage(delivery_case[2], BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 		if(delivery_case[3])
 			survivor.death()
 			TEST_ASSERT(escort.grace_timer, "The survivor's death must start the revival window")
@@ -480,7 +481,7 @@
 	repeated.voucher_count = initial(rescue_type.voucher_count)
 	var/datum/mission_objective/field/escort/repeated_escort = new
 	repeated.add_objective(repeated_escort)
-	repeated_escort.survivor = allocate(/mob/living/basic/ambient_npc/mission_survivor, pad_turf)
+	repeated_escort.survivor = allocate(/mob/living/carbon/human/npc/ambient_npc/mission_survivor, pad_turf)
 	repeated_escort.on_turn_in_finalized(pad)
 	TEST_ASSERT_EQUAL(repeated.value, 1250, "A healthy survivor must add 25% to credits")
 	TEST_ASSERT_NULL(repeated_escort.survivor, "Finalization must clear the survivor reference")
@@ -490,23 +491,23 @@
 
 /**
  * A survivor the contract lets go of in front of someone is taken up in the transporter's beam:
- * held still and untouchable for the length of it, with the column on their tile, rather than
+ * held still for the length of it, with the column on their tile, rather than
  * blinking out. With nobody about they are simply deleted (the delivery test above relies on it).
  */
 /datum/unit_test/voidcrew_mission_survivor_beam/Run()
 	var/turf/spot = run_loc_floor_bottom_left
-	var/mob/living/basic/ambient_npc/mission_survivor/watched = allocate(/mob/living/basic/ambient_npc/mission_survivor, spot)
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/watched = allocate(/mob/living/carbon/human/npc/ambient_npc/mission_survivor, spot)
 	watched.beam_out(force_visual = TRUE)
 	TEST_ASSERT(!QDELETED(watched), "A watched survivor must stay for the beam, not vanish on the spot")
 	TEST_ASSERT(watched.beaming_out, "A watched survivor must be marked as leaving")
-	TEST_ASSERT(HAS_TRAIT(watched, TRAIT_GODMODE), "A survivor in the beam must not be hurt")
+	TEST_ASSERT(!HAS_TRAIT(watched, TRAIT_GODMODE), "A survivor in the beam is still a person: no godmode")
 	TEST_ASSERT(HAS_TRAIT(watched, TRAIT_IMMOBILIZED), "A survivor in the beam must not walk out of it")
 	TEST_ASSERT(watched.anchored, "A survivor in the beam must not be pulled out of it")
 	TEST_ASSERT(locate(/obj/effect/temp_visual/transporter_beam) in spot, "A watched survivor must get the beam column on their tile")
 	watched.talked_to(allocate(/mob/living/carbon/human/consistent, get_step(spot, NORTH)))
 	TEST_ASSERT(!watched.is_following(), "A survivor in the beam must not start following anyone")
 
-	var/mob/living/basic/ambient_npc/mission_survivor/unseen = allocate(/mob/living/basic/ambient_npc/mission_survivor, get_step(spot, EAST))
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/unseen = allocate(/mob/living/carbon/human/npc/ambient_npc/mission_survivor, get_step(spot, EAST))
 	unseen.beam_out()
 	TEST_ASSERT(QDELETED(unseen), "A survivor nobody can see must be deleted at once")
 
@@ -515,7 +516,7 @@
  *
  * Double-booking a ruin is cosmetic for salvage and fatal for a rescue. A bounty
  * contract spawns its named target plus a paid entourage at a random interior
- * turf; a rescue spawns a 60 HP survivor who never fights back at another random
+ * turf; a rescue spawns a survivor (a real human body) who never fights back at another random
  * interior turf in the same small template. Playtesting turned that up the
  * obvious way - the crew flew out to a rescue, found the survivor dead, and left
  * with the identification tag of somebody else's bounty target instead.
@@ -630,7 +631,6 @@
 /mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test
 	ai_controller = null
 	basic_mob_flags = NONE
-	use_dynamic_appearance = FALSE
 	corpse = null
 	loot = null
 	loot_pool = null

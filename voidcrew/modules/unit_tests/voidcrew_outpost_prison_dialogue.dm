@@ -50,7 +50,7 @@
 	return line
 
 /// Checks one line of the file: plain ASCII, at most 20 words, only known placeholders, and filled completely
-/datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/check_line(line, where, mob/living/basic/outpost_prisoner/talker, mob/living/basic/outpost_prisoner/listener)
+/datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/check_line(line, where, mob/living/carbon/human/npc/outpost_prisoner/talker, mob/living/carbon/human/npc/outpost_prisoner/listener)
 	TEST_ASSERT(istext(line) && length(line), "[where] has an empty or non-text line")
 	TEST_ASSERT_EQUAL(length(line), length_char(line), "[where] has a line that is not plain ASCII: [line]")
 	TEST_ASSERT(length(splittext(line, " ")) <= 20, "[where] has a line over 20 words: [line]")
@@ -90,8 +90,8 @@
 			TEST_ASSERT(own_pools >= 2, "[context] has lines for [own_pools] personalities, not 2 or more")
 
 	// Every line in the file fills its placeholders, for any speaker.
-	var/mob/living/basic/outpost_prisoner/talker = allocate(/mob/living/basic/outpost_prisoner, run_loc_floor_bottom_left)
-	var/mob/living/basic/outpost_prisoner/listener = allocate(/mob/living/basic/outpost_prisoner, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/outpost_prisoner/talker = allocate(/mob/living/carbon/human/npc/outpost_prisoner, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/outpost_prisoner/listener = allocate(/mob/living/carbon/human/npc/outpost_prisoner, run_loc_floor_bottom_left)
 	talker.sentence_left = 600
 	for(var/context in lines)
 		var/list/entry = lines[context]
@@ -119,7 +119,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /// Whether `prisoner` picks `context` at least once in `tries` goes at pick_speech()
-/datum/unit_test/voidcrew_outpost_prison_dialogue_complaints/proc/ever_says(mob/living/basic/outpost_prisoner/prisoner, context, tries = 200)
+/datum/unit_test/voidcrew_outpost_prison_dialogue_complaints/proc/ever_says(mob/living/carbon/human/npc/outpost_prisoner/prisoner, context, tries = 200)
 	for(var/i in 1 to tries)
 		var/list/choice = prisoner.pick_speech()
 		if(choice && choice[1] == context)
@@ -138,7 +138,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("complaintowner")
 	TEST_ASSERT_NOTNULL(home, "The complaint test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	for(var/obj/machinery/light/fixture as anything in all_lights(prison))
 		if(fixture.status != LIGHT_OK)
 			fixture.fix()

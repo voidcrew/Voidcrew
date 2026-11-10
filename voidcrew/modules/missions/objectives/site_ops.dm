@@ -310,7 +310,7 @@
  */
 /datum/mission_objective/field/escort
 	/// The survivor mob type
-	var/survivor_type = /mob/living/basic/ambient_npc/mission_survivor
+	var/survivor_type = /mob/living/carbon/human/npc/ambient_npc/mission_survivor
 	/// The live survivor
 	var/mob/living/survivor
 	/// Health fraction at turn-in for the "still walking" pay bonus
@@ -363,7 +363,7 @@
 	if(QDELETED(leaving))
 		return
 	UnregisterSignal(leaving, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
-	var/mob/living/basic/ambient_npc/mission_survivor/person = leaving
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/person = leaving
 	if(istype(person))
 		person.beam_out()
 		return
@@ -373,7 +373,7 @@
 /datum/mission_objective/field/escort/spawn_field_objects(turf/spawn_turf)
 	var/list/hiding_place = mission_survivor_hiding_place(spawn_turf, mission?.target)
 	survivor = new survivor_type(hiding_place[1] || spawn_turf)
-	var/mob/living/basic/ambient_npc/mission_survivor/person = survivor
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/person = survivor
 	if(istype(person))
 		person.join_contract(mission)
 		person.take_shelter(hiding_place[2])
@@ -474,7 +474,7 @@
 	if(istype(reward_anchor, /obj/machinery/mission_pad))
 		var/obj/machinery/mission_pad/pad = reward_anchor
 		pad.do_teleport_effect()
-	var/mob/living/basic/ambient_npc/mission_survivor/person = leaving
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/person = leaving
 	if(istype(person))
 		person.beam_out(farewell = TRUE)
 		return

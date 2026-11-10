@@ -42,6 +42,14 @@
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/prospector,
 		/datum/shop_sku/ripperdoc/hopper,
+		/datum/shop_sku/ripperdoc/frostline,
+		/datum/shop_sku/ripperdoc/spyglass,
+		/datum/shop_sku/ripperdoc/assay_optics,
+		/datum/shop_sku/ripperdoc/hopper_street,
+		/datum/shop_sku/ripperdoc/rockjaw_deepcore,
+		/datum/shop_sku/ripperdoc/longsight,
+		/datum/shop_sku/ripperdoc/deck_junker,
+		/datum/shop_sku/ripperdoc/hopper_milspec,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/hooded/explorer = 10,
@@ -55,6 +63,10 @@
 		// prospector's chrome, cheapest rung: pistons that get you off the
 		// ground fast and hold your footing on bad decking
 		/obj/item/organ/cyberimp/cyberware/shock_coils = 4,
+		// a cold lining for the ice worlds, and cheap eyes that see a long way
+		/obj/item/organ/cyberimp/cyberware/frostline = 3,
+		/obj/item/organ/eyes/robotic/cyberware/spyglass = 3,
+		/obj/item/organ/eyes/robotic/cyberware/prospector/street = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
@@ -70,6 +82,12 @@
 		// and hoppers its own ore, and a harpoon winch for everything else
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/angler = 3,
+		// claim chrome a step up: calf springs, the heavy drill fist, long
+		// optics, and a junk deck for the depot doors
+		/obj/item/organ/cyberimp/cyberware/hopper/street = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore = 3,
+		/obj/item/organ/eyes/robotic/cyberware/longsight = 2,
+		/obj/item/organ/cyberimp/cyberware/deck = 3,
 	)
 	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,
@@ -83,6 +101,8 @@
 		/obj/item/organ/eyes/robotic/cyberware/prospector = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook = 3,
 		/obj/item/organ/cyberimp/cyberware/hopper = 2,
+		// the survey team's jump pistons
+		/obj/item/organ/cyberimp/cyberware/hopper/milspec = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
