@@ -1,2 +1,8 @@
 //Carbon
 #define COMSIG_KB_CARBON_TAKESHIPPART_DOWN "keybinding_carbon_takeshippart_down"
+
+//Cyberware (voidcrew/modules/cyberware/chrome_wheel_keybindings.dm)
+#define COMSIG_KB_LIVING_CHROME_WHEEL_DOWN "keybinding_living_chrome_wheel_down"
+#define COMSIG_KB_LIVING_USE_CHROME_DOWN "keybinding_living_use_chrome_down"
+#define COMSIG_KB_LIVING_USE_OS_CHROME_DOWN "keybinding_living_use_os_chrome_down"
+#define COMSIG_KB_LIVING_DEPLOY_ARM_CHROME_DOWN "keybinding_living_deploy_arm_chrome_down"

@@ -101,8 +101,8 @@
 		/mob/living/simple_animal/hostile/asteroid/elite,
 		/mob/living/basic/boss,
 		/mob/living/basic/trooper/pirate/faction/boss,
-		/mob/living/basic/bounty_criminal/boss,
-		/mob/living/basic/bounty_criminal/kingpin,
+		/mob/living/carbon/human/npc/bounty_criminal/boss,
+		/mob/living/carbon/human/npc/bounty_criminal/kingpin,
 		/mob/living/basic/bounty_lair_boss,
 		/mob/living/basic/lich,
 		/mob/living/basic/hoarfrost_matriarch,
@@ -186,13 +186,21 @@
 	RegisterSignal(src, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(npc_zone_projectile))
 
 /// Use for raw max-health changes (posse size, phases). Retains the selected factor.
+/// Never on a carbon: a person's crit line stays where tg puts it (human NPCs, defaults PI-1).
 /mob/living/proc/set_npc_zone_health(raw_max_health)
+	if(iscarbon(src))
+		stack_trace("set_npc_zone_health() was called on [src] ([type]); carbons keep tg's health. Toughen human NPCs with armour and npc_damage_taken.")
+		return
 	npc_zone_original_max_health = raw_max_health
 	resize_npc_zone_health(raw_max_health * npc_zone_health_factor)
 
 /// Basic and legacy simple animals both store ALL physical damage in bruteloss.
 /// Scale the damage store too, so updatehealth/healing/revival cannot undo the resize.
+/// Never on a carbon (see set_npc_zone_health()).
 /mob/living/proc/resize_npc_zone_health(new_max_health)
+	if(iscarbon(src))
+		stack_trace("resize_npc_zone_health() was called on [src] ([type]); carbons keep tg's health. Toughen human NPCs with armour and npc_damage_taken.")
+		return
 	if(maxHealth <= 0 || new_max_health <= 0)
 		return
 	var/ratio = new_max_health / maxHealth

@@ -27,64 +27,49 @@ GLOBAL_LIST_EMPTY(ambient_npcs)
 // =========================================================================
 
 /**
- * A person who lives in the world: dressed as a random person in an outfit, protected against
- * being dragged, boxed, teleported or turned into something else, environment-proof, kept to a
- * leash, talking from a dialogue file and going about a routine of activities.
+ * A person who lives in the world: a real human body (voidcrew/modules/human_npcs/) with one random
+ * face for life (outpost_npc_looks.dm), dressed in an outfit whose kit is locked to them (owner
+ * decision D3), kept to a leash, talking from a dialogue file and going about a routine of
+ * activities. What they hold for an activity (a mop, a lit welder, a drink) is a real item in
+ * their hand.
  *
- * Anyone can be killed. A body drops a little cash (`death_cash_low` to `death_cash_high`, capped
- * by their place) and any `death_loot`, once: never again after a revive. Hurting one at a trader
- * outpost is violence there, like hurting a visitor.
+ * Anyone can be killed, and their body is a person's: crit, bleeding, revival, carrying, bags and
+ * surgery work on it as on a player. A living, conscious one won't stay grabbed, buckled, cuffed or
+ * shut in a closet (their AI resists, as a person would), and at a trader outpost they refuse
+ * teleports. A body drops a little cash (`death_cash_low` to `death_cash_high`, capped by their
+ * place) and any `death_loot`, once: never again after a revive. Hurting one at a trader outpost is
+ * violence there, like hurting a visitor. They breathe and feel the cold like anyone: their outfit
+ * carries what their place needs (the base's site layers add a sealed suit and air where needed).
  */
-/mob/living/basic/ambient_npc
+/mob/living/carbon/human/npc/ambient_npc
 	name = "spacer"
 	desc = "Someone passing through."
-	icon = 'icons/mob/simple/simple_human.dmi'
-	icon_state = ""
 	gender = MALE
-	unique_name = FALSE
-	combat_mode = FALSE
-	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
-	sentience_type = SENTIENCE_HUMANOID
-	// Nobody drags them off, and nobody pulls them out of their room
-	move_resist = MOVE_FORCE_VERY_STRONG
-	density = TRUE
-	// A body stays where it fell (the planet sweep takes it with the fauna)
-	basic_mob_flags = NONE
-	maxHealth = 80
-	health = 80
-	// An unhurried walk
-	speed = 2.5
-	melee_damage_lower = 0
-	melee_damage_upper = 0
-	// Airless or frozen ground must not kill them in forty seconds (basic mob defaults do)
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	speak_emote = list("says")
-	response_help_continuous = "talks to"
-	response_help_simple = "talk to"
+	faction = list(FACTION_NEUTRAL)
 	ai_controller = /datum/ai_controller/basic_controller/ambient_npc
+	// The ones that fight back (planet fighters) stop once someone is down
+	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
 
 	// ----- Look -----
-	/// The outfit whose worn look they wear
+	/// The outfit they wear, its kit locked to them. Null for one picked by their npc_outfit_table.
 	var/outfit = /datum/outfit/job/assistant
 	/// If set, one of these is picked for `outfit` when they are made
 	var/list/outfit_choices
-	/// Which person in that outfit (outpost_npc_looks.dm); random when null
-	var/look_number
+	/// Their face for life: skin, hair and eyes (outpost_npc_looks.dm). Rolled when they are made, unless given.
+	var/datum/outpost_npc_look/person
 	/// Pick a random gender when made
 	var/random_gender = TRUE
 	/// Give them a random real name when made; a fixed `name` otherwise
 	var/random_name = TRUE
-	/// "idle", "weld" and "tool" looks, for NPCs that do work (built when `work_weights` is set)
-	var/list/work_looks
-	/// What they hold, drawn in their hand as part of their look: an /obj/item type, or null
+	/// The item type they hold for show (a mop, a paper bag): a real one is put in their hand. Null for none.
 	var/held_visual
-	/// "weld", "tool" or "carry": the work look shown now (null for none)
+	/// "weld", "tool" or "carry": what they hold for the work they do now (null for none)
 	var/work_look
-	/// Bumped by every look build; an async build applies only if it is still the latest one
-	var/look_serial = 0
-	/// A real item they carry for an activity (a drink), in their contents, never dropped by a hit
+	/// The real item in their hand for `held_visual` or `work_look`, locked to them like their kit
+	var/obj/item/held_prop
+	/// The slot `held_prop` came off when it is their own (a belt pickaxe), where it goes back; NONE for a prop or a bag
+	var/held_prop_slot = NONE
+	/// A real item they carry for an activity (a drink): in their hand while they have it, not locked
 	var/obj/item/held_item
 
 	// ----- Death -----
@@ -164,7 +149,7 @@ GLOBAL_LIST_EMPTY(ambient_npcs)
 	/// Short text for the admin verb
 	var/name = "standing around"
 	/// Who is doing it
-	var/mob/living/basic/ambient_npc/doer
+	var/mob/living/carbon/human/npc/ambient_npc/doer
 	/// Weakref to what it happens at, if anything
 	var/datum/weakref/anchor_ref
 	/// Where to go, or null where they stand
@@ -199,7 +184,7 @@ GLOBAL_LIST_EMPTY(ambient_npcs)
 	/// Short text for the admin verb
 	var/name = "somewhere"
 	/// The NPCs here, dead or alive, until they are deleted
-	var/list/mob/living/basic/ambient_npc/npcs = list()
+	var/list/mob/living/carbon/human/npc/ambient_npc/npcs = list()
 	/// world.time anyone here may say a spontaneous line
 	var/next_line_at = 0
 	/// The zone band (ZONE_*) it lies in, if known

@@ -20,20 +20,68 @@
  * (autosurgeon.dm's "insertion failed!" path).
  */
 /**
- * The worn-chrome overlay: tg's augment overlay, drawn one notch higher.
- * Stock augments sit at BODY_ADJ_LAYER, which the character-setup underwear
- * layer paints over, a bra would cover a Cascade spine rig. Chrome instead
- * draws at CYBERWARE_WORN_LAYER: over underwear and undershirts, still under
- * eyes, damage, and every EQUIPPED clothing layer. One override covers the
- * images, the emissive twins and the emissive blockers alike, because they
- * all take their layer from bitflag_to_layer().
+ * The worn-chrome overlay: tg's augment overlay, drawn higher. Stock augments
+ * sit at BODY_ADJ_LAYER, under underwear and every piece of clothing. Chrome
+ * draws at CYBERWARE_WORN_LAYER instead: over the jumpsuit, still under hands,
+ * gloves, shoes and suits. One override covers the images, the emissive twins
+ * and the emissive blockers alike, because they all take their layer from
+ * bitflag_to_layer().
+ *
+ * Plating grown into the skin (worn_under_clothes) is skin: it stays where
+ * stock augments sit, under everything that is worn.
  */
 /datum/bodypart_overlay/augment/cyberware
 
 /datum/bodypart_overlay/augment/cyberware/bitflag_to_layer(layer)
 	if(layer == EXTERNAL_ADJACENT)
+		var/obj/item/organ/cyberimp/cyberware/ware = implant
+		if(istype(ware) && ware.worn_under_clothes)
+			return ..()
 		return -CYBERWARE_WORN_LAYER
 	return ..()
+
+// Arm hardware whose worn sprite draws the folded item (the Mantis line) is not
+// drawn while that item is out in a hand. Hiding here also drops the overlay from
+// the limb's icon key, so update_body_parts() redraws the arm on the flip.
+/datum/bodypart_overlay/augment/cyberware/can_draw_on_bodypart(obj/item/bodypart/bodypart_owner)
+	// A bearer being deleted can lose its chrome before its clothes, and taking
+	// the clothes off redraws the limbs while this overlay is still on them.
+	if(!implant)
+		return FALSE
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/arm_ware = implant
+	if(istype(arm_ware) && arm_ware.worn_overlay_hidden())
+		return FALSE
+	return ..()
+
+/**
+ * The parent puts an emissive blocker over every image it draws, the glow
+ * included. Same layer, later in the list, so a Cascade or Redline would black
+ * out its own glow. Glows skip the blocker and go last, after every blocker of
+ * this overlay, the same order tg's worn clothing uses.
+ */
+/datum/bodypart_overlay/augment/cyberware/get_overlay(layer, obj/item/bodypart/limb)
+	layer = bitflag_to_layer(layer)
+	var/list/imageset = implant.get_overlay(layer, limb)
+	// EMP static, dark and blink looks, the folding housing, the spine nodes (cyberware_anim.dm).
+	imageset = implant.cyberware_dress_worn(imageset, layer, limb)
+	if(blocks_emissive == EMISSIVE_BLOCK_NONE || !limb)
+		return imageset
+
+	var/list/all_images = list()
+	var/list/glows = list()
+	for(var/image/overlay as anything in imageset)
+		if(PLANE_TO_TRUE(overlay.plane) == EMISSIVE_PLANE)
+			glows += overlay
+			continue
+		all_images += overlay
+		all_images += emissive_blocker(overlay.icon, overlay.icon_state, limb, layer = overlay.layer, alpha = overlay.alpha)
+	return all_images + glows
+
+/// The animation look is part of the limb's render key, so changing it redraws the limb.
+/datum/bodypart_overlay/augment/cyberware/generate_icon_cache()
+	. = ..()
+	if(implant)
+		. += implant.cyberware_worn_key()
 
 /obj/item/organ/cyberimp/cyberware
 	name = "cyberware"
@@ -41,17 +89,19 @@
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	// Worn look: ware that reads from outside the body sets aug_overlay to a
 	// state in this sheet and tg's bodypart-overlay pipeline draws it ON the
-	// bearer, over the character-setup underwear, under equipped clothing.
+	// bearer, over the jumpsuit, under suits and armour.
 	// Stack enough chrome and you stop looking human.
 	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
 	organ_flags = ORGAN_ROBOTIC
-	failing_desc = "is dark and inert, browned out, EMP-scrambled, or plain broken."
+	failing_desc = "is dark and inert."
 	/// Neural load this ware puts on its bearer. 0-12; see the tier bands.
 	var/chrome_load = 1
 	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed (the Governor hook).
 	var/chrome_capacity_bonus = 0
+	/// TRUE for ware that is part of the skin: its worn look draws under clothes, not over the jumpsuit.
+	var/worn_under_clothes = FALSE
 
 /obj/item/organ/cyberimp/cyberware/Initialize(mapload)
 	. = ..()
@@ -121,11 +171,17 @@
  * Every optic on this base carries the chrome read (cyberware_scan.dm), the
  * diagnostic bus is what makes chrome eyes chrome eyes. Subtypes that add
  * their own ability must keep the read in their actions_types list.
+ *
+ * Every optic also zooms (cyberware_zoom.dm). That button is added in
+ * Initialize() whenever optics_zoom is above 0, so it never goes in
+ * actions_types.
  */
 /obj/item/organ/eyes/robotic/cyberware
 	name = "cyberware optics"
 	desc = "Aftermarket eyes. The irises catch the light in a way real ones don't."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// The base is never sold; it borrows the plainest optics' sprite so it has one.
+	icon_state = "nightshade"
 	actions_types = list(/datum/action/cooldown/cyberware/chrome_read)
 	/// Neural load this ware puts on its bearer.
 	var/chrome_load = 1
@@ -140,6 +196,8 @@
 /obj/item/organ/eyes/robotic/cyberware/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+	// Zoom rides every optic on this base (cyberware_zoom.dm).
+	setup_optics_zoom()
 
 /obj/item/organ/eyes/robotic/cyberware/Destroy()
 	var/turf/drop_turf = get_turf(src)
@@ -198,6 +256,8 @@
 	name = "arm cyberware"
 	desc = "Aftermarket arm hardware. Folds away until you want it."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// The base is never sold; it borrows a plain arm housing's sprite so it has one.
+	icon_state = "fixers"
 	// Worn look (see the cyberware base above): the arm pipeline derives
 	// "[aug_overlay]_left/_right" from the installed zone on its own. No
 	// separate hand states in our sheet, so the hand overlay stays off.
@@ -209,6 +269,9 @@
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed.
 	var/chrome_capacity_bonus = 0
+	/// TRUE when the worn sprite draws the deployable folded into its housing
+	/// (the Mantis line). The worn overlay hides while that item is out in a hand.
+	var/hide_worn_while_deployed = FALSE
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Initialize(mapload)
 	. = ..()
@@ -241,6 +304,12 @@
 	if(!special)
 		cyberware_boot_splash(arm_owner, src)
 
+// tg's arm implants register these two on the bearer and never let go on removal, so a
+// housing sold on or reinstalled elsewhere kept answering to the body it was pulled from.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
+	. = ..()
+	UnregisterSignal(arm_owner, list(COMSIG_CARBON_POST_ATTACH_LIMB, COMSIG_KB_MOB_DROPITEM_DOWN))
+
 // Deploying and stowing arm hardware is the most visible thing a piece of
 // chrome does, so it is also the ink's most common cue: every toolkit arm
 // (Fixer's Fingers picking a tool off the radial, the Rockjaw drill, blades,
@@ -254,12 +323,39 @@
 	// (augments_arms.dm), so "did it deploy" is "did it leave us", not "is it set".
 	if(active_item && !(active_item in src))
 		cyberware_ink_pulse(owner, CYBERWARE_INK_HARD)
+		if(hide_worn_while_deployed)
+			// Any way out of the hand that isn't Retract() (a forced drop, a
+			// deleted blade) must put the folded sprite back as well.
+			RegisterSignal(active_item, COMSIG_ITEM_DROPPED, PROC_REF(on_deployed_item_dropped), override = TRUE)
+			play_blade_unfold(active_item)
+			owner.update_body_parts()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Retract()
 	var/mob/living/carbon/stowing_owner = owner
+	var/obj/item/stowing = active_item
+	// Only a blade coming out of the hand folds back in; one picked off the floor just stows.
+	var/was_held = stowing && stowing_owner?.is_holding(stowing)
 	. = ..()
 	if(.)
 		cyberware_ink_pulse(stowing_owner, CYBERWARE_INK_SOFT)
+		if(hide_worn_while_deployed)
+			UnregisterSignal(stowing, COMSIG_ITEM_DROPPED)
+			if(was_held && owner)
+				play_blade_fold()
+			stowing_owner?.update_body_parts()
+
+/// TRUE while the worn overlay should not draw: this hardware's worn sprite
+/// shows its item folded away, and that item is out in the bearer's hand.
+/// Stowed, dropped, deleted or with no bearer, the overlay draws.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/worn_overlay_hidden()
+	return hide_worn_while_deployed && owner && active_item && owner.is_holding(active_item)
+
+/// Signal proc for [COMSIG_ITEM_DROPPED] on a deployed item whose folded sprite
+/// is part of the worn overlay. Redraws the arm so the housing shows again.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/on_deployed_item_dropped(obj/item/source, mob/user)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_ITEM_DROPPED)
+	owner?.update_body_parts()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/emp_act(severity)
 	. = ..() // toolkit's own EMP retract fires first
@@ -296,10 +392,21 @@
 /proc/cyberware_insert_check(obj/item/organ/ware, mob/living/carbon/target, silent = FALSE, mob/feedback_to)
 	if(!iscarbon(target))
 		return FALSE
+	if(!cyberware_has_limb(ware, target, silent))
+		return FALSE
 	if(installed_capacity_check(target, list(ware), ware.cyberware_get_incumbents(target), silent))
 		return TRUE
 	if(!silent && feedback_to && feedback_to != target)
 		feedback_to.balloon_alert(feedback_to, "no neural headroom!")
+	return FALSE
+
+/// Whether the body still has the limb this ware lives in. Chrome cannot go into a limb that
+/// is gone: the insert would seat it on a body with nothing to hold it.
+/proc/cyberware_has_limb(obj/item/organ/ware, mob/living/carbon/target, silent = FALSE)
+	if(target.get_bodypart(deprecise_zone(ware.zone)))
+		return TRUE
+	if(!silent)
+		target.balloon_alert(target, "no limb for it!")
 	return FALSE
 
 /**
@@ -320,6 +427,9 @@
 		if(receiver)
 			receiver.balloon_alert(receiver, "needs a real rig!")
 			to_chat(receiver, span_warning("The autosurgeon chokes. This needs a real rig."))
+		return FALSE
+	// Even a forced window cannot seat chrome in a limb that is not there.
+	if(!cyberware_has_limb(ware, receiver))
 		return FALSE
 	if(!chrome.install_context_forced && !cyberware_insert_check(ware, receiver))
 		return FALSE
@@ -449,6 +559,28 @@
 			organ?.owner?.balloon_alert(organ.owner, "chrome offline!")
 		return FALSE
 	return TRUE
+
+/**
+ * A click made with a chrome ability armed belongs to the chrome, refused or
+ * not. tg's version returns FALSE on a refusal, and ClickOn() then carries on
+ * as an ordinary click: a held gun fires at whoever was out of reach, an empty
+ * hand punches whoever the ability would not take. So an armed ability swallows
+ * every click it is handed. A refusal (out of reach, no line of sight, wrong
+ * target) keeps it armed for another try; a button that has gone dark
+ * since it was armed (EMP, cooldown started elsewhere, stun) disarms, so the
+ * next click is an ordinary one again.
+ *
+ * Only for a real click on an armed ability. Trigger() with a target (AI and
+ * scripted callers) pass through unchanged.
+ */
+/datum/action/cooldown/cyberware/InterceptClickOn(mob/living/clicker, params, atom/target)
+	var/armed = !isnull(clicker) && clicker.click_intercept == src
+	if(armed && !IsAvailable(feedback = TRUE))
+		unset_click_ability(clicker, refund_cooldown = TRUE)
+		return TRUE
+	. = ..()
+	if(!. && armed)
+		return TRUE
 
 /**
  * Is there a clear arc from [here] to [destination]? Shared by every leg

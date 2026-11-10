@@ -101,7 +101,7 @@
 "sr" = (
 /obj/effect/decal/cleanable/wrapping,
 /obj/structure/cable,
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/plating/rust,
 /area/ruin)
 "sV" = (
@@ -191,7 +191,7 @@
 /area/ruin)
 "Fg" = (
 /obj/structure/chair/comfy/beige,
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/wood,
 /area/ruin)
@@ -265,7 +265,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "VS" = (
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /turf/open/floor/plating,
 /area/ruin)
 "WB" = (

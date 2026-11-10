@@ -15,7 +15,10 @@
 	var/obj/item/bodypart/affecting = limb_owner.get_bodypart(BODY_ZONE_CHEST)
 	affecting.receive_damage(clamp(brute_dam/2 * affecting.body_damage_coeff, 15, 50), clamp(burn_dam/2 * affecting.body_damage_coeff, 0, 50), wound_bonus=CANT_WOUND) //Damage the chest based on limb's existing damage
 	if(!silent)
-		limb_owner.visible_message(span_danger("<B>[limb_owner]'s [name] is violently dismembered!</B>"))
+		// VOIDCREW EDIT CHANGE START: the line joins the message of the hit that caused it (voidcrew/modules/hyperviolence/hitlines)
+		// original: limb_owner.visible_message(span_danger("<B>[limb_owner]'s [name] is violently dismembered!</B>"))
+		limb_owner.hv_add_hit_line("[limb_owner]'s [name] is violently dismembered!", HV_LINE_HUGE, range = DEFAULT_MESSAGE_RANGE)
+		// VOIDCREW EDIT CHANGE END
 	INVOKE_ASYNC(limb_owner, TYPE_PROC_REF(/mob, emote), "scream")
 	playsound(get_turf(limb_owner), 'sound/effects/dismember.ogg', 80, TRUE)
 	limb_owner.add_mood_event("dismembered_[body_zone]", /datum/mood_event/dismembered, src)

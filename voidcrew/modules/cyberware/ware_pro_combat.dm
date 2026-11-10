@@ -22,6 +22,8 @@
 
 /// A dodge source only fires while its bearer moved within this window.
 #define CYBERWARE_DODGE_MOVE_WINDOW (1 SECONDS)
+/// The shortest gap between two dodge lines from a bearer nobody is playing (an NPC under fire).
+#define CYBERWARE_DODGE_LINE_GAP (1.5 SECONDS)
 
 /**
  * The one dodge roll for all cyberware. Lives on the mob; wares and status
@@ -43,6 +45,8 @@
 	var/list/dodge_sources = list()
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
+	/// world.time a dodge was last announced: an NPC under fire says it at most once every CYBERWARE_DODGE_LINE_GAP, so chat isn't flooded
+	var/last_message_at = -INFINITY
 
 /datum/component/cyberware_dodge/Initialize()
 	if(!isliving(parent))
@@ -96,10 +100,12 @@
 		return
 	new /obj/effect/temp_visual/decoy/fading/halfsecond(source.loc, source)
 	playsound(source, SFX_BULLET_MISS, 60, TRUE)
-	source.visible_message(
-		span_danger("[source] blurs sideways out of [dodged]'s path!"),
-		span_danger("You blur out of [dodged]'s path!"),
-	)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("[source] blurs sideways out of [dodged]'s path!"),
+			span_danger("You blur out of [dodged]'s path!"),
+		)
 	var/incoming_dir = QDELETED(dodged) ? source.dir : dodged.dir
 	var/list/side_dirs = shuffle(list(turn(incoming_dir, 90), turn(incoming_dir, -90)))
 	for(var/step_dir in side_dirs)
@@ -158,6 +164,9 @@
 		return TRUE
 	if(!istype(user) || !istype(target))
 		return FALSE
+	// A bounty criminal's own companions and creatures (voidcrew/modules/bounties)
+	if(bounty_ai_same_gang(user, target))
+		return TRUE
 	var/datum/team/user_team = cyberware_crew_team(user)
 	if(!user_team)
 		return FALSE
@@ -189,7 +198,7 @@
  */
 /obj/item/organ/eyes/robotic/cyberware/deadeye
 	name = "\improper Deadeye link"
-	desc = "Milspec optics built around a target-processing coprocessor. Paint someone and the link walks your next few rounds onto them, whatever the barrel was actually pointed at."
+	desc = "Military optics built around a targeting coprocessor. It decides where your rounds go, and you aren't consulted."
 	icon_state = "deadeye"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -197,6 +206,14 @@
 		/datum/action/cooldown/cyberware/deadeye_tag,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
+	/// How far a tag can be planted, and how far homing keeps correcting.
+	var/tag_range = CYBERWARE_DEADEYE_TAG_RANGE
+	/// Homing shots granted per tag.
+	var/tag_shots = CYBERWARE_DEADEYE_TAG_SHOTS
+	/// How long a tag lasts, spent or not.
+	var/tag_duration = CYBERWARE_DEADEYE_TAG_DURATION
 	/// Weakref to the currently tagged target.
 	var/datum/weakref/tagged_ref
 	/// Homing shots remaining on the current tag.
@@ -217,14 +234,14 @@
 /obj/item/organ/eyes/robotic/cyberware/deadeye/proc/start_tag(mob/living/target)
 	end_tag(owner)
 	tagged_ref = WEAKREF(target)
-	shots_left = CYBERWARE_DEADEYE_TAG_SHOTS
+	shots_left = tag_shots
 	RegisterSignal(owner, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_owner_fired))
 	target.add_filter(CYBERWARE_DEADEYE_MARK_FILTER, 2, list("type" = "outline", "color" = "#ff3300", "size" = 1))
 	new /obj/effect/temp_visual/smartgun_target(get_turf(target))
 	playsound(owner, 'sound/machines/synth/synth_yes.ogg', 30, TRUE)
 	owner.balloon_alert(owner, "target tagged")
 	to_chat(target, span_userdanger("A red targeting glint settles on you!"))
-	tag_timer = addtimer(CALLBACK(src, PROC_REF(on_tag_expired)), CYBERWARE_DEADEYE_TAG_DURATION, TIMER_STOPPABLE)
+	tag_timer = addtimer(CALLBACK(src, PROC_REF(on_tag_expired)), tag_duration, TIMER_STOPPABLE)
 
 /obj/item/organ/eyes/robotic/cyberware/deadeye/proc/on_tag_expired()
 	tag_timer = null
@@ -255,7 +272,7 @@
 	if(!istype(projectile))
 		return
 	var/mob/living/target = tagged_ref?.resolve()
-	if(QDELETED(target) || target.stat == DEAD || target.z != user.z || get_dist(user, target) > CYBERWARE_DEADEYE_TAG_RANGE)
+	if(QDELETED(target) || target.stat == DEAD || target.z != user.z || get_dist(user, target) > tag_range)
 		end_tag(user)
 		return
 	projectile.set_homing_target(target)
@@ -267,7 +284,7 @@
 
 /datum/action/cooldown/cyberware/deadeye_tag
 	name = "Deadeye Tag"
-	desc = "Tag a hostile in view. Your next three shots track them automatically. The tag refuses to take a crewmate."
+	desc = "Tag a hostile in view. Your next three shots track them."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "sniper_zoom"
 	cooldown_time = 25 SECONDS
@@ -287,7 +304,7 @@
 	if(cyberware_is_ally(owner, victim))
 		owner.balloon_alert(owner, "friendly, tag refused!")
 		return FALSE
-	if(!can_see(owner, victim, CYBERWARE_DEADEYE_TAG_RANGE))
+	if(!can_see(owner, victim, optics.tag_range))
 		owner.balloon_alert(owner, "no line of sight!")
 		return FALSE
 	StartCooldown()
@@ -309,17 +326,22 @@
  * sidestep (never point-blank, never while browned out) plus a small
  * always-on gait boost. The dodge itself lives in the shared arbiter above;
  * this organ just contributes a source whose chance drops to zero the moment
- * the ware is EMP-scrambled or browned out.
+ * the ware is EMP-scrambled or browned out. The chance and the gait boost are
+ * vars, so the street and service models (ware_models_b.dm) retune them.
  */
 /obj/item/organ/cyberimp/cyberware/slipwire
 	name = "\improper Slipwire reflex shunt"
-	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps incoming fire on its own, roughly one shot in seven misses because your body moved before you told it to."
+	desc = "A reflex arc spliced in parallel with the spinal trunk. Your body gets out of the way before you've decided to."
 	icon_state = "slipwire"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 4
 	tier = CYBERWARE_TIER_2
+	/// Percent of hostile projectiles dodged while the bearer is moving.
+	var/dodge_chance = CYBERWARE_SLIPWIRE_DODGE_CHANCE
+	/// The gait boost the ware adds while it runs. Null for none.
+	var/datum/movespeed_modifier/gait_modifier = /datum/movespeed_modifier/cyberware_slipwire
 
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -335,17 +357,19 @@
 // add/remove is idempotent and needs no applied-state guard.
 /obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+	if(gait_modifier)
+		bearer?.add_movespeed_modifier(gait_modifier)
 
 /obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+	if(gait_modifier)
+		bearer?.remove_movespeed_modifier(gait_modifier)
 
 /// Dodge-source callback: dead weight while failing, 15% otherwise.
 /obj/item/organ/cyberimp/cyberware/slipwire/proc/get_dodge_chance()
 	if(organ_flags & ORGAN_FAILING)
 		return 0
-	return CYBERWARE_SLIPWIRE_DODGE_CHANCE
+	return dodge_chance
 
 /datum/movespeed_modifier/cyberware_slipwire
 	multiplicative_slowdown = -0.1
@@ -391,7 +415,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel
 	name = "\improper Dead Channel pain editor"
-	desc = "A signal processor clamped over the pain nerves. You stop feeling injuries entirely, which keeps you upright and moving where anyone else would fold. The catch is that you can't tell how bad it's gotten. The colour draining out of the world is the only gauge you get."
+	desc = "A signal processor clamped over the pain nerves. Nothing hurts. That isn't the same as nothing being wrong."
 	icon_state = "dead_channel"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -608,7 +632,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/hopper
 	name = "\improper Hopper piston calves"
-	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way. Flat is the operative word: they will not put you over a wall."
+	desc = "Paired myomer pistons sleeved over both calves, for clearing railings, tables and whoever's in the way."
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -622,14 +646,34 @@
 	tier = CYBERWARE_TIER_2
 	aug_overlay = "hopper"
 	actions_types = list(/datum/action/cooldown/cyberware/hopper_leap)
+	// The models in the line (ware_line_models_a.dm) retune these by setting vars.
+	/// Leap distance in tiles.
+	var/leap_range = CYBERWARE_HOPPER_RANGE
+	/// Gap between leaps. The button reads it when it is built.
+	var/leap_cooldown = 8 SECONDS
+	/// Tooltip for the button when this model's numbers differ from the button's
+	/// own text. Null keeps the button's own.
+	var/leap_action_desc
 
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
-	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
+	desc = "Leap up to four tiles over gaps, tables and people."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body does not get to leap out of it.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE
+
+/datum/action/cooldown/cyberware/hopper_leap/New(Target, original = TRUE)
+	. = ..()
+	// The pistons this button belongs to set its cooldown and tooltip.
+	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = organ
+	if(!istype(pistons))
+		return
+	cooldown_time = pistons.leap_cooldown
+	if(pistons.leap_action_desc)
+		desc = pistons.leap_action_desc
 
 /datum/action/cooldown/cyberware/hopper_leap/Activate(atom/target)
 	if(!isliving(owner))
@@ -642,10 +686,12 @@
 	if(jumper.buckled || !isturf(jumper.loc))
 		jumper.balloon_alert(jumper, "can't jump from here!")
 		return FALSE
-	if(get_dist(here, destination) > CYBERWARE_HOPPER_RANGE)
+	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = organ
+	var/leap_range = istype(pistons) ? pistons.leap_range : CYBERWARE_HOPPER_RANGE
+	if(get_dist(here, destination) > leap_range)
 		jumper.balloon_alert(jumper, "too far!")
 		return FALSE
-	if(!can_see(jumper, destination, CYBERWARE_HOPPER_RANGE))
+	if(!can_see(jumper, destination, leap_range))
 		jumper.balloon_alert(jumper, "no line of sight!")
 		return FALSE
 	if(destination.is_blocked_turf() || islava(destination) || ischasm(destination))
@@ -656,12 +702,13 @@
 		return FALSE
 	StartCooldown()
 	playsound(here, 'sound/items/weapons/punchmiss.ogg', 40, TRUE, -1)
-	new /obj/effect/temp_visual/decoy/fading/halfsecond(here, jumper)
+	var/obj/effect/temp_visual/decoy/fading/halfsecond/afterimage = new(here, jumper)
 	jumper.visible_message(
 		span_warning("[jumper]'s legs fire like pistons and [jumper.p_they()] vault[jumper.p_s()] into the air!"),
 		span_notice("You fire the pistons and leap."),
 	)
-	animate(jumper, pixel_z = 20, time = CYBERWARE_HOPPER_AIRTIME, flags = ANIMATION_RELATIVE, easing = QUAD_EASING|EASE_OUT)
+	// A crouch, dust, and an arc over to the landing; the body stays on its tile until it lands (cyberware_anim2.dm).
+	cyberware_leap_takeoff_fx(jumper, here, destination, CYBERWARE_HOPPER_AIRTIME, 20, 26, afterimage)
 	addtimer(CALLBACK(src, PROC_REF(land), destination), CYBERWARE_HOPPER_AIRTIME)
 	return TRUE
 
@@ -671,7 +718,7 @@
 	var/mob/living/jumper = owner
 	if(QDELETED(jumper))
 		return
-	animate(jumper, pixel_z = -20, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
+	cyberware_leap_touchdown_fx(jumper)
 	var/turf/final = destination
 	if(QDELETED(final) || final.is_blocked_turf())
 		final = null
@@ -683,10 +730,11 @@
 		jumper.balloon_alert(jumper, "landing fouled!")
 		return
 	jumper.forceMove(final)
-	new /obj/effect/temp_visual/mook_dust(final)
+	cyberware_grey_dust(final)
 	playsound(final, 'sound/effects/gravhit.ogg', 50, TRUE)
 
 #undef CYBERWARE_DODGE_MOVE_WINDOW
+#undef CYBERWARE_DODGE_LINE_GAP
 #undef CYBERWARE_DEADEYE_TAG_RANGE
 #undef CYBERWARE_DEADEYE_TAG_SHOTS
 #undef CYBERWARE_DEADEYE_TAG_DURATION

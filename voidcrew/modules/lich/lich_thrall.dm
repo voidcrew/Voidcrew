@@ -370,6 +370,8 @@
 			continue // Ilthuun and his garrison
 		if(candidate.has_status_effect(/datum/status_effect/lich_thrall))
 			continue
+		if(cyberware_camo_hides(candidate, owner)) // optical camo (cyberware_stealth.dm)
+			continue
 
 		var/score = get_dist(owner, candidate)
 		if(candidate.client)
