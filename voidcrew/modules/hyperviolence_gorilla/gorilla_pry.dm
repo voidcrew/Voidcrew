@@ -44,7 +44,7 @@
 	// Unpowered or opened for them: nothing to strain against.
 	if(!airlock_target.hasPower() || airlock_target.allowed(attacker))
 		return ..()
-	var/datum/gorilla_pry_strain/strain = new(attacker, airlock_target)
+	var/datum/gorilla_pry_strain/strain = new(attacker, airlock_target, pry_time)
 	. = ..()
 	qdel(strain)
 
@@ -57,14 +57,23 @@
 	/// Beats so far
 	var/beats = 0
 	var/beat_timer
+	/// world.time the pry began
+	var/started
+	/// How long the pry takes
+	var/pry_time
 
-/datum/gorilla_pry_strain/New(mob/living/carbon/bearer, obj/machinery/door/airlock/door)
+/datum/gorilla_pry_strain/New(mob/living/carbon/bearer, obj/machinery/door/airlock/door, pry_time = GORILLA_PRY_TIME)
 	. = ..()
 	src.bearer = bearer
 	src.door = door
+	src.pry_time = pry_time
+	started = world.time
 	seam = new(null)
+	seam.stepped = gorilla_door_seam_stepped(door)
+	seam.set_width(0)
 	door.vis_contents += seam
 	RegisterSignal(door, COMSIG_QDELETING, PROC_REF(on_deleted))
+	RegisterSignal(door, COMSIG_AIRLOCK_OPEN, PROC_REF(on_opening))
 	RegisterSignal(bearer, COMSIG_QDELETING, PROC_REF(on_deleted))
 	beat()
 
@@ -73,7 +82,7 @@
 		deltimer(beat_timer)
 		beat_timer = null
 	if(door)
-		UnregisterSignal(door, COMSIG_QDELETING)
+		UnregisterSignal(door, list(COMSIG_QDELETING, COMSIG_AIRLOCK_OPEN))
 		door.vis_contents -= seam
 	if(bearer)
 		UnregisterSignal(bearer, COMSIG_QDELETING)
@@ -86,6 +95,12 @@
 	SIGNAL_HANDLER
 	qdel(src)
 
+/// The door gives: from here the gap is the door's own, sliding open. The seam goes before the leaves move.
+/datum/gorilla_pry_strain/proc/on_opening(datum/source)
+	SIGNAL_HANDLER
+	if(door && seam)
+		door.vis_contents -= seam
+
 /datum/gorilla_pry_strain/proc/beat()
 	beat_timer = null
 	if(QDELETED(bearer) || QDELETED(door) || !DOING_INTERACTION_WITH_TARGET(bearer, door))
@@ -93,7 +108,7 @@
 	beats++
 	bearer.do_jitter_animation(20)
 	door.Shake(1, 0, 0.3 SECONDS)
-	seam.set_width(beats)
+	seam.set_width((world.time - started) / max(pry_time, 1))
 	do_sparks(2, TRUE, door)
 	beat_timer = addtimer(CALLBACK(src, PROC_REF(beat)), 0.5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
@@ -105,7 +120,17 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_ID
 	layer = ABOVE_OBJ_LAYER
+	/// The door's leaves meet on the stepped seam of tg's station airlocks, not a straight one
+	var/stepped = FALSE
 
-/// Widens the seam with the strain: three steps.
-/obj/effect/abstract/gorilla_pry_seam/proc/set_width(beats)
-	icon_state = "pry_seam_[clamp(round((beats + 1) / 3), 1, 3)]"
+/// Widens the seam as the pry goes on: three steps, a third of the pry each. [progress] runs 0 to 1.
+/obj/effect/abstract/gorilla_pry_seam/proc/set_width(progress)
+	icon_state = "pry_seam_[stepped ? "step_" : ""][clamp(1 + round(progress * 3), 1, 3)]"
+
+/**
+ * Whether [door]'s two leaves meet on the stepped seam tg's station airlock sprites share (public, command,
+ * maintenance and the rest of icons/obj/doors/airlocks/station), so the gap is drawn along it. Any other door
+ * gets the straight gap.
+ */
+/proc/gorilla_door_seam_stepped(obj/machinery/door/airlock/door)
+	return !!findtext("[door.icon]", "/airlocks/station/")
