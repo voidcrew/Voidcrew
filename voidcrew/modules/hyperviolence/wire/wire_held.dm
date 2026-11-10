@@ -197,21 +197,24 @@
 	return IS_LEFT_INDEX(index) ? "left" : "right"
 
 /**
- * Where the wire leaves the `side` hand ("left" or "right") of `holder`, in pixels from the middle of its tile, and
- * whether that hand is behind the body as the body faces: the far hand in profile, and both hands of a body facing
- * away. The grip as the held wire draws it (rows 17-18 of the "monowire" states in cyberware_lefthand.dmi and
- * cyberware_righthand.dmi), the same points the garrote uses. list(x, y, behind)
+ * The pixel the wire leaves the `side` hand ("left" or "right") of `holder` from: the one the held wire's spool lights,
+ * where the wire comes out of it, for each facing (the bright pixel in the spool of the "monowire" states in
+ * cyberware_lefthand.dmi and cyberware_righthand.dmi; the far hand in profile shows no spool, only the hand's edge).
+ * By its lower left corner, in pixels from the middle of the tile: a line of wire is drawn from the middle of this
+ * pixel. Also whether that hand is behind the body as the body faces: the far hand in profile, and both hands of a body
+ * facing away. The hands hang at the hips; in profile the near hand is at the middle of the body and the far one just
+ * shows at its front edge. The garrote's wire leaves the same pixels. list(x, y, behind)
  */
 /proc/wire_hand_point(mob/living/holder, side)
 	var/right = side != "left"
 	switch(holder.dir)
 		if(EAST)
-			return right ? list(-1, -3, FALSE) : list(5, -3, TRUE)
+			return right ? list(-2, -3, FALSE) : list(4, -3, TRUE)
 		if(WEST)
-			return right ? list(-4, -3, TRUE) : list(2, -3, FALSE)
+			return right ? list(-5, -3, TRUE) : list(1, -3, FALSE)
 		if(NORTH)
-			return right ? list(7, -3, TRUE) : list(-7, -3, TRUE)
-	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
+			return right ? list(7, -3, TRUE) : list(-8, -3, TRUE)
+	return right ? list(-8, -3, FALSE) : list(7, -3, FALSE)
 
 /// The world layer for a line of wire leaving a hand: over the bodies, or under them for a hand behind its body.
 /proc/wire_line_layer(behind)
@@ -240,43 +243,46 @@
 	return WIRE_SWING_LAYER
 
 /**
- * Where the `zone` part of `body` is drawn, in pixels from the middle of its tile: as it stands and faces
- * (wire_part_offset()), turned with it when it lies, then moved by its offsets. list(x, y)
+ * The pixel the `zone` part of `body` is drawn on, by its lower left corner in pixels from the middle of its tile: as
+ * it stands and faces (wire_part_offset()), turned with it when it lies, then moved by its offsets. list(x, y)
  */
 /proc/wire_zone_point(mob/living/body, zone)
 	var/list/at = wire_part_offset(zone, body.dir)
 	var/matrix/shape = body.transform
-	return list(round(shape.a * at[1] + shape.b * at[2] + shape.c) + body.pixel_x, round(shape.d * at[1] + shape.e * at[2] + shape.f) + body.pixel_y)
+	// The pixel its middle lands in.
+	var/middle_x = at[1] + 0.5
+	var/middle_y = at[2] + 0.5
+	return list(floor(shape.a * middle_x + shape.b * middle_y + shape.c) + body.pixel_x, floor(shape.d * middle_x + shape.e * middle_y + shape.f) + body.pixel_y)
 
 /**
- * Where the `zone` part of a standing human body facing `facing` is, in pixels from the middle of its tile, as a line
- * of wire is placed on it ("wire_reach" in WIRE_GORE_ICON). An arm or leg is the middle of the cut across its shoulder
- * or hip, where the "wire_cut_<zone>" seam is drawn and the limb comes away. The body's right is the screen's left
- * facing south and its right facing north. Side on, the far arm and leg (wire_limb_far()) are hidden behind the near
- * ones, the leg drawn a pixel ahead of it; the chest is the middle of the torso. list(x, y)
+ * The pixel of the `zone` part of a standing human body facing `facing` that a line of wire lands on, by its lower left
+ * corner in pixels from the middle of its tile. An arm or leg: the pixel in the middle of the cut across its shoulder
+ * or hip, the middle of the "wire_cut_<zone>" seam's line, where the limb comes away. The body's right is the screen's
+ * left facing south and its right facing north. Side on, the far arm and leg (wire_limb_far()) are hidden behind the
+ * near ones, the leg drawn a pixel ahead of it; the chest is the middle of the torso. list(x, y)
  */
 /proc/wire_part_offset(zone, facing)
 	switch(zone)
 		if(BODY_ZONE_HEAD)
-			return list(0, 9)
+			return list(-1, 9)
 		if(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM)
 			switch(facing)
 				if(EAST)
-					return list(-2, 3)
+					return list(-3, 3)
 				if(WEST)
-					return list(3, 3)
+					return list(2, 3)
 			// Facing north the body's right is on the screen's right.
 			var/screen_right = (zone == BODY_ZONE_R_ARM) == (facing == NORTH)
-			return list(screen_right ? 6 : -6, 1)
+			return list(screen_right ? 5 : -7, 1)
 		if(BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
 			switch(facing)
 				if(EAST)
-					return list(zone == BODY_ZONE_R_LEG ? 1 : 2, -9)
+					return list(zone == BODY_ZONE_R_LEG ? 0 : 1, -9)
 				if(WEST)
-					return list(zone == BODY_ZONE_L_LEG ? 1 : 0, -9)
+					return list(zone == BODY_ZONE_L_LEG ? 0 : -1, -9)
 			var/screen_right = (zone == BODY_ZONE_R_LEG) == (facing == NORTH)
-			return list(screen_right ? 3 : -3, -7)
-	return list(facing == WEST ? 1 : 0, -1)
+			return list(screen_right ? 2 : -4, -7)
+	return list(facing == WEST ? 0 : -1, -1)
 
 /**
  * A landed swing: the wire lashes from the hand holding it to the part of `target` it cut (`zone`, else the part the
@@ -299,6 +305,10 @@
  *   through it: left on, it runs along the leg and paints it.
  * From a wielder facing the viewer, a line that would slant across his own legs lands out to the hand's side on the
  * limb it cuts, if it can clear them there (wire_lash_clear_legs()).
+ *
+ * The line runs from the middle of the pixel the wire leaves the hand from (wire_hand_point()) to the middle of the
+ * pixel it lands on (wire_zone_point()), and covers both, whichever way it runs. Both pieces are cut from that one
+ * line (wire_lash_shape()), so they meet without a step; only the target's piece carries the wire's bright end.
  */
 /// How fast the piece of a lash that runs along a leg beyond the wielder goes.
 #define WIRE_LASH_SNAP_FADE (0.25 SECONDS)
@@ -310,6 +320,8 @@
 /// The target's piece sorts this far in front of the target (or behind): a body lying down is drawn a few pixels lower
 /// (tg's lying offset), and so in front of anything placed level with its tile.
 #define WIRE_LASH_ROW_TARGET 4
+/// The line starts this far before the middle of the pixel it leaves the hand from, so that pixel is always drawn.
+#define WIRE_LASH_BACK 0.5
 
 /obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone, cross = FALSE)
 	var/turf/from = get_turf(user)
@@ -320,6 +332,8 @@
 		return
 	zone = zone || check_zone(user.zone_selected)
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
+	// The pixel the line leaves and the pixel it lands on, by their lower left corners: the first from the middle of the
+	// wielder's tile, the second from the middle of the target's.
 	var/hand_x = user.pixel_x + hand[1]
 	var/hand_y = user.pixel_y + hand[2]
 	var/tile_x = (hit.x - from.x) * ICON_SIZE_X
@@ -339,29 +353,57 @@
 		end_x += round(run_x * WIRE_CROSS_PAST / run)
 		end_y += round(run_y * WIRE_CROSS_PAST / run)
 	else if(hit.y < from.y && user.dir == SOUTH && user.body_position != LYING_DOWN)
-		end_x = wire_lash_clear_legs(user, hand_x, hand_y, tile_x + end_x, tile_y + end_y) - tile_x
+		end_x = wire_lash_clear_legs(user, hand_x, hand_y + 0.5, tile_x + end_x, tile_y + end_y + 0.5) - tile_x
 	wire_lash_hide(user)
+	// From the middle of the one pixel to the middle of the other.
 	var/span_x = tile_x + end_x - hand_x
 	var/span_y = tile_y + end_y - hand_y
-	// Where the line leaves the wielder's tile: its side beside him, else its foot or head.
-	var/edge_x
-	var/edge_y
+	var/length = sqrt(span_x ** 2 + span_y ** 2)
+	if(length < 1)
+		return
+	// How far along it leaves the wielder's tile: by its side beside him, else by its foot or head.
+	var/along = 1
 	if(hit.y == from.y)
-		edge_x = SIGN(tile_x) * ICON_SIZE_X / 2
-		edge_y = hand_y + span_y * (edge_x - hand_x) / (span_x || 1)
-	else
-		edge_y = SIGN(tile_y) * ICON_SIZE_Y / 2
-		edge_x = hand_x + span_x * (edge_y - hand_y) / (span_y || 1)
+		if(span_x)
+			along = (SIGN(tile_x) * ICON_SIZE_X / 2 - (hand_x + 0.5)) / span_x
+	else if(span_y)
+		along = (SIGN(tile_y) * ICON_SIZE_Y / 2 - (hand_y + 0.5)) / span_y
+	along = clamp(along, 0, 1)
+	// The hand's piece: from just before the middle of the hand's pixel, so that pixel is always drawn, to the edge.
 	var/hand_row = user.pixel_y + (hand[3] ? WIRE_LASH_ROW_HAND : -WIRE_LASH_ROW_HAND)
-	wire_line_piece(from, hand_x, hand_y, edge_x - hand_x, edge_y - hand_y, wire_line_layer(hand[3]), hand_row)
+	if(along * length >= 0.5)
+		wire_line_piece(from, hand_x, hand_y, wire_lash_shape(span_x, span_y, -WIRE_LASH_BACK, along * length, 0.5, 0.5), lash_run_state(), wire_line_layer(hand[3]), hand_row)
+	// The target's piece: on from the edge, to just past the middle of the pixel it lands on. It is placed on the pixel
+	// the edge point falls in, and the rest of the way to that point is in its shape, so the two pieces are one line.
+	var/edge_x = hand_x + 0.5 + span_x * along - tile_x
+	var/edge_y = hand_y + 0.5 + span_y * along - tile_y
+	var/base_x = floor(edge_x)
+	var/base_y = floor(edge_y)
 	var/snap = hit.y > from.y && !behind && !cross && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG)
 	var/target_row = target.pixel_y + (behind ? WIRE_LASH_ROW_TARGET : -WIRE_LASH_ROW_TARGET)
-	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, tile_x + end_x - edge_x, tile_y + end_y - edge_y, behind ? BELOW_MOB_LAYER : ABOVE_MOB_LAYER, target_row, fade = snap ? WIRE_LASH_SNAP_FADE : WIRE_LASH_FADE)
+	wire_line_piece(hit, base_x, base_y, wire_lash_shape(span_x, span_y, 0, (1 - along) * length + 0.5, edge_x - base_x, edge_y - base_y), lash_state(), behind ? BELOW_MOB_LAYER : ABOVE_MOB_LAYER, target_row, fade = snap ? WIRE_LASH_SNAP_FADE : WIRE_LASH_FADE)
 
 #undef WIRE_LASH_SNAP_FADE
 #undef WIRE_CROSS_PAST
 #undef WIRE_LASH_ROW_HAND
 #undef WIRE_LASH_ROW_TARGET
+#undef WIRE_LASH_BACK
+
+/**
+ * A stretch of a lash's line, as a transform for one of its pieces (the "wire_lash" states of WIRE_GORE_ICON: half a
+ * tile of line running up from the middle of the icon, a half pixel left of it). The whole line runs from a point
+ * toward one (`span_x`, `span_y`) away; this piece is the stretch from `from_length` to `to_length` pixels along it,
+ * the point itself being (`at_x`, `at_y`) from the lower left corner of the pixel the piece is placed on: (0.5, 0.5)
+ * for the middle of that pixel. Two pieces of one line given the same bearing and consecutive stretches meet exactly.
+ */
+/proc/wire_lash_shape(span_x, span_y, from_length, to_length, at_x, at_y)
+	var/matrix/shape = matrix()
+	shape.Translate(0.5, 0)
+	shape.Scale(1, max(to_length - from_length, 0.5) / 16)
+	shape.Translate(0, from_length)
+	shape.Turn(arctan(span_y, span_x))
+	shape.Translate(at_x, at_y)
+	return shape
 
 /**
  * Whether a lash from `user` meets `body` behind it, so its end is drawn under the body:
@@ -438,35 +480,44 @@
 #undef WIRE_CLEAR_REACH
 
 /**
- * One straight piece of a lash on `where`: from (`start_x`, `start_y`) pixels off the middle of that tile, running
- * (`span_x`, `span_y`), at world `line_layer`; it fades out over `fade`. Over the usual WIRE_LASH_FADE it is down to a
- * trace as the wire comes back into the hand (wire_lash_hide()) and holds that until it goes: both are the server's
- * timers, so a server running behind keeps the line in the hand until the wire is drawn. It is placed with pixel_w and
- * pixel_z, which only move the picture; `row` (pixel_y) is where it sorts among the things on its tile's row, which
- * the map orders front to back before it looks at layers (wire_lash_at()).
+ * One straight piece of a lash on `where`: placed on the pixel (`base_x`, `base_y`) off the middle of that tile (its
+ * lower left corner), drawn as `shape` (wire_lash_shape()) in `state`, at world `line_layer`; it fades out over `fade`.
+ * Over the usual WIRE_LASH_FADE it is down to a trace as the wire comes back into the hand (wire_lash_hide()) and
+ * holds that until it goes: both are the server's timers, so a server running behind keeps the line in the hand until
+ * the wire is drawn. It is placed with pixel_w and pixel_z, which only move the picture; `row` (pixel_y) is where it
+ * sorts among the things on its tile's row, which the map orders front to back before it looks at layers
+ * (wire_lash_at()).
  */
-/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, start_x, start_y, span_x, span_y, line_layer, row = 0, fade = WIRE_LASH_FADE)
-	if(!where || (abs(span_x) < 1 && abs(span_y) < 1))
+/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, base_x, base_y, matrix/shape, state, line_layer, row = 0, fade = WIRE_LASH_FADE)
+	if(!where || !shape)
 		return
 	var/obj/effect/abstract/wire_reach/lash = new(where)
-	lash.icon_state = lash_state()
+	lash.icon_state = state
 	lash.layer = line_layer
 	lash.add_overlay(emissive_appearance(lash.icon, lash.icon_state, lash))
 	lash.pixel_y = row
-	lash.pixel_w = start_x
-	lash.pixel_z = start_y - row
-	lash.transform = wire_reach_shape(span_x, span_y)
+	lash.pixel_w = base_x
+	lash.pixel_z = base_y - row
+	lash.transform = shape
 	if(fade == WIRE_LASH_FADE)
 		animate(lash, alpha = WIRE_LASH_TRACE, time = WIRE_LASH_HIDE, easing = QUAD_EASING | EASE_IN)
 	else
 		animate(lash, alpha = 0, time = fade, easing = QUAD_EASING | EASE_IN)
 	QDEL_IN(lash, fade)
 
+/// The line of a lash that ends on what it hit: the wire's bright end at its far end.
 /obj/item/melee/cyberware_monowire/proc/lash_state()
-	return "wire_reach"
+	return "wire_lash"
 
 /obj/item/melee/cyberware_monowire/live/lash_state()
-	return "wire_reach_live"
+	return "wire_lash_live"
+
+/// The line of a lash that runs on into another piece: no bright end.
+/obj/item/melee/cyberware_monowire/proc/lash_run_state()
+	return "wire_lash_run"
+
+/obj/item/melee/cyberware_monowire/live/lash_run_state()
+	return "wire_lash_run_live"
 
 /// The light at the spool while the wire runs out or snaps back: the wire's own colour.
 /obj/item/melee/cyberware_monowire/proc/spool_light_color()
