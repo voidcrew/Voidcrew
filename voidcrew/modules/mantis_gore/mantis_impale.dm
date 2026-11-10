@@ -194,8 +194,8 @@
 	addtimer(CALLBACK(src, PROC_REF(lift), 1), MANTIS_IMPALE_ENTER_BEAT, TIMER_DELETE_ME)
 
 /**
- * The hoist from the stab to the hold, a frame at a time in the side views: the victim and the blades in them
- * rise together, so the steel stays where it went in. Seen from the front or back it is one step.
+ * The hoist from the stab to the hold, a frame at a time: the victim and the blades in them rise together,
+ * in the same frame, so the steel stays where it went in.
  */
 /datum/mantis_impale/proc/lift(step)
 	if(!running || ripping)
@@ -436,16 +436,11 @@
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null
-	// The side views draw the pull-back in steps, the steel coming out a little at a time.
-	if(rig && mantis_rig_beat("impale", "pull1", facing))
-		for(var/step in 1 to 3)
-			addtimer(CALLBACK(src, PROC_REF(show_beat), "pull[step]", 0), (step - 1) * MANTIS_IMPALE_PULL_STEP, TIMER_DELETE_ME)
-		addtimer(CALLBACK(src, PROC_REF(show_rip)), 3 * MANTIS_IMPALE_PULL_STEP, TIMER_DELETE_ME)
-		addtimer(CALLBACK(src, PROC_REF(tear_out), half), 3 * MANTIS_IMPALE_PULL_STEP + MANTIS_IMPALE_PULL_BEAT - MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
-		return
-	show_beat("pull")
-	addtimer(CALLBACK(src, PROC_REF(show_rip)), MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
-	addtimer(CALLBACK(src, PROC_REF(tear_out), half), MANTIS_IMPALE_PULL_BEAT, TIMER_DELETE_ME)
+	// The pull-back in steps, the steel coming out a little at a time.
+	for(var/step in 1 to 3)
+		addtimer(CALLBACK(src, PROC_REF(show_beat), "pull[step]", 0), (step - 1) * MANTIS_IMPALE_PULL_STEP, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(show_rip)), 3 * MANTIS_IMPALE_PULL_STEP, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(tear_out), half), 3 * MANTIS_IMPALE_PULL_STEP + MANTIS_IMPALE_PULL_BEAT - MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
 
 /// The blades tear up and down out of them: blood sprays out of the back as they come free.
 /datum/mantis_impale/proc/show_rip()

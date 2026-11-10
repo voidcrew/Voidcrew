@@ -745,7 +745,10 @@
 	for(var/state in list("mantis_spurt", "mantis_flick_right", "mantis_flick_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_LARGE_ICON, state), "The large gore sheet has no [state]")
 	// Every piece the blade rig draws, for every model that can impale and scissor.
-	var/list/moves = list("impale" = list("enter", "hold", "pull", "rip", "drop"), "scissor" = list("raise", "glint", "close", "cut", "recover"))
+	var/list/moves = list(
+		"impale" = list("arrive", "contact", "enter", "lift1", "lift2", "hold", "pull1", "pull2", "pull3", "rip", "drop"),
+		"scissor" = list("raise", "glint", "close", "cut", "recover"),
+	)
 	for(var/model in list("mantis", "mantis_scorch"))
 		for(var/move in moves)
 			for(var/beat in moves[move])
@@ -756,12 +759,12 @@
 						if(piece == "T" || piece == "body" || piece == "whole")
 							continue
 						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
-	// The beats only the side views draw: the hoist, the pull-back in steps and the scissor's swing (also seen from the front).
-	var/list/side_moves = list("impale" = list("lift1", "lift2", "pull1", "pull2", "pull3"), "scissor" = list("swing"))
+	// The beat only some views draw: the scissor's swing, seen from the side and the front.
+	var/list/side_moves = list("scissor" = list("swing"))
 	for(var/model in list("mantis", "mantis_scorch"))
 		for(var/move in side_moves)
 			for(var/beat in side_moves[move])
-				for(var/facing in (beat == "swing" ? list(EAST, WEST, SOUTH) : list(EAST, WEST)))
+				for(var/facing in list(EAST, WEST, SOUTH))
 					var/list/spec = mantis_rig_beat(move, beat, facing)
 					TEST_ASSERT(spec, "The rig has no [move] [beat] facing [dir2text(facing)]")
 					for(var/piece in spec[MANTIS_RIG_ORDER])

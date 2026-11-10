@@ -63,8 +63,6 @@
 			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 3, 0, 2)
 		if("impale_hold_E")
 			spec = list(list("far", "body", "T", "wound", "drip", "narm", "near"), 7, 0, -17, 4, 0, 2)
-		if("impale_pull_E")
-			spec = list(list("far", "body", "T", "wound", "narm", "near"), 4, 0, -19, 1, 0, 1)
 		// The pull-back in three steps: the bearer leans back, the arms draw back and the target slides off,
 		// 3 px of steel out a step. Only what has come out of the front shows.
 		if("impale_pull1_E")
@@ -90,8 +88,6 @@
 			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 3, 0, 0)
 		if("impale_hold_N")
 			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 4, 0, 0)
-		if("impale_pull_N")
-			spec = list(list("tips", "T", "arms", "body"), 0, 23, 0, 0, 0, 0)
 		if("impale_pull1_N")
 			spec = list(list("tips", "T", "arms", "body"), 0, 23, 0, 3, 0, 0)
 		if("impale_pull2_N")
@@ -118,8 +114,6 @@
 			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 27, 0, 0)
 		if("impale_hold_S")
 			spec = list(list("body", "arms", "T", "wound", "tips", "drip"), 0, 0, 0, 28, 0, 0)
-		if("impale_pull_S")
-			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 23, 0, 0)
 		if("impale_pull1_S")
 			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 27, 0, 0)
 		if("impale_pull2_S")

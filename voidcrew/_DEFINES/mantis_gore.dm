@@ -102,7 +102,7 @@
 #define MANTIS_IMPALE_CONTACT_BEAT (0.05 SECONDS)
 /// From the blades going in to the hoist, held up. Short, so the hold fills the 0.8 s.
 #define MANTIS_IMPALE_ENTER_BEAT (0.1 SECONDS)
-/// Each step of the hoist from the stab up to the hold, and of the pull-back (side views).
+/// Each step of the hoist from the stab up to the hold, and of the pull-back.
 #define MANTIS_IMPALE_STEP (0.05 SECONDS)
 #define MANTIS_IMPALE_PULL_STEP (0.1 SECONDS)
 /// Held up they sag a pixel this long into the hold, for this long, and once more this long after the first.
