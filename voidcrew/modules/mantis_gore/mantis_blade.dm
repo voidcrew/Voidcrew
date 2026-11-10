@@ -169,12 +169,12 @@
 		if(!istype(torn, /datum/wound/slash/flesh/critical/hv_carotid/limb))
 			torn.adjust_blood_flow(-torn.blood_flow * 0.4)
 		victim.hv_add_hit_line("[victim]'s [place] is seared open to the artery!", HV_LINE_BOLD, "Your [place] is seared open to the artery!", DEFAULT_MESSAGE_RANGE)
-		victim.hv_blood_spray(attack_direction, 2)
 	else
 		victim.hv_add_hit_line("The artery in [victim]'s [place] is cut!", HV_LINE_BOLD, "The artery in your [place] is cut!", DEFAULT_MESSAGE_RANGE)
-		victim.hv_blood_spray(attack_direction, 4)
 		drench(victim)
+	// What it looks like: one spurt of drops the way the cut went, then the blood runs down the body.
 	mantis_spurt_fx(victim, limb.body_zone, attack_direction, seared)
+	mantis_artery_run_fx(victim, limb.body_zone, torn)
 	log_combat(user, victim, "tore an artery in", src, "([limb.plaintext_zone])")
 	return TRUE
 

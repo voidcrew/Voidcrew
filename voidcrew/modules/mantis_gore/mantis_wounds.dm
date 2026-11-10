@@ -44,8 +44,6 @@
 
 /// One heartbeat out of the open artery.
 /datum/wound/slash/flesh/critical/hv_carotid/limb/proc/pulse()
-	if(!victim.hv_blood_spray(spurt_dir, spurt_strength))
-		return
 	mantis_spurt_fx(victim, limb.body_zone, spurt_dir, spurt_strength < 2)
 
 /datum/wound/slash/flesh/critical/hv_carotid/limb/clamp_artery(obj/item/tool, mob/user)

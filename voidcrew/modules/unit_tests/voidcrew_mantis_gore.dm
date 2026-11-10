@@ -20,6 +20,7 @@
 /// MANTIS_GORE_ICON, MANTIS_GORE_LARGE_ICON and the held-blade files
 #define MANTIS_TEST_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
 #define MANTIS_TEST_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
+#define MANTIS_TEST_ARTERY_ICON 'voidcrew/modules/mantis_gore/icons/mantis_artery.dmi'
 #define MANTIS_TEST_LEFTHAND 'voidcrew/modules/mantis_gore/icons/mantis_lefthand.dmi'
 #define MANTIS_TEST_RIGHTHAND 'voidcrew/modules/mantis_gore/icons/mantis_righthand.dmi'
 /// MANTIS_GORE_REACH_ICON
@@ -750,7 +751,7 @@
 				TEST_ASSERT(icon_exists(hand_file, "[model]_[pose]"), "[hand_file] has no [model]_[pose]")
 	for(var/state in list("mantis_trail", "mantis_scorch_trail", "mantis_impale", "mantis_scorch_impale", "mantis_coil_glow_right", "mantis_scorch_coil_glow_left", "mantis_guard_glint_right", "mantis_raise_glint_left", "scorch_gash_l_arm", "scorch_gash_head", "flick_spatter_right", "flick_spatter_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, state), "The gore sheet has no [state]")
-	for(var/state in list("mantis_spurt", "mantis_flick_right", "mantis_flick_left"))
+	for(var/state in list("mantis_flick_right", "mantis_flick_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_LARGE_ICON, state), "The large gore sheet has no [state]")
 	// Every piece the blade rig draws, for every model that can impale and scissor.
 	var/list/moves = list(
@@ -780,6 +781,68 @@
 							continue
 						TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_[move]_[beat]_[piece]"), "The reach sheet has no [model]_[move]_[beat]_[piece]")
 
+/// What a torn artery looks like: drops thrown the way the cut went that land as spots, and the blood running
+/// down the body for as long as the wound is open.
+/datum/unit_test/voidcrew_mantis_gore/artery_look
+
+/datum/unit_test/voidcrew_mantis_gore/artery_look/Run()
+	for(var/height in list("low", "mid", "high"))
+		for(var/strength in list("", "_weak"))
+			TEST_ASSERT(icon_exists(MANTIS_TEST_ARTERY_ICON, "spurt_[height][strength]"), "The artery sheet has no spurt_[height][strength]")
+			TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_drops_[height][strength]"), "The gore sheet has no artery_drops_[height][strength]")
+	for(var/zone in GLOB.all_body_zones)
+		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_run_[zone]"), "The gore sheet has no artery_run_[zone]")
+		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_ran_[zone]"), "The gore sheet has no artery_ran_[zone]")
+
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	victim.setDir(SOUTH)
+	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_L_ARM)
+	var/datum/wound/slash/flesh/critical/hv_carotid/limb/torn = hv_crit_apply_wound(arm, /datum/wound/slash/flesh/critical/hv_carotid/limb, EAST, null)
+	TEST_ASSERT(torn, "The limb artery wound would not apply")
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_L_ARM), "mid", "An arm's artery is not at arm height")
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_R_LEG), "low", "A leg's artery is not near the floor")
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_HEAD), "high", "The neck's artery is not at neck height")
+
+	// One spurt: drops in the air the way the cut went, then spots where they come down, a tile east.
+	var/obj/effect/abstract/cyberware_anim/jet = mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST)
+	TEST_ASSERT_NOTNULL(jet, "A torn artery throws nothing")
+	TEST_ASSERT_EQUAL(jet.icon_state, "spurt_mid", "An arm's spurt isn't the arm-height one")
+	TEST_ASSERT_EQUAL(jet.dir, EAST, "The spurt doesn't fly the way the cut went")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/mantis_drops) in spot(2, 1)), "The drops are on the floor before they have flown")
+	sleep(0.5 SECONDS)
+	var/obj/effect/decal/cleanable/blood/mantis_drops/drops = locate() in spot(2, 1)
+	TEST_ASSERT_NOTNULL(drops, "The spurt's drops left no spots where they came down")
+	TEST_ASSERT_EQUAL(drops.icon_state, "artery_drops_mid", "The spots are not the spurt's own")
+	TEST_ASSERT_EQUAL(drops.dir, EAST, "The spots don't lie the way the drops flew")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/hv_spray) in spot(2, 1)), "A spurt still lays a spray")
+	// The next beat comes down on the same spots.
+	mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST)
+	sleep(0.5 SECONDS)
+	var/spots = 0
+	for(var/obj/effect/decal/cleanable/blood/mantis_drops/laid in spot(2, 1))
+		spots++
+	TEST_ASSERT_EQUAL(spots, 1, "A second beat stacked its spots on the first's")
+	// A weak one falls close by.
+	var/obj/effect/abstract/cyberware_anim/weak_jet = mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST, TRUE)
+	TEST_ASSERT_EQUAL(weak_jet?.icon_state, "spurt_mid_weak", "A weak spurt isn't the weak one")
+
+	// The blood runs down the body, and goes when the wound does.
+	var/obj/effect/abstract/cyberware_anim/mantis_run/run = mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, torn)
+	TEST_ASSERT_NOTNULL(run, "A torn artery doesn't run down the body")
+	TEST_ASSERT(run in victim.vis_contents, "The run isn't drawn on the body")
+	TEST_ASSERT_EQUAL(run.icon_state, "artery_run_l_arm", "The run isn't the arm's")
+	sleep(0.9 SECONDS)
+	TEST_ASSERT_EQUAL(run.icon_state, "artery_ran_l_arm", "The run isn't held once it has run its length")
+	qdel(torn)
+	TEST_ASSERT(QDELETED(run), "The run outlived its wound")
+
+	// Lying down the blood goes to the floor: low drops, and nothing runs down the body.
+	victim.set_body_position(LYING_DOWN)
+	TEST_ASSERT_EQUAL(mantis_artery_height(victim, BODY_ZONE_L_ARM), "low", "A body lying down still bleeds from arm height")
+	var/datum/wound/slash/flesh/critical/hv_carotid/limb/again = hv_crit_apply_wound(arm, /datum/wound/slash/flesh/critical/hv_carotid/limb, EAST, null)
+	TEST_ASSERT(again, "The limb artery wound would not apply a second time")
+	TEST_ASSERT_NULL(mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, again), "Blood runs down a body lying flat")
+
 #undef MG_MOVE_IMPALE
 #undef MG_MOVE_XSLASH
 #undef MG_IMPALE_TRAIT
@@ -789,6 +852,7 @@
 #undef MG_FINISHER_DAMAGED
 #undef MANTIS_TEST_ICON
 #undef MANTIS_TEST_LARGE_ICON
+#undef MANTIS_TEST_ARTERY_ICON
 #undef MANTIS_TEST_LEFTHAND
 #undef MANTIS_TEST_RIGHTHAND
 #undef MANTIS_TEST_REACH_ICON

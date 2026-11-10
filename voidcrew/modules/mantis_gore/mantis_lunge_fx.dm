@@ -179,50 +179,175 @@
 // THE CUTS
 // =========================================================================
 
-/// Where on the body the artery of [zone] is, in pixels up from the middle of the sprite.
-/proc/mantis_artery_height(zone)
+/// How far over the floor the artery of [zone] opens on [victim], as the spurt's art comes: "low" (a leg, or
+/// anyone lying down), "mid" (an arm, the chest) or "high" (the neck).
+/proc/mantis_artery_height(mob/living/victim, zone)
+	if(victim.body_position == LYING_DOWN)
+		return "low"
 	switch(zone)
 		if(BODY_ZONE_HEAD)
-			return 6
+			return "high"
 		if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
-			return -8
-	return 0
+			return "low"
+	return "mid"
+
+/// Where the artery of [zone] opens on [body], as it stands, faces and lies now, from the middle of its tile:
+/// list(x, y) in pixels. The part as it is drawn (mantis_part_point()); the neck for the head.
+/proc/mantis_artery_point(mob/living/body, zone)
+	if(zone != BODY_ZONE_HEAD)
+		return mantis_part_point(body, zone)
+	var/across = (body.dir == EAST) ? 2 : ((body.dir == WEST) ? -3 : 0)
+	var/matrix/shape = body.transform
+	return list(round(shape.a * across + shape.b * 5 + shape.c, 1), round(shape.d * across + shape.e * 5 + shape.f, 1))
+
+/// The spurt's art, by [height] and whether it is a [weak] one: list(how far out its drops come down, how far
+/// below the wound, how long they are in the air). Pixels and deciseconds, as the art is drawn.
+/proc/mantis_spurt_shape(height, weak)
+	switch(height)
+		if("low")
+			return list(weak ? 6.7 : 16.16, 6, 3)
+		if("high")
+			return list(weak ? 11.63 : 28.18, 24, 4.5)
+	return list(weak ? 9.8 : 23.74, 16, 4)
 
 /**
- * One heartbeat out of a torn artery: a jet thrown the way the cut went. Drawn upright in the world
- * (it does not lie down with the body), in the blood's own colour.
+ * One spurt out of a torn artery: a handful of drops thrown from the wound the way the cut went ([spurt_dir]),
+ * big and small in turn, that arc down and land as spots about a tile off ("spurt_[height]" in
+ * MANTIS_ARTERY_ICON, drawn for each of the eight ways). A [weak] one is fewer drops that fall close by: a
+ * seared artery, or a wall where the drops would have come down. Upright in the world (it does not lie down
+ * with the body), in the blood's own colour. Thrown away from the viewer, or out of a limb on the body's far
+ * side, the drops leave from behind the body; otherwise in front of it. Returns the picture.
  */
 /proc/mantis_spurt_fx(mob/living/victim, zone, spurt_dir, weak = FALSE)
-	if(QDELETED(victim))
+	if(QDELETED(victim) || !isturf(victim.loc) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return null
-	var/obj/effect/abstract/cyberware_anim/jet = cyberware_anim_play(victim, MANTIS_GORE_LARGE_ICON, "mantis_spurt", MANTIS_ANIM_TOP_LAYER, 0.6 SECONDS)
+	if(!spurt_dir)
+		spurt_dir = pick(GLOB.alldirs)
+	var/height = mantis_artery_height(victim, zone)
+	var/list/point = mantis_artery_point(victim, zone)
+	// The wound on the floor's own grid: the body may be drawn off the middle of its tile (lying down, shoved).
+	var/list/from = list(point[1] + victim.pixel_x + victim.pixel_w, point[2] + victim.pixel_y + victim.pixel_z)
+	var/turf/land = weak ? null : mantis_spurt_turf(victim, from, height, FALSE, spurt_dir)
+	if(!weak && (isnull(land) || hv_blood_spray_blocked(land)))
+		weak = TRUE
+	if(weak)
+		land = mantis_spurt_turf(victim, from, height, TRUE, spurt_dir)
+	var/list/shape = mantis_spurt_shape(height, weak)
+	var/state = "[height][weak ? "_weak" : ""]"
+	// One beat past the landing, on its last frame: the spots it shows there are the ones laid on the floor.
+	var/obj/effect/abstract/cyberware_anim/jet = cyberware_anim_play(victim, MANTIS_ARTERY_ICON, "spurt_[state]", MANTIS_ANIM_TOP_LAYER, shape[3] + world.tick_lag)
 	if(!jet)
 		return null
 	jet.vis_flags &= ~VIS_INHERIT_DIR
-	jet.appearance_flags |= RESET_TRANSFORM|RESET_COLOR|PIXEL_SCALE
-	jet.pixel_x = -16
-	jet.pixel_y = -16 + mantis_artery_height(zone)
+	jet.setDir(spurt_dir)
+	// Blood in the air is no part of the body: drawn apart from it, so its layer sorts it against the whole body.
+	jet.appearance_flags |= RESET_TRANSFORM|RESET_COLOR|KEEP_APART
+	// 96x96 around the wound. Drawn elsewhere, not moved: it stays on the body's own row.
+	jet.pixel_w = -32 + point[1]
+	jet.pixel_z = -32 + point[2]
 	jet.color = victim.get_blood_dna_color() || BLOOD_COLOR_RED
-	if(weak)
-		jet.alpha = 170
-	var/matrix/turned = matrix()
-	if(spurt_dir & WEST)
-		turned.Scale(-1, 1)
-	if(spurt_dir == NORTH)
-		turned.Turn(-90)
-	else if(spurt_dir == SOUTH)
-		turned.Turn(90)
-	else if(spurt_dir & NORTH)
-		turned.Turn((spurt_dir & WEST) ? 35 : -35)
-	else if(spurt_dir & SOUTH)
-		turned.Turn((spurt_dir & WEST) ? -35 : 35)
-	// Straight up or down the arc reads shorter.
-	if(spurt_dir == NORTH || spurt_dir == SOUTH)
-		turned.Scale(0.75, 0.75)
-	if(weak)
-		turned.Scale(0.6, 0.6)
-	jet.transform = turned
+	jet.layer = ((spurt_dir & NORTH) || wire_limb_far(zone, victim.dir)) ? BELOW_MOB_LAYER : MANTIS_OVER_VICTIM_LAYER
+	if(land)
+		var/list/spot = mantis_spurt_spot(from, height, weak, spurt_dir)
+		var/offset_x = spot[1] - (land.x - victim.x) * ICON_SIZE_X
+		var/offset_y = spot[2] - (land.y - victim.y) * ICON_SIZE_Y
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_spurt_land), land, "artery_drops_[state]", spurt_dir, offset_x, offset_y, victim.get_blood_dna_list(), victim.get_static_viruses()), shape[3])
 	return jet
+
+/// Where the middle of a spurt's drops comes down, from the middle of the tile the wound is on: list(x, y).
+/// [point] is the wound (mantis_artery_point()).
+/proc/mantis_spurt_spot(list/point, height, weak, spurt_dir)
+	var/list/shape = mantis_spurt_shape(height, weak)
+	var/out_x = (spurt_dir & EAST) ? 1 : ((spurt_dir & WEST) ? -1 : 0)
+	var/out_y = (spurt_dir & NORTH) ? 1 : ((spurt_dir & SOUTH) ? -1 : 0)
+	var/reach = shape[1] * ((out_x && out_y) ? 0.7071 : 1)
+	return list(point[1] + round(out_x * reach, 1), point[2] - shape[2] + round(out_y * reach, 1))
+
+/// The tile a spurt's drops come down on, or null if there is none.
+/proc/mantis_spurt_turf(mob/living/victim, list/point, height, weak, spurt_dir)
+	var/list/spot = mantis_spurt_spot(point, height, weak, spurt_dir)
+	return locate(victim.x + round(spot[1] / ICON_SIZE_X, 1), victim.y + round(spot[2] / ICON_SIZE_Y, 1), victim.z)
+
+/**
+ * The spots a spurt of arterial blood leaves where its drops come down ("artery_drops_[...]", the last frame
+ * of the spurt's own art, eight ways). Its own kind of blood, not one of the sprays: thin, and a tile keeps
+ * only a few.
+ */
+/obj/effect/decal/cleanable/blood/mantis_drops
+	name = "blood drops"
+	icon = MANTIS_GORE_ICON
+	icon_state = "artery_drops_mid"
+	random_icon_states = null
+	mergeable_decal = FALSE
+	// Thin enough that walking through it does not leave footprints.
+	bloodiness = 10
+	drying_time = 3 MINUTES
+	beauty = -15
+	base_name = null
+	base_suffix = "drops"
+
+// Too thin to dive into.
+/obj/effect/decal/cleanable/blood/mantis_drops/can_bloodcrawl_in()
+	return FALSE
+
+/// A spurt's drops come down on [land]: its spots are laid, [offset_x] and [offset_y] pixels from the tile's
+/// middle. Wet spots already there from the same beat of the same wound are only freshened, and a tile holds
+/// no more than a few. Returns the spots.
+/proc/mantis_spurt_land(turf/land, state, spurt_dir, offset_x, offset_y, list/blood_dna, list/viruses)
+	if(!isturf(land) || !length(blood_dna) || hv_blood_spray_blocked(land) || isgroundlessturf(land) || !land.has_gravity())
+		return null
+	var/laid = 0
+	for(var/obj/effect/decal/cleanable/blood/mantis_drops/wet in land)
+		if(wet.dried || QDELETED(wet))
+			continue
+		laid++
+		if(laid >= 4 || (wet.icon_state == state && wet.dir == spurt_dir && wet.pixel_x == offset_x && wet.pixel_y == offset_y))
+			wet.add_blood_DNA(blood_dna, viruses)
+			return wet
+	var/obj/effect/decal/cleanable/blood/mantis_drops/drops = new(land, viruses, blood_dna)
+	if(QDELETED(drops))
+		return null
+	drops.icon_state = state
+	drops.setDir(spurt_dir)
+	drops.pixel_x = offset_x
+	drops.pixel_y = offset_y
+	return drops
+
+/// The blood run down a body from a torn artery (mantis_artery_run_fx()).
+/obj/effect/abstract/cyberware_anim/mantis_run
+	icon = MANTIS_GORE_ICON
+	layer = MANTIS_ANIM_TOP_LAYER
+	/// The part it runs from.
+	var/zone
+
+/// Run its length: a still picture from here on, whichever way the body turns.
+/obj/effect/abstract/cyberware_anim/mantis_run/proc/ran()
+	icon_state = "artery_ran_[zone]"
+
+/**
+ * The blood of a torn artery runs down [victim]'s body from the wound on [zone] to the feet: a thin broken
+ * line that grows over half a second and stays ("artery_run_[zone]", then "artery_ran_[zone]", drawn for the
+ * body's four facings; nothing where the part is on the body's far side). Part of the body: it turns and lies
+ * down with it. It lasts as long as [torn], the wound. Only on someone upright: lying down, the blood goes
+ * straight to the floor. Returns the picture.
+ */
+/proc/mantis_artery_run_fx(mob/living/victim, zone, datum/wound/torn)
+	if(QDELETED(victim) || QDELETED(torn) || victim.body_position == LYING_DOWN)
+		return null
+	if(!icon_exists(MANTIS_GORE_ICON, "artery_run_[zone]"))
+		return null
+	var/obj/effect/abstract/cyberware_anim/mantis_run/run = new(null)
+	run.bearer = victim
+	run.zone = zone
+	run.icon_state = "artery_run_[zone]"
+	run.appearance_flags |= RESET_COLOR
+	run.color = victim.get_blood_dna_color() || BLOOD_COLOR_RED
+	run.RegisterSignal(victim, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))
+	// The wound closing, or going with its limb, takes the run with it.
+	run.RegisterSignal(torn, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))
+	victim.vis_contents += run
+	addtimer(CALLBACK(run, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim/mantis_run, ran)), 0.8 SECONDS)
+	return run
 
 /// A Scorch cut: a white-hot seam across the limb that cools to char.
 /proc/mantis_scorch_seam_fx(mob/living/carbon/victim, obj/item/bodypart/limb)
