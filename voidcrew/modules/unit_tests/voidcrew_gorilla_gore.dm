@@ -750,6 +750,29 @@
 	sleep(0.2 SECONDS)
 	TEST_ASSERT(cornered.getBruteLoss() - cornered_before >= 20, "A haymaker at a corner tile never landed") // GORILLA_HAYMAKER_MIN_DAMAGE
 
+	// Something in the guard hand: that arm stays down, so the thing isn't pulled apart
+	var/mob/living/carbon/human/guarder = gorilla(spot(4, 2))
+	guarder.setDir(EAST)
+	guarder.put_in_hand(allocate(/obj/item/wrench), 1)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/guarded = locate() in arm(guarder, BODY_ZONE_R_ARM).actions
+	guarded.Trigger(guarder)
+	TEST_ASSERT_NOTNULL(guarded.rig, "A wind-up with something in the guard hand raised no rig")
+	TEST_ASSERT_NOTNULL(guarded.rig.arm_poses["r"], "Test fixture: the punching arm wasn't drawn back")
+	TEST_ASSERT_NULL(guarded.rig.arm_poses["l"], "A guard arm with something in its hand was raised")
+	guarded.unset_click_ability(guarder, refund_cooldown = TRUE)
+
+	// Something in the punching hand: no drawing, and the wind-up goes on
+	var/mob/living/carbon/human/gripper = gorilla(spot(0, 4))
+	gripper.setDir(EAST)
+	gripper.put_in_hand(allocate(/obj/item/wrench), 2)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/gripped = locate() in arm(gripper, BODY_ZONE_R_ARM).actions
+	gripped.Trigger(gripper)
+	TEST_ASSERT_NULL(gripped.rig, "A punching arm with something in its hand was drawn on the rig")
+	TEST_ASSERT(gripped.charging(), "Something in the punching hand stopped the wind-up")
+	gripped.unset_click_ability(gripper, refund_cooldown = TRUE)
+	sleep(0.4 SECONDS)
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A wind-up with full hands left a puppet behind")
+
 // =========================================================================
 // GROUND POUND
 // =========================================================================

@@ -12,7 +12,8 @@
  * of gorilla_swing.dm): the punching arm draws back as the charge builds and is held there, the other comes up as a
  * guard, and on the release the fist is thrown onto the part it hits with a step in behind it, stays there a beat,
  * follows through and comes back to rest. The blow lands with the fist on it, a tick after the release. A bearer who
- * walks or turns while winding up keeps the lean alone, and their blow is tg's lunge.
+ * walks or turns while winding up keeps the lean alone, and their blow is tg's lunge; so does one whose punching hand
+ * holds something. A guard hand that holds something stays down.
  *
  * The haymaker and every Gorilla finisher share one cooldown, kept on the bearer, so they never chain.
  */
@@ -40,6 +41,8 @@
 	var/datum/chrome_rig/rig
 	/// Timer that takes the rig down when the arms are back at rest
 	var/rig_timer
+	/// The guard hand held something when the rig came up, so that arm stays down
+	var/guard_still = FALSE
 	/// Timer that lands a thrown blow
 	var/land_timer
 	/// The part the blow must land on, for an AI that picks one. Else it is rolled from the part the bearer aims at
@@ -293,7 +296,7 @@
 /**
  * Draws the bearer on the rig and starts the wind-up: after a beat with the real body still on show, the punching
  * arm draws back, half way by GORILLA_HAYMAKER_DRAW and all the way by GORILLA_HAYMAKER_DRAWN, and the other arm
- * comes up as a guard. Returns TRUE if the rig is up.
+ * comes up as a guard if its hand is empty. Returns TRUE if the rig is up.
  */
 /datum/action/cooldown/cyberware/gorilla_haymaker/proc/raise_rig(mob/living/carbon/human/bearer)
 	drop_rig()
@@ -303,24 +306,30 @@
 	// the picture is of a body of the usual height
 	if(bearer.alpha < 255 || bearer.invisibility || bearer.mob_height != HUMAN_HEIGHT_MEDIUM)
 		return FALSE
+	// An arm is cut from the picture at its own outline, so one that swings would take the thing in its hand apart and
+	// leave the rest of it behind. A punching hand that holds something gets no drawing, and a full guard hand stays down
+	var/side = punching_side()
+	var/guard = side == "l" ? "r" : "l"
+	if(bearer.get_item_for_held_index(side == "l" ? 1 : 2))
+		return FALSE
+	guard_still = !!bearer.get_item_for_held_index(guard == "l" ? 1 : 2)
 	rig = new(bearer, bearer.dir)
 	if(!rig.rig_arms(GORILLA_HAYMAKER_RIG_HOLD))
 		QDEL_NULL(rig)
 		return FALSE
 	// A step, a turn or a fall: the drawing comes down at once and the lean carries the rest of the wind-up
 	rig.watch_body(CALLBACK(src, PROC_REF(drop_rig)), turns = TRUE)
-	var/side = punching_side()
-	var/guard = side == "l" ? "r" : "l"
 	var/list/poses = swing_poses()
 	// Facing the viewer the arm is drawn back behind its own shoulder
 	var/back_layer = rig.facing == SOUTH ? bearer.layer - 0.01 : null
 	var/datum/chrome_swing_beat/hold = new(GORILLA_HAYMAKER_RIG_HOLD)
 	var/datum/chrome_swing_beat/half = new(GORILLA_HAYMAKER_DRAW - GORILLA_HAYMAKER_RIG_HOLD, CHROME_SWING_EASE_OUT)
 	half.arm(side, rig.pose_of(side, poses[1][1], poses[1][2]), back_layer)
-	half.arm(guard, rig.pose_of(guard, poses[3][1], poses[3][2]))
 	var/datum/chrome_swing_beat/drawn = new(GORILLA_HAYMAKER_DRAWN - GORILLA_HAYMAKER_DRAW, CHROME_SWING_EASE_OUT)
 	drawn.arm(side, rig.pose_of(side, poses[2][1], poses[2][2]))
-	drawn.arm(guard, rig.pose_of(guard, poses[4][1], poses[4][2]))
+	if(!guard_still)
+		half.arm(guard, rig.pose_of(guard, poses[3][1], poses[3][2]))
+		drawn.arm(guard, rig.pose_of(guard, poses[4][1], poses[4][2]))
 	play_rig(list(hold, half, drawn))
 	return TRUE
 
@@ -399,7 +408,8 @@
 			throw_layer = rig.behind_body(side) ? under : max(bearer.layer, victim?.layer) + 0.01
 	var/datum/chrome_swing_beat/throw_beat = new(GORILLA_HAYMAKER_OUT, CHROME_SWING_LINEAR, way[1] * step, way[2] * step)
 	throw_beat.arm(side, thrown, throw_layer)
-	throw_beat.arm(guard, rig.pose_of(guard, poses[6][1], poses[6][2]))
+	if(!guard_still)
+		throw_beat.arm(guard, rig.pose_of(guard, poses[6][1], poses[6][2]))
 	// The fist is there a moment before the blow is due, and stays as it lands
 	var/datum/chrome_swing_beat/dwell_beat = new(GORILLA_HAYMAKER_DWELL, CHROME_SWING_LINEAR, way[1] * step, way[2] * step)
 	// The follow-through carries the fist on the way it was going, and the body half way back
