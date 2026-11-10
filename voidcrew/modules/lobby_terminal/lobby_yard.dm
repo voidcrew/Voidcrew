@@ -406,6 +406,9 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 				yard_opened = TRUE
 				if(ui && !QDELETED(ui))
 					update_static_data(player, ui)
+			// The URL mappings go out with the first SHIPYARD open, before any hull is
+			// picked, so the first preview already resolves to its real asset name.
+			yard_send_mappings()
 			// Sent on every SHIPYARD open, so it may only reach the DB once a minute.
 			if(!yard_refreshed_at || world.time - yard_refreshed_at > LOBBY_YARD_REFRESH_INTERVAL)
 				yard_refresh()
@@ -432,11 +435,16 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	yard_previews_sent += hull_id
 	if(!length(names))
 		return
-	var/datum/asset/previews = get_asset_datum(/datum/asset/simple/ship_previews)
 	SSassets.transport.send_assets(owner, names)
-	if(!yard_mappings_sent && window)
-		yard_mappings_sent = TRUE
-		window.send_raw_message(previews.get_serialized_url_mappings())
+	yard_send_mappings()
+
+/// Sends the preview URL mappings to the browser, once per terminal.
+/datum/lobby_terminal/proc/yard_send_mappings()
+	if(yard_mappings_sent || !window)
+		return
+	yard_mappings_sent = TRUE
+	var/datum/asset/previews = get_asset_datum(/datum/asset/simple/ship_previews)
+	window.send_raw_message(previews.get_serialized_url_mappings())
 
 /**
  * Why a join route can't start right now, or null. Same gates as the Join key: round

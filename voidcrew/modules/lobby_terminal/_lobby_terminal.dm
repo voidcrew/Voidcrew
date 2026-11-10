@@ -7,9 +7,10 @@
  * One /datum/lobby_terminal per client. It owns the unpooled tgui_window bound to that
  * control, the open /datum/tgui, the per-client notice and cached DB values.
  *
- * The classic HUD lobby (/datum/hud/new_player) is still built underneath, unchanged. If
- * the browser never comes up (for example during a 516 resource download stall), the
- * control stays hidden and the classic HUD keeps working.
+ * The classic HUD lobby (/datum/hud/new_player) is still built, unchanged, but its buttons
+ * are taken off the screen while the terminal is in charge, so they never show around or
+ * before it. If the browser never comes up (for example during a 516 resource download
+ * stall), the load timeout puts the classic buttons back as the fallback.
  *
  * Sections: the shell (this file, lobby_tgui.dm, lobby_bezel.dm) declares every section
  * proc below. Section owners override them in their own file without the `proc/` keyword:
@@ -87,6 +88,10 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		return
 	if(!ui || QDELETED(ui))
 		visible = FALSE
+		// A fresh page has none of the yard's previews or URL mappings yet.
+		yard_mappings_sent = FALSE
+		yard_previews_sent = list()
+	set_classic_lobby(FALSE)
 	refresh_polls(user)
 	ui_interact(user)
 	if(load_timer)
@@ -128,10 +133,27 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	if(load_timer)
 		deltimer(load_timer)
 		load_timer = null
+	set_classic_lobby(FALSE)
 	winset(owner, null, list(
 		"[control_id].is-visible" = "true",
 		"mapwindow.status_bar.is-visible" = "false",
 	))
+
+/**
+ * Puts the classic HUD lobby's buttons on or off the owner's screen. The starfield backdrop
+ * always stays. Only touches this client's screen, never the shared HUD lists.
+ */
+/datum/lobby_terminal/proc/set_classic_lobby(shown)
+	var/mob/dead/new_player/player = owner?.mob
+	if(!istype(player) || !player.hud_used)
+		return
+	for(var/atom/movable/screen/lobby/element in player.hud_used.static_inventory)
+		if(istype(element, /atom/movable/screen/lobby/starfield))
+			continue
+		if(shown)
+			owner.screen |= element
+		else
+			owner.screen -= element
 
 /// Any mob change. A new_player Login shows the terminal itself (lobby_bezel.dm); anything else hides it.
 /datum/lobby_terminal/proc/on_mob_login(datum/source, mob/new_mob)
@@ -145,6 +167,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	if(visible || !owner || !istype(owner.mob, /mob/dead/new_player))
 		return
 	log_tgui(owner, "Lobby terminal did not report visible in time", window = window)
+	set_classic_lobby(TRUE)
 	to_chat(owner, span_warning("The dock terminal didn't load. <a href='byond://?src=[REF(src)];lobby_reload=1'>Try again</a>."))
 
 /datum/lobby_terminal/Topic(href, list/href_list)

@@ -156,15 +156,17 @@ export function CrewRecord(props: Props) {
 
   const grey = locked || !!c.applied;
   const sign = '[ SIGN ON ]';
-  const maxBlocks = Math.max(1, Math.floor((w - 20 - sign.length - 4) / 2));
-  // Two rows per berth as in the mockup, one when that would not fit.
-  const step = y + c.jobs.length * 2 + tail <= bottom ? 2 : 1;
+  // The job name gets the whole width up to SIGN ON; the open berths sit on the line under it.
+  const nameW = Math.max(8, w - 3 - sign.length - 5);
+  const maxBlocks = Math.max(1, Math.floor((nameW - 1) / 2));
+  // Name, berths and a spacer per job; drop the spacer when that would not fit.
+  const step = y + c.jobs.length * 3 + tail <= bottom ? 3 : 2;
   const jobRoom = Math.max(1, Math.floor((bottom - y - tail) / step));
   for (const job of c.jobs.slice(0, jobRoom)) {
     const usable = !grey && !!job.ok && c.rejoin_wait <= 0;
     out.push(
       <Put key={`j${job.ref}`} x={x + 3} y={y} cls={grey ? 'dim' : ''}>
-        {pad(job.title.toUpperCase(), 14)}
+        {pad(job.title.toUpperCase(), nameW)}
       </Put>,
     );
     const shown = Math.min(job.open, maxBlocks);
@@ -172,8 +174,8 @@ export function CrewRecord(props: Props) {
       out.push(
         <Blocks
           key={`b${job.ref}-${i}`}
-          x={x + 17 + i * 2}
-          y={y}
+          x={x + 3 + i * 2}
+          y={y + 1}
           n={1}
           cls={grey ? 'dim' : ''}
           frac={0.5}

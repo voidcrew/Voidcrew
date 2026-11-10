@@ -7,8 +7,37 @@
  * draw pixelated; anything smaller is a smooth downscale at a whole number of px per tile,
  * so tiles never land between pixels.
  */
-import type { CSSProperties, ReactNode } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useEffect,
+  useState,
+} from 'react';
 import { resolveAsset } from 'tgui/assets';
+
+/**
+ * A preview image that keeps trying until its file has arrived. The first time a hull is
+ * opened its PNGs (and the URL mappings) are still on their way to the client, so the
+ * first load can fail; retry a few times, re-resolving the asset name each time.
+ */
+function PreviewImg(props: { name: string; style: CSSProperties }) {
+  const { name, style } = props;
+  const [tries, setTries] = useState(0);
+  useEffect(() => setTries(0), [name]);
+  // A new key remounts the <img>, so the browser asks for the file again.
+  return (
+    <img
+      key={tries}
+      src={resolveAsset(name)}
+      style={style}
+      onError={() => {
+        if (tries < 20) {
+          setTimeout(() => setTries((n) => n + 1), 250);
+        }
+      }}
+    />
+  );
+}
 
 import { useGrid } from './term';
 import type { ShipFit } from './YardTab';
@@ -76,9 +105,9 @@ export function ShipPic(props: {
   const rendering = crisp ? 'pixelated' : 'auto';
 
   const layers: ReactNode[] = [
-    <img
+    <PreviewImg
       key="hull"
-      src={resolveAsset(hull.png)}
+      name={hull.png}
       style={{
         position: 'absolute',
         left: 0,
@@ -100,9 +129,9 @@ export function ShipPic(props: {
     const l = (marker[0] - cx) * d;
     const t = (hull.height - (marker[1] - cy) - g.height) * d;
     layers.push(
-      <img
+      <PreviewImg
         key={`m-${slot.key}`}
-        src={resolveAsset(g.png)}
+        name={g.png}
         style={{
           position: 'absolute',
           left: l,

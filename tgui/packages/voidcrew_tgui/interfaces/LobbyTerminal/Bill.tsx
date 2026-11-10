@@ -67,8 +67,12 @@ export function Bill(props: {
       </Put>,
     );
     y += 2;
-    const colW = Math.floor((lw - 6) / 2);
-    const per = Math.max(1, Math.ceil(crew.length / 2));
+    // Two columns only when every job title still fits whole in one; otherwise one column.
+    const longest = crew.reduce((m, [job]) => Math.max(m, job.length), 0);
+    const twoColW = Math.floor((lw - 6) / 2);
+    const columns = twoColW - 5 >= longest ? 2 : 1;
+    const colW = columns === 2 ? twoColW : lw - 6;
+    const per = Math.max(1, Math.ceil(crew.length / columns));
     crew.forEach(([job, n], i) => {
       const cx = 3 + Math.floor(i / per) * colW;
       const cy = y + (i % per);
