@@ -331,6 +331,8 @@ export const BODY_KEYS = [
   'feature_ethcolor',
   'eye_color',
   'voice_pack',
+  'bark_speech_pitch',
+  'bark_speech_speed',
   'backpack',
   'jumpsuit_style',
   'underwear',
@@ -435,6 +437,7 @@ export type LobbyActions = {
   char_dress: { category: string };
   /** Asks for that facing when it isn't cached for the current look. */
   char_turn: { dir: CharDir };
+  char_face: { dir: CharDir };
   /** Answers CharData.confirm. */
   char_confirm: { ok: 0 | 1 };
 };

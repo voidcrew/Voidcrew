@@ -166,6 +166,14 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			char_facing = dir
 			char_preview_request(dir)
 			return TRUE
+		if("char_face")
+			// The client turned to a facing it already had: remember it so the next edit renders that side first. No render.
+			var/dir = lobby_char_int(params["dir"])
+			if(!(dir in GLOB.cardinals))
+				return FALSE
+			char_facing = dir
+			char_preview_dir = dir
+			return FALSE
 		if("char_confirm")
 			return char_answer_confirm(user, prefs, !!lobby_char_int(params["ok"]))
 	return FALSE

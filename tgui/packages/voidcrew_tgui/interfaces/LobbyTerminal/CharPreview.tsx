@@ -19,6 +19,8 @@ const LOOKS = 6;
 const TILE = 32;
 /** An unanswered char_turn may be sent again after this long (ms). */
 const ASK_AGAIN = 3000;
+/** char_face (a turn to a cached facing) goes out at most this often (ms). */
+const FACE_EVERY = 400;
 
 type Look = Partial<Record<CharDir, string>>;
 
@@ -32,6 +34,20 @@ export function CharPreview(props: CellBox & { dir: CharDir }) {
   const cache = useRef(new Map<string, Look>());
   // "key:dir" -> when char_turn asked for it.
   const asked = useRef(new Map<string, number>());
+  // The facing the server last heard about (char_turn or char_face), and the one on screen.
+  const told = useRef<{ sent: CharDir; want: CharDir; timer: number | null }>({
+    sent: 2,
+    want: 2,
+    timer: null,
+  });
+  useEffect(
+    () => () => {
+      if (told.current.timer !== null) {
+        window.clearTimeout(told.current.timer);
+      }
+    },
+    [],
+  );
   const [current, setCurrent] = useState<string | null>(null);
   const [shown, setShown] = useState<string | null>(null);
   const [size, setSize] = useState<[number, number]>([TILE, TILE]);
@@ -58,8 +74,22 @@ export function CharPreview(props: CellBox & { dir: CharDir }) {
   useEffect(() => {
     if (png) {
       setShown(png);
+      // A cached facing: only tell the server which side is on screen, at most every FACE_EVERY ms.
+      const t = told.current;
+      t.want = dir;
+      if (t.timer === null) {
+        t.timer = window.setTimeout(() => {
+          t.timer = null;
+          if (t.want !== t.sent) {
+            t.sent = t.want;
+            act('char_face', { dir: t.want });
+          }
+        }, FACE_EVERY);
+      }
       return;
     }
+    told.current.sent = dir;
+    told.current.want = dir;
     const ask = `${current || ''}:${dir}`;
     const at = asked.current.get(ask);
     if (at === undefined || Date.now() - at > ASK_AGAIN) {

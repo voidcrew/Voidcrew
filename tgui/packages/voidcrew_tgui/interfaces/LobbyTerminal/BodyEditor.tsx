@@ -48,6 +48,8 @@ const LABELS: Record<string, string> = {
   feature_ethcolor: 'GLOW',
   eye_color: 'EYES',
   voice_pack: 'VOICE',
+  bark_speech_pitch: 'PITCH',
+  bark_speech_speed: 'SPEED',
   backpack: 'BAG',
   jumpsuit_style: 'UNIFORM',
   underwear: 'UNDERWEAR',
@@ -93,6 +95,12 @@ const PAIRED: Record<string, string> = {
 
 /** Named lists that show a swatch per choice. */
 const PALETTES = new Set(['skin_tone', 'feature_ethcolor']);
+
+/** Numeric rows and the amount one click moves them. */
+const NUMERIC_STEPS: Record<string, number> = {
+  bark_speech_pitch: 0.1,
+  bark_speech_speed: 0.5,
+};
 
 /** Lists longer than this open the paged list when the value is clicked. */
 const PICK_OVER = 12;
@@ -287,6 +295,36 @@ export function BodyEditor(props: CellBox) {
     });
   };
 
+  /** A numeric preference (bark pitch, speed): steps within the catalog's range. */
+  const numberRow = (key: string): Row => {
+    const spec = (cat?.[key] || {}) as { minimum?: number; maximum?: number };
+    const step = NUMERIC_STEPS[key];
+    const lo = spec.minimum ?? 0;
+    const hi = spec.maximum ?? lo + step * 20;
+    const value = Number(prefs[key]) || lo;
+    const to = (v: number) =>
+      set(key, Math.round(Math.min(hi, Math.max(lo, v)) * 100) / 100);
+    const text = value.toFixed(1);
+    return {
+      key,
+      h: 1,
+      draw: (L, V, ry) => [
+        <Put key={`${key}-l`} x={L} y={ry} cls="dim">
+          {labelOf(key)}
+        </Put>,
+        <Cycler
+          key={`${key}-v`}
+          x={V}
+          y={ry}
+          w={text.length}
+          value={text}
+          onPrev={() => value > lo && to(value - step)}
+          onNext={() => value < hi && to(value + step)}
+        />,
+      ],
+    };
+  };
+
   const colourRow = (key: string): Row => ({
     key,
     h: 1,
@@ -372,6 +410,10 @@ export function BodyEditor(props: CellBox) {
           />,
         ],
       });
+      continue;
+    }
+    if (k in NUMERIC_STEPS) {
+      rows.push(numberRow(k));
       continue;
     }
     const row = isColour(k) ? colourRow(k) : choiceRow(k);

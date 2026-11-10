@@ -198,20 +198,12 @@ export function TraitsEditor(props: CellBox) {
   const filterY = yy;
   yy += 2;
 
-  // The quirk whose words show at the bottom: the hovered row, else the selected one.
-  const shown = hover && info[hover] ? hover : sel && info[sel] ? sel : null;
   const options =
-    sel && taken.includes(sel) && shown === sel
+    sel && info[sel] && taken.includes(sel) && (!hover || hover === sel)
       ? (info[sel].customization_options || []).filter(
           (key) => key in (char.prefs || {}),
         )
       : [];
-  const descLines = shown
-    ? wrap(firstSentence(info[shown].description), aw - 6).slice(
-        0,
-        options.length ? 1 : 2,
-      )
-    : [];
   const descH = 3 + options.length;
 
   const list = Object.keys(info).filter((k) => {
@@ -230,6 +222,16 @@ export function TraitsEditor(props: CellBox) {
   const pages = Math.max(1, Math.ceil(list.length / room));
   const pg = Math.min(pages, page);
   const rows = list.slice((pg - 1) * room, pg * room);
+  // The selected row, else the first one on the page, so the description is never blank.
+  const current = sel && info[sel] ? sel : rows[0] || null;
+  // The quirk whose words show at the bottom: the hovered row, else the current one.
+  const shown = hover && info[hover] ? hover : current;
+  const descLines = shown
+    ? wrap(firstSentence(info[shown].description), aw - 6).slice(
+        0,
+        options.length ? 1 : 2,
+      )
+    : [];
   const py = y + h - 2 - descH;
   const descY = y + h - 1 - descH;
   const recent = fileColors(char.prefs);
@@ -261,7 +263,7 @@ export function TraitsEditor(props: CellBox) {
             taken={isTaken}
             cant={!isTaken && !canAdd(k)}
             locked={isTaken && !canRemove(k)}
-            sel={k === sel}
+            sel={k === current}
             onClick={() => {
               setSel(k);
               toggle(k);

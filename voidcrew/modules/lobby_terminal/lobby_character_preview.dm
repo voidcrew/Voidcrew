@@ -24,8 +24,6 @@
  *
  * Memory: nothing goes into the RSC and nothing is registered with SSassets. Each terminal keeps the last LOBBY_CHAR_CACHE_LOOKS looks, four
  * facings each (about 1-2 KB a facing).
- *
- * Compile with -DLOBBY_CHAR_PREVIEW_DEBUG for the timing log and the headless benchmark.
  */
 
 /// Human dummy slot the preview renders on. Only the worker uses it, so it is never busy.
@@ -201,9 +199,6 @@ GLOBAL_VAR_INIT(lobby_char_forge_serial, 0)
 	// Main-thread time only; the wait on rust-g is a sleep and costs the server nothing.
 	var/cost = timing["setup"] + timing["flat"] + timing["queue"] + timing["b64"]
 	GLOB.lobby_char_render_spend += list(list(world.time, cost))
-#ifdef LOBBY_CHAR_PREVIEW_DEBUG
-	log_world("LOBBY_CHAR_RENDER [owner?.ckey] dir=[dir] cost=[cost]ms setup=[timing["setup"]] flat=[timing["flat"]] queue=[timing["queue"]] wait=[timing["wait_ticks"]]t b64=[timing["b64"]] bytes=[length(png)]")
-#endif
 	if(!png || QDELETED(src))
 		return
 	char_preview_store(key, dir, png)
@@ -363,86 +358,6 @@ GLOBAL_VAR_INIT(lobby_char_forge_serial, 0)
 				mannequin.add_quirk(quirk_type, player, announce = FALSE)
 	return mannequin
 
-#ifdef LOBBY_CHAR_PREVIEW_DEBUG
-/// The plain DM way (getFlatIcon), kept for the benchmark's comparison only.
-/proc/lobby_char_render_flat(datum/preferences/prefs, category, dir, client/player, list/timing)
-	var/start = TICK_USAGE_REAL
-	var/mob/living/carbon/human/dummy/mannequin = lobby_char_dress(prefs, category, player)
-	timing["setup"] = TICK_USAGE_TO_MS(start)
-	start = TICK_USAGE_REAL
-	var/icon/flat = getFlatIcon(mannequin, dir, no_anim = TRUE)
-	timing["flat"] = TICK_USAGE_TO_MS(start)
-	unset_busy_human_dummy(LOBBY_CHAR_DUMMY)
-	GLOB.lobby_char_rendering = FALSE
-	start = TICK_USAGE_REAL
-	. = icon2base64(flat)
-	timing["b64"] = TICK_USAGE_TO_MS(start)
-
-/datum/controller/subsystem/ticker/Initialize()
-	. = ..()
-	Master.sleep_offline_after_initializations = FALSE
-	delay_end = TRUE
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(lobby_char_bench))
-
-/// Headless benchmark: renders species x outfits x facings both ways, logs the cost per stage, writes the PNGs as base64 lines, then soaks.
-/proc/lobby_char_bench()
-	UNTIL(SSticker.current_state >= GAME_STATE_PREGAME)
-	SSticker.SetTimeLeft(-1)
-	sleep(5 SECONDS)
-	var/out = "data/lobby_c2_bench/"
-	fdel(out)
-	var/datum/client_interface/mock = new
-	var/datum/preferences/prefs = new(mock)
-	mock.prefs = prefs
-	var/datum/preference/species_pref = GLOB.preference_entries[/datum/preference/choiced/species]
-	var/list/species = list(SPECIES_HUMAN, SPECIES_LIZARD, SPECIES_MOTH, SPECIES_FELINE, SPECIES_PLASMAMAN, SPECIES_ETHEREAL)
-	var/list/categories = list(JOB_CAT_ENGINEERING, JOB_CAT_SECURITY, JOB_CAT_MEDICAL, JOB_CAT_ASSISTANT, JOB_CAT_COMMAND, JOB_CAT_CARGO)
-	for(var/category in categories)
-		var/datum/job/job = lobby_char_dress_job(category)
-		text2file("DRESS [category] = [job?.title] [job?.outfit]", "[out]timing.txt")
-	for(var/way in list("forge", "flat"))
-		var/list/totals = list()
-		var/count = 0
-		for(var/species_id in species)
-			prefs.write_preference(species_pref, species_id)
-			var/first = TRUE
-			for(var/category in categories)
-				for(var/dir in GLOB.cardinals)
-					var/list/timing = list()
-					var/png = way == "forge" ? lobby_char_render(prefs, category, dir, mock, timing) : lobby_char_render_flat(prefs, category, dir, mock, timing)
-					var/line = ""
-					var/cost = 0
-					for(var/stage in timing)
-						line += " [stage]=[timing[stage]]"
-						if(stage != "wait_ticks")
-							cost += timing[stage]
-					text2file("RENDER [way] [species_id] [category] dir=[dir] cost=[cost][line] bytes=[length(png)][first ? " COLD" : ""]", "[out]timing.txt")
-					text2file("[way]_[species_id]_[category]_[dir]|[png]", "[out]pngs.txt")
-					if(!first)
-						timing["cost"] = cost
-						for(var/stage in timing)
-							totals[stage] += timing[stage]
-						count++
-					first = FALSE
-					stoplag()
-		var/mean = "WARM MEAN [way] over [count]:"
-		for(var/stage in totals)
-			mean += " [stage]=[totals[stage] / count]"
-		text2file(mean, "[out]timing.txt")
-	text2file("SOAK READY [world.timeofday]", "[out]timing.txt")
-	sleep(30 SECONDS)
-	text2file("SOAK START [world.timeofday]", "[out]timing.txt")
-	var/soak_ms = 0
-	for(var/i in 1 to 500)
-		prefs.write_preference(species_pref, species[(i % length(species)) + 1])
-		var/list/timing = list()
-		lobby_char_render(prefs, categories[(i % length(categories)) + 1], GLOB.cardinals[(i % 4) + 1], mock, timing)
-		soak_ms += timing["setup"] + timing["flat"] + timing["queue"] + timing["b64"]
-		stoplag()
-	text2file("SOAK END [world.timeofday] mean=[soak_ms / 500]", "[out]timing.txt")
-	sleep(30 SECONDS)
-	text2file("BENCH DONE", "[out]timing.txt")
-#endif
 
 #undef LOBBY_CHAR_DUMMY
 #undef LOBBY_CHAR_CACHE_LOOKS
