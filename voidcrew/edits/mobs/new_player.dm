@@ -118,6 +118,8 @@
 
 /// Flag to prevent double-clicking ship spawn
 /mob/dead/new_player/var/spawning_ship = FALSE
+/// Crew-leave answer the dock terminal already collected for requisition_free_hull() (TRUE founds a new crew). Null asks with a popup.
+/mob/dead/new_player/var/lobby_form_new = null
 
 /**
  * Callback when player confirms their hull, theme and upgrade selections.
@@ -130,12 +132,13 @@
 	spawn_ship_with_upgrades(template, upgrade_selections, selected_theme)
 
 /**
- * Actually spawn the ship with the given upgrade selections and theme
+ * Actually spawn the ship with the given upgrade selections and theme.
+ * preset_form_new: the crew-leave answer the dock terminal already collected (lobby_terminal/lobby_yard.dm); null asks with a popup.
  */
-/mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme)
+/mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme, preset_form_new = null)
 	if(!template)
 		return select_ship()
-	var/form_new = choose_new_reputation_crew(src)
+	var/form_new = isnull(preset_form_new) ? choose_new_reputation_crew(src) : preset_form_new
 	if(isnull(form_new))
 		return
 	var/datum/voidcrew_crew_record/registration_crew = mind?.recover_reputation_crew()
@@ -193,7 +196,8 @@
 	if(!can_requisition_hull(src))
 		to_chat(src, span_warning("A berth has opened aboard the fleet."))
 		return select_ship()
-	var/form_new = choose_new_reputation_crew(src)
+	var/form_new = isnull(lobby_form_new) ? choose_new_reputation_crew(src) : lobby_form_new
+	lobby_form_new = null
 	if(isnull(form_new))
 		return
 	var/datum/voidcrew_crew_record/registration_crew = mind?.recover_reputation_crew()
