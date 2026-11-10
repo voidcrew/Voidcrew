@@ -78,8 +78,12 @@
 	to_chat(target, span_userdanger("[user] presses the barrel of [src] to your head!"))
 	// Like tg's version: no other shot from this gun while the barrel is held there.
 	fire_cd = TRUE
-	var/held = do_after(user, HV_EXECUTION_WINDUP, target, extra_checks = CALLBACK(src, PROC_REF(hv_execution_holds), user, target), interaction_key = DOAFTER_SOURCE_HV_EXECUTION)
+	// Everyone in view sees the bar over the shooter (finisher_bar.dm), so do_after shows none of its own.
+	var/obj/effect/abstract/hv_exec_bar/bar = hv_exec_bar_start(user, HV_EXECUTION_WINDUP)
+	var/held = do_after(user, HV_EXECUTION_WINDUP, target, progress = FALSE, extra_checks = CALLBACK(src, PROC_REF(hv_execution_holds), user, target), interaction_key = DOAFTER_SOURCE_HV_EXECUTION)
 	fire_cd = FALSE
+	if(!QDELETED(bar))
+		bar.finish(held && !QDELETED(src) && !QDELETED(user) && !QDELETED(target))
 	if(!held || QDELETED(src) || QDELETED(user) || QDELETED(target))
 		return
 	hv_fire_execution(user, target, params)

@@ -718,7 +718,7 @@
 	var/mob/living/jumper = owner
 	if(QDELETED(jumper))
 		return
-	cyberware_leap_touchdown_fx(jumper, 20, 0.1 SECONDS)
+	cyberware_leap_touchdown_fx(jumper)
 	var/turf/final = destination
 	if(QDELETED(final) || final.is_blocked_turf())
 		final = null

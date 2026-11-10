@@ -44,6 +44,8 @@
 #define CHROME_ANIM_BLADE_LAYER (-(HANDS_LAYER - 0.5))
 /// Layer for arcs, sparks and crackle: over everything the bearer wears.
 #define CHROME_ANIM_TOP_LAYER (-(HIGHEST_LAYER - 0.5))
+/// The mask on a far arm's picture: the near hand's held item, cut out of it.
+#define CHROME_ANIM_ARM_COVER_FILTER "chrome_arm_cover"
 
 // =========================================================================
 // THE HOLDER
@@ -62,15 +64,20 @@
 	blocks_emissive = EMISSIVE_BLOCK_NONE
 	/// What we are drawn on.
 	var/atom/movable/bearer
+	/// The arm this is a picture of, "left" or "right", once it is sorted as one arm's (sort_as_arm()).
+	var/arm_side
+	/// What the near hand holds while this is the far arm's picture: it is cut out of it.
+	var/obj/item/arm_cover
 
 /obj/effect/abstract/cyberware_anim/Destroy()
 	detach()
 	return ..()
 
 /obj/effect/abstract/cyberware_anim/proc/detach()
+	set_arm_cover(null)
 	if(!bearer)
 		return
-	UnregisterSignal(bearer, COMSIG_QDELETING)
+	UnregisterSignal(bearer, list(COMSIG_QDELETING, COMSIG_ATOM_POST_DIR_CHANGE, COMSIG_MOB_UPDATE_HELD_ITEMS))
 	bearer.vis_contents -= src
 	bearer = null
 
@@ -100,6 +107,109 @@
 	bearer.vis_contents += holder
 	QDEL_IN(holder, lifetime)
 	return holder
+
+// =========================================================================
+// ONE ARM'S PICTURE
+// =========================================================================
+
+/**
+ * Sorts this picture as one of the [side] ("left" or "right") arm's from now on. A picture in vis_contents
+ * draws over every overlay of its bearer whatever its own float layer, held items included, and pictures draw
+ * over one another in the order they went in, whatever their float layers. So side on a far arm's picture
+ * would cover the near arm. Here what the near hand holds is cut out of the far arm's picture with a mask of
+ * that item's held sprite, for as long as it is drawn in that hand, and the near arm's pictures are put back
+ * on over it (under_near_arm()). Kept right as the bearer turns and as the hands redraw. The art itself
+ * leaves out the body where it hides a far arm.
+ */
+/obj/effect/abstract/cyberware_anim/proc/sort_as_arm(side)
+	if(QDELETED(bearer) || arm_side || !side)
+		return
+	arm_side = side
+	RegisterSignal(bearer, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_arm_bearer_changed))
+	RegisterSignal(bearer, COMSIG_MOB_UPDATE_HELD_ITEMS, PROC_REF(on_arm_bearer_changed))
+	fit_to_facing()
+
+/// Sorts an arm's picture for the way its bearer faces and what the other hand shows right now.
+/obj/effect/abstract/cyberware_anim/proc/fit_to_facing()
+	if(QDELETED(bearer) || !arm_side)
+		return
+	var/far = (bearer.dir == EAST && arm_side == "left") || (bearer.dir == WEST && arm_side == "right")
+	var/obj/item/near_item = far ? near_held_item() : null
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/near_blade = near_item
+	// A blade hidden under a picture of its own is not in the hand to be cut out: that picture is in front.
+	if(istype(near_blade) && world.time < near_blade.inhand_hidden_until)
+		near_item = null
+	set_arm_cover(near_item)
+	if(far)
+		under_near_arm()
+
+/**
+ * Puts the near arm's pictures back on over this far arm's picture: each is taken off its bearer and put
+ * straight back, in the order they were in. A picture put back in the same tick goes on playing where it was.
+ */
+/obj/effect/abstract/cyberware_anim/proc/under_near_arm()
+	var/list/near_pictures
+	for(var/obj/effect/abstract/cyberware_anim/other in bearer.vis_contents)
+		if(other.arm_side && other.arm_side != arm_side)
+			LAZYADD(near_pictures, other)
+	for(var/obj/effect/abstract/cyberware_anim/other as anything in near_pictures)
+		bearer.vis_contents -= other
+		bearer.vis_contents += other
+
+/// What the bearer holds in the hand on the other side from this arm.
+/obj/effect/abstract/cyberware_anim/proc/near_held_item()
+	var/mob/living/holder = bearer
+	if(!isliving(holder))
+		return null
+	for(var/obj/item/held in holder.held_items)
+		if(IS_LEFT_INDEX(holder.get_held_index_of_item(held)) != (arm_side == "left"))
+			return held
+	return null
+
+/// Cuts [item]'s held sprite out of this picture, or nothing out of it if null.
+/obj/effect/abstract/cyberware_anim/proc/set_arm_cover(obj/item/item)
+	if(arm_cover)
+		UnregisterSignal(arm_cover, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+	var/icon/mask = item && cyberware_held_mask(item, bearer)
+	arm_cover = mask ? item : null
+	if(arm_cover)
+		RegisterSignals(arm_cover, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_arm_cover_gone))
+		add_filter(CHROME_ANIM_ARM_COVER_FILTER, 1, alpha_mask_filter(icon = mask, flags = MASK_INVERSE))
+	else if(arm_side)
+		remove_filter(CHROME_ANIM_ARM_COVER_FILTER)
+
+/obj/effect/abstract/cyberware_anim/proc/on_arm_cover_gone(datum/source)
+	SIGNAL_HANDLER
+	set_arm_cover(null)
+
+/obj/effect/abstract/cyberware_anim/proc/on_arm_bearer_changed(datum/source)
+	SIGNAL_HANDLER
+	fit_to_facing()
+
+/**
+ * The shape [item] has in [holder]'s hand, facing the way [holder] faces now, as a mask: the first frame of
+ * its held sprite. Null if it has none. Each sprite and facing is made once.
+ */
+/proc/cyberware_held_mask(obj/item/item, mob/living/holder)
+	if(!isliving(holder))
+		return null
+	var/index = holder.get_held_index_of_item(item)
+	if(!index)
+		return null
+	var/file = IS_RIGHT_INDEX(index) ? item.righthand_file : item.lefthand_file
+	var/state = item.inhand_icon_state || item.icon_state
+	if(!file || !state || !icon_exists(file, state))
+		return null
+	var/static/list/masks = list()
+	var/list/by_state = masks[file]
+	if(!by_state)
+		by_state = list()
+		masks[file] = by_state
+	var/key = "[state]-[holder.dir]"
+	. = by_state[key]
+	if(!.)
+		. = icon(file, state, holder.dir, 1)
+		by_state[key] = .
 
 // =========================================================================
 // WORN LOOKS
@@ -248,12 +358,23 @@
 
 /// The swing state for this housing, or null when the sheet has none.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/blade_anim_state(kind)
-	var/state = "[aug_overlay]_[kind]_[zone == BODY_ZONE_L_ARM ? "left" : "right"]"
+	var/state = "[aug_overlay]_[kind]_[arm_side()]"
 	return icon_exists(CYBERWARE_ANIM_LARGE_ICON, state) ? state : null
 
 /// The swing playing on the bearer right now, if any.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/blade_anim()
 	return blade_anim_ref?.resolve()
+
+/// The arm this housing is in, as the art names it.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/arm_side()
+	return zone == BODY_ZONE_L_ARM ? "left" : "right"
+
+/// Plays [state] on the bearer for [lifetime] as this arm's picture: side on, the far arm's goes behind the near arm.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/play_blade_anim(state, lifetime)
+	var/obj/effect/abstract/cyberware_anim/swing = cyberware_anim_play(owner, CYBERWARE_ANIM_LARGE_ICON, state, CHROME_ANIM_BLADE_LAYER, lifetime)
+	swing?.sort_as_arm(arm_side())
+	blade_anim_ref = WEAKREF(swing)
+	return swing
 
 /// Stops any swing and brings the folded housing back if it was waiting.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/stop_blade_anim()
@@ -270,7 +391,7 @@
 	if(!state || !owner)
 		return
 	stop_blade_anim()
-	blade_anim_ref = WEAKREF(cyberware_anim_play(owner, CYBERWARE_ANIM_LARGE_ICON, state, CHROME_ANIM_BLADE_LAYER, BLADE_UNFOLD_TIME))
+	play_blade_anim(state, BLADE_UNFOLD_TIME)
 	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/held_blade = blade
 	if(istype(held_blade))
 		held_blade.hide_inhand_for(BLADE_UNFOLD_SWING)
@@ -300,7 +421,7 @@
 	if(!state || !owner)
 		return
 	stop_blade_anim()
-	blade_anim_ref = WEAKREF(cyberware_anim_play(owner, CYBERWARE_ANIM_LARGE_ICON, state, CHROME_ANIM_BLADE_LAYER, BLADE_FOLD_TIME))
+	play_blade_anim(state, BLADE_FOLD_TIME)
 	fold_hide_until = world.time + BLADE_FOLD_SWING
 	fold_timer = addtimer(CALLBACK(src, PROC_REF(end_fold_hide)), BLADE_FOLD_SWING, TIMER_STOPPABLE)
 	blade_flash(0.5, BLADE_FOLD_SWING)
@@ -546,9 +667,30 @@
 		if(PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE)
 			continue
 		dressed += part
-	dressed += image(icon = CYBERWARE_ANIM_ICON, icon_state = state, layer = image_layer)
-	dressed += emissive_appearance(CYBERWARE_ANIM_ICON, "[state]_e", limb?.owner || limb, image_layer)
+	dressed += cyberware_spine_node_images(CYBERWARE_ANIM_ICON, state, node_look != "dead", image_layer, limb?.owner || limb)
 	return dressed
+
+/**
+ * The images of one spine node frame. Lit nodes shine through whatever is worn on the back: they draw at
+ * CYBERWARE_SPINE_SHINE_LAYER, just over the backpack. Dark nodes stay with the housing, under the clothes. A
+ * frame with lit and dark nodes both is split in its sheet into "[state]_lit" and "[state]_dark".
+ */
+/proc/cyberware_spine_node_images(icon_file, state, lit, image_layer, atom/glow_owner)
+	var/list/images = list()
+	var/has_glow = icon_exists(icon_file, "[state]_e")
+	if(!lit)
+		images += image(icon = icon_file, icon_state = state, layer = image_layer)
+		if(has_glow)
+			images += emissive_appearance(icon_file, "[state]_e", glow_owner, image_layer)
+		return images
+	var/lit_state = state
+	if(icon_exists(icon_file, "[state]_lit"))
+		lit_state = "[state]_lit"
+		images += image(icon = icon_file, icon_state = "[state]_dark", layer = image_layer)
+	images += image(icon = icon_file, icon_state = lit_state, layer = -CYBERWARE_SPINE_SHINE_LAYER)
+	if(has_glow)
+		images += emissive_appearance(icon_file, "[state]_e", glow_owner, -CYBERWARE_SPINE_SHINE_LAYER)
+	return images
 
 /// Plays node frames one after another, then holds the last.
 /obj/item/organ/cyberimp/cyberware/cascade/proc/play_node_looks(list/looks)
@@ -920,3 +1062,4 @@
 #undef CHROME_LOOK_WARM
 #undef CHROME_ANIM_BLADE_LAYER
 #undef CHROME_ANIM_TOP_LAYER
+#undef CHROME_ANIM_ARM_COVER_FILTER

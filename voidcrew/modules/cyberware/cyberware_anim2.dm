@@ -8,15 +8,14 @@
  *
  * - Redline Burn: nodes flash white and run red-hot, eyes flood red, a red
  *   halo breathes round the body and the roar rolls a ring across the floor.
- *   The crash vents steam from the back, cools the nodes to grey and slumps
- *   the body a little.
+ *   In the crash the outline gutters out, the spine runs white and the charge
+ *   earths through the deck in arcs that fade; the nodes cool to grey and the
+ *   body slumps a little.
  * - Lazarus Node: a magenta charge crawls over the body through the windup,
  *   then a white jolt, a burst and a little spring as they come up.
  * - Leaps: the Hopper crouches, kicks up dust and arcs over to where it lands,
  *   with a shadow running along the floor under it. The Piledriver glides to
  *   its mark and slams down with a ring and a cracked floor.
- * - Cyberdeck: packets run up the trace, a door glitches when a hack lands on
- *   it, and Ping sweeps a ring out and outlines what answered.
  * - Weapon trails: a Scorch cut throws embers; the Widowline Arc's wire
  *   lashes out, a small crackle runs along it and sparks burst where it hit.
  * - Brownout: worn chrome stutters, warms and dims together, and stutters
@@ -31,7 +30,6 @@
 
 #define CYBERWARE_ANIM2_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim2.dmi'
 #define CYBERWARE_ANIM2_LARGE_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim2_large.dmi'
-#define CYBERWARE_ANIM_PING_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim_ping.dmi'
 #define CHROME_CRADLE_RIG_ICON 'voidcrew/modules/cyberware/icons/chrome_cradle_rig.dmi'
 
 /// Layer for flashes, arcs and bursts: over everything the bearer wears.
@@ -91,7 +89,9 @@
 		return
 	var/static/list/flash = list(0.4, 0, 0, 0, 0, 0.4, 0, 0, 0, 0, 0.4, 0, 0, 0, 0, 1, 0.6, 0.6, 0.62, 0)
 	target.add_filter(CHROME_FLASH_FILTER, 43, color_matrix_filter(flash))
-	animate(target.get_filter(CHROME_FLASH_FILTER), color = COLOR_MATRIX_IDENTITY, time = fade_time)
+	// Beside whatever else is moving the target: a plain animate() on its filter would end a fall or a shove
+	// already under way, and they would snap to the floor.
+	animate(target.get_filter(CHROME_FLASH_FILTER), color = COLOR_MATRIX_IDENTITY, time = fade_time, flags = ANIMATION_PARALLEL)
 	// A rebuild of the target's filters lands on the faded end, not the flash.
 	target.filter_data[CHROME_FLASH_FILTER]["color"] = COLOR_MATRIX_IDENTITY
 	addtimer(CALLBACK(target, TYPE_PROC_REF(/datum, remove_filter), CHROME_FLASH_FILTER), fade_time + 0.5)
@@ -99,7 +99,7 @@
 #undef CHROME_FLASH_FILTER
 
 // =========================================================================
-// GLITCH (doors, and a patient booting new chrome)
+// GLITCH (a patient booting new chrome)
 // =========================================================================
 
 #define CHROME_GLITCH_SLICES "cyberware_glitch_slices"
@@ -148,19 +148,38 @@
 // =========================================================================
 
 #define REDLINE_LOOK_FLASH "flash"
+/// The crash's first instant: the whole core lit white down the spine.
+#define REDLINE_LOOK_SURGE "surge"
 #define REDLINE_LOOK_HOT "hot"
 #define REDLINE_LOOK_COOL1 "cool1"
 #define REDLINE_LOOK_COOL2 "cool2"
 #define REDLINE_SAG_FILTER "cyberware_redline_sag"
 /// How long the white kick-in flash holds before the nodes run red.
 #define REDLINE_FLASH_TIME (0.15 SECONDS)
-/// From the crash to the nodes going grey.
-#define REDLINE_COOL_STEP (0.6 SECONDS)
-/// How long the back vents steam, and how long the last of it hangs.
-#define REDLINE_STEAM_TIME (1.2 SECONDS)
-#define REDLINE_STEAM_LIFE (2.4 SECONDS)
+/// The crash: how long the spine runs white before the charge leaves it for the floor.
+#define REDLINE_SPINE_FLASH (0.1 SECONDS)
+/// From the discharge to the nodes going grey.
+#define REDLINE_COOL_STEP (0.35 SECONDS)
+/// The outline's last stutters, drawn by a filter of its own once the window has taken its outline away.
+#define REDLINE_GUTTER_FILTER "cyberware_redline_gutter"
+/// The window's outline colour (CYBERWARE_REDLINE_OUTLINE_COLOR, ware_legend.dm), lit and out.
+#define REDLINE_GUTTER_ON "#ff2a2a"
+#define REDLINE_GUTTER_OUT "#ff2a2a00"
+/// How long that outline stands at full strength before its first stutter.
+#define REDLINE_GUTTER_HOLD (0.1 SECONDS)
+/// How long the arcs stand on the deck, how often they change, and how long their tracks take to glow, cool and
+/// fade after them.
+#define REDLINE_ARC_TIME (0.15 SECONDS)
+#define REDLINE_ARC_FLICKER (0.05 SECONDS)
+#define REDLINE_GLOW_TIME (2.2 SECONDS)
+/// How long the body takes to straighten up out of the slump when the crash ends.
+#define REDLINE_STRAIGHTEN_TIME (0.3 SECONDS)
+/// The sheet of deck effects, 96 px and centred on the bearer's tile.
+#define CYBERWARE_GROUND_ICON 'voidcrew/modules/cyberware/icons/cyberware_ground.dmi'
 /// The eyes during the burn.
 #define REDLINE_EYE_COLOR "#ff2a1a"
+/// The eyes as the red drains out of them.
+#define REDLINE_EYE_DYING "#8a2420"
 
 /obj/item/organ/cyberimp/cyberware/redline
 	/// The node look drawn over the core, or null for the plain one.
@@ -171,8 +190,6 @@
 	var/datum/weakref/burn_fx_ref
 	/// The red light the burn throws.
 	var/datum/weakref/burn_light_ref
-	/// The steam venting off the back in the crash.
-	var/datum/weakref/burn_steam_ref
 
 /obj/item/organ/cyberimp/cyberware/redline/cyberware_worn_key()
 	return "[..()]-[burn_look]"
@@ -189,16 +206,17 @@
 		if(PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE)
 			continue
 		dressed += part
-	var/atom/glow_owner = limb?.owner || limb
-	dressed += image(icon = CYBERWARE_ANIM2_ICON, icon_state = state, layer = image_layer)
-	if(icon_exists(CYBERWARE_ANIM2_ICON, "[state]_e"))
-		dressed += emissive_appearance(CYBERWARE_ANIM2_ICON, "[state]_e", glow_owner, image_layer)
-	if(burn_look == REDLINE_LOOK_HOT || burn_look == REDLINE_LOOK_FLASH)
+	// Nodes that still glow shine through whatever is worn on the back; cold ones stay under it.
+	dressed += cyberware_spine_node_images(CYBERWARE_ANIM2_ICON, state, burn_look != REDLINE_LOOK_COOL2, image_layer, limb?.owner || limb)
+	if(burn_look == REDLINE_LOOK_HOT || burn_look == REDLINE_LOOK_FLASH || burn_look == REDLINE_LOOK_SURGE)
 		dressed += redline_eyes(limb, image_layer)
+	else if(burn_look == REDLINE_LOOK_COOL1)
+		// The crash: the red drains out of them.
+		dressed += redline_eyes(limb, image_layer, REDLINE_EYE_DYING, FALSE)
 	return dressed
 
 /// Red eyes for the burn, drawn from the bearer's own eye sprites so they sit where their eyes are.
-/obj/item/organ/cyberimp/cyberware/redline/proc/redline_eyes(obj/item/bodypart/limb, image_layer)
+/obj/item/organ/cyberimp/cyberware/redline/proc/redline_eyes(obj/item/bodypart/limb, image_layer, eye_color = REDLINE_EYE_COLOR, glow = TRUE)
 	var/mob/living/carbon/human/bearer = limb?.owner
 	if(!istype(bearer))
 		return list()
@@ -211,12 +229,15 @@
 	var/list/eye_images = list()
 	for(var/side in list("_l", "_r"))
 		var/mutable_appearance/eye = mutable_appearance('icons/mob/human/human_face.dmi', "[eyes.eye_icon_state][side]", image_layer, bearer)
-		eye.color = REDLINE_EYE_COLOR
-		var/mutable_appearance/eye_glow = emissive_appearance(eye.icon, eye.icon_state, bearer, image_layer)
+		eye.color = eye_color
 		if(head.worn_face_offset)
 			head.worn_face_offset.apply_offset(eye)
-			head.worn_face_offset.apply_offset(eye_glow)
 		eye_images += eye
+		if(!glow)
+			continue
+		var/mutable_appearance/eye_glow = emissive_appearance(eye.icon, eye.icon_state, bearer, image_layer)
+		if(head.worn_face_offset)
+			head.worn_face_offset.apply_offset(eye_glow)
 		eye_images += eye_glow
 	return eye_images
 
@@ -249,19 +270,71 @@
 	if(here && reach > 0)
 		new /obj/effect/temp_visual/circle_wave/cyberware_roar(here, reach)
 
-/// The crash: the halo goes out, the nodes cool, steam vents from the back and the body slumps.
+/**
+ * The crash. The governor slams shut and the charge it was holding has to go somewhere: the outline gutters out,
+ * the red drains from the eyes, the spine runs white from neck to hips, and then the charge earths through the
+ * deck (see [/obj/item/organ/cyberimp/cyberware/redline/proc/ground_burn]). The body slumps.
+ */
 /obj/item/organ/cyberimp/cyberware/redline/proc/play_burn_crash(mob/living/carbon/bearer)
 	if(QDELETED(bearer) || bearer != owner)
 		return
 	stop_burn_glow(bearer)
 	watch_burn_bearer(bearer)
-	set_burn_look(REDLINE_LOOK_COOL1)
-	queue_burn_look(REDLINE_LOOK_COOL2, REDLINE_COOL_STEP)
-	qdel(burn_steam_ref?.resolve())
-	burn_steam_ref = WEAKREF(cyberware_anim_particles(bearer, /particles/smoke/steam/cyberware_vent, CHROME_ANIM2_TOP_LAYER, REDLINE_STEAM_TIME, REDLINE_STEAM_LIFE))
+	if(burn_look_timer)
+		deltimer(burn_look_timer)
+	set_burn_look(REDLINE_LOOK_SURGE)
+	burn_look_timer = addtimer(CALLBACK(src, PROC_REF(ground_burn)), REDLINE_SPINE_FLASH, TIMER_STOPPABLE)
+	// The window took its outline with it. Ours holds for a beat, then stutters out (gutter_burn). Both filters go
+	// on before the slump starts to move: adding a filter rebuilds every filter on the body from its stored values
+	// and drops whatever was animating.
+	bearer.add_filter(REDLINE_GUTTER_FILTER, 2, outline_filter(1, REDLINE_GUTTER_ON))
 	bearer.add_filter(REDLINE_SAG_FILTER, 31, displacement_map_filter(icon(CYBERWARE_ANIM2_ICON, "sag_map"), size = 0))
 	animate(bearer.get_filter(REDLINE_SAG_FILTER), size = 2, time = 0.3 SECONDS, easing = QUAD_EASING | EASE_OUT)
 	bearer.filter_data[REDLINE_SAG_FILTER]["size"] = 2
+	addtimer(CALLBACK(src, PROC_REF(gutter_burn), WEAKREF(bearer), 1), REDLINE_GUTTER_HOLD)
+
+/**
+ * The outline's last stutters, one a call: out, back dimmer, out, back dimmer still, gone.
+ *
+ * Stepped on a timer and stored as it goes, not animated. A second filter animation started on a body in the same
+ * instant as the slump's does not play, and an outline left lit in its stored values comes back at full strength
+ * the next time anything rebuilds the body's filters.
+ */
+/obj/item/organ/cyberimp/cyberware/redline/proc/gutter_burn(datum/weakref/bearer_ref, step)
+	var/static/list/colours = list(REDLINE_GUTTER_OUT, "#ff2a2ab4", REDLINE_GUTTER_OUT, "#ff2a2a70")
+	var/static/list/holds = list(0.05 SECONDS, 0.1 SECONDS, 0.05 SECONDS, 0.05 SECONDS)
+	var/mob/living/carbon/bearer = bearer_ref?.resolve()
+	if(QDELETED(bearer) || !bearer.get_filter(REDLINE_GUTTER_FILTER))
+		return
+	if(step > length(colours))
+		bearer.remove_filter(REDLINE_GUTTER_FILTER)
+		return
+	bearer.modify_filter(REDLINE_GUTTER_FILTER, list("color" = colours[step]))
+	addtimer(CALLBACK(src, PROC_REF(gutter_burn), bearer_ref, step + 1), holds[step])
+
+/**
+ * The charge leaves the spine for the floor. The nodes cool behind it, arcs crawl out across the deck under
+ * everybody's feet, and on a bearer still standing it runs down the legs first: behind the body, and in front of
+ * it only when the back is to the camera.
+ */
+/obj/item/organ/cyberimp/cyberware/redline/proc/ground_burn()
+	burn_look_timer = null
+	var/mob/living/carbon/bearer = burn_fx_ref?.resolve()
+	if(QDELETED(bearer) || bearer != owner)
+		return
+	set_burn_look(REDLINE_LOOK_COOL1)
+	queue_burn_look(REDLINE_LOOK_COOL2, REDLINE_COOL_STEP)
+	var/turf/deck = get_turf(bearer)
+	if(!isturf(bearer.loc) || isgroundlessturf(deck))
+		return
+	var/lying = bearer.body_position == LYING_DOWN
+	new /obj/effect/temp_visual/cyberware_redline_ground(deck, lying)
+	playsound(deck, SFX_SPARKS, 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	if(lying)
+		return
+	var/obj/effect/abstract/cyberware_anim/leg = cyberware_anim_play(bearer, CYBERWARE_ANIM2_ICON, "redline_legarc", CHROME_ANIM2_TOP_LAYER, REDLINE_ARC_TIME, glow = TRUE)
+	if(leg && !(bearer.dir & NORTH))
+		leg.vis_flags |= VIS_UNDERLAY
 
 /// Takes the light off; the nodes and the slump stay.
 /obj/item/organ/cyberimp/cyberware/redline/proc/stop_burn_glow(mob/living/carbon/bearer)
@@ -276,24 +349,37 @@
 	SIGNAL_HANDLER
 	clear_burn_fx()
 
-/// Back to the plain core: no node look, no halo, light, steam or slump.
-/obj/item/organ/cyberimp/cyberware/redline/proc/clear_burn_fx()
+/// Back to the plain core: no node look, no halo, light or slump. [straighten] eases a living body up out of the
+/// slump (the crash running its course); otherwise the slump goes at once.
+/obj/item/organ/cyberimp/cyberware/redline/proc/clear_burn_fx(straighten = FALSE)
 	if(burn_look_timer)
 		deltimer(burn_look_timer)
 		burn_look_timer = null
-	qdel(burn_steam_ref?.resolve())
-	burn_steam_ref = null
 	var/mob/living/carbon/bearer = burn_fx_ref?.resolve()
 	burn_fx_ref = null
 	stop_burn_glow(bearer)
 	if(!QDELETED(bearer))
 		UnregisterSignal(bearer, COMSIG_LIVING_DEATH)
-		bearer.remove_filter(REDLINE_SAG_FILTER)
+		bearer.remove_filter(REDLINE_GUTTER_FILTER)
+		var/sag = bearer.get_filter(REDLINE_SAG_FILTER)
+		if(sag && straighten && bearer.stat != DEAD)
+			animate(sag, size = 0, time = REDLINE_STRAIGHTEN_TIME, easing = QUAD_EASING | EASE_OUT)
+			bearer.filter_data[REDLINE_SAG_FILTER]["size"] = 0
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_redline_straightened), WEAKREF(bearer)), REDLINE_STRAIGHTEN_TIME)
+		else
+			bearer.remove_filter(REDLINE_SAG_FILTER)
 	if(isnull(burn_look))
 		return
 	burn_look = null
 	if(!QDELETED(bearer))
 		bearer.update_body_parts()
+
+/// The body is upright again: the slump's filter, flat by now, comes off. A slump put on since is left alone.
+/proc/cyberware_redline_straightened(datum/weakref/bearer_ref)
+	var/mob/living/carbon/bearer = bearer_ref?.resolve()
+	if(QDELETED(bearer) || bearer.filter_data?[REDLINE_SAG_FILTER]?["size"])
+		return
+	bearer.remove_filter(REDLINE_SAG_FILTER)
 
 /// The core in the bearer's OS slot, if it is a Redline model.
 /proc/cyberware_bearer_redline(mob/living/bearer)
@@ -323,48 +409,91 @@
 
 /// Hook for the crash's on_remove().
 /proc/cyberware_redline_crash_end_fx(mob/living/bearer)
-	cyberware_bearer_redline(bearer)?.clear_burn_fx()
+	cyberware_bearer_redline(bearer)?.clear_burn_fx(straighten = TRUE)
 
 /obj/item/organ/cyberimp/cyberware/redline/cyberware_anim_clear(mob/living/carbon/old_owner)
 	. = ..()
 	clear_burn_fx()
 
-/// The roar's ring, out as far as the roar reaches.
+/// The roar's ring, out as far as the roar reaches. It rolls across the floor, so it is drawn on the floor: under
+/// everyone and everything standing in its way, whichever side of the bearer they are on.
 /obj/effect/temp_visual/circle_wave/cyberware_roar
 	color = "#ff4a2a"
 	max_alpha = 200
 	duration = 0.5 SECONDS
-	layer = BELOW_MOB_LAYER
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
 
 /obj/effect/temp_visual/circle_wave/cyberware_roar/Initialize(mapload, reach = 5)
 	// The 64 px ring, scaled so its edge lands [reach] tiles out.
 	amount_to_scale = reach + 0.5
 	return ..()
 
-/// Steam off the back of a crashing core.
-/particles/smoke/steam/cyberware_vent
-	icon_state = list("steam_1" = 1, "steam_2" = 1, "steam_3" = 2)
-	count = 50
-	spawning = 3
-	lifespan = 1 SECONDS
-	fade = 0.6 SECONDS
-	position = generator(GEN_BOX, list(-7, 2, 0), list(7, 8, 0), UNIFORM_RAND)
-	velocity = generator(GEN_VECTOR, list(-0.6, 0.8, 0), list(0.6, 1.5, 0), NORMAL_RAND)
-	gravity = list(0, 0.2)
-	friction = 0.15
-	drift = generator(GEN_SPHERE, 0, 0.3, NORMAL_RAND)
-	grow = 0.05
-	scale = 0.75
+/**
+ * The Redline's charge earthing through the deck. Arcs crawl out across the floor under everybody's feet and
+ * flicker; the tracks they leave glow, cool to a scorch and fade to nothing. Nothing of it outlasts its duration.
+ *
+ * It is floor: on the floor plane, and shifted with pixel_w and pixel_z so the 96 px picture stays on its own
+ * tile's row. Shifted with pixel_y it would sort a row forward, and its glow would light the bearer through.
+ */
+/obj/effect/temp_visual/cyberware_redline_ground
+	icon = CYBERWARE_GROUND_ICON
+	icon_state = "redline_arcs_standing_1"
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
+	pixel_w = -32
+	pixel_z = -32
+	randomdir = FALSE
+	duration = REDLINE_ARC_TIME + REDLINE_GLOW_TIME
+	light_range = 2
+	light_power = 0.9
+	light_color = "#ff5a3a"
+	/// Where on the tile the charge reaches the deck: "standing" at the feet, "lying" along the length of the back.
+	var/shape = "standing"
+
+/obj/effect/temp_visual/cyberware_redline_ground/Initialize(mapload, lying = FALSE)
+	. = ..()
+	shape = lying ? "lying" : "standing"
+	show_arcs(1)
+	addtimer(CALLBACK(src, PROC_REF(show_arcs), 2), REDLINE_ARC_FLICKER)
+	addtimer(CALLBACK(src, PROC_REF(show_arcs), 1), REDLINE_ARC_FLICKER * 2)
+	addtimer(CALLBACK(src, PROC_REF(leave_glow)), REDLINE_ARC_TIME)
+
+/// One of the two arc pictures, and the same picture again as its glow, so the two are never out of step.
+/obj/effect/temp_visual/cyberware_redline_ground/proc/show_arcs(picture)
+	icon_state = "redline_arcs_[shape]_[picture]"
+	cut_overlays()
+	add_overlay(emissive_appearance(icon, icon_state, src))
+
+/// The arcs are gone: their tracks glow, cool and fade.
+/obj/effect/temp_visual/cyberware_redline_ground/proc/leave_glow()
+	icon_state = "redline_glow_[shape]"
+	cut_overlays()
+	add_overlay(emissive_appearance(icon, icon_state, src, alpha = 150))
+	set_light(0)
+	animate(src, alpha = 255, time = REDLINE_GLOW_TIME * 0.15)
+	animate(color = "#6a5350", time = REDLINE_GLOW_TIME * 0.3)
+	animate(alpha = 0, time = REDLINE_GLOW_TIME * 0.5)
 
 #undef REDLINE_LOOK_FLASH
+#undef REDLINE_LOOK_SURGE
 #undef REDLINE_LOOK_HOT
 #undef REDLINE_LOOK_COOL1
 #undef REDLINE_LOOK_COOL2
 #undef REDLINE_SAG_FILTER
 #undef REDLINE_FLASH_TIME
 #undef REDLINE_COOL_STEP
-#undef REDLINE_STEAM_TIME
-#undef REDLINE_STEAM_LIFE
+#undef REDLINE_SPINE_FLASH
+#undef REDLINE_GUTTER_FILTER
+#undef REDLINE_GUTTER_ON
+#undef REDLINE_GUTTER_OUT
+#undef REDLINE_GUTTER_HOLD
+#undef REDLINE_ARC_TIME
+#undef REDLINE_ARC_FLICKER
+#undef REDLINE_STRAIGHTEN_TIME
+#undef REDLINE_GLOW_TIME
+#undef REDLINE_EYE_DYING
+#undef CYBERWARE_GROUND_ICON
 #undef REDLINE_EYE_COLOR
 
 // =========================================================================
@@ -437,18 +566,38 @@
 /// Set at take-off to when the leap should be down. A leap whose landing never
 /// runs is put back on the floor shortly after.
 /mob/living/var/cyberware_leap_until = 0
+/// How the body's steps were animated before a leap switched that off, to put back once it has landed.
+/mob/living/var/cyberware_leap_steps
+
+/// Where a leaping body draws among the things on its row: over anyone standing there, since it is above them.
+#define CYBERWARE_LEAP_LAYER (ABOVE_MOB_LAYER + 0.05)
+/// How long a leap that holds its height takes to come down at the end.
+#define CYBERWARE_LEAP_SLAM (0.1 SECONDS)
 
 /// Where the body sits at rest, before any leap offset.
 /proc/cyberware_leap_rest(mob/living/jumper, pixel)
-	var/base = pixel == PIXEL_W_OFFSET ? jumper.base_pixel_w : jumper.base_pixel_z
+	var/base = jumper.base_pixel_z
+	switch(pixel)
+		if(PIXEL_W_OFFSET)
+			base = jumper.base_pixel_w
+		if(PIXEL_Y_OFFSET)
+			base = jumper.base_pixel_y
 	return base + jumper.has_offset(pixel = pixel)
 
 /**
- * Take-off. The body arcs from [launch] over to [landing] during [airtime], rising
- * to [peak] halfway and ending [height] over the landing tile, where the
- * landing drops it. The body stays on its own tile until the landing moves
- * it; only the drawing travels. A one-tile leap hops in place, since moving
- * one tile glides.
+ * Take-off. The body arcs from [launch] over to [landing] and is down on the landing tile when [airtime] ends, so
+ * the landing's dust, ring and sound meet it there. With [height] under [peak] it rises to [peak] halfway and
+ * falls; with [height] at [peak] it climbs, holds that height over to its mark and drops in the last
+ * CYBERWARE_LEAP_SLAM of the flight. The body stays on its own tile until the landing moves it; only the drawing
+ * travels.
+ *
+ * The fall is started by a timer of its own, on the same clock as the landing: a server running slow holds the
+ * body up until its landing is nearly due, and never stands it on the tile ahead of its own impact.
+ *
+ * The run along the floor goes at an even pace and only the height eases, so the body never hangs at the top of
+ * its arc. The run up and down the screen is pixel_y, which carries the body's place in the front-to-back order
+ * along with it: it draws in front of what it has passed and behind what it hasn't. The height is pixel_z, which
+ * changes nothing but the drawing. On its row it draws over whoever stands there.
  */
 /proc/cyberware_leap_takeoff_fx(mob/living/jumper, turf/launch, turf/landing, airtime, height, peak, obj/effect/afterimage)
 	if(QDELETED(jumper))
@@ -462,40 +611,75 @@
 	cyberware_grey_dust(launch)
 	var/dx = 0
 	var/dy = 0
-	if(launch && landing && get_dist(launch, landing) >= 2)
+	if(launch && landing)
 		dx = (landing.x - launch.x) * ICON_SIZE_X
 		dy = (landing.y - launch.y) * ICON_SIZE_Y
 	var/rest_w = cyberware_leap_rest(jumper, PIXEL_W_OFFSET)
+	var/rest_y = cyberware_leap_rest(jumper, PIXEL_Y_OFFSET)
 	var/rest_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET)
-	animate(jumper, pixel_w = rest_w + dx * 0.5, pixel_z = rest_z + dy * 0.5 + peak, time = airtime * 0.5, easing = SINE_EASING | EASE_OUT)
-	animate(pixel_w = rest_w + dx, pixel_z = rest_z + dy + height, time = airtime * 0.5, easing = SINE_EASING | EASE_IN)
+	if(jumper.layer == initial(jumper.layer) || jumper.layer == LYING_MOB_LAYER)
+		jumper.layer = CYBERWARE_LEAP_LAYER
+	// The landing moves the body onto a tile its drawing has already reached, so that move must not glide. The
+	// client only honours this for moves that come after it has heard of it, so it is set here, not at the landing.
+	if(jumper.animate_movement != NO_STEPS)
+		jumper.cyberware_leap_steps = jumper.animate_movement
+		jumper.animate_movement = NO_STEPS
+	animate(jumper, pixel_w = rest_w + dx, pixel_y = rest_y + dy, time = airtime, flags = ANIMATION_PARALLEL)
+	var/fall = airtime * 0.5
+	var/rise = airtime * 0.5
+	if(height >= peak)
+		fall = min(CYBERWARE_LEAP_SLAM, airtime * 0.5)
+		rise = (airtime - fall) * 0.4
+	animate(jumper, pixel_z = rest_z + peak, time = rise, easing = QUAD_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_leap_fall_fx), WEAKREF(jumper), fall), airtime - fall)
 	if(dx || dy)
 		new /obj/effect/temp_visual/cyberware_leap_shadow(launch, dx, dy, airtime)
 	jumper.cyberware_leap_until = world.time + airtime
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_leap_failsafe), WEAKREF(jumper)), airtime + 0.5 SECONDS)
 
-/// Touchdown: the body is over its landing tile and drops [height] onto it.
-/proc/cyberware_leap_touchdown_fx(mob/living/jumper, height, drop_time)
+/// The last of a leap: the body comes down over its landing tile, arriving as the landing is due.
+/proc/cyberware_leap_fall_fx(datum/weakref/jumper_ref, fall)
+	var/mob/living/jumper = jumper_ref?.resolve()
+	if(QDELETED(jumper) || !jumper.cyberware_leap_until)
+		return
+	animate(jumper, pixel_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET), time = fall, easing = QUAD_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+
+/**
+ * Touchdown: the arc has brought the body down over its landing tile, and the drawing goes back to the body. The
+ * move onto that tile, which the caller makes right after this, must not glide: the drawing is already there.
+ */
+/proc/cyberware_leap_touchdown_fx(mob/living/jumper)
 	if(QDELETED(jumper))
 		return
 	jumper.cyberware_leap_until = 0
-	var/rest_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET)
-	jumper.pixel_w = cyberware_leap_rest(jumper, PIXEL_W_OFFSET)
-	jumper.pixel_z = rest_z + height
-	animate(jumper, pixel_z = rest_z, time = drop_time)
+	if(jumper.layer == CYBERWARE_LEAP_LAYER)
+		jumper.layer = jumper.body_position == LYING_DOWN ? LYING_MOB_LAYER : initial(jumper.layer)
+	// Ends every track of the arc where it stands.
+	animate(jumper, pixel_w = cyberware_leap_rest(jumper, PIXEL_W_OFFSET), pixel_y = cyberware_leap_rest(jumper, PIXEL_Y_OFFSET), pixel_z = cyberware_leap_rest(jumper, PIXEL_Z_OFFSET), time = 0, flags = ANIMATION_END_NOW)
+	// Steps glide again once the landing's own move has gone out.
+	if(!isnull(jumper.cyberware_leap_steps))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_leap_steps_back), WEAKREF(jumper)), 0.2 SECONDS)
+
+/// Gives a landed body its step animation back, unless it is already in the air again.
+/proc/cyberware_leap_steps_back(datum/weakref/jumper_ref)
+	var/mob/living/jumper = jumper_ref?.resolve()
+	if(QDELETED(jumper) || jumper.cyberware_leap_until || isnull(jumper.cyberware_leap_steps))
+		return
+	jumper.animate_movement = jumper.cyberware_leap_steps
+	jumper.cyberware_leap_steps = null
 
 /// A leap whose landing never ran (the pistons were pulled mid-air) is put back down.
 /proc/cyberware_leap_failsafe(datum/weakref/jumper_ref)
 	var/mob/living/jumper = jumper_ref?.resolve()
 	if(QDELETED(jumper) || !jumper.cyberware_leap_until || world.time < jumper.cyberware_leap_until)
 		return
-	cyberware_leap_touchdown_fx(jumper, 0, 0)
+	cyberware_leap_touchdown_fx(jumper)
 
 /// The Piledriver's impact: a ring rolls out over the shockwave and the floor cracks.
 /proc/cyberware_piledriver_impact_fx(turf/where, reach)
 	if(isnull(where))
 		return
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(where, reach)
 	new /obj/effect/temp_visual/cyberware_impact_cracks(where, "damaged1", 255)
 	for(var/direction in GLOB.cardinals)
 		var/turf/next = get_step(where, direction)
@@ -528,6 +712,12 @@
 	amount_to_scale = reach + 0.5
 	return ..()
 
+/// The same ring drawn on the floor, under everyone and everything standing in its way, whichever side of the
+/// landing they are on. The Piledriver's own; the plain one is also what a Gorilla fist throws.
+/obj/effect/temp_visual/circle_wave/cyberware_slam/floor
+	plane = FLOOR_PLANE
+	layer = ABOVE_OPEN_TURF_LAYER
+
 /// Cracks the Piledriver leaves in the floor. They fade on their own.
 /obj/effect/temp_visual/cyberware_impact_cracks
 	icon = 'icons/turf/damaged.dmi'
@@ -547,84 +737,6 @@
 	alpha = peak_alpha
 	animate(src, alpha = peak_alpha, time = duration - 2 SECONDS)
 	animate(alpha = 0, time = 2 SECONDS)
-
-// =========================================================================
-// CYBERDECK
-// =========================================================================
-
-/// Packets running up the trace while a hack uploads, drawn over it.
-/proc/cyberware_deck_packets(mob/living/bearer, atom/target, time, maxdistance)
-	if(QDELETED(bearer) || QDELETED(target))
-		return null
-	return bearer.Beam(target, icon_state = "deck_packets", icon = CYBERWARE_ANIM2_ICON, time = time, maxdistance = maxdistance)
-
-/// How long after a Ping the sweep reaches [machine] from [center].
-/proc/cyberware_ping_reveal_delay(turf/center, atom/machine)
-	var/turf/there = get_turf(machine)
-	if(isnull(center) || isnull(there))
-		return 0
-	var/distance = sqrt((there.x - center.x) ** 2 + (there.y - center.y) ** 2) * ICON_SIZE_X
-	// The ring's radius is 6 + 224 * (1 - (1 - t)^2) over the sweep; solve for t.
-	var/progress = clamp((distance - 6) / 224, 0, 1)
-	return round((1 - sqrt(1 - progress)) * 0.72 SECONDS, 0.5)
-
-/// The Ping sweep: a ring rolls out from the hacker, for the hacker alone.
-/proc/cyberware_ping_sweep_fx(mob/living/viewer)
-	var/turf/here = get_turf(viewer)
-	if(isnull(here) || !viewer.client)
-		return
-	var/image/sweep = image(CYBERWARE_ANIM_PING_ICON, here, "ping_sweep", ABOVE_ALL_MOB_LAYER)
-	sweep.pixel_w = -224
-	sweep.pixel_z = -224
-	sweep.appearance_flags = RESET_COLOR | RESET_TRANSFORM | RESET_ALPHA
-	SET_PLANE_EXPLICIT(sweep, ABOVE_LIGHTING_PLANE, here)
-	viewer.client.images += sweep
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_ping_sweep_end), WEAKREF(viewer), sweep), 0.9 SECONDS)
-
-/proc/cyberware_ping_sweep_end(datum/weakref/viewer_ref, image/sweep)
-	var/mob/living/viewer = viewer_ref?.resolve()
-	viewer?.client?.images -= sweep
-
-/**
- * A tinted copy of [target] with an outline in [mark_color], for a HUD mark
- * to draw through walls. Only the target's own drawing comes along: its
- * lights and emissive blockers stay behind.
- */
-/proc/cyberware_mark_outline(atom/target, mark_color)
-	var/mutable_appearance/look = new(target)
-	var/list/kept = list()
-	for(var/mutable_appearance/part as anything in look.overlays)
-		if(part.plane == FLOAT_PLANE)
-			kept += part
-	look.overlays = kept
-	look.underlays = list()
-	look.filters = null
-	look.alpha = 210
-	look.layer = ABOVE_ALL_MOB_LAYER - 0.01
-	look.appearance_flags = KEEP_TOGETHER | PIXEL_SCALE | RESET_COLOR | RESET_ALPHA
-	look.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	var/list/rgb = rgb2num(mark_color)
-	var/red = rgb[1] / 255 * 1.3
-	var/green = rgb[2] / 255 * 1.3
-	var/blue = rgb[3] / 255 * 1.3
-	look.color = list(
-		0.3 * red, 0.3 * green, 0.3 * blue,
-		0.59 * red, 0.59 * green, 0.59 * blue,
-		0.11 * red, 0.11 * green, 0.11 * blue,
-		0.12 * rgb[1] / 255, 0.12 * rgb[2] / 255, 0.12 * rgb[3] / 255,
-	)
-	var/image/outline = new
-	outline.appearance = look
-	outline.add_filter("cyberware_mark_outline", 1, outline_filter(1, mark_color))
-	return outline
-
-/// The outline fades in when the sweep reaches it and out before the mark goes.
-/proc/cyberware_mark_outline_reveal(image/outline, delay, duration)
-	outline.alpha = 0
-	animate(outline, alpha = 0, time = max(delay, 0))
-	animate(alpha = 210, time = 1)
-	animate(alpha = 210, time = max(duration - delay - 5, 0))
-	animate(alpha = 0, time = 4)
 
 // =========================================================================
 // WEAPON TRAILS
@@ -914,9 +1026,10 @@
 #undef RIG_PRESS_TIME
 #undef RIG_RETRACT_TIME
 
+#undef CYBERWARE_LEAP_LAYER
+#undef CYBERWARE_LEAP_SLAM
 #undef CYBERWARE_ANIM2_ICON
 #undef CYBERWARE_ANIM2_LARGE_ICON
-#undef CYBERWARE_ANIM_PING_ICON
 #undef CHROME_CRADLE_RIG_ICON
 #undef CHROME_ANIM2_TOP_LAYER
 #undef CHROME_LOOK_BROWN

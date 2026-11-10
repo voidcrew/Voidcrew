@@ -887,7 +887,7 @@
 		var/list/before = gc_before[gc_type] || list(0, 0)
 		if(item.failures > before[1] || item.hard_deletes > before[2])
 			var/path_text = "[gc_type]"
-			if(findtext(path_text, "cyberware") || findtext(path_text, "chrome") || findtext(path_text, "/mob/living/carbon/human") || findtext(path_text, "quickhack") || findtext(path_text, "shop_buyback"))
+			if(findtext(path_text, "cyberware") || findtext(path_text, "chrome") || findtext(path_text, "/mob/living/carbon/human") || findtext(path_text, "shop_buyback"))
 				leaks["GC [path_text]: [item.failures - before[1]] failures, [item.hard_deletes - before[2]] hard deletes"] = 1
 	// A timer pointing at an object that is already gone should not exist.
 	var/orphaned = 0

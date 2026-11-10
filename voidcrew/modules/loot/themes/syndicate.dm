@@ -60,9 +60,7 @@
 		/datum/shop_sku/ripperdoc/subvocal_mic,
 		/datum/shop_sku/ripperdoc/slipwire_street,
 		/datum/shop_sku/ripperdoc/adrenal_pump,
-		/datum/shop_sku/ripperdoc/deck_street,
 		/datum/shop_sku/ripperdoc/slipwire_milspec,
-		/datum/shop_sku/ripperdoc/deck_assault,
 	)
 	loot_common = list(
 		/obj/item/soap/syndie = 10,
@@ -89,11 +87,9 @@
 		// knockoff operative chrome: a patchy camo weave and a taped reflex rig
 		/obj/item/organ/cyberimp/cyberware/ghostskin/street = 2,
 		/obj/item/organ/cyberimp/cyberware/cascade/street = 1,
-		// street operative chrome: a twitchy reflex shunt, an adrenal pump and
-		// a deck flashed with somebody else's codes
+		// street operative chrome: a twitchy reflex shunt and an adrenal pump
 		/obj/item/organ/cyberimp/cyberware/slipwire/street = 2,
 		/obj/item/organ/cyberimp/cyberware/adrenal_pump = 2,
-		/obj/item/organ/cyberimp/cyberware/deck/street = 1,
 	)
 	loot_prime = list(
 		/obj/item/pen/sleepy = 4,
@@ -103,9 +99,8 @@
 		/obj/item/organ/cyberimp/cyberware/slipwire = 3,
 		/obj/item/organ/cyberimp/cyberware/ghostskin = 2,
 		/obj/item/organ/cyberimp/cyberware/cascade/milspec = 1,
-		// the boarding team's shunt and deck
+		// the boarding team's shunt
 		/obj/item/organ/cyberimp/cyberware/slipwire/milspec = 1,
-		/obj/item/organ/cyberimp/cyberware/deck/assault = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

@@ -38,6 +38,7 @@
 	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
 		if(part.icon_state == "redline_hot")
 			found_nodes = TRUE
+			TEST_ASSERT_EQUAL(part.layer, -13.7, "Red-hot nodes don't shine through what is worn on the back")
 		if(part.icon_state == "eyes_l")
 			found_eyes = TRUE
 	TEST_ASSERT(found_nodes, "The red-hot nodes aren't drawn over the core")
@@ -45,17 +46,43 @@
 
 	bearer.remove_status_effect(/datum/status_effect/cyberware_redline_window)
 	TEST_ASSERT(bearer.has_status_effect(/datum/status_effect/cyberware_redline_crash), "Test fixture: no crash after the window")
-	TEST_ASSERT_EQUAL(core.burn_look, "cool1", "The nodes didn't start cooling in the crash")
+	TEST_ASSERT_EQUAL(core.burn_look, "surge", "The spine doesn't run white as the crash begins")
+	var/found_spine = FALSE
+	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		if(part.icon_state == "redline_surge")
+			found_spine = TRUE
+	TEST_ASSERT(found_spine, "The white spine isn't drawn over the core")
+	TEST_ASSERT(core.burn_look_timer, "The charge never leaves the spine")
 	TEST_ASSERT(!bearer.get_filter("cyberware_redline_window"), "The red outline outlived the window")
+	TEST_ASSERT(bearer.get_filter("cyberware_redline_gutter"), "The outline goes out without a stutter")
+	// Its stutters by hand. Each is stored, so anything that rebuilds the body's filters meanwhile can't relight it.
+	core.gutter_burn(WEAKREF(bearer), 1)
+	TEST_ASSERT_EQUAL(bearer.filter_data["cyberware_redline_gutter"]["color"], "#ff2a2a00", "The guttering outline doesn't go out between stutters")
+	core.gutter_burn(WEAKREF(bearer), 5)
+	TEST_ASSERT(!bearer.get_filter("cyberware_redline_gutter"), "The outline never finishes guttering out")
 	TEST_ASSERT(!core.burn_light_ref?.resolve(), "The red light outlived the window")
 	TEST_ASSERT(bearer.get_filter("cyberware_redline_sag"), "The crash doesn't slump the body")
-	var/obj/effect/abstract/cyberware_anim/steam = core.burn_steam_ref?.resolve()
-	TEST_ASSERT(steam && (steam in bearer.vis_contents), "The crash vents no steam")
+	// The charge leaves the spine: the nodes cool, the eyes dim, and arcs crawl out across the deck under the body.
+	core.ground_burn()
+	TEST_ASSERT_EQUAL(core.burn_look, "cool1", "The nodes didn't start cooling once the charge left them")
+	var/obj/effect/temp_visual/cyberware_redline_ground/arcs = locate() in get_turf(bearer)
+	TEST_ASSERT_NOTNULL(arcs, "The charge never earths through the deck")
+	TEST_ASSERT_EQUAL(PLANE_TO_TRUE(arcs.plane), FLOOR_PLANE, "The arcs on the deck draw over the people standing on it")
+	TEST_ASSERT_EQUAL(arcs.pixel_y, 0, "The arcs on the deck sort a row forward of their own tile")
+	TEST_ASSERT(icon_exists(arcs.icon, arcs.icon_state), "The arcs on the deck have no picture")
+	var/found_dying_eyes = FALSE
+	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		if(part.icon_state == "eyes_l")
+			found_dying_eyes = TRUE
+	TEST_ASSERT(found_dying_eyes, "The red goes out of the eyes at once, with no dying flicker")
 
 	bearer.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
 	TEST_ASSERT_NULL(core.burn_look, "The nodes kept a look after the crash")
+	// A living body eases up out of the slump, and the filter comes off once it is flat.
+	TEST_ASSERT_EQUAL(bearer.filter_data?["cyberware_redline_sag"]?["size"], 0, "The body doesn't straighten up when the crash ends")
+	cyberware_redline_straightened(WEAKREF(bearer))
 	TEST_ASSERT(!bearer.get_filter("cyberware_redline_sag"), "The slump outlived the crash")
-	TEST_ASSERT(QDELETED(steam), "The steam outlived the crash")
+	TEST_ASSERT(!bearer.get_filter("cyberware_redline_gutter"), "The outline's last stutter outlived the crash")
 	TEST_ASSERT(!core.burn_look_timer, "Node looks keep coming after the crash")
 
 	// Dead mid-burn: the picture goes at once, though the window runs on.
@@ -74,7 +101,8 @@
 	core.Remove(next_bearer, special = TRUE)
 	TEST_ASSERT_NULL(core.burn_look, "A pulled core kept its node look")
 	TEST_ASSERT(!next_bearer.get_filter("cyberware_redline_sag"), "A pulled core left the slump")
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in next_bearer.vis_contents), "A pulled core left its steam")
+	TEST_ASSERT(!next_bearer.get_filter("cyberware_redline_gutter"), "A pulled core left the outline stuttering")
+	TEST_ASSERT(!core.burn_look_timer, "A pulled core still earths its charge")
 
 /// Lazarus: crit starts the charge, death or a pulled node ends it, and the
 /// jolt flashes, bursts and springs the patient without leaving anything on.
@@ -118,8 +146,9 @@
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in donor.vis_contents), "A pulled node left its charge")
 	TEST_ASSERT(!donor.get_filter("cyberware_lazarus_charge"), "A pulled node left the charge's halo")
 
-/// Leaps: take-off offsets the drawing toward the landing and only the drawing,
-/// touchdown puts it back, and a leap that never lands is put down anyway.
+/// Leaps: take-off carries the drawing over to the landing and only the drawing, drawn over whoever stands on its
+/// row; the fall brings it down as the landing is due; touchdown gives it back without a glide; a leap up or down
+/// the screen moves its place in the front-to-back order with it; a leap that never lands is put down anyway.
 /datum/unit_test/voidcrew_cyberware_anim2_leap
 
 /datum/unit_test/voidcrew_cyberware_anim2_leap/Run()
@@ -128,22 +157,36 @@
 	TEST_ASSERT(landing && landing.x <= run_loc_floor_top_right.x, "Test fixture: the test room is too narrow for a two-tile leap")
 	var/mob/living/carbon/human/jumper = allocate(/mob/living/carbon/human/consistent, start)
 
+	var/ground_layer = jumper.layer
 	cyberware_leap_takeoff_fx(jumper, start, landing, 0.2 SECONDS, 20, 26)
 	TEST_ASSERT_EQUAL(jumper.loc, start, "The take-off moved the body")
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 64, "The leap's drawing doesn't end over the landing")
-	TEST_ASSERT_EQUAL(jumper.pixel_z, 20, "The leap's drawing doesn't end in the air")
+	TEST_ASSERT_EQUAL(jumper.pixel_z, 26, "The leap's drawing doesn't rise")
+	cyberware_leap_fall_fx(WEAKREF(jumper), 0.1 SECONDS)
+	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "The leap's drawing isn't down on the floor when its landing is due")
+	TEST_ASSERT(jumper.layer > ground_layer, "A leaping body doesn't draw over the people on its row")
 	TEST_ASSERT((locate(/obj/effect/temp_visual/cyberware_leap_shadow) in start), "The leap has no floor shadow")
 	TEST_ASSERT(jumper.cyberware_leap_until, "Nothing watches for a leap that never lands")
 
-	cyberware_leap_touchdown_fx(jumper, 20, 0.1 SECONDS)
+	cyberware_leap_touchdown_fx(jumper)
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "The landing left the drawing to one side")
 	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "The landing left the drawing in the air")
+	TEST_ASSERT_EQUAL(jumper.layer, ground_layer, "The landing left the body drawn over everyone")
+	TEST_ASSERT_EQUAL(jumper.animate_movement, NO_STEPS, "The move onto the landing tile would glide after the arc")
+	cyberware_leap_steps_back(WEAKREF(jumper))
+	TEST_ASSERT_EQUAL(jumper.animate_movement, SLIDE_STEPS, "A landed body's steps never glide again")
 	TEST_ASSERT(!jumper.cyberware_leap_until, "A landed leap is still watched")
 
-	// One tile hops in place: a one-tile move glides.
+	// One tile arcs like any other: the landing never glides, so there is nothing to hide by hopping in place.
 	cyberware_leap_takeoff_fx(jumper, start, get_step(start, EAST), 0.2 SECONDS, 20, 26)
-	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "A one-tile leap slid sideways")
-	cyberware_leap_touchdown_fx(jumper, 20, 0.1 SECONDS)
+	TEST_ASSERT_EQUAL(jumper.pixel_w, 32, "A one-tile leap doesn't travel")
+	cyberware_leap_touchdown_fx(jumper)
+
+	// Up the screen the run is pixel_y, so the body's place in the front-to-back order goes with it.
+	cyberware_leap_takeoff_fx(jumper, start, get_step(start, NORTH), 0.2 SECONDS, 20, 26)
+	TEST_ASSERT_EQUAL(jumper.pixel_y, 32, "A leap up the screen keeps its launch row's place in the draw order")
+	cyberware_leap_touchdown_fx(jumper)
+	TEST_ASSERT_EQUAL(jumper.pixel_y, 0, "The landing left the drawing up the screen")
 
 	// The pistons pulled mid-air: no landing ever runs, the failsafe puts the body down.
 	cyberware_leap_takeoff_fx(jumper, start, landing, 0.2 SECONDS, 20, 26)
@@ -151,6 +194,7 @@
 	cyberware_leap_failsafe(WEAKREF(jumper))
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "A leap that never landed stayed to one side")
 	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "A leap that never landed stayed in the air")
+	TEST_ASSERT_EQUAL(jumper.layer, ground_layer, "A leap that never landed stayed drawn over everyone")
 
 	// The real button, end to end.
 	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = allocate(/obj/item/organ/cyberimp/cyberware/hopper)
@@ -163,6 +207,7 @@
 	TEST_ASSERT_EQUAL(jumper.loc, landing, "The leap landed somewhere else")
 	TEST_ASSERT_EQUAL(jumper.pixel_w, 0, "The Hopper landed off to one side")
 	TEST_ASSERT_EQUAL(jumper.pixel_z, 0, "The Hopper landed in the air")
+	TEST_ASSERT_EQUAL(jumper.layer, ground_layer, "The Hopper landed still drawn over everyone")
 
 	// The Piledriver's impact cracks the floor and leaves it alone afterwards.
 	cyberware_piledriver_impact_fx(landing, 2)
@@ -222,30 +267,6 @@
 	TEST_ASSERT(QDELETED(show), "The brownout show outlived its bearer")
 	TEST_ASSERT_NULL(chrome.brownout_look, "Death left a stutter look")
 	TEST_ASSERT_NULL(lattice.cyberware_worn_look(), "Recovered chrome isn't drawn plain")
-
-/// Cyberdeck: a door glitch comes off on its own, and a Ping mark's outline
-/// goes with its mark.
-/datum/unit_test/voidcrew_cyberware_anim2_deck
-
-/datum/unit_test/voidcrew_cyberware_anim2_deck/Run()
-	var/mob/living/carbon/human/hacker = allocate(/mob/living/carbon/human/consistent)
-	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, get_step(run_loc_floor_bottom_left, NORTH))
-
-	cyberware_glitch_fx(door)
-	TEST_ASSERT(door.get_filter("cyberware_glitch_slices"), "The door doesn't tear into slices")
-	TEST_ASSERT(door.get_filter("cyberware_glitch_red") && door.get_filter("cyberware_glitch_cyan"), "The door doesn't split its colours")
-	TEST_ASSERT(voidcrew_test_anim_state(door, "glitch_tear"), "The door has no static")
-	cyberware_glitch_end(WEAKREF(door))
-	TEST_ASSERT(!door.get_filter("cyberware_glitch_slices") && !door.get_filter("cyberware_glitch_red"), "The glitch stayed on the door")
-
-	var/datum/cyberware_hud_mark/plain = cyberware_hud_mark(hacker, door, "#4dd8e6", 5 SECONDS)
-	TEST_ASSERT_NULL(plain.outline, "A plain mark grew an outline")
-	var/datum/cyberware_hud_mark/outlined = cyberware_hud_mark(hacker, door, "#4dd8e6", 5 SECONDS, outline = TRUE, outline_delay = 3)
-	TEST_ASSERT(outlined.outline, "A Ping mark has no outline")
-	TEST_ASSERT(outlined.outline.filter_data?["cyberware_mark_outline"], "The outline isn't outlined")
-	qdel(outlined)
-	TEST_ASSERT_NULL(outlined.outline, "A deleted mark kept its outline")
-	qdel(plain)
 
 /// Chrome cradle: the rig follows the install's beats and pulls back and parks
 /// when the sequence is cancelled, with nothing left in the gripper.

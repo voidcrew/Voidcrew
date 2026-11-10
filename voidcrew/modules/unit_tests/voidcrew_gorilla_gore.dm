@@ -89,11 +89,13 @@
 			return
 		finisher.advance()
 
-/// Every chrome puppet left anywhere in the test room
+/// Every chrome puppet left anywhere in the test room, and every body's stand-in (what shows until a client has the puppets' pictures)
 /datum/unit_test/voidcrew_gorilla_gore/proc/puppets_left()
 	. = 0
 	for(var/turf/floor in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
 		for(var/obj/effect/abstract/chrome_puppet/puppet in floor)
+			.++
+		for(var/obj/effect/abstract/chrome_rig_stand_in/stand_in in floor)
 			.++
 
 // =========================================================================
@@ -170,6 +172,8 @@
 	GLOB.outpost_pvp_enforcement = spy
 	var/hurt_before = victim.getBruteLoss()
 	var/punched = punch(bearer, victim)
+	// The blow lands when the fist is there: 0.1 s (GORILLA_THRUST_LANDS)
+	sleep(0.3 SECONDS)
 	GLOB.outpost_pvp_enforcement = real_enforcement
 	real_enforcement = null
 	TEST_ASSERT_EQUAL(punched, COMPONENT_CANCEL_ATTACK_CHAIN, "The Gorilla arm didn't take the punch")
@@ -254,6 +258,7 @@
 	victim.grabbedby(bearer, supress_message = TRUE)
 	TEST_ASSERT(bearer.grab_state >= GRAB_AGGRESSIVE, "Test fixture: no aggressive grab")
 	punch(bearer, victim)
+	sleep(0.3 SECONDS) // the fist arrives
 	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(bearer, "gorilla_grab_move"), "A hurl didn't start the grab-move cooldown") // COOLDOWN_GORILLA_GRAB_MOVE
 	sleep(1 SECONDS)
 	TEST_ASSERT_NOTEQUAL(victim.loc, spot(1, 0), "A grabbed body wasn't hurled")
@@ -263,36 +268,118 @@
 	victim.grabbedby(bearer, supress_message = TRUE)
 	victim.grabbedby(bearer, supress_message = TRUE)
 	punch(bearer, victim)
-	sleep(0.5 SECONDS)
+	sleep(0.8 SECONDS)
 	TEST_ASSERT_EQUAL(victim.loc, spot(1, 0), "A grabbed body was hurled twice inside the cooldown")
 
+/// A human at `where` in [bearer]'s aggressive grab
+/datum/unit_test/voidcrew_gorilla_gore/proc/held_by(mob/living/carbon/human/bearer, turf/where)
+	var/mob/living/carbon/human/consistent/held = allocate(/mob/living/carbon/human/consistent, where)
+	held.grabbedby(bearer, supress_message = TRUE)
+	held.grabbedby(bearer, supress_message = TRUE)
+	TEST_ASSERT(bearer.pulling == held && bearer.grab_state >= GRAB_AGGRESSIVE, "Test fixture: no aggressive grab")
+	return held
+
 /// A click on the floor under a held body slams them into it; a table click slams them onto the table
-/// instead of caving the table in.
+/// instead of caving the table in. Nothing happens to anyone until the body comes down.
 /datum/unit_test/voidcrew_gorilla_gore/slam
 
 /datum/unit_test/voidcrew_gorilla_gore/slam/Run()
 	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
-	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
-	victim.grabbedby(bearer, supress_message = TRUE)
-	victim.grabbedby(bearer, supress_message = TRUE)
+	var/mob/living/carbon/human/consistent/victim = held_by(bearer, spot(1, 0))
 	var/hurt_before = victim.getBruteLoss()
 	TEST_ASSERT_EQUAL(punch(bearer, spot(1, 0)), COMPONENT_CANCEL_ATTACK_CHAIN, "A floor click while grabbing wasn't a slam")
+	// On the way up: the grab is held, the bearer stays put, and the body is unhurt and still on its feet
+	TEST_ASSERT_EQUAL(bearer.pulling, victim, "The slam let go before the body came down")
+	TEST_ASSERT(HAS_TRAIT_FROM(bearer, TRAIT_IMMOBILIZED, "gorilla_slam"), "The bearer can walk off in the middle of a slam") // GORILLA_SLAM_TRAIT
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The slam hurt them before it landed")
+	TEST_ASSERT(victim.body_position == STANDING_UP, "The slam floored them before it landed")
+	TEST_ASSERT(puppets_left() > 0, "The slam posed nobody")
+	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The real body shows under its puppet") // CHROME_RIG_HIDE_FILTER
+	sleep(0.5 SECONDS) // 0.44 s to the impact
 	TEST_ASSERT_NULL(bearer.pulling, "The slam kept the grab")
-	sleep(0.5 SECONDS)
 	TEST_ASSERT(victim.getBruteLoss() > hurt_before, "The floor slam did no damage")
 	TEST_ASSERT(victim.body_position == LYING_DOWN, "The floor slam didn't knock them down")
+	// On its back, head at the feet of a bearer seen from the side
+	TEST_ASSERT_EQUAL(victim.dir, SOUTH, "A slammed body didn't land on its back")
+	TEST_ASSERT_EQUAL(victim.lying_angle, 270, "A body slammed to the east doesn't lie with its head at the bearer's feet") // LYING_ANGLE_WEST
+	sleep(0.4 SECONDS) // 0.70 s in all
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The slam left puppets standing")
+	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A slammed body stayed hidden") // CHROME_RIG_HIDE_FILTER
+	TEST_ASSERT_NULL(bearer.get_filter("chrome_rig_hide"), "The bearer stayed hidden after a slam") // CHROME_RIG_HIDE_FILTER
+	TEST_ASSERT(!HAS_TRAIT_FROM(bearer, TRAIT_IMMOBILIZED, "gorilla_slam"), "The bearer is still held in place after a slam") // GORILLA_SLAM_TRAIT
+	TEST_ASSERT_NULL(bearer.gorilla_slam, "The slam never ended for the bearer")
+	TEST_ASSERT_NULL(victim.gorilla_slam, "The slam never ended for the body")
 
-	// The table
+	// The table. A head-aimed one lands face down.
 	var/mob/living/carbon/human/table_bearer = gorilla(spot(0, 3))
-	var/mob/living/carbon/human/consistent/table_victim = allocate(/mob/living/carbon/human/consistent, spot(1, 3))
+	var/mob/living/carbon/human/consistent/table_victim = held_by(table_bearer, spot(1, 3))
 	var/obj/structure/table/table = allocate(/obj/structure/table, spot(1, 4))
 	var/table_before = table.get_integrity()
-	table_victim.grabbedby(table_bearer, supress_message = TRUE)
-	table_victim.grabbedby(table_bearer, supress_message = TRUE)
+	table_bearer.zone_selected = BODY_ZONE_HEAD
 	TEST_ASSERT_EQUAL(punch(table_bearer, table), COMPONENT_CANCEL_ATTACK_CHAIN, "A table click while grabbing wasn't a slam")
-	TEST_ASSERT_EQUAL(table_victim.loc, spot(1, 4), "The slam didn't put them on the table")
+	TEST_ASSERT_EQUAL(table_victim.loc, spot(1, 3), "The body was on the table before the slam landed")
 	sleep(0.5 SECONDS)
+	TEST_ASSERT_EQUAL(table_victim.loc, spot(1, 4), "The slam didn't put them on the table")
 	TEST_ASSERT(QDELETED(table) || table.get_integrity() <= table_before - 50, "The table didn't take the slam") // GORILLA_SLAM_TABLE_BREAK
+	TEST_ASSERT_EQUAL(table_victim.dir, NORTH, "A head-aimed table slam didn't land face down")
+
+/// A slam is called off before it lands if the bearer is stunned, loses the grab, or the body is moved or can't be put
+/// where it was going: the body is unhurt and on its feet, the puppets go, and the bearer is free to move.
+/datum/unit_test/voidcrew_gorilla_gore/slam_called_off
+
+/datum/unit_test/voidcrew_gorilla_gore/slam_called_off/Run()
+	// The bearer is stunned on the way up
+	var/mob/living/carbon/human/stunned = gorilla(spot(0, 0))
+	var/mob/living/carbon/human/consistent/first = held_by(stunned, spot(1, 0))
+	TEST_ASSERT_EQUAL(punch(stunned, spot(1, 0)), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: no slam")
+	TEST_ASSERT_NOTNULL(stunned.gorilla_slam, "Test fixture: the slam didn't start")
+	stunned.Paralyze(2 SECONDS)
+	TEST_ASSERT(!HAS_TRAIT_FROM(stunned, TRAIT_IMMOBILIZED, "gorilla_slam"), "A called-off slam still holds the bearer in place") // GORILLA_SLAM_TRAIT
+	TEST_ASSERT_NULL(stunned.get_filter("chrome_rig_hide"), "A stunned bearer stayed hidden behind his puppets") // CHROME_RIG_HIDE_FILTER
+	sleep(0.7 SECONDS)
+	TEST_ASSERT_EQUAL(first.getBruteLoss(), 0, "A slam landed after the bearer was stunned")
+	TEST_ASSERT_EQUAL(first.getStaminaLoss(), 0, "A called-off slam winded them")
+	TEST_ASSERT(first.body_position == STANDING_UP, "A called-off slam knocked them down")
+	TEST_ASSERT_EQUAL(first.loc, spot(1, 0), "A called-off slam moved the body")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A called-off slam left puppets standing")
+	TEST_ASSERT_NULL(first.get_filter("chrome_rig_hide"), "A body put back down stayed hidden") // CHROME_RIG_HIDE_FILTER
+	TEST_ASSERT_NULL(first.gorilla_slam, "A called-off slam never ended for the body")
+	TEST_ASSERT_NULL(stunned.gorilla_slam, "A called-off slam never ended for the bearer")
+
+	// The grab is lost on the way up
+	var/mob/living/carbon/human/dropper = gorilla(spot(0, 2))
+	var/mob/living/carbon/human/consistent/second = held_by(dropper, spot(1, 2))
+	TEST_ASSERT_EQUAL(punch(dropper, spot(1, 2)), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: no second slam")
+	dropper.stop_pulling()
+	sleep(0.7 SECONDS)
+	TEST_ASSERT_EQUAL(second.getBruteLoss(), 0, "A slam landed after the grab was lost")
+	TEST_ASSERT(second.body_position == STANDING_UP, "A slam with the grab lost knocked them down")
+	TEST_ASSERT(!HAS_TRAIT_FROM(dropper, TRAIT_IMMOBILIZED, "gorilla_slam"), "A bearer who lost the grab is still held in place") // GORILLA_SLAM_TRAIT
+	TEST_ASSERT_NULL(second.get_filter("chrome_rig_hide"), "A body that slipped the grab stayed hidden") // CHROME_RIG_HIDE_FILTER
+
+	// The body is pulled away on the way up
+	var/mob/living/carbon/human/robbed = gorilla(spot(0, 4))
+	var/mob/living/carbon/human/consistent/third = held_by(robbed, spot(1, 4))
+	TEST_ASSERT_EQUAL(punch(robbed, spot(1, 4)), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: no third slam")
+	third.forceMove(spot(4, 4))
+	TEST_ASSERT_NULL(third.get_filter("chrome_rig_hide"), "A body taken away stayed hidden") // CHROME_RIG_HIDE_FILTER
+	sleep(0.7 SECONDS)
+	TEST_ASSERT_EQUAL(third.getBruteLoss(), 0, "A slam landed on a body that was taken away")
+	TEST_ASSERT_EQUAL(third.loc, spot(4, 4), "A slam brought back a body that was taken away")
+	TEST_ASSERT_NULL(robbed.gorilla_slam, "A slam on a body taken away never ended")
+
+	// Something blocks the table before the body gets there: it comes down where it stood
+	var/mob/living/carbon/human/blocked = gorilla(spot(3, 0))
+	var/mob/living/carbon/human/consistent/fourth = held_by(blocked, spot(4, 0))
+	var/obj/structure/table/table = allocate(/obj/structure/table, spot(3, 1))
+	var/table_before = table.get_integrity()
+	TEST_ASSERT_EQUAL(punch(blocked, table), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: no table slam")
+	allocate(/obj/structure/window/reinforced/fulltile, spot(3, 1))
+	sleep(0.7 SECONDS)
+	TEST_ASSERT_EQUAL(fourth.loc, spot(4, 0), "A body went through a window onto a table")
+	TEST_ASSERT_EQUAL(fourth.getBruteLoss(), 0, "A slam that couldn't reach the table hurt them")
+	TEST_ASSERT_EQUAL(table.get_integrity(), table_before, "A slam that couldn't reach the table hit it")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A slam that couldn't reach the table left puppets standing")
 
 // =========================================================================
 // WALL IMPACTS (owner D38)
@@ -436,13 +523,27 @@
 	TEST_ASSERT(right_haymaker.charging(), "Triggering the haymaker didn't wind it up")
 	TEST_ASSERT_NOTNULL(bearer.has_status_effect(/datum/status_effect/gorilla_windup), "The wind-up has no status effect")
 	TEST_ASSERT(bearer.has_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup), "The wind-up doesn't slow")
+	// The lean: a pixel back at once, turning with the bearer, GORILLA_HAYMAKER_LEAN and a tremble at full charge
+	var/datum/status_effect/gorilla_windup/windup = bearer.has_status_effect(/datum/status_effect/gorilla_windup)
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_X_OFFSET), -1, "The wind-up doesn't start a pixel back from an east facing")
+	bearer.setDir(NORTH)
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_X_OFFSET), 0, "A turn left the old lean behind")
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_Z_OFFSET), -1, "Facing away, the lean isn't down the screen")
+	bearer.setDir(EAST)
 	right_haymaker.charge_started = world.time - 2 SECONDS
+	windup.tick(0.2)
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_X_OFFSET), -4, "A full charge doesn't lean all the way back") // GORILLA_HAYMAKER_LEAN
+	TEST_ASSERT(bearer.has_offset("gorilla_windup_tremble", PIXEL_W_OFFSET), "A full charge doesn't tremble")
 	var/hurt_before = victim.getBruteLoss()
 	right_haymaker.InterceptClickOn(bearer, null, victim)
 	TEST_ASSERT(!right_haymaker.charging(), "The haymaker still winds up after the release")
 	TEST_ASSERT_NULL(bearer.has_status_effect(/datum/status_effect/gorilla_windup), "The wind-up outlived the release")
 	TEST_ASSERT(!bearer.has_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup), "The wind-up's slow outlived it")
 	TEST_ASSERT(!bearer.has_offset("gorilla_windup"), "The wind-up's lean outlived it")
+	TEST_ASSERT(!bearer.has_offset("gorilla_windup_tremble"), "The wind-up's tremble outlived it")
+	// The blow lands when the thrown fist does (GORILLA_HAYMAKER_THROW)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The haymaker landed before its fist was thrown")
+	sleep(0.2 SECONDS)
 	TEST_ASSERT(victim.getBruteLoss() - hurt_before >= 20, "A full haymaker hit for too little") // GORILLA_HAYMAKER_MIN_DAMAGE
 	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(bearer, "gorilla_pistons"), "The haymaker didn't spend the pistons") // COOLDOWN_GORILLA_PISTONS
 	TEST_ASSERT(!left_haymaker.IsAvailable(), "The other arm's haymaker didn't share the cooldown")
@@ -468,6 +569,209 @@
 	TEST_ASSERT(!vent.charging(), "Calling the haymaker off left it winding up")
 	var/left = S_TIMER_COOLDOWN_TIMELEFT(venter, "gorilla_pistons")
 	TEST_ASSERT(left > 0 && left <= 5 SECONDS, "A vent cost the wrong cooldown ([left])") // GORILLA_PISTONS_VENTED
+
+/**
+ * The piston punch's arm: the blow waits for the fist; for the punch and no longer, the punching arm is a puppet over a
+ * body with that arm masked out; a bearer who looks the same is not pictured again; the arm steps with a bearer who
+ * steps and comes down when they turn; and a bearer who can't be drawn still lands the blow.
+ */
+/datum/unit_test/voidcrew_gorilla_gore/punch_thrust
+
+/datum/unit_test/voidcrew_gorilla_gore/punch_thrust/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	bearer.setDir(EAST)
+	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/fist = arm(bearer)
+	var/obj/item/bodypart/hand = bearer.get_bodypart(BODY_ZONE_R_ARM)
+	var/filters_before = length(bearer.filters)
+	var/hurt_before = victim.getBruteLoss()
+	TEST_ASSERT(fist.piston_hit(bearer, victim, hand, BODY_ZONE_CHEST), "The piston punch wasn't thrown")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The piston punch landed before its fist did")
+	TEST_ASSERT_NOTNULL(bearer.gorilla_thrust, "The punch drew no arm")
+	TEST_ASSERT_EQUAL(puppets_left(), 2, "A punch seen from the side isn't an arm and the torso under it")
+	TEST_ASSERT_EQUAL(length(bearer.filters), filters_before + 1, "The real arm wasn't masked out under its puppet")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() > hurt_before, "The piston punch never landed")
+	sleep(0.4 SECONDS)
+	TEST_ASSERT_NULL(bearer.gorilla_thrust, "The punch's arm outlived the punch")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The punch left a puppet behind")
+	TEST_ASSERT_EQUAL(length(bearer.filters), filters_before, "The mask on the real arm outlived the punch")
+	var/matrix/rested = bearer.transform
+	TEST_ASSERT(rested.a == 1 && !rested.b && !rested.c && !rested.d && rested.e == 1 && !rested.f, "The lunge left the bearer off their feet")
+
+	// The same look is not pictured twice; the arm walks with its bearer and comes down on a turn
+	var/mob/living/carbon/human/walker = gorilla(spot(0, 2))
+	var/mob/living/carbon/human/consistent/bag = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	ADD_TRAIT(bag, TRAIT_GODMODE, TRAIT_SOURCE_UNIT_TESTS)
+	bag.anchored = TRUE
+	walker.setDir(EAST)
+	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/walker_fist = arm(walker)
+	var/obj/item/bodypart/walker_hand = walker.get_bodypart(BODY_ZONE_R_ARM)
+	walker_fist.piston_hit(walker, bag, walker_hand, BODY_ZONE_HEAD)
+	var/datum/gorilla_arm_look/look = walker.gorilla_arm_looks?["[EAST]"]
+	TEST_ASSERT_NOTNULL(look, "The punch kept no picture of its bearer")
+	sleep(0.6 SECONDS)
+	walker_fist.piston_hit(walker, bag, walker_hand, BODY_ZONE_HEAD)
+	TEST_ASSERT_EQUAL(walker.gorilla_arm_looks["[EAST]"], look, "A second punch pictured a bearer who hadn't changed")
+	var/datum/gorilla_thrust/thrust = walker.gorilla_thrust
+	TEST_ASSERT_NOTNULL(thrust, "The second punch drew no arm")
+	walker.forceMove(spot(0, 3))
+	TEST_ASSERT_EQUAL(walker.gorilla_thrust, thrust, "A step took the arm down")
+	for(var/obj/effect/abstract/chrome_puppet/puppet as anything in thrust.pieces)
+		TEST_ASSERT_EQUAL(puppet.loc, walker.loc, "The arm didn't step with its bearer")
+	walker.setDir(NORTH)
+	TEST_ASSERT_NULL(walker.gorilla_thrust, "A turn left the old facing's arm up")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A turn left a puppet behind")
+	sleep(0.6 SECONDS)
+
+	// A bearer on the floor can't be drawn: tg's lunge, and the blow still lands
+	var/mob/living/carbon/human/floored = gorilla(spot(2, 4))
+	var/mob/living/carbon/human/consistent/kicked = allocate(/mob/living/carbon/human/consistent, spot(3, 4))
+	floored.set_resting(TRUE, silent = TRUE, instant = TRUE)
+	var/kicked_before = kicked.getBruteLoss()
+	arm(floored).piston_hit(floored, kicked, floored.get_bodypart(BODY_ZONE_R_ARM), BODY_ZONE_CHEST)
+	TEST_ASSERT_NULL(floored.gorilla_thrust, "A bearer lying down drew an arm")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(kicked.getBruteLoss() > kicked_before, "A punch from the floor never landed")
+
+	// The first punch a picture is taken for lands as soon as any other
+	var/mob/living/carbon/human/fresh = gorilla(spot(3, 2))
+	var/mob/living/carbon/human/consistent/dummy = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
+	ADD_TRAIT(dummy, TRAIT_GODMODE, TRAIT_SOURCE_UNIT_TESTS)
+	dummy.anchored = TRUE
+	fresh.setDir(EAST)
+	var/first_wait = gorilla_thrust(fresh, dummy, BODY_ZONE_R_ARM, BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(fresh.gorilla_thrust, "Test fixture: the first punch drew no arm")
+	TEST_ASSERT_EQUAL(first_wait, 0.1 SECONDS, "The first punch of a new look lands late") // GORILLA_THRUST_LANDS
+	sleep(0.6 SECONDS)
+	TEST_ASSERT_EQUAL(gorilla_thrust(fresh, dummy, BODY_ZONE_R_ARM, BODY_ZONE_CHEST), first_wait, "A later punch lands at another time than the first")
+	sleep(0.6 SECONDS)
+
+	// The fist reaches the part it is thrown at, down to the leg of a body beside its bearer
+	var/datum/gorilla_arm_look/fresh_look = fresh.gorilla_arm_looks?["[EAST]"]
+	var/datum/chrome_rig/fresh_rig = fresh_look?.rig
+	TEST_ASSERT_NOTNULL(fresh_rig, "Test fixture: the punch kept no picture")
+	for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_LEG))
+		var/list/point = gorilla_fist_target(fresh, dummy, zone)
+		// GORILLA_THRUST_LUNGE_MIN, GORILLA_THRUST_LUNGE_MAX, GORILLA_THRUST_TIP, GORILLA_SWING_EASY_LENGTH, GORILLA_SWING_MAX_LENGTH
+		var/list/reach = chrome_swing_reach(fresh_rig, "r", point[1], point[2], list(1, 0), 8, 16, 15, 1.9, 3.3, -90)
+		var/list/fist_at = fresh_rig.hand_at("r", list(reach[2], reach[3], chrome_swing_base(reach[1], 0, 15)))
+		TEST_ASSERT(abs(fist_at[1] - point[1]) <= 1 && abs(fist_at[2] - point[2]) <= 1, "The fist stops short of the [zone] of a body beside its bearer")
+
+	// A body a corner away gets tg's lunge: the arm is thrown the way its bearer faces
+	var/mob/living/carbon/human/consistent/cornered = allocate(/mob/living/carbon/human/consistent, spot(4, 3))
+	var/cornered_before = cornered.getBruteLoss()
+	arm(fresh).piston_hit(fresh, cornered, fresh.get_bodypart(BODY_ZONE_R_ARM), BODY_ZONE_CHEST)
+	TEST_ASSERT_NULL(fresh.gorilla_thrust, "A punch at a corner tile threw its arm past the body")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(cornered.getBruteLoss() > cornered_before, "A punch at a corner tile never landed")
+
+/**
+ * The haymaker's arm: a bearer who stands still winds up on the rig, whose puppets lean with the hidden body; the blow
+ * lands when the thrown fist does, and the rig comes down when the arms are back at rest. A step or a turn mid
+ * wind-up takes the rig down and the wind-up goes on; a wind-up called off lowers the arms and then the rig.
+ */
+/datum/unit_test/voidcrew_gorilla_gore/haymaker_swing
+
+/datum/unit_test/voidcrew_gorilla_gore/haymaker_swing/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	bearer.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/haymaker = locate() in arm(bearer, BODY_ZONE_R_ARM).actions
+	haymaker.Trigger(bearer)
+	TEST_ASSERT_NOTNULL(haymaker.rig, "A wind-up standing still raised no rig")
+	TEST_ASSERT_EQUAL(puppets_left(), 3, "The wind-up's rig isn't a body and two arms")
+	var/datum/status_effect/gorilla_windup/windup = bearer.has_status_effect(/datum/status_effect/gorilla_windup)
+	haymaker.charge_started = world.time - 2 SECONDS
+	windup.tick(0.2)
+	var/obj/effect/abstract/chrome_puppet/body_puppet = haymaker.rig.puppet("body")
+	TEST_ASSERT_EQUAL(body_puppet.pixel_x, bearer.pixel_x, "The puppets didn't lean with the hidden body")
+	TEST_ASSERT_EQUAL(body_puppet.pixel_w, bearer.pixel_w, "The puppets didn't tremble with the hidden body")
+	var/hurt_before = victim.getBruteLoss()
+	haymaker.InterceptClickOn(bearer, null, victim)
+	TEST_ASSERT_NOTNULL(haymaker.rig, "The rig came down before the swing")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), hurt_before, "The haymaker landed before its fist was thrown")
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() - hurt_before >= 20, "The thrown haymaker never landed") // GORILLA_HAYMAKER_MIN_DAMAGE
+	TEST_ASSERT_NOTNULL(haymaker.rig, "The rig came down before the follow-through")
+	sleep(0.6 SECONDS)
+	TEST_ASSERT_NULL(haymaker.rig, "The rig outlived the swing")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The swing left a puppet behind")
+	TEST_ASSERT(!bearer.get_filter("chrome_rig_hide"), "The swing left its bearer hidden") // CHROME_RIG_HIDE_FILTER
+
+	// A step: the lean alone from there, and the wind-up goes on
+	var/mob/living/carbon/human/walker = gorilla(spot(0, 2))
+	walker.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/walking = locate() in arm(walker, BODY_ZONE_R_ARM).actions
+	walking.Trigger(walker)
+	TEST_ASSERT_NOTNULL(walking.rig, "Test fixture: the second wind-up raised no rig")
+	walker.forceMove(spot(0, 3))
+	TEST_ASSERT_NULL(walking.rig, "A step left the rig standing where the bearer was")
+	TEST_ASSERT(walking.charging(), "A step ended the wind-up")
+	TEST_ASSERT_NOTNULL(walker.has_status_effect(/datum/status_effect/gorilla_windup), "A step ended the wind-up's lean")
+	walking.unset_click_ability(walker, refund_cooldown = TRUE)
+
+	// A turn does the same
+	var/mob/living/carbon/human/turner = gorilla(spot(2, 2))
+	turner.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/turning = locate() in arm(turner, BODY_ZONE_R_ARM).actions
+	turning.Trigger(turner)
+	TEST_ASSERT_NOTNULL(turning.rig, "Test fixture: the third wind-up raised no rig")
+	turner.setDir(SOUTH)
+	TEST_ASSERT_NULL(turning.rig, "A turn left the old facing's puppets up")
+	TEST_ASSERT(turning.charging(), "A turn ended the wind-up")
+	turning.unset_click_ability(turner, refund_cooldown = TRUE)
+
+	// Called off: the arms come down first, then the rig
+	var/mob/living/carbon/human/venter = gorilla(spot(2, 4))
+	venter.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/vented = locate() in arm(venter, BODY_ZONE_R_ARM).actions
+	vented.Trigger(venter)
+	TEST_ASSERT_NOTNULL(vented.rig, "Test fixture: the fourth wind-up raised no rig")
+	vented.unset_click_ability(venter, refund_cooldown = TRUE)
+	TEST_ASSERT(!vented.charging(), "Test fixture: the wind-up wasn't called off")
+	TEST_ASSERT_NOTNULL(vented.rig, "A wind-up called off dropped its arms in one frame")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_NULL(vented.rig, "The rig outlived a wind-up called off")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A wind-up called off left a puppet behind")
+
+	// Thrown at a body a corner away: the rig comes down, the lunge is tg's, and the blow still lands
+	var/mob/living/carbon/human/cornerer = gorilla(spot(3, 3))
+	var/mob/living/carbon/human/consistent/cornered = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
+	cornerer.setDir(EAST)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/corner_swing = locate() in arm(cornerer, BODY_ZONE_R_ARM).actions
+	corner_swing.Trigger(cornerer)
+	TEST_ASSERT_NOTNULL(corner_swing.rig, "Test fixture: the fifth wind-up raised no rig")
+	corner_swing.charge_started = world.time - 1 SECONDS
+	var/cornered_before = cornered.getBruteLoss()
+	corner_swing.InterceptClickOn(cornerer, null, cornered)
+	TEST_ASSERT_NULL(corner_swing.rig, "A haymaker at a corner tile threw its arm past the body")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A haymaker at a corner tile left a puppet behind")
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(cornered.getBruteLoss() - cornered_before >= 20, "A haymaker at a corner tile never landed") // GORILLA_HAYMAKER_MIN_DAMAGE
+
+	// Something in the guard hand: that arm stays down, so the thing isn't pulled apart
+	var/mob/living/carbon/human/guarder = gorilla(spot(4, 2))
+	guarder.setDir(EAST)
+	guarder.put_in_hand(allocate(/obj/item/wrench), 1)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/guarded = locate() in arm(guarder, BODY_ZONE_R_ARM).actions
+	guarded.Trigger(guarder)
+	TEST_ASSERT_NOTNULL(guarded.rig, "A wind-up with something in the guard hand raised no rig")
+	TEST_ASSERT_NOTNULL(guarded.rig.arm_poses["r"], "Test fixture: the punching arm wasn't drawn back")
+	TEST_ASSERT_NULL(guarded.rig.arm_poses["l"], "A guard arm with something in its hand was raised")
+	guarded.unset_click_ability(guarder, refund_cooldown = TRUE)
+
+	// Something in the punching hand: no drawing, and the wind-up goes on
+	var/mob/living/carbon/human/gripper = gorilla(spot(0, 4))
+	gripper.setDir(EAST)
+	gripper.put_in_hand(allocate(/obj/item/wrench), 2)
+	var/datum/action/cooldown/cyberware/gorilla_haymaker/gripped = locate() in arm(gripper, BODY_ZONE_R_ARM).actions
+	gripped.Trigger(gripper)
+	TEST_ASSERT_NULL(gripped.rig, "A punching arm with something in its hand was drawn on the rig")
+	TEST_ASSERT(gripped.charging(), "Something in the punching hand stopped the wind-up")
+	gripped.unset_click_ability(gripper, refund_cooldown = TRUE)
+	sleep(0.4 SECONDS)
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A wind-up with full hands left a puppet behind")
 
 // =========================================================================
 // GROUND POUND
@@ -617,6 +921,8 @@
 	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
 	bearer.zone_selected = BODY_ZONE_L_ARM
 	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	// Blood an earlier test left here would keep the tear's own where it is
+	clear_mess(spot(2, 1))
 	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The limb rip didn't start")
 	var/datum/hv_finisher/chrome/gorilla/rip/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip")
@@ -626,6 +932,14 @@
 	var/obj/item/bodypart/arm/left/torn = locate() in get_turf(victim)
 	TEST_ASSERT_NOTNULL(torn, "The torn arm wasn't left on the victim's tile")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "The limb rip left puppets behind")
+	// The blood is the tear's, laid under the shoulder as the arm came off: nothing fresh when the arm is dropped
+	var/obj/effect/decal/cleanable/blood/pool
+	for(var/obj/effect/decal/cleanable/blood/found in get_turf(victim))
+		if(found.type == /obj/effect/decal/cleanable/blood)
+			pool = found
+	TEST_ASSERT_NOTNULL(pool, "The torn shoulder left no blood on the floor")
+	TEST_ASSERT(pool.base_pixel_x || pool.base_pixel_y, "The torn shoulder's blood was laid on the middle of the tile, off the body held in the grab")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/splatter) in get_turf(victim), "The dropped arm laid a splash of its own after the wound")
 
 	// Armour on the arm: the shoulder comes out instead
 	var/mob/living/carbon/human/second = gorilla(spot(1, 3))
@@ -640,7 +954,8 @@
 	TEST_ASSERT_NOTNULL(armoured.get_bodypart(BODY_ZONE_R_ARM).get_wound_type(/datum/wound/blunt/bone/moderate), "An armoured arm didn't dislocate")
 	qdel(armoured_rip)
 
-/// The backbreaker breaks the back (they can't stand), and the fold comes off when the body is moved.
+/// The backbreaker breaks the back (they can't stand) and shoves the body onto the tile the bearer faces, or drops it
+/// at his feet if that tile is blocked; the fold comes off when the body is moved.
 /datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker
 
 /datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker/Run()
@@ -650,24 +965,43 @@
 	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The backbreaker didn't start")
 	var/datum/hv_finisher/chrome/gorilla/backbreaker/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "A chest aim didn't pick the backbreaker")
+	// Whatever blood earlier tests left where the body is broken and where it comes down
+	clear_mess(spot(1, 1))
+	clear_mess(spot(2, 1))
 	run_to_end(finisher)
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(1, 1), "The backbreaker laid blood of its own at the knee")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(2, 1), "The backbreaker laid blood of its own where the body landed")
 	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
 	var/datum/wound/spine = chest.get_wound_type(/datum/wound/blunt/bone/critical/gorilla_spine)
 	TEST_ASSERT_NOTNULL(spine, "The back didn't break")
 	TEST_ASSERT(HAS_TRAIT_FROM(victim, TRAIT_FLOORED, REF(spine)), "A broken back can still stand")
-	TEST_ASSERT_EQUAL(victim.loc, spot(1, 1), "The body didn't come down off the knee where it broke")
+	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The backbreaker moved the bearer")
+	TEST_ASSERT_EQUAL(victim.loc, spot(2, 1), "The body wasn't shoved off the knee onto the tile the bearer faces")
 	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_EAST, "The body lies the other way from its bent halves, so it flips when they come down")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_fold), "The broken back isn't drawn bent")
 	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The bent body isn't the one shown")
-	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "The body isn't drawn in front of the bearer standing over it")
+	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "A body shoved clear of the bearer is drawn off its tile")
 	victim.forceMove(spot(3, 3))
 	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_fold), "The fold stayed on a moved body")
-	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "A moved body is still drawn off its tile")
 	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A moved body stayed hidden")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold left puppets behind")
 	var/spine_ref = REF(spine)
 	spine.remove_wound()
 	TEST_ASSERT(!HAS_TRAIT_FROM(victim, TRAIT_FLOORED, spine_ref), "A set back still can't stand")
+
+	// Something solid on the tile he faces: the body comes down at his feet, drawn in front of him
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3))
+	second.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/boxed_in = downed(spot(2, 3))
+	allocate(/obj/structure/closet/crate, spot(2, 3))
+	var/datum/hv_finisher/chrome/gorilla/backbreaker/blocked = new(second, boxed_in)
+	TEST_ASSERT(blocked.start(), "Test fixture: the backbreaker wouldn't start beside a crate")
+	run_to_end(blocked)
+	TEST_ASSERT_EQUAL(boxed_in.loc, spot(1, 3), "With the tile ahead blocked the body didn't come down at the bearer's feet")
+	TEST_ASSERT_NOTNULL(boxed_in.GetComponent(/datum/component/gorilla_laid_in_front), "The body at his feet isn't drawn in front of the bearer standing over it")
+	boxed_in.forceMove(spot(3, 3))
+	TEST_ASSERT_NULL(boxed_in.GetComponent(/datum/component/gorilla_laid_in_front), "A moved body is still drawn off its tile")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold at his feet left puppets behind")
 
 /// Damage on the bearer, the bearer moving, or the victim coming out of the stun stops it, with the
 /// shorter cooldown, and nothing is left hidden or posed.
@@ -766,10 +1100,12 @@
 	var/brute_before = held.getBruteLoss()
 	var/stamina_before = held.getStaminaLoss()
 	TEST_ASSERT_EQUAL(punch(brawler, spot(1, 0)), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler floor click while grabbing wasn't a slam")
-	TEST_ASSERT_NULL(brawler.pulling, "The Brawler slam kept the grab")
 	var/grab_wait = S_TIMER_COOLDOWN_TIMELEFT(brawler, "gorilla_grab_move") // COOLDOWN_GORILLA_GRAB_MOVE
 	TEST_ASSERT(grab_wait > 10 SECONDS, "The Brawler slam's grab clock is the Gorilla's ([grab_wait])") // BRAWLER_GRAB_MOVE_COOLDOWN 15 s
-	sleep(0.5 SECONDS)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT_EQUAL(held.getBruteLoss(), brute_before, "A Brawler slam landed inside 0.3 s") // 0.40 s to the impact
+	sleep(0.2 SECONDS)
+	TEST_ASSERT_NULL(brawler.pulling, "The Brawler slam kept the grab")
 	TEST_ASSERT_EQUAL(held.loc, spot(1, 0), "The Brawler slam moved the body")
 	TEST_ASSERT_EQUAL(held.getBruteLoss() - brute_before, 18, "A Brawler floor slam didn't land 18") // BRAWLER_SLAM_FLOOR_DAMAGE
 	var/winded = held.getStaminaLoss() - stamina_before
@@ -796,7 +1132,7 @@
 	punched.grabbedby(hurler, supress_message = TRUE)
 	punched.grabbedby(hurler, supress_message = TRUE)
 	TEST_ASSERT_EQUAL(punch(hurler, punched), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: the Brawler punch didn't land")
-	sleep(0.5 SECONDS)
+	sleep(0.8 SECONDS)
 	TEST_ASSERT_EQUAL(punched.loc, spot(4, 0), "Brawler myomers hurled a held body")
 
 	// A pacifist never slams; neither does an arm that's down

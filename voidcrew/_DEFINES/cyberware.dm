@@ -14,6 +14,11 @@
 /// Fractional on purpose, it must never collide with a real layer index, nor
 /// with a fresh stump (HV_STUMP_FRESH_LAYER, 27.5).
 #define CYBERWARE_WORN_LAYER 27.6
+/// Mob layer the lit nodes of a spine rig (Cascade, Redline) shine at: just over
+/// whatever is worn on the back (BACK_LAYER 14, and every suit and cloak under
+/// it), still under hair (HAIR_LAYER 13) and headgear. Only what glows goes up
+/// here; the housing and dark nodes stay at CYBERWARE_WORN_LAYER.
+#define CYBERWARE_SPINE_SHINE_LAYER 13.7
 
 // ---- Organ slots -------------------------------------------------------
 // Minted here, never in DNA.dm. Slot uniqueness is global per mob, so
@@ -151,27 +156,10 @@
 // ---- Optics zoom (cyberware_zoom.dm) -----------------------------------
 // Every set of chrome optics can zoom: tg's scope component pans the camera
 // toward the cursor. A zoomed bearer can't fire a gun and their clicks reach
-// nothing on the map, except a cyberdeck through the signal below.
+// nothing on the map.
 
 /// Held by a bearer while their chrome optics are zoomed. Source is the optics.
 #define TRAIT_CYBER_ZOOMED "cyber_zoomed"
-
-/**
- * Sent on a zoomed bearer when they click the zoomed view, instead of the click
- * going anywhere else: (atom/target, list/modifiers). [target] is the best atom
- * on the turf under the cursor, the one a scoped gun would shoot (a mob, then a
- * dense object, then any other object, else the turf itself). [modifiers] is
- * the click's params2list(). Nothing checks range or line of sight first, so a
- * listener that acts on [target] has to.
- *
- * Zoomed clicks never reach click intercepts, so an armed click-to-activate
- * action does not see them. A listener that handles one (a cyberdeck firing its
- * armed hack) returns COMPONENT_CYBERWARE_ZOOM_CLICK_HANDLED and disarms itself.
- * Unhandled, the click is dropped: zoom is look-only.
- */
-#define COMSIG_CYBERWARE_ZOOM_CLICK "cyberware_zoom_click"
-	/// Returned by a COMSIG_CYBERWARE_ZOOM_CLICK listener that acted on the click.
-	#define COMPONENT_CYBERWARE_ZOOM_CLICK_HANDLED (1<<0)
 
 // ---- Chrome wheel (chrome_wheel.dm) ------------------------------------
 
@@ -261,9 +249,3 @@
 /// frame (ware_military_body.dm) and the Strut frame (ware_models_b.dm); the
 /// gate itself is in ware_military_body.dm.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
-
-// ---- Cyberdecks (ware_line_deck.dm) ------------------------------------
-
-/// Hacking deck, head. The deck line, Junker deck up to the Blackbox deck.
-/// Its own slot, not the OS slot, so a hacker can still run a sandevistan.
-#define ORGAN_SLOT_CYBERWARE_DECK "cyberware_deck"

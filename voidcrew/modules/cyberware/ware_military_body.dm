@@ -57,7 +57,7 @@
 	break_camo(organ_owner, silent = TRUE)
 
 /// The field runs on the weave: it collapses the moment the weave goes offline,
-/// a deck's Glitch, a brownout or damage, the same as an EMP drops it.
+/// a brownout or damage, the same as an EMP drops it.
 /obj/item/organ/cyberimp/cyberware/ghostskin/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
 	if(camo_active)
@@ -186,8 +186,8 @@
 		return
 	break_camo(owner, reason = "field contact")
 
-/// Signal proc for [COMSIG_LIVING_ELECTROCUTE_ACT]: a real jolt (a live door,
-/// a deck's Feedback Surge or Arc Flash) drops the field. Hallucinated shocks and
+/// Signal proc for [COMSIG_LIVING_ELECTROCUTE_ACT]: a real jolt (a live door)
+/// drops the field. Hallucinated shocks and
 /// ones the gloves fully insulate don't.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_shocked(datum/source, shock_damage, shock_source, siemens_coeff, flags)
 	SIGNAL_HANDLER
@@ -264,7 +264,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/slabskin
 	name = "\improper Slabskin plate"
-	desc = "Sintered ceramic scales grown into the skin in overlapping courses. Bullets leave scuffs and a noise like a dropped pan, and not a great deal else."
+	desc = "A keel and rib plates of sintered ceramic, grown into the skin of the chest and back. Bullets leave scuffs and a noise like a dropped pan."
 	icon_state = "slabskin"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_DERMAL
@@ -272,6 +272,7 @@
 	chrome_load = 6
 	tier = CYBERWARE_TIER_3
 	aug_overlay = "slabskin"
+	worn_under_clothes = TRUE
 	/// TRUE while the plate armor is mixed into the bearer's physiology.
 	/// Guards the failing-gated passive hooks against double add/subtract.
 	var/plate_armor_applied = FALSE

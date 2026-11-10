@@ -79,8 +79,8 @@
 		/datum/shop_sku/ripperdoc/governor_street,
 		/datum/shop_sku/ripperdoc/redline_street,
 		/datum/shop_sku/ripperdoc/cascade_street,
-		// Phase 2: the street models, street passives, optics and the two
-		// credit decks. Nothing priced in vouchers belongs here.
+		// Phase 2: the street models, street passives and optics. Nothing
+		// priced in vouchers belongs here.
 		/datum/shop_sku/ripperdoc/spyglass,
 		/datum/shop_sku/ripperdoc/cuffer_wrists,
 		/datum/shop_sku/ripperdoc/medic_palms,
@@ -93,7 +93,6 @@
 		/datum/shop_sku/ripperdoc/frostline,
 		/datum/shop_sku/ripperdoc/atlas_street,
 		/datum/shop_sku/ripperdoc/doppler_street,
-		/datum/shop_sku/ripperdoc/deck_junker,
 		/datum/shop_sku/ripperdoc/second_wind_deep,
 		/datum/shop_sku/ripperdoc/slipwire_street,
 		/datum/shop_sku/ripperdoc/hopper_street,
@@ -103,7 +102,6 @@
 		/datum/shop_sku/ripperdoc/ronin_holdout,
 		/datum/shop_sku/ripperdoc/longsight,
 		/datum/shop_sku/ripperdoc/hardweave,
-		/datum/shop_sku/ripperdoc/deck_street,
 		// CYBERWARE LINES: T2 SKUS END
 	)
 	buyback_types = list(
@@ -130,7 +128,6 @@
 		/datum/shop_buyback/ripperdoc/frostline/street_doc,
 		/datum/shop_buyback/ripperdoc/atlas_street/street_doc,
 		/datum/shop_buyback/ripperdoc/doppler_street/street_doc,
-		/datum/shop_buyback/ripperdoc/deck_junker/street_doc,
 		/datum/shop_buyback/ripperdoc/second_wind_deep/street_doc,
 		/datum/shop_buyback/ripperdoc/slipwire_street/street_doc,
 		/datum/shop_buyback/ripperdoc/hopper_street/street_doc,
@@ -140,7 +137,6 @@
 		/datum/shop_buyback/ripperdoc/ronin_holdout/street_doc,
 		/datum/shop_buyback/ripperdoc/longsight/street_doc,
 		/datum/shop_buyback/ripperdoc/hardweave/street_doc,
-		/datum/shop_buyback/ripperdoc/deck_street/street_doc,
 		// CYBERWARE LINES: T2 BUYBACKS END
 		// The rest of Splice's credit shelf, which Ratchet buys back even where he
 		// doesn't sell it (owner D7).

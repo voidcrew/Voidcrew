@@ -26,11 +26,17 @@
  * gloves, shoes and suits. One override covers the images, the emissive twins
  * and the emissive blockers alike, because they all take their layer from
  * bitflag_to_layer().
+ *
+ * Plating grown into the skin (worn_under_clothes) is skin: it stays where
+ * stock augments sit, under everything that is worn.
  */
 /datum/bodypart_overlay/augment/cyberware
 
 /datum/bodypart_overlay/augment/cyberware/bitflag_to_layer(layer)
 	if(layer == EXTERNAL_ADJACENT)
+		var/obj/item/organ/cyberimp/cyberware/ware = implant
+		if(istype(ware) && ware.worn_under_clothes)
+			return ..()
 		return -CYBERWARE_WORN_LAYER
 	return ..()
 
@@ -94,6 +100,8 @@
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed (the Governor hook).
 	var/chrome_capacity_bonus = 0
+	/// TRUE for ware that is part of the skin: its worn look draws under clothes, not over the jumpsuit.
+	var/worn_under_clothes = FALSE
 
 /obj/item/organ/cyberimp/cyberware/Initialize(mapload)
 	. = ..()
@@ -556,14 +564,14 @@
  * A click made with a chrome ability armed belongs to the chrome, refused or
  * not. tg's version returns FALSE on a refusal, and ClickOn() then carries on
  * as an ordinary click: a held gun fires at whoever was out of reach, an empty
- * hand punches whoever the deck would not take. So an armed ability swallows
+ * hand punches whoever the ability would not take. So an armed ability swallows
  * every click it is handed. A refusal (out of reach, no line of sight, wrong
  * target) keeps it armed for another try; a button that has gone dark
  * since it was armed (EMP, cooldown started elsewhere, stun) disarms, so the
  * next click is an ordinary one again.
  *
  * Only for a real click on an armed ability. Trigger() with a target (AI and
- * scripted callers) and the deck's zoom relay pass through unchanged.
+ * scripted callers) pass through unchanged.
  */
 /datum/action/cooldown/cyberware/InterceptClickOn(mob/living/clicker, params, atom/target)
 	var/armed = !isnull(clicker) && clicker.click_intercept == src
