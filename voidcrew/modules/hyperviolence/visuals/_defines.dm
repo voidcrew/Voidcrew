@@ -87,6 +87,8 @@
 /// How long a corpse keeps a pose (a slide, a curl) before it eases back. Moving, standing up or
 /// being revived ends it at once.
 #define HV_VIS_POSE_HOLD (20 MINUTES)
+/// How long a held pose takes to ease back when something ends it early (the body is dragged off).
+#define HV_VIS_POSE_RELEASE (0.3 SECONDS)
 /// The beat an executed body holds before it slumps.
 #define HV_VIS_SLUMP_BEAT (0.3 SECONDS)
 /// How a body died, which decides how it falls (hv_vis_death_kind()).

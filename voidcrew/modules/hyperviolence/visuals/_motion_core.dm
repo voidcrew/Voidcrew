@@ -363,11 +363,14 @@
 	else if(new_position == LYING_DOWN && (end_flags & HV_VIS_END_LIE))
 		release()
 
-/// Stops the held sequences and goes.
+/// Lets the held sequences go and leaves. Each eases back to where the body really is from wherever it
+/// has got to: a corpse that slid a few pixels as it died, or curled up, does not jump back when it is
+/// dragged off.
 /datum/component/hv_motion_hold/proc/release()
 	var/atom/holder = parent
 	if(!QDELETED(holder))
-		holder.hv_vis_stop(tags)
+		for(var/tag in tags)
+			holder.hv_vis_release(tag, HV_VIS_POSE_RELEASE)
 	qdel(src)
 
 /// The hold ran its course: the sequences already ended themselves.
