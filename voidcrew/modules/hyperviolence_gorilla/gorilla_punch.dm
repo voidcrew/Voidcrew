@@ -179,10 +179,22 @@
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/gorilla_punch_fx(mob/living/carbon/human/source, mob/living/target, heavy = FALSE, zone)
 	gorilla_punch_sparks(source, target, impact_state, zone)
 	if(heavy)
-		var/turf/spot = get_turf(target)
-		if(spot)
-			// On the floor, under whoever stands in it or beyond it up the screen
-			new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, 0.4)
+		gorilla_floor_ring(target, 0.4)
+
+/**
+ * A shockwave ring on the floor under [target], out to [reach]. On the floor plane, so it passes under whoever stands
+ * in it or beyond it up the screen. Laid where the body is drawn: one hit mid-stride is short of its turf, as the
+ * sparks are (gorilla_glide_lag()).
+ */
+/proc/gorilla_floor_ring(atom/movable/target, reach)
+	var/turf/spot = get_turf(target)
+	if(isnull(spot))
+		return null
+	var/obj/effect/temp_visual/circle_wave/cyberware_slam/floor/ring = new(spot, reach)
+	var/list/lag = gorilla_glide_lag(target)
+	ring.pixel_w += round(lag[1])
+	ring.pixel_z += round(lag[2])
+	return ring
 
 /// The sound of a landed piston punch on [target]. The one place to swap it.
 /proc/gorilla_punch_impact_sound(atom/target)
@@ -391,9 +403,7 @@ GLOBAL_LIST_INIT(gorilla_zone_points, list(
 		victim.hv_add_hit_line("The bone in [victim]'s [limb.plaintext_zone] snaps!", HV_LINE_HUGE, "The bone in your [limb.plaintext_zone] snaps!", DEFAULT_MESSAGE_RANGE)
 	playsound(victim, 'sound/effects/wounds/crack2.ogg', 80, TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2, ignore_walls = FALSE, falloff_distance = 0)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
-	var/turf/spot = get_turf(victim)
-	if(spot)
-		new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, 0.5)
+	gorilla_floor_ring(victim, 0.5)
 	log_combat(attacker, victim, "snapped the [limb.plaintext_zone] of", source_item, "(gorilla arms)")
 	return TRUE
 
