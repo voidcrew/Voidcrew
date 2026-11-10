@@ -89,6 +89,8 @@
 	var/real_hits = FALSE
 	/// Wound bonus added to the killing blow when it is a real one
 	var/kill_wound_bonus = 30
+	/// The bar over the attacker that everyone sees fill until the kill (finisher_bar.dm)
+	var/obj/effect/abstract/hv_exec_bar/exec_bar
 
 /datum/hv_finisher/New(mob/living/user, mob/living/carbon/victim, datum/callback/on_end)
 	. = ..()
@@ -117,6 +119,20 @@
 	. = 0
 	for(var/datum/hv_finisher_stage/stage as anything in stages)
 		. += stage.duration
+
+/// How long from the start to the killing blow: every stage before it, and its own beat's delay
+/datum/hv_finisher/proc/time_to_kill()
+	. = 0
+	for(var/datum/hv_finisher_stage/stage as anything in stages)
+		if(stage.killing_blow)
+			return . + stage.effect_delay
+		. += stage.duration
+
+/// Ends the bar over the attacker: full on a kill, failed otherwise
+/datum/hv_finisher/proc/end_exec_bar(success)
+	if(!QDELETED(exec_bar))
+		exec_bar.finish(success)
+	exec_bar = null
 
 /// The longest it can possibly run before the timeout safety net ends it
 /datum/hv_finisher/proc/longest_duration()
@@ -153,6 +169,7 @@
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(victim, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	user.face_atom(victim)
+	exec_bar = hv_exec_bar_start(user, time_to_kill())
 	log_combat(user, victim, "began a finisher on", addition = "([name])")
 	advance()
 	if(running)
@@ -234,6 +251,7 @@
 	current_stage.effect_done = TRUE
 	if(current_stage.killing_blow && !completed)
 		completed = TRUE
+		end_exec_bar(TRUE)
 		log_combat(user, victim, "finished", addition = "([name])")
 	current_stage.effect()
 
@@ -318,6 +336,7 @@
 		return
 	running = FALSE
 	result = reason
+	end_exec_bar(completed)
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null

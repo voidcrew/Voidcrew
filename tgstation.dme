@@ -7302,6 +7302,7 @@
 #include "voidcrew\modules\hyperviolence\crits\crit_wounds.dm"
 #include "voidcrew\modules\hyperviolence\finishers\finisher.dm"
 #include "voidcrew\modules\hyperviolence\finishers\finisher_ai.dm"
+#include "voidcrew\modules\hyperviolence\finishers\finisher_bar.dm"
 #include "voidcrew\modules\hyperviolence\finishers\finisher_effects.dm"
 #include "voidcrew\modules\hyperviolence\finishers\finisher_stages.dm"
 #include "voidcrew\modules\hyperviolence\finishers\finisher_users.dm"
