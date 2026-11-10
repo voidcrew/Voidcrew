@@ -12,9 +12,11 @@
  * filter on the planet target), and the protected species, terrain and
  * evidence all come from a per-planet table.
  *
- * The squad is the fork's hermit family (simple_animal humanoids): scruffy
- * wild-country gunmen with working c38/c46x30mm casing fire, each renamed to
- * a generated poacher on spawn. Every death is attributed suppression-style
+ * The squad is the wasteland hermits as human NPCs
+ * (voidcrew/modules/human_npcs/ruins/ruin_npc_hermits.dm): scruffy wild-country
+ * gunmen with real .38 revolvers and WT-550s and their spare ammunition, each
+ * renamed to a generated poacher on spawn. They are queued and built a body a
+ * tick; on an ice planet they are dressed for the cold. Every death is attributed suppression-style
  * (last-attacker ckey or a living crew member in confirm range); unattributed
  * deaths still count - dead is dead, and the telemetry logs it - so the wipe
  * can never stall on a weather or wildlife kill.
@@ -194,26 +196,25 @@
 
 	wipe = new
 	// The squad scales with the zone: green gets rifles and a knife, deeper
-	// zones add the trailboss's SMG and more guns. Exact subtypes only, the
-	// /survivor/random variant self-replaces on Initialize and would escape
-	// tracking.
+	// zones add the trailboss's SMG and more guns. Exact types only: a type
+	// that replaces itself on Initialize would escape tracking.
 	var/list/squad_types = list()
 	switch(difficulty)
 		if(MISSION_DIFFICULTY_MEDIUM)
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/survivor
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/gunslinger
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit
 		if(MISSION_DIFFICULTY_HARD)
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/survivor
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/gunslinger
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit
 		else
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter
-			squad_types += /mob/living/simple_animal/hostile/asteroid/hermit/survivor
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit/hunter
+			squad_types += /mob/living/carbon/human/npc/ruin/hermit
 	wipe.squad_types = squad_types
 	wipe.squad_names = squad_names
 	wipe.evidence_names = bust_row["evidence"]
@@ -264,6 +265,8 @@
 	var/list/squad_names
 	/// Live squad members still being tracked
 	var/list/mob/living/squad = list()
+	/// Queued orders for human NPC poachers not built yet (voidcrew/modules/human_npcs/)
+	var/list/datum/human_npc_order/pending_poachers = list()
 	/// Total squad size at spawn / members down so far
 	var/squad_size = 0
 	var/squad_down = 0
@@ -301,29 +304,39 @@
 	squad_size = 0
 	cache = null
 
-/// Stops tracking every remaining squad member (mission over / reset)
+/// Stops tracking every remaining squad member (mission over / reset), and cancels the ones still queued
 /datum/mission_objective/field/wipe_camp/proc/release_squad()
 	for(var/mob/living/poacher as anything in squad)
 		UnregisterSignal(poacher, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 	squad.Cut()
+	for(var/datum/human_npc_order/order as anything in pending_poachers)
+		qdel(order)
+	pending_poachers.Cut()
 
 /datum/mission_objective/field/wipe_camp/spawn_field_objects(turf/camp_turf)
-	// The squad, scattered around the campsite
+	// The squad, scattered around the campsite. Human poachers are queued and join
+	// the squad as they are built; the head count includes them from the start.
 	for(var/i in 1 to length(squad_types))
 		var/poacher_type = squad_types[i]
-		var/mob/living/simple_animal/poacher = spawn_field_npc(poacher_type, get_nearby_open_turf(camp_turf, 3), finalize = FALSE)
-		if(i <= length(squad_names))
-			poacher.name = squad_names[i]
+		var/poacher_name = i <= length(squad_names) ? squad_names[i] : null
+		var/turf/poacher_spot = get_nearby_open_turf(camp_turf, 3)
+		if(ispath(poacher_type, /mob/living/carbon/human/npc))
+			// Their outfits keep an ice-planet camp from freezing (human_npc_outfits.dm site layers).
+			var/datum/npc_spawn_context/context = new(mission?.target || src, mission?.target?.get_zone_type(), "auto", source_turf = poacher_spot)
+			pending_poachers += spawn_human_npc(poacher_type, poacher_spot, CALLBACK(src, PROC_REF(on_human_poacher_built)), name = poacher_name, context = context)
+			continue
+		var/mob/living/simple_animal/poacher = spawn_field_npc(poacher_type, poacher_spot, finalize = FALSE)
+		if(poacher_name)
+			poacher.name = poacher_name
 		poacher.desc += " The kit is professional: snare wire, skinning knives, and the brand of [mission.objective_name] burned into the stock."
 		// Outfitted expedition: cold-weather gear keeps an ice-planet camp
 		// from freezing to death before the crew arrives
 		poacher.minbodytemp = 0
 		poacher.npc_spawn_context.finalize()
-		protect_field_mob(poacher)
-		RegisterSignal(poacher, COMSIG_LIVING_DEATH, PROC_REF(on_poacher_death))
-		RegisterSignal(poacher, COMSIG_QDELETING, PROC_REF(on_poacher_removed))
-		squad += poacher
-	squad_size = length(squad)
+		enlist_poacher(poacher)
+	squad_size = length(squad) + length(pending_poachers)
+	if(length(pending_poachers))
+		addtimer(CALLBACK(src, PROC_REF(check_pending_poachers)), HUMAN_NPC_ZONE_WAIT + 10 SECONDS)
 
 	// Camp dressing: fire, crude cover, bedrolls. The dense prelit bonfire
 	// can't be pathed into, so the squad won't cook itself.
@@ -365,6 +378,41 @@
 			mission.register_quest_atom(piece)
 
 	notify_crew("[mission.objective_name] camp sighted - [squad_size] armed poachers holding a sealed trophy cache. The case beacon marks the cache ([mission.gps_tag]).", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+
+/// Tracks a squad member: spared by the planet's fauna sweep, counted when it dies.
+/datum/mission_objective/field/wipe_camp/proc/enlist_poacher(mob/living/poacher)
+	protect_field_mob(poacher)
+	RegisterSignal(poacher, COMSIG_LIVING_DEATH, PROC_REF(on_poacher_death))
+	RegisterSignal(poacher, COMSIG_QDELETING, PROC_REF(on_poacher_removed))
+	squad += poacher
+
+/// A queued human poacher was built: it joins the squad.
+/datum/mission_objective/field/wipe_camp/proc/on_human_poacher_built(mob/living/carbon/human/npc/poacher)
+	for(var/datum/human_npc_order/order as anything in pending_poachers)
+		if(order.spawned_ref?.resolve() == poacher)
+			pending_poachers -= order
+			break
+	if(!active || !mission || mission.failed || mission.completed)
+		return
+	enlist_poacher(poacher)
+
+/**
+ * A queued poacher that was never built (its spot became unusable) leaves the head count, so the wipe
+ * can still finish. Orders still waiting are looked at again later.
+ */
+/datum/mission_objective/field/wipe_camp/proc/check_pending_poachers()
+	if(!active || !mission || mission.failed || mission.completed)
+		return
+	for(var/datum/human_npc_order/order as anything in pending_poachers.Copy())
+		if(QDELETED(order) || (order.done && !order.spawned_ref?.resolve()))
+			pending_poachers -= order
+			squad_size--
+	if(length(pending_poachers))
+		addtimer(CALLBACK(src, PROC_REF(check_pending_poachers)), 10 SECONDS)
+		return
+	if(squad_size > 0 && squad_down >= squad_size)
+		unlock_cache()
+		complete()
 
 /**
  * A named poacher died: always counts toward the wipe (attribution only

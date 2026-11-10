@@ -34,6 +34,9 @@
 		/datum/shop_sku/ripperdoc/hemoglass,
 		/datum/shop_sku/ripperdoc/dead_channel,
 		/datum/shop_sku/ripperdoc/lazarus,
+		/datum/shop_sku/ripperdoc/clotter_node,
+		/datum/shop_sku/ripperdoc/medic_palms,
+		/datum/shop_sku/ripperdoc/second_wind_deep,
 	)
 	loot_common = list(
 		/obj/item/storage/medkit/regular = 10,
@@ -53,6 +56,9 @@
 		/obj/item/organ/cyberimp/cyberware/gastro = 4,
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/stimmed = 3,
+		// clinic chrome: a clotting node and a medic's sensor palms
+		/obj/item/organ/cyberimp/cyberware/clotter_node = 4,
+		/obj/item/organ/cyberimp/cyberware/medic_palms = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/storage/medkit/advanced = 10,
@@ -79,6 +85,8 @@
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/hypermetabolic = 3,
 		/obj/item/dnainjector/loot/plasmocile = 2,
+		// the long-shift air bladder
+		/obj/item/organ/cyberimp/cyberware/second_wind/deep = 3,
 	)
 	loot_prime = list(
 		/obj/item/reagent_containers/hypospray/medipen/atropine = 7,

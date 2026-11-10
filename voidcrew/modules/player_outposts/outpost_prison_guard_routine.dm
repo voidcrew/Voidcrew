@@ -2,8 +2,8 @@
  * # Prison guards: routine
  *
  * Owner: XA (extras-plan.md 4.1). The guards' AI controller, their peaceful activities (post,
- * rounds, watching the yard, a drink at the cooler, a chat, checking on a prisoner) and the
- * response datum the dispatcher in outpost_prison_guards.dm hands out.
+ * rounds, watching the yard, a drink at the cooler, a chat, checking on a prisoner, patching
+ * themselves up) and the response datum the dispatcher in outpost_prison_guards.dm hands out.
  *
  * As with the prisoners' routine (outpost_prison_routine.dm), the AI only walks: to the goal of
  * the guard's response when there is one, else to their activity's. The dispatcher deals with
@@ -86,7 +86,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 // ===== THE GUARD'S SIDE =====
 
 /// Where their AI should walk them now, or null to stay put
-/mob/living/basic/outpost_prison_guard/proc/walk_goal()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/walk_goal()
 	if(phase == OUTPOST_GUARD_DISMISSED)
 		return (leave_spot && loc != leave_spot) ? leave_spot : null
 	if(phase != OUTPOST_GUARD_PRESENT)
@@ -98,7 +98,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	return (goal && !at_goal(goal)) ? goal : null
 
 /// A walk to `goal` failed: a response gets another try until it expires; an activity gets one more, then a rest
-/mob/living/basic/outpost_prison_guard/proc/walk_failed(atom/goal)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/walk_failed(atom/goal)
 	if(response || !activity || goal != activity.goal())
 		return
 	if(++activity.failed_moves < 2)
@@ -107,7 +107,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	end_activity(cancel_ai = FALSE)
 
 /// Ends what they are doing on routine
-/mob/living/basic/outpost_prison_guard/proc/end_activity(cancel_ai = TRUE)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/end_activity(cancel_ai = TRUE)
 	if(!activity)
 		return
 	var/datum/outpost_guard_activity/old = activity
@@ -119,16 +119,16 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 		ai_controller?.CancelActions()
 
 /// Starts `new_activity` in place of whatever they were doing on routine
-/mob/living/basic/outpost_prison_guard/proc/start_activity(datum/outpost_guard_activity/new_activity)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/start_activity(datum/outpost_guard_activity/new_activity)
 	end_activity()
 	activity = new_activity
 	return new_activity
 
-/mob/living/basic/outpost_prison_guard/proc/activity_on_cooldown(activity_type)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/activity_on_cooldown(activity_type)
 	return LAZYACCESS(activity_cooldowns, activity_type) > world.time
 
 /// Picks their next routine activity by weight. Returns it, already set up, or null.
-/mob/living/basic/outpost_prison_guard/proc/choose_activity()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/choose_activity()
 	if(!prison || !on_duty())
 		return null
 	var/list/candidates = list()
@@ -161,7 +161,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
  * A two-guard exchange: they open with a line from the file's guard_conversations, and `partner`
  * answers a few seconds later. Returns TRUE if it started.
  */
-/mob/living/basic/outpost_prison_guard/proc/start_guard_conversation(mob/living/basic/outpost_prison_guard/partner)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/start_guard_conversation(mob/living/carbon/human/npc/outpost_prison_guard/partner)
 	if(!on_duty() || !partner?.on_duty())
 		return FALSE
 	var/list/conversations = outpost_guard_dialogue("guard_conversations")
@@ -179,8 +179,8 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	return TRUE
 
 /// The second half of a guards' exchange
-/mob/living/basic/outpost_prison_guard/proc/reply_to_guard(line, datum/weakref/opener_ref)
-	var/mob/living/basic/outpost_prison_guard/opener = opener_ref?.resolve()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/reply_to_guard(line, datum/weakref/opener_ref)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/opener = opener_ref?.resolve()
 	if(!on_duty() || !opener || get_dist(src, opener) > 5 || !istext(line))
 		return FALSE
 	face_atom(opener)
@@ -191,7 +191,9 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 // ===== AI =====
 
 /datum/ai_controller/basic_controller/outpost_prison_guard
-	blackboard = list()
+	blackboard = list(
+		BB_TARGET_MINIMUM_STAT = HUMAN_NPC_SPARES_DOWNED,
+	)
 	ai_traits = PASSIVE_AI_FLAGS
 	ai_movement = /datum/ai_movement/jps
 	// The routine plans everything, idle time included.
@@ -200,13 +202,17 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	can_idle = FALSE
 	// No finding targets: guards only ever strike through the dispatcher (outpost_prison_guards.dm),
 	// so turrets never read them as hostile.
-	planning_subtrees = list(/datum/ai_planning_subtree/outpost_prison_guard)
+	// Combat sense first: out of a line of stun fire before anything else (outpost_prison_guard_combat_sense.dm)
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/npc_combat_sense,
+		/datum/ai_planning_subtree/outpost_prison_guard,
+	)
 
 /// Walks to the response's goal, else the activity's, or ticks the activity once there
 /datum/ai_planning_subtree/outpost_prison_guard
 
 /datum/ai_planning_subtree/outpost_prison_guard/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/outpost_prison_guard/guard = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = controller.pawn
 	if(!istype(guard) || guard.stat != CONSCIOUS || HAS_TRAIT(guard, TRAIT_IMMOBILIZED))
 		return
 	if(guard.phase == OUTPOST_GUARD_DISMISSED || guard.response)
@@ -235,7 +241,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// Queues the walk to `goal`: onto a tile, or up beside a mob
-/mob/living/basic/outpost_prison_guard/proc/queue_walk(datum/ai_controller/controller, atom/goal)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/queue_walk(datum/ai_controller/controller, atom/goal)
 	controller.set_blackboard_key(BB_OUTPOST_GUARD_GOAL, goal)
 	controller.queue_behavior(isturf(goal) ? /datum/ai_behavior/outpost_prison_guard_travel : /datum/ai_behavior/outpost_prison_guard_travel/approach, BB_OUTPOST_GUARD_GOAL)
 
@@ -253,7 +259,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	set_movement_target(controller, goal)
 
 /datum/ai_behavior/outpost_prison_guard_travel/perform(seconds_per_tick, datum/ai_controller/controller, goal_key)
-	var/mob/living/basic/outpost_prison_guard/guard = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = controller.pawn
 	var/atom/goal = controller.blackboard[goal_key]
 	if(QDELETED(goal) || !istype(guard))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -269,7 +275,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	. = ..()
 	controller.clear_blackboard_key(goal_key)
 	if(!succeeded)
-		var/mob/living/basic/outpost_prison_guard/guard = controller.pawn
+		var/mob/living/carbon/human/npc/outpost_prison_guard/guard = controller.pawn
 		if(istype(guard))
 			guard.walk_failed(goal)
 
@@ -282,11 +288,11 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	action_cooldown = 1 SECONDS
 
 /datum/ai_behavior/outpost_prison_guard_activity/setup(datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prison_guard/guard = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = controller.pawn
 	return istype(guard) && !!guard.activity
 
 /datum/ai_behavior/outpost_prison_guard_activity/perform(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prison_guard/guard = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = controller.pawn
 	var/datum/outpost_guard_activity/doing = guard.activity
 	if(!doing || guard.response || !guard.on_duty())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -320,14 +326,14 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	var/max_duration = 90 SECONDS
 	/// Whether rounds or the other guard's chat may take its place
 	var/interruptible = TRUE
-	var/mob/living/basic/outpost_prison_guard/guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard
 	/// Where they are headed: a tile, or a mob to stand beside; null once there
 	var/datum/weakref/goal_ref
 	var/started = FALSE
 	var/ends_at = 0
 	var/failed_moves = 0
 
-/datum/outpost_guard_activity/New(mob/living/basic/outpost_prison_guard/doer)
+/datum/outpost_guard_activity/New(mob/living/carbon/human/npc/outpost_prison_guard/doer)
 	. = ..()
 	guard = doer
 
@@ -377,7 +383,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /// The other guard of the wing on the payroll, if any is here
 /datum/outpost_guard_activity/proc/other_guard()
-	for(var/mob/living/basic/outpost_prison_guard/other in guard.prison?.guard_mobs)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/other in guard.prison?.guard_mobs)
 		if(other != guard && other.on_duty())
 			return other
 	return null
@@ -534,8 +540,8 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /datum/outpost_guard_activity/watch_yard/tick(seconds)
 	var/obj/structure/hoop/hoop = hoop_ref?.resolve()
-	var/mob/living/basic/outpost_prisoner/player
-	for(var/mob/living/basic/outpost_prisoner/prisoner in guard.prison?.prisoners)
+	var/mob/living/carbon/human/npc/outpost_prisoner/player
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in guard.prison?.prisoners)
 		if(istype(prisoner.activity, /datum/prisoner_activity/basketball) && prisoner.stat == CONSCIOUS)
 			player = prisoner
 			break
@@ -600,7 +606,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	var/next_exchange = 0
 
 /datum/outpost_guard_activity/chat/setup()
-	var/mob/living/basic/outpost_prison_guard/other = other_guard()
+	var/mob/living/carbon/human/npc/outpost_prison_guard/other = other_guard()
 	if(!can_join(other))
 		return FALSE
 	partner_ref = WEAKREF(other)
@@ -608,13 +614,13 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	return TRUE
 
 /// Whether the other guard is free to talk
-/datum/outpost_guard_activity/chat/proc/can_join(mob/living/basic/outpost_prison_guard/other)
+/datum/outpost_guard_activity/chat/proc/can_join(mob/living/carbon/human/npc/outpost_prison_guard/other)
 	if(!other?.on_duty() || !other.ai_running() || other.response)
 		return FALSE
 	return !other.activity || (other.activity.interruptible && !istype(other.activity, /datum/outpost_guard_activity/chat))
 
 /datum/outpost_guard_activity/chat/arrive()
-	var/mob/living/basic/outpost_prison_guard/partner = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prison_guard/partner = partner_ref?.resolve()
 	if(!partner || !guard.Adjacent(partner) || !can_join(partner))
 		return FALSE
 	. = ..()
@@ -624,7 +630,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	next_exchange = world.time + 1 SECONDS
 
 /datum/outpost_guard_activity/chat/tick(seconds)
-	var/mob/living/basic/outpost_prison_guard/partner = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prison_guard/partner = partner_ref?.resolve()
 	var/datum/outpost_guard_activity/chat/listen/listening = partner?.activity
 	if(!partner || !guard.Adjacent(partner) || !istype(listening) || listening.partner_ref?.resolve() != guard)
 		return GUARD_ACTIVITY_DONE
@@ -636,7 +642,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	return ..()
 
 /datum/outpost_guard_activity/chat/finish()
-	var/mob/living/basic/outpost_prison_guard/partner = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prison_guard/partner = partner_ref?.resolve()
 	var/datum/outpost_guard_activity/chat/listen/listening = partner?.activity
 	if(istype(listening) && listening.partner_ref?.resolve() == guard)
 		partner.end_activity()
@@ -647,7 +653,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	leisure = FALSE
 	weight = 0
 
-/datum/outpost_guard_activity/chat/listen/New(mob/living/basic/outpost_prison_guard/doer, mob/living/basic/outpost_prison_guard/talker)
+/datum/outpost_guard_activity/chat/listen/New(mob/living/carbon/human/npc/outpost_prison_guard/doer, mob/living/carbon/human/npc/outpost_prison_guard/talker)
 	. = ..(doer)
 	partner_ref = WEAKREF(talker)
 	started = TRUE
@@ -661,7 +667,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	return TRUE
 
 /datum/outpost_guard_activity/chat/listen/tick(seconds)
-	var/mob/living/basic/outpost_prison_guard/talker = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prison_guard/talker = partner_ref?.resolve()
 	var/datum/outpost_guard_activity/chat/talking = talker?.activity
 	if(!talker || !guard.Adjacent(talker) || !istype(talking) || talking.partner_ref?.resolve() != guard)
 		return GUARD_ACTIVITY_DONE
@@ -688,7 +694,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 /datum/outpost_guard_activity/check_on/setup()
 	var/datum/outpost_prison/prison = guard.prison
 	var/list/options = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || !prisoner.routine_allowed() || prisoner.activity?.sleeping || !prison.in_cell_block(prisoner))
 			continue
 		if(prisoner.guard_noticed_at && world.time - prisoner.guard_noticed_at < OUTPOST_GUARD_CHECK_ON_GAP)
@@ -698,7 +704,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 		options += prisoner
 	if(!length(options))
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/chosen = pick(options)
+	var/mob/living/carbon/human/npc/outpost_prisoner/chosen = pick(options)
 	prisoner_ref = WEAKREF(chosen)
 	need = chosen.bubble
 	chosen.guard_noticed_at = world.time
@@ -707,7 +713,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /datum/outpost_guard_activity/check_on/begin()
 	. = ..()
-	var/mob/living/basic/outpost_prisoner/prisoner = prisoner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = prisoner_ref?.resolve()
 	if(!prisoner)
 		return
 	guard.face_atom(prisoner)
@@ -716,11 +722,131 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 		guard.prison?.note_speech()
 
 /datum/outpost_guard_activity/check_on/tick(seconds)
-	var/mob/living/basic/outpost_prisoner/prisoner = prisoner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = prisoner_ref?.resolve()
 	if(!prisoner || !guard.Adjacent(prisoner))
 		return GUARD_ACTIVITY_DONE
 	guard.face_atom(prisoner)
 	return ..()
+
+// ----- patching up -----
+
+/**
+ * Hurt (OUTPOST_GUARD_TREAT_ABOVE brute and burn) with nothing going on: they treat themselves the way
+ * anyone does, with a bruise pack or suture on themselves (tg's medical stacks, their do_after and all).
+ * Their own pack first, else one from the wing's first-aid kit in the office, which the crew keeps stocked.
+ * Nothing heals them otherwise.
+ */
+/datum/outpost_guard_activity/patch_up
+	name = "patching up"
+	leisure = TRUE
+	weight = 0
+	min_duration = 20 SECONDS
+	max_duration = 30 SECONDS
+	interruptible = FALSE
+	/// The first-aid kit they are going to, if they have nothing of their own
+	var/datum/weakref/kit_ref
+
+/datum/outpost_guard_activity/patch_up/get_weight()
+	if(!guard.needs_patching() || guard.prison?.riot_active)
+		return 0
+	return 100
+
+/datum/outpost_guard_activity/patch_up/setup()
+	if(guard.carried_treatment())
+		return TRUE
+	var/obj/item/storage/medkit/kit = guard.prison?.guard_first_aid_kit()
+	if(!kit)
+		return FALSE
+	kit_ref = WEAKREF(kit)
+	set_goal(isturf(kit.loc) && guard.prison.guard_office_tile(kit.loc) ? kit.loc : guard.prison.guard_spot_beside(kit, guard))
+	return !!goal()
+
+/datum/outpost_guard_activity/patch_up/begin()
+	. = ..()
+	var/obj/item/storage/medkit/kit = kit_ref?.resolve()
+	if(kit && !guard.carried_treatment() && get_dist(guard, kit) <= 1)
+		guard.take_treatment_from(kit)
+	INVOKE_ASYNC(guard, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prison_guard, treat_self))
+
+/datum/outpost_guard_activity/patch_up/tick(seconds)
+	if(!guard.treating && !guard.needs_patching())
+		return GUARD_ACTIVITY_DONE
+	if(!guard.treating && guard.carried_treatment())
+		INVOKE_ASYNC(guard, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prison_guard, treat_self))
+	return ..()
+
+/datum/outpost_guard_activity/patch_up/Destroy()
+	kit_ref = null
+	return ..()
+
+/mob/living/carbon/human/npc/outpost_prison_guard
+	/// Busy putting a dressing on themselves
+	var/treating = FALSE
+
+/// Hurt enough to stop and patch up
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/needs_patching()
+	return getBruteLoss() + getFireLoss() >= OUTPOST_GUARD_TREAT_ABOVE
+
+/// A bruise pack, suture, ointment or mesh they carry that would do some good now
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/carried_treatment()
+	for(var/obj/item/stack/medical/stack in get_all_contents_type(/obj/item/stack/medical))
+		if(QDELETED(stack) || !stack.amount)
+			continue
+		if((stack.heal_brute && getBruteLoss()) || (stack.heal_burn && getFireLoss()))
+			return stack
+	return null
+
+/// Takes a pack out of the wing's first-aid kit into a free hand, as anyone would
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/take_treatment_from(obj/item/storage/medkit/kit)
+	for(var/obj/item/stack/medical/stack in kit)
+		if(!stack.amount || !((stack.heal_brute && getBruteLoss()) || (stack.heal_burn && getFireLoss())))
+			continue
+		if(!put_in_hands(stack))
+			return null
+		// Used up on them, never loot (human_npc_gear.dm)
+		npc_lock_item(stack)
+		return stack
+	return null
+
+/**
+ * Puts a dressing on themselves: a medical stack they carry, in a free hand, used on their own body
+ * through tg's medical code (the do_after, the limb it treats, the stack used up). Sleeps.
+ */
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/treat_self()
+	if(treating || stat != CONSCIOUS || !needs_patching())
+		return FALSE
+	var/obj/item/stack/medical/stack = carried_treatment()
+	if(!stack)
+		return FALSE
+	if(!is_holding(stack) && !human_npc_take_in_hand(src, stack))
+		set_baton(FALSE)
+		if(!human_npc_take_in_hand(src, stack))
+			return FALSE
+	if(!human_npc_ready_item(src, stack))
+		return FALSE
+	treating = TRUE
+	stack.interact_with_atom(src, src)
+	treating = FALSE
+	if(!QDELETED(stack) && is_holding(stack))
+		stack.equip_to_best_slot(src)
+	return TRUE
+
+/// The wing's first-aid kit in the office with something in it, if there is one
+/datum/outpost_prison/proc/guard_first_aid_kit()
+	for(var/turf/tile as anything in staff_ground)
+		if(tile.loc != wing)
+			continue
+		for(var/obj/item/storage/medkit/kit in tile)
+			if(locate(/obj/item/stack/medical) in kit)
+				return kit
+	return null
+
+/// A free office tile beside `thing`, for a guard to stand at, or null
+/datum/outpost_prison/proc/guard_spot_beside(atom/thing, mob/living/except)
+	for(var/turf/tile in orange(1, get_turf(thing)))
+		if(guard_office_tile(tile) && !guard_spot_taken(tile, except))
+			return tile
+	return null
 
 #undef GUARD_ACTIVITY_CONTINUE
 #undef GUARD_ACTIVITY_DONE

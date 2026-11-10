@@ -105,7 +105,7 @@
 	for(var/datum/outpost_prison_cell/cell as anything in cells)
 		if(cell.occupant && (cell.occupant in prisoners))
 			ordered += cell.occupant
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		ordered |= prisoner
 	return ordered
 
@@ -114,7 +114,7 @@
  * experiment's subject or shut in their cell ("confined", whatever the reason), and otherwise
  * present or leaving.
  */
-/datum/outpost_prison/proc/roster_status(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/roster_status(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/status = prisoner.console_status()
 	if(status == "dead" || status == "arriving" || prisoner.phase == PRISONER_LEAVING)
 		return status
@@ -131,7 +131,7 @@
 /// The warden console's ui_data (OutpostPrison.tsx)
 /datum/outpost_prison/proc/ui_payload(mob/user)
 	var/list/roster = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in roster_order())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in roster_order())
 		roster += list(list(
 			"ref" = REF(prisoner),
 			"name" = prisoner.real_name,

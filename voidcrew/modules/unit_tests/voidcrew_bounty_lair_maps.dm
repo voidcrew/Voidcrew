@@ -15,6 +15,17 @@
 	var/datum/turf_reservation/reserve
 
 /datum/unit_test/voidcrew_bounty_lair_maps/Destroy()
+	// The club's markers queue its people (spawn_human_npc()): none of them is built into the block once it's given back
+	if(reserve)
+		var/list/block_turfs = list()
+		for(var/turf/tile as anything in reserve.reserved_turfs)
+			block_turfs[tile] = TRUE
+		for(var/datum/human_npc_order/order as anything in SShuman_npcs.queue.Copy())
+			if(block_turfs[order.where])
+				qdel(order)
+		for(var/turf/tile as anything in reserve.reserved_turfs)
+			for(var/mob/living/carbon/human/npc/bounty_mafia/member in tile)
+				qdel(member)
 	QDEL_NULL(reserve)
 	return ..()
 
@@ -84,7 +95,7 @@
 	// The gatekeepers: two lieutenants, outside the garage
 	TEST_ASSERT_EQUAL(length(gatekeepers), 2, "The club should hold two gatekeeper landmarks")
 	for(var/obj/effect/landmark/bounty_lair_gatekeeper/keeper as anything in gatekeepers)
-		TEST_ASSERT_EQUAL(keeper.gatekeeper_type, /mob/living/basic/trooper/russian/mafia/lieutenant, "A gatekeeper landmark is not set to the lieutenant")
+		TEST_ASSERT_EQUAL(keeper.gatekeeper_type, /mob/living/carbon/human/npc/bounty_mafia/lieutenant, "A gatekeeper landmark is not set to the lieutenant")
 		TEST_ASSERT(istype(get_area(keeper), /area/ruin/space/has_grav/powered/mafia_club/back_office), "A gatekeeper landmark is not in the back office, in front of the garage door")
 
 	// The garage door: three closed, indestructible blast doors, the club's only poddoors

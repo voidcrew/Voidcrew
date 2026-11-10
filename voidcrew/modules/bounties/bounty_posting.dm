@@ -45,7 +45,7 @@
 	var/datum/weakref/board_proof_ref
 	/// Weakrefs to GPS units (/datum/component/gps/item) its sighting beacon was uploaded to -> weakref of the ship that linked them
 	var/list/board_gps_units = list()
-	/// The worst capture state (BOUNTY_STATE_*) any body of its criminal reached. A criminal that comes back when its site loads again starts from here: once downed, never full pay; once dead, only proof (12.1).
+	/// BOUNTY_STATE_DEAD once a body of its criminal was dead when its site unloaded: the next load places its proof of death, never a living body again. Otherwise BOUNTY_STATE_FREE.
 	var/board_worst_state = BOUNTY_STATE_FREE
 	/// The sighting beacon's tag on those units
 	var/board_gps_tag
@@ -57,6 +57,10 @@
 	var/list/board_printed_warrants = list()
 	/// Timer deciding, a moment after its criminal was deleted, whether anything is left to turn in
 	var/board_lost_timer
+	/// The company its criminal keeps at its site (board_company(): bounty_roll_company(), a style and chrome a companion), null until rolled
+	var/list/board_company
+	/// Weakref to the site board_company was rolled for: a new site rolls a new one
+	var/datum/weakref/board_company_site
 
 /datum/criminal_bounty/Destroy()
 	// close() is the way out; this catches an admin qdel that skipped it
@@ -188,7 +192,7 @@
 		if(record && !record.mugshot)
 			bounty_queue_mugshot(record)
 	board_push_waypoint(ship)
-	ship.ship_notify("WANTED: now hunting [record?.name]. [board_place_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship.ship_notify("WANTED: now hunting [record?.name]. [board_sighting_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	log_game("BOUNTY: [ship.name] is hunting the [board_log_name()]")
 	board_arm()
 	return TRUE
@@ -351,7 +355,7 @@
  * so this never touches one being beamed out.
  */
 /datum/criminal_bounty/proc/board_remove_mobs(reason, relisting = FALSE)
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	board_detach_criminal()
 	var/list/extras = list()
 	for(var/datum/weakref/ref as anything in companions + decoys)
@@ -385,6 +389,12 @@
 	var/turf/spot = get_turf(leaving)
 	if(spot && leaving.stat != DEAD)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
+	// Its locked kit goes with it (D3); whatever on it isn't its own (papers, a key, a crew's cuffs, a suit a
+	// crew put on it) stays behind, as at the pad (bounty_return_crew_items(), bounty_suits.dm).
+	if(ishumannpc(leaving) && spot)
+		var/mob/living/carbon/human/npc/body = leaving
+		body.npc_drop_not_gear()
+		bounty_return_crew_items(body, spot)
 	qdel(leaving)
 
 // ===== RELISTING =====
@@ -448,7 +458,7 @@
 	SScriminal_bounties.board_changed()
 	for(var/obj/structure/overmap/ship/hunter as anything in hunter_ships())
 		board_push_waypoint(hunter)
-		hunter.ship_notify("WANTED: new sighting of [record?.name]. [board_place_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		hunter.ship_notify("WANTED: new sighting of [record?.name]. [board_sighting_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	log_game("BOUNTY: the [board_log_name()] relisted")
 	board_arm()
 	return TRUE
@@ -486,19 +496,12 @@
 	return 0
 
 /**
- * Percent paid for a criminal in `state` at the pad that has at some point been as bad as
- * `worst_state` (12.1: once downed, at most the downed share; once dead, the dead share). 0 for a
- * free criminal, which the pad refuses.
+ * Percent paid for a criminal in `state` at the pad: its condition there, nothing it went through on the
+ * way (owner ruling 2026-11-08). 0 for a free criminal, which the pad refuses. The kingpin and kill-only
+ * postings override it.
  */
-/datum/criminal_bounty/proc/board_share_for(state, worst_state)
-	var/share = bounty_state_share(state)
-	if(!share)
-		return 0
-	if(worst_state && worst_state != BOUNTY_STATE_FREE)
-		var/worst_share = bounty_state_share(worst_state)
-		if(worst_share)
-			share = min(share, worst_share)
-	return share
+/datum/criminal_bounty/proc/board_share_for(state)
+	return bounty_state_share(state)
 
 /**
  * What a turn-in at `share` percent pays: list(credits, vouchers). Vouchers come only with the
@@ -554,6 +557,32 @@
 			return "Seen at the [site_name]"
 	return "Seen on [site_name]"
 
+/// The sighting as the card and the notices give it: where they were seen, and who with ("Seen on Kepler IV with two friends, one armed")
+/datum/criminal_bounty/proc/board_sighting_text()
+	var/company = board_company_text()
+	return company ? "[board_place_text()] [company]" : board_place_text()
+
+/// Who they were seen with (board_company()), or null for nobody: "with a friend", "with an armed friend", "with two friends", "with two friends, one armed"
+/datum/criminal_bounty/proc/board_company_text()
+	if(board_relisting)
+		return null
+	var/list/company = board_company()
+	if(!length(company))
+		return null
+	var/armed = 0
+	for(var/list/member as anything in company)
+		if(bounty_style_is_gun(member[BOUNTY_COMPANY_STYLE]))
+			armed++
+	if(length(company) == 1)
+		return armed ? "with an armed friend" : "with a friend"
+	var/friends = "with [length(company) == 2 ? "two" : length(company)] friends"
+	switch(armed)
+		if(0)
+			return friends
+		if(1)
+			return "[friends], one armed"
+	return "[friends], all armed"
+
 /// How the poster says they're wanted: alive, dead or alive, or dead
 /datum/criminal_bounty/proc/board_terms()
 	return "Wanted alive"
@@ -595,7 +624,7 @@
 		"tier" = record?.tier || BOUNTY_TIER_PETTY,
 		"terms" = board_terms(),
 		"crime" = record?.crime,
-		"place" = board_place_text(),
+		"place" = board_sighting_text(),
 		"zone" = board_zone_name(),
 		"zone_color" = board_zone_color(),
 		"mugshot_id" = record?.id,
@@ -660,6 +689,9 @@
 		lines += "<b>Wanted for:</b> [record.crime].<br>"
 	lines += "<b>[board_terms()]</b>.<br>"
 	lines += "[board_place_text()], [board_zone_name()].<br>"
+	var/company = board_company_text()
+	if(company)
+		lines += "[capitalize(company)].<br>"
 	// One feature is left off, so what the traders say about them still tells a hunter something new
 	var/list/features = record?.feature_lines()
 	if(length(features))

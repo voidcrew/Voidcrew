@@ -1,4 +1,5 @@
-// Faction-specific pirate NPC mobs for Voidcrew NPC ships
+// Faction-specific pirate NPC basic mobs. NPC ship crews and their boarders are human NPCs now
+// (faction_pirate_humans.dm); these stay for ruins, planets and missions until those move (phase C).
 // Each faction has melee, ranged, and captain variants
 // All are space-capable (no atmos damage, spacewalk trait)
 
@@ -25,10 +26,6 @@
 	var/list/crew_alert_lines
 	/// What it shouts when it spots someone. Null uses the generic lines.
 	var/list/crew_spot_lines
-	/// Weights of the guns a gunner of this faction rolls when it joins a crew (pirate_guns.dm). Null: the default mix.
-	var/list/crew_gun_weights
-	/// Keeps its own ranged weapon instead of rolling a gun
-	var/crew_keeps_gun = FALSE
 	/// Random combat loot - one item is picked at random and added to death drops.
 	var/list/random_loot = list(\
 		/obj/item/knife/combat/survival,\
@@ -83,6 +80,10 @@
 		AddElement(/datum/element/death_drops, string_list(death_loot))
 
 /mob/living/basic/trooper/pirate/faction/proc/roll_ladder_weapon(zone, roll = rand(1, 100))
+	return pirate_roll_ladder_weapon(zone, roll)
+
+/// The weapon a faction pirate drops by the zone it fought in, basic or human (faction_pirate_humans.dm).
+/proc/pirate_roll_ladder_weapon(zone, roll = rand(1, 100))
 	switch(zone)
 		if(ZONE_YELLOW)
 			return roll <= 5 ? /obj/item/gun/energy/laser : pick(npc_ladder_yellow_melee())
@@ -636,56 +637,3 @@
 	ADD_TRAIT(src, TRAIT_PUSHIMMUNE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_NOGUNS, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
-
-// ==================== CREW GUNS ====================
-// What each faction's gunners roll when they join a crew (pirate_guns.dm)
-
-/mob/living/basic/trooper/pirate/faction/silverscale
-	crew_gun_weights = list(
-		/datum/pirate_gun_loadout/energy_gun = 3,
-		/datum/pirate_gun_loadout/laser_rifle = 2,
-		/datum/pirate_gun_loadout/pistol = 3,
-		/datum/pirate_gun_loadout/shotgun = 1,
-	)
-
-/mob/living/basic/trooper/pirate/faction/skeleton
-	crew_gun_weights = list(
-		/datum/pirate_gun_loadout/laser_rifle = 1,
-		/datum/pirate_gun_loadout/pistol = 2,
-		/datum/pirate_gun_loadout/smg = 2,
-		/datum/pirate_gun_loadout/shotgun = 3,
-	)
-
-/mob/living/basic/trooper/pirate/faction/grey
-	crew_gun_weights = list(
-		/datum/pirate_gun_loadout/energy_gun = 3,
-		/datum/pirate_gun_loadout/laser_rifle = 3,
-		/datum/pirate_gun_loadout/smg = 1,
-	)
-
-/mob/living/basic/trooper/pirate/faction/lustrous
-	crew_gun_weights = list(
-		/datum/pirate_gun_loadout/energy_gun = 3,
-		/datum/pirate_gun_loadout/laser_rifle = 3,
-		/datum/pirate_gun_loadout/pistol = 1,
-	)
-
-/mob/living/basic/trooper/pirate/faction/interdyne
-	crew_gun_weights = list(
-		/datum/pirate_gun_loadout/energy_gun = 2,
-		/datum/pirate_gun_loadout/pistol = 2,
-		/datum/pirate_gun_loadout/smg = 3,
-		/datum/pirate_gun_loadout/shotgun = 1,
-	)
-
-/mob/living/basic/trooper/pirate/faction/irs
-	crew_gun_weights = list(
-		/datum/pirate_gun_loadout/energy_gun = 1,
-		/datum/pirate_gun_loadout/pistol = 3,
-		/datum/pirate_gun_loadout/smg = 2,
-		/datum/pirate_gun_loadout/shotgun = 2,
-	)
-
-// Crossbows suit them
-/mob/living/basic/trooper/pirate/faction/medieval
-	crew_keeps_gun = TRUE

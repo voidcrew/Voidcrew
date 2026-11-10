@@ -147,6 +147,11 @@
 	/// treat an empty roster as a crew wipe unless this is set - otherwise a hull whose
 	/// crew spawn silently failed would resolve at birth and churn the pool in a loop.
 	var/crew_ever_spawned = FALSE
+	/// Human NPC crew still waiting in the spawn queue (spawn_human_npc()); the hull's roster isn't
+	/// complete, and can't be wiped, until they are built
+	var/list/datum/human_npc_order/crew_orders = list()
+	/// Set once the crew wipe has been handled, so a second path to it does nothing
+	var/crew_wipe_handled = FALSE
 
 	// ========== MASS CACHING (Performance optimization) ==========
 	// Instead of iterating all turfs every second, we cache mass and only
@@ -239,8 +244,9 @@
 	if(abandonment_timer)
 		deltimer(abandonment_timer)
 		abandonment_timer = null
-	// Clear crew tracking
+	// Clear crew tracking; crew still in the spawn queue are never built
 	tracked_crew.Cut()
+	QDEL_LIST(crew_orders)
 	return ..()
 
 /**
@@ -375,16 +381,13 @@
 	if(captain_type && length(valid_turfs))
 		var/turf/captain_loc = pick_n_take(valid_turfs)
 		var/datum/npc_spawn_context/context = new(src, pool_zone_type, "boss")
-		var/mob/living/basic/captain = spawn_npc_in_zone(captain_type, captain_loc, context, FALSE)
-		// Give captain the ship key - stored in contents, drops on death
-		var/obj/item/ship_key/key = new(null, src)
-		key.forceMove(captain)
-		context.finalize()
-		// Track captain and register death signal
-		tracked_crew += captain
-		RegisterSignal(captain, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
-		// The captain holds the helm with one guard (pirate_crew.dm)
-		pirate_crew_enlist_defender(captain, src, PIRATE_ROLE_CAPTAIN)
+		if(ispath(captain_type, /mob/living/carbon/human/npc))
+			// Human NPCs are built a body at a time (spawn_human_npc()); the captain joins when built
+			crew_orders += spawn_human_npc(captain_type, captain_loc, CALLBACK(src, PROC_REF(on_captain_built)), context = context)
+		else
+			var/mob/living/basic/captain = spawn_npc_in_zone(captain_type, captain_loc, context, FALSE)
+			context.finalize()
+			on_captain_built(captain)
 		crew_count--  // Captain counts toward crew count
 
 	// Spawn rest of crew from configured types
@@ -392,15 +395,53 @@
 		var/turf/spawn_loc = pick_n_take(valid_turfs)
 		var/mob_type = pick(crew_types)
 		var/datum/npc_spawn_context/context = new(src, pool_zone_type, "ordinary")
-		var/mob/living/crewmember = spawn_npc_in_zone(mob_type, spawn_loc, context)
-		// Track crew and register death signal
-		tracked_crew += crewmember
-		RegisterSignal(crewmember, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
-		pirate_crew_enlist_defender(crewmember, src)
+		if(ispath(mob_type, /mob/living/carbon/human/npc))
+			crew_orders += spawn_human_npc(mob_type, spawn_loc, CALLBACK(src, PROC_REF(on_crewman_built)), context = context)
+		else
+			on_crewman_built(spawn_npc_in_zone(mob_type, spawn_loc, context))
 
+/// The captain is built: it carries the ship key and holds the helm with one guard (pirate_crew.dm).
+/obj/structure/overmap/ship/npc/proc/on_captain_built(mob/living/captain)
+	if(QDELETED(captain))
+		return
+	// The key is not gear: a human captain keeps it in a pocket, where a crew that cuffs or downs him can
+	// take it (the strip menu), and it drops when he dies (on_crew_death())
+	var/obj/item/ship_key/key = new(null, src)
+	var/mob/living/carbon/human/npc/faction_pirate/human_captain = captain
+	if(!istype(human_captain) || !human_captain.crew_pocket(key))
+		key.forceMove(captain)
+	track_crewman(captain, PIRATE_ROLE_CAPTAIN)
+
+/// A crewman is built: tracked for the crew wipe and enlisted in the hull's crew.
+/obj/structure/overmap/ship/npc/proc/on_crewman_built(mob/living/crewmember)
+	if(QDELETED(crewmember))
+		return
+	track_crewman(crewmember, PIRATE_ROLE_HUNTER)
+
+/obj/structure/overmap/ship/npc/proc/track_crewman(mob/living/crewmember, role)
+	prune_crew_orders()
+	if(QDELETED(src))
+		qdel(crewmember)
+		return
+	tracked_crew += crewmember
+	RegisterSignal(crewmember, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
+	// Out of the fight counts as gone for the crew wipe too (owner ruling OC-7): down or cuffed
+	if(ishumannpc(crewmember))
+		RegisterSignals(crewmember, list(COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)), PROC_REF(on_crew_out_of_fight))
+	pirate_crew_enlist_defender(crewmember, src, role)
 	// A roster exists; the pool may now treat this roster emptying as a crew wipe
-	if(length(tracked_crew))
-		crew_ever_spawned = TRUE
+	crew_ever_spawned = TRUE
+
+/// Drops crew orders that have been built or cancelled.
+/obj/structure/overmap/ship/npc/proc/prune_crew_orders()
+	for(var/datum/human_npc_order/order as anything in crew_orders.Copy())
+		if(QDELETED(order) || order.done)
+			crew_orders -= order
+
+/// Whether crew are still waiting to be built.
+/obj/structure/overmap/ship/npc/proc/crew_pending()
+	prune_crew_orders()
+	return length(crew_orders) > 0
 
 /**
  * Signal handler for when any crew member dies.
@@ -408,27 +449,45 @@
  */
 /obj/structure/overmap/ship/npc/proc/on_crew_death(mob/living/victim, gibbed)
 	SIGNAL_HANDLER
-	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+	UnregisterSignal(victim, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
 
-	// Drop ship key if the victim has one (captain)
+	// Drop ship key if the victim has one (captain). A human captain's drops from his pocket with
+	// whatever else he carries that isn't gear (human_npc_gear.dm); this catches one held loose.
 	var/turf/drop_loc = get_turf(victim)
 	if(drop_loc)
 		for(var/obj/item/ship_key/key in victim.contents)
-			key.forceMove(drop_loc)
+			if(!victim.get_slot_by_item(key))
+				key.forceMove(drop_loc)
 
 	// Remove from tracked crew list
 	tracked_crew -= victim
 	log_shuttle("NPC_SHIP: [name] crew member [victim] died ([length(tracked_crew)] tracked crew remain)")
+	check_crew_wipe()
 
-	// Check if all crew are dead
-	if(!length(tracked_crew))
-		npc_metric_crew_wiped(src)
-		// The pool slot frees the instant the crew is wiped. The abandonment timer below
-		// is a separate concern - it holds the hull claimable for a while - and must not
-		// delay the replacement spawn.
-		if(!player_controlled)
-			notify_spawner_resolved("crew wiped")
-		start_abandonment_timer()
+/// A human crewman went into crit or was cuffed: if nobody aboard is left fighting, the crew is wiped.
+/obj/structure/overmap/ship/npc/proc/on_crew_out_of_fight(mob/living/source)
+	SIGNAL_HANDLER
+	check_crew_wipe()
+
+/**
+ * The crew is wiped once every tracked crewman is dead, or out of the fight (in crit or cuffed, owner
+ * ruling OC-7: a crew the players took down or captured is beaten, and a body frozen in crit on a hull
+ * nobody is near must not hold the pool slot). Crew still waiting to be built keep it from wiping.
+ */
+/obj/structure/overmap/ship/npc/proc/check_crew_wipe()
+	if(crew_wipe_handled || crew_pending())
+		return
+	for(var/mob/living/crewmember as anything in tracked_crew)
+		if(!human_npc_out_of_fight(crewmember))
+			return
+	crew_wipe_handled = TRUE
+	npc_metric_crew_wiped(src)
+	// The pool slot frees the instant the crew is wiped. The abandonment timer below
+	// is a separate concern - it holds the hull claimable for a while - and must not
+	// delay the replacement spawn.
+	if(!player_controlled)
+		notify_spawner_resolved("crew wiped")
+	start_abandonment_timer()
 
 /**
  * Starts a timer to abandon the ship after all crew die.
@@ -522,46 +581,26 @@
 	return despawn_derelict()
 
 /**
- * How many of this hull's own tracked crew are alive and actually aboard.
+ * How many of this hull's own tracked crew are still fighting and actually aboard.
  *
  * Derived from live state rather than roster bookkeeping on purpose: a missed death
  * signal, a hard-deleted mob, or a pirate spaced or dragged off the hull must all read
- * as "not aboard", or the pool slot this crew holds never frees. The roster is 2-6
- * entries, so this is cheap enough for the reconcile's slow tick.
+ * as "not aboard", or the pool slot this crew holds never frees. A crewman in crit or
+ * cuffed is out of the fight and doesn't count either (owner ruling OC-7). The roster is
+ * 2-6 entries, so this is cheap enough for the reconcile's slow tick.
  */
 /obj/structure/overmap/ship/npc/proc/count_live_crew_aboard()
 	if(!shuttle?.shuttle_areas)
 		return 0
 	var/count = 0
 	for(var/mob/living/crew as anything in tracked_crew)
-		if(QDELETED(crew))
-			continue
-		if(crew.stat == DEAD)
+		if(human_npc_out_of_fight(crew))
 			continue
 		var/area/crew_area = get_area(crew)
 		if(!crew_area || !shuttle.shuttle_areas[crew_area])
 			continue
 		count++
 	return count
-
-/**
- * Kills tracked crew that ended up floating in open space (hull breach blowout).
- * The same cleanup boarding waves already get via check_boarders_in_space(); without it
- * a spaced pirate drifts alive forever. Run from the pool reconcile.
- */
-/obj/structure/overmap/ship/npc/proc/sweep_spaced_crew()
-	var/list/spaced = list()
-	for(var/mob/living/crew as anything in tracked_crew)
-		if(QDELETED(crew) || crew.stat == DEAD)
-			continue
-		var/turf/crew_turf = get_turf(crew)
-		if(!crew_turf)
-			continue
-		if(isspaceturf(crew_turf) || istype(get_area(crew_turf), /area/space))
-			spaced += crew
-	// death() fires on_crew_death, which edits tracked_crew - never kill mid-iteration
-	for(var/mob/living/lost as anything in spaced)
-		lost.death()
 
 /**
  * Signal handler for ship integrity changes.
@@ -916,10 +955,10 @@
 	// Crew configuration
 	crew_min = 3
 	crew_max = 6
-	captain_type = /mob/living/basic/trooper/pirate/ranged/space
+	captain_type = /mob/living/carbon/human/npc/ruin/trooper/pirate/space/gunner
 	crew_types = list(
-		/mob/living/basic/trooper/pirate/melee/space,
-		/mob/living/basic/trooper/pirate/ranged/space,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/space,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/space/gunner,
 	)
 
 	// Faction

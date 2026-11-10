@@ -77,7 +77,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("xfshivowner")
 	TEST_ASSERT_NOTNULL(home, "The shiv test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 3, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 3, 14))
 	var/datum/outpost_prison_cell/cell = prisoner.cell
 	TEST_ASSERT(cell?.contains(prison_spot(home, 2, 15)), "The first prisoner was not booked into cell 1")
 	TEST_ASSERT_NOTNULL(cell.bed(), "Cell 1 has no bed")
@@ -96,7 +96,7 @@
 	TEST_ASSERT_EQUAL(prisoner.contraband_shiv_sour, 0, "Mood 46 did not reset the sour clock")
 
 	// Nobody on the level: nobody starts a stash, however sour
-	var/mob/living/basic/outpost_prisoner/dozing = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/dozing = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	dozing.set_mood(20)
 	dozing.contraband_counters(600)
 	prison.contraband_force_rolls = TRUE
@@ -144,7 +144,7 @@
 	prisoner.threaten(warden)
 	TEST_ASSERT(!prisoner.has_shiv(), "A threat drew the stashed shiv")
 	prisoner.cancel_threat()
-	var/mob/living/basic/outpost_prisoner/rival = trouble_awake_prisoner(prison, prison_spot(home, 3, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rival = trouble_awake_prisoner(prison, prison_spot(home, 3, 10))
 	var/datum/outpost_prison_fight/brawl = prison.start_fight(prisoner, rival)
 	TEST_ASSERT_NOTNULL(brawl, "The test fight did not start")
 	TEST_ASSERT(!prisoner.has_shiv() && !rival.has_shiv(), "A fight drew a shiv")
@@ -163,9 +163,9 @@
 			shivs++
 	TEST_ASSERT_EQUAL(shivs, 1, "Drawing the stashed shiv left [shivs] shivs in the wing, not 1")
 	prisoner.calm_down()
-	// Without a stash a rioter still draws a new one
+	// Without a stash a rioter has only their fists: nothing comes from nowhere (PR-18, OC-11)
 	rival.start_rioting(FALSE)
-	TEST_ASSERT(rival.has_shiv(), "A rioter without a stash drew no shiv")
+	TEST_ASSERT(!rival.has_shiv(), "A rioter without a stash drew a shiv from nowhere")
 	rival.calm_down()
 
 	// Tension: 2 for each armed, occupied cell, 4 at most (OUTPOST_CONTRABAND_SHIV_TENSION, _TENSION_MAX)
@@ -199,8 +199,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfsearchowner")
 	TEST_ASSERT_NOTNULL(home, "The search test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/owner = trouble_prisoner(prison, prison_spot(home, 2, 14))
-	var/mob/living/basic/outpost_prisoner/neighbour = trouble_prisoner(prison, prison_spot(home, 3, 13))
+	var/mob/living/carbon/human/npc/outpost_prisoner/owner = trouble_prisoner(prison, prison_spot(home, 2, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/neighbour = trouble_prisoner(prison, prison_spot(home, 3, 13))
 	var/datum/outpost_prison_cell/cell = owner.cell
 	TEST_ASSERT(cell?.contains(prison_spot(home, 2, 15)), "The first prisoner was not booked into cell 1")
 	var/obj/structure/bed/bed = cell.bed()
@@ -387,7 +387,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfstashowner")
 	TEST_ASSERT_NOTNULL(home, "The stash test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/owner = trouble_prisoner(prison, prison_spot(home, 3, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/owner = trouble_prisoner(prison, prison_spot(home, 3, 14))
 	var/datum/outpost_prison_cell/cell = owner.cell
 	TEST_ASSERT_NOTNULL(cell, "The prisoner has no cell")
 
@@ -417,7 +417,7 @@
 	prison.forget(owner)
 	qdel(owner)
 	TEST_ASSERT(cell.stash_shiv, "The stash left with its owner")
-	var/mob/living/basic/outpost_prisoner/newcomer = new(prison_spot(home, 3, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/newcomer = new(prison_spot(home, 3, 14))
 	prison.contraband_force_rolls = TRUE
 	prison.admit(newcomer, cell)
 	TEST_ASSERT_EQUAL(newcomer.cell, cell, "The newcomer was not booked into the armed cell")
@@ -436,22 +436,22 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfmailowner")
 	TEST_ASSERT_NOTNULL(home, "The mail test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
 
 	// The share: a third to a half of those present (OUTPOST_MAIL_WAVE_SHARE_MIN, _MAX), rounded, at
 	// least one and never all of them. Two present: always exactly one.
 	for(var/i in 1 to 20)
 		TEST_ASSERT_EQUAL(length(prison.mail_wave_recipients()), 1, "A wave for two prisoners was not for exactly one")
-	var/mob/living/basic/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 11, 8))
-	var/mob/living/basic/outpost_prisoner/fourth = trouble_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fourth = trouble_prisoner(prison, prison_spot(home, 13, 8))
 	var/list/everyone = list(first, second, third, fourth)
 	var/list/sizes = list()
 	for(var/i in 1 to 40)
 		var/list/picked = prison.mail_wave_recipients()
 		TEST_ASSERT(length(picked) >= 1 && length(picked) <= 2, "A wave for four prisoners was for [length(picked)], not 1 or 2")
 		sizes["[length(picked)]"] = TRUE
-		for(var/mob/living/basic/outpost_prisoner/picked_one as anything in picked)
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/picked_one as anything in picked)
 			TEST_ASSERT(picked_one in everyone, "A wave picked someone who is not a prisoner here")
 	TEST_ASSERT(sizes["1"] && sizes["2"], "Waves for four prisoners were always the same size")
 	// Only prisoners due a letter: none who had one this stay, none with under 180 seconds left
@@ -466,7 +466,7 @@
 	TEST_ASSERT_EQUAL(length(prison.mail_wave_recipients()), 0, "A wave picked someone with nobody due a letter")
 	TEST_ASSERT_EQUAL(prison.mail_wave(), 0, "A mail pod came with nobody due a letter")
 	TEST_ASSERT_NULL(find_landing_zone(prison), "A mail pod is coming with nobody due a letter")
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in everyone)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in everyone)
 		prisoner.mail_had_letter = FALSE
 		prisoner.sentence_left = 3600
 
@@ -535,7 +535,7 @@
 	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), letters_in_crate, "The crate's letters do not all count as waiting")
 	TEST_ASSERT(findtext(contraband_last_log(prison), "Mail call: a pod dropped [letters_in_crate] letter"), "The mail call was not logged: [contraband_last_log(prison)]")
 	var/lettered = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in everyone)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in everyone)
 		if(prisoner.mail_had_letter)
 			lettered++
 	TEST_ASSERT(lettered < length(everyone), "Every prisoner had a letter")
@@ -649,8 +649,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfpostowner")
 	TEST_ASSERT_NOTNULL(home, "The delivery test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/reader = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/bystander = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/reader = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/bystander = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 9, 8), "xfpostowner")
 	member.set_combat_mode(FALSE)
 	prison.contraband_force_rolls = TRUE
@@ -757,8 +757,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfreturnowner")
 	TEST_ASSERT_NOTNULL(home, "The mail clean-up test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/waiting = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/leaving = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/waiting = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/leaving = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	prison.crew_home_override = TRUE
 	prison.mail_next_in = 100000
 

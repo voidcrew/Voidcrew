@@ -6,12 +6,19 @@
 /// it browns every piece of chrome out until the load drops back under.
 #define CYBERWARE_BASE_CAPACITY 20
 
-/// Mob-overlay height worn chrome draws at: between the character-setup
-/// underwear/undershirt layer (BODY_LAYER, 32) and the eyes (EYES_LAYER, 31),
-/// so a spine rig reads over a bra or undershirt while every EQUIPPED
-/// clothing layer (UNIFORM_LAYER 28 and up) still covers it. Fractional on
-/// purpose, it must never collide with a real layer index.
-#define CYBERWARE_WORN_LAYER 31.5
+/// Mob-overlay height worn chrome draws at: just over the jumpsuit
+/// (UNIFORM_LAYER, 28) and under the worn ID (ID_LAYER, 27), so arm plates and
+/// a spine rig read over normal clothes while hands (BODYPARTS_HIGH_LAYER 25),
+/// gloves, shoes and every suit, vest or armour layer (SUIT_LAYER 19 and up)
+/// still cover them. Mob layers count down: a lower number draws on top.
+/// Fractional on purpose, it must never collide with a real layer index, nor
+/// with a fresh stump (HV_STUMP_FRESH_LAYER, 27.5).
+#define CYBERWARE_WORN_LAYER 27.6
+/// Mob layer the lit nodes of a spine rig (Cascade, Redline) shine at: just over
+/// whatever is worn on the back (BACK_LAYER 14, and every suit and cloak under
+/// it), still under hair (HAIR_LAYER 13) and headgear. Only what glows goes up
+/// here; the housing and dark nodes stay at CYBERWARE_WORN_LAYER.
+#define CYBERWARE_SPINE_SHINE_LAYER 13.7
 
 // ---- Organ slots -------------------------------------------------------
 // Minted here, never in DNA.dm. Slot uniqueness is global per mob, so
@@ -145,3 +152,100 @@
 /// Minimum environmental O2 partial pressure (kPa) the bladder considers
 /// breathable, mirroring the lungs' safe_oxygen_min of 16.
 #define CYBERWARE_BREATHABLE_O2_KPA 16
+
+// ---- Optics zoom (cyberware_zoom.dm) -----------------------------------
+// Every set of chrome optics can zoom: tg's scope component pans the camera
+// toward the cursor. A zoomed bearer can't fire a gun and their clicks reach
+// nothing on the map.
+
+/// Held by a bearer while their chrome optics are zoomed. Source is the optics.
+#define TRAIT_CYBER_ZOOMED "cyber_zoomed"
+
+// ---- Chrome wheel (chrome_wheel.dm) ------------------------------------
+
+/// Name of the "Chrome wheel" keybind; the release poll reads the player's
+/// keys for it to catch modifier binds, which never get a keyUp of their own.
+#define CHROME_WHEEL_KEYBIND "chrome_wheel"
+/// A wheel key let go sooner than this was a tap, and the wheel stays open
+/// for a click instead of closing on release.
+#define CHROME_WHEEL_HOLD_TIME (0.3 SECONDS)
+
+/// Wheel states. CLOSED, HELD (open while the key is down) or CLICK (open
+/// after a tap, until the next click or press).
+#define CHROME_WHEEL_CLOSED 0
+#define CHROME_WHEEL_HELD 1
+#define CHROME_WHEEL_CLICK 2
+
+/// Sockets: where a ware's chips sit on the ring. Each owns a run of fixed
+/// positions on its region's arc, so one socket's chrome changing never moves
+/// another socket's chips. Hand chrome rides its arm's socket.
+#define CHROME_WHEEL_SOCKET_EYES "eyes"
+#define CHROME_WHEEL_SOCKET_HEAD "head"
+#define CHROME_WHEEL_SOCKET_OS "os"
+#define CHROME_WHEEL_SOCKET_SKIN "skin"
+#define CHROME_WHEEL_SOCKET_LEFT_ARM "l_arm"
+#define CHROME_WHEEL_SOCKET_RIGHT_ARM "r_arm"
+#define CHROME_WHEEL_SOCKET_LEGS "legs"
+
+/// Radius in pixels of the ring the chips sit on.
+#define CHROME_WHEEL_RADIUS 100
+/// Degrees between neighbouring chips on the ring.
+#define CHROME_WHEEL_STEP 14.5
+/// A socket with more chips than its arc holds starts another row this much
+/// further out, at the same angles.
+#define CHROME_WHEEL_ROW_GAP 26
+/// The ring's centre sits this many pixels above the centre of the view.
+#define CHROME_WHEEL_CENTRE_Y 2
+/// Mouse distance from the ring centre inside which nothing is pointed at.
+#define CHROME_WHEEL_DEADZONE 34
+/// A chip this close to the mouse is the one under it.
+#define CHROME_WHEEL_PICK_RANGE 12
+/// Otherwise the mouse points at the first-row chip whose bearing from the ring
+/// centre is nearest its own, if one lies within this many degrees.
+#define CHROME_WHEEL_POINT_TOLERANCE 13
+
+/// After a pick the wheel stays up this long for the lock and fade. The pick
+/// itself lands at once.
+#define CHROME_WHEEL_LINGER_TIME (0.2 SECONDS)
+/// A wheel opened from the Chrome button fires what a click picks, so a click
+/// further than this from the ring's centre picks by bearing no more: out past
+/// the second row, a click just shuts the wheel.
+#define CHROME_WHEEL_FIRE_REACH (CHROME_WHEEL_RADIUS + CHROME_WHEEL_ROW_GAP + 24)
+/// Reserves Arm chrome's place on the wheel (GLOB.chrome_wheel_reserved), as an
+/// organ slot reserves its ware's.
+#define CHROME_WHEEL_ARMS_KEY "chrome_arms"
+/// The region an Arm chrome chip lights: both arms.
+#define CHROME_WHEEL_REGION_ARMS "arms"
+/// The Chrome button's and Arm chrome's own art.
+#define CHROME_HUD_ICON 'voidcrew/modules/cyberware/icons/chrome_hud.dmi'
+
+#define CHROME_WHEEL_ICON 'voidcrew/modules/cyberware/icons/chrome_wheel.dmi'
+/// 240x240 art centred on the ring: body, arcs, leaders, glows, backdrop.
+#define CHROME_WHEEL_RING_ICON 'voidcrew/modules/cyberware/icons/chrome_wheel_ring.dmi'
+/// Corner brackets borrowed from the chrome read.
+#define CHROME_WHEEL_BRACKET_ICON 'voidcrew/modules/cyberware/icons/chrome_read.dmi'
+
+/// Wheel colours, the chrome read's own.
+#define CHROME_WHEEL_HUD_COLOR CYBERWARE_COLOR_TIER_2
+#define CHROME_WHEEL_PANEL_COLOR "#060e12"
+#define CHROME_WHEEL_NAME_COLOR "#e6fbff"
+#define CHROME_WHEEL_DIM_COLOR "#8fa1a8"
+#define CHROME_WHEEL_OFFLINE_COLOR "#ff5a4a"
+#define CHROME_WHEEL_OFFLINE_NAME_COLOR "#7d8a90"
+/// The pick's brackets (radial.dmi's module_selected cyan).
+#define CHROME_WHEEL_PICKED_COLOR "#00ffff"
+/// Deployed or armed (radial.dmi's module_active green).
+#define CHROME_WHEEL_DEPLOYED_COLOR "#00ff00"
+
+// ---- Phase 2 models: seal, frame and nervous street models -------------
+// ware_models_b.dm. Hardweave, the Strut frame, the Deep-lung bladder, the
+// Heat-sink and Frostline linings, the Twitchwire and Weaver shunts, and the
+// Thumper ear.
+
+/// Held by a bearer whose skeleton simply does not break. Blocks the whole
+/// bone wound series, dislocations, hairline fractures, compound fractures,
+/// at the wound system's own gate, and nothing else. Every other wound series
+/// lands on its bearer exactly as it lands on anyone. Granted by the Atlas
+/// frame (ware_military_body.dm) and the Strut frame (ware_models_b.dm); the
+/// gate itself is in ware_military_body.dm.
+#define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"

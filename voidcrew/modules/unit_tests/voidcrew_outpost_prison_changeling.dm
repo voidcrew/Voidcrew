@@ -18,7 +18,7 @@
  * does, so its experiment_paused() sees an experiment under way.
  */
 /datum/unit_test/voidcrew_outpost_management/proc/changeling_host(datum/outpost_prison/prison, obj/structure/overmap/dynamic/player_outpost/home, x = 2, y = 15)
-	var/mob/living/basic/outpost_prisoner/host = test_prisoner(prison, prison_spot(home, x, y))
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = test_prisoner(prison, prison_spot(home, x, y))
 	var/datum/outpost_changeling_event/event
 	if(hascall(prison, "start_experiment"))
 		call(prison, "start_experiment")("changeling", host, TRUE)
@@ -59,7 +59,7 @@
 	prison.crew_home_override = TRUE
 	var/datum/outpost_changeling_event/event = changeling_host(prison, home)
 	TEST_ASSERT_NOTNULL(event, "The specimen did not take")
-	var/mob/living/basic/outpost_prisoner/host = event.host
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = event.host
 	TEST_ASSERT(host.experiment_subject, "The host is not marked as the experiment's subject")
 	TEST_ASSERT_EQUAL(host.bubble, "experiment", "The host does not show the syringe bubble")
 	TEST_ASSERT_EQUAL(event.stage, "incubating", "A fresh specimen is not incubating")
@@ -121,7 +121,7 @@
 	// A host killed early bursts three seconds later anyway, whoever is home.
 	var/datum/outpost_changeling_event/early = changeling_host(prison, home, 6, 15)
 	TEST_ASSERT_NOTNULL(early, "A second specimen did not take once the first was done")
-	var/mob/living/basic/outpost_prisoner/early_host = early.host
+	var/mob/living/carbon/human/npc/outpost_prisoner/early_host = early.host
 	early_host.death()
 	TEST_ASSERT_EQUAL(early.stage, "incubating", "A host killed early burst at once")
 	TEST_ASSERT_EQUAL(early.early_burst_left, 3, "A host killed early bursts in [early.early_burst_left] s, not 3") // OUTPOST_CHANGELING_EARLY_BURST
@@ -137,7 +137,7 @@
 
 	// A host kept out of the cell block for a minute: the specimen is lost, and the host is let off.
 	var/datum/outpost_changeling_event/lost = changeling_host(prison, home, 10, 15)
-	var/mob/living/basic/outpost_prisoner/lost_host = lost.host
+	var/mob/living/carbon/human/npc/outpost_prisoner/lost_host = lost.host
 	lost_host.forceMove(prison_spot(home, 12, 3))
 	TEST_ASSERT(!prison.in_cell_block(lost_host), "The office counts as the cell block")
 	// Nobody home: that clock waits too.
@@ -155,7 +155,7 @@
 
 	// A host killed out of the cell block (dragged toward a docked ship, say) does not burst there.
 	var/datum/outpost_changeling_event/carried = changeling_host(prison, home, 14, 15)
-	var/mob/living/basic/outpost_prisoner/carried_host = carried.host
+	var/mob/living/carbon/human/npc/outpost_prisoner/carried_host = carried.host
 	carried_host.forceMove(prison_spot(home, 12, 3))
 	carried_host.death()
 	changeling_ticks(carried, 10)
@@ -281,7 +281,7 @@
 	prison.crew_home_override = TRUE
 	var/datum/outpost_changeling_event/event = changeling_host(prison, home)
 	// In front of cell 1's window, where the burst is in plain sight
-	var/mob/living/basic/outpost_prisoner/bystander = test_prisoner(prison, prison_spot(home, 2, 11))
+	var/mob/living/carbon/human/npc/outpost_prisoner/bystander = test_prisoner(prison, prison_spot(home, 2, 11))
 	bystander.set_mood(70)
 	var/obj/structure/outpost_kessler_vent/cell_vent = changeling_in_vent(event, home, 4, 14)
 	TEST_ASSERT_NOTNULL(cell_vent, "The slug did not get into cell 1's vent")
@@ -354,7 +354,7 @@
 
 /// A prisoner beside the horror, beaten down and ready to absorb
 /datum/unit_test/voidcrew_outpost_prison_changeling_kit/proc/downed_prisoner(datum/outpost_prison/prison, turf/spot)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, spot)
 	prisoner.collapse()
 	return prisoner
 
@@ -379,7 +379,7 @@
 	var/list/order = list("dissonant", "fleshmend", "tentacle", null)
 	for(var/i in 1 to 4)
 		ready(horror)
-		var/mob/living/basic/outpost_prisoner/victim = downed_prisoner(prison, beside)
+		var/mob/living/carbon/human/npc/outpost_prisoner/victim = downed_prisoner(prison, beside)
 		TEST_ASSERT(horror.absorbable(victim), "A prisoner beaten down could not be absorbed")
 		horror.adjust_health(250)
 		TEST_ASSERT(horror.start_absorb(victim), "Absorb [i] did not start")
@@ -416,7 +416,7 @@
 
 	// Interrupts: 40 damage, fire, or the victim dragged off their tile; each staggers it.
 	ready(horror)
-	var/mob/living/basic/outpost_prisoner/lucky = downed_prisoner(prison, beside)
+	var/mob/living/carbon/human/npc/outpost_prisoner/lucky = downed_prisoner(prison, beside)
 	TEST_ASSERT(horror.start_absorb(lucky), "The interrupt test's absorb did not start")
 	horror.adjust_health(39)
 	TEST_ASSERT_EQUAL(horror.busy, "absorb", "39 damage broke the absorb") // OUTPOST_HORROR_ABSORB_BREAK
@@ -579,7 +579,7 @@
 	TEST_ASSERT(!horror.can_be_revived(), "A dead horror could be revived")
 
 	// With nobody from the wing home it lies low: it answers whoever hurts it and hunts nobody.
-	var/mob/living/basic/outpost_prisoner/nearby = test_prisoner(prison, prison_spot(home, 11, 9))
+	var/mob/living/carbon/human/npc/outpost_prisoner/nearby = test_prisoner(prison, prison_spot(home, 11, 9))
 	TEST_ASSERT_EQUAL(horror.pick_quarry(), nearby, "The horror ignored a prisoner in plain sight")
 	prison.crew_home_override = FALSE
 	TEST_ASSERT_NULL(horror.pick_quarry(), "The horror hunts with nobody from the wing home")
@@ -702,7 +702,7 @@
 	TEST_ASSERT(event.regen_announced, "The outpost was not told the horror is regenerating")
 
 	// Down, it cannot absorb anyone.
-	var/mob/living/basic/outpost_prisoner/victim = test_prisoner(prison, prison_spot(home, 10, 9))
+	var/mob/living/carbon/human/npc/outpost_prisoner/victim = test_prisoner(prison, prison_spot(home, 10, 9))
 	victim.collapse()
 	TEST_ASSERT(horror.absorbable(victim), "The test's victim could not be absorbed at all")
 	horror.next_absorb_at = 0

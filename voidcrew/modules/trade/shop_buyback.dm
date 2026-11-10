@@ -10,10 +10,13 @@
  * one sale-unit per click or in bulk. Credits land on the selected ship's account,
  * falling back to the ID account; voucher payouts materialize in hand.
  *
- * Balance rule: entries that pay VOUCHERS must only ever buy loot that can't
- * be manufactured aboard a ship (planet minerals, fauna harvests, ruin finds).
- * Vouchers are the currency that can't be farmed safely, and a lathe-printable
- * buyback would break that in one shift.
+ * Balance rule: entries that pay VOUCHERS buy loot a ship can't manufacture
+ * (planet minerals, fauna harvests, ruin finds) at whatever demand suits it.
+ * Ship-made goods (drinks, cooked food, plants, slime extracts, farmed fish)
+ * may pay vouchers only for their rare top tier: 1-3 vouchers a sale, with
+ * demand 1-3. Demand is per round and shared by every crew, so that roll is
+ * the whole round's supply for everyone. Commons pay credits. Anything a
+ * lathe, cargo pack or vendor turns out cheaply never pays vouchers.
  */
 /datum/shop_buyback
 	/// Display name of what the trader wants (defaults to the item's name)
@@ -42,6 +45,10 @@
 	var/icon_state_override
 	/// Cached base64 icon for the UI, computed once per instance
 	var/cached_icon
+	/// Takes goods bought over a counter (TRAIT_TRADER_GOODS) as well as found
+	/// ones. Only the ripperdoc trade-in sets this, and only credit payouts
+	/// honour it, see takes_shop_stock().
+	var/buys_shop_stock = FALSE
 
 /datum/shop_buyback/New()
 	..()
@@ -89,10 +96,19 @@
 	return cached_icon
 
 /**
+ * Whether this ledger takes goods that were bought at a shop. Every ledger
+ * refuses them except the ripperdoc trade-in, and that one only while it pays
+ * credits alone: a voucher payout for bought goods would turn credits into
+ * vouchers.
+ */
+/datum/shop_buyback/proc/takes_shop_stock()
+	return buys_shop_stock && pay_vouchers <= 0
+
+/**
  * Whether this item counts for this ledger entry.
  */
 /datum/shop_buyback/proc/matches(obj/item/offered)
-	if(is_trader_good(offered))
+	if(is_trader_good(offered) && !takes_shop_stock())
 		return FALSE
 	if(match_subtypes ? !istype(offered, item_path) : offered.type != item_path)
 		return FALSE
@@ -111,7 +127,7 @@
 	if(match_subtypes || !item_path)
 		return null
 	for(var/obj/item/offered in user.get_all_contents())
-		if(istype(offered, item_path) && offered.type != item_path)
+		if(istype(offered, item_path) && offered.type != item_path && !shop_buyback_inside_body(offered))
 			return offered
 	return null
 
@@ -125,6 +141,11 @@
  * the seller's own back, or the MODsuit they are standing in. Held items still
  * count (that hand-off is the whole gesture), and so does anything in a bag or
  * a pocket, because carrying it there is already a decision to bring it.
+ *
+ * The seller's own body is skipped too. Installed organs sit inside their
+ * bodypart, inside the mob, so the same sweep reaches them, and none of them
+ * is in get_equipped_items(): without this a chrome ledger would take the
+ * seller's working eyes out of their head.
  */
 /datum/shop_buyback/proc/find_offered_items(mob/living/user)
 	var/list/found = list()
@@ -135,9 +156,28 @@
 	for(var/obj/item/offered in user.get_all_contents())
 		if((offered in found) || (offered in worn))
 			continue
+		if(shop_buyback_inside_body(offered))
+			continue
 		if(matches(offered))
 			found += offered
 	return found
+
+/**
+ * Whether an item is part of a body or rides inside one: an attached limb, an
+ * installed organ, or anything held inside either. The walk stops at the first
+ * mob, so a severed limb or a pulled organ in a bag still counts as goods.
+ */
+/proc/shop_buyback_inside_body(obj/item/offered)
+	for(var/atom/current = offered; current && !ismob(current); current = current.loc)
+		if(isorgan(current))
+			var/obj/item/organ/organ = current
+			if(organ.owner)
+				return TRUE
+		else if(isbodypart(current))
+			var/obj/item/bodypart/limb = current
+			if(limb.owner)
+				return TRUE
+	return FALSE
 
 /**
  * How many sale-units the seller is carrying (stacks divide by `amount`).
@@ -171,7 +211,7 @@
 		return "Not buying any more this shift."
 	if(count_carried_units(user) < 1)
 		for(var/obj/item/offered in user.get_all_contents())
-			if(istype(offered, item_path) && is_trader_good(offered))
+			if(istype(offered, item_path) && is_trader_good(offered) && !takes_shop_stock() && !shop_buyback_inside_body(offered))
 				return "I don't buy back shop stock."
 		// Exact-type ledgers (match_subtypes = FALSE) refuse processed/lab-made
 		// variants of the wanted goods. Without this, a player holding a refined

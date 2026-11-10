@@ -163,7 +163,7 @@
 	points_done++
 	// Calibration is loud. Something heard it.
 	if(wave_theme)
-		new wave_theme(get_turf(pylon), list(1, 2))
+		new wave_theme(get_turf(pylon), list(1, 2), TRUE)
 
 	// The finished pylon stays as a breadcrumb but stops being the objective
 	mission.forget_quest_atom(pylon)
@@ -299,7 +299,7 @@
  */
 /datum/mission_objective/field/escort
 	/// The survivor mob type
-	var/survivor_type = /mob/living/basic/mission_survivor
+	var/survivor_type = /mob/living/carbon/human/npc/mission_survivor
 	/// The live survivor
 	var/mob/living/survivor
 	/// Health fraction at turn-in for the "still walking" pay bonus
@@ -555,7 +555,7 @@
 	// Periodic company
 	if(wave_theme && beacon.next_wave_at <= world.time)
 		beacon.next_wave_at = world.time + wave_interval
-		new wave_theme(get_turf(beacon), list(1, 2))
+		new wave_theme(get_turf(beacon), list(1, 2), TRUE)
 		notify_crew("Claim jumpers inbound on the beacon!", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
 /// The clock ran out with the beacon alive: print the deed

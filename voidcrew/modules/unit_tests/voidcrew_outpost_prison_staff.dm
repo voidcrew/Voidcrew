@@ -16,7 +16,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("staffowner")
 	TEST_ASSERT_NOTNULL(home, "The staff test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 4, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 4, 10))
 
 	// A monkey nobody plays is not staff, its punches cost nothing, and it is nobody to talk at.
 	var/mob/living/carbon/human/species/monkey/monkey = allocate(/mob/living/carbon/human/species/monkey, prison_spot(home, 5, 10))

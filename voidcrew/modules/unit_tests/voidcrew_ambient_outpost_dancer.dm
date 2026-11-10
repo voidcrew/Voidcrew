@@ -27,7 +27,7 @@
 	var/obj/structure/festivus/anchored/pole = dancer_test_pole(pa_tile(2, 2))
 	var/turf/pole_turf = get_turf(pole)
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
-	var/mob/living/basic/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, pa_tile(0, 0), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, pa_tile(0, 0), place)
 	var/base_w = dancer.base_pixel_w
 	var/base_z = dancer.base_pixel_z
 
@@ -96,11 +96,11 @@
 	// No pole in reach: she does not pretend to dance
 	var/obj/structure/overmap/trader_outpost/empty_outpost = allocate(/obj/structure/overmap/trader_outpost)
 	var/datum/ambient_place/outpost/empty_place = pa_place(empty_outpost)
-	var/mob/living/basic/ambient_npc/outpost/dancer/stray = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, pa_tile(4, 4), empty_place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/stray = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, pa_tile(4, 4), empty_place)
 	TEST_ASSERT(!stray.start_activity(new /datum/ambient_activity/dance_pole(stray)), "The dancer found a pole that is not there")
 
 /// The dancer is up on the pole, raised by its platform, with her place against it on top (a sway of a pixel or two along it if `sway_ok`)
-/datum/unit_test/voidcrew_ambient_outpost_dancer_settle/proc/check_on_pole(mob/living/basic/ambient_npc/outpost/dancer/dancer, datum/ambient_activity/dance_pole/dance, base_w, base_z, when, sway_ok = FALSE)
+/datum/unit_test/voidcrew_ambient_outpost_dancer_settle/proc/check_on_pole(mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer, datum/ambient_activity/dance_pole/dance, base_w, base_z, when, sway_ok = FALSE)
 	var/list/against = dance.side_offset(dance.side)
 	TEST_ASSERT(HAS_TRAIT(dancer, TRAIT_MOB_ELEVATED), "The dancer [when] on the pole is not raised by its platform")
 	var/w_off = dancer.pixel_w - base_w - against[1]
@@ -115,7 +115,7 @@
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
 	var/obj/structure/festivus/anchored/pole = dancer_test_pole(pa_tile(2, 2))
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
-	var/mob/living/basic/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, pa_tile(2, 3), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, pa_tile(2, 3), place)
 	var/base_w = dancer.base_pixel_w
 	var/base_z = dancer.base_pixel_z
 	var/datum/ambient_activity/dance_pole/dance = dancer.start_activity(new /datum/ambient_activity/dance_pole(dancer))
@@ -149,7 +149,7 @@
 	// A fight right by the kingpin's seat, no shootout: she gets clear of it and stays at the outpost
 	allocate(/obj/effect/landmark/bounty_kingpin/seat, pa_tile(0, 0))
 	var/mob/living/carbon/human/consistent/brawler = allocate(/mob/living/carbon/human/consistent, pa_tile(2, 1))
-	var/mob/living/basic/ambient_npc/outpost/dancer/second = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, pa_tile(1, 1), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/second = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, pa_tile(1, 1), place)
 	second.react_violence(brawler)
 	var/datum/ambient_activity/dancer_hide/hiding = second.activity
 	TEST_ASSERT(istype(hiding), "A fight by the kingpin's seat did not send the dancer into hiding")
@@ -173,7 +173,7 @@
 	second.forceMove(pa_tile(4, 2))
 
 	// Hit herself, well clear of the kingpin: she hides too, and never leaves
-	var/mob/living/basic/ambient_npc/outpost/dancer/third = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, pa_tile(3, 4), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/third = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, pa_tile(3, 4), place)
 	var/mob/living/carbon/human/consistent/other_brawler = allocate(/mob/living/carbon/human/consistent, pa_tile(4, 4))
 	third.react_attacked(other_brawler)
 	TEST_ASSERT(istype(third.activity, /datum/ambient_activity/dancer_hide), "A hit did not send the dancer into hiding")
@@ -186,10 +186,10 @@
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
 	var/turf/spot = pa_tile(1, 1)
 	var/cash_before = ambient_test_cash_on(spot)
-	var/mob/living/basic/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, spot, place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, spot, place)
 	TEST_ASSERT(!HAS_TRAIT(dancer, TRAIT_GODMODE), "The dancer cannot be hurt")
 
-	dancer.apply_damage(dancer.maxHealth * 2, BRUTE)
+	dancer.apply_damage(dancer.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(dancer.stat, DEAD, "The dancer did not die of her wounds")
 	var/dropped = ambient_test_cash_on(spot) - cash_before
 	TEST_ASSERT(dropped >= 5 && dropped <= 30, "The dancer dropped [dropped] cr, not 5 to 30") // AMBIENT_DEATH_CASH_LOW/HIGH
@@ -200,7 +200,7 @@
 
 	// Killed up on the pole: her body falls off it, beside the pole, with her offsets gone
 	var/obj/structure/festivus/anchored/pole = dancer_test_pole(pa_tile(2, 3))
-	var/mob/living/basic/ambient_npc/outpost/dancer/performer = pa_npc(/mob/living/basic/ambient_npc/outpost/dancer, pa_tile(2, 2), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/performer = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, pa_tile(2, 2), place)
 	var/base_w = performer.base_pixel_w
 	var/base_z = performer.base_pixel_z
 	var/datum/ambient_activity/dance_pole/dance = performer.start_activity(new /datum/ambient_activity/dance_pole(performer))
@@ -209,7 +209,7 @@
 	dance.climb_at = world.time
 	performer.activity_step(1)
 	TEST_ASSERT(dance.on_pole, "The dancer did not climb onto the pole")
-	performer.apply_damage(performer.maxHealth * 2, BRUTE)
+	performer.apply_damage(performer.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(performer.stat, DEAD, "The dancer on the pole did not die of her wounds")
 	TEST_ASSERT(get_turf(performer) != get_turf(pole), "The dancer's body stayed up on the pole")
 	TEST_ASSERT_EQUAL(get_dist(performer, pole), 1, "The dancer's body did not fall beside the pole")

@@ -5,13 +5,13 @@
  * itself out of that list on its first tick. Upstream deleted the subsystem that walked
  * the idle list (tg #82469), which silently made AI_IDLE permanent - every mapped hermit
  * in the wasteland ruins loaded, idled, and then ignored players for the rest of the
- * round. SSidlenpcpool + consider_wakeup() (voidcrew/controllers/subsystem/idle_npc_wakeup.dm)
+ * round. (Hermits are human NPCs now; the polar bear stands in as a mapped hostile.) SSidlenpcpool + consider_wakeup() (voidcrew/controllers/subsystem/idle_npc_wakeup.dm)
  * restore the wakeup; this guards it against being dropped in an upstream merge.
  */
 /datum/unit_test/voidcrew_simple_mob_wakeup
 
 /datum/unit_test/voidcrew_simple_mob_wakeup/Run()
-	var/mob/living/simple_animal/hostile/asteroid/hermit/survivor/hermit = allocate(/mob/living/simple_animal/hostile/asteroid/hermit/survivor)
+	var/mob/living/simple_animal/hostile/asteroid/polarbear/hermit = allocate(/mob/living/simple_animal/hostile/asteroid/polarbear)
 	var/turf/hermit_turf = get_turf(hermit)
 	TEST_ASSERT(hermit_turf, "the test hermit was allocated without a turf")
 
@@ -24,7 +24,7 @@
 	TEST_ASSERT_EQUAL(hermit.AIStatus, AI_IDLE, "an idle hostile woke up with nobody on its z-level")
 
 	// Now put someone it wants to kill in front of it. Both mobs are allocated onto
-	// run_loc_floor_bottom_left, so this is well inside the hermit's vision_range of 2.
+	// run_loc_floor_bottom_left, so this is well inside the bear's vision_range of 2.
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
 	SSmobs.clients_by_zlevel[hermit_turf.z] += victim
 	hermit.consider_wakeup()

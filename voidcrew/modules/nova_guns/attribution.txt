@@ -1,0 +1,31 @@
+The art and sounds in this module come from Nova Sector (https://github.com/NovaSector/NovaSector),
+taken on 2026-11-08 from the paths below. Nova licenses its assets CC BY-SA 3.0
+(https://creativecommons.org/licenses/by-sa/3.0/) unless a file says otherwise, and none of these
+files says otherwise; they are used here under that licence. Each DMI holds only the states these
+guns use, copied pixel for pixel, apart from the changes listed.
+
+Icons (Nova paths are under modular_nova/modules/modular_weapons/icons/)
+icons/rapier.dmi          - states rapier, rapier_mag, rapier_bolt, rapier_bolt_locked from
+                            obj/company_and_or_faction_based/aethon_arms/wide_guns.dmi.
+                            rapier_suppressor is new: the saber_suppressor state from /tg/station
+                            icons/obj/weapons/guns/ballistic.dmi (CC BY-SA 3.0), moved into a 48x32 frame.
+icons/zashch.dmi          - states zashch, zashch_bolt, zashch_bolt_locked, zashch_mag from
+                            obj/company_and_or_faction_based/szot_dynamica/guns_32.dmi.
+icons/zashch_lefthand.dmi - state zashch from mob/company_and_or_faction_based/szot_dynamica/guns_lefthand.dmi.
+icons/zashch_righthand.dmi - state zashch from mob/company_and_or_faction_based/szot_dynamica/guns_righthand.dmi.
+icons/nt_m96.dmi          - states mauser, mauser_bolt and mauser_bolt_open from
+                            obj/company_and_or_faction_based/nanotrasen_armories/ballistic.dmi.
+                            mauser_bolt_open is renamed mauser_bolt_locked, the state our gun code draws
+                            for an open bolt.
+icons/magazines.dmi       - states rapier, rapier-full, rapier-empty from
+                            obj/company_and_or_faction_based/aethon_arms/ammo.dmi, and zashch_mag,
+                            zashch_mag-full, zashch_mag-empty from
+                            obj/company_and_or_faction_based/szot_dynamica/ammo.dmi.
+
+Sounds (Nova paths are under modular_nova/modules/modular_weapons/sounds/, taken unmodified)
+sound/smg_light.ogg           - sounds/smg_light.ogg
+sound/pistol_heavy.ogg        - sounds/pistol_heavy.ogg
+                                Byte-identical to TerraGov Marine Corps sound/weapons/guns/fire/gun_p23.ogg
+                                (TGMC PR #13409), licensed CC BY-NC-SA 3.0. Non-commercial use only.
+sound/bay_gunshot_magnum.ogg  - sounds/bay_gunshot_magnum.ogg. Nova's sounds/attributions.txt says it was
+                                taken from Baystation12 (https://github.com/Baystation12/Baystation12).

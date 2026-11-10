@@ -18,7 +18,7 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
 "ad" = (
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /obj/item/ammo_casing/shotgun/buckshot/spent{
 	pixel_x = 3;
 	pixel_y = 10
@@ -35,14 +35,14 @@
 /area/ruin/space/has_grav/waystation/dorms)
 "ae" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargooffice)
 "af" = (
 /obj/effect/turf_decal/loading_area/red,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
@@ -98,11 +98,11 @@
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/waystation/securestorage)
 "ah" = (
-/mob/living/basic/trooper/syndicate/melee/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/waystation/securestorage)
 "ai" = (
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/syndicate/commando/gunner,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
 "aj" = (

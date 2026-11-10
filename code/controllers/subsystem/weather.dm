@@ -38,7 +38,8 @@ SUBSYSTEM_DEF(weather)
 					mobs_by_z_cache_fire = times_fired
 					for(var/mob/living/candidate as anything in GLOB.mob_living_list)
 						// Weather is player-facing; ordinary planetary fauna should never enter its work list.
-						if(!candidate.mind && !candidate.ever_had_mind)
+						// Human NPCs (voidcrew/modules/human_npcs/) are people: weathered like players while awake.
+						if(!candidate.mind && !candidate.ever_had_mind && !human_npc_weathered(candidate))
 							continue
 						var/candidate_z = candidate.z
 						if(!candidate_z) // contained mobs report z = 0

@@ -8,7 +8,8 @@
 //    (see cave_entrance.dm): industrial plant equipment, uncommon-tier.
 //  - cyberware: shop-floor chrome, the kind a plant fits to keep a line
 //    running, omnitool fingers, then the coolant lattice for hot work and
-//    the myomer arms that pull a dead airlock open.
+//    the myomer arms that pull a dead airlock open. The cheap myomer pair
+//    is a yellow melee extra, the real Gorilla Arms a red one.
 // TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune against outpost shop material prices and
 // the Boffin stall parts SKUs in theme_skus.
@@ -26,6 +27,9 @@
 		),
 	)
 	melee_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/cyberware_pair_case/gorilla_arms/street = 1,
+		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/cyberware_pair_case/gorilla_arms = 1,
 		),
@@ -41,6 +45,10 @@
 		/datum/shop_sku/ripperdoc/fixers,
 		/datum/shop_sku/ripperdoc/coolant,
 		/datum/shop_sku/ripperdoc/gorilla,
+		/datum/shop_sku/ripperdoc/coolant_street,
+		/datum/shop_sku/ripperdoc/fixers_street,
+		/datum/shop_sku/ripperdoc/atlas_street,
+		/datum/shop_sku/ripperdoc/gorilla_street,
 	)
 	loot_common = list(
 		/obj/item/stack/sheet/iron/fifty = 10,
@@ -57,6 +65,9 @@
 		/obj/item/stack/sheet/plasteel/twenty = 4,
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/rock_eater = 3,
+		// line-worker chrome: a heat-sink lining and loose fingertip tools
+		/obj/item/organ/cyberimp/cyberware/coolant/street = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street = 4,
 	)
 	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/titanium/fifty = 8,
@@ -79,6 +90,8 @@
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/heat_adaptation = 2,
 		/obj/item/dnainjector/loot/insulated = 3,
+		// a loader's strut frame
+		/obj/item/organ/cyberimp/cyberware/atlas/street = 3,
 	)
 	loot_prime = list(
 		/obj/item/stack/sheet/plasteel/fifty = 9,

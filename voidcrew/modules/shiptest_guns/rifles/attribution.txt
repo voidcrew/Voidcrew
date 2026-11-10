@@ -1,0 +1,46 @@
+The art and sounds in this folder come from Shiptest (https://github.com/shiptest-ss13/Shiptest), taken
+on 2026-11-08 at commit 000f892ae9. Shiptest licenses its assets CC BY-SA 3.0
+(https://creativecommons.org/licenses/by-sa/3.0/) unless otherwise indicated. Each DMI holds only the
+states these guns use, copied pixel for pixel, apart from the renames and additions listed.
+
+Icons
+icons/woodsman.dmi          - states woodsman and woodsman_mag_woodsman_mag (renamed woodsman_mag, the
+                              state our gun code draws for a loaded magazine) from
+                              icons/obj/guns/manufacturer/serene_outdoors/48x32.dmi. Drawn by Apogee-dev,
+                              Shiptest PR #4083 "Serene Outdoors Model 23 Woodsman Rifle". CC BY-SA 3.0.
+icons/skm.dmi               - states skm, skm_mag_skm_mag, skm_mag_skm_extended_mag and skm_mag_skm_drum
+                              from icons/obj/guns/manufacturer/frontier_import/48x32.dmi. Drawn by retlaw34
+                              and Apogee-dev, Shiptest PR #2734 (the PR calls the SKM an original design).
+                              CC BY-SA 3.0.
+                              skm_suppressor is new: the saber_suppressor state from /tg/station
+                              icons/obj/weapons/guns/ballistic.dmi (CC BY-SA 3.0), moved into a 48x32 frame.
+icons/rifles_lefthand.dmi,
+icons/rifles_righthand.dmi  - state woodsman from icons/obj/guns/manufacturer/serene_outdoors/lefthand.dmi
+                              and righthand.dmi (Shiptest PR #4083), state skm from
+                              icons/obj/guns/manufacturer/frontier_import/lefthand.dmi and righthand.dmi
+                              (Shiptest PR #2734 and later frontier_import updates). CC BY-SA 3.0.
+icons/rifles_back.dmi       - state woodsman from icons/obj/guns/manufacturer/serene_outdoors/onmob.dmi and
+                              state skm from icons/obj/guns/manufacturer/frontier_import/onmob.dmi, same
+                              sources as the inhands. CC BY-SA 3.0.
+icons/ammo.dmi              - from Shiptest icons/obj/ammunition/ammo.dmi: woodsman_mag, skm_mag,
+                              skm_extended_mag and skm_drum (each Shiptest "-1" state copied as the base and
+                              "-full" states, each "-0" state as the "-empty" state, the names our magazine
+                              code draws), and the stripper clip states 850, 850-0 to 850-5, 300m and 300m-0
+                              to 300m-5 unchanged. Added by Shiptest in-house PRs; no outside source is
+                              credited in that history. CC BY-SA 3.0.
+
+Sounds (taken unmodified from Shiptest sound/weapons/gun/rifle/)
+sound/skm.ogg        - rifle/skm.ogg. Byte-identical to TerraGov-Marine-Corps sound/weapons/guns/fire/ak47.ogg,
+                       last changed in TGMC PR #5261 "The Gun Sound Overhaul" (XSlayer300). TGMC's README
+                       licenses the sounds of PR #5261 CC BY-NC-SA 3.0
+                       (https://creativecommons.org/licenses/by-nc-sa/3.0/). NON-COMMERCIAL.
+sound/skm_reload.ogg - rifle/skm_reload.ogg. Byte-identical to TerraGov-Marine-Corps
+                       sound/weapons/guns/interact/ak47_reload.ogg, added by TGMC PR #2905 (Aurelien3189).
+                       TGMC licenses contributions not otherwise specified under AGPL-3.0.
+sound/skm_unload.ogg - rifle/skm_unload.ogg. Byte-identical to TerraGov-Marine-Corps
+                       sound/weapons/guns/interact/ak47_unload.ogg, added by TGMC PR #2905 (Aurelien3189).
+                       TGMC licenses contributions not otherwise specified under AGPL-3.0.
+
+Not copied: the Woodsman's own fire sound (rifle/ssg669c.ogg) and the SKM's rack sound
+(rifle/skm_cocked.ogg) have no traceable source, so both guns use stock /tg/station sounds there, which
+the gun_feel module swaps for its credited Shiptest recordings.

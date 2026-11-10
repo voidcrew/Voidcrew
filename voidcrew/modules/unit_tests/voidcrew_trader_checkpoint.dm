@@ -687,7 +687,7 @@
 /// NPCs never work the doors, a refusal does not repeat while the chamber cycles, and NPC pathing keeps out of the chamber
 /datum/unit_test/voidcrew_trader_checkpoint/npc_doors/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
-	var/mob/living/basic/ambient_npc/outpost/customer/npc = allocate(/mob/living/basic/ambient_npc/outpost/customer, lobby)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, lobby)
 	// Walking into the doors again and again does nothing at all
 	for(var/i in 1 to 5)
 		outer.bumpopen(npc)
@@ -743,7 +743,7 @@
 /datum/unit_test/voidcrew_trader_checkpoint/npc_crossing/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(host)
-	var/mob/living/basic/ambient_npc/outpost/customer/npc = allocate(/mob/living/basic/ambient_npc/outpost/customer, lobby)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, lobby)
 	npc.set_place(place)
 	ambient_cross_checkpoint_on_arrival(npc, host)
 	var/datum/ambient_activity/cross_checkpoint/crossing = npc.activity

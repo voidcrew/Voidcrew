@@ -38,11 +38,11 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 // ===== PRISONER SIDE =====
 
 /// Whether their routine may run now: not while down, cuffed, pulled, in trouble or held by the talk menu (outpost_prison_warden_tools.dm)
-/mob/living/basic/outpost_prisoner/proc/routine_allowed()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/routine_allowed()
 	return prison && stat == CONSCIOUS && phase == PRISONER_PRESENT && !can_be_dragged() && !pulledby && !in_trouble() && !held_by_talk_menu()
 
 /// Ends what they are doing, putting things down and getting up
-/mob/living/basic/outpost_prisoner/proc/end_activity(cancel_ai = TRUE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/end_activity(cancel_ai = TRUE)
 	if(!activity)
 		return
 	var/datum/prisoner_activity/old = activity
@@ -55,13 +55,13 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 		ai_controller?.CancelActions()
 
 /// Starts `new_activity` in place of whatever they were doing
-/mob/living/basic/outpost_prisoner/proc/start_activity(datum/prisoner_activity/new_activity)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/start_activity(datum/prisoner_activity/new_activity)
 	end_activity()
 	activity = new_activity
 	return new_activity
 
 /// A walk failed: try once more, then give up on it for a while
-/mob/living/basic/outpost_prisoner/proc/activity_move_failed()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/activity_move_failed()
 	if(!activity)
 		return
 	if(++activity.failed_moves < 2)
@@ -70,14 +70,14 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	end_activity(cancel_ai = FALSE)
 
 /// Whether they gave up on this kind of activity recently
-/mob/living/basic/outpost_prisoner/proc/activity_on_cooldown(activity_type)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/activity_on_cooldown(activity_type)
 	return LAZYACCESS(activity_cooldowns, activity_type) > world.time
 
 /**
  * Picks their next activity: duties and needs first (heading home at release, eating, changing,
  * calling for the hatch), then leisure by weight. Returns the activity, already set up.
  */
-/mob/living/basic/outpost_prisoner/proc/choose_activity()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/choose_activity()
 	if(!prison)
 		return null
 	if(!walkable)
@@ -131,7 +131,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return null
 
 /// The nearest free tile beside `target` they can stand on, or its own tile when walkable
-/mob/living/basic/outpost_prisoner/proc/approach_turf(atom/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/approach_turf(atom/target)
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf || !walkable)
 		return null
@@ -150,19 +150,19 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return best
 
 /// Somewhere to hang about: the yard, or their own cell, not someone else's
-/mob/living/basic/outpost_prisoner/proc/may_loiter(turf/tile)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/may_loiter(turf/tile)
 	var/datum/outpost_prison_cell/holder = prison?.cell_at(tile)
 	return !holder || holder == cell || holder == prison.cell_at(get_turf(src))
 
 /// Whether someone else stands on this tile
-/mob/living/basic/outpost_prisoner/proc/tile_taken(turf/tile)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/tile_taken(turf/tile)
 	for(var/mob/living/other in tile)
 		if(other != src && other.density)
 			return TRUE
 	return FALSE
 
 /// Their bed if they can get to it, else any free bed they can
-/mob/living/basic/outpost_prisoner/proc/find_bed()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/find_bed()
 	var/obj/structure/bed/own = cell?.bed()
 	if(own && walkable?[get_turf(own)] && !prison.claimed_by_other(own, src))
 		return own
@@ -172,7 +172,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return null
 
 /// A fixture of `category` they can walk up to and nobody else is using, own cell's first, never in another's cell
-/mob/living/basic/outpost_prisoner/proc/find_fixture(category, stand_on = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/find_fixture(category, stand_on = FALSE)
 	var/list/options = list()
 	for(var/atom/fixture as anything in prison.fixtures_of(category))
 		if(QDELETED(fixture) || prison.claimed_by_other(fixture, src))
@@ -189,7 +189,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return pick(options)
 
 /// Whether `person` is a member of the wing awake in the cell block, close by, holding dressings
-/mob/living/basic/outpost_prisoner/proc/is_medic(mob/living/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_medic(mob/living/person)
 	if(!istype(person) || QDELETED(person) || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 		return FALSE
 	if(get_dist(src, person) > PRISONER_SICK_CALL_RANGE || !prison?.in_cell_block(person) || !prison.is_member(person))
@@ -197,7 +197,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return !!person.is_holding_item_of_type(/obj/item/stack/medical)
 
 /// The nearest medic they can see and walk up to
-/mob/living/basic/outpost_prisoner/proc/find_medic()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/find_medic()
 	var/mob/living/best
 	var/best_distance = INFINITY
 	for(var/mob/living/person in view(PRISONER_SICK_CALL_RANGE, src))
@@ -213,13 +213,13 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
  * Hurt, with a medic in sight: drops whatever idle thing they were doing and goes over. Called
  * every few seconds by the prison while anyone is on the level. Returns TRUE if they went.
  */
-/mob/living/basic/outpost_prisoner/proc/check_sick_call()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/check_sick_call()
 	if(!ai_running())
 		return FALSE
 	return start_sick_call()
 
 /// Starts a sick call if they are hurt, free and someone holding dressings is near. Returns TRUE if it started.
-/mob/living/basic/outpost_prisoner/proc/start_sick_call()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/start_sick_call()
 	if(!routine_allowed() || health_factor() >= PRISONER_INJURED_BELOW || !COOLDOWN_FINISHED(src, sick_call_cooldown))
 		return FALSE
 	// A need, a duty or sleep comes first; anything idle can wait.
@@ -236,7 +236,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
  * A ball thrown at them: caught by anyone in a game, and by an idle prisoner when staff throw it,
  * who then starts shooting hoops. Returns TRUE if they caught it.
  */
-/mob/living/basic/outpost_prisoner/proc/try_catch_ball(atom/movable/thrown_thing, datum/thrownthing/throwing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/try_catch_ball(atom/movable/thrown_thing, datum/thrownthing/throwing)
 	var/obj/item/toy/basketball/ball = thrown_thing
 	if(!istype(ball) || held_item || !routine_allowed() || activity?.sleeping)
 		return FALSE
@@ -257,7 +257,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 			qdel(game)
 	return TRUE
 
-/mob/living/basic/outpost_prisoner/hitby(atom/movable/AM, skipcatch, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum)
+/mob/living/carbon/human/npc/outpost_prisoner/hitby(atom/movable/AM, skipcatch, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum)
 	if(try_catch_ball(AM, throwingdatum))
 		return TRUE
 	return ..()
@@ -284,7 +284,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 /datum/ai_planning_subtree/outpost_prisoner_routine
 
 /datum/ai_planning_subtree/outpost_prisoner_routine/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	if(!istype(prisoner) || !prisoner.routine_allowed())
 		return
 	var/datum/prisoner_activity/activity = prisoner.activity || prisoner.choose_activity()
@@ -310,7 +310,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	action_cooldown = 0.5 SECONDS
 
 /datum/ai_behavior/outpost_prisoner_travel/setup(datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	var/turf/spot = prisoner.activity?.spot
 	if(!spot)
 		return FALSE
@@ -319,7 +319,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return TRUE
 
 /datum/ai_behavior/outpost_prisoner_travel/perform(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	var/datum/prisoner_activity/activity = prisoner.activity
 	if(!activity || prisoner.loc != activity.spot)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -330,7 +330,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 /datum/ai_behavior/outpost_prisoner_travel/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	if(!succeeded)
-		var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 		prisoner?.activity_move_failed()
 
 /// Ticks the activity about once a second until it wants to move or is done
@@ -338,11 +338,11 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	action_cooldown = 1 SECONDS
 
 /datum/ai_behavior/outpost_prisoner_activity/setup(datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	return !!prisoner.activity
 
 /datum/ai_behavior/outpost_prisoner_activity/perform(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	var/datum/prisoner_activity/activity = prisoner.activity
 	if(!activity || !prisoner.routine_allowed())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -381,7 +381,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	var/mood_activity = FALSE
 	/// Asleep: no chatting, only sleep talk
 	var/sleeping = FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner
 	/// Where they are headed; null once there
 	var/turf/spot
 	/// When it ends, once started
@@ -392,7 +392,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	/// REF() keys of what this activity has claimed in the prison
 	var/list/claimed
 
-/datum/prisoner_activity/New(mob/living/basic/outpost_prisoner/doer)
+/datum/prisoner_activity/New(mob/living/carbon/human/npc/outpost_prisoner/doer)
 	. = ..()
 	prisoner = doer
 
@@ -1062,13 +1062,13 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 
 /datum/prisoner_activity/chat/setup()
 	var/list/options = list()
-	for(var/mob/living/basic/outpost_prisoner/other as anything in prisoner.prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other as anything in prisoner.prison.prisoners)
 		if(other == prisoner || !can_join(other))
 			continue
 		options += other
 	while(length(options))
 		// Friends first (outpost_prison_life.dm); the pick comes out of options either way.
-		var/mob/living/basic/outpost_prisoner/other = prisoner.prison.take_chat_partner(prisoner, options)
+		var/mob/living/carbon/human/npc/outpost_prisoner/other = prisoner.prison.take_chat_partner(prisoner, options)
 		var/turf/beside = prisoner.approach_turf(other)
 		if(!beside)
 			continue
@@ -1078,7 +1078,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return FALSE
 
 /// Whether `other` is free to talk
-/datum/prisoner_activity/chat/proc/can_join(mob/living/basic/outpost_prisoner/other)
+/datum/prisoner_activity/chat/proc/can_join(mob/living/carbon/human/npc/outpost_prisoner/other)
 	if(QDELETED(other) || !other.routine_allowed() || other.activity?.sleeping)
 		return FALSE
 	if(other.activity && (!other.activity.interruptible || istype(other.activity, /datum/prisoner_activity/chat)))
@@ -1086,7 +1086,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return TRUE
 
 /datum/prisoner_activity/chat/arrive()
-	var/mob/living/basic/outpost_prisoner/partner = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/partner = partner_ref?.resolve()
 	if(!partner || get_dist(prisoner, partner) > 1 || !can_join(partner))
 		return FALSE
 	. = ..()
@@ -1096,7 +1096,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	next_exchange = world.time + 1 SECONDS
 
 /datum/prisoner_activity/chat/tick(seconds)
-	var/mob/living/basic/outpost_prisoner/partner = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/partner = partner_ref?.resolve()
 	if(!partner || get_dist(prisoner, partner) > 1 || partner.activity?.chat_partner() != prisoner)
 		return ACTIVITY_DONE
 	prisoner.face_atom(partner)
@@ -1107,7 +1107,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return ..()
 
 /datum/prisoner_activity/chat/finish()
-	var/mob/living/basic/outpost_prisoner/partner = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/partner = partner_ref?.resolve()
 	if(partner && istype(partner.activity, /datum/prisoner_activity/chat/listen) && partner.activity.chat_partner() == prisoner)
 		partner.end_activity()
 	if(started && partner)
@@ -1119,7 +1119,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	leisure = FALSE
 	weight = 0
 
-/datum/prisoner_activity/chat/listen/New(mob/living/basic/outpost_prisoner/doer, mob/living/basic/outpost_prisoner/talker)
+/datum/prisoner_activity/chat/listen/New(mob/living/carbon/human/npc/outpost_prisoner/doer, mob/living/carbon/human/npc/outpost_prisoner/talker)
 	. = ..(doer)
 	partner_ref = WEAKREF(talker)
 	started = TRUE
@@ -1133,7 +1133,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	return TRUE
 
 /datum/prisoner_activity/chat/listen/tick(seconds)
-	var/mob/living/basic/outpost_prisoner/talker = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/talker = partner_ref?.resolve()
 	if(!talker || get_dist(prisoner, talker) > 1 || talker.activity?.chat_partner() != prisoner)
 		return ACTIVITY_DONE
 	prisoner.face_atom(talker)

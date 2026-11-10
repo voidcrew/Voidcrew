@@ -39,7 +39,7 @@
 	/// world.time a search of this cell last cost its owner mood
 	var/searched_at = 0
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Seconds their mood has stayed low enough to make a shiv, and to brew pruno
 	var/contraband_shiv_sour = 0
 	var/contraband_brew_sour = 0
@@ -62,12 +62,12 @@
 // ===== THE PRISONER'S SIDE =====
 
 /// Hooks up the prisoner's side of contraband and mail (the letter hand-over); called from setup_extras()
-/mob/living/basic/outpost_prisoner/proc/setup_contraband()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_contraband()
 	// An element, since the prisoner's own handler for item use already takes the signal (outpost_prison_mail.dm)
 	AddElement(/datum/element/outpost_prison_mail_handover)
 
 /// The sour clocks, the drink wearing off and the drunk's sway
-/mob/living/basic/outpost_prisoner/proc/contraband_counters(seconds)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_counters(seconds)
 	// Each sour clock counts while mood is under its line, holds just above it, and resets once they cheer up
 	if(mood >= OUTPOST_CONTRABAND_SOUR_RESET)
 		contraband_shiv_sour = 0
@@ -87,19 +87,19 @@
 	if(stat == CONSCIOUS && isturf(loc) && !buckled)
 		Shake(1, 0, 0.5 SECONDS)
 
-/mob/living/basic/outpost_prisoner/proc/contraband_drunk()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_drunk()
 	return contraband_drunk_left > 0
 
 /// Whether they have been sour long enough to make a shiv, and their cell has none
-/mob/living/basic/outpost_prisoner/proc/contraband_can_make_shiv()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_can_make_shiv()
 	return cell && !cell.stash_shiv && contraband_shiv_sour >= OUTPOST_CONTRABAND_SOUR_TIME
 
 /// Whether they have been grumbling long enough to brew, and their cell's cistern has no pruno
-/mob/living/basic/outpost_prisoner/proc/contraband_can_brew()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_can_brew()
 	return cell && contraband_brew_sour >= OUTPOST_CONTRABAND_BREW_SOUR_TIME && !prison?.contraband_pruno(cell)
 
 /// Hides `thing` (a razor blade or yeast from the mail) on them until they can stash it. FALSE if they already carry something.
-/mob/living/basic/outpost_prisoner/proc/contraband_carry(obj/item/thing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_carry(obj/item/thing)
 	if(QDELETED(thing) || carried_contraband)
 		return FALSE
 	thing.forceMove(src)
@@ -110,12 +110,12 @@
 	return TRUE
 
 /// Forgets what they carried, leaving the item wherever it is
-/mob/living/basic/outpost_prisoner/proc/contraband_clear_carried()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_clear_carried()
 	if(carried_contraband)
 		UnregisterSignal(carried_contraband, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 	carried_contraband = null
 
-/mob/living/basic/outpost_prisoner/proc/on_carried_contraband_moved(obj/item/source)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_carried_contraband_moved(obj/item/source)
 	SIGNAL_HANDLER
 	if(source != carried_contraband)
 		UnregisterSignal(source, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
@@ -124,7 +124,7 @@
 		contraband_clear_carried()
 
 /// A new arrival finds what the last occupant left and says so, if it is still there
-/mob/living/basic/outpost_prisoner/proc/contraband_remark_inherited()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/contraband_remark_inherited()
 	if(stat != CONSCIOUS || phase != PRISONER_PRESENT || !cell || in_trouble())
 		return FALSE
 	if(!cell.stash_shiv && !prison?.contraband_pruno(cell))
@@ -139,7 +139,7 @@
 
 /// Sour clocks, shiv making, brewing and drinking, and the cells' beds and toilets
 /datum/outpost_prison/proc/contraband_tick(seconds)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD)
 			continue
 		prisoner.contraband_counters(seconds)
@@ -151,12 +151,12 @@
 		return
 	contraband_clock = 0
 	contraband_hook_fixtures()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 			continue
 		// Nobody on the level: whatever came in the mail is stashed wherever they are, unless they are cuffed
 		if(prisoner.carried_contraband && !prisoner.ai_running())
-			if(!prisoner.cuffs)
+			if(!prisoner.handcuffed)
 				contraband_stash_carried(prisoner)
 			continue
 		contraband_try_start(prisoner)
@@ -166,7 +166,7 @@
  * they are free, nothing more pressing has them busy and no staff are in sight. Returns the
  * activity started, or null.
  */
-/datum/outpost_prison/proc/contraband_try_start(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_try_start(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner.ai_running() || !prisoner.routine_allowed() || !prisoner.cell)
 		return null
 	var/datum/prisoner_activity/current = prisoner.activity
@@ -188,14 +188,14 @@
 	return stash
 
 /// Staff (on-duty guards included) who can see `prisoner`, or null
-/datum/outpost_prison/proc/contraband_watcher(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_watcher(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	for(var/mob/living/person in view(OUTPOST_CONTRABAND_WATCH_RANGE, prisoner))
 		if(is_outpost_prison_staff(person))
 			return person
 	return null
 
 /// Caught at it: they stop, deny it, and have to sour all over again before the next try
-/datum/outpost_prison/proc/contraband_caught(mob/living/basic/outpost_prisoner/prisoner, mob/living/watcher, shiv = TRUE)
+/datum/outpost_prison/proc/contraband_caught(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/watcher, shiv = TRUE)
 	if(shiv)
 		prisoner.contraband_shiv_sour = 0
 	else
@@ -268,7 +268,7 @@
 	return TRUE
 
 /// A prisoner drinks the pruno in their cell's cistern: a lift, then a while drunk. Returns TRUE if they drank.
-/datum/outpost_prison/proc/contraband_drink(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_drink(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/obj/item/reagent_containers/cup/glass/bottle/pruno/bag = contraband_pruno(prisoner?.cell)
 	if(!outpost_prison_pruno_ready(bag))
 		return FALSE
@@ -281,7 +281,7 @@
 	return TRUE
 
 /// Home and unwatched, with the AI running: whatever came in the mail goes into hiding
-/datum/outpost_prison/proc/contraband_try_stash_carried(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_try_stash_carried(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner.cell?.contains(prisoner) || !prisoner.routine_allowed() || contraband_watcher(prisoner))
 		return FALSE
 	return contraband_stash_carried(prisoner)
@@ -291,7 +291,7 @@
  * the cistern. A cell that already has that stash, or no room for it, leaves them carrying it.
  * Returns TRUE if it was stashed.
  */
-/datum/outpost_prison/proc/contraband_stash_carried(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_stash_carried(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/obj/item/thing = prisoner.carried_contraband
 	var/datum/outpost_prison_cell/home = prisoner.cell
 	if(!thing || thing.loc != prisoner || !home)
@@ -366,7 +366,7 @@
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 	if(source.has_buckled_mobs())
 		// A prisoner lying on it can be told to get up from the talk menu, or shaken awake; the balloon only says who is in the way.
-		var/mob/living/basic/outpost_prisoner/lying = locate() in source.buckled_mobs
+		var/mob/living/carbon/human/npc/outpost_prisoner/lying = locate() in source.buckled_mobs
 		source.balloon_alert(user, lying?.activity?.sleeping ? "someone's asleep on it" : "someone's lying on it")
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 	INVOKE_ASYNC(src, PROC_REF(contraband_search_mattress), user, source)
@@ -388,7 +388,7 @@
 		return null
 	if(QDELETED(src) || QDELETED(bed) || QDELETED(user) || cell_at(get_turf(bed)) != cell)
 		return null
-	var/mob/living/basic/outpost_prisoner/owner = cell.occupant
+	var/mob/living/carbon/human/npc/outpost_prisoner/owner = cell.occupant
 	if(cell.stash_shiv)
 		cell.stash_shiv = FALSE
 		var/obj/item/knife/shiv/shiv = new(get_turf(user))
@@ -457,7 +457,7 @@
 		to_chat(user, span_notice("There's nothing in the cistern."))
 	else
 		to_chat(user, span_notice("You find [english_list(found)] in the cistern."))
-	var/mob/living/basic/outpost_prisoner/owner = cell.occupant
+	var/mob/living/carbon/human/npc/outpost_prisoner/owner = cell.occupant
 	if(!caught)
 		contraband_search_came_up_empty(owner, user, cell)
 		return "empty"
@@ -477,11 +477,11 @@
 	return TRUE
 
 /// Whether a cell's owner is there to take it: present, awake and not loose
-/datum/outpost_prison/proc/contraband_owner_home(mob/living/basic/outpost_prisoner/owner)
+/datum/outpost_prison/proc/contraband_owner_home(mob/living/carbon/human/npc/outpost_prisoner/owner)
 	return !QDELETED(owner) && (owner in prisoners) && owner.stat == CONSCIOUS && owner.phase == PRISONER_PRESENT && owner.trouble != PRISONER_TROUBLE_LOOSE
 
 /// Something was found in `owner`'s cell by `finder`: they deny it and lose a little mood
-/datum/outpost_prison/proc/contraband_owner_caught(mob/living/basic/outpost_prisoner/owner, mob/living/finder, datum/outpost_prison_cell/cell)
+/datum/outpost_prison/proc/contraband_owner_caught(mob/living/carbon/human/npc/outpost_prisoner/owner, mob/living/finder, datum/outpost_prison_cell/cell)
 	if(!contraband_owner_home(owner))
 		return FALSE
 	if(contraband_search_costs(cell))
@@ -493,12 +493,12 @@
 	return TRUE
 
 /// A search of `owner`'s cell found nothing: the owner and anyone watching take it badly. An empty cell costs nothing.
-/datum/outpost_prison/proc/contraband_search_came_up_empty(mob/living/basic/outpost_prisoner/owner, mob/living/searcher, datum/outpost_prison_cell/cell)
+/datum/outpost_prison/proc/contraband_search_came_up_empty(mob/living/carbon/human/npc/outpost_prisoner/owner, mob/living/searcher, datum/outpost_prison_cell/cell)
 	if(!contraband_owner_home(owner))
 		return FALSE
 	if(contraband_search_costs(cell))
 		owner.adjust_mood(-OUTPOST_CONTRABAND_EMPTY_MOOD)
-		for(var/mob/living/basic/outpost_prisoner/onlooker in view(OUTPOST_CONTRABAND_WATCH_RANGE, searcher))
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/onlooker in view(OUTPOST_CONTRABAND_WATCH_RANGE, searcher))
 			if(onlooker == owner || !(onlooker in prisoners) || onlooker.stat != CONSCIOUS || onlooker.phase != PRISONER_PRESENT)
 				continue
 			onlooker.adjust_mood(-OUTPOST_CONTRABAND_ONLOOKER_MOOD)
@@ -530,13 +530,13 @@
 // ===== THE PAT-DOWN =====
 
 /// The pat-down choice for the talk menu: name -> image. Hands on the wall, or held still in cuffs.
-/datum/outpost_prison/proc/contraband_talk_choices(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/contraband_talk_choices(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(!prisoner || !user || !is_member(user))
 		return list()
 	return list((CONTRABAND_PATDOWN_CHOICE) = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_search"))
 
 /// Runs a talk menu choice of this package; TRUE if it was one. May sleep.
-/datum/outpost_prison/proc/contraband_talk_act(mob/living/basic/outpost_prisoner/prisoner, mob/living/user, choice)
+/datum/outpost_prison/proc/contraband_talk_act(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user, choice)
 	if(choice != CONTRABAND_PATDOWN_CHOICE)
 		return FALSE
 	contraband_pat_down(prisoner, user)
@@ -549,12 +549,12 @@
  * in it: rioting, loose or sour, they hold still and are searched, unless someone is already
  * talking to them or working on their cuffs. Returns "found", "empty" or null. Sleeps.
  */
-/datum/outpost_prison/proc/contraband_pat_down(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/contraband_pat_down(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(QDELETED(prisoner) || QDELETED(user) || !is_member(user) || !(prisoner in prisoners))
 		return null
 	if(prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT)
 		return null
-	if(prisoner.cuffs)
+	if(prisoner.handcuffed)
 		if(prisoner.talking || prisoner.cuff_work)
 			prisoner.balloon_alert(user, "busy")
 			return null
@@ -571,7 +571,7 @@
 	prisoner.talking = TRUE
 	prisoner.end_activity()
 	prisoner.stand_up()
-	if(prisoner.cuffs)
+	if(prisoner.handcuffed)
 		// Their hands are cuffed already; nothing for them to put on the wall
 		prisoner.face_atom(user)
 		prisoner.manual_emote("stands still to be searched.")
@@ -612,11 +612,11 @@
 	prisoner.say_context("patdown_empty")
 	if(contraband_roll(OUTPOST_CONTRABAND_PATDOWN_ONLOOKER_CHANCE))
 		var/list/onlookers = list()
-		for(var/mob/living/basic/outpost_prisoner/onlooker in view(OUTPOST_CONTRABAND_ONLOOKER_RANGE, prisoner))
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/onlooker in view(OUTPOST_CONTRABAND_ONLOOKER_RANGE, prisoner))
 			if(onlooker != prisoner && (onlooker in prisoners) && onlooker.stat == CONSCIOUS && onlooker.phase == PRISONER_PRESENT && !onlooker.in_trouble())
 				onlookers += onlooker
 		if(length(onlookers))
-			var/mob/living/basic/outpost_prisoner/speaker = pick(onlookers)
+			var/mob/living/carbon/human/npc/outpost_prisoner/speaker = pick(onlookers)
 			speaker.face_atom(user)
 			speaker.say_context("patdown_onlooker", prisoner)
 	note_staff_event(user, prisoner, "patdown_empty")
@@ -637,35 +637,35 @@
 	return contraband_tension() > 0 ? "word of a shiv" : null
 
 /// How much higher `prisoner`'s riot line is (a shiv under their mattress, and some bounty prisoners: outpost_prison_bounty.dm)
-/datum/outpost_prison/proc/riot_join_bonus(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/riot_join_bonus(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return (prisoner?.cell?.stash_shiv ? OUTPOST_CONTRABAND_RIOT_JOIN_BONUS : 0) + (prisoner ? prisoner.bounty_riot_bonus() : 0)
 
 /**
  * A rioter draws the shiv from their cell's stash instead of a new one; TRUE if they did. Only
  * start_rioting() calls this: a stash never arms a threat or a fight (decision 8).
  */
-/datum/outpost_prison/proc/draw_stashed_shiv(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/draw_stashed_shiv(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison_cell/home = prisoner?.cell
 	if(!home?.stash_shiv || prisoner.has_shiv())
 		return FALSE
 	home.stash_shiv = FALSE
 	prisoner.drop_held_item()
-	var/obj/item/knife/shiv/shiv = new(prisoner)
-	prisoner.held_item = shiv
-	prisoner.update_melee()
-	prisoner.update_appearance(UPDATE_OVERLAYS)
+	// The stash comes out into their hand, a real shiv like any other.
+	var/obj/item/knife/shiv/shiv = new(prisoner.drop_location())
+	if(!prisoner.take_item(shiv))
+		return FALSE
 	prisoner.manual_emote("pulls out a shiv [prisoner.p_they()] had been saving.")
 	return TRUE
 
 /// Multiplier on the chance these two start a fight: either one drunk
-/datum/outpost_prison/proc/contraband_fight_mult(mob/living/basic/outpost_prisoner/one, mob/living/basic/outpost_prisoner/two)
+/datum/outpost_prison/proc/contraband_fight_mult(mob/living/carbon/human/npc/outpost_prisoner/one, mob/living/carbon/human/npc/outpost_prisoner/two)
 	if(one?.contraband_drunk() || two?.contraband_drunk())
 		return OUTPOST_CONTRABAND_DRUNK_FIGHT_MULT
 	return 1
 
 /// Multiplier on the wing's chance of a spat: anyone drunk
 /datum/outpost_prison/proc/contraband_spat_mult()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat == CONSCIOUS && prisoner.contraband_drunk())
 			return OUTPOST_CONTRABAND_DRUNK_SPAT_MULT
 	return 1
@@ -673,13 +673,13 @@
 // ===== SPEECH AND EXAMINE =====
 
 /// A drunk line `prisoner` wants to say now, as list(context, other), or null
-/datum/outpost_prison/proc/contraband_extra_speech(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_extra_speech(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner?.contraband_drunk() && prob(50))
 		return list("drunk", null)
 	return null
 
 /// The tells for examine: a hand kept in a pocket, a drunk's sway; or null
-/datum/outpost_prison/proc/contraband_examine(mob/living/basic/outpost_prisoner/prisoner, mob/user)
+/datum/outpost_prison/proc/contraband_examine(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/user)
 	if(!prisoner || prisoner.stat == DEAD)
 		return null
 	var/list/tells = list()
@@ -699,22 +699,22 @@
 			UnregisterSignal(thing, list(COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_ATTACK_HAND_SECONDARY, COMSIG_ATOM_EXITED))
 	contraband_hooked.Cut()
 	// Prisoners deleted with the prison never pass through forget()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		var/obj/item/thing = prisoner.carried_contraband
 		prisoner.contraband_clear_carried()
 		qdel(thing)
 
 /// A new arrival: half the time they notice what the last occupant left, a little after they arrive
-/datum/outpost_prison/proc/contraband_prisoner_admitted(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_prisoner_admitted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison_cell/home = prisoner?.cell
 	if(!home || (!home.stash_shiv && !contraband_pruno(home)))
 		return
 	if(!contraband_roll(OUTPOST_CONTRABAND_INHERIT_CHANCE))
 		return
-	addtimer(CALLBACK(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, contraband_remark_inherited)), OUTPOST_CONTRABAND_INHERIT_DELAY)
+	addtimer(CALLBACK(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, contraband_remark_inherited)), OUTPOST_CONTRABAND_INHERIT_DELAY)
 
 /// A prisoner is leaving: what they carry goes with them. Their cell's stash stays for the next.
-/datum/outpost_prison/proc/contraband_prisoner_leaving(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/contraband_prisoner_leaving(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/obj/item/thing = prisoner.carried_contraband
 	prisoner.contraband_clear_carried()
 	qdel(thing)
@@ -734,7 +734,7 @@
 		))
 	var/list/drunk = list()
 	var/list/carrying = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.contraband_drunk())
 			drunk += REF(prisoner)
 		if(prisoner.carried_contraband)
