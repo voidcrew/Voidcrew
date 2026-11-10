@@ -321,6 +321,7 @@
 	steps = list(
 		/datum/vc_tutorial_step/chrome_buy,
 		/datum/vc_tutorial_step/chrome_install,
+		/datum/vc_tutorial_step/chrome_execute,
 	)
 
 /datum/vc_tutorial_step/chrome_buy
@@ -332,6 +333,11 @@
 	key = TUTORIAL_STEP_CHROME_INSTALL
 	name = "Get it installed"
 	text = "Lie in the Chop Shop's Chrome Cradle, or have it put in by surgery."
+
+/datum/vc_tutorial_step/chrome_execute
+	key = TUTORIAL_STEP_CHROME_EXECUTE
+	name = "Do an execution"
+	text = "Get someone down, then finish them with Gorilla Arms, Mantis Blades or a Widowline."
 
 // ---------------------------------------------------------------------------
 // First surgery

@@ -222,6 +222,37 @@
 	TEST_ASSERT(implant.owner == player, "The install failed")
 	TEST_ASSERT(done("vc/chrome/install"), "Installing an implant was not credited")
 
+/// A chrome finisher that lands counts; one called off, or a boss-style finisher, doesn't.
+/datum/unit_test/voidcrew_tutorials/chrome_execute/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, get_step(run_loc_floor_bottom_left, EAST))
+
+	var/datum/hv_finisher/chrome/called_off = new(player, victim)
+	called_off.running = TRUE
+	called_off.stop(HV_FINISHER_LOST_GRIP)
+	TEST_ASSERT(!done("vc/chrome/execute"), "A called-off chrome finisher was credited")
+
+	var/datum/hv_finisher/boss_style = new(player, victim)
+	boss_style.running = TRUE
+	boss_style.completed = TRUE
+	boss_style.stop(HV_FINISHER_DONE)
+	qdel(boss_style)
+	TEST_ASSERT(!done("vc/chrome/execute"), "A non-chrome finisher was credited")
+
+	var/datum/hv_finisher/chrome/finished = new(player, victim)
+	finished.running = TRUE
+	finished.completed = TRUE
+	finished.stop(HV_FINISHER_DONE)
+	TEST_ASSERT(done("vc/chrome/execute"), "A finished chrome execution was not credited")
+
+	reset_progress()
+	var/datum/hv_finisher/mantis_scissor/scissor = new(player, victim)
+	scissor.running = TRUE
+	scissor.completed = TRUE
+	scissor.stop(HV_FINISHER_DONE)
+	qdel(scissor)
+	TEST_ASSERT(done("vc/chrome/execute"), "A finished Mantis scissor was not credited")
+
 /// Redeeming research notes at an R&D console.
 /datum/unit_test/voidcrew_tutorials/research_notes/Run()
 	var/mob/living/carbon/human/player = make_player()

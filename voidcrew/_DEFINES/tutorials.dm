@@ -55,6 +55,7 @@
 // Cyberware
 #define TUTORIAL_STEP_CHROME_BUY "vc/chrome/buy"
 #define TUTORIAL_STEP_CHROME_INSTALL "vc/chrome/install"
+#define TUTORIAL_STEP_CHROME_EXECUTE "vc/chrome/execute"
 
 // First surgery
 #define TUTORIAL_STEP_SURGERY_START "vc/surgery/start"

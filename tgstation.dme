@@ -7841,6 +7841,7 @@
 #include "voidcrew\modules\trade\favor_uniques\outfitter.dm"
 #include "voidcrew\modules\trade\favor_uniques\pike.dm"
 #include "voidcrew\modules\trade\favor_uniques\vex.dm"
+#include "voidcrew\modules\tutorials\hooks_chrome_finisher.dm"
 #include "voidcrew\modules\tutorials\hooks_contract.dm"
 #include "voidcrew\modules\tutorials\hooks_medical.dm"
 #include "voidcrew\modules\tutorials\hooks_power.dm"
