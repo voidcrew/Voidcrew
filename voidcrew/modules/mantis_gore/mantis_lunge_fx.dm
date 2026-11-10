@@ -216,7 +216,8 @@
  * MANTIS_ARTERY_ICON, drawn for each of the eight ways). A [weak] one is fewer drops that fall close by: a
  * seared artery, or a wall where the drops would have come down. Upright in the world (it does not lie down
  * with the body), in the blood's own colour. Thrown away from the viewer, or out of a limb on the body's far
- * side, the drops leave from behind the body; otherwise in front of it. Returns the picture.
+ * side, the drops leave from behind the body; otherwise in front of it. Thrown straight up or down the screen
+ * they lean out to the wound's side of the body (mantis_spurt_lean()). Returns the picture.
  */
 /proc/mantis_spurt_fx(mob/living/victim, zone, spurt_dir, weak = FALSE)
 	if(QDELETED(victim) || !isturf(victim.loc) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
@@ -225,13 +226,15 @@
 		spurt_dir = pick(GLOB.alldirs)
 	var/height = mantis_artery_height(victim, zone)
 	var/list/point = mantis_artery_point(victim, zone)
+	// Which side of the body's middle line, as it is drawn, the wound is on. One on the line counts as the right.
+	var/side = point[1] < 0 ? -1 : 1
 	// The wound on the floor's own grid: the body may be drawn off the middle of its tile (lying down, shoved).
 	var/list/from = list(point[1] + victim.pixel_x + victim.pixel_w, point[2] + victim.pixel_y + victim.pixel_z)
-	var/turf/land = weak ? null : mantis_spurt_turf(victim, from, height, FALSE, spurt_dir)
+	var/turf/land = weak ? null : mantis_spurt_turf(victim, from, height, FALSE, spurt_dir, side)
 	if(!weak && (isnull(land) || hv_blood_spray_blocked(land)))
 		weak = TRUE
 	if(weak)
-		land = mantis_spurt_turf(victim, from, height, TRUE, spurt_dir)
+		land = mantis_spurt_turf(victim, from, height, TRUE, spurt_dir, side)
 	var/list/shape = mantis_spurt_shape(height, weak)
 	var/state = "[height][weak ? "_weak" : ""]"
 	// One beat past the landing, on its last frame: the spots it shows there are the ones laid on the floor.
@@ -247,25 +250,36 @@
 	jet.pixel_z = -32 + point[2]
 	jet.color = victim.get_blood_dna_color() || BLOOD_COLOR_RED
 	jet.layer = ((spurt_dir & NORTH) || wire_limb_far(zone, victim.dir)) ? BELOW_MOB_LAYER : MANTIS_OVER_VICTIM_LAYER
+	var/lean = mantis_spurt_lean(weak, spurt_dir, side)
+	if(lean)
+		animate(jet, pixel_w = jet.pixel_w + lean, time = shape[3], easing = SINE_EASING|EASE_OUT)
 	if(land)
-		var/list/spot = mantis_spurt_spot(from, height, weak, spurt_dir)
+		var/list/spot = mantis_spurt_spot(from, height, weak, spurt_dir, side)
 		var/offset_x = spot[1] - (land.x - victim.x) * ICON_SIZE_X
 		var/offset_y = spot[2] - (land.y - victim.y) * ICON_SIZE_Y
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_spurt_land), land, "artery_drops_[state]", spurt_dir, offset_x, offset_y, victim.get_blood_dna_list(), victim.get_static_viruses()), shape[3])
 	return jet
 
+/// How far a spurt's drops lean sideways by the time they come down, in pixels. Thrown straight up or down the
+/// screen out of a wound on one [side] of the body's middle line (-1 left as drawn, 1 right, 0 for no lean) they
+/// would fly along the body, behind it or over it: they lean out to the wound's side and land clear of it.
+/proc/mantis_spurt_lean(weak, spurt_dir, side)
+	if(spurt_dir != NORTH && spurt_dir != SOUTH)
+		return 0
+	return side * (weak ? 4 : 9)
+
 /// Where the middle of a spurt's drops comes down, from the middle of the tile the wound is on: list(x, y).
-/// [point] is the wound (mantis_artery_point()).
-/proc/mantis_spurt_spot(list/point, height, weak, spurt_dir)
+/// [point] is the wound (mantis_artery_point()), on the [side] of the body mantis_spurt_lean() takes.
+/proc/mantis_spurt_spot(list/point, height, weak, spurt_dir, side = 0)
 	var/list/shape = mantis_spurt_shape(height, weak)
 	var/out_x = (spurt_dir & EAST) ? 1 : ((spurt_dir & WEST) ? -1 : 0)
 	var/out_y = (spurt_dir & NORTH) ? 1 : ((spurt_dir & SOUTH) ? -1 : 0)
 	var/reach = shape[1] * ((out_x && out_y) ? 0.7071 : 1)
-	return list(point[1] + round(out_x * reach, 1), point[2] - shape[2] + round(out_y * reach, 1))
+	return list(point[1] + round(out_x * reach, 1) + mantis_spurt_lean(weak, spurt_dir, side), point[2] - shape[2] + round(out_y * reach, 1))
 
 /// The tile a spurt's drops come down on, or null if there is none.
-/proc/mantis_spurt_turf(mob/living/victim, list/point, height, weak, spurt_dir)
-	var/list/spot = mantis_spurt_spot(point, height, weak, spurt_dir)
+/proc/mantis_spurt_turf(mob/living/victim, list/point, height, weak, spurt_dir, side = 0)
+	var/list/spot = mantis_spurt_spot(point, height, weak, spurt_dir, side)
 	return locate(victim.x + round(spot[1] / ICON_SIZE_X, 1), victim.y + round(spot[2] / ICON_SIZE_Y, 1), victim.z)
 
 /**

@@ -828,6 +828,13 @@
 	// A weak one falls close by.
 	var/obj/effect/abstract/cyberware_anim/weak_jet = mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST, TRUE)
 	TEST_ASSERT_EQUAL(weak_jet?.icon_state, "spurt_mid_weak", "A weak spurt isn't the weak one")
+	// Thrown straight up or down the screen out of an arm, the drops lean out to that arm's side and land clear
+	// of the body. Thrown sideways they don't lean.
+	var/list/straight = mantis_spurt_spot(list(6, 1), "mid", FALSE, NORTH)
+	var/list/leaning = mantis_spurt_spot(list(6, 1), "mid", FALSE, NORTH, 1)
+	TEST_ASSERT(leaning[1] > straight[1], "Drops thrown up the screen out of an arm on the right don't lean out to the right")
+	TEST_ASSERT_EQUAL(leaning[2], straight[2], "Leaning out changed how far the drops fly")
+	TEST_ASSERT_EQUAL(mantis_spurt_lean(FALSE, EAST, 1), 0, "Drops thrown sideways lean")
 
 	// The blood runs down the body, and goes when the wound does.
 	var/obj/effect/abstract/cyberware_anim/mantis_run/run = mantis_artery_run_fx(victim, BODY_ZONE_L_ARM, torn)
