@@ -17,6 +17,9 @@
 	TEST_ASSERT(swing && (swing in user.vis_contents), "A hit didn't swing the blade")
 	TEST_ASSERT_EQUAL(swing.icon_state, "mantis_swing_right", "The right hand swung the wrong picture")
 	TEST_ASSERT(blade.inhand_hidden_until > world.time, "The held blade draws under its own swing")
+	// The slash over the target goes up with the swing, so the client plays both from the same moment.
+	var/obj/effect/abstract/cyberware_anim/slash = blade.swing_impact_ref?.resolve()
+	TEST_ASSERT(slash && (slash in target.vis_contents), "The swing put no slash over its target")
 
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/right = housings(user)[1]
 	right.Retract()

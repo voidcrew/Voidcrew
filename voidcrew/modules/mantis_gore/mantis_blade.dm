@@ -92,6 +92,8 @@
 /// A cut that did damage: the artery count, the scorch seam and the X-slash count.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_cut_landed(mob/living/victim, mob/living/user, obj/item/bodypart/limb, damage, attack_direction)
 	if(limb && iscarbon(victim))
+		// The swing's slash goes on the part it cut (mantis_swing.dm).
+		mantis_swing_impact_onto(victim, limb.body_zone)
 		cut_fx(victim, limb)
 		if(gore_moves & MANTIS_MOVE_ARTERY)
 			mantis_gash(victim, user, limb, damage, attack_direction)

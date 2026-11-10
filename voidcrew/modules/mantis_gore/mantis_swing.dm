@@ -10,7 +10,8 @@
 // holds is cut out of it (sort_as_arm(), voidcrew/modules/cyberware/cyberware_anim.dm). The blood coat goes on
 // after its swing, so it draws over it.
 
-/// 64x64 frames on the bearer's tile: "[model]_swing_[side]" and its "_blood" and "_soak" coats.
+/// 64x64 frames on the bearer's tile: "[model]_swing_[side]" and its "_blood" and "_soak" coats. And the slash
+/// over the target, by the blade's impact_state: the impact art after half a beat of nothing, the swing's cock.
 #define MANTIS_SWING_ICON 'voidcrew/modules/mantis_gore/icons/mantis_swing.dmi'
 /// How long the held blade is hidden: the cock, the strike and the follow-through.
 #define MANTIS_SWING_TIME (2.5 DECISECONDS)
@@ -18,12 +19,16 @@
 #define MANTIS_SWING_LIFETIME (3 DECISECONDS)
 /// The impact over the target waits for the strike frame.
 #define MANTIS_SWING_IMPACT_DELAY (0.5 DECISECONDS)
+/// How long the slash over the target stays: that half beat, then its four frames.
+#define MANTIS_SWING_IMPACT_LIFETIME (4.5 DECISECONDS)
 /// The X-slash's other blade swings one beat behind the first, so the two cross.
 #define MANTIS_XSLASH_SWING_DELAY (0.5 DECISECONDS)
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	/// The swing playing for this blade right now, if any. Weak: it deletes itself.
 	var/datum/weakref/swing_ref
+	/// The slash over the target of that swing, if any. Weak: it deletes itself.
+	var/datum/weakref/swing_impact_ref
 
 /// The swing playing for this blade right now, if any.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_swing()
@@ -59,21 +64,59 @@
 	hide_inhand_for(MANTIS_SWING_TIME)
 	return swing
 
-/// The impact over [attacked_atom], when the swing's strike frame is up, its slash cut the way this blade swings.
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_swing_impact(atom/movable/attacker, atom/attacked_atom)
+/**
+ * The slash over [attacked_atom] for this blade's swing, cut the way the blade crosses the target in the strike
+ * frame for the way [attacker] faces now, or [mirrored] if given. It goes up with the swing and shows nothing
+ * for the half beat the blade cocks back: the client plays both pictures from the same moment, so the slash
+ * comes up with the strike frame and never ahead of it (a timer on the server could). Returns it, or null.
+ */
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_swing_impact(atom/movable/attacker, atom/attacked_atom, mirrored = null)
 	if(!impact_state || !ismovable(attacked_atom))
-		return
-	var/obj/effect/abstract/cyberware_anim/mantis_swing/swing = mantis_swing()
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_swing_play_impact), attacker, attacked_atom, impact_state, swing?.side), MANTIS_SWING_IMPACT_DELAY)
+		return null
+	if(!icon_exists(MANTIS_SWING_ICON, impact_state))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_play_impact), attacker, attacked_atom, impact_state, mirrored), MANTIS_SWING_IMPACT_DELAY)
+		return null
+	if(isnull(mirrored))
+		var/obj/effect/abstract/cyberware_anim/mantis_swing/swing = mantis_swing()
+		if(swing && !QDELETED(attacker))
+			mirrored = mantis_swing_impact_mirrored(attacker.dir, swing.side)
+		else
+			// Turned as any chrome hit's is (cyberware_play_impact()).
+			var/direction = get_dir(attacker, attacked_atom)
+			mirrored = (direction & WEST) || (!(direction & EAST) && prob(50))
+	var/obj/effect/abstract/cyberware_anim/impact = cyberware_anim_play(attacked_atom, MANTIS_SWING_ICON, impact_state, MANTIS_ANIM_TOP_LAYER, MANTIS_SWING_IMPACT_LIFETIME, glow = impact_state != "impact_shiv")
+	if(isnull(impact))
+		return null
+	// 64x64 around the target's tile, upright even on someone lying down.
+	impact.pixel_w = -16
+	impact.pixel_z = -16
+	impact.appearance_flags |= RESET_TRANSFORM
+	if(mirrored)
+		impact.transform = matrix(-1, 0, 0, 0, 1, 0)
+	swing_impact_ref = WEAKREF(impact)
+	return impact
 
 /**
- * The impact over [attacked_atom] for a swing of the [side] hand's blade, its slash cut the way that blade
- * crosses the target in the strike frame, for the way [attacker] faces now. Without a side, or without the
- * attacker, it is turned as any chrome hit's is.
+ * How far the [zone] part of [body] is drawn from the middle of its chest, as it stands, faces and lies now
+ * (wire_part_offset(), hyperviolence/wire/wire_held.dm): list(x, y) in pixels. The body's left and right swap
+ * on screen as it turns.
  */
-/proc/mantis_swing_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state, side)
-	var/mirrored = (side && !QDELETED(attacker)) ? mantis_swing_impact_mirrored(attacker.dir, side) : null
-	return cyberware_play_impact(attacker, attacked_atom, impact_state, mirrored)
+/proc/mantis_part_shift(mob/living/body, zone)
+	var/list/part = wire_part_offset(zone, body.dir)
+	var/list/chest = wire_part_offset(BODY_ZONE_CHEST, body.dir)
+	var/across = part[1] - chest[1]
+	var/up = part[2] - chest[2]
+	var/matrix/shape = body.transform
+	return list(round(shape.a * across + shape.b * up), round(shape.d * across + shape.e * up))
+
+/// The slash of the swing playing now is set on the part of [victim] it cut ([zone]), [drop] pixels lower.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_swing_impact_onto(mob/living/victim, zone, drop = 0)
+	var/obj/effect/abstract/cyberware_anim/impact = swing_impact_ref?.resolve()
+	if(isnull(impact) || impact.bearer != victim || !zone)
+		return
+	var/list/shift = mantis_part_shift(victim, zone)
+	impact.pixel_w = -16 + shift[1]
+	impact.pixel_z = -16 + shift[2] - drop
 
 /**
  * Whether the [side] hand's swing, its bearer facing [facing], shows the impact art mirrored. The art cuts
@@ -171,4 +214,5 @@
 #undef MANTIS_SWING_TIME
 #undef MANTIS_SWING_LIFETIME
 #undef MANTIS_SWING_IMPACT_DELAY
+#undef MANTIS_SWING_IMPACT_LIFETIME
 #undef MANTIS_XSLASH_SWING_DELAY
