@@ -203,7 +203,8 @@
 		var/turf/swing_at = isturf(target) ? target : get_step(bearer, bearer.dir)
 		if(swing_at)
 			bearer.face_atom(swing_at)
-			bearer.do_attack_animation(swing_at, ATTACK_EFFECT_SMASH)
+			// The lunge only: a fist that met nothing leaves no mark on the floor
+			bearer.do_attack_animation(swing_at)
 		playsound(bearer, 'sound/items/weapons/punchmiss.ogg', 50, TRUE)
 		bearer.visible_message(span_danger("[bearer]'s fist hits nothing but air!"), span_userdanger("Your fist hits nothing but air!"))
 		bearer.adjust_staggered_up_to(1 SECONDS, 1 SECONDS)
@@ -236,7 +237,8 @@
 	var/reach = charge >= 1 ? GORILLA_HAYMAKER_MAX_RANGE : GORILLA_HAYMAKER_MIN_RANGE
 	var/direction = get_dir(bearer, victim) || bearer.dir
 	bearer.face_atom(victim)
-	bearer.do_attack_animation(victim, ATTACK_EFFECT_SMASH)
+	// The lunge only, as with the piston punch: the sparks are the blow's mark and stay where it landed
+	bearer.do_attack_animation(victim)
 	if(ishuman(victim))
 		var/mob/living/carbon/human/human_victim = victim
 		if(human_victim.check_block(bearer, damage, "[bearer]'s haymaker"))
@@ -268,7 +270,7 @@
 	victim.hv_flush_hit()
 	gorilla_register_aggression(victim, bearer)
 	gorilla_haymaker_impact_sound(victim)
-	arm.gorilla_punch_fx(bearer, victim, TRUE)
+	arm.gorilla_punch_fx(bearer, victim, TRUE, zone)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
 	shake_camera(victim, 3, 2)
 	if(flies && !QDELETED(victim))
@@ -306,6 +308,8 @@
 	var/datum/action/cooldown/cyberware/gorilla_haymaker/action
 	/// Trembling at full charge
 	var/trembling = FALSE
+	/// Which way the tremble's next pixel goes
+	var/tremble_side = 1
 
 /datum/status_effect/gorilla_windup/on_creation(mob/living/new_owner, datum/action/cooldown/cyberware/gorilla_haymaker/action)
 	src.action = action
@@ -318,16 +322,34 @@
 	if(owner.pulling)
 		owner.stop_pulling()
 	RegisterSignal(owner, COMSIG_MOB_STATCHANGE, PROC_REF(on_stat_change))
-	// Lean back from the way they face. A tracked offset tg removes cleanly.
-	var/back = REVERSE_DIR(owner.dir)
-	var/dx = (back & EAST) ? 2 : ((back & WEST) ? -2 : 0)
-	var/dz = (back & NORTH) ? 1 : 0
-	owner.add_offsets(id, x_add = dx, z_add = dz)
+	RegisterSignal(owner, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_turned))
+	lean()
 	return TRUE
 
+/**
+ * Leans back from the way they face now, further as the charge builds, so the whole wind-up moves: away from the
+ * target seen from the side (a pixel at once, GORILLA_HAYMAKER_LEAN at full charge), half as far up the screen when
+ * they face the viewer and down it when they face away. A tracked offset tg eases to and removes cleanly.
+ */
+/datum/status_effect/gorilla_windup/proc/lean()
+	var/charged = action?.charging() ? clamp((world.time - action.charge_started) / GORILLA_HAYMAKER_FULL_CHARGE, 0, 1) : 0
+	var/back_by = 1 + round(charged * (GORILLA_HAYMAKER_LEAN - 1))
+	var/up_by = CEILING(back_by / 2, 1)
+	var/back = REVERSE_DIR(owner.dir)
+	var/dx = (back & EAST) ? back_by : ((back & WEST) ? -back_by : 0)
+	var/dz = (back & NORTH) ? up_by : ((back & SOUTH) ? -up_by : 0)
+	owner.add_offsets(id, x_add = dx, z_add = dz)
+
+/// Turned mid wind-up: the lean turns with them.
+/datum/status_effect/gorilla_windup/proc/on_turned(datum/source, old_dir, new_dir)
+	SIGNAL_HANDLER
+	if(old_dir != new_dir)
+		lean()
+
 /datum/status_effect/gorilla_windup/on_remove()
-	UnregisterSignal(owner, COMSIG_MOB_STATCHANGE)
+	UnregisterSignal(owner, list(COMSIG_MOB_STATCHANGE, COMSIG_ATOM_POST_DIR_CHANGE))
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup)
+	owner.remove_offsets("[id]_tremble", animate = FALSE)
 	owner.remove_offsets(id)
 	var/datum/action/cooldown/cyberware/gorilla_haymaker/haymaker = action
 	action = null
@@ -342,13 +364,16 @@
 	if(HAS_TRAIT(owner, TRAIT_INCAPACITATED) || HAS_TRAIT(owner, TRAIT_HANDS_BLOCKED) || owner.body_position == LYING_DOWN)
 		qdel(src)
 		return
-	if(trembling || !action?.charging())
+	if(!action?.charging())
 		return
+	lean()
 	if(world.time - action.charge_started < GORILLA_HAYMAKER_FULL_CHARGE)
 		return
-	// Full: a tremble
+	// Full: a tremble for as long as it is held, a pixel either way. A tracked offset, so it can't leave them
+	// off their tile, and never the pixel of nothing tg's random jitter can roll
 	trembling = TRUE
-	owner.do_jitter_animation(30)
+	tremble_side = -tremble_side
+	owner.add_offsets("[id]_tremble", w_add = tremble_side, animate = FALSE)
 
 /datum/status_effect/gorilla_windup/proc/on_stat_change(datum/source, new_stat, old_stat)
 	SIGNAL_HANDLER

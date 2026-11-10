@@ -60,8 +60,10 @@
 	if(!rig.rig_arms())
 		QDEL_NULL(rig)
 		return FALSE
-	// Moved, knocked down or gone: the drawing comes down at once
-	RegisterSignals(bearer, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_QDELETING), PROC_REF(drop_rig))
+	// Moved or knocked down: the drawing comes down at once (a deleted body takes its rig with it). The rig does the
+	// listening: this chip already hears the bearer lie down and be deleted, and a second listener here would
+	// replace those and then remove them with the rig.
+	rig.watch_body(CALLBACK(src, PROC_REF(drop_rig)))
 	// Arms first: a crouch runs alongside, and a swing started after it would cut it short
 	for(var/side in list("l", "r"))
 		rig.swing_arm(side, 150, GORILLA_POUND_CROUCH, 0, SINE_EASING)
@@ -69,10 +71,7 @@
 	return TRUE
 
 /// Takes the rig down and shows the real body.
-/datum/action/cooldown/cyberware/gorilla_pound/proc/drop_rig(datum/source)
-	SIGNAL_HANDLER
-	if(rig?.body)
-		UnregisterSignal(rig.body, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_QDELETING))
+/datum/action/cooldown/cyberware/gorilla_pound/proc/drop_rig()
 	QDEL_NULL(rig)
 
 /datum/action/cooldown/cyberware/gorilla_pound/IsAvailable(feedback = FALSE)
@@ -149,7 +148,9 @@
 /proc/gorilla_ground_pound(mob/living/carbon/human/bearer, turf/where, stagger = GORILLA_POUND_STAGGER, daze = GORILLA_POUND_DAZE, stamina = GORILLA_POUND_STAMINA, full = TRUE)
 	. = list()
 	cyberware_camo_drop(bearer, "ground pound")
-	bearer.do_attack_animation(where, ATTACK_EFFECT_SMASH)
+	// No attack ring from tg: it is drawn over everything on the tile, the bearer's head included, and the pound has
+	// its own ring, cracks and dust on the floor under him
+	bearer.do_attack_animation(where)
 	bearer.visible_message(span_danger("[bearer] drives both fists into the floor!"), span_danger("You drive both fists into the floor!"), vision_distance = DEFAULT_MESSAGE_RANGE)
 	playsound(where, 'sound/effects/meteorimpact.ogg', full ? 80 : 50, TRUE, full ? 8 : 2)
 	gorilla_pound_impact_fx(where, full ? 1.5 : 1, full)
@@ -176,7 +177,8 @@
 /proc/gorilla_pound_impact_fx(turf/where, reach, cross = TRUE)
 	if(isnull(where))
 		return
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
+	// On the floor: a ring on the game plane is drawn over anyone standing further up the screen than the bearer
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(where, reach)
 	new /obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound(where, "damaged1", cross ? 255 : 180)
 	if(!cross)
 		return

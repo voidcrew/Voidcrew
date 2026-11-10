@@ -772,7 +772,7 @@
 		span_userdanger("The core slams shut and your legs go out from under you."),
 	)
 	owner.balloon_alert(owner, "redline collapse!")
-	// Steam off the back, the nodes cool, the body slumps (cyberware_anim2.dm).
+	// The outline gutters out, the charge earths through the deck, the nodes cool, the body slumps (cyberware_anim2.dm).
 	cyberware_redline_crash_fx(owner)
 	return TRUE
 

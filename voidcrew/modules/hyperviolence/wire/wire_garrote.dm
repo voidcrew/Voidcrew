@@ -345,8 +345,8 @@
 	RegisterSignal(user, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_user_equipped))
 
 /datum/hv_finisher/garrote/proc/hide_held_wire(obj/item/melee/cyberware_monowire/held)
-	// The timeout only backs show_hands() up.
-	held.hide_inhand_for(longest_duration())
+	// The timeout only backs show_hands() up. Its spool stays in the hand: the wire runs out of it.
+	held.hide_inhand_for(longest_duration(), spool = TRUE)
 	if(held != wire)
 		LAZYOR(off_hand_refs, WEAKREF(held))
 
@@ -388,24 +388,14 @@
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), rest - turn_time), turn_time, TIMER_STOPPABLE | TIMER_DELETE_ME))
 
 /**
- * The pixel the wire leaves the garroter's `side` hand from: the one the held wire's spool lights, where the wire comes
- * out of it, for each facing (the bright pixel in the spool of the "monowire" states in cyberware_lefthand.dmi and
- * cyberware_righthand.dmi; the far hand in profile shows no spool, only the hand's edge). By its lower left corner, in
- * pixels from the middle of the tile: a line of wire is drawn from the middle of this pixel. The hands hang at the hips;
- * in profile the near hand is at the middle of the body and the far one just shows at its front edge, behind the
- * torso. Facing the viewer both hands show at the sides. Facing away they show at the sides too, but the wire runs
- * forward from them, through the garroter's body, so both count as behind it. list(x, y, behind)
+ * The pixel the wire leaves the garroter's `side` hand from (wire_hand_point(), wire_held.dm): the one the held wire's
+ * spool lights for each facing, by its lower left corner in pixels from the middle of the tile. A line of wire is
+ * drawn from the middle of this pixel. Facing the viewer both hands show at the sides. Facing away they show at the
+ * sides too, but the wire runs forward from them, through the garroter's body, so both count as behind it; in profile
+ * the far hand does. list(x, y, behind)
  */
 /datum/hv_finisher/garrote/proc/hand_point(side)
-	var/right = side != "left"
-	switch(user.dir)
-		if(EAST)
-			return right ? list(-2, -3, FALSE) : list(4, -3, TRUE)
-		if(WEST)
-			return right ? list(-5, -3, TRUE) : list(1, -3, FALSE)
-		if(NORTH)
-			return right ? list(7, -3, TRUE) : list(-8, -3, TRUE)
-	return right ? list(-8, -3, FALSE) : list(7, -3, FALSE)
+	return wire_hand_point(user, side)
 
 /**
  * Where a line of wire from the garroter's `side` hand is drawn from: the hand (hand_point()), except facing away.
@@ -503,14 +493,6 @@
 	for(var/datum/weakref/line_ref as anything in reach_refs)
 		qdel(line_ref.resolve())
 	reach_refs = null
-
-/// The flying wire's line drawn from its start to (`span_x`, `span_y`) pixels away, or `length` pixels along that
-/// bearing: the sprite is half a tile of line running up from the middle, so it is stretched and turned.
-/proc/wire_reach_shape(span_x, span_y, length)
-	var/matrix/shape = matrix()
-	shape.Scale(1, max(isnull(length) ? sqrt(span_x ** 2 + span_y ** 2) : length, 1) / 16)
-	shape.Turn(arctan(span_y, span_x))
-	return shape
 
 /**
  * The garrote's thrown wire (wire_reach, half a tile of line running up a half pixel left of the middle) drawn from
@@ -937,9 +919,8 @@
 
 /**
  * The garroter has just been leaned somewhere else (the kill's lean), sliding there over tg's offset time: each strand's
- * end in the hand slides with the hand, and its end on the neck stays put. The strands already up are moved, not drawn
- * again: a picture a client already has moves in step with the body, a new one starts a frame behind it. Returns FALSE
- * if there are none to move.
+ * end in the hand slides with the hand, and its end on the neck stays put. The strands already up are moved, not taken
+ * down and drawn again. Returns FALSE if there are none to move.
  */
 /datum/hv_finisher/garrote/proc/lean_wire()
 	if(QDELETED(user) || QDELETED(victim))

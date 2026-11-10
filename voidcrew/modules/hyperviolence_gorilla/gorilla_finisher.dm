@@ -210,7 +210,8 @@
 		sparks.pixel_w += spark_w
 	var/turf/spot = get_turf(where)
 	if(spot)
-		new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, heavy ? 1 : 0.6)
+		// On the floor: on the game plane the ring was drawn over bodies standing further up the screen
+		new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, heavy ? 1 : 0.6)
 	for(var/mob/living/viewer in range(4, spot))
 		if(viewer.client)
 			shake_camera(viewer, heavy ? 3 : 2, heavy ? 2 : 1)

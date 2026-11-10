@@ -696,7 +696,13 @@
 		if(part.icon_state == "mantis_right_stain")
 			stain_drawn = TRUE
 	TEST_ASSERT(stain_drawn, "The stained housing draws no stain")
-	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in spot(2, 1), "The flick left no streak ahead")
+	// The flicked blood is in the air for a moment before it lands.
+	sleep(0.4 SECONDS)
+	var/obj/effect/decal/cleanable/blood/mantis_flick/spatter = locate() in spot(2, 1)
+	TEST_ASSERT_NOTNULL(spatter, "The flick left no spatter ahead")
+	TEST_ASSERT_EQUAL(spatter.dir, user.dir, "The flick's spatter doesn't point the way it was thrown")
+	TEST_ASSERT(icon_exists(spatter.icon, spatter.icon_state), "The flick's spatter has no picture")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in spot(2, 1)), "The flick still lays a streak")
 	user.wash(CLEAN_TYPE_BLOOD)
 	TEST_ASSERT(!right.stained, "Washing didn't clear the housing")
 
@@ -742,7 +748,7 @@
 		for(var/pose in poses_by_model[model])
 			for(var/hand_file in list(MANTIS_TEST_LEFTHAND, MANTIS_TEST_RIGHTHAND))
 				TEST_ASSERT(icon_exists(hand_file, "[model]_[pose]"), "[hand_file] has no [model]_[pose]")
-	for(var/state in list("mantis_trail", "mantis_scorch_trail", "mantis_impale", "mantis_scorch_impale", "mantis_coil_glow_right", "mantis_scorch_coil_glow_left", "mantis_guard_glint_right", "mantis_raise_glint_left", "scorch_gash_l_arm", "scorch_gash_head"))
+	for(var/state in list("mantis_trail", "mantis_scorch_trail", "mantis_impale", "mantis_scorch_impale", "mantis_coil_glow_right", "mantis_scorch_coil_glow_left", "mantis_guard_glint_right", "mantis_raise_glint_left", "scorch_gash_l_arm", "scorch_gash_head", "flick_spatter_right", "flick_spatter_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, state), "The gore sheet has no [state]")
 	for(var/state in list("mantis_spurt", "mantis_flick_right", "mantis_flick_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_LARGE_ICON, state), "The large gore sheet has no [state]")

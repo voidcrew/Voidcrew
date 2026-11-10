@@ -92,6 +92,8 @@
 /// A cut that did damage: the artery count, the scorch seam and the X-slash count.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_cut_landed(mob/living/victim, mob/living/user, obj/item/bodypart/limb, damage, attack_direction)
 	if(limb && iscarbon(victim))
+		// The swing's slash goes on the part it cut (mantis_swing.dm).
+		mantis_swing_impact_onto(victim, limb.body_zone)
 		cut_fx(victim, limb)
 		if(gore_moves & MANTIS_MOVE_ARTERY)
 			mantis_gash(victim, user, limb, damage, attack_direction)
@@ -225,7 +227,7 @@
 	)
 	if(!QDELETED(victim))
 		victim.set_staggered_if_lower(MANTIS_XSLASH_STAGGER)
-	mantis_xslash_cross(user, victim, off_blade)
+	mantis_xslash_cross(user, victim, off_blade, zone)
 	log_combat(user, victim, "x-slashed", src)
 
 // =========================================================================
@@ -276,7 +278,10 @@
 	var/state = "[base_icon_state]_[pose]_glint_[hand_side()]"
 	if(!icon_exists(MANTIS_GORE_ICON, state))
 		return null
-	return cyberware_anim_play(holder, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 0.3 SECONDS, glow = TRUE)
+	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(holder, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 0.3 SECONDS, glow = TRUE)
+	// Side on, the far blade's light stays behind the near blade.
+	glint?.sort_as_arm(hand_side())
+	return glint
 
 // =========================================================================
 // BLOOD

@@ -38,6 +38,7 @@
 	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
 		if(part.icon_state == "redline_hot")
 			found_nodes = TRUE
+			TEST_ASSERT_EQUAL(part.layer, -13.7, "Red-hot nodes don't shine through what is worn on the back")
 		if(part.icon_state == "eyes_l")
 			found_eyes = TRUE
 	TEST_ASSERT(found_nodes, "The red-hot nodes aren't drawn over the core")
@@ -45,17 +46,43 @@
 
 	bearer.remove_status_effect(/datum/status_effect/cyberware_redline_window)
 	TEST_ASSERT(bearer.has_status_effect(/datum/status_effect/cyberware_redline_crash), "Test fixture: no crash after the window")
-	TEST_ASSERT_EQUAL(core.burn_look, "cool1", "The nodes didn't start cooling in the crash")
+	TEST_ASSERT_EQUAL(core.burn_look, "surge", "The spine doesn't run white as the crash begins")
+	var/found_spine = FALSE
+	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		if(part.icon_state == "redline_surge")
+			found_spine = TRUE
+	TEST_ASSERT(found_spine, "The white spine isn't drawn over the core")
+	TEST_ASSERT(core.burn_look_timer, "The charge never leaves the spine")
 	TEST_ASSERT(!bearer.get_filter("cyberware_redline_window"), "The red outline outlived the window")
+	TEST_ASSERT(bearer.get_filter("cyberware_redline_gutter"), "The outline goes out without a stutter")
+	// Its stutters by hand. Each is stored, so anything that rebuilds the body's filters meanwhile can't relight it.
+	core.gutter_burn(WEAKREF(bearer), 1)
+	TEST_ASSERT_EQUAL(bearer.filter_data["cyberware_redline_gutter"]["color"], "#ff2a2a00", "The guttering outline doesn't go out between stutters")
+	core.gutter_burn(WEAKREF(bearer), 5)
+	TEST_ASSERT(!bearer.get_filter("cyberware_redline_gutter"), "The outline never finishes guttering out")
 	TEST_ASSERT(!core.burn_light_ref?.resolve(), "The red light outlived the window")
 	TEST_ASSERT(bearer.get_filter("cyberware_redline_sag"), "The crash doesn't slump the body")
-	var/obj/effect/abstract/cyberware_anim/steam = core.burn_steam_ref?.resolve()
-	TEST_ASSERT(steam && (steam in bearer.vis_contents), "The crash vents no steam")
+	// The charge leaves the spine: the nodes cool, the eyes dim, and arcs crawl out across the deck under the body.
+	core.ground_burn()
+	TEST_ASSERT_EQUAL(core.burn_look, "cool1", "The nodes didn't start cooling once the charge left them")
+	var/obj/effect/temp_visual/cyberware_redline_ground/arcs = locate() in get_turf(bearer)
+	TEST_ASSERT_NOTNULL(arcs, "The charge never earths through the deck")
+	TEST_ASSERT_EQUAL(PLANE_TO_TRUE(arcs.plane), FLOOR_PLANE, "The arcs on the deck draw over the people standing on it")
+	TEST_ASSERT_EQUAL(arcs.pixel_y, 0, "The arcs on the deck sort a row forward of their own tile")
+	TEST_ASSERT(icon_exists(arcs.icon, arcs.icon_state), "The arcs on the deck have no picture")
+	var/found_dying_eyes = FALSE
+	for(var/image/part as anything in core.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, bearer.get_bodypart(BODY_ZONE_CHEST)))
+		if(part.icon_state == "eyes_l")
+			found_dying_eyes = TRUE
+	TEST_ASSERT(found_dying_eyes, "The red goes out of the eyes at once, with no dying flicker")
 
 	bearer.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
 	TEST_ASSERT_NULL(core.burn_look, "The nodes kept a look after the crash")
+	// A living body eases up out of the slump, and the filter comes off once it is flat.
+	TEST_ASSERT_EQUAL(bearer.filter_data?["cyberware_redline_sag"]?["size"], 0, "The body doesn't straighten up when the crash ends")
+	cyberware_redline_straightened(WEAKREF(bearer))
 	TEST_ASSERT(!bearer.get_filter("cyberware_redline_sag"), "The slump outlived the crash")
-	TEST_ASSERT(QDELETED(steam), "The steam outlived the crash")
+	TEST_ASSERT(!bearer.get_filter("cyberware_redline_gutter"), "The outline's last stutter outlived the crash")
 	TEST_ASSERT(!core.burn_look_timer, "Node looks keep coming after the crash")
 
 	// Dead mid-burn: the picture goes at once, though the window runs on.
@@ -74,7 +101,8 @@
 	core.Remove(next_bearer, special = TRUE)
 	TEST_ASSERT_NULL(core.burn_look, "A pulled core kept its node look")
 	TEST_ASSERT(!next_bearer.get_filter("cyberware_redline_sag"), "A pulled core left the slump")
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in next_bearer.vis_contents), "A pulled core left its steam")
+	TEST_ASSERT(!next_bearer.get_filter("cyberware_redline_gutter"), "A pulled core left the outline stuttering")
+	TEST_ASSERT(!core.burn_look_timer, "A pulled core still earths its charge")
 
 /// Lazarus: crit starts the charge, death or a pulled node ends it, and the
 /// jolt flashes, bursts and springs the patient without leaving anything on.

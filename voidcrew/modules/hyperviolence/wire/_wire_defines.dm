@@ -6,6 +6,9 @@
 #define WIRE_GORE_ICON 'voidcrew/modules/hyperviolence/wire/icons/wire_gore.dmi'
 /// The wire swinging out of its spool and reeling back in, with blood-flick twins.
 #define WIRE_HELD_ANIM_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim_monowire.dmi'
+/// The held wire's spool on its own, as each hand draws it ("<held state>_left", "<held state>_right"): what is left in
+/// the hand while the wire is out of it as a line.
+#define WIRE_SPOOL_ICON 'voidcrew/modules/hyperviolence/wire/icons/wire_spool.dmi'
 
 /// On a body a Widowline is cutting right now: no flying hitsplatter, drips instead of floor splatter,
 /// and a limb tg's own wound roll would tear off is left for the wire to take off clean.

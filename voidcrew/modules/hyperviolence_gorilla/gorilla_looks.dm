@@ -42,6 +42,24 @@
 		delay += 0.15 SECONDS
 	return TRUE
 
+/**
+ * Where each hand hangs on tg's human sprite, in pixels from the middle of the icon (x right, y up), by facing:
+ * arm zone -> list("[dir]" = list(x, y)). Measured on icons/mob/human/bodyparts_greyscale.dmi. Seen from the side
+ * the near hand hangs behind the middle and the far one shows in front of the belly.
+ */
+GLOBAL_LIST_INIT(gorilla_hand_points, list(
+	BODY_ZONE_L_ARM = list("[SOUTH]" = list(6, -4), "[NORTH]" = list(-7, -4), "[EAST]" = list(4, -4), "[WEST]" = list(2, -4)),
+	BODY_ZONE_R_ARM = list("[SOUTH]" = list(-7, -4), "[NORTH]" = list(6, -4), "[EAST]" = list(-2, -4), "[WEST]" = list(-4, -4)),
+))
+
+/// Where the hand of [bearer]'s arm on [arm_zone] is drawn for the way they face now: list(x, y) from the middle of the icon.
+/proc/gorilla_hand_point(mob/living/bearer, arm_zone)
+	var/facing = bearer.dir
+	if(ISDIAGONALDIR(facing))
+		facing = (facing & EAST) ? EAST : WEST
+	var/list/point = GLOB.gorilla_hand_points[arm_zone]?["[facing]"]
+	return point ? list(point[1], point[2]) : list(0, -4)
+
 /// One arm's part of the flex: the knuckles flashing.
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/flex_beat()
 	if(!owner)
@@ -49,11 +67,10 @@
 	var/obj/effect/abstract/cyberware_anim/spark = cyberware_anim_play(owner, GORILLA_GORE_ICON, "impact_brawler", GORILLA_ANIM_TOP_LAYER, 0.4 SECONDS)
 	if(spark)
 		spark.appearance_flags |= RESET_TRANSFORM
-		var/side = (zone == BODY_ZONE_R_ARM) ? -1 : 1
-		if(owner.dir == NORTH)
-			side = -side
-		spark.pixel_w = (owner.dir & (EAST|WEST)) ? 0 : side * 7
-		spark.pixel_z = -5
+		// On this arm's own hand, wherever the facing puts it
+		var/list/hand = gorilla_hand_point(owner, zone)
+		spark.pixel_w = hand[1]
+		spark.pixel_z = hand[2]
 		spark.transform = matrix().Scale(0.5)
 
 // The pair comes back from an EMP: once it is back in sync, the arms flex.

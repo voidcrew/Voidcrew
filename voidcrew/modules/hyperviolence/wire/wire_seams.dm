@@ -6,6 +6,7 @@
 //   off bleeds when it slides off (wire_sever_fx.dm); otherwise the wound bleeds as any does.
 // - tg's own wound roll never tears a limb off mid wire cut; the wire takes that limb off clean after.
 // - A limb taken by the wire sprays nothing when it leaves (hv_sever_spray); the wire lays its own streak.
+// - Nor does its body reel, flash or lurch as the animation pass has a lost limb do (hv_vis_on_limb_lost()).
 // - A wire stump can be held back for the beat the severed arm is still drawn on, and can be seared shut.
 // - A neck the wire took the head off shows its own stump: a clean flat cut, not #509's ragged one.
 // - hv_wire_take_part(): tg's dismemberment without the throw and the fan of blood.
@@ -83,12 +84,19 @@ GLOBAL_LIST_INIT(hv_wire_stump_zones, list(BODY_ZONE_HEAD))
 	return ..()
 
 // The gore's animation pass (visuals/hit_reactions.dm) reels a body that loses a limb: a stagger along the blow, held
-// for a hit-stop with a pale flash while whoever landed it holds a lean in, and a lurch toward the missing side. None
-// of that plays for a head the wire takes (hv_wire_take_part()): the garrote lets its own body go in its own one move
-// (let_go_at_kill()).
+// for a hit-stop with a pale flash while whoever landed it holds a lean in, and a lurch toward the missing side. All at
+// the moment the limb is lost, which for a wire is the hit: its limb stays drawn on for a beat after, and the lash still
+// runs to it. None of that plays for a limb the wire takes (hv_wire_take_part()): the cut is clean and the body stands
+// as it stood; the garrote, taking a head, lets its own body go in its own one move (let_go_at_kill()). A leg gone
+// still limps from then on.
 /mob/living/carbon/hv_vis_on_limb_lost(obj/item/bodypart/lost_limb, special, dismembered)
-	if(isnull(hv_sever_spray) || lost_limb.body_zone != BODY_ZONE_HEAD)
+	if(isnull(hv_sever_spray))
 		return ..()
+	if(special || QDELETED(src) || stat == DEAD)
+		return
+	var/zone = lost_limb.body_zone
+	if((zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG) && default_num_legs >= 2)
+		AddComponent(/datum/component/hv_limp)
 
 /// The limbs a wire takes off. The head is the garrote's; the chest never comes off.
 GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
@@ -97,9 +105,11 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
  * The short spray of a clean cut: a few drops thrown from src toward spray_dir, landing within a tile or so in a
  * narrow fan. No streak along the floor; the shared spray (hv_blood_throw()) lays a straight line, a wire's never
  * does. `tiles` sets how far the furthest drops reach. From the stump of `zone` if given, shorter, and never straight
- * away from the viewer: drops thrown that way would read as leaving the head. Returns TRUE if anything was sprayed.
+ * away from the viewer: drops thrown that way would read as leaving the head. With no `zone`, from the pixel `from`
+ * (x, y of its lower left corner, off the middle of src's tile), where a line of wire cut the body, or from the middle
+ * of the body if that isn't given either. Returns TRUE if anything was sprayed.
  */
-/mob/living/proc/hv_wire_spray(spray_dir, tiles = 2, zone)
+/mob/living/proc/hv_wire_spray(spray_dir, tiles = 2, zone, list/from)
 	if(QDELETED(src) || !isturf(loc) || can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return FALSE
 	tiles = clamp(round(tiles), 1, 2)
@@ -109,7 +119,10 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 	hv_blood_spray_strength = max(hv_blood_spray_strength, tiles)
 	if(!zone)
 		var/list/reach = tiles > 1 ? list(10, 16, 22, 30, 38) : list(8, 12, 16, 20)
-		wire_blood_burst(loc, pixel_x, pixel_y - 2, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 45, reach)
+		// A drop's picture is the pixel under the one it is placed on.
+		var/from_x = from ? from[1] : pixel_x
+		var/from_y = from ? from[2] + 1 : pixel_y - 2
+		wire_blood_burst(loc, from_x, from_y, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 45, reach)
 		return TRUE
 	// From the stump: drops only, no splat; a clean cut. Short, so they land by the body, on the floor round the feet
 	// of a body standing.

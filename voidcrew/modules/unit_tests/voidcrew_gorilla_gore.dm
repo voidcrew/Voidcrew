@@ -520,13 +520,24 @@
 	TEST_ASSERT(right_haymaker.charging(), "Triggering the haymaker didn't wind it up")
 	TEST_ASSERT_NOTNULL(bearer.has_status_effect(/datum/status_effect/gorilla_windup), "The wind-up has no status effect")
 	TEST_ASSERT(bearer.has_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup), "The wind-up doesn't slow")
+	// The lean: a pixel back at once, turning with the bearer, GORILLA_HAYMAKER_LEAN and a tremble at full charge
+	var/datum/status_effect/gorilla_windup/windup = bearer.has_status_effect(/datum/status_effect/gorilla_windup)
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_X_OFFSET), -1, "The wind-up doesn't start a pixel back from an east facing")
+	bearer.setDir(NORTH)
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_X_OFFSET), 0, "A turn left the old lean behind")
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_Z_OFFSET), -1, "Facing away, the lean isn't down the screen")
+	bearer.setDir(EAST)
 	right_haymaker.charge_started = world.time - 2 SECONDS
+	windup.tick(0.2)
+	TEST_ASSERT_EQUAL(bearer.has_offset("gorilla_windup", PIXEL_X_OFFSET), -4, "A full charge doesn't lean all the way back") // GORILLA_HAYMAKER_LEAN
+	TEST_ASSERT(bearer.has_offset("gorilla_windup_tremble", PIXEL_W_OFFSET), "A full charge doesn't tremble")
 	var/hurt_before = victim.getBruteLoss()
 	right_haymaker.InterceptClickOn(bearer, null, victim)
 	TEST_ASSERT(!right_haymaker.charging(), "The haymaker still winds up after the release")
 	TEST_ASSERT_NULL(bearer.has_status_effect(/datum/status_effect/gorilla_windup), "The wind-up outlived the release")
 	TEST_ASSERT(!bearer.has_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup), "The wind-up's slow outlived it")
 	TEST_ASSERT(!bearer.has_offset("gorilla_windup"), "The wind-up's lean outlived it")
+	TEST_ASSERT(!bearer.has_offset("gorilla_windup_tremble"), "The wind-up's tremble outlived it")
 	TEST_ASSERT(victim.getBruteLoss() - hurt_before >= 20, "A full haymaker hit for too little") // GORILLA_HAYMAKER_MIN_DAMAGE
 	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(bearer, "gorilla_pistons"), "The haymaker didn't spend the pistons") // COOLDOWN_GORILLA_PISTONS
 	TEST_ASSERT(!left_haymaker.IsAvailable(), "The other arm's haymaker didn't share the cooldown")
