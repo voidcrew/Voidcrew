@@ -793,6 +793,8 @@
 	for(var/zone in GLOB.all_body_zones)
 		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_run_[zone]"), "The gore sheet has no artery_run_[zone]")
 		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_ran_[zone]"), "The gore sheet has no artery_ran_[zone]")
+	for(var/drips in 1 to 3)
+		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, "artery_feet_[drips]"), "The gore sheet has no artery_feet_[drips]")
 
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
 	victim.setDir(SOUTH)
@@ -811,9 +813,9 @@
 	TEST_ASSERT_NOTNULL(jet, "A torn artery throws nothing")
 	TEST_ASSERT_EQUAL(jet.icon_state, "spurt_mid", "An arm's spurt isn't the arm-height one")
 	TEST_ASSERT_EQUAL(jet.dir, EAST, "The spurt doesn't fly the way the cut went")
-	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/mantis_drops) in spot(2, 1)), "The drops are on the floor before they have flown")
+	TEST_ASSERT(!(locate(/obj/effect/decal/cleanable/blood/drip/mantis_drops) in spot(2, 1)), "The drops are on the floor before they have flown")
 	sleep(0.5 SECONDS)
-	var/obj/effect/decal/cleanable/blood/mantis_drops/drops = locate() in spot(2, 1)
+	var/obj/effect/decal/cleanable/blood/drip/mantis_drops/drops = locate() in spot(2, 1)
 	TEST_ASSERT_NOTNULL(drops, "The spurt's drops left no spots where they came down")
 	TEST_ASSERT_EQUAL(drops.icon_state, "artery_drops_mid", "The spots are not the spurt's own")
 	TEST_ASSERT_EQUAL(drops.dir, EAST, "The spots don't lie the way the drops flew")
@@ -822,7 +824,7 @@
 	mantis_spurt_fx(victim, BODY_ZONE_L_ARM, EAST)
 	sleep(0.5 SECONDS)
 	var/spots = 0
-	for(var/obj/effect/decal/cleanable/blood/mantis_drops/laid in spot(2, 1))
+	for(var/obj/effect/decal/cleanable/blood/drip/mantis_drops/laid in spot(2, 1))
 		spots++
 	TEST_ASSERT_EQUAL(spots, 1, "A second beat stacked its spots on the first's")
 	// A weak one falls close by.
@@ -843,6 +845,24 @@
 	TEST_ASSERT_EQUAL(run.icon_state, "artery_run_l_arm", "The run isn't the arm's")
 	sleep(0.9 SECONDS)
 	TEST_ASSERT_EQUAL(run.icon_state, "artery_ran_l_arm", "The run isn't held once it has run its length")
+	// Three drips fall off its lower end and make a small pool at the feet, just under the body's own tile.
+	sleep(0.5 SECONDS)
+	var/obj/effect/decal/cleanable/blood/drip/mantis_drops/pool
+	for(var/obj/effect/decal/cleanable/blood/drip/mantis_drops/found in get_step(victim, SOUTH))
+		if(found.feet_drips)
+			pool = found
+	TEST_ASSERT_NOTNULL(pool, "The run dripped nothing at the feet")
+	TEST_ASSERT_EQUAL(pool.icon_state, "artery_feet_3", "Three drips at the feet did not make the small pool")
+	TEST_ASSERT_NOTNULL(mantis_artery_run_foot(BODY_ZONE_L_ARM, EAST), "The blood off a far arm comes down to no sole")
+	// tg's own bleeding still drips onto a tile that holds the artery's spots, and makes its pool there in the end.
+	var/turf/spotted = spot(2, 1)
+	for(var/drips in 1 to 6)
+		victim.get_bloodtype()?.make_blood_splatter(victim, spotted, TRUE)
+	var/pooled = FALSE
+	for(var/obj/effect/decal/cleanable/blood/splatter in spotted)
+		if(!istype(splatter, /obj/effect/decal/cleanable/blood/drip))
+			pooled = TRUE
+	TEST_ASSERT(pooled, "Blood dripping onto the artery's spots never made a pool")
 	qdel(torn)
 	TEST_ASSERT(QDELETED(run), "The run outlived its wound")
 

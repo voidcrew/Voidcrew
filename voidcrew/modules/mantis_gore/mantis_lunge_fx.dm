@@ -284,14 +284,18 @@
 
 /**
  * The spots a spurt of arterial blood leaves where its drops come down ("artery_drops_[...]", the last frame
- * of the spurt's own art, eight ways). Its own kind of blood, not one of the sprays: thin, and a tile keeps
- * only a few.
+ * of the spurt's own art, eight ways), and the drips at the feet off the run down the body ("artery_feet_[...]").
+ * Its own kind of blood, not one of the sprays: thin, and a tile keeps only a few.
+ *
+ * It is one of tg's drops of blood on purpose, with tg's own list of drop pictures. tg's bleeding feeds its
+ * drips to the first wet blood it finds on a tile unless that blood is drops, so someone bleeding over spots
+ * that were plain blood would never stand in a pool. Onto drops it lets its own drips fall as ever, and turns
+ * the lot into its pool in the end.
  */
-/obj/effect/decal/cleanable/blood/mantis_drops
+/obj/effect/decal/cleanable/blood/drip/mantis_drops
 	name = "blood drops"
 	icon = MANTIS_GORE_ICON
 	icon_state = "artery_drops_mid"
-	random_icon_states = null
 	mergeable_decal = FALSE
 	// Thin enough that walking through it does not leave footprints.
 	bloodiness = 10
@@ -299,9 +303,11 @@
 	beauty = -15
 	base_name = null
 	base_suffix = "drops"
+	/// How many drips off a run have landed here, if this is the pool at someone's feet.
+	var/feet_drips = 0
 
 // Too thin to dive into.
-/obj/effect/decal/cleanable/blood/mantis_drops/can_bloodcrawl_in()
+/obj/effect/decal/cleanable/blood/drip/mantis_drops/can_bloodcrawl_in()
 	return FALSE
 
 /// A spurt's drops come down on [land]: its spots are laid, [offset_x] and [offset_y] pixels from the tile's
@@ -311,14 +317,14 @@
 	if(!isturf(land) || !length(blood_dna) || hv_blood_spray_blocked(land) || isgroundlessturf(land) || !land.has_gravity())
 		return null
 	var/laid = 0
-	for(var/obj/effect/decal/cleanable/blood/mantis_drops/wet in land)
-		if(wet.dried || QDELETED(wet))
+	for(var/obj/effect/decal/cleanable/blood/drip/mantis_drops/wet in land)
+		if(wet.dried || wet.feet_drips || QDELETED(wet))
 			continue
 		laid++
 		if(laid >= 4 || (wet.icon_state == state && wet.dir == spurt_dir && wet.pixel_x == offset_x && wet.pixel_y == offset_y))
 			wet.add_blood_DNA(blood_dna, viruses)
 			return wet
-	var/obj/effect/decal/cleanable/blood/mantis_drops/drops = new(land, viruses, blood_dna)
+	var/obj/effect/decal/cleanable/blood/drip/mantis_drops/drops = new(land, viruses, blood_dna)
 	if(QDELETED(drops))
 		return null
 	drops.icon_state = state
@@ -337,6 +343,64 @@
 /// Run its length: a still picture from here on, whichever way the body turns.
 /obj/effect/abstract/cyberware_anim/mantis_run/proc/ran()
 	icon_state = "artery_ran_[zone]"
+
+/// A drip falls off the run's lower end and lands at the feet.
+/obj/effect/abstract/cyberware_anim/mantis_run/proc/drip()
+	var/mob/living/body = bearer
+	if(QDELETED(src) || !istype(body) || QDELETED(body) || body.body_position == LYING_DOWN)
+		return
+	mantis_feet_drip(body, zone)
+
+/// Where the run down a body from [zone] comes to the sole of a body facing [facing], in pixels across from the
+/// middle of its tile: the lower end of the art's own run ("artery_ran_[zone]"). Where the part is on the body's
+/// far side and the run can't be seen, the sole the blood comes down to all the same.
+/proc/mantis_artery_run_foot(zone, facing)
+	var/static/list/feet = list(
+		BODY_ZONE_HEAD = list("[SOUTH]" = 0, "[NORTH]" = 0, "[EAST]" = 3, "[WEST]" = -2),
+		BODY_ZONE_CHEST = list("[SOUTH]" = 1, "[NORTH]" = 0, "[EAST]" = 3, "[WEST]" = -2),
+		BODY_ZONE_L_ARM = list("[SOUTH]" = 5, "[NORTH]" = -7, "[EAST]" = -1, "[WEST]" = 2),
+		BODY_ZONE_R_ARM = list("[SOUTH]" = -6, "[NORTH]" = 5, "[EAST]" = -1, "[WEST]" = 2),
+		BODY_ZONE_L_LEG = list("[SOUTH]" = 4, "[NORTH]" = -2, "[EAST]" = 0, "[WEST]" = 2),
+		BODY_ZONE_R_LEG = list("[SOUTH]" = -3, "[NORTH]" = 2, "[EAST]" = 0, "[WEST]" = 2),
+	)
+	var/list/by_facing = feet[zone]
+	return by_facing?["[facing]"]
+
+/**
+ * A drip off the blood run down [victim] from [zone] lands at the feet, two pixels under the sole the run comes
+ * down to: a spot there ("artery_feet_1"), wider with the next, a small pool with the third. Nothing where no
+ * blood would lie. Returns the spot.
+ */
+/proc/mantis_feet_drip(mob/living/victim, zone)
+	if(QDELETED(victim) || !isturf(victim.loc) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
+		return null
+	var/foot = mantis_artery_run_foot(zone, victim.dir)
+	if(isnull(foot))
+		return null
+	// The sole is the body picture's lowest row, 15 pixels under the middle of the tile, wherever the body is drawn.
+	var/matrix/shape = victim.transform
+	var/drip_x = round(shape.a * foot + shape.b * -15 + shape.c, 1) + victim.pixel_x + victim.pixel_w
+	var/drip_y = round(shape.d * foot + shape.e * -15 + shape.f, 1) + victim.pixel_y + victim.pixel_z - 2
+	var/turf/land = locate(victim.x + round(drip_x / ICON_SIZE_X, 1), victim.y + round(drip_y / ICON_SIZE_Y, 1), victim.z)
+	if(!isturf(land) || isgroundlessturf(land) || !land.has_gravity() || (land != victim.loc && hv_blood_spray_blocked(land)))
+		return null
+	var/offset_x = drip_x - (land.x - victim.x) * ICON_SIZE_X
+	var/offset_y = drip_y - (land.y - victim.y) * ICON_SIZE_Y
+	for(var/obj/effect/decal/cleanable/blood/drip/mantis_drops/wet in land)
+		if(!wet.feet_drips || wet.dried || QDELETED(wet) || wet.pixel_x != offset_x || wet.pixel_y != offset_y)
+			continue
+		wet.feet_drips = min(wet.feet_drips + 1, 3)
+		wet.icon_state = "artery_feet_[wet.feet_drips]"
+		wet.add_blood_DNA(victim.get_blood_dna_list(), victim.get_static_viruses())
+		return wet
+	var/obj/effect/decal/cleanable/blood/drip/mantis_drops/pool = new(land, victim.get_static_viruses(), victim.get_blood_dna_list())
+	if(QDELETED(pool))
+		return null
+	pool.feet_drips = 1
+	pool.icon_state = "artery_feet_1"
+	pool.pixel_x = offset_x
+	pool.pixel_y = offset_y
+	return pool
 
 /**
  * The blood of a torn artery runs down [victim]'s body from the wound on [zone] to the feet: a thin broken
@@ -361,6 +425,9 @@
 	run.RegisterSignal(torn, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))
 	victim.vis_contents += run
 	addtimer(CALLBACK(run, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim/mantis_run, ran)), 0.8 SECONDS)
+	// It comes to the feet, and three drips fall off it there.
+	for(var/wait in list(0.6 SECONDS, 0.95 SECONDS, 1.25 SECONDS))
+		addtimer(CALLBACK(run, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim/mantis_run, drip)), wait)
 	return run
 
 /// A Scorch cut: a white-hot seam across the limb that cools to char.
