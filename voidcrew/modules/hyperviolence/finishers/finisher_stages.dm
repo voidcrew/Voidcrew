@@ -262,10 +262,14 @@
 /datum/hv_finisher_stage/kill/rip_limb/gore(spray_dir)
 	var/obj/item/bodypart/part = host.victim.get_bodypart(host.target_zone)
 	host.victim.hv_blood_spray(spray_dir, spray_strength)
-	// Torn off toward whoever tore it: it comes away with the pull and falls between the two of them,
-	// not off in whatever direction tg picks.
-	part?.hv_vis_fling_dir = REVERSE_DIR(spray_dir)
-	part?.dismember(BRUTE, TRUE, WOUND_SLASH)
+	if(part)
+		// Torn off toward whoever tore it: it comes away with the pull and falls between the two of them,
+		// not off in whatever direction tg picks. It starts where it is drawn, on a body held up off the floor.
+		part.hv_vis_fling_dir = REVERSE_DIR(spray_dir)
+		var/list/part_at = host.victim.hv_vis_part_offset(host.target_zone)
+		part_at[2] += hv_vis_lift
+		part.hv_vis_fling_from = part_at
+		part.dismember(BRUTE, TRUE, WOUND_SLASH)
 
 /// Takes the head off and leaves it at the victim's feet, brain and all
 /datum/hv_finisher_stage/kill/decapitate
@@ -276,8 +280,9 @@
 
 /datum/hv_finisher_stage/kill/decapitate/gore(spray_dir)
 	host.victim.hv_blood_spray(spray_dir, spray_strength)
-	// Where the head is on the body, read before it comes off.
+	// Where the head is drawn, on a body held up off the floor, read before it comes off.
 	var/list/head_at = host.victim.hv_vis_head_offset()
+	head_at[2] += hv_vis_lift
 	var/obj/item/bodypart/head/head = hv_finisher_take_head(host.victim, WOUND_SLASH)
 	// It falls from the neck toward whoever took it, and goes no further: a head carries the brain.
 	head?.hv_fling(REVERSE_DIR(spray_dir), 0, null, head_at)
