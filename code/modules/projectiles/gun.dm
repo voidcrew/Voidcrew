@@ -376,6 +376,11 @@
 		handle_suicide(user, target, params)
 		return
 
+	// VOIDCREW EDIT ADDITION START: a point-blank head shot at someone helpless is an execution (voidcrew/modules/hyperviolence/overlays_exec/executions.dm)
+	if(flag && hv_try_head_execution(user, target, params))
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	if(!can_shoot()) //Just because you can pull the trigger doesn't mean it can shoot.
 		shoot_with_empty_chamber(user)
 		return

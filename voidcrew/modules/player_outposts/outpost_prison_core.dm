@@ -47,7 +47,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	var/datum/outpost_upgrade/prison/upgrade
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/area/voidcrew/player_outpost/prison/wing
-	var/list/mob/living/basic/outpost_prisoner/prisoners = list()
+	var/list/mob/living/carbon/human/npc/outpost_prisoner/prisoners = list()
 	/// The wing's cells, in number order
 	var/list/datum/outpost_prison_cell/cells = list()
 	/// Prisoners the wing holds at once: one per cell, at most OUTPOST_PRISON_MAX_CAPACITY
@@ -108,7 +108,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 		wing.prison = null
 	var/list/leaving = prisoners
 	prisoners = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in leaving)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in leaving)
 		close_bounty_record(prisoner, BOUNTY_RECORD_CLOSED)
 		prisoner.prison = null
 		prisoner.cell = null
@@ -325,7 +325,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	if(supply_clock < PRISON_SUPPLY_REFRESH_SECONDS)
 		return
 	supply_clock = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		prisoner.fend_for_self()
 		prisoner.check_sick_call()
 	check_hatch_shortage()
@@ -358,7 +358,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 				dirty_suits++
 	// How long it lasts at the usual rates, for the prisoners here (or a full wing while intake is open).
 	var/eaters = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_ARRIVING && prisoner.stat != DEAD && prisoner.trouble != PRISONER_TROUBLE_LOOSE)
 			eaters++
 	if(!eaters && intake_open)
@@ -389,7 +389,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	var/list/all_hatches = hatches()
 	if(!length(all_hatches))
 		return
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT || prisoner.trouble)
 			continue
 		var/reaches_hatch = FALSE
@@ -442,7 +442,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
  * hatch, a table, a cell, the floor), or a cleaner uniform off a serving hatch when `want_uniform`
  * is set. Anything another prisoner is already fetching is left alone.
  */
-/datum/outpost_prison/proc/find_supply(mob/living/basic/outpost_prisoner/prisoner, want_uniform = FALSE)
+/datum/outpost_prison/proc/find_supply(mob/living/carbon/human/npc/outpost_prisoner/prisoner, want_uniform = FALSE)
 	if(!prisoner.reachable)
 		refresh_prisoner_reach(prisoner)
 	var/obj/item/best
@@ -514,14 +514,14 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	if(user)
 		note_staff_stock(user)
 	// Whoever wants it drops what they were idling at and comes over.
-	for(var/mob/living/basic/outpost_prisoner/wanting in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/wanting in prisoners)
 		var/datum/prisoner_activity/idle = wanting.activity
 		if(!wanting.ai_running() || !idle?.leisure || !idle.interruptible || idle.sleeping)
 			continue
 		if((food && wanting.wants_food()) || (suits && wanting.wants_clean_uniform()))
 			wanting.end_activity()
-	var/mob/living/basic/outpost_prisoner/thanker
-	for(var/mob/living/basic/outpost_prisoner/waiting in prisoners)
+	var/mob/living/carbon/human/npc/outpost_prisoner/thanker
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/waiting in prisoners)
 		var/datum/prisoner_activity/hatch_wait/wait = waiting.activity
 		if(!istype(wait) || wait.hatch_ref?.resolve() != hatch)
 			continue
@@ -529,11 +529,11 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 			thanker = waiting
 			if(user)
 				waiting.note_carer(user)
-			INVOKE_ASYNC(waiting, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, thank), (food && waiting.wants_food()) ? "thanks_food" : "thanks_uniform")
+			INVOKE_ASYNC(waiting, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, thank), (food && waiting.wants_food()) ? "thanks_food" : "thanks_uniform")
 			break
 	if(!COOLDOWN_FINISHED(src, hatch_call_cooldown))
 		return null
-	for(var/mob/living/basic/outpost_prisoner/crier as anything in shuffle(prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/crier as anything in shuffle(prisoners))
 		if(crier == thanker || crier.stat != CONSCIOUS || crier.phase != PRISONER_PRESENT || crier.in_trouble() || crier.activity?.sleeping)
 			continue
 		var/context
@@ -545,7 +545,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 			continue
 		COOLDOWN_START(src, hatch_call_cooldown, OUTPOST_PRISON_HATCH_CALL_GAP)
 		note_speech()
-		INVOKE_ASYNC(crier, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), context)
+		INVOKE_ASYNC(crier, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), context)
 		return crier
 	return null
 
@@ -554,15 +554,15 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
  * PRISONER_SHARED_MEAL_WINDOW makes a shared meal: each of them cheers up a little, once, and one
  * of them says so. Returns the prisoners who got the lift.
  */
-/datum/outpost_prison/proc/note_table_meal(mob/living/basic/outpost_prisoner/eater)
-	for(var/mob/living/basic/outpost_prisoner/earlier as anything in table_eaters.Copy())
+/datum/outpost_prison/proc/note_table_meal(mob/living/carbon/human/npc/outpost_prisoner/eater)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/earlier as anything in table_eaters.Copy())
 		if(QDELETED(earlier) || !(earlier in prisoners) || world.time - table_eaters[earlier] > PRISONER_SHARED_MEAL_WINDOW)
 			table_eaters -= earlier
 	table_eaters[eater] = world.time
 	var/list/lifted = list()
 	if(length(table_eaters) < PRISONER_SHARED_MEAL_COUNT)
 		return lifted
-	for(var/mob/living/basic/outpost_prisoner/diner as anything in table_eaters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/diner as anything in table_eaters)
 		if(diner.shared_meal_at && world.time - diner.shared_meal_at <= PRISONER_SHARED_MEAL_WINDOW)
 			continue
 		diner.shared_meal_at = world.time
@@ -572,8 +572,8 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 		note_shared_meal(lifted)
 	if(length(lifted) && COOLDOWN_FINISHED(src, mess_hall_cooldown))
 		COOLDOWN_START(src, mess_hall_cooldown, OUTPOST_PRISON_MESS_HALL_GAP)
-		var/mob/living/basic/outpost_prisoner/speaker = pick(lifted)
-		INVOKE_ASYNC(speaker, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "mess_hall")
+		var/mob/living/carbon/human/npc/outpost_prisoner/speaker = pick(lifted)
+		INVOKE_ASYNC(speaker, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "mess_hall")
 	return lifted
 
 /**
@@ -584,22 +584,22 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	if(!is_member(shooter) || !COOLDOWN_FINISHED(src, staff_basket_cooldown))
 		return FALSE
 	var/list/players = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.stat == CONSCIOUS && prisoner.phase == PRISONER_PRESENT && istype(prisoner.activity, /datum/prisoner_activity/basketball))
 			players += prisoner
 	if(length(players) < 2)
 		return FALSE
 	COOLDOWN_START(src, staff_basket_cooldown, OUTPOST_PRISON_STAFF_BASKET_GAP)
 	note_staff_basket(shooter)
-	for(var/mob/living/basic/outpost_prisoner/player as anything in players)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/player as anything in players)
 		player.adjust_mood(PRISONER_MOOD_STAFF_BASKET)
 		player.face_atom(hoop)
-	var/mob/living/basic/outpost_prisoner/cheering = pick(players)
+	var/mob/living/carbon/human/npc/outpost_prisoner/cheering = pick(players)
 	INVOKE_ASYNC(cheering, TYPE_PROC_REF(/atom, manual_emote), pick("whistles.", "claps.", "cheers."))
 	return TRUE
 
 /// The nearest trash bin the prisoner can reach
-/datum/outpost_prison/proc/find_bin(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/find_bin(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner.reachable)
 		refresh_prisoner_reach(prisoner)
 	var/obj/structure/closet/crate/bin/best
@@ -613,7 +613,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	return best
 
 /// The nearest litter lying where the prisoner may walk, off the serving hatches and out of other cells
-/datum/outpost_prison/proc/find_litter(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/find_litter(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner.walkable)
 		refresh_prisoner_reach(prisoner)
 	var/obj/item/trash/best
@@ -631,7 +631,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	return best
 
 /// A basketball the prisoner can get at: their own, loose within reach, or in another player's hands
-/datum/outpost_prison/proc/find_ball(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/find_ball(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(istype(prisoner.held_item, /obj/item/toy/basketball))
 		return prisoner.held_item
 	if(!prisoner.reachable)
@@ -640,13 +640,13 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 		var/obj/item/toy/basketball/ball = locate() in spot
 		if(ball)
 			return ball
-	for(var/mob/living/basic/outpost_prisoner/other in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(istype(other.held_item, /obj/item/toy/basketball) && prisoner.walkable?[get_turf(other)])
 			return other.held_item
 	return null
 
 /// The nearest book lying about within reach, not on a shelf
-/datum/outpost_prison/proc/find_loose_book(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/find_loose_book(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner.reachable)
 		refresh_prisoner_reach(prisoner)
 	var/obj/item/book/best
@@ -681,8 +681,8 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	return FALSE
 
 /// Whether a prisoner other than `except` is doing an activity of this type
-/datum/outpost_prison/proc/anyone_doing(activity_type, mob/living/basic/outpost_prisoner/except)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+/datum/outpost_prison/proc/anyone_doing(activity_type, mob/living/carbon/human/npc/outpost_prisoner/except)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner != except && istype(prisoner.activity, activity_type))
 			return TRUE
 	return FALSE
@@ -690,7 +690,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 // ===== CLAIMS =====
 
 /// Reserves `thing` for `prisoner`. FALSE if someone else is using it.
-/datum/outpost_prison/proc/claim(atom/thing, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/claim(atom/thing, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(claimed_by_other(thing, prisoner))
 		return FALSE
 	claims[REF(thing)] = prisoner
@@ -698,13 +698,13 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 
 /// The prisoner using `thing`, if any
 /datum/outpost_prison/proc/claimant(atom/thing)
-	var/mob/living/basic/outpost_prisoner/holder = claims[REF(thing)]
+	var/mob/living/carbon/human/npc/outpost_prisoner/holder = claims[REF(thing)]
 	if(QDELETED(holder) || !holder.activity)
 		return null
 	return holder
 
-/datum/outpost_prison/proc/claimed_by_other(atom/thing, mob/living/basic/outpost_prisoner/prisoner)
-	var/mob/living/basic/outpost_prisoner/holder = claimant(thing)
+/datum/outpost_prison/proc/claimed_by_other(atom/thing, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	var/mob/living/carbon/human/npc/outpost_prisoner/holder = claimant(thing)
 	return holder && holder != prisoner
 
 // ===== SPEECH =====
@@ -722,10 +722,9 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	if(QDELETED(outpost) || !wing)
 		return
 	tick(seconds_per_tick)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT)
 			continue
-		prisoner.maybe_drip(seconds_per_tick)
 		if(prisoner.stat != CONSCIOUS)
 			continue
 		if(prisoner.trouble != PRISONER_TROUBLE_LOOSE && SPT_PROB(OUTPOST_PRISON_MESS_CHANCE / 60, seconds_per_tick))
@@ -747,7 +746,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	conditions_tick(seconds)
 	containment_tick(seconds)
 	supply_tick(seconds)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT)
 			continue
 		if(prisoner.stat == DEAD)
@@ -778,7 +777,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 // ===== COMINGS AND GOINGS =====
 
 /// Drops a prisoner from the roster and their cell, and starts refilling it
-/datum/outpost_prison/proc/forget(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/forget(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!(prisoner in prisoners))
 		return
 	// Whatever else closed their bounty record first decided how it ended (outpost_prison_bounty.dm).
@@ -797,6 +796,11 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 		emptied.occupant = null
 	prisoner.cell = null
 	prisoner.prison = null
+	// Off the roster, a body is like any human NPC's: cleaned up once it has lain unwatched for a while
+	// (human_npc_spawning.dm), unless someone is dragging, carrying or watching it.
+	if(prisoner.stat == DEAD && !QDELETED(prisoner))
+		prisoner.npc_corpse_lifetime = HUMAN_NPC_CORPSE_LIFETIME
+		SShuman_npcs.track_corpse(prisoner)
 	for(var/key in claims.Copy())
 		if(claims[key] == prisoner)
 			claims -= key
@@ -823,7 +827,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	var/list/turfs
 	var/list/turf_set
 	/// The prisoner who owns it
-	var/mob/living/basic/outpost_prisoner/occupant
+	var/mob/living/carbon/human/npc/outpost_prisoner/occupant
 	/// world.time from which the cell may take a new arrival
 	var/ready_at = 0
 

@@ -86,6 +86,10 @@
  * than a person in the room, so the reach is nine tiles for a click and seven for the room,
  * and you have to be there for both. The single-target hacks are likewise local, Kill the
  * Power is one APC's area, not the grid; Silence is one bubble, not the ship.
+ *
+ * The hacks themselves live in voidcrew/modules/quickhacks/, shared with cyberdecks.
+ * What the boon carries is [/datum/quickhack_kit/communion] below, listed by hand so
+ * nothing written for a deck ever reaches it.
  */
 
 // ===== THE WARFRAME =====
@@ -178,65 +182,6 @@
 
 /// How far the capstone reaches. You have to be in the room.
 #define COMMUNION_RANGE 9
-/// Seconds a bolted-and-live door stays electrified.
-#define COMMUNION_ELECTRIFY_SECONDS 30
-/// Burn a communion-live door lands. Equal to the floor of a stock powernet shock, ELECTROCUTE_DAMAGE().
-#define COMMUNION_ELECTRIFY_DAMAGE 20
-/// Stun on top of the burn. Matches the paralyse a carbon takes from a stock shock, so carbons feel no change.
-#define COMMUNION_ELECTRIFY_STUN (4 SECONDS)
-/// How long an overloaded machine buzzes before it goes.
-#define COMMUNION_OVERLOAD_DELAY (4 SECONDS)
-/// Radius and lifetime of the Silence bubble.
-#define COMMUNION_JAM_RANGE 9
-#define COMMUNION_JAM_DURATION (45 SECONDS)
-/// How long a radio switched off by Cutout or Silence stays dead before it recovers.
-#define COMMUNION_RADIO_OFF_DURATION (45 SECONDS)
-/// Burn per full standard cell drained by Feedback Surge, and the ceiling on it.
-#define COMMUNION_SURGE_PER_CELL 12
-#define COMMUNION_SURGE_MAX 60
-#define COMMUNION_SURGE_MIN 5
-
-// ===== THE MASS HACKS =====
-// The second button. Everything below is room-scale, and the descs quote these
-// numbers literally, keep them in sync.
-
-/// How far a mass hack reaches from the caster. Shorter than the single-target reach
-/// on purpose: this is the room you are standing in, not the room next door.
-#define COMMUNION_MASS_RANGE 7
-/// Most machines any one mass hack will touch. Caps the blast, the mob count and the tick cost.
-#define COMMUNION_MASS_CAP 12
-/// How long the whole room buzzes before Overload the Room lands. A second longer than
-/// the single-target version, because there is a great deal more to run away from.
-#define COMMUNION_MASS_OVERLOAD_DELAY (5 SECONDS)
-/// Gap between two machines going up, so a dozen explosions do not land on one tick.
-#define COMMUNION_MASS_OVERLOAD_STAGGER (0.2 SECONDS)
-/// Blast radii of one machine in a mass overload. Identical to the single-target blast.
-/// This is a dozen full Overloads going off at once, not a dozen small ones. EXPLODE_HEAVY
-/// on a wall is `dismantle_wall(prob(50), TRUE)`, which always takes the wall, so a room
-/// that goes up this way is stripped to the girders and an outer wall may well go with it.
-/// That is the intent; the five-second buzz is what everybody in the room gets instead.
-#define COMMUNION_MASS_OVERLOAD_HEAVY 1
-#define COMMUNION_MASS_OVERLOAD_LIGHT 3
-#define COMMUNION_MASS_OVERLOAD_FLASH 3
-
-/// Arc Flash: how many volleys it throws and how far apart.
-#define COMMUNION_ARC_PULSES 5
-#define COMMUNION_ARC_INTERVAL (1.5 SECONDS)
-/// How far a machine will reach for somebody to earth itself through.
-#define COMMUNION_ARC_REACH 5
-/// Burn one arc lands. Everyone in the room takes one per volley.
-#define COMMUNION_ARC_DAMAGE 14
-
-/// Most machines Wake the Machines will stand up. Lower than the general cap; each one is a mob.
-#define COMMUNION_WAKE_CAP 8
-/// How long a woken machine lasts before it falls apart.
-#define COMMUNION_WAKE_DURATION (2 MINUTES)
-/// Multiplier on a woken machine's health and melee damage over a stock animated one.
-#define COMMUNION_WAKE_SCALE 2
-/// Filter key and colour for the outline a woken machine wears, so the room can tell
-/// which vending machine is yours.
-#define COMMUNION_WAKE_FILTER "communion_woken"
-#define COMMUNION_WAKE_COLOR "#63c8d6"
 
 // =========================================================================
 // THE WARFRAME
@@ -1803,6 +1748,38 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	room.Grant(user)
 
 /**
+ * What the capstone carries: every hack written for it, the two boon-only ones
+ * included, at full reach with no upload, cooldowns as written and the detailed
+ * tooltips. Listed by hand so hacks added for cyberdecks never reach the boon.
+ * The hacks live in voidcrew/modules/quickhacks/; see [/datum/quickhack_kit].
+ */
+/datum/quickhack_kit/communion
+	quickhack_types = list(
+		/datum/machine_quickhack/overload,
+		/datum/machine_quickhack/safeties,
+		/datum/machine_quickhack/bolts,
+		/datum/machine_quickhack/electrify,
+		/datum/machine_quickhack/kill_power,
+		/datum/machine_quickhack/burst_lights,
+		/datum/machine_quickhack/feedback_surge,
+		/datum/machine_quickhack/cutout,
+		/datum/machine_quickhack/silence,
+	)
+	masshack_types = list(
+		/datum/machine_masshack/overload,
+		/datum/machine_masshack/arc_flash,
+		/datum/machine_masshack/wake,
+	)
+	hack_range = COMMUNION_RANGE
+	upload_time = 0
+	cooldown_mult = 1
+	needs_sight = FALSE
+	detailed_menu = TRUE
+	allow_boon_only = TRUE
+
+GLOBAL_DATUM_INIT(communion_quickhack_kit, /datum/quickhack_kit/communion, new)
+
+/**
  * The capstone ability.
  *
  * Two halves, and the passive one matters as much as the button. On Grant it hands the
@@ -1877,13 +1854,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 
 /// Hacks this target could accept right now.
 /datum/action/cooldown/spell/machine_communion/proc/applicable_hacks(atom/cast_on, mob/living/user)
-	var/list/found = list()
-	if(QDELETED(cast_on) || !isliving(user))
-		return found
-	for(var/datum/machine_quickhack/hack as anything in get_machine_quickhacks())
-		if(hack.valid_for(cast_on, user))
-			found += hack
-	return found
+	return GLOB.communion_quickhack_kit.applicable_quickhacks(cast_on, user)
 
 /// Menu validity: we still exist, we still belong to this mob, and the target is still there.
 /datum/action/cooldown/spell/machine_communion/proc/menu_check(mob/living/user, atom/cast_on)
@@ -1908,11 +1879,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	var/list/options = list()
 	var/list/by_name = list()
 	for(var/datum/machine_quickhack/hack as anything in available)
-		var/datum/radial_menu_choice/option = new()
-		option.image = image(icon = hack.radial_icon, icon_state = hack.radial_icon_state)
-		option.name = hack.name
-		option.info = "[hack.desc] ([round(hack.cooldown / 10)] second cooldown.)"
-		options[hack.name] = option
+		options[hack.name] = GLOB.communion_quickhack_kit.menu_option(hack)
 		by_name[hack.name] = hack
 
 	// autopick_single_option is off deliberately: several of these are expensive and a
@@ -1930,438 +1897,12 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	if(!chosen.execute(cast_on, user))
 		return
 	user.log_message("used the [chosen.name] quickhack on [cast_on] ([cast_on.type]).", LOG_ATTACK)
-	StartCooldown(chosen.cooldown)
+	StartCooldown(GLOB.communion_quickhack_kit.hack_cooldown(chosen))
 	build_all_button_icons()
 
 /// Keep the sleeping input separate from the post-selection action checks.
 /datum/action/cooldown/spell/machine_communion/proc/choose_hack(mob/living/user, atom/cast_on, list/options)
 	return show_radial_menu(user, cast_on, options, custom_check = CALLBACK(src, PROC_REF(menu_check), user, cast_on), tooltips = TRUE, autopick_single_option = FALSE)
-
-// =========================================================================
-// THE QUICKHACKS
-// =========================================================================
-
-/**
- * One thing Machine Communion can do to one thing.
- *
- * Stateless singletons, built once into a global list and shared by every owner, so
- * nothing here may hold per-cast state. Timers hang off the singleton, which is fine
- * because it is never deleted.
- */
-/datum/machine_quickhack
-	/// Shown on the radial slice.
-	var/name = "Quickhack"
-	/// Shown in the slice's tooltip. Lead with the effect, then the numbers.
-	var/desc = ""
-	/// Radial slice icon.
-	var/radial_icon = 'icons/mob/actions/actions_AI.dmi'
-	/// Icon state paired with radial_icon.
-	var/radial_icon_state = "overload_machine"
-	/// Cooldown this hack puts on the whole ability.
-	var/cooldown = 20 SECONDS
-
-/// Can this hack be run on this target at all? Decides whether the slice is even shown.
-/datum/machine_quickhack/proc/valid_for(atom/target, mob/living/user)
-	return FALSE
-
-/// Do it. Return TRUE if it landed; a FALSE return costs no cooldown.
-/datum/machine_quickhack/proc/execute(atom/target, mob/living/user)
-	return FALSE
-
-/// Every quickhack, built once on demand.
-GLOBAL_LIST_EMPTY(machine_quickhacks)
-
-/proc/get_machine_quickhacks()
-	if(!length(GLOB.machine_quickhacks))
-		for(var/datum/machine_quickhack/hack_type as anything in subtypesof(/datum/machine_quickhack))
-			GLOB.machine_quickhacks += new hack_type()
-	return GLOB.machine_quickhacks
-
-// ===== OVERLOAD =====
-
-/**
- * Straight off `/datum/action/innate/ai/ranged/overload_machine` (malf_ai_modules.dm:521),
- * including its blacklist, with a smaller blast because this one is repeatable rather
- * than two uses a purchase. Lights burst instead of exploding. A light bulb should not
- * take out a wall.
- */
-/datum/machine_quickhack/overload
-	name = "Overload"
-	desc = "Feed the machine power until it comes apart. Four seconds of loud buzzing, then a small explosion that destroys it. Lights just burst."
-	radial_icon_state = "overload_machine"
-	cooldown = 45 SECONDS
-
-/datum/machine_quickhack/overload/valid_for(atom/target, mob/living/user)
-	if(!ismachinery(target))
-		return FALSE
-	var/obj/machinery/victim = target
-	if(victim.resistance_flags & INDESTRUCTIBLE)
-		return FALSE
-	return !is_type_in_typecache(victim, GLOB.blacklisted_malf_machines)
-
-/datum/machine_quickhack/overload/execute(atom/target, mob/living/user)
-	var/obj/machinery/victim = target
-	victim.audible_message(span_userdanger("[victim] starts buzzing, loudly."))
-	playsound(victim, SFX_SPARKS, 60, TRUE)
-	user.playsound_local(user, 'sound/misc/interference.ogg', 40, FALSE)
-	// ADMIN_VERBOSEJMP expands to a ternary over its argument, so it needs a plain
-	// variable, a proc call inlined here doesn't parse inside the string
-	var/turf/blast_site = get_turf(victim)
-	message_admins("[ADMIN_LOOKUPFLW(user)] overloaded [victim.name] ([victim.type]) at [ADMIN_VERBOSEJMP(blast_site)] with Machine Communion.")
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(communion_burst_machine), victim, 1, 3), COMMUNION_OVERLOAD_DELAY)
-	return TRUE
-
-/**
- * The end of an overload, single or mass: the machine comes apart and takes the tile
- * with it. Lights burst instead of exploding, because a light bulb should not take out
- * a wall. Blast radii are arguments because the mass version fires a dozen of these and
- * has to be much smaller per machine, see [/datum/machine_masshack/overload].
- */
-/proc/communion_burst_machine(obj/machinery/victim, heavy_range = 1, light_range = 3, flash_range = null)
-	if(QDELETED(victim))
-		return
-	if(istype(victim, /obj/machinery/light))
-		var/obj/machinery/light/bulb = victim
-		bulb.break_light_tube()
-		return
-	explosion(victim, heavy_impact_range = heavy_range, light_impact_range = light_range, flash_range = flash_range)
-	if(!QDELETED(victim))
-		qdel(victim)
-
-// ===== CUT THE SAFETIES =====
-
-/**
- * `emag_act` on anything that has one. The compatible-type list is lifted from the malf
- * targeted override module (malf_ai_modules.dm:1090-1097) so the surface area is a known
- * quantity rather than "every atom in the game".
- */
-/datum/machine_quickhack/safeties
-	name = "Cut the Safeties"
-	desc = "Strip the target's safety interlocks. Exactly what an emag would do to it, which depends entirely on what it is."
-	radial_icon = 'icons/obj/card.dmi'
-	radial_icon_state = "emag"
-	cooldown = 25 SECONDS
-
-/datum/machine_quickhack/safeties/valid_for(atom/target, mob/living/user)
-	var/static/list/compatible = list(
-		/obj/machinery,
-		/obj/item/modular_computer,
-		/obj/item/radio/intercom,
-		/mob/living/basic/bot,
-		/mob/living/silicon,
-		/mob/living/simple_animal/bot,
-	)
-	if(!is_type_in_list(target, compatible))
-		return FALSE
-	if(ismachinery(target))
-		var/obj/machinery/machine = target
-		return machine.is_operational
-	return TRUE
-
-/datum/machine_quickhack/safeties/execute(atom/target, mob/living/user)
-	if(!target.emag_act(user))
-		target.balloon_alert(user, "nothing to strip!")
-		return FALSE
-	playsound(target, SFX_SPARKS, 50, TRUE)
-	to_chat(user, span_notice("[target] drops its safety interlocks."))
-	return TRUE
-
-// ===== BOLTS =====
-
-/datum/machine_quickhack/bolts
-	name = "Bolts"
-	desc = "Throw the door's bolts, or pull them if they are already down. Works on the AI wire, so a cut door will not answer."
-	radial_icon_state = "lockdown"
-	cooldown = 8 SECONDS
-
-/datum/machine_quickhack/bolts/valid_for(atom/target, mob/living/user)
-	return istype(target, /obj/machinery/door/airlock)
-
-/datum/machine_quickhack/bolts/execute(atom/target, mob/living/user)
-	var/obj/machinery/door/airlock/door = target
-	if(!door.canAIControl(user) || door.machine_stat)
-		door.balloon_alert(user, "no interface!")
-		return FALSE
-	if(door.locked)
-		door.unbolt()
-		door.balloon_alert(user, "bolts up")
-	else
-		door.bolt()
-		door.balloon_alert(user, "bolts down")
-	return TRUE
-
-// ===== ELECTRIFY =====
-
-/**
- * Stock electrification alone is not worth a capstone hack. A shock through the frame is
- * `ELECTROCUTE_DAMAGE(area APC's spare energy)`, which is 0 below a kilojoule and jumps
- * straight to 20 above it, so on a derelict with a flat cell the door does nothing at all,
- * no burn and no stun, and `shock()` returning FALSE means it opens for them anyway.
- *
- * So a door the vestige has electrified carries its own current: a flat
- * [COMMUNION_ELECTRIFY_DAMAGE] burn and a [COMMUNION_ELECTRIFY_STUN] stun no matter how little
- * the local powernet has left in it. The door still has to be powered at all, same as ever.
- * The hack cannot be cast on a dead one. That is what `communion_live` below is for.
- */
-/datum/machine_quickhack/electrify
-	name = "Electrify"
-	desc = "Run the door's frame live for 30 seconds. It draws on your own current rather than the area's, so a \
-		nearly-empty APC still lands the shock. Touching it without insulated gloves is 20 burn and a stun."
-	radial_icon = 'icons/obj/machines/wallmounts.dmi'
-	radial_icon_state = "apc-spark"
-	cooldown = 20 SECONDS
-
-/datum/machine_quickhack/electrify/valid_for(atom/target, mob/living/user)
-	return istype(target, /obj/machinery/door/airlock)
-
-/datum/machine_quickhack/electrify/execute(atom/target, mob/living/user)
-	var/obj/machinery/door/airlock/door = target
-	if(!door.canAIControl(user) || door.machine_stat)
-		door.balloon_alert(user, "no interface!")
-		return FALSE
-	door.set_electrified(COMMUNION_ELECTRIFY_SECONDS, user)
-	door.set_communion_live(COMMUNION_ELECTRIFY_SECONDS)
-	door.balloon_alert(user, "live")
-	playsound(door, SFX_SPARKS, 50, TRUE)
-	return TRUE
-
-/// Set for as long as a Machine Communion electrification lasts. See [/datum/machine_quickhack/electrify].
-/obj/machinery/door/airlock/var/communion_live = FALSE
-
-/// Makes this airlock's electrification self-powered for `seconds`, matching the seconds `set_electrified` takes.
-/obj/machinery/door/airlock/proc/set_communion_live(seconds)
-	communion_live = TRUE
-	addtimer(VARSET_CALLBACK(src, communion_live, FALSE), seconds SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
-
-/**
- * Every path that shocks somebody on an airlock funnels through here, so overriding it once
- * covers bumping the door, touching it, and prying at it with a crowbar alike. Off a
- * communion-live door we do the parent's job by hand rather than through `electrocute_mob`,
- * which reads its damage off the area's APC and refuses non-carbons outright.
- *
- * `electrocute_act` with default flags still runs the victim's siemens coefficient, so
- * insulated gloves zero it out and nothing lands, same as an ordinary electrified door.
- * The explicit Paralyze is what carries the stun onto simple and basic mobs, whose
- * `electrocute_act` only ever adjusts fire loss.
- */
-/obj/machinery/door/airlock/shock(mob/living/user, prb)
-	if(!communion_live || !isElectrified())
-		return ..()
-	// Gating lifted from the parent: same power requirement, same one-second-per-victim grace
-	// so a live doorway is not a stunlock, same probability roll.
-	if(!istype(user) || !hasPower())
-		return FALSE
-	if(HAS_TRAIT(user, TRAIT_AIRLOCK_SHOCKIMMUNE))
-		return FALSE
-	if(!COOLDOWN_FINISHED(src, shockCooldown))
-		return FALSE
-	if(!prob(prb))
-		return FALSE
-	do_sparks(5, TRUE, src)
-	if(!user.electrocute_act(COMMUNION_ELECTRIFY_DAMAGE, src))
-		return FALSE
-	user.Paralyze(COMMUNION_ELECTRIFY_STUN)
-	log_combat(src, user, "electrocuted")
-	COOLDOWN_START(src, shockCooldown, 1 SECONDS)
-	ADD_TRAIT(user, TRAIT_AIRLOCK_SHOCKIMMUNE, REF(src))
-	addtimer(TRAIT_CALLBACK_REMOVE(user, TRAIT_AIRLOCK_SHOCKIMMUNE, REF(src)), 1 SECONDS)
-	return TRUE
-
-// ===== KILL THE POWER =====
-
-/datum/machine_quickhack/kill_power
-	name = "Kill the Power"
-	desc = "Flip an APC's breaker. Lights, equipment and air handling across that whole area go dead until it is flipped back."
-	radial_icon = 'icons/obj/machines/wallmounts.dmi'
-	radial_icon_state = "apc0"
-	cooldown = 30 SECONDS
-
-/datum/machine_quickhack/kill_power/valid_for(atom/target, mob/living/user)
-	return isapc(target)
-
-/datum/machine_quickhack/kill_power/execute(atom/target, mob/living/user)
-	var/obj/machinery/power/apc/apc = target
-	if(apc.aidisabled || !apc.is_operational || apc.failure_timer)
-		apc.balloon_alert(user, "no interface!")
-		return FALSE
-	apc.toggle_breaker(user)
-	playsound(apc, 'sound/machines/terminal/terminal_off.ogg', 50, FALSE)
-	return TRUE
-
-// ===== BURST THE LIGHTS =====
-
-/**
- * The malf blackout, aimed at one APC instead of every APC on the station.
- *
- * It breaks the tubes directly rather than going through `overload_lighting()`, which
- * silently does nothing when the APC's cell is flat (apc_main.dm:732-736), a hack that
- * fails invisibly is worse than one that does not exist.
- */
-/datum/machine_quickhack/burst_lights
-	name = "Burst the Lights"
-	desc = "Push an APC's lighting circuit until every bulb in its area breaks. They stay broken."
-	radial_icon_state = "blackout"
-	cooldown = 30 SECONDS
-
-/datum/machine_quickhack/burst_lights/valid_for(atom/target, mob/living/user)
-	return isapc(target)
-
-/datum/machine_quickhack/burst_lights/execute(atom/target, mob/living/user)
-	var/obj/machinery/power/apc/apc = target
-	if(apc.aidisabled)
-		apc.balloon_alert(user, "no interface!")
-		return FALSE
-	var/burst = 0
-	for(var/obj/machinery/light/bulb as anything in apc.get_lights())
-		if(QDELETED(bulb))
-			continue
-		bulb.on = TRUE
-		bulb.break_light_tube()
-		burst++
-		CHECK_TICK
-	if(!burst)
-		apc.balloon_alert(user, "no lights on this circuit!")
-		return FALSE
-	playsound(apc, 'sound/effects/light_flicker.ogg', 60, FALSE)
-	to_chat(user, span_notice("Overcurrent applied. [burst] bulb\s gone."))
-	return TRUE
-
-// ===== FEEDBACK SURGE =====
-
-/**
- * The headline, and the part of the spec that has no prior art to lift: everything a
- * person is carrying that holds a charge dumps that charge into the person.
- *
- * The shock scales with what they were carrying, so this is a hard counter to somebody
- * walking around with an armoury and close to nothing against somebody in a jumpsuit.
- * SHOCK_NOGLOVES is deliberate, the current is coming out of their own belt, and
- * insulated gloves have nothing to do with it.
- */
-/datum/machine_quickhack/feedback_surge
-	name = "Feedback Surge"
-	desc = "Dump everything a person's gear is holding into the person. Empties every power cell they are carrying and shocks them for up to 60 burn, scaled to how much charge there was."
-	radial_icon = 'icons/obj/weapons/baton.dmi'
-	radial_icon_state = "stunbaton_active"
-	cooldown = 60 SECONDS
-
-/datum/machine_quickhack/feedback_surge/valid_for(atom/target, mob/living/user)
-	if(!isliving(target) || target == user)
-		return FALSE
-	var/mob/living/victim = target
-	return victim.stat != DEAD
-
-/datum/machine_quickhack/feedback_surge/execute(atom/target, mob/living/user)
-	var/mob/living/victim = target
-	var/drained = vestige_drain_carried_cells(victim)
-	if(drained <= 0)
-		victim.balloon_alert(user, "carrying nothing live!")
-		return FALSE
-
-	var/shock = clamp(round(drained / STANDARD_CELL_CHARGE) * COMMUNION_SURGE_PER_CELL, COMMUNION_SURGE_MIN, COMMUNION_SURGE_MAX)
-	victim.visible_message(
-		span_boldwarning("Everything [victim] is carrying goes off at once in a sheet of sparks!"),
-		span_userdanger("Every powered thing on you empties itself through you!"),
-	)
-	do_sparks(5, FALSE, victim)
-	playsound(victim, 'sound/items/weapons/egloves.ogg', 75, TRUE)
-	victim.electrocute_act(shock, user, flags = SHOCK_NOGLOVES|SHOCK_KNOCKDOWN)
-	victim.drop_all_held_items()
-	return TRUE
-
-// ===== CUTOUT =====
-
-/**
- * The quiet half of the same trick. No shock, no stun, no announcement, their gear
- * simply stops working and their radios stop transmitting, and they find out when they
- * pull a trigger. Half the cooldown, none of the damage.
- */
-/datum/machine_quickhack/cutout
-	name = "Cutout"
-	desc = "Quietly empty every power cell a person is carrying and switch their radios off for 45 seconds. No shock and no stun; their gear just stops."
-	radial_icon = 'icons/obj/weapons/baton.dmi'
-	radial_icon_state = "stunbaton_nocell"
-	cooldown = 35 SECONDS
-
-/datum/machine_quickhack/cutout/valid_for(atom/target, mob/living/user)
-	if(!isliving(target) || target == user)
-		return FALSE
-	var/mob/living/victim = target
-	return victim.stat != DEAD
-
-/datum/machine_quickhack/cutout/execute(atom/target, mob/living/user)
-	var/mob/living/victim = target
-	var/drained = vestige_drain_carried_cells(victim)
-	var/silenced = 0
-	for(var/obj/item/radio/radio in victim.get_all_contents())
-		if(communion_radio_off(radio))
-			silenced++
-	if(drained <= 0 && !silenced)
-		victim.balloon_alert(user, "carrying nothing live!")
-		return FALSE
-	to_chat(user, span_notice("[victim]'s gear goes quiet. [victim.p_they(TRUE)] [victim.p_do()]n't seem to have noticed."))
-	// The tell lands a beat later, and it is the only one they get.
-	addtimer(CALLBACK(src, PROC_REF(notice), victim), 2 SECONDS)
-	return TRUE
-
-/datum/machine_quickhack/cutout/proc/notice(mob/living/victim)
-	if(QDELETED(victim) || victim.stat == DEAD)
-		return
-	to_chat(victim, span_warning("Something in your gear clicks, and every charge light you can see goes out."))
-
-// ===== SILENCE =====
-
-/datum/machine_quickhack/silence
-	name = "Silence"
-	desc = "Jam every radio within nine tiles of what you clicked for 45 seconds, and switch the ones already in range off outright for as long."
-	radial_icon = 'icons/obj/devices/syndie_gadget.dmi'
-	radial_icon_state = "jammer"
-	cooldown = 40 SECONDS
-
-/datum/machine_quickhack/silence/valid_for(atom/target, mob/living/user)
-	var/turf/spot = get_turf(target)
-	if(isnull(spot))
-		return FALSE
-	// Only offered where there is somebody to silence. Jamming an empty corridor burns
-	// forty seconds for nothing, and this hack is targetable at almost anything.
-	for(var/mob/living/candidate in view(COMMUNION_JAM_RANGE, spot))
-		if(candidate != user)
-			return TRUE
-	return FALSE
-
-/datum/machine_quickhack/silence/execute(atom/target, mob/living/user)
-	var/turf/spot = get_turf(target)
-	if(isnull(spot))
-		return FALSE
-	new /obj/item/jammer/machine_communion(spot)
-	for(var/mob/living/holder in view(COMMUNION_JAM_RANGE, spot))
-		for(var/obj/item/radio/radio in holder.get_all_contents())
-			communion_radio_off(radio)
-	for(var/obj/item/radio/loose in view(COMMUNION_JAM_RANGE, spot))
-		communion_radio_off(loose)
-	to_chat(user, span_notice("Everything with an aerial around [target] stops talking."))
-	playsound(spot, 'sound/misc/interference.ogg', 40, TRUE)
-	return TRUE
-
-/**
- * The Silence bubble.
- *
- * `is_within_radio_jammer_range()` walks `GLOB.active_jammers` and reads `.range` off
- * each entry (traitordevices.dm:318-322), so the cheapest correct way to jam an area is
- * to be a jammer. Invisible, unclickable, and it deletes itself.
- */
-/obj/item/jammer/machine_communion
-	name = "silence"
-	desc = "You should not be able to see this."
-	invisibility = INVISIBILITY_ABSTRACT
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	anchored = TRUE
-	range = COMMUNION_JAM_RANGE
-
-/obj/item/jammer/machine_communion/Initialize(mapload)
-	. = ..()
-	active = TRUE
-	GLOB.active_jammers |= src
-	QDEL_IN(src, COMMUNION_JAM_DURATION)
 
 // =========================================================================
 // MASS HACK: THE ROOM BUTTON
@@ -2406,14 +1947,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 
 /// Mass hacks that have something to work on right now, from the caster's tile.
 /datum/action/cooldown/spell/mass_hack/proc/applicable_hacks(mob/living/user)
-	var/list/found = list()
-	var/turf/here = get_turf(user)
-	if(isnull(here))
-		return found
-	for(var/datum/machine_masshack/hack as anything in get_machine_masshacks())
-		if(hack.available(user, here))
-			found += hack
-	return found
+	return GLOB.communion_quickhack_kit.applicable_masshacks(user, get_turf(user))
 
 /// Menu validity: we still exist and still belong to this mob. Where they are standing
 /// when they confirm is where it lands, so there is nothing else to re-check.
@@ -2443,11 +1977,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	var/list/options = list()
 	var/list/by_name = list()
 	for(var/datum/machine_masshack/hack as anything in available)
-		var/datum/radial_menu_choice/option = new()
-		option.image = image(icon = hack.radial_icon, icon_state = hack.radial_icon_state)
-		option.name = hack.name
-		option.info = "[hack.desc] ([round(hack.cooldown / 600)] minute cooldown.)"
-		options[hack.name] = option
+		options[hack.name] = GLOB.communion_quickhack_kit.menu_option(hack)
 		by_name[hack.name] = hack
 
 	// Same reasoning as the quickhack radial: every one of these is expensive, so a room
@@ -2483,429 +2013,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 		return
 	user.log_message("used the [hack.name] mass hack with Machine Communion.", LOG_ATTACK)
 	message_admins("[ADMIN_LOOKUPFLW(user)] used the [hack.name] mass hack at [ADMIN_VERBOSEJMP(here)].")
-	StartCooldown(hack.cooldown)
-
-// =========================================================================
-// THE MASS HACKS
-// =========================================================================
-
-/**
- * One thing Mass Hack can do to one room. Stateless singletons like the quickhacks,
- * built once into a global list and shared by every owner, so nothing here may hold
- * per-cast state. Timers hang off the singleton, which is fine because it is never
- * deleted; anything a timer needs comes in as a callback argument.
- */
-/datum/machine_masshack
-	/// Shown on the radial slice.
-	var/name = "Mass Hack"
-	/// Shown in the slice's tooltip. Lead with the effect, then the numbers.
-	var/desc = ""
-	/// Radial slice icon.
-	var/radial_icon = 'icons/mob/actions/actions_AI.dmi'
-	/// Icon state paired with radial_icon.
-	var/radial_icon_state = "overload_machine"
-	/// Cooldown this hack puts on the ability.
-	var/cooldown = 2 MINUTES
-
-/// Is there anything in this room for this hack to do? Decides whether the slice is shown.
-/datum/machine_masshack/proc/available(mob/living/user, turf/center)
-	return FALSE
-
-/// Do it. Return TRUE if it landed; a FALSE return costs no cooldown.
-/datum/machine_masshack/proc/execute(mob/living/user, turf/center)
-	return FALSE
-
-/// Every mass hack, built once on demand.
-GLOBAL_LIST_EMPTY(machine_masshacks)
-
-/proc/get_machine_masshacks()
-	if(!length(GLOB.machine_masshacks))
-		for(var/datum/machine_masshack/hack_type as anything in subtypesof(/datum/machine_masshack))
-			GLOB.machine_masshacks += new hack_type()
-	return GLOB.machine_masshacks
-
-/**
- * The machines in a room that a mass hack may touch, nearest first, capped.
- *
- * The filter matters more here than it does for a single click, because the player is not
- * choosing the targets. Two things it deliberately drops that `ismachinery` would keep:
- *
- * - **Atmospherics.** Pipes, vents and scrubbers are machinery, most of a room's pipework
- *   is under the floor and invisible, and eating a distribution loop is not a hack, it is
- *   an atmos incident nobody asked for.
- * - **Anything hidden.** Power terminals and buried plumbing sit on the tile at
- *   INVISIBILITY_MAXIMUM. If the caster cannot see it, it is not "in the room".
- *
- * `standing_only` narrows it further to the free-standing machines, dense, and not a
- * door. That is the set Wake the Machines uses, because a light switch getting up and
- * walking around is not the effect anybody wants.
- *
- * `skip_lights` drops light fixtures. Overload the Room uses it so that a room with six
- * ceiling tubes does not spend half its twelve-machine budget on bulbs; it bursts them
- * separately and for free. Arc Flash deliberately leaves them in, a light tube arcing at
- * somebody is exactly the effect.
- */
-/proc/communion_mass_machines(turf/center, cap = COMMUNION_MASS_CAP, standing_only = FALSE, skip_lights = FALSE)
-	var/list/found = list()
-	if(isnull(center))
-		return found
-	var/static/list/mass_hack_blacklist = typecacheof(list(
-		/obj/machinery/atmospherics,
-		/obj/machinery/portable_atmospherics,
-		/obj/machinery/duct,
-		/obj/machinery/power/terminal,
-		// The cover is the closed turret's sprite standing in for the turret, which is in
-		// view right beside it. Taking both would double-count one object.
-		/obj/machinery/porta_turret_cover,
-	))
-	for(var/obj/machinery/machine in view(COMMUNION_MASS_RANGE, center))
-		if(machine.resistance_flags & INDESTRUCTIBLE)
-			continue
-		if(is_type_in_typecache(machine, GLOB.blacklisted_malf_machines) || is_type_in_typecache(machine, mass_hack_blacklist))
-			continue
-		if(machine.invisibility > SEE_INVISIBLE_LIVING)
-			continue
-		if(skip_lights && istype(machine, /obj/machinery/light))
-			continue
-		if(standing_only && (!machine.density || istype(machine, /obj/machinery/door)))
-			continue
-		found += machine
-
-	if(length(found) <= cap)
-		return found
-	// view() is documented nowhere as returning in distance order, and which machines get
-	// cut is the difference between a room hack and a corridor hack. Bucket by distance.
-	var/list/nearest = list()
-	for(var/distance in 0 to COMMUNION_MASS_RANGE)
-		for(var/obj/machinery/machine as anything in found)
-			if(get_dist(center, machine) != distance)
-				continue
-			nearest += machine
-			if(length(nearest) >= cap)
-				return nearest
-	return nearest
-
-// ===== OVERLOAD THE ROOM =====
-
-/**
- * The single-target Overload, applied to everything at once, at full strength.
- *
- * Every machine gets the same blast the single-target hack gives one, heavy 1, light 3,
- * so this is twelve real explosions in a room, not twelve small ones. It levels the room:
- * EXPLODE_HEAVY always dismantles a wall, EXPLODE_LIGHT takes one at `prob(hardness)`, and
- * an outer wall in the pattern means the compartment vents. One EXPLODE_LIGHT alone is 30
- * brute, sixteen seconds of knockdown and a real chance of losing a limb, and nobody
- * standing in this gets only one.
- *
- * There is exactly one piece of counterplay and everybody gets it, the caster included:
- * five seconds of every machine in the room buzzing at `span_userdanger`. Leave.
- *
- * Two things keep it from being unbounded rather than merely enormous. The twelve-machine
- * cap holds the tick cost and the blast pattern to something a room can contain, and the
- * 0.2s stagger means the blasts land one at a time, which also means a machine killed by
- * an earlier blast simply no-ops when its own timer comes up, so the cascade eats itself
- * from the middle outwards instead of double-counting.
- */
-/datum/machine_masshack/overload
-	name = "Overload the Room"
-	desc = "Feed every machine around you power at once, each one at full overload strength. Five seconds of the whole \
-		room buzzing, then up to twelve real explosions land a fifth of a second apart. It takes the walls with it and \
-		it will breach a hull if one is in the pattern. Lights just burst. Nothing that goes up comes back, and you are \
-		standing in the middle of it, leave."
-	radial_icon_state = "overload_machine"
-	cooldown = 3 MINUTES
-
-/datum/machine_masshack/overload/available(mob/living/user, turf/center)
-	return length(communion_mass_machines(center, skip_lights = TRUE)) > 0
-
-/datum/machine_masshack/overload/execute(mob/living/user, turf/center)
-	var/list/targets = communion_mass_machines(center, skip_lights = TRUE)
-	if(!length(targets))
-		return FALSE
-	user.playsound_local(user, 'sound/misc/interference.ogg', 60, FALSE)
-	playsound(center, SFX_SPARKS, 70, TRUE)
-	for(var/index in 1 to length(targets))
-		var/obj/machinery/victim = targets[index]
-		victim.audible_message(span_userdanger("[victim] starts buzzing, loudly."))
-		var/datum/callback/burst = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(communion_burst_machine), victim, COMMUNION_MASS_OVERLOAD_HEAVY, COMMUNION_MASS_OVERLOAD_LIGHT, COMMUNION_MASS_OVERLOAD_FLASH)
-		addtimer(burst, COMMUNION_MASS_OVERLOAD_DELAY + ((index - 1) * COMMUNION_MASS_OVERLOAD_STAGGER))
-	// Lights are outside the cap and go on the same clock, so the room goes dark as it goes up.
-	for(var/obj/machinery/light/bulb in view(COMMUNION_MASS_RANGE, center))
-		addtimer(CALLBACK(bulb, TYPE_PROC_REF(/obj/machinery/light, break_light_tube)), COMMUNION_MASS_OVERLOAD_DELAY)
-	to_chat(user, span_userdanger("Every machine in the room takes the charge. [length(targets)] of them. Get out."))
-	return TRUE
-
-// ===== ARC FLASH =====
-
-/**
- * Every powered thing in the room earths itself through whoever is standing nearest to it,
- * five times over seven and a half seconds.
- *
- * Deliberately not `tesla_zap`: that proc is a chain, it damages every machine and
- * structure it hops through, it electrolyses the air on each landing, and it recurses
- * unboundedly out of the room. What is wanted here is one arc per person per volley from
- * whatever machine happens to be nearest them, so it is written out longhand.
- *
- * Iterating victims rather than sources is what bounds the damage: it does not matter
- * whether somebody is standing in front of one machine or ten, they take one arc per
- * volley. Move out of the room and the volleys stop finding you.
- */
-/datum/machine_masshack/arc_flash
-	name = "Arc Flash"
-	desc = "Every powered machine around you starts earthing itself through whoever is standing nearest to it. Five \
-		volleys a second and a half apart, 14 burn each, and it comes out of the wall rather than through their hands, \
-		so insulated gloves do nothing. It hits everyone in the room except you, friend or not."
-	radial_icon = 'icons/mob/actions/actions_spells.dmi'
-	radial_icon_state = "lightning"
-	cooldown = 2 MINUTES
-
-/datum/machine_masshack/arc_flash/available(mob/living/user, turf/center)
-	if(!length(communion_arc_sources(center)))
-		return FALSE
-	for(var/mob/living/candidate in view(COMMUNION_MASS_RANGE, center))
-		if(candidate != user && candidate.stat != DEAD)
-			return TRUE
-	return FALSE
-
-/datum/machine_masshack/arc_flash/execute(mob/living/user, turf/center)
-	var/list/sources = communion_arc_sources(center)
-	if(!length(sources))
-		return FALSE
-	// The charged room moves with its ship, and unloading it must end the remaining arcs.
-	var/obj/effect/vestige_trial_marker/room = new(center)
-	QDEL_IN(room, COMMUNION_ARC_PULSES * COMMUNION_ARC_INTERVAL)
-	to_chat(user, span_boldwarning("Everything with a current in it starts looking for somewhere to put it."))
-	for(var/pulse in 1 to COMMUNION_ARC_PULSES)
-		addtimer(CALLBACK(src, PROC_REF(volley), WEAKREF(room), WEAKREF(user)), (pulse - 1) * COMMUNION_ARC_INTERVAL)
-	return TRUE
-
-/// One volley: everybody in the room takes an arc from the machine nearest them, if any.
-/datum/machine_masshack/arc_flash/proc/volley(datum/weakref/room_ref, datum/weakref/caster_ref)
-	var/turf/center = get_turf(room_ref?.resolve())
-	if(QDELETED(center))
-		return
-	var/mob/living/caster = caster_ref?.resolve()
-	// The sources are re-gathered every volley on purpose: a machine that lost power or
-	// was destroyed between volleys stops throwing, and so does one that was never on.
-	var/list/sources = communion_arc_sources(center)
-	if(!length(sources))
-		return
-	var/landed = 0
-	for(var/mob/living/victim in view(COMMUNION_MASS_RANGE, center))
-		if(victim == caster || victim.stat == DEAD)
-			continue
-		var/obj/machinery/source = communion_nearest_source(victim, sources)
-		if(isnull(source))
-			continue
-		source.Beam(victim, icon_state = "lightning[rand(1, 12)]", time = 0.4 SECONDS)
-		do_sparks(2, FALSE, victim)
-		// SHOCK_NOGLOVES because the current is coming out of the wall beside them rather
-		// than through anything they are holding. SHOCK_NOSTUN because five volleys of
-		// stock electrocution is a seven-second stunlock, and the counterplay is supposed
-		// to be walking out of the room.
-		victim.electrocute_act(COMMUNION_ARC_DAMAGE, source, flags = SHOCK_NOGLOVES|SHOCK_NOSTUN)
-		landed++
-	if(landed)
-		playsound(center, 'sound/effects/magic/lightningbolt.ogg', 50, TRUE)
-
-/// Powered machines in the room that could throw an arc.
-/proc/communion_arc_sources(turf/center)
-	var/list/sources = list()
-	for(var/obj/machinery/machine as anything in communion_mass_machines(center, cap = COMMUNION_MASS_CAP))
-		if(machine.is_operational)
-			sources += machine
-	return sources
-
-/// The nearest source with line of sight to this victim, or null if none is close enough.
-/proc/communion_nearest_source(mob/living/victim, list/sources)
-	var/obj/machinery/closest
-	var/closest_distance = COMMUNION_ARC_REACH + 1
-	for(var/obj/machinery/candidate as anything in sources)
-		if(QDELETED(candidate))
-			continue
-		var/distance = get_dist(candidate, victim)
-		if(distance >= closest_distance)
-			continue
-		if(!can_see(candidate, victim, COMMUNION_ARC_REACH))
-			continue
-		closest = candidate
-		closest_distance = distance
-	return closest
-
-// ===== WAKE THE MACHINES =====
-
-/**
- * The room stands up and takes your side.
- *
- * `/mob/living/basic/mimic/copy/machine` is the same mob the malf AI's Override Machine
- * animates (malf_ai_modules.dm:485), so the animation, the visuals, the stat block and the
- * melee are all upstream's. Three things are ours:
- *
- * - The AI controller uses `/datum/targeting_strategy/basic/not_friends`. The stock mimic
- *   uses plain `/basic`, which reads factions only, and `befriend` writes the owner's
- *   REF into the MIMIC'S faction list, not the owner's, so a plain faction check does not
- *   match and the machine happily attacks the person who woke it. `not_friends` is the
- *   strategy that reads `BB_FRIENDS_LIST`, which is the half of `befriend` that knows who
- *   woke this thing up.
- *
- *   The catch, and it bit: `not_friends` also overrides `faction_check` to return FALSE
- *   unconditionally, "friends dont care about factions". Factions stop being a reason to
- *   spare anyone at all, so two woken machines sharing FACTION_MIMIC will happily beat each
- *   other to death. The friends list is the ONLY authority under this strategy, which is why
- *   [/datum/machine_masshack/wake] introduces every machine in a batch to every other one
- *   after they are all built. Anything added here that should not be attacked has to go on
- *   that list; adding a faction will not do it.
- * - A clock. Woken machines fall apart after two minutes rather than wandering the ship
- *   until the stock idle decay finishes them.
- * - Twice the health and twice the melee, because eight of these have to be worth three
- *   minutes on the same button as Overload the Room.
- *
- * The machine is consumed, `destroy_original` is TRUE, same as the malf module, because
- * the alternative (storing it inside the mob and dropping it on death, which is what
- * animated structures do) means forceMoving live machinery into a mob's contents and all
- * the power and pipe bookkeeping that implies. It is a real cost and the desc says so.
- */
-/datum/machine_masshack/wake
-	name = "Wake the Machines"
-	desc = "Stand every free-standing machine in the room up to fight for you. Up to eight of them, twice as tough as an \
-		animated machine and hitting twice as hard, for two minutes before they fall apart. They know you and nobody \
-		else, everyone else in the room is a stranger to them. The machines do not come back."
-	radial_icon_state = "override_machine"
-	cooldown = 3 MINUTES
-
-/datum/machine_masshack/wake/available(mob/living/user, turf/center)
-	return length(communion_mass_machines(center, cap = COMMUNION_WAKE_CAP, standing_only = TRUE)) > 0
-
-/datum/machine_masshack/wake/execute(mob/living/user, turf/center)
-	var/list/targets = communion_mass_machines(center, cap = COMMUNION_WAKE_CAP, standing_only = TRUE)
-	if(!length(targets))
-		return FALSE
-	user.playsound_local(user, 'sound/misc/interference.ogg', 60, FALSE)
-	var/list/woken = list()
-	for(var/obj/machinery/sleeper as anything in targets)
-		sleeper.audible_message(span_userdanger("[sleeper] shudders, and stands up."))
-		var/mob/living/basic/mimic/copy/machine/communion/risen = new(get_turf(sleeper), sleeper, user, TRUE)
-		if(!QDELETED(risen))
-			woken += risen
-	if(!length(woken))
-		return FALSE
-	// Introduce the batch to each other, or they fight each other instead of anyone else.
-	// Sharing FACTION_MIMIC does NOT cover this: not_friends overrides `faction_check` to
-	// return FALSE unconditionally, so factions stop being a reason to spare anybody and the
-	// friends list becomes the only one. See [/mob/living/basic/mimic/copy/machine/communion].
-	for(var/mob/living/first as anything in woken)
-		for(var/mob/living/second as anything in woken)
-			if(first != second)
-				first.befriend(second)
-	to_chat(user, span_boldnotice("[length(woken)] of them get up. They know your face and each other's, and nobody else's."))
-	return TRUE
-
-/**
- * A machine woken by the capstone. See [/datum/machine_masshack/wake] for why each
- * difference from the stock animated machine is there.
- */
-/mob/living/basic/mimic/copy/machine/communion
-	ai_controller = /datum/ai_controller/basic_controller/mimic_copy/machine/communion
-
-/datum/ai_controller/basic_controller/mimic_copy/machine/communion
-	// not_friends is the whole point. See the file comment. It reads BB_FRIENDS_LIST,
-	// which is the half of befriend() that actually knows who woke this thing up.
-	blackboard = list(
-		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/not_friends,
-	)
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/random_speech/when_has_target/communion_machine,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
-
-/datum/ai_planning_subtree/random_speech/when_has_target/communion_machine
-	speech_chance = 6
-	emote_hear = list()
-	speak = list(
-		"Clear the room.",
-		"You are not on the list.",
-		"Stand still.",
-		"Instruction received.",
-		"This is being logged.",
-		"Stop moving.",
-	)
-
-// The stat block is set by CopyObject inside the parent's Initialize, so the scaling has
-// to come after it. no_googlies defaults on because the stock mimic's googly eyes are the
-// joke read of this mob and the wrong one here; the outline does the same job of telling
-// the room which vending machine is somebody's.
-/mob/living/basic/mimic/copy/machine/communion/Initialize(mapload, obj/copy, mob/living/creator, destroy_original = TRUE, no_googlies = TRUE)
-	. = ..()
-	maxHealth = round(maxHealth * COMMUNION_WAKE_SCALE)
-	health = maxHealth
-	melee_damage_lower = round(melee_damage_lower * COMMUNION_WAKE_SCALE)
-	melee_damage_upper = round(melee_damage_upper * COMMUNION_WAKE_SCALE)
-	// The stock decay exists so an animated object with nothing to kill eventually stops.
-	// This one has a hard clock instead, so it does not quietly die mid-fight for standing
-	// still, and does not outlive its two minutes for having something to chase.
-	idledamage = FALSE
-	add_filter(COMMUNION_WAKE_FILTER, 2, list("type" = "outline", "color" = COMMUNION_WAKE_COLOR, "size" = 1))
-	addtimer(CALLBACK(src, PROC_REF(fall_apart)), COMMUNION_WAKE_DURATION)
-
-/mob/living/basic/mimic/copy/machine/communion/proc/fall_apart()
-	if(QDELETED(src) || stat == DEAD)
-		return
-	visible_message(span_warning("[src] stops dead, and falls over."))
-	playsound(src, SFX_SPARKS, 50, TRUE)
-	death()
-
-// ===== SHARED HELPERS =====
-
-/**
- * Switches a radio off the way an EMP does, and books the same recovery.
- *
- * `set_broadcasting(FALSE)` is NOT this: broadcasting is the open-mic hot function,
- * already off on every standard headset, and `talk_into` ignores it entirely
- * (radio.dm:233-234 says so in as many words). The switch that actually gates both
- * talking and hearing is `on`, and riding the radio's own EMP bookkeeping
- * (`emped` + [/obj/item/radio/proc/end_emp_effect]) means a real EMP landing
- * mid-outage extends it instead of having it cancelled by our recovery timer.
- *
- * Returns TRUE if the radio was on and is now off.
- */
-/proc/communion_radio_off(obj/item/radio/radio, duration = COMMUNION_RADIO_OFF_DURATION)
-	if(QDELETED(radio) || !radio.on)
-		return FALSE
-	radio.emped++
-	radio.set_on(FALSE)
-	addtimer(CALLBACK(radio, TYPE_PROC_REF(/obj/item/radio, end_emp_effect), radio.emped), duration)
-	return TRUE
-
-/**
- * Empties every power cell inside an atom and returns the total charge taken, in joules.
- *
- * Works off `get_cell()`, which is the codebase's one honest answer to "does this thing
- * hold a charge", energy guns, security batons, MOD suits, tablets, defibs, cyborgs and
- * bare cells all implement it. Cells are deduplicated because a gun and the cell inside
- * it both show up in `get_all_contents()` and both resolve to the same cell.
- */
-/proc/vestige_drain_carried_cells(atom/holder)
-	if(QDELETED(holder))
-		return 0
-	var/total = 0
-	var/list/already_drained = list()
-	for(var/atom/movable/thing as anything in holder.get_all_contents())
-		if(thing == holder)
-			continue
-		var/obj/item/stock_parts/power_store/cell = thing.get_cell()
-		if(isnull(cell) || (cell in already_drained))
-			continue
-		already_drained += cell
-		if(cell.charge <= 0)
-			continue
-		total += cell.use(cell.charge, TRUE)
-		cell.update_appearance()
-		if(thing != cell)
-			thing.update_appearance()
-	return total
+	StartCooldown(GLOB.communion_quickhack_kit.hack_cooldown(hack))
 
 #undef WARFRAME_SECOND_ROUND_THRESHOLD
 #undef WARFRAME_ROUND_CHANGE_TIME
@@ -2952,29 +2060,3 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 #undef BB_WARFRAME_LIVE_FLOOR
 #undef BB_WARFRAME_LAST_ABILITY
 #undef COMMUNION_RANGE
-#undef COMMUNION_ELECTRIFY_SECONDS
-#undef COMMUNION_ELECTRIFY_DAMAGE
-#undef COMMUNION_ELECTRIFY_STUN
-#undef COMMUNION_OVERLOAD_DELAY
-#undef COMMUNION_JAM_RANGE
-#undef COMMUNION_JAM_DURATION
-#undef COMMUNION_RADIO_OFF_DURATION
-#undef COMMUNION_SURGE_PER_CELL
-#undef COMMUNION_SURGE_MAX
-#undef COMMUNION_SURGE_MIN
-#undef COMMUNION_MASS_RANGE
-#undef COMMUNION_MASS_CAP
-#undef COMMUNION_MASS_OVERLOAD_DELAY
-#undef COMMUNION_MASS_OVERLOAD_STAGGER
-#undef COMMUNION_MASS_OVERLOAD_HEAVY
-#undef COMMUNION_MASS_OVERLOAD_LIGHT
-#undef COMMUNION_MASS_OVERLOAD_FLASH
-#undef COMMUNION_ARC_PULSES
-#undef COMMUNION_ARC_INTERVAL
-#undef COMMUNION_ARC_REACH
-#undef COMMUNION_ARC_DAMAGE
-#undef COMMUNION_WAKE_CAP
-#undef COMMUNION_WAKE_DURATION
-#undef COMMUNION_WAKE_SCALE
-#undef COMMUNION_WAKE_FILTER
-#undef COMMUNION_WAKE_COLOR

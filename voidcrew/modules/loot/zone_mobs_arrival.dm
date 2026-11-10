@@ -18,8 +18,20 @@
  * stays behind as free furniture.
  */
 /proc/zone_mobs_pod_drop(mob_path, turf/spot, datum/npc_spawn_context/context, datum/pod_style/style = /datum/pod_style)
+	// A human NPC is built by the spawn queue (human_npc_spawning.dm), then goes in its pod the same tick
+	if(ispath(mob_path, /mob/living/carbon/human/npc))
+		spawn_human_npc(mob_path, spot, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(zone_mobs_pod_send), spot, style), context = context)
+		return
 	var/obj/structure/closet/supplypod/podspawn/pod = new(null, style)
 	spawn_npc_in_zone(mob_path, pod, context)
+	new /obj/effect/pod_landingzone(spot, pod)
+
+/// Puts a human NPC the spawn queue has just built into a pod and drops it on the spot.
+/proc/zone_mobs_pod_send(turf/spot, datum/pod_style/style, mob/living/body)
+	if(QDELETED(body))
+		return
+	var/obj/structure/closet/supplypod/podspawn/pod = new(null, style)
+	body.forceMove(pod)
 	new /obj/effect/pod_landingzone(spot, pod)
 
 /**
@@ -35,7 +47,14 @@
 		return
 	playsound(spot, 'sound/effects/shovel_dig.ogg', 60, TRUE)
 	new /obj/effect/decal/cleanable/rubble(spot)
-	var/mob/living/body = spawn_npc_in_zone(mob_path, spot, context)
+	// A human NPC is built by the spawn queue (human_npc_spawning.dm) and climbs out as it appears
+	if(ispath(mob_path, /mob/living/carbon/human/npc))
+		spawn_human_npc(mob_path, spot, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(zone_mobs_emerge_rise)), context = context)
+		return
+	zone_mobs_emerge_rise(spawn_npc_in_zone(mob_path, spot, context))
+
+/// The mob rises out of the ground it was just made on.
+/proc/zone_mobs_emerge_rise(mob/living/body)
 	if(!isliving(body) || QDELETED(body))
 		return
 	// Parallel and relative so a mob's own idle animation (floating, bobbing) survives

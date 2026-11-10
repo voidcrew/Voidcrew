@@ -24,9 +24,7 @@
 
 /// How often mess, air and rats are refreshed, in seconds
 #define PRISON_MESS_REFRESH_SECONDS 5
-/// Seconds per step of damage from bad air
-#define PRISON_AIR_STEP_SECONDS 5
-/// Percent chance a prisoner hurt by bad air says so
+/// Percent chance a prisoner on bad air says so, each check
 #define PRISON_AIR_LINE_CHANCE 15
 
 /// Mess weight by type (see PRISON_MESS_WEIGHT_*); types not listed are not mess
@@ -530,7 +528,7 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
 /datum/outpost_prison/proc/check_battery()
 	var/battery = battery_percent()
 	if(!isnull(battery) && !isnull(last_battery) && last_battery >= PRISON_BATTERY_WARNING && battery < PRISON_BATTERY_WARNING)
-		var/mob/living/basic/outpost_prisoner/speaker = pick_conditions_speaker()
+		var/mob/living/carbon/human/npc/outpost_prisoner/speaker = pick_conditions_speaker()
 		if(speaker?.say_context("lights_flicker"))
 			note_speech()
 	last_battery = battery
@@ -572,7 +570,7 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
  * no power costs in proportion; a clean, lit, powered wing is a small comfort; and a dark cell of
  * their own costs a little more.
  */
-/mob/living/basic/outpost_prisoner/proc/wing_mood_per_minute()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/wing_mood_per_minute()
 	var/loss = 0
 	var/gain = 0
 	if(prison && trouble != PRISONER_TROUBLE_LOOSE)
@@ -587,20 +585,18 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
 
 // ===== AIR =====
 
-/// Prisoners on bad air lose a little health every PRISON_AIR_STEP_SECONDS, never below PRISON_AIR_HEALTH_FLOOR percent
+/**
+ * Bad air is tg's own: prisoners breathe like anyone, and a breach, a fire or a plasma leak hurts them
+ * the way it hurts the crew. Each check, a prisoner on bad air may say so, and goes for a mask and a tank
+ * from the cell block's emergency locker (outpost_prison_breach.dm); once they wear one, they breathe
+ * from it while the air is bad.
+ */
 /datum/outpost_prison/proc/air_tick(seconds)
-	var/steps = max(1, round(seconds / PRISON_AIR_STEP_SECONDS))
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD || !outpost_prison_unsafe_air(prisoner.loc?.return_air()))
 			continue
-		var/hurt = FALSE
-		for(var/i in 1 to steps)
-			var/above_floor = prisoner.health - prisoner.maxHealth * PRISON_AIR_HEALTH_FLOOR / 100
-			if(above_floor <= 0)
-				break
-			prisoner.adjustBruteLoss(min(PRISON_AIR_DAMAGE, above_floor))
-			hurt = TRUE
-		if(hurt && prisoner.stat == CONSCIOUS && prob(PRISON_AIR_LINE_CHANCE) && wing_can_speak() && prisoner.say_context("no_air"))
+		prisoner.on_bad_air()
+		if(prisoner.stat == CONSCIOUS && prob(PRISON_AIR_LINE_CHANCE) && wing_can_speak() && prisoner.say_context("no_air"))
 			note_speech()
 
 /// Whether air is too thin, too thick, too hot, too cold or too full of plasma to live in
@@ -652,7 +648,7 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
 	var/mob/living/basic/mouse/rat = new(spot)
 	rat_refs += WEAKREF(rat)
 	log_game("PLAYER OUTPOST PRISON: a rat turned up in the prison wing at '[outpost?.name]'")
-	for(var/mob/living/basic/outpost_prisoner/prisoner in view(7, spot))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in view(7, spot))
 		if(prisoner.prison == src && prisoner.stat == CONSCIOUS && prisoner.say_context("rat"))
 			note_speech()
 			break
@@ -661,7 +657,7 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
 /// Someone in the wing to remark on its state
 /datum/outpost_prison/proc/pick_conditions_speaker()
 	var/list/candidates = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat == CONSCIOUS && prisoner.trouble != PRISONER_TROUBLE_LOOSE)
 			candidates += prisoner
 	return length(candidates) ? pick(candidates) : null
