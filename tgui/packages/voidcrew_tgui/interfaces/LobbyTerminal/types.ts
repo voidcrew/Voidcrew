@@ -212,7 +212,12 @@ export type Outpost = {
   cleared: BooleanLike;
   /** Short in-character reason MOVE IN is refused, or null. */
   denial: string | null;
+  /** Seconds left on a wrong-code lockout. */
   code_wait?: number;
+  /** INVITE outposts: the player may ask to move in. */
+  can_ask?: BooleanLike;
+  /** A move-in request from this player is still fresh. */
+  asked?: BooleanLike;
 };
 
 export type HousingData = {
@@ -268,4 +273,5 @@ export type LobbyActions = {
   yard_requisition: { leave_crew: 0 | 1 };
   yard_load: { slot: number; leave_crew: 0 | 1 };
   home_move_in: { outpost: string; code?: string };
+  home_request: { outpost: string };
 };
