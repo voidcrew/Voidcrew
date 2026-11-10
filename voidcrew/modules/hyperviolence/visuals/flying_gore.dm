@@ -12,8 +12,9 @@
 // still asks for its throw at the end; a part marked to tumble turns that into a flight
 // (/obj/item/bodypart/throw_at() below).
 
-/// Set while a burst head throws its gibs, so they arc.
-GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
+/// Set while a burst head throws its gibs, so they arc: where the head is drawn on its tile
+/// (list(x, y) in pixels from the middle), which is where they start from.
+GLOBAL_LIST(hv_vis_arcing_gibs)
 
 /obj/item
 	/// Hyperviolence visuals: set just before a body part or organ comes off a body, so it tumbles as
@@ -405,30 +406,35 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 	var/list/obj/item/organ/marked = list()
 	if(head?.can_dismember() && !HAS_TRAIT(src, TRAIT_GODMODE))
 		var/list/blood_dna = can_bleed() ? get_blood_dna_list() : null
+		// Everything comes out of the head, wherever that is on a body standing or lying.
+		var/list/head_at = hv_vis_part_offset(BODY_ZONE_HEAD)
 		for(var/obj/item/organ/organ in head)
-			organ.hv_vis_tumble = istype(organ, /obj/item/organ/brain) ? HV_VIS_TUMBLE_BRAIN : HV_VIS_TUMBLE_ORGAN
+			organ.hv_vis_tumble = organ.hv_vis_tumble_style()
 			organ.hv_vis_tumble_dna = blood_dna
+			organ.hv_vis_fling_from = head_at
 			marked += organ
+		GLOB.hv_vis_arcing_gibs = head_at
 		// Before the burst, so the death it causes sees the blow was a big one.
 		hv_vis_big_hit(burst_dir)
-	GLOB.hv_vis_arcing_gibs = TRUE
 	. = ..()
-	GLOB.hv_vis_arcing_gibs = FALSE
+	GLOB.hv_vis_arcing_gibs = null
 	for(var/obj/item/organ/organ as anything in marked)
 		if(!QDELETED(organ))
 			organ.hv_vis_forget_fling()
 
-/// Gibs thrown by a burst head rise and fall as they fly, turning over.
+/// Gibs thrown by a burst head leave from the head, rise and fall as they fly, and turn over once.
 /obj/effect/decal/cleanable/blood/gibs/streak(list/directions, mapload = FALSE)
-	var/arcing = GLOB.hv_vis_arcing_gibs && !mapload
+	var/list/head_at = mapload ? null : GLOB.hv_vis_arcing_gibs
 	. = ..()
-	if(arcing && !QDELETED(src) && isturf(loc) && has_gravity() > 0)
+	if(head_at && !QDELETED(src) && isturf(loc) && has_gravity() > 0)
 		var/matrix/base = matrix(transform)
 		var/height = rand(8, 14)
-		var/turn = pick(-1, 1) * rand(90, 200)
 		hv_vis_play(HV_VIS_TAG_ARC, list(
-			list(pixel_w, pixel_z + height, hv_vis_turned(base, turn / 2), 2, QUAD_EASING|EASE_OUT),
-			list(pixel_w, pixel_z, hv_vis_turned(base, turn), 2.5, QUAD_EASING|EASE_IN),
-			list(pixel_w, pixel_z + 2, hv_vis_turned(base, turn), 0.7, QUAD_EASING|EASE_OUT),
+			list(pixel_w + head_at[1], pixel_z + head_at[2], base, 0, LINEAR_EASING),
+			list(pixel_w + head_at[1] / 2, pixel_z + head_at[2] / 2 + height, base, 2, QUAD_EASING|EASE_OUT),
+			list(pixel_w, pixel_z, base, 2.5, QUAD_EASING|EASE_IN),
+			list(pixel_w, pixel_z + 2, base, 0.7, QUAD_EASING|EASE_OUT),
 			list(pixel_w, pixel_z, base, 1.5, BOUNCE_EASING),
 		))
+		// One whole turn over the flight, so it lands as it lies: no turning back at the end.
+		hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(src, 1, 4.5, pick(-1, 1)))

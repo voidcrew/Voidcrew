@@ -28,6 +28,9 @@
 	var/bleeds = head.can_bleed()
 	var/list/blood_dna = bleeds ? get_blood_dna_list() : null
 	var/blood_color = bleeds ? get_bloodtype()?.get_color() : null
+	// Where the head is drawn right now, standing or lying: the burst comes out of it, not out of the
+	// middle of the body. Read before the head comes off, which drops a standing body.
+	var/list/head_at = hv_vis_part_offset(BODY_ZONE_HEAD)
 	// everything inside the head that can come out: brain, eyes, ears, tongue, and whatever was implanted
 	var/list/obj/item/organ/loose = list()
 	for(var/obj/item/organ/organ in head)
@@ -55,7 +58,7 @@
 			new /obj/effect/gibspawner/robot(here, src)
 		else if(bleeds)
 			hv_spawn_head_gibs(here, burst_dir, blood_dna)
-			hv_head_burst_splatter(here, burst_dir, blood_color)
+			hv_head_burst_splatter(here, burst_dir, blood_color, head_at)
 		playsound(here, 'sound/effects/wounds/splatter.ogg', 80, TRUE)
 
 	for(var/obj/item/organ/organ as anything in loose)
@@ -103,10 +106,19 @@
 	new /obj/effect/decal/cleanable/blood/gibs/core(where, null, blood_dna)
 
 /// The short burst itself: blood and a pale smear of brain thrown out of the head along the blow.
-/proc/hv_head_burst_splatter(turf/where, burst_dir, blood_color)
+/// head_at is where the head is drawn on the tile (list(x, y) in pixels from its middle), so the burst
+/// starts at the head of a body on its feet or on the floor; without it, it starts at the middle.
+/proc/hv_head_burst_splatter(turf/where, burst_dir, blood_color, list/head_at)
+	var/list/obj/effect/splatters = list()
 	for(var/angle in list(0, 45, -45))
-		new /obj/effect/temp_visual/dir_setting/bloodsplatter(where, turn(burst_dir, angle), blood_color)
-	new /obj/effect/temp_visual/dir_setting/bloodsplatter(where, burst_dir, "#c9a0ac")
+		splatters += new /obj/effect/temp_visual/dir_setting/bloodsplatter(where, turn(burst_dir, angle), blood_color)
+	splatters += new /obj/effect/temp_visual/dir_setting/bloodsplatter(where, burst_dir, "#c9a0ac")
+	if(!head_at)
+		return
+	// pixel_w and pixel_z: tg's splatter animates its own pixel_x and pixel_y outward.
+	for(var/obj/effect/splatter as anything in splatters)
+		splatter.pixel_w += head_at[1]
+		splatter.pixel_z += head_at[2]
 
 /// Whether a blow that is about to knock this head off should burst it instead. Rare on purpose: the
 /// victim must already be dead or in hard crit, the head already half destroyed, and the blow a heavy
