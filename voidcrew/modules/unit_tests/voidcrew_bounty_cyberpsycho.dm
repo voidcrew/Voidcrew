@@ -184,17 +184,18 @@
 	TEST_ASSERT_NULL(psycho.gloves, "The cyberpsycho wears gloves over its arms")
 	TEST_ASSERT(psycho.boss_gear_text(), "The cyberpsycho has no gear line on examine")
 	// Its two stimulants and a bruise pack, as every mini-boss, where it can reach them; no bag over its spine rig
-	TEST_ASSERT_EQUAL(length(psycho.get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen/stimpack)), 2, "The cyberpsycho doesn't carry its two stimulants") // BOUNTY_BOSS_STIMULANTS
+	TEST_ASSERT_EQUAL(length(psycho.get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen/stimpack)) - length(psycho.get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen/stimpack/traitor)), 2, "The cyberpsycho doesn't carry its two stimulants") // BOUNTY_BOSS_STIMULANTS
+	// Its combat stimpack rides in a pocket, the bum bag being full (BOUNTY_BOSS_COMBAT_STIMULANT)
+	var/obj/item/combat_pen = locate(/obj/item/reagent_containers/hypospray/medipen/stimpack/traitor) in list(psycho.l_store, psycho.r_store)
+	TEST_ASSERT_NOTNULL(combat_pen, "The cyberpsycho has no combat stimpack in a pocket")
+	TEST_ASSERT_EQUAL(length(psycho.get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen/stimpack/traitor)), 1, "The cyberpsycho doesn't carry one combat stimpack")
+	TEST_ASSERT(human_npc_gear_consumable(combat_pen), "The cyberpsycho's combat stimpack isn't issued to it")
 	TEST_ASSERT(length(psycho.get_all_contents_type(/obj/item/stack/medical/bruise_pack)), "The cyberpsycho carries nothing to patch itself up with")
 	TEST_ASSERT_NOTNULL(bounty_ai_find_injector(psycho, /obj/item/reagent_containers/hypospray/medipen/stimpack), "The cyberpsycho can't reach its stimulants")
 	TEST_ASSERT_NULL(psycho.back, "The cyberpsycho wears [psycho.back] over its spine rig")
-	// In the void, a soft suit: it wears no armour in good air either
+	// In the void, a civilian MODsuit: it wears no armour in good air either
 	var/list/gear = bounty_vacuum_gear(psycho)
-	var/soft = FALSE
-	for(var/list/suit as anything in GLOB.bounty_soft_suits)
-		if(length(gear) == 2 && suit[1] == gear[1] && suit[2] == gear[2])
-			soft = TRUE
-	TEST_ASSERT(soft, "The cyberpsycho's void suit isn't a soft one: [jointext(gear, ", ")]")
+	TEST_ASSERT(length(gear) == 1 && gear[1] == /obj/item/mod/control/pre_equipped/bounty_boss/civilian, "The cyberpsycho's void suit isn't a civilian MODsuit: [jointext(gear, ", ")]")
 
 	// Dead, its chrome burns out to scrap, all six pieces
 	var/turf/here = get_turf(psycho)

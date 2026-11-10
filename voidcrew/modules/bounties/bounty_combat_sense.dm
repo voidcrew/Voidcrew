@@ -3,8 +3,8 @@
  * criminals and their companions. Meek criminals (they run), decoys (patrons) and bosses (their own
  * stimulant and fallback, bounty_boss.dm) don't have it.
  *
- * What they carry: a Wanted normal criminal also packs a stimpack, a Most Wanted one a combat stimpack
- * (bounty_ai_normal.dm, bounty_build_outfit()), used when it tires in a fight, when its style leaves a
+ * What they carry: a Wanted normal criminal also packs a stimpack (bounty_ai_normal.dm,
+ * bounty_build_outfit(); every Most Wanted is a mini-boss with its own pens), used when it tires in a fight, when its style leaves a
  * pocket free (brawler, club, bottle, shotgun; not pistol or knife). Petty criminals and companions carry
  * none. Under stun fire a criminal whose style shoots or throws from range runs for
  * cover; a brawler, knife, club or shotgun style charges the shooter. Cover stays on the criminal's leash

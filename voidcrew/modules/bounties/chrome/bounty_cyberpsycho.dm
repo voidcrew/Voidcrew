@@ -124,7 +124,7 @@
 /mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho/bounty_build_outfit(zone)
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/cyberpsycho))
 
-// No bag over its spine rig: its stimulants and bruise pack ride in a bum bag, where it reaches them as any boss reaches its bag
+// No bag over its spine rig: its stimulants and bruise pack ride in a bum bag, where it reaches them as any boss reaches its bag. The bag holds three, so its combat stimpack rides in a pocket.
 /mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho/boss_supplies(datum/outfit/outfit)
 	if(!istype(outfit))
 		return outfit
@@ -132,6 +132,10 @@
 	LAZYINITLIST(outfit.belt_contents)
 	outfit.belt_contents[BOUNTY_BOSS_STIMULANT] = BOUNTY_BOSS_STIMULANTS
 	outfit.belt_contents[/obj/item/stack/medical/bruise_pack] = 1
+	if(isnull(outfit.l_pocket))
+		outfit.l_pocket = BOUNTY_BOSS_COMBAT_STIMULANT
+	else if(isnull(outfit.r_pocket))
+		outfit.r_pocket = BOUNTY_BOSS_COMBAT_STIMULANT
 	return outfit
 
 // Its chrome is its kit: it dresses to show it (C0's bounty_chrome_expose_outfit())

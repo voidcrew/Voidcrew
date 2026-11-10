@@ -232,9 +232,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss))
 
 /**
- * Packs what every boss carries into `outfit`, an instance: BOUNTY_BOSS_STIMULANTS stimulant pens (its
- * combat sense uses them when it tires) and a bruise pack, in a bag on its back (one is added if it wears
- * none). Returns the outfit.
+ * Packs what every boss carries into `outfit`, an instance: BOUNTY_BOSS_STIMULANTS stimulant pens and one
+ * combat stimpack (BOUNTY_BOSS_COMBAT_STIMULANT; its combat sense uses them when it tires, one at a time)
+ * and a bruise pack, in a bag on its back (one is added if it wears none; in vacuum its MODsuit's storage
+ * takes them, bounty_suits.dm). They are consumables: used up, never loot (human_npc_gear.dm). Returns
+ * the outfit.
  */
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_supplies(datum/outfit/outfit)
 	if(!istype(outfit))
@@ -242,6 +244,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	outfit.back ||= /obj/item/storage/backpack
 	LAZYINITLIST(outfit.backpack_contents)
 	outfit.backpack_contents[BOUNTY_BOSS_STIMULANT] = (outfit.backpack_contents[BOUNTY_BOSS_STIMULANT] || 0) + BOUNTY_BOSS_STIMULANTS
+	outfit.backpack_contents[BOUNTY_BOSS_COMBAT_STIMULANT] = (outfit.backpack_contents[BOUNTY_BOSS_COMBAT_STIMULANT] || 0) + 1
 	outfit.backpack_contents[/obj/item/stack/medical/bruise_pack] = (outfit.backpack_contents[/obj/item/stack/medical/bruise_pack] || 0) + 1
 	return outfit
 

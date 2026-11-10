@@ -386,9 +386,8 @@
 
 	var/mob/living/carbon/human/npc/bounty_criminal/normal/most_wanted = make_normal_criminal(3, "club", tile(0, 4)) // BOUNTY_TIER_MOST_WANTED
 	TEST_ASSERT_NOTNULL(most_wanted, "Test fixture: no Most Wanted criminal was made")
-	var/obj/item/reagent_containers/hypospray/medipen/combat_stim = human_npc_find_stim(most_wanted)
-	TEST_ASSERT_NOTNULL(combat_stim, "A Most Wanted club fighter carries no stimulant")
-	TEST_ASSERT_EQUAL(combat_stim.type, /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor, "A Most Wanted club fighter doesn't carry a combat stimpack")
+	// Every Most Wanted is a mini-boss, which carries the combat stimpack (boss_supplies()); a plain one made by hand carries none
+	TEST_ASSERT_NULL(human_npc_find_stim(most_wanted), "A plain Most Wanted club fighter carries a stimulant")
 
 	var/mob/living/carbon/human/npc/bounty_criminal/normal/gunman = make_normal_criminal(2, "pistol", tile(4, 4)) // BOUNTY_STYLE_PISTOL
 	TEST_ASSERT_NOTNULL(gunman, "Test fixture: no Wanted gunman was made")

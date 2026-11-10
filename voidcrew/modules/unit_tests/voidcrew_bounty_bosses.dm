@@ -157,7 +157,12 @@
 		TEST_ASSERT(boss.status_flags & CANSTUN, "[kit_type] can't be stunned")
 		TEST_ASSERT(boss.status_flags & CANKNOCKDOWN, "[kit_type] can't be knocked down")
 		// Its stimulants and a bruise pack, carried for real, the pens used by its combat sense (C8).
-		TEST_ASSERT_EQUAL(carried(boss, /obj/item/reagent_containers/hypospray/medipen/stimpack), 2, "[kit_type] doesn't carry its two stimulants") // BOUNTY_BOSS_STIMULANTS
+		TEST_ASSERT_EQUAL(carried(boss, /obj/item/reagent_containers/hypospray/medipen/stimpack) - carried(boss, /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor), 2, "[kit_type] doesn't carry its two stimulants") // BOUNTY_BOSS_STIMULANTS
+		// And one combat stimpack, issued to it: used up or gone, never loot (BOUNTY_BOSS_COMBAT_STIMULANT)
+		TEST_ASSERT_EQUAL(carried(boss, /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor), 1, "[kit_type] doesn't carry one combat stimpack")
+		var/obj/item/reagent_containers/hypospray/medipen/combat_pen = locate(/obj/item/reagent_containers/hypospray/medipen/stimpack/traitor) in boss.get_all_contents()
+		TEST_ASSERT(human_npc_gear_consumable(combat_pen), "[kit_type]'s combat stimpack isn't issued to it")
+		TEST_ASSERT(human_npc_can_draw(boss, combat_pen), "[kit_type] can't reach its combat stimpack")
 		TEST_ASSERT(carried(boss, /obj/item/stack/medical/bruise_pack) >= 1, "[kit_type] carries nothing to patch itself up with")
 		var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
 		TEST_ASSERT(istype(sense?.rules, /datum/npc_combat_sense/bounty/boss), "[kit_type] has no boss combat sense")
@@ -817,8 +822,11 @@
 	TEST_ASSERT(boss.boss_fallback_until > world.time, "A worn-out boss has no fall back")
 	TEST_ASSERT(!boss.boss_can_use_ability(), "A boss falling back can still start an ability")
 
-	// No pens left: it just falls back, and once that is over it fights on.
+	// No pens left: it just falls back, and once that is over it fights on. Its combat stimpack, its third pen, goes too.
 	boss.reagents.clear_reagents()
+	for(var/obj/item/reagent_containers/hypospray/medipen/left as anything in boss.get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen))
+		if(human_npc_is_stim(left))
+			qdel(left)
 	TEST_ASSERT_NULL(human_npc_find_stim(boss), "Test fixture: the boss still has a stimulant")
 	TEST_ASSERT_EQUAL(worn.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "With no pens left, the worn-out boss didn't fall back")
 	TEST_ASSERT(!controller.current_behaviors[stim], "With no pens left, it tried to use one")

@@ -17,6 +17,10 @@
 #define BOUNTY_BOSS_STIMULANT /obj/item/reagent_containers/hypospray/medipen/stimpack
 /// How many of BOUNTY_BOSS_STIMULANT it carries: one for when it first tires, one for a long fight (an ephedrine pen lasts about 100 s). (phase D)
 #define BOUNTY_BOSS_STIMULANTS 2
+/// Its combat stimpack, one per kit beside BOUNTY_BOSS_STIMULANTS: stimulants and omnizine, used through the same combat sense rule as the others, never while a stimulant is still in its blood
+#define BOUNTY_BOSS_COMBAT_STIMULANT /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor
+/// The cell in the standard core of a mini-boss's MODsuit (bounty_suits.dm): about 2 hours of a suit running at tg's base drain. The suit doesn't run while its wearer is dormant.
+#define BOUNTY_BOSS_MODSUIT_CELL /obj/item/stock_parts/power_store/cell/bluespace
 /// Worn out: stamina loss over this share of its max stamina... (phase D, CB-2)
 #define BOUNTY_BOSS_WORN_OUT_STAMINA 0.5
 /// ...or health under this share of its max health. (phase D, CB-2)
