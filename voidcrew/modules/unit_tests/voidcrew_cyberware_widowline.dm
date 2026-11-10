@@ -454,8 +454,9 @@
 	TEST_ASSERT(("monowire_retract_blood2_right" in states) || ("monowire_retract_blood2_left" in states), "A wet wire reeled in clean: [jointext(states, ", ")]")
 	TEST_ASSERT_EQUAL(wire.blood_stage(), 0, "The wire is still bloody in its spool")
 
-/// The garrote: only on someone helpless (crit or stunned, not just lying down), even a fellow player; no mark;
-/// a real grab; the head in hard crit, the throat otherwise, turned by a collar; broken by damage; the wire's blow.
+/// The garrote: only on someone helpless (crit or stunned, not just lying down) and lying on the floor (not stunned on
+/// their feet, not strapped into a chair), even a fellow player; no mark; a real grab; the head in hard crit, the
+/// throat otherwise, turned by a collar; broken by damage or the victim getting up; the wire's blow.
 /datum/unit_test/voidcrew_widowline/garrote
 
 /datum/unit_test/voidcrew_widowline/garrote/Run()
@@ -469,6 +470,20 @@
 	victim.Knockdown(100 SECONDS)
 	TEST_ASSERT(!wire.wire_try_garrote(victim, user), "A garrote started on someone only knocked down")
 	victim.SetKnockdown(0)
+
+	// Helpless but not on the floor: no. A stun leaves them on their feet (stood up at once: tg takes a second over it).
+	victim.get_up(instant = TRUE)
+	victim.Stun(100 SECONDS)
+	TEST_ASSERT(victim.body_position == STANDING_UP && HAS_TRAIT(victim, TRAIT_INCAPACITATED), "Fixture: the stun didn't leave them stunned on their feet")
+	TEST_ASSERT(!wire.wire_try_garrote(victim, user), "A garrote started on someone stunned on their feet")
+	victim.SetStun(0)
+	// In crit, strapped into a chair beside the garroter: no.
+	var/mob/living/carbon/human/consistent/seated = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	var/obj/structure/chair/chair = allocate(/obj/structure/chair, spot(1, 0))
+	seated.apply_damage(150, OXY)
+	TEST_ASSERT(seated.stat >= SOFT_CRIT && seated.stat != DEAD, "Fixture: the seated one isn't in crit ([seated.stat])")
+	TEST_ASSERT(chair.buckle_mob(seated, force = TRUE) && seated.buckled == chair, "Fixture: couldn't strap them into the chair")
+	TEST_ASSERT(!wire.wire_start_garrote(user, seated), "A garrote started on someone in crit strapped into a chair")
 
 	// Stunned, though both are neutral-faction people: yes. No mark; the wire thrown at the neck.
 	victim.Paralyze(100 SECONDS)
@@ -596,6 +611,10 @@
 	garrote = wire.garrote_running
 	TEST_ASSERT(garrote.real_blow(BODY_ZONE_HEAD), "The garrote's blow didn't swing")
 	TEST_ASSERT_EQUAL(user.get_active_held_item(), wire, "The garrote swung the heavier weapon, not the wire")
+	// Up off the floor, they're out of it.
+	TEST_ASSERT(garrote.running && !garrote.safety_check(), "Fixture: the last garrote isn't running")
+	saved.set_body_position(STANDING_UP)
+	TEST_ASSERT_EQUAL(garrote.safety_check(), 2, "The garrote kept on with its victim back on their feet") // HV_FINISHER_LOST_GRIP
 	garrote.stop(2) // HV_FINISHER_LOST_GRIP
 
 	// The crit gates never count the wire's penetration; its cuts still do.

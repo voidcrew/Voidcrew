@@ -1,19 +1,20 @@
 /**
  * # The garrote
  *
- * A Widowline wielder standing over someone who can't fight back (in crit, or stunned: lying down alone
- * isn't enough) loops the wire round their neck with a combat click at the head or mouth. It is #509's
- * finisher engine (hyperviolence/finishers/) run by a person: a real aggressive grab, interruptible the
- * same ways.
+ * A Widowline wielder standing over someone lying on the floor who can't fight back (in crit, or stunned:
+ * lying down alone isn't enough; on their feet, or strapped into a chair or bed, never) loops the wire round
+ * their neck with a combat click at the head or mouth. It is #509's finisher engine (hyperviolence/finishers/)
+ * run by a person: a real aggressive grab, interruptible the same ways.
  *
  * - Wind-up (1 s): the wire loops round the neck and glints. No mark over the victim (owner D34): the loop
- *   and the struggle are the tell. It holds nobody, so pulling the victim clear, or them getting up, ends it.
+ *   and the struggle are the tell. It holds nobody, so pulling the victim clear, or them coming round, ends it.
  * - Hold (1.5 s): the grab, the wire goes taut and bites, the victim thrashes.
  * - Kill (0.5 s into the stage): in hard crit the head comes off (an Atlas frame keeps it); otherwise the
  *   throat is slit, #509's carotid crit. A sealed helmet, an armoured collar or plating that would stop
  *   the throat crit turns the wire, and it lands as an ordinary blow at the head instead.
  * - Broken by #509's rules: the grab broken or pulled apart, the garroter hurt (WIRE_GARROTE_INTERRUPT
- *   health), stunned, cuffed or out of their wire, the victim dying first, the timeout.
+ *   health), stunned, cuffed or out of their wire, the victim dying first, the timeout. Also by the victim
+ *   getting up off the floor or being strapped to something, at any point before the kill.
  *
  * Only wielders that hv_wire_moves_allowed() lets use the wire's moves (wire_users.dm) can start one. It
  * refuses allies, starts the outpost's self-defence clock like any attack, and the wielder waits
@@ -62,9 +63,14 @@
 	if(wire_try_garrote(target, user))
 		return TRUE
 
-/// Someone who can't fight the wire off: in crit, or stunned. Lying down alone doesn't count.
+/// Someone the wire can be looped round: lying on the floor (wire_garrote_on_floor()) and unable to fight it off, in
+/// crit or stunned. Lying down alone doesn't count, and neither does a stun that leaves them on their feet.
 /proc/wire_garrote_helpless(mob/living/victim)
-	return victim.stat >= SOFT_CRIT || HAS_TRAIT(victim, TRAIT_INCAPACITATED)
+	return wire_garrote_on_floor(victim) && (victim.stat >= SOFT_CRIT || HAS_TRAIT(victim, TRAIT_INCAPACITATED))
+
+/// Lying on the floor, not strapped into a chair or bed: where a garrote's victim has to stay from the first loop to the cut.
+/proc/wire_garrote_on_floor(mob/living/victim)
+	return victim.body_position == LYING_DOWN && !victim.buckled
 
 /// Starts a garrote on `target` if this click asks for one (combat mode, the head or mouth on the target doll)
 /// and it can begin. Returns TRUE if it began.
@@ -189,7 +195,10 @@
 		return
 	if(QDELETED(wire) || !user.is_holding(wire))
 		return HV_FINISHER_ATTACKER_DOWN
-	// The wind-up holds nobody: back on their feet, they're out of it.
+	// Up off the floor or strapped to something, they're out of it, held or not: the grab alone doesn't keep them down.
+	if(!wire_garrote_on_floor(victim))
+		return HV_FINISHER_LOST_GRIP
+	// The wind-up holds nobody: come round enough to fight it off, they're out of it.
 	if(!gripped && !wire_garrote_helpless(victim))
 		return HV_FINISHER_LOST_GRIP
 
@@ -390,12 +399,38 @@
 	return hand_point(side)
 
 /**
- * The world layer for wire leaving a hand. Wire from a hand behind the garroter (both facing away, the far one in
- * profile) goes between the two bodies: under the garroter, so their torso, back and head hide it, and over the one
- * lying there, so it shows from where it clears the garroter to the neck. Wire from a hand in front goes over both.
+ * The world layer for wire leaving a hand. Wire from a hand in front goes over both bodies. Wire from a hand behind
+ * the garroter goes under them, so their torso, back and head hide it:
+ * - Facing away (both hands) it goes over the one lying beyond them, so it shows from where it clears the garroter to
+ *   the neck.
+ * - In profile (the far hand) it goes round the back of the neck: under the one lying there too, so it shows between
+ *   the hand and the head, and their head and neck hide the rest, while the near hand's runs over them.
  */
 /datum/hv_finisher/garrote/proc/strand_layer(behind)
-	return behind ? WIRE_BETWEEN_LAYER : wire_line_layer(FALSE)
+	if(!behind)
+		return wire_line_layer(FALSE)
+	return wire_behind_neck(behind) ? BELOW_MOB_LAYER : WIRE_BETWEEN_LAYER
+
+/// TRUE for wire from a hand `behind` the garroter that goes round the back of the neck, under the body lying there:
+/// the far hand's, in profile.
+/datum/hv_finisher/garrote/proc/wire_behind_neck(behind)
+	return behind && (user.dir & (EAST | WEST))
+
+/**
+ * A new line of wire from a hand `behind` or not. It goes on the garroter's turf, except wire round the back of the
+ * neck (wire_behind_neck()) with the body on the row behind the garroter's (lying a tile up and to the side): that goes
+ * on the body's row, since the map sorts a row in front over a row behind whatever their layers. pixel_z draws it back
+ * where it would be on the garroter's turf, so its pixel_x and pixel_y count from there as ever.
+ */
+/datum/hv_finisher/garrote/proc/new_line(behind)
+	var/turf/from = get_turf(user)
+	if(!from)
+		return null
+	if(wire_behind_neck(behind) && !QDELETED(victim) && victim.y > user.y)
+		from = locate(user.x, victim.y, user.z) || from
+	var/obj/effect/abstract/wire_reach/line = new(from)
+	line.pixel_z = (user.y - from.y) * ICON_SIZE_Y
+	return line
 
 /// "left" or "right": the hand the wire is in.
 /datum/hv_finisher/garrote/proc/wire_side()
@@ -420,9 +455,11 @@
 	var/span_x = meet[1] - (hand_x + 0.5)
 	var/span_y = meet[2] - (hand_y + 0.5)
 	var/step = WIRE_GARROTE_REACH_TIME / WIRE_GARROTE_THROW_BEATS
-	var/obj/effect/abstract/wire_reach/line = new(from)
+	var/obj/effect/abstract/wire_reach/line = new_line(hand[3])
 	line.icon_state = "wire_reach[wire_suffix()]"
-	line.layer = strand_layer(hand[3])
+	// In flight, wire from a hand behind the garroter passes over the body lying there and under the garroter. In profile
+	// it goes round the back of the neck once it winds on (land_reach()).
+	line.layer = hand[3] ? WIRE_BETWEEN_LAYER : strand_layer(FALSE)
 	line.add_overlay(emissive_appearance(line.icon, line.icon_state, line))
 	line.pixel_x = hand_x
 	line.pixel_y = hand_y
@@ -476,7 +513,8 @@
 /**
  * The thrown wire's end put on the loop where the neck is drawn as it lands. It was aimed where the neck was drawn as
  * it left the hand, and anything that moves the body in flight leaves it short of the loop (recorded once, two pixels
- * short facing the viewer).
+ * short facing the viewer). Wound on, it is drawn as the hold's strand from its hand will be: from the far hand in
+ * profile, round the back of the neck, under the body it flew over.
  */
 /datum/hv_finisher/garrote/proc/land_reach()
 	var/datum/weakref/line_ref = LAZYACCESS(reach_refs, 1)
@@ -486,6 +524,7 @@
 	// The throw's beats end here anyway; ended now, it is drawn as they leave it (whole, lit) before it is moved.
 	animate(line)
 	line.transform = reach_to_neck(line, victim.transform)
+	line.layer = strand_layer(line_origin(wire_side())[3])
 
 /// The end of the throw: the wire winds round the neck and is held there, loose, for the rest of the wind-up (`rest`).
 /datum/hv_finisher/garrote/proc/wind_loop(rest)
@@ -581,10 +620,12 @@
  * list(x, y)
  *
  * On a body lying down the loop shows as a short line up and down across the neck. In profile the near hand's strand
- * meets its lower end and the far hand's its upper end, so the two show as two strands. Facing the viewer both meet
- * its top, the end toward the garroter; facing away both meet it at the neck, since its lower end is hidden behind the
- * garroter's head. On a body still on its feet the loop lies across the neck: facing toward or away each strand meets
- * the end on its own side, and in profile the near one the end toward the garroter, the far one the middle.
+ * meets its lower end over the head, and the far hand's its upper end round the back of the neck, the head hiding it
+ * (strand_layer()), so the two show as two strands. Facing the viewer both meet its top, the end toward the garroter;
+ * facing away both meet it at the neck, since its lower end is hidden behind the garroter's head. On a body on its feet
+ * (none is garroted: only for one getting up before the garrote lets go) the loop lies across the neck: facing toward or
+ * away each strand meets the end on its own side, and in profile the near one the end toward the garroter, the far one
+ * the middle.
  */
 /datum/hv_finisher/garrote/proc/loop_point(side, matrix/shape)
 	if(!shape)
@@ -822,7 +863,7 @@
 		var/start_hand_y = hand_y + start[2] - user.pixel_y
 		var/start_span_x = span_x + (start[3] - victim.pixel_x) - (start[1] - user.pixel_x)
 		var/start_span_y = span_y + (start[4] - victim.pixel_y) - (start[2] - user.pixel_y)
-		var/obj/effect/abstract/wire_reach/strand = new(from)
+		var/obj/effect/abstract/wire_reach/strand = new_line(hand[3])
 		strand.icon_state = "wire_taut[wire_suffix()]"
 		strand.layer = strand_layer(hand[3])
 		strand.add_overlay(emissive_appearance(strand.icon, strand.icon_state, strand))
