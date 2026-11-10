@@ -149,6 +149,21 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
+/datum/design/vc_mag_m9mm_rattlesnake
+	name = "MP-84 Magazine (9mm) (Lethal)"
+	desc = "A long 18-round 9mm magazine for the MP-84 machine pistol."
+	id = "vc_mag_m9mm_rattlesnake"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 4,
+		/datum/material/plastic = HALF_SHEET_MATERIAL_AMOUNT * 3,
+	)
+	build_path = /obj/item/ammo_box/magazine/m9mm_rattlesnake
+	category = list(
+		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+
 /datum/design/vc_mag_smgm9mm
 	name = "SMG Magazine (9mm) (Lethal)"
 	desc = "A sleek 9mm magazine, suitable for the Saber SMG."

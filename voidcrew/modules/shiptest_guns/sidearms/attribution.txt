@@ -1,0 +1,37 @@
+The code in this folder ports the MP-84 'Rattlesnake' and the PD46 'Resolution' from Shiptest
+(https://github.com/shiptest-ss13/Shiptest, commit 000f892ae9), whose code is AGPL-3.0 like ours.
+
+Art
+Shiptest licenses its art CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) unless a file
+says otherwise, and none of these files says otherwise. Each DMI here holds only the states these guns use,
+copied pixel for pixel, apart from the renames listed.
+
+icons/rattlesnake.dmi  - states rattlesnake, rattlesnake_mag, rattlesnake_bolt, rattlesnake_bolt_locked from
+                         Shiptest icons/obj/guns/manufacturer/scarborough/48x32.dmi (Scarborough Arms sprites,
+                         shiptest-ss13/Shiptest PR #3336 by rye-rice, moved there by PR #3176).
+                         rattlesnake_suppressor is the pistol_suppressor state from /tg/station
+                         icons/obj/weapons/guns/ballistic.dmi (CC BY-SA 3.0), copied into a 48x32 frame.
+icons/resolution.dmi   - states resolution and resolution_nomag from Shiptest
+                         icons/obj/guns/manufacturer/warra_sharplite/48x32.dmi (Advantage weapons, Shiptest
+                         PR #5210, designs by Apogee-dev; file moved by PR #5816). resolution_stock_folded and
+                         resolution_stock_extended are that file's resolution_stock-attached and
+                         resolution_stock-on-attached, renamed. resolution_suppressor and
+                         resolution_nomag_suppressor are the saber_suppressor state from /tg/station
+                         icons/obj/weapons/guns/ballistic.dmi (CC BY-SA 3.0), copied into a 48x32 frame.
+icons/magazines.dmi    - states rattlesnake_mag_0, _1, _3, _6, _9, _12, _15, _18 from Shiptest
+                         icons/obj/ammunition/ammo.dmi. resolution_mag and resolution_mag-full are that file's
+                         resolution_mag-1, and resolution_mag-empty is its resolution_mag-0.
+icons/lefthand.dmi     - state rattlesnake from Shiptest icons/obj/guns/manufacturer/scarborough/lefthand.dmi and
+                         state resolution from icons/obj/guns/manufacturer/warra_sharplite/lefthand.dmi.
+icons/righthand.dmi    - the same two states from the matching righthand.dmi files.
+
+Sounds (taken unmodified)
+sound/rattlesnake.ogg  - Shiptest sound/weapons/gun/pistol/rattlesnake.ogg (PR #3336). It is byte-identical to
+                         TerraGov Marine Corps sound/weapons/guns/fire/tgmc/kinetic/gun_p23.ogg, added by
+                         TerraGov PR #13409 (https://github.com/tgstation/TerraGov-Marine-Corps). Licence:
+                         CC BY-NC-SA 3.0 (https://creativecommons.org/licenses/by-nc-sa/3.0/).
+sound/resolution.ogg   - Shiptest sound/weapons/gun/smg/resolution.ogg (PR #5210). That PR credits its sound
+                         effects as "Taken from TGMC" and remixed some to mono, so this file is treated as
+                         TerraGov Marine Corps work under CC BY-NC-SA 3.0
+                         (https://creativecommons.org/licenses/by-nc-sa/3.0/). No byte-identical TerraGov file was
+                         found, so the exact source file is not known.

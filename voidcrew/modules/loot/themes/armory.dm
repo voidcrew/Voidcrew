@@ -64,6 +64,7 @@
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/automatic/m90/unrestricted = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/energy/e_gun/hos = 1,
 			/obj/item/gun/energy/e_gun/nuclear = 1,
 			/obj/item/gun/energy/laser/carbine/cybersun/unrestricted = 1,

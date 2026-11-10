@@ -33,6 +33,17 @@
 		/datum/shop_sku/black_market/rotating/mateba = 1,
 		/datum/shop_sku/black_market/c20r = 1,
 		/datum/shop_sku/black_market/wt550 = 1,
+		/datum/shop_sku/black_market/ansem = 1,
+		/datum/shop_sku/black_market/ansem_sc = 1,
+		/datum/shop_sku/black_market/lethal_cycler = 1,
+		/datum/shop_sku/black_market/resolution = 1,
+		/datum/shop_sku/outfitter/resolution_mag = 1,
+		/datum/shop_sku/black_market/heater = 1,
+		/datum/shop_sku/black_market/woodsman = 1,
+		/datum/shop_sku/black_market/skm = 1,
+		/datum/shop_sku/black_market/slammer = 1,
+		/datum/shop_sku/black_market/absolution = 1,
+		/datum/shop_sku/black_market/conflagration = 1,
 		/datum/shop_sku/outfitter/rare/ablative_vest = 1,
 		/datum/shop_sku/skunk/rotating/thermal_glasses = 1,
 		/datum/shop_sku/black_market/thermals = 1,
@@ -74,7 +85,11 @@
 		/datum/shop_sku/outfitter/laser_gun = 1,
 		/datum/shop_sku/outfitter/smg_mag = 1,
 		/datum/shop_sku/outfitter/wt550_mag = 1,
+		/datum/shop_sku/outfitter/heater_mag = 1,
 		/datum/shop_sku/outfitter/rifle_clip = 1,
+		/datum/shop_sku/outfitter/woodsman_mag = 1,
+		/datum/shop_sku/outfitter/skm_mag = 1,
+		/datum/shop_sku/outfitter/skm_extended_mag = 1,
 		/datum/shop_sku/outfitter/bulletproof_vest = 1,
 		/datum/shop_sku/outfitter/bulletproof_helmet = 1,
 		/datum/shop_sku/outfitter/rare/ablative_hood = 1,
@@ -98,7 +113,9 @@
 		/datum/shop_sku/ripperdoc/ronin_mag = 1,
 		/datum/shop_sku/ripperdoc/buster_rockets = 1,
 		/datum/shop_sku/outfitter/ablative_bat = 2,
+		/datum/shop_sku/black_market/scorcher = 2,
 		/datum/shop_sku/black_market/ew_drive_lockout = 2,
+		/datum/shop_sku/black_market/rattlesnake = 2,
 		/datum/shop_sku/black_market/ew_fire_control_freeze = 2,
 		/datum/shop_sku/black_market/ew_shield_collapse = 2,
 		/datum/shop_sku/black_market/ew_breaker_trip = 2,
@@ -117,6 +134,7 @@
 		/datum/shop_sku/fitter/rare/mod_emp_shield_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_projectile_dampener = 2,
 		/datum/shop_sku/black_market/mod_chassis_syndicate = 2,
+		/datum/shop_sku/black_market/skm_drum = 2,
 		/datum/shop_sku/black_market/mod_interdyne = 2,
 		/datum/shop_sku/black_market/mod_energy_shield = 2,
 		/datum/shop_sku/black_market/shield_generator_board = 2,
@@ -151,7 +169,7 @@
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 121, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 139, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
