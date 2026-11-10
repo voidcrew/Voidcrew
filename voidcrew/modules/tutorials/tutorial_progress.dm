@@ -22,7 +22,7 @@ SUBSYSTEM_DEF(vc_tutorials)
 
 	/// ckey -> list(key -> TRUE). Step and item keys both live here.
 	var/list/progress = list()
-	/// Every checklist item singleton, sorted by order.
+	/// Every checklist item singleton, sorted by category (GLOB.tutorial_categories order), then order.
 	var/list/datum/vc_tutorial/items
 	/// step key -> step singleton
 	var/list/datum/vc_tutorial_step/steps_by_key
@@ -32,6 +32,8 @@ SUBSYSTEM_DEF(vc_tutorials)
 	var/list/loaded_ckeys = list()
 	/// "[REF(ship)]|[type]" -> list(world.time, result). Keyed by ref string so no hard ref is held.
 	var/list/machine_cache = list()
+	/// ckey -> the item id the viewer has open in the panel. The in-game highlight reads it.
+	var/list/selected = list()
 
 /datum/controller/subsystem/vc_tutorials/Initialize()
 	build_catalog()
@@ -63,8 +65,12 @@ SUBSYSTEM_DEF(vc_tutorials)
 		items += item
 	sortTim(items, GLOBAL_PROC_REF(cmp_vc_tutorial_order))
 
-/// Sort helper for the checklist items.
+/// Sort helper for the checklist items: category order first, then order within it.
 /proc/cmp_vc_tutorial_order(datum/vc_tutorial/a, datum/vc_tutorial/b)
+	var/category_a = GLOB.tutorial_categories.Find(a.category)
+	var/category_b = GLOB.tutorial_categories.Find(b.category)
+	if(category_a != category_b)
+		return category_a - category_b
 	return a.order - b.order
 
 /datum/controller/subsystem/vc_tutorials/proc/on_client_connect(datum/source, client/client)
@@ -128,10 +134,31 @@ SUBSYSTEM_DEF(vc_tutorials)
 	for(var/datum/vc_tutorial_step/step as anything in item.steps)
 		if(step.optional || done[step.key])
 			continue
+		if(step.route_excused(ckey))
+			continue
 		if(user && step.excused(user))
 			continue
 		return FALSE
 	return TRUE
+
+/**
+ * The item the panel suggests next for this viewer: the first incomplete item, in panel
+ * order, with a counted step left that is neither excused nor marked unavailable for them.
+ * Returns the item id, or null.
+ */
+/datum/controller/subsystem/vc_tutorials/proc/suggested_item(ckey, mob/user)
+	build_catalog()
+	var/list/done = progress[ckey]
+	for(var/datum/vc_tutorial/item as anything in items)
+		if(item_complete(item, ckey, user))
+			continue
+		for(var/datum/vc_tutorial_step/step as anything in item.steps)
+			if(step.optional || done?[step.key] || step.route_excused(ckey))
+				continue
+			if(user && (step.excused(user) || step.availability(user)))
+				continue
+			return item.id
+	return null
 
 /// TRUE if every item is complete for this viewer.
 /datum/controller/subsystem/vc_tutorials/proc/all_complete(ckey, mob/user)
@@ -161,6 +188,7 @@ SUBSYSTEM_DEF(vc_tutorials)
 	var/mob/viewer = user?.client ? user : get_mob_by_ckey(ckey)
 	if(viewer)
 		SStgui.try_update_ui(viewer, GLOB.tutorial_checklist)
+		tutorial_refresh_highlights(viewer)
 	return TRUE
 
 /// Whether a machine of this type is aboard the ship, cached for TUTORIAL_MACHINE_CACHE_TIME

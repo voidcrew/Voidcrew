@@ -5,8 +5,9 @@
  * spawn unless the player turned that off, closed it this round, or has every item
  * done. The "Tutorials" OOC verb opens it any time, ghosts included.
  *
- * Its only action is the "open on spawn" preference. It takes no refs and never acts
- * on the world.
+ * Its actions are the two footer preferences and "select", which records the item the
+ * viewer has open (SSvc_tutorials.selected) for the in-game highlight. It takes no refs
+ * and never acts on the world.
  */
 
 /// Gap between spawning and the checklist opening, so it lands after the client has
@@ -33,6 +34,7 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 		// doesn't need to rebuild its notes every tick.
 		ui.set_autoupdate(FALSE)
 		ui.open()
+		tutorial_refresh_highlights(user)
 
 /// Credits steps the viewer has already done but no hook saw.
 /datum/tutorial_checklist/proc/run_state_checks(mob/user)
@@ -50,6 +52,7 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 /datum/tutorial_checklist/ui_static_data(mob/user)
 	SSvc_tutorials.build_catalog()
 	var/list/items = list()
+	var/list/category_items = list()
 	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
 		var/list/steps = list()
 		for(var/datum/vc_tutorial_step/step as anything in item.steps)
@@ -58,13 +61,28 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 				"name" = step.name,
 				"text" = step.text,
 				"optional" = step.optional,
+				"route" = step.route,
+				"route_name" = step.route_name,
 			))
 		items += list(list(
 			"id" = item.id,
 			"name" = item.name,
+			"intro" = item.intro,
 			"steps" = steps,
 		))
-	return list("items" = items)
+		if(!category_items[item.category])
+			category_items[item.category] = list()
+		category_items[item.category] += item.id
+	var/list/categories = list()
+	for(var/category_id in GLOB.tutorial_categories)
+		if(!length(category_items[category_id]))
+			continue
+		categories += list(list(
+			"id" = category_id,
+			"name" = GLOB.tutorial_categories[category_id],
+			"items" = category_items[category_id],
+		))
+	return list("categories" = categories, "items" = items)
 
 /datum/tutorial_checklist/ui_data(mob/user)
 	var/list/data = list()
@@ -87,7 +105,10 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 	data["done"] = done_keys
 	data["notes"] = notes
 	data["excused"] = excused
+	data["suggested"] = ckey ? SSvc_tutorials.suggested_item(ckey, user) : null
+	data["selected"] = ckey ? SSvc_tutorials.selected[ckey] : null
 	data["spawn_open"] = user.client?.prefs ? !!user.client.prefs.read_preference(/datum/preference/toggle/tutorial_checklist) : TRUE
+	data["highlights"] = user.client?.prefs ? !!user.client.prefs.read_preference(/datum/preference/toggle/tutorial_highlights) : TRUE
 	return data
 
 /datum/tutorial_checklist/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -102,12 +123,36 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 			var/datum/preference/toggle/tutorial_checklist/pref = GLOB.preference_entries[/datum/preference/toggle/tutorial_checklist]
 			prefs.write_preference(pref, !prefs.read_preference(/datum/preference/toggle/tutorial_checklist))
 			return TRUE
+		if("toggle_highlights")
+			var/datum/preferences/prefs = ui.user.client?.prefs
+			if(!prefs)
+				return FALSE
+			var/datum/preference/toggle/tutorial_highlights/pref = GLOB.preference_entries[/datum/preference/toggle/tutorial_highlights]
+			prefs.write_preference(pref, !prefs.read_preference(/datum/preference/toggle/tutorial_highlights))
+			tutorial_refresh_highlights(ui.user)
+			return TRUE
+		if("select")
+			var/ckey = tutorial_viewer_ckey(ui.user)
+			var/item_id = params["id"]
+			if(!ckey || !istext(item_id))
+				return FALSE
+			var/known = FALSE
+			for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
+				if(item.id == item_id)
+					known = TRUE
+					break
+			if(!known)
+				return FALSE
+			SSvc_tutorials.selected[ckey] = item_id
+			tutorial_refresh_highlights(ui.user)
+			return TRUE
 
 /datum/tutorial_checklist/ui_close(mob/user)
 	. = ..()
 	var/ckey = tutorial_viewer_ckey(user)
 	if(ckey)
 		GLOB.tutorial_checklist_hidden |= ckey
+	tutorial_refresh_highlights(user)
 
 /// The ckey whose progress a viewer sees.
 /proc/tutorial_viewer_ckey(mob/user)

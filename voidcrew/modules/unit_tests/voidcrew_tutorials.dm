@@ -64,8 +64,8 @@
 	location.change_area(get_area(location), new_area)
 	return new_area
 
-/// Keys unique and short, under "vc/", each item has a counted step, and every key a hook
-/// credits is a step in the catalog.
+/// Keys unique and short, under "vc/", each item has a category, an intro and a counted step,
+/// route steps come in two or more routes, and every key a hook credits is a step in the catalog.
 /datum/unit_test/voidcrew_tutorials/catalog/Run()
 	SSvc_tutorials.build_catalog()
 	TEST_ASSERT_EQUAL(length(SSvc_tutorials.items), 14, "The checklist does not have its fourteen items")
@@ -73,14 +73,21 @@
 	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
 		check_key(item.id, seen)
 		TEST_ASSERT(item.name, "[item.id] has no name")
+		TEST_ASSERT(item.category && GLOB.tutorial_categories[item.category], "[item.id] has no panel category")
+		TEST_ASSERT(istext(item.intro) && length(trimtext(item.intro)), "[item.id] has no intro")
 		var/counted = 0
+		var/list/routes = list()
 		for(var/datum/vc_tutorial_step/step as anything in item.steps)
 			check_key(step.key, seen)
 			TEST_ASSERT(findtext(step.key, "[item.id]/") == 1, "[step.key] is not under its item [item.id]")
 			TEST_ASSERT(step.name && step.text, "[step.key] has no name or text")
+			if(step.route)
+				TEST_ASSERT(step.route_name, "[step.key] has a route with no name")
+				routes |= step.route
 			if(!step.optional)
 				counted++
 		TEST_ASSERT(counted, "[item.id] has no step that counts")
+		TEST_ASSERT(!length(routes) || length(routes) >= 2, "[item.id] has route steps but only one route")
 
 	var/list/define_values = list()
 	var/defines = file2text("voidcrew/_DEFINES/tutorials.dm")
@@ -108,6 +115,98 @@
 	TEST_ASSERT(findtext(key, "vc/") == 1, "[key] does not start with vc/")
 	TEST_ASSERT(!seen[key], "[key] is used twice")
 	seen[key] = TRUE
+
+/// A two-route item built outside the catalog (no id, so build_catalog skips the type).
+/datum/vc_tutorial/route_test
+	name = "Route test"
+	steps = list(
+		/datum/vc_tutorial_step/route_test_shared,
+		/datum/vc_tutorial_step/route_test_a1,
+		/datum/vc_tutorial_step/route_test_a2,
+		/datum/vc_tutorial_step/route_test_b1,
+	)
+
+/datum/vc_tutorial_step/route_test_shared
+	key = "vc/route_test/shared"
+	name = "Shared"
+	text = "Shared step."
+
+/datum/vc_tutorial_step/route_test_a1
+	key = "vc/route_test/a1"
+	name = "A1"
+	text = "Route A, first step."
+	route = "a"
+	route_name = "Route A"
+
+/datum/vc_tutorial_step/route_test_a2
+	key = "vc/route_test/a2"
+	name = "A2"
+	text = "Route A, second step."
+	route = "a"
+	route_name = "Route A"
+
+/datum/vc_tutorial_step/route_test_b1
+	key = "vc/route_test/b1"
+	name = "B1"
+	text = "Route B."
+	route = "b"
+	route_name = "Route B"
+
+/// Finishing every step of route A excuses route B and completes the item.
+/datum/unit_test/voidcrew_tutorials/routes
+	var/datum/vc_tutorial/route_test/test_item
+
+/datum/unit_test/voidcrew_tutorials/routes/Destroy()
+	if(test_item)
+		for(var/datum/vc_tutorial_step/step as anything in test_item.steps)
+			SSvc_tutorials.steps_by_key -= step.key
+			SSvc_tutorials.item_by_step -= step.key
+		QDEL_LIST(test_item.steps)
+		QDEL_NULL(test_item)
+	return ..()
+
+/datum/unit_test/voidcrew_tutorials/routes/Run()
+	SSvc_tutorials.build_catalog()
+	test_item = new
+	test_item.id = "vc/route_test"
+	var/list/step_instances = list()
+	for(var/step_type in test_item.steps)
+		var/datum/vc_tutorial_step/step = new step_type
+		step_instances += step
+		SSvc_tutorials.steps_by_key[step.key] = step
+		SSvc_tutorials.item_by_step[step.key] = test_item
+	test_item.steps = step_instances
+	var/datum/vc_tutorial_step/a1 = step_instances[2]
+	var/datum/vc_tutorial_step/b1 = step_instances[4]
+	var/mob/living/carbon/human/player = make_player()
+
+	tutorial_credit(player, "vc/route_test/shared")
+	tutorial_credit(player, "vc/route_test/a1")
+	TEST_ASSERT(!b1.excused(player), "Route B was excused with route A half done")
+	TEST_ASSERT(!SSvc_tutorials.item_complete(test_item, TUTORIAL_TEST_CKEY, player), "The item completed with route A half done")
+	tutorial_credit(player, "vc/route_test/a2")
+	TEST_ASSERT(b1.excused(player), "Finishing route A did not excuse route B")
+	TEST_ASSERT(b1.route_excused(TUTORIAL_TEST_CKEY), "Finishing route A did not excuse route B by ckey")
+	TEST_ASSERT(!a1.excused(player), "The finished route excused itself")
+	TEST_ASSERT(SSvc_tutorials.item_complete(test_item, TUTORIAL_TEST_CKEY, null), "Finishing route A did not complete the item")
+	TEST_ASSERT(done("vc/route_test"), "Finishing route A did not save the item key")
+	TEST_ASSERT(!done("vc/route_test/b1"), "Route B's step was marked done")
+
+/// The suggested item is the first incomplete one in panel order with a step the viewer
+/// can do now: steps marked unavailable or excused don't count.
+/datum/unit_test/voidcrew_tutorials/suggested/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	make_crewed_ship(deck, player)
+	SSvc_tutorials.build_catalog()
+	tutorial_credit(player, "vc/ship/manage")
+	TEST_ASSERT_EQUAL(SSvc_tutorials.suggested_item(TUTORIAL_TEST_CKEY, player), "vc/ship", "A new player was not pointed at Your ship")
+	// What's left of Your ship needs a helm, and this hull has none.
+	tutorial_credit(player, "vc/ship/search")
+	TEST_ASSERT_EQUAL(SSvc_tutorials.suggested_item(TUTORIAL_TEST_CKEY, player), "vc/power", "Steps marked unavailable still held the suggestion")
+	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
+		SSvc_tutorials.progress[TUTORIAL_TEST_CKEY][item.id] = TRUE
+	TEST_ASSERT_NULL(SSvc_tutorials.suggested_item(TUTORIAL_TEST_CKEY, player), "Something was suggested with every item done")
 
 /// Opening a locker aboard counts; one off the ship doesn't.
 /datum/unit_test/voidcrew_tutorials/ship_search/Run()

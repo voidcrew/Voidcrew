@@ -7869,6 +7869,7 @@
 #include "voidcrew\modules\tutorials\hooks_zones.dm"
 #include "voidcrew\modules\tutorials\preferences.dm"
 #include "voidcrew\modules\tutorials\tutorial_catalog.dm"
+#include "voidcrew\modules\tutorials\tutorial_highlights.dm"
 #include "voidcrew\modules\tutorials\tutorial_panel.dm"
 #include "voidcrew\modules\tutorials\tutorial_progress.dm"
 #include "voidcrew\modules\transporter\_transporter.dm"

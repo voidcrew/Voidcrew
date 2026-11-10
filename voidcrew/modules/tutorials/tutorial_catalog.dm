@@ -6,17 +6,36 @@
  * (hooks_*.dm) calling tutorial_credit() or tutorial_credit_crew() with a step key
  * from voidcrew/_DEFINES/tutorials.dm. Nothing here acts on the world.
  *
- * The step text is the one place how-to text is allowed in player UI (kit rule
- * exception for the checklist). Keep it to one plain line.
+ * The panel is the one place how-to text is allowed in player UI (kit rule exception
+ * for the checklist). Keep the intro to 1-3 plain sentences and each step to one line.
+ *
+ * Adding an item: give it an id, a category (TUTORIAL_CATEGORY_*), an order within that
+ * category, an intro and its steps. A step with a route is one way to finish the item:
+ * give every step of one way the same route id and route_name, and the item needs at
+ * least two routes. Once every counted step of one route is done, the other routes'
+ * steps are excused.
  */
+
+/// Panel categories, in panel order: category id -> name.
+GLOBAL_LIST_INIT(tutorial_categories, list(
+	TUTORIAL_CATEGORY_START = "Getting started",
+	TUTORIAL_CATEGORY_EXPLORE = "Exploring",
+	TUTORIAL_CATEGORY_BODY = "Your body",
+	TUTORIAL_CATEGORY_FIGHT = "Fighting",
+	TUTORIAL_CATEGORY_KEEP = "Keeping your ship",
+))
 
 /datum/vc_tutorial
 	/// Item key, a TUTORIAL_ITEM_* define. Written to the DB when the item completes.
 	var/id
 	/// Shown in the panel's item list.
 	var/name
-	/// Position in the panel, lowest first.
+	/// The panel category it is listed under, a TUTORIAL_CATEGORY_* define.
+	var/category
+	/// Position within its category, lowest first.
 	var/order = 0
+	/// 1-3 plain sentences on how the system works, shown above the steps.
+	var/intro
 	/// Step typepaths, in the order they are shown.
 	var/list/steps = list()
 
@@ -29,6 +48,13 @@
 	var/text
 	/// Optional steps are shown but never counted toward the item.
 	var/optional = FALSE
+	/// Route id. Steps sharing one form one way to finish the item; null for shared steps.
+	var/route
+	/// The route's heading in the panel.
+	var/route_name
+	/// Atom types the in-game highlight outlines while this step's item is open. Empty when
+	/// no fixed object fits.
+	var/list/highlight_types
 
 /**
  * A short note shown under the step for this viewer, or null.
@@ -39,9 +65,35 @@
 
 /**
  * TRUE when this step should not count toward its item for this viewer, for example
- * a captain-only step seen by a crewmate.
+ * a captain-only step seen by a crewmate, or a route step once another route is done.
+ * Overrides must keep the parent's result.
  */
 /datum/vc_tutorial_step/proc/excused(mob/user)
+	return route_excused(tutorial_viewer_ckey(user))
+
+/**
+ * TRUE when this is a route step and every counted step of a different route in the same
+ * item is done for this ckey. Reads SSvc_tutorials.progress only, so it never recurses.
+ */
+/datum/vc_tutorial_step/proc/route_excused(ckey)
+	if(!route || !ckey)
+		return FALSE
+	var/list/done = SSvc_tutorials.progress[ckey]
+	var/datum/vc_tutorial/item = SSvc_tutorials.item_by_step?[key]
+	if(!done || !item)
+		return FALSE
+	// route id -> TRUE while every counted step of it is done so far
+	var/list/finished = list()
+	for(var/datum/vc_tutorial_step/other as anything in item.steps)
+		if(!other.route || other.route == route || other.optional)
+			continue
+		if(isnull(finished[other.route]))
+			finished[other.route] = TRUE
+		if(!done[other.key])
+			finished[other.route] = FALSE
+	for(var/other_route in finished)
+		if(finished[other_route])
+			return TRUE
 	return FALSE
 
 /**
@@ -58,7 +110,9 @@
 /datum/vc_tutorial/ship
 	id = TUTORIAL_ITEM_SHIP
 	name = "Your ship"
+	category = TUTORIAL_CATEGORY_START
 	order = 1
+	intro = "The helm flies the ship and docks it at planets, outposts and ruins. The captain runs the crew and ship settings from Ship Management. Your ship's lockers hold most of what you need to start."
 	steps = list(
 		/datum/vc_tutorial_step/ship_manage,
 		/datum/vc_tutorial_step/ship_search,
@@ -79,12 +133,15 @@
 	return null
 
 /datum/vc_tutorial_step/ship_manage/excused(mob/user)
+	if(..())
+		return TRUE
 	return !(locate(/datum/action/innate/captain_management) in user?.actions)
 
 /datum/vc_tutorial_step/ship_search
 	key = TUTORIAL_STEP_SHIP_SEARCH
 	name = "Search the lockers"
 	text = "Open your ship's lockers and crates, or Alt-click a tile to see everything on it."
+	highlight_types = list(/obj/structure/closet)
 
 /// Shared by the helm steps: a hull with no helm can't do them.
 /datum/vc_tutorial_step/proc/no_helm_note(mob/user)
@@ -97,6 +154,7 @@
 	key = TUTORIAL_STEP_SHIP_COURSE
 	name = "Set a course"
 	text = "At the helm, pick a heading, or click the map to fly there on autopilot."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /datum/vc_tutorial_step/ship_course/availability(mob/user)
 	return no_helm_note(user)
@@ -105,6 +163,7 @@
 	key = TUTORIAL_STEP_SHIP_DOCK
 	name = "Dock"
 	text = "Fly onto a planet, outpost or ruin and press Dock at the helm."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /datum/vc_tutorial_step/ship_dock/availability(mob/user)
 	return no_helm_note(user)
@@ -113,6 +172,7 @@
 	key = TUTORIAL_STEP_SHIP_UNDOCK
 	name = "Undock"
 	text = "Press Undock at the helm to leave."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /datum/vc_tutorial_step/ship_undock/availability(mob/user)
 	return no_helm_note(user)
@@ -122,6 +182,7 @@
 	name = "See the construction console"
 	text = "Research Shuttle Construction, build the console, and use its drone to change your hull."
 	optional = TRUE
+	highlight_types = list(/obj/machinery/computer/camera_advanced/base_construction/ship)
 
 // ---------------------------------------------------------------------------
 // First contract
@@ -130,7 +191,9 @@
 /datum/vc_tutorial/contract
 	id = TUTORIAL_ITEM_CONTRACT
 	name = "First contract"
-	order = 2
+	category = TUTORIAL_CATEGORY_START
+	order = 5
+	intro = "Contracts are paid jobs from the board on your ship or from outpost traders. Do the job, bring back what they asked for and turn it in at the pad."
 	steps = list(
 		/datum/vc_tutorial_step/contract_take,
 		/datum/vc_tutorial_step/contract_work,
@@ -141,6 +204,7 @@
 	key = TUTORIAL_STEP_CONTRACT_TAKE
 	name = "Take a contract"
 	text = "Open the contract board on your ship and accept one. Traders at outposts offer contracts too."
+	highlight_types = list(/obj/machinery/computer/mission_board)
 
 /datum/vc_tutorial_step/contract_take/availability(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -157,6 +221,7 @@
 	key = TUTORIAL_STEP_CONTRACT_TURN_IN
 	name = "Get paid"
 	text = "Bring the goods to the contract pad and press Turn In on the board."
+	highlight_types = list(/obj/machinery/mission_pad, /obj/machinery/computer/mission_board)
 
 // ---------------------------------------------------------------------------
 // R&D setup
@@ -165,7 +230,9 @@
 /datum/vc_tutorial/research
 	id = TUTORIAL_ITEM_RESEARCH
 	name = "R&D setup"
+	category = TUTORIAL_CATEGORY_START
 	order = 3
+	intro = "Research unlocks new gear and machines for your ship. You need a server, a console and a protolathe, all linked together. The autolathe prints a kit with everything to start."
 	steps = list(
 		/datum/vc_tutorial_step/research_kit,
 		/datum/vc_tutorial_step/research_server,
@@ -180,6 +247,7 @@
 	key = TUTORIAL_STEP_RESEARCH_KIT
 	name = "Get the R&D kit"
 	text = "Print the Research & Development Kit at the autolathe and pick it up."
+	highlight_types = list(/obj/machinery/autolathe)
 
 /// A hull that already has a ship server is past needing the kit.
 /datum/vc_tutorial_step/research_kit/state_satisfied(mob/user)
@@ -190,6 +258,7 @@
 	key = TUTORIAL_STEP_RESEARCH_SERVER
 	name = "Build the R&D server"
 	text = "Set the server flatpack on the floor and use a multitool on it."
+	highlight_types = list(/obj/item/flatpack)
 
 /datum/vc_tutorial_step/research_server/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -199,6 +268,7 @@
 	key = TUTORIAL_STEP_RESEARCH_DISK
 	name = "Add the ship disk"
 	text = "Put the R&D server source code disk into the server."
+	highlight_types = list(/obj/machinery/rnd/server/ship)
 
 /datum/vc_tutorial_step/research_disk/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -208,6 +278,7 @@
 	key = TUTORIAL_STEP_RESEARCH_CONSOLE
 	name = "Set up the R&D console"
 	text = "Make a computer frame from the kit's iron, then add the console board, cable and glass."
+	highlight_types = list(/obj/machinery/computer/rdconsole)
 
 /datum/vc_tutorial_step/research_console/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -217,6 +288,7 @@
 	key = TUTORIAL_STEP_RESEARCH_PROTOLATHE
 	name = "Set up the protolathe"
 	text = "Set the protolathe flatpack on the floor and use a multitool on it."
+	highlight_types = list(/obj/item/flatpack)
 
 /datum/vc_tutorial_step/research_protolathe/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -226,6 +298,7 @@
 	key = TUTORIAL_STEP_RESEARCH_MULTITOOL
 	name = "Multitool the server"
 	text = "Use a multitool on the server to copy its link."
+	highlight_types = list(/obj/machinery/rnd/server/ship)
 
 /// A hull whose console and protolathe already run off its server got here some other way.
 /datum/vc_tutorial_step/research_multitool/state_satisfied(mob/user)
@@ -235,6 +308,7 @@
 	key = TUTORIAL_STEP_RESEARCH_LINK
 	name = "Link all the devices"
 	text = "Use that multitool on the R&D console and the protolathe."
+	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/protolathe)
 
 /datum/vc_tutorial_step/research_link/state_satisfied(mob/user)
 	return tutorial_ship_rnd_linked(get_crew_ship(user))
@@ -246,7 +320,9 @@
 /datum/vc_tutorial/surveys
 	id = TUTORIAL_ITEM_SURVEYS
 	name = "Surveys"
-	order = 4
+	category = TUTORIAL_CATEGORY_EXPLORE
+	order = 1
+	intro = "A survey console scans a planet from orbit and prints research notes. The R&D console turns the notes into research points."
 	steps = list(
 		/datum/vc_tutorial_step/surveys_node,
 		/datum/vc_tutorial_step/surveys_build,
@@ -258,6 +334,7 @@
 	key = TUTORIAL_STEP_SURVEYS_NODE
 	name = "Research the survey console"
 	text = "At the R&D console, research Orbital Survey Console."
+	highlight_types = list(/obj/machinery/computer/rdconsole)
 
 /datum/vc_tutorial_step/surveys_node/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -268,6 +345,7 @@
 	key = TUTORIAL_STEP_SURVEYS_BUILD
 	name = "Build a survey console"
 	text = "Print its board at the circuit imprinter and build it like any computer."
+	highlight_types = list(/obj/machinery/rnd/production/circuit_imprinter)
 
 /datum/vc_tutorial_step/surveys_build/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -277,11 +355,13 @@
 	key = TUTORIAL_STEP_SURVEYS_SURVEY
 	name = "Survey a planet"
 	text = "Fly next to a planet and start a survey at the console."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/shuttle_docker/survey)
 
 /datum/vc_tutorial_step/surveys_notes
 	key = TUTORIAL_STEP_SURVEYS_NOTES
 	name = "Turn in the notes"
 	text = "Print the notes at the survey console and use them on the R&D console."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/shuttle_docker/survey, /obj/machinery/computer/rdconsole)
 
 // ---------------------------------------------------------------------------
 // Planet ruin
@@ -290,7 +370,9 @@
 /datum/vc_tutorial/ruin
 	id = TUTORIAL_ITEM_RUIN
 	name = "Planet ruin"
-	order = 5
+	category = TUTORIAL_CATEGORY_EXPLORE
+	order = 2
+	intro = "Planets are dotted with ruins people left behind. Most hold loot, often an abandoned cache, and usually something guarding it."
 	steps = list(
 		/datum/vc_tutorial_step/ruin_land,
 		/datum/vc_tutorial_step/ruin_find,
@@ -301,6 +383,7 @@
 	key = TUTORIAL_STEP_RUIN_LAND
 	name = "Land on a planet"
 	text = "Dock at a planet from the helm."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /datum/vc_tutorial_step/ruin_find
 	key = TUTORIAL_STEP_RUIN_FIND
@@ -311,6 +394,7 @@
 	key = TUTORIAL_STEP_RUIN_CACHE
 	name = "Open the cache"
 	text = "Find the abandoned cache and open it. No cache? Try another ruin."
+	highlight_types = list(/obj/structure/closet/crate/zone_loot, /obj/structure/closet/crate/secure/loot)
 
 // ---------------------------------------------------------------------------
 // Outpost trade
@@ -319,7 +403,9 @@
 /datum/vc_tutorial/trade
 	id = TUTORIAL_ITEM_TRADE
 	name = "Outpost trade"
-	order = 6
+	category = TUTORIAL_CATEGORY_EXPLORE
+	order = 3
+	intro = "Outposts are where you buy gear and sell what you found. Each trader has their own stock and a list of things they want."
 	steps = list(
 		/datum/vc_tutorial_step/trade_travel,
 		/datum/vc_tutorial_step/trade_elevator,
@@ -331,11 +417,13 @@
 	key = TUTORIAL_STEP_TRADE_TRAVEL
 	name = "Travel to an outpost and dock"
 	text = "Fly to a trading outpost and press Dock at the helm."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /datum/vc_tutorial_step/trade_elevator
 	key = TUTORIAL_STEP_TRADE_ELEVATOR
 	name = "Ride the elevator"
 	text = "From your berth, take the elevator up to the concourse."
+	highlight_types = list(/obj/machinery/outpost_elevator)
 
 /datum/vc_tutorial_step/trade_buy
 	key = TUTORIAL_STEP_TRADE_BUY
@@ -354,7 +442,9 @@
 /datum/vc_tutorial/power
 	id = TUTORIAL_ITEM_POWER
 	name = "Ship power"
-	order = 7
+	category = TUTORIAL_CATEGORY_START
+	order = 2
+	intro = "The SMES batteries in engineering power the whole ship. A fuel generator recharges them while it runs. Each room has an APC that switches its lights, machines and air on or off."
 	steps = list(
 		/datum/vc_tutorial_step/power_smes,
 		/datum/vc_tutorial_step/power_generator,
@@ -365,11 +455,13 @@
 	key = TUTORIAL_STEP_POWER_SMES
 	name = "Check the batteries"
 	text = "Find the SMES in engineering. It powers the ship."
+	highlight_types = list(/obj/machinery/power/smes)
 
 /datum/vc_tutorial_step/power_generator
 	key = TUTORIAL_STEP_POWER_GENERATOR
 	name = "Start the generator"
 	text = "Load plasma into the generator and turn it on to recharge the batteries."
+	highlight_types = list(/obj/machinery/power/port_gen)
 
 /datum/vc_tutorial_step/power_generator/availability(mob/user)
 	if(excused(user))
@@ -377,6 +469,8 @@
 	return null
 
 /datum/vc_tutorial_step/power_generator/excused(mob/user)
+	if(..())
+		return TRUE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && !SSvc_tutorials.ship_has_machine(ship, /obj/machinery/power/port_gen)
 
@@ -384,6 +478,7 @@
 	key = TUTORIAL_STEP_POWER_APC
 	name = "Find an APC"
 	text = "Each room has a power panel on the wall. Use it to turn things off or back on."
+	highlight_types = list(/obj/machinery/power/apc)
 
 // ---------------------------------------------------------------------------
 // Cyberware
@@ -392,7 +487,9 @@
 /datum/vc_tutorial/chrome
 	id = TUTORIAL_ITEM_CHROME
 	name = "Cyberware"
-	order = 8
+	category = TUTORIAL_CATEGORY_BODY
+	order = 1
+	intro = "Chrome is cybernetic parts fitted into your body. Some of it lets you finish off a downed enemy in one move."
 	steps = list(
 		/datum/vc_tutorial_step/chrome_buy,
 		/datum/vc_tutorial_step/chrome_install,
@@ -408,6 +505,7 @@
 	key = TUTORIAL_STEP_CHROME_INSTALL
 	name = "Get it installed"
 	text = "Lie in the Chop Shop's Chrome Cradle, or have it put in by surgery."
+	highlight_types = list(/obj/machinery/chrome_cradle)
 
 /datum/vc_tutorial_step/chrome_execute
 	key = TUTORIAL_STEP_CHROME_EXECUTE
@@ -421,7 +519,9 @@
 /datum/vc_tutorial/surgery
 	id = TUTORIAL_ITEM_SURGERY
 	name = "First surgery"
-	order = 9
+	category = TUTORIAL_CATEGORY_BODY
+	order = 2
+	intro = "Surgery heals wounds and works on organs. The patient lies down under a sheet or drapes, and each step needs the right tool. Dissecting a body adds to your ship's research."
 	steps = list(
 		/datum/vc_tutorial_step/surgery_start,
 		/datum/vc_tutorial_step/surgery_finish,
@@ -432,6 +532,7 @@
 	key = TUTORIAL_STEP_SURGERY_START
 	name = "Start an operation"
 	text = "Lay a hurt crewmate down, cover them with a bedsheet or surgical drapes and pick Tend Wounds. The autolathe prints the tools."
+	highlight_types = list(/obj/structure/table/optable)
 
 /datum/vc_tutorial_step/surgery_finish
 	key = TUTORIAL_STEP_SURGERY_FINISH
@@ -442,6 +543,7 @@
 	key = TUTORIAL_STEP_SURGERY_DISSECT
 	name = "Dissect a body"
 	text = "Lay a corpse or dead creature on a table, cover it with a bedsheet or surgical drapes and pick Dissection. What you learn goes into your ship's research."
+	highlight_types = list(/obj/structure/table/optable)
 
 // ---------------------------------------------------------------------------
 // Zones (replaces the old orientation briefing)
@@ -450,7 +552,9 @@
 /datum/vc_tutorial/zones
 	id = TUTORIAL_ITEM_ZONES
 	name = "Zones"
-	order = 10
+	category = TUTORIAL_CATEGORY_FIGHT
+	order = 1
+	intro = "Space is split into green, yellow and red zones. Green is safe from other crews. In yellow crews can board each other, and in red anything goes."
 	steps = list(
 		/datum/vc_tutorial_step/zones_yellow,
 		/datum/vc_tutorial_step/zones_warfare,
@@ -461,11 +565,13 @@
 	key = TUTORIAL_STEP_ZONES_YELLOW
 	name = "Enter the yellow zone"
 	text = "Green space has no fighting between crews. In yellow, other crews can board and rob you."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /datum/vc_tutorial_step/zones_warfare
 	key = TUTORIAL_STEP_ZONES_WARFARE
 	name = "Research Shuttle Warfare Systems"
 	text = "At the R&D console. It leads to shields, guns, missiles and an interdictor for your ship."
+	highlight_types = list(/obj/machinery/computer/rdconsole)
 
 /datum/vc_tutorial_step/zones_warfare/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -476,6 +582,7 @@
 	name = "Enter the red zone"
 	text = "Anything goes in red. Ships fire on each other and players can kill you for nothing."
 	optional = TRUE
+	highlight_types = list(/obj/machinery/computer/helm)
 
 // ---------------------------------------------------------------------------
 // Storage
@@ -484,7 +591,9 @@
 /datum/vc_tutorial/storage
 	id = TUTORIAL_ITEM_STORAGE
 	name = "Storage"
-	order = 11
+	category = TUTORIAL_CATEGORY_START
+	order = 4
+	intro = "Loose items get lost fast on a ship. Cargo shelves stack crates out of the way, and smart lockers keep items sorted for the whole crew."
 	steps = list(
 		/datum/vc_tutorial_step/storage_shelf,
 		/datum/vc_tutorial_step/storage_crate,
@@ -501,16 +610,19 @@
 	key = TUTORIAL_STEP_STORAGE_CRATE
 	name = "Shelve a crate"
 	text = "Drag a crate onto a cargo shelf to lift it up."
+	highlight_types = list(/obj/structure/cargo_shelf)
 
 /datum/vc_tutorial_step/storage_locker
 	key = TUTORIAL_STEP_STORAGE_LOCKER
 	name = "Build a smart locker"
 	text = "Print a Smart Locker board and build it in a machine frame."
+	highlight_types = list(/obj/machinery/rnd/production/circuit_imprinter)
 
 /datum/vc_tutorial_step/storage_store
 	key = TUTORIAL_STEP_STORAGE_STORE
 	name = "Fill a smart locker"
 	text = "Put an item in a smart locker, or drag a bag onto it to empty the bag."
+	highlight_types = list(/obj/machinery/smartfridge/storage)
 
 // ---------------------------------------------------------------------------
 // Repair drones
@@ -519,7 +631,9 @@
 /datum/vc_tutorial/repair_drones
 	id = TUTORIAL_ITEM_REPAIR_DRONES
 	name = "Repair drones"
-	order = 12
+	category = TUTORIAL_CATEGORY_KEEP
+	order = 1
+	intro = "Repair drones fix hull damage while you fly. They rebuild it with ore from your ship's silo."
 	steps = list(
 		/datum/vc_tutorial_step/repair_drones_research,
 		/datum/vc_tutorial_step/repair_drones_assemble,
@@ -531,6 +645,7 @@
 	key = TUTORIAL_STEP_REPAIR_DRONES_RESEARCH
 	name = "Research Shuttle Repair Swarm"
 	text = "At the R&D console, after Shuttle Automation, Robotics and Mech Assembly."
+	highlight_types = list(/obj/machinery/computer/rdconsole)
 
 /datum/vc_tutorial_step/repair_drones_research/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -541,11 +656,13 @@
 	key = TUTORIAL_STEP_REPAIR_DRONES_ASSEMBLE
 	name = "Assemble a drone"
 	text = "Print the four drone parts at an exosuit fabricator and fit them to the chassis."
+	highlight_types = list(/obj/machinery/mecha_part_fabricator)
 
 /datum/vc_tutorial_step/repair_drones_link
 	key = TUTORIAL_STEP_REPAIR_DRONES_LINK
 	name = "Link the drone"
 	text = "Install the repair swarm disk, then use a multitool on the construction console and the drone."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/base_construction/ship, /obj/structure/ship_repair_drone)
 
 /datum/vc_tutorial_step/repair_drones_repair
 	key = TUTORIAL_STEP_REPAIR_DRONES_REPAIR
@@ -559,7 +676,9 @@
 /datum/vc_tutorial/ship_save
 	id = TUTORIAL_ITEM_SHIP_SAVE
 	name = "Save your ship"
-	order = 13
+	category = TUTORIAL_CATEGORY_KEEP
+	order = 2
+	intro = "A saved ship can be loaded again in a later round. Saving happens at a crew outpost with ship bays."
 	steps = list(
 		/datum/vc_tutorial_step/ship_save_dock,
 		/datum/vc_tutorial_step/ship_save_save,
@@ -570,6 +689,7 @@
 	key = TUTORIAL_STEP_SHIP_SAVE_DOCK
 	name = "Dock in a ship bay"
 	text = "Dock at a crew outpost that has ship bays."
+	highlight_types = list(/obj/machinery/computer/helm)
 
 /// Only the captain can save or load a ship.
 /datum/vc_tutorial_step/proc/captain_only_note(mob/user)
@@ -581,11 +701,14 @@
 	key = TUTORIAL_STEP_SHIP_SAVE_SAVE
 	name = "Save the ship"
 	text = "At the bay's shipyard console, open Saved ships and save your ship to a slot."
+	highlight_types = list(/obj/machinery/computer/ship_checkpoint)
 
 /datum/vc_tutorial_step/ship_save_save/availability(mob/user)
 	return captain_only_note(user)
 
 /datum/vc_tutorial_step/ship_save_save/excused(mob/user)
+	if(..())
+		return TRUE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && !ship.is_ship_captain(user)
 
@@ -594,6 +717,7 @@
 	name = "Load a saved ship"
 	text = "Pick a saved ship when you join, or build it at a shipyard console once the old hull is gone."
 	optional = TRUE
+	highlight_types = list(/obj/machinery/computer/ship_checkpoint)
 
 // ---------------------------------------------------------------------------
 // Vestige pact
@@ -602,7 +726,9 @@
 /datum/vc_tutorial/vestige
 	id = TUTORIAL_ITEM_VESTIGE
 	name = "Vestige pact"
-	order = 14
+	category = TUTORIAL_CATEGORY_FIGHT
+	order = 10
+	intro = "Vestiges are strange places that show up during the round. The patron inside sets you one trial, and finishing it earns a boon."
 	steps = list(
 		/datum/vc_tutorial_step/vestige_find,
 		/datum/vc_tutorial_step/vestige_pact,

@@ -3,6 +3,13 @@
 // never collide with tg's own tutorial keys, and must stay at most 64 characters.
 // Never rename a key that has shipped: players' saved progress is stored under it.
 
+// Panel categories, in the order the panel lists them (GLOB.tutorial_categories holds the names).
+#define TUTORIAL_CATEGORY_START "start"
+#define TUTORIAL_CATEGORY_EXPLORE "explore"
+#define TUTORIAL_CATEGORY_BODY "body"
+#define TUTORIAL_CATEGORY_FIGHT "fight"
+#define TUTORIAL_CATEGORY_KEEP "keep"
+
 // Checklist items. An item key is written once every counted step of the item is done,
 // so later step additions don't reopen a finished item.
 #define TUTORIAL_ITEM_SHIP "vc/ship"

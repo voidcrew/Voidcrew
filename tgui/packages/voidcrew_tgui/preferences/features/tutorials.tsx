@@ -9,3 +9,10 @@ export const tutorial_checklist: FeatureToggle = {
   description: 'Open the tutorial checklist each time you spawn.',
   component: CheckboxInput,
 };
+
+export const tutorial_highlights: FeatureToggle = {
+  name: 'Highlight tutorial objects',
+  category: 'GAMEPLAY',
+  description: 'Outline the objects the open tutorial points at.',
+  component: CheckboxInput,
+};
