@@ -332,6 +332,8 @@
  * The line runs from the middle of the pixel the wire leaves the hand from (wire_hand_point()) to the middle of the
  * pixel it lands on (wire_zone_point()), and covers both, whichever way it runs. Both pieces are cut from that one
  * line (wire_lash_shape()), so they meet without a step; only the target's piece carries the wire's bright end.
+ *
+ * A swing that carried on into someone standing right behind its target draws wire_lash_through() instead.
  */
 /// How fast the piece of a lash that runs along a leg beyond the wielder goes.
 #define WIRE_LASH_SNAP_FADE (0.25 SECONDS)
@@ -351,7 +353,12 @@
 	var/turf/hit = get_turf(target)
 	cross = cross || lash_crossing
 	lash_crossing = FALSE
+	var/mob/living/through = lash_through?.resolve()
+	lash_through = null
 	if(!from || !hit || from == hit || from.z != hit.z)
+		return
+	// The swing carried on into someone right behind its target: the one line runs on to them.
+	if(through && !cross && isliving(target) && wire_lash_through(user, target, through))
 		return
 	zone = zone || check_zone(user.zone_selected)
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
@@ -405,6 +412,84 @@
 	var/snap = hit.y > from.y && !behind && !cross && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG)
 	var/target_row = target.pixel_y + (behind ? WIRE_LASH_ROW_TARGET : -WIRE_LASH_ROW_TARGET)
 	wire_line_piece(hit, base_x, base_y, wire_lash_shape(span_x, span_y, 0, (1 - along) * length + 0.5, edge_x - base_x, edge_y - base_y), lash_state(), behind ? BELOW_MOB_LAYER : ABOVE_MOB_LAYER, target_row, fade = snap ? WIRE_LASH_SNAP_FADE : WIRE_LASH_FADE)
+
+/**
+ * The lash of a swing that carried on through `target` into `behind`, standing right behind it (wire_cleave()): the one
+ * line runs on, straight from the hand to the middle of `behind`'s chest, the last part it cut, through `target` on the
+ * way. No light of its own and no line of blood: it is the wire. Cut from one line like any lash (wire_lash_shape()),
+ * in four pieces, each sorted against its own body:
+ * - The hand's piece, on the wielder's tile, as in any lash.
+ * - On `target`'s tile, up to where the line passes its chest: over it, or under one standing nearer the viewer than
+ *   the wielder, met on its far side (wire_lash_behind()).
+ * - On from there to the edge of `behind`'s tile the wire has gone through `target` and out of its other side: under
+ *   it where it went in over it, over it where it went in under it. Inside a body or behind one, it isn't seen. Over
+ *   a body lying on the floor all the way.
+ * - On `behind`'s tile, to its chest, with the wire's bright end: over it or under it by the same rule.
+ * Returns FALSE, with nothing drawn, if the three don't stand so that a line can run through them in that order.
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_lash_through(mob/living/user, mob/living/target, mob/living/behind)
+	var/turf/from = get_turf(user)
+	var/turf/first = get_turf(target)
+	var/turf/last = get_turf(behind)
+	if(QDELETED(behind) || !from || !first || !last || from.z != first.z || from.z != last.z || from == first || first == last || from == last)
+		return FALSE
+	var/list/hand = wire_hand_point(user, held_side(user) || "right")
+	var/hand_x = user.pixel_x + hand[1]
+	var/hand_y = user.pixel_y + hand[2]
+	// The pixel it passes on the first body and the pixel it lands on, by their lower left corners from the middle of
+	// each body's own tile; the tiles, from the middle of the wielder's.
+	var/list/chest = wire_zone_point(target, BODY_ZONE_CHEST)
+	var/list/end = wire_zone_point(behind, BODY_ZONE_CHEST)
+	var/first_x = (first.x - from.x) * ICON_SIZE_X
+	var/first_y = (first.y - from.y) * ICON_SIZE_Y
+	var/last_x = (last.x - from.x) * ICON_SIZE_X
+	var/last_y = (last.y - from.y) * ICON_SIZE_Y
+	// From the middle of the hand's pixel to the middle of the one it lands on.
+	var/start_x = hand_x + 0.5
+	var/start_y = hand_y + 0.5
+	var/span_x = last_x + end[1] - hand_x
+	var/span_y = last_y + end[2] - hand_y
+	var/length = sqrt(span_x ** 2 + span_y ** 2)
+	if(length < 1)
+		return FALSE
+	// How far along, in pixels, it leaves the wielder's tile, passes the first body's chest and enters the second's tile.
+	var/leaves = length * wire_line_crosses(start_x, start_y, span_x, span_y, first.y == from.y, SIGN(first_x) * ICON_SIZE_X / 2, SIGN(first_y) * ICON_SIZE_Y / 2)
+	var/enters = length * wire_line_crosses(start_x, start_y, span_x, span_y, last.y == first.y, last_x - SIGN(last_x - first_x) * ICON_SIZE_X / 2, last_y - SIGN(last_y - first_y) * ICON_SIZE_Y / 2)
+	if(enters < leaves)
+		return FALSE
+	var/passes = clamp(((first_x + chest[1] - hand_x) * span_x + (first_y + chest[2] - hand_y) * span_y) / length, leaves, enters)
+	wire_lash_hide(user)
+	if(leaves >= 0.5)
+		wire_line_piece(from, hand_x, hand_y, wire_lash_shape(span_x, span_y, -WIRE_LASH_BACK, leaves, 0.5, 0.5), lash_run_state(), wire_line_layer(hand[3]), user.pixel_y + (hand[3] ? WIRE_LASH_ROW_HAND : -WIRE_LASH_ROW_HAND))
+	var/under = wire_lash_behind(user, target, BODY_ZONE_CHEST, hand[3], FALSE)
+	var/under_after = target.body_position == LYING_DOWN ? under : !under
+	wire_lash_stretch(first, from, start_x, start_y, span_x, span_y, length, leaves, passes, lash_run_state(), under, target.pixel_y)
+	wire_lash_stretch(first, from, start_x, start_y, span_x, span_y, length, passes, enters, lash_run_state(), under_after, target.pixel_y)
+	wire_lash_stretch(last, from, start_x, start_y, span_x, span_y, length, enters, length + 0.5, lash_state(), wire_lash_behind(user, behind, BODY_ZONE_CHEST, hand[3], FALSE), behind.pixel_y)
+	return TRUE
+
+/**
+ * One stretch of a lash's line beyond the wielder's tile, from `from_length` to `to_length` pixels along it, on the
+ * tile `where` of the body it is sorted against: `under` it or over it, `row` being that body's pixel_y. The line
+ * starts (`start_x`, `start_y`) from the middle of the wielder's tile `from` and runs (`span_x`, `span_y`), `length`
+ * long. The piece is placed on the pixel its first point falls in, and the rest of the way to that point is in its
+ * shape, so that consecutive stretches are one line (wire_lash_shape()).
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_lash_stretch(turf/where, turf/from, start_x, start_y, span_x, span_y, length, from_length, to_length, state, under, row)
+	if(to_length - from_length < 0.5)
+		return
+	var/at_x = start_x + span_x * from_length / length - (where.x - from.x) * ICON_SIZE_X
+	var/at_y = start_y + span_y * from_length / length - (where.y - from.y) * ICON_SIZE_Y
+	var/base_x = floor(at_x)
+	var/base_y = floor(at_y)
+	wire_line_piece(where, base_x, base_y, wire_lash_shape(span_x, span_y, 0, to_length - from_length, at_x - base_x, at_y - base_y), state, under ? BELOW_MOB_LAYER : ABOVE_MOB_LAYER, row + (under ? WIRE_LASH_ROW_TARGET : -WIRE_LASH_ROW_TARGET))
+
+/// How far along a line from (`start_x`, `start_y`) running (`span_x`, `span_y`) it crosses the edge between two tiles:
+/// the upright edge at `edge_x` for tiles side by side (`level`), else the level one at `edge_y`. From 0 to 1.
+/proc/wire_line_crosses(start_x, start_y, span_x, span_y, level, edge_x, edge_y)
+	if(level)
+		return span_x ? clamp((edge_x - start_x) / span_x, 0, 1) : 1
+	return span_y ? clamp((edge_y - start_y) / span_y, 0, 1) : 1
 
 #undef WIRE_LASH_SNAP_FADE
 #undef WIRE_CROSS_PAST

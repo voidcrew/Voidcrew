@@ -340,8 +340,8 @@
 	var/result = lines(target)
 	TEST_ASSERT(findtext(result, "carries through into [behind]"), "The through-cut's line didn't join the hit: [result]")
 	TEST_ASSERT(findtext(result, "sings through everything beside"), "The cleave's line didn't join the hit: [result]")
-	var/streak = locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in get_turf(behind)
-	TEST_ASSERT_NOTNULL(streak, "The through-cut left no streak through the second body's tile")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in get_turf(behind), "The through-cut laid a streak on the floor")
+	TEST_ASSERT_NULL(locate(/obj/effect/ebeam) in range(3, target), "The through-cut drew a beam of its own")
 	TEST_ASSERT(!HAS_TRAIT(behind, "hv_clean_cut"), "TRAIT_HV_CLEAN_CUT outlived the cleave")
 
 	// A real swing does all of it in one message.
@@ -351,6 +351,19 @@
 	wire.melee_attack_chain(user, target)
 	TEST_ASSERT(target.getBruteLoss() > 0, "The swing didn't land")
 	TEST_ASSERT(behind.getBruteLoss() > 0, "A landed swing didn't carry through")
+	// The swing's one lash runs on to the body behind and ends there; it goes into the first body over it and comes
+	// out under it.
+	var/obj/effect/abstract/wire_reach/lash_end = locate() in get_turf(behind)
+	TEST_ASSERT_NOTNULL(lash_end, "The lash of a through-cut stopped short of the body behind")
+	TEST_ASSERT_EQUAL(lash_end.icon_state, wire.lash_state(), "The lash of a through-cut has no bright end on the body behind")
+	var/over = 0
+	var/under = 0
+	for(var/obj/effect/abstract/wire_reach/piece in get_turf(target))
+		if(piece.layer == ABOVE_MOB_LAYER)
+			over++
+		else if(piece.layer == BELOW_MOB_LAYER)
+			under++
+	TEST_ASSERT(over == 1 && under == 1, "The lash of a through-cut should cross the first body in two pieces, over it then under it: [over] over, [under] under")
 
 /// A cut wets the wire with the victim's blood, which drips, dries and flicks off on stowing; the DNA stays. The Arc stays clean.
 /datum/unit_test/voidcrew_widowline/wire_bloody
