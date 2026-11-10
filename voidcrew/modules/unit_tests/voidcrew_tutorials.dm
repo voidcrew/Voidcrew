@@ -522,6 +522,64 @@
 	TEST_ASSERT(removed, "The spent save was not removed")
 	TEST_ASSERT(credited, "Using a saved ship was not credited")
 
+/// The outline follows the open item's first unfinished step, honours the preference, and
+/// cleans up when its target is deleted or the viewer logs out.
+/datum/unit_test/voidcrew_tutorials/highlights
+	var/datum/tutorial_highlight/highlight
+
+/datum/unit_test/voidcrew_tutorials/highlights/Destroy()
+	QDEL_NULL(highlight)
+	SSvc_tutorials.selected -= TUTORIAL_TEST_CKEY
+	return ..()
+
+/datum/unit_test/voidcrew_tutorials/highlights/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	make_crewed_ship(deck, player)
+	SSvc_tutorials.build_catalog()
+	SSvc_tutorials.selected[TUTORIAL_TEST_CKEY] = "vc/ship"
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, deck)
+	var/obj/machinery/computer/helm/helm = allocate(/obj/machinery/computer/helm, deck)
+
+	// A clientless body never gets one by itself.
+	tutorial_refresh_highlights(player)
+	TEST_ASSERT_NULL(GLOB.tutorial_highlighters[TUTORIAL_TEST_CKEY], "A body with no client got highlights")
+
+	highlight = new(player)
+	highlight.wanted_override = TRUE
+	highlight.rebuild(player)
+	// Ship management is captain-only, so a crewmate's first step is searching the lockers.
+	var/image/locker_image = highlight.images[locker]
+	TEST_ASSERT(locker_image, "The locker by the player was not outlined for the search step")
+	TEST_ASSERT(!highlight.images[helm], "The helm was outlined before its step")
+	TEST_ASSERT(length(highlight.images) <= 3, "More than three objects were outlined")
+	TEST_ASSERT_EQUAL(locker_image.loc, locker, "The outline is not attached to the locker")
+	TEST_ASSERT_EQUAL(length(locker_image.filters), 2, "The outline is missing its outline or glow filter")
+
+	// Finishing the step moves the outline on through the real credit path.
+	tutorial_credit(player, "vc/ship/search")
+	TEST_ASSERT(highlight.images[helm], "The helm was not outlined once searching was done")
+	TEST_ASSERT(!highlight.images[locker], "The locker stayed outlined after its step was done")
+
+	highlight.wanted_override = FALSE
+	highlight.rebuild(player)
+	TEST_ASSERT_EQUAL(length(highlight.images), 0, "Outlines showed with the preference off")
+	highlight.wanted_override = TRUE
+	highlight.rebuild(player)
+	TEST_ASSERT(highlight.images[helm], "The helm was not outlined again with the preference back on")
+
+	qdel(helm)
+	TEST_ASSERT(!(helm in highlight.images), "A deleted helm kept its outline")
+
+	var/obj/machinery/computer/helm/second_helm = allocate(/obj/machinery/computer/helm, deck)
+	highlight.rebuild(player)
+	TEST_ASSERT(highlight.images[second_helm], "A new helm was not outlined")
+	SEND_SIGNAL(player, COMSIG_MOB_LOGOUT)
+	TEST_ASSERT(QDELETED(highlight), "Logging out did not end the highlights")
+	TEST_ASSERT_EQUAL(length(highlight.images), 0, "Logging out left outline images behind")
+	TEST_ASSERT_NULL(GLOB.tutorial_highlighters[TUTORIAL_TEST_CKEY], "Logging out left the viewer registered")
+	highlight = null
+
 /// Taking a contract credits whoever accepted it; work and turn-in credit the crew.
 /datum/unit_test/voidcrew_tutorials_contract
 	parent_type = /datum/unit_test/voidcrew_zone_missions
