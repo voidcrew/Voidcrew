@@ -564,14 +564,14 @@
  * A click made with a chrome ability armed belongs to the chrome, refused or
  * not. tg's version returns FALSE on a refusal, and ClickOn() then carries on
  * as an ordinary click: a held gun fires at whoever was out of reach, an empty
- * hand punches whoever the deck would not take. So an armed ability swallows
+ * hand punches whoever the ability would not take. So an armed ability swallows
  * every click it is handed. A refusal (out of reach, no line of sight, wrong
  * target) keeps it armed for another try; a button that has gone dark
  * since it was armed (EMP, cooldown started elsewhere, stun) disarms, so the
  * next click is an ordinary one again.
  *
  * Only for a real click on an armed ability. Trigger() with a target (AI and
- * scripted callers) and the deck's zoom relay pass through unchanged.
+ * scripted callers) pass through unchanged.
  */
 /datum/action/cooldown/cyberware/InterceptClickOn(mob/living/clicker, params, atom/target)
 	var/armed = !isnull(clicker) && clicker.click_intercept == src

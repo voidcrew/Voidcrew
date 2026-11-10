@@ -78,7 +78,7 @@
 		/datum/shop_sku/ripperdoc/governor_street,
 		/datum/shop_sku/ripperdoc/redline_street,
 		/datum/shop_sku/ripperdoc/cascade_street,
-		// The phase 2 street models, street passives, optics and decks.
+		// The phase 2 street models, street passives and optics.
 		/datum/shop_sku/ripperdoc/spyglass,
 		/datum/shop_sku/ripperdoc/cuffer_wrists,
 		/datum/shop_sku/ripperdoc/medic_palms,
@@ -91,7 +91,6 @@
 		/datum/shop_sku/ripperdoc/frostline,
 		/datum/shop_sku/ripperdoc/atlas_street,
 		/datum/shop_sku/ripperdoc/doppler_street,
-		/datum/shop_sku/ripperdoc/deck_junker,
 		/datum/shop_sku/ripperdoc/second_wind_deep,
 		/datum/shop_sku/ripperdoc/slipwire_street,
 		/datum/shop_sku/ripperdoc/hopper_street,
@@ -101,7 +100,6 @@
 		/datum/shop_sku/ripperdoc/ronin_holdout,
 		/datum/shop_sku/ripperdoc/longsight,
 		/datum/shop_sku/ripperdoc/hardweave,
-		/datum/shop_sku/ripperdoc/deck_street,
 		// ---- Pro Chrome (mixed) ----
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/hemoglass,
@@ -133,13 +131,10 @@
 		/datum/shop_sku/ripperdoc/slipwire_milspec,
 		/datum/shop_sku/ripperdoc/deadeye_milspec,
 		/datum/shop_sku/ripperdoc/lookout,
-		/datum/shop_sku/ripperdoc/deck_control,
-		/datum/shop_sku/ripperdoc/deck_assault,
 		// ---- Legend Chrome (the chase, always listed) ----
 		/datum/shop_sku/ripperdoc/governor_delete,
 		/datum/shop_sku/ripperdoc/redline,
 		/datum/shop_sku/ripperdoc/cascade,
-		/datum/shop_sku/ripperdoc/deck_flagship,
 		// ---- Ammunition (parlor-only reloads) ----
 		/datum/shop_sku/ripperdoc/ronin_mag,
 		/datum/shop_sku/ripperdoc/buster_rockets,
@@ -157,7 +152,7 @@
 		/datum/shop_buyback/ripperdoc/governor_street,
 		/datum/shop_buyback/ripperdoc/redline_street,
 		/datum/shop_buyback/ripperdoc/cascade_street,
-		// The phase 2 street models, street passives, optics and decks.
+		// The phase 2 street models, street passives and optics.
 		/datum/shop_buyback/ripperdoc/spyglass,
 		/datum/shop_buyback/ripperdoc/cuffer_wrists,
 		/datum/shop_buyback/ripperdoc/medic_palms,
@@ -170,7 +165,6 @@
 		/datum/shop_buyback/ripperdoc/frostline,
 		/datum/shop_buyback/ripperdoc/atlas_street,
 		/datum/shop_buyback/ripperdoc/doppler_street,
-		/datum/shop_buyback/ripperdoc/deck_junker,
 		/datum/shop_buyback/ripperdoc/second_wind_deep,
 		/datum/shop_buyback/ripperdoc/slipwire_street,
 		/datum/shop_buyback/ripperdoc/hopper_street,
@@ -180,7 +174,6 @@
 		/datum/shop_buyback/ripperdoc/ronin_holdout,
 		/datum/shop_buyback/ripperdoc/longsight,
 		/datum/shop_buyback/ripperdoc/hardweave,
-		/datum/shop_buyback/ripperdoc/deck_street,
 		// The rest of the credit shelf (owner D7).
 		/datum/shop_buyback/ripperdoc/hopper,
 		/datum/shop_buyback/ripperdoc/coolant,

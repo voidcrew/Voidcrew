@@ -48,7 +48,6 @@
 		/datum/shop_sku/ripperdoc/hopper_street,
 		/datum/shop_sku/ripperdoc/rockjaw_deepcore,
 		/datum/shop_sku/ripperdoc/longsight,
-		/datum/shop_sku/ripperdoc/deck_junker,
 		/datum/shop_sku/ripperdoc/hopper_milspec,
 	)
 	loot_common = list(
@@ -82,12 +81,11 @@
 		// and hoppers its own ore, and a harpoon winch for everything else
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/angler = 3,
-		// claim chrome a step up: calf springs, the heavy drill fist, long
-		// optics, and a junk deck for the depot doors
+		// claim chrome a step up: calf springs, the heavy drill fist and long
+		// optics
 		/obj/item/organ/cyberimp/cyberware/hopper/street = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore = 3,
 		/obj/item/organ/eyes/robotic/cyberware/longsight = 2,
-		/obj/item/organ/cyberimp/cyberware/deck = 3,
 	)
 	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,

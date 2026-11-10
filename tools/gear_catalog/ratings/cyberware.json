@@ -446,51 +446,6 @@
    "reason": "You stay on your feet down to -30 health instead of 0, stamina damage is halved, and damage never slows you, but your health display lies. About 30 more health and half of every disabler, for load 4 and 2 vouchers with no reputation.",
    "tier": "red"
   },
-  "/obj/item/organ/cyberimp/cyberware/deck": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Junker deck",
-   "rank": 8,
-   "reason": "From 5 tiles with a clear line, after a 2 s upload with a visible trace line: bolt or unbolt a door, burst an area's lights, or ping nearby cameras, turrets and powered doors through walls. 12 to 45 s cooldowns. No access bypass. Load 2, 1,500 cr; Splice takes it back for 750.",
-   "tier": "green"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/assault": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Breacher deck",
-   "rank": 2,
-   "reason": "People from 7 tiles after a 1 s upload: Feedback Surge for up to 60 burn, a knockdown and dropped hands; Overload a machine into a small explosion; Glitch one piece of a target's chrome into a 9 s reboot, heavier pieces likelier. Plus the Street deck's hacks. One shared cooldown, 45 to 60 s on the big ones. Load 6, 4 vouchers at reputation 11.",
-   "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/control": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Facilities deck",
-   "rank": 3,
-   "reason": "Doors, radios and turrets from 7 tiles after a 1 s upload: electrify a door for 30 s (20 burn and a stun), jam radios in a 9-tile bubble for 45 s, knock a turret off for 8 s, and Cutout, which empties every cell a person carries (energy guns, MOD suit) and kills their radios for 45 s. Plus the Street deck's hacks. One shared cooldown of 8 to 40 s. Load 6, 4 vouchers at reputation 11.",
-   "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/flagship": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Blackbox deck",
-   "rank": 1,
-   "reason": "Both service decks' hacks from 8 tiles with a 0.5 s upload, plus Arc Flash: five volleys of 14 burn on everyone near a powered machine in the room, two minutes apart. Still no access bypass, no emag and no woken machines, unlike the Machine Communion boon. Load 9 of 20, 7 vouchers at reputation 22.",
-   "tier": "red"
-  },
-  "/obj/item/organ/cyberimp/cyberware/deck/street": {
-   "confidence": "medium",
-   "group": "Hacking and ship control",
-   "hash": "",
-   "name": "Street deck",
-   "rank": 7,
-   "reason": "The Junker deck at 6 tiles and 1.5 s, plus Kill the Power: flip an APC's breaker and the whole area goes dark and unpowered. No hack that touches a person. Load 3, 2,400 cr at yellow reputation; buys back at 1,200.",
-   "tier": "yellow"
-  },
   "/obj/item/organ/cyberimp/cyberware/dermal_mesh": {
    "confidence": "high",
    "group": "Armor and frame",

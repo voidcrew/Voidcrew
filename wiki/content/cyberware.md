@@ -19,7 +19,7 @@ Outside the parlors, ordinary organ-manipulation surgery at any operating table 
 
 ## The Back Bay
 
-Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled chrome back on the same terms as Splice, even the pieces only Splice sells. His shelf carries the newer street pieces too: the cheap optics, the junk and street decks, and the quiet passives below.
+Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled chrome back on the same terms as Splice, even the pieces only Splice sells. His shelf carries the newer street pieces too: the cheap optics and the quiet passives below.
 
 ## Neural load
 
@@ -127,12 +127,6 @@ The newer makers fill in the gaps under the big names. Each takes the same slot 
 ## Optics and zoom
 
 Every pair of chrome eyes can zoom: focus on something far off and your view pulls toward it. Better eyes see further, and cheap ones make you slow while you look. Nobody shoots straight through a zoom, so you have to look up before you fire. A flash, a stun or an EMP snaps you out of it. Spyglass and assay optics are the cheap way in; the Longsight, the marksman link and the Lookout are what scouts and sharpshooters save for.
-
-## Cyberdecks
-
-A cyberdeck sits in the back of the skull and talks to machines and other people's gear. Use it, pick something you can see, and the deck offers only what that target will take: doors, lights, a room's power, turrets, radios, a person's gear and the chrome inside them. Pick yourself and it offers what it can do to the room around you. A deck works through your zoom, too.
-
-Every push draws a trace line to the target and makes their gear chirp, and it fails if you move, lose sight or get stunned. No deck opens a locked door, outpost security ignores them all, and inside a prison wing a deck does nothing. Jamming the radios or running a door live at a trader outpost counts as an attack there. The Junker deck and the Street deck sell for credits at both counters; the Facilities and Breacher decks, one for doors, radios and turrets and one for people and their gear, are vouchers from Splice; and the Blackbox deck, which does both, is legend chrome.
 
 ## Finding chrome in the wild
 
