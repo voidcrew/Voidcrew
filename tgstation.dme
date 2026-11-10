@@ -7715,6 +7715,7 @@
 #include "voidcrew\modules\tutorials\hooks_research.dm"
 #include "voidcrew\modules\tutorials\hooks_ship.dm"
 #include "voidcrew\modules\tutorials\hooks_trade.dm"
+#include "voidcrew\modules\tutorials\hooks_vestige.dm"
 #include "voidcrew\modules\tutorials\hooks_world.dm"
 #include "voidcrew\modules\tutorials\hooks_zones.dm"
 #include "voidcrew\modules\tutorials\preferences.dm"

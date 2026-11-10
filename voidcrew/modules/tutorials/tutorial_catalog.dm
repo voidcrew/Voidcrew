@@ -344,6 +344,7 @@
 	steps = list(
 		/datum/vc_tutorial_step/surgery_start,
 		/datum/vc_tutorial_step/surgery_finish,
+		/datum/vc_tutorial_step/surgery_dissect,
 	)
 
 /datum/vc_tutorial_step/surgery_start
@@ -355,6 +356,11 @@
 	key = TUTORIAL_STEP_SURGERY_FINISH
 	name = "Finish it"
 	text = "Work through each step with the right tool until the wound is closed."
+
+/datum/vc_tutorial_step/surgery_dissect
+	key = TUTORIAL_STEP_SURGERY_DISSECT
+	name = "Dissect a body"
+	text = "Lay a corpse or dead creature on a table, cover it with a bedsheet and pick Dissection. What you learn goes into your ship's research."
 
 // ---------------------------------------------------------------------------
 // Zones (replaces the old orientation briefing)
@@ -389,3 +395,38 @@
 	name = "Enter the red zone"
 	text = "Anything goes in red. Ships fire on each other and players can kill you for nothing."
 	optional = TRUE
+
+// ---------------------------------------------------------------------------
+// Vestige pact
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial/vestige
+	id = TUTORIAL_ITEM_VESTIGE
+	name = "Vestige pact"
+	order = 10
+	steps = list(
+		/datum/vc_tutorial_step/vestige_find,
+		/datum/vc_tutorial_step/vestige_pact,
+		/datum/vc_tutorial_step/vestige_trial,
+		/datum/vc_tutorial_step/vestige_claim,
+	)
+
+/datum/vc_tutorial_step/vestige_find
+	key = TUTORIAL_STEP_VESTIGE_FIND
+	name = "Find a vestige"
+	text = "Vestiges appear during the round as red signals on sensors. Fly to one and go inside."
+
+/datum/vc_tutorial_step/vestige_pact
+	key = TUTORIAL_STEP_VESTIGE_PACT
+	name = "Make a pact"
+	text = "Find the patron inside and choose Pact. It sets you one trial."
+
+/datum/vc_tutorial_step/vestige_trial
+	key = TUTORIAL_STEP_VESTIGE_TRIAL
+	name = "Complete the trial"
+	text = "Do what the patron asked. The reminder on your screen shows your progress."
+
+/datum/vc_tutorial_step/vestige_claim
+	key = TUTORIAL_STEP_VESTIGE_CLAIM
+	name = "Claim your boon"
+	text = "Use the Claim Your Boon button and pick one."

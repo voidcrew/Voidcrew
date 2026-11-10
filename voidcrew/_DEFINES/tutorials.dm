@@ -14,6 +14,7 @@
 #define TUTORIAL_ITEM_CHROME "vc/chrome"
 #define TUTORIAL_ITEM_SURGERY "vc/surgery"
 #define TUTORIAL_ITEM_ZONES "vc/zones"
+#define TUTORIAL_ITEM_VESTIGE "vc/vestige"
 
 // Your ship
 #define TUTORIAL_STEP_SHIP_MANAGE "vc/ship/manage"
@@ -58,11 +59,18 @@
 // First surgery
 #define TUTORIAL_STEP_SURGERY_START "vc/surgery/start"
 #define TUTORIAL_STEP_SURGERY_FINISH "vc/surgery/finish"
+#define TUTORIAL_STEP_SURGERY_DISSECT "vc/surgery/dissect"
 
 // Zones
 #define TUTORIAL_STEP_ZONES_YELLOW "vc/zones/yellow"
 #define TUTORIAL_STEP_ZONES_WARFARE "vc/zones/warfare"
 #define TUTORIAL_STEP_ZONES_RED "vc/zones/red"
+
+// Vestige pact
+#define TUTORIAL_STEP_VESTIGE_FIND "vc/vestige/find"
+#define TUTORIAL_STEP_VESTIGE_PACT "vc/vestige/pact"
+#define TUTORIAL_STEP_VESTIGE_TRIAL "vc/vestige/trial"
+#define TUTORIAL_STEP_VESTIGE_CLAIM "vc/vestige/claim"
 
 /// Prefix shared by every Voidcrew tutorial key in `tutorial_completions`.
 #define TUTORIAL_KEY_PREFIX "vc/"

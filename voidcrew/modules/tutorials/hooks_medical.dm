@@ -21,3 +21,11 @@
 /datum/surgery/complete(mob/surgeon)
 	tutorial_credit(surgeon, TUTORIAL_STEP_SURGERY_FINISH)
 	return ..()
+
+/// Every dissection tier inherits this step. The body's dissection_points_paid grows by
+/// exactly what the notes are worth, so a rise means research was actually earned.
+/datum/surgery_step/experimental_dissection/success(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, default_display_results = FALSE)
+	var/paid_before = target?.dissection_points_paid
+	. = ..()
+	if(target && target.dissection_points_paid > paid_before)
+		tutorial_credit(user, TUTORIAL_STEP_SURGERY_DISSECT)
