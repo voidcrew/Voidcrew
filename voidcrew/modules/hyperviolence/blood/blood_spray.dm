@@ -164,12 +164,11 @@
 
 /// tg's wound spray: note the tick, so the heavy-hit spray does not add a second one to the same hit.
 /// tg rolls a limb off without saying which way the blow went, and its spray with no direction flies
-/// south whatever happened: it goes the way of the hit being resolved, or is left out.
+/// south whatever happened. That one is left out: a lost limb already sprays along the blow
+/// (hv_blood_on_limb_removed()), and a second spray down the same line made one thick straight band.
 /mob/living/carbon/spray_blood(splatter_direction, splatter_strength = 3)
 	if(!splatter_direction)
-		splatter_direction = hv_blood_recent_hit_dir()
-		if(!splatter_direction)
-			return
+		return
 	hv_blood_tg_spray_tick = world.time
 	return ..()
 
