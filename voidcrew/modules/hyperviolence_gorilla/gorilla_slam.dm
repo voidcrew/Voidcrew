@@ -280,7 +280,7 @@
 	var/turned = facing == EAST ? -1 : 1
 	if(arm.slam_overhead)
 		top_x = side_on ? GORILLA_SLAM_TOP_SIDE_X * ahead : GORILLA_SLAM_TOP_FRONT_X
-		top_y = side_on ? GORILLA_SLAM_TOP_SIDE_Y : GORILLA_SLAM_TOP_FRONT_Y
+		top_y = side_on ? GORILLA_SLAM_TOP_SIDE_Y : (facing == NORTH ? GORILLA_SLAM_TOP_BACK_Y : GORILLA_SLAM_TOP_FRONT_Y)
 		top_angle = 90 * turned
 	else
 		top_x = side_on ? BRAWLER_SLAM_TOP_SIDE_X * ahead : BRAWLER_SLAM_TOP_FRONT_X
@@ -567,17 +567,21 @@
 			top.arms[pair[1]] = list(SLAM_ARM_GRIP, -7 * slam_x, 0)
 			top.arms[pair[2]] = list(SLAM_ARM_GRIP, -5 * slam_x, 4.5)
 	else
+		if(arm.slam_overhead && facing == NORTH)
+			top.shift_y = GORILLA_SLAM_TOP_BACK_RISE
 		for(var/side in list("l", "r"))
 			top.arms[side] = list(SLAM_ARM_POINT, slam_rig.shoulder(side)[1], top_y - (arm.slam_overhead ? 8 : 7))
 	settle_arms(top)
 	var/datum/gorilla_slam_pose/top_held = new(t_drive, facing)
 	top_held.lean = top.lean
+	top_held.shift_y = top.shift_y
 	top_held.arms = list()
 	// The hoist ends with the fists where the top has them, in the rig that took the body
 	var/datum/gorilla_slam_pose/hoisted = new(t_top, taking, SLAM_EASE_OUT)
 	hoisted.arms = list()
 	if(taking == facing)
 		hoisted.lean = top.lean
+		hoisted.shift_y = top.shift_y
 	for(var/side in list("l", "r"))
 		var/list/grip_at = top.grips[side]
 		top_held.arms[side] = list(SLAM_ARM_GRIP, grip_at[1], grip_at[2])
@@ -612,7 +616,7 @@
 /**
  * The bearer's puppets in the rig facing [way] at [time]: key ("legs", "body", "arm_l", "arm_r") -> transform. The body
  * pose is eased between the keys either side; an arm on the body is solved onto its grip, which slides between the keys'
- * grips, and an arm coming off it or going onto it swings between the keys' own arm poses.
+ * grips, and the hand of an arm coming off it or going onto it is carried straight between where the two keys have it.
  */
 /datum/gorilla_slam/proc/pose_at(time, way)
 	var/datum/gorilla_slam_pose/from_key
@@ -650,15 +654,12 @@
 			var/list/point = chrome_rig_apply(held, grip_from[1] + (grip_to[1] - grip_from[1]) * progress, grip_from[2] + (grip_to[2] - grip_from[2]) * progress)
 			arm_pose = reaching(rig, side, point[1], point[2], base[3])
 		else
-			var/list/arm_from = from_key.reached[side]
-			var/list/arm_to = to_key.reached[side]
-			// The short way round
-			var/swing = arm_to[1] - arm_from[1]
-			while(swing > 180)
-				swing -= 360
-			while(swing < -180)
-				swing += 360
-			arm_pose = list(arm_from[1] + swing * progress, arm_from[2] + (arm_to[2] - arm_from[2]) * progress)
+			// Coming off the body or going onto it: the hand goes straight from where one key has it to where the other
+			// does, in his own pixels, so the arm folds in past the shoulder and never swings out wide
+			var/list/hand_from = rig.hand_at(side, from_key.reached[side])
+			var/list/hand_to = rig.hand_at(side, to_key.reached[side])
+			arm_pose = rig.pose_reaching(side, hand_from[1] + (hand_to[1] - hand_from[1]) * progress, hand_from[2] + (hand_to[2] - hand_from[2]) * progress)
+			arm_pose[2] = min(arm_pose[2], GORILLA_SLAM_MAX_REACH)
 		.["arm_[side]"] = rig.arm_matrix(side, arm_pose[1], arm_pose[2], base[3])
 
 /// Every puppet takes its first pose: the rig that takes the body as he stands, the rig that brings it down at the top and unseen until then.

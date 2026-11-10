@@ -94,6 +94,10 @@
 #define GORILLA_SLAM_TOP_SIDE_Y 22
 #define GORILLA_SLAM_TOP_FRONT_X 3
 #define GORILLA_SLAM_TOP_FRONT_Y 28
+/// Seen from behind, the floor in front of him is up the screen too, about where a body held overhead is drawn. So he goes
+/// up on his toes at the top and holds it this high, and it has somewhere to come down from.
+#define GORILLA_SLAM_TOP_BACK_Y 34
+#define GORILLA_SLAM_TOP_BACK_RISE 4
 /// How far up tg draws a body lying on a table.
 #define GORILLA_SLAM_TABLE_TOP 12
 /// What holds the bearer where he stands for the slam.
