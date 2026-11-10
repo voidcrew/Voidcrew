@@ -131,7 +131,9 @@
 	var/standing = source.body_position != LYING_DOWN
 	var/hurl = heavy_moves && hurl_range > 0 && grabbed && standing && TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE)
 	var/direction = get_dir(source, living_target) || source.dir
-	source.do_attack_animation(living_target, ATTACK_EFFECT_SMASH)
+	// The lunge only. tg's attack ring is drawn over the middle of the target and rides it wherever it is knocked;
+	// the knuckle sparks (gorilla_punch_fx()) are this blow's mark, on the part it landed on
+	source.do_attack_animation(living_target)
 	gorilla_punch_impact_sound(living_target)
 	var/target_zone = living_target.get_random_valid_zone(source.zone_selected)
 	var/armor_block = living_target.run_armor_check(target_zone, MELEE, armour_penetration = active_hand.unarmed_effectiveness)
