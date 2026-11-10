@@ -22,10 +22,11 @@
  * - The core shelf is the ladder spine; the rotating and rare pools carry the
  *   breadth, so a round shows a slice of ~200 modules rather than all of them.
  *   Plating rotates on purpose: which themes you can BUILD varies by round.
- * - Buybacks are credits-only and deliberately narrow. Modules, frame parts
- *   and plating are all mechfab-printable, so buying them back would be a
- *   money loop for any crew with a fabricator. Wick only buys things no lathe
- *   makes: dead cores and whole salvaged suits.
+ * - Buybacks stay narrow. Frame parts, plating and the common modules are
+ *   mechfab-printable, so buying them back would be a money loop for any crew
+ *   with a fabricator. Wick buys dead cores, whole suits (by theme: only the
+ *   unprintable combat themes pay vouchers), anomaly modules with a field core
+ *   seated, and the handful of modules no lathe or shelf supplies.
  */
 
 // =========================================================================
@@ -189,11 +190,20 @@
 		/datum/shop_sku/fitter/rare/mod_projectile_dampener,
 		/datum/shop_sku/fitter/rare/bomb_suit,
 	)
-	// Credits only, and only things no fabricator makes: dead cores and whole
-	// suits off whoever stopped needing them
+	// Dead cores and whole suits off whoever stopped needing them, the rare
+	// suits and modules by name. Keep scrap_control ahead of the rare suit rows:
+	// get_counter_value() prices the salvaged-suit contract off the first match.
 	buyback_types = list(
 		/datum/shop_buyback/fitter/broken_core,
 		/datum/shop_buyback/fitter/scrap_control,
+		/datum/shop_buyback/fitter/rare_suit,
+		/datum/shop_buyback/fitter/rare_suit/syndicate,
+		/datum/shop_buyback/fitter/rare_suit/elite,
+		/datum/shop_buyback/fitter/rare_suit/spider_clan,
+		/datum/shop_buyback/fitter/anomaly_module,
+		/datum/shop_buyback/fitter/anomaly_module/teleporter,
+		/datum/shop_buyback/fitter/rare_module,
+		/datum/shop_buyback/fitter/rare_module/combat,
 		/datum/shop_buyback/fitter/salvage_spacesuit,
 		/datum/shop_buyback/fitter/salvage_space_helmet,
 	)
@@ -899,9 +909,12 @@
 
 // =========================================================================
 // WICK'S SALVAGE BENCH (buybacks)
-// Credits only, and nothing a fabricator prints. Modules, frame parts and
-// plating are all MECHFAB designs. Buying those back would be a money loop
-// for any crew with an exosuit fabricator, so Wick doesn't take them.
+// Nothing a fabricator prints pays more than scrap. Frame parts, plating and
+// most modules are MECHFAB designs, so Wick doesn't take them loose. Whole
+// suits are priced by theme: work themes are scrap, armored themes credits,
+// and the unprintable combat themes vouchers (well under the black market's
+// voucher prices). A suit mapped aboard a player hull, or built around a core
+// off a shelf, only ever sells as scrap.
 // =========================================================================
 
 /datum/shop_buyback/fitter/broken_core
@@ -914,7 +927,7 @@
 	demand_max = 3
 
 /datum/shop_buyback/fitter/scrap_control
-	name = "MOD control unit (any)"
+	name = "MOD control unit"
 	desc = "A whole suit with its core seated, working or not, modules included. Wick strips it to the frame and asks nothing about the previous owner."
 	category = "Suit Salvage"
 	item_path = /obj/item/mod/control
@@ -929,12 +942,241 @@
  *
  * It also has to have a core. A frame and plating print for about 100 cr, so a
  * coreless unit was a money loop: sell it, wrench the core out of the next one.
+ * For the same reason the core can't be shop stock (Wick's shelf, cargo).
  */
 /datum/shop_buyback/fitter/scrap_control/matches(obj/item/offered)
 	if(!..())
 		return FALSE
 	var/obj/item/mod/control/suit = offered
-	return isnull(suit.wearer) && !isnull(suit.core)
+	if(!isnull(suit.wearer) || isnull(suit.core) || is_trader_good(suit.core))
+		return FALSE
+	// A rare theme goes to its own row; the ship's own suits still sell here as scrap
+	return suit.buyback_hull_issue || !buyback_rare_mod_theme(suit)
+
+/// Armored themes: a shelf sells them (security 1 voucher + 3,600 cr, advanced 4,800 cr) or a ruin locker holds them.
+GLOBAL_LIST_INIT(fitter_armored_themes, list(
+	/datum/mod_theme/security,
+	/datum/mod_theme/advanced,
+	/datum/mod_theme/prototype,
+	/datum/mod_theme/responsory,
+	/datum/mod_theme/responsory/traitor,
+))
+/// Syndicate-pattern combat themes. The black market's chassis start at 2 vouchers + 3,600 cr.
+GLOBAL_LIST_INIT(fitter_syndicate_themes, list(
+	/datum/mod_theme/syndicate,
+	/datum/mod_theme/interdyne,
+))
+/// Elite combat themes. The black market asks 3-4 vouchers for the ones it carries.
+GLOBAL_LIST_INIT(fitter_elite_themes, list(
+	/datum/mod_theme/elite,
+	/datum/mod_theme/infiltrator,
+	/datum/mod_theme/magnate,
+	/datum/mod_theme/safeguard,
+))
+/// Sold nowhere at all.
+GLOBAL_LIST_INIT(fitter_spider_clan_themes, list(
+	/datum/mod_theme/ninja,
+))
+
+/// Whether a suit's theme belongs to one of Wick's named rows.
+/proc/buyback_rare_mod_theme(obj/item/mod/control/suit)
+	var/theme_type = suit.theme?.type
+	if(!theme_type)
+		return FALSE
+	return (theme_type in GLOB.fitter_armored_themes) || (theme_type in GLOB.fitter_syndicate_themes) || (theme_type in GLOB.fitter_elite_themes) || (theme_type in GLOB.fitter_spider_clan_themes)
+
+/**
+ * A whole suit of a named theme. Off a body, core seated, the core not shop
+ * stock, and not one of the suits the crew's own hull came with.
+ */
+/datum/shop_buyback/fitter/rare_suit
+	name = "armored MODsuit"
+	desc = "Security, advanced and response-team suits. Wick refits them for crews who expect to be shot at."
+	category = "Suit Salvage"
+	item_path = /obj/item/mod/control
+	pay_credits = 1000
+	demand_min = 2
+	demand_max = 3
+	/// Item whose sprite the ledger shows
+	var/obj/item/display_path = /obj/item/mod/control/pre_equipped/security
+	/// Control unit sprites are picked by theme at runtime, so name the state
+	var/display_state = "security-control"
+
+/datum/shop_buyback/fitter/rare_suit/New()
+	..()
+	buyback_use_display_icon(src, display_path)
+	icon_state_override = display_state
+
+/// The theme list this row buys from
+/datum/shop_buyback/fitter/rare_suit/proc/theme_list()
+	return GLOB.fitter_armored_themes
+
+/datum/shop_buyback/fitter/rare_suit/buyback_wanted_kind(obj/item/offered)
+	if(!istype(offered, /obj/item/mod/control))
+		return FALSE
+	var/obj/item/mod/control/suit = offered
+	return suit.theme && (suit.theme.type in theme_list())
+
+/datum/shop_buyback/fitter/rare_suit/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	if(!buyback_wanted_kind(offered) || offered.buyback_hull_issue || !buyback_goods_loose(offered))
+		return FALSE
+	var/obj/item/mod/control/suit = offered
+	return isnull(suit.wearer) && !isnull(suit.core) && !is_trader_good(suit.core)
+
+/datum/shop_buyback/fitter/rare_suit/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/fitter/rare_suit/syndicate
+	name = "syndicate MODsuit"
+	desc = "Blood-red combat suits, Interdyne's too. Wick files the serials off before anyone asks."
+	pay_credits = 0
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+	display_path = /obj/item/mod/control/pre_equipped/empty/syndicate
+	display_state = "syndicate-control"
+
+/datum/shop_buyback/fitter/rare_suit/syndicate/theme_list()
+	return GLOB.fitter_syndicate_themes
+
+/datum/shop_buyback/fitter/rare_suit/elite
+	name = "elite MODsuit"
+	desc = "Elite, infiltrator, magnate and safeguard suits. Wick has buyers who don't haggle."
+	pay_credits = 0
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 2
+	display_path = /obj/item/mod/control/pre_equipped/empty/elite
+	display_state = "elite-control"
+
+/datum/shop_buyback/fitter/rare_suit/elite/theme_list()
+	return GLOB.fitter_elite_themes
+
+/datum/shop_buyback/fitter/rare_suit/spider_clan
+	name = "spider clan suit"
+	desc = "Wick has only ever seen one in a picture. He'd like to see one on his bench."
+	pay_credits = 0
+	pay_vouchers = 3
+	demand_min = 1
+	demand_max = 1
+	display_path = /obj/item/mod/control/pre_equipped/empty/ninja
+	display_state = "ninja-control"
+
+/datum/shop_buyback/fitter/rare_suit/spider_clan/theme_list()
+	return GLOB.fitter_spider_clan_themes
+
+/**
+ * An anomaly module with a field core seated. The module prints, so the core
+ * is what's being paid for, a little over Boffin's price for the bare core.
+ * Loose modules only: one still installed goes with its suit.
+ */
+/datum/shop_buyback/fitter/anomaly_module
+	name = "anomaly module"
+	desc = "An anti-gravity or kinesis module with its core seated and humming. Wick fits them for crews who can't find a core of their own."
+	category = "Modules"
+	item_path = /obj/item/mod/module/anomaly_locked
+	pay_credits = 1200
+	demand_min = 1
+	demand_max = 3
+	/// Exact module types this row takes
+	var/list/module_types = list(
+		/obj/item/mod/module/anomaly_locked/antigrav,
+		/obj/item/mod/module/anomaly_locked/kinesis,
+	)
+	var/list/module_cache
+	/// Item whose sprite the ledger shows
+	var/obj/item/display_path = /obj/item/mod/module/anomaly_locked/antigrav
+
+/datum/shop_buyback/fitter/anomaly_module/New()
+	..()
+	module_cache = buyback_exact_cache(module_types)
+	buyback_use_display_icon(src, display_path)
+
+/datum/shop_buyback/fitter/anomaly_module/buyback_wanted_kind(obj/item/offered)
+	return module_cache?[offered.type]
+
+/datum/shop_buyback/fitter/anomaly_module/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	if(!buyback_wanted_kind(offered) || offered.buyback_hull_issue || !buyback_goods_loose(offered))
+		return FALSE
+	var/obj/item/mod/module/anomaly_locked/module = offered
+	return !isnull(module.core) && !is_trader_good(module.core)
+
+/datum/shop_buyback/fitter/anomaly_module/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/fitter/anomaly_module/teleporter
+	name = "teleporter module"
+	desc = "A teleporter module with a bluespace core seated. Wick wants one badly enough to pay in vouchers."
+	pay_credits = 0
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 1
+	module_types = list(/obj/item/mod/module/anomaly_locked/teleporter)
+	display_path = /obj/item/mod/module/anomaly_locked/teleporter
+
+/**
+ * Modules no lathe prints and no shelf sells: they come out of rare suits.
+ * Credits only, since they usually arrive with a suit that already paid.
+ */
+/datum/shop_buyback/fitter/rare_module
+	name = "rare module"
+	desc = "Advanced magboots, night vision, ash plating, the odd syndicate fitting. Things Wick can't order."
+	category = "Modules"
+	item_path = /obj/item/mod/module
+	pay_credits = 400
+	demand_min = 2
+	demand_max = 4
+	/// Exact module types this row takes
+	var/list/module_types = list(
+		/obj/item/mod/module/ash_accretion,
+		/obj/item/mod/module/infiltrator,
+		/obj/item/mod/module/night,
+		/obj/item/mod/module/sphere_transform,
+		/obj/item/mod/module/magboot/advanced,
+		/obj/item/mod/module/quick_carry/advanced,
+		/obj/item/mod/module/reagent_scanner/advanced,
+		/obj/item/mod/module/welding/syndicate,
+		/obj/item/mod/module/welding/camera_vision,
+		/obj/item/mod/module/weapon_recall,
+		/obj/item/mod/module/quick_cuff,
+		/obj/item/mod/module/shove_blocker/locked,
+	)
+	var/list/module_cache
+	/// Item whose sprite the ledger shows
+	var/obj/item/display_path = /obj/item/mod/module/magboot/advanced
+
+/datum/shop_buyback/fitter/rare_module/New()
+	..()
+	module_cache = buyback_exact_cache(module_types)
+	buyback_use_display_icon(src, display_path)
+
+/datum/shop_buyback/fitter/rare_module/buyback_wanted_kind(obj/item/offered)
+	return module_cache?[offered.type]
+
+/datum/shop_buyback/fitter/rare_module/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return buyback_wanted_kind(offered) && !offered.buyback_hull_issue && buyback_goods_loose(offered)
+
+/datum/shop_buyback/fitter/rare_module/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/fitter/rare_module/combat
+	name = "combat module"
+	desc = "Energy nets, combat defibrillators, hacking gloves. Wick doesn't fit these for anyone he likes."
+	pay_credits = 1000
+	demand_min = 1
+	demand_max = 2
+	module_types = list(
+		/obj/item/mod/module/energy_net,
+		/obj/item/mod/module/defibrillator/combat,
+		/obj/item/mod/module/hacker,
+	)
+	display_path = /obj/item/mod/module/energy_net
 
 /datum/shop_buyback/fitter/salvage_spacesuit
 	name = "space suit (salvage)"

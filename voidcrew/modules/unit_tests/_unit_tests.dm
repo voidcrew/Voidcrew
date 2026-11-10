@@ -65,6 +65,7 @@
 #include "voidcrew_bounty_pace.dm"
 #include "voidcrew_bounty_seams.dm"
 #include "voidcrew_bounty_suits.dm"
+#include "voidcrew_buyback_depot.dm"
 #include "voidcrew_buyback_vex.dm"
 #include "voidcrew_camera_scope.dm"
 #include "voidcrew_cargo_cart.dm"

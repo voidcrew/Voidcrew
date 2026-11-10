@@ -168,6 +168,12 @@
 		/datum/shop_buyback/outfitter/goliath_plates,
 		/datum/shop_buyback/outfitter/sinew,
 		/datum/shop_buyback/outfitter/glacial_core,
+		/datum/shop_buyback/outfitter/listed/officer_armor,
+		/datum/shop_buyback/outfitter/listed/military_armor,
+		/datum/shop_buyback/outfitter/listed/service_arms,
+		/datum/shop_buyback/outfitter/listed/heavy_arms,
+		/datum/shop_buyback/outfitter/listed/military_arms,
+		/datum/shop_buyback/outfitter/listed/collector_pieces,
 	)
 	// Field harvests for depot resupply
 	mission_requests = list(
@@ -703,13 +709,15 @@
 	price_credits = 2000
 
 // ===== SARGE'S SALVAGE COUNTER (buybacks) =====
-// Credits only; guns and armor can come off a lathe, so they never pay vouchers.
+// Plain salvage pays credits. The rare rows below take exact types only
+// (buyback_listed.dm): a row typed at /obj/item/gun would pay out on cargo's
+// toy crates, 400 cr buys eight foam shotguns, so every gun row names its guns.
 //
-// No gun line here either. Any buyback typed at /obj/item/gun or
-// /obj/item/gun/energy pays out on cargo's toy crates, 400 cr buys eight foam
-// shotguns or six laser-tag rifles, and none of them can be told apart from the
-// real thing at the counter. Armor's bid includes room for discounted cargo and
-// the crate/manifest return; security packs cannot receive ordinary coupons.
+// Tiers follow tools/gear_catalog/ratings/. Anything a crew can buy, order or
+// print pays credits at a fraction of its cheapest shelf price (peddler and
+// depot prices); only gear with no buy, print or order route pays vouchers.
+// Armor's bid includes room for discounted cargo and the crate/manifest
+// return; security packs cannot receive ordinary coupons.
 
 /datum/shop_buyback/outfitter/salvage_armor
 	name = "armored suit (salvage)"
@@ -719,6 +727,14 @@
 	pay_credits = 130
 	demand_min = 3
 	demand_max = 6
+
+/// The rare armor rows outbid this one, so their goods go there. Ship's issue still sells here.
+/datum/shop_buyback/outfitter/salvage_armor/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	if(offered.buyback_hull_issue)
+		return TRUE
+	return !(GLOB.depot_officer_armor[offered.type] || GLOB.depot_military_armor[offered.type] || GLOB.depot_collector_pieces[offered.type])
 
 // Planet megafauna materials: armor-grade feedstock the depot can't lathe
 /datum/shop_buyback/outfitter/goliath_plates
@@ -753,6 +769,240 @@
 	pay_credits = 400
 	demand_min = 3
 	demand_max = 5
+
+// --- Rare arms and armor: exact types, priced by gear rating ---
+
+/// Yellow-tier armor with no shelf, plus the depot's own ablative vest (1 voucher + 3,600 cr new).
+GLOBAL_LIST_INIT(depot_officer_armor, buyback_exact_cache(list(
+	/obj/item/clothing/suit/armor/hos,
+	/obj/item/clothing/suit/armor/hos/trenchcoat,
+	/obj/item/clothing/suit/armor/hos/trenchcoat/winter,
+	/obj/item/clothing/suit/armor/vest/capcarapace,
+	/obj/item/clothing/suit/armor/vest/capcarapace/syndicate,
+	/obj/item/clothing/suit/armor/vest/capcarapace/captains_formal,
+	/obj/item/clothing/suit/armor/vest/marine/sulaco,
+	/obj/item/clothing/suit/armor/reactive/teleport,
+	/obj/item/clothing/suit/armor/swat,
+	/obj/item/clothing/suit/armor/riot/knight/warlord,
+	/obj/item/clothing/suit/armor/laserproof,
+	/obj/item/clothing/suit/costume/pirate/armored,
+	/obj/item/clothing/suit/costume/pirate/captain/armored,
+	/obj/item/clothing/head/helmet/swat,
+	/obj/item/clothing/head/helmet/knight/warlord,
+	/obj/item/clothing/head/costume/pirate/armored,
+	/obj/item/clothing/head/costume/pirate/bandana/armored,
+)))
+
+/// Red-tier armor: no shelf, no lathe, no cargo pack. Red caches and megafauna.
+GLOBAL_LIST_INIT(depot_military_armor, buyback_exact_cache(list(
+	/obj/item/clothing/suit/armor/heavy,
+	/obj/item/clothing/suit/armor/vest/marine,
+	/obj/item/clothing/suit/armor/vest/marine/pmc,
+	/obj/item/clothing/suit/armor/vest/marine/security,
+	/obj/item/clothing/suit/hooded/berserker,
+	/obj/item/clothing/suit/hooded/hostile_environment,
+	/obj/item/clothing/head/helmet/marine,
+	/obj/item/clothing/head/helmet/marine/pmc,
+	/obj/item/shield/energy,
+)))
+
+/// Yellow-tier arms. Shelf ones start at 1,125 cr (peddler laser), so 300 cr is under a third of any of them.
+GLOBAL_LIST_INIT(depot_service_arms, buyback_exact_cache(list(
+	/obj/item/gun/energy/laser,
+	/obj/item/gun/energy/e_gun,
+	/obj/item/gun/energy/e_gun/lethal,
+	/obj/item/gun/energy/e_gun/old,
+	/obj/item/gun/energy/e_gun/hos,
+	/obj/item/gun/energy/laser/captain,
+	/obj/item/gun/energy/laser/retro,
+	/obj/item/gun/energy/laser/retro/old,
+	/obj/item/gun/energy/laser/luxurypaywall,
+	/obj/item/gun/energy/ionrifle,
+	/obj/item/gun/energy/disabler/smg,
+	/obj/item/gun/energy/laser/carbine/cybersun/unrestricted,
+	/obj/item/gun/ballistic/automatic/c20r/unrestricted,
+	/obj/item/gun/ballistic/automatic/wt550,
+	/obj/item/gun/ballistic/automatic/mini_uzi,
+	/obj/item/gun/ballistic/automatic/pistol/aps,
+	/obj/item/gun/ballistic/automatic/pistol/deagle,
+	/obj/item/gun/ballistic/automatic/pistol/deagle/camo,
+	/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
+	/obj/item/gun/ballistic/automatic/proto/unrestricted,
+	/obj/item/gun/ballistic/revolver,
+	/obj/item/gun/ballistic/revolver/mateba,
+	/obj/item/gun/ballistic/revolver/nagant,
+	/obj/item/gun/ballistic/revolver/golden,
+	/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted,
+	/obj/item/gun/ballistic/rifle/boltaction,
+	/obj/item/gun/ballistic/rifle/boltaction/donkrifle,
+	/obj/item/gun/ballistic/shotgun/automatic/dual_tube,
+	/obj/item/gun/syringe/syndicate,
+	/obj/item/claymore,
+	/obj/item/claymore/cutlass,
+	/obj/item/claymore/cutlass/old,
+	/obj/item/fireaxe/boardingaxe,
+)))
+
+/// Red-tier arms the peddler or a crafting kit can supply (4,950-6,600 cr new), so credits only.
+GLOBAL_LIST_INIT(depot_heavy_arms, buyback_exact_cache(list(
+	/obj/item/gun/energy/laser/carbine,
+	/obj/item/gun/energy/lasercannon/unrestricted,
+	/obj/item/gun/energy/laser/scatter,
+	/obj/item/gun/energy/laser/hellgun,
+	/obj/item/gun/energy/e_gun/nuclear,
+	/obj/item/gun/energy/xray,
+	/obj/item/gun/ballistic/shotgun/automatic/combat,
+	/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
+	/obj/item/gun/ballistic/automatic/tommygun,
+	/obj/item/katana,
+	/obj/item/melee/energy/sword/pirate,
+	/obj/item/melee/energy/sword/saber,
+	/obj/item/melee/energy/sword/saber/blue,
+	/obj/item/melee/energy/sword/saber/purple,
+	/obj/item/melee/energy/sword/saber/red,
+)))
+
+/// Red-tier arms with no buy, print or order route at all.
+GLOBAL_LIST_INIT(depot_military_arms, buyback_exact_cache(list(
+	/obj/item/gun/ballistic/automatic/ar,
+	/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
+	/obj/item/gun/ballistic/automatic/m90/unrestricted,
+	/obj/item/gun/ballistic/rifle/boltaction/prime,
+	/obj/item/gun/ballistic/rifle/sniper_rifle,
+	/obj/item/gun/ballistic/rocketlauncher/unrestricted,
+	/obj/item/mjollnir,
+	/obj/item/spear/grey_tide,
+)))
+
+/// Above-tier finds: authored uniques and megafauna prizes. Never on any shelf.
+/// The soulscythe is left off on purpose: it can hold a player's soul.
+GLOBAL_LIST_INIT(depot_collector_pieces, buyback_exact_cache(list(
+	/obj/item/gun/ballistic/revolver/c38/housecall,
+	/obj/item/gun/ballistic/shotgun/musket/no_quarter,
+	/obj/item/gun/magic/hook/marlinspike,
+	/obj/item/cain_and_abel,
+	/obj/item/cane/shepherds_crook,
+	/obj/item/claymore/cutlass/parley,
+	/obj/item/cursed_katana,
+	/obj/item/energy_katana,
+	/obj/item/garrison_standard,
+	/obj/item/heave_ho,
+	/obj/item/hierophant_club,
+	/obj/item/knife/understudy,
+	/obj/item/lava_staff,
+	/obj/item/melee/cleaving_saw,
+	/obj/item/melee/ghost_sword,
+	/obj/item/melee/verdigris_staff,
+	/obj/item/veilrender,
+	/obj/item/shield/riot/phalanx_buckler,
+	/obj/item/clothing/suit/armor/hos/trenchcoat/heirloom_coat,
+	/obj/item/clothing/suit/hooded/cloak/second_shadow,
+	/obj/item/clothing/suit/hooded/explorer/second_season_duster,
+	/obj/item/clothing/suit/the_occasion,
+	/obj/item/clothing/suit/toggle/labcoat/eventide_courier,
+	/obj/item/clothing/suit/wizrobe/verdigris,
+	/obj/item/clothing/head/stage_presence,
+	/obj/item/clothing/head/wizard/verdigris,
+)))
+
+/**
+ * A row that takes an exact list of types (see buyback_listed.dm). Loose goods
+ * only, never shop stock, never a hull's own kit.
+ */
+/datum/shop_buyback/outfitter/listed
+	item_path = /obj/item
+	category = "Arms & Armor"
+	/// The GLOB typecache this row buys from
+	var/list/wanted_cache
+	/// Item whose sprite the ledger shows
+	var/obj/item/display_path
+
+/datum/shop_buyback/outfitter/listed/New()
+	..()
+	buyback_use_display_icon(src, display_path)
+
+/datum/shop_buyback/outfitter/listed/buyback_wanted_kind(obj/item/offered)
+	return wanted_cache?[offered.type]
+
+/datum/shop_buyback/outfitter/listed/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return buyback_wanted_kind(offered) && !offered.buyback_hull_issue && buyback_goods_loose(offered)
+
+/datum/shop_buyback/outfitter/listed/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/outfitter/listed/officer_armor
+	name = "officer's armor"
+	desc = "Commanders' coats, carapaces, tactical helmets. Good armor with someone else's rank still on it."
+	display_path = /obj/item/clothing/suit/armor/hos
+	pay_credits = 350
+	demand_min = 2
+	demand_max = 4
+
+/datum/shop_buyback/outfitter/listed/officer_armor/New()
+	wanted_cache = GLOB.depot_officer_armor
+	return ..()
+
+/datum/shop_buyback/outfitter/listed/military_armor
+	name = "military armor"
+	desc = "Marine plate, heavy vests and their helmets. The depot can't get it through any honest channel."
+	display_path = /obj/item/clothing/suit/armor/vest/marine
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/outfitter/listed/military_armor/New()
+	wanted_cache = GLOB.depot_military_armor
+	return ..()
+
+/datum/shop_buyback/outfitter/listed/service_arms
+	name = "service arms"
+	desc = "Sidearms, rifles and boarding blades in working order. Sarge test-fires everything before it goes on a rack."
+	display_path = /obj/item/gun/energy/e_gun
+	pay_credits = 300
+	demand_min = 3
+	demand_max = 5
+
+/datum/shop_buyback/outfitter/listed/service_arms/New()
+	wanted_cache = GLOB.depot_service_arms
+	return ..()
+
+/datum/shop_buyback/outfitter/listed/heavy_arms
+	name = "heavy arms"
+	desc = "Laser cannons, combat shotguns, energy blades. Sarge knows a buyer for every one of them."
+	display_path = /obj/item/gun/energy/lasercannon/unrestricted
+	pay_credits = 900
+	demand_min = 2
+	demand_max = 4
+
+/datum/shop_buyback/outfitter/listed/heavy_arms/New()
+	wanted_cache = GLOB.depot_heavy_arms
+	return ..()
+
+/datum/shop_buyback/outfitter/listed/military_arms
+	name = "military arms"
+	desc = "Machine guns, marksman rifles, launchers. The kind of thing nobody admits to losing."
+	display_path = /obj/item/gun/ballistic/automatic/l6_saw/unrestricted
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/outfitter/listed/military_arms/New()
+	wanted_cache = GLOB.depot_military_arms
+	return ..()
+
+/datum/shop_buyback/outfitter/listed/collector_pieces
+	name = "one-of-a-kind pieces"
+	desc = "Named blades, heirloom guns, the gear people tell stories about. Sarge keeps a short list of collectors."
+	display_path = /obj/item/claymore/cutlass/parley
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/outfitter/listed/collector_pieces/New()
+	wanted_cache = GLOB.depot_collector_pieces
+	return ..()
 
 // Barter: the depot always needs hull stock
 /datum/shop_sku/barter/plasteel_for_shield
