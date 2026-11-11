@@ -31,6 +31,33 @@
 // MORGUE HALF (R3)
 // =========================================================================
 
+/**
+ * The morgue crew's ID: it opens the staff lift doors on the concourse (the police doors), as the crews come in
+ * that way and never through a checkpoint. Locked to the body like the rest of the kit, so it is never loot.
+ */
+/datum/id_trim/outpost_morgue
+	assignment = "Outpost Morgue"
+	trim_state = "trim_coroner"
+	department_color = COLOR_MEDICAL_BLUE
+	subdepartment_color = COLOR_MEDICAL_BLUE
+	sechud_icon_state = SECHUD_CORONER
+	access = list(ACCESS_OUTPOST_POLICE)
+
+/**
+ * Black coroner's scrubs, black latex gloves and a black surgery cap: dark and plainly the people who carry the
+ * dead. A headset on the station's net (spec-rehydrate 3.3) and the lift ID. Nothing in the pockets: the body
+ * bag in their hand is a prop made when they need it (recovery_morgue.dm), and nobody carries cash (4.3).
+ */
+/datum/outfit/outpost_morgue
+	name = "Outpost morgue worker"
+	uniform = /obj/item/clothing/under/rank/medical/scrubs/coroner
+	gloves = /obj/item/clothing/gloves/latex/coroner
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	head = /obj/item/clothing/head/utility/surgerycap/black
+	ears = /obj/item/radio/headset
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_morgue
+
 // =========================================================================
 // JANITOR HALF (R4)
 // =========================================================================
