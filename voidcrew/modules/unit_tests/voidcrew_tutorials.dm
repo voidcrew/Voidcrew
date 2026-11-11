@@ -1173,4 +1173,61 @@
 	web.researched_nodes["survey_console"] = TRUE
 	TEST_ASSERT_NULL(tutorial_node_points_line(web, "survey_console"), "A researched node still showed a points line")
 
+// ---------------------------------------------------------------------------
+// ruin-vestige: Planet ruin and Vestige pact credits and live lines
+// ---------------------------------------------------------------------------
+
+/// A found cache also counts as finding the ruin; a bought black-market cache counts for neither.
+/datum/unit_test/voidcrew_tutorials/ruin_cache_sources/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	var/obj/structure/closet/crate/zone_loot/syndicate/trader/bought = allocate(/obj/structure/closet/crate/zone_loot/syndicate/trader, beside)
+	TEST_ASSERT(bought.open(player), "The bought cache would not open")
+	TEST_ASSERT(!done("vc/ruin/cache"), "Opening a bought cache was credited")
+	TEST_ASSERT(!done("vc/ruin/find"), "Opening a bought cache counted as finding a ruin")
+	qdel(bought)
+	var/obj/structure/closet/crate/zone_loot/cache = allocate(/obj/structure/closet/crate/zone_loot, beside)
+	TEST_ASSERT(cache in GLOB.tutorial_ruin_caches, "A cache was not registered for the pointers")
+	TEST_ASSERT(cache in tutorial_nearby_ruin_caches(player), "A closed cache nearby was not offered to the arrow")
+	TEST_ASSERT(cache.open(player), "The cache would not open")
+	TEST_ASSERT(done("vc/ruin/cache"), "Opening a found cache was not credited")
+	TEST_ASSERT(done("vc/ruin/find"), "Opening a found cache did not count as finding its ruin")
+	TEST_ASSERT(!(cache in tutorial_nearby_ruin_caches(player)), "An opened cache was still offered to the arrow")
+
+/// Open-air ruins have no ruin area: standing in a ruin's footprint counts as finding it.
+/datum/unit_test/voidcrew_tutorials/ruin_footprint/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/datum/map_template/template = allocate(/datum/map_template)
+	// Half of 1, rounded up: the footprint reaches one tile out from the landmark.
+	template.width = 1
+	template.height = 1
+	var/obj/effect/landmark/ruin/mark = allocate(/obj/effect/landmark/ruin, center)
+	mark.ruin_template = template
+	var/mob/living/carbon/human/player = make_player(center)
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial_step/find = SSvc_tutorials.steps_by_key["vc/ruin/find"]
+	TEST_ASSERT(tutorial_in_ruin_footprint(get_step(center, NORTHEAST), mark), "A tile inside the footprint was not counted")
+	TEST_ASSERT(!tutorial_in_ruin_footprint(locate(center.x + 3, center.y, center.z), mark), "A tile outside the footprint was counted")
+	TEST_ASSERT(find.state_satisfied(player), "Standing in a ruin footprint did not satisfy Find a ruin")
+	TEST_ASSERT_EQUAL(tutorial_nearest_ruin_landmark(player), mark, "The nearest ruin landmark was not found")
+	TEST_ASSERT_NULL(find.live_line(player), "Find a ruin pointed elsewhere while standing in a ruin")
+	player.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!find.state_satisfied(player), "Standing outside a ruin footprint satisfied Find a ruin")
+	TEST_ASSERT(find.live_line(player), "Find a ruin had no live line near a ruin")
+	mark.ruin_template = null
+
+/// The vestige steps read the player's pact as state.
+/datum/unit_test/voidcrew_tutorials/vestige_live_lines/Run()
+	var/mob/living/carbon/human/player = make_player()
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial_step/pact = SSvc_tutorials.steps_by_key["vc/vestige/pact"]
+	var/datum/vc_tutorial_step/trial_step = SSvc_tutorials.steps_by_key["vc/vestige/trial"]
+	TEST_ASSERT_NULL(pact.live_line(player), "A free player was told they were busy")
+	TEST_ASSERT_NULL(trial_step.live_line(player), "A trial line showed with no pact")
+	var/datum/vestige_trial/trial = allocate(/datum/vestige_trial, player.mind, "Test patron", list())
+	player.mind.active_vestige_trial = trial
+	TEST_ASSERT(findtext(pact.live_line(player), "Test patron"), "The busy line did not name the patron")
+	TEST_ASSERT(findtext(trial_step.live_line(player), trial.get_progress_text()), "The trial line did not show progress")
+	player.mind.active_vestige_trial = null
+
 #undef TUTORIAL_TEST_CKEY

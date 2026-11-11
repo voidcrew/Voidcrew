@@ -34,3 +34,37 @@
 	if(was_paid || !paid)
 		return
 	tutorial_credit(QDELETED(user) ? mind?.current : user, TUTORIAL_STEP_VESTIGE_CLAIM)
+
+// ---------------------------------------------------------------------------
+// Patron pointers for Make a pact (ruin-vestige). Patrons are godmode NPCs that
+// never leave their altar, so pointing at one through a wall gives nothing away.
+// ---------------------------------------------------------------------------
+
+/// How far from the viewer a patron is still pointed at.
+#define TUTORIAL_PATRON_RANGE 40
+
+/// Every vestige patron in the world (one per loaded vestige).
+GLOBAL_LIST_EMPTY(tutorial_vestige_patrons)
+
+/mob/living/basic/vestige_patron/Initialize(mapload)
+	. = ..()
+	GLOB.tutorial_vestige_patrons += src
+
+/mob/living/basic/vestige_patron/Destroy()
+	GLOB.tutorial_vestige_patrons -= src
+	return ..()
+
+/// Patrons in the vestige the viewer stands in.
+/proc/tutorial_nearby_patrons(mob/user)
+	. = list()
+	var/turf/here = get_turf(user)
+	if(!here)
+		return
+	for(var/mob/living/basic/vestige_patron/patron as anything in GLOB.tutorial_vestige_patrons)
+		var/turf/there = get_turf(patron)
+		if(!there || there.z != here.z || get_dist(here, there) > TUTORIAL_PATRON_RANGE)
+			continue
+		if(tutorial_same_tenant(here, there))
+			. += patron
+
+#undef TUTORIAL_PATRON_RANGE
