@@ -252,6 +252,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 			A.throwing.paused = TRUE
 	GLOB.cyberware_time_dilated[A] = src
 	frozen_things[A] = TRUE
+	RegisterSignal(A, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
 	if(tint)
 		into_the_negative_zone(A)
 	SEND_SIGNAL(A, COMSIG_ATOM_TIMESTOP_FREEZE, src)
@@ -276,6 +277,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 		held_throws -= A
 	frozen_structures -= A
 	user_shots -= A
+	UnregisterSignal(A, COMSIG_QDELETING)
 	escape_the_negative_zone(A)
 	frozen_things -= A
 	GLOB.cyberware_time_dilated -= A
@@ -372,33 +374,50 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 /// Signal proc for [COMSIG_PROJECTILE_FIRER_BEFORE_FIRE] on the user: watch the shot leave the barrel.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/on_user_fire(datum/source, obj/projectile/shot, atom/fired_from, atom/original)
 	SIGNAL_HANDLER
-	if(time_scale <= 0)
-		RegisterSignal(shot, COMSIG_PROJECTILE_FIRE, PROC_REF(hang_shot))
+	RegisterSignal(shot, COMSIG_PROJECTILE_FIRE, PROC_REF(hang_shot))
 
-/// Signal proc for [COMSIG_PROJECTILE_FIRE]: in a frozen world the user's shot flies a tile, then hangs.
+/// Signal proc for [COMSIG_PROJECTILE_FIRE]: the user's shot keeps its colour. In a frozen world it flies a
+/// tile, then hangs; in slow-mo it crawls like everything else.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/hang_shot(obj/projectile/shot)
 	SIGNAL_HANDLER
 	UnregisterSignal(shot, COMSIG_PROJECTILE_FIRE)
 	if(QDELETED(shot) || shot.deletion_queued)
 		return
+	if(time_scale > 0)
+		user_shots[shot] = TRUE
+		escape_the_negative_zone(shot) // in case it was tinted before it had a firer
+		if(!held_shots[shot])
+			hold_shot(shot)
+			GLOB.cyberware_time_dilated[shot] = src
+			frozen_things[shot] = TRUE
+			RegisterSignal(shot, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+		return
 	// A hitscan beam takes its first step itself once paused (process_hitscan) and stops there.
 	if(!shot.hitscan)
+		shot.paused = FALSE // it may have been caught before it had a firer
 		shot.process_movement(SANDY_STOP_SHOT_HANG)
 		if(QDELETED(shot) || shot.deletion_queued)
 			return
 	user_shots[shot] = TRUE
 	escape_the_negative_zone(shot) // in case it was tinted before it had a firer
-	if(!held_shots[shot])
+	if(held_shots[shot])
+		shot.paused = TRUE
+	else
 		hold_shot(shot)
 	GLOB.cyberware_time_dilated[shot] = src
 	frozen_things[shot] = TRUE
-	RegisterSignal(shot, COMSIG_QDELETING, PROC_REF(held_gone))
+	RegisterSignal(shot, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
 
 /// Forgets a held thing that got deleted.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/held_gone(atom/movable/thing)
 	SIGNAL_HANDLER
 	held_shots -= thing
 	user_shots -= thing
+	held_mobs -= thing
+	frozen_mobs -= thing
+	held_throws -= thing
+	boss_holds -= thing
+	frozen_structures -= thing
 	frozen_things -= thing
 	GLOB.cyberware_time_dilated -= thing
 
