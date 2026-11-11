@@ -227,6 +227,22 @@
 	TEST_ASSERT(door.density, "The door did not shut")
 	TEST_ASSERT(!door.open(), "The permission outlived its opening")
 
+/// Abuse SF5: a police door lets anyone out from the lift side, and nobody in from the concourse without an officer's ID
+/datum/unit_test/voidcrew_outpost_police_lift_door_exit
+
+/datum/unit_test/voidcrew_outpost_police_lift_door_exit/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	// The lift, the closet floor, the door, the concourse: a column up the test room
+	police.lift_turfs = list(wanted_spot(4, 4))
+	var/obj/machinery/door/airlock/outpost/police/lift_door = allocate(/obj/machinery/door/airlock/outpost/police, wanted_spot(4, 2))
+	lift_door.outpost = outpost
+	var/mob/living/carbon/human/inside = wanted_person(wanted_spot(4, 3))
+	var/mob/living/carbon/human/outside = wanted_person(wanted_spot(4, 1))
+	TEST_ASSERT(lift_door.allowed(inside), "Someone in the lift closet cannot get out")
+	TEST_ASSERT(!lift_door.allowed(outside), "Someone on the concourse got into the lift closet with no ID")
+	police.lift_turfs = list()
+
 /// A paid fine holds the suspect 30 s at one star and 60 s at two, and never strips them
 /datum/unit_test/voidcrew_outpost_police_cell_book_paid
 

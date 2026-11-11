@@ -748,6 +748,27 @@
 /obj/machinery/door/airlock/outpost/police/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
 
+// Abuse SF5: from the lift side anyone may leave, so nobody who followed an officer in is shut in the lift closet.
+// The lift side is the one nearer a police lift than the door itself. Coming in still takes an officer's ID.
+/obj/machinery/door/airlock/outpost/police/unrestricted_side(mob/opener)
+	. = ..()
+	if(. || !opener)
+		return
+	var/obj/structure/overmap/trader_outpost/home = outpost
+	var/datum/outpost_police/police = istype(home) ? home.police : null
+	var/turf/door_turf = get_turf(src)
+	var/turf/from = get_turf(opener)
+	if(!police || !door_turf || !from || from == door_turf)
+		return
+	var/from_distance = INFINITY
+	var/door_distance = INFINITY
+	for(var/turf/lift as anything in police.lift_turfs)
+		if(lift.z != door_turf.z)
+			continue
+		from_distance = min(from_distance, get_dist(from, lift))
+		door_distance = min(door_distance, get_dist(door_turf, lift))
+	return from_distance < door_distance
+
 /**
  * A holding cell's door. Nothing opens it but its cell (police_cell.dm, build_cells()): a bump, a click, an
  * ID, a wire, a spell or a pry gets a refusal, and an emag does nothing (abuse M1). A crowbar or jaws work on
