@@ -515,16 +515,6 @@
 /obj/machinery/light/directional/west,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
-"bE" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "bF" = (
 /obj/effect/landmark/outpost_elevator_alcove,
 /obj/machinery/outpost_elevator/directional/south,
@@ -653,6 +643,10 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"ch" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "cp" = (
 /obj/structure/lattice/catwalk,
 /turf/open/space/basic,
@@ -831,6 +825,10 @@
 	},
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"eI" = (
+/obj/effect/landmark/outpost_janitor_closet,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "eM" = (
 /obj/effect/turf_decal/tile/yellow,
 /obj/effect/turf_decal/siding/thinplating_new/corner,
@@ -1113,6 +1111,17 @@
 	},
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
+"hO" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/sign/departments/morgue/directional/west,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "hR" = (
 /obj/structure/showcase/fakesec{
 	dir = 2
@@ -1850,6 +1859,9 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"qQ" = (
+/turf/closed/indestructible/reinforced/titanium/outpost,
+/area/voidcrew/trader_outpost/checkpoint)
 "qS" = (
 /obj/effect/turf_decal/siding/thinplating_new,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -1925,6 +1937,9 @@
 /obj/machinery/light/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"rr" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "rw" = (
 /obj/structure/showcase/fakesec{
 	dir = 2
@@ -2030,6 +2045,10 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"sK" = (
+/obj/structure/sink/directional/east,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "sQ" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
@@ -2268,6 +2287,12 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"vH" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "vN" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
 /obj/effect/turf_decal/tile/yellow,
@@ -2550,6 +2575,21 @@
 /obj/machinery/light/small/red/directional/north,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"yR" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Custodial Closet"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
+"zd" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/caution,
+/obj/item/clothing/suit/caution,
+/obj/item/storage/bag/trash,
+/obj/item/storage/bag/trash,
+/obj/machinery/light/small/directional/south,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "zo" = (
 /obj/structure/showcase/fakeid,
 /obj/effect/turf_decal/bot,
@@ -3787,6 +3827,10 @@
 /obj/structure/mirror/directional/east,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
+"Sh" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "Sj" = (
 /obj/effect/turf_decal/tile/dark/full,
 /obj/structure/sign/poster/official/bless_this_spess{
@@ -4102,6 +4146,10 @@
 	},
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
+"WC" = (
+/obj/effect/landmark/outpost_morgue,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "WJ" = (
 /obj/machinery/door/airlock/multi_tile/public/glass{
 	dir = 4;
@@ -4167,6 +4215,12 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"XI" = (
+/obj/machinery/door/airlock/medical{
+	name = "Morgue"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "XW" = (
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 8
@@ -4244,6 +4298,10 @@
 	},
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
+"Ze" = (
+/obj/structure/mop_bucket,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "Zo" = (
 /obj/effect/turf_decal/siding/thinplating_new,
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
@@ -4386,10 +4444,10 @@ ao
 ao
 ao
 ao
-ao
-ao
-ao
-ao
+qQ
+qQ
+qQ
+qQ
 ao
 ao
 "}
@@ -4428,10 +4486,10 @@ ao
 ao
 ao
 ao
-ao
-ao
-ao
-ao
+qQ
+sK
+Ze
+qQ
 ao
 ao
 "}
@@ -4470,10 +4528,10 @@ dU
 dU
 dU
 dU
-ao
-ao
-ao
-ao
+qQ
+eI
+zd
+qQ
 ao
 ao
 "}
@@ -4513,10 +4571,10 @@ un
 am
 dU
 dU
-ao
-ao
-ao
-ao
+yR
+qQ
+qQ
+qQ
 ao
 "}
 (7,1,1) = {"
@@ -4555,10 +4613,10 @@ Gd
 Wy
 UU
 lE
-ao
-ao
-ao
-ao
+rr
+rr
+vH
+qQ
 ao
 "}
 (8,1,1) = {"
@@ -4597,10 +4655,10 @@ Tp
 KZ
 QU
 lE
-ao
-ao
-ao
-ao
+rr
+WC
+vH
+qQ
 ao
 "}
 (9,1,1) = {"
@@ -4639,10 +4697,10 @@ kf
 EH
 ju
 lE
-ao
-ao
-ao
-ao
+rr
+rr
+vH
+qQ
 ao
 "}
 (10,1,1) = {"
@@ -4681,10 +4739,10 @@ wM
 dS
 dU
 dU
-ao
-ao
-ao
-ao
+rr
+Sh
+vH
+qQ
 ao
 "}
 (11,1,1) = {"
@@ -4722,8 +4780,8 @@ dU
 dU
 dU
 dU
-aV
-dU
+qQ
+bm
 dU
 dU
 dU
@@ -4761,11 +4819,11 @@ Cx
 Ld
 dU
 dU
-aV
-aV
-aV
-aV
-dU
+qQ
+qQ
+bm
+ch
+bm
 dU
 ct
 MU
@@ -4805,7 +4863,7 @@ dU
 dU
 dU
 dU
-dU
+XI
 dU
 dU
 dU
@@ -4845,7 +4903,7 @@ gY
 dU
 ba
 bm
-bE
+hO
 bD
 bB
 dU

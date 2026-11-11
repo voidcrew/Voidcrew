@@ -339,11 +339,6 @@
 /obj/effect/turf_decal/delivery/red,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
-"bm" = (
-/obj/structure/reagent_dispensers/water_cooler,
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost/checkpoint)
 "bo" = (
 /obj/structure/railing/unbreakable{
 	dir = 4
@@ -370,18 +365,10 @@
 /obj/effect/turf_decal/tile/neutral/anticorner,
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
-"br" = (
-/obj/effect/turf_decal/delivery,
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost/checkpoint)
 "bs" = (
 /obj/machinery/light/directional/west,
 /obj/effect/turf_decal/tile/neutral/full,
 /turf/open/indestructible/large,
-/area/voidcrew/trader_outpost/checkpoint)
-"bt" = (
-/turf/open/indestructible/glass,
 /area/voidcrew/trader_outpost/checkpoint)
 "bu" = (
 /obj/structure/flora/bush/flowers_yw/style_random,
@@ -441,13 +428,6 @@
 	},
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
-"bC" = (
-/obj/structure/chair/sofa/bench/tram/right{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost/checkpoint)
 "bE" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 5
@@ -503,13 +483,6 @@
 	dir = 4
 	},
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost/checkpoint)
-"bJ" = (
-/obj/structure/chair/sofa/bench/tram/left{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
 /area/voidcrew/trader_outpost/checkpoint)
 "bK" = (
 /obj/effect/landmark/outpost_elevator_alcove,
@@ -1335,6 +1308,10 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"iV" = (
+/obj/effect/landmark/outpost_morgue,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "jc" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/thinplating_new/dark,
@@ -1420,13 +1397,6 @@
 /obj/item/seeds/cotton,
 /turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
-"kC" = (
-/obj/structure/closet/secure_closet/outpost_rental/checkpoint,
-/obj/effect/turf_decal/bot,
-/obj/structure/sign/warning/secure_area/directional/north,
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost/checkpoint)
 "kK" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -1658,6 +1628,10 @@
 /obj/structure/flora/bush/ferny/style_random,
 /turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
+"mQ" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "mT" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 10
@@ -1822,6 +1796,11 @@
 	},
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"oS" = (
+/obj/structure/sign/departments/morgue/directional/north,
+/obj/effect/turf_decal/tile/neutral/full,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost/checkpoint)
 "oY" = (
 /obj/effect/landmark/stealth_group,
 /turf/open/indestructible/large,
@@ -1864,6 +1843,10 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"pT" = (
+/obj/effect/landmark/outpost_janitor_closet,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "pV" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -1956,6 +1939,9 @@
 /obj/machinery/light/floor,
 /turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
+"qV" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "re" = (
 /obj/structure/railing/unbreakable{
 	color = "#5d341f";
@@ -2724,6 +2710,12 @@
 /obj/effect/turf_decal/trimline/neutral/filled/mid_joiner,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"yk" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "yw" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
@@ -3181,6 +3173,10 @@
 /obj/effect/turf_decal/siding/thinplating_new/light,
 /turf/open/indestructible/white,
 /area/voidcrew/trader_outpost)
+"Cp" = (
+/obj/structure/mop_bucket,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "Cy" = (
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 1
@@ -3367,6 +3363,14 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /turf/open/indestructible/white,
 /area/voidcrew/trader_outpost)
+"EB" = (
+/obj/structure/sink/directional/north,
+/obj/item/clothing/suit/caution,
+/obj/item/clothing/suit/caution,
+/obj/item/storage/bag/trash,
+/obj/item/storage/bag/trash,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "ED" = (
 /obj/structure/chair/sofa/corp{
 	dir = 8
@@ -4171,13 +4175,6 @@
 	},
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
-"Mc" = (
-/obj/structure/closet/secure_closet/outpost_rental/checkpoint,
-/obj/effect/turf_decal/bot,
-/obj/structure/sign/departments/security/directional/north,
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost/checkpoint)
 "Me" = (
 /obj/machinery/status_display/outpost_berth/police_cell/directional/north{
 	cell_id = "halcyon_cell_1"
@@ -4789,6 +4786,23 @@
 /obj/machinery/light/small/directional/east,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"RX" = (
+/obj/structure/railing/unbreakable{
+	dir = 4
+	},
+/obj/structure/railing/unbreakable{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/structure/sign/warning/secure_area/directional/east,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost/checkpoint)
 "RZ" = (
 /obj/structure/closet/outpost_medical,
 /obj/effect/turf_decal/trimline/blue/filled/line,
@@ -5590,6 +5604,12 @@
 	icon_state = "stairs-l"
 	},
 /area/voidcrew/trader_outpost)
+"ZL" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Morgue"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "ZQ" = (
 /obj/machinery/vending/cigarette,
 /obj/machinery/light/blacklight/directional/north,
@@ -8091,7 +8111,7 @@ aP
 an
 ac
 bl
-bo
+RX
 bw
 bo
 bw
@@ -8157,11 +8177,11 @@ ak
 al
 ac
 ak
-kC
-be
-be
-be
-be
+wZ
+wZ
+wZ
+wZ
+aT
 bI
 bM
 bP
@@ -8223,11 +8243,11 @@ ak
 ul
 ul
 ak
-Mc
-bt
-bt
-bj
-be
+yk
+qV
+mQ
+qV
+ZL
 be
 be
 aT
@@ -8289,12 +8309,12 @@ ak
 bc
 bf
 ul
-br
-bt
-bt
-be
-be
-be
+yk
+qV
+iV
+pT
+wZ
+oS
 be
 aT
 ul
@@ -8355,13 +8375,13 @@ bV
 ak
 bh
 ul
-br
+yk
+qV
+qV
+Cp
+wZ
 be
-be
-be
-be
-be
-be
+aT
 ak
 bU
 aK
@@ -8420,13 +8440,13 @@ ef
 JW
 ak
 ak
-bm
+wZ
+yk
+qV
+qV
+EB
+wZ
 bi
-be
-be
-be
-bC
-bJ
 ak
 ak
 eJ
