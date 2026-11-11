@@ -13,14 +13,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
-"ac" = (
-/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
-/obj/structure/fluff/shower_drain,
-/obj/machinery/shower/directional/south,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/indestructible/stone,
-/area/voidcrew/trader_outpost)
 "ad" = (
 /obj/structure/railing{
 	dir = 9
@@ -153,18 +145,6 @@
 /area/voidcrew/trader_outpost)
 "ar" = (
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
-"as" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
-	dir = 1
-	},
-/obj/machinery/door/airlock/centcom{
-	name = "Restroom"
-	},
-/turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
 "at" = (
 /obj/structure/displaycase/chop_shop/cascade,
@@ -808,6 +788,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost/checkpoint)
+"cc" = (
+/obj/structure/chair,
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/landmark/outpost_police_cell{
+	cell_id = "undertow_cell_1"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "ci" = (
 /obj/structure/chair/sofa/corp/left,
 /turf/open/floor/carpet/neon/simple/red/nodots,
@@ -838,6 +826,12 @@
 /obj/effect/spawner/random/trash/cigbutt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"cv" = (
+/obj/effect/landmark/outpost_police_cell{
+	cell_id = "undertow_cell_1"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "cJ" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 10
@@ -1123,6 +1117,11 @@
 /obj/effect/turf_decal/tile/dark_red/opposingcorners,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"fq" = (
+/obj/structure/sign/departments/security/directional/north,
+/obj/effect/turf_decal/tile/dark_red/full,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost/checkpoint)
 "fr" = (
 /obj/structure/closet/secure_closet/personal/outpost_police,
 /obj/effect/turf_decal/bot,
@@ -1198,6 +1197,9 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"gz" = (
+/turf/closed/indestructible/opsglass,
+/area/voidcrew/trader_outpost/checkpoint)
 "gK" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -1524,16 +1526,6 @@
 /obj/machinery/light/floor,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"kt" = (
-/obj/structure/chair/sofa/bench/tram/left{
-	dir = 1
-	},
-/obj/machinery/light/small/red/directional/south,
-/obj/effect/landmark/outpost_police_cell{
-	cell_id = "undertow_cell_1"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "kF" = (
 /obj/structure/chair/comfy/carp{
 	dir = 1
@@ -1580,6 +1572,13 @@
 /obj/structure/extinguisher_cabinet/directional/north,
 /turf/open/floor/carpet/neon/simple/red/nodots,
 /area/voidcrew/trader_outpost)
+"lx" = (
+/obj/structure/chair/office,
+/obj/effect/landmark/outpost_police_desk,
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/turf_decal/tile/dark_red/full,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost/checkpoint)
 "lQ" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -1855,16 +1854,6 @@
 /obj/effect/invisible_wall,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
-"pY" = (
-/obj/structure/chair/sofa/bench/tram/right{
-	dir = 1
-	},
-/obj/machinery/light/small/red/directional/south,
-/obj/effect/landmark/outpost_police_cell{
-	cell_id = "undertow_cell_2"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "qb" = (
 /obj/structure/table/reinforced,
 /obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
@@ -1929,6 +1918,16 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"rt" = (
+/obj/machinery/status_display/outpost_berth/police_cell/directional/north{
+	cell_id = "undertow_cell_1"
+	},
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "rw" = (
 /obj/structure/table/reinforced,
 /turf/open/floor/carpet/neon/simple/red/nodots,
@@ -1961,13 +1960,6 @@
 	},
 /turf/open/floor/carpet/neon/simple/red/nodots,
 /area/voidcrew/trader_outpost)
-"sc" = (
-/obj/machinery/status_display/outpost_berth/police_cell/directional/south{
-	cell_id = "undertow_cell_2"
-	},
-/obj/machinery/light/small/red/directional/north,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
 "se" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 9
@@ -2014,14 +2006,6 @@
 /obj/effect/spawner/random/trash/cigbutt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"sT" = (
-/obj/machinery/outpost_police_evidence,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
-"td" = (
-/obj/effect/spawner/structure/window/reinforced/indestructible,
-/turf/open/indestructible/plating,
-/area/voidcrew/trader_outpost/checkpoint)
 "tu" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -2064,29 +2048,11 @@
 	icon_state = "stairs-l"
 	},
 /area/voidcrew/trader_outpost)
-"uz" = (
-/obj/structure/chair/sofa/bench/tram/right{
-	dir = 1
-	},
-/obj/effect/landmark/outpost_police_cell{
-	cell_id = "undertow_cell_1"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "uB" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark,
 /obj/effect/turf_decal/tile/dark_red/half/contrasted,
 /obj/effect/landmark/bounty_kingpin/goon/pistol,
 /turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
-"uC" = (
-/obj/structure/falsewall/plastitanium,
-/obj/structure/fans/tiny,
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "uM" = (
 /obj/structure/railing/corner,
@@ -2106,11 +2072,6 @@
 	},
 /obj/machinery/light/floor,
 /turf/open/floor/carpet/neon/simple/red/nodots,
-/area/voidcrew/trader_outpost)
-"va" = (
-/obj/effect/turf_decal/weather/dirt,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
 "vb" = (
 /obj/structure/chair/sofa/corp/corner{
@@ -2200,13 +2161,6 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"vG" = (
-/obj/structure/chair/office{
-	dir = 8
-	},
-/obj/effect/landmark/outpost_police_desk,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
 "we" = (
 /obj/structure/chair/stool/bar/directional/east,
 /turf/open/floor/carpet/neon/simple/red/nodots,
@@ -2245,16 +2199,6 @@
 	dir = 4
 	},
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
-"wF" = (
-/obj/structure/sink/directional/west,
-/obj/structure/mirror/directional/east,
-/obj/effect/turf_decal/weather/dirt{
-	dir = 5
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
 "wK" = (
 /obj/structure/railing/unbreakable{
@@ -2334,15 +2278,6 @@
 	},
 /obj/effect/landmark/bounty_kingpin/goon/shotgun,
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
-"xj" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark,
-/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
-/obj/effect/turf_decal/trimline/dark_red/filled/warning,
-/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "xB" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -2596,12 +2531,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden,
 /turf/closed/indestructible/syndicate/outpost,
 /area/voidcrew/trader_outpost)
-"Bx" = (
-/obj/machinery/status_display/outpost_berth/police_cell/directional/west{
-	cell_id = "undertow_cell_1"
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
 "BE" = (
 /obj/machinery/light/floor,
 /obj/effect/landmark/stealth_patrol/police{
@@ -2696,6 +2625,12 @@
 /obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"CF" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "CI" = (
 /obj/structure/chair/sofa/corp{
 	dir = 4
@@ -2901,6 +2836,13 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"Gg" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/effect/turf_decal/tile/dark_red/full,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost/checkpoint)
 "Gi" = (
 /obj/structure/railing,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -3127,6 +3069,23 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"Jq" = (
+/obj/machinery/status_display/outpost_berth/police_cell/directional/north{
+	cell_id = "undertow_cell_2"
+	},
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
+"Js" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "Jt" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -3202,21 +3161,6 @@
 	dir = 1
 	},
 /area/voidcrew/trader_outpost)
-"Lm" = (
-/obj/structure/chair/sofa/bench/tram/left{
-	dir = 1
-	},
-/obj/effect/landmark/outpost_police_cell{
-	cell_id = "undertow_cell_2"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
-"Lp" = (
-/obj/structure/table/reinforced,
-/obj/item/paper_bin,
-/obj/item/pen,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
 "Lu" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
 	dir = 4
@@ -3277,6 +3221,11 @@
 /obj/machinery/light/red/directional/south,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"Mf" = (
+/obj/structure/closet/secure_closet/outpost_evidence,
+/obj/effect/turf_decal/bot_red,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "Mg" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
@@ -3416,6 +3365,12 @@
 	dir = 1
 	},
 /area/voidcrew/trader_outpost)
+"On" = (
+/obj/effect/landmark/outpost_police_cell{
+	cell_id = "undertow_cell_2"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "Op" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -3535,18 +3490,13 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
-"PI" = (
-/obj/structure/toilet{
-	dir = 8
+"PK" = (
+/obj/structure/toilet,
+/obj/effect/landmark/outpost_police_cell{
+	cell_id = "undertow_cell_1"
 	},
-/obj/effect/turf_decal/weather/dirt{
-	dir = 6
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/newscaster/directional/east,
-/obj/machinery/light/small/directional/south,
-/turf/open/indestructible/stone,
-/area/voidcrew/trader_outpost)
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "PM" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/tile/dark_red/opposingcorners,
@@ -3595,13 +3545,6 @@
 /turf/open/floor/carpet/neon/simple/red/nodots,
 /area/voidcrew/trader_outpost)
 "QW" = (
-/turf/open/indestructible/stone,
-/area/voidcrew/trader_outpost)
-"Rw" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 10
-	},
-/obj/machinery/light/small/directional/south,
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
 "RB" = (
@@ -4160,8 +4103,23 @@
 /obj/effect/landmark/outpost_morgue,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
+"ZP" = (
+/obj/structure/toilet,
+/obj/effect/landmark/outpost_police_cell{
+	cell_id = "undertow_cell_2"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "ZS" = (
 /turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost/checkpoint)
+"ZZ" = (
+/obj/structure/chair,
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/landmark/outpost_police_cell{
+	cell_id = "undertow_cell_2"
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
 
 (1,1,1) = {"
@@ -4500,9 +4458,9 @@ rE
 aa
 aa
 aa
-uC
 aa
-aC
+aa
+aa
 "}
 (11,1,1) = {"
 aC
@@ -4533,10 +4491,10 @@ VB
 qL
 Vc
 aa
-ac
-Rw
+PK
+gz
+Js
 aa
-aC
 "}
 (12,1,1) = {"
 aC
@@ -4565,12 +4523,12 @@ ar
 ar
 ar
 aB
-xj
-as
-QW
-va
+Jz
 aV
-aC
+cv
+RB
+CF
+aa
 "}
 (13,1,1) = {"
 aC
@@ -4601,10 +4559,10 @@ NC
 dN
 Jz
 aa
-wF
-PI
+cc
+gz
+CF
 aa
-aC
 "}
 (14,1,1) = {"
 aC
@@ -4637,8 +4595,8 @@ Gw
 aa
 aa
 aa
+rt
 aa
-aC
 "}
 (15,1,1) = {"
 aC
@@ -4669,9 +4627,9 @@ kO
 ar
 au
 aa
-Bx
-RB
-kt
+ZP
+gz
+CF
 aa
 "}
 (16,1,1) = {"
@@ -4703,9 +4661,9 @@ aq
 ar
 Eu
 aV
-bK
-td
-uz
+On
+oy
+CF
 aa
 "}
 (17,1,1) = {"
@@ -4737,9 +4695,9 @@ aK
 aB
 aN
 aa
-sc
-ZS
-ZS
+ZZ
+gz
+CF
 aa
 "}
 (18,1,1) = {"
@@ -4771,9 +4729,9 @@ az
 ar
 zA
 aa
-bK
-oy
-Lm
+ZS
+ZS
+Jq
 aa
 "}
 (19,1,1) = {"
@@ -4805,9 +4763,9 @@ ak
 ar
 aN
 aa
-bK
-td
-pY
+lx
+Gg
+CF
 aa
 "}
 (20,1,1) = {"
@@ -4839,9 +4797,9 @@ ao
 ar
 aN
 aa
+fq
 bK
-bK
-ZS
+CF
 aa
 "}
 (21,1,1) = {"
@@ -4875,7 +4833,7 @@ aN
 aR
 aa
 bK
-fr
+Mf
 aa
 "}
 (22,1,1) = {"
@@ -5011,7 +4969,7 @@ aN
 LS
 aa
 bK
-Lp
+fr
 aa
 "}
 (26,1,1) = {"
@@ -5045,7 +5003,7 @@ bY
 aa
 aa
 bK
-vG
+bK
 aa
 "}
 (27,1,1) = {"
@@ -5079,7 +5037,7 @@ Ha
 aa
 bw
 bK
-sT
+bK
 aa
 "}
 (28,1,1) = {"
