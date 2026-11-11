@@ -190,6 +190,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	var/thaw_at = 0
 	/// world.time of the last tick, for how much time each tick dilated.
 	var/last_tick = 0
+	/// The field's own clock. A timer, not SSfastprocess, which sleeps outside RUNLEVEL_GAME.
+	var/tick_timer
 	/// Mobs in hand.
 	var/list/held_mobs = list()
 	/// Projectiles in hand, to their own speed.
@@ -207,9 +209,13 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	time_scale = start_scale
 	last_tick = world.time
 	. = ..()
+	STOP_PROCESSING(SSfastprocess, src) // tick() runs on tick_timer instead
+	tick_timer = addtimer(CALLBACK(src, PROC_REF(tick)), 0.2 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	RegisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_user_fire))
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/Destroy()
+	deltimer(tick_timer)
+	tick_timer = null
 	if(host)
 		UnregisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
 	stopper = null
@@ -234,6 +240,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 				return FALSE
 			user_shots[shot] = TRUE
 			tint = FALSE
+			escape_the_negative_zone(shot) // in case it was tinted before it had a firer
 		hold_shot(shot)
 	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A) || ismecha(A))
 		frozen_structures += A // looks only
@@ -380,7 +387,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 		if(QDELETED(shot) || shot.deletion_queued)
 			return
 	user_shots[shot] = TRUE
-	hold_shot(shot)
+	escape_the_negative_zone(shot) // in case it was tinted before it had a firer
+	if(!held_shots[shot])
+		hold_shot(shot)
 	GLOB.cyberware_time_dilated[shot] = src
 	frozen_things[shot] = TRUE
 	RegisterSignal(shot, COMSIG_QDELETING, PROC_REF(held_gone))
@@ -414,6 +423,10 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 			thing.throwing.paused = time_scale <= 0
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/process()
+	return PROCESS_KILL
+
+/// Every 0.2 s: end if a player came in, push back the timers of everything held, let bosses go, end the freeze.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/tick()
 	if(QDELETED(host) || cyberware_time_stop_witnessed(host))
 		if(!QDELETED(stopper))
 			qdel(stopper) // takes this field with it
