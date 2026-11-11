@@ -2,7 +2,7 @@
  * HULLS registry. Wide: the list, and the selected hull's record beside it. Narrow: the
  * list, or the record on its own screen ([ BACK ] returns to the list).
  */
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { HullRecord } from './HullRecord';
 import { Frame, Hit, lpad, Put, pad, TOP, useGrid } from './term';
@@ -23,6 +23,8 @@ export function Hulls(props: { ctx: YardCtx }) {
     () => catalog.map((hl) => crewCount(stockFit(hl))),
     [catalog],
   );
+  const [page, setPage] = useState(1);
+  const [enterLast, setEnterLast] = useState(false);
 
   if (narrow && hull) {
     return <HullRecord ctx={ctx} hull={hull} x={0} w={cols} />;
@@ -71,9 +73,23 @@ export function Hulls(props: { ctx: YardCtx }) {
       </Put>,
     );
   }
-  const maxRows = Math.max(0, TOP + h - 2 - hy);
-  catalog.slice(0, maxRows).forEach((hl, i) => {
-    const y = hy + 1 + i;
+  // Rows below the header, less one for the pager when the list runs over.
+  let maxRows = Math.max(1, TOP + h - 2 - hy);
+  if (catalog.length > maxRows) {
+    maxRows = Math.max(1, maxRows - 1);
+  }
+  const pages = Math.max(1, Math.ceil(catalog.length / maxRows));
+  const pg = Math.min(pages, Math.max(1, page));
+  const goPage = (to: number, last: boolean) => {
+    setEnterLast(last);
+    setPage(to);
+  };
+  const shown = catalog.slice((pg - 1) * maxRows, pg * maxRows);
+  shown.forEach((hl, n) => {
+    const i = (pg - 1) * maxRows + n;
+    const y = hy + 1 + n;
+    const firstRow = n === 0;
+    const lastRow = n === shown.length - 1;
     const sel = hull?.id === hl.id;
     const k = sel ? 'inv' : '';
     const owned = hullOwned(own, hl);
@@ -109,7 +125,7 @@ export function Hulls(props: { ctx: YardCtx }) {
         y={y}
         cls={sel ? 'inv' : owned ? 'dim' : 'amb'}
       >
-        {priceText}
+        {pad(priceText, lw - 3 - price)}
       </Put>,
     );
     if (showModel) {
@@ -128,15 +144,61 @@ export function Hulls(props: { ctx: YardCtx }) {
     }
     out.push(
       <Hit
-        key={`hit${i}`}
+        key={`hit${pg}-${i}`}
         x={1}
         y={y}
         w={lw - 3}
         h={1}
         onClick={() => ctx.set({ hull: sel ? null : hl.id })}
+        auto={(enterLast ? lastRow : firstRow) && !hull ? 1 : undefined}
+        edge={{
+          down:
+            lastRow && pg < pages
+              ? () => {
+                  goPage(pg + 1, false);
+                  return true;
+                }
+              : undefined,
+          up:
+            firstRow && pg > 1
+              ? () => {
+                  goPage(pg - 1, true);
+                  return true;
+                }
+              : undefined,
+        }}
       />,
     );
   });
+  if (pages > 1) {
+    const py = TOP + h - 1;
+    const label = ` ${pg}/${pages} `;
+    out.push(
+      <Put
+        key="prev"
+        x={lw - 14}
+        y={py}
+        cls={pg > 1 ? 'inv' : 'faint'}
+        bg={pg <= 1}
+        onClick={pg > 1 ? () => goPage(pg - 1, false) : undefined}
+      >
+        {' < '}
+      </Put>,
+      <Put key="pg" x={lw - 11} y={py} bg>
+        {label}
+      </Put>,
+      <Put
+        key="next"
+        x={lw - 11 + label.length}
+        y={py}
+        cls={pg < pages ? 'inv' : 'faint'}
+        bg={pg >= pages}
+        onClick={pg < pages ? () => goPage(pg + 1, false) : undefined}
+      >
+        {' > '}
+      </Put>,
+    );
+  }
 
   return (
     <>

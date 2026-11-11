@@ -93,6 +93,7 @@ export function HousingTab() {
           y={y}
           right
           label="MOVE IN"
+          auto={o === shown[0] ? 1 : undefined}
           amber
           lit={code.length > 0}
           disabled={locked}
@@ -143,6 +144,7 @@ export function HousingTab() {
             right
             label="MOVE IN"
             lit
+            auto={o === shown[0] ? 1 : undefined}
             onClick={() => moveIn(o)}
           />
         )}

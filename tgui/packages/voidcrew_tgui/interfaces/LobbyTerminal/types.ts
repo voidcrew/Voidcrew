@@ -93,6 +93,8 @@ export type Crew = {
   /** Seconds left on a wrong-code lockout. */
   code_wait: number;
   jobs: CrewJob[];
+  /** Who is aboard: [name, job title, captain], the captain first. Capped server-side. */
+  aboard?: [string, string, BooleanLike][];
 };
 
 export type CrewsData = {

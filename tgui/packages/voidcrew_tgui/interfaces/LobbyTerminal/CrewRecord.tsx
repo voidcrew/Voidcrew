@@ -4,7 +4,7 @@
  */
 import { type ReactNode, useState } from 'react';
 import { useBackend } from 'tgui/backend';
-
+import { useBack } from './nav';
 import {
   Blocks,
   Btn,
@@ -15,7 +15,7 @@ import {
   RPut,
   Rule,
   TOP,
-  wrap,
+  wrapMax,
 } from './term';
 import type { Crew, LobbyData } from './types';
 
@@ -56,6 +56,7 @@ export function CrewRecord(props: Props) {
   const bottom = TOP + h - 1;
   const out: ReactNode[] = [];
   let y = TOP + 2;
+  useBack(onClose);
 
   const closeLabel = narrow ? ' BACK ' : ' X ';
   out.push(
@@ -67,6 +68,7 @@ export function CrewRecord(props: Props) {
       hoverCls="inv"
       bg
       onClick={onClose}
+      auto={1}
     >
       {closeLabel}
     </Put>,
@@ -74,7 +76,7 @@ export function CrewRecord(props: Props) {
 
   out.push(
     <Put key="cls" x={x + 3} y={y} cls="dim">
-      {pad(c.cls.toUpperCase(), Math.max(1, w - 18))}
+      {pad(c.cls.toUpperCase(), Math.max(1, w - 9 - `${c.crew} ABOARD`.length))}
     </Put>,
     <RPut key="aboard" x={x + w - 3} y={y} cls="dim">
       {`${c.crew} ABOARD`}
@@ -99,7 +101,7 @@ export function CrewRecord(props: Props) {
 
   if (c.memo) {
     const room = Math.max(1, bottom - y - tail - 6);
-    const lines = wrap(`"${c.memo}"`, w - 6).slice(0, Math.min(5, room));
+    const lines = wrapMax(`"${c.memo}"`, w - 6, Math.min(4, room));
     for (const line of lines) {
       out.push(
         <Put key={`memo${y}`} x={x + 3} y={y}>
@@ -109,6 +111,53 @@ export function CrewRecord(props: Props) {
       y++;
     }
     y += 1;
+  }
+  // Who is aboard, the captain first, in what room the berths below leave.
+  const aboard = c.aboard || [];
+  if (aboard.length) {
+    const below =
+      1 +
+      (c.jobs.length ? Math.min(2, c.jobs.length) * 2 : 4) +
+      tail +
+      (c.rejoin_wait > 0 && !locked ? 3 : 0);
+    const room = Math.min(6, bottom - y - below - 1);
+    if (room >= 1) {
+      const shown = aboard.length > room ? room - 1 : aboard.length;
+      const more = Math.max(c.crew, aboard.length) - shown;
+      const jobW = Math.min(
+        16,
+        Math.max(6, ...aboard.map(([, job]) => job.length)),
+      );
+      const nameX = x + 8;
+      const nameW = Math.max(4, x + w - 3 - jobW - 1 - nameX);
+      aboard.slice(0, shown).forEach(([name, job, capt], i) => {
+        out.push(
+          <Put key={`ab${i}`} x={nameX} y={y} cls={capt ? 'amb' : ''}>
+            {pad(name.toUpperCase(), nameW)}
+          </Put>,
+          <RPut key={`aj${i}`} x={x + w - 3} y={y} cls="dim">
+            {cut(job.toUpperCase(), jobW)}
+          </RPut>,
+        );
+        if (capt) {
+          out.push(
+            <Put key={`ac${i}`} x={x + 3} y={y} cls="amb">
+              CAPT
+            </Put>,
+          );
+        }
+        y++;
+      });
+      if (more > 0) {
+        out.push(
+          <Put key="abm" x={nameX} y={y} cls="faint">
+            {`+${more} MORE`}
+          </Put>,
+        );
+        y++;
+      }
+      y += 1;
+    }
   }
   out.push(<Rule key="rule1" x={x + 1} y={y} w={w - 2} />);
   y += 1;
@@ -137,6 +186,7 @@ export function CrewRecord(props: Props) {
           y={y}
           label="PING CREW"
           lit
+          auto={2}
           onClick={() => act('crew_ping', { ship: c.ref })}
         />,
       );
@@ -161,9 +211,17 @@ export function CrewRecord(props: Props) {
   const maxBlocks = Math.max(1, Math.floor((nameW - 1) / 2));
   // Name, berths and a spacer per job; drop the spacer when that would not fit.
   const step = y + c.jobs.length * 3 + tail <= bottom ? 3 : 2;
-  const jobRoom = Math.max(1, Math.floor((bottom - y - tail) / step));
+  let jobRoom = Math.max(1, Math.floor((bottom - y - tail) / step));
+  // Berths that don't fit leave a row saying how many more there are.
+  const jobsCut = c.jobs.length > jobRoom;
+  if (jobsCut) {
+    jobRoom = Math.max(1, Math.floor((bottom - y - tail - 1) / step));
+  }
+  let autoGiven = false;
   for (const job of c.jobs.slice(0, jobRoom)) {
     const usable = !grey && !!job.ok && c.rejoin_wait <= 0;
+    const first = usable && !autoGiven;
+    autoGiven = autoGiven || usable;
     out.push(
       <Put key={`j${job.ref}`} x={x + 3} y={y} cls={grey ? 'dim' : ''}>
         {pad(job.title.toUpperCase(), nameW)}
@@ -190,10 +248,19 @@ export function CrewRecord(props: Props) {
         right
         label="SIGN ON"
         disabled={!usable}
+        auto={first ? 2 : undefined}
         onClick={() => act('crew_sign_on', { ship: c.ref, job: job.ref })}
       />,
     );
     y += step;
+  }
+  if (jobsCut) {
+    out.push(
+      <Put key="jmore" x={x + 3} y={y} cls="faint">
+        {`+${c.jobs.length - jobRoom} MORE`}
+      </Put>,
+    );
+    y += 1;
   }
 
   if (locked) {
@@ -220,6 +287,7 @@ export function CrewRecord(props: Props) {
         max={CODE_MAX}
         disabled={waiting}
         secret
+        auto={2}
         onChange={setCode}
         onEnter={sendCode}
       />,
@@ -233,7 +301,7 @@ export function CrewRecord(props: Props) {
         onClick={sendCode}
       />,
     );
-    if (waiting) {
+    if (waiting && w >= 42) {
       out.push(
         <Put key="codew" x={x + 34} y={y} cls="faint">
           {clock(c.code_wait)}

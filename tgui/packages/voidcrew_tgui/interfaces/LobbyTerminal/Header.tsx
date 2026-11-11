@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { Put, pad, RPut, Rule, useGrid } from './term';
+import { cut, Put, pad, RPut, Rule, useGrid } from './term';
 import type { LobbyData, TabId } from './types';
 
-const TABS: [TabId, string][] = [
+export const TABS: [TabId, string][] = [
   ['crews', 'CREWS'],
   ['shipyard', 'SHIPYARD'],
   ['housing', 'HOUSING'],
@@ -74,6 +74,12 @@ export function Header(props: { tab: TabId; setTab: (tab: TabId) => void }) {
     right = `${ready} READY  ${admins}/${adminTotal} ADM   ${right}`;
   }
 
+  if (right.length > cols - 2) {
+    right = right.slice(right.length - Math.max(0, cols - 2));
+  }
+  // The port name gives way to the clock: cut it, never run it under the right-hand text.
+  const titleText = cut(title, Math.max(0, cols - right.length - 3));
+
   let x = 1;
   const tabs = TABS.map(([id, label]) => {
     const text = ` ${label} `;
@@ -87,6 +93,7 @@ export function Header(props: { tab: TabId; setTab: (tab: TabId) => void }) {
         cls={id === tab ? 'inv' : 'dim'}
         hoverCls={id === tab ? 'inv' : ''}
         onClick={() => setTab(id)}
+        tab
       >
         {text}
       </Put>
@@ -96,7 +103,7 @@ export function Header(props: { tab: TabId; setTab: (tab: TabId) => void }) {
   return (
     <>
       <Put x={0} y={0} cls="inv">
-        {pad(title, cols)}
+        {pad(titleText, cols)}
       </Put>
       <RPut x={cols - 1} y={0} cls="inv" bg={false}>
         {right}

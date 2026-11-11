@@ -13,8 +13,10 @@ import {
   createContext,
   type ReactNode,
   useContext,
-  useState,
+  useRef,
 } from 'react';
+
+import { type FocusOpts, useFocusable } from './nav';
 
 export type Grid = {
   cols: number;
@@ -47,25 +49,33 @@ export type Cls = '' | 'dim' | 'faint' | 'amb' | 'red' | 'inv' | 'inva';
 
 const cx = (cls?: string) => (cls ? cls : undefined);
 
-type PutProps = {
+/** Keyboard focus options a clickable item can pass on (see nav.tsx). */
+export type NavProps = Pick<FocusOpts, 'auto' | 'edge' | 'tab'>;
+
+type PutProps = NavProps & {
   x: number;
   y: number;
   /** Colour class. */
   cls?: Cls | string;
   children: ReactNode;
   onClick?: () => void;
-  /** Class while hovered (clickable keys light up). */
+  /** Class while focused or hovered (clickable keys light up). */
   hoverCls?: Cls | string;
   /** Paint the terminal background behind the text (over frame lines). */
   bg?: boolean;
   title?: string;
 };
 
-/** Text at a cell. */
+/** Text at a cell. With onClick it is focusable: hover or the arrow keys light it. */
 export function Put(props: PutProps) {
   const { x, y, cls, children, onClick, hoverCls, bg, title } = props;
   const { cw, ch } = useGrid();
-  const [hover, setHover] = useState(false);
+  const focus = useFocusable<HTMLSpanElement>(!!onClick, {
+    activate: () => onClick?.(),
+    auto: props.auto,
+    edge: props.edge,
+    tab: props.tab,
+  });
   const style: CSSProperties = {
     left: Math.round(x * cw),
     top: Math.round(y * ch),
@@ -77,10 +87,11 @@ export function Put(props: PutProps) {
     style.cursor = 'pointer';
     style.zIndex = 5;
   }
-  const shown = hover && hoverCls ? hoverCls : cls;
+  const shown = focus.focused && hoverCls ? hoverCls : cls;
   return (
     <span
-      className={cx(shown)}
+      ref={focus.ref}
+      className={cx(focus.focused ? `${shown || ''} lt-foc` : shown)}
       style={style}
       title={title}
       onClick={
@@ -91,8 +102,7 @@ export function Put(props: PutProps) {
             }
           : undefined
       }
-      onMouseEnter={hoverCls ? () => setHover(true) : undefined}
-      onMouseLeave={hoverCls ? () => setHover(false) : undefined}
+      onMouseEnter={focus.onMouseEnter}
     >
       {children}
     </span>
@@ -104,7 +114,7 @@ export function RPut(props: PutProps & { children: string }) {
   return <Put {...props} x={props.x - props.children.length} />;
 }
 
-type BtnProps = {
+type BtnProps = NavProps & {
   x: number;
   y: number;
   label: string;
@@ -120,7 +130,8 @@ type BtnProps = {
 
 /** A `[ LABEL ]` key on the grid. Disabled keys draw faint and ignore clicks. */
 export function Btn(props: BtnProps) {
-  const { x, y, label, right, lit, amber, disabled, onClick } = props;
+  const { x, y, label, right, lit, amber, disabled, onClick, auto, edge } =
+    props;
   const text = `[ ${label} ]`;
   const at = right ? x - text.length : x;
   if (disabled) {
@@ -133,13 +144,21 @@ export function Btn(props: BtnProps) {
   const rest = lit ? (amber ? 'inva' : 'inv') : amber ? 'amb' : '';
   const hover = amber ? 'inva' : 'inv';
   return (
-    <Put x={at} y={y} cls={rest} hoverCls={hover} onClick={onClick}>
+    <Put
+      x={at}
+      y={y}
+      cls={rest}
+      hoverCls={hover}
+      onClick={onClick}
+      auto={auto}
+      edge={edge}
+    >
       {text}
     </Put>
   );
 }
 
-type FieldProps = {
+type FieldProps = Pick<NavProps, 'auto'> & {
   /** Column of the opening bracket; the text starts one cell to the right. */
   x: number;
   y: number;
@@ -162,12 +181,25 @@ type FieldProps = {
 export function Field(props: FieldProps) {
   const { x, y, w, value, max, disabled, secret, onChange, onEnter } = props;
   const { cw, ch } = useGrid();
+  const input = useRef<HTMLInputElement | null>(null);
+  const focus = useFocusable<HTMLInputElement>(!disabled, {
+    activate: () => input.current?.focus(),
+    auto: props.auto,
+    input,
+  });
   return (
     <>
       <Put x={x} y={y} cls={disabled ? 'faint' : 'amb'}>
         {`[${' '.repeat(w)}]`}
       </Put>
       <input
+        ref={(el) => {
+          input.current = el;
+          focus.ref.current = el;
+        }}
+        className={focus.focused ? 'lt-fieldfoc' : undefined}
+        onMouseEnter={focus.onMouseEnter}
+        onFocus={focus.take}
         type={secret ? 'password' : 'text'}
         value={value}
         maxLength={max}
@@ -190,7 +222,7 @@ export function Field(props: FieldProps) {
           padding: 0,
           margin: 0,
           border: 'none',
-          outline: 'none',
+          outline: focus.focused ? undefined : 'none',
           background: 'transparent',
           color: disabled ? 'var(--lt-faint)' : 'var(--lt-amb)',
           caretColor: 'var(--lt-amb)',
@@ -234,7 +266,7 @@ export function Frame(props: FrameProps) {
       <div className={dim ? 'lt-box dimb' : 'lt-box'} style={style} />
       {!!title && (
         <Put x={x + 2} y={y} cls={dim ? 'dim' : ''} bg>
-          {` ${title} `}
+          {` ${cut(title, Math.max(1, w - 6))} `}
         </Put>
       )}
       {children}
@@ -283,18 +315,26 @@ export function Blocks(props: {
 }
 
 /** Invisible click target over a block of cells (whole list rows). */
-export function Hit(props: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  onClick: () => void;
-  onHover?: (over: boolean) => void;
-}) {
-  const { x, y, w, h, onClick, onHover } = props;
+export function Hit(
+  props: NavProps & {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    onClick: () => void;
+  },
+) {
+  const { x, y, w, h, onClick } = props;
   const { cw, ch } = useGrid();
+  const focus = useFocusable<HTMLDivElement>(true, {
+    activate: onClick,
+    auto: props.auto,
+    edge: props.edge,
+  });
   return (
     <div
+      ref={focus.ref}
+      className={focus.focused ? 'lt-hitfoc' : undefined}
       style={{
         position: 'absolute',
         left: x * cw,
@@ -305,8 +345,7 @@ export function Hit(props: {
         zIndex: 4,
       }}
       onClick={onClick}
-      onMouseEnter={onHover ? () => onHover(true) : undefined}
-      onMouseLeave={onHover ? () => onHover(false) : undefined}
+      onMouseEnter={focus.onMouseEnter}
     />
   );
 }
@@ -320,6 +359,29 @@ export function pad(str: string | number, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1)}.` : s + ' '.repeat(n - s.length);
 }
 
+/** Cuts to n characters without padding; a cut ends in '.'. */
+export function cut(str: string, n: number): string {
+  if (n <= 0) {
+    return '';
+  }
+  return str.length > n ? `${str.slice(0, Math.max(0, n - 1))}.` : str;
+}
+
+/** Wraps to at most n lines; when more is left over the last shown line ends in '.'. */
+export function wrapMax(text: string, w: number, n: number): string[] {
+  const lines = wrap(text, w);
+  if (lines.length <= n) {
+    return lines;
+  }
+  const out = lines.slice(0, Math.max(0, n));
+  if (out.length) {
+    const last = out[out.length - 1];
+    out[out.length - 1] =
+      last.length >= w ? `${last.slice(0, w - 1)}.` : `${last}.`;
+  }
+  return out;
+}
+
 /** Left-pads to n characters. */
 export function lpad(str: string | number, n: number): string {
   const s = String(str);
@@ -329,8 +391,18 @@ export function lpad(str: string | number, n: number): string {
 /** Word-wraps to lines of at most w characters. */
 export function wrap(text: string, w: number): string[] {
   const out: string[] = [];
+  if (w <= 0) {
+    return out;
+  }
   let line = '';
-  for (const word of text.split(' ')) {
+  const words: string[] = [];
+  for (const word of text.split(/\s+/)) {
+    // A word longer than a line is split, so nothing runs past the box.
+    for (let i = 0; i < word.length; i += w) {
+      words.push(word.slice(i, i + w));
+    }
+  }
+  for (const word of words) {
     if (`${line} ${word}`.trim().length > w) {
       if (line.trim()) {
         out.push(line.trim());

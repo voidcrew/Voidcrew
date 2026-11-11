@@ -60,6 +60,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	var/load_timer
 	/// Failed opens retried since the terminal last came up (or since "Try again").
 	var/open_retries = 0
+	/// TRUE once the terminal took keyboard focus, so hiding it hands focus back to the map.
+	var/had_focus = FALSE
 	/// The skin.dmf BROWSER control the terminal renders into.
 	var/control_id = "lobby_browser"
 
@@ -123,12 +125,15 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	else
 		hide_control()
 
-/// Skin side of hiding: control off, status bar back.
+/// Skin side of hiding: control off, status bar back, keyboard back on the map (movement keys).
 /datum/lobby_terminal/proc/hide_control()
 	if(!owner)
 		return
 	winset(owner, control_id, "is-visible=false")
 	winset(owner, "mapwindow.status_bar", "is-visible=true")
+	if(had_focus)
+		had_focus = FALSE
+		winset(owner, "mapwindow.map", "focus=true")
 
 /datum/lobby_terminal/proc/on_window_visible(datum/source, client/client)
 	SIGNAL_HANDLER
@@ -141,9 +146,13 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		deltimer(load_timer)
 		load_timer = null
 	set_classic_lobby(FALSE)
+	// The control takes keyboard focus inside the client so the arrow keys reach the page
+	// (lobby nav.tsx). This is skin focus only; it never raises the client's window.
+	had_focus = TRUE
 	winset(owner, null, list(
 		"[control_id].is-visible" = "true",
 		"mapwindow.status_bar.is-visible" = "false",
+		"[control_id].focus" = "true",
 	))
 
 /**

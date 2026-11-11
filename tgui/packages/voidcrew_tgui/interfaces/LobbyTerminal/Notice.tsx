@@ -1,6 +1,7 @@
 import { useBackend } from 'tgui/backend';
 
-import { Btn, Frame, Put, pad, TOP, useGrid, wrap } from './term';
+import { useBack } from './nav';
+import { Btn, Frame, Put, pad, TOP, useGrid, wrapMax } from './term';
 import type { LobbyData } from './types';
 
 /** The CONFIRMED box (kind "ok"), drawn instead of the tab content. */
@@ -8,12 +9,13 @@ export function Confirmed() {
   const { data, act } = useBackend<LobbyData>();
   const { cols } = useGrid();
   const notice = data.notice;
+  useBack(notice ? () => act('dismiss') : null);
   if (!notice) {
     return null;
   }
   const w = Math.min(44, cols - 2);
   const x = Math.floor(cols / 2) - Math.floor(w / 2);
-  const lines = wrap(notice.text.toUpperCase(), w - 6).slice(0, 3);
+  const lines = wrapMax(notice.text.toUpperCase(), w - 6, 3);
   const h = 7 + lines.length;
   return (
     <Frame x={x} y={TOP + 3} w={w} h={h} title="CONFIRMED">
@@ -30,6 +32,7 @@ export function Confirmed() {
         y={TOP + 8 + lines.length}
         label="BACK"
         lit
+        auto={1}
         onClick={() => act('dismiss')}
       />
     </Frame>
