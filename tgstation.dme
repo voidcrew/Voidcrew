@@ -6925,6 +6925,7 @@
 #include "voidcrew\edits\modules\power\supermatter_anomalies.dm"
 #include "voidcrew\edits\modules\power\turbine\turbine.dm"
 #include "voidcrew\edits\modules\projectiles\boxes_magazines\_box_magazine.dm"
+#include "voidcrew\edits\modules\projectiles\projectile\beams.dm"
 #include "voidcrew\edits\modules\research\designs.dm"
 #include "voidcrew\edits\modules\research\designs\comp_board_designs.dm"
 #include "voidcrew\edits\modules\research\designs\machine_designs.dm"

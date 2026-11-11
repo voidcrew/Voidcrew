@@ -93,6 +93,7 @@
 #include "voidcrew_gene_injector_loot.dm"
 #include "voidcrew_helm_access.dm"
 #include "voidcrew_helpers.dm"
+#include "voidcrew_hitscan_lasers.dm"
 #include "voidcrew_hull_containment.dm"
 #include "voidcrew_hull_survey.dm"
 #include "voidcrew_launch_access.dm"
