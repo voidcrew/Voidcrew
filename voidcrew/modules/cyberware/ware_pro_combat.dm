@@ -13,7 +13,10 @@
  *   COMSIG_ATOM_PRE_BULLET_ACT handler. A source registered with melee = TRUE
  *   (the Cascade line's windows) also dodges blows, through tg's own
  *   check_block() via COMSIG_LIVING_CHECK_BLOCK, so a dodged blow is a real
- *   miss and never fake damage.
+ *   miss and never fake damage. The same arbiter rolls the dermal plating's
+ *   bullet deflection (see cyberware_register_deflect_source()), capped so a
+ *   dodge and a deflect together never stop more than CYBERWARE_AVOID_CAP
+ *   percent of shots.
  * - cyberware_is_ally(): the crew filter for auto-targeting ware (Deadeye's
  *   tag, Widowline's cleave). Allies are people who share a ship team with
  *   you; NPC boarders standing on your deck are NOT allies, and rival players
@@ -27,6 +30,10 @@
 #define CYBERWARE_DODGE_MOVE_WINDOW (1 SECONDS)
 /// The shortest gap between two dodge lines from a bearer nobody is playing (an NPC under fire).
 #define CYBERWARE_DODGE_LINE_GAP (1.5 SECONDS)
+/// Dodge and deflect together never stop more than this percent of shots.
+#define CYBERWARE_AVOID_CAP 60
+/// Stamina each deflected bullet costs the bearer, so focused fire still wears them down.
+#define CYBERWARE_DEFLECT_STAMINA 5
 
 /**
  * The one dodge roll for all cyberware. Lives on the mob; wares and status
@@ -53,6 +60,8 @@
 	var/list/dodge_sources = list()
 	/// key -> /datum/callback for the sources that also dodge blows. Each is in dodge_sources too.
 	var/list/melee_sources = list()
+	/// key -> /datum/callback returning that source's live bullet-deflect chance (the dermal plating).
+	var/list/deflect_sources = list()
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
 	/// world.time a dodge was last announced: an NPC under fire says it at most once every CYBERWARE_DODGE_LINE_GAP, so chat isn't flooded
@@ -73,6 +82,7 @@
 /datum/component/cyberware_dodge/Destroy()
 	dodge_sources = null
 	melee_sources = null
+	deflect_sources = null
 	return ..()
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: timestamp the movement window.
@@ -80,25 +90,83 @@
 	SIGNAL_HANDLER
 	last_move_time = world.time
 
-/// Signal proc for [COMSIG_ATOM_PRE_BULLET_ACT]: the actual dodge roll.
+/**
+ * Signal proc for [COMSIG_ATOM_PRE_BULLET_ACT]: the dodge roll, then the
+ * deflect roll. One handler for both, so the cap on the two together holds
+ * no matter which chrome registered first.
+ */
 /datum/component/cyberware_dodge/proc/on_pre_bullet_act(mob/living/source, obj/projectile/hitting_projectile, def_zone, piercing_hit, blocked)
 	SIGNAL_HANDLER
-	if(world.time - last_move_time > CYBERWARE_DODGE_MOVE_WINDOW)
-		return NONE
-	if(source.stat != CONSCIOUS || source.body_position == LYING_DOWN || source.buckled)
-		return NONE
 	if(!istype(hitting_projectile) || !hitting_projectile.is_hostile_projectile())
 		return NONE
+	var/dodge_chance = live_dodge_chance(source, hitting_projectile)
+	if(dodge_chance > 0 && prob(dodge_chance))
+		INVOKE_ASYNC(src, PROC_REF(perform_sidestep), source, hitting_projectile)
+		return COMPONENT_BULLET_PIERCED
+	var/deflect_chance = min(live_deflect_chance(source, hitting_projectile), cyberware_deflect_cap(dodge_chance))
+	if(deflect_chance <= 0 || !prob(deflect_chance))
+		return NONE
+	glance(source, hitting_projectile)
+	return COMPONENT_BULLET_PIERCED
+
+/// The dodge chance against this shot right now: 0 unless the bearer is moving, upright and not point-blank.
+/datum/component/cyberware_dodge/proc/live_dodge_chance(mob/living/source, obj/projectile/hitting_projectile)
+	if(!length(dodge_sources))
+		return 0
+	if(world.time - last_move_time > CYBERWARE_DODGE_MOVE_WINDOW)
+		return 0
+	if(source.stat != CONSCIOUS || source.body_position == LYING_DOWN || source.buckled)
+		return 0
 	// Point-blank shots always land: an adjacent shooter is inside the
 	// reflex loop. This is the anti-"unhittable in a brawl" rule.
 	var/atom/shooter = hitting_projectile.firer
 	if(shooter && shooter != source && get_dist(source, shooter) <= 1)
-		return NONE
-	var/best_chance = best_chance(dodge_sources)
-	if(best_chance <= 0 || !prob(best_chance))
-		return NONE
-	INVOKE_ASYNC(src, PROC_REF(perform_sidestep), source, hitting_projectile)
-	return COMPONENT_BULLET_PIERCED
+		return 0
+	return best_chance(dodge_sources)
+
+/**
+ * The deflect chance against this shot right now. Only real bullets (and
+ * each buckshot pellet on its own, since every pellet is its own projectile)
+ * glance off; lasers, energy and everything else never do. The plate only
+ * covers what the bearer is facing: a shot into the back always lands.
+ */
+/datum/component/cyberware_dodge/proc/live_deflect_chance(mob/living/source, obj/projectile/hitting_projectile)
+	if(!length(deflect_sources))
+		return 0
+	if(!istype(hitting_projectile, /obj/projectile/bullet) || hitting_projectile.armor_flag != BULLET)
+		return 0
+	if(source.stat == DEAD)
+		return 0
+	if(cyberware_shot_from_behind(source, hitting_projectile))
+		return 0
+	return best_chance(deflect_sources)
+
+/**
+ * The real glance: the bullet's heading turns back off the plate at a random
+ * angle and the round keeps flying (COMPONENT_BULLET_PIERCED, the same exit
+ * tg's own reflect takes), so it can still hit whoever stands in its new
+ * path. It loses energy like any tg ricochet. The bearer stays in the
+ * bullet's impacted list, so it can't come back for them.
+ */
+/datum/component/cyberware_dodge/proc/glance(mob/living/source, obj/projectile/bullet)
+	bullet.set_angle(SIMPLIFY_DEGREES(bullet.angle + pick(-1, 1) * rand(100, 170)))
+	bullet.damage *= bullet.ricochet_decay_damage
+	bullet.stamina *= bullet.ricochet_decay_damage
+	INVOKE_ASYNC(src, PROC_REF(perform_glance), source, bullet.name)
+
+/// The visible and physical half of a glance: sparks, a ping, and the stamina the hit still costs.
+/datum/component/cyberware_dodge/proc/perform_glance(mob/living/source, bullet_name)
+	if(QDELETED(source))
+		return
+	do_sparks(1, TRUE, source)
+	playsound(source, SFX_RICOCHET, 60, TRUE)
+	source.adjustStaminaLoss(CYBERWARE_DEFLECT_STAMINA)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("\The [bullet_name] glances off [source]!"),
+			span_danger("\The [bullet_name] glances off you!"),
+		)
 
 /// The highest live chance among these sources. Never additive.
 /datum/component/cyberware_dodge/proc/best_chance(list/sources)
@@ -206,8 +274,44 @@
 		return
 	arbiter.dodge_sources -= key
 	arbiter.melee_sources -= key
-	if(!length(arbiter.dodge_sources))
+	if(!length(arbiter.dodge_sources) && !length(arbiter.deflect_sources))
 		qdel(arbiter)
+
+/**
+ * Adds (or refreshes) a keyed bullet-deflect source on the bearer, through
+ * the same arbiter as the dodge. The callback returns the source's CURRENT
+ * chance. Never additive: the highest live source rolls.
+ */
+/proc/cyberware_register_deflect_source(mob/living/bearer, key, datum/callback/chance_callback)
+	if(!istype(bearer) || !key || !chance_callback)
+		return
+	var/datum/component/cyberware_dodge/arbiter = bearer.LoadComponent(/datum/component/cyberware_dodge)
+	arbiter.deflect_sources[key] = chance_callback
+
+/// Removes a keyed deflect source; the arbiter cleans itself up with the last source of either kind.
+/proc/cyberware_unregister_deflect_source(mob/living/bearer, key)
+	var/datum/component/cyberware_dodge/arbiter = bearer?.GetComponent(/datum/component/cyberware_dodge)
+	if(!arbiter)
+		return
+	arbiter.deflect_sources -= key
+	if(!length(arbiter.dodge_sources) && !length(arbiter.deflect_sources))
+		qdel(arbiter)
+
+/**
+ * The most a deflect may roll after a dodge roll at dodge_chance missed, so
+ * that dodge and deflect together never stop more than CYBERWARE_AVOID_CAP
+ * percent of shots: dodge + (1 - dodge) * deflect <= cap.
+ */
+/proc/cyberware_deflect_cap(dodge_chance)
+	dodge_chance = clamp(dodge_chance, 0, 100)
+	if(dodge_chance >= CYBERWARE_AVOID_CAP)
+		return 0
+	return (CYBERWARE_AVOID_CAP - dodge_chance) / (100 - dodge_chance) * 100
+
+/// Whether this shot is travelling the way the bearer faces, so it strikes them in the back.
+/proc/cyberware_shot_from_behind(mob/living/bearer, obj/projectile/shot)
+	var/offset = SIMPLIFY_DEGREES(shot.angle - dir2angle(bearer.dir) + 180) - 180
+	return abs(offset) < 90
 
 // ---- Shared ally filter ------------------------------------------------
 
@@ -811,6 +915,8 @@
 
 #undef CYBERWARE_DODGE_MOVE_WINDOW
 #undef CYBERWARE_DODGE_LINE_GAP
+#undef CYBERWARE_AVOID_CAP
+#undef CYBERWARE_DEFLECT_STAMINA
 #undef CYBERWARE_DEADEYE_TAG_RANGE
 #undef CYBERWARE_DEADEYE_TAG_SHOTS
 #undef CYBERWARE_DEADEYE_TAG_DURATION

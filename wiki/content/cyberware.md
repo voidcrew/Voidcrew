@@ -47,7 +47,7 @@ Prices are the same at both counters, stock is limited per round, and load is th
 | Cargo Cavity | 1,000 cr | 1 | A chest stash for one small item that no scanner, pat-down or Chrome Read finds |
 | Rockjaw drill fist | 1,200 cr | 2 | Deployable forearm mining drill; ore from walls you crack auto-pockets into a hopper |
 | Fixer's Fingers | 1,800 cr | 2 | Fingertip screwdriver, wrench and wirecutters, plus 25% faster timed actions full-time |
-| Dermal Mesh weave | 2,000 cr | 2 | Light built-in armor: melee 15, bullet 15, laser 10 |
+| Dermal Mesh weave | 2,000 cr | 2 | Light built-in armor: melee 15, bullet 15, laser 10. 15% of bullets from the front glance off |
 
 ### Tier 2: Pro chrome (credits or vouchers)
 
@@ -76,7 +76,7 @@ Prices are the same at both counters, stock is limited per round, and load is th
 | Widowline monowire | 3 | 5 | A two-tile whip that ignores armor entirely and cleaves bystanders for 75% |
 | Popup Ronin housing | *loot only* | 5 | Deployable full-auto machine pistol in 10x24mm caseless. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Rigger socket | 3 | 4 | Jack into your own ship's helm from anywhere aboard and fly it from a corridor |
-| Slabskin plate | 3 | 6 | Heavy built-in armor in every damage type. Solid hits visibly spark off you. Everyone can see you are plated |
+| Slabskin plate | 3 | 6 | Heavy built-in armor in every damage type. 45% of bullets from the front glance off. Solid hits visibly spark off you. Everyone can see you are plated |
 | Mantis Blades (pair) | 4 | 3/arm | Deployable hardlight blades, plus a five-tile lunge that knocks the target down. Press and hold the lunge on a target to crouch, and let go to spring up to seven tiles; a solid hit or a stun while you crouch wastes it. A kill brings the lunge back almost at once. Three quick cuts to one limb open its artery, a two-blade lunge skewers someone already hurt, every third cut with both blades out crosses them and staggers, and a swing at the head of someone dying takes it off |
 | Bunker Buster housing | *loot only* | 5 | Two shaped micro-rockets: 60 damage, no splash, will never breach a hull. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Ghostskin weave | 4 | 5 | Ten seconds of optical camo. NPCs will not target you, and Chrome Reads scatter. Attacking, throwing, taking a hit or a shock, or an EMP drops it |
@@ -118,7 +118,7 @@ The newer makers fill in the gaps under the big names. Each takes the same slot 
 - **Brawler myomers**: a cased pair of forearms that hit hard, break rock, slam a held body down and force an airlock, slower than Gorilla Arms.
 - **Tinker's fingers** and the **Deepcore drill fist**: a looser set of fingertip tools, and a heavier drill on the same ore hopper.
 - **Holdout housing**: a snub revolver folded into the forearm, loaded one round at a time.
-- **Hardweave plating** and the **Strut frame**: a heavier dermal weave, and a frame that keeps your bones whole.
+- **Hardweave plating** and the **Strut frame**: a heavier dermal weave that turns 30% of bullets from the front, and a frame that keeps your bones whole.
 - **Deep-lung bladder**, **Heat-sink lining** and **Frostline lining**: a longer breath, a lining for the heat, a lining for the cold.
 - **Twitchwire** and the **Weaver shunt**: a twitchy reflex shunt, and the service model.
 - **Thumper ear**: a louder, shorter-ranged sonar behind the ear.
@@ -137,4 +137,5 @@ Most of the roster also appears in zone loot caches. Street and utility chrome a
 - **EMP is the hard counter.** A pulse downs every piece you carry (nine seconds on a heavy blast, four and a half on a light one) then it reboots on its own. Gecko Grips spasm and throw whatever you are holding, Ghostskin camo collapses, and a Cascade window crashes on the spot. A Cradle tune-up cancels the reboot early. Actions and arm weapons stay unavailable while the chrome is offline. An EMP interrupting Lazarus during its charge does not spend the revival charge.
 - **Detection cuts both ways.** Chrome optics carry the Chrome Read, a scan that names a target's ware (street optics only count it), and the subject always feels the handshake. The Cargo Cavity never resolves on any scan, and Ghostskin scatters reads entirely.
 - **Death does not keep it.** Gibbing, dusting or destroying a limb ejects every piece onto the floor, and killers absolutely loot a chromed corpse. Cloning leaves the chrome on the body.
+- **Plating turns bullets.** Dermal Mesh, Hardweave and Slabskin make bullets and buckshot pellets glance off with a spark and a ping, each pellet on its own. It never stops lasers, energy or blows, and never a shot into your back. The round keeps flying, so whoever stands beside you can still catch it. Each glance costs a little stamina, so steady fire still wears you down. A dodge and a glance together never stop more than 60% of shots.
 - **Nothing is subtle.** Slabskin sparks on every hit, the Chromatic Dermis flares whenever your chrome fires, and the heavy installs change how you look. Chromed is a fashion statement whether you want it or not.
