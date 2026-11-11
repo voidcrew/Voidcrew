@@ -18,7 +18,8 @@
 // * The roll is tg's own wound roll: rand(1, min(damage, 25) ^ 1.4), so 1 to 90. On top of the
 //   weapon's wound_bonus we add up to +30 for how battered the limb already is (its damage over
 //   its max damage) and +25 if the victim is helpless (lying down, in crit, stunned, cuffed or
-//   held in an aggressive grab), +15 more if the attacker is the one holding them. Then tg's
+//   held in an aggressive grab), +15 more if the attacker is the one holding them, plus any
+//   situation bonus (hv_crit_situation_bonus(): stealth guards caught unaware). Then tg's
 //   check_woundings_mods() adds the limb's existing wound penalties and scales everything by
 //   wound armour (worn WOUND ratings plus the limb's own resistance: head 5%, chest 10%).
 // * Each crit has a threshold and a minimum damage after armour (crit_types.dm). A fresh,
@@ -253,9 +254,14 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	for(var/source in hv_crit_attacker_bonuses)
 		. = max(., hv_crit_attacker_bonuses[source])
 
-/// The crit roll for this limb. tg's wound roll plus the battered and helpless bonuses, run
+/// Roll bonus from how the blow was struck, on top of the helpless bonus: 0 here. The stealth layer adds one for a guard
+/// caught unaware or stabbed in the back (voidcrew/modules/stealth/stealth_crits.dm). `source` is the weapon or projectile.
+/mob/living/proc/hv_crit_situation_bonus(mob/living/attacker, atom/source, obj/item/bodypart/limb)
+	return 0
+
+/// The crit roll for this limb. tg's wound roll plus the battered, helpless, attacker and situation bonuses, run
 /// through check_woundings_mods() so wound armour and existing wounds count as they do for tg.
-/obj/item/bodypart/proc/hv_crit_roll(wounding_type, damage, wound_bonus, exposed_wound_bonus, mob/living/attacker)
+/obj/item/bodypart/proc/hv_crit_roll(wounding_type, damage, wound_bonus, exposed_wound_bonus, mob/living/attacker, atom/source)
 	var/easily_wounded = HAS_TRAIT(owner, TRAIT_EASILY_WOUNDED)
 	var/hardly_wounded = HAS_TRAIT(owner, TRAIT_HARDLY_WOUNDED)
 	if(easily_wounded && !hardly_wounded)
@@ -265,7 +271,7 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	if(hardly_wounded && !easily_wounded)
 		damage *= 0.85
 	var/base_roll = rand(1, max(1, round(damage ** WOUND_DAMAGE_EXPONENT)))
-	var/bonus = wound_bonus + round(HV_CRIT_BATTERED_BONUS * get_damage() / max(max_damage, 1)) + owner.hv_crit_helpless_bonus(attacker)
+	var/bonus = wound_bonus + round(HV_CRIT_BATTERED_BONUS * get_damage() / max(max_damage, 1)) + owner.hv_crit_helpless_bonus(attacker) + owner.hv_crit_situation_bonus(attacker, source, src)
 	bonus += attacker?.hv_crit_attacker_bonus(owner) || 0
 	return check_woundings_mods(wounding_type, base_roll, damage, bonus, exposed_wound_bonus, FALSE)
 
@@ -336,7 +342,7 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 			if(damage < crit.min_damage)
 				continue
 			if(isnull(roll))
-				roll = isnull(forced_roll) ? limb.hv_crit_roll(wounding_type, damage, wound_bonus, exposed_wound_bonus, attacker) : forced_roll
+				roll = isnull(forced_roll) ? limb.hv_crit_roll(wounding_type, damage, wound_bonus, exposed_wound_bonus, attacker, source) : forced_roll
 			if(roll < crit.threshold)
 				continue
 		if(!crit.apply_carbon(src, limb, damage, attack_direction, source, attacker))

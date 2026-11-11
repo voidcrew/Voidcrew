@@ -281,6 +281,14 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 	message_admins("[key_name_admin(user)] forced z-level [z_level] active for AI debugging.")
 	BLACKBOX_LOG_ADMIN_VERB("Force Z-Level Active")
 
+// tg idles an AI unless a living mob with a client is in its nearby grid cells. A ghost isn't living and the
+// activator dummy has no client, so on a forced-active level the AI would sit idle and never plan.
+/datum/ai_controller/should_idle()
+	var/turf/pawn_turf = get_turf(pawn)
+	if(pawn_turf && GLOB.z_level_activator_dummies["[pawn_turf.z]"])
+		return FALSE
+	return ..()
+
 /// Global list of room visualization overlays (ship_ref -> list of overlay images)
 GLOBAL_LIST_EMPTY(room_visualization_overlays)
 
