@@ -473,6 +473,7 @@
 				return_by -= prisoner
 				time_left -= prisoner
 				carried_by -= prisoner
+				walked_out -= prisoner
 			else if(!can_walk_back(body))
 				// Down, held, carried or asleep: the time to walk back starts once they can (abuse MF1)
 				return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
