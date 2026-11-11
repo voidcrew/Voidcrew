@@ -31,9 +31,12 @@
 	tutorial_credit(user, TUTORIAL_STEP_WEAPONS_EW)
 
 /// The screwdriver seal moves a missile from PAYLOAD to ARMED inside the parent (after a do_after).
+/// A missile bought armed (the /armed subtypes) can be unsealed and resealed; that doesn't count.
 /obj/structure/ship_missile/attackby(obj/item/W, mob/user, list/modifiers)
 	var/state_before = construction_state
 	. = ..()
+	if(initial(construction_state) == MISSILE_STATE_ARMED)
+		return
 	if(state_before == MISSILE_STATE_PAYLOAD && construction_state == MISSILE_STATE_ARMED && !QDELETED(src))
 		tutorial_credit(user, TUTORIAL_STEP_WEAPONS_MISSILE)
 

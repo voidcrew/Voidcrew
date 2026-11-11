@@ -595,34 +595,94 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	category = TUTORIAL_CATEGORY_FIGHT
 	order = 1
 	intro = "Space is split into green, yellow and red zones. Green is safe from other crews. In yellow crews can board each other, and in red anything goes."
+	// Warfare research comes first so the checklist agrees with the zone advisory, which warns a
+	// crew crossing into yellow without it.
 	steps = list(
-		/datum/vc_tutorial_step/zones_yellow,
 		/datum/vc_tutorial_step/zones_warfare,
+		/datum/vc_tutorial_step/zones_yellow,
 		/datum/vc_tutorial_step/zones_red,
 	)
 
-/datum/vc_tutorial_step/zones_yellow
-	key = TUTORIAL_STEP_ZONES_YELLOW
-	name = "Enter the yellow zone"
-	text = "Green space has no fighting between crews. In yellow, other crews can board and rob you."
-	highlight_types = list(/obj/machinery/computer/helm)
+/// The viewer's crew ship if the viewer is aboard it, else null.
+/proc/tutorial_aboard_crew_ship(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(ship && get_ship_from_atom(user) == ship)
+		return ship
+	return null
+
+/// TRUE when the viewer is aboard their crew ship and it sits in one of the given zone types.
+/proc/tutorial_aboard_in_zone(mob/user, list/zone_types)
+	var/obj/structure/overmap/ship/ship = tutorial_aboard_crew_ship(user)
+	if(!ship || !SSovermap_zones?.initialized)
+		return FALSE
+	return (SSovermap_zones.get_zone_type_anywhere(get_turf(ship)) in zone_types)
+
+/**
+ * Live line for a zone step: the crossing in progress, or roughly how far the crew ship is from
+ * the ring it has to cross. Zones are static rings around the overmap centre
+ * (SSovermap.get_zone_band_for_turf()); ring_ratio is ZONE_INNER_RING_RATIO for yellow and
+ * ZONE_MIDDLE_RING_RATIO for red.
+ */
+/proc/tutorial_zone_distance_line(mob/user, ring_ratio, zone_name)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	if(ship.zone_transitioning)
+		return "Crossing the line. Don't press stop."
+	if(ship.docked)
+		return "Docked. Undock to fly out."
+	var/turf/here = get_turf(ship)
+	var/turf/centre = SSovermap.overmap_centre
+	if(!istype(here, /turf/open/overmap) || !centre || here.z != centre.z)
+		return null
+	var/max_radius = (OVERMAP_SIZE - 1) / 2
+	var/distance = sqrt((here.x - centre.x) ** 2 + (here.y - centre.y) ** 2)
+	var/tiles = CEILING(ring_ratio * max_radius - distance, 1)
+	if(tiles <= 0)
+		return null
+	return "About [tiles] tile\s to the [zone_name]."
 
 /datum/vc_tutorial_step/zones_warfare
 	key = TUTORIAL_STEP_ZONES_WARFARE
 	name = "Research Shuttle Warfare Systems"
-	text = "At the R&D console. It leads to shields, guns, missiles and an interdictor for your ship."
+	text = "At the R&D console, after Basic Shuttle Research. It unlocks the weapons console; each ship weapon has its own research after it."
 	highlight_types = list(/obj/machinery/computer/rdconsole)
+	ui_focus = list("techweb" = "rd_node_ship_combat")
 
 /datum/vc_tutorial_step/zones_warfare/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && ship.has_ship_combat_research()
 
+/datum/vc_tutorial_step/zones_warfare/live_line(mob/user)
+	return tutorial_research_line(user, TECHWEB_NODE_SHIP_COMBAT, skip_self = TRUE)
+
+/datum/vc_tutorial_step/zones_yellow
+	key = TUTORIAL_STEP_ZONES_YELLOW
+	name = "Enter the yellow zone"
+	text = "Fly away from the sun. At the line the ship stops for a few seconds to cross; don't press stop. In yellow, other crews can board and rob you."
+	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_course")
+
+/// Covers a player who joins a crew already out in yellow or red.
+/datum/vc_tutorial_step/zones_yellow/state_satisfied(mob/user)
+	return tutorial_aboard_in_zone(user, list(ZONE_YELLOW, ZONE_RED))
+
+/datum/vc_tutorial_step/zones_yellow/live_line(mob/user)
+	return tutorial_zone_distance_line(user, ZONE_INNER_RING_RATIO, ZONE_NAME_YELLOW)
+
 /datum/vc_tutorial_step/zones_red
 	key = TUTORIAL_STEP_ZONES_RED
 	name = "Enter the red zone"
-	text = "Anything goes in red. Ships fire on each other and players can kill you for nothing."
+	text = "Keep flying out past yellow. Anything goes in red. Ships fire on each other and players can kill you for nothing."
 	optional = TRUE
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_course")
+
+/datum/vc_tutorial_step/zones_red/state_satisfied(mob/user)
+	return tutorial_aboard_in_zone(user, list(ZONE_RED))
+
+/datum/vc_tutorial_step/zones_red/live_line(mob/user)
+	return tutorial_zone_distance_line(user, ZONE_MIDDLE_RING_RATIO, ZONE_NAME_RED)
 
 // ---------------------------------------------------------------------------
 // Ship weapons
@@ -633,15 +693,15 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Ship weapons"
 	category = TUTORIAL_CATEGORY_FIGHT
 	order = 2
-	intro = "Ship weapons come from Shuttle Warfare Systems research and only fire in red space. Shields, the interdictor and electronic warfare also need crew reputation to research."
+	intro = "Shuttle Warfare Systems unlocks the weapons console, and each weapon has its own research after it. Ship weapons only fire in red space. Shields, the interdictor and electronic warfare also need crew reputation to research."
 	steps = list(
-		/datum/vc_tutorial_step/weapons_console,
-		/datum/vc_tutorial_step/weapons_launcher,
-		/datum/vc_tutorial_step/weapons_missile,
-		/datum/vc_tutorial_step/weapons_laser,
-		/datum/vc_tutorial_step/weapons_shield,
-		/datum/vc_tutorial_step/weapons_interdictor,
-		/datum/vc_tutorial_step/weapons_ew,
+		/datum/vc_tutorial_step/weapon_build/console,
+		/datum/vc_tutorial_step/weapon_build/launcher,
+		/datum/vc_tutorial_step/weapon_build/missile,
+		/datum/vc_tutorial_step/weapon_build/laser,
+		/datum/vc_tutorial_step/weapon_build/shield,
+		/datum/vc_tutorial_step/weapon_build/interdictor,
+		/datum/vc_tutorial_step/weapon_build/ew,
 	)
 
 /// A note while the viewer's crew is below the reputation that ZONE_PERMISSION_ADVANCED
@@ -653,56 +713,264 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 		return "Needs more crew reputation."
 	return null
 
-/datum/vc_tutorial_step/weapons_console
+/**
+ * The node to research next on the way to node_id: node_id itself once its prerequisites are in,
+ * else the first missing prerequisite (walked back). Null once node_id is researched.
+ */
+/proc/tutorial_next_research_node(datum/techweb/web, node_id, depth = 0)
+	if(!web || !node_id || web.researched_nodes[node_id] || depth > 8)
+		return null
+	var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)
+	if(!node)
+		return null
+	for(var/prereq_id in node.prereq_ids)
+		var/datum/techweb_node/missing = tutorial_next_research_node(web, prereq_id, depth + 1)
+		if(missing)
+			return missing
+	return node
+
+/**
+ * "Research X first." for the next node on the way to node_id on the viewer's ship web, or null
+ * once it (or design_id, from a disk) is in. skip_self: say nothing while node_id itself is next,
+ * for a step that already names it. A node held back only by crew reputation says nothing here;
+ * the step's availability() note covers that.
+ */
+/proc/tutorial_research_line(mob/user, node_id, design_id, skip_self = FALSE)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	var/datum/techweb/web = ship.get_research_web()
+	if(!web)
+		return "No research server running aboard."
+	if(design_id && web.researched_designs[design_id])
+		return null
+	var/datum/techweb_node/next = tutorial_next_research_node(web, node_id)
+	if(!next || (skip_self && next.id == node_id) || !web.have_zone_permission_for_node(next))
+		return null
+	return "Research [next.display_name] first."
+
+/// TRUE when the viewer carries an item of this type anywhere on them.
+/proc/tutorial_carries(mob/user, item_type)
+	if(!user || !item_type)
+		return FALSE
+	return !!(locate(item_type) in user.get_all_contents())
+
+/**
+ * A ship weapon built from a printed board. The guide moves with the build: the R&D console until
+ * the board's research is in, then the printer, then a frame holding that board (or any empty frame
+ * while the viewer carries the board). Credit is on_construction() in hooks_ship_combat.dm.
+ */
+/datum/vc_tutorial_step/weapon_build
+	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/circuit_imprinter, /obj/structure/frame/machine)
+	/// Techweb node that unlocks the board.
+	var/node_id
+	/// Design id of the board.
+	var/design_id
+	/// The board item, an /obj/item/circuitboard path.
+	var/board_type
+	/// The frame the board goes in.
+	var/frame_type = /obj/structure/frame/machine
+
+/// TRUE once the ship web has the board's design, or when there is no web to ask.
+/datum/vc_tutorial_step/weapon_build/proc/board_unlocked(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/datum/techweb/web = ship?.get_research_web()
+	if(!web)
+		return TRUE
+	return web.researched_designs[design_id] || web.researched_nodes[node_id]
+
+/datum/vc_tutorial_step/weapon_build/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/structure/frame))
+		var/obj/structure/frame/frame = candidate
+		if(frame.circuit)
+			return istype(frame.circuit, board_type)
+		return tutorial_carries(user, board_type)
+	if(tutorial_carries(user, board_type))
+		return FALSE
+	var/unlocked = board_unlocked(user)
+	if(istype(candidate, /obj/machinery/computer/rdconsole))
+		return !unlocked
+	return unlocked
+
+/datum/vc_tutorial_step/weapon_build/live_line(mob/user)
+	if(!tutorial_carries(user, board_type))
+		var/research = tutorial_research_line(user, node_id, design_id)
+		if(research)
+			return research
+	return frame_line(user)
+
+/// What the nearest frame in view that holds this board (or, while the viewer carries the board,
+/// an empty one) still needs.
+/datum/vc_tutorial_step/weapon_build/proc/frame_line(mob/user)
+	var/carrying = tutorial_carries(user, board_type)
+	var/obj/structure/frame/best
+	var/best_dist = INFINITY
+	for(var/obj/structure/frame/frame in view(7, user))
+		if(!istype(frame, frame_type))
+			continue
+		if(frame.circuit ? !istype(frame.circuit, board_type) : !carrying)
+			continue
+		var/dist = get_dist(user, frame)
+		// A frame already holding the board beats an empty one.
+		if(frame.circuit)
+			dist -= 100
+		if(dist < best_dist)
+			best = frame
+			best_dist = dist
+	if(!best)
+		return null
+	if(istype(best, /obj/structure/frame/computer))
+		return tutorial_computer_frame_line(best)
+	return tutorial_machine_frame_line(best)
+
+/// One line on what a machine frame still needs.
+/proc/tutorial_machine_frame_line(obj/structure/frame/machine/frame)
+	switch(frame.state)
+		if(FRAME_STATE_EMPTY)
+			return "The frame needs 5 cables."
+		if(FRAME_STATE_WIRED)
+			return frame.anchored ? "The frame is ready for the board." : "Wrench the frame down, then add the board."
+	var/list/needs = list()
+	for(var/component in frame.req_components)
+		var/amount = frame.req_components[component]
+		if(amount)
+			needs += "[amount] [frame.req_component_names[component]]\s"
+	if(!length(needs))
+		return "The frame is ready. Screwdriver it shut."
+	return "The frame needs [english_list(needs)]."
+
+/// One line on what a computer frame still needs.
+/proc/tutorial_computer_frame_line(obj/structure/frame/computer/frame)
+	switch(frame.state)
+		if(FRAME_COMPUTER_STATE_EMPTY)
+			return frame.anchored ? "The frame is ready for the board." : "Wrench the frame down, then add the board."
+		if(FRAME_COMPUTER_STATE_BOARD_INSTALLED)
+			return "Screwdriver the board in."
+		if(FRAME_COMPUTER_STATE_BOARD_SECURED)
+			return "The frame needs 5 cables."
+		if(FRAME_COMPUTER_STATE_WIRED)
+			return "The frame needs 2 glass sheets."
+		if(FRAME_COMPUTER_STATE_GLASSED)
+			return "The frame is ready. Screwdriver it shut."
+	return null
+
+/datum/vc_tutorial_step/weapon_build/console
 	key = TUTORIAL_STEP_WEAPONS_CONSOLE
 	name = "Build a weapons console"
-	text = "Print the weapons console board and build it in a computer frame."
-	highlight_types = list(/obj/structure/frame/computer)
+	text = "Print the Weapons System board at the circuit imprinter and build it in a computer frame."
+	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/circuit_imprinter, /obj/structure/frame/computer)
+	ui_focus = list("techweb" = "rd_node_ship_combat", "imprinter" = "imprinter_ship_combat_console")
+	node_id = TECHWEB_NODE_SHIP_COMBAT
+	design_id = "ship_combat_console"
+	board_type = /obj/item/circuitboard/computer/ship_combat_console
+	frame_type = /obj/structure/frame/computer
 
-/datum/vc_tutorial_step/weapons_launcher
+/datum/vc_tutorial_step/weapon_build/launcher
 	key = TUTORIAL_STEP_WEAPONS_LAUNCHER
 	name = "Build a missile launcher"
-	text = "Print the launcher board, build it in a machine frame, then drag it onto an outer wall."
-	highlight_types = list(/obj/structure/frame/machine)
+	text = "Print the launcher board and build it in a machine frame. Wrench it loose, then drag it onto an outer wall."
+	ui_focus = list("techweb" = "rd_node_ship_combat_missiles", "imprinter" = "imprinter_ship_missile_launcher")
+	node_id = TECHWEB_NODE_SHIP_COMBAT_MISSILES
+	design_id = "ship_missile_launcher"
+	board_type = /obj/item/circuitboard/machine/ship_combat/missile_launcher
 
-/datum/vc_tutorial_step/weapons_missile
-	key = TUTORIAL_STEP_WEAPONS_MISSILE
-	name = "Arm a missile"
-	text = "Print a missile frame, wire it, add a tracking circuit and a warhead, then screwdriver it shut."
-	highlight_types = list(/obj/structure/ship_missile)
-
-/datum/vc_tutorial_step/weapons_laser
+/datum/vc_tutorial_step/weapon_build/laser
 	key = TUTORIAL_STEP_WEAPONS_LASER
 	name = "Build a laser turret"
-	text = "Print the turret board, build it in a machine frame, then drag it onto an outer wall."
-	highlight_types = list(/obj/structure/frame/machine)
+	text = "Print the turret board and build it in a machine frame with a power cell. Wrench it loose, then drag it onto an outer wall."
+	ui_focus = list("techweb" = "rd_node_ship_combat_lasers", "imprinter" = "imprinter_ship_laser_turret")
+	node_id = TECHWEB_NODE_SHIP_COMBAT_LASERS
+	design_id = "ship_laser_turret"
+	board_type = /obj/item/circuitboard/machine/ship_combat/laser_turret
 
-/datum/vc_tutorial_step/weapons_shield
+/// Shields, the interdictor and EW: the reputation note, unless the crew already has the board's design.
+/datum/vc_tutorial_step/weapon_build/proc/gated_note(mob/user)
+	if(tutorial_carries(user, board_type))
+		return null
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/datum/techweb/web = ship?.get_research_web()
+	if(web && (web.researched_designs[design_id] || web.researched_nodes[node_id]))
+		return null
+	return crew_reputation_note(user)
+
+/datum/vc_tutorial_step/weapon_build/shield
 	key = TUTORIAL_STEP_WEAPONS_SHIELD
 	name = "Build a shield generator"
 	text = "Print the shield generator board and build it in a machine frame."
-	highlight_types = list(/obj/structure/frame/machine)
+	ui_focus = list("techweb" = "rd_node_ship_combat_shields", "imprinter" = "imprinter_ship_shield_generator")
+	node_id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
+	design_id = "ship_shield_generator"
+	board_type = /obj/item/circuitboard/machine/ship_combat/shield_generator
 
-/datum/vc_tutorial_step/weapons_shield/availability(mob/user)
-	return crew_reputation_note(user)
+/datum/vc_tutorial_step/weapon_build/shield/availability(mob/user)
+	return gated_note(user)
 
-/datum/vc_tutorial_step/weapons_interdictor
+/datum/vc_tutorial_step/weapon_build/interdictor
 	key = TUTORIAL_STEP_WEAPONS_INTERDICTOR
 	name = "Build an interdictor"
 	text = "Print the interdictor board and build it in a machine frame."
-	highlight_types = list(/obj/structure/frame/machine)
+	ui_focus = list("techweb" = "rd_node_ship_combat_interdictor", "imprinter" = "imprinter_ship_interdictor")
+	node_id = TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR
+	design_id = "ship_interdictor"
+	board_type = /obj/item/circuitboard/machine/ship_combat/interdictor
 
-/datum/vc_tutorial_step/weapons_interdictor/availability(mob/user)
-	return crew_reputation_note(user)
+/datum/vc_tutorial_step/weapon_build/interdictor/availability(mob/user)
+	return gated_note(user)
 
-/datum/vc_tutorial_step/weapons_ew
+/datum/vc_tutorial_step/weapon_build/ew
 	key = TUTORIAL_STEP_WEAPONS_EW
 	name = "Build an EW suite"
-	text = "Print the EW suite board and build it in a machine frame. Link it to the weapons console with a multitool and load a cartridge."
-	highlight_types = list(/obj/structure/frame/machine)
+	text = "Print the EW suite board and build it in a machine frame. To use it, link it to the weapons console with a multitool and load a cartridge."
+	ui_focus = list("techweb" = "rd_node_ship_combat_ew", "imprinter" = "imprinter_ew_suite")
+	node_id = TECHWEB_NODE_SHIP_COMBAT_EW
+	design_id = "ew_suite"
+	board_type = /obj/item/circuitboard/machine/ship_combat/ew_suite
 
-/datum/vc_tutorial_step/weapons_ew/availability(mob/user)
-	return crew_reputation_note(user)
+/datum/vc_tutorial_step/weapon_build/ew/availability(mob/user)
+	return gated_note(user)
+
+/// The missile is printed whole at the protolathe, so this step points at the protolathe and the
+/// unarmed missile frames instead of a board and a machine frame.
+/datum/vc_tutorial_step/weapon_build/missile
+	key = TUTORIAL_STEP_WEAPONS_MISSILE
+	name = "Arm a missile"
+	text = "Print a missile frame, a tracking circuit and a warhead at the protolathe. Wire the frame, add the circuit and the warhead, then screwdriver it shut."
+	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/protolathe, /obj/structure/ship_missile)
+	ui_focus = list("techweb" = "rd_node_ship_combat_missiles")
+	node_id = TECHWEB_NODE_SHIP_COMBAT_MISSILES
+	design_id = "ship_missile_frame"
+
+/datum/vc_tutorial_step/weapon_build/missile/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/structure/ship_missile))
+		var/obj/structure/ship_missile/missile = candidate
+		return missile.construction_state < MISSILE_STATE_ARMED
+	var/unlocked = board_unlocked(user)
+	if(istype(candidate, /obj/machinery/computer/rdconsole))
+		return !unlocked
+	return unlocked
+
+/datum/vc_tutorial_step/weapon_build/missile/live_line(mob/user)
+	var/research = tutorial_research_line(user, node_id, design_id)
+	if(research)
+		return research
+	var/obj/structure/ship_missile/best
+	for(var/obj/structure/ship_missile/missile in view(7, user))
+		if(missile.construction_state >= MISSILE_STATE_ARMED)
+			continue
+		if(!best || get_dist(user, missile) < get_dist(user, best))
+			best = missile
+	if(!best)
+		return null
+	switch(best.construction_state)
+		if(MISSILE_STATE_UNWIRED)
+			return "The missile needs 5 cables."
+		if(MISSILE_STATE_WIRED)
+			return "The missile needs a tracking circuit."
+		if(MISSILE_STATE_TRACKING)
+			return "The missile needs a warhead."
+		if(MISSILE_STATE_PAYLOAD)
+			return "Screwdriver the missile shut."
+	return null
 
 // ---------------------------------------------------------------------------
 // Ship combat
