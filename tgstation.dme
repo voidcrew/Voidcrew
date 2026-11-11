@@ -7745,6 +7745,7 @@
 #include "voidcrew\modules\transporter\transporter_designs.dm"
 #include "voidcrew\modules\transporter\transporter_pad.dm"
 #include "voidcrew\modules\transporter\transporter_transponder.dm"
+#include "voidcrew\modules\ui_harness\ui_harness.dm"
 #if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
 #endif
 #include "voidcrew\modules\vehicles\atv.dm"

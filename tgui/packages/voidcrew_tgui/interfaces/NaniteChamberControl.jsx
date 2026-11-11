@@ -35,6 +35,7 @@ export const NaniteChamberControlContent = (props, context) => {
   }
 
   const mob_programs = data.mob_programs || [];
+  const missing_programs = data.missing_programs || [];
   const load_segments = data.load_segments || [];
 
   return (
@@ -138,11 +139,6 @@ export const NaniteChamberControlContent = (props, context) => {
                 />
               </Box>
             )}
-            <Box mt={1} color="label">
-              Nanite clouds are ship-local. Setting a cloud ID here links these
-              nanites to the matching backup on this ship&apos;s cloud
-              controller; the same ID on another ship is a different cloud.
-            </Box>
           </Section>
           <Section title="Programs" level={2}>
             {mob_programs.map((program) => {
@@ -286,6 +282,12 @@ export const NaniteChamberControlContent = (props, context) => {
                 </Collapsible>
               );
             })}
+            {missing_programs.map((program, i) => (
+              <Flex key={'missing' + i} color="label" ml={1} lineHeight="20px">
+                <Flex.Item grow={1}>{program.name}</Flex.Item>
+                <Flex.Item mr={1}>Not installed</Flex.Item>
+              </Flex>
+            ))}
           </Section>
         </>
       )}
