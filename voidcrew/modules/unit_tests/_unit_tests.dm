@@ -202,6 +202,7 @@
 #include "voidcrew_respawn_timer.dm"
 #include "voidcrew_restaurant_portal.dm"
 #include "voidcrew_rig_bay.dm"
+#include "voidcrew_rig_bay_wick.dm"
 #include "voidcrew_rnd_kit.dm"
 #include "voidcrew_round_end.dm"
 #include "voidcrew_round_metrics.dm"
