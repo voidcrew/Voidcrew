@@ -198,6 +198,36 @@
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
+/// The user's own mech runs at full speed in their slow-mo, whether they were in it at the surge or climbed in after
+/datum/unit_test/voidcrew_cyberware_timestop/own_mech_free
+
+/datum/unit_test/voidcrew_cyberware_timestop/own_mech_free/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, spot(0, 0))
+	var/obj/vehicle/sealed/mecha/ripley/other_mech = allocate(/obj/vehicle/sealed/mecha/ripley, spot(2, 2))
+	user.forceMove(mech) // moved_inside() wants a client
+	if(!mech.is_occupant(user))
+		mech.add_occupant(user)
+	TEST_ASSERT(mech.is_occupant(user), "Test fixture: the user isn't in the mech")
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	TEST_ASSERT(!field.held_mechs[mech], "The user's own mech was slowed")
+	TEST_ASSERT(!tinted(mech), "The user's own mech was tinted")
+	TEST_ASSERT(field.held_mechs[other_mech], "An empty mech in the field wasn't slowed")
+
+	// Out of the first mech and into the slowed one: it's let go on the next tick.
+	mech.mob_exit(user, silent = TRUE)
+	user.forceMove(other_mech) // moved_inside() wants a client
+	if(!other_mech.is_occupant(user))
+		other_mech.add_occupant(user)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(!field.held_mechs[other_mech], "A mech the user climbed into stayed slowed")
+	TEST_ASSERT(!tinted(other_mech), "A mech the user climbed into stayed tinted")
+	other_mech.mob_exit(user, silent = TRUE)
+	end_surge(user)
+
 /// A player hidden in a locker, or picked up and carried as an item, still counts as someone near
 /datum/unit_test/voidcrew_cyberware_timestop/witnessed_hidden
 

@@ -329,7 +329,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	QDEL_IN(src, duration)
 	if(QDELETED(user))
 		return
-	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = new(user, freezerange, TRUE, immune, antimagic_flags, FALSE, slow_scale, user_multiplier)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = new(user, freezerange, FALSE, immune, antimagic_flags, FALSE, slow_scale, user_multiplier) // a user inside a mech still slows the world
 	field.stopper = src
 	field.ends_at = world.time + duration
 	chronofield = field
@@ -452,6 +452,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		return FALSE
 	if(cyberware_own_surge(A))
 		take_surger(A, cyberware_surge_multiplier(A))
+		return FALSE
+	if(own_ride(A)) // the user's mech or vehicle is part of them: full speed
 		return FALSE
 	if(ismob(A))
 		var/mob/M = A
@@ -756,12 +758,33 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 				throw_datum.start_time += push
 		push_machine_deadlines(push)
 	check_surgers()
+	let_go_own_ride()
 	for(var/mob/living/boss as anything in boss_holds.Copy())
 		if(world.time < boss_holds[boss])
 			continue
 		unfreeze_atom(boss)
 		released[boss] = TRUE
 	senses?.refresh_weather()
+
+/// Whether `thing` is what the user is riding or piloting: a vehicle with them aboard, or anything they're buckled to.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/own_ride(atom/movable/thing)
+	if(!ismob(host) || !istype(thing))
+		return FALSE
+	var/mob/living/user = host
+	if(istype(thing, /obj/vehicle))
+		var/obj/vehicle/ride = thing
+		if(ride.is_occupant(user))
+			return TRUE
+	return isliving(user) && user.buckled == thing
+
+/// The user climbed into a mech or onto a vehicle the field already holds: it runs at full speed from now on.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/let_go_own_ride()
+	if(!isliving(host))
+		return
+	var/mob/living/user = host
+	for(var/atom/movable/ride in list(user.loc, user.buckled))
+		if(frozen_things[ride] && own_ride(ride))
+			unfreeze_atom(ride)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/into_the_negative_zone(atom/A)
 	tinted[A] = TRUE
