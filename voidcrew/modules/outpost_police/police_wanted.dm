@@ -392,6 +392,43 @@
 		update_hud(who)
 	wake()
 
+/// An admin lifts `who`'s record here: warrant, prior and bar. A prisoner's cell lets them out on its next tick.
+/datum/outpost_police/proc/admin_lift(datum/mind/who)
+	var/datum/outpost_warrant/warrant = warrants[who]
+	if(!warrant)
+		return
+	if(warrant.peak > 0)
+		warrant_ended(warrant, "closed")
+	remove_warrant(warrant)
+
+/**
+ * An admin puts `who` on the wanted list here at `stars` (1-5): the heat that earns exactly those stars, seen
+ * now, and everything a counted crime brings after it (the alert, the embargo at four and five, the tick).
+ */
+/datum/outpost_police/proc/admin_set_stars(datum/mind/who, stars)
+	if(!who)
+		return
+	var/list/star_heat = OUTPOST_POLICE_STAR_HEAT
+	var/datum/outpost_warrant/warrant = ensure_warrant(who)
+	var/old_stars = stars_of(warrant.heat)
+	warrant.heat = star_heat[clamp(stars, 1, 5)]
+	warrant.peak = max(warrant.peak, warrant.heat)
+	warrant.last_crime_at = world.time
+	warrant.last_seen_at = world.time
+	warrant.unseen_since = 0
+	warrant.away_since = 0
+	var/mob/body = who.current
+	if(body)
+		warrant.last_seen_turf = get_turf(body)
+	var/new_stars = stars_of(warrant.heat)
+	if(new_stars >= 3)
+		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
+	if(new_stars != old_stars)
+		stars_changed(warrant, old_stars, new_stars)
+	else
+		update_hud(who)
+	wake()
+
 /// Clears every warrant, prior and bar of `crew` here and lifts its embargo
 /datum/outpost_police/proc/pardon_crew(datum/voidcrew_crew_record/crew)
 	if(!crew)

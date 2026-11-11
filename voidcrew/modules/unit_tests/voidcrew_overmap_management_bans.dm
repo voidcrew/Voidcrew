@@ -49,10 +49,10 @@
 	TEST_ASSERT_EQUAL(police.get_stars(wanted_mind), 0, "Lifting a warrant left the person wanted")
 	panel.ban_act("ban_lift", list("outpost" = REF(outpost), "kind" = "wanted", "target" = REF(barred_mind)), operator)
 	TEST_ASSERT(!police.is_barred(barred_mind.current), "Lifting a bar left the person refused service")
-	TEST_ASSERT(barred_warrant.barred_until <= world.time && !barred_warrant.prior, "Lifting a bar left the bar or the prior on the record")
-	// The cell lets out whoever's time is up, so a lifted prisoner's time is up now
+	TEST_ASSERT_NULL(police.get_warrant(barred_mind), "Lifting a bar left the bar or the prior on the record")
+	// The cell lets out a prisoner whose warrant is gone on its next tick (police_cell.dm tick_cell())
 	panel.ban_act("ban_lift", list("outpost" = REF(outpost), "kind" = "wanted", "target" = REF(prisoner_mind)), operator)
-	TEST_ASSERT(cell.prisoners[prisoner_mind] <= world.time, "Lifting a prisoner's warrant did not end their time in the cell")
+	TEST_ASSERT_NULL(police.get_warrant(prisoner_mind), "Lifting a prisoner's warrant left the warrant their cell holds them on")
 	TEST_ASSERT_EQUAL(police.get_stars(prisoner_mind), 0, "Lifting a prisoner's warrant left them wanted")
 	TEST_ASSERT(!length(ban_rows_for(panel, outpost)), "Lifted restrictions were still listed")
 

@@ -177,46 +177,9 @@
 	log_admin("[key_name(user)] lifted [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()].")
 	message_admins("[key_name_admin(user)] lifted [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()] via Overmap Management.")
 
-/// Ends `suspect`'s warrant, prior and bar at `police`, and lets them out of their cell
+/// Ends `suspect`'s warrant, prior and bar at `police`; a prisoner's cell lets them out on its next tick
 /datum/overmap_management/proc/ban_lift_warrant(datum/outpost_police/police, datum/mind/suspect)
-	var/datum/outpost_police_cell/cell = ban_cell_of(police, suspect)
-	if(cell)
-		// The cell lets out whoever's time is up (police_cell.dm tick_cells())
-		cell.prisoners[suspect] = world.time
-	police.close_warrant(suspect, FALSE)
-	// close_warrant() keeps the prior and the bar: an admin lifting a warrant lifts those too
-	var/datum/outpost_warrant/warrant = police.warrants[suspect]
-	if(warrant)
-		warrant.prior = 0
-		warrant.barred_until = 0
-	police.update_hud(suspect)
-
-/**
- * An admin puts `suspect` on the wanted list at `stars` here. The wanted core (police_wanted.dm) has no
- * proc for an imposed warrant, so this makes the warrant with the heat that earns exactly those stars and
- * does what a counted crime does after it: the signal, the HUD alert, the tick.
- */
-/datum/outpost_police/proc/admin_set_stars(datum/mind/suspect, stars)
-	var/list/star_heat = OUTPOST_POLICE_STAR_HEAT
-	var/old_stars = get_stars(suspect)
-	var/datum/outpost_warrant/warrant = warrants[suspect]
-	if(!warrant)
-		warrant = new
-		warrant.mind = suspect
-		warrant.crew = suspect.get_reputation_crew()
-		warrants[suspect] = warrant
-	warrant.heat = star_heat[clamp(stars, 1, 5)]
-	warrant.peak = max(warrant.peak, warrant.heat)
-	warrant.last_crime_at = world.time
-	warrant.last_seen_at = world.time
-	warrant.unseen_since = 0
-	warrant.away_since = 0
-	var/mob/body = suspect.current
-	if(body)
-		warrant.last_seen_turf = get_turf(body)
-	SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_STARS, suspect, old_stars, get_stars(suspect))
-	update_hud(suspect)
-	wake()
+	police.admin_lift(suspect)
 
 /datum/overmap_management/proc/ban_add(mob/user, obj/structure/overmap/outpost, obj/structure/overmap/trader_outpost/trader, obj/structure/overmap/dynamic/player_outpost/home, kind, target_ref, minutes, stars = 3)
 	var/target_name
