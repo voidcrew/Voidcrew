@@ -61,3 +61,38 @@
 // =========================================================================
 // JANITOR HALF (R4)
 // =========================================================================
+
+// The janitors' kit. The type, its tools and its work are in recovery_janitor.dm. Everything below is locked gear
+// (human_npc_gear.dm): nobody takes the mop, the bag or the headset off a janitor, and they go when it does.
+
+/**
+ * What a cleaning crew's ID opens: the police lift doors (ACCESS_OUTPOST_POLICE), which the crews come in by and
+ * take a full bag out by. Nothing else carries that access but the officers' own IDs.
+ */
+/datum/id_trim/recovery_crew
+	assignment = "Outpost Maintenance"
+	trim_state = "trim_janitor"
+	department_color = COLOR_SERVICE_LIME
+	subdepartment_color = COLOR_SERVICE_LIME
+	sechud_icon_state = SECHUD_JANITOR
+	access = list(ACCESS_OUTPOST_POLICE)
+
+/// A janitor on a cleanup: a mop in one hand, a trash bag in the other, a headset, galoshes. The ID opens the police lift doors.
+/datum/outfit/recovery_janitor
+	name = "Outpost cleaning crew"
+	uniform = /obj/item/clothing/under/rank/civilian/janitor
+	gloves = /obj/item/clothing/gloves/color/purple
+	head = /obj/item/clothing/head/soft/purple
+	shoes = /obj/item/clothing/shoes/galoshes
+	ears = /obj/item/radio/headset
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/recovery_crew
+	r_hand = /obj/item/mop
+	l_hand = /obj/item/storage/bag/trash
+
+/// Overalls and a beanie instead
+/datum/outfit/recovery_janitor/overalls
+	name = "Outpost cleaning crew (overalls)"
+	uniform = /obj/item/clothing/under/misc/overalls
+	suit = /obj/item/clothing/suit/apron/overalls
+	head = /obj/item/clothing/head/beanie

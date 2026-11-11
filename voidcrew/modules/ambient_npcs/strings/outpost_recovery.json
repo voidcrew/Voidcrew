@@ -1,33 +1,290 @@
 {
-	"_owner": "R4 (outpost recovery crews, spec-rehydrate.md 3.3). Keys: RECOVERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm.",
+	"_owner": "R4 (outpost recovery crews, spec-rehydrate.md 3.3). Keys: RECOVERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm, plus the ambient contexts (idle, talk, work, chat, reply, attacked, violence, leave) and conversations. Placeholders: {name}, {other}, {place}.",
 	"halcyon": {
-		"call": [],
-		"first_body": [],
-		"officer_body": [],
-		"bagged": [],
-		"tray": [],
-		"lift": [],
-		"mess": [],
-		"mind_floor": []
+		"call": [
+			"Desk to all units. The concourse is quiet. Cleaning crew on their way.",
+			"All units, stand easy. The crew is coming down to clear up.",
+			"Desk to beat. Quiet now. Sending the cleaners and the morgue crew."
+		],
+		"first_body": [
+			"Oh dear. Right. Gloves on.",
+			"Well. That's one.",
+			"Poor soul. Somebody tell the desk."
+		],
+		"officer_body": [
+			"That's one of the officers. Radio the desk.",
+			"Oh no. It's Port Authority. Tell the desk.",
+			"One of theirs. Careful with this one."
+		],
+		"bagged": [
+			"One bagged, concourse.",
+			"Bagged. Sending it down.",
+			"One away. Who's next?"
+		],
+		"tray": [
+			"One in the morgue. Tray's shut.",
+			"Morgue has one more. Tray's closed.",
+			"Settled in the morgue. Somebody will come asking."
+		],
+		"lift": [
+			"Lift, please. Concourse.",
+			"Calling the lift. Hold the door.",
+			"Lift coming down. Mind your fingers."
+		],
+		"mess": [
+			"Who bleeds like this? Honestly.",
+			"I only did this floor on Tuesday.",
+			"That is not coming out with soap.",
+			"There's brass in every corner."
+		],
+		"mind_floor": [
+			"Mind the floor, it's wet.",
+			"Careful there. Wet floor.",
+			"Watch your step, please."
+		],
+		"idle": [
+			"Quiet now. Funny, that.",
+			"Another day. Same floor.",
+			"Somebody put the kettle on."
+		],
+		"talk": [
+			"Mind the wet bits.",
+			"Busy, sorry. Terrible morning.",
+			"Can't stop. The mop's drying."
+		],
+		"work": [
+			"Round and round.",
+			"Nearly there.",
+			"This floor never learns."
+		],
+		"chat": [
+			"Did you see the state of the diner?",
+			"It'll be a long shift.",
+			"Somebody left a bottle in the planter again."
+		],
+		"reply": [
+			"Don't remind me.",
+			"I know.",
+			"Tell me about it."
+		],
+		"attacked": [
+			"Hey! I'm only the cleaner!",
+			"Stop that! I just mop!"
+		],
+		"violence": [
+			"Not again! I just cleaned!",
+			"Get down! Everyone get down!"
+		],
+		"leave": [
+			"That's me done.",
+			"Bag's full. Heading down.",
+			"Lift, then home."
+		],
+		"conversations": [
+			{
+				"opener": "Do you ever get the smell out of your gloves?",
+				"replies": [
+					"Never.",
+					"Not for a week."
+				]
+			},
+			{
+				"opener": "What's the worst one you've seen?",
+				"replies": [
+					"Today.",
+					"Don't ask."
+				]
+			}
+		]
 	},
 	"quartermain": {
-		"call": [],
-		"first_body": [],
-		"officer_body": [],
-		"bagged": [],
-		"tray": [],
-		"lift": [],
-		"mess": [],
-		"mind_floor": []
+		"call": [
+			"Desk to all. Concourse secure. Cleanup crew inbound.",
+			"All units, hold position. Sending the crew.",
+			"Concourse quiet. Cleanup is on the way."
+		],
+		"first_body": [
+			"Not in my contract.",
+			"Great. Another one.",
+			"Right. Bag."
+		],
+		"officer_body": [
+			"That's security. Tell the desk.",
+			"Depot officer down. Radio it in.",
+			"One of ours. Get a bag."
+		],
+		"bagged": [
+			"One bagged. Concourse.",
+			"Bagged. Going down.",
+			"One for the lift."
+		],
+		"tray": [
+			"One in the morgue. Logged.",
+			"Morgue has one. Tray's shut.",
+			"Tray's closed. Next."
+		],
+		"lift": [
+			"Lift. Concourse. Now.",
+			"Need the lift down here.",
+			"Calling the lift. Depot floor."
+		],
+		"mess": [
+			"This isn't in the rota.",
+			"Who signs off on this much blood?",
+			"Brass again. Everywhere.",
+			"Overtime for this. I mean it."
+		],
+		"mind_floor": [
+			"Floor's wet. Walk round.",
+			"Wet floor. Go round.",
+			"Mind your feet."
+		],
+		"idle": [
+			"Quiet. Suits me.",
+			"Depot's never this quiet.",
+			"Shift's half done."
+		],
+		"talk": [
+			"Wet floor. Go round.",
+			"Working. Move along.",
+			"Can't stop. Rota's tight."
+		],
+		"work": [
+			"Nearly there.",
+			"One more tile.",
+			"Mop, bucket, repeat."
+		],
+		"chat": [
+			"Union's going to hear about this.",
+			"Anyone seen the supervisor?"
+		],
+		"reply": [
+			"Same here.",
+			"Tell me about it."
+		],
+		"attacked": [
+			"Hey! Depot staff!",
+			"Back off! I clean floors!"
+		],
+		"violence": [
+			"Not on the clean floor!",
+			"Down! Get down!"
+		],
+		"leave": [
+			"Done here.",
+			"Clocking off.",
+			"Bag's full. Going down."
+		],
+		"conversations": [
+			{
+				"opener": "Is this overtime or isn't it?",
+				"replies": [
+					"Ask the supervisor.",
+					"It had better be."
+				]
+			},
+			{
+				"opener": "How long till the next freighter?",
+				"replies": [
+					"Too soon.",
+					"Not long enough."
+				]
+			}
+		]
 	},
 	"undertow": {
-		"call": [],
-		"first_body": [],
-		"officer_body": [],
-		"bagged": [],
-		"tray": [],
-		"lift": [],
-		"mess": [],
-		"mind_floor": []
+		"call": [
+			"Desk to all. It's quiet. Send in the sweepers.",
+			"All wardens, stand down. The crew's coming for the mess.",
+			"Concourse is yours again. Cleanup's on the way."
+		],
+		"first_body": [
+			"Huh. Fresh.",
+			"Well. There goes someone's evening.",
+			"Bag. Now. Before it gets worse."
+		],
+		"officer_body": [
+			"Warden's down. Tell the desk.",
+			"That's a warden. Be nice to this one.",
+			"Bad luck, warden. Radio it."
+		],
+		"bagged": [
+			"One bagged. Concourse.",
+			"Bagged. Off it goes.",
+			"That's one for the lift."
+		],
+		"tray": [
+			"One in the morgue. It's quiet in there.",
+			"Tray's shut. Don't open it.",
+			"Morgue's got another."
+		],
+		"lift": [
+			"Lift. Concourse. Move it.",
+			"Calling the lift. Again.",
+			"Lift. I haven't got all day."
+		],
+		"mess": [
+			"Somebody always bleeds on the nice floor.",
+			"I don't get paid enough for this.",
+			"It's never just one stain.",
+			"The brass gets everywhere."
+		],
+		"mind_floor": [
+			"Wet floor. Fall on your own time.",
+			"Careful. It's wet. I'm not carrying you.",
+			"Mind it. It's slick."
+		],
+		"idle": [
+			"Quiet. I hate quiet.",
+			"Don't ask what's in the bag.",
+			"Another day in paradise."
+		],
+		"talk": [
+			"Not now. Busy.",
+			"Floor's wet. Good luck.",
+			"Don't look at me. I just clean."
+		],
+		"work": [
+			"Round and round.",
+			"One more.",
+			"It never ends."
+		],
+		"chat": [
+			"Wardens are useless.",
+			"Third time this month."
+		],
+		"reply": [
+			"Tell me about it.",
+			"Don't start."
+		],
+		"attacked": [
+			"Oi! I just mop!",
+			"Hey! Wrong person!"
+		],
+		"violence": [
+			"Not on my floor!",
+			"Great. More mess."
+		],
+		"leave": [
+			"That's me done.",
+			"Bag's full. I'm out.",
+			"Lift. Then a drink."
+		],
+		"conversations": [
+			{
+				"opener": "Which one's worse, the blood or the paperwork?",
+				"replies": [
+					"The paperwork.",
+					"Depends who bled."
+				]
+			},
+			{
+				"opener": "You think they pay hazard rates for this?",
+				"replies": [
+					"Ha.",
+					"Ask nicely."
+				]
+			}
+		]
 	}
 }
