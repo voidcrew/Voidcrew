@@ -208,14 +208,14 @@
 			"I've got a list of ships I don't serve. Congratulations on making it.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Hands off the merchandise, hostile. Next one arms the grid.",
+			"Hands off the merchandise, hostile. Next one, I call Security.",
 			"That's one warning. I only ever give the one.",
 			"Test the armor on your own time. Not on my fixtures.",
 		),
 		TRADER_LINE_AGGRESSION = list(
-			"Weapons free. You were warned by the sign. There are several signs.",
-			"That armor you're wearing? I sell the thing that beats it. To my turrets.",
-			"Grid's hot. For what it's worth, the paperwork on you was already done.",
+			"Security! You were warned by the sign. There are several signs.",
+			"That armor you're wearing? I sell the thing that beats it. To depot security.",
+			"Security's coming. For what it's worth, the paperwork on you was already done.",
 		),
 		TRADER_LINE_IDLE = list(
 			"Inventory rotates when the convoys make it through. When.",

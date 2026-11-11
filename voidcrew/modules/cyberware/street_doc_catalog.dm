@@ -178,7 +178,7 @@
 			"No. Go square it with the depot first.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Easy. The turrets in here don't miss.",
+			"Easy. Depot security doesn't miss.",
 			"Do that again and the whole depot stops serving you.",
 			"I patch people up. I'd rather not start with you.",
 		),
