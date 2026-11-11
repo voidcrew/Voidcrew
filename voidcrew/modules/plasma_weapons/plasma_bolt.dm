@@ -35,9 +35,35 @@
 	light_range = 2.5
 	light_power = 1.6
 
+/obj/projectile/energy/plasma_bolt
+	/// Where a person hit is struck, in pixels from the centre of their turf, set by the burst
+	var/list/impact_point
+	/// The turf impact_point is measured on
+	var/turf/impact_turf
+
 /obj/projectile/energy/plasma_bolt/Destroy()
 	hissed_mobs = null
+	impact_turf = null
 	return ..()
+
+/// The last stretch to an impact: the sprite stops with its nose where the burst or splash draws, then
+/// goes out, so it never slides over the flash or into the body
+/obj/projectile/energy/plasma_bolt/move_animate(animate_x, animate_y, animate_time = world.tick_lag, deleting = FALSE)
+	if(!deleting || deletion_queued != PROJECTILE_IMPACT_DELETE || !movement_vector)
+		return FALSE
+	var/dx = movement_vector.pixel_x
+	var/dy = movement_vector.pixel_y
+	// Pixels from the sprite's centre to the front of its glow: 7 on the pistol bolt, 13 on the rifle's
+	var/offset = istype(src, /obj/projectile/energy/plasma_bolt/heavy) ? 13 : 7
+	var/full = (animate_x - pixel_x) * dx + (animate_y - pixel_y) * dy
+	var/stop = full - offset
+	if(impact_point && impact_turf == loc)
+		stop = (impact_point[1] - pixel_x) * dx + (impact_point[2] - pixel_y) * dy - offset
+	stop = clamp(stop, 0, max(full, 0) + ICON_SIZE_ALL / 2)
+	var/anim_time = full > 0 ? animate_time * stop / full : 0
+	animate(src, pixel_x = pixel_x + dx * stop, pixel_y = pixel_y + dy * stop, time = anim_time, flags = ANIMATION_PARALLEL | ANIMATION_CONTINUE)
+	animate(alpha = 0, time = 0, flags = ANIMATION_CONTINUE)
+	return TRUE
 
 /obj/projectile/energy/plasma_bolt/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()

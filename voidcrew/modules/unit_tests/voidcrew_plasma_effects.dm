@@ -109,6 +109,7 @@
 	var/obj/effect/temp_visual/plasma_splash/splash = locate() in get_turf(victim)
 	TEST_ASSERT_EQUAL(splash?.icon_state, "splash_armour", "a shield block made no armour splash")
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_burst) in get_turf(victim), "a shield block made a flesh burst")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/block) in get_turf(victim), "a shield block of a plasma bolt left tg's block star")
 
 /// Ordinary person hits alternate the splatter and the flash; a killing hit burns through.
 /datum/unit_test/voidcrew_plasma_bolt/burst_pick
@@ -126,8 +127,15 @@
 	hit.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, turf_at(1, 2)), BODY_ZONE_CHEST)
 	var/obj/effect/temp_visual/plasma_burst/burst = locate() in get_turf(hit)
 	TEST_ASSERT_NOTNULL(burst, "a bolt hitting a person made no burst")
-	TEST_ASSERT(burst.drawn, "the burst was not drawn in the tick of the hit")
-	TEST_ASSERT(findtext(burst.icon_state, "sp_A") == 1 || findtext(burst.icon_state, "sp_B") == 1, "an ordinary hit drew [burst.icon_state]")
+	TEST_ASSERT(burst.drawn, "the burst's look was not picked in the tick of the hit")
+	TEST_ASSERT(burst.look == "A" || burst.look == "B", "an ordinary hit picked [burst.look]")
+	// It shows a tick later, once the bolt's sprite has arrived; show it now
+	burst.show(WEAKREF(hit))
+	TEST_ASSERT(findtext(burst.icon_state, "sp_[burst.look]") == 1, "an ordinary hit drew [burst.icon_state]")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/plasma_burst_bloom) in get_turf(hit), "a burst had no bloom")
+	var/obj/effect/temp_visual/plasma_burst_body/stuck = locate() in hit.vis_contents
+	TEST_ASSERT_NOTNULL(stuck, "nothing stuck to a body hit from the front")
+	TEST_ASSERT(stuck.vis_flags & VIS_INHERIT_DIR, "what sticks to the body does not turn with it")
 
 	var/mob/living/carbon/human/consistent/dying = allocate(/mob/living/carbon/human/consistent, turf_at(2, 3))
 	dying.adjustOxyLoss(190)
@@ -135,4 +143,14 @@
 	dying.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 3)), BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(dying.stat, DEAD, "a rifle bolt did not kill a body at -90 health")
 	burst = locate() in get_turf(dying)
-	TEST_ASSERT(burst && findtext(burst.icon_state, "sp_C") == 1, "a killing hit drew [burst?.icon_state] instead of the burn-through")
+	TEST_ASSERT_EQUAL(burst?.look, "C", "a killing hit did not pick the burn-through")
+
+/// What sticks to a body is named by the side of the body it is on, the same whichever way the body faces
+/datum/unit_test/voidcrew_plasma_burst_body_side
+
+/datum/unit_test/voidcrew_plasma_burst_body_side/Run()
+	TEST_ASSERT_EQUAL(plasma_burst_body_side(SOUTH, SOUTH), SOUTH, "the front of a body facing south is not its front")
+	TEST_ASSERT_EQUAL(plasma_burst_body_side(EAST, EAST), SOUTH, "the front of a body facing east is not its front")
+	TEST_ASSERT_EQUAL(plasma_burst_body_side(SOUTH, NORTH), NORTH, "the back of a body facing north is not its back")
+	TEST_ASSERT_EQUAL(plasma_burst_body_side(WEST, NORTH), EAST, "the left side of a body facing north is not its left")
+	TEST_ASSERT_EQUAL(plasma_burst_body_side(NORTH, WEST), WEST, "the right side of a body facing west is not its right")
