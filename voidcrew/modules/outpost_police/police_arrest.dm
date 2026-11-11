@@ -461,7 +461,7 @@
  * not yet in cuffs (the lethal response takes over), or the suspect gone with no evidence left for the desk.
  */
 /datum/outpost_police_case/proc/check_close(mob/living/carbon/suspect)
-	if(!warrant?.mind || police.warrants[warrant.mind] != warrant)
+	if(!warrant?.mind || police.get_warrant(warrant.mind) != warrant)
 		close()
 		return TRUE
 	if(!suspect || get_trader_outpost_for_turf(get_turf(suspect)) != police.outpost)

@@ -618,7 +618,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 /// What the Search step takes from `suspect` now: the crime tools on the warrant and stolen property, in reach
 /datum/outpost_police/proc/evidence_candidates(mob/living/carbon/suspect)
 	var/list/take = list()
-	var/datum/outpost_warrant/warrant = suspect.mind ? warrants[suspect.mind] : null
+	var/datum/outpost_warrant/warrant = suspect.mind ? get_warrant(suspect.mind) : null
 	if(warrant)
 		for(var/datum/weakref/ref in warrant.evidence)
 			var/obj/item/tool = ref.resolve()
