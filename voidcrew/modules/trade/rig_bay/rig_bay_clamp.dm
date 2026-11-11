@@ -288,6 +288,10 @@
 /datum/component/rig_bay_hold/proc/register_hit(atom/source, atom/attacker)
 	if(!is_trader_outpost_protected(source))
 		return
+	// The buyer's crew can bash their own mech about
+	var/mob/hitter = attacker
+	if(ismob(hitter) && crew_ref && hitter.mind?.get_reputation_crew() == crew_ref.resolve())
+		return
 	register_outpost_property_hit(source, attacker)
 
 /datum/component/rig_bay_hold/proc/on_projectile_hit(atom/source, obj/projectile/hit_projectile)
