@@ -17,8 +17,8 @@
  * Nothing here runs while nobody is on the concourse. The ambient system freezes its people then (the crews with
  * them), and the recovery does not fake their work: its clocks stand still too and are moved on by as long as
  * they stood (shift_times(), on the first tick after someone comes), so every give-up timer (quiet, the 15 minute
- * cleanup, the crew grace, restaff, refill) counts only time the crews could actually work. A massacre at an
- * outpost nobody then visits waits, bodies and all, until the next player walks in.
+ * cleanup, the crew grace, restaff, refill) counts only time the crews could actually work. With nobody at the
+ * outpost at all (owner decision 32), the recovery finishes at once instead: recovery_offscreen.dm.
  */
 
 /// The slow look that wakes a NORMAL outpost when a counter has lost its keeper without a death to say so
@@ -35,6 +35,8 @@
 #define RECOVERY_ROOM_MAX 60
 /// A wanted person off the outpost's own floor (aboard a docked ship, in a hangar) or not at the keys holds TROUBLE this long at most (abuse MF4)
 #define RECOVERY_STARS_AWAY_MAX (3 MINUTES)
+/// One medic comes with a wave for up to this many patients, two past it (decision 31, recovery_medic.dm)
+#define RECOVERY_MEDIC_SECOND_AT 2
 
 /obj/structure/overmap/trader_outpost
 	/// This outpost's recovery (recovery_core.dm). Made by ensure_recovery(), deleted in Destroy().
@@ -157,6 +159,8 @@
 	stars_away.Cut()
 	claims.Cut()
 	retry_at.Cut()
+	patient_claims.Cut()
+	patient_retry.Cut()
 	dirty_stops.Cut()
 	crew.Cut()
 	morgue_trays.Cut()
@@ -364,9 +368,9 @@
 		if(!QDELETED(body))
 			. += body
 
-/// Whether there is anything for a crew to do: a body or a dirty stop
+/// Whether there is anything for a crew to do: a body, a dirty stop, or someone down for the medics
 /datum/outpost_recovery/proc/has_cleanup_work()
-	return length(npc_bodies()) || length(player_bodies()) || dirty_count()
+	return length(npc_bodies()) || length(player_bodies()) || dirty_count() || length(patients_due())
 
 /// How many patrol stops are found dirty (R4 may leave a cleaned stop in the list as FALSE)
 /datum/outpost_recovery/proc/dirty_count()
@@ -522,10 +526,16 @@
 
 /**
  * Once a second while there is work (wake() and sleep_tick()); a slow watch (watch()) wakes it from NORMAL. Nothing
- * runs while nobody is on the concourse; the clocks are shifted on the first tick after (shift_times()).
+ * runs while nobody is on the concourse; the clocks are shifted on the first tick after (shift_times()). With nobody
+ * at the outpost at all (its hangars and docked ships included) for a short while, the recovery is finished at once
+ * instead (finish_unseen(), recovery_offscreen.dm).
  */
 /datum/outpost_recovery/proc/tick()
 	if(QDELETED(src) || QDELETED(outpost))
+		return
+	// Nobody at the outpost for a while: done at once, without the crews (decision 32, recovery_offscreen.dm)
+	if(unseen_ready())
+		finish_unseen()
 		return
 	if(!outpost_occupied())
 		if(!paused_at)
@@ -568,7 +578,8 @@
 	if(QDELETED(src) || QDELETED(outpost) || !outpost.loaded)
 		return
 	register_posts()
-	if(state == OUTPOST_RECOVERY_NORMAL && length(vacant_posts()))
+	// A counter with nobody at it, or someone of the outpost's down and nobody coming for them (decision 31)
+	if(state == OUTPOST_RECOVERY_NORMAL && (length(vacant_posts()) || length(patients_due())))
 		begin_trouble()
 
 // ----- TROUBLE to CLEANUP -----
@@ -596,7 +607,7 @@
 	if(world.time - quiet_since >= OUTPOST_RECOVERY_CLEANUP_MAX)
 		finish_cleanup()
 		return
-	if(!length(npc_bodies()) && clean_share() * 100 >= OUTPOST_RECOVERY_CLEAN_SHARE)
+	if(!length(npc_bodies()) && !length(patients_due()) && clean_share() * 100 >= OUTPOST_RECOVERY_CLEAN_SHARE)
 		finish_cleanup()
 		return
 	if(wave_active)
@@ -612,6 +623,7 @@
 	// Whoever was not built yet is not coming
 	wave_morgue_left = 0
 	wave_janitors_left = 0
+	wave_medics_left = 0
 	wave_escort_left = 0
 	restaff_started_at = world.time
 	set_state(OUTPOST_RECOVERY_RESTAFF)
@@ -733,7 +745,8 @@
 	var/bodies = length(npc_bodies())
 	var/need_morgue = bodies || length(player_bodies())
 	var/need_janitors = bodies || dirty_count()
-	if(!need_morgue && !need_janitors)
+	var/hurt = length(patients_due())
+	if(!need_morgue && !need_janitors && !hurt)
 		return
 	var/each = bodies > OUTPOST_RECOVERY_BIG_WAVE_BODIES ? OUTPOST_RECOVERY_CREW_BIG : OUTPOST_RECOVERY_CREW_SMALL
 	var/escort = officers_alive() ? 0 : OUTPOST_RECOVERY_ESCORT
@@ -748,6 +761,7 @@
 	wave_called_at = world.time
 	wave_morgue_left = need_morgue ? each : 0
 	wave_janitors_left = need_janitors ? each : 0
+	wave_medics_left = hurt ? (hurt > RECOVERY_MEDIC_SECOND_AT ? 2 : 1) : 0
 	wave_escort_left = escort
 	wave_escort_size = escort
 	wave_escort_kind = escort_kind
@@ -760,6 +774,8 @@
 		wave_morgue_left--
 	while(wave_janitors_left > 0 && make_crew(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor))
 		wave_janitors_left--
+	while(wave_medics_left > 0 && make_crew(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic))
+		wave_medics_left--
 	if(wave_escort_left > 0)
 		send_escort()
 
@@ -836,9 +852,9 @@
 		officer.recovery_escort = FALSE
 	escort_waves.Cut()
 
-/// Whether a worker still holds a body (R3's claims): the crews do not leave a bagged body half way
+/// Whether a worker still holds a body (R3's claims) or a patient: the crews do not leave a bagged body or a patient half way
 /datum/outpost_recovery/proc/crew_busy()
-	return length(claims) && length(live_wave_workers())
+	return (length(claims) || length(patient_claims)) && length(live_wave_workers())
 
 /// The crews that are still about go: they slip away by the lift. The escorts are not crew in this sense (release_escorts()).
 /datum/outpost_recovery/proc/retire_crew()
@@ -863,7 +879,7 @@
 	lost_workers[key] = TRUE
 	var/datum/weakref/worker_ref = WEAKREF(worker)
 	crew -= worker_ref
-	if(!wave_active || wave_morgue_left > 0 || wave_janitors_left > 0)
+	if(!wave_active || wave_morgue_left > 0 || wave_janitors_left > 0 || wave_medics_left > 0)
 		return
 	for(var/mob/living/who as anything in live_wave_workers())
 		if(who != worker)

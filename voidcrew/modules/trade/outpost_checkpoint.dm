@@ -601,6 +601,11 @@
 	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in list(outer_door, inner_door))
 		if(!QDELETED(door) && !door.density)
 			close_door(door)
+	// The scanner is seen coming back, not just found working (owner decision 33)
+	if(!QDELETED(sensor))
+		do_sparks(2, TRUE, sensor)
+		playsound(sensor, 'sound/machines/ping.ogg', 40, FALSE, SILENCED_SOUND_EXTRARANGE)
+		sensor.visible_message(span_notice("[sensor] sparks and flickers back on."))
 
 /// The gate is down: `door` opens for whoever asked, like a plain airlock, and shuts again once its doorway is clear. TRUE if it opens.
 /datum/outpost_checkpoint/proc/open_freely(obj/machinery/door/airlock/outpost/checkpoint/door)

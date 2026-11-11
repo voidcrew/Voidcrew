@@ -111,21 +111,7 @@
  * EMPed or jammed, or when they can't talk (decision 19). TRUE if they spoke.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/proc/morgue_radio(context)
-	if(stat != CONSCIOUS || fading || paused_at || !human_npc_can_talk(src))
-		return FALSE
-	var/obj/item/radio/headset = ears
-	if(!istype(headset) || !headset.is_on() || is_within_radio_jammer_range(src))
-		return FALSE
-	var/list/lines = get_lines(context)
-	if(!length(lines))
-		return FALSE
-	var/line = pick(lines)
-	if(!istext(line))
-		return FALSE
-	if(headset.frequency != OUTPOST_POLICE_RADIO_FREQ)
-		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
-	say_line(";[fill_line(line)]")
-	return TRUE
+	return crew_radio(context)
 
 // =========================================================================
 // THE BAG
@@ -633,6 +619,10 @@
  * the tray and are never deleted).
  */
 /datum/ambient_activity/recover_body/proc/gather_parts(mob/living/body, turf/body_turf)
+	return morgue_gather_parts(body, body_turf)
+
+/// gather_parts() for anyone: the crew's hands, or the unseen recovery (recovery_offscreen.dm)
+/proc/morgue_gather_parts(mob/living/body, turf/body_turf)
 	var/list/parts = list()
 	var/list/candidates = list()
 	if(morgue_npc_body(body))
