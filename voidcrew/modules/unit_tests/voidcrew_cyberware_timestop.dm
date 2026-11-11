@@ -345,7 +345,7 @@
 	TEST_ASSERT(lattice.Insert(raider, special = TRUE), "Test fixture: the lattice wouldn't go in the NPC")
 	return raider
 
-/// No reflex dodge while the user's own world is slowed; it comes back if the slow-mo ends before the window does
+/// No reflex dodge, speed, quicker blows or crit edge while the user's own world is slowed; they come back if the slow-mo ends before the window does
 /datum/unit_test/voidcrew_cyberware_timestop/no_dodge_while_slowed
 
 /datum/unit_test/voidcrew_cyberware_timestop/no_dodge_while_slowed/Run()
@@ -360,12 +360,16 @@
 	TEST_ASSERT_NOTNULL(arbiter, "The window has no dodge")
 	TEST_ASSERT(cyberware_time_stopping(user), "The user isn't marked as slowing time")
 	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), FAILED_BLOCK, "The user dodged a blow in slow-mo")
+	TEST_ASSERT(!user.has_movespeed_modifier(window.speed_type), "The user kept the surge's speed in slow-mo")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 1, "The user kept the surge's quicker blows in slow-mo")
 	sleep(1.2 SECONDS)
 	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), FAILED_BLOCK, "The user dodged a blow later in slow-mo")
 	qdel(window.time_stop) // as when a player comes in range
 	TEST_ASSERT_NULL(window.time_stop, "Test fixture: the dilation didn't end")
 	TEST_ASSERT(!cyberware_time_stopping(user), "The user still counts as slowing time")
 	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), SUCCESSFUL_BLOCK, "The dodge didn't come back after the slow-mo ended")
+	TEST_ASSERT(user.has_movespeed_modifier(window.speed_type), "The surge's speed didn't come back after the slow-mo ended")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), window.melee_mult, "The surge's quicker blows didn't come back after the slow-mo ended")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 

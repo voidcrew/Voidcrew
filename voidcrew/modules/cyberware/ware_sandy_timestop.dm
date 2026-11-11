@@ -10,7 +10,7 @@
  *   Cascade T4   8 s     20%
  *
  * Pressing the surge again ends the window early, slow-mo and all, and the crash follows as usual. With another
- * player near, the surge is the plain one; if one comes in range mid-surge, the slow-mo ends there and the surge
+ * player near (the user's own crewmates don't count: they slow like an NPC), the surge is the plain one; if one comes in range mid-surge, the slow-mo ends there and the surge
  * carries on without it. Only a player's surge does this (the user needs a ckey): an NPC criminal's lattice never does.
  *
  * Built on tg's time stop field (code/datums/proximity_monitor/fields/timestop.dm), hosted on the user so
@@ -127,6 +127,20 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(field.host != surger)
 			field.surge_free(surger, multiplier)
 
+/// Whether some other user's field is running `surger` at its relative rate.
+/proc/cyberware_surge_in_field(mob/living/surger)
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(field.surging[surger])
+			return TRUE
+	return FALSE
+
+/// A field just took or let go of `surger`: its surge's own edge goes off or back on (ware_legend.dm).
+/proc/cyberware_surge_refresh_perks(mob/living/surger)
+	if(QDELETED(surger))
+		return
+	var/datum/status_effect/cyberware_cascade_window/window = surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	window?.refresh_perks()
+
 /// The time multiplier of `body`'s open surge window, or 1 with none.
 /proc/cyberware_surge_multiplier(mob/living/body)
 	if(!isliving(body))
@@ -214,24 +228,26 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/due = start + cyberware_time_lag(shooter) + gap * index
 	return due - world.time >= world.tick_lag ? due - world.time : 0
 
-/// Whether a player other than `user` is within `range` tiles: any living body with a ckey, connected or not.
+/// Whether a player other than `user` is within `range` tiles: any living body with a ckey, connected or not. The user's
+/// own crewmates don't count: they are slowed with the rest of the world, like an NPC.
 /proc/cyberware_time_stop_witnessed(mob/living/user, range = SANDY_STOP_WITNESS_RANGE)
 	var/turf/here = get_turf(user)
 	if(!here)
 		return TRUE
+	var/datum/team/user_crew = cyberware_crew_team(user) // ware_pro_combat.dm
 	for(var/atom/movable/found as anything in SSspatial_grid.orthogonal_range_search(here, SPATIAL_GRID_CONTENTS_TYPE_HEARING, range))
 		if(found == user)
 			continue
 		if(isliving(found))
 			var/mob/living/body = found
-			if(body.ckey)
+			if(body.ckey && (!user_crew || cyberware_crew_team(body) != user_crew))
 				return TRUE
 			continue
 		if(ismob(found)) // ghosts and camera eyes don't count
 			continue
 		// a locker or a mech with a player in it, or a small player picked up and carried as an item
 		for(var/mob/living/inside in found.get_all_contents())
-			if(inside != user && inside.ckey)
+			if(inside != user && inside.ckey && (!user_crew || cyberware_crew_team(inside) != user_crew))
 				return TRUE
 	return FALSE
 
@@ -410,10 +426,13 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		UnregisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
 	stopper = null
 	GLOB.cyberware_time_fields -= src
+	var/list/were_surging = surging.Copy()
 	for(var/mob/living/surger as anything in surging)
 		UnregisterSignal(surger, COMSIG_QDELETING)
 	surging.Cut()
 	. = ..() // unfreeze_all() lets everything go
+	for(var/mob/living/surger as anything in were_surging)
+		cyberware_surge_refresh_perks(surger) // a surge still open gets its own edge back
 	own_scales.Cut()
 	released.Cut()
 
@@ -588,6 +607,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/take_surger(mob/living/surger, multiplier)
 	surging[surger] = TRUE
 	RegisterSignal(surger, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+	cyberware_surge_refresh_perks(surger) // the field paces it now, not its own edge
 	var/rate = relative_rate(multiplier)
 	if(abs(rate - 1) < SANDY_STOP_SAME_RATE)
 		return
@@ -641,6 +661,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			unfreeze_atom(surger)
 		surging -= surger
 		UnregisterSignal(surger, COMSIG_QDELETING)
+		cyberware_surge_refresh_perks(surger)
 		if(surger.stat == DEAD)
 			released[surger] = TRUE
 			continue
@@ -884,6 +905,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	owner.remove_filter(SANDY_STOP_OUTLINE)
 	sandy_release_flash(owner)
 	owner.add_client_colour(colour_type, id)
+	refresh_perks() // the rest of the window is an ordinary surge
 
 /// Ends the dilation early (the window is closing).
 /datum/status_effect/cyberware_cascade_window/proc/end_time_stop()

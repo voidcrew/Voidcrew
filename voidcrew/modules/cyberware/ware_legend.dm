@@ -196,6 +196,8 @@
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
 	/// Steps taken so far, for the afterimage cadence.
 	var/steps_taken = 0
+	/// Whether the surge's own speed, quicker blows, crit and dodge are on now (refresh_perks()).
+	var/perks_on = FALSE
 
 /// Optional second argument: the lattice whose numbers this window runs on.
 /datum/status_effect/cyberware_cascade_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/cascade/lattice)
@@ -218,10 +220,8 @@
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
 	trail_hue = rand(0, 359)
-	owner.add_movespeed_modifier(speed_type)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)), melee = TRUE)
-	owner.hv_crit_set_attacker_bonus(id, crit_bonus)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
 	owner.add_client_colour(colour_type, id)
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
@@ -232,14 +232,14 @@
 	owner.balloon_alert(owner, "cascade online")
 	cyberware_cascade_window_fx(owner)
 	try_time_stop() // ware_sandy_timestop.dm
+	refresh_perks()
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
 	end_time_stop()
-	owner.remove_movespeed_modifier(speed_type)
+	set_perks(FALSE)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
-	owner.hv_crit_set_attacker_bonus(id, null)
 	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
@@ -250,13 +250,32 @@
 
 /// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()
-	return melee_mult
+	return perks_on ? melee_mult : 1
+
+/**
+ * The surge's own edge (speed, quicker blows, crit, dodge) is off while a slow-mo carries the surger: its own
+ * (ware_sandy_timestop.dm), or someone else's that runs it at its relative rate. There it moves and swings at
+ * normal speed and only the world around it is slowed. Call whenever either changes.
+ */
+/datum/status_effect/cyberware_cascade_window/proc/refresh_perks()
+	set_perks(!time_stop && !cyberware_surge_in_field(owner))
+
+/datum/status_effect/cyberware_cascade_window/proc/set_perks(on)
+	if(on == perks_on)
+		return
+	perks_on = on
+	if(on)
+		owner.add_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, crit_bonus)
+	else
+		owner.remove_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, null)
 
 /// Dodge-source callback for the shared arbiter: flat chance while the window
 /// lives (the arbiter itself enforces the moving-only and point-blank rules
 /// for shots, and the pinned rules for blows).
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
-	return dodge_chance
+	return perks_on ? dodge_chance : 0
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
 /// telegraph everyone in the fight can read. Each step shifts the hue, so the
