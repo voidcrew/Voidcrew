@@ -188,6 +188,7 @@
 /proc/outpost_work_barrier(turf/tile)
 	var/static/list/barriers = typecacheof(list(
 		/obj/effect/landmark/outpost_elevator_alcove,
+		/obj/effect/landmark/outpost_work_threshold,
 		/obj/machinery/door,
 		/obj/structure/fence,
 		/obj/structure/grille,

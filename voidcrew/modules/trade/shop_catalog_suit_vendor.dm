@@ -49,8 +49,8 @@
 
 /// Wick, who will not sell you a suit until he has measured you for it
 /datum/outpost_shop/vendor/suit_fitter
-	outpost_name = "\improper The Fitting Bay"
-	outpost_desc = "The depot's modsuit shop, and the only bench in the lanes that'll fit one properly."
+	outpost_name = "\improper The Rig Bay"
+	outpost_desc = "The depot's modsuit counter, with exosuits hanging from the gantries out back."
 	trader_name = "Wick"
 	trader_outfit = /datum/outfit/fitting_bay_wick
 	trader_gender = MALE
@@ -67,8 +67,28 @@
 		"Medical Modules",
 		"Visors & Sensors",
 		"Environment Gear",
+		"Exosuits",
+		"Exosuit Arms",
+		"Exosuit Ammo",
+		"Exosuit Fittings",
 	)
 	sku_types = list(
+		// The Rig Bay: whole mechs come off the stands (rig_bay/), the rest is shelf stock
+		/datum/shop_sku/rig_bay_gear/arm/kinetic,
+		/datum/shop_sku/rig_bay_gear/arm/plasma_cutter,
+		/datum/shop_sku/rig_bay_gear/arm/disabler,
+		/datum/shop_sku/rig_bay_gear/arm/missile_rack,
+		/datum/shop_sku/rig_bay_gear/ammo/lmg,
+		/datum/shop_sku/rig_bay_gear/ammo/scattershot,
+		/datum/shop_sku/rig_bay_gear/ammo/incendiary,
+		/datum/shop_sku/rig_bay_gear/ammo/flashbang,
+		/datum/shop_sku/rig_bay_gear/ammo/missiles,
+		/datum/shop_sku/rig_bay_gear/projectile_shielding,
+		/datum/shop_sku/rig_bay_gear/impact_plates,
+		/datum/shop_sku/rig_bay_gear/ablative_insulation,
+		/datum/shop_sku/rig_bay_gear/drill,
+		/datum/shop_sku/rig_bay_gear/hydraulic_clamp,
+		/datum/shop_sku/rig_bay_gear/repair_droid,
 		// MOD Chassis: two finished suits plus the whole build route
 		/datum/shop_sku/fitter/suit_civilian,
 		/datum/shop_sku/fitter/suit_engineering,
@@ -212,6 +232,7 @@
 			"Good fit. Bring it back when the cell's flat, not after.",
 			"Signed for. Bench is right there if you want the modules seated properly.",
 			"Yours. Service it every few runs and it'll outlast the ship.",
+			"Signed for. Drive it out slow, the concourse has corners.",
 		),
 		TRADER_LINE_REFUSAL = list(
 			"You're flagged. The depot won't clear the sale and I don't argue with the depot.",
@@ -224,11 +245,12 @@
 			"Bench install is free. Doing it yourself in a corridor is how people lose fingers.",
 			"The civilian chassis is not spaceworthy. It says so on the plate. People still ask.",
 			"Bring me a wrecked control unit and I'll take it, modules and all.",
+			"Don't lean on the chains.",
 		),
 		TRADER_LINE_RESTOCK = list(
-			"Convoy's in. New chassis on the rack and the plating rotation changed.",
+			"Convoy's in. New frames on the stands.",
 			"Resupply landed. Cores came through intact this time, which isn't guaranteed.",
-			"Fresh stock. Look now, before the mining crews strip the rack.",
+			"Fresh rigs. Mind the chains.",
 		),
 	)
 
