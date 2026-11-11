@@ -963,11 +963,11 @@
 		TEST_ASSERT_EQUAL(cloud.add_program(null, program), 1, "Hostless backup was capacity-limited")
 		excess += program
 	TEST_ASSERT(cloud.programs_fit_capacity(cloud.programs), "Hostless cloud has a body capacity")
-	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, TRUE, TRUE), 4, "Over-budget cloud sync did not report refusal") // NANITE_SYNC_REFUSED
-	TEST_ASSERT(incumbent in nanites.programs, "Rejected cloud sync deleted an incumbent")
-	TEST_ASSERT_EQUAL(shared.activation_code, 12, "Rejected cloud sync copied settings")
-	TEST_ASSERT(!shared.activated, "Rejected cloud sync copied activation")
-	TEST_ASSERT_EQUAL(length(nanites.programs), 2, "Rejected cloud sync partially installed programs")
+	// Nothing new fits, but the settings on programs the host already runs still sync.
+	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, TRUE, TRUE), 6, "Over-budget cloud sync did not refuse its additions and copy settings") // NANITE_SYNC_REFUSED | NANITE_SYNC_REPLACED
+	TEST_ASSERT(incumbent in nanites.programs, "Refused additions deleted a matching incumbent")
+	TEST_ASSERT_EQUAL(shared.activation_code, 34, "Refused additions blocked a settings change")
+	TEST_ASSERT_EQUAL(length(nanites.programs), 2, "Over-budget cloud sync installed programs that don't fit")
 	for(var/datum/nanite_program/program in excess)
 		qdel(program)
 	TEST_ASSERT(nanites.sync_programming(cloud), "Fitting cloud sync didn't commit")

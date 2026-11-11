@@ -174,7 +174,9 @@
 			data["cloud_backup"] = TRUE
 			var/list/cloud_programs = list()
 			var/id = 1
+			var/cloud_load = 0
 			for(var/datum/nanite_program/P in nanites.programs)
+				cloud_load += P.capacity_cost()
 				var/list/cloud_program = list()
 				cloud_program["name"] = P.name
 				cloud_program["desc"] = P.desc
@@ -216,6 +218,7 @@
 				id++
 				cloud_programs += list(cloud_program)
 			data["cloud_programs"] = cloud_programs
+			data["cloud_load"] = cloud_load
 	else
 		var/list/backup_list = list()
 		for(var/datum/nanite_cloud_backup/backup as anything in cloud_backups)

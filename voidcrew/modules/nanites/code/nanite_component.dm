@@ -186,9 +186,13 @@
  *
  * Returns a bitfield describing what actually changed, so callers can tell a sync that rewrote the
  * host's programming from the 30-second one that found everything already identical:
- * * NANITE_SYNC_REFUSED - the complete package exceeded the host's capacity
+ * * NANITE_SYNC_REFUSED - some new programs were left out because they didn't fit the host
  * * NANITE_SYNC_ADDED - programs were installed
  * * NANITE_SYNC_REPLACED - programming the host already had was deleted or overwritten with different settings
+ *
+ * Removals and settings changes never raise the host's load, so they always apply. New programs are
+ * then taken in the source's order, each one only if it still fits the program limit and the host's
+ * neural capacity on top of everything kept so far; the ones that don't fit are skipped.
  */
 /datum/component/nanites/proc/sync_programming(datum/component/nanites/source, full_overwrite = TRUE, copy_activation = FALSE)
 	. = NONE
@@ -204,10 +208,13 @@
 	var/list/result = programs.Copy()
 	if(full_overwrite)
 		result -= programs_to_remove
-	result += programs_to_add
-	if(length(result) > max_programs || !programs_fit_capacity(result))
-		capacity_changed()
-		return NANITE_SYNC_REFUSED
+	for(var/datum/nanite_program/SNP as anything in programs_to_add.Copy())
+		var/list/attempt = result + SNP
+		if(length(attempt) > max_programs || (SNP.capacity_cost() > 0 && !programs_fit_capacity(attempt)))
+			programs_to_add -= SNP
+			. |= NANITE_SYNC_REFUSED
+			continue
+		result = attempt
 	programming_transaction = TRUE
 	for(var/datum/nanite_program/NP as anything in programs)
 		for(var/datum/nanite_program/SNP as anything in source.programs)
@@ -274,12 +281,12 @@
 						if(world.time >= next_update_warning)
 							next_update_warning = world.time + NANITE_CLOUD_WARNING_DELAY
 							notify_host("Nanite update refused.", warning = TRUE)
-						return
-					next_update_warning = 0
+					else
+						next_update_warning = 0
 					//The cloud copy is authoritative, so the first sync after joining a cloud wipes
 					//whatever the host programmed locally. Say so once instead of letting it look
 					//like the programming vanished on its own.
-					if(announce_cloud_takeover && sync_changes)
+					if(announce_cloud_takeover && (sync_changes & (NANITE_SYNC_ADDED|NANITE_SYNC_REPLACED)))
 						announce_cloud_takeover = FALSE
 						if(sync_changes & NANITE_SYNC_REPLACED)
 							notify_host("Nanite programming synced from cloud backup #[cloud_id] (local changes replaced).")

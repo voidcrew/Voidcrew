@@ -461,14 +461,15 @@ export const NaniteCloudBackupList = (props, context) => {
 
 export const NaniteCloudBackupDetails = (props, context) => {
   const { act, data } = useBackend(context);
-  const { current_view, can_rule, has_program, cloud_backup } = data;
+  const { current_view, can_rule, has_program, cloud_backup, cloud_load } =
+    data;
   if (!cloud_backup) {
     return <NoticeBox>ERROR: Backup not found</NoticeBox>;
   }
   const cloud_programs = data.cloud_programs || [];
   return (
     <Section
-      title={'Backup #' + current_view}
+      title={'Backup #' + current_view + ' - Load ' + (cloud_load || 0)}
       level={2}
       buttons={
         !!has_program && (
