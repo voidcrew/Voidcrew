@@ -2,18 +2,27 @@
 // (chains lower the mech, then wind up) and the beam-in (a blue-white column, the mech fades in, the chains
 // come down and hoist it). Logic lives in rig_bay_stand.dm; this file only draws and plays sounds.
 //
-// Draw order on the stand's tile (all on one turf, so they sort by layer; everything moves by pixel_z/pixel_w,
-// never pixel_y, so nothing changes rows):
-//   stand pad (2.9) < chains (RIG_BAY_CHAIN_LAYER) < gantry + post lamps (RIG_BAY_GANTRY_LAYER)
-//   < beam column (RIG_BAY_BEAM_LAYER) < mech (VEHICLE_LAYER) < flash, sparks (RIG_BAY_FRONT_LAYER) < mobs
+// Draw order on the stand's tile. The world uses SIDE_MAP (code/world.dm), which sorts by screen row (turf y plus
+// pixel_y) before layer. Every part sits on the stand's own turf and moves by pixel_z/pixel_w only, never
+// pixel_y, so all of them stay on the stand's row and sort among themselves by layer:
+//   stand pad (2.9) < chains (RIG_BAY_CHAIN_LAYER) < gantry (RIG_BAY_GANTRY_LAYER) < post lamps
+//   (RIG_BAY_LAMP_LAYER) < beam column (RIG_BAY_BEAM_LAYER) < mech (VEHICLE_LAYER)
+//   < flash, sparks (RIG_BAY_FRONT_LAYER) < mobs
 // The chains sit behind the mech, so their shackles tuck behind its shoulders, and behind the gantry bar, so
 // their tops tuck into it. The flash and sparks sit just in front of the mech and still behind anyone
-// standing on the stand's own tile row.
+// standing on the stand's own tile row. The gantry bar and the beam column reach up over the tiles north of
+// the stand, but stay on its row, so anyone south of the stand draws in front of them.
+//
+// Timing: every change that has to land on a beat (mech, chains, column, flash, sparks, lamps) is queued with
+// animate() when the move starts, so the client plays it on time even when the server lags. The server-side
+// timers at the end only settle state for logic.
 
 /// Chains hang behind the gantry and the mech.
 #define RIG_BAY_CHAIN_LAYER 3.86
-/// The gantry posts, bar and lamps: in front of the chains, behind the beam and the mech.
+/// The gantry posts and bar: in front of the chains, behind the lamps, the beam and the mech.
 #define RIG_BAY_GANTRY_LAYER 3.87
+/// The lamps on the gantry posts: just in front of the posts.
+#define RIG_BAY_LAMP_LAYER 3.875
 /// The beam-in column: in front of the gantry, behind the mech.
 #define RIG_BAY_BEAM_LAYER 3.88
 /// The arrival flash and the sparks at the mech's feet: in front of the mech, behind mobs.
@@ -34,7 +43,10 @@
 /obj/structure/rig_bay_stand
 	/// The two chains hanging from the gantry, left then right (screen space).
 	var/list/obj/effect/rig_bay_chain/chains
+	/// The two lamps on the gantry posts, left then right.
+	var/list/obj/effect/rig_bay_lamp/lamps
 	/// Colour of the lamps on the gantry posts: "red" (held), "amber" (working), "green" (released), "grey" (empty).
+	/// The server's state; a release or beam-in queues the lamps' own change on the client ahead of it.
 	var/lamp = "grey"
 
 /obj/structure/rig_bay_stand/Initialize(mapload)
@@ -46,8 +58,10 @@
 	// The parent forgets the mech first; forget_mech() below leaves the chains alone while the stand is going.
 	. = ..()
 	QDEL_LIST(chains)
+	QDEL_LIST(lamps)
 
-/// Makes sure both chains exist and stand on the stand's tile. Rebuilds any that were deleted or moved off.
+/// Makes sure both chains and both lamps exist and stand on the stand's tile. Rebuilds any that were deleted
+/// or moved off.
 /obj/structure/rig_bay_stand/proc/ensure_chains()
 	LAZYINITLIST(chains)
 	for(var/obj/effect/rig_bay_chain/chain as anything in chains.Copy())
@@ -60,6 +74,18 @@
 		var/obj/effect/rig_bay_chain/chain = new(loc)
 		chain.set_pose(default_anchors[length(chains) + 1], RIG_BAY_CHAIN_STOWED, RIG_BAY_CHAIN_TOP - RIG_BAY_HANG_LIFT)
 		chains += chain
+	LAZYINITLIST(lamps)
+	for(var/obj/effect/rig_bay_lamp/post_lamp as anything in lamps.Copy())
+		if(QDELETED(post_lamp) || post_lamp.loc != loc)
+			lamps -= post_lamp
+			if(!QDELETED(post_lamp))
+				qdel(post_lamp)
+	var/static/list/lamp_spots = list(-5, 35)
+	while(length(lamps) < 2)
+		var/obj/effect/rig_bay_lamp/post_lamp = new(loc)
+		post_lamp.pixel_w = lamp_spots[length(lamps) + 1]
+		post_lamp.show(lamp)
+		lamps += post_lamp
 
 /obj/structure/rig_bay_stand/update_overlays()
 	. = ..()
@@ -75,25 +101,22 @@
 		part.pixel_w = offset[1]
 		part.pixel_z = offset[2]
 		. += part
-	// A lamp on each post, just under the bar.
-	for(var/lamp_x in list(-5, 35))
-		var/mutable_appearance/light = mutable_appearance(icon_file, "lamp_[lamp]", RIG_BAY_GANTRY_LAYER, src)
-		light.pixel_w = lamp_x
-		light.pixel_z = 20
-		. += light
-		if(lamp == "grey")
-			continue
-		var/mutable_appearance/glow = emissive_appearance(icon_file, "lamp_[lamp]", src, RIG_BAY_GANTRY_LAYER)
-		glow.pixel_w = lamp_x
-		glow.pixel_z = 20
-		. += glow
 
-/// Sets the post lamps.
+/// Sets the post lamps now. Drops any lamp change still queued on the client, unless the lamps already show
+/// (or are queued to show) this colour.
 /obj/structure/rig_bay_stand/proc/set_lamp(new_lamp)
-	if(lamp == new_lamp)
-		return
 	lamp = new_lamp
-	update_appearance(UPDATE_OVERLAYS)
+	ensure_chains()
+	for(var/obj/effect/rig_bay_lamp/post_lamp as anything in lamps)
+		post_lamp.show(new_lamp)
+
+/// Queues the post lamps to turn `new_lamp` `delay` ds from now, on the client, in step with the move's other
+/// animate() chains. Only between lit colours. The server's `lamp` follows later through set_lamp().
+/obj/structure/rig_bay_stand/proc/queue_lamp(new_lamp, delay)
+	ensure_chains()
+	for(var/obj/effect/rig_bay_lamp/post_lamp as anything in lamps)
+		animate(post_lamp, time = delay)
+		animate(icon_state = "lamp_[new_lamp]", time = 1)
 
 /// A mech that leaves (driven off, deleted) takes nothing with it: the chains go back up to the bar.
 /obj/structure/rig_bay_stand/forget_mech()
@@ -139,9 +162,11 @@
 		animate(pixel_z = top - lift, time = 4)
 		chain.queue_length_steps(length, RIG_BAY_CHAIN_STOWED, 4)
 		chain.length = RIG_BAY_CHAIN_STOWED
+	queue_lamp("green", 11)
 	addtimer(CALLBACK(src, PROC_REF(end_release), mech, on_done), 1.1 SECONDS)
 
-/// Release end: makes sure the mech is on the floor, lamps green, then hands over.
+/// Release end: makes sure the mech is on the floor and the lamps are green (the client already turned them),
+/// then hands over.
 /obj/structure/rig_bay_stand/proc/end_release(obj/vehicle/sealed/mecha/mech, datum/callback/on_done)
 	if(!QDELETED(mech))
 		mech.pixel_z = 0
@@ -203,6 +228,7 @@
 		animate(pixel_z = RIG_BAY_CHAIN_TOP, time = 4)
 		chain.anchor_x = anchor[1]
 		chain.length = hang
+	queue_lamp("red", 30)
 	addtimer(CALLBACK(src, PROC_REF(end_beam_in), mech, on_done), 3 SECONDS)
 
 /// Beam-in end: settles the hang pose (lamps red), then hands over.
@@ -302,6 +328,36 @@
 	for(var/step in 1 to steps)
 		animate(icon_state = "chain_[round(from_length + (to_length - from_length) * step / steps)]", time = time / steps)
 
+/// One lamp on a Rig Bay gantry post, just under the bar. Pure visual; the stand owns it. A separate object
+/// (not an overlay) so a release or beam-in can queue its colour change with animate().
+/obj/effect/rig_bay_lamp
+	name = "lamp"
+	icon = 'voidcrew/modules/trade/icons/rig_bay_stand.dmi'
+	icon_state = "lamp_grey"
+	layer = RIG_BAY_LAMP_LAYER
+	anchored = TRUE
+	pixel_z = 20
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	blocks_emissive = EMISSIVE_BLOCK_NONE
+	/// Whether the glow overlay is on. Every lit colour has the same shape, so one glow serves them all.
+	var/lit = FALSE
+
+/// Shows `colour` now. Does nothing when the lamp already shows it or is queued to (animate() sets the end
+/// state on the server at once), so a server-side settle never cuts a queued change short.
+/obj/effect/rig_bay_lamp/proc/show(colour)
+	var/new_state = "lamp_[colour]"
+	var/now_lit = colour != "grey"
+	if(icon_state == new_state && lit == now_lit)
+		return
+	animate(src)
+	icon_state = new_state
+	if(lit == now_lit)
+		return
+	lit = now_lit
+	cut_overlays()
+	if(lit)
+		add_overlay(emissive_appearance(icon, "lamp_red", src))
+
 /// The blue-white column a restocked mech beams in through: 1.5 tiles wide, 3 tall, standing on the pad.
 /// Sorts on the pad's row (pixel_z only), so it stays behind the mech and anything south of the stand.
 /obj/effect/rig_bay_beam_column
@@ -338,7 +394,7 @@
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "nothing"
 	layer = RIG_BAY_FRONT_LAYER
-	pixel_z = -6
+	pixel_z = -10
 	duration = 3 SECONDS
 
 /obj/effect/temp_visual/rig_bay_spark/Initialize(mapload)
@@ -347,6 +403,7 @@
 
 #undef RIG_BAY_CHAIN_LAYER
 #undef RIG_BAY_GANTRY_LAYER
+#undef RIG_BAY_LAMP_LAYER
 #undef RIG_BAY_BEAM_LAYER
 #undef RIG_BAY_FRONT_LAYER
 #undef RIG_BAY_CHAIN_TOP
