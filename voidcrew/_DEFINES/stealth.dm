@@ -174,10 +174,11 @@
 #define STEALTH_TORCH_REACH_DIAGONAL 2
 /// The pool's light power (its seclite blue takes it to about 1.2 white)
 #define STEALTH_TORCH_POWER 1.5
-/// The pool's light range with its centre 2.5 or more tiles off, 2 or more, and nearer (tg's least useful range)
+/// The pool's light range with its centre 2.5 or more tiles off, 2 or more, and nearer (sized so the guard's own
+/// tile stays under the dark line: data/stealth/STATUS.md, decision 39)
 #define STEALTH_TORCH_RANGE_FAR 2.5
 #define STEALTH_TORCH_RANGE_MID 2
-#define STEALTH_TORCH_RANGE_NEAR MINIMUM_USEFUL_LIGHT_RANGE
+#define STEALTH_TORCH_RANGE_NEAR 1.7
 /// tg's seclite colour
 #define STEALTH_TORCH_COLOR "#99ccff"
 
