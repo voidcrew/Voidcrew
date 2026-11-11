@@ -8,17 +8,26 @@
  * Its actions are the two footer preferences and "select", which records the item the
  * viewer has open (SSvc_tutorials.selected) for the in-game highlight. It takes no refs
  * and never acts on the world.
+ *
+ * Autoupdate is off. Credits push updates themselves, and while the window is open a loop
+ * timer refreshes it and the viewer's highlights every TUTORIAL_LIVE_REFRESH, so live lines
+ * (step live_line(), computed only for the open item) and the arrow stay current.
  */
 
 /// Gap between spawning and the checklist opening, so it lands after the client has
 /// loaded into its body.
 #define TUTORIAL_CHECKLIST_DELAY (4 SECONDS)
+/// Gap between two live refreshes of an open checklist.
+#define TUTORIAL_LIVE_REFRESH (5 SECONDS)
 
 /// Ckeys who closed the checklist this round. It stays shut for them until next round.
 GLOBAL_LIST_EMPTY(tutorial_checklist_hidden)
 
 /// One datum for the whole server; tgui keys windows on (user, datum).
 GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
+
+/// ckey -> the loop timer refreshing that viewer's open checklist.
+GLOBAL_LIST_EMPTY(tutorial_live_timers)
 
 /datum/tutorial_checklist
 
@@ -30,11 +39,39 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 	if(!ui)
 		run_state_checks(user)
 		ui = new(user, src, "TutorialChecklist")
-		// Credits push updates themselves (SStgui.try_update_ui), so the window
-		// doesn't need to rebuild its notes every tick.
+		// Credits push updates themselves (SStgui.try_update_ui), and live lines
+		// refresh on their own slower loop, so the window doesn't rebuild every tick.
 		ui.set_autoupdate(FALSE)
 		ui.open()
+		start_live_refresh(user)
 		tutorial_refresh_highlights(user)
+		// The guide step is only known once the highlighter has run.
+		ui.send_update()
+
+/// Starts (or restarts) the viewer's live refresh loop.
+/datum/tutorial_checklist/proc/start_live_refresh(mob/user)
+	var/ckey = tutorial_viewer_ckey(user)
+	if(!ckey)
+		return
+	stop_live_refresh(ckey)
+	GLOB.tutorial_live_timers[ckey] = addtimer(CALLBACK(src, PROC_REF(live_refresh), ckey, WEAKREF(user)), TUTORIAL_LIVE_REFRESH, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
+
+/datum/tutorial_checklist/proc/stop_live_refresh(ckey)
+	var/timer = GLOB.tutorial_live_timers[ckey]
+	GLOB.tutorial_live_timers -= ckey
+	if(timer)
+		deltimer(timer)
+
+/// Loop timer landing point: refreshes the open window and the viewer's highlights, or
+/// stops once the window is gone.
+/datum/tutorial_checklist/proc/live_refresh(ckey, datum/weakref/user_ref)
+	var/mob/user = user_ref?.resolve()
+	var/datum/tgui/ui = user ? SStgui.get_open_ui(user, src) : null
+	if(!ui)
+		stop_live_refresh(ckey)
+		return
+	ui.send_update()
+	tutorial_refresh_highlights(user)
 
 /// Credits steps the viewer has already done but no hook saw.
 /datum/tutorial_checklist/proc/run_state_checks(mob/user)
@@ -105,8 +142,27 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 	data["done"] = done_keys
 	data["notes"] = notes
 	data["excused"] = excused
-	data["suggested"] = ckey ? SSvc_tutorials.suggested_item(ckey, user) : null
+	var/suggested = ckey ? SSvc_tutorials.suggested_item(ckey, user) : null
+	data["suggested"] = suggested
 	data["selected"] = ckey ? SSvc_tutorials.selected[ckey] : null
+	// Live lines, for the open item's undone steps only.
+	var/list/live = list()
+	var/open_id = data["selected"] || suggested
+	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
+		if(item.id != open_id)
+			continue
+		for(var/datum/vc_tutorial_step/step as anything in item.steps)
+			if(progress?[step.key])
+				continue
+			var/line = step.live_line(user)
+			if(line)
+				// The panel wraps it to two lines; this only stops a runaway string.
+				live[step.key] = copytext_char("[line]", 1, 161)
+		break
+	data["live"] = live
+	// The step the outlines, arrow and window focus follow, if the viewer has highlights.
+	var/datum/tutorial_highlight/highlight = ckey ? GLOB.tutorial_highlighters[ckey] : null
+	data["guide"] = highlight?.viewer == user ? highlight.step_key : null
 	data["spawn_open"] = user.client?.prefs ? !!user.client.prefs.read_preference(/datum/preference/toggle/tutorial_checklist) : TRUE
 	data["highlights"] = user.client?.prefs ? !!user.client.prefs.read_preference(/datum/preference/toggle/tutorial_highlights) : TRUE
 	return data
@@ -152,6 +208,7 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 	var/ckey = tutorial_viewer_ckey(user)
 	if(ckey)
 		GLOB.tutorial_checklist_hidden |= ckey
+		stop_live_refresh(ckey)
 	tutorial_refresh_highlights(user)
 
 /// The ckey whose progress a viewer sees.
@@ -191,3 +248,4 @@ GLOBAL_DATUM_INIT(tutorial_checklist, /datum/tutorial_checklist, new)
 	GLOB.tutorial_checklist.ui_interact(mob)
 
 #undef TUTORIAL_CHECKLIST_DELAY
+#undef TUTORIAL_LIVE_REFRESH

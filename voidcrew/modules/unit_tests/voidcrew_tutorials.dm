@@ -792,4 +792,191 @@
 	pirate.on_ship_destroyed()
 	TEST_ASSERT(!done("vc/pirates/shoot"), "A hull that had already failed was credited again")
 
+// ---------------------------------------------------------------------------
+// Guide step, candidates, window focus, arrow and live lines (tutorial_highlights.dm).
+// The steps below are test-only: they belong to no catalog item, so they never show in game.
+// ---------------------------------------------------------------------------
+
+/datum/vc_tutorial_step/unit_test_plain
+	key = "vc/test/plain"
+	name = "Nothing to point at"
+
+/datum/vc_tutorial_step/unit_test_closet
+	key = "vc/test/closet"
+	name = "Lockers"
+	highlight_types = list(/obj/structure/closet)
+	/// When set, only these candidates survive highlight_filter(), so map lockers don't count.
+	var/list/allowed
+	/// Returned by extra_targets().
+	var/list/extras = list()
+
+/datum/vc_tutorial_step/unit_test_closet/highlight_filter(mob/user, atom/candidate)
+	return !allowed || (candidate in allowed)
+
+/datum/vc_tutorial_step/unit_test_closet/extra_targets(mob/user)
+	return extras
+
+/datum/vc_tutorial_step/unit_test_focus
+	key = "vc/test/focus"
+	name = "Window only"
+	ui_focus = list("test_window" = "test_button")
+
+/datum/vc_tutorial_step/unit_test_mob
+	key = "vc/test/mob"
+	name = "People"
+	highlight_types = list(/mob/living/carbon/human)
+
+/datum/vc_tutorial_step/unit_test_live
+	key = "vc/test/live"
+	name = "Live"
+
+/datum/vc_tutorial_step/unit_test_live/live_line(mob/user)
+	return "Batteries at 12%"
+
+/// The guide step is the first undone step with something to point at, else the first undone
+/// step; mobs and turfs can be candidates; filters and extra targets apply; the viewer is never
+/// a candidate.
+/datum/unit_test/voidcrew_tutorials/guide_step/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/datum/vc_tutorial/item = new
+	item.id = "vc/test"
+	var/datum/vc_tutorial_step/unit_test_plain/plain = new
+	var/datum/vc_tutorial_step/unit_test_closet/closet_step = new
+	var/datum/vc_tutorial_step/unit_test_focus/focus_step = new
+
+	// Nothing to point at anywhere: the first undone step.
+	item.steps = list(plain)
+	TEST_ASSERT_EQUAL(tutorial_pick_guide_step(player, item), plain, "With nothing to point at, the first undone step was not the guide")
+	// A later step with a window focus beats an earlier one with nothing.
+	item.steps = list(plain, focus_step)
+	TEST_ASSERT_EQUAL(tutorial_pick_guide_step(player, item), focus_step, "A step with a window focus was skipped")
+	// A step with no lockers in reach is skipped; with one beside the player it is the guide.
+	item.steps = list(plain, closet_step, focus_step)
+	closet_step.allowed = list()
+	TEST_ASSERT_EQUAL(tutorial_pick_guide_step(player, item), focus_step, "A step with no lockers in reach was chosen")
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, deck)
+	closet_step.allowed = list(locker)
+	TEST_ASSERT_EQUAL(tutorial_pick_guide_step(player, item), closet_step, "The step with a locker beside the player was not the guide")
+	// Done steps are skipped.
+	SSvc_tutorials.progress[TUTORIAL_TEST_CKEY] = list("vc/test/closet" = TRUE)
+	TEST_ASSERT_EQUAL(tutorial_pick_guide_step(player, item), focus_step, "A done step stayed the guide")
+	reset_progress()
+
+	// Filter and extra targets.
+	var/obj/structure/closet/other_locker = allocate(/obj/structure/closet, run_loc_floor_top_right)
+	closet_step.allowed = null
+	var/list/candidates = tutorial_step_candidates(player, closet_step)
+	TEST_ASSERT((locker in candidates) && (other_locker in candidates), "Both lockers in view were not candidates")
+	closet_step.allowed = list(other_locker)
+	candidates = tutorial_step_candidates(player, closet_step)
+	TEST_ASSERT(!(locker in candidates) && (other_locker in candidates), "highlight_filter() did not drop the other locker")
+	closet_step.allowed = list(run_loc_floor_top_right)
+	closet_step.extras = list(run_loc_floor_top_right)
+	candidates = tutorial_step_candidates(player, closet_step)
+	TEST_ASSERT(run_loc_floor_top_right in candidates, "An extra_targets() turf was not a candidate")
+	closet_step.extras = list()
+
+	// Mobs: another person is a candidate, the viewer never is.
+	var/datum/vc_tutorial_step/unit_test_mob/mob_step = new
+	var/mob/living/carbon/human/consistent/patient = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
+	candidates = tutorial_step_candidates(player, mob_step)
+	TEST_ASSERT(patient in candidates, "A person in view was not a candidate")
+	TEST_ASSERT(!(player in candidates), "The viewer was a candidate for their own step")
+
+	// Turfs by type, and their outline is a frame on the turf.
+	var/datum/vc_tutorial_step/unit_test_plain/turf_step = new
+	turf_step.highlight_types = list(run_loc_floor_top_right.type)
+	candidates = tutorial_step_candidates(player, turf_step)
+	TEST_ASSERT(run_loc_floor_top_right in candidates, "A floor of the step's type was not a candidate")
+	var/datum/tutorial_highlight/highlight = new(player)
+	highlight.wanted_override = TRUE
+	var/image/frame = highlight.make_image(run_loc_floor_top_right)
+	TEST_ASSERT_EQUAL(frame.loc, run_loc_floor_top_right, "The turf frame is not on the turf")
+	TEST_ASSERT_EQUAL(frame.icon_state, "selector", "The turf outline is not the frame")
+	qdel(highlight)
+
+/// The default arrow target, the screen check, and where the arrow sits for a 21x15 view.
+/datum/unit_test/voidcrew_tutorials/arrow/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/list/view_size = getviewsize(world.view)
+	var/far_x = min(deck.x + 30, world.maxx)
+	var/turf/far = locate(far_x, deck.y, deck.z)
+	TEST_ASSERT(far_x - deck.x > (view_size[1] - 1) / 2, "The test map is too narrow for an off-screen target")
+	TEST_ASSERT(!tutorial_on_screen(deck, far, view_size), "A turf thirty tiles away counted as on screen")
+	TEST_ASSERT(tutorial_on_screen(deck, run_loc_floor_top_right, view_size), "A turf beside the player counted as off screen")
+	TEST_ASSERT_EQUAL(tutorial_default_arrow_target(player, list(far)), far, "The arrow did not point at an off-screen target")
+	TEST_ASSERT_NULL(tutorial_default_arrow_target(player, list(far, run_loc_floor_top_right)), "The arrow showed while a target was on screen")
+
+	var/atom/movable/screen/tutorial_arrow/arrow = allocate(/atom/movable/screen/tutorial_arrow)
+	arrow.point(10, 0, list(21, 15))
+	TEST_ASSERT_EQUAL(arrow.screen_loc, "CENTER+9:0,CENTER+0:0", "The arrow is not one tile in from the east edge")
+	arrow.point(-10, 0, list(21, 15))
+	TEST_ASSERT_EQUAL(arrow.screen_loc, "CENTER-9:0,CENTER+0:0", "The arrow is not one tile in from the west edge")
+	arrow.point(0, -20, list(21, 15))
+	TEST_ASSERT_EQUAL(arrow.screen_loc, "CENTER+0:0,CENTER-6:0", "The arrow is not one tile in from the south edge")
+
+/// tutorial_ui_focus() follows the viewer's guide step and is null with highlights off.
+/datum/unit_test/voidcrew_tutorials/ui_focus
+	var/datum/tutorial_highlight/highlight
+
+/datum/unit_test/voidcrew_tutorials/ui_focus/Destroy()
+	QDEL_NULL(highlight)
+	SSvc_tutorials.selected -= TUTORIAL_TEST_CKEY
+	return ..()
+
+/datum/unit_test/voidcrew_tutorials/ui_focus/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	make_crewed_ship(deck, player)
+	SSvc_tutorials.build_catalog()
+	SSvc_tutorials.selected[TUTORIAL_TEST_CKEY] = "vc/ship"
+	allocate(/obj/structure/closet, deck)
+	allocate(/obj/machinery/computer/helm, deck)
+
+	TEST_ASSERT_NULL(tutorial_ui_focus(player, "helm"), "A viewer with no highlights got a window focus")
+	highlight = new(player)
+	highlight.wanted_override = TRUE
+	highlight.rebuild(player)
+	TEST_ASSERT_NULL(tutorial_ui_focus(player, "helm"), "The helm was focused while the search step was the guide")
+	tutorial_credit(player, "vc/ship/search")
+	TEST_ASSERT_EQUAL(tutorial_ui_focus(player, "helm"), "helm_course", "The helm did not focus its heading pad for the course step")
+	TEST_ASSERT_NULL(tutorial_ui_focus(player, "weapons"), "A window the step has no focus for got one")
+	highlight.wanted_override = FALSE
+	highlight.rebuild(player)
+	TEST_ASSERT_NULL(tutorial_ui_focus(player, "helm"), "The window focus stayed with highlights off")
+
+/// The panel sends live lines for the open item's undone steps only.
+/datum/unit_test/voidcrew_tutorials/live_lines
+	var/datum/vc_tutorial/test_item
+
+/datum/unit_test/voidcrew_tutorials/live_lines/Destroy()
+	SSvc_tutorials.items -= test_item
+	SSvc_tutorials.selected -= TUTORIAL_TEST_CKEY
+	test_item = null
+	return ..()
+
+/datum/unit_test/voidcrew_tutorials/live_lines/Run()
+	var/mob/living/carbon/human/player = make_player(run_loc_floor_bottom_left)
+	SSvc_tutorials.build_catalog()
+	test_item = new
+	test_item.id = "vc/test"
+	test_item.steps = list(new /datum/vc_tutorial_step/unit_test_live)
+	SSvc_tutorials.items += test_item
+	SSvc_tutorials.selected[TUTORIAL_TEST_CKEY] = "vc/test"
+
+	var/list/data = GLOB.tutorial_checklist.ui_data(player)
+	var/list/live = data["live"]
+	TEST_ASSERT_EQUAL(live["vc/test/live"], "Batteries at 12%", "The open item's live line was not sent")
+	SSvc_tutorials.progress[TUTORIAL_TEST_CKEY] = list("vc/test/live" = TRUE)
+	data = GLOB.tutorial_checklist.ui_data(player)
+	live = data["live"]
+	TEST_ASSERT(!live["vc/test/live"], "A done step's live line was still sent")
+	SSvc_tutorials.selected[TUTORIAL_TEST_CKEY] = "vc/ship"
+	SSvc_tutorials.progress[TUTORIAL_TEST_CKEY] = list()
+	data = GLOB.tutorial_checklist.ui_data(player)
+	live = data["live"]
+	TEST_ASSERT(!live["vc/test/live"], "A live line was sent for an item that is not open")
+
 #undef TUTORIAL_TEST_CKEY

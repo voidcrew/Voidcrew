@@ -34,6 +34,10 @@ type Data = {
   items: Item[];
   done: string[];
   notes: Record<string, string>;
+  /** Live state lines for the open item's undone steps. */
+  live: Record<string, string>;
+  /** The step the outlines and in-window focus follow, or null. */
+  guide: string | null;
   excused: string[];
   suggested: string | null;
   selected: string | null;
@@ -100,6 +104,8 @@ export const TutorialChecklist = () => {
   const items = data.items || [];
   const categories = data.categories || [];
   const notes = data.notes || {};
+  const live = data.live || {};
+  const guide = data.guide || null;
   const suggested = data.suggested || null;
   const look: Lookup = {
     done: new Set(data.done || []),
@@ -242,7 +248,13 @@ export const TutorialChecklist = () => {
                           {selected.intro}
                         </Box>
                       ) : null}
-                      <StepList item={selected} look={look} notes={notes} />
+                      <StepList
+                        item={selected}
+                        look={look}
+                        notes={notes}
+                        live={live}
+                        guide={guide}
+                      />
                     </>
                   ) : null}
                 </Section>
@@ -298,11 +310,13 @@ type StepListProps = {
   item: Item;
   look: Lookup;
   notes: Record<string, string>;
+  live: Record<string, string>;
+  guide: string | null;
 };
 
 /** Steps in order. Routes get a box with "OR" between them and go quiet once another route is done. */
 const StepList = (props: StepListProps) => {
-  const { item, look, notes } = props;
+  const { item, look, notes, live, guide } = props;
   const groups = groupSteps(item.steps);
   const routeDone = (route: string) =>
     item.steps
@@ -320,6 +334,8 @@ const StepList = (props: StepListProps) => {
               done={look.done.has(step.key)}
               quiet={look.excused.has(step.key) && !notes[step.key]}
               note={notes[step.key]}
+              live={live[step.key]}
+              guided={step.key === guide}
             />
           ));
         }
@@ -364,6 +380,8 @@ const StepList = (props: StepListProps) => {
                   done={look.done.has(step.key)}
                   quiet={quiet}
                   note={notes[step.key]}
+                  live={live[step.key]}
+                  guided={step.key === guide}
                 />
               ))}
             </Box>
@@ -379,10 +397,14 @@ type StepRowProps = {
   done: boolean;
   quiet?: boolean;
   note?: string;
+  /** Live state, shown while the step is undone. */
+  live?: string;
+  /** The outlines and in-window focus point at this step. */
+  guided?: boolean;
 };
 
 const StepRow = (props: StepRowProps) => {
-  const { step, done, quiet, note } = props;
+  const { step, done, quiet, note, live, guided } = props;
   return (
     <Stack mb={1.5} style={{ opacity: quiet ? 0.6 : 1 }}>
       <Stack.Item>
@@ -395,6 +417,9 @@ const StepRow = (props: StepRowProps) => {
       <Stack.Item grow>
         <Box bold color={done ? 'label' : undefined}>
           {step.name}
+          {guided && !done ? (
+            <Icon name="location-crosshairs" color="green" ml={1} />
+          ) : null}
           {step.optional ? (
             <Box as="span" color="label" ml={1} bold={false}>
               (optional)
@@ -405,6 +430,20 @@ const StepRow = (props: StepRowProps) => {
         {!done && !!note ? (
           <Box color="average" italic>
             {note}
+          </Box>
+        ) : null}
+        {!done && !!live ? (
+          <Box
+            color="teal"
+            style={{
+              overflowWrap: 'anywhere',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {live}
           </Box>
         ) : null}
       </Stack.Item>

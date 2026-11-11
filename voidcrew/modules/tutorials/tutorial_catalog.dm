@@ -52,16 +52,53 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	var/route
 	/// The route's heading in the panel.
 	var/route_name
-	/// Atom types the in-game highlight outlines while this step's item is open. Empty when
-	/// no fixed object fits.
+	/// Atom types (objects, mobs or turfs) the in-game highlight outlines while this step is the
+	/// guide step. Empty when no fixed type fits; see extra_targets() and highlight_filter().
 	var/list/highlight_types
+	/// Window id -> focus key. While this is the viewer's guide step, a window whose ui_data sends
+	/// tutorial_ui_focus(user, window id) pulses the element wrapped in <TutorialFocus id={key}>.
+	/// Example: list("helm" = "helm_dock").
+	var/list/ui_focus
 
 /**
  * A short note shown under the step for this viewer, or null.
  * Machine scans are cached per ship by SSvc_tutorials.
+ * A note also tells suggested_item() the step can't be done yet; use live_line() for state.
  */
 /datum/vc_tutorial_step/proc/availability(mob/user)
 	return null
+
+/**
+ * A short line of live state shown under the step while it is undone, or null.
+ * Example: "Batteries at 12%". It is state, never rules. Plain text: React renders it as text,
+ * so don't html_encode it. Called only for the viewer's open item, about every 5 s while the
+ * panel is open. It never affects suggested_item().
+ */
+/datum/vc_tutorial_step/proc/live_line(mob/user)
+	return null
+
+/**
+ * TRUE to keep a highlight candidate (a highlight_types match or an extra_targets() entry).
+ * Example: only the unlinked machine, only the armed missile.
+ */
+/datum/vc_tutorial_step/proc/highlight_filter(mob/user, atom/candidate)
+	return TRUE
+
+/**
+ * Atoms to highlight besides highlight_types matches: specific mobs, turfs or objects.
+ * Only atoms on the viewer's z-level are used. Default empty.
+ */
+/datum/vc_tutorial_step/proc/extra_targets(mob/user)
+	return list()
+
+/**
+ * What the off-screen arrow points at, or null for no arrow. The arrow hides while the target
+ * is on the viewer's screen. The default is the nearest highlight candidate on the viewer's
+ * z-level within TUTORIAL_ARROW_RANGE tiles, and no arrow at all while any candidate is on
+ * screen. Override it for things that aren't highlight candidates (the nearest ruin).
+ */
+/datum/vc_tutorial_step/proc/arrow_target(mob/user)
+	return tutorial_default_arrow_target(user, tutorial_step_candidates(user, src))
 
 /**
  * TRUE when this step should not count toward its item for this viewer, for example
@@ -155,6 +192,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Set a course"
 	text = "At the helm, pick a heading, or click the map to fly there on autopilot."
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_course")
 
 /datum/vc_tutorial_step/ship_course/availability(mob/user)
 	return no_helm_note(user)
@@ -164,6 +202,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Dock"
 	text = "Fly onto a planet, outpost or ruin and press Dock at the helm."
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_dock")
 
 /datum/vc_tutorial_step/ship_dock/availability(mob/user)
 	return no_helm_note(user)
@@ -173,6 +212,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Undock"
 	text = "Press Undock at the helm to leave."
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_undock")
 
 /datum/vc_tutorial_step/ship_undock/availability(mob/user)
 	return no_helm_note(user)
@@ -766,6 +806,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Claim the hull"
 	text = "Clear out their crew, then claim the ship at its helm."
 	optional = TRUE
+	ui_focus = list("helm" = "helm_claim")
 
 // ---------------------------------------------------------------------------
 // Storage
@@ -873,6 +914,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Dock in a ship bay"
 	text = "Dock at a crew outpost that has ship bays."
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_dock_bay")
 
 /// Only the captain can save or load a ship.
 /datum/vc_tutorial_step/proc/captain_only_note(mob/user)
