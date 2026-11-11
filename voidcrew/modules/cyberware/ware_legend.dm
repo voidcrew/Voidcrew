@@ -252,7 +252,7 @@
 	steps_taken++
 	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
 		return
-	if(time_stop)
+	if(time_stop || dilated) // a surge that slowed the world keeps its green trail to the end of the window
 		stopped_afterimage(old_loc)
 		return
 	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
