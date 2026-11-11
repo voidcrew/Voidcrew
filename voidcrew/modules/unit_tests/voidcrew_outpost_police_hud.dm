@@ -4,7 +4,7 @@
  * literal values with a comment naming the define.
  */
 
-/// The wanted alert shows one to five stars at the outpost, blinks while the suspect is unseen or away, follows the stars signal and goes at none
+/// The wanted alert shows one to five stars at the outpost, blinks while the suspect is unseen or away, follows a change of stars and goes at none
 /datum/unit_test/voidcrew_outpost_police_hud
 
 /datum/unit_test/voidcrew_outpost_police_hud/Run()
@@ -60,12 +60,12 @@
 	police.update_hud(suspect_mind)
 	TEST_ASSERT(!suspect.has_alert(alert_category), "The wanted alert stayed at no stars")
 
-	// The stars signal alone puts it up (the wanted core sends it when stars change)
-	police_pin_warrant(police, suspect_mind, star_heat[2])
-	SEND_SIGNAL(police, "outpost_police_stars", suspect_mind, 0, 2) // COMSIG_OUTPOST_POLICE_STARS
+	// The wanted core's change of stars alone puts it up
+	var/datum/outpost_warrant/changed = police_pin_warrant(police, suspect_mind, star_heat[2])
+	police.stars_changed(changed, 0, 2)
 	var/atom/movable/screen/alert/outpost_wanted/signalled = suspect.alerts[alert_category]
-	TEST_ASSERT_NOTNULL(signalled, "The stars signal did not put the alert up")
-	TEST_ASSERT_EQUAL(signalled.icon_state, "wanted2", "The stars signal showed the wrong state")
+	TEST_ASSERT_NOTNULL(signalled, "A change of stars did not put the alert up")
+	TEST_ASSERT_EQUAL(signalled.icon_state, "wanted2", "A change of stars showed the wrong state")
 
 	// The alert reads its warrant again on its own: a blink that starts, then a warrant that is gone
 	warrant = police_pin_warrant(police, suspect_mind, star_heat[2])
