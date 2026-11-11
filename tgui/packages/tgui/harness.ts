@@ -485,6 +485,25 @@ const layout = (args: Args) => {
   const hasBorder = (s: CSSStyleDeclaration) =>
     SIDES.some((side) => borderWidth(s, side) >= 1);
 
+  /** True when something opaque is drawn over [el] at [point]: the first opaque layer above it isn't [el]'s own. */
+  const coveredAt = (el: Element, x: number, y: number) => {
+    for (const hit of document.elementsFromPoint(x, y)) {
+      if (hit === el || hit.contains(el) || el.contains(hit)) {
+        return false;
+      }
+      if (alphaOf(styleOf(hit).backgroundColor) >= 0.85) {
+        return true;
+      }
+    }
+    return false;
+  };
+  /** A box is covered (a popup over it, say) when its middle row is covered at both ends and the centre. */
+  const covered = (el: Element, box: Box) => {
+    const y = (box.t + box.b) / 2;
+    const xs = [box.l + 1, (box.l + box.r) / 2, box.r - 1];
+    return xs.every((x) => coveredAt(el, x, y));
+  };
+
   const findings: Finding[] = [];
   let total = 0;
   const seen = new Set<string>();
@@ -537,6 +556,10 @@ const layout = (args: Args) => {
         r: r.right,
         b: r.bottom - inset,
       };
+      // Text under a popup or another opaque panel can't be seen, so it can't collide either.
+      if (covered(el, line)) {
+        continue;
+      }
       let ownBox = false;
       for (let a: Element | null = el; a && line; a = a.parentElement) {
         if (a === document.documentElement || a === document.body) {
@@ -634,7 +657,7 @@ const layout = (args: Args) => {
       return width > maxLine ? 0 : width;
     });
     const push = (box: Box, across: boolean) => {
-      if (box.r - box.l >= 1 && box.b - box.t >= 1) {
+      if (box.r - box.l >= 1 && box.b - box.t >= 1 && !covered(el, box)) {
         strips.push({ el, box, across });
       }
     };
