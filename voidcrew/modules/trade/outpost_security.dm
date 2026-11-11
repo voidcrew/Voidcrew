@@ -141,6 +141,81 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		return
 	outpost.police?.report_crime(shooter, OUTPOST_CRIME_GUNFIRE, null, gun)
 
+// =========================================================================
+// BOMBS (decision 38)
+// =========================================================================
+// A blast at a trader outpost hurts people and wrecks loose and placed things as anywhere else. The outpost's own
+// floors and walls never react to it (the EX_ACT wrapper in code/__DEFINES/explosions.dm) and its property shrugs
+// it off (/datum/element/outpost_property). tg's explosion damage raises none of the attack signals above, so
+// propagate_blastwave() hands over who it caught here, and the bomb is an attack on each of them.
+
+/// Adds the living mobs on `blasted` to `victims` (made on first use) when it is trader outpost ground. Returns the list.
+/proc/note_outpost_blast_victims(turf/blasted, list/victims)
+	var/checked = FALSE
+	for(var/mob/living/victim in blasted)
+		if(!checked)
+			if(!is_trader_outpost_protected(blasted))
+				return victims
+			checked = TRUE
+		LAZYADD(victims, victim)
+	return victims
+
+/**
+ * Who set off a blast, by tg's own blame: the firer of a projectile (a mech's pilot), otherwise the last person to
+ * touch the explosive (fingerprintslast, the key tg's own explosion log names). Null when that is nobody living,
+ * or the cause is not an atom (a chemical reaction).
+ */
+/proc/outpost_bomber_of(atom/explosion_cause)
+	if(isprojectile(explosion_cause))
+		var/obj/projectile/shot = explosion_cause
+		if(isliving(shot.firer))
+			return shot.firer
+		if(ismecha(shot.firer))
+			var/obj/vehicle/sealed/mecha/mech = shot.firer
+			for(var/mob/living/pilot in mech.return_drivers())
+				return pilot
+			return null
+		explosion_cause = shot.firer
+	if(!isatom(explosion_cause) || !explosion_cause.fingerprintslast)
+		return null
+	var/mob/living/bomber = get_mob_by_ckey(explosion_cause.fingerprintslast)
+	return isliving(bomber) ? bomber : null
+
+/**
+ * A blast caught `victims` at a trader outpost: it is an attack by its bomber on each, through the same routes as a
+ * blow. Officers first, then the outpost's other people, then visitors, so the gravest crime is the one counted and
+ * the rest fold into it (report_crime()). Whether anyone saw the bomber is the police's call. Never sleeps.
+ */
+/datum/outpost_pvp_enforcement/proc/on_outpost_bombing(atom/explosion_cause, list/victims)
+	var/mob/living/bomber = outpost_bomber_of(explosion_cause)
+	if(!bomber?.mind)
+		return
+	var/obj/item/bomb = isitem(explosion_cause) ? explosion_cause : null
+	var/list/officers = list()
+	var/list/locals = list()
+	var/list/visitors = list()
+	for(var/mob/living/victim as anything in victims)
+		if(QDELETED(victim) || victim == bomber)
+			continue
+		if(istype(victim, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			officers += victim
+		else if(victim.mind && !istype(victim, /mob/living/carbon/human/npc))
+			visitors += victim
+		else
+			locals += victim
+	if(!length(officers) && !length(locals) && !length(visitors))
+		return
+	log_game("OUTPOST BOMBING: [key_name(bomber)] caught [length(officers) + length(locals) + length(visitors)] at [AREACOORD(victims[1])] with [explosion_cause].")
+	for(var/mob/living/officer as anything in officers)
+		// The bomb is the weapon. The signal alone would find none in the bomber's hands and call it resisting.
+		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(officer))
+		outpost?.police?.officer_struck(officer, bomber, ATTACKER_DAMAGING_ATTACK, bomb)
+		SEND_SIGNAL(officer, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
+	for(var/mob/living/local as anything in locals)
+		SEND_SIGNAL(local, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
+	for(var/mob/living/visitor as anything in visitors)
+		register_pvp_aggression(visitor, bomber, OUTPOST_CRIME_ASSAULT_ARMED, bomb)
+
 /**
  * # Outpost Airlock
  *
@@ -295,6 +370,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	var/obj/property = target
 	property.resistance_flags |= INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	property.AddElement(/datum/element/empprotection, EMP_PROTECT_ALL)
+	// A bomb (decision 38) skips it and whatever it holds: some types blow up or spill from their own ex_act()
+	// whatever their resistance flags, and a machine flagged after Initialize() misses its own parts guard
+	property.flags_1 |= PREVENT_CONTENTS_EXPLOSION_1
+	RegisterSignal(target, COMSIG_ATOM_PRE_EX_ACT, PROC_REF(block_blast))
 	// The RPD's unwrench upgrade and the construction console's Remove Pipe call wrench_act()
 	// directly, skipping the tool signal below; both still ask can_unwrench()
 	if(istype(target, /obj/machinery/atmospherics))
@@ -360,9 +439,14 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		COMSIG_ATOM_PREHITBY,
 		COMSIG_ATOM_HULK_ATTACK,
 		COMSIG_ATOM_ATTACK_MECH,
+		COMSIG_ATOM_PRE_EX_ACT,
 	))
 	REMOVE_TRAIT(source, TRAIT_OUTPOST_PROPERTY, ELEMENT_TRAIT(type))
 	return ..()
+
+/datum/element/outpost_property/proc/block_blast(obj/source, severity, target)
+	SIGNAL_HANDLER
+	return COMPONENT_CANCEL_EX_ACT
 
 /datum/element/outpost_property/proc/block_tool(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER

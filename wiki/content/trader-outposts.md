@@ -155,7 +155,7 @@ Turn them in at any outpost trader or at your own mission pad. Except courier ru
 
 ## Violence
 
-The walls, doors, glass and machines of an outpost cannot be broken. The people in it can. Traders, checkpoint guards, officers, shoppers, drinkers and the odd regular are all people, and can be hurt, cuffed, wounded and killed like anyone. What stops you is **outpost security**: officers who live at each outpost and answer anything they see.
+The walls, doors, glass and machines of an outpost cannot be broken, not even by a bomb. The people in it can, and so can anything they bring. A bomb that hurts someone is a crime like any other attack. Traders, checkpoint guards, officers, shoppers, drinkers and the odd regular are all people, and can be hurt, cuffed, wounded and killed like anyone. What stops you is **outpost security**: officers who live at each outpost and answer anything they see.
 
 Shoppers and regulars carry a little cash, and hurting them is a crime. Hurting a trader or a guard is a worse one.
 
