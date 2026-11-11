@@ -402,3 +402,25 @@
 	TEST_ASSERT_EQUAL(length(recovery.morgue_trays), 4, "The morgue room does not have its four trays")
 	TEST_ASSERT_EQUAL(recovery.closet_turf, wanted_spot(8, 8), "The janitor closet's floor was not recorded")
 	TEST_ASSERT(QDELETED(morgue_mark) && QDELETED(closet_mark), "The recovery landmarks were not consumed")
+
+/// Each real outpost map links one morgue with four trays and one janitor closet, and both rooms are closed off
+/datum/unit_test/voidcrew_outpost_recovery_real_rooms
+
+/datum/unit_test/voidcrew_outpost_recovery_real_rooms/Run()
+	for(var/outpost_type in list(
+		/obj/structure/overmap/trader_outpost/general,
+		/obj/structure/overmap/trader_outpost/outfitter,
+		/obj/structure/overmap/trader_outpost/black_market,
+	))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			continue
+		var/datum/outpost_recovery/recovery = outpost.recovery
+		TEST_ASSERT_NOTNULL(recovery, "[outpost_type] has no recovery")
+		TEST_ASSERT_NOTNULL(recovery.morgue_turf, "[outpost_type] linked no morgue")
+		TEST_ASSERT_EQUAL(length(recovery.morgue_trays), 4, "[outpost_type]'s morgue does not have four trays")
+		TEST_ASSERT_NOTNULL(recovery.closet_turf, "[outpost_type] linked no janitor closet")
+		TEST_ASSERT(recovery.back_rooms[recovery.morgue_turf], "[outpost_type]'s morgue is not a closed room")
+		TEST_ASSERT(recovery.back_rooms[recovery.closet_turf], "[outpost_type]'s janitor closet is not a closed room")
+		// The morgue and closet are small rooms behind doors (RECOVERY_ROOM_MAX is 60): never the lobby with them
+		TEST_ASSERT(length(recovery.back_rooms) <= 40, "[outpost_type]'s back rooms run out into the outpost ([length(recovery.back_rooms)] tiles)")

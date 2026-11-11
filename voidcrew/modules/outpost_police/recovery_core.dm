@@ -201,7 +201,8 @@
 /**
  * The floor of the room `start` stands in: open tiles reached without passing a wall, a door, a window or a grille
  * (turf = TRUE). Read from the map's objects, so it works before the atoms initialise. A room bigger than
- * RECOVERY_ROOM_MAX is no back room (a missing door or wall on the map): empty, and a mapping log line.
+ * RECOVERY_ROOM_MAX is no back room (a missing door or wall on the map): empty, and a game log line (not
+ * log_mapping(): a test floor with hand-placed landmarks is one open room).
  */
 /datum/outpost_recovery/proc/room_floor(turf/start)
 	. = list()
@@ -220,7 +221,7 @@
 			floor[next] = TRUE
 			queue += next
 			if(length(floor) > RECOVERY_ROOM_MAX)
-				log_mapping("[outpost] has no closed room round [AREACOORD(start)]")
+				log_game("OUTPOST RECOVERY: [outpost] has no closed room round [AREACOORD(start)]")
 				return
 	return floor
 
