@@ -26,7 +26,7 @@
 		return
 	tutorial_credit(user, TUTORIAL_STEP_TRADE_BUY)
 	var/bought = sku.item_path
-	if(ispath(bought, /obj/item/organ/cyberimp) || ispath(bought, /obj/item/organ/eyes/robotic/cyberware) || ispath(bought, /obj/item/autosurgeon))
+	if(tutorial_is_chrome_path(bought))
 		tutorial_credit(user, TUTORIAL_STEP_CHROME_BUY)
 
 /datum/shop_sku/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)

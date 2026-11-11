@@ -6,6 +6,7 @@ import { type BooleanLike, classes } from 'tgui-core/react';
 
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
+import { TutorialFocus } from '../components/TutorialFocus';
 import { Window } from '../layouts';
 import {
   BROWNOUT_COLOR,
@@ -131,6 +132,7 @@ type Data = {
   ink: Ink | null;
   groups: Group[];
   tray_count: number;
+  tutorial_focus?: string | null;
 };
 
 const TIER_NAMES: Record<number, string> = {
@@ -309,7 +311,9 @@ const LoadRail = () => {
               className="Cradle__loadCell"
               style={{
                 width: `${(segment.load / scale) * 100}%`,
-                backgroundColor: brownout ? BROWNOUT_COLOR : segmentColor(segment),
+                backgroundColor: brownout
+                  ? BROWNOUT_COLOR
+                  : segmentColor(segment),
               }}
             />
           </Tooltip>
@@ -369,9 +373,7 @@ const Rack = () => {
   const { groups, has_occupant } = data;
 
   if (!has_occupant) {
-    return (
-      <div className="Cradle__empty">The rack is dark.</div>
-    );
+    return <div className="Cradle__empty">The rack is dark.</div>;
   }
 
   return (
@@ -425,6 +427,13 @@ const Tile = (props: { ware: Ware }) => {
   const { act, data } = useBackend<Data>();
   const picked = data.selected === ware.ref;
   const fault = faultLabel(ware);
+  // The tutorial points at the first part that fits until one is picked. Set on the button by hand:
+  // the Tooltip clones its child, so a TutorialFocus wrapper there would swallow its hover props.
+  const tutorialPulse =
+    data.tutorial_focus === 'cradle_install' &&
+    !!data.occupant_is_user &&
+    !data.selected &&
+    firstFittingRef(data.groups) === ware.ref;
 
   return (
     <Tooltip content={<TileCard ware={ware} />} position="right">
@@ -435,6 +444,7 @@ const Tile = (props: { ware: Ware }) => {
           !!ware.installed && 'Cradle__tile--installed',
           picked && 'Cradle__tile--picked',
           !ware.installed && !ware.fits && 'Cradle__tile--nofit',
+          tutorialPulse && 'TutorialFocus',
         ])}
         style={{ borderColor: tierColor(ware.tier) }}
         onClick={() => act('select', { ref: ware.ref })}
@@ -454,6 +464,16 @@ const Tile = (props: { ware: Ware }) => {
     </Tooltip>
   );
 };
+
+/** The first part not yet installed that fits, in rack order, or null. */
+function firstFittingRef(groups: Group[]): string | null {
+  for (const group of groups) {
+    for (const ware of group.ware) {
+      if (!ware.installed && ware.fits) return ware.ref;
+    }
+  }
+  return null;
+}
 
 /**
  * What a tile says on hover: the whole card without having to commit a click.
@@ -516,9 +536,7 @@ const Detail = () => {
     .find((entry) => entry.ref === selected);
 
   if (!ware) {
-    return (
-      <div className="Cradle__empty">Nothing selected.</div>
-    );
+    return <div className="Cradle__empty">Nothing selected.</div>;
   }
 
   // Only the occupant, conscious and unrestrained, may order work on their own
@@ -613,14 +631,16 @@ const Detail = () => {
             EXTRACT
           </ActionButton>
         ) : (
-          <ActionButton
-            tone="good"
-            disabled={!mayOperate || !ware.fits}
-            hint={ware.fits ? undefined : 'No neural headroom.'}
-            onClick={() => act('install', { ref: ware.ref })}
-          >
-            INSTALL
-          </ActionButton>
+          <TutorialFocus id={data.occupant_is_user ? 'cradle_install' : ''}>
+            <ActionButton
+              tone="good"
+              disabled={!mayOperate || !ware.fits}
+              hint={ware.fits ? undefined : 'No neural headroom.'}
+              onClick={() => act('install', { ref: ware.ref })}
+            >
+              INSTALL
+            </ActionButton>
+          </TutorialFocus>
         )}
       </div>
 
@@ -708,9 +728,10 @@ const ActionButton = (props: {
   disabled?: boolean;
   hint?: string;
   onClick: () => void;
+  className?: string;
   children;
 }) => {
-  const { tone, disabled, hint, onClick, children } = props;
+  const { tone, disabled, hint, onClick, className, children } = props;
   return (
     <button
       type="button"
@@ -720,6 +741,7 @@ const ActionButton = (props: {
         'Cradle__action',
         `Cradle__action--${tone}`,
         disabled && 'Cradle__action--off',
+        className,
       ])}
       onClick={() => !disabled && onClick()}
     >
