@@ -868,6 +868,7 @@
 		return
 	placing = TRUE
 	bearer.stop_pulling()
+	var/turf/stood = victim.loc
 	if(victim.loc != spot)
 		var/passtable_key = REF(src)
 		if(table)
@@ -875,6 +876,9 @@
 		victim.Move(spot, get_dir(victim, spot))
 		if(table)
 			passtable_off(victim, passtable_key)
+	if(victim.loc != spot && victim.loc != stood && isturf(stood))
+		// A diagonal move goes a step at a time: one that got half way was never there, it never left the hoist
+		victim.forceMove(stood)
 	placing = FALSE
 	if(victim.loc != spot)
 		// Something stopped them getting there
