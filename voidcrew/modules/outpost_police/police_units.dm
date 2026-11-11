@@ -3,21 +3,76 @@
  *
  * Owner: P2. The officer bodies (types are declared in police_core.dm: /police/beat, /sergeant, /officer,
  * /tactical, /marshal), their kit, the three zone profiles and the police cuffs. Spec 5.1 and 5.5.
+ *
+ * An officer is a real human NPC (voidcrew/modules/human_npcs/) and an ambient outpost NPC. They take damage,
+ * bleed, crit, get cuffed and die through tg's own code, like a player. What is different, all documented
+ * here:
+ * - Their kit is locked to their body (human_npc_gear.dm) and they drop nothing when killed or gibbed: no
+ *   cash, no loot, no item a player can hold (abuse M8). The ID card carries ACCESS_OUTPOST_POLICE, which
+ *   opens the police doors, and it is locked like the rest.
+ * - Hitting one is a police matter, not the base NPC's "violence at the outpost" report: on_attacked() hands
+ *   the blow to police.officer_struck() and a cuff attempt goes to police.officer_cuff_attempt() (abuse M3).
+ * - They never duck, flee or take cover as bystanders (abuse M17).
+ * - Their leash is the whole outpost (concourse, lobby and hangars), not the concourse the base NPC keeps to.
  */
 
-// ===== PROFILES =====
+// =========================================================================
+// PROFILES
+// =========================================================================
 
-/// Waystation Halcyon (green)
+/**
+ * The base profile dresses its officers as Halcyon's do, so an outpost with no profile of its own (a test's
+ * plain outpost) still has officers in uniform. The three zones below set every var.
+ */
+/datum/outpost_police_profile
+	outfits = list(
+		POLICE_UNIT_BEAT = /datum/outfit/outpost_police/beat/halcyon,
+		POLICE_UNIT_SERGEANT = /datum/outfit/outpost_police/sergeant/halcyon,
+		POLICE_UNIT_OFFICER = /datum/outfit/outpost_police/officer/halcyon,
+		POLICE_UNIT_TACTICAL = /datum/outfit/outpost_police/tactical/halcyon,
+		POLICE_UNIT_MARSHAL = /datum/outfit/outpost_police/marshal/halcyon,
+	)
+
+/// Waystation Halcyon (green): by the book, navy, spares the downed
 /datum/outpost_police_profile/halcyon
+	force_name = "Halcyon Port Authority"
+	beat_count = 3
+	fine_multiplier = 1
+	comply_time = 4 SECONDS
+	spares_downed = TRUE
 	voice_section = "halcyon"
 
-/// Quartermain Depot (yellow)
+/// Quartermain Depot (yellow): clipped, corporate grey, spares the downed
 /datum/outpost_police_profile/quartermain
+	force_name = "Quartermain Depot Security"
+	beat_count = 2
+	fine_multiplier = 1.5
+	comply_time = 3 SECONDS
+	spares_downed = TRUE
 	voice_section = "quartermain"
+	outfits = list(
+		POLICE_UNIT_BEAT = /datum/outfit/outpost_police/beat/quartermain,
+		POLICE_UNIT_SERGEANT = /datum/outfit/outpost_police/sergeant/quartermain,
+		POLICE_UNIT_OFFICER = /datum/outfit/outpost_police/officer/quartermain,
+		POLICE_UNIT_TACTICAL = /datum/outfit/outpost_police/tactical/quartermain,
+		POLICE_UNIT_MARSHAL = /datum/outfit/outpost_police/marshal/quartermain,
+	)
 
-/// The Undertow Exchange (red)
+/// The Undertow Exchange (red): bored, mean, black, finishes the downed
 /datum/outpost_police_profile/undertow
+	force_name = "the Exchange's wardens"
+	beat_count = 2
+	fine_multiplier = 2
+	comply_time = 2 SECONDS
+	spares_downed = FALSE
 	voice_section = "undertow"
+	outfits = list(
+		POLICE_UNIT_BEAT = /datum/outfit/outpost_police/beat/undertow,
+		POLICE_UNIT_SERGEANT = /datum/outfit/outpost_police/sergeant/undertow,
+		POLICE_UNIT_OFFICER = /datum/outfit/outpost_police/officer/undertow,
+		POLICE_UNIT_TACTICAL = /datum/outfit/outpost_police/tactical/undertow,
+		POLICE_UNIT_MARSHAL = /datum/outfit/outpost_police/marshal/undertow,
+	)
 
 /// The profile for this outpost's zone (called once, from /datum/outpost_police/New())
 /datum/outpost_police/proc/make_profile()
@@ -29,22 +84,381 @@
 		return new /datum/outpost_police_profile/undertow
 	return new /datum/outpost_police_profile
 
-// ===== KIT =====
+// =========================================================================
+// ID
+// =========================================================================
 
-/// Police cuffs: the pair put on a suspect is /used
+/**
+ * What an officer's ID carries. The access is a plain string no tg trim knows, so it has to come from a trim
+ * of its own: a card takes a trim's access as it is, while one added to a card afterwards is asked to fit a
+ * wildcard slot, finds none for a string tg has no flag for, and is refused.
+ */
+/datum/id_trim/outpost_police
+	assignment = "Outpost Police"
+	trim_state = "trim_securityofficer"
+	department_color = COLOR_SECURITY_RED
+	subdepartment_color = COLOR_SECURITY_RED
+	sechud_icon_state = SECHUD_SECURITY_OFFICER
+	access = list(ACCESS_OUTPOST_POLICE)
+
+// =========================================================================
+// KIT
+// =========================================================================
+
+/**
+ * The cuffs an officer carries. Putting them on someone always dispenses a fresh pair (/used) and keeps the
+ * officer's own, so the pair in the belt is never lost. The pair on the suspect is DROPDEL: it is gone the
+ * moment it comes off, so nobody ends up holding police cuffs (abuse M8). Never sold, printed or crafted.
+ */
 /obj/item/restraints/handcuffs/outpost_police
+	name = "police handcuffs"
+	desc = "Handcuffs with a police stamp."
+	custom_price = null
+	custom_materials = null
+	trashtype = /obj/item/restraints/handcuffs/outpost_police/used
 
-/// The pair on a suspect; gone when it comes off
+/**
+ * Tg's apply_cuffs() with `dispense` forced on, but without taking the officer's own pair out of its hand
+ * first (tg does that before it looks at `dispense`, which leaves a pair held in a hand sitting unslotted in
+ * the officer). The suspect gets the same thing: a pair of `trashtype` on their wrists.
+ */
+/obj/item/restraints/handcuffs/outpost_police/apply_cuffs(mob/living/carbon/target, mob/user, dispense = FALSE)
+	if(target.handcuffed)
+		return
+	target.equip_to_slot(new trashtype(), ITEM_SLOT_HANDCUFFED)
+
+/// The pair on a suspect. Gone when it comes off, and it cuffs nobody itself.
 /obj/item/restraints/handcuffs/outpost_police/used
+	item_flags = parent_type::item_flags | DROPDEL
+	trashtype = null
+
+/obj/item/restraints/handcuffs/outpost_police/used/attack()
+	return
+
+/obj/item/restraints/handcuffs/outpost_police/used/apply_cuffs(mob/living/carbon/target, mob/user, dispense = FALSE)
+	return
+
+// ----- outfits -----
+// Built from clothing that already exists (npc-outfit skill), each worn look checked on a mannequin.
+// Every outfit has a uniform, so each one equips on its own (tg's outfit_sanity test builds them all).
+// Halcyon is navy, Quartermain corporate grey, the Undertow black. The ID, headset, baton, cuffs and an
+// energy gun are on every officer; response officers add a vest, a helmet and sunglasses; the tactical
+// officer and the marshal add a gas mask, flash-proof eyewear and a ballistic long gun (abuse M5: no gas
+// or flash trick, and no energy weapon for an EMP to take).
+
+/// Every officer: radio, an ID that opens the police doors, a belt with baton and cuffs, an energy gun in a pocket
+/datum/outfit/outpost_police
+	name = "Outpost Police"
+	uniform = /obj/item/clothing/under/rank/security/officer/spacepol
+	shoes = /obj/item/clothing/shoes/jackboots
+	gloves = /obj/item/clothing/gloves/color/black
+	ears = /obj/item/radio/headset/headset_sec
+	belt = /obj/item/storage/belt/security
+	belt_contents = list(
+		/obj/item/melee/baton/security/loaded = 1,
+		/obj/item/restraints/handcuffs/outpost_police = 1,
+	)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
+	r_pocket = /obj/item/gun/energy/e_gun/mini
+
+// ----- beat officers: the uniform and a cap -----
+
+/datum/outfit/outpost_police/beat
+	name = "Outpost Police: beat officer"
+
+/datum/outfit/outpost_police/beat/halcyon
+	name = "Outpost Police: Halcyon beat officer"
+	head = /obj/item/clothing/head/hats/warden/police
+
+/datum/outfit/outpost_police/beat/quartermain
+	name = "Outpost Police: Quartermain beat officer"
+	uniform = /obj/item/clothing/under/rank/security/officer/grey
+	head = /obj/item/clothing/head/soft/sec
+
+/datum/outfit/outpost_police/beat/undertow
+	name = "Outpost Police: Undertow beat officer"
+	uniform = /obj/item/clothing/under/syndicate
+	head = /obj/item/clothing/head/soft/black
+
+// ----- desk sergeants: the beat look under a drill hat -----
+
+/datum/outfit/outpost_police/sergeant
+	name = "Outpost Police: desk sergeant"
+	head = /obj/item/clothing/head/hats/warden/drill
+
+/datum/outfit/outpost_police/sergeant/halcyon
+	name = "Outpost Police: Halcyon desk sergeant"
+
+/datum/outfit/outpost_police/sergeant/quartermain
+	name = "Outpost Police: Quartermain desk sergeant"
+	uniform = /obj/item/clothing/under/rank/security/officer/grey
+
+/datum/outfit/outpost_police/sergeant/undertow
+	name = "Outpost Police: Undertow desk sergeant"
+	uniform = /obj/item/clothing/under/syndicate
+
+// ----- response officers: a vest, a helmet and sunglasses (abuse M5) -----
+
+/datum/outfit/outpost_police/officer
+	name = "Outpost Police: response officer"
+	glasses = /obj/item/clothing/glasses/sunglasses
+
+/datum/outfit/outpost_police/officer/halcyon
+	name = "Outpost Police: Halcyon response officer"
+	suit = /obj/item/clothing/suit/armor/vest/blueshirt
+	head = /obj/item/clothing/head/helmet/blueshirt
+
+/datum/outfit/outpost_police/officer/quartermain
+	name = "Outpost Police: Quartermain response officer"
+	uniform = /obj/item/clothing/under/rank/security/officer/grey
+	suit = /obj/item/clothing/suit/armor/vest/alt/sec
+	head = /obj/item/clothing/head/helmet/sec
+
+/datum/outfit/outpost_police/officer/undertow
+	name = "Outpost Police: Undertow response officer"
+	uniform = /obj/item/clothing/under/syndicate
+	suit = /obj/item/clothing/suit/armor/vest/leather
+	head = /obj/item/clothing/head/helmet/alt
+
+// ----- tactical officers: riot armour, a gas mask, a flash-proof visor and the zone's long gun -----
+
+/// The shared tactical kit. Spare rounds ride in a backpack, a flashbang joins the belt, the long gun is in hand.
+/datum/outfit/outpost_police/tactical
+	name = "Outpost Police: tactical officer"
+	suit = /obj/item/clothing/suit/armor/riot
+	mask = /obj/item/clothing/mask/gas/sechailer
+	glasses = /obj/item/clothing/glasses/sunglasses
+	back = /obj/item/storage/backpack/security
+	belt_contents = list(
+		/obj/item/melee/baton/security/loaded = 1,
+		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/grenade/flashbang = 1,
+	)
+
+/// Halcyon's ballistic rifle
+/datum/outfit/outpost_police/tactical/halcyon
+	name = "Outpost Police: Halcyon tactical officer"
+	head = /obj/item/clothing/head/helmet/blueshirt
+	r_hand = /obj/item/gun/ballistic/automatic/ar
+	backpack_contents = list(/obj/item/ammo_box/magazine/m223 = 3)
+
+/// Quartermain's combat shotgun
+/datum/outfit/outpost_police/tactical/quartermain
+	name = "Outpost Police: Quartermain tactical officer"
+	uniform = /obj/item/clothing/under/rank/security/officer/grey
+	head = /obj/item/clothing/head/helmet/sec
+	r_hand = /obj/item/gun/ballistic/shotgun/automatic/combat
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 2)
+
+/// The Undertow's WT-550
+/datum/outfit/outpost_police/tactical/undertow
+	name = "Outpost Police: Undertow tactical officer"
+	uniform = /obj/item/clothing/under/syndicate
+	head = /obj/item/clothing/head/helmet/alt
+	r_hand = /obj/item/gun/ballistic/automatic/wt550
+	backpack_contents = list(/obj/item/ammo_box/magazine/wt550m9 = 3)
+
+// ----- the marshal: heavy plate, and the same long gun as the zone's tactical officer -----
+
+/datum/outfit/outpost_police/marshal
+	name = "Outpost Police: marshal"
+	suit = /obj/item/clothing/suit/armor/vest/marine/security
+	head = /obj/item/clothing/head/helmet/marine/security
+	mask = /obj/item/clothing/mask/gas/sechailer
+	glasses = /obj/item/clothing/glasses/sunglasses
+	back = /obj/item/storage/backpack/security
+	belt_contents = list(
+		/obj/item/melee/baton/security/loaded = 1,
+		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/grenade/flashbang = 1,
+	)
+
+/datum/outfit/outpost_police/marshal/halcyon
+	name = "Outpost Police: Halcyon marshal"
+	r_hand = /obj/item/gun/ballistic/automatic/ar
+	backpack_contents = list(/obj/item/ammo_box/magazine/m223 = 3)
+
+/datum/outfit/outpost_police/marshal/quartermain
+	name = "Outpost Police: Quartermain marshal"
+	uniform = /obj/item/clothing/under/rank/security/officer/grey
+	r_hand = /obj/item/gun/ballistic/shotgun/automatic/combat
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 2)
+
+/datum/outfit/outpost_police/marshal/undertow
+	name = "Outpost Police: Undertow marshal"
+	uniform = /obj/item/clothing/under/syndicate
+	r_hand = /obj/item/gun/ballistic/automatic/wt550
+	backpack_contents = list(/obj/item/ammo_box/magazine/wt550m9 = 3)
+
+// =========================================================================
+// THE BODIES
+// =========================================================================
+
+/**
+ * What every officer is, whatever the unit: nothing drops (cash, loot or kit), the body goes in three minutes,
+ * kit locked to the body. The outfit set on each unit below is Halcyon's; Initialize() swaps in the zone's.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police
+	dialogue_file = AMBIENT_STRINGS_POLICE
+	outfit = /datum/outfit/outpost_police/beat/halcyon
+	// Nothing drops (abuse M8): the base NPC's cash and loot, and the human NPC base's
+	death_cash_low = 0
+	death_cash_high = 0
+	death_loot = null
+	npc_death_cash = 0
+	npc_death_loot = null
+	// Kit locked to the body (human_npc_gear.dm)
+	npc_gear_locked = TRUE
+	npc_corpse_lifetime = OUTPOST_POLICE_CORPSE_LIFETIME
+	// Whom they leave down; set from the profile at Initialize(). Whom they go for is police_force.dm's.
+	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat
+	outfit = /datum/outfit/outpost_police/beat/halcyon
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant
+	outfit = /datum/outfit/outpost_police/sergeant/halcyon
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer
+	outfit = /datum/outfit/outpost_police/officer/halcyon
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical
+	outfit = /datum/outfit/outpost_police/tactical/halcyon
+
+/// The top of the ladder: an elite (aimed crits), in heavy plate
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/marshal
+	outfit = /datum/outfit/outpost_police/marshal/halcyon
+	npc_rank = HUMAN_NPC_RANK_ELITE
+
+/**
+ * The outpost they are built at, its police and that zone's profile decide what they wear, what they say
+ * and whom they leave down; all of it is read before the base builds the body. One built where there is no
+ * outpost (a test's bare floor) wears Halcyon's and answers to nobody.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/Initialize(mapload, datum/human_npc_order/order)
+	var/datum/outpost_police_profile/kit = kit_profile()
+	var/kit_outfit = kit.outfits[unit_kind]
+	if(ispath(kit_outfit, /datum/outfit))
+		outfit = kit_outfit
+	npc_target_stat = kit.spares_downed ? HUMAN_NPC_SPARES_DOWNED : HUMAN_NPC_FINISHES_DOWNED
+	dialogue_section = kit.voice_section
+	. = ..()
+	ban_from_containment()
+	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempt))
+	// Their ID reads their name, as a person's does
+	var/obj/item/card/id/card = wear_id
+	if(istype(card))
+		card.registered_name = real_name
+		card.update_label()
+	desc = "[unit_title()], [kit.force_name]."
+	// On the roster of the police who keep this outpost, if any (roles and dispatch add them as well: no harm)
+	home_police()?.add_officer(src)
+
+/// The outpost they stand at, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/home_outpost()
+	return police?.outpost || get_trader_outpost_for_turf(get_turf(src))
+
+/// The police of the outpost they stand at, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/home_police()
+	return police || home_outpost()?.ensure_police()
+
+/// This zone's profile, or Halcyon's where they stand at no outpost
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/kit_profile()
+	var/datum/outpost_police/keepers = home_police()
+	if(keepers?.profile)
+		return keepers.profile
+	return human_npc_singleton(/datum/outpost_police_profile/halcyon)
+
+/// What a person would call them
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/unit_title()
+	switch(unit_kind)
+		if(POLICE_UNIT_SERGEANT)
+			return "Desk sergeant"
+		if(POLICE_UNIT_OFFICER)
+			return "Response officer"
+		if(POLICE_UNIT_TACTICAL)
+			return "Tactical officer"
+		if(POLICE_UNIT_MARSHAL)
+			return "Marshal"
+	return "Beat officer"
+
+/// Their body lies three minutes (the base asks this in death(); a trader outpost's own five would win otherwise)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/corpse_lifetime()
+	return OUTPOST_POLICE_CORPSE_LIFETIME
+
+// ----- being struck -----
+
+/**
+ * Someone hit, shot, shoved or stunned them. The police are told (abuse M3: a stamina blow or a shove counts,
+ * not only damage). The base NPC's own report, "a visitor was hurt", is left out: an officer struck is a crime
+ * of its own kind and would otherwise count twice.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/on_attacked(datum/source, atom/attacker, attack_flags)
+	SIGNAL_HANDLER
+	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))
+		return
+	police?.officer_struck(src, attacker, attack_flags)
+	react_attacked(attacker)
+
+/// Someone is putting cuffs on them (abuse M3)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_cuff_attempt(datum/source, mob/living/user)
+	SIGNAL_HANDLER
+	if(user == src)
+		return
+	police?.officer_cuff_attempt(src, user)
+
+// ----- bystander reactions: they have none (abuse M17) -----
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/react_attacked(atom/attacker)
+	return
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/react_violence(mob/living/offender)
+	return
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/react_shootout(turf/refuge)
+	return
+
+// ----- the leash -----
+
+/// Anywhere on their outpost: the concourse, the lobby and the hangars, not the concourse only
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/leash_ok(turf/tile)
+	var/obj/structure/overmap/trader_outpost/keep = police?.outpost
+	if(!keep)
+		return ..()
+	tile = get_turf(tile)
+	if(!tile)
+		return FALSE
+	return get_trader_outpost_for_turf(tile) == keep
+
+/**
+ * Carried off their outpost with no way back. Never gone in front of a player: while anyone is within
+ * HUMAN_NPC_CORPSE_WATCH_RANGE they stay and carry on (their AI is on); out of every player's sight they are
+ * deleted. Rostering and the caps are police_dispatch.dm's (abuse M12).
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/give_up_leash()
+	if(human_npc_watched(src))
+		return
+	fade_out(instant = TRUE)
+
+// ----- what they carry -----
 
 /// Their baton, or null
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/get_baton()
 	return locate(/obj/item/melee/baton) in get_all_contents()
 
-/// Their cuffs, or null
+/// Their own cuffs: not the pair they may be wearing themselves, nor a pair already on someone
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/get_cuffs()
-	return locate(/obj/item/restraints/handcuffs) in get_all_contents()
+	for(var/obj/item/restraints/handcuffs/cuffs in get_all_contents())
+		if(cuffs == handcuffed || istype(cuffs, /obj/item/restraints/handcuffs/outpost_police/used))
+			continue
+		return cuffs
+	return null
 
-/// Their sidearm, or null
+/// Their energy gun (every officer has one), or null
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/get_sidearm()
 	return locate(/obj/item/gun/energy) in get_all_contents()
+
+/// The tactical officer's and the marshal's ballistic long gun, or null for anyone else
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/get_longgun()
+	return locate(/obj/item/gun/ballistic) in get_all_contents()
