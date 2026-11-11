@@ -112,7 +112,7 @@
 	TEST_ASSERT_NOTNULL(arm, "one rifle bolt melted an unhurt arm")
 	TEST_ASSERT_NOTNULL(arm?.get_wound_type(/datum/wound/burn/flesh), "a rifle bolt on a bare arm left no burn wound")
 
-/// A rifle bolt burns away an arm already at 40/50, without a blood spray, and leaves ash.
+/// A rifle bolt burns away an arm already at 40/50, without a blood spray, and leaves no ash (the melt leaves slag).
 /datum/unit_test/voidcrew_plasma_bolt/ash_arm
 
 /datum/unit_test/voidcrew_plasma_bolt/ash_arm/Run()
@@ -124,7 +124,7 @@
 
 	victim.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 1), BODY_ZONE_L_ARM), BODY_ZONE_L_ARM)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "a rifle bolt left an arm at 40/50 attached")
-	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/ash) in spot, "the ashed arm left no ash")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/ash) in spot, "the melted arm left tg's ash pile")
 	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/hitsplatter) in range(4, spot), "ashing an arm sprayed blood")
 	for(var/obj/effect/decal/cleanable/leftover in range(4, spot))
 		qdel(leftover)
