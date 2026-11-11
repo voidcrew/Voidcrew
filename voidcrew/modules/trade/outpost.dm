@@ -98,6 +98,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	berths = new /list(OUTPOST_MAX_BERTHS)
 	ensure_main_shop()
 	ensure_police()
+	ensure_recovery()
 	if(SSovermap_zones.initialized)
 		start_contract_offers()
 	else
@@ -153,6 +154,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	embargoed_ships.Cut()
 	clear_checkpoint_state()
 	QDEL_NULL(police)
+	QDEL_NULL(recovery)
 	self_defense_targets.Cut()
 	QDEL_LIST(shop_offers)
 	traders.Cut()
@@ -232,6 +234,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/status_display/outpost_berth/police_cell/police_signs = list()
 	var/list/obj/structure/closet/secure_closet/personal/outpost_police/police_lockers = list()
 	var/obj/machinery/outpost_police_evidence/police_chute
+	// The morgue room and janitor closet (voidcrew/modules/outpost_police/recovery_core.dm, link_rooms())
+	var/list/obj/effect/landmark/recovery_landmarks = list()
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
 		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
@@ -251,6 +255,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			police_landmarks += police_mark
 		for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
 			police_lockers += locker
+		for(var/obj/effect/landmark/outpost_morgue/recovery_mark in interior_turf)
+			recovery_landmarks += recovery_mark
+		for(var/obj/effect/landmark/outpost_janitor_closet/recovery_mark in interior_turf)
+			recovery_landmarks += recovery_mark
 		for(var/mob/living/basic/outpost_trader/npc in interior_turf)
 			npc.outpost = src
 			npc.shop = get_shop(npc.shop_type)
@@ -290,6 +298,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// (outpost_checkpoint.dm); the guards linked above are matched to theirs.
 	build_checkpoints(checkpoint_doors, checkpoint_chambers, checkpoint_sensors)
 	ensure_police().link_interior(police_landmarks, police_doors, police_signs, police_lockers, police_chute)
+	ensure_recovery().link_rooms(recovery_landmarks)
 	start_armed_sweep()
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized

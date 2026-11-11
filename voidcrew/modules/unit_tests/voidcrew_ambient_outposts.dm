@@ -866,6 +866,14 @@
 			TEST_ASSERT_EQUAL(ambient_test_cash_on(spot), cash_before, "[npc_type] dropped cash")
 			qdel(officer)
 			continue
+		// A cleanup crew member carries no cash (spec-rehydrate.md 4.3); the rest of their kit is the recovery tests'
+		if(ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
+			var/mob/living/carbon/human/npc/ambient_npc/worker = pa_npc(npc_type, spot, place)
+			worker.apply_damage(worker.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+			TEST_ASSERT_EQUAL(worker.stat, DEAD, "[npc_type] did not die of their wounds")
+			TEST_ASSERT_EQUAL(ambient_test_cash_on(spot), cash_before, "[npc_type] dropped cash")
+			qdel(worker)
+			continue
 		var/mob/living/carbon/human/npc/ambient_npc/npc = pa_npc(npc_type, spot, place)
 		TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_GODMODE), "[npc_type] cannot be hurt")
 		TEST_ASSERT(FACTION_TURRET in npc.faction, "The outpost's staff would not count [npc_type] as their own")

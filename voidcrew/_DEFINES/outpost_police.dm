@@ -32,6 +32,13 @@
 #define OUTPOST_CRIME_JAILBREAK "jailbreak"
 #define OUTPOST_CRIME_ACCOMPLICE "accomplice"
 #define OUTPOST_CRIME_LOCKER_THEFT "locker_theft"
+// Wave 2 (spec-rehydrate.md; added by R0)
+/// A trader or checkpoint guard dies within OUTPOST_POLICE_KILL_WINDOW of the offender's counted hit (1.4)
+#define OUTPOST_CRIME_KILL_STAFF "staff_kill"
+/// A checkpoint scanner emagged in sight of its guard or another witness (9)
+#define OUTPOST_CRIME_GATE_TAMPER "gate_tamper"
+/// A trader held up at its counter (10)
+#define OUTPOST_CRIME_ARMED_ROBBERY "armed_robbery"
 
 // ===== WITNESSES (police_perception.dm) =====
 

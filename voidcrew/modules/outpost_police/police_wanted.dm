@@ -712,6 +712,8 @@
 	SIGNAL_HANDLER
 	if(QDELETED(src) || !outpost || !istype(dead))
 		return
+	// The outpost's recovery tracks its dead (recovery_core.dm, R2); it checks the turf itself
+	outpost.recovery?.note_death(dead)
 	var/is_ours = (dead in officers)
 	if(!is_ours && !length(warrants))
 		return
@@ -724,7 +726,9 @@
 		var/turf/where = get_turf(dead)
 		if(!where || get_trader_outpost_for_turf(where) != outpost)
 			return
-		if(istype(dead, /mob/living/carbon/human/npc/ambient_npc))
+		if(istype(dead, OUTPOST_TRADER_MOB)) // a trader or checkpoint guard (spec-rehydrate 1.4)
+			crime = OUTPOST_CRIME_KILL_STAFF
+		else if(istype(dead, /mob/living/carbon/human/npc/ambient_npc))
 			crime = OUTPOST_CRIME_KILL_CIVILIAN
 		else if(dead.mind)
 			crime = OUTPOST_CRIME_MURDER

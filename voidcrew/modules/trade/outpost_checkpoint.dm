@@ -126,6 +126,11 @@
 	var/last_line
 	var/last_line_at = 0
 	COOLDOWN_DECLARE(line_cooldown)
+	// The gate emag (spec-rehydrate.md 9; owner R7, seams R0)
+	/// world.time the gate comes back after an emag on its scanner; 0 or past = up
+	var/disabled_until = 0
+	/// world.time the scanner can be emagged again (M36)
+	var/emag_ready_at = 0
 
 /datum/outpost_checkpoint/New(obj/structure/overmap/trader_outpost/outpost, checkpoint_id)
 	. = ..()
@@ -516,6 +521,21 @@
 		return
 	close_door(outer_door)
 
+// ----- the gate emag (R7) -----
+
+/**
+ * An emag on the wall scanner takes the gate down for OUTPOST_CHECKPOINT_EMAG_TIME: no scan, both doors open for
+ * anyone, nobody shut in (M39); a living, awake guard raises the alarm and reports OUTPOST_CRIME_GATE_TAMPER with
+ * the card as source. Refused before emag_ready_at (M36). Returns TRUE if the gate went down (emag_act's answer).
+ * Owner R7; R0 stub: nothing happens.
+ */
+/datum/outpost_checkpoint/proc/disable(mob/user, obj/item/card/emag/card)
+	return FALSE
+
+/// Whether the gate is down from an emag
+/datum/outpost_checkpoint/proc/is_disabled()
+	return disabled_until > world.time
+
 // ----- forcing the inner door -----
 
 /// `user` starts prying or hacking the inner door. Sleeps for the whole attempt; TRUE if it gave.
@@ -815,7 +835,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 	return ..()
 
 /obj/machinery/outpost_checkpoint_sensor/emag_act(mob/user, obj/item/card/emag/emag_card)
-	return FALSE
+	return checkpoint ? checkpoint.disable(user, emag_card) : FALSE
 
 /obj/machinery/outpost_checkpoint_sensor/update_icon_state()
 	switch(look)

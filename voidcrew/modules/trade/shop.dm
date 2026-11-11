@@ -87,6 +87,8 @@
 	var/obj/structure/overmap/trader_outpost/outpost
 	/// The trader NPC fronting this shop, if one is placed (set on interior link)
 	var/mob/living/basic/outpost_trader/trader_npc
+	/// Weakref to the keeper at its counter (outpost recovery, R1: shop.set_keeper(), is_open())
+	var/datum/weakref/keeper
 	/// Personality lines, keyed by TRADER_LINE_* category
 	var/list/trader_lines = list()
 	/// Supply request table for the outpost mission board: list of
@@ -855,3 +857,19 @@
 
 // The rumor SKU and every other chart line now live in shop_catalog_charts.dm,
 // keeping this file to machinery as its header describes.
+
+// =========================================================================
+// THE KEEPER (outpost recovery, spec-rehydrate.md 1.2; owner R1, seams R0)
+// =========================================================================
+
+/**
+ * Whether the shop trades: TRUE only while its keeper is alive, conscious and within 1 tile of the counter tile.
+ * Every purchase, buyback, contract and favor path that asks is_user_barred() also asks this.
+ * R0 stub: always open.
+ */
+/datum/outpost_shop/proc/is_open()
+	return TRUE
+
+/// `new_keeper` (a trader, or null) keeps this shop's counter now
+/datum/outpost_shop/proc/set_keeper(mob/living/new_keeper)
+	return

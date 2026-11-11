@@ -1,0 +1,33 @@
+{
+	"_owner": "R4 (outpost recovery crews, spec-rehydrate.md 3.3). Keys: RECOVERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm.",
+	"halcyon": {
+		"call": [],
+		"first_body": [],
+		"officer_body": [],
+		"bagged": [],
+		"tray": [],
+		"lift": [],
+		"mess": [],
+		"mind_floor": []
+	},
+	"quartermain": {
+		"call": [],
+		"first_body": [],
+		"officer_body": [],
+		"bagged": [],
+		"tray": [],
+		"lift": [],
+		"mess": [],
+		"mind_floor": []
+	},
+	"undertow": {
+		"call": [],
+		"first_body": [],
+		"officer_body": [],
+		"bagged": [],
+		"tray": [],
+		"lift": [],
+		"mess": [],
+		"mind_floor": []
+	}
+}

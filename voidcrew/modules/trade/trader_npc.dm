@@ -92,6 +92,15 @@
 	shop_ui = new /datum/outpost_trader_ui/shop(src)
 	contracts_ui = new /datum/outpost_trader_ui/contracts(src)
 	setup_from_shop()
+	hook_holdup() // the stick-up (outpost_police/recovery_robbery.dm, R7)
+
+/**
+ * Killed: one item off this trader's own shelf (spec-rehydrate.md 1.3): in stock, at or under
+ * OUTPOST_TRADER_DROP_CAP, the first keeper of the counter only, within recovery.loss_room(). Nothing for a
+ * replacement, a checkpoint guard or a keeper robbed since the last convoy. Owner R1; R0 stub: nothing.
+ */
+/mob/living/basic/outpost_trader/proc/drop_from_shelf()
+	return
 
 /mob/living/basic/outpost_trader/Destroy()
 	QDEL_NULL(shop_ui)

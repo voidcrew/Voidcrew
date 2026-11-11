@@ -1,0 +1,24 @@
+{
+	"_owner": "R7 (trader stick-up and gate emag, spec-rehydrate.md 9-10). Keys: ROBBERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm.",
+	"halcyon": {
+		"hands_up": [],
+		"hand_over": [],
+		"empty": [],
+		"alarm": [],
+		"gate_down": []
+	},
+	"quartermain": {
+		"hands_up": [],
+		"hand_over": [],
+		"empty": [],
+		"alarm": [],
+		"gate_down": []
+	},
+	"undertow": {
+		"hands_up": [],
+		"hand_over": [],
+		"empty": [],
+		"alarm": [],
+		"gate_down": []
+	}
+}
