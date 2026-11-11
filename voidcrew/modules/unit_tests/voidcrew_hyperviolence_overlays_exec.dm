@@ -162,6 +162,49 @@
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "A head-aimed point-blank shot at a downed target was not an execution ([head.brute_dam] head damage from a [round_damage] round)")
 	TEST_ASSERT(head.hv_skull_wound >= 1, "A head-aimed light execution left no skull wound for its damage") // light: 40 head brute
 
+/// An execution click ends tg's attack chain: the gun isn't also swung at the victim (no pistol-whip), whether the
+/// shot went off or the wind-up was refused.
+/datum/unit_test/hv_execution_no_pistol_whip
+	/// Gun blows tg's attack chain landed on the victim
+	var/bashes = 0
+
+/datum/unit_test/hv_execution_no_pistol_whip/Run()
+	var/mob/living/carbon/human/consistent/gunner = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	ADD_TRAIT(victim, TRAIT_PIERCEIMMUNE, INNATE_TRAIT) // no stray shrapnel
+	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	gun.can_misfire = FALSE
+	gunner.put_in_active_hand(gun, forced = TRUE)
+	gunner.set_combat_mode(TRUE)
+	gunner.zone_selected = BODY_ZONE_HEAD
+	gun.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under the burst line
+	victim.Knockdown(30 SECONDS)
+	TEST_ASSERT(gun.hv_execution_possible(gunner, victim), "Test fixture: the downed victim can't be executed")
+	RegisterSignal(gun, COMSIG_ITEM_ATTACK, PROC_REF(on_bash))
+	// The real click: tg's attack chain, through try_fire_gun(), the wind-up and the shot.
+	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT(gun.melee_attack_chain(gunner, victim, list()), "The execution click didn't end the attack chain")
+	TEST_ASSERT(head.brute_dam > 0, "Test fixture: the execution didn't fire")
+	TEST_ASSERT_EQUAL(bashes, 0, "The gun clubbed the victim after the execution")
+	// A refused wind-up (the gun still busy) ends the chain too.
+	gun.fire_cd = TRUE
+	TEST_ASSERT(gun.melee_attack_chain(gunner, victim, list()), "A refused execution click didn't end the attack chain")
+	TEST_ASSERT_EQUAL(bashes, 0, "The gun clubbed the victim when the execution was refused")
+	gun.fire_cd = FALSE
+	// Someone who can't be executed is still clubbed as tg does (combat mode, point blank, nothing to shoot).
+	victim.SetKnockdown(0)
+	victim.fully_heal(HEAL_ALL)
+	gun.magazine.stored_ammo.Cut()
+	QDEL_NULL(gun.chambered)
+	TEST_ASSERT(!gun.hv_execution_possible(gunner, victim), "Test fixture: an empty gun could still execute")
+	gun.melee_attack_chain(gunner, victim, list())
+	TEST_ASSERT_EQUAL(bashes, 1, "Test fixture: an empty gun's point-blank click didn't club, so the counts above prove nothing")
+	UnregisterSignal(gun, COMSIG_ITEM_ATTACK)
+
+/datum/unit_test/hv_execution_no_pistol_whip/proc/on_bash(obj/item/source, mob/living/target, mob/living/user)
+	SIGNAL_HANDLER
+	bashes++
+
 /// A human NPC is helpless only in tg's states (stunned, cuffed, held, down), never because of its health.
 /datum/unit_test/hv_npc_executable_states
 
