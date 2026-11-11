@@ -979,4 +979,84 @@
 	live = data["live"]
 	TEST_ASSERT(!live["vc/test/live"], "A live line was sent for an item that is not open")
 
+// ---------------------------------------------------------------------------
+// combat-pirates: Ship combat and Hunting pirates content.
+// ---------------------------------------------------------------------------
+
+/// The weapons console walks a step's focus back to the lock, then to Engage.
+/datum/unit_test/voidcrew_tutorials/cp_weapons_focus/Run()
+	var/obj/machinery/computer/camera_advanced/ship_combat/console = allocate(/obj/machinery/computer/camera_advanced/ship_combat, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship, get_step(run_loc_floor_top_right, WEST))
+	TEST_ASSERT_NULL(console.tutorial_weapons_focus(null), "No step focus still focused something")
+	console.target_ship = null
+	TEST_ASSERT_EQUAL(console.tutorial_weapons_focus("wpn_fire"), "wpn_contact", "Fire was focused with no lock")
+	TEST_ASSERT_EQUAL(console.tutorial_weapons_focus("wpn_interdict"), "wpn_contact", "Interdict was focused with no lock")
+	TEST_ASSERT_EQUAL(console.tutorial_weapons_focus("wpn_hack"), "wpn_contact", "Exploits were focused with no lock")
+	console.target_ship = target
+	console.attack_mode = FALSE
+	TEST_ASSERT_EQUAL(console.tutorial_weapons_focus("wpn_fire"), "wpn_engage", "Fire was focused outside attack mode")
+	TEST_ASSERT_EQUAL(console.tutorial_weapons_focus("wpn_interdict"), "wpn_interdict", "Interdict lost its focus with a lock")
+	console.attack_mode = TRUE
+	TEST_ASSERT_EQUAL(console.tutorial_weapons_focus("wpn_fire"), "wpn_fire", "Fire was not focused in attack mode")
+	console.attack_mode = FALSE
+	console.target_ship = null
+
+/// Missile outlines skip unarmed missiles and loaded launchers; hail outlines only ringing pads.
+/datum/unit_test/voidcrew_tutorials/cp_filters/Run()
+	SSvc_tutorials.build_catalog()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/missile_step = SSvc_tutorials.steps_by_key["vc/combat/missile"]
+	var/datum/vc_tutorial_step/hail_step = SSvc_tutorials.steps_by_key["vc/pirates/hail"]
+	var/datum/vc_tutorial_step/claim_step = SSvc_tutorials.steps_by_key["vc/pirates/claim"]
+	TEST_ASSERT(missile_step && hail_step && claim_step, "A combat or pirate step is missing from the catalog")
+
+	var/obj/structure/ship_missile/missile = allocate(/obj/structure/ship_missile, get_step(run_loc_floor_bottom_left, EAST))
+	missile.construction_state = 3 // MISSILE_STATE_PAYLOAD
+	TEST_ASSERT(!missile_step.highlight_filter(player, missile), "An unarmed missile was outlined")
+	missile.construction_state = 4 // MISSILE_STATE_ARMED
+	TEST_ASSERT(missile_step.highlight_filter(player, missile), "An armed missile was not outlined")
+	var/obj/machinery/ship_combat/missile_launcher/launcher = allocate(/obj/machinery/ship_combat/missile_launcher, get_step(run_loc_floor_bottom_left, NORTH))
+	launcher.loaded_missile = null
+	TEST_ASSERT(missile_step.highlight_filter(player, launcher), "An empty launcher was not outlined")
+	launcher.loaded_missile = list("name" = "test")
+	TEST_ASSERT(!missile_step.highlight_filter(player, launcher), "A loaded launcher was outlined")
+	launcher.loaded_missile = null
+
+	var/obj/machinery/holopad/pad = allocate(/obj/machinery/holopad, get_step(run_loc_floor_bottom_left, NORTHEAST))
+	pad.incoming_hail = FALSE
+	TEST_ASSERT(!hail_step.highlight_filter(player, pad), "A quiet holopad was outlined")
+	pad.incoming_hail = TRUE
+	TEST_ASSERT(hail_step.highlight_filter(player, pad), "A ringing holopad was not outlined")
+	pad.incoming_hail = FALSE
+
+	var/obj/machinery/computer/helm/helm = allocate(/obj/machinery/computer/helm, get_step(run_loc_floor_top_right, SOUTH))
+	TEST_ASSERT(!claim_step.highlight_filter(player, helm), "A helm on no pirate ship was outlined for claiming")
+
+/// Claiming an abandoned pirate hull at its helm counts as claiming it; a player hull doesn't.
+/datum/unit_test/voidcrew_tutorials/cp_abandoned_claim/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/structure/overmap/ship/plain = allocate(/obj/structure/overmap/ship, get_step(run_loc_floor_top_right, WEST))
+	plain.abandoned = TRUE
+	TEST_ASSERT(plain.claim_abandoned_ship(player, TRUE), "The abandoned player hull could not be claimed")
+	crew_records |= plain.get_crew_record()
+	TEST_ASSERT(!done("vc/pirates/claim"), "Claiming a player hull counted as claiming a pirate")
+	var/obj/structure/overmap/ship/npc/tutorial_test/pirate = allocate(/obj/structure/overmap/ship/npc/tutorial_test, get_step(run_loc_floor_top_right, SOUTHWEST))
+	pirate.abandoned = TRUE
+	TEST_ASSERT(pirate.claim_abandoned_ship(player, TRUE), "The abandoned pirate hull could not be claimed")
+	crew_records |= pirate.get_crew_record()
+	TEST_ASSERT(done("vc/pirates/claim"), "Claiming an abandoned pirate hull was not credited")
+
+/// Missiles come first in Ship combat; the hail and bounty steps are optional.
+/datum/unit_test/voidcrew_tutorials/cp_catalog/Run()
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial/combat = SSvc_tutorials.item_by_step["vc/combat/missile"]
+	TEST_ASSERT(combat, "Ship combat is missing")
+	var/datum/vc_tutorial_step/first = combat.steps[1]
+	TEST_ASSERT_EQUAL(first.key, "vc/combat/missile", "Ship combat does not start with the missile step")
+	for(var/key in list("vc/pirates/hail", "vc/pirates/bounty"))
+		var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key[key]
+		TEST_ASSERT(step, "[key] is missing")
+		TEST_ASSERT(step.optional, "[key] counts toward Hunting pirates")
+		TEST_ASSERT(!step.route, "[key] belongs to a route")
+
 #undef TUTORIAL_TEST_CKEY

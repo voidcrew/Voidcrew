@@ -713,45 +713,135 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Ship combat"
 	category = TUTORIAL_CATEGORY_FIGHT
 	order = 3
-	intro = "Ship weapons and hacking only work in red space. The interdictor also works in yellow space and holds a ship so you can hit it or board it."
+	intro = "Ship weapons and hacking only work in red space. The interdictor also works in yellow space and holds a ship so you can hit it or board it. All of it is run from the weapons console."
 	steps = list(
-		/datum/vc_tutorial_step/combat_interdict,
 		/datum/vc_tutorial_step/combat_missile,
 		/datum/vc_tutorial_step/combat_shields,
+		/datum/vc_tutorial_step/combat_interdict,
 		/datum/vc_tutorial_step/combat_hack,
 		/datum/vc_tutorial_step/combat_force_dock,
 	)
 
-/datum/vc_tutorial_step/combat_interdict
-	key = TUTORIAL_STEP_COMBAT_INTERDICT
-	name = "Interdict a ship"
-	text = "Lock the interdictor onto a ship close by. It slows them down and stops them docking."
-	highlight_types = list(/obj/machinery/ship_combat/interdictor)
-
 /datum/vc_tutorial_step/combat_missile
 	key = TUTORIAL_STEP_COMBAT_MISSILE
 	name = "Launch a missile"
-	text = "Load an armed missile into the launcher, pick a ship at the weapons console and fire."
-	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+	text = "Drag an armed missile onto the launcher. At the weapons console, lock onto a ship, press Engage, then Fire."
+	highlight_types = list(
+		/obj/machinery/computer/camera_advanced/ship_combat,
+		/obj/structure/ship_missile,
+		/obj/machinery/ship_combat/missile_launcher,
+	)
+	ui_focus = list("weapons" = "wpn_fire")
+
+/// Only armed missiles and empty launchers: the ones the drag still has to join.
+/datum/vc_tutorial_step/combat_missile/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/structure/ship_missile))
+		var/obj/structure/ship_missile/missile = candidate
+		return missile.construction_state == MISSILE_STATE_ARMED
+	if(istype(candidate, /obj/machinery/ship_combat/missile_launcher))
+		var/obj/machinery/ship_combat/missile_launcher/launcher = candidate
+		return !launcher.loaded_missile
+	return TRUE
+
+/datum/vc_tutorial_step/combat_missile/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	var/note = tutorial_weapons_zone_note(ship)
+	if(note)
+		return note
+	var/list/launchers = tutorial_combat_machines(ship, /obj/machinery/ship_combat/missile_launcher)
+	if(!length(launchers))
+		return "No missile launcher aboard."
+	for(var/obj/machinery/ship_combat/missile_launcher/launcher as anything in launchers)
+		if(launcher.loaded_missile)
+			return null
+	return "No missile loaded."
 
 /datum/vc_tutorial_step/combat_shields
 	key = TUTORIAL_STEP_COMBAT_SHIELDS
 	name = "Bring down their shields"
 	text = "Keep hitting a shielded ship with missiles or lasers until its shield fails."
 	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+	ui_focus = list("weapons" = "wpn_fire")
+
+/datum/vc_tutorial_step/combat_shields/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	var/note = tutorial_weapons_zone_note(ship)
+	if(note)
+		return note
+	var/obj/structure/overmap/ship/target = tutorial_weapons_target(ship)
+	if(!target)
+		return null
+	return target.shields_active ? "Their shield is up." : "Their shield is down."
+
+/datum/vc_tutorial_step/combat_interdict
+	key = TUTORIAL_STEP_COMBAT_INTERDICT
+	name = "Interdict a ship"
+	text = "At the weapons console, lock onto a ship within two tiles and press Engage field. It slows them and stops them docking."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+	ui_focus = list("weapons" = "wpn_interdict")
+
+/datum/vc_tutorial_step/combat_interdict/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	if(!SSvc_tutorials.ship_has_machine(ship, /obj/machinery/ship_combat/interdictor))
+		return "No interdictor aboard."
+	if(!SSovermap_zones.interdiction_allowed_at(ship))
+		return "Interdiction is blocked in green space."
+	return null
 
 /datum/vc_tutorial_step/combat_hack
 	key = TUTORIAL_STEP_COMBAT_HACK
 	name = "Hack a ship"
-	text = "Lock onto a ship at the weapons console and run a cartridge from the EW suite."
+	text = "Lock onto a ship at the weapons console, open Exploits and run a cartridge."
 	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+	ui_focus = list("weapons" = "wpn_hack")
+
+/datum/vc_tutorial_step/combat_hack/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	var/note = tutorial_weapons_zone_note(ship)
+	if(note)
+		return note
+	if(!length(tutorial_combat_machines(ship, /obj/machinery/ship_combat/ew_suite)))
+		return "No EW suite aboard."
+	var/linked = FALSE
+	for(var/obj/machinery/computer/camera_advanced/ship_combat/console as anything in tutorial_combat_machines(ship, /obj/machinery/computer/camera_advanced/ship_combat))
+		var/obj/machinery/ship_combat/ew_suite/suite = console.linked_ew_ref?.resolve()
+		if(!suite)
+			continue
+		linked = TRUE
+		if(length(suite.loaded_chips))
+			return null
+	return linked ? "No cartridges loaded." : "The EW suite isn't linked to a console."
 
 /datum/vc_tutorial_step/combat_force_dock
 	key = TUTORIAL_STEP_COMBAT_FORCE_DOCK
 	name = "Force-dock a ship"
-	text = "Fly onto the ship you're holding and force it to dock with you from the interdictor."
+	text = "Fly onto the ship you're holding, stop, and press Dock at the helm."
 	optional = TRUE
-	highlight_types = list(/obj/machinery/ship_combat/interdictor)
+	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_dock")
+
+/datum/vc_tutorial_step/combat_force_dock/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	var/obj/structure/overmap/ship/held = tutorial_interdicted_ship(ship)
+	if(!held)
+		return "Not holding a ship."
+	if(get_turf(held) != get_turf(ship))
+		return "Get onto their tile."
+	if(!ship.is_still())
+		return "Stop your ship."
+	if(!held.is_still())
+		return "They're still moving."
+	return null
 
 // ---------------------------------------------------------------------------
 // Hunting pirates
@@ -764,12 +854,26 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	order = 4
 	intro = "Pirate ships hunt crews in red space. You can let them board and then take the fight to their ship, or shoot their ship down from yours. In yellow space they only board a crew that's broke."
 	steps = list(
+		/datum/vc_tutorial_step/pirates_hail,
 		/datum/vc_tutorial_step/pirates_boarders,
 		/datum/vc_tutorial_step/pirates_commander,
 		/datum/vc_tutorial_step/pirates_board,
 		/datum/vc_tutorial_step/pirates_shoot,
+		/datum/vc_tutorial_step/pirates_bounty,
 		/datum/vc_tutorial_step/pirates_claim,
 	)
+
+/datum/vc_tutorial_step/pirates_hail
+	key = TUTORIAL_STEP_PIRATES_HAIL
+	name = "Answer a hail"
+	text = "A pirate hail rings your holopads. Answer it to pay them off. Refuse or ignore it and they board."
+	optional = TRUE
+	highlight_types = list(/obj/machinery/holopad)
+
+/// Only pads that are ringing.
+/datum/vc_tutorial_step/pirates_hail/highlight_filter(mob/user, atom/candidate)
+	var/obj/machinery/holopad/pad = candidate
+	return !istype(pad) || pad.incoming_hail
 
 /datum/vc_tutorial_step/pirates_boarders
 	key = TUTORIAL_STEP_PIRATES_BOARDERS
@@ -778,6 +882,12 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	route = "board"
 	route_name = "Let them board"
 
+/datum/vc_tutorial_step/pirates_boarders/live_line(mob/user)
+	var/datum/ai_controller/npc_ship/controller = tutorial_engaging_pirate_controller(get_crew_ship(user))
+	if(controller?.get_combat_state() == NPC_COMBAT_BOARDING)
+		return "Boarders aboard."
+	return null
+
 /datum/vc_tutorial_step/pirates_commander
 	key = TUTORIAL_STEP_PIRATES_COMMANDER
 	name = "Beat their commander"
@@ -785,13 +895,29 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	route = "board"
 	route_name = "Let them board"
 
+/datum/vc_tutorial_step/pirates_commander/live_line(mob/user)
+	var/zone_type = tutorial_ship_zone_type(get_crew_ship(user))
+	if(zone_type && zone_type != ZONE_RED)
+		return "You're not in red space."
+	return null
+
 /datum/vc_tutorial_step/pirates_board
 	key = TUTORIAL_STEP_PIRATES_BOARD
 	name = "Board their ship"
-	text = "Dock with their ship from the helm, or force-dock it with the interdictor."
+	text = "Once their commander is down, or while you're holding their ship, fly onto it, stop, and press Dock at the helm."
 	route = "board"
 	route_name = "Let them board"
 	highlight_types = list(/obj/machinery/computer/helm)
+
+/// The helm only once a pirate ship nearby will take the dock.
+/datum/vc_tutorial_step/pirates_board/highlight_filter(mob/user, atom/candidate)
+	return !!tutorial_boardable_pirate(get_crew_ship(user))
+
+/datum/vc_tutorial_step/pirates_board/live_line(mob/user)
+	var/obj/structure/overmap/ship/npc/pirate = tutorial_boardable_pirate(get_crew_ship(user))
+	if(pirate?.is_disabled)
+		return "Their ship is disabled."
+	return null
 
 /datum/vc_tutorial_step/pirates_shoot
 	key = TUTORIAL_STEP_PIRATES_SHOOT
@@ -800,13 +926,53 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	route = "shoot"
 	route_name = "Fight ship to ship"
 	highlight_types = list(/obj/machinery/computer/camera_advanced/ship_combat)
+	ui_focus = list("weapons" = "wpn_fire")
+
+/// A wreck can't be turned in, so a crew on a bounty sees whose key it's after.
+/datum/vc_tutorial_step/pirates_shoot/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship || !SSbounty)
+		return null
+	for(var/datum/pirate_bounty/bounty as anything in SSbounty.get_bounties_for_claimant(ship))
+		return "Hunting [bounty.name]'s key."
+	return null
+
+/datum/vc_tutorial_step/pirates_bounty
+	key = TUTORIAL_STEP_PIRATES_BOUNTY
+	name = "Turn in a bounty"
+	text = "Take a pirate bounty at the mission board. Bring back their captain's key, put it on the mission pad and turn it in."
+	optional = TRUE
+	highlight_types = list(
+		/obj/item/ship_key,
+		/obj/machinery/computer/mission_board,
+		/obj/machinery/mission_pad,
+	)
+
+/// Keys anywhere; the board and pad only while the crew is hunting a bounty.
+/datum/vc_tutorial_step/pirates_bounty/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/item/ship_key))
+		return TRUE
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && SSbounty?.ship_has_active_bounty(ship)
 
 /datum/vc_tutorial_step/pirates_claim
 	key = TUTORIAL_STEP_PIRATES_CLAIM
 	name = "Claim the hull"
-	text = "Clear out their crew, then claim the ship at its helm."
+	text = "Take their captain's key and use it on their helm. A downed or cuffed captain keeps it in a pocket."
 	optional = TRUE
+	highlight_types = list(/obj/item/ship_key, /obj/machinery/computer/helm)
 	ui_focus = list("helm" = "helm_claim")
+
+/// Keys anywhere, but only the helms of pirate ships.
+/datum/vc_tutorial_step/pirates_claim/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/machinery/computer/helm))
+		var/obj/structure/overmap/ship/npc/npc_ship = get_ship_from_atom(candidate)
+		return istype(npc_ship) && (!npc_ship.player_controlled || npc_ship.abandoned)
+	return TRUE
+
+/// A downed or cuffed NPC in view with a key in a pocket.
+/datum/vc_tutorial_step/pirates_claim/extra_targets(mob/user)
+	return tutorial_key_carriers(user)
 
 // ---------------------------------------------------------------------------
 // Storage
