@@ -43,8 +43,9 @@
 	update_appearance(UPDATE_OVERLAYS)
 
 /obj/structure/rig_bay_stand/Destroy()
+	// The parent forgets the mech first; forget_mech() below leaves the chains alone while the stand is going.
+	. = ..()
 	QDEL_LIST(chains)
-	return ..()
 
 /// Makes sure both chains exist and stand on the stand's tile. Rebuilds any that were deleted or moved off.
 /obj/structure/rig_bay_stand/proc/ensure_chains()
@@ -97,6 +98,8 @@
 /// A mech that leaves (driven off, deleted) takes nothing with it: the chains go back up to the bar.
 /obj/structure/rig_bay_stand/forget_mech()
 	..()
+	if(QDELING(src))
+		return
 	ensure_chains()
 	for(var/obj/effect/rig_bay_chain/chain as anything in chains)
 		chain.set_pose(chain.anchor_x, RIG_BAY_CHAIN_STOWED, RIG_BAY_CHAIN_TOP - RIG_BAY_HANG_LIFT)
@@ -142,7 +145,8 @@
 /obj/structure/rig_bay_stand/proc/end_release(obj/vehicle/sealed/mecha/mech, datum/callback/on_done)
 	if(!QDELETED(mech))
 		mech.pixel_z = 0
-	set_lamp("green")
+	if(mech == held_mech)
+		set_lamp("green")
 	on_done?.Invoke()
 
 /**

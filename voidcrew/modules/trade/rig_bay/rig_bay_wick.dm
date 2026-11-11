@@ -556,6 +556,7 @@
 			"Hydraulics are weeping again.",
 			"Come on. Come on. There.",
 			"Who keeps parking these in the rain?",
+			"Somebody's been feeding this one plasma cutter grit.",
 		))
 
 /// A welding job is the one with sparks on

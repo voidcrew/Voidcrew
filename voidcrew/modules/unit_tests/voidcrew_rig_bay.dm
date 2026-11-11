@@ -26,6 +26,12 @@
 	allocated += mech
 	return mech
 
+/// Waits out a stand's release or beam-in animation (at most 5 s) until it reaches `state`.
+/datum/unit_test/voidcrew_rig_bay/proc/wait_for_stand(obj/structure/rig_bay_stand/stand, state)
+	var/give_up = world.time + 5 SECONDS
+	while(stand.stand_state != state && world.time < give_up)
+		sleep(1)
+
 /// Every stand mech spawns with the kit its line lists.
 /datum/unit_test/voidcrew_rig_bay/roster/Run()
 	var/datum/outpost_shop/vendor/suit_fitter/shop = allocate(/datum/outpost_shop/vendor/suit_fitter)
@@ -198,6 +204,7 @@
 
 	for(var/obj/structure/rig_bay_stand/stand as anything in list(work, parked, combat))
 		TEST_ASSERT(stand.release_mech(buyer), "Bay [stand.bay_number] wouldn't release its mech")
+		wait_for_stand(stand, "sold_on_stand")
 		TEST_ASSERT_EQUAL(stand.stand_state, "sold_on_stand", "Bay [stand.bay_number] didn't finish lowering")
 	work_mech.forceMove(bay_turf(1, 2))
 	combat_mech.forceMove(bay_turf(3, 2))
@@ -205,6 +212,7 @@
 	TEST_ASSERT_EQUAL(combat.stand_state, "empty", "Driving off didn't empty bay 3")
 
 	shop.convoy_restock()
+	wait_for_stand(work, "clamped")
 	TEST_ASSERT_EQUAL(work.stand_state, "clamped", "The work stand didn't refill on the convoy")
 	TEST_ASSERT_EQUAL(work.sku?.stock, 1, "The refilled work stand isn't in stock")
 	TEST_ASSERT(work.sku in shop.skus, "The refilled line isn't in the shop")
@@ -218,6 +226,7 @@
 	TEST_ASSERT_EQUAL(rig_bay_lines, 3, "The shop lists the wrong number of stand lines")
 
 	shop.convoy_restock()
+	wait_for_stand(combat, "clamped")
 	TEST_ASSERT_EQUAL(combat.stand_state, "clamped", "The combat stand didn't refill on the second convoy")
 	allocated += combat.held_mech
 	TEST_ASSERT(ispath(combat.sku?.item_path, /obj/vehicle/sealed/mecha/gygax) || ispath(combat.sku?.item_path, /obj/vehicle/sealed/mecha/durand), "The combat stand dealt a work mech")

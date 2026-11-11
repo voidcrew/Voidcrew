@@ -245,8 +245,6 @@
 			"Bench install is free. Doing it yourself in a corridor is how people lose fingers.",
 			"The civilian chassis is not spaceworthy. It says so on the plate. People still ask.",
 			"Bring me a wrecked control unit and I'll take it, modules and all.",
-			"Hold still. Not you. The Ripley.",
-			"Somebody's been feeding this one plasma cutter grit.",
 			"Don't lean on the chains.",
 		),
 		TRADER_LINE_RESTOCK = list(
