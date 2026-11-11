@@ -172,7 +172,10 @@
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/bounty_boss_mark) in spot(0, 2), "The line is marked behind the criminal")
 	sleep(0.6 SECONDS)
 	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "The hunter was cut before the tell was over")
-	TEST_ASSERT_NOTNULL(lunge.lunge_action(), "The lunge was used before the tell was over")
+	// Standing still through the tell greys the button out (the lunge checks immobility), so read its cooldown
+	for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing as anything in bounty_mantis_housings(criminal))
+		var/datum/action/cooldown/cyberware/mantis_lunge/housing_lunge = locate() in housing.actions
+		TEST_ASSERT(!housing_lunge || housing_lunge.next_use_time <= world.time, "The lunge was used before the tell was over")
 	// The tell ends at 0.9 s, the implant's own telegraph runs 0.3 s, then the dash
 	sleep(1 SECONDS)
 	TEST_ASSERT_NULL(lunge.lunge_action(), "The housing's own Mantis Lunge wasn't used: it isn't cooling down")
