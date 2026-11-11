@@ -276,14 +276,24 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	))
 	return !!blood[thing.type]
 
-/// tg works a blood decal's drying colour out of its `color` (blending it toward the dried colour), which can't be
-/// done with the slow-mo's tint matrix there: while tinted it wears the tint, and works its colour out again when
-/// the tint comes off (update_atom_colour() calls this). A colour filter was tried first and didn't draw on decals.
+/// tg works a blood decal's drying colour out of its `color` (blending it toward the dried colour), and its sprite is
+/// white, coloured by that `color`. With the slow-mo's tint matrix in `color` it would be drawn white and its drying
+/// colour lost, so while tinted it wears the tint mixed with its own colour, held where it was. It works its colour
+/// out again when the tint comes off (update_atom_colour() calls this). A colour filter didn't draw on decals.
 /obj/effect/decal/cleanable/blood/update_blood_color()
-	if(islist(color) && LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) && GLOB.cyberware_time_dilated[src])
-		animate(src)
+	if(!islist(color) || !LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) || !GLOB.cyberware_time_dilated[src])
+		return ..()
+	animate(src)
+	var/own = sandy_replay_colour() // ware_sandy_replay.dm
+	if(!istext(own))
 		return TRUE
-	return ..()
+	var/list/rgb = rgb2num(own)
+	var/list/mixed = cyberware_time_stop_tint().Copy()
+	for(var/row in 0 to 2)
+		for(var/column in 1 to 3)
+			mixed[row * 3 + column] *= rgb[row + 1] / 255
+	color = mixed
+	return TRUE
 
 /// Flattens a sprite to luminance and paints it the dilation's green (#5AFF96).
 /proc/cyberware_time_stop_green()
