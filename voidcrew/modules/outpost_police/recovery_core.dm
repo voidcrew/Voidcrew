@@ -31,6 +31,8 @@
 #define RECOVERY_POST_PATIENCE (2 MINUTES)
 /// After the cleanup the crews get this long to put down what they carry, then they leave
 #define RECOVERY_CREW_GRACE (2 MINUTES)
+/// A back room (morgue, closet) bigger than this many tiles is a map without its door or wall
+#define RECOVERY_ROOM_MAX 60
 
 /obj/structure/overmap/trader_outpost
 	/// This outpost's recovery (recovery_core.dm). Made by ensure_recovery(), deleted in Destroy().
@@ -123,6 +125,8 @@
 	var/list/obj/structure/bodycontainer/morgue/morgue_trays = list()
 	/// The janitor closet's floor, where its landmark was
 	var/turf/closet_turf
+	/// The floor of the morgue room and the closet, up to their doors (turf = TRUE): nobody waits or idles in there
+	var/list/back_rooms = list()
 
 	/// The looping tick, or null while asleep (R2 decides when it runs)
 	var/tick_timer
@@ -189,8 +193,52 @@
 			else
 				closet_turf = where
 		qdel(mark)
+	for(var/turf/room as anything in list(morgue_turf, closet_turf))
+		back_rooms |= room_floor(room)
 	// Once the interior has finished loading (its spawners included), what lies about is the map's own
 	addtimer(CALLBACK(src, PROC_REF(mark_decor)), 1 SECONDS, TIMER_DELETE_ME)
+
+/**
+ * The floor of the room `start` stands in: open tiles reached without passing a wall, a door, a window or a grille
+ * (turf = TRUE). Read from the map's objects, so it works before the atoms initialise. A room bigger than
+ * RECOVERY_ROOM_MAX is no back room (a missing door or wall on the map): empty, and a mapping log line.
+ */
+/datum/outpost_recovery/proc/room_floor(turf/start)
+	. = list()
+	if(!start)
+		return
+	var/list/floor = list()
+	floor[start] = TRUE
+	var/list/queue = list(start)
+	while(length(queue))
+		var/turf/tile = queue[length(queue)]
+		queue.len--
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(tile, direction)
+			if(!next || floor[next] || !room_step_open(tile, next, direction))
+				continue
+			floor[next] = TRUE
+			queue += next
+			if(length(floor) > RECOVERY_ROOM_MAX)
+				log_mapping("[outpost] has no closed room round [AREACOORD(start)]")
+				return
+	return floor
+
+/// Whether a walk from `tile` to `next` (one step `direction`) stays in the room
+/datum/outpost_recovery/proc/room_step_open(turf/tile, turf/next, direction)
+	if(isclosedturf(next) || isspaceturf(next))
+		return FALSE
+	for(var/atom/thing as anything in next)
+		if(istype(thing, /obj/machinery/door) || istype(thing, /obj/structure/grille) || istype(thing, /obj/effect/spawner/structure/window))
+			return FALSE
+		if(istype(thing, /obj/structure/window))
+			var/obj/structure/window/pane = thing
+			if(pane.fulltile || pane.dir == REVERSE_DIR(direction))
+				return FALSE
+	for(var/obj/structure/window/pane in tile)
+		if(!pane.fulltile && pane.dir == direction)
+			return FALSE
+	return TRUE
 
 /**
  * Marks the mess and litter the map placed (and its spawners made) as decor, so no crew ever washes or bags it:

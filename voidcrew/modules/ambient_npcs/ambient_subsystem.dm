@@ -781,6 +781,9 @@ SUBSYSTEM_DEF(ambient_npcs)
 	for(var/turf/tile as anything in floor)
 		if(passages[tile] || (locate(/obj/machinery/door) in tile))
 			continue
+		// Nobody stands about in the morgue or the janitor's closet (outpost_police/recovery_core.dm)
+		if(outpost?.recovery?.back_rooms?[tile])
+			continue
 		// Nobody stands about in the checkpoint lobby (outpost_checkpoint.dm)
 		if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))
 			continue

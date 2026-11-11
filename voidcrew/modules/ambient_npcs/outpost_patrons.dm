@@ -342,8 +342,13 @@
 	if(!middle || !npc)
 		return null
 	var/list/options = list()
+	// can_see() looks through a door: never a spot in the morgue or the closet behind one (recovery_core.dm)
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(middle)
+	var/list/back_rooms = outpost?.recovery?.back_rooms
 	for(var/turf/tile as anything in RANGE_TURFS(high, middle))
 		if(get_dist(tile, middle) < low || !npc.standable(tile, avoid))
+			continue
+		if(back_rooms?[tile])
 			continue
 		if(!can_see(middle, tile, high + 1))
 			continue
