@@ -222,7 +222,7 @@
 	// Seven tiles and a wall: a pistol carries 9, the wall costs half its 3 for a loud noise
 	var/mob/living/carbon/human/shooter = visitor_at(11, 3)
 	var/heard_by = stealth_noise(get_turf(shooter), "gun_pistol", null, shooter)
-	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look (heard by [heard_by], officer's group [brain.group ? "yes" : "none"], muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look (heard by [heard_by], officer's AI [brain.ai_status], held still [officer.paused_at], officer's group [brain.group ? "yes" : "none"], muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
 	TEST_ASSERT(!length(police.warrants) && !length(police.pending_reports), "A shot heard gave someone a record")
 
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
@@ -247,6 +247,12 @@
 	police_stop(6, 2, "a", 2, 30 SECONDS, "coffee")
 	police_stop(16, 2, "b", 1, 5 SECONDS, null)
 	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, at(7, 3))
+	// The test room is the outpost's public floor, as a mapped concourse is (a stop's activity stands only on public floor)
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	place.public_floor = list()
+	for(var/turf/open/tile in block(room.bottom_left_turfs[1], room.top_right_turfs[1]))
+		place.public_floor[tile] = TRUE
+	place.floor_built_at = world.time
 
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, NORTH)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller

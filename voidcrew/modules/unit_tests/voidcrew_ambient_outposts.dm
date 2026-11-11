@@ -921,25 +921,23 @@
 			break
 	TEST_ASSERT_NOTNULL(victim, "Nobody living holds the role that was filled")
 	victim.apply_damage(victim.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
-	TEST_ASSERT_EQUAL(place.killed_slots(role.type), 1, "A killing did not leave its place empty")
-	var/list/until = place.killed_until[role.type]
-	TEST_ASSERT(until[1] - world.time >= 11900 && until[1] - world.time <= 12000, "A killed person's place opens again in [(until[1] - world.time) / 10] seconds, not twenty minutes") // AMBIENT_OUTPOST_KILLED_SLOT_TIME
+	// At an outpost the recovery paces the return, not the 20 minute killed-slot wait (recovery_staff.dm npc_died())
+	TEST_ASSERT_EQUAL(place.killed_slots(role.type), 0, "A killing at an outpost started the killed-slot wait the recovery replaces")
+	TEST_ASSERT(recovery.state != 0, "A killing did not put the outpost in trouble") // OUTPOST_RECOVERY_NORMAL
 	// Nobody there: nobody is made in their place, and the body lies for the outpost's morgue crew, not the
 	// corpse sweep (spec-rehydrate 2)
 	place.needs_settling = TRUE
 	TEST_ASSERT_EQUAL(SSambient_npcs.update_outpost(place, 0, roles, 5), 0, "A killed person was made up in place at once")
 	TEST_ASSERT(!QDELETED(victim), "A body vanished at an outpost nobody is on")
-	TEST_ASSERT(recovery.state != 0, "A killing did not put the outpost in trouble") // OUTPOST_RECOVERY_NORMAL
 	TEST_ASSERT(WEAKREF(victim) in recovery.npc_dead, "A body at an outpost is not left for its morgue crew")
 	TEST_ASSERT_EQUAL(victim.npc_corpse_lifetime, 0, "A body at a trader outpost is still on the corpse sweep's clock")
-	// Back to a normal day, a player comes: nobody off the lift for them while the killed person's place is empty
-	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
+	// A player comes while the outpost is in trouble: nobody off the lift for them either
 	for(var/i in 1 to 3)
 		place.arrivals_at = world.time
 		SSambient_npcs.update_outpost(place, 1, roles)
-	TEST_ASSERT_EQUAL(place.count_role(role.type), 0, "A killed person was replaced off the lift at once")
-	// Once their place opens again, someone comes
-	until[1] = world.time - 1
+	TEST_ASSERT_EQUAL(place.count_role(role.type), 0, "A killed person was replaced off the lift while the outpost was in trouble")
+	// Once the outpost is back to normal, someone comes
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
 	place.arrivals_at = world.time
 	SSambient_npcs.update_outpost(place, 1, roles)
 	TEST_ASSERT_EQUAL(place.count_role(role.type), 1, "A killed person's place never opened again")

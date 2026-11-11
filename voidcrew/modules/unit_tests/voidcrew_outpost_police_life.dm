@@ -284,7 +284,7 @@
 	TEST_ASSERT_NULL(beat_role.arrive(place, pa_tile(4, 4)), "A replacement came off the public lift while a police lift was blocked")
 	qdel(blocker)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/replacement = beat_role.arrive(place, pa_tile(4, 4))
-	TEST_ASSERT_NOTNULL(replacement, "A replacement did not come off the police lift")
+	TEST_ASSERT_NOTNULL(replacement, "A replacement did not come off the police lift (on the lift: [english_list(lift.contents)], blocked [lift.is_blocked_turf(exclude_mobs = FALSE)])")
 	TEST_ASSERT_EQUAL(get_turf(replacement), lift, "A replacement did not step off the police lift")
 	TEST_ASSERT(replacement in police.officers, "A replacement is not on the roster")
 	qdel(replacement)
@@ -333,7 +333,8 @@
 	TEST_ASSERT_NULL(sergeant.held_prop, "The sergeant kept the clipboard after leaving the desk")
 
 	// A sleeper is looked in on: words only
-	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human/consistent, pa_tile(0, 3))
+	// Clear of the bait shop's counter: nobody without business there stands within its reach (ambient_outpost_tile_avoided())
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human/consistent, pa_tile(0, 0))
 	sleeper.Sleeping(5 MINUTES)
 	var/datum/ambient_activity/police_check/check = patrol.start_activity(new /datum/ambient_activity/police_check(patrol))
 	TEST_ASSERT_NOTNULL(check, "An officer did not notice someone asleep (sleeper seen: [patrol.life_sleeper_near() || "nobody"], asleep [sleeper.IsSleeping()], stat [sleeper.stat], [get_dist(patrol, sleeper)] tiles, line [can_see(patrol, sleeper, 8)], doing [patrol.activity?.type || "nothing"], beside: [police_spot_report(patrol, sleeper)])")
