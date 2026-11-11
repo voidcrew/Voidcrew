@@ -191,16 +191,17 @@
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
 	if(new_stars != old_stars)
-		stars_changed(warrant, old_stars, new_stars, offender, crime != OUTPOST_CRIME_ACCOMPLICE)
+		stars_changed(warrant, old_stars, new_stars)
 	wake()
 	return new_stars
 
-/// `warrant` went from `old_stars` to `new_stars`: tell the listeners and the HUD; a rise is called in on the radio
-/datum/outpost_police/proc/stars_changed(datum/outpost_warrant/warrant, old_stars, new_stars, mob/living/suspect, call_in = TRUE)
+/**
+ * `warrant` went from `old_stars` to `new_stars`: tell the listeners and the HUD. The radio call of a rise is
+ * police_life.dm's (tick_life() calls each change of the outpost's alert level), not made here.
+ */
+/datum/outpost_police/proc/stars_changed(datum/outpost_warrant/warrant, old_stars, new_stars)
 	SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_STARS, warrant.mind, old_stars, new_stars)
 	update_hud(warrant.mind)
-	if(new_stars > old_stars && new_stars >= 1 && call_in && suspect)
-		say_dispatch(POLICE_LINE_RADIO_CALL, dispatch_values(suspect))
 	if(new_stars >= 4)
 		escalate_incident(warrant, new_stars)
 
@@ -398,7 +399,7 @@
 	if(!served)
 		warrant.barred_until = 0
 	if(old_stars)
-		stars_changed(warrant, old_stars, 0, who.current, FALSE)
+		stars_changed(warrant, old_stars, 0)
 	else
 		update_hud(who)
 	wake()
@@ -533,7 +534,7 @@
 				warrant_faded(warrant)
 			var/new_stars = stars_of(warrant.heat)
 			if(new_stars != old_stars)
-				stars_changed(warrant, old_stars, new_stars, body, FALSE)
+				stars_changed(warrant, old_stars, new_stars)
 
 	if(warrant.heat <= 0 && current_prior(warrant) <= 0 && warrant.barred_until <= world.time)
 		remove_warrant(warrant)
@@ -854,38 +855,3 @@
 		return
 	incident.watched -= ship
 	incident.docked -= ship
-
-// =========================================================================
-// WHAT THE SERGEANT SAYS ON THE RADIO (M15: type names and catalog names only)
-// =========================================================================
-
-/// The tokens the radio call fills: the nearest shop's catalog name and what the suspect wears, by type name
-/datum/outpost_police/proc/dispatch_values(mob/living/suspect)
-	return list("%PLACE%" = nearest_shop_name(suspect), "%LOOK%" = suspect_look(suspect))
-
-/// The catalog name of the shop whose trader stands nearest `suspect`
-/datum/outpost_police/proc/nearest_shop_name(mob/living/suspect)
-	var/best_name = outpost.name
-	var/best_dist = INFINITY
-	for(var/datum/outpost_shop/shop as anything in outpost.get_all_shops())
-		if(!shop?.trader_npc)
-			continue
-		var/dist = get_dist(shop.trader_npc, suspect)
-		if(dist < best_dist)
-			best_dist = dist
-			best_name = shop.outpost_name
-	return police_plain_name(best_name)
-
-/// What `suspect` wears over their uniform, or the uniform: the item's type name
-/datum/outpost_police/proc/suspect_look(mob/living/suspect)
-	if(!ishuman(suspect))
-		return "someone"
-	var/mob/living/carbon/human/person = suspect
-	var/obj/item/clothing/worn = person.wear_suit || person.w_uniform
-	if(!worn)
-		return "someone"
-	return police_plain_name(initial(worn.name))
-
-/// `text` without the \proper and \improper markers
-/proc/police_plain_name(text)
-	return replacetext(replacetext("[text]", "\proper", ""), "\improper", "")

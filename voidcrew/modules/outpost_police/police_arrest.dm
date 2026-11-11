@@ -382,15 +382,10 @@
 	stripper_ref = WEAKREF(stripper)
 	stripped_at = world.time
 
-/// The %LOOK% token for a line about `suspect`: the type name of what they wear on top (abuse M15)
+/// The "look" token for a line about `suspect` (police_life.dm fills %LOOK% from it): the type name of what they wear (abuse M15)
 /datum/outpost_police_case/proc/line_values(mob/living/carbon/suspect)
-	var/mob/living/carbon/human/person = suspect
-	if(!istype(person))
-		return null
-	var/obj/item/worn = person.wear_suit || person.w_uniform
-	if(!worn)
-		return null
-	return list("%LOOK%" = initial(worn.name))
+	var/look = suspect && outpost_police_look(suspect)
+	return look ? list("look" = look) : null
 
 /// `officer` says `line` once per case
 /datum/outpost_police_case/proc/say_once(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, line, mob/living/carbon/suspect, radio = FALSE)
