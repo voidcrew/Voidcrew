@@ -622,7 +622,9 @@
 		warrant.away_since = 0
 	// Seen: an officer sees them, or a checkpoint scan has them. Cleared only by a sighting.
 	var/seen = FALSE
-	if(here && !downed)
+	if(warrant.left_lying && !(body && HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)))
+		warrant.left_lying = FALSE
+	if(here && !downed && !warrant.left_lying)
 		seen = suspect_seen(body)
 	if(seen)
 		warrant.last_seen_at = world.time

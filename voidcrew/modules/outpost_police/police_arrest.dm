@@ -865,6 +865,12 @@
 		medic_called = TRUE
 		officer.police_say(POLICE_LINE_MEDIC, line_values(suspect), TRUE)
 	if(world.time - downed_since >= OUTPOST_POLICE_CRIT_WAIT)
+		// Left where they lie: unseen while they stay in crit (their stars can fade), and no new arrest for a while
+		if(police && warrant?.mind)
+			warrant.left_lying = TRUE
+			if(!warrant.unseen_since)
+				warrant.unseen_since = world.time
+			LAZYSET(police.case_holds, warrant.mind, world.time + CASE_REOPEN_HOLD)
 		close()
 
 // =========================================================================
