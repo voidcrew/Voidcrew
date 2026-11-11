@@ -19,5 +19,4 @@
 	var/worn_through = ash_prior_damage >= PLASMA_ASH_PRIOR_DAMAGE && limb.get_damage() >= limb.max_damage - ash_margin
 	if(!burned_through && !worn_through)
 		return
-	var/datum/wound/loss/ash = new
-	ash.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
+	plasma_melt_limb(limb, attack_direction) // tg's WOUND_BURN loss, plus the melt picture (plasma_melt.dm)
