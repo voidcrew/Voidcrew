@@ -15,6 +15,8 @@
 #define PLASMA_HISSBY_MIN_TRAVEL 3
 /// Light colour shared by the bolt's splash and gutter-out
 #define PLASMA_EFFECT_LIGHT_COLOR "#B8FFD0"
+/// Shared particle pool for the flesh splash's steam, kept apart because its holders take the splash's layer
+#define PLASMA_SPLASH_STEAM_KEY "plasma_splash_steam"
 
 /// Live wall and soot glows per z-level, keyed by "[z]"
 GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
@@ -187,7 +189,8 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 // ===== Splash =====
 
 /obj/effect/temp_visual/plasma_splash
-	duration = 0.5 SECONDS
+	// Every splash state is six 0.1 s frames
+	duration = 0.6 SECONDS
 	randomdir = FALSE
 	light_system = OVERLAY_LIGHT
 	light_range = 1.5
@@ -199,8 +202,6 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 
 /obj/effect/temp_visual/plasma_splash/Initialize(mapload, px = 0, py = 0, splash_state = "splash_wall", turn_angle = 0, behind_body = FALSE)
 	icon_state = splash_state
-	if(splash_state == "splash_flesh")
-		duration = 0.6 SECONDS
 	. = ..()
 	pixel_x = px
 	pixel_y = py
@@ -212,12 +213,14 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	add_overlay(emissive_appearance(icon, icon_state, src))
 	if(splash_state == "splash_flesh")
 		steaming = TRUE
-		add_shared_particles(/particles/smoke/steam/mild)
+		// The shared holder draws above every mob unless it takes our layer; this pool's holders take it
+		var/obj/effect/abstract/shared_particle_holder/steam = add_shared_particles(/particles/smoke/steam/mild, PLASMA_SPLASH_STEAM_KEY)
+		steam?.vis_flags |= VIS_INHERIT_LAYER
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.3 SECONDS)
 
 /obj/effect/temp_visual/plasma_splash/Destroy()
 	if(steaming)
-		remove_shared_particles(/particles/smoke/steam/mild)
+		remove_shared_particles(PLASMA_SPLASH_STEAM_KEY)
 	return ..()
 
 // ===== Wall glow =====
@@ -317,8 +320,11 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	if(bolt)
 		icon = bolt.icon
 		icon_state = bolt.icon_state
-		pixel_x = bolt.pixel_x
-		pixel_y = bolt.pixel_y
+		// tg's range-out hop (delete_distance in projectile.dm) leaves the bolt a tile less twice its
+		// overshoot short of where it ran out, often behind where it was last drawn; start from that point
+		var/shortfall = clamp(ICON_SIZE_ALL - 2 * bolt.pixels_moved_last_tile, 0, ICON_SIZE_ALL)
+		pixel_x = bolt.pixel_x + round(bolt.movement_vector?.pixel_x * shortfall)
+		pixel_y = bolt.pixel_y + round(bolt.movement_vector?.pixel_y * shortfall)
 		layer = bolt.layer
 		plane = bolt.plane
 		base = matrix(bolt.transform)
@@ -330,9 +336,6 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	animate(transform = scaled_copy(base, 0.55), alpha = 90, time = 0.5)
 	animate(transform = scaled_copy(base, 0.45), alpha = 255, time = 0.5)
 	animate(transform = scaled_copy(base, 0.3), alpha = 200, time = 1)
-	// The wisp is drawn upright, whichever way the bolt flew
-	animate(icon_state = "wisp", transform = matrix(), alpha = 255, time = 0)
-	animate(alpha = 0, time = 2)
 	addtimer(CALLBACK(src, PROC_REF(snuff)), 0.3 SECONDS)
 
 /obj/effect/temp_visual/plasma_gutter/proc/scaled_copy(matrix/base, scale)
@@ -340,10 +343,17 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	scaled.Scale(scale)
 	return scaled
 
-/// The core and its light go out when the wisp starts
+/// The core and its light go out and what is left curls into a wisp, all in one update: turning the
+/// sprite upright any earlier would flash the core's emissive upright for a frame
 /obj/effect/temp_visual/plasma_gutter/proc/snuff()
 	cut_overlays()
 	set_light_on(FALSE)
+	// The wisp is drawn upright, whichever way the bolt flew, and fades out in its own frames
+	// The bolt's look came from the projectile icon; the wisp is in ours
+	icon = initial(icon)
+	icon_state = "wisp"
+	// A new animation replaces the shrink
+	animate(src, transform = matrix(), alpha = 255, time = 0)
 
 // ===== Vent puff =====
 
@@ -364,3 +374,4 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 #undef PLASMA_FAR_SOUND_VOL_FAR
 #undef PLASMA_HISSBY_MIN_TRAVEL
 #undef PLASMA_EFFECT_LIGHT_COLOR
+#undef PLASMA_SPLASH_STEAM_KEY
