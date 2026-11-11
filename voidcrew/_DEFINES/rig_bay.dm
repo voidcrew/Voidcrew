@@ -14,6 +14,8 @@
 #define RIG_BAY_HOLD_TIME (20 MINUTES)
 /// Pixels a chained mech hangs above its stand. Release lowers it back to 0.
 #define RIG_BAY_HANG_LIFT 4
+/// How often a due restock retries while something blocks the stand tile.
+#define RIG_BAY_RETRY_DELAY (10 SECONDS)
 
 // Stand states (/obj/structure/rig_bay_stand var/stand_state)
 /// Nothing on the stand; waits for the next due convoy.

@@ -35,6 +35,8 @@
 	var/convoys_waited = 0
 	/// One of the RIG_BAY_STAND_* states.
 	var/stand_state = RIG_BAY_STAND_EMPTY
+	/// While a due restock waits for the stand tile to clear: retries the deal every RIG_BAY_RETRY_DELAY.
+	var/retry_timer
 
 /obj/structure/rig_bay_stand/Destroy()
 	if(held_mech)
@@ -45,6 +47,7 @@
 		if(unsold)
 			qdel(mech)
 	drop_sku()
+	stop_retry()
 	shop = null
 	outpost = null
 	return ..()
@@ -59,7 +62,7 @@
 		return
 	outpost = new_outpost
 	shop = outpost.get_shop(/datum/outpost_shop/vendor/suit_fitter)
-	// P1: shop.attach_stand(src) registers the stand for convoy restocks.
+	shop?.attach_stand(src)
 	if(SSatoms.initialized == INITIALIZATION_INNEW_REGULAR)
 		deal_mech(animate = FALSE)
 	else
@@ -118,7 +121,7 @@
 	mech.set_anchored(TRUE)
 	RegisterSignal(mech, COMSIG_QDELETING, PROC_REF(on_mech_deleted))
 	RegisterSignal(mech, COMSIG_MOVABLE_MOVED, PROC_REF(on_mech_moved))
-	// P1: mech.AddComponent(/datum/component/rig_bay_clamp, src)
+	mech.AddComponent(/datum/component/rig_bay_clamp, src)
 	stand_state = RIG_BAY_STAND_ARRIVING
 	if(animate)
 		mech.alpha = 0
@@ -148,7 +151,10 @@
 	stand_state = RIG_BAY_STAND_RELEASING
 	if(sku)
 		sku.stock = 0
-	// P1: swap /datum/component/rig_bay_clamp for /datum/component/rig_bay_hold (buyer's crew) here.
+	// Chains off, the buyer's hold on, then the lowering. The hold keeps the mech still until it is down.
+	var/datum/voidcrew_crew_record/crew = get_crew_ship(buyer)?.get_crew_record() || buyer?.mind?.get_reputation_crew()
+	qdel(held_mech.GetComponent(/datum/component/rig_bay_clamp))
+	held_mech.AddComponent(/datum/component/rig_bay_hold, crew)
 	to_chat(buyer, span_notice("The chains on bay [bay_number] drop."))
 	animate_release(held_mech, CALLBACK(src, PROC_REF(finish_release), held_mech))
 	return TRUE
@@ -181,6 +187,48 @@
 /obj/structure/rig_bay_stand/proc/apply_hang_pose(obj/vehicle/sealed/mecha/mech)
 	mech.alpha = 255
 	mech.pixel_z = RIG_BAY_HANG_LIFT
+
+/**
+ * The convoy came through. An empty stand counts it toward its pool's convoys_per_refill and deals a
+ * new mech once the count is reached. If the tile is blocked it retries every RIG_BAY_RETRY_DELAY
+ * until the next convoy. A stand with a mech on it (hanging or sold) waits.
+ */
+/obj/structure/rig_bay_stand/proc/convoy_arrived()
+	stop_retry()
+	if(stand_state != RIG_BAY_STAND_EMPTY)
+		convoys_waited = 0
+		return
+	if(++convoys_waited < get_convoys_per_refill())
+		return
+	if(deal_mech(animate = TRUE))
+		convoys_waited = 0
+		return
+	if(stand_state == RIG_BAY_STAND_EMPTY && shop)
+		retry_timer = addtimer(CALLBACK(src, PROC_REF(retry_deal)), RIG_BAY_RETRY_DELAY, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
+
+/// A due restock found the tile blocked. Tries again until it deals or the next convoy takes over.
+/obj/structure/rig_bay_stand/proc/retry_deal()
+	if(stand_state != RIG_BAY_STAND_EMPTY)
+		stop_retry()
+		return
+	if(deal_mech(animate = TRUE))
+		convoys_waited = 0
+		stop_retry()
+
+/obj/structure/rig_bay_stand/proc/stop_retry()
+	if(retry_timer)
+		deltimer(retry_timer)
+		retry_timer = null
+
+/// Convoys an empty stand waits before its next mech, from its pool.
+/obj/structure/rig_bay_stand/proc/get_convoys_per_refill()
+	var/datum/shop_rotation/rig_bay/rotation = shop ? (locate(pool) in shop.live_rotations) : null
+	if(rotation)
+		return max(1, rotation.convoys_per_refill)
+	if(!ispath(pool, /datum/shop_rotation/rig_bay))
+		return 1
+	var/datum/shop_rotation/rig_bay/rotation_type = pool
+	return max(1, initial(rotation_type.convoys_per_refill))
 
 /// TRUE if a new mech can be placed: no mob, mech or other dense thing on the stand tile.
 /obj/structure/rig_bay_stand/proc/tile_clear()
