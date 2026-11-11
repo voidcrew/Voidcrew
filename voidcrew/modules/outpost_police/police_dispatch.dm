@@ -533,13 +533,16 @@
 				called_in = TRUE
 				INVOKE_ASYNC(farthest, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_CLEAR, null, TRUE)
 
-/// Opens an arrest for each suspect of one or two stars who has none, at most one case per two officers
+/**
+ * Opens an arrest for each suspect of one or two stars who has none, one case per two officers, rounded up: a
+ * lone officer still makes the arrest (with nobody to cover them), rather than fighting someone it never cuffs.
+ */
 /datum/outpost_police/proc/dispatch_open_cases()
 	var/available = 0
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
 		if(dispatch_can_respond(officer) && officer.unit_kind != POLICE_UNIT_SERGEANT)
 			available++
-	var/allowed = round(available / 2)
+	var/allowed = round((available + 1) / 2)
 	if(length(cases) >= allowed)
 		return
 	for(var/datum/outpost_warrant/warrant as anything in suspects_at_outpost())

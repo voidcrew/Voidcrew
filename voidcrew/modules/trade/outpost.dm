@@ -233,7 +233,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/door/airlock/outpost/police_doors = list()
 	var/list/obj/machinery/status_display/outpost_berth/police_cell/police_signs = list()
 	var/list/obj/structure/closet/secure_closet/personal/outpost_police/police_lockers = list()
-	var/obj/machinery/outpost_police_evidence/police_chute
+	var/obj/structure/closet/secure_closet/outpost_evidence/police_evidence
 	// The morgue room and janitor closet (voidcrew/modules/outpost_police/recovery_core.dm, link_rooms())
 	var/list/obj/effect/landmark/recovery_landmarks = list()
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
@@ -255,6 +255,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			police_landmarks += police_mark
 		for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
 			police_lockers += locker
+		police_evidence ||= locate(/obj/structure/closet/secure_closet/outpost_evidence) in interior_turf
 		for(var/obj/effect/landmark/outpost_morgue/recovery_mark in interior_turf)
 			recovery_landmarks += recovery_mark
 		for(var/obj/effect/landmark/outpost_janitor_closet/recovery_mark in interior_turf)
@@ -276,8 +277,6 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 					police_doors += door
 			else if(istype(machine, /obj/machinery/status_display/outpost_berth/police_cell))
 				police_signs += machine
-			else if(istype(machine, /obj/machinery/outpost_police_evidence))
-				police_chute = machine
 			else if(istype(machine, /obj/machinery/outpost_checkpoint_sensor))
 				checkpoint_sensors += machine
 			else if(istype(machine, /obj/machinery/outpost_elevator))
@@ -297,7 +296,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// Only parts collected from this concourse reservation form a checkpoint
 	// (outpost_checkpoint.dm); the guards linked above are matched to theirs.
 	build_checkpoints(checkpoint_doors, checkpoint_chambers, checkpoint_sensors)
-	ensure_police().link_interior(police_landmarks, police_doors, police_signs, police_lockers, police_chute)
+	ensure_police().link_interior(police_landmarks, police_doors, police_signs, police_lockers, police_evidence)
 	ensure_recovery().link_rooms(recovery_landmarks)
 	start_armed_sweep()
 	// The traders' names/appearances depend on their shops, so setup runs

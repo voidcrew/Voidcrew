@@ -20,9 +20,14 @@
  *
  * When it goes wrong (spec 6.4): a suspect in crit or dead before the cuffs is left where they lie for
  * OUTPOST_POLICE_CRIT_WAIT with a medic called, then the case closes. A suspect lost after the search still
- * sends the officer to the desk with the evidence. Slipping police cuffs is SLIP_CUFFS, someone else taking
- * them off is ABET, pulling the suspect away is RESIST. A step stuck OUTPOST_POLICE_STEP_TIMEOUT goes back to
- * respond; the third time the case closes and no new one opens on that person for CASE_REOPEN_HOLD.
+ * sends the officer to the evidence locker with the evidence. Slipping police cuffs is SLIP_CUFFS, someone else
+ * taking them off is ABET, pulling the suspect away is RESIST. A suspect who breaks the hold on the walk is run
+ * down and held by tg's aggressive grip after that. A step stuck OUTPOST_POLICE_STEP_TIMEOUT without the officer
+ * getting any nearer goes back to respond; the third time the case ends and no new one opens on that person for
+ * CASE_REOPEN_HOLD. A case that ends with our cuffs still on the suspect first sends an officer to take them off
+ * (the release step), and a booking with no cell to be had fines and frees them on the spot: nobody is left in
+ * police cuffs. A suspect stunned short of crit in front of an officer at one or two stars is arrested where
+ * they lie (arrest_downed(), from the stealth layer).
  * No healing, no moving a downed body, no state of our own on the suspect: what they feel is tg's baton,
  * cuffs and pull.
  */
@@ -39,6 +44,8 @@
 #define CASE_STEP_BOOK "book"
 /// Standing by a suspect who went down before the cuffs
 #define CASE_STEP_DOWNED "standby"
+/// The arrest is called off with our cuffs still on them: an officer goes and takes them off
+#define CASE_STEP_RELEASE "release"
 
 // ===== ACTIONS (`case.acting`) =====
 
@@ -48,12 +55,16 @@
 #define CASE_ACT_DISPOSING "disposing"
 #define CASE_ACT_BOOKING "booking"
 #define CASE_ACT_RECOVERING "recovering"
+#define CASE_ACT_RELEASING "releasing"
 
 /// Blackboard key: where the officer's case sends them
 #define BB_OUTPOST_POLICE_CASE_GOAL "outpost_police_case_goal"
 
-/// An action that has not come back in this long is taken as broken (a runtime inside it) and let go
-#define CASE_ACTION_STUCK (2 MINUTES)
+/// An action that has not come back in this long is taken as broken (a runtime inside it) and let go. The
+/// longest real one, booking with the jail strip, is well under it.
+#define CASE_ACTION_STUCK (45 SECONDS)
+/// Tries at picking an evidence case back up before it is left where it lies (the arrest goes on without it)
+#define CASE_RECOVER_TRIES 3
 /// After a case closes on timeouts, no new case opens on that person for this long (the warrant may fade)
 #define CASE_REOPEN_HOLD (2 MINUTES)
 /// How far the cover officer keeps from the arresting one
@@ -99,6 +110,22 @@
 	case.staff()
 	wake()
 	return case
+
+/**
+ * `fallen` went down short of crit (stamina, a stun, a knockdown) in front of an officer: at one or two stars they
+ * are arrested where they lie, whatever the case limit or a hold from an earlier case. TRUE if an arrest is on them.
+ */
+/datum/outpost_police/proc/arrest_downed(mob/living/fallen)
+	if(!iscarbon(fallen) || QDELETED(fallen) || !fallen.mind || fallen.stat == DEAD || HAS_TRAIT(fallen, TRAIT_CRITICAL_CONDITION))
+		return FALSE
+	var/datum/outpost_warrant/warrant = get_warrant(fallen.mind)
+	if(!warrant)
+		return FALSE
+	var/stars = get_stars(fallen.mind)
+	if(stars < 1 || stars > 2)
+		return FALSE
+	LAZYREMOVE(case_holds, fallen.mind)
+	return !isnull(open_case(warrant))
 
 /// Closes `who`'s arrest, if any
 /datum/outpost_police/proc/close_case(datum/mind/who)
@@ -172,6 +199,18 @@
 	var/list/said
 	/// The arresting officer the last time staff() ran
 	var/datum/weakref/last_arresting_ref
+	/// Nearest the arresting officer has got to what it walks to this step: closing in keeps the step's clock fresh
+	var/progress_dist = INFINITY
+	/// REF() of what progress_dist is measured to
+	var/progress_target
+	/// world.time until which the police lift is not tried again (a ride that went nowhere): the officer walks
+	var/ride_failed_until = 0
+	/// Failed tries at picking the evidence case back up
+	var/recover_tries = 0
+	/// The officer had hold of the suspect on the walk
+	var/escort_held = FALSE
+	/// Times the suspect got out of the officer's hold on the walk: after the first, the hold is a firm grip
+	var/pull_breaks = 0
 
 /datum/outpost_police_case/New(datum/outpost_police/new_police, datum/outpost_warrant/new_warrant)
 	. = ..()
@@ -216,6 +255,7 @@
 /datum/outpost_police_case/proc/set_step(new_step)
 	step = new_step
 	step_started_at = world.time
+	progress_dist = INFINITY
 	goal = null
 
 /// Sends the arresting officer to `where`, stopping `distance` from it (null: stand)
@@ -232,13 +272,40 @@
 	if(!QDELETED(src))
 		qdel(src)
 
+/**
+ * Ends the case, unless the suspect still wears our cuffs with nobody booking them: then an officer goes and takes
+ * them off first (the release step), so nobody is left in police cuffs when an arrest is called off.
+ */
+/datum/outpost_police_case/proc/finish()
+	if(QDELETED(src))
+		return
+	if(step != CASE_STEP_RELEASE && needs_release())
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
+		var/mob/living/carbon/suspect = suspect_ref?.resolve()
+		if(officer && suspect && officer.pulling == suspect)
+			officer.stop_pulling()
+		unregister_order(suspect)
+		lift_goal = null
+		set_step(CASE_STEP_RELEASE)
+		return
+	close()
+
+/// Whether the suspect still wears the used police cuffs this arrest put on, alive and at our outpost
+/datum/outpost_police_case/proc/needs_release()
+	var/mob/living/carbon/suspect = suspect_ref?.resolve()
+	if(!police || QDELETED(suspect) || suspect.stat == DEAD || booked_at || !police_cuffs)
+		return FALSE
+	if(!istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used))
+		return FALSE
+	return get_trader_outpost_for_turf(get_turf(suspect)) == police.outpost
+
 /// The case goes back to the start (a step timed out). The third time it closes and the warrant is left to fade.
 /datum/outpost_police_case/proc/reset_case()
 	resets++
 	if(resets >= 3)
 		if(police && warrant?.mind)
 			LAZYSET(police.case_holds, warrant.mind, world.time + CASE_REOPEN_HOLD)
-		close()
+		finish()
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 	var/mob/living/carbon/suspect = get_suspect()
@@ -418,6 +485,9 @@
 		if(world.time - acting_since < CASE_ACTION_STUCK)
 			return
 		acting = null
+	if(step == CASE_STEP_RELEASE)
+		process_release()
+		return
 	var/mob/living/carbon/suspect = get_suspect()
 	if(check_close(suspect))
 		return
@@ -433,12 +503,30 @@
 		// Nobody to work it: the case waits for dispatch, and the clock waits with it
 		step_started_at = world.time
 		return
-	if(step != CASE_STEP_DOWNED && step != CASE_STEP_BOOK && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
+	if(step != CASE_STEP_DOWNED && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
 		reset_case()
 		return
 	if(recover_evidence(officer))
 		return
 	run_step()
+
+/// The release step, once a second: an officer walks up to the suspect and takes our cuffs off. It ends when they
+/// are off, the suspect is gone, or the step's time is up.
+/datum/outpost_police_case/proc/process_release()
+	if(!needs_release())
+		close()
+		return
+	staff()
+	if(QDELETED(src))
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
+	if(!officer)
+		step_started_at = world.time
+		return
+	if(world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
+		close()
+		return
+	step_release()
 
 /// Runs the current step's proc
 /datum/outpost_police_case/proc/run_step()
@@ -461,6 +549,8 @@
 			step_book()
 		if(CASE_STEP_DOWNED)
 			step_downed()
+		if(CASE_STEP_RELEASE)
+			step_release()
 
 /**
  * Whether the case is over, and closes it if so: the warrant gone, no stars, three or more stars on someone
@@ -468,7 +558,7 @@
  */
 /datum/outpost_police_case/proc/check_close(mob/living/carbon/suspect)
 	if(!warrant?.mind || police.get_warrant(warrant.mind) != warrant)
-		close()
+		finish()
 		return TRUE
 	if(!suspect || get_trader_outpost_for_turf(get_turf(suspect)) != police.outpost)
 		if(!searched || disposed_at)
@@ -481,7 +571,7 @@
 	var/stars = police.get_stars(warrant.mind)
 	// In cuffs at three stars they are no danger to anyone: the arrest carries on
 	if(stars <= 0 || (stars >= 3 && !cuffed))
-		close()
+		finish()
 		return TRUE
 	return FALSE
 
@@ -576,6 +666,13 @@
 		evidence_ref = null
 		return FALSE
 	if(evidence in officer.get_all_contents())
+		recover_tries = 0
+		return FALSE
+	if(recover_tries >= CASE_RECOVER_TRIES)
+		// It cannot be carried: left where it lies, and the arrest goes on without it
+		log_game("OUTPOST POLICE: [key_name(officer)] could not pick up the evidence ([evidence]) at [AREACOORD(evidence)].")
+		evidence_ref = null
+		recover_tries = 0
 		return FALSE
 	var/atom/holder = evidence.loc
 	if(isturf(holder))
@@ -604,9 +701,17 @@
 	if(here.z == there.z && get_dist(here, there) <= distance)
 		set_goal(null)
 		return TRUE
+	// Closing in (a chase, a long walk) is progress: the step only times out once the officer stops getting nearer
+	if(progress_target != REF(target))
+		progress_target = REF(target)
+		progress_dist = INFINITY
+	var/dist = here.z == there.z ? get_dist(here, there) : INFINITY
+	if(dist < progress_dist)
+		progress_dist = dist
+		step_started_at = world.time
 	var/from_sector = police.sector_of(here)
 	var/to_sector = police.sector_of(there)
-	if(from_sector == to_sector)
+	if(from_sector == to_sector || world.time < ride_failed_until)
 		lift_goal = null
 		set_goal(target, distance)
 		return FALSE
@@ -624,15 +729,38 @@
 	begin_action(CASE_ACT_RIDING)
 	return FALSE
 
-/// Keeps `officer` pulling the suspect, walking up to them first. TRUE while pulling.
+/**
+ * Keeps `officer` pulling the suspect, running after them first if they got away. Once they have broken free on
+ * the walk, the officer takes tg's aggressive grip instead of a plain pull. TRUE while holding them.
+ */
 /datum/outpost_police_case/proc/keep_pulling(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
 	if(officer.pulling == suspect)
+		escort_held = TRUE
+		if(pull_breaks && officer.grab_state < GRAB_AGGRESSIVE && officer.Adjacent(suspect))
+			suspect.grabbedby(officer, TRUE)
+		police_case_pace(officer, FALSE)
 		return TRUE
+	if(escort_held)
+		escort_held = FALSE
+		pull_breaks++
 	if(!officer.Adjacent(suspect))
+		police_case_pace(officer, TRUE)
 		route_to(officer, suspect, 1)
 		return FALSE
 	officer.start_pulling(suspect)
-	return officer.pulling == suspect
+	if(officer.pulling != suspect)
+		return FALSE
+	escort_held = TRUE
+	if(pull_breaks)
+		suspect.grabbedby(officer, TRUE)
+	police_case_pace(officer, FALSE)
+	return TRUE
+
+/// The arresting officer runs after a suspect and walks one it holds
+/datum/outpost_police_case/proc/police_case_pace(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, run)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer?.ai_controller
+	if(istype(brain) && !officer.client)
+		brain.stealth_set_pace(run)
 
 /// Stops listening for the suspect's steps after the order
 /datum/outpost_police_case/proc/unregister_order(mob/living/carbon/suspect)
@@ -662,6 +790,7 @@
 		officer.police_alert_on(suspect)
 		after_contact()
 		return
+	police_case_pace(officer, TRUE)
 	if(police.perception?.sees(officer, suspect))
 		police.note_seen(warrant.mind, get_turf(suspect))
 		if(get_dist(officer, suspect) <= CASE_CONTACT_RANGE)
@@ -809,21 +938,31 @@
 		if(!suspect || !keep_pulling(officer, suspect))
 			return
 		say_once(officer, POLICE_LINE_WALK, suspect)
-	var/turf/desk = police.desk_turf
+	var/atom/desk = evidence_spot(officer)
 	if(!desk || route_to(officer, desk, 1))
 		set_step(CASE_STEP_DESK)
 
-/// Desk: the evidence is dealt with (the chute and the lockers, P12), then on to the cell door. A lost suspect's case ends here.
+/// Where the evidence goes: the evidence locker, or the desk when the station has none; null with no evidence to take
+/datum/outpost_police_case/proc/evidence_spot(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(disposed_at || !(locate(/obj/item/outpost_sealed_case/evidence) in officer.get_all_contents()))
+		return null
+	return police.get_evidence_locker() || police.desk_turf
+
+/// Desk: the evidence goes in the evidence locker (P12), then on to the cell door. A lost suspect's case ends here.
 /datum/outpost_police_case/proc/step_desk()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 	if(!officer)
 		return
 	if(!disposed_at)
-		var/turf/desk = police.desk_turf
-		if(!desk || route_to(officer, desk, 1))
-			set_goal(null)
-			begin_action(CASE_ACT_DISPOSING)
-		return
+		var/atom/desk = evidence_spot(officer)
+		if(!desk)
+			// Nothing taken, or nothing carried any more: straight on
+			disposed_at = world.time
+		else
+			if(route_to(officer, desk, 1))
+				set_goal(null)
+				begin_action(CASE_ACT_DISPOSING)
+			return
 	if(suspect_lost)
 		close()
 		return
@@ -873,6 +1012,17 @@
 			LAZYSET(police.case_holds, warrant.mind, world.time + CASE_REOPEN_HOLD)
 		close()
 
+/// Release: up to the suspect (who may have walked off in our cuffs), then the cuffs off
+/datum/outpost_police_case/proc/step_release()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
+	var/mob/living/carbon/suspect = suspect_ref?.resolve()
+	if(!officer || QDELETED(suspect))
+		return
+	police_case_pace(officer, !officer.Adjacent(suspect))
+	if(!route_to(officer, suspect, 1))
+		return
+	begin_action(CASE_ACT_RELEASING)
+
 // =========================================================================
 // ACTIONS (what takes time on a body; through INVOKE_ASYNC, the officer holding still)
 // =========================================================================
@@ -906,6 +1056,8 @@
 				act_book(officer, suspect)
 			if(CASE_ACT_RECOVERING)
 				act_recover(officer)
+			if(CASE_ACT_RELEASING)
+				act_release(officer, suspect_ref?.resolve())
 	if(!QDELETED(src) && acting == action)
 		acting = null
 
@@ -916,11 +1068,13 @@
 	var/obj/item/restraints/handcuffs/cuffs = officer.get_cuffs()
 	if(!cuffs)
 		return
-	if(!officer.is_holding(cuffs))
+	if(!officer.is_holding(cuffs) && officer.police_free_hand())
 		human_npc_take_in_hand(officer, cuffs)
 	officer.face_atom(suspect)
 	say_once(officer, POLICE_LINE_CUFF, suspect)
 	cuffs.attempt_to_cuff(suspect, officer)
+	// The pair goes back on the belt: a hand is wanted for the evidence and the walk
+	officer.police_put_away(cuffs)
 	if(QDELETED(src) || QDELETED(suspect))
 		return
 	if(suspect.handcuffed)
@@ -937,6 +1091,8 @@
 	searched = TRUE
 	search_calls++
 	officer.police_say(POLICE_LINE_SEARCH, line_values(suspect))
+	// Hands full (a drawn gun, the baton): something goes away so the case has a hand to go in
+	officer.police_free_hand()
 	var/obj/item/found = police.confiscate(suspect, officer)
 	if(QDELETED(src))
 		return
@@ -947,13 +1103,16 @@
 /// The police lift, with whoever they pull (P4)
 /datum/outpost_police_case/proc/act_ride(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	var/to_sector = ride_sector
-	police.ride(officer, to_sector)
+	var/arrived = police.ride(officer, to_sector)
 	if(QDELETED(src))
 		return
+	if(!arrived)
+		// The lift went nowhere (no lift point on the far side, or the ride was broken off): walk for a while
+		ride_failed_until = world.time + 30 SECONDS
 	lift_goal = null
 	ride_sector = null
 
-/// At the desk: the chute and the lockers (P12)
+/// At the evidence locker: the evidence goes in it (P12)
 /datum/outpost_police_case/proc/act_dispose(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	if(disposed_at)
 		return
@@ -977,7 +1136,21 @@
 		return
 	if(!shut)
 		log_game("OUTPOST POLICE: [key_name(suspect)] was not put in a cell at [police.outpost] ([AREACOORD(suspect)]).")
-	close()
+		// No cell to be had: the fine on the spot and the cuffs off, never a suspect left in cuffs
+		var/datum/outpost_warrant/booked_warrant = suspect.mind ? police.get_warrant(suspect.mind) : null
+		if(!QDELETED(suspect) && suspect.stat != DEAD && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police) && officer.Adjacent(suspect))
+			if(booked_warrant)
+				police.cell_book_fallback(suspect, officer, booked_warrant)
+			else
+				police.cell_remove_cuffs(suspect, officer)
+	if(QDELETED(src))
+		return
+	if(shut)
+		close()
+		return
+	// Not held: whatever cuffs are still on are ours to take off
+	booked_at = 0
+	finish()
 
 /// Takes the evidence case off the floor, or off a fallen officer the way stripping them would
 /datum/outpost_police_case/proc/act_recover(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
@@ -996,7 +1169,17 @@
 	else if(!isturf(holder) || !officer.Adjacent(evidence))
 		return
 	if(!QDELETED(evidence) && isturf(evidence.loc))
-		officer.put_in_hands(evidence)
+		officer.police_carry(evidence)
+	if(!QDELETED(src) && !QDELETED(evidence) && !(evidence in officer.get_all_contents()))
+		recover_tries++
+
+/// The cuffs off, with the strip menu's wait; the case is over once they are off
+/datum/outpost_police_case/proc/act_release(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	if(QDELETED(suspect))
+		return
+	outpost_police_take_cuffs_off(officer, suspect)
+	if(!QDELETED(src) && !needs_release())
+		close()
 
 /// `officer` takes the police cuffs off `suspect` (an arrest called off), with the same wait as the strip menu's
 /proc/outpost_police_take_cuffs_off(mob/living/carbon/human/officer, mob/living/carbon/suspect)
