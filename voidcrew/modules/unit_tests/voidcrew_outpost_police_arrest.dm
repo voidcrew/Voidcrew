@@ -59,7 +59,10 @@
 		TEST_FAIL("No case opened on a suspect at [heat] heat")
 		return null
 	if(case.arresting() != officer)
-		TEST_FAIL("The officer beside the suspect is not the arresting officer ([case.arresting()])")
+		var/list/roster = list()
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/someone in police.officers)
+			roster += "[someone] ([someone.unit_kind], [get_dist(someone, suspect)] tiles, case [someone.case ? "yes" : "no"])"
+		TEST_FAIL("The officer beside the suspect is not the arresting officer ([case.arresting()]). Roster: [jointext(roster, "; ")]")
 		return null
 	return list(officer, suspect, case)
 
@@ -229,6 +232,8 @@
 	TEST_ASSERT(!police.cases[suspect.mind], "The suspect in crit still has a case")
 	TEST_ASSERT(!officer.case, "The officer is still on a closed case")
 	TEST_ASSERT_NULL(police.open_case(police.warrants[suspect.mind]), "A case opened on a suspect still in crit")
+	// The first officer is free again and may stand as near the next suspect as the new one: off the roster
+	police.remove_officer(officer)
 
 	// Cuffed, searched, then dead: no more escort, but the evidence still goes to the desk
 	var/list/more = police_arrest_setup(outpost)
@@ -473,18 +478,21 @@
 		police.close_case(suspect.mind)
 	warrant.heat = 0
 
-	// One free officer is enough to open an arrest: the cases allowed are half the free officers, rounded up
+	// One free officer is enough to open an arrest: the cases allowed are half the free officers, rounded up.
+	// The test's seconds with nobody on the concourse may have paused the outpost's NPCs: wake them first.
+	SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
 	var/available = 0
+	var/list/roster = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/someone in police.officers)
+		roster += "[someone] (stat [someone.stat], paused [someone.paused_at], out of fight [human_npc_out_of_fight(someone)], exit [someone.npc_exit], fading [someone.fading])"
 		if(police.dispatch_can_respond(someone) && someone.unit_kind != "sergeant") // POLICE_UNIT_SERGEANT
 			available++
-	TEST_ASSERT(available >= 1, "No officer is free")
+	TEST_ASSERT(available >= 1, "No officer is free. Roster: [jointext(roster, "; ")]")
 	var/mob/living/carbon/human/other = police_arrest_person(police_floor(outpost))
 	var/datum/outpost_warrant/other_warrant = police_pin_warrant(police, other.mind, 12) // one star
 	for(var/datum/mind/open_mind as anything in police.cases.Copy())
 		police.close_case(open_mind)
 	if(available == 1)
-		SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
 		police.dispatch_open_cases()
 		police.sleep_tick()
 		TEST_ASSERT_NOTNULL(police.cases[other.mind], "A lone free officer opened no arrest")
@@ -516,6 +524,9 @@
 	case.set_step("escort")
 	case.step_escort()
 	TEST_ASSERT_EQUAL(officer.pulling, suspect, "The officer did not take hold of a cuffed suspect")
+	// With no evidence to put away the walk goes straight on to the cell door (the desk step): either way, a walk
+	var/walk_step = case.step
+	TEST_ASSERT(walk_step in list("escort", "desk"), "After taking hold the arrest is on [walk_step], not the walk")
 
 	// They break free and run off in the cuffs
 	officer.stop_pulling()
@@ -527,7 +538,7 @@
 	TEST_ASSERT_EQUAL(case.pull_breaks, 1, "A broken hold was not noticed")
 	TEST_ASSERT_EQUAL(case.goal, suspect, "The officer is not going after a suspect who ran in cuffs")
 	TEST_ASSERT_EQUAL(officer.move_intent, MOVE_INTENT_RUN, "The officer walks after a suspect who ran")
-	TEST_ASSERT(!QDELETED(case) && case.step == "escort", "The arrest gave up on a suspect who ran in cuffs")
+	TEST_ASSERT(!QDELETED(case) && case.step == walk_step, "The arrest gave up on a suspect who ran in cuffs (the case is on [QDELETED(case) ? "nothing" : case.step], not [walk_step])")
 
 	// Caught up: held again, firmly this time
 	officer.forceMove(police_arrest_beside(suspect))
