@@ -530,7 +530,36 @@
 		else
 			for(var/datum/nanite_program/NP as anything in programs)
 				to_chat(user, span_info("<b>[NP.name]</b> | [NP.force_disabled ? "Crashed" : (NP.activated ? "Active" : "Inactive")]"))
+			for(var/datum/nanite_program/missing as anything in get_missing_cloud_programs())
+				to_chat(user, span_info("<b>[missing.name]</b> | Not installed"))
 		return TRUE
+
+/**
+ * Programs on the host's cloud backup that the host isn't running, matched by type the same way a
+ * sync pairs them. Empty without a reachable cloud. [cloud] overrides the lookup.
+ */
+/datum/component/nanites/proc/get_missing_cloud_programs(datum/component/nanites/cloud)
+	. = list()
+	if(!cloud)
+		if(!cloud_id)
+			return
+		var/obj/structure/overmap/cloud_ship = cloud_ship_ref?.resolve()
+		if(!cloud_ship)
+			return
+		var/datum/nanite_cloud_backup/backup = SSnanites.get_cloud_backup(cloud_id, FALSE, cloud_ship)
+		cloud = backup?.nanites
+		if(!cloud)
+			return
+	var/list/unmatched = programs.Copy()
+	for(var/datum/nanite_program/cloud_program as anything in cloud.programs)
+		var/matched = FALSE
+		for(var/datum/nanite_program/host_program as anything in unmatched)
+			if(host_program.type == cloud_program.type)
+				unmatched -= host_program
+				matched = TRUE
+				break
+		if(!matched)
+			. += cloud_program
 
 /datum/component/nanites/proc/nanite_ui_data(datum/source, list/data, scan_level)
 	SIGNAL_HANDLER
@@ -594,6 +623,10 @@
 		id++
 		mob_programs += list(mob_program)
 	data["mob_programs"] = mob_programs
+	var/list/missing_programs = list()
+	for(var/datum/nanite_program/missing as anything in get_missing_cloud_programs())
+		missing_programs += list(list("name" = missing.name, "load" = missing.capacity_cost()))
+	data["missing_programs"] = missing_programs
 
 #undef NANITE_DEFAULT_MAX_VOLUME
 

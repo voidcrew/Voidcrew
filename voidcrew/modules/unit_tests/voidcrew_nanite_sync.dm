@@ -104,3 +104,48 @@
 	for(var/datum/nanite_rule/rule as anything in copy_rules)
 		TEST_ASSERT(QDELETED(rule), "Deleting a copied program left a rule alive")
 		TEST_ASSERT_NULL(rule.program, "Copied program's rule kept a reference to it")
+
+/// Cloud order decides which program a full host keeps, and the skipped one reads as not installed.
+/datum/unit_test/voidcrew_nanite_cloud_order
+
+/datum/unit_test/voidcrew_nanite_cloud_order/Run()
+	var/obj/machinery/computer/nanite_cloud_controller/controller = allocate(/obj/machinery/computer/nanite_cloud_controller)
+	var/datum/nanite_cloud_backup/backup = allocate(/datum/nanite_cloud_backup, controller)
+	var/datum/component/nanites/cloud = backup.AddComponent(/datum/component/nanites)
+	backup.nanites = cloud
+	var/datum/nanite_program/nervous/cloud_nerves = allocate(/datum/nanite_program/nervous)
+	var/datum/nanite_program/hardening/cloud_armor = allocate(/datum/nanite_program/hardening)
+	cloud.add_program(null, cloud_nerves)
+	cloud.add_program(null, cloud_armor)
+
+	var/datum/component/nanites/first_host = make_full_host()
+	first_host.sync_programming(cloud)
+	TEST_ASSERT(locate(/datum/nanite_program/nervous) in first_host.programs, "First cloud program didn't install")
+	TEST_ASSERT(!(locate(/datum/nanite_program/hardening) in first_host.programs), "Second cloud program installed past capacity")
+	var/list/missing = first_host.get_missing_cloud_programs(cloud)
+	TEST_ASSERT_EQUAL(length(missing), 1, "Not-installed list has the wrong length")
+	TEST_ASSERT_EQUAL(missing[1], cloud_armor, "Not-installed list doesn't name the skipped program")
+
+	TEST_ASSERT(!controller.move_backup_program(cloud, cloud_nerves, -1), "Moved the first program above the top")
+	TEST_ASSERT(!controller.move_backup_program(cloud, cloud_armor, 1), "Moved the last program below the bottom")
+	cloud_armor.activation_code = 55
+	TEST_ASSERT(controller.move_backup_program(cloud, cloud_armor, -1), "Couldn't move a program up")
+	TEST_ASSERT_EQUAL(cloud.programs[1], cloud_armor, "Move didn't reorder the backup")
+	TEST_ASSERT_EQUAL(cloud_armor.activation_code, 55, "Move changed the program's settings")
+
+	var/datum/component/nanites/second_host = make_full_host()
+	second_host.sync_programming(cloud)
+	TEST_ASSERT(locate(/datum/nanite_program/hardening) in second_host.programs, "Reordered program didn't take priority")
+	TEST_ASSERT(!(locate(/datum/nanite_program/nervous) in second_host.programs), "Lower program installed past capacity")
+	missing = second_host.get_missing_cloud_programs(cloud)
+	TEST_ASSERT_EQUAL(length(missing), 1, "Not-installed list has the wrong length after reorder")
+	TEST_ASSERT_EQUAL(missing[1], cloud_nerves, "Not-installed list doesn't name the newly skipped program")
+
+/// A host whose chrome leaves room for one 3-load program, not two.
+/datum/unit_test/voidcrew_nanite_cloud_order/proc/make_full_host()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/test_heavy/heavy = allocate(/obj/item/organ/cyberimp/cyberware/test_heavy)
+	heavy.Insert(patient, TRUE)
+	var/datum/component/nanites/nanites = patient.AddComponent(/datum/component/nanites)
+	STOP_PROCESSING(SSnanites, nanites)
+	return nanites

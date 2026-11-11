@@ -481,22 +481,44 @@ export const NaniteCloudBackupDetails = (props, context) => {
           />
         )
       }>
-      {cloud_programs.map((program) => {
+      {cloud_programs.map((program, index) => {
         const rules = program.rules || [];
         return (
           <Collapsible
             key={program.name}
             title={program.name}
             buttons={
-              <Button
-                icon="minus-circle"
-                color="bad"
-                onClick={() =>
-                  act('remove_program', {
-                    program_id: program.id,
-                  })
-                }
-              />
+              <>
+                <Button
+                  icon="arrow-up"
+                  disabled={index === 0}
+                  onClick={() =>
+                    act('move_program', {
+                      program_id: program.id,
+                      offset: -1,
+                    })
+                  }
+                />
+                <Button
+                  icon="arrow-down"
+                  disabled={index === cloud_programs.length - 1}
+                  onClick={() =>
+                    act('move_program', {
+                      program_id: program.id,
+                      offset: 1,
+                    })
+                  }
+                />
+                <Button
+                  icon="minus-circle"
+                  color="bad"
+                  onClick={() =>
+                    act('remove_program', {
+                      program_id: program.id,
+                    })
+                  }
+                />
+              </>
             }>
             <Section>
               <NaniteInfoBox program={program} />

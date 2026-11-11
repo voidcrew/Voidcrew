@@ -35,6 +35,7 @@ export const NaniteChamberControlContent = (props, context) => {
   }
 
   const mob_programs = data.mob_programs || [];
+  const missing_programs = data.missing_programs || [];
   const load_segments = data.load_segments || [];
 
   return (
@@ -286,6 +287,12 @@ export const NaniteChamberControlContent = (props, context) => {
                 </Collapsible>
               );
             })}
+            {missing_programs.map((program, i) => (
+              <Flex key={'missing' + i} color="label" ml={1} lineHeight="20px">
+                <Flex.Item grow={1}>{program.name}</Flex.Item>
+                <Flex.Item mr={1}>Not installed</Flex.Item>
+              </Flex>
+            ))}
           </Section>
         </>
       )}
