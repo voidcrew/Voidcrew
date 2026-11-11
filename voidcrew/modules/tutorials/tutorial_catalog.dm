@@ -539,18 +539,72 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/chrome_buy
 	key = TUTORIAL_STEP_CHROME_BUY
 	name = "Buy chrome"
-	text = "The general store sells street chrome. The Chop Shop in the red zone sells the rest."
+	text = "Halcyon's general store sells a little street chrome. The Back Bay at Quartermain Depot sells more, and the Chop Shop in the red zone sells the rest."
+	highlight_types = list(/mob/living/basic/outpost_trader)
+
+/// Only traders whose shelf holds chrome.
+/datum/vc_tutorial_step/chrome_buy/highlight_filter(mob/user, atom/candidate)
+	var/mob/living/basic/outpost_trader/trader = candidate
+	if(!istype(trader))
+		return FALSE
+	return tutorial_shop_sells_chrome(trader.shop)
+
+/// Chrome found in the field and fitted counts: nobody has to buy what they already wear.
+/datum/vc_tutorial_step/chrome_buy/excused(mob/user)
+	. = ..()
+	if(!.)
+		. = SSvc_tutorials.has_key(tutorial_viewer_ckey(user), TUTORIAL_STEP_CHROME_INSTALL)
 
 /datum/vc_tutorial_step/chrome_install
 	key = TUTORIAL_STEP_CHROME_INSTALL
 	name = "Get it installed"
-	text = "Lie in the Chop Shop's Chrome Cradle, or have it put in by surgery."
+	text = "Lie in a Chrome Cradle at the Back Bay or the Chop Shop, pick the part and press Install. Surgery can fit it too."
 	highlight_types = list(/obj/machinery/chrome_cradle)
+	ui_focus = list("cradle" = "cradle_install")
+
+/// Cradles are outpost machines, never in a ship scan: any on the viewer's z-level, so the
+/// arrow can lead to one.
+/datum/vc_tutorial_step/chrome_install/extra_targets(mob/user)
+	. = list()
+	var/turf/here = get_turf(user)
+	if(!here)
+		return
+	for(var/obj/machinery/chrome_cradle/cradle as anything in SSmachines.get_machines_by_type(/obj/machinery/chrome_cradle))
+		if(cradle.z == here.z)
+			. += cradle
+
+/datum/vc_tutorial_step/chrome_install/live_line(mob/user)
+	var/obj/item/organ/ware = tutorial_carried_chrome(user)
+	if(!ware)
+		return null
+	var/where = parse_zone(deprecise_zone(ware.zone))
+	if(!cyberware_insert_check(ware, user, silent = TRUE))
+		return "[format_text(ware.name)] ([where]) won't fit."
+	return "[format_text(ware.name)] goes in your [where]."
+
+/// Chrome already in the body counts, whoever fitted it and whenever.
+/datum/vc_tutorial_step/chrome_install/state_satisfied(mob/user)
+	return length(get_installed_cyberware(user)) > 0
 
 /datum/vc_tutorial_step/chrome_execute
 	key = TUTORIAL_STEP_CHROME_EXECUTE
 	name = "Do an execution"
-	text = "Get someone down, then finish them with Gorilla Arms, Mantis Blades or a Widowline."
+	text = "Get someone down, stand square on, then finish them with Brawler Myomers, Gorilla Arms, Mantis Blades or a Widowline."
+
+/datum/vc_tutorial_step/chrome_execute/live_line(mob/user)
+	var/list/state = tutorial_chrome_finisher_state(user)
+	return state[1]
+
+/// Someone the viewer could finish right now, if they carry a finisher. Only bodies already
+/// down within a few tiles, in plain sight.
+/datum/vc_tutorial_step/chrome_execute/extra_targets(mob/user)
+	. = list()
+	var/list/state = tutorial_chrome_finisher_state(user)
+	if(!state[2])
+		return
+	for(var/mob/living/carbon/victim in oview(3, user))
+		if(chrome_finisher_valid_victim(user, victim))
+			. += victim
 
 // ---------------------------------------------------------------------------
 // First surgery
@@ -571,19 +625,75 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/surgery_start
 	key = TUTORIAL_STEP_SURGERY_START
 	name = "Start an operation"
-	text = "Lay a hurt crewmate down, cover them with a bedsheet or surgical drapes and pick Tend Wounds. The autolathe prints the tools."
-	highlight_types = list(/obj/structure/table/optable)
+	text = "Lay a crewmate or yourself on a table or bed, cover them with a bedsheet or surgical drapes, aim at the chest and pick Tend Wounds. The autolathe prints the tools."
+	highlight_types = list(/obj/structure/table, /obj/structure/bed, /obj/item/bedsheet)
+	ui_focus = list("surgery" = "surgery_tend_wounds")
+
+/// Missing tools: the autolathe. Then a sheet. Then somewhere to lie down.
+/datum/vc_tutorial_step/surgery_start/extra_targets(mob/user)
+	. = list()
+	var/list/missing = tutorial_surgery_missing(user)
+	if(!length(missing) || (length(missing) == 1 && missing[1] == "a sheet"))
+		return
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(user)
+	if(!ship)
+		return
+	for(var/obj/machinery/autolathe/lathe as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/autolathe))
+		if(lathe.z == user.z && get_ship_from_atom(lathe) == ship)
+			. += lathe
+
+/datum/vc_tutorial_step/surgery_start/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/machinery/autolathe))
+		return TRUE
+	var/list/missing = tutorial_surgery_missing(user)
+	if(istype(candidate, /obj/item/bedsheet))
+		return length(missing) == 1 && missing[1] == "a sheet"
+	return !length(missing)
+
+/datum/vc_tutorial_step/surgery_start/live_line(mob/user)
+	var/list/missing = tutorial_surgery_missing(user)
+	if(!length(missing))
+		return null
+	return "Missing: [english_list(missing)]."
 
 /datum/vc_tutorial_step/surgery_finish
 	key = TUTORIAL_STEP_SURGERY_FINISH
 	name = "Finish it"
-	text = "Work through each step with the right tool until the wound is closed."
+	text = "Use the tool each step names, in your active hand, until you mend the incision."
+
+/datum/vc_tutorial_step/surgery_finish/live_line(mob/user)
+	var/datum/surgery/operation = tutorial_surgery_in_reach(user)
+	var/datum/surgery_step/next = operation && GLOB.surgery_steps[operation.steps[operation.status]]
+	if(!next)
+		return null
+	return "Next: [next.name]."
+
+/// The patient of an operation the viewer is working on (never the viewer themselves).
+/datum/vc_tutorial_step/surgery_finish/extra_targets(mob/user)
+	. = list()
+	var/datum/surgery/operation = tutorial_surgery_in_reach(user)
+	var/mob/living/patient = operation?.target
+	if(patient && patient != user)
+		. += patient
 
 /datum/vc_tutorial_step/surgery_dissect
 	key = TUTORIAL_STEP_SURGERY_DISSECT
 	name = "Dissect a body"
-	text = "Lay a corpse or dead creature on a table, cover it with a bedsheet or surgical drapes and pick Dissection. What you learn goes into your ship's research."
+	text = "Lay a corpse or dead creature on a table, cover it, aim at the chest and pick Dissection. Take the notes it gives you to an R&D console."
 	highlight_types = list(/obj/structure/table/optable)
+	ui_focus = list("surgery" = "surgery_dissection")
+
+/// Dead bodies in sight that still have something to teach.
+/datum/vc_tutorial_step/surgery_dissect/extra_targets(mob/user)
+	. = list()
+	var/static/datum/surgery_step/experimental_dissection/pricer
+	if(!pricer)
+		pricer = new
+	for(var/mob/living/body in oview(9, user))
+		if(body.stat != DEAD || HAS_TRAIT(body, TRAIT_DISSECTED) || !isturf(body.loc))
+			continue
+		if(pricer.check_value(body) > body.dissection_points_paid)
+			. += body
 
 // ---------------------------------------------------------------------------
 // Zones (replaces the old orientation briefing)

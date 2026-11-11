@@ -979,4 +979,72 @@
 	live = data["live"]
 	TEST_ASSERT(!live["vc/test/live"], "A live line was sent for an item that is not open")
 
+// ---- chrome-surgery ----
+
+/// Cased chrome sets credit Buy chrome; the empty autosurgeon, which can't fit chrome, doesn't.
+/datum/unit_test/voidcrew_tutorials/chrome_buy_paths/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/shop_sku/sku = allocate(/datum/shop_sku)
+	sku.item_path = /obj/item/autosurgeon
+	tutorial_credit_purchase(player, sku)
+	TEST_ASSERT(done("vc/trade/buy"), "A purchase was not credited")
+	TEST_ASSERT(!done("vc/chrome/buy"), "An empty autosurgeon counted as chrome")
+	sku.item_path = /obj/item/cyberware_pair_case/gorilla_arms/street
+	tutorial_credit_purchase(player, sku)
+	TEST_ASSERT(done("vc/chrome/buy"), "A cased chrome pair was not credited")
+	TEST_ASSERT(tutorial_is_chrome_path(/obj/item/storage/case/cyberware/scrapper), "The scrapper case is not chrome")
+	TEST_ASSERT(tutorial_is_chrome_path(/obj/item/organ/eyes/robotic/cyberware/lookout), "Cyberware eyes are not chrome")
+
+/// Carried chrome names where it goes; fitted chrome satisfies Install and excuses Buy.
+/datum/unit_test/voidcrew_tutorials/chrome_install_state/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/chrome_install/install = allocate(/datum/vc_tutorial_step/chrome_install)
+	var/datum/vc_tutorial_step/chrome_buy/buy = allocate(/datum/vc_tutorial_step/chrome_buy)
+	TEST_ASSERT_NULL(install.live_line(player), "An empty-handed player got a chrome line")
+	TEST_ASSERT(!install.state_satisfied(player), "A body with no chrome satisfied Install")
+	var/obj/item/organ/cyberimp/cyberware/second_wind/ware = allocate(/obj/item/organ/cyberimp/cyberware/second_wind)
+	player.put_in_hands(ware)
+	var/line = install.live_line(player)
+	TEST_ASSERT(line && findtext(line, "chest"), "The carried chrome line did not name the chest: [line]")
+	ware.Insert(player, TRUE)
+	TEST_ASSERT(ware.owner == player, "The special insert failed")
+	TEST_ASSERT(install.state_satisfied(player), "Fitted chrome did not satisfy Install")
+	TEST_ASSERT(!buy.excused(player), "Buy was excused before Install was done")
+	SSvc_tutorials.progress[TUTORIAL_TEST_CKEY] = list("vc/chrome/install" = TRUE)
+	TEST_ASSERT(buy.excused(player), "Buy was not excused once chrome was fitted")
+
+/// The execution line reads the fitted chrome: none, then Shiv Blades, which can't finish anyone.
+/datum/unit_test/voidcrew_tutorials/chrome_execute_line/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/chrome_execute/execute = allocate(/datum/vc_tutorial_step/chrome_execute)
+	TEST_ASSERT_EQUAL(execute.live_line(player), "Nothing fitted can finish someone yet.", "Wrong line with no chrome")
+	var/obj/item/organ/right = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/street)
+	var/obj/item/organ/left = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/street/left)
+	right.Insert(player, TRUE)
+	left.Insert(player, TRUE)
+	TEST_ASSERT_EQUAL(execute.live_line(player), "Shiv Blades can't finish anyone.", "Shiv Blades were not called out")
+	TEST_ASSERT(!length(execute.extra_targets(player)), "A player who can't finish anyone got finisher targets")
+
+/// Tend Wounds tools: all four missing on a bare body, none once carried.
+/datum/unit_test/voidcrew_tutorials/surgery_tools/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/surgery_start/start = allocate(/datum/vc_tutorial_step/surgery_start)
+	TEST_ASSERT_EQUAL(length(tutorial_surgery_missing(player, fresh = TRUE)), 4, "A bare body was not missing all four")
+	TEST_ASSERT(findtext(start.live_line(player), "Missing: "), "No missing-tools line")
+	for(var/tool_type in list(/obj/item/scalpel, /obj/item/hemostat, /obj/item/cautery, /obj/item/bedsheet))
+		var/obj/item/tool = allocate(tool_type)
+		tool.forceMove(player)
+	TEST_ASSERT(!length(tutorial_surgery_missing(player, fresh = TRUE)), "Carried tools were not seen")
+
+/// The finish line names the next step of an operation the player is working on.
+/datum/unit_test/voidcrew_tutorials/surgery_next_step/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/surgery_finish/finish = allocate(/datum/vc_tutorial_step/surgery_finish)
+	TEST_ASSERT_NULL(finish.live_line(player), "A line with no operation running")
+	player.zone_selected = BODY_ZONE_CHEST
+	var/datum/surgery/operation = new /datum/surgery/healing/brute/basic(player, BODY_ZONE_CHEST, player.get_bodypart(BODY_ZONE_CHEST))
+	var/line = finish.live_line(player)
+	TEST_ASSERT(line && findtext(line, "Next: ") == 1, "No next-step line: [line]")
+	qdel(operation)
+
 #undef TUTORIAL_TEST_CKEY

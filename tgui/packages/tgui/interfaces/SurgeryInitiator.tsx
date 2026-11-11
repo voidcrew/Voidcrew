@@ -4,6 +4,7 @@ import { Button, KeyListener, Stack } from 'tgui-core/components';
 import { KEY_DOWN, KEY_ENTER, KEY_UP } from 'tgui-core/keycodes';
 import type { BooleanLike } from 'tgui-core/react';
 
+import { TutorialFocus } from '../../voidcrew_tgui/components/TutorialFocus'; // VOIDCREW EDIT ADDITION: tutorial checklist
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 import { type BodyZone, BodyZoneSelector } from './common/BodyZoneSelector';
@@ -11,6 +12,7 @@ import { type BodyZone, BodyZoneSelector } from './common/BodyZoneSelector';
 type Surgery = {
   name: string;
   blocked?: BooleanLike;
+  tutorial_id?: string; // VOIDCREW EDIT ADDITION: tutorial checklist
 };
 
 type SurgeryInitiatorData = {
@@ -77,33 +79,43 @@ class SurgeryInitiatorInner extends Component<
       <Window width={400} height={350} title={`Surgery on ${target_name}`}>
         <Window.Content scrollable>
           <Stack fill height="100%">
-            <Stack.Item width="30%">
-              <BodyZoneSelector
-                onClick={(zone) => act('change_zone', { new_zone: zone })}
-                selectedZone={selected_zone}
-              />
-            </Stack.Item>
+            {/* VOIDCREW EDIT CHANGE START: tutorial checklist focus (voidcrew/modules/tutorials) */}
+            <TutorialFocus id="surgery_chest">
+              <Stack.Item width="30%">
+                <BodyZoneSelector
+                  onClick={(zone) => act('change_zone', { new_zone: zone })}
+                  selectedZone={selected_zone}
+                />
+              </Stack.Item>
+            </TutorialFocus>
+            {/* VOIDCREW EDIT CHANGE END */}
 
             <Stack.Item width="95%">
               <Stack vertical height="100%">
+                {/* VOIDCREW EDIT CHANGE START: tutorial checklist focus */}
                 {surgeries.map((surgery, index) => (
-                  <Button
-                    onClick={() => {
-                      act('start_surgery', {
-                        surgery_name: surgery.name,
-                      });
-                    }}
-                    disabled={surgery.blocked}
-                    selected={index === this.state.selectedSurgeryIndex}
-                    tooltip={
-                      surgery.blocked ? 'Their body is covered!' : undefined
-                    }
+                  <TutorialFocus
                     key={surgery.name}
-                    fluid
+                    id={surgery.tutorial_id || ''}
                   >
-                    {surgery.name}
-                  </Button>
+                    <Button
+                      onClick={() => {
+                        act('start_surgery', {
+                          surgery_name: surgery.name,
+                        });
+                      }}
+                      disabled={surgery.blocked}
+                      selected={index === this.state.selectedSurgeryIndex}
+                      tooltip={
+                        surgery.blocked ? 'Their body is covered!' : undefined
+                      }
+                      fluid
+                    >
+                      {surgery.name}
+                    </Button>
+                  </TutorialFocus>
                 ))}
+                {/* VOIDCREW EDIT CHANGE END */}
               </Stack>
             </Stack.Item>
           </Stack>
