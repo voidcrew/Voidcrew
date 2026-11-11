@@ -686,6 +686,7 @@
 				for(var/item_path in pool)
 					TEST_ASSERT(!(item_path in weapon_paths) && !ispath(item_path, /obj/item/gun) && !ispath(item_path, /obj/item/knife), "Supplies can pay an extra weapon")
 					TEST_ASSERT(!ispath(item_path, /obj/item/organ/cyberimp), "Bought cargo can pay chrome")
+					TEST_ASSERT(!ispath(item_path, /obj/item/dnainjector), "Bought cargo can pay a gene injector")
 				pool.Cut() // A caller may consume every working pool safely.
 			var/weapon_count = 0
 			cache.PopulateContents()

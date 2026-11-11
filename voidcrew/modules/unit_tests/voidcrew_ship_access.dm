@@ -292,6 +292,68 @@
 	QDEL_NULL(toolbox.throwing)
 	ship.ship_team.remove_member(crewmember.mind)
 
+/// A crew lock keeps out pirate NPCs, not just players, and the boarders' planners break those doors.
+/datum/unit_test/voidcrew_ship_crew_airlock_npcs
+	parent_type = /datum/unit_test/voidcrew_ship_crew_airlocks
+
+/datum/unit_test/voidcrew_ship_crew_airlock_npcs/Destroy()
+	if(ship)
+		clear_ship_patrol_path(ship)
+	return ..()
+
+/datum/unit_test/voidcrew_ship_crew_airlock_npcs/Run()
+	var/obj/machinery/door/airlock/instant/door = allocate(/obj/machinery/door/airlock/instant)
+	door.autoclose = FALSE
+	door_turf = get_turf(door)
+	original_area = door_turf.loc
+	ship_area = new
+	door_turf.change_area(original_area, ship_area)
+	var/obj/docking_port/mobile/voidcrew/port = allocate(/obj/docking_port/mobile/voidcrew)
+	ship = allocate(/obj/structure/overmap/ship)
+	ship_area.shuttle_port = port
+	port.current_ship = ship
+	ship.ship_team = new /datum/team/voidcrew()
+	ship.ship_team.ship = ship
+
+	var/mob/living/basic/trooper/pirate/melee/pirate = allocate(/mob/living/basic/trooper/pirate/melee, get_step(door, EAST))
+	var/mob/living/carbon/human/consistent/crewmember = allocate(/mob/living/carbon/human/consistent, get_step(door, EAST))
+	crewmember.mock_client = allocate(/datum/client_interface)
+	crewmember.mind_initialize()
+	ship.ship_team.add_member(crewmember.mind)
+	// A crewmember's body with nobody in it, e.g. a disconnected player
+	var/mob/living/carbon/human/consistent/vacant_crew = allocate(/mob/living/carbon/human/consistent, get_step(door, EAST))
+	vacant_crew.mind_initialize()
+	ship.ship_team.add_member(vacant_crew.mind)
+
+	// Lock off: a door with no access opens for an NPC, as upstream
+	TEST_ASSERT(door.allowed(pirate), "an unlocked ship's unaccessed airlock refused a pirate")
+	TEST_ASSERT(!door_refuses_npc(door), "the door planner marked an unlocked, unaccessed airlock for attack")
+	TEST_ASSERT(pirate_can_open_door(pirate, door), "the pirate AI thinks an unlocked ship's airlock is shut to it")
+
+	TEST_ASSERT(ship.set_crew_only_airlocks(TRUE), "could not enable crew-only airlocks")
+	TEST_ASSERT(!door.allowed(pirate), "a crew-locked ship's airlock let a pirate NPC through")
+	pirate.last_bumped = 0
+	door.Bumped(pirate)
+	TEST_ASSERT(door.density && !door.operating, "a pirate bumped open a crew-locked airlock")
+	TEST_ASSERT(door.allowed(crewmember), "the crew lock refused a rostered player")
+	TEST_ASSERT(door.allowed(vacant_crew), "the crew lock refused a rostered body with no player in it")
+	TEST_ASSERT(door_refuses_npc(door), "the door planner did not mark a crew-locked airlock for attack")
+	TEST_ASSERT(door_refuses_npc(door, pirate), "the door planner thinks a crew-locked airlock opens for a pirate")
+	TEST_ASSERT(!door_refuses_npc(door, vacant_crew), "the door planner thinks a crew-locked airlock refuses its own crew")
+	TEST_ASSERT(!pirate_can_open_door(pirate, door), "the pirate AI thinks a crew-locked airlock opens for it")
+
+	// The boarding patrol pre-marks crew-locked doors for attack, even on a path cached before the lock
+	GLOB.boarding_patrol_paths[REF(ship)] = list(door)
+	GLOB.boarding_locked_doors[REF(ship)] = list()
+	TEST_ASSERT(assign_mob_to_patrol(pirate, ship), "could not put the pirate on the boarding patrol")
+	var/list/attack_doors = pirate.ai_controller.blackboard["_failed_blocking_doors"]
+	TEST_ASSERT(LAZYACCESS(attack_doors, REF(door)), "the boarding patrol did not mark the crew-locked airlock for attack")
+
+	TEST_ASSERT(ship.set_crew_only_airlocks(FALSE), "could not disable crew-only airlocks")
+	TEST_ASSERT(door.allowed(pirate), "turning the crew lock off did not let the pirate through again")
+	ship.ship_team.remove_member(crewmember.mind)
+	ship.ship_team.remove_member(vacant_crew.mind)
+
 /// Same-type ship jobs must not confer command, prevent acting command, or survive demotion.
 /datum/unit_test/voidcrew_pill_captain_commands/Run()
 	var/datum/map_template/shuttle/voidcrew/pill/template = allocate(/datum/map_template/shuttle/voidcrew/pill)

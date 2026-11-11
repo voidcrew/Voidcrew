@@ -174,6 +174,7 @@ CATEGORIES = [
     ('/obj/item/instrument', 'toys', '/obj/item/instrument'),
     ('/obj/item/trash', 'trash', '/obj/item/trash'),
     ('/obj/item/vending_refill', 'vending_refills', '/obj/item/vending_refill'),
+    ('/obj/item/dnainjector/loot', 'medical', '/obj/item/dnainjector'),
     ('/obj/item/dnainjector', 'genetics', '/obj/item/dnainjector'),
     ('/obj/item/flashlight', 'tools', '/obj/item/flashlight'),
     ('/obj/item/assembly', 'tools', '/obj/item/assembly'),

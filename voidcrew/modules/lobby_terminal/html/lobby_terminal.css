@@ -1,0 +1,256 @@
+/*
+ * Dock terminal lobby: bezel pieces.
+ * Every size is a 1x pixel count times --s, the integer pixel-art scale set on .lt-bezel
+ * (see bezel.json "scale"). Image URLs are relative: this file is served in the same asset
+ * namespace as the PNGs next to it.
+ *
+ * Structure:
+ *   .lt-bezel                      (--s; fills the pane)
+ *     .lt-screen                   glass rect; the terminal draws inside it
+ *     .lt-frame                    9-slice frame, drawn over the screen
+ *       .lt-strip                  service lamps, top centre
+ *     .lt-deck
+ *       .lt-deck-row
+ *         .lt-keys > .lt-key.lt-key--join (or --ready/--notready + .lt-lamp), --observe, --character
+ *         .lt-grille-slot > .lt-grille
+ *         .lt-tray > .lt-sbtn x5 (an lt_<button>.png icon inside; .lt-sbtn-mark for the new-poll lamp)
+ */
+
+.lt-bezel {
+  --s: 1;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #9aa39f;
+  image-rendering: pixelated;
+  user-select: none;
+}
+
+.lt-bezel * {
+  image-rendering: pixelated;
+}
+
+/* Glass rect. bottom = 3 (recess) + 49 (deck). */
+.lt-screen {
+  position: absolute;
+  top: calc(var(--s) * 15px);
+  left: calc(var(--s) * 13px);
+  right: calc(var(--s) * 13px);
+  bottom: calc(var(--s) * 52px);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.lt-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--s) * 49px);
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: calc(var(--s) * 18px) calc(var(--s) * 64px) calc(var(--s) * 6px);
+  border-image-source: url('frame_9slice.png');
+  border-image-slice: 18 64 6 64;
+  border-image-repeat: stretch;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.lt-strip {
+  position: absolute;
+  /* relative to the frame's padding box, which starts inside the 18px top border */
+  top: calc(var(--s) * -15px);
+  left: calc(50% - var(--s) * 30px);
+  /* snap the centre to the pixel grid so an odd width doesn't split a pixel */
+  left: calc(round(down, 50%, var(--s) * 1px) - var(--s) * 30px);
+  width: calc(var(--s) * 61px);
+  height: calc(var(--s) * 8px);
+  background: url('strip_top.png') 0 0 / 100% 100% no-repeat;
+}
+
+.lt-deck {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--s) * 49px);
+  z-index: 2;
+}
+
+.lt-deck::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 0 calc(var(--s) * 26px);
+  border-image-source: url('deck.png');
+  border-image-slice: 0 26 fill;
+  border-image-repeat: stretch;
+  pointer-events: none;
+}
+
+.lt-deck-row {
+  position: absolute;
+  top: calc(var(--s) * 6px);
+  left: calc(var(--s) * 30px);
+  right: calc(var(--s) * 29px);
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Keycaps */
+.lt-keys {
+  display: flex;
+  align-items: flex-start;
+  flex: none;
+}
+
+.lt-key {
+  display: block;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  height: calc(var(--s) * 34px);
+  background: transparent 0 0 / 100% 100% no-repeat;
+  cursor: pointer;
+}
+
+.lt-key + .lt-key {
+  margin-left: calc(var(--s) * 4px);
+}
+
+.lt-key--join,
+.lt-key--ready,
+.lt-key--notready {
+  width: calc(var(--s) * 68px);
+}
+
+.lt-key--observe {
+  width: calc(var(--s) * 84px);
+}
+
+.lt-key--character {
+  width: calc(var(--s) * 100px);
+}
+
+.lt-key--join { background-image: url('key_join_idle.png'); }
+.lt-key--join.is-focus { background-image: url('key_join_hover.png'); }
+.lt-key--join:active,
+.lt-key--join.is-pressed { background-image: url('key_join_pressed.png'); }
+.lt-key--join.is-disabled,
+.lt-key--join:disabled { background-image: url('key_join_disabled.png'); }
+
+.lt-key--ready { background-image: url('key_ready_idle.png'); }
+.lt-key--ready.is-focus { background-image: url('key_ready_hover.png'); }
+.lt-key--ready:active,
+.lt-key--ready.is-pressed { background-image: url('key_ready_pressed.png'); }
+.lt-key--ready.is-disabled,
+.lt-key--ready:disabled { background-image: url('key_ready_disabled.png'); }
+
+.lt-key--notready { background-image: url('key_notready_idle.png'); }
+.lt-key--notready.is-focus { background-image: url('key_notready_hover.png'); }
+.lt-key--notready:active,
+.lt-key--notready.is-pressed { background-image: url('key_notready_pressed.png'); }
+.lt-key--notready.is-disabled,
+.lt-key--notready:disabled { background-image: url('key_notready_disabled.png'); }
+
+.lt-key--observe { background-image: url('key_observe_idle.png'); }
+.lt-key--observe.is-focus { background-image: url('key_observe_hover.png'); }
+.lt-key--observe:active,
+.lt-key--observe.is-pressed { background-image: url('key_observe_pressed.png'); }
+.lt-key--observe.is-disabled,
+.lt-key--observe:disabled { background-image: url('key_observe_disabled.png'); }
+
+.lt-key--character { background-image: url('key_character_idle.png'); }
+.lt-key--character.is-focus { background-image: url('key_character_hover.png'); }
+.lt-key--character:active,
+.lt-key--character.is-pressed { background-image: url('key_character_pressed.png'); }
+.lt-key--character.is-disabled,
+.lt-key--character:disabled { background-image: url('key_character_disabled.png'); }
+
+.lt-key.is-disabled,
+.lt-key:disabled {
+  cursor: default;
+}
+
+/* Ready lamp, between the READY key and OBSERVE. Overrides the key gap that follows it. */
+.lt-lamp {
+  flex: none;
+  width: calc(var(--s) * 10px);
+  height: calc(var(--s) * 9px);
+  margin: calc(var(--s) * 11px) calc(var(--s) * 1px) 0 calc(var(--s) * 2px);
+  background: transparent 0 0 / 100% 100% no-repeat;
+}
+
+.lt-lamp + .lt-key {
+  margin-left: 0;
+}
+
+.lt-lamp--ready { background-image: url('lamp_ready.png'); }
+.lt-lamp--notready { background-image: url('lamp_notready.png'); }
+.lt-lamp--off { background-image: url('lamp_off.png'); }
+
+/* Speaker grille: fills up to 40px of the gap between keys and tray, whole dots only. */
+.lt-grille-slot {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: calc(var(--s) * 8px) calc(var(--s) * 12px) 0;
+  overflow: hidden;
+}
+
+.lt-grille {
+  width: 100%;
+  max-width: calc(var(--s) * 40px);
+  height: calc(var(--s) * 14px);
+  background: url('grille.png') 0 0 / calc(var(--s) * 4px) calc(var(--s) * 14px) space no-repeat;
+}
+
+/* Small lobby buttons. Each slot holds one 1x PNG, lt_<button>[_highlighted|_disabled].png,
+ * cut at runtime from the lobby button sprites (lobby_assets.dm); .lt-sbtn-icon scales it by --s. */
+.lt-tray {
+  flex: none;
+  position: relative;
+  display: flex;
+  margin-top: calc(var(--s) * 1px);
+  padding: calc(var(--s) * 3px);
+  width: calc(var(--s) * 142px);
+  height: calc(var(--s) * 31px);
+  box-sizing: border-box;
+  background: url('tray.png') 0 0 / 100% 100% no-repeat;
+}
+
+.lt-sbtn {
+  position: relative;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  width: calc(var(--s) * 24px);
+  height: calc(var(--s) * 24px);
+  cursor: pointer;
+}
+
+.lt-sbtn + .lt-sbtn {
+  margin-left: calc(var(--s) * 4px);
+}
+
+.lt-sbtn-icon,
+.lt-sbtn-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: scale(var(--s));
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.lt-sbtn-mark {
+  top: calc(var(--s) * -1px);
+}
