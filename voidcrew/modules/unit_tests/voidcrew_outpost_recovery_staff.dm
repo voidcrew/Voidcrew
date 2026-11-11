@@ -117,6 +117,50 @@
 	TEST_ASSERT_NULL(post.replacement, "A replacement still on the way kept the counter from its original")
 	qdel(replacement)
 
+/// Abuse MF5: bodies or people parked in the lift alcove never keep a replacement trader away
+/datum/unit_test/voidcrew_outpost_recovery_alcove_blocked
+
+/datum/unit_test/voidcrew_outpost_recovery_alcove_blocked/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	place.occupied = TRUE
+	TEST_ASSERT(length(outpost.lobby_alcove_turfs), "The loaded outpost has no lift alcove")
+	var/mob/living/keeper = outpost.trader
+	TEST_ASSERT_NOTNULL(keeper, "The loaded outpost has no main trader")
+	if(!keeper || !length(outpost.lobby_alcove_turfs))
+		return
+	recovery.register_posts()
+	var/datum/outpost_recovery_post/post = recovery.posts[outpost.shop]
+	TEST_ASSERT_NOTNULL(post, "The main counter was not learnt")
+	if(!post)
+		return
+	qdel(keeper)
+
+	// A body on every alcove tile
+	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
+		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/consistent, alcove)
+		body.death()
+	TEST_ASSERT_NULL(SSambient_npcs.lift_arrival_turf(outpost), "Setup: the ambient lift still takes arrivals")
+	recovery.send_staff()
+	var/mob/living/replacement = post.replacement?.resolve()
+	TEST_ASSERT_NOTNULL(replacement, "Bodies in the lift alcove kept the replacement away")
+	TEST_ASSERT(get_turf(replacement) in outpost.lobby_alcove_turfs, "The replacement did not come up the public lift")
+	if(replacement)
+		replacement.death()
+		qdel(replacement)
+
+	// Someone standing on every alcove tile: he still comes, and steps round them
+	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
+		allocate(/mob/living/carbon/human/consistent, alcove)
+	recovery.send_staff()
+	replacement = post.replacement?.resolve()
+	TEST_ASSERT_NOTNULL(replacement, "People standing in the lift alcove kept the replacement away")
+	if(replacement)
+		qdel(replacement)
+
 /// A fake outpost is not loaded: it learns no post, has none vacant and the watch makes no trouble
 /datum/unit_test/voidcrew_outpost_recovery_posts
 

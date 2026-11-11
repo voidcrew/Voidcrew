@@ -184,9 +184,15 @@
 /datum/outpost_recovery/proc/send_keeper(datum/outpost_recovery_post/post)
 	if(!ispath(post.keeper_type, /mob/living) || !post.spot)
 		return
-	var/turf/arrival = post.kind == RECOVERY_POST_GUARD ? post.spot : SSambient_npcs.lift_arrival_turf(outpost)
-	if(!arrival || arrival.is_blocked_turf(exclude_mobs = FALSE))
-		return
+	var/turf/arrival
+	if(post.kind == RECOVERY_POST_GUARD)
+		arrival = post.spot
+		if(!arrival || arrival.is_blocked_turf(exclude_mobs = FALSE))
+			return
+	else
+		arrival = keeper_arrival_turf()
+		if(!arrival)
+			return
 	var/mob/living/replacement = new post.keeper_type(arrival)
 	post.replacement = WEAKREF(replacement)
 	post.replacement_at = world.time
@@ -196,6 +202,31 @@
 		walker.fade_in()
 		if(post.kind != RECOVERY_POST_GUARD)
 			ambient_cross_checkpoint_on_arrival(walker, outpost)
+
+/**
+ * Where a replacement trader steps off the public lift: a free alcove tile, else one with nobody standing on it (a
+ * body, a mouse, someone lying there), else any open one, and he steps round whoever is in the way. Somebody parked
+ * in the alcove never keeps the replacement away (abuse MF5). Null if the outpost has no open alcove tile.
+ */
+/datum/outpost_recovery/proc/keeper_arrival_turf()
+	var/turf/free = SSambient_npcs.lift_arrival_turf(outpost)
+	if(free)
+		return free
+	if(!length(outpost?.lobby_alcove_turfs))
+		return null
+	var/turf/crowded
+	for(var/turf/alcove as anything in shuffle(outpost.lobby_alcove_turfs.Copy()))
+		if(alcove.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		var/standing = FALSE
+		for(var/mob/living/someone in alcove)
+			if(someone.stat != DEAD && someone.body_position == STANDING_UP)
+				standing = TRUE
+				break
+		if(!standing)
+			return alcove
+		crowded ||= alcove
+	return crowded
 
 /// The missing officers of a police post step off a police lift (the ambient role's own arrival), all at once
 /datum/outpost_recovery/proc/send_officers(datum/outpost_recovery_post/post)
