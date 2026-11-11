@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/priroda_module.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_priroda_module_proton.png",
+     "src_md5": "2ec25ecddcd410443f0f6ea9fbd607c8",
+     "width": 8
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_priroda_module_standard.png",
+     "src_md5": "eaf3ee0c567e030ae2c8e5217ae233c6",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

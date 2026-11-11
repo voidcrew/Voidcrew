@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/nachalnik_office.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_nachalnik_office_proton.png",
+     "src_md5": "c8639352bad1c8962914f36f12f68279",
+     "width": 9
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_nachalnik_office_standard.png",
+     "src_md5": "bf3f468ca43d7b538d5b959a3121d5c2",
+     "width": 9
+    }
+   },
+   "width": 9
+  }
+ },
+ "tile_px": 32
+}

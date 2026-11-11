@@ -1,0 +1,364 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ahL" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"aoQ" = (
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/turf/template_noop,
+/area/template_noop)
+"aCX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"bIe" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"ckP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"cJp" = (
+/obj/machinery/atmospherics/components/tank/air/layer4,
+/turf/template_noop,
+/area/template_noop)
+"ehc" = (
+/obj/machinery/door/airlock/engineering/glass/critical,
+/turf/open/floor/engine,
+/area/template_noop)
+"fcM" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fuV" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fyw" = (
+/obj/machinery/light/small/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"fBt" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/reflector/box/anchored{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"fKC" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on,
+/turf/open/floor/engine,
+/area/template_noop)
+"gnt" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"gxb" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/plating,
+/area/template_noop)
+"gNW" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"hzE" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"hMV" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/turf/template_noop,
+/area/template_noop)
+"hTQ" = (
+/obj/structure/cable,
+/obj/structure/sign/poster/contraband/power/directional/north,
+/obj/machinery/light/dim/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"iPV" = (
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer,
+/obj/machinery/light/dim/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"iTv" = (
+/obj/machinery/light/dim/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"joI" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/template_noop)
+"jrx" = (
+/obj/structure/closet/crate/radiation,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/power/supermatter_crystal/shard/engine,
+/turf/template_noop,
+/area/template_noop)
+"mrY" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"mvu" = (
+/obj/machinery/power/emitter/welded{
+	dir = 1
+	},
+/obj/machinery/light/dim/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"nBi" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"oue" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"oUe" = (
+/obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"pET" = (
+/obj/modular_map_connector,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"qqg" = (
+/obj/machinery/power/emitter/welded{
+	dir = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"rim" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"rIo" = (
+/obj/machinery/power/emitter/welded,
+/obj/effect/mapping_helpers/broken_machine,
+/turf/template_noop,
+/area/template_noop)
+"sGS" = (
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/turf/template_noop,
+/area/template_noop)
+"tyg" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"tLo" = (
+/turf/open/floor/engine,
+/area/template_noop)
+"uaA" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"uie" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/power/energy_accumulator/grounding_rod/anchored,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/turf/template_noop,
+/area/template_noop)
+"umg" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"vVg" = (
+/obj/machinery/pipedispenser,
+/turf/template_noop,
+/area/template_noop)
+"wyO" = (
+/turf/template_noop,
+/area/template_noop)
+"xee" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"xeH" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"xXT" = (
+/obj/machinery/power/energy_accumulator/grounding_rod/anchored,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+ahL
+ahL
+ahL
+xeH
+xeH
+xeH
+ahL
+ahL
+pET
+"}
+(2,1,1) = {"
+gnt
+gnt
+gnt
+gxb
+oue
+gxb
+gnt
+gnt
+gnt
+"}
+(3,1,1) = {"
+fcM
+fcM
+fcM
+nBi
+nBi
+nBi
+fcM
+fcM
+fcM
+"}
+(4,1,1) = {"
+vVg
+wyO
+nBi
+oUe
+wyO
+fyw
+nBi
+wyO
+wyO
+"}
+(5,1,1) = {"
+jrx
+wyO
+umg
+joI
+ehc
+joI
+mrY
+gNW
+wyO
+"}
+(6,1,1) = {"
+fuV
+wyO
+sGS
+tyg
+tLo
+fKC
+aoQ
+hzE
+cJp
+"}
+(7,1,1) = {"
+hTQ
+gNW
+xXT
+tyg
+tLo
+fKC
+uie
+hzE
+iTv
+"}
+(8,1,1) = {"
+wyO
+hzE
+sGS
+tyg
+tLo
+fKC
+hMV
+hzE
+wyO
+"}
+(9,1,1) = {"
+wyO
+aCX
+uaA
+uaA
+fBt
+uaA
+uaA
+aCX
+wyO
+"}
+(10,1,1) = {"
+wyO
+rim
+bIe
+bIe
+ckP
+bIe
+bIe
+bIe
+wyO
+"}
+(11,1,1) = {"
+wyO
+nBi
+nBi
+nBi
+xee
+nBi
+nBi
+nBi
+wyO
+"}
+(12,1,1) = {"
+wyO
+iPV
+qqg
+rIo
+xee
+wyO
+qqg
+mvu
+wyO
+"}

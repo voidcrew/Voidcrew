@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "soviet_spacecraft_progress": {
+   "height": 37,
+   "png": "ship_soviet_spacecraft_progress.png",
+   "slots": {
+    "docking_module": [
+     26,
+     16
+    ],
+    "engineering_module": [
+     3,
+     15
+    ],
+    "living_module": [
+     16,
+     16
+    ],
+    "solars": [
+     7,
+     1
+    ]
+   },
+   "src_md5": "5111f8cf4794a37ce7a8c501a594eebc",
+   "width": 38
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

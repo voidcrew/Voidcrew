@@ -1,0 +1,413 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ajF" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"arZ" = (
+/obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/co2{
+	dir = 4
+	},
+/obj/machinery/light/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"bax" = (
+/obj/machinery/atmospherics/components/binary/pump,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"bOS" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"cyA" = (
+/obj/structure/closet/crate/engineering/electrical,
+/turf/template_noop,
+/area/template_noop)
+"cIf" = (
+/obj/structure/cable,
+/obj/machinery/suit_storage_unit/engine,
+/turf/template_noop,
+/area/template_noop)
+"cOU" = (
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/template_noop,
+/area/template_noop)
+"dmN" = (
+/obj/machinery/door/poddoor{
+	id = "door_engine_lockdown"
+	},
+/turf/template_noop,
+/area/template_noop)
+"dne" = (
+/obj/machinery/atmospherics/components/tank/air/layer4,
+/turf/template_noop,
+/area/template_noop)
+"feK" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"fnY" = (
+/obj/machinery/suit_storage_unit/engine,
+/turf/template_noop,
+/area/template_noop)
+"fqA" = (
+/obj/structure/table/reinforced,
+/obj/machinery/microwave/engineering,
+/turf/template_noop,
+/area/template_noop)
+"fuc" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"fNH" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fRy" = (
+/obj/structure/cable,
+/obj/machinery/light/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/clothing/accessory/armband/engine,
+/obj/item/flashlight,
+/turf/template_noop,
+/area/template_noop)
+"fRG" = (
+/obj/machinery/door/airlock/engineering,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"ghh" = (
+/turf/closed/wall/mineral/titanium,
+/area/template_noop)
+"gNP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/template_noop,
+/area/template_noop)
+"gPo" = (
+/obj/machinery/door/airlock/engineering,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"hsc" = (
+/obj/structure/cable,
+/obj/structure/table/reinforced,
+/obj/item/stack/cable_coil/thirty,
+/obj/item/multitool,
+/turf/template_noop,
+/area/template_noop)
+"hEx" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/item/reagent_containers/cup/bucket/wooden,
+/turf/template_noop,
+/area/template_noop)
+"iVP" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"jAw" = (
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"loY" = (
+/obj/machinery/button/door/directional/north{
+	id = "door_engine_lockdown"
+	},
+/obj/machinery/power/port_gen/pacman,
+/obj/effect/mapping_helpers/broken_machine,
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"lDT" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"lKB" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"lXq" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/item/weldingtool/largetank,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"mai" = (
+/obj/machinery/atmospherics/components/tank/plasma,
+/turf/template_noop,
+/area/template_noop)
+"mBl" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"nDC" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"nPj" = (
+/turf/template_noop,
+/area/template_noop)
+"nRa" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"pek" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"pZp" = (
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"qvP" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/canister,
+/turf/template_noop,
+/area/template_noop)
+"rpE" = (
+/obj/machinery/atmospherics/components/binary/pump/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"sdB" = (
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"sAj" = (
+/obj/item/clothing/mask/gas/atmosprop,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"sMk" = (
+/obj/item/toy/figure/engineer{
+	pixel_y = 14
+	},
+/turf/template_noop,
+/area/template_noop)
+"sMz" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"tbu" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"tNv" = (
+/obj/machinery/door/airlock/engineering,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"tQe" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"uRn" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/power/shuttle_engine/heater{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"vOm" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"wRQ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"xbC" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"xpC" = (
+/obj/structure/cable,
+/obj/item/storage/box/donkpockets/donkpocketspicy,
+/turf/template_noop,
+/area/template_noop)
+"xuG" = (
+/obj/machinery/light/red/dim/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"xwY" = (
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/obj/structure/sign/warning/engine_safety/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"xGz" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+lKB
+lKB
+lKB
+tbu
+jAw
+ajF
+lKB
+lKB
+nRa
+"}
+(2,1,1) = {"
+uRn
+uRn
+uRn
+ghh
+dmN
+ghh
+uRn
+uRn
+uRn
+"}
+(3,1,1) = {"
+gNP
+gNP
+gNP
+ghh
+loY
+ghh
+gNP
+gNP
+gNP
+"}
+(4,1,1) = {"
+sMz
+fuc
+nPj
+ghh
+gPo
+ghh
+sAj
+tQe
+fuc
+"}
+(5,1,1) = {"
+mai
+pek
+nPj
+ghh
+xbC
+ghh
+xwY
+iVP
+mai
+"}
+(6,1,1) = {"
+lXq
+fNH
+fNH
+ghh
+xuG
+ghh
+arZ
+bax
+qvP
+"}
+(7,1,1) = {"
+hEx
+nDC
+fNH
+ghh
+xbC
+ghh
+sdB
+vOm
+dne
+"}
+(8,1,1) = {"
+nPj
+lDT
+xGz
+fRG
+bOS
+ghh
+rpE
+vOm
+nPj
+"}
+(9,1,1) = {"
+nPj
+wRQ
+hsc
+ghh
+bOS
+tNv
+xGz
+lDT
+nPj
+"}
+(10,1,1) = {"
+nPj
+nPj
+fRy
+ghh
+bOS
+ghh
+mBl
+wRQ
+pZp
+"}
+(11,1,1) = {"
+sMk
+fNH
+cIf
+ghh
+feK
+ghh
+xpC
+fNH
+nPj
+"}
+(12,1,1) = {"
+nPj
+cOU
+fnY
+ghh
+bOS
+ghh
+fqA
+cyA
+nPj
+"}

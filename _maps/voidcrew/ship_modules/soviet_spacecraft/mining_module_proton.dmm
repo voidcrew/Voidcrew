@@ -1,0 +1,177 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dpR" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"dVY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"gtq" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"hrc" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"hHA" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"jVV" = (
+/turf/template_noop,
+/area/template_noop)
+"kdq" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"lxo" = (
+/obj/machinery/button/door/directional/west{
+	id = "mech"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"lZF" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"mOK" = (
+/obj/vehicle/sealed/mecha/ripley/mining,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"nea" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"opC" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"pgT" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/template_noop)
+"pBO" = (
+/obj/machinery/mineral/ore_redemption,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"rzX" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"rDz" = (
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"scx" = (
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"tAG" = (
+/obj/structure/ore_box,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"vqj" = (
+/obj/structure/reagent_dispensers/fueltank/large,
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"vCc" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"wUq" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"xcA" = (
+/obj/machinery/door/poddoor/shutters/window{
+	id = "mech"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+jVV
+jVV
+jVV
+vCc
+jVV
+jVV
+dpR
+"}
+(2,1,1) = {"
+jVV
+mOK
+xcA
+vCc
+lxo
+kdq
+jVV
+"}
+(3,1,1) = {"
+vqj
+scx
+xcA
+vCc
+kdq
+kdq
+hHA
+"}
+(4,1,1) = {"
+opC
+scx
+xcA
+vCc
+kdq
+kdq
+lZF
+"}
+(5,1,1) = {"
+pgT
+pgT
+pgT
+rzX
+kdq
+kdq
+tAG
+"}
+(6,1,1) = {"
+kdq
+rDz
+gtq
+dVY
+kdq
+kdq
+tAG
+"}
+(7,1,1) = {"
+jVV
+hrc
+hrc
+wUq
+pBO
+nea
+jVV
+"}
+(8,1,1) = {"
+jVV
+jVV
+lZF
+kdq
+lZF
+jVV
+jVV
+"}

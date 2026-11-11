@@ -1,0 +1,273 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"arT" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"aJU" = (
+/obj/structure/table/wood,
+/obj/item/storage/toolbox/mechanical/old,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"aTf" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"aUk" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"aWn" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"dNX" = (
+/obj/structure/cable,
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"flw" = (
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"fCL" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"gro" = (
+/obj/machinery/door/airlock/public/glass,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"hbK" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/dresser,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"igB" = (
+/obj/machinery/vending/sovietsoda,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"iuB" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"iUO" = (
+/obj/structure/rack,
+/obj/item/storage/medkit/fire,
+/obj/item/storage/medkit/o2{
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/brute{
+	pixel_y = 10
+	},
+/obj/item/storage/medkit/toxin{
+	pixel_y = 15
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kfn" = (
+/obj/machinery/computer/operating,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"knE" = (
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kzx" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kDU" = (
+/obj/effect/spawner/surgery_tray/full/deployed,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kIW" = (
+/obj/structure/table/optable,
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kQf" = (
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"lzO" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/structure/sign/poster/contraband/kss13/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"mkc" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"nTh" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"odl" = (
+/obj/structure/table/wood,
+/obj/item/binoculars,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"owV" = (
+/turf/template_noop,
+/area/template_noop)
+"plk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sZz" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"tyY" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"tKU" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/kirbyplants/organic/plant11,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"uOW" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"voP" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"wqC" = (
+/turf/closed/wall/mineral/titanium,
+/area/template_noop)
+"xDN" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+lzO
+kzx
+wqC
+mkc
+wqC
+kDU
+aUk
+"}
+(2,1,1) = {"
+aJU
+fCL
+wqC
+dNX
+wqC
+kIW
+plk
+"}
+(3,1,1) = {"
+odl
+uOW
+wqC
+tyY
+wqC
+kfn
+uOW
+"}
+(4,1,1) = {"
+nTh
+gro
+nTh
+mkc
+wqC
+wqC
+gro
+"}
+(5,1,1) = {"
+tKU
+uOW
+flw
+mkc
+wqC
+iUO
+uOW
+"}
+(6,1,1) = {"
+aTf
+xDN
+sZz
+mkc
+gro
+uOW
+uOW
+"}
+(7,1,1) = {"
+knE
+kQf
+iuB
+mkc
+wqC
+aWn
+arT
+"}
+(8,1,1) = {"
+owV
+nTh
+igB
+voP
+wqC
+hbK
+owV
+"}
+(9,1,1) = {"
+owV
+owV
+owV
+mkc
+owV
+owV
+owV
+"}

@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/dvushka.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_dvushka_proton.png",
+     "src_md5": "ea13db0c2906940aa6c363b4b1e6bf1d",
+     "width": 9
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_dvushka_standard.png",
+     "src_md5": "ebf21e875987460b51f487a6c1671a39",
+     "width": 9
+    }
+   },
+   "width": 9
+  }
+ },
+ "tile_px": 32
+}
