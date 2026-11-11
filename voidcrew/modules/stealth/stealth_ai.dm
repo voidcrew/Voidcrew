@@ -297,6 +297,8 @@
 	var/old_state = blackboard[BB_STEALTH_STATE]
 	if(old_state == STEALTH_UNAWARE && new_state != STEALTH_UNAWARE)
 		blackboard[BB_STEALTH_UNAWARE_LOST_AT] = world.time
+	if(old_state != new_state)
+		blackboard[BB_STEALTH_PREV_STATE] = old_state
 	blackboard[BB_STEALTH_STATE] = new_state
 	blackboard[BB_STEALTH_STATE_SINCE] = world.time
 	// Only an alert guard goes after a locker it saw someone get into (decision 33).
@@ -1290,6 +1292,21 @@
 	if(stealth_ai.stealth_state() == STEALTH_UNAWARE)
 		return TRUE
 	return stealth_ai.blackboard[BB_STEALTH_UNAWARE_LOST_AT] == world.time
+
+/**
+ * The state this guard was in when the current blow began (step 3a): unaware if stealth_was_unaware(), else the state
+ * before a change made this same tick (a bullet's prehit alerts it before the damage lands), else its state now.
+ * Null for any NPC without the stealth controller.
+ */
+/mob/living/carbon/human/npc/proc/stealth_state_at_blow()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = ai_controller
+	if(!istype(stealth_ai))
+		return null
+	if(stealth_was_unaware())
+		return STEALTH_UNAWARE
+	if(stealth_ai.blackboard[BB_STEALTH_STATE_SINCE] == world.time && !isnull(stealth_ai.blackboard[BB_STEALTH_PREV_STATE]))
+		return stealth_ai.blackboard[BB_STEALTH_PREV_STATE]
+	return stealth_ai.stealth_state()
 
 // ===== Planning =====
 

@@ -14,8 +14,9 @@
  * Beating it is tg's: you see the beam coming; an EMP or the saboteur gun cuts it out for a while (the
  * scav seclite takes an EMP as tg's saboteur hit; a stock seclite ignores EMPs); a guard that is down,
  * stunned, cuffed, asleep or dead doesn't touch it. A light that is gone from its body (deleted, burnt,
- * forced off) is gone: the guard goes without. Like the rest of its kit it is locked gear (human NPC
- * decision D3), so it can't be stripped or looted.
+ * forced off) is gone: the guard goes without. Unlike the rest of its kit it is not locked gear (decision 34
+ * amends human NPC decision D3): it can be stripped, knocked loose and looted like anyone's seclite. Once it has left
+ * a guard's body it is an ordinary seclite to the guards too (off the guard light list).
  */
 
 /// Every guard's seclite, so a guard can leave them all out when it judges how dark its spot is
@@ -30,6 +31,18 @@ GLOBAL_LIST_EMPTY(stealth_guard_lights)
 
 /obj/item/flashlight/seclite/scav/Destroy()
 	GLOB.stealth_guard_lights -= src
+	return ..()
+
+/// Off a guard's body (looted, stripped, dropped), it is just a seclite: no guard leaves its light out any more.
+/obj/item/flashlight/seclite/scav/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(!ishumannpc(loc))
+		GLOB.stealth_guard_lights -= src
+
+/// Decision 34: a guard's seclite is loot like anyone's, so it is never locked to the body (D3 holds for the rest).
+/mob/living/carbon/human/npc/npc_lock_item(obj/item/item)
+	if(istype(item, /obj/item/flashlight/seclite/scav))
+		return FALSE
 	return ..()
 
 /obj/item/flashlight/seclite/scav/emp_act(severity)

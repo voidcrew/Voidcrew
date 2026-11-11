@@ -13,6 +13,8 @@
 #define BB_STEALTH_STATE_SINCE "stealth_state_since"
 /// world.time the guard last stopped being unaware (stealth_was_unaware())
 #define BB_STEALTH_UNAWARE_LOST_AT "stealth_unaware_lost_at"
+/// The state before the last change, so a blow can be judged by the state it began in (stealth_state_at_blow())
+#define BB_STEALTH_PREV_STATE "stealth_prev_state"
 /// TRUE once alerted, searching or hit. Fades after STEALTH_WARY_TIME with nothing new (checked each scan).
 #define BB_STEALTH_WARY "stealth_wary"
 /// The candidate with the highest notice
@@ -158,3 +160,27 @@
 #define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
 
 #define FACTION_SCAV "scav"
+
+// ===== Stealth crits and the backstab knife (step 3a, stealth_crits.dm) =====
+// Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
+// so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".
+/// Added when the guard was unaware of everyone as the blow began
+#define STEALTH_CRIT_UNAWARE_BONUS 30
+/// Added when it was only suspicious
+#define STEALTH_CRIT_SUSPICIOUS_BONUS 15
+/// Added on top of either when the attacker aimed at the head (head, eyes or mouth)
+#define STEALTH_CRIT_HEAD_BONUS 35
+/// Added when the backstab knife strikes from behind (tg's check_behind()), whatever the guard's state
+#define STEALTH_BACKSTAB_BONUS 40
+/// The head shot crit (a bullet through the skull) needs a roll this high, and only a stealth hit can roll it
+#define STEALTH_HEAD_SHOT_THRESHOLD 80
+/// Least damage after armour a head shot crit needs
+#define STEALTH_HEAD_SHOT_MIN_DAMAGE 20
+/// A helmet this good against the bullet (after its armour penetration) stops a head shot crit outright
+#define STEALTH_HEAD_SHOT_HELMET_ARMOUR 30
+/// Brain damage a head shot crit deals (brains die at 200)
+#define STEALTH_HEAD_SHOT_BRAIN_DAMAGE 40
+/// How long a head shot crit knocks the guard down
+#define STEALTH_HEAD_SHOT_KNOCKDOWN (4 SECONDS)
+/// A bullet through the head
+#define WOUND_SERIES_HV_HEAD_SHOT "wound_series_hv_head_shot"
