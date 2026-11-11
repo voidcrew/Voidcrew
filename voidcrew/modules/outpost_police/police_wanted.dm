@@ -11,7 +11,7 @@
  * Round metrics written here (METRIC_COMBAT, voidcrew/modules/metrics; the event catalog lives in the kit
  * vault page for metrics):
  *   police_warrant_ended    A wanted record ended. ckey = the suspect, subject = how ("faded", "served",
- *                           "closed", "pardoned"), points = peak stars, quantity = officers they killed.
+ *                           "closed"), points = peak stars, quantity = officers they killed.
  *   police_officer_killed   An officer was killed by someone with a record. ckey = the killer, quantity = 1.
  *   police_embargo          A four or five star incident put a crew under embargo. ckey = the suspect,
  *                           points = stars, quantity = minutes.
@@ -56,7 +56,7 @@
 	/// What followed while it waited, counted with it: list(crime, weakref to the victim) each (a killing)
 	var/list/followups
 
-/// One four or five star incident of one crew at this outpost: the embargo, the cutter's single dispatch
+/// One four or five star incident of one crew at this outpost: the embargo here (decision 25: this outpost only)
 /datum/outpost_incident
 	var/datum/voidcrew_crew_record/crew
 	/// Highest tier applied: 4 or 5 stars
@@ -65,12 +65,6 @@
 	/// world.time the embargo ends
 	var/ends_at = 0
 	var/officers_killed = 0
-	/// The cutter has been sent for this incident
-	var/pursued = FALSE
-	/// The crew's ships we listen to
-	var/list/obj/structure/overmap/ship/watched = list()
-	/// ship -> TRUE while it sits in a berth here
-	var/list/docked = list()
 
 // =========================================================================
 // REPORTING A CRIME
@@ -526,26 +520,6 @@
 		update_hud(who)
 	wake()
 
-/// Clears every warrant, prior and bar of `crew` here and lifts its embargo
-/datum/outpost_police/proc/pardon_crew(datum/voidcrew_crew_record/crew)
-	if(!crew)
-		return
-	for(var/datum/mind/mind as anything in warrants.Copy())
-		var/datum/outpost_warrant/warrant = warrants[mind]
-		if(warrant && (warrant.crew == crew || mind.get_reputation_crew() == crew))
-			if(warrant.peak > 0)
-				warrant_ended(warrant, "pardoned")
-			remove_warrant(warrant)
-	var/datum/outpost_incident/incident = incidents[crew]
-	var/everywhere = incident?.stars >= 5
-	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(crew))
-		outpost.embargoed_ships -= ship
-		if(everywhere)
-			for(var/obj/structure/overmap/trader_outpost/other as anything in GLOB.trader_outposts)
-				other.embargoed_ships -= ship
-	if(incident)
-		end_incident(incident)
-
 /// Drops `warrant` and clears its holder's HUD
 /datum/outpost_police/proc/remove_warrant(datum/outpost_warrant/warrant)
 	var/datum/mind/mind = warrant.mind
@@ -773,11 +747,9 @@
 		return
 	incident.officers_killed++
 	incident.ends_at = min(incident.ends_at + OUTPOST_POLICE_EMBARGO_PER_KILL, incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
-	var/list/places = incident.stars >= 5 ? GLOB.trader_outposts : list(outpost)
-	for(var/obj/structure/overmap/trader_outpost/place as anything in places)
-		for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
-			if(place.embargoed_ships[ship])
-				place.embargoed_ships[ship] = incident.ends_at
+	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
+		if(outpost.embargoed_ships[ship])
+			outpost.embargoed_ships[ship] = incident.ends_at
 
 // =========================================================================
 // OFFICERS STRUCK (abuse M3; called from the officer's body, police_units.dm)
@@ -891,10 +863,10 @@
 			. += team.ship
 
 // =========================================================================
-// FOUR AND FIVE STARS: THE EMBARGO AND THE CUTTER (spec 9)
+// FOUR AND FIVE STARS: THE EMBARGO (spec 9; decision 25: at this outpost only, no cutter)
 // =========================================================================
 
-/// `warrant` reached four or five stars: its crew is embargoed, and the cutter follows its ship out
+/// `warrant` reached four or five stars: its crew's ships are embargoed here
 /datum/outpost_police/proc/escalate_incident(datum/outpost_warrant/warrant, stars)
 	var/datum/voidcrew_crew_record/crew = warrant.crew
 	if(QDELETED(crew))
@@ -916,24 +888,13 @@
 	var/list/lengths = OUTPOST_POLICE_EMBARGO
 	var/length_for = lengths[stars - 3] + incident.officers_killed * OUTPOST_POLICE_EMBARGO_PER_KILL
 	incident.ends_at = min(max(incident.ends_at, world.time + length_for), incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
-	var/list/places = stars >= 5 ? GLOB.trader_outposts : list(outpost)
-	for(var/obj/structure/overmap/trader_outpost/place as anything in places)
-		for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(crew))
-			place.embargo_ship(ship, max(1, incident.ends_at - world.time))
+	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(crew))
+		outpost.embargo_ship(ship, max(1, incident.ends_at - world.time))
 	sync_incident(incident)
 	record_metric(METRIC_COMBAT, "police_embargo", actor = warrant.mind?.current, points = stars, quantity = round((incident.ends_at - world.time) / (1 MINUTES)))
 
-/// Listens to every ship of the incident's crew, and notes the ones already in a berth here
+/// Crewmates of an embargoed crew on secured turf here
 /datum/outpost_police/proc/sync_incident(datum/outpost_incident/incident)
-	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
-		if(ship in incident.watched)
-			continue
-		incident.watched += ship
-		RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_watched_ship_docked))
-		RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_watched_ship_undocked))
-		RegisterSignal(ship, COMSIG_QDELETING, PROC_REF(on_watched_ship_deleted))
-		if(ship_in_berth(ship))
-			incident.docked[ship] = TRUE
 	// Crewmates who walked in past the embargo are barred from secured turf: an arrest
 	for(var/datum/mind/mate as anything in incident.crew.minds)
 		var/mob/living/body = mate.current
@@ -942,54 +903,10 @@
 		if(outpost.is_secured_turf(get_turf(body)) && barred_by_record(body) && suspect_seen(body))
 			count_crime(body, OUTPOST_CRIME_TRESPASS)
 
-/// The incident is over: stop listening and forget it
+/// The incident is over: forget it
 /datum/outpost_police/proc/end_incident(datum/outpost_incident/incident)
-	for(var/obj/structure/overmap/ship/ship as anything in incident.watched)
-		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED, COMSIG_QDELETING))
-	incident.watched.Cut()
-	incident.docked.Cut()
 	if(incidents[incident.crew] == incident)
 		incidents -= incident.crew
 	incident.crew = null
 	qdel(incident)
 
-/// Whether `ship` holds one of this outpost's hangar berths
-/datum/outpost_police/proc/ship_in_berth(obj/structure/overmap/ship/ship)
-	for(var/datum/outpost_berth/berth as anything in outpost.berths)
-		if(berth?.ship == ship)
-			return TRUE
-	return FALSE
-
-/// The incident that listens to `ship`, or null
-/datum/outpost_police/proc/incident_of(obj/structure/overmap/ship/ship)
-	for(var/crew in incidents)
-		var/datum/outpost_incident/incident = incidents[crew]
-		if(incident && (ship in incident.watched))
-			return incident
-	return null
-
-/datum/outpost_police/proc/on_watched_ship_docked(obj/structure/overmap/ship/ship)
-	SIGNAL_HANDLER
-	var/datum/outpost_incident/incident = incident_of(ship)
-	if(incident && ship_in_berth(ship))
-		incident.docked[ship] = TRUE
-
-/// A ship of the crew finished undocking: if it left this outpost, the cutter follows, once per incident
-/datum/outpost_police/proc/on_watched_ship_undocked(obj/structure/overmap/ship/ship)
-	SIGNAL_HANDLER
-	var/datum/outpost_incident/incident = incident_of(ship)
-	if(!incident || !incident.docked[ship])
-		return
-	incident.docked -= ship
-	if(incident.pursued || world.time >= incident.ends_at)
-		return
-	incident.pursued = TRUE
-	INVOKE_ASYNC(src, PROC_REF(start_pursuit), ship, incident.stars, incident.officers_killed)
-
-/datum/outpost_police/proc/on_watched_ship_deleted(obj/structure/overmap/ship/ship)
-	SIGNAL_HANDLER
-	var/datum/outpost_incident/incident = incident_of(ship)
-	if(!incident)
-		return
-	incident.watched -= ship
-	incident.docked -= ship

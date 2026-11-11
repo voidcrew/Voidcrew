@@ -269,7 +269,7 @@ The warden's console has a **Bounty prisoners** setting: **All**, **No Most Want
 
 - Nobody owns a catch. Whoever gets the criminal onto their own ship's pad and presses Turn In is paid. Cuffing them first gives no claim, and anyone can take the cuffs off with an empty hand.
 - When a bounty is turned in, every other crew hunting it is told who claimed it.
-- Normal PvP rules apply. At trader outposts, the [Port Authority](trader-outposts.md#the-port-authority) works as usual.
+- Normal PvP rules apply. At trader outposts, [outpost security](trader-outposts.md#outpost-security) works as usual.
 
 ## FAQ
 

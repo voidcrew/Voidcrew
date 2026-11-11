@@ -477,7 +477,7 @@
 
 /**
  * Once a second for each officer (police_dispatch.dm tick_dispatch()): one the police set on someone with no stars
- * left (faded, booked, pardoned) stands down to its beat; one sent after a wanted person whose search ran out looks
+ * left (faded, booked, lifted) stands down to its beat; one sent after a wanted person whose search ran out looks
  * again, at most every OUTPOST_POLICE_RESEARCH_GAP; a beat officer with no route takes a free one.
  */
 /datum/outpost_police/proc/stealth_tick_officer(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)

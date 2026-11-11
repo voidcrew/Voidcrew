@@ -19,7 +19,6 @@
  * - police_cell.dm: cells, police doors and cell doors (P6)
  * - police_property.dm: confiscation, evidence chute, property lockers, the jail strip (P12)
  * - police_hud.dm: the wanted alert (P8)
- * - police_cutter.dm: the cutter (P9)
  *
  * Include order: this module comes after ambient_npcs, bounties, human_npcs and npc_ships, and before
  * overmap, player_outposts and trade. An override placed here of a proc that is first declared (proc/) in
@@ -288,8 +287,8 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /// A zone's police: what they are called, how many walk the beat, the fine, the comply time, mercy, voice and kit.
 /// police_units.dm (P2) sets the values on the three subtypes and picks one in make_profile().
 /datum/outpost_police_profile
-	/// What the force is called ("Halcyon Port Authority"), shown on the wanted alert
-	var/force_name = "Outpost Police"
+	/// What the force is called ("Halcyon Security"), shown on the wanted alert
+	var/force_name = "Outpost Security"
 	/// Beat officers on the concourse
 	var/beat_count = 2
 	/// The fine is multiplied by this
@@ -356,7 +355,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
  * NPC's fighting brain. Bodies, kit and profiles are police_units.dm's (P2).
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police
-	name = "outpost officer"
+	name = "security officer"
 	desc = "Keeps the peace here."
 	ai_controller = /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police
 	/// The police they serve
@@ -416,7 +415,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 
 /// A door officers use between the concourse and their lift. Behaviour in police_cell.dm (P6).
 /obj/machinery/door/airlock/outpost/police
-	name = "police door"
+	name = "security door"
 	req_access = list(ACCESS_OUTPOST_POLICE)
 
 /// A holding cell's glass door. Opens only through its cell (police_cell.dm, P6).

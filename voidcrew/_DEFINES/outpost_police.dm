@@ -151,18 +151,12 @@
 
 // ===== FOUR AND FIVE STARS =====
 
-/// The cutter's fine at four and five stars
-#define OUTPOST_POLICE_CUTTER_FINES list(6000, 15000)
-/// Embargo length at four and five stars
+/// Embargo length at four and five stars, at the outpost where it happened
 #define OUTPOST_POLICE_EMBARGO list(15 MINUTES, 30 MINUTES)
 /// Added to the embargo per officer killed
 #define OUTPOST_POLICE_EMBARGO_PER_KILL (5 MINUTES)
 /// The embargo never runs longer than this
 #define OUTPOST_POLICE_EMBARGO_MAX (120 MINUTES)
-/// The cutter gives up after this long without its quarry
-#define OUTPOST_POLICE_CUTTER_GIVEUP (6 MINUTES)
-/// Docked time at the wanted outpost not counted toward giving up, at most
-#define OUTPOST_POLICE_CUTTER_LURK_MAX (20 MINUTES)
 
 // ===== LIFTS AND AI =====
 

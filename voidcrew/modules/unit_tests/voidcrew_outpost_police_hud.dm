@@ -30,7 +30,7 @@
 		TEST_ASSERT(istype(alert, /atom/movable/screen/alert/outpost_wanted), "The wanted alert is not the outpost one")
 		TEST_ASSERT_EQUAL(alert.icon_state, "wanted[stars]", "The alert at [stars] stars showed the wrong state")
 		TEST_ASSERT_EQUAL(alert.name, "Wanted", "The wanted alert has the wrong name")
-		TEST_ASSERT_EQUAL(alert.desc, "[police.profile.force_name].", "The wanted alert does not describe the force")
+		TEST_ASSERT_EQUAL(alert.desc, "[capitalize(police.profile.force_name)].", "The wanted alert does not describe the force")
 		TEST_ASSERT_EQUAL(length(suspect.alerts), 1, "Something else was put on the screen with the wanted alert")
 
 	// Unseen or away: the blinking set, and back to the plain one when they are in sight again

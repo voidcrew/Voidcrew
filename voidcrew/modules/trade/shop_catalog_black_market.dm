@@ -208,12 +208,12 @@
 			"The Undertow forgives everything except property damage. Wait it out.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Easy, killer. The wardens have a temper and a long memory.",
+			"Easy, killer. Security here has a temper and a long memory.",
 			"That's one. Keep swinging and you'll meet the expensive part of this station.",
 			"Read the plaque. Violence is bad for business, mostly yours.",
 		),
 		TRADER_LINE_AGGRESSION = list(
-			"Bad call. The wardens get paid either way.",
+			"Bad call. Security gets paid either way.",
 			"Violence! In MY shop! Embargo their ship and paint them, girls.",
 			"You just made the blacklist. It's laminated.",
 		),

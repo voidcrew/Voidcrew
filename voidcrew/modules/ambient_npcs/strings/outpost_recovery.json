@@ -13,7 +13,7 @@
 		],
 		"officer_body": [
 			"That's one of the officers. Radio the desk.",
-			"Oh no. It's Port Authority. Tell the desk.",
+			"Oh no. It's one of security. Tell the desk.",
 			"One of theirs. Careful with this one."
 		],
 		"bagged": [
@@ -195,7 +195,7 @@
 	"undertow": {
 		"call": [
 			"Desk to all. It's quiet. Send in the sweepers.",
-			"All wardens, stand down. The crew's coming for the mess.",
+			"All guards, stand down. The crew's coming for the mess.",
 			"Concourse is yours again. Cleanup's on the way."
 		],
 		"first_body": [
@@ -204,9 +204,9 @@
 			"Bag. Now. Before it gets worse."
 		],
 		"officer_body": [
-			"Warden's down. Tell the desk.",
-			"That's a warden. Be nice to this one.",
-			"Bad luck, warden. Radio it."
+			"Guard's down. Tell the desk.",
+			"That's a guard. Be nice to this one.",
+			"Bad luck, guard. Radio it."
 		],
 		"bagged": [
 			"One bagged. Concourse.",
@@ -250,7 +250,7 @@
 			"It never ends."
 		],
 		"chat": [
-			"Wardens are useless.",
+			"Guards are useless.",
 			"Third time this month."
 		],
 		"reply": [

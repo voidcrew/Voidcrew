@@ -391,9 +391,9 @@
 	TEST_ASSERT(warrant.unseen_since, "An unconscious officer still saw the suspect")
 	officer.stat = CONSCIOUS
 
-// ===== THE RECORD OF A CREW: ACCOMPLICES, THE EMBARGO, THE CUTTER =====
+// ===== THE RECORD OF A CREW: ACCOMPLICES AND THE EMBARGO =====
 
-/// Four stars puts the crew's ships under embargo here and makes the crewmates at the outpost accomplices; five stars spreads the embargo; a dead officer lengthens it; paying clears it
+/// Four stars puts the crew's ships under embargo here and makes the crewmates at the outpost accomplices; five stars lengthens it but never spreads it to other outposts; a dead officer lengthens it; it lapses on its own
 /datum/unit_test/voidcrew_outpost_police_incident
 	/// What COMSIG_OUTPOST_POLICE_OFFICER_DOWN told us
 	var/list/down_log = list()
@@ -433,7 +433,8 @@
 	// Five stars
 	warrant.heat = 150
 	police.tick_warrants()
-	TEST_ASSERT(other.is_ship_embargoed(ship), "Five stars did not embargo the ship at the other outposts")
+	TEST_ASSERT(outpost.is_ship_embargoed(ship), "Five stars lifted the embargo here")
+	TEST_ASSERT(!other.is_ship_embargoed(ship), "Five stars spread the embargo to another outpost")
 	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 30 MINUTES, "The five-star embargo is not 30 minutes")
 
 	// An officer killed by the leader: five minutes more, announced
@@ -442,23 +443,19 @@
 	police.on_wanted_death(null, officer, FALSE)
 	TEST_ASSERT_EQUAL(warrant.officers_killed, 1, "A dead officer was not counted against their killer")
 	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 35 MINUTES, "A dead officer did not add 5 minutes") // OUTPOST_POLICE_EMBARGO_PER_KILL
-	TEST_ASSERT_EQUAL(other.embargoed_ships[ship], incident.ends_at, "The longer embargo did not reach the other outposts")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "The longer embargo did not reach the ship here")
+	TEST_ASSERT(!other.is_ship_embargoed(ship), "A dead officer spread the embargo to another outpost")
 	TEST_ASSERT_EQUAL(warrant.heat, 180, "Killing an officer did not take the warrant to the cap")
 	TEST_ASSERT_EQUAL(length(down_log), 1, "The officer's death was not announced once")
 	TEST_ASSERT_EQUAL(down_log[1][2], leader, "The announcement did not name the killer")
 
-	// The cutter follows the ship out, once
-	incident.docked[ship] = TRUE
-	SEND_SIGNAL(ship, "voidcrew_ship_undocked") // COMSIG_VOIDCREW_SHIP_UNDOCKED
-	TEST_ASSERT(incident.pursued, "A ship leaving the outpost did not send the cutter")
-	TEST_ASSERT_EQUAL(length(incident.docked), 0, "A ship that left is still counted as docked")
-
-	// Paying wipes it
-	police.pardon_crew(crew)
-	TEST_ASSERT(!outpost.is_ship_embargoed(ship), "A pardon left the embargo here")
-	TEST_ASSERT(!other.is_ship_embargoed(ship), "A five-star pardon left the embargo at the other outposts")
-	TEST_ASSERT_EQUAL(length(police.warrants), 0, "A pardon left warrants")
-	TEST_ASSERT_EQUAL(length(police.incidents), 0, "A pardon left the incident")
+	// It runs out on its own: the next tick after its end forgets the incident, and the embargo has lapsed
+	police.remove_warrant(warrant)
+	incident.ends_at = world.time
+	outpost.embargoed_ships[ship] = world.time
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(length(police.incidents), 0, "A lapsed embargo left the incident")
+	TEST_ASSERT(!outpost.is_ship_embargoed(ship), "The embargo here outlived its time")
 	wanted_cleanup(list(ship))
 
 /// A killing is the killer's MURDER when the victim died within 30 seconds of a counted hit

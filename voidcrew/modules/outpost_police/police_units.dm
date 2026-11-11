@@ -35,7 +35,7 @@
 
 /// Waystation Halcyon (green): by the book, navy, spares the downed
 /datum/outpost_police_profile/halcyon
-	force_name = "Halcyon Port Authority"
+	force_name = "Halcyon Security"
 	beat_count = 3
 	fine_multiplier = 1
 	comply_time = 4 SECONDS
@@ -60,7 +60,7 @@
 
 /// The Undertow Exchange (red): bored, mean, black, finishes the downed
 /datum/outpost_police_profile/undertow
-	force_name = "the Exchange's wardens"
+	force_name = "the Exchange's security"
 	beat_count = 2
 	fine_multiplier = 2
 	comply_time = 2 SECONDS
@@ -94,7 +94,7 @@
  * wildcard slot, finds none for a string tg has no flag for, and is refused.
  */
 /datum/id_trim/outpost_police
-	assignment = "Outpost Police"
+	assignment = "Outpost Security"
 	trim_state = "trim_securityofficer"
 	department_color = COLOR_SECURITY_RED
 	subdepartment_color = COLOR_SECURITY_RED
@@ -111,8 +111,8 @@
  * moment it comes off, so nobody ends up holding police cuffs (abuse M8). Never sold, printed or crafted.
  */
 /obj/item/restraints/handcuffs/outpost_police
-	name = "police handcuffs"
-	desc = "Handcuffs with a police stamp."
+	name = "security handcuffs"
+	desc = "Handcuffs with a security stamp."
 	custom_price = null
 	custom_materials = null
 	trashtype = /obj/item/restraints/handcuffs/outpost_police/used

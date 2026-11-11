@@ -104,9 +104,9 @@
 /datum/unit_test/voidcrew_outpost_police_units_profiles/Run()
 	// outpost type -> profile type, force name, beat officers, fine multiplier, time to comply, spares the downed, voice section
 	var/list/expected = list(
-		/obj/structure/overmap/trader_outpost/general = list(/datum/outpost_police_profile/halcyon, "Halcyon Port Authority", 3, 1, 4 SECONDS, TRUE, "halcyon"),
+		/obj/structure/overmap/trader_outpost/general = list(/datum/outpost_police_profile/halcyon, "Halcyon Security", 3, 1, 4 SECONDS, TRUE, "halcyon"),
 		/obj/structure/overmap/trader_outpost/outfitter = list(/datum/outpost_police_profile/quartermain, "Quartermain Depot Security", 2, 1.5, 3 SECONDS, TRUE, "quartermain"),
-		/obj/structure/overmap/trader_outpost/black_market = list(/datum/outpost_police_profile/undertow, "the Exchange's wardens", 2, 2, 2 SECONDS, FALSE, "undertow"),
+		/obj/structure/overmap/trader_outpost/black_market = list(/datum/outpost_police_profile/undertow, "the Exchange's security", 2, 2, 2 SECONDS, FALSE, "undertow"),
 	)
 	var/list/beat_uniforms = list()
 	for(var/outpost_type in expected)

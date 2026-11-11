@@ -18,11 +18,11 @@
 		],
 		"chase": [
 			"Stop right there!",
-			"Port Authority! Stop!",
+			"Security! Stop!",
 			"Hey! Stop!"
 		],
 		"stun": [
-			"Port Authority! On the ground!",
+			"Security! On the ground!",
 			"Down! Get down on the ground!",
 			"On the ground, now!"
 		],
@@ -151,7 +151,7 @@
 		"talk": [
 			"Afternoon. Keep the peace and we'll get along.",
 			"Anything I can help you with?",
-			"Port Authority. Move along if you've no business.",
+			"Halcyon Security. Move along if you've no business.",
 			"Mind the signs and enjoy your stay."
 		],
 		"talk_prior": [
@@ -252,7 +252,7 @@
 			"All quiet. Carrying on."
 		],
 		"stealth_search": [
-			"Port Authority. Come out where I can see you.",
+			"Security. Come out where I can see you.",
 			"Nobody's in trouble yet. Show yourself.",
 			"I know someone's here."
 		],
@@ -720,7 +720,7 @@
 		],
 		"stun": [
 			"Down! On the floor!",
-			"Warden! Get down!",
+			"Guard! Get down!",
 			"Ground. Now. Or I help you."
 		],
 		"shots": [
@@ -729,7 +729,7 @@
 			"Gunfire. Great."
 		],
 		"all_units": [
-			"All wardens, concourse.",
+			"All guards, concourse.",
 			"Everyone. Concourse. Now.",
 			"All units. Yes, now."
 		],
@@ -755,7 +755,7 @@
 		],
 		"make_way": [
 			"Make a hole.",
-			"Move. Warden coming through.",
+			"Move. Guard coming through.",
 			"Out of the way."
 		],
 		"book": [
@@ -774,9 +774,9 @@
 			"Medic! Don't let them die on my shift."
 		],
 		"officer_down": [
-			"Warden down!",
+			"Guard down!",
 			"Officer down!",
-			"Warden down! Concourse!"
+			"Guard down! Concourse!"
 		],
 		"clear": [
 			"Dispatch, show us clear.",
@@ -795,19 +795,19 @@
 		],
 		"radio_call": [
 			"Desk to all. Someone in a %LOOK%, by %PLACE%. Go and look.",
-			"All wardens. %LOOK%. Near %PLACE%. Deal with it.",
+			"All guards. %LOOK%. Near %PLACE%. Deal with it.",
 			"Desk to beat. Trouble by %PLACE%. Again.",
 			"Desk to all. Trouble on the concourse. Again.",
-			"All wardens. Go and look at the concourse.",
+			"All guards. Go and look at the concourse.",
 			"Desk to beat. Something's kicking off."
 		],
 		"radio_call_hot": [
-			"All wardens. Armed. %LOOK%. Last seen by %PLACE%.",
+			"All guards. Armed. %LOOK%. Last seen by %PLACE%.",
 			"Shooting. %LOOK%. Near %PLACE%. Everyone move.",
 			"Armed idiot in a %LOOK%. By %PLACE%.",
-			"All wardens. Armed idiot on the concourse.",
+			"All guards. Armed idiot on the concourse.",
 			"Shots fired. Everyone. Now.",
-			"All wardens. Weapons out. Move."
+			"All guards. Weapons out. Move."
 		],
 		"radio_ack": [
 			"Two-one. Moving.",
@@ -846,7 +846,7 @@
 		],
 		"talk": [
 			"What do you want?",
-			"Warden. Keep your hands to yourself.",
+			"Guard. Keep your hands to yourself.",
 			"Don't start anything. I'm tired."
 		],
 		"talk_prior": [
@@ -885,7 +885,7 @@
 			"You all right here?"
 		],
 		"trader_reply": [
-			"Nothing yet, warden.",
+			"Nothing yet, guard.",
 			"Quiet. For once.",
 			"No trouble. Don't jinx it."
 		],
@@ -956,7 +956,7 @@
 			"Something hit me!"
 		],
 		"stealth_body": [
-			"Warden down! Over here!",
+			"Guard down! Over here!",
 			"Man down! Get over here!",
 			"Someone's down here!"
 		],
@@ -1020,16 +1020,16 @@
 			"Something's off here. Checking."
 		],
 		"stealth_radio_alarm": [
-			"All wardens, trouble by %PLACE%!",
+			"All guards, trouble by %PLACE%!",
 			"Need bodies by %PLACE%, now!",
-			"All wardens, trouble, now!",
-			"All wardens, need help here!",
+			"All guards, trouble, now!",
+			"All guards, need help here!",
 			"Trouble on the floor! Move!"
 		],
 		"stealth_radio_missing": [
 			"Desk, %NAME% gone quiet. Checking.",
 			"No word from %NAME%. Looking.",
-			"Lost a warden. Going to look.",
+			"Lost a guard. Going to look.",
 			"Desk, someone's gone quiet. Looking.",
 			"Missed check-in. Going to look."
 		],

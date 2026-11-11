@@ -18,7 +18,7 @@
 
 /atom/movable/screen/alert/outpost_wanted
 	name = "Wanted"
-	desc = "Outpost Police."
+	desc = "Outpost Security."
 	icon = 'voidcrew/modules/outpost_police/icons/wanted.dmi'
 	icon_state = "wanted1"
 	/// The person it shows, so the alert can follow them and clear itself
@@ -37,7 +37,7 @@
 /atom/movable/screen/alert/outpost_wanted/proc/show_wanted(datum/mind/who, stars, blink, force_name)
 	wanted_mind = WEAKREF(who)
 	icon_state = "wanted[clamp(stars, 1, 5)][blink ? "_fade" : ""]"
-	desc = "[force_name]."
+	desc = "[capitalize(force_name)]."
 	if(!refresh_timer)
 		refresh_timer = addtimer(CALLBACK(src, PROC_REF(refresh)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 

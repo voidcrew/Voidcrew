@@ -93,7 +93,7 @@
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
 			"On your tab. The tab is due immediately. That was the tab.",
-			"Good pour. Don't drink it near the wardens, they get jealous.",
+			"Good pour. Don't drink it near the guards, they get jealous.",
 			"Enjoy. If it comes back up, that's between you and the deck plating.",
 			"House rule: you break the bottle, you already bought the bottle.",
 			"Cheers. To repeat business and functioning livers.",

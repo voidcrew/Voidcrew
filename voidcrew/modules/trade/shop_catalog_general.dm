@@ -195,7 +195,7 @@
 			"I do forgive you, personally. The till doesn't. Come back later.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Oh, please don't do that, dear. The Port Authority get ever so cross.",
+			"Oh, please don't do that, dear. Security get ever so cross.",
 			"Now now, that's quite enough. One more and I simply can't help you.",
 		),
 		TRADER_LINE_AGGRESSION = list(

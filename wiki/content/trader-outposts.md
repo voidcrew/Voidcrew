@@ -2,7 +2,7 @@
 title: Trader Outposts
 category: Economy
 order: 3
-blurb: The three permanent markets on the overmap, who runs them, what they stock, and who polices them and what happens if you start a fight there.
+blurb: The three permanent markets on the overmap, who runs them, what they stock, who guards them and what happens if you start a fight there.
 ---
 
 Three trader outposts sit permanently on the [overmap](overmap.md), one per zone band. They never move, never unload, and the buildings cannot be destroyed. Each is a market, a contract board, a repair stop and a safe room in one, and each stocks a different tier of goods depending on how dangerous the space around it is.
@@ -41,7 +41,7 @@ No combat guns past the checkpoint. Work tools and disablers are fine, including
 
 Combat guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
 
-**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. A combat gun in hand without a permit, or fired inside, counts as a crime and the [Port Authority](#the-port-authority) answers it. So does coming through a checkpoint door that was pried or hacked open, which also takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
+**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. A combat gun in hand without a permit, or fired inside, counts as a crime and [outpost security](#outpost-security) answers it. So does coming through a checkpoint door that was pried or hacked open, which also takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
 
 **Emagging the scanner.** An emag on the wall scanner takes the whole gate down for three minutes. Both doors open for anyone who walks into them, nobody is scanned, and the scanner's light goes out. A guard who sees it sounds the alarm. Anyone who sees it reports you, and that is 2 stars. With the guard dead and nobody watching, nobody reports it. The gate comes back by itself, and the same scanner cannot be emagged again for five minutes after that. Walking through a gate someone else took down is no crime, but a gun in your hand past it is still one if anyone sees it.
 
@@ -146,7 +146,7 @@ Turn them in at any outpost trader or at your own mission pad. Except courier ru
 
 ## Violence
 
-The walls, doors, glass and machines of an outpost cannot be broken. The people in it can. Traders, checkpoint guards, officers, shoppers, drinkers and the odd regular are all people, and can be hurt, cuffed, wounded and killed like anyone. What stops you is the **Port Authority**: officers who live at each outpost and answer anything they see.
+The walls, doors, glass and machines of an outpost cannot be broken. The people in it can. Traders, checkpoint guards, officers, shoppers, drinkers and the odd regular are all people, and can be hurt, cuffed, wounded and killed like anyone. What stops you is **outpost security**: officers who live at each outpost and answer anything they see.
 
 Shoppers and regulars carry a little cash, and hurting them is a crime. Hurting a trader or a guard is a worse one.
 
@@ -156,7 +156,7 @@ A dead trader leaves an empty counter and a sign reading CLOSED. Nothing at that
 
 The first trader behind each counter may drop one item from their shelf when they die, and the outpost only has so much to give in a round. Replacement traders drop nothing. A trader who dies, is knocked out or is dragged off the counter does not run the shop; a revived one goes back to work.
 
-Killing a trader or a checkpoint guard that someone sees is at least 4 stars. The port bars your whole crew and sends a cutter after your ship, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
+Killing a trader or a checkpoint guard that someone sees is at least 4 stars. The outpost bars your whole crew, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
 
 ### Holding up a trader
 
@@ -170,7 +170,7 @@ When the shooting stops, the port sends crews up by the staff lifts a few minute
 
 Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port sends nobody for a quarter of an hour.
 
-## The Port Authority
+## Outpost security
 
 Officers walk the concourse, drink coffee at the station by the checkpoint and talk to each other. They are people, not turrets: they can be stunned, cuffed, wounded and killed like anyone. They stay inside the outpost and its hangars, and they do not board docked ships.
 
@@ -184,8 +184,8 @@ Crimes pile up against the person who did them, shown as **stars** on your alert
 |---|---|
 | 1-2 | Order you to stop, stun and cuff you, take what you used, and walk you to the desk by the lobby |
 | 3 | Shoot to kill. Nobody takes a surrender |
-| 4 | As 3, plus your crewmates at the outpost are arrested, the crew is under embargo and a cutter is sent after your ship |
-| 5 | As 4, with the marshal on scene, all three outposts embargoed |
+| 4 | As 3, plus your crewmates at the outpost are arrested and the crew is under embargo there |
+| 5 | As 4, with the marshal on scene and a longer embargo |
 
 More officers arrive through the staff lifts as your stars rise, and they keep coming. Officers in green and yellow space spare someone who is down. In red space they finish the job.
 
@@ -210,11 +210,9 @@ Your locker opens for you, or for the ID you booked in with. It is free to take 
 
 You can force a cell door with a crowbar or jaws from either side. It takes a few seconds and sets off an alarm, and it is 3 stars. So is walking out of a cell before your time is up.
 
-### Embargo and the cutter
+### Embargo
 
-At 4 stars every ship of your crew is embargoed at that outpost: no shops, no checkpoint, no trade. At 5 stars it is all three outposts. Each officer you kill adds time to it.
-
-When an embargoed ship undocks, a police cutter goes after it. It hails you with a fine, 6,000 credits at 4 stars and 15,000 at 5. **Pay it** and the cutter leaves, the embargo lifts and your record at that outpost is wiped. Refuse and the cutter attacks and boards. If you beat it or outrun it, the embargo simply runs its time.
+At 4 stars every ship of your crew is embargoed at that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars, and each officer you kill adds 5 more. It only covers the outpost where it happened; the other two still trade with you. There is no paying it off: it runs its time.
 
 !!! danger "The embargo covers your whole crew"
     One person losing their temper bars every ship of the crew, including people who were still shopping.
