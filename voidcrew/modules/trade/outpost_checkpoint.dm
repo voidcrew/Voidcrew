@@ -686,13 +686,38 @@
 	for(var/mob/living/person in arrived.get_all_contents())
 		if(!person.mind)
 			continue
-		var/stars_before = police.get_stars(person.mind)
+		var/mob/living/offender = breach_answerer(person, arrived)
+		if(!offender?.mind)
+			continue
+		var/stars_before = police.get_stars(offender.mind)
 		// The forcer's crowbar or emag is evidence; nobody else brought it
-		var/stars_after = police.report_crime(person, OUTPOST_CRIME_CHECKPOINT_BREACH, null, person == breacher ? breach_tool : null)
+		var/stars_after = police.report_crime(offender, OUTPOST_CRIME_CHECKPOINT_BREACH, null, offender == breacher ? breach_tool : null)
 		if(!isnull(stars_after) && stars_after > stars_before)
 			raised = TRUE
 	if(raised)
 		announce(CHECKPOINT_LINE_INTRUDER, urgent = TRUE)
+
+/**
+ * Who answers for `person` coming through the forced doorway as part of `arrived` (abuse SF1): someone who walked
+ * through themselves; for someone stunned, tied up, lying, logged off and dragged or carried, whoever moved them;
+ * for someone inside a thing (a locker, a bag, a bed), whoever carried or pulled it. Null if nobody can be named.
+ */
+/datum/outpost_checkpoint/proc/breach_answerer(mob/living/person, atom/movable/arrived)
+	if(person == arrived)
+		var/mob/living/mover = isliving(person.pulledby) ? person.pulledby : (isliving(person.buckled) ? person.buckled : null)
+		if(!mover && person.buckled && isliving(person.buckled.pulledby))
+			mover = person.buckled.pulledby // on a bed someone pulls
+		if(mover && (person.incapacitated || HAS_TRAIT(person, TRAIT_RESTRAINED) || person.body_position == LYING_DOWN || (person.mind?.key && !person.client)))
+			return mover
+		return person
+	if(isliving(arrived))
+		return arrived
+	if(isliving(arrived.pulledby))
+		return arrived.pulledby
+	// Shut in a locker or a bag nobody is pulling (shoved, thrown): nobody; at the controls of anything else (a mech): them
+	if(istype(arrived, /obj/structure/closet) || isitem(arrived))
+		return null
+	return person
 
 // =========================================================================
 // THE DOORS

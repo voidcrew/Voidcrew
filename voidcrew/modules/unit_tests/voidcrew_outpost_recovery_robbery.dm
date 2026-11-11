@@ -156,6 +156,40 @@
 	TEST_ASSERT_NULL(police.get_warrant(person.mind), "The emagger is wanted with the guard dead and nobody watching")
 	TEST_ASSERT_EQUAL(police.get_stars(person.mind), 0, "The emagger has stars with the guard dead and nobody watching")
 
+/// Abuse SF1: someone tied up and dragged, or shut in a pulled locker, through a forced gate did not breach it; whoever moved them did
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_breach_mover
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_breach_mover/Run()
+	if(!gate_fixture())
+		return
+	var/turf/chamber = checkpoint.chamber_turfs[1]
+	checkpoint.state = "forced" // CHECKPOINT_FORCED
+	// Tied up and dragged
+	var/mob/living/carbon/human/dragger = mind_person(chamber)
+	ADD_TRAIT(person, TRAIT_RESTRAINED, "outpost_police_test")
+	person.pulledby = dragger
+	checkpoint.on_breach_entry(person, chamber)
+	person.pulledby = null
+	TEST_ASSERT_NULL(police.get_warrant(person.mind), "Someone tied up and dragged through a forced gate was charged")
+	TEST_ASSERT_NOTNULL(police.get_warrant(dragger.mind), "Whoever dragged someone through a forced gate was not charged")
+	// Shut in a locker someone pulls
+	var/mob/living/carbon/human/stuffed = mind_person(chamber)
+	var/mob/living/carbon/human/hauler = mind_person(chamber)
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, chamber)
+	stuffed.forceMove(locker)
+	locker.pulledby = hauler
+	checkpoint.on_breach_entry(locker, chamber)
+	locker.pulledby = null
+	stuffed.forceMove(chamber)
+	TEST_ASSERT_NULL(police.get_warrant(stuffed.mind), "Someone shut in a locker pulled through a forced gate was charged")
+	TEST_ASSERT_NOTNULL(police.get_warrant(hauler.mind), "Whoever pulled a locker with someone in it through a forced gate was not charged")
+	// Walking through on their own is still a breach
+	REMOVE_TRAIT(person, TRAIT_RESTRAINED, "outpost_police_test")
+	police.recent_reports.Cut()
+	checkpoint.on_breach_entry(person, chamber)
+	TEST_ASSERT_NOTNULL(police.get_warrant(person.mind), "Walking through a forced gate was not a breach")
+	checkpoint.state = "idle" // CHECKPOINT_IDLE
+
 // ===== THE STICK-UP (spec 10) =====
 
 /// A loaded outpost's main trader at its counter, the keeper of its shop, and a robber with a gun beside it. Nobody else sees.
