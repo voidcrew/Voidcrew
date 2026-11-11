@@ -493,6 +493,7 @@
 		var/datum/outpost_recovery_post/post = posts[shop]
 		if(post)
 			post.replacement_at = ambient_shifted(post.replacement_at, delay)
+			post.away_since = ambient_shifted(post.away_since, delay)
 
 /**
  * Once a second while there is work (wake() and sleep_tick()); a slow watch (watch()) wakes it from NORMAL. Nothing

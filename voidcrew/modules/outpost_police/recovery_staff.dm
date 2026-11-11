@@ -21,6 +21,9 @@
  * the walk fails and nobody is watching.
  */
 
+/// A keeper away from the outpost's own box (dragged into a hangar or a docked ship) keeps the post this long, then is replaced as if dead (abuse MF3, M31)
+#define RECOVERY_KEEPER_AWAY_MAX (1 MINUTES)
+
 /// The kinds of post (recovery_staff.dm)
 #define RECOVERY_POST_COUNTER "counter"
 #define RECOVERY_POST_GUARD "guard"
@@ -42,6 +45,8 @@
 	var/datum/weakref/replacement
 	/// world.time the replacement was made
 	var/replacement_at = 0
+	/// world.time the keeper was first found away from the outpost's own box, or 0 (abuse MF3)
+	var/away_since = 0
 	/// A police post: the ambient role that brings them, and how many are missing
 	var/role_type
 	var/missing = 0
@@ -90,14 +95,40 @@
 /datum/outpost_recovery/proc/keeper_alive(mob/living/who)
 	return !QDELETED(who) && who.stat != DEAD
 
-/// The counters and desks with nobody keeping them: the keeper is dead or gone, and no replacement is alive
+/// Whether `who` is up and in the outpost's own box (concourse, lobby, closets): not carried off into a hangar or a docked ship
+/datum/outpost_recovery/proc/keeper_on_post(mob/living/who)
+	if(!keeper_alive(who))
+		return FALSE
+	var/turf/where = get_turf(who)
+	if(!where)
+		return FALSE
+	if(outpost?.police)
+		return outpost.police.dispatch_in_box(where)
+	return get_trader_outpost_for_turf(where) == outpost
+
+/**
+ * Whether `who` still keeps `post`: alive and at the outpost, or away from it for less than RECOVERY_KEEPER_AWAY_MAX.
+ * A keeper carried off alive (into a docked ship, out of the hangar) is replaced as if dead (abuse MF3, M31); the old
+ * body is just a person after that.
+ */
+/datum/outpost_recovery/proc/keeper_holds_post(datum/outpost_recovery_post/post, mob/living/who)
+	if(!keeper_alive(who))
+		return FALSE
+	if(keeper_on_post(who))
+		post.away_since = 0
+		return TRUE
+	if(!post.away_since)
+		post.away_since = world.time
+	return world.time - post.away_since < RECOVERY_KEEPER_AWAY_MAX
+
+/// The counters and desks with nobody keeping them: the keeper is dead, gone or carried off, and no replacement is alive
 /datum/outpost_recovery/proc/vacant_posts()
 	. = list()
 	for(var/datum/outpost_shop/shop as anything in posts)
 		var/datum/outpost_recovery_post/post = posts[shop]
 		if(QDELETED(shop) || !post)
 			continue
-		if(keeper_alive(post.replacement?.resolve()) || keeper_alive(counter_keeper(shop)))
+		if(keeper_holds_post(post, post.replacement?.resolve()) || keeper_holds_post(post, counter_keeper(shop)))
 			continue
 		. += post
 
@@ -203,7 +234,8 @@
 		var/datum/outpost_recovery_post/post = posts[shop]
 		var/mob/living/original = post?.original?.resolve()
 		var/mob/living/replacement = post?.replacement?.resolve()
-		if(!keeper_alive(original) || !keeper_alive(replacement) || original == replacement)
+		// An original still carried off never takes the counter back (abuse MF3)
+		if(!keeper_on_post(original) || !keeper_alive(replacement) || original == replacement)
 			continue
 		if(!post.spot || get_dist(replacement, post.spot) <= 1)
 			continue
@@ -254,6 +286,7 @@
 			return TRUE
 	return FALSE
 
+#undef RECOVERY_KEEPER_AWAY_MAX
 #undef RECOVERY_WATCH_GAP
 #undef RECOVERY_RESTAFF_MAX
 #undef RECOVERY_REFILL_MAX
