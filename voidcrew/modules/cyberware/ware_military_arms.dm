@@ -752,11 +752,12 @@
  *
  * The damage splits 3:1. The cut is brute and carries the wounding; the charge
  * running down the line is burn, flat and unwounding. Both halves ignore armor
- * and both halves cleave.
+ * and both halves carry through.
  *
- * Every landed hit cleaves through mobs adjacent to the victim with line of
- * sight, allies filtered out, for CYBERWARE_MONOWIRE_CLEAVE_MULT of both. The
- * cleave, severs and the garrote live in voidcrew/modules/hyperviolence/wire/.
+ * Every landed hit carries on into one body at most: the one standing right
+ * behind the victim along the swing, allies filtered out, for
+ * CYBERWARE_MONOWIRE_CLEAVE_MULT of both, never taking a limb. The
+ * through-cut, severs and the garrote live in voidcrew/modules/hyperviolence/wire/.
  */
 /obj/item/melee/cyberware_monowire
 	name = "\improper Widowline monowire"
@@ -794,7 +795,7 @@
 	// line's two voices we are before handing off.
 	hitsound = pick('voidcrew/sound/monowire1.ogg', 'voidcrew/sound/monowire2.ogg')
 	swing_landed = FALSE
-	// The cut rides the hit: clean severs, the through-cut and the cleave all land
+	// The cut rides the hit: clean severs and the through-cut land
 	// while tg resolves it, so their lines join its message (hyperviolence/wire/wire_cut.dm).
 	wire_cut_begin(target, user)
 	. = ..()
@@ -829,8 +830,8 @@
 /**
  * # Widowline Monowire (T3, one arm, aug slot, load 5)
  *
- * A single-arm spool housing deploying the wire above. Reach two, hits the
- * crowd around whatever it lands on, and armor does nothing to slow it down.
+ * A single-arm spool housing deploying the wire above. Reach two, carries on
+ * into whoever stands behind what it lands on, and armor does nothing to slow it down.
  * What it can't do is hard targets: a quarter demolition mod means walls,
  * doors and machines shrug it off. Bring it to bodies, not to bulkheads.
  */

@@ -246,10 +246,10 @@
 		PATROL_LOG("FAILED: Path too short ([length(path)] doors)")
 		return null
 
-	// Also build a list of doors that require access (pirates have none, so these need attacking)
+	// Also build a list of doors that refuse NPCs (pirates have no access and are never crew, so these need attacking)
 	var/list/locked_doors = list()
 	for(var/obj/machinery/door/D in path)
-		if(door_requires_access(D))
+		if(door_refuses_npc(D))
 			locked_doors[REF(D)] = TRUE
 
 	// Cache the locked doors list
@@ -606,28 +606,6 @@
 	controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
 
 /**
- * Check if a door requires access to open.
- * Pirates have no access, so any door with req_access or req_one_access will need to be attacked.
- */
-/proc/door_requires_access(obj/machinery/door/D)
-	if(!D)
-		return FALSE
-
-	// Check for airlock-specific access requirements
-	if(istype(D, /obj/machinery/door/airlock))
-		var/obj/machinery/door/airlock/A = D
-		if(LAZYLEN(A.req_access) || LAZYLEN(A.req_one_access))
-			return TRUE
-
-	// Check for windoor access requirements
-	if(istype(D, /obj/machinery/door/window))
-		var/obj/machinery/door/window/W = D
-		if(LAZYLEN(W.req_access) || LAZYLEN(W.req_one_access))
-			return TRUE
-
-	return FALSE
-
-/**
  * Get or generate the cached patrol path for a ship.
  * Paths are cached in GLOB.boarding_patrol_paths keyed by ship ref.
  */
@@ -882,8 +860,14 @@
 
 	// Pre-populate the failed doors list with doors that require access
 	var/list/locked_doors = GLOB.boarding_locked_doors[ship_ref]
+	locked_doors = locked_doors ? locked_doors.Copy() : list()
+	// The captain can turn the crew lock on after the path was cached, so judge it again now
+	if(target_ship.crew_only_airlocks)
+		for(var/obj/machinery/door/door in path)
+			if(door_refuses_npc(door))
+				locked_doors[REF(door)] = TRUE
 	if(length(locked_doors))
-		controller.blackboard["_failed_blocking_doors"] = locked_doors.Copy()
+		controller.blackboard["_failed_blocking_doors"] = locked_doors
 		PATROL_LOG("Pre-marked [length(locked_doors)] doors as needing attack (no access)")
 
 	PATROL_LOG("SUCCESS: Assigned [mob_to_assign] to patrol, start_index=[start_index], path_length=[length(path)]")

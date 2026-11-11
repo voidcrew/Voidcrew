@@ -42,6 +42,9 @@
 	ship.ship_team = new /datum/team/voidcrew
 	var/datum/outpost_berth/berth = home.allocate_berth(ship)
 	TEST_ASSERT_NOTNULL(berth, "No standard berth for the test ship")
+	TEST_ASSERT_NULL(berth.shipyard, "A player outpost berth kept the trader berth's shipyard console")
+	for(var/turf/berth_tile as anything in berth.get_block())
+		TEST_ASSERT_NULL(locate(/obj/machinery/computer/ship_checkpoint) in berth_tile, "A player outpost berth has a shipyard console")
 	var/floor_id = berth.berth_number
 	var/list/turf/berth_car = berth.alcove_turfs
 

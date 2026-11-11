@@ -82,7 +82,9 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 10
 	},
-/obj/item/kirbyplants/organic/plant21,
+/obj/machinery/computer/ship_checkpoint{
+	dir = 1
+	},
 /turf/open/indestructible/dark,
 /area/template_noop)
 "l" = (

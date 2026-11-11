@@ -73,7 +73,7 @@ Prices are the same at both counters, stock is limited per round, and load is th
 |---|---|---|---|
 | Atlas frame | 2 | 4 | Bones cannot break and limbs cannot come off; knockback against you is halved |
 | Gorilla Arms (pair) | 3 | 3/arm | 20-damage punches with knockback, fists that break rock, and bare-handed airlock prying |
-| Widowline monowire | 3 | 5 | A two-tile whip that ignores armor entirely and cleaves bystanders for 75% |
+| Widowline monowire | 3 | 5 | A two-tile whip that ignores armor entirely and cuts through into one person standing right behind the target for 75% |
 | Popup Ronin housing | *loot only* | 5 | Deployable full-auto machine pistol in 10x24mm caseless. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Rigger socket | 3 | 4 | Jack into your own ship's helm from anywhere aboard and fly it from a corridor |
 | Slabskin plate | 3 | 6 | Heavy built-in armor in every damage type. 45% of bullets from the front glance off. Solid hits visibly spark off you. Everyone can see you are plated |
