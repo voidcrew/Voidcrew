@@ -99,6 +99,9 @@
 
 	// ...or be found there already, holding still, and never on or beside the lift
 	for(var/npc_type in subtypesof(/mob/living/carbon/human/npc/ambient_npc/outpost))
+		// Traders are mapped at their counters (or walk in to them as replacements); no role settles them
+		if(ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+			continue
 		var/mob/living/carbon/human/npc/ambient_npc/npc = ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police) ? police_officer(outpost, npc_type, pa_tile(1, 1)) : pa_npc(npc_type, pa_tile(1, 1), place)
 		npc.settle_in()
 		TEST_ASSERT(get_dist(npc, pa_tile(4, 4)) > 1, "[npc_type] was found on or beside the lift")
@@ -865,6 +868,16 @@
 			TEST_ASSERT_EQUAL(officer.stat, DEAD, "[npc_type] did not die of their wounds")
 			TEST_ASSERT_EQUAL(ambient_test_cash_on(spot), cash_before, "[npc_type] dropped cash")
 			qdel(officer)
+			continue
+		// A trader or gate guard is a real body that dies of its wounds and carries no cash; its shelf drop is the recovery trader tests'
+		if(ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+			var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = allocate(npc_type, spot)
+			TEST_ASSERT(!HAS_TRAIT(keeper, TRAIT_GODMODE), "[npc_type] cannot be hurt")
+			TEST_ASSERT(FACTION_TURRET in keeper.faction, "The outpost's staff would not count [npc_type] as their own")
+			keeper.apply_damage(keeper.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+			TEST_ASSERT_EQUAL(keeper.stat, DEAD, "[npc_type] did not die of their wounds")
+			TEST_ASSERT_EQUAL(ambient_test_cash_on(spot), cash_before, "[npc_type] dropped cash")
+			qdel(keeper)
 			continue
 		// A cleanup crew member carries no cash (spec-rehydrate.md 4.3); the rest of their kit is the recovery tests'
 		if(ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))

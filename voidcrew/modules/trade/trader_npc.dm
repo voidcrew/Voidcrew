@@ -367,9 +367,13 @@
 			outpost.ensure_shop_offers()
 			contracts_ui.ui_interact(user)
 
-/// Whether they keep their shop's counter and it is open: the keeper, up, at the counter, not held up
+/// Whether they keep their shop's counter and it is open: the keeper, up, at the counter, not held up. A shop whose counter never had a keeper (a bare test stall) is served by whoever fronts it.
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/is_serving()
-	return shop && shop.keeper?.resolve() == src && shop.is_open()
+	if(!shop)
+		return FALSE
+	if(!shop.counter_turf)
+		return stat == CONSCIOUS
+	return shop.keeper?.resolve() == src && shop.is_open()
 
 /// Radial validity: customer still there, still conscious, still at the counter, and the counter open
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/check_menu(mob/living/user)
@@ -493,6 +497,10 @@
 		return
 	guard_alive(FALSE)
 	shop?.update_signs()
+
+// No ambient place of their own: an outpost's staff lie as long as its other dead (outpost recovery may change it on note_death())
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/corpse_lifetime()
+	return outpost ? AMBIENT_OUTPOST_BODY_TIME : ..()
 
 // Cash and death_loot are off; the one drop is a shelf item
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/drop_loot()
