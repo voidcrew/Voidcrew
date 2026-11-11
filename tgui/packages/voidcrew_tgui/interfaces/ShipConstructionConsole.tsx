@@ -15,6 +15,7 @@ import {
 import type { BooleanLike } from 'tgui-core/react';
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 import { ShipConstructionControls } from './ShipConstructionControls';
 
 interface PortDoorData {
@@ -43,6 +44,7 @@ interface Data {
   };
   repairUnlocked: BooleanLike;
   repairEnabled: BooleanLike;
+  tutorial_focus?: string | null;
   repairStatus: string;
   repairTracking: BooleanLike;
   repairRecords: number;
@@ -212,12 +214,20 @@ export const ShipConstructionConsole = () => {
                 Tools
               </Tabs.Tab>
               {!isOutpost && (
-                <Tabs.Tab
-                  selected={activeTab === 'repair'}
-                  onClick={() => setActiveTab('repair')}
+                <TutorialFocus
+                  id={
+                    data.repairEnabled
+                      ? 'construct_drones_tab'
+                      : ['construct_drones_tab', 'construct_deploy_swarm']
+                  }
                 >
-                  Repair Drones
-                </Tabs.Tab>
+                  <Tabs.Tab
+                    selected={activeTab === 'repair'}
+                    onClick={() => setActiveTab('repair')}
+                  >
+                    Repair Drones
+                  </Tabs.Tab>
+                </TutorialFocus>
               )}
               {!isOutpost && (
                 <Tabs.Tab
@@ -808,13 +818,15 @@ const RepairTab = () => {
         <Section
           title={`Repair swarm (${repairDrones.length}/${repairDroneLimit})`}
         >
-          <Button
-            icon={repairEnabled ? 'pause' : 'play'}
-            disabled={isNotCrew}
-            onClick={() => act('repair_toggle')}
-          >
-            {repairEnabled ? 'Pause swarm' : 'Deploy swarm'}
-          </Button>
+          <TutorialFocus id={repairEnabled ? '' : 'construct_deploy_swarm'}>
+            <Button
+              icon={repairEnabled ? 'pause' : 'play'}
+              disabled={isNotCrew}
+              onClick={() => act('repair_toggle')}
+            >
+              {repairEnabled ? 'Pause swarm' : 'Deploy swarm'}
+            </Button>
+          </TutorialFocus>
           <Button
             icon="house"
             disabled={isNotCrew || repairDrones.length === 0}
