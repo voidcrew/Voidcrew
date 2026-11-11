@@ -466,9 +466,7 @@
 	// Until the booking is over they are held but not on a clock
 	admit(suspect, world.time + OUTPOST_POLICE_HOLDS[stars])
 	booking[prisoner] = world.time
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = officer
-	if(istype(cop))
-		INVOKE_ASYNC(cop, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_BOOK)
+	// The booking line is the arresting officer's (police_arrest.dm act_book())
 	shut_door(TRUE)
 	if(!holds(prisoner, suspect))
 		return FALSE

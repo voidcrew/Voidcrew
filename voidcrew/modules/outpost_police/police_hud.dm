@@ -91,13 +91,4 @@
 	SHOULD_NOT_SLEEP(TRUE)
 	refresh_outpost_wanted_alert(who)
 
-/datum/outpost_police/New(obj/structure/overmap/trader_outpost/new_outpost)
-	. = ..()
-	RegisterSignal(src, COMSIG_OUTPOST_POLICE_STARS, PROC_REF(on_stars_changed))
-
-/// A warrant's stars changed (datum/mind/who, old_stars, new_stars): show them
-/datum/outpost_police/proc/on_stars_changed(datum/source, datum/mind/who, old_stars, new_stars)
-	SIGNAL_HANDLER
-	update_hud(who)
-
 #undef OUTPOST_WANTED_ALERT
