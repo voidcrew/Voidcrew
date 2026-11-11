@@ -1,8 +1,17 @@
-// Stealth guards: flashlights, elbow-to-elbow sight, volleys and sentry facing (owner decision 31,
+// Stealth guards: flashlights, elbow-to-elbow sight, volleys and sentry facing (owner decisions 31 and 39,
 // voidcrew/modules/stealth/stealth_light.dm). Values from voidcrew/_DEFINES are written out: STEALTH_LIGHT_HOLD
-// 5 s, STEALTH_NOISE_COALESCE 3 s, STEALTH_SENTRY_TURN_INTERVAL 8 s, STEALTH_SENTRY_GLANCE_TIME 2 s.
+// 5 s, STEALTH_TORCH_REACH 3, STEALTH_TORCH_REACH_DIAGONAL 2, STEALTH_NOISE_COALESCE 3 s,
+// STEALTH_SENTRY_TURN_INTERVAL 8 s, STEALTH_SENTRY_GLANCE_TIME 2 s.
 
-/// The guard switches its seclite on in the dark and while on edge, off in the light, and can't while it is cut out.
+/// Waits for tg's static lighting to apply what was just switched or moved (it updates on its own subsystem).
+/datum/unit_test/proc/stealth_settle_light()
+	sleep(1)
+	for(var/i in 1 to 50)
+		if(!length(SSlighting.sources_queue) && !length(SSlighting.current_sources))
+			return
+		sleep(1)
+
+/// The guard switches its light on in the dark and while on edge, off in the light, and can't while it is cut out.
 /datum/unit_test/voidcrew_stealth_light_switch
 
 /datum/unit_test/voidcrew_stealth_light_switch/Run()
@@ -12,77 +21,135 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 	var/obj/item/flashlight/light = stealth_ai.stealth_light()
 	TEST_ASSERT_NOTNULL(light, "A scav guard has no flashlight on its body")
-	TEST_ASSERT(!light.light_on, "A guard's light starts on")
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A guard's light starts on")
 	var/turf/here = get_turf(guard)
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(!light.light_on, "An unaware guard in the light switched its light on")
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "An unaware guard in the light switched its light on")
 	GLOB.stealth_test_dark_turfs[here] = TRUE
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(light.light_on, "A guard standing in the dark didn't switch its light on")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard standing in the dark didn't switch its light on")
+	TEST_ASSERT(!light.light_on, "The seclite item lit its own beam as well as the pool")
 	// Back in the light it keeps it on a moment, then switches it off.
 	GLOB.stealth_test_dark_turfs[here] = FALSE
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(light.light_on, "A guard switched its light off the moment it stepped into the light")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard switched its light off the moment it stepped into the light")
 	stealth_ai.light_hold_until = 0
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(!light.light_on, "An unaware guard in the light kept its light on")
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "An unaware guard in the light kept its light on")
 	// On edge, it is on even in the light.
 	stealth_ai.stealth_go_suspicious(stealth_at(block, 6, 2))
-	TEST_ASSERT(light.light_on, "A suspicious guard's light isn't on")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A suspicious guard's light isn't on")
 	stealth_ai.stealth_go_searching(stealth_at(block, 6, 2))
-	TEST_ASSERT(light.light_on, "A searching guard's light isn't on")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A searching guard's light isn't on")
 	stealth_ai.stealth_go_unaware()
 	stealth_ai.light_hold_until = 0
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(!light.light_on, "A calm guard in the light kept its light on")
-	// An EMP cuts it out, and the guard can't switch it back on until it recovers.
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A calm guard in the light kept its light on")
+	// An EMP cuts it out at once, and the guard can't switch it back on until it recovers.
 	GLOB.stealth_test_dark_turfs[here] = TRUE
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(light.light_on, "The light didn't come on in the dark")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "The light didn't come on in the dark")
 	guard.emp_act(EMP_LIGHT)
-	TEST_ASSERT(!light.light_on, "An EMP didn't cut the guard's light out")
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "An EMP didn't cut the guard's light out")
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(!light.light_on, "A guard switched an EMP'd light straight back on")
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A guard switched an EMP'd light straight back on")
 	light.disabled_time = 0
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(light.light_on, "The light didn't come back on once the EMP wore off")
-	// Gone from its body, it goes without.
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "The light didn't come back on once the EMP wore off")
+	// Stunned, it has no light.
+	guard.Paralyze(5 SECONDS)
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A stunned guard kept its light on")
+	guard.SetParalyzed(0)
+	stealth_ai.stealth_update_light()
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "The light didn't come back once the guard was up")
+	// Gone from its body, it goes out at once.
 	light.forceMove(stealth_at(block, 4, 4))
 	TEST_ASSERT_NULL(stealth_ai.stealth_light(), "A guard still counts a light that left its body")
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A guard's pool stayed on after its seclite was taken")
 	GLOB.stealth_test_dark_turfs[here] = FALSE
 	qdel(block)
 
-/// Real lighting: in a dark room the guard sees someone 5 tiles ahead only by its own light.
+/// Decision 39: the pool lands 3 tiles ahead (2 on a diagonal), stops short of a wall or a closed door, goes through
+/// glass, and follows the guard's turns and steps.
+/datum/unit_test/voidcrew_stealth_light_pool
+
+/datum/unit_test/voidcrew_stealth_light_pool/Run()
+	var/datum/turf_reservation/block = stealth_block(10, 7)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/turf/from = stealth_at(block, 2, 3)
+	TEST_ASSERT_EQUAL(stealth_torch_spot(from, EAST), stealth_at(block, 5, 3), "An open floor's pool isn't 3 tiles ahead")
+	TEST_ASSERT_EQUAL(stealth_torch_spot(from, NORTHEAST), stealth_at(block, 4, 5), "A diagonal pool isn't 2 tiles out")
+	// A wall 3 ahead: the pool is on the last open tile before it.
+	var/turf/wall = stealth_at(block, 5, 3)
+	wall.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT_EQUAL(stealth_torch_spot(from, EAST), stealth_at(block, 4, 3), "The pool went into or past a wall")
+	// Right at its nose: no pool.
+	var/turf/near_wall = stealth_at(block, 3, 3)
+	near_wall.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT_NULL(stealth_torch_spot(from, EAST), "A guard facing a wall at its nose has a pool")
+	// A closed glass airlock stops it; glass does not.
+	var/obj/machinery/door/airlock/glass/door = allocate(/obj/machinery/door/airlock/glass, stealth_at(block, 2, 5))
+	TEST_ASSERT(door.density, "Test fixture: the airlock isn't closed")
+	TEST_ASSERT_EQUAL(stealth_torch_spot(from, NORTH), stealth_at(block, 2, 4), "The pool went through a closed glass door")
+	allocate(/obj/structure/window/fulltile, stealth_at(block, 2, 1))
+	TEST_ASSERT_EQUAL(stealth_torch_spot(from, SOUTH), stealth_at(block, 2, 0), "The pool stopped at a window")
+	// A guard's pool follows it.
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 6, 3, SOUTH)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	GLOB.stealth_test_dark_turfs[get_turf(guard)] = TRUE
+	stealth_ai.stealth_update_light()
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark has no pool")
+	TEST_ASSERT_EQUAL(get_turf(stealth_ai.torch), stealth_at(block, 6, 0), "The pool isn't 3 ahead of a guard facing south")
+	guard.setDir(EAST)
+	TEST_ASSERT_EQUAL(get_turf(stealth_ai.torch), stealth_at(block, 9, 3), "The pool didn't follow the guard's turn")
+	// A wall goes up where the pool was; after its next step the pool sits short of it, and smaller.
+	var/turf/far_wall = stealth_at(block, 9, 3)
+	far_wall.ChangeTurf(/turf/closed/wall)
+	guard.forceMove(stealth_at(block, 7, 3))
+	TEST_ASSERT_EQUAL(get_turf(stealth_ai.torch), stealth_at(block, 8, 3), "The pool didn't stop short of a wall after a step")
+	TEST_ASSERT(stealth_ai.torch.light_range < 2.5, "A pool a tile off is as wide as one 3 off")
+	var/obj/effect/abstract/stealth_torch/old_torch = stealth_ai.torch
+	GLOB.stealth_test_dark_turfs[stealth_at(block, 6, 3)] = FALSE
+	qdel(guard)
+	TEST_ASSERT(QDELETED(old_torch), "A deleted guard left its pool behind")
+	qdel(block)
+
+/// Real lighting: in a dark room the guard's pool lights what it lands on and nothing behind it.
 /datum/unit_test/voidcrew_stealth_light_sight
 
 /datum/unit_test/voidcrew_stealth_light_sight/Run()
 	var/datum/turf_reservation/block = stealth_block(12, 5)
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
 	stealth_unlist(block, 12, 5)
-	var/mob/living/carbon/human/person = stealth_person(block, 6, 2)
+	var/mob/living/carbon/human/person = stealth_person(block, 5, 2)
 	var/turf/spot = get_turf(person)
 	TEST_ASSERT(stealth_tile_is_dark(spot), "Reserved test space isn't dark, so the light can't be tested")
-	// Without a light: 5 tiles off in the dark is past sight.
-	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 1, 2)
+	// Without a light: 3 tiles off in the dark fills slowly (no near fill in the dark, decision 39).
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 	qdel(stealth_ai.stealth_light())
-	stealth_scans(guard, 5)
-	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard with no light saw someone 5 tiles off in the dark")
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard with no light noticed someone 3 tiles off in the dark in one look")
 	qdel(guard)
-	// With one: it switches it on, the light reaches them, and it notices them.
-	guard = stealth_guard(block, 1, 2)
+	// With one: it switches it on, the pool lands on them, and it notices them.
+	guard = stealth_guard(block, 2, 2)
 	stealth_ai = stealth_ai(guard)
-	var/obj/item/flashlight/light = stealth_ai.stealth_light()
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(light.light_on, "A guard standing in the dark didn't switch its light on")
-	TEST_ASSERT(!stealth_tile_is_dark(spot), "The guard's light doesn't reach 5 tiles ahead")
-	TEST_ASSERT(stealth_tile_is_dark(get_turf(guard), light), "A guard counts its own light as the room's")
-	stealth_scans(guard, 5)
-	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't notice someone its light was on")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard standing in the dark didn't switch its light on")
+	stealth_settle_light()
+	TEST_ASSERT(!stealth_tile_is_dark(spot), "The guard's pool doesn't light the tile it lands on")
+	TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 6, 2)), "The guard's pool doesn't light the tile past it")
+	TEST_ASSERT(stealth_tile_is_dark(get_turf(guard)), "The guard's pool lights its own tile")
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 1, 2)), "The guard's pool lights the tile behind it")
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 8, 2)), "The guard's pool lights 6 tiles ahead")
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't notice someone its pool was on")
 	qdel(guard)
+	stealth_settle_light()
+	TEST_ASSERT(stealth_tile_is_dark(spot), "The pool stayed lit after its guard was gone")
 	qdel(block)
 
-/// Real lighting: a searching guard finds a body in the dark by its light.
+/// Real lighting: a searching guard sees as far as in daylight onto the tiles its pool lights.
 /datum/unit_test/voidcrew_stealth_light_body
 
 /datum/unit_test/voidcrew_stealth_light_body/Run()
@@ -91,24 +158,28 @@
 	stealth_unlist(block, 12, 5)
 	allocate(/obj/effect/landmark/stealth_group, stealth_at(block, 7, 4))
 	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 1, 2)
-	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 6, 2)
+	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 4, 2)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/friend_ai = stealth_ai(friend)
 	stealth_ai.stealth_setup()
 	friend_ai.stealth_setup()
 	qdel(friend_ai.stealth_light())
 	friend.death()
-	TEST_ASSERT(stealth_tile_is_dark(get_turf(friend)), "Reserved test space isn't dark, so the light can't be tested")
-	// Its light cut out, it searches past the body 5 tiles off in the dark.
+	var/turf/body_turf = get_turf(friend)
+	TEST_ASSERT(stealth_tile_is_dark(body_turf), "Reserved test space isn't dark, so the light can't be tested")
+	var/datum/stealth_skill/profile = stealth_ai.stealth_skill()
+	// Its light cut out, the body's tile is dark to it.
 	var/obj/item/flashlight/light = stealth_ai.stealth_light()
 	light.on_saboteur(null, 1 MINUTES)
 	stealth_ai.stealth_go_searching(get_turf(guard))
-	stealth_ai.stealth_check_bodies()
-	TEST_ASSERT(!(REF(friend) in stealth_ai.blackboard["stealth_bodies_seen"]), "A guard saw a body 5 tiles off in the dark without a light")
-	// With it on, it finds it.
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A guard's cut-out light shows a pool")
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_range_onto(body_turf), profile.dark_sight_range, "A guard sees into the dark as if it were lit")
+	// With it on, it is lit, and it finds the body.
 	light.disabled_time = 0
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(light.light_on, "A searching guard's light didn't come on")
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A searching guard's light didn't come on")
+	stealth_settle_light()
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_range_onto(body_turf), profile.sight_range, "A guard's pool doesn't light the body it lands on")
 	stealth_ai.next_body_scan = 0
 	stealth_ai.stealth_check_bodies()
 	TEST_ASSERT(REF(friend) in stealth_ai.blackboard["stealth_bodies_seen"], "A searching guard with its light on didn't find the body")
@@ -117,7 +188,7 @@
 	qdel(block)
 
 /// Elbow to elbow: someone on the next tile in front is seen in the dark (an alert, decision 32); behind or side-on
-/// is not; two ahead in the dark fills (3x near, decision 32) to suspicious.
+/// is not; two ahead in the dark fills slowly (no near fill in the dark, decision 39).
 /datum/unit_test/voidcrew_stealth_adjacent
 
 /datum/unit_test/voidcrew_stealth_adjacent/Run()
@@ -132,7 +203,7 @@
 		list(1, 0, "alert"),
 		list(-1, 0, "unaware"),
 		list(0, 1, "unaware"),
-		list(2, 0, "suspicious"),
+		list(2, 0, "unaware"),
 	)
 	for(var/list/test_case as anything in cases)
 		person.forceMove(stealth_at(block, 3 + test_case[1], 3 + test_case[2]))

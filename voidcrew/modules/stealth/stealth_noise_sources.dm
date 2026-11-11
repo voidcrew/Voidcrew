@@ -184,6 +184,30 @@
 	if(whole)
 		stealth_noise(src, STEALTH_NOISE_GLASS)
 
+// Stepping on broken glass (decision 37): tg's own crunch, which plays at a walk too and through shoes. Shards of
+// every kind and dropped bulbs and tubes are the things tg plays it for. Broken bottles hurt but make no sound in
+// tg, so they make none here; prescription glasses crunch only under a running step, which is heard anyway.
+/obj/item/shard/on_entered(datum/source, atom/movable/AM)
+	. = ..()
+	stealth_glass_step(src, AM)
+
+/obj/item/light/on_entered(datum/source, atom/movable/moving_atom)
+	. = ..()
+	stealth_glass_step(src, moving_atom)
+
+/// `stepper` walked onto `glass`: the crunch tg played, under tg's own rule for when it plays.
+/proc/stealth_glass_step(atom/glass, atom/movable/stepper)
+	if(!length(GLOB.stealth_groups) || !isliving(stepper) || QDELETED(glass))
+		return
+	var/mob/living/walker = stepper
+	if((walker.movement_type & MOVETYPES_NOT_TOUCHING_GROUND) && !walker.buckled)
+		return
+	// A mouse or a roach on the glass is no lure: only something that weighs something carries.
+	if(walker.mob_size <= MOB_SIZE_TINY)
+		return
+	var/reach = HAS_TRAIT(walker, TRAIT_LIGHT_STEP) ? STEALTH_NOISE_RANGE_CRUNCH_LIGHT : STEALTH_NOISE_RANGE_CRUNCH
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_noise), get_turf(glass), STEALTH_NOISE_CRUNCH, reach, walker)
+
 // ===== Knocks =====
 
 // Knuckles on a window with combat mode off, a fist with it on. Repeats the parent's two guards.
@@ -200,8 +224,8 @@
 		return
 	stealth_noise(src, STEALTH_NOISE_KNOCK, null, isliving(user) ? user : null)
 
-// An airlock opening or closing, refusing someone, or being forced. Nobody is named: a door with one of the
-// group beside it is one of their own going through (stealth_noise()).
+// An airlock refusing someone, or being forced. Nobody is named: a door with one of the group beside it is one
+// of their own going through (stealth_noise()). An airlock opening or closing is every door's hook (stealth_doors.dm).
 /obj/machinery/door/airlock/animation_effects(animation, force_type = DEFAULT_DOOR_CHECKS)
 	. = ..()
 	if(!length(GLOB.stealth_groups))
@@ -209,11 +233,8 @@
 	if(force_type == BYPASS_DOOR_CHECKS)
 		stealth_noise(src, STEALTH_NOISE_BASH)
 		return
-	switch(animation)
-		if(DOOR_OPENING_ANIMATION, DOOR_CLOSING_ANIMATION)
-			stealth_noise(src, STEALTH_NOISE_DOOR)
-		if(DOOR_DENY_ANIMATION)
-			stealth_noise(src, STEALTH_NOISE_KNOCK)
+	if(animation == DOOR_DENY_ANIMATION)
+		stealth_noise(src, STEALTH_NOISE_KNOCK)
 
 // Tools at work: a wrench or a crowbar is a knock, a welder or a drill is louder. Breaking in is a choice
 // between slow and quiet, and fast and loud. Guards don't use tools.

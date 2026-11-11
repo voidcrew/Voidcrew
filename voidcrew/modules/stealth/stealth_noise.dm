@@ -72,6 +72,7 @@
 			STEALTH_NOISE_VOICE = list(STEALTH_NOISE_RANGE_VOICE, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_SCREAM = list(STEALTH_NOISE_RANGE_SCREAM, STEALTH_HEAR_ALARM, STEALTH_NOISE_LOUD | STEALTH_NOISE_ALLIES_COUNT),
 			STEALTH_NOISE_SHOUT = list(STEALTH_NOISE_RANGE_SHOUT, STEALTH_HEAR_SHOUT, STEALTH_NOISE_LOUD | STEALTH_NOISE_GROUP_ONLY),
+			STEALTH_NOISE_CRUNCH = list(STEALTH_NOISE_RANGE_CRUNCH, STEALTH_HEAR_INVESTIGATE, NONE),
 		)
 	return profiles[kind]
 
@@ -216,8 +217,12 @@
 		var/turf/guard_turf = get_turf(guard)
 		if(guard_turf?.z != where.z)
 			continue
+		// Its ear (decision 38): quiet noises carry further to a sharp guard, less far to a sloppy one.
+		var/guard_reach = reach
+		if(!gunfire && !(flags & STEALTH_NOISE_LOUD) && kind != STEALTH_NOISE_GUN_QUIET)
+			guard_reach = round(reach * guard_ai.stealth_skill().hearing_mult, 1)
 		var/dist = get_dist(guard_turf, where)
-		if(dist > reach)
+		if(dist > guard_reach)
 			continue
 		if(guard_ai.ai_status == AI_STATUS_OFF || guard.client || guard.stat != CONSCIOUS || guard_ai.stealth_captive() || guard_ai.blackboard_key_exists(BB_HUMAN_NPC_EXIT))
 			note(guard, "busy")
@@ -230,8 +235,8 @@
 			note(guard, "busy")
 			continue
 		var/muffled = stealth_muffled_dist(where, guard_turf, flags)
-		if(muffled > reach)
-			note(guard, muffled == INFINITY ? "muffled" : "muffled [muffled]/[reach]")
+		if(muffled > guard_reach)
+			note(guard, muffled == INFINITY ? "muffled" : "muffled [muffled]/[guard_reach]")
 			continue
 		var/index = 1
 		while(index <= length(hearers) && hearers[index][2] <= muffled)
@@ -239,7 +244,7 @@
 		hearers.Insert(index, null)
 		hearers[index] = list(guard, muffled)
 		guard_ai.last_heard = list(kind, world.time)
-		note(guard, "heard [muffled]/[reach]")
+		note(guard, "heard [muffled]/[guard_reach]")
 	if(length(hearers))
 		noise_stamps[kind] = list(world.time, where)
 		// Far off, they misjudge the spot: all of them by the same error, so they end up in one place.
@@ -296,6 +301,8 @@
 	alarms = list()
 	checks = list()
 	next_radio_alarm = 0
+	door_guard_used = list()
+	door_cues = list()
 
 /// Moves every noise stamp back by `time`, as if that long had passed (unit tests, admin tools).
 /datum/stealth_group/proc/rewind(time)
@@ -310,6 +317,12 @@
 		check.due -= time
 	next_overdue_check -= time
 	next_radio_alarm -= time
+	for(var/key in door_guard_used)
+		door_guard_used[key] -= time
+	for(var/key in door_cues)
+		var/list/stamps = door_cues[key]
+		for(var/index in 1 to length(stamps))
+			stamps[index] -= time
 
 /**
  * What the guards that heard a noise do, decided for the group. `hearers` is list(guard, muffled distance),

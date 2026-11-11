@@ -102,7 +102,6 @@
 #define STEALTH_ROUTE_CLAIM_RANGE 2
 #define STEALTH_PATROL_DEFAULT_WAIT (6 SECONDS)
 #define STEALTH_LOOK_TURN_INTERVAL (3 SECONDS)
-#define STEALTH_LOOK_TURN_CHANCE 50
 #define STEALTH_LOOK_TURN_ARC 90
 #define STEALTH_SENTRY_TURN_INTERVAL (8 SECONDS)
 /// How long a sentry looks aside before it faces its post again
@@ -140,6 +139,15 @@
 /// A guard that isn't the one opening it stands this close and covers it
 #define STEALTH_CLOSET_COVER_RANGE 3
 
+// Doors seen moving (decision 37, stealth_doors.dm)
+/// A door one of the group opened: its next close this soon after is theirs too (an airlock shuts itself after 6 s)
+#define STEALTH_DOOR_GUARD_MEMORY (20 SECONDS)
+/// After a door sent someone to look, it only gets glances for this long
+#define STEALTH_DOOR_CUE_COOLDOWN (30 SECONDS)
+/// A door that sent someone to look STEALTH_DOOR_CUE_MAX times within this long is ignored for the rest of it
+#define STEALTH_DOOR_CUE_MEMORY (3 MINUTES)
+#define STEALTH_DOOR_CUE_MAX 2
+
 // The mark over a guard's head (stealth_meter.dm, owner decision 27)
 /// Pixel rows in the "?" and "!" glyphs: fill and drain steps
 #define STEALTH_METER_ROWS 7
@@ -158,6 +166,31 @@
 #define STEALTH_LIGHT_EMP_HEAVY (40 SECONDS)
 /// A light EMP cuts a guard's seclite out for this long
 #define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
+
+// ===== Real flashlight pools (decision 39, stealth_light.dm) =====
+/// Tiles ahead its pool lands, when nothing stops it first
+#define STEALTH_TORCH_REACH 3
+/// The same, facing a diagonal
+#define STEALTH_TORCH_REACH_DIAGONAL 2
+/// The pool's light power (its seclite blue takes it to about 1.2 white)
+#define STEALTH_TORCH_POWER 1.5
+/// The pool's light range with its centre 2.5 or more tiles off, 2 or more, and nearer (sized so the guard's own
+/// tile stays under the dark line: data/stealth/STATUS.md, decision 39)
+#define STEALTH_TORCH_RANGE_FAR 2.5
+#define STEALTH_TORCH_RANGE_MID 2
+#define STEALTH_TORCH_RANGE_NEAR 1.7
+/// tg's seclite colour
+#define STEALTH_TORCH_COLOR "#99ccff"
+
+// ===== Readable turns (decision 39, stealth_turns.dm) =====
+/// How long a guard leans towards the side it is about to turn to before it turns
+#define STEALTH_TURN_TELL (0.6 SECONDS)
+/// Pixels of that lean
+#define STEALTH_TURN_LEAN 3
+/// How long the lean takes to show and to go
+#define STEALTH_TURN_LEAN_TIME (0.2 SECONDS)
+/// After a turn where it stands, nothing is plain to it at a glance for this long (yellow; the skill holds the number)
+#define STEALTH_TURN_GRACE (1 SECONDS)
 
 #define FACTION_SCAV "scav"
 

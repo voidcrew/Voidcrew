@@ -57,30 +57,22 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
  * Whether `tile` is dark enough to hide in. A turf with no lighting object (planet ground lit only by its
  * area's ambient light) reads its area's base light, which get_lumcount() skips (it returns 1 there).
  * Same rule as the bounty AI's ai_tile_is_dark() (bounty_ai_meek.dm), which is a type proc.
- * A flashlight's light counts like any other (tg adds it to dynamic_lumcount). `own_light` leaves out what
- * that one light adds: a guard's own beam never lights the tile behind it (decision 32). `no_guard_lights`
- * leaves out every guard's seclite, so a guard deciding whether its spot needs a light judges by the room's
- * own light, not by a friend walking past with one (decision 32: no flicker when guards meet).
+ * Every light counts, a guard's own flashlight pool too: it is real light that players see (decision 39).
+ * `no_guard_lights` leaves out every guard's pool, so a guard deciding whether its spot needs a light judges by
+ * the room's own light, not by a friend walking past with one (decision 32: no flicker when guards meet).
  */
-/proc/stealth_tile_is_dark(turf/tile, obj/item/flashlight/own_light, no_guard_lights = FALSE)
+/proc/stealth_tile_is_dark(turf/tile, no_guard_lights = FALSE)
 	if(!isturf(tile))
 		return FALSE
 #ifdef UNIT_TESTS
 	if(tile in GLOB.stealth_test_dark_turfs)
 		return GLOB.stealth_test_dark_turfs[tile]
 #endif
-	var/own = 0
-	if(no_guard_lights)
-		for(var/obj/item/flashlight/guard_light as anything in GLOB.stealth_guard_lights)
-			own += stealth_light_share(guard_light, tile)
-		if(own_light && !(own_light in GLOB.stealth_guard_lights))
-			own += stealth_light_share(own_light, tile)
-	else if(own_light)
-		own = stealth_light_share(own_light, tile)
 	if(!tile.lighting_object)
 		var/area/tile_area = tile.loc
-		return (tile_area.base_lighting_alpha / 255) + tile.dynamic_lumcount - own < STEALTH_DARK_LUMCOUNT
-	return tile.get_lumcount() - own < STEALTH_DARK_LUMCOUNT
+		return (tile_area.base_lighting_alpha / 255) + tile.dynamic_lumcount < STEALTH_DARK_LUMCOUNT
+	var/guard_light = no_guard_lights ? stealth_torch_share(tile) : 0
+	return tile.get_lumcount() - guard_light < STEALTH_DARK_LUMCOUNT
 
 /**
  * What `who` is shut inside, as it stands on a turf: the box, locker, bag or car, or the outermost of them.

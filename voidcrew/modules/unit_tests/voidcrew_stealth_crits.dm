@@ -168,16 +168,15 @@
 	TEST_ASSERT(!HAS_TRAIT(light, TRAIT_NO_STRIP), "The seclite can't be stripped")
 	TEST_ASSERT(!human_npc_gear_locked(light), "The seclite is locked gear")
 	TEST_ASSERT(human_npc_gear_locked(guard.w_uniform), "The rest of the guard's kit isn't locked any more")
-	TEST_ASSERT(light in GLOB.stealth_guard_lights, "The seclite isn't on the guard light list")
 	var/mob/living/carbon/human/person = stealth_person(block, 3, 2)
 	TEST_ASSERT(guard.dropItemToGround(light), "The seclite can't be taken off")
 	TEST_ASSERT(person.put_in_hands(light), "The seclite can't be picked up")
 	TEST_ASSERT(!QDELETED(light), "The looted seclite was deleted")
-	TEST_ASSERT(!(light in GLOB.stealth_guard_lights), "A looted seclite still counts as a guard's")
 	// The guard goes without: no light to switch, and it still scans and sees.
 	TEST_ASSERT_NULL(stealth_ai.stealth_light(), "The guard still counts the light it lost")
 	GLOB.stealth_test_dark_turfs[get_turf(guard)] = TRUE
 	stealth_ai.stealth_update_light()
+	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "The guard lights a pool with a light a player holds")
 	TEST_ASSERT(!light.light_on, "The guard switched on a light a player holds")
 	GLOB.stealth_test_dark_turfs[get_turf(guard)] = FALSE
 	person.forceMove(stealth_at(block, 5, 2))
