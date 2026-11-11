@@ -417,6 +417,11 @@
 	TEST_ASSERT(kill.start(), "The scissor didn't start")
 	TEST_ASSERT(kill.rig, "The bearer isn't drawn around the victim")
 	kill.advance()
+	// The cut opens on the swing down and shows the blades meeting a step later (MANTIS_SCISSOR_SWING_STEP): show
+	// that beat now, as its timer would
+	var/datum/hv_finisher_stage/kill/decapitate/mantis/cut = kill.current_stage
+	TEST_ASSERT(istype(cut), "The scissor's second stage isn't the cut")
+	cut.close()
 	var/list/closing = rig_pictures(user)
 	var/below = 0
 	for(var/obj/effect/abstract/mantis_puppet/picture as anything in closing)
