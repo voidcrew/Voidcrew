@@ -125,11 +125,28 @@
 		/datum/shop_sku/ripperdoc/governor_delete = 3,
 		/datum/shop_sku/ripperdoc/redline = 3,
 		/datum/shop_sku/ripperdoc/cascade = 3,
+		/datum/shop_sku/rig_bay_mech/gygax = 1,
+		/datum/shop_sku/rig_bay_mech/durand = 2,
+		/datum/shop_sku/rig_bay_gear/arm/missile_rack = 2,
+		/datum/shop_sku/rig_bay_gear/arm/lmg = 1,
+		/datum/shop_sku/rig_bay_gear/arm/laser = 1,
+		/datum/shop_sku/rig_bay_gear/arm/laser_heavy = 1,
+		/datum/shop_sku/rig_bay_gear/arm/scattershot = 1,
+		/datum/shop_sku/rig_bay_gear/arm/carbine = 1,
+		/datum/shop_sku/rig_bay_gear/arm/ion = 1,
+		/datum/shop_sku/rig_bay_gear/arm/tesla = 1,
+		/datum/shop_sku/rig_bay_gear/arm/flashbang_launcher = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/lmg = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/scattershot = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/incendiary = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/flashbang = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/missiles = 2,
+		/datum/shop_sku/rig_bay_gear/projectile_shielding = 1,
 	)
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 99, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 116, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
