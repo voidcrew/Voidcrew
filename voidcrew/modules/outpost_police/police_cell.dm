@@ -47,6 +47,12 @@
 	var/list/time_left = list()
 	/// ...and who moved them: mind -> weakref
 	var/list/carried_by = list()
+	/// Prisoners who stepped out of the cell by their own hand: mind -> TRUE (abuse MF1)
+	var/list/walked_out = list()
+	/// The last time each prisoner took a step of their own: mind -> world.time (the client's move)
+	var/list/stepped_at = list()
+	/// Who last shoved each prisoner, and when: mind -> list(weakref, world.time)
+	var/list/shoved_by = list()
 	/// Somebody is working on the door with a crowbar right now
 	var/forcing = FALSE
 	/// The door stays open until this
@@ -65,7 +71,7 @@
 	for(var/datum/mind/prisoner in bodies)
 		var/mob/living/body = body_of(prisoner)
 		if(body)
-			UnregisterSignal(body, COMSIG_MOVABLE_MOVED)
+			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT))
 	if(door)
 		if(door.holding_cell == src)
 			door.holding_cell = null
@@ -86,6 +92,9 @@
 	return_by.Cut()
 	time_left.Cut()
 	carried_by.Cut()
+	walked_out.Cut()
+	stepped_at.Cut()
+	shoved_by.Cut()
 	medic_bodies.Cut()
 	return ..()
 
@@ -168,13 +177,15 @@
 		jailed[prisoner] = TRUE
 		bail_due[prisoner] = world.time + OUTPOST_POLICE_BAIL_RETRY
 	RegisterSignal(body, COMSIG_MOVABLE_MOVED, PROC_REF(on_prisoner_moved), override = TRUE)
+	RegisterSignal(body, COMSIG_MOB_CLIENT_PRE_MOVE, PROC_REF(on_prisoner_step), override = TRUE)
+	RegisterSignal(body, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_prisoner_shoved), override = TRUE)
 	police?.wake()
 
 /// `prisoner` is no longer held here (released, escaped, down, or gone). Warrant and signals are the caller's.
 /datum/outpost_police_cell/proc/forget_prisoner(datum/mind/prisoner)
 	var/mob/living/body = body_of(prisoner)
 	if(body)
-		UnregisterSignal(body, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT))
 	prisoners -= prisoner
 	jailed -= prisoner
 	booking -= prisoner
@@ -183,25 +194,74 @@
 	return_by -= prisoner
 	time_left -= prisoner
 	carried_by -= prisoner
+	walked_out -= prisoner
+	stepped_at -= prisoner
+	shoved_by -= prisoner
+
+/// The prisoner whose body `body` is, or null
+/datum/outpost_police_cell/proc/prisoner_of(mob/living/body)
+	for(var/datum/mind/held in bodies)
+		if(body_of(held) == body)
+			return held
+	return null
 
 /**
- * A prisoner moved. Outside the cell, remember who moved them: pulled, carried on a bed or an arm, or thrown
- * (abuse M4). The tick decides what it means, at most a second later.
+ * A prisoner moved. Outside the cell, remember how they left: pulled, carried on a bed or an arm, thrown, pushed,
+ * swapped or shoved by someone (abuse M4, MF1), or a step of their own. The tick decides what it means, at most a
+ * second later. A move nobody can be found behind (a teleport) is neither: the prisoner gets the time to walk back.
  */
 /datum/outpost_police_cell/proc/on_prisoner_moved(mob/living/source, atom/old_loc, movement_dir, forced, list/old_locs)
 	SIGNAL_HANDLER
 	if(QDELETED(src) || (get_turf(source) in tiles))
 		return
-	var/datum/mind/prisoner
-	for(var/datum/mind/held in bodies)
-		if(body_of(held) == source)
-			prisoner = held
-			break
-	if(!prisoner || (prisoner in carried_by))
+	var/datum/mind/prisoner = prisoner_of(source)
+	if(!prisoner || (prisoner in carried_by) || (prisoner in walked_out))
 		return
-	var/mob/living/mover = mover_now(source)
-	if(mover)
+	var/mob/living/mover = mover_now(source) || pusher_of(source, old_loc, prisoner)
+	if(mover && mover != source)
 		carried_by[prisoner] = WEAKREF(mover)
+	else if(stepped_at[prisoner] == world.time)
+		walked_out[prisoner] = TRUE
+
+/// A prisoner's own player moves them (tg's client move): the step is theirs
+/datum/outpost_police_cell/proc/on_prisoner_step(mob/living/source, list/move_args)
+	SIGNAL_HANDLER
+	var/datum/mind/prisoner = prisoner_of(source)
+	if(prisoner)
+		stepped_at[prisoner] = world.time
+
+/// Someone shoved a prisoner: the shove's move comes right after this, in the same tick
+/datum/outpost_police_cell/proc/on_prisoner_shoved(mob/living/source, mob/living/attacker, zone, obj/item/weapon)
+	SIGNAL_HANDLER
+	var/datum/mind/prisoner = prisoner_of(source)
+	if(prisoner && isliving(attacker) && attacker != source)
+		shoved_by[prisoner] = list(WEAKREF(attacker), world.time)
+
+/// Whoever shoved `body` this tick, or is pushing it or swapping places with it in a bump beside `old_loc` (abuse MF1). Null if nobody.
+/datum/outpost_police_cell/proc/pusher_of(mob/living/body, atom/old_loc, datum/mind/prisoner)
+	var/list/shove = shoved_by[prisoner]
+	if(shove && shove[2] == world.time)
+		var/datum/weakref/shover_ref = shove[1]
+		var/mob/living/shover = shover_ref?.resolve()
+		shoved_by -= prisoner
+		if(shover)
+			return shover
+	var/turf/old_turf = get_turf(old_loc)
+	if(!old_turf)
+		return null
+	for(var/mob/living/other in range(1, old_turf))
+		if(other != body && other.now_pushing)
+			return other
+	return null
+
+/// Whether `body`, out of the cell, could walk back by itself: up, free, not held or carried, and its player at the keys
+/datum/outpost_police_cell/proc/can_walk_back(mob/living/body)
+	if(body.incapacitated || HAS_TRAIT(body, TRAIT_RESTRAINED) || body.pulledby || body.buckled || body.throwing)
+		return FALSE
+	// Asleep at the keyboard (a player's mind and no client): the clock waits for them
+	if(body.mind?.key && !body.client)
+		return FALSE
+	return TRUE
 
 /// Whoever is moving `body` against its will right now: its puller, the one carrying it, the one pushing its bed, its thrower. Null if nobody.
 /datum/outpost_police_cell/proc/mover_now(mob/living/body)
@@ -396,6 +456,9 @@
 				return_by -= prisoner
 				time_left -= prisoner
 				carried_by -= prisoner
+			else if(!can_walk_back(body))
+				// Down, held, carried or asleep: the time to walk back starts once they can (abuse MF1)
+				return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
 			else if(world.time >= return_by[prisoner])
 				escaped(prisoner, body) // the time to walk back is up
 			continue
@@ -411,16 +474,21 @@
 				release(prisoner, body, POLICE_LINE_BAIL)
 	update_sign()
 
-/// `prisoner` is outside the cell before their time is up (abuse M4: someone else moving them is the one at fault)
+/**
+ * `prisoner` is outside the cell before their time is up. Only a step of their own is a jailbreak on them; someone
+ * else moving them (a pull, a carry, a throw, a push, a swap, a shove) is the mover's jailbreak (abuse M4, MF1), and
+ * a move nobody can be found behind charges nobody yet. Either way the prisoner gets the time to walk back.
+ */
 /datum/outpost_police_cell/proc/left_cell(datum/mind/prisoner, mob/living/body)
 	var/datum/weakref/ref = carried_by[prisoner]
 	var/mob/living/mover = ref?.resolve() || mover_now(body)
-	if(mover && mover != body)
-		time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
-		return_by[prisoner] = world.time + OUTPOST_POLICE_CELL_RETURN
-		police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
+	if(walked_out[prisoner] && (!mover || mover == body))
+		escaped(prisoner, body)
 		return
-	escaped(prisoner, body)
+	time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
+	return_by[prisoner] = world.time + OUTPOST_POLICE_CELL_RETURN
+	if(mover && mover != body)
+		police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
 
 /// `prisoner` walked out (or was teleported out): they are not held any more, and that is a jailbreak
 /datum/outpost_police_cell/proc/escaped(datum/mind/prisoner, mob/living/body)

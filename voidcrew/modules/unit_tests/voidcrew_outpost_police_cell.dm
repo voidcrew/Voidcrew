@@ -374,6 +374,8 @@
 	cell.admit(prisoner, world.time + 1800, TRUE)
 	police.tick_cells()
 	TEST_ASSERT_EQUAL(length(police.crimes), 0, "A prisoner standing in the cell was reported")
+	// A step of their own: what tg's client move says before it moves them
+	SEND_SIGNAL(prisoner, COMSIG_MOB_CLIENT_PRE_MOVE, list())
 	prisoner.forceMove(cell.outside_turf)
 	police.tick_cells()
 	var/list/crime = police_last_crime(police)
@@ -428,6 +430,67 @@
 	crime = police_last_crime(police)
 	TEST_ASSERT_EQUAL(crime[1], prisoner, "A prisoner who never came back was not reported")
 	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never came back is still held")
+
+/// Abuse MF1: a prisoner shoved, swapped or moved out by nobody known is not the escaper. The shover or swapper is; the time to walk back waits while they cannot.
+/datum/unit_test/voidcrew_outpost_police_cell_moved_out
+
+/datum/unit_test/voidcrew_outpost_police_cell_moved_out/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[1])
+	var/mob/living/carbon/human/griefer = police_cell_person(cell.outside_turf)
+	police_pin_warrant(police, prisoner.mind, 12)
+	cell.admit(prisoner, world.time + 1800, TRUE)
+
+	// A shove: tg's shove says who did it, then moves them in the same tick
+	SEND_SIGNAL(prisoner, COMSIG_LIVING_DISARM_HIT, griefer, BODY_ZONE_CHEST, null)
+	prisoner.forceMove(cell.outside_turf)
+	police.tick_cells()
+	var/list/crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "Shoving a prisoner out reported nobody")
+	TEST_ASSERT_EQUAL(crime[1], griefer, "A shoved prisoner was charged with the jailbreak, not the one who shoved them")
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "A prisoner shoved out was let go")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner shoved out has no time to come back")
+	prisoner.forceMove(cell.tiles[1])
+	police.tick_cells()
+	TEST_ASSERT(!(prisoner.mind in cell.return_by), "A prisoner who came back is still on the way back")
+
+	// A swap: the griefer is mid-bump beside them
+	police.crimes.Cut()
+	griefer.now_pushing = TRUE
+	griefer.forceMove(cell.tiles[2])
+	prisoner.forceMove(cell.outside_turf)
+	griefer.now_pushing = FALSE
+	police.tick_cells()
+	crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "Swapping a prisoner out reported nobody")
+	TEST_ASSERT_EQUAL(crime[1], griefer, "A swapped prisoner was charged with the jailbreak, not the one who swapped")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner swapped out has no time to come back")
+	prisoner.forceMove(cell.tiles[1])
+	griefer.forceMove(cell.outside_turf)
+	police.tick_cells()
+
+	// Moved by nobody known (a teleport): nobody is charged, and they get the time to walk back
+	police.crimes.Cut()
+	prisoner.forceMove(cell.outside_turf)
+	police.tick_cells()
+	TEST_ASSERT_EQUAL(length(police.crimes), 0, "A prisoner moved out by nobody known was charged")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner moved out by nobody known has no time to come back")
+
+	// Asleep at the keyboard: the time to walk back waits
+	prisoner.mind.key = "outpost_police_test_ssd"
+	cell.return_by[prisoner.mind] = world.time - 1
+	police.tick_cells()
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "A prisoner asleep outside the cell was made a jailbreaker")
+	TEST_ASSERT(cell.return_by[prisoner.mind] >= world.time + 190, "The time to walk back did not wait for a prisoner who could not walk") // OUTPOST_POLICE_CELL_RETURN, 20 SECONDS
+	prisoner.mind.key = null
+	// Awake and still out once the time is up: their own doing
+	cell.return_by[prisoner.mind] = world.time - 1
+	police.tick_cells()
+	crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "A prisoner who never walked back was not reported")
+	TEST_ASSERT_EQUAL(crime[1], prisoner, "A prisoner who never walked back was not the one reported")
+	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never walked back is still held")
 
 /// A prisoner in crit or dead in the cell: the door opens at once and is held for a medic, the term is over, the warrant closed
 /datum/unit_test/voidcrew_outpost_police_cell_downed
