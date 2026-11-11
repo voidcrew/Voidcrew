@@ -282,7 +282,12 @@
 /// Cleans `tile`: its fresh mess and wrappers go, nothing else is touched
 /mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/clean_tile(turf/tile)
 	for(var/atom/movable/mess as anything in ambient_outpost_mess_on(tile))
-		qdel(mess)
+		// The wash a mop stroke gives (tg's cleaner, CLEAN_SCRUB), on the fresh mess only: the map's decor beside it
+		// stays. A wrapper goes in the bin, which this ambient janitor carries none of.
+		if(istype(mess, /obj/effect/decal/cleanable))
+			mess.wash(CLEAN_SCRUB)
+		else
+			qdel(mess)
 	LAZYSET(mopped, tile, world.time)
 	if(length(mopped) > 12)
 		mopped.Cut(1, 2)
