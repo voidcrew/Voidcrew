@@ -281,7 +281,7 @@
 	TEST_ASSERT(replacement in police.officers, "A replacement is not on the roster")
 	qdel(replacement)
 
-/// The routines: the beat plans a loop, coffee is a real mug carried on, the desk sits with a clipboard, a sleeper is looked in on
+/// The stop activities: coffee is a real mug carried on, the desk sits with a clipboard, a sleeper is looked in on
 /datum/unit_test/voidcrew_outpost_police_routines
 
 /datum/unit_test/voidcrew_outpost_police_routines/Run()
@@ -291,12 +291,8 @@
 	police.desk_turf = pa_tile(1, 1)
 	pa_trader(outpost, pa_tile(2, 4), pa_tile(2, 3), /datum/outpost_shop/vendor/bait_shop)
 
-	// The beat: a loop with somewhere to go
+	// The beat itself is a stealth route (voidcrew_outpost_police_stealth.dm); here, what is done at its stops
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/patrol = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
-	var/datum/ambient_activity/wander/police_beat/walk = patrol.start_activity(new /datum/ambient_activity/wander/police_beat(patrol))
-	TEST_ASSERT_NOTNULL(walk, "A beat officer could not plan a round")
-	TEST_ASSERT_NOTNULL(walk.spot, "A beat officer has no first stop")
-	patrol.end_activity()
 
 	// Coffee: a real mug of real coffee, carried on by one who takes it along, put away by the next thing they do
 	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, pa_tile(3, 1))

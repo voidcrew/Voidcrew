@@ -264,6 +264,11 @@
 	dropped.due = world.time
 	police.tick_warrants()
 	TEST_ASSERT_NULL(police.warrants[silenced.mind], "A witness who could no longer report still got a warrant made")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "A report was dropped while its witness might still come round")
+	// Kept OUTPOST_POLICE_PENDING_KEEP for the witness to come round, then dropped
+	dropped.expires = world.time
+	police.tick_warrants()
+	TEST_ASSERT_NULL(police.warrants[silenced.mind], "A witness who never came round still got a warrant made")
 	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "A dropped report stayed queued")
 
 // ===== SELF-DEFENCE (abuse M14) =====

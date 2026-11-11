@@ -34,15 +34,27 @@
 	/// Whether the death hook is registered
 	var/events_hooked = FALSE
 
-/// A report that waits for its witness to make the call (perception.report_delay() above 0)
+/**
+ * A report that waits for its witnesses (perception.report_delay() above 0, or perception.reports_by_call()). Until
+ * it counts, the warrant exists for nobody but those witnesses: no stars, no dispatch, no bar (spec-stealth 2.3).
+ */
 /datum/outpost_pending_report
-	/// world.time the witness finishes reporting
+	/// world.time the witness finishes reporting (a witness that reports by call waits for `confirmed` instead)
 	var/due = 0
+	/// world.time it is dropped if nobody has made it: a witness out cold may come round meanwhile
+	var/expires = 0
+	/// Set when a witness's radio call went out (confirm_reports())
+	var/confirmed = FALSE
+	/// world.time a radioless witness started telling someone in person, or 0
+	var/relay_since = 0
 	var/crime
 	var/datum/weakref/offender
 	var/datum/weakref/victim
 	var/datum/weakref/source
-	var/datum/weakref/witness
+	/// Weakrefs to everyone who saw it (one is enough to make it)
+	var/list/datum/weakref/witnesses
+	/// What followed while it waited, counted with it: list(crime, weakref to the victim) each (a killing)
+	var/list/followups
 
 /// One four or five star incident of one crew at this outpost: the embargo, the cutter's single dispatch
 /datum/outpost_incident
@@ -97,9 +109,9 @@
 		return null
 	var/atom/witness = perception.last_witness
 	var/delay = perception.report_delay(witness, crime)
-	if(delay > 0)
+	if(delay > 0 || perception.reports_by_call(witness))
 		recent_reports[mind] = list(world.time, FALSE)
-		queue_report(offender, crime, victim, source, witness, delay)
+		queue_report(offender, crime, victim, source, perception.last_witnesses || list(witness), delay)
 		return null
 	recent_reports[mind] = list(world.time, TRUE)
 	return count_crime(offender, crime, victim, source)
@@ -121,35 +133,116 @@
 	if(isliving(victim))
 		record_victim(warrant, victim)
 
-/// Queues a report that its witness will make in `delay` deciseconds, if they can still make it then
-/datum/outpost_police/proc/queue_report(mob/living/offender, crime, atom/victim, obj/item/source, atom/witness, delay)
+/**
+ * Queues a report that `witnesses` will make in `delay` deciseconds, or (perception.reports_by_call()) when the first
+ * of them gets the call out. An officer who saw it acts on it at once (police_stealth.dm, police_witness_saw()).
+ */
+/datum/outpost_police/proc/queue_report(mob/living/offender, crime, atom/victim, obj/item/source, list/witnesses, delay)
 	var/datum/outpost_pending_report/report = new
 	report.due = world.time + delay
+	report.expires = world.time + max(delay, OUTPOST_POLICE_PENDING_KEEP)
 	report.crime = crime
 	report.offender = WEAKREF(offender)
 	if(victim)
 		report.victim = WEAKREF(victim)
 	if(source)
 		report.source = WEAKREF(source)
-	if(witness)
-		report.witness = WEAKREF(witness)
+	report.witnesses = list()
+	for(var/atom/witness as anything in witnesses)
+		if(witness)
+			report.witnesses += WEAKREF(witness)
 	pending_reports += report
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
+		INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
 	wake()
 
-/// Confirms or drops the reports whose witness has finished their call
+/// Confirms the reports whose witness has finished their call; drops those nobody can make any more
 /datum/outpost_police/proc/process_pending_reports()
 	for(var/datum/outpost_pending_report/report as anything in pending_reports.Copy())
-		if(world.time < report.due)
+		if(QDELETED(report))
+			pending_reports -= report
 			continue
-		pending_reports -= report
 		var/mob/living/offender = report.offender?.resolve()
-		var/atom/witness = report.witness?.resolve()
-		var/lost_witness = report.witness && (QDELETED(witness) || !perception.can_report(witness))
-		if(QDELETED(offender) || lost_witness)
+		var/list/atom/able = list()
+		var/any_alive = !length(report.witnesses)
+		for(var/datum/weakref/ref as anything in report.witnesses)
+			var/atom/witness = ref.resolve()
+			if(QDELETED(witness))
+				continue
+			var/mob/living/living_witness = witness
+			if(isliving(witness) && living_witness.stat == DEAD)
+				continue
+			any_alive = TRUE
+			if(perception.can_report(witness))
+				able += witness
+		var/made = !!length(able) && (report.confirmed || (world.time >= report.due && !perception.reports_by_call(able[1])))
+		if(!made && length(able) && !report.confirmed)
+			// Officers: a call going, or the words said in person
+			var/telling = FALSE
+			for(var/atom/witness as anything in able)
+				if(perception.nudge_witness(witness, report))
+					telling = TRUE
+			if(!telling)
+				report.relay_since = 0
+			else if(!report.relay_since)
+				report.relay_since = world.time
+			else if(world.time - report.relay_since >= OUTPOST_POLICE_RADIOLESS_TIME)
+				made = TRUE
+		if(made && !QDELETED(offender))
+			pending_reports -= report
+			count_report(report, offender)
+			qdel(report)
+			continue
+		if(QDELETED(offender) || !any_alive || world.time >= report.expires)
+			pending_reports -= report
 			log_game("OUTPOST POLICE: a report of [report.crime] at [outpost] was never made.")
-		else
-			count_crime(offender, report.crime, report.victim?.resolve(), report.source?.resolve())
-		qdel(report)
+			qdel(report)
+
+/// Counts a pending report that was made, and what followed it while it waited
+/datum/outpost_police/proc/count_report(datum/outpost_pending_report/report, mob/living/offender)
+	count_crime(offender, report.crime, report.victim?.resolve(), report.source?.resolve())
+	for(var/list/followup as anything in report.followups)
+		var/datum/weakref/victim_ref = followup[2]
+		count_crime(offender, followup[1], victim_ref?.resolve(), derived = TRUE)
+
+/// `witness` has made its call (police_stealth.dm): every report it was waiting to make counts now
+/datum/outpost_police/proc/confirm_reports(atom/witness)
+	if(!witness || !length(pending_reports))
+		return
+	var/datum/weakref/witness_ref = WEAKREF(witness)
+	var/found = FALSE
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(witness_ref in report.witnesses)
+			report.confirmed = TRUE
+			found = TRUE
+	if(found)
+		process_pending_reports()
+
+/**
+ * The stars `officer` believes `mind` has: the warrant's, raised by the reports this officer is waiting to make
+ * (spec-stealth 2.3: a witness acts on what it saw before anyone else knows).
+ */
+/datum/outpost_police/proc/officer_knows(mob/living/officer, datum/mind/mind)
+	if(!mind)
+		return 0
+	var/datum/outpost_warrant/warrant = warrants[mind]
+	var/heat = warrant ? warrant.heat : 0
+	if(officer && length(pending_reports))
+		var/datum/weakref/officer_ref = WEAKREF(officer)
+		var/raised = FALSE
+		for(var/datum/outpost_pending_report/report as anything in pending_reports)
+			if(!(officer_ref in report.witnesses))
+				continue
+			var/mob/living/offender = report.offender?.resolve()
+			if(offender?.mind != mind)
+				continue
+			if(!raised)
+				raised = TRUE
+				heat = max(heat, warrant ? current_prior(warrant) : 0)
+			heat = heat_after(heat, report.crime)
+			for(var/list/followup as anything in report.followups)
+				heat = heat_after(heat, followup[1])
+	return stars_of(heat)
 
 /**
  * Puts a witnessed crime on `offender`'s warrant. `derived` marks a crime that follows from one already
@@ -303,11 +396,15 @@
 /datum/outpost_police/proc/get_warrant(datum/mind/who)
 	return warrants[who]
 
-/// How hard officers may go at `target`: POLICE_FORCE_* (NONE for no mind, in custody or dead)
-/datum/outpost_police/proc/force_level(mob/living/target)
+/**
+ * How hard officers may go at `target`: POLICE_FORCE_* (NONE for no mind, in custody or dead). With `officer`, what
+ * that officer knows counts too: a crime it saw and has not yet got out on the radio (officer_knows()).
+ */
+/datum/outpost_police/proc/force_level(mob/living/target, mob/living/officer)
 	if(!target?.mind || target.stat == DEAD || in_custody(target))
 		return POLICE_FORCE_NONE
-	switch(get_stars(target.mind))
+	var/stars = officer ? officer_knows(officer, target.mind) : get_stars(target.mind)
+	switch(stars)
 		if(0)
 			return POLICE_FORCE_NONE
 		if(1)
@@ -634,6 +731,16 @@
 		else
 			return
 	var/datum/weakref/dead_ref = WEAKREF(dead)
+	// A hit still waiting on its witness's call: the killing goes with it, and counts if the report is made
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(report.victim != dead_ref || world.time - (report.expires - OUTPOST_POLICE_PENDING_KEEP) > OUTPOST_POLICE_KILL_WINDOW)
+			continue
+		var/already = FALSE
+		for(var/list/followup as anything in report.followups)
+			if(followup[2] == dead_ref)
+				already = TRUE
+		if(!already)
+			LAZYADD(report.followups, list(list(crime, dead_ref)))
 	var/mob/living/killer
 	for(var/datum/mind/mind as anything in warrants.Copy())
 		var/datum/outpost_warrant/warrant = warrants[mind]

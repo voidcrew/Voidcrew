@@ -1,5 +1,5 @@
 {
-	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% and %LOOK% fill only in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm.",
+	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% and %LOOK% fill only in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm. P13 adds stealth's lines as contexts named for their bark kinds (stealth_*); %PLACE% fills in the radio calls and %NAME% in the missing-friend lines, each with a plain line beside it.",
 	"halcyon": {
 		"knock": [
 			"Hey. Knock it off.",
@@ -240,6 +240,106 @@
 					"Welcome to the beat."
 				]
 			}
+		],
+		"stealth_suspicious": [
+			"Hold on. What was that?",
+			"Hm. Something over there.",
+			"Did someone just move?"
+		],
+		"stealth_give_up": [
+			"Nothing. Back to it.",
+			"Must have been nothing.",
+			"All quiet. Carrying on."
+		],
+		"stealth_search": [
+			"Port Authority. Come out where I can see you.",
+			"Nobody's in trouble yet. Show yourself.",
+			"I know someone's here."
+		],
+		"stealth_hit_unseen": [
+			"Ow! Who threw that?",
+			"Who did that?",
+			"Something hit me!"
+		],
+		"stealth_body": [
+			"Officer down! Over here!",
+			"Man down! I need help here!",
+			"We've got someone down here!"
+		],
+		"stealth_chatter": [
+			"Quiet shift so far.",
+			"Docking fees went up again, did you hear?",
+			"Two more hours and I'm off."
+		],
+		"stealth_target_downed": [
+			"Suspect down. Somebody call a medic.",
+			"Down. Stay there.",
+			"That's enough. Stay down."
+		],
+		"stealth_closet_open": [
+			"Out of there. Now.",
+			"I saw you get in. Come out.",
+			"Hiding in a locker? Really?"
+		],
+		"stealth_closet_give_up": [
+			"Can't get it open. Keep looking.",
+			"Locked tight. Search the area.",
+			"Forget the locker. Spread out."
+		],
+		"stealth_heard": [
+			"What was that noise?",
+			"Did you hear that?",
+			"Something over there."
+		],
+		"stealth_heard_again": [
+			"There it is again.",
+			"That's twice now. Checking it.",
+			"Again. I'm going to look."
+		],
+		"stealth_gunfire": [
+			"Shots fired!",
+			"Gunfire! Get down!",
+			"Was that a gun?"
+		],
+		"stealth_hold": [
+			"Holding here.",
+			"I'll keep this spot covered.",
+			"Staying put. Let me know."
+		],
+		"stealth_help": [
+			"Need a hand over here!",
+			"Help! Over here!",
+			"Backup, now!"
+		],
+		"stealth_missing": [
+			"Where's %NAME%? Not answering.",
+			"Anyone seen %NAME%?",
+			"Has anyone heard from the beat?"
+		],
+		"stealth_radio_report": [
+			"Checking something by %PLACE%. Stand by.",
+			"Beat to desk, having a look by %PLACE%.",
+			"Beat to desk, checking a noise. Stand by."
+		],
+		"stealth_radio_alarm": [
+			"Beat to all units, trouble by %PLACE%!",
+			"All units, need support by %PLACE%!",
+			"Beat to all units, need support now!"
+		],
+		"stealth_radio_missing": [
+			"Desk, %NAME% isn't answering. Checking.",
+			"No word from %NAME%. Going to look.",
+			"Lost contact with a unit. Checking."
+		],
+		"stealth_copy": [
+			"Copy. On my way.",
+			"Copy that, responding.",
+			"Heard. Moving."
+		],
+		"stealth_radio_dead": [
+			"Desk, do you read? Desk?",
+			"Radio's dead.",
+			"Nothing but static."
 		]
 	},
 	"quartermain": {
@@ -479,6 +579,106 @@
 					"Knock on something."
 				]
 			}
+		],
+		"stealth_suspicious": [
+			"Wait. Over there.",
+			"Hm. Something's off.",
+			"Was that movement?"
+		],
+		"stealth_give_up": [
+			"Nothing. As you were.",
+			"False alarm. Back to it.",
+			"Clear. Resuming patrol."
+		],
+		"stealth_search": [
+			"Security. Make yourself known.",
+			"Step out. You're on company property.",
+			"Come out, please. We know you're here."
+		],
+		"stealth_hit_unseen": [
+			"Hey! Who threw that?",
+			"What the... who did that?",
+			"I've been hit!"
+		],
+		"stealth_body": [
+			"Officer down! Over here!",
+			"Man down! Send help!",
+			"We have a casualty here!"
+		],
+		"stealth_chatter": [
+			"Did you file the incident sheet?",
+			"They cut overtime again.",
+			"Audit's next week, they say."
+		],
+		"stealth_target_downed": [
+			"Suspect's down. Get medical.",
+			"Stay down. It's over.",
+			"That's enough."
+		],
+		"stealth_closet_open": [
+			"Out of the locker, now.",
+			"We saw you. Come out.",
+			"That's company storage. Out."
+		],
+		"stealth_closet_give_up": [
+			"Won't budge. Search around it.",
+			"It's sealed. Spread out.",
+			"Leave it. Check the area."
+		],
+		"stealth_heard": [
+			"Did you hear that?",
+			"What was that?",
+			"Noise over there."
+		],
+		"stealth_heard_again": [
+			"Again. I'm checking it.",
+			"There it is again.",
+			"Twice now. Going over."
+		],
+		"stealth_gunfire": [
+			"Shots fired!",
+			"Gunfire!",
+			"Weapons fire on the floor!"
+		],
+		"stealth_hold": [
+			"Holding position.",
+			"I'll cover this end.",
+			"Staying here."
+		],
+		"stealth_help": [
+			"Need assistance!",
+			"Over here, now!",
+			"Backup!"
+		],
+		"stealth_missing": [
+			"Has anyone seen %NAME%?",
+			"%NAME% missed the check-in.",
+			"Somebody's missed their check-in."
+		],
+		"stealth_radio_report": [
+			"Unit to desk, checking something near %PLACE%.",
+			"Desk, looking into a noise by %PLACE%.",
+			"Desk, checking a disturbance. Stand by."
+		],
+		"stealth_radio_alarm": [
+			"All units, incident near %PLACE%!",
+			"Support required near %PLACE%!",
+			"All units, support required now!"
+		],
+		"stealth_radio_missing": [
+			"Desk, no contact with %NAME%. Checking.",
+			"%NAME% isn't responding. Going to look.",
+			"Lost a unit's signal. Checking."
+		],
+		"stealth_copy": [
+			"Copy, en route.",
+			"Acknowledged. Moving.",
+			"Copy that."
+		],
+		"stealth_radio_dead": [
+			"Desk? Desk, respond.",
+			"My radio's out.",
+			"Nothing. Radio's dead."
 		]
 	},
 	"undertow": {
@@ -718,6 +918,106 @@
 					"Don't ask."
 				]
 			}
+		],
+		"stealth_suspicious": [
+			"Oi. What's that?",
+			"Something moved.",
+			"Who's there?"
+		],
+		"stealth_give_up": [
+			"Nothing. Rats.",
+			"Forget it.",
+			"Probably rats. Moving on."
+		],
+		"stealth_search": [
+			"Come on out. I won't ask twice.",
+			"I know you're here. Out.",
+			"Make this easy. Come out."
+		],
+		"stealth_hit_unseen": [
+			"Ow! Who threw that?",
+			"Right. Who did that?",
+			"Something hit me!"
+		],
+		"stealth_body": [
+			"Warden down! Over here!",
+			"Man down! Get over here!",
+			"Someone's down here!"
+		],
+		"stealth_chatter": [
+			"Pay's late again.",
+			"Another night in this dump.",
+			"Saw a rat the size of a dog earlier."
+		],
+		"stealth_target_downed": [
+			"Stay down.",
+			"That's you done.",
+			"Down. Good."
+		],
+		"stealth_closet_open": [
+			"Out of the box.",
+			"I saw you climb in. Out.",
+			"Get out of there."
+		],
+		"stealth_closet_give_up": [
+			"Stuck. Look around it.",
+			"Won't open. Forget it.",
+			"Leave it. Spread out."
+		],
+		"stealth_heard": [
+			"Hear that?",
+			"What was that?",
+			"Over there."
+		],
+		"stealth_heard_again": [
+			"Again. Right.",
+			"That's twice. Going to look.",
+			"There it is again."
+		],
+		"stealth_gunfire": [
+			"Shots!",
+			"Gunfire!",
+			"Someone's shooting!"
+		],
+		"stealth_hold": [
+			"Holding here.",
+			"I'm staying put.",
+			"I've got this end."
+		],
+		"stealth_help": [
+			"Need help here!",
+			"Over here!",
+			"Backup, now!"
+		],
+		"stealth_missing": [
+			"Where's %NAME% got to?",
+			"%NAME% gone quiet.",
+			"Someone's not answering."
+		],
+		"stealth_radio_report": [
+			"Desk, checking something by %PLACE%.",
+			"Having a look by %PLACE%.",
+			"Desk, checking a noise."
+		],
+		"stealth_radio_alarm": [
+			"All wardens, trouble by %PLACE%!",
+			"Need bodies by %PLACE%, now!",
+			"All wardens, trouble, now!"
+		],
+		"stealth_radio_missing": [
+			"Desk, %NAME% gone quiet. Checking.",
+			"No word from %NAME%. Looking.",
+			"Lost a warden. Going to look."
+		],
+		"stealth_copy": [
+			"Copy. Coming.",
+			"On my way.",
+			"Yeah, heard. Moving."
+		],
+		"stealth_radio_dead": [
+			"Desk? Hello?",
+			"Radio's dead.",
+			"Nothing. Great."
 		]
 	}
 }

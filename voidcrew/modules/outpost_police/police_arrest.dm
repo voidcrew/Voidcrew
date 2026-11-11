@@ -320,12 +320,15 @@
 			best_score = score
 	return best
 
-/// `officer` joins the case: whatever they were doing stops
+/// `officer` joins the case: whatever they were doing stops, and one who can see the suspect is on them (spec-stealth P5)
 /datum/outpost_police_case/proc/take_officer(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	officer.case = src
 	if(officer.activity)
 		officer.end_activity()
 	officer.ai_controller?.CancelActions()
+	var/mob/living/carbon/suspect = get_suspect()
+	if(suspect && !cuffed && police?.perception?.sees(officer, suspect))
+		officer.police_alert_on(suspect)
 
 /// `officer` leaves the case: lets go of the suspect, stops walking for it and stops shooting at them
 /datum/outpost_police_case/proc/drop_officer(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
@@ -336,6 +339,9 @@
 		officer.case = null
 	if(suspect && officer.pulling == suspect)
 		officer.stop_pulling()
+	// The case is over and the suspect is nobody to them now (booked, let go, faded): back to the beat
+	if(!suspect || !police || police.force_level(suspect, officer) == POLICE_FORCE_NONE)
+		officer.police_stand_easy()
 	var/datum/ai_controller/controller = officer.ai_controller
 	if(controller)
 		controller.clear_blackboard_key(BB_OUTPOST_POLICE_CASE_GOAL)
@@ -653,12 +659,15 @@
 		return
 	if(officer.Adjacent(suspect))
 		set_goal(null)
+		officer.police_alert_on(suspect)
 		after_contact()
 		return
 	if(police.perception?.sees(officer, suspect))
 		police.note_seen(warrant.mind, get_turf(suspect))
 		if(get_dist(officer, suspect) <= CASE_CONTACT_RANGE)
 			set_goal(null)
+			// The order and its time to comply start once the officer is on them (spec-stealth P5)
+			officer.police_alert_on(suspect)
 			after_contact()
 			return
 		route_to(officer, suspect, 1)
@@ -769,6 +778,10 @@
 	stripper_ref = null
 	RegisterSignal(suspect, COMSIG_BEING_STRIPPED, PROC_REF(on_suspect_stripped), override = TRUE)
 	clear_cover_target(suspect)
+	// In hand: nobody to fight or look for. The walk to the desk is a calm one.
+	for(var/datum/weakref/ref as anything in officers)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = ref?.resolve()
+		officer?.police_stand_easy()
 	set_step(searched ? CASE_STEP_ESCORT : CASE_STEP_SEARCH)
 
 /// Search: police.confiscate() takes the offending items into an evidence case (P12). Once per case.

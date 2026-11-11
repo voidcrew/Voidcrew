@@ -57,7 +57,7 @@
 	TEST_ASSERT(officer.flags_1 & INITIALIZED_1, "A beat officer did not initialise")
 	TEST_ASSERT(officer in police.officers, "A beat officer is not on the roster")
 	TEST_ASSERT_EQUAL(officer.police, police, "A beat officer does not know their police")
-	TEST_ASSERT(istype(officer.ai_controller, /datum/ai_controller/basic_controller/human_npc/outpost_police), "A beat officer has [officer.ai_controller?.type], not the police brain")
+	TEST_ASSERT(istype(officer.ai_controller, /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police), "A beat officer has [officer.ai_controller?.type], not the police brain")
 	officer.ai_controller.SelectBehaviors(1)
 	TEST_ASSERT(HAS_TRAIT(officer, TRAIT_AI_PAUSED), "A beat officer at an outpost with nobody on it is not holding still")
 

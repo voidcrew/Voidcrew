@@ -5,27 +5,22 @@
  * hold-fire and body-block rules, and looking for a suspect who got away. Spec 8. Every "does this officer
  * see that suspect" test outside the targeting strategy goes through police.perception.sees().
  *
- * - Targeting (/datum/targeting_strategy/basic/human_npc/outpost_police): a person is a target only at STUN or
- *   LETHAL force by their warrant, and never in police custody; a stunned person is left for the cuffs. A
- *   creature by the old turret rule: xenos always, otherwise not on the outpost's side, not
- *   TRAIT_OUTPOST_RESIDENT, and is_hostile_creature(). A mech when anyone aboard is a target.
+ * - Targeting (/datum/targeting_strategy/basic/human_npc/outpost_police): a person is a target at ARREST, STUN or
+ *   LETHAL force by their warrant, or by what this officer saw and has not yet got out on the radio
+ *   (force_level(target, officer)), and never in police custody; a stunned person is left for the cuffs. The
+ *   stealth scan judges only those (spec-stealth 1.3), so a clean visitor is never noticed. A creature by the old
+ *   turret rule: xenos always, otherwise not on the outpost's side, not TRAIT_OUTPOST_RESIDENT, and
+ *   is_hostile_creature(). A mech when anyone aboard is a target.
  * - Force (outpost_police_force subtree, set_force()): the baton at ARREST, the energy gun on disable at STUN
- *   and on kill at LETHAL or for a creature, switched with the gun's own select_fire(). The officer shoots
+ *   and on kill at LETHAL or for a creature, switched with the gun's own select_fire(). At ARREST an officer
+ *   with no case on that person stands and watches them: the arrest is the case's job. The officer shoots
  *   through the human NPC base's shot (the real gun), but holds fire while anyone they would not shoot stands
  *   in the line (abuse M10), stepping aside instead.
  * - Body-blocking (M11): a person who stands in the line within 2 tiles of an officer firing to kill for
  *   OUTPOST_POLICE_BLOCK_TIME, or pulls an officer (police_dispatch.dm), resists, again every 5 seconds.
- * - Search (outpost_police_search subtree): an officer responding to a suspect they cannot shoot or do not see
- *   goes where the suspect was last seen, by lift if that is another sector, looks about, says so, and keeps
- *   looking nearby. At three stars a suspect seen last aboard a docked ship is waited for at its airlock.
+ * - Looking for someone is stealth's searching state (stealth_ai.dm); dispatch sends officers to search
+ *   (police_dispatch.dm) and the lift is taken inside the walk (police_stealth.dm, stealth_walk()).
  */
-
-/// Where a searching officer is walking
-#define BB_POLICE_DESTINATION "outpost_police_destination"
-/// How long an officer looks about a spot before moving on
-#define POLICE_LOOK_TIME (6 SECONDS)
-/// How far from the last sighting an officer looks
-#define POLICE_SEARCH_RADIUS 5
 
 // =========================================================================
 // TARGETING
@@ -69,13 +64,14 @@
 	if(living_target.mind || living_target.client)
 		if(police.in_custody(living_target))
 			return FALSE
-		var/level = police.force_level(living_target)
+		var/level = police.force_level(living_target, src)
 		if(level >= POLICE_FORCE_LETHAL)
 			return TRUE
 		if(level == POLICE_FORCE_STUN)
 			// Down from the disabler already: the cuffs are the arrest's job
 			return living_target.stat == CONSCIOUS && !HAS_TRAIT(living_target, TRAIT_INCAPACITATED) && !HAS_TRAIT(living_target, TRAIT_RESTRAINED)
-		return FALSE
+		// One star: noticed, watched and arrested, never fought (the force subtree holds)
+		return level == POLICE_FORCE_ARREST && !HAS_TRAIT(living_target, TRAIT_RESTRAINED)
 	// Wildlife, by the rule the outpost turrets had
 	if(isalien(living_target) || istype(living_target, /mob/living/basic/alien))
 		return TRUE
@@ -89,19 +85,16 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/force_for(atom/target)
 	var/mob/living/living_target = target
 	if(isliving(living_target) && (living_target.mind || living_target.client))
-		return police?.force_level(living_target) || POLICE_FORCE_NONE
+		return police?.force_level(living_target, src) || POLICE_FORCE_NONE
 	return POLICE_FORCE_LETHAL
 
 // =========================================================================
 // FIRE DISCIPLINE
 // =========================================================================
 
-/**
- * The tiles a shot from `start_turf` at `end_turf` crosses. The one line helper of this module: the stealth merge swaps
- * it for human_npc_shot_path() (spec 18).
- */
+/// The tiles a shot from `start_turf` at `end_turf` crosses: the human NPC base's own line (human_npc_ai.dm)
 /proc/outpost_police_shot_line(turf/start_turf, turf/end_turf)
-	return get_line(start_turf, end_turf)
+	return human_npc_shot_path(start_turf, end_turf)
 
 /**
  * Whoever stands in this officer's line of fire at `target` and is not someone they would shoot: anyone up
@@ -153,9 +146,9 @@
 // =========================================================================
 
 /**
- * The weapon mode for the current target, then the shot with fire discipline. With a person of one star (no
- * target: the arrest's job) or nothing to fight, the weapons go away. With no loaded gun it leaves the target
- * to the base's arm and melee subtrees (the baton).
+ * The weapon mode for the current target, then the shot with fire discipline. With nothing to fight the weapons go
+ * away. A person of one star is the arrest's job: an officer with no case on them, baton out, stands and watches
+ * (spec-stealth 1.3). With no loaded gun it leaves the target to the base's arm and melee subtrees (the baton).
  */
 /datum/ai_planning_subtree/outpost_police_force
 
@@ -174,6 +167,11 @@
 	var/level = officer.force_for(target)
 	if(level != officer.force)
 		officer.set_force(level)
+	if(level == POLICE_FORCE_ARREST && !officer.case)
+		if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters))
+			officer.face_atom(target)
+		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+		return SUBTREE_RETURN_FINISH_PLANNING
 	if(level < POLICE_FORCE_STUN || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || LAZYLEN(officer.do_afters))
 		return
 	if(isnull(human_npc_loaded_gun(officer)))
@@ -274,131 +272,14 @@
 		return FALSE
 	return initial(projectile_type.damage_type) != STAMINA && initial(projectile_type.damage) > 0
 
-// =========================================================================
-// SEARCH
-// =========================================================================
-
-/**
- * An officer responding to a suspect (dispatch_mind) with nothing to fight: to the suspect if they see them,
- * else to where they were last seen (at three stars aboard a docked ship, the ship's airlock), by lift when
- * that is another sector; there, they look about, say they lost them, and look again nearby.
- */
-/datum/ai_planning_subtree/outpost_police_search
-
-/datum/ai_planning_subtree/outpost_police_search/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
-	if(!istype(officer) || !officer.police || officer.case || officer.dispatch_riding || officer.npc_exit)
-		return
-	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) || LAZYLEN(officer.do_afters))
-		return
-	var/datum/mind/mind = officer.dispatch_mind?.resolve()
-	var/datum/outpost_police/police = officer.police
-	var/datum/outpost_warrant/warrant = mind ? police.get_warrant(mind) : null
-	if(!warrant)
-		return
-	var/mob/living/suspect = mind.current
-	var/seen = isliving(suspect) && police.perception.sees(officer, suspect)
-	var/turf/goal
-	var/goal_distance = 1
-	if(seen)
-		goal = get_turf(suspect)
-		goal_distance = 2
-		officer.dispatch_search_from = null
-		officer.dispatch_post = null
-		officer.dispatch_search_until = 0
-		officer.dispatch_lost_ref = null
-	else
-		var/list/held = police.dispatch_holds[mind]
-		if(held && police.get_stars(mind) >= 3)
-			goal = held[2]
-		else
-			goal = warrant.last_seen_turf
-			if(goal && goal != officer.dispatch_search_from)
-				officer.dispatch_search_from = goal
-				officer.dispatch_post = null
-				officer.dispatch_search_until = 0
-			goal = officer.dispatch_post || goal
-	if(!goal)
-		return
-	// Another sector: the lift
-	var/my_sector = police.sector_of(officer)
-	var/goal_sector = police.sector_of(goal)
-	if(goal_sector != my_sector && goal_sector != POLICE_SECTOR_OUTSIDE)
-		var/turf/lift = police.dispatch_nearest_lift_point(my_sector, officer)
-		if(!lift)
-			return
-		if(get_turf(officer) == lift)
-			controller.queue_behavior(/datum/ai_behavior/outpost_police_ride, goal_sector)
-			return SUBTREE_RETURN_FINISH_PLANNING
-		controller.set_blackboard_key(BB_POLICE_DESTINATION, lift)
-		controller.queue_behavior(/datum/ai_behavior/travel_towards/outpost_police, BB_POLICE_DESTINATION)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(get_dist(officer, goal) > goal_distance)
-		controller.set_blackboard_key(BB_POLICE_DESTINATION, goal)
-		controller.queue_behavior(goal_distance > 1 ? /datum/ai_behavior/travel_towards/outpost_police/near : /datum/ai_behavior/travel_towards/outpost_police, BB_POLICE_DESTINATION)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(seen)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	// There, and no sign of them: look about, then try somewhere close by
-	if(!officer.dispatch_search_until)
-		officer.dispatch_search_until = world.time + POLICE_LOOK_TIME
-		if(officer.dispatch_lost_ref?.resolve() != mind)
-			officer.dispatch_lost_ref = WEAKREF(mind)
-			INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_LOST, null, FALSE)
-	if(world.time < officer.dispatch_search_until)
-		controller.queue_behavior(/datum/ai_behavior/outpost_police_look_about)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	officer.dispatch_search_until = 0
-	officer.dispatch_post = police_search_spot(police, officer.dispatch_search_from || goal, my_sector)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/// A free tile of `sector` within POLICE_SEARCH_RADIUS of `around` to look from next, or null
-/proc/police_search_spot(datum/outpost_police/police, turf/around, sector)
-	if(!around)
-		return null
-	for(var/turf/spot as anything in shuffle(RANGE_TURFS(POLICE_SEARCH_RADIUS, around)))
-		if(!isopenturf(spot) || isspaceturf(spot) || spot.is_blocked_turf() || police.sector_of(spot) != sector)
-			continue
-		return spot
-	return null
-
-/// Walks to the spot in the blackboard key; planning goes on meanwhile
-/datum/ai_behavior/travel_towards/outpost_police
-	action_cooldown = 0.5 SECONDS
-	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION | AI_BEHAVIOR_MOVE_AND_PERFORM
-
-/datum/ai_behavior/travel_towards/outpost_police/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/atom/target = controller.blackboard[target_key]
-	if(QDELETED(target) || controller.current_movement_target != target)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	if(get_dist(controller.pawn, target) <= required_distance)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	return AI_BEHAVIOR_DELAY
-
-/// The same, stopping a couple of tiles short (closing on someone they can see)
-/datum/ai_behavior/travel_towards/outpost_police/near
-	required_distance = 2
-
-/// Takes the lift they stand on to a sector (police.ride(), which sleeps, so it runs on its own)
-/datum/ai_behavior/outpost_police_ride
+/// Stands and keeps its eyes on its target: a one-star suspect it has no case on
+/datum/ai_behavior/outpost_police_watch
 	action_cooldown = 1 SECONDS
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
 
-/datum/ai_behavior/outpost_police_ride/perform(seconds_per_tick, datum/ai_controller/controller, sector)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
-	if(!istype(officer) || !officer.police || officer.dispatch_riding)
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	INVOKE_ASYNC(officer.police, TYPE_PROC_REF(/datum/outpost_police, ride), officer, sector)
-	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-
-/// Turns to look one way and another
-/datum/ai_behavior/outpost_police_look_about
-	action_cooldown = 1.5 SECONDS
-
-/datum/ai_behavior/outpost_police_look_about/perform(seconds_per_tick, datum/ai_controller/controller)
+/datum/ai_behavior/outpost_police_watch/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/mob/living/officer = controller.pawn
-	officer.setDir(pick(GLOB.cardinals))
-	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-
-#undef BB_POLICE_DESTINATION
-#undef POLICE_LOOK_TIME
-#undef POLICE_SEARCH_RADIUS
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(target) && officer.stat == CONSCIOUS && isturf(officer.loc) && !HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED))
+		officer.face_atom(target)
+	return AI_BEHAVIOR_DELAY

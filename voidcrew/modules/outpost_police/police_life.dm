@@ -1,9 +1,12 @@
 /**
  * # Outpost police: life and voice
  *
- * Owner: P3. The officers' routines (the beat, coffee, chat, the sergeant's desk, looking in on a sleeper),
- * the ambient roles that bring them, what they say and the radio. Spec 11. Lines come from
- * AMBIENT_STRINGS_POLICE by profile section (`profile.voice_section`).
+ * Owner: P3, then P13. What officers do at their patrol stops (a word at a shop front, coffee, a chat, a bench, a
+ * look at the cells, the sergeant's desk; the stops are stealth patrol routes, voidcrew/modules/stealth_police/),
+ * the ambient roles that bring them, what they say and the desk's radio calls. Spec 11 and spec-stealth 1.5.
+ * Lines come from AMBIENT_STRINGS_POLICE by profile section (`profile.voice_section`); stealth's barks are
+ * contexts there too ("stealth_*", police_stealth.dm). An officer's own call to the others is stealth's radio
+ * call (stealth_radio.dm); the desk's calls of a change of level are say_dispatch() here.
  *
  * How officers sit with the ambient system (build plan P0 note 18, the 8-person cap):
  * - They are ambient outpost NPCs in their place's `npcs`, so the empty-outpost pause, the leash, the place's
@@ -42,11 +45,6 @@
 #define POLICE_HARDER_TIME (60 SECONDS)
 /// Routine radio check-ins are no closer than this
 #define POLICE_CHECK_IN_GAP (150 SECONDS)
-/// Shop fronts on one patrol
-#define POLICE_BEAT_STOPS 3
-/// How far from a shop front the beat officer stands
-#define POLICE_BEAT_DISTANCE_LOW 3
-#define POLICE_BEAT_DISTANCE_HIGH 4
 /// How far round their post a sleeper is looked for
 #define POLICE_CHECK_RANGE 10
 
@@ -177,12 +175,15 @@
 			continue
 		if(findtext(line, "%LOOK%") && !values["look"])
 			continue
+		if(findtext(line, "%NAME%") && !values["name"])
+			continue
 		usable += line
 	if(!length(usable))
 		return null
 	var/text = pick(usable)
 	text = replacetext(text, "%PLACE%", values["place"])
 	text = replacetext(text, "%LOOK%", values["look"])
+	text = replacetext(text, "%NAME%", values["name"])
 	return text
 
 /// One level harder, in voice only (after an officer falls)
@@ -211,15 +212,7 @@
 	var/datum/weakref/coffee_ref
 	var/coffee_looked_at = 0
 
-/// The beat: round the shop fronts, a coffee, a word with whoever is about, an eye on the benches
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat
-	routine = list(
-		/datum/ambient_activity/wander/police_beat = 6,
-		/datum/ambient_activity/police_coffee = 1,
-		/datum/ambient_activity/chat = 2,
-		/datum/ambient_activity/police_check = 1,
-		/datum/ambient_activity/idle = 1,
-	)
+// The beat is a stealth patrol route; what a beat officer does at each stop is the stop's (police_stealth.dm)
 
 /// The desk: sits, writes, looks in on the cell, a word with the guard
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant
@@ -367,11 +360,11 @@
 	if(length(voice.called_down) > 24)
 		voice.called_down.Cut(1, 2)
 	voice.harder_until = world.time + POLICE_HARDER_TIME
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/witness = life_nearest_officer(get_turf(officer), 12, officer)
-	if(witness)
-		witness.police_say(POLICE_LINE_OFFICER_DOWN, null, TRUE)
-	else
-		say_dispatch(POLICE_LINE_OFFICER_DOWN)
+	// Only an officer who sees it go down calls it; the others find the body (stealth_check_bodies())
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/witness in officers)
+		if(witness != officer && witness.stat == CONSCIOUS && !witness.fading && perception.sees(witness, officer))
+			witness.police_say(POLICE_LINE_OFFICER_DOWN, null, TRUE)
+			return
 
 // ----- the sergeant overhears a prisoner -----
 
@@ -526,7 +519,16 @@
 /datum/ambient_outpost_role/police_beat/wanted(datum/ambient_place/outpost/place)
 	return outpost_police_missing(place, POLICE_UNIT_BEAT, place?.outpost()?.police?.profile?.beat_count || 2)
 
+/// A beat officer is found on the first stop of a route nobody walks; with no free route, somewhere on the floor
 /datum/ambient_outpost_role/police_beat/settle(datum/ambient_place/outpost/place)
+	var/turf/start = istype(place) ? place.outpost()?.police?.free_route_start() : null
+	if(start && !(locate(/mob/living) in start))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = outpost_police_make(src, place, start)
+		// It claims the route now (stealth_setup(): the stop it stands on), so the next one made takes another
+		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer?.ai_controller
+		if(istype(brain))
+			brain.stealth_setup()
+		return officer
 	return outpost_police_settle(src, place, istype(place) ? place.settle_turf() : null)
 
 /datum/ambient_outpost_role/police_beat/arrive(datum/ambient_place/outpost/place, turf/where)
@@ -722,91 +724,85 @@
 	officer.sip()
 
 /**
- * The beat: a loop of the shop fronts, a stop at each. They stand a few tiles out, face the counter, say a word to
- * the trader, who answers, and carry a coffee if they took one; at the end of the round they report in.
+ * At a shop front stop: faces the counter, a word to the trader, who answers (not every time), and a sip of the
+ * coffee if they carry one. Stands until the stop's wait is over (the stop subtree ends it).
  */
-/datum/ambient_activity/wander/police_beat
-	name = "walking the beat"
-	/// Stops still to make: tiles, and (same order) weakrefs to the trader each is the front of
-	var/list/stops
-	var/list/stop_traders
-	/// The trader at the stop they are at
+/datum/ambient_activity/police_shopfront
+	name = "watching a shop front"
+	accepts_company = TRUE
+	/// The trader of the counter they watch
 	var/datum/weakref/trader_ref
 	var/next_sip = 0
-	var/checked_in = FALSE
+	var/spoke = FALSE
 
-/datum/ambient_activity/wander/police_beat/Destroy()
-	stops = null
-	stop_traders = null
+/datum/ambient_activity/police_shopfront/setup()
+	var/mob/living/basic/outpost_trader/best
+	var/best_distance = INFINITY
+	for(var/mob/living/basic/outpost_trader/trader in range(7, doer))
+		if(trader.stat == DEAD)
+			continue
+		var/distance = get_dist(trader, doer)
+		if(distance < best_distance)
+			best = trader
+			best_distance = distance
+	trader_ref = best ? WEAKREF(best) : null
+	next_sip = world.time + rand(4 SECONDS, 10 SECONDS)
+	return TRUE
+
+/datum/ambient_activity/police_shopfront/Destroy()
 	trader_ref = null
 	return ..()
 
-/datum/ambient_activity/wander/police_beat/setup()
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
-	if(!istype(officer))
-		return FALSE
-	stops = list()
-	stop_traders = list()
-	var/datum/ambient_place/outpost/place = officer.place
-	if(istype(place))
-		for(var/mob/living/basic/outpost_trader/trader as anything in shuffle(ambient_outpost_traders(place)))
-			if(trader.z != officer.z || length(stops) >= POLICE_BEAT_STOPS)
-				continue
-			var/turf/stop = ambient_waiting_spot(officer, trader, POLICE_BEAT_DISTANCE_LOW, POLICE_BEAT_DISTANCE_HIGH, failed_spots)
-			if(!stop || officer.life_keeps_off(stop) || (stop in stops))
-				continue
-			stops += stop
-			stop_traders += WEAKREF(trader)
-	if(!length(stops))
-		// No shop fronts to walk to: a few corners of the floor
-		for(var/i in 1 to POLICE_BEAT_STOPS)
-			var/turf/corner = istype(place) ? place.settle_turf(officer, officer, 9) : null
-			if(corner && !officer.life_keeps_off(corner) && !(corner in stops))
-				stops += corner
-				stop_traders += null
-	if(!length(stops))
-		return FALSE
-	stops_left = length(stops)
-	return next_stop()
-
-/datum/ambient_activity/wander/police_beat/next_stop()
-	while(length(stops))
-		var/turf/stop = stops[1]
-		trader_ref = stop_traders[1]
-		stops.Cut(1, 2)
-		stop_traders.Cut(1, 2)
-		if(LAZYACCESS(failed_spots, stop))
-			continue
-		go_to(stop)
-		return TRUE
-	return FALSE
-
-/datum/ambient_activity/wander/police_beat/arrive()
-	. = ..()
+/datum/ambient_activity/police_shopfront/arrive()
 	var/mob/living/basic/outpost_trader/trader = trader_ref?.resolve()
 	if(QDELETED(trader) || trader.stat == DEAD)
 		return
 	if(!doer.buckled)
 		doer.face_atom(trader)
-	// A word to the shop, and its answer; not at every counter
-	if(prob(70) && doer.speak_context("beat", trader, force = TRUE))
+	if(prob(60) && doer.speak_context("beat", trader, force = TRUE))
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
 		ambient_trader_reply(trader, doer, AMBIENT_STRINGS_POLICE, officer.life_voice_section(), "trader_reply", 6)
 
-/datum/ambient_activity/wander/police_beat/act(seconds)
-	if(doer.held_item && world.time >= next_sip && world.time < linger_until)
+/datum/ambient_activity/police_shopfront/act(seconds)
+	if(doer.held_item && world.time >= next_sip)
 		next_sip = world.time + rand(10 SECONDS, 20 SECONDS)
 		outpost_police_sip(doer)
-	if(world.time >= linger_until && !length(stops) && !checked_in)
-		checked_in = TRUE
-		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
-		if(istype(officer) && prob(40))
-			officer.life_check_in()
-	return ..()
+	return AMBIENT_STEP_CONTINUE
 
-/datum/ambient_activity/wander/police_beat/shift_times(delay)
+/datum/ambient_activity/police_shopfront/shift_times(delay)
 	. = ..()
 	next_sip = ambient_shifted(next_sip, delay)
+
+/**
+ * At the cells stop: a look in at whoever is held, and a word to them now and then. Stands until the stop's
+ * wait is over.
+ */
+/datum/ambient_activity/police_cells
+	name = "looking in on the cells"
+	accepts_company = TRUE
+	var/next_look = 0
+
+/datum/ambient_activity/police_cells/setup()
+	next_look = world.time
+	return TRUE
+
+/datum/ambient_activity/police_cells/act(seconds)
+	if(world.time < next_look)
+		return AMBIENT_STEP_CONTINUE
+	next_look = world.time + rand(5 SECONDS, 9 SECONDS)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/datum/outpost_police_cell/cell = officer.police?.life_occupied_cell()
+	if(!cell)
+		return AMBIENT_STEP_CONTINUE
+	var/atom/cell_view = cell.door || (length(cell.tiles) ? cell.tiles[1] : null)
+	if(cell_view && !doer.buckled)
+		doer.face_atom(cell_view)
+	chatter("cell_check", 15 SECONDS, 30 SECONDS)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_cells/shift_times(delay)
+	. = ..()
+	next_look = ambient_shifted(next_look, delay)
 
 /**
  * A coffee from the machine by the desk, drunk life_standing beside it; most take it along on the beat, in a real
@@ -1006,6 +1002,3 @@
 	return ..()
 
 #undef POLICE_CHECK_RANGE
-#undef POLICE_BEAT_DISTANCE_HIGH
-#undef POLICE_BEAT_DISTANCE_LOW
-#undef POLICE_BEAT_STOPS

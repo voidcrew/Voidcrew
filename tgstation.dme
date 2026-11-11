@@ -7857,6 +7857,7 @@
 #include "voidcrew\modules\stealth\stealth_perception.dm"
 #include "voidcrew\modules\stealth\stealth_radio.dm"
 #include "voidcrew\modules\stealth\stealth_test_ruin.dm"
+#include "voidcrew\modules\stealth_police\police_stealth.dm"
 #include "voidcrew\modules\storage\cargo_shelf.dm"
 #include "voidcrew\modules\storage\smart_locker.dm"
 #include "voidcrew\modules\storage\wall_locker.dm"

@@ -315,6 +315,9 @@
 	// Kit locked to the body (human_npc_gear.dm)
 	npc_gear_locked = TRUE
 	npc_corpse_lifetime = OUTPOST_POLICE_CORPSE_LIFETIME
+	// On the station's radio net (stealth_radio.dm): the headset in their ears carries their calls. No light: the
+	// concourse is lit, and a stealth guard's seclite is loot (abuse M8)
+	stealth_radio = TRUE
 	// Whom they leave down; set from the profile at Initialize(). Whom they go for is police_force.dm's.
 	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
 

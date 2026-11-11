@@ -41,8 +41,22 @@
 #define POLICE_WITNESS_HEARD 2
 #define POLICE_WITNESS_CAMERA 3
 
-/// How far a witness sees a crime
+/// How far a player witness sees a crime (and how far apart two tiles may be to be in sight of each other)
 #define OUTPOST_POLICE_WITNESS_RANGE 9
+/// How far a trader, checkpoint guard, townsperson or camera sees a crime (an officer sees by stealth's rules)
+#define OUTPOST_POLICE_NPC_WITNESS_RANGE 8
+/// A report waiting on a witness who can't make it now (out cold, held) is kept this long in case they come round
+#define OUTPOST_POLICE_PENDING_KEEP (2 MINUTES)
+/// A townsperson who saw a crime takes this long to tell anyone
+#define OUTPOST_POLICE_CIVILIAN_REPORT_TIME (3 SECONDS)
+/// An officer without a working radio reports in person: within this many tiles of an officer with one, or of the desk...
+#define OUTPOST_POLICE_RADIOLESS_RANGE 7
+/// ...for this long
+#define OUTPOST_POLICE_RADIOLESS_TIME (3 SECONDS)
+/// An officer whose search for a wanted person ran out is sent to look again no sooner than this
+#define OUTPOST_POLICE_RESEARCH_GAP (20 SECONDS)
+/// What an officer does at a patrol stop happens within this many tiles of it (a seat, the coffee machine, a chat)
+#define OUTPOST_POLICE_STOP_REACH 3
 /// A death this soon after the offender's last counted hit on the victim is a killing
 #define OUTPOST_POLICE_KILL_WINDOW (30 SECONDS)
 

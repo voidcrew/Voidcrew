@@ -78,14 +78,6 @@
 	var/datum/weakref/dispatch_block_ref
 	/// world.time since when they have stood there, or since they were last charged for it
 	var/dispatch_block_since = 0
-	/// The last-seen tile they are searching from
-	var/turf/dispatch_search_from
-	/// Where they look next while searching
-	var/turf/dispatch_post
-	/// world.time until which they look about where they stand
-	var/dispatch_search_until = 0
-	/// Weakref to the mind they last reported lost
-	var/datum/weakref/dispatch_lost_ref
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/Destroy()
 	if(dispatch_wave)
@@ -94,9 +86,6 @@
 	police?.dispatch_strays -= src
 	dispatch_mind = null
 	dispatch_block_ref = null
-	dispatch_lost_ref = null
-	dispatch_search_from = null
-	dispatch_post = null
 	return ..()
 
 /// Whether they are responding to a suspect
@@ -272,6 +261,8 @@
 			continue
 		officer.dispatch_check_pull()
 		officer.check_body_block()
+		// Stars drive the stealth states: stand down, look again, take a free route (police_stealth.dm)
+		stealth_tick_officer(officer)
 
 /// Drops orders that were built or dropped
 /datum/outpost_police/proc/dispatch_prune_orders()
@@ -326,6 +317,8 @@
 	wave.released_at = world.time
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in wave.living_members())
 		REMOVE_TRAIT(member, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
+		// They come out of the lift doors already hunting (spec-stealth 1.4)
+		member.police_search_for(member.dispatch_mind?.resolve())
 
 /**
  * Abuse M2. Members still on their lift point a while after leaving, with a suspect to go to, could not get
@@ -818,6 +811,8 @@
 	wave.members += WEAKREF(officer)
 	if(!wave.released_at)
 		ADD_TRAIT(officer, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
+	else
+		officer.police_search_for(officer.dispatch_mind?.resolve())
 
 /**
  * A free tile of `sector` at least OUTPOST_POLICE_UNSEEN_SPAWN_DIST from, and out of sight of, every player on

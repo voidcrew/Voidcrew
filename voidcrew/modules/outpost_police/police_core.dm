@@ -6,8 +6,9 @@
  * One /datum/outpost_police per trader outpost (`outpost.police`). It holds warrants (mind -> heat, this
  * outpost only), the officers on the roster, the station's parts (lift tiles, desk, cells, property lockers,
  * evidence chute) and a one-second tick that runs while there is anything to do. Every crime at the outpost
- * enters through report_crime() (police_wanted.dm). Officers are ambient outpost NPCs with a human NPC's
- * fighting brain (/datum/ai_controller/basic_controller/human_npc/outpost_police below).
+ * enters through report_crime() (police_wanted.dm). Officers are ambient outpost NPCs with a stealth guard's
+ * brain (/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police, in
+ * voidcrew/modules/stealth_police/police_stealth.dm: it overrides stealth procs, so it is included after stealth).
  *
  * Who owns what (spec and build plan in the parent checkout's data/outpost-police/):
  * - police_wanted.dm, police_perception.dm: warrants, heat, stars, fines, embargoes, witnesses (P1)
@@ -227,6 +228,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	// The cells read their landmarks' tiles, so the landmarks go only after
 	build_cells(cell_landmarks, cell_doors, signs) // P6, police_cell.dm
 	build_property(lockers, chute) // P12, police_property.dm
+	read_stop_tags() // P13, voidcrew/modules/stealth_police/police_stealth.dm
 	for(var/obj/effect/landmark/mark as anything in landmarks)
 		qdel(mark)
 
@@ -350,7 +352,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /mob/living/carbon/human/npc/ambient_npc/outpost/police
 	name = "outpost officer"
 	desc = "Keeps the peace here."
-	ai_controller = /datum/ai_controller/basic_controller/human_npc/outpost_police
+	ai_controller = /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police
 	/// The police they serve
 	var/datum/outpost_police/police
 	/// POLICE_UNIT_*
@@ -386,37 +388,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/marshal
 	unit_kind = POLICE_UNIT_MARSHAL
 
-/**
- * The officers' brain. Subtree order is frozen; each police subtree is its owner's (police_arrest.dm P5,
- * police_force.dm P4). Routines run last, only when nothing else planned.
- */
-/datum/ai_controller/basic_controller/human_npc/outpost_police
-	blackboard = list(
-		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/human_npc/outpost_police,
-		BB_TARGET_MINIMUM_STAT = HARD_CRIT,
-		BB_AGGRO_RANGE = HUMAN_NPC_SIGHT_RANGE,
-		BB_HUMAN_NPC_SHOT_DELAY = 3 SECONDS,
-		BB_HUMAN_NPC_FIRE_RANGE = 7,
-		BB_HUMAN_NPC_KEEP_AWAY = 2,
-	)
-	ai_movement = /datum/ai_movement/jps/ambient
-	idle_behavior = null
-	// Routines cross the whole concourse, as the ambient controller's do
-	max_target_distance = AMBIENT_PATH_LENGTH
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/human_npc_soft_crit,
-		/datum/ai_planning_subtree/ambient_escape,
-		/datum/ai_planning_subtree/human_npc_walk_out,
-		/datum/ai_planning_subtree/outpost_police_case,
-		/datum/ai_planning_subtree/outpost_police_force,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/npc_combat_sense,
-		/datum/ai_planning_subtree/human_npc_arm,
-		/datum/ai_planning_subtree/human_npc_shoot,
-		/datum/ai_planning_subtree/human_npc_melee,
-		/datum/ai_planning_subtree/outpost_police_search,
-		/datum/ai_planning_subtree/ambient_routine,
-	)
+// The officers' brain is a stealth guard's: see voidcrew/modules/stealth_police/police_stealth.dm.
 
 // =========================================================================
 // THE MAP KIT (placed by P7; behaviour by P6 and P12)
