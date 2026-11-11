@@ -1,0 +1,88 @@
+{
+ "category": "exosuits",
+ "groups": [
+  "combat exosuits",
+  "working and medical exosuits"
+ ],
+ "items": {
+  "/obj/vehicle/sealed/mecha/clarke": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "",
+   "name": "Clarke",
+   "rank": 1,
+   "reason": "Tracked mining mech with an ore box manager and sleeper, sold with a drill and mining scanner. Rated as its chassis.",
+   "tier": "green"
+  },
+  "/obj/vehicle/sealed/mecha/durand": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "",
+   "name": "Durand",
+   "rank": 3,
+   "reason": "Heavy combat mech with a frontal shield, sold bare. Rated as its chassis.",
+   "tier": "red"
+  },
+  "/obj/vehicle/sealed/mecha/gygax": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "",
+   "name": "Gygax",
+   "rank": 5,
+   "reason": "The entry combat mech, sold bare: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Rated as its chassis.",
+   "tier": "yellow"
+  },
+  "/obj/vehicle/sealed/mecha/odysseus": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "",
+   "name": "Odysseus",
+   "rank": 4,
+   "reason": "Medical mech, sold with a mounted sleeper. Rated as its chassis.",
+   "tier": "green"
+  },
+  "/obj/vehicle/sealed/mecha/ripley": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "",
+   "name": "APLU MK-I \"Ripley\"",
+   "rank": 3,
+   "reason": "The open-cabin cargo and mining mech, sold with a hydraulic clamp and a drill. Rated as its chassis.",
+   "tier": "green"
+  },
+  "/obj/vehicle/sealed/mecha/ripley/mk2": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "",
+   "name": "APLU MK-II \"Ripley\"",
+   "rank": 2,
+   "reason": "The enclosed Ripley, sold with a hydraulic clamp and a drill. Rated as the MK-II conversion kit on a Ripley.",
+   "tier": "green"
+  }
+ },
+ "method": "A whole mech rates as its chassis does in mech.json: how many vested men it takes to match its health and armor. Its tg default kit and the stand's working kit are tools, not weapons; arms are sold and rated separately.",
+ "unrated": {
+  "/obj/vehicle/sealed/mecha": "abstract",
+  "/obj/vehicle/sealed/mecha/gygax/dark": "no route",
+  "/obj/vehicle/sealed/mecha/honker": "no route",
+  "/obj/vehicle/sealed/mecha/honker/dark": "no route",
+  "/obj/vehicle/sealed/mecha/honker/dark/loaded": "no route",
+  "/obj/vehicle/sealed/mecha/justice": "no route",
+  "/obj/vehicle/sealed/mecha/justice/loaded": "no route",
+  "/obj/vehicle/sealed/mecha/marauder": "no route",
+  "/obj/vehicle/sealed/mecha/marauder/loaded": "no route",
+  "/obj/vehicle/sealed/mecha/marauder/mauler": "no route",
+  "/obj/vehicle/sealed/mecha/marauder/mauler/loaded": "no route",
+  "/obj/vehicle/sealed/mecha/marauder/seraph": "no route",
+  "/obj/vehicle/sealed/mecha/phazon": "no route",
+  "/obj/vehicle/sealed/mecha/reticence": "no route",
+  "/obj/vehicle/sealed/mecha/reticence/loaded": "no route",
+  "/obj/vehicle/sealed/mecha/ripley/cargo": "no route",
+  "/obj/vehicle/sealed/mecha/ripley/deathripley": "no route",
+  "/obj/vehicle/sealed/mecha/ripley/deathripley/real": "no route",
+  "/obj/vehicle/sealed/mecha/ripley/mining": "no route",
+  "/obj/vehicle/sealed/mecha/ripley/paddy": "no route",
+  "/obj/vehicle/sealed/mecha/ripley/paddy/preset": "no route",
+  "/obj/vehicle/sealed/mecha/savannah_ivanov": "no route"
+ }
+}
