@@ -114,7 +114,7 @@
 		tutorial_moved_at = world.time
 
 // ---------------------------------------------------------------------------
-// In-window focus (TutorialFocus in the tsx). Window ids: "rdconsole", "imprinter", "survey".
+// In-window focus (TutorialFocus in the tsx). Window ids: "rdconsole", "imprinter", "survey", "autolathe".
 // ---------------------------------------------------------------------------
 
 /obj/machinery/computer/rdconsole/ui_data(mob/user)
@@ -126,6 +126,11 @@
 	. = ..()
 	if(islist(.))
 		.["tutorial_focus"] = tutorial_ui_focus(user, "imprinter")
+
+/obj/machinery/autolathe/ui_data(mob/user)
+	. = ..()
+	if(islist(.))
+		.["tutorial_focus"] = tutorial_ui_focus(user, "autolathe")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
 	. = ..()

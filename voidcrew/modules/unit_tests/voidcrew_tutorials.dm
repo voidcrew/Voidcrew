@@ -1510,4 +1510,37 @@
 	TEST_ASSERT(!step.highlight_filter(player, few), "Three sheets were outlined")
 	TEST_ASSERT(step.highlight_filter(player, enough), "Four sheets were not outlined")
 
+// ---------------------------------------------------------------------------
+// integration: every step's window focus names a window that sends tutorial_focus, and
+// node/design keys name real techweb nodes and designs.
+// ---------------------------------------------------------------------------
+
+/datum/unit_test/voidcrew_tutorials/ui_focus_keys/Run()
+	// Windows whose ui_data sends tutorial_focus (tutorial_ui_focus(user, "<id>")).
+	var/list/windows = list("helm", "board", "trader", "elevator", "rdconsole", "imprinter", "survey", "autolathe", "cradle", "surgery", "weapons", "construction")
+	SSvc_tutorials.build_catalog()
+	for(var/datum/vc_tutorial/item as anything in SSvc_tutorials.items)
+		for(var/datum/vc_tutorial_step/step as anything in item.steps)
+			for(var/window in step.ui_focus)
+				var/focus_key = step.ui_focus[window]
+				TEST_ASSERT(window in windows, "[step.key] focuses unknown window [window]")
+				TEST_ASSERT(istext(focus_key) && length(focus_key), "[step.key] has an empty focus key for [window]")
+				if(window == "rdconsole")
+					TEST_ASSERT(findtext(focus_key, "rd_node_") == 1, "[step.key] sends [focus_key] to the R&D console")
+					TEST_ASSERT(SSresearch.techweb_nodes[copytext(focus_key, 9)], "[step.key] points at missing node [focus_key]")
+				if(window == "imprinter" || window == "autolathe")
+					TEST_ASSERT(findtext(focus_key, "[window]_") == 1, "[step.key] sends [focus_key] to the [window]")
+					TEST_ASSERT(SSresearch.techweb_designs[copytext(focus_key, length(window) + 2)], "[step.key] points at missing design [focus_key]")
+
+/// The off-screen arrow snaps to eight facings: straight sprite for cardinals, the 45 degree one for diagonals.
+/datum/unit_test/voidcrew_tutorials/arrow_facing/Run()
+	var/atom/movable/screen/tutorial_arrow/arrow = allocate(/atom/movable/screen/tutorial_arrow)
+	var/list/view_size = list(21, 15)
+	arrow.point(4, 4, view_size)
+	TEST_ASSERT_EQUAL(arrow.icon_state, "arrow_diagonal", "A north-east target did not use the diagonal arrow")
+	arrow.point(10, 1, view_size)
+	TEST_ASSERT_EQUAL(arrow.icon_state, "arrow", "A nearly east target did not snap to the straight arrow")
+	arrow.point(-3, -4, view_size)
+	TEST_ASSERT_EQUAL(arrow.icon_state, "arrow_diagonal", "A south-west target did not use the diagonal arrow")
+
 #undef TUTORIAL_TEST_CKEY

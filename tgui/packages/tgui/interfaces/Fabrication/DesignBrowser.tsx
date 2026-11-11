@@ -357,12 +357,12 @@ const DesignBrowserTab = <T extends Design = Design>(
   maxDepth ??= 3;
 
   // VOIDCREW EDIT ADDITION START - the tutorial checklist pulses the top-level tab holding
-  // the circuit imprinter design it points at (imprinter_<design id>).
+  // the circuit imprinter or autolathe design it points at (imprinter_<design id>,
+  // autolathe_<design id>).
   const tutorialFocus =
     useBackend<{ tutorial_focus?: string | null }>().data?.tutorial_focus || '';
-  const focusDesign = tutorialFocus.startsWith('imprinter_')
-    ? tutorialFocus.slice('imprinter_'.length)
-    : '';
+  const focusDesign =
+    /^(imprinter|autolathe)_(.+)$/.exec(tutorialFocus)?.[2] ?? '';
   const tabFocused =
     depth === 0 &&
     !!focusDesign &&

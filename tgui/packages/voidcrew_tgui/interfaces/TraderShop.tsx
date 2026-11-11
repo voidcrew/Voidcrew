@@ -264,7 +264,15 @@ const SkuRow = (props: {
         {live?.denial && !live.can_buy && !barred && (isFavor || !soldOut) ? (
           <Tooltip content={live.denial}>{buyButton}</Tooltip>
         ) : (
-          <TutorialFocus id={live?.can_buy ? 'trader_buy' : ''}>
+          <TutorialFocus
+            id={
+              !live?.can_buy
+                ? ''
+                : sku.category === CHROME_CATEGORY
+                  ? ['trader_buy', 'trader_chrome_tab']
+                  : 'trader_buy'
+            }
+          >
             {buyButton}
           </TutorialFocus>
         )}
@@ -272,6 +280,9 @@ const SkuRow = (props: {
     </Stack>
   );
 };
+
+/** The shop category the Buy chrome tutorial step points at. */
+const CHROME_CATEGORY = 'Street Chrome';
 
 const BuyView = (props: { barred: BooleanLike }) => {
   const { data } = useBackend<Data>();
@@ -308,13 +319,21 @@ const BuyView = (props: { barred: BooleanLike }) => {
             All ({catalog.length})
           </Tabs.Tab>
           {withItems.map((cat) => (
-            <Tabs.Tab
+            <TutorialFocus
               key={cat}
-              selected={category === cat}
-              onClick={() => setCategory(cat)}
+              id={
+                cat === CHROME_CATEGORY && category !== cat
+                  ? 'trader_chrome_tab'
+                  : ''
+              }
             >
-              {cat} ({catalog.filter((sku) => sku.category === cat).length})
-            </Tabs.Tab>
+              <Tabs.Tab
+                selected={category === cat}
+                onClick={() => setCategory(cat)}
+              >
+                {cat} ({catalog.filter((sku) => sku.category === cat).length})
+              </Tabs.Tab>
+            </TutorialFocus>
           ))}
         </Tabs>
       </Stack.Item>
@@ -347,9 +366,7 @@ const LedgerRow = (props: {
 
   const sellButtons = (
     <>
-      <TutorialFocus
-        id={live?.can_sell && carrying > 0 ? 'trader_sell' : ''}
-      >
+      <TutorialFocus id={live?.can_sell && carrying > 0 ? 'trader_sell' : ''}>
         <Button
           disabled={!live?.can_sell}
           icon="hand-holding-dollar"
@@ -507,7 +524,13 @@ export const TraderShop = (props) => {
                 <Stack align="center">
                   <Stack.Item grow>
                     <Tabs mt={0} mb={0}>
-                      <TutorialFocus id={tab === 'buy' ? '' : 'trader_buy'}>
+                      <TutorialFocus
+                        id={
+                          tab === 'buy'
+                            ? ''
+                            : ['trader_buy', 'trader_chrome_tab']
+                        }
+                      >
                         <Tabs.Tab
                           selected={tab === 'buy'}
                           onClick={() => setTab('buy')}

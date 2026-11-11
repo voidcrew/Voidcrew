@@ -572,8 +572,8 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
  */
 /atom/movable/screen/tutorial_arrow
 	name = ""
-	icon = 'icons/hud/screen_gen.dmi'
-	icon_state = "arrow_large_white_still"
+	icon = 'voidcrew/icons/hud/tutorial_arrow.dmi'
+	icon_state = "arrow"
 	color = TUTORIAL_HIGHLIGHT_COLOR
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	animate_movement = NO_STEPS
@@ -588,6 +588,10 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 /**
  * Places the arrow on the line from the screen centre toward a target dx, dy tiles away,
  * one tile in from the screen edge, and turns it to face the target.
+ *
+ * The facing snaps to the nearest of eight directions. Cardinals use the straight sprite and
+ * diagonals a hand-drawn 45 degree one, each only ever turned by whole right angles, so the
+ * pixel art is never resampled (a free rotation renders jagged).
  */
 /atom/movable/screen/tutorial_arrow/proc/point(dx, dy, list/view_size)
 	var/edge_x = max((view_size[1] - 1) / 2 - 1, 0)
@@ -602,9 +606,12 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 	var/offset_x = round(dx * scale * ICON_SIZE_X)
 	var/offset_y = round(dy * scale * ICON_SIZE_Y)
 	screen_loc = "CENTER[screen_offset_text(offset_x, ICON_SIZE_X)],CENTER[screen_offset_text(offset_y, ICON_SIZE_Y)]"
-	// The sprite points south (180); delta_to_angle() is clockwise from north.
+	// delta_to_angle() is clockwise from north. "arrow" points south (180), "arrow_diagonal"
+	// south-east (135).
+	var/sector = round(delta_to_angle(dx, dy) / 45, 1) % 8
+	icon_state = ISODD(sector) ? "arrow_diagonal" : "arrow"
 	var/matrix/turned = matrix()
-	turned.Turn(delta_to_angle(dx, dy) - 180)
+	turned.Turn(sector * 45 - (ISODD(sector) ? 135 : 180))
 	transform = turned
 
 /// "+tiles:pixels" or "-tiles:pixels" for a pixel offset from a screen anchor, pixels 0 to tile_size - 1.

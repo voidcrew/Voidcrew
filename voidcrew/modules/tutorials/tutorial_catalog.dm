@@ -350,6 +350,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Get the R&D kit"
 	text = "Print the Research & Development Kit at the autolathe and pick it up."
 	highlight_types = list(/obj/machinery/autolathe, /obj/item/storage/box/rndboards/all)
+	ui_focus = list("autolathe" = "autolathe_rndkit")
 
 /// A hull that already has a ship server is past needing the kit.
 /datum/vc_tutorial_step/research_kit/state_satisfied(mob/user)
@@ -865,6 +866,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Buy chrome"
 	text = "Halcyon's general store sells a little street chrome. The Back Bay at Quartermain Depot sells more, and the Chop Shop in the red zone sells the rest."
 	highlight_types = list(/mob/living/basic/outpost_trader)
+	ui_focus = list("trader" = "trader_chrome_tab")
 
 /// Only traders whose shelf holds chrome.
 /datum/vc_tutorial_step/chrome_buy/highlight_filter(mob/user, atom/candidate)
@@ -1081,7 +1083,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Research Shuttle Warfare Systems"
 	text = "At the R&D console, after Basic Shuttle Research. It unlocks the weapons console; each ship weapon has its own research after it."
 	highlight_types = list(/obj/machinery/computer/rdconsole)
-	ui_focus = list("techweb" = "rd_node_ship_combat")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat")
 
 /datum/vc_tutorial_step/zones_warfare/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -1293,7 +1295,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Build a weapons console"
 	text = "Print the Weapons System board at the circuit imprinter and build it in a computer frame."
 	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/circuit_imprinter, /obj/structure/frame/computer)
-	ui_focus = list("techweb" = "rd_node_ship_combat", "imprinter" = "imprinter_ship_combat_console")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat", "imprinter" = "imprinter_ship_combat_console")
 	node_id = TECHWEB_NODE_SHIP_COMBAT
 	design_id = "ship_combat_console"
 	board_type = /obj/item/circuitboard/computer/ship_combat_console
@@ -1303,7 +1305,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_WEAPONS_LAUNCHER
 	name = "Build a missile launcher"
 	text = "Print the launcher board and build it in a machine frame. Wrench it loose, then drag it onto an outer wall."
-	ui_focus = list("techweb" = "rd_node_ship_combat_missiles", "imprinter" = "imprinter_ship_missile_launcher")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat_missiles", "imprinter" = "imprinter_ship_missile_launcher")
 	node_id = TECHWEB_NODE_SHIP_COMBAT_MISSILES
 	design_id = "ship_missile_launcher"
 	board_type = /obj/item/circuitboard/machine/ship_combat/missile_launcher
@@ -1312,7 +1314,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_WEAPONS_LASER
 	name = "Build a laser turret"
 	text = "Print the turret board and build it in a machine frame with a power cell. Wrench it loose, then drag it onto an outer wall."
-	ui_focus = list("techweb" = "rd_node_ship_combat_lasers", "imprinter" = "imprinter_ship_laser_turret")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat_lasers", "imprinter" = "imprinter_ship_laser_turret")
 	node_id = TECHWEB_NODE_SHIP_COMBAT_LASERS
 	design_id = "ship_laser_turret"
 	board_type = /obj/item/circuitboard/machine/ship_combat/laser_turret
@@ -1331,7 +1333,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_WEAPONS_SHIELD
 	name = "Build a shield generator"
 	text = "Print the shield generator board and build it in a machine frame."
-	ui_focus = list("techweb" = "rd_node_ship_combat_shields", "imprinter" = "imprinter_ship_shield_generator")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat_shields", "imprinter" = "imprinter_ship_shield_generator")
 	node_id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
 	design_id = "ship_shield_generator"
 	board_type = /obj/item/circuitboard/machine/ship_combat/shield_generator
@@ -1343,7 +1345,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_WEAPONS_INTERDICTOR
 	name = "Build an interdictor"
 	text = "Print the interdictor board and build it in a machine frame."
-	ui_focus = list("techweb" = "rd_node_ship_combat_interdictor", "imprinter" = "imprinter_ship_interdictor")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat_interdictor", "imprinter" = "imprinter_ship_interdictor")
 	node_id = TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR
 	design_id = "ship_interdictor"
 	board_type = /obj/item/circuitboard/machine/ship_combat/interdictor
@@ -1355,7 +1357,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_WEAPONS_EW
 	name = "Build an EW suite"
 	text = "Print the EW suite board and build it in a machine frame. To use it, link it to the weapons console with a multitool and load a cartridge."
-	ui_focus = list("techweb" = "rd_node_ship_combat_ew", "imprinter" = "imprinter_ew_suite")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat_ew", "imprinter" = "imprinter_ew_suite")
 	node_id = TECHWEB_NODE_SHIP_COMBAT_EW
 	design_id = "ew_suite"
 	board_type = /obj/item/circuitboard/machine/ship_combat/ew_suite
@@ -1370,7 +1372,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Arm a missile"
 	text = "Print a missile frame, a tracking circuit and a warhead at the protolathe. Wire the frame, add the circuit and the warhead, then screwdriver it shut."
 	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/protolathe, /obj/structure/ship_missile)
-	ui_focus = list("techweb" = "rd_node_ship_combat_missiles")
+	ui_focus = list("rdconsole" = "rd_node_ship_combat_missiles")
 	node_id = TECHWEB_NODE_SHIP_COMBAT_MISSILES
 	design_id = "ship_missile_frame"
 
@@ -1649,6 +1651,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 		/obj/machinery/computer/mission_board,
 		/obj/machinery/mission_pad,
 	)
+	ui_focus = list("board" = "board_bounty")
 
 /// Keys anywhere; the board and pad only while the crew is hunting a bounty.
 /datum/vc_tutorial_step/pirates_bounty/highlight_filter(mob/user, atom/candidate)

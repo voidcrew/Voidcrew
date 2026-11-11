@@ -414,7 +414,9 @@ const MissionBoardContent = () => {
             id={
               currentTab === 'active'
                 ? ''
-                : ['board_active_tab', 'board_turn_in']
+                : has_active_bounty
+                  ? ['board_active_tab', 'board_turn_in', 'board_bounty']
+                  : ['board_active_tab', 'board_turn_in']
             }
           >
             <Tabs.Tab
@@ -760,16 +762,18 @@ const BountyCard = (props: BountyCardProps) => {
           {bounty.is_hunting ? (
             <Stack>
               <Stack.Item grow>
-                <Button
-                  fluid
-                  icon="crosshairs"
-                  color="green"
-                  disabled={!hasPad}
-                  tooltip={hasPad ? undefined : 'No mission pad'}
-                  onClick={() => act('turn_in_bounty', { ref: bounty.ref })}
-                >
-                  Turn In Key
-                </Button>
+                <TutorialFocus id={hasPad ? 'board_bounty' : ''}>
+                  <Button
+                    fluid
+                    icon="crosshairs"
+                    color="green"
+                    disabled={!hasPad}
+                    tooltip={hasPad ? undefined : 'No mission pad'}
+                    onClick={() => act('turn_in_bounty', { ref: bounty.ref })}
+                  >
+                    Turn In Key
+                  </Button>
+                </TutorialFocus>
               </Stack.Item>
               {!bounty.has_tracking && (
                 <Stack.Item>
@@ -793,16 +797,18 @@ const BountyCard = (props: BountyCardProps) => {
               </Stack.Item>
             </Stack>
           ) : (
-            <Button
-              fluid
-              icon="skull"
-              color={canAccept ? 'caution' : 'gray'}
-              disabled={!canAccept}
-              tooltip={getDisabledReason()}
-              onClick={() => act('accept_bounty', { ref: bounty.ref })}
-            >
-              {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
-            </Button>
+            <TutorialFocus id={canAccept ? 'board_bounty' : ''}>
+              <Button
+                fluid
+                icon="skull"
+                color={canAccept ? 'caution' : 'gray'}
+                disabled={!canAccept}
+                tooltip={getDisabledReason()}
+                onClick={() => act('accept_bounty', { ref: bounty.ref })}
+              >
+                {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
+              </Button>
+            </TutorialFocus>
           )}
         </Flex.Item>
       </Flex>
