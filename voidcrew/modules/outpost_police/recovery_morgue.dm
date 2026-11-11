@@ -223,6 +223,25 @@
 			return TRUE
 	return FALSE
 
+/**
+ * Puts on `where` whatever in `thing` holds a person (a pAI card, an MMI, a bag with a player's pet in it), so nobody
+ * leaves the round with an NPC body or its bag (abuse SF3, M32). A limb or organ with a person in it is
+ * morgue_part_has_person()'s to keep.
+ */
+/proc/morgue_drop_persons(atom/movable/thing, turf/where)
+	for(var/mob/living/someone in thing.get_all_contents())
+		if(someone == thing || !(someone.mind || someone.ckey))
+			continue
+		var/atom/movable/holder = someone
+		while(holder.loc && holder.loc != thing)
+			holder = holder.loc
+		if(holder.loc != thing || istype(holder, /obj/item/organ) || istype(holder, /obj/item/bodypart))
+			continue
+		if(ismob(thing) && isitem(holder))
+			var/mob/wearer = thing
+			wearer.dropItemToGround(holder, force = TRUE)
+		holder.forceMove(where)
+
 /// The atom a worker stands beside to bag `body`: the body, or the bag it lies in
 /proc/morgue_bag_target(mob/living/body)
 	return isturf(body.loc) ? body : body.loc
@@ -795,6 +814,8 @@
 			// Never a person: let it out where it is
 			inside.forceMove(get_turf(bag))
 			continue
+		// Nor anyone in something it holds (abuse SF3)
+		morgue_drop_persons(inside, get_turf(bag))
 		qdel(inside)
 	qdel(bag)
 	playsound(start, 'sound/machines/ding.ogg', 50, TRUE)

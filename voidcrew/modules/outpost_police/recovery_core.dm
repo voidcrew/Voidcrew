@@ -391,7 +391,8 @@
 	if(!where || get_trader_outpost_for_turf(where) != outpost)
 		return
 	var/in_box = !!outpost.police?.dispatch_in_box(where)
-	if(ishumannpc(dead))
+	// A player in an NPC body (a brain transplant) is a person: never on the NPC list, never collected (abuse SF3)
+	if(ishumannpc(dead) && morgue_npc_body(dead))
 		var/mob/living/carbon/human/npc/body = dead
 		// A crew member down is the crews' own trouble (4.2), not the outpost's: the ladder counts it, wherever it fell here
 		var/is_crew = istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery)
@@ -465,7 +466,8 @@
 		claims -= oldest_ref
 		retry_at -= oldest_ref
 		var/mob/living/carbon/human/npc/oldest = oldest_ref.resolve()
-		if(!QDELETED(oldest))
+		// Never a body a player has been in since it died (abuse SF3)
+		if(!QDELETED(oldest) && morgue_npc_body(oldest))
 			oldest.npc_fade()
 
 /**

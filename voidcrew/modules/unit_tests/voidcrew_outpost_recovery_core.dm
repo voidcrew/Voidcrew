@@ -209,6 +209,31 @@
 	outsider.death()
 	TEST_ASSERT_EQUAL(length(recovery.npc_dead), 0, "A body outside the outpost is on its list")
 
+/// Abuse SF3: an NPC body a player is in is a person's body, never on the NPC list; nobody in what an NPC body holds goes down the lift with it
+/datum/unit_test/voidcrew_outpost_recovery_player_in_npc
+
+/datum/unit_test/voidcrew_outpost_recovery_player_in_npc/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/possessed = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(1, 1))
+	possessed.set_place(SSambient_npcs.outpost_place(outpost))
+	possessed.mind_initialize()
+	allocated += possessed.mind
+	possessed.death()
+	TEST_ASSERT(!(WEAKREF(possessed) in recovery.npc_dead), "An NPC body a player was in is on the NPC list")
+	TEST_ASSERT(WEAKREF(possessed) in recovery.player_dead, "An NPC body a player was in is not kept as a person's")
+
+	// A box in an NPC's hand with a person in it comes out before the body goes (alive here: a death would drop it anyway)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/carrier = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(2, 2))
+	var/obj/item/storage/box/box = allocate(/obj/item/storage/box)
+	TEST_ASSERT(carrier.put_in_hands(box), "Setup: the NPC could not hold the box")
+	var/mob/living/carbon/human/stowaway = wanted_person(wanted_spot(2, 2))
+	stowaway.forceMove(box)
+	morgue_drop_persons(carrier, wanted_spot(3, 3))
+	TEST_ASSERT_EQUAL(box.loc, wanted_spot(3, 3), "Something holding a person stayed on an NPC body")
+	TEST_ASSERT_EQUAL(stowaway.loc, box, "The person was taken out of what held them")
+	stowaway.forceMove(wanted_spot(3, 3))
+
 // ===== THE BODY CAP =====
 
 /// 24 NPC bodies at most (officers' included): the 25th takes the oldest, a player's body is never touched
