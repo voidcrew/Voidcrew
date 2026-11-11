@@ -68,6 +68,8 @@
 	name = "morgue worker"
 	desc = "Outpost morgue staff."
 	outfit = /datum/outfit/outpost_morgue
+	// On the station's radio net: what they see goes out on their headset, or not at all (stealth_radio.dm)
+	stealth_radio = TRUE
 	routine = list(/datum/ambient_activity/recover_body = 1)
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/Initialize(mapload, datum/human_npc_order/order)

@@ -344,7 +344,8 @@
 #endif
 	return is_officer(witness)
 
-/// An officer reports while awake and not held (stealth_captive()); a townsperson while awake and not tied up
+/// An officer reports while awake and not held (stealth_captive()); a townsperson while awake and not tied up; a crew
+/// member only with a working headset
 /datum/outpost_police_perception/stealth/can_report(atom/witness)
 	if(!isliving(witness))
 		return TRUE
@@ -354,6 +355,11 @@
 	if(is_officer(person))
 		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = person.ai_controller
 		return !istype(brain) || !brain.stealth_captive()
+	// A morgue or cleaning crew member calls it in on their headset: dead air with it off, EMPed or jammed (decision 19)
+	if(istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/crew = person
+		if(!crew.stealth_radio_ready() || !human_npc_can_talk(crew))
+			return FALSE
 	if(istype(person, /mob/living/carbon/human/npc/ambient_npc))
 		return !HAS_TRAIT(person, TRAIT_RESTRAINED)
 	return TRUE
