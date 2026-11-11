@@ -673,15 +673,25 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/hold_shot(obj/projectile/shot)
 	held_shots[shot] = shot.speed
 	shot.speed = held_shots[shot] * scale_for(shot)
+	if(!user_shots[shot]) // a shot is made, and taken, before it has a firer
+		RegisterSignal(shot, COMSIG_PROJECTILE_FIRE, PROC_REF(held_shot_fired), override = TRUE)
+
+/// Signal proc for [COMSIG_PROJECTILE_FIRE] on a held shot: now it has a firer, a surging mob's shot loses the tint.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/held_shot_fired(obj/projectile/shot)
+	SIGNAL_HANDLER
+	UnregisterSignal(shot, COMSIG_PROJECTILE_FIRE)
+	if(shot.firer && (surging[shot.firer] || cyberware_own_surge(shot.firer)))
+		escape_the_negative_zone(shot)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/let_go_shot(obj/projectile/shot)
 	shot.speed = held_shots[shot]
 	held_shots -= shot
+	UnregisterSignal(shot, COMSIG_PROJECTILE_FIRE)
 
 /// Signal proc for [COMSIG_PROJECTILE_FIRER_BEFORE_FIRE] on the user: watch the shot leave the barrel.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/on_user_fire(datum/source, obj/projectile/shot, atom/fired_from, atom/original)
 	SIGNAL_HANDLER
-	RegisterSignal(shot, COMSIG_PROJECTILE_FIRE, PROC_REF(take_user_shot))
+	RegisterSignal(shot, COMSIG_PROJECTILE_FIRE, PROC_REF(take_user_shot), override = TRUE)
 
 /// Signal proc for [COMSIG_PROJECTILE_FIRE]: the user's shot keeps its colour but crawls at the field's pace like
 /// every bullet in it.

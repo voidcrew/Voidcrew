@@ -264,7 +264,8 @@
 	TEST_ASSERT(gore > 4.9 && gore < 5.1, "A slowed NPC's gore doesn't play at 20% ([gore] for 1)")
 	TEST_ASSERT_NOTNULL(cyberware_time_field(pool), "Blood on the floor in the field isn't slowed")
 	var/list/steps = cyberware_dilated_steps(raider, list(2, 2))
-	TEST_ASSERT(length(steps) == 2 && abs(steps[1] - 10) < 0.1 && abs(steps[2] - 10) < 0.1, "A slowed NPC's flinch doesn't play at 20% from its first step ([jointext(steps, ",")])")
+	var/both = cyberware_dilated_time(raider, 4) // the second step may run past the window's end, back at full speed
+	TEST_ASSERT(length(steps) == 2 && abs(steps[1] - 10) < 0.1 && abs(steps[1] + steps[2] - both) < 0.1, "A slowed NPC's flinch doesn't play at 20% from its first step ([jointext(steps, ",")], [both] in all)")
 
 	// Bursts queued in the slow-mo wait longer.
 	raider_gun.cyberware_burst_start = cyberware_burst_clock(raider)
@@ -285,7 +286,8 @@
 	var/move_at = mech.cooldown_vehicle_move
 
 	sleep(0.5 SECONDS)
-	TEST_ASSERT(cyberware_burst_wait(raider, raider_gun.cyberware_burst_start, 1, 1) > 0, "A queued burst shot fired at full speed")
+	// 0.5 s at 20% is 1 decisecond of the NPC's own time: a 2 decisecond gap is still waiting, at full speed it's long gone
+	TEST_ASSERT(cyberware_burst_wait(raider, raider_gun.cyberware_burst_start, 2, 1) > 0, "A queued burst shot fired at full speed")
 	TEST_ASSERT(raider_gun.cyberware_burst_start > gun_start, "The NPC's burst clock wasn't pushed back")
 	TEST_ASSERT(rat_gun.cyberware_burst_start > rat_start, "A basic mob's burst clock wasn't pushed back")
 	TEST_ASSERT(turret.last_fired > fired_at, "A slowed turret's fire cooldown wasn't pushed back")
@@ -356,7 +358,7 @@
 	TEST_ASSERT(!tinted(raider), "A surging NPC was tinted")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "A surging NPC's clock slowed")
 	TEST_ASSERT_NULL(cyberware_time_field(raider), "A surging NPC's gore would be slowed")
-	TEST_ASSERT(!field.held_shots[shot] && shot.speed == shot_speed, "A surging NPC's shot was held")
+	TEST_ASSERT(field.held_shots[shot] && shot.speed == shot_speed * field.time_scale, "A surging NPC's shot doesn't fly at the field's pace like every bullet")
 	sleep(0.5 SECONDS) // a couple of field ticks
 	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "A surging NPC was slowed")
 
@@ -396,7 +398,7 @@
 	TEST_ASSERT_NULL(GLOB.cyberware_time_dilated[raider], "The surging NPC is still in the field's hands")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The surging NPC's clock stayed slow")
 	TEST_ASSERT_NULL(field.slowed_tags[raider], "The surging NPC's slowed animations weren't dropped")
-	TEST_ASSERT(!field.held_shots[shot] && shot.speed == shot_speed, "The surging NPC's shot stayed slowed")
+	TEST_ASSERT(field.held_shots[shot] && shot.speed == shot_speed * field.time_scale, "The surging NPC's shot left the field's pace")
 	sleep(0.5 SECONDS) // a few field ticks
 	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The field took the surging NPC back")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
@@ -506,16 +508,17 @@
 
 	var/obj/projectile/bullet/user_shot = allocate(/obj/projectile/bullet, spot(1, 0))
 	user_shot.firer = user
-	var/user_speed = user_shot.speed
 	field.take_user_shot(user_shot)
+	var/user_speed = field.held_shots[user_shot] // its own speed: the field may have taken it as it appeared
 	TEST_ASSERT(field.held_shots[user_shot] && !user_shot.paused, "The user's slow-mo shot wasn't held, or hung")
 	TEST_ASSERT_EQUAL(user_shot.speed, user_speed * field.time_scale, "The user's slow-mo shot doesn't crawl at the field's pace")
 	TEST_ASSERT(!tinted(user_shot), "The user's slow-mo shot was tinted")
 
 	var/obj/projectile/bullet/npc_shot = allocate(/obj/projectile/bullet, spot(2, 0))
 	npc_shot.firer = raider
-	var/npc_speed = npc_shot.speed
 	field.freeze_atom(npc_shot)
+	SEND_SIGNAL(npc_shot, COMSIG_PROJECTILE_FIRE) // made, then fired
+	var/npc_speed = field.held_shots[npc_shot]
 	TEST_ASSERT(field.held_shots[npc_shot] && !npc_shot.paused, "A surging NPC's shot wasn't held, or hung")
 	TEST_ASSERT_EQUAL(npc_shot.speed, npc_speed * field.time_scale, "A surging NPC's shot doesn't fly at the field's pace")
 	TEST_ASSERT(!tinted(npc_shot), "A surging NPC's shot was tinted")
@@ -626,4 +629,6 @@
 /datum/unit_test/voidcrew_cyberware_timestop/weather_slowed/proc/weather_states(image/slowed)
 	. = list()
 	for(var/overlay in slowed.overlays)
+		if(overlay:icon == 'icons/effects/glow_weather.dmi')
+			continue // rain has no glow state: that overlay draws nothing either way
 		. += overlay:icon_state
