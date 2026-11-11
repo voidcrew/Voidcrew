@@ -15,6 +15,18 @@
 	. = ..()
 	AddElement(/datum/element/outpost_property)
 
+/**
+ * Lockers skip access checks everywhere (voidcrew/edits/ship_access.dm); this one keeps tg's own check, so
+ * only a card with ACCESS_OUTPOST_POLICE opens it.
+ */
+/obj/structure/closet/secure_closet/outpost_evidence/check_access_list(list/access_list)
+	if(!length(access_list) || !islist(access_list))
+		return FALSE
+	for(var/required in req_access)
+		if(!(required in access_list))
+			return FALSE
+	return TRUE
+
 /// No renaming it
 /obj/structure/closet/secure_closet/outpost_evidence/tool_interact(obj/item/weapon, mob/living/user)
 	if(IS_WRITING_UTENSIL(weapon))
