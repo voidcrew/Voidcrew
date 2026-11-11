@@ -107,6 +107,8 @@
 		real_spot[thing] = thing.loc
 		real_dir[thing] = thing.dir
 	var/raider_overlays = length(raider.overlays)
+	// Not in the slow-mo, but near the user: it holds still for the replay too.
+	var/mob/living/carbon/human/npc/outsider = allocate(/mob/living/carbon/human/npc, spot(5, 1))
 
 	replay.begin()
 	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
@@ -125,6 +127,7 @@
 	TEST_ASSERT(length(replay.standins) >= 1, "Something deleted mid-window has no stand-in")
 	TEST_ASSERT(HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, "sandy_replay") && HAS_TRAIT_FROM(user, TRAIT_INCAPACITATED, "sandy_replay"), "The user can act during the replay")
 	TEST_ASSERT(HAS_TRAIT_FROM(raider, TRAIT_AI_PAUSED, "sandy_replay"), "The NPC's AI runs during the replay")
+	TEST_ASSERT(HAS_TRAIT_FROM(outsider, TRAIT_AI_PAUSED, "sandy_replay"), "An NPC near the user but outside the slow-mo acts during the replay")
 	TEST_ASSERT(!raider.IsStun() && !user.IsStun(), "The replay stunned someone")
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash started during the replay")
 
@@ -159,7 +162,7 @@
 	TEST_ASSERT_EQUAL(wrench.pixel_w, initial(wrench.pixel_w), "The item is left drawn off its tile")
 	TEST_ASSERT_EQUAL(wrench.mouse_opacity, initial(wrench.mouse_opacity), "The item can't be clicked after the replay")
 	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["unhooked"], 1, "Puppets read as changed when nothing changed them")
-	TEST_ASSERT(!held(user) && !held(raider) && !held(bleeder), "Someone is still held after the replay")
+	TEST_ASSERT(!held(user) && !held(raider) && !held(bleeder) && !held(outsider), "Someone is still held after the replay")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/sandy_replay_standin) in range(9, user)), "A stand-in outlived the replay")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
 	// It looks and sounds like a surge: the user's step left an afterimage, and the sound made in the field played again.

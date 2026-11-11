@@ -58,6 +58,9 @@
 #define SANDY_REPLAY_TURN_TIME 2
 /// Degrees the replay trail's hue moves per step (CYBERWARE_CASCADE_HUE_STEP in ware_legend.dm).
 #define SANDY_REPLAY_HUE_STEP 25
+/// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
+/// any other player this close is crew, or there would be no replay).
+#define SANDY_REPLAY_HOLD_RANGE 11
 /// The most sounds one recording keeps.
 #define SANDY_REPLAY_MAX_SOUNDS 200
 
@@ -458,9 +461,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		if(isliving(thing))
 			lock(thing)
 		else if(ismecha(thing))
-			var/obj/vehicle/sealed/mecha/mech = thing
-			mechs[mech] = mech.completely_disabled
-			mech.completely_disabled = TRUE
+			hold_mech(thing)
 		if(length(track.frames) == SANDY_FRAME_SIZE && track.first == 0)
 			continue // it never changed: nothing to show
 		if(isturf(thing.loc))
@@ -475,12 +476,33 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		standins += track
 	gone.Cut()
 	user_track = tracks[user]
+	hold_nearby()
 	RegisterSignal(user, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(on_user_z_changed))
 	if(user.client && user.stat != DEAD && isturf(user.loc) && user_track?.mode == SANDY_TRACK_PUPPET)
 		eye = new(user.loc)
 		eye_pixel_x = user.client.pixel_x
 		eye_pixel_y = user.client.pixel_y
 		user.reset_perspective(eye)
+
+/// Holds every mob and mech near the user, in the bubble or not: a crewmate or an NPC just outside it can't act on
+/// the held ones (or on the user) while the replay plays. Called at the start and every frame, for arrivals.
+/datum/sandy_replay/proc/hold_nearby()
+	var/turf/here = get_turf(user)
+	if(!here)
+		return
+	for(var/atom/movable/found as anything in SSspatial_grid.orthogonal_range_search(here, SPATIAL_GRID_CONTENTS_TYPE_HEARING, SANDY_REPLAY_HOLD_RANGE))
+		if(isliving(found))
+			lock(found)
+		var/obj/vehicle/sealed/mecha/mech = get_atom_on_turf(found, /obj/vehicle/sealed/mecha)
+		if(istype(mech)) // a pilot, or something hearing inside one
+			hold_mech(mech)
+
+/// Switches `mech` off for the replay.
+/datum/sandy_replay/proc/hold_mech(obj/vehicle/sealed/mecha/mech)
+	if(!isnull(mechs[mech]) || QDELETED(mech))
+		return
+	mechs[mech] = mech.completely_disabled
+	mech.completely_disabled = TRUE
 
 /// Pauses `body`'s AI and locks its player's input. No stun: decisions and input only.
 /datum/sandy_replay/proc/lock(mob/living/body)
@@ -803,6 +825,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			finish()
 			return
 		frame = min(frame, total)
+		hold_nearby()
 		play_sounds(frame)
 		for(var/datum/sandy_replay_track/track as anything in puppets)
 			var/atom/movable/thing = track.thing
@@ -1069,6 +1092,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 #undef SANDY_REPLAY_TURN_TIME
 #undef SANDY_REPLAY_HUE_STEP
 #undef SANDY_REPLAY_MAX_SOUNDS
+#undef SANDY_REPLAY_HOLD_RANGE
 #undef SANDY_FRAME_SIZE
 #undef SANDY_FRAME_INDEX
 #undef SANDY_FRAME_LOOK
