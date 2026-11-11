@@ -46,12 +46,16 @@ export type FocusOpts = {
 
 type Item = {
   el: () => HTMLElement | null;
+  /** The FocusScope it sits in; only the newest open scope's items take the focus. */
+  scope: string;
   opts: RefObject<FocusOpts>;
 };
 
 type How = 'key' | 'mouse' | 'auto';
 
 type Nav = {
+  pushScope: (id: string) => void;
+  popScope: (id: string) => void;
   focused: string | null;
   focus: (id: string, how: How) => void;
   register: (id: string, item: Item) => void;
@@ -61,6 +65,7 @@ type Nav = {
 };
 
 const NavContext = createContext<Nav | null>(null);
+const ScopeContext = createContext('root');
 
 // ---------------------------------------------------------------------------
 // Sound
@@ -200,6 +205,12 @@ export function NavProvider(props: ProviderProps) {
   const items = useRef(new Map<string, Item>()).current;
   const order = useRef<string[]>([]).current;
   const backs = useRef<[string, RefObject<() => void>][]>([]).current;
+  const scopes = useRef<string[]>(['root']).current;
+  /** Items in the newest open scope, in mount order. */
+  const live = () => {
+    const top = scopes[scopes.length - 1];
+    return order.filter((id) => items.get(id)?.scope === top);
+  };
   const focusRef = useRef<string | null>(null);
   const lastBox = useRef<Box | null>(null);
   const claim = useRef<{ id: string; prio: number } | null>(null);
@@ -231,13 +242,19 @@ export function NavProvider(props: ProviderProps) {
     const settle = () => {
       scheduled.current = false;
       const current = focusRef.current;
-      const currentItem = current ? items.get(current) : undefined;
+      const top = scopes[scopes.length - 1];
+      const found = current ? items.get(current) : undefined;
+      const currentItem = found?.scope === top ? found : undefined;
       const pending = claim.current;
       claim.current = null;
       // A claim wins after a key or click (a record or screen the player opened), never because
       // a server update added a row under the focus.
       const fresh = Date.now() - lastAction.current < CLAIM_WINDOW;
-      if (pending && items.has(pending.id) && (!currentItem || fresh)) {
+      if (
+        pending &&
+        items.get(pending.id)?.scope === top &&
+        (!currentItem || fresh)
+      ) {
         if (!currentItem?.opts.current.tab) {
           setFocus(pending.id, 'auto');
           return;
@@ -250,7 +267,7 @@ export function NavProvider(props: ProviderProps) {
       let best: string | null = null;
       let bestScore = Infinity;
       const from = lastBox.current;
-      for (const id of order) {
+      for (const id of live()) {
         const box = boxOf(items.get(id));
         if (!box) {
           continue;
@@ -302,6 +319,17 @@ export function NavProvider(props: ProviderProps) {
           schedule();
         }
       },
+      pushScope: (id) => {
+        scopes.push(id);
+        schedule();
+      },
+      popScope: (id) => {
+        const at = scopes.indexOf(id);
+        if (at > 0) {
+          scopes.splice(at, 1);
+        }
+        schedule();
+      },
       pushBack: (id, fn) => {
         backs.push([id, fn]);
       },
@@ -320,8 +348,9 @@ export function NavProvider(props: ProviderProps) {
       const item = current ? items.get(current) : undefined;
       const from = boxOf(item);
       if (!item || !from) {
-        if (order.length) {
-          nav.focus(order[0], 'key');
+        const first = live()[0];
+        if (first) {
+          nav.focus(first, 'key');
         }
         return;
       }
@@ -332,7 +361,7 @@ export function NavProvider(props: ProviderProps) {
       }
       let best: string | null = null;
       let bestScore = Infinity;
-      for (const id of order) {
+      for (const id of live()) {
         if (id === current) {
           continue;
         }
@@ -440,6 +469,7 @@ export function useFocusable<T extends HTMLElement>(
   opts: FocusOpts,
 ) {
   const nav = useContext(NavContext);
+  const scope = useContext(ScopeContext);
   const id = useId();
   const ref = useRef<T | null>(null);
   const optsRef = useRef(opts);
@@ -450,9 +480,9 @@ export function useFocusable<T extends HTMLElement>(
     if (!enabled || !register || !unregister) {
       return;
     }
-    register(id, { el: () => ref.current, opts: optsRef });
+    register(id, { el: () => ref.current, opts: optsRef, scope });
     return () => unregister(id);
-  }, [enabled, register, unregister]);
+  }, [enabled, register, unregister, scope]);
   const focused = enabled && !!nav && nav.focused === id;
   return {
     ref,
@@ -461,6 +491,27 @@ export function useFocusable<T extends HTMLElement>(
     /** Moves the focus here, for things that want it after a click. */
     take: () => nav?.focus(id, 'auto'),
   };
+}
+
+/**
+ * A modal layer (a picker, a confirm box): while it is mounted the arrow keys only reach the
+ * items inside it, and the focus goes back to the screen under it when it closes.
+ */
+export function FocusScope(props: { children: ReactNode }) {
+  const nav = useContext(NavContext);
+  const id = useId();
+  const pushScope = nav?.pushScope;
+  const popScope = nav?.popScope;
+  useLayoutEffect(() => {
+    if (!pushScope || !popScope) {
+      return;
+    }
+    pushScope(id);
+    return () => popScope(id);
+  }, [pushScope, popScope]);
+  return (
+    <ScopeContext.Provider value={id}>{props.children}</ScopeContext.Provider>
+  );
 }
 
 /**
