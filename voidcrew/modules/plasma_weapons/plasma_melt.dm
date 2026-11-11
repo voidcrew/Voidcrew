@@ -23,14 +23,15 @@
 #define PLASMA_MELT_FLOOR_ROW 30
 /// How far below the feet the pool sits on a standing body, so it reads in front of them
 #define PLASMA_MELT_POOL_FRONT 4
-/// The same for a lying body: how far past where the limb lay, away from the body, so the body doesn't cover it
-#define PLASMA_MELT_POOL_FRONT_LYING 4
+/// The same for an arm on a lying body: how far out past where the arm lay, so the torso doesn't cover the pool.
+/// A leg's pool stays on the leg's line at the foot end.
+#define PLASMA_MELT_POOL_FRONT_LYING 2
 /// Row and column of the pool's centre in its own 32x32 tile (pool, splat and slag states)
 #define PLASMA_MELT_POOL_TILE_X 15
 #define PLASMA_MELT_POOL_TILE_Y 21
 /// Row and column of a falling drop's lowest pixel in its own tile
 #define PLASMA_MELT_DROP_TILE 16
-/// How long a body takes to slide one tile; drips from a moving body land after this
+/// While the body slid onto its tile this recently, drips fall straight to the floor under it
 #define PLASMA_MELT_GLIDE_WAIT (0.4 SECONDS)
 
 /// Most slag decals in the world at once; the oldest goes first
@@ -61,6 +62,25 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		return FALSE
 	var/zone = limb.body_zone
 	var/list/drawn = plasma_melt_capture(victim, limb)
+	// tg drops what this limb wore or held the moment it comes off; keep their look on the body while it melts
+	var/list/worn_look = list()
+	var/mutable_appearance/shoes_look
+	var/list/may_drop = list()
+	if(istype(limb, /obj/item/bodypart/arm))
+		var/obj/item/bodypart/arm/arm = limb
+		var/obj/item/held = victim.get_item_for_held_index(arm.held_index)
+		if(held)
+			var/icon_file = IS_RIGHT_INDEX(arm.held_index) ? held.righthand_file : held.lefthand_file
+			worn_look += held.build_worn_icon(default_layer = HANDS_LAYER, default_icon_file = icon_file, isinhands = TRUE)
+			may_drop[held] = "held"
+		if(istype(victim.overlays_standing[GLOVES_LAYER], /mutable_appearance))
+			worn_look += new /mutable_appearance(victim.overlays_standing[GLOVES_LAYER])
+		if(victim.gloves)
+			may_drop[victim.gloves] = "worn"
+	else if(victim.shoes)
+		if(istype(victim.overlays_standing[SHOES_LAYER], /mutable_appearance))
+			shoes_look = new /mutable_appearance(victim.overlays_standing[SHOES_LAYER])
+		may_drop[victim.shoes] = "worn"
 	var/turf/where = get_turf(victim)
 	var/list/old_ash = list()
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
@@ -75,7 +95,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 			qdel(pile)
 	if(QDELETED(victim) || victim.get_bodypart(zone) == limb)
 		return FALSE
-	new /datum/plasma_melt(victim, zone, drawn)
+	var/list/dropped = list()
+	for(var/obj/item/thing as anything in may_drop)
+		if(!QDELETED(thing) && thing.loc != victim)
+			dropped[thing] = may_drop[thing]
+	new /datum/plasma_melt(victim, zone, drawn, worn_look, shoes_look, dropped)
 	return TRUE
 
 /// tg's dismember bleeds the body; on a plasma melt the blood is lost but no splatter lands (the slag stands in)
@@ -120,13 +144,26 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	var/turf/start_turf
 	/// Gobbets still falling (each with its column), so a body that moves doesn't leave one hanging in the air
 	var/list/falling = list()
-	/// world.time the body last changed tiles
+	/// What the limb wore or held, drawn with it while it heats (gloves and the held item's in-hand look)
+	var/list/worn_look
+	/// The shoes as worn; tg drops both, so the other foot keeps this look (masked off the melting leg) until the snap
+	var/mutable_appearance/shoes_look
+	var/mutable_appearance/shoes_masked
+	/// Items tg dropped when the limb came off, hidden until they fall out of the melt: item = "held" or "worn"
+	var/list/hidden_items = list()
+	/// world.time the body last changed tiles, the way it went and how long its slide takes
 	var/last_moved = -INFINITY
+	var/last_move_dir = 0
+	var/glide_time = 0
 
-/datum/plasma_melt/New(mob/living/carbon/victim, zone, list/drawn)
+/datum/plasma_melt/New(mob/living/carbon/victim, zone, list/drawn, list/worn_look, mutable_appearance/shoes_look, list/dropped)
 	src.victim = victim
 	src.zone = zone
 	src.drawn = drawn
+	src.worn_look = worn_look || list()
+	src.shoes_look = shoes_look
+	for(var/obj/item/thing as anything in dropped)
+		hide_item(thing, dropped[thing])
 	var/datum/plasma_melt/old = LAZYACCESS(victim.plasma_melts, zone)
 	if(old)
 		qdel(old)
@@ -159,6 +196,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 			wearer.update_worn_undersuit()
 	victim = null
 	start_turf = null
+	reveal_items()
 	falling.Cut()
 	QDEL_NULL(limb_light)
 	if(!QDELETED(pool)) // a pool still hot when the melt ends sets where it is
@@ -176,19 +214,22 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	qdel(src)
 
 /// The limb, stump and sleeve ride on the body as overlays and the limb's light follows it. A gobbet still in the air
-/// when the body moves would hang where the body was, so it is taken away and lands under the body as a drip once
-/// the body has arrived.
+/// when the body moves would hang where the body was, so it drops onto the floor under the body right away.
 /datum/plasma_melt/proc/on_moved(atom/movable/source, atom/old_loc, dir, forced, list/old_locs)
 	SIGNAL_HANDLER
-	last_moved = world.time
 	var/turf/here = get_turf(victim)
 	if(!here)
 		return
+	last_moved = world.time
+	last_move_dir = get_dir(old_loc, here)
+	glide_time = victim.glide_size > 0 ? (ICON_SIZE_X / victim.glide_size) * world.tick_lag : 0
+	if(get_dist(old_loc, here) > 1)
+		glide_time = 0 // a jump, not a slide
 	if(limb_light)
 		limb_light.set_glide_size(victim.glide_size)
 		limb_light.forceMove(here)
 	for(var/obj/effect/temp_visual/plasma_melt_drop/drop as anything in falling)
-		addtimer(CALLBACK(src, PROC_REF(drip_trail), falling[drop][1], falling[drop][2], PLASMA_MELT_POOL_TILE_Y - (PLASMA_MELT_FLOOR_ROW + PLASMA_MELT_POOL_FRONT), here), PLASMA_MELT_GLIDE_WAIT)
+		drip_trail(falling[drop][1], falling[drop][2], PLASMA_MELT_POOL_TILE_Y - (PLASMA_MELT_FLOOR_ROW + PLASMA_MELT_POOL_FRONT))
 		qdel(drop)
 	falling.Cut()
 
@@ -240,10 +281,15 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		pieces = list()
 		for(var/mutable_appearance/source as anything in drawn)
 			pieces += new /mutable_appearance(source)
+		pieces += worn_look
+		if(shoes_look)
+			pieces += shoes_look
 		pieces += mutable_appearance(PLASMA_MELT_ICON, "[base]_[frame]", -BODY_FRONT_LAYER)
 		pieces += emissive_appearance(PLASMA_MELT_ICON, "[base]_[frame]", victim, -BODY_FRONT_LAYER)
 	else
 		pieces = pair("[base]_[frame]", "[base]_far_[frame]", hot)
+		if(shoes_masked)
+			pieces += shoes_masked
 	show(pieces)
 	if(frame < frames)
 		addtimer(CALLBACK(src, PROC_REF(play_frame), id, base, frame + 1, frames, delay, hot, heat), delay)
@@ -256,11 +302,15 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 /datum/plasma_melt/proc/pose_melt()
 	if(!victim)
 		return
+	if(shoes_look)
+		shoes_masked = mask_off_limb(shoes_look)
 	melt_dir = victim.dir
 	melt_lying = victim.body_position == LYING_DOWN
 	play((is_arm() && melt_lying) ? "[zone]_melt_floor" : "[zone]_melt", 25, 0.05 SECONDS)
 	if(is_arm())
 		burn_sleeve()
+	// a held item drops out of the hand as it loses its shape
+	reveal_items("held")
 	find_pool_spot()
 	var/list/geometry = GLOB.plasma_melt_geometry[zone]?["[melt_dir]"]
 	var/list/drop_list = (is_arm() && !melt_lying && geometry) ? geometry[4] : list()
@@ -288,6 +338,9 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		return
 	switch(suffix)
 		if("stump_bubble")
+			// the last of the limb lets go: what it wore lands on the floor
+			shoes_masked = null
+			reveal_items()
 			play("[zone]_stump_bubble", 16, 0.05 SECONDS)
 		if("stump_cool")
 			play("[zone]_stump_cool", 10, 0.2 SECONDS, hot = FALSE)
@@ -298,6 +351,41 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		limb_light?.set_light_power(is_far() ? 0.2 : 0.3)
 	else if(suffix == "stump_cool")
 		QDEL_NULL(limb_light)
+
+/// A copy of `look` with this limb's pixels cut out of it, in every facing
+/datum/plasma_melt/proc/mask_off_limb(mutable_appearance/look)
+	var/mutable_appearance/masked = new(look)
+	var/static/atom/movable/limb_mask
+	if(isnull(limb_mask))
+		limb_mask = new(null)
+	limb_mask.icon = PLASMA_MELT_ICON
+	limb_mask.icon_state = "[zone]_sleeve_mask"
+	limb_mask.render_target = "*PlasmaMeltWorn [REF(victim)] [zone]"
+	masked.add_overlay(limb_mask)
+	masked.filters += filter(type = "alpha", render_source = limb_mask.render_target, flags = MASK_INVERSE)
+	return masked
+
+/// Hides an item tg dropped off the melting limb until it falls out of the melt. Only its look changes; anyone who
+/// picks it up or moves it gets it back at once.
+/datum/plasma_melt/proc/hide_item(obj/item/thing, kind)
+	hidden_items[thing] = kind
+	thing.alpha = 0
+	RegisterSignals(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_hidden_item_moved))
+
+/datum/plasma_melt/proc/on_hidden_item_moved(obj/item/source)
+	SIGNAL_HANDLER
+	reveal_item(source)
+
+/datum/plasma_melt/proc/reveal_item(obj/item/thing)
+	UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+	hidden_items -= thing
+	thing.alpha = initial(thing.alpha)
+
+/// Shows the hidden items of one `kind`, or all of them
+/datum/plasma_melt/proc/reveal_items(kind)
+	for(var/obj/item/thing as anything in hidden_items)
+		if(!kind || hidden_items[thing] == kind)
+			reveal_item(thing)
 
 /// Burns the jumpsuit sleeve away at this missing arm (masked on the uniform overlay, see update_worn_undersuit)
 /datum/plasma_melt/proc/burn_sleeve()
@@ -325,7 +413,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	var/screen_x = turn.a * u + turn.b * v + turn.c
 	var/screen_y = turn.d * u + turn.e * v + turn.f
 	pool_x = round(screen_x + 0.5 + body_x)
-	pool_y = round(screen_y + 5.5 + plasma_melt_lying_side(turn, u, v) * PLASMA_MELT_POOL_FRONT_LYING + body_y)
+	pool_y = round(screen_y + 5.5 + plasma_melt_lying_side(turn, u, v) * lying_front() + body_y)
+
+/// How far a lying body's pool sits out past the limb's place: arms clear the torso, legs stay on the leg's line
+/datum/plasma_melt/proc/lying_front()
+	return is_arm() ? PLASMA_MELT_POOL_FRONT_LYING : 0
 
 /// Row (sprite pixels from the top) where a drop lands: the top of the pool's middle
 /datum/plasma_melt/proc/pool_top_row()
@@ -339,8 +431,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	if(!here)
 		return
 	if(moving())
-		// a body on the move drips straight onto the floor under it, after it has arrived
-		addtimer(CALLBACK(src, PROC_REF(drip_trail), size, x - PLASMA_MELT_POOL_TILE_X, PLASMA_MELT_POOL_TILE_Y - (PLASMA_MELT_FLOOR_ROW + PLASMA_MELT_POOL_FRONT), here), max(fall_time, PLASMA_MELT_GLIDE_WAIT))
+		// a body on the move drips onto the floor under wherever it is when the drip lands
+		addtimer(CALLBACK(src, PROC_REF(drip_trail), size, x - PLASMA_MELT_POOL_TILE_X, PLASMA_MELT_POOL_TILE_Y - (PLASMA_MELT_FLOOR_ROW + PLASMA_MELT_POOL_FRONT)), fall_time)
 		return
 	var/body_x = victim.pixel_x + victim.pixel_w
 	var/body_y = victim.pixel_y + victim.pixel_z
@@ -367,16 +459,29 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	grow_pool(grow_to)
 
 /// A drip that missed the pool because the body moved: a splash and a small cooling spot under the body, gone in a
-/// few seconds (the pool on the start tile holds the lasting slag). `here` is the tile the body was sliding onto when
-/// the drip fell, so a body that keeps walking doesn't get drips landing a tile ahead of it.
-/datum/plasma_melt/proc/drip_trail(size, px, py, turf/here)
+/// few seconds (the pool on the start tile holds the lasting slag). A body still sliding onto its tile is drawn
+/// part of the way back, so the drip lands under where the body is seen, not where its tile is.
+/datum/plasma_melt/proc/drip_trail(size, px, py)
 	if(!victim)
 		return
-	here ||= get_turf(victim)
+	var/turf/here = get_turf(victim)
 	if(!isopenturf(here))
 		return
 	px += victim.pixel_x + victim.pixel_w
 	py += victim.pixel_y + victim.pixel_z
+	var/left = glide_time - (world.time - last_moved)
+	if(left > 0 && last_move_dir)
+		var/behind = ICON_SIZE_X * left / glide_time
+		if(last_move_dir & EAST)
+			px -= behind
+		if(last_move_dir & WEST)
+			px += behind
+		if(last_move_dir & NORTH)
+			py -= behind
+		if(last_move_dir & SOUTH)
+			py += behind
+	px = round(px)
+	py = round(py)
 	if(size > 1)
 		new /obj/effect/temp_visual/plasma_melt_splat(here, px, py)
 	new /obj/effect/temp_visual/plasma_melt_drip_spot(here, px, py, size)
@@ -391,7 +496,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	var/u = geometry[2] - 15.5
 	var/v = 15.5 - geometry[3]
 	var/matrix/turn = victim.transform
-	return list(round(turn.a * u + turn.b * v + turn.c + 0.5), round(turn.d * u + turn.e * v + turn.f + 5.5 + plasma_melt_lying_side(turn, u, v) * PLASMA_MELT_POOL_FRONT_LYING))
+	return list(round(turn.a * u + turn.b * v + turn.c + 0.5), round(turn.d * u + turn.e * v + turn.f + 5.5 + plasma_melt_lying_side(turn, u, v) * lying_front()))
 
 /datum/plasma_melt/proc/make_pool()
 	if(!isopenturf(start_turf))
@@ -405,10 +510,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		// a slumping limb on a body that has moved on runs off under it instead
 		if(grow_to % 2 == 0)
 			var/list/spot = spot_now()
-			if(moving())
-				addtimer(CALLBACK(src, PROC_REF(drip_trail), 1, spot[1], spot[2], get_turf(victim)), PLASMA_MELT_GLIDE_WAIT)
-			else
-				drip_trail(1, spot[1], spot[2])
+			drip_trail(1, spot[1], spot[2])
 		return
 	if(!pool)
 		make_pool()

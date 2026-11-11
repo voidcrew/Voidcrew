@@ -155,3 +155,36 @@
 		for(var/obj/effect/thing in where)
 			if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light) || istype(thing, /obj/effect/temp_visual))
 				qdel(thing)
+
+/// What tg drops off a melting limb really drops at once, but stays hidden until it falls out of the melt;
+/// picking it up shows it straight away
+/datum/unit_test/voidcrew_plasma_melt_dropped_items
+
+/datum/unit_test/voidcrew_plasma_melt_dropped_items/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/clothing/shoes/boots = allocate(/obj/item/clothing/shoes/sneakers/black)
+	victim.equip_to_slot_or_del(boots, ITEM_SLOT_FEET)
+	var/obj/item/tool = allocate(/obj/item/crowbar)
+	victim.put_in_r_hand(tool)
+	TEST_ASSERT_EQUAL(victim.shoes, boots, "The test body could not wear shoes")
+	TEST_ASSERT_EQUAL(victim.get_item_for_held_index(victim.get_held_index_of_item(tool)), tool, "The test body could not hold the tool")
+
+	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_R_LEG), SOUTH), "The leg did not melt off")
+	TEST_ASSERT_NULL(victim.shoes, "tg's leg loss did not take the shoes off (the real drop must stay)")
+	TEST_ASSERT_EQUAL(boots.alpha, 0, "The dropped shoes show before the leg has melted away")
+	var/datum/plasma_melt/leg_melt = victim.plasma_melts[BODY_ZONE_R_LEG]
+	leg_melt.pose_stump("stump_bubble", TRUE)
+	TEST_ASSERT_EQUAL(boots.alpha, 255, "The shoes stayed hidden after the leg melted away")
+
+	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_R_ARM), SOUTH), "The arm did not melt off")
+	TEST_ASSERT(tool.loc != victim, "The melted hand still holds the tool")
+	TEST_ASSERT_EQUAL(tool.alpha, 0, "The dropped tool shows before the hand melts")
+	tool.forceMove(get_step(get_turf(victim), EAST))
+	TEST_ASSERT_EQUAL(tool.alpha, 255, "Moving the hidden tool did not show it")
+
+	for(var/zone in victim.plasma_melts)
+		qdel(victim.plasma_melts[zone])
+	var/turf/where = get_turf(victim)
+	for(var/obj/effect/thing in where)
+		if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light) || istype(thing, /obj/effect/temp_visual))
+			qdel(thing)
