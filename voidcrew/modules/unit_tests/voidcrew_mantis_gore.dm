@@ -458,7 +458,13 @@
 	// Square on, it starts; dragged onto a corner before the cut, it stops
 	victim.forceMove(spot(2, 1))
 	user.next_move = 0
-	TEST_ASSERT(blade.mantis_try_scissor(victim, user), "The scissor didn't start square on")
+	var/datum/outpost_pvp_enforcement/real_enforcement = GLOB.outpost_pvp_enforcement
+	var/datum/outpost_pvp_enforcement/gorilla_spy/spy = new
+	GLOB.outpost_pvp_enforcement = spy
+	var/started = blade.mantis_try_scissor(victim, user)
+	GLOB.outpost_pvp_enforcement = real_enforcement
+	TEST_ASSERT(started, "The scissor didn't start square on")
+	TEST_ASSERT(victim in spy.hits, "The scissor didn't count as an attack at a trader outpost")
 	var/datum/hv_finisher/mantis_scissor/scissor = user.mantis_state.scissor
 	TEST_ASSERT(scissor?.running, "The scissor isn't running")
 	victim.forceMove(spot(2, 2))
