@@ -363,9 +363,16 @@
 
 /**
  * What `officer` does at a stop tagged `tag`, or null to stand: a word at a shop front, a coffee at the machine, a
- * chat with someone at hand, a seat on a bench, a look at the cells, the desk.
+ * chat with someone at hand, a seat on a bench, a look at the cells, the desk. "watch" (an untagged stop) is only
+ * the look in on a sleeper, which any stop but the desk does first.
  */
 /datum/outpost_police/proc/stop_activity_for(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, tag)
+	// Someone asleep on the floor nearby comes first: a look and a word to move along (police_life.dm), never at the desk
+	if(tag != "desk")
+		// Close enough that the spot beside them is still within the stop's reach
+		var/mob/living/carbon/human/sleeper = officer.life_sleeper_near(OUTPOST_POLICE_STOP_REACH - 1)
+		if(sleeper)
+			return new /datum/ambient_activity/police_check(officer, sleeper)
 	switch(tag)
 		if("shopfront")
 			return new /datum/ambient_activity/police_shopfront(officer)
@@ -421,7 +428,8 @@
 	if(route_id)
 		if(!at_stop || world.time >= wait_until)
 			return null
-		return officer.police.stop_tag(home_turf)
+		// An untagged stop is watched from where they stand, unless someone sleeps nearby
+		return officer.police.stop_tag(home_turf) || "watch"
 	if(officer.unit_kind == POLICE_UNIT_SERGEANT && officer.police.desk_turf && get_turf(officer) == officer.police.desk_turf)
 		return "desk"
 	return null

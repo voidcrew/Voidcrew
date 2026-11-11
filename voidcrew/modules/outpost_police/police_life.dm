@@ -943,6 +943,20 @@
 	next_cell_look = ambient_shifted(next_cell_look, delay)
 	next_guard_word = ambient_shifted(next_guard_word, delay)
 
+/// Someone asleep or out cold in sight within `reach` they have not looked in on lately, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_sleeper_near(reach = POLICE_CHECK_RANGE)
+	for(var/mob/living/carbon/human/candidate in range(reach, src))
+		if(candidate == src || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || candidate.stat == DEAD)
+			continue
+		if(candidate.stat != UNCONSCIOUS && !candidate.IsSleeping())
+			continue
+		if(LAZYACCESS(reaction_cooldowns, "check [REF(candidate)]") > world.time || life_keeps_off(get_turf(candidate)))
+			continue
+		if(!police?.perception?.sees(src, candidate))
+			continue
+		return candidate
+	return null
+
 /**
  * Looking in on someone asleep where they should not be: walks over, looks, tells them to move along. Only
  * words; nobody is shaken awake, moved or searched. Each sleeper is left alone for a good while after.
@@ -957,19 +971,9 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
 	if(!istype(officer))
 		return FALSE
-	var/mob/living/carbon/human/sleeper
-	for(var/mob/living/carbon/human/candidate in range(POLICE_CHECK_RANGE, doer))
-		if(candidate == doer || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || candidate.stat == DEAD)
-			continue
-		if(!officer.police?.perception?.sees(doer, candidate))
-			continue
-		if(candidate.stat != UNCONSCIOUS && !candidate.IsSleeping())
-			continue
-		if(LAZYACCESS(doer.reaction_cooldowns, "check [REF(candidate)]") > world.time || officer.life_keeps_off(get_turf(candidate)))
-			continue
-		sleeper = candidate
-		break
-	if(!sleeper)
+	// The one given (anchor: a patrol stop's pick), else the first they see
+	var/mob/living/carbon/human/sleeper = anchor_ref?.resolve() || officer.life_sleeper_near()
+	if(QDELETED(sleeper) || sleeper.stat == DEAD)
 		return FALSE
 	var/turf/stand = doer.free_tile_beside(sleeper, 1, failed_spots)
 	if(!stand)
