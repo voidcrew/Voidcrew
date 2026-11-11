@@ -93,3 +93,46 @@
 	var/datum/gas_mixture/source_air = source.return_air_readonly()
 	if(far_air?.return_pressure() >= ONE_ATMOSPHERE && source_air?.return_pressure() >= ONE_ATMOSPHERE)
 		TEST_ASSERT(far in picked, "A listener 25 tiles away in air was not picked for the far sound")
+
+/// A held shield that blocks a plasma bolt stops it and takes the hit itself, and the hit splashes off it.
+/datum/unit_test/voidcrew_plasma_bolt/shield_block
+
+/datum/unit_test/voidcrew_plasma_bolt/shield_block/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	var/obj/item/shield/riot/shield = allocate(/obj/item/shield/riot)
+	shield.block_chance = INFINITY
+	victim.put_in_active_hand(shield, forced = TRUE)
+	var/integrity_before = shield.get_integrity()
+	victim.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 1)), BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "a plasma bolt burned through a shield with a forced block")
+	TEST_ASSERT(shield.get_integrity() < integrity_before, "a shield that blocked a plasma bolt took no damage")
+	var/obj/effect/temp_visual/plasma_splash/splash = locate() in get_turf(victim)
+	TEST_ASSERT_EQUAL(splash?.icon_state, "splash_armour", "a shield block made no armour splash")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_burst) in get_turf(victim), "a shield block made a flesh burst")
+
+/// Ordinary person hits alternate the splatter and the flash; a killing hit burns through.
+/datum/unit_test/voidcrew_plasma_bolt/burst_pick
+
+/datum/unit_test/voidcrew_plasma_bolt/burst_pick/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	var/last
+	for(var/i in 1 to 6)
+		var/look = plasma_burst_pick(victim)
+		TEST_ASSERT(look == "A" || look == "B", "an ordinary burst picked [look]")
+		TEST_ASSERT_NOTEQUAL(look, last, "the same burst played twice in a row")
+		last = look
+
+	var/mob/living/carbon/human/consistent/hit = allocate(/mob/living/carbon/human/consistent, turf_at(2, 2))
+	hit.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, turf_at(1, 2)), BODY_ZONE_CHEST)
+	var/obj/effect/temp_visual/plasma_burst/burst = locate() in get_turf(hit)
+	TEST_ASSERT_NOTNULL(burst, "a bolt hitting a person made no burst")
+	TEST_ASSERT(burst.drawn, "the burst was not drawn in the tick of the hit")
+	TEST_ASSERT(findtext(burst.icon_state, "sp_A") == 1 || findtext(burst.icon_state, "sp_B") == 1, "an ordinary hit drew [burst.icon_state]")
+
+	var/mob/living/carbon/human/consistent/dying = allocate(/mob/living/carbon/human/consistent, turf_at(2, 3))
+	dying.adjustOxyLoss(190)
+	TEST_ASSERT(dying.stat != DEAD, "the dying test body was already dead")
+	dying.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 3)), BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(dying.stat, DEAD, "a rifle bolt did not kill a body at -90 health")
+	burst = locate() in get_turf(dying)
+	TEST_ASSERT(burst && findtext(burst.icon_state, "sp_C") == 1, "a killing hit drew [burst?.icon_state] instead of the burn-through")
