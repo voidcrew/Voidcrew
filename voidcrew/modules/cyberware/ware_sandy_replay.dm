@@ -26,8 +26,13 @@
  * replay at once, a watchdog timer ends it whatever happens, and finish() can be called any number of times.
  * The surge's crash starts when the replay ends.
  *
+ * It looks and sounds like a surge: the surge-on sound plays at the start, the sounds made in the field play again
+ * at normal pitch (playsound() hands them over), and every surger in it (the user, or a mob on its own surge) leaves
+ * the surge's rolling-hue afterimage trail. A turn of a body (a fall) is tweened, as tg's lying turn is.
+ *
  * Not replayed (they show as they really are): lights, fire, smoke and particles, turf changes, attack lunges,
- * flick()s, anything in vis_contents, runechat and sounds.
+ * flick()s, tweens other than steps and turns (flinches, the spin and arc of flying gore, blood drying and
+ * spreading), anything in vis_contents, runechat, and looping sounds (machines, weather).
  */
 
 /// Trait source of the replay's AI pause and input lock.
@@ -49,6 +54,12 @@
 #define SANDY_REPLAY_GLIDE_MAX 96
 /// Extra time the watchdog gives the replay before it ends it.
 #define SANDY_REPLAY_WATCHDOG (1 SECONDS)
+/// How long a recorded turn of a body (a fall, getting up) takes in the replay: tg's own lying turn.
+#define SANDY_REPLAY_TURN_TIME 2
+/// Degrees the replay trail's hue moves per step (CYBERWARE_CASCADE_HUE_STEP in ware_legend.dm).
+#define SANDY_REPLAY_HUE_STEP 25
+/// The most sounds one recording keeps.
+#define SANDY_REPLAY_MAX_SOUNDS 200
 
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
@@ -67,6 +78,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_masked)
 GLOBAL_REAL_VAR(sandy_replay_masks)
 /// Numbers from the last replay that finished, for tests and recordings.
 GLOBAL_LIST_EMPTY(sandy_replay_last)
+/// A replay is playing a recorded sound: nobody records it again.
+GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// One recorded thing.
 /datum/sandy_replay_track
@@ -83,6 +96,17 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 	var/last_raw
 	/// It was on a surge during the window: the user, or a mob on its own surge in the field.
 	var/surger = FALSE
+	/// Surger: its surge's trail. An afterimage every this many steps, starting at this alpha.
+	var/trail_every = 1
+	var/trail_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// Surger: the next afterimage's hue, and steps taken in the replay.
+	var/trail_hue = 0
+	var/trail_steps = 0
+	/// Playback: a turn (transform change) being tweened: from, to, how long it takes and when it ends.
+	var/turn_from
+	var/turn_to
+	var/turn_time = 0
+	var/turn_until = 0
 	/// Playback: offset in `frames` of the frame shown before the current one.
 	var/came_from = -SANDY_FRAME_SIZE
 	/// Playback: SANDY_TRACK_PUPPET or SANDY_TRACK_STANDIN.
@@ -169,6 +193,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 	var/unhooked = 0
 	/// Times a wrapped proc changed a puppet.
 	var/unmasks = 0
+	/// Sounds made in the field, each list(frame, turf, the rest of playsound()'s arguments).
+	var/list/sounds = list()
+	/// Playback: the next sound to play.
+	var/sound_at = 1
+	/// Afterimages the replay's surgers left.
+	var/afterimages = 0
 
 /datum/sandy_replay/New(datum/proximity_monitor/advanced/timestop/sandevistan/_field, mob/living/_user)
 	field = _field
@@ -278,7 +308,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 		return
 	track.last_raw = raw
 	if(!track.surger && (thing == user || field?.surging[thing]))
-		track.surger = TRUE
+		become_surger(track)
 	var/look = clean_look(thing)
 	if(at >= 0)
 		if(frames[at + SANDY_FRAME_LOOK] == look && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
@@ -328,6 +358,28 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 		if(length(entry[ATOM_COLOR_VALUE_INDEX]))
 			return entry[ATOM_COLOR_VALUE_INDEX]
 	return null
+
+/// `track`'s thing is on a surge: the replay gives it its surge's trail.
+/datum/sandy_replay/proc/become_surger(datum/sandy_replay_track/track)
+	track.surger = TRUE
+	track.trail_hue = rand(0, 359)
+	if(!isliving(track.thing))
+		return
+	var/mob/living/body = track.thing
+	var/datum/status_effect/cyberware_cascade_window/window = body.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	if(window)
+		track.trail_every = max(1, window.afterimage_interval)
+		track.trail_alpha = window.afterimage_alpha
+
+/// A sound was played on `source`, in the field: kept, to play again in the replay. `arguments` are the rest of
+/// playsound()'s, from soundin on, without the channel.
+/datum/sandy_replay/proc/hear(turf/source, list/arguments)
+	if(state != SANDY_REPLAY_RECORDING || !field || length(sounds) >= SANDY_REPLAY_MAX_SOUNDS)
+		return
+	var/turf/centre = get_turf(field.host)
+	if(!centre || centre.z != source.z || get_dist(centre, source) > field.current_range)
+		return
+	sounds += list(list((world.time - started) / interval, source) + arguments)
 
 /// Signal proc for [COMSIG_QDELETING] on anything recorded.
 /datum/sandy_replay/proc/on_thing_deleted(atom/movable/thing)
@@ -389,6 +441,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 	if(finished)
 		return
 	play_started = world.time
+	// The surge coming on, as the replay's user did at its first frame.
+	var/turf/first = user_track ? locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) : null
+	playsound(first || user, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
 	play_timer = addtimer(CALLBACK(src, PROC_REF(play_frame)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	play_frame()
 
@@ -551,10 +606,22 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 		carry_y = track.glide_y * left / track.glide_time
 	track.glide_until = 0
 	if(old < 0 || !frames[old + SANDY_FRAME_Z] || frames[old + SANDY_FRAME_Z] != frames[at + SANDY_FRAME_Z])
+		track.turn_until = 0
 		return TRUE
-	// Tween from where it was drawn to where it is now.
 	var/mutable_appearance/was = frames[old + SANDY_FRAME_LOOK]
 	var/mutable_appearance/now = frames[at + SANDY_FRAME_LOOK]
+	// A turn (a fall, getting up) is a tween on the client: the recording only saw where it ended.
+	if(!(was.transform ~= now.transform))
+		var/matrix/start = matrix(was.transform)
+		var/turn_left = track.turn_until - world.time
+		if(turn_left > 0 && track.turn_time > 0)
+			var/matrix/turning = track.turn_from
+			start = turning.Interpolate(track.turn_to, 1 - turn_left / track.turn_time)
+		track.turn_from = start
+		track.turn_to = matrix(now.transform)
+		track.turn_time = SANDY_REPLAY_TURN_TIME
+		track.turn_until = world.time + SANDY_REPLAY_TURN_TIME
+	// Tween from where it was drawn to where it is now.
 	var/stepped = frames[old + SANDY_FRAME_X] != frames[at + SANDY_FRAME_X] || frames[old + SANDY_FRAME_Y] != frames[at + SANDY_FRAME_Y]
 	var/move_x = (frames[old + SANDY_FRAME_X] - frames[at + SANDY_FRAME_X]) * ICON_SIZE_X + (was.pixel_x + was.pixel_w) - (now.pixel_x + now.pixel_w) + carry_x
 	var/move_y = (frames[old + SANDY_FRAME_Y] - frames[at + SANDY_FRAME_Y]) * ICON_SIZE_Y + (was.pixel_y + was.pixel_z) - (now.pixel_y + now.pixel_z) + carry_y
@@ -633,13 +700,20 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 /datum/sandy_replay/proc/settle(datum/sandy_replay_track/track, atom/movable/body, off_x, off_y)
 	var/to_w = body.pixel_w + off_x
 	var/to_z = body.pixel_z + off_y
+	var/turn_left = track.turn_until - world.time
+	var/turning = turn_left > 0 && track.turn_time > 0 && track.turn_from && (body.transform ~= track.turn_to)
+	if(turning)
+		var/matrix/from = track.turn_from
+		body.transform = from.Interpolate(track.turn_to, 1 - turn_left / track.turn_time)
 	var/left = track.glide_until - world.time
 	if(left > 0 && track.glide_time > 0)
 		body.pixel_w = to_w + track.glide_x * left / track.glide_time
 		body.pixel_z = to_z + track.glide_y * left / track.glide_time
 		animate(body, pixel_w = to_w, pixel_z = to_z, time = left, flags = ANIMATION_END_NOW)
-		return
-	animate(body, pixel_w = to_w, pixel_z = to_z, time = 0, flags = ANIMATION_END_NOW)
+	else
+		animate(body, pixel_w = to_w, pixel_z = to_z, time = 0, flags = ANIMATION_END_NOW)
+	if(turning)
+		animate(body, transform = track.turn_to, time = turn_left, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 /// The user's view follows their puppet.
 /datum/sandy_replay/proc/follow()
@@ -664,10 +738,55 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
  * A surger's puppet (the user's, or a surging NPC's) just moved on to a new frame. The place where the surge's
  * own look and sound join the replay: `track.came_from` and `track.cursor` are the frames it went from and to
  * (offsets in `track.frames`; came_from is below 0 on its first), so a step is the two frames standing on
- * different turfs. Nothing is emitted yet.
+ * different turfs. Each step leaves the surge's own rolling-hue afterimage on the tile it left, as a surge does
+ * outside a slow-mo (cyberware_cascade_window/on_move()).
  */
 /datum/sandy_replay/proc/surger_frame(datum/sandy_replay_track/track)
-	return
+	var/list/frames = track.frames
+	var/from = track.came_from
+	var/dest = track.cursor
+	if(from < 0 || !frames[from + SANDY_FRAME_Z] || frames[from + SANDY_FRAME_Z] != frames[dest + SANDY_FRAME_Z])
+		return
+	if(frames[from + SANDY_FRAME_X] == frames[dest + SANDY_FRAME_X] && frames[from + SANDY_FRAME_Y] == frames[dest + SANDY_FRAME_Y])
+		return
+	track.trail_steps++
+	if(track.trail_steps % track.trail_every)
+		return
+	var/turf/left = locate(frames[from + SANDY_FRAME_X], frames[from + SANDY_FRAME_Y], frames[from + SANDY_FRAME_Z])
+	if(!left)
+		return
+	new /obj/effect/temp_visual/decoy/fading/cascade/replay(left, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha)
+	afterimages++
+	track.trail_hue = (track.trail_hue + SANDY_REPLAY_HUE_STEP) % 360
+
+/// Plays the recorded sounds due by `frame`.
+/datum/sandy_replay/proc/play_sounds(frame)
+	while(sound_at <= length(sounds))
+		var/list/heard = sounds[sound_at]
+		if(heard[1] > frame)
+			return
+		sound_at++
+		var/turf/source = heard[2]
+		if(QDELETED(source))
+			continue
+		GLOB.sandy_replay_echoing = TRUE
+		playsound(source, heard[3], heard[4], heard[5], heard[6], falloff_exponent = heard[7], frequency = heard[8], pressure_affected = heard[9], ignore_walls = heard[10], falloff_distance = heard[11], use_reverb = heard[12], volume_preference = heard[13])
+		GLOB.sandy_replay_echoing = FALSE
+
+/// One afterimage of a surger's trail in the replay: a recorded look, washed in one hue like the live trail.
+/obj/effect/temp_visual/decoy/fading/cascade/replay
+
+/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA)
+	. = ..(mapload, null, hue, start_alpha)
+	if(look)
+		appearance = look
+	dir = facing
+	name = ""
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	opacity = FALSE
+	alpha = start_alpha
+	color = cascade_tint_matrix(hue)
+	animate(src, alpha = 0, time = duration)
 
 /// The playback timer: one frame a tick.
 /datum/sandy_replay/proc/play_frame()
@@ -682,6 +801,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 			finish()
 			return
 		frame = min(frame, total)
+		play_sounds(frame)
 		for(var/datum/sandy_replay_track/track as anything in puppets)
 			var/atom/movable/thing = track.thing
 			if(QDELETED(thing))
@@ -709,6 +829,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 			if(advance(track, frame))
 				show(track)
 	catch(var/exception/error)
+		GLOB.sandy_replay_echoing = FALSE
 		finish()
 		stack_trace("Sandevistan replay frame failed: [error] ([error.file]:[error.line])")
 
@@ -787,7 +908,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 				if(viewer.eye == eye)
 					user.reset_perspective()
 	QDEL_NULL(eye)
-	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "unmasks" = unmasks)
+	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1)
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
 		user.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash[1], crash[2])
 	crash = null
@@ -804,6 +925,15 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 		return FALSE
 	replay.crash = list(length, stamina)
 	return TRUE
+
+/// Called from playsound(): a sound played in a slow-mo is recorded for its replay. A /sound datum is a looping
+/// sound's next segment (machines, weather), which plays on live and isn't recorded.
+/proc/sandy_replay_hear(turf/source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
+	if(GLOB.sandy_replay_echoing || isdatum(soundin))
+		return
+	for(var/user in GLOB.sandy_replays)
+		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+		replay.hear(source, list(soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference))
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)
@@ -920,6 +1050,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_last)
 #undef SANDY_REPLAY_REACH
 #undef SANDY_REPLAY_GLIDE_MAX
 #undef SANDY_REPLAY_WATCHDOG
+#undef SANDY_REPLAY_TURN_TIME
+#undef SANDY_REPLAY_HUE_STEP
+#undef SANDY_REPLAY_MAX_SOUNDS
 #undef SANDY_FRAME_SIZE
 #undef SANDY_FRAME_INDEX
 #undef SANDY_FRAME_LOOK

@@ -82,6 +82,7 @@
 	victim.death()
 	var/obj/item/screwdriver/made = allocate(/obj/item/screwdriver, spot(3, 1))
 	var/obj/item/pen/spent = new(spot(1, 0))
+	playsound(spot(2, 1), 'sound/items/weapons/genhit1.ogg', 50, FALSE)
 	sleep(0.6 SECONDS)
 	qdel(spent)
 	sleep(0.3 SECONDS)
@@ -92,8 +93,10 @@
 	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't wait for the replay")
 	var/list/things = list(user, raider, bleeder, victim, wrench, still, table, made)
-	var/head_in_flight = !QDELETED(head) && !!head.throwing
-	if(!QDELETED(head) && !head_in_flight) // a head still flying really lands, and changes, during the replay
+	// A head still flying (a throw, or hyperviolence's tumble) really lands during the replay, and its roll on landing
+	// moves its pixel_x 6 px (hv_vis_roll() in hyperviolence/visuals/flying_gore.dm): a real change, not the replay's.
+	var/head_in_flight = !QDELETED(head) && (!!head.throwing || !!head.GetComponent(/datum/component/hv_tumble))
+	if(!QDELETED(head) && !head_in_flight)
 		things += head
 	log_test("replay/plays_and_restores: severed head [QDELETED(head) ? "gone" : (head_in_flight ? "still in flight at the release, left out of the exact check" : "at rest, checked")]")
 	var/list/real = list()
@@ -159,6 +162,10 @@
 	TEST_ASSERT(!held(user) && !held(raider) && !held(bleeder), "Someone is still held after the replay")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/sandy_replay_standin) in range(9, user)), "A stand-in outlived the replay")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
+	// It looks and sounds like a surge: the user's step left an afterimage, and the sound made in the field played again.
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 1, "The user's step in the replay left no afterimage")
+	TEST_ASSERT(GLOB.sandy_replay_last["sounds"] >= 1, "A sound made in the field wasn't recorded")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["sounds_played"], GLOB.sandy_replay_last["sounds"], "The recorded sounds didn't all play in the replay")
 
 /// A slow-mo that runs out replays by itself, and the watchdog ends a replay whose frames stopped coming
 /datum/unit_test/voidcrew_cyberware_timestop/replay/watchdog
