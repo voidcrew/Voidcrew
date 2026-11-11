@@ -979,4 +979,79 @@
 	live = data["live"]
 	TEST_ASSERT(!live["vc/test/live"], "A live line was sent for an item that is not open")
 
+// ---------------------------------------------------------------------------
+// contract-trade
+// ---------------------------------------------------------------------------
+
+/// Riding a trader outpost's elevator credits the ride and the arrival (crew who joined after
+/// the dock); riding one anywhere else credits only the ride.
+/datum/unit_test/voidcrew_tutorials/trade_elevator_travel/Run()
+	var/turf/berth_spot = run_loc_floor_bottom_left
+	var/turf/concourse_spot = get_step(run_loc_floor_bottom_left, EAST)
+	var/mob/living/carbon/human/player = make_player(berth_spot)
+	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost, get_step(run_loc_floor_top_right, WEST))
+	var/datum/outpost_berth/berth = allocate(/datum/outpost_berth, outpost, 1, null)
+	berth.alcove_turfs = list(berth_spot)
+	outpost.lobby_alcove_turfs = list(concourse_spot)
+	var/obj/machinery/outpost_elevator/panel = allocate(/obj/machinery/outpost_elevator, get_step(berth_spot, NORTH))
+	panel.outpost = outpost
+	panel.berth = berth
+	panel.complete_ride(0, WEAKREF(player))
+	TEST_ASSERT_EQUAL(get_turf(player), concourse_spot, "The elevator did not move the rider")
+	TEST_ASSERT(done("vc/trade/elevator"), "Riding the elevator was not credited")
+	TEST_ASSERT(done("vc/trade/travel"), "Riding a trader outpost's elevator did not credit reaching it")
+	panel.berth = null
+	panel.outpost = null
+	outpost.lobby_alcove_turfs = list()
+
+	reset_progress()
+	player.forceMove(berth_spot)
+	var/obj/structure/overmap/ship/host = allocate(/obj/structure/overmap/ship, get_step(run_loc_floor_top_right, SOUTH))
+	var/datum/outpost_berth/host_berth = allocate(/datum/outpost_berth, host, 1, null)
+	host_berth.alcove_turfs = list(berth_spot)
+	host.lobby_alcove_turfs = list(concourse_spot)
+	panel.outpost = host
+	panel.berth = host_berth
+	panel.complete_ride(0, WEAKREF(player))
+	TEST_ASSERT(done("vc/trade/elevator"), "Riding another host's elevator was not credited as a ride")
+	TEST_ASSERT(!done("vc/trade/travel"), "Riding an elevator away from a trader outpost counted as reaching one")
+	panel.berth = null
+	panel.outpost = null
+	host.lobby_alcove_turfs = list()
+
+/// Turn In only reads a board's linked pad, so an unlinked pad is never outlined.
+/datum/unit_test/voidcrew_tutorials/contract_pad_filter/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/machinery/mission_pad/linked = allocate(/obj/machinery/mission_pad, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/machinery/computer/mission_board/board = allocate(/obj/machinery/computer/mission_board, get_step(run_loc_floor_bottom_left, NORTH))
+	var/obj/machinery/mission_pad/spare = allocate(/obj/machinery/mission_pad, get_step(get_step(run_loc_floor_bottom_left, EAST), EAST))
+	TEST_ASSERT_EQUAL(board.linked_pad, linked, "The board did not link the nearby pad")
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key["vc/contract/turn_in"]
+	TEST_ASSERT(step, "The turn-in step is missing")
+	TEST_ASSERT(step.highlight_filter(player, linked), "The linked pad was filtered out")
+	TEST_ASSERT(!step.highlight_filter(player, spare), "An unlinked pad was kept")
+	TEST_ASSERT(step.highlight_filter(player, board), "The board was filtered out")
+
+/// Guards and shopless traders are never pointed at for buying, selling or contracts.
+/datum/unit_test/voidcrew_tutorials/trader_filters/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/mob/living/basic/outpost_trader/checkpoint_guard/guard = allocate(/mob/living/basic/outpost_trader/checkpoint_guard, get_step(run_loc_floor_bottom_left, EAST))
+	var/mob/living/basic/outpost_trader/stall = allocate(/mob/living/basic/outpost_trader, get_step(run_loc_floor_bottom_left, NORTH))
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial_step/buy = SSvc_tutorials.steps_by_key["vc/trade/buy"]
+	var/datum/vc_tutorial_step/take = SSvc_tutorials.steps_by_key["vc/contract/take"]
+	TEST_ASSERT(buy && take, "A trade or contract step is missing")
+	TEST_ASSERT(!buy.highlight_filter(player, guard), "A checkpoint guard was kept as a shop")
+	TEST_ASSERT(!buy.highlight_filter(player, stall), "A trader with no shop was kept")
+	TEST_ASSERT(!take.highlight_filter(player, stall), "A trader with no outpost was kept for contracts")
+
+/// The ship balance line reads like a price tag.
+/datum/unit_test/voidcrew_tutorials/credits_text/Run()
+	TEST_ASSERT_EQUAL(tutorial_credits_text(0), "0", "Zero was formatted wrong")
+	TEST_ASSERT_EQUAL(tutorial_credits_text(999), "999", "Three digits were formatted wrong")
+	TEST_ASSERT_EQUAL(tutorial_credits_text(1000), "1,000", "Four digits were formatted wrong")
+	TEST_ASSERT_EQUAL(tutorial_credits_text(1234567), "1,234,567", "Seven digits were formatted wrong")
+	TEST_ASSERT_EQUAL(tutorial_credits_text(-1500), "-1,500", "A debt was formatted wrong")
+
 #undef TUTORIAL_TEST_CKEY

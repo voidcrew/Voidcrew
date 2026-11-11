@@ -15,6 +15,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 
 type CatalogSku = {
   ref: string;
@@ -83,6 +84,8 @@ type Data = {
   crew_ships: { ref: string; name: string }[];
   crew_ship_ref: string | null;
   reputation?: Reputation | null;
+  /** The tutorial checklist's focus key for this window (TutorialFocus), or null. */
+  tutorial_focus?: string | null;
 };
 
 const SHELF_TAGS = {
@@ -261,7 +264,9 @@ const SkuRow = (props: {
         {live?.denial && !live.can_buy && !barred && (isFavor || !soldOut) ? (
           <Tooltip content={live.denial}>{buyButton}</Tooltip>
         ) : (
-          buyButton
+          <TutorialFocus id={live?.can_buy ? 'trader_buy' : ''}>
+            {buyButton}
+          </TutorialFocus>
         )}
       </Stack.Item>
     </Stack>
@@ -342,13 +347,17 @@ const LedgerRow = (props: {
 
   const sellButtons = (
     <>
-      <Button
-        disabled={!live?.can_sell}
-        icon="hand-holding-dollar"
-        onClick={() => act('sell', { ref: entry.ref })}
+      <TutorialFocus
+        id={live?.can_sell && carrying > 0 ? 'trader_sell' : ''}
       >
-        {done ? 'Not buying' : 'Sell'}
-      </Button>
+        <Button
+          disabled={!live?.can_sell}
+          icon="hand-holding-dollar"
+          onClick={() => act('sell', { ref: entry.ref })}
+        >
+          {done ? 'Not buying' : 'Sell'}
+        </Button>
+      </TutorialFocus>
       {!done && carrying > 1 && (
         <Button
           disabled={!live?.can_sell}
@@ -498,19 +507,29 @@ export const TraderShop = (props) => {
                 <Stack align="center">
                   <Stack.Item grow>
                     <Tabs mt={0} mb={0}>
-                      <Tabs.Tab
-                        selected={tab === 'buy'}
-                        onClick={() => setTab('buy')}
-                      >
-                        {trader_name}&apos;s Stock
-                      </Tabs.Tab>
-                      {!!hasBuybacks && (
+                      <TutorialFocus id={tab === 'buy' ? '' : 'trader_buy'}>
                         <Tabs.Tab
-                          selected={tab === 'sell'}
-                          onClick={() => setTab('sell')}
+                          selected={tab === 'buy'}
+                          onClick={() => setTab('buy')}
                         >
-                          {trader_name} Buys
+                          {trader_name}&apos;s Stock
                         </Tabs.Tab>
+                      </TutorialFocus>
+                      {!!hasBuybacks && (
+                        <TutorialFocus
+                          id={
+                            tab === 'sell'
+                              ? ''
+                              : ['trader_sell_tab', 'trader_sell']
+                          }
+                        >
+                          <Tabs.Tab
+                            selected={tab === 'sell'}
+                            onClick={() => setTab('sell')}
+                          >
+                            {trader_name} Buys
+                          </Tabs.Tab>
+                        </TutorialFocus>
                       )}
                     </Tabs>
                   </Stack.Item>

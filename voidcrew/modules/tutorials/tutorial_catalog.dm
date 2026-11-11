@@ -243,8 +243,9 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/contract_take
 	key = TUTORIAL_STEP_CONTRACT_TAKE
 	name = "Take a contract"
-	text = "Open the contract board on your ship and accept one. Traders at outposts offer contracts too."
-	highlight_types = list(/obj/machinery/computer/mission_board)
+	text = "Open the contract board and press Accept Mission on a contract. At an outpost, the main trader has Contracts."
+	highlight_types = list(/obj/machinery/computer/mission_board, /mob/living/basic/outpost_trader)
+	ui_focus = list("board" = "board_accept")
 
 /datum/vc_tutorial_step/contract_take/availability(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -255,13 +256,15 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/contract_work
 	key = TUTORIAL_STEP_CONTRACT_WORK
 	name = "Do the job"
-	text = "Follow the contract. The helm marks where to go."
+	text = "Do what the contract asks. Jobs at a site are marked on the helm."
+	ui_focus = list("board" = "board_active_tab")
 
 /datum/vc_tutorial_step/contract_turn_in
 	key = TUTORIAL_STEP_CONTRACT_TURN_IN
 	name = "Get paid"
-	text = "Bring the goods to the contract pad and press Turn In on the board."
+	text = "Put the goods on the pad and press Turn In under Active, or Complete if there's nothing to hand over. Traders take goods from your hands."
 	highlight_types = list(/obj/machinery/mission_pad, /obj/machinery/computer/mission_board)
+	ui_focus = list("board" = "board_turn_in")
 
 // ---------------------------------------------------------------------------
 // R&D setup
@@ -458,22 +461,28 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Travel to an outpost and dock"
 	text = "Fly to a trading outpost and press Dock at the helm."
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_dock")
 
 /datum/vc_tutorial_step/trade_elevator
 	key = TUTORIAL_STEP_TRADE_ELEVATOR
 	name = "Ride the elevator"
-	text = "From your berth, take the elevator up to the concourse."
+	text = "Stand in the elevator by your berth's panel and pick the concourse."
 	highlight_types = list(/obj/machinery/outpost_elevator)
+	ui_focus = list("elevator" = "elevator_concourse")
 
 /datum/vc_tutorial_step/trade_buy
 	key = TUTORIAL_STEP_TRADE_BUY
 	name = "Buy something"
-	text = "Talk to a trader and buy from their stock."
+	text = "Click a trader, pick Trade and buy from their stock."
+	highlight_types = list(/mob/living/basic/outpost_trader)
+	ui_focus = list("trader" = "trader_buy")
 
 /datum/vc_tutorial_step/trade_sell
 	key = TUTORIAL_STEP_TRADE_SELL
 	name = "Sell something"
-	text = "Traders buy the items on their wanted list. Hold one and sell it."
+	text = "Open a trader's Buys tab and sell what they want while carrying it. They won't buy back shop goods."
+	highlight_types = list(/mob/living/basic/outpost_trader)
+	ui_focus = list("trader" = "trader_sell")
 
 // ---------------------------------------------------------------------------
 // Ship power
