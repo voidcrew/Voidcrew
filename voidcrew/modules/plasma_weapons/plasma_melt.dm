@@ -1,6 +1,6 @@
 // Package: P1 bolt. The melt-off picture. The arm or leg comes off at once through tg's WOUND_BURN loss (state,
 // damage, ash decal all as tg does them); the picture lags behind it. A copy of the limb as it was drawn on the
-// body plays the melt on the body (glow, sag, forearm drops, gone), and tg's ash decal shows under it at the end.
+// body plays the melt on the body (glow, sag, forearm drops, gone), and tg's ash decal shows under it as the forearm lands.
 // The copy is built from the limb's own cached overlays, so it sits exactly where the limb was in every facing,
 // standing or lying, and takes the body's turn when the victim falls.
 // Blocking build: key poses only, no drips, pool, steam or light yet.
@@ -175,14 +175,18 @@ GLOBAL_LIST_EMPTY(plasma_melt_halves)
 /datum/plasma_melt/proc/pose_gone()
 	show(list())
 
-/// Pose 5: tg's ash shows under where the limb fell
+/// Pose 5: the melt is over (the ash already landed with the forearm)
 /datum/plasma_melt/proc/pose_cooled()
 	qdel(src)
 
 /// Moves tg's ash decal under the limb, from the limb's place on the body for the victim's facing and turn
 /datum/plasma_melt/proc/place_ash(mob/living/carbon/victim)
 	var/obj/effect/decal/cleanable/ash/ash = ash_ref?.resolve()
-	if(!ash || ash.loc != get_turf(victim))
+	if(!ash)
+		return
+	// the ash lands with the falling forearm, not after the cool-down
+	animate(ash, alpha = 255, time = 0.1 SECONDS)
+	if(ash.loc != get_turf(victim))
 		return
 	var/list/anchor = GLOB.plasma_melt_anchor[zone]?["[victim.dir]"]
 	if(!anchor)
