@@ -33,6 +33,8 @@
 #define RECOVERY_CREW_GRACE (2 MINUTES)
 /// A back room (morgue, closet) bigger than this many tiles is a map without its door or wall
 #define RECOVERY_ROOM_MAX 60
+/// A wanted person off the outpost's own floor (aboard a docked ship, in a hangar) or not at the keys holds TROUBLE this long at most (abuse MF4)
+#define RECOVERY_STARS_AWAY_MAX (3 MINUTES)
 
 /obj/structure/overmap/trader_outpost
 	/// This outpost's recovery (recovery_core.dm). Made by ensure_recovery(), deleted in Destroy().
@@ -59,6 +61,8 @@
 	var/last_death_at = 0
 	/// world.time the clock stopped because nobody was on the concourse, or 0 while players are there
 	var/paused_at = 0
+	/// Wanted people at the outpost but off its own floor or not at the keys: mind -> world.time first seen so (abuse MF4)
+	var/list/stars_away = list()
 
 	// ----- the dead (note_death(), R2) -----
 	/// Weakrefs to NPC bodies at the outpost, oldest first
@@ -150,6 +154,7 @@
 	lost_workers.Cut()
 	npc_dead.Cut()
 	player_dead.Cut()
+	stars_away.Cut()
 	claims.Cut()
 	retry_at.Cut()
 	dirty_stops.Cut()
@@ -310,16 +315,32 @@
 	set_state(OUTPOST_RECOVERY_TROUBLE)
 	wake()
 
-/// Whether anyone with stars is at the outpost and up: a dead holder's stars fade within seconds (police_wanted.dm)
+/**
+ * Whether anyone with stars is at the outpost and up: a dead holder's stars fade within seconds (police_wanted.dm).
+ * One sitting aboard their docked ship or in a hangar, or logged off, holds it for RECOVERY_STARS_AWAY_MAX at most,
+ * so a wanted crew shut in its ship never keeps the shops shut for good (abuse MF4); on the outpost's own floor
+ * with a player at the keys, they hold it as long as they stay.
+ */
 /datum/outpost_recovery/proc/stars_present()
+	. = FALSE
 	var/datum/outpost_police/police = outpost?.police
 	if(!police)
-		return FALSE
+		stars_away.Cut()
+		return
+	var/list/still_away = list()
 	for(var/datum/outpost_warrant/warrant as anything in police.suspects_at_outpost())
 		var/mob/living/holder = warrant.mind?.current
-		if(isliving(holder) && holder.stat != DEAD)
-			return TRUE
-	return FALSE
+		if(!isliving(holder) || holder.stat == DEAD)
+			continue
+		var/turf/where = get_turf(holder)
+		if(where && police.dispatch_in_box(where) && (holder.client || !warrant.mind.key))
+			. = TRUE
+			continue
+		var/since = stars_away[warrant.mind] || world.time
+		still_away[warrant.mind] = since
+		if(world.time - since < RECOVERY_STARS_AWAY_MAX)
+			. = TRUE
+	stars_away = still_away
 
 /// Whether the outpost is quiet: nobody at it has stars and no NPC died here for OUTPOST_RECOVERY_QUIET_TIME
 /datum/outpost_recovery/proc/is_quiet()
@@ -487,6 +508,8 @@
 	restaff_started_at = ambient_shifted(restaff_started_at, delay)
 	refill_started_at = ambient_shifted(refill_started_at, delay)
 	wave_called_at = ambient_shifted(wave_called_at, delay)
+	for(var/datum/mind/away as anything in stars_away)
+		stars_away[away] = ambient_shifted(stars_away[away], delay)
 	for(var/datum/weakref/ref as anything in retry_at)
 		retry_at[ref] = ambient_shifted(retry_at[ref], delay)
 	for(var/datum/outpost_shop/shop as anything in posts)

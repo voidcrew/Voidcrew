@@ -112,6 +112,37 @@
 	TEST_ASSERT_EQUAL(recovery.state, 0, "REFILL did not end") // OUTPOST_RECOVERY_NORMAL
 	TEST_ASSERT_NULL(recovery.tick_timer, "A NORMAL recovery left its tick running")
 
+/// Abuse MF4: a wanted person logged off (or sat in their docked ship) holds TROUBLE three minutes at most; at the keys on the outpost's floor, as long as they stay
+/datum/unit_test/voidcrew_outpost_recovery_stars_away
+
+/datum/unit_test/voidcrew_outpost_recovery_stars_away/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	recovery_corpse(outpost, wanted_spot(1, 1))
+	TEST_ASSERT_EQUAL(recovery.state, 1, "An NPC death did not make trouble") // OUTPOST_RECOVERY_TROUBLE
+	var/mob/living/carbon/human/offender = wanted_person(wanted_spot(5, 5))
+	police_pin_warrant(outpost.police, offender.mind, 100)
+	recovery.last_death_at = world.time - 10 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "A wanted person on the floor did not hold TROUBLE")
+	TEST_ASSERT_EQUAL(length(recovery.stars_away), 0, "A wanted person at the keys on the floor was counted as away")
+
+	// Logged off where they stand: they hold it for a while, then not
+	offender.mind.key = "outpost_recovery_test_ssd"
+	TEST_ASSERT(recovery.stars_present(), "A wanted person just logged off no longer holds TROUBLE")
+	TEST_ASSERT(offender.mind in recovery.stars_away, "A logged off wanted person was not noted as away")
+	recovery.stars_away[offender.mind] = world.time - 3 MINUTES // RECOVERY_STARS_AWAY_MAX
+	TEST_ASSERT(!recovery.stars_present(), "A wanted person logged off for three minutes still holds TROUBLE")
+	recovery.last_shot_at = world.time - 10 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "TROUBLE did not end with only a long logged off wanted person about") // OUTPOST_RECOVERY_CLEANUP
+
+	// Back at the keys: they hold it again, and the away clock starts over next time
+	offender.mind.key = null
+	TEST_ASSERT(recovery.stars_present(), "A wanted person back at the keys does not hold TROUBLE")
+	TEST_ASSERT(!(offender.mind in recovery.stars_away), "A wanted person back at the keys is still counted as away")
+	outpost.police.warrants -= offender.mind
+
 /// CLEANUP is over fifteen minutes after quiet at the latest, body or no body
 /datum/unit_test/voidcrew_outpost_recovery_cleanup_cap
 
