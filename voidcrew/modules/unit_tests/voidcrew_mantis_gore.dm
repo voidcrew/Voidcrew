@@ -410,7 +410,8 @@
 	sleep(0.25 SECONDS) // mantis_rig/hand_back(), MANTIS_RIG_HANDBACK 0.15 s
 
 	// The head comes off, brain inside, and lands where they lie.
-	var/mob/living/carbon/human/consistent/doomed = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	// Side on (west of the bearer), where the rig draws a far blade: north or south it draws both arms as one piece
+	var/mob/living/carbon/human/consistent/doomed = allocate(/mob/living/carbon/human/consistent, spot(0, 1))
 	crit(doomed)
 	var/datum/hv_finisher/mantis_scissor/kill = allocate(/datum/hv_finisher/mantis_scissor, user, doomed, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_scissor_ended)))
 	TEST_ASSERT(kill.start(), "The scissor didn't start")
@@ -421,10 +422,7 @@
 	for(var/obj/effect/abstract/mantis_puppet/picture as anything in closing)
 		if(picture.layer < doomed.layer)
 			below++
-	var/list/diag_states = list()
-	for(var/obj/effect/abstract/mantis_puppet/picture as anything in closing)
-		diag_states += "[picture.icon_state]@[picture.layer < doomed.layer][QDELETED(picture) ? "Q" : ""]"
-	TEST_ASSERT(length(closing) == 4 && below == 1, "The closing blades aren't drawn with the far blade under the neck ([length(closing)] pieces, [below] under) (DIAG [jointext(diag_states, ",")] stage [kill.current_stage?.type])")
+	TEST_ASSERT(length(closing) == 4 && below == 1, "The closing blades aren't drawn with the far blade under the neck ([length(closing)] pieces, [below] under)")
 	TEST_ASSERT(right_blade(user).inhand_hidden_until > world.time, "The held blade is drawn over the closing blades")
 	for(var/i in 1 to 20)
 		if(!kill.running)
@@ -464,13 +462,20 @@
 	// Square on, it starts; dragged onto a corner before the cut, it stops
 	victim.forceMove(spot(2, 1))
 	user.next_move = 0
-	TEST_ASSERT(blade.mantis_try_scissor(victim, user), "The scissor didn't start square on")
+	var/datum/outpost_pvp_enforcement/real_enforcement = GLOB.outpost_pvp_enforcement
+	var/datum/outpost_pvp_enforcement/gorilla_spy/spy = new
+	GLOB.outpost_pvp_enforcement = spy
+	var/started = blade.mantis_try_scissor(victim, user)
+	GLOB.outpost_pvp_enforcement = real_enforcement
+	TEST_ASSERT(started, "The scissor didn't start square on")
+	TEST_ASSERT(victim in spy.hits, "The scissor didn't count as an attack at a trader outpost")
 	var/datum/hv_finisher/mantis_scissor/scissor = user.mantis_state.scissor
 	TEST_ASSERT(scissor?.running, "The scissor isn't running")
 	victim.forceMove(spot(2, 2))
 	TEST_ASSERT(QDELETED(scissor) || !scissor.running, "The scissor went on with the body on a corner")
 	TEST_ASSERT(isnull(user.mantis_state.scissor), "The stopped scissor is still on the bearer")
-	sleep(0.25 SECONDS) // the rig fades out (mantis_rig/hand_back(), MANTIS_RIG_HANDBACK 0.15 s)
+	// The rig fades back into the real bearer (MANTIS_RIG_HANDBACK), then goes
+	sleep(0.35 SECONDS) // MANTIS_RIG_HANDBACK is 0.15 s
 	TEST_ASSERT(!length(rig_pictures(user)), "A scissor stopped on a corner left the bearer drawn by the rig")
 
 /// Who counts, at most once per bearer per 8 s and per body per 2 min, never prisoners, only kills
