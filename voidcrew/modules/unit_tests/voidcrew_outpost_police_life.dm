@@ -283,6 +283,9 @@
 	var/mob/living/carbon/human/blocker = allocate(/mob/living/carbon/human/consistent, lift)
 	TEST_ASSERT_NULL(beat_role.arrive(place, pa_tile(4, 4)), "A replacement came off the public lift while a police lift was blocked")
 	qdel(blocker)
+	// Anyone the recovery already sent up (RESTAFF, recovery_staff.dm) would walk off; nobody walks at an empty outpost
+	for(var/mob/living/standing in lift)
+		standing.forceMove(pa_tile(1, 1))
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/replacement = beat_role.arrive(place, pa_tile(4, 4))
 	TEST_ASSERT_NOTNULL(replacement, "A replacement did not come off the police lift (on the lift: [english_list(lift.contents)], blocked [lift.is_blocked_turf(exclude_mobs = FALSE)])")
 	TEST_ASSERT_EQUAL(get_turf(replacement), lift, "A replacement did not step off the police lift")

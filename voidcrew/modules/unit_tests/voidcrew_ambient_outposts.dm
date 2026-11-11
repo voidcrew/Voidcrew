@@ -965,15 +965,16 @@
 	TEST_ASSERT(outpost.police.get_stars(brute.mind) >= 1, "A blow to one of the outpost's people was not worth a star") // ASSAULT_CIVILIAN: 12 heat, one star is 10
 	TEST_ASSERT(istype(witness.activity, /datum/ambient_activity/leave), "Nobody near ducked and left when one of the outpost's people was hit")
 
-	// With players there a body lies a while; after five minutes the human NPC corpse sweep takes it
-	// once nobody is near (N9)
+	// With players there a body lies where it fell, for the outpost's morgue crew to carry off, not the
+	// corpse sweep (spec-rehydrate 2)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/body = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, pa_tile(1, 2), place)
 	body.death()
 	SSambient_npcs.update_outpost(place, 1, list())
 	TEST_ASSERT(!body.fading && !QDELETED(body), "A body was taken away the moment someone died in front of players")
 	TEST_ASSERT(!body.npc_corpse_expired(), "A fresh body is already up to be taken away")
+	TEST_ASSERT(WEAKREF(body) in outpost.recovery?.npc_dead, "A body at the outpost is not left for its morgue crew")
 	body.npc_died_at = world.time - 3001 // AMBIENT_OUTPOST_BODY_TIME
-	TEST_ASSERT(body.npc_corpse_expired(), "A body nobody is near is not taken away after five minutes")
+	TEST_ASSERT(!body.npc_corpse_expired(), "The corpse sweep took a body the morgue crew is to carry off")
 
 /// Nobody new comes up the lift while someone is still in it
 /datum/unit_test/voidcrew_ambient_outpost_lift_one_at_a_time

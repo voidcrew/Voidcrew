@@ -213,6 +213,8 @@
 	person_at(19, 6)
 	police_stop(4, 3, "a", 1, 10 MINUTES, null)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(4, 3, WEST)
+	// Nobody on the test concourse holds them still (ambient pause); a player there would wake them
+	officer.resume_routine()
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = wake(officer)
 	brain.stealth_setup()
 	TEST_ASSERT_EQUAL(brain.route_id, "a", "The officer did not take its beat")
