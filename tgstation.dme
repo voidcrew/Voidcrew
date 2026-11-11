@@ -7706,6 +7706,7 @@
 #include "voidcrew\modules\trade\outpost_quests.dm"
 #include "voidcrew\modules\trade\outpost_residents.dm"
 #include "voidcrew\modules\trade\outpost_security.dm"
+#include "voidcrew\modules\trade\outpost_shipyard.dm"
 #include "voidcrew\modules\trade\outpost_trespass.dm"
 #include "voidcrew\modules\trade\planetary_goods.dm"
 #include "voidcrew\modules\trade\resale.dm"

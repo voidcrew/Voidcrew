@@ -232,6 +232,7 @@
 #include "voidcrew_teleport_blocker.dm"
 #include "voidcrew_trader_checkpoint.dm"
 #include "voidcrew_trader_rental_locker.dm"
+#include "voidcrew_trader_shipyard_berths.dm"
 #include "voidcrew_vestige.dm"
 #include "voidcrew_vestige_abductor.dm"
 #include "voidcrew_vestige_ascension.dm"
