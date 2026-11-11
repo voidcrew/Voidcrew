@@ -1492,7 +1492,7 @@
    "name": "Cinder plasma pistol",
    "rank": 10,
    "reason": "A plasma sidearm: slow bolts that burn, fed by hand from sheets or ore.",
-   "score": 52,
+   "score": 55,
    "score_inputs": {
     "cell_fed": {
      "value": false,
@@ -1500,7 +1500,7 @@
     },
     "points": {
      "value": 15,
-     "why": "Bolts can't be reflected, break windows, set people alight in air and can burn off a limb."
+     "why": "Bolts can't be reflected, break windows and doors faster, leave deep burns and can melt off a hurt limb."
     }
    },
    "tier": "yellow"
@@ -1520,7 +1520,7 @@
     },
     "points": {
      "value": 75,
-     "why": "Beats ablative armour and mirrors, breaks windows, lights fuel and people, and burns off limbs that can't be reattached. Its bolts can be dodged at range."
+     "why": "Beats ablative armour and mirrors, breaks windows and doors twice as fast, lights fuel, leaves deep burns and melts off limbs that can't be reattached. Its bolts can be dodged at range."
     }
    },
    "tier": "red"

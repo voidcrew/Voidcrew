@@ -54,10 +54,10 @@ Plasma ore turns up in every zone, so a crew that mines can keep a plasma gun fe
 Plasma bolts are slower than lasers and bullets, so a target far away can step out of the way.
 
 - **Armour:** bolts are energy hits. Ablative armour and reflective vests cannot reflect them.
-- **Glass:** bolts stop at windows and break them. A shuttle window takes about four rifle bolts.
-- **Fire:** a hit sets the target alight if there is air to burn. Fire suits keep the heat off. In vacuum nothing burns.
+- **Burns:** bolts leave deep burns that get worse with every hit on the same spot. They do not set people on fire. Treat them like any other burn.
+- **Limbs:** an arm or leg that is already badly hurt melts away under a bolt. A rifle bolt also melts an arm or leg that already carries a critical burn. One bolt never melts a healthy limb. Heads and chests never melt.
+- **Glass and doors:** bolts stop at windows and break them. They break windows, tables, other structures and doors faster than other guns: a shuttle window takes two rifle bolts or four pistol bolts, an airlock about four rifle bolts. Grilles and blast doors shrug them off, and mechs and machines take no extra damage.
 - **Fuel gas:** a bolt passing through plasma, tritium or hydrogen in the air can light it. Clean air never lights.
-- **Limbs:** an arm or leg that is already badly hurt can burn away to dust under a bolt. The rifle does this far more easily than the pistol. Heads and chests never burn off this way.
 - **Canisters:** bolts do not damage gas canisters.
 
 Hits leave scorch marks on the floor that stay until they are cleaned. Scorch marks on a ship are gone after a ship save.
