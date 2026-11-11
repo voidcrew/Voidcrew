@@ -170,6 +170,7 @@
 	r_hand = /obj/item/reagent_containers/hypospray/combat
 	l_hand = /obj/item/gun/syringe/syndicate
 	loot_pool = list(/obj/item/reagent_containers/hypospray/combat, /obj/item/gun/syringe/syndicate, /obj/item/grenade/gluon)
+	rare_loot_pool = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
 	plunder_credits = 3000
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
@@ -186,6 +187,8 @@
 		cooldown_time = ranged_cooldown,\
 		burst_shots = burst_shots,\
 	)
+	// In a red zone it carries a Furnace instead (plasma_weapons module)
+	arm_plasma_rifle()
 
 // ==================== CHIEF AUDITOR (IRS) ====================
 
@@ -205,6 +208,7 @@
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/chief
 	r_hand = /obj/item/gun/energy/e_gun/lethal
 	loot_pool = list(/obj/item/gun/energy/laser, /obj/item/storage/bag/money/dutchmen)
+	rare_loot_pool = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
 	plunder_credits = 3000
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
@@ -221,6 +225,8 @@
 		cooldown_time = ranged_cooldown,\
 		burst_shots = burst_shots,\
 	)
+	// In a red zone it carries a Furnace instead (plasma_weapons module)
+	arm_plasma_rifle()
 
 // ==================== THE BLACK KNIGHT (Medieval) ====================
 
