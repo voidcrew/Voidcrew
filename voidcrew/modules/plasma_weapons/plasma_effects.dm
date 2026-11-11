@@ -15,6 +15,8 @@
 #define PLASMA_HISSBY_MIN_TRAVEL 3
 /// Light colour shared by the bolt's splash and gutter-out
 #define PLASMA_EFFECT_LIGHT_COLOR "#B8FFD0"
+/// Shared particle pool for the flesh splash's steam, kept apart because its holders take the splash's layer
+#define PLASMA_SPLASH_STEAM_KEY "plasma_splash_steam"
 
 /// Live wall and soot glows per z-level, keyed by "[z]"
 GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
@@ -187,7 +189,8 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 // ===== Splash =====
 
 /obj/effect/temp_visual/plasma_splash
-	duration = 0.5 SECONDS
+	// Every splash state is six 0.1 s frames
+	duration = 0.6 SECONDS
 	randomdir = FALSE
 	light_system = OVERLAY_LIGHT
 	light_range = 1.5
@@ -199,8 +202,6 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 
 /obj/effect/temp_visual/plasma_splash/Initialize(mapload, px = 0, py = 0, splash_state = "splash_wall", turn_angle = 0, behind_body = FALSE)
 	icon_state = splash_state
-	if(splash_state == "splash_flesh")
-		duration = 0.6 SECONDS
 	. = ..()
 	pixel_x = px
 	pixel_y = py
@@ -212,12 +213,14 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	add_overlay(emissive_appearance(icon, icon_state, src))
 	if(splash_state == "splash_flesh")
 		steaming = TRUE
-		add_shared_particles(/particles/smoke/steam/mild)
+		// The shared holder draws above every mob unless it takes our layer; this pool's holders take it
+		var/obj/effect/abstract/shared_particle_holder/steam = add_shared_particles(/particles/smoke/steam/mild, PLASMA_SPLASH_STEAM_KEY)
+		steam?.vis_flags |= VIS_INHERIT_LAYER
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.3 SECONDS)
 
 /obj/effect/temp_visual/plasma_splash/Destroy()
 	if(steaming)
-		remove_shared_particles(/particles/smoke/steam/mild)
+		remove_shared_particles(PLASMA_SPLASH_STEAM_KEY)
 	return ..()
 
 // ===== Wall glow =====
@@ -364,3 +367,4 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 #undef PLASMA_FAR_SOUND_VOL_FAR
 #undef PLASMA_HISSBY_MIN_TRAVEL
 #undef PLASMA_EFFECT_LIGHT_COLOR
+#undef PLASMA_SPLASH_STEAM_KEY
