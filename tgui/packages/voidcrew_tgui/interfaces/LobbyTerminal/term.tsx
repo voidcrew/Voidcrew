@@ -538,8 +538,10 @@ export function wrapMax(text: string, w: number, n: number): string[] {
   const out = lines.slice(0, Math.max(0, n));
   if (out.length) {
     const last = out[out.length - 1];
-    out[out.length - 1] =
-      last.length >= w ? `${last.slice(0, w - 1)}.` : `${last}.`;
+    if (!last.endsWith('.')) {
+      out[out.length - 1] =
+        last.length >= w ? `${last.slice(0, w - 1)}.` : `${last}.`;
+    }
   }
   return out;
 }

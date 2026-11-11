@@ -129,7 +129,7 @@ export function CrewRecord(props: Props) {
         Math.max(6, ...aboard.map(([, job]) => job.length)),
       );
       const nameX = x + 8;
-      const nameW = Math.max(4, x + w - 3 - jobW - 1 - nameX);
+      const nameW = Math.max(4, x + w - 3 - jobW - 2 - nameX);
       aboard.slice(0, shown).forEach(([name, job, capt], i) => {
         out.push(
           <Put key={`ab${i}`} x={nameX} y={y} cls={capt ? 'amb' : ''}>

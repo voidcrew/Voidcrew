@@ -103,12 +103,16 @@ export function Header(props: { tab: TabId; setTab: (tab: TabId) => void }) {
 
   return (
     <>
+      {/* One lit bar in three pieces that meet but never overlap: title, clock, end cell. */}
       <Put x={0} y={0} cls="inv">
-        {pad(titleText, cols)}
+        {pad(titleText, Math.max(0, cols - 1 - right.length))}
       </Put>
       <RPut x={cols - 1} y={0} cls="inv" bg={false}>
         {right}
       </RPut>
+      <Put x={cols - 1} y={0} cls="inv">
+        {' '}
+      </Put>
       {tabs}
       <Rule x={0} y={3} w={cols} />
     </>
