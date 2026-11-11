@@ -300,8 +300,12 @@
  * kit locked to the body. The outfit set on each unit below is Halcyon's; Initialize() swaps in the zone's.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police
-	dialogue_file = AMBIENT_STRINGS_POLICE
+	// dialogue_file and the voice are police_life.dm's (P3); Initialize() below only picks the zone's section
 	outfit = /datum/outfit/outpost_police/beat/halcyon
+	/// What struck them by throw or shot this tick, kept for on_attacked() (the attack relay names only who did it)
+	var/datum/weakref/struck_source_ref
+	/// world.time struck_source_ref was noted
+	var/struck_source_at = -1
 	// Nothing drops (abuse M8): the base NPC's cash and loot, and the human NPC base's
 	death_cash_low = 0
 	death_cash_high = 0
@@ -343,6 +347,9 @@
 		outfit = kit_outfit
 	npc_target_stat = kit.spares_downed ? HUMAN_NPC_SPARES_DOWNED : HUMAN_NPC_FINISHES_DOWNED
 	dialogue_section = kit.voice_section
+	// Before ..(): the attack relay (added in the parent's Initialize) must hear of a throw or shot after these do
+	RegisterSignal(src, COMSIG_ATOM_PREHITBY, PROC_REF(note_thrown_at))
+	RegisterSignal(src, COMSIG_PROJECTILE_PREHIT, PROC_REF(note_shot))
 	. = ..()
 	ban_from_containment()
 	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempt))
@@ -398,8 +405,26 @@
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))
 		return
-	police?.officer_struck(src, attacker, attack_flags)
+	// A thrown item or the gun that fired, noted this tick; otherwise the wanted core takes the weapon in hand
+	var/obj/item/weapon = struck_source_at == world.time ? struck_source_ref?.resolve() : null
+	struck_source_ref = null
+	struck_source_at = -1
+	police?.officer_struck(src, attacker, attack_flags, weapon)
 	react_attacked(attacker)
+
+/// A thrown item is about to hit them: remember it for on_attacked()
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/note_thrown_at(datum/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	if(isitem(hit_atom))
+		struck_source_ref = WEAKREF(hit_atom)
+		struck_source_at = world.time
+
+/// A projectile is about to hit them: remember the gun it came from for on_attacked()
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/note_shot(datum/source, obj/projectile/hit_projectile)
+	SIGNAL_HANDLER
+	if(isitem(hit_projectile?.fired_from))
+		struck_source_ref = WEAKREF(hit_projectile.fired_from)
+		struck_source_at = world.time
 
 /// Someone is putting cuffs on them (abuse M3)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_cuff_attempt(datum/source, mob/living/user)
