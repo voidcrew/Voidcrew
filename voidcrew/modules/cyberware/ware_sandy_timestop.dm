@@ -20,9 +20,19 @@
  * TRAIT_AI_PAUSED, never a fake state or a Stun. A slowed mob moves under a movespeed modifier, and every
  * tick the field pushes its timing deadlines back by the time it lost (next_move, ability cooldowns, AI
  * behaviour cooldowns and the blackboard deadlines listed in dilated_blackboard_keys(), ranged cooldowns).
- * Guns scale their fire and burst delays for a slowed shooter (VOIDCREW EDIT in gun.dm). Frozen and slowed
- * bodies take damage, wounds and bleeding through tg as normal. Not covered: do_after progress bars and
- * burst timers queued before the slow-mo started.
+ * Frozen and slowed bodies take damage, wounds and bleeding through tg as normal.
+ *
+ * Everything else in the field runs on the same slowed clock, through a few helpers below:
+ * - cyberware_dilated_time() and cyberware_dilated_steps() turn a length of local time into real time, exact
+ *   through the freeze, the slow-mo and the end. Hyperviolence gore uses them (flinches, death throes, blood
+ *   paint, flying gibs), and so do a mech's weapon and melee cooldowns and a gun's fire delay.
+ * - cyberware_time_lost() stretches do_after for a slowed body (VOIDCREW EDIT in do_after).
+ * - Burst shots wait on a burst clock the field pushes back (cyberware_burst_wait()), so a burst queued before
+ *   the slow-mo slows with it: guns (gun.dm) and basic mob ranged attacks (ranged_attacks.dm).
+ * - The field pushes back mech move cooldowns, turret fire cooldowns and lit grenade fuses (_grenade.dm), and
+ *   shuts a mech down for the freeze.
+ * Things in hand stay held until the effect ends; gore and blood that merely stand in the field are slowed
+ * while they are within its range. The user and anything the user carries are never slowed.
  *
  * Bosses (a finisher user, or a boss-rank human NPC) are held for SANDY_STOP_BOSS_HOLD at most.
  *
@@ -53,6 +63,95 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 		return 1
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = GLOB.cyberware_time_dilated[thing]
 	return field ? field.time_scale : 1
+
+/// Every dilation field running now.
+GLOBAL_LIST_EMPTY(cyberware_time_fields)
+
+/**
+ * The field `thing` runs slow in: the one holding it, or one it stands inside (blood, gibs, a grenade on the
+ * floor). Never for the user, anything the user carries, or a living thing the field didn't take.
+ */
+/proc/cyberware_time_field(atom/thing)
+	if(isnull(thing) || !length(GLOB.cyberware_time_fields))
+		return null
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = GLOB.cyberware_time_dilated[thing]
+	if(field)
+		return field
+	if(isliving(thing))
+		return null
+	var/turf/here = get_turf(thing)
+	if(!here)
+		return null
+	var/atom/on_turf = ismovable(thing) ? get_atom_on_turf(thing) : thing
+	for(field as anything in GLOB.cyberware_time_fields)
+		if(field.immune[thing] || field.immune[on_turf] || field.released[on_turf])
+			continue
+		var/turf/centre = get_turf(field.host)
+		if(centre && centre.z == here.z && get_dist(centre, here) <= field.current_range)
+			return field
+	return null
+
+/// How long, in real time, `time` deciseconds of `thing`'s own time take from now. Exact through the freeze,
+/// the slow-mo and the end of the effect, as the field stands now.
+/proc/cyberware_dilated_time(atom/thing, time)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_time_field(thing)
+	if(!field)
+		return time
+	return field.real_time_for(thing, time)
+
+/**
+ * Real-time lengths for a chain of animation steps `times` on `thing`: list(hold, step 1, step 2, ...), or null
+ * when it isn't slowed. `hold` is how long it sits still first (the freeze). A looping chain just plays at the
+ * field's pace.
+ */
+/proc/cyberware_dilated_steps(atom/thing, list/times, loop = 1)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_time_field(thing)
+	if(!field)
+		return null
+	var/list/real = list()
+	if(loop != 1)
+		var/scale = field.time_scale > 0 ? field.time_scale : field.slow_scale
+		real += 0
+		for(var/time in times)
+			real += time / max(scale, 0.05)
+		return real
+	var/hold = field.real_time_for(thing, 0)
+	real += hold
+	var/local = 0
+	var/reached = hold
+	for(var/time in times)
+		local += time
+		var/at = field.real_time_for(thing, local)
+		real += max(at - reached, 0)
+		reached = at
+	return real
+
+/// Time `thing` lost in the last `elapsed` deciseconds: all of it frozen, none of it outside a field.
+/proc/cyberware_time_lost(atom/thing, elapsed)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = GLOB.cyberware_time_dilated[thing]
+	if(!field || elapsed <= 0)
+		return 0
+	return elapsed * (1 - field.time_scale)
+
+/// Time a held `thing` has lost since the field last pushed its deadlines back.
+/proc/cyberware_time_lag(atom/thing)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = GLOB.cyberware_time_dilated[thing]
+	if(!field)
+		return 0
+	return (world.time - field.last_tick) * (1 - field.time_scale)
+
+/// A burst clock's start for a burst beginning now. The field pushes it back with the shooter's deadlines.
+/proc/cyberware_burst_clock(atom/shooter)
+	return world.time - cyberware_time_lag(shooter)
+
+/// How much longer shot `index` (0 for the first) of a burst begun at `start`, `gap` apart, has to wait.
+/proc/cyberware_burst_wait(atom/shooter, start, gap, index)
+	if(!GLOB.cyberware_time_dilated[shooter])
+		return max(start + gap * index - world.time, 0)
+	if(!cyberware_time_scale(shooter))
+		return world.tick_lag
+	var/due = start + cyberware_time_lag(shooter) + gap * index
+	return due - world.time >= world.tick_lag ? due - world.time : 0
 
 /// Whether a player other than `user` is within `range` tiles: any living body with a ckey, connected or not.
 /proc/cyberware_time_stop_witnessed(mob/living/user, range = SANDY_STOP_WITNESS_RANGE)
@@ -173,6 +272,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	field.slow_scale = slow_scale
 	if(freeze_time > 0)
 		field.thaw_at = world.time + freeze_time
+	field.ends_at = world.time + duration
 	chronofield = field
 
 // =========================================================================
@@ -204,10 +304,19 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	var/list/boss_holds = list()
 	/// Bosses that already shrugged it off. The field leaves them be.
 	var/list/released = list()
+	/// world.time the effect ends, when time runs normally again.
+	var/ends_at = INFINITY
+	/// Mechs held, to whether the field shut them down for the freeze.
+	var/list/held_mechs = list()
+	/// Turrets held. Their fire cooldown runs slow.
+	var/list/held_turrets = list()
+	/// Armed grenades held. Their fuse runs slow.
+	var/list/held_grenades = list()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, start_scale = 0)
 	time_scale = start_scale
 	last_tick = world.time
+	GLOB.cyberware_time_fields += src
 	. = ..()
 	STOP_PROCESSING(SSfastprocess, src) // tick() runs on tick_timer instead
 	tick_timer = addtimer(CALLBACK(src, PROC_REF(tick)), 0.2 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
@@ -219,8 +328,31 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	if(host)
 		UnregisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
 	stopper = null
+	GLOB.cyberware_time_fields -= src
 	. = ..() // unfreeze_all() lets everything go
 	released.Cut()
+
+/// How long, in real time from now, `local` deciseconds of `thing`'s own time take: the rest of the freeze,
+/// then the slow-mo until the effect (or a boss's hold) ends, then real time.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/real_time_for(atom/thing, local)
+	var/now = world.time
+	var/ends = ends_at
+	if(boss_holds[thing])
+		ends = min(ends, boss_holds[thing])
+	if(ends <= now)
+		return local
+	var/at = now
+	var/scale = time_scale
+	if(scale <= 0)
+		at = thaw_at ? min(thaw_at, ends) : ends
+		scale = slow_scale
+	if(at < ends && scale > 0)
+		var/span = (ends - at) * scale
+		if(local <= span)
+			return at - now + local / scale
+		local -= span
+		at = ends
+	return at - now + local
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/freeze_atom(atom/movable/A)
 	if(!istype(A) || GLOB.cyberware_time_dilated[A] || global_frozen_atoms[A] || released[A] || immune[A])
@@ -242,8 +374,18 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 			tint = FALSE
 			escape_the_negative_zone(shot) // in case it was tinted before it had a firer
 		hold_shot(shot)
-	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A) || ismecha(A))
+	else if(ismecha(A))
+		hold_mech(A)
+	else if(istype(A, /obj/machinery/porta_turret))
+		frozen_structures += A
+		held_turrets[A] = TRUE
+		if(time_scale <= 0)
+			hold_turret_fire(A)
+	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A))
 		frozen_structures += A // looks only
+	else if(cyberware_lit_grenade(A))
+		held_grenades[A] = TRUE
+		tint = !!A.throwing // floor items keep their colour
 	else if(!A.throwing)
 		return FALSE
 	if(A.throwing)
@@ -275,6 +417,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 		if(throw_datum)
 			throw_datum.paused = FALSE
 		held_throws -= A
+	if(!isnull(held_mechs[A]))
+		start_mech(A)
+		held_mechs -= A
+	held_turrets -= A
+	held_grenades -= A
 	frozen_structures -= A
 	user_shots -= A
 	UnregisterSignal(A, COMSIG_QDELETING)
@@ -357,6 +504,54 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 		if(animal_victim.ranged_cooldown > now)
 			animal_victim.ranged_cooldown += push
 
+	for(var/obj/item/gun/gun in victim.held_items)
+		gun.cyberware_burst_start += push
+	if(ranged)
+		ranged.cyberware_burst_start += push
+
+// ----- mechs, turrets, grenades -----
+
+/// Takes hold of a mech and whoever is driving it.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/hold_mech(obj/vehicle/sealed/mecha/mech)
+	frozen_structures += mech
+	held_mechs[mech] = FALSE
+	if(time_scale <= 0)
+		stop_mech(mech)
+	for(var/mob/living/pilot in mech.occupants)
+		freeze_atom(pilot)
+
+/// The freeze shuts a mech down, as tg's own time stop does.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/stop_mech(obj/vehicle/sealed/mecha/mech)
+	if(held_mechs[mech] || mech.completely_disabled)
+		return
+	mech.completely_disabled = TRUE
+	held_mechs[mech] = TRUE
+
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/start_mech(obj/vehicle/sealed/mecha/mech)
+	if(!held_mechs[mech])
+		return
+	mech.completely_disabled = FALSE
+	held_mechs[mech] = FALSE
+
+/// A frozen turret's cooldown stays a little ahead of the clock, so it can't fire until time moves.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/hold_turret_fire(obj/machinery/porta_turret/turret)
+	turret.last_fired = max(turret.last_fired, world.time + 0.3 SECONDS - turret.shot_delay)
+
+/// Pushes back the clocks of held machines and grenades by `push` deciseconds.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/push_machine_deadlines(push)
+	var/now = world.time
+	for(var/obj/vehicle/sealed/mecha/mech as anything in held_mechs)
+		if(mech.cooldown_vehicle_move > now)
+			mech.cooldown_vehicle_move += push
+	for(var/obj/machinery/porta_turret/turret as anything in held_turrets)
+		if(turret.last_fired + turret.shot_delay > now)
+			turret.last_fired += push
+		if(time_scale <= 0)
+			hold_turret_fire(turret)
+	for(var/obj/item/grenade/bomb as anything in held_grenades)
+		if(bomb.cyberware_fuse_at > now)
+			bomb.cyberware_fuse_at += push
+
 // ----- projectiles -----
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/hold_shot(obj/projectile/shot)
@@ -416,6 +611,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	held_mobs -= thing
 	frozen_mobs -= thing
 	held_throws -= thing
+	held_mechs -= thing
+	held_turrets -= thing
+	held_grenades -= thing
 	boss_holds -= thing
 	frozen_structures -= thing
 	frozen_things -= thing
@@ -440,6 +638,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 	for(var/atom/movable/thing as anything in held_throws)
 		if(thing.throwing)
 			thing.throwing.paused = time_scale <= 0
+	for(var/obj/vehicle/sealed/mecha/mech as anything in held_mechs)
+		if(time_scale <= 0)
+			stop_mech(mech)
+		else
+			start_mech(mech)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/process()
 	return PROCESS_KILL
@@ -460,6 +663,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 			var/datum/thrownthing/throw_datum = thing.throwing
 			if(throw_datum && !throw_datum.paused)
 				throw_datum.start_time += push
+		push_machine_deadlines(push)
 	for(var/mob/living/boss as anything in boss_holds.Copy())
 		if(world.time < boss_holds[boss])
 			continue
@@ -538,6 +742,58 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 /// The afterimage left while time is dilated.
 /obj/effect/temp_visual/decoy/fading/cascade/stopped
 	duration = 4
+
+// =========================================================================
+// CLOCKS THAT RUN SLOW
+// =========================================================================
+
+/obj/item/gun
+	/// world.time the current burst began, pushed back while the shooter is slowed (cyberware time dilation).
+	var/cyberware_burst_start = 0
+	/// The gap between the current burst's shots, in the shooter's own time.
+	var/cyberware_burst_gap = 0
+
+/datum/component/ranged_attacks
+	/// world.time the current burst began, pushed back while the mob is slowed (cyberware time dilation).
+	var/cyberware_burst_start = 0
+
+/// One shot of a burst (`index` 1 is the second shot), fired when the mob's own clock gets there.
+/datum/component/ranged_attacks/proc/cyberware_burst_shot(mob/living/basic/firer, atom/target, modifiers, index)
+	if(QDELETED(firer))
+		return
+	var/wait = cyberware_burst_wait(firer, cyberware_burst_start, burst_intervals, index)
+	if(wait > 0)
+		addtimer(CALLBACK(src, PROC_REF(cyberware_burst_shot), firer, target, modifiers, index), wait, TIMER_DELETE_ME)
+		return
+	async_fire_ranged_attack(firer, target, modifiers)
+
+/obj/item/grenade
+	/// world.time the fuse runs out, pushed back while the grenade sits in a dilation field. 0 when not lit.
+	var/cyberware_fuse_at = 0
+
+/// Whether `thing` is a grenade with its fuse burning.
+/proc/cyberware_lit_grenade(atom/thing)
+	if(!istype(thing, /obj/item/grenade))
+		return FALSE
+	var/obj/item/grenade/bomb = thing
+	return bomb.active && bomb.cyberware_fuse_at
+
+/obj/item/grenade/arm_grenade(mob/user, delayoverride, msg = TRUE, volume = 60)
+	cyberware_fuse_at = world.time + (isnull(delayoverride) ? det_time : delayoverride)
+	. = ..()
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_time_field(src)
+	field?.freeze_atom(src)
+
+/// The fuse timer ran out: go off, unless the grenade's own clock is still behind.
+/obj/item/grenade/proc/cyberware_fuse_done()
+	if(!cyberware_fuse_at)
+		return
+	var/wait = cyberware_fuse_at + cyberware_time_lag(src) - world.time
+	if(wait >= world.tick_lag || (GLOB.cyberware_time_dilated[src] && !cyberware_time_scale(src)))
+		addtimer(CALLBACK(src, PROC_REF(cyberware_fuse_done)), max(wait, world.tick_lag), TIMER_DELETE_ME)
+		return
+	cyberware_fuse_at = 0
+	detonate()
 
 #undef SANDY_STOP_WITNESS_RANGE
 #undef SANDY_STOP_FIELD_RANGE
