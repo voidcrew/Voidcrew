@@ -12,8 +12,8 @@
  * standard interdiction -> boarding waves -> boss pipeline. When disabled (boss
  * killed) the ship warps out and despawns - no loot, no claim. A
  * /datum/nt_patrol_director babysits the hunt: re-engages after the quarry
- * docks and flies again, and breaks off after a cumulative DRUG_COP_GIVEUP_TIME
- * without a target.
+ * docks and flies again, and breaks off after a cumulative giveup_time()
+ * (DRUG_COP_GIVEUP_TIME) without a target.
  */
 
 /// How often the hunt director re-evaluates the chase
@@ -457,8 +457,11 @@
  * @param item_demand Optional list(type, quantity, name) - the item-surrender
  *   alternative (e.g. the contraband itself). Passed verbatim to
  *   fixed_item_demand; surrendered items are qdel'd by the negotiation.
+ * @param ship_type The patrol ship subtype to spawn; its shuttle_template is the
+ *   hull that gets loaded (the outpost police's cutter, voidcrew/modules/outpost_police/police_cutter.dm)
+ * @param director_type The /datum/nt_patrol_director subtype that runs the hunt
  */
-/proc/dispatch_nt_patrol(obj/structure/overmap/ship/quarry, fine_credits, list/item_demand)
+/proc/dispatch_nt_patrol(obj/structure/overmap/ship/quarry, fine_credits, list/item_demand, obj/structure/overmap/ship/npc/pirate/nt_patrol/ship_type = /obj/structure/overmap/ship/npc/pirate/nt_patrol, datum/nt_patrol_director/director_type = /datum/nt_patrol_director)
 	if(!quarry || QDELETED(quarry))
 		return null
 
@@ -467,7 +470,7 @@
 		log_shuttle("NT_PATROL: No clear overmap turf near [quarry.name] - dispatch aborted")
 		return null
 
-	var/obj/structure/overmap/ship/npc/pirate/nt_patrol/ship = SSnpc_ships.create_npc_ship(/datum/map_template/shuttle/voidcrew/nt_patrol, spawn_turf, /obj/structure/overmap/ship/npc/pirate/nt_patrol)
+	var/obj/structure/overmap/ship/npc/pirate/nt_patrol/ship = SSnpc_ships.create_npc_ship(initial(ship_type.shuttle_template), spawn_turf, ship_type)
 	if(!ship)
 		log_shuttle("NT_PATROL: create_npc_ship failed - dispatch aborted")
 		return null
@@ -485,7 +488,7 @@
 	if(length(item_demand))
 		ship.fixed_item_demand = item_demand
 
-	var/datum/nt_patrol_director/director = new(ship, quarry)
+	var/datum/nt_patrol_director/director = new director_type(ship, quarry)
 	director.begin_hunt()
 
 	log_shuttle("NT_PATROL: Dispatched [ship.name] against [quarry.name] at ([spawn_turf.x], [spawn_turf.y]) - fine [fine_credits] cr")
@@ -526,8 +529,8 @@
  * - quarry docked/landed (check_disengage cleared the target) -> lurk,
  *   accumulating targetless time, and re-sic when the quarry flies again
  *   (unless the fine was paid / tribute immunity is active)
- * - cumulative targetless time beyond DRUG_COP_GIVEUP_TIME -> break off and
- *   warp out
+ * - cumulative targetless time beyond giveup_time() (DRUG_COP_GIVEUP_TIME) ->
+ *   break off and warp out
  * - fine paid or contraband surrendered (successful negotiation) -> depart
  *
  * The mission holds this ref and calls stand_down() when it ends; the director
@@ -585,9 +588,40 @@
 	controller.clear_blackboard_key("hailing_reminder_sent")
 	SEND_SIGNAL(quarry, COMSIG_SHIP_BEING_TARGETED, patrol_ship)
 
-	quarry.ship_notify("[patrol_ship.name]: \"Attention [quarry.name]. This is Nanotrasen Customs Enforcement. Cut your engines and stand by for inspection. Non-compliance gets expensive.\"", "CUSTOMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg', 25)
+	quarry.ship_notify(hail_line(quarry), "CUSTOMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg', 25)
 
 	timer_id = addtimer(CALLBACK(src, PROC_REF(hunt_tick)), NT_PATROL_TICK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
+	return TRUE
+
+// What the hunt says and how long it is patient: overridable, so another force (the outpost police's cutter,
+// voidcrew/modules/outpost_police/police_cutter.dm) can run the same hunt with its own voice and patience.
+
+/// The hail sent to the quarry when the hunt opens
+/datum/nt_patrol_director/proc/hail_line(obj/structure/overmap/ship/quarry)
+	return "[patrol_ship.name]: \"Attention [quarry.name]. This is Nanotrasen Customs Enforcement. Cut your engines and stand by for inspection. Non-compliance gets expensive.\""
+
+/// What the patrol logs when the quarry is under way again
+/datum/nt_patrol_director/proc/reengage_line_patrol(obj/structure/overmap/ship/quarry)
+	return "Quarry [quarry.name] is under way again. Resuming enforcement action."
+
+/// What the quarry hears when the patrol picks it up again
+/datum/nt_patrol_director/proc/reengage_line_quarry(obj/structure/overmap/ship/quarry)
+	return "[patrol_ship.name] has reacquired your vessel! The interdiction warrant is still active."
+
+/// What the quarry hears when the fine is settled and the patrol leaves
+/datum/nt_patrol_director/proc/departure_line(obj/structure/overmap/ship/quarry)
+	return "[patrol_ship.name] has logged your payment and is departing the sector."
+
+/// What the quarry hears when the patrol gives up
+/datum/nt_patrol_director/proc/break_off_line(obj/structure/overmap/ship/quarry)
+	return "[patrol_ship.name]: \"You are costing us more than your fine is worth. Breaking off pursuit. Your file stays open.\""
+
+/// How long the patrol goes without a target before it gives up (deciseconds)
+/datum/nt_patrol_director/proc/giveup_time()
+	return DRUG_COP_GIVEUP_TIME
+
+/// Whether this tick of targetless time (`step` deciseconds) counts towards giving up
+/datum/nt_patrol_director/proc/counts_as_targetless(obj/structure/overmap/ship/quarry, step)
 	return TRUE
 
 /// Periodic hunt re-evaluation
@@ -619,8 +653,9 @@
 		return  // Actively hailing/fighting/boarding - nothing to manage
 
 	// Targetless: the quarry docked, landed, cloaked, or broke tracking
-	targetless_time += NT_PATROL_TICK_INTERVAL
-	if(targetless_time >= DRUG_COP_GIVEUP_TIME)
+	if(counts_as_targetless(quarry, NT_PATROL_TICK_INTERVAL))
+		targetless_time += NT_PATROL_TICK_INTERVAL
+	if(targetless_time >= giveup_time())
 		break_off()
 		return
 
@@ -636,8 +671,8 @@
 	controller.set_target(quarry)
 	controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	SEND_SIGNAL(quarry, COMSIG_SHIP_BEING_TARGETED, patrol_ship)
-	patrol_ship.ship_notify("Quarry [quarry.name] is under way again. Resuming enforcement action.", "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-	quarry.ship_notify("[patrol_ship.name] has reacquired your vessel! The interdiction warrant is still active.", "CUSTOMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 25)
+	patrol_ship.ship_notify(reengage_line_patrol(quarry), "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	quarry.ship_notify(reengage_line_quarry(quarry), "CUSTOMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 25)
 
 /**
  * Negotiation concluded. Success = the fine was paid or the contraband
@@ -656,7 +691,7 @@
 /datum/nt_patrol_director/proc/depart_satisfied()
 	if(patrol_ship && !QDELETED(patrol_ship) && !patrol_ship.is_disabled)
 		var/obj/structure/overmap/ship/quarry = quarry_ref?.resolve()
-		quarry?.ship_notify("[patrol_ship.name] has logged your payment and is departing the sector.", "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		quarry?.ship_notify(departure_line(quarry), "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		patrol_ship.warp_out()
 	finish_hunt()
 
@@ -665,7 +700,7 @@
 	if(patrol_ship && !QDELETED(patrol_ship))
 		if(!silent)
 			var/obj/structure/overmap/ship/quarry = quarry_ref?.resolve()
-			quarry?.ship_notify("[patrol_ship.name]: \"You are costing us more than your fine is worth. Breaking off pursuit. Your file stays open.\"", "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+			quarry?.ship_notify(break_off_line(quarry), "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		patrol_ship.warp_out()
 	finish_hunt()
 
