@@ -439,6 +439,9 @@
 	if(length(bounds) < 5)
 		return null
 	for(var/turf/tile as anything in block(locate(bounds[1], bounds[2], bounds[5]), locate(bounds[3], bounds[4], bounds[5])))
+		// The checkpoint (lobby, security office, cells) is not the concourse: its coffee machine is the guards'
+		if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+			continue
 		thing = locate(find_type) in tile
 		if(thing)
 			notes[found_key] = WEAKREF(thing)
