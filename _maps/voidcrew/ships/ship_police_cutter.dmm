@@ -1,0 +1,1058 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/west,
+/obj/machinery/airalarm/directional/west,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ab" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ac" = (
+/obj/machinery/computer/helm,
+/obj/effect/turf_decal/tile/blue/half/contrasted,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ad" = (
+/obj/structure/table,
+/obj/machinery/button/door{
+	id = "ntbridge";
+	name = "Bridge Shutters Control";
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ae" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"af" = (
+/turf/template_noop,
+/area/template_noop)
+"ag" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ah" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ai" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"aj" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/police_cutter)
+"ak" = (
+/obj/machinery/airalarm/directional/west,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/machinery/light/small/directional/west,
+/obj/structure/closet/secure_closet/freezer{
+	locked = 0;
+	name = "fridge"
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"al" = (
+/obj/machinery/loot_locator,
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"am" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"an" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/machinery/button/door/directional/south{
+	id = "ntbridgebolt";
+	name = "Bridge Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ao" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/east,
+/obj/machinery/airalarm/directional/east,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ap" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Port Gun Battery"
+	},
+/obj/structure/barricade/security,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"aq" = (
+/obj/structure/chair/stool/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"ar" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"au" = (
+/obj/machinery/door/airlock/hatch{
+	id_tag = "ntbridgebolt";
+	name = "Bridge"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"av" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Starboard Gun Battery"
+	},
+/obj/structure/barricade/security,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"aw" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"ax" = (
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"ay" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/obj/machinery/ship_combat/cloak_device,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"az" = (
+/obj/structure/table,
+/obj/machinery/chem_dispenser/drinks{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"aC" = (
+/obj/machinery/shuttle_scrambler/ship_siphon,
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"aD" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aF" = (
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "ntportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aG" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aH" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 1
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"aI" = (
+/obj/machinery/light/small/directional/west,
+/obj/structure/sign/warning/vacuum/external/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aJ" = (
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "ntportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aK" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/window/reinforced/spawner/directional/north{
+	pixel_y = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/police_cutter)
+"aM" = (
+/obj/structure/closet/secure_closet/personal/police_cutter,
+/obj/effect/turf_decal/stripes/line,
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/police_cutter)
+"aN" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/button/door/directional/south{
+	id = "ntportexternal";
+	name = "External Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aO" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/turf_decal/stripes/corner,
+/obj/machinery/button/door/directional/south{
+	id = "ntstarboardexternal";
+	name = "External Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aR" = (
+/obj/machinery/porta_turret/syndicate/nt_patrol,
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/police_cutter)
+"aS" = (
+/obj/effect/turf_decal/stripes/line,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"aU" = (
+/obj/structure/sign/departments/engineering,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/police_cutter)
+"aV" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"aW" = (
+/obj/machinery/light/small/directional/west,
+/obj/machinery/firealarm/directional/south,
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted,
+/obj/machinery/computer/camera_advanced/ship_combat{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"be" = (
+/obj/machinery/space_heater,
+/obj/effect/turf_decal/bot,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"bf" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/machinery/turretid{
+	icon_state = "control_kill";
+	lethal = 1;
+	locked = 0;
+	pixel_y = -24;
+	req_access = null
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"bg" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/structure/table,
+/obj/machinery/recharger,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/police_cutter)
+"bk" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"bl" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/machinery/light/small/directional/north,
+/obj/machinery/airalarm/directional/north,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/structure/table,
+/obj/machinery/cell_charger,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/police_cutter)
+"bm" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"bo" = (
+/obj/machinery/light/small/directional/east,
+/obj/structure/sign/warning/vacuum/external/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"br" = (
+/obj/structure/table,
+/obj/effect/turf_decal/stripes/line,
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/police_cutter)
+"bt" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/obj/machinery/light/small/directional/north,
+/obj/machinery/firealarm/directional/north,
+/obj/structure/table,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/police_cutter)
+"bu" = (
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 9
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bx" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"by" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/structure/filingcabinet/security,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"bA" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"bB" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bC" = (
+/obj/machinery/airalarm/directional/east,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/machinery/light/small/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bF" = (
+/obj/structure/table,
+/obj/machinery/microwave{
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bH" = (
+/obj/machinery/vending/coffee,
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bI" = (
+/obj/machinery/light/small/directional/south,
+/obj/machinery/computer/records/security{
+	dir = 1
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"bJ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/anticorner/contrasted,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"bK" = (
+/obj/structure/sink/directional/south,
+/obj/structure/toilet{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/turf/open/floor/iron/showroomfloor,
+/area/shuttle/voidcrew/police_cutter)
+"bM" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/machinery/door/airlock{
+	name = "Crew Cabin"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"bO" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/reagent_dispensers/watertank,
+/obj/effect/turf_decal/bot,
+/obj/structure/cable,
+/obj/effect/mapping_helpers/apc/cut_AI_wire,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"bP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"bQ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"bX" = (
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"bZ" = (
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "ntstarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"df" = (
+/obj/machinery/porta_turret/syndicate/energy/nt_patrol{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/police_cutter)
+"dy" = (
+/obj/structure/chair/comfy/black,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/police_cutter)
+"dU" = (
+/obj/machinery/light/small/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"ek" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/structure/table,
+/obj/structure/sign/poster/official/nanotrasen_logo/directional/east,
+/obj/structure/sign/poster/official/enlist/directional/north,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/police_cutter)
+"ep" = (
+/obj/structure/cable,
+/obj/machinery/power/smes/full,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/police_cutter)
+"er" = (
+/obj/structure/grille,
+/obj/machinery/ship_combat/shield_generator,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"et" = (
+/obj/machinery/ship_combat/missile_launcher{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/police_cutter)
+"eu" = (
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/police_cutter)
+"ex" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/frame/machine,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/police_cutter)
+"ey" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "ntbridge"
+	},
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/obj/structure/grille,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"eA" = (
+/obj/structure/window/reinforced/spawner/directional/north{
+	pixel_y = 1
+	},
+/obj/structure/frame/computer{
+	anchored = 1
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"eE" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 6
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"fW" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/police_cutter)
+"fY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 1
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"km" = (
+/obj/machinery/atmospherics/components/tank/air,
+/obj/effect/turf_decal/bot,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"mD" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
+/obj/structure/closet/secure_closet/personal/police_cutter,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"mU" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"np" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/effect/turf_decal/bot,
+/obj/machinery/airalarm/directional/north,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"sP" = (
+/obj/machinery/light/small/directional/east,
+/obj/machinery/airalarm/directional/south,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/machinery/ship_combat/interdictor,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"vB" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/obj/structure/rack{
+	dir = 8
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/police_cutter)
+"wf" = (
+/obj/machinery/door/airlock{
+	name = "Unisex Restrooms"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/iron/showroomfloor,
+/area/shuttle/voidcrew/police_cutter)
+"wR" = (
+/obj/machinery/porta_turret/syndicate/energy/nt_patrol{
+	dir = 8
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/police_cutter)
+"yi" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/door/airlock/hatch{
+	name = "Armory Access"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/police_cutter)
+"zw" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/machinery/door/airlock{
+	name = "Captain's Quarters"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/police_cutter)
+"AC" = (
+/obj/machinery/computer/cryopod,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/police_cutter)
+"ED" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/tank_dispenser/oxygen{
+	oxygentanks = 0
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"Gk" = (
+/obj/machinery/shower/directional/south{
+	name = "decontamination shower"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
+/obj/structure/window/spawner/directional/east,
+/obj/machinery/door/window/left/directional/south{
+	name = "Decontamination"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"JT" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/obj/structure/closet/crate,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/police_cutter)
+"Ni" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 5
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"Oe" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+"OD" = (
+/obj/machinery/airalarm/directional/north,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/structure/sign/poster/official/random/directional/east,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/police_cutter)
+"RY" = (
+/obj/machinery/airalarm/directional/north,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/machinery/cryopod{
+	dir = 1
+	},
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/police_cutter)
+"TU" = (
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "ntstarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/docking_port/mobile/voidcrew/police_cutter{
+	port_direction = 2
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/police_cutter)
+"Ur" = (
+/obj/structure/closet/secure_closet/personal/police_cutter,
+/obj/effect/turf_decal/tile/neutral/half/contrasted,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/police_cutter)
+
+(1,1,1) = {"
+af
+af
+af
+fW
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+wR
+af
+af
+af
+af
+"}
+(2,1,1) = {"
+af
+et
+eu
+ex
+eA
+aa
+ap
+aw
+ak
+bF
+aj
+AC
+aj
+fW
+af
+af
+"}
+(3,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+ax
+aq
+ar
+aj
+RY
+aM
+ep
+aK
+af
+"}
+(4,1,1) = {"
+af
+af
+af
+af
+af
+er
+ey
+ay
+Oe
+Oe
+zw
+dy
+br
+ep
+aK
+af
+"}
+(5,1,1) = {"
+af
+af
+af
+af
+af
+aH
+aj
+az
+bx
+bH
+aj
+aj
+aj
+aj
+aj
+aR
+"}
+(6,1,1) = {"
+af
+af
+af
+ey
+ey
+aj
+aj
+aj
+yi
+aj
+aj
+Gk
+Ni
+aF
+aI
+aJ
+"}
+(7,1,1) = {"
+af
+af
+ey
+ey
+aC
+aW
+aj
+bg
+bA
+JT
+aj
+km
+aN
+aj
+aj
+aj
+"}
+(8,1,1) = {"
+af
+af
+ey
+ab
+ae
+bf
+aj
+bl
+fY
+ai
+aU
+be
+aD
+aG
+ep
+aK
+"}
+(9,1,1) = {"
+af
+af
+ey
+ac
+ag
+am
+au
+bm
+by
+bm
+mU
+aD
+bP
+bX
+ep
+aK
+"}
+(10,1,1) = {"
+af
+af
+ey
+ad
+ah
+an
+aj
+bt
+bA
+bI
+aj
+bO
+bQ
+bk
+ep
+aK
+"}
+(11,1,1) = {"
+af
+af
+ey
+ey
+al
+sP
+aj
+ek
+bA
+vB
+aj
+np
+aO
+aj
+aj
+aj
+"}
+(12,1,1) = {"
+af
+af
+af
+ey
+ey
+aj
+aj
+aj
+yi
+aj
+aj
+ED
+aS
+bZ
+bo
+TU
+"}
+(13,1,1) = {"
+af
+af
+af
+af
+af
+aH
+aj
+mD
+bB
+Ur
+aj
+aj
+aj
+aj
+aj
+aR
+"}
+(14,1,1) = {"
+af
+af
+af
+af
+af
+er
+ey
+eE
+bC
+bJ
+bM
+dU
+aV
+ep
+aK
+af
+"}
+(15,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+bu
+aj
+wf
+aj
+OD
+aV
+ep
+aK
+af
+"}
+(16,1,1) = {"
+af
+et
+eu
+ex
+eA
+ao
+av
+bv
+aj
+bK
+aj
+aj
+aj
+fW
+af
+af
+"}
+(17,1,1) = {"
+af
+af
+af
+fW
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+df
+af
+af
+af
+af
+"}
