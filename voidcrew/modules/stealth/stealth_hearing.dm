@@ -54,12 +54,17 @@
 		return
 	if(stealth_state() == STEALTH_SUSPICIOUS)
 		last_gain = world.time
-		if(!investigated)
-			stealth_aim_at(spot)
-		return
-	stealth_go_suspicious(spot, STEALTH_GOTO_INVESTIGATE, again ? STEALTH_BARK_HEARD_AGAIN : STEALTH_BARK_HEARD)
-	suspicion_heard = TRUE
-	stealth_meter_update()
+		if(investigated)
+			return
+		stealth_aim_at(spot)
+	else
+		stealth_go_suspicious(spot, STEALTH_GOTO_INVESTIGATE, again ? STEALTH_BARK_HEARD_AGAIN : STEALTH_BARK_HEARD)
+		suspicion_heard = TRUE
+		stealth_meter_update()
+	// A sentry walks only a few steps toward it, looks round there and goes back to its post and facing.
+	var/turf/home = home_turf
+	if(isnull(route_id) && home && investigate_turf?.z == home.z && get_dist(home, investigate_turf) > STEALTH_SENTRY_INVESTIGATE_RANGE)
+		investigate_turf = stealth_open_near(get_ranged_target_turf_direct(home, investigate_turf, STEALTH_SENTRY_INVESTIGATE_RANGE)) || home
 
 /// Turns to face `where` for `time` without leaving its state, route or post. No line: the turn is the read.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_glance(turf/where, time = STEALTH_GLANCE_TIME)

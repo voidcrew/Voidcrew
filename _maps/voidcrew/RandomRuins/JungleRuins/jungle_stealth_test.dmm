@@ -1,7 +1,7 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
 /obj/effect/spawner/human_npc/ruin/scav/lookout{
-	dir = 2
+	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -139,6 +139,10 @@
 /area/ruin/powered)
 "J" = (
 /turf/closed/wall,
+/area/ruin/powered)
+"M" = (
+/obj/machinery/door/airlock/maintenance,
+/turf/open/floor/plating,
 /area/ruin/powered)
 "P" = (
 /turf/open/floor/plating,
@@ -495,7 +499,7 @@ s
 P
 P
 P
-J
+M
 i
 i
 "}
@@ -685,7 +689,7 @@ x
 x
 x
 x
-a
+x
 x
 t
 i
@@ -704,7 +708,7 @@ x
 x
 x
 x
-x
+a
 x
 x
 x

@@ -375,8 +375,8 @@
 	for(var/list/hearer as anything in hearers)
 		var/mob/living/carbon/human/npc/guard = hearer[1]
 		var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
-		var/sentry_too_far = isnull(guard_ai.route_id) && get_dist(guard, spot) > STEALTH_SENTRY_INVESTIGATE_RANGE
-		if(length(went) < wanted && !sentry_too_far && guard_ai.stealth_can_investigate())
+		// A sentry goes too, but only a few steps toward it (stealth_go_heard()).
+		if(length(went) < wanted && guard_ai.stealth_can_investigate())
 			guard_ai.stealth_go_heard(spot, earlier >= 1 && !length(went))
 			went += guard
 			note(guard, "goes", TRUE)

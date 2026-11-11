@@ -136,7 +136,8 @@
 /// "The same spot" for counting lures
 #define STEALTH_LURE_RADIUS 6
 #define STEALTH_LURE_MEMORY (3 MINUTES)
-/// A sentry leaves its post only for a noise this close
+/// How far a sentry walks from its post toward a small noise before it looks round and goes back. A third lure
+/// at one spot it holds wary at its post if the noise is farther than this.
 #define STEALTH_SENTRY_INVESTIGATE_RANGE 4
 /// How long a guard that went to look has before its friends miss it
 #define STEALTH_CHECKIN_TIME (30 SECONDS)
