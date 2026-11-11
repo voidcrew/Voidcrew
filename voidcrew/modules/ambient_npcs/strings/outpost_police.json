@@ -660,7 +660,7 @@
 		],
 		"stealth_missing": [
 			"Has anyone seen %NAME%?",
-			"%NAME% missed the check-in.",
+			"No check-in from %NAME%.",
 			"Somebody's missed their check-in.",
 			"Who's missed the check-in?",
 			"One of ours isn't answering."
@@ -681,7 +681,7 @@
 		],
 		"stealth_radio_missing": [
 			"Desk, no contact with %NAME%. Checking.",
-			"%NAME% isn't responding. Going to look.",
+			"Desk, %NAME% isn't responding. Going to look.",
 			"Lost a unit's signal. Checking.",
 			"Desk, a unit is unresponsive. Checking.",
 			"Missed check-in. Investigating."
@@ -1007,7 +1007,7 @@
 		],
 		"stealth_missing": [
 			"Where's %NAME% got to?",
-			"%NAME% gone quiet.",
+			"Not a word from %NAME%.",
 			"Someone's not answering.",
 			"Who's gone quiet?",
 			"Somebody's not checking in."
