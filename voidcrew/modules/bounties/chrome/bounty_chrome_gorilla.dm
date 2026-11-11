@@ -550,9 +550,16 @@
 		let_go()
 		return FALSE
 	punch(victim, bounty_gorilla_hand(owner, finisher))
-	// The hurl took them out of its hands (tg ends the pull as they fly); if anything stopped it, it lets go
-	let_go()
+	// The fist lands a moment after the click (GORILLA_THRUST_LANDS), and only lands as the hurl while it still holds
+	// them. The hurl takes them out of its hands (tg ends the pull as they fly); if anything stopped it, it lets go then.
+	step_timer = addtimer(CALLBACK(src, PROC_REF(after_hurl), hold_serial), GORILLA_THRUST_LANDS + 1, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return TRUE
+
+/// The hurl's fist under `serial` has landed: if it still holds them, something stopped the hurl, and it lets go
+/datum/bounty_chrome_move/gorilla_grab/proc/after_hurl(serial)
+	step_timer = null
+	if(serial == hold_serial && held_ref)
+		let_go()
 
 /// A punch to `victim`'s face with hand `index`: a player's click in combat mode, so tg's punch, or the implant's if that fist is loaded
 /datum/bounty_chrome_move/gorilla_grab/proc/punch(mob/living/victim, index)

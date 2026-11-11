@@ -199,6 +199,8 @@
 	grab.grab_ready_at = 0
 	criminal.next_move = 0
 	criminal.next_click = 0
+	// The hurl's own wait, shared with the slam, is over too: only the guard is left
+	TIMER_COOLDOWN_END(criminal, "gorilla_grab_move") // COOLDOWN_GORILLA_GRAB_MOVE
 	TEST_ASSERT(!grab.can_start(hunter), "The hunter was grabbed again the moment they were let go")
 	grab.guard = null
 	TEST_ASSERT(grab.can_start(hunter), "With the guard gone, no second grab")

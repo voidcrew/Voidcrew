@@ -26,6 +26,8 @@
 		return FALSE
 	state.scissor = scissor
 	state.next_scissor = world.time + MANTIS_SCISSOR_COOLDOWN
+	// The swing never reaches the attack chain, so it counts at a trader outpost here, as the Gorilla finishers do.
+	gorilla_register_aggression(target, user)
 	return TRUE
 
 /// The scissor ended, however it ended: the blades go back to the guard, and the rig fades into the real bearer.

@@ -488,7 +488,8 @@
 	var/mob/living/carbon/human/reader = make_person(spot(3, 0))
 	var/obj/item/organ/eyes/robotic/cyberware/deadeye/optics = new
 	TEST_ASSERT(optics.Insert(reader, special = TRUE, movement_flags = DELETE_IF_REPLACED), "The reader's optics didn't go in")
-	var/datum/action/cooldown/cyberware/chrome_read/read = locate() in reader.actions
+	// Chrome abilities never join mob.actions (chrome_hud.dm): the read lives on the optics
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate() in optics.actions
 	TEST_ASSERT_NOTNULL(read, "The reader's optics have no chrome read")
 	var/mob/living/carbon/human/npc/bounty_criminal/criminal = make_criminal(make_record(1, "normal", "brawler", null, list("gorilla")))
 	criminal.ai_controller?.set_ai_status(AI_STATUS_OFF)
