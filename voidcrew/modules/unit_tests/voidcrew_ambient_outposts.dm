@@ -43,6 +43,9 @@
 	trader.shop_type = shop_type
 	trader.outpost = outpost
 	outpost.traders += trader
+	// A real NPC now (trader_npc.dm): kept at its spot as a mapped trader is at its counter
+	trader.home = where
+	trader.leash_to(where)
 	return trader
 
 /// An NPC of `npc_type` at `where`, belonging to `place`
