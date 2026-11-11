@@ -1298,4 +1298,56 @@
 	TEST_ASSERT(line && findtext(line, "Next: ") == 1, "No next-step line: [line]")
 	qdel(operation)
 
+// ---------------------------------------------------------------------------
+// zones-weapons
+// ---------------------------------------------------------------------------
+
+/// Warfare research is the first Zones step, so the checklist agrees with the zone advisory.
+/datum/unit_test/voidcrew_tutorials/zw_zone_order/Run()
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial/zones = SSvc_tutorials.item_by_step["vc/zones/yellow"]
+	TEST_ASSERT(zones, "The Zones item is missing")
+	var/datum/vc_tutorial_step/first = zones.steps[1]
+	TEST_ASSERT_EQUAL(first.key, "vc/zones/warfare", "Zones does not start with warfare research")
+
+/// A missile bought armed can be unsealed and resealed without counting as arming one.
+/datum/unit_test/voidcrew_tutorials/zw_bought_missile/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/obj/structure/ship_missile/missile = allocate(/obj/structure/ship_missile/armed, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/item/screwdriver/tool = allocate(/obj/item/screwdriver)
+	TEST_ASSERT(player.put_in_active_hand(tool), "The player could not hold the screwdriver")
+	missile.attackby(tool, player)
+	TEST_ASSERT_EQUAL(missile.construction_state, 3, "The screwdriver did not unseal the missile") // MISSILE_STATE_PAYLOAD
+	missile.attackby(tool, player)
+	TEST_ASSERT_EQUAL(missile.construction_state, 4, "The screwdriver did not reseal the missile") // MISSILE_STATE_ARMED
+	TEST_ASSERT(!done("vc/weapons/missile"), "Resealing a bought missile counted as arming one")
+
+/// The research line walks back to the first missing prerequisite and goes quiet once researched.
+/datum/unit_test/voidcrew_tutorials/zw_next_research/Run()
+	var/datum/techweb/web = allocate(/datum/techweb)
+	var/datum/techweb_node/next = tutorial_next_research_node(web, "ship_combat")
+	TEST_ASSERT(next, "A fresh web had nothing to research toward Shuttle Warfare Systems")
+	TEST_ASSERT_NOTEQUAL(next.id, "ship_combat", "Shuttle Warfare Systems was next before Basic Shuttle Research")
+	web.research_node(SSresearch.techweb_node_by_id("ship_combat"), TRUE, FALSE, FALSE)
+	next = tutorial_next_research_node(web, "ship_combat_missiles")
+	TEST_ASSERT_EQUAL(next?.id, "ship_combat_missiles", "Missile Ordnance was not next after Shuttle Warfare Systems")
+	web.research_node(SSresearch.techweb_node_by_id("ship_combat_missiles"), TRUE, FALSE, FALSE)
+	TEST_ASSERT_NULL(tutorial_next_research_node(web, "ship_combat_missiles"), "A researched node still had a next node")
+
+/// Launcher outlines: an empty frame only while the viewer carries the board, and no printer then.
+/datum/unit_test/voidcrew_tutorials/zw_build_filter/Run()
+	var/mob/living/carbon/human/player = make_player()
+	SSvc_tutorials.build_catalog()
+	var/datum/vc_tutorial_step/weapon_build/step = SSvc_tutorials.steps_by_key["vc/weapons/launcher"]
+	TEST_ASSERT(istype(step), "The launcher step is not a weapon build step")
+	var/obj/structure/frame/machine/frame = allocate(/obj/structure/frame/machine, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/machinery/rnd/production/circuit_imprinter/printer = allocate(/obj/machinery/rnd/production/circuit_imprinter, get_step(run_loc_floor_bottom_left, NORTH))
+	TEST_ASSERT(!step.highlight_filter(player, frame), "An empty frame was outlined before the board was printed")
+	TEST_ASSERT(step.highlight_filter(player, printer), "The imprinter was not outlined before the board was printed")
+	TEST_ASSERT_EQUAL(tutorial_machine_frame_line(frame), "The frame needs 5 cables.", "The empty frame line is wrong")
+	var/obj/item/circuitboard/machine/ship_combat/missile_launcher/board = allocate(/obj/item/circuitboard/machine/ship_combat/missile_launcher)
+	TEST_ASSERT(player.put_in_active_hand(board), "The player could not hold the board")
+	TEST_ASSERT(step.highlight_filter(player, frame), "An empty frame was not outlined with the board in hand")
+	TEST_ASSERT(!step.highlight_filter(player, printer), "The imprinter was still outlined with the board in hand")
+
 #undef TUTORIAL_TEST_CKEY
