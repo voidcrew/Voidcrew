@@ -202,12 +202,30 @@
 /atom/proc/hv_vis_play(tag, list/steps, loop = 1)
 	if(!length(steps))
 		return
+	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) it plays at the field's pace, and holds still
+	// through the freeze once any jump to its first pose is done.
+	var/list/times = list()
+	for(var/list/step as anything in steps)
+		times += step[4]
+	var/list/real = cyberware_dilated_steps(src, times, loop)
+	var/hold = real ? real[1] : 0
+	var/started = FALSE
 	for(var/i in 1 to length(steps))
 		var/list/step = steps[i]
-		if(i == 1)
-			animate(src, pixel_w = step[1], pixel_z = step[2], transform = step[3], time = step[4], easing = step[5], loop = loop, tag = tag)
+		if(hold > 0 && step[4] > 0)
+			var/list/still = i > 1 ? steps[i - 1] : list(pixel_w, pixel_z, transform)
+			if(!started)
+				animate(src, pixel_w = still[1], pixel_z = still[2], transform = still[3], time = hold, loop = loop, tag = tag)
+				started = TRUE
+			else
+				animate(pixel_w = still[1], pixel_z = still[2], transform = still[3], time = hold)
+			hold = 0
+		var/time = real ? real[i + 1] : step[4]
+		if(!started)
+			animate(src, pixel_w = step[1], pixel_z = step[2], transform = step[3], time = time, easing = step[5], loop = loop, tag = tag)
+			started = TRUE
 		else
-			animate(pixel_w = step[1], pixel_z = step[2], transform = step[3], time = step[4], easing = step[5])
+			animate(pixel_w = step[1], pixel_z = step[2], transform = step[3], time = time, easing = step[5])
 
 /**
  * Plays steps that take over this atom's whole animation: each step is list(pixel_y, transform, time,
@@ -218,15 +236,33 @@
 /atom/proc/hv_vis_play_over(list/steps)
 	if(!length(steps))
 		return
+	// Slowed and held like hv_vis_play() in a Sandevistan field.
+	var/list/times = list()
+	for(var/list/step as anything in steps)
+		times += step[3]
+	var/list/real = cyberware_dilated_steps(src, times)
+	var/hold = real ? real[1] : 0
+	var/started = FALSE
 	for(var/i in 1 to length(steps))
 		var/list/step = steps[i]
-		if(i == 1)
-			animate(src, pixel_y = step[1], transform = step[2], time = step[3], easing = step[4])
+		if(hold > 0 && step[3] > 0)
+			var/list/still = i > 1 ? steps[i - 1] : list(pixel_y, transform)
+			if(!started)
+				animate(src, pixel_y = still[1], transform = still[2], time = hold)
+				started = TRUE
+			else
+				animate(pixel_y = still[1], transform = still[2], time = hold)
+			hold = 0
+		var/time = real ? real[i + 1] : step[3]
+		if(!started)
+			animate(src, pixel_y = step[1], transform = step[2], time = time, easing = step[4])
+			started = TRUE
 		else
-			animate(pixel_y = step[1], transform = step[2], time = step[3], easing = step[4])
+			animate(pixel_y = step[1], transform = step[2], time = time, easing = step[4])
 
 /// Eases a named sequence back to where the atom really is over `time`, from wherever it has got to.
 /atom/proc/hv_vis_release(tag, time = 2)
+	time = cyberware_dilated_time(src, time)
 	animate(src, pixel_w = pixel_w, pixel_z = pixel_z, transform = transform, time = time, easing = SINE_EASING, tag = tag)
 
 /// Stops named sequences at once.
@@ -288,10 +324,11 @@
 	var/flash = get_filter(HV_VIS_FLASH_FILTER)
 	if(!flash)
 		return
-	animate(flash, color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = 0.5, easing = LINEAR_EASING)
-	animate(color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = HV_VIS_HITSTOP_TIME, easing = LINEAR_EASING)
-	animate(color = list(1,0,0, 0,1,0, 0,0,1, 0,0,0), time = 1, easing = LINEAR_EASING)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, remove_filter), HV_VIS_FLASH_FILTER), 0.5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
+	var/list/real = cyberware_dilated_steps(src, list(0.5, HV_VIS_HITSTOP_TIME, 1)) || list(0, 0.5, HV_VIS_HITSTOP_TIME, 1)
+	animate(flash, color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = real[1] + real[2], easing = LINEAR_EASING)
+	animate(color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = real[3], easing = LINEAR_EASING)
+	animate(color = list(1,0,0, 0,1,0, 0,0,1, 0,0,0), time = real[4], easing = LINEAR_EASING)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, remove_filter), HV_VIS_FLASH_FILTER), cyberware_dilated_time(src, 0.5 SECONDS), TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
 
 /// The attacker's side of a hit-stop: the blow sticks for a few frames. A melee attacker stays leaned
 /// into the victim; a shooter stays rocked back, even with the barrel against them (`shot`).
