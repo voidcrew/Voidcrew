@@ -23,6 +23,8 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/process_atmos()
 	var/environment_temperature = 0
 	var/datum/gas_mixture/pipe_air = return_air()
+	if(!pipe_air) // VOIDCREW EDIT: no pipenet yet (or anymore), nothing to exchange
+		return
 
 	var/turf/local_turf = loc
 	if(istype(local_turf))

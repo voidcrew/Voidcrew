@@ -144,7 +144,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 
 /// Skin side of hiding: control off, status bar back, keyboard back on the map (movement keys).
 /datum/lobby_terminal/proc/hide_control()
-	if(!owner)
+	// A logging-out client is still referenced here but winset() on it fails with "bad client".
+	if(!owner || !(owner in GLOB.clients) || owner.mob?.client != owner)
 		return
 	winset(owner, control_id, "is-visible=false")
 	winset(owner, "mapwindow.status_bar", "is-visible=true")

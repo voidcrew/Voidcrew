@@ -62,7 +62,8 @@
 /datum/ai_behavior/find_and_set/in_hands/given_list
 
 /datum/ai_behavior/find_and_set/in_hands/given_list/search_tactic(datum/ai_controller/controller, locate_paths)
-	var/list/found = typecache_filter_list(controller.pawn, locate_paths)
+	var/atom/pawn = controller.pawn // VOIDCREW EDIT: our typecache filter guard rejects a bare atom (voidcrew/edits/__HELPERS/_lists.dm)
+	var/list/found = typecache_filter_list(pawn.contents, locate_paths)
 	if(length(found))
 		return pick(found)
 

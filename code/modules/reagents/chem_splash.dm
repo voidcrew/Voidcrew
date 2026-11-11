@@ -111,4 +111,6 @@
 	for(var/atom/thing as anything in (dview(spread_range, epicenter) & reactable))
 		var/distance = max(1, get_dist(thing, epicenter))
 		var/fraction = 0.5 / (2 ** distance) //50/25/12/6... for a 200u splash, 25/12/6/3... for a 100u, 12/6/3/1 for a 50u
+		if(fraction <= 0) // VOIDCREW EDIT: nothing to expose; expose() stack traces on a zero volume modifier
+			continue
 		source.expose(thing, TOUCH, fraction)
