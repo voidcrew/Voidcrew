@@ -119,6 +119,10 @@
 		outpost_test_minds += hunter.mind
 	return hunter
 
+/// An officer in the test room's far corner, to witness a crime there (a crime counts only if somebody saw it)
+/datum/unit_test/voidcrew_bounty_outpost/proc/make_witness()
+	return police_port_witness(outpost, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+
 /// The posting's decoys, resolved
 /datum/unit_test/voidcrew_bounty_outpost/proc/decoys_of(datum/criminal_bounty/posting)
 	. = list()
@@ -452,9 +456,7 @@
 	warrant.show_warrant(decoys[2], hunter)
 	TEST_ASSERT_EQUAL(posting.alert, 1, "An out-of-date warrant raised the alert")
 
-// POLICE-PORT: reads aggressor_strikes or the removed outpost turret; port to warrant.heat and force_level()/can_attack() (P10)
-#ifdef POLICE_TESTS_PORTED
-/// Restraints reached for on someone blending in cost exactly what a punch costs: the decoy's wrists are a strike and the alert and it backs away, the fugitive's end its act. Down or held, the cuffs go on. A decoy confronted any other way raises the alert too (C1)
+/// Restraints reached for on someone blending in cost exactly what a punch costs: the decoy's wrists are a crime and the alert and it backs away, the fugitive's end its act. Down or held, the cuffs go on. A decoy confronted any other way raises the alert too (C1)
 /datum/unit_test/voidcrew_bounty_outpost/cuffs
 
 /datum/unit_test/voidcrew_bounty_outpost/cuffs/Run()
@@ -464,12 +466,13 @@
 	TEST_ASSERT(posting.setup_outpost_blend(TRUE), "The posting could not be set up to blend in")
 	var/list/decoys = decoys_of(posting)
 	TEST_ASSERT(length(decoys) >= 2, "Too few decoys to test with")
+	make_witness()
 
-	// A decoy's wrists, the way tg's cuffs reach for them: a strike and the alert, and the cuffs don't go on
+	// A decoy's wrists, the way tg's cuffs reach for them: a crime and the alert, and the cuffs don't go on
 	var/mob/living/carbon/human/cuffer = make_hunter()
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = decoys[1]
 	SEND_SIGNAL(decoy, COMSIG_CARBON_CUFF_ATTEMPTED, cuffer)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[cuffer.mind], 1, "Cuffs on a decoy were not an outpost strike, as a punch is")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(cuffer.mind), "Cuffs on a decoy were not a crime, as a punch is")
 	TEST_ASSERT_EQUAL(posting.alert, 1, "Cuffs on a decoy did not raise the alert, as a punch does")
 	TEST_ASSERT(!decoy.is_restrained(), "A decoy on its feet was cuffed")
 	TEST_ASSERT(decoy.blended, "A decoy stopped blending in")
@@ -480,8 +483,9 @@
 	SEND_SIGNAL(fugitive, COMSIG_CARBON_CUFF_ATTEMPTED, other_cuffer)
 	TEST_ASSERT(!fugitive.blended, "Cuffs on the fugitive did not end its act")
 	TEST_ASSERT(fugitive.body_has_grudge(other_cuffer), "The fugitive holds no grudge against whoever reached for its wrists")
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[other_cuffer.mind], "Reaching for the fugitive's wrists was an outpost strike")
+	TEST_ASSERT_NULL(outpost.police.get_warrant(other_cuffer.mind), "Reaching for the fugitive's wrists was a crime")
 	TEST_ASSERT_EQUAL(posting.alert, 1, "Reaching for the fugitive's wrists raised the alert")
+	outpost.police.sleep_tick() // the first cuffer is wanted now: the police tick must not order units while this waits
 	sleep(10)
 	TEST_ASSERT_EQUAL(fugitive.confronted_by, other_cuffer, "The fugitive did not answer the reach for its wrists")
 
@@ -494,7 +498,7 @@
 	TEST_ASSERT_NULL(posting.relisted_for, "An exposed fugitive slipped away")
 	TEST_ASSERT(!is_leaving(fugitive), "An exposed fugitive set off for the lift")
 
-	// A decoy that can't answer (knocked out, say) is cuffed as anyone is, and it still costs the same
+	// A decoy that can't answer (knocked out, say) is cuffed as anyone is, and it still costs the same (a crime)
 	var/datum/criminal_bounty/outpost_test/helpless_posting = make_posting(run_loc_floor_bottom_left)
 	TEST_ASSERT(helpless_posting.setup_outpost_blend(TRUE), "The second posting could not be set up to blend in")
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/helpless = decoys_of(helpless_posting)[1]
@@ -502,7 +506,7 @@
 	var/mob/living/carbon/human/fourth_cuffer = make_hunter()
 	var/helpless_answer = SEND_SIGNAL(helpless, "bounty_cuff_reached", fourth_cuffer)
 	TEST_ASSERT(!(helpless_answer & 1), "A decoy that could do nothing about it took the reaction over")
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[fourth_cuffer.mind], 1, "Cuffs on a helpless decoy were free")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(fourth_cuffer.mind), "Cuffs on a helpless decoy were free")
 	TEST_ASSERT_EQUAL(helpless_posting.alert, 1, "Cuffs on a helpless decoy did not raise the alert")
 	helpless_posting.status = "closed" // BOUNTY_POSTING_CLOSED: the outpost has room again
 
@@ -523,7 +527,6 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/next_decoy = next_decoys[1]
 	next_decoy.on_confronted(make_hunter())
 	TEST_ASSERT_EQUAL(next.alert, 1, "Confronting a decoy another way cost nothing")
-#endif
 
 /// Two alerts: the decoys leave, and the fugitive walks out for real, still the posting's until it has gone; the bounty relists when it does. A fugitive caught on the way stays the posting's. An exposed fugitive stays
 /datum/unit_test/voidcrew_bounty_outpost/alert
@@ -610,9 +613,7 @@
 	planet.placement_kind = "planet" // BOUNTY_PLACEMENT_PLANET
 	TEST_ASSERT(!planet.raise_alert("a test"), "A planet bounty's alert rose")
 
-// POLICE-PORT: reads aggressor_strikes or the removed outpost turret; port to warrant.heat and force_level()/can_attack() (P10)
-#ifdef POLICE_TESTS_PORTED
-/// A deliberate hit on a decoy is an outpost strike and raises the alert; hitting the fugitive only exposes it. A shot hits whoever it hits
+/// A deliberate hit on a decoy is a crime at the outpost and raises the alert; hitting the fugitive only exposes it. A shot hits whoever it hits
 /datum/unit_test/voidcrew_bounty_outpost/decoy_hit
 
 /datum/unit_test/voidcrew_bounty_outpost/decoy_hit/Run()
@@ -623,6 +624,7 @@
 	var/list/decoys = decoys_of(posting)
 	TEST_ASSERT(length(decoys) >= 2, "Too few decoys to test with")
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = decoys[1]
+	make_witness()
 
 	// Someone with no mind behind them never counts
 	var/mob/living/carbon/human/npc = allocate(/mob/living/carbon/human/consistent)
@@ -634,15 +636,15 @@
 	var/mob/living/carbon/human/hunter = make_hunter()
 	decoy.attack_hand(hunter, list())
 	TEST_ASSERT_EQUAL(posting.alert, 0, "Patting a decoy raised the alert")
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[hunter.mind], "Patting a decoy was an outpost strike")
+	TEST_ASSERT_NULL(outpost.police.get_warrant(hunter.mind), "Patting a decoy was a crime")
 
-	// A punch is a strike and an alert
+	// A punch is a crime and an alert
 	hunter.combat_mode = TRUE
 	decoy.attack_hand(hunter, list())
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[hunter.mind], 1, "Punching a decoy was not an outpost strike")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(hunter.mind), "Punching a decoy was not a crime")
 	TEST_ASSERT_EQUAL(posting.alert, 1, "Punching a decoy did not raise the alert")
 
-	// A shot at someone else hits whoever it hits: it goes through nobody, and it is nobody's strike
+	// A shot at someone else hits whoever it hits: it goes through nobody, and it is nobody's crime
 	var/mob/living/carbon/human/shooter = make_hunter()
 	var/obj/projectile/bullet/stray = allocate(/obj/projectile/bullet)
 	stray.firer = shooter
@@ -651,18 +653,18 @@
 	TEST_ASSERT(!(SEND_SIGNAL(other_decoy, COMSIG_PROJECTILE_PREHIT, stray) & PROJECTILE_INTERRUPT_HIT_PHASE), "A shot at someone else passed through a decoy")
 	TEST_ASSERT(!(SEND_SIGNAL(other_decoy, COMSIG_PROJECTILE_PREHIT, stray) & PROJECTILE_INTERRUPT_HIT), "A shot at someone else was stopped by a decoy")
 	TEST_ASSERT_EQUAL(posting.alert, 1, "A stray shot that landed on a decoy raised the alert")
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[shooter.mind], "A stray shot that landed on a decoy was an outpost strike")
+	TEST_ASSERT_NULL(outpost.police.get_warrant(shooter.mind), "A stray shot that landed on a decoy was a crime")
 	// One aimed at it counts, and the second alert sends the fugitive off
 	var/obj/projectile/bullet/aimed = allocate(/obj/projectile/bullet)
 	aimed.firer = shooter
 	aimed.original = other_decoy
 	TEST_ASSERT(!(SEND_SIGNAL(other_decoy, COMSIG_PROJECTILE_PREHIT, aimed) & PROJECTILE_INTERRUPT_HIT_PHASE), "A shot aimed at a decoy passed through it")
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[shooter.mind], 1, "Shooting a decoy was not an outpost strike")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(shooter.mind), "Shooting a decoy was not a crime")
 	TEST_ASSERT(is_leaving(fugitive), "Two hits on decoys did not send the fugitive off")
 	SShuman_npcs.sweep_leavers()
 	TEST_ASSERT_NOTNULL(posting.relisted_for, "Two hits on decoys did not relist the bounty once the fugitive had gone")
 
-	// Hitting the (next) fugitive exposes it: no strike, no alert
+	// Hitting the (next) fugitive exposes it: no crime, no alert
 	var/datum/criminal_bounty/outpost_test/next = make_posting(run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/npc/bounty_criminal/next_fugitive = next.criminal()
 	TEST_ASSERT(next.setup_outpost_blend(TRUE), "The second posting could not be set up to blend in")
@@ -672,7 +674,7 @@
 	TEST_ASSERT(!next_fugitive.blended, "Punching the fugitive did not expose it")
 	TEST_ASSERT(next_fugitive.body_has_grudge(brawler), "The fugitive holds no grudge against whoever hit it")
 	TEST_ASSERT_EQUAL(next.alert, 0, "Hitting the fugitive raised the alert")
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[brawler.mind], "Hitting the fugitive was an outpost strike")
+	TEST_ASSERT_NULL(outpost.police.get_warrant(brawler.mind), "Hitting the fugitive was a crime")
 
 /// Things thrown straight at a decoy and a mech's fist count as hits; a throw at someone else that lands on one doesn't (H1)
 /datum/unit_test/voidcrew_bounty_outpost/thrown
@@ -688,6 +690,7 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/other_decoy = decoys[2]
 	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox)
 	TEST_ASSERT(toolbox.throwforce > 0, "The toolbox is too light to test with")
+	make_witness()
 
 	// Thrown at someone else, landing on a decoy: nobody is framed with it
 	var/mob/living/carbon/human/thrower = make_hunter()
@@ -696,29 +699,29 @@
 	SEND_SIGNAL(decoy, COMSIG_ATOM_PREHITBY, toolbox, stray)
 	qdel(stray)
 	TEST_ASSERT_EQUAL(posting.alert, 0, "A throw at someone else that hit a decoy raised the alert")
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[thrower.mind], "A throw at someone else that hit a decoy was a strike")
+	TEST_ASSERT_NULL(outpost.police.get_warrant(thrower.mind), "A throw at someone else that hit a decoy was a crime")
 
-	// Thrown at the decoy: a strike and the alert
+	// Thrown at the decoy: a crime and the alert
 	var/datum/thrownthing/aimed = new(toolbox, decoy, NORTH, 7, 1, thrower)
 	SEND_SIGNAL(decoy, COMSIG_ATOM_PREHITBY, toolbox, aimed)
 	qdel(aimed)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[thrower.mind], 1, "A toolbox thrown at a decoy was not a strike")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(thrower.mind), "A toolbox thrown at a decoy was not a crime")
 	TEST_ASSERT_EQUAL(posting.alert, 1, "A toolbox thrown at a decoy did not raise the alert")
 
 	// A mech's fist is its pilot's
 	var/mob/living/carbon/human/pilot = make_hunter()
 	SEND_SIGNAL(other_decoy, COMSIG_ATOM_ATTACK_MECH, null, pilot, 0)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[pilot.mind], 1, "A mech punching a decoy was not a strike for its pilot")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(pilot.mind), "A mech punching a decoy was not a crime for its pilot")
 	TEST_ASSERT(is_leaving(fugitive), "Two hits on decoys did not send the fugitive off")
 
-	// A decoy that is already walking out: a hit is still the hitter's strike, but no further alert
+	// A decoy that is already walking out: a hit is still the hitter's crime, but no further alert
 	var/mob/living/carbon/human/late = make_hunter()
 	var/datum/thrownthing/late_throw = new(toolbox, other_decoy, NORTH, 7, 1, late)
 	SEND_SIGNAL(other_decoy, COMSIG_ATOM_PREHITBY, toolbox, late_throw)
 	qdel(late_throw)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[late.mind], 1, "A hit on a decoy walking out was free")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(late.mind), "A hit on a decoy walking out was free")
 
-/// While blending in the turrets leave them alone and the lift never carries them; a hand on them is a hand on a person; the fugitive's shots and blows at the outpost are judged by who they hit, and hurting a bystander ends the turrets' leave
+/// While blending in the officers leave them alone and the lift never carries them; a hand on them is a hand on a person; the fugitive's shots and blows at the outpost are judged by who they hit, and hurting a bystander ends the officers' leave
 /datum/unit_test/voidcrew_bounty_outpost/security
 
 /datum/unit_test/voidcrew_bounty_outpost/security/Run()
@@ -740,32 +743,31 @@
 	decoy.Move(lift, EAST)
 	TEST_ASSERT_EQUAL(decoy.loc, beside_lift, "A decoy stepped onto the hangar lift")
 
-	// The turrets: this one does shoot a hostile creature, and skips the patrons by faction
-	var/obj/machinery/porta_turret/outpost/turret = allocate(/obj/machinery/porta_turret/outpost)
-	turret.outpost = outpost
-	TEST_ASSERT(turret.valid_target(allocate(/mob/living/basic/carp)), "The test turret won't shoot anything, so it proves nothing")
-	TEST_ASSERT(turret.in_faction(decoy) && turret.in_faction(fugitive), "The patrons are not in the turrets' faction")
-	TEST_ASSERT(!turret.valid_target(decoy), "The outpost turrets target a decoy")
-	TEST_ASSERT(!turret.valid_target(fugitive), "The outpost turrets target a fugitive blending in")
+	// The officers: this one does shoot a hostile creature, and skips the patrons by faction
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = make_witness()
+	TEST_ASSERT(police_port_may_attack(officer, allocate(/mob/living/basic/carp)), "The test officer won't shoot anything, so it proves nothing")
+	TEST_ASSERT((FACTION_TURRET in decoy.faction) && (FACTION_TURRET in fugitive.faction), "The patrons are not of the outpost staff's faction")
+	TEST_ASSERT(!police_port_may_attack(officer, decoy), "The officers target a decoy")
+	TEST_ASSERT(!police_port_may_attack(officer, fugitive), "The officers target a fugitive blending in")
 
 	// The fugitive's shots go where they go: one that lands on a person on its grudge list is the chase, one that lands on anyone else is not
 	var/mob/living/carbon/human/bystander = make_hunter()
 	posting.outpost_confront(fugitive, hunter)
-	TEST_ASSERT(!turret.in_faction(fugitive), "An exposed fugitive is still in the turrets' faction")
+	TEST_ASSERT(!(FACTION_TURRET in fugitive.faction), "An exposed fugitive is still of the outpost staff's faction")
 	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet)
 	SEND_SIGNAL(fugitive, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, shot, fugitive, hunter)
 	TEST_ASSERT(!(SEND_SIGNAL(shot, COMSIG_PROJECTILE_SELF_PREHIT, bystander) & PROJECTILE_INTERRUPT_HIT_PHASE), "The fugitive's shot passed through a bystander")
 	SEND_SIGNAL(shot, COMSIG_PROJECTILE_SELF_ON_HIT, fugitive, hunter, 0, null, 0, FALSE)
-	TEST_ASSERT(!fugitive.outpost_turret_target(), "Fighting its grudge list made the fugitive a turret target")
-	// Hurting someone who never crossed it ends the turrets' leave
+	TEST_ASSERT(!fugitive.outpost_turret_target(), "Fighting its grudge list made the fugitive a target for the officers")
+	// Hurting someone who never crossed it ends the officers' leave
 	SEND_SIGNAL(shot, COMSIG_PROJECTILE_SELF_ON_HIT, fugitive, bystander, 0, null, 0, FALSE)
-	TEST_ASSERT(fugitive.outpost_turret_target(), "The fugitive hurt a bystander with a shot and the turrets still leave it be")
-	TEST_ASSERT(!decoy.outpost_turret_target(), "A decoy is a turret target")
+	TEST_ASSERT(fugitive.outpost_turret_target(), "The fugitive hurt a bystander with a shot and the officers still leave it be")
+	TEST_ASSERT(!decoy.outpost_turret_target(), "A decoy is a target for the officers")
 	// But not once the hunters have it: stunned, cuffed, in crit or dead (tg's states)
 	fugitive.Paralyze(10 SECONDS)
-	TEST_ASSERT(!fugitive.outpost_turret_target(), "The turrets fire on a fugitive the hunters have already put down")
+	TEST_ASSERT(!fugitive.outpost_turret_target(), "The officers go for a fugitive the hunters have already put down")
 	fugitive.SetParalyzed(0)
-	TEST_ASSERT(fugitive.outpost_turret_target(), "A fugitive on its feet again is not a turret target")
+	TEST_ASSERT(fugitive.outpost_turret_target(), "A fugitive on its feet again is not a target for the officers")
 
 	// Its blows count the same: a punch at a bystander
 	var/datum/criminal_bounty/outpost_test/next = make_posting(run_loc_floor_bottom_left)
@@ -773,10 +775,9 @@
 	TEST_ASSERT(next.setup_outpost_blend(TRUE), "The second posting could not be set up to blend in")
 	next.outpost_confront(next_fugitive, hunter)
 	SEND_SIGNAL(next_fugitive, COMSIG_LIVING_UNARMED_ATTACK, hunter, TRUE, list())
-	TEST_ASSERT(!next_fugitive.outpost_turret_target(), "Punching someone on its grudge list made the fugitive a turret target")
+	TEST_ASSERT(!next_fugitive.outpost_turret_target(), "Punching someone on its grudge list made the fugitive a target for the officers")
 	SEND_SIGNAL(next_fugitive, COMSIG_LIVING_UNARMED_ATTACK, bystander, TRUE, list())
-	TEST_ASSERT(next_fugitive.outpost_turret_target(), "The fugitive punched a bystander and the turrets still leave it be")
-#endif
+	TEST_ASSERT(next_fugitive.outpost_turret_target(), "The fugitive punched a bystander and the officers still leave it be")
 
 /// A hand on someone blending in is a hand on a person: they can be grabbed like anyone, and it is no hit. Standing or down, the fugitive and a decoy alike
 /datum/unit_test/voidcrew_bounty_outpost/grab

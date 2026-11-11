@@ -168,10 +168,9 @@
 	TEST_ASSERT(bear.CanAttack(flicker), "A bear was fooled by the Flickerskin")
 	TEST_ASSERT(boss.CanAttack(flicker), "A megafauna was fooled by the Flickerskin")
 
-// POLICE-PORT: lists the removed outpost turret; port to the police targeting strategy (P10)
-#ifdef POLICE_TESTS_PORTED
 /// Every turret type that can be handed a camo'd human drops them from the list it shoots at.
 /// tryToShootAt() returns 1 once it has settled on a target, and nothing when it has none.
+/// (The trader outposts' own turret is gone: their officers have the next test.)
 /datum/unit_test/voidcrew_cyberware_camo/turrets
 
 /datum/unit_test/voidcrew_cyberware_camo/turrets/Run()
@@ -184,7 +183,6 @@
 		/obj/machinery/porta_turret/ai,
 		/obj/machinery/porta_turret/ruin,
 		/obj/machinery/porta_turret/syndicate,
-		/obj/machinery/porta_turret/outpost,
 		/obj/machinery/porta_turret/ship_defense,
 	)
 	for(var/turret_type in turret_types)
@@ -200,7 +198,33 @@
 		ghost.forceMove(spot(0, 2))
 		TEST_ASSERT(turret.tryToShootAt(list(ghost)), "[turret_type] missed a camo'd human 2 tiles off")
 		ghost.forceMove(spot(4, 4))
-#endif
+
+/**
+ * A trader outpost's officers: their targeting strategy (the human NPC one, with the police rules on top)
+ * is fooled by camo beyond range like any other human NPC's, so a wanted human under the field is not
+ * picked from across the room, and is from 2 tiles. The street weave fools nobody. Every suspect is
+ * wanted at three stars (shoot on sight), so the police rules alone would not rule them out.
+ */
+/datum/unit_test/voidcrew_cyberware_camo/officers
+
+/datum/unit_test/voidcrew_cyberware_camo/officers/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, spot(0, 0))
+	officer.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/mob/living/carbon/human/consistent/plain = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
+	var/mob/living/carbon/human/consistent/ghost = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin, spot(4, 4))
+	var/mob/living/carbon/human/consistent/flicker = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin/street, spot(4, 3))
+	for(var/mob/living/carbon/human/consistent/suspect in list(plain, ghost, flicker))
+		suspect.mind_initialize()
+		police_pin_warrant(outpost.police, suspect.mind, 50) // the third star
+		TEST_ASSERT_EQUAL(outpost.police.force_level(suspect), 3, "Fixture: a three star suspect isn't shot on sight") // POLICE_FORCE_LETHAL
+	TEST_ASSERT(police_port_may_attack(officer, plain), "Fixture: an officer won't target a wanted human to begin with")
+	TEST_ASSERT(cyberware_camo_hides(ghost, officer), "Camo didn't hide its bearer from an officer")
+	TEST_ASSERT(!police_port_may_attack(officer, ghost), "An officer targeted a camo'd human 4 tiles off")
+	ghost.forceMove(spot(2, 0))
+	TEST_ASSERT(police_port_may_attack(officer, ghost), "An officer missed a camo'd human 2 tiles off")
+	ghost.forceMove(spot(4, 4))
+	TEST_ASSERT(police_port_may_attack(officer, flicker), "An officer was fooled by the Flickerskin")
 
 /// Human NPCs: tg's basic targeting through the human NPC strategy, which pirate crews and boarders,
 /// ruin troopers and the club's people all run on. A regular NPC is fooled beyond range; a boss

@@ -90,16 +90,16 @@
 	pa_trader(outpost, pa_tile(2, 4), null, /datum/outpost_shop/vendor/bait_shop)
 	TEST_ASSERT_EQUAL(customers.wanted(place), 2, "An outpost with a trader wants [customers.wanted(place)] customers, not 2")
 
-	// Every one of them can come to an outpost with nothing in it and not fall over
+	// Every one of them can come to an outpost with nothing in it and not fall over (an officer comes on its station's roster)
 	for(var/npc_type in subtypesof(/mob/living/carbon/human/npc/ambient_npc/outpost))
-		var/mob/living/carbon/human/npc/ambient_npc/npc = pa_npc(npc_type, pa_tile(1, 1), place)
+		var/mob/living/carbon/human/npc/ambient_npc/npc = ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police) ? police_officer(outpost, npc_type, pa_tile(1, 1)) : pa_npc(npc_type, pa_tile(1, 1), place)
 		npc.pick_activity()
 		npc.end_activity()
 		qdel(npc)
 
 	// ...or be found there already, holding still, and never on or beside the lift
 	for(var/npc_type in subtypesof(/mob/living/carbon/human/npc/ambient_npc/outpost))
-		var/mob/living/carbon/human/npc/ambient_npc/npc = pa_npc(npc_type, pa_tile(1, 1), place)
+		var/mob/living/carbon/human/npc/ambient_npc/npc = ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police) ? police_officer(outpost, npc_type, pa_tile(1, 1)) : pa_npc(npc_type, pa_tile(1, 1), place)
 		npc.settle_in()
 		TEST_ASSERT(get_dist(npc, pa_tile(4, 4)) > 1, "[npc_type] was found on or beside the lift")
 		TEST_ASSERT(HAS_TRAIT(npc, TRAIT_AI_PAUSED), "[npc_type] at an empty outpost is not holding still")
@@ -170,7 +170,8 @@
 	TEST_ASSERT(!barback_role.applies_to(halcyon_outpost), "A barback still applies to Halcyon")
 	TEST_ASSERT(barback_role.applies_to(undertow_outpost), "A barback does not apply to the Undertow")
 
-	// The floor crowd matches spec exactly, and never crosses the transient cap
+	// The floor crowd matches spec exactly, and never crosses the transient cap. The police roles are left
+	// out of the sum: how officers sit with the cap is outpost_police/police_life.dm's call, and its tests'
 	var/list/expected_crowd = list()
 	expected_crowd[halcyon_place] = 7
 	expected_crowd[quartermain_place] = 7
@@ -179,6 +180,8 @@
 		var/obj/structure/overmap/trader_outpost/crowd_outpost = crowd_place.outpost()
 		var/total = 0
 		for(var/role_type in subtypesof(/datum/ambient_outpost_role))
+			if(ispath(role_type, /datum/ambient_outpost_role/police_beat) || ispath(role_type, /datum/ambient_outpost_role/police_sergeant))
+				continue
 			var/datum/ambient_outpost_role/role = allocate(role_type)
 			if(!role.npc_type || !role.applies_to(crowd_outpost))
 				continue
@@ -378,13 +381,11 @@
 // DRINKERS (owner item 2)
 // =========================================================================
 
-// POLICE-PORT: reads aggressor_strikes; port to police.get_stars()/warrant.heat (P10)
-#ifdef POLICE_TESTS_PORTED
 /**
  * A drinker orders at the bar, sits, really drinks a real glass (the drink goes into them, and tg's
  * drunkenness sets their stage), is cut off when done for, sleeps it off on a sofa for real (tg's
  * Sleeping) and leaves; a drink handed to them is drunk the same way; poison anyone could see is
- * refused, poison hidden in a drink is not, and counts as violence at the outpost.
+ * refused, poison hidden in a drink is not, and is a crime at the outpost.
  */
 /datum/unit_test/voidcrew_ambient_outpost_drinkers
 
@@ -472,13 +473,14 @@
 	plasma.reagents.add_reagent(/datum/reagent/toxin/plasma, 30)
 	TEST_ASSERT(!regular.accept_drink(player, plasma), "A drinker drank a glass of plasma")
 	TEST_ASSERT_EQUAL(plasma.reagents.total_volume, 30, "A drinker sipped the plasma")
-	// Poison hidden in a beer goes down, and the outpost counts it as violence
+	// Poison hidden in a beer goes down, and the police count it as a crime: the drinker and the barkeep saw it
 	LAZYREMOVE(regular.reaction_cooldowns, "handed")
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/spiked = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
 	spiked.reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, 25)
 	spiked.reagents.add_reagent(/datum/reagent/toxin, 5)
 	TEST_ASSERT(regular.accept_drink(player, spiked), "A drinker turned down a spiked beer they couldn't tell from a beer")
-	TEST_ASSERT(outpost.aggressor_strikes[player.mind] >= 1, "Spiking a drinker's beer is not violence at the outpost")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(player.mind), "Spiking a drinker's beer is not a crime at the outpost")
+	TEST_ASSERT(outpost.police.get_stars(player.mind) >= 1, "Spiking a drinker's beer is not worth a star") // ASSAULT_CIVILIAN: 12 heat, one star is 10
 	// Coffee is welcome too
 	LAZYREMOVE(regular.reaction_cooldowns, "handed")
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/coffee = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
@@ -493,7 +495,6 @@
 	crew.on_sip(FALSE)
 	crew.on_sip(FALSE)
 	TEST_ASSERT(crew.glass_is_strong(), "The crew room never moved on to something stronger")
-#endif
 
 // =========================================================================
 // STAFF (owner item 4)
@@ -837,13 +838,12 @@
 // KILLING
 // =========================================================================
 
-// POLICE-PORT: reads aggressor_strikes; port to police.get_stars()/warrant.heat (P10)
-#ifdef POLICE_TESTS_PORTED
 /**
  * Every outpost NPC can be killed: they die of their wounds and drop 5 to 30 cr once, never again
- * after a revive, and the outpost's turrets count them as its own. A killed person's place stays
- * empty a good while, made up neither in place nor off the lift; the outpost's people drop no more
- * than 300 cr between them; a blow to one is violence at the outpost; bodies are taken away.
+ * after a revive, and carry the outpost staff's faction (FACTION_TURRET). The station's officers die
+ * the same way and drop nothing at all. A killed person's place stays empty a good while, made up
+ * neither in place nor off the lift; the outpost's people drop no more than 300 cr between them;
+ * a blow to one is a crime at the outpost; bodies are taken away.
  */
 /datum/unit_test/voidcrew_ambient_outpost_deaths
 
@@ -857,9 +857,18 @@
 	for(var/npc_type in types)
 		place.cash_dropped = 0
 		var/cash_before = ambient_test_cash_on(spot)
+		// An officer comes on its station's roster, carries no cash and drops nothing; their kit is the units test's
+		if(ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, npc_type, spot)
+			TEST_ASSERT(!HAS_TRAIT(officer, TRAIT_GODMODE), "[npc_type] cannot be hurt")
+			officer.apply_damage(officer.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+			TEST_ASSERT_EQUAL(officer.stat, DEAD, "[npc_type] did not die of their wounds")
+			TEST_ASSERT_EQUAL(ambient_test_cash_on(spot), cash_before, "[npc_type] dropped cash")
+			qdel(officer)
+			continue
 		var/mob/living/carbon/human/npc/ambient_npc/npc = pa_npc(npc_type, spot, place)
 		TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_GODMODE), "[npc_type] cannot be hurt")
-		TEST_ASSERT(FACTION_TURRET in npc.faction, "The outpost's turrets would shoot [npc_type]")
+		TEST_ASSERT(FACTION_TURRET in npc.faction, "The outpost's staff would not count [npc_type] as their own")
 		npc.apply_damage(npc.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 		TEST_ASSERT_EQUAL(npc.stat, DEAD, "[npc_type] did not die of their wounds")
 		var/dropped = ambient_test_cash_on(spot) - cash_before
@@ -913,13 +922,14 @@
 	broke.death()
 	TEST_ASSERT_EQUAL(ambient_test_cash_on(purse_spot), last_cash, "Someone dropped cash past the outpost's cap")
 
-	// A real blow to one of them is violence at the outpost: a strike, and everyone near ducks and goes
+	// A real blow to one of them is violence at the outpost: a crime, seen by the two customers, and everyone near ducks and goes
 	var/mob/living/carbon/human/consistent/brute = allocate(/mob/living/carbon/human/consistent, pa_tile(4, 0))
 	brute.mind_initialize()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/witness = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, pa_tile(2, 0), place)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/target = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, pa_tile(3, 1), place)
 	SEND_SIGNAL(target, COMSIG_ATOM_WAS_ATTACKED, brute, ATTACKER_DAMAGING_ATTACK)
-	TEST_ASSERT(outpost.aggressor_strikes[brute.mind], "A blow to one of the outpost's people was no strike")
+	TEST_ASSERT_NOTNULL(outpost.police.get_warrant(brute.mind), "A blow to one of the outpost's people was no crime")
+	TEST_ASSERT(outpost.police.get_stars(brute.mind) >= 1, "A blow to one of the outpost's people was not worth a star") // ASSAULT_CIVILIAN: 12 heat, one star is 10
 	TEST_ASSERT(istype(witness.activity, /datum/ambient_activity/leave), "Nobody near ducked and left when one of the outpost's people was hit")
 
 	// With players there a body lies a while; after five minutes the human NPC corpse sweep takes it
@@ -931,7 +941,6 @@
 	TEST_ASSERT(!body.npc_corpse_expired(), "A fresh body is already up to be taken away")
 	body.npc_died_at = world.time - 3001 // AMBIENT_OUTPOST_BODY_TIME
 	TEST_ASSERT(body.npc_corpse_expired(), "A body nobody is near is not taken away after five minutes")
-#endif
 
 /// Nobody new comes up the lift while someone is still in it
 /datum/unit_test/voidcrew_ambient_outpost_lift_one_at_a_time
