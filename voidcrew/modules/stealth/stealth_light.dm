@@ -217,16 +217,19 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	if(isnull(spot))
 		if(torch?.light_on)
 			torch.set_light_on(FALSE)
+			torch.update_light()
 		return
 	if(QDELETED(torch))
 		torch = new(spot)
 	var/range = stealth_torch_range(get_dist_euclidean(guard, spot))
-	if(torch.light_range != range)
-		torch.set_light_range(range)
+	// tg's light setters don't rebuild a COMPLEX_LIGHT source on their own (see /obj/item/flashlight/update_brightness()):
+	// update_light() does. A move needs nothing more, the source follows its host's Moved.
 	if(torch.loc != spot)
 		torch.abstract_move(spot)
-	if(!torch.light_on)
+	if(torch.light_range != range || !torch.light_on)
+		torch.set_light_range(range)
 		torch.set_light_on(TRUE)
+		torch.update_light()
 
 /// Whether its light is on with a pool on the floor (for admins and tests).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light_shows()
