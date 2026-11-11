@@ -285,7 +285,7 @@
 	TEST_ASSERT(lose_original(home, ship), "[ship] could not leave the bay")
 
 /**
- * An order and a checkpoint rebuild at two outposts share the shipyard queue: both wait with
+ * An order and a snapshot rebuild at two outposts share the shipyard queue: both wait with
  * their bays reserved while the loader is busy, load in the order they asked, and finish.
  */
 /datum/unit_test/voidcrew_checkpoints/ship_order_queue

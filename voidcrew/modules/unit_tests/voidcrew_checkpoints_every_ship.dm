@@ -55,8 +55,6 @@
 		original.shuttle.admin_delete_shuttle()
 		return "not saved: [denial]"
 	snapshot.outpost = home
-	home.checkpoints += snapshot
-	original.checkpoint_ref = WEAKREF(snapshot)
 	var/list/before_counts = count_hull(original.shuttle)
 	var/list/dropped = list()
 	var/list/without_board = list()
@@ -64,7 +62,7 @@
 		if(!(get_area(tile) in original.shuttle.shuttle_areas))
 			continue
 		for(var/obj/object in tile)
-			if(!outpost_checkpoint_saves(object))
+			if(!outpost_checkpoint_saves(object) || ship_save_refuses_object(object))
 				if(ismachinery(object) || isstructure(object))
 					dropped["[object.type]"]++
 			else if(ismachinery(object))
@@ -145,6 +143,9 @@
 		if(!(get_area(tile) in port.shuttle_areas))
 			continue
 		for(var/obj/item/item in tile.get_all_contents())
+			// A stocked fixture comes back with what a new one holds.
+			if(checkpoint_held_by_restocked(item, ship_save_restocked()))
+				continue
 			if(ismachinery(item.loc))
 				var/obj/machinery/machine = item.loc
 				if((item in machine.component_parts) || item == machine.circuit || istype(item, /obj/item/radio))
@@ -164,16 +165,16 @@
 			. += "free item [item.type] in [item.loc?.type]"
 		for(var/obj/object in tile)
 			// Engine fuel and the basics (fuel and water tanks, plumbing) are restocked on purpose.
-			if(object.reagents?.total_volume && !is_type_in_typecache(object, GLOB.outpost_checkpoint_restocked) && !istype(object, /obj/machinery/power/shuttle_engine))
+			if(object.reagents?.total_volume && !is_type_in_typecache(object, ship_save_restocked()) && !istype(object, /obj/machinery/power/shuttle_engine))
 				. += "[object.type] holds [object.reagents.total_volume] units of reagents"
 			var/datum/component/material_container/materials = object.GetComponent(/datum/component/material_container)
 			if(materials?.total_amount())
 				. += "[object.type] holds [materials.total_amount()] units of materials"
-			if(istype(object, /obj/machinery/atmospherics/components/tank) && !is_type_in_typecache(object, GLOB.outpost_checkpoint_restocked))
+			if(istype(object, /obj/machinery/atmospherics/components/tank) && !is_type_in_typecache(object, ship_save_restocked()))
 				var/obj/machinery/atmospherics/components/tank/stored = object
 				if(stored.air_contents?.total_moles())
 					. += "[object.type] holds [stored.air_contents.total_moles()] moles"
-			if(istype(object, /obj/machinery/vending))
+			if(istype(object, /obj/machinery/vending) && !is_type_in_typecache(object, GLOB.ship_save_stocked_fixtures))
 				var/obj/machinery/vending/vendor = object
 				for(var/datum/data/vending_product/product as anything in vendor.product_records + vendor.hidden_records + vendor.coin_records)
 					if(product.amount)
@@ -316,7 +317,7 @@
 		if(!(get_area(tile) in port.shuttle_areas))
 			continue
 		for(var/obj/machinery/atmospherics/machine in tile)
-			if(is_type_in_typecache(machine, GLOB.outpost_checkpoint_restocked))
+			if(is_type_in_typecache(machine, ship_save_restocked()))
 				continue
 			var/moles = 0
 			if(istype(machine, /obj/machinery/atmospherics/pipe))
