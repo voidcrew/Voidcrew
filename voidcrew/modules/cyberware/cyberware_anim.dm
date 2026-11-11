@@ -741,11 +741,18 @@
 	var/turf/here = get_turf(owner)
 	if(!here)
 		return
-	var/datum/status_effect/cyberware_cascade_window/window = owner?.has_status_effect(/datum/status_effect/cyberware_cascade_window)
-	if(window?.time_stop) // a green ring that rolls out past the edge of the screen
-		new /obj/effect/temp_visual/cyberware_time_ring(here, stop_ring_scale, ring_alpha, ring_time, TRUE)
-		return
 	new /obj/effect/temp_visual/cyberware_time_ring(here, ring_scale, ring_alpha, ring_time)
+
+/// The world slows as the window opens: the green ring rolls out past the edge of the screen at once, with the
+/// tint behind its front, instead of waiting for the last spine node.
+/obj/item/organ/cyberimp/cyberware/cascade/proc/roll_stop_ring()
+	if(ring_timer)
+		deltimer(ring_timer)
+		ring_timer = null
+	var/turf/here = get_turf(owner)
+	if(!here)
+		return
+	new /obj/effect/temp_visual/cyberware_time_ring(here, stop_ring_scale, ring_alpha, ring_time, TRUE)
 
 /// The crash: nodes die hips to neck and stay dark.
 /obj/item/organ/cyberimp/cyberware/cascade/proc/play_crash()

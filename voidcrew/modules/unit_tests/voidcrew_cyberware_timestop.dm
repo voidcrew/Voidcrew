@@ -198,6 +198,25 @@
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
+/// A player hidden in a locker, or picked up and carried as an item, still counts as someone near
+/datum/unit_test/voidcrew_cyberware_timestop/witnessed_hidden
+
+/datum/unit_test/voidcrew_cyberware_timestop/witnessed_hidden/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, spot(3, 0))
+	var/mob/living/carbon/human/hider = allocate(/mob/living/carbon/human/consistent, spot(3, 0))
+	hider.key = "sandytimestophider"
+	hider.forceMove(locker)
+	TEST_ASSERT(cyberware_time_stop_witnessed(user), "A player in a locker didn't count as someone near")
+	hider.key = null
+	var/mob/living/basic/mouse/pet = allocate(/mob/living/basic/mouse, spot(2, 2))
+	pet.key = "sandytimestoppet"
+	var/obj/item/mob_holder/holder = allocate(/obj/item/mob_holder, spot(2, 2), pet)
+	TEST_ASSERT(pet.loc == holder, "The mouse wasn't picked up")
+	TEST_ASSERT(cyberware_time_stop_witnessed(user), "A player carried as an item didn't count as someone near")
+	pet.key = null
+	TEST_ASSERT(!cyberware_time_stop_witnessed(user), "Nobody's near, but the user counted as watched")
+
 /// An NPC's surge never slows the world, whoever is near
 /datum/unit_test/voidcrew_cyberware_timestop/npc_surge
 

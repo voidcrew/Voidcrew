@@ -66,6 +66,8 @@
 #define SANDY_STOP_SAME_RATE 0.01
 /// Filter name of the user's edge glow.
 #define SANDY_STOP_OUTLINE "sandy_time_stop_outline"
+/// Fullscreen category of the release flash.
+#define SANDY_STOP_FLASH "sandy_time_stop_flash"
 
 /// Every atom the dilation has hold of, to its field.
 GLOBAL_LIST_EMPTY(cyberware_time_dilated)
@@ -225,9 +227,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			if(body.ckey)
 				return TRUE
 			continue
-		if(ismob(found) || isitem(found)) // ghosts and camera eyes don't count; radios hold nobody
+		if(ismob(found)) // ghosts and camera eyes don't count
 			continue
-		// a locker or a mech with a player in it
+		// a locker or a mech with a player in it, or a small player picked up and carried as an item
 		for(var/mob/living/inside in found.get_all_contents())
 			if(inside != user && inside.ckey)
 				return TRUE
@@ -375,6 +377,18 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/user_multiplier = 1
 	/// Surging mobs held at their relative rate, to that rate. Never 0, never tinted. Their shots fly at the field's pace.
 	var/list/own_scales = list()
+	/// Things that should wear the tint, to TRUE.
+	var/list/tinted = list()
+	/// Tinted things the ring hasn't reached yet, to the timer that tints them when it does.
+	var/list/tint_timers = list()
+	/// Where the green ring rolls out from, while it is rolling.
+	var/turf/ring_center
+	/// world.time the ring started rolling.
+	var/ring_start = 0
+	/// How long the ring takes to reach its full size.
+	var/ring_time = 0
+	/// The ring's full size, in tiles of radius.
+	var/ring_reach = 0
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, _time_scale = 1, _user_multiplier = 1)
 	time_scale = _time_scale > 0 ? _time_scale : 1
@@ -698,6 +712,10 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	boss_holds -= thing
 	surging -= thing
 	slowed_tags -= thing
+	tinted -= thing
+	if(tint_timers[thing])
+		deltimer(tint_timers[thing])
+	tint_timers -= thing
 	own_scales -= thing
 	frozen_structures -= thing
 	frozen_things -= thing
@@ -736,7 +754,55 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	senses?.refresh_weather()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/into_the_negative_zone(atom/A)
+	tinted[A] = TRUE
+	var/wait = ring_wait(A)
+	if(wait > 0)
+		if(!tint_timers[A])
+			tint_timers[A] = addtimer(CALLBACK(src, PROC_REF(ring_reached), A), wait, TIMER_STOPPABLE)
+		return
 	A.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+
+/datum/proximity_monitor/advanced/timestop/sandevistan/escape_the_negative_zone(atom/A)
+	if(tint_timers[A])
+		deltimer(tint_timers[A])
+	tint_timers -= A
+	tinted -= A
+	return ..()
+
+/// The ring starts rolling out from `center` to `reach` tiles over `time`: everything it hasn't reached yet loses
+/// its tint until the ring's front passes it.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/sweep_ring(turf/center, reach, time)
+	ring_center = center
+	ring_start = world.time
+	ring_time = time
+	ring_reach = reach
+	for(var/atom/movable/thing as anything in tinted)
+		if(tint_timers[thing])
+			continue
+		var/wait = ring_wait(thing)
+		if(wait <= 0)
+			continue
+		thing.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
+		tint_timers[thing] = addtimer(CALLBACK(src, PROC_REF(ring_reached), thing), wait, TIMER_STOPPABLE)
+
+/// How long until the rolling ring's front reaches `thing`, or 0 if it already has. The ring grows with a sine
+/// ease-out (cyberware_time_ring).
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/ring_wait(atom/thing)
+	if(!ring_center || world.time >= ring_start + ring_time)
+		return 0
+	var/turf/spot = get_turf(thing)
+	if(!spot || spot.z != ring_center.z)
+		return 0
+	var/dist = sqrt((spot.x - ring_center.x) ** 2 + (spot.y - ring_center.y) ** 2)
+	var/reached = clamp((dist - 0.2) / max(ring_reach - 0.2, 0.1), 0, 1)
+	return ring_start + ring_time * arcsin(reached) / 90 - world.time
+
+/// The ring's front got to `thing`: on with its tint, if it still wants it.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/ring_reached(atom/movable/thing)
+	tint_timers -= thing
+	if(QDELETED(thing) || !tinted[thing])
+		return
+	thing.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
 
 // =========================================================================
 // THE WINDOW'S SIDE
@@ -766,6 +832,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		time_stop = null
 		return FALSE
 	RegisterSignal(time_stop, COMSIG_QDELETING, PROC_REF(time_stop_over))
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = cyberware_bearer_lattice(owner)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
+	if(lattice)
+		lattice.roll_stop_ring()
+		field?.sweep_ring(here, lattice.stop_ring_scale, lattice.ring_time)
 	owner.remove_client_colour(id) // the user sees the slowed world as it is
 	owner.add_filter(SANDY_STOP_OUTLINE, 2, outline_filter(1, "#5AFF96D2"))
 	return TRUE
@@ -778,6 +849,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(QDELETED(owner))
 		return
 	owner.remove_filter(SANDY_STOP_OUTLINE)
+	sandy_release_flash(owner)
 	owner.add_client_colour(colour_type, id)
 
 /// Ends the dilation early (the window is closing).
@@ -788,6 +860,16 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	QDEL_NULL(time_stop)
 	if(!QDELETED(owner))
 		owner.remove_filter(SANDY_STOP_OUTLINE)
+		sandy_release_flash(owner)
+
+/// A pale green flash on the user's screen as the world speeds back up.
+/proc/sandy_release_flash(mob/living/user)
+	user.overlay_fullscreen(SANDY_STOP_FLASH, /atom/movable/screen/fullscreen/flash/sandy_release)
+	user.clear_fullscreen(SANDY_STOP_FLASH, 0.22 SECONDS)
+
+/atom/movable/screen/fullscreen/flash/sandy_release
+	color = "#E1FFEB"
+	alpha = 140
 
 /// One afterimage while time is dilated: green, gone in 0.4 s. It sits on the user's own tile, shifted back to
 /// where they were, so it sorts on their row and draws behind them in every facing.
@@ -864,3 +946,4 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 #undef SANDY_STOP_MAX_RELATIVE
 #undef SANDY_STOP_SAME_RATE
 #undef SANDY_STOP_OUTLINE
+#undef SANDY_STOP_FLASH
