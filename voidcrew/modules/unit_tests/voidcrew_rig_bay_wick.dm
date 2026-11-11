@@ -35,6 +35,14 @@
 	var/turf/lane = get_step(stand_tile, SOUTH)
 	var/obj/vehicle/sealed/mecha/mech = allocate(/obj/vehicle/sealed/mecha/ripley, stand_tile)
 	ADD_TRAIT(mech, "rig_bay_clamped", "rig_bay")
+	stand.held_mech = mech
+	// The chains' trait goes on as a mech starts beaming in: he leaves it alone until it hangs
+	var/datum/outpost_ambient_work/mech_service/service = new
+	stand.stand_state = "arriving"
+	TEST_ASSERT(!service.accepts(mech), "Wick would work on a mech that is still beaming in")
+	stand.stand_state = "clamped"
+	TEST_ASSERT(service.accepts(mech), "Wick won't work on a hanging mech")
+	qdel(service)
 	var/turf/home = at(4, 2)
 	var/mob/living/basic/outpost_trader/suit_fitter/wick = allocate(/mob/living/basic/outpost_trader/suit_fitter, home)
 	wick.start_rig_bay_routine()

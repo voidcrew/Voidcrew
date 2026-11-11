@@ -533,9 +533,13 @@
 	/// Played instead of `sounds` on a welding job
 	var/list/weld_sounds = list('sound/items/tools/welder.ogg', 'sound/items/tools/welder2.ogg')
 
-/// Only a mech hanging on its stand, never one that's sold or driven in by a customer
+/// Only a mech hanging on its stand, never one that's beaming in, sold or driven in by a customer.
+/// The clamp trait goes on at arrival, so the stand's state is checked too.
 /datum/outpost_ambient_work/mech_service/accepts(atom/target)
-	return ..() && HAS_TRAIT(target, TRAIT_RIG_BAY_CLAMPED)
+	if(!..() || !HAS_TRAIT(target, TRAIT_RIG_BAY_CLAMPED))
+		return FALSE
+	var/obj/structure/rig_bay_stand/stand = locate() in get_turf(target)
+	return stand?.held_mech == target && stand.stand_state == RIG_BAY_STAND_CLAMPED
 
 /datum/outpost_ambient_work/mech_service/start(datum/component/outpost_ambient_worker/worker, atom/target)
 	var/atom/movable/body = worker.parent
