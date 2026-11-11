@@ -13,10 +13,11 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useEffect,
   useRef,
 } from 'react';
 
-import { type FocusOpts, useFocusable } from './nav';
+import { type FocusOpts, FocusScope, useFocusable } from './nav';
 
 export type Grid = {
   cols: number;
@@ -50,7 +51,7 @@ export type Cls = '' | 'dim' | 'faint' | 'amb' | 'red' | 'inv' | 'inva';
 const cx = (cls?: string) => (cls ? cls : undefined);
 
 /** Keyboard focus options a clickable item can pass on (see nav.tsx). */
-export type NavProps = Pick<FocusOpts, 'auto' | 'edge' | 'tab'>;
+export type NavProps = Pick<FocusOpts, 'auto' | 'edge' | 'tab' | 'mouseOnly'>;
 
 type PutProps = NavProps & {
   x: number;
@@ -75,6 +76,7 @@ export function Put(props: PutProps) {
     auto: props.auto,
     edge: props.edge,
     tab: props.tab,
+    mouseOnly: props.mouseOnly,
   });
   const style: CSSProperties = {
     left: Math.round(x * cw),
@@ -322,15 +324,24 @@ export function Hit(
     w: number;
     h: number;
     onClick: () => void;
+    /** Told when the row gains or loses the focus (mouse or keys). */
+    onHover?: (over: boolean) => void;
   },
 ) {
-  const { x, y, w, h, onClick } = props;
+  const { x, y, w, h, onClick, onHover } = props;
   const { cw, ch } = useGrid();
   const focus = useFocusable<HTMLDivElement>(true, {
     activate: onClick,
     auto: props.auto,
     edge: props.edge,
   });
+  const was = useRef(false);
+  useEffect(() => {
+    if (was.current !== focus.focused) {
+      was.current = focus.focused;
+      onHover?.(focus.focused);
+    }
+  }, [focus.focused]);
   return (
     <div
       ref={focus.ref}
@@ -347,6 +358,157 @@ export function Hit(
       onClick={onClick}
       onMouseEnter={focus.onMouseEnter}
     />
+  );
+}
+
+/**
+ * A colour chip filling w cells (default 2) of row y, as the mockup's swatch(). sel draws
+ * it with a lit border. hex must be a CSS colour; the server sanitises every stored colour.
+ */
+export function Swatch(props: {
+  x: number;
+  y: number;
+  hex: string;
+  sel?: boolean;
+  /** Width in cells. */
+  w?: number;
+  onClick?: () => void;
+}) {
+  const { x, y, hex, sel, w = 2, onClick } = props;
+  const { cw, ch, s } = useGrid();
+  const focus = useFocusable<HTMLDivElement>(!!onClick, {
+    activate: () => onClick?.(),
+    auto: sel ? 1 : undefined,
+  });
+  const lit = sel || focus.focused;
+  const bw = lit ? Math.max(2, Math.round(s)) : Math.max(1, Math.round(s) - 1);
+  return (
+    <div
+      ref={focus.ref}
+      className={focus.focused ? 'lt-hitfoc' : undefined}
+      onMouseEnter={focus.onMouseEnter}
+      style={{
+        position: 'absolute',
+        boxSizing: 'content-box',
+        left: x * cw + 1,
+        top: y * ch + ch * 0.12,
+        width: Math.max(0, w * cw - 4 - 2 * bw),
+        height: Math.max(0, ch * 0.76 - 2 * bw),
+        background: hex,
+        border: `${bw}px solid ${lit ? 'var(--lt-ph)' : 'var(--lt-faint)'}`,
+        boxShadow: sel
+          ? '0 0 6px rgba(126,255,191,.7), inset 0 0 0 1px #07130d'
+          : 'inset 0 0 0 1px #07130d',
+        cursor: onClick ? 'pointer' : undefined,
+        zIndex: 4,
+      }}
+      onClick={
+        onClick
+          ? (e) => {
+              e.stopPropagation();
+              onClick();
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+/**
+ * `< VALUE >` stepper, as the mockup's cyc(): `<` at x, the value in w cells from x + 2,
+ * `>` at x + 3 + w. The whole control is w + 4 cells wide. onValue makes the value itself
+ * clickable (long lists open a picker there).
+ */
+export function Cycler(props: {
+  x: number;
+  y: number;
+  /** Cells for the value. */
+  w: number;
+  value: string;
+  onPrev: () => void;
+  onNext: () => void;
+  onValue?: () => void;
+  disabled?: boolean;
+}) {
+  const { x, y, w, value, onPrev, onNext, onValue, disabled } = props;
+  const text = pad(value.toUpperCase(), w);
+  // The value takes the focus; Left and Right step it, Enter opens the picker (or steps on).
+  const step = {
+    left: () => {
+      onPrev();
+      return true;
+    },
+    right: () => {
+      onNext();
+      return true;
+    },
+  };
+  if (disabled) {
+    return (
+      <Put x={x} y={y} cls="faint">
+        {`< ${text} >`}
+      </Put>
+    );
+  }
+  return (
+    <>
+      <Put x={x} y={y} cls="dim" hoverCls="inv" onClick={onPrev} mouseOnly>
+        {'<'}
+      </Put>
+      <Put
+        x={x + 2}
+        y={y}
+        hoverCls="inv"
+        onClick={onValue || onNext}
+        edge={step}
+      >
+        {text}
+      </Put>
+      <Put
+        x={x + 3 + w}
+        y={y}
+        cls="dim"
+        hoverCls="inv"
+        onClick={onNext}
+        mouseOnly
+      >
+        {'>'}
+      </Put>
+    </>
+  );
+}
+
+/**
+ * A framed overlay: paints the terminal background over cells (x, y, w, h), draws a Frame
+ * and puts its children above everything under it. Children use the same grid coordinates
+ * as everything else. Clicks on the panel never reach what is beneath it.
+ */
+export function Panel(props: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  title?: string;
+  children?: ReactNode;
+}) {
+  const { x, y, w, h, title, children } = props;
+  const { cw, ch } = useGrid();
+  return (
+    <div style={{ position: 'absolute', left: 0, top: 0, zIndex: 8 }}>
+      <div
+        style={{
+          position: 'absolute',
+          left: x * cw,
+          top: y * ch,
+          width: w * cw,
+          height: h * ch,
+          background: 'var(--lt-bg)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
+      <Frame x={x} y={y} w={w} h={h} title={title} />
+      <FocusScope>{children}</FocusScope>
+    </div>
   );
 }
 

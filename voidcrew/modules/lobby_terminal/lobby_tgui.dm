@@ -110,6 +110,7 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 	merge_section(data, crews_data(user))
 	merge_section(data, yard_data(user))
 	merge_section(data, housing_data(user))
+	merge_section(data, char_data(user))
 	return data
 
 /// Copies a section's keys into the payload. Sections may return null.
@@ -133,4 +134,9 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 		return yard_act(action, params, user)
 	if(prefix == "home_")
 		return housing_act(action, params, user)
+	if(prefix == "char_")
+		// Same guard as tg's character window: no prefs edits before the preference assets exist.
+		if(!user.client?.prefs || SSearly_assets.initialized != INITIALIZATION_INNEW_REGULAR)
+			return FALSE
+		return char_act(action, params, user)
 	return shell_act(action, params, user)

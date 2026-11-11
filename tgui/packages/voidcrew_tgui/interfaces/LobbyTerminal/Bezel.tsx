@@ -27,10 +27,12 @@ const KEY_LABEL: Record<KeyId, string> = {
 function Key(props: {
   id: KeyId;
   disabled?: boolean;
+  /** Glows while its screen is open (CHARACTER). */
+  lit?: boolean;
   title: string;
   onClick: () => void;
 }) {
-  const { id, disabled, title, onClick } = props;
+  const { id, disabled, lit, title, onClick } = props;
   const focus = useFocusable<HTMLButtonElement>(!disabled, {
     activate: onClick,
   });
@@ -38,7 +40,7 @@ function Key(props: {
     <button
       ref={focus.ref}
       type="button"
-      className={`lt-key lt-key--${id}${disabled ? ' is-disabled' : ''}${focus.focused ? ' is-focus' : ''}`}
+      className={`lt-key lt-key--${id}${disabled ? ' is-disabled' : ''}${lit ? ' is-lit' : ''}${focus.focused ? ' is-focus' : ''}`}
       disabled={disabled}
       title={title}
       onClick={disabled ? undefined : onClick}
@@ -93,8 +95,15 @@ function SmallButton(props: {
   );
 }
 
-export function Bezel(props: { s: number; children: ReactNode }) {
-  const { s, children } = props;
+export function Bezel(props: {
+  s: number;
+  children: ReactNode;
+  /** The CHARACTER tab is open: the key glows. */
+  characterLit?: boolean;
+  /** The CHARACTER key: switches to the CHARACTER tab. */
+  onCharacter: () => void;
+}) {
+  const { s, children, characterLit, onCharacter } = props;
   const { data, act } = useBackend<LobbyData>();
   const art = !!data.bezel;
   const preRound = data.phase === 'loading' || data.phase === 'pregame';
@@ -143,8 +152,9 @@ export function Bezel(props: { s: number; children: ReactNode }) {
             <Key
               id="character"
               disabled={!data.prefs_ready}
+              lit={characterLit}
               title="Character"
-              onClick={() => act('character')}
+              onClick={onCharacter}
             />
             {data.localhost_admin && preRound ? (
               <Key
@@ -208,6 +218,11 @@ const LEGEND_CSS = `
   line-height: calc(var(--s) * 13px); text-align: center; letter-spacing: calc(var(--s) * 1px); }
 .lt-key--start.is-focus .lt-key-legend { color: #ffc41f; }
 .lt-key-legend { pointer-events: none; }
+.lt-key.is-lit { position: relative; }
+.lt-key.is-lit::after { content: ''; position: absolute; pointer-events: none;
+  left: calc(var(--s) * 9px); top: calc(var(--s) * 5px); width: calc(var(--s) * 77px); height: calc(var(--s) * 15px);
+  background: rgba(126,255,191,.16); mix-blend-mode: screen;
+  box-shadow: 0 0 calc(var(--s) * 6px) rgba(126,255,191,.55), inset 0 0 calc(var(--s) * 3px) rgba(126,255,191,.5); }
 `;
 
 export const BEZEL_EXTRA_CSS = LEGEND_CSS;

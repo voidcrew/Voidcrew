@@ -12,7 +12,7 @@
 	assets = list()
 	if(fexists("interface/fonts/VCR_OSD_Mono.ttf"))
 		assets["VCR_OSD_Mono.ttf"] = "interface/fonts/VCR_OSD_Mono.ttf"
-	var/list/art = list("frame_9slice.png", "strip_top.png", "deck.png", "grille.png", "tray.png", "lamp_ready.png", "lamp_notready.png", "lamp_off.png")
+	var/list/art = list("frame_9slice.png", "strip_top.png", "deck.png", "grille.png", "tray.png", "lamp_ready.png", "lamp_notready.png", "lamp_off.png", "char_floor.png")
 	for(var/key in list("join", "ready", "notready", "observe", "character"))
 		for(var/key_state in list("idle", "hover", "pressed", "disabled"))
 			art += "key_[key]_[key_state].png"
