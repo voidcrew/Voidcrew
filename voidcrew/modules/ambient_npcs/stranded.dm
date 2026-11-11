@@ -163,6 +163,7 @@
 	outfit = null
 	npc_outfit_table = /datum/human_npc_outfit_table/ambient_stranded
 	dialogue_section = "stranded"
+	gives_gifts = TRUE
 	routine = list(
 		/datum/ambient_activity/stray_fire = 3,
 		/datum/ambient_activity/stray_flare = 1,
