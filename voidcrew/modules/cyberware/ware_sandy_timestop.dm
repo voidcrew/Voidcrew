@@ -36,6 +36,13 @@
  *
  * Bosses (a finisher user, or a boss-rank human NPC) are held for SANDY_STOP_BOSS_HOLD at most.
  *
+ * A mob running its own Cascade surge (a bounty NPC's lattice) is never slowed, frozen or tinted while its window
+ * is open, and neither are its shots. If it surges while already held, the field lets it go at once and drops
+ * every slow it was carrying (surge_free()). When its window closes the field may take it again.
+ *
+ * The user's reflex dodge (ware_pro_combat.dm) is off while the world is slowed: the speed gap already does that
+ * job. It comes back for the rest of the window.
+ *
  * Look: affected things get a grey-green tint instead of tg's inversion. Floor items, blood decals and the
  * user are never touched, so they keep their colour, and so do the user's own shots. Shots the user fires
  * while the world is frozen fly a tile, hang there, and go on when it starts moving again.
@@ -84,12 +91,32 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		return null
 	var/atom/on_turf = ismovable(thing) ? get_atom_on_turf(thing) : thing
 	for(field as anything in GLOB.cyberware_time_fields)
-		if(field.immune[thing] || field.immune[on_turf] || field.released[on_turf])
+		if(field.immune[thing] || field.immune[on_turf] || field.released[on_turf] || field.surging[on_turf])
 			continue
 		var/turf/centre = get_turf(field.host)
 		if(centre && centre.z == here.z && get_dist(centre, here) <= field.current_range)
 			return field
 	return null
+
+/// Whether `bearer` is slowing the world around them right now (the freeze or the slow-mo).
+/proc/cyberware_time_stopping(mob/living/bearer)
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(field.host == bearer)
+			return TRUE
+	return FALSE
+
+/// Whether `thing` is a mob with its own Cascade surge window open. Such a mob runs at its own speed in any field.
+/proc/cyberware_own_surge(atom/thing)
+	if(!isliving(thing))
+		return FALSE
+	var/mob/living/body = thing
+	return !!body.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// `surger` just opened its own surge window: every field lets it go and leaves it be until the window closes.
+/proc/cyberware_surge_frees(mob/living/surger)
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(field.host != surger)
+			field.surge_free(surger)
 
 /// How long, in real time, `time` deciseconds of `thing`'s own time take from now. Exact through the freeze,
 /// the slow-mo and the end of the effect, as the field stands now.
@@ -102,12 +129,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /**
  * Real-time lengths for a chain of animation steps `times` on `thing`: list(hold, step 1, step 2, ...), or null
  * when it isn't slowed. `hold` is how long it sits still first (the freeze). A looping chain just plays at the
- * field's pace.
+ * field's pace. `tag` names the animation, so a held mob that breaks free (surge_free()) can drop it.
  */
-/proc/cyberware_dilated_steps(atom/thing, list/times, loop = 1)
+/proc/cyberware_dilated_steps(atom/thing, list/times, loop = 1, tag)
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_time_field(thing)
 	if(!field)
 		return null
+	if(tag && field.held_mobs[thing])
+		LAZYOR(field.slowed_tags[thing], tag)
 	var/list/real = list()
 	if(loop != 1)
 		var/scale = field.time_scale > 0 ? field.time_scale : field.slow_scale
@@ -312,6 +341,10 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/list/held_turrets = list()
 	/// Armed grenades held. Their fuse runs slow.
 	var/list/held_grenades = list()
+	/// Mobs in range running their own surge. The field leaves them and their shots be until their window closes.
+	var/list/surging = list()
+	/// Held mobs, to the tags of their slowed hv_vis_play() animations, to drop if they break free.
+	var/list/slowed_tags = list()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, start_scale = 0)
 	time_scale = start_scale
@@ -329,6 +362,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		UnregisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
 	stopper = null
 	GLOB.cyberware_time_fields -= src
+	for(var/mob/living/surger as anything in surging)
+		UnregisterSignal(surger, COMSIG_QDELETING)
+	surging.Cut()
 	. = ..() // unfreeze_all() lets everything go
 	released.Cut()
 
@@ -355,7 +391,10 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	return at - now + local
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/freeze_atom(atom/movable/A)
-	if(!istype(A) || GLOB.cyberware_time_dilated[A] || global_frozen_atoms[A] || released[A] || immune[A])
+	if(!istype(A) || GLOB.cyberware_time_dilated[A] || global_frozen_atoms[A] || released[A] || immune[A] || surging[A])
+		return FALSE
+	if(cyberware_own_surge(A))
+		leave_surger(A)
 		return FALSE
 	if(ismob(A))
 		var/mob/M = A
@@ -367,6 +406,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		hold_mob(A)
 	else if(isprojectile(A))
 		var/obj/projectile/shot = A
+		if(shot.firer && (surging[shot.firer] || cyberware_own_surge(shot.firer))) // a surging mob's shots fly at its speed
+			return FALSE
 		if(shot.firer && immune[shot.firer])
 			if(time_scale <= 0) // hang_shot takes these
 				return FALSE
@@ -424,6 +465,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	held_grenades -= A
 	frozen_structures -= A
 	user_shots -= A
+	slowed_tags -= A
 	UnregisterSignal(A, COMSIG_QDELETING)
 	escape_the_negative_zone(A)
 	frozen_things -= A
@@ -508,6 +550,50 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		gun.cyberware_burst_start += push
 	if(ranged)
 		ranged.cyberware_burst_start += push
+
+// ----- mobs on their own surge -----
+
+/// Leaves `surger` be while its own window runs. It isn't held.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/leave_surger(mob/living/surger)
+	surging[surger] = TRUE
+	RegisterSignal(surger, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+
+/**
+ * `surger` opened its own surge: if the field holds it, let it go now and drop every slow it carried (its walk,
+ * its pauses, its last bit of lost time, its slowed animations and the shots it fired), then leave it be.
+ */
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/surge_free(mob/living/surger)
+	if(surging[surger])
+		return
+	if(GLOB.cyberware_time_dilated[surger] == src)
+		var/lag = cyberware_time_lag(surger)
+		if(lag > 0)
+			push_deadlines(surger, lag) // the time it really lost since the last tick
+		var/list/tags = slowed_tags[surger]
+		unfreeze_atom(surger)
+		for(var/tag in tags)
+			surger.hv_vis_release(tag, 1) // back to its real pose at once, not at the slowed pace
+		for(var/obj/projectile/shot as anything in held_shots.Copy())
+			if(shot.firer == surger)
+				unfreeze_atom(shot)
+	else
+		var/turf/centre = get_turf(host)
+		var/turf/here = get_turf(surger)
+		if(!centre || !here || here.z != centre.z || get_dist(centre, here) > current_range)
+			return // out of reach: if it walks in still surging, freeze_atom() leaves it be
+	leave_surger(surger)
+
+/// Every tick: surgers whose window has closed are fair game again, if they are still in range.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/check_surgers()
+	var/turf/centre = get_turf(host)
+	for(var/mob/living/surger as anything in surging.Copy())
+		if(cyberware_own_surge(surger))
+			continue
+		surging -= surger
+		UnregisterSignal(surger, COMSIG_QDELETING)
+		var/turf/here = get_turf(surger)
+		if(centre && here && here.z == centre.z && get_dist(centre, here) <= current_range)
+			freeze_atom(surger)
 
 // ----- mechs, turrets, grenades -----
 
@@ -615,6 +701,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	held_turrets -= thing
 	held_grenades -= thing
 	boss_holds -= thing
+	surging -= thing
+	slowed_tags -= thing
 	frozen_structures -= thing
 	frozen_things -= thing
 	GLOB.cyberware_time_dilated -= thing
@@ -664,6 +752,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			if(throw_datum && !throw_datum.paused)
 				throw_datum.start_time += push
 		push_machine_deadlines(push)
+	check_surgers()
 	for(var/mob/living/boss as anything in boss_holds.Copy())
 		if(world.time < boss_holds[boss])
 			continue
@@ -689,9 +778,12 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/dilation_scale = 0.2
 	/// The running dilation, if any.
 	var/obj/effect/timestop/sandevistan/time_stop
+	/// Whether this window slowed the world. Its trail stays green after the dilation ends.
+	var/dilated = FALSE
 
 /// Slows the world if the bearer is a player and nobody else is near. Called as the window opens.
 /datum/status_effect/cyberware_cascade_window/proc/try_time_stop()
+	cyberware_surge_frees(owner) // anyone's surge breaks them out of someone else's field
 	if(dilation_freeze + dilation_time <= 0 || !owner.ckey || time_stop)
 		return FALSE
 	if(cyberware_time_stop_witnessed(owner))
@@ -704,6 +796,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		time_stop = null
 		return FALSE
 	RegisterSignal(time_stop, COMSIG_QDELETING, PROC_REF(time_stop_over))
+	dilated = TRUE
 	owner.remove_client_colour(id) // the user sees the slowed world as it is
 	owner.add_filter(SANDY_STOP_OUTLINE, 2, outline_filter(1, "#5AFF96D2"))
 	return TRUE

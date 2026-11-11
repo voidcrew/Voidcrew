@@ -179,3 +179,105 @@
 	bomb.cyberware_fuse_at = 0 // don't let it go off after the test
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// Whether `thing` wears the dilation's tint
+/datum/unit_test/voidcrew_cyberware_timestop/proc/tinted(atom/thing)
+	return length(thing.atom_colours) >= TEMPORARY_COLOUR_PRIORITY && !isnull(thing.atom_colours[TEMPORARY_COLOUR_PRIORITY])
+
+/// A raider NPC at `where` with its own Cascade lattice
+/datum/unit_test/voidcrew_cyberware_timestop/proc/make_surger(turf/where)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, where)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	TEST_ASSERT(lattice.Insert(raider, special = TRUE), "Test fixture: the lattice wouldn't go in the NPC")
+	return raider
+
+/// No reflex dodge while the user's own world is slowed; it comes back for the rest of the window
+/datum/unit_test/voidcrew_cyberware_timestop/no_dodge_while_slowed
+
+/datum/unit_test/voidcrew_cyberware_timestop/no_dodge_while_slowed/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen, spot(1, 0))
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	TEST_ASSERT_NOTNULL(window, "The lattice's window didn't open")
+	window.dodge_chance = 100
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/component/cyberware_dodge/arbiter = user.GetComponent(/datum/component/cyberware_dodge)
+	TEST_ASSERT_NOTNULL(arbiter, "The window has no dodge")
+	TEST_ASSERT(cyberware_time_stopping(user), "The user isn't marked as slowing time")
+	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), FAILED_BLOCK, "The user dodged a blow in frozen time")
+	sleep(1.2 SECONDS)
+	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), FAILED_BLOCK, "The user dodged a blow in slow-mo")
+	sleep(3 SECONDS) // past the dilation, still in the window
+	TEST_ASSERT_NULL(window.time_stop, "The dilation outlived its 4 s")
+	TEST_ASSERT(!cyberware_time_stopping(user), "The user still counts as slowing time")
+	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), SUCCESSFUL_BLOCK, "The dodge didn't come back after the dilation")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// An NPC already surging when the user slows the world runs at its own speed, and so do its shots
+/datum/unit_test/voidcrew_cyberware_timestop/surging_npc_immune
+
+/datum/unit_test/voidcrew_cyberware_timestop/surging_npc_immune/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/mob/living/carbon/human/npc/raider = make_surger(spot(2, 0))
+	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet, spot(1, 1))
+	shot.firer = raider
+	var/shot_speed = shot.speed
+	TEST_ASSERT_NOTNULL(surge(raider), "The NPC's window didn't open")
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	TEST_ASSERT(field.surging[raider], "The field didn't notice the NPC's surge")
+	TEST_ASSERT(!HAS_TRAIT(raider, TRAIT_IMMOBILIZED) && !HAS_TRAIT(raider, TRAIT_AI_PAUSED), "A surging NPC was frozen")
+	TEST_ASSERT(!tinted(raider), "A surging NPC was tinted")
+	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "A surging NPC's clock slowed")
+	TEST_ASSERT_NULL(cyberware_time_field(raider), "A surging NPC's gore would be slowed")
+	TEST_ASSERT(!field.held_shots[shot] && !shot.paused && shot.speed == shot_speed, "A surging NPC's shot was held")
+	sleep(1.2 SECONDS) // into the slow-mo
+	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "A surging NPC was slowed")
+
+	// Its window closes: the field takes it like anyone else.
+	raider.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(!field.surging[raider], "The field kept leaving the NPC be after its window closed")
+	TEST_ASSERT(raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The NPC wasn't slowed once its window closed")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	raider.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// An NPC held in slow-mo that surges breaks free at once and drops every slow it carried
+/datum/unit_test/voidcrew_cyberware_timestop/late_surge_breaks_free
+
+/datum/unit_test/voidcrew_cyberware_timestop/late_surge_breaks_free/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/mob/living/carbon/human/npc/raider = make_surger(spot(2, 0))
+	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet, spot(1, 1))
+	shot.firer = raider
+	var/shot_speed = shot.speed
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	sleep(1.2 SECONDS) // into the slow-mo
+	TEST_ASSERT(raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "Test fixture: the NPC isn't slowed")
+	TEST_ASSERT(field.held_shots[shot], "Test fixture: the NPC's shot isn't held")
+	raider.hv_vis_play("sandy_test_flinch", list(list(2, 0, matrix(), 2, LINEAR_EASING), list(0, 0, matrix(), 2, LINEAR_EASING)))
+	TEST_ASSERT("sandy_test_flinch" in field.slowed_tags[raider], "A held NPC's slowed animation wasn't noted")
+
+	TEST_ASSERT_NOTNULL(surge(raider), "The NPC's window didn't open")
+	TEST_ASSERT(field.surging[raider], "The field didn't let the surging NPC go")
+	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The surging NPC stayed slowed")
+	TEST_ASSERT(!HAS_TRAIT(raider, TRAIT_IMMOBILIZED) && !HAS_TRAIT(raider, TRAIT_AI_PAUSED), "The surging NPC stayed held")
+	TEST_ASSERT(!tinted(raider), "The surging NPC stayed tinted")
+	TEST_ASSERT_NULL(GLOB.cyberware_time_dilated[raider], "The surging NPC is still in the field's hands")
+	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The surging NPC's clock stayed slow")
+	TEST_ASSERT_NULL(field.slowed_tags[raider], "The surging NPC's slowed animations weren't dropped")
+	TEST_ASSERT(!field.held_shots[shot] && shot.speed == shot_speed, "The surging NPC's shot stayed slowed")
+	sleep(0.5 SECONDS) // a few field ticks
+	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The field took the surging NPC back")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	raider.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	raider.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

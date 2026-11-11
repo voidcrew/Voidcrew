@@ -207,7 +207,7 @@
 	var/list/times = list()
 	for(var/list/step as anything in steps)
 		times += step[4]
-	var/list/real = cyberware_dilated_steps(src, times, loop)
+	var/list/real = cyberware_dilated_steps(src, times, loop, tag)
 	var/hold = real ? real[1] : 0
 	var/started = FALSE
 	for(var/i in 1 to length(steps))
