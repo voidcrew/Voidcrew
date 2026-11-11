@@ -137,6 +137,15 @@ window "mapwindow"
 		saved-params = ""
 		text = ""
 		align = left
+	elem "lobby_browser"
+		type = BROWSER
+		pos = 0,0
+		size = 640x480
+		anchor1 = 0,0
+		anchor2 = 100,100
+		is-visible = false
+		background-color = #0b0b0e
+		saved-params = ""
 
 window "info_and_buttons"
 	elem "info_and_buttons"

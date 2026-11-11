@@ -128,6 +128,9 @@
 		worldgen_end(probe, "spawn-failed")
 		return FALSE
 
+	if(template_instance.no_starting_funds)
+		ship_to_spawn.starting_credits = 0
+
 	// Store upgrade selections and theme BEFORE setup_from_template (module job_slots_add
 	// reads them) and BEFORE the map loads (modular_map_root reads them)
 	if(length(upgrade_selections))
@@ -147,6 +150,8 @@
 
 	SSair.can_fire = FALSE
 	var/obj/docking_port/mobile/voidcrew/loaded = action_load(ship_to_spawn.source_template, load_owner = load_owner)
+	if(loaded)
+		template_instance.finish_loaded_copy(loaded)
 	SSair.can_fire = load_owner.previous_air_can_fire
 
 	// Clear loading_ship now that map is loaded

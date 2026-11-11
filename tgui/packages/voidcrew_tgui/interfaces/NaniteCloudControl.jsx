@@ -461,14 +461,15 @@ export const NaniteCloudBackupList = (props, context) => {
 
 export const NaniteCloudBackupDetails = (props, context) => {
   const { act, data } = useBackend(context);
-  const { current_view, can_rule, has_program, cloud_backup } = data;
+  const { current_view, can_rule, has_program, cloud_backup, cloud_load } =
+    data;
   if (!cloud_backup) {
     return <NoticeBox>ERROR: Backup not found</NoticeBox>;
   }
   const cloud_programs = data.cloud_programs || [];
   return (
     <Section
-      title={'Backup #' + current_view}
+      title={'Backup #' + current_view + ' - Load ' + (cloud_load || 0)}
       level={2}
       buttons={
         !!has_program && (
@@ -480,22 +481,44 @@ export const NaniteCloudBackupDetails = (props, context) => {
           />
         )
       }>
-      {cloud_programs.map((program) => {
+      {cloud_programs.map((program, index) => {
         const rules = program.rules || [];
         return (
           <Collapsible
             key={program.name}
             title={program.name}
             buttons={
-              <Button
-                icon="minus-circle"
-                color="bad"
-                onClick={() =>
-                  act('remove_program', {
-                    program_id: program.id,
-                  })
-                }
-              />
+              <>
+                <Button
+                  icon="arrow-up"
+                  disabled={index === 0}
+                  onClick={() =>
+                    act('move_program', {
+                      program_id: program.id,
+                      offset: -1,
+                    })
+                  }
+                />
+                <Button
+                  icon="arrow-down"
+                  disabled={index === cloud_programs.length - 1}
+                  onClick={() =>
+                    act('move_program', {
+                      program_id: program.id,
+                      offset: 1,
+                    })
+                  }
+                />
+                <Button
+                  icon="minus-circle"
+                  color="bad"
+                  onClick={() =>
+                    act('remove_program', {
+                      program_id: program.id,
+                    })
+                  }
+                />
+              </>
             }>
             <Section>
               <NaniteInfoBox program={program} />
@@ -659,7 +682,7 @@ export const NaniteProgramHub = (props, context) => {
 
 export const NaniteCloudControl = (props, context) => {
   const { act, data } = useBackend(context);
-  const { has_disk, current_view, new_backup_id, ship_name } = data;
+  const { has_disk, current_view, new_backup_id } = data;
   return (
     <Window width={1295} height={700} resizable>
       <Window.Content>
@@ -744,12 +767,6 @@ export const NaniteCloudControl = (props, context) => {
                       </>
                     )
                   }>
-                  <NoticeBox info>
-                    Cloud networks are local to {ship_name || 'this ship'}.
-                    Nanites join a backup by having their cloud ID set in a
-                    nanite chamber aboard this ship. Matching ID numbers on
-                    other ships are separate, unrelated clouds.
-                  </NoticeBox>
                   {!data.current_view ? (
                     <NaniteCloudBackupList />
                   ) : (

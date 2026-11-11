@@ -88,6 +88,11 @@
 // If this is uncommented, we do a single run though of the game setup and tear down process with unit tests in between
 //#define UNIT_TESTS
 
+// VOIDCREW EDIT ADDITION START - dev-only tgui test harness (voidcrew/modules/ui_harness). Lets local tools click a
+// client's tgui windows through world/Topic from 127.0.0.1. Never define this on a live server.
+//#define UI_HARNESS
+// VOIDCREW EDIT ADDITION END
+
 // If this is uncommented, will attempt to load and initialize prof.dll/libprof.so by default.
 // Even if it's not defined, you can pass "tracy" via -params in order to try to load it.
 // We do not ship byond-tracy. Build it yourself here: https://github.com/mafemergency/byond-tracy,
