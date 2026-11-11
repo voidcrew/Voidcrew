@@ -682,7 +682,8 @@
 	var/obj/machinery/vending/coffee/known = coffee_ref?.resolve()
 	if(!QDELETED(known))
 		return known
-	if(world.time < coffee_looked_at + 5 MINUTES)
+	// Looked lately and found none: not again for a while (never looked: look now, even in a round's first minutes)
+	if(coffee_looked_at && world.time < coffee_looked_at + 5 MINUTES)
 		return null
 	coffee_looked_at = world.time
 	var/turf/near = police?.desk_turf || get_turf(src)
