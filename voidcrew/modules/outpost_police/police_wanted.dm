@@ -23,7 +23,8 @@
 // =========================================================================
 
 /datum/outpost_police
-	/// mind -> list(world.time, TRUE if that report counted): folds the same offender's reports within a half second
+	/// weakref to a mind -> list(world.time, TRUE if that report counted): folds the same offender's reports within a
+	/// half second. Weak, so a deleted mind is not held here.
 	var/list/recent_reports = list()
 	/// Reports waiting on a witness's delay (/datum/outpost_pending_report), confirmed in tick_warrants()
 	var/list/pending_reports = list()
@@ -89,33 +90,35 @@
 			if(bounty_kingpin_excuses_aggression(outpost, offender))
 				return null
 	var/datum/mind/mind = offender.mind
+	var/datum/weakref/mind_ref = WEAKREF(mind)
 	// One report per offender per half second; a folded one still lends its weapon and victim to a counted crime
 	prune_recent_reports()
-	var/list/last = recent_reports[mind]
+	var/list/last = recent_reports[mind_ref]
 	if(last)
 		if(last[2])
 			fold_crime(mind, victim, source)
 		return null
 	var/witnessed = perception.witness_of(offender, crime, victim, source)
 	if(witnessed == POLICE_WITNESS_NONE)
-		recent_reports[mind] = list(world.time, FALSE)
+		recent_reports[mind_ref] = list(world.time, FALSE)
 		log_game("OUTPOST POLICE: [key_name(offender)] committed [crime] at [outpost] ([AREACOORD(offender)]) and nobody saw.")
 		return null
 	var/atom/witness = perception.last_witness
 	var/delay = perception.report_delay(witness, crime)
 	if(delay > 0 || perception.reports_by_call(witness))
-		recent_reports[mind] = list(world.time, FALSE)
+		recent_reports[mind_ref] = list(world.time, FALSE)
 		queue_report(offender, crime, victim, source, perception.last_witnesses || list(witness), delay)
 		return null
-	recent_reports[mind] = list(world.time, TRUE)
+	recent_reports[mind_ref] = list(world.time, TRUE)
 	return count_crime(offender, crime, victim, source)
 
 /// Forgets reports older than the grace
 /datum/outpost_police/proc/prune_recent_reports()
-	for(var/datum/mind/mind as anything in recent_reports.Copy())
-		var/list/seen = recent_reports[mind]
+	for(var/datum/weakref/mind_ref as anything in recent_reports.Copy())
+		var/list/seen = recent_reports[mind_ref]
+		var/datum/mind/mind = mind_ref.resolve()
 		if(QDELETED(mind) || world.time - seen[1] >= OUTPOST_AGGRESSION_GRACE)
-			recent_reports -= mind
+			recent_reports -= mind_ref
 
 /// A report folded into the offender's last counted one: its weapon is evidence, its victim a victim
 /datum/outpost_police/proc/fold_crime(datum/mind/mind, atom/victim, obj/item/source)
