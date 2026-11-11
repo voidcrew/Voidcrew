@@ -221,8 +221,8 @@
 		wall_spot.ChangeTurf(/turf/closed/wall)
 	// Seven tiles and a wall: a pistol carries 9, the wall costs half its 3 for a loud noise
 	var/mob/living/carbon/human/shooter = visitor_at(11, 3)
-	stealth_noise(get_turf(shooter), "gun_pistol", null, shooter)
-	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look (muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
+	var/heard_by = stealth_noise(get_turf(shooter), "gun_pistol", null, shooter)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look (heard by [heard_by], officer's group [brain.group ? "yes" : "none"], muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
 	TEST_ASSERT(!length(police.warrants) && !length(police.pending_reports), "A shot heard gave someone a record")
 
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
@@ -266,7 +266,7 @@
 	TEST_ASSERT(brain.at_stop && brain.route_index == 2, "A beat officer at stop 2 is not stopped there")
 	var/datum/ai_planning_subtree/outpost_police_stop/stop_subtree = locate() in brain.planning_subtrees
 	stop_subtree.SelectBehaviors(brain, 1)
-	TEST_ASSERT(istype(officer.activity, /datum/ambient_activity/police_coffee), "At a coffee stop the officer did not go for a coffee (stop tag [brain.police_stop_tag_now() || "none"], visit [brain.police_stop_visit] of [brain.wait_until], doing [officer.activity?.type || "nothing"], held still [officer.paused_at])")
+	TEST_ASSERT(istype(officer.activity, /datum/ambient_activity/police_coffee), "At a coffee stop the officer did not go for a coffee (stop tag [brain.police_stop_tag_now() || "none"], visit [brain.police_stop_visit] of [brain.wait_until], doing [officer.activity?.type || "nothing"], held still [officer.paused_at], beside the machine: [police_spot_report(officer, machine)])")
 	TEST_ASSERT_EQUAL(officer.activity.anchor(), machine, "The officer went for a coffee somewhere else")
 	brain.wait_until = world.time - 1
 	stop_subtree.SelectBehaviors(brain, 1)

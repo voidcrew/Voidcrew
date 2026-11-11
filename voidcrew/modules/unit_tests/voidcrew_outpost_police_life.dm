@@ -336,7 +336,7 @@
 	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human/consistent, pa_tile(0, 3))
 	sleeper.Sleeping(5 MINUTES)
 	var/datum/ambient_activity/police_check/check = patrol.start_activity(new /datum/ambient_activity/police_check(patrol))
-	TEST_ASSERT_NOTNULL(check, "An officer did not notice someone asleep (sleeper seen: [patrol.life_sleeper_near() || "nobody"], asleep [sleeper.IsSleeping()], stat [sleeper.stat], [get_dist(patrol, sleeper)] tiles, line [can_see(patrol, sleeper, 8)], doing [patrol.activity?.type || "nothing"])")
+	TEST_ASSERT_NOTNULL(check, "An officer did not notice someone asleep (sleeper seen: [patrol.life_sleeper_near() || "nobody"], asleep [sleeper.IsSleeping()], stat [sleeper.stat], [get_dist(patrol, sleeper)] tiles, line [can_see(patrol, sleeper, 8)], doing [patrol.activity?.type || "nothing"], beside: [police_spot_report(patrol, sleeper)])")
 	TEST_ASSERT_EQUAL(check.target_ref.resolve(), sleeper, "An officer is checking on the wrong person")
 	var/health_before = sleeper.health
 	patrol.forceMove(check.spot)

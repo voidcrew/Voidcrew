@@ -24,7 +24,8 @@
 	person.forceMove(locker)
 	stealth_ai.stealth_go_alert(person)
 	TEST_ASSERT_EQUAL(stealth_ai.shut_in, locker, "A guard didn't claim the locker the second time")
-	qdel(locker)
+	// Broken apart, as a locker is destroyed in play: it lets its contents out first (a bare qdel() deletes them, person and all)
+	locker.deconstruct(FALSE)
 	TEST_ASSERT_NULL(stealth_ai.shut_in, "A guard kept a deleted locker")
 	// A new one, and the guard calms down.
 	var/obj/structure/closet/second = allocate(/obj/structure/closet, stealth_at(block, 4, 1))

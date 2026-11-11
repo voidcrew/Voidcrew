@@ -70,6 +70,8 @@
 	TEST_ASSERT(shop.is_open(), "A shop that never had a keeper is shut")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = r1_keeper(shop, counter)
 	var/mob/living/carbon/human/buyer = wanted_person(wanted_spot(2, 1))
+	// tg closes every window on a mob with no client; the buyer stands in for a player at the counter
+	ADD_TRAIT(buyer, TRAIT_PRESERVE_UI_WITHOUT_CLIENT, TRAIT_GENERIC)
 	TEST_ASSERT_EQUAL(shop.keeper?.resolve(), keeper, "The keeper was not set")
 	TEST_ASSERT_EQUAL(shop.counter_turf, counter, "The counter is not the first keeper's spot")
 	TEST_ASSERT_EQUAL(keeper.home, counter, "The keeper's home is not their counter")

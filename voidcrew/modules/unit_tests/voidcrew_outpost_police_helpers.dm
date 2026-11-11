@@ -55,6 +55,29 @@
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	brain.planned_behaviors.Cut()
 
+/// For a failure message: why `npc` may or may not stand on each tile beside `thing` ("dx,dy why")
+/datum/unit_test/proc/police_spot_report(mob/living/carbon/human/npc/ambient_npc/outpost/npc, atom/thing)
+	var/turf/center = get_turf(thing)
+	var/list/out = list()
+	for(var/turf/tile as anything in RANGE_TURFS(1, center))
+		if(tile == center)
+			continue
+		var/why = "ok"
+		if(!isopenturf(tile))
+			why = "closed"
+		else if(tile != npc.loc && ambient_outpost_tile_blocked(tile, npc))
+			why = "blocked"
+		else if(!npc.leash_ok(tile))
+			why = "leash"
+		else if(npc.place && !npc.place.spot_allowed(tile, npc))
+			why = "not public floor"
+		else if(ambient_outpost_tile_avoided(tile, npc.place, npc.counter_business))
+			why = "avoided"
+		else if(!tile.Adjacent(thing))
+			why = "not adjacent"
+		out += "[tile.x - center.x],[tile.y - center.y] [why]"
+	return "place [npc.place ? "yes" : "none"]: [out.Join("; ")]"
+
 /// A loaded trader outpost has police; a beat officer built there joins the roster, plans once without a runtime and holds still with nobody about
 /datum/unit_test/voidcrew_outpost_police_smoke
 
