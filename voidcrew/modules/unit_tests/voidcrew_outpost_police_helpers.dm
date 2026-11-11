@@ -38,6 +38,23 @@
 	warrant.peak = max(warrant.peak, heat)
 	return warrant
 
+/**
+ * Whether `officer`'s force subtree plans a shot at `target` now, with `target` as its target. A one-star suspect is
+ * a target (spec-stealth 1.3: the officer keeps them in view) that the subtree only watches; this tells the two apart.
+ */
+/datum/unit_test/proc/police_plans_shot(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, atom/target)
+	var/datum/ai_controller/brain = officer.ai_controller
+	var/datum/ai_planning_subtree/outpost_police_force/force_tree = locate() in brain?.planning_subtrees
+	if(!force_tree)
+		TEST_FAIL("[officer.type]'s brain has no force subtree")
+		return FALSE
+	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+	brain.planned_behaviors.Cut()
+	force_tree.SelectBehaviors(brain, 1)
+	. = !!(locate(/datum/ai_behavior/human_npc_shoot) in brain.planned_behaviors)
+	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	brain.planned_behaviors.Cut()
+
 /// A loaded trader outpost has police; a beat officer built there joins the roster, plans once without a runtime and holds still with nobody about
 /datum/unit_test/voidcrew_outpost_police_smoke
 

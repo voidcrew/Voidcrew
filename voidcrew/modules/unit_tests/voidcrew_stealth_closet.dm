@@ -30,7 +30,7 @@
 	var/obj/structure/closet/second = allocate(/obj/structure/closet, stealth_at(block, 4, 1))
 	person.forceMove(second)
 	stealth_ai.stealth_go_alert(person)
-	TEST_ASSERT_EQUAL(stealth_ai.shut_in, second, "A guard didn't claim the second locker")
+	TEST_ASSERT_EQUAL(stealth_ai.shut_in, second, "A guard didn't claim the second locker (state [stealth_ai.stealth_state()], target [stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET] || "none"], person in [person.loc || "nullspace"], person deleted [QDELETED(person)])")
 	stealth_ai.stealth_go_searching(stealth_at(block, 4, 1))
 	TEST_ASSERT_NULL(stealth_ai.shut_in, "A guard that stopped being alert kept its locker")
 

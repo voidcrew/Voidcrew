@@ -116,6 +116,8 @@
 	var/obj/item/storage/belt/utility/belt = prisoner.belt
 	var/obj/item/screwdriver/inside = allocate(/obj/item/screwdriver)
 	bag.atom_storage.attempt_insert(inside, prisoner, TRUE)
+	// tg's cuffs make them drop what they hold, where they are cuffed: the crowbar goes in a pocket first
+	TEST_ASSERT(prisoner.equip_to_slot_if_possible(crowbar, ITEM_SLOT_RPOCKET, disable_warning = TRUE), "The fixture could not pocket the crowbar")
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
 	cuffs.apply_cuffs(prisoner, officer, TRUE)
 	TEST_ASSERT_NOTNULL(prisoner.handcuffed, "The fixture could not cuff the prisoner")

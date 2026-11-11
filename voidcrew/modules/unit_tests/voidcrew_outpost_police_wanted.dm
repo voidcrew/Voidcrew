@@ -292,7 +292,8 @@
 	outpost.register_pvp_aggression(attacker, defender, "unarmed")
 	TEST_ASSERT_NULL(police.warrants[defender.mind], "Hitting back inside the window made the defender a suspect")
 	TEST_ASSERT_NULL(outpost.self_defense_targets[attacker.mind], "Hitting back gave the attacker a window of their own")
-	// A hit by the attacker, with the defender watching, counts
+	// A later hit by the attacker (past the half-second fold, OUTPOST_AGGRESSION_GRACE), with the defender watching, counts
+	police.recent_reports.Cut()
 	outpost.register_pvp_aggression(defender, attacker, "unarmed")
 	TEST_ASSERT_NOTNULL(police.warrants[attacker.mind], "A seen hit by the first aggressor did not count")
 

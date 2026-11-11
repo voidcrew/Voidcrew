@@ -119,9 +119,9 @@
 	person.mind_initialize()
 	return person
 
-/// Police cuffs on `suspect`, put there by `officer`
+/// Police cuffs on `suspect`, put there by `officer` with an officer's own pair (it puts a used pair on them; a used pair cuffs nobody)
 /datum/unit_test/proc/police_cell_cuff(mob/living/carbon/human/suspect, mob/living/officer)
-	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police)
 	cuffs.apply_cuffs(suspect, officer, TRUE)
 	return suspect.handcuffed
 

@@ -80,7 +80,12 @@
 	TEST_ASSERT(!(/datum/ai_planning_subtree/simple_find_target in subtrees) && !(/datum/ai_planning_subtree/ambient_routine in subtrees), "tg's target finder or the ambient routine still runs an officer")
 	TEST_ASSERT(officer.stealth_radio, "An officer is not on the radio net")
 	TEST_ASSERT_NOTNULL(officer.stealth_radio_ready(), "An officer's headset does not work")
-	TEST_ASSERT_NULL(locate(/obj/item/flashlight) in officer.get_all_contents(), "An officer carries a light (abuse M8)")
+	// No light that can come off them (abuse M8, ST6). The one light allowed is tg's mini energy gun's own gunlight,
+	// built into the gun (not removable) on an officer whose kit is locked to them
+	for(var/obj/item/flashlight/light in officer.get_all_contents())
+		var/obj/item/gun/holder = light.loc
+		var/datum/component/seclite_attachable/mount = istype(holder) ? holder.GetComponent(/datum/component/seclite_attachable) : null
+		TEST_ASSERT(mount && mount.light == light && !mount.is_light_removable, "An officer carries a light that can come off (abuse M8): [light] in [light.loc]")
 
 // ===== SIGHT CONVICTS =====
 
@@ -217,7 +222,7 @@
 	// Seven tiles and a wall: a pistol carries 9, the wall costs half its 3 for a loud noise
 	var/mob/living/carbon/human/shooter = visitor_at(11, 3)
 	stealth_noise(get_turf(shooter), "gun_pistol", null, shooter)
-	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look (muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
 	TEST_ASSERT(!length(police.warrants) && !length(police.pending_reports), "A shot heard gave someone a record")
 
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
@@ -261,7 +266,7 @@
 	TEST_ASSERT(brain.at_stop && brain.route_index == 2, "A beat officer at stop 2 is not stopped there")
 	var/datum/ai_planning_subtree/outpost_police_stop/stop_subtree = locate() in brain.planning_subtrees
 	stop_subtree.SelectBehaviors(brain, 1)
-	TEST_ASSERT(istype(officer.activity, /datum/ambient_activity/police_coffee), "At a coffee stop the officer did not go for a coffee")
+	TEST_ASSERT(istype(officer.activity, /datum/ambient_activity/police_coffee), "At a coffee stop the officer did not go for a coffee (stop tag [brain.police_stop_tag_now() || "none"], visit [brain.police_stop_visit] of [brain.wait_until], doing [officer.activity?.type || "nothing"], held still [officer.paused_at])")
 	TEST_ASSERT_EQUAL(officer.activity.anchor(), machine, "The officer went for a coffee somewhere else")
 	brain.wait_until = world.time - 1
 	stop_subtree.SelectBehaviors(brain, 1)

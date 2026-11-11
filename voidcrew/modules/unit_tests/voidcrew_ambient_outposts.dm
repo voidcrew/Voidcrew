@@ -902,27 +902,38 @@
 		TEST_ASSERT_EQUAL(ambient_test_cash_on(spot) - cash_before, dropped, "[npc_type] dropped cash again after a revive")
 		qdel(npc)
 
-	// A killed person's place stays empty a good while
+	// A killed person's place stays empty a good while. The deaths above put the outpost in trouble, when nobody is
+	// brought in at all (spec-rehydrate 2, recovery_core.dm roles_may_fill()): this starts from a normal day.
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	TEST_ASSERT_NOTNULL(recovery, "A trader outpost has no recovery")
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
 	var/datum/ambient_outpost_role/core_test/role = allocate(/datum/ambient_outpost_role/core_test)
 	role.npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/customer
 	role.max_count = 1
 	var/list/roles = list(role)
 	SSambient_npcs.update_outpost(place, 0, roles, 5)
 	TEST_ASSERT_EQUAL(place.count_role(role.type), 1, "The role was not filled in place")
-	var/list/settled = place.living_npcs()
-	var/mob/living/carbon/human/npc/ambient_npc/victim = settled[1]
+	// The one made for the role (a cleanup crew the trouble above called in may still be about)
+	var/mob/living/carbon/human/npc/ambient_npc/victim
+	for(var/mob/living/carbon/human/npc/ambient_npc/settled as anything in place.living_npcs())
+		if(settled.role == role.type)
+			victim = settled
+			break
+	TEST_ASSERT_NOTNULL(victim, "Nobody living holds the role that was filled")
 	victim.apply_damage(victim.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(place.killed_slots(role.type), 1, "A killing did not leave its place empty")
 	var/list/until = place.killed_until[role.type]
 	TEST_ASSERT(until[1] - world.time >= 11900 && until[1] - world.time <= 12000, "A killed person's place opens again in [(until[1] - world.time) / 10] seconds, not twenty minutes") // AMBIENT_OUTPOST_KILLED_SLOT_TIME
-	// Nobody there: nobody is made in their place, and the body lies until the human NPC corpse sweep
-	// takes it once nobody is near (N9; AMBIENT_OUTPOST_BODY_TIME at a trader outpost)
+	// Nobody there: nobody is made in their place, and the body lies for the outpost's morgue crew, not the
+	// corpse sweep (spec-rehydrate 2)
 	place.needs_settling = TRUE
 	TEST_ASSERT_EQUAL(SSambient_npcs.update_outpost(place, 0, roles, 5), 0, "A killed person was made up in place at once")
 	TEST_ASSERT(!QDELETED(victim), "A body vanished at an outpost nobody is on")
-	TEST_ASSERT(victim in SShuman_npcs.corpses, "A body at an outpost is not up for the corpse sweep")
-	TEST_ASSERT_EQUAL(victim.npc_corpse_lifetime, 3000, "A body at a trader outpost lies [victim.npc_corpse_lifetime / 10] seconds, not five minutes") // AMBIENT_OUTPOST_BODY_TIME
-	// A player comes: nobody off the lift for them either
+	TEST_ASSERT(recovery.state != 0, "A killing did not put the outpost in trouble") // OUTPOST_RECOVERY_NORMAL
+	TEST_ASSERT(WEAKREF(victim) in recovery.npc_dead, "A body at an outpost is not left for its morgue crew")
+	TEST_ASSERT_EQUAL(victim.npc_corpse_lifetime, 0, "A body at a trader outpost is still on the corpse sweep's clock")
+	// Back to a normal day, a player comes: nobody off the lift for them while the killed person's place is empty
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
 	for(var/i in 1 to 3)
 		place.arrivals_at = world.time
 		SSambient_npcs.update_outpost(place, 1, roles)

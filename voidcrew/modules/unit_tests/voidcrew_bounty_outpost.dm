@@ -979,7 +979,8 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/downed_decoy = decoys[2]
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/free_decoy = decoys[3]
 	dead_decoy.death()
-	TEST_ASSERT(dead_decoy in SShuman_npcs.corpses, "A dead decoy is nobody's to clean up: the corpse sweep does not know it")
+	// A body at a trader outpost is its morgue crew's to carry off (spec-rehydrate 2; recovery_core.dm note_death())
+	TEST_ASSERT(outpost.recovery && (WEAKREF(dead_decoy) in outpost.recovery.npc_dead), "A dead decoy is nobody's to clean up: the morgue crew does not know it")
 	posting.close("expired") // BOUNTY_CLOSE_EXPIRED
 
 	var/datum/ai_planning_subtree/walk_out = GLOB.ai_subtrees[/datum/ai_planning_subtree/human_npc_walk_out]

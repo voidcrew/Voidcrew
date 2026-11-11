@@ -254,8 +254,12 @@
 	TEST_ASSERT(!strategy.can_attack(officer, stunned), "Officers keep firing at a two-star suspect already down")
 	var/mob/living/clean = dispatch_suspect(outpost, 0, here)
 	TEST_ASSERT(!strategy.can_attack(officer, clean), "Officers fight a player with no warrant")
+	// One star stays a target, so the officer keeps them in view (spec-stealth 1.3), but at arrest force the
+	// force subtree only watches them: no shot is planned
 	var/mob/living/arrest = dispatch_suspect(outpost, 10, here)
-	TEST_ASSERT(!strategy.can_attack(officer, arrest), "Officers open fire on a one-star suspect")
+	TEST_ASSERT(strategy.can_attack(officer, arrest), "Officers do not keep a one-star suspect in view")
+	TEST_ASSERT_EQUAL(officer.force_for(arrest), 1, "A one-star suspect is not at arrest force") // POLICE_FORCE_ARREST
+	TEST_ASSERT(!police_plans_shot(officer, arrest), "Officers open fire on a one-star suspect")
 	var/mob/living/carp = allocate(/mob/living/basic/carp, here)
 	TEST_ASSERT(strategy.can_attack(officer, carp), "Officers do not shoot carp")
 	var/mob/living/resident = allocate(/mob/living/basic/carp, here)

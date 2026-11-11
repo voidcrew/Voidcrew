@@ -545,7 +545,8 @@
 	TEST_ASSERT(host.is_user_barred(person), "A gun kept out past the checkpoint did not bar its holder")
 	// One star is the baton and the cuffs: the officers do not shoot for a drawn gun
 	TEST_ASSERT_EQUAL(police.force_level(person), 1, "A drawn gun is more than an arrest") // POLICE_FORCE_ARREST
-	TEST_ASSERT(!police_port_may_attack(officer, person), "An officer would shoot someone for a drawn gun")
+	// A target to keep in view (spec-stealth 1.3), never one to shoot
+	TEST_ASSERT(!police_plans_shot(officer, person), "An officer would shoot someone for a drawn gun")
 	// Their record closing lifts the bar
 	police.close_warrant(person.mind, TRUE)
 	TEST_ASSERT(!host.is_user_barred(person), "The bar did not lift")

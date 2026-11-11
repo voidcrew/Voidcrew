@@ -26,6 +26,22 @@
 	shop.set_keeper(keeper)
 	return keeper
 
+/// Stands in for a loaded outpost's reservation over the test room: it answers contains_turf() and claims or frees nothing
+/datum/turf_reservation/r1_room
+
+/datum/turf_reservation/r1_room/New()
+	return
+
+/datum/turf_reservation/r1_room/Release()
+	return
+
+/// The test room as `outpost`'s site, as a loaded outpost's reservation makes its interior (a trader trades only on its site)
+/datum/unit_test/proc/r1_site(obj/structure/overmap/trader_outpost/outpost)
+	var/datum/turf_reservation/r1_room/room = new
+	room.bottom_left_turfs = list(run_loc_floor_bottom_left)
+	room.top_right_turfs = list(run_loc_floor_top_right)
+	outpost.reservation = room
+
 /// Kills `victim` of its wounds
 /datum/unit_test/proc/r1_kill(mob/living/victim)
 	victim.apply_damage(victim.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
@@ -48,6 +64,7 @@
 
 /datum/unit_test/voidcrew_outpost_recovery_trader_open/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	r1_site(outpost)
 	var/datum/outpost_shop/shop = outpost.ensure_main_shop()
 	var/turf/counter = wanted_spot(2, 2)
 	TEST_ASSERT(shop.is_open(), "A shop that never had a keeper is shut")
@@ -65,7 +82,7 @@
 	TEST_ASSERT_NOTNULL(sku, "The main shop has no plain item to test with")
 	TEST_ASSERT(shop.is_open(), "The shop is shut with its keeper at the counter")
 	TEST_ASSERT(keeper.check_menu(buyer), "A customer at the counter can't be served")
-	TEST_ASSERT(sku.can_trade(buyer, keeper), "A customer at the counter can't trade")
+	TEST_ASSERT(sku.can_trade(buyer, keeper), "A customer at the counter can't trade (keeper's shop [keeper.shop == shop ? "this one" : keeper.shop], buyer barred [outpost.is_user_barred(buyer)], keeper on the site [outpost.contains_site_turf(get_turf(keeper))], keeper's outpost [keeper.outpost == outpost ? "this one" : keeper.outpost])")
 	TEST_ASSERT(GLOB.trader_counter_state.can_use_topic(keeper, buyer) > UI_CLOSE, "The storefront closed with the keeper at the counter")
 
 	// Held up: shut while it lasts

@@ -271,7 +271,9 @@
 		officers += officer
 		officer.apply_damage(officer.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 		TEST_ASSERT_EQUAL(officer.stat, DEAD, "A [kind] did not die of their wounds")
-		TEST_ASSERT_EQUAL(officer.npc_corpse_lifetime, 3 MINUTES, "A dead [kind] is not marked to go in three minutes") // OUTPOST_POLICE_CORPSE_LIFETIME
+		// Dead at the outpost, the body is its morgue crew's to carry off, not the corpse sweep's (spec-rehydrate 2)
+		TEST_ASSERT_EQUAL(officer.npc_corpse_lifetime, 0, "A dead [kind] at the outpost is still on the corpse sweep's clock")
+		TEST_ASSERT(outpost.recovery && (WEAKREF(officer) in outpost.recovery.npc_dead), "A dead [kind] is not left for the morgue crew")
 		for(var/obj/item/stack/spacecash/money in spot)
 			TEST_FAIL("A dead [kind] dropped cash")
 		for(var/obj/item/holochip/chip in spot)

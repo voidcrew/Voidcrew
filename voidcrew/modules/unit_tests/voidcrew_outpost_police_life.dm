@@ -14,8 +14,10 @@
 	officer.resume_routine()
 	return officer
 
-/// A headset on `officer`'s ears, which their radio lines go through
+/// A headset on `officer`'s ears, which their radio lines go through: an officer's own (their kit locks it on), or a new one
 /datum/unit_test/proc/police_headset_on(mob/living/carbon/human/officer)
+	if(istype(officer.ears, /obj/item/radio/headset))
+		return officer.ears
 	var/obj/item/radio/headset/headset = allocate(/obj/item/radio/headset)
 	TEST_ASSERT(officer.equip_to_slot_if_possible(headset, ITEM_SLOT_EARS), "A headset would not go on [officer]")
 	return headset
@@ -334,7 +336,7 @@
 	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human/consistent, pa_tile(0, 3))
 	sleeper.Sleeping(5 MINUTES)
 	var/datum/ambient_activity/police_check/check = patrol.start_activity(new /datum/ambient_activity/police_check(patrol))
-	TEST_ASSERT_NOTNULL(check, "An officer did not notice someone asleep")
+	TEST_ASSERT_NOTNULL(check, "An officer did not notice someone asleep (sleeper seen: [patrol.life_sleeper_near() || "nobody"], asleep [sleeper.IsSleeping()], stat [sleeper.stat], [get_dist(patrol, sleeper)] tiles, line [can_see(patrol, sleeper, 8)], doing [patrol.activity?.type || "nothing"])")
 	TEST_ASSERT_EQUAL(check.target_ref.resolve(), sleeper, "An officer is checking on the wrong person")
 	var/health_before = sleeper.health
 	patrol.forceMove(check.spot)
