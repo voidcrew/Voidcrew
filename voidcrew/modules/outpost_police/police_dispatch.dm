@@ -398,7 +398,11 @@
  * units stand down; beat officers go back to their beat.
  */
 /datum/outpost_police/proc/dispatch_respond(level)
-	var/list/datum/outpost_warrant/suspects = suspects_at_outpost()
+	// Someone in cuffs or a cell is no reason to keep a response here: the extra units go home (owner decision 37)
+	var/list/datum/outpost_warrant/suspects = dispatch_active_suspects()
+	level = min(level, dispatch_active_level())
+	if(level < 3)
+		clear_roles()
 	if(level <= 0 || !length(suspects))
 		dispatch_stand_down(0)
 		return
@@ -503,7 +507,7 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in on_scene)
 		if(!officer.case)
 			candidates += officer
-	var/list/datum/outpost_warrant/suspects = suspects_at_outpost()
+	var/list/datum/outpost_warrant/suspects = dispatch_active_suspects()
 	var/surplus = length(on_scene) - keep
 	var/called_in = FALSE
 	// Response units go first, then beat officers
@@ -533,9 +537,26 @@
 				called_in = TRUE
 				INVOKE_ASYNC(farthest, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_CLEAR, null, TRUE)
 
+/// Suspects at the outpost who are not in custody (cuffed by us or in a cell)
+/datum/outpost_police/proc/dispatch_active_suspects()
+	. = list()
+	for(var/datum/outpost_warrant/warrant as anything in suspects_at_outpost())
+		var/mob/living/body = warrant.mind?.current
+		if(isliving(body) && in_custody(body))
+			continue
+		. += warrant
+
+/// The highest stars among the suspects at the outpost who are not in custody
+/datum/outpost_police/proc/dispatch_active_level()
+	. = 0
+	for(var/datum/outpost_warrant/warrant as anything in dispatch_active_suspects())
+		. = max(., get_stars(warrant.mind))
+	. = clamp(., 0, 5)
+
 /**
  * Opens an arrest for each suspect of one or two stars who has none, one case per two officers, rounded up: a
  * lone officer still makes the arrest (with nobody to cover them), rather than fighting someone it never cuffs.
+ * A suspect who is down (any stars, alive) is cuffed where they lie (owner decision 37).
  */
 /datum/outpost_police/proc/dispatch_open_cases()
 	var/available = 0
@@ -549,12 +570,15 @@
 		if(length(cases) >= allowed)
 			return
 		var/stars = get_stars(warrant.mind)
-		if(stars < 1 || stars > 2 || cases[warrant.mind])
+		if(stars < 1 || cases[warrant.mind])
 			continue
 		var/mob/living/suspect = warrant.mind?.current
 		if(!isliving(suspect) || suspect.stat == DEAD || in_custody(suspect))
 			continue
-		open_case(warrant)
+		var/down = police_suspect_down(suspect)
+		if(stars > 2 && !down)
+			continue
+		open_case(warrant, down)
 
 /**
  * Where officers hold a docked ship at three stars and up (spec 8: they follow through open doors and never

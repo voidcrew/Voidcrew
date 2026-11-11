@@ -64,12 +64,15 @@
 	if(living_target.mind || living_target.client)
 		if(police.in_custody(living_target))
 			return FALSE
-		var/level = police.force_level(living_target, src)
+		// Down (crit, stamina crit, stunned): the cuffs are the arrest's job at every star, never a fight
+		// (owner decision 37). Nobody goes back on alert over someone lying there; they are fought again once up.
+		if(police_suspect_down(living_target))
+			return FALSE
+		var/level = force_for(living_target)
 		if(level >= POLICE_FORCE_LETHAL)
 			return TRUE
 		if(level == POLICE_FORCE_STUN)
-			// Down from the disabler already: the cuffs are the arrest's job
-			return living_target.stat == CONSCIOUS && !HAS_TRAIT(living_target, TRAIT_INCAPACITATED) && !HAS_TRAIT(living_target, TRAIT_RESTRAINED)
+			return !HAS_TRAIT(living_target, TRAIT_RESTRAINED)
 		// One star: noticed, watched and arrested, never fought (the force subtree holds)
 		return level == POLICE_FORCE_ARREST && !HAS_TRAIT(living_target, TRAIT_RESTRAINED)
 	// Wildlife, by the rule the outpost turrets had
@@ -81,12 +84,60 @@
 		return FALSE
 	return is_hostile_creature(living_target)
 
-/// How hard they go at `target`: a person by their warrant, anything else to kill
+/// How hard they go at `target`: a person by their warrant (a stun officer never past STUN), anything else to kill
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/force_for(atom/target)
 	var/mob/living/living_target = target
 	if(isliving(living_target) && (living_target.mind || living_target.client))
-		return police?.force_level(living_target, src) || POLICE_FORCE_NONE
+		var/level = police?.force_level(living_target, src) || POLICE_FORCE_NONE
+		if(level >= POLICE_FORCE_LETHAL && police.role_of(src) == POLICE_ROLE_STUN)
+			return POLICE_FORCE_STUN
+		return level
 	return POLICE_FORCE_LETHAL
+
+/// Whether `person` is down: in crit, or stunned or in stamina crit. Lying down by choice is not down.
+/proc/police_suspect_down(mob/living/person)
+	return person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(person, TRAIT_INCAPACITATED)
+
+// =========================================================================
+// ROLES (owner decision 37)
+// =========================================================================
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police
+	/// At three stars and up: POLICE_ROLE_STUN (baton and disabler, takes the suspect alive) or POLICE_ROLE_LETHAL. Null
+	/// below three stars, where everyone works by the warrant. Kept until the outpost's alert drops below three.
+	var/police_role
+
+/**
+ * `officer`'s role, given on first need: the squad gets one stun officer in OUTPOST_POLICE_STUN_SHARE of its
+ * members at the outpost's stars (at least one in a squad of two or more; a lone officer is lethal), counted over
+ * the officers given a role.
+ * A long gun is a lethal officer's.
+ */
+/datum/outpost_police/proc/role_of(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(officer.police_role)
+		return officer.police_role
+	var/squad = 1
+	var/stun = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other in officers)
+		if(other == officer || !other.police_role || other.stat == DEAD || other.npc_exit)
+			continue
+		squad++
+		if(other.police_role == POLICE_ROLE_STUN)
+			stun++
+	var/list/shares = OUTPOST_POLICE_STUN_SHARE
+	var/stars = clamp(dispatch_active_level(), 3, 5)
+	// A lone officer is a lethal one; from two up, at least one of them takes the suspect alive
+	var/wanted = squad >= 2 ? max(1, floor(squad / shares[stars - 2] + 0.5)) : 0
+	if(stun < wanted && !officer.get_longgun())
+		officer.police_role = POLICE_ROLE_STUN
+	else
+		officer.police_role = POLICE_ROLE_LETHAL
+	return officer.police_role
+
+/// Everyone's role goes: the outpost is below three stars
+/datum/outpost_police/proc/clear_roles()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		officer.police_role = null
 
 // =========================================================================
 // FIRE DISCIPLINE

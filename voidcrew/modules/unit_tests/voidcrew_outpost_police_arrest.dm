@@ -197,7 +197,11 @@
 	TEST_ASSERT(QDELETED(case), "The case did not close after booking")
 	TEST_ASSERT(!police.cases[suspect.mind], "A booked suspect still has an open case")
 
-/// A suspect in crit is left alone and the case closes after the wait; one who dies after the search still sends the officer to the desk
+/**
+ * A suspect in crit is cuffed where they lie with no blow struck, then stood by until they come round (owner
+ * decision 37: nobody says a suspect is down and walks off); one who dies after the search still sends the
+ * officer to the desk
+ */
 /datum/unit_test/voidcrew_outpost_police_arrest_downed
 
 /datum/unit_test/voidcrew_outpost_police_arrest_downed/Run()
@@ -219,19 +223,26 @@
 	var/oxy_before = suspect.getOxyLoss()
 	var/turf/lay_turf = get_turf(suspect)
 	case.process_case()
-	TEST_ASSERT_EQUAL(case.step, "standby", "A suspect in crit before the cuffs did not stop the arrest")
+	TEST_ASSERT_EQUAL(case.step, "cuff", "A suspect in crit before the cuffs is not being cuffed (the case is on [case.step])")
+	for(var/i in 1 to 6)
+		if(QDELETED(case) || suspect.handcuffed)
+			break
+		case.process_case()
+		police_arrest_wait(case)
+	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "A suspect in crit was not cuffed")
 	case.process_case()
-	TEST_ASSERT(officer.pulling != suspect, "An officer took hold of a suspect in crit")
+	TEST_ASSERT_EQUAL(case.step, "standby", "A cuffed suspect in crit is not stood by (the case is on [case.step])")
+	case.process_case()
+	TEST_ASSERT(officer.pulling != suspect, "An officer dragged a suspect in crit")
 	TEST_ASSERT_EQUAL(get_turf(suspect), lay_turf, "A suspect in crit was moved")
 	TEST_ASSERT_EQUAL(suspect.getStaminaLoss(), stamina_before, "A suspect in crit was struck")
 	TEST_ASSERT(suspect.getOxyLoss() >= oxy_before - 5, "A suspect in crit was healed")
-	TEST_ASSERT(!suspect.handcuffed, "A suspect in crit was cuffed")
-	case.downed_since = world.time - 46 SECONDS // OUTPOST_POLICE_CRIT_WAIT is 45 s
+	case.downed_since = world.time - 10 MINUTES
 	case.process_case()
-	TEST_ASSERT(QDELETED(case), "The case did not close after standing by a suspect in crit")
-	TEST_ASSERT(!police.cases[suspect.mind], "The suspect in crit still has a case")
-	TEST_ASSERT(!officer.case, "The officer is still on a closed case")
-	TEST_ASSERT_NULL(police.open_case(police.warrants[suspect.mind]), "A case opened on a suspect still in crit")
+	TEST_ASSERT(!QDELETED(case), "The officer walked off a cuffed suspect in crit")
+	TEST_ASSERT(police.in_custody(suspect), "A cuffed suspect in crit is not in custody")
+	police.close_case(suspect.mind)
+	suspect.uncuff()
 	// The first officer is free again and may stand as near the next suspect as the new one: off the roster
 	police.remove_officer(officer)
 

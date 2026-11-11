@@ -18,16 +18,17 @@
  *   officer follows the arresting one, and at two stars may fire on disable through the force and shooting
  *   subtrees (police_force.dm and the human NPC base).
  *
- * When it goes wrong (spec 6.4): a suspect in crit or dead before the cuffs is left where they lie for
- * OUTPOST_POLICE_CRIT_WAIT with a medic called, then the case closes. A suspect lost after the search still
+ * When it goes wrong (spec 6.4, owner decision 37): a suspect in crit before the cuffs is cuffed where they lie,
+ * then held there with a medic called until they come round; one dead before the cuffs ends the case. At three
+ * stars and up only a suspect who is down is taken alive (by a stun officer if one is free). A suspect lost after the search still
  * sends the officer to the evidence locker with the evidence. Slipping police cuffs is SLIP_CUFFS, someone else
  * taking them off is ABET, pulling the suspect away is RESIST. A suspect who breaks the hold on the walk is run
  * down and held by tg's aggressive grip after that. A step stuck OUTPOST_POLICE_STEP_TIMEOUT without the officer
  * getting any nearer goes back to respond; the third time the case ends and no new one opens on that person for
  * CASE_REOPEN_HOLD. A case that ends with our cuffs still on the suspect first sends an officer to take them off
  * (the release step), and a booking with no cell to be had fines and frees them on the spot: nobody is left in
- * police cuffs. A suspect stunned short of crit in front of an officer at one or two stars is arrested where
- * they lie (arrest_downed(), from the stealth layer).
+ * police cuffs. A wanted suspect down in front of an officer, at any stars, is arrested where they lie
+ * (arrest_downed(), from the stealth layer).
  * No healing, no moving a downed body, no state of our own on the suspect: what they feel is tg's baton,
  * cuffs and pull.
  */
@@ -86,8 +87,11 @@
 // THE API
 // =========================================================================
 
-/// Opens an arrest for `warrant`. Returns the case (the open one, if there is one already), or null.
-/datum/outpost_police/proc/open_case(datum/outpost_warrant/warrant)
+/**
+ * Opens an arrest for `warrant`. Returns the case (the open one, if there is one already), or null. `takedown`: the
+ * suspect is down (crit, stamina crit, stunned), and is cuffed where they lie at any stars (owner decision 37).
+ */
+/datum/outpost_police/proc/open_case(datum/outpost_warrant/warrant, takedown = FALSE)
 	var/datum/mind/who = warrant?.mind
 	if(!who)
 		return null
@@ -99,11 +103,14 @@
 		return null
 	LAZYREMOVE(case_holds, who)
 	var/mob/living/carbon/suspect = who.current
-	if(!iscarbon(suspect) || QDELETED(suspect) || suspect.stat == DEAD || HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION))
+	if(!iscarbon(suspect) || QDELETED(suspect) || suspect.stat == DEAD)
+		return null
+	if(!takedown && HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION))
 		return null
 	if(get_trader_outpost_for_turf(get_turf(suspect)) != outpost || in_custody(suspect))
 		return null
-	if(get_stars(who) >= 3)
+	// Three stars and up: only someone down is taken alive; anyone on their feet is the squad's to stop
+	if(get_stars(who) >= 3 && !takedown)
 		return null
 	case = new /datum/outpost_police_case(src, warrant)
 	cases[who] = case
@@ -112,20 +119,35 @@
 	return case
 
 /**
- * `fallen` went down short of crit (stamina, a stun, a knockdown) in front of an officer: at one or two stars they
- * are arrested where they lie, whatever the case limit or a hold from an earlier case. TRUE if an arrest is on them.
+ * `fallen` went down (crit, stamina crit, a stun) in front of `barker`, an officer: at any stars they are cuffed where
+ * they lie and taken to a cell, whatever the case limit or a hold from an earlier case (owner decision 37). The
+ * nearest free stun officer takes it; with none free, `barker` does it himself. TRUE if an arrest is on them.
  */
-/datum/outpost_police/proc/arrest_downed(mob/living/fallen)
-	if(!iscarbon(fallen) || QDELETED(fallen) || !fallen.mind || fallen.stat == DEAD || HAS_TRAIT(fallen, TRAIT_CRITICAL_CONDITION))
+/datum/outpost_police/proc/arrest_downed(mob/living/fallen, mob/living/carbon/human/npc/ambient_npc/outpost/police/barker)
+	if(!iscarbon(fallen) || QDELETED(fallen) || !fallen.mind || fallen.stat == DEAD)
 		return FALSE
 	var/datum/outpost_warrant/warrant = get_warrant(fallen.mind)
-	if(!warrant)
-		return FALSE
-	var/stars = get_stars(fallen.mind)
-	if(stars < 1 || stars > 2)
+	if(!warrant || get_stars(fallen.mind) < 1)
 		return FALSE
 	LAZYREMOVE(case_holds, fallen.mind)
-	return !isnull(open_case(warrant))
+	var/datum/outpost_police_case/case = cases[fallen.mind]
+	if(!case || QDELETED(case))
+		case = open_case(warrant, TRUE)
+	if(!case)
+		return FALSE
+	// No stun officer free (or nobody at all): the officer who saw them go down does it himself
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lead = case.arresting()
+	// Covering someone else's arrest is not making one: he leaves that to see this one through
+	if(istype(barker) && barker.case && barker.case != case && barker.case.arresting() != barker)
+		barker.case.drop_officer(barker)
+	if(istype(barker) && lead != barker && !barker.case && case.officer_fit(barker))
+		if(!lead || (get_stars(fallen.mind) >= 3 && role_of(lead) != POLICE_ROLE_STUN))
+			if(lead)
+				case.drop_officer(lead)
+			case.take_officer(barker)
+			case.officers.Insert(1, WEAKREF(barker))
+			case.staff()
+	return TRUE
 
 /// Closes `who`'s arrest, if any
 /datum/outpost_police/proc/close_case(datum/mind/who)
@@ -370,9 +392,11 @@
 		// A new arresting officer starts the step's clock afresh
 		step_started_at = world.time
 
-/// The nearest officer with no case, beat and response officers before the desk sergeant
+/// The nearest officer with no case, beat and response officers before the desk sergeant; at three stars and up a
+/// stun officer before anyone else (owner decision 37)
 /datum/outpost_police_case/proc/nearest_free_officer(mob/living/carbon/suspect, list/exclude)
 	var/turf/where = get_turf(suspect)
+	var/high = warrant?.mind && police?.get_stars(warrant.mind) >= 3
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
 	var/best_score = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police?.officers)
@@ -382,6 +406,8 @@
 		var/score = (where && officer_turf?.z == where.z) ? get_dist(officer_turf, where) : 500
 		if(officer.unit_kind == POLICE_UNIT_SERGEANT)
 			score += 1000
+		if(high && police.role_of(officer) != POLICE_ROLE_STUN)
+			score += 2000
 		if(score < best_score)
 			best = officer
 			best_score = score
@@ -394,7 +420,8 @@
 		officer.end_activity()
 	officer.ai_controller?.CancelActions()
 	var/mob/living/carbon/suspect = get_suspect()
-	if(suspect && !cuffed && police?.perception?.sees(officer, suspect))
+	// On their feet and in view: on them. Someone down is only walked up to and cuffed.
+	if(suspect && !cuffed && officer.police_will_fight(suspect) && police?.perception?.sees(officer, suspect))
 		officer.police_alert_on(suspect)
 
 /// `officer` leaves the case: lets go of the suspect, stops walking for it and stops shooting at them
@@ -569,8 +596,9 @@
 	if(suspect_lost)
 		return FALSE
 	var/stars = police.get_stars(warrant.mind)
-	// In cuffs at three stars they are no danger to anyone: the arrest carries on
-	if(stars <= 0 || (stars >= 3 && !cuffed))
+	// Three stars and up: in cuffs, or down, they are taken alive (owner decision 37). Up and free, they are the
+	// squad's again.
+	if(stars <= 0 || (stars >= 3 && !cuffed && !police_suspect_down(suspect)))
 		finish()
 		return TRUE
 	return FALSE
@@ -623,31 +651,49 @@
 	LAZYSET(resist_reports, puller.mind, world.time)
 	report(puller, OUTPOST_CRIME_RESIST, arresting() || suspect)
 
-/// Down before the cuffs and the search: officers stand back. Down after either: only the evidence goes on.
+/**
+ * Dead, or in crit (owner decision 37). Dead before the cuffs: nobody left to arrest. Dead after the cuffs or the
+ * search: only the evidence goes on. Alive in crit: cuffed where they lie, nobody shooting at them, then held there
+ * (a medic called once) until they come round and can be walked to the cell.
+ */
 /datum/outpost_police_case/proc/check_down(mob/living/carbon/suspect)
 	if(!suspect_downed(suspect))
 		return
-	if(cuffed || searched)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
+	if(suspect.stat == DEAD)
+		if(!cuffed && !searched)
+			close()
+			return
 		if(!suspect_lost)
-			say_once(arresting(), POLICE_LINE_MEDIC, suspect, TRUE)
 			if(searched)
 				mark_lost(suspect)
 			else
-				// Cuffed and down: the search still happens where they lie, then the desk
+				// Cuffed and dead: the search still happens where they lie, then the desk
 				suspect_lost = TRUE
-				var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 				if(officer?.pulling == suspect)
 					officer.stop_pulling()
 		return
+	if(suspect_lost)
+		return
+	clear_targets(suspect)
+	if(!cuffed)
+		if(step != CASE_STEP_CUFF)
+			if(officer?.pulling == suspect)
+				officer.stop_pulling()
+			enter_cuff(suspect)
+		return
 	if(step == CASE_STEP_DOWNED)
 		return
-	set_step(CASE_STEP_DOWNED)
-	downed_since = world.time
-	medic_called = FALSE
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 	if(officer?.pulling == suspect)
 		officer.stop_pulling()
 	unregister_order(suspect)
+	lift_goal = null
+	set_step(CASE_STEP_DOWNED)
+	downed_since = world.time
+	medic_called = FALSE
+
+/// Nobody on the case keeps `suspect` as a target
+/datum/outpost_police_case/proc/clear_targets(mob/living/carbon/suspect)
 	for(var/datum/weakref/ref as anything in officers)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = ref?.resolve()
 		var/datum/ai_controller/controller = other?.ai_controller
@@ -989,28 +1035,29 @@
 	set_goal(null)
 	begin_action(CASE_ACT_BOOKING)
 
-/// Standing by a suspect who went down before the cuffs: nobody touches them, a medic is called, and after OUTPOST_POLICE_CRIT_WAIT the case closes. Up again: back to respond.
+/**
+ * Standing by a cuffed suspect in crit: a medic called once, the search done where they lie, and the step's clock
+ * held while they lie there. Once they come round, on to the cell.
+ */
 /datum/outpost_police_case/proc/step_downed()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 	var/mob/living/carbon/suspect = get_suspect()
-	if(!suspect)
+	if(!suspect || !officer)
 		return
 	if(!suspect_downed(suspect))
 		downed_since = 0
-		set_step(CASE_STEP_RESPOND)
+		after_contact()
 		return
-	set_goal(null)
-	if(officer && !medic_called)
+	step_started_at = world.time
+	if(!medic_called)
 		medic_called = TRUE
 		officer.police_say(POLICE_LINE_MEDIC, line_values(suspect), TRUE)
-	if(world.time - downed_since >= OUTPOST_POLICE_CRIT_WAIT)
-		// Left where they lie: unseen while they stay in crit (their stars can fade), and no new arrest for a while
-		if(police && warrant?.mind)
-			warrant.left_lying = TRUE
-			if(!warrant.unseen_since)
-				warrant.unseen_since = world.time
-			LAZYSET(police.case_holds, warrant.mind, world.time + CASE_REOPEN_HOLD)
-		close()
+	if(!officer.Adjacent(suspect))
+		route_to(officer, suspect, 1)
+		return
+	set_goal(null)
+	if(!searched)
+		begin_action(CASE_ACT_SEARCHING)
 
 /// Release: up to the suspect (who may have walked off in our cuffs), then the cuffs off
 /datum/outpost_police_case/proc/step_release()

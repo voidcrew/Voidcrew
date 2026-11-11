@@ -536,11 +536,14 @@
 
 /**
  * Brings `suspect` in and books them: the fine, then processing (paid) or the jail strip (not paid), the cuffs
- * off, the officer out. Sleeps. TRUE once the suspect is held; FALSE (nothing taken) if they could not be.
+ * off, the officer out. At three stars and up there is no fine: the jail strip and a sentence that grows with the
+ * stars (owner decision 37). Sleeps. TRUE once the suspect is held; FALSE (nothing taken) if they could not be.
  */
 /datum/outpost_police_cell/proc/book_in(mob/living/carbon/suspect, mob/living/officer, datum/outpost_warrant/warrant)
 	var/datum/mind/prisoner = suspect.mind
-	var/stars = clamp(police.get_stars(prisoner), 1, 2)
+	var/full_stars = clamp(police.get_stars(prisoner), 1, 5)
+	var/no_fine = full_stars >= 3
+	var/stars = clamp(full_stars, 1, 2)
 	if(!open_door(OUTPOST_POLICE_CELL_OPEN, TRUE))
 		return FALSE
 	// In: the officer brings them
@@ -560,7 +563,7 @@
 	if(!holds(prisoner, suspect))
 		return FALSE
 	// The fine, with the door shut on the two of them
-	var/paid = police.charge_fine(warrant)
+	var/paid = no_fine ? FALSE : police.charge_fine(warrant)
 	if(!paid)
 		// Gear into a locker before the cuffs come off (abuse M25)
 		police.store_property(suspect, officer)
@@ -573,11 +576,12 @@
 	if(!QDELETED(officer) && officer.stat != DEAD && (get_turf(officer) in tiles))
 		if(open_door(CELL_OFFICER_PASS, TRUE))
 			officer.forceMove(outside_turf)
-	var/term = paid ? OUTPOST_POLICE_HOLDS[stars] : OUTPOST_POLICE_JAIL[stars]
+	var/term = paid ? OUTPOST_POLICE_HOLDS[stars] : OUTPOST_POLICE_JAIL[full_stars]
 	prisoners[prisoner] = world.time + term
 	if(!paid)
 		jailed[prisoner] = TRUE
-		bail_due[prisoner] = world.time + OUTPOST_POLICE_BAIL_RETRY
+		// No bail at three stars and up: the sentence is served
+		bail_due[prisoner] = no_fine ? INFINITY : world.time + OUTPOST_POLICE_BAIL_RETRY
 	booking -= prisoner
 	shut_door(TRUE)
 	update_sign()

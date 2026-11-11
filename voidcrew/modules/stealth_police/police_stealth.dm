@@ -214,20 +214,22 @@
 	return kind
 
 /**
- * Its target went down to its stun short of crit (owner decision 34): at one or two stars that is an arrest, made
- * where they lie by the case (police_arrest.dm), not stealth's "stay down" and a walk away. Anyone else down is
- * stealth's as before (three stars and up: the lethal response and the zone's rule on the downed).
+ * Its target went down (owner decisions 34 and 37): a wanted person down and alive, at any stars, is an arrest made
+ * where they lie by the case (police_arrest.dm), by the nearest free stun officer or else by this one; one already in
+ * our cuffs is someone else's arrest. Never stealth's "stay down" and a walk away. Anyone else down is stealth's as before.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_target_downed(mob/living/fallen)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
-	if(!istype(officer) || !officer.police?.arrest_downed(fallen))
+	if(!istype(officer) || !officer.police)
+		return ..()
+	if(!officer.police.arrest_downed(fallen, officer) && !(isliving(fallen) && fallen.stat != DEAD && officer.police.in_custody(fallen)))
 		return ..()
 	notice_map -= REF(fallen)
 	clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	clear_blackboard_key(BB_STEALTH_FOCUS)
-	// The arresting officer's case drives it; anyone else is back to its beat
-	if(!officer.case)
-		stealth_go_unaware()
+	// The arrest drives the officer on it; anyone else is back to its beat. Nobody stays on alert over them.
+	police_hunt = null
+	stealth_go_unaware()
 
 // ----- the public (owner decision 35) -----
 // The concourse is a public place. Stealth's guards treat anyone they are not allied with as a stranger to look
@@ -318,7 +320,7 @@
 		// Already fighting someone: it knows, and turns on them by stealth's own rules
 		if(fighting != offender)
 			brain.stealth_remember(offender)
-	else
+	else if(!police_suspect_down(offender))
 		brain.stealth_go_alert(offender)
 	brain.police_hunt = WEAKREF(offender.mind)
 	if(stealth_radio_ready())
@@ -328,6 +330,9 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_alert_on(mob/living/suspect)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
 	if(!istype(brain) || QDELETED(suspect) || stat != CONSCIOUS || client)
+		return
+	// Someone down is cuffed, never fought: no alert over them (owner decision 37)
+	if(isliving(suspect) && police_suspect_down(suspect))
 		return
 	if(brain.stealth_state() == STEALTH_ALERT && brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET] == suspect)
 		return
@@ -580,6 +585,10 @@
 			brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 			brain.stealth_go_unaware()
 	var/datum/mind/assigned = officer.dispatch_mind?.resolve()
+	// Someone down or in custody is the arrest's: nobody goes looking for them (owner decision 37)
+	var/mob/living/assigned_body = assigned?.current
+	if(isliving(assigned_body) && (police_suspect_down(assigned_body) || in_custody(assigned_body)))
+		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)
 	if(officer.unit_kind == POLICE_UNIT_BEAT && !assigned && isnull(brain.route_id) && brain.stealth_state() == STEALTH_UNAWARE)

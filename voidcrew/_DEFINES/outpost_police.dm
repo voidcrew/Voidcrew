@@ -75,6 +75,12 @@
 #define POLICE_FORCE_STUN 2
 #define POLICE_FORCE_LETHAL 3
 
+/// An officer's part in a squad at three stars and up (owner decision 37): takes the suspect alive, or shoots to kill
+#define POLICE_ROLE_STUN "stun"
+#define POLICE_ROLE_LETHAL "lethal"
+/// One in this many responders carries stun gear, at three, four and five stars (at least one in a squad of two or more)
+#define OUTPOST_POLICE_STUN_SHARE list(2, 3, 4)
+
 // ===== UNITS AND SECTORS =====
 
 #define POLICE_UNIT_BEAT "beat"
@@ -126,8 +132,9 @@
 #define OUTPOST_POLICE_FINES list(300, 800)
 /// Time in a cell after a paid fine, at one and two stars
 #define OUTPOST_POLICE_HOLDS list(30 SECONDS, 60 SECONDS)
-/// Jail term when the fine is not paid, at one and two stars (no debt afterwards)
-#define OUTPOST_POLICE_JAIL list(3 MINUTES, 6 MINUTES)
+/// Jail term when the fine is not paid, at one and two stars (no debt afterwards); at three to five stars, the
+/// sentence with no fine on offer (owner decision 37)
+#define OUTPOST_POLICE_JAIL list(3 MINUTES, 6 MINUTES, 10 MINUTES, 15 MINUTES, 20 MINUTES)
 /// A jailed prisoner's fine is tried again this often
 #define OUTPOST_POLICE_BAIL_RETRY (30 SECONDS)
 /// Searching one item off a suspect

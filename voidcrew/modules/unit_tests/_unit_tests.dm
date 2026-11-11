@@ -204,6 +204,7 @@
 #include "voidcrew_outpost_police_life.dm"
 #include "voidcrew_outpost_police_property.dm"
 #include "voidcrew_outpost_police_stealth.dm"
+#include "voidcrew_outpost_police_stun_squad.dm"
 #include "voidcrew_outpost_police_units.dm"
 #include "voidcrew_outpost_police_wanted.dm"
 #include "voidcrew_outpost_prison_admin.dm"
