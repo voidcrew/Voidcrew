@@ -336,3 +336,199 @@
 
 #undef POLICE_ARREST_TEST_HEAT_1
 #undef POLICE_ARREST_TEST_HEAT_3
+
+// ===== CROSS-PACKAGE: FROM THE CRIME TO THE CELL =====
+
+/// Stands in for a walk: `officer` onto `target` (or beside it), the suspect they pull beside them, the pull taken up again
+/datum/unit_test/proc/police_jail_carry(mob/living/officer, mob/living/carbon/suspect, turf/target)
+	officer.stop_pulling()
+	var/turf/stand = (isopenturf(target) && !target.is_blocked_turf(TRUE)) ? target : police_arrest_beside(target)
+	if(!stand)
+		TEST_FAIL("Nowhere to stand at [AREACOORD(target)]")
+		return
+	officer.forceMove(stand)
+	var/turf/behind = police_arrest_beside(officer)
+	if(!behind)
+		TEST_FAIL("No floor beside the officer at [AREACOORD(officer)]")
+		return
+	suspect.forceMove(behind)
+	officer.start_pulling(suspect)
+
+/// A punch, by tg's own unarmed attack
+/datum/unit_test/proc/police_jail_punch(mob/living/carbon/human/attacker, mob/living/carbon/human/victim, unused)
+	victim.attack_hand(attacker, list(RIGHT_CLICK = FALSE))
+
+/// A stab with `weapon`, by tg's own melee chain
+/datum/unit_test/proc/police_jail_stab(mob/living/carbon/human/attacker, mob/living/carbon/human/victim, obj/item/weapon)
+	attacker.next_move = 0
+	weapon.melee_attack_chain(attacker, victim)
+
+/**
+ * `suspect` does `attack` (list(proc on this test taking the offender, the victim and an argument; the argument))
+ * to `victim` twice in front of a new beat officer at `outpost`, gives up, and the arrest is walked step by step:
+ * dispatch opens it, then the order, the cuffs, the search, the desk and the cell. Walks are stood in for by
+ * police_jail_carry(); every other step is the police's own code, stepped by hand. Returns the cell they were
+ * booked into, or null (and the test has failed).
+ */
+/datum/unit_test/proc/police_jail_run(obj/structure/overmap/trader_outpost/outpost, mob/living/carbon/human/suspect, mob/living/carbon/human/victim, list/attack)
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/witness = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, police_arrest_beside(suspect))
+	police_arrest_kit(witness)
+	// A second officer, so dispatch has two to spare for one arrest
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = police_officer(outpost)
+	police_arrest_kit(cover)
+
+	// The crime, twice, more than half a second apart (OUTPOST_AGGRESSION_GRACE folds hits closer than that)
+	suspect.set_combat_mode(TRUE)
+	for(var/blow in 1 to 2)
+		call(src, attack[1])(suspect, victim, attack[2])
+		police.sleep_tick()
+		sleep(0.6 SECONDS)
+	police.sleep_tick()
+	var/stars = police.get_stars(suspect.mind)
+	if(stars != 1)
+		TEST_FAIL("[outpost.type]: two blows in front of an officer gave [stars] stars, not one (heat [police.warrants[suspect.mind]?.heat])")
+		return null
+	// They give up: fists down, hands empty
+	suspect.set_combat_mode(FALSE)
+	suspect.drop_all_held_items()
+
+	// A player is on the concourse (here, the suspect): nobody holds still (no client in a test, so the ambient
+	// tick would pause them again; this stands in for it just before dispatch looks for officers)
+	SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
+	police.dispatch_open_cases()
+	police.sleep_tick()
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	if(!case)
+		TEST_FAIL("[outpost.type]: dispatch opened no arrest on a one-star suspect")
+		return null
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = case.arresting()
+	if(!officer)
+		TEST_FAIL("[outpost.type]: the arrest has no officer")
+		return null
+	police_arrest_kit(officer)
+	if(!officer.Adjacent(suspect))
+		officer.forceMove(police_arrest_beside(suspect))
+
+	case.step_respond()
+	TEST_ASSERT_EQUAL(case.step, "order", "[outpost.type]: the officer beside the suspect did not give the order")
+	case.step_order()
+	case.order_at = world.time - 10 SECONDS
+	case.step_order()
+	TEST_ASSERT_EQUAL(case.step, "cuff", "[outpost.type]: a suspect who gave up was not to be cuffed")
+	case.step_cuff()
+	police_arrest_wait(case)
+	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police), "[outpost.type]: the suspect wears [suspect.handcuffed?.type || "no cuffs"], not police cuffs")
+	TEST_ASSERT_EQUAL(case.step, "search", "[outpost.type]: after the cuffs the arrest is on [case.step]")
+	case.step_search()
+	police_arrest_wait(case, 20 SECONDS)
+	TEST_ASSERT_EQUAL(case.step, "escort", "[outpost.type]: after the search the arrest is on [case.step]")
+
+	// The walk to the desk
+	TEST_ASSERT_NOTNULL(police.desk_turf, "[outpost.type] has no desk")
+	case.step_escort()
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "[outpost.type]: the officer did not take the suspect along")
+	police_jail_carry(officer, suspect, police.desk_turf)
+	case.step_escort()
+	TEST_ASSERT_EQUAL(case.step, "desk", "[outpost.type]: at the desk the arrest is on [case.step]")
+	case.step_desk()
+	police_arrest_wait(case)
+	TEST_ASSERT(case.disposed_at, "[outpost.type]: the desk did not deal with the evidence")
+
+	// The walk to the cell door
+	var/datum/outpost_police_cell/cell = police.cell_best()
+	TEST_ASSERT_NOTNULL(cell, "[outpost.type] has no cell to book into")
+	case.step_desk()
+	police_jail_carry(officer, suspect, cell.outside_turf)
+	case.step_desk()
+	TEST_ASSERT_EQUAL(case.step, "book", "[outpost.type]: at the cell door the arrest is on [case.step]")
+	case.step_book()
+	police_arrest_wait(case, 40 SECONDS)
+	TEST_ASSERT(QDELETED(case), "[outpost.type]: the arrest did not end at the cell")
+	TEST_ASSERT(suspect.mind in cell.prisoners, "[outpost.type]: the suspect is not held in the cell")
+	TEST_ASSERT(get_turf(suspect) in cell.tiles, "[outpost.type]: the suspect is not inside the cell")
+	TEST_ASSERT_NULL(suspect.handcuffed, "[outpost.type]: the prisoner is still cuffed in the cell")
+	return cell
+
+/**
+ * At each of the three outposts: a player who punches twice in front of a beat officer gets one star, is ordered,
+ * cuffed, walked to the desk and the cell and fined from their ship. The same with the ship account empty ends
+ * in the prison jumpsuit with their gear in a property locker they can open. A player who stabs twice loses the
+ * knife down the evidence chute.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_to_jail
+	var/saved_scale
+
+/datum/unit_test/voidcrew_outpost_police_arrest_to_jail/Destroy()
+	if(!isnull(saved_scale))
+		GLOB.outpost_police_property_time_scale = saved_scale
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_arrest_to_jail/Run()
+	saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/list/ships = list()
+	for(var/outpost_type in list(
+		/obj/structure/overmap/trader_outpost/general,
+		/obj/structure/overmap/trader_outpost/outfitter,
+		/obj/structure/overmap/trader_outpost/black_market,
+	))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			continue
+		var/datum/outpost_police/police = outpost.police
+
+		// Fined: the money comes off the ship and they keep their clothes
+		var/mob/living/carbon/human/payer = police_arrest_person(police_floor(outpost))
+		ADD_TRAIT(payer, TRAIT_PERFECT_ATTACKER, INNATE_TRAIT)
+		var/obj/item/clothing/under/own_suit = allocate(/obj/item/clothing/under/color/grey)
+		payer.equip_to_slot_if_possible(own_suit, ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
+		var/obj/structure/overmap/ship/rich = wanted_ship(payer, 5000)
+		ships += rich
+		var/mob/living/carbon/human/victim = police_arrest_person(police_arrest_beside(payer))
+		var/datum/outpost_police_cell/cell = police_jail_run(outpost, payer, victim, list(PROC_REF(police_jail_punch), null))
+		if(!cell)
+			continue
+		var/datum/outpost_warrant/paid_warrant = police.warrants[payer.mind]
+		var/fine = paid_warrant?.fine_level ? police.fine_amount(paid_warrant) : 5000 - rich.ship_account.account_balance
+		TEST_ASSERT(fine > 0, "[outpost_type]: no fine was charged ([fine])")
+		TEST_ASSERT_EQUAL(rich.ship_account.account_balance, 5000 - fine, "[outpost_type]: the ship paid [5000 - rich.ship_account.account_balance], not the fine of [fine]")
+		TEST_ASSERT(!cell.jailed[payer.mind], "[outpost_type]: a prisoner who paid was jailed")
+		TEST_ASSERT_EQUAL(payer.w_uniform, own_suit, "[outpost_type]: a prisoner who paid lost their clothes")
+
+		// Not fined: the prison jumpsuit, and their gear in a locker they can open
+		var/mob/living/carbon/human/broke = police_arrest_person(police_floor(outpost))
+		ADD_TRAIT(broke, TRAIT_PERFECT_ATTACKER, INNATE_TRAIT)
+		var/obj/item/clothing/under/broke_suit = allocate(/obj/item/clothing/under/color/grey)
+		broke.equip_to_slot_if_possible(broke_suit, ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
+		var/obj/item/crowbar/pocketed = allocate(/obj/item/crowbar)
+		broke.equip_to_slot_if_possible(pocketed, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+		var/obj/structure/overmap/ship/empty = wanted_ship(broke, 0)
+		ships += empty
+		var/mob/living/carbon/human/second_victim = police_arrest_person(police_arrest_beside(broke))
+		cell = police_jail_run(outpost, broke, second_victim, list(PROC_REF(police_jail_punch), null))
+		if(!cell)
+			continue
+		TEST_ASSERT(cell.jailed[broke.mind], "[outpost_type]: a prisoner whose ship could not pay was not jailed")
+		TEST_ASSERT(istype(broke.w_uniform, /obj/item/clothing/under/rank/prisoner/outpost_police), "[outpost_type]: a jailed prisoner wears [broke.w_uniform?.type || "nothing"], not the prison jumpsuit")
+		var/obj/structure/closet/secure_closet/personal/outpost_police/locker = police.property_locker_for(broke)
+		TEST_ASSERT_NOTNULL(locker, "[outpost_type]: a jailed prisoner has no property locker")
+		TEST_ASSERT(broke_suit in locker.contents, "[outpost_type]: the prisoner's own jumpsuit is not in their locker")
+		TEST_ASSERT(pocketed in locker.contents, "[outpost_type]: what was in the prisoner's pocket is not in their locker")
+		TEST_ASSERT(locker.locked, "[outpost_type]: a property locker was left open")
+		locker.togglelock(broke)
+		TEST_ASSERT(!locker.locked, "[outpost_type]: the prisoner could not open their own property locker")
+		locker.lock()
+
+		// The knife: dropped when they give up, taken off the floor at the search, gone down the chute at the desk
+		var/mob/living/carbon/human/stabber = police_arrest_person(police_floor(outpost))
+		ADD_TRAIT(stabber, TRAIT_PERFECT_ATTACKER, INNATE_TRAIT)
+		ships += wanted_ship(stabber, 5000)
+		var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
+		stabber.put_in_active_hand(knife, forced = TRUE)
+		var/mob/living/carbon/human/third_victim = police_arrest_person(police_arrest_beside(stabber))
+		cell = police_jail_run(outpost, stabber, third_victim, list(PROC_REF(police_jail_stab), knife))
+		if(!cell)
+			continue
+		TEST_ASSERT(QDELETED(knife), "[outpost_type]: the knife was not destroyed in the evidence chute (it is at [knife.loc ? AREACOORD(knife) : "nowhere"])")
+	wanted_cleanup(ships)
