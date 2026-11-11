@@ -49,7 +49,7 @@
  * job. It comes back if the slow-mo ends before the window does.
  *
  * Look: affected things get a grey-green tint instead of tg's inversion, and so does blood (decals, sprays,
- * splatters), as a colour filter so its own drying colour carries on under it. Floor items and the user are never
+ * splatters); a tinted decal's drying colour waits for the tint to come off. Floor items and the user are never
  * touched, so they keep their colour, and so do the user's own shots. Every bullet in the field
  * flies at the field's pace, whoever fired it: the user's and a surging mob's crawl in the slow-mo like the rest
  * (a faster surger fires sooner, but its bullets still crawl), untinted. A shot leaving the field gets its speed back.
@@ -276,15 +276,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	))
 	return !!blood[thing.type]
 
-/// The field's tint as `thing` wears it. Blood takes it as a colour filter: tg works a blood decal's drying colour
-/// out of its `color` (update_blood_color()), which a colour matrix there would break.
-/proc/cyberware_time_stop_tint_for(atom/thing)
-	if(cyberware_time_tinted_blood(thing))
-		var/static/list/filter_tint
-		if(!filter_tint)
-			filter_tint = color_matrix_filter(cyberware_time_stop_tint())
-		return filter_tint
-	return cyberware_time_stop_tint()
+/// tg works a blood decal's drying colour out of its `color` (blending it toward the dried colour), which can't be
+/// done with the slow-mo's tint matrix there: while tinted it wears the tint, and works its colour out again when
+/// the tint comes off (update_atom_colour() calls this). A colour filter was tried first and didn't draw on decals.
+/obj/effect/decal/cleanable/blood/update_blood_color()
+	if(islist(color) && LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) && GLOB.cyberware_time_dilated[src])
+		animate(src)
+		return TRUE
+	return ..()
 
 /// Flattens a sprite to luminance and paints it the dilation's green (#5AFF96).
 /proc/cyberware_time_stop_green()
@@ -854,7 +853,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(!tint_timers[A])
 			tint_timers[A] = addtimer(CALLBACK(src, PROC_REF(ring_reached), A), wait, TIMER_STOPPABLE)
 		return
-	A.add_atom_colour(cyberware_time_stop_tint_for(A), TEMPORARY_COLOUR_PRIORITY)
+	A.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/escape_the_negative_zone(atom/A)
 	if(tint_timers[A])
@@ -896,7 +895,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	tint_timers -= thing
 	if(QDELETED(thing) || !tinted[thing])
 		return
-	thing.add_atom_colour(cyberware_time_stop_tint_for(thing), TEMPORARY_COLOUR_PRIORITY)
+	thing.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
 
 // =========================================================================
 // THE WINDOW'S SIDE

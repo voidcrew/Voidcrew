@@ -99,8 +99,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/last_raw
 	/// It was on a surge during the window: the user, or a mob on its own surge in the field.
 	var/surger = FALSE
-	/// Surger: its surge's trail. An afterimage every this many steps, starting at this alpha.
-	var/trail_every = 1
+	/// Surger: its surge's trail. An afterimage every this many steps (0 until its window is found), starting at this alpha.
+	var/trail_every = 0
 	var/trail_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
 	/// Surger: the next afterimage's hue, and steps taken in the replay.
 	var/trail_hue = 0
@@ -316,6 +316,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	track.last_raw = raw
 	if(!track.surger && (thing == user || field?.surging[thing]))
 		become_surger(track)
+	else if(track.surger && !track.trail_every)
+		read_trail(track)
 	var/look = clean_look(thing)
 	if(wet)
 		look = wet_look(wet, look)
@@ -338,15 +340,17 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!tinted && !outlined)
 		return thing.appearance
 	var/mutable_appearance/copy = new(thing)
-	// Blood wears the tint as a colour filter (cyberware_time_stop_tint_for()), and keeps its own colour under it.
-	var/tint_filter = tinted && cyberware_time_tinted_blood(thing)
-	if(tinted && !tint_filter)
-		copy.color = untinted_colour(thing)
+	if(tinted)
+		if(istype(thing, /obj/effect/decal/cleanable/blood)) // blood's colour is its own, worked out as it dries
+			var/obj/effect/decal/cleanable/blood/blood = thing
+			copy.color = blood.sandy_replay_colour()
+		else
+			copy.color = untinted_colour(thing)
 		copy.appearance_flags |= KEEP_TOGETHER // update_atom_colour() leaves this on once anything was ever coloured
-	if(outlined || tint_filter)
+	if(outlined)
 		copy.filters = null
 		for(var/name in thing.filter_data)
-			if(name == SANDY_REPLAY_OUTLINE || (tint_filter && name == ATOM_PRIORITY_COLOR_FILTER))
+			if(name == SANDY_REPLAY_OUTLINE)
 				continue
 			var/list/data = thing.filter_data[name]
 			var/list/arguments = data.Copy()
@@ -374,6 +378,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/become_surger(datum/sandy_replay_track/track)
 	track.surger = TRUE
 	track.trail_hue = rand(0, 359)
+	read_trail(track)
+
+/// Takes the trail's cadence and strength from the surger's window. The user's own window isn't listed on them yet
+/// while it opens the slow-mo, so this is tried again on later samples.
+/datum/sandy_replay/proc/read_trail(datum/sandy_replay_track/track)
 	if(!isliving(track.thing))
 		return
 	var/mob/living/body = track.thing
@@ -384,7 +393,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// `look` (wet `blood`'s appearance) as the blood is drawn on screen right now, not where its tweens end.
 /datum/sandy_replay/proc/wet_look(obj/effect/decal/cleanable/blood/blood, look)
-	var/colour = blood.sandy_replay_colour_now()
+	var/colour = blood.sandy_replay_colour()
 	var/list/paint = blood.sandy_replay_paint_now()
 	if(!colour && !paint)
 		return look
@@ -802,7 +811,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	crossed -= reached
 	for(var/turf/step_from as anything in crossed)
 		track.trail_steps++
-		if(track.trail_steps % track.trail_every)
+		if(track.trail_steps % max(1, track.trail_every))
 			continue
 		new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha)
 		afterimages++
@@ -979,11 +988,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /obj/effect/decal/cleanable/blood/proc/sandy_replay_wet()
 	return (!dried && can_dry && total_dry_time && drying_time > 0) || length(hv_vis_painting) >= 2
 
-/// The colour it is drawn with right now while it dries (update_blood_color() animates from this to the dried colour),
-/// or null when that isn't a plain colour.
-/obj/effect/decal/cleanable/blood/proc/sandy_replay_colour_now()
-	if(dried || !can_dry || drying_time <= 0 || !total_dry_time)
-		return null
+/// The colour update_blood_color() gives it right now without the slow-mo's tint: dried, or partway there while it
+/// dries (it animates from this to the dried colour). Null when that isn't a plain colour.
+/obj/effect/decal/cleanable/blood/proc/sandy_replay_colour()
 	var/base
 	for(var/priority in 1 to length(atom_colours)) // the slow-mo's tint is a filter at TEMPORARY_COLOUR_PRIORITY
 		if(priority == TEMPORARY_COLOUR_PRIORITY)
@@ -1002,6 +1009,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		base = length(blood_DNA) ? get_color_from_blood_list(blood_DNA) : BLOOD_COLOR_RED
 	if(!istext(base))
 		return null
+	if(dried || drying_time <= 0)
+		return get_dried_color(base)
+	if(!total_dry_time)
+		return base
 	return BlendRGB(base, get_dried_color(base), round(1 - drying_time / total_dry_time, 0.01))
 
 /// Where its hyperviolence paint (hv_vis_paint()) has got to right now: list(transform, alpha), or null.

@@ -343,7 +343,7 @@
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo outlived the window")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The NPC's clock stayed slow after the dilation")
 	TEST_ASSERT_NULL(cyberware_time_field(pool), "Blood stayed slowed after the dilation")
-	TEST_ASSERT(!pool.get_filter(ATOM_PRIORITY_COLOR_FILTER) && !islist(pool.color), "Blood kept the slow-mo's tint, or lost its own colour, after the dilation")
+	TEST_ASSERT(istext(pool.color), "Blood kept the slow-mo's tint, or lost its own colour, after the dilation")
 	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A grenade's fuse didn't lose its slowed time")
 	TEST_ASSERT(bomb.cyberware_fuse_at > world.time, "A grenade's fuse has nothing left after losing time")
 	bomb.cyberware_fuse_at = 0 // don't let it go off after the test
