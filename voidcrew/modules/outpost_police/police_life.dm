@@ -481,7 +481,7 @@
 		return null
 	var/best_shop
 	var/best_distance = 16
-	for(var/mob/living/basic/outpost_trader/trader as anything in outpost.traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in outpost.traders)
 		if(QDELETED(trader) || trader.z != where.z)
 			continue
 		var/shop_type = ambient_trader_shop(trader)
@@ -736,9 +736,9 @@
 	var/spoke = FALSE
 
 /datum/ambient_activity/police_shopfront/setup()
-	var/mob/living/basic/outpost_trader/best
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/best
 	var/best_distance = INFINITY
-	for(var/mob/living/basic/outpost_trader/trader in range(7, doer))
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in range(7, doer))
 		if(trader.stat == DEAD)
 			continue
 		var/distance = get_dist(trader, doer)
@@ -754,7 +754,7 @@
 	return ..()
 
 /datum/ambient_activity/police_shopfront/arrive()
-	var/mob/living/basic/outpost_trader/trader = trader_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
 	if(QDELETED(trader) || trader.stat == DEAD)
 		return
 	if(!doer.buckled)
@@ -919,8 +919,8 @@
 			doer.speak_context("cell_check", null, force = TRUE)
 	if(world.time >= next_guard_word)
 		next_guard_word = world.time + rand(90 SECONDS, 180 SECONDS)
-		var/mob/living/basic/outpost_trader/checkpoint_guard/guard
-		for(var/mob/living/basic/outpost_trader/checkpoint_guard/found in range(9, doer))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/found in range(9, doer))
 			if(found.stat != DEAD && officer.police?.perception?.sees(doer, found))
 				guard = found
 				break

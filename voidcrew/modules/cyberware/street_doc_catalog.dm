@@ -282,5 +282,5 @@
 
 /// Ratchet behind his counter. A ripperdoc subtype, so the cradle in his bay
 /// talks through him during installs.
-/mob/living/basic/outpost_trader/ripperdoc/street_doc
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc/street_doc
 	shop_type = /datum/outpost_shop/vendor/street_doc

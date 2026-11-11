@@ -76,9 +76,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	/// Posted (not yet accepted) contracts (see outpost_missions.dm / outpost_quests.dm)
 	var/list/datum/mission/shop_offers = list()
 	/// Linked trader NPC fronting the main shop (the outpost's "face")
-	var/mob/living/basic/outpost_trader/trader
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader
 	/// All linked trader NPCs, main trader and vendor stalls alike
-	var/list/mob/living/basic/outpost_trader/traders = list()
+	var/list/mob/living/carbon/human/npc/ambient_npc/outpost/trader/traders = list()
 	/// Looping timer id for the supply convoy restock
 	var/restock_timer
 	/// Board clock is independent of visits, acceptance and the supply convoy.
@@ -259,7 +259,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			recovery_landmarks += recovery_mark
 		for(var/obj/effect/landmark/outpost_janitor_closet/recovery_mark in interior_turf)
 			recovery_landmarks += recovery_mark
-		for(var/mob/living/basic/outpost_trader/npc in interior_turf)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc in interior_turf)
 			npc.outpost = src
 			npc.shop = get_shop(npc.shop_type)
 			npc.shop.trader_npc = npc
@@ -304,7 +304,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
 	// yet, dressing the appearance dummy that early is unsafe, so those
 	// traders run setup_from_shop in Initialize instead.
-	for(var/mob/living/basic/outpost_trader/npc as anything in traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc as anything in traders)
 		if(npc.flags_1 & INITIALIZED_1)
 			npc.setup_from_shop()
 
@@ -437,7 +437,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		if(berth?.ship)
 			berth.ship.ship_notify("[name]: supply convoy arrived, shelves restocked, new items rotated in.", "CONVOY ARRIVAL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	// Open storefront UIs are looking at a stale catalog now; refresh them
-	for(var/mob/living/basic/outpost_trader/npc as anything in traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc as anything in traders)
 		npc.shop_ui?.update_static_data_for_all_viewers()
 	// World population (voidcrew/modules/ambient_npcs): the dock workers unload it
 	SEND_SIGNAL(src, COMSIG_TRADER_OUTPOST_CONVOY)

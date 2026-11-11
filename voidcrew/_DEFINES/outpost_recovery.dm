@@ -12,7 +12,7 @@
  * declaration, so declarations write the path out (recovery_robbery.dm's three forwarders). R1's path rename
  * (basic mob to /mob/living/carbon/human/npc/ambient_npc/outpost/trader) changes this line with the rest.
  */
-#define OUTPOST_TRADER_MOB /mob/living/basic/outpost_trader
+#define OUTPOST_TRADER_MOB /mob/living/carbon/human/npc/ambient_npc/outpost/trader
 
 // ===== STATE (recovery_core.dm, R2; spec-rehydrate 2) =====
 

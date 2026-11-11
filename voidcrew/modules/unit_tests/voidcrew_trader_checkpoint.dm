@@ -14,7 +14,7 @@
 	var/datum/outpost_checkpoint/checkpoint
 	var/obj/machinery/door/airlock/outpost/checkpoint/outer/outer
 	var/obj/machinery/door/airlock/outpost/checkpoint/inner/inner
-	var/mob/living/basic/outpost_trader/checkpoint_guard/guard
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard
 	var/obj/machinery/outpost_checkpoint_sensor/sensor
 	/// In front of the outer door
 	var/turf/lobby
@@ -73,7 +73,7 @@
 	sensor = allocate(/obj/machinery/outpost_checkpoint_sensor/directional/west, chamber[1])
 	sensor.checkpoint_id = "test_checkpoint"
 	if(with_guard)
-		guard = allocate(/mob/living/basic/outpost_trader/checkpoint_guard/halcyon, locate(origin.x + 4, origin.y + 6, origin.z))
+		guard = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/halcyon, locate(origin.x + 4, origin.y + 6, origin.z))
 		guard.checkpoint_id = "test_checkpoint"
 	host.link_interior_machinery()
 	checkpoint = host.checkpoints["test_checkpoint"]

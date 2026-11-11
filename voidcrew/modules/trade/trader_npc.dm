@@ -1,26 +1,24 @@
 /**
  * # Outpost Trader NPC
  *
- * The outpost's shopkeeper in the flesh: an unkillable static mob standing
- * behind the counter. Clicking them opens a radial, Trade, Talk, and (for the
- * outpost's main trader) Contracts, which consolidates what used to be a
- * holopad, a shop terminal and a mission board into one person.
+ * The outpost's shopkeeper: a real person behind the counter, an ambient outpost NPC with a human body that
+ * bleeds, goes into crit, dies and can be revived like anyone (owner decision 14, spec-rehydrate.md 1). Clicking
+ * them opens a radial, Trade, Talk, and (for the outpost's main trader) Contracts, which consolidates what used to
+ * be a holopad, a shop terminal and a mission board into one person.
  *
- * The trade and contract radials open the same TraderShop / OutpostMissionBoard
- * tgui windows as before; the mob hosts them through two small facet datums
- * (one interface per tgui src_object) so both can be open at once.
+ * The trade and contract radials open the same TraderShop / OutpostMissionBoard tgui windows as before; the mob
+ * hosts them through two small facet datums (one interface per tgui src_object) so both can be open at once.
  *
- * Unkillable AND protected: godmode makes violence pointless, and attacking a
- * trader is aggression against outpost property. Embargo rules apply. The
- * ambient NPCs milling about are killable, and hurting them counts as violence too.
+ * The shop lives on its /datum/outpost_shop, not on the person: stock, prices, demand and reputation outlast a
+ * keeper. The shop trades only while its keeper is up and at the counter (shop.is_open(), shop.dm), so a dead,
+ * dragged-off or held-up keeper shuts it until they are back or a replacement walks in (outpost recovery,
+ * outpost_police/recovery_*.dm). The first keeper of a counter drops one thing off their own shelf when killed
+ * (drop_from_shelf()); nothing else they wear or carry is loot.
  *
- * A documented fixture, not a person (owner ruling OC-1, human NPC migration, 2026-11-08): every
- * other humanoid NPC is a real human body that bleeds, goes into crit and dies
- * (voidcrew/modules/human_npcs/), but traders and the checkpoint guards (a subtype,
- * outpost_checkpoint_guard.dm) stay invulnerable basic mobs. A dead shopkeeper would cut every crew
- * off that shop for the rest of a six-hour round; the outpost's own answer to an attack (aggression,
- * the embargo, the turrets) is the consequence instead. Keep the exception to the counter staff:
- * everyone else at an outpost can be killed.
+ * Hitting one is aggression against the outpost's staff (OUTPOST_CRIME_ASSAULT_STAFF, with the trader as the
+ * victim); a killing is KILL_STAFF (outpost_police/police_wanted.dm). A fight nearby sends them down behind the
+ * counter; a badly hurt one runs for the lift. While alive they refuse teleports and closets, and their AI
+ * resists grabs and buckles like any ambient NPC. Checkpoint guards are a subtype (outpost_checkpoint_guard.dm).
  *
  * Speech lines come from the outpost's shop datum, so each trader has their
  * own voice (see the trader_lines lists on the /datum/outpost_shop subtypes).
@@ -35,29 +33,33 @@
 /// How far a customer may stand from a trader and still be served, in tiles.
 /// Two, so the counter itself doesn't have to be walked around.
 #define TRADER_COUNTER_RANGE 2
+/// Below this share of their health, a hurt keeper runs for the lift (guards stay in their booth)
+#define TRADER_FLEE_HEALTH 0.5
+/// How long a keeper keeps their head down after a fight nearby
+#define TRADER_DUCK_LOW (15 SECONDS)
+#define TRADER_DUCK_HIGH (30 SECONDS)
+/// Trait source for what a living keeper refuses (closets, storage)
+#define TRADER_ALIVE_TRAIT "outpost_trader_alive"
 
-/mob/living/basic/outpost_trader
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader
 	name = "trader"
 	desc = "An independent merchant behind a well-worn counter."
-	icon = 'icons/mob/simple/simple_human.dmi'
-	unique_name = FALSE
-	combat_mode = FALSE
-	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
-	sentience_type = SENTIENCE_HUMANOID
-	density = TRUE
-	move_resist = INFINITY // nobody drags the shopkeep off their counter
-	basic_mob_flags = NONE
-	// The outpost turrets skip faction-mates outright, belt-and-suspenders on
-	// top of aggression being per-mind (see outpost_security.dm)
+	// The shop's outfit replaces it once the shop is known (setup_from_shop())
+	outfit = /datum/outfit/outpost_trader_generic
+	random_name = FALSE
+	// Nothing on them is loot but the one shelf item (spec-rehydrate 1.3)
+	death_cash_low = 0
+	death_cash_high = 0
+	// The outpost turrets and police skip faction-mates; aggression is per mind
 	faction = list(FACTION_TURRET, FACTION_NEUTRAL)
-	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	routine = list(/datum/ambient_activity/keep_counter = 1)
 
 	/// The outpost this trader works for (set by the outpost on interior link)
 	var/obj/structure/overmap/trader_outpost/outpost
 	/// The shop this trader fronts: null for the outpost's main shop, or a
 	/// /datum/outpost_shop typepath for a vendor stall (the bar, the clinic, ...)
 	var/shop_type
-	/// The resolved live shop (set by the outpost on interior link)
+	/// The resolved live shop (set by the outpost on interior link, or by shop.set_keeper())
 	var/datum/outpost_shop/shop
 	/// Facet hosting the TraderShop tgui
 	var/datum/outpost_trader_ui/shop_ui
@@ -65,50 +67,44 @@
 	var/datum/outpost_trader_ui/contracts_ui
 	/// Whether the shop-driven name/appearance/voice have been applied
 	var/shop_setup_done = FALSE
+	/// Made already in the shop's look (the pre-load path: the shop was linked before Initialize)
+	var/dressed_for_shop = FALSE
+	/// The first keeper of their counter: only they drop anything when killed
+	var/first_keeper = FALSE
 	/// Minimum delay between idle chatter lines
 	COOLDOWN_DECLARE(idle_line_cooldown)
 	/// Minimum delay between any spoken lines (don't spam on bulk purchases)
 	COOLDOWN_DECLARE(speak_cooldown)
 
-// Covers the roundstart pre-load path: the outpost links (and sets shop on)
-// this mob before SSatoms initializes it, dressing the appearance dummy that
-// early is unsafe, so the look is applied here instead. No-ops when there's no
-// linked shop yet; the lazy-load path runs setup through link_interior_machinery.
-/mob/living/basic/outpost_trader/Initialize(mapload)
+// The roundstart pre-load path links the outpost (and sets shop on) this mob before SSatoms initializes it, so the
+// body is made in the shop's look at once. The lazy-load path links an initialized mob and redresses it
+// (setup_from_shop()). A replacement walking in is linked by shop.set_keeper().
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/Initialize(mapload, datum/human_npc_order/order)
+	if(shop)
+		take_shop_look()
 	. = ..()
-	// Godmode makes them unkillable; NOMOBSWAP stops help-intent walkers from
-	// place-swapping through them (move_resist already blocks shoves/pushes).
-	ADD_TRAIT(src, TRAIT_GODMODE, INNATE_TRAIT)
+	// NOMOBSWAP stops help-intent walkers from place-swapping through the counter
 	ADD_TRAIT(src, TRAIT_NOMOBSWAP, INNATE_TRAIT)
-	// move_resist only stops pulling; drag-drops (buckling to beds, stuffing
-	// into crates/disposals) never check it, so cancel them at the source.
 	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
-	// ...and a closet does not use the drag path at all: close() sweeps whatever is
-	// standing on its tile into itself, which is how an entire outpost's traders left
-	// in a bluespace body bag (#131). See voidcrew/edits/objects/structures/
-	// closet_containment.dm.
-	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
-	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
+	RegisterSignal(src, COMSIG_LIVING_GET_PULLED, PROC_REF(on_pulled))
+	RegisterSignal(src, COMSIG_LIVING_REVIVE, PROC_REF(on_revived))
+	guard_alive(TRUE)
+	leash_to(home)
 	shop_ui = new /datum/outpost_trader_ui/shop(src)
 	contracts_ui = new /datum/outpost_trader_ui/contracts(src)
 	setup_from_shop()
 	hook_holdup() // the stick-up (outpost_police/recovery_robbery.dm, R7)
 
-/**
- * Killed: one item off this trader's own shelf (spec-rehydrate.md 1.3): in stock, at or under
- * OUTPOST_TRADER_DROP_CAP, the first keeper of the counter only, within recovery.loss_room(). Nothing for a
- * replacement, a checkpoint guard or a keeper robbed since the last convoy. Owner R1; R0 stub: nothing.
- */
-/mob/living/basic/outpost_trader/proc/drop_from_shelf()
-	return
-
-/mob/living/basic/outpost_trader/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/Destroy()
 	QDEL_NULL(shop_ui)
 	QDEL_NULL(contracts_ui)
 	if(shop?.trader_npc == src)
 		shop.trader_npc = null
+	if(shop?.keeper?.resolve() == src)
+		shop.set_keeper(null)
 	shop = null
 	if(outpost)
+		UnregisterSignal(outpost, COMSIG_TRADER_OUTPOST_VIOLENCE)
 		outpost.traders -= src
 		if(outpost.trader == src)
 			outpost.trader = null
@@ -116,53 +112,207 @@
 	return ..()
 
 /**
- * Applies the shop's identity to the mob: name, dressed-human appearance and
- * bark voice. Called from Initialize (pre-load path, shop already linked) or
- * from the outpost's interior link (lazy-load path, mob already initialized).
+ * Takes the counter of `new_shop` at `counter`: links them to the shop and its outpost, makes the counter their
+ * home and leash, and puts on the shop's look. Called by shop.set_keeper(); the counter's first keeper is the
+ * shop's named trader, anyone after is a new face (spec-rehydrate 1.2).
  */
-/mob/living/basic/outpost_trader/proc/setup_from_shop()
-	if(shop_setup_done || !shop)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/take_counter(datum/outpost_shop/new_shop, turf/counter, is_first)
+	shop = new_shop
+	first_keeper = is_first
+	var/obj/structure/overmap/trader_outpost/new_outpost = new_shop.outpost
+	if(new_outpost && new_outpost != outpost)
+		if(outpost)
+			UnregisterSignal(outpost, COMSIG_TRADER_OUTPOST_VIOLENCE)
+		outpost = new_outpost
+	if(outpost)
+		shop_type = (new_shop == outpost.shop) ? null : new_shop.type
+		outpost.traders |= src
+		if(isnull(shop_type))
+			outpost.trader = src
+		RegisterSignal(outpost, COMSIG_TRADER_OUTPOST_VIOLENCE, PROC_REF(on_outpost_violence), override = TRUE)
+	if(counter)
+		home = counter
+		leash_to(counter)
+	setup_from_shop()
+
+/// Their leash: within OUTPOST_TRADER_COUNTER_REACH of `counter`, or none
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/leash_to(turf/counter)
+	if(!counter)
+		leash_bounds = null
+		return
+	leash_bounds = list(counter.x - OUTPOST_TRADER_COUNTER_REACH, counter.y - OUTPOST_TRADER_COUNTER_REACH, counter.x + OUTPOST_TRADER_COUNTER_REACH, counter.y + OUTPOST_TRADER_COUNTER_REACH, counter.z)
+
+/// The shop's outfit, name and gender for a body not made yet (before Initialize's parent)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/take_shop_look()
+	dressed_for_shop = TRUE
+	outfit_choices = null
+	outfit = shop.trader_outfit || /datum/outfit/outpost_trader_generic
+	random_gender = FALSE
+	person = new_outpost_npc_person(shop.trader_gender == FEMALE ? FEMALE : MALE)
+	name = shop.trader_name
+
+/**
+ * Applies the shop's identity to the mob: name, outfit and bark voice. Runs once, after the shop is linked: from
+ * Initialize (pre-load path, shop already linked), from the outpost's interior link (lazy-load path, mob already
+ * made) or from take_counter(). A body not yet registered as its shop's keeper is registered first.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/setup_from_shop()
+	if(shop_setup_done || !shop || !(flags_1 & INITIALIZED_1))
+		return
+	if(shop.keeper?.resolve() != src)
+		shop.set_keeper(src) // comes back here through take_counter()
 		return
 	shop_setup_done = TRUE
-	name = shop.trader_name
-	real_name = shop.trader_name
-	gender = shop.trader_gender
-	apply_dynamic_human_appearance(src, outfit_path = shop.trader_outfit)
+	if(!dressed_for_shop)
+		dress_for_shop()
+	if(first_keeper && (shop.trader_gender == PLURAL || shop.trader_gender == NEUTER))
+		gender = shop.trader_gender
 	if(shop.trader_voice_pack)
 		set_bark_voice_pack(shop.trader_voice_pack)
 		var/datum/atom_voice/bark_voice = get_bark_voice()
 		if(bark_voice)
 			bark_voice.pitch = shop.trader_voice_pitch
 
-/mob/living/basic/outpost_trader/examine(mob/user)
+/// Redresses a body already made in the shop's outfit: the shop's named trader for the first keeper, a new face for anyone after
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/dress_for_shop()
+	dressed_for_shop = TRUE
+	var/new_gender = first_keeper ? (shop.trader_gender == FEMALE ? FEMALE : MALE) : pick(MALE, FEMALE)
+	if(new_gender != person?.gender)
+		person = new_outpost_npc_person(new_gender)
+		person.apply_to(src)
+	npc_delete_locked_gear()
+	outfit = shop.trader_outfit || /datum/outfit/outpost_trader_generic
+	equipOutfit(outfit)
+	npc_lock_all_gear()
+	refresh_hands()
+	var/new_name = first_keeper ? shop.trader_name : generate_random_name(gender)
+	if(new_name)
+		fully_replace_character_name(real_name, new_name)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/examine(mob/user)
 	. = ..()
+	if(stat == DEAD)
+		return
 	if(shop)
 		. += span_notice("[name] runs the counter at [shop.outpost_name].")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")
 
+// ===== THE COUNTER (their routine) =====
+
+// Nothing but the counter: back to it, and standing there
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/pick_activity()
+	return start_activity(new /datum/ambient_activity/keep_counter(src))
+
+// Off their counter (shoved, dragged): they walk back however long it takes, and never slip away for it
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/give_up_leash()
+	leash_broken_at = 0
+
+// Alive, they stay at the outpost: no teleport of any kind moves them, wherever they are
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/refuse_teleport(datum/source, atom/destination, channel)
+	if(stat == DEAD)
+		return NONE
+	return TRUE
+
+/**
+ * Minding the counter: back on the counter tile, standing there, now and then facing about. The trader's idle
+ * lines come from their shop (Life()), not the ambient files.
+ */
+/datum/ambient_activity/keep_counter
+	name = "minding the counter"
+	duration_low = 1 MINUTES
+	duration_high = 3 MINUTES
+
+/datum/ambient_activity/keep_counter/setup()
+	set_duration()
+	if(doer.home && doer.loc != doer.home)
+		go_to(doer.home)
+	return TRUE
+
+/datum/ambient_activity/keep_counter/act(seconds)
+	if(prob(5) && !doer.buckled)
+		doer.setDir(pick(GLOB.cardinals))
+	return AMBIENT_STEP_CONTINUE
+
+// They can't get back on the tile (someone stands there): beside it will do
+/datum/ambient_activity/keep_counter/spot_unreachable()
+	if(spot && spot_distance == 0)
+		spot_distance = 1
+		arrived = FALSE
+		return
+	return ..()
+
+/// A fight nearby: down behind the counter until it is over
+/datum/ambient_activity/trader_duck
+	name = "keeping their head down"
+	priority = AMBIENT_PRIORITY_REACTION
+	duration_low = TRADER_DUCK_LOW
+	duration_high = TRADER_DUCK_HIGH
+
+/datum/ambient_activity/trader_duck/setup()
+	set_duration()
+	return TRUE
+
+/datum/ambient_activity/trader_duck/arrive()
+	doer.crouch()
+
+/datum/ambient_activity/trader_duck/act(seconds)
+	if(!doer.crouching)
+		doer.crouch()
+	return AMBIENT_STEP_CONTINUE
+
 // ===== INTERACTION =====
 
-/// Cancels any attempt to drag-drop the trader onto something (beds, crates,
-/// disposals, ...): the shopkeep stays at their counter, period.
-/mob/living/basic/outpost_trader/proc/block_being_dragged(atom/over, mob/user)
+/// Cancels drag-dropping a living trader onto something (beds, crates, disposals); a body is moved like any other
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/block_being_dragged(atom/over, mob/user)
 	SIGNAL_HANDLER
+	if(stat == DEAD)
+		return NONE
 	return COMPONENT_CANCEL_MOUSEDROP_ONTO
 
-/mob/living/basic/outpost_trader/attack_hand(mob/living/carbon/human/user, list/modifiers)
-	if(user.combat_mode)
-		. = ..()
-		outpost?.register_aggression(user, OUTPOST_CRIME_ASSAULT_STAFF, src)
+/// Alive, closets and bags can't take them (a bluespace body bag once took a whole outpost's traders, #131)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/guard_alive(alive)
+	if(alive)
+		ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, TRADER_ALIVE_TRAIT)
+		ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, TRADER_ALIVE_TRAIT)
+	else
+		REMOVE_TRAIT(src, TRAIT_NO_CONTAINMENT, TRADER_ALIVE_TRAIT)
+		REMOVE_TRAIT(src, TRAIT_NO_STORAGE_INSERT, TRADER_ALIVE_TRAIT)
+
+/// Someone grabs a living keeper: moving staff against their will is assault on the staff (M31)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_pulled(datum/source, mob/living/puller)
+	SIGNAL_HANDLER
+	if(stat == DEAD || !isliving(puller) || puller == src || !outpost)
 		return
+	outpost.register_aggression(puller, OUTPOST_CRIME_ASSAULT_STAFF, src)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_revived(datum/source, full_heal_flags)
+	SIGNAL_HANDLER
+	guard_alive(TRUE)
+	if(shop?.keeper?.resolve() == src && home)
+		leash_to(home)
+	shop?.update_signs()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/attack_hand(mob/living/carbon/human/user, list/modifiers)
+	if(!user.combat_mode && !LAZYACCESS(modifiers, RIGHT_CLICK))
+		return ..() // talked_to() opens the radial while they are up
+	var/was_alive = stat != DEAD
+	. = ..()
+	if(was_alive)
+		outpost?.register_aggression(user, OUTPOST_CRIME_ASSAULT_STAFF, src)
+
+// An empty hand at the counter is a customer
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/talked_to(mob/living/user)
+	if(!buckled)
+		face_atom(user)
 	// show_radial_menu sleeps; don't hold up the click chain
 	INVOKE_ASYNC(src, PROC_REF(open_trader_menu), user)
-	return TRUE
 
 // Empty-handed clicks from across the counter (see edits/_onclick/ranged_hand.dm).
 // Combat mode is already filtered out upstream, so anything arriving here is a
 // customer, not an assailant.
-/mob/living/basic/outpost_trader/ranged_attack_hand(mob/living/user, list/modifiers)
-	if(get_dist(src, user) > TRADER_COUNTER_RANGE)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ranged_attack_hand(mob/living/user, list/modifiers)
+	if(get_dist(src, user) > TRADER_COUNTER_RANGE || !can_be_talked_to())
 		return FALSE
 	if(!customer_in_reach(user))
 		balloon_alert(user, "no clear line to the counter!")
@@ -175,7 +325,7 @@
  * nothing solid in the way. Adjacency isn't enough on its own here, the whole
  * point is being able to stand on the customer side of a counter.
  */
-/mob/living/basic/outpost_trader/proc/customer_in_reach(mob/user)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/customer_in_reach(mob/user)
 	if(QDELETED(user) || get_dist(src, user) > TRADER_COUNTER_RANGE)
 		return FALSE
 	return (src in view(TRADER_COUNTER_RANGE, user))
@@ -183,12 +333,12 @@
 /**
  * The Trade / Talk / Contracts radial. Contracts only shows on the outpost's
  * main trader, vendor stalls don't post work. Barred customers get refused
- * before the menu even opens.
+ * before the menu even opens; a shut counter (shop.is_open()) opens nothing.
  */
-/mob/living/basic/outpost_trader/proc/open_trader_menu(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/open_trader_menu(mob/living/user)
 	// outpost may legitimately be null: standalone stalls (the colosseum's
 	// lanista) run a shop with no station behind it
-	if(!shop)
+	if(!shop || !is_serving())
 		return
 	if(outpost?.is_user_barred(user))
 		speak_line(TRADER_LINE_REFUSAL)
@@ -217,11 +367,21 @@
 			outpost.ensure_shop_offers()
 			contracts_ui.ui_interact(user)
 
-/// Radial validity: customer still there, still conscious, still at the counter
-/mob/living/basic/outpost_trader/proc/check_menu(mob/living/user)
+/// Whether they keep their shop's counter and it is open: the keeper, up, at the counter, not held up. A shop whose counter never had a keeper (a bare test stall) is served by whoever fronts it.
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/is_serving()
+	if(!shop)
+		return FALSE
+	if(!shop.counter_turf)
+		return stat == CONSCIOUS
+	return shop.keeper?.resolve() == src && shop.is_open()
+
+/// Radial validity: customer still there, still conscious, still at the counter, and the counter open
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/check_menu(mob/living/user)
 	if(!istype(user))
 		return FALSE
 	if(IS_DEAD_OR_INCAP(user) || !customer_in_reach(user))
+		return FALSE
+	if(shop && !is_serving())
 		return FALSE
 	return TRUE
 
@@ -230,8 +390,8 @@
  * Rate-limited except for aggression lines, which always go through. Barks
  * fire automatically through the mob's say() (see modules/voice_barks).
  */
-/mob/living/basic/outpost_trader/proc/speak_line(category, line)
-	if(!shop)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/speak_line(category, line)
+	if(!shop || stat != CONSCIOUS)
 		return
 	if(category != TRADER_LINE_AGGRESSION && !COOLDOWN_FINISHED(src, speak_cooldown))
 		return
@@ -241,10 +401,13 @@
 	COOLDOWN_START(src, speak_cooldown, 3 SECONDS)
 	say(line)
 
-// Idle chatter on the mob's life tick, roughly once every few minutes
-/mob/living/basic/outpost_trader/Life(seconds_per_tick, times_fired)
+// Idle chatter on the mob's life tick, roughly once every few minutes, from the counter
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/Life(seconds_per_tick, times_fired)
 	. = ..()
-	if(!shop || !COOLDOWN_FINISHED(src, idle_line_cooldown))
+	// Walked off, held up, back again: the stall sign follows (shop.update_signs() only acts on a change)
+	if(shop?.keeper?.resolve() == src)
+		shop.update_signs()
+	if(!shop || stat != CONSCIOUS || !COOLDOWN_FINISHED(src, idle_line_cooldown) || !is_serving())
 		return
 	if(!prob(15))
 		return
@@ -260,56 +423,191 @@
 	speak_line(TRADER_LINE_IDLE)
 
 /// The polite "no" noise for refused purchases and sales
-/mob/living/basic/outpost_trader/proc/play_denial()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/play_denial()
 	playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 
 // ===== AGGRESSION =====
-// Swinging at the staff is aggression like attacking anything else here; the
-// blow itself bounces off godmode.
+// Swinging at the staff is aggression like attacking anything else here, and the blow lands as on anyone.
 
-/mob/living/basic/outpost_trader/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && outpost)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
+	if(attacking_item.force && outpost && stat != DEAD)
 		outpost.register_aggression(user, OUTPOST_CRIME_ASSAULT_STAFF, src, attacking_item)
 	return ..()
 
-/mob/living/basic/outpost_trader/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE, blocked = 0)
-	if(outpost && isliving(hitting_projectile.firer))
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE, blocked = 0)
+	if(outpost && stat != DEAD && isliving(hitting_projectile.firer))
 		var/obj/item/fired_from = hitting_projectile.fired_from
 		outpost.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_ASSAULT_STAFF, src, isitem(fired_from) ? fired_from : null)
 	return ..()
+
+// Hurt: a line, then down behind the counter, or off to the lift when it is bad (a guard stays in the booth)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/react_attacked(atom/attacker)
+	if(stat != CONSCIOUS || fading)
+		return
+	if(reaction_ready("attacked"))
+		speak_line(TRADER_LINE_AGGRESSION)
+	if(may_flee() && health < maxHealth * TRADER_FLEE_HEALTH)
+		flee()
+		return
+	duck(attacker)
+
+// A fight near the counter
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/react_violence(mob/living/offender)
+	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/leave) || !reaction_ready("violence"))
+		return
+	duck(offender)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_outpost_violence(datum/source, mob/living/offender)
+	SIGNAL_HANDLER
+	if(offender && get_dist(src, offender) <= AMBIENT_VIOLENCE_RANGE)
+		react_violence(offender)
+
+/// Down behind the counter for a while, facing the trouble
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/duck(atom/trouble)
+	if(istype(activity, /datum/ambient_activity/leave))
+		return
+	if(!istype(activity, /datum/ambient_activity/trader_duck) && !start_activity(new /datum/ambient_activity/trader_duck(src)))
+		return
+	if(trouble && !buckled)
+		face_atom(trouble)
+	crouch()
+
+/// Whether they may leave their post to save themselves. A guard's booth is sealed.
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/may_flee()
+	return !!outpost
+
+/// Off to the nearest lift, leash dropped, running
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/flee()
+	if(istype(activity, /datum/ambient_activity/leave))
+		return
+	var/turf/exit = bounty_outpost_exit_turf(src, outpost)
+	if(!exit)
+		duck()
+		return
+	leash_bounds = null
+	set_pace(running = TRUE)
+	start_activity(new /datum/ambient_activity/leave(src, exit))
+
+// ===== DEATH =====
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/death(gibbed)
+	var/was_alive = stat != DEAD
+	. = ..()
+	if(!was_alive || stat != DEAD)
+		return
+	guard_alive(FALSE)
+	shop?.update_signs()
+
+// No ambient place of their own: an outpost's staff lie as long as its other dead (outpost recovery may change it on note_death())
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/corpse_lifetime()
+	return outpost ? AMBIENT_OUTPOST_BODY_TIME : ..()
+
+// Cash and death_loot are off; the one drop is a shelf item
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/drop_loot()
+	if(loot_dropped)
+		return
+	loot_dropped = TRUE
+	drop_from_shelf()
+
+/**
+ * Killed: one item off this trader's own shelf (spec-rehydrate.md 1.3): a credit-priced SKU in stock, at or under
+ * OUTPOST_TRADER_DROP_CAP and within recovery.loss_room() (the outpost's cap shared with the stick-up), its stock
+ * down by one. Only the first keeper of a counter, and only once per counter; nothing for a replacement, a
+ * checkpoint guard, a stall with no outpost, or a counter whose till was robbed. A gun past the checkpoint comes
+ * sealed, as a bought one does. Returns the item, or null.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/drop_from_shelf()
+	if(!shop || !outpost || !first_keeper || shop.drop_spent)
+		return null
+	shop.drop_spent = TRUE
+	if(shop.till_robbed_by) // robbing and then killing never pays twice (M37)
+		return null
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	if(!recovery)
+		return null
+	var/room = min(OUTPOST_TRADER_DROP_CAP, recovery.loss_room())
+	if(room <= 0)
+		return null
+	var/list/datum/shop_sku/eligible = list()
+	for(var/datum/shop_sku/sku as anything in shop.skus)
+		if(sku.stock <= 0 || sku.shelf == SHELF_FAVOR || sku.price_vouchers > 0 || sku.is_chart)
+			continue
+		if(istype(sku, /datum/shop_sku/barter) || !ispath(sku.item_path, /obj/item))
+			continue
+		var/price = sku.get_credit_price()
+		if(price <= 0 || price > room)
+			continue
+		eligible += sku
+	if(!length(eligible))
+		return null
+	var/turf/drop_turf = drop_location()
+	if(!drop_turf)
+		return null
+	var/datum/shop_sku/picked = pick(eligible)
+	picked.stock--
+	recovery.note_loss(picked.get_credit_price())
+	var/atom/movable/goods = create_trader_goods(picked.item_path, drop_turf, picked.dispense_amount)
+	var/atom/movable/handed = outpost_seal_goods(goods)
+	mark_trader_goods(handed)
+	return handed
 
 // ===== VENDOR STALL VARIANTS (the outposts' side businesses) =====
 
 // The Undertow's stalls (shop_catalog_black_market_vendors.dm)
 
-/mob/living/basic/outpost_trader/dregs_barkeep
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/dregs_barkeep
 	shop_type = /datum/outpost_shop/vendor/dregs_bar
 
-/mob/living/basic/outpost_trader/clinic_doctor
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/clinic_doctor
 	shop_type = /datum/outpost_shop/vendor/patchup_clinic
 
-/mob/living/basic/outpost_trader/ripperdoc
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc
 	shop_type = /datum/outpost_shop/vendor/ripperdoc
 
 // Halcyon's stalls (shop_catalog_general_vendors.dm, shop_catalog_diner.dm)
 
-/mob/living/basic/outpost_trader/potting_shed
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/potting_shed
 	shop_type = /datum/outpost_shop/vendor/potting_shed
 
-/mob/living/basic/outpost_trader/bait_shop
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/bait_shop
 	shop_type = /datum/outpost_shop/vendor/bait_shop
 
-/mob/living/basic/outpost_trader/diner_cook
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/diner_cook
 	shop_type = /datum/outpost_shop/vendor/diner
 
 // The Quartermain's stalls (shop_catalog_outfitter_vendors.dm,
 // shop_catalog_suit_vendor.dm)
 
-/mob/living/basic/outpost_trader/skunkworks
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/skunkworks
 	shop_type = /datum/outpost_shop/vendor/skunkworks
 
-/mob/living/basic/outpost_trader/suit_fitter
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter
 	shop_type = /datum/outpost_shop/vendor/suit_fitter
+
+// =========================================================================
+// THE STALL SIGN
+// =========================================================================
+
+/**
+ * A stall's sign: OPEN while the counter trades, CLOSED while it does not
+ * (spec-rehydrate 1.2). It belongs to the counter it hangs within OUTPOST_TRADER_SIGN_RANGE of, found when that
+ * counter gets its first keeper (shop.set_keeper()).
+ */
+/obj/machinery/status_display/outpost_sign/stall
+	name = "stall sign"
+	desc = "A stall's sign."
+	top_line = "OPEN"
+	bottom_line = ""
+	/// Weakref to the shop whose counter it shows (set by shop.link_signs())
+	var/datum/weakref/shop_ref
+
+/// Shows its counter open or shut
+/obj/machinery/status_display/outpost_sign/stall/proc/show_open(open)
+	top_line = open ? "OPEN" : "CLOSED"
+	bottom_line = ""
+	set_messages(top_line, bottom_line)
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/stall, 32)
 
 // =========================================================================
 // UI FACETS
@@ -324,9 +622,9 @@
  */
 /datum/outpost_trader_ui
 	/// The trader this facet fronts for
-	var/mob/living/basic/outpost_trader/npc
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc
 
-/datum/outpost_trader_ui/New(mob/living/basic/outpost_trader/npc)
+/datum/outpost_trader_ui/New(mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc)
 	..()
 	src.npc = npc
 
@@ -374,6 +672,10 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	if(. <= UI_CLOSE)
 		return UI_CLOSE
 	if(!isliving(user))
+		return UI_CLOSE
+	// A counter that shuts (its keeper dead, gone or held up) closes its windows
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = src_object
+	if(istype(keeper) && keeper.shop && !keeper.is_serving())
 		return UI_CLOSE
 	// Obscured by a wall closes it, same as physical_state
 	if(!(src_object in view(user)))
@@ -728,7 +1030,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			return TRUE
 
 /// Stale UI actions must still originate from a crew member at the actual counter.
-/mob/living/basic/outpost_trader/proc/can_use_contracts(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/can_use_contracts(mob/living/user)
 	if(!check_menu(user) || QDELETED(outpost) || outpost.trader != src || shop != outpost.shop)
 		return FALSE
 	if(!outpost.contains_site_turf(get_turf(src)))
@@ -739,6 +1041,10 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	return TRUE
 
 #undef TRADER_COUNTER_RANGE
+#undef TRADER_FLEE_HEALTH
+#undef TRADER_DUCK_LOW
+#undef TRADER_DUCK_HIGH
+#undef TRADER_ALIVE_TRAIT
 #undef TRADER_NPC_OPTION_TRADE
 #undef TRADER_NPC_OPTION_TALK
 #undef TRADER_NPC_OPTION_CONTRACTS

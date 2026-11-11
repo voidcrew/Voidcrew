@@ -196,7 +196,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "ax" = (
-/mob/living/basic/outpost_trader/ripperdoc,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc,
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/tile/dark_red/opposingcorners,
 /obj/machinery/light/floor,
@@ -541,7 +541,7 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost/checkpoint)
 "bt" = (
-/mob/living/basic/outpost_trader/checkpoint_guard/undertow{
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/undertow{
 	checkpoint_id = "undertow_door"
 	},
 /obj/effect/turf_decal/tile/dark_red/full,
@@ -1292,7 +1292,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "hH" = (
-/mob/living/basic/outpost_trader/dregs_barkeep{
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/dregs_barkeep{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -1486,7 +1486,7 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
 	},
-/mob/living/basic/outpost_trader/clinic_doctor,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/clinic_doctor,
 /obj/effect/turf_decal/trimline/dark_red/filled/corner,
 /obj/effect/turf_decal/tile/dark_red{
 	dir = 1
@@ -3300,7 +3300,7 @@
 /area/voidcrew/trader_outpost)
 "My" = (
 /obj/structure/chair/comfy/carp,
-/mob/living/basic/outpost_trader,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader,
 /turf/open/floor/carpet/neon/simple/red/nodots,
 /area/voidcrew/trader_outpost)
 "MD" = (

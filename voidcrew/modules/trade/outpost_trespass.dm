@@ -64,7 +64,7 @@
 			qdel(checkpoint)
 			continue
 		checkpoints[checkpoint_id] = checkpoint
-	for(var/mob/living/basic/outpost_trader/checkpoint_guard/guard in traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard in traders)
 		var/datum/outpost_checkpoint/post = checkpoints[guard.checkpoint_id]
 		if(post)
 			post.guard = guard

@@ -52,7 +52,7 @@
 		/obj/machinery/computer/colosseum_signup,
 		/obj/machinery/computer/colosseum_bookmaker,
 		/obj/machinery/colosseum_vault,
-		/mob/living/basic/outpost_trader/colosseum,
+		/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum,
 	))
 		if(!vc_test_map_has_path(text, machine_path))
 			TEST_FAIL("the colosseum map places no [machine_path]")

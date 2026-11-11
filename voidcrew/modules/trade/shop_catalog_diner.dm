@@ -205,7 +205,7 @@
 	stock_min = 2
 	stock_max = 4
 
-/datum/shop_sku/diner/plated/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/diner/plated/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	var/atom/movable/goods = ..()
 	if(!isnull(goods))
 		ADD_TRAIT(goods, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)

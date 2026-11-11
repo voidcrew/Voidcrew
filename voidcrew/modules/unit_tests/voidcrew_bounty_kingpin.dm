@@ -1044,7 +1044,7 @@
 	TEST_ASSERT_EQUAL(length(crew.crew_tables), 0, "The crew minds [length(crew.crew_tables)] lounge tables, not none")
 	TEST_ASSERT_EQUAL(crew.crew_refuge, refuge, "The crew doesn't use the refuge")
 	TEST_ASSERT_EQUAL(crew.exit_turf(null), refuge, "The crew's way out isn't the refuge")
-	var/mob/living/basic/outpost_trader/barkeep = crew.crew_barkeep_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = crew.crew_barkeep_ref?.resolve()
 	TEST_ASSERT_NOTNULL(barkeep, "No trader in sight of the sofa is the barkeep")
 	var/matrix/standing = matrix(barkeep.transform)
 

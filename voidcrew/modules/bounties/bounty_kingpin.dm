@@ -1509,8 +1509,8 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 		make_table_breakable(table)
 	// The barkeep is the trader in this room: the nearest one with a clear line to the sofa, never one behind a wall or a window (M4)
 	crew_barkeep_ref = null
-	var/mob/living/basic/outpost_trader/nearest_trader
-	for(var/mob/living/basic/outpost_trader/trader in range(BOUNTY_KINGPIN_SIGHT, crew_seat))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/nearest_trader
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in range(BOUNTY_KINGPIN_SIGHT, crew_seat))
 		if(!bounty_kingpin_clear_shot(crew_seat, trader))
 			continue
 		if(!nearest_trader || get_dist(trader, crew_seat) < get_dist(nearest_trader, crew_seat))
@@ -2004,7 +2004,7 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 
 /// The barkeep shouts from behind his counter
 /datum/bounty_kingpin_crew/proc/clear_room()
-	var/mob/living/basic/outpost_trader/barkeep = crew_barkeep_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = crew_barkeep_ref?.resolve()
 	if(QDELETED(barkeep))
 		return
 	var/line = bounty_kingpin_line("room", "barkeep_duck")

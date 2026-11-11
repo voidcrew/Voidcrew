@@ -502,7 +502,7 @@
 					line = "...Don't waste that."
 	if(!line)
 		return
-	for(var/mob/living/basic/outpost_trader/ripperdoc/splice in view(7, src))
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc/splice in view(7, src))
 		splice.say(line)
 		return
 	say(line)

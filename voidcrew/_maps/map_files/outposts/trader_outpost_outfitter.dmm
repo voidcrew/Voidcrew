@@ -399,7 +399,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost/checkpoint)
 "bp" = (
-/mob/living/basic/outpost_trader/checkpoint_guard/quartermain{
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/quartermain{
 	checkpoint_id = "quartermain_gate"
 	},
 /obj/effect/turf_decal/tile/red/full,
@@ -1491,7 +1491,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "lz" = (
-/mob/living/basic/outpost_trader/ripperdoc/street_doc,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc/street_doc,
 /obj/machinery/light/small/dim/directional/north,
 /turf/open/indestructible/freezer,
 /area/voidcrew/trader_outpost)
@@ -1883,7 +1883,7 @@
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "rf" = (
-/mob/living/basic/outpost_trader/skunkworks,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/skunkworks,
 /obj/structure/chair/office/light,
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
@@ -2840,7 +2840,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
 "Dy" = (
-/mob/living/basic/outpost_trader,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader,
 /obj/structure/chair/office/light{
 	dir = 4
 	},
@@ -3639,7 +3639,7 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "OK" = (
-/mob/living/basic/outpost_trader/suit_fitter,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter,
 /obj/structure/chair/office/light{
 	dir = 8
 	},

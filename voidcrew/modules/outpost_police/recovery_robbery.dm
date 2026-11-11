@@ -28,15 +28,15 @@
 // =========================================================================
 
 /// Called once from the trader's Initialize (trade/trader_npc.dm): registers what the stick-up listens to
-/mob/living/basic/outpost_trader/proc/hook_holdup()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/hook_holdup()
 	outpost_holdup_hook(src)
 
 /// `robber` holds this trader up with `weapon` (the hold has just started)
-/mob/living/basic/outpost_trader/proc/on_held_up(mob/living/robber, obj/item/gun/weapon)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_held_up(mob/living/robber, obj/item/gun/weapon)
 	shop?.held_up(src, robber, weapon)
 
 /// The trader reports the robbery from its counter (OUTPOST_CRIME_ARMED_ROBBERY, the gun as source)
-/mob/living/basic/outpost_trader/proc/raise_alarm()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/raise_alarm()
 	shop?.raise_holdup_alarm(src)
 
 // =========================================================================
