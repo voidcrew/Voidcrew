@@ -40,9 +40,14 @@
 	window.send_message("update", get_payload(
 		with_data = TRUE,
 		with_static_data = TRUE))
+	// The page can report itself visible while send_assets() sleeps, so the terminal must
+	// already know this is its UI, or on_window_visible() would hide the control again.
+	terminal.ui = src
 	send_assets()
 	// The UI can close while send_assets() sleeps. Say so, and the terminal tries again.
 	if(QDELETED(src) || closing || !user?.client || QDELETED(src_object))
+		if(!QDELETED(terminal) && terminal.ui == src)
+			terminal.ui = null
 		return FALSE
 	// Again now the asset URLs are mapped, so the first render's pictures resolve.
 	window.send_message("update", get_payload(with_data = TRUE))
@@ -71,6 +76,8 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 	if(!ui)
 		ui = new /datum/tgui/lobby_terminal(user, src, "LobbyTerminal")
 		if(!ui.open())
+			if(src.ui == ui)
+				src.ui = null
 			if(!QDELETED(ui))
 				ui.close(can_be_suspended = FALSE)
 			qdel(ui)
