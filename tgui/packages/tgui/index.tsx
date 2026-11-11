@@ -14,7 +14,7 @@ import { setupHotReloading } from 'tgui-dev-server/link/client';
 
 import { App } from './App';
 import { setGlobalStore } from './backend';
-import { setupUiHarness } from './harness'; // VOIDCREW EDIT ADDITION - ui_harness dev test harness
+import { setupUiHarness } from 'voidcrew_tgui/utils/harness'; // VOIDCREW EDIT ADDITION - ui_harness dev test harness
 import { captureExternalLinks } from './links';
 import { render } from './renderer';
 import { configureStore } from './store';

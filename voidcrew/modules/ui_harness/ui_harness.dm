@@ -4,7 +4,7 @@
  * Lets a local tool drive a connected client's tgui windows (click, type, press keys, read the page)
  * without touching the real mouse or keyboard. The tool talks to world/Topic over TCP from 127.0.0.1;
  * this file forwards each command to the page as a tgui message, and the page module
- * (tgui/packages/tgui/harness.ts) fires real DOM events and replies with "harness/result".
+ * (tgui/packages/voidcrew_tgui/utils/harness.ts) fires real DOM events and replies with "harness/result".
  *
  * None of this exists unless the world is compiled with -DUI_HARNESS. Never build a live server with it.
  */
