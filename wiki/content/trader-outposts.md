@@ -2,7 +2,7 @@
 title: Trader Outposts
 category: Economy
 order: 3
-blurb: The three permanent markets on the overmap, who runs them, what they stock, and what happens if you start a fight there.
+blurb: The three permanent markets on the overmap, who runs them, what they stock, and who polices them and what happens if you start a fight there.
 ---
 
 Three trader outposts sit permanently on the [overmap](overmap.md), one per zone band. They never move, never unload, and cannot be destroyed. Each is a market, a contract board, a repair stop and a safe room in one, and each stocks a different tier of goods depending on how dangerous the space around it is.
@@ -41,7 +41,7 @@ No combat guns past the checkpoint. Work tools and disablers are fine, including
 
 Combat guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
 
-**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. Anyone seen inside with a combat gun in hand, or firing one, without a permit, and anyone who comes through a checkpoint door that was pried or hacked open, is an **armed trespasser**: the turrets treat you as hostile, and the traders, the guard and the checkpoint all refuse you for a good while after. Forcing the inner door takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
+**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. A combat gun in hand without a permit, or fired inside, counts as a crime and the [Port Authority](#the-port-authority) answers it. So does coming through a checkpoint door that was pried or hacked open, which also takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
 
 ## Shopping
 
@@ -144,19 +144,59 @@ Turn them in at any outpost trader or at your own mission pad. Except courier ru
 
 ## Violence
 
-Outposts are indestructible. Walls, doors, machines and traders all shrug off weapons fire, so there is nothing to break into and nothing to rob. The deterrent is economic instead.
+Outposts are indestructible. Walls, doors, machines and traders all shrug off weapons fire, so there is nothing to break into and nothing to rob. What stops you is the **Port Authority**: officers who live at each outpost and answer anything they see.
 
-Attacking outpost property (or attacking another visitor inside the outpost) earns you a **strike**. The first two only get you a warning, with the turrets swinging around to point at you. On the **third**, three things happen at once:
+The shoppers, drinkers, staff and odd regulars milling around each concourse can be hurt like anyone else, and doing it is a crime. They carry a little cash on them.
 
-- You are personally marked. Every trader on the station refuses to serve you for 15 minutes.
-- Every ship your crew belongs to is put under a **trade embargo** for 15 minutes.
-- The outpost's turrets go lethal on you and anyone else aboard your embargoed ship.
+## The Port Authority
 
-The shoppers, drinkers, staff and odd regulars milling around each concourse can be hurt like anyone else, and doing it counts as violence at the outpost. They carry a little cash on them.
+Officers walk the concourse, drink coffee at the station by the checkpoint and talk to each other. They are people, not turrets: they can be stunned, cuffed, wounded and killed like anyone. They stay inside the outpost and its hangars, and they do not board docked ships.
+
+A crime counts only if someone saw it: an officer, a trader, a guard, a bystander from another crew or a checkpoint scanner. Fighting back against someone who attacked you first is not a crime. Hunters going after a bounty fugitive are left alone for it.
+
+### Crimes and stars
+
+Crimes pile up against the person who did them, shown as **stars** on your alert icon. Small things come first: one punch earns a word from the nearest officer, two earn a star. Weapons, gunfire, vandalism, hitting staff or civilians, and fighting an officer climb faster. Killing a visitor is at least three stars. Killing an officer is at least three, and a lot more besides.
+
+| Stars | What the officers do |
+|---|---|
+| 1-2 | Order you to stop, stun and cuff you, take what you used, and walk you to the desk by the lobby |
+| 3 | Shoot to kill. Nobody takes a surrender |
+| 4 | As 3, plus your crewmates at the outpost are arrested, the crew is under embargo and a cutter is sent after your ship |
+| 5 | As 4, with the marshal on scene, all three outposts embargoed |
+
+More officers arrive through the staff lifts as your stars rise, and they keep coming. Officers in green and yellow space spare someone who is down. In red space they finish the job.
+
+Stars fade if you stay out of sight of the officers long enough, or if you leave the outpost. At 3 stars and up they will not fade while you are still in the outpost. After a warrant fades, the officers remember you for a while.
+
+### Being arrested
+
+Stand still, drop your weapon and put your hands down, or use `*surrender` at 1-2 stars, and the officer cuffs you without a fight. Otherwise they stun you first.
+
+- **What they take.** Every weapon or tool you used in a crime goes down the evidence chute at the desk and is destroyed. It does not come back. Anything you stole from a prisoner's locker goes back to the locker. Implants, cyberware, ship keys and mission items are never taken.
+- **The fine.** 300 credits at 1 star and 800 at 2, higher at outposts in the dangerous zones, paid from your crew's ship accounts together. It is paid in full or not at all.
+- **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
+- **If it is not.** You go to jail for a few minutes. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID and your implants. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
+
+If you are badly hurt or die in the cells, the door opens at once and a medic is called.
+
+### Getting your things back
+
+Your locker opens for you, or for the ID you booked in with. It is free to take your gear any time after you are out. Emags open them too. Anyone can empty a locker, but an officer who sees someone doing it treats it as theft (2 stars) and takes the goods back. Lockers nobody collects stay shut for the rest of the round. If every locker is in use, the one left longest is emptied onto the floor.
+
+### Breaking out
+
+You can force a cell door with a crowbar or jaws from either side. It takes a few seconds and sets off an alarm, and it is 3 stars. So is walking out of a cell before your time is up.
+
+### Embargo and the cutter
+
+At 4 stars every ship of your crew is embargoed at that outpost: no shops, no checkpoint, no trade. At 5 stars it is all three outposts. Each officer you kill adds time to it.
+
+When an embargoed ship undocks, a police cutter goes after it. It hails you with a fine, 6,000 credits at 4 stars and 15,000 at 5. **Pay it** and the cutter leaves, the embargo lifts and your record at that outpost is wiped. Refuse and the cutter attacks and boards. If you beat it or outrun it, the embargo simply runs its time.
 
 !!! danger "The embargo covers your whole crew"
-    One person losing their temper bars everybody on the ship, including people who were still shopping. Embargoed crew are shot on sight, not merely refused service.
+    One person losing their temper bars every ship of the crew, including people who were still shopping.
 
-Carrying a gun past the checkpoint without a permit is a separate matter from strikes: see [The checkpoint](#the-checkpoint). It marks only you, and the turrets go for you straight away.
+The officers also shoot hostile wildlife and xenos that get loose in the outpost.
 
 Fuel and gas sold at outposts, and the exotic gases Vex buys by the tank, are covered on [Fuel & Gas](gas-economy.md). Deeds for founding your own station are sold at Halcyon and Quartermain and covered on [Player Outposts](player-outposts.md).
