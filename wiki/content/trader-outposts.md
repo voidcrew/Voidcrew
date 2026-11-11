@@ -72,14 +72,25 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 | Halcyon | Pike's Bait & Tackle | Pike | Rods, bait and tackle, beside an indoor pond |
 | Halcyon | The Chowder Pot | Roux | The diner. Hot meals in tiers, galley staples, buys home cooking |
 | Quartermain | The Skunkworks | Boffin | Research and fabrication gear, Strong-Arm implants, robotics and xenobiology starter packs, raw anomaly cores and anomaly charts |
-| Quartermain | The Fitting Bay | Wick | Civilian through advanced MODsuits |
+| Quartermain | The Rig Bay | Wick | Civilian through advanced MODsuits, whole exosuits, exosuit arms, ammo and fittings |
 | The Undertow | The Dregs | Dram | The cantina |
 | The Undertow | Patch-Up Clinic | Sawbones | Medical supplies, the genetics starter pack |
 | The Undertow | The Chop Shop | Splice | Cyberware implants in four tiers, installed in the parlor's own Chrome Cradle |
 
 **The Chowder Pot** at Halcyon is the waystation diner, and the menu is a quality ladder with real teeth. *Counter grub* is cheap factory food. It fills you up and does nothing else. The *blue plate specials* and the *chef's table* come off Roux's own pass, and a meal an actual cook made gives a genuine mood lift that scales with the depth of the recipe, so the expensive plate really does eat better than the hot dog. The *pantry* shelf stocks the raw staples a ship galley cannot print, flour, rice, milk, eggs, butter, enzyme, meat, even monkey cubes, which makes Halcyon the place to provision a working kitchen. Roux also **buys** home-cooked dishes, hand-made pies and whole cakes over the counter. She pays for real cooking only: vending-machine food is refused, and so are her own plates coming back around.
 
-**The Fitting Bay** at Quartermain has a **MOD fitting bench**, a powered frame you back into while still wearing your suit. It swaps modules for free with no screwdriver work, sells permanent upgrades (plating, module capacity, actuator tuning, power regulation, cell swaps) and per-visit servicing, gives away paint and engraving, and trickle-charges your cell while the frame is shut. Reinforced plating needs 4 [reputation](zone-reputation.md) and composite plating needs 11. It will not convert a suit from one theme to another. For the tier Wick won't touch, syndicate and elite chassis, Interdyne and infiltrator control units, the antag modules. Go to **Vex**: 3600 credits plus 2 vouchers for a syndicate chassis, 5400 plus 3 for an elite, 5 vouchers for a fully equipped syndicate suit.
+**The Rig Bay** at Quartermain has a **MOD fitting bench**, a powered frame you back into while still wearing your suit. It swaps modules for free with no screwdriver work, sells permanent upgrades (plating, module capacity, actuator tuning, power regulation, cell swaps) and per-visit servicing, gives away paint and engraving, and trickle-charges your cell while the frame is shut. Reinforced plating needs 4 [reputation](zone-reputation.md) and composite plating needs 11. It will not convert a suit from one theme to another. For the tier Wick won't touch, syndicate and elite chassis, Interdyne and infiltrator control units, the antag modules. Go to **Vex**: 3600 credits plus 2 vouchers for a syndicate chassis, 5400 plus 3 for an elite, 5 vouchers for a fully equipped syndicate suit.
+
+Wick also sells **whole exosuits**, each one hanging on chains from a gantry in the back of the Rig Bay. Each gantry has its bay number painted on it, and the Exosuits tab lists one line per bay ("Ripley, bay 2"). Buying a line lowers that exact mech off its chains. Nobody can climb into, open, fit or move a mech while it hangs there.
+
+- **Work bays** show a Ripley MK-I, Ripley MK-II, Clarke or Odysseus, from 4000 to 6500 credits, with a clamp and drill, a drill and mining scanner, or a sleeper already fitted. They restock on every convoy.
+- **The combat bay** shows a Gygax (11000 credits, 4 reputation, two per crew each round) or a Durand (18000 credits plus 3 vouchers, 11 reputation, one per crew each round). Combat mechs come bare; buy the arms separately. The bay restocks on every second convoy.
+- A bay only restocks once the last mech has been driven off it.
+- After the sale only your crew can climb in, while the mech is on the outpost and for 20 minutes at most. An empty, unarmed mech can't be damaged while it is still inside the concourse.
+- Drive it out through the exit gate and take the lobby elevator down to the hangars, like anyone else.
+- Wick never buys a mech back, and a ship save does not keep mechs aboard.
+
+The **Exosuit Arms**, **Exosuit Ammo** and **Exosuit Fittings** tabs carry the printable mech guns (a few yellow-reputation arms at a time, one each), their ammo boxes, armor boosters, drills, clamps and repair droids. Weapons bought past the checkpoint come in a sealed case, as guns do.
 
 **The Chop Shop** at the Undertow is the galaxy's only cyberware parlor, a neon annex off the Dregs. Splice sells chrome implants off four shelves, street chrome for credits, pro chrome for credits or vouchers, military and legend chrome for vouchers only, and the **Chrome Cradle** in the middle of the room does the installing: you lie on the slab, pick a piece off the rack, and the rig does the surgery in seconds. Removals, repairs and ink re-keying run on the same console, an ammunition shelf keeps implanted weapons fed, and Splice buys back pulled street chrome at about half price. The full catalog is on [Cyberware](cyberware.md).
 

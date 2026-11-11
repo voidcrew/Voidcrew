@@ -30,10 +30,19 @@
 		/datum/shop_sku/rig_bay_mech/durand = 1,
 	)
 
-/// Yellow exosuit arms: four of the pool on the shelf at once, one each. P1 fills the pool (spec section 4).
+/// Yellow exosuit arms: four of the pool on the shelf at once, one each.
 /datum/shop_rotation/rig_bay_arms
 	slots = 4
-	pool = list()
+	pool = list(
+		/datum/shop_sku/rig_bay_gear/arm/lmg = 3,
+		/datum/shop_sku/rig_bay_gear/arm/laser = 3,
+		/datum/shop_sku/rig_bay_gear/arm/laser_heavy = 2,
+		/datum/shop_sku/rig_bay_gear/arm/scattershot = 2,
+		/datum/shop_sku/rig_bay_gear/arm/carbine = 2,
+		/datum/shop_sku/rig_bay_gear/arm/ion = 1,
+		/datum/shop_sku/rig_bay_gear/arm/tesla = 1,
+		/datum/shop_sku/rig_bay_gear/arm/flashbang_launcher = 1,
+	)
 
 // ===== WHOLE MECHS =====
 
@@ -60,6 +69,42 @@
 		stand.sku = null
 	stand = null
 	return ..()
+
+/// TRUE while this line's mech hangs on its stand, ready to hand over.
+/datum/shop_sku/rig_bay_mech/proc/mech_ready()
+	return !QDELETED(stand) && stand.sku == src && stand.stand_state == RIG_BAY_STAND_CLAMPED && !QDELETED(stand.held_mech)
+
+/datum/shop_sku/rig_bay_mech/get_denial_reason(mob/living/user)
+	if(!mech_ready())
+		return "Out of stock."
+	return ..()
+
+/datum/shop_sku/rig_bay_mech/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	if(!mech_ready())
+		return FALSE
+	return ..()
+
+/// No crate over the counter: the stand lowers this exact mech for the buyer's crew.
+/datum/shop_sku/rig_bay_mech/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	var/obj/vehicle/sealed/mecha/mech = stand?.held_mech
+	if(mech_ready() && stand.release_mech(user))
+		return mech
+	refund(user)
+	return null
+
+/// The mech vanished between the charge and the hand-over: give back exactly what was taken.
+/datum/shop_sku/rig_bay_mech/proc/refund(mob/living/user)
+	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
+	var/credit_price = get_credit_price(user, crew_ship)
+	if(credit_price > 0)
+		var/datum/bank_account/account = get_account(user, crew_ship)
+		account?.adjust_money(credit_price, "Trader Outpost: [name] refund")
+	if(price_vouchers > 0)
+		var/obj/item/stack/trade_voucher/vouchers = new(user.drop_location(), price_vouchers)
+		user.put_in_hands(vouchers)
+	if(crew_limit > 0)
+		crew_ship?.get_crew_record()?.release_purchase(type)
+	to_chat(user, span_warning("Something's wrong with that one. Your money's back."))
 
 /datum/shop_sku/rig_bay_mech/ripley
 	item_path = /obj/vehicle/sealed/mecha/ripley
@@ -107,6 +152,144 @@
 
 // ===== ARMS, AMMO AND FITTINGS =====
 
-/// Base for the ordinary exosuit gear lines (Exosuit Arms, Ammo and Fittings tabs). P1 adds the subtypes (spec section 4).
+/// Base for the ordinary exosuit gear lines (Exosuit Arms, Ammo and Fittings tabs).
 /datum/shop_sku/rig_bay_gear
 	category = "Exosuit Fittings"
+	stock_min = 1
+	stock_max = 3
+
+// Exosuit Arms. The green arms and the missile rack sit on the core shelf; the yellow arms
+// come through /datum/shop_rotation/rig_bay_arms, one of each.
+
+/datum/shop_sku/rig_bay_gear/arm
+	category = "Exosuit Arms"
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/rig_bay_gear/arm/kinetic
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/mecha_kineticgun
+	price_credits = 600
+
+/datum/shop_sku/rig_bay_gear/arm/plasma_cutter
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma
+	price_credits = 500
+
+/datum/shop_sku/rig_bay_gear/arm/disabler
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/disabler
+	price_credits = 900
+
+/datum/shop_sku/rig_bay_gear/arm/missile_rack
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/breaching
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 4000
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	convoys_per_unit = 3
+
+/datum/shop_sku/rig_bay_gear/arm/lmg
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 4000
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/laser
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 2500
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/laser_heavy
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 3000
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/scattershot
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 3000
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/carbine
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 3500
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/ion
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/ion
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 3500
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/tesla
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/tesla
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 2500
+	stock_max = 1
+
+/datum/shop_sku/rig_bay_gear/arm/flashbang_launcher
+	item_path = /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 3000
+	stock_max = 1
+
+// Exosuit Ammo
+
+/datum/shop_sku/rig_bay_gear/ammo
+	category = "Exosuit Ammo"
+	stock_min = 4
+	stock_max = 6
+
+/datum/shop_sku/rig_bay_gear/ammo/lmg
+	item_path = /obj/item/mecha_ammo/lmg
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 150
+
+/datum/shop_sku/rig_bay_gear/ammo/scattershot
+	item_path = /obj/item/mecha_ammo/scattershot
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 150
+
+/datum/shop_sku/rig_bay_gear/ammo/incendiary
+	item_path = /obj/item/mecha_ammo/incendiary
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 250
+
+/datum/shop_sku/rig_bay_gear/ammo/flashbang
+	item_path = /obj/item/mecha_ammo/flashbang
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 300
+
+/datum/shop_sku/rig_bay_gear/ammo/missiles
+	item_path = /obj/item/mecha_ammo/missiles_pep
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 800
+
+// Exosuit Fittings
+
+/datum/shop_sku/rig_bay_gear/projectile_shielding
+	item_path = /obj/item/mecha_parts/mecha_equipment/armor/antiproj_armor_booster
+	zone_permission = ZONE_PERMISSION_YELLOW
+	price_credits = 2500
+
+/datum/shop_sku/rig_bay_gear/impact_plates
+	item_path = /obj/item/mecha_parts/mecha_equipment/armor/anticcw_armor_booster
+	price_credits = 900
+
+/datum/shop_sku/rig_bay_gear/ablative_insulation
+	item_path = /obj/item/mecha_parts/mecha_equipment/armor/antiemp_armor_booster
+	price_credits = 1200
+
+/datum/shop_sku/rig_bay_gear/drill
+	item_path = /obj/item/mecha_parts/mecha_equipment/drill
+	price_credits = 300
+
+/datum/shop_sku/rig_bay_gear/hydraulic_clamp
+	item_path = /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
+	price_credits = 300
+
+/datum/shop_sku/rig_bay_gear/repair_droid
+	item_path = /obj/item/mecha_parts/mecha_equipment/repair_droid
+	price_credits = 1200

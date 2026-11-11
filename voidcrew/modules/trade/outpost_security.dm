@@ -498,6 +498,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 
 /// Shoves, bare hands and stamina hits aren't vandalism; only a real damaging hit is
 /datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker)
+	register_outpost_property_hit(source, attacker)
+
+/// A damaging hit on outpost property (or a Rig Bay mech) counts as aggression at the outpost it stands in.
+/proc/register_outpost_property_hit(atom/source, atom/attacker)
 	if(!isliving(attacker))
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(source))
