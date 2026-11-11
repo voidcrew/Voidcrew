@@ -21,6 +21,10 @@
  *   OUTPOST_CHECKPOINT_FORCE_TIME and raises the alarm; anyone who then goes through it from the
  *   chamber is reported to the outpost police as a breach (voidcrew/modules/outpost_police/), the
  *   forcer's tool with them.
+ * - An emag on the wall scanner takes the whole gate down for OUTPOST_CHECKPOINT_EMAG_TIME (disable()): no
+ *   scan, and both doors open for anyone who walks into them and shut behind them like plain airlocks.
+ *   It comes back by itself. A guard who is awake and sees it raises the alarm and the emag is evidence
+ *   (spec-rehydrate.md 9).
  * - A door never closes on anyone in its doorway: it waits for them to move.
  * - NPCs never work the doors by walking into them, and pathing never takes an NPC through a chamber.
  *   Someone off the lift crosses by asking each door once (outpost_checkpoint_npcs.dm).
@@ -131,6 +135,8 @@
 	var/disabled_until = 0
 	/// world.time the scanner can be emagged again (M36)
 	var/emag_ready_at = 0
+	/// The timer that brings the gate back up (end_disable())
+	var/emag_timer
 
 /datum/outpost_checkpoint/New(obj/structure/overmap/trader_outpost/outpost, checkpoint_id)
 	. = ..()
@@ -140,6 +146,8 @@
 /datum/outpost_checkpoint/Destroy()
 	deltimer(phase_timer)
 	phase_timer = null
+	deltimer(emag_timer)
+	emag_timer = null
 	if(outpost?.checkpoints[checkpoint_id] == src)
 		outpost.checkpoints -= checkpoint_id
 	if(outer_door?.checkpoint == src)
@@ -273,7 +281,9 @@
 /datum/outpost_checkpoint/proc/update_sensor()
 	if(QDELETED(sensor))
 		return
-	if(forcing || state == CHECKPOINT_FORCED)
+	if(is_disabled())
+		sensor.set_look("off")
+	else if(forcing || state == CHECKPOINT_FORCED)
 		sensor.set_look("alarm")
 	else if(state == CHECKPOINT_REJECTING)
 		sensor.set_look("refused")
@@ -284,6 +294,9 @@
 
 /// The checkpoint's voice: the guard if there is one, else the wall scanner. The same line is not repeated to someone stepping back and forth.
 /datum/outpost_checkpoint/proc/announce(category, urgent = FALSE)
+	// A gate that is down says nothing (the guard's own line is guard_reacts())
+	if(is_disabled())
+		return
 	if(!urgent && !COOLDOWN_FINISHED(src, line_cooldown))
 		return
 	if(category == last_line && world.time < last_line_at + OUTPOST_CHECKPOINT_REPEAT_LINE)
@@ -392,7 +405,8 @@
 			scan_when_closed = FALSE
 			set_state(CHECKPOINT_IDLE)
 			exit_request = requested && leaving
-			if(requested || length(chamber_people()))
+			// A gate that is down scans nobody
+			if(!is_disabled() && (requested || length(chamber_people())))
 				start_scan()
 
 /datum/outpost_checkpoint/proc/set_state(new_state)
@@ -413,6 +427,9 @@
 
 /// Someone walks into or clicks the outer door. Returns TRUE if it opens.
 /datum/outpost_checkpoint/proc/request_outer(mob/user)
+	// The gate is down (an emag on its scanner): a plain airlock
+	if(is_disabled() && !QDELETED(outer_door) && !QDELETED(inner_door))
+		return open_freely(outer_door)
 	if(QDELETED(outer_door) || QDELETED(inner_door) || outer_door.operating)
 		return FALSE
 	if(!outer_door.density)
@@ -437,6 +454,9 @@
 
 /// Someone walks into or clicks the inner door: cycle the chamber. Returns TRUE if a scan starts.
 /datum/outpost_checkpoint/proc/request_cycle(mob/user)
+	// The gate is down (an emag on its scanner): a plain airlock, in or out
+	if(is_disabled() && !QDELETED(outer_door) && !QDELETED(inner_door))
+		return open_freely(inner_door)
 	if(QDELETED(outer_door) || QDELETED(inner_door) || forcing)
 		return FALSE
 	if(!inner_door.density || inner_door.operating || outer_door.operating)
@@ -462,6 +482,8 @@
 	return TRUE
 
 /datum/outpost_checkpoint/proc/start_scan()
+	if(is_disabled())
+		return
 	set_state(CHECKPOINT_SCANNING)
 	sweep_chamber()
 	sound_at_chamber('sound/machines/scanner/scanner.ogg', 30)
@@ -527,14 +549,84 @@
  * An emag on the wall scanner takes the gate down for OUTPOST_CHECKPOINT_EMAG_TIME: no scan, both doors open for
  * anyone, nobody shut in (M39); a living, awake guard raises the alarm and reports OUTPOST_CRIME_GATE_TAMPER with
  * the card as source. Refused before emag_ready_at (M36). Returns TRUE if the gate went down (emag_act's answer).
- * Owner R7; R0 stub: nothing happens.
+ * Owner R7 (spec-rehydrate.md 9).
  */
 /datum/outpost_checkpoint/proc/disable(mob/user, obj/item/card/emag/card)
-	return FALSE
+	if(QDELETED(src))
+		return FALSE
+	// Never down for good (M36): not while it is down, and not until OUTPOST_CHECKPOINT_EMAG_COOLDOWN after it came back
+	if(is_disabled() || world.time < emag_ready_at)
+		if(user && !QDELETED(sensor))
+			sensor.balloon_alert(user, "no response")
+		return FALSE
+	disabled_until = world.time + OUTPOST_CHECKPOINT_EMAG_TIME
+	emag_ready_at = disabled_until + OUTPOST_CHECKPOINT_EMAG_COOLDOWN
+	deltimer(emag_timer)
+	emag_timer = addtimer(CALLBACK(src, PROC_REF(end_disable)), OUTPOST_CHECKPOINT_EMAG_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	log_game("OUTPOST CHECKPOINT: [key_name(user)] emagged the scanner of '[checkpoint_id]' at [outpost?.name]; the gate is down.")
+	// Whatever the gate was doing stops, and nobody is ever shut in (M39): both doors answer a bump from now on,
+	// and a door that was open closes once its doorway is clear
+	deltimer(phase_timer)
+	phase_timer = null
+	scan_when_closed = FALSE
+	if(state == CHECKPOINT_FORCED)
+		end_breach()
+	else
+		for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in list(outer_door, inner_door))
+			if(!QDELETED(door) && !door.density)
+				close_door(door)
+	set_state(CHECKPOINT_IDLE) // the scanner goes dark with it (update_sensor())
+	if(!QDELETED(sensor))
+		do_sparks(3, TRUE, sensor)
+		playsound(sensor, SFX_SPARKS, 50, TRUE, SILENCED_SOUND_EXTRARANGE)
+		sensor.balloon_alert(user, "scanner shorted")
+	if(user)
+		guard_reacts(user, card)
+	return TRUE
 
 /// Whether the gate is down from an emag
 /datum/outpost_checkpoint/proc/is_disabled()
 	return disabled_until > world.time
+
+/// The time is up (or a test calls it): both doors shut, the light back, the state idle. Whoever stands in the chamber is scanned on the next cycle.
+/datum/outpost_checkpoint/proc/end_disable()
+	deltimer(emag_timer)
+	emag_timer = null
+	if(QDELETED(src))
+		return
+	if(is_disabled())
+		emag_timer = addtimer(CALLBACK(src, PROC_REF(end_disable)), disabled_until - world.time, TIMER_STOPPABLE | TIMER_DELETE_ME)
+		return
+	set_state(CHECKPOINT_IDLE)
+	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in list(outer_door, inner_door))
+		if(!QDELETED(door) && !door.density)
+			close_door(door)
+
+/// The gate is down: `door` opens for whoever asked, like a plain airlock, and shuts again once its doorway is clear. TRUE if it opens.
+/datum/outpost_checkpoint/proc/open_freely(obj/machinery/door/airlock/outpost/checkpoint/door)
+	if(QDELETED(door) || !door.density || door.operating)
+		return FALSE
+	open_door(door)
+	addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_DELETE_ME)
+	return TRUE
+
+/**
+ * The guard who is awake and sees `user` emag the scanner sounds the buzzer and shouts (spec-rehydrate.md 9). The
+ * crime itself (OUTPOST_CRIME_GATE_TAMPER, the emag as source) is reported by the usual witness rules, the
+ * guard first: he needs no radio. With no guard, or a guard who is dead or out cold, there is no buzzer and no
+ * line, and only whoever else saw it can report it.
+ */
+/datum/outpost_checkpoint/proc/guard_reacts(mob/user, obj/item/card/emag/card)
+	var/datum/outpost_police/police = outpost?.police
+	if(!police || !isliving(user))
+		return
+	var/mob/living/watcher = guard
+	if(!QDELETED(watcher) && police.perception.can_report(watcher) && police.perception.sees(watcher, user))
+		playsound(watcher, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+		var/line = outpost_robbery_line(police, ROBBERY_LINE_GATE_DOWN)
+		if(line)
+			INVOKE_ASYNC(watcher, TYPE_PROC_REF(/atom/movable, say), line)
+	police.report_crime(user, OUTPOST_CRIME_GATE_TAMPER, null, card)
 
 // ----- forcing the inner door -----
 
@@ -818,7 +910,7 @@
 	var/checkpoint_id
 	/// Set when the outpost links its interior
 	var/datum/outpost_checkpoint/checkpoint
-	/// "idle", "scanning", "refused" or "alarm"
+	/// "idle", "scanning", "refused", "alarm" or "off"
 	var/look = "idle"
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
@@ -843,15 +935,18 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 			icon_state = "[base_icon_state]_alert"
 		if("alarm")
 			icon_state = "[base_icon_state]_cycle"
+		if("off")
+			icon_state = "[base_icon_state]_off"
 		else
 			icon_state = "[base_icon_state]_standby"
 	return ..()
 
-/// Sets what the scanner shows: "idle", "scanning", "refused" or "alarm"
+/// Sets what the scanner shows: "idle", "scanning", "refused", "alarm", or "off" (its gate is down from an emag: the light is out)
 /obj/machinery/outpost_checkpoint_sensor/proc/set_look(new_look)
 	if(look == new_look)
 		return
 	look = new_look
+	set_light_on(look != "off")
 	switch(look)
 		if("scanning")
 			set_light_color(CHECKPOINT_SWEEP_COLOR)
