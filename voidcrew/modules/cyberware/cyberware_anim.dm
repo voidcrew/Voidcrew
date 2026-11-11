@@ -641,16 +641,20 @@
 	var/ring_alpha = 235
 	/// How long the ring takes to roll out and fade.
 	var/ring_time = 0.65 SECONDS
+	/// How far the ring rolls out when it stops time (ware_sandy_timestop.dm).
+	var/stop_ring_scale = 7.5
 
 /obj/item/organ/cyberimp/cyberware/cascade/milspec
 	ring_scale = 2.7
 	ring_alpha = 190
 	ring_time = 0.55 SECONDS
+	stop_ring_scale = 6.5
 
 /obj/item/organ/cyberimp/cyberware/cascade/street
 	ring_scale = 2.2
 	ring_alpha = 140
 	ring_time = 0.45 SECONDS
+	stop_ring_scale = 5.5
 
 /obj/item/organ/cyberimp/cyberware/cascade/cyberware_worn_key()
 	return "[..()]-[node_look]"
@@ -735,8 +739,13 @@
 /obj/item/organ/cyberimp/cyberware/cascade/proc/roll_ring()
 	ring_timer = null
 	var/turf/here = get_turf(owner)
-	if(here)
-		new /obj/effect/temp_visual/cyberware_time_ring(here, ring_scale, ring_alpha, ring_time)
+	if(!here)
+		return
+	var/datum/status_effect/cyberware_cascade_window/window = owner?.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	if(window?.time_stop) // a green ring that rolls out past the edge of the screen
+		new /obj/effect/temp_visual/cyberware_time_ring(here, stop_ring_scale, ring_alpha, ring_time, TRUE)
+		return
+	new /obj/effect/temp_visual/cyberware_time_ring(here, ring_scale, ring_alpha, ring_time)
 
 /// The crash: nodes die hips to neck and stay dark.
 /obj/item/organ/cyberimp/cyberware/cascade/proc/play_crash()
@@ -784,9 +793,11 @@
 	randomdir = FALSE
 	duration = 0.65 SECONDS
 
-/obj/effect/temp_visual/cyberware_time_ring/Initialize(mapload, max_scale = 3.3, peak_alpha = 235, ring_time = 0.65 SECONDS)
+/obj/effect/temp_visual/cyberware_time_ring/Initialize(mapload, max_scale = 3.3, peak_alpha = 235, ring_time = 0.65 SECONDS, green = FALSE)
 	duration = ring_time
 	. = ..()
+	if(green)
+		color = cyberware_time_stop_green()
 	add_overlay(emissive_appearance(icon, icon_state, src))
 	transform = matrix().Scale(0.2)
 	alpha = peak_alpha

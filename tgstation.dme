@@ -7225,6 +7225,7 @@
 #include "voidcrew\modules\cyberware\ware_pro_combat.dm"
 #include "voidcrew\modules\cyberware\ware_pro_utility.dm"
 #include "voidcrew\modules\cyberware\ware_registry.dm"
+#include "voidcrew\modules\cyberware\ware_sandy_timestop.dm"
 #include "voidcrew\modules\cyberware\ware_second_wind.dm"
 #include "voidcrew\modules\cyberware\ware_street.dm"
 #include "voidcrew\modules\cyberware\ware_street_passives.dm"

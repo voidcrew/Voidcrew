@@ -90,6 +90,8 @@
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	/// How long the world stops when no other player is near (ware_sandy_timestop.dm).
+	var/stop_duration = 4 SECONDS
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -188,6 +190,7 @@
 		online_message = lattice.online_message
 		crash_duration = lattice.crash_duration
 		crash_stamina = lattice.crash_stamina
+		stop_duration = lattice.stop_duration
 	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
@@ -205,9 +208,11 @@
 	)
 	owner.balloon_alert(owner, "cascade online")
 	cyberware_cascade_window_fx(owner)
+	try_time_stop() // ware_sandy_timestop.dm
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
+	end_time_stop()
 	owner.remove_movespeed_modifier(speed_type)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
@@ -239,6 +244,9 @@
 		return
 	steps_taken++
 	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
+		return
+	if(time_stop)
+		stopped_afterimage(old_loc)
 		return
 	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
 	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
