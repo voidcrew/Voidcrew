@@ -194,6 +194,59 @@
 
 #define FACTION_SCAV "scav"
 
+// ===== Disguises (decision 40, stealth_disguise.dm) =====
+/// The den's own doors
+#define ACCESS_SCAV "scav"
+// What someone wears of the scavs' own
+/// Their face is hidden (tg's get_face_name() finds none)
+#define STEALTH_PIECE_MASK (1<<0)
+/// The scav fatigues, showing, under nothing the guards don't wear
+#define STEALTH_PIECE_CLOTHES (1<<1)
+/// A scav pass in the ID slot
+#define STEALTH_PIECE_ID (1<<2)
+/// What someone wears is worked out again when it is older than this (a mask pulled down, a face wrecked)
+#define STEALTH_DISGUISE_CACHE_TIME (2 SECONDS)
+/// Share of the usual notice gained in the fatigues, in the fatigues and a mask, and in the whole set inside the
+/// guard's near range (beyond it the whole set gains none). Scaled by the guard's skill (`disguise`).
+#define STEALTH_DISGUISE_FILL_CLOTHES 0.5
+#define STEALTH_DISGUISE_FILL_MASKED 0.25
+#define STEALTH_DISGUISE_FILL_FULL 0.05
+/// Tiles within which a guard that sees them plainly stops them, for the same three. Its skill and being wary add to it.
+#define STEALTH_CHALLENGE_RANGE_CLOTHES 5
+#define STEALTH_CHALLENGE_RANGE_MASKED 3
+#define STEALTH_CHALLENGE_RANGE_FULL 2
+/// It reads a pass from this close
+#define STEALTH_CHALLENGE_CHECK_RANGE 2
+/// It reads a pass for this long before it lets them go
+#define STEALTH_CHALLENGE_CHECK_TIME (2 SECONDS)
+/// With no pass shown, it asks again after this long
+#define STEALTH_CHALLENGE_WARN_TIME (3 SECONDS)
+/// With no pass shown after this long, the disguise is blown
+#define STEALTH_CHALLENGE_FAIL_TIME (6 SECONDS)
+/// Further than this from where it stopped them is walking off
+#define STEALTH_CHALLENGE_LEASH 2
+/// How long a guard that read their pass lets them be
+#define STEALTH_PASS_TIME (5 MINUTES)
+/// How long a guard remembers the wearer of a disguise it saw through (a face it remembers for good)
+#define STEALTH_MADE_TIME (5 MINUTES)
+/// Tiles within which a guard has a word for one of its own
+#define STEALTH_GREET_RANGE 4
+#define STEALTH_GREET_COOLDOWN (30 SECONDS)
+/// Anything sharp with this much force is a weapon in hand, like any gun or melee weapon
+#define STEALTH_WEAPON_FORCE 10
+/// One of its own goes by
+#define STEALTH_BARK_GREET "stealth_greet"
+/// It asks one of its own for a light
+#define STEALTH_BARK_SMOKE "stealth_smoke"
+/// It stops someone to see their pass
+#define STEALTH_BARK_CHALLENGE "stealth_challenge"
+/// The pass is good
+#define STEALTH_BARK_ID_PASS "stealth_id_pass"
+/// No pass yet: it asks again
+#define STEALTH_BARK_ID_FAIL "stealth_id_fail"
+/// It has seen through a disguise
+#define STEALTH_BARK_BLOWN "stealth_blown"
+
 // ===== Stealth crits and the backstab knife (step 3a, stealth_crits.dm) =====
 // Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
 // so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".

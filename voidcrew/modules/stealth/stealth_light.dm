@@ -59,8 +59,11 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 		stealth_ai.stealth_update_light()
 
 /// Decision 34: a guard's seclite is loot like anyone's, so it is never locked to the body (D3 holds for the rest).
+/// Decision 40: so are the scavs' fatigues, balaclava and pass (stealth_disguise.dm).
 /mob/living/carbon/human/npc/npc_lock_item(obj/item/item)
-	if(istype(item, /obj/item/flashlight/seclite/scav))
+	if(istype(item, /obj/item/flashlight/seclite/scav) || istype(item, /obj/item/clothing/under/syndicate/scav))
+		return FALSE
+	if(istype(item, /obj/item/clothing/mask/balaclava/scav) || istype(item, /obj/item/card/id/advanced/black/scav))
 		return FALSE
 	return ..()
 

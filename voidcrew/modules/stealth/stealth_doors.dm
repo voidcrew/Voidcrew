@@ -108,6 +108,14 @@
 		var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
 		if(!istype(guard_ai) || !guard_ai.stealth_sees_door(where))
 			continue
+		// Someone it takes for one of its own at the door: nothing to look at (decision 40).
+		var/own = FALSE
+		for(var/mob/living/carbon/human/near in range(1, where))
+			if(!guard.faction_check_atom(near) && guard_ai.stealth_fooled(near))
+				own = TRUE
+				break
+		if(own)
+			continue
 		var/dist = get_dist(guard, where)
 		var/index = 1
 		while(index <= length(seers) && get_dist(seers[index], where) <= dist)

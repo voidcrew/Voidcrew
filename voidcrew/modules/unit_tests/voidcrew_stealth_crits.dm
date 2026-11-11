@@ -167,7 +167,7 @@
 	TEST_ASSERT_NOTNULL(light, "A scav guard has no flashlight")
 	TEST_ASSERT(!HAS_TRAIT(light, TRAIT_NO_STRIP), "The seclite can't be stripped")
 	TEST_ASSERT(!human_npc_gear_locked(light), "The seclite is locked gear")
-	TEST_ASSERT(human_npc_gear_locked(guard.w_uniform), "The rest of the guard's kit isn't locked any more")
+	TEST_ASSERT(human_npc_gear_locked(guard.shoes), "The rest of the guard's kit isn't locked any more")
 	var/mob/living/carbon/human/person = stealth_person(block, 3, 2)
 	TEST_ASSERT(guard.dropItemToGround(light), "The seclite can't be taken off")
 	TEST_ASSERT(person.put_in_hands(light), "The seclite can't be picked up")

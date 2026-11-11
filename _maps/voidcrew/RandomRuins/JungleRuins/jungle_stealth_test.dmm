@@ -36,7 +36,7 @@
 "e" = (
 /obj/machinery/door/airlock/security{
 	name = "Strongroom";
-	req_access = list("armory")
+	req_one_access = list("armory","scav")
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -150,6 +150,12 @@
 "Q" = (
 /obj/effect/landmark/stealth_group,
 /turf/open/floor/iron,
+/area/ruin/powered)
+"R" = (
+/obj/effect/landmark/stealth_restricted{
+	reach = 15
+	},
+/turf/open/floor/plating,
 /area/ruin/powered)
 "V" = (
 /obj/effect/landmark/stealth_patrol{
@@ -347,7 +353,7 @@ P
 P
 P
 P
-P
+R
 B
 P
 P

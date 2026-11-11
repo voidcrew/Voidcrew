@@ -32,6 +32,12 @@
 		STEALTH_BARK_RADIO_MISSING = list("%NAME%, come in.", "%NAME%'s not answering.", "Got one not answering."),
 		STEALTH_BARK_COPY = list("Copy.", "Moving.", "On my way."),
 		STEALTH_BARK_RADIO_DEAD = list("Radio's dead.", "Nothing but static."),
+		STEALTH_BARK_GREET = list("Evening.", "All quiet?", "Still breathing, then.", "Evening, %NAME%.", "You're late, %NAME%."),
+		STEALTH_BARK_SMOKE = list("Got a light?", "Spare a smoke?", "You owe me a smoke, %NAME%."),
+		STEALTH_BARK_CHALLENGE = list("Hold up. Let's see your card.", "Hey. You. Card.", "Stop there. Who are you with?"),
+		STEALTH_BARK_ID_PASS = list("Fine. Move along.", "All right. Go on.", "Go on, %NAME%."),
+		STEALTH_BARK_ID_FAIL = list("No card? Don't move.", "Card. Now.", "I said card."),
+		STEALTH_BARK_BLOWN = list("You're not one of us!", "That's not one of ours!", "Who the hell are you?"),
 	)
 	emotes = list(
 		HUMAN_NPC_BARK_DOWNED = list("collapses."),
@@ -45,6 +51,8 @@
 		STEALTH_BARK_GUNFIRE = list("flinches."),
 		STEALTH_BARK_HOLD = list("shifts their grip."),
 		STEALTH_BARK_RADIO_DEAD = list("taps their earpiece."),
+		STEALTH_BARK_GREET = list("nods.", "lifts their chin."),
+		STEALTH_BARK_SMOKE = list("pats their pockets."),
 	)
 	chances = list(RUIN_NPC_BARK_SPOT = 100)
 
@@ -95,10 +103,24 @@
 	npc_voice = /datum/human_npc_voice/scav
 	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/sword
 
-/// Every scav guard carries a seclite it switches on in the dark (stealth_light.dm, decision 31).
+/// Whatever outfit its table picks, a scav guard wears the scavs' own fatigues under it (stealth_disguise.dm, decision 40).
+/mob/living/carbon/human/npc/ruin/trooper/scav/equipOutfit(outfit, visuals_only = FALSE)
+	var/datum/outfit/dressed = ispath(outfit) ? new outfit() : outfit
+	if(istype(dressed))
+		dressed.uniform = /obj/item/clothing/under/syndicate/scav
+	return ..(dressed, visuals_only)
+
+/// Every scav guard carries a seclite it switches on in the dark (stealth_light.dm, decision 31), and a pass in its own
+/// name; about half wear a balaclava, where nothing else is on their face (decision 40).
 /mob/living/carbon/human/npc/ruin/trooper/scav/npc_dress(datum/human_npc_order/order)
 	. = ..()
 	stealth_give_light()
+	if(isnull(wear_mask) && prob(50))
+		equip_to_slot_or_del(new /obj/item/clothing/mask/balaclava/scav(src), ITEM_SLOT_MASK)
+	if(isnull(wear_id) && w_uniform)
+		var/obj/item/card/id/card = new /obj/item/card/id/advanced/black/scav(src)
+		card.registered_name = real_name
+		equip_to_slot_or_del(card, ITEM_SLOT_ID)
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/gunner
 	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/pistol

@@ -49,6 +49,10 @@
 	var/wary_time = 60 SECONDS
 	/// After it turns where it stands, how long before anything is plain to it at a glance (decision 39)
 	var/turn_grace = 1 SECONDS
+	/// Multiplies the notice someone in a disguise still gains: under 1 is easier to fool (decision 40)
+	var/disguise = 1
+	/// Tiles added to the range within which it stops someone in a disguise to see their pass (decision 40)
+	var/challenge = 0
 
 /datum/stealth_skill/yellow
 
@@ -71,6 +75,8 @@
 	search_time = 25 SECONDS
 	wary_time = 40 SECONDS
 	turn_grace = 1.2 SECONDS
+	disguise = 0.6
+	challenge = -1
 
 /// Sharp: sees further and wider, notices faster, hears more, searches longer. Still blind behind in the dark.
 /datum/stealth_skill/red
@@ -91,6 +97,8 @@
 	search_time = 60 SECONDS
 	wary_time = 90 SECONDS
 	turn_grace = 0.8 SECONDS
+	disguise = 1.6
+	challenge = 1
 
 /// The shared profile of type `skill_type`, or null if it isn't one.
 /proc/stealth_skill_of(skill_type)
