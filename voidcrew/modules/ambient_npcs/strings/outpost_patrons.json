@@ -89,7 +89,7 @@
 		],
 		"trader_reply": [
 			"Sensible choice. Don't tell anyone I said so.",
-			"Pay at the till, dear. The turrets don't take tips.",
+			"Pay at the till, dear. The officers don't take tips.",
 			"Wrapped up and ready. Mind the step on your way out.",
 			"There you are. Bring yourself back in one piece.",
 			"Lovely. I'd have picked the same."
@@ -386,7 +386,7 @@
 		"idle": [
 			"Everyone's armed in the red zone. That's why it's polite here.",
 			"My captain thinks I'm out resupplying. I am. Slowly.",
-			"The turrets only shoot rude people. Beautiful system. No survivors... I mean, no complaints.",
+			"The officers only shoot rude people. Beautiful system. No survivors... I mean, no complaints.",
 			"Shore leave's four days. Two getting here, one drinking, one regretting it.",
 			"You didn't see me here. I'm not here. Nobody's ever here."
 		],
