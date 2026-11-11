@@ -41,7 +41,7 @@
  * at most SANDY_STOP_MAX_RELATIVE: a street NPC in a Cascade's field at 40%, an equal tier at 100% (left alone),
  * a Cascade NPC in a street user's field at 200% (2.5x, capped). The user's freeze doesn't change that: a surging
  * mob keeps its relative rate through it, so the freeze only stops those with no surge. Faster than the user runs
- * the same machinery the other way (its deadlines, cooldowns, walk, shots and gore come sooner). A surging mob is
+ * the same machinery the other way (its deadlines, cooldowns, walk and gore come sooner). A surging mob is
  * never tinted, at any rate. If it surges while already held, the field lets it go at once, drops every slow it
  * was carrying (surge_free()) and takes it back at its relative rate. When its window closes the field takes it at
  * the field's own pace, unless it is dead: a corpse freed by a surge is left as it fell.
@@ -50,9 +50,10 @@
  * job. It comes back for the rest of the window.
  *
  * Look: affected things get a grey-green tint instead of tg's inversion. Floor items, blood decals and the
- * user are never touched, so they keep their colour, and so do the user's own shots. Shots the user fires
- * while the world is frozen fly a tile and hang there until the freeze ends, then fly at full speed. Shots the
- * user fires in the slow-mo are never held: they fly at full speed.
+ * user are never touched, so they keep their colour, and so do the user's own shots. Every bullet in the field
+ * flies at the field's pace, whoever fired it: the user's and a surging mob's crawl in the slow-mo like the rest
+ * (a faster surger fires sooner, but its bullets still crawl), untinted. Shots the user fires while the world is
+ * frozen fly a tile, hang there, and go on when it starts moving again. A shot leaving the field gets its speed back.
  */
 
 /// Another player within this many tiles of the user means no dilation.
@@ -373,7 +374,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/list/held_shots = list()
 	/// Thrown things in hand.
 	var/list/held_throws = list()
-	/// The user's own shots: never tinted.
+	/// The user's own shots: never tinted. A surging mob's held shots aren't tinted either.
 	var/list/user_shots = list()
 	/// Bosses in hand, to the world.time they shrug the field off.
 	var/list/boss_holds = list()
@@ -393,7 +394,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/list/slowed_tags = list()
 	/// The user's time multiplier. A surging mob runs at its own over this.
 	var/user_multiplier = 1
-	/// Surging mobs held at their relative rate, and their shots, to that rate. Never 0, never tinted.
+	/// Surging mobs held at their relative rate, to that rate. Never 0, never tinted. Their shots fly at the field's pace.
 	var/list/own_scales = list()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, start_scale = 0, _user_multiplier = 1)
@@ -481,13 +482,13 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		hold_mob(A)
 	else if(isprojectile(A))
 		var/obj/projectile/shot = A
-		if(shot.firer && immune[shot.firer]) // the user's own: hang_shot takes these in the freeze; in the slow-mo they fly free
-			return FALSE
-		if(shot.firer && (surging[shot.firer] || cyberware_own_surge(shot.firer))) // a surging mob's shots fly at its rate
-			var/rate = surging[shot.firer] ? scale_for(shot.firer) : relative_rate(cyberware_surge_multiplier(shot.firer))
-			if(abs(rate - 1) < SANDY_STOP_SAME_RATE)
+		if(shot.firer && immune[shot.firer])
+			if(time_scale <= 0) // hang_shot takes these
 				return FALSE
-			own_scales[shot] = rate
+			user_shots[shot] = TRUE
+			tint = FALSE
+			escape_the_negative_zone(shot) // in case it was tinted before it had a firer
+		else if(shot.firer && (surging[shot.firer] || cyberware_own_surge(shot.firer))) // at the field's pace, like every bullet, but in colour
 			tint = FALSE
 		hold_shot(shot)
 	else if(ismecha(A))
@@ -652,7 +653,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /**
  * `surger` opened its own surge at `multiplier`: if the field holds it, let it go now and drop every slow it
  * carried (its walk, its pauses, its last bit of lost time, its slowed animations and the shots it fired), then
- * take it back at its relative rate, shots and all.
+ * take it back at its relative rate. Its shots go back in at the field's pace, untinted.
  */
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/surge_free(mob/living/surger, multiplier)
 	if(surging[surger])
@@ -764,16 +765,21 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	SIGNAL_HANDLER
 	RegisterSignal(shot, COMSIG_PROJECTILE_FIRE, PROC_REF(hang_shot))
 
-/// Signal proc for [COMSIG_PROJECTILE_FIRE]: the user's shot keeps its colour. In a frozen world it flies a
-/// tile, then hangs until the freeze ends (tick() lets it go at full speed); in the slow-mo it flies at full speed.
+/// Signal proc for [COMSIG_PROJECTILE_FIRE]: the user's shot keeps its colour but flies at the field's pace like
+/// every bullet in it. In a frozen world it flies a tile, then hangs; in the slow-mo it crawls with the rest.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/hang_shot(obj/projectile/shot)
 	SIGNAL_HANDLER
 	UnregisterSignal(shot, COMSIG_PROJECTILE_FIRE)
 	if(QDELETED(shot) || shot.deletion_queued)
 		return
 	if(time_scale > 0)
-		if(GLOB.cyberware_time_dilated[shot] == src)
-			unfreeze_atom(shot) // caught before it had a firer: its speed and colour back
+		user_shots[shot] = TRUE
+		escape_the_negative_zone(shot) // in case it was tinted before it had a firer
+		if(!held_shots[shot])
+			hold_shot(shot)
+			GLOB.cyberware_time_dilated[shot] = src
+			frozen_things[shot] = TRUE
+			RegisterSignal(shot, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
 		return
 	// A hitscan beam takes its first step itself once paused (process_hitscan) and stops there.
 	if(!shot.hitscan)
@@ -825,8 +831,6 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		else
 			slow_mob(victim)
 	for(var/obj/projectile/shot as anything in held_shots)
-		if(own_scales[shot])
-			continue
 		shot.paused = time_scale <= 0
 		if(time_scale > 0)
 			shot.speed = held_shots[shot] * time_scale
@@ -869,8 +873,6 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		released[boss] = TRUE
 	if(thaw_at && world.time >= thaw_at)
 		thaw_at = 0
-		for(var/obj/projectile/shot as anything in user_shots.Copy()) // the user's hung shots fly on at full speed
-			unfreeze_atom(shot)
 		set_time_scale(slow_scale)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/into_the_negative_zone(atom/A)

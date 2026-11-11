@@ -358,7 +358,8 @@
 	TEST_ASSERT_EQUAL(cyberware_dilated_time(raider, 10), 5, "A faster surger's gore doesn't play at double speed")
 	var/datum/movespeed_modifier/pace = raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation)
 	TEST_ASSERT(pace && pace.multiplicative_slowdown <= 0, "A faster surger doesn't walk faster")
-	TEST_ASSERT(field.held_shots[shot] && !shot.paused && shot.speed == shot_speed * 2, "A faster surger's shot doesn't fly at double speed")
+	TEST_ASSERT(field.held_shots[shot] && !shot.paused && shot.speed == shot_speed * field.time_scale, "A faster surger's shot doesn't fly at the field's pace")
+	TEST_ASSERT(!tinted(shot), "A surger's shot was tinted")
 
 	var/next_move_was = world.time + 5 SECONDS
 	raider.next_move = next_move_was
@@ -367,38 +368,42 @@
 	end_surge(user)
 	end_surge(raider)
 
-/// The user's shots in their own slow-mo fly at full speed; shots hung in the freeze fly on at full speed when it ends
-/datum/unit_test/voidcrew_cyberware_timestop/user_shots_free
+/// Every bullet in the field flies at the field's pace, whoever fired it: the user's and a surging NPC's alike, untinted
+/datum/unit_test/voidcrew_cyberware_timestop/shots_at_field_pace
 
-/datum/unit_test/voidcrew_cyberware_timestop/user_shots_free/Run()
+/datum/unit_test/voidcrew_cyberware_timestop/shots_at_field_pace/Run()
 	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/mob/living/carbon/human/npc/raider = make_surger(spot(3, 0))
 	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
 	sleep(0.1 SECONDS)
 	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
-
-	// One hanging in the freeze, as hang_shot leaves it.
-	var/obj/projectile/bullet/hung = allocate(/obj/projectile/bullet, spot(1, 0))
-	hung.firer = user
-	var/hung_speed = hung.speed
-	field.user_shots[hung] = TRUE
-	field.hold_shot(hung)
-	GLOB.cyberware_time_dilated[hung] = field
-	field.frozen_things[hung] = TRUE
-	TEST_ASSERT(hung.paused, "Test fixture: the hung shot isn't paused")
-
+	TEST_ASSERT_NOTNULL(surge(raider), "The NPC's window didn't open")
 	sleep(1.2 SECONDS) // into the slow-mo
-	TEST_ASSERT(field.time_scale > 0, "Test fixture: still frozen")
-	TEST_ASSERT(!hung.paused && hung.speed == hung_speed && !field.held_shots[hung], "A shot hung in the freeze didn't fly on at full speed")
+	TEST_ASSERT(field.time_scale > 0 && field.time_scale < 1, "Test fixture: not in the slow-mo")
 
-	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet, spot(1, 1))
-	shot.firer = user
-	var/shot_speed = shot.speed
-	TEST_ASSERT(!field.freeze_atom(shot), "The field took the user's own slow-mo shot")
-	field.hang_shot(shot)
-	TEST_ASSERT(!field.held_shots[shot] && !shot.paused && shot.speed == shot_speed, "The user's slow-mo shot was slowed")
-	TEST_ASSERT(!tinted(shot), "The user's slow-mo shot was tinted")
+	var/obj/projectile/bullet/user_shot = allocate(/obj/projectile/bullet, spot(1, 0))
+	user_shot.firer = user
+	var/user_speed = user_shot.speed
+	field.hang_shot(user_shot)
+	TEST_ASSERT(field.held_shots[user_shot] && !user_shot.paused, "The user's slow-mo shot wasn't held")
+	TEST_ASSERT_EQUAL(user_shot.speed, user_speed * field.time_scale, "The user's slow-mo shot doesn't crawl at the field's pace")
+	TEST_ASSERT(!tinted(user_shot), "The user's slow-mo shot was tinted")
+
+	var/obj/projectile/bullet/npc_shot = allocate(/obj/projectile/bullet, spot(2, 0))
+	npc_shot.firer = raider
+	var/npc_speed = npc_shot.speed
+	field.freeze_atom(npc_shot)
+	TEST_ASSERT(field.held_shots[npc_shot] && !npc_shot.paused, "A surging NPC's shot wasn't held")
+	TEST_ASSERT_EQUAL(npc_shot.speed, npc_speed * field.time_scale, "A surging NPC's shot doesn't fly at the field's pace")
+	TEST_ASSERT(!tinted(npc_shot), "A surging NPC's shot was tinted")
+
+	sleep(3 SECONDS) // past the end
+	TEST_ASSERT_NULL(window.time_stop, "The dilation outlived its 4 s")
+	TEST_ASSERT_EQUAL(user_shot.speed, user_speed, "The user's shot didn't get its speed back")
+	TEST_ASSERT_EQUAL(npc_shot.speed, npc_speed, "The NPC's shot didn't get its speed back")
 	end_surge(user)
+	end_surge(raider)
 
 /// A surging NPC that dies is let go for good: its corpse isn't taken back and tinted
 /datum/unit_test/voidcrew_cyberware_timestop/no_corpse_retake
