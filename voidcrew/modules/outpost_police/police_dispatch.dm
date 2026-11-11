@@ -271,6 +271,20 @@
 			dispatch_orders -= order
 
 /**
+ * Whether a player is or was in `npc` (a brain transplant puts one in a human NPC's body): such a body is never
+ * deleted out of hand by the police or the recovery (review S4). Logged when `why` is given (one-off checks only).
+ */
+/proc/outpost_npc_played(mob/living/npc, why)
+	if(QDELETED(npc))
+		return FALSE
+	var/mob/living/carbon/carbon_npc = npc
+	if(!npc.mind && !npc.ckey && !npc.client && !(iscarbon(npc) && carbon_npc.last_mind))
+		return FALSE
+	if(why)
+		log_game("OUTPOST POLICE: [key_name(npc)] was not deleted ([why]): a player is or was in that body.")
+	return TRUE
+
+/**
  * Abuse M12: an officer carried off the outpost (aboard a ship that undocked, dragged out of the box) leaves
  * the roster and the caps but keeps their AI. Once no player is near enough to see them they are deleted;
  * back at the outpost, they rejoin.
@@ -292,6 +306,9 @@
 			continue
 		if(!human_npc_watched(stray))
 			dispatch_strays -= stray
+			if(outpost_npc_played(stray, "off-outpost stray"))
+				continue
+			stray.npc_drop_not_gear()
 			qdel(stray)
 
 /// Waves leave together once formed up (M13); a point whose unit never got out is skipped (M2)
@@ -361,7 +378,8 @@
 /datum/outpost_police/proc/dispatch_collect_bodies()
 	var/list/bodies = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-		if(officer.stat == DEAD)
+		// A body a player died in is theirs, and goes by the player rules (review S4)
+		if(officer.stat == DEAD && !outpost_npc_played(officer))
 			bodies += officer
 	while(length(bodies) > OUTPOST_POLICE_CORPSE_CAP)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/oldest = bodies[1]
@@ -385,7 +403,8 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers.Copy())
 		if(officer.stat == DEAD || !dispatch_is_response_unit(officer))
 			continue
-		if(!human_npc_watched(officer))
+		if(!human_npc_watched(officer) && !outpost_npc_played(officer))
+			officer.npc_drop_not_gear()
 			qdel(officer)
 	for(var/datum/human_npc_order/order as anything in dispatch_orders.Copy())
 		qdel(order)

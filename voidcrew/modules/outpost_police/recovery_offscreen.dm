@@ -7,9 +7,11 @@
  * shares with unrelated sites (outpost_security.dm says the same of its own checks). Observers and the dead don't
  * count; a living mob with a client anywhere at the outpost does.
  *
- * It waits RECOVERY_UNSEEN_GRACE of nobody being there, and for nobody wanted here to be holding the outpost in
- * trouble (stars_present()), then it runs in one call that never sleeps, so nobody can walk in half way through it.
- * Someone who comes back inside the grace finds the crews where they stood, carrying on from there (the ambient
+ * It waits RECOVERY_UNSEEN_WAIT (10 minutes, owner decision 40) of nobody being there, during which the crews stand
+ * still, and for nobody wanted here to be holding the outpost in trouble (stars_present()), and for the port to be
+ * open (a shut port sends nobody, seen or not). Then it runs in one call that never sleeps, so nobody can walk in
+ * half way through it. The lost-wave ladder carries over.
+ * Someone who comes back inside the wait finds the crews where they stood, carrying on from there (the ambient
  * system wakes them and the recovery's clocks move on, as before). So a player arriving never sees half of each.
  *
  * What it does, step for step what the crews end with:
@@ -28,14 +30,16 @@
  *   it is NORMAL again.
  */
 
-/// Nobody has been at the outpost this long before the recovery finishes without them
-#define RECOVERY_UNSEEN_GRACE (30 SECONDS)
+/// Nobody has been at the outpost this long before the recovery finishes without them (owner decision 40)
+#define RECOVERY_UNSEEN_WAIT (10 MINUTES)
 /// A patient treated unseen is not treated unseen again for this long (a body the kit can't fix waits on tg)
 #define RECOVERY_UNSEEN_PATIENT_RETRY (5 MINUTES)
 
 /datum/outpost_recovery
 	/// world.time nobody was first found at the outpost, or 0 while someone is
 	var/unseen_since = 0
+	/// How long nobody must be there before finish_unseen() (RECOVERY_UNSEEN_WAIT; the tests shorten it)
+	var/unseen_wait = RECOVERY_UNSEEN_WAIT
 
 /// Whether a living player with a client is at the outpost: its concourse box or its berths, docked ships included
 /datum/outpost_recovery/proc/player_at_outpost()
@@ -51,7 +55,8 @@
 
 /**
  * Whether the recovery should finish without its crews now: there is work, nobody has been at the outpost for
- * RECOVERY_UNSEEN_GRACE, and nobody wanted here still holds it in trouble. Called once a second by tick().
+ * unseen_wait, the port is open, and nobody wanted here still holds it in trouble. Called once a second by tick().
+ * While nobody is there the crews stand still (tick() pauses with the concourse empty); only this clock runs.
  */
 /datum/outpost_recovery/proc/unseen_ready()
 	if(state == OUTPOST_RECOVERY_NORMAL || QDELETED(outpost) || !outpost.loaded)
@@ -62,7 +67,10 @@
 		return FALSE
 	if(!unseen_since)
 		unseen_since = max(world.time, 1)
-	if(world.time - unseen_since < RECOVERY_UNSEEN_GRACE)
+	if(world.time - unseen_since < unseen_wait)
+		return FALSE
+	// The port is shut after four lost waves: nobody comes, seen or not (review SF3)
+	if(world.time < port_shut_until)
 		return FALSE
 	return !stars_present()
 
@@ -83,6 +91,11 @@
 		if(istype(worker) && !QDELETED(worker))
 			if(worker.pulling)
 				worker.stop_pulling()
+			// A worker a player has taken over is theirs now: off the crew, never deleted (review S4)
+			if(outpost_npc_played(worker, "unseen recovery"))
+				crew -= ref
+				continue
+			worker.npc_drop_not_gear()
 			worker.fade_out(instant = TRUE)
 	claims.Cut()
 	retry_at.Cut()
@@ -97,17 +110,18 @@
 	unseen_treat()
 	unseen_clean()
 	unseen_staff()
-	// The waves are over: the ladder starts again, as after a wave that did its job
+	// The waves are over; whoever was not built yet is not coming
 	wave_active = FALSE
 	wave_morgue_left = 0
 	wave_janitors_left = 0
 	wave_medics_left = 0
 	wave_escort_left = 0
-	if(port_shut_until <= world.time)
-		waves_lost = 0
 	prune_dead()
 	quiet_since = world.time
+	// The lost-wave ladder is not wiped by leaving (review SF3): only a wave that does its job resets it
+	var/kept_losses = waves_lost
 	set_state(OUTPOST_RECOVERY_NORMAL)
+	waves_lost = kept_losses
 	var/datum/ambient_place/outpost/place = recovery_place()
 	if(place)
 		place.needs_settling = TRUE
@@ -241,5 +255,5 @@
 		post.away_since = 0
 		post.shop.set_keeper(replacement)
 
-#undef RECOVERY_UNSEEN_GRACE
+#undef RECOVERY_UNSEEN_WAIT
 #undef RECOVERY_UNSEEN_PATIENT_RETRY

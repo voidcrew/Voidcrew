@@ -171,13 +171,15 @@ Killing a trader or a checkpoint guard that someone sees is at least 4 stars. Th
 
 Point a gun at a trader behind their counter, the same way you hold anyone up, and they put their hands up, close the shop and hand over the till. It holds 200 credits at Halcyon, 300 at Quartermain and 400 at Undertow, and it is empty for the next half hour. An empty till gives up one cheap item from the shelf, then nothing. A stick-up and a trader's drop come out of the same small pot, so robbing a trader and then killing them does not pay twice. Checkpoint guards have no till.
 
-The trader raises the alarm when you leave their sight or half a minute after handing over, whichever comes first, and sooner if you fire or hit anyone. Anyone else who sees the gun reports it too. Robbery is 2 stars at the least. If you are caught, the gun is taken and destroyed and the takings go back to the till.
+The trader raises the alarm when you leave their sight or half a minute after handing over, whichever comes first, and sooner if you fire or hit anyone. Anyone else who sees the gun reports it too. Robbery is 2 stars at the least. If you are caught, the gun goes into the evidence locker and the takings go back to the till.
 
 ### Who comes to clean up
 
-When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers** and **janitors**. Morgue workers bag the dead and drag them off. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. They are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
+When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers**, **janitors** and **medics**. Morgue workers bag the dead and drag them off. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. Medics patch up the outpost's own people who are down but alive; they do not treat visitors. The crews are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
 
 Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port sends nobody for a quarter of an hour.
+
+If nobody is at the outpost for ten minutes, the whole cleanup is done at once while you are away.
 
 ## Outpost security
 
@@ -192,11 +194,11 @@ Crimes pile up against the person who did them, shown as **stars** on your alert
 | Stars | What the officers do |
 |---|---|
 | 1-2 | Order you to stop, stun and cuff you, take what you used, and walk you to the desk by the lobby |
-| 3 | Shoot to kill. Nobody takes a surrender |
+| 3 | Some officers shoot to kill. The rest carry stun batons and disablers and take you alive, straight to jail |
 | 4 | As 3, plus your crewmates at the outpost are arrested and the crew is under embargo there |
 | 5 | As 4, with the marshal on scene and a longer embargo |
 
-More officers arrive through the staff lifts as your stars rise, and they keep coming. Officers in green and yellow space spare someone who is down. In red space they finish the job.
+More officers arrive through the staff lifts as your stars rise, and they keep coming. Nobody shoots someone who is down, cuffed or in a cell: an officer comes over and cuffs them instead. Get away from them and you are fair game again.
 
 Stars fade if you stay out of sight of the officers long enough, or if you leave the outpost. At 3 stars and up they will not fade while you are still in the outpost. After a warrant fades, the officers remember you for a while.
 
@@ -204,12 +206,13 @@ Stars fade if you stay out of sight of the officers long enough, or if you leave
 
 Stand still, drop your weapon and put your hands down, or use `*surrender` at 1-2 stars, and the officer cuffs you without a fight. Otherwise they stun you first.
 
-- **What they take.** Every weapon or tool you used in a crime goes into the security station's evidence locker. Only outpost security's own IDs open it. An emag breaks the lock, but doing that in front of an officer is theft. Anything you stole from a prisoner's locker goes back to the locker. Implants, cyberware, ship keys and mission items are never taken.
+- **What they take.** Every weapon or tool you used in a crime goes into the security station's evidence locker. Only outpost security's own IDs open it. An emag breaks the lock for a few minutes, and breaking it or taking anything out of it in front of an officer is theft. Anything you stole from a prisoner's locker goes back to the locker. Implants, cyberware, ship keys and mission items are never taken.
 - **The fine.** 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at Undertow, paid from your crew's ship accounts together. It is paid in full or not at all.
 - **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
-- **If it is not.** You go to jail, three minutes at 1 star and six at 2. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID and your implants. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
+- **If it is not.** You go to jail, three minutes at 1 star and six at 2. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
+- **At 3 stars and up.** There is no fine. You go straight to jail, stripped the same way: 10 minutes at 3 stars, 15 at 4 and 20 at 5, with no paying your way out.
 
-If you are badly hurt or die in the cells, the door opens at once and a medic is called.
+If you die in a cell, the door opens and your term is over.
 
 ### Getting your things back
 

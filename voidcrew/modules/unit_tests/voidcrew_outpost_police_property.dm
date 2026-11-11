@@ -338,12 +338,14 @@
 	TEST_ASSERT(evidence.emag_act(suspect, allocate(/obj/item/card/emag)), "An emag did nothing to the evidence locker")
 	TEST_ASSERT(!evidence.locked, "An emag left the evidence locker locked")
 
-	// A case deleted any other way keeps nothing alive (abuse M24)
+	// A case deleted any other way never spills (abuse M24): what it held goes to the evidence locker (review S1)
 	var/obj/item/outpost_sealed_case/evidence/loose = new(get_turf(cop))
 	loose.police_ref = WEAKREF(police)
-	var/obj/item/screwdriver/tool = new(loose)
+	var/obj/item/screwdriver/tool = allocate(/obj/item/screwdriver)
+	tool.forceMove(loose)
 	qdel(loose)
-	TEST_ASSERT(QDELETED(tool), "A deleted evidence case spilled its contents")
+	TEST_ASSERT(!QDELETED(tool), "A deleted evidence case destroyed the tool in it")
+	TEST_ASSERT_EQUAL(tool.loc, evidence, "A deleted evidence case put its tool in [tool.loc], not the evidence locker")
 	TEST_ASSERT(!(locate(/obj/item/screwdriver) in get_turf(cop)), "A deleted evidence case left an item on the floor")
 
 /// With every locker held by someone still in the cells nobody else is stripped; once one is let out, the longest-released locker is emptied onto the floor and reused
@@ -375,3 +377,90 @@
 	TEST_ASSERT_EQUAL(police.property_locker_for(fifth), first_locker, "The fifth prisoner did not get the longest-released locker")
 	TEST_ASSERT(!first_crowbar || !QDELETED(first_crowbar), "The evicted prisoner's gear was deleted")
 	TEST_ASSERT(!first_crowbar || !(first_crowbar in first_locker.contents), "The evicted gear is still in the reused locker")
+
+/// Review S1 and abuse SF5: an officer deleted with evidence on him, in his hand or his belt, sends it to the evidence locker
+/datum/unit_test/voidcrew_outpost_police_property/evidence_on_officer
+
+/datum/unit_test/voidcrew_outpost_police_property/evidence_on_officer/Run()
+	fixture(1)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, spare[1])
+	TEST_ASSERT_NOTNULL(officer.belt, "Test fixture: the officer has no belt")
+	var/obj/item/gun/ballistic/automatic/pistol/in_hand = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	var/obj/item/gun/ballistic/automatic/pistol/in_belt = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	var/obj/item/outpost_sealed_case/evidence/held_case = new(get_turf(officer))
+	held_case.police_ref = WEAKREF(police)
+	TEST_ASSERT(held_case.add_evidence(in_hand, null), "Test fixture: the first gun did not go in its case")
+	TEST_ASSERT(officer.put_in_hands(held_case), "Test fixture: the officer could not hold the case")
+	var/obj/item/outpost_sealed_case/evidence/belt_case = new(get_turf(officer))
+	belt_case.police_ref = WEAKREF(police)
+	TEST_ASSERT(belt_case.add_evidence(in_belt, null), "Test fixture: the second gun did not go in its case")
+	belt_case.forceMove(officer.belt)
+	var/turf/floor = get_turf(officer)
+
+	qdel(officer)
+	for(var/obj/item/gun/gun as anything in list(in_hand, in_belt))
+		TEST_ASSERT(!QDELETED(gun), "Evidence was deleted with the officer carrying it")
+		TEST_ASSERT_EQUAL(gun.loc, evidence, "Evidence on a deleted officer went to [gun.loc], not the evidence locker")
+	TEST_ASSERT(!(locate(/obj/item/gun) in floor), "Evidence on a deleted officer was left on the floor")
+
+/// Review S2: a locker that cannot shut (an emagged door held open by a crate, a person in the doorway) still takes the evidence, never deletes it, and never locks anyone in
+/datum/unit_test/voidcrew_outpost_police_property/evidence_blocked
+
+/datum/unit_test/voidcrew_outpost_police_property/evidence_blocked/Run()
+	fixture(1)
+	var/mob/living/carbon/human/cop = person()
+	TEST_ASSERT(evidence.emag_act(cop, allocate(/obj/item/card/emag)), "Test fixture: the emag did nothing")
+	TEST_ASSERT(evidence.open(null, TRUE), "Test fixture: the broken locker would not open")
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, get_turf(evidence))
+	TEST_ASSERT(!evidence.can_close(), "Test fixture: the crate does not hold the door open")
+
+	var/obj/item/outpost_sealed_case/evidence/case = new(get_turf(cop))
+	case.police_ref = WEAKREF(police)
+	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	case.add_evidence(gun, null)
+	TEST_ASSERT(cop.put_in_hands(case), "Test fixture: the officer could not hold the case")
+	police.dispose_evidence(cop)
+	TEST_ASSERT(!QDELETED(gun), "A blocked evidence locker had the evidence deleted")
+	TEST_ASSERT_EQUAL(gun.loc, evidence, "Evidence for a blocked locker went to [gun.loc]")
+
+	// Someone in the doorway: the door is not shut on them, and they are not locked in
+	qdel(crate)
+	var/mob/living/carbon/human/bystander = person()
+	bystander.forceMove(get_turf(evidence))
+	var/obj/item/screwdriver/tool = allocate(/obj/item/screwdriver)
+	TEST_ASSERT(evidence.take_evidence(tool), "The evidence locker refused a tool with someone in the doorway")
+	TEST_ASSERT_EQUAL(tool.loc, evidence, "The tool is not in the evidence locker")
+	TEST_ASSERT(isturf(bystander.loc), "The evidence locker shut someone in")
+
+	// The lock mends: shut and locked once the doorway is clear, never with someone in it
+	evidence.mend_lock()
+	TEST_ASSERT(!evidence.broken, "The emagged lock did not mend")
+	TEST_ASSERT(evidence.opened, "The evidence locker shut with someone in the doorway")
+	TEST_ASSERT(isturf(bystander.loc), "The mending lock shut someone in")
+	bystander.forceMove(spare[1])
+	evidence.shut_when_clear()
+	TEST_ASSERT(!evidence.opened, "The mended evidence locker did not shut once its doorway was clear")
+	TEST_ASSERT(evidence.locked, "The mended evidence locker did not lock")
+	TEST_ASSERT_EQUAL(gun.loc, evidence, "The evidence left the locker while it mended")
+
+/// Review S3: a ship key or mission item in a bag is not locked away with the bag; it stays on the prisoner
+/datum/unit_test/voidcrew_outpost_police_property/strip_keepsakes
+
+/datum/unit_test/voidcrew_outpost_police_property/strip_keepsakes/Run()
+	fixture(4)
+	var/mob/living/carbon/human/prisoner = outfitted()
+	var/mob/living/carbon/human/officer = officer_beside(prisoner)
+	var/obj/item/storage/backpack/bag = prisoner.back
+	var/obj/item/ship_key/key = allocate(/obj/item/ship_key)
+	var/obj/item/screwdriver/tool = allocate(/obj/item/screwdriver)
+	bag.atom_storage.attempt_insert(key, prisoner, TRUE)
+	bag.atom_storage.attempt_insert(tool, prisoner, TRUE)
+	TEST_ASSERT_EQUAL(key.loc, bag, "Test fixture: the key is not in the bag")
+
+	TEST_ASSERT(police.store_property(prisoner, officer), "store_property failed with free lockers")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = police.property_locker_for(prisoner)
+	TEST_ASSERT_EQUAL(bag.loc, locker, "The bag did not go in the locker")
+	TEST_ASSERT_EQUAL(tool.loc, bag, "The rest of the bag did not go with it")
+	TEST_ASSERT_EQUAL(get_atom_on_turf(key), prisoner, "A ship key in a bag was locked away (it is in [key.loc])")
+	TEST_ASSERT(prisoner.is_holding(key) || prisoner.l_store == key || prisoner.r_store == key, "The ship key is on the prisoner but not in a pocket or hand")
+	TEST_ASSERT(!locker.holds(key), "A ship key is listed in the locker")

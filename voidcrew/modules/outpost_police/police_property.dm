@@ -45,6 +45,21 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		return TRUE
 	return FALSE
 
+/// The outermost things inside `container` whose loss would break something outside an arrest (ship keys, mission
+/// items, bounty proof, paper): the strip leaves them on their owner (review S3)
+/proc/outpost_police_keepsakes(obj/item/container)
+	. = list()
+	for(var/obj/item/part as anything in container.get_all_contents_type(/obj/item))
+		if(part == container || QDELETED(part) || !is_type_in_typecache(part, GLOB.human_npc_not_gear))
+			continue
+		var/nested = FALSE
+		for(var/atom/holder = part.loc; holder && holder != container; holder = holder.loc)
+			if(is_type_in_typecache(holder, GLOB.human_npc_not_gear))
+				nested = TRUE
+				break
+		if(!nested)
+			. += part
+
 /// Moves everything inside `doomed` that must not be destroyed onto `where`
 /proc/outpost_police_salvage(obj/item/doomed, turf/where)
 	for(var/atom/movable/part as anything in doomed.get_all_contents())
@@ -386,10 +401,12 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	LAZYSET(taken_from, WEAKREF(thing), holder ? key_name(holder) : "the floor")
 	return TRUE
 
-/// Evidence never spills (abuse M24): whatever is still inside goes with the case, after stolen goods go home
+/// Evidence never spills (abuse M24): whatever is still inside goes to the evidence locker, wherever the case is
+/// deleted (an officer faded or collected with it on them, review S1); only with no locker at all is it deleted
 /obj/item/outpost_sealed_case/evidence/Destroy()
 	var/datum/outpost_police/police = police_ref?.resolve()
-	police?.evidence_empty_case(src, get_turf(src))
+	if(police)
+		police.evidence_empty_case(src, get_turf(src), police.get_evidence_locker())
 	for(var/atom/movable/inside as anything in contents.Copy())
 		qdel(inside)
 	taken_from = null
@@ -553,9 +570,14 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		ordered += jumpsuit
 
 	var/stored = 0
+	var/list/keepsakes = list()
 	for(var/obj/item/thing as anything in ordered)
 		if(QDELETED(thing))
 			continue
+		// A ship key or mission item in a bag stays with its owner (review S3): held on them until the clothes are on
+		for(var/obj/item/keepsake as anything in outpost_police_keepsakes(thing))
+			keepsake.forceMove(prisoner)
+			keepsakes += keepsake
 		if(thing.loc == prisoner)
 			if(!prisoner.transferItemToLoc(thing, locker, FALSE, TRUE, FALSE))
 				continue
@@ -583,6 +605,16 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 			continue
 		if(!prisoner.equip_to_slot_if_possible(slotted, pocketed[slotted], FALSE, TRUE, TRUE, TRUE))
 			prisoner.put_in_hands(slotted)
+	// The keepsakes: pockets, then hands; what does not fit goes in the locker with their other things
+	for(var/obj/item/keepsake as anything in keepsakes)
+		if(QDELETED(keepsake) || keepsake.loc != prisoner)
+			continue
+		if(prisoner.equip_to_slot_if_possible(keepsake, ITEM_SLOT_LPOCKET, FALSE, TRUE, TRUE, TRUE) || prisoner.equip_to_slot_if_possible(keepsake, ITEM_SLOT_RPOCKET, FALSE, TRUE, TRUE, TRUE))
+			continue
+		if(prisoner.put_in_hands(keepsake))
+			continue
+		keepsake.forceMove(locker)
+		locker.record(keepsake)
 
 	locker.finish_assignment(card)
 	log_game("OUTPOST POLICE: [key_name(prisoner)] was stripped at [outpost]: [stored] items to a property locker.")
@@ -661,17 +693,19 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		qdel(case)
 		return null
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = officer
-	if(istype(cop))
-		cop.police_carry(case)
-	else
-		officer.put_in_hands(case)
+	var/carried = istype(cop) ? cop.police_carry(case) : officer.put_in_hands(case)
+	if(!carried)
+		// No hand free for it (two cases already): straight to the evidence locker, never left on the floor
+		evidence_empty_case(case, floor, get_evidence_locker())
+		qdel(case)
+		return null
 	return case
 
 /**
  * What a case holds: stolen property back into its locker, anything that must not be taken onto `spill`, the
- * rest into `store` (the evidence locker). With no locker to put it in (a mapping error, or a case that never
- * reached the desk) a crime tool is deleted, as nothing taken may be left lying about. Returns how many items
- * were stored or deleted. The case itself is left to the caller.
+ * rest into `store` (the evidence locker), which always takes it (review S2). Only with no evidence locker at the
+ * outpost at all (a mapping error) is a crime tool deleted, as nothing taken may be left lying about. Returns how
+ * many items were stored or deleted. The case itself is left to the caller.
  */
 /datum/outpost_police/proc/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill, obj/structure/closet/secure_closet/outpost_evidence/store)
 	var/destroyed = 0

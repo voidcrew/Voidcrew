@@ -553,7 +553,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	return take
 
 /// Stolen takings in an emptied evidence case go back where they came from (a holochip's credits to the till, a shelf item to its shelf); the rest is the case's business
-/datum/outpost_police/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill)
+/datum/outpost_police/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill, obj/structure/closet/secure_closet/outpost_evidence/store)
 	for(var/obj/item/thing as anything in case.contents.Copy())
 		var/datum/weakref/ref = WEAKREF(thing)
 		var/list/record = takings?[ref]
