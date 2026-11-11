@@ -133,26 +133,88 @@
 		SSexplosions.vars[queue] = saved_queues[queue]
 	return ..()
 
-/datum/unit_test/voidcrew_outpost_protection/explosions/Run()
-	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, protected_turf)
-	var/obj/item/pen/contents = allocate(/obj/item/pen, bag)
-	explosion(bag, devastation_range = 2, flame_range = 2, flash_range = 2, silent = TRUE, adminlog = FALSE)
-	TEST_ASSERT_EQUAL(length(SSexplosions.highturf), 0, "An inventory bomb propagated inside the outpost")
-	TEST_ASSERT_EQUAL(length(SSexplosions.flameturf), 0, "An outpost bomb produced fire")
-	TEST_ASSERT_EQUAL(length(SSexplosions.high_mov_atom), 0, "An outpost bomb triggered nested contents")
-	TEST_ASSERT_EQUAL(length(SSexplosions.held_throwturf), 0, "An outpost bomb threw objects")
+/// The whole 5x5 test room becomes outpost ground; returns its middle tile
+/datum/unit_test/voidcrew_outpost_protection/explosions/proc/claim_room()
+	outpost.outpost_template.width = run_loc_floor_top_right.x - run_loc_floor_bottom_left.x + 1
+	outpost.outpost_template.height = run_loc_floor_top_right.y - run_loc_floor_bottom_left.y + 1
+	return locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 
-	explosion(outside_turf, devastation_range = 2, flame_range = 2, silent = TRUE, adminlog = FALSE)
-	TEST_ASSERT(outside_turf in SSexplosions.highturf, "An outside explosion lost its normal effects")
-	TEST_ASSERT(!(protected_turf in SSexplosions.highturf), "An outside explosion reached the outpost")
-	TEST_ASSERT(!(protected_turf in SSexplosions.flameturf), "An outside explosion ignited the outpost")
-	TEST_ASSERT(!(protected_turf in SSexplosions.held_throwturf), "An outside explosion threw outpost contents")
-	// Also exercise direct explosion calls and objects moved after a blast was queued.
-	EX_ACT(bag, EXPLODE_DEVASTATE)
-	TEST_ASSERT(!QDELETED(bag) && !QDELETED(contents), "Direct explosion handling bypassed inventory protection")
-	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, protected_turf)
-	EX_ACT(visitor, EXPLODE_DEVASTATE)
-	TEST_ASSERT(!QDELETED(visitor), "Direct explosion handling gibbed an outpost visitor")
+/// Applies what the blast queued, turfs then movables, as SSexplosions.fire() does (throws are left out)
+/datum/unit_test/voidcrew_outpost_protection/explosions/proc/apply_blast()
+	for(var/list/pass in list(list("lowturf", EXPLODE_LIGHT), list("medturf", EXPLODE_HEAVY), list("highturf", EXPLODE_DEVASTATE)))
+		var/list/queued = SSexplosions.vars[pass[1]]
+		SSexplosions.vars[pass[1]] = list()
+		var/severity = pass[2]
+		for(var/turf/blasted as anything in queued)
+			EX_ACT(blasted, severity)
+	for(var/list/pass in list(list("high_mov_atom", EXPLODE_DEVASTATE), list("med_mov_atom", EXPLODE_HEAVY), list("low_mov_atom", EXPLODE_LIGHT)))
+		var/list/queued = SSexplosions.vars[pass[1]]
+		SSexplosions.vars[pass[1]] = list()
+		var/severity = pass[2]
+		for(var/atom/movable/blasted as anything in queued)
+			if(!QDELETED(blasted))
+				EX_ACT(blasted, severity)
+
+/// Everything a blast could change about a tile's own ground
+/datum/unit_test/voidcrew_outpost_protection/explosions/proc/ground_state(turf/ground)
+	. = "[ground.type] [islist(ground.baseturfs) ? jointext(ground.baseturfs, ",") : ground.baseturfs] [ground.icon_state]"
+	if(isopenturf(ground))
+		var/turf/open/floor = ground
+		. += " [floor.broken] [floor.burnt]"
+
+/// Decision 38: a blast at a trader outpost hurts people and placed things as anywhere, never the ground or the outpost's property
+/datum/unit_test/voidcrew_outpost_protection/explosions/Run()
+	var/turf/epicenter = claim_room()
+	TEST_ASSERT(is_trader_outpost_protected(epicenter) && is_trader_outpost_protected(run_loc_floor_top_right), "The test room is not outpost ground")
+	var/list/before = list()
+	for(var/turf/ground in range(2, epicenter))
+		before[ground] = ground_state(ground)
+
+	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, get_step(epicenter, EAST))
+	var/obj/structure/chair/placed = allocate(/obj/structure/chair, get_step(epicenter, WEST))
+	var/obj/item/pen/loose = allocate(/obj/item/pen, epicenter)
+	// Property at ground zero: a tank that blows up from its own ex_act(), and a machine with parts inside
+	var/obj/structure/reagent_dispensers/fueltank/tank = allocate(/obj/structure/reagent_dispensers/fueltank, epicenter)
+	tank.AddElement(/datum/element/outpost_property)
+	var/obj/machinery/recharger/fixture = allocate(/obj/machinery/recharger, epicenter)
+	fixture.AddElement(/datum/element/outpost_property)
+	var/obj/item/circuitboard/fixture_board = fixture.circuit
+	var/fixture_integrity = fixture.get_integrity()
+	var/tank_integrity = tank.get_integrity()
+
+	explosion(epicenter, heavy_impact_range = 1, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE)
+	TEST_ASSERT(epicenter in SSexplosions.medturf, "An outpost bomb did not go off")
+	TEST_ASSERT(get_turf(visitor) in SSexplosions.lowturf, "The blast did not travel across the outpost floor")
+	apply_blast()
+
+	TEST_ASSERT(visitor.getBruteLoss() + visitor.getFireLoss() > 0, "An outpost bomb did not hurt a visitor beside it")
+	TEST_ASSERT(QDELETED(placed) || placed.get_integrity() < placed.max_integrity, "A placed chair in the blast was unharmed")
+	TEST_ASSERT(QDELETED(loose) || loose.get_integrity() < loose.max_integrity, "A loose pen at ground zero was unharmed")
+	TEST_ASSERT(!QDELETED(tank) && tank.get_integrity() == tank_integrity, "A blast damaged or set off an outpost fuel tank")
+	TEST_ASSERT(!QDELETED(fixture) && fixture.get_integrity() == fixture_integrity, "A blast damaged an outpost machine")
+	TEST_ASSERT(!QDELETED(fixture_board) && fixture_board.loc == fixture, "A blast destroyed an outpost machine's parts")
+	TEST_ASSERT_EQUAL(length(SSexplosions.highturf) + length(SSexplosions.medturf) + length(SSexplosions.lowturf), 0, "Outpost property set off a second blast")
+	for(var/turf/ground as anything in before)
+		TEST_ASSERT_EQUAL(ground_state(ground), before[ground], "A blast changed the outpost's ground at [ground.x],[ground.y]")
+
+/// Decision 38: a bombing that catches a visitor at an outpost is an attack by the bomber, as a blow would be
+/datum/unit_test/voidcrew_outpost_protection/explosions/bombing_reported/Run()
+	var/turf/epicenter = claim_room()
+	var/mob/living/carbon/human/consistent/bomber = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, get_step(epicenter, EAST))
+	bomber.mind_initialize()
+	visitor.mind_initialize()
+	// A rocket's blast is blamed on whoever fired it
+	var/obj/projectile/rocket = allocate(/obj/projectile)
+	rocket.firer = bomber
+	TEST_ASSERT_EQUAL(outpost_bomber_of(rocket), bomber, "A rocket's blast was not blamed on its firer")
+	var/obj/item/pen/untouched = allocate(/obj/item/pen)
+	TEST_ASSERT_NULL(outpost_bomber_of(untouched), "A bomb nobody touched was blamed on someone")
+
+	explosion(epicenter, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE, explosion_cause = rocket)
+	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[visitor.mind], bomber.mind), "A bombing at the outpost did not count as an attack on the visitor")
+	TEST_ASSERT_NULL(outpost.self_defense_targets[bomber.mind], "The bombed visitor was counted as the attacker")
+	apply_blast()
 
 /datum/unit_test/voidcrew_outpost_protection/fixtures/Run()
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, protected_turf)
