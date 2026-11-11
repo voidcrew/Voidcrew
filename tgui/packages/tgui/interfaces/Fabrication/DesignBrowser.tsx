@@ -9,7 +9,8 @@ import {
 } from 'tgui-core/components';
 import { classes } from 'tgui-core/react';
 
-import { useSharedState } from '../../backend';
+import { useBackend, useSharedState } from '../../backend'; // VOIDCREW EDIT CHANGE: useBackend
+import { TutorialFocus } from '../../../voidcrew_tgui/components/TutorialFocus'; // VOIDCREW EDIT ADDITION
 import { SearchBar } from '../common/SearchBar';
 import type { Design, MaterialMap } from './Types';
 
@@ -355,7 +356,22 @@ const DesignBrowserTab = <T extends Design = Design>(
   depth ??= 0;
   maxDepth ??= 3;
 
-  return (
+  // VOIDCREW EDIT ADDITION START - the tutorial checklist pulses the top-level tab holding
+  // the circuit imprinter design it points at (imprinter_<design id>).
+  const tutorialFocus =
+    useBackend<{ tutorial_focus?: string | null }>().data?.tutorial_focus || '';
+  const focusDesign = tutorialFocus.startsWith('imprinter_')
+    ? tutorialFocus.slice('imprinter_'.length)
+    : '';
+  const tabFocused =
+    depth === 0 &&
+    !!focusDesign &&
+    selectedCategory !== category.title &&
+    !!category.descendants[focusDesign];
+  // VOIDCREW EDIT ADDITION END
+
+  // VOIDCREW EDIT CHANGE: was `return (`, wrapped below
+  const tab = (
     <div
       className={classes([
         'FabricatorTabs__Tab',
@@ -402,6 +418,11 @@ const DesignBrowserTab = <T extends Design = Design>(
           </div>
         )}
     </div>
+  );
+
+  // VOIDCREW EDIT ADDITION
+  return (
+    <TutorialFocus id={tabFocused ? tutorialFocus : ''}>{tab}</TutorialFocus>
   );
 };
 

@@ -2,6 +2,10 @@ import { sortBy } from 'es-toolkit';
 import { useState } from 'react';
 import { Flex, Input, Section, Tabs, VirtualList } from 'tgui-core/components';
 
+// VOIDCREW EDIT ADDITION START - tutorial checklist focus
+import { useBackend } from '../../backend';
+import { TutorialFocus } from '../../../voidcrew_tgui/components/TutorialFocus';
+// VOIDCREW EDIT ADDITION END
 import { useRemappedBackend } from './helpers';
 import { TechNode } from './nodes/TechNode';
 
@@ -41,6 +45,27 @@ export function TechwebOverview(props) {
     );
   }
 
+  // VOIDCREW EDIT ADDITION START - tutorial checklist: list the node it points at first
+  const tutorialFocus =
+    useBackend<{ tutorial_focus?: string | null }>().data?.tutorial_focus || '';
+  const focusNodeId = tutorialFocus.startsWith('rd_node_')
+    ? tutorialFocus.slice('rd_node_'.length)
+    : '';
+  const focusNode = focusNodeId
+    ? displayedNodes.find((x) => x.id === focusNodeId)
+    : undefined;
+  if (focusNode) {
+    displayedNodes = [
+      focusNode,
+      ...displayedNodes.filter((x) => x !== focusNode),
+    ];
+  }
+  const focusAvailable =
+    !!focusNodeId &&
+    (searching || tabIndex !== Tab.AVAILABLE) &&
+    nodes.some((x) => x.id === focusNodeId && x.tier === Tab.AVAILABLE);
+  // VOIDCREW EDIT ADDITION END
+
   function switchTab(tab) {
     setTabIndex(tab);
     setSearchText('');
@@ -61,12 +86,15 @@ export function TechwebOverview(props) {
               >
                 Researched
               </Tabs.Tab>
-              <Tabs.Tab
-                selected={!searching && tabIndex === Tab.AVAILABLE}
-                onClick={() => switchTab(1)}
-              >
-                Available
-              </Tabs.Tab>
+              {/* VOIDCREW EDIT: the tutorial pulses this tab while its node is elsewhere */}
+              <TutorialFocus id={focusAvailable ? tutorialFocus : ''}>
+                <Tabs.Tab
+                  selected={!searching && tabIndex === Tab.AVAILABLE}
+                  onClick={() => switchTab(1)}
+                >
+                  Available
+                </Tabs.Tab>
+              </TutorialFocus>
               <Tabs.Tab
                 selected={!searching && tabIndex === Tab.FUTURE}
                 onClick={() => switchTab(2)}
