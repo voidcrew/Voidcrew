@@ -108,3 +108,76 @@
 	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
 	if(our_ship && tutorial_is_pirate_ship(target))
 		tutorial_credit_crew(our_ship, TUTORIAL_STEP_PIRATES_BOARD, aboard_only = TRUE)
+
+// ---------------------------------------------------------------------------
+// Ship combat: the weapons console window ("weapons") and live state for the steps.
+// ---------------------------------------------------------------------------
+
+/// How long a ship's combat machine list is reused by the live lines.
+#define TUTORIAL_COMBAT_MACHINE_CACHE (10 SECONDS)
+
+/// Chained after console_ui.dm and ew_console.dm (this file is included after both).
+/obj/machinery/computer/camera_advanced/ship_combat/ui_data(mob/user)
+	var/list/data = ..()
+	data["tutorial_focus"] = tutorial_weapons_focus(tutorial_ui_focus(user, "weapons"))
+	return data
+
+/// Walks a step's focus key back to the control this console needs first: a lock, then
+/// the targeting camera before the fire keys.
+/obj/machinery/computer/camera_advanced/ship_combat/proc/tutorial_weapons_focus(focus)
+	if(!focus)
+		return null
+	if(!target_ship && (focus in list("wpn_engage", "wpn_fire", "wpn_interdict", "wpn_hack", "wpn_execute")))
+		return "wpn_contact"
+	if(focus == "wpn_fire" && !attack_mode)
+		return "wpn_engage"
+	return focus
+
+/// Machines of a type aboard a ship, cached for a few seconds because the lookup walks every
+/// ship area. Live state is read off the machines by the caller.
+/proc/tutorial_combat_machines(obj/structure/overmap/ship/ship, machine_type)
+	. = list()
+	if(QDELETED(ship))
+		return
+	var/cache_key = "combat|[REF(ship)]|[machine_type]"
+	var/list/cached = SSvc_tutorials.machine_cache[cache_key]
+	var/list/refs
+	if(cached && world.time < cached[1] + TUTORIAL_COMBAT_MACHINE_CACHE)
+		refs = cached[2]
+	else
+		refs = list()
+		for(var/obj/machinery/machine as anything in ship.get_ship_machines(machine_type))
+			refs += WEAKREF(machine)
+		SSvc_tutorials.machine_cache[cache_key] = list(world.time, refs)
+	for(var/datum/weakref/ref as anything in refs)
+		var/obj/machinery/machine = ref.resolve()
+		if(!QDELETED(machine))
+			. += machine
+
+/// "Weapons are locked" while the ship sits where ship weapons can't fire, else null.
+/proc/tutorial_weapons_zone_note(obj/structure/overmap/ship/ship)
+	if(ship && !SSovermap_zones.weapons_allowed_at(ship))
+		return "Weapons are locked outside red space."
+	return null
+
+/// The ship a weapons console aboard has locked, or null.
+/proc/tutorial_weapons_target(obj/structure/overmap/ship/ship)
+	for(var/obj/machinery/computer/camera_advanced/ship_combat/console as anything in tutorial_combat_machines(ship, /obj/machinery/computer/camera_advanced/ship_combat))
+		var/obj/structure/overmap/ship/target = console.target_ship
+		if(istype(target) && !QDELETED(target))
+			return target
+	return null
+
+/// The ship one of this ship's interdictors is holding, or null.
+/proc/tutorial_interdicted_ship(obj/structure/overmap/ship/ship)
+	if(QDELETED(ship))
+		return null
+	for(var/obj/machinery/ship_combat/interdictor/interdictor in ship.linked_interdictors)
+		if(!interdictor.interdiction_active)
+			continue
+		var/obj/structure/overmap/ship/held = interdictor.interdicted_ship_ref?.resolve()
+		if(!QDELETED(held))
+			return held
+	return null
+
+#undef TUTORIAL_COMBAT_MACHINE_CACHE

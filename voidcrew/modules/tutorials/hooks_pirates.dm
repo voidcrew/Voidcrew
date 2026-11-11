@@ -46,3 +46,81 @@
 	. = ..()
 	if(. && claimer)
 		tutorial_credit(claimer, TUTORIAL_STEP_PIRATES_CLAIM)
+
+/// The hull was abandoned (crew wiped) and claimed with the helm's Claim button, no key.
+/obj/structure/overmap/ship/npc/claim_abandoned_ship(mob/living/claimer, form_new = null)
+	var/was_pirate = tutorial_is_pirate_ship(src)
+	. = ..()
+	if(. && was_pirate && claimer)
+		tutorial_credit(claimer, TUTORIAL_STEP_PIRATES_CLAIM)
+
+/// Credits whoever picked up a pirate's hail.
+/obj/machinery/holopad/answer_hail(obj/structure/overmap/ship/npc/pirate/pirate, mob/user)
+	. = ..()
+	if(. && user)
+		tutorial_credit(user, TUTORIAL_STEP_PIRATES_HAIL)
+
+/// A pirate bounty paid out to a crew (the mission board turn-in).
+/datum/pirate_bounty/complete(obj/structure/overmap/ship/winner, obj/machinery/mission_pad/pad)
+	var/was_settled = completed || failed
+	. = ..()
+	if(!was_settled && completed && !QDELETED(winner) && !istype(winner, /obj/structure/overmap/ship/npc))
+		tutorial_credit_crew(winner, TUTORIAL_STEP_PIRATES_BOUNTY)
+
+// ---------------------------------------------------------------------------
+// Live state for the Hunting pirates steps.
+// ---------------------------------------------------------------------------
+
+/// Tiles on the overmap a boardable pirate can be from the crew's ship.
+#define TUTORIAL_BOARD_RANGE 2
+/// Matches TUTORIAL_HIGHLIGHT_VIEW_RANGE in tutorial_highlights.dm.
+#define TUTORIAL_KEY_CARRIER_RANGE 9
+
+/// The controller of the pirate currently engaging this ship, or null.
+/proc/tutorial_engaging_pirate_controller(obj/structure/overmap/ship/ship)
+	if(QDELETED(ship))
+		return null
+	var/obj/structure/overmap/ship/npc/pirate = ship.engaging_pirate_ref?.resolve()
+	if(QDELETED(pirate))
+		return null
+	var/datum/ai_controller/npc_ship/controller = pirate.ai_controller
+	return istype(controller) ? controller : null
+
+/// The ZONE_* type of the space a ship is in, or null when unknown.
+/proc/tutorial_ship_zone_type(obj/structure/overmap/ship/ship)
+	if(QDELETED(ship))
+		return null
+	var/turf/ship_turf = get_turf(ship)
+	return ship_turf ? SSovermap_zones.get_zone_type(ship_turf) : null
+
+/// A pirate ship near this one that a helm Dock would board: one our interdictor holds, or
+/// a disabled one. Null if none.
+/proc/tutorial_boardable_pirate(obj/structure/overmap/ship/ship)
+	if(QDELETED(ship))
+		return null
+	var/obj/structure/overmap/ship/npc/held = tutorial_interdicted_ship(ship)
+	if(tutorial_is_pirate_ship(held))
+		return held
+	var/turf/ship_turf = get_turf(ship)
+	if(!ship_turf)
+		return null
+	for(var/obj/structure/overmap/ship/npc/pirate in range(TUTORIAL_BOARD_RANGE, ship_turf))
+		if(pirate.is_disabled && tutorial_is_pirate_ship(pirate))
+			return pirate
+	return null
+
+/// Downed or cuffed NPCs in view of the viewer with a ship key in a pocket.
+/proc/tutorial_key_carriers(mob/user)
+	. = list()
+	if(!user)
+		return
+	for(var/mob/living/holder in view(TUTORIAL_KEY_CARRIER_RANGE, user))
+		if(holder == user || holder.ckey)
+			continue
+		if(holder.stat == CONSCIOUS && !HAS_TRAIT(holder, TRAIT_RESTRAINED))
+			continue
+		if(locate(/obj/item/ship_key) in holder.contents)
+			. += holder
+
+#undef TUTORIAL_BOARD_RANGE
+#undef TUTORIAL_KEY_CARRIER_RANGE

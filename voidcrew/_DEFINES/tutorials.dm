@@ -129,10 +129,12 @@
 #define TUTORIAL_STEP_COMBAT_FORCE_DOCK "vc/combat/force_dock"
 
 // Hunting pirates
+#define TUTORIAL_STEP_PIRATES_HAIL "vc/pirates/hail"
 #define TUTORIAL_STEP_PIRATES_BOARDERS "vc/pirates/boarders"
 #define TUTORIAL_STEP_PIRATES_COMMANDER "vc/pirates/commander"
 #define TUTORIAL_STEP_PIRATES_BOARD "vc/pirates/board"
 #define TUTORIAL_STEP_PIRATES_SHOOT "vc/pirates/shoot"
+#define TUTORIAL_STEP_PIRATES_BOUNTY "vc/pirates/bounty"
 #define TUTORIAL_STEP_PIRATES_CLAIM "vc/pirates/claim"
 
 /// Prefix shared by every Voidcrew tutorial key in `tutorial_completions`.

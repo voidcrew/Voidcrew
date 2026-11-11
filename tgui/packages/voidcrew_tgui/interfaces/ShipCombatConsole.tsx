@@ -20,6 +20,7 @@ import { type BooleanLike } from 'tgui-core/react';
 
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
+import { TutorialFocus } from '../components/TutorialFocus';
 import { Window } from '../layouts';
 
 // ---------------------------------------------------------------- geometry
@@ -230,6 +231,8 @@ type Data = {
   cloak_active: BooleanLike;
   attack_mode: BooleanLike;
   is_in_attack_mode: BooleanLike;
+  /** The tutorial checklist's focus key for this window (TutorialFocus), or null. */
+  tutorial_focus?: string | null;
   target_name: string | null;
   target_ref: string | null;
   // Targeting lock-in-progress data
@@ -1621,6 +1624,11 @@ const ApproachCluster = () => {
 
 const TABS = ['Contacts', 'Exploits', 'Defense', 'Systems'] as const;
 type Tab = (typeof TABS)[number];
+/** Tutorial focus key each drawer tab answers to. */
+const TAB_FOCUS: Partial<Record<Tab, string>> = {
+  Contacts: 'wpn_contact',
+  Exploits: 'wpn_hack',
+};
 
 const Drawer = () => {
   const { data } = useBackend<Data>();
@@ -1637,23 +1645,24 @@ const Drawer = () => {
     <div className="Tac__drawerWrap">
       <div className="Tac__tabs">
         {TABS.map((name) => (
-          <button
-            key={name}
-            type="button"
-            className={`Tac__tab ${tab === name ? 'Tac--on' : ''}`}
-            onClick={() => setTab(name)}
-          >
-            {name}
-            {name === 'Contacts' && contacts > 0 && (
-              <span className="Tac__badge">{contacts}</span>
-            )}
-            {name === 'Exploits' && readyChips > 0 && (
-              <span className="Tac__badge">{readyChips}</span>
-            )}
-            {name === 'Defense' && threats > 0 && (
-              <span className="Tac__badge Tac__badge--red">{threats}</span>
-            )}
-          </button>
+          <TutorialFocus key={name} id={TAB_FOCUS[name] ?? ''}>
+            <button
+              type="button"
+              className={`Tac__tab ${tab === name ? 'Tac--on' : ''}`}
+              onClick={() => setTab(name)}
+            >
+              {name}
+              {name === 'Contacts' && contacts > 0 && (
+                <span className="Tac__badge">{contacts}</span>
+              )}
+              {name === 'Exploits' && readyChips > 0 && (
+                <span className="Tac__badge">{readyChips}</span>
+              )}
+              {name === 'Defense' && threats > 0 && (
+                <span className="Tac__badge Tac__badge--red">{threats}</span>
+              )}
+            </button>
+          </TutorialFocus>
         ))}
       </div>
       <div className="Tac__drawerBody">
@@ -1797,46 +1806,50 @@ const ContactsTab = () => {
         others.map((ship) => {
           const targetable = !!ship.same_zone;
           return (
-            <div
+            <TutorialFocus
               key={ship.ref}
-              className={`Tac__row ${targetable ? '' : 'Tac--dead'}`}
-              title={
-                targetable
-                  ? `Acquire a lock on ${ship.name}`
-                  : zoneBlockReason(ship, zone_type, zone_name)
-              }
-              onClick={() => {
-                if (targetable) act('select_target', { ref: ship.ref });
-              }}
+              id={targetable ? 'wpn_contact' : ''}
             >
-              <span className="Tac__rowGlyph">
-                <svg viewBox="-8 -8 16 16" aria-hidden="true">
-                  <path
-                    d="M0,-6 L5,5 L0,2 L-5,5 Z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  />
-                </svg>
-              </span>
-              <span className="Tac__rowName">{ship.name}</span>
-              <span className="Tac__rowDist">
-                {ship.distance} {bearingOf(ship.dx, ship.dy)}
-              </span>
-              <span className="Tac__rowMeta">
-                {ship.identified ? (
-                  <>
-                    shd {Math.round(ship.shields)}/{ship.shields_max} · hull{' '}
-                    {Math.round(ship.integrity)}%
-                  </>
-                ) : (
-                  'no signature'
-                )}
-                {!targetable && (
-                  <span className="Tac__rowZone"> [{ship.zone_name}]</span>
-                )}
-              </span>
-            </div>
+              <div
+                className={`Tac__row ${targetable ? '' : 'Tac--dead'}`}
+                title={
+                  targetable
+                    ? `Acquire a lock on ${ship.name}`
+                    : zoneBlockReason(ship, zone_type, zone_name)
+                }
+                onClick={() => {
+                  if (targetable) act('select_target', { ref: ship.ref });
+                }}
+              >
+                <span className="Tac__rowGlyph">
+                  <svg viewBox="-8 -8 16 16" aria-hidden="true">
+                    <path
+                      d="M0,-6 L5,5 L0,2 L-5,5 Z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    />
+                  </svg>
+                </span>
+                <span className="Tac__rowName">{ship.name}</span>
+                <span className="Tac__rowDist">
+                  {ship.distance} {bearingOf(ship.dx, ship.dy)}
+                </span>
+                <span className="Tac__rowMeta">
+                  {ship.identified ? (
+                    <>
+                      shd {Math.round(ship.shields)}/{ship.shields_max} · hull{' '}
+                      {Math.round(ship.integrity)}%
+                    </>
+                  ) : (
+                    'no signature'
+                  )}
+                  {!targetable && (
+                    <span className="Tac__rowZone"> [{ship.zone_name}]</span>
+                  )}
+                </span>
+              </div>
+            </TutorialFocus>
           );
         })
       )}
@@ -1988,6 +2001,9 @@ const ExploitsTab = () => {
   );
 };
 
+/** Tutorial focus keys a runnable cartridge's run buttons answer to. */
+const EXEC_FOCUS = ['wpn_hack', 'wpn_execute'];
+
 const EwChipRow = (props: { chip: EwChip }) => {
   const { chip } = props;
   const { act, data } = useBackend<Data>();
@@ -2058,27 +2074,30 @@ const EwChipRow = (props: { chip: EwChip }) => {
       <div className="Tac__ewExec">
         {chip.modes && chip.modes.length > 0 ? (
           chip.modes.map((mode) => (
+            <TutorialFocus key={mode} id={canExecute ? EXEC_FOCUS : ''}>
+              <button
+                type="button"
+                className="Tac__btn Tac__execBtn"
+                disabled={!canExecute}
+                title={blockReason || chip.desc}
+                onClick={() => act('ew_execute', { chip_ref: chip.ref, mode })}
+              >
+                {formatModeLabel(mode)}
+              </button>
+            </TutorialFocus>
+          ))
+        ) : (
+          <TutorialFocus id={canExecute ? EXEC_FOCUS : ''}>
             <button
-              key={mode}
               type="button"
               className="Tac__btn Tac__execBtn"
               disabled={!canExecute}
               title={blockReason || chip.desc}
-              onClick={() => act('ew_execute', { chip_ref: chip.ref, mode })}
+              onClick={() => act('ew_execute', { chip_ref: chip.ref })}
             >
-              {formatModeLabel(mode)}
+              {spent ? 'Spent' : 'Execute'}
             </button>
-          ))
-        ) : (
-          <button
-            type="button"
-            className="Tac__btn Tac__execBtn"
-            disabled={!canExecute}
-            title={blockReason || chip.desc}
-            onClick={() => act('ew_execute', { chip_ref: chip.ref })}
-          >
-            {spent ? 'Spent' : 'Execute'}
-          </button>
+          </TutorialFocus>
         )}
       </div>
     </div>
@@ -2533,24 +2552,28 @@ const TubesPanel = () => {
         </span>
       </div>
       <div className="Tac__fireRow">
-        <button
-          type="button"
-          className="Tac__fireKey"
-          disabled={!armed || launchers.length === 0}
-          title={blockReason ?? 'Fire one tube at the locked target'}
-          onClick={() => act('fire_missile')}
-        >
-          Fire
-        </button>
-        <button
-          type="button"
-          className="Tac__fireKey"
-          disabled={!armed || launchers.length === 0}
-          title={blockReason ?? 'Empty every ready tube at once'}
-          onClick={() => act('fire_all')}
-        >
-          Salvo
-        </button>
+        <TutorialFocus id="wpn_fire">
+          <button
+            type="button"
+            className="Tac__fireKey"
+            disabled={!armed || launchers.length === 0}
+            title={blockReason ?? 'Fire one tube at the locked target'}
+            onClick={() => act('fire_missile')}
+          >
+            Fire
+          </button>
+        </TutorialFocus>
+        <TutorialFocus id="wpn_fire">
+          <button
+            type="button"
+            className="Tac__fireKey"
+            disabled={!armed || launchers.length === 0}
+            title={blockReason ?? 'Empty every ready tube at once'}
+            onClick={() => act('fire_all')}
+          >
+            Salvo
+          </button>
+        </TutorialFocus>
         {pod_tubes.length > 0 && (
           <button
             type="button"
@@ -2787,19 +2810,21 @@ const InterdictPanel = () => {
         <span className="Tac__k">Draw</span>
         <span className="Tac__v">{interdictor_power_draw || 0}W</span>
       </div>
-      <button
-        type="button"
-        className="Tac__fireKey"
-        style={{ marginTop: 'auto' }}
-        disabled={!!reason}
-        title={
-          reason ??
-          'Project a field that pins the target’s engines while it holds'
-        }
-        onClick={() => act('start_interdict')}
-      >
-        Engage field
-      </button>
+      <TutorialFocus id="wpn_interdict">
+        <button
+          type="button"
+          className="Tac__fireKey"
+          style={{ marginTop: 'auto' }}
+          disabled={!!reason}
+          title={
+            reason ??
+            'Project a field that pins the target’s engines while it holds'
+          }
+          onClick={() => act('start_interdict')}
+        >
+          Engage field
+        </button>
+      </TutorialFocus>
       {!!reason && <div className="Tac__reason">{reason}</div>}
     </div>
   );
@@ -2815,10 +2840,15 @@ const OpsButton = (props: {
   state?: 'armed' | 'active';
   title: string;
   onClick: () => void;
+  className?: string;
 }) => (
   <button
     type="button"
-    className={`Tac__opBtn ${props.state ? `Tac--${props.state}` : ''}`}
+    className={[
+      'Tac__opBtn',
+      props.state ? `Tac--${props.state}` : '',
+      props.className ?? '',
+    ].join(' ')}
     disabled={props.disabled}
     title={props.title}
     onClick={props.onClick}
@@ -2855,33 +2885,35 @@ const OpsPanel = () => {
 
   return (
     <div className="Tac__ops">
-      <OpsButton
-        label={is_in_attack_mode ? 'Exit' : 'Engage'}
-        sub={
-          is_in_attack_mode
-            ? 'targeting live'
-            : target_ref && !target_in_missile_range
-              ? 'out of range'
-              : 'camera'
-        }
-        path="M12 3v4M12 17v4M3 12h4M17 12h4M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-        // The server refuses the camera beyond missile-lock range, so a live
-        // key out there would only ever bounce off a chat warning.
-        disabled={
-          !is_in_attack_mode && (!target_ref || !target_in_missile_range)
-        }
-        state={is_in_attack_mode ? 'active' : undefined}
-        title={
-          is_in_attack_mode
-            ? 'Drop out of the targeting camera'
-            : !target_ref
-              ? 'Select a target on the scope first'
-              : !target_in_missile_range
-                ? `Close to within ${LOCK_RANGE_TILES} tiles for a missile lock`
-                : 'Enter the targeting camera and arm the fire keys'
-        }
-        onClick={() => act(is_in_attack_mode ? 'deactivate' : 'activate')}
-      />
+      <TutorialFocus id="wpn_engage">
+        <OpsButton
+          label={is_in_attack_mode ? 'Exit' : 'Engage'}
+          sub={
+            is_in_attack_mode
+              ? 'targeting live'
+              : target_ref && !target_in_missile_range
+                ? 'out of range'
+                : 'camera'
+          }
+          path="M12 3v4M12 17v4M3 12h4M17 12h4M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          // The server refuses the camera beyond missile-lock range, so a live
+          // key out there would only ever bounce off a chat warning.
+          disabled={
+            !is_in_attack_mode && (!target_ref || !target_in_missile_range)
+          }
+          state={is_in_attack_mode ? 'active' : undefined}
+          title={
+            is_in_attack_mode
+              ? 'Drop out of the targeting camera'
+              : !target_ref
+                ? 'Select a target on the scope first'
+                : !target_in_missile_range
+                  ? `Close to within ${LOCK_RANGE_TILES} tiles for a missile lock`
+                  : 'Enter the targeting camera and arm the fire keys'
+          }
+          onClick={() => act(is_in_attack_mode ? 'deactivate' : 'activate')}
+        />
+      </TutorialFocus>
       <OpsButton
         label="Release"
         sub={target_name ?? 'no lock'}
