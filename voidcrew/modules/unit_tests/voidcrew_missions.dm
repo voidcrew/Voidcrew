@@ -481,13 +481,35 @@
 	repeated.voucher_count = initial(rescue_type.voucher_count)
 	var/datum/mission_objective/field/escort/repeated_escort = new
 	repeated.add_objective(repeated_escort)
-	repeated_escort.survivor = allocate(/mob/living/carbon/human/npc/mission_survivor, pad_turf)
+	repeated_escort.survivor = allocate(/mob/living/carbon/human/npc/ambient_npc/mission_survivor, pad_turf)
 	repeated_escort.on_turn_in_finalized(pad)
 	TEST_ASSERT_EQUAL(repeated.value, 1250, "A healthy survivor must add 25% to credits")
 	TEST_ASSERT_NULL(repeated_escort.survivor, "Finalization must clear the survivor reference")
 	repeated_escort.on_turn_in_finalized(pad)
 	TEST_ASSERT_EQUAL(repeated.value, 1250, "Repeated finalization must not stack the bonus")
 	TEST_ASSERT_EQUAL(repeated.voucher_count, initial(rescue_type.voucher_count), "Repeated finalization must not change vouchers")
+
+/**
+ * A survivor the contract lets go of in front of someone is taken up in the transporter's beam:
+ * held still for the length of it, with the column on their tile, rather than
+ * blinking out. With nobody about they are simply deleted (the delivery test above relies on it).
+ */
+/datum/unit_test/voidcrew_mission_survivor_beam/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/watched = allocate(/mob/living/carbon/human/npc/ambient_npc/mission_survivor, spot)
+	watched.beam_out(force_visual = TRUE)
+	TEST_ASSERT(!QDELETED(watched), "A watched survivor must stay for the beam, not vanish on the spot")
+	TEST_ASSERT(watched.beaming_out, "A watched survivor must be marked as leaving")
+	TEST_ASSERT(!HAS_TRAIT(watched, TRAIT_GODMODE), "A survivor in the beam is still a person: no godmode")
+	TEST_ASSERT(HAS_TRAIT(watched, TRAIT_IMMOBILIZED), "A survivor in the beam must not walk out of it")
+	TEST_ASSERT(watched.anchored, "A survivor in the beam must not be pulled out of it")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/transporter_beam) in spot, "A watched survivor must get the beam column on their tile")
+	watched.talked_to(allocate(/mob/living/carbon/human/consistent, get_step(spot, NORTH)))
+	TEST_ASSERT(!watched.is_following(), "A survivor in the beam must not start following anyone")
+
+	var/mob/living/carbon/human/npc/ambient_npc/mission_survivor/unseen = allocate(/mob/living/carbon/human/npc/ambient_npc/mission_survivor, get_step(spot, EAST))
+	unseen.beam_out()
+	TEST_ASSERT(QDELETED(unseen), "A survivor nobody can see must be deleted at once")
 
 /**
  * A contract that marks itself exclusive_site must get a wreck to itself.
@@ -619,7 +641,7 @@
 /datum/unit_test/voidcrew_mission_kill_rewind
 	abstract_type = /datum/unit_test/voidcrew_mission_kill_rewind
 
-/datum/unit_test/voidcrew_mission_kill_rewind/proc/make_hunt(big_game = FALSE)
+/datum/unit_test/voidcrew_mission_kill_rewind/proc/make_hunt(big_game = FALSE, wait_for_beast = FALSE)
 	var/datum/mission/kill_rewind_test/mission = allocate(__IMPLIED_TYPE__)
 	mission.servant = allocate(/obj/structure/overmap/ship)
 	mission.servant.ship_account = allocate(/datum/bank_account)
@@ -652,8 +674,13 @@
 	mission.activate_current_objective()
 	if(lure)
 		lure.on_planted(null, target.spawn_turf)
-		// The single-turf fixture stands in for the whole hunting ground.
-		hunt.target_mob.forceMove(target.spawn_turf)
+		if(!wait_for_beast)
+			// In play the beast comes in after a wait and a walk; the fixture skips both.
+			var/datum/mission_objective/field/kill_named/big_game/trophy_hunt = hunt
+			trophy_hunt.cancel_arrival()
+			trophy_hunt.spawn_field_objects(target.spawn_turf)
+			// The single-turf fixture stands in for the whole hunting ground.
+			hunt.target_mob.forceMove(target.spawn_turf)
 	return mission
 
 /datum/unit_test/voidcrew_mission_kill_rewind/proc/test_mobs()
@@ -745,6 +772,22 @@
 	TEST_ASSERT(!mission.failed && mission.completed, "Proof consumption must finish rather than void the mission")
 	TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, null, TRUE), "Repeated forced turn-in must still honor mission completion")
 	TEST_ASSERT_EQUAL(mission.reward_calls, 1, "Repeated turn-in must not distribute rewards twice")
+
+/// The beast is called in with a wait, not conjured beside the staked lure.
+/datum/unit_test/voidcrew_mission_kill_rewind/lure_wait/Run()
+	var/datum/mission/kill_rewind_test/mission = make_hunt(TRUE, wait_for_beast = TRUE)
+	var/datum/mission_objective/field/kill_named/big_game/hunt = mission.current_objective()
+	TEST_ASSERT_NULL(hunt.target_mob, "The beast must not appear in the tick the lure goes in")
+	TEST_ASSERT_EQUAL(length(test_mobs()), 0, "Neither the beast nor its guards may appear in the tick the lure goes in")
+	TEST_ASSERT(hunt.arrival_pending && hunt.arrival_timer, "The staked lure must call the beast in with a wait")
+	var/obj/structure/hunting_lure_stake/stake = hunt.lure_stake_ref?.resolve()
+	TEST_ASSERT_NOTNULL(stake, "The staked lure must stay in the world")
+	TEST_ASSERT(stake.anchored, "The staked lure must be anchored")
+	TEST_ASSERT_NULL(mission.quest_atom, "The staked lure is scenery, not the tracked quest atom")
+	hunt.deactivate()
+	TEST_ASSERT_NULL(hunt.arrival_timer, "A contract that ends during the wait must cancel the arrival")
+	TEST_ASSERT(stake.toppled, "A contract that ends must leave the lure down")
+	TEST_ASSERT_EQUAL(length(test_mobs()), 0, "A cancelled arrival must not spawn anything")
 
 /// Carried proof stays valid while the crew revisits an emptied site.
 /datum/unit_test/voidcrew_mission_kill_rewind/carried/Run()
