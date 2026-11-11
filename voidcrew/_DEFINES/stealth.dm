@@ -140,6 +140,15 @@
 /// A guard that isn't the one opening it stands this close and covers it
 #define STEALTH_CLOSET_COVER_RANGE 3
 
+// Doors seen moving (decision 37, stealth_doors.dm)
+/// A door one of the group opened: its next close this soon after is theirs too (an airlock shuts itself after 6 s)
+#define STEALTH_DOOR_GUARD_MEMORY (20 SECONDS)
+/// After a door sent someone to look, it only gets glances for this long
+#define STEALTH_DOOR_CUE_COOLDOWN (30 SECONDS)
+/// A door that sent someone to look STEALTH_DOOR_CUE_MAX times within this long is ignored for the rest of it
+#define STEALTH_DOOR_CUE_MEMORY (3 MINUTES)
+#define STEALTH_DOOR_CUE_MAX 2
+
 // The mark over a guard's head (stealth_meter.dm, owner decision 27)
 /// Pixel rows in the "?" and "!" glyphs: fill and drain steps
 #define STEALTH_METER_ROWS 7

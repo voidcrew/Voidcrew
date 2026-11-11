@@ -62,7 +62,7 @@
 	if(QDELETED(guard) || isnull(controller))
 		return
 	var/state = controller.stealth_state()
-	var/new_public = stealth_meter_public_state(state, world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until)
+	var/new_public = stealth_meter_public_state(state, world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until, controller.stealth_skill().search_time)
 	set_public(new_public)
 	// Alert and searching own the mark even once it has drained: no private "?" in the moment before the scan
 	// sends it back to unaware (and clears its notice).
@@ -183,7 +183,7 @@
 	if(drain_timer)
 		deltimer(drain_timer)
 		drain_timer = null
-	var/delay = stealth_meter_next_step(controller.stealth_state(), world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until)
+	var/delay = stealth_meter_next_step(controller.stealth_state(), world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until, controller.stealth_skill().search_time)
 	if(delay > 0)
 		drain_timer = addtimer(CALLBACK(src, PROC_REF(on_drain_step)), delay, TIMER_STOPPABLE)
 
@@ -271,35 +271,35 @@
 	return clamp(CEILING(time_left / total * STEALTH_METER_ROWS - 0.001, 1), 0, STEALTH_METER_ROWS)
 
 /// When a public drain ends and how long it lasts, as list(end, total), or null when nothing drains.
-/proc/stealth_meter_drain_span(state, lost_since, state_since, calm_until)
+/proc/stealth_meter_drain_span(state, lost_since, state_since, calm_until, search_time = STEALTH_SEARCH_TIME)
 	switch(state)
 		if(STEALTH_ALERT)
 			if(lost_since)
 				return list(lost_since + STEALTH_LOSE_TARGET_TIME, STEALTH_LOSE_TARGET_TIME)
 		if(STEALTH_SEARCHING)
-			var/end = calm_until || (state_since + STEALTH_SEARCH_TIME)
+			var/end = calm_until || (state_since + search_time)
 			return list(end, end - state_since)
 	return null
 
 /// The public mark for a guard's state, or null for none.
-/proc/stealth_meter_public_state(state, now, lost_since, state_since, calm_until)
+/proc/stealth_meter_public_state(state, now, lost_since, state_since, calm_until, search_time = STEALTH_SEARCH_TIME)
 	switch(state)
 		if(STEALTH_ALERT)
 			if(!lost_since)
 				return "ex_r[STEALTH_METER_ROWS]"
-			var/list/span = stealth_meter_drain_span(state, lost_since, state_since, calm_until)
+			var/list/span = stealth_meter_drain_span(state, lost_since, state_since, calm_until, search_time)
 			var/rows = stealth_meter_drain_rows(span[1] - now, span[2])
 			// Drained: the full searching "?" it is about to become.
 			return rows ? "ex_r[rows]" : "q_y[STEALTH_METER_ROWS]"
 		if(STEALTH_SEARCHING)
-			var/list/span = stealth_meter_drain_span(state, lost_since, state_since, calm_until)
+			var/list/span = stealth_meter_drain_span(state, lost_since, state_since, calm_until, search_time)
 			var/rows = stealth_meter_drain_rows(span[1] - now, span[2])
 			return rows ? "q_y[rows]" : null
 	return null
 
 /// Deciseconds until a draining public mark loses its next row, or 0 when nothing drains.
-/proc/stealth_meter_next_step(state, now, lost_since, state_since, calm_until)
-	var/list/span = stealth_meter_drain_span(state, lost_since, state_since, calm_until)
+/proc/stealth_meter_next_step(state, now, lost_since, state_since, calm_until, search_time = STEALTH_SEARCH_TIME)
+	var/list/span = stealth_meter_drain_span(state, lost_since, state_since, calm_until, search_time)
 	if(isnull(span) || span[2] <= 0)
 		return 0
 	var/time_left = span[1] - now

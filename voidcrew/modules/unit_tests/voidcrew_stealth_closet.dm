@@ -24,7 +24,9 @@
 	person.forceMove(locker)
 	stealth_ai.stealth_go_alert(person)
 	TEST_ASSERT_EQUAL(stealth_ai.shut_in, locker, "A guard didn't claim the locker the second time")
-	qdel(locker)
+	// Broken up: tg tips out whoever is inside, then deletes it (a bare qdel would delete them too).
+	locker.deconstruct(FALSE)
+	TEST_ASSERT(QDELETED(locker), "The locker wasn't deleted")
 	TEST_ASSERT_NULL(stealth_ai.shut_in, "A guard kept a deleted locker")
 	// A new one, and the guard calms down.
 	var/obj/structure/closet/second = allocate(/obj/structure/closet, stealth_at(block, 4, 1))
@@ -91,7 +93,8 @@
 	TEST_ASSERT_EQUAL(locker.get_integrity(), start_integrity, "A guard hit a locker it never saw anyone get into")
 	TEST_ASSERT_NULL(stealth_ai.shut_in, "A searching guard claimed a locker")
 
-/// Real AI: a gunner that saw someone shut in a locker that is then locked shoots it open from beside it, not from range.
+/// Real AI: a gunner that saw someone shut in a locker that is then locked tries it, steps back two tiles and shoots it
+/// open (tg never fires at a thing beside you), never from range.
 /datum/unit_test/voidcrew_stealth_live/closet_locked
 
 /datum/unit_test/voidcrew_stealth_live/closet_locked/Run()
@@ -120,7 +123,7 @@
 		sleep(1)
 	TEST_ASSERT(locker.opened, "A gunner never broke open a locked locker it saw someone get into (claim: [stealth_ai.shut_in ? "yes" : "no"], integrity [locker.get_integrity()]/[start_integrity])")
 	TEST_ASSERT_NOTNULL(first_hit_dist, "The locked locker opened without being hit")
-	TEST_ASSERT(first_hit_dist <= 1, "A gunner shot a locker from [first_hit_dist] tiles away")
+	TEST_ASSERT(first_hit_dist <= 2, "A gunner shot a locker from [first_hit_dist] tiles away")
 	TEST_ASSERT(isturf(person.loc), "The person is still shut in after the locker broke")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The gunner isn't after whoever was in the locker")
 

@@ -201,6 +201,8 @@
 	var/list/was = heard_map
 	var/list/now = list()
 	var/list/notice = notice_map
+	var/datum/stealth_skill/profile = stealth_skill()
+	var/hearing_mult = profile.hearing_mult
 	for(var/mob/living/walker as anything in stealth_candidates(guard, STEALTH_FOOTSTEP_MAX_RANGE))
 		var/key = REF(walker)
 		var/turf/where = get_turf(walker)
@@ -208,7 +210,8 @@
 		var/turf/stood = was?[key]
 		if(isnull(stood) || stood == where)
 			continue
-		var/reach = stealth_footstep_reach(walker)
+		// A sharper or duller ear than the yellow tuning (decision 38), never past the furthest step listened for.
+		var/reach = min(round(stealth_footstep_reach(walker) * hearing_mult, 1), STEALTH_FOOTSTEP_MAX_RANGE)
 		if(!reach || get_dist(here, where) > reach || stealth_muffled_dist(where, here) > reach)
 			continue
 		LAZYSET(heard_now, key, TRUE)
@@ -224,7 +227,7 @@
 			entry = list(0, where, 0)
 			notice[key] = entry
 		if(entry[STEALTH_ENTRY_NOTICE] < STEALTH_SUSPICIOUS_AT)
-			var/gained = get_dist(here, where) <= STEALTH_CLOSE_RANGE ? STEALTH_SUSPICIOUS_AT : entry[STEALTH_ENTRY_NOTICE] + STEALTH_FOOTSTEP_NOTICE
+			var/gained = get_dist(here, where) <= profile.close_range ? STEALTH_SUSPICIOUS_AT : entry[STEALTH_ENTRY_NOTICE] + STEALTH_FOOTSTEP_NOTICE
 			entry[STEALTH_ENTRY_NOTICE] = min(gained, STEALTH_SUSPICIOUS_AT)
 		entry[STEALTH_ENTRY_SEEN_AT] = world.time
 		if(blackboard[BB_STEALTH_WARY])

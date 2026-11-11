@@ -16,6 +16,8 @@
 #define STEALTH_NOISE_VOICE "voice"
 #define STEALTH_NOISE_SCREAM "scream"
 #define STEALTH_NOISE_SHOUT "shout"
+/// A step on broken glass or a dropped bulb (decision 37)
+#define STEALTH_NOISE_CRUNCH "crunch"
 
 /// Every kind, for the admin verb and the tests
 #define STEALTH_NOISE_KINDS list(\
@@ -34,6 +36,7 @@
 	STEALTH_NOISE_VOICE,\
 	STEALTH_NOISE_SCREAM,\
 	STEALTH_NOISE_SHOUT,\
+	STEALTH_NOISE_CRUNCH,\
 )
 
 // ===== What a guard does about a noise =====
@@ -105,6 +108,10 @@
 #define STEALTH_NOISE_RANGE_VOICE 5
 #define STEALTH_NOISE_RANGE_SCREAM 9
 #define STEALTH_NOISE_RANGE_SHOUT 9
+/// A step on glass (tg plays it at 50: a player hears it 12 tiles off)
+#define STEALTH_NOISE_RANGE_CRUNCH 4
+/// The same with TRAIT_LIGHT_STEP (tg plays it at 30: 9 tiles)
+#define STEALTH_NOISE_RANGE_CRUNCH_LIGHT 2
 /// Tiles of reach a wall eats
 #define STEALTH_MUFFLE_WALL 3
 /// Tiles of reach a closed solid door eats

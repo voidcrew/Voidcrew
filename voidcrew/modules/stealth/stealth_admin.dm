@@ -34,8 +34,8 @@
 	var/state_text = stealth_ai.calm_until ? "[stealth_ai.stealth_state()] (calming)" : stealth_ai.stealth_state()
 	var/wary_text = "calm"
 	if(stealth_ai.blackboard[BB_STEALTH_WARY])
-		wary_text = "wary [max(0, round((STEALTH_WARY_TIME - (world.time - stealth_ai.wary_at)) / (1 SECONDS)))]s"
-	return "[guard.real_name] [REF(guard)] | [stealth_ai.group?.id || "no group"] | [state_text] [since]s | focus [focus_text] | [wary_text] | [route_text] | AI [status_text] | [stealth_guard_hearing_summary(guard, stealth_ai)]"
+		wary_text = "wary [max(0, round((stealth_ai.stealth_skill().wary_time - (world.time - stealth_ai.wary_at)) / (1 SECONDS)))]s"
+	return "[guard.real_name] [REF(guard)] | [stealth_ai.group?.id || "no group"] | [stealth_ai.stealth_skill().name][stealth_ai.skill_forced ? " (set)" : ""] | [state_text] [since]s | focus [focus_text] | [wary_text] | [route_text] | AI [status_text] | [stealth_guard_hearing_summary(guard, stealth_ai)]"
 
 ADMIN_VERB(stealth_guards, R_DEBUG, "Stealth Guards", "View and force the awareness of stealth guards on your z-level.", ADMIN_CATEGORY_DEBUG)
 	var/turf/here = get_turf(user.mob)
@@ -74,7 +74,7 @@ ADMIN_VERB(stealth_guards, R_DEBUG, "Stealth Guards", "View and force the awaren
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard.ai_controller
 	if(QDELETED(guard) || !istype(stealth_ai))
 		return
-	var/list/actions = list("Force Unaware", "Force Suspicious at my turf", "Force Alert on me", "Force Alert on a mob I pick", "Force Searching at my turf", "Toggle Wary", "Show its sight", "Jump to it", "Next stop", "Hear a noise here", "Start radio call (alarm at my turf)")
+	var/list/actions = list("Force Unaware", "Force Suspicious at my turf", "Force Alert on me", "Force Alert on a mob I pick", "Force Searching at my turf", "Toggle Wary", "Show its sight", "Jump to it", "Next stop", "Hear a noise here", "Start radio call (alarm at my turf)", "Set skill")
 	var/action = tgui_input_list(user, stealth_guard_summary(guard), "Stealth Guard", actions)
 	if(isnull(action) || QDELETED(guard))
 		return
@@ -123,6 +123,13 @@ ADMIN_VERB(stealth_guards, R_DEBUG, "Stealth Guards", "View and force the awaren
 			if(!stealth_ai.stealth_start_call(STEALTH_CALL_ALARM, here))
 				to_chat(user, span_warning("It carries no radio."), confidential = TRUE)
 				return
+		if("Set skill")
+			var/list/skills = list("Green" = /datum/stealth_skill/green, "Yellow" = /datum/stealth_skill/yellow, "Red" = /datum/stealth_skill/red, "Back to its zone's (or mapper's)" = null)
+			var/picked = tgui_input_list(user, "Its skill is [stealth_ai.stealth_skill().name].", "Stealth Guard", skills)
+			if(isnull(picked) || QDELETED(guard))
+				return
+			stealth_ai.stealth_force_skill(skills[picked])
+			action = "Set skill to [stealth_ai.stealth_skill().name]"
 		if("Next stop")
 			var/next = stealth_ai.stealth_next_index()
 			if(next)
@@ -132,12 +139,22 @@ ADMIN_VERB(stealth_guards, R_DEBUG, "Stealth Guards", "View and force the awaren
 	stealth_admin_log(user, "[action] on [key_name(guard)]", guard)
 
 /proc/stealth_admin_group(client/user, datum/stealth_group/group)
-	var/list/actions = list("Calm all", "Clear wary", "Alert all on me", "Search all at my turf", "Show every route", "Radio alarm at my turf", "Show noise memory", "Forget noises")
+	var/list/actions = list("Calm all", "Clear wary", "Alert all on me", "Search all at my turf", "Show every route", "Radio alarm at my turf", "Show noise memory", "Forget noises", "Set skill of all")
 	var/action = tgui_input_list(user, "[group.id]: [length(group.living_members())] guards", "Stealth Group", actions)
 	if(isnull(action) || QDELETED(group))
 		return
 	var/turf/here = get_turf(user.mob)
-	if(action == "Show every route")
+	if(action == "Set skill of all")
+		var/list/skills = list("Green" = /datum/stealth_skill/green, "Yellow" = /datum/stealth_skill/yellow, "Red" = /datum/stealth_skill/red, "Back to their zone's (or mapper's)" = null)
+		var/picked = tgui_input_list(user, "Skill for every guard in [group.id]", "Stealth Group", skills)
+		if(isnull(picked) || QDELETED(group))
+			return
+		for(var/mob/living/guard as anything in group.living_members())
+			var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard.ai_controller
+			if(istype(stealth_ai))
+				stealth_ai.stealth_force_skill(skills[picked])
+		action = "Set skill of all to [picked]"
+	else if(action == "Show every route")
 		stealth_show_routes(user, group)
 	else if(action == "Radio alarm at my turf")
 		group.next_radio_alarm = 0
@@ -305,15 +322,16 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 	var/eyes = stealth_ai.stealth_eyes_open()
 	var/half_angle = stealth_ai.stealth_half_angle()
 	var/night = HAS_TRAIT(guard, TRAIT_NIGHT_VISION)
-	for(var/turf/tile as anything in RANGE_TURFS(STEALTH_SIGHT_RANGE, center))
+	var/datum/stealth_skill/profile = stealth_ai.stealth_skill()
+	for(var/turf/tile as anything in RANGE_TURFS(profile.sight_range, center))
 		var/dist = get_dist(center, tile)
 		var/colour
-		if(eyes && stealth_in_cone(guard, tile, half_angle) && can_see(center, tile, STEALTH_SIGHT_RANGE))
-			if(dist <= STEALTH_DARK_SIGHT_RANGE || night)
+		if(eyes && stealth_in_cone(guard, tile, half_angle) && can_see(center, tile, profile.sight_range))
+			if(dist <= profile.dark_sight_range || night)
 				colour = "#3399ff"
 			else
 				colour = "#33cc33"
-		if(dist <= STEALTH_CLOSE_RANGE)
+		if(dist <= profile.close_range)
 			colour = colour || "#ffcc00"
 		if(isnull(colour))
 			continue

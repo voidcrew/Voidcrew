@@ -238,6 +238,7 @@
 #include "voidcrew_stealth_closet.dm"
 #include "voidcrew_stealth_crits.dm"
 #include "voidcrew_stealth_d32.dm"
+#include "voidcrew_stealth_d37.dm"
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_light.dm"
 #include "voidcrew_survey_archive.dm"

@@ -221,6 +221,8 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	stealth_ready = TRUE
 	var/mob/living/guard = pawn
 	var/turf/spawn_turf = get_turf(guard)
+	// Its skill comes from where it starts (decision 38), settled now, before it walks anywhere.
+	stealth_skill()
 	home_turf = spawn_turf
 	sentry_dir = stealth_facing(guard)
 	stand_dir = sentry_dir

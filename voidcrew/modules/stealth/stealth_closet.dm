@@ -4,8 +4,9 @@
  * An alert guard, or a searching one that glimpses someone, that sees its target get into a locker, a crate, a
  * coffin, a body bag or a cardboard box (any /obj/structure/closet), or sees the door shut on them, remembers
  * that container. It walks up and opens it with tg's own open(). If it won't open (locked or welded), it hits it
- * with what it holds, through tg's click path: point-blank shots with a loaded gun, or its melee weapon when that
- * can dent it. A locker that breaks bursts open through tg's atom_break(). It gives up after
+ * with what it holds, through tg's click path: with a loaded gun it steps back to two tiles off and shoots it (tg
+ * never fires a gun at a thing beside you: that click is a gun-butt blow, which can't dent a secure locker), or
+ * it hits it with its melee weapon when that can dent it. A locker that breaks bursts open through tg's atom_break(). It gives up after
  * STEALTH_CLOSET_GIVE_UP_TIME and searches round it.
  *
  * Someone who gets in unseen is still hidden (decision 22): an alert guard whose target is in a container it
@@ -24,6 +25,8 @@
 	var/shut_in_at = 0
 	/// Alert: world.time it last saw its target on open ground
 	var/target_free_seen_at = 0
+	/// Its container wouldn't open for it (locked or welded): a gunner steps back to shoot it
+	var/closet_stuck = FALSE
 
 /// The locker, crate or box `who` is shut in (the outermost, if one is inside another), or null.
 /proc/stealth_closet_of(mob/living/who)
@@ -57,6 +60,7 @@
 	shut_in = null
 	shut_who = null
 	shut_in_at = 0
+	closet_stuck = FALSE
 
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_closet_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -100,7 +104,7 @@
 	var/turf/was = entry[STEALTH_ENTRY_TURF]
 	if(isnull(was) || get_dist(was, shell) > 2)
 		return FALSE
-	return can_see(pawn, shell, STEALTH_SIGHT_RANGE)
+	return can_see(pawn, shell, stealth_skill().sight_range)
 
 /// Just went alert on `target` (always first hand: sight, a touch, a hit). If they are in a container, that's the one.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_closet_alerted(atom/target)
@@ -191,11 +195,16 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_try_closet()
 	var/mob/living/carbon/human/guard = pawn
 	var/obj/structure/closet/box = shut_in
-	if(QDELETED(box) || !guard.Adjacent(box) || HAS_TRAIT(guard, TRAIT_HANDS_BLOCKED) || guard.incapacitated)
+	if(QDELETED(box) || HAS_TRAIT(guard, TRAIT_HANDS_BLOCKED) || guard.incapacitated)
+		return
+	var/obj/item/gun/gun = human_npc_loaded_gun(guard)
+	var/adjacent = guard.Adjacent(box)
+	// Stepped back to shoot it (stealth_closet_fire_spot()).
+	if(!adjacent && !(closet_stuck && gun && stealth_closet_in_fire_spot(box)))
 		return
 	var/mob/living/who = shut_who?.resolve()
 	guard.face_atom(box)
-	if(box.open(guard))
+	if(adjacent && box.open(guard))
 		stealth_drop_closet()
 		stealth_bark(STEALTH_BARK_CLOSET_OPEN)
 		if(isliving(who) && !QDELETED(who))
@@ -206,11 +215,11 @@
 			else
 				stealth_closet_alerted(who)
 		return
+	closet_stuck = TRUE
 	if(world.time < guard.next_move)
 		return
-	var/obj/item/gun/gun = human_npc_loaded_gun(guard)
 	if(gun)
-		if(world.time < blackboard[BB_HUMAN_NPC_NEXT_SHOT] || !human_npc_ready_item(guard, gun))
+		if(adjacent || world.time < blackboard[BB_HUMAN_NPC_NEXT_SHOT] || !human_npc_ready_item(guard, gun))
 			return
 		guard.zone_selected = BODY_ZONE_CHEST
 		ai_interact(target = box, combat_mode = TRUE)
@@ -222,6 +231,26 @@
 	human_npc_ready_item(guard, weapon)
 	human_npc_ready_weapon(guard, weapon)
 	ai_interact(target = box, combat_mode = TRUE)
+
+/// Whether it stands two tiles from `box` with a clear line to it: where it shoots a container that won't open.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_closet_in_fire_spot(obj/structure/closet/box)
+	var/mob/living/guard = pawn
+	return isturf(guard.loc) && get_dist(guard, box) == 2 && can_see(guard, box, 2)
+
+/// The nearest open tile two tiles from `box` with a clear line to it, or null.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_closet_fire_spot(obj/structure/closet/box)
+	var/mob/living/guard = pawn
+	var/turf/center = get_turf(box)
+	var/turf/best
+	var/best_dist = INFINITY
+	for(var/turf/open/spot in RANGE_TURFS(2, center))
+		if(get_dist(spot, center) != 2 || spot.is_blocked_turf(exclude_mobs = TRUE) || !can_see(spot, center, 2))
+			continue
+		var/dist = get_dist(guard, spot)
+		if(dist < best_dist)
+			best = spot
+			best_dist = dist
+	return best
 
 /**
  * Alert with its target in a container. One it saw them get into: the guard that saw first walks over and opens
@@ -263,6 +292,16 @@
 			controller.stand_dir = stealth_dir_to(guard, box)
 		controller.queue_behavior(/datum/ai_behavior/stealth_stand)
 		return SUBTREE_RETURN_FINISH_PLANNING
+	// It wouldn't open: a gunner shoots it from two tiles off.
+	if(controller.closet_stuck && human_npc_loaded_gun(guard))
+		if(controller.stealth_closet_in_fire_spot(box))
+			controller.stealth_drop_walk()
+			controller.queue_behavior(/datum/ai_behavior/stealth_open_closet)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		var/turf/fire_spot = controller.stealth_closet_fire_spot(box)
+		if(fire_spot && !controller.stealth_walk_gave_up(fire_spot))
+			controller.stealth_walk(fire_spot, STEALTH_GOTO_CLOSET)
+			return SUBTREE_RETURN_FINISH_PLANNING
 	if(!guard.Adjacent(box))
 		if(controller.stealth_walk_gave_up(spot))
 			// No way to it: it gives up now rather than stand there.
