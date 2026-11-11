@@ -416,6 +416,8 @@ const layout = (args: Args) => {
   // Share of the font size a line's ink fills; the rest of a Range box is leading.
   const ink = Math.min(Math.max(Number(args.ink ?? 0.9), 0.3), 1.5);
   const max = Math.min(Number(args.max || 40), MAX_FINDINGS);
+  // Borders thicker than this are a surround (a bezel, a padded panel edge), not a line.
+  const maxLine = Number(args.max_line ?? 12);
   const ignore = parseIgnore(args.ignore);
   const root =
     (args.root ? document.querySelector(args.root) : null) || document.body;
@@ -619,16 +621,18 @@ const layout = (args: Args) => {
       continue;
     }
     const s = styleOf(el);
-    if (!hasBorder(s)) {
+    // Image borders are artwork (the lobby's bezel), drawn under the screen that sits in them.
+    if (!hasBorder(s) || s.getPropertyValue('border-image-source') !== 'none') {
       continue;
     }
     const r = el.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) {
       continue;
     }
-    const [top, right, bottom, left] = SIDES.map((side) =>
-      borderWidth(s, side),
-    );
+    const [top, right, bottom, left] = SIDES.map((side) => {
+      const width = borderWidth(s, side);
+      return width > maxLine ? 0 : width;
+    });
     const push = (box: Box, across: boolean) => {
       if (box.r - box.l >= 1 && box.b - box.t >= 1) {
         strips.push({ el, box, across });
