@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 1, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(2, 5, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 2, 5), "freight" = list(5, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -300,7 +300,8 @@
 			var/list/pool = classes[class]
 			TEST_ASSERT_EQUAL(length(pool), counts[text2num(class)], "Main gun class changed size")
 			for(var/entry in pool)
-				TEST_ASSERT_EQUAL(pool[entry], 10, "Main gun class is not uniform")
+				// The Old Furnace is the one rare unique in the main pools
+				TEST_ASSERT_EQUAL(pool[entry], entry == /obj/item/gun/energy/plasma_weapon/rifle/old_furnace ? 1 : 10, "Main gun class is not uniform")
 	var/list/melee_counts = list(9, 6, 4)
 	for(var/class in GLOB.loot_melee_pools)
 		var/list/pool = GLOB.loot_melee_pools[class]

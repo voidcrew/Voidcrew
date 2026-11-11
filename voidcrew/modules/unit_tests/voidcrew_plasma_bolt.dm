@@ -30,8 +30,8 @@
 	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt/heavy::damage, 45, "rifle bolt damage changed")
 	TEST_ASSERT_EQUAL(/obj/item/ammo_casing/energy/plasma_bolt::projectile_type, /obj/projectile/energy/plasma_bolt, "the pistol casing fires the wrong bolt")
 	TEST_ASSERT_EQUAL(/obj/item/ammo_casing/energy/plasma_bolt/heavy::projectile_type, /obj/projectile/energy/plasma_bolt/heavy, "the rifle casing fires the wrong bolt")
-	TEST_ASSERT_EQUAL(/obj/item/ammo_casing/energy/plasma_bolt::e_cost, 4, "the pistol casing costs the wrong mol")
-	TEST_ASSERT_EQUAL(/obj/item/ammo_casing/energy/plasma_bolt/heavy::e_cost, 5, "the rifle casing costs the wrong mol")
+	TEST_ASSERT_EQUAL(/obj/item/ammo_casing/energy/plasma_bolt::e_cost, PLASMA_SHOT_MOL_PISTOL, "the pistol casing costs the wrong mol")
+	TEST_ASSERT_EQUAL(/obj/item/ammo_casing/energy/plasma_bolt/heavy::e_cost, PLASMA_SHOT_MOL_RIFLE, "the rifle casing costs the wrong mol")
 
 /// A canister's energy armour stops a bolt cold; a shuttle window has none and takes the hit.
 /datum/unit_test/voidcrew_plasma_bolt/structures
@@ -83,9 +83,9 @@
 /datum/unit_test/voidcrew_plasma_bolt/fire_on_hit/Run()
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
 	var/obj/projectile/energy/plasma_bolt/bolt = make_bolt(/obj/projectile/energy/plasma_bolt, turf_at(1, 1))
-	TEST_ASSERT_EQUAL(bolt.fire_stacks_on_hit, 2, "a bolt carries the wrong fire stacks")
+	TEST_ASSERT_EQUAL(bolt.fire_stacks_on_hit, PLASMA_FIRE_STACKS_ON_HIT, "a bolt carries the wrong fire stacks")
 	victim.bullet_act(bolt, BODY_ZONE_CHEST)
-	TEST_ASSERT(victim.fire_stacks >= 2, "a bolt hit added [victim.fire_stacks] fire stacks, expected 2")
+	TEST_ASSERT(victim.fire_stacks >= PLASMA_FIRE_STACKS_ON_HIT, "a bolt hit added [victim.fire_stacks] fire stacks, expected [PLASMA_FIRE_STACKS_ON_HIT]")
 	TEST_ASSERT(victim.on_fire, "a bolt hit in breathable air did not ignite the target")
 	victim.extinguish_mob()
 

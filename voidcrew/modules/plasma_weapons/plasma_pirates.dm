@@ -57,6 +57,12 @@
 	if(.)
 		arm_plasma_rifle()
 
+// The Old Furnace is a red-zone prize: a boss met anywhere else loses the roll before its loot is set
+/mob/living/basic/trooper/pirate/faction/boss/initialize_weapon_loot(zone)
+	if(!weapon_loot_initialized && zone != ZONE_RED && rolled_rare_loot)
+		rolled_rare_loot -= /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
+	return ..()
+
 // A Furnace pirate vents its rifle as it changes flasks
 /datum/component/pirate_gun/reload_effects()
 	. = ..()

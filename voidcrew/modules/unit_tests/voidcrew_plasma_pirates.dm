@@ -101,6 +101,15 @@
 				boss.apply_npc_weapon_ladder()
 				TEST_ASSERT_EQUAL(pirate_gun_of(boss), gun, "A red-zone [boss_type] was armed twice")
 			else
+				TEST_ASSERT(!(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in boss.rolled_rare_loot), "A zone [zone] [boss_type] kept an Old Furnace roll")
 				TEST_ASSERT_NULL(gun, "A zone [zone] [boss_type] carries a pirate gun")
 				TEST_ASSERT_NOTNULL(boss.GetComponent(/datum/component/ranged_attacks), "A zone [zone] [boss_type] lost its stock shot")
 		row++
+
+	// The roll itself: kept by a red-zone boss, dropped by any other
+	for(var/zone in 1 to 3)
+		var/mob/living/basic/trooper/pirate/faction/boss/irs/roller = allocate(/mob/living/basic/trooper/pirate/faction/boss/irs, spot(4, zone))
+		roller.rolled_rare_loot = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
+		roller.weapon_loot_initialized = FALSE
+		roller.initialize_weapon_loot(zone)
+		TEST_ASSERT_EQUAL(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in roller.rolled_rare_loot, zone == 3, "A zone [zone] boss's Old Furnace roll was [zone == 3 ? "dropped" : "kept"]")

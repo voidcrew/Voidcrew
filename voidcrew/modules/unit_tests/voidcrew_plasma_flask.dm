@@ -1,9 +1,5 @@
 // Package: P2 guns and flask. Unit tests for voidcrew/modules/plasma_weapons/.
 
-// voidcrew/_DEFINES/ is included after the unit tests, so the plasma defines aren't visible here;
-// read the same numbers off the types and procs instead.
-#define TEST_PLASMA_CAPACITY (/obj/item/stock_parts/power_store/cell/plasma_chamber::maxcharge)
-
 /// Plasma a gun and its seated or loose flask hold together
 /proc/plasma_test_total(obj/item/gun/energy/plasma_weapon/gun, obj/item/plasma_flask/flask)
 	return gun.chamber_mol() + (flask ? flask.stored : 0)
@@ -13,12 +9,12 @@
 	for(var/gun_type in list(/obj/item/gun/energy/plasma_weapon/pistol, /obj/item/gun/energy/plasma_weapon/rifle, /obj/item/gun/energy/plasma_weapon/rifle/old_furnace))
 		var/obj/item/gun/energy/plasma_weapon/gun = allocate(gun_type)
 		TEST_ASSERT_NOTNULL(gun.flask, "[gun_type] spawned without a flask")
-		TEST_ASSERT_EQUAL(gun.chamber_mol(), TEST_PLASMA_CAPACITY, "[gun_type] did not spawn full")
+		TEST_ASSERT_EQUAL(gun.chamber_mol(), PLASMA_FLASK_CAPACITY, "[gun_type] did not spawn full")
 		TEST_ASSERT_EQUAL(gun.flask.stored, 0, "[gun_type]'s seated flask still holds plasma")
 	for(var/gun_type in list(/obj/item/gun/energy/plasma_weapon/pistol/loot, /obj/item/gun/energy/plasma_weapon/rifle/loot))
 		var/obj/item/gun/energy/plasma_weapon/gun = allocate(gun_type)
 		TEST_ASSERT_NOTNULL(gun.flask, "[gun_type] spawned without a flask")
-		TEST_ASSERT(gun.chamber_mol() >= 0 && gun.chamber_mol() <= TEST_PLASMA_CAPACITY / 2, "[gun_type] spawned with [gun.chamber_mol()] mol")
+		TEST_ASSERT(gun.chamber_mol() >= 0 && gun.chamber_mol() <= PLASMA_FLASK_CAPACITY / 2, "[gun_type] spawned with [gun.chamber_mol()] mol")
 
 /// Loading and unloading 100 times never changes the plasma a gun and its flask hold
 /datum/unit_test/voidcrew_plasma_flask_invariant/Run()
@@ -26,7 +22,7 @@
 	gun.take_mol(17)
 	var/obj/item/plasma_flask/flask = gun.flask
 	var/total = plasma_test_total(gun, null)
-	TEST_ASSERT_EQUAL(total, TEST_PLASMA_CAPACITY - 17, "take_mol took the wrong amount")
+	TEST_ASSERT_EQUAL(total, PLASMA_FLASK_CAPACITY - 17, "take_mol took the wrong amount")
 	for(var/i in 1 to 100)
 		TEST_ASSERT_EQUAL(gun.unload_flask(null), flask, "unload_flask didn't return the flask")
 		TEST_ASSERT_NULL(gun.flask, "flask still seated after unloading")
@@ -51,7 +47,7 @@
 	flask.forceMove(elsewhere)
 	TEST_ASSERT_NULL(gun.flask, "gun still thinks the flask is seated")
 	TEST_ASSERT_EQUAL(gun.chamber_mol(), 0, "chamber kept plasma after the flask left")
-	TEST_ASSERT_EQUAL(flask.stored, TEST_PLASMA_CAPACITY - 12, "flask didn't get the chamber's plasma")
+	TEST_ASSERT_EQUAL(flask.stored, PLASMA_FLASK_CAPACITY - 12, "flask didn't get the chamber's plasma")
 	TEST_ASSERT(!gun.can_shoot(), "gun can still fire with no flask")
 
 	// Destroying the gun drops the flask with its plasma
@@ -59,7 +55,7 @@
 	gun.take_mol(4)
 	qdel(gun)
 	TEST_ASSERT(isturf(flask.loc), "flask didn't drop when the gun was destroyed")
-	TEST_ASSERT_EQUAL(flask.stored, TEST_PLASMA_CAPACITY - 16, "flask lost plasma when the gun was destroyed")
+	TEST_ASSERT_EQUAL(flask.stored, PLASMA_FLASK_CAPACITY - 16, "flask lost plasma when the gun was destroyed")
 	qdel(flask)
 
 /// Only plasma sheets and ore go in, a whole unit at a time, and only with room for all of it
@@ -75,11 +71,11 @@
 
 	flask.stored = 50
 	TEST_ASSERT_EQUAL(flask.feed(ore, null), plasma_fuel_mol_per_unit(ore), "ore didn't fill the last 10 mol")
-	TEST_ASSERT_EQUAL(flask.stored, TEST_PLASMA_CAPACITY, "flask not full after the ore")
+	TEST_ASSERT_EQUAL(flask.stored, PLASMA_FLASK_CAPACITY, "flask not full after the ore")
 	TEST_ASSERT_EQUAL(ore.get_amount(), 4, "feeding took the wrong amount of ore")
 
 	flask.stored = 0
-	TEST_ASSERT_EQUAL(flask.feed(sheets, null), TEST_PLASMA_CAPACITY, "three sheets didn't fill an empty flask")
+	TEST_ASSERT_EQUAL(flask.feed(sheets, null), PLASMA_FLASK_CAPACITY, "three sheets didn't fill an empty flask")
 	TEST_ASSERT_EQUAL(sheets.get_amount(), 2, "feeding took the wrong number of sheets")
 
 	// Nothing else goes in: liquid plasma, glass, other flasks
@@ -121,7 +117,7 @@
 	chamber.corrupt(TRUE)
 	chamber.explode()
 	TEST_ASSERT_EQUAL(gun.chamber_mol(), 20, "the chamber gained or lost plasma without feeding")
-	TEST_ASSERT_EQUAL(chamber.maxcharge, TEST_PLASMA_CAPACITY, "corrupt() shrank the chamber")
+	TEST_ASSERT_EQUAL(chamber.maxcharge, PLASMA_FLASK_CAPACITY, "corrupt() shrank the chamber")
 	TEST_ASSERT(!chamber.rigged, "the chamber got rigged")
 	TEST_ASSERT_NULL(chamber.reagents, "the chamber has a reagent holder")
 	TEST_ASSERT(!QDELETED(chamber), "the chamber exploded")
@@ -151,5 +147,3 @@
 	gun.take_mol(gun.chamber_mol() - shot.e_cost + 1)
 	TEST_ASSERT_EQUAL(gun.icon_state, "cinder_empty", "a Cinder short of one shot isn't shown empty")
 	TEST_ASSERT(!gun.can_shoot(), "a Cinder short of one shot can fire")
-
-#undef TEST_PLASMA_CAPACITY

@@ -2,14 +2,6 @@
 // Shots are simulated with add_heat(heat_per_shot) and 0.7 s of process() between them, the pace the
 // balance sim fires at. A boil shows as lost integrity, so these pass with or without P2's take_mol.
 
-// The unit tests are included before voidcrew/_DEFINES/, so the PLASMA_* values are copied here.
-#define PLASMA_TEST_HEAT_BOIL 100
-#define PLASMA_TEST_BOIL_INTEGRITY 10
-#define PLASMA_TEST_FLASK_CAPACITY 60
-#define PLASMA_TEST_VENT_MOL 5
-#define PLASMA_TEST_VENT_COOL 50
-#define PLASMA_TEST_BOIL_MOL 5
-
 /// Fires `shots` simulated rifle shots, cooling 0.7 s after each. Returns the shot number of the first boil, or 0.
 /proc/plasma_heat_test_burst(obj/item/gun/energy/plasma_weapon/gun, shots)
 	for(var/shot in 1 to shots)
@@ -34,7 +26,7 @@
 	TEST_ASSERT(air.return_pressure() > 90, "The test floor has no room air ([air.return_pressure()] kPa)")
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
 	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 0, "A Furnace boiled within 12 shots in room air")
-	TEST_ASSERT(gun.barrel_heat > 0 && gun.barrel_heat < PLASMA_TEST_HEAT_BOIL, "A Furnace ended 12 shots at heat [gun.barrel_heat]")
+	TEST_ASSERT(gun.barrel_heat > 0 && gun.barrel_heat < PLASMA_HEAT_BOIL, "A Furnace ended 12 shots at heat [gun.barrel_heat]")
 	TEST_ASSERT_EQUAL(gun.heat_step, 2, "A Furnace at heat [gun.barrel_heat] shows coil step [gun.heat_step]")
 
 /// In vacuum the rifle only cools by its base rate and boils on the 9th shot.
@@ -52,8 +44,8 @@
 	gun.cell.charge = 0 // a boil with plasma would leave hot gas on the tile and change the cooling
 	// 13.5 + 11.75 per shot after the first: 95.75 after the 8th, 107.5 after the 9th
 	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 9, "A Furnace in vacuum did not first boil on the 9th shot")
-	TEST_ASSERT_EQUAL(gun.get_integrity(), gun.max_integrity - PLASMA_TEST_BOIL_INTEGRITY, "One boil did not cost [PLASMA_TEST_BOIL_INTEGRITY] integrity")
-	TEST_ASSERT(gun.barrel_heat < PLASMA_TEST_HEAT_BOIL, "A boil left the Furnace at heat [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.get_integrity(), gun.max_integrity - PLASMA_BOIL_INTEGRITY, "One boil did not cost [PLASMA_BOIL_INTEGRITY] integrity")
+	TEST_ASSERT(gun.barrel_heat < PLASMA_HEAT_BOIL, "A boil left the Furnace at heat [gun.barrel_heat]")
 
 	// The Old Furnace runs cooler: 10 + 8.25 per shot after the first, so 10 shots stay under the boil.
 	air.remove_ratio(1)
@@ -63,7 +55,7 @@
 
 	// The pistol has no heat at all.
 	var/obj/item/gun/energy/plasma_weapon/pistol/pistol = allocate(/obj/item/gun/energy/plasma_weapon/pistol, spot)
-	pistol.add_heat(PLASMA_TEST_HEAT_BOIL * 2)
+	pistol.add_heat(PLASMA_HEAT_BOIL * 2)
 	TEST_ASSERT_EQUAL(pistol.barrel_heat, 0, "The Cinder gained heat")
 	TEST_ASSERT(!(pistol.datum_flags & DF_ISPROCESSING), "The Cinder started processing")
 
@@ -86,7 +78,7 @@
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
 
 	// A full chamber
-	gun.cell.charge = PLASMA_TEST_FLASK_CAPACITY
+	gun.cell.charge = PLASMA_FLASK_CAPACITY
 	gun.barrel_heat = 80
 	var/chamber_before = gun.chamber_mol()
 	var/turf_before = plasma_heat_test_plasma(air)
@@ -94,9 +86,9 @@
 	var/lost = chamber_before - gun.chamber_mol()
 	var/gained = plasma_heat_test_plasma(air) - turf_before
 	TEST_ASSERT_EQUAL(gained, lost, "A vent put [gained] mol on the turf but took [lost] mol from the chamber")
-	TEST_ASSERT(lost == 0 || lost == PLASMA_TEST_VENT_MOL, "A vent from a full chamber took [lost] mol")
+	TEST_ASSERT(lost == PLASMA_VENT_MOL, "A vent from a full chamber took [lost] mol")
 	if(lost)
-		TEST_ASSERT_EQUAL(gun.barrel_heat, 80 - PLASMA_TEST_VENT_COOL, "A vent did not cool the barrel by [PLASMA_TEST_VENT_COOL]")
+		TEST_ASSERT_EQUAL(gun.barrel_heat, 80 - PLASMA_VENT_COOL, "A vent did not cool the barrel by [PLASMA_VENT_COOL]")
 		TEST_ASSERT(!gun.can_fire_heat(), "The Furnace can fire straight after a vent")
 		TEST_ASSERT(!gun.can_shoot(), "can_shoot ignores the vent lock")
 		var/chamber_mid = gun.chamber_mol()
@@ -117,15 +109,15 @@
 	TEST_ASSERT(lost >= 0 && lost <= 3, "A vent from a 3 mol chamber took [lost] mol")
 
 	// A boil conserves the same way.
-	gun.cell.charge = PLASMA_TEST_FLASK_CAPACITY
+	gun.cell.charge = PLASMA_FLASK_CAPACITY
 	chamber_before = gun.chamber_mol()
 	turf_before = plasma_heat_test_plasma(air)
-	gun.barrel_heat = PLASMA_TEST_HEAT_BOIL
+	gun.barrel_heat = PLASMA_HEAT_BOIL
 	gun.add_heat(0)
 	lost = chamber_before - gun.chamber_mol()
 	gained = plasma_heat_test_plasma(air) - turf_before
 	TEST_ASSERT_EQUAL(gained, lost, "A boil put [gained] mol on the turf but took [lost] mol from the chamber")
-	TEST_ASSERT(lost == 0 || lost == PLASMA_TEST_BOIL_MOL, "A boil from a full chamber took [lost] mol")
+	TEST_ASSERT(lost == PLASMA_BOIL_MOL, "A boil from a full chamber took [lost] mol")
 
 /datum/unit_test/voidcrew_plasma_heat_vent/Destroy()
 	if(spot && saved_air)
@@ -151,20 +143,13 @@
 /datum/unit_test/voidcrew_plasma_heat_breaks/Run()
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, run_loc_floor_bottom_left)
 	gun.cell.charge = 0 // nothing to vent, so no hot plasma lights the test room
-	var/boils = gun.max_integrity / PLASMA_TEST_BOIL_INTEGRITY
+	var/boils = gun.max_integrity / PLASMA_BOIL_INTEGRITY
 	TEST_ASSERT_EQUAL(boils, 20, "A Furnace takes [boils] boils to break, not 20")
 	for(var/boil in 1 to boils - 1)
-		gun.barrel_heat = PLASMA_TEST_HEAT_BOIL
+		gun.barrel_heat = PLASMA_HEAT_BOIL
 		gun.add_heat(0)
 	TEST_ASSERT(!QDELETED(gun), "A Furnace broke before its 20th boil")
-	TEST_ASSERT_EQUAL(gun.get_integrity(), PLASMA_TEST_BOIL_INTEGRITY, "19 boils left the Furnace at [gun.get_integrity()] integrity")
-	gun.barrel_heat = PLASMA_TEST_HEAT_BOIL
+	TEST_ASSERT_EQUAL(gun.get_integrity(), PLASMA_BOIL_INTEGRITY, "19 boils left the Furnace at [gun.get_integrity()] integrity")
+	gun.barrel_heat = PLASMA_HEAT_BOIL
 	gun.add_heat(0)
 	TEST_ASSERT(QDELETED(gun), "A Furnace survived 20 boils")
-
-#undef PLASMA_TEST_HEAT_BOIL
-#undef PLASMA_TEST_BOIL_INTEGRITY
-#undef PLASMA_TEST_FLASK_CAPACITY
-#undef PLASMA_TEST_VENT_MOL
-#undef PLASMA_TEST_VENT_COOL
-#undef PLASMA_TEST_BOIL_MOL

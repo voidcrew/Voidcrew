@@ -6,7 +6,14 @@
 
 /obj/item/gun/energy/frontier_laser
 	vary_fire_sound = FALSE
-	automatic_charge_overlays = TRUE
+	// The sprites have a full and an _empty state and no charge overlay states
+	automatic_charge_overlays = FALSE
+
+/obj/item/gun/energy/frontier_laser/update_icon_state()
+	var/obj/item/ammo_casing/energy/shot = length(ammo_type) ? ammo_type[select] : null
+	var/loaded = cell && istype(shot) && cell.charge >= shot.e_cost
+	icon_state = "[initial(icon_state)][loaded ? "" : "_empty"]"
+	return ..()
 
 /obj/item/gun/energy/frontier_laser/shoot_live_shot(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = TRUE)
 	. = ..()

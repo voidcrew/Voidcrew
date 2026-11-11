@@ -65,10 +65,10 @@
 		list("armory", "1", /obj/item/gun/energy/frontier_laser/pistol, 10),
 		list("freight", "1", /obj/item/gun/energy/frontier_laser/pistol, 10),
 		list("armory", "2", /obj/item/gun/energy/frontier_laser/smg, 10),
-		list("armory", "2", /obj/item/gun/energy/plasma_weapon/pistol, 10),
-		list("plunder", "2", /obj/item/gun/energy/plasma_weapon/pistol, 10),
-		list("plunder", "3", /obj/item/gun/energy/plasma_weapon/rifle, 10),
-		list("plunder", "3", /obj/item/gun/energy/plasma_weapon/rifle/old_furnace, 2),
+		list("armory", "2", /obj/item/gun/energy/plasma_weapon/pistol/loot, 10),
+		list("plunder", "2", /obj/item/gun/energy/plasma_weapon/pistol/loot, 10),
+		list("plunder", "3", /obj/item/gun/energy/plasma_weapon/rifle/loot, 10),
+		list("plunder", "3", /obj/item/gun/energy/plasma_weapon/rifle/old_furnace, 1),
 	)
 	for(var/list/entry as anything in pool_entries)
 		var/list/pool = GLOB.loot_gun_pools[entry[1]][entry[2]]
