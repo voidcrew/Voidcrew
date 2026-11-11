@@ -62,6 +62,8 @@
 	var/list/melee_sources = list()
 	/// key -> /datum/callback returning that source's live bullet-deflect chance (the dermal plating).
 	var/list/deflect_sources = list()
+	/// Dodge and deflect together never stop more than this percent of shots.
+	var/avoid_cap = CYBERWARE_AVOID_CAP
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
 	/// world.time a dodge was last announced: an NPC under fire says it at most once every CYBERWARE_DODGE_LINE_GAP, so chat isn't flooded
@@ -103,7 +105,7 @@
 	if(dodge_chance > 0 && prob(dodge_chance))
 		INVOKE_ASYNC(src, PROC_REF(perform_sidestep), source, hitting_projectile)
 		return COMPONENT_BULLET_PIERCED
-	var/deflect_chance = min(live_deflect_chance(source, hitting_projectile), cyberware_deflect_cap(dodge_chance))
+	var/deflect_chance = min(live_deflect_chance(source, hitting_projectile), cyberware_deflect_cap(dodge_chance, avoid_cap))
 	if(deflect_chance <= 0 || !prob(deflect_chance))
 		return NONE
 	glance(source, hitting_projectile)
@@ -299,14 +301,14 @@
 
 /**
  * The most a deflect may roll after a dodge roll at dodge_chance missed, so
- * that dodge and deflect together never stop more than CYBERWARE_AVOID_CAP
+ * that dodge and deflect together never stop more than avoid_cap
  * percent of shots: dodge + (1 - dodge) * deflect <= cap.
  */
-/proc/cyberware_deflect_cap(dodge_chance)
+/proc/cyberware_deflect_cap(dodge_chance, avoid_cap = CYBERWARE_AVOID_CAP)
 	dodge_chance = clamp(dodge_chance, 0, 100)
-	if(dodge_chance >= CYBERWARE_AVOID_CAP)
+	if(dodge_chance >= avoid_cap)
 		return 0
-	return (CYBERWARE_AVOID_CAP - dodge_chance) * 100 / (100 - dodge_chance)
+	return (avoid_cap - dodge_chance) * 100 / (100 - dodge_chance)
 
 /// Whether this shot is travelling the way the bearer faces, so it strikes them in the back.
 /proc/cyberware_shot_from_behind(mob/living/bearer, obj/projectile/shot)

@@ -25,7 +25,9 @@
 	TEST_ASSERT(slab.Insert(patient, TRUE), "Slabskin fixture failed")
 	var/datum/component/cyberware_dodge/arbiter = patient.GetComponent(/datum/component/cyberware_dodge)
 	TEST_ASSERT_NOTNULL(arbiter, "Slabskin didn't register a deflect source")
+	// Force every glance: a 100% plate under a lifted cap. The cap itself is checked above.
 	slab.deflect_chance = 100
+	arbiter.avoid_cap = 100
 	patient.setDir(SOUTH)
 
 	// A bullet from the front (travelling north into a bearer facing south) glances off.
