@@ -63,11 +63,37 @@
 			"rejoin_wait" = CEILING(cryo_rejoin_wait(ckey, ship) / (1 SECONDS), 1),
 			"code_wait" = code_lock_wait(ckey, ship_ref),
 			"jobs" = jobs,
+			"aboard" = crew_aboard(ship),
 		))
 	if(to_check && !crew_jobs_checking && istype(user, /mob/dead/new_player))
 		crew_jobs_checking = TRUE
 		INVOKE_ASYNC(src, PROC_REF(refresh_crew_jobs), user, to_check)
 	return list("crews" = crews)
+
+/// Most crew names sent per ship. The record shows fewer and says how many more.
+#define LOBBY_CREW_ABOARD_MAX 30
+
+/**
+ * Who is aboard, from the ship's manifest: list(name, job title, is captain), the captain first.
+ * The captain is whoever is_ship_captain_mind() says holds command (a claim, or the officer job).
+ */
+/datum/lobby_terminal/proc/crew_aboard(obj/structure/overmap/ship/ship)
+	var/list/captains = list()
+	for(var/datum/mind/member as anything in ship.ship_team?.members)
+		if(member && ship.is_ship_captain_mind(member))
+			captains[member.current?.real_name || member.name] = TRUE
+	var/list/first = list()
+	var/list/rest = list()
+	for(var/name in ship.manifest)
+		var/datum/job/job = ship.manifest[name]
+		var/list/line = list("[name]", istype(job) ? job.title : "", !!captains[name])
+		if(captains[name])
+			first += list(line)
+		else if(length(rest) < LOBBY_CREW_ABOARD_MAX)
+			rest += list(line)
+	return first + rest
+
+#undef LOBBY_CREW_ABOARD_MAX
 
 /// Runs the job eligibility checks (ban DB, playtime, account age) off the UI tick and caches the answers.
 /datum/lobby_terminal/proc/refresh_crew_jobs(mob/dead/new_player/user, list/jobs)

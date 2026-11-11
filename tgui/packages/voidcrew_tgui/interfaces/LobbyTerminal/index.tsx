@@ -14,10 +14,11 @@ import { useBackend } from 'tgui/backend';
 
 import { BEZEL_EXTRA_CSS, Bezel } from './Bezel';
 import { CrewsTab } from './CrewsTab';
-import { Header } from './Header';
+import { Header, TABS } from './Header';
 import { HousingTab } from './HousingTab';
 import { computeLayout, START_KEY_W } from './layout';
 import { Confirmed, NoticeLine } from './Notice';
+import { NAV_CSS, NavProvider } from './nav';
 import { type Grid, GridContext, TERM_CSS } from './term';
 import type { LobbyData, TabId } from './types';
 import { YardTab } from './YardTab';
@@ -162,6 +163,16 @@ export function LobbyTerminal() {
   const { s } = layout;
   const scan = Math.max(2, Math.round(s));
 
+  const pickTab = (next: TabId) => {
+    if (next === tab && next === 'shipyard') {
+      setYardHome(yardHome + 1);
+    }
+    setTab(next);
+    if (confirmed) {
+      act('dismiss');
+    }
+  };
+
   let body;
   if (confirmed) {
     body = <Confirmed />;
@@ -183,46 +194,49 @@ export function LobbyTerminal() {
         ['--lt-bg' as string]: '#07130d',
       }}
     >
-      <style>{TERM_CSS + BEZEL_EXTRA_CSS}</style>
-      <Bezel s={s}>
-        <div className="lt-crt">
-          <div
-            className="lt-tui"
-            style={{
-              left: layout.ox,
-              top: layout.oy,
-              width: layout.cols * layout.cw,
-              height: layout.rows * layout.ch,
-              fontSize: layout.fs,
-              lineHeight: `${layout.ch}px`,
-            }}
-          >
-            <GridContext.Provider value={grid}>
-              <Header
-                tab={tab}
-                setTab={(next) => {
-                  if (next === tab && next === 'shipyard') {
-                    setYardHome(yardHome + 1);
-                  }
-                  setTab(next);
-                  if (confirmed) {
-                    act('dismiss');
-                  }
-                }}
-              />
-              {body}
-              <NoticeLine />
-            </GridContext.Provider>
+      <style>{TERM_CSS + NAV_CSS + BEZEL_EXTRA_CSS}</style>
+      <NavProvider
+        onTabNumber={(n) => {
+          const next = TABS[n - 1];
+          if (next) {
+            pickTab(next[0]);
+          }
+        }}
+        onTabStep={(step) => {
+          const at = TABS.findIndex(([id]) => id === tab);
+          const next = TABS[(at + step + TABS.length) % TABS.length];
+          pickTab(next[0]);
+        }}
+      >
+        <Bezel s={s}>
+          <div className="lt-crt">
+            <div
+              className="lt-tui"
+              style={{
+                left: layout.ox,
+                top: layout.oy,
+                width: layout.cols * layout.cw,
+                height: layout.rows * layout.ch,
+                fontSize: layout.fs,
+                lineHeight: `${layout.ch}px`,
+              }}
+            >
+              <GridContext.Provider value={grid}>
+                <Header tab={tab} setTab={pickTab} />
+                {body}
+                <NoticeLine />
+              </GridContext.Provider>
+            </div>
+            <div
+              className="lt-scan"
+              style={{
+                background: `repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${scan - 1}px, rgba(0,0,0,.32) ${scan - 1}px, rgba(0,0,0,.32) ${scan}px)`,
+              }}
+            />
+            <div className="lt-glass" />
           </div>
-          <div
-            className="lt-scan"
-            style={{
-              background: `repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${scan - 1}px, rgba(0,0,0,.32) ${scan - 1}px, rgba(0,0,0,.32) ${scan}px)`,
-            }}
-          />
-          <div className="lt-glass" />
-        </div>
-      </Bezel>
+        </Bezel>
+      </NavProvider>
     </div>
   );
 }

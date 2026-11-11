@@ -3,10 +3,11 @@
  * crew on the left, the viewscreen and this step's options on the right. Narrow: the
  * viewscreen above the options, PREV/NEXT between steps.
  */
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { ShipPic } from './ShipPic';
 import {
+  cut,
   Frame,
   Hit,
   lpad,
@@ -81,6 +82,18 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   const h = rows - 1 - TOP;
   const fit = fitOf(hull, view.finish, view.picks);
   const steps = stepsOf(fit);
+  /** First option row shown when a step has more options than rows, and the row to focus. */
+  const [win, setWin] = useState<{ st: number; top: number; want: number }>({
+    st: -1,
+    top: 0,
+    want: -1,
+  });
+  // Nothing to fit (no finishes, no rooms): show the bill instead of a blank screen.
+  useEffect(() => {
+    if (!steps.length) {
+      set({ screen: 'bill' });
+    }
+  }, [steps.length]);
   if (!steps.length) {
     return null;
   }
@@ -146,10 +159,16 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
         title={`FIT  ${hull.short.toUpperCase()}`}
       />,
     );
-    // Two rows a step when there is room, one when not.
+    // Two rows a step when there is room, one when not; past that, a window round this step.
     const pitch = TOP + 2 + steps.length * 2 + 8 <= TOP + h ? 2 : 1;
+    const stepRoom = Math.max(1, Math.floor((h - 10) / pitch));
+    const from = Math.max(
+      0,
+      Math.min(steps.length - stepRoom, st - Math.floor(stepRoom / 2)),
+    );
     let y = TOP + 2;
-    steps.forEach((s, i) => {
+    steps.slice(from, from + stepRoom).forEach((s, n) => {
+      const i = from + n;
       const o = s.opts[s.pick];
       const cur = i === st;
       const paid =
@@ -274,8 +293,34 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   out.push(<Frame key="of" x={x} y={oy} w={w} h={oh} title={title} />);
   let y = oy + 2;
   const tagW = 18;
-  S.opts.forEach((o, j) => {
+  const by = oy + oh - 2;
+  // Options get the rows above the keys less two for the description; more scroll.
+  const optRows = Math.max(1, by - (narrow ? 2 : 1) - y - 2);
+  const many = S.opts.length > optRows;
+  let top = 0;
+  if (many) {
+    top =
+      win.st === st
+        ? win.top
+        : Math.max(0, Math.min(S.pick, S.opts.length - optRows));
+    top = Math.max(0, Math.min(S.opts.length - optRows, top));
+    out.push(
+      <RPut key="orange" x={x + w - 3} y={oy} cls="dim" bg>
+        {` ${top + 1}-${top + optRows}/${S.opts.length} `}
+      </RPut>,
+    );
+  }
+  const scroll = (to: number, want: number) => {
+    setWin({ st, top: to, want });
+    return true;
+  };
+  const shownOpts = S.opts.slice(top, top + optRows);
+  shownOpts.forEach((o, n) => {
+    const j = top + n;
     const sel = j === S.pick;
+    const firstRow = n === 0;
+    const lastRow = n === shownOpts.length - 1;
+    const focusHere = win.st === st && win.want >= 0 ? win.want === j : sel;
     const owned = ownedOpt(o);
     if (sel) {
       out.push(
@@ -284,7 +329,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
         </Put>,
       );
     }
-    const tag = o.def ? 'STOCK' : owned ? 'OWNED' : costOf(o.cost);
+    const tag = cut(o.def ? 'STOCK' : owned ? 'OWNED' : costOf(o.cost), tagW);
     out.push(
       <Put key={`om${j}`} x={x + 1} y={y} cls={sel ? 'inv' : ''}>
         {sel ? '>' : ' '}
@@ -301,19 +346,26 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
         {tag}
       </RPut>,
       <Hit
-        key={`oh${j}`}
+        key={`oh${st}-${j}`}
         x={x + 1}
         y={y}
         w={w - 3}
         h={1}
         onClick={() => choose(j)}
+        auto={focusHere ? 1 : undefined}
+        edge={{
+          down:
+            lastRow && j < S.opts.length - 1
+              ? () => scroll(top + 1, j + 1)
+              : undefined,
+          up: firstRow && j > 0 ? () => scroll(top - 1, j - 1) : undefined,
+        }}
       />,
     );
     y++;
   });
   y++;
   const o = S.opts[S.pick];
-  const by = oy + oh - 2;
   if (o) {
     const jl =
       S.slot === null ? wrap(jobsText((o as Finish).jobs), w - 12) : [];

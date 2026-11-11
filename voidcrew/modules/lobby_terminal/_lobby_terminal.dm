@@ -20,6 +20,10 @@
 
 /// How long to wait for the browser to report itself visible before offering a reload link.
 #define LOBBY_TERMINAL_LOAD_TIMEOUT (30 SECONDS)
+/// Times a failed open is retried before the load timeout is left to bring back the classic lobby.
+#define LOBBY_TERMINAL_OPEN_RETRIES 5
+/// Wait between those retries.
+#define LOBBY_TERMINAL_OPEN_RETRY_DELAY (2 SECONDS)
 /// Wrong codes allowed per ckey per lock (a ship or an outpost) before a lockout.
 #define LOBBY_CODE_MAX_FAILURES 5
 /// How long a code lockout lasts.
@@ -54,6 +58,10 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	var/tab_request_serial = 0
 	/// Load timeout timer id.
 	var/load_timer
+	/// Failed opens retried since the terminal last came up (or since "Try again").
+	var/open_retries = 0
+	/// TRUE once the terminal took keyboard focus, so hiding it hands focus back to the map.
+	var/had_focus = FALSE
 	/// The skin.dmf BROWSER control the terminal renders into.
 	var/control_id = "lobby_browser"
 
@@ -117,12 +125,15 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	else
 		hide_control()
 
-/// Skin side of hiding: control off, status bar back.
+/// Skin side of hiding: control off, status bar back, keyboard back on the map (movement keys).
 /datum/lobby_terminal/proc/hide_control()
 	if(!owner)
 		return
 	winset(owner, control_id, "is-visible=false")
 	winset(owner, "mapwindow.status_bar", "is-visible=true")
+	if(had_focus)
+		had_focus = FALSE
+		winset(owner, "mapwindow.map", "focus=true")
 
 /datum/lobby_terminal/proc/on_window_visible(datum/source, client/client)
 	SIGNAL_HANDLER
@@ -130,13 +141,18 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		hide_control()
 		return
 	visible = TRUE
+	open_retries = 0
 	if(load_timer)
 		deltimer(load_timer)
 		load_timer = null
 	set_classic_lobby(FALSE)
+	// The control takes keyboard focus inside the client so the arrow keys reach the page
+	// (lobby nav.tsx). This is skin focus only; it never raises the client's window.
+	had_focus = TRUE
 	winset(owner, null, list(
 		"[control_id].is-visible" = "true",
 		"mapwindow.status_bar.is-visible" = "false",
+		"[control_id].focus" = "true",
 	))
 
 /**
@@ -160,6 +176,9 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	SIGNAL_HANDLER
 	if(istype(new_mob, /mob/dead/new_player))
 		return
+	// Leaving the lobby ends whatever was under way ("Preparing your ship"), so it must
+	// not greet the player again when they come back.
+	notice = null
 	hide()
 
 /datum/lobby_terminal/proc/on_load_timeout()
@@ -179,6 +198,24 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		return
 	if(ui && !QDELETED(ui))
 		ui.close(can_be_suspended = FALSE)
+	open_retries = 0
+	show(player)
+
+/**
+ * Called when the UI failed to open, for example because it closed while its assets were still
+ * being sent during world init. Tries again a few times; after that the load timeout puts the
+ * classic lobby back and offers "Try again".
+ */
+/datum/lobby_terminal/proc/retry_show()
+	if(open_retries >= LOBBY_TERMINAL_OPEN_RETRIES)
+		return
+	open_retries++
+	addtimer(CALLBACK(src, PROC_REF(retry_show_now)), LOBBY_TERMINAL_OPEN_RETRY_DELAY, TIMER_UNIQUE)
+
+/datum/lobby_terminal/proc/retry_show_now()
+	var/mob/dead/new_player/player = owner?.mob
+	if(!istype(player) || (ui && !QDELETED(ui)))
+		return
 	show(player)
 
 /// Sets the notice line. kind is "ok" (the CONFIRMED box), "warn" (amber line) or "bad" (red line). Null text clears it.
@@ -342,6 +379,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	return FALSE
 
 #undef LOBBY_TERMINAL_LOAD_TIMEOUT
+#undef LOBBY_TERMINAL_OPEN_RETRIES
+#undef LOBBY_TERMINAL_OPEN_RETRY_DELAY
 #undef LOBBY_CODE_MAX_FAILURES
 #undef LOBBY_CODE_LOCKOUT
 #undef LOBBY_CODE_ADMIN_NOTICE_LOCKOUTS

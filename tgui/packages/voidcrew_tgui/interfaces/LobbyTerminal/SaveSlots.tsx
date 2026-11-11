@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { PlanPic } from './PlanPic';
-import { Blocks, Frame, Put, pad, RPut, wrap } from './term';
+import { Blocks, cut, Frame, Put, pad, RPut, wrap, wrapMax } from './term';
 import type { LobbyData, SaveCard } from './types';
 import { Key, thousands, type YardCtx } from './YardTab';
 
@@ -157,7 +157,7 @@ function Card(props: {
           MASS
         </Put>,
         <Put key="mv" x={ix + 5} y={yy} cls={denied ? 'dim' : ''}>
-          {`${thousands(sv.mass)} t`}
+          {cut(`${thousands(sv.mass)} t`, sv.crew !== undefined ? 10 : iw - 5)}
         </Put>,
       );
     }
@@ -191,13 +191,13 @@ function Card(props: {
         frac={0.35}
       />,
       <Put key={`l${i}`} x={ix + 2} y={yy} cls={denied ? 'faint' : 'dim'}>
-        {pad(label, iw - 6)}
+        {pad(label, iw - 8)}
       </Put>,
     );
     if (count) {
       out.push(
         <RPut key={`c${i}`} x={ix + iw} y={yy} cls={denied ? 'faint' : ''}>
-          {String(count)}
+          {cut(String(count), 5)}
         </RPut>,
       );
     }
@@ -213,16 +213,14 @@ function Card(props: {
 
   const by = y + h - 2;
   if (sv.denial) {
-    wrap(sv.denial, iw)
-      .slice(-2)
-      .reverse()
-      .forEach((l, i) => {
-        out.push(
-          <Put key={`d${i}`} x={ix} y={by - i} cls="amb">
-            {l}
-          </Put>,
-        );
-      });
+    const denial = wrapMax(sv.denial, iw, 2);
+    denial.forEach((l, i) => {
+      out.push(
+        <Put key={`d${i}`} x={ix} y={by - denial.length + 1 + i} cls="amb">
+          {l}
+        </Put>,
+      );
+    });
   } else if (sv.locked) {
     out.push(
       <Put key="uw" x={ix} y={by} cls="faint">

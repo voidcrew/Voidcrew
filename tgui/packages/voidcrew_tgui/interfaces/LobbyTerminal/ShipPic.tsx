@@ -7,12 +7,7 @@
  * draw pixelated; anything smaller is a smooth downscale at a whole number of px per tile,
  * so tiles never land between pixels.
  */
-import {
-  type CSSProperties,
-  type ReactNode,
-  useEffect,
-  useState,
-} from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
 import { resolveAsset } from 'tgui/assets';
 
 /**

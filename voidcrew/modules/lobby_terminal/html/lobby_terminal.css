@@ -138,35 +138,35 @@
 }
 
 .lt-key--join { background-image: url('key_join_idle.png'); }
-.lt-key--join:hover { background-image: url('key_join_hover.png'); }
+.lt-key--join.is-focus { background-image: url('key_join_hover.png'); }
 .lt-key--join:active,
 .lt-key--join.is-pressed { background-image: url('key_join_pressed.png'); }
 .lt-key--join.is-disabled,
 .lt-key--join:disabled { background-image: url('key_join_disabled.png'); }
 
 .lt-key--ready { background-image: url('key_ready_idle.png'); }
-.lt-key--ready:hover { background-image: url('key_ready_hover.png'); }
+.lt-key--ready.is-focus { background-image: url('key_ready_hover.png'); }
 .lt-key--ready:active,
 .lt-key--ready.is-pressed { background-image: url('key_ready_pressed.png'); }
 .lt-key--ready.is-disabled,
 .lt-key--ready:disabled { background-image: url('key_ready_disabled.png'); }
 
 .lt-key--notready { background-image: url('key_notready_idle.png'); }
-.lt-key--notready:hover { background-image: url('key_notready_hover.png'); }
+.lt-key--notready.is-focus { background-image: url('key_notready_hover.png'); }
 .lt-key--notready:active,
 .lt-key--notready.is-pressed { background-image: url('key_notready_pressed.png'); }
 .lt-key--notready.is-disabled,
 .lt-key--notready:disabled { background-image: url('key_notready_disabled.png'); }
 
 .lt-key--observe { background-image: url('key_observe_idle.png'); }
-.lt-key--observe:hover { background-image: url('key_observe_hover.png'); }
+.lt-key--observe.is-focus { background-image: url('key_observe_hover.png'); }
 .lt-key--observe:active,
 .lt-key--observe.is-pressed { background-image: url('key_observe_pressed.png'); }
 .lt-key--observe.is-disabled,
 .lt-key--observe:disabled { background-image: url('key_observe_disabled.png'); }
 
 .lt-key--character { background-image: url('key_character_idle.png'); }
-.lt-key--character:hover { background-image: url('key_character_hover.png'); }
+.lt-key--character.is-focus { background-image: url('key_character_hover.png'); }
 .lt-key--character:active,
 .lt-key--character.is-pressed { background-image: url('key_character_pressed.png'); }
 .lt-key--character.is-disabled,

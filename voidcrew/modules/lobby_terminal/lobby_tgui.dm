@@ -2,15 +2,16 @@
  * The terminal's tgui. Same as /datum/tgui except open(): instead of a pooled popup it uses
  * the terminal's own unpooled window bound to the lobby_browser control.
  *
- * The body below copies /datum/tgui/open() (code/modules/tgui/tgui.dm). If upstream changes
- * that proc, change this one to match. Unpooled windows never suspend
+ * The body below copies /datum/tgui/open() (code/modules/tgui/tgui.dm), apart from the update
+ * order and the closed-while-sleeping check marked inside. If upstream changes that proc,
+ * change this one to match. Unpooled windows never suspend
  * (/datum/tgui_window/can_be_suspended() needs `pooled`), which matters here: a suspend
  * would winset the control to 1x1 off-screen and wreck the map pane.
  */
 /datum/tgui/lobby_terminal
 
 /datum/tgui/lobby_terminal/open()
-	if(!user.client)
+	if(!user.client?.prefs) // get_payload() reads the client's preferences
 		return FALSE
 	if(window)
 		return FALSE
@@ -32,10 +33,24 @@
 			))
 	else
 		window.send_message("ping")
-	send_assets()
+	// Differs from upstream: the first update goes out before send_assets(), which can sleep for
+	// seconds while the world is still initialising (browse_queue_flush). The page renders on any
+	// message it gets, and a render before its first update crashes tgui's Window layout on the
+	// empty config, which closes this UI mid-open. Queued first, the update always arrives first.
 	window.send_message("update", get_payload(
 		with_data = TRUE,
 		with_static_data = TRUE))
+	// The page can report itself visible while send_assets() sleeps, so the terminal must
+	// already know this is its UI, or on_window_visible() would hide the control again.
+	terminal.ui = src
+	send_assets()
+	// The UI can close while send_assets() sleeps. Say so, and the terminal tries again.
+	if(QDELETED(src) || closing || !user?.client || QDELETED(src_object))
+		if(!QDELETED(terminal) && terminal.ui == src)
+			terminal.ui = null
+		return FALSE
+	// Again now the asset URLs are mapped, so the first render's pictures resolve.
+	window.send_message("update", get_payload(with_data = TRUE))
 	SStgui.on_open(src)
 	return TRUE
 
@@ -61,7 +76,12 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 	if(!ui)
 		ui = new /datum/tgui/lobby_terminal(user, src, "LobbyTerminal")
 		if(!ui.open())
+			if(src.ui == ui)
+				src.ui = null
+			if(!QDELETED(ui))
+				ui.close(can_be_suspended = FALSE)
 			qdel(ui)
+			retry_show()
 			return
 		src.ui = ui
 

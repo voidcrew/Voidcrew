@@ -7,6 +7,7 @@ import { type ReactNode, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { CrewRecordPane, isLocked } from './CrewRecord';
+import { useBack } from './nav';
 import { Frame, Hit, lpad, Put, pad, TOP, useGrid } from './term';
 import type { Crew, LobbyData } from './types';
 
@@ -34,9 +35,13 @@ export function CrewsTab() {
   const crews = data.crews || [];
   const [selRef, setSelRef] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  /** Which row of a new page takes the focus: the last when paging up with the arrow keys. */
+  const [enterLast, setEnterLast] = useState(false);
 
   const selected = crews.find((c) => c.ref === selRef) || null;
   const h = rows - 1 - TOP;
+  // The record's own BACK (CrewRecord) wins while it is open; this only covers a stale selection.
+  useBack(selected ? () => setSelRef(null) : null);
 
   if (selected && narrow) {
     return (
@@ -152,14 +157,35 @@ export function CrewsTab() {
         </Put>,
       );
     }
+    const firstRow = i === 0;
+    const lastRow = i === shown.length - 1;
     out.push(
       <Hit
-        key={`h${c.ref}`}
+        key={`h${pg}-${c.ref}`}
         x={1}
         y={y}
         w={lw - 3}
         h={1}
         onClick={() => setSelRef(isSel ? null : c.ref)}
+        auto={(enterLast ? lastRow : firstRow) ? 1 : undefined}
+        edge={{
+          down:
+            lastRow && pg < pages
+              ? () => {
+                  setEnterLast(false);
+                  setPage(pg + 1);
+                  return true;
+                }
+              : undefined,
+          up:
+            firstRow && pg > 1
+              ? () => {
+                  setEnterLast(true);
+                  setPage(pg - 1);
+                  return true;
+                }
+              : undefined,
+        }}
       />,
     );
   });
@@ -174,7 +200,14 @@ export function CrewsTab() {
         y={py}
         cls={pg > 1 ? 'inv' : 'faint'}
         bg={pg <= 1}
-        onClick={pg > 1 ? () => setPage(pg - 1) : undefined}
+        onClick={
+          pg > 1
+            ? () => {
+                setEnterLast(false);
+                setPage(pg - 1);
+              }
+            : undefined
+        }
       >
         {' < '}
       </Put>,
@@ -187,7 +220,14 @@ export function CrewsTab() {
         y={py}
         cls={pg < pages ? 'inv' : 'faint'}
         bg={pg >= pages}
-        onClick={pg < pages ? () => setPage(pg + 1) : undefined}
+        onClick={
+          pg < pages
+            ? () => {
+                setEnterLast(false);
+                setPage(pg + 1);
+              }
+            : undefined
+        }
       >
         {' > '}
       </Put>,
