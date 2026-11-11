@@ -47,6 +47,8 @@
 		/obj/item/experi_scanner = 5,
 		/obj/item/research_notes/loot/tiny = 5,
 		/obj/item/stack/ore/bluespace_crystal/artificial = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/antenna = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/plasma/thirty = 10,
@@ -85,6 +87,13 @@
 		// the annex's own interface work: a skull jack that flies a ship from
 		// anywhere aboard it, as long as the hull still has a helm console
 		/obj/item/organ/cyberimp/cyberware/rigger = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/thermal_vision = 3,
+		/obj/item/dnainjector/loot/cryokinesis = 2,
+		/obj/item/dnainjector/loot/pyrokinesis = 2,
+		/obj/item/dnainjector/loot/elastic_arms = 2,
+		/obj/item/dnainjector/loot/chem_spike = 1,
+		/obj/item/dnainjector/loot/biotech = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -96,6 +105,9 @@
 		/obj/item/reagent_containers/cup/beaker/entangled = 2,
 		/obj/item/clothing/gloves/fingerless/chronal_splint = 1,
 		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/xray = 1,
+		/obj/item/dnainjector/loot/telekinesis = 2,
 	)
 
 /obj/structure/closet/crate/zone_loot/research

@@ -58,6 +58,9 @@
 		/obj/item/coin/gold = 5,
 		/obj/item/toy/cards/deck/tarot = 5,
 		/obj/item/reagent_containers/cup/glass/bottle/wine = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/telepathy = 3,
+		/obj/item/dnainjector/loot/cindikinesis = 2,
 	)
 	loot_uncommon = list(
 		/obj/item/statuebust = 8,
@@ -71,6 +74,9 @@
 		// whoever was robbing these graves before you left their tools in
 		// their arm: three seconds a body, and the skull gives up what it kept
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/webbing = 3,
+		/obj/item/dnainjector/loot/autotomy = 2,
 	)
 	loot_prime = list(
 		/obj/item/stack/sheet/mineral/diamond/five = 8,
@@ -83,6 +89,10 @@
 		/obj/item/book/granter/action/spell/sacredflame = 2,
 		/obj/item/book/granter/action/spell/fireball = 1,
 		/obj/item/book/granter/action/spell/random = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/fire_breath = 1,
+		/obj/item/dnainjector/loot/fiery_sweat = 1,
+		/obj/item/dnainjector/loot/void_magnet = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -94,6 +104,8 @@
 		/obj/item/flashlight/lantern/censer_quiet_parish = 2,
 		/obj/item/cane/shepherds_crook = 1,
 		/obj/item/clothing/neck/beads/vow_ring = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/dextrous = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/occult
