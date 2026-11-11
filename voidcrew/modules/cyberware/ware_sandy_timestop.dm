@@ -77,8 +77,9 @@
 		var/red = 90 / 255
 		var/grn = 1
 		var/blue = 150 / 255
-		var/gain = 0.8
-		var/lift = 0.5
+		// gain + lift = 1, so white maps to the green itself and black to a dim green
+		var/gain = 0.65
+		var/lift = 0.35
 		green = list(
 			0.3 * gain * red, 0.3 * gain * grn, 0.3 * gain * blue,
 			0.59 * gain * red, 0.59 * gain * grn, 0.59 * gain * blue,
