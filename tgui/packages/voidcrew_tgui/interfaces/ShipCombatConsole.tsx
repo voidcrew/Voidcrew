@@ -1645,7 +1645,10 @@ const Drawer = () => {
     <div className="Tac__drawerWrap">
       <div className="Tac__tabs">
         {TABS.map((name) => (
-          <TutorialFocus key={name} id={TAB_FOCUS[name] ?? ''}>
+          <TutorialFocus
+            key={name}
+            id={tab === name ? '' : (TAB_FOCUS[name] ?? '')}
+          >
             <button
               type="button"
               className={`Tac__tab ${tab === name ? 'Tac--on' : ''}`}

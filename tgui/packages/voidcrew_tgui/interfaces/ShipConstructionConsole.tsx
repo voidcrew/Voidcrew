@@ -216,9 +216,11 @@ export const ShipConstructionConsole = () => {
               {!isOutpost && (
                 <TutorialFocus
                   id={
-                    data.repairEnabled
-                      ? 'construct_drones_tab'
-                      : ['construct_drones_tab', 'construct_deploy_swarm']
+                    activeTab === 'repair'
+                      ? ''
+                      : data.repairEnabled
+                        ? 'construct_drones_tab'
+                        : ['construct_drones_tab', 'construct_deploy_swarm']
                   }
                 >
                   <Tabs.Tab
