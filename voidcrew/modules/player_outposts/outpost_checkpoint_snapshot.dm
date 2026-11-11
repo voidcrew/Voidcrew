@@ -91,8 +91,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
  * price table (ship_save_progress.dm), and it only ever comes apart into iron (ship_save_capture.dm).
  */
 /datum/ship_checkpoint
-	/// The outpost a construction job builds this in.
-	var/obj/structure/overmap/dynamic/player_outpost/outpost
+	/// The player outpost or trader outpost a construction job builds this at.
+	var/obj/structure/overmap/outpost
 	var/datum/weakref/source_ship
 	/// Live round identity and entitlements; only the round registry owns record lifetime.
 	var/datum/weakref/crew_record_ref

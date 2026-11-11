@@ -537,8 +537,6 @@
 	if (survey_in_progress)
 		return "in-progress"
 
-	if(!data.get_related_celestial_list(object.type))
-		log_runtime("Not found [object.type]")
 	if(is_object_surveyed(object))
 		return "complete"
 	return "unsurveyed"

@@ -254,6 +254,7 @@
 	desc = "Pale, thin and still in an emergency softsuit."
 	outfit = /datum/outfit/ambient_lifeboat
 	dialogue_section = "lifeboat"
+	gives_gifts = TRUE
 	routine = list(
 		/datum/ambient_activity/stray_rest = 2,
 		/datum/ambient_activity/lifeboat_canister = 1,

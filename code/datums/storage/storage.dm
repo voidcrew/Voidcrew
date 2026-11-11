@@ -700,7 +700,7 @@ GLOBAL_LIST_EMPTY(cached_storage_typecaches)
 /datum/storage/proc/remove_and_refresh(atom/movable/gone)
 	SIGNAL_HANDLER
 
-	for(var/mob/user as anything in is_using)
+	for(var/mob/user in is_using) // VOIDCREW EDIT: typed loop skips nulls a hard-deleted viewer leaves behind
 		if(user.client)
 			var/client/cuser = user.client
 			cuser.screen -= gone

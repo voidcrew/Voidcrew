@@ -18,7 +18,7 @@
 	if(QDELETED(shuttle))
 		qdel(src)
 
-/// Every ship bay map has a shipyard console; the board replaces a lost one.
+/// Every ship bay map and trader outpost berth has a shipyard console; the board replaces a lost one.
 /obj/item/circuitboard/computer/ship_checkpoint
 	name = "Shipyard Console (Computer Board)"
 	greyscale_colors = CIRCUIT_COLOR_COMMAND
@@ -28,7 +28,7 @@
 /// the shop and is kept so maps and boards stay valid.
 /obj/machinery/computer/ship_checkpoint
 	name = "shipyard console"
-	desc = "Orders new ships for the outpost ship bay and keeps records of ships saved there."
+	desc = "Orders new ships and keeps records of ships saved here."
 	icon_screen = "id"
 	icon_keyboard = "id_key"
 	circuit = /obj/item/circuitboard/computer/ship_checkpoint
@@ -42,9 +42,9 @@
 	return ..()
 
 /obj/machinery/computer/ship_checkpoint/ui_interact(mob/user, datum/tgui/ui)
-	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
-	if(!home?.ship_bay_installed)
-		balloon_alert(user, "no outpost ship bays")
+	var/obj/structure/overmap/home = get_shipyard_host(src)
+	if(!home?.shipyard_open())
+		balloon_alert(user, "no ship bay")
 		return
 	for(var/datum/ship_checkpoint_ui/panel as anything in checkpoint_panels.Copy())
 		if(panel.user_ref.resolve() != user)
@@ -61,7 +61,8 @@
 	return null
 
 /datum/ship_checkpoint_ui
-	var/obj/structure/overmap/dynamic/player_outpost/outpost
+	/// The player outpost or trader outpost this console serves (outpost_shipyard.dm)
+	var/obj/structure/overmap/outpost
 	var/datum/weakref/host_ref
 	var/datum/weakref/user_ref
 	var/turf/host_turf
@@ -69,7 +70,7 @@
 	var/notice
 	var/working = FALSE
 
-/datum/ship_checkpoint_ui/New(obj/structure/overmap/dynamic/player_outpost/home, obj/machinery/computer/host, mob/user)
+/datum/ship_checkpoint_ui/New(obj/structure/overmap/home, obj/machinery/computer/host, mob/user)
 	outpost = home
 	host_ref = WEAKREF(host)
 	user_ref = WEAKREF(user)
@@ -101,9 +102,9 @@
 
 /datum/ship_checkpoint_ui/ui_status(mob/user, datum/ui_state/state)
 	var/obj/machinery/computer/host = host_ref?.resolve()
-	if(QDELETED(outpost) || !outpost.ship_bay_installed || QDELETED(host) || get_turf(host) != host_turf || user_ref.resolve() != user || !isliving(user) || !user.ckey)
+	if(QDELETED(outpost) || !outpost.shipyard_open() || QDELETED(host) || get_turf(host) != host_turf || user_ref.resolve() != user || !isliving(user) || !user.ckey)
 		return UI_CLOSE
-	if(!istype(host, /obj/machinery/computer/ship_checkpoint) || get_outpost_from_atom(host) != outpost)
+	if(!istype(host, /obj/machinery/computer/ship_checkpoint) || get_shipyard_host(host) != outpost)
 		return UI_CLOSE
 	return host.ui_status(user, host.ui_state(user))
 
@@ -156,7 +157,7 @@
 		return
 	switch(action)
 		if("ship_save_store")
-			var/datum/outpost_berth/ship_bay/bay = locate(params["ref"]) in outpost.bay_berths
+			var/datum/outpost_berth/bay = locate(params["ref"]) in outpost.shipyard_berths()
 			save_ship(user, bay, text2num(params["slot"]), params["funds_parts"] ? text2num(params["funds_parts"]) : 0)
 		if("ship_save_retrieve")
 			retrieve_ship(user, text2num(params["slot"]))
