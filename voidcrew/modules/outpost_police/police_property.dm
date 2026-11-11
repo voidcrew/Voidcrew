@@ -479,17 +479,16 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	oldest?.evict()
 	return oldest
 
-/// A tile outside the cell `prisoner` is in, or the officer's own tile when there is none
+/// The lobby tile outside the door of the cell `prisoner` is in (the cell's own outside_turf), or the officer's own tile when there is none
 /datum/outpost_police/proc/property_outside_turf(mob/living/prisoner, mob/living/officer)
 	var/turf/inside = get_turf(prisoner)
 	for(var/datum/outpost_police_cell/cell as anything in cells)
-		if(!(inside in cell.tiles) || !cell.door)
+		if(!(inside in cell.tiles))
 			continue
-		var/turf/door_turf = get_turf(cell.door)
-		for(var/direction in GLOB.cardinals)
-			var/turf/candidate = get_step(door_turf, direction)
-			if(candidate && !candidate.density && !(candidate in cell.tiles))
-				return candidate
+		// usable() looks for the outside tile again when it is missing or built over
+		if(cell.usable())
+			return cell.outside_turf
+		break
 	return get_turf(officer) || inside
 
 /datum/outpost_police/proc/property_strip_check(mob/living/prisoner, mob/living/officer)
