@@ -1,0 +1,29 @@
+Mojave Sun (https://github.com/Mojave-Sun/mojave-sun-13), commit 1302c0c1f01, licensed CC BY-NC-SA 3.0 (Mojave Sun also licenses its DMI files under AGPL v3).
+States are renamed from the originals listed below.
+
+guns.dmi
+	kestrel, kestrel_empty - mojave/icons/objects/guns/guns_world.dmi stanlas_pistol, stanlas_pistol_empty
+	hornet, hornet_empty - mojave/icons/objects/guns/guns_world.dmi rcw, rcw_empty
+	cinder - mojave/icons/objects/guns/guns_world.dmi plasmapistol
+	cinder_empty - mojave/icons/objects/guns/guns_world.dmi plasmapistol_empty, modified (plasma glass darkened)
+	furnace, furnace_empty - mojave/icons/objects/guns/guns_world.dmi enclaveplasma, enclaveplasma_empty
+	old_furnace, old_furnace_empty - mojave/icons/objects/guns/guns_world.dmi enclaveplasma, enclaveplasma_empty, modified (recoloured)
+	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/objects/guns/guns_world.dmi enclaveplasma, modified
+
+guns_lefthand.dmi, guns_righthand.dmi
+	kestrel - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi stanlas_pistol
+	cinder - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi plasmapistol
+	hornet_wielded - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi rcw_wielded
+	furnace_wielded - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi enclaveplasma_wielded
+	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi enclaveplasma_wielded, modified
+
+guns_back.dmi
+	hornet - mojave/icons/mob/worn_guns.dmi rcw
+	furnace - mojave/icons/mob/worn_guns.dmi enclaveplasma
+
+flask.dmi
+	flask_0 - mojave/icons/objects/ammo/ammo_world.dmi plasma_empty
+	flask_3 - mojave/icons/objects/ammo/ammo_world.dmi plasma
+	flask_1, flask_2 - drawn from plasma and plasma_empty, modified
+
+projectiles.dmi and effects.dmi are original Voidcrew art.
