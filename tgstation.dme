@@ -7059,6 +7059,7 @@
 #include "voidcrew\modules\ambient_npcs\planet_peddler.dm"
 #include "voidcrew\modules\ambient_npcs\planet_sites.dm"
 #include "voidcrew\modules\ambient_npcs\recruit.dm"
+#include "voidcrew\modules\ambient_npcs\rescue_reputation.dm"
 #include "voidcrew\modules\ambient_npcs\stranded.dm"
 #include "voidcrew\modules\ambient_npcs\stranded_lifeboat.dm"
 #include "voidcrew\modules\anomalies\core_rewards.dm"

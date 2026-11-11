@@ -35,6 +35,10 @@
 			"Real walls. I forgot what walls looked like. Here, {other}, I pulled this out of the pod. It's yours.",
 			"Thank you. I mean it. Take this, it's the only thing off the pod worth keeping."
 		],
+		"delivered": [
+			"Solid ground. I'll tell them who pulled me out of that pod.",
+			"Thanks, {other}. They'll hear your crew's name from me."
+		],
 		"fire": [
 			"Don't you go out on me.",
 			"Last of the dry stuff."
@@ -88,6 +92,10 @@
 		"rescued": [
 			"Gravity. Real air. Here, {other}, take this. It came off the lifeboat.",
 			"I owe you. Start with this."
+		],
+		"delivered": [
+			"A real dock. Thank you, {other}.",
+			"Everyone here's going to hear who picked up that lifeboat."
 		],
 		"canister": [
 			"Still a third. Still a third.",
