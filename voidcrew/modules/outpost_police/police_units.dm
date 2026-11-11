@@ -503,6 +503,39 @@
 		return cuffs
 	return null
 
+/// Puts `thing` from their hand back where it is carried (its slot, a pocket, the belt or the bag). TRUE once it is out of their hands.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_put_away(obj/item/thing)
+	if(QDELETED(thing) || !is_holding(thing))
+		return TRUE
+	if(equip_to_appropriate_slot(thing))
+		return TRUE
+	for(var/obj/item/holder in list(belt, back))
+		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+			return TRUE
+	return !is_holding(thing)
+
+/// A hand free for what they are about to take: if both are full, something held goes away. TRUE if a hand is free.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_free_hand()
+	if(length(get_empty_held_indexes()))
+		return TRUE
+	for(var/obj/item/held in held_items)
+		if(istype(held, /obj/item/outpost_sealed_case/evidence))
+			continue
+		if(police_put_away(held) && length(get_empty_held_indexes()))
+			return TRUE
+	return length(get_empty_held_indexes()) > 0
+
+/// Takes `thing` into a free hand (making one free), or failing that into the belt or the bag. TRUE if they have it.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_carry(obj/item/thing)
+	if(QDELETED(thing))
+		return FALSE
+	if(police_free_hand() && put_in_hands(thing))
+		return TRUE
+	for(var/obj/item/holder in list(belt, back))
+		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+			return TRUE
+	return thing in get_all_contents()
+
 /// Their energy gun (every officer has one), or null
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/get_sidearm()
 	return locate(/obj/item/gun/energy) in get_all_contents()

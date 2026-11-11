@@ -5,7 +5,7 @@
  *
  * One /datum/outpost_police per trader outpost (`outpost.police`). It holds warrants (mind -> heat, this
  * outpost only), the officers on the roster, the station's parts (lift tiles, desk, cells, property lockers,
- * evidence chute) and a one-second tick that runs while there is anything to do. Every crime at the outpost
+ * evidence locker) and a one-second tick that runs while there is anything to do. Every crime at the outpost
  * enters through report_crime() (police_wanted.dm). Officers are ambient outpost NPCs with a stealth guard's
  * brain (/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police, in
  * voidcrew/modules/stealth_police/police_stealth.dm: it overrides stealth procs, so it is included after stealth).
@@ -17,7 +17,7 @@
  * - police_dispatch.dm, police_force.dm: sectors, lifts, waves, targeting, fire rules (P4)
  * - police_arrest.dm: the arrest case (P5)
  * - police_cell.dm: cells, police doors and cell doors (P6)
- * - police_property.dm: confiscation, evidence chute, property lockers, the jail strip (P12)
+ * - police_property.dm: confiscation, the evidence locker, property lockers, the jail strip (P12)
  * - police_hud.dm: the wanted alert (P8)
  *
  * Include order: this module comes after ambient_npcs, bounties, human_npcs and npc_ships, and before
@@ -83,8 +83,8 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	var/datum/outpost_police_perception/perception
 	/// The station's property lockers (behaviour in police_property.dm)
 	var/list/obj/structure/closet/secure_closet/personal/outpost_police/lockers = list()
-	/// The evidence chute at the desk
-	var/obj/machinery/outpost_police_evidence/chute
+	/// The evidence locker in the station (evidence_locker.dm): what officers take goes in it
+	var/obj/structure/closet/secure_closet/outpost_evidence/evidence_locker
 	/// Every officer on the roster, alive or dead. Use add_officer() and remove_officer().
 	var/list/mob/living/carbon/human/npc/ambient_npc/outpost/police/officers = list()
 	/// The police lift tiles behind the police doors on the concourse
@@ -125,7 +125,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	QDEL_NULL(profile)
 	lockers.Cut()
 	lift_turfs.Cut()
-	chute = null
+	evidence_locker = null
 	desk_turf = null
 	outpost = null
 	return ..()
@@ -202,10 +202,10 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /**
  * The outpost's interior link (trade/outpost.dm) hands over everything the template placed for the police:
  * `landmarks` (lift, desk and cell landmarks), `doors` (police doors and cell doors), `signs` (cell signs),
- * `lockers` (property lockers) and the evidence `chute`. The cells and the property are built from them,
+ * `lockers` (property lockers) and the `evidence` locker. The cells and the property are built from them,
  * then the landmarks are deleted.
  */
-/datum/outpost_police/proc/link_interior(list/landmarks, list/doors, list/signs, list/new_lockers, obj/machinery/outpost_police_evidence/new_chute)
+/datum/outpost_police/proc/link_interior(list/landmarks, list/doors, list/signs, list/new_lockers, obj/structure/closet/secure_closet/outpost_evidence/new_evidence)
 	var/list/cell_landmarks = list()
 	var/list/cell_doors = list()
 	for(var/obj/effect/landmark/mark as anything in landmarks)
@@ -223,13 +223,13 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 			cell_doors += door
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in new_lockers)
 		lockers |= locker
-	if(new_chute)
-		if(chute && chute != new_chute)
-			log_mapping("OUTPOST POLICE: [outpost] has more than one evidence chute ([AREACOORD(new_chute)]).")
-		chute = new_chute
+	if(new_evidence)
+		if(evidence_locker && evidence_locker != new_evidence)
+			log_mapping("OUTPOST POLICE: [outpost] has more than one evidence locker ([AREACOORD(new_evidence)]).")
+		evidence_locker = new_evidence
 	// The cells read their landmarks' tiles, so the landmarks go only after
 	build_cells(cell_landmarks, cell_doors, signs) // P6, police_cell.dm
-	build_property(lockers, chute) // P12, police_property.dm
+	build_property(lockers, evidence_locker) // P12, police_property.dm
 	read_stop_tags() // P13, voidcrew/modules/stealth_police/police_stealth.dm
 	for(var/obj/effect/landmark/mark as anything in landmarks)
 		qdel(mark)

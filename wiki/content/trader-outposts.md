@@ -204,7 +204,7 @@ Stars fade if you stay out of sight of the officers long enough, or if you leave
 
 Stand still, drop your weapon and put your hands down, or use `*surrender` at 1-2 stars, and the officer cuffs you without a fight. Otherwise they stun you first.
 
-- **What they take.** Every weapon or tool you used in a crime goes down the evidence chute at the desk and is destroyed. It does not come back. Anything you stole from a prisoner's locker goes back to the locker. Implants, cyberware, ship keys and mission items are never taken.
+- **What they take.** Every weapon or tool you used in a crime goes into the security station's evidence locker. Only outpost security's own IDs open it. An emag breaks the lock, but doing that in front of an officer is theft. Anything you stole from a prisoner's locker goes back to the locker. Implants, cyberware, ship keys and mission items are never taken.
 - **The fine.** 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at Undertow, paid from your crew's ship accounts together. It is paid in full or not at all.
 - **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
 - **If it is not.** You go to jail, three minutes at 1 star and six at 2. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID and your implants. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.

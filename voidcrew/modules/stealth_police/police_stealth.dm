@@ -213,9 +213,96 @@
 		return POLICE_LINE_LOST
 	return kind
 
+/**
+ * Its target went down to its stun short of crit (owner decision 34): at one or two stars that is an arrest, made
+ * where they lie by the case (police_arrest.dm), not stealth's "stay down" and a walk away. Anyone else down is
+ * stealth's as before (three stars and up: the lethal response and the zone's rule on the downed).
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_target_downed(mob/living/fallen)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(!istype(officer) || !officer.police?.arrest_downed(fallen))
+		return ..()
+	notice_map -= REF(fallen)
+	clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	clear_blackboard_key(BB_STEALTH_FOCUS)
+	// The arresting officer's case drives it; anyone else is back to its beat
+	if(!officer.case)
+		stealth_go_unaware()
+
+// ----- the public (owner decision 35) -----
+// The concourse is a public place. Stealth's guards treat anyone they are not allied with as a stranger to look
+// into; officers do not share a side with anyone (police_units.dm faction_check_atom()), so without these a
+// visitor who only walks past makes them suspicious. Sight already goes through the police targeting strategy;
+// these do the same for footsteps, everyday noises, doors and bumps. Loud trouble (gunfire, blasts, breaking glass,
+// bashing, screams) still brings them to look, whoever made it.
+
+/// Steps of someone the police have nothing on are not heard: their last-seen tile is kept current, so they never moved
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_hear_footsteps()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(istype(officer) && officer.police && length(heard_map))
+		for(var/key in heard_map)
+			var/mob/living/walker = locate(key)
+			if(isliving(walker) && !officer.police_has_business(walker))
+				heard_map[key] = get_turf(walker)
+	return ..()
+
+// Someone it has nothing on walking into it is no stranger in the dark: it's a crowd
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_bumped(atom/source, atom/movable/bumper)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(isliving(bumper) && istype(officer) && !officer.police_has_business(bumper))
+		return
+	return ..()
+
+// A friendly hand (a shake, a pat on the back) from someone it has nothing on; a hand in combat mode is still felt
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_handled(mob/living/source, mob/living/toucher)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(isliving(toucher) && !toucher.combat_mode && istype(officer) && !officer.police_has_business(toucher))
+		return
+	return ..()
+
+/// The police of the outpost this group patrols, or null for any other stealth group
+/datum/stealth_group/proc/outpost_police()
+	return home ? get_trader_outpost_for_turf(home)?.police : null
+
+// The outpost's doors are the public's: one moving is nobody's business (a forced door is a bash, and still heard)
+/datum/stealth_group/door_is_theirs(key, turf/where, opening)
+	if(outpost_police())
+		return TRUE
+	return ..()
+
+/// Noises of everyday life at an outpost: nothing an officer looks into from someone they have nothing on
+/proc/outpost_police_everyday_noise(kind)
+	var/static/list/everyday = list(
+		STEALTH_NOISE_DOOR = TRUE,
+		STEALTH_NOISE_VOICE = TRUE,
+		STEALTH_NOISE_KNOCK = TRUE,
+		STEALTH_NOISE_THUD = TRUE,
+		STEALTH_NOISE_CRUNCH = TRUE,
+		STEALTH_NOISE_THROWN = TRUE,
+	)
+	return everyday[kind]
+
+/datum/stealth_group/hear(turf/where, kind, reach, level, flags, mob/living/actor, door = FALSE)
+	if(!(flags & STEALTH_NOISE_GROUP_ONLY) && outpost_police_everyday_noise(kind))
+		var/datum/outpost_police/police = outpost_police()
+		if(police && (isnull(actor) || ((actor.mind || actor.client) && police.force_level(actor) == POLICE_FORCE_NONE)))
+			return 0
+	return ..()
+
 // =========================================================================
 // ON THE OFFICER
 // =========================================================================
+
+/**
+ * Whether this officer has any business with `who`: a person by their warrant or by a crime it saw itself; anyone
+ * else (a creature, a resident) by stealth's own rules. A visitor with a clean record is none of its business.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_has_business(mob/living/who)
+	if(!isliving(who) || !police || !(who.mind || who.client))
+		return TRUE
+	return police.force_level(who, src) != POLICE_FORCE_NONE
 
 /**
  * This officer saw `offender` commit a crime whose report waits on its call (police_wanted.dm queue_report()): it

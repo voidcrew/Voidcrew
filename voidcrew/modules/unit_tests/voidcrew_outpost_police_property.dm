@@ -3,16 +3,16 @@
  * Helpers are in voidcrew_outpost_police_helpers.dm. Fork defines are included after the tests: use
  * literal values with a comment naming the define.
  *
- * The fixture is a bare police datum (no outpost), four property lockers and an evidence chute on the unit
+ * The fixture is a bare police datum (no outpost), four property lockers and an evidence locker on the unit
  * test room's floor, and people with minds. The search and strip waits are turned down to a tick.
  */
 
 /datum/unit_test/voidcrew_outpost_police_property
 	abstract_type = /datum/unit_test/voidcrew_outpost_police_property
 	var/datum/outpost_police/police
-	var/obj/machinery/outpost_police_evidence/chute
+	var/obj/structure/closet/secure_closet/outpost_evidence/evidence
 	var/list/obj/structure/closet/secure_closet/personal/outpost_police/bank = list()
-	/// Floor tiles not used by the bank or the chute
+	/// Floor tiles not used by the bank or the evidence locker
 	var/list/turf/spare = list()
 	var/saved_scale
 
@@ -22,7 +22,7 @@
 	spare = null
 	return ..()
 
-/// Police with `locker_count` lockers and a chute; the waits cut to a tick
+/// Police with `locker_count` lockers and an evidence locker; the waits cut to a tick
 /datum/unit_test/voidcrew_outpost_police_property/proc/fixture(locker_count = 4)
 	saved_scale = GLOB.outpost_police_property_time_scale
 	GLOB.outpost_police_property_time_scale = 0.01
@@ -36,9 +36,9 @@
 		var/obj/structure/closet/secure_closet/personal/outpost_police/locker = allocate(/obj/structure/closet/secure_closet/personal/outpost_police, floor[index])
 		bank += locker
 		police.lockers += locker
-	chute = allocate(/obj/machinery/outpost_police_evidence, floor[locker_count + 1])
-	police.chute = chute
-	police.build_property(police.lockers, chute)
+	evidence = allocate(/obj/structure/closet/secure_closet/outpost_evidence, floor[locker_count + 1])
+	police.evidence_locker = evidence
+	police.build_property(police.lockers, evidence)
 	for(var/index in (locker_count + 2) to length(floor))
 		spare += floor[index]
 
@@ -228,7 +228,7 @@
 	TEST_ASSERT_EQUAL(police.property_locker_for(next), spare_locker, "The next booking did not take the broken locker")
 	TEST_ASSERT(!spare_locker.broken && spare_locker.locked, "The broken lock was not reset at the booking")
 
-/// Taking a stored item: the owner frees the locker, a stranger is put on record, and an arrested thief's loot goes back, not down the chute
+/// Taking a stored item: the owner frees the locker, a stranger is put on record, and an arrested thief's loot goes back, not into the evidence locker
 /datum/unit_test/voidcrew_outpost_police_property/pickup
 
 /datum/unit_test/voidcrew_outpost_police_property/pickup/Run()
@@ -269,11 +269,11 @@
 	TEST_ASSERT(prize in case.contents, "The stolen item was not taken")
 	TEST_ASSERT(own_tool in case.contents, "The crime tool was not taken")
 	police.dispose_evidence(cop)
-	TEST_ASSERT(!QDELETED(prize), "Stolen property went down the chute")
+	TEST_ASSERT(!QDELETED(prize), "Stolen property was deleted")
 	TEST_ASSERT_EQUAL(prize.loc, locker, "Stolen property did not go back to its locker")
 	TEST_ASSERT(locker.locked, "The lock was not reset after the goods came back")
-	TEST_ASSERT(QDELETED(own_tool), "The crime tool survived the chute")
-	TEST_ASSERT(QDELETED(case), "The case survived the chute")
+	TEST_ASSERT_EQUAL(own_tool.loc, evidence, "The crime tool did not go in the evidence locker")
+	TEST_ASSERT(QDELETED(case), "The case survived being emptied")
 
 	// The owner collecting their things frees the locker once nothing of theirs is left
 	locker.open(null, TRUE)
@@ -288,10 +288,14 @@
 	TEST_ASSERT(locker.is_free(), "A collected locker did not shut and lock again")
 	TEST_ASSERT(locker.locked, "A collected locker was left unlocked")
 
-/// The Search step takes a recorded gun from a backpack and leaves an unrecorded one; the chute deletes it and leaves nothing
-/datum/unit_test/voidcrew_outpost_police_property/chute
+/**
+ * The Search step takes a recorded gun from a backpack and leaves an unrecorded one; at the evidence locker the gun
+ * goes inside and the case is gone. The locker stays locked to anyone without a police ID, opens to one, and an emag
+ * breaks it open (owner decision 30).
+ */
+/datum/unit_test/voidcrew_outpost_police_property/evidence_locker
 
-/datum/unit_test/voidcrew_outpost_police_property/chute/Run()
+/datum/unit_test/voidcrew_outpost_police_property/evidence_locker/Run()
 	fixture(4)
 	var/mob/living/carbon/human/suspect = outfitted()
 	var/mob/living/carbon/human/cop = officer_beside(suspect)
@@ -314,13 +318,25 @@
 	TEST_ASSERT(cop.is_holding(case), "The evidence case is not in the officer's hand")
 	TEST_ASSERT(!(key in case.contents), "A ship key went into the case")
 
-	// The chute: tool deleted, nothing on the floor, case last
+	// Into the locker, standing open or not: the gun inside, nothing on the floor, the case gone
+	evidence.open(null, TRUE)
 	police.dispose_evidence(cop)
-	TEST_ASSERT(QDELETED(recorded), "The recorded gun survived the chute")
-	TEST_ASSERT(QDELETED(case), "The case survived the chute")
-	TEST_ASSERT(!(locate(/obj/item/gun) in get_turf(chute)), "The chute left a gun on the floor")
-	TEST_ASSERT(!QDELETED(unrecorded) && !QDELETED(key), "The chute took more than the evidence")
-	TEST_ASSERT_EQUAL(chute.emag_act(suspect, allocate(/obj/item/card/emag)), FALSE, "The chute took an emag")
+	TEST_ASSERT_EQUAL(recorded.loc, evidence, "The recorded gun is in [recorded.loc], not the evidence locker")
+	TEST_ASSERT(!evidence.opened, "The evidence locker was left open")
+	TEST_ASSERT(QDELETED(case), "The case survived being emptied")
+	TEST_ASSERT(!(locate(/obj/item/gun) in get_turf(cop)), "A gun was left on the floor")
+	TEST_ASSERT(!QDELETED(unrecorded) && !QDELETED(key), "More than the evidence was taken")
+
+	// A visitor's card does nothing; a police card opens it; an emag breaks it open
+	evidence.locked = TRUE
+	evidence.update_appearance()
+	var/obj/item/card/id/advanced/visitor_card = allocate(/obj/item/card/id/advanced)
+	TEST_ASSERT(!evidence.check_access(visitor_card), "A card with no police access opens the evidence locker")
+	var/obj/item/card/id/advanced/police_card = allocate(/obj/item/card/id/advanced)
+	police_card.access = list("outpost_police") // ACCESS_OUTPOST_POLICE
+	TEST_ASSERT(evidence.check_access(police_card), "A police card does not open the evidence locker")
+	TEST_ASSERT(evidence.emag_act(suspect, allocate(/obj/item/card/emag)), "An emag did nothing to the evidence locker")
+	TEST_ASSERT(!evidence.locked, "An emag left the evidence locker locked")
 
 	// A case deleted any other way keeps nothing alive (abuse M24)
 	var/obj/item/outpost_sealed_case/evidence/loose = new(get_turf(cop))

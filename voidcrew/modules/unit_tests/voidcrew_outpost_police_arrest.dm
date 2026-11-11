@@ -176,8 +176,9 @@
 	police_arrest_wait(case)
 	TEST_ASSERT_EQUAL(case.search_calls, 1, "A second search step searched again")
 
-	// Booking before the desk is refused
+	// Booking before the desk is refused. The evidence locker is beside the officer.
 	police.desk_turf = get_turf(officer)
+	police.evidence_locker = allocate(/obj/structure/closet/secure_closet/outpost_evidence, police_arrest_beside(officer))
 	case.set_step("book")
 	case.step_book()
 	TEST_ASSERT_EQUAL(case.step, "desk", "The case went to book before the evidence was dealt with")
@@ -245,6 +246,7 @@
 	second.evidence_ref = WEAKREF(evidence)
 	second.set_step("escort")
 	police.desk_turf = get_turf(second_officer)
+	police.evidence_locker = allocate(/obj/structure/closet/secure_closet/outpost_evidence, police_arrest_beside(second_officer))
 	dead.death()
 	second.process_case()
 	TEST_ASSERT(second.suspect_lost, "A suspect who died after the search is not given up")
@@ -334,6 +336,240 @@
 	police.tick_cases()
 	TEST_ASSERT(!QDELETED(third), "A cuffed suspect's arrest was called off at three stars")
 
+// ===== PLAYTEST 1 (owner decision 34): NO ARREST STALLS =====
+
+/**
+ * The emag arrest from the playtest: an officer with both hands full (sidearm and baton) cuffs a two-star suspect,
+ * searches them and carries the evidence case off. It never drops the case and stands over it; the emag goes in the
+ * evidence locker and the suspect into a cell.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_cuffed_to_cell
+	var/saved_scale
+
+/datum/unit_test/voidcrew_outpost_police_arrest_cuffed_to_cell/Destroy()
+	if(!isnull(saved_scale))
+		GLOB.outpost_police_property_time_scale = saved_scale
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_arrest_cuffed_to_cell/Run()
+	saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost, 30) // two stars (OUTPOST_POLICE_STAR_HEAT 25)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+	var/list/ships = list(wanted_ship(suspect, 5000))
+
+	// Both hands full, as after a fight at two stars
+	var/obj/item/gun = officer.get_sidearm()
+	var/obj/item/baton = officer.get_baton()
+	TEST_ASSERT(gun && baton, "An officer has no sidearm or no baton")
+	human_npc_take_in_hand(officer, gun)
+	human_npc_take_in_hand(officer, baton)
+	TEST_ASSERT(!length(officer.get_empty_held_indexes()), "The officer's hands are not both full")
+
+	// The emag: in the suspect's hand and on the warrant
+	var/obj/item/card/emag/emag = allocate(/obj/item/card/emag)
+	suspect.put_in_hands(emag)
+	var/datum/outpost_warrant/warrant = police.warrants[suspect.mind]
+	LAZYADD(warrant.evidence, WEAKREF(emag))
+
+	suspect.Knockdown(20 SECONDS)
+	case.set_step("cuff")
+	case.step_cuff()
+	police_arrest_wait(case)
+	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "An officer with full hands did not cuff a suspect on the floor")
+	TEST_ASSERT_EQUAL(case.step, "search", "After the cuffs the case is on [case.step], not the search")
+	var/obj/item/own_cuffs = officer.get_cuffs()
+	TEST_ASSERT(own_cuffs && !officer.is_holding(own_cuffs), "The officer kept their cuffs in hand after cuffing")
+
+	case.step_search()
+	police_arrest_wait(case, 20 SECONDS)
+	var/obj/item/evidence = case.evidence_ref?.resolve()
+	TEST_ASSERT_NOTNULL(evidence, "The search filled no evidence case")
+	TEST_ASSERT(evidence in officer.get_all_contents(), "The evidence case is not on the officer (it is in [evidence?.loc])")
+	TEST_ASSERT(!case.recover_evidence(officer), "The officer stands over evidence it already carries")
+	TEST_ASSERT_EQUAL(case.step, "escort", "After the search the case is on [case.step], not the escort")
+
+	// On to the evidence locker, the suspect along
+	var/obj/structure/closet/secure_closet/outpost_evidence/locker = police_evidence_locker(outpost)
+	case.step_escort()
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "The officer did not take the suspect along")
+	TEST_ASSERT_EQUAL(case.evidence_spot(officer), locker, "The evidence is not headed for the evidence locker")
+	police_jail_carry(officer, suspect, get_turf(locker))
+	case.step_escort()
+	TEST_ASSERT_EQUAL(case.step, "desk", "At the evidence locker the case is on [case.step]")
+	case.step_desk()
+	police_arrest_wait(case)
+	TEST_ASSERT(case.disposed_at, "The evidence was not put away")
+	TEST_ASSERT_EQUAL(emag.loc, locker, "The emag is in [emag.loc], not the evidence locker")
+
+	// The cell
+	var/datum/outpost_police_cell/cell = police.cell_best()
+	TEST_ASSERT_NOTNULL(cell, "The outpost has no cell")
+	case.step_desk()
+	police_jail_carry(officer, suspect, cell.outside_turf)
+	case.step_desk()
+	TEST_ASSERT_EQUAL(case.step, "book", "At the cell door the case is on [case.step]")
+	case.step_book()
+	police_arrest_wait(case, 40 SECONDS)
+	TEST_ASSERT(QDELETED(case), "The arrest did not end at the cell")
+	TEST_ASSERT(get_turf(suspect) in cell.tiles, "The suspect is not in the cell")
+	TEST_ASSERT_NULL(suspect.handcuffed, "The prisoner is still cuffed in the cell")
+	wanted_cleanup(ships)
+
+/**
+ * The disabler loop from the playtest: a two-star suspect knocked into stamina crit in front of an officer is
+ * arrested where they lie (no "stay down" and a walk away), and the arrest cuffs them before they are up. A lone
+ * officer can open an arrest at all.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_stamcrit
+
+/datum/unit_test/voidcrew_outpost_police_arrest_stamcrit/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost)
+	police_arrest_kit(officer)
+	var/mob/living/carbon/human/suspect = police_arrest_person(police_arrest_beside(officer))
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 30) // two stars
+	police.sleep_tick()
+	TEST_ASSERT_NULL(police.cases[suspect.mind], "A case was open before the test")
+
+	// Disabled into stamina crit while the officer fights them on stealth's rules
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	brain.stealth_go_alert(suspect)
+	suspect.adjustStaminaLoss(200)
+	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_INCAPACITATED), "200 stamina damage did not put the suspect down")
+	TEST_ASSERT(suspect.stat != DEAD && !HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION), "The suspect is in crit, not stamina crit")
+	brain.stealth_target_downed(suspect)
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	TEST_ASSERT_NOTNULL(case, "A two-star suspect in stamina crit in front of an officer is not under arrest")
+	TEST_ASSERT_NULL(brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "The officer still fights a suspect in stamina crit")
+	police.sleep_tick()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = case.arresting()
+	TEST_ASSERT_NOTNULL(arresting, "The arrest has no officer")
+	if(!arresting.Adjacent(suspect))
+		arresting.forceMove(police_arrest_beside(suspect))
+	police_arrest_kit(arresting)
+
+	// The case cuffs them where they lie
+	for(var/i in 1 to 6)
+		if(QDELETED(case) || suspect.handcuffed)
+			break
+		case.process_case()
+		police_arrest_wait(case)
+	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "A suspect in stamina crit was not cuffed (the case is on [QDELETED(case) ? "nothing" : case.step])")
+	TEST_ASSERT(QDELETED(case) || case.strikes == 0, "A suspect already down was struck")
+	if(!QDELETED(case))
+		police.close_case(suspect.mind)
+	warrant.heat = 0
+
+	// One free officer is enough to open an arrest: the cases allowed are half the free officers, rounded up
+	var/available = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/someone in police.officers)
+		if(police.dispatch_can_respond(someone) && someone.unit_kind != "sergeant") // POLICE_UNIT_SERGEANT
+			available++
+	TEST_ASSERT(available >= 1, "No officer is free")
+	var/mob/living/carbon/human/other = police_arrest_person(police_floor(outpost))
+	var/datum/outpost_warrant/other_warrant = police_pin_warrant(police, other.mind, 12) // one star
+	for(var/datum/mind/open_mind as anything in police.cases.Copy())
+		police.close_case(open_mind)
+	if(available == 1)
+		SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
+		police.dispatch_open_cases()
+		police.sleep_tick()
+		TEST_ASSERT_NOTNULL(police.cases[other.mind], "A lone free officer opened no arrest")
+	police.close_case(other.mind)
+	other_warrant.heat = 0
+
+/**
+ * A cuffed suspect who breaks the officer's hold on the walk is run down and held by a firm grip; one who slips the
+ * cuffs is arrested again. An arrest called off with our cuffs still on ends with an officer taking them off.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_recapture
+
+/datum/unit_test/voidcrew_outpost_police_arrest_recapture/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.cuffs_on(suspect)
+	case.searched = TRUE
+	case.set_step("escort")
+	case.step_escort()
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "The officer did not take hold of a cuffed suspect")
+
+	// They break free and run off in the cuffs
+	officer.stop_pulling()
+	var/turf/open/away = police_floor(outpost)
+	TEST_ASSERT_NOTNULL(away, "No free floor to run to")
+	suspect.forceMove(away)
+	TEST_ASSERT(!officer.Adjacent(suspect), "The suspect could not be put out of reach")
+	case.step_escort()
+	TEST_ASSERT_EQUAL(case.pull_breaks, 1, "A broken hold was not noticed")
+	TEST_ASSERT_EQUAL(case.goal, suspect, "The officer is not going after a suspect who ran in cuffs")
+	TEST_ASSERT_EQUAL(officer.move_intent, MOVE_INTENT_RUN, "The officer walks after a suspect who ran")
+	TEST_ASSERT(!QDELETED(case) && case.step == "escort", "The arrest gave up on a suspect who ran in cuffs")
+
+	// Caught up: held again, firmly this time
+	officer.forceMove(police_arrest_beside(suspect))
+	case.step_escort()
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "The officer did not take hold of the suspect again")
+	TEST_ASSERT(officer.grab_state >= GRAB_AGGRESSIVE, "The second hold is not a firm grip (grab state [officer.grab_state])")
+	TEST_ASSERT_EQUAL(officer.move_intent, MOVE_INTENT_WALK, "The officer runs while walking a suspect")
+
+	// Out of the cuffs: back to the start of the arrest, not dropped
+	officer.stop_pulling()
+	qdel(suspect.handcuffed)
+	case.process_case()
+	TEST_ASSERT(!QDELETED(case), "The arrest ended when the suspect slipped the cuffs")
+	if(QDELETED(case))
+		return
+	TEST_ASSERT(case.step in list("respond", "order", "subdue", "cuff"), "After the cuffs came off the arrest is on [case.step]")
+	TEST_ASSERT(!case.cuffed, "The arrest still counts the suspect as cuffed")
+
+	// Called off with our cuffs on (the third timeout): an officer takes them off before the case ends
+	police_pin_warrant(police, suspect.mind, 12) // back to one star, whatever slipping the cuffs added
+	var/obj/item/restraints/handcuffs/again = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(again, ITEM_SLOT_HANDCUFFED)
+	case.cuffs_on(suspect)
+	if(!officer.Adjacent(suspect))
+		officer.forceMove(police_arrest_beside(suspect))
+	case.resets = 2
+	case.set_step("escort")
+	case.step_started_at = world.time - 61 SECONDS // OUTPOST_POLICE_STEP_TIMEOUT is 60 s
+	case.process_case()
+	TEST_ASSERT(!QDELETED(case), "The case closed with the suspect left in police cuffs")
+	if(QDELETED(case))
+		return
+	TEST_ASSERT_EQUAL(case.step, "release", "A called-off arrest with cuffs on is on [case.step], not the release")
+	for(var/i in 1 to 4)
+		if(QDELETED(case))
+			break
+		case.process_case()
+		police_arrest_wait(case)
+	TEST_ASSERT_NULL(suspect.handcuffed, "The cuffs were never taken off a suspect whose arrest was called off")
+	TEST_ASSERT(QDELETED(case), "The release did not end the case")
+	police_pin_warrant(police, suspect.mind, 0)
+
 #undef POLICE_ARREST_TEST_HEAT_1
 #undef POLICE_ARREST_TEST_HEAT_3
 
@@ -353,6 +589,17 @@
 		return
 	suspect.forceMove(behind)
 	officer.start_pulling(suspect)
+
+/// The outpost's evidence locker; one is put beside the desk if the map has none yet
+/datum/unit_test/proc/police_evidence_locker(obj/structure/overmap/trader_outpost/outpost)
+	var/datum/outpost_police/police = outpost.police
+	var/obj/structure/closet/secure_closet/outpost_evidence/locker = police.get_evidence_locker()
+	if(locker)
+		return locker
+	var/turf/spot = police_arrest_beside(police.desk_turf) || police_floor(outpost)
+	locker = allocate(/obj/structure/closet/secure_closet/outpost_evidence, spot)
+	police.evidence_locker = locker
+	return locker
 
 /// A punch, by tg's own unarmed attack
 /datum/unit_test/proc/police_jail_punch(mob/living/carbon/human/attacker, mob/living/carbon/human/victim, unused)
@@ -424,11 +671,12 @@
 	police_arrest_wait(case, 20 SECONDS)
 	TEST_ASSERT_EQUAL(case.step, "escort", "[outpost.type]: after the search the arrest is on [case.step]")
 
-	// The walk to the desk
+	// The walk to the evidence locker (straight to the desk with nothing taken)
 	TEST_ASSERT_NOTNULL(police.desk_turf, "[outpost.type] has no desk")
+	police_evidence_locker(outpost)
 	case.step_escort()
 	TEST_ASSERT_EQUAL(officer.pulling, suspect, "[outpost.type]: the officer did not take the suspect along")
-	police_jail_carry(officer, suspect, police.desk_turf)
+	police_jail_carry(officer, suspect, get_turf(case.evidence_spot(officer)) || police.desk_turf)
 	case.step_escort()
 	TEST_ASSERT_EQUAL(case.step, "desk", "[outpost.type]: at the desk the arrest is on [case.step]")
 	case.step_desk()
@@ -454,7 +702,7 @@
  * At each of the three outposts: a player who punches twice in front of a beat officer gets one star, is ordered,
  * cuffed, walked to the desk and the cell and fined from their ship. The same with the ship account empty ends
  * in the prison jumpsuit with their gear in a property locker they can open. A player who stabs twice loses the
- * knife down the evidence chute.
+ * knife to the evidence locker.
  */
 /datum/unit_test/voidcrew_outpost_police_arrest_to_jail
 	var/saved_scale
@@ -520,7 +768,7 @@
 		TEST_ASSERT(!locker.locked, "[outpost_type]: the prisoner could not open their own property locker")
 		locker.lock()
 
-		// The knife: dropped when they give up, taken off the floor at the search, gone down the chute at the desk
+		// The knife: dropped when they give up, taken off the floor at the search, into the evidence locker
 		var/mob/living/carbon/human/stabber = police_arrest_person(police_floor(outpost))
 		ADD_TRAIT(stabber, TRAIT_PERFECT_ATTACKER, INNATE_TRAIT)
 		ships += wanted_ship(stabber, 5000)
@@ -530,5 +778,5 @@
 		cell = police_jail_run(outpost, stabber, third_victim, list(PROC_REF(police_jail_stab), knife))
 		if(!cell)
 			continue
-		TEST_ASSERT(QDELETED(knife), "[outpost_type]: the knife was not destroyed in the evidence chute (it is at [knife.loc ? AREACOORD(knife) : "nowhere"])")
+		TEST_ASSERT_EQUAL(knife.loc, police.get_evidence_locker(), "[outpost_type]: the knife is in [knife.loc || "nowhere"], not the evidence locker")
 	wanted_cleanup(ships)

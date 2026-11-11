@@ -1,15 +1,16 @@
 /**
  * # Outpost police: property
  *
- * Owner: P12. Confiscation (the offending items), the evidence chute, the property lockers and the jail strip.
+ * Owner: P12. Confiscation (the offending items), the evidence locker, the property lockers and the jail strip.
  * Spec 6.1, 6.3 and the locker half of 7.
  *
  * Nothing here copies, stores for sale or hands out a thing:
- * - A crime tool taken at an arrest goes into an evidence case and down the chute, deleted for good.
+ * - A crime tool taken at an arrest goes into an evidence case, and from it into the station's evidence locker
+ *   (evidence_locker.dm), which a police ID or an emag opens.
  * - A jailed prisoner's gear goes straight from their body into a real tg secure closet, never onto the cell
  *   floor, and comes back only through that closet.
  * - Stolen property (an item still listed in another prisoner's locker) goes back to that locker, never down
- *   the chute.
+ *   the evidence locker.
  * - Things whose loss would break something outside the arrest stay on the person (outpost_police_untouchable()).
  *
  * The lockers are anchored outpost property that players can open (their owner, the registered ID, an emag) and
@@ -363,34 +364,6 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	update_appearance()
 
 // =========================================================================
-// THE EVIDENCE CHUTE
-// =========================================================================
-
-/// The chute at the desk: crime tools go down it for good. Officers use it through police.dispose_evidence();
-/// nobody else can do anything with it.
-/obj/machinery/outpost_police_evidence
-	name = "evidence chute"
-	desc = "Evidence goes in. Nothing comes out."
-	icon = 'icons/obj/pipes_n_cables/disposal.dmi'
-	icon_state = "intake"
-	density = TRUE
-	anchored = TRUE
-	use_power = NO_POWER_USE
-
-/obj/machinery/outpost_police_evidence/Initialize(mapload)
-	. = ..()
-	AddElement(/datum/element/outpost_property)
-
-/// No emag opens it (abuse M24)
-/obj/machinery/outpost_police_evidence/emag_act(mob/user, obj/item/card/emag/emag_card)
-	return FALSE
-
-/// Something just went down
-/obj/machinery/outpost_police_evidence/proc/swallow()
-	playsound(src, 'sound/machines/disposalflush.ogg', 30, TRUE)
-	flick("intake-flush", src)
-
-// =========================================================================
 // THE EVIDENCE CASE AND THE ISSUED CLOTHES
 // =========================================================================
 
@@ -435,8 +408,12 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 // THE POLICE SIDE
 // =========================================================================
 
+/datum/outpost_police
+	/// world.time get_evidence_locker() may next look over the station for a locker
+	var/evidence_locker_search_at = 0
+
 /// Resets and locks the station's lockers (called by link_interior())
-/datum/outpost_police/proc/build_property(list/locker_list, obj/machinery/outpost_police_evidence/evidence_chute)
+/datum/outpost_police/proc/build_property(list/locker_list, obj/structure/closet/secure_closet/outpost_evidence/locker_for_evidence)
 	UnregisterSignal(src, COMSIG_OUTPOST_POLICE_RELEASED)
 	RegisterSignal(src, COMSIG_OUTPOST_POLICE_RELEASED, PROC_REF(property_on_released))
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in locker_list)
@@ -445,11 +422,10 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		// Not yet initialised (a pre-loaded interior): the type already starts shut, locked and nobody's
 		if(locker.flags_1 & INITIALIZED_1)
 			locker.free_up()
-	evidence_chute?.AddElement(/datum/element/outpost_property)
 	if(length(locker_list) != OUTPOST_POLICE_LOCKERS)
 		log_mapping("OUTPOST POLICE: [outpost] has [length(locker_list)] property lockers, not [OUTPOST_POLICE_LOCKERS].")
-	if(!evidence_chute)
-		log_mapping("OUTPOST POLICE: [outpost] has no evidence chute.")
+	if(!locker_for_evidence)
+		log_mapping("OUTPOST POLICE: [outpost] has no evidence locker.")
 
 /// `suspect` was let out of the cells: their locker's owner has been released from now
 /datum/outpost_police/proc/property_on_released(datum/source, mob/living/suspect)
@@ -685,14 +661,20 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	if(!length(case.contents))
 		qdel(case)
 		return null
-	officer.put_in_hands(case)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = officer
+	if(istype(cop))
+		cop.police_carry(case)
+	else
+		officer.put_in_hands(case)
 	return case
 
 /**
- * What a case holds: stolen property back into its locker, anything that must not be destroyed onto `spill`,
- * the rest deleted. Returns how many items were destroyed. The case itself is left to the caller.
+ * What a case holds: stolen property back into its locker, anything that must not be taken onto `spill`, the
+ * rest into `store` (the evidence locker). With no locker to put it in (a mapping error, or a case that never
+ * reached the desk) a crime tool is deleted, as nothing taken may be left lying about. Returns how many items
+ * were stored or deleted. The case itself is left to the caller.
  */
-/datum/outpost_police/proc/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill)
+/datum/outpost_police/proc/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill, obj/structure/closet/secure_closet/outpost_evidence/store)
 	var/destroyed = 0
 	for(var/obj/item/thing as anything in case.contents.Copy())
 		if(QDELETED(thing))
@@ -706,22 +688,57 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 				thing.forceMove(spill)
 			continue
 		outpost_police_salvage(thing, spill)
-		log_game("OUTPOST POLICE: [thing] ([thing.type]) destroyed in the evidence chute at [outpost]; taken from [LAZYACCESS(case.taken_from, WEAKREF(thing)) || "the floor"].")
-		qdel(thing)
+		var/from = LAZYACCESS(case.taken_from, WEAKREF(thing)) || "the floor"
 		destroyed++
+		if(store?.take_evidence(thing))
+			log_game("OUTPOST POLICE: [thing] ([thing.type]) put in the evidence locker at [outpost]; taken from [from].")
+			continue
+		log_game("OUTPOST POLICE: [thing] ([thing.type]) destroyed at [outpost] with no evidence locker to hold it; taken from [from].")
+		qdel(thing)
 	return destroyed
 
 /**
- * At the desk: whatever evidence cases `officer` carries are emptied. Stolen property goes back in its locker,
- * crime tools go down the chute, and the case goes last (abuse M24).
+ * At the evidence locker: whatever evidence cases `officer` carries are emptied. Stolen property goes back in
+ * its property locker, crime tools into the evidence locker, and the case goes last (abuse M24).
  */
 /datum/outpost_police/proc/dispose_evidence(mob/living/officer)
 	if(QDELETED(officer))
 		return
-	var/turf/spill = get_turf(chute) || get_turf(officer)
-	var/destroyed = 0
+	var/obj/structure/closet/secure_closet/outpost_evidence/store = get_evidence_locker()
+	var/turf/spill = get_turf(officer)
+	var/stored = 0
 	for(var/obj/item/outpost_sealed_case/evidence/case in officer.get_all_contents())
-		destroyed += evidence_empty_case(case, spill)
+		stored += evidence_empty_case(case, spill, store)
 		qdel(case)
-	if(destroyed)
-		chute?.swallow()
+	if(stored && store)
+		playsound(store, 'sound/machines/closet/closet_close.ogg', 30, TRUE)
+
+/**
+ * The station's evidence locker: the one the interior scan found, or the nearest one inside the outpost's
+ * template (a locker placed or replaced later). Null if the outpost has none.
+ */
+/datum/outpost_police/proc/get_evidence_locker()
+	if(!QDELETED(evidence_locker))
+		return evidence_locker
+	evidence_locker = null
+	// One look over the station a minute at most: an outpost mapped without one is not searched on every arrest
+	if(world.time < evidence_locker_search_at)
+		return null
+	evidence_locker_search_at = world.time + 1 MINUTES
+	var/turf/corner = outpost?.template_bottom_left
+	if(!corner || !outpost.outpost_template)
+		return null
+	var/turf/far = locate(corner.x + outpost.outpost_template.width - 1, corner.y + outpost.outpost_template.height - 1, corner.z)
+	if(!far)
+		return null
+	var/turf/near = desk_turf || corner
+	var/best_dist = INFINITY
+	for(var/turf/spot as anything in block(corner, far))
+		var/obj/structure/closet/secure_closet/outpost_evidence/locker = locate() in spot
+		if(QDELETED(locker))
+			continue
+		var/dist = get_dist(spot, near)
+		if(dist < best_dist)
+			best_dist = dist
+			evidence_locker = locker
+	return evidence_locker

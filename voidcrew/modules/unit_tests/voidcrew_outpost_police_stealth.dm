@@ -236,6 +236,58 @@
 	stealth_noise(get_turf(shooter), "gun_quiet", null, shooter)
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "A suppressed shot eight tiles off moved the officer")
 
+// ===== THE PUBLIC (owner decision 35) =====
+
+/**
+ * A visitor with a clean record who runs about behind an officer, bumps into it, talks and opens a door in front of it
+ * gets no question mark; once they are wanted, the same steps are heard.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/innocent_walker
+
+/datum/unit_test/voidcrew_stealth_live/police/innocent_walker/Run()
+	TEST_ASSERT(police_room(16, 7), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	police_stop(8, 3, "a", 1, 10 MINUTES, null)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(8, 3, EAST)
+	officer.resume_routine()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = wake(officer)
+	brain.stealth_setup()
+	TEST_ASSERT_EQUAL(brain.group?.outpost_police(), police, "The officer's patrol group does not know it is the police's")
+
+	// A visitor on the list of players, running (tg's default), barefoot on plain floor: heard 5 tiles off
+	var/mob/living/carbon/human/visitor = person_at(5, 3)
+	visitor.mind_initialize()
+	allocated += visitor.mind
+	if(visitor.move_intent != MOVE_INTENT_RUN)
+		visitor.toggle_move_intent()
+	TEST_ASSERT(stealth_footstep_reach(visitor) > 0, "A running visitor makes no footsteps")
+
+	// Running about behind it, right at its back
+	stealth_scans(officer, 1)
+	for(var/list/spot in list(list(6, 3), list(7, 3), list(7, 4), list(6, 4), list(7, 2)))
+		visitor.forceMove(at(spot[1], spot[2]))
+		stealth_scans(officer, 1)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a clean visitor running behind it")
+
+	// Bumping into it, a friendly hand, talking, a door in front of it
+	brain.on_bumped(officer, visitor)
+	brain.on_handled(officer, visitor)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a clean visitor bumping into it")
+	TEST_ASSERT_EQUAL(stealth_noise(get_turf(visitor), "voice", null, visitor), 0, "An officer heard a clean visitor talk")
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(11, 3))
+	TEST_ASSERT_EQUAL(stealth_door_moved(door, TRUE), 0, "A door opening in front of an officer sent it to look")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a door or a voice")
+	TEST_ASSERT(!length(brain.notice_map), "An officer keeps notice on a clean visitor")
+
+	// Wanted, the same steps behind it are heard
+	police_pin_warrant(police, visitor.mind, 12) // one star
+	visitor.forceMove(at(5, 3))
+	stealth_scans(officer, 1)
+	visitor.forceMove(at(7, 3))
+	stealth_scans(officer, 1)
+	TEST_ASSERT(brain.stealth_state() != "unaware", "An officer did not hear a wanted person run up behind it")
+	police_pin_warrant(police, visitor.mind, 0)
+
 // ===== THE BEAT =====
 
 /// A beat officer made on stop 1 claims the route and walks to stop 2; a coffee stop runs the coffee while it waits; carried off and back it walks its route again; a spare beat officer takes a free route; stars at 0 send it back to its beat
