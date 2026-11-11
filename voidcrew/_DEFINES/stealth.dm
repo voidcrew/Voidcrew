@@ -37,6 +37,10 @@
 #define STEALTH_BARK_CHATTER "stealth_chatter"
 /// It just put its target down
 #define STEALTH_BARK_DOWNED "stealth_target_downed"
+/// It yanks open the locker or crate it saw its target get into (decision 33)
+#define STEALTH_BARK_CLOSET_OPEN "stealth_closet_open"
+/// It gives up on a locker or crate it can't get open (decision 33)
+#define STEALTH_BARK_CLOSET_GIVE_UP "stealth_closet_give_up"
 
 // ===== What a stealth goto is for =====
 #define STEALTH_GOTO_PATROL "patrol"
@@ -44,6 +48,7 @@
 #define STEALTH_GOTO_BODY "body"
 #define STEALTH_GOTO_SEARCH "search"
 #define STEALTH_GOTO_HOME "home"
+#define STEALTH_GOTO_CLOSET "closet"
 
 // ===== Numbers (first playtest defaults; the owner tunes them) =====
 #define STEALTH_SCAN_INTERVAL (1 SECONDS)
@@ -124,6 +129,14 @@
 #define STEALTH_ADMIN_OVERLAY_TIME (5 MINUTES)
 /// Seconds of search between "Come on out." lines
 #define STEALTH_SEARCH_BARK_INTERVAL (12 SECONDS)
+
+// Lockers and crates it saw someone get into (decision 33, stealth_closet.dm)
+/// Seen on open ground this recently and now in a locker in view: it saw them get in
+#define STEALTH_CLOSET_SEEN_WINDOW (1.5 SECONDS)
+/// After this long on one locker (walking, opening, bashing) it gives up and searches round it
+#define STEALTH_CLOSET_GIVE_UP_TIME (45 SECONDS)
+/// A guard that isn't the one opening it stands this close and covers it
+#define STEALTH_CLOSET_COVER_RANGE 3
 
 // The mark over a guard's head (stealth_meter.dm, owner decision 27)
 /// Pixel rows in the "?" and "!" glyphs: fill and drain steps

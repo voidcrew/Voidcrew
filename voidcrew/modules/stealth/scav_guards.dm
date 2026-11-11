@@ -19,6 +19,8 @@
 		STEALTH_BARK_BODY = list("Man down!", "Who did this?"),
 		STEALTH_BARK_CHATTER = list("Shipment's late again.", "My feet are killing me.", "You hear that? No? Good.", "Radio check.", "Quiet tonight. I hate quiet."),
 		STEALTH_BARK_DOWNED = list("Got 'em.", "Stay down.", "That's handled."),
+		STEALTH_BARK_CLOSET_OPEN = list("Out you come.", "Thought so.", "Found you."),
+		STEALTH_BARK_CLOSET_GIVE_UP = list("Stay in there, then.", "Fine. Rot in there."),
 		STEALTH_BARK_HEARD = list("What was that?", "You hear that?", "Hm."),
 		STEALTH_BARK_HEARD_AGAIN = list("Again?", "That's twice now."),
 		STEALTH_BARK_GUNFIRE = list("Shots!", "That's gunfire!", "Shots, %SIDE% side!"),

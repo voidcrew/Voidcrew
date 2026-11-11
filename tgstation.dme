@@ -7732,6 +7732,7 @@
 #include "voidcrew\modules\stealth\stealth_admin.dm"
 #include "voidcrew\modules\stealth\stealth_admin_noise.dm"
 #include "voidcrew\modules\stealth\stealth_ai.dm"
+#include "voidcrew\modules\stealth\stealth_closet.dm"
 #include "voidcrew\modules\stealth\stealth_hearing.dm"
 #include "voidcrew\modules\stealth\stealth_light.dm"
 #include "voidcrew\modules\stealth\stealth_meter.dm"

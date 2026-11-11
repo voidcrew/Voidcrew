@@ -235,6 +235,7 @@
 #include "voidcrew_slime_extract_piles.dm"
 #include "voidcrew_smart_locker.dm"
 #include "voidcrew_stealth.dm"
+#include "voidcrew_stealth_closet.dm"
 #include "voidcrew_stealth_d32.dm"
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_light.dm"

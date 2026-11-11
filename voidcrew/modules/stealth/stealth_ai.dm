@@ -81,6 +81,7 @@
 		/datum/ai_planning_subtree/human_npc_surrender,
 		/datum/ai_planning_subtree/stealth_react,
 		/datum/ai_planning_subtree/human_npc_arm,
+		/datum/ai_planning_subtree/stealth_closet,
 		/datum/ai_planning_subtree/human_npc_shoot,
 		/datum/ai_planning_subtree/human_npc_melee,
 		/datum/ai_planning_subtree/stealth_patrol,
@@ -219,6 +220,7 @@
 		) + STEALTH_HANDLED_SIGNALS + STEALTH_STUN_SIGNALS)
 	group?.remove_member(pawn)
 	group = null
+	stealth_drop_closet()
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers?.Copy())
 		qdel(overlay)
 	watchers = null
@@ -247,6 +249,7 @@
 	. = ..()
 	QDEL_NULL(meter)
 	stealth_drop_call()
+	stealth_drop_closet()
 
 // The player has left the body: it is a guard again, with nothing on its mind.
 /datum/ai_controller/basic_controller/human_npc/stealth/on_sentience_lost()
@@ -296,6 +299,9 @@
 		blackboard[BB_STEALTH_UNAWARE_LOST_AT] = world.time
 	blackboard[BB_STEALTH_STATE] = new_state
 	blackboard[BB_STEALTH_STATE_SINCE] = world.time
+	// Only an alert guard goes after a locker it saw someone get into (decision 33).
+	if(new_state != STEALTH_ALERT)
+		stealth_drop_closet()
 	look_until = 0
 	lost_since = 0
 	calm_until = 0
@@ -434,6 +440,8 @@
 	last_seen_turf = get_turf(target)
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 	set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+	// Every alert is first hand: if they are in a locker or a box, it is the one it just saw or felt (decision 33).
+	stealth_closet_alerted(target)
 	// It has seen or felt them itself: it calls for help (decision 8).
 	if(news)
 		stealth_first_hand(last_seen_turf)
@@ -537,6 +545,10 @@
 		pending_call[STEALTH_CALL_DUE] -= time
 	if(explained_at)
 		explained_at -= time
+	if(shut_in_at)
+		shut_in_at -= time
+	if(target_free_seen_at)
+		target_free_seen_at -= time
 	for(var/kind in bark_ready_at)
 		bark_ready_at[kind] -= time
 	for(var/key in stop_skip_until)
@@ -675,6 +687,11 @@
 		if(dist > STEALTH_SIGHT_RANGE)
 			continue
 		if(boxed)
+			// Searching, it saw them on open ground a moment ago, and now they are in a locker it can see (decision 33).
+			if(state == STEALTH_SEARCHING && eyes && dist <= STEALTH_ALERT_MAX_RANGE && stealth_closet_glimpsed(candidate, stealth_shell_of(candidate)))
+				if(strategy.can_attack(guard, candidate, STEALTH_SIGHT_RANGE))
+					stealth_go_alert(candidate)
+					return
 			// Hidden, unless the thing they hide in moves at its shoulder (decision 29).
 			if(dist > STEALTH_CLOSE_RANGE + 1)
 				continue
@@ -902,8 +919,13 @@
 	if(QDELETED(remembered))
 		stealth_go_searching(last_seen_turf)
 		return
+	// In a locker or a box: tracked only if it saw them get in (decision 33, stealth_closet.dm).
+	if(stealth_closet_track(remembered))
+		return
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
 	if(strategy?.can_attack(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
+		if(isturf(remembered.loc))
+			target_free_seen_at = world.time
 		lost_since = 0
 		last_seen_turf = get_turf(remembered)
 		blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
@@ -970,7 +992,7 @@
 		return
 	if(best)
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
-		if(best_notice >= STEALTH_ALERT_AT && strategy?.can_attack(guard, best, HUMAN_NPC_SIGHT_RANGE))
+		if(best_notice >= STEALTH_ALERT_AT && isnull(stealth_shell_of(best)) && strategy?.can_attack(guard, best, HUMAN_NPC_SIGHT_RANGE))
 			stealth_go_alert(best)
 		else if(best_notice >= STEALTH_ALERT_AT)
 			stealth_go_searching(best_turf)
@@ -1226,6 +1248,7 @@
 	if(new_stat != CONSCIOUS)
 		QDEL_NULL(meter)
 		stealth_drop_call()
+		stealth_drop_closet()
 	if(new_stat == CONSCIOUS && was != CONSCIOUS && was != DEAD)
 		stealth_came_round()
 
