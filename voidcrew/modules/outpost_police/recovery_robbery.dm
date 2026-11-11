@@ -72,6 +72,16 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 
 /datum/outpost_holdup_watcher/proc/watch(mob/living/trader)
 	RegisterSignal(trader, COMSIG_LIVING_STATUS_APPLIED, PROC_REF(on_status_applied), override = TRUE)
+	RegisterSignal(trader, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempted), override = TRUE)
+
+/// Someone tries to cuff a living trader: assault on the staff, as grabbing one is (abuse SF6: cuffs never silence a stick-up for free)
+/datum/outpost_holdup_watcher/proc/on_cuff_attempted(mob/living/source, mob/living/user)
+	SIGNAL_HANDLER
+	if(source.stat == DEAD || !isliving(user) || user == source)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = source
+	if(istype(trader))
+		trader.outpost?.register_aggression(user, OUTPOST_CRIME_ASSAULT_STAFF, trader)
 
 /// Registers once per outpost, at its first stick-up: the supply convoy forgets who emptied a till (M37)
 /datum/outpost_holdup_watcher/proc/watch_convoy(obj/structure/overmap/trader_outpost/outpost)
@@ -258,7 +268,8 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
  * hold is over. It keeps the trader still (the gunpoint fires on a target that moves), hands over the takings when the
  * hold steadies, and raises the trader's alarm (spec-rehydrate.md 10): when the robber is out of the trader's sight or
  * more than OUTPOST_HOLDUP_ALARM_RANGE tiles off, OUTPOST_HOLDUP_ALARM_DELAY after the hand-over whatever happens, or
- * the moment the robber fires or hits anyone. A trader who is dead, out cold, tied up or off its counter raises none.
+ * the moment the robber fires or hits anyone. A trader who is dead raises none; one out cold, tied up or off its
+ * counter raises it once able again.
  */
 /datum/outpost_holdup
 	var/datum/outpost_shop/shop
@@ -275,6 +286,8 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	var/counted = FALSE
 	/// The alarm has gone out, or can never go out
 	var/alarm_done = FALSE
+	/// The alarm's time came while the trader could not reach it: it goes the moment they can (abuse SF6, M38)
+	var/alarm_overdue = FALSE
 	var/steady_timer
 	var/steady_tries = 0
 	var/alarm_timer
@@ -409,6 +422,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	if(QDELETED(trader) || QDELETED(robber))
 		settle()
 		return
+	if(alarm_overdue)
+		try_alarm()
+		return
 	var/datum/outpost_police_perception/perception = shop?.outpost?.police?.perception
 	if(get_dist(trader, robber) > OUTPOST_HOLDUP_ALARM_RANGE || !perception?.sees(trader, robber))
 		try_alarm()
@@ -433,7 +449,8 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 /**
  * The trader raises the alarm: OUTPOST_CRIME_ARMED_ROBBERY against the robber with the gun as source, counted once, and
  * the desk relays it on the radio. A trader that is dead or gone never will; one that is stunned, tied up or dragged
- * off its counter is tried again by the next trigger, and `final` (the 30 s timer) is the last chance.
+ * off its counter is tried again by the next trigger, and after `final` (the 30 s timer) every second until it can
+ * (abuse SF6, M38: "at 30 s regardless", so cuffing the trader for 30 seconds silences nothing).
  */
 /datum/outpost_holdup/proc/try_alarm(final = FALSE)
 	if(alarm_done)
@@ -444,8 +461,10 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		settle()
 		return
 	if(!shop?.holdup_trader_able(trader, counter_turf))
-		if(final)
-			settle()
+		if(final && !alarm_overdue)
+			alarm_overdue = TRUE
+			if(!watch_timer)
+				watch_timer = addtimer(CALLBACK(src, PROC_REF(watch_robber)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 		return
 	var/datum/outpost_police/police = shop.outpost?.police
 	if(!counted && !pending_report() && police)

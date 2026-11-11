@@ -96,6 +96,8 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	var/assigning = FALSE
 	/// Minds that were reported for robbing it: weakref -> world.time
 	var/list/thieves
+	/// Who first took each listed item out: item weakref -> mind weakref. Only they are the thief (abuse SF1).
+	var/list/first_takers
 	/// Weakref to the police this locker belongs to
 	var/datum/weakref/police_ref
 
@@ -114,6 +116,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	owner_mind = null
 	police_ref = null
 	thieves = null
+	first_takers = null
 	return ..()
 
 // Nothing comes with it (abuse M18)
@@ -209,7 +212,10 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	if(QDELETED(source) || QDELETED(src) || !source.loc)
 		return
 	var/atom/movable/top = get_atom_on_turf(source)
-	if(top == src || !isliving(top))
+	if(top == src)
+		LAZYREMOVE(first_takers, WEAKREF(source)) // back in: whoever takes it next is the thief
+		return
+	if(!isliving(top))
 		return
 	// Officers carrying evidence are not thieves; the arrest sorts it out
 	if(istype(top, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
@@ -219,6 +225,15 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		forget(source)
 		addtimer(CALLBACK(src, PROC_REF(check_freed)), 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 		return
+	if(!taker.mind)
+		return
+	// Abuse SF1: goods handed or planted on someone after they left the locker are the first taker's theft, not theirs
+	var/datum/weakref/item_ref = WEAKREF(source)
+	var/datum/weakref/taker_ref = WEAKREF(taker.mind)
+	var/datum/weakref/first = LAZYACCESS(first_takers, item_ref)
+	if(first && first != taker_ref)
+		return
+	LAZYSET(first_takers, item_ref, taker_ref)
 	report_theft(taker)
 
 /// `thief` took from or broke open this locker. Reported once per person; the witness test is the police's.
@@ -279,6 +294,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	id_card = null
 	released_at = 0
 	thieves = null
+	first_takers = null
 	stored_items = null
 	name = initial(name)
 	desc = initial(desc)
@@ -311,6 +327,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	owner_mind = WEAKREF(prisoner.mind)
 	assigning = TRUE
 	thieves = null
+	first_takers = null
 	released_at = 0
 	return TRUE
 

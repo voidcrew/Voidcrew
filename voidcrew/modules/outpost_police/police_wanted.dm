@@ -104,10 +104,14 @@
 		log_game("OUTPOST POLICE: [key_name(offender)] committed [crime] at [outpost] ([AREACOORD(offender)]) and nobody saw.")
 		return null
 	var/atom/witness = perception.last_witness
+	var/list/witnesses = perception.last_witnesses
+	// Abuse SF4: the perception keeps no hard reference to a witness once read (a deleted officer or player would hang on it)
+	perception.last_witness = null
+	perception.last_witnesses = null
 	var/delay = perception.report_delay(witness, crime)
 	if(delay > 0 || perception.reports_by_call(witness))
 		recent_reports[mind_ref] = list(world.time, FALSE)
-		queue_report(offender, crime, victim, source, perception.last_witnesses || list(witness), delay)
+		queue_report(offender, crime, victim, source, witnesses || list(witness), delay)
 		return null
 	recent_reports[mind_ref] = list(world.time, TRUE)
 	return count_crime(offender, crime, victim, source)
@@ -283,7 +287,7 @@
 	if(new_stars >= 4)
 		escalate_incident(warrant, new_stars)
 
-/// The warrant of `mind`, made if they have none; it remembers the crew they had at their first crime (abuse M7)
+/// The warrant of `mind`, made if they have none, with the crew they are on (current_warrant_crew() keeps it current, abuse MF6)
 /datum/outpost_police/proc/ensure_warrant(datum/mind/mind)
 	var/datum/outpost_warrant/warrant = warrants[mind]
 	if(!warrant)
@@ -293,6 +297,20 @@
 	if(!warrant.crew)
 		set_warrant_crew(warrant, mind.get_reputation_crew())
 	return warrant
+
+/**
+ * The crew `warrant`'s holder is on now, kept on the warrant (abuse MF6): the fine, the embargo and the accomplices
+ * follow it, never a crew the holder has left or been kicked from. Leaving dodges nothing (M7): with no crew there
+ * is nobody to pay, and an unpaid fine is jail. Null if they have no crew.
+ */
+/datum/outpost_police/proc/current_warrant_crew(datum/outpost_warrant/warrant)
+	var/datum/voidcrew_crew_record/current = warrant?.mind?.get_reputation_crew()
+	if(QDELETED(current))
+		current = null
+	if(warrant && warrant.crew != current)
+		warrant.crew = null
+		set_warrant_crew(warrant, current)
+	return current
 
 /// Remembers `crew` on `warrant` and watches for the record being deleted
 /datum/outpost_police/proc/set_warrant_crew(datum/outpost_warrant/warrant, datum/voidcrew_crew_record/crew)
@@ -659,7 +677,7 @@
 
 /// Every living crewmate of someone at four stars or more, at the outpost, is an accomplice: two stars, arrested
 /datum/outpost_police/proc/abet_crew(datum/outpost_warrant/leader)
-	var/datum/voidcrew_crew_record/crew = leader.crew
+	var/datum/voidcrew_crew_record/crew = current_warrant_crew(leader)
 	if(QDELETED(crew))
 		return
 	for(var/datum/mind/mate as anything in crew.minds)
@@ -745,7 +763,8 @@
 /// `warrant`'s holder killed an officer: the embargo of their crew runs longer
 /datum/outpost_police/proc/officer_killed_by(datum/outpost_warrant/warrant)
 	record_metric(METRIC_COMBAT, "police_officer_killed", actor = warrant.mind?.current, quantity = 1)
-	var/datum/outpost_incident/incident = warrant.crew ? incidents[warrant.crew] : null
+	var/datum/voidcrew_crew_record/crew = current_warrant_crew(warrant)
+	var/datum/outpost_incident/incident = crew ? incidents[crew] : null
 	if(!incident)
 		return
 	incident.officers_killed++
@@ -807,12 +826,13 @@
 	return round(fines[warrant.fine_level] * profile.fine_multiplier)
 
 /**
- * The fine for `warrant`'s stars and the zone, from the ship accounts of the crew it remembers, pooled, richest
- * first, all or nothing. TRUE with the money gone, or FALSE with nothing taken. Never sleeps; no debt anywhere.
+ * The fine for `warrant`'s stars and the zone, from the ship accounts of the crew its holder is on now (abuse MF6),
+ * pooled, richest first, all or nothing. TRUE with the money gone, or FALSE with nothing taken. Never sleeps; no
+ * debt anywhere.
  */
 /datum/outpost_police/proc/charge_fine(datum/outpost_warrant/warrant)
 	SHOULD_NOT_SLEEP(TRUE)
-	if(!warrant || QDELETED(warrant.crew))
+	if(!warrant || QDELETED(current_warrant_crew(warrant)))
 		return FALSE
 	var/amount = fine_amount(warrant)
 	if(amount <= 0)
@@ -871,7 +891,7 @@
 
 /// `warrant` reached four or five stars: its crew's ships are embargoed here
 /datum/outpost_police/proc/escalate_incident(datum/outpost_warrant/warrant, stars)
-	var/datum/voidcrew_crew_record/crew = warrant.crew
+	var/datum/voidcrew_crew_record/crew = current_warrant_crew(warrant)
 	if(QDELETED(crew))
 		return
 	var/datum/outpost_incident/incident = incidents[crew]

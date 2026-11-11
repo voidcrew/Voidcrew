@@ -440,6 +440,15 @@
 		struck_source_ref = WEAKREF(hit_projectile.fired_from)
 		struck_source_at = world.time
 
+// Abuse SF3: a player in an officer's body (a brain transplant) is a person, not an officer: off the roster, so no
+// stray sweep, recall or corpse cap ever deletes them
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/Login()
+	. = ..()
+	if(!. || isnull(client) || !police)
+		return
+	police.remove_officer(src)
+	police.dispatch_strays -= src
+
 /// Someone is putting cuffs on them (abuse M3)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_cuff_attempt(datum/source, mob/living/user)
 	SIGNAL_HANDLER

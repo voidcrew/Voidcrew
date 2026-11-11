@@ -120,7 +120,8 @@
 
 /**
  * Abuse M11, once a second from dispatch: a person in the line of fire within 2 tiles of an officer firing to
- * kill, for OUTPOST_POLICE_BLOCK_TIME, resists; again each OUTPOST_POLICE_BLOCK_TIME they stay.
+ * kill, for OUTPOST_POLICE_BLOCK_TIME, resists; again each OUTPOST_POLICE_BLOCK_TIME they stay. Someone who cannot
+ * move away (stunned, tied up, dragged, carried, logged off) never does (abuse SF2).
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/check_body_block()
 	var/mob/living/blocker
@@ -128,6 +129,9 @@
 	if(force == POLICE_FORCE_LETHAL && stat == CONSCIOUS && !QDELETED(target))
 		blocker = bystander_in_line(target, 2)
 		if(blocker && !blocker.mind)
+			blocker = null
+		// Abuse SF2: only someone who chose to stand there resists, never the stunned, the tied up, the dragged or the logged off
+		if(blocker && (blocker.incapacitated || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || blocker.pulledby || blocker.buckled || (blocker.mind.key && !blocker.client)))
 			blocker = null
 	if(!blocker)
 		dispatch_block_ref = null

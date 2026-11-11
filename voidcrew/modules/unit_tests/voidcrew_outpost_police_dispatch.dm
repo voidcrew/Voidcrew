@@ -309,7 +309,7 @@
 	controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	dispatch_clear(police)
 
-/// Standing in an officer's line of fire within 2 tiles is resisting once it lasts 5 seconds; so is pulling an officer
+/// Standing in an officer's line of fire within 2 tiles is resisting once it lasts 5 seconds, unless they cannot move; so is pulling an officer
 /datum/unit_test/voidcrew_outpost_police_dispatch_body_block
 
 /datum/unit_test/voidcrew_outpost_police_dispatch_body_block/Run()
@@ -325,6 +325,13 @@
 	var/mob/living/blocker = dispatch_suspect(outpost, 0, row[2])
 	officer.force = 3 // POLICE_FORCE_LETHAL
 	officer.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+	// Abuse SF2: someone tied up (or stunned, dragged or logged off) in the line never resists
+	ADD_TRAIT(blocker, TRAIT_RESTRAINED, "outpost_police_test")
+	officer.check_body_block()
+	officer.dispatch_block_since = world.time - 5 SECONDS // OUTPOST_POLICE_BLOCK_TIME
+	officer.check_body_block()
+	TEST_ASSERT_NULL(police.get_warrant(blocker.mind), "Someone tied up in the line of fire was resisting")
+	REMOVE_TRAIT(blocker, TRAIT_RESTRAINED, "outpost_police_test")
 	officer.check_body_block()
 	TEST_ASSERT_NULL(police.get_warrant(blocker.mind), "Stepping into the line was resisting at once")
 	officer.dispatch_block_since = world.time - 5 SECONDS // OUTPOST_POLICE_BLOCK_TIME

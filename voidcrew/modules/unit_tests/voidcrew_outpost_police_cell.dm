@@ -227,6 +227,22 @@
 	TEST_ASSERT(door.density, "The door did not shut")
 	TEST_ASSERT(!door.open(), "The permission outlived its opening")
 
+/// Abuse SF5: a police door lets anyone out from the lift side, and nobody in from the concourse without an officer's ID
+/datum/unit_test/voidcrew_outpost_police_lift_door_exit
+
+/datum/unit_test/voidcrew_outpost_police_lift_door_exit/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	// The lift, the closet floor, the door, the concourse: a column up the test room
+	police.lift_turfs = list(wanted_spot(4, 4))
+	var/obj/machinery/door/airlock/outpost/police/lift_door = allocate(/obj/machinery/door/airlock/outpost/police, wanted_spot(4, 2))
+	lift_door.outpost = outpost
+	var/mob/living/carbon/human/inside = wanted_person(wanted_spot(4, 3))
+	var/mob/living/carbon/human/outside = wanted_person(wanted_spot(4, 1))
+	TEST_ASSERT(lift_door.allowed(inside), "Someone in the lift closet cannot get out")
+	TEST_ASSERT(!lift_door.allowed(outside), "Someone on the concourse got into the lift closet with no ID")
+	police.lift_turfs = list()
+
 /// A paid fine holds the suspect 30 s at one star and 60 s at two, and never strips them
 /datum/unit_test/voidcrew_outpost_police_cell_book_paid
 
@@ -361,7 +377,10 @@
 	TEST_ASSERT(cell.open_until > world.time, "The door is not held open for the prisoner to leave")
 	cell.open_until = 0
 	cell.close_check()
-	TEST_ASSERT(cell.door.density, "The door did not shut once its time was up")
+	TEST_ASSERT(!cell.door.density, "The door shut on a released prisoner still in the cell") // abuse MF2
+	prisoner.forceMove(cell.outside_turf)
+	cell.close_check()
+	TEST_ASSERT(cell.door.density, "The door did not shut once its time was up and the cell was empty")
 
 /// A prisoner who walks out before their time is up is a jailbreak, and is no longer held
 /datum/unit_test/voidcrew_outpost_police_cell_jailbreak
@@ -374,6 +393,8 @@
 	cell.admit(prisoner, world.time + 1800, TRUE)
 	police.tick_cells()
 	TEST_ASSERT_EQUAL(length(police.crimes), 0, "A prisoner standing in the cell was reported")
+	// A step of their own: what tg's client move says before it moves them
+	SEND_SIGNAL(prisoner, COMSIG_MOB_CLIENT_PRE_MOVE, list())
 	prisoner.forceMove(cell.outside_turf)
 	police.tick_cells()
 	var/list/crime = police_last_crime(police)
@@ -429,6 +450,67 @@
 	TEST_ASSERT_EQUAL(crime[1], prisoner, "A prisoner who never came back was not reported")
 	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never came back is still held")
 
+/// Abuse MF1: a prisoner shoved, swapped or moved out by nobody known is not the escaper. The shover or swapper is; the time to walk back waits while they cannot.
+/datum/unit_test/voidcrew_outpost_police_cell_moved_out
+
+/datum/unit_test/voidcrew_outpost_police_cell_moved_out/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[1])
+	var/mob/living/carbon/human/griefer = police_cell_person(cell.outside_turf)
+	police_pin_warrant(police, prisoner.mind, 12)
+	cell.admit(prisoner, world.time + 1800, TRUE)
+
+	// A shove: tg's shove says who did it, then moves them in the same tick
+	SEND_SIGNAL(prisoner, COMSIG_LIVING_DISARM_HIT, griefer, BODY_ZONE_CHEST, null)
+	prisoner.forceMove(cell.outside_turf)
+	police.tick_cells()
+	var/list/crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "Shoving a prisoner out reported nobody")
+	TEST_ASSERT_EQUAL(crime[1], griefer, "A shoved prisoner was charged with the jailbreak, not the one who shoved them")
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "A prisoner shoved out was let go")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner shoved out has no time to come back")
+	prisoner.forceMove(cell.tiles[1])
+	police.tick_cells()
+	TEST_ASSERT(!(prisoner.mind in cell.return_by), "A prisoner who came back is still on the way back")
+
+	// A swap: the griefer is mid-bump beside them
+	police.crimes.Cut()
+	griefer.now_pushing = TRUE
+	griefer.forceMove(cell.tiles[2])
+	prisoner.forceMove(cell.outside_turf)
+	griefer.now_pushing = FALSE
+	police.tick_cells()
+	crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "Swapping a prisoner out reported nobody")
+	TEST_ASSERT_EQUAL(crime[1], griefer, "A swapped prisoner was charged with the jailbreak, not the one who swapped")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner swapped out has no time to come back")
+	prisoner.forceMove(cell.tiles[1])
+	griefer.forceMove(cell.outside_turf)
+	police.tick_cells()
+
+	// Moved by nobody known (a teleport): nobody is charged, and they get the time to walk back
+	police.crimes.Cut()
+	prisoner.forceMove(cell.outside_turf)
+	police.tick_cells()
+	TEST_ASSERT_EQUAL(length(police.crimes), 0, "A prisoner moved out by nobody known was charged")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner moved out by nobody known has no time to come back")
+
+	// Asleep at the keyboard: the time to walk back waits
+	prisoner.mind.key = "outpost_police_test_ssd"
+	cell.return_by[prisoner.mind] = world.time - 1
+	police.tick_cells()
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "A prisoner asleep outside the cell was made a jailbreaker")
+	TEST_ASSERT(cell.return_by[prisoner.mind] >= world.time + 190, "The time to walk back did not wait for a prisoner who could not walk") // OUTPOST_POLICE_CELL_RETURN, 20 SECONDS
+	prisoner.mind.key = null
+	// Awake and still out once the time is up: their own doing
+	cell.return_by[prisoner.mind] = world.time - 1
+	police.tick_cells()
+	crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "A prisoner who never walked back was not reported")
+	TEST_ASSERT_EQUAL(crime[1], prisoner, "A prisoner who never walked back was not the one reported")
+	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never walked back is still held")
+
 /// A prisoner in crit or dead in the cell: the door opens at once and is held for a medic, the term is over, the warrant closed
 /datum/unit_test/voidcrew_outpost_police_cell_downed
 
@@ -464,6 +546,39 @@
 	TEST_ASSERT_EQUAL(length(police.closed), 2, "A dead prisoner did not get their warrant closed")
 	sleep(2 SECONDS)
 	TEST_ASSERT(!cell_b.door.density, "The door did not open for a dead prisoner")
+
+/// Abuse MF2: a cell holding nobody never stays shut on a body or on someone it does not hold, and a crowbar opens it
+/datum/unit_test/voidcrew_outpost_police_cell_strays
+
+/datum/unit_test/voidcrew_outpost_police_cell_strays/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	TEST_ASSERT(cell.door.density, "Setup: the empty cell's door is open")
+	TEST_ASSERT(!cell.still_forceable(), "A crowbar works on an empty cell")
+	// A body shut in (a dead prisoner after the medic hold, or one put there): the tick opens the door
+	var/mob/living/carbon/human/corpse = police_cell_person(cell.tiles[1])
+	corpse.death()
+	TEST_ASSERT(cell.still_forceable(), "A crowbar does not work on a cell shut on a body")
+	police.tick_cells()
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell.door.density, "A cell holding nobody stayed shut on a body")
+	cell.open_until = 0
+	cell.close_check()
+	TEST_ASSERT(!cell.door.density, "A cell holding nobody shut on a body")
+	TEST_ASSERT_EQUAL(length(police.crimes), 0, "Opening a cell for a body reported a crime")
+	corpse.forceMove(cell.outside_turf)
+	cell.close_check()
+	TEST_ASSERT(cell.door.density, "The door did not shut once the body was out")
+	// Someone pushed in while it stood open
+	var/mob/living/carbon/human/visitor = police_cell_person(cell.tiles[2])
+	TEST_ASSERT(cell.still_forceable(), "A crowbar does not work on a cell shut on a visitor")
+	police.tick_cells()
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell.door.density, "A cell holding nobody stayed shut on a visitor")
+	visitor.forceMove(cell.outside_turf)
+	cell.open_until = 0
+	cell.close_check()
+	TEST_ASSERT(cell.door.density, "The door did not shut once the visitor was out")
 
 /// Forcing the door with a crowbar while somebody is held: 12 s, a buzzer and a shout, then the door gives and the forcer is a jailbreak with the tool as the source
 /datum/unit_test/voidcrew_outpost_police_cell_forcing

@@ -156,6 +156,40 @@
 	TEST_ASSERT_NULL(police.get_warrant(person.mind), "The emagger is wanted with the guard dead and nobody watching")
 	TEST_ASSERT_EQUAL(police.get_stars(person.mind), 0, "The emagger has stars with the guard dead and nobody watching")
 
+/// Abuse SF1: someone tied up and dragged, or shut in a pulled locker, through a forced gate did not breach it; whoever moved them did
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_breach_mover
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_breach_mover/Run()
+	if(!gate_fixture())
+		return
+	var/turf/chamber = checkpoint.chamber_turfs[1]
+	checkpoint.state = "forced" // CHECKPOINT_FORCED
+	// Tied up and dragged
+	var/mob/living/carbon/human/dragger = mind_person(chamber)
+	ADD_TRAIT(person, TRAIT_RESTRAINED, "outpost_police_test")
+	person.pulledby = dragger
+	checkpoint.on_breach_entry(person, chamber)
+	person.pulledby = null
+	TEST_ASSERT_NULL(police.get_warrant(person.mind), "Someone tied up and dragged through a forced gate was charged")
+	TEST_ASSERT_NOTNULL(police.get_warrant(dragger.mind), "Whoever dragged someone through a forced gate was not charged")
+	// Shut in a locker someone pulls
+	var/mob/living/carbon/human/stuffed = mind_person(chamber)
+	var/mob/living/carbon/human/hauler = mind_person(chamber)
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, chamber)
+	stuffed.forceMove(locker)
+	locker.pulledby = hauler
+	checkpoint.on_breach_entry(locker, chamber)
+	locker.pulledby = null
+	stuffed.forceMove(chamber)
+	TEST_ASSERT_NULL(police.get_warrant(stuffed.mind), "Someone shut in a locker pulled through a forced gate was charged")
+	TEST_ASSERT_NOTNULL(police.get_warrant(hauler.mind), "Whoever pulled a locker with someone in it through a forced gate was not charged")
+	// Walking through on their own is still a breach
+	REMOVE_TRAIT(person, TRAIT_RESTRAINED, "outpost_police_test")
+	police.recent_reports.Cut()
+	checkpoint.on_breach_entry(person, chamber)
+	TEST_ASSERT_NOTNULL(police.get_warrant(person.mind), "Walking through a forced gate was not a breach")
+	checkpoint.state = "idle" // CHECKPOINT_IDLE
+
 // ===== THE STICK-UP (spec 10) =====
 
 /// A loaded outpost's main trader at its counter, the keeper of its shop, and a robber with a gun beside it. Nobody else sees.
@@ -312,6 +346,43 @@
 
 /datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_silenced/dragged/silence()
 	trader.forceMove(locate(trader.x + 5, trader.y, trader.z))
+
+/// Abuse SF6 (M38): a trader out cold or tied up when the 30 s alarm comes raises it the moment it can
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_alarm_waits
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_alarm_waits/Run()
+	if(!holdup_fixture())
+		return
+	if(!hold_up())
+		return
+	var/datum/outpost_holdup/holdup = shop.holdup
+	holdup.hand_over(trader, person)
+	trader.set_stat(UNCONSCIOUS)
+	holdup.timed_alarm()
+	TEST_ASSERT_NULL(police.get_warrant(person.mind), "A trader out cold raised the alarm")
+	TEST_ASSERT(!QDELETED(holdup) && !holdup.alarm_done, "The alarm was dropped because the trader was out cold at 30 seconds")
+	if(QDELETED(holdup))
+		return
+	TEST_ASSERT(holdup.alarm_overdue, "The alarm is not waiting for the trader")
+	TEST_ASSERT_NOTNULL(holdup.watch_timer, "Nothing tries the alarm again")
+	holdup.watch_robber()
+	TEST_ASSERT_NULL(police.get_warrant(person.mind), "A trader still out cold raised the alarm")
+	trader.set_stat(CONSCIOUS)
+	holdup.watch_robber()
+	TEST_ASSERT_EQUAL(police.get_stars(person.mind), 2, "The trader did not raise the alarm once it could")
+	if(!QDELETED(shop.holdup))
+		qdel(shop.holdup)
+
+/// Abuse SF6: trying to cuff a trader is assault on the staff
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_cuff_is_assault
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_cuff_is_assault/Run()
+	if(!holdup_fixture())
+		return
+	SEND_SIGNAL(trader, COMSIG_CARBON_CUFF_ATTEMPTED, person)
+	var/datum/outpost_warrant/warrant = police.get_warrant(person.mind)
+	TEST_ASSERT_NOTNULL(warrant, "Trying to cuff a trader in front of it made no warrant")
+	TEST_ASSERT(warrant?.heat > 0, "Trying to cuff a trader was not assault on the staff") // OUTPOST_CRIME_ASSAULT_STAFF
 
 /// A gate guard has no till and nobody who is not a trader at its counter is robbed (M40)
 /datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_guard_has_no_till

@@ -245,6 +245,14 @@
 	thief.put_in_hands(prize)
 	TEST_ASSERT(LAZYACCESS(locker.thieves, WEAKREF(thief.mind)), "Taking another prisoner's gear was not put on record")
 	TEST_ASSERT(locker.holds(prize), "A stolen item stopped being listed")
+	// Abuse SF1: planted on someone else, it is still the thief's theft, not theirs
+	var/mob/living/carbon/human/framed = person()
+	thief.dropItemToGround(prize)
+	framed.put_in_hands(prize)
+	TEST_ASSERT_EQUAL(prize.loc, framed, "Setup: the stolen item did not reach the second person")
+	TEST_ASSERT(!LAZYACCESS(locker.thieves, WEAKREF(framed.mind)), "Someone the stolen goods were planted on was put on record")
+	framed.dropItemToGround(prize)
+	thief.put_in_hands(prize)
 
 	// Arrested: the loot is taken, and the thief's own crime tool with it
 	var/obj/item/lighter/own_tool = allocate(/obj/item/lighter)

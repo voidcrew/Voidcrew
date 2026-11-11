@@ -68,6 +68,99 @@
 	TEST_ASSERT(post in recovery.vacant_posts(), "A dead replacement still keeps the counter")
 	qdel(replacement)
 
+/// Abuse MF3 (M31): a keeper carried off the outpost alive keeps the counter a minute, then is replaced as if dead and never takes it back from off the outpost
+/datum/unit_test/voidcrew_outpost_recovery_keeper_carried_off
+
+/datum/unit_test/voidcrew_outpost_recovery_keeper_carried_off/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	place.occupied = TRUE
+	var/mob/living/keeper = outpost.trader
+	TEST_ASSERT_NOTNULL(keeper, "The loaded outpost has no main trader")
+	if(!keeper)
+		return
+	var/turf/counter = get_turf(keeper)
+	recovery.register_posts()
+	var/datum/outpost_recovery_post/post = recovery.posts[outpost.shop]
+	TEST_ASSERT_NOTNULL(post, "The main counter was not learnt")
+	if(!post)
+		return
+	TEST_ASSERT(!(post in recovery.vacant_posts()), "A kept counter is vacant")
+
+	// Carried off alive (the test room is off the outpost): a minute's grace, then vacant
+	keeper.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!recovery.keeper_on_post(keeper), "A keeper off the outpost is still on post")
+	TEST_ASSERT(!(post in recovery.vacant_posts()), "A keeper just dragged off left the counter vacant at once")
+	TEST_ASSERT(post.away_since, "The time the keeper went was not noted")
+	post.away_since = world.time - 1 MINUTES - 1 // RECOVERY_KEEPER_AWAY_MAX
+	TEST_ASSERT(post in recovery.vacant_posts(), "A keeper carried off alive for a minute still keeps the counter")
+	recovery.watch()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "A counter left vacant by a keeper carried off made no trouble") // OUTPOST_RECOVERY_TROUBLE
+
+	// The replacement comes; the original, still off the outpost, does not take the counter back
+	recovery.send_staff()
+	var/mob/living/replacement = post.replacement?.resolve()
+	TEST_ASSERT_NOTNULL(replacement, "No replacement was made for a keeper carried off")
+	if(!replacement)
+		return
+	recovery.turn_round_replacements()
+	TEST_ASSERT_EQUAL(post.replacement?.resolve(), replacement, "An original off the outpost took the counter back")
+	TEST_ASSERT_EQUAL(outpost.shop.keeper?.resolve(), replacement, "The shop's keeper is not the replacement")
+
+	// Back at the outpost before the replacement reaches the counter: the original takes it back
+	keeper.forceMove(counter)
+	TEST_ASSERT(recovery.keeper_on_post(keeper), "A keeper back at the outpost is not on post")
+	recovery.turn_round_replacements()
+	TEST_ASSERT_NULL(post.replacement, "A replacement still on the way kept the counter from its original")
+	qdel(replacement)
+
+/// Abuse MF5: bodies or people parked in the lift alcove never keep a replacement trader away
+/datum/unit_test/voidcrew_outpost_recovery_alcove_blocked
+
+/datum/unit_test/voidcrew_outpost_recovery_alcove_blocked/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	place.occupied = TRUE
+	TEST_ASSERT(length(outpost.lobby_alcove_turfs), "The loaded outpost has no lift alcove")
+	var/mob/living/keeper = outpost.trader
+	TEST_ASSERT_NOTNULL(keeper, "The loaded outpost has no main trader")
+	if(!keeper || !length(outpost.lobby_alcove_turfs))
+		return
+	recovery.register_posts()
+	var/datum/outpost_recovery_post/post = recovery.posts[outpost.shop]
+	TEST_ASSERT_NOTNULL(post, "The main counter was not learnt")
+	if(!post)
+		return
+	qdel(keeper)
+
+	// A body on every alcove tile
+	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
+		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/consistent, alcove)
+		body.death()
+	TEST_ASSERT_NULL(SSambient_npcs.lift_arrival_turf(outpost), "Setup: the ambient lift still takes arrivals")
+	recovery.send_staff()
+	var/mob/living/replacement = post.replacement?.resolve()
+	TEST_ASSERT_NOTNULL(replacement, "Bodies in the lift alcove kept the replacement away")
+	TEST_ASSERT(get_turf(replacement) in outpost.lobby_alcove_turfs, "The replacement did not come up the public lift")
+	if(replacement)
+		replacement.death()
+		qdel(replacement)
+
+	// Someone standing on every alcove tile: he still comes, and steps round them
+	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
+		allocate(/mob/living/carbon/human/consistent, alcove)
+	recovery.send_staff()
+	replacement = post.replacement?.resolve()
+	TEST_ASSERT_NOTNULL(replacement, "People standing in the lift alcove kept the replacement away")
+	if(replacement)
+		qdel(replacement)
+
 /// A fake outpost is not loaded: it learns no post, has none vacant and the watch makes no trouble
 /datum/unit_test/voidcrew_outpost_recovery_posts
 

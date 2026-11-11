@@ -112,6 +112,37 @@
 	TEST_ASSERT_EQUAL(recovery.state, 0, "REFILL did not end") // OUTPOST_RECOVERY_NORMAL
 	TEST_ASSERT_NULL(recovery.tick_timer, "A NORMAL recovery left its tick running")
 
+/// Abuse MF4: a wanted person logged off (or sat in their docked ship) holds TROUBLE three minutes at most; at the keys on the outpost's floor, as long as they stay
+/datum/unit_test/voidcrew_outpost_recovery_stars_away
+
+/datum/unit_test/voidcrew_outpost_recovery_stars_away/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	recovery_corpse(outpost, wanted_spot(1, 1))
+	TEST_ASSERT_EQUAL(recovery.state, 1, "An NPC death did not make trouble") // OUTPOST_RECOVERY_TROUBLE
+	var/mob/living/carbon/human/offender = wanted_person(wanted_spot(5, 5))
+	police_pin_warrant(outpost.police, offender.mind, 100)
+	recovery.last_death_at = world.time - 10 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "A wanted person on the floor did not hold TROUBLE")
+	TEST_ASSERT_EQUAL(length(recovery.stars_away), 0, "A wanted person at the keys on the floor was counted as away")
+
+	// Logged off where they stand: they hold it for a while, then not
+	offender.mind.key = "outpost_recovery_test_ssd"
+	TEST_ASSERT(recovery.stars_present(), "A wanted person just logged off no longer holds TROUBLE")
+	TEST_ASSERT(offender.mind in recovery.stars_away, "A logged off wanted person was not noted as away")
+	recovery.stars_away[offender.mind] = world.time - 3 MINUTES // RECOVERY_STARS_AWAY_MAX
+	TEST_ASSERT(!recovery.stars_present(), "A wanted person logged off for three minutes still holds TROUBLE")
+	recovery.last_shot_at = world.time - 10 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "TROUBLE did not end with only a long logged off wanted person about") // OUTPOST_RECOVERY_CLEANUP
+
+	// Back at the keys: they hold it again, and the away clock starts over next time
+	offender.mind.key = null
+	TEST_ASSERT(recovery.stars_present(), "A wanted person back at the keys does not hold TROUBLE")
+	TEST_ASSERT(!(offender.mind in recovery.stars_away), "A wanted person back at the keys is still counted as away")
+	outpost.police.warrants -= offender.mind
+
 /// CLEANUP is over fifteen minutes after quiet at the latest, body or no body
 /datum/unit_test/voidcrew_outpost_recovery_cleanup_cap
 
@@ -177,6 +208,31 @@
 	var/mob/living/carbon/human/npc/outsider = allocate(/mob/living/carbon/human/npc, wanted_spot(30, 30))
 	outsider.death()
 	TEST_ASSERT_EQUAL(length(recovery.npc_dead), 0, "A body outside the outpost is on its list")
+
+/// Abuse SF3: an NPC body a player is in is a person's body, never on the NPC list; nobody in what an NPC body holds goes down the lift with it
+/datum/unit_test/voidcrew_outpost_recovery_player_in_npc
+
+/datum/unit_test/voidcrew_outpost_recovery_player_in_npc/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/possessed = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(1, 1))
+	possessed.set_place(SSambient_npcs.outpost_place(outpost))
+	possessed.mind_initialize()
+	allocated += possessed.mind
+	possessed.death()
+	TEST_ASSERT(!(WEAKREF(possessed) in recovery.npc_dead), "An NPC body a player was in is on the NPC list")
+	TEST_ASSERT(WEAKREF(possessed) in recovery.player_dead, "An NPC body a player was in is not kept as a person's")
+
+	// A box in an NPC's hand with a person in it comes out before the body goes (alive here: a death would drop it anyway)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/carrier = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(2, 2))
+	var/obj/item/storage/box/box = allocate(/obj/item/storage/box)
+	TEST_ASSERT(carrier.put_in_hands(box), "Setup: the NPC could not hold the box")
+	var/mob/living/carbon/human/stowaway = wanted_person(wanted_spot(2, 2))
+	stowaway.forceMove(box)
+	morgue_drop_persons(carrier, wanted_spot(3, 3))
+	TEST_ASSERT_EQUAL(box.loc, wanted_spot(3, 3), "Something holding a person stayed on an NPC body")
+	TEST_ASSERT_EQUAL(stowaway.loc, box, "The person was taken out of what held them")
+	stowaway.forceMove(wanted_spot(3, 3))
 
 // ===== THE BODY CAP =====
 
