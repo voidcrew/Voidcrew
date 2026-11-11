@@ -320,8 +320,11 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	if(bolt)
 		icon = bolt.icon
 		icon_state = bolt.icon_state
-		pixel_x = bolt.pixel_x
-		pixel_y = bolt.pixel_y
+		// tg's range-out hop (delete_distance in projectile.dm) leaves the bolt a tile less twice its
+		// overshoot short of where it ran out, often behind where it was last drawn; start from that point
+		var/shortfall = clamp(ICON_SIZE_ALL - 2 * bolt.pixels_moved_last_tile, 0, ICON_SIZE_ALL)
+		pixel_x = bolt.pixel_x + round(bolt.movement_vector?.pixel_x * shortfall)
+		pixel_y = bolt.pixel_y + round(bolt.movement_vector?.pixel_y * shortfall)
 		layer = bolt.layer
 		plane = bolt.plane
 		base = matrix(bolt.transform)
@@ -333,9 +336,6 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	animate(transform = scaled_copy(base, 0.55), alpha = 90, time = 0.5)
 	animate(transform = scaled_copy(base, 0.45), alpha = 255, time = 0.5)
 	animate(transform = scaled_copy(base, 0.3), alpha = 200, time = 1)
-	// The wisp is drawn upright, whichever way the bolt flew
-	animate(icon_state = "wisp", transform = matrix(), alpha = 255, time = 0)
-	animate(alpha = 0, time = 2)
 	addtimer(CALLBACK(src, PROC_REF(snuff)), 0.3 SECONDS)
 
 /obj/effect/temp_visual/plasma_gutter/proc/scaled_copy(matrix/base, scale)
@@ -343,10 +343,17 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	scaled.Scale(scale)
 	return scaled
 
-/// The core and its light go out when the wisp starts
+/// The core and its light go out and what is left curls into a wisp, all in one update: turning the
+/// sprite upright any earlier would flash the core's emissive upright for a frame
 /obj/effect/temp_visual/plasma_gutter/proc/snuff()
 	cut_overlays()
 	set_light_on(FALSE)
+	// The wisp is drawn upright, whichever way the bolt flew, and fades out in its own frames
+	// The bolt's look came from the projectile icon; the wisp is in ours
+	icon = initial(icon)
+	icon_state = "wisp"
+	// A new animation replaces the shrink
+	animate(src, transform = matrix(), alpha = 255, time = 0)
 
 // ===== Vent puff =====
 
