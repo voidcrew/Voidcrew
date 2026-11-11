@@ -87,3 +87,6 @@
 #define PLASMA_SOOT_GLOBAL_CAP 300
 /// How long a wall glow (or a soot decal's glow) takes to cool to nothing
 #define PLASMA_GLOW_DURATION (8 SECONDS)
+
+/// Light colour of a plasma bolt and of its splash and gutter-out
+#define PLASMA_LIGHT_COLOR "#74FFA0"

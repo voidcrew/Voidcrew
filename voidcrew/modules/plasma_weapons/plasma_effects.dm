@@ -13,8 +13,6 @@
 #define PLASMA_FAR_SOUND_VOL_FAR 30
 /// A bolt must be this many tiles from where it was fired before it hisses past anyone
 #define PLASMA_HISSBY_MIN_TRAVEL 3
-/// Light colour shared by the bolt's splash and gutter-out
-#define PLASMA_EFFECT_LIGHT_COLOR "#B8FFD0"
 /// Shared particle pool for the flesh splash's steam, kept apart because its holders take the splash's layer
 #define PLASMA_SPLASH_STEAM_KEY "plasma_splash_steam"
 
@@ -195,7 +193,7 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	light_system = OVERLAY_LIGHT
 	light_range = 1.5
 	light_power = 1
-	light_color = PLASMA_EFFECT_LIGHT_COLOR
+	light_color = PLASMA_LIGHT_COLOR
 	light_on = TRUE
 	/// Whether this splash carries the steam pool, so Destroy gives it back
 	var/steaming = FALSE
@@ -310,7 +308,7 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	light_system = OVERLAY_LIGHT
 	light_range = 1.5
 	light_power = 1
-	light_color = PLASMA_EFFECT_LIGHT_COLOR
+	light_color = PLASMA_LIGHT_COLOR
 	light_on = TRUE
 
 /// Takes the look of `bolt`, shrinks with two flickers over 0.3 s, then curls into a wisp
@@ -373,5 +371,4 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 #undef PLASMA_FAR_SOUND_VOL_NEAR
 #undef PLASMA_FAR_SOUND_VOL_FAR
 #undef PLASMA_HISSBY_MIN_TRAVEL
-#undef PLASMA_EFFECT_LIGHT_COLOR
 #undef PLASMA_SPLASH_STEAM_KEY

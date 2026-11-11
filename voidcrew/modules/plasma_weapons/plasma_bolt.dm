@@ -17,9 +17,9 @@
 	hitsound_wall = 'sound/items/weapons/effects/searwall.ogg'
 	impact_effect_type = null
 	light_system = OVERLAY_LIGHT
-	light_range = 1.5
+	light_range = 2
 	light_power = 1.2
-	light_color = "#B8FFD0"
+	light_color = PLASMA_LIGHT_COLOR
 
 /obj/projectile/energy/plasma_bolt/heavy
 	damage = 45
@@ -27,8 +27,8 @@
 	wound_bonus = 5
 	exposed_wound_bonus = 20
 	range = 25
-	light_range = 2
-	light_power = 1.3
+	light_range = 2.5
+	light_power = 1.6
 
 /obj/projectile/energy/plasma_bolt/Destroy()
 	hissed_mobs = null
