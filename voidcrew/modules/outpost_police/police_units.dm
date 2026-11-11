@@ -365,6 +365,17 @@
 	// On the roster of the police who keep this outpost, if any (roles and dispatch add them as well: no harm)
 	home_police()?.add_officer(src)
 
+/**
+ * A person is never on an officer's side: players and officers share the neutral faction, and stealth's scan,
+ * hearing and touch would otherwise pass over every visitor as a friend. Their warrant decides what an officer does
+ * about them (police_force.dm); creatures and staff go by faction as before.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/faction_check_atom(atom/movable/target, exact_match)
+	var/mob/living/person = target
+	if(isliving(person) && (person.mind || person.client) && !istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		return FALSE
+	return ..()
+
 /// The outpost they stand at, or null
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/home_outpost()
 	return police?.outpost || get_trader_outpost_for_turf(get_turf(src))

@@ -314,22 +314,30 @@
 		"stealth_missing": [
 			"Where's %NAME%? Not answering.",
 			"Anyone seen %NAME%?",
-			"Has anyone heard from the beat?"
+			"Has anyone heard from the beat?",
+			"Has anyone heard from the east beat?",
+			"Someone's gone quiet on us."
 		],
 		"stealth_radio_report": [
 			"Checking something by %PLACE%. Stand by.",
 			"Beat to desk, having a look by %PLACE%.",
-			"Beat to desk, checking a noise. Stand by."
+			"Beat to desk, checking a noise. Stand by.",
+			"Desk, having a quick look round. Stand by.",
+			"Beat to desk, something odd here. Checking."
 		],
 		"stealth_radio_alarm": [
 			"Beat to all units, trouble by %PLACE%!",
 			"All units, need support by %PLACE%!",
-			"Beat to all units, need support now!"
+			"Beat to all units, need support now!",
+			"All units, trouble on the concourse!",
+			"Beat to all units, I need help here!"
 		],
 		"stealth_radio_missing": [
 			"Desk, %NAME% isn't answering. Checking.",
 			"No word from %NAME%. Going to look.",
-			"Lost contact with a unit. Checking."
+			"Lost contact with a unit. Checking.",
+			"Desk, a unit's gone quiet. Checking.",
+			"Desk, missed check-in. Going to look."
 		],
 		"stealth_copy": [
 			"Copy. On my way.",
@@ -653,22 +661,30 @@
 		"stealth_missing": [
 			"Has anyone seen %NAME%?",
 			"%NAME% missed the check-in.",
-			"Somebody's missed their check-in."
+			"Somebody's missed their check-in.",
+			"Who's missed the check-in?",
+			"One of ours isn't answering."
 		],
 		"stealth_radio_report": [
 			"Unit to desk, checking something near %PLACE%.",
 			"Desk, looking into a noise by %PLACE%.",
-			"Desk, checking a disturbance. Stand by."
+			"Desk, checking a disturbance. Stand by.",
+			"Desk, checking an irregularity. Stand by.",
+			"Unit to desk, looking into something."
 		],
 		"stealth_radio_alarm": [
 			"All units, incident near %PLACE%!",
 			"Support required near %PLACE%!",
-			"All units, support required now!"
+			"All units, support required now!",
+			"All units, incident on the floor!",
+			"Unit requires support, now!"
 		],
 		"stealth_radio_missing": [
 			"Desk, no contact with %NAME%. Checking.",
 			"%NAME% isn't responding. Going to look.",
-			"Lost a unit's signal. Checking."
+			"Lost a unit's signal. Checking.",
+			"Desk, a unit is unresponsive. Checking.",
+			"Missed check-in. Investigating."
 		],
 		"stealth_copy": [
 			"Copy, en route.",
@@ -992,22 +1008,30 @@
 		"stealth_missing": [
 			"Where's %NAME% got to?",
 			"%NAME% gone quiet.",
-			"Someone's not answering."
+			"Someone's not answering.",
+			"Who's gone quiet?",
+			"Somebody's not checking in."
 		],
 		"stealth_radio_report": [
 			"Desk, checking something by %PLACE%.",
 			"Having a look by %PLACE%.",
-			"Desk, checking a noise."
+			"Desk, checking a noise.",
+			"Desk, having a look. Hang on.",
+			"Something's off here. Checking."
 		],
 		"stealth_radio_alarm": [
 			"All wardens, trouble by %PLACE%!",
 			"Need bodies by %PLACE%, now!",
-			"All wardens, trouble, now!"
+			"All wardens, trouble, now!",
+			"All wardens, need help here!",
+			"Trouble on the floor! Move!"
 		],
 		"stealth_radio_missing": [
 			"Desk, %NAME% gone quiet. Checking.",
 			"No word from %NAME%. Looking.",
-			"Lost a warden. Going to look."
+			"Lost a warden. Going to look.",
+			"Desk, someone's gone quiet. Looking.",
+			"Missed check-in. Going to look."
 		],
 		"stealth_copy": [
 			"Copy. Coming.",
