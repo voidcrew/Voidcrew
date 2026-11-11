@@ -102,6 +102,8 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	outpost = new_outpost
 	profile = make_profile()
 	perception = make_perception()
+	// The wanted core's event hooks (police_wanted.dm): here, so a perception subtype never loses them
+	hook_events()
 
 /datum/outpost_police/Destroy()
 	if(tick_timer)
@@ -264,6 +266,16 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	var/list/recent_victims
 	/// Weakrefs to the items used in counted crimes, OUTPOST_POLICE_EVIDENCE_MAX at most, oldest first
 	var/list/evidence
+	/// The fine's star level, fixed at the first charge so bail asks for the same sum (1 or 2), or 0
+	var/fine_level = 0
+
+/datum/outpost_warrant/Destroy()
+	mind = null
+	crew = null
+	last_seen_turf = null
+	evidence = null
+	recent_victims = null
+	return ..()
 
 /// A zone's police: what they are called, how many walk the beat, the fine, the comply time, mercy, voice and kit.
 /// police_units.dm (P2) sets the values on the three subtypes and picks one in make_profile().

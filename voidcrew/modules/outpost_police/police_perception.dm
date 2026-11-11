@@ -13,7 +13,6 @@
 /// The witness test this police uses
 /datum/outpost_police/proc/make_perception()
 	// The stealth merge returns its subtype here, under #ifdef STEALTH_SIGHT_RANGE (spec 18)
-	hook_events() // police_wanted.dm: police_core.dm's New() calls this once, so the event hooks start here
 	return new /datum/outpost_police_perception(src)
 
 /**

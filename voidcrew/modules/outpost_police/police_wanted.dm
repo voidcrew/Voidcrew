@@ -34,18 +34,6 @@
 	/// Whether the death hook is registered
 	var/events_hooked = FALSE
 
-/datum/outpost_warrant
-	/// The fine's star level, fixed at the first charge so bail asks for the same sum (1 or 2), or 0
-	var/fine_level = 0
-
-/datum/outpost_warrant/Destroy()
-	mind = null
-	crew = null
-	last_seen_turf = null
-	evidence = null
-	recent_victims = null
-	return ..()
-
 /// A report that waits for its witness to make the call (perception.report_delay() above 0)
 /datum/outpost_pending_report
 	/// world.time the witness finishes reporting
@@ -573,7 +561,7 @@
 // KILLINGS
 // =========================================================================
 
-/// Starts listening for deaths (police_core.dm's New() reaches this through make_perception())
+/// Starts listening for deaths (called once from police_core.dm's New())
 /datum/outpost_police/proc/hook_events()
 	if(events_hooked)
 		return
