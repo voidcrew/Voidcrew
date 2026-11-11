@@ -333,7 +333,8 @@
 	if(test_plain)
 		return 0
 #endif
-	if(istype(witness, /mob/living/carbon/human/npc/ambient_npc) && !is_officer(witness))
+	// Townspeople take a moment; a trader or gate guard (ambient NPCs since R1) reports at once, as an officer's desk would
+	if(istype(witness, /mob/living/carbon/human/npc/ambient_npc) && !is_officer(witness) && !istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 		return OUTPOST_POLICE_CIVILIAN_REPORT_TIME
 	return 0
 
