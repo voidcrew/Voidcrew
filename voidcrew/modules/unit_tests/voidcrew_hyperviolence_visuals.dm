@@ -247,7 +247,8 @@
 	// Nobody has seen it fall yet: a part cut off it in the same tick starts as it stood
 	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), 0, "A body counts as turned in the tick it goes down")
 	sleep(world.tick_lag)
-	victim.set_lying_angle(LYING_ANGLE_EAST)
+	if(victim.body_position == LYING_DOWN)
+		victim.set_lying_angle(LYING_ANGLE_EAST)
 	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), 90, "A body lying head east is not a quarter turn clockwise")
 	victim.set_lying_angle(LYING_ANGLE_WEST)
 	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), -90, "A body lying head west is not a quarter turn the other way")
@@ -373,6 +374,10 @@
 	victim.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim is not in soft crit")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/hv_downed), "Soft crit did not bring the pleading lean")
+	// tg lays a body down facing a random side and turns it to the way it crawls (lying_angle_on_movement()):
+	// lay it the way the move goes, so only the plea could change how it is drawn.
+	if(victim.body_position == LYING_DOWN)
+		victim.set_lying_angle(LYING_ANGLE_EAST)
 	var/list/rest = rest_of(victim)
 	victim.Move(spot(2, 1), EAST)
 	victim.hv_vis_plead(null)

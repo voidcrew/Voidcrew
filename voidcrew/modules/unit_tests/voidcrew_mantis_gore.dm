@@ -299,8 +299,8 @@
 	skewer = lunge.impale
 	TEST_ASSERT(skewer.wall_pin, "A window behind them didn't pin them")
 	TEST_ASSERT_EQUAL(skewer.hold_time, 1.5 SECONDS, "The pin isn't 1.5 seconds")
-	// It runs out on its own and rips.
-	sleep(2 SECONDS)
+	// It runs out on its own and rips: the 1.5 s hold, up to a 0.2 s tick, then the 0.4 s pull-back and tear-out.
+	sleep(2.5 SECONDS)
 	TEST_ASSERT(isnull(lunge.impale), "The pin never ended")
 	TEST_ASSERT(pinned.IsKnockdown(), "The pin ended without the rip")
 
@@ -395,7 +395,7 @@
 
 	// Atlas: the blades stop on metal, the head stays.
 	ADD_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
-	var/datum/hv_finisher/mantis_scissor/framed = allocate(/datum/hv_finisher/mantis_scissor, user, victim)
+	var/datum/hv_finisher/mantis_scissor/framed = allocate(/datum/hv_finisher/mantis_scissor, user, victim, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_scissor_ended)))
 	TEST_ASSERT(framed.start(), "The scissor didn't start on an Atlas body")
 	var/head_brute = victim.get_bodypart(BODY_ZONE_HEAD).brute_dam
 	for(var/i in 1 to 20)
@@ -406,11 +406,13 @@
 	TEST_ASSERT(victim.get_bodypart(BODY_ZONE_HEAD), "An Atlas body lost its head")
 	TEST_ASSERT(victim.get_bodypart(BODY_ZONE_HEAD).brute_dam > head_brute, "The blades did nothing to the Atlas neck")
 	REMOVE_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
+	// Ended as the game ends one (mantis_try_scissor()'s callback): the rig fades into the real bearer
+	sleep(0.25 SECONDS) // mantis_rig/hand_back(), MANTIS_RIG_HANDBACK 0.15 s
 
 	// The head comes off, brain inside, and lands where they lie.
 	var/mob/living/carbon/human/consistent/doomed = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
 	crit(doomed)
-	var/datum/hv_finisher/mantis_scissor/kill = allocate(/datum/hv_finisher/mantis_scissor, user, doomed)
+	var/datum/hv_finisher/mantis_scissor/kill = allocate(/datum/hv_finisher/mantis_scissor, user, doomed, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_scissor_ended)))
 	TEST_ASSERT(kill.start(), "The scissor didn't start")
 	TEST_ASSERT(kill.rig, "The bearer isn't drawn around the victim")
 	kill.advance()
@@ -419,13 +421,17 @@
 	for(var/obj/effect/abstract/mantis_puppet/picture as anything in closing)
 		if(picture.layer < doomed.layer)
 			below++
-	TEST_ASSERT(length(closing) == 4 && below == 1, "The closing blades aren't drawn with the far blade under the neck ([length(closing)] pieces, [below] under)")
+	var/list/diag_states = list()
+	for(var/obj/effect/abstract/mantis_puppet/picture as anything in closing)
+		diag_states += "[picture.icon_state]@[picture.layer < doomed.layer][QDELETED(picture) ? "Q" : ""]"
+	TEST_ASSERT(length(closing) == 4 && below == 1, "The closing blades aren't drawn with the far blade under the neck ([length(closing)] pieces, [below] under) (DIAG [jointext(diag_states, ",")] stage [kill.current_stage?.type])")
 	TEST_ASSERT(right_blade(user).inhand_hidden_until > world.time, "The held blade is drawn over the closing blades")
 	for(var/i in 1 to 20)
 		if(!kill.running)
 			break
 		kill.advance()
 	TEST_ASSERT_EQUAL(kill.result, MG_FINISHER_DONE, "The scissor didn't finish")
+	sleep(0.25 SECONDS) // the rig fades out (mantis_rig/hand_back(), MANTIS_RIG_HANDBACK 0.15 s)
 	TEST_ASSERT(!length(rig_pictures(user)) && !user.get_filter("mantis_rig_hide"), "The bearer is still drawn by the rig after the scissor")
 	TEST_ASSERT_NULL(doomed.get_bodypart(BODY_ZONE_HEAD), "The head is still on")
 	var/obj/item/bodypart/head/head = locate() in get_turf(doomed)
@@ -464,6 +470,7 @@
 	victim.forceMove(spot(2, 2))
 	TEST_ASSERT(QDELETED(scissor) || !scissor.running, "The scissor went on with the body on a corner")
 	TEST_ASSERT(isnull(user.mantis_state.scissor), "The stopped scissor is still on the bearer")
+	sleep(0.25 SECONDS) // the rig fades out (mantis_rig/hand_back(), MANTIS_RIG_HANDBACK 0.15 s)
 	TEST_ASSERT(!length(rig_pictures(user)), "A scissor stopped on a corner left the bearer drawn by the rig")
 
 /// Who counts, at most once per bearer per 8 s and per body per 2 min, never prisoners, only kills
@@ -606,6 +613,8 @@
 	TEST_ASSERT(user.Adjacent(target), "The leap didn't land beside the target")
 	TEST_ASSERT(!lunge.crouched && !HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, MG_CHARGE_TRAIT), "The leap left the bearer crouched")
 	TEST_ASSERT(!lunge.IsAvailable(), "The leap cost no cooldown")
+	// They go down with the impact, once the body has glided in (land_lunge(), mantis_lunge_knockdown())
+	sleep(1 SECONDS)
 	TEST_ASSERT(target.IsKnockdown(), "The leap didn't drop the target")
 
 /// The dash stops at the edge of a chasm or lava, never on it.

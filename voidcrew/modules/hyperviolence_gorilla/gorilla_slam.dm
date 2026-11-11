@@ -823,7 +823,8 @@
 	to_chat(bearer, span_danger("You lose your hold on [victim]!"))
 	var/showing = world.time - started_at < t_top ? taking : facing
 	var/obj/effect/abstract/chrome_puppet/held = posed ? victim_rig?.puppet("body_[showing]") : null
-	if(!held || !isturf(victim.loc))
+	// A body taken off its tile shows where it is at once: its puppet would set down on the tile it left.
+	if(!held || !isturf(victim.loc) || victim.loc != victim_spot)
 		finish()
 		return
 	// His own puppets go at once; the body's puppet comes down onto the real body, and the one not on yet never shows
@@ -837,6 +838,9 @@
 	down.Translate(victim_at[1], victim_at[2])
 	animate(held, transform = down, alpha = 255, time = GORILLA_SLAM_SET_DOWN_TIME, easing = SINE_EASING | EASE_IN)
 	end_timer = addtimer(CALLBACK(src, PROC_REF(finish)), GORILLA_SLAM_SET_DOWN_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	// Lost grip first, then the body taken off its tile (a pull breaks before the body moves): it shows where it is at
+	// once, not hidden under a puppet setting down on the tile it left. Destroy()'s stop_listening() lets go of this.
+	RegisterSignal(victim, COMSIG_MOVABLE_MOVED, PROC_REF(on_deleted))
 
 /// The slam is over: the puppets go and both bodies show.
 /datum/gorilla_slam/proc/finish()

@@ -185,9 +185,11 @@
 	TEST_ASSERT_EQUAL(puncher.get_active_hand()?.body_zone, BODY_ZONE_L_ARM, "The test puncher isn't swinging with the left arm")
 	var/hurt_before = victim.getBruteLoss()
 	TEST_ASSERT_EQUAL(punch_arm.on_punch(puncher, victim, TRUE, null), COMPONENT_CANCEL_ATTACK_CHAIN, "The Brawler arm didn't take the punch")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss() - hurt_before, 14, "A Brawler punch didn't land 14")
 	TEST_ASSERT_EQUAL(COOLDOWN_TIMELEFT(punch_arm, slam_cooldown), 5 SECONDS, "A Brawler punch didn't start the five second clock")
 	TEST_ASSERT_NOTEQUAL(punch_arm.on_punch(puncher, victim, TRUE, null), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler arm punched again on its clock")
+	// The blow lands when the fist is there: 0.1 s after the click (GORILLA_THRUST_LANDS)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss() - hurt_before, 14, "A Brawler punch didn't land 14")
 
 /// Tinker's fingers: the Fixer's three tools and a weaker servo speed-up under
 /// its own key, so it never replaces the Fixer's.
