@@ -48,6 +48,13 @@
 	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
 	return locate(/datum/action/cooldown/cyberware/cascade_surge) in lattice.actions
 
+/// Waits for the replay that follows `user`'s slow-mo to be over (ware_sandy_replay.dm): AIs are paused and the crash waits until then
+/datum/unit_test/voidcrew_cyberware_timestop/proc/wait_replay(mob/living/carbon/human/user)
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay after the slow-mo never ended")
+
 /// Nobody else near: the world runs slow from the first moment to the end of the window, nothing is ever frozen,
 /// and the user can act throughout
 /datum/unit_test/voidcrew_cyberware_timestop/alone
@@ -93,7 +100,8 @@
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_window), "Test fixture: the window outlived its 2 s")
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo outlived the window")
 	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The NPC stayed slow after the window")
-	TEST_ASSERT(!frozen(raider), "The NPC was frozen after the window")
+	wait_replay(user)
+	TEST_ASSERT(!frozen(raider), "The NPC was frozen after the window and its replay")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
 /// The slow-mo lasts each model's whole window at that model's pace
@@ -142,10 +150,14 @@
 	TEST_ASSERT(button.IsAvailable(), "The surge can't be pressed while its window runs")
 	TEST_ASSERT(button.Trigger(), "The second press did nothing")
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_window), "The second press didn't end the window")
-	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "Ending the window early skipped the crash")
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo outlived the window")
 	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The NPC stayed slow after the window was cut short")
 	TEST_ASSERT_EQUAL(button.next_use_time, cooldown_end, "Cutting the window short changed the cooldown")
+
+	// The crash lands once the replay of the shortened slow-mo is over, and the surge can't be pressed in between.
+	TEST_ASSERT(!button.Trigger(), "A press went through during the replay")
+	wait_replay(user)
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "Ending the window early skipped the crash")
 
 	// In the crash, and after it, the button is back on its cooldown.
 	TEST_ASSERT(!button.IsAvailable(), "The surge could be pressed in the crash")

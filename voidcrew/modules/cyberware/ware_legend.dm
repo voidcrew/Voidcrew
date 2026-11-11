@@ -242,7 +242,8 @@
 	cyberware_unregister_dodge_source(owner, id)
 	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	owner.remove_client_colour(id)
-	if(!QDELETED(owner) && owner.stat != DEAD)
+	// A slow-mo that ran to its end replays first, and the crash lands when the replay is over (ware_sandy_replay.dm).
+	if(!QDELETED(owner) && owner.stat != DEAD && !sandy_replay_defer_crash(owner, crash_duration, crash_stamina))
 		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash_duration, crash_stamina)
 	if(!QDELETED(owner))
 		cyberware_cascade_window_end_fx(owner)

@@ -102,6 +102,7 @@
 #include "voidcrew_cyberware_models_b.dm"
 #include "voidcrew_cyberware_npcs.dm"
 #include "voidcrew_cyberware_passives.dm"
+#include "voidcrew_cyberware_replay.dm"
 #include "voidcrew_cyberware_soak.dm"
 #include "voidcrew_cyberware_text.dm"
 #include "voidcrew_cyberware_timestop.dm"

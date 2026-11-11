@@ -405,12 +405,18 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/ring_time = 0
 	/// The ring's full size, in tiles of radius.
 	var/ring_reach = 0
+	/// The recording of this slow-mo, played back when it ends (ware_sandy_replay.dm). Only a player's field has one.
+	var/datum/sandy_replay/replay
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, _time_scale = 1, _user_multiplier = 1)
 	time_scale = _time_scale > 0 ? _time_scale : 1
 	user_multiplier = _user_multiplier > 0 ? _user_multiplier : 1
 	last_tick = world.time
 	GLOB.cyberware_time_fields += src
+	if(isliving(_host))
+		var/mob/living/recorded = _host
+		if(recorded.ckey)
+			replay = new(src, recorded) // before the field takes its first turf, so it sees everything
 	. = ..()
 	STOP_PROCESSING(SSfastprocess, src) // tick() runs on tick_timer instead
 	tick_timer = addtimer(CALLBACK(src, PROC_REF(tick)), 0.2 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
@@ -435,6 +441,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		cyberware_surge_refresh_perks(surger) // a surge still open gets its own edge back
 	own_scales.Cut()
 	released.Cut()
+	var/datum/sandy_replay/recording = replay
+	replay = null
+	recording?.field_over() // it plays back from here; a player cutting the slow-mo short cancelled it in tick()
 
 /// How long, in real time from now, `local` deciseconds of `thing`'s own time take: its rate in the field until
 /// the effect (or a boss's hold) ends, then real time.
@@ -467,6 +476,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	return min(multiplier / user_multiplier, SANDY_STOP_MAX_RELATIVE)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/freeze_atom(atom/movable/A)
+	replay?.notice(A) // everything on, entering or made on a field turf comes through here
 	if(!istype(A) || GLOB.cyberware_time_dilated[A] || global_frozen_atoms[A] || released[A] || immune[A] || surging[A])
 		return FALSE
 	if(cyberware_own_surge(A))
@@ -511,6 +521,13 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(tint)
 		into_the_negative_zone(A)
 	return TRUE
+
+/datum/proximity_monitor/advanced/timestop/sandevistan/setup_field_turf(turf/target)
+	if(!replay)
+		return ..()
+	replay.covering = TRUE // what stands on a turf the field moves onto was there all along
+	. = ..()
+	replay?.covering = FALSE
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/unfreeze_all()
 	for(var/atom/movable/thing as anything in frozen_things)
@@ -762,6 +779,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// Every 0.2 s: end if a player came in, push back the timers of everything held, let bosses go.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/tick()
 	if(QDELETED(host) || cyberware_time_stop_witnessed(host))
+		replay?.cancel() // cut short: nothing replays
 		if(!QDELETED(stopper))
 			qdel(stopper) // takes this field with it
 		return
@@ -809,6 +827,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/into_the_negative_zone(atom/A)
 	tinted[A] = TRUE
+	replay?.resample(A) // recorded without the tint from here on
 	var/wait = ring_wait(A)
 	if(wait > 0)
 		if(!tint_timers[A])
