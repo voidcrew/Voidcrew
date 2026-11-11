@@ -593,16 +593,6 @@
 /obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost/checkpoint)
-"bC" = (
-/obj/structure/railing/unbreakable{
-	dir = 2
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/line{
-	dir = 2
-	},
-/obj/effect/turf_decal/delivery,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
 "bD" = (
 /obj/structure/railing/unbreakable{
 	dir = 2
@@ -1822,6 +1812,17 @@
 /obj/effect/spawner/random/entertainment/money_small,
 /turf/open/floor/carpet/neon/simple/red/nodots,
 /area/voidcrew/trader_outpost)
+"pv" = (
+/obj/structure/railing/unbreakable{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/delivery,
+/obj/machinery/status_display/outpost_sign/stall/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "pB" = (
 /obj/structure/railing/unbreakable{
 	dir = 4
@@ -2564,6 +2565,22 @@
 /obj/effect/invisible_wall,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"Bf" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/machinery/microwave/outpost,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
+	dir = 1
+	},
+/obj/machinery/status_display/outpost_sign/stall/directional/south,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "Bm" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark,
 /obj/machinery/jukebox,
@@ -3046,26 +3063,6 @@
 	},
 /turf/open/floor/engine/hull/reinforced,
 /area/space)
-"Ih" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark,
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/reagent_containers/cup/glass/bottle/cognac{
-	pixel_w = -1;
-	pixel_z = 14
-	},
-/obj/item/reagent_containers/cup/glass/bottle/vermouth{
-	pixel_w = -9;
-	pixel_z = 6
-	},
-/obj/item/reagent_containers/cup/glass/bottle/whiskey{
-	pixel_w = 10;
-	pixel_z = 9
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/line,
-/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner,
-/obj/machinery/light/floor,
-/turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
 "Il" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner{
 	dir = 8
@@ -3201,22 +3198,6 @@
 	icon_state = "stairs-l";
 	dir = 1
 	},
-/area/voidcrew/trader_outpost)
-"Lf" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 8
-	},
-/obj/machinery/chem_dispenser/drinks/beer/fullupgrade{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
-	dir = 8
-	},
-/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "Lm" = (
 /obj/structure/chair/sofa/bench/tram/left{
@@ -3432,6 +3413,22 @@
 	dir = 1
 	},
 /area/voidcrew/trader_outpost)
+"Op" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/obj/machinery/chem_dispenser/drinks/beer/fullupgrade{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "Oq" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner{
 	dir = 1
@@ -3511,6 +3508,22 @@
 /obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 4
 	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
+"Pz" = (
+/obj/machinery/sleeper/outpost{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 4
+	},
+/obj/machinery/status_display/outpost_sign/stall/directional/west,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "PC" = (
@@ -3772,6 +3785,14 @@
 /obj/effect/spawner/random/trash/cigbutt,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"TL" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/dark_red/opposingcorners,
+/obj/machinery/status_display/outpost_sign/stall/directional/west,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
 "TM" = (
 /obj/structure/table/reinforced,
 /obj/item/reagent_containers/cup/soda_cans/pwr_game{
@@ -3814,21 +3835,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
-"Ux" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/machinery/microwave/outpost,
-/obj/effect/spawner/random/food_or_drink/donkpockets,
-/obj/effect/turf_decal/trimline/dark_red/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
-	dir = 1
-	},
-/turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
 "UL" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 4
@@ -3970,6 +3976,27 @@
 /obj/structure/sign/departments/medbay/alt,
 /turf/closed/indestructible/opsglass,
 /area/voidcrew/trader_outpost)
+"WU" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/reagent_containers/cup/glass/bottle/cognac{
+	pixel_w = -1;
+	pixel_z = 14
+	},
+/obj/item/reagent_containers/cup/glass/bottle/vermouth{
+	pixel_w = -9;
+	pixel_z = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_w = 10;
+	pixel_z = 9
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/line,
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner,
+/obj/machinery/light/floor,
+/obj/machinery/status_display/outpost_sign/stall/directional/north,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "WW" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark,
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
@@ -4039,13 +4066,6 @@
 	dir = 1
 	},
 /turf/open/floor/carpet/neon/simple/red/nodots,
-/area/voidcrew/trader_outpost)
-"Yy" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 9
-	},
-/obj/effect/turf_decal/tile/dark_red/opposingcorners,
-/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "YU" = (
 /obj/structure/table/reinforced,
@@ -4228,7 +4248,7 @@ aa
 aa
 aa
 eJ
-aY
+Pz
 aY
 hP
 aa
@@ -4491,7 +4511,7 @@ aC
 aJ
 aa
 LB
-Yy
+TL
 qK
 Zo
 yM
@@ -4858,7 +4878,7 @@ aa
 (22,1,1) = {"
 aC
 aV
-Ih
+WU
 ai
 My
 xB
@@ -5184,7 +5204,7 @@ Pn
 Pn
 Pn
 TO
-Ux
+Bf
 aa
 aa
 aV
@@ -5214,7 +5234,7 @@ RI
 aa
 bJ
 om
-Lf
+Op
 Jl
 DM
 YU
@@ -5224,7 +5244,7 @@ aX
 br
 bt
 aV
-bC
+pv
 bK
 bS
 aa
