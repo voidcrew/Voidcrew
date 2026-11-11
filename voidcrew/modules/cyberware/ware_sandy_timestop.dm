@@ -48,8 +48,9 @@
  * The user's reflex dodge (ware_pro_combat.dm) is off while the world is slowed: the speed gap already does that
  * job. It comes back if the slow-mo ends before the window does.
  *
- * Look: affected things get a grey-green tint instead of tg's inversion. Floor items, blood decals and the
- * user are never touched, so they keep their colour, and so do the user's own shots. Every bullet in the field
+ * Look: affected things get a grey-green tint instead of tg's inversion, and so does blood (decals, sprays,
+ * splatters), as a colour filter so its own drying colour carries on under it. Floor items and the user are never
+ * touched, so they keep their colour, and so do the user's own shots. Every bullet in the field
  * flies at the field's pace, whoever fired it: the user's and a surging mob's crawl in the slow-mo like the rest
  * (a faster surger fires sooner, but its bullets still crawl), untinted. A shot leaving the field gets its speed back.
  */
@@ -264,6 +265,26 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /proc/cyberware_time_stop_tint()
 	var/static/list/tint = list(0.26,0.28,0.27, 0.52,0.56,0.54, 0.10,0.11,0.105, 0.02,0.05,0.04)
 	return tint
+
+/// Blood the field tints like the world around it (it is only looked at, never held).
+/proc/cyberware_time_tinted_blood(atom/thing)
+	var/static/list/blood = typecacheof(list(
+		/obj/effect/decal/cleanable/blood,
+		/obj/effect/temp_visual/dir_setting/bloodsplatter,
+		/obj/effect/temp_visual/hv_blood_bead,
+		/obj/effect/temp_visual/wire_blood_drop,
+	))
+	return !!blood[thing.type]
+
+/// The field's tint as `thing` wears it. Blood takes it as a colour filter: tg works a blood decal's drying colour
+/// out of its `color` (update_blood_color()), which a colour matrix there would break.
+/proc/cyberware_time_stop_tint_for(atom/thing)
+	if(cyberware_time_tinted_blood(thing))
+		var/static/list/filter_tint
+		if(!filter_tint)
+			filter_tint = color_matrix_filter(cyberware_time_stop_tint())
+		return filter_tint
+	return cyberware_time_stop_tint()
 
 /// Flattens a sprite to luminance and paints it the dilation's green (#5AFF96).
 /proc/cyberware_time_stop_green()
@@ -506,7 +527,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	else if(istype(A, /obj/machinery/porta_turret))
 		frozen_structures += A
 		held_turrets[A] = TRUE
-	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A))
+	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A) || cyberware_time_tinted_blood(A))
 		frozen_structures += A // looks only
 	else if(cyberware_lit_grenade(A))
 		held_grenades[A] = TRUE
@@ -833,7 +854,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(!tint_timers[A])
 			tint_timers[A] = addtimer(CALLBACK(src, PROC_REF(ring_reached), A), wait, TIMER_STOPPABLE)
 		return
-	A.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+	A.add_atom_colour(cyberware_time_stop_tint_for(A), TEMPORARY_COLOUR_PRIORITY)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/escape_the_negative_zone(atom/A)
 	if(tint_timers[A])
@@ -875,7 +896,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	tint_timers -= thing
 	if(QDELETED(thing) || !tinted[thing])
 		return
-	thing.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+	thing.add_atom_colour(cyberware_time_stop_tint_for(thing), TEMPORARY_COLOUR_PRIORITY)
 
 // =========================================================================
 // THE WINDOW'S SIDE

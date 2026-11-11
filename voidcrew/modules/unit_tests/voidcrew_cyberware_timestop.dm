@@ -305,6 +305,8 @@
 	var/gore = cyberware_dilated_time(raider, 1)
 	TEST_ASSERT(gore > 4.9 && gore < 5.1, "A slowed NPC's gore doesn't play at 20% ([gore] for 1)")
 	TEST_ASSERT_NOTNULL(cyberware_time_field(pool), "Blood on the floor in the field isn't slowed")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/pool_field = GLOB.cyberware_time_dilated[pool]
+	TEST_ASSERT(pool_field?.tinted[pool], "Blood in the field isn't tinted with the world")
 	var/list/steps = cyberware_dilated_steps(raider, list(2, 2))
 	var/both = cyberware_dilated_time(raider, 4) // the second step may run past the window's end, back at full speed
 	TEST_ASSERT(length(steps) == 2 && abs(steps[1] - 10) < 0.1 && abs(steps[1] + steps[2] - both) < 0.1, "A slowed NPC's flinch doesn't play at 20% from its first step ([jointext(steps, ",")], [both] in all)")
@@ -341,6 +343,7 @@
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo outlived the window")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The NPC's clock stayed slow after the dilation")
 	TEST_ASSERT_NULL(cyberware_time_field(pool), "Blood stayed slowed after the dilation")
+	TEST_ASSERT(!pool.get_filter(ATOM_PRIORITY_COLOR_FILTER) && !islist(pool.color), "Blood kept the slow-mo's tint, or lost its own colour, after the dilation")
 	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A grenade's fuse didn't lose its slowed time")
 	TEST_ASSERT(bomb.cyberware_fuse_at > world.time, "A grenade's fuse has nothing left after losing time")
 	bomb.cyberware_fuse_at = 0 // don't let it go off after the test

@@ -329,13 +329,15 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!tinted && !outlined)
 		return thing.appearance
 	var/mutable_appearance/copy = new(thing)
-	if(tinted)
+	// Blood wears the tint as a colour filter (cyberware_time_stop_tint_for()), and keeps its own colour under it.
+	var/tint_filter = tinted && cyberware_time_tinted_blood(thing)
+	if(tinted && !tint_filter)
 		copy.color = untinted_colour(thing)
 		copy.appearance_flags |= KEEP_TOGETHER // update_atom_colour() leaves this on once anything was ever coloured
-	if(outlined)
+	if(outlined || tint_filter)
 		copy.filters = null
 		for(var/name in thing.filter_data)
-			if(name == SANDY_REPLAY_OUTLINE)
+			if(name == SANDY_REPLAY_OUTLINE || (tint_filter && name == ATOM_PRIORITY_COLOR_FILTER))
 				continue
 			var/list/data = thing.filter_data[name]
 			var/list/arguments = data.Copy()
@@ -883,6 +885,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_ATOM_DIR_CHANGE))
 				if(!QDELETED(thing) && !track.unmasked)
 					wear_real(track)
+					thing.sandy_replay_resume()
 			track.unmasked = FALSE
 		catch(var/exception/error)
 			LAZYADD(problems, "[error] ([error.file]:[error.line])")
@@ -916,6 +919,19 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		qdel(src)
 	if(problems)
 		stack_trace("Sandevistan replay restore problems: [problems.Join("; ")]")
+
+/**
+ * `src` just got its real look back after the replay. A look's vars hold where its animate()s end, so anything that
+ * was mid-tween when it became a puppet starts its tween again here from where it has got to by now.
+ */
+/atom/movable/proc/sandy_replay_resume()
+	return
+
+/// Wet blood dries (and spreads) by animate(): without this it jumps to its dried look as the replay ends.
+/// update_blood_color() works out how far it has got and plays the rest (hv_vis_paint_on() for the spread).
+/obj/effect/decal/cleanable/blood/sandy_replay_resume()
+	if(!dried || length(hv_vis_painting))
+		update_atom_colour()
 
 /// The surge window is closing on `user`: if their replay is about to play or playing, the crash waits for it.
 /// Returns TRUE if it took the crash.
