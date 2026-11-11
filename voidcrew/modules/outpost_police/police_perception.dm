@@ -88,10 +88,14 @@
  * Whether `viewer` (a conscious living mob, or a camera) sees `target` now: within the witness range with a
  * clear line, and not past the optical camo of a target an NPC or camera cannot spot. Also the test for
  * "an officer sees the suspect" (police_wanted.dm tick_warrants()).
+ * A turf `viewer` asks whether that tile and `target` are in sight of each other (police_dispatch.dm picks
+ * lift points and arrival tiles out of a suspect's sight with it): range and a clear line only.
  */
 /datum/outpost_police_perception/proc/sees(atom/viewer, mob/living/target)
 	if(QDELETED(viewer) || QDELETED(target))
 		return FALSE
+	if(isturf(viewer))
+		return can_see(viewer, target, OUTPOST_POLICE_WITNESS_RANGE)
 	var/mob/living/watcher = isliving(viewer) ? viewer : null
 	if(watcher)
 		if(watcher.stat != CONSCIOUS)
