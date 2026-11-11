@@ -182,9 +182,9 @@ Guns, disablers included, don't get past the outpost's checkpoint unless you buy
 - Examine a patron to see their distinguishing features: hair, a scar, a tattoo, a scarf, a limp, glasses, a missing ear. Each look-alike shares one or two of the fugitive's features, never all of them. The warrant lists all of them but one.
 - **Ask the traders.** While your ship hunts the bounty, every trader, the barkeep included, has an **Ask about the wanted person** option. Each gives your ship one clue, and each trader a different one: where the fugitive was seen, how their hair looks now, one of their features, or one patron who isn't them.
 - **Show the warrant** to the one you think it is. The right person drops the act: a meek one runs, a normal one fights. Anyone else protests and shows you a docking pass. Your ship can show a warrant once every 30 seconds.
-- **The alert.** Showing the warrant to the wrong patron raises the alert. So does hitting a look-alike on purpose: a punch, a shove, a baton, a thrown item, a shot aimed at them, or reaching for their wrists with cuffs. Hitting a look-alike is also an outpost strike. At two alerts, the fugitive and the look-alikes walk out to the hangar and leave, and the bounty lists at a different trader outpost 5 minutes later. Stop the fugitive before they reach the lift and they're still yours to take.
+- **The alert.** Showing the warrant to the wrong patron raises the alert. So does hitting a look-alike on purpose: a punch, a shove, a baton, a thrown item, a shot aimed at them, or reaching for their wrists with cuffs. Hitting a look-alike is also a crime at the outpost. At two alerts, the fugitive and the look-alikes walk out to the hangar and leave, and the bounty lists at a different trader outpost 5 minutes later. Stop the fugitive before they reach the lift and they're still yours to take.
 - Hitting the right patron on purpose exposes them, the same as the warrant.
-- Shots hit whoever is in the way, look-alikes included, and hitting a look-alike is an outpost strike. The outpost's turrets leave the patrons alone. An exposed fugitive only fights the people who came for it. If it hurts a bystander, the turrets can fire on it.
+- Shots hit whoever is in the way, look-alikes included, and hitting a look-alike is a crime at the outpost. Officers leave the patrons alone. An exposed fugitive only fights the people who came for it. If it hurts a bystander, officers can shoot it.
 
 ## Pirate ships
 
@@ -216,7 +216,7 @@ A crime boss holds court in the lounge at the Undertow Exchange from the start o
 - He never leaves the sofa. Before each shot he aims his .357 revolver at someone with a red line for half a second, and a hit spoils his aim. He reloads with a speedloader.
 - Once his goons are down and he's badly hurt, he may give up. He wears an armoured coat, and his goons wear armour vests.
 - When he falls, half the goons left run for it.
-- The outpost's turrets stay out of it. Fighting his crew earns no outpost strikes, but hitting other players still does.
+- Officers stay out of it. Fighting his crew is not a crime, but hitting other players still is.
 
 Once he's down or cuffed, unbuckle him from the sofa and drag him to your ship's pad in the Undertow's hangar.
 
@@ -269,7 +269,7 @@ The warden's console has a **Bounty prisoners** setting: **All**, **No Most Want
 
 - Nobody owns a catch. Whoever gets the criminal onto their own ship's pad and presses Turn In is paid. Cuffing them first gives no claim, and anyone can take the cuffs off with an empty hand.
 - When a bounty is turned in, every other crew hunting it is told who claimed it.
-- Normal PvP rules apply. At trader outposts, strikes work as usual.
+- Normal PvP rules apply. At trader outposts, the [Port Authority](trader-outposts.md#the-port-authority) works as usual.
 
 ## FAQ
 
