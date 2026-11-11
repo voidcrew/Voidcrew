@@ -306,7 +306,7 @@
 	dodge_chance = clamp(dodge_chance, 0, 100)
 	if(dodge_chance >= CYBERWARE_AVOID_CAP)
 		return 0
-	return (CYBERWARE_AVOID_CAP - dodge_chance) / (100 - dodge_chance) * 100
+	return (CYBERWARE_AVOID_CAP - dodge_chance) * 100 / (100 - dodge_chance)
 
 /// Whether this shot is travelling the way the bearer faces, so it strikes them in the back.
 /proc/cyberware_shot_from_behind(mob/living/bearer, obj/projectile/shot)
