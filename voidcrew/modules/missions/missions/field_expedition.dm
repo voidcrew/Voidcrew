@@ -51,7 +51,9 @@
 	))
 
 /datum/mission/field_expedition/build_objectives()
-	add_objective(new /datum/mission_objective/field/plant_quest)
+	var/datum/mission_objective/field/plant_quest/plant = new
+	plant.scene_type = /datum/mission_scene/crash
+	add_objective(plant)
 	add_objective(new /datum/mission_objective/deliver/bound)
 
 /// Picking the core up can wake the neighborhood (once per era)

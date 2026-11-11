@@ -292,6 +292,7 @@
 		fail("No mission pad to deliver the formula chip to.")
 		return
 	formula = new(chip_turf)
+	mission_pad_delivery_effect(chip_turf)
 	formula.recipe = recipe
 	servant?.ship_notify("Formula chip for '[recipe.street_name]' delivered to your mission pad. Examine it for the shopping list.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
@@ -433,6 +434,8 @@
 		fail("Nowhere to deliver the finished batch, contract void.")
 		return
 	var/obj/item/mission_recovery/drug_product/product = new(product_turf)
+	if(!preferred_turf)
+		mission_pad_delivery_effect(product_turf) // the pad fallback: it arrives like any other delivery
 	product.configure(recipe, purity_tier)
 	bind_item(product)
 	register_quest_atom(product)
@@ -496,6 +499,10 @@
 	var/respawns_left = 1
 	/// Guard so notify_when_loaded() is never double-registered
 	var/awaiting_load = FALSE
+	/// Where the current harvest scene was laid; a replacement grows near it
+	var/turf/scene_anchor
+	/// How far from the cache a replacement specimen may grow
+	var/regrow_radius = 6
 
 /datum/ingredient_site/New(datum/mission/drug_run/mission, list/entry)
 	..()
@@ -508,6 +515,7 @@
 	release_item(delete_uncollected = TRUE)
 	QDEL_NULL(site_target)
 	mission = null
+	scene_anchor = null
 	return ..()
 
 /**
@@ -554,6 +562,7 @@
 		site_target?.notify_when_loaded()
 		return
 	spawned = TRUE
+	scene_anchor = scene_turf
 	new /obj/structure/ingredient_cache(scene_turf)
 	var/obj/item/drug_ingredient/ingredient = new ingredient_type(get_nearby_open_turf(scene_turf))
 	watch_item(ingredient)
@@ -608,7 +617,7 @@
 			site_target.notify_when_loaded()
 		return
 	if(respawns_left > 0)
-		var/turf/retry_turf = site_target.get_spawn_turf()
+		var/turf/retry_turf = find_regrowth_turf()
 		if(retry_turf)
 			respawns_left--
 			var/obj/item/drug_ingredient/replacement = new ingredient_type(retry_turf)
@@ -638,6 +647,24 @@
 		return
 	if(mission.active)
 		mission.push_site_waypoint(src)
+
+/**
+ * Where a replacement specimen grows: clear ground a few tiles from the cache,
+ * out of the crew's sight when there is any. Falls back to the whole site when
+ * the camp has no room (or the anchor isn't on this site any more).
+ */
+/datum/ingredient_site/proc/find_regrowth_turf()
+	if(scene_anchor && site_target.contains_turf(scene_anchor))
+		var/list/nearby = list()
+		for(var/turf/open/tile in RANGE_TURFS(regrow_radius, scene_anchor))
+			if(isgroundlessturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
+				continue
+			if(istype(get_area(tile), /area/shuttle) || !site_target.contains_turf(tile))
+				continue
+			nearby += tile
+		if(length(nearby))
+			return pick_unwatched_turf(nearby)
+	return site_target.get_spawn_turf()
 
 /// Stops watching the live field ingredient; optionally removes it outright
 /datum/ingredient_site/proc/release_item(delete_uncollected = FALSE)

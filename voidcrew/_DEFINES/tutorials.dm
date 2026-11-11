@@ -3,11 +3,19 @@
 // never collide with tg's own tutorial keys, and must stay at most 64 characters.
 // Never rename a key that has shipped: players' saved progress is stored under it.
 
+// Panel categories, in the order the panel lists them (GLOB.tutorial_categories holds the names).
+#define TUTORIAL_CATEGORY_START "start"
+#define TUTORIAL_CATEGORY_EXPLORE "explore"
+#define TUTORIAL_CATEGORY_BODY "body"
+#define TUTORIAL_CATEGORY_FIGHT "fight"
+#define TUTORIAL_CATEGORY_KEEP "keep"
+
 // Checklist items. An item key is written once every counted step of the item is done,
 // so later step additions don't reopen a finished item.
 #define TUTORIAL_ITEM_SHIP "vc/ship"
 #define TUTORIAL_ITEM_CONTRACT "vc/contract"
 #define TUTORIAL_ITEM_RESEARCH "vc/research"
+#define TUTORIAL_ITEM_SURVEYS "vc/surveys"
 #define TUTORIAL_ITEM_RUIN "vc/ruin"
 #define TUTORIAL_ITEM_TRADE "vc/trade"
 #define TUTORIAL_ITEM_POWER "vc/power"
@@ -18,6 +26,9 @@
 #define TUTORIAL_ITEM_REPAIR_DRONES "vc/repair_drones"
 #define TUTORIAL_ITEM_SHIP_SAVE "vc/ship_save"
 #define TUTORIAL_ITEM_VESTIGE "vc/vestige"
+#define TUTORIAL_ITEM_WEAPONS "vc/weapons"
+#define TUTORIAL_ITEM_COMBAT "vc/combat"
+#define TUTORIAL_ITEM_PIRATES "vc/pirates"
 
 // Your ship
 #define TUTORIAL_STEP_SHIP_MANAGE "vc/ship/manage"
@@ -32,13 +43,20 @@
 #define TUTORIAL_STEP_CONTRACT_WORK "vc/contract/work"
 #define TUTORIAL_STEP_CONTRACT_TURN_IN "vc/contract/turn_in"
 
-// Research and surveys
+// R&D setup
+#define TUTORIAL_STEP_RESEARCH_KIT "vc/research/kit"
+#define TUTORIAL_STEP_RESEARCH_SERVER "vc/research/server"
+#define TUTORIAL_STEP_RESEARCH_DISK "vc/research/disk"
 #define TUTORIAL_STEP_RESEARCH_CONSOLE "vc/research/console"
-#define TUTORIAL_STEP_RESEARCH_LATHE "vc/research/lathe"
-#define TUTORIAL_STEP_RESEARCH_NODE "vc/research/node"
-#define TUTORIAL_STEP_RESEARCH_BUILD "vc/research/build"
-#define TUTORIAL_STEP_RESEARCH_SURVEY "vc/research/survey"
-#define TUTORIAL_STEP_RESEARCH_NOTES "vc/research/notes"
+#define TUTORIAL_STEP_RESEARCH_PROTOLATHE "vc/research/protolathe"
+#define TUTORIAL_STEP_RESEARCH_MULTITOOL "vc/research/multitool"
+#define TUTORIAL_STEP_RESEARCH_LINK "vc/research/link"
+
+// Surveys
+#define TUTORIAL_STEP_SURVEYS_NODE "vc/surveys/node"
+#define TUTORIAL_STEP_SURVEYS_BUILD "vc/surveys/build"
+#define TUTORIAL_STEP_SURVEYS_SURVEY "vc/surveys/survey"
+#define TUTORIAL_STEP_SURVEYS_NOTES "vc/surveys/notes"
 
 // Planet ruin
 #define TUTORIAL_STEP_RUIN_LAND "vc/ruin/land"
@@ -46,6 +64,7 @@
 #define TUTORIAL_STEP_RUIN_CACHE "vc/ruin/cache"
 
 // Outpost trade
+#define TUTORIAL_STEP_TRADE_TRAVEL "vc/trade/travel"
 #define TUTORIAL_STEP_TRADE_ELEVATOR "vc/trade/elevator"
 #define TUTORIAL_STEP_TRADE_BUY "vc/trade/buy"
 #define TUTORIAL_STEP_TRADE_SELL "vc/trade/sell"
@@ -92,6 +111,31 @@
 #define TUTORIAL_STEP_VESTIGE_PACT "vc/vestige/pact"
 #define TUTORIAL_STEP_VESTIGE_TRIAL "vc/vestige/trial"
 #define TUTORIAL_STEP_VESTIGE_CLAIM "vc/vestige/claim"
+
+// Ship weapons
+#define TUTORIAL_STEP_WEAPONS_CONSOLE "vc/weapons/console"
+#define TUTORIAL_STEP_WEAPONS_LAUNCHER "vc/weapons/launcher"
+#define TUTORIAL_STEP_WEAPONS_MISSILE "vc/weapons/missile"
+#define TUTORIAL_STEP_WEAPONS_LASER "vc/weapons/laser"
+#define TUTORIAL_STEP_WEAPONS_SHIELD "vc/weapons/shield"
+#define TUTORIAL_STEP_WEAPONS_INTERDICTOR "vc/weapons/interdictor"
+#define TUTORIAL_STEP_WEAPONS_EW "vc/weapons/ew"
+
+// Ship combat
+#define TUTORIAL_STEP_COMBAT_INTERDICT "vc/combat/interdict"
+#define TUTORIAL_STEP_COMBAT_MISSILE "vc/combat/missile"
+#define TUTORIAL_STEP_COMBAT_SHIELDS "vc/combat/shields"
+#define TUTORIAL_STEP_COMBAT_HACK "vc/combat/hack"
+#define TUTORIAL_STEP_COMBAT_FORCE_DOCK "vc/combat/force_dock"
+
+// Hunting pirates
+#define TUTORIAL_STEP_PIRATES_HAIL "vc/pirates/hail"
+#define TUTORIAL_STEP_PIRATES_BOARDERS "vc/pirates/boarders"
+#define TUTORIAL_STEP_PIRATES_COMMANDER "vc/pirates/commander"
+#define TUTORIAL_STEP_PIRATES_BOARD "vc/pirates/board"
+#define TUTORIAL_STEP_PIRATES_SHOOT "vc/pirates/shoot"
+#define TUTORIAL_STEP_PIRATES_BOUNTY "vc/pirates/bounty"
+#define TUTORIAL_STEP_PIRATES_CLAIM "vc/pirates/claim"
 
 /// Prefix shared by every Voidcrew tutorial key in `tutorial_completions`.
 #define TUTORIAL_KEY_PREFIX "vc/"

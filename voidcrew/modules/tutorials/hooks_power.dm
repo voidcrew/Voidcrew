@@ -12,7 +12,15 @@
 	if(action == "toggle_power" && active && !was_active)
 		tutorial_credit(ui?.user || usr, TUTORIAL_STEP_POWER_GENERATOR)
 
+/// Opening an unlocked panel counts. A locked one shows nothing the player can switch.
 /obj/machinery/power/apc/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
-	if(user?.ckey && !SSvc_tutorials.progress[user.ckey]?[TUTORIAL_STEP_POWER_APC] && get_ship_from_atom(src))
+	if((!locked || issilicon(user)) && user?.ckey && !SSvc_tutorials.progress[user.ckey]?[TUTORIAL_STEP_POWER_APC] && get_ship_from_atom(src))
+		tutorial_credit(user, TUTORIAL_STEP_POWER_APC)
+
+/// Unlocking a panel aboard counts too (right-click or an ID swipe).
+/obj/machinery/power/apc/togglelock(mob/living/user)
+	var/was_locked = locked
+	. = ..()
+	if(was_locked && !locked && user?.ckey && get_ship_from_atom(src))
 		tutorial_credit(user, TUTORIAL_STEP_POWER_APC)
