@@ -97,6 +97,9 @@
 	var/dilation_time = 3 SECONDS
 	/// and how fast the world runs in slow-mo.
 	var/dilation_scale = 0.2
+	/// How much faster than normal the bearer runs in the window. A surging mob in someone else's field runs at its
+	/// multiplier over theirs.
+	var/time_multiplier = 5
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -198,6 +201,7 @@
 		dilation_freeze = lattice.dilation_freeze
 		dilation_time = lattice.dilation_time
 		dilation_scale = lattice.dilation_scale
+		time_multiplier = lattice.time_multiplier
 	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
@@ -255,6 +259,7 @@
 	if(time_stop || dilated) // a surge that slowed the world keeps its green trail to the end of the window
 		stopped_afterimage(old_loc)
 		return
+	trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
 	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
 	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
 
