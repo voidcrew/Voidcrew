@@ -925,7 +925,7 @@
 		next_guard_word = world.time + rand(90 SECONDS, 180 SECONDS)
 		var/mob/living/basic/outpost_trader/checkpoint_guard/guard
 		for(var/mob/living/basic/outpost_trader/checkpoint_guard/found in range(9, doer))
-			if(found.stat != DEAD && can_see(doer, found, 10))
+			if(found.stat != DEAD && officer.police?.perception?.sees(doer, found))
 				guard = found
 				break
 		if(guard)
@@ -965,7 +965,7 @@
 	for(var/mob/living/carbon/human/candidate in range(POLICE_CHECK_RANGE, doer))
 		if(candidate == doer || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || candidate.stat == DEAD)
 			continue
-		if(!can_see(doer, candidate, POLICE_CHECK_RANGE + 1))
+		if(!officer.police?.perception?.sees(doer, candidate))
 			continue
 		if(candidate.stat != UNCONSCIOUS && !candidate.IsSleeping())
 			continue
