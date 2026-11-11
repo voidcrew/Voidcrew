@@ -52,7 +52,7 @@
 		if(sees(officer, offender))
 			last_witness = officer
 			return POLICE_WITNESS_SAW
-	for(var/mob/living/basic/outpost_trader/trader in police.outpost.traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in police.outpost.traders)
 		if(sees(trader, offender))
 			last_witness = trader
 			return POLICE_WITNESS_SAW
@@ -203,7 +203,7 @@
 			// The scanner, the cell and the officers' own sighting see these
 			return POLICE_WITNESS_CAMERA
 	// At once: the traders and checkpoint guards, players not on the offender's crew (the victim first), the cameras
-	for(var/mob/living/basic/outpost_trader/trader in police.outpost.traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in police.outpost.traders)
 		if(sees(trader, offender))
 			last_witness = trader
 			return POLICE_WITNESS_SAW

@@ -206,12 +206,12 @@
 		return "The registry can't establish your identity."
 	return ..()
 
-/datum/shop_sku/outpost_deed/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/outpost_deed/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	if(!user.ckey)
 		return FALSE
 	return ..()
 
-/datum/shop_sku/outpost_deed/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/outpost_deed/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	var/atom/drop_loc = user.drop_location() || vendor?.drop_location()
 	var/obj/item/outpost_deed/deed = new(drop_loc)
 	deed.owner_ckey = user.ckey

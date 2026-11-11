@@ -39,7 +39,7 @@
 /datum/unit_test/proc/pa_trader(obj/structure/overmap/trader_outpost/outpost, turf/where, turf/counter, shop_type)
 	if(counter)
 		allocate(/obj/structure/table, counter)
-	var/mob/living/basic/outpost_trader/trader = allocate(/mob/living/basic/outpost_trader, where)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, where)
 	trader.shop_type = shop_type
 	trader.outpost = outpost
 	outpost.traders += trader
@@ -259,7 +259,7 @@
 /datum/unit_test/voidcrew_ambient_outpost_settle/Run()
 	// Dram behind a counter at the top left: the one tile in front of it is (0, 2). A bar stool at a table.
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
-	var/mob/living/basic/outpost_trader/dram = pa_trader(outpost, pa_tile(0, 4), pa_tile(0, 3), /datum/outpost_shop/vendor/dregs_bar)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/dram = pa_trader(outpost, pa_tile(0, 4), pa_tile(0, 3), /datum/outpost_shop/vendor/dregs_bar)
 	var/obj/structure/chair/stool/bar/stool = allocate(/obj/structure/chair/stool/bar, pa_tile(2, 1))
 	allocate(/obj/structure/table, pa_tile(2, 0))
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
@@ -323,7 +323,7 @@
 /datum/unit_test/voidcrew_ambient_outpost_customers/Run()
 	// Pike behind a counter at the top of the room: the only tile in front of it is (2, 2)
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
-	var/mob/living/basic/outpost_trader/pike = pa_trader(outpost, pa_tile(2, 4), pa_tile(2, 3), /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/pike = pa_trader(outpost, pa_tile(2, 4), pa_tile(2, 3), /datum/outpost_shop/vendor/bait_shop)
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
 	TEST_ASSERT_EQUAL(ambient_trader_section(pike), "pike", "Pike's customers have no lines of their own")
 	TEST_ASSERT(length(ambient_dialogue_lines("outpost_patrons.json", "pike", "order")), "Pike's customers have nothing to ask for")
@@ -392,7 +392,7 @@
 /datum/unit_test/voidcrew_ambient_outpost_drinkers/Run()
 	// Dram behind a counter at the top left; a bar stool at a table; a sofa in the corner
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
-	var/mob/living/basic/outpost_trader/dram = pa_trader(outpost, pa_tile(0, 4), pa_tile(0, 3), /datum/outpost_shop/vendor/dregs_bar)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/dram = pa_trader(outpost, pa_tile(0, 4), pa_tile(0, 3), /datum/outpost_shop/vendor/dregs_bar)
 	var/obj/structure/chair/stool/bar/stool = allocate(/obj/structure/chair/stool/bar, pa_tile(2, 1))
 	allocate(/obj/structure/table, pa_tile(2, 0))
 	var/obj/structure/chair/sofa/corp/sofa = allocate(/obj/structure/chair/sofa/corp, pa_tile(0, 0))
@@ -667,7 +667,7 @@
 
 /datum/unit_test/voidcrew_ambient_outpost_dock_workers/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
-	var/mob/living/basic/outpost_trader/sarge = pa_trader(outpost, pa_tile(0, 4), null, null)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/sarge = pa_trader(outpost, pa_tile(0, 4), null, null)
 	outpost.trader = sarge
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock/worker = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock, pa_tile(0, 0), place)
@@ -723,7 +723,7 @@
 	pond_tile_baseturfs = pond_tile.baseturfs
 	pond_tile = pond_tile.ChangeTurf(/turf/open/water/outpost_pond)
 	// Pike's counter on the right, out of reach of the pond's edge; the one tile in front of it is (2, 1)
-	var/mob/living/basic/outpost_trader/pike = pa_trader(outpost, pa_tile(4, 1), pa_tile(3, 1), /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/pike = pa_trader(outpost, pa_tile(4, 1), pa_tile(3, 1), /datum/outpost_shop/vendor/bait_shop)
 	var/datum/ambient_place/outpost/place = pa_place(outpost)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/angler, pa_tile(1, 1), place)
 

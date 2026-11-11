@@ -386,7 +386,7 @@ GLOBAL_LIST_INIT(bounty_bar_drinks, list(
 	var/atom/best
 	var/best_distance = INFINITY
 	for(var/atom/movable/thing in range(range, center))
-		if(!istype(thing, /mob/living/basic/outpost_trader) && !istype(thing, /obj/machinery/vending))
+		if(!istype(thing, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) && !istype(thing, /obj/machinery/vending))
 			continue
 		if(!leash_ok(get_turf(thing)))
 			continue
@@ -888,7 +888,7 @@ GLOBAL_LIST_INIT(bounty_bar_drinks, list(
 
 /datum/bounty_activity/trade/setup()
 	var/atom/stall = anchor()
-	if(!istype(stall, /mob/living/basic/outpost_trader) && !istype(stall, /obj/machinery/vending) && !istype(stall, /obj/structure/table))
+	if(!istype(stall, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) && !istype(stall, /obj/machinery/vending) && !istype(stall, /obj/structure/table))
 		stall = doer.ai_find_stall(BOUNTY_ACTIVITY_RANGE)
 	if(!stall)
 		return FALSE

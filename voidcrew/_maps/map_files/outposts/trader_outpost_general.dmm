@@ -277,7 +277,7 @@
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost/checkpoint)
 "bf" = (
-/mob/living/basic/outpost_trader/checkpoint_guard/halcyon{
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/halcyon{
 	checkpoint_id = "halcyon_arrivals"
 	},
 /obj/effect/turf_decal/tile/red/full,
@@ -1249,7 +1249,7 @@
 /area/voidcrew/trader_outpost/checkpoint)
 "hZ" = (
 /obj/structure/chair/stool/directional/west,
-/mob/living/basic/outpost_trader/bait_shop,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/bait_shop,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "ia" = (
@@ -2834,7 +2834,7 @@
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "zc" = (
-/mob/living/basic/outpost_trader,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "zd" = (
@@ -3425,7 +3425,7 @@
 	},
 /area/voidcrew/trader_outpost)
 "EZ" = (
-/mob/living/basic/outpost_trader/diner_cook,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/diner_cook,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 4
 	},
@@ -3977,7 +3977,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "JQ" = (
-/mob/living/basic/outpost_trader/potting_shed,
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/potting_shed,
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
 "JR" = (

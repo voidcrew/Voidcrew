@@ -156,7 +156,7 @@
 	if(!ship)
 		return "No crew registration."
 
-/datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	if(stock <= 0)
 		return FALSE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)

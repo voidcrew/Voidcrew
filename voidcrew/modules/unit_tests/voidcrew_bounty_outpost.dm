@@ -851,7 +851,7 @@
 
 	var/list/traders = list()
 	for(var/index in 1 to 4)
-		var/mob/living/basic/outpost_trader/trader = allocate(/mob/living/basic/outpost_trader)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader)
 		trader.outpost = outpost
 		traders += trader
 
@@ -879,7 +879,7 @@
 	TEST_ASSERT_EQUAL(posting.outpost_trader_clues[REF(traders[2])], kind_before, "A trader changed their story for another ship")
 
 	// A decoy ruled out by where it stood, and the fugitive then standing there: never told as true (M4)
-	var/mob/living/basic/outpost_trader/witness = traders[4]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/witness = traders[4]
 	posting.outpost_trader_clues[REF(witness)] = list("ruled_out", 1) // BOUNTY_CLUE_RULED_OUT, the first decoy
 	var/first = posting.outpost_clue_for(witness, ship)
 	var/place = bounty_outpost_where(decoys[1], outpost)
@@ -1078,8 +1078,8 @@
 	TEST_ASSERT(posting.setup_outpost_blend(TRUE), "The posting could not be set up to blend in")
 	fugitive.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT_NULL(posting.outpost_trader_reacts(fugitive), "A trader reacted with no trader there")
-	var/mob/living/basic/outpost_trader/far = allocate(/mob/living/basic/outpost_trader, run_loc_floor_top_right)
-	var/mob/living/basic/outpost_trader/near = allocate(/mob/living/basic/outpost_trader, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/far = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, run_loc_floor_top_right)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/near = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z))
 	far.outpost = outpost
 	near.outpost = outpost
 	TEST_ASSERT_EQUAL(posting.outpost_trader_reacts(fugitive), near, "The nearest trader didn't react to the fugitive being exposed")

@@ -501,9 +501,9 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * BOUNTY_OUTPOST_REACT_RANGE, calls out. Returns the trader, or null.
  */
 /datum/criminal_bounty/proc/outpost_trader_reacts(mob/living/carbon/human/npc/bounty_criminal/fugitive)
-	var/mob/living/basic/outpost_trader/nearest
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/nearest
 	var/nearest_distance = INFINITY
-	for(var/mob/living/basic/outpost_trader/trader in view(BOUNTY_OUTPOST_REACT_RANGE, fugitive))
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in view(BOUNTY_OUTPOST_REACT_RANGE, fugitive))
 		if(trader.stat != CONSCIOUS)
 			continue
 		var/distance = get_dist(trader, fugitive)
@@ -1106,7 +1106,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * "Ask about the wanted person" option on the trader's radial asks about. Only a ship hunting it
  * (a claimant) asks.
  */
-/proc/bounty_outpost_ask_posting(mob/living/basic/outpost_trader/trader, mob/living/user)
+/proc/bounty_outpost_ask_posting(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, mob/living/user)
 	var/obj/structure/overmap/trader_outpost/outpost = trader?.outpost
 	var/obj/structure/overmap/ship/ship = outpost ? get_crew_ship(user) : null
 	if(!ship)
@@ -1124,7 +1124,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * `user` asked `trader` about the fugitive their ship is hunting there: the trader leans in and
  * tells them their one clue, quietly. Returns TRUE if there was anything to ask about.
  */
-/proc/bounty_outpost_ask(mob/living/basic/outpost_trader/trader, mob/living/user)
+/proc/bounty_outpost_ask(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, mob/living/user)
 	var/datum/criminal_bounty/posting = bounty_outpost_ask_posting(trader, user)
 	if(!posting)
 		return FALSE
@@ -1145,7 +1145,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * (M4): a place is told in the present only if it is true now, and retold in the past
  * ("earlier") once it may not be.
  */
-/datum/criminal_bounty/proc/outpost_clue_for(mob/living/basic/outpost_trader/trader, hunter_key)
+/datum/criminal_bounty/proc/outpost_clue_for(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, hunter_key)
 	var/told_key = "[REF(trader)]|[REF(hunter_key)]"
 	var/list/told = outpost_clues_told[told_key]
 	if(told)
@@ -1161,7 +1161,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * The clue `trader` gives now (list(BOUNTY_CLUE_*, index)): the kind they were given, if it can be
  * said truthfully now, or the next kind nobody here has given yet that can. Null if none can.
  */
-/datum/criminal_bounty/proc/outpost_trader_kind(mob/living/basic/outpost_trader/trader)
+/datum/criminal_bounty/proc/outpost_trader_kind(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	var/trader_key = REF(trader)
 	var/list/kind = outpost_trader_clues[trader_key]
 	if(kind && outpost_clue_words(kind))
@@ -1273,7 +1273,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
 		if(alcove.z == spot.z && get_dist(alcove, spot) <= 4)
 			return "near the docks"
-	for(var/mob/living/basic/outpost_trader/trader as anything in outpost.traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in outpost.traders)
 		if(!QDELETED(trader) && trader.z == spot.z && get_dist(trader, spot) <= 3)
 			return "near [trader.name]'s counter"
 	if(locate(/turf/open/water/outpost_pond) in range(2, spot))

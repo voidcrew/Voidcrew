@@ -107,7 +107,7 @@
 	/// The tile beyond the inner door, on the concourse
 	var/turf/secured_turf
 	/// The guard at the desk, if this checkpoint has one
-	var/mob/living/basic/outpost_trader/checkpoint_guard/guard
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard
 	/// CHECKPOINT_IDLE, _SCANNING, _PASSING, _REJECTING or _FORCED
 	var/state = CHECKPOINT_IDLE
 	/// The timer ending the current state
@@ -291,7 +291,7 @@
 	COOLDOWN_START(src, line_cooldown, OUTPOST_CHECKPOINT_LINE_COOLDOWN)
 	last_line = category
 	last_line_at = world.time
-	if(!QDELETED(guard) && guard.shop)
+	if(!QDELETED(guard) && guard.shop && guard.stat == CONSCIOUS) // a dead or downed guard leaves it to the scanner
 		var/line = guard.shop.get_line(category)
 		if(line)
 			INVOKE_ASYNC(guard, TYPE_PROC_REF(/atom/movable, say), line)
