@@ -96,6 +96,154 @@
 	if(ship)
 		tutorial_credit_crew(ship, TUTORIAL_STEP_SURVEYS_NODE)
 
+/// Only the crew's own ship console counts. Outpost archive consoles open the same window.
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
-	tutorial_credit(user, TUTORIAL_STEP_SURVEYS_BUILD)
+	var/obj/structure/overmap/ship/ship = bound_ship?.resolve()
+	if(attached_to_ship && ship && get_crew_ship(user, ship))
+		tutorial_credit(user, TUTORIAL_STEP_SURVEYS_BUILD)
+
+/// When the ship's movement last stopped a running survey, for the Surveys checklist line.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/var/tutorial_moved_at = 0
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/cancel_survey(datum/source)
+	SIGNAL_HANDLER
+	var/was_running = survey_in_progress
+	. = ..()
+	if(was_running && source && !survey_in_progress)
+		tutorial_moved_at = world.time
+
+// ---------------------------------------------------------------------------
+// In-window focus (TutorialFocus in the tsx). Window ids: "rdconsole", "imprinter", "survey".
+// ---------------------------------------------------------------------------
+
+/obj/machinery/computer/rdconsole/ui_data(mob/user)
+	. = ..()
+	if(islist(.))
+		.["tutorial_focus"] = tutorial_ui_focus(user, "rdconsole")
+
+/obj/machinery/rnd/production/circuit_imprinter/ui_data(mob/user)
+	. = ..()
+	if(islist(.))
+		.["tutorial_focus"] = tutorial_ui_focus(user, "imprinter")
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
+	. = ..()
+	if(islist(.))
+		.["tutorial_focus"] = tutorial_ui_focus(user, "survey")
+
+// ---------------------------------------------------------------------------
+// Step helpers (tutorial_catalog.dm R&D setup and Surveys)
+// ---------------------------------------------------------------------------
+
+/// TRUE when the candidate is a flatpack that deploys into one of these machine types.
+/proc/tutorial_flatpack_builds(atom/candidate, list/machine_types)
+	var/obj/item/flatpack/pack = candidate
+	if(!istype(pack) || !pack.board)
+		return FALSE
+	for(var/machine_type in machine_types)
+		if(ispath(pack.board.build_path, machine_type))
+			return TRUE
+	return FALSE
+
+/// TRUE when the mob carries an item that works as this tool (TOOL_* define).
+/proc/tutorial_has_tool(mob/user, tool_behaviour)
+	if(!user)
+		return FALSE
+	for(var/obj/item/thing in user.get_all_contents())
+		if(thing.tool_behaviour == tool_behaviour)
+			return TRUE
+	return FALSE
+
+/// "No multitool on you." while the mob carries no such tool, else null.
+/proc/tutorial_tool_line(mob/user, tool_behaviour)
+	if(!user || tutorial_has_tool(user, tool_behaviour))
+		return null
+	return "No [tool_behaviour] on you."
+
+/// TRUE for a computer frame that is empty or holds this board type.
+/proc/tutorial_frame_for(atom/candidate, board_type)
+	var/obj/structure/frame/computer/frame = candidate
+	if(!istype(frame))
+		return FALSE
+	return !frame.circuit || istype(frame.circuit, board_type)
+
+/// The step's nearest highlight candidate that is a computer frame for this board, or null.
+/// With board_required, empty frames don't count.
+/proc/tutorial_nearest_frame(mob/user, datum/vc_tutorial_step/step, board_type, board_required = FALSE)
+	var/turf/center = get_turf(user)
+	if(!center)
+		return null
+	var/obj/structure/frame/computer/nearest
+	var/nearest_dist = INFINITY
+	for(var/obj/structure/frame/computer/frame in tutorial_step_candidates(user, step))
+		if(frame.circuit ? !istype(frame.circuit, board_type) : board_required)
+			continue
+		var/dist = get_dist(center, frame)
+		if(dist < nearest_dist)
+			nearest = frame
+			nearest_dist = dist
+	return nearest
+
+/// What a computer frame needs next, and whether the mob lacks the tool for it.
+/proc/tutorial_frame_line(mob/user, obj/structure/frame/computer/frame)
+	if(QDELETED(frame))
+		return null
+	var/line
+	var/tool
+	if(!frame.anchored)
+		line = "The frame needs a wrench."
+		tool = TOOL_WRENCH
+	else
+		switch(frame.state)
+			if(FRAME_COMPUTER_STATE_EMPTY)
+				line = "The frame needs its board."
+			if(FRAME_COMPUTER_STATE_BOARD_INSTALLED)
+				line = "The board needs a screwdriver."
+				tool = TOOL_SCREWDRIVER
+			if(FRAME_COMPUTER_STATE_BOARD_SECURED)
+				line = "The frame needs 5 cable."
+			if(FRAME_COMPUTER_STATE_WIRED)
+				line = "The frame needs 2 glass."
+			if(FRAME_COMPUTER_STATE_GLASSED)
+				line = "The frame needs a screwdriver."
+				tool = TOOL_SCREWDRIVER
+	if(tool && !tutorial_has_tool(user, tool))
+		line += " You have none."
+	return line
+
+/// TRUE when an R&D console or lathe runs off this techweb.
+/proc/tutorial_rnd_device_linked(atom/candidate, datum/techweb/web)
+	if(!web)
+		return FALSE
+	if(istype(candidate, /obj/machinery/computer/rdconsole))
+		var/obj/machinery/computer/rdconsole/console = candidate
+		return console.stored_research == web
+	if(istype(candidate, /obj/machinery/rnd))
+		var/obj/machinery/rnd/machine = candidate
+		return machine.stored_research == web
+	return FALSE
+
+/// The plain name the R&D setup steps use for a linkable device, or null.
+/proc/tutorial_rnd_device_label(atom/machine)
+	if(istype(machine, /obj/machinery/computer/rdconsole))
+		return "R&D console"
+	if(istype(machine, /obj/machinery/rnd/production/protolathe))
+		return "protolathe"
+	if(istype(machine, /obj/machinery/rnd/production/circuit_imprinter))
+		return "circuit imprinter"
+	return null
+
+/// "Research points: 12 of 40." for a node not yet researched, or null.
+/proc/tutorial_node_points_line(datum/techweb/web, node_id)
+	if(!web || web.researched_nodes[node_id])
+		return null
+	var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)
+	if(!node)
+		return null
+	var/list/price = node.get_price(web)
+	var/cost = price?[TECHWEB_POINT_TYPE_GENERIC]
+	if(!cost)
+		return null
+	var/have = round(web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0)
+	return "Research points: [have] of [cost]."

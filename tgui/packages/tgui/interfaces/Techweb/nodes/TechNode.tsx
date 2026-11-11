@@ -9,6 +9,7 @@ import {
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 
+import { TutorialFocus } from '../../../../voidcrew_tgui/components/TutorialFocus';
 import { Experiment } from '../../ExperimentConfigure';
 import { useRemappedBackend } from '../helpers';
 import { useTechWebRoute } from '../hooks';
@@ -93,7 +94,7 @@ export function TechNode(props: Props) {
       return tot + discount_experiments[curr];
     }, 0);
 
-  return (
+  const nodeSection = (
     <Section
       className="Techweb__NodeContainer"
       title={name}
@@ -236,5 +237,8 @@ export function TechNode(props: Props) {
       )}
     </Section>
   );
+
+  // The tutorial checklist outlines the node it points at (key rd_node_<id>).
+  return <TutorialFocus id={`rd_node_${id}`}>{nodeSection}</TutorialFocus>;
 }
 // VOIDCREW EDIT END

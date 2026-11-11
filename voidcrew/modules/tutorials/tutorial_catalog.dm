@@ -349,7 +349,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_RESEARCH_KIT
 	name = "Get the R&D kit"
 	text = "Print the Research & Development Kit at the autolathe and pick it up."
-	highlight_types = list(/obj/machinery/autolathe)
+	highlight_types = list(/obj/machinery/autolathe, /obj/item/storage/box/rndboards/all)
 
 /// A hull that already has a ship server is past needing the kit.
 /datum/vc_tutorial_step/research_kit/state_satisfied(mob/user)
@@ -366,11 +366,18 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/server/ship)
 
+/// Only the server's flatpack, not the other three from the kit.
+/datum/vc_tutorial_step/research_server/highlight_filter(mob/user, atom/candidate)
+	return tutorial_flatpack_builds(candidate, list(/obj/machinery/rnd/server/ship))
+
+/datum/vc_tutorial_step/research_server/live_line(mob/user)
+	return tutorial_tool_line(user, TOOL_MULTITOOL)
+
 /datum/vc_tutorial_step/research_disk
 	key = TUTORIAL_STEP_RESEARCH_DISK
 	name = "Add the ship disk"
-	text = "Put the R&D server source code disk into the server."
-	highlight_types = list(/obj/machinery/rnd/server/ship)
+	text = "Put the R&D server source code disk from the kit into the server."
+	highlight_types = list(/obj/machinery/rnd/server/ship, /obj/item/computer_disk/ship_disk)
 
 /datum/vc_tutorial_step/research_disk/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -379,41 +386,85 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/research_console
 	key = TUTORIAL_STEP_RESEARCH_CONSOLE
 	name = "Set up the R&D console"
-	text = "Make a computer frame from the kit's iron, then add the console board, cable and glass."
-	highlight_types = list(/obj/machinery/computer/rdconsole)
+	text = "Use the kit's iron in hand to make a computer frame. Wrench it, add the console board, screwdriver it, add 5 cable and 2 glass, then screwdriver it again."
+	highlight_types = list(/obj/structure/frame/computer)
 
 /datum/vc_tutorial_step/research_console/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/computer/rdconsole)
 
+/// Empty frames and frames holding the R&D console board.
+/datum/vc_tutorial_step/research_console/highlight_filter(mob/user, atom/candidate)
+	return tutorial_frame_for(candidate, /obj/item/circuitboard/computer/rdconsole)
+
+/datum/vc_tutorial_step/research_console/live_line(mob/user)
+	var/obj/structure/frame/computer/frame = tutorial_nearest_frame(user, src, /obj/item/circuitboard/computer/rdconsole)
+	if(!frame)
+		return "No computer frame yet."
+	return tutorial_frame_line(user, frame)
+
 /datum/vc_tutorial_step/research_protolathe
 	key = TUTORIAL_STEP_RESEARCH_PROTOLATHE
 	name = "Set up the protolathe"
-	text = "Set the protolathe flatpack on the floor and use a multitool on it."
+	text = "Set the protolathe flatpack on the floor and use a multitool on it. Do the same with the circuit imprinter."
 	highlight_types = list(/obj/item/flatpack)
 
 /datum/vc_tutorial_step/research_protolathe/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/production/protolathe)
 
+/datum/vc_tutorial_step/research_protolathe/highlight_filter(mob/user, atom/candidate)
+	return tutorial_flatpack_builds(candidate, list(/obj/machinery/rnd/production/protolathe, /obj/machinery/rnd/production/circuit_imprinter))
+
+/datum/vc_tutorial_step/research_protolathe/live_line(mob/user)
+	return tutorial_tool_line(user, TOOL_MULTITOOL)
+
 /datum/vc_tutorial_step/research_multitool
 	key = TUTORIAL_STEP_RESEARCH_MULTITOOL
 	name = "Multitool the server"
-	text = "Use a multitool on the server to copy its link."
+	text = "Hold a multitool and use it on the server to copy its link."
 	highlight_types = list(/obj/machinery/rnd/server/ship)
 
 /// A hull whose console and protolathe already run off its server got here some other way.
 /datum/vc_tutorial_step/research_multitool/state_satisfied(mob/user)
 	return tutorial_ship_rnd_linked(get_crew_ship(user))
 
+/datum/vc_tutorial_step/research_multitool/live_line(mob/user)
+	return tutorial_tool_line(user, TOOL_MULTITOOL)
+
 /datum/vc_tutorial_step/research_link
 	key = TUTORIAL_STEP_RESEARCH_LINK
 	name = "Link all the devices"
-	text = "Use that multitool on the R&D console and the protolathe."
-	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/protolathe)
+	text = "Use that multitool on the R&D console, the protolathe and the circuit imprinter."
+	highlight_types = list(/obj/machinery/computer/rdconsole, /obj/machinery/rnd/production/protolathe, /obj/machinery/rnd/production/circuit_imprinter)
 
 /datum/vc_tutorial_step/research_link/state_satisfied(mob/user)
 	return tutorial_ship_rnd_linked(get_crew_ship(user))
+
+/// Only the machines that aren't on the ship's research web yet.
+/datum/vc_tutorial_step/research_link/highlight_filter(mob/user, atom/candidate)
+	return !tutorial_rnd_device_linked(candidate, get_crew_ship(user)?.get_research_web())
+
+/datum/vc_tutorial_step/research_link/live_line(mob/user)
+	var/datum/techweb/web = get_crew_ship(user)?.get_research_web()
+	if(!web)
+		return null
+	var/unlinked_tool = FALSE
+	for(var/obj/item/multitool/tool in user.get_all_contents())
+		if(tool.buffer == web)
+			unlinked_tool = FALSE
+			break
+		unlinked_tool = TRUE
+	if(unlinked_tool)
+		return "Your multitool has no server link."
+	var/list/unlinked = list()
+	for(var/atom/machine as anything in tutorial_step_candidates(user, src))
+		var/label = tutorial_rnd_device_label(machine)
+		if(label)
+			unlinked |= label
+	if(!length(unlinked))
+		return null
+	return "Not linked: [unlinked.Join(", ")]."
 
 // ---------------------------------------------------------------------------
 // Surveys
@@ -435,35 +486,107 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/surveys_node
 	key = TUTORIAL_STEP_SURVEYS_NODE
 	name = "Research the survey console"
-	text = "At the R&D console, research Orbital Survey Console."
+	text = "At the R&D console, research Orbital survey console. It's on the Available tab."
 	highlight_types = list(/obj/machinery/computer/rdconsole)
+	ui_focus = list("rdconsole" = "rd_node_" + TECHWEB_NODE_SURVEY_CONSOLE)
 
 /datum/vc_tutorial_step/surveys_node/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	var/datum/techweb/web = ship?.get_research_web()
 	return !!web?.researched_nodes[TECHWEB_NODE_SURVEY_CONSOLE]
 
+/datum/vc_tutorial_step/surveys_node/live_line(mob/user)
+	return tutorial_node_points_line(get_crew_ship(user)?.get_research_web(), TECHWEB_NODE_SURVEY_CONSOLE)
+
 /datum/vc_tutorial_step/surveys_build
 	key = TUTORIAL_STEP_SURVEYS_BUILD
 	name = "Build a survey console"
-	text = "Print its board at the circuit imprinter and build it like any computer."
-	highlight_types = list(/obj/machinery/rnd/production/circuit_imprinter)
+	text = "Print the Orbital survey console board at the circuit imprinter. Build it in a computer frame like the R&D console."
+	highlight_types = list(
+		/obj/machinery/rnd/production/circuit_imprinter,
+		/obj/item/flatpack,
+		/obj/structure/frame/computer,
+		/obj/item/circuitboard/computer/survey_shuttle_docker,
+	)
+	ui_focus = list("imprinter" = "imprinter_survey_console_board")
 
 /datum/vc_tutorial_step/surveys_build/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/computer/camera_advanced/shuttle_docker/survey)
 
+/// The imprinter's flatpack while no imprinter is aboard, and frames empty or holding the survey board.
+/datum/vc_tutorial_step/surveys_build/highlight_filter(mob/user, atom/candidate)
+	if(istype(candidate, /obj/item/flatpack))
+		var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+		if(ship && SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/production/circuit_imprinter))
+			return FALSE
+		return tutorial_flatpack_builds(candidate, list(/obj/machinery/rnd/production/circuit_imprinter))
+	if(istype(candidate, /obj/structure/frame/computer))
+		return tutorial_frame_for(candidate, /obj/item/circuitboard/computer/survey_shuttle_docker)
+	return TRUE
+
+/datum/vc_tutorial_step/surveys_build/live_line(mob/user)
+	var/datum/techweb/web = get_crew_ship(user)?.get_research_web()
+	if(!web)
+		return null
+	var/obj/structure/frame/computer/frame = tutorial_nearest_frame(user, src, /obj/item/circuitboard/computer/survey_shuttle_docker, TRUE)
+	if(frame)
+		return tutorial_frame_line(user, frame)
+	var/has_imprinter = FALSE
+	for(var/obj/machinery/rnd/production/circuit_imprinter/imprinter in tutorial_step_candidates(user, src))
+		has_imprinter = TRUE
+		if(imprinter.stored_research == web)
+			return null
+	if(has_imprinter)
+		return "The circuit imprinter isn't linked to the server."
+	return "No circuit imprinter set up."
+
 /datum/vc_tutorial_step/surveys_survey
 	key = TUTORIAL_STEP_SURVEYS_SURVEY
 	name = "Survey a planet"
-	text = "Fly next to a planet and start a survey at the console."
+	text = "Park the ship on a planet's tile and start a survey at the console. Keep the ship still until it ends."
 	highlight_types = list(/obj/machinery/computer/camera_advanced/shuttle_docker/survey)
+	ui_focus = list("survey" = "survey_start")
+
+/datum/vc_tutorial_step/surveys_survey/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/survey/console = ship.survey_console?.resolve()
+	if(!console)
+		return "No survey console aboard."
+	if(console.survey_in_progress)
+		return "Surveying. Keep the ship still."
+	if(console.tutorial_moved_at && world.time < console.tutorial_moved_at + 2 MINUTES)
+		return "The last survey stopped when the ship moved."
+	if(!ship.is_still())
+		return "The ship is moving."
+	var/list/blacklisted_types = console.get_blacklisted_overmap_types()
+	for(var/obj/structure/overmap/object in ship.close_overmap_objects)
+		if(!is_type_in_list(object, blacklisted_types))
+			return "Over [object.name]."
+	return "Nothing to survey on this tile."
 
 /datum/vc_tutorial_step/surveys_notes
 	key = TUTORIAL_STEP_SURVEYS_NOTES
 	name = "Turn in the notes"
-	text = "Print the notes at the survey console and use them on the R&D console."
-	highlight_types = list(/obj/machinery/computer/camera_advanced/shuttle_docker/survey, /obj/machinery/computer/rdconsole)
+	text = "Print the notes on the survey console's Research tab and use them on the R&D console."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/shuttle_docker/survey, /obj/item/research_notes, /obj/machinery/computer/rdconsole)
+	ui_focus = list("survey" = "survey_print")
+
+/// The survey console only while it has research waiting to print.
+/datum/vc_tutorial_step/surveys_notes/highlight_filter(mob/user, atom/candidate)
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/survey/console = candidate
+	if(istype(console))
+		return console.banked_points > 0
+	return TRUE
+
+/datum/vc_tutorial_step/surveys_notes/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/survey/console = ship?.survey_console?.resolve()
+	if(console?.banked_points > 0)
+		return "[console.banked_points] research waiting to print."
+	return null
 
 // ---------------------------------------------------------------------------
 // Planet ruin

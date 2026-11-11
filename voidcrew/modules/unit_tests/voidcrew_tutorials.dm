@@ -1115,4 +1115,62 @@
 	TEST_ASSERT_EQUAL(tutorial_credits_text(1234567), "1,234,567", "Seven digits were formatted wrong")
 	TEST_ASSERT_EQUAL(tutorial_credits_text(-1500), "-1,500", "A debt was formatted wrong")
 
+// ---------------------------------------------------------------------------
+// research-surveys: R&D setup and Surveys step filters and live lines
+// ---------------------------------------------------------------------------
+
+/// Flatpack steps outline only their own machine's pack; the link step only unlinked machines;
+/// the frame line names the next part and a missing tool.
+/datum/unit_test/voidcrew_tutorials/research_surveys_steps/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/datum/vc_tutorial_step/server_step = SSvc_tutorials.steps_by_key["vc/research/server"]
+	var/datum/vc_tutorial_step/lathe_step = SSvc_tutorials.steps_by_key["vc/research/protolathe"]
+	var/datum/vc_tutorial_step/console_step = SSvc_tutorials.steps_by_key["vc/research/console"]
+
+	var/obj/item/flatpack/server_pack = allocate(/obj/item/flatpack, deck, new /obj/item/circuitboard/machine/rdserver/ship())
+	var/obj/item/flatpack/lathe_pack = allocate(/obj/item/flatpack, deck, new /obj/item/circuitboard/machine/protolathe())
+	var/obj/item/flatpack/imprinter_pack = allocate(/obj/item/flatpack, deck, new /obj/item/circuitboard/machine/circuit_imprinter())
+	TEST_ASSERT(server_step.highlight_filter(player, server_pack), "The server step dropped the server flatpack")
+	TEST_ASSERT(!server_step.highlight_filter(player, lathe_pack), "The server step kept the protolathe flatpack")
+	TEST_ASSERT(lathe_step.highlight_filter(player, lathe_pack), "The protolathe step dropped the protolathe flatpack")
+	TEST_ASSERT(lathe_step.highlight_filter(player, imprinter_pack), "The protolathe step dropped the imprinter flatpack")
+	TEST_ASSERT(!lathe_step.highlight_filter(player, server_pack), "The protolathe step kept the server flatpack")
+
+	TEST_ASSERT_EQUAL(tutorial_tool_line(player, TOOL_MULTITOOL), "No multitool on you.", "A player without a multitool got no line")
+	var/obj/item/multitool/tool = allocate(/obj/item/multitool, deck)
+	player.put_in_hands(tool)
+	TEST_ASSERT_NULL(tutorial_tool_line(player, TOOL_MULTITOOL), "A player holding a multitool was told they had none")
+
+	var/obj/structure/frame/computer/frame = allocate(/obj/structure/frame/computer, get_step(deck, EAST))
+	TEST_ASSERT(console_step.highlight_filter(player, frame), "The console step dropped an empty computer frame")
+	TEST_ASSERT(!console_step.highlight_filter(player, tool), "The console step kept something that isn't a frame")
+	frame.set_anchored(FALSE)
+	TEST_ASSERT_EQUAL(tutorial_frame_line(player, frame), "The frame needs a wrench. You have none.", "Wrong line for a loose frame")
+	frame.set_anchored(TRUE)
+	TEST_ASSERT_EQUAL(tutorial_frame_line(player, frame), "The frame needs its board.", "Wrong line for an empty frame")
+	frame.state = FRAME_COMPUTER_STATE_GLASSED
+	TEST_ASSERT_EQUAL(tutorial_frame_line(player, frame), "The frame needs a screwdriver. You have none.", "Wrong line for a glassed frame")
+	var/obj/item/screwdriver/driver = allocate(/obj/item/screwdriver, deck)
+	player.put_in_hands(driver)
+	TEST_ASSERT_EQUAL(tutorial_frame_line(player, frame), "The frame needs a screwdriver.", "A player holding a screwdriver was told they had none")
+	frame.state = FRAME_COMPUTER_STATE_EMPTY
+
+	var/datum/techweb/web = allocate(/datum/techweb)
+	var/obj/machinery/rnd/production/protolathe/lathe = allocate(/obj/machinery/rnd/production/protolathe, get_step(deck, NORTH))
+	TEST_ASSERT(!tutorial_rnd_device_linked(lathe, web), "An unlinked protolathe counted as linked")
+	lathe.stored_research = web
+	TEST_ASSERT(tutorial_rnd_device_linked(lathe, web), "A linked protolathe counted as unlinked")
+	TEST_ASSERT(!tutorial_rnd_device_linked(lathe, null), "A protolathe counted as linked to no web")
+	lathe.stored_research = null
+
+	var/datum/techweb_node/node = SSresearch.techweb_node_by_id("survey_console")
+	TEST_ASSERT_NOTNULL(node, "No survey console node")
+	web.researched_nodes -= "survey_console"
+	web.research_points[TECHWEB_POINT_TYPE_GENERIC] = 12
+	var/cost = node.get_price(web)[TECHWEB_POINT_TYPE_GENERIC]
+	TEST_ASSERT_EQUAL(tutorial_node_points_line(web, "survey_console"), "Research points: 12 of [cost].", "Wrong research points line")
+	web.researched_nodes["survey_console"] = TRUE
+	TEST_ASSERT_NULL(tutorial_node_points_line(web, "survey_console"), "A researched node still showed a points line")
+
 #undef TUTORIAL_TEST_CKEY

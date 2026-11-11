@@ -9,6 +9,7 @@ import {
 } from 'tgui-core/components';
 import { classes } from 'tgui-core/react';
 
+import { TutorialFocus } from '../../voidcrew_tgui/components/TutorialFocus'; // VOIDCREW EDIT ADDITION
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 import { DesignBrowser } from './Fabrication/DesignBrowser';
@@ -161,7 +162,8 @@ const Recipe = (props: RecipeProps) => {
       !available[material] || amount > (available[material] ?? 0),
   );
 
-  return (
+  // VOIDCREW EDIT CHANGE: was `return (`, wrapped below
+  const recipe = (
     <div className="FabricatorRecipe">
       <Tooltip content={design.desc} position="right">
         <div
@@ -217,5 +219,10 @@ const Recipe = (props: RecipeProps) => {
       />
       <CustomPrint design={design} available={available} />
     </div>
+  );
+
+  // VOIDCREW EDIT ADDITION: the tutorial checklist outlines the design it points at.
+  return (
+    <TutorialFocus id={`imprinter_${design.id}`}>{recipe}</TutorialFocus>
   );
 };
