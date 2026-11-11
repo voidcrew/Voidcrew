@@ -307,12 +307,18 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/facing = thing.dir
 	var/list/frames = track.frames
 	var/at = length(frames) - SANDY_FRAME_SIZE
-	if(at >= 0 && raw == track.last_raw && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
+	// Wet blood dries and spreads on the client (animate()): its vars already hold the end, so it is looked at every sample.
+	var/obj/effect/decal/cleanable/blood/wet = istype(thing, /obj/effect/decal/cleanable/blood) ? thing : null
+	if(wet && !wet.sandy_replay_wet())
+		wet = null
+	if(!wet && at >= 0 && raw == track.last_raw && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 		return
 	track.last_raw = raw
 	if(!track.surger && (thing == user || field?.surging[thing]))
 		become_surger(track)
 	var/look = clean_look(thing)
+	if(wet)
+		look = wet_look(wet, look)
 	if(at >= 0)
 		if(frames[at + SANDY_FRAME_LOOK] == look && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 			return
@@ -375,6 +381,20 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(window)
 		track.trail_every = max(1, window.afterimage_interval)
 		track.trail_alpha = window.afterimage_alpha
+
+/// `look` (wet `blood`'s appearance) as the blood is drawn on screen right now, not where its tweens end.
+/datum/sandy_replay/proc/wet_look(obj/effect/decal/cleanable/blood/blood, look)
+	var/colour = blood.sandy_replay_colour_now()
+	var/list/paint = blood.sandy_replay_paint_now()
+	if(!colour && !paint)
+		return look
+	var/mutable_appearance/copy = new(look)
+	if(colour)
+		copy.color = colour
+	if(paint)
+		copy.transform = paint[1]
+		copy.alpha = paint[2]
+	return copy.appearance
 
 /// A sound was played on `source`, in the field: kept, to play again in the replay. `arguments` are the rest of
 /// playsound()'s, from soundin on, without the channel.
@@ -773,15 +793,20 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	if(frames[from + SANDY_FRAME_X] == frames[dest + SANDY_FRAME_X] && frames[from + SANDY_FRAME_Y] == frames[dest + SANDY_FRAME_Y])
 		return
-	track.trail_steps++
-	if(track.trail_steps % track.trail_every)
-		return
 	var/turf/left = locate(frames[from + SANDY_FRAME_X], frames[from + SANDY_FRAME_Y], frames[from + SANDY_FRAME_Z])
-	if(!left)
-		return
-	new /obj/effect/temp_visual/decoy/fading/cascade/replay(left, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha)
-	afterimages++
-	track.trail_hue = (track.trail_hue + SANDY_REPLAY_HUE_STEP) % 360
+	var/turf/reached = locate(frames[dest + SANDY_FRAME_X], frames[dest + SANDY_FRAME_Y], frames[dest + SANDY_FRAME_Z])
+	if(!left || !reached || get_dist(left, reached) > SANDY_REPLAY_GLIDE_MAX / ICON_SIZE_X)
+		return // a jump, not steps
+	// Two steps can fall between two samples: each tile it crossed gets its afterimage, as each step would.
+	var/list/crossed = get_line(left, reached)
+	crossed -= reached
+	for(var/turf/step_from as anything in crossed)
+		track.trail_steps++
+		if(track.trail_steps % track.trail_every)
+			continue
+		new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha)
+		afterimages++
+		track.trail_hue = (track.trail_hue + SANDY_REPLAY_HUE_STEP) % 360
 
 /// Plays the recorded sounds due by `frame`.
 /datum/sandy_replay/proc/play_sounds(frame)
@@ -949,6 +974,54 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
  */
 /atom/movable/proc/sandy_replay_resume()
 	return
+
+/// Whether the decal is in the middle of drying or spreading, which happen on the client.
+/obj/effect/decal/cleanable/blood/proc/sandy_replay_wet()
+	return (!dried && can_dry && total_dry_time && drying_time > 0) || length(hv_vis_painting) >= 2
+
+/// The colour it is drawn with right now while it dries (update_blood_color() animates from this to the dried colour),
+/// or null when that isn't a plain colour.
+/obj/effect/decal/cleanable/blood/proc/sandy_replay_colour_now()
+	if(dried || !can_dry || drying_time <= 0 || !total_dry_time)
+		return null
+	var/base
+	for(var/priority in 1 to length(atom_colours)) // the slow-mo's tint is a filter at TEMPORARY_COLOUR_PRIORITY
+		if(priority == TEMPORARY_COLOUR_PRIORITY)
+			continue
+		var/list/entry = atom_colours[priority]
+		if(!entry)
+			continue
+		if(entry[ATOM_COLOR_TYPE_INDEX] == ATOM_COLOR_TYPE_FILTER || !istext(entry[ATOM_COLOR_VALUE_INDEX]))
+			return null
+		base = entry[ATOM_COLOR_VALUE_INDEX]
+		break
+	if(!base)
+		var/list/blood_DNA = GET_ATOM_BLOOD_DECALS(src)
+		if(!length(blood_DNA))
+			blood_DNA = GET_ATOM_BLOOD_DNA(src)
+		base = length(blood_DNA) ? get_color_from_blood_list(blood_DNA) : BLOOD_COLOR_RED
+	if(!istext(base))
+		return null
+	return BlendRGB(base, get_dried_color(base), round(1 - drying_time / total_dry_time, 0.01))
+
+/// Where its hyperviolence paint (hv_vis_paint()) has got to right now: list(transform, alpha), or null.
+/obj/effect/decal/cleanable/blood/proc/sandy_replay_paint_now()
+	var/list/keys = hv_vis_painting
+	if(length(keys) < 2)
+		return null
+	var/now = world.time
+	for(var/i in 2 to length(keys))
+		var/list/ahead = keys[i]
+		if(now >= ahead[3])
+			continue
+		var/list/behind = keys[i - 1]
+		if(now <= behind[3])
+			return list(behind[1], behind[2])
+		var/span = ahead[3] - behind[3]
+		var/progress = span > 0 ? hv_vis_eased(clamp((now - behind[3]) / span, 0, 1), ahead[4]) : 1
+		var/matrix/from = behind[1]
+		return list(from.Interpolate(ahead[1], progress), behind[2] + (ahead[2] - behind[2]) * progress)
+	return null
 
 /// Wet blood dries (and spreads) by animate(): without this it jumps to its dried look as the replay ends.
 /// update_blood_color() works out how far it has got and plays the rest (hv_vis_paint_on() for the spread).

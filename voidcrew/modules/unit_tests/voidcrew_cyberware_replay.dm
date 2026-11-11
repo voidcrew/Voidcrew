@@ -96,6 +96,7 @@
 	// A head still flying (a throw, or hyperviolence's tumble) really lands during the replay, and its roll on landing
 	// moves its pixel_x 6 px (hv_vis_roll() in hyperviolence/visuals/flying_gore.dm): a real change, not the replay's.
 	var/head_in_flight = !QDELETED(head) && (!!head.throwing || !!head.GetComponent(/datum/component/hv_tumble))
+	var/head_x = QDELETED(head) ? null : head.pixel_x
 	if(!QDELETED(head) && !head_in_flight)
 		things += head
 	log_test("replay/plays_and_restores: severed head [QDELETED(head) ? "gone" : (head_in_flight ? "still in flight at the release, left out of the exact check" : "at rest, checked")]")
@@ -161,7 +162,11 @@
 	TEST_ASSERT_EQUAL(wrench.alpha, 128, "A var written mid-replay was lost")
 	TEST_ASSERT_EQUAL(wrench.pixel_w, initial(wrench.pixel_w), "The item is left drawn off its tile")
 	TEST_ASSERT_EQUAL(wrench.mouse_opacity, initial(wrench.mouse_opacity), "The item can't be clicked after the replay")
-	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["unhooked"], 1, "Puppets read as changed when nothing changed them")
+	// The wrench's alpha is one change no wrapper sees. A head that lands mid-replay rolls (a direct pixel_x write) and
+	// is the only other one: it must have moved by its roll.
+	var/head_rolled = head_in_flight && !QDELETED(head) && head.pixel_x != head_x
+	log_test("replay/plays_and_restores: head pixel_x [head_x] at the release, [QDELETED(head) ? "gone" : head.pixel_x] after; unhooked [GLOB.sandy_replay_last["unhooked"]]")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["unhooked"], head_rolled ? 2 : 1, "Puppets read as changed when nothing changed them")
 	TEST_ASSERT(!held(user) && !held(raider) && !held(bleeder) && !held(outsider), "Someone is still held after the replay")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/sandy_replay_standin) in range(9, user)), "A stand-in outlived the replay")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
