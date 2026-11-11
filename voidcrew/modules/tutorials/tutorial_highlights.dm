@@ -403,8 +403,14 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 		if(!(old_target in new_targets))
 			remove_target(old_target)
 	for(var/atom/target as anything in new_targets)
-		if(!images[target])
+		var/image/current = images[target]
+		if(!current)
 			add_target(target)
+		// Some code sets dir directly, without setDir() or its signal.
+		else if(!isturf(target) && current.dir != target.dir)
+			images[target] = make_image(target)
+			shown_client?.images -= current
+			shown_client?.images |= images[target]
 	sync_client()
 
 /datum/tutorial_highlight/proc/add_target(atom/target)
@@ -425,6 +431,9 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 		return make_turf_image(target)
 	var/image/outline = new
 	outline.appearance = target.appearance
+	// The copied appearance doesn't carry the facing over to the image (it reads SOUTH), so
+	// the outline would trace the south-facing sprite of anything turned another way.
+	outline.dir = target.dir
 	outline.loc = target
 	// An attached image already draws at the target, so the copied offsets and transform
 	// would be applied twice.
