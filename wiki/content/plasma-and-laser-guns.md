@@ -32,7 +32,7 @@ The **Old Furnace** is a Furnace with a hand-wound coil. It runs cooler and shoo
 
 Each line restores one unit per hour. Guns bought at a counter come with a full flask seated. See [Trader Outposts](trader-outposts.md) and [Crews & Reputation](zone-reputation.md).
 
-In loot, Kestrels turn up in green armory and freight caches, Hornets and Cinders in yellow caches, and Furnaces in red plunder. A plasma gun found in loot carries a flask that is at most half full. Pirates in yellow and red zones fire plasma guns, and two red-zone pirate captains carry Furnaces and can drop the Old Furnace. See [Pirates & NPC Ships](pirates-and-npc-ships.md).
+In loot, Kestrels turn up in green armory and freight caches, Hornets and Cinders in yellow caches, and Furnaces in red plunder, where an Old Furnace is a rare find. A plasma gun found in loot carries a flask that is at most half full. Pirates in yellow and red zones fire plasma guns, and in red zones Director Prime and the Chief Auditor carry Furnaces and can drop the Old Furnace. They never drop it anywhere else. See [Pirates & NPC Ships](pirates-and-npc-ships.md).
 
 Plasma and frontier guns cannot be crafted, printed or ordered through cargo, and no one buys them back.
 
@@ -57,7 +57,7 @@ Plasma bolts are slower than lasers and bullets, so a target far away can step o
 - **Glass:** bolts stop at windows and break them. A shuttle window takes about four rifle bolts.
 - **Fire:** a hit sets the target alight if there is air to burn. Fire suits keep the heat off. In vacuum nothing burns.
 - **Fuel gas:** a bolt passing through plasma, tritium or hydrogen in the air can light it. Clean air never lights.
-- **Limbs:** an arm or leg that is already badly burned can burn away to dust under a bolt. The rifle does this far more easily than the pistol. Heads and chests never burn off this way.
+- **Limbs:** an arm or leg that is already badly hurt can burn away to dust under a bolt. The rifle does this far more easily than the pistol. Heads and chests never burn off this way.
 - **Canisters:** bolts do not damage gas canisters.
 
 Hits leave scorch marks on the floor that stay until they are cleaned. Scorch marks on a ship are gone after a ship save.
@@ -68,7 +68,7 @@ The Furnace and the Old Furnace heat up as they fire, and their coils glow brigh
 
 - A full flask fired as fast as you can in ship air will not overheat a Furnace. In vacuum it will.
 - An overheated rifle **hisses and spits gas**: it dumps some plasma onto your tile and the gun takes damage. A rifle that keeps overheating eventually breaks.
-- **Vent:** use the rifle in your hand to dump some plasma and cool it quickly. You can't fire for a moment afterwards, and you have to wait a few seconds between vents.
+- **Vent:** use the rifle in your hand to dump some plasma and cool it quickly. You can't fire for a moment afterwards, and you have to wait a few seconds between vents. A rifle with no plasma left has nothing to vent.
 
 !!! warning "Vented gas is hot"
     Vented and spat plasma comes out hot enough to catch fire in breathable air. Vent in vacuum, or expect a fire on your tile.

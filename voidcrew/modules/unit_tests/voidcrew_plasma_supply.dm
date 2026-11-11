@@ -8,7 +8,9 @@
 		/obj/item/gun/energy/frontier_laser/pistol,
 		/obj/item/gun/energy/frontier_laser/smg,
 		/obj/item/gun/energy/plasma_weapon/pistol,
+		/obj/item/gun/energy/plasma_weapon/pistol/loot,
 		/obj/item/gun/energy/plasma_weapon/rifle,
+		/obj/item/gun/energy/plasma_weapon/rifle/loot,
 		/obj/item/gun/energy/plasma_weapon/rifle/old_furnace,
 		/obj/item/plasma_flask,
 	)

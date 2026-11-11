@@ -139,6 +139,10 @@
 	chamber.emp_act(EMP_HEAVY)
 	TEST_ASSERT_EQUAL(gun.chamber_mol(), 20, "an EMP drained the chamber")
 
+	// No turret or emitter fires plasma bolts off the power grid
+	for(var/obj/item/gun/energy/plasma_weapon/gun_type as anything in subtypesof(/obj/item/gun/energy/plasma_weapon))
+		TEST_ASSERT(initial(gun_type.gun_flags) & TURRET_INCOMPATIBLE, "[gun_type] can be built into a turret")
+
 /// The world sprite shows empty once the chamber holds less than one shot
 /datum/unit_test/voidcrew_plasma_empty_sprite/Run()
 	var/obj/item/gun/energy/plasma_weapon/pistol/gun = allocate(/obj/item/gun/energy/plasma_weapon/pistol)

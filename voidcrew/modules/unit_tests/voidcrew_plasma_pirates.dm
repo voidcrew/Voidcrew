@@ -112,4 +112,4 @@
 		roller.rolled_rare_loot = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
 		roller.weapon_loot_initialized = FALSE
 		roller.initialize_weapon_loot(zone)
-		TEST_ASSERT_EQUAL(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in roller.rolled_rare_loot, zone == 3, "A zone [zone] boss's Old Furnace roll was [zone == 3 ? "dropped" : "kept"]")
+		TEST_ASSERT_EQUAL((/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in roller.rolled_rare_loot), zone == 3, "A zone [zone] boss's Old Furnace roll was [zone == 3 ? "dropped" : "kept"]")

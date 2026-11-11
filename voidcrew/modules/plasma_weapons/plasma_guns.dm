@@ -8,6 +8,8 @@
 /obj/item/gun/energy/plasma_weapon
 	automatic_charge_overlays = FALSE
 	vary_fire_sound = FALSE
+	// A turret or emitter fires a gun's bolts off the power grid; plasma bolts only come from plasma
+	gun_flags = TURRET_INCOMPATIBLE
 	/// do_after to seat a flask
 	var/flask_load_delay = PLASMA_LOAD_DELAY_PISTOL
 	/// Spawn with a flask seated: full, or (spawn_fill_random) 0-50% full. Never set FALSE on a sold gun.
