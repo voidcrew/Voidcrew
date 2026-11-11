@@ -422,19 +422,68 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ruin_land
 	key = TUTORIAL_STEP_RUIN_LAND
 	name = "Land on a planet"
-	text = "Dock at a planet from the helm."
+	text = "Fly onto a planet and press Dock at the helm."
 	highlight_types = list(/obj/machinery/computer/helm)
+	ui_focus = list("helm" = "helm_dock")
+
+/// Already berthed on a planet, or standing on one: a late joiner walks straight out.
+/datum/vc_tutorial_step/ruin_land/state_satisfied(mob/user)
+	return !!tutorial_planet_under(user)
+
+/datum/vc_tutorial_step/ruin_land/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(user)
+	var/obj/structure/overmap/berth = ship?.docked
+	if(!berth || tutorial_planet_under(user))
+		return null
+	return "Docked at [berth]."
 
 /datum/vc_tutorial_step/ruin_find
 	key = TUTORIAL_STEP_RUIN_FIND
 	name = "Find a ruin"
-	text = "Explore until you find a building someone left behind."
+	text = "Walk out and explore until you find a place someone left behind."
+
+/// Open-air ruins have no ruin area to walk into, so standing inside one's footprint counts.
+/datum/vc_tutorial_step/ruin_find/state_satisfied(mob/user)
+	return tutorial_ruin_footprint_check(user, credit = FALSE)
+
+/datum/vc_tutorial_step/ruin_find/arrow_target(mob/user)
+	if(tutorial_ruin_footprint_check(user, credit = TRUE))
+		return null
+	var/obj/effect/landmark/ruin/mark = tutorial_nearest_ruin_landmark(user)
+	return mark ? get_turf(mark) : null
+
+/datum/vc_tutorial_step/ruin_find/live_line(mob/user)
+	var/obj/effect/landmark/ruin/mark = tutorial_nearest_ruin_landmark(user)
+	var/turf/here = get_turf(user)
+	var/turf/there = get_turf(mark)
+	if(!here || !there || tutorial_in_ruin_footprint(here, mark))
+		return null
+	var/distance = max(10, round(get_dist(here, there), 10))
+	return "A ruin lies about [distance] tiles [dir2text(get_dir(here, there))]."
 
 /datum/vc_tutorial_step/ruin_cache
 	key = TUTORIAL_STEP_RUIN_CACHE
 	name = "Open the cache"
-	text = "Find the abandoned cache and open it. No cache? Try another ruin."
+	text = "Find the abandoned cache and open it. A locked one needs a code; a multitool on it rates your last try."
 	highlight_types = list(/obj/structure/closet/crate/zone_loot, /obj/structure/closet/crate/secure/loot)
+
+/// Unopened caches in the ruin the viewer is in or near, so the arrow finds one behind walls.
+/datum/vc_tutorial_step/ruin_cache/extra_targets(mob/user)
+	return tutorial_nearby_ruin_caches(user)
+
+/// Closed, found caches only: never a bought one, never one aboard a ship.
+/datum/vc_tutorial_step/ruin_cache/highlight_filter(mob/user, atom/candidate)
+	var/obj/structure/closet/cache = candidate
+	return istype(cache) && !cache.opened && tutorial_countable_cache(cache)
+
+/datum/vc_tutorial_step/ruin_cache/live_line(mob/user)
+	var/obj/effect/landmark/ruin/mark = tutorial_nearest_ruin_landmark(user)
+	if(!mark || !tutorial_in_ruin_footprint(get_turf(user), mark))
+		return null
+	for(var/obj/structure/closet/cache as anything in GLOB.tutorial_ruin_caches)
+		if(!cache.opened && tutorial_countable_cache(cache) && tutorial_in_ruin_footprint(get_turf(cache), mark))
+			return null
+	return "No closed cache left in this ruin."
 
 // ---------------------------------------------------------------------------
 // Outpost trade
@@ -964,19 +1013,59 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/vestige_find
 	key = TUTORIAL_STEP_VESTIGE_FIND
 	name = "Find a vestige"
-	text = "Vestiges appear during the round as red signals on sensors. Fly to one and go inside."
+	text = "Vestiges surface during the round. The helm lists each one under its patron's name. Fly to one and go inside."
+
+/datum/vc_tutorial_step/vestige_find/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(user)
+	var/surfaced = FALSE
+	for(var/obj/structure/overmap/space_ruin/vestige/signal in GLOB.space_ruin_signals)
+		if(QDELETED(signal))
+			continue
+		surfaced = TRUE
+		if(ship?.discovered_contacts?[REF(signal)])
+			return "Your helm has charted [signal]."
+	if(!surfaced)
+		return "None have surfaced yet."
+	return ship ? "One has surfaced. Your helm hasn't found it yet." : "One has surfaced."
 
 /datum/vc_tutorial_step/vestige_pact
 	key = TUTORIAL_STEP_VESTIGE_PACT
 	name = "Make a pact"
-	text = "Find the patron inside and choose Pact. It sets you one trial."
+	text = "Click the patron inside with an empty hand and choose Pact. It sets you one trial."
+	highlight_types = list(/mob/living/basic/vestige_patron)
+
+/// Patrons in the vestige the viewer is in, so the arrow finds one behind walls. They never move.
+/datum/vc_tutorial_step/vestige_pact/extra_targets(mob/user)
+	return tutorial_nearby_patrons(user)
+
+/datum/vc_tutorial_step/vestige_pact/live_line(mob/user)
+	var/datum/mind/mind = user.mind
+	var/datum/action/vestige_reward/pending = mind?.vestige_pending_reward
+	if(pending)
+		return "A patron still owes you a boon."
+	var/datum/vestige_trial/active = mind?.active_vestige_trial
+	if(active)
+		return "You already have a pact with [active.patron_name]."
+	return null
 
 /datum/vc_tutorial_step/vestige_trial
 	key = TUTORIAL_STEP_VESTIGE_TRIAL
 	name = "Complete the trial"
-	text = "Do what the patron asked. The reminder on your screen shows your progress."
+	text = "Do what the patron asked. Click the pact button on your screen to read the terms again."
+
+/datum/vc_tutorial_step/vestige_trial/live_line(mob/user)
+	var/datum/vestige_trial/active = user.mind?.active_vestige_trial
+	if(!active)
+		return null
+	return "[active.name]: [active.get_progress_text()]"
 
 /datum/vc_tutorial_step/vestige_claim
 	key = TUTORIAL_STEP_VESTIGE_CLAIM
 	name = "Claim your boon"
 	text = "Use the Claim Your Boon button and pick one."
+
+/datum/vc_tutorial_step/vestige_claim/live_line(mob/user)
+	var/datum/vestige_record/record = get_vestige_record(user.mind)
+	if(!user.mind?.vestige_pending_reward)
+		return null
+	return record?.pending_patron_name ? "[record.pending_patron_name] owes you a boon." : "A boon is waiting for you."
