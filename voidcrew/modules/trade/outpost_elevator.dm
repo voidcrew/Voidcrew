@@ -101,6 +101,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
 /obj/machinery/outpost_elevator/ui_data(mob/user)
 	var/list/data = list()
+	// Tutorial checklist pointer (voidcrew/modules/tutorials)
+	data["tutorial_focus"] = tutorial_ui_focus(user, "elevator")
 	data["current_floor"] = get_current_floor()
 	data["moving"] = moving
 	data["linked"] = !!(outpost && get_current_floor() != -1)
