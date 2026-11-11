@@ -979,4 +979,65 @@
 	live = data["live"]
 	TEST_ASSERT(!live["vc/test/live"], "A live line was sent for an item that is not open")
 
+// ---------------------------------------------------------------------------
+// ship-power
+// ---------------------------------------------------------------------------
+
+/// Lockers already opened, or opened and emptied, are not pointed at.
+/datum/unit_test/voidcrew_tutorials/ship_power_lockers/Run()
+	SSvc_tutorials.build_catalog()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key["vc/ship/search"]
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, get_step(run_loc_floor_bottom_left, EAST))
+	TEST_ASSERT(step.highlight_filter(player, locker), "A closed, unsearched locker was not pointed at")
+	TEST_ASSERT(locker.open(player), "The locker would not open")
+	TEST_ASSERT(!step.highlight_filter(player, locker), "An open locker was still pointed at")
+	TEST_ASSERT(locker.close(player), "The locker would not close")
+	TEST_ASSERT(!step.highlight_filter(player, locker), "An emptied locker was still pointed at")
+
+/// The generator line follows the generator: unbolted, no fuel, ready, running.
+/datum/unit_test/voidcrew_tutorials/ship_power_generator_line/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	var/obj/machinery/power/port_gen/pacman/generator = allocate(/obj/machinery/power/port_gen/pacman, deck)
+	make_crewed_ship(deck, player)
+	SSvc_tutorials.build_catalog()
+	SSvc_tutorials.machine_cache.Cut()
+	var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key["vc/power/generator"]
+	generator.set_anchored(FALSE)
+	TEST_ASSERT_EQUAL(step.live_line(player), "Not bolted down. Wrench it to the floor.", "An unbolted generator was not reported")
+	generator.set_anchored(TRUE)
+	generator.sheets = 0
+	TEST_ASSERT_EQUAL(step.live_line(player), "No solid plasma loaded.", "An empty generator did not name its fuel")
+	generator.sheets = 10
+	TEST_ASSERT_EQUAL(step.live_line(player), "Ready. Turn it on.", "A fuelled, bolted generator was not ready")
+	generator.active = TRUE
+	TEST_ASSERT_EQUAL(step.live_line(player), "Running.", "A running generator was not reported")
+	generator.active = FALSE
+	SSvc_tutorials.machine_cache.Cut()
+
+/// A hull with no SMES excuses the battery step; one with a switched-off SMES says so.
+/datum/unit_test/voidcrew_tutorials/ship_power_smes/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/player = make_player(deck)
+	make_crewed_ship(deck, player)
+	SSvc_tutorials.build_catalog()
+	SSvc_tutorials.machine_cache.Cut()
+	var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key["vc/power/smes"]
+	TEST_ASSERT(step.excused(player), "The battery step was not excused on a hull with no SMES")
+	var/obj/machinery/power/smes/battery = allocate(/obj/machinery/power/smes, deck)
+	SSvc_tutorials.machine_cache.Cut()
+	TEST_ASSERT(!step.excused(player), "The battery step was excused with an SMES aboard")
+	battery.output_attempt = FALSE
+	TEST_ASSERT_EQUAL(step.live_line(player), "A battery's output is switched off.", "A switched-off SMES was not reported")
+	SSvc_tutorials.machine_cache.Cut()
+
+/// The Ship Management button is never outlined for someone without it, or once the step is done.
+/datum/unit_test/voidcrew_tutorials/ship_power_hud/Run()
+	var/mob/living/carbon/human/player = make_player()
+	SSvc_tutorials.build_catalog()
+	TEST_ASSERT(!length(tutorial_ship_manage_buttons(player)), "A player with no Ship Management button got an outline")
+	tutorial_credit(player, "vc/ship/manage")
+	TEST_ASSERT(!length(tutorial_ship_manage_buttons(player)), "A done Ship Management step still outlined the button")
+
 #undef TUTORIAL_TEST_CKEY
