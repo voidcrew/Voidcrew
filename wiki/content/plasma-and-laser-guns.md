@@ -71,6 +71,6 @@ The Furnace and the Old Furnace heat up as they fire, and their coils glow brigh
 - **Vent:** use the rifle in your hand to dump some plasma and cool it quickly. You can't fire for a moment afterwards, and you have to wait a few seconds between vents. A rifle with no plasma left has nothing to vent.
 
 !!! warning "Vented gas is hot"
-    Vented and spat plasma comes out hot enough to catch fire in breathable air. Vent in vacuum, or expect a fire on your tile.
+    Vented and spat plasma comes out hot, and hot plasma can catch fire in breathable air. Vent in vacuum when you can.
 
 The Cinder does not heat up.
