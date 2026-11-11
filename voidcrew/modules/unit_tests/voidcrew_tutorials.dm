@@ -915,7 +915,7 @@
 	arrow.point(-10, 0, list(21, 15))
 	TEST_ASSERT_EQUAL(arrow.screen_loc, "CENTER-9:0,CENTER+0:0", "The arrow is not one tile in from the west edge")
 	arrow.point(0, -20, list(21, 15))
-	TEST_ASSERT_EQUAL(arrow.screen_loc, "CENTER+0:0,CENTER-6:0", "The arrow is not one tile in from the south edge")
+	TEST_ASSERT_EQUAL(arrow.screen_loc, "CENTER+0:0,CENTER-5:0", "The arrow is not two tiles in from the south edge, above the HUD buttons")
 
 /// tutorial_ui_focus() follows the viewer's guide step and is null with highlights off.
 /datum/unit_test/voidcrew_tutorials/ui_focus
