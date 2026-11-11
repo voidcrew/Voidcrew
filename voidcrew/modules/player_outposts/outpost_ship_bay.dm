@@ -186,7 +186,7 @@
 	bay_zone.occupy()
 	return bay
 
-/obj/structure/overmap/dynamic/player_outpost/proc/available_ship_bay()
+/obj/structure/overmap/dynamic/player_outpost/available_ship_bay()
 	var/datum/outpost_berth/ship_bay/bay = LAZYACCESS(bay_berths, 1)
 	return ship_bay_installed && bay?.is_available() ? bay : null
 
@@ -197,7 +197,7 @@
 	return bay
 
 /// Claim the empty bay before waiting for a loader or placing any part of a ship.
-/obj/structure/overmap/dynamic/player_outpost/proc/reserve_rebuild_bay(datum/owner)
+/obj/structure/overmap/dynamic/player_outpost/reserve_rebuild_bay(datum/owner)
 	var/datum/outpost_berth/ship_bay/bay = available_ship_bay()
 	if(!bay || QDELETED(owner))
 		return null
@@ -221,7 +221,6 @@
 	var/silo_requested_at
 	var/datum/weakref/approved_silo
 	var/silo_owner_ckey
-	var/datum/weakref/rebuild_owner
 	var/release_pending = FALSE
 	var/release_timer
 
@@ -240,7 +239,7 @@
 		return "Departing"
 	return is_available() ? "Available" : "Reserved"
 
-/datum/outpost_berth/ship_bay/proc/update_status()
+/datum/outpost_berth/ship_bay/update_status()
 	for(var/obj/machinery/status_display/outpost_berth/sign as anything in status_signs)
 		sign.set_messages("SHIP BAY", ship?.name || status_text())
 	outpost?.refresh_elevator_uis()
@@ -265,7 +264,7 @@
 	update_status()
 	return TRUE
 
-/datum/outpost_berth/ship_bay/proc/finish_rebuild(datum/owner)
+/datum/outpost_berth/ship_bay/finish_rebuild(datum/owner)
 	if(!IS_WEAKREF_OF(owner, rebuild_owner))
 		return
 	rebuild_owner = null
@@ -274,7 +273,7 @@
 	update_status()
 
 /// A staged rebuild has already landed its hull here; hand the bay to its new ship record.
-/datum/outpost_berth/ship_bay/proc/complete_rebuild(obj/structure/overmap/ship/rebuilt, datum/owner)
+/datum/outpost_berth/ship_bay/complete_rebuild(obj/structure/overmap/ship/rebuilt, datum/owner)
 	if(QDELETED(src) || !IS_WEAKREF_OF(owner, rebuild_owner) || ship || QDELETED(rebuilt) || QDELETED(rebuilt.shuttle) || dock?.get_docked() != rebuilt.shuttle)
 		return FALSE
 	ship = rebuilt
@@ -322,17 +321,6 @@
 	reset_reserve_dock_to_home(dock)
 	refresh_hangar_air()
 	update_status()
-
-/// The hangar keeps its own atmosphere. A departing hull leaves its own air on the pad, vacuum
-/// from its outer plating included, and the sealed hangar would spend the next few minutes (and
-/// a lot of atmos time) evening that out, drawing its pressure down for good. Every hangar
-/// tile not under a ship goes back to the hangar's own air instead, already settled.
-/datum/outpost_berth/ship_bay/proc/refresh_hangar_air()
-	for(var/turf/open/tile in get_block())
-		if(!tile.air || tile.blocks_air || istype(tile.loc, /area/shuttle))
-			continue
-		tile.air.copy_from(tile.create_gas_mixture())
-		SSair.remove_from_active(tile)
 
 /datum/outpost_berth/ship_bay/proc/retry_release()
 	release_timer = null
@@ -393,9 +381,6 @@
 	if(!console?.use_outpost_silo())
 		console?.use_ship_silo()
 	ship.ship_notify("Docked at [outpost.name], Ship Bay [bay_number]. The construction console is beside the south elevator. Bay equipment connects automatically to your outpost's silo, or your ship's silo when visiting. Choose the material source at the console.", "SHIP BAY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-
-/datum/outpost_berth/ship_bay/proc/is_ship_present()
-	return !QDELETED(outpost) && !QDELETED(ship) && !QDELETED(ship.shuttle) && ship.docked == outpost && ship.state == OVERMAP_SHIP_IDLE && dock?.get_docked() == ship.shuttle
 
 /datum/outpost_berth/ship_bay/proc/request_silo(mob/user)
 	if(!is_ship_present() || !console?.is_crew_member(user))

@@ -66,6 +66,8 @@
 		// boarder's palms: your hands clamp shut on your gun when you go
 		// down, and tables stop being furniture
 		/obj/item/organ/cyberimp/cyberware/gecko = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/tongue_spike = 3,
 	)
 	loot_prime = list(
 		/obj/item/stack/spacecash/c1000 = 9,

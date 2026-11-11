@@ -66,6 +66,9 @@
 		// a wrist spike for door motors and turret IFF
 		/obj/item/organ/cyberimp/cyberware/cargo_cavity = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/mind_reader = 2,
+		/obj/item/dnainjector/loot/anti_glow = 2,
 	)
 	loot_prime = list(
 		/obj/item/pen/sleepy = 4,
@@ -83,6 +86,9 @@
 		/obj/item/radio/listening_coin = 3,
 		/obj/item/static_cuff = 2,
 		/obj/item/clothing/suit/hooded/cloak/second_shadow = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/martyrdom = 1,
+		/obj/item/dnainjector/loot/laser_eyes = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/syndicate

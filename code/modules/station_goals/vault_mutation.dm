@@ -8,6 +8,10 @@
 
 /datum/mutation/breathless/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	ADD_TRAIT(acquirer, TRAIT_NOBREATH, GENETIC_MUTATION)
 
 /datum/mutation/breathless/on_losing(mob/living/carbon/human/owner)//this shouldnt happen under normal condition but just to be sure
@@ -23,6 +27,10 @@
 
 /datum/mutation/quick/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	acquirer.add_movespeed_modifier(/datum/movespeed_modifier/dna_vault_speedup)
 
 /datum/mutation/quick/on_losing(mob/living/carbon/human/owner)
@@ -38,6 +46,10 @@
 
 /datum/mutation/tough/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	acquirer.physiology.brute_mod *= 0.7
 	ADD_TRAIT(acquirer, TRAIT_PIERCEIMMUNE, GENETIC_MUTATION)
 
@@ -55,6 +67,10 @@
 
 /datum/mutation/dextrous/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	acquirer.next_move_modifier *= 0.5
 
 /datum/mutation/dextrous/on_losing(mob/living/carbon/human/owner)
@@ -70,6 +86,10 @@
 
 /datum/mutation/fire_immunity/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	acquirer.physiology.burn_mod *= 0.5
 	acquirer.add_traits(list(TRAIT_RESISTHEAT, TRAIT_NOFIRE), GENETIC_MUTATION)
 
@@ -87,6 +107,10 @@
 
 /datum/mutation/quick_recovery/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	acquirer.physiology.stun_mod *= 0.5
 
 /datum/mutation/quick_recovery/on_losing(mob/living/carbon/human/owner)
@@ -102,6 +126,10 @@
 
 /datum/mutation/plasmocile/on_acquiring(mob/living/carbon/human/acquirer)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - a failed acquisition must not keep the buff (gene injector loot, voidcrew/modules/loot/gene_injectors.dm)
+	if(!.)
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/obj/item/organ/lungs/improved_lungs = acquirer.get_organ_slot(ORGAN_SLOT_LUNGS)
 	ADD_TRAIT(owner, TRAIT_VIRUSIMMUNE, GENETIC_MUTATION)
 	if(improved_lungs)
