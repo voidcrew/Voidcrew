@@ -51,7 +51,8 @@ type Item = {
   opts: RefObject<FocusOpts>;
 };
 
-type How = 'key' | 'mouse' | 'auto';
+/** auto: a stand-in the game picked; claim: a screen's first target. */
+type How = 'key' | 'mouse' | 'auto' | 'claim';
 
 type Nav = {
   pushScope: (id: string) => void;
@@ -217,6 +218,8 @@ export function NavProvider(props: ProviderProps) {
   const scheduled = useRef(false);
   /** When the player last pressed a key or clicked. Only then may a new screen take the focus. */
   const lastAction = useRef(0);
+  /** How the focus got where it is; one the player never moved may go to a later claim. */
+  const focusHow = useRef<How>('auto');
   const [focused, setFocused] = useState<string | null>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
@@ -227,10 +230,11 @@ export function NavProvider(props: ProviderProps) {
         return;
       }
       focusRef.current = id;
+      focusHow.current = how;
       setFocused(id);
       const item = id ? items.get(id) : undefined;
       lastBox.current = boxOf(item) || lastBox.current;
-      if (how !== 'auto' && id) {
+      if ((how === 'key' || how === 'mouse') && id) {
         playSound('move');
       }
       if (how === 'key' && item?.opts.current.tab) {
@@ -249,14 +253,15 @@ export function NavProvider(props: ProviderProps) {
       claim.current = null;
       // A claim wins after a key or click (a record or screen the player opened), never because
       // a server update added a row under the focus.
-      const fresh = Date.now() - lastAction.current < CLAIM_WINDOW;
+      const untouched = focusHow.current === 'auto';
+      const fresh = untouched || Date.now() - lastAction.current < CLAIM_WINDOW;
       if (
         pending &&
         items.get(pending.id)?.scope === top &&
         (!currentItem || fresh)
       ) {
-        if (!currentItem?.opts.current.tab) {
-          setFocus(pending.id, 'auto');
+        if (untouched || !currentItem?.opts.current.tab) {
+          setFocus(pending.id, 'claim');
           return;
         }
       }
@@ -489,7 +494,7 @@ export function useFocusable<T extends HTMLElement>(
     focused,
     onMouseEnter: enabled && nav ? () => nav.focus(id, 'mouse') : undefined,
     /** Moves the focus here, for things that want it after a click. */
-    take: () => nav?.focus(id, 'auto'),
+    take: () => nav?.focus(id, 'claim'),
   };
 }
 
