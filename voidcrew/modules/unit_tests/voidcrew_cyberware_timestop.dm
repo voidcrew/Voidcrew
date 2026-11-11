@@ -281,3 +281,94 @@
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	raider.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	raider.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// The user hears the slowed world slowed (ware_sandy_senses.dm): world sounds in the field take its pace and
+/// a quiet low rumble in the freeze; their own sounds, sounds from outside the field and other listeners don't.
+/datum/unit_test/voidcrew_cyberware_timestop/heard_slowed
+
+/datum/unit_test/voidcrew_cyberware_timestop/heard_slowed/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(3, 0))
+	var/turf/far = locate(user.x + 40, user.y, user.z) || locate(1, user.y, user.z)
+	TEST_ASSERT_EQUAL(cyberware_heard_speed(user, get_turf(raider), raider), 1, "A sound was slowed with no dilation running")
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	TEST_ASSERT_NOTNULL(field.senses, "The field has no senses for its user")
+
+	// The freeze: a quiet, low rumble.
+	var/frozen_speed = cyberware_heard_speed(user, get_turf(raider), raider)
+	TEST_ASSERT(frozen_speed > 0 && frozen_speed < 0.5, "A world sound in the freeze played at [frozen_speed]")
+	var/sound/shot = sound('sound/items/weapons/gun/pistol/shot.ogg')
+	shot.volume = 100
+	cyberware_dilate_heard(user, get_turf(raider), shot, raider)
+	TEST_ASSERT(shot.frequency == frozen_speed, "A world sound in the freeze went out at frequency [shot.frequency]")
+	TEST_ASSERT(shot.volume < 50, "A world sound in the freeze stayed loud ([shot.volume])")
+	TEST_ASSERT_EQUAL(field.senses.loop_speed, frozen_speed, "The user's loops didn't slow in the freeze")
+
+	// The user's own sounds, other listeners and far sounds stay as they are.
+	TEST_ASSERT_EQUAL(cyberware_heard_speed(user, get_turf(user), raider), 1, "A sound on the user's own tile was slowed")
+	TEST_ASSERT_EQUAL(cyberware_heard_speed(user, get_turf(raider), user), 1, "A sound the user set off was slowed")
+	TEST_ASSERT_EQUAL(cyberware_heard_speed(raider, get_turf(raider), null), 1, "Someone other than the user heard it slowed")
+	if(far && get_dist(far, user) > field.current_range)
+		TEST_ASSERT_EQUAL(cyberware_heard_speed(user, far, null), 1, "A sound from outside the field was slowed")
+	TEST_ASSERT_EQUAL(cyberware_scaled_frequency(44100, 0.5), 22050, "A rate in Hz didn't scale")
+	TEST_ASSERT_EQUAL(cyberware_scaled_frequency(0, 0.2), 0.2, "An as-is sound didn't scale")
+
+	sleep(1.2 SECONDS) // into the 20% slow-mo
+	TEST_ASSERT_EQUAL(cyberware_heard_speed(user, get_turf(raider), raider), field.time_scale, "A world sound didn't take the slow-mo pace")
+	TEST_ASSERT_EQUAL(field.senses.loop_speed, field.time_scale, "The user's loops didn't take the slow-mo pace")
+
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	TEST_ASSERT_NULL(window.time_stop, "Test fixture: the dilation outlived its window")
+	TEST_ASSERT_EQUAL(cyberware_heard_speed(user, get_turf(raider), raider), 1, "Sounds stayed slowed after the dilation")
+
+/// The user sees the weather slowed through a private override image per area; the area itself never changes,
+/// and the images go when the dilation ends.
+/datum/unit_test/voidcrew_cyberware_timestop/weather_slowed
+
+/datum/unit_test/voidcrew_cyberware_timestop/weather_slowed/Run()
+	var/mob/living/carbon/human/user = make_user(spot(1, 1), "sandytimestopuser")
+	var/area/place = get_area(user)
+	var/datum/weather/rain_storm/rain = new(list(user.z), list("areas" = list(place), "weather_flags" = WEATHER_INDOORS))
+	TEST_ASSERT(rain.impacted_areas_lookup[place], "Test fixture: the rain didn't take the test room")
+	rain.stage = MAIN_STAGE
+	rain.update_areas()
+	SSweather.processing |= rain
+	var/list/area_overlays = place.overlays.Copy()
+
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	field.senses.refresh_weather(force = TRUE) // no client in a unit test
+	var/image/frozen = field.senses.area_images[place]
+	TEST_ASSERT_NOTNULL(frozen, "The rained-on area got no image")
+	TEST_ASSERT(frozen.override, "The weather image doesn't replace the area's look")
+	TEST_ASSERT(weather_states(frozen).Find("rain_high_still"), "The freeze didn't show still rain: [jointext(weather_states(frozen), ",")]")
+	TEST_ASSERT(!weather_states(frozen).Find("rain_high"), "The fast rain is still in the freeze image")
+	TEST_ASSERT_EQUAL(length(place.overlays), length(area_overlays), "The area's own overlays changed")
+
+	sleep(1.2 SECONDS) // into the 20% slow-mo
+	field.senses.refresh_weather(force = TRUE)
+	var/image/slowed = field.senses.area_images[place]
+	TEST_ASSERT(weather_states(slowed).Find("rain_high_s20"), "The slow-mo didn't show slowed rain: [jointext(weather_states(slowed), ",")]")
+
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	TEST_ASSERT_NULL(window.time_stop, "Test fixture: the dilation outlived its window")
+	TEST_ASSERT_NULL(field.senses, "The senses outlived the dilation")
+	TEST_ASSERT_EQUAL(length(place.overlays), length(area_overlays), "The area's own overlays changed after the dilation")
+
+	SSweather.processing -= rain
+	rain.stage = END_STAGE
+	rain.update_areas()
+	qdel(rain)
+
+/// The icon states of `slowed`'s overlays.
+/datum/unit_test/voidcrew_cyberware_timestop/weather_slowed/proc/weather_states(image/slowed)
+	. = list()
+	for(var/overlay in slowed.overlays)
+		. += overlay:icon_state

@@ -345,6 +345,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/list/surging = list()
 	/// Held mobs, to the tags of their slowed hv_vis_play() animations, to drop if they break free.
 	var/list/slowed_tags = list()
+	/// The user's slowed weather and sound (ware_sandy_senses.dm).
+	var/datum/sandy_senses/senses
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, start_scale = 0)
 	time_scale = start_scale
@@ -354,8 +356,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	STOP_PROCESSING(SSfastprocess, src) // tick() runs on tick_timer instead
 	tick_timer = addtimer(CALLBACK(src, PROC_REF(tick)), 0.2 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	RegisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_user_fire))
+	if(ismob(host))
+		senses = new(src)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/Destroy()
+	QDEL_NULL(senses)
 	deltimer(tick_timer)
 	tick_timer = null
 	if(host)
@@ -731,6 +736,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			stop_mech(mech)
 		else
 			start_mech(mech)
+	senses?.update()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/process()
 	return PROCESS_KILL
@@ -761,6 +767,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(thaw_at && world.time >= thaw_at)
 		thaw_at = 0
 		set_time_scale(slow_scale)
+	senses?.refresh_weather()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/into_the_negative_zone(atom/A)
 	A.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
