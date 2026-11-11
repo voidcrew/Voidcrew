@@ -27,7 +27,6 @@
 		"installed" = home.ship_bay_installed, "capacity" = OUTPOST_SHIP_BAY_SLOTS,
 		"install_denial" = home.ship_bay_setup_denial(), "remove_denial" = bay_removal_denial(home),
 		"slots" = slots, "silos" = silos, "silo" = selected_silo ? REF(selected_silo) : null,
-		"saved_checkpoints" = length(home.checkpoints),
 	)
 
 /datum/outpost_manipulator/proc/bay_material_denial(obj/structure/overmap/dynamic/player_outpost/home, datum/outpost_berth/ship_bay/bay)
@@ -41,15 +40,13 @@
 		return "Select an outpost silo first."
 	return null
 
-/// Never disable recovery or pull the bay out from under an active visit.
+/// Never pull the bay out from under an active visit or build.
 /datum/outpost_manipulator/proc/bay_removal_denial(obj/structure/overmap/dynamic/player_outpost/home)
 	if(!home.ship_bay_installed)
 		return "The ship bay is not installed."
-	if(length(home.checkpoints))
-		return "Saved checkpoints still depend on this bay."
 	for(var/datum/outpost_berth/ship_bay/bay as anything in home.bay_berths)
 		if(bay && !bay.is_available())
-			return "Undock the ship and finish any checkpoint rebuild first."
+			return "Undock the ship and finish any construction first."
 	for(var/obj/structure/overmap/ship/ship as anything in home.pending_dock_variants)
 		if(home.pending_dock_variants[ship] == OUTPOST_DOCK_VARIANT_BAY)
 			return "Resolve pending ship-bay docking requests first."

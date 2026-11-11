@@ -206,7 +206,9 @@
 	// The other hand's wire lashes out too, a beat later; nothing is drawn over the target.
 	sleep(0.2 SECONDS)
 	TEST_ASSERT(locate(/obj/effect/abstract/wire_reach) in get_turf(user), "The crossing cut didn't lash the other wire")
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in victim.vis_contents), "The crossing cut drew over its target")
+	// The arm's own sever seam (wire_sever_fx.dm) shows on the body; the old crossing X must not.
+	for(var/obj/effect/abstract/cyberware_anim/drawn in victim.vis_contents)
+		TEST_ASSERT(!findtext(drawn.icon_state, "cross"), "The crossing cut drew over its target ([drawn.icon_state])")
 	TEST_ASSERT_EQUAL(user.wire_cross_hits, 0, "The count didn't start again after the crossing cut")
 
 	// Hits too far apart start the count again.
@@ -220,6 +222,7 @@
 		qdel(old_lash)
 	user.zone_selected = BODY_ZONE_HEAD
 	TEST_ASSERT(wire.wire_crossing_swing(user, victim, BODY_ZONE_CHEST), "wire_crossing_swing() didn't swing")
+	sleep(0.2 SECONDS) // the other hand's wire lashes out a beat later, as above
 	var/lashes = 0
 	for(var/obj/effect/abstract/wire_reach/lash in get_turf(user))
 		lashes++
@@ -325,7 +328,8 @@
 	sleep(1.5 SECONDS)
 	TEST_ASSERT_NULL(get_ghost(dying), "The held leg outlived its beat on a body that died")
 
-/// The wire carries on into whoever stands behind the target and cleaves the rest, as lines of the one hit.
+/// The wire carries on into the one body right behind the target, as a line of the one hit, and nobody beside it.
+/// The body behind never loses a limb to it.
 /datum/unit_test/voidcrew_widowline/wire_cleave
 
 /datum/unit_test/voidcrew_widowline/wire_cleave/Run()
@@ -334,15 +338,22 @@
 	var/mob/living/carbon/human/consistent/behind = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
 	var/mob/living/carbon/human/consistent/beside = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
 	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	// A limb tg's wound roll wanted off the body behind stays on.
+	var/obj/item/bodypart/arm = behind.get_bodypart(BODY_ZONE_L_ARM)
+	behind.hv_wire_owed_sever = arm
 	wire.wire_cleave(target, user)
 	TEST_ASSERT(behind.getBruteLoss() > 0, "The mob behind the target took no cut")
-	TEST_ASSERT(beside.getBruteLoss() > 0, "The mob beside the target took no cleave")
+	TEST_ASSERT_EQUAL(beside.getBruteLoss() + beside.getFireLoss(), 0, "The mob beside the target was cut")
+	TEST_ASSERT_EQUAL(behind.get_bodypart(BODY_ZONE_L_ARM), arm, "The body behind the target lost a limb")
+	TEST_ASSERT_NULL(behind.hv_wire_owed_sever, "The body behind the target is still owed a sever")
+	TEST_ASSERT_EQUAL(wire.lash_through?.resolve(), behind, "The body behind was cut with no line to it")
 	var/result = lines(target)
 	TEST_ASSERT(findtext(result, "carries through into [behind]"), "The through-cut's line didn't join the hit: [result]")
-	TEST_ASSERT(findtext(result, "sings through everything beside"), "The cleave's line didn't join the hit: [result]")
+	TEST_ASSERT(!findtext(result, "sings through"), "The old cleave's line joined the hit: [result]")
 	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in get_turf(behind), "The through-cut laid a streak on the floor")
 	TEST_ASSERT_NULL(locate(/obj/effect/ebeam) in range(3, target), "The through-cut drew a beam of its own")
 	TEST_ASSERT(!HAS_TRAIT(behind, "hv_clean_cut"), "TRAIT_HV_CLEAN_CUT outlived the cleave")
+	wire.lash_through = null
 
 	// A real swing does all of it in one message.
 	target.hv_flush_hit()
@@ -351,6 +362,7 @@
 	wire.melee_attack_chain(user, target)
 	TEST_ASSERT(target.getBruteLoss() > 0, "The swing didn't land")
 	TEST_ASSERT(behind.getBruteLoss() > 0, "A landed swing didn't carry through")
+	TEST_ASSERT_EQUAL(beside.getBruteLoss() + beside.getFireLoss(), 0, "A landed swing cut the mob beside the target")
 	// The swing's one lash runs on to the body behind and ends there; it goes into the first body over it and comes
 	// out under it.
 	var/obj/effect/abstract/wire_reach/lash_end = locate() in get_turf(behind)
@@ -374,6 +386,69 @@
 		else if(piece.layer == BELOW_MOB_LAYER)
 			under++
 	TEST_ASSERT(over == 1 && under == 1, "The lash of a through-cut should cross the first body in two pieces, over it then under it: [over] over, [under] under")
+
+	// Two bodies behind: the wire carries into one of them.
+	target.hv_flush_hit()
+	behind.fully_heal(HEAL_DAMAGE)
+	var/mob/living/carbon/human/consistent/also_behind = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	wire.wire_cleave(target, user)
+	var/hurt = (behind.getBruteLoss() > 0) + (also_behind.getBruteLoss() > 0)
+	TEST_ASSERT_EQUAL(hurt, 1, "A swing carried into [hurt] bodies behind its target")
+	wire.lash_through = null
+
+/// The wire carries into nobody when no line runs from the hand through the target to the body behind: the wielder on
+/// the target's tile, or a swing at a knight's move. The garrote's own blow never carries through either.
+/datum/unit_test/voidcrew_widowline/wire_cleave_no_line
+
+/datum/unit_test/voidcrew_widowline/wire_cleave_no_line/Run()
+	// On the target's tile, facing the body behind.
+	var/mob/living/carbon/human/user = wielder(spot(1, 1))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/mob/living/carbon/human/consistent/behind = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	user.setDir(EAST)
+	wire.wire_cleave(target, user)
+	TEST_ASSERT_EQUAL(behind.getBruteLoss() + behind.getFireLoss(), 0, "A swing from the target's own tile cut the body beside it")
+	TEST_ASSERT_NULL(wire.lash_through, "A swing from the target's own tile carried through")
+	TEST_ASSERT(!findtext(lines(target), "carries through"), "A swing from the target's own tile said it carried through")
+
+	// A reach-two swing at a knight's move: the tile past the target along it holds a body, but no line runs to it.
+	var/mob/living/carbon/human/far_user = wielder(spot(0, 0))
+	var/obj/item/melee/cyberware_monowire/far_wire = held(far_user)
+	var/mob/living/carbon/human/consistent/far_target = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	var/mob/living/carbon/human/consistent/far_behind = allocate(/mob/living/carbon/human/consistent, spot(2, 3))
+	TEST_ASSERT_EQUAL(get_step(far_target, get_dir(far_user, far_target)), get_turf(far_behind), "Fixture: the body isn't on the tile past the target")
+	TEST_ASSERT_NULL(far_wire.wire_through_line(far_user, far_target, far_behind), "A line runs through a knight's move")
+	far_wire.wire_cleave(far_target, far_user)
+	TEST_ASSERT_EQUAL(far_behind.getBruteLoss() + far_behind.getFireLoss(), 0, "A swing at a knight's move cut the body past its target")
+	TEST_ASSERT_EQUAL(behind.getBruteLoss() + behind.getFireLoss(), 0, "A swing at a knight's move cut a body beside its target")
+	TEST_ASSERT_NULL(far_wire.lash_through, "A swing at a knight's move carried through")
+
+/// The garrote's blow when armour turns the wire cuts the victim alone, never the body behind.
+/datum/unit_test/voidcrew_widowline/wire_garrote_no_cleave
+
+/datum/unit_test/voidcrew_widowline/wire_garrote_no_cleave/Run()
+	var/mob/living/carbon/human/user = wielder(spot(0, 1))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/mob/living/carbon/human/consistent/behind = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	TEST_ASSERT_EQUAL(wire.wire_through_target(victim, user), behind, "Fixture: a plain swing doesn't carry into the body behind")
+	wire.garrote_no_cleave = TRUE
+	TEST_ASSERT_NULL(wire.wire_through_target(victim, user), "The garrote's blow would carry into the body behind")
+	wire.garrote_no_cleave = FALSE
+
+	user.zone_selected = BODY_ZONE_HEAD
+	victim.equip_to_slot_or_del(new /obj/item/clothing/head/helmet/space(victim), ITEM_SLOT_HEAD)
+	victim.Paralyze(100 SECONDS)
+	TEST_ASSERT(wire.wire_try_garrote(victim, user), "Fixture: no garrote on the helmeted victim")
+	var/datum/hv_finisher/garrote/garrote = wire.garrote_running
+	for(var/i in 1 to 10)
+		if(!garrote.running)
+			break
+		garrote.advance()
+	TEST_ASSERT(victim.getBruteLoss() > 0, "Fixture: the turned wire's blow didn't land")
+	TEST_ASSERT_EQUAL(behind.getBruteLoss() + behind.getFireLoss(), 0, "The garrote's blow cut the body behind the victim")
+	TEST_ASSERT(!wire.garrote_no_cleave, "The wire still thinks it is the garrote's blow")
 
 /// A through-cut that also takes a limb off its target still draws its line on through to the body behind.
 /datum/unit_test/voidcrew_widowline/wire_through_sever
@@ -429,6 +504,8 @@
 
 	// Wet again, stowed: drops in front, the look clears, the DNA stays.
 	cut(user, victim, BODY_ZONE_CHEST)
+	// The cut throws its own drops off the seam (wire_seams.dm); let them land so only the fan is counted.
+	sleep(1 SECONDS)
 	user.setDir(EAST)
 	var/list/plan = wire_fan_plan(EAST, "right")
 	TEST_ASSERT_EQUAL(length(plan), 6, "The fan isn't six drops") // WIRE_FLICK_DROPS
@@ -758,7 +835,8 @@
 
 	// Soft crit, nowhere near hard crit: the Arc takes the head.
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
-	victim.apply_damage(110, OXY)
+	// Brute, not oxygen: past 50 oxyloss tg knocks a body out (check_passout()), which is not soft crit.
+	victim.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Fixture: not in soft crit")
 	victim.set_body_position(LYING_DOWN)
 	TEST_ASSERT(garrote_through(user, victim), "The Arc's garrote didn't start on someone in soft crit")

@@ -462,7 +462,7 @@ GLOBAL_LIST_EMPTY(outpost_patrol_caches)
 
 	var/list/locked_doors = list()
 	for(var/obj/machinery/door/door as anything in path)
-		if(door_requires_access(door))
+		if(door_refuses_npc(door))
 			locked_doors[REF(door)] = TRUE
 	GLOB.boarding_locked_doors[key] = locked_doors
 

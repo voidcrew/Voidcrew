@@ -149,6 +149,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 	var/release_retries = 0
 	/// Timer that frees the berth if the ship never shows up (TIMER_STOPPABLE)
 	var/arrival_watchdog
+	/// The ship build (/datum/checkpoint_construction) holding this berth, before its ship exists
+	var/datum/weakref/rebuild_owner
+	/// A trader outpost berth held for a build loads its hangar once the hull's size is known
+	var/ground_on_build = FALSE
+	/// The berth's shipyard console, on hosts that keep one (berth_shipyards())
+	var/obj/machinery/computer/ship_checkpoint/shipyard
 
 /datum/outpost_berth/New(obj/structure/overmap/outpost, berth_number, obj/structure/overmap/ship/ship)
 	src.outpost = outpost
@@ -170,6 +176,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 	if(panel)
 		panel.berth = null
 		panel = null
+	shipyard = null
+	rebuild_owner = null
 	status_signs = null
 	if(dock)
 		qdel(dock, TRUE) // stationary ports refuse non-forced qdel
@@ -303,6 +311,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
  * /obj/machinery/outpost_elevator/proc/complete_ride).
  */
 /datum/outpost_berth/proc/allows_entry(mob/visitor)
+	var/datum/checkpoint_construction/build = rebuild_owner?.resolve()
+	if(!ship && build)
+		return !!visitor?.ckey && visitor.ckey == build.captain_ckey
 	if(!ship || ship.abandoned)
 		return TRUE
 	return !!(ship.ship_team && (ship.ship_team in visitor?.mind?.ship_teams))
@@ -351,6 +362,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 			else if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = outpost
+			else if(istype(machine, /obj/machinery/computer/ship_checkpoint))
+				// Standard berths keep theirs only at trader outposts (outpost_shipyard.dm).
+				if(keeps_shipyard_console())
+					shipyard = machine
+				else
+					qdel(machine)
 		// Berth fixtures (lights, signage, the lift panel) are outpost property.
 		// The docked ship arrives after this sweep, so its own machinery and
 		// structures stay player-serviceable.

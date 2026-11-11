@@ -3,7 +3,7 @@
  *
  * Players can. Human NPCs can't yet: the owner wants bounty criminals to use them later, and this is the one
  * place that opens them, for example `return wielder.client || wielder.npc_rank >= HUMAN_NPC_RANK_BOSS`
- * for bosses only. Everything else a wire does (its damage, the cleave and through-cut, clean cuts, blood on
+ * for bosses only. Everything else a wire does (its damage, the through-cut, clean cuts, blood on
  * the wire, tg's own dismemberment drawn clean) belongs to the weapon and works for any wielder, as it did
  * before these moves existed.
  *

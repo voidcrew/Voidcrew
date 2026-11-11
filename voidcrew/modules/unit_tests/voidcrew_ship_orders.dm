@@ -285,7 +285,7 @@
 	TEST_ASSERT(lose_original(home, ship), "[ship] could not leave the bay")
 
 /**
- * An order and a checkpoint rebuild at two outposts share the shipyard queue: both wait with
+ * An order and a snapshot rebuild at two outposts share the shipyard queue: both wait with
  * their bays reserved while the loader is busy, load in the order they asked, and finish.
  */
 /datum/unit_test/voidcrew_checkpoints/ship_order_queue
@@ -319,8 +319,9 @@
 	for(var/datum/checkpoint_construction/job as anything in list(rebuild, purchase))
 		TEST_ASSERT(job.queued, "[job.type] did not wait for the busy loader")
 		TEST_ASSERT_EQUAL(job.status_line(), "Waiting for the shipyard", "[job.type] reported the wrong status while queued")
-		TEST_ASSERT_EQUAL(job.bay.status_text(), "Queued", "[job.type]'s bay sign is wrong while queued")
-		TEST_ASSERT(!job.bay.is_available(), "[job.type] released its bay while queued")
+		var/datum/outpost_berth/ship_bay/queued_bay = job.bay
+		TEST_ASSERT_EQUAL(queued_bay.status_text(), "Queued", "[job.type]'s bay sign is wrong while queued")
+		TEST_ASSERT(!queued_bay.is_available(), "[job.type] released its bay while queued")
 	SSshuttle.release_template_load(held)
 	held = null
 	var/deadline = world.time + 3 MINUTES

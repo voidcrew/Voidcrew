@@ -535,8 +535,11 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
 "br" = (
-/obj/structure/table/reinforced,
-/obj/item/paper_bin,
+/obj/effect/turf_decal/tile/dark_red/full,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost/checkpoint)
+"bs" = (
+/obj/structure/table/reinforced/plastitaniumglass,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost/checkpoint)
@@ -5243,7 +5246,7 @@ aa
 aX
 br
 bt
-aV
+bs
 pv
 bK
 bS

@@ -899,3 +899,23 @@
 				TEST_ASSERT(entry != /obj/item/his_grace, "His Grace remains in ordinary cache loot")
 	for(var/entry in all_weapons)
 		TEST_ASSERT(entry in seen, "Retained weapon [entry] lost its guarded cache source")
+
+/// Everything the street doc sells can also turn up in a zone cache (owner: low-tier chrome rides the loot pools too).
+/datum/unit_test/voidcrew_street_chrome_in_loot
+
+/datum/unit_test/voidcrew_street_chrome_in_loot/Run()
+	var/list/lootable = list()
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		for(var/table_name in list("loot_common", "loot_uncommon", "loot_prime", "loot_uniques"))
+			for(var/entry in theme.vars[table_name])
+				lootable[entry] = TRUE
+		for(var/extras_name in list("gun_extras", "melee_extras"))
+			var/list/extras = theme.vars[extras_name]
+			for(var/weapon_class in extras)
+				for(var/entry in extras[weapon_class])
+					lootable[entry] = TRUE
+	var/datum/outpost_shop/vendor/street_doc/shop = allocate(/datum/outpost_shop/vendor/street_doc)
+	TEST_ASSERT(length(shop.skus), "The street doc has nothing on his shelf")
+	for(var/datum/shop_sku/sku as anything in shop.skus)
+		TEST_ASSERT(lootable[sku.item_path], "[sku.item_path], sold by the street doc, is in no loot theme")

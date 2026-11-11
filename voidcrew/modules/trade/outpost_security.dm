@@ -118,6 +118,18 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	SIGNAL_HANDLER
 	register_pvp_aggression(victim, pilot, OUTPOST_CRIME_ASSAULT_ARMED)
 
+// Touch spells land through the hand item's own interaction signal, which none
+// of the victim-side signals above see. Shock Touch is an attack on any living
+// target; Mending Touch only when it smites instead of healing.
+/datum/action/cooldown/spell/touch/shock/cast_on_hand_hit(obj/item/melee/touch_attack/hand, atom/victim, mob/living/carbon/caster)
+	. = ..()
+	if(. && isliving(victim))
+		GLOB.outpost_pvp_enforcement.register_pvp_aggression(victim, caster)
+
+/datum/action/cooldown/spell/touch/lay_on_hands/by_gods_light_i_smite_you(mob/living/carbon/smiter, mob/living/motherfucker_to_hurt, smite_multiplier)
+	. = ..()
+	GLOB.outpost_pvp_enforcement.register_pvp_aggression(motherfucker_to_hurt, smiter)
+
 /// Firing a gun past a trader outpost's checkpoint without a permit is gunfire for the police; the gun is evidence
 /datum/outpost_pvp_enforcement/proc/on_outpost_gun_fired(mob/living/shooter, obj/item/gun/gun, atom/target)
 	SIGNAL_HANDLER

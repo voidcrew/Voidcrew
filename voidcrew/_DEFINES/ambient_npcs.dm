@@ -113,6 +113,13 @@
 #define AMBIENT_RECRUITS_PENDING_PER_SHIP 1
 /// Strays one ship may take aboard in a round
 #define AMBIENT_RECRUITS_PER_SHIP_ROUND 2
+/// A rescued stray's thank-you gifts, after the one they give on coming aboard, come this far apart...
+#define AMBIENT_STRAY_GIFT_LOW (75 MINUTES)
+#define AMBIENT_STRAY_GIFT_HIGH (120 MINUTES)
+/// ...and stop after this many
+#define AMBIENT_STRAY_GIFTS_MAX 3
+/// With no crew about when one is due, they look again this much later
+#define AMBIENT_STRAY_GIFT_RETRY (3 MINUTES)
 
 // ===== DIALOGUE (2.3) =====
 
