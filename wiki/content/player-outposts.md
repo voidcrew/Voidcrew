@@ -169,11 +169,11 @@ The bay's own **shipyard console**, found only in the bay itself, has two tabs:
 
 ### Saved ships
 
-You have three save slots. Dock a ship you command in a ship bay, choose a slot and pay with [ship parts](ship-parts.md) to save it there. The hull needs at least one cryopod. Saving to a slot that already holds a ship overwrites that save, and you pay again.
+You have three save slots. Dock a ship you command in a ship bay or at a [trader outpost](trader-outposts.md#the-shipyard-console), choose a slot and pay with [ship parts](ship-parts.md) to save it there. The hull needs at least one cryopod. Saving to a slot that already holds a ship overwrites that save, and you pay again.
 
 The price depends on what is aboard, and the console lists it before you pay. The hull costs misc parts. Weapons, defenses, lab, chemistry, cargo and mining machines cost nothing at their standard parts; once upgraded, weapons and defenses cost combat parts, lab and chemistry machines science parts, and cargo and mining machines trade parts. Upgraded machines and research together never cost more than 10 parts. Every save costs at least 5 parts in total. Misc parts can be paid for in credits instead, at 2,500 credits each from the ship's account. Combat, science and trade parts have to be parts. Whatever you take off the ship before saving is not charged for, and is not in the save.
 
-Get a saved ship back for free, either from **Saved Ships** in the lobby's join menu, which launches it with you aboard, or from the **Saved ships** tab of a shipyard console in any ship bay, where the delivery drones build it. Each save works once: using it uses it up and frees the slot.
+Get a saved ship back for free, either from **Saved Ships** in the lobby's join menu, which launches it with you aboard, or from the **Saved ships** tab of any shipyard console, in a ship bay or a trader outpost berth, where the delivery drones build it. Each save works once: using it uses it up and frees the slot.
 
 You can load a save in the same round you made it once the ship it came from is lost or abandoned. Loading it retires the old hull and moves its account to the new ship.
 
