@@ -127,6 +127,14 @@
 	rise = -2
 	effect_sound = 'sound/items/weapons/bladeslice.ogg'
 
+// Over a victim on the row behind him (facing north) he stands flat for the kill. Raised, his helmet reached into
+// that row and the shoes, gibs and cut body that land there drew over it until he straightened up.
+/datum/hv_finisher_stage/kill/bisect/black_knight/enter()
+	if(host.victim?.y > host.user?.y)
+		lunge = 0
+		rise = 0
+	return ..()
+
 /datum/hv_finisher_stage/kill/bisect/black_knight/effect_message()
 	return "[host.user] brings the claymore down and cleaves [host.victim] apart at the hips!"
 

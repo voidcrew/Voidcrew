@@ -321,7 +321,6 @@
 		/mob/living/carbon/human/npc/outpost_prisoner,
 		/mob/living/carbon/human/npc/bounty_criminal/meek,
 		/mob/living/carbon/human/npc/bounty_criminal/decoy,
-		/mob/living/carbon/human/npc/mission_survivor,
 	)
 	var/datum/ai_planning_subtree/npc_combat_sense/subtree = sense_subtree()
 	var/list/checked = list()

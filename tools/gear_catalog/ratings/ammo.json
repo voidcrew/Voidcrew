@@ -8,7 +8,10 @@
   ".45 loads",
   ".160 Smart loads",
   "4.6x30mm loads",
+  "5.7x39mm loads",
   ".310 rifle loads",
+  "8x50mmR loads",
+  "7.62x40mm loads",
   ".223 rifle loads",
   "7mm machine gun loads",
   ".50 sniper loads",
@@ -70,13 +73,31 @@
    "reason": "60 damage and a light blast with fire around the target. Hurts a room, cannot open a hull. Only the M-90 can fire it.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_box/a762x40": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "stripper clip (7.62x40mm)",
+   "rank": 4,
+   "reason": "Five loose 7.62x40mm rounds to refill SKM magazines. Follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/a8x50r": {
+   "confidence": "high",
+   "group": "8x50mmR loads",
+   "hash": "",
+   "name": "stripper clip (8x50mmR)",
+   "rank": 2,
+   "reason": "Five loose 8x50mmR rounds to refill Woodsman magazines. Follows the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/c10mm": {
    "confidence": "medium",
    "group": "10mm loads",
    "hash": "50eb0251eb73bd7c",
    "name": "ammo box (10mm)",
-   "rank": 3,
-   "reason": "Plain 40 damage. The only guns that take it are the near-useless Liberator and, by hand, the Condor magazine, so a box does little.",
+   "rank": 7,
+   "reason": "Plain 40 damage. Fits the Zashch and Ansem magazines, and the Liberator. Every autolathe prints the box from round start.",
    "tier": "green"
   },
   "/obj/item/ammo_box/c38": {
@@ -237,6 +258,15 @@
    "reason": "Reload for the Popup Ronin arm, 20 rounds of 20 damage. Follows the gun; fits nothing else.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_box/magazine/heater": {
+   "confidence": "high",
+   "group": "5.7x39mm loads",
+   "hash": "",
+   "name": "Heater magazine (5.7x39mm)",
+   "rank": 1,
+   "reason": "Plain 5.7x39mm rounds, 30 to a magazine, 20 damage with a little armor piercing. Follows the Heater.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/magazine/internal/boltaction/jezail": {
    "confidence": "high",
    "group": "magazines built into a gun",
@@ -368,6 +398,24 @@
    "reason": "Built into the M-90's underbarrel launcher, never on its own. Rated with the launcher.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_box/magazine/internal/nt_m96": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "NT M-96 internal magazine",
+   "rank": 11,
+   "reason": "Built into the NT M-96, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/absolution": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Absolution internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Absolution, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/magazine/internal/shot/bounty": {
    "confidence": "high",
    "group": "magazines built into a gun",
@@ -375,6 +423,24 @@
    "name": "triple-barrel shotgun internal magazine",
    "rank": 7,
    "reason": "Built into the hook shotgun, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/brimstone": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Brimstone internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Brimstone, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/conflagration": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Conflagration internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Conflagration, never on its own. Rated with the gun.",
    "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/internal/shot/dual/breacherslug": {
@@ -393,6 +459,15 @@
    "name": "double-barrel shotgun internal magazine (slugs)",
    "rank": 10,
    "reason": "Built into a green shotgun, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/flaming_arrow": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Flaming Arrow internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Flaming Arrow, never on its own. Rated with the gun.",
    "tier": "green"
   },
   "/obj/item/ammo_box/magazine/internal/shot/lethal": {
@@ -449,6 +524,42 @@
    "rank": 12,
    "reason": "Built into a green riot foam gun, never on its own. Rated with the gun.",
    "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/m10mm": {
+   "confidence": "high",
+   "group": "10mm loads",
+   "hash": "",
+   "name": "pistol magazine (10mm)",
+   "rank": 5,
+   "reason": "Ansem magazine, 8 plain 40 damage rounds. Follows the gun; the rounds print at every autolathe.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/m10mm/ap": {
+   "confidence": "high",
+   "group": "10mm loads",
+   "hash": "",
+   "name": "pistol magazine (10mm AP)",
+   "rank": 2,
+   "reason": "35 damage with enough armor piercing to cancel a vest. The best 10mm against armored crews.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/m10mm/fire": {
+   "confidence": "high",
+   "group": "10mm loads",
+   "hash": "",
+   "name": "pistol magazine (10mm incendiary)",
+   "rank": 4,
+   "reason": "20 damage and three fire stacks. Weaker than plain 10mm until the fire takes hold.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/m10mm/hp": {
+   "confidence": "high",
+   "group": "10mm loads",
+   "hash": "",
+   "name": "pistol magazine (10mm HP)",
+   "rank": 3,
+   "reason": "50 damage on bare skin, far less through a vest. Good on NPCs and unarmored crews.",
+   "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/m12g": {
    "confidence": "high",
@@ -525,6 +636,15 @@
    "reason": "Eight taser slugs in a burst-fire drum. A 10 second paralysis on the first hit, with the next already on its way.",
    "tier": "red"
   },
+  "/obj/item/ammo_box/magazine/m12g_slammer": {
+   "confidence": "medium",
+   "group": "shotgun shells",
+   "hash": "",
+   "name": "Slammer box magazine",
+   "rank": 10,
+   "reason": "Six plain buckshot shells in a box magazine. The shells sell freely; the magazine only matters in a Slammer.",
+   "tier": "green"
+  },
   "/obj/item/ammo_box/magazine/m223": {
    "confidence": "high",
    "group": ".223 rifle loads",
@@ -542,6 +662,15 @@
    "rank": 1,
    "reason": "30 damage that ignores armor and flies through walls, in a 30 round magazine on a burst rifle. Far past the X-ray gun.",
    "tier": "red"
+  },
+  "/obj/item/ammo_box/magazine/m23": {
+   "confidence": "high",
+   "group": "8x50mmR loads",
+   "hash": "",
+   "name": "Model 23 magazine (8x50mmR)",
+   "rank": 1,
+   "reason": "Five 50 damage rounds that go through a vest. Follows the Woodsman.",
+   "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/m38": {
    "confidence": "high",
@@ -784,6 +913,15 @@
    "reason": "40 damage on bare skin, far less through a vest. Good on NPCs and unarmored crews.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_box/magazine/m9mm_rattlesnake": {
+   "confidence": "high",
+   "group": "9mm loads",
+   "hash": "",
+   "name": "MP-84 magazine (9mm)",
+   "rank": 3,
+   "reason": "18 plain 30 damage 9mm rounds, between the Stechkin and Saber magazines. Only the MP-84 takes it.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/magazine/r10mm": {
    "confidence": "high",
    "group": "10mm loads",
@@ -792,6 +930,51 @@
    "rank": 1,
    "reason": "Regal Condor magazine: 50 damage, armor piercing 40 and it hits the instant you fire. The round is most of why that gun is red.",
    "tier": "red"
+  },
+  "/obj/item/ammo_box/magazine/rapier": {
+   "confidence": "high",
+   "group": "4.6x30mm loads",
+   "hash": "",
+   "name": "M-94 'Rapier' magazine",
+   "rank": 4,
+   "reason": "Plain 4.6x30mm rounds, 30 to a magazine. Follows the gun.",
+   "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/resolution": {
+   "confidence": "high",
+   "group": "4.6x30mm loads",
+   "hash": "",
+   "name": "PD46 magazine (4.6x30mm)",
+   "rank": 2,
+   "reason": "30 plain 4.6x30mm rounds, the Rapier magazine's load. Follows the PD46, as the WT-550 magazine follows its gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/skm": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "SKM magazine (7.62x40mm)",
+   "rank": 3,
+   "reason": "Plain SKM magazine, 20 rounds of 24 damage. Follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/skm/drum": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "SKM drum (7.62x40mm)",
+   "rank": 1,
+   "reason": "75 rounds of automatic fire without a reload, half again what the red L6 SAW holds. This is what makes the SKM red.",
+   "tier": "red"
+  },
+  "/obj/item/ammo_box/magazine/skm/extended": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "extended SKM magazine (7.62x40mm)",
+   "rank": 2,
+   "reason": "40 rounds. The SKM scores 108 with it, just under red.",
+   "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/smartgun": {
    "confidence": "high",
@@ -1035,6 +1218,15 @@
    "reason": "10 damage and one fire stack. The weakest WT-550 load.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_box/magazine/zashch": {
+   "confidence": "high",
+   "group": "10mm loads",
+   "hash": "",
+   "name": "Zashch pistol magazine",
+   "rank": 8,
+   "reason": "Plain 40 damage 10mm rounds, 20 to a magazine. Follows the gun.",
+   "tier": "green"
+  },
   "/obj/item/ammo_box/n762": {
    "confidence": "high",
    "group": "heavy sidearm loads",
@@ -1118,12 +1310,30 @@
    "reason": "Plain 60 damage in a Desert Eagle magazine. Follows the yellow gun.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_casing/a762x40": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "7.62x40mm bullet casing",
+   "rank": 5,
+   "reason": "One SKM round. Follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_casing/a8x50r": {
+   "confidence": "high",
+   "group": "8x50mmR loads",
+   "hash": "",
+   "name": "8x50mmR bullet casing",
+   "rank": 3,
+   "reason": "One Woodsman round. Follows the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_casing/arrow": {
    "confidence": "high",
    "group": "arrows and crossbow bolts",
    "hash": "00f7f77a875f0218",
    "name": "arrow",
-   "rank": 4,
+   "rank": 5,
    "reason": "50 damage arrow, needs the fletching book. Follows the green bow.",
    "tier": "green"
   },
@@ -1132,7 +1342,7 @@
    "group": "arrows and crossbow bolts",
    "hash": "26c61b2e12b85c94",
    "name": "holy arrow",
-   "rank": 4,
+   "rank": 5,
    "reason": "50 damage arrow, needs the fletching book. Follows the green bow.",
    "tier": "green"
   },
@@ -1141,7 +1351,7 @@
    "group": "arrows and crossbow bolts",
    "hash": "2641ea5de62b9f09",
    "name": "plastic arrow",
-   "rank": 6,
+   "rank": 7,
    "reason": "5 damage and 50 stamina, weak against armor. The bow's less-lethal arrow.",
    "tier": "green"
   },
@@ -1151,7 +1361,7 @@
    "hash": "656913dd1b8db374",
    "name": "poisonous arrow",
    "note": "A human who is hit gets 8 units of cyanide and 1 unit of stamina toxin added straight into their reagents; armor does not stop it.",
-   "rank": 3,
+   "rank": 4,
    "reason": "40 damage and 8 units of cyanide past any armor. Still one slow arrow at a time.",
    "tier": "green"
   },
@@ -1160,7 +1370,7 @@
    "group": "arrows and crossbow bolts",
    "hash": "e9b3370054896d43",
    "name": "sticky arrow",
-   "rank": 5,
+   "rank": 6,
    "reason": "30 damage that almost always sticks and hurts to pull out.",
    "tier": "green"
   },
@@ -1169,8 +1379,8 @@
    "group": "10mm loads",
    "hash": "7bbe2ad1ddb2010b",
    "name": "10mm bullet casing",
-   "rank": 3,
-   "reason": "Plain 40 damage. The only guns that take it are the near-useless Liberator and, by hand, the Condor magazine, so a box does little.",
+   "rank": 7,
+   "reason": "Plain 40 damage. Fits the Zashch and Ansem magazines, and the Liberator. Every autolathe prints the box from round start.",
    "tier": "green"
   },
   "/obj/item/ammo_casing/c10mm/ap": {
@@ -1178,8 +1388,8 @@
    "group": "10mm loads",
    "hash": "5f8864970b7d1dc0",
    "name": "10mm armor-piercing bullet casing",
-   "rank": 2,
-   "reason": "35 damage that cancels a vest, but only a Liberator or a hand-filled Condor magazine can use it. No shop, ruin or played hull has it.",
+   "rank": 6,
+   "reason": "35 damage that cancels a vest. Loaded in the Ansem armor-piercing magazine.",
    "tier": "yellow"
   },
   "/obj/item/ammo_casing/c10mm/reaper": {
@@ -1271,6 +1481,15 @@
    "name": "4.6x30mm armor-piercing bullet casing",
    "rank": 1,
    "reason": "15 damage that cancels a vest. A little better than plain rounds through armor, worse on bare skin.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_casing/c57x39mm": {
+   "confidence": "high",
+   "group": "5.7x39mm loads",
+   "hash": "",
+   "name": "5.7x39mm bullet casing",
+   "rank": 2,
+   "reason": "The plain Heater round. Follows the gun.",
    "tier": "yellow"
   },
   "/obj/item/ammo_casing/c9mm": {
@@ -1768,6 +1987,15 @@
    "reason": "Riot foam darts, 25 stamina each. Toy guns loaded with these are real stun weapons, level with the green riot toys.",
    "tier": "green"
   },
+  "/obj/item/ammo_casing/harpoon": {
+   "confidence": "medium",
+   "group": "arrows and crossbow bolts",
+   "hash": "",
+   "name": "harpoon",
+   "rank": 3,
+   "reason": "60 damage that goes through a vest and sticks in the target. Fits only the harpoon gun, so it follows the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_casing/junk": {
    "confidence": "high",
    "group": "junk rounds",
@@ -1851,7 +2079,7 @@
    "group": "arrows and crossbow bolts",
    "hash": "6fc7032803ed668b",
    "name": "Sharpened Iron Rod",
-   "rank": 9,
+   "rank": 10,
    "reason": "Plain iron rod bolt for a green crossbow, sharpened from a rod. 30 damage, one at a time. The gun is the gate.",
    "tier": "none"
   },
@@ -1861,7 +2089,7 @@
    "hash": "a52840a8c2b7a626",
    "name": "healium crystal bolt",
    "note": "Holds 6 seconds of healing and passes what's left to the bolt when fired, so a bolt that missed keeps its remainder. Embedded in an organic target it heals 5 each of brute, burn, toxin and oxygen per second, adds drowsiness that puts them to sleep for 3 seconds at a time, then falls out and is back at 6 seconds. / Deals no damage and embeds at 100% chance up close, losing 3% per tile; it can be pulled out in 1.5 seconds. Only the first such bolt in a target can put them to sleep, and later ones only heal. The listed proc just hands the remaining heal time back to the dropped or embedded bolt.",
-   "rank": 3,
+   "rank": 4,
    "reason": "No damage, but it nearly always sticks up close, past any armor, and heals 5 of each damage type a second for 6 seconds while the target falls asleep. A field heal or a sleep dart. Healium takes a crystallizer run and the crossbow is slow.",
    "tier": "yellow"
   },
@@ -1880,7 +2108,7 @@
    "group": "arrows and crossbow bolts",
    "hash": "378189095d29a5e8",
    "name": "paper ball",
-   "rank": 7,
+   "rank": 8,
    "reason": "A ball of paper. 1 damage.",
    "tier": "none"
   },
@@ -2228,7 +2456,10 @@
  "unrated": {
   "/obj/item/ammo_box": "abstract",
   "/obj/item/ammo_box/a40mm/rubber": "no route",
+  "/obj/item/ammo_box/a762x40/empty": "no route",
+  "/obj/item/ammo_box/a8x50r/empty": "no route",
   "/obj/item/ammo_box/magazine": "abstract",
+  "/obj/item/ammo_box/magazine/heater/empty": "no route",
   "/obj/item/ammo_box/magazine/internal": "abstract",
   "/obj/item/ammo_box/magazine/internal/boltaction": "abstract",
   "/obj/item/ammo_box/magazine/internal/boltaction/harpoon": "no route",
@@ -2261,13 +2492,12 @@
   "/obj/item/ammo_box/magazine/internal/shot/tube/slug": "no route",
   "/obj/item/ammo_box/magazine/internal/sks": "abstract",
   "/obj/item/ammo_box/magazine/internal/sks/empty": "no route",
-  "/obj/item/ammo_box/magazine/m10mm": "needs another system",
-  "/obj/item/ammo_box/magazine/m10mm/ap": "needs another system",
-  "/obj/item/ammo_box/magazine/m10mm/fire": "needs another system",
-  "/obj/item/ammo_box/magazine/m10mm/hp": "needs another system",
-  "/obj/item/ammo_box/magazine/m10mm/quiet_word": "needs another system",
+  "/obj/item/ammo_box/magazine/m12g_slammer/empty": "no route",
+  "/obj/item/ammo_box/magazine/m23/empty": "no route",
   "/obj/item/ammo_box/magazine/m38/empty": "no route",
   "/obj/item/ammo_box/magazine/m75": "needs another system",
+  "/obj/item/ammo_box/magazine/m9mm_rattlesnake/empty": "no route",
+  "/obj/item/ammo_box/magazine/rapier/empty": "no route",
   "/obj/item/ammo_box/magazine/recharge": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf/deagle": "no route",
@@ -2286,8 +2516,13 @@
   "/obj/item/ammo_box/magazine/recharge/ctf/shotgun/green": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf/shotgun/red": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf/shotgun/yellow": "no route",
+  "/obj/item/ammo_box/magazine/resolution/empty": "no route",
+  "/obj/item/ammo_box/magazine/skm/drum/empty": "no route",
+  "/obj/item/ammo_box/magazine/skm/empty": "no route",
+  "/obj/item/ammo_box/magazine/skm/extended/empty": "no route",
   "/obj/item/ammo_box/magazine/sniper_rounds/surplus": "no route",
   "/obj/item/ammo_box/magazine/toy": "abstract",
+  "/obj/item/ammo_box/magazine/zashch/empty": "no route",
   "/obj/item/ammo_box/rocket": "no route",
   "/obj/item/ammo_box/strilka310/lionhunter": "no route",
   "/obj/item/ammo_casing/a223/phasic": "no route",
@@ -2353,7 +2588,6 @@
   "/obj/item/ammo_casing/glockroach": "literal only",
   "/obj/item/ammo_casing/gumball": "no route",
   "/obj/item/ammo_casing/gumball/harmful": "no route",
-  "/obj/item/ammo_casing/harpoon": "needs another system",
   "/obj/item/ammo_casing/hivebot": "literal only",
   "/obj/item/ammo_casing/junk/hunter": "no route",
   "/obj/item/ammo_casing/junk/incendiary": "no route",

@@ -2,7 +2,7 @@
  * # Cyberware: the final pass
  *
  * The fixes and owner-call defaults from the phase 2 code and balance reviews:
- * an armed chrome ability keeps the click it refuses, Ghostskin drops on every
+ * an armed chrome ability takes the click it refuses and drops its aim, Ghostskin drops on every
  * kind of hit, the chrome wheel's zoom and stale chips, the full credit trade-in
  * shelf (owner D7), and pirate bosses seeing through camo.
  *
@@ -17,35 +17,57 @@
 /datum/unit_test/voidcrew_cyberware_final
 	abstract_type = /datum/unit_test/voidcrew_cyberware_final
 
-/// A refused click on an armed chrome ability is the chrome's: it never falls
-/// through to the held gun, and the ability stays armed. One that went dark
-/// while armed takes that click and disarms.
+/// A click on an armed chrome ability is the chrome's: a refused one never falls
+/// through to the held gun, and it drops the aim with the cooldown untouched. A
+/// right-click, a stun, or waiting too long drops it too, and so does chrome that
+/// went dark while armed. Chrome has no button to click it off, so nothing may
+/// leave it armed and eating clicks.
 /datum/unit_test/voidcrew_cyberware_final/click/Run()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
-	var/obj/item/organ/eyes/robotic/cyberware/nightshade/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
-	TEST_ASSERT(optics.Insert(user, special = TRUE), "Nightshade staging insert was refused")
-	var/datum/action/cooldown/cyberware/chrome_read/action = locate() in optics.actions
-	TEST_ASSERT_NOTNULL(action, "The optics granted no Chrome Read")
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick/optics = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick)
+	TEST_ASSERT(optics.Insert(user, special = TRUE), "Icepick staging insert was refused")
+	var/datum/action/cooldown/cyberware/icepick/suppress/action = locate() in optics.actions
+	TEST_ASSERT_NOTNULL(action, "The Icepick granted no Suppress")
+	TEST_ASSERT(action.IsAvailable(), "Test fixture: Suppress can't be used")
 	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
-	TEST_ASSERT(user.put_in_active_hand(gun), "Test fixture: the reader couldn't hold the pistol")
+	TEST_ASSERT(user.put_in_active_hand(gun), "Test fixture: the user couldn't hold the pistol")
 	var/ammo = gun.get_ammo()
 	TEST_ASSERT(ammo > 0, "Test fixture: the pistol spawned empty")
 	var/turf/target = get_step(get_step(run_loc_floor_bottom_left, EAST), EAST)
 
+	// A floor tile has no port for the spike.
 	action.set_click_ability(user)
-	TEST_ASSERT_EQUAL(user.click_intercept, action, "Test fixture: Chrome Read did not arm")
-	// A floor tile has no chrome to read, so the read refuses it.
-	TEST_ASSERT(user.check_click_intercept("left=1", target), "A refused chrome click fell through to an ordinary click")
+	TEST_ASSERT_EQUAL(user.click_intercept, action, "Test fixture: Suppress did not arm")
 	user.next_click = 0
 	user.next_move = 0
 	user.ClickOn(target, "left=1")
 	TEST_ASSERT_EQUAL(gun.get_ammo(), ammo, "A refused chrome click fired the held gun")
-	TEST_ASSERT_EQUAL(user.click_intercept, action, "A refused chrome click disarmed the ability")
+	TEST_ASSERT(user.click_intercept != action, "A click on a floor tile left the Icepick armed")
+	TEST_ASSERT(action.next_use_time <= world.time, "A refused spike started the cooldown")
+	TEST_ASSERT(!user.check_click_intercept("left=1", target), "A disarmed ability still took a click")
+
+	// Right-click drops the aim without trying.
+	action.set_click_ability(user)
+	TEST_ASSERT(user.check_click_intercept("right=1", target), "A right-click on an armed ability fell through")
+	TEST_ASSERT(user.click_intercept != action, "A right-click left the Icepick armed")
+
+	// Armed and left waiting.
+	action.set_click_ability(user)
+	action.on_timeout()
+	TEST_ASSERT(user.click_intercept != action, "An aim left waiting never dropped")
+
+	// Stunned while armed.
+	action.set_click_ability(user)
+	user.Stun(2 SECONDS)
+	TEST_ASSERT(user.click_intercept != action, "A stun left the Icepick armed")
+	user.SetStun(0)
+	TEST_ASSERT(action.IsAvailable(), "Test fixture: Suppress stayed down after the stun")
 
 	// Chrome that went dark while armed takes the click once and disarms.
+	action.set_click_ability(user)
 	var/datum/component/cyberware/chrome = optics.GetComponent(/datum/component/cyberware)
 	chrome.start_emp_reboot(EMP_HEAVY)
-	TEST_ASSERT(!chrome.is_running(), "Test fixture: the optics stayed up through a reboot")
+	TEST_ASSERT(!chrome.is_running(), "Test fixture: the Icepick stayed up through a reboot")
 	TEST_ASSERT(user.check_click_intercept("left=1", target), "An armed ability that went dark let the click through")
 	TEST_ASSERT(user.click_intercept != action, "An armed ability that went dark stayed armed")
 	TEST_ASSERT(!user.check_click_intercept("left=1", target), "A disarmed ability still took a click")

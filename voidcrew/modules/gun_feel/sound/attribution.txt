@@ -1,0 +1,28 @@
+All sounds in this folder come from Shiptest (https://github.com/shiptest-ss13/Shiptest), path
+sound/weapons/gun/<same path as here>, taken unmodified on 2026-11-07. Shiptest licenses its assets
+CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) unless otherwise indicated; they are
+used here under that licence. Shiptest took most of them from other SS13 codebases, listed per file
+below where a byte-identical copy was found in the source repository.
+
+Fire sounds
+pistol/shot.ogg       - Shiptest PR #1601 "Gun rework" (rye-rice). Same file as TerraGov-Marine-Corps sound/weapons/guns/fire/tgmc/kinetic/gun_p14.ogg, added by TGMC PR #13409 (XSlayer300), whose description states its new sounds are CC BY-NC-SA 3.0.
+pistol/shot_alt.ogg   - Shiptest PR #56 "Eris gun noises" (rye-rice). From CEV-Eris sound/weapons/guns/fire/cal/40revolver.ogg.
+revolver/shot.ogg     - Shiptest PR #56 (rye-rice). From CEV-Eris sound/weapons/guns/fire/revolver_fire.ogg.
+revolver/shot_light.ogg - Shiptest PR #1601 (rye-rice). From TerraGov-Marine-Corps sound/weapons/guns/fire/revolver_light.ogg (TGMC PR #5261, XSlayer300).
+smg/shot.ogg          - Shiptest PR #56 (rye-rice). From CEV-Eris sound/weapons/guns/fire/smg_fire.ogg.
+rifle/shot.ogg        - Shiptest PR #56 (rye-rice). From CEV-Eris sound/weapons/guns/fire/batrifle_fire.ogg.
+shotgun/shot.ogg      - Shiptest PR #56 (rye-rice). From CEV-Eris sound/weapons/guns/fire/shotgunp_fire.ogg.
+sniper/shot.ogg       - Shiptest PR #56 (rye-rice). From CEV-Eris sound/weapons/guns/fire/sniper_fire.ogg.
+l6/shot.ogg           - Shiptest PR #56 (rye-rice). From CEV-Eris sound/weapons/guns/fire/lmg_fire.ogg.
+
+Handling sounds
+smg/smg_reload.ogg, smg/smg_unload.ogg - Shiptest PR #1601 (rye-rice). From TerraGov-Marine-Corps sound/weapons/guns/interact/ (TGMC PR #2284, MoXuT0).
+rifle/ar_reload.ogg, rifle/ar_unload.ogg, rifle/ar_cock.ogg - Shiptest PR #1601 (rye-rice). From CEV-Eris sound/weapons/guns/interact/batrifle_magin.ogg, batrifle_magout.ogg, batrifle_cock.ogg.
+hmg/cm40_reload.ogg, hmg/cm40_unload.ogg - Shiptest PR #3238 (rye-rice), credited there to TerraGov-Marine-Corps. No byte-identical source copy found.
+
+Hit and near-miss sounds
+hit/bullet_impact1-3.ogg - Shiptest PR #1601 (rye-rice). From TerraGov-Marine-Corps sound/bullets/ (TGMC PR #636, forwardslashN).
+hit/bullet_miss1-3.ogg   - Shiptest PR #1601 (rye-rice). From TerraGov-Marine-Corps sound/bullets/ (TGMC PR #636, forwardslashN).
+hit/bullet_glass_01-07.ogg, hit/bullet_masonry_01-06.ogg, hit/bullet_metal_01-06.ogg,
+hit/bullet_wood_01-06.ogg, hit/bullet_snow_01-06.ogg - Shiptest PR #1601 (rye-rice). From Skyrat-tg
+modular_skyrat/modules/gunsgalore/sound/impact/impact_*.ogg (Skyrat-tg PR #11697 "The Impact Soundening", Gandalf2k15).

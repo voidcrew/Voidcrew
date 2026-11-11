@@ -1,0 +1,32 @@
+Shiptest shotguns and lever-action rifles
+
+Code is ported from Shiptest (https://github.com/shiptest-ss13/Shiptest), AGPL-3.0, commit 000f892ae9:
+- code/modules/projectiles/guns/manufacturer/hunter_pride/ballistics.dm (Brimstone, Flaming Arrow, Absolution, Conflagration)
+- code/modules/projectiles/guns/manufacturer/frontier_import/ballistics.dm (Slammer and its magazine)
+
+All sprites below are from Shiptest and licensed CC BY-SA 3.0
+(https://creativecommons.org/licenses/by-sa/3.0/), per Shiptest's README: "All assets including icons
+and sound are under a Creative Commons 3.0 BY-SA license unless otherwise indicated." None of these
+files carries a different licence note. States were copied unchanged; some were renamed.
+
+icons/shotguns.dmi
+  brimstone, brimstone_sawn, flamingarrow, flamingarrow_sawn, absolution, absolution_sawn,
+  conflagration, conflagration_sawn: icons/obj/guns/manufacturer/hunterspride/48x32.dmi
+  slammer, slammer_mag: icons/obj/guns/manufacturer/frontier_import/48x32.dmi
+
+icons/lefthand.dmi, icons/righthand.dmi, icons/back.dmi
+  From hunterspride/lefthand.dmi, righthand.dmi and onmob.dmi, and frontier_import/lefthand.dmi,
+  righthand.dmi and onmob.dmi. Renamed states, as Shiptest itself reuses them for the sawn-off guns:
+  brimstone_sawn <- illestren_factory_sawn, absolution_sawn <- illestren_sawn,
+  conflagration_sawn <- beacon_factory_sawn.
+
+icons/magazines.dmi
+  slammer_mag-full <- slammer_mag-1, slammer_mag-empty <- slammer_mag-0: icons/obj/ammunition/ammo.dmi
+
+Authors, from the Shiptest history of those files: retlaw34 (Flaming Arrow, PR #2618), Martinpachu
+(lever-action rifles, PR #3243), rye-rice (Slammer and Hunter's Pride sprite work, PRs #3176, #3238,
+#3500, #3943), and earlier Shiptest contributors.
+
+Sounds: none copied. The guns use stock tg sounds and the gun-feel module's sounds
+(voidcrew/modules/gun_feel/sound/, credited in its own attribution.txt). Shiptest's own
+brimstone.ogg, flamingarrow.ogg and skm_cocked.ogg were not used because their sources could not be traced.

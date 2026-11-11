@@ -952,6 +952,8 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 			var/result = objective.accept_item(turned_in_item, reward_anchor)
 			if(result == MISSION_ITEM_REFUSED)
 				return FALSE
+			// The pad took something: every hand-over gets the effect, counted ones included
+			flash_reward_anchor(reward_anchor)
 			if(result == MISSION_ITEM_PROGRESS)
 				return TRUE // partial hand-over; mission continues
 			if(!all_objectives_satisfied())
@@ -1222,6 +1224,8 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 	if(completed && !failed && guarded_prize_family && !guarded_prize_rolled)
 		guarded_prize_rolled = TRUE
 		guarded_prize = servant.award_guarded_prize(guarded_prize_family, quote_zone, reward_anchor, type)
+		if(guarded_prize)
+			flash_reward_anchor(reward_anchor)
 
 /**
  * Turn-in visual: pads get their teleport effect, other anchors stay quiet

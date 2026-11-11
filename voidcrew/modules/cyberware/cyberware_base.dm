@@ -564,23 +564,60 @@
  * A click made with a chrome ability armed belongs to the chrome, refused or
  * not. tg's version returns FALSE on a refusal, and ClickOn() then carries on
  * as an ordinary click: a held gun fires at whoever was out of reach, an empty
- * hand punches whoever the ability would not take. So an armed ability swallows
- * every click it is handed. A refusal (out of reach, no line of sight, wrong
- * target) keeps it armed for another try; a button that has gone dark
- * since it was armed (EMP, cooldown started elsewhere, stun) disarms, so the
- * next click is an ordinary one again.
+ * hand punches whoever the ability would not take. So an armed ability takes
+ * the one click it is handed, and only that one.
+ *
+ * Chrome abilities have no button of their own to click off (chrome_hud.dm),
+ * so the aim must never outlive the click. A refusal (wrong target, out of
+ * reach, no line of sight) disarms: the ability's own balloon says why, and
+ * the next click is an ordinary one. A right-click disarms without trying. A
+ * button that has gone dark since it was armed (EMP, cooldown started
+ * elsewhere, stun) disarms too. None of these touch the cooldown.
  *
  * Only for a real click on an armed ability. Trigger() with a target (AI and
  * scripted callers) pass through unchanged.
  */
 /datum/action/cooldown/cyberware/InterceptClickOn(mob/living/clicker, params, atom/target)
 	var/armed = !isnull(clicker) && clicker.click_intercept == src
-	if(armed && !IsAvailable(feedback = TRUE))
+	if(!armed)
+		return ..()
+	// The click is the player acting, so the idle drop no longer applies (a channel can outlast it).
+	stop_timer()
+	if(params && LAZYACCESS(params2list(params), RIGHT_CLICK))
 		unset_click_ability(clicker, refund_cooldown = TRUE)
 		return TRUE
-	. = ..()
-	if(!. && armed)
+	if(!IsAvailable(feedback = TRUE))
+		unset_click_ability(clicker, refund_cooldown = TRUE)
 		return TRUE
+	if(..())
+		return TRUE
+	// Refused. Only drop our own aim: a channel that slept may have let another ability arm meanwhile.
+	if(clicker.click_intercept == src)
+		unset_click_ability(clicker, refund_cooldown = TRUE)
+	return TRUE
+
+/// The timer that drops an aim left waiting. (Names reused on purpose: the CI build sits at DM's identifier limit.)
+/datum/action/cooldown/cyberware/var/timeout_timer
+
+/datum/action/cooldown/cyberware/set_click_ability(mob/on_who)
+	. = ..()
+	stop_timer()
+	timeout_timer = addtimer(CALLBACK(src, PROC_REF(on_timeout)), 10 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+
+/datum/action/cooldown/cyberware/unset_click_ability(mob/on_who, refund_cooldown = TRUE)
+	stop_timer()
+	return ..()
+
+/datum/action/cooldown/cyberware/proc/stop_timer()
+	if(timeout_timer)
+		deltimer(timeout_timer)
+		timeout_timer = null
+
+/// Armed and never clicked: the aim drops, cooldown untouched.
+/datum/action/cooldown/cyberware/proc/on_timeout()
+	timeout_timer = null
+	if(owner?.click_intercept == src)
+		unset_click_ability(owner, refund_cooldown = TRUE)
 
 /**
  * Is there a clear arc from [here] to [destination]? Shared by every leg

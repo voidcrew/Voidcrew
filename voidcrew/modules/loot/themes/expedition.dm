@@ -124,6 +124,7 @@
 /// Planet fauna: territorial wildlife around and inside surface ruins.
 /obj/effect/zone_mobs/wildlife
 	name = "zone mob spawner (wildlife)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/mining/bileworm = 8,
 		/mob/living/basic/mining/lobstrosity = 6,
@@ -167,6 +168,7 @@
 /// asteroid ruin, everything in these tables survives space.
 /obj/effect/zone_mobs/asteroid
 	name = "zone mob spawner (asteroid)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/mining/goldgrub = 8,
 		/mob/living/basic/mining/hivelord = 6,

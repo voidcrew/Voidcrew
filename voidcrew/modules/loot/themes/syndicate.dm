@@ -22,12 +22,14 @@
 	gun_pool = LOOT_GUN_POOL_SYNDICATE
 	gun_extras = list(
 		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher = 1,
 			/obj/item/gun/ballistic/automatic/pistol/deagle = 1,
 			/obj/item/gun/ballistic/revolver = 1,
 			/obj/item/gun/ballistic/revolver/c38/housecall = 1,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/rifle/sniper_rifle = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/ballistic/shotgun/automatic/combat = 1,
 		),
 	)
@@ -120,6 +122,7 @@
 /// Syndicate holdouts: operatives left guarding whatever the base was for.
 /obj/effect/zone_mobs/syndicate
 	name = "zone mob spawner (syndicate)"
+	wave_pod_style = /datum/pod_style/syndicate
 	mobs_green = list(
 		/mob/living/carbon/human/npc/ruin/trooper/syndicate = 14,
 	)
