@@ -7742,6 +7742,7 @@
 #include "voidcrew\modules\trade\favor_uniques\vex.dm"
 #include "voidcrew\modules\trade\rig_bay\rig_bay_skus.dm"
 #include "voidcrew\modules\trade\rig_bay\rig_bay_stand.dm"
+#include "voidcrew\modules\trade\rig_bay\rig_bay_stand_visuals.dm"
 #include "voidcrew\modules\transporter\_transporter.dm"
 #include "voidcrew\modules\transporter\transporter_console.dm"
 #include "voidcrew\modules\transporter\transporter_designs.dm"
