@@ -51,6 +51,20 @@
 	/// Build units at once rather than through the human NPC queue (unit tests)
 	var/dispatch_build_now = FALSE
 
+// Chains with police_core.dm's Destroy(): orders not built yet are called off, so nobody is built for a police that is gone
+/datum/outpost_police/Destroy()
+	for(var/datum/human_npc_order/order as anything in dispatch_orders.Copy())
+		qdel(order)
+	dispatch_orders.Cut()
+	QDEL_LIST(dispatch_waves)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stray in dispatch_strays)
+		if(stray.police == src)
+			stray.police = null
+	dispatch_strays.Cut()
+	dispatch_skipped.Cut()
+	dispatch_holds.Cut()
+	return ..()
+
 /mob/living/carbon/human/npc/ambient_npc/outpost/police
 	/// The wave they came in, while it is forming up
 	var/datum/outpost_police_wave/dispatch_wave
@@ -670,6 +684,9 @@
 /// Whether `officer` can be sent somewhere: alive, up, free and not walking out
 /datum/outpost_police/proc/dispatch_can_respond(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	if(QDELETED(officer) || officer.stat != CONSCIOUS || officer.npc_exit || officer.fading)
+		return FALSE
+	// Held still by the ambient pause (nobody on the concourse): they would never come
+	if(officer.paused_at)
 		return FALSE
 	return !human_npc_out_of_fight(officer)
 
