@@ -13,6 +13,7 @@ import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
 import { BEZEL_EXTRA_CSS, Bezel } from './Bezel';
+import { CharacterTab } from './CharacterTab';
 import { CrewsTab } from './CrewsTab';
 import { Header, TABS } from './Header';
 import { HousingTab } from './HousingTab';
@@ -134,6 +135,8 @@ export function LobbyTerminal() {
   const [tab, setTab] = useState<TabId>('crews');
   /** Bumped when SHIPYARD is pressed while already on it. */
   const [yardHome, setYardHome] = useState(0);
+  /** Bumped when CHARACTER (tab or bezel key) is pressed while already on it: back to the file view. */
+  const [charHome, setCharHome] = useState(0);
   const request = data.tab_request;
   useEffect(() => {
     if (request) {
@@ -160,18 +163,21 @@ export function LobbyTerminal() {
 
   const notice = data.notice;
   const confirmed = !!notice && notice.kind === 'ok';
-  const { s } = layout;
-  const scan = Math.max(2, Math.round(s));
 
-  const pickTab = (next: TabId) => {
+  const switchTab = (next: TabId) => {
     if (next === tab && next === 'shipyard') {
       setYardHome(yardHome + 1);
+    }
+    if (next === tab && next === 'character') {
+      setCharHome(charHome + 1);
     }
     setTab(next);
     if (confirmed) {
       act('dismiss');
     }
   };
+  const { s } = layout;
+  const scan = Math.max(2, Math.round(s));
 
   let body;
   if (confirmed) {
@@ -180,6 +186,8 @@ export function LobbyTerminal() {
     body = <CrewsTab />;
   } else if (tab === 'shipyard') {
     body = <YardTab home={yardHome} />;
+  } else if (tab === 'character') {
+    body = <CharacterTab home={charHome} />;
   } else {
     body = <HousingTab />;
   }
@@ -199,16 +207,20 @@ export function LobbyTerminal() {
         onTabNumber={(n) => {
           const next = TABS[n - 1];
           if (next) {
-            pickTab(next[0]);
+            switchTab(next[0]);
           }
         }}
         onTabStep={(step) => {
           const at = TABS.findIndex(([id]) => id === tab);
           const next = TABS[(at + step + TABS.length) % TABS.length];
-          pickTab(next[0]);
+          switchTab(next[0]);
         }}
       >
-        <Bezel s={s}>
+        <Bezel
+          s={s}
+          characterLit={tab === 'character' && !confirmed}
+          onCharacter={() => switchTab('character')}
+        >
           <div className="lt-crt">
             <div
               className="lt-tui"
@@ -222,7 +234,7 @@ export function LobbyTerminal() {
               }}
             >
               <GridContext.Provider value={grid}>
-                <Header tab={tab} setTab={pickTab} />
+                <Header tab={tab} setTab={switchTab} />
                 {body}
                 <NoticeLine />
               </GridContext.Provider>

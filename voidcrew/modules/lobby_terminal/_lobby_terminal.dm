@@ -14,8 +14,9 @@
  *
  * Sections: the shell (this file, lobby_tgui.dm, lobby_bezel.dm) declares every section
  * proc below. Section owners override them in their own file without the `proc/` keyword:
- * lobby_crews.dm (crew_* actions), lobby_yard.dm (yard_* actions) and lobby_housing.dm
- * (home_* actions). Those files sort after this one, so their overrides win.
+ * lobby_crews.dm (crew_* actions), lobby_yard.dm (yard_* actions), lobby_housing.dm
+ * (home_* actions) and lobby_character*.dm (char_* actions). Those files sort after this
+ * one, so their overrides win.
  */
 
 /// How long to wait for the browser to report itself visible before offering a reload link.
@@ -65,6 +66,18 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	/// The skin.dmf BROWSER control the terminal renders into.
 	var/control_id = "lobby_browser"
 
+	// CHARACTER section (lobby_character*.dm). Declared here so every owner shares them.
+	/// Job category the preview wears (preview only, never saved). Null: the top role.
+	var/char_dress
+	/// Bumped on every character edit and slot switch, so the client and async work can spot stale state.
+	var/char_rev = 0
+	/// TRUE once char_open has sent the catalog and the first push to this window.
+	var/char_open = FALSE
+	/// A native colour pick is waiting on input(): list("key", "slot", "rev"), or null.
+	var/list/char_pending_pick
+	/// Preview renders: appearance key -> list("[dir]" = base64 png). Owned by lobby_character_preview.dm.
+	var/list/char_preview_cache
+
 /datum/lobby_terminal/New(client/owner)
 	. = ..()
 	src.owner = owner
@@ -73,6 +86,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	RegisterSignal(owner, COMSIG_CLIENT_MOB_LOGIN, PROC_REF(on_mob_login))
 
 /datum/lobby_terminal/Destroy()
+	char_save()
 	if(owner)
 		UnregisterSignal(owner, COMSIG_CLIENT_MOB_LOGIN)
 		if(owner.lobby_terminal == src)
@@ -99,6 +113,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		// A fresh page has none of the yard's previews or URL mappings yet.
 		yard_mappings_sent = FALSE
 		yard_previews_sent = list()
+		// Nor the character catalog or its first push.
+		char_open = FALSE
 	set_classic_lobby(FALSE)
 	refresh_polls(user)
 	ui_interact(user)
@@ -116,6 +132,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 
 /// Takes the terminal off the map and closes its UI. The classic HUD (or the game) shows again.
 /datum/lobby_terminal/proc/hide()
+	char_save()
 	visible = FALSE
 	if(load_timer)
 		deltimer(load_timer)
@@ -227,7 +244,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	if(ui && !QDELETED(ui))
 		SStgui.update_uis(src)
 
-/// Asks the client to switch tabs ("crews", "shipyard", "housing").
+/// Asks the client to switch tabs ("crews", "shipyard", "housing", "character").
 /datum/lobby_terminal/proc/goto_tab(tab)
 	tab_request = tab
 	tab_request_serial++
@@ -368,6 +385,40 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 /// HOUSING actions: home_move_in.
 /datum/lobby_terminal/proc/housing_act(action, list/params, mob/user)
 	return FALSE
+
+/// CHARACTER (lobby_character.dm): data.char_rev only. The char block goes out as one-off pushes (char_push).
+/datum/lobby_terminal/proc/char_data(mob/user)
+	return null
+
+/**
+ * CHARACTER actions (lobby_character.dm): char_open, char_slot, char_set, char_random_name,
+ * char_color_pick, char_voice_play, char_role, char_quirk, char_kit, char_kit_color,
+ * char_kit_name, char_kit_skin, char_dress, char_turn, char_confirm. The shell has already
+ * checked that the player's prefs exist and the preference assets are built.
+ */
+/datum/lobby_terminal/proc/char_act(action, list/params, mob/user)
+	return FALSE
+
+/// CHARACTER: tg's character window changed a preference; push the terminal's copy soon (coalesced).
+/datum/lobby_terminal/proc/char_changed()
+	return
+
+/// CHARACTER: sends the full char block (and char_static on the first open) as a one-off update.
+/datum/lobby_terminal/proc/char_push(mob/user)
+	return
+
+/// CHARACTER preview (lobby_character_preview.dm): queue a render of the current look facing dir.
+/datum/lobby_terminal/proc/char_preview_request(dir)
+	return
+
+/// CHARACTER preview: hash of everything that changes the look, the cache key for renders.
+/datum/lobby_terminal/proc/char_appearance_key()
+	return null
+
+/// CHARACTER: writes the character slot and the savefile. Also runs from hide() (inside a signal handler) and Destroy(), so it must not sleep and must be safe with no client or prefs.
+/datum/lobby_terminal/proc/char_save()
+	SHOULD_NOT_SLEEP(TRUE)
+	return
 
 /// Saved ships hook (feature/ship-saving overrides it): list of save cards (null entries for empty slots), or null to hide the box.
 /datum/lobby_terminal/proc/saved_ships_data()

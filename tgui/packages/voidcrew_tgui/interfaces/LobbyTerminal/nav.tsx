@@ -40,6 +40,8 @@ export type FocusOpts = {
   edge?: Partial<Record<Dir, () => boolean>>;
   /** A tab: keeps the focus while the screen under it changes, and switches on arrow focus. */
   tab?: boolean;
+  /** Lit by the mouse only; the arrow keys pass it by (a cycler's < and >, which Left/Right drive). */
+  mouseOnly?: boolean;
   /** A text field: Enter starts typing in it. */
   input?: RefObject<HTMLInputElement | null>;
 };
@@ -210,7 +212,10 @@ export function NavProvider(props: ProviderProps) {
   /** Items in the newest open scope, in mount order. */
   const live = () => {
     const top = scopes[scopes.length - 1];
-    return order.filter((id) => items.get(id)?.scope === top);
+    return order.filter((id) => {
+      const item = items.get(id);
+      return item?.scope === top && !item.opts.current.mouseOnly;
+    });
   };
   const focusRef = useRef<string | null>(null);
   const lastBox = useRef<Box | null>(null);
