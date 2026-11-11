@@ -433,7 +433,8 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 	outline.transform = null
 	outline.layer = target.layer - 0.001
 	outline.plane = target.plane
-	outline.appearance_flags |= KEEP_TOGETHER | RESET_COLOR
+	// KEEP_APART: a KEEP_TOGETHER target (humans) would otherwise tint and filter the outline with itself.
+	outline.appearance_flags |= KEEP_TOGETHER | RESET_COLOR | KEEP_APART
 	outline.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	outline.alpha = 255
 	// A tinted target (atom colour or a colour matrix) would tint the green outline too.
