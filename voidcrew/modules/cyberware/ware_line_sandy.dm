@@ -52,8 +52,6 @@
 	afterimage_alpha = 120
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "REFLEX RIG ONLINE."
-	dilation_freeze = 0
-	dilation_time = 2 SECONDS
 	dilation_scale = 0.5
 	time_multiplier = 2
 
@@ -93,8 +91,6 @@
 	afterimage_alpha = 160
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "LATTICE ONLINE."
-	dilation_freeze = 0
-	dilation_time = 3 SECONDS
 	dilation_scale = 0.35
 	time_multiplier = 1 / 0.35
 

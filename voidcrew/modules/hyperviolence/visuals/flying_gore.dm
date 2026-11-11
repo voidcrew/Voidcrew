@@ -230,7 +230,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 /// where it is once it has dropped.
 /datum/component/hv_tumble/proc/launch()
 	start_flight()
-	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) it waits out the freeze and flies slow.
+	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) it flies slow.
 	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), cyberware_dilated_time(parent, length(path) ? world.tick_lag : flight_time()), TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /datum/component/hv_tumble/proc/start_flight()
@@ -432,12 +432,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/list/pivot = part.hv_vis_spin_pivot()
 	var/start_x = part.pixel_x
 	var/start_y = part.pixel_y
-	// Slower in a Sandevistan field (cyberware/ware_sandy_timestop.dm); the opening pause takes the freeze.
-	var/list/real = cyberware_dilated_steps(part, list(2.5, 1.5, 2, 3)) || list(0, 2.5, 1.5, 2, 3)
-	animate(part, pixel_x = start_x, pixel_y = start_y, transform = base, time = real[1] + real[2], tag = HV_VIS_TAG_SPIN)
-	animate(pixel_x = start_x + (end_x - start_x) / 3, pixel_y = start_y + (end_y - start_y) / 3, transform = hv_vis_turned(base, spin * 120, pivot[2], pivot[1]), time = real[3], easing = LINEAR_EASING)
-	animate(pixel_x = start_x + (end_x - start_x) * 2 / 3, pixel_y = start_y + (end_y - start_y) * 2 / 3, transform = hv_vis_turned(base, spin * 240, pivot[2], pivot[1]), time = real[4], easing = LINEAR_EASING)
-	animate(pixel_x = end_x, pixel_y = end_y, transform = base, time = real[5], easing = QUAD_EASING|EASE_OUT)
+	// Slower in a Sandevistan field (cyberware/ware_sandy_timestop.dm).
+	var/list/real = cyberware_dilated_steps(part, list(2.5, 1.5, 2, 3)) || list(2.5, 1.5, 2, 3)
+	animate(part, pixel_x = start_x, pixel_y = start_y, transform = base, time = real[1], tag = HV_VIS_TAG_SPIN)
+	animate(pixel_x = start_x + (end_x - start_x) / 3, pixel_y = start_y + (end_y - start_y) / 3, transform = hv_vis_turned(base, spin * 120, pivot[2], pivot[1]), time = real[2], easing = LINEAR_EASING)
+	animate(pixel_x = start_x + (end_x - start_x) * 2 / 3, pixel_y = start_y + (end_y - start_y) * 2 / 3, transform = hv_vis_turned(base, spin * 240, pivot[2], pivot[1]), time = real[3], easing = LINEAR_EASING)
+	animate(pixel_x = end_x, pixel_y = end_y, transform = base, time = real[4], easing = QUAD_EASING|EASE_OUT)
 
 // ---- Limbs and heads coming off ----
 

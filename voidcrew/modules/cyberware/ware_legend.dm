@@ -90,12 +90,7 @@
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
-	// When no other player is near, the world slows (ware_sandy_timestop.dm):
-	/// how long it freezes first,
-	var/dilation_freeze = 1 SECONDS
-	/// how long slow-mo runs after that,
-	var/dilation_time = 3 SECONDS
-	/// and how fast the world runs in slow-mo.
+	/// How fast the world runs through the window when no other player is near (ware_sandy_timestop.dm).
 	var/dilation_scale = 0.2
 	/// How much faster than normal the bearer runs in the window. A surging mob in someone else's field runs at its
 	/// multiplier over theirs.
@@ -135,10 +130,29 @@
 	cooldown_time = 60 SECONDS
 	click_to_activate = FALSE
 
+/// Whether a press now would end a running window: a player's own press only. An NPC's AI never turns its surge off.
+/datum/action/cooldown/cyberware/cascade_surge/proc/can_cut_short()
+	if(!isliving(owner))
+		return FALSE
+	var/mob/living/surger = owner
+	return !!surger.ckey && !!surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// The cooldown starts as the window opens, so pressing again to end the window early looks past it.
+/datum/action/cooldown/cyberware/cascade_surge/IsAvailable(feedback = FALSE)
+	if(!can_cut_short())
+		return ..()
+	var/cooldown_end = next_use_time
+	next_use_time = 0
+	. = ..()
+	next_use_time = cooldown_end
+
 /datum/action/cooldown/cyberware/cascade_surge/Activate(atom/target)
 	if(!isliving(owner))
 		return FALSE
 	var/mob/living/surger = owner
+	if(can_cut_short()) // the second press: back to real time, and the crash
+		surger.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+		return TRUE
 	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
 		surger.balloon_alert(surger, "lattice still cycling!")
 		return FALSE
@@ -198,8 +212,6 @@
 		online_message = lattice.online_message
 		crash_duration = lattice.crash_duration
 		crash_stamina = lattice.crash_stamina
-		dilation_freeze = lattice.dilation_freeze
-		dilation_time = lattice.dilation_time
 		dilation_scale = lattice.dilation_scale
 		time_multiplier = lattice.time_multiplier
 	return ..()
@@ -256,7 +268,7 @@
 	steps_taken++
 	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
 		return
-	if(time_stop || dilated) // a surge that slowed the world keeps its green trail to the end of the window
+	if(time_stop) // green while the world is slowed
 		stopped_afterimage(old_loc)
 		return
 	trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm

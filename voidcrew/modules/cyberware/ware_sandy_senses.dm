@@ -6,21 +6,16 @@
  * Sound: a sound from a tile inside the field reaches the user pitched down and slowed by the field's scale
  * (the `frequency` of the sound datum, set in playsound_local). The user's own sounds stay normal: anything
  * from their own tile, and anything their own action set off (`usr` is the user: their gun, their swings,
- * their callbacks). During the freeze the world is a low, quiet rumble. The weather and ship-hum loops already
- * playing on the user's channels are slowed in place with SOUND_UPDATE, and the loop's next segments go out
+ * their callbacks). The weather and ship-hum loops already playing on the user's channels are slowed in place with SOUND_UPDATE, and the loop's next segments go out
  * slowed too.
  *
  * Weather: area overlays are shared by everyone on a planet, so they are left alone. Each weathered area in
  * the user's view gets one override image, shown to the user's client only: a copy of the area's appearance
- * with every weather overlay swapped for a pre-baked slowed (or, in the freeze, still) copy from
+ * with every weather overlay swapped for a pre-baked slowed copy from
  * sandy_weather.dmi. There is no particle weather to slow.
  */
 
 #define SANDY_WEATHER_ICON 'voidcrew/modules/cyberware/icons/sandy_weather.dmi'
-/// How fast world sounds play for the user while the world is frozen.
-#define SANDY_FREEZE_SOUND_SPEED 0.15
-/// How loud world sounds are for the user while the world is frozen, as a share of normal.
-#define SANDY_FREEZE_SOUND_VOLUME 0.25
 /// Tiles past the edge of the user's view that still get slowed weather, so a step never shows a fast edge.
 #define SANDY_WEATHER_VIEW_MARGIN 1
 
@@ -32,7 +27,7 @@
 
 /**
  * How fast `listener` hears a sound from `source`: 1 normally, the field's pace for a sound from inside the
- * user's field, SANDY_FREEZE_SOUND_SPEED in the freeze. `actor` is whoever set the sound off (`usr`).
+ * user's field. `actor` is whoever set the sound off (`usr`).
  */
 /proc/cyberware_heard_speed(mob/listener, turf/source, mob/actor)
 	if(!isturf(source) || actor == listener)
@@ -43,7 +38,7 @@
 	var/turf/here = get_turf(listener)
 	if(!here || source == here || source.z != here.z || get_dist(source, here) > field.current_range)
 		return 1
-	return field.time_scale > 0 ? field.time_scale : SANDY_FREEZE_SOUND_SPEED
+	return field.time_scale
 
 /// Slows `heard` for `listener` if it comes from the slowed world. Called from playsound_local.
 /proc/cyberware_dilate_heard(mob/listener, turf/source, sound/heard, mob/actor)
@@ -53,8 +48,6 @@
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_field_of_user(listener)
 	field?.senses?.note_one_shot(heard)
 	heard.frequency = cyberware_scaled_frequency(heard.frequency, speed)
-	if(speed == SANDY_FREEZE_SOUND_SPEED)
-		heard.volume *= SANDY_FREEZE_SOUND_VOLUME
 
 /// `frequency` (0 for as-is, a multiplier within -100..100, or a rate in Hz) played `speed` times as fast.
 /proc/cyberware_scaled_frequency(frequency, speed)
@@ -86,7 +79,6 @@
 	if(length(GLOB.cyberware_time_fields) && ismob(parent))
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_field_of_user(parent)
 		if(field?.senses)
-			sound_to_play.volume *= field.senses.loop_volume
 			sound_to_play.frequency = field.senses.loop_speed
 	SEND_SOUND(parent, sound_to_play)
 
@@ -108,8 +100,6 @@
 	var/list/area_keys = list()
 	/// How fast the user's loops play now.
 	var/loop_speed = 1
-	/// How loud the user's loops are now, as a share of normal.
-	var/loop_volume = 1
 	/// Channels of world sounds sent slowed and maybe still playing, to an unslowed copy of each, to retune them.
 	var/list/one_shots = list()
 	/// The same channels, to when each went out.
@@ -124,18 +114,15 @@
 /datum/sandy_senses/Destroy()
 	if(user)
 		UnregisterSignal(user, COMSIG_MOB_LOGOUT)
-		set_loops(1, 1)
+		set_loops(1)
 	clear_images()
 	field = null
 	user = null
 	return ..()
 
-/// The field changed pace, or ticked: bring the loops and the weather in line.
+/// The field started: bring the loops and the weather in line with its pace.
 /datum/sandy_senses/proc/update()
-	if(field.time_scale > 0)
-		set_loops(field.time_scale, 1)
-	else
-		set_loops(SANDY_FREEZE_SOUND_SPEED, SANDY_FREEZE_SOUND_VOLUME)
+	set_loops(field.time_scale)
 	refresh_weather()
 
 /// Signal proc for [COMSIG_MOB_LOGOUT]: the client keeps its images when it leaves, so take them back.
@@ -145,25 +132,24 @@
 
 // ----- sound loops -----
 
-/// Plays the user's weather and ship-hum loops at `speed` and `volume` times normal, in place.
-/datum/sandy_senses/proc/set_loops(speed, volume)
-	if(loop_speed == speed && loop_volume == volume)
+/// Plays the user's weather and ship-hum loops at `speed` times normal, in place.
+/datum/sandy_senses/proc/set_loops(speed)
+	if(loop_speed == speed)
 		return
 	loop_speed = speed
-	loop_volume = volume
 	if(!user.client)
 		return
-	retune_one_shots(speed, volume)
+	retune_one_shots(speed)
 	for(var/datum/component/area_sound_manager/manager as anything in user.GetComponents(/datum/component/area_sound_manager))
 		var/datum/looping_sound/loop = manager.our_loop
 		if(!loop?.direct || !loop.sandy_last_channel || !loop.sandy_last_file)
 			continue
-		update_channel(loop.sandy_last_file, loop.sandy_last_channel, loop.sandy_last_volume * volume, speed)
+		update_channel(loop.sandy_last_file, loop.sandy_last_channel, loop.sandy_last_volume, speed)
 	var/buzz = user.client.current_ambient_sound
 	var/area/here = get_area(user)
 	if(buzz && here?.ambient_buzz == buzz)
 		var/buzz_pref = user.client.prefs.read_preference(/datum/preference/numeric/volume/sound_ship_ambience_volume)
-		update_channel(buzz, CHANNEL_BUZZ, here.ambient_buzz_vol * (buzz_pref / 100) * volume, speed, TRUE)
+		update_channel(buzz, CHANNEL_BUZZ, here.ambient_buzz_vol * (buzz_pref / 100), speed, TRUE)
 
 /// Notes a world sound about to go out slowed (`heard` still unslowed), to speed it back up later.
 /datum/sandy_senses/proc/note_one_shot(sound/heard)
@@ -181,14 +167,14 @@
 	one_shot_times["[heard.channel]"] = world.time
 
 /// World sounds still playing from earlier in the effect take the new pace: full speed when it ends.
-/datum/sandy_senses/proc/retune_one_shots(speed, volume)
+/datum/sandy_senses/proc/retune_one_shots(speed)
 	for(var/channel in one_shots.Copy())
 		if(world.time - one_shot_times[channel] > 15 SECONDS) // long finished
 			one_shots -= channel
 			one_shot_times -= channel
 			continue
 		var/sound/copy = one_shots[channel]
-		var/sound/update = sound(copy.file, 0, 0, copy.channel, copy.volume * volume)
+		var/sound/update = sound(copy.file, 0, 0, copy.channel, copy.volume)
 		update.frequency = cyberware_scaled_frequency(copy.frequency, speed) // never 0: an update with 0 keeps the old pace
 		update.x = copy.x
 		update.y = copy.y
@@ -274,10 +260,8 @@
 	area_keys.Cut()
 	viewer = null
 
-/// The sandy_weather.dmi suffix for a field running at `scale`: a still frame in the freeze, else the nearest baked pace.
+/// The sandy_weather.dmi suffix for a field running at `scale`: the nearest baked pace.
 /proc/cyberware_weather_tag(scale)
-	if(scale <= 0)
-		return "still"
 	if(scale <= 0.27)
 		return "s20"
 	if(scale <= 0.42)
@@ -312,6 +296,4 @@
 	return slowed
 
 #undef SANDY_WEATHER_ICON
-#undef SANDY_FREEZE_SOUND_SPEED
-#undef SANDY_FREEZE_SOUND_VOLUME
 #undef SANDY_WEATHER_VIEW_MARGIN

@@ -69,10 +69,10 @@
 	var/base_w = pixel_w
 	var/base_z = pixel_z
 	// Slower in a Sandevistan field (cyberware/ware_sandy_timestop.dm).
-	var/list/real = cyberware_dilated_steps(src, list(0.5, 1, 0.5), loops) || list(0, 0.5, 1, 0.5)
-	animate(src, pixel_w = base_w + strength, pixel_z = base_z, transform = base, time = real[1] + real[2], loop = loops, tag = HV_VIS_TAG_TREMBLE)
-	animate(pixel_w = base_w - strength, pixel_z = base_z, transform = base, time = real[3])
-	animate(pixel_w = base_w, pixel_z = base_z, transform = base, time = real[4])
+	var/list/real = cyberware_dilated_steps(src, list(0.5, 1, 0.5), loops) || list(0.5, 1, 0.5)
+	animate(src, pixel_w = base_w + strength, pixel_z = base_z, transform = base, time = real[1], loop = loops, tag = HV_VIS_TAG_TREMBLE)
+	animate(pixel_w = base_w - strength, pixel_z = base_z, transform = base, time = real[2])
+	animate(pixel_w = base_w, pixel_z = base_z, transform = base, time = real[3])
 
 /**
  * A muzzle flash much bigger than a normal shot's, with a flash of light. It is where the barrel's end
