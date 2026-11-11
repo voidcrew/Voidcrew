@@ -1,5 +1,5 @@
 /**
- * Pulses a green outline around one element while the tutorial checklist points at it.
+ * Pulses a gold outline around one element while the tutorial checklist points at it.
  *
  * The window's ui_data sends `tutorial_focus` from `tutorial_ui_focus(user, "<window id>")`
  * (voidcrew/modules/tutorials/tutorial_highlights.dm). Wrap each element a step can point

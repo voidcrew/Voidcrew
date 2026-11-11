@@ -28,7 +28,11 @@
 	hud_outlined = list()
 	for(var/atom/movable/screen/target as anything in new_targets)
 		if(!target.get_filter(TUTORIAL_HUD_FILTER))
-			target.add_filter(TUTORIAL_HUD_FILTER, 10, outline_filter(1, "#3CFF6E"))
+			target.add_filter(TUTORIAL_HUD_FILTER, 10, outline_filter(1, "#FFC83C"))
+			// Pulses in step with the world outlines.
+			var/hud_filter = target.get_filter(TUTORIAL_HUD_FILTER)
+			animate(hud_filter, color = "#8A5A10", time = 0.8 SECONDS, loop = -1, easing = SINE_EASING)
+			animate(color = "#FFC83C", time = 0.8 SECONDS, easing = SINE_EASING)
 		hud_outlined += WEAKREF(target)
 
 /**

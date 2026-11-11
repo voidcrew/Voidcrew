@@ -1,7 +1,7 @@
 /**
  * # Tutorial highlights
  *
- * Points one viewer at what their open tutorial item needs next: green outlines on things
+ * Points one viewer at what their open tutorial item needs next: gold outlines on things
  * nearby, an arrow at the screen edge toward a target off screen, and a pulsing outline on
  * the right button in windows that opt in (tutorial_ui_focus()).
  *
@@ -19,8 +19,8 @@
  * ## Rendering
  * Outlines: one client /image per outlined atom, attached to the atom (loc = target). Objects
  * and mobs get a copy of their appearance with an outline and glow filter, a hair BELOW the
- * target's layer on its own plane, so the real sprite covers the copy and only the green ring
- * shows. Turfs get a green square frame just above the floor. Images go only into the
+ * target's layer on its own plane, so the real sprite covers the copy and only the gold ring
+ * shows. Turfs get a gold square frame just above the floor. Images go only into the
  * viewer's client.images, so nobody else sees them. They are hidden by walls like the target.
  *
  * Arrow: one /atom/movable/screen/tutorial_arrow per viewer in their client.screen, placed one
@@ -50,7 +50,9 @@
 /// How long a ship-wide scan for one step stays cached.
 #define TUTORIAL_HIGHLIGHT_SHIP_CACHE (10 SECONDS)
 /// The outline colour the owner approved.
-#define TUTORIAL_HIGHLIGHT_COLOR "#3CFF6E"
+#define TUTORIAL_HIGHLIGHT_COLOR "#FFC83C"
+/// The dim end of the outline pulse.
+#define TUTORIAL_HIGHLIGHT_COLOR_DIM "#8A5A10"
 
 /// ckey -> /datum/tutorial_highlight for every viewer that currently has one.
 GLOBAL_LIST_EMPTY(tutorial_highlighters)
@@ -408,12 +410,12 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 /datum/tutorial_highlight/proc/add_target(atom/target)
 	images[target] = make_image(target)
 	RegisterSignal(target, COMSIG_QDELETING, PROC_REF(on_target_deleted))
-	RegisterSignals(target, list(COMSIG_ATOM_UPDATED_ICON, COMSIG_ATOM_DIR_CHANGE), PROC_REF(on_target_look_changed))
+	RegisterSignals(target, list(COMSIG_ATOM_UPDATED_ICON, COMSIG_ATOM_POST_DIR_CHANGE), PROC_REF(on_target_look_changed))
 
 /datum/tutorial_highlight/proc/remove_target(atom/target)
 	var/image/old_image = images[target]
 	images -= target
-	UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_ATOM_UPDATED_ICON, COMSIG_ATOM_DIR_CHANGE))
+	UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_ATOM_UPDATED_ICON, COMSIG_ATOM_POST_DIR_CHANGE))
 	if(old_image)
 		shown_client?.images -= old_image
 
@@ -437,16 +439,17 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 	outline.appearance_flags |= KEEP_TOGETHER | RESET_COLOR | KEEP_APART
 	outline.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	outline.alpha = 255
-	// A tinted target (atom colour or a colour matrix) would tint the green outline too.
+	// A tinted target (atom colour or a colour matrix) would tint the gold outline too.
 	outline.color = null
 	outline.filters = list(
 		filter(type = "outline", size = 1, color = TUTORIAL_HIGHLIGHT_COLOR),
-		filter(type = "drop_shadow", x = 0, y = 0, size = 3, offset = 1, color = "[TUTORIAL_HIGHLIGHT_COLOR]90"),
+		filter(type = "drop_shadow", x = 0, y = 0, size = 2, offset = 1, color = "[TUTORIAL_HIGHLIGHT_COLOR]90"),
 	)
 	pulse(outline)
+	pulse_filters(outline.filters[1], outline.filters[2])
 	return outline
 
-/// A green square frame on a turf, just above the floor and under anything standing on it.
+/// A gold square frame on a turf, just above the floor and under anything standing on it.
 /// (A copy of the turf would sit under its neighbours, which would hide the ring.)
 /datum/tutorial_highlight/proc/make_turf_image(turf/target)
 	var/image/frame = image('icons/hud/screen_gen.dmi', target, "selector")
@@ -457,12 +460,22 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 	frame.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	frame.filters = filter(type = "drop_shadow", x = 0, y = 0, size = 2, offset = 0, color = "[TUTORIAL_HIGHLIGHT_COLOR]90")
 	pulse(frame)
+	pulse_filters(null, frame.filters[1])
 	return frame
 
 /// The shared slow alpha pulse.
 /datum/tutorial_highlight/proc/pulse(image/target_image)
-	animate(target_image, alpha = 140, time = 0.8 SECONDS, loop = -1, easing = SINE_EASING)
+	animate(target_image, alpha = 110, time = 0.8 SECONDS, loop = -1, easing = SINE_EASING)
 	animate(alpha = 255, time = 0.8 SECONDS, easing = SINE_EASING)
+
+/// Breathes the outline between bright and dark gold and the glow in and out, in step with pulse().
+/datum/tutorial_highlight/proc/pulse_filters(outline_filter, glow_filter)
+	if(outline_filter)
+		animate(outline_filter, color = TUTORIAL_HIGHLIGHT_COLOR_DIM, time = 0.8 SECONDS, loop = -1, easing = SINE_EASING)
+		animate(color = TUTORIAL_HIGHLIGHT_COLOR, time = 0.8 SECONDS, easing = SINE_EASING)
+	if(glow_filter)
+		animate(glow_filter, size = 0, time = 0.8 SECONDS, loop = -1, easing = SINE_EASING)
+		animate(size = 4, time = 0.8 SECONDS, easing = SINE_EASING)
 
 /// Puts the current images on the viewer's client and takes images and arrow off any old client.
 /datum/tutorial_highlight/proc/sync_client()
@@ -634,3 +647,4 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 #undef TUTORIAL_HIGHLIGHT_MOVE_TILES
 #undef TUTORIAL_HIGHLIGHT_SHIP_CACHE
 #undef TUTORIAL_HIGHLIGHT_COLOR
+#undef TUTORIAL_HIGHLIGHT_COLOR_DIM
