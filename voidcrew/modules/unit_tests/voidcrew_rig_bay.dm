@@ -157,7 +157,7 @@
 	ship.enlist_crewmember(buyer)
 	var/obj/structure/overmap/ship/other_ship = make_ship()
 	record_for(other_ship)
-	var/mob/living/carbon/human/stranger = make_member("rigbay_stranger")
+	var/mob/living/carbon/human/stranger = make_member()
 	other_ship.enlist_crewmember(stranger)
 
 	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, bay_turf(1, 1))
