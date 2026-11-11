@@ -208,6 +208,7 @@
 	if(uses_heat)
 		add_heat(heat_per_shot)
 	plasma_weapons_far_sound(src, far_fire_sound)
+	// tg hands the shot's target in as pbtarget on every shot, point blank or not (process_fire, process_burst)
 	plasma_pinch(user, pbtarget)
 
 /obj/item/gun/energy/plasma_weapon/can_shoot()
