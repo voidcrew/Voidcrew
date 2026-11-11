@@ -219,7 +219,9 @@
 
 /datum/unit_test/voidcrew_stealth_live/walk_pace/Run()
 	TEST_ASSERT(make_room(16, 16), "No room for the test")
-	person_at(15, 15)
+	// Not on SSmobs' player list, as in run_speed: an awake guard would walk back to its post and take over the
+	// movement being timed.
+	person_at(15, 15, FALSE)
 	var/mob/living/carbon/human/npc/guard = guard_at(1, 1)
 	TEST_ASSERT_EQUAL(guard.move_intent, MOVE_INTENT_RUN, "Test fixture: tg no longer starts mobs at a run, so this test proves nothing")
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard.ai_controller
