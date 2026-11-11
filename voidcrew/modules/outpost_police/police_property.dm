@@ -3,55 +3,708 @@
  *
  * Owner: P12. Confiscation (the offending items), the evidence chute, the property lockers and the jail strip.
  * Spec 6.1, 6.3 and the locker half of 7.
+ *
+ * Nothing here copies, stores for sale or hands out a thing:
+ * - A crime tool taken at an arrest goes into an evidence case and down the chute, deleted for good.
+ * - A jailed prisoner's gear goes straight from their body into a real tg secure closet, never onto the cell
+ *   floor, and comes back only through that closet.
+ * - Stolen property (an item still listed in another prisoner's locker) goes back to that locker, never down
+ *   the chute.
+ * - Things whose loss would break something outside the arrest stay on the person (outpost_police_untouchable()).
+ *
+ * The lockers are anchored outpost property that players can open (their owner, the registered ID, an emag) and
+ * never lock. Only this file locks one.
  */
 
-/// A prisoner's gear, locked to them (owner decision 7)
+/// Multiplier on the waits in this file (search, strip). 1 in play; the tests turn it down.
+GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
+
+// =========================================================================
+// WHAT STAYS WITH ITS PERSON (abuse M21, M22)
+// =========================================================================
+
+/// Whether `part` is something the police never take or destroy: a live mob, an organ, a limb, an implant, or a type
+/// whose loss breaks something outside the arrest (ship keys, mission items, bounty proof, paper)
+/proc/outpost_police_protected_part(atom/movable/part)
+	if(isliving(part) || isorgan(part) || isbodypart(part) || istype(part, /obj/item/implant))
+		return TRUE
+	return is_type_in_typecache(part, GLOB.human_npc_not_gear)
+
+/// Whether `thing` is never taken from a person or put in a locker by force
+/proc/outpost_police_untouchable(obj/item/thing)
+	if(QDELETED(thing))
+		return TRUE
+	if(HAS_TRAIT(thing, TRAIT_NODROP) || (thing.item_flags & (ABSTRACT | DROPDEL)))
+		return TRUE
+	return outpost_police_protected_part(thing)
+
+/// Whether `thing` holds a living mob anywhere inside it (a pet carrier, a body bag)
+/proc/outpost_police_holds_mob(obj/item/thing)
+	for(var/mob/living/inside in thing.get_all_contents_type(/mob/living))
+		return TRUE
+	return FALSE
+
+/// Moves everything inside `doomed` that must not be destroyed onto `where`
+/proc/outpost_police_salvage(obj/item/doomed, turf/where)
+	for(var/atom/movable/part as anything in doomed.get_all_contents())
+		if(part == doomed || QDELETED(part) || !outpost_police_protected_part(part))
+			continue
+		if(where)
+			part.forceMove(where)
+
+/// Whether `thing` is on `person` (worn, held, in a bag) or loose on the floor within two tiles of them
+/proc/outpost_police_in_reach(obj/item/thing, mob/living/person)
+	if(QDELETED(thing) || QDELETED(person) || !isturf(person.loc))
+		return FALSE
+	var/atom/movable/top = get_atom_on_turf(thing)
+	if(top == person)
+		return TRUE
+	if(top != thing || !isturf(thing.loc))
+		return FALSE
+	return thing.z == person.z && get_dist(thing, person) <= 2
+
+// =========================================================================
+// THE PROPERTY LOCKER
+// =========================================================================
+
+/**
+ * A prisoner's gear, locked to them (owner decision 7). A real secure closet: anchored outpost property, never
+ * welded, nothing in it until the strip puts something there. It opens for its owner in person, for the ID card
+ * registered at booking in any hand, and for an emag. Players can open it and never lock it, so it is never a
+ * private safe. The goods stay listed here until their owner takes them, so a thief carrying them can be told
+ * from the owner (and the goods sent back at an arrest).
+ */
 /obj/structure/closet/secure_closet/personal/outpost_police
 	name = "property locker"
+	desc = "A prisoner's things. The lock has seen better days."
+	anchored = TRUE
+	anchorable = FALSE
+	can_weld_shut = FALSE
+	can_install_electronics = FALSE
+	divable = FALSE
+	paint_jobs = null
+	delivery_icon = null
+	storage_capacity = 60
+	req_access = list()
 	/// Weakref to the mind of the prisoner whose gear this holds
 	var/datum/weakref/owner_mind
-	/// Weakrefs to what was put in it at the strip
+	/// Weakrefs to everything the strip put in (bags and what is inside them), until the owner takes it
 	var/list/stored_items
-	/// world.time its owner was let out, or 0 while they are still held
+	/// world.time its owner was let out, or 0 while they are still held (or never noticed leaving)
 	var/released_at = 0
+	/// A strip is under way: nobody else may take this locker
+	var/assigning = FALSE
+	/// Minds that were reported for robbing it: weakref -> world.time
+	var/list/thieves
+	/// Weakref to the police this locker belongs to
+	var/datum/weakref/police_ref
+
+/obj/structure/closet/secure_closet/personal/outpost_police/Initialize(mapload)
+	. = ..()
+	// Nobody claims, renames or re-keys it with a card (abuse M18)
+	access_choices = null
+	AddElement(/datum/element/outpost_property)
+
+/obj/structure/closet/secure_closet/personal/outpost_police/Destroy()
+	for(var/datum/weakref/ref as anything in stored_items)
+		var/obj/item/thing = ref?.resolve()
+		if(thing)
+			UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
+	stored_items = null
+	owner_mind = null
+	police_ref = null
+	thieves = null
+	return ..()
 
 // Nothing comes with it (abuse M18)
 /obj/structure/closet/secure_closet/personal/outpost_police/PopulateContents()
 	return
 
-/// The chute at the desk: crime tools go down it for good
+/// No painting, renaming or re-wiring it (abuse M18)
+/obj/structure/closet/secure_closet/personal/outpost_police/tool_interact(obj/item/weapon, mob/living/user)
+	if(IS_WRITING_UTENSIL(weapon))
+		return TRUE
+	return ..()
+
+/// The owner in person, or the registered ID card in any hand (abuse M26). Never anyone else, and a deleted card never makes it public.
+/obj/structure/closet/secure_closet/personal/outpost_police/can_unlock(mob/living/user, obj/item/card/id/player_id, obj/item/card/id/registered_id)
+	return is_authorised(user, player_id)
+
+/// Players only ever unlock it (abuse M20): only a booking locks it
+/obj/structure/closet/secure_closet/personal/outpost_police/togglelock(mob/living/user, silent)
+	if(!locked)
+		return
+	return ..()
+
+/// tg's own emag: the lock breaks open. The owner allows looting, so it is not blocked; a witness may report it.
+/obj/structure/closet/secure_closet/personal/outpost_police/emag_act(mob/user, obj/item/card/emag/emag_card)
+	. = ..()
+	if(. && isliving(user))
+		report_theft(user, emag_card)
+
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/get_police()
+	return police_ref?.resolve()
+
+/// The prisoner whose things these are, if they still exist
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/owner()
+	return owner_mind?.resolve()
+
+/// Whether `user` may take things from here: the owner, or whoever holds the registered ID
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/is_authorised(mob/living/user, obj/item/card/id/player_id)
+	if(!user)
+		return FALSE
+	var/datum/mind/owning = owner()
+	if(owning && user.mind == owning)
+		return TRUE
+	var/obj/item/card/id/registered = id_card?.resolve()
+	if(!registered)
+		return FALSE
+	return player_id == registered || user.get_idcard() == registered
+
+/// The things still listed here that exist
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/live_items()
+	. = list()
+	for(var/datum/weakref/ref as anything in stored_items)
+		var/obj/item/thing = ref?.resolve()
+		if(thing && !QDELETED(thing))
+			. += thing
+	if(length(.) != length(stored_items))
+		stored_items = null
+		for(var/obj/item/thing as anything in .)
+			LAZYADD(stored_items, WEAKREF(thing))
+
+/// Whether `thing` is listed here
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/holds(obj/item/thing)
+	return !!(WEAKREF(thing) in stored_items)
+
+/// Free for the next prisoner: shut, nobody's, nothing left of theirs, no strip under way
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/is_free()
+	return !assigning && !opened && !owner() && !length(live_items())
+
+/// Lists `thing` and what it holds as this locker's, and listens for them leaving
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/record(obj/item/thing)
+	for(var/obj/item/part as anything in thing.get_all_contents_type(/obj/item))
+		if(QDELETED(part) || isorgan(part) || isbodypart(part))
+			continue
+		var/datum/weakref/ref = WEAKREF(part)
+		if(ref in stored_items)
+			continue
+		LAZYADD(stored_items, ref)
+		UnregisterSignal(part, COMSIG_MOVABLE_MOVED)
+		RegisterSignal(part, COMSIG_MOVABLE_MOVED, PROC_REF(on_stored_moved))
+
+/// Stops listing `thing` and what it holds
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/forget(obj/item/thing)
+	for(var/obj/item/part as anything in thing.get_all_contents_type(/obj/item))
+		if(stored_items)
+			stored_items -= WEAKREF(part)
+		UnregisterSignal(part, COMSIG_MOVABLE_MOVED)
+	if(!length(stored_items))
+		stored_items = null
+
+/// Something listed here moved. Inside, or on the spilled pile at the locker, is fine; in a mob's hands it is
+/// either the owner collecting their things or someone robbing them.
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/on_stored_moved(obj/item/source, atom/old_loc, movement_dir, forced, list/old_locs)
+	SIGNAL_HANDLER
+	if(QDELETED(source) || QDELETED(src) || !source.loc)
+		return
+	var/atom/movable/top = get_atom_on_turf(source)
+	if(top == src || !isliving(top))
+		return
+	// Officers carrying evidence are not thieves; the arrest sorts it out
+	if(istype(top, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		return
+	var/mob/living/taker = top
+	if(is_authorised(taker))
+		forget(source)
+		addtimer(CALLBACK(src, PROC_REF(check_freed)), 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+		return
+	report_theft(taker)
+
+/// `thief` took from or broke open this locker. Reported once per person; the witness test is the police's.
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/report_theft(mob/living/thief, obj/item/source)
+	if(!thief?.mind || is_authorised(thief))
+		return
+	var/datum/weakref/key = WEAKREF(thief.mind)
+	if(LAZYACCESS(thieves, key))
+		return
+	LAZYSET(thieves, key, world.time)
+	get_police()?.report_crime(thief, OUTPOST_CRIME_LOCKER_THEFT, null, source)
+
+/// The tile in front, where things are put out
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/front_turf()
+	var/turf/front = get_step(src, dir)
+	if(isopenturf(front) && !front.density)
+		return front
+	return get_turf(src)
+
+/// Puts out everything that is not listed here, mobs first (abuse M18)
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/eject_strangers()
+	var/turf/front = front_turf()
+	for(var/mob/living/stranger in contents)
+		stranger.forceMove(front)
+	for(var/atom/movable/other as anything in contents.Copy())
+		if(!isitem(other) || !holds(other))
+			other.forceMove(front)
+	if(!opened)
+		return
+	var/turf/home = get_turf(src)
+	for(var/mob/living/stranger in home)
+		stranger.forceMove(front)
+	for(var/obj/item/loose in home)
+		if(!loose.anchored && !holds(loose))
+			loose.forceMove(front)
+
+/// Shuts it, unbreaks the lock and locks it (abuse M19). Waits if someone stands in the doorway.
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/reset_lock()
+	if(QDELETED(src) || assigning)
+		return
+	var/turf/home = get_turf(src)
+	if(opened)
+		if(locate(/mob/living) in home)
+			addtimer(CALLBACK(src, PROC_REF(reset_lock)), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+			return
+		if(!close())
+			addtimer(CALLBACK(src, PROC_REF(reset_lock)), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+			return
+	for(var/mob/living/stranger in contents)
+		stranger.forceMove(front_turf())
+	broken = FALSE
+	lock()
+	update_appearance()
+
+/// Nobody's again: the registration and the owner are cleared, the lock is reset
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/free_up()
+	owner_mind = null
+	id_card = null
+	released_at = 0
+	thieves = null
+	stored_items = null
+	name = initial(name)
+	desc = initial(desc)
+	reset_lock()
+
+/// Frees it when everything of its owner's has been collected (or has ceased to exist)
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/check_freed()
+	if(QDELETED(src) || assigning || length(live_items()))
+		return
+	free_up()
+
+/// Empties what the prisoner left onto the floor in front and frees it. Nothing is deleted (abuse J20).
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/evict()
+	var/turf/front = front_turf()
+	var/turf/home = get_turf(src)
+	var/list/goods = live_items()
+	for(var/obj/item/thing as anything in goods)
+		if(thing.loc == src || thing.loc == home)
+			thing.forceMove(front)
+	for(var/obj/item/thing as anything in goods)
+		forget(thing)
+	free_up()
+
+/// Takes it for `prisoner`'s strip: strangers out, shut, theirs. FALSE if it cannot be shut.
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/reserve_for(mob/living/prisoner)
+	eject_strangers()
+	if(opened && !close())
+		return FALSE
+	broken = FALSE
+	owner_mind = WEAKREF(prisoner.mind)
+	assigning = TRUE
+	thieves = null
+	released_at = 0
+	return TRUE
+
+/// The strip did not happen
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/release_reservation()
+	assigning = FALSE
+	if(!length(live_items()))
+		free_up()
+
+/// The strip is done: registered to `card`, locked
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/finish_assignment(obj/item/card/id/card)
+	assigning = FALSE
+	if(!length(live_items()))
+		free_up()
+		return
+	if(card)
+		id_card = WEAKREF(card)
+	broken = FALSE
+	lock()
+	update_appearance()
+
+/// Stolen goods come back: in, shut, locked again (abuse M19)
+/obj/structure/closet/secure_closet/personal/outpost_police/proc/give_back(obj/item/thing)
+	if(QDELETED(thing))
+		return
+	if(opened)
+		thing.forceMove(get_turf(src))
+		reset_lock()
+		return
+	thing.forceMove(src)
+	broken = FALSE
+	lock()
+	update_appearance()
+
+// =========================================================================
+// THE EVIDENCE CHUTE
+// =========================================================================
+
+/// The chute at the desk: crime tools go down it for good. Officers use it through police.dispose_evidence();
+/// nobody else can do anything with it.
 /obj/machinery/outpost_police_evidence
 	name = "evidence chute"
+	desc = "Evidence goes in. Nothing comes out."
 	icon = 'icons/obj/pipes_n_cables/disposal.dmi'
 	icon_state = "intake"
 	density = TRUE
 	anchored = TRUE
 	use_power = NO_POWER_USE
 
-/// The case an officer carries what they took in
-/obj/item/outpost_sealed_case/evidence
+/obj/machinery/outpost_police_evidence/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
 
-/// What a jailed prisoner wears
+/// No emag opens it (abuse M24)
+/obj/machinery/outpost_police_evidence/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
+
+/// Something just went down
+/obj/machinery/outpost_police_evidence/proc/swallow()
+	playsound(src, 'sound/machines/disposalflush.ogg', 30, TRUE)
+	flick("intake-flush", src)
+
+// =========================================================================
+// THE EVIDENCE CASE AND THE ISSUED CLOTHES
+// =========================================================================
+
+/// The case an officer carries what they took in. Never locked to the officer: it drops with them if they die.
+/obj/item/outpost_sealed_case/evidence
+	name = "evidence case"
+	desc = "A hard case with an evidence tag across the latch."
+	/// Weakref to the police that filled it
+	var/datum/weakref/police_ref
+	/// Weakref of an item inside -> who it was taken from, for the log
+	var/list/taken_from
+
+/// Takes `thing` off `holder` (or off the floor, or out of their bag) into the case
+/obj/item/outpost_sealed_case/evidence/proc/add_evidence(obj/item/thing, mob/living/holder)
+	if(thing.loc == holder)
+		if(!holder.transferItemToLoc(thing, src, FALSE, TRUE, FALSE))
+			return FALSE
+	else
+		thing.forceMove(src)
+	LAZYSET(taken_from, WEAKREF(thing), holder ? key_name(holder) : "the floor")
+	return TRUE
+
+/// Evidence never spills (abuse M24): whatever is still inside goes with the case, after stolen goods go home
+/obj/item/outpost_sealed_case/evidence/Destroy()
+	var/datum/outpost_police/police = police_ref?.resolve()
+	police?.evidence_empty_case(src, get_turf(src))
+	for(var/atom/movable/inside as anything in contents.Copy())
+		qdel(inside)
+	taken_from = null
+	return ..()
+
+/// What a jailed prisoner wears. Gone the moment it comes off (abuse M23).
 /obj/item/clothing/under/rank/prisoner/outpost_police
+	flags_1 = parent_type::flags_1 | NO_NEW_GAGS_PREVIEW_1 // same icon and colour as the base type
+	item_flags = parent_type::item_flags | DROPDEL
 
 /obj/item/clothing/shoes/sneakers/orange/outpost_police
+	flags_1 = parent_type::flags_1 | NO_NEW_GAGS_PREVIEW_1 // same icon and colour as the base type
+	item_flags = parent_type::item_flags | DROPDEL
 
-/// The Search step: takes the offending items off `suspect` into an evidence case in `officer`'s hand. Sleeps. Returns the case, or null.
-/datum/outpost_police/proc/confiscate(mob/living/carbon/suspect, mob/living/officer)
-	return null
+// =========================================================================
+// THE POLICE SIDE
+// =========================================================================
 
-/// At the desk: crime tools down the chute, stolen property back to its locker
-/datum/outpost_police/proc/dispose_evidence(mob/living/officer)
-	return
+/// Resets and locks the station's lockers (called by link_interior())
+/datum/outpost_police/proc/build_property(list/locker_list, obj/machinery/outpost_police_evidence/evidence_chute)
+	UnregisterSignal(src, COMSIG_OUTPOST_POLICE_RELEASED)
+	RegisterSignal(src, COMSIG_OUTPOST_POLICE_RELEASED, PROC_REF(property_on_released))
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in locker_list)
+		locker.police_ref = WEAKREF(src)
+		locker.AddElement(/datum/element/outpost_property)
+		// Not yet initialised (a pre-loaded interior): the type already starts shut, locked and nobody's
+		if(locker.flags_1 & INITIALIZED_1)
+			locker.free_up()
+	evidence_chute?.AddElement(/datum/element/outpost_property)
+	if(length(locker_list) != OUTPOST_POLICE_LOCKERS)
+		log_mapping("OUTPOST POLICE: [outpost] has [length(locker_list)] property lockers, not [OUTPOST_POLICE_LOCKERS].")
+	if(!evidence_chute)
+		log_mapping("OUTPOST POLICE: [outpost] has no evidence chute.")
 
-/// The jail strip: gear into a property locker, the prison jumpsuit on. Sleeps. TRUE if stripped, FALSE if no locker was free.
-/datum/outpost_police/proc/store_property(mob/living/carbon/prisoner, mob/living/officer)
-	return FALSE
+/// `suspect` was let out of the cells: their locker's owner has been released from now
+/datum/outpost_police/proc/property_on_released(datum/source, mob/living/suspect)
+	SIGNAL_HANDLER
+	if(!suspect?.mind)
+		return
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(!QDELETED(locker) && locker.owner() == suspect.mind)
+			locker.released_at = world.time
 
 /// For a later theft system: `thing` was stolen by `thief`. Unused in this build.
 /datum/outpost_police/proc/mark_stolen(obj/item/thing, datum/mind/thief)
 	return
 
-/// Resets and locks the station's lockers (called by link_interior())
-/datum/outpost_police/proc/build_property(list/locker_list, obj/machinery/outpost_police_evidence/evidence_chute)
-	return
+/// Whether `who` is a prisoner in any cell right now
+/datum/outpost_police/proc/property_held_in_cells(datum/mind/who)
+	for(var/datum/outpost_police_cell/cell as anything in cells)
+		if(who in cell.prisoners)
+			return TRUE
+	return FALSE
+
+/// The locker holding `thing` among its listed goods, if any
+/datum/outpost_police/proc/property_locker_holding(obj/item/thing)
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(!QDELETED(locker) && locker.holds(thing))
+			return locker
+	return null
+
+/// The locker for `prisoner`'s gear: one that is theirs already, a free one, or the one whose owner was let out
+/// longest ago (emptied onto the floor in front). Null when all of them belong to people still in the cells.
+/datum/outpost_police/proc/property_locker_for(mob/living/prisoner)
+	var/datum/mind/mind = prisoner.mind
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(!QDELETED(locker) && !locker.assigning && locker.owner() == mind)
+			return locker
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(!QDELETED(locker) && locker.is_free())
+			return locker
+	var/obj/structure/closet/secure_closet/personal/outpost_police/oldest
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(QDELETED(locker) || locker.assigning)
+			continue
+		var/datum/mind/owning = locker.owner()
+		if(owning && property_held_in_cells(owning))
+			continue
+		// An owner who left without a release signal counts from now
+		if(!locker.released_at)
+			locker.released_at = world.time
+		if(!oldest || locker.released_at < oldest.released_at)
+			oldest = locker
+	oldest?.evict()
+	return oldest
+
+/// A tile outside the cell `prisoner` is in, or the officer's own tile when there is none
+/datum/outpost_police/proc/property_outside_turf(mob/living/prisoner, mob/living/officer)
+	var/turf/inside = get_turf(prisoner)
+	for(var/datum/outpost_police_cell/cell as anything in cells)
+		if(!(inside in cell.tiles) || !cell.door)
+			continue
+		var/turf/door_turf = get_turf(cell.door)
+		for(var/direction in GLOB.cardinals)
+			var/turf/candidate = get_step(door_turf, direction)
+			if(candidate && !candidate.density && !(candidate in cell.tiles))
+				return candidate
+	return get_turf(officer) || inside
+
+/datum/outpost_police/proc/property_strip_check(mob/living/prisoner, mob/living/officer)
+	return !QDELETED(prisoner) && !QDELETED(officer) && officer.Adjacent(prisoner)
+
+/**
+ * The jail strip: gear into a property locker, the prison jumpsuit on. Sleeps. TRUE if stripped, FALSE if no
+ * locker was free (or the strip was interrupted). Everything comes off through tg's own unequip straight into
+ * the locker, so nothing ever lies in the cell; the ID card, the cuffs, and what must never be taken stay on.
+ */
+/datum/outpost_police/proc/store_property(mob/living/carbon/prisoner, mob/living/officer)
+	if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+		return FALSE
+	var/mob/living/carbon/human/person = prisoner
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner)
+	if(!locker || !locker.reserve_for(prisoner))
+		return FALSE
+	var/delay = max(1, round(OUTPOST_POLICE_STRIP_TIME * GLOB.outpost_police_property_time_scale))
+	if(officer && !do_after(officer, delay, prisoner, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer)))
+		locker.release_reservation()
+		return FALSE
+	if(QDELETED(prisoner) || QDELETED(locker))
+		locker?.release_reservation()
+		return FALSE
+
+	// The ID card stays on them: lift it out of any PDA or wallet and off the slot, so removing the jumpsuit cannot drop it
+	var/obj/item/card/id/card = prisoner.get_idcard(FALSE) || prisoner.get_idcard(TRUE)
+	if(card)
+		if(card.loc != prisoner)
+			card.forceMove(prisoner)
+		prisoner.temporarilyRemoveItemFromInventory(card, TRUE)
+
+	var/list/gear = prisoner.get_equipped_items(INCLUDE_POCKETS | INCLUDE_HELD)
+	list_clear_nulls(gear)
+	if(card)
+		gear -= card
+	if(prisoner.handcuffed)
+		gear -= prisoner.handcuffed
+	if(prisoner.legcuffed)
+		gear -= prisoner.legcuffed
+	// tg drops pockets, suit storage and belt when the jumpsuit or suit comes off; what stays on them is put back after
+	var/list/pocketed = list()
+	for(var/obj/item/slotted as anything in list(person.l_store, person.r_store, person.s_store, person.belt))
+		if(slotted && outpost_police_untouchable(slotted))
+			pocketed[slotted] = person.get_slot_by_item(slotted)
+	// Suit storage before the suit and the jumpsuit last, so tg never drops anything on the floor behind us
+	var/list/ordered = list()
+	var/list/outside = list()
+	var/obj/item/jumpsuit
+	for(var/obj/item/thing as anything in gear)
+		if(outpost_police_untouchable(thing))
+			continue
+		if(outpost_police_holds_mob(thing))
+			outside += thing
+		else if(thing == person.w_uniform)
+			jumpsuit = thing
+		else if(thing == person.s_store)
+			ordered.Insert(1, thing)
+		else
+			ordered += thing
+	if(jumpsuit)
+		ordered += jumpsuit
+
+	var/stored = 0
+	for(var/obj/item/thing as anything in ordered)
+		if(QDELETED(thing))
+			continue
+		if(thing.loc == prisoner)
+			if(!prisoner.transferItemToLoc(thing, locker, FALSE, TRUE, FALSE))
+				continue
+		else if(isturf(thing.loc) && get_dist(thing, prisoner) <= 1)
+			// Something tg dropped as a side effect of an earlier item: it goes in with the rest
+			thing.forceMove(locker)
+		else
+			continue
+		property_return_stolen(thing)
+		if(property_locker_holding(thing))
+			continue
+		locker.record(thing)
+		stored++
+	var/turf/outside_turf = property_outside_turf(prisoner, officer)
+	for(var/obj/item/thing as anything in outside)
+		prisoner.transferItemToLoc(thing, outside_turf, FALSE, TRUE, FALSE)
+
+	// The prison clothes (they delete themselves when taken off), then the ID back where it belongs
+	prisoner.equip_to_slot_if_possible(new /obj/item/clothing/under/rank/prisoner/outpost_police(), ITEM_SLOT_ICLOTHING, TRUE, TRUE, TRUE, TRUE)
+	prisoner.equip_to_slot_if_possible(new /obj/item/clothing/shoes/sneakers/orange/outpost_police(), ITEM_SLOT_FEET, TRUE, TRUE, TRUE, TRUE)
+	if(card && !QDELETED(card) && !prisoner.equip_to_slot_if_possible(card, ITEM_SLOT_ID, FALSE, TRUE, TRUE, TRUE))
+		prisoner.put_in_hands(card)
+	for(var/obj/item/slotted as anything in pocketed)
+		if(QDELETED(slotted) || slotted.loc == prisoner || !isturf(slotted.loc) || get_dist(slotted, prisoner) > 1)
+			continue
+		if(!prisoner.equip_to_slot_if_possible(slotted, pocketed[slotted], FALSE, TRUE, TRUE, TRUE))
+			prisoner.put_in_hands(slotted)
+
+	locker.finish_assignment(card)
+	log_game("OUTPOST POLICE: [key_name(prisoner)] was stripped at [outpost]: [stored] items to a property locker.")
+	return TRUE
+
+/// Anything inside `container` that is listed in another prisoner's locker goes back there instead of into this one
+/datum/outpost_police/proc/property_return_stolen(obj/item/container)
+	for(var/obj/item/part as anything in container.get_all_contents_type(/obj/item))
+		var/obj/structure/closet/secure_closet/personal/outpost_police/victim = property_locker_holding(part)
+		if(victim)
+			victim.give_back(part)
+
+/// Whether the Search step may take `thing` off `suspect`
+/datum/outpost_police/proc/evidence_can_take(obj/item/thing, mob/living/carbon/suspect)
+	if(outpost_police_untouchable(thing) || outpost_police_holds_mob(thing) || !outpost_police_in_reach(thing, suspect))
+		return FALSE
+	if(thing == suspect.handcuffed || thing == suspect.legcuffed)
+		return FALSE
+	// Their ID stays, and so does anything it is inside (a PDA)
+	var/obj/item/card/id/card = suspect.get_idcard(FALSE) || suspect.get_idcard(TRUE)
+	if(card && (thing == card || (card in thing.get_all_contents())))
+		return FALSE
+	return TRUE
+
+/// What the Search step takes from `suspect` now: the crime tools on the warrant and stolen property, in reach
+/datum/outpost_police/proc/evidence_candidates(mob/living/carbon/suspect)
+	var/list/take = list()
+	var/datum/outpost_warrant/warrant = suspect.mind ? warrants[suspect.mind] : null
+	if(warrant)
+		for(var/datum/weakref/ref in warrant.evidence)
+			var/obj/item/tool = ref.resolve()
+			if(isitem(tool) && evidence_can_take(tool, suspect))
+				take |= tool
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(QDELETED(locker) || (locker.owner() && locker.owner() == suspect.mind))
+			continue
+		for(var/obj/item/stolen as anything in locker.live_items())
+			// Goods lying about are nobody's loot; only what the suspect carries is taken back
+			if(get_atom_on_turf(stolen) == suspect && evidence_can_take(stolen, suspect))
+				take |= stolen
+	return take
+
+/datum/outpost_police/proc/property_search_check(mob/living/carbon/suspect, mob/living/officer)
+	return !QDELETED(suspect) && !QDELETED(officer) && officer.Adjacent(suspect)
+
+/**
+ * The Search step: takes the crime tools on `suspect`'s warrant, and any property still listed in another
+ * prisoner's locker, off them or off the floor within two tiles into an evidence case in `officer`'s hand.
+ * Sleeps. Returns the case, or null when there was nothing to take or the search was interrupted.
+ */
+/datum/outpost_police/proc/confiscate(mob/living/carbon/suspect, mob/living/officer)
+	if(QDELETED(suspect) || QDELETED(officer))
+		return null
+	var/list/take = evidence_candidates(suspect)
+	if(!length(take))
+		return null
+	var/delay = max(1, round(min(length(take) * OUTPOST_POLICE_SEARCH_ITEM, OUTPOST_POLICE_SEARCH_MAX) * GLOB.outpost_police_property_time_scale))
+	if(!do_after(officer, delay, suspect, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(property_search_check), suspect, officer)))
+		return null
+	if(QDELETED(suspect) || QDELETED(officer))
+		return null
+	// They may have moved things while the officer was looking
+	take = evidence_candidates(suspect)
+	if(!length(take))
+		return null
+	var/obj/item/outpost_sealed_case/evidence/case = new(get_turf(officer))
+	case.police_ref = WEAKREF(src)
+	var/turf/floor = get_turf(suspect)
+	for(var/obj/item/thing as anything in take)
+		if(QDELETED(thing))
+			continue
+		// A ship key or the like inside a tool being taken stays with the suspect
+		outpost_police_salvage(thing, floor)
+		case.add_evidence(thing, suspect)
+	if(!length(case.contents))
+		qdel(case)
+		return null
+	officer.put_in_hands(case)
+	return case
+
+/**
+ * What a case holds: stolen property back into its locker, anything that must not be destroyed onto `spill`,
+ * the rest deleted. Returns how many items were destroyed. The case itself is left to the caller.
+ */
+/datum/outpost_police/proc/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill)
+	var/destroyed = 0
+	for(var/obj/item/thing as anything in case.contents.Copy())
+		if(QDELETED(thing))
+			continue
+		var/obj/structure/closet/secure_closet/personal/outpost_police/victim = property_locker_holding(thing)
+		if(victim)
+			victim.give_back(thing)
+			continue
+		if(outpost_police_untouchable(thing) || outpost_police_holds_mob(thing))
+			if(spill)
+				thing.forceMove(spill)
+			continue
+		outpost_police_salvage(thing, spill)
+		log_game("OUTPOST POLICE: [thing] ([thing.type]) destroyed in the evidence chute at [outpost]; taken from [LAZYACCESS(case.taken_from, WEAKREF(thing)) || "the floor"].")
+		qdel(thing)
+		destroyed++
+	return destroyed
+
+/**
+ * At the desk: whatever evidence cases `officer` carries are emptied. Stolen property goes back in its locker,
+ * crime tools go down the chute, and the case goes last (abuse M24).
+ */
+/datum/outpost_police/proc/dispose_evidence(mob/living/officer)
+	if(QDELETED(officer))
+		return
+	var/turf/spill = get_turf(chute) || get_turf(officer)
+	var/destroyed = 0
+	for(var/obj/item/outpost_sealed_case/evidence/case in officer.get_all_contents())
+		destroyed += evidence_empty_case(case, spill)
+		qdel(case)
+	if(destroyed)
+		chute?.swallow()
