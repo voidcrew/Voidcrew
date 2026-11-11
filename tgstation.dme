@@ -7745,6 +7745,7 @@
 #include "voidcrew\modules\trade\rig_bay\rig_bay_shop.dm"
 #include "voidcrew\modules\trade\rig_bay\rig_bay_skus.dm"
 #include "voidcrew\modules\trade\rig_bay\rig_bay_stand.dm"
+#include "voidcrew\modules\trade\rig_bay\rig_bay_stand_visuals.dm"
 #include "voidcrew\modules\trade\rig_bay\rig_bay_wick.dm"
 #include "voidcrew\modules\transporter\_transporter.dm"
 #include "voidcrew\modules\transporter\transporter_console.dm"
