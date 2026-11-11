@@ -448,6 +448,11 @@
 	if(!user || !firing_burst)
 		firing_burst = FALSE
 		return FALSE
+	// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): a burst queued before the world froze waits for it to move again
+	if(!cyberware_time_scale(user))
+		addtimer(CALLBACK(src, PROC_REF(process_burst), user, target, message, params, zone_override, random_spread, burst_spread_mult, iteration), 1)
+		return TRUE
+	// VOIDCREW EDIT ADDITION END
 	if(!issilicon(user))
 		if(iteration > 1 && !(user.is_holding(src))) //for burst firing
 			firing_burst = FALSE
@@ -517,6 +522,12 @@
 	if(user && HAS_TRAIT(user, TRAIT_DOUBLE_TAP))
 		modified_burst_delay = ROUND_UP(burst_delay * 0.5)
 		modified_fire_delay = ROUND_UP(fire_delay * 0.5)
+	// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): a slowed shooter's gun cycles slowly too
+	var/dilation = cyberware_time_scale(user)
+	if(dilation < 1)
+		modified_burst_delay /= max(dilation, 0.1)
+		modified_fire_delay /= max(dilation, 0.1)
+	// VOIDCREW EDIT ADDITION END
 
 	if(burst_size > 1)
 		firing_burst = TRUE

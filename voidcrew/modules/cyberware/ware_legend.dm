@@ -90,8 +90,13 @@
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
-	/// How long the world stops when no other player is near (ware_sandy_timestop.dm).
-	var/stop_duration = 4 SECONDS
+	// When no other player is near, the world slows (ware_sandy_timestop.dm):
+	/// how long it freezes first,
+	var/dilation_freeze = 1 SECONDS
+	/// how long slow-mo runs after that,
+	var/dilation_time = 3 SECONDS
+	/// and how fast the world runs in slow-mo.
+	var/dilation_scale = 0.2
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -190,7 +195,9 @@
 		online_message = lattice.online_message
 		crash_duration = lattice.crash_duration
 		crash_stamina = lattice.crash_stamina
-		stop_duration = lattice.stop_duration
+		dilation_freeze = lattice.dilation_freeze
+		dilation_time = lattice.dilation_time
+		dilation_scale = lattice.dilation_scale
 	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
