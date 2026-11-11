@@ -361,7 +361,10 @@
 	TEST_ASSERT(cell.open_until > world.time, "The door is not held open for the prisoner to leave")
 	cell.open_until = 0
 	cell.close_check()
-	TEST_ASSERT(cell.door.density, "The door did not shut once its time was up")
+	TEST_ASSERT(!cell.door.density, "The door shut on a released prisoner still in the cell") // abuse MF2
+	prisoner.forceMove(cell.outside_turf)
+	cell.close_check()
+	TEST_ASSERT(cell.door.density, "The door did not shut once its time was up and the cell was empty")
 
 /// A prisoner who walks out before their time is up is a jailbreak, and is no longer held
 /datum/unit_test/voidcrew_outpost_police_cell_jailbreak
@@ -527,6 +530,39 @@
 	TEST_ASSERT_EQUAL(length(police.closed), 2, "A dead prisoner did not get their warrant closed")
 	sleep(2 SECONDS)
 	TEST_ASSERT(!cell_b.door.density, "The door did not open for a dead prisoner")
+
+/// Abuse MF2: a cell holding nobody never stays shut on a body or on someone it does not hold, and a crowbar opens it
+/datum/unit_test/voidcrew_outpost_police_cell_strays
+
+/datum/unit_test/voidcrew_outpost_police_cell_strays/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	TEST_ASSERT(cell.door.density, "Setup: the empty cell's door is open")
+	TEST_ASSERT(!cell.still_forceable(), "A crowbar works on an empty cell")
+	// A body shut in (a dead prisoner after the medic hold, or one put there): the tick opens the door
+	var/mob/living/carbon/human/corpse = police_cell_person(cell.tiles[1])
+	corpse.death()
+	TEST_ASSERT(cell.still_forceable(), "A crowbar does not work on a cell shut on a body")
+	police.tick_cells()
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell.door.density, "A cell holding nobody stayed shut on a body")
+	cell.open_until = 0
+	cell.close_check()
+	TEST_ASSERT(!cell.door.density, "A cell holding nobody shut on a body")
+	TEST_ASSERT_EQUAL(length(police.crimes), 0, "Opening a cell for a body reported a crime")
+	corpse.forceMove(cell.outside_turf)
+	cell.close_check()
+	TEST_ASSERT(cell.door.density, "The door did not shut once the body was out")
+	// Someone pushed in while it stood open
+	var/mob/living/carbon/human/visitor = police_cell_person(cell.tiles[2])
+	TEST_ASSERT(cell.still_forceable(), "A crowbar does not work on a cell shut on a visitor")
+	police.tick_cells()
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell.door.density, "A cell holding nobody stayed shut on a visitor")
+	visitor.forceMove(cell.outside_turf)
+	cell.open_until = 0
+	cell.close_check()
+	TEST_ASSERT(cell.door.density, "The door did not shut once the visitor was out")
 
 /// Forcing the door with a crowbar while somebody is held: 12 s, a buzzer and a shout, then the door gives and the forcer is a jailbreak with the tool as the source
 /datum/unit_test/voidcrew_outpost_police_cell_forcing

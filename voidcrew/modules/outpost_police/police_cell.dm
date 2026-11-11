@@ -8,7 +8,8 @@
  * placed (build_cells()). Its door opens only for the cell itself: a bump, a click, an ID, a wire or a pry
  * never gets it open, and an emag does nothing. The cell opens it to bring a prisoner in, to let an officer
  * out, on release, for a medic, and for a minute-long forced door (a crowbar or jaws, from either side while
- * somebody is held).
+ * somebody is held or it is shut on someone it does not hold). A cell holding nobody never shuts on a body or a
+ * person (abuse MF2).
  *
  * A prisoner is a mind in `prisoners` (mind -> world.time they are let out). `jailed` marks the ones who could
  * not pay. Everything slow about a booking happens in book() on the officer's own actions (the fine, the
@@ -343,6 +344,14 @@
 			return TRUE
 	return FALSE
 
+/// Whether anyone the cell does not hold, alive or dead, is on its floor: a body, a visitor pushed in, a released prisoner (abuse MF2)
+/datum/outpost_police_cell/proc/stray_inside()
+	for(var/turf/tile as anything in tiles)
+		for(var/mob/living/someone in tile)
+			if(!prisoner_of(someone))
+				return TRUE
+	return FALSE
+
 /// Whether a body the medic hold is for is still on the cell floor
 /datum/outpost_police_cell/proc/medic_body_inside()
 	for(var/datum/weakref/ref in medic_bodies)
@@ -373,24 +382,30 @@
 	if(door.operating || doorway_blocked())
 		schedule_close_check(1 SECONDS)
 		return
+	// Abuse MF2: a cell holding nobody never shuts on a body or on anyone it does not hold
+	if(!length(prisoners) && stray_inside())
+		schedule_close_check(5 SECONDS)
+		return
 	door.close(FORCING_DOOR_CHECKS)
 	if(!QDELETED(src) && !QDELETED(door) && !door.density)
 		schedule_close_check(1 SECONDS)
 
-/// Whether a crowbar can still be working on the door
+/// Whether a crowbar can still be working on the door: shut on a prisoner, or on anyone or any body it does not hold (abuse MF2)
 /datum/outpost_police_cell/proc/still_forceable()
-	return !QDELETED(door) && door.density && length(prisoners)
+	return !QDELETED(door) && door.density && (length(prisoners) || stray_inside())
 
 /**
- * `user` pries the door with `tool`, from either side, while somebody is held (spec 7). Sleeps for the whole
- * attempt. The door gives for OUTPOST_POLICE_CELL_OPEN; whoever forced it, held or not, is a jailbreak.
+ * `user` pries the door with `tool`, from either side, while somebody is held (spec 7), or while it is shut on
+ * somebody it does not hold (abuse MF2). Sleeps for the whole attempt. The door gives for OUTPOST_POLICE_CELL_OPEN;
+ * whoever forced it while a prisoner was held, held or not, is a jailbreak.
  */
 /datum/outpost_police_cell/proc/force_door(mob/living/user, obj/item/tool)
 	if(forcing || !still_forceable())
 		return FALSE
 	forcing = TRUE
-	playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
-	police?.cell_station_say(POLICE_LINE_CELL_ALARM)
+	if(length(prisoners))
+		playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+		police?.cell_station_say(POLICE_LINE_CELL_ALARM)
 	log_game("OUTPOST POLICE: [key_name(user)] started forcing [door] at [AREACOORD(door)] with [tool].")
 	var/succeeded = do_after(user, OUTPOST_POLICE_CELL_FORCE_TIME, target = door, extra_checks = CALLBACK(src, PROC_REF(still_forceable)))
 	if(QDELETED(src))
@@ -399,8 +414,10 @@
 	if(!succeeded)
 		return FALSE
 	log_game("OUTPOST POLICE: [key_name(user)] forced [door] at [AREACOORD(door)].")
+	var/held = length(prisoners)
 	open_door(OUTPOST_POLICE_CELL_OPEN)
-	police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, tool)
+	if(held)
+		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, tool)
 	return TRUE
 
 // ----- the wall clock -----
@@ -472,6 +489,9 @@
 			bail_due[prisoner] = world.time + OUTPOST_POLICE_BAIL_RETRY
 			if(police.charge_fine(warrant))
 				release(prisoner, body, POLICE_LINE_BAIL)
+	// Abuse MF2: a cell that holds nobody opens for whoever or whatever is shut in it
+	if(!length(prisoners) && !QDELETED(door) && door.density && !door.operating && stray_inside())
+		open_door(OUTPOST_POLICE_CELL_OPEN)
 	update_sign()
 
 /**
@@ -731,7 +751,7 @@
 /**
  * A holding cell's door. Nothing opens it but its cell (police_cell.dm, build_cells()): a bump, a click, an
  * ID, a wire, a spell or a pry gets a refusal, and an emag does nothing (abuse M1). A crowbar or jaws work on
- * it only while somebody is held, as a forced door (force_door()).
+ * it only while somebody is held or shut in, as a forced door (force_door()).
  */
 /obj/machinery/door/airlock/outpost/glass/police_cell
 	desc = "A cell door with a view."
@@ -791,7 +811,7 @@
 	return TRUE
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/crowbar_act(mob/living/user, obj/item/tool)
-	if(!density || !holding_cell || holding_cell.forcing || !length(holding_cell.prisoners))
+	if(!density || !holding_cell || holding_cell.forcing || !holding_cell.still_forceable())
 		return ITEM_INTERACT_BLOCKING
 	INVOKE_ASYNC(holding_cell, TYPE_PROC_REF(/datum/outpost_police_cell, force_door), user, tool)
 	return ITEM_INTERACT_SUCCESS
