@@ -162,11 +162,18 @@
 	TEST_ASSERT_EQUAL(wrench.alpha, 128, "A var written mid-replay was lost")
 	TEST_ASSERT_EQUAL(wrench.pixel_w, initial(wrench.pixel_w), "The item is left drawn off its tile")
 	TEST_ASSERT_EQUAL(wrench.mouse_opacity, initial(wrench.mouse_opacity), "The item can't be clicked after the replay")
-	// The wrench's alpha is one change no wrapper sees. A head that lands mid-replay rolls (a direct pixel_x write) and
-	// is the only other one: it must have moved by its roll.
-	var/head_rolled = head_in_flight && !QDELETED(head) && head.pixel_x != head_x
-	log_test("replay/plays_and_restores: head pixel_x [head_x] at the release, [QDELETED(head) ? "gone" : head.pixel_x] after; unhooked [GLOB.sandy_replay_last["unhooked"]]")
-	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["unhooked"], head_rolled ? 2 : 1, "Puppets read as changed when nothing changed them")
+	// The wrench's alpha is one change no wrapper sees. A head still tumbling at the release lands mid-replay, and its
+	// bounce and roll (hv_vis_roll(), flying_gore.dm) write its pixel offsets directly: that may be another. Nothing
+	// else may be.
+	var/list/folded = GLOB.sandy_replay_last["folded"]
+	log_test("replay/plays_and_restores: head pixel_x [head_x] at the release, [QDELETED(head) ? "gone" : head.pixel_x] after; changes no wrapper saw: [folded.Join("; ")]")
+	var/wrench_changes = 0
+	for(var/change in folded)
+		if(findtext(change, "[/obj/item/wrench]:") == 1)
+			wrench_changes++
+		else
+			TEST_ASSERT(head_in_flight && findtext(change, "[/obj/item/bodypart/head]") == 1, "A puppet read as changed when nothing changed it: [change]")
+	TEST_ASSERT_EQUAL(wrench_changes, 1, "The var written on the wrench mid-replay wasn't seen once")
 	TEST_ASSERT(!held(user) && !held(raider) && !held(bleeder) && !held(outsider), "Someone is still held after the replay")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/sandy_replay_standin) in range(9, user)), "A stand-in outlived the replay")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")

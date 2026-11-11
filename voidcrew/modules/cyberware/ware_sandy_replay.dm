@@ -192,8 +192,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	/// The crash waiting for the replay to end: list(length, stamina).
 	var/list/crash
 	var/finished = FALSE
-	/// Changes to a puppet that no wrapped proc made (fold()).
+	/// Changes to a puppet that no wrapped proc made (fold()), and what they were.
 	var/unhooked = 0
+	var/list/folded = list()
 	/// Times a wrapped proc changed a puppet.
 	var/unmasks = 0
 	/// Sounds made in the field, each list(frame, turf, the rest of playsound()'s arguments).
@@ -617,27 +618,28 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/mutable_appearance/now = new(track.thing)
 	var/mutable_appearance/drawn = new(track.expect)
 	var/mutable_appearance/real = new(track.saved_look)
-	var/changed = FALSE
+	var/list/changed = list()
 	// pixel_x and pixel_y are taken as plain writes (tg sets them far more often than it shifts them). pixel_w and
 	// pixel_z carry the puppet's own shift, so only what was added to them is carried over.
 	for(var/name in list("icon", "icon_state", "alpha", "layer", "plane", "invisibility", "name", "blend_mode", "pixel_x", "pixel_y"))
 		if(now.vars[name] != drawn.vars[name])
 			real.vars[name] = now.vars[name]
-			changed = TRUE
+			changed += name
 	if(!(now.color ~= drawn.color))
 		real.color = now.color
-		changed = TRUE
+		changed += "color"
 	if(!(now.transform ~= drawn.transform))
 		real.transform = now.transform
-		changed = TRUE
+		changed += "transform"
 	for(var/name in list("pixel_w", "pixel_z"))
 		if(now.vars[name] != drawn.vars[name])
 			real.vars[name] += now.vars[name] - drawn.vars[name]
-			changed = TRUE
-	if(!changed)
+			changed += name
+	if(!length(changed))
 		return
 	track.saved_look = real.appearance
 	unhooked++
+	folded += "[track.thing.type]: [changed.Join(",")]"
 
 /// Moves `track` on to the newest frame at or before `frame`. Returns TRUE if that is a new one.
 /datum/sandy_replay/proc/advance(datum/sandy_replay_track/track, frame)
@@ -968,7 +970,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				if(viewer.eye == eye)
 					user.reset_perspective()
 	QDEL_NULL(eye)
-	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1)
+	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1)
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
 		user.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash[1], crash[2])
 	crash = null
