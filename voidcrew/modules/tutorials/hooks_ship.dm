@@ -17,11 +17,11 @@
 	if(get_ship_from_atom(src))
 		tutorial_credit(user, TUTORIAL_STEP_SHIP_SEARCH)
 
-/// Alt-click tile search.
+/// Alt-click tile search aboard a ship.
 /datum/lootpanel/open(turf/tile)
 	. = ..()
 	var/mob/viewer = owner?.mob
-	if(viewer)
+	if(viewer && get_ship_from_atom(tile))
 		tutorial_credit(viewer, TUTORIAL_STEP_SHIP_SEARCH)
 
 /// Only a course this click actually changed counts, so refused clicks (viewer helms,

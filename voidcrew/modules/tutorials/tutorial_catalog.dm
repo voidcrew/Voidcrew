@@ -162,7 +162,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ship_manage
 	key = TUTORIAL_STEP_SHIP_MANAGE
 	name = "Open Ship Management"
-	text = "Use the Ship Management button to see your crew, invites and ship settings."
+	text = "Use the Ship Management button at the top left to see your crew, invites and ship settings."
 
 /datum/vc_tutorial_step/ship_manage/availability(mob/user)
 	if(excused(user))
@@ -180,6 +180,16 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	text = "Open your ship's lockers and crates, or Alt-click a tile to see everything on it."
 	highlight_types = list(/obj/structure/closet)
 
+/// Skip lockers someone already opened or emptied. A closet that was never opened may not
+/// have made its contents yet, so it still counts.
+/datum/vc_tutorial_step/ship_search/highlight_filter(mob/user, atom/candidate)
+	var/obj/structure/closet/closet = candidate
+	if(!istype(closet))
+		return TRUE
+	if(closet.opened)
+		return FALSE
+	return !closet.contents_initialized || length(closet.contents)
+
 /// Shared by the helm steps: a hull with no helm can't do them.
 /datum/vc_tutorial_step/proc/no_helm_note(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -190,12 +200,20 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ship_course
 	key = TUTORIAL_STEP_SHIP_COURSE
 	name = "Set a course"
-	text = "At the helm, pick a heading, or click the map to fly there on autopilot."
+	text = "At the helm, pick a heading, or right-click the chart to fly there on autopilot."
 	highlight_types = list(/obj/machinery/computer/helm)
 	ui_focus = list("helm" = "helm_course")
 
 /datum/vc_tutorial_step/ship_course/availability(mob/user)
 	return no_helm_note(user)
+
+/datum/vc_tutorial_step/ship_course/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship?.shuttle || !isturf(ship.loc))
+		return null
+	if(!ship.can_thrust())
+		return "The engines have no power."
+	return null
 
 /datum/vc_tutorial_step/ship_dock
 	key = TUTORIAL_STEP_SHIP_DOCK
@@ -207,6 +225,18 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ship_dock/availability(mob/user)
 	return no_helm_note(user)
 
+/datum/vc_tutorial_step/ship_dock/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return null
+	if(ship.dock_warmup_timer || ship.state == OVERMAP_SHIP_DOCKING)
+		return "Docking..."
+	if(!isturf(ship.loc))
+		return "Docked. Undock to fly somewhere new."
+	if(!ship.is_still() && MAGNITUDE(ship.speed[1], ship.speed[2]) > ship.max_speed * DOCK_ASSIST_SPEED_FRACTION)
+		return "Too fast to dock."
+	return null
+
 /datum/vc_tutorial_step/ship_undock
 	key = TUTORIAL_STEP_SHIP_UNDOCK
 	name = "Undock"
@@ -217,12 +247,41 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ship_undock/availability(mob/user)
 	return no_helm_note(user)
 
+/// The same blocks the helm's Undock button shows, in the order it checks them.
+/datum/vc_tutorial_step/ship_undock/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship || isturf(ship.loc))
+		return null
+	if(ship.undock_warmup_timer || ship.state == OVERMAP_SHIP_UNDOCKING)
+		return "Undocking..."
+	if(!COOLDOWN_FINISHED(ship, integrity_undock_lockout))
+		return "The hull is too damaged to leave yet."
+	if(!COOLDOWN_FINISHED(ship, interdiction_undock_lockout))
+		return "Held by an interdiction."
+	if(!COOLDOWN_FINISHED(ship, undock_cooldown))
+		return "The docking clamps are still cycling."
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = ship.get_cargo_shuttle()
+	if(cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY)
+		return "The cargo shuttle is aboard."
+	return null
+
 /datum/vc_tutorial_step/ship_build
 	key = TUTORIAL_STEP_SHIP_BUILD
 	name = "See the construction console"
 	text = "Research Shuttle Construction, build the console, and use its drone to change your hull."
 	optional = TRUE
 	highlight_types = list(/obj/machinery/computer/camera_advanced/base_construction/ship)
+
+/datum/vc_tutorial_step/ship_build/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship || SSvc_tutorials.ship_has_machine(ship, /obj/machinery/computer/camera_advanced/base_construction/ship))
+		return null
+	var/datum/techweb/web = ship.get_research_web()
+	if(!web)
+		return null
+	if(web.researched_nodes[TECHWEB_NODE_SHIP_CONSTRUCTION])
+		return "Researched. Print its board at the circuit imprinter."
+	return "Shuttle Construction isn't researched yet."
 
 // ---------------------------------------------------------------------------
 // First contract
@@ -484,7 +543,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	name = "Ship power"
 	category = TUTORIAL_CATEGORY_START
 	order = 2
-	intro = "The SMES batteries in engineering power the whole ship. A fuel generator recharges them while it runs. Each room has an APC that switches its lights, machines and air on or off."
+	intro = "Most ships store their power in SMES batteries in engineering. A fuel generator recharges them while it runs. Each room has an APC that switches its lights, machines and air on or off."
 	steps = list(
 		/datum/vc_tutorial_step/power_smes,
 		/datum/vc_tutorial_step/power_generator,
@@ -497,11 +556,59 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	text = "Find the SMES in engineering. It powers the ship."
 	highlight_types = list(/obj/machinery/power/smes)
 
+/datum/vc_tutorial_step/power_smes/availability(mob/user)
+	if(excused(user))
+		return "No batteries aboard."
+	return null
+
+/// Some small hulls run straight off a generator with no SMES at all.
+/datum/vc_tutorial_step/power_smes/excused(mob/user)
+	if(..())
+		return TRUE
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return ship && !SSvc_tutorials.ship_has_machine(ship, /obj/machinery/power/smes)
+
+/datum/vc_tutorial_step/power_smes/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship || !SSvc_tutorials.ship_has_machine(ship, /obj/machinery/power/smes))
+		return null
+	var/stored = 0
+	var/capacity = 0
+	var/output_off = FALSE
+	for(var/obj/machinery/power/smes/battery as anything in ship.get_ship_machines(/obj/machinery/power/smes))
+		if(!battery.output_attempt)
+			output_off = TRUE
+		for(var/obj/item/stock_parts/power_store/cell in battery.component_parts)
+			stored += cell.charge()
+			capacity += cell.max_charge()
+	if(output_off)
+		return "A battery's output is switched off."
+	if(capacity <= 0)
+		return null
+	return "Batteries at [round(stored / capacity * 100)]%."
+
 /datum/vc_tutorial_step/power_generator
 	key = TUTORIAL_STEP_POWER_GENERATOR
 	name = "Start the generator"
-	text = "Load plasma into the generator and turn it on to recharge the batteries."
+	text = "Bolt the generator down, load its fuel sheets and turn it on."
 	highlight_types = list(/obj/machinery/power/port_gen)
+
+/datum/vc_tutorial_step/power_generator/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship || !SSvc_tutorials.ship_has_machine(ship, /obj/machinery/power/port_gen))
+		return null
+	var/obj/machinery/power/port_gen/generator = tutorial_power_nearest(user, ship.get_ship_machines(/obj/machinery/power/port_gen))
+	if(!generator)
+		return null
+	if(generator.active)
+		return "Running."
+	if(!generator.anchored)
+		return "Not bolted down. Wrench it to the floor."
+	var/obj/machinery/power/port_gen/pacman/pacman = generator
+	if(istype(pacman) && !pacman.HasFuel())
+		var/obj/item/fuel = pacman.sheet_path
+		return "No [initial(fuel.name)] loaded."
+	return "Ready. Turn it on."
 
 /datum/vc_tutorial_step/power_generator/availability(mob/user)
 	if(excused(user))
@@ -516,9 +623,45 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 
 /datum/vc_tutorial_step/power_apc
 	key = TUTORIAL_STEP_POWER_APC
-	name = "Find an APC"
-	text = "Each room has a power panel on the wall. Use it to turn things off or back on."
+	name = "Use an APC"
+	text = "Each room has a power panel on the wall. Right-click it to unlock it, then switch things off or back on."
 	highlight_types = list(/obj/machinery/power/apc)
+
+/// The panel for the room the viewer stands in, when it has one; otherwise any.
+/datum/vc_tutorial_step/power_apc/highlight_filter(mob/user, atom/candidate)
+	var/obj/machinery/power/apc/room_apc = tutorial_room_apc(user)
+	return !room_apc || candidate == room_apc
+
+/datum/vc_tutorial_step/power_apc/live_line(mob/user)
+	var/obj/machinery/power/apc/room_apc = tutorial_room_apc(user)
+	if(!room_apc)
+		return null
+	return room_apc.locked ? "This room's panel is locked." : "This room's panel is unlocked."
+
+/// The APC of the ship room the viewer stands in, or null.
+/proc/tutorial_room_apc(mob/user)
+	var/area/room = get_area(user)
+	var/obj/machinery/power/apc/room_apc = room?.apc
+	if(QDELETED(room_apc) || !get_ship_from_atom(room_apc))
+		return null
+	return room_apc
+
+/// The atom in a list nearest the viewer on their z-level, or null.
+/proc/tutorial_power_nearest(mob/user, list/things)
+	var/turf/here = get_turf(user)
+	if(!here)
+		return null
+	var/atom/best
+	var/best_dist = INFINITY
+	for(var/atom/thing as anything in things)
+		var/turf/spot = get_turf(thing)
+		if(spot?.z != here.z)
+			continue
+		var/dist = get_dist(here, spot)
+		if(dist < best_dist)
+			best = thing
+			best_dist = dist
+	return best
 
 // ---------------------------------------------------------------------------
 // Cyberware
