@@ -10,6 +10,8 @@
 #include "glass_floor_baseturfs.dm"
 #include "hyperspace_jetpack.dm"
 #include "late_initialization_reentry.dm"
+#include "lobby_character.dm"
+#include "lobby_terminal_bill.dm"
 #include "map_parser_attributes.dm"
 #include "mod_night_vision.dm"
 #include "operating_table_movement.dm"
