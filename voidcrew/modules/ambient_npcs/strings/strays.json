@@ -31,6 +31,10 @@
 			"Real walls. I forgot what walls looked like.",
 			"It smells like people in here. I missed that."
 		],
+		"rescued": [
+			"Real walls. I forgot what walls looked like. Here, {other}, I pulled this out of the pod. It's yours.",
+			"Thank you. I mean it. Take this, it's the only thing off the pod worth keeping."
+		],
 		"fire": [
 			"Don't you go out on me.",
 			"Last of the dry stuff."
@@ -80,6 +84,10 @@
 		"aboard": [
 			"Gravity. Real air. Thank you.",
 			"I'm never getting in one of those things again."
+		],
+		"rescued": [
+			"Gravity. Real air. Here, {other}, take this. It came off the lifeboat.",
+			"I owe you. Start with this."
 		],
 		"canister": [
 			"Still a third. Still a third.",
@@ -166,6 +174,11 @@
 			"Morning, {other}. Or whatever it is.",
 			"{other}, where are we off to next?",
 			"You look tired, {other}."
+		],
+		"gift": [
+			"{other}. Found this behind a panel. Figured you'd want it.",
+			"Here, {other}. I fixed it up in my spare time.",
+			"For you, {other}. Still paying off that rescue."
 		],
 		"wash": [
 			"Hot water. Unbelievable."
