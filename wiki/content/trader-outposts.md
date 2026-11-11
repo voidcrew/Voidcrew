@@ -43,7 +43,7 @@ Combat guns bought inside the outpost, or paid out by a contract there, come in 
 
 **Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. A combat gun in hand without a permit, or fired inside, counts as a crime and the [Port Authority](#the-port-authority) answers it. So does coming through a checkpoint door that was pried or hacked open, which also takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
 
-**Emagging the scanner.** An emag on the wall scanner takes the whole gate down for three minutes. Both doors open for anyone who walks into them, nobody is scanned, and the scanner's light goes out. A guard who sees it sounds the alarm and reports you, and that is 2 stars. If he is dead or cannot see, nobody reports it. The gate comes back by itself, and the same scanner cannot be emagged again for five minutes after that. Walking through a gate someone else took down is no crime, but a gun in your hand past it is still one if anyone sees it.
+**Emagging the scanner.** An emag on the wall scanner takes the whole gate down for three minutes. Both doors open for anyone who walks into them, nobody is scanned, and the scanner's light goes out. A guard who sees it sounds the alarm. Anyone who sees it reports you, and that is 2 stars. With the guard dead and nobody watching, nobody reports it. The gate comes back by itself, and the same scanner cannot be emagged again for five minutes after that. Walking through a gate someone else took down is no crime, but a gun in your hand past it is still one if anyone sees it.
 
 ## Shopping
 
@@ -166,9 +166,9 @@ The trader raises the alarm when you leave their sight or half a minute after ha
 
 ### Who comes to clean up
 
-When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers** and **janitors**. Morgue workers bag the dead and wheel them to the lift. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. They are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
+When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers** and **janitors**. Morgue workers bag the dead and drag them off. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. They are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
 
-Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port closes to crews for a quarter of an hour.
+Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port sends nobody for a quarter of an hour.
 
 ## The Port Authority
 
