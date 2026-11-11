@@ -538,5 +538,29 @@
   "rule": "above_on_route",
   "route": "/datum/design/beamrifle",
   "reason": "Deliberate: reputation 22 and six anomaly cores are a real gate, so the Event Horizon stays craftable."
+ },
+ {
+  "path": "/obj/vehicle/sealed/mecha/honker",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/rig_bay_mech/showpiece/honker",
+  "reason": "Deliberate: owner's showpiece stand pricing. Every super mech sells at 25,000 to 31,000 credits plus 3 vouchers, one a round, whatever its tier."
+ },
+ {
+  "path": "/obj/vehicle/sealed/mecha/justice/loaded",
+  "rule": "above_on_route",
+  "route": "/datum/shop_sku/rig_bay_mech/showpiece/justice",
+  "reason": "Deliberate: owner's decision to sell the super mechs as they are on the showpiece stand, one a round for the server and one per crew, at advanced reputation."
+ },
+ {
+  "path": "/obj/vehicle/sealed/mecha/marauder/loaded",
+  "rule": "above_on_route",
+  "route": "/datum/shop_sku/rig_bay_mech/showpiece/marauder",
+  "reason": "Deliberate: owner's decision to sell the super mechs as they are on the showpiece stand, one a round for the server and one per crew, at advanced reputation."
+ },
+ {
+  "path": "/obj/vehicle/sealed/mecha/ripley/paddy/preset",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/rig_bay_mech/showpiece/paddy",
+  "reason": "Deliberate: owner's showpiece stand pricing. Every super mech sells at 25,000 to 31,000 credits plus 3 vouchers, one a round, whatever its tier."
  }
 ]

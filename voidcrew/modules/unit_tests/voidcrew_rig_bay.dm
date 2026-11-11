@@ -32,11 +32,14 @@
 	while(stand.stand_state != state && world.time < give_up)
 		sleep(1)
 
-/// Every stand mech spawns with the kit its line lists.
+/// Every stand mech spawns with the kit its line lists. Only showpieces hang armed, with their stock kit.
 /datum/unit_test/voidcrew_rig_bay/roster/Run()
 	var/datum/outpost_shop/vendor/suit_fitter/shop = allocate(/datum/outpost_shop/vendor/suit_fitter)
 	var/obj/structure/rig_bay_stand/stand = make_stand(shop, bay_turf(1, 1), /datum/shop_rotation/rig_bay/work)
 	for(var/sku_type in subtypesof(/datum/shop_sku/rig_bay_mech))
+		if(sku_type == /datum/shop_sku/rig_bay_mech/showpiece)
+			continue
+		var/showpiece = ispath(sku_type, /datum/shop_sku/rig_bay_mech/showpiece)
 		shop.add_sku(sku_type, "core")
 		var/datum/shop_sku/rig_bay_mech/sku = shop.skus[length(shop.skus)]
 		var/obj/vehicle/sealed/mecha/mech = stand.receive_mech(sku, FALSE)
@@ -45,8 +48,14 @@
 		TEST_ASSERT_EQUAL(mech.type, sku.item_path, "[sku_type] hung the wrong mech")
 		for(var/kit_type in sku.spawn_kit)
 			TEST_ASSERT(locate(kit_type) in mech.flat_equipment, "[sku_type] came without its [kit_type]")
-		for(var/obj/item/mecha_parts/mecha_equipment/equipment as anything in mech.flat_equipment)
-			TEST_ASSERT(!istype(equipment, /obj/item/mecha_parts/mecha_equipment/weapon), "[sku_type] hangs armed with [equipment.type]")
+		if(!showpiece)
+			for(var/obj/item/mecha_parts/mecha_equipment/equipment as anything in mech.flat_equipment)
+				TEST_ASSERT(!istype(equipment, /obj/item/mecha_parts/mecha_equipment/weapon), "[sku_type] hangs armed with [equipment.type]")
+		TEST_ASSERT(!(mech.mecha_flags & ID_LOCK_ON), "[sku_type] hangs locked to an access")
+		if(sku_type == /datum/shop_sku/rig_bay_mech/showpiece/paddy)
+			TEST_ASSERT(locate(/obj/item/mecha_parts/mecha_equipment/weapon/paddy_claw) in mech.flat_equipment, "The Paddy came without its claw")
+		if(sku_type == /datum/shop_sku/rig_bay_mech/showpiece/marauder)
+			TEST_ASSERT(locate(/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack) in mech.flat_equipment, "The Marauder came without its missile rack")
 		TEST_ASSERT(is_trader_good(mech), "[sku_type] isn't marked as trader goods")
 		TEST_ASSERT(mech.cell && is_trader_good(mech.cell), "[sku_type]'s cell isn't marked as trader goods")
 		stand.drop_sku()
@@ -237,3 +246,79 @@
 	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, bay_turf(2, 1))
 	TEST_ASSERT(!outpost_checkpoint_saves(stand), "Ship saves keep Rig Bay stands")
 	TEST_ASSERT(!outpost_checkpoint_saves(mech), "Ship saves keep mechs")
+
+/// Showpiece tests start each with the server's showpiece deal unspent and put the real count back after.
+/datum/unit_test/voidcrew_rig_bay/showpiece
+	abstract_type = /datum/unit_test/voidcrew_rig_bay/showpiece
+	var/saved_deals
+
+/datum/unit_test/voidcrew_rig_bay/showpiece/New()
+	. = ..()
+	saved_deals = GLOB.rig_bay_pool_deals[/datum/shop_rotation/rig_bay/showpiece]
+	GLOB.rig_bay_pool_deals[/datum/shop_rotation/rig_bay/showpiece] = 0
+
+/datum/unit_test/voidcrew_rig_bay/showpiece/Destroy()
+	GLOB.rig_bay_pool_deals[/datum/shop_rotation/rig_bay/showpiece] = saved_deals
+	return ..()
+
+/// The showpiece stand deals one super mech a round for the whole server and never refills.
+/datum/unit_test/voidcrew_rig_bay/showpiece/refill/Run()
+	var/datum/outpost_shop/vendor/suit_fitter/shop = allocate(/datum/outpost_shop/vendor/suit_fitter)
+	var/obj/structure/rig_bay_stand/stand = make_stand(shop, bay_turf(1, 1), /datum/shop_rotation/rig_bay/showpiece, 4)
+	var/obj/structure/rig_bay_stand/second = make_stand(shop, bay_turf(3, 1), /datum/shop_rotation/rig_bay/showpiece, 5)
+	var/obj/vehicle/sealed/mecha/mech = deal(stand)
+	TEST_ASSERT(istype(stand.sku, /datum/shop_sku/rig_bay_mech/showpiece), "The showpiece stand dealt [stand.sku?.type]")
+	TEST_ASSERT_EQUAL(stand.sku.zone_permission, 2, "A showpiece isn't gated at advanced")
+	TEST_ASSERT_NULL(second.deal_mech(FALSE), "A second showpiece was dealt in the same round")
+
+	var/mob/living/carbon/human/consistent/buyer = allocate(/mob/living/carbon/human/consistent, bay_turf(1, 3))
+	TEST_ASSERT(stand.release_mech(buyer), "The showpiece stand wouldn't release its mech")
+	wait_for_stand(stand, "sold_on_stand")
+	mech.forceMove(bay_turf(1, 2))
+	TEST_ASSERT_EQUAL(stand.stand_state, "empty", "Driving off didn't empty the showpiece stand")
+	for(var/convoy in 1 to 4)
+		shop.convoy_restock()
+	TEST_ASSERT_EQUAL(stand.stand_state, "empty", "The showpiece stand refilled after its sale")
+	TEST_ASSERT_NULL(stand.retry_timer, "The showpiece stand keeps retrying a deal it may not make")
+	TEST_ASSERT_EQUAL(second.stand_state, "empty", "Another showpiece stand dealt after the round's showpiece")
+	TEST_ASSERT_EQUAL(GLOB.rig_bay_pool_deals[/datum/shop_rotation/rig_bay/showpiece], 1, "The round's showpiece deal count is wrong")
+
+	// The other pools keep no such count
+	var/obj/structure/rig_bay_stand/work = make_stand(shop, bay_turf(3, 3), /datum/shop_rotation/rig_bay/work, 1)
+	deal(work)
+	TEST_ASSERT(work.pool_can_deal(), "The work pool ran out of deals")
+
+/// One showpiece per crew per round, whichever mech it is. Another crew can still buy.
+/datum/unit_test/voidcrew_rig_bay/showpiece/crew_cap/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/crew = record_for(ship)
+	var/mob/living/carbon/human/buyer = make_member()
+	ship.enlist_crewmember(buyer)
+	set_permission(crew, 2)
+	var/datum/bank_account/account = fund(buyer, 100000)
+	var/obj/structure/overmap/ship/other_ship = make_ship()
+	var/datum/voidcrew_crew_record/other_crew = record_for(other_ship)
+	var/mob/living/carbon/human/other_buyer = make_member()
+	other_ship.enlist_crewmember(other_buyer)
+	set_permission(other_crew, 2)
+	fund(other_buyer, 100000)
+
+	var/datum/outpost_shop/vendor/suit_fitter/shop = allocate(/datum/outpost_shop/vendor/suit_fitter)
+	var/obj/structure/rig_bay_stand/first_stand = make_stand(shop, bay_turf(1, 1), /datum/shop_rotation/rig_bay/showpiece, 4)
+	var/obj/structure/rig_bay_stand/second_stand = make_stand(shop, bay_turf(3, 1), /datum/shop_rotation/rig_bay/showpiece, 5)
+	shop.add_sku(/datum/shop_sku/rig_bay_mech/showpiece/honker, "core")
+	var/datum/shop_sku/rig_bay_mech/showpiece/honker = shop.skus[length(shop.skus)]
+	allocated += first_stand.receive_mech(honker, FALSE)
+	shop.add_sku(/datum/shop_sku/rig_bay_mech/showpiece/phazon, "core")
+	var/datum/shop_sku/rig_bay_mech/showpiece/phazon = shop.skus[length(shop.skus)]
+	allocated += second_stand.receive_mech(phazon, FALSE)
+
+	set_permission(crew, 1)
+	TEST_ASSERT(!honker.try_purchase(buyer, null), "A showpiece sold below advanced reputation")
+	set_permission(crew, 2)
+	TEST_ASSERT(honker.try_purchase(buyer, null), "The crew couldn't buy its first showpiece")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000 - honker.price_credits, "The showpiece cost the wrong amount")
+	TEST_ASSERT_EQUAL(phazon.get_denial_reason(buyer), "I've filled that order already.", "A second showpiece wasn't refused")
+	TEST_ASSERT(!phazon.try_purchase(buyer, null), "A crew bought a second showpiece in one round")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000 - honker.price_credits, "A refused showpiece took money")
+	TEST_ASSERT(phazon.try_purchase(other_buyer, null), "The first crew's showpiece blocked another crew")

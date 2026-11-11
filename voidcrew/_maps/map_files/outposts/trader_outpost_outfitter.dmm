@@ -883,10 +883,6 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
-"ch" = (
-/obj/machinery/light/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "ci" = (
 /obj/machinery/light/directional/north,
 /turf/open/indestructible/large,
@@ -955,36 +951,6 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood/oil,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
-"cr" = (
-/obj/structure/table/reinforced,
-/obj/structure/showcase{
-	density = 0;
-	desc = "A display piece, bolted to the table.";
-	icon = 'icons/obj/clothing/modsuit/mod_construction.dmi';
-	icon_state = "chestplate";
-	name = "MOD chestplate";
-	pixel_x = -5;
-	pixel_y = 4
-	},
-/obj/structure/showcase{
-	density = 0;
-	desc = "A display helmet. The visor is a sticker.";
-	icon = 'icons/obj/clothing/modsuit/mod_construction.dmi';
-	icon_state = "helmet";
-	name = "MOD helmet";
-	pixel_x = 6;
-	pixel_y = 2
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
-"cs" = (
-/obj/machinery/porta_turret/outpost,
-/obj/effect/turf_decal/box/red/corners{
-	dir = 8
-	},
-/obj/effect/turf_decal/box/red/corners,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "ct" = (
@@ -1080,18 +1046,6 @@
 	dir = 2
 	},
 /turf/open/indestructible,
-/area/voidcrew/trader_outpost)
-"cE" = (
-/obj/structure/showcase{
-	density = 1;
-	desc = "A sealed MOD suit locker. Wick has the key.";
-	icon = 'icons/obj/machines/suit_storage.dmi';
-	icon_state = "industrial";
-	name = "suit locker"
-	},
-/obj/effect/turf_decal/bot,
-/obj/structure/sign/poster/contraband/borg_fancy_1/directional/east,
-/turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "cF" = (
 /obj/structure/table/reinforced,
@@ -1637,6 +1591,14 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"gk" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/stripes/white/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "gD" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
@@ -2196,6 +2158,12 @@
 /obj/machinery/light/directional/north,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"pK" = (
+/obj/effect/turf_decal/stripes/white/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "pN" = (
 /obj/effect/spawner/random/vending/snackvend,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -2513,6 +2481,15 @@
 /obj/machinery/light/directional/west,
 /turf/open/indestructible/white/smooth_large,
 /area/voidcrew/trader_outpost)
+"up" = (
+/obj/structure/rig_bay_stand{
+	bay_number = 4;
+	dir = 2;
+	pool = /datum/shop_rotation/rig_bay/showpiece
+	},
+/obj/effect/turf_decal/delivery/white,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "uC" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -2745,6 +2722,15 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"xL" = (
+/obj/machinery/porta_turret/outpost,
+/obj/effect/turf_decal/box/red/corners{
+	dir = 8
+	},
+/obj/effect/turf_decal/box/red/corners,
+/obj/structure/sign/poster/contraband/borg_fancy_1/directional/east,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
 "xZ" = (
 /obj/effect/turf_decal/stripes{
 	dir = 4
@@ -2798,6 +2784,15 @@
 	},
 /obj/item/kirbyplants/organic/plant22,
 /turf/open/indestructible,
+/area/voidcrew/trader_outpost)
+"zf" = (
+/obj/effect/turf_decal/stripes/white/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear/white{
+	dir = 2
+	},
+/turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "zw" = (
 /obj/structure/chair{
@@ -3076,6 +3071,12 @@
 /obj/effect/turf_decal/trimline/yellow/filled/mid_joiner,
 /obj/structure/sign/painting/library{
 	pixel_w = -32
+	},
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
+"Dq" = (
+/obj/effect/turf_decal/arrows{
+	dir = 8
 	},
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
@@ -5318,8 +5319,8 @@ aV
 (26,1,1) = {"
 ao
 dU
-cr
-Xe
+pK
+Dq
 Xe
 Xe
 Xe
@@ -5360,8 +5361,8 @@ aV
 (27,1,1) = {"
 ao
 dU
-ch
-Xe
+up
+zf
 Xe
 de
 ks
@@ -5402,8 +5403,8 @@ aV
 (28,1,1) = {"
 ao
 dU
-cs
-cE
+gk
+xL
 dd
 df
 dg

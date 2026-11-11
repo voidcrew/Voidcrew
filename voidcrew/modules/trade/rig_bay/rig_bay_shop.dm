@@ -6,6 +6,7 @@
 	rotations = list(
 		/datum/shop_rotation/rig_bay/work,
 		/datum/shop_rotation/rig_bay/combat,
+		/datum/shop_rotation/rig_bay/showpiece,
 		/datum/shop_rotation/rig_bay_arms,
 	)
 	/// The Rig Bay stands linked to this shop. Each lists its mech as one line under Exosuits.

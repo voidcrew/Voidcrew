@@ -14,6 +14,8 @@
 #define RIG_BAY_HOLD_TIME (20 MINUTES)
 /// Pixels a chained mech hangs above its stand. Release lowers it back to 0.
 #define RIG_BAY_HANG_LIFT 4
+/// Shared per-crew purchase key for the showpiece stand's whole line (voidcrew_crew_record favor_unique_purchases).
+#define RIG_BAY_SHOWPIECE_CAP "rig_bay_showpiece"
 /// How often a due restock retries while something blocks the stand tile.
 #define RIG_BAY_RETRY_DELAY (10 SECONDS)
 

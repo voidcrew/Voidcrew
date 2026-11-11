@@ -85,6 +85,7 @@ Wick also sells **whole exosuits**, each one hanging on chains from a gantry in 
 
 - **Work bays** show a Ripley MK-I, Ripley MK-II, Clarke or Odysseus, from 4000 to 6500 credits, with a clamp and drill, a drill and mining scanner, or a sleeper already fitted. They restock on every convoy.
 - **The combat bay** shows a Gygax (11000 credits, 4 reputation, two per crew each round) or a Durand (18000 credits plus 3 vouchers, 11 reputation, one per crew each round). Combat mechs come bare; buy the arms separately. The bay restocks on every second convoy.
+- **The showpiece bay**, bay 4 with the white stripes, shows one rare exosuit a round: a H.O.N.K, Paddy, Justice, Phazon, Savannah-Ivanov or Marauder, from 25000 to 31000 credits plus 3 vouchers, 11 reputation, one per crew. Each one comes as it was built, guns included where it has them. Once it's sold, the bay stays empty until the next round.
 - A bay only restocks once the last mech has been driven off it.
 - After the sale only your crew can climb in, while the mech is on the outpost and for 20 minutes at most. An empty, unarmed mech can't be damaged while it is still inside the concourse.
 - Drive it out through the exit gate and take the lobby elevator down to the hangars, like anyone else.

@@ -1,3 +1,6 @@
+/// Mechs each stand pool has dealt this round, server-wide: pool typepath -> count. See deals_per_round.
+GLOBAL_LIST_EMPTY(rig_bay_pool_deals)
+
 /**
  * # Rig Bay stand
  *
@@ -76,7 +79,7 @@
 /obj/structure/rig_bay_stand/proc/deal_mech(animate = TRUE)
 	if(QDELETED(src) || !shop || stand_state != RIG_BAY_STAND_EMPTY || !ispath(pool, /datum/shop_rotation/rig_bay))
 		return null
-	if(!tile_clear())
+	if(!tile_clear() || !pool_can_deal())
 		return null
 	var/datum/shop_rotation/rig_bay/rotation = locate(pool) in shop.live_rotations
 	var/temporary_rotation = !rotation
@@ -93,7 +96,9 @@
 		return null
 	drop_sku()
 	shop.add_sku(sku_type, SHELF_CORE)
-	return receive_mech(shop.skus[length(shop.skus)], animate)
+	. = receive_mech(shop.skus[length(shop.skus)], animate)
+	if(.)
+		GLOB.rig_bay_pool_deals[pool] = (GLOB.rig_bay_pool_deals[pool] || 0) + 1
 
 /**
  * Takes ownership of `new_sku` (already in shop.skus) and spawns its mech on the stand with its kit,
@@ -116,6 +121,8 @@
 			part.attach(mech)
 		else
 			qdel(part)
+	// Some stock builds come locked to an access no crew carries (Paddy, Justice). Sold mechs open to whoever buys them.
+	mech.mecha_flags &= ~ID_LOCK_ON
 	mark_trader_goods(mech)
 	mech.setDir(dir)
 	mech.set_anchored(TRUE)
@@ -195,7 +202,7 @@
  */
 /obj/structure/rig_bay_stand/proc/convoy_arrived()
 	stop_retry()
-	if(stand_state != RIG_BAY_STAND_EMPTY)
+	if(stand_state != RIG_BAY_STAND_EMPTY || !pool_can_deal())
 		convoys_waited = 0
 		return
 	if(++convoys_waited < get_convoys_per_refill())
@@ -208,7 +215,7 @@
 
 /// A due restock found the tile blocked. Tries again until it deals or the next convoy takes over.
 /obj/structure/rig_bay_stand/proc/retry_deal()
-	if(stand_state != RIG_BAY_STAND_EMPTY)
+	if(stand_state != RIG_BAY_STAND_EMPTY || !pool_can_deal())
 		stop_retry()
 		return
 	if(deal_mech(animate = TRUE))
@@ -229,6 +236,14 @@
 		return 1
 	var/datum/shop_rotation/rig_bay/rotation_type = pool
 	return max(1, initial(rotation_type.convoys_per_refill))
+
+/// FALSE once this stand's pool has dealt its deals_per_round for the whole server.
+/obj/structure/rig_bay_stand/proc/pool_can_deal()
+	if(!ispath(pool, /datum/shop_rotation/rig_bay))
+		return FALSE
+	var/datum/shop_rotation/rig_bay/rotation_type = pool
+	var/limit = initial(rotation_type.deals_per_round)
+	return limit <= 0 || (GLOB.rig_bay_pool_deals[pool] || 0) < limit
 
 /// TRUE if a new mech can be placed: no mob, mech or other dense thing on the stand tile.
 /obj/structure/rig_bay_stand/proc/tile_clear()

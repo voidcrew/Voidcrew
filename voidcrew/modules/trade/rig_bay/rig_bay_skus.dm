@@ -12,6 +12,8 @@
 	slots = 0
 	/// Convoys an empty stand of this pool waits before it takes a new mech. 1 refills on every convoy.
 	var/convoys_per_refill = 1
+	/// Mechs this pool may deal in a round, across every stand on the server. 0 means no limit.
+	var/deals_per_round = 0
 
 /// Working mechs. Refills every convoy.
 /datum/shop_rotation/rig_bay/work
@@ -28,6 +30,18 @@
 	pool = list(
 		/datum/shop_sku/rig_bay_mech/gygax = 3,
 		/datum/shop_sku/rig_bay_mech/durand = 1,
+	)
+
+/// Super mechs for the showpiece stand. It deals one a round for the whole server and never refills.
+/datum/shop_rotation/rig_bay/showpiece
+	deals_per_round = 1
+	pool = list(
+		/datum/shop_sku/rig_bay_mech/showpiece/honker = 1,
+		/datum/shop_sku/rig_bay_mech/showpiece/paddy = 1,
+		/datum/shop_sku/rig_bay_mech/showpiece/justice = 1,
+		/datum/shop_sku/rig_bay_mech/showpiece/phazon = 1,
+		/datum/shop_sku/rig_bay_mech/showpiece/savannah_ivanov = 1,
+		/datum/shop_sku/rig_bay_mech/showpiece/marauder = 1,
 	)
 
 /// Yellow exosuit arms: four of the pool on the shelf at once, one each.
@@ -149,6 +163,61 @@
 	price_credits = 18000
 	price_vouchers = 3
 	crew_limit = 1
+
+// ===== SHOWPIECE MECHS =====
+
+/**
+ * Super mechs, sold as tg builds them: their stock kit, or bare where tg gives them none.
+ * One per crew per round across the whole line, on top of each mech's own cap of 1.
+ * Each subtype sets its own gate so the abstract base stays out of the reputation catalog.
+ */
+/datum/shop_sku/rig_bay_mech/showpiece
+	crew_limit = 1
+	price_vouchers = 3
+
+/datum/shop_sku/rig_bay_mech/showpiece/get_favor_denial(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
+	. = ..()
+	if(.)
+		return
+	var/datum/voidcrew_crew_record/crew = crew_ship?.get_crew_record()
+	if((crew?.favor_unique_purchases[RIG_BAY_SHOWPIECE_CAP] || 0) >= 1)
+		return "I've filled that order already."
+
+/// The shop has charged and nothing in between can yield, so the shared cap is taken only on a real hand-over.
+/datum/shop_sku/rig_bay_mech/showpiece/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	. = ..()
+	if(.)
+		get_crew_ship(user)?.get_crew_record()?.claim_purchase(RIG_BAY_SHOWPIECE_CAP, 1)
+
+/datum/shop_sku/rig_bay_mech/showpiece/honker
+	item_path = /obj/vehicle/sealed/mecha/honker
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 25000
+
+/datum/shop_sku/rig_bay_mech/showpiece/paddy
+	item_path = /obj/vehicle/sealed/mecha/ripley/paddy/preset
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 26000
+
+/datum/shop_sku/rig_bay_mech/showpiece/justice
+	item_path = /obj/vehicle/sealed/mecha/justice/loaded
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 28000
+
+/datum/shop_sku/rig_bay_mech/showpiece/phazon
+	item_path = /obj/vehicle/sealed/mecha/phazon
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 29000
+
+/datum/shop_sku/rig_bay_mech/showpiece/savannah_ivanov
+	item_path = /obj/vehicle/sealed/mecha/savannah_ivanov
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 30000
+
+/datum/shop_sku/rig_bay_mech/showpiece/marauder
+	item_path = /obj/vehicle/sealed/mecha/marauder/loaded
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	price_credits = 31000
 
 // ===== ARMS, AMMO AND FITTINGS =====
 
