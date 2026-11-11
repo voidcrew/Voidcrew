@@ -115,6 +115,7 @@
 #include "voidcrew_mission_metrics.dm"
 #include "voidcrew_missions.dm"
 #include "voidcrew_nanite_research.dm"
+#include "voidcrew_nanite_sync.dm"
 #include "voidcrew_npc_boarding_docking.dm"
 #include "voidcrew_npc_disarm.dm"
 #include "voidcrew_npc_zone_profiles.dm"

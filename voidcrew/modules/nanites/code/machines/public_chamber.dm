@@ -95,7 +95,7 @@
 	if(!occupant)
 		return
 	if(attacker)
-		occupant.investigate_log("had their nanite cloud ID changed into [cloud_id] by [key_name(attacker)] using [src] at [AREACOORD(src)].")
+		log_game("[key_name(occupant)] had their nanite cloud ID changed to [cloud_id] by [key_name(attacker)] using [src] at [AREACOORD(src)].")
 	SEND_SIGNAL(occupant, COMSIG_NANITE_SET_CLOUD, cloud_id)
 
 /obj/machinery/public_nanite_chamber/update_icon_state()
