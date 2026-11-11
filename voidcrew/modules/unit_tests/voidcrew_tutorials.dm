@@ -1430,4 +1430,84 @@
 		TEST_ASSERT(step.optional, "[key] counts toward Hunting pirates")
 		TEST_ASSERT(!step.route, "[key] belongs to a route")
 
+// ---------------------------------------------------------------------------
+// storage-drones-saves: Storage, Repair drones and Save your ship panel lines and outlines.
+// ---------------------------------------------------------------------------
+
+/// The repair swarm research line names the next node on the way, then reputation.
+/datum/unit_test/voidcrew_tutorials/sds_research_line/Run()
+	var/datum/techweb/web = allocate(/datum/techweb)
+	web.researched_nodes = list()
+	// TECHWEB_NODE_SHIP_AUTOMATION and TECHWEB_NODE_SHIP_REPAIR_SWARM
+	var/datum/techweb_node/automation = SSresearch.techweb_node_by_id("ship_automation")
+	var/datum/techweb_node/swarm = SSresearch.techweb_node_by_id("ship_repair_swarm")
+	TEST_ASSERT(automation && swarm, "The repair swarm nodes are missing")
+	for(var/prereq_id in swarm.prereq_ids)
+		if(prereq_id != automation.id)
+			mark_researched(web, prereq_id)
+	for(var/prereq_id in automation.prereq_ids)
+		mark_researched(web, prereq_id)
+	TEST_ASSERT_EQUAL(tutorial_repair_research_line(web, swarm.id), "Research [automation.display_name] first.", "The missing prerequisite was not named")
+	web.researched_nodes[automation.id] = TRUE
+	// A web with no ship server has public standing only; the swarm needs yellow.
+	TEST_ASSERT_EQUAL(tutorial_repair_research_line(web, swarm.id), "Needs more crew reputation.", "The reputation gate was not named")
+	web.researched_nodes[swarm.id] = TRUE
+	TEST_ASSERT_NULL(tutorial_repair_research_line(web, swarm.id), "A researched node still had a line")
+
+/// Marks a node and everything before it researched, for the line helpers only.
+/datum/unit_test/voidcrew_tutorials/sds_research_line/proc/mark_researched(datum/techweb/web, node_id)
+	if(web.researched_nodes[node_id])
+		return
+	web.researched_nodes[node_id] = TRUE
+	var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)
+	for(var/prereq_id in node?.prereq_ids)
+		mark_researched(web, prereq_id)
+
+/// The Watch it repair line follows the console: disk, drones, paused swarm, monitoring, backlog.
+/datum/unit_test/voidcrew_tutorials/sds_swarm_line/Run()
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/console = allocate(/obj/machinery/computer/camera_advanced/base_construction/ship)
+	console.console_upgrades = NONE
+	TEST_ASSERT_EQUAL(tutorial_repair_swarm_line(console), "No repair disk in the construction console.", "A console with no disk was not reported")
+	// SHIP_CONSTRUCTION_UPGRADE_REPAIR
+	console.console_upgrades = (1<<10)
+	TEST_ASSERT_EQUAL(tutorial_repair_swarm_line(console), "No drones linked.", "A console with no drones was not reported")
+	var/obj/structure/ship_repair_drone/drone = allocate(/obj/structure/ship_repair_drone, run_loc_floor_bottom_left)
+	console.repair_drones += drone
+	console.repair_enabled = FALSE
+	TEST_ASSERT_EQUAL(tutorial_repair_swarm_line(console), "Swarm paused.", "A paused swarm was not reported")
+	console.repair_enabled = TRUE
+	console.repair_tracking = FALSE
+	TEST_ASSERT_EQUAL(tutorial_repair_swarm_line(console), "Damage monitoring is off.", "Monitoring being off was not reported")
+	console.repair_tracking = TRUE
+	TEST_ASSERT_EQUAL(tutorial_repair_swarm_line(console), "Swarm out. No hull damage logged.", "An idle deployed swarm was not reported")
+	console.repair_drones -= drone
+	console.repair_enabled = FALSE
+	console.repair_tracking = FALSE
+
+/// Shelve a crate outlines loose crates and shelves with room, nothing else.
+/datum/unit_test/voidcrew_tutorials/sds_crate_filter/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key["vc/storage/crate"]
+	TEST_ASSERT(step, "The Shelve a crate step is missing")
+	var/obj/structure/cargo_shelf/shelf = allocate(/obj/structure/cargo_shelf, get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, get_step(run_loc_floor_bottom_left, NORTH))
+	TEST_ASSERT(step.highlight_filter(player, shelf), "An empty shelf was not outlined")
+	TEST_ASSERT(step.highlight_filter(player, crate), "A loose crate was not outlined")
+	crate.set_anchored(TRUE)
+	TEST_ASSERT(!step.highlight_filter(player, crate), "A bolted crate was outlined")
+	crate.set_anchored(FALSE)
+	for(var/level in 1 to length(shelf.shelf_contents))
+		TEST_ASSERT(shelf.insert_crate(allocate(/obj/structure/closet/crate, run_loc_floor_bottom_left)), "The shelf refused a crate")
+	TEST_ASSERT(!step.highlight_filter(player, shelf), "A full shelf was outlined")
+
+/// The shelf step outlines iron only in stacks big enough for the parts.
+/datum/unit_test/voidcrew_tutorials/sds_shelf_filter/Run()
+	var/mob/living/carbon/human/player = make_player()
+	var/datum/vc_tutorial_step/step = SSvc_tutorials.steps_by_key["vc/storage/shelf"]
+	TEST_ASSERT(step, "The Build a cargo shelf step is missing")
+	var/obj/item/stack/sheet/iron/few = allocate(/obj/item/stack/sheet/iron, run_loc_floor_bottom_left, 3)
+	var/obj/item/stack/sheet/iron/enough = allocate(/obj/item/stack/sheet/iron, get_step(run_loc_floor_bottom_left, EAST), 4)
+	TEST_ASSERT(!step.highlight_filter(player, few), "Three sheets were outlined")
+	TEST_ASSERT(step.highlight_filter(player, enough), "Four sheets were not outlined")
+
 #undef TUTORIAL_TEST_CKEY

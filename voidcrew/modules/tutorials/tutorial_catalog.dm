@@ -1696,19 +1696,48 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/storage_shelf
 	key = TUTORIAL_STEP_STORAGE_SHELF
 	name = "Build a cargo shelf"
-	text = "Make cargo shelf parts from four iron sheets, then use them where the shelf should stand."
+	text = "Use four iron sheets in hand and make cargo shelf parts. Stand on a clear tile and use the parts to build it there."
+	highlight_types = list(/obj/item/stack/sheet/iron, /obj/item/rack_parts/cargo_shelf)
+
+/// Loose shelf parts, or an iron stack big enough for them (the recipe takes four sheets).
+/datum/vc_tutorial_step/storage_shelf/highlight_filter(mob/user, atom/candidate)
+	var/obj/item/stack/sheet/iron/sheets = candidate
+	return !istype(sheets) || sheets.amount >= 4
 
 /datum/vc_tutorial_step/storage_crate
 	key = TUTORIAL_STEP_STORAGE_CRATE
 	name = "Shelve a crate"
-	text = "Drag a crate onto a cargo shelf to lift it up."
-	highlight_types = list(/obj/structure/cargo_shelf)
+	text = "Push a crate next to a cargo shelf, then drag the crate onto the shelf."
+	highlight_types = list(/obj/structure/cargo_shelf, /obj/structure/closet/crate)
+
+/// Shelves with room left, and crates loose on the floor.
+/datum/vc_tutorial_step/storage_crate/highlight_filter(mob/user, atom/candidate)
+	var/obj/structure/cargo_shelf/shelf = candidate
+	if(istype(shelf))
+		return !!shelf.shelf_contents?.Find(null)
+	var/obj/structure/closet/crate/crate = candidate
+	return istype(crate) && !crate.anchored && isturf(crate.loc)
 
 /datum/vc_tutorial_step/storage_locker
 	key = TUTORIAL_STEP_STORAGE_LOCKER
 	name = "Build a smart locker"
-	text = "Print a Smart Locker board and build it in a machine frame."
-	highlight_types = list(/obj/machinery/rnd/production/circuit_imprinter)
+	text = "Research Food Processing, then print a Smart Locker board at the circuit imprinter. Build it in a machine frame with a matter bin and five cable."
+	highlight_types = list(/obj/machinery/rnd/production/circuit_imprinter, /obj/structure/frame/machine)
+	ui_focus = list("rdconsole" = "rd_node_food_proc", "imprinter" = "imprinter_smartlocker")
+
+/// Only frames that hold a smart locker board.
+/datum/vc_tutorial_step/storage_locker/highlight_filter(mob/user, atom/candidate)
+	var/obj/structure/frame/machine/frame = candidate
+	return !istype(frame) || istype(frame.circuit, /obj/item/circuitboard/machine/smartfridge/storage)
+
+/datum/vc_tutorial_step/storage_locker/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/datum/techweb/web = ship?.get_research_web()
+	if(web && !web.researched_designs["smartlocker"])
+		return "Research Food Processing first."
+	if(ship && !SSvc_tutorials.ship_has_machine(ship, /obj/machinery/rnd/production/circuit_imprinter))
+		return "No circuit imprinter aboard."
+	return null
 
 /datum/vc_tutorial_step/storage_store
 	key = TUTORIAL_STEP_STORAGE_STORE
@@ -1736,30 +1765,67 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/repair_drones_research
 	key = TUTORIAL_STEP_REPAIR_DRONES_RESEARCH
 	name = "Research Shuttle Repair Swarm"
-	text = "At the R&D console, after Shuttle Automation, Robotics and Mech Assembly."
+	text = "At the R&D console, after Shuttle Construction Automation. It needs some crew reputation."
 	highlight_types = list(/obj/machinery/computer/rdconsole)
+	ui_focus = list("rdconsole" = "rd_node_ship_repair_swarm")
 
 /datum/vc_tutorial_step/repair_drones_research/state_satisfied(mob/user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	var/datum/techweb/web = ship?.get_research_web()
 	return web && (TECHWEB_NODE_SHIP_REPAIR_SWARM in web.researched_nodes)
 
+/datum/vc_tutorial_step/repair_drones_research/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	return tutorial_repair_research_line(ship?.get_research_web(), TECHWEB_NODE_SHIP_REPAIR_SWARM)
+
 /datum/vc_tutorial_step/repair_drones_assemble
 	key = TUTORIAL_STEP_REPAIR_DRONES_ASSEMBLE
 	name = "Assemble a drone"
-	text = "Print the four drone parts at an exosuit fabricator and fit them to the chassis."
-	highlight_types = list(/obj/machinery/mecha_part_fabricator)
+	text = "Print the chassis and its three parts at an exosuit fabricator. Fit the parts to the chassis with a wrench, five cable and a screwdriver."
+	highlight_types = list(/obj/machinery/mecha_part_fabricator, /obj/item/ship_repair_drone_part/chassis)
+
+/// The next assembly step of the nearest chassis in reach.
+/datum/vc_tutorial_step/repair_drones_assemble/live_line(mob/user)
+	return tutorial_repair_chassis_line(user)
 
 /datum/vc_tutorial_step/repair_drones_link
 	key = TUTORIAL_STEP_REPAIR_DRONES_LINK
 	name = "Link the drone"
-	text = "Install the repair swarm disk, then use a multitool on the construction console and the drone."
+	text = "Print the Repair Swarm upgrade disk at a protolathe and use it on the construction console. Then use a multitool on the console, then on the drone aboard."
 	highlight_types = list(/obj/machinery/computer/camera_advanced/base_construction/ship, /obj/structure/ship_repair_drone)
+
+/// The crew's own console, and drones nobody has linked yet.
+/datum/vc_tutorial_step/repair_drones_link/highlight_filter(mob/user, atom/candidate)
+	var/obj/structure/ship_repair_drone/drone = candidate
+	if(istype(drone))
+		return !drone.console
+	return tutorial_repair_is_crew_console(user, candidate)
+
+/datum/vc_tutorial_step/repair_drones_link/live_line(mob/user)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/console = tutorial_repair_console(get_crew_ship(user))
+	if(console && !(console.console_upgrades & SHIP_CONSTRUCTION_UPGRADE_REPAIR))
+		return "No repair disk in the construction console."
+	return null
 
 /datum/vc_tutorial_step/repair_drones_repair
 	key = TUTORIAL_STEP_REPAIR_DRONES_REPAIR
 	name = "Watch it repair"
-	text = "Take hull damage while flying. Linked drones rebuild it from the ore silo."
+	text = "In the construction console's Repair Drones tab, press Deploy swarm. Then take hull damage while flying."
+	highlight_types = list(/obj/machinery/computer/camera_advanced/base_construction/ship, /obj/structure/ship_repair_drone)
+	ui_focus = list("construction" = "construct_deploy_swarm")
+
+/// The console while the swarm is paused, the crew's linked drones once it is out.
+/datum/vc_tutorial_step/repair_drones_repair/highlight_filter(mob/user, atom/candidate)
+	var/obj/structure/ship_repair_drone/drone = candidate
+	if(istype(drone))
+		return drone.console && drone.console.repair_enabled && drone.console.current_ship == get_crew_ship(user)
+	if(!tutorial_repair_is_crew_console(user, candidate))
+		return FALSE
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/console = candidate
+	return !console.repair_enabled
+
+/datum/vc_tutorial_step/repair_drones_repair/live_line(mob/user)
+	return tutorial_repair_swarm_line(tutorial_repair_console(get_crew_ship(user)))
 
 // ---------------------------------------------------------------------------
 // Save your ship
@@ -1780,9 +1846,15 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ship_save_dock
 	key = TUTORIAL_STEP_SHIP_SAVE_DOCK
 	name = "Dock in a ship bay"
-	text = "Dock at a crew outpost that has ship bays."
+	text = "Fly to a crew outpost with ship bays. On the helm, pick Dock at ship bay, not the plain outpost entry."
 	highlight_types = list(/obj/machinery/computer/helm)
 	ui_focus = list("helm" = "helm_dock_bay")
+
+/datum/vc_tutorial_step/ship_save_dock/live_line(mob/user)
+	var/list/names = tutorial_save_bay_outposts()
+	if(!length(names))
+		return "No outpost has ship bays right now."
+	return "Ship bays: [jointext(names, ", ")]."
 
 /// Only the captain can save or load a ship.
 /datum/vc_tutorial_step/proc/captain_only_note(mob/user)
@@ -1793,7 +1865,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 /datum/vc_tutorial_step/ship_save_save
 	key = TUTORIAL_STEP_SHIP_SAVE_SAVE
 	name = "Save the ship"
-	text = "At the bay's shipyard console, open Saved ships and save your ship to a slot."
+	text = "Take the bay elevator to the shipyard console and save your ship to a slot."
 	highlight_types = list(/obj/machinery/computer/ship_checkpoint)
 
 /datum/vc_tutorial_step/ship_save_save/availability(mob/user)
@@ -1804,6 +1876,20 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 		return TRUE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	return ship && !ship.is_ship_captain(user)
+
+/datum/vc_tutorial_step/ship_save_save/live_line(mob/user)
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship?.is_ship_captain(user))
+		return null
+	if(!tutorial_save_bay_of(ship))
+		return "Your ship isn't in a ship bay."
+	if(!length(ship.shuttle?.spawn_points))
+		return "This hull has no cryopods."
+	return null
+
+/// The shipyard console in the bay the crew's ship sits in, so the arrow can lead the captain there.
+/datum/vc_tutorial_step/ship_save_save/extra_targets(mob/user)
+	return tutorial_save_bay_consoles(tutorial_save_bay_of(get_crew_ship(user)))
 
 /datum/vc_tutorial_step/ship_save_load
 	key = TUTORIAL_STEP_SHIP_SAVE_LOAD
