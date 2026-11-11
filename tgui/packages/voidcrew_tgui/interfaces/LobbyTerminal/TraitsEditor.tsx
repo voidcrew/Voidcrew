@@ -268,7 +268,7 @@ export function TraitsEditor(props: CellBox) {
               setSel(k);
               toggle(k);
             }}
-            onHover={(over) => setHover(over ? k : null)}
+            onHover={(over) => setHover((h) => (over ? k : h === k ? null : h))}
           />
         );
       })}

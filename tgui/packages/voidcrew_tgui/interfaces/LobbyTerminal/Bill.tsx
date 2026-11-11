@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 
 import { ShipPic } from './ShipPic';
-import { Frame, lpad, Put, pad, RPut, Rule, TOP, useGrid } from './term';
+import { cut, Frame, lpad, Put, pad, RPut, Rule, TOP, useGrid } from './term';
 import type { Hull, LobbyActions } from './types';
 import {
   billOf,
@@ -94,19 +94,32 @@ export function Bill(props: {
   const w = cols - x;
   out.push(<Frame key="bf" x={x} y={TOP} w={w} h={h} title="BILL" />);
   let y = TOP + 2;
+  // Keys on by; the status line two above; the parts table above that; the bill lines on top.
   const by = TOP + h - 3;
+  const short = Object.keys(bill.short).length > 0;
+  const tableTop = by - (short ? 8 : 7);
   const labelW = Math.min(14, Math.max(8, Math.floor(w * 0.25)));
   const nameX = x + 3 + labelW + 1;
-  // Leave the bottom of the box to the total, account, warnings and keys.
-  const lineEnd = by - 7;
-  bill.lines.forEach(([label, name, cost], i) => {
-    if (y >= lineEnd) {
-      return;
-    }
+  const lines = bill.lines;
+  lines.forEach(([label, name, cost], i) => {
     const costText = cost ? costOf(cost) || '-' : '-';
     const nameRoom = x + w - 3 - nameX;
     // A long price drops to its own row under the name.
     const own = nameRoom - (costText.length + 2) < 10;
+    const need = own ? 2 : 1;
+    // Rows left above the table, keeping one for "+N MORE" unless this is the last line.
+    const left = tableTop - 1 - y - (i < lines.length - 1 ? 1 : 0);
+    if (y < 0 || need > left) {
+      if (y >= 0) {
+        out.push(
+          <Put key="lmore" x={x + 3} y={y} cls="faint">
+            {`+${lines.length - i} MORE`}
+          </Put>,
+        );
+      }
+      y = -1;
+      return;
+    }
     out.push(
       <Put key={`ll${i}`} x={x + 3} y={y} cls="dim">
         {pad(label, labelW)}
@@ -128,61 +141,79 @@ export function Bill(props: {
         y={y}
         cls={cost && partsOf(cost) ? 'amb' : 'faint'}
       >
-        {costText.slice(-(w - 6))}
+        {cut(costText, w - 6)}
       </RPut>,
     );
     y++;
   });
-  y++;
-  out.push(<Rule key="br" x={x + 1} y={y} w={w - 2} />);
-  y += 2;
-  const short = Object.keys(bill.short).length > 0;
+
+  // The parts table: one column per part, so TOTAL, ON ACCOUNT and SHORT line up and never
+  // run into each other however many parts there are.
+  out.push(<Rule key="br" x={x + 1} y={tableTop} w={w - 2} />);
+  const inner = w - 6;
+  const longLabels = inner >= 11 + 4 * 8;
+  const rowLabelW = longLabels ? 11 : 6;
+  const colW = Math.max(4, Math.min(9, Math.floor((inner - rowLabelW) / 4)));
+  const colX = (j: number) => x + 3 + rowLabelW + j * colW;
+  const cell = (n: number) => lpad(cut(String(n), colW - 1), colW - 1);
   const due = partsOf(bill.total);
+  PART_ORDER.forEach((k, j) => {
+    const head =
+      colW - 1 >= k.length ? k.toUpperCase() : k.slice(0, 3).toUpperCase();
+    out.push(
+      <Put key={`ph${k}`} x={colX(j)} y={tableTop + 1} cls="faint">
+        {lpad(head, colW - 1)}
+      </Put>,
+      <Put
+        key={`pt${k}`}
+        x={colX(j)}
+        y={tableTop + 2}
+        cls={bill.short[k] ? 'red' : (bill.total[k] || 0) > 0 ? 'amb' : 'faint'}
+      >
+        {cell(bill.total[k] || 0)}
+      </Put>,
+      <Put key={`pa${k}`} x={colX(j)} y={tableTop + 3} cls="dim">
+        {cell(ctx.account?.[k] || 0)}
+      </Put>,
+    );
+    if (short) {
+      out.push(
+        <Put
+          key={`ps${k}`}
+          x={colX(j)}
+          y={tableTop + 4}
+          cls={bill.short[k] ? 'red' : 'faint'}
+        >
+          {bill.short[k] ? cell(bill.short[k] || 0) : lpad('-', colW - 1)}
+        </Put>,
+      );
+    }
+  });
   out.push(
-    <Put key="tl" x={x + 3} y={y} cls="dim">
+    <Put key="tl" x={x + 3} y={tableTop + 2} cls={due ? '' : 'dim'}>
       TOTAL
     </Put>,
-    <RPut
-      key="tv"
-      x={x + w - 3}
-      y={y}
-      cls={short ? 'red' : due ? 'amb' : 'dim'}
-    >
-      {costOf(bill.total) || '-'}
-    </RPut>,
-  );
-  y++;
-  const accountText = PART_ORDER.map(
-    (k) =>
-      `${ctx.account?.[k] || 0} ${narrow ? k.slice(0, 3).toUpperCase() : k.toUpperCase()}`,
-  ).join('  ');
-  out.push(
-    <Put key="al" x={x + 3} y={y} cls="dim">
-      {narrow ? 'HELD' : 'ON ACCOUNT'}
+    <Put key="al" x={x + 3} y={tableTop + 3} cls="dim">
+      {longLabels ? 'ON ACCOUNT' : 'HELD'}
     </Put>,
-    <RPut key="av" x={x + w - 3} y={y} cls="dim">
-      {accountText}
-    </RPut>,
   );
+  if (short) {
+    out.push(
+      <Put key="sl" x={x + 3} y={tableTop + 4} cls="red">
+        SHORT
+      </Put>,
+    );
+  }
 
   const confirming = view.confirm === 'commission';
   const blocked = short || !ctx.open;
-  if (short) {
-    out.push(
-      <Put key="sl" x={x + 3} y={by - 2} cls="red">
-        SHORT
-      </Put>,
-      <Put key="sv" x={x + 10} y={by - 2} cls="red">
-        {costOf(bill.short)}
-      </Put>,
-    );
-  } else if (!ctx.open) {
+  if (!short && !ctx.open) {
     out.push(
       <Put key="wait" x={x + 3} y={by - 2} cls="amb">
-        THE YARD OPENS AT DEPARTURE
+        {cut('THE YARD OPENS AT DEPARTURE', w - 6)}
       </Put>,
     );
-  } else if (ctx.crewChange) {
+  } else if (!short && ctx.crewChange) {
     out.push(
       <Put key="lv" x={x + 3} y={by - 2} cls="amb">
         {pad(`LEAVES ${ctx.crewChange.toUpperCase()}`, w - 6)}
@@ -216,6 +247,7 @@ export function Bill(props: {
       cls={confirming ? 'inva' : 'inv'}
       disabled={blocked}
       onClick={commission}
+      auto={2}
     />,
   );
   // A hull with nothing to fit has no CHANGE FIT.
@@ -227,6 +259,7 @@ export function Bill(props: {
         y={by}
         label="CHANGE FIT"
         cls="dim"
+        auto={1}
         onClick={() => set({ screen: 'fit' })}
       />,
     );

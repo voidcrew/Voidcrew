@@ -14,6 +14,7 @@ import { BodyEditor } from './BodyEditor';
 import { CharPreview } from './CharPreview';
 import { parseHex } from './ColorEntry';
 import { KitEditor } from './KitEditor';
+import { useBack } from './nav';
 import { RolesEditor } from './RolesEditor';
 import { TraitsEditor } from './TraitsEditor';
 import {
@@ -92,6 +93,7 @@ export function CharacterTab(props: { home: number }) {
   const { cols, rows, narrow } = useGrid();
   const cat = usePrefsCatalog();
   const [section, setSection] = useState<CharSection | null>(null);
+  useBack(section ? () => setSection(null) : null);
   const [dir, setDir] = useState<CharDir>(2);
 
   useEffect(() => {

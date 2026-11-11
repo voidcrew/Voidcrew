@@ -7,10 +7,10 @@
  *
  * Without the art (static.bezel null) the same tree is drawn by PLACEHOLDER_CSS.
  */
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
-
+import { useFocusable } from './nav';
 import type { LobbyData } from './types';
 
 type KeyId = 'join' | 'ready' | 'notready' | 'observe' | 'character' | 'start';
@@ -33,13 +33,18 @@ function Key(props: {
   onClick: () => void;
 }) {
   const { id, disabled, lit, title, onClick } = props;
+  const focus = useFocusable<HTMLButtonElement>(!disabled, {
+    activate: onClick,
+  });
   return (
     <button
+      ref={focus.ref}
       type="button"
-      className={`lt-key lt-key--${id}${disabled ? ' is-disabled' : ''}${lit ? ' is-lit' : ''}`}
+      className={`lt-key lt-key--${id}${disabled ? ' is-disabled' : ''}${lit ? ' is-lit' : ''}${focus.focused ? ' is-focus' : ''}`}
       disabled={disabled}
       title={title}
       onClick={disabled ? undefined : onClick}
+      onMouseEnter={focus.onMouseEnter}
     >
       <span className="lt-key-legend">{KEY_LABEL[id]}</span>
     </button>
@@ -56,17 +61,19 @@ function SmallButton(props: {
   onClick: () => void;
 }) {
   const { id, title, disabled, mark, onClick } = props;
-  const [hover, setHover] = useState(false);
-  const state = disabled ? '_disabled' : hover ? '_highlighted' : '';
+  const focus = useFocusable<HTMLButtonElement>(!disabled, {
+    activate: onClick,
+  });
+  const state = disabled ? '_disabled' : focus.focused ? '_highlighted' : '';
   return (
     <button
+      ref={focus.ref}
       type="button"
-      className={`lt-sbtn${disabled ? ' is-disabled' : ''}`}
+      className={`lt-sbtn${disabled ? ' is-disabled' : ''}${focus.focused ? ' is-focus' : ''}`}
       title={title}
       disabled={disabled}
       onClick={disabled ? undefined : onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={focus.onMouseEnter}
     >
       <img
         className="lt-sbtn-icon"
@@ -209,7 +216,7 @@ const LEGEND_CSS = `
   left: calc(var(--s) * 6px); right: calc(var(--s) * 6px); top: calc(var(--s) * 9px); height: calc(var(--s) * 13px);
   background: #36373a; color: #7effbf; font-family: 'VCR', monospace; font-size: calc(var(--s) * 9px);
   line-height: calc(var(--s) * 13px); text-align: center; letter-spacing: calc(var(--s) * 1px); }
-.lt-key--start:hover .lt-key-legend { color: #ffc41f; }
+.lt-key--start.is-focus .lt-key-legend { color: #ffc41f; }
 .lt-key-legend { pointer-events: none; }
 .lt-key.is-lit { position: relative; }
 .lt-key.is-lit::after { content: ''; position: absolute; pointer-events: none;
@@ -242,7 +249,7 @@ const PLACEHOLDER_CSS = `
 .lt-ph .lt-key--join, .lt-ph .lt-key--ready, .lt-ph .lt-key--notready { width: calc(var(--s) * 68px); }
 .lt-ph .lt-key--observe { width: calc(var(--s) * 84px); }
 .lt-ph .lt-key--character { width: calc(var(--s) * 100px); }
-.lt-ph .lt-key:hover { background: #e0e3dc; }
+.lt-ph .lt-key.is-focus { background: #e0e3dc; }
 .lt-ph .lt-key:active { background: #9aa39f; }
 .lt-ph .lt-key.is-disabled { cursor: default; background: #9aa39f; }
 .lt-ph .lt-key.is-disabled .lt-key-legend { color: #33676a; }

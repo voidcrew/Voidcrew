@@ -11,8 +11,9 @@ import { useBackend } from 'tgui/backend';
 import { Bill } from './Bill';
 import { Fit } from './Fit';
 import { Hulls } from './Hulls';
+import { useBack } from './nav';
 import { SaveSlots } from './SaveSlots';
-import { Frame, Put, RPut, TOP, useGrid } from './term';
+import { Frame, type NavProps, Put, RPut, TOP, useGrid } from './term';
 import type {
   CrewLine,
   Finish,
@@ -304,17 +305,30 @@ export type YardCtx = {
 // ---------------------------------------------------------------------------
 
 /** A `[ LABEL ]` key in any colour class; faint and dead when disabled. */
-export function Key(props: {
-  x: number;
-  y: number;
-  label: string;
-  cls?: string;
-  right?: boolean;
-  disabled?: boolean;
-  bg?: boolean;
-  onClick?: () => void;
-}) {
-  const { x, y, label, cls = '', right, disabled, bg, onClick } = props;
+export function Key(
+  props: NavProps & {
+    x: number;
+    y: number;
+    label: string;
+    cls?: string;
+    right?: boolean;
+    disabled?: boolean;
+    bg?: boolean;
+    onClick?: () => void;
+  },
+) {
+  const {
+    x,
+    y,
+    label,
+    cls = '',
+    right,
+    disabled,
+    bg,
+    onClick,
+    auto,
+    edge,
+  } = props;
   const text = `[ ${label} ]`;
   const at = right ? x - text.length : x;
   if (disabled) {
@@ -333,6 +347,8 @@ export function Key(props: {
       hoverCls={amber ? 'inva' : 'inv'}
       bg={bg}
       onClick={onClick}
+      auto={auto}
+      edge={edge}
     >
       {text}
     </Put>
@@ -379,6 +395,7 @@ function Crumbs(props: { ctx: YardCtx; screen: YardScreen }) {
     fit: { screen: 'hulls' },
     bill: { screen: fittable ? 'fit' : 'hulls' },
   };
+  useBack(() => set(back[screen]));
   const out: ReactNode[] = [];
   let x = cols - 1 - (showCrumbs ? width() : 0);
   out.push(
@@ -461,6 +478,7 @@ function Home(props: { ctx: YardCtx }) {
         label="NEW SHIP"
         cls="inv"
         onClick={newShip}
+        auto={1}
       />,
     );
     const short = PART_ORDER.map(
@@ -501,6 +519,7 @@ function Home(props: { ctx: YardCtx }) {
         label="NEW SHIP"
         cls="inv"
         onClick={newShip}
+        auto={1}
       />,
     );
     const segs = PART_ORDER.map((k) => [

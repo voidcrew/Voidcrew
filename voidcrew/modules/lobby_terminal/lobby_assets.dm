@@ -24,6 +24,16 @@
 		for(var/suffix in list("", "_highlighted", "_disabled"))
 			assets["lt_[button][suffix].png"] = icon('icons/hud/lobby/bottom_buttons.dmi', "[button][suffix]", frame = 1)
 	assets["lt_new_poll.png"] = icon('icons/hud/lobby/poll_overlay.dmi', "new_poll")
+	// Key clicks the page plays itself when the focus moves or a key is pressed (nav.tsx).
+	var/list/sounds = list(
+		"lt_key1.ogg" = "sound/machines/terminal/terminal_button01.ogg",
+		"lt_key2.ogg" = "sound/machines/terminal/terminal_button03.ogg",
+		"lt_key3.ogg" = "sound/machines/terminal/terminal_button05.ogg",
+		"lt_press.ogg" = "sound/machines/terminal/terminal_select.ogg",
+	)
+	for(var/name in sounds)
+		if(fexists(sounds[name]))
+			assets[name] = sounds[name]
 	parents = list()
 	if(fexists("[art_dir]lobby_terminal.css"))
 		parents["lobby_terminal.css"] = "[art_dir]lobby_terminal.css"

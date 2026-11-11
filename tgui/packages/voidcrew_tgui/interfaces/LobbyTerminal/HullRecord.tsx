@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react';
 
 import { ShipPic } from './ShipPic';
-import { Frame, Put, TOP, useGrid, wrap } from './term';
+import { cut, Frame, Put, TOP, useGrid, wrapMax } from './term';
 import type { Hull } from './types';
 import {
   costOf,
@@ -37,7 +37,7 @@ export function HullRecord(props: {
   let y = TOP + 2 + picH;
   out.push(
     <Put key="name" x={x + 3} y={y++}>
-      {hull.name.toUpperCase().slice(0, w - 6)}
+      {cut(hull.name.toUpperCase(), w - 6)}
     </Put>,
   );
   y++;
@@ -45,15 +45,13 @@ export function HullRecord(props: {
   const owned = hullOwned(ctx.own, hull);
   // Leave room for the stats line and the price above the key.
   const descRows = Math.max(1, by - (owned ? 1 : 3) - 2 - y);
-  wrap(hull.desc, w - 6)
-    .slice(0, descRows)
-    .forEach((l, i) => {
-      out.push(
-        <Put key={`d${i}`} x={x + 3} y={y++} cls="dim">
-          {l}
-        </Put>,
-      );
-    });
+  wrapMax(hull.desc, w - 6, descRows).forEach((l, i) => {
+    out.push(
+      <Put key={`d${i}`} x={x + 3} y={y++} cls="dim">
+        {l}
+      </Put>,
+    );
+  });
   y++;
   if (y < by - (owned ? 0 : 2)) {
     out.push(
@@ -87,7 +85,7 @@ export function HullRecord(props: {
         PRICE
       </Put>,
       <Put key="pv" x={x + 10} y={by - 2} cls="amb">
-        {costOf(hull.cost)}
+        {cut(costOf(hull.cost), w - 13)}
       </Put>,
     );
   }
@@ -98,6 +96,7 @@ export function HullRecord(props: {
       y={by}
       label="FIT OUT"
       cls="inv"
+      auto={1}
       onClick={() =>
         ctx.set({
           // A hull with no finishes and no rooms has nothing to fit: straight to the bill.

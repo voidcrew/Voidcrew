@@ -8,12 +8,9 @@
  * row and stays on the screen. Dragging on a bar only changes local state: nothing is sent
  * until SET, so the server never renders a colour that was dragged past.
  */
-import {
-  type PointerEvent as ReactPointerEvent,
-  useEffect,
-  useState,
-} from 'react';
+import { type PointerEvent as ReactPointerEvent, useState } from 'react';
 
+import { useBack } from './nav';
 import { Btn, Field, lpad, Panel, Put, Swatch, TOP, useGrid } from './term';
 
 export type ColorEntryProps = {
@@ -235,18 +232,7 @@ export function ColorEntry(props: ColorEntryProps) {
     }
   };
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  useBack(open ? () => setOpen(false) : null);
 
   const lx = label ? x + label.length + 1 : x;
   const row = (

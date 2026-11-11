@@ -12,6 +12,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { ColorEntry, parseHex } from './ColorEntry';
+import { useBack } from './nav';
 import { Btn, Cycler, Field, Panel, Put, pad, Swatch, wrap } from './term';
 import {
   AGE_MAX,
@@ -660,15 +661,7 @@ function ListPicker(props: {
     Math.max(0, Math.floor(list.indexOf(value) / per)),
   );
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  useBack(onClose);
 
   const needle = find.trim().toLowerCase();
   const shown = needle
@@ -707,6 +700,7 @@ function ListPicker(props: {
             cls={cur ? 'inv' : ''}
             hoverCls="inv"
             onClick={() => onPick(v)}
+            auto={cur ? 1 : undefined}
           >
             {pad(show(v).toUpperCase(), colW)}
           </Put>
