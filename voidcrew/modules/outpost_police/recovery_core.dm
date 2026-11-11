@@ -189,6 +189,31 @@
 			else
 				closet_turf = where
 		qdel(mark)
+	// Once the interior has finished loading (its spawners included), what lies about is the map's own
+	addtimer(CALLBACK(src, PROC_REF(mark_decor)), 1 SECONDS, TIMER_DELETE_ME)
+
+/**
+ * Marks the mess and litter the map placed (and its spawners made) as decor, so no crew ever washes or bags it:
+ * TRAIT_AMBIENT_OUTPOST_DECOR (ambient_npcs/outpost_patrons.dm, written out: the define is not kept), read by
+ * recovery_is_mess(), recovery_is_litter() and the ambient janitor. The whole interior, lobby and closets too.
+ * Mess made after this is the crews' to clean.
+ */
+/datum/outpost_recovery/proc/mark_decor()
+	if(QDELETED(outpost) || !outpost.template_bottom_left || !outpost.outpost_template?.width || !outpost.outpost_template?.height)
+		return
+	var/turf/bottom_left = outpost.template_bottom_left
+	var/turf/top_right = locate(bottom_left.x + outpost.outpost_template.width - 1, bottom_left.y + outpost.outpost_template.height - 1, bottom_left.z)
+	if(!top_right)
+		return
+	// The ambient janitor's own marking (ambient_outpost_mark_decor()) would come later and take fresh mess as decor
+	var/list/notes = ambient_outpost_notes(outpost)
+	notes["decor marked"] = TRUE
+	for(var/turf/tile as anything in block(bottom_left, top_right))
+		for(var/obj/effect/decal/cleanable/decal in tile)
+			ADD_TRAIT(decal, "ambient_outpost_decor", "ambient_outpost")
+		for(var/obj/item/thing in tile)
+			if(recovery_is_litter(thing))
+				ADD_TRAIT(thing, "ambient_outpost_decor", "ambient_outpost")
 
 // =========================================================================
 // STATE AND PACE (R2; spec-rehydrate.md 2 and 4)

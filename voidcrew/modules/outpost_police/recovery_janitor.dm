@@ -107,6 +107,9 @@
 	// Small enough for the bag (the crew's takes a bottle, which tg's own does not), and nothing marked as property or fixed to the world
 	if(thing.w_class > WEIGHT_CLASS_NORMAL || (thing.resistance_flags & INDESTRUCTIBLE) || HAS_TRAIT(thing, TRAIT_NODROP))
 		return FALSE
+	// The map's own litter (recovery.mark_decor(), TRAIT_AMBIENT_OUTPOST_DECOR written out)
+	if(HAS_TRAIT(thing, "ambient_outpost_decor"))
+		return FALSE
 	if(istype(thing, /obj/item/ammo_casing))
 		var/obj/item/ammo_casing/casing = thing
 		return !casing.loaded_projectile
