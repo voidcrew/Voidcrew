@@ -21,8 +21,8 @@
  * round-start pre-load) already calls. The shop and stand code need no call into this file.
  */
 
-/// How far from his spawn tile Wick's room may reach. A bound, not a layout: walls and thresholds close it.
-#define RIG_BAY_WICK_RANGE 14
+/// How far from his spawn tile Wick's room may reach: the ordinary worker range. Walls and thresholds close it.
+#define RIG_BAY_WICK_RANGE OUTPOST_WORK_RANGE
 /// A player this close to him (or to his counter, see below) is a customer
 #define RIG_BAY_WICK_SERVE_RANGE 3
 /// No new job until this long after the last customer left
@@ -82,6 +82,8 @@
 		return
 	AddComponent(/datum/component/outpost_ambient_worker/rig_bay_wick, list(
 		/datum/outpost_ambient_work/mech_service = 6,
+		/datum/outpost_ambient_work/weld = 1,
+		/datum/outpost_ambient_work/wrench = 1,
 		/datum/outpost_ambient_work/panel = 1,
 	), TRUE, CALLBACK(src, PROC_REF(show_rig_bay_look)))
 
@@ -181,24 +183,47 @@
 	var/list/tiles = get_room()
 	return tiles[tile] || stand_tiles[tile] || lane_tiles[tile]
 
-/// Mechs on the stands first, then the parent's search around him for anything else (wall panels)
+/**
+ * Mechs on the stands, or any other prop in or against his room (a wreck, a rack, a wall panel).
+ * Unlike the parent, the whole room is searched, not just a few tiles round where he stands.
+ */
 /datum/component/outpost_ambient_worker/rig_bay_wick/find_work()
 	if(isnull(get_turf(parent)) || !length(work_weights))
 		return null
-	var/list/all_weights = work_weights
-	var/list/weights = all_weights.Copy()
-	. = null
-	while(length(weights) && isnull(.))
+	var/list/weights = work_weights.Copy()
+	while(length(weights))
 		var/work_type = pick_weight(weights)
 		weights -= work_type
-		if(ispath(work_type, /datum/outpost_ambient_work/mech_service))
-			. = find_mech_job(outpost_ambient_work(work_type))
-			continue
-		work_weights = list()
-		work_weights[work_type] = 1
-		. = ..()
-		work_weights = all_weights
-	work_weights = all_weights
+		var/datum/outpost_ambient_work/kind = outpost_ambient_work(work_type)
+		var/list/job = istype(kind, /datum/outpost_ambient_work/mech_service) ? find_mech_job(kind) : find_room_job(kind)
+		if(job)
+			return job
+	return null
+
+/// Something in or against his room that `kind` works on, never a stand's mech, as find_work() returns
+/datum/component/outpost_ambient_worker/rig_bay_wick/proc/find_room_job(datum/outpost_ambient_work/kind)
+	if(kind.works_on_floor)
+		return null
+	var/list/tiles = get_room()
+	var/area/home_area = get_area(home)
+	var/list/search = list()
+	for(var/turf/tile as anything in tiles)
+		search[tile] = TRUE
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(tile, direction)
+			if(next && !stand_tiles[next] && get_area(next) == home_area)
+				search[next] = TRUE
+	var/checked = 0
+	for(var/turf/tile as anything in shuffle(search))
+		for(var/obj/thing in tile)
+			if(++checked > OUTPOST_WORK_SEARCH_LIMIT)
+				return null
+			if(thing.invisibility || IS_WEAKREF_OF(thing, last_target) || !kind.accepts(thing))
+				continue
+			var/turf/spot = spot_for(thing)
+			if(spot)
+				return list(thing, spot, kind)
+	return null
 
 /// A mech on one of his stands that the job accepts, and a free tile beside it, as find_work() returns
 /datum/component/outpost_ambient_worker/rig_bay_wick/proc/find_mech_job(datum/outpost_ambient_work/kind)
