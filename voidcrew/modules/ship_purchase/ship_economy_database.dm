@@ -292,15 +292,66 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	qdel(query)
 	return success
 
-/// Puts back parts a failed spend_parts() already took: class -> amount.
-/datum/ship_economy_db/proc/refund_parts(ckey, list/taken)
-	for(var/part_class in taken)
-		var/amount = taken[part_class]
-		if(add_part(ckey, part_class, amount, "refund"))
-			log_game("SHIP_ECONOMY: [ckey] refunded [amount] [part_class] parts after a failed spend")
+/**
+ * Spend a total number of parts from any class, largest stack first.
+ * Reads fresh from the database, and can sleep.
+ *
+ * @param ckey - The player's ckey
+ * @param total - How many parts to take
+ * @return The class -> quantity list taken, for refund_parts(). Null if it could not be paid.
+ */
+/datum/ship_economy_db/proc/spend_any_parts(ckey, total)
+	if(!ckey || total <= 0)
+		return null
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	invalidate_cache(ckey, "parts")
+	var/list/plan = plan_part_spend(get_parts(ckey), total)
+	if(!plan || !spend_parts(ckey, plan))
+		return null
+	return plan
+
+/// Which classes pay a total: all of the largest stack, then the next. Null if there aren't enough.
+/datum/ship_economy_db/proc/plan_part_spend(list/held, total)
+	if(!held)
+		return null
+	var/list/remaining = held.Copy()
+	var/list/plan = list()
+	while(total > 0)
+		var/largest
+		for(var/part_class in remaining)
+			if(remaining[part_class] > (largest ? remaining[largest] : 0))
+				largest = part_class
+		if(!largest)
+			return null
+		var/taken = min(remaining[largest], total)
+		plan[largest] = taken
+		total -= taken
+		remaining -= largest
+	return plan
+
+/**
+ * Give back parts taken by spend_any_parts() or spend_parts()
+ *
+ * @param ckey - The player's ckey
+ * @param plan - Class -> quantity list to give back
+ * @return TRUE if every class went back
+ */
+/datum/ship_economy_db/proc/refund_parts(ckey, list/plan)
+	. = TRUE
+	for(var/part_class in plan)
+		if(add_part(ckey, part_class, plan[part_class], "refund"))
+			log_game("SHIP_ECONOMY: [ckey] refunded [plan[part_class]] [part_class] parts")
 			continue
-		log_game("SHIP_ECONOMY ERROR: [ckey] lost [amount] [part_class] parts: the refund after a failed spend did not go through")
-		message_admins("Ship parts refund failed for [ckey]: [amount] [part_class] parts were taken but not returned. Check the game log.")
+		log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
+		message_admins("Ship parts refund failed for [ckey]: [plan[part_class]] [part_class] parts were taken but not returned. Check the game log.")
+		. = FALSE
+
+/// Parts held by class, from the cache alone so it never sleeps. Null until something has loaded them.
+/datum/ship_economy_db/proc/cached_parts(ckey)
+	var/list/parts = ckey ? parts_cache[ckey(ckey)] : null
+	return parts?.Copy()
 
 /**
  * Check if a ship template is unlocked for a player

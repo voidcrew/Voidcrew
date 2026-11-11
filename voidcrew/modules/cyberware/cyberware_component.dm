@@ -377,6 +377,8 @@ GLOBAL_LIST_INIT(installed_capacity_costs, list(
 		var/datum/component/cyberware/chrome = organ.GetComponent(/datum/component/cyberware)
 		if(chrome)
 			. += chrome.capacity_bonus
+	if(HAS_TRAIT(target, TRAIT_BIOTECH_NEURAL))
+		. += CYBERWARE_BIOTECH_CAPACITY
 
 /// Accent colour for a tier, for BIOS lines and UI chrome.
 /proc/cyberware_tier_color(tier)

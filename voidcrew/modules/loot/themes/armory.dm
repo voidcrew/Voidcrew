@@ -149,6 +149,8 @@
 		/obj/item/clothing/glasses/hud/security/sunglasses = 5,
 		/obj/item/melee/baton/security/loaded = 4,
 		/obj/item/clothing/mask/balaclava = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/strength = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/clothing/suit/armor/bulletproof = 10,
@@ -173,6 +175,8 @@
 		/obj/item/organ/cyberimp/cyberware/slabskin = 3,
 		/obj/item/organ/eyes/robotic/cyberware/deadeye = 3,
 		/obj/item/organ/cyberimp/cyberware/atlas = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/quick_recovery = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -182,6 +186,9 @@
 		/obj/item/handloaders_vise = 3,
 		/obj/item/clothing/glasses/sunglasses/marksmans_cant = 2,
 		/obj/item/garrison_standard = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/hulk = 1,
+		/obj/item/dnainjector/loot/tough = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/armory

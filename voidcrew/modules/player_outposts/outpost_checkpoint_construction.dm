@@ -2,8 +2,9 @@
  * # Staged ship construction
  *
  * The ship is loaded once, through the ordinary template loader, into the outpost's shipyard
- * zone (outpost_level_layout.dm), where nobody can reach it and which this job holds while it
- * runs. Its pieces then move into the permanent bay one tile visit at a time,
+ * zone (outpost_level_layout.dm), or at a trader outpost a turf reservation of its own
+ * (outpost_shipyard.dm), where nobody can reach it and which this job holds while it
+ * runs. Its pieces then move into the bay or berth one tile visit at a time,
  * through the same per-atom shuttle move hooks a docking uses, so the finished hull is what
  * a normal landing would have left behind and departs the same way.
  *
@@ -11,15 +12,13 @@
  * the bay. A piece that is removed, moved or damaged after placement stays that way.
  *
  * The source is what the job builds from and what it spends at the first piece. This type
- * rebuilds a saved checkpoint: stock is scrubbed and parts are restored in the hidden copy
- * before any of it can be reached, and the checkpoint is consumed immediately before the
- * first piece. /datum/checkpoint_construction/order (outpost_ship_orders.dm) builds a new
- * ship from the catalog instead, and charges its buyer at that point. The hooks each source
+ * builds from a snapshot, which it owns: stock is scrubbed and parts are put right in the
+ * hidden copy before any of it can be reached, and the snapshot is consumed immediately before
+ * the first piece. /datum/checkpoint_construction/saved (ship_save_construction.dm) spends a
+ * saved ship at that point, and /datum/checkpoint_construction/order (outpost_ship_orders.dm)
+ * builds a new ship from the catalog instead, and charges its buyer. The hooks each source
  * overrides are grouped under SOURCE below.
  */
-/obj/structure/overmap/dynamic/player_outpost
-	var/list/datum/checkpoint_construction/checkpoint_jobs = list()
-
 /// One bay tile's share of one build stage.
 /datum/checkpoint_visit
 	var/stage
@@ -35,8 +34,10 @@
 
 /datum/checkpoint_construction
 	var/state = CHECKPOINT_BUILD_PREPARING
-	var/obj/structure/overmap/dynamic/player_outpost/home
-	var/datum/outpost_berth/ship_bay/bay
+	/// The player outpost or trader outpost building the ship (outpost_shipyard.dm)
+	var/obj/structure/overmap/home
+	/// The ship bay or trader berth the ship is delivered into
+	var/datum/outpost_berth/bay
 	var/datum/ship_checkpoint/snapshot
 	/// Live round identity retains prize and research claims after checkpoint consumption.
 	var/datum/weakref/crew_record_ref
@@ -45,18 +46,18 @@
 	/// The affiliation whose departure was confirmed, not a later crew joined mid-build.
 	var/datum/weakref/registration_crew_ref
 	var/datum/weakref/panel_ref
-	/// Only used to reapply console upgrade disks while the hidden copy is prepared.
-	var/datum/weakref/operator_ref
 	var/datum/weakref/original_ref
 	var/captain_ckey
 	var/ship_name
-	/// What the hidden copy is loaded from. Checkpoints use their commissioned checkpoint
+	/// What the hidden copy is loaded from. Snapshots use their commissioned checkpoint
 	/// template; orders a plain hull template. The ship record keeps it at handover.
 	var/datum/map_template/shuttle/voidcrew/template
 	/// The loaded copy. Its port joins the bay before the first piece does.
 	var/obj/docking_port/mobile/voidcrew/port
 	/// The outpost's shipyard zone: holds every piece that has not been placed yet.
 	var/datum/outpost_zone/source_zone
+	/// Or, at a host with no shipyard zone, the turf reservation holding it.
+	var/datum/turf_reservation/source_reservation
 	/// TRUE while the template is being written into the shipyard; nothing may wipe it then.
 	var/copy_loading = FALSE
 	/// Paired by index, exactly as initiate_docking() pairs a move.
@@ -113,21 +114,19 @@
 	var/status_verb = "Rebuilding"
 	var/build_noun = "Reconstruction"
 
-/// leave_original: an admin copy of a hull that is still in service. It is not retired and
-/// keeps its money; the checkpoint is still consumed.
-/datum/checkpoint_construction/New(datum/ship_checkpoint_ui/terminal, datum/ship_checkpoint/blueprint, mob/living/user, manual_drive = FALSE, leave_original = FALSE)
+/// The job owns the snapshot from here on.
+/datum/checkpoint_construction/New(datum/ship_checkpoint_ui/terminal, datum/ship_checkpoint/blueprint, mob/living/user, manual_drive = FALSE)
 	panel_ref = terminal ? WEAKREF(terminal) : null
-	operator_ref = WEAKREF(user)
 	snapshot = blueprint
 	crew_record_ref = blueprint.crew_record_ref
 	home = blueprint.outpost
 	captain_ckey = blueprint.captain_ckey
 	ship_name = blueprint.ship_name
 	manual = manual_drive
-	var/obj/structure/overmap/ship/original = leave_original ? null : blueprint.source_ship?.resolve()
+	var/obj/structure/overmap/ship/original = blueprint.source_ship?.resolve()
 	if(original)
 		original_ref = WEAKREF(original)
-	// Refunds follow the checkpoint's owner, who is the operator unless an admin started it.
+	// Refunds follow the snapshot's owner, who is the operator unless an admin started it.
 	var/mob/living/owner = user?.ckey == captain_ckey ? user : get_mob_by_ckey(captain_ckey)
 	var/datum/bank_account/personal = istype(owner) ? owner.get_bank_account() : null
 	if(personal)
@@ -139,12 +138,10 @@
 		state = CHECKPOINT_BUILD_FAILED
 		return
 	home.checkpoint_jobs += src
-	snapshot.busy = TRUE
 	if(original)
 		original.checkpoint_rebuilding = TRUE
 	RegisterSignal(home, COMSIG_QDELETING, PROC_REF(on_site_deleted))
 	RegisterSignal(bay, COMSIG_QDELETING, PROC_REF(on_site_deleted))
-	RegisterSignal(snapshot, COMSIG_QDELETING, PROC_REF(on_checkpoint_deleted))
 
 /// Once pieces exist, only a forced deletion may stop the job; it then removes them.
 /datum/checkpoint_construction/Destroy(force)
@@ -160,11 +157,9 @@
 		UnregisterSignal(home, COMSIG_QDELETING)
 	if(bay)
 		UnregisterSignal(bay, COMSIG_QDELETING)
-	if(snapshot)
-		UnregisterSignal(snapshot, COMSIG_QDELETING)
 	home = null
 	bay = null
-	snapshot = null
+	QDEL_NULL(snapshot)
 	crew_record_ref = null
 	registration_crew_ref = null
 	port = null
@@ -172,6 +167,8 @@
 	// A load still writing into the shipyard lets it go itself when it returns (load_source()).
 	if(!copy_loading)
 		source_zone = null
+		if(source_reservation)
+			QDEL_NULL(source_reservation)
 	source_turfs = null
 	bay_turfs = null
 	stage_visits = null
@@ -182,13 +179,6 @@
 	SIGNAL_HANDLER
 	// Releasing reservations can yield; the removal itself finishes before the bay goes.
 	INVOKE_ASYNC(src, PROC_REF(abort), "The ship bay was removed.")
-
-/datum/checkpoint_construction/proc/on_checkpoint_deleted(datum/source)
-	SIGNAL_HANDLER
-	UnregisterSignal(snapshot, COMSIG_QDELETING)
-	snapshot = null
-	if(!committed)
-		INVOKE_ASYNC(src, PROC_REF(abort), "This checkpoint is no longer available.")
 
 // ===== PREPARATION =====
 
@@ -207,6 +197,12 @@
 	update_bay_status()
 	var/loaded = SSshuttle.run_template_load(CALLBACK(src, PROC_REF(load_source)), background = TRUE, keep_waiting = CALLBACK(src, PROC_REF(still_queued)))
 	queued = FALSE
+	if(QDELETED(src) || state != CHECKPOINT_BUILD_PREPARING)
+		return FALSE
+	// A trader berth is only built once the hull's size is known.
+	if(loaded && !home.prepare_rebuild_bay(bay, port))
+		error ||= "No berth could be made ready. [unspent_note()]"
+		loaded = FALSE
 	if(QDELETED(src) || state != CHECKPOINT_BUILD_PREPARING)
 		return FALSE
 	if(!loaded || !plan())
@@ -266,7 +262,7 @@
 	return TRUE
 
 /// Whether a queued job still wants the shared loader. Anything that ended it already
-/// released its bay and kept its checkpoint.
+/// released its bay and spent nothing.
 /datum/checkpoint_construction/proc/still_queued()
 	return !QDELETED(src) && state == CHECKPOINT_BUILD_PREPARING
 
@@ -274,31 +270,37 @@
 /datum/checkpoint_construction/proc/source_still_loading()
 	return !QDELETED(src) && state == CHECKPOINT_BUILD_PREPARING && !QDELETED(port) && has_source_ground()
 
-/// Whether the hidden copy still holds its ground: the shipyard zone, claimed and not given back.
+/// Whether the hidden copy still holds its ground: the shipyard zone or reservation, claimed and not given back.
 /datum/checkpoint_construction/proc/has_source_ground()
+	if(source_reservation)
+		return !QDELETED(source_reservation)
 	return !isnull(source_zone) && source_zone.is_held_by(src)
 
 /// Every turf of the hidden copy's ground in block() order; empty once it is given back.
 /datum/checkpoint_construction/proc/get_source_block()
 	if(!has_source_ground())
 		return list()
+	if(source_reservation)
+		if(!length(source_reservation.bottom_left_turfs) || !length(source_reservation.top_right_turfs))
+			return list()
+		return block(source_reservation.bottom_left_turfs[1], source_reservation.top_right_turfs[1])
 	return source_zone.get_block()
 
 /// Shared checks before any piece exists.
 /datum/checkpoint_construction/proc/build_denial()
-	if(QDELETED(home) || QDELETED(bay) || !IS_WEAKREF_OF(src, bay.rebuild_owner) || QDELETED(bay.dock) || !bay.has_ground())
+	if(QDELETED(home) || QDELETED(bay) || !IS_WEAKREF_OF(src, bay.rebuild_owner) || !bay.has_build_ground())
 		return "The ship bay is no longer reserved."
-	if(bay.ship || (bay.dock.get_docked() && (!port || bay.dock.get_docked() != port)))
+	if(bay.ship || (bay.dock?.get_docked() && (!port || bay.dock.get_docked() != port)))
 		return "The ship bay is occupied."
 	return source_denial()
 
 // ===== SOURCE =====
-// A checkpoint rebuild. /datum/checkpoint_construction/order overrides these.
+// Building from a snapshot. /datum/checkpoint_construction/saved and order override these.
 
 /// Why the source can no longer be built, or null.
 /datum/checkpoint_construction/proc/source_denial()
-	if(QDELETED(snapshot) || snapshot.outpost != home || !(snapshot in home.checkpoints))
-		return "This checkpoint is no longer available."
+	if(QDELETED(snapshot))
+		return "This record can't be read."
 	var/obj/structure/overmap/ship/original = original_ref?.resolve()
 	if(original)
 		if(original.retired_by_checkpoint)
@@ -309,7 +311,7 @@
 
 /// Added to every refusal made before the first piece.
 /datum/checkpoint_construction/proc/unspent_note()
-	return "Your checkpoint is still available."
+	return "Nothing was built."
 
 /// The template the hidden copy is loaded from.
 /datum/checkpoint_construction/proc/create_template()
@@ -325,9 +327,11 @@
  * job owns SSshuttle's template load. Returns the unregistered port, or null.
  */
 /datum/checkpoint_construction/proc/load_hidden_copy(datum/shuttle_template_load/load_owner)
-	var/datum/outpost_zone/yard = home?.level_zone(OUTPOST_ZONE_YARD)
-	if(!yard || !template?.width || !template?.height)
+	if(QDELETED(home) || !template?.width || !template?.height)
 		return null
+	var/datum/outpost_zone/yard = home.shipyard_source_zone()
+	if(!yard)
+		return load_reserved_copy()
 	if(template.width > yard.get_width() - 2 || template.height > yard.get_height() - 2)
 		log_mapping("OUTPOST SHIPYARD: [template.name] ([template.width]x[template.height]) does not fit the [yard.get_width()]x[yard.get_height()] shipyard at [home].")
 		return null
@@ -344,23 +348,39 @@
 	yard.occupy()
 	return loaded_port
 
+/// load_hidden_copy() for a host without a shipyard zone: a turf reservation one tile larger than the
+/// hull on every side, held until the copy is done with, like the zone. Teleports into it are refused
+/// (in_shipyard_copy()).
+/datum/checkpoint_construction/proc/load_reserved_copy()
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(template.width + 2, template.height + 2, 1, requester = "shipyard copy of '[ship_name]' at '[home.name]'")
+	if(!claimed)
+		return null
+	if(QDELETED(src) || state != CHECKPOINT_BUILD_PREPARING || !length(claimed.bottom_left_turfs))
+		qdel(claimed)
+		return null
+	source_reservation = claimed
+	var/turf/corner = claimed.bottom_left_turfs[1]
+	copy_loading = TRUE
+	var/obj/docking_port/mobile/loaded_port = load_shuttle_template_at(template, locate(corner.x + 1, corner.y + 1, corner.z))
+	copy_loading = FALSE
+	return loaded_port
+
 /// Runs once on the loaded, frozen copy, before anyone could reach any of it.
 /datum/checkpoint_construction/proc/prepare_copy()
 	// Scrubbing and restoring stay in one tick: a machine processed in between would run with
 	// its stock gone and its parts not yet restored (an APC without its cell, for one).
 	// Initialization may stock lockers or engine tanks even though no items were saved.
 	clear_stock(port)
-	var/mob/living/operator = operator_ref?.resolve()
 	for(var/turf/tile as anything in port.return_turfs())
 		if(!(get_area(tile) in port.shuttle_areas))
 			continue
 		for(var/obj/machinery/machine in tile)
-			restore_machine(machine, operator)
+			checkpoint_restore_machine(machine)
 	mark_phase("scrub_and_restore")
 
 /**
  * Spends the source immediately before the first piece, and sets committed. From here the
- * job only moves forward: partial output is never rolled back into a fresh checkpoint.
+ * job only moves forward: partial output is never rolled back into a fresh snapshot.
  * Returns FALSE, with error set, when it cannot be spent; nothing is spent then.
  */
 /datum/checkpoint_construction/proc/consume_source()
@@ -368,7 +388,6 @@
 		error = "Registration cancelled. [unspent_note()]"
 		return FALSE
 	committed = TRUE
-	UnregisterSignal(snapshot, COMSIG_QDELETING)
 	var/datum/ship_checkpoint/consumed = snapshot
 	snapshot = null
 	var/datum/map_template/shuttle/voidcrew/commissioned/checkpoint/checkpoint_template = template
@@ -376,14 +395,8 @@
 	qdel(consumed)
 	var/obj/structure/overmap/ship/original = original_ref?.resolve()
 	if(original)
-		original.retired_by_checkpoint = TRUE
-		original.checkpoint_rebuilding = FALSE
-		var/balance = original.ship_account?.account_balance
-		if(balance > 0 && original.ship_account.adjust_money(-balance, "Checkpoint recovery"))
-			held_balance = balance
-		if(QDELETED(original.shuttle))
-			qdel(original)
-	log_game("Checkpoint for [ship_name] ([captain_ckey]) at [home.name] was consumed by its reconstruction.")
+		held_balance = original.retire_replaced_hull()
+	log_game("Snapshot of [ship_name] ([captain_ckey]) at [home.name] was consumed by its reconstruction.")
 	return TRUE
 
 /// A saved captain restoring the same crew's own hull needs no new-ship permission.
@@ -419,7 +432,7 @@
 	registration_crew_ref = current_crew ? WEAKREF(current_crew) : null
 	return TRUE
 
-/// Lets go of the source when the job stops. Before the first piece it stays spendable.
+/// Lets go of the source when the job stops. Before the first piece nothing has been spent.
 /datum/checkpoint_construction/proc/release_source()
 	var/obj/structure/overmap/ship/original = original_ref?.resolve()
 	if(committed)
@@ -429,8 +442,6 @@
 			original.checkpoint_rebuilding = FALSE
 		return_held_balance(original)
 		return
-	if(!QDELETED(snapshot))
-		snapshot.busy = FALSE
 	if(original)
 		original.checkpoint_rebuilding = FALSE
 
@@ -469,7 +480,7 @@
 
 /// For the handover log.
 /datum/checkpoint_construction/proc/finished_text()
-	return "rebuilt from its checkpoint"
+	return "rebuilt from a snapshot"
 
 /// Records the template's timing phases; only a checkpoint template keeps them.
 /datum/checkpoint_construction/proc/mark_phase(phase)
@@ -685,8 +696,7 @@
 		for(var/obj/structure/checkpoint_drone_bay/cradle in tile)
 			cradles += cradle
 	// Maps without drone bays launch from the bay console instead.
-	var/obj/machinery/computer/console = bay.console
-	var/turf/fallback = console ? get_turf(console) : (length(bay.alcove_turfs) ? bay.alcove_turfs[1] : get_turf(bay.dock))
+	var/turf/fallback = bay.drone_launch_turf()
 	var/count = clamp(CEILING(visit_total / CHECKPOINT_BUILD_VISITS_PER_DRONE, 1), CHECKPOINT_BUILD_MIN_DRONES, CHECKPOINT_BUILD_MAX_DRONES)
 	for(var/i in 1 to count)
 		var/obj/structure/checkpoint_drone_bay/cradle = length(cradles) ? cradles[(i - 1) % length(cradles) + 1] : null
@@ -1242,7 +1252,7 @@
 	home.refresh_elevator_uis()
 	log_game("[captain ? key_name(captain) : captain_ckey] received [vessel.name], [finished_text()] at [home.name].")
 	if(captain)
-		to_chat(captain, span_notice("[vessel.name] is ready in Ship Bay [bay.bay_number]."))
+		to_chat(captain, span_notice("[vessel.name] is ready in [bay.berth_label()]."))
 	var/datum/ship_checkpoint_ui/panel = panel_ref?.resolve()
 	if(panel)
 		panel.notice = "[vessel.name] is ready."
@@ -1253,8 +1263,8 @@
 // ===== FAILURE AND TERMINATION =====
 
 /**
- * Before the first piece: release everything and keep the checkpoint.
- * After it: remove what was placed and release the bay. The checkpoint stays consumed.
+ * Before the first piece: release everything, having spent nothing.
+ * After it: remove what was placed and release the bay. The source stays spent.
  */
 /datum/checkpoint_construction/proc/abort(reason, delete_job = TRUE)
 	if(state == CHECKPOINT_BUILD_COMPLETE || state == CHECKPOINT_BUILD_FAILED)
@@ -1295,9 +1305,13 @@
 
 /// Gives the shipyard back once the hidden copy is done with; the zone's wipe clears what is left.
 /datum/checkpoint_construction/proc/release_source_zone()
-	var/datum/outpost_zone/yard = source_zone
 	// A load in progress is still writing into the shipyard; load_source() lets it go on return.
-	if(!yard || copy_loading)
+	if(copy_loading)
+		return
+	if(source_reservation)
+		QDEL_NULL(source_reservation)
+	var/datum/outpost_zone/yard = source_zone
+	if(!yard)
 		return
 	source_zone = null
 	if(yard.is_held_by(src))
@@ -1305,7 +1319,7 @@
 
 /**
  * Objects mapped around the hull but outside its rooms are what a landing leaves behind. A
- * saved checkpoint has none; a ship map can (signs on the outer face of a wall). Nobody can
+ * snapshot has none; a ship map can (signs on the outer face of a wall). Nobody can
  * reach them here, so shipyard orders delete them rather than leave them to the shipyard's wipe.
  */
 /datum/checkpoint_construction/proc/clear_off_hull()
@@ -1446,9 +1460,9 @@
 		var/mob/living/captain = get_mob_by_ckey(captain_ckey)
 		account = istype(captain) ? captain.get_bank_account() : null
 	if(account)
-		account.adjust_money(held_balance, "Checkpoint recovery refund")
+		account.adjust_money(held_balance, "Ship recovery refund")
 	else
-		log_game("Checkpoint reconstruction of [ship_name] could not return [held_balance] credits: no account remains.")
+		log_game("Reconstruction of [ship_name] could not return [held_balance] credits: no account remains.")
 	held_balance = 0
 
 /datum/checkpoint_construction/proc/on_port_deleted(datum/source)
