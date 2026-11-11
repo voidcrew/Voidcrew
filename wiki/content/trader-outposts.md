@@ -5,7 +5,7 @@ order: 3
 blurb: The three permanent markets on the overmap, who runs them, what they stock, and who polices them and what happens if you start a fight there.
 ---
 
-Three trader outposts sit permanently on the [overmap](overmap.md), one per zone band. They never move, never unload, and cannot be destroyed. Each is a market, a contract board, a repair stop and a safe room in one, and each stocks a different tier of goods depending on how dangerous the space around it is.
+Three trader outposts sit permanently on the [overmap](overmap.md), one per zone band. They never move, never unload, and the buildings cannot be destroyed. Each is a market, a contract board, a repair stop and a safe room in one, and each stocks a different tier of goods depending on how dangerous the space around it is.
 
 ## The three outposts
 
@@ -42,6 +42,8 @@ No combat guns past the checkpoint. Work tools and disablers are fine, including
 Combat guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
 
 **Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. A combat gun in hand without a permit, or fired inside, counts as a crime and the [Port Authority](#the-port-authority) answers it. So does coming through a checkpoint door that was pried or hacked open, which also takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
+
+**Emagging the scanner.** An emag on the wall scanner takes the whole gate down for three minutes. Both doors open for anyone who walks into them, nobody is scanned, and the scanner's light goes out. A guard who sees it sounds the alarm and reports you, and that is 2 stars. If he is dead or cannot see, nobody reports it. The gate comes back by itself, and the same scanner cannot be emagged again for five minutes after that. Walking through a gate someone else took down is no crime, but a gun in your hand past it is still one if anyone sees it.
 
 ## Shopping
 
@@ -144,9 +146,29 @@ Turn them in at any outpost trader or at your own mission pad. Except courier ru
 
 ## Violence
 
-Outposts are indestructible. Walls, doors, machines and traders all shrug off weapons fire, so there is nothing to break into and nothing to rob. What stops you is the **Port Authority**: officers who live at each outpost and answer anything they see.
+The walls, doors, glass and machines of an outpost cannot be broken. The people in it can. Traders, checkpoint guards, officers, shoppers, drinkers and the odd regular are all people, and can be hurt, cuffed, wounded and killed like anyone. What stops you is the **Port Authority**: officers who live at each outpost and answer anything they see.
 
-The shoppers, drinkers, staff and odd regulars milling around each concourse can be hurt like anyone else, and doing it is a crime. They carry a little cash on them.
+Shoppers and regulars carry a little cash, and hurting them is a crime. Hurting a trader or a guard is a worse one.
+
+### Killing a trader
+
+A dead trader leaves an empty counter and a sign reading CLOSED. Nothing at that stall can be bought, sold or turned in while nobody stands behind it, and the contract board shuts with its trader. Prices, stock and your standing with the shop are not lost, and contracts you already accepted keep running. Convoys still restock a closed shop.
+
+The first trader behind each counter may drop one item from their shelf when they die, and the outpost only has so much to give in a round. Replacement traders drop nothing. A trader who dies, is knocked out or is dragged off the counter does not run the shop; a revived one goes back to work.
+
+Killing a trader or a checkpoint guard that someone sees is at least 4 stars. The port bars your whole crew and sends a cutter after your ship, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
+
+### Holding up a trader
+
+Point a gun at a trader behind their counter, the same way you hold anyone up, and they put their hands up, close the shop and hand over the till. It holds 200 credits at Halcyon, 300 at Quartermain and 400 at Undertow, and it is empty for the next half hour. An empty till gives up one cheap item from the shelf, then nothing. A stick-up and a trader's drop come out of the same small pot, so robbing a trader and then killing them does not pay twice. Checkpoint guards have no till.
+
+The trader raises the alarm when you leave their sight or half a minute after handing over, whichever comes first, and sooner if you fire or hit anyone. Anyone else who sees the gun reports it too. Robbery is 2 stars at the least. If you are caught, the gun is taken and destroyed and the takings go back to the till.
+
+### Who comes to clean up
+
+When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers** and **janitors**. Morgue workers bag the dead and wheel them to the lift. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. They are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
+
+Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port closes to crews for a quarter of an hour.
 
 ## The Port Authority
 
@@ -174,9 +196,9 @@ Stars fade if you stay out of sight of the officers long enough, or if you leave
 Stand still, drop your weapon and put your hands down, or use `*surrender` at 1-2 stars, and the officer cuffs you without a fight. Otherwise they stun you first.
 
 - **What they take.** Every weapon or tool you used in a crime goes down the evidence chute at the desk and is destroyed. It does not come back. Anything you stole from a prisoner's locker goes back to the locker. Implants, cyberware, ship keys and mission items are never taken.
-- **The fine.** 300 credits at 1 star and 800 at 2, higher at outposts in the dangerous zones, paid from your crew's ship accounts together. It is paid in full or not at all.
+- **The fine.** 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at Undertow, paid from your crew's ship accounts together. It is paid in full or not at all.
 - **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
-- **If it is not.** You go to jail for a few minutes. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID and your implants. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
+- **If it is not.** You go to jail, three minutes at 1 star and six at 2. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID and your implants. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
 
 If you are badly hurt or die in the cells, the door opens at once and a medic is called.
 
