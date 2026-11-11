@@ -611,6 +611,10 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"co" = (
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost/checkpoint)
 "cs" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 9
@@ -4678,6 +4682,14 @@
 /obj/effect/turf_decal/tile/neutral/full,
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost/checkpoint)
+"Qy" = (
+/obj/machinery/door/airlock/outpost/police{
+	desc = "Staff only.";
+	name = "Guard Booth"
+	},
+/obj/effect/turf_decal/delivery/red,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "Qz" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -8417,10 +8429,10 @@ TZ
 ef
 JW
 ak
-ak
 bh
-Dt
-br
+co
+Qy
+be
 be
 Sq
 wZ

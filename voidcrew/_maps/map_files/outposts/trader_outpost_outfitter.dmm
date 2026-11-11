@@ -1727,6 +1727,15 @@
 	},
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"pm" = (
+/obj/effect/turf_decal/trimline/yellow/warning,
+/obj/effect/landmark/stealth_patrol/police{
+	order = 6;
+	route = "b";
+	wait = 50
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
 "pn" = (
 /obj/item/kirbyplants/organic/plant10,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -2787,18 +2796,6 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"BF" = (
-/obj/effect/turf_decal/trimline/yellow/corner,
-/obj/effect/turf_decal/trimline/yellow/corner{
-	dir = 8
-	},
-/obj/effect/landmark/stealth_patrol/police{
-	order = 6;
-	route = "b";
-	wait = 50
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
 "BN" = (
 /obj/structure/table/reinforced,
 /obj/item/stack/cable_coil,
@@ -2968,6 +2965,10 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"EA" = (
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost/checkpoint)
 "EB" = (
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 4
@@ -3644,6 +3645,11 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"Nj" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/turf_decal/stripes,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "Nx" = (
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 1
@@ -3885,6 +3891,14 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"Sq" = (
+/obj/machinery/door/airlock/outpost/police{
+	desc = "Staff only.";
+	name = "Guard Booth"
+	},
+/obj/effect/turf_decal/delivery/red,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "St" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 8
@@ -5334,13 +5348,13 @@ Tb
 KN
 FG
 kv
-BF
+pm
 dU
 dU
+EA
+Sq
+bm
 dU
-dU
-lE
-lE
 dU
 dU
 aV
@@ -5376,15 +5390,15 @@ ah
 aH
 aD
 qk
-ag
-kw
-iR
-iR
-iR
-QD
-uC
-dD
-aa
+AD
+dU
+dU
+dU
+dU
+lE
+dU
+dU
+dU
 aV
 aV
 aV
@@ -5419,13 +5433,13 @@ aD
 aA
 qk
 ag
-dc
-vz
-vz
-vz
-vz
-vz
-ad
+kw
+iR
+iR
+iR
+QD
+uC
+dD
 aa
 aV
 aV
@@ -5467,7 +5481,7 @@ vz
 vz
 vz
 vz
-lT
+Nj
 aa
 aV
 aV
