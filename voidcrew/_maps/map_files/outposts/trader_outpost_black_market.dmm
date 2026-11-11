@@ -119,19 +119,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
-"an" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "ao" = (
 /obj/effect/turf_decal/tile/dark_red{
 	dir = 1
@@ -296,19 +283,6 @@
 "aF" = (
 /obj/structure/table/wood/poker,
 /turf/open/floor/carpet/neon/simple/red/nodots,
-/area/voidcrew/trader_outpost)
-"aG" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/dark_red/half/contrasted{
-	dir = 1
-	},
-/obj/machinery/barsign/all_access/directional/north{
-	pixel_w = 16;
-	pixel_z = 3
-	},
-/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "aH" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -905,6 +879,60 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"cT" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_red,
+/obj/effect/turf_decal/trimline/dark_red/corner{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 8;
+	order = 2;
+	police_activity = "shopfront";
+	route = "b";
+	wait = 80
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"dc" = (
+/obj/effect/turf_decal/trimline/dark_red/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_red/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_red/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 1;
+	order = 6;
+	route = "a";
+	wait = 50
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "dk" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -969,6 +997,15 @@
 	dir = 8
 	},
 /turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"dN" = (
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 8;
+	order = 7;
+	route = "b";
+	wait = 50
+	},
+/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "dW" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -1236,6 +1273,23 @@
 "hv" = (
 /obj/effect/landmark/bounty_kingpin/refuge,
 /turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
+"hE" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 8;
+	order = 2;
+	route = "a";
+	wait = 50
+	},
+/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "hH" = (
 /mob/living/basic/outpost_trader/dregs_barkeep{
@@ -1518,6 +1572,27 @@
 /obj/structure/extinguisher_cabinet/directional/north,
 /turf/open/floor/carpet/neon/simple/red/nodots,
 /area/voidcrew/trader_outpost)
+"lQ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 8;
+	order = 1;
+	police_activity = "bench";
+	route = "a";
+	route_mode = "loop";
+	wait = 300
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "mv" = (
 /obj/machinery/newscaster/directional/north,
 /obj/machinery/light/red/directional/north,
@@ -1562,6 +1637,17 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"mR" = (
+/obj/effect/landmark/stealth_patrol/police{
+	chatter = 1;
+	dir = 4;
+	order = 4;
+	police_activity = "chat";
+	route = "b";
+	wait = 200
+	},
+/turf/open/indestructible/light,
 /area/voidcrew/trader_outpost)
 "mT" = (
 /obj/effect/turf_decal/tile/dark_red/anticorner/contrasted{
@@ -1613,30 +1699,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
-"nA" = (
-/obj/effect/turf_decal/trimline/dark_red/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/dark_red/mid_joiner{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/dark_red/mid_joiner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
-	dir = 4
-	},
-/turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
 "nG" = (
 /obj/structure/table/reinforced,
 /obj/item/food/chips{
@@ -1660,6 +1722,16 @@
 /obj/effect/turf_decal/tile/dark_red{
 	dir = 1
 	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"oc" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/landmark/stealth_group,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "om" = (
@@ -1931,6 +2003,22 @@
 /obj/effect/spawner/structure/window/reinforced/indestructible,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost/checkpoint)
+"tu" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark_red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 8;
+	order = 3;
+	police_activity = "bench";
+	route = "b";
+	wait = 300
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
 "tz" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -2103,6 +2191,23 @@
 "we" = (
 /obj/structure/chair/stool/bar/directional/east,
 /turf/open/floor/carpet/neon/simple/red/nodots,
+/area/voidcrew/trader_outpost)
+"wg" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/corner{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 1;
+	order = 1;
+	route = "b";
+	route_mode = "loop";
+	wait = 50
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "ww" = (
 /obj/effect/turf_decal/trimline/dark_red/line,
@@ -2416,23 +2521,6 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"zE" = (
-/obj/effect/turf_decal/trimline/dark_red/filled/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/dark_red,
-/obj/effect/turf_decal/trimline/dark_red/corner{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
 "zH" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 4
@@ -2476,6 +2564,17 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost/checkpoint)
+"BE" = (
+/obj/machinery/light/floor,
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 1;
+	order = 5;
+	police_activity = "shopfront";
+	route = "a";
+	wait = 80
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "BG" = (
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/structure/showcase/katana{
@@ -2856,16 +2955,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
-"GI" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/corner{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "GT" = (
 /obj/structure/extinguisher_cabinet/directional/east,
 /turf/open/indestructible{
@@ -3174,6 +3263,22 @@
 /obj/machinery/light/red/directional/south,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"Mg" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 1;
+	order = 3;
+	police_activity = "shopfront";
+	route = "a";
+	wait = 80
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
 "Mr" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 5
@@ -3253,15 +3358,20 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"Nk" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark,
+"Nr" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/dark_red/half/contrasted{
 	dir = 4
 	},
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 4;
+	order = 5;
+	police_activity = "shopfront";
+	route = "b";
+	wait = 80
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "NC" = (
@@ -3563,6 +3673,25 @@
 /obj/machinery/light/floor,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"SU" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/barsign/all_access/directional/north{
+	pixel_w = 16;
+	pixel_z = 3
+	},
+/obj/effect/landmark/stealth_patrol/police{
+	dir = 4;
+	order = 7;
+	route = "a";
+	wait = 50
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
 "Tr" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
@@ -3842,6 +3971,14 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"XY" = (
+/obj/effect/landmark/stealth_patrol/police{
+	order = 6;
+	route = "b";
+	wait = 50
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "Yd" = (
 /obj/effect/landmark/bounty_kingpin/goon/pistol,
 /turf/open/floor/carpet/neon/simple/red/nodots,
@@ -3881,6 +4018,23 @@
 /obj/structure/extinguisher_cabinet/directional/south,
 /obj/machinery/light/floor,
 /turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
+"Zb" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/landmark/stealth_patrol/police{
+	chatter = 1;
+	dir = 4;
+	order = 4;
+	police_activity = "chat";
+	route = "a";
+	wait = 200
+	},
+/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "Zd" = (
 /obj/effect/turf_decal/weather/dirt{
@@ -4193,11 +4347,11 @@ EO
 vm
 yd
 aA
-zE
+cT
 st
 Oz
 ad
-GI
+wg
 MJ
 aa
 Zh
@@ -4261,7 +4415,7 @@ aa
 aa
 aV
 WQ
-nA
+dc
 aM
 WQ
 aV
@@ -4324,7 +4478,7 @@ PU
 ax
 zf
 MP
-aB
+BE
 ar
 ar
 hv
@@ -4370,7 +4524,7 @@ ph
 Wb
 aW
 NC
-ar
+dN
 Jz
 aa
 wF
@@ -4500,7 +4654,7 @@ VB
 Gv
 dk
 dk
-dk
+tu
 dk
 dk
 MY
@@ -4520,7 +4674,7 @@ aC
 aa
 eW
 ah
-Ze
+Zb
 Ze
 zp
 Dh
@@ -4565,7 +4719,7 @@ aa
 AU
 Sp
 nU
-Ze
+oc
 mJ
 Ze
 Ze
@@ -4631,7 +4785,7 @@ ai
 Yd
 aV
 MG
-aG
+SU
 bL
 Jy
 Jy
@@ -4658,7 +4812,7 @@ ai
 My
 xB
 ai
-KQ
+Mg
 bL
 ai
 QV
@@ -4670,7 +4824,7 @@ uB
 Jy
 Jy
 ve
-Jy
+mR
 Jy
 ae
 aj
@@ -4744,7 +4898,7 @@ KQ
 jx
 NP
 VI
-ar
+XY
 aN
 TP
 aV
@@ -4829,7 +4983,7 @@ iQ
 xe
 kk
 kk
-Nk
+hE
 ww
 VM
 Wb
@@ -4840,7 +4994,7 @@ gK
 kk
 kk
 xe
-kk
+Nr
 kk
 kL
 aO
@@ -5036,7 +5190,7 @@ aC
 aa
 dw
 tz
-an
+lQ
 aH
 aD
 DU
