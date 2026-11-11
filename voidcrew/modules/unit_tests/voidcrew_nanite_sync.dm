@@ -50,7 +50,7 @@
 	// Once it fits, the refused program comes through on the next sync.
 	var/datum/nanite_program/brain_heal/light = locate() in nanites.programs
 	qdel(cloud_armor)
-	TEST_ASSERT(nanites.sync_programming(cloud) & NANITE_SYNC_ADDED, "Freed capacity didn't admit the refused program")
+	TEST_ASSERT(nanites.sync_programming(cloud) & 1, "Freed capacity didn't admit the refused program") // NANITE_SYNC_ADDED
 	TEST_ASSERT(locate(/datum/nanite_program/nervous) in nanites.programs, "Refused program never synced once it fit")
 	TEST_ASSERT(QDELETED(armor), "Sync didn't remove the program dropped from the cloud")
 	TEST_ASSERT(light in nanites.programs, "Resync replaced a kept program")
