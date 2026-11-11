@@ -136,6 +136,9 @@
 	TEST_ASSERT_NOTNULL(result, "A punch in front of its victim did not count")
 	TEST_ASSERT_EQUAL(result, 0, "One punch is not under one star")
 	TEST_ASSERT_EQUAL(police.warrants[puncher.mind].heat, 6, "A counted punch is not 6 heat")
+	// Abuse SF4: the perception lets go of the witness once the report has read it
+	TEST_ASSERT_NULL(police.perception.last_witness, "The perception still holds the last witness")
+	TEST_ASSERT_NULL(police.perception.last_witnesses, "The perception still holds the last witnesses")
 
 	// Nobody there, no heat
 	var/mob/living/carbon/human/hidden = wanted_person(wanted_spot(0, 1))

@@ -102,10 +102,14 @@
 		log_game("OUTPOST POLICE: [key_name(offender)] committed [crime] at [outpost] ([AREACOORD(offender)]) and nobody saw.")
 		return null
 	var/atom/witness = perception.last_witness
+	var/list/witnesses = perception.last_witnesses
+	// Abuse SF4: the perception keeps no hard reference to a witness once read (a deleted officer or player would hang on it)
+	perception.last_witness = null
+	perception.last_witnesses = null
 	var/delay = perception.report_delay(witness, crime)
 	if(delay > 0 || perception.reports_by_call(witness))
 		recent_reports[mind] = list(world.time, FALSE)
-		queue_report(offender, crime, victim, source, perception.last_witnesses || list(witness), delay)
+		queue_report(offender, crime, victim, source, witnesses || list(witness), delay)
 		return null
 	recent_reports[mind] = list(world.time, TRUE)
 	return count_crime(offender, crime, victim, source)
