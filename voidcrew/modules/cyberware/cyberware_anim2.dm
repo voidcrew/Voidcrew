@@ -940,6 +940,11 @@
 
 /obj/machinery/chrome_cradle/update_overlays()
 	. = ..()
+	// The gantry legs the rig hangs from, standing on the deck behind the slab.
+	var/mutable_appearance/frame = mutable_appearance(CHROME_CRADLE_RIG_ICON, "frame", layer - 0.01)
+	frame.pixel_x = -16
+	frame.pixel_y = -16
+	. += frame
 	if(rig_phase)
 		return
 	// The parked rig, over whoever lies on the slab.
