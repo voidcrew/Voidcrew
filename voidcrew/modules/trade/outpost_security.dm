@@ -175,6 +175,41 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	outpost = null
 	return ..()
 
+/**
+ * tg's emag leaves an airlock open, bolted and dark for good. An outpost's doors are looked after: the door comes
+ * back as the gate scanner does (OUTPOST_CHECKPOINT_EMAG_TIME), with a spark, its lights and bolts back, and shuts
+ * once its doorway is clear (owner decision 33).
+ */
+/obj/machinery/door/airlock/outpost/finish_emag_act()
+	. = ..()
+	if(!QDELETED(src) && (obj_flags & EMAGGED))
+		addtimer(CALLBACK(src, PROC_REF(mend_emag)), OUTPOST_CHECKPOINT_EMAG_TIME, TIMER_UNIQUE | TIMER_DELETE_ME)
+
+/// The emag wears off: lights, power and bolts back, then the door shuts once nobody is in the way
+/obj/machinery/door/airlock/outpost/proc/mend_emag()
+	if(QDELETED(src) || !(obj_flags & EMAGGED))
+		return
+	obj_flags &= ~EMAGGED
+	lights = TRUE
+	regainMainPower()
+	regainBackupPower()
+	unbolt()
+	do_sparks(2, TRUE, src)
+	visible_message(span_notice("[src] sparks, and its lights come back on."))
+	update_appearance()
+	close_when_clear()
+
+/// Shuts once nothing stands in the doorway, trying again every few seconds
+/obj/machinery/door/airlock/outpost/proc/close_when_clear()
+	if(QDELETED(src) || density || locked)
+		return
+	var/turf/doorway = get_turf(src)
+	for(var/atom/movable/thing in doorway)
+		if(thing != src && !iseffect(thing) && (isliving(thing) || thing.density))
+			addtimer(CALLBACK(src, PROC_REF(close_when_clear)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
+			return
+	INVOKE_ASYNC(src, PROC_REF(close))
+
 /obj/machinery/door/airlock/outpost/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(attacking_item.force && outpost)
 		outpost.register_aggression(user)

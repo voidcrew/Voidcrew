@@ -95,6 +95,21 @@
 					"Don't ask."
 				]
 			}
+		],
+		"medic_found": [
+			"Stay with me. You're all right.",
+			"Easy now. I've got you.",
+			"Don't try to sit up. Let me look."
+		],
+		"medic_stable": [
+			"Medic to desk. One patient stable, concourse.",
+			"Desk, medic. They're breathing on their own now.",
+			"One back on their feet. Moving on."
+		],
+		"medic_lost": [
+			"Medic to desk. Lost one. Morgue crew, please.",
+			"Desk, medic. I couldn't keep them.",
+			"They're gone. Sorry. Morgue crew to me."
 		]
 	},
 	"quartermain": {
@@ -190,6 +205,21 @@
 					"Not long enough."
 				]
 			}
+		],
+		"medic_found": [
+			"Hey. Hey. Look at me. You're fine.",
+			"Hold still, mate. This'll sting.",
+			"Right, where's it hurt? Everywhere. Figures."
+		],
+		"medic_stable": [
+			"Medic. One patched up, he'll walk.",
+			"Desk, medic. Got one back. Next.",
+			"One's up and grumbling."
+		],
+		"medic_lost": [
+			"Medic. Lost one. Send the bag.",
+			"Desk, medic. Too late for this one.",
+			"He's gone. Morgue crew, my position."
 		]
 	},
 	"undertow": {
@@ -285,6 +315,21 @@
 					"Ask nicely."
 				]
 			}
+		],
+		"medic_found": [
+			"Don't die on me. Not today.",
+			"Lie still. You're not dead yet.",
+			"Teeth together. This bit hurts."
+		],
+		"medic_stable": [
+			"Medic. This one will live.",
+			"Desk, medic. Patched one. Won't last, never does.",
+			"One's up. Next idiot."
+		],
+		"medic_lost": [
+			"Medic. Lost one. Bag him.",
+			"Desk, medic. He's done. Morgue.",
+			"Gone. Somebody else's problem now."
 		]
 	}
 }

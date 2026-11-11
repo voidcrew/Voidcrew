@@ -235,6 +235,7 @@
 #include "voidcrew_outpost_prison_trouble.dm"
 #include "voidcrew_outpost_recovery_core.dm"
 #include "voidcrew_outpost_recovery_janitor.dm"
+#include "voidcrew_outpost_recovery_medic.dm"
 #include "voidcrew_outpost_recovery_morgue.dm"
 #include "voidcrew_outpost_recovery_robbery.dm"
 #include "voidcrew_outpost_recovery_staff.dm"
