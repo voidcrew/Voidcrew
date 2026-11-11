@@ -466,3 +466,27 @@
 	officer.give_up_leash()
 	TEST_ASSERT(QDELETED(officer), "An officer carried off their outpost, unseen, did not go")
 	qdel(outpost)
+
+/// Each map's checkpoint guard wears a police card for the booth door, locked to the body: not strippable, gone once out of it
+/datum/unit_test/voidcrew_outpost_police_guard_card
+
+/datum/unit_test/voidcrew_outpost_police_guard_card/Run()
+	for(var/outpost_type in list(
+		/obj/structure/overmap/trader_outpost/general,
+		/obj/structure/overmap/trader_outpost/outfitter,
+		/obj/structure/overmap/trader_outpost/black_market,
+	))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			return
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard = locate() in outpost.traders
+		TEST_ASSERT_NOTNULL(guard, "[outpost_type] has no checkpoint guard")
+		var/obj/item/card/id/card = guard.wear_id
+		TEST_ASSERT(istype(card) && ("outpost_police" in card.GetAccess()), "[outpost_type]'s guard has no card for the police doors") // ACCESS_OUTPOST_POLICE
+		TEST_ASSERT(human_npc_gear_locked(card), "[outpost_type]'s guard's card is not locked to the body")
+		TEST_ASSERT(HAS_TRAIT(card, TRAIT_NO_STRIP), "[outpost_type]'s guard's card can be stripped")
+		guard.death()
+		card.forceMove(get_turf(guard))
+		sleep(2)
+		TEST_ASSERT(QDELETED(card), "[outpost_type]'s dead guard's card survived being taken off the body")
+		qdel(outpost)

@@ -27,6 +27,14 @@
 	checkpoint = null
 	return ..()
 
+// His card reads his name, as an officer's does
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/setup_from_shop()
+	. = ..()
+	var/obj/item/card/id/card = wear_id
+	if(istype(card))
+		card.registered_name = real_name
+		card.update_label()
+
 // He keeps his post behind the desk
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/may_flee()
 	return FALSE
@@ -82,6 +90,9 @@
 	head = /obj/item/clothing/head/helmet/blueshirt
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
+	// A police card for the booth door, locked to the body with the rest of the kit (human_npc_gear.dm)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
 
 /datum/outpost_shop/vendor/checkpoint/halcyon
 	outpost_name = "\improper Halcyon Arrivals"
@@ -135,6 +146,9 @@
 	head = /obj/item/clothing/head/helmet/sec
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
+	// A police card for the booth door, locked to the body with the rest of the kit (human_npc_gear.dm)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
 
 /datum/outpost_shop/vendor/checkpoint/quartermain
 	outpost_name = "\improper Depot Gate"
@@ -187,6 +201,9 @@
 	glasses = /obj/item/clothing/glasses/sunglasses
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
+	// A police card for the booth door, locked to the body with the rest of the kit (human_npc_gear.dm)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
 
 /datum/outpost_shop/vendor/checkpoint/undertow
 	outpost_name = "\improper The Door"
