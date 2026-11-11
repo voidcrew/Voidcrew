@@ -96,14 +96,12 @@
 	stealth_scans(guard, 10)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard noticed someone standing 3 tiles behind it")
 	qdel(guard)
-	// In front, 2 tiles.
+	// In front, 2 tiles, lit: an alert on the first look (decision 32).
 	guard = stealth_guard(block, 6, 2)
 	stealth_ai = stealth_ai(guard)
 	person.forceMove(stealth_at(block, 8, 2))
-	stealth_scans(guard, 2)
-	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard wasn't suspicious of someone 2 tiles in front after two scans")
-	stealth_scans(guard, 2)
-	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard wasn't alert on someone 2 tiles in front after four scans")
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard wasn't alert on someone 2 tiles in front after one scan")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The alert guard has no target")
 	qdel(guard)
 	// In front, 6 tiles, dark.
@@ -508,7 +506,7 @@
 		var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, stealth_at(block, 3, 2))
 		mouse.faction = list("scav") // FACTION_SCAV
 	stealth_person(block, 5, 2)
-	stealth_scans(guard, 3)
+	stealth_scans(guard, 1)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A crowd of its own side hid someone 3 tiles in front of a guard")
 	qdel(block)
 

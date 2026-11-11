@@ -152,6 +152,8 @@
 	var/next_switch_at = 0
 	/// world.time of its next scan
 	var/next_scan = 0
+	/// The turf its last AI step ended on, to tell a diagonal step (stealth_step_cost())
+	var/turf/last_step_turf
 	/// world.time of its next look for fallen friends
 	var/next_body_scan = 0
 	/// Whether its search is over a fallen friend (it doesn't end it with "Nothing.")
@@ -305,7 +307,7 @@
 	stealth_drop_walk()
 	if(!stealth_driven())
 		stealth_set_pace(new_state == STEALTH_ALERT || new_state == STEALTH_SEARCHING)
-	human_npc_set_ai_movement(src, new_state == STEALTH_ALERT ? /datum/ai_movement/basic_avoidance : /datum/ai_movement/jps/stealth)
+	human_npc_set_ai_movement(src, new_state == STEALTH_ALERT ? /datum/ai_movement/basic_avoidance/stealth : /datum/ai_movement/jps/stealth)
 	stealth_update_light()
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
@@ -636,6 +638,11 @@
 	var/list/was_hidden = hidden_spots
 	var/list/now_hidden
 	var/judged = 0
+	// Someone it plainly sees within STEALTH_POINT_BLANK_RANGE: an alert on this look (decision 32). Nearest first.
+	var/mob/living/point_blank
+	// The close radius out of its cone works by the light that is there, not by its own beam (decision 32).
+	var/obj/item/flashlight/own_light = stealth_light()
+	var/night_vision = HAS_TRAIT(guard, TRAIT_NIGHT_VISION)
 	for(var/mob/living/candidate as anything in stealth_candidates(guard, HUMAN_NPC_SIGHT_RANGE))
 		// Only those it could perceive count toward the cap, so bystanders it can't see never crowd a player out.
 		if(judged >= STEALTH_MAX_CANDIDATES)
@@ -679,6 +686,7 @@
 			continue
 		judged++
 		var/rate = 0
+		var/plain_sight = FALSE
 		if(boxed)
 			rate = STEALTH_NOTICE_RATE
 		else if(eyes && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
@@ -689,8 +697,13 @@
 				rate = STEALTH_NOTICE_RATE * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < STEALTH_SIGHT_RANGE)
 					rate *= STEALTH_DARK_MULT
-		if(!rate && dist <= STEALTH_CLOSE_RANGE)
-			// At its shoulder: light doesn't matter (abuse P7).
+				// Close in front of it, seen plainly: no slow double take (decision 32).
+				plain_sight = cap == STEALTH_SIGHT_RANGE && dist <= STEALTH_POINT_BLANK_RANGE
+				if(dist <= STEALTH_NEAR_RANGE)
+					rate *= STEALTH_NEAR_MULT
+		if(!rate && dist <= STEALTH_CLOSE_RANGE && (night_vision || !stealth_tile_is_dark(where, own_light)))
+			// At its shoulder, in light that is there anyway (abuse P7). Its own beam points ahead, so it
+			// doesn't count here: someone standing still right behind it in the dark is not seen (decision 32).
 			rate = STEALTH_BEHIND_RATE
 		if(!rate)
 			continue
@@ -712,6 +725,10 @@
 			rate *= STEALTH_WARY_MULT
 			wary_at = world.time
 		entry[STEALTH_ENTRY_NOTICE] = min(entry[STEALTH_ENTRY_NOTICE] + rate * scan_seconds, STEALTH_NOTICE_MAX)
+		if(plain_sight)
+			entry[STEALTH_ENTRY_NOTICE] = STEALTH_NOTICE_MAX
+			if(isnull(point_blank))
+				point_blank = candidate
 		entry[STEALTH_ENTRY_TURF] = where
 		entry[STEALTH_ENTRY_SEEN_AT] = world.time
 		perceived[key] = candidate
@@ -743,6 +760,9 @@
 			best_key = key
 	if(alert)
 		stealth_weigh_switch(perceived, strategy)
+		return
+	if(point_blank)
+		stealth_spot_point_blank(point_blank)
 		return
 	// Whoever it sees now decides what it does; a higher entry it can't see no longer speaks for them.
 	var/judged_key = seen_key || best_key
@@ -790,6 +810,50 @@
 			var/turf/new_center = stealth_leash(best_turf)
 			if(calm_until || (new_center && get_dist(new_center, search_center) > 1))
 				stealth_go_searching(best_turf)
+
+/// Someone it plainly sees right in front of it: it turns on them and fights now, no double take (decision 32).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_spot_point_blank(mob/living/who)
+	var/mob/living/guard = pawn
+	stealth_go_alert(who)
+	if(stealth_state() == STEALTH_ALERT && !QDELETED(guard) && !QDELETED(who))
+		guard.face_atom(who)
+
+/**
+ * Between scans (planning runs every half second, the scan once a second): someone it plainly sees within
+ * STEALTH_POINT_BLANK_RANGE is an alert now, not at the next scan. The same rules as the point-blank part of
+ * stealth_look(): eyes open, not cloaked, on a turf of their own, in its cone, and lit or at its elbow.
+ * One spatial grid lookup of two tiles; nothing else. Returns TRUE if it went alert.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_quick_look()
+	var/mob/living/carbon/human/guard = pawn
+	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client || !isturf(guard.loc) || stealth_state() == STEALTH_ALERT)
+		return FALSE
+	if(!stealth_eyes_open())
+		return FALSE
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
+	if(isnull(strategy))
+		return FALSE
+	var/half_angle = stealth_half_angle()
+	for(var/mob/living/candidate as anything in stealth_candidates(guard, STEALTH_POINT_BLANK_RANGE))
+		var/turf/where = candidate.loc
+		if(!isturf(where) || stealth_is_cloaked(candidate) || !stealth_in_cone(guard, where, half_angle))
+			continue
+		var/dist = get_dist(guard, where)
+		if(dist > STEALTH_ADJACENT_RANGE && stealth_range_onto(where) < STEALTH_SIGHT_RANGE)
+			continue
+		if(!strategy.can_attack(guard, candidate, STEALTH_SIGHT_RANGE))
+			continue
+		var/key = REF(candidate)
+		var/list/entry = notice_map[key]
+		if(isnull(entry))
+			entry = list(0, null, 0)
+			notice_map[key] = entry
+		entry[STEALTH_ENTRY_NOTICE] = STEALTH_NOTICE_MAX
+		entry[STEALTH_ENTRY_TURF] = where
+		entry[STEALTH_ENTRY_SEEN_AT] = world.time
+		stealth_spot_point_blank(candidate)
+		return TRUE
+	return FALSE
 
 /**
  * Alert: whether to turn on someone else it has noticed. They must be at alert-level notice, in reach, and
@@ -1210,6 +1274,35 @@
 /datum/ai_movement/jps/stealth
 	maximum_length = STEALTH_PATROL_MAX_PATH
 
+/datum/ai_movement/jps/stealth/post_move(datum/move_loop/source, succeeded)
+	. = ..()
+	stealth_step_cost(source)
+
+/// tg's plain chase movement, with a diagonal step costing what it costs a player.
+/datum/ai_movement/basic_avoidance/stealth
+
+/datum/ai_movement/basic_avoidance/stealth/post_move(datum/move_loop/source, succeeded)
+	. = ..()
+	stealth_step_cost(source)
+
+/**
+ * A player's diagonal step waits sqrt(2) times their move delay (tg's client Move()); tg's AI move loops wait
+ * the plain delay whatever the step, so a guard cutting corners outran a player at the same run speed
+ * (decision 32, fix 7). After a diagonal step, the loop waits as long as a player would.
+ */
+/proc/stealth_step_cost(datum/move_loop/source)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/controller = source.extra_info
+	var/atom/movable/moving = source.moving
+	if(!istype(controller) || QDELETED(moving))
+		return
+	var/turf/now = get_turf(moving)
+	var/turf/before = controller.last_step_turf
+	controller.last_step_turf = now
+	if(isnull(before) || isnull(now) || before == now || before.z != now.z || get_dist(before, now) != 1)
+		return
+	if(before.x != now.x && before.y != now.y)
+		source.delay = controller.movement_delay * sqrt(2)
+
 /**
  * Runs the scan once a second, straight from planning: it never waits in the behaviour queue, where a walk
  * or tg's idle mode could starve it or be starved by it. First in the list, and never ends planning. With
@@ -1224,8 +1317,13 @@
 		QDEL_NULL(controller.meter)
 		return
 	controller.stealth_setup()
-	if(world.time >= controller.next_scan && !controller.blackboard_key_exists(BB_HUMAN_NPC_EXIT))
+	if(controller.blackboard_key_exists(BB_HUMAN_NPC_EXIT))
+		return
+	if(world.time >= controller.next_scan)
 		controller.stealth_scan_once()
+	else
+		// Someone stepping in front of it doesn't wait up to a second for the next scan (decision 32).
+		controller.stealth_quick_look()
 
 /// Suspicious: stare, walk over, look round. Searching: sweep the spots. Ends planning while it acts.
 /datum/ai_planning_subtree/stealth_react

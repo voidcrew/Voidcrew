@@ -18,8 +18,19 @@
  * decision D3), so it can't be stripped or looted.
  */
 
+/// Every guard's seclite, so a guard can leave them all out when it judges how dark its spot is
+GLOBAL_LIST_EMPTY(stealth_guard_lights)
+
 /// A guard's seclite: an EMP blinds it for a while, as tg's saboteur gun does.
 /obj/item/flashlight/seclite/scav
+
+/obj/item/flashlight/seclite/scav/Initialize(mapload)
+	. = ..()
+	GLOB.stealth_guard_lights += src
+
+/obj/item/flashlight/seclite/scav/Destroy()
+	GLOB.stealth_guard_lights -= src
+	return ..()
 
 /obj/item/flashlight/seclite/scav/emp_act(severity)
 	. = ..()
@@ -73,10 +84,34 @@
 	var/obj/item/flashlight/light = stealth_light()
 	if(isnull(light) || !COOLDOWN_FINISHED(light, disabled_time))
 		return
-	var/wanted = stealth_state() != STEALTH_UNAWARE || stealth_tile_is_dark(get_turf(guard), light)
+	// Its own spot judged by the room's light alone: a friend's passing beam doesn't switch it off (decision 32).
+	var/wanted = stealth_state() != STEALTH_UNAWARE || stealth_tile_is_dark(get_turf(guard), light, no_guard_lights = TRUE)
 	if(wanted)
 		light_hold_until = world.time + STEALTH_LIGHT_HOLD
 	else if(world.time < light_hold_until)
 		return
 	if(wanted != light.light_on)
 		light.toggle_light(guard)
+		if(light.light_on)
+			stealth_redraw_light(light)
+
+/**
+ * After switching it on: has tg's light lay its beam out again, as it does when the guard turns. The fl_sentry
+ * clip (decision 32) caught a light that read on but drew nothing until the guard next turned; turning re-runs
+ * this same update. Done now and again a tick later, so a facing change in the same tick can't race it.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_redraw_light(obj/item/flashlight/light)
+	stealth_relay_light(light)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_relay_light), light), 1)
+
+/// Re-lays an overlay light that is on: the holder check, then the beam and the lit turfs, as a turn would.
+/proc/stealth_relay_light(obj/item/flashlight/light)
+	if(QDELETED(light) || !light.light_on)
+		return
+	var/datum/component/overlay_lighting/glow = light.GetComponent(/datum/component/overlay_lighting)
+	// (1<<0) is tg's LIGHTING_ON, which overlay_lighting.dm undefines at its end.
+	if(isnull(glow) || !(glow.overlay_lighting_flags & (1<<0)))
+		return
+	glow.recheck_holder()
+	if(glow.current_holder)
+		glow.make_luminosity_update()

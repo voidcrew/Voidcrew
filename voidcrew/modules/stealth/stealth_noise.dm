@@ -445,6 +445,10 @@
 		var/mob/living/carbon/human/npc/gone = check.who?.resolve()
 		var/datum/ai_controller/basic_controller/human_npc/stealth/gone_ai = gone?.ai_controller
 		var/down = QDELETED(gone) || !istype(gone_ai) || gone.stat != CONSCIOUS || HAS_TRAIT(gone, TRAIT_RESTRAINED)
+		// Already found and called out as a body: nobody asks where it got to (decision 32).
+		if(down && !QDELETED(gone) && (REF(gone) in reported_bodies))
+			checks -= check
+			continue
 		if(!down)
 			var/state = gone_ai.stealth_state()
 			if(state == STEALTH_UNAWARE || state == STEALTH_ALERT)

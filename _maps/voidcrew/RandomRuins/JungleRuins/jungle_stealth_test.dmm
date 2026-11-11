@@ -113,6 +113,10 @@
 "x" = (
 /turf/open/floor/iron,
 /area/ruin/powered)
+"y" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron,
+/area/ruin/powered)
 "z" = (
 /obj/structure/table,
 /turf/open/floor/iron,
@@ -678,7 +682,7 @@ x
 x
 x
 x
-x
+y
 x
 x
 x

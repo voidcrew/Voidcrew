@@ -55,6 +55,11 @@
 #define STEALTH_CLOSE_RANGE 2
 /// Elbow to elbow: someone this close in its cone is seen whatever the light (decision 31)
 #define STEALTH_ADJACENT_RANGE 1
+/// Point-blank (decision 32): someone it can see in its cone this close is an alert on that look
+#define STEALTH_POINT_BLANK_RANGE 2
+/// Near (decision 32): in its cone up to this far, notice fills STEALTH_NEAR_MULT times faster
+#define STEALTH_NEAR_RANGE 4
+#define STEALTH_NEAR_MULT 3
 #define STEALTH_CONE_HALF_ANGLE 60
 #define STEALTH_WARY_HALF_ANGLE 75
 #define STEALTH_SEARCH_HALF_ANGLE 90

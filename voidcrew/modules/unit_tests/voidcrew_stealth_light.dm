@@ -116,7 +116,8 @@
 	TEST_ASSERT(stealth_ai.search_for_body, "The search isn't marked as over a body")
 	qdel(block)
 
-/// Elbow to elbow: someone on the next tile in front is seen in the dark; behind or side-on is not.
+/// Elbow to elbow: someone on the next tile in front is seen in the dark (an alert, decision 32); behind or side-on
+/// is not; two ahead in the dark fills (3x near, decision 32) to suspicious.
 /datum/unit_test/voidcrew_stealth_adjacent
 
 /datum/unit_test/voidcrew_stealth_adjacent/Run()
@@ -126,19 +127,19 @@
 		for(var/dy in 0 to 6)
 			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = TRUE
 	var/mob/living/carbon/human/person = stealth_person(block, 4, 3)
-	// offset from the guard => whether two scans make it suspicious
+	// offset from the guard => its state after two scans
 	var/list/cases = list(
-		list(1, 0, TRUE),
-		list(-1, 0, FALSE),
-		list(0, 1, FALSE),
-		list(2, 0, FALSE),
+		list(1, 0, "alert"),
+		list(-1, 0, "unaware"),
+		list(0, 1, "unaware"),
+		list(2, 0, "suspicious"),
 	)
 	for(var/list/test_case as anything in cases)
 		person.forceMove(stealth_at(block, 3 + test_case[1], 3 + test_case[2]))
 		var/mob/living/carbon/human/npc/guard = stealth_guard(block, 3, 3)
 		var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 		stealth_scans(guard, 2)
-		TEST_ASSERT_EQUAL(stealth_ai.stealth_state() == "suspicious", test_case[3], "Offset ([test_case[1]], [test_case[2]]) in the dark: state [stealth_ai.stealth_state()]")
+		TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), test_case[3], "Offset ([test_case[1]], [test_case[2]]) in the dark: state [stealth_ai.stealth_state()]")
 		qdel(guard)
 	for(var/dx in 0 to 6)
 		for(var/dy in 0 to 6)
