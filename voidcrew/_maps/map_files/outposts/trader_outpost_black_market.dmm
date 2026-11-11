@@ -614,17 +614,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
-"bI" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/obj/machinery/light/red/directional/east,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "bJ" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -2631,6 +2620,14 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost/checkpoint)
+"CH" = (
+/obj/machinery/door/airlock/outpost/police{
+	desc = "Staff only.";
+	name = "Guard Booth"
+	},
+/obj/effect/turf_decal/delivery/red,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "CI" = (
 /obj/structure/chair/sofa/corp{
 	dir = 4
@@ -2704,6 +2701,18 @@
 /obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"DP" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/sign/departments/morgue/directional/north,
+/obj/machinery/light/red/directional/east,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "DU" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/warning{
 	dir = 4
@@ -3347,17 +3356,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"NK" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/obj/structure/sign/departments/morgue/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "NP" = (
 /turf/open/indestructible{
 	base_icon_state = "stairs-r";
@@ -3706,6 +3704,16 @@
 /obj/machinery/light/red/directional/north,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"Ts" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "Tt" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 10
@@ -5237,8 +5245,8 @@ aa
 aa
 aV
 aV
-aV
-aa
+br
+CH
 bD
 bN
 bS
@@ -5273,7 +5281,7 @@ ZS
 ZS
 ZS
 ZS
-NK
+Ts
 bP
 bU
 aa
@@ -5341,7 +5349,7 @@ AE
 AE
 AE
 ZS
-bI
+DP
 bR
 bW
 aa
