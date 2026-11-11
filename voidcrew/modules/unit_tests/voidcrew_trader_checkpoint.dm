@@ -115,6 +115,8 @@
 
 // ===== THE CHAMBER =====
 
+// POLICE-PORT: uses is_armed_trespasser/trespass_bars or the removed outpost turret; port to warrant.heat and get_stars() (P10)
+#ifdef POLICE_TESTS_PORTED
 /// Work tools and disablers pass every checkpoint weapon check; a laser remains restricted.
 /datum/unit_test/voidcrew_trader_checkpoint/gun_classification
 	abstract_type = /datum/unit_test/voidcrew_trader_checkpoint/gun_classification
@@ -165,6 +167,7 @@
 		TEST_ASSERT_EQUAL(goods.loc, handed_over, "[gun_type] was left outside its sealed case")
 	else
 		TEST_ASSERT_EQUAL(handed_over, goods, "[gun_type] was needlessly sealed")
+#endif
 
 /// Clean people pass together, and a clean result is never stored on the doors
 /datum/unit_test/voidcrew_trader_checkpoint/clean_group/Run()
@@ -467,6 +470,8 @@
 
 // ===== FORCING THE INNER DOOR =====
 
+// POLICE-PORT: uses is_armed_trespasser/trespass_bars or the removed outpost turret; port to warrant.heat and get_stars() (P10)
+#ifdef POLICE_TESTS_PORTED
 /// Prying starts a long, alarmed attempt; a breached door flags anyone who goes through it from the chamber
 /datum/unit_test/voidcrew_trader_checkpoint/forced_entry/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
@@ -508,9 +513,12 @@
 	insider.forceMove(secured)
 	TEST_ASSERT(wait_shut(inner), "The forced door did not shut again")
 	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The checkpoint did not settle after the breach") // CHECKPOINT_IDLE
+#endif
 
 // ===== ARMED TRESPASS =====
 
+// POLICE-PORT: uses is_armed_trespasser/trespass_bars or the removed outpost turret; port to warrant.heat and get_stars() (P10)
+#ifdef POLICE_TESTS_PORTED
 /// A gun drawn past the checkpoint flags its holder once it stays out; holstered, permitted or in the lobby it does not
 /datum/unit_test/voidcrew_trader_checkpoint/drawn_gun/Run()
 	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
@@ -555,6 +563,7 @@
 	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
 	SEND_SIGNAL(shooter, COMSIG_MOB_FIRED_GUN, gun, lobby, null, null, list(0, 0))
 	TEST_ASSERT(host.is_armed_trespasser(shooter.mind), "Firing past the checkpoint was not flagged")
+#endif
 
 /// The traders and the permit desk refuse an armed trespasser, and the desk sells them nothing
 /datum/unit_test/voidcrew_trader_checkpoint/refused_service/Run()

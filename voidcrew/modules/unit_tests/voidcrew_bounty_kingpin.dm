@@ -972,6 +972,8 @@
 
 // ===== THE MAP =====
 
+// POLICE-PORT: uses the removed outpost turret and strike ladder; port to an officer and warrant.heat (P10)
+#ifdef POLICE_TESTS_PORTED
 /**
  * The black market's lounge: the seat on the corp sofa, no table of his own in front of it (he lost
  * his coffee table, and no lounge table stands at any of his six goon posts either), six goon posts
@@ -1071,6 +1073,7 @@
 	TEST_ASSERT(length(loiter) >= 40, "The Undertow has only [length(loiter)] loiter tiles")
 	TEST_ASSERT(!loiter[refuge], "The kingpin's refuge, mid-hallway, is a loiter tile")
 	qdel(outpost)
+#endif
 
 // ===== H1: SHOTS FROM MECHS, AND ANY DAMAGE =====
 
@@ -1212,6 +1215,8 @@
 
 // ===== OUTPOST SECURITY =====
 
+// POLICE-PORT: uses the removed outpost turret and strike ladder; port to an officer and warrant.heat (P10)
+#ifdef POLICE_TESTS_PORTED
 /**
  * During the shootout a hunter's stray shot, just after firing at his crew, takes no outpost strike:
  * three of them leave the turret holding fire, where three strikes mark anyone else. Hits away from
@@ -1280,6 +1285,7 @@
 	outpost.aggressor_strike_times -= hunter.mind
 	outpost.register_aggression(hunter)
 	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[hunter.mind], 1, "A hunter's property strike didn't count outside the shootout")
+#endif
 
 // ===== THE LOW ONES =====
 

@@ -257,8 +257,9 @@ GLOBAL_LIST_EMPTY(overmap_objects)
 // The berth lifecycle procs themselves live in voidcrew/modules/trade/outpost_hangar.dm.
 
 /// Called when someone attacks host-owned service machinery (elevator panels,
-/// outpost doors). Trader outposts escalate to embargo/turrets; no-op by default.
-/obj/structure/overmap/proc/register_aggression(mob/living/offender)
+/// outpost doors). Trader outposts hand it to their police (OUTPOST_CRIME_* `crime`,
+/// the `victim` and the item used as `source`); no-op by default.
+/obj/structure/overmap/proc/register_aggression(mob/living/offender, crime = OUTPOST_CRIME_VANDALISM, atom/victim, obj/item/source)
 	return
 /**
   * When something crosses another overmap object, add it to the nearby objects list, which are used by events and docking

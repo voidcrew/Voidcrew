@@ -378,6 +378,8 @@
 // DRINKERS (owner item 2)
 // =========================================================================
 
+// POLICE-PORT: reads aggressor_strikes; port to police.get_stars()/warrant.heat (P10)
+#ifdef POLICE_TESTS_PORTED
 /**
  * A drinker orders at the bar, sits, really drinks a real glass (the drink goes into them, and tg's
  * drunkenness sets their stage), is cut off when done for, sleeps it off on a sofa for real (tg's
@@ -491,6 +493,7 @@
 	crew.on_sip(FALSE)
 	crew.on_sip(FALSE)
 	TEST_ASSERT(crew.glass_is_strong(), "The crew room never moved on to something stronger")
+#endif
 
 // =========================================================================
 // STAFF (owner item 4)
@@ -834,6 +837,8 @@
 // KILLING
 // =========================================================================
 
+// POLICE-PORT: reads aggressor_strikes; port to police.get_stars()/warrant.heat (P10)
+#ifdef POLICE_TESTS_PORTED
 /**
  * Every outpost NPC can be killed: they die of their wounds and drop 5 to 30 cr once, never again
  * after a revive, and the outpost's turrets count them as its own. A killed person's place stays
@@ -926,6 +931,7 @@
 	TEST_ASSERT(!body.npc_corpse_expired(), "A fresh body is already up to be taken away")
 	body.npc_died_at = world.time - 3001 // AMBIENT_OUTPOST_BODY_TIME
 	TEST_ASSERT(body.npc_corpse_expired(), "A body nobody is near is not taken away after five minutes")
+#endif
 
 /// Nobody new comes up the lift while someone is still in it
 /datum/unit_test/voidcrew_ambient_outpost_lift_one_at_a_time

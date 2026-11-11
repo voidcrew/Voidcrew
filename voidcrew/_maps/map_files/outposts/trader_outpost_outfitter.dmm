@@ -193,11 +193,6 @@
 /obj/machinery/light/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"aC" = (
-/obj/structure/lattice/catwalk,
-/obj/machinery/porta_turret/outpost,
-/turf/open/space/basic,
-/area/space)
 "aD" = (
 /obj/effect/turf_decal/bot,
 /turf/open/indestructible/dark/smooth_large,
@@ -597,7 +592,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "bM" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/box/red/corners{
 	dir = 1
 	},
@@ -767,7 +761,6 @@
 /obj/structure/railing/unbreakable{
 	dir = 6
 	},
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted,
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 6
@@ -871,7 +864,6 @@
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "ez" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 10
 	},
@@ -1858,7 +1850,6 @@
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "sd" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/box/red/corners{
 	dir = 1
 	},
@@ -2139,7 +2130,6 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "uD" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 1
 	},
@@ -2657,7 +2647,6 @@
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 1
 	},
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/box/red/corners{
 	dir = 8
 	},
@@ -2673,7 +2662,6 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "Cm" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
 	},
@@ -3072,7 +3060,6 @@
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "HV" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 8
 	},
@@ -3460,7 +3447,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "NJ" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 4
 	},
@@ -3485,7 +3471,6 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "Ob" = (
-/obj/machinery/porta_turret/outpost,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
 	},
@@ -4461,7 +4446,7 @@ ao
 ao
 ao
 ao
-aC
+cp
 cp
 cp
 cp
@@ -5701,7 +5686,7 @@ ao
 ao
 ao
 ao
-aC
+cp
 cp
 cp
 cp

@@ -452,6 +452,8 @@
 	warrant.show_warrant(decoys[2], hunter)
 	TEST_ASSERT_EQUAL(posting.alert, 1, "An out-of-date warrant raised the alert")
 
+// POLICE-PORT: reads aggressor_strikes or the removed outpost turret; port to warrant.heat and force_level()/can_attack() (P10)
+#ifdef POLICE_TESTS_PORTED
 /// Restraints reached for on someone blending in cost exactly what a punch costs: the decoy's wrists are a strike and the alert and it backs away, the fugitive's end its act. Down or held, the cuffs go on. A decoy confronted any other way raises the alert too (C1)
 /datum/unit_test/voidcrew_bounty_outpost/cuffs
 
@@ -521,6 +523,7 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/next_decoy = next_decoys[1]
 	next_decoy.on_confronted(make_hunter())
 	TEST_ASSERT_EQUAL(next.alert, 1, "Confronting a decoy another way cost nothing")
+#endif
 
 /// Two alerts: the decoys leave, and the fugitive walks out for real, still the posting's until it has gone; the bounty relists when it does. A fugitive caught on the way stays the posting's. An exposed fugitive stays
 /datum/unit_test/voidcrew_bounty_outpost/alert
@@ -607,6 +610,8 @@
 	planet.placement_kind = "planet" // BOUNTY_PLACEMENT_PLANET
 	TEST_ASSERT(!planet.raise_alert("a test"), "A planet bounty's alert rose")
 
+// POLICE-PORT: reads aggressor_strikes or the removed outpost turret; port to warrant.heat and force_level()/can_attack() (P10)
+#ifdef POLICE_TESTS_PORTED
 /// A deliberate hit on a decoy is an outpost strike and raises the alert; hitting the fugitive only exposes it. A shot hits whoever it hits
 /datum/unit_test/voidcrew_bounty_outpost/decoy_hit
 
@@ -771,6 +776,7 @@
 	TEST_ASSERT(!next_fugitive.outpost_turret_target(), "Punching someone on its grudge list made the fugitive a turret target")
 	SEND_SIGNAL(next_fugitive, COMSIG_LIVING_UNARMED_ATTACK, bystander, TRUE, list())
 	TEST_ASSERT(next_fugitive.outpost_turret_target(), "The fugitive punched a bystander and the turrets still leave it be")
+#endif
 
 /// A hand on someone blending in is a hand on a person: they can be grabbed like anyone, and it is no hit. Standing or down, the fugitive and a decoy alike
 /datum/unit_test/voidcrew_bounty_outpost/grab

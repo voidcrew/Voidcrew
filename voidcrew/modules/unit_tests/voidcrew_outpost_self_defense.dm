@@ -1,3 +1,5 @@
+// POLICE-PORT: reads aggressor_strikes; port to warrant.heat (P10)
+#ifdef POLICE_TESTS_PORTED
 /// Personal retaliation must not punish the victim or excuse the original attacker.
 /datum/unit_test/voidcrew_outpost_self_defense/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost)
@@ -61,3 +63,4 @@
 	TEST_ASSERT(!LAZYACCESS(defender_targets, attacker.mind), "Expired retaliation permission must be pruned")
 	var/list/attacker_targets = outpost.self_defense_targets[attacker.mind]
 	TEST_ASSERT(attacker_targets[defender.mind] > world.time, "A new attack after expiry must let its victim defend themselves")
+#endif

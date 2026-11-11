@@ -4,11 +4,9 @@
  * One list of everyone an outpost is refusing, across every trader outpost and player outpost, so an
  * admin can lift a restriction or impose one without hunting through variables.
  *
- * Trader outposts (voidcrew/modules/trade/outpost.dm, outpost_trespass.dm):
- * - "embargo": a ship under trade embargo. Its crew are refused service and shot on sight.
- * - "aggressor": a person marked for violence. Refused service and shot on sight.
- * - "warning": a person with warning strikes who has not been marked yet.
- * - "trespass": a person refused service after armed trespass (turrets only for the shorter hostile window).
+ * Trader outposts (voidcrew/modules/trade/outpost.dm):
+ * - "embargo": a ship under trade embargo. Its crew are refused service.
+ * Wanted people at trader outposts are the outpost police's (voidcrew/modules/outpost_police/).
  * Player outposts (voidcrew/modules/player_outposts/):
  * - "ship_ban": a ship the owners denied docking.
  */
@@ -81,19 +79,6 @@
 				continue
 			if(trader.is_ship_embargoed(embargoed))
 				entries += list(ban_entry(trader, "embargo", embargoed, embargoed.name, "Trade embargo", outpost_ban_seconds_left(trader.embargoed_ships[embargoed])))
-		for(var/datum/mind/marked as anything in trader.aggressor_minds.Copy())
-			if(trader.is_marked_aggressor(marked))
-				entries += list(ban_entry(trader, "aggressor", marked, outpost_ban_mind_label(marked), "Marked for violence", outpost_ban_seconds_left(trader.aggressor_minds[marked])))
-		for(var/datum/mind/warned as anything in trader.aggressor_strikes.Copy())
-			var/last_strike = trader.aggressor_strike_times[warned]
-			if(trader.aggressor_minds[warned] || !last_strike || world.time >= last_strike + OUTPOST_AGGRESSION_MARK_DURATION)
-				continue
-			var/strikes = trader.aggressor_strikes[warned]
-			entries += list(ban_entry(trader, "warning", warned, outpost_ban_mind_label(warned), "[strikes] warning[strikes == 1 ? "" : "s"]", outpost_ban_seconds_left(last_strike + OUTPOST_AGGRESSION_MARK_DURATION)))
-		for(var/datum/mind/trespasser as anything in trader.trespass_bars.Copy())
-			if(trader.is_trespass_barred(trespasser))
-				var/label = trader.is_armed_trespasser(trespasser) ? "Armed trespass, turrets hostile" : "Armed trespass"
-				entries += list(ban_entry(trader, "trespass", trespasser, outpost_ban_mind_label(trespasser), label, outpost_ban_seconds_left(trader.trespass_bars[trespasser])))
 
 	var/list/ships = list()
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
@@ -139,20 +124,6 @@
 				trader.embargoed_ships -= ship
 				target_name = ship.name
 				ship.ship_notify("[trader.admin_name()] has lifted the trade embargo on your vessel.", "TRADE EMBARGO", SHIP_NOTIFY_NOTICE)
-		if("aggressor", "warning")
-			var/datum/mind/marked = trader && (locate(target_ref) in (kind == "aggressor" ? trader.aggressor_minds : trader.aggressor_strikes))
-			if(marked)
-				trader.aggressor_minds -= marked
-				trader.aggressor_strikes -= marked
-				trader.aggressor_strike_times -= marked
-				target_name = outpost_ban_mind_label(marked)
-		if("trespass")
-			var/datum/mind/trespasser = trader && (locate(target_ref) in trader.trespass_bars)
-			if(trespasser)
-				trader.trespass_bars -= trespasser
-				trader.armed_trespassers -= trespasser
-				trader.armed_sightings -= trespasser
-				target_name = outpost_ban_mind_label(trespasser)
 		if("ship_ban")
 			var/obj/structure/overmap/ship/ship = home && (locate(target_ref) in home.banned_ships)
 			if(ship)
@@ -182,24 +153,6 @@
 				home.approved_ships -= ship
 				if(ship in home.pending_dock_requests)
 					home.deny_dock_request(ship)
-		if("aggressor", "trespass")
-			var/datum/mind/target = locate(target_ref) in ban_candidate_minds()
-			if(!target || !trader)
-				error = "Choose a person and a trader outpost."
-				return
-			target_name = outpost_ban_mind_label(target)
-			var/mob/living/body = target.current
-			var/at_outpost = body && get_trader_outpost_for_turf(get_turf(body)) == trader
-			if(kind == "aggressor")
-				trader.aggressor_minds[target] = world.time + duration
-				trader.aggressor_strikes[target] = OUTPOST_AGGRESSION_STRIKES
-				trader.aggressor_strike_times[target] = world.time
-				if(at_outpost)
-					to_chat(body, span_userdanger("Outpost defense systems lock onto you."))
-			else
-				trader.trespass_bars[target] = world.time + duration
-				trader.weapon_permits -= target
-				trader.permit_lapse_told -= target
 		else
 			error = "Unknown restriction."
 			return
@@ -212,12 +165,6 @@
 	switch(kind)
 		if("embargo")
 			return "a trade embargo"
-		if("aggressor")
-			return "a violence mark"
-		if("warning")
-			return "the warnings"
-		if("trespass")
-			return "a refused-service bar"
 		if("ship_ban")
 			return "a docking ban"
 	return "a restriction"

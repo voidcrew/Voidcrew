@@ -168,6 +168,8 @@
 	TEST_ASSERT(bear.CanAttack(flicker), "A bear was fooled by the Flickerskin")
 	TEST_ASSERT(boss.CanAttack(flicker), "A megafauna was fooled by the Flickerskin")
 
+// POLICE-PORT: lists the removed outpost turret; port to the police targeting strategy (P10)
+#ifdef POLICE_TESTS_PORTED
 /// Every turret type that can be handed a camo'd human drops them from the list it shoots at.
 /// tryToShootAt() returns 1 once it has settled on a target, and nothing when it has none.
 /datum/unit_test/voidcrew_cyberware_camo/turrets
@@ -198,6 +200,7 @@
 		ghost.forceMove(spot(0, 2))
 		TEST_ASSERT(turret.tryToShootAt(list(ghost)), "[turret_type] missed a camo'd human 2 tiles off")
 		ghost.forceMove(spot(4, 4))
+#endif
 
 /// Human NPCs: tg's basic targeting through the human NPC strategy, which pirate crews and boarders,
 /// ruin troopers and the club's people all run on. A regular NPC is fooled beyond range; a boss

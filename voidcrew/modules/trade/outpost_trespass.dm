@@ -2,16 +2,12 @@
  * # Armed trespass at trader outposts
  *
  * Past a trader outpost's checkpoint (outpost_checkpoint.dm), a weapon is only carried openly with a
- * weapons permit bought from the checkpoint guard. Anyone else is an armed trespasser when they are:
- * - seen with a gun drawn (held in hand for OUTPOST_ARMED_SIGHTING_GRACE on the outpost's sweep),
- * - heard firing one, or
- * - caught going through a forced checkpoint door.
- * A gun kept holstered or smuggled in a bag is not noticed until it comes out.
- *
- * An armed trespasser is personal (by mind, never their crew): the outpost's turrets treat them as
- * hostile until OUTPOST_TRESPASS_HOSTILE_DURATION after they were last seen armed inside, and every
- * trader, the permit desk and the checkpoint refuse them until OUTPOST_TRESPASS_BAR_DURATION after
- * it. Attacks still go through the ordinary aggression rules (outpost.dm).
+ * weapons permit bought from the checkpoint guard. Anyone else seen with a gun drawn (held in hand for
+ * OUTPOST_ARMED_SIGHTING_GRACE on the outpost's sweep) is reported to the outpost police with each
+ * drawn weapon (voidcrew/modules/outpost_police/), and loses any permit they had. Firing one is
+ * reported as gunfire (outpost_security.dm), going through a forced checkpoint door as a breach
+ * (outpost_checkpoint.dm). A gun kept holstered or smuggled in a bag is not noticed until it comes out.
+ * What it costs them, and whether anyone refuses them service, is the police's business.
  *
  * Goods bought or paid out past the checkpoint come sealed when they hold a gun, so nobody is
  * flagged for carrying home what they just bought.
@@ -24,10 +20,6 @@
 	var/list/weapon_permits = list()
 	/// Permit holders already told their permit ran out: mind -> TRUE
 	var/list/permit_lapse_told = list()
-	/// Armed trespassers: mind -> world.time they were last seen armed past the checkpoint
-	var/list/armed_trespassers = list()
-	/// Refused service after armed trespass: mind -> world.time the bar lifts
-	var/list/trespass_bars = list()
 	/// Someone currently holding a gun past the checkpoint: mind -> world.time first seen doing it
 	var/list/armed_sightings = list()
 	/// Looping timer for armed_sweep()
@@ -43,8 +35,6 @@
 	QDEL_LIST_ASSOC_VAL(checkpoints)
 	weapon_permits.Cut()
 	permit_lapse_told.Cut()
-	armed_trespassers.Cut()
-	trespass_bars.Cut()
 	armed_sightings.Cut()
 	network_pad_spot = null
 
@@ -112,41 +102,35 @@
 
 // ===== TRESPASS =====
 
-/// Whether the turrets treat `offender_mind` as hostile for armed trespass
-/obj/structure/overmap/trader_outpost/proc/is_armed_trespasser(datum/mind/offender_mind)
-	var/last_seen = offender_mind && armed_trespassers[offender_mind]
-	return last_seen && world.time < last_seen + OUTPOST_TRESPASS_HOSTILE_DURATION
-
-/// Whether `offender_mind` is still refused service for armed trespass
-/obj/structure/overmap/trader_outpost/proc/is_trespass_barred(datum/mind/offender_mind)
-	var/lifts_at = offender_mind && trespass_bars[offender_mind]
-	if(!lifts_at)
-		return FALSE
-	if(world.time >= lifts_at)
-		trespass_bars -= offender_mind
-		armed_trespassers -= offender_mind
-		return FALSE
-	return TRUE
-
 /**
- * `offender` was seen armed past the checkpoint without a permit (or came through a forced door).
- * Starts or extends both clocks and voids any permit. Returns TRUE if they were not already hostile.
- * Never sleeps: it runs from signal handlers.
+ * `offender` was seen armed past the checkpoint without a permit. Voids any permit, then reports a drawn
+ * weapon to the police once per weapon in hand, each as evidence. Returns TRUE if they have stars here
+ * afterwards. Never sleeps: it runs from signal handlers.
  */
 /obj/structure/overmap/trader_outpost/proc/flag_trespasser(mob/living/offender)
 	var/datum/mind/offender_mind = offender?.mind
 	if(!offender_mind)
 		return FALSE
-	var/newly_hostile = !is_armed_trespasser(offender_mind)
-	armed_trespassers[offender_mind] = world.time
-	trespass_bars[offender_mind] = max(trespass_bars[offender_mind], world.time + OUTPOST_TRESPASS_BAR_DURATION)
 	weapon_permits -= offender_mind
 	permit_lapse_told -= offender_mind
 	armed_sightings -= offender_mind
-	if(newly_hostile)
-		log_game("OUTPOST TRESPASS: [key_name(offender)] was marked as an armed trespasser at [name] ([AREACOORD(offender)]).")
-		to_chat(offender, span_userdanger("The outpost's turrets turn toward you."))
-	return newly_hostile
+	if(!police)
+		return FALSE
+	var/list/obj/item/drawn = outpost_drawn_weapons(offender)
+	if(!length(drawn)) // a mech's guns: nothing to take off them
+		return police.report_crime(offender, OUTPOST_CRIME_WEAPON_DRAWN) > 0
+	var/wanted = FALSE
+	for(var/obj/item/weapon as anything in drawn)
+		if(police.report_crime(offender, OUTPOST_CRIME_WEAPON_DRAWN, null, weapon) > 0)
+			wanted = TRUE
+	return wanted
+
+/// The weapons `visitor` holds in hand
+/proc/outpost_drawn_weapons(mob/living/visitor)
+	. = list()
+	for(var/obj/item/held in visitor.held_items)
+		if(outpost_checkpoint_weapon(held))
+			. += held
 
 /// Whether `visitor` has a weapon out: in hand, or mounted on the mech they sit in
 /proc/outpost_weapon_drawn(mob/living/visitor)

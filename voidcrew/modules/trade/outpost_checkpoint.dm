@@ -19,7 +19,8 @@
  *   way (the exterior hatches need that; the lobby checkpoints have a one-way exit gate as well).
  * - The inner door can be pried open with a crowbar or jaws of life, or hacked with an emag. It takes
  *   OUTPOST_CHECKPOINT_FORCE_TIME and raises the alarm; anyone who then goes through it from the
- *   chamber is flagged as an armed trespasser (outpost_trespass.dm).
+ *   chamber is reported to the outpost police as a breach (voidcrew/modules/outpost_police/), the
+ *   forcer's tool with them.
  * - A door never closes on anyone in its doorway: it waits for them to move.
  * - NPCs never work the doors by walking into them, and pathing never takes an NPC through a chamber.
  *   Someone off the lift crosses by asking each door once (outpost_checkpoint_npcs.dm).
@@ -113,6 +114,10 @@
 	var/phase_timer
 	/// Someone is prying or hacking the inner door right now
 	var/forcing = FALSE
+	/// Who forced the inner door open, while it is breached
+	var/datum/weakref/breacher_ref
+	/// What they forced it with, while it is breached: evidence for the police
+	var/datum/weakref/breach_tool_ref
 	/// Scan as soon as the outer door has closed (someone asked to go through)
 	var/scan_when_closed = FALSE
 	/// The current cycle was asked for from the concourse side
@@ -529,6 +534,8 @@
 	if(!succeeded)
 		update_sensor()
 		return FALSE
+	breacher_ref = WEAKREF(user)
+	breach_tool_ref = WEAKREF(tool)
 	breach(user)
 	return TRUE
 
@@ -547,22 +554,32 @@
 
 /datum/outpost_checkpoint/proc/end_breach()
 	phase_timer = null
+	breacher_ref = null
+	breach_tool_ref = null
 	if(!QDELETED(outer_door) && !outer_door.density)
 		close_door(outer_door)
 	close_door(inner_door)
 
-/// Someone stepped into the forced inner doorway
+/// Someone stepped into the forced inner doorway: a crime for the police (outpost_police/police_wanted.dm)
 /datum/outpost_checkpoint/proc/on_breach_entry(atom/movable/arrived, atom/old_loc)
-	if(state != CHECKPOINT_FORCED || !outpost)
+	if(state != CHECKPOINT_FORCED || !outpost?.police)
 		return
 	var/turf/came_from = get_turf(old_loc)
 	if(came_from && !(came_from in chamber_turfs))
 		return // from the concourse side: already inside
-	var/flagged = FALSE
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/breacher = breacher_ref?.resolve()
+	var/obj/item/breach_tool = breach_tool_ref?.resolve()
+	var/raised = FALSE
 	for(var/mob/living/person in arrived.get_all_contents())
-		if(person.mind && outpost.flag_trespasser(person))
-			flagged = TRUE
-	if(flagged)
+		if(!person.mind)
+			continue
+		var/stars_before = police.get_stars(person.mind)
+		// The forcer's crowbar or emag is evidence; nobody else brought it
+		var/stars_after = police.report_crime(person, OUTPOST_CRIME_CHECKPOINT_BREACH, null, person == breacher ? breach_tool : null)
+		if(!isnull(stars_after) && stars_after > stars_before)
+			raised = TRUE
+	if(raised)
 		announce(CHECKPOINT_LINE_INTRUDER, urgent = TRUE)
 
 // =========================================================================
@@ -753,9 +770,8 @@
 	overlays_file = 'icons/obj/doors/airlocks/centcom/overlays.dmi'
 	can_be_glass = FALSE
 
-/// Whether outpost property lets a crowbar get to work on this. Only a checkpoint's inner door says yes.
-/obj/proc/outpost_forceable()
-	return FALSE
+// /obj/proc/outpost_forceable() is declared in voidcrew/modules/outpost_police/police_core.dm, which is
+// included before this module, so the police cell door can override it too.
 
 // =========================================================================
 // THE WALL SCANNER

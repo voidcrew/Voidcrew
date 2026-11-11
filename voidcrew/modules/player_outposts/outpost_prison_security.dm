@@ -22,7 +22,7 @@
  * On a player outpost a turret's controls, and a turret control panel's, answer only to the
  * outpost's members, as a hull turret's do there (ship_defense_turret.dm).
  *
- * Hull defense turrets and trader outpost turrets keep their own rules (uses_outpost_turret_rules()).
+ * Hull defense turrets keep their own rules (uses_outpost_turret_rules()).
  * Numbers in voidcrew/_DEFINES/outpost_prison_security.dm.
  */
 
@@ -108,15 +108,12 @@
 
 /**
  * Whether the prison's rules and the outpost's control lock hold for this turret: for every
- * turret players can build or bring. Hull defense turrets and trader outpost turrets have their own.
+ * turret players can build or bring. Hull defense turrets have their own.
  */
 /obj/machinery/porta_turret/proc/uses_outpost_turret_rules()
 	return TRUE
 
 /obj/machinery/porta_turret/ship_defense/uses_outpost_turret_rules()
-	return FALSE
-
-/obj/machinery/porta_turret/outpost/uses_outpost_turret_rules()
 	return FALSE
 
 /// The stock scan found `targets`; the prison's mobs the rule spares are dropped before one is picked

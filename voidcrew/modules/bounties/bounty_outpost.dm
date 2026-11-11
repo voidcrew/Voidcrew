@@ -988,7 +988,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		owner.on_confronted(attacker)
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(owner))
-	outpost?.register_aggression(attacker)
+	outpost?.register_aggression(attacker, OUTPOST_CRIME_ASSAULT_CIVILIAN, owner)
 	if(!leaving && COOLDOWN_FINISHED(src, hit_grace))
 		COOLDOWN_START(src, hit_grace, BOUNTY_OUTPOST_HIT_GRACE)
 		var/datum/criminal_bounty/posting = posting_ref?.resolve()

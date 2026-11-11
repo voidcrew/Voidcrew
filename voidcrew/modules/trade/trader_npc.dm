@@ -143,7 +143,7 @@
 /mob/living/basic/outpost_trader/attack_hand(mob/living/carbon/human/user, list/modifiers)
 	if(user.combat_mode)
 		. = ..()
-		outpost?.register_aggression(user)
+		outpost?.register_aggression(user, OUTPOST_CRIME_ASSAULT_STAFF, src)
 		return
 	// show_radial_menu sleeps; don't hold up the click chain
 	INVOKE_ASYNC(src, PROC_REF(open_trader_menu), user)
@@ -260,12 +260,13 @@
 
 /mob/living/basic/outpost_trader/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(attacking_item.force && outpost)
-		outpost.register_aggression(user)
+		outpost.register_aggression(user, OUTPOST_CRIME_ASSAULT_STAFF, src, attacking_item)
 	return ..()
 
 /mob/living/basic/outpost_trader/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE, blocked = 0)
 	if(outpost && isliving(hitting_projectile.firer))
-		outpost.register_aggression(hitting_projectile.firer)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_ASSAULT_STAFF, src, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 // ===== VENDOR STALL VARIANTS (the outposts' side businesses) =====

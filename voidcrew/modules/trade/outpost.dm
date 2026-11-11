@@ -7,8 +7,8 @@
  * Unlike space ruins, outposts never unload, never move and never respawn.
  * The interior is lazy-loaded on first dock and then stays for the round.
  * The structure is indestructible by construction (CentCom-style turfs and
- * machinery); the deterrent against aggression is economic (turrets plus a
- * per-ship trade embargo), not HP.
+ * machinery); the deterrent against aggression is its police (voidcrew/modules/outpost_police/)
+ * and a per-ship trade embargo, not HP.
  */
 
 /// All trader outposts on the overmap (used by vouchers/missions to list trader locations)
@@ -71,12 +71,6 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// template_bottom_left) live on /obj/structure/overmap, see _overmap.dm.
 	/// Ships under trade embargo: ship -> world.time the embargo ends
 	var/list/embargoed_ships = list()
-	/// Minds that committed violence here: mind -> world.time the mark lapses (turret targets, refused service)
-	var/list/aggressor_minds = list()
-	/// Warning strikes accrued before turrets engage: mind -> infraction count
-	var/list/aggressor_strikes = list()
-	/// Last time each mind took a strike: mind -> world.time (see OUTPOST_AGGRESSION_GRACE)
-	var/list/aggressor_strike_times = list()
 	/// Personal retaliation exemptions: defender mind -> (attacker mind -> expiry time).
 	var/list/self_defense_targets = list()
 	/// Posted (not yet accepted) contracts (see outpost_missions.dm / outpost_quests.dm)
@@ -85,8 +79,6 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/mob/living/basic/outpost_trader/trader
 	/// All linked trader NPCs, main trader and vendor stalls alike
 	var/list/mob/living/basic/outpost_trader/traders = list()
-	/// Linked defense turrets
-	var/list/obj/machinery/porta_turret/outpost/turrets = list()
 	/// Looping timer id for the supply convoy restock
 	var/restock_timer
 	/// Board clock is independent of visits, acceptance and the supply convoy.
@@ -105,6 +97,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	GLOB.trader_outposts += src
 	berths = new /list(OUTPOST_MAX_BERTHS)
 	ensure_main_shop()
+	ensure_police()
 	if(SSovermap_zones.initialized)
 		start_contract_offers()
 	else
@@ -159,12 +152,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	template_bottom_left = null
 	embargoed_ships.Cut()
 	clear_checkpoint_state()
-	aggressor_minds.Cut()
-	aggressor_strikes.Cut()
-	aggressor_strike_times.Cut()
+	QDEL_NULL(police)
 	self_defense_targets.Cut()
 	QDEL_LIST(shop_offers)
-	turrets.Cut()
 	traders.Cut()
 	trader = null
 	loaded = FALSE
@@ -236,6 +226,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/door/airlock/outpost/checkpoint/checkpoint_doors = list()
 	var/list/obj/effect/landmark/outpost_checkpoint_chamber/checkpoint_chambers = list()
 	var/list/obj/machinery/outpost_checkpoint_sensor/checkpoint_sensors = list()
+	// The police station's parts (voidcrew/modules/outpost_police/police_core.dm, link_interior())
+	var/list/obj/effect/landmark/police_landmarks = list()
+	var/list/obj/machinery/door/airlock/outpost/police_doors = list()
+	var/list/obj/machinery/status_display/outpost_berth/police_cell/police_signs = list()
+	var/list/obj/structure/closet/secure_closet/personal/outpost_police/police_lockers = list()
+	var/obj/machinery/outpost_police_evidence/police_chute
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
 		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
@@ -247,6 +243,14 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			qdel(pad_mark)
 		for(var/obj/effect/landmark/outpost_checkpoint_chamber/chamber_mark in interior_turf)
 			checkpoint_chambers += chamber_mark
+		for(var/obj/effect/landmark/outpost_police_lift/police_mark in interior_turf)
+			police_landmarks += police_mark
+		for(var/obj/effect/landmark/outpost_police_desk/police_mark in interior_turf)
+			police_landmarks += police_mark
+		for(var/obj/effect/landmark/outpost_police_cell/police_mark in interior_turf)
+			police_landmarks += police_mark
+		for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
+			police_lockers += locker
 		for(var/mob/living/basic/outpost_trader/npc in interior_turf)
 			npc.outpost = src
 			npc.shop = get_shop(npc.shop_type)
@@ -255,15 +259,17 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			if(isnull(npc.shop_type)) // the main shop's trader is the outpost's face
 				trader = npc
 		for(var/obj/machinery/machine in interior_turf)
-			if(istype(machine, /obj/machinery/porta_turret/outpost))
-				var/obj/machinery/porta_turret/outpost/turret = machine
-				turret.outpost = src
-				turrets += turret
-			else if(istype(machine, /obj/machinery/door/airlock/outpost))
+			if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = src
 				if(istype(door, /obj/machinery/door/airlock/outpost/checkpoint))
 					checkpoint_doors += door
+				else if(istype(door, /obj/machinery/door/airlock/outpost/police) || istype(door, /obj/machinery/door/airlock/outpost/glass/police_cell))
+					police_doors += door
+			else if(istype(machine, /obj/machinery/status_display/outpost_berth/police_cell))
+				police_signs += machine
+			else if(istype(machine, /obj/machinery/outpost_police_evidence))
+				police_chute = machine
 			else if(istype(machine, /obj/machinery/outpost_checkpoint_sensor))
 				checkpoint_sensors += machine
 			else if(istype(machine, /obj/machinery/outpost_elevator))
@@ -283,6 +289,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// Only parts collected from this concourse reservation form a checkpoint
 	// (outpost_checkpoint.dm); the guards linked above are matched to theirs.
 	build_checkpoints(checkpoint_doors, checkpoint_chambers, checkpoint_sensors)
+	ensure_police().link_interior(police_landmarks, police_doors, police_signs, police_lockers, police_chute)
 	start_armed_sweep()
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
@@ -432,8 +439,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
  * Only the attacked person may retaliate, and only against their attacker.
  * Check the exemption before recording aggression so defending oneself never
  * gives the original attacker a reciprocal exemption or extends the fight.
+ * The victim's window opens before the police hear of it, seen or not (abuse M14).
+ * `crime` is an OUTPOST_CRIME_* and `source` the item the hit was done with, if any.
  */
-/obj/structure/overmap/trader_outpost/proc/register_pvp_aggression(mob/living/victim, mob/living/offender)
+/obj/structure/overmap/trader_outpost/proc/register_pvp_aggression(mob/living/victim, mob/living/offender, crime = OUTPOST_CRIME_ASSAULT_ARMED, obj/item/source)
 	if(!victim?.mind || !offender?.mind || victim.mind == offender.mind)
 		return
 	var/list/allowed_targets = self_defense_targets[offender.mind]
@@ -449,58 +458,35 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!victim_targets)
 		victim_targets = list()
 		self_defense_targets[victim.mind] = victim_targets
-	// Even hits inside the strike grace period or from an already marked
-	// aggressor renew the victim's permission to defend themselves.
+	// Even hits the police fold together or never see renew the victim's
+	// permission to defend themselves.
 	victim_targets[offender.mind] = world.time + OUTPOST_SELF_DEFENSE_DURATION
-	register_aggression(offender)
+	register_aggression(offender, crime, victim, source)
 
 /**
- * Called when someone attacks outpost property or another visitor. The first
- * infractions only issue a warning; once the offender racks up
- * OUTPOST_AGGRESSION_STRIKES the outpost marks them and embargoes every ship
- * whose crew they belong to. Idempotent once marked, confirmed aggressors
- * short-circuit here until the mark lapses.
+ * Called when someone attacks outpost property, its people or another visitor. The
+ * outpost police decide whether it counted (a witness, the dedupe) and what it does
+ * to the offender's wanted level (voidcrew/modules/outpost_police/police_wanted.dm).
+ * A counted crime tells the bystanders to duck; the trader has a word for a scuffle
+ * still under one star, and another when someone first reaches three.
  */
-/obj/structure/overmap/trader_outpost/register_aggression(mob/living/offender)
+/obj/structure/overmap/trader_outpost/register_aggression(mob/living/offender, crime = OUTPOST_CRIME_VANDALISM, atom/victim, obj/item/source)
 	if(!istype(offender) || !offender.mind)
 		return
 	if(bounty_kingpin_excuses_aggression(src, offender)) return // BOUNTY P9 (kingpin): no property strikes for hunters in his shootout; PvP still counts
+	if(!police)
+		return
+	var/stars_before = police.get_stars(offender.mind)
+	var/stars_after = police.report_crime(offender, crime, victim, source)
+	if(isnull(stars_after))
+		return
 	// World population (voidcrew/modules/ambient_npcs): bystanders near the fight duck and leave
 	SEND_SIGNAL(src, COMSIG_TRADER_OUTPOST_VIOLENCE, offender)
-	if(is_marked_aggressor(offender.mind))
+	if(!trader)
 		return
-
-	// One swing can arrive here down several routes in the same tick; fold those
-	// together without letting a second real swing ride along for free.
-	var/last_strike = aggressor_strike_times[offender.mind]
-	if(last_strike && world.time < last_strike + OUTPOST_AGGRESSION_GRACE)
-		return
-	// Warnings go stale on the same clock as a mark: a scuffle hours ago should
-	// not turn today's first shove into the final strike.
-	if(last_strike && world.time >= last_strike + OUTPOST_AGGRESSION_MARK_DURATION)
-		aggressor_strikes -= offender.mind
-	aggressor_strike_times[offender.mind] = world.time
-
-	var/strikes = aggressor_strikes[offender.mind] + 1
-	aggressor_strikes[offender.mind] = strikes
-
-	// Not over the line yet: warn and give them a chance to stand down.
-	if(strikes < OUTPOST_AGGRESSION_STRIKES)
-		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning."))
-		if(trader)
-			trader.speak_line(TRADER_LINE_WARNING)
-		return
-
-	// Final strike: mark them and embargo their crew's ships.
-	aggressor_minds[offender.mind] = world.time + OUTPOST_AGGRESSION_MARK_DURATION
-
-	var/datum/voidcrew_crew_record/crew = offender.mind.get_reputation_crew()
-	for(var/datum/team/voidcrew/team in crew?.teams)
-		if(team.ship)
-			embargo_ship(team.ship)
-
-	to_chat(offender, span_userdanger("Outpost defense systems lock onto you."))
-	if(trader)
+	if(stars_after < 1)
+		trader.speak_line(TRADER_LINE_WARNING)
+	else if(stars_before < 3 && stars_after >= 3)
 		trader.speak_line(TRADER_LINE_AGGRESSION)
 
 /**
@@ -524,52 +510,13 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	return TRUE
 
 /**
- * Whether this mind is currently marked as an aggressor. Lapsed marks are
- * pruned lazily, along with the strike ladder that produced them, so someone
- * coming back after serving their time starts from a clean record.
- */
-/obj/structure/overmap/trader_outpost/proc/is_marked_aggressor(datum/mind/mind)
-	var/mark_ends = aggressor_minds[mind]
-	if(!mark_ends)
-		return FALSE
-	if(world.time >= mark_ends)
-		aggressor_minds -= mind
-		aggressor_strikes -= mind
-		aggressor_strike_times -= mind
-		return FALSE
-	return TRUE
-
-/**
- * Whether this user is refused service: personally marked as an aggressor,
- * crew of an embargoed ship, or recently caught armed past the checkpoint
- * (outpost_trespass.dm).
+ * Whether this user is refused service: the police answer it (stars, a bar, or crew
+ * of an embargoed ship; voidcrew/modules/outpost_police/police_wanted.dm).
  */
 /obj/structure/overmap/trader_outpost/proc/is_user_barred(mob/user)
-	if(!user?.mind)
+	if(!user?.mind || !police)
 		return FALSE
-	return is_aggression_barred(user) || is_trespass_barred(user.mind)
-
-/// Marked as an aggressor, or crew of an embargoed ship
-/obj/structure/overmap/trader_outpost/proc/is_aggression_barred(mob/user)
-	if(!user?.mind)
-		return FALSE
-	if(is_marked_aggressor(user.mind))
-		return TRUE
-	var/datum/voidcrew_crew_record/crew = user.mind.get_reputation_crew()
-	for(var/datum/team/voidcrew/team in crew?.teams)
-		if(team.ship && is_ship_embargoed(team.ship))
-			return TRUE
-	return FALSE
-
-/**
- * Whether the outpost has barred this mob from the sanctuary: marked aggressors
- * AND crew of embargoed ships, an embargo means shot on sight, not just refused
- * service. Armed trespassers too, for their shorter hostile window only
- * (outpost_trespass.dm). Per-mind, so it holds for a player in any body. The turrets layer
- * their own on-sight rules (xenos, hostile wildlife) on top in valid_target().
- */
-/obj/structure/overmap/trader_outpost/proc/is_turret_target(mob/living/target)
-	return istype(target) && (is_aggression_barred(target) || is_armed_trespasser(target.mind))
+	return police.is_barred(user)
 
 /**
  * Resolves which trader outpost protects a turf by checking its concourse and

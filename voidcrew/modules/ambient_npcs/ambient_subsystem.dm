@@ -673,7 +673,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in living_npcs())
 		npc.react_convoy(outpost)
 
-// Its turrets never shoot its own people; with nobody on the concourse, whoever joins holds still until someone comes
+// Its own people carry the staff faction (FACTION_TURRET); with nobody on the concourse, whoever joins holds still until someone comes
 /datum/ambient_place/outpost/add_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	. = ..()
 	npc.faction |= FACTION_TURRET
@@ -699,12 +699,12 @@ SUBSYSTEM_DEF(ambient_npcs)
 	until += opens_at
 	refill_at = refill_at ? min(refill_at, opens_at) : opens_at
 
-// A real blow is violence at the outpost, as against a visitor: its strikes, and everyone near ducks (register_aggression())
+// A real blow is violence at the outpost, as against a visitor: a crime for its police, and everyone near ducks (register_aggression())
 /datum/ambient_place/outpost/npc_attacked(mob/living/carbon/human/npc/ambient_npc/npc, atom/attacker, attack_flags)
 	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
-	outpost?.register_aggression(attacker)
+	outpost?.register_aggression(attacker, OUTPOST_CRIME_ASSAULT_CIVILIAN, npc)
 
 // Its people drop no more than AMBIENT_OUTPOST_CASH_CAP between them in a round
 /datum/ambient_place/outpost/cash_for(mob/living/carbon/human/npc/ambient_npc/npc, amount)

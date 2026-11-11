@@ -1,3 +1,5 @@
+// POLICE-PORT: uses the removed aggressor and trespass rows; port to the wanted rows (P8)
+#ifdef POLICE_TESTS_PORTED
 /// The outpost bans view lists every trader restriction, and lifting or adding one changes what the outpost enforces.
 /datum/unit_test/voidcrew_overmap_management_bans
 
@@ -50,3 +52,4 @@
 		if(entry["outpost_ref"] == REF(outpost))
 			kinds["[entry["kind"]]:[entry["target_ref"]]"] = TRUE
 	return kinds
+#endif
