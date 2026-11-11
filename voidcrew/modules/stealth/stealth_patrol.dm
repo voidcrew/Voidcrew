@@ -21,7 +21,8 @@ GLOBAL_LIST_EMPTY(stealth_unassigned_points)
 /datum/stealth_stop
 	var/turf/spot
 	var/wait = STEALTH_PATROL_DEFAULT_WAIT
-	var/dir = SOUTH
+	/// The way the guard turns to here, or 0 to keep facing the way it walked in
+	var/dir = 0
 	var/chatter = FALSE
 	var/order = 0
 
@@ -114,7 +115,7 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	var/datum/stealth_stop/stop = new
 	stop.spot = get_turf(point)
 	stop.wait = point.wait < 0 ? STEALTH_PATROL_DEFAULT_WAIT : point.wait
-	stop.dir = point.dir
+	stop.dir = point.facing
 	stop.chatter = point.chatter
 	stop.order = point.order
 	var/list/route = routes[point.route]
@@ -189,10 +190,13 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 		old.prune()
 	return ..()
 
-/// A stop on a guard route. Its dir is the way the guard faces there.
+/// A stop on a guard route. A guard arrives facing the way it walked, unless `facing` is set.
 /obj/effect/landmark/stealth_patrol
 	name = "stealth patrol point"
 	icon_state = "x3"
+	/// The way the guard turns to at this stop (NORTH, SOUTH, EAST or WEST), or 0 to keep facing the way it walked in
+	/// (decision 39: turning back on the way it came faced anyone following it)
+	var/facing = 0
 	/// The route it belongs to ("a", "b", ...)
 	var/route = "a"
 	/// Its place on the route, from 1
@@ -223,6 +227,10 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	var/turf/spawn_turf = get_turf(guard)
 	// Its skill comes from where it starts (decision 38), settled now, before it walks anywhere.
 	stealth_skill()
+	// A calm guard walks (decision 39: tg starts every mob at a run, and nothing set the pace before its first
+	// change of state, so fresh patrols ran their routes).
+	if(!stealth_driven())
+		stealth_set_pace(FALSE)
 	home_turf = spawn_turf
 	sentry_dir = stealth_facing(guard)
 	stand_dir = sentry_dir
@@ -421,8 +429,11 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	home_turf = stop.spot
 	stop_fails["[route_index]"] = 0
 	wait_until = world.time + stop.wait
-	stand_dir = stop.dir
-	pawn.setDir(stop.dir)
+	if(stop.dir)
+		stand_dir = stop.dir
+		stealth_turn_to(stop.dir)
+	else
+		stand_dir = stealth_facing(pawn)
 	next_turn = world.time + STEALTH_LOOK_TURN_INTERVAL
 	if(!stop.chatter || world.time < group.next_chatter)
 		return

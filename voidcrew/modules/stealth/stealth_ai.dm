@@ -17,6 +17,13 @@
 	COMSIG_LIVING_STATUS_UNCONSCIOUS,\
 	COMSIG_LIVING_STATUS_SLEEP,\
 )
+/// Its hands stop or start working, or it is cuffed or freed: its flashlight goes out or may come back.
+#define STEALTH_LIGHT_SIGNALS list(\
+	SIGNAL_ADDTRAIT(TRAIT_HANDS_BLOCKED),\
+	SIGNAL_REMOVETRAIT(TRAIT_HANDS_BLOCKED),\
+	SIGNAL_ADDTRAIT(TRAIT_RESTRAINED),\
+	SIGNAL_REMOVETRAIT(TRAIT_RESTRAINED),\
+)
 
 /**
  * # Stealth guards: awareness
@@ -204,6 +211,8 @@
 	RegisterSignals(new_pawn, STEALTH_STUN_SIGNALS, PROC_REF(on_stunned))
 	RegisterSignal(new_pawn, COMSIG_LIVING_STATUS_REMOVED, PROC_REF(on_status_removed))
 	RegisterSignal(new_pawn, COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET), PROC_REF(on_target_set))
+	RegisterSignal(new_pawn, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_pawn_turned))
+	RegisterSignals(new_pawn, STEALTH_LIGHT_SIGNALS, PROC_REF(on_light_cue))
 
 /datum/ai_controller/basic_controller/human_npc/stealth/UnpossessPawn(destroy)
 	if(pawn)
@@ -217,7 +226,9 @@
 			COMSIG_MOB_FLASHED,
 			COMSIG_LIVING_STATUS_REMOVED,
 			COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET),
-		) + STEALTH_HANDLED_SIGNALS + STEALTH_STUN_SIGNALS)
+			COMSIG_ATOM_POST_DIR_CHANGE,
+		) + STEALTH_HANDLED_SIGNALS + STEALTH_STUN_SIGNALS + STEALTH_LIGHT_SIGNALS)
+		stealth_drop_turn()
 	group?.remove_member(pawn)
 	group = null
 	stealth_drop_closet()
@@ -225,6 +236,9 @@
 		qdel(overlay)
 	watchers = null
 	QDEL_NULL(meter)
+	QDEL_NULL(torch)
+	light_lit = FALSE
+	turned_from = null
 	home_turf = null
 	last_seen_turf = null
 	harm_turf = null
@@ -248,6 +262,8 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/on_sentience_gained()
 	. = ..()
 	QDEL_NULL(meter)
+	stealth_drop_turn()
+	stealth_update_light()
 	stealth_drop_call()
 	stealth_drop_closet()
 
@@ -307,6 +323,7 @@
 	look_until = 0
 	lost_since = 0
 	calm_until = 0
+	stealth_drop_turn()
 	suspicion_heard = FALSE
 	if(new_state != STEALTH_UNAWARE)
 		glance_until = 0
@@ -659,8 +676,9 @@
 	var/judged = 0
 	// Someone it plainly sees within its point-blank range: an alert on this look (decision 32). Nearest first.
 	var/mob/living/point_blank
-	// The close radius out of its cone works by the light that is there, not by its own beam (decision 32).
-	var/obj/item/flashlight/own_light = stealth_light()
+	// Just turned: nothing is plain to it at a glance and nothing makes it alert for a moment (decision 39); notice
+	// still fills as usual, so someone still in front of it when the moment passes is seen.
+	var/turning = stealth_turn_grace()
 	var/night_vision = HAS_TRAIT(guard, TRAIT_NIGHT_VISION)
 	for(var/mob/living/candidate as anything in stealth_candidates(guard, HUMAN_NPC_SIGHT_RANGE))
 		// Only those it could perceive count toward the cap, so bystanders it can't see never crowd a player out.
@@ -721,13 +739,15 @@
 				rate = profile.notice_rate * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < sight_range)
 					rate *= STEALTH_DARK_MULT
-				// Close in front of it, seen plainly: no slow double take (decision 32).
-				plain_sight = cap == sight_range && dist <= profile.point_blank_range
-				if(dist <= profile.near_range)
-					rate *= profile.near_mult
-		if(!rate && dist <= close_range && (night_vision || !stealth_tile_is_dark(where, own_light)))
-			// At its shoulder, in light that is there anyway (abuse P7). Its own beam points ahead, so it
-			// doesn't count here: someone standing still right behind it in the dark is not seen (decision 32).
+				// Close in front of it, seen plainly: no slow double take (decision 32). Not in the dark, and not
+				// in the moment after it turns (decision 39).
+				else
+					plain_sight = !turning && dist <= profile.point_blank_range
+					if(dist <= profile.near_range)
+						rate *= profile.near_mult
+		if(!rate && dist <= close_range && (night_vision || !stealth_tile_is_dark(where)))
+			// At its shoulder, in light that is really there (abuse P7). Its own pool lands ahead of it, so
+			// someone right behind it in the dark is not seen (decisions 32 and 39).
 			rate = STEALTH_BEHIND_RATE
 		if(!rate)
 			continue
@@ -813,7 +833,8 @@
 				return
 			// It has someone in sight now: their own "?" takes over from the heard one.
 			suspicion_heard = FALSE
-			if(level >= STEALTH_ALERT_AT && in_reach)
+			// Just turned: the alert waits for the moment to pass (decision 39), the notice doesn't.
+			if(level >= STEALTH_ALERT_AT && in_reach && !turning)
 				stealth_go_alert(best)
 				return
 			last_gain = world.time
@@ -826,9 +847,10 @@
 		if(STEALTH_SEARCHING)
 			if(!seen_now || level < STEALTH_SUSPICIOUS_AT)
 				return
-			// It is primed: a glimpse is enough.
+			// It is primed: a glimpse is enough, once it isn't in the middle of turning (decision 39).
 			if(in_reach)
-				stealth_go_alert(best)
+				if(!turning)
+					stealth_go_alert(best)
 				return
 			// Too far to be sure: the search moves to where it saw them.
 			var/turf/new_center = stealth_leash(best_turf)
@@ -852,7 +874,7 @@
 	var/mob/living/carbon/human/guard = pawn
 	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client || !isturf(guard.loc) || stealth_state() == STEALTH_ALERT)
 		return FALSE
-	if(!stealth_eyes_open())
+	if(!stealth_eyes_open() || stealth_turn_grace())
 		return FALSE
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
 	if(isnull(strategy))
@@ -1260,6 +1282,9 @@
 		stealth_drop_closet()
 	if(new_stat == CONSCIOUS && was != CONSCIOUS && was != DEAD)
 		stealth_came_round()
+	if(new_stat != CONSCIOUS)
+		stealth_drop_turn()
+	stealth_update_light()
 
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_status_removed(mob/living/source, datum/status_effect/effect)
 	SIGNAL_HANDLER
@@ -1547,10 +1572,10 @@
 	if(!istype(controller) || guard.stat != CONSCIOUS || !isturf(guard.loc))
 		return AI_BEHAVIOR_DELAY
 	if(world.time < controller.look_until)
-		// Looking round: two other ways over STEALTH_LOOK_AROUND_TIME.
+		// Looking round: one side, then the other, over STEALTH_LOOK_AROUND_TIME (decision 39: no random sides).
 		if(world.time >= controller.next_turn)
 			controller.next_turn = world.time + STEALTH_LOOK_AROUND_TIME / 2
-			guard.setDir(turn(controller.stand_dir, pick(90, -90, 180)))
+			controller.stealth_turn_to(turn(controller.stand_dir, STEALTH_LOOK_TURN_ARC * controller.stealth_next_side()))
 		return AI_BEHAVIOR_DELAY
 	if(world.time < controller.next_turn)
 		return AI_BEHAVIOR_DELAY
@@ -1559,16 +1584,18 @@
 		guard.setDir(controller.stand_dir)
 		return AI_BEHAVIOR_DELAY
 	// A sentry faces its post and only glances aside now and then (decision 31: it used to spend half its
-	// time, the first eight seconds included, facing sideways).
+	// time, the first eight seconds included, facing sideways). A guard at a stop looks left, back, right,
+	// back, on a steady beat (decision 39: it used to be a coin toss every 3 s, which no one could read).
 	var/sentry = isnull(controller.route_id)
 	controller.next_turn = world.time + (sentry ? STEALTH_SENTRY_TURN_INTERVAL : STEALTH_LOOK_TURN_INTERVAL)
 	if(guard.dir != controller.stand_dir)
-		guard.setDir(controller.stand_dir)
-	else if(sentry || prob(STEALTH_LOOK_TURN_CHANCE))
-		guard.setDir(turn(controller.stand_dir, pick(STEALTH_LOOK_TURN_ARC, -STEALTH_LOOK_TURN_ARC)))
-		if(sentry)
-			controller.next_turn = world.time + STEALTH_SENTRY_GLANCE_TIME
+		controller.stealth_turn_to(controller.stand_dir)
+		return AI_BEHAVIOR_DELAY
+	controller.stealth_turn_to(turn(controller.stand_dir, STEALTH_LOOK_TURN_ARC * controller.stealth_next_side()))
+	if(sentry)
+		controller.next_turn = world.time + STEALTH_SENTRY_GLANCE_TIME
 	return AI_BEHAVIOR_DELAY
 
 #undef STEALTH_HANDLED_SIGNALS
 #undef STEALTH_STUN_SIGNALS
+#undef STEALTH_LIGHT_SIGNALS

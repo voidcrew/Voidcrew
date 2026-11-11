@@ -1,55 +1,68 @@
 /**
- * # Stealth guards: flashlights (owner decision 31)
+ * # Stealth guards: flashlights (owner decisions 31 and 39)
  *
- * A scav guard carries a real seclite clipped to its belt (or its vest, or a pocket). tg's own overlay
- * light draws it, cast the way the guard faces, and adds to the lit turfs' dynamic_lumcount, which the
- * darkness rule (stealth_tile_is_dark()) already reads. So the light shows a guard what it lights and
- * nothing more: there is no "sees in the dark" rule.
+ * A scav guard carries a real seclite clipped to its belt (or its vest, or a pocket). What it lights is a real
+ * light (decision 39): a hidden lamp, /obj/effect/abstract/stealth_torch, that sits on the floor a few tiles ahead
+ * of the guard, where the beam would land, and lights a small pool through tg's own static lighting. Everyone sees
+ * the pool, around corners too, and the darkness rule (stealth_tile_is_dark()) reads the same light the players
+ * see, so what looks dark is dark to the guards as well. The seclite item itself stays off and stays a plain tg
+ * seclite: a looted one works like any other, and nothing draws two beams.
  *
- * The guard switches it with the light's own toggle (its click and all): on when it stands somewhere dark,
- * always on while suspicious, alert or searching, off in lit places while unaware so a lit patrol looks
- * the same as before. It keeps it on for STEALTH_LIGHT_HOLD after it last wanted it, so walking along the
- * edge of a lit room doesn't flick it on and off.
+ * Where the pool goes: STEALTH_TORCH_REACH tiles ahead along its facing (STEALTH_TORCH_REACH_DIAGONAL on a
+ * diagonal), or the last open tile before the first wall, opaque thing or closed door. It shines through glass. The
+ * nearer the pool has to sit, the smaller it is, so it never lights the guard's own back (stealth_torch_range()).
+ * Facing a wall at its nose it has no pool at all.
  *
- * Beating it is tg's: you see the beam coming; an EMP or the saboteur gun cuts it out for a while (the
- * scav seclite takes an EMP as tg's saboteur hit; a stock seclite ignores EMPs); a guard that is down,
- * stunned, cuffed, asleep or dead doesn't touch it. A light that is gone from its body (deleted, burnt,
- * forced off) is gone: the guard goes without. Unlike the rest of its kit it is not locked gear (decision 34
- * amends human NPC decision D3): it can be stripped, knocked loose and looted like anyone's seclite. Once it has left
- * a guard's body it is an ordinary seclite to the guards too (off the guard light list).
+ * The guard switches it as before: on when it stands somewhere dark (judged without any guard's light, decision 32,
+ * so two guards never switch each other off), always on while suspicious, alert or searching, off in lit places
+ * while unaware. It keeps it on for STEALTH_LIGHT_HOLD after it last wanted it, so walking along the edge of a lit
+ * room doesn't flick it on and off.
+ *
+ * Beating it is tg's: you see the pool coming; an EMP or the saboteur gun cuts the seclite out for a while (the scav
+ * seclite takes an EMP as tg's saboteur hit; a stock seclite ignores EMPs); a guard that is down, stunned, cuffed,
+ * held, asleep or dead has no light; nor does one whose seclite was taken (decision 34: it can be stripped, knocked
+ * loose and looted like anyone's seclite).
+ *
+ * Cost: the pool moves only when the guard's turf or facing changes, or when it switches on or off (at most once a
+ * scan). A move is one abstract_move() of the lamp, which queues one static light update. A guard asleep in a
+ * dormant level moves and scans nothing, so its lamp costs nothing.
  */
 
-/// Every guard's seclite, so a guard can leave them all out when it judges how dark its spot is
-GLOBAL_LIST_EMPTY(stealth_guard_lights)
+/// Every guard's lamp, so a guard can leave them all out when it judges how dark its own spot is (decision 32)
+GLOBAL_LIST_EMPTY(stealth_guard_torches)
 
 /// A guard's seclite: an EMP blinds it for a while, as tg's saboteur gun does.
 /obj/item/flashlight/seclite/scav
-
-/obj/item/flashlight/seclite/scav/Initialize(mapload)
-	. = ..()
-	GLOB.stealth_guard_lights += src
-
-/obj/item/flashlight/seclite/scav/Destroy()
-	GLOB.stealth_guard_lights -= src
-	return ..()
-
-/// Off a guard's body (looted, stripped, dropped), it is just a seclite: no guard leaves its light out any more.
-/obj/item/flashlight/seclite/scav/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
-	. = ..()
-	if(!ishumannpc(loc))
-		GLOB.stealth_guard_lights -= src
-
-/// Decision 34: a guard's seclite is loot like anyone's, so it is never locked to the body (D3 holds for the rest).
-/mob/living/carbon/human/npc/npc_lock_item(obj/item/item)
-	if(istype(item, /obj/item/flashlight/seclite/scav))
-		return FALSE
-	return ..()
 
 /obj/item/flashlight/seclite/scav/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
 	on_saboteur(null, severity == EMP_HEAVY ? STEALTH_LIGHT_EMP_HEAVY : STEALTH_LIGHT_EMP_LIGHT)
+
+/obj/item/flashlight/seclite/scav/on_saboteur(datum/source, disrupt_duration)
+	. = ..()
+	stealth_tell_holder(loc)
+
+/// Off a guard's body (looted, stripped, dropped), the guard's pool goes out at once.
+/obj/item/flashlight/seclite/scav/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	stealth_tell_holder(old_loc)
+
+/// Tells the guard `holder` (if it is one) that its light changed.
+/obj/item/flashlight/seclite/scav/proc/stealth_tell_holder(atom/holder)
+	if(!ishumannpc(holder))
+		return
+	var/mob/living/carbon/human/npc/guard = holder
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard.ai_controller
+	if(istype(stealth_ai))
+		stealth_ai.stealth_update_light()
+
+/// Decision 34: a guard's seclite is loot like anyone's, so it is never locked to the body (D3 holds for the rest).
+/mob/living/carbon/human/npc/npc_lock_item(obj/item/item)
+	if(istype(item, /obj/item/flashlight/seclite/scav))
+		return FALSE
+	return ..()
 
 /mob/living/carbon/human/npc
 	/// Weakref to the flashlight a stealth guard switches on in the dark, or null for none
@@ -65,18 +78,99 @@ GLOBAL_LIST_EMPTY(stealth_guard_lights)
 	qdel(light)
 	return null
 
-/// How much `light` adds to `tile` right now (tg's overlay light: a flat share on every turf it reaches).
-/proc/stealth_light_share(obj/item/flashlight/light, turf/tile)
-	if(!light?.light_on)
-		return 0
-	var/datum/component/overlay_lighting/glow = light.GetComponent(/datum/component/overlay_lighting)
-	if(isnull(glow) || !(tile in glow.affected_turfs))
-		return 0
-	return glow.lum_power
+/**
+ * The pool of a guard's flashlight on the floor: a real static light with no sprite. It is never entered into a
+ * turf (abstract_move()), so it trips nothing, and nothing can touch, move or burn it.
+ */
+/obj/effect/abstract/stealth_torch
+	name = "flashlight beam"
+	icon = null
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	blocks_emissive = EMISSIVE_BLOCK_NONE
+	light_system = COMPLEX_LIGHT
+	light_range = STEALTH_TORCH_RANGE_FAR
+	light_power = STEALTH_TORCH_POWER
+	light_color = STEALTH_TORCH_COLOR
+	light_on = FALSE
+
+/obj/effect/abstract/stealth_torch/Initialize(mapload)
+	. = ..()
+	GLOB.stealth_guard_torches += src
+
+/obj/effect/abstract/stealth_torch/Destroy()
+	GLOB.stealth_guard_torches -= src
+	return ..()
+
+/// How much every guard's lamp adds to `tile` right now, in get_lumcount() units.
+/proc/stealth_torch_share(turf/tile)
+	. = 0
+	if(!isturf(tile))
+		return
+	for(var/obj/effect/abstract/stealth_torch/torch as anything in GLOB.stealth_guard_torches)
+		var/datum/light_source/source = torch.light
+		var/list/strengths = source?.effect_str
+		if(!length(strengths) || torch.z != tile.z || get_dist(torch, tile) > STEALTH_TORCH_RANGE_FAR + 1)
+			continue
+		var/channels = source.applied_lum_r + source.applied_lum_g + source.applied_lum_b
+		for(var/datum/lighting_corner/corner as anything in list(tile.lighting_corner_NE, tile.lighting_corner_SE, tile.lighting_corner_SW, tile.lighting_corner_NW))
+			if(corner)
+				. += (strengths[corner] || 0) * channels
+	. /= 12 // as get_lumcount(): 4 corners, 3 channels each
+
+/// Whether light passes from `tile` on to `next`, the way `facing` points: not into a wall, an opaque thing or a
+/// closed door (glass ones too). Glass passes. A diagonal step needs one of its two sides open.
+/proc/stealth_torch_passes(turf/tile, turf/next, facing)
+	if(isnull(next) || next.z != tile.z || IS_OPAQUE_TURF(next))
+		return FALSE
+	if(facing & (facing - 1))
+		var/turf/side_a = get_step(tile, facing & (NORTH | SOUTH))
+		var/turf/side_b = get_step(tile, facing & (EAST | WEST))
+		if((isnull(side_a) || IS_OPAQUE_TURF(side_a)) && (isnull(side_b) || IS_OPAQUE_TURF(side_b)))
+			return FALSE
+	for(var/obj/machinery/door/door in next)
+		if(door.density)
+			return FALSE
+	for(var/obj/structure/mineral_door/door in next)
+		if(door.density)
+			return FALSE
+	// A closed windoor on the edge it leaves by
+	for(var/obj/machinery/door/window/windoor in tile)
+		if(windoor.density && (windoor.dir & facing))
+			return FALSE
+	return TRUE
+
+/// Where the pool of a light carried at `from`, facing `facing`, lands: the furthest open tile within reach, or null.
+/proc/stealth_torch_spot(turf/from, facing)
+	if(!isturf(from) || !facing)
+		return null
+	var/reach = (facing & (facing - 1)) ? STEALTH_TORCH_REACH_DIAGONAL : STEALTH_TORCH_REACH
+	var/turf/tile = from
+	var/turf/spot
+	for(var/i in 1 to reach)
+		var/turf/next = get_step(tile, facing)
+		if(!stealth_torch_passes(tile, next, facing))
+			break
+		tile = next
+		spot = next
+	return spot
+
+/// How wide the pool is with its centre `distance` tiles from the guard: smaller when it has to sit near, so it
+/// never lights the guard's own tile or the tile behind it (numbers in data/stealth/STATUS.md, decision 39).
+/proc/stealth_torch_range(distance)
+	if(distance >= 2.5)
+		return STEALTH_TORCH_RANGE_FAR
+	if(distance >= 2)
+		return STEALTH_TORCH_RANGE_MID
+	return STEALTH_TORCH_RANGE_NEAR
 
 /datum/ai_controller/basic_controller/human_npc/stealth
 	/// world.time until which it keeps its light on after it last wanted it
 	var/light_hold_until = 0
+	/// Whether it has its light on (the pool shows when there is room for one ahead)
+	var/light_lit = FALSE
+	/// The pool its light makes, made the first time it is switched on
+	var/obj/effect/abstract/stealth_torch/torch
 
 /// Its flashlight, if it still has it on its body; else null.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light()
@@ -88,43 +182,61 @@ GLOBAL_LIST_EMPTY(stealth_guard_lights)
 		return null
 	return light
 
-/// Switches its light on or off for where it stands and what it is doing. Does nothing while it can't use
-/// its hands, while a player has the body, or while the light is cut out.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_update_light()
+/// Whether it can use its light at all: awake, its own, free, hands working, and the seclite on it and not cut out.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light_usable()
 	var/mob/living/carbon/human/npc/guard = pawn
 	if(QDELETED(guard) || guard.stat != CONSCIOUS || stealth_driven() || stealth_captive() || HAS_TRAIT(guard, TRAIT_HANDS_BLOCKED))
-		return
+		return FALSE
 	var/obj/item/flashlight/light = stealth_light()
-	if(isnull(light) || !COOLDOWN_FINISHED(light, disabled_time))
+	return !isnull(light) && COOLDOWN_FINISHED(light, disabled_time)
+
+/// Switches its light on or off for where it stands and what it is doing. Off at once when it can't use it.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_update_light()
+	if(!stealth_light_usable())
+		light_hold_until = 0
+		stealth_set_light(FALSE)
 		return
-	// Its own spot judged by the room's light alone: a friend's passing beam doesn't switch it off (decision 32).
-	var/wanted = stealth_state() != STEALTH_UNAWARE || stealth_tile_is_dark(get_turf(guard), light, no_guard_lights = TRUE)
+	var/mob/living/guard = pawn
+	// Its own spot judged by the room's light alone: a friend's passing pool doesn't switch it off (decision 32).
+	var/wanted = stealth_state() != STEALTH_UNAWARE || stealth_tile_is_dark(get_turf(guard), no_guard_lights = TRUE)
 	if(wanted)
 		light_hold_until = world.time + STEALTH_LIGHT_HOLD
 	else if(world.time < light_hold_until)
+		stealth_place_torch()
 		return
-	if(wanted != light.light_on)
-		light.toggle_light(guard)
-		if(light.light_on)
-			stealth_redraw_light(light)
+	stealth_set_light(wanted)
 
-/**
- * After switching it on: has tg's light lay its beam out again, as it does when the guard turns. The fl_sentry
- * clip (decision 32) caught a light that read on but drew nothing until the guard next turned; turning re-runs
- * this same update. Done now and again a tick later, so a facing change in the same tick can't race it.
- */
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_redraw_light(obj/item/flashlight/light)
-	stealth_relay_light(light)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_relay_light), light), 1)
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_set_light(lit)
+	light_lit = lit
+	stealth_place_torch()
 
-/// Re-lays an overlay light that is on: the holder check, then the beam and the lit turfs, as a turn would.
-/proc/stealth_relay_light(obj/item/flashlight/light)
-	if(QDELETED(light) || !light.light_on)
+/// Puts the pool where its light lands now, or puts it out. Moves the lamp only when the spot changed.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_place_torch()
+	var/mob/living/guard = pawn
+	var/turf/spot = (light_lit && !QDELETED(guard)) ? stealth_torch_spot(get_turf(guard), guard.dir) : null
+	if(isnull(spot))
+		if(torch?.light_on)
+			torch.set_light_on(FALSE)
 		return
-	var/datum/component/overlay_lighting/glow = light.GetComponent(/datum/component/overlay_lighting)
-	// (1<<0) is tg's LIGHTING_ON, which overlay_lighting.dm undefines at its end.
-	if(isnull(glow) || !(glow.overlay_lighting_flags & (1<<0)))
+	if(QDELETED(torch))
+		torch = new(spot)
+	var/range = stealth_torch_range(get_dist_euclidean(guard, spot))
+	if(torch.light_range != range)
+		torch.set_light_range(range)
+	if(torch.loc != spot)
+		torch.abstract_move(spot)
+	if(!torch.light_on)
+		torch.set_light_on(TRUE)
+
+/// Whether its light is on with a pool on the floor (for admins and tests).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light_shows()
+	return light_lit && !QDELETED(torch) && torch.light_on
+
+/// It moved or turned: the pool follows. Nothing to do with its light off.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light_follow()
+	if(!light_lit)
 		return
-	glow.recheck_holder()
-	if(glow.current_holder)
-		glow.make_luminosity_update()
+	if(!stealth_light_usable())
+		stealth_update_light()
+		return
+	stealth_place_torch()

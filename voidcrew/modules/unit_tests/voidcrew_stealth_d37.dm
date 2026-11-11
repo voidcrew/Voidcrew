@@ -142,6 +142,7 @@
 	TEST_ASSERT_EQUAL(yellow.reaction_delay, 2 SECONDS, "Yellow reaction delay changed")
 	TEST_ASSERT_EQUAL(yellow.search_time, 40 SECONDS, "Yellow search time changed")
 	TEST_ASSERT_EQUAL(yellow.wary_time, 60 SECONDS, "Yellow wary time changed")
+	TEST_ASSERT_EQUAL(yellow.turn_grace, 1 SECONDS, "Yellow turn grace changed")
 	// Every profile keeps decision 18 (no alert from off screen) and a cone that never takes in what is behind.
 	for(var/skill_type in subtypesof(/datum/stealth_skill))
 		var/datum/stealth_skill/profile = stealth_skill_of(skill_type)

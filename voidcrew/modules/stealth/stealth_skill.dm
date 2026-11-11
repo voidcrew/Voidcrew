@@ -47,6 +47,8 @@
 	var/search_time = 40 SECONDS
 	/// How long it stays wary with nothing new
 	var/wary_time = 60 SECONDS
+	/// After it turns where it stands, how long before anything is plain to it at a glance (decision 39)
+	var/turn_grace = 1 SECONDS
 
 /datum/stealth_skill/yellow
 
@@ -68,6 +70,7 @@
 	reaction_delay = 3 SECONDS
 	search_time = 25 SECONDS
 	wary_time = 40 SECONDS
+	turn_grace = 1.2 SECONDS
 
 /// Sharp: sees further and wider, notices faster, hears more, searches longer. Still blind behind in the dark.
 /datum/stealth_skill/red
@@ -87,6 +90,7 @@
 	reaction_delay = 1 SECONDS
 	search_time = 60 SECONDS
 	wary_time = 90 SECONDS
+	turn_grace = 0.8 SECONDS
 
 /// The shared profile of type `skill_type`, or null if it isn't one.
 /proc/stealth_skill_of(skill_type)

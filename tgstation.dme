@@ -7746,6 +7746,7 @@
 #include "voidcrew\modules\stealth\stealth_radio.dm"
 #include "voidcrew\modules\stealth\stealth_skill.dm"
 #include "voidcrew\modules\stealth\stealth_test_ruin.dm"
+#include "voidcrew\modules\stealth\stealth_turns.dm"
 #include "voidcrew\modules\storage\smart_locker.dm"
 #include "voidcrew\modules\storage\wall_locker.dm"
 #include "voidcrew\modules\surgery\experimental_dissection.dm"
