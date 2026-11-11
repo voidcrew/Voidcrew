@@ -436,6 +436,8 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 	outline.appearance_flags |= KEEP_TOGETHER
 	outline.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	outline.alpha = 255
+	// A tinted target (atom colour or a colour matrix) would tint the green outline too.
+	outline.color = null
 	outline.filters = list(
 		filter(type = "outline", size = 1, color = TUTORIAL_HIGHLIGHT_COLOR),
 		filter(type = "drop_shadow", x = 0, y = 0, size = 3, offset = 1, color = "[TUTORIAL_HIGHLIGHT_COLOR]90"),
@@ -596,6 +598,9 @@ GLOBAL_LIST_EMPTY(tutorial_highlighters)
 /atom/movable/screen/tutorial_arrow/proc/point(dx, dy, list/view_size)
 	var/edge_x = max((view_size[1] - 1) / 2 - 1, 0)
 	var/edge_y = max((view_size[2] - 1) / 2 - 1, 0)
+	// The bottom row of the screen holds the HUD buttons, so a downward arrow stays one tile higher.
+	if(dy < 0)
+		edge_y = max(edge_y - 1, 0)
 	var/scale = 0
 	if(dx && dy)
 		scale = min(edge_x / abs(dx), edge_y / abs(dy))
