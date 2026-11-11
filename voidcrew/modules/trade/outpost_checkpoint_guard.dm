@@ -1,11 +1,11 @@
 /**
  * # Checkpoint guards and weapons permits
  *
- * Each trader outpost's lobby checkpoint has a guard in a sealed glass booth (the Undertow's sits behind an open
- * desk). The guard is an outpost trader (a real person: trader_npc.dm) whose only stock is the weapons permit, and is
+ * Each trader outpost's lobby checkpoint has a guard sitting behind a desk (a table counter) at the gate. The guard
+ * is an outpost trader (a real person: trader_npc.dm) whose only stock is the weapons permit, and is
  * the checkpoint's voice while he is up (outpost_checkpoint.dm announce()); dead or out cold, the wall scanner speaks
  * and the gate scans as before. His desk is shut until he is back or a replacement sits down (shop.is_open()). He
- * never leaves the booth, drops nothing and has no till.
+ * never leaves the desk, drops nothing and has no till.
  *
  * The permit is a record the outpost keeps against the buyer's mind (grant_weapons_permit(),
  * outpost_trespass.dm); the paper the guard hands over is a receipt and proves nothing by itself.
@@ -15,7 +15,7 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard
 	name = "guard"
-	desc = "Outpost security, behind armored glass."
+	desc = "Outpost security, sat behind the permit desk."
 	/// The checkpoint this guard keeps: matches its doors' checkpoint_id
 	var/checkpoint_id
 	/// Set when the outpost links its interior
@@ -27,7 +27,7 @@
 	checkpoint = null
 	return ..()
 
-// The booth is sealed: he keeps his head down in it
+// He keeps his post behind the desk
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/may_flee()
 	return FALSE
 
