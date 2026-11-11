@@ -309,7 +309,8 @@
 	TEST_ASSERT(press.Trigger(target = victim), "The lunge wouldn't start at someone behind a window")
 	sleep(0.8 SECONDS)
 	TEST_ASSERT_EQUAL(get_turf(lunger), spot(1, 2), "The player's lunge went through a window")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), brute_before, "A lunge stopped by a window still cut its target")
+	// <=, not ==: the earlier cut may heal a little meanwhile
+	TEST_ASSERT(victim.getBruteLoss() <= brute_before, "A lunge stopped by a window still cut its target")
 	qdel(pane)
 
 /// The bounty NPC's shown-line dash is a real run: someone who steps onto its line during the tell stops it short, and nobody is cut

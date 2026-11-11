@@ -477,7 +477,7 @@
 	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/organ/cyberimp/cyberware/redline/core = allocate(/obj/item/organ/cyberimp/cyberware/redline)
 	TEST_ASSERT(core.Insert(lab_rat, special = TRUE), "Redline staging insert was refused")
-	var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in lab_rat.actions
+	var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in core.actions // chrome abilities never join mob.actions (chrome_hud.dm)
 	TEST_ASSERT_NOTNULL(burn, "The Redline core gave no burn action")
 	burn.Trigger()
 	TEST_ASSERT_NOTNULL(lab_rat.has_status_effect(/datum/status_effect/cyberware_redline_window), "Pressing the burn opened no window")

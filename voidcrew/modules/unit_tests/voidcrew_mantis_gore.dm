@@ -470,6 +470,8 @@
 	victim.forceMove(spot(2, 2))
 	TEST_ASSERT(QDELETED(scissor) || !scissor.running, "The scissor went on with the body on a corner")
 	TEST_ASSERT(isnull(user.mantis_state.scissor), "The stopped scissor is still on the bearer")
+	// The rig fades back into the real bearer (MANTIS_RIG_HANDBACK), then goes
+	sleep(0.35 SECONDS) // MANTIS_RIG_HANDBACK is 0.15 s
 	TEST_ASSERT(!length(rig_pictures(user)), "A scissor stopped on a corner left the bearer drawn by the rig")
 
 /// Who counts, at most once per bearer per 8 s and per body per 2 min, never prisoners, only kills
