@@ -517,7 +517,7 @@
 
 // ===== THE FINE (abuse M6, M7) =====
 
-/// All or nothing from the remembered crew's accounts pooled, richest first; one credit short takes nothing; leaving the crew does not help
+/// All or nothing from the current crew's accounts pooled, richest first; one credit short takes nothing; a crew the offender left never pays (abuse MF6)
 /datum/unit_test/voidcrew_outpost_police_fine
 
 /datum/unit_test/voidcrew_outpost_police_fine/Run()
@@ -535,9 +535,22 @@
 	police.report_crime(payer, "unarmed", witness)
 	var/datum/outpost_warrant/warrant = police.warrants[payer.mind]
 	TEST_ASSERT_EQUAL(police.get_stars(payer.mind), 1, "The test warrant is not one star")
-	// The offender leaves the crew; the warrant remembers it
+	var/datum/voidcrew_crew_record/old_crew = payer.mind.get_reputation_crew()
+	TEST_ASSERT_EQUAL(warrant.crew, old_crew, "The warrant does not know the offender's crew")
+	// The offender leaves the crew: it never pays for them, and with no crew nobody does (jail)
 	payer.mind.leave_reputation_crew()
-	TEST_ASSERT(police.charge_fine(warrant), "The fine was not charged to the crew the warrant remembers") // OUTPOST_POLICE_FINES: 300 at one star
+	TEST_ASSERT(!police.charge_fine(warrant), "A crew the offender left paid their fine")
+	TEST_ASSERT_EQUAL(rich.ship_account.account_balance, 500, "A crew the offender left lost money to their fine")
+	TEST_ASSERT_NULL(warrant.crew, "The warrant still names a crew the offender left")
+	// They join another crew: that one pays
+	var/obj/structure/overmap/ship/other = wanted_ship(payer, 1000)
+	TEST_ASSERT(police.charge_fine(warrant), "The offender's new crew did not pay their fine")
+	TEST_ASSERT_EQUAL(other.ship_account.account_balance, 700, "The new crew did not pay the whole fine") // OUTPOST_POLICE_FINES: 300 at one star
+	TEST_ASSERT_EQUAL(rich.ship_account.account_balance, 500, "The old crew paid part of the new crew's fine")
+	// Back on the old crew
+	rich.ship_team.join_member(payer.mind)
+	TEST_ASSERT_EQUAL(payer.mind.get_reputation_crew(), old_crew, "Setup: the offender did not rejoin their old crew")
+	TEST_ASSERT(police.charge_fine(warrant), "The fine was not charged to the offender's crew")
 	TEST_ASSERT_EQUAL(rich.ship_account.account_balance, 200, "The richer ship did not pay the whole fine")
 	TEST_ASSERT_EQUAL(poor.ship_account.account_balance, 400, "The poorer ship paid part of a fine the richer one covered")
 	TEST_ASSERT_EQUAL(warrant.fine_level, 1, "The fine's level was not fixed at the first charge")
@@ -556,9 +569,9 @@
 	TEST_ASSERT_EQUAL(poor.ship_account.account_balance, 0, "The poorer ship did not pay the rest")
 
 	// No crew, no fine
-	warrant.crew = null
-	TEST_ASSERT(!police.charge_fine(warrant), "A warrant with no remembered crew charged a fine")
-	wanted_cleanup(list(rich, poor))
+	payer.mind.leave_reputation_crew()
+	TEST_ASSERT(!police.charge_fine(warrant), "An offender with no crew was charged a fine")
+	wanted_cleanup(list(rich, poor, other))
 
 // ===== WHO IS REFUSED SERVICE =====
 
