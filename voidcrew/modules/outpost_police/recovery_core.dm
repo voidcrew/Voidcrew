@@ -360,12 +360,13 @@
 		if(!QDELETED(body))
 			. += body
 
-/// The bodies of minds that died here and still lie here
+/// The bodies of minds that died here and still lie here, not yet in a tray or left bagged in the morgue room
+/// (a delivered body is no work: it stays on player_dead until revived or taken away, and calls no wave)
 /datum/outpost_recovery/proc/player_bodies()
 	. = list()
 	for(var/datum/weakref/ref as anything in player_dead)
 		var/mob/living/body = ref.resolve()
-		if(!QDELETED(body))
+		if(!QDELETED(body) && !morgue_body_done(body))
 			. += body
 
 /// Whether there is anything for a crew to do: a body, a dirty stop, or someone down for the medics
@@ -449,6 +450,14 @@
 			if(!QDELETED(body) && ishumannpc(body))
 				var/mob/living/carbon/human/npc/revived = body
 				revived.npc_corpse_lifetime = HUMAN_NPC_CORPSE_LIFETIME
+			continue
+		// A player went into the body after it died (a brain put into the corpse): a person's body from now on, kept
+		// for a tray and never handed to the sweep or the body cap (abuse SF3)
+		if(!morgue_npc_body(body))
+			npc_dead -= ref
+			retry_at -= ref
+			if(!(ref in player_dead))
+				player_dead += ref
 	for(var/datum/weakref/ref as anything in player_dead.Copy())
 		var/mob/living/body = ref.resolve()
 		if(QDELETED(body) || body.stat != DEAD)
@@ -457,6 +466,10 @@
 		var/turf/where = get_turf(body)
 		if(!where || get_trader_outpost_for_turf(where) != outpost)
 			player_dead -= ref
+	// Patients waited out or gone are forgotten, so the list does not grow for the round
+	for(var/datum/weakref/ref as anything in patient_retry.Copy())
+		if(patient_retry[ref] <= world.time || !ref.resolve())
+			patient_retry -= ref
 
 /**
  * More than OUTPOST_RECOVERY_BODY_CAP NPC bodies (officers' included): the oldest is collected (deleted) even if
@@ -487,6 +500,11 @@
 		retry_at -= ref
 		var/mob/living/carbon/human/npc/body = ref.resolve()
 		if(QDELETED(body) || body.stat != DEAD)
+			continue
+		// Never a body a player has been in: the sweep would delete it (abuse SF3)
+		if(!morgue_npc_body(body))
+			if(!(ref in player_dead))
+				player_dead += ref
 			continue
 		body.npc_corpse_lifetime = HUMAN_NPC_CORPSE_LIFETIME
 		SShuman_npcs.track_corpse(body)

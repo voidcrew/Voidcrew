@@ -800,8 +800,8 @@
 		worker.stop_pulling()
 	// Down the lift: bag, body and its parts leave the round
 	for(var/atom/movable/inside as anything in bag.contents.Copy())
-		if(ismob(inside) && !morgue_npc_body(inside))
-			// Never a person: let it out where it is
+		// Never a person, nor a limb or organ with one in it: let it out where it is
+		if((ismob(inside) && !morgue_npc_body(inside)) || (isitem(inside) && morgue_part_has_person(inside)))
 			inside.forceMove(get_turf(bag))
 			continue
 		// Nor anyone in something it holds (abuse SF3)

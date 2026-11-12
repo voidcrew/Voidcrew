@@ -40,6 +40,8 @@
 #define RECOVERY_SPOT_CHECKS 12
 /// Mess or a sink they could not get to is left alone this long
 #define RECOVERY_GIVE_UP_TIME (3 MINUTES)
+/// At most this many tiles and sinks are left alone at once (the oldest is let back in past it)
+#define RECOVERY_GIVE_UP_MAX 64
 /// A patrol stop's clean state is looked at again after this long
 #define RECOVERY_STOP_RECHECK (3 SECONDS)
 /// With nothing left to do they take the lift out after this long
@@ -361,8 +363,12 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/give_up_on(atom/thing)
 	if(!thing)
 		return
+	// Waited-out entries go first, so a big patch they can't reach is never let back in early and walked at again
+	for(var/atom/old as anything in cleaning_gave_up?.Copy())
+		if(cleaning_gave_up[old] <= world.time)
+			cleaning_gave_up -= old
 	LAZYSET(cleaning_gave_up, thing, world.time + RECOVERY_GIVE_UP_TIME)
-	if(length(cleaning_gave_up) > 16)
+	if(length(cleaning_gave_up) > RECOVERY_GIVE_UP_MAX)
 		cleaning_gave_up.Cut(1, 2)
 
 /**
@@ -488,6 +494,9 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/nearest_work(list/found)
 	var/list/distances = list()
 	for(var/turf/tile as anything in found)
+		// Tiles given up on are left out here, so a dozen of them nearest never hide mess they can reach
+		if(LAZYACCESS(cleaning_gave_up, tile) > world.time)
+			continue
 		distances[tile] = get_dist(src, tile)
 	if(!length(distances))
 		return null
@@ -756,6 +765,7 @@
 #undef RECOVERY_STRAY_RANGE
 #undef RECOVERY_SPOT_CHECKS
 #undef RECOVERY_GIVE_UP_TIME
+#undef RECOVERY_GIVE_UP_MAX
 #undef RECOVERY_STOP_RECHECK
 #undef RECOVERY_IDLE_LEAVE
 #undef RECOVERY_STROKES_MAX

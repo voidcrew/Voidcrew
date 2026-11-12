@@ -480,3 +480,35 @@
 		TEST_ASSERT(recovery.back_rooms[recovery.closet_turf], "[outpost_type]'s janitor closet is not a closed room")
 		// The morgue and closet are small rooms behind doors (RECOVERY_ROOM_MAX is 60): never the lobby with them
 		TEST_ASSERT(length(recovery.back_rooms) <= 40, "[outpost_type]'s back rooms run out into the outpost ([length(recovery.back_rooms)] tiles)")
+
+/// A player put into an NPC's corpse (a brain transplant after death) makes it a person's body: off the NPC list,
+/// never handed to the corpse sweep; and a player's body already in a tray calls no crew wave
+/datum/unit_test/voidcrew_outpost_recovery_corpse_taken_over
+
+/datum/unit_test/voidcrew_outpost_recovery_corpse_taken_over/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/body = recovery_corpse(outpost, wanted_spot(1, 1))
+	TEST_ASSERT(WEAKREF(body) in recovery.npc_dead, "Setup: the NPC body is not on the outpost's list")
+	body.mind_initialize()
+	allocated += body.mind
+	recovery.prune_dead()
+	TEST_ASSERT(!(WEAKREF(body) in recovery.npc_dead), "A corpse a player went into is still on the NPC list")
+	TEST_ASSERT(WEAKREF(body) in recovery.player_dead, "A corpse a player went into is not kept as a person's")
+	// Even if it is still on the NPC list when the bodies go back to the sweep
+	recovery.npc_dead += WEAKREF(body)
+	recovery.hand_back_bodies(force = TRUE)
+	TEST_ASSERT_EQUAL(body.npc_corpse_lifetime, 0, "A corpse a player went into was handed to the corpse sweep")
+	TEST_ASSERT(!(body in SShuman_npcs.corpses), "A corpse a player went into is on the corpse sweep")
+
+	// In a tray it is done: no morgue crew is called for it
+	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, wanted_spot(3, 3))
+	body.forceMove(tray)
+	TEST_ASSERT(morgue_body_done(body), "A body in a tray is not done")
+	recovery.npc_dead.Cut()
+	recovery.dirty_stops.Cut()
+	TEST_ASSERT_EQUAL(length(recovery.player_bodies()), 0, "A body in a tray is still waiting for the morgue crew")
+	TEST_ASSERT(!recovery.has_cleanup_work(), "A body in a tray is cleanup work")
+	recovery.call_wave()
+	TEST_ASSERT(!recovery.wave_active, "A body in a tray called a crew wave")
+	body.forceMove(wanted_spot(1, 1))

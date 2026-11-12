@@ -252,3 +252,25 @@
 				TEST_ASSERT(!findtext(line, "%"), "[section] [kind] has a placeholder that is not filled: [line]")
 		var/list/entry = ambient_dialogue_section(file, section)
 		TEST_ASSERT(length(entry["conversations"]), "[section] has no conversations")
+
+/// Mess they can't reach is left alone however much of it there is, and never hides mess they can reach
+/datum/unit_test/voidcrew_outpost_recovery_janitor_gave_up
+
+/datum/unit_test/voidcrew_outpost_recovery_janitor_gave_up/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	var/list/given_up = list()
+	for(var/turf/tile as anything in block(pa_tile(0, 0), pa_tile(4, 3)))
+		janitor.give_up_on(tile)
+		given_up += tile
+	for(var/turf/tile as anything in given_up)
+		TEST_ASSERT(LAZYACCESS(janitor.cleaning_gave_up, tile) > world.time, "A tile given up on was let back in early ([length(given_up)] given up)")
+	// Twenty given-up tiles nearest, and one they can work further off: they go for that one
+	var/list/found = list()
+	for(var/turf/tile as anything in given_up)
+		found[tile] = 1 // RECOVERY_WORK_MESS
+	var/turf/open_tile = pa_tile(4, 4)
+	found[open_tile] = 1
+	var/list/job = janitor.nearest_work(found)
+	TEST_ASSERT_EQUAL(job?[1], open_tile, "Tiles given up on hid mess the janitor could reach")
