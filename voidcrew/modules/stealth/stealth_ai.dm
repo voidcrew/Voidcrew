@@ -238,6 +238,11 @@
 	QDEL_NULL(meter)
 	QDEL_NULL(torch)
 	light_lit = FALSE
+	sweeping = FALSE
+	torch_aim = 0
+	torch_pass = 0
+	torch_serial++
+	sputter_serial++
 	turned_from = null
 	home_turf = null
 	last_seen_turf = null
@@ -693,6 +698,10 @@
 	// still fills as usual, so someone still in front of it when the moment passes is seen.
 	var/turning = stealth_turn_grace()
 	var/night_vision = HAS_TRAIT(guard, TRAIT_NIGHT_VISION)
+	// Decision 41: unaware and standing somewhere the room leaves dark, a lit light someone carries near it draws
+	// its notice wherever they stand. REF => TRUE for everyone noticed that way this look.
+	var/stray_lights = state == STEALTH_UNAWARE && eyes && stealth_room_is_dark(guard.loc)
+	var/list/by_light
 	// Decision 40 (stealth_disguise.dm): REF => TRUE for everyone whose disguise holds this look, the nearest of
 	// them close enough to stop, and whoever it has stopped already.
 	var/list/disguised
@@ -767,9 +776,14 @@
 					if(dist <= profile.near_range)
 						rate *= profile.near_mult
 		if(!rate && dist <= close_range && (night_vision || !stealth_tile_is_dark(where)))
-			// At its shoulder, in light that is really there (abuse P7). Its own pool lands ahead of it, so
+			// At its shoulder, in light that is really there (abuse P7). Its own beam lands ahead of it, so
 			// someone right behind it in the dark is not seen (decisions 32 and 39).
 			rate = STEALTH_BEHIND_RATE
+		// Someone's light on its back or its side (decision 41). It turns to look; it is never an alert by itself.
+		var/lit_up = FALSE
+		if(!rate && stray_lights && !boxed && dist <= min(stealth_carried_light(candidate), STEALTH_STRAY_LIGHT_RANGE))
+			rate = STEALTH_STRAY_LIGHT_RATE
+			lit_up = TRUE
 		if(!rate)
 			continue
 		// A disguise that holds (decision 40): seen doing what no guard would, it is blown; otherwise notice fills
@@ -813,7 +827,11 @@
 		if(wary)
 			rate *= STEALTH_WARY_MULT
 			wary_at = world.time
-		entry[STEALTH_ENTRY_NOTICE] = min(entry[STEALTH_ENTRY_NOTICE] + rate * scan_seconds, pieces ? STEALTH_SUSPICIOUS_AT : STEALTH_NOTICE_MAX)
+		if(lit_up)
+			LAZYSET(by_light, key, TRUE)
+			entry[STEALTH_ENTRY_NOTICE] = max(entry[STEALTH_ENTRY_NOTICE], min(entry[STEALTH_ENTRY_NOTICE] + rate * scan_seconds, STEALTH_SUSPICIOUS_AT))
+		else
+			entry[STEALTH_ENTRY_NOTICE] = min(entry[STEALTH_ENTRY_NOTICE] + rate * scan_seconds, pieces ? STEALTH_SUSPICIOUS_AT : STEALTH_NOTICE_MAX)
 		if(plain_sight)
 			entry[STEALTH_ENTRY_NOTICE] = STEALTH_NOTICE_MAX
 			if(isnull(point_blank))
@@ -881,7 +899,7 @@
 	switch(state)
 		if(STEALTH_UNAWARE)
 			if(level >= STEALTH_SUSPICIOUS_AT)
-				stealth_go_suspicious(best_turf)
+				stealth_go_suspicious(best_turf, line = by_light?[judged_key] ? STEALTH_BARK_LIGHT : null)
 		if(STEALTH_SUSPICIOUS)
 			if(!seen_now)
 				return

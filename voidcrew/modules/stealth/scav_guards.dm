@@ -38,6 +38,8 @@
 		STEALTH_BARK_ID_PASS = list("Fine. Move along.", "All right. Go on.", "Go on, %NAME%."),
 		STEALTH_BARK_ID_FAIL = list("No card? Don't move.", "Card. Now.", "I said card."),
 		STEALTH_BARK_BLOWN = list("You're not one of us!", "That's not one of ours!", "Who the hell are you?"),
+		STEALTH_BARK_LIGHT = list("Whose light is that?", "Who's got a light on?", "Kill that light."),
+		STEALTH_BARK_LIGHT_DEAD = list("Light's dead.", "Come on. Work.", "Cheap junk."),
 	)
 	emotes = list(
 		HUMAN_NPC_BARK_DOWNED = list("collapses."),
@@ -53,6 +55,8 @@
 		STEALTH_BARK_RADIO_DEAD = list("taps their earpiece."),
 		STEALTH_BARK_GREET = list("nods.", "lifts their chin."),
 		STEALTH_BARK_SMOKE = list("pats their pockets."),
+		STEALTH_BARK_LIGHT = list("shades their eyes."),
+		STEALTH_BARK_LIGHT_DEAD = list("smacks their flashlight.", "shakes their flashlight."),
 	)
 	chances = list(RUIN_NPC_BARK_SPOT = 100)
 

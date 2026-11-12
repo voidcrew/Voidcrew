@@ -167,20 +167,37 @@
 /// A light EMP cuts a guard's seclite out for this long
 #define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
 
-// ===== Real flashlight pools (decision 39, stealth_light.dm) =====
-/// Tiles ahead its pool lands, when nothing stops it first
-#define STEALTH_TORCH_REACH 3
-/// The same, facing a diagonal
-#define STEALTH_TORCH_REACH_DIAGONAL 2
-/// The pool's light power (its seclite blue takes it to about 1.2 white)
-#define STEALTH_TORCH_POWER 1.5
-/// The pool's light range with its centre 2.5 or more tiles off, 2 or more, and nearer (sized so the guard's own
-/// tile stays under the dark line: data/stealth/STATUS.md, decision 39)
-#define STEALTH_TORCH_RANGE_FAR 2.5
-#define STEALTH_TORCH_RANGE_MID 2
-#define STEALTH_TORCH_RANGE_NEAR 1.7
+// ===== Flashlight beams (decisions 39 and 41, stealth_light.dm) =====
+/// The beam's light range in tiles, from where it starts (lit floor ends 4 tiles ahead: data/stealth/STATUS.md, decision 41)
+#define STEALTH_TORCH_RANGE 5
+/// The beam's light power (its seclite blue takes it to about 1.5 white)
+#define STEALTH_TORCH_POWER 1.9
+/// Degrees of the beam at full strength; tg fades it to nothing over the next 30 each side
+#define STEALTH_TORCH_ANGLE 30
+/// Tiles ahead of the guard's own tile the beam starts (the hand, not the body), so its own tile stays dark
+#define STEALTH_TORCH_FORWARD 0.5
 /// tg's seclite colour
 #define STEALTH_TORCH_COLOR "#99ccff"
+/// A turn of 90 degrees or more shows the beam halfway for this long before it lands
+#define STEALTH_TORCH_TURN_STEP (0.15 SECONDS)
+/// A step at a walk shows the beam half a tile back for this long
+#define STEALTH_TORCH_HALF_STEP (0.2 SECONDS)
+/// Suspicious or searching and standing: the beam swings a side, back, the other side, back, one move per this long
+#define STEALTH_TORCH_SWEEP_STEP (0.6 SECONDS)
+/// A seclite that is cut out sputters: world.time offsets it flashes on at, and how long each flash lasts
+#define STEALTH_TORCH_SPUTTER_AT list(0.2 SECONDS, 0.5 SECONDS)
+#define STEALTH_TORCH_SPUTTER_FLASH (0.1 SECONDS)
+/// Loudness of the click when a guard switches its light
+#define STEALTH_TORCH_CLICK_VOLUME 25
+/// A lit light someone carries within this many tiles of an unaware guard standing in the dark draws its notice
+/// even behind it (never further than the light itself reaches)
+#define STEALTH_STRAY_LIGHT_RANGE 5
+/// Notice a second from such a light. It only ever fills to suspicious: the guard turns and uses its eyes.
+#define STEALTH_STRAY_LIGHT_RATE 0.5
+/// Bark: someone's light is on it
+#define STEALTH_BARK_LIGHT "stealth_light"
+/// Bark: its own light cut out
+#define STEALTH_BARK_LIGHT_DEAD "stealth_light_dead"
 
 // ===== Readable turns (decision 39, stealth_turns.dm) =====
 /// How long a guard leans towards the side it is about to turn to before it turns

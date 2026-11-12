@@ -1,6 +1,6 @@
-// Stealth guards: flashlights, elbow-to-elbow sight, volleys and sentry facing (owner decisions 31 and 39,
+// Stealth guards: flashlights, elbow-to-elbow sight, volleys and sentry facing (owner decisions 31, 39 and 41,
 // voidcrew/modules/stealth/stealth_light.dm). Values from voidcrew/_DEFINES are written out: STEALTH_LIGHT_HOLD
-// 5 s, STEALTH_TORCH_REACH 3, STEALTH_TORCH_REACH_DIAGONAL 2, STEALTH_NOISE_COALESCE 3 s,
+// 5 s, STEALTH_TORCH_FORWARD 0.5, STEALTH_STRAY_LIGHT_RANGE 5, STEALTH_NOISE_COALESCE 3 s,
 // STEALTH_SENTRY_TURN_INTERVAL 8 s, STEALTH_SENTRY_GLANCE_TIME 2 s.
 
 /// Waits for tg's static lighting to apply what was just switched or moved (it updates on its own subsystem).
@@ -51,6 +51,11 @@
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "The light didn't come on in the dark")
 	guard.emp_act(EMP_LIGHT)
 	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "An EMP didn't cut the guard's light out")
+	// It sputters as it dies (decision 41): a flash of the beam with the light counted off, then dark again.
+	stealth_ai.stealth_sputter(stealth_ai.sputter_serial, TRUE)
+	TEST_ASSERT(stealth_ai.torch.light_on && !stealth_ai.stealth_light_shows(), "A cut-out seclite doesn't sputter")
+	stealth_ai.stealth_sputter(stealth_ai.sputter_serial, FALSE)
+	TEST_ASSERT(!stealth_ai.torch.light_on, "A sputter left the beam on")
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "A guard switched an EMP'd light straight back on")
 	light.disabled_time = 0
@@ -69,49 +74,187 @@
 	GLOB.stealth_test_dark_turfs[here] = FALSE
 	qdel(block)
 
-/// Decision 39: the pool lands 3 tiles ahead (2 on a diagonal), stops short of a wall or a closed door, goes through
-/// glass, and follows the guard's turns and steps.
+/// Decision 41: the lamp sits on the guard's tile and its beam starts half a tile ahead; a turn passes through the
+/// halfway point, a turn of its own is led by the beam, a step at a walk carries the beam half a tile at a time, and
+/// a searching guard sweeps it side to side.
 /datum/unit_test/voidcrew_stealth_light_pool
 
 /datum/unit_test/voidcrew_stealth_light_pool/Run()
-	var/datum/turf_reservation/block = stealth_block(10, 7)
+	var/datum/turf_reservation/block = stealth_block(12, 7)
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
-	var/turf/from = stealth_at(block, 2, 3)
-	TEST_ASSERT_EQUAL(stealth_torch_spot(from, EAST), stealth_at(block, 5, 3), "An open floor's pool isn't 3 tiles ahead")
-	TEST_ASSERT_EQUAL(stealth_torch_spot(from, NORTHEAST), stealth_at(block, 4, 5), "A diagonal pool isn't 2 tiles out")
-	// A wall 3 ahead: the pool is on the last open tile before it.
-	var/turf/wall = stealth_at(block, 5, 3)
-	wall.ChangeTurf(/turf/closed/wall)
-	TEST_ASSERT_EQUAL(stealth_torch_spot(from, EAST), stealth_at(block, 4, 3), "The pool went into or past a wall")
-	// Right at its nose: no pool.
-	var/turf/near_wall = stealth_at(block, 3, 3)
-	near_wall.ChangeTurf(/turf/closed/wall)
-	TEST_ASSERT_NULL(stealth_torch_spot(from, EAST), "A guard facing a wall at its nose has a pool")
-	// A closed glass airlock stops it; glass does not.
-	var/obj/machinery/door/airlock/glass/door = allocate(/obj/machinery/door/airlock/glass, stealth_at(block, 2, 5))
-	TEST_ASSERT(door.density, "Test fixture: the airlock isn't closed")
-	TEST_ASSERT_EQUAL(stealth_torch_spot(from, NORTH), stealth_at(block, 2, 4), "The pool went through a closed glass door")
-	allocate(/obj/structure/window/fulltile, stealth_at(block, 2, 1))
-	TEST_ASSERT_EQUAL(stealth_torch_spot(from, SOUTH), stealth_at(block, 2, 0), "The pool stopped at a window")
-	// A guard's pool follows it.
-	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 6, 3, SOUTH)
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 3)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
-	GLOB.stealth_test_dark_turfs[get_turf(guard)] = TRUE
+	if(guard.move_intent == MOVE_INTENT_RUN)
+		guard.toggle_move_intent()
+	for(var/dx in 0 to 11)
+		for(var/dy in 0 to 6)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = TRUE
 	stealth_ai.stealth_update_light()
-	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark has no pool")
-	TEST_ASSERT_EQUAL(get_turf(stealth_ai.torch), stealth_at(block, 6, 0), "The pool isn't 3 ahead of a guard facing south")
-	guard.setDir(EAST)
-	TEST_ASSERT_EQUAL(get_turf(stealth_ai.torch), stealth_at(block, 9, 3), "The pool didn't follow the guard's turn")
-	// A wall goes up where the pool was; after its next step the pool sits short of it, and smaller.
-	var/turf/far_wall = stealth_at(block, 9, 3)
-	far_wall.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark has no beam")
+	var/obj/effect/abstract/stealth_torch/torch = stealth_ai.torch
+	TEST_ASSERT_EQUAL(get_turf(torch), get_turf(guard), "The lamp isn't on the guard's tile")
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "The beam doesn't point the way the guard faces")
+	TEST_ASSERT_EQUAL(torch.beam_x, -0.5, "The beam doesn't start half a tile ahead of a guard facing east")
+	TEST_ASSERT_EQUAL(torch.beam_y, 0, "A beam facing east starts off to one side")
+	// A turn of 90 degrees shows the beam halfway, then lands.
+	guard.setDir(NORTH)
+	TEST_ASSERT_EQUAL(torch.light_dir, NORTHEAST, "A quarter turn didn't pass the beam through the diagonal")
+	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	TEST_ASSERT_EQUAL(torch.light_dir, NORTH, "The beam didn't land on the new facing")
+	TEST_ASSERT_EQUAL(torch.beam_y, -0.5, "The beam doesn't start half a tile ahead of a guard facing north")
+	TEST_ASSERT_EQUAL(torch.beam_x, 0, "A beam facing north starts off to one side")
+	// A turn of its own: the beam goes halfway first, while the body still faces the old way.
+	stealth_ai.stealth_turn_to(EAST)
+	TEST_ASSERT_EQUAL(guard.dir, NORTH, "A guard's own turn has no tell")
+	TEST_ASSERT_EQUAL(torch.light_dir, NORTHEAST, "The beam didn't lead a turn the guard makes on its own")
+	stealth_ai.stealth_finish_turn(EAST, stealth_ai.turn_planned_at)
+	TEST_ASSERT_EQUAL(guard.dir, EAST, "The guard didn't finish its turn")
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "The beam didn't land when the led turn finished")
+	TEST_ASSERT(!stealth_ai.torch_pass, "A led turn passed through the halfway point a second time")
+	// A turn it drops: the beam goes back.
+	stealth_ai.stealth_turn_to(SOUTH)
+	TEST_ASSERT_EQUAL(torch.light_dir, SOUTHEAST, "The beam didn't lead the second turn")
+	stealth_ai.stealth_drop_turn()
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "A dropped turn left the beam off to the side")
+	// One step at a walk: the lamp moves at once, the beam half a tile behind it until it settles.
+	guard.forceMove(stealth_at(block, 3, 3))
+	TEST_ASSERT_EQUAL(get_turf(torch), stealth_at(block, 3, 3), "The lamp didn't follow the guard's step")
+	TEST_ASSERT_EQUAL(torch.beam_x, 0, "A step at a walk didn't hold the beam half a tile back")
+	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	TEST_ASSERT_EQUAL(torch.beam_x, -0.5, "The beam didn't land after the step")
+	// Further than a step (a shove, a teleport): no half step.
+	guard.forceMove(stealth_at(block, 6, 3))
+	TEST_ASSERT_EQUAL(get_turf(torch), stealth_at(block, 6, 3), "The lamp didn't follow the guard")
+	TEST_ASSERT_EQUAL(torch.beam_x, -0.5, "A jump of three tiles held the beam back")
+	// Searching, standing: one side, back, the other side, back.
+	// Its sweep runs only while its AI does (a dormant level sweeps nothing).
+	stealth_ai.stealth_go_searching(stealth_at(block, 8, 3))
+	TEST_ASSERT(stealth_ai.stealth_scanning() || !stealth_ai.sweeping, "A guard whose AI is off sweeps its beam")
+	stealth_ai.set_ai_status(AI_STATUS_ON)
+	stealth_ai.stealth_update_light()
+	TEST_ASSERT(stealth_ai.sweeping, "A searching guard with its light on doesn't sweep")
+	stealth_ai.torch_moved_at = 0
+	stealth_ai.turned_at = 0
+	var/side = stealth_ai.look_side
+	stealth_ai.stealth_sweep_tick()
+	TEST_ASSERT_EQUAL(torch.light_dir, turn(EAST, 45 * side), "The sweep's first move isn't 45 degrees to a side")
+	stealth_ai.stealth_sweep_tick()
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "The sweep didn't come back to the middle")
+	stealth_ai.stealth_sweep_tick()
+	TEST_ASSERT_EQUAL(torch.light_dir, turn(EAST, -45 * side), "The sweep didn't go to the other side")
+	stealth_ai.stealth_sweep_tick()
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "The sweep didn't end in the middle")
+	// A step interrupts it; calm again, it stops.
+	stealth_ai.stealth_sweep_tick()
 	guard.forceMove(stealth_at(block, 7, 3))
-	TEST_ASSERT_EQUAL(get_turf(stealth_ai.torch), stealth_at(block, 8, 3), "The pool didn't stop short of a wall after a step")
-	TEST_ASSERT(stealth_ai.torch.light_range < 2.5, "A pool a tile off is as wide as one 3 off")
-	var/obj/effect/abstract/stealth_torch/old_torch = stealth_ai.torch
-	GLOB.stealth_test_dark_turfs[stealth_at(block, 6, 3)] = FALSE
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "A step left the beam off to the side")
+	stealth_ai.stealth_go_unaware()
+	stealth_ai.stealth_sweep_tick()
+	TEST_ASSERT(!stealth_ai.sweeping, "A calm guard keeps sweeping")
+	for(var/dx in 0 to 11)
+		for(var/dy in 0 to 6)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = FALSE
 	qdel(guard)
-	TEST_ASSERT(QDELETED(old_torch), "A deleted guard left its pool behind")
+	TEST_ASSERT(QDELETED(torch), "A deleted guard left its lamp behind")
+	qdel(block)
+
+/// Decision 41, real lighting: the beam is a wedge. It lights 1 to 4 tiles ahead and the tiles beside 2 and 3
+/// ahead; the guard's own tile, its sides, its back, 5 ahead and two tiles off the line stay dark. A wall stops it.
+/datum/unit_test/voidcrew_stealth_light_beam
+
+/datum/unit_test/voidcrew_stealth_light_beam/Run()
+	var/datum/turf_reservation/block = stealth_block(12, 9)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	stealth_unlist(block, 12, 9)
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 5, 4)), "Reserved test space isn't dark, so the light can't be tested")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 4)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	stealth_ai.stealth_update_light()
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard standing in the dark didn't switch its light on")
+	stealth_settle_light()
+	// offsets from the guard (ahead, aside)
+	var/list/lit = list(list(1, 0), list(2, 0), list(3, 0), list(4, 0), list(2, 1), list(2, -1), list(3, 1), list(3, -1))
+	var/list/dark = list(list(0, 0), list(-1, 0), list(0, 1), list(0, -1), list(-1, 1), list(5, 0), list(6, 0), list(3, 2), list(3, -2), list(1, 2))
+	for(var/list/offset as anything in lit)
+		TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 2 + offset[1], 4 + offset[2])), "The beam doesn't light [offset[1]] ahead, [offset[2]] aside")
+	for(var/list/offset as anything in dark)
+		TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 2 + offset[1], 4 + offset[2])), "The beam lights [offset[1]] ahead, [offset[2]] aside")
+	// The beam is what the guard's own "is my spot dark" test leaves out, wherever it lands.
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 4, 4), no_guard_lights = TRUE), "A tile lit only by a guard's beam isn't dark without guard lights")
+	TEST_ASSERT(stealth_room_is_dark(stealth_at(block, 4, 4)), "A tile lit only by a guard's beam isn't dark by the room's light")
+	// Turned north, the wedge turns with it.
+	guard.setDir(NORTH)
+	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	stealth_settle_light()
+	TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 2, 6)), "The beam doesn't light 2 ahead of a guard facing north")
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 4, 4)), "The beam still lights where the guard used to face")
+	qdel(guard)
+	stealth_settle_light()
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 2, 6)), "The beam stayed lit after its guard was gone")
+	// A wall two tiles ahead: lit up to it, dark past it.
+	var/turf/wall = stealth_at(block, 4, 4)
+	wall.ChangeTurf(/turf/closed/wall)
+	guard = stealth_guard(block, 2, 4)
+	stealth_ai = stealth_ai(guard)
+	stealth_ai.stealth_update_light()
+	stealth_settle_light()
+	TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 3, 4)), "The beam doesn't light the tile before a wall")
+	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 5, 4)), "The beam lights the tile behind a wall")
+	qdel(guard)
+	qdel(block)
+
+/// Decision 41: a lit flashlight carried behind an unaware guard that stands in the dark makes it suspicious, never
+/// alert, and it turns to look. Unlit, out of the light's reach, or in a lit room, it draws nothing.
+/datum/unit_test/voidcrew_stealth_stray_light
+
+/datum/unit_test/voidcrew_stealth_stray_light/Run()
+	var/datum/turf_reservation/block = stealth_block(14, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	for(var/dx in 0 to 13)
+		for(var/dy in 0 to 4)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = TRUE
+	var/mob/living/carbon/human/person = stealth_person(block, 6, 2)
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 9, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	TEST_ASSERT_EQUAL(stealth_carried_light(person), 0, "Someone with no light counts as carrying one")
+	// Three tiles behind it in the dark, no light: nothing.
+	stealth_scans(guard, 4)
+	var/list/entry = stealth_ai.notice_map[REF(person)]
+	TEST_ASSERT(isnull(entry) || entry[1] == 0, "A guard built notice on someone behind it in the dark ([entry?[1]])")
+	// The same with a lit flashlight in hand.
+	var/obj/item/flashlight/held = allocate(/obj/item/flashlight, get_turf(person))
+	TEST_ASSERT(person.put_in_hands(held), "Test fixture: the flashlight can't be held")
+	held.attack_self(person)
+	TEST_ASSERT(held.light_on, "Test fixture: the flashlight didn't switch on")
+	TEST_ASSERT(stealth_carried_light(person) >= 3, "A lit flashlight in hand reaches [stealth_carried_light(person)] tiles")
+	for(var/i in 1 to 6)
+		stealth_scans(guard, 1)
+		if(stealth_ai.stealth_state() != "unaware")
+			break
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A lit flashlight behind a guard in the dark made it [stealth_ai.stealth_state()]")
+	entry = stealth_ai.notice_map[REF(person)]
+	TEST_ASSERT(entry[1] <= 1, "A light behind a guard filled its notice past suspicious ([entry[1]])")
+	TEST_ASSERT_EQUAL(guard.dir, WEST, "The guard didn't turn to the light")
+	qdel(guard)
+	// Out of the light's reach: nothing.
+	person.forceMove(stealth_at(block, 1, 2))
+	guard = stealth_guard(block, 9, 2)
+	stealth_ai = stealth_ai(guard)
+	stealth_scans(guard, 6)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A light 8 tiles behind a guard drew its notice")
+	qdel(guard)
+	// In a lit room a flashlight is nothing to wonder at.
+	person.forceMove(stealth_at(block, 6, 2))
+	GLOB.stealth_test_dark_turfs[stealth_at(block, 9, 2)] = FALSE
+	guard = stealth_guard(block, 9, 2)
+	stealth_ai = stealth_ai(guard)
+	stealth_scans(guard, 6)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A flashlight behind a guard in a lit room drew its notice")
+	entry = stealth_ai.notice_map[REF(person)]
+	TEST_ASSERT(isnull(entry) || entry[1] == 0, "A flashlight behind a guard in a lit room built notice ([entry?[1]])")
+	for(var/dx in 0 to 13)
+		for(var/dy in 0 to 4)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = FALSE
 	qdel(block)
 
 /// Real lighting: in a dark room the guard's pool lights what it lands on and nothing behind it.
