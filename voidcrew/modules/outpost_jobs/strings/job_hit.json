@@ -1,1 +1,108 @@
-{}
+{
+	"mark": {
+		"idle": [
+			"Twenty minutes. Fine.",
+			"Hm. Same as last time.",
+			"Should've taken the earlier shuttle.",
+			"Smells like engine grease and fried fish in here.",
+			"Nobody told me the coffee was this bad."
+		],
+		"talk": [
+			"Do I know you?",
+			"Just passing through, friend.",
+			"I've got a shuttle to catch. Make it quick.",
+			"No, I'm not buying anything.",
+			"Sorry. Waiting on a call."
+		],
+		"chat": [
+			"Business, mostly. You?",
+			"First time on {place}. Won't be the last, worst luck.",
+			"They say the yard here does good work. Expensive, though.",
+			"I've been on shuttles since six this morning.",
+			"Don't suppose you know a decent hotel on the next stop?"
+		],
+		"reply": [
+			"Hm.",
+			"That right?",
+			"Can't argue with that.",
+			"Sure.",
+			"If you say so."
+		],
+		"conversations": [
+			{
+				"opener": "You come here often, {other}?",
+				"replies": ["More than I'd like.", "Only when the money's good.", "Every week, like a bad habit."]
+			},
+			{
+				"opener": "Busy today, isn't it?",
+				"replies": ["Always is around this time.", "Seen worse.", "Convoy's due, that's why."]
+			},
+			{
+				"opener": "What's good to drink here?",
+				"replies": ["Whatever's cheapest.", "Nothing. Have it anyway.", "Ask for the house. Don't ask what's in it."]
+			}
+		],
+		"order": [
+			"Whatever's cold, thanks.",
+			"Something short. I'm not staying long.",
+			"One of those. On me.",
+			"Same as him."
+		],
+		"refuse": [
+			"I buy my own, thanks.",
+			"No. I'm fine.",
+			"Kind of you. I'll pass.",
+			"I've got one coming, thanks."
+		],
+		"call": [
+			"Yeah. I'm here.",
+			"No, nobody's said a word.",
+			"I told you, the shuttle leaves when it leaves.",
+			"Not on this line.",
+			"Did he sign it or didn't he?",
+			"Fine. Tell them half now.",
+			"I don't care what it costs. Get it done.",
+			"Uh-huh. Uh-huh. No.",
+			"Hold on. Someone's looking."
+		],
+		"attacked": [
+			"Help! Security!",
+			"Get off me! Somebody call security!",
+			"Security! He's trying to kill me!",
+			"Officer! Over here!"
+		],
+		"violence": [
+			"Oh, hell. Where's security?",
+			"Not today. Not today.",
+			"Somebody get an officer!"
+		],
+		"gun": [
+			"Whoa, whoa. Put that away!",
+			"Security! He's got a gun!",
+			"Don't point that at me!"
+		],
+		"safe": [
+			"Officer, somebody's after me.",
+			"Stay where I can see you, would you?",
+			"I'll just wait here, if that's all right.",
+			"Thank god. There's someone following me."
+		],
+		"leave": [
+			"That's my shuttle.",
+			"Right. Time to go.",
+			"Can't miss this one."
+		],
+		"yield": [
+			"Go ahead, I'm not in a hurry.",
+			"After you."
+		],
+		"queue_give_up": [
+			"Forget it.",
+			"Not worth the wait."
+		],
+		"cover": [
+			"Get down!",
+			"Oh, hell."
+		]
+	}
+}
