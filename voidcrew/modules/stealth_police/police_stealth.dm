@@ -320,7 +320,7 @@
 		// Already fighting someone: it knows, and turns on them by stealth's own rules
 		if(fighting != offender)
 			brain.stealth_remember(offender)
-	else if(!police_suspect_down(offender))
+	else if(!police_suspect_down(offender) || police.finishes_downed(offender, src))
 		brain.stealth_go_alert(offender)
 	brain.police_hunt = WEAKREF(offender.mind)
 	if(stealth_radio_ready())
@@ -331,8 +331,8 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
 	if(!istype(brain) || QDELETED(suspect) || stat != CONSCIOUS || client)
 		return
-	// Someone down is cuffed, never fought: no alert over them (owner decision 37)
-	if(isliving(suspect) && police_suspect_down(suspect))
+	// Someone down is cuffed, never fought: no alert over them (owner decision 37), unless the zone finishes them (39)
+	if(isliving(suspect) && police_suspect_down(suspect) && !police?.finishes_downed(suspect, src))
 		return
 	if(brain.stealth_state() == STEALTH_ALERT && brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET] == suspect)
 		return
@@ -587,7 +587,7 @@
 	var/datum/mind/assigned = officer.dispatch_mind?.resolve()
 	// Someone down or in custody is the arrest's: nobody goes looking for them (owner decision 37)
 	var/mob/living/assigned_body = assigned?.current
-	if(isliving(assigned_body) && (police_suspect_down(assigned_body) || in_custody(assigned_body)))
+	if(isliving(assigned_body) && ((police_suspect_down(assigned_body) && !finishes_downed(assigned_body)) || in_custody(assigned_body)))
 		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)

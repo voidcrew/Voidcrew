@@ -580,7 +580,10 @@
 		if(stars >= 4)
 			// Holds the embargo while they stay at four or five (it lapses and is laid again after its time)
 			escalate_incident(warrant, stars)
-			if(holder_at_outpost(mind.current))
+			// Only a leader alive and free at the outpost makes accomplices: one in a cell (or our cuffs), or a body,
+			// does not keep sweeping up the crew that comes for them (review-1 M2)
+			var/mob/living/leader_body = mind.current
+			if(holder_at_outpost(leader_body) && leader_body.stat != DEAD && !in_custody(leader_body))
 				stand_at_four += warrant
 	for(var/datum/outpost_warrant/leader as anything in stand_at_four)
 		abet_crew(leader)

@@ -166,7 +166,7 @@
  * them first; if every point is watched, the farthest (abuse M13). Points skipped for being blocked (M2) are
  * left out. Null if the sector has none left.
  */
-/datum/outpost_police/proc/lift_point(sector, atom/avoid_sight_of)
+/datum/outpost_police/proc/lift_point(sector, atom/avoid_sight_of, mob/living/rider)
 	var/list/watchers = dispatch_suspect_mobs()
 	if(isliving(avoid_sight_of))
 		watchers |= avoid_sight_of
@@ -175,6 +175,9 @@
 	var/best_distance = -1
 	for(var/turf/point as anything in dispatch_lift_tiles(sector))
 		if(!point || dispatch_skipped[point] > world.time)
+			continue
+		// Someone standing on it: the officer could never step on (review-1 S4)
+		if(lift_point_blocked(point, rider))
 			continue
 		var/watched = FALSE
 		var/distance = INFINITY
@@ -189,6 +192,14 @@
 			best_watched = watched
 			best_distance = distance
 	return best
+
+/// Whether someone on their feet other than `rider`, or whoever `rider` pulls, stands on `point`
+/datum/outpost_police/proc/lift_point_blocked(turf/point, mob/living/rider)
+	for(var/mob/living/standing in point)
+		if(standing == rider || (rider && rider.pulling == standing) || standing.stat == DEAD || standing.body_position == LYING_DOWN)
+			continue
+		return TRUE
+	return FALSE
 
 /**
  * `officer` rides the lift from the lift point they stand on to a point of `sector`, with whoever they pull.

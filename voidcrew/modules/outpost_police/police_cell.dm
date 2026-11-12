@@ -62,6 +62,8 @@
 	var/medic_until = 0
 	/// Weakrefs to those bodies
 	var/list/medic_bodies = list()
+	/// Prisoners in crit whose mover has been charged with taking them out: mind -> TRUE
+	var/list/carry_reported = list()
 
 /datum/outpost_police_cell/New(datum/outpost_police/new_police, new_cell_id)
 	. = ..()
@@ -198,6 +200,7 @@
 	walked_out -= prisoner
 	stepped_at -= prisoner
 	shoved_by -= prisoner
+	carry_reported -= prisoner
 
 /// The prisoner whose body `body` is, or null
 /datum/outpost_police_cell/proc/prisoner_of(mob/living/body)
@@ -454,8 +457,11 @@
 		if(!body)
 			forget_prisoner(prisoner)
 			continue
-		if(body.stat == DEAD || HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION))
+		if(body.stat == DEAD)
 			down_prisoner(prisoner, body)
+			continue
+		if(HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION))
+			crit_prisoner(prisoner, body)
 			continue
 		var/started = booking[prisoner]
 		if(!isnull(started))
@@ -474,6 +480,8 @@
 				time_left -= prisoner
 				carried_by -= prisoner
 				walked_out -= prisoner
+				carry_reported -= prisoner
+				end_medic_hold(body)
 			else if(!can_walk_back(body))
 				// Down, held, carried or asleep: the time to walk back starts once they can (abuse MF1)
 				return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
@@ -524,7 +532,41 @@
 	police.cell_station_say(line)
 	open_door(OUTPOST_POLICE_CELL_OPEN)
 
-/// `prisoner` is in crit or dead in the cell: the term is over, the door opens and stays open for a medic
+/**
+ * `prisoner` is in crit: the term stops, not ends (abuse review 3 SF1). The door opens for a medic and the time
+ * left is kept, as for a prisoner carried out: once they can walk again they have OUTPOST_POLICE_CELL_RETURN to be
+ * back inside, or it is a jailbreak. Whoever takes them out of the cell meanwhile answers for it.
+ */
+/datum/outpost_police_cell/proc/crit_prisoner(datum/mind/prisoner, mob/living/body)
+	var/started = booking[prisoner]
+	if(!isnull(started) && world.time - started < CELL_BOOKING_STALE)
+		return // book_in() is still working on them; their term is set when it is done
+	if(!(prisoner in return_by))
+		booking -= prisoner
+		time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
+		medic_bodies |= WEAKREF(body)
+		medic_until = world.time + OUTPOST_POLICE_CELL_MEDIC_OPEN
+		police.cell_station_say(POLICE_LINE_MEDIC)
+		open_door(0)
+	return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
+	if(!(get_turf(body) in tiles) && !carry_reported[prisoner])
+		var/datum/weakref/ref = carried_by[prisoner]
+		var/mob/living/mover = ref?.resolve() || mover_now(body)
+		if(mover && mover != body && mover.mind)
+			carry_reported[prisoner] = TRUE
+			police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
+
+/// A prisoner who was down is back on their feet in the cell: the door no longer waits for a medic
+/datum/outpost_police_cell/proc/end_medic_hold(mob/living/body)
+	var/datum/weakref/ref = WEAKREF(body)
+	if(!(ref in medic_bodies))
+		return
+	medic_bodies -= ref
+	if(!length(medic_bodies))
+		medic_until = 0
+	schedule_close_check(1 SECONDS)
+
+/// `prisoner` is dead in the cell: the term is over, the door opens and stays open for a medic
 /datum/outpost_police_cell/proc/down_prisoner(datum/mind/prisoner, mob/living/body)
 	forget_prisoner(prisoner)
 	police.close_warrant(prisoner, TRUE)
@@ -667,16 +709,17 @@
 /datum/outpost_police/proc/cell_door_turf()
 	return cell_best()?.outside_turf
 
-/// Whether `who` is in police custody: from the cuffs going on to release
+/**
+ * Whether `who` is in police custody: from an arrest's cuffs (or grip) going on to release from a cell. By the police's
+ * own state, not the cuffs alone: someone in police cuffs nobody is arresting any more (carried off and brought back,
+ * a case that fell through) is an ordinary suspect again, to be chased and taken back in (review-1 S5).
+ */
 /datum/outpost_police/proc/in_custody(mob/living/who)
-	if(!who)
+	if(!who?.mind)
 		return FALSE
-	if(iscarbon(who))
-		var/mob/living/carbon/cuffed = who
-		if(istype(cuffed.handcuffed, /obj/item/restraints/handcuffs/outpost_police))
-			return TRUE
-	if(!who.mind)
-		return FALSE
+	var/datum/outpost_police_case/case = cases[who.mind]
+	if(case && !QDELETED(case) && case.cuffed && case.get_suspect() == who)
+		return TRUE
 	for(var/datum/outpost_police_cell/cell in cells)
 		if(who.mind in cell.prisoners)
 			return TRUE
