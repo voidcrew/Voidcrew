@@ -161,7 +161,7 @@
 /datum/mission/fixer_job/hit/unstage()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/job_mark/mark = get_mark()
 	if(mark)
-		job_atoms -= WEAKREF(mark)
+		job_atoms?.Remove(WEAKREF(mark))
 		mark.job_ref = null
 		if(mark.stat != DEAD)
 			mark.catch_shuttle()
