@@ -115,7 +115,7 @@
 		/datum/shop_sku/general/basic_parts,
 		/datum/shop_sku/general/supply_console_board,
 		// Colonial Registry
-		/datum/shop_sku/outpost_deed,
+		/datum/shop_sku/outpost_floor,
 		// Intel & Charts: the cheap always-available rung; the dealt chart
 		// shelf below stocks the star charts and the named ruin coordinates
 		/datum/shop_sku/rumor,

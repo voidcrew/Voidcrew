@@ -319,8 +319,8 @@
 	var/datum/outpost_shop/shop = outpost.shop
 	// The core shelf, plain credit-priced goods only. Vouchers never spend
 	// remotely, and the intel/registry lines have counter-only purchase flows
-	// (a rumor charts the buyer's helm, a deed binds to the buyer's name) that
-	// a pod can't reproduce.
+	// (a rumor charts the buyer's helm, a floor lease is let to the buyer in
+	// person) that a pod can't reproduce.
 	var/list/entries = list()
 	var/list/lookup = list()
 	for(var/datum/shop_sku/sku as anything in shop.skus)
@@ -328,7 +328,7 @@
 			continue
 		if(sku.price_vouchers != 0 || sku.price_credits <= 0)
 			continue
-		if(sku.is_chart || istype(sku, /datum/shop_sku/barter) || istype(sku, /datum/shop_sku/outpost_deed))
+		if(sku.is_chart || istype(sku, /datum/shop_sku/barter) || istype(sku, /datum/shop_sku/outpost_floor))
 			continue
 		if(!sku.item_path || sku.stock <= 0)
 			continue

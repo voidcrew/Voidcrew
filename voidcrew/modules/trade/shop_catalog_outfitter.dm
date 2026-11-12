@@ -124,7 +124,7 @@
 		/datum/shop_sku/outfitter/welding_fuel,
 		/datum/shop_sku/outfitter/oxygen_tank,
 		// Colonial Registry
-		/datum/shop_sku/outpost_deed,
+		/datum/shop_sku/outpost_floor,
 		// Intel & Charts: the dealt chart shelf adds to this from chart_pool
 		/datum/shop_sku/rumor,
 		// Barter
