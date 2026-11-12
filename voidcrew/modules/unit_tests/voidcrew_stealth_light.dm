@@ -4,12 +4,18 @@
 // STEALTH_SENTRY_TURN_INTERVAL 8 s, STEALTH_SENTRY_GLANCE_TIME 2 s.
 
 /// Waits for tg's static lighting to apply what was just switched or moved (it updates on its own subsystem).
-/datum/unit_test/proc/stealth_settle_light()
+/// `target`: a lamp whose light is applied here if SSlighting hasn't got to it. A test run first in a world can find
+/// SSlighting still holding the whole map's boot backlog (70,000 sources, not fired once 3 minutes in).
+/datum/unit_test/proc/stealth_settle_light(atom/movable/target)
 	sleep(1)
 	for(var/i in 1 to 50)
 		if(!length(SSlighting.sources_queue) && !length(SSlighting.current_sources))
 			return
 		sleep(1)
+	var/datum/light_source/source = target?.light
+	if(source?.needs_update)
+		source.update_corners()
+		source.needs_update = LIGHTING_NO_UPDATE
 
 /// The guard switches its light on in the dark and while on edge, off in the light, and can't while it is cut out.
 /datum/unit_test/voidcrew_stealth_light_switch
@@ -171,7 +177,7 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard standing in the dark didn't switch its light on")
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	// offsets from the guard (ahead, aside)
 	var/list/lit = list(list(1, 0), list(2, 0), list(3, 0), list(4, 0), list(2, 1), list(2, -1), list(3, 1), list(3, -1))
 	var/list/dark = list(list(0, 0), list(-1, 0), list(0, 1), list(0, -1), list(-1, 1), list(5, 0), list(6, 0), list(3, 2), list(3, -2), list(1, 2))
@@ -185,19 +191,21 @@
 	// Turned north, the wedge turns with it.
 	guard.setDir(NORTH)
 	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 2, 6)), "The beam doesn't light 2 ahead of a guard facing north")
 	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 4, 4)), "The beam still lights where the guard used to face")
 	qdel(guard)
 	stealth_settle_light()
 	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 2, 6)), "The beam stayed lit after its guard was gone")
-	// A wall two tiles ahead: lit up to it, dark past it.
-	var/turf/wall = stealth_at(block, 4, 4)
-	wall.ChangeTurf(/turf/closed/wall)
+	// A wall across the room two tiles ahead: lit up to it, dark past it. A lone wall tile wouldn't do: tg lights a
+	// tile by its corners, and the tiles beside the one behind a pillar still see the beam.
+	for(var/dy in 1 to 7)
+		var/turf/wall = stealth_at(block, 4, dy)
+		wall.ChangeTurf(/turf/closed/wall)
 	guard = stealth_guard(block, 2, 4)
 	stealth_ai = stealth_ai(guard)
 	stealth_ai.stealth_update_light()
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 3, 4)), "The beam doesn't light the tile before a wall")
 	TEST_ASSERT(stealth_tile_is_dark(stealth_at(block, 5, 4)), "The beam lights the tile behind a wall")
 	qdel(guard)

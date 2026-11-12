@@ -204,7 +204,8 @@
 		stealth_scans(guard, 1)
 		TEST_ASSERT_NULL(stealth_ai.challenge?.resolve(), "[how]: the guard stopped them once more instead of seeing through it")
 		TEST_ASSERT(stealth_ai.made?[REF(person)] > world.time, "[how]: the guard doesn't remember who it saw through")
-		TEST_ASSERT_EQUAL(guard.npc_last_bark, "stealth_blown", "[how]: the guard saw through them without a word")
+		// The spot line follows the blown one at once, so the last bark is "spot": the blown line's cooldown shows it was said.
+		TEST_ASSERT(stealth_ai.bark_ready_at["stealth_blown"] > world.time, "[how]: the guard saw through them without a word")
 		TEST_ASSERT(!stealth_ai.stealth_fooled(person), "[how]: the disguise still holds for that guard")
 		qdel(guard)
 		qdel(person)

@@ -416,6 +416,8 @@
 		if(world.time - checked_at < STEALTH_CHALLENGE_CHECK_TIME)
 			return
 		stealth_bark(STEALTH_BARK_ID_PASS, null, stealth_card_name(who), TRUE)
+		// Waving them on is the greeting: no nod straight after it.
+		greeted = world.time + STEALTH_GREET_COOLDOWN
 		LAZYSET(passes, key, world.time + STEALTH_PASS_TIME)
 		LAZYADDASSOCLIST(waved, key, world.time)
 		stealth_go_unaware()
