@@ -255,8 +255,9 @@
 	return FALSE
 
 /**
- * What the scan refuses: chamber atom -> CHECKPOINT_LINE_ARMED or CHECKPOINT_LINE_BARRED. A weapon
- * passes when the person carrying it holds a valid permit; anything loose on the floor never does.
+ * What the scan refuses: chamber atom -> CHECKPOINT_LINE_ARMED, CHECKPOINT_LINE_BARRED or CHECKPOINT_LINE_CARGO
+ * (a fixer job's case, outpost_jobs). A weapon passes when the person carrying it holds a valid permit; anything
+ * loose on the floor never does. Barred outranks armed, armed outranks cargo.
  */
 /datum/outpost_checkpoint/proc/inspect_chamber()
 	var/list/refused = list()
@@ -269,11 +270,28 @@
 					var/mob/living/person = content
 					if(person.mind && outpost?.is_user_barred(person))
 						refused[thing] = CHECKPOINT_LINE_BARRED
-				else if(outpost_checkpoint_weapon(content) && !refused[thing])
+				else if(outpost_checkpoint_weapon(content) && (!refused[thing] || refused[thing] == CHECKPOINT_LINE_CARGO)) // OUTPOST JOBS seam: armed outranks cargo
 					var/mob/living/carrier = outpost_weapon_carrier(content)
 					if(!carrier || !outpost?.has_weapons_permit(carrier))
 						refused[thing] = CHECKPOINT_LINE_ARMED
+				// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): a fixer job's sealed case is refused like a weapon
+				else if(!refused[thing] && outpost_checkpoint_job_cargo(content))
+					refused[thing] = CHECKPOINT_LINE_CARGO
 	return refused
+
+// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+#ifdef UNIT_TESTS
+/// Things the scan treats as a live job case in a test (fixer_is_contraband() is FALSE until the smuggle job exists)
+GLOBAL_LIST_EMPTY(fixer_test_contraband)
+#endif
+
+/// Whether `thing` is cargo the scan refuses: a fixer job's case (outpost_jobs/job_smuggle.dm)
+/proc/outpost_checkpoint_job_cargo(atom/movable/thing)
+#ifdef UNIT_TESTS
+	if(thing in GLOB.fixer_test_contraband)
+		return TRUE
+#endif
+	return fixer_is_contraband(thing)
 
 // ----- speech and show -----
 
@@ -506,11 +524,16 @@
 			set_state(CHECKPOINT_IDLE)
 		return
 	var/barred = FALSE
+	// OUTPOST JOBS seam: what the checkpoint says, barred over armed over cargo
+	var/refusal_line = CHECKPOINT_LINE_CARGO
 	for(var/atom/movable/thing as anything in refused)
 		if(refused[thing] == CHECKPOINT_LINE_BARRED)
 			barred = TRUE
+			refusal_line = CHECKPOINT_LINE_BARRED
 			break
-	reject(barred, people)
+		if(refused[thing] == CHECKPOINT_LINE_ARMED)
+			refusal_line = CHECKPOINT_LINE_ARMED
+	reject(barred, people, refusal_line)
 
 /datum/outpost_checkpoint/proc/pass(list/people)
 	set_state(CHECKPOINT_PASSING)
@@ -521,14 +544,15 @@
 	open_door(inner_door)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(close_door), inner_door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/// The inner door stays shut, the checkpoint says why, and the outer door opens for whoever it refused to walk back out
-/datum/outpost_checkpoint/proc/reject(barred, list/people)
+/// The inner door stays shut, the checkpoint says why, and the outer door opens for whoever it refused to walk back out.
+/// `refusal_line` (OUTPOST JOBS seam) is the CHECKPOINT_LINE_* to say; null says barred or armed by `barred`.
+/datum/outpost_checkpoint/proc/reject(barred, list/people, refusal_line)
 	var/leaving = exit_request
 	set_state(CHECKPOINT_REJECTING)
 	wash_chamber(CHECKPOINT_REFUSE_COLOR)
 	sound_at_chamber('sound/machines/scanner/scanbuzz.ogg', 40)
 	if(includes_player(people) || leaving)
-		announce(barred ? CHECKPOINT_LINE_BARRED : CHECKPOINT_LINE_ARMED, urgent = TRUE)
+		announce(refusal_line || (barred ? CHECKPOINT_LINE_BARRED : CHECKPOINT_LINE_ARMED), urgent = TRUE) // OUTPOST JOBS seam
 	open_door(outer_door)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(check_refused)), OUTPOST_CHECKPOINT_REJECT_HOLD, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
@@ -997,6 +1021,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 			return "Tamper alarm."
 		if(CHECKPOINT_LINE_INTRUDER)
 			return "Armed intruder."
+		if(CHECKPOINT_LINE_CARGO) // OUTPOST JOBS seam
+			return "Sealed cargo. Entry refused."
 	return null
 
 // =========================================================================

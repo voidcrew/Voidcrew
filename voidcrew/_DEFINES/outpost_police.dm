@@ -39,6 +39,9 @@
 #define OUTPOST_CRIME_GATE_TAMPER "gate_tamper"
 /// A trader held up at its counter (10)
 #define OUTPOST_CRIME_ARMED_ROBBERY "armed_robbery"
+// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+/// A fixer job's target (a structure the job placed) wrecked or tampered with, seen
+#define OUTPOST_CRIME_SABOTAGE "sabotage"
 
 // ===== WITNESSES (police_perception.dm) =====
 
@@ -227,3 +230,8 @@
 #define COMSIG_OUTPOST_POLICE_BOOKED "outpost_police_booked"
 /// A prisoner was let out: (mob/living/suspect)
 #define COMSIG_OUTPOST_POLICE_RELEASED "outpost_police_released"
+// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+/// Every counted crime, star or no star (count_crime()): (datum/mind/mind, crime, atom/victim, stars_after, derived)
+#define COMSIG_OUTPOST_POLICE_CRIME "outpost_police_crime"
+/// A cell door was forced open (force_door()): (datum/outpost_police_cell/cell, mob/living/user)
+#define COMSIG_OUTPOST_POLICE_CELL_FORCED "outpost_police_cell_forced"

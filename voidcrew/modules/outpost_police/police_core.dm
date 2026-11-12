@@ -53,6 +53,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	(OUTPOST_CRIME_KILL_STAFF) = list(60, 5, 4),
 	(OUTPOST_CRIME_GATE_TAMPER) = list(0, 2, 2),
 	(OUTPOST_CRIME_ARMED_ROBBERY) = list(30, 3, 2),
+	(OUTPOST_CRIME_SABOTAGE) = list(12, 2, 1), // OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
 ))
 
 // =========================================================================

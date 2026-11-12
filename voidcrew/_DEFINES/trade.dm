@@ -185,6 +185,8 @@
 #define CHECKPOINT_LINE_FORCING "checkpoint_forcing"
 #define CHECKPOINT_LINE_INTRUDER "checkpoint_intruder"
 #define CHECKPOINT_LINE_PERMIT_LAPSED "checkpoint_permit_lapsed"
+// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): the scan refused a fixer job's sealed case (fixer_is_contraband())
+#define CHECKPOINT_LINE_CARGO "checkpoint_cargo"
 
 /// Original shop deliveries cannot be sold to cargo or a trader's wanted ledger.
 #define TRAIT_TRADER_GOODS "trader_goods"

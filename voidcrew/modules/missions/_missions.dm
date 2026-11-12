@@ -996,18 +996,7 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 
 	// Notify ship
 	if(servant)
-		var/list/reward_parts = list()
-		if(value > 0)
-			reward_parts += "[value] credits"
-		if(length(get_reward_types()))
-			reward_parts += get_reward_summary()
-		if(research_reward > 0)
-			reward_parts += "[research_reward] research points"
-		if(voucher_count > 0)
-			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
-		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
-		var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
-		servant.ship_notify("[name] completed! Reward: [reward_text].[reputation_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		notify_completed(reputation_gain) // OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): overridable notice
 		servant.active_missions -= src
 
 	// Remove from subsystem tracking
@@ -1016,6 +1005,22 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 	SEND_SIGNAL(src, COMSIG_MISSION_COMPLETED)
 
 	qdel(src)
+
+// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): the fixer job words its own notice
+/// The ship's notice that the mission is done and what it paid. finish_mission() calls it while `servant` is set.
+/datum/mission/proc/notify_completed(reputation_gain)
+	var/list/reward_parts = list()
+	if(value > 0)
+		reward_parts += "[value] credits"
+	if(length(get_reward_types()))
+		reward_parts += get_reward_summary()
+	if(research_reward > 0)
+		reward_parts += "[research_reward] research points"
+	if(voucher_count > 0)
+		reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+	var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
+	var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
+	servant.ship_notify("[name] completed! Reward: [reward_text].[reputation_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 // =========================================================================
 // WAYPOINTS & GPS

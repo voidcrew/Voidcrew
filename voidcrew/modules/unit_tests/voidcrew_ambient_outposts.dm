@@ -188,6 +188,9 @@
 		for(var/role_type in subtypesof(/datum/ambient_outpost_role))
 			if(ispath(role_type, /datum/ambient_outpost_role/police_beat) || ispath(role_type, /datum/ambient_outpost_role/police_sergeant))
 				continue
+			// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): the one fixer per outpost is outpost_jobs' tests' call
+			if(ispath(role_type, /datum/ambient_outpost_role/fixer))
+				continue
 			var/datum/ambient_outpost_role/role = allocate(role_type)
 			if(!role.npc_type || !role.applies_to(crowd_outpost))
 				continue

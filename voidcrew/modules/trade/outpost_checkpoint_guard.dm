@@ -111,6 +111,11 @@
 			"Weapon on the scan. Back out, please.",
 			"Scanner's flagged a weapon. Back out.",
 		),
+		// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+		CHECKPOINT_LINE_CARGO = list(
+			"What's in the case? Not through here.",
+			"That case isn't coming in. Back out, please.",
+		),
 		CHECKPOINT_LINE_BARRED = list(
 			"Not today. Back out, please.",
 			"You're not coming in. Back out.",
@@ -167,6 +172,11 @@
 			"Weapon on the scan. Back out.",
 			"Iron on the scan. Back out and stow it.",
 		),
+		// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+		CHECKPOINT_LINE_CARGO = list(
+			"Sealed freight goes through the cargo dock. Not here.",
+			"Don't know what's in that case and neither do you. Out.",
+		),
 		CHECKPOINT_LINE_BARRED = list(
 			"You're not getting in. Back out.",
 			"Not you. Out.",
@@ -221,6 +231,11 @@
 		CHECKPOINT_LINE_ARMED = list(
 			"Weapon on the scan. Back out.",
 			"Nice try. Back out.",
+		),
+		// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+		CHECKPOINT_LINE_CARGO = list(
+			"Not the case.",
+			"Case stays outside. So do you.",
 		),
 		CHECKPOINT_LINE_BARRED = list(
 			"You're done here. Back out.",

@@ -64,6 +64,10 @@
 	var/list/medic_bodies = list()
 	/// Prisoners in crit whose mover has been charged with taking them out: mind -> TRUE
 	var/list/carry_reported = list()
+	// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): NPC prisoners a fixer job put here (no mind, no warrant,
+	// no clock). The cell only keeps them on its list: placing them, shutting the door and letting them go is the
+	// job's. They count as held for the door (a forced door is a jailbreak) and are never strays.
+	var/list/mob/living/wards = list()
 
 /datum/outpost_police_cell/New(datum/outpost_police/new_police, new_cell_id)
 	. = ..()
@@ -75,6 +79,7 @@
 		var/mob/living/body = body_of(prisoner)
 		if(body)
 			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT))
+	drop_all_wards() // OUTPOST JOBS seam
 	if(door)
 		if(door.holding_cell == src)
 			door.holding_cell = null
@@ -103,6 +108,7 @@
 
 /// This cell is being replaced by a rebuild: it lets go of its door and sign without opening anything
 /datum/outpost_police_cell/proc/retire()
+	drop_all_wards() // OUTPOST JOBS seam
 	if(door?.holding_cell == src)
 		door.holding_cell = null
 	door = null
@@ -351,7 +357,7 @@
 /datum/outpost_police_cell/proc/stray_inside()
 	for(var/turf/tile as anything in tiles)
 		for(var/mob/living/someone in tile)
-			if(!prisoner_of(someone))
+			if(!prisoner_of(someone) && !(someone in wards)) // OUTPOST JOBS seam: a ward is held, not a stray
 				return TRUE
 	return FALSE
 
@@ -395,7 +401,7 @@
 
 /// Whether a crowbar can still be working on the door: shut on a prisoner, or on anyone or any body it does not hold (abuse MF2)
 /datum/outpost_police_cell/proc/still_forceable()
-	return !QDELETED(door) && door.density && (length(prisoners) || stray_inside())
+	return !QDELETED(door) && door.density && (length(prisoners) || ward_count() || stray_inside()) // OUTPOST JOBS seam: wards
 
 /**
  * `user` pries the door with `tool`, from either side, while somebody is held (spec 7), or while it is shut on
@@ -406,7 +412,7 @@
 	if(forcing || !still_forceable())
 		return FALSE
 	forcing = TRUE
-	if(length(prisoners))
+	if(length(prisoners) || ward_count()) // OUTPOST JOBS seam: wards
 		playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 		police?.cell_station_say(POLICE_LINE_CELL_ALARM)
 	log_game("OUTPOST POLICE: [key_name(user)] started forcing [door] at [AREACOORD(door)] with [tool].")
@@ -417,11 +423,47 @@
 	if(!succeeded)
 		return FALSE
 	log_game("OUTPOST POLICE: [key_name(user)] forced [door] at [AREACOORD(door)].")
-	var/held = length(prisoners)
+	var/held = length(prisoners) || ward_count() // OUTPOST JOBS seam: wards
 	open_door(OUTPOST_POLICE_CELL_OPEN)
 	if(held)
 		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, tool)
+	// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+	if(police)
+		SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_CELL_FORCED, src, user)
 	return TRUE
+
+// ----- wards (OUTPOST JOBS seam, voidcrew/modules/outpost_jobs) -----
+
+/// Puts `ward` (an NPC prisoner a fixer job brought) on this cell's list. TRUE if they are on it. Moves nobody.
+/datum/outpost_police_cell/proc/hold_ward(mob/living/ward)
+	if(QDELETED(src) || QDELETED(ward))
+		return FALSE
+	if(ward in wards)
+		return TRUE
+	wards += ward
+	RegisterSignal(ward, COMSIG_QDELETING, PROC_REF(on_ward_deleted))
+	police?.wake()
+	return TRUE
+
+/// Takes `ward` off this cell's list. Moves nobody and opens nothing.
+/datum/outpost_police_cell/proc/drop_ward(mob/living/ward)
+	if(!(ward in wards))
+		return
+	wards -= ward
+	UnregisterSignal(ward, COMSIG_QDELETING)
+
+/// How many wards this cell holds
+/datum/outpost_police_cell/proc/ward_count()
+	return length(wards)
+
+/datum/outpost_police_cell/proc/on_ward_deleted(mob/living/source)
+	SIGNAL_HANDLER
+	drop_ward(source)
+
+/datum/outpost_police_cell/proc/drop_all_wards()
+	for(var/mob/living/ward as anything in wards.Copy())
+		drop_ward(ward)
+	wards.Cut()
 
 // ----- the wall clock -----
 
@@ -697,13 +739,27 @@
 	for(var/datum/outpost_police_cell/cell in cells)
 		if(!cell.usable())
 			continue
-		var/load = length(cell.prisoners)
+		var/load = length(cell.prisoners) + cell.ward_count() // OUTPOST JOBS seam: wards
 		var/distance = near ? get_dist(near, cell.door) : 0
 		if(isnull(best) || load < best_load || (load == best_load && distance < best_distance))
 			best = cell
 			best_load = load
 			best_distance = distance
 	return best
+
+// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs)
+/// The usable cell a fixer job's ward goes into: the one holding the fewest, prisoners and wards. Null if there is none.
+/datum/outpost_police/proc/cell_for_ward()
+	return cell_best()
+
+/// The cell holding `ward` on its ward list, or null
+/datum/outpost_police/proc/cell_of_ward(mob/living/ward)
+	if(!ward)
+		return null
+	for(var/datum/outpost_police_cell/cell in cells)
+		if(ward in cell.wards)
+			return cell
+	return null
 
 /// The lobby tile outside the door of the cell the next booking uses, or null
 /datum/outpost_police/proc/cell_door_turf()

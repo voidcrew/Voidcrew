@@ -246,6 +246,48 @@
 	return stars_of(heat)
 
 /**
+ * OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): the stars the reports still waiting on a witness would give
+ * if they were made now, for any of `minds` as offender or against any of `atoms` as victim (a followup's victim
+ * counts too). The arithmetic of officer_knows(), summed per offender over every matching report. 0 when none
+ * match; at least 1 while one does, since a counted crime under one star is still a counted crime. Never sleeps.
+ */
+/datum/outpost_police/proc/pending_noise(list/minds, list/atoms)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!length(pending_reports) || (!length(minds) && !length(atoms)))
+		return 0
+	var/list/heat_by_mind = list()
+	. = 0
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(QDELETED(report))
+			continue
+		var/mob/living/offender = report.offender?.resolve()
+		var/datum/mind/mind = offender?.mind
+		if(!mind)
+			continue
+		var/matched = (mind in minds)
+		if(!matched && length(atoms))
+			var/atom/victim = report.victim?.resolve()
+			matched = victim && (victim in atoms)
+			if(!matched)
+				for(var/list/followup as anything in report.followups)
+					var/datum/weakref/victim_ref = followup[2]
+					var/atom/followup_victim = victim_ref?.resolve()
+					if(followup_victim && (followup_victim in atoms))
+						matched = TRUE
+						break
+		if(!matched)
+			continue
+		var/heat = heat_by_mind[mind]
+		if(isnull(heat))
+			var/datum/outpost_warrant/warrant = warrants[mind]
+			heat = warrant ? max(warrant.heat, current_prior(warrant)) : 0
+		heat = heat_after(heat, report.crime)
+		for(var/list/followup as anything in report.followups)
+			heat = heat_after(heat, followup[1])
+		heat_by_mind[mind] = heat
+		. = max(., 1, stars_of(heat))
+
+/**
  * Puts a witnessed crime on `offender`'s warrant. `derived` marks a crime that follows from one already
  * counted (a killing, an accomplice): it is not seen again and does not say where the offender is.
  * Returns the stars after.
@@ -274,6 +316,8 @@
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
+	// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): every counted crime, a punch under one star included
+	SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_CRIME, mind, crime, victim, new_stars, derived)
 	wake()
 	return new_stars
 
