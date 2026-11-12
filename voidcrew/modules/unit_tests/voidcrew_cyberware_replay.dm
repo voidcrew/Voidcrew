@@ -349,3 +349,108 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(user.body_position, STANDING_UP, "A user whose knockdown wore off during the replay never got up after it")
 	TEST_ASSERT_EQUAL(user.lying_angle, 0, "The user got up but is still turned")
+
+/// A crit body for an execution to be done on, `dx`, `dy` from the room's corner
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/make_victim(dx, dy)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, spot(dx, dy))
+	victim.adjustOxyLoss(120)
+	TEST_ASSERT(victim.hv_is_helpless(), "Test fixture: the victim isn't down")
+	return victim
+
+/// The user's own look on a replay frame: never hidden, and never wearing a finisher rig's hide
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/check_seen(mob/living/user, datum/sandy_replay/replay)
+	var/datum/sandy_replay_track/track = replay.tracks[user]
+	if(!track || track.cursor < 0 || !GLOB.sandy_replay_masked[user])
+		return
+	TEST_ASSERT(user.alpha > 0 && user.invisibility < INVISIBILITY_ABSTRACT, "The user is drawn hidden on replay frame [track.frames[track.cursor + 1]]")
+	TEST_ASSERT(!user.filter_data?["chrome_rig_hide"] && !user.filter_data?["mantis_rig_hide"], "The user's puppet wears a rig's hide on replay frame [track.frames[track.cursor + 1]]")
+
+/**
+ * A gun execution still in its wind-up when the slow-mo ends (playtest bug 2026-11-12): the replay waits for it,
+ * holding nobody, so it goes off for real; then it plays, the user never hidden; then the user is exactly where and
+ * as they really are, nothing shifted.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/execution_running_at_end
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/execution_running_at_end/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 1), "sandyreplayexec")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	TEST_ASSERT(user.put_in_active_hand(pistol), "Test fixture: the pistol wouldn't go in the user's hand")
+	user.zone_selected = BODY_ZONE_HEAD
+	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+	var/head_brute = head.brute_dam
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.6 SECONDS)
+	user.Move(spot(0, 0), SOUTH) // off the tile the replay starts on: its puppet is drawn a tile up
+	sleep(0.3 SECONDS)
+	user.face_atom(victim)
+	INVOKE_ASYNC(pistol, TYPE_PROC_REF(/obj/item/gun, hv_start_execution), user, victim, null)
+	sleep(0.4 SECONDS)
+	TEST_ASSERT(sandy_replay_mid_move(user), "The wind-up isn't seen as a move in progress")
+
+	press_again(user)
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 1, "The replay didn't wait for the execution")
+	TEST_ASSERT(replay.wait_started, "The replay didn't wait for the execution")
+	TEST_ASSERT(!held(user), "The user is held while their execution plays out")
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't wait for the replay")
+	var/until = world.time + 6 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay never played after the execution")
+	TEST_ASSERT(replay.waited >= 0.5 SECONDS, "The replay didn't wait long enough for the wind-up ([replay.waited] ds)")
+	head = victim.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT(!head || head.brute_dam > head_brute, "The execution didn't go off: the replay cut it short")
+	// Frame 0 has the user a tile up, never hidden. Then every frame to the end.
+	TEST_ASSERT_EQUAL(user.pixel_z, 32, "The user isn't drawn back on their first tile")
+	while(GLOB.sandy_replays[user] && world.time < until + 5 SECONDS)
+		check_seen(user, replay)
+		sleep(world.tick_lag)
+	wait_over(user)
+	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "The user is left drawn off their tile: [user.pixel_w],[user.pixel_z]")
+	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "The user is left shifted: [user.pixel_x],[user.pixel_y]")
+	TEST_ASSERT(user.alpha == 255 && user.invisibility == initial(user.invisibility), "The user is left hidden")
+	TEST_ASSERT(user.transform ~= matrix(), "The user is left turned or scaled")
+	TEST_ASSERT(!held(user), "The user is still held after the replay")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
+
+/**
+ * A rig move done inside the slow-mo: the body it hid (the rig's posed pictures aren't recorded) is drawn in the
+ * replay, never hidden. And tg's offsets set on a puppet mid-replay (a finisher letting go, a grab) land on the real
+ * body, not on the puppet's shift: nothing is left drawn off its tile.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/rig_move_inside
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/rig_move_inside/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 1), "sandyreplayrig")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.6 SECONDS)
+	user.Move(spot(0, 0), SOUTH)
+	var/datum/chrome_rig/rig = new(user, EAST)
+	TEST_ASSERT(rig.snapshot(), "Test fixture: the rig couldn't picture the user")
+	rig.conceal()
+	TEST_ASSERT(user.filter_data?["chrome_rig_hide"], "Test fixture: the rig didn't hide the user")
+	TEST_ASSERT(sandy_replay_mid_move(user), "A rigged body isn't seen as mid-move")
+	sleep(0.4 SECONDS)
+	qdel(rig)
+	sleep(0.3 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "A finished move held the replay back")
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT_EQUAL(user.pixel_z, 32, "The user isn't drawn back on their first tile")
+	// tg's offsets on the puppet (a finisher's lean, then letting go), as a cut-short move would
+	user.add_offsets("sandy_replay_test", null, 6, 4)
+	sleep(world.tick_lag)
+	user.remove_offsets("sandy_replay_test")
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		check_seen(user, replay)
+		sleep(world.tick_lag)
+	wait_over(user)
+	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "Offsets set mid-replay left the user drawn off their tile: [user.pixel_w],[user.pixel_z]")
+	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "Offsets set mid-replay left the user shifted: [user.pixel_x],[user.pixel_y]")
+	TEST_ASSERT(!user.filter_data?["chrome_rig_hide"] && user.alpha == 255, "The user is left hidden")
