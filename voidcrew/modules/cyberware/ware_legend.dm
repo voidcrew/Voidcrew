@@ -357,7 +357,6 @@
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
 	owner.adjustStaminaLoss(crash_stamina)
-	owner.add_client_colour(/datum/client_colour/cyberware_cascade_crash, id)
 	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 	owner.visible_message(
 		span_warning("[owner] staggers, every movement suddenly leaden."),
@@ -369,7 +368,6 @@
 
 /datum/status_effect/cyberware_cascade_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "systems restabilized")
 	if(!QDELETED(owner))
@@ -388,13 +386,6 @@
 	color = list(1.1, 0, 0.08, 0.05, 1.05, 0.1, 0.1, 0, 1.2)
 	fade_in = 3
 	fade_out = 3
-
-/// The crash's screen: drained and gray-brown.
-/datum/client_colour/cyberware_cascade_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.55, 0.3, 0.25, 0.35, 0.55, 0.25, 0.25, 0.25, 0.5)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // REDLINE CORE
@@ -835,7 +826,6 @@
 /datum/status_effect/cyberware_redline_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
 	owner.adjustStaminaLoss(stamina_dump)
-	owner.add_client_colour(/datum/client_colour/cyberware_redline_crash, id)
 	owner.visible_message(
 		span_warning("[owner] sags as the red drains out of [owner.p_their()] eyes."),
 		span_userdanger("The core slams shut and your legs go out from under you."),
@@ -847,7 +837,6 @@
 
 /datum/status_effect/cyberware_redline_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "core recovered")
 	if(!QDELETED(owner))
@@ -863,13 +852,6 @@
 	color = list(1, 0, 0, 0.55, 0.5, 0, 0.55, 0, 0.5)
 	fade_in = 2
 	fade_out = 10
-
-/// The crash's screen: burnt out, brown-gray.
-/datum/client_colour/cyberware_redline_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.6, 0.35, 0.3, 0.3, 0.5, 0.25, 0.25, 0.25, 0.45)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // GOVERNOR DELETE
