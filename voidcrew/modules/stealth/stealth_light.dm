@@ -114,6 +114,8 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	/// Where the beam starts, in tiles from the middle of the lamp's tile, as tg's light offset: a negative x is east
 	var/beam_x = 0
 	var/beam_y = 0
+	/// The guard's AI that owns it (it deletes the lamp with itself), so a test that applies the light can land its cone
+	var/datum/ai_controller/basic_controller/human_npc/stealth/owner_ai
 
 /obj/effect/abstract/stealth_torch/Initialize(mapload)
 	. = ..()
@@ -121,6 +123,7 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 
 /obj/effect/abstract/stealth_torch/Destroy()
 	GLOB.stealth_guard_torches -= src
+	owner_ai = null
 	return ..()
 
 /obj/effect/abstract/stealth_torch/get_light_offset()
@@ -133,7 +136,7 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
  * part of the guard (vis_contents), so it glides with every step. It is only for the eye: guards see, and tiles count
  * as lit, by the real lamp alone. It stops at the first wall or solid door ahead (stealth_beam_reach()).
  * It never shows ahead of the lamp's light on the floor: a new aim waits until SSlighting has applied the lamp
- * (stealth_queue(), COMSIG_LIGHT_SOURCE_APPLIED), so when lighting runs slow the whole flashlight is slow together.
+ * (stealth_queue(), stealth_cone_check()), so when lighting runs slow the whole flashlight is slow together.
  */
 /obj/effect/abstract/stealth_beam
 	name = "flashlight beam"
@@ -296,6 +299,10 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/sweep_step = 0
 	/// Counts switches, so a light that comes back stops a sputter
 	var/sputter_serial = 0
+	/// The timer that shows its cone once its lamp's light is applied, or null when nothing waits
+	var/cone_timer
+	/// world.time its cone started waiting on the lamp
+	var/cone_wait_since = 0
 
 /// Its flashlight, if it still has it on its body; else null.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light()
@@ -363,13 +370,14 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/turf/spot = ((light_lit || flash) && !QDELETED(guard) && isturf(guard.loc)) ? guard.loc : null
 	if(isnull(spot))
 		beam?.stealth_hide()
+		stealth_cone_stop()
 		if(torch?.light_on)
 			torch.set_light_on(FALSE)
 			torch.update_light()
 		return
 	if(QDELETED(torch))
 		torch = new(spot)
-		RegisterSignal(torch, COMSIG_LIGHT_SOURCE_APPLIED, PROC_REF(stealth_torch_applied))
+		torch.owner_ai = src
 	if(QDELETED(beam))
 		beam = new(null)
 	var/beam_dir = stealth_beam_dir()
@@ -392,13 +400,29 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	// The cone never shows ahead of the light on the floor: while the lamp waits on SSlighting, so does the cone.
 	if(torch.light?.needs_update)
 		beam.stealth_queue(guard, beam_dir, reach)
+		if(!cone_timer)
+			cone_wait_since = world.time
+			cone_timer = addtimer(CALLBACK(src, PROC_REF(stealth_cone_check)), world.tick_lag, TIMER_STOPPABLE)
 	else
 		beam.stealth_show(guard, beam_dir, reach)
+		stealth_cone_stop()
 
-/// SSlighting (or a test) applied its lamp's light: the cone catches up.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_torch_applied(datum/source)
-	SIGNAL_HANDLER
-	beam?.stealth_flush()
+/// Its cone waits on the lamp: shown once SSlighting has applied the lamp's light (or after STEALTH_BEAM_WAIT_CAP),
+/// else looked at again next tick. Runs only while something waits.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_cone_check()
+	cone_timer = null
+	if(QDELETED(beam) || isnull(beam.pending_guard))
+		return
+	if(torch?.light?.needs_update && world.time < cone_wait_since + STEALTH_BEAM_WAIT_CAP)
+		cone_timer = addtimer(CALLBACK(src, PROC_REF(stealth_cone_check)), world.tick_lag, TIMER_STOPPABLE)
+		return
+	beam.stealth_flush()
+
+/// Stops waiting on the lamp (the cone was shown or hidden).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_cone_stop()
+	if(cone_timer)
+		deltimer(cone_timer)
+		cone_timer = null
 
 /// Whether its light is on with its beam showing (for admins and tests).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light_shows()

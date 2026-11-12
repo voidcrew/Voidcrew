@@ -10,12 +10,14 @@
 	sleep(1)
 	for(var/i in 1 to 50)
 		if(!length(SSlighting.sources_queue) && !length(SSlighting.current_sources))
+			stealth_land_cone(target)
 			return
 		sleep(1)
 	var/datum/light_source/source = target?.light
 	if(source?.needs_update)
 		source.update_corners()
 		source.needs_update = LIGHTING_NO_UPDATE
+	stealth_land_cone(target)
 
 /// Applies `lamp`'s queued light now, without waiting, as SSlighting would: for checks that a beam's short timers
 /// would outrun.
@@ -24,6 +26,14 @@
 	if(source?.needs_update)
 		source.update_corners()
 		source.needs_update = LIGHTING_NO_UPDATE
+	stealth_land_cone(lamp)
+
+/// A guard's cone looks for its lamp's light once a tick; this looks now, so a test needn't wait the tick.
+/datum/unit_test/proc/stealth_land_cone(atom/movable/lamp)
+	var/obj/effect/abstract/stealth_torch/torch = lamp
+	if(istype(torch) && torch.owner_ai)
+		torch.owner_ai.stealth_cone_stop()
+		torch.owner_ai.stealth_cone_check()
 
 /// The guard switches its light on in the dark and while on edge, off in the light, and can't while it is cut out.
 /datum/unit_test/voidcrew_stealth_light_switch

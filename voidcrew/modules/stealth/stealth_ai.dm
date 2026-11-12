@@ -238,6 +238,7 @@
 	QDEL_NULL(meter)
 	QDEL_NULL(beam)
 	QDEL_NULL(torch)
+	stealth_cone_stop()
 	light_lit = FALSE
 	sweeping = FALSE
 	torch_aim = 0

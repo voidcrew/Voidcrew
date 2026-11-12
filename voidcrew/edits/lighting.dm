@@ -212,11 +212,3 @@
 	var/is_target = lighting_object && !is_ambient && !isspaceturf(src) && !istype(src, /turf/cordon)
 	if(was_target != is_target)
 		reconsider_ambient_bleed_neighbors()
-
-/// Tells the light's owner once its queued update is done (COMSIG_LIGHT_SOURCE_APPLIED). One signal send per source
-/// update; nothing listens but a lit stealth guard's lamp.
-/datum/light_source/update_corners()
-	var/atom/host = source_atom
-	. = ..()
-	if(host)
-		SEND_SIGNAL(host, COMSIG_LIGHT_SOURCE_APPLIED)

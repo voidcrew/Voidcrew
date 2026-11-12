@@ -59,8 +59,3 @@
 /// alpha. At the stock alpha of 255 this is power 1, which is what the /lit turfs used,
 /// and it keeps ruin ground level with the surface if the planet is ever tuned dimmer.
 #define RUIN_DAYLIGHT_POWER(alpha) ((alpha) / 255)
-
-/// Sent to a static light's owner each time its /datum/light_source has been worked through (applied to its corners,
-/// or found unchanged), by SSlighting or a test: () (voidcrew/edits/lighting.dm). Stealth guards' beam cones wait on
-/// it so they never show ahead of the light on the floor (voidcrew/modules/stealth/stealth_light.dm).
-#define COMSIG_LIGHT_SOURCE_APPLIED "voidcrew_light_source_applied"

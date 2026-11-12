@@ -187,6 +187,8 @@
 #define STEALTH_BEAM_LENGTHS 22
 /// Pixels from the guard's tile centre to its icon's centre (stealth_beam.dmi is 128x192, the guard at its bottom middle)
 #define STEALTH_BEAM_PIVOT 96
+/// The longest a guard's cone waits for SSlighting to apply its lamp before it shows anyway (decision 42 sync)
+#define STEALTH_BEAM_WAIT_CAP (5 SECONDS)
 /// A lit light someone carries within this many tiles of an unaware guard standing in the dark draws its notice
 /// even behind it (never further than the light itself reaches)
 #define STEALTH_STRAY_LIGHT_RANGE 5
