@@ -1,19 +1,22 @@
 // Plasma and frontier laser weapons (voidcrew/modules/plasma_weapons/).
 // Package: P0 seams. Values are final; packages read them and never redefine them.
 
-// ===== Flask, chamber and feeding =====
+// ===== Cartridge and chamber =====
 
-/// Mol of plasma a flask (and a gun's sealed chamber) holds: three sheets
-#define PLASMA_FLASK_CAPACITY 60
 /// Mol one plasma sheet gives (a sheet grinds to 20 u, 1 u boils to 1 mol)
 #define PLASMA_MOL_PER_SHEET 20
-/// Mol one plasma ore gives (half a sheet)
-#define PLASMA_MOL_PER_ORE 10
-/// do_after per sheet or ore fed into a flask or gun
-#define PLASMA_FEED_DELAY (0.5 SECONDS)
-/// do_after to seat a flask in a pistol
+/// Plasma sheets pressed or printed into one cartridge
+#define PLASMA_CARTRIDGE_SHEETS 3
+/// Mol of plasma a cartridge (and a gun's sealed chamber) holds
+#define PLASMA_CARTRIDGE_CAPACITY (PLASMA_CARTRIDGE_SHEETS * PLASMA_MOL_PER_SHEET)
+/// Iron in a cartridge's jacket. A cartridge is made of this and nothing else, whatever made it,
+/// so a lathe or recycler never gets plasma back out of one.
+#define PLASMA_CARTRIDGE_IRON HALF_SHEET_MATERIAL_AMOUNT
+/// Time to press a cartridge by hand from the crafting menu
+#define PLASMA_PRESS_TIME (3 SECONDS)
+/// do_after to seat a cartridge in a pistol
 #define PLASMA_LOAD_DELAY_PISTOL (1 SECONDS)
-/// do_after to seat a flask in a rifle
+/// do_after to seat a cartridge in a rifle
 #define PLASMA_LOAD_DELAY_RIFLE (1.5 SECONDS)
 /// Mol a pistol bolt costs (casing e_cost)
 #define PLASMA_SHOT_MOL_PISTOL 4
@@ -112,11 +115,10 @@
 #define PLASMA_SOUND_SHIELD_BLOCK null
 /// The Furnace venting its heat
 #define PLASMA_SOUND_FURNACE_VENT 'sound/machines/hiss.ogg'
-/// The Furnace boiling its flask over
+/// The Furnace boiling its chamber over
 #define PLASMA_SOUND_FURNACE_BOIL 'sound/effects/gas_hissing.ogg'
-/// A sheet fed into a flask, and the click after it
-#define PLASMA_SOUND_FEED_SHEET 'sound/items/tools/welder.ogg'
-#define PLASMA_SOUND_FEED_CLICK 'sound/machines/click.ogg'
+/// A cartridge pressed by hand
+#define PLASMA_SOUND_PRESS 'sound/items/tools/welder.ogg'
 
 // ===== Wounds =====
 

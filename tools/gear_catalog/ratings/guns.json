@@ -1491,12 +1491,12 @@
    "hash": "",
    "name": "Cinder plasma pistol",
    "rank": 10,
-   "reason": "A plasma sidearm: slow bolts that burn, fed by hand from sheets or ore.",
+   "reason": "A plasma sidearm: slow bolts that burn, loaded with single-use plasma cartridges.",
    "score": 55,
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Fed by hand with plasma sheets or ore; no recharger."
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
     },
     "points": {
      "value": 15,
@@ -1511,12 +1511,12 @@
    "hash": "",
    "name": "Furnace plasma rifle",
    "rank": 5,
-   "reason": "Close-range plasma rifle that overheats, fed by hand from sheets or ore.",
+   "reason": "Close-range plasma rifle that overheats, loaded with single-use plasma cartridges.",
    "score": 113,
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Fed by hand with plasma sheets or ore; no recharger."
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
     },
     "points": {
      "value": 75,
@@ -1536,7 +1536,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Fed by hand with plasma sheets or ore; no recharger."
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
     },
     "points": {
      "value": 85,

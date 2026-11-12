@@ -12,7 +12,7 @@
 	cooldown = 6 SECONDS
 	reload_time = 3 SECONDS
 	reload_sound = 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg'
-	reload_lines = list("Changing flasks!", "Flask's dry!", "Cover me!")
+	reload_lines = list("Changing cartridges!", "Cartridge is dry!", "Cover me!")
 
 /datum/pirate_gun_loadout/plasma_rifle
 	energy_shots = 12
@@ -20,7 +20,7 @@
 	cooldown = 4 SECONDS
 	reload_time = 4 SECONDS
 	reload_sound = 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg'
-	reload_lines = list("Venting!", "She's cooking!", "Changing flasks!")
+	reload_lines = list("Venting!", "She's cooking!", "New cartridge!")
 
 /// The overmap zone `gunner` was spawned for, or null if it isn't known yet
 /proc/plasma_pirate_zone(mob/living/gunner)
@@ -63,7 +63,7 @@
 		rolled_rare_loot -= /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
 	return ..()
 
-// A Furnace pirate vents its rifle as it changes flasks
+// A Furnace pirate vents its rifle as it changes cartridges
 /datum/component/pirate_gun/reload_effects()
 	. = ..()
 	if(!istype(loadout, /datum/pirate_gun_loadout/plasma_rifle))

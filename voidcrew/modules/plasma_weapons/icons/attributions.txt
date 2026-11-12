@@ -21,10 +21,10 @@ guns_back.dmi
 	hornet - mojave/icons/mob/worn_guns.dmi rcw
 	furnace - mojave/icons/mob/worn_guns.dmi enclaveplasma, modified (recoloured)
 
-flask.dmi
-	flask_0 - mojave/icons/objects/ammo/ammo_world.dmi plasma_empty
-	flask_3 - mojave/icons/objects/ammo/ammo_world.dmi plasma
-	flask_1, flask_2 - drawn from plasma and plasma_empty, modified
+cartridge.dmi
+	cartridge_0 - mojave/icons/objects/ammo/ammo_world.dmi plasma_empty
+	cartridge_3 - mojave/icons/objects/ammo/ammo_world.dmi plasma, modified (fill recoloured)
+	cartridge_1, cartridge_2 - drawn from plasma and plasma_empty, modified (fill recoloured)
 
 projectiles.dmi, effects.dmi and the plasma_melt*.dmi files are original Voidcrew art (plasma_melt*.dmi: new sprites).
 
