@@ -1,0 +1,389 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"c" = (
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"f" = (
+/obj/machinery/door/airlock/outpost/service,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"g" = (
+/obj/structure/sign/calendar/directional/north,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"j" = (
+/obj/structure/closet/secure_closet/personal/bunk,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"l" = (
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"m" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/toy/cards/deck{
+	pixel_y = 3
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"n" = (
+/obj/structure/closet/secure_closet/personal/bunk,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"o" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"p" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"r" = (
+/turf/closed/indestructible/reinforced/titanium/nodiagonal,
+/area/voidcrew/player_outpost/service_room/quarters)
+"s" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -3;
+	pixel_y = 10
+	},
+/obj/item/paper{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"t" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 7
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"u" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = 3;
+	pixel_y = 9
+	},
+/obj/item/photo{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"v" = (
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"x" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/blue{
+	dir = 4
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"y" = (
+/obj/structure/noticeboard/directional/east,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"z" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"A" = (
+/obj/item/kirbyplants/organic/plant21,
+/obj/structure/sign/clock/directional/north,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"B" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"C" = (
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"D" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/item/bedsheet/grey{
+	dir = 8
+	},
+/obj/item/book/random{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"E" = (
+/obj/structure/closet/secure_closet/personal/bunk,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"F" = (
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"I" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"K" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"M" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/item/bedsheet/blue{
+	dir = 8
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"N" = (
+/obj/machinery/washing_machine,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"O" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/quarters)
+"P" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/blue{
+	dir = 4
+	},
+/obj/item/toy/plush/carpplushie{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"Q" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -2;
+	pixel_y = 9
+	},
+/obj/item/reagent_containers/cup/glass/mug/nanotrasen{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"R" = (
+/obj/structure/dresser,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"T" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"U" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"V" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"X" = (
+/obj/item/kirbyplants/organic/plant16,
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+"Z" = (
+/obj/item/paper/crumpled{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/turf/open/indestructible/wood/large,
+/area/voidcrew/player_outpost/service_room/quarters)
+
+(1,1,1) = {"
+r
+r
+r
+r
+r
+r
+r
+r
+r
+"}
+(2,1,1) = {"
+r
+T
+U
+x
+Q
+P
+l
+o
+r
+"}
+(3,1,1) = {"
+r
+I
+U
+F
+F
+F
+F
+V
+r
+"}
+(4,1,1) = {"
+r
+A
+F
+c
+B
+c
+F
+s
+r
+"}
+(5,1,1) = {"
+r
+n
+F
+c
+t
+c
+F
+F
+r
+"}
+(6,1,1) = {"
+r
+j
+F
+p
+m
+O
+F
+v
+f
+"}
+(7,1,1) = {"
+r
+E
+F
+c
+K
+c
+F
+C
+r
+"}
+(8,1,1) = {"
+r
+n
+F
+c
+z
+c
+F
+N
+r
+"}
+(9,1,1) = {"
+r
+g
+Z
+F
+F
+F
+F
+b
+r
+"}
+(10,1,1) = {"
+r
+R
+F
+M
+u
+D
+y
+X
+r
+"}
+(11,1,1) = {"
+r
+r
+r
+r
+r
+r
+r
+r
+r
+"}
