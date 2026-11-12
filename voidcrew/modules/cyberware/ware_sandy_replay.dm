@@ -39,6 +39,8 @@
 #define SANDY_REPLAY_TRAIT "sandy_replay"
 /// The user's edge glow in a slow-mo (SANDY_STOP_OUTLINE in ware_sandy_timestop.dm, which is included after this file).
 #define SANDY_REPLAY_OUTLINE "sandy_time_stop_outline"
+/// The slow-mo's tint filter on bodies and items (SANDY_STOP_TINT in ware_sandy_timestop.dm).
+#define SANDY_REPLAY_TINT "sandy_time_stop_tint"
 
 #define SANDY_REPLAY_RECORDING 1
 #define SANDY_REPLAY_PENDING 2
@@ -341,17 +343,19 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!tinted && !outlined)
 		return thing.appearance
 	var/mutable_appearance/copy = new(thing)
-	if(tinted)
+	// Bodies and items wear the tint as a filter (cyberware_time_tints_by_filter()), the rest in `color`.
+	var/filtered = tinted && cyberware_time_tints_by_filter(thing)
+	if(tinted && !filtered)
 		if(istype(thing, /obj/effect/decal/cleanable/blood)) // blood's colour is its own, worked out as it dries
 			var/obj/effect/decal/cleanable/blood/blood = thing
 			copy.color = blood.sandy_replay_colour()
 		else
 			copy.color = untinted_colour(thing)
 		copy.appearance_flags |= KEEP_TOGETHER // update_atom_colour() leaves this on once anything was ever coloured
-	if(outlined)
+	if(outlined || filtered)
 		copy.filters = null
 		for(var/name in thing.filter_data)
-			if(name == SANDY_REPLAY_OUTLINE)
+			if(name == SANDY_REPLAY_OUTLINE || name == SANDY_REPLAY_TINT)
 				continue
 			var/list/data = thing.filter_data[name]
 			var/list/arguments = data.Copy()
@@ -1166,6 +1170,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 #undef SANDY_REPLAY_TRAIT
 #undef SANDY_REPLAY_OUTLINE
+#undef SANDY_REPLAY_TINT
 #undef SANDY_REPLAY_RECORDING
 #undef SANDY_REPLAY_PENDING
 #undef SANDY_REPLAY_PLAYING

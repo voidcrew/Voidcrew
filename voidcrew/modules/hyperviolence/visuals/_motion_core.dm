@@ -300,6 +300,8 @@
 
 /// A pale flash over the body for the frames of a hit-stop. A colour filter, gone again half a second later.
 /mob/living/proc/hv_vis_flash()
+	if(cyberware_time_flash(src, list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), cyberware_dilated_steps(src, list(0.5, HV_VIS_HITSTOP_TIME, 1)) || list(0.5, HV_VIS_HITSTOP_TIME, 1)))
+		return // in a Sandevistan slow-mo the flash plays through the slow-mo's tint filter (ware_sandy_timestop.dm)
 	if(!get_filter(HV_VIS_FLASH_FILTER))
 		add_filter(HV_VIS_FLASH_FILTER, 10, color_matrix_filter(list(1,0,0, 0,1,0, 0,0,1, 0,0,0)))
 	var/flash = get_filter(HV_VIS_FLASH_FILTER)

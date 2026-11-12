@@ -287,6 +287,12 @@
 	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, spot(3, 2))
 	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret, spot(3, 1))
 	var/obj/effect/decal/cleanable/blood/pool = allocate(/obj/effect/decal/cleanable/blood, spot(2, 1))
+	// Drips drawn in another drip's vis_contents with RESET_COLOR, as tg's make_blood_splatter() adds them
+	var/obj/effect/decal/cleanable/blood/drip/drips = allocate(/obj/effect/decal/cleanable/blood/drip, spot(1, 3))
+	var/obj/effect/decal/cleanable/blood/drip/drop = allocate(/obj/effect/decal/cleanable/blood/drip, drips)
+	drop.appearance_flags |= RESET_COLOR
+	drips.vis_contents += drop
+	var/obj/effect/decal/cleanable/blood/gibs/gibs = allocate(/obj/effect/decal/cleanable/blood/gibs, spot(2, 3))
 	var/obj/item/grenade/bomb = allocate(/obj/item/grenade, spot(1, 1))
 	bomb.arm_grenade(null, 3 SECONDS, msg = FALSE)
 
@@ -330,6 +336,12 @@
 	var/move_at = mech.cooldown_vehicle_move
 
 	sleep(0.5 SECONDS)
+	// Blood and gore take the world's tint, including what a `color` tint can't reach (RESET_COLOR overlays and vis_contents)
+	TEST_ASSERT(tinted(raider), "A slowed NPC wasn't tinted")
+	TEST_ASSERT(raider.filter_data?["sandy_time_stop_tint"], "A slowed NPC's tint doesn't cover its wound and blood overlays")
+	TEST_ASSERT(tinted(drop), "A drip drawn in another drip's vis_contents kept its colour in the slow-mo")
+	TEST_ASSERT(islist(drop.color), "A drip in the slow-mo isn't drawn with the tint")
+	TEST_ASSERT(gib_bits_tinted(gibs), "A gib's meat overlay kept its colour in the slow-mo")
 	// 0.5 s at 20% is 1 decisecond of the NPC's own time: a 2 decisecond gap is still waiting, at full speed it's long gone
 	TEST_ASSERT(cyberware_burst_wait(raider, raider_gun.cyberware_burst_start, 2, 1) > 0, "A queued burst shot fired at full speed")
 	TEST_ASSERT(raider_gun.cyberware_burst_start > gun_start, "The NPC's burst clock wasn't pushed back")
@@ -344,6 +356,9 @@
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The NPC's clock stayed slow after the dilation")
 	TEST_ASSERT_NULL(cyberware_time_field(pool), "Blood stayed slowed after the dilation")
 	TEST_ASSERT(istext(pool.color), "Blood kept the slow-mo's tint, or lost its own colour, after the dilation")
+	TEST_ASSERT(!tinted(raider), "An NPC kept the slow-mo's tint after the dilation")
+	TEST_ASSERT(!tinted(drop) && istext(drop.color), "A drip kept the slow-mo's tint, or lost its own colour, after the dilation")
+	TEST_ASSERT(!gib_bits_tinted(gibs), "A gib's meat overlay kept the slow-mo's tint after the dilation")
 	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A grenade's fuse didn't lose its slowed time")
 	TEST_ASSERT(bomb.cyberware_fuse_at > world.time, "A grenade's fuse has nothing left after losing time")
 	bomb.cyberware_fuse_at = 0 // don't let it go off after the test
@@ -351,7 +366,14 @@
 
 /// Whether `thing` wears the dilation's tint
 /datum/unit_test/voidcrew_cyberware_timestop/proc/tinted(atom/thing)
-	return length(thing.atom_colours) >= TEMPORARY_COLOUR_PRIORITY && !isnull(thing.atom_colours[TEMPORARY_COLOUR_PRIORITY])
+	return cyberware_time_has_tint(thing)
+
+/// Whether one of `gibs`' RESET_COLOR overlays (its meat and bone) is drawn with a colour matrix
+/datum/unit_test/voidcrew_cyberware_timestop/proc/gib_bits_tinted(obj/effect/decal/cleanable/blood/gibs/gibs)
+	for(var/mutable_appearance/bit as anything in gibs.overlays)
+		if((bit.appearance_flags & RESET_COLOR) && islist(bit.color))
+			return TRUE
+	return FALSE
 
 /// A raider NPC at `where` with its own Cascade lattice (or `lattice_type`)
 /datum/unit_test/voidcrew_cyberware_timestop/proc/make_surger(turf/where, lattice_type = /obj/item/organ/cyberimp/cyberware/cascade)

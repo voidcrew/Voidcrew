@@ -69,6 +69,8 @@
 #define SANDY_STOP_OUTLINE "sandy_time_stop_outline"
 /// Fullscreen category of the release flash.
 #define SANDY_STOP_FLASH "sandy_time_stop_flash"
+/// Filter name (and KEEP_TOGETHER source) of the slow-mo's tint on bodies and items. Same as SANDY_REPLAY_TINT.
+#define SANDY_STOP_TINT "sandy_time_stop_tint"
 
 /// Every atom the dilation has hold of, to its field.
 GLOBAL_LIST_EMPTY(cyberware_time_dilated)
@@ -266,6 +268,85 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/static/list/tint = list(0.26,0.28,0.27, 0.52,0.56,0.54, 0.10,0.11,0.105, 0.02,0.05,0.04)
 	return tint
 
+/// The wash over something drawn in `colour` (a sprite coloured white-to-`colour` by its `color`): the tint's rows
+/// scaled by that colour, so it reads as that colour seen through the wash.
+/proc/cyberware_time_tint_of(colour)
+	var/list/mixed = cyberware_time_stop_tint().Copy()
+	var/list/rgb = istext(colour) ? rgb2num(colour) : null
+	if(length(rgb) < 3)
+		return mixed
+	for(var/row in 0 to 2)
+		for(var/column in 1 to 3)
+			mixed[row * 3 + column] *= rgb[row + 1] / 255
+	return mixed
+
+/// Whether `thing` wears the slow-mo's tint as a colour filter. Bodies and items carry their blood as RESET_COLOR
+/// overlays (wounds, gore, bloody clothes, stains on a severed limb), which a tint in `color` never reaches; a filter
+/// covers the whole drawn atom, overlays included. It also leaves `atom_colours` alone, so a body's own temporary
+/// colour (a chem, a perk) is still there when the tint comes off.
+/proc/cyberware_time_tints_by_filter(atom/thing)
+	return isliving(thing) || isitem(thing)
+
+/// Puts the slow-mo's tint on `thing`.
+/proc/cyberware_time_tint_on(atom/thing)
+	if(cyberware_time_tints_by_filter(thing))
+		// While another colour filter was animated on a tinted body (hyperviolence's hit flash), the client drew
+		// it in full colour: the flash runs through this filter instead (cyberware_time_flash()).
+		thing.remove_filter("hv_vis_flash") // a hit flash already running would show the body in full colour
+		thing.add_filter(SANDY_STOP_TINT, 20, color_matrix_filter(cyberware_time_stop_tint()))
+		ADD_KEEP_TOGETHER(thing, SANDY_STOP_TINT)
+		return
+	// A blood splash, bead or strand carries its colour in `color` alone, which the tint replaces: kept as its own
+	// colour, so it is red again (not white) when the tint comes off.
+	if((istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/effect/ebeam)) && istext(thing.color) && !LAZYACCESS(thing.atom_colours, FIXED_COLOUR_PRIORITY))
+		thing.add_atom_colour(thing.color, FIXED_COLOUR_PRIORITY)
+	thing.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+	if(istype(thing, /obj/effect/decal/cleanable/blood/gibs)) // its meat is a RESET_COLOR overlay: see its update_overlays()
+		thing.update_appearance(UPDATE_OVERLAYS)
+
+/// `first` then the slow-mo's tint, as one colour matrix (both 12-number RGB matrices).
+/proc/cyberware_time_tint_after(list/first)
+	var/list/tint = cyberware_time_stop_tint()
+	var/list/out = list()
+	for(var/row in 0 to 3)
+		for(var/column in 1 to 3)
+			var/sum = row == 3 ? tint[9 + column] : 0
+			for(var/k in 0 to 2)
+				sum += first[row * 3 + k + 1] * tint[k * 3 + column]
+			out += sum
+	return out
+
+/**
+ * A hit flash (`flash`, a colour matrix held for `times`: in, hold, out) on a `body` the slow-mo tints. The client
+ * drew a tinted body in full colour while a second colour filter was animated on it, so the flash plays through the
+ * tint filter itself: tint over the flash, held, then back to the plain tint. FALSE if the body isn't tinted.
+ */
+/proc/cyberware_time_flash(atom/body, list/flash, list/times)
+	var/tint_filter = body.filter_data?[SANDY_STOP_TINT] && body.get_filter(SANDY_STOP_TINT)
+	if(!tint_filter)
+		return FALSE
+	var/list/flashed = cyberware_time_tint_after(flash)
+	animate(tint_filter, color = flashed, time = times[1], easing = LINEAR_EASING)
+	animate(color = flashed, time = times[2], easing = LINEAR_EASING)
+	animate(color = cyberware_time_stop_tint(), time = times[3], easing = LINEAR_EASING)
+	return TRUE
+
+/// Takes the slow-mo's tint off `thing`.
+/proc/cyberware_time_tint_off(atom/thing)
+	if(cyberware_time_tints_by_filter(thing))
+		thing.remove_filter(SANDY_STOP_TINT)
+		REMOVE_KEEP_TOGETHER(thing, SANDY_STOP_TINT)
+		return
+	thing.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
+	if(istype(thing, /obj/effect/decal/cleanable/blood/gibs))
+		thing.update_appearance(UPDATE_OVERLAYS)
+
+/// Whether `thing` is drawn with the slow-mo's tint right now.
+/proc/cyberware_time_has_tint(atom/thing)
+	if(cyberware_time_tints_by_filter(thing))
+		return !!thing.filter_data?[SANDY_STOP_TINT]
+	return LAZYACCESS(thing.atom_colours, TEMPORARY_COLOUR_PRIORITY) && compare_list(thing.atom_colours[TEMPORARY_COLOUR_PRIORITY][ATOM_COLOR_VALUE_INDEX], cyberware_time_stop_tint())
+
 /// Blood and loose gore the field tints like the world around it (it is only looked at, never held): nothing about
 /// gore is in colour in the slow-mo. Severed parts and spilled intestines are items, which otherwise keep their colour
 /// on the floor.
@@ -289,19 +370,35 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// colour lost, so while tinted it wears the tint mixed with its own colour, held where it was. It works its colour
 /// out again when the tint comes off (update_atom_colour() calls this). A colour filter didn't draw on decals.
 /obj/effect/decal/cleanable/blood/update_blood_color()
-	if(!islist(color) || !LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) || !GLOB.cyberware_time_dilated[src])
+	if(!sandy_time_tinted())
 		return ..()
 	animate(src)
 	var/own = sandy_replay_colour() // ware_sandy_replay.dm
 	if(!istext(own))
 		return TRUE
-	var/list/rgb = rgb2num(own)
-	var/list/mixed = cyberware_time_stop_tint().Copy()
-	for(var/row in 0 to 2)
-		for(var/column in 1 to 3)
-			mixed[row * 3 + column] *= rgb[row + 1] / 255
-	color = mixed
+	color = cyberware_time_tint_of(own)
 	return TRUE
+
+/// Whether the slow-mo's tint is on this blood right now.
+/obj/effect/decal/cleanable/blood/proc/sandy_time_tinted()
+	return islist(color) && LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) && GLOB.cyberware_time_dilated[src]
+
+/// tg's create_splatter() sets the splash's colour after making it, over the slow-mo's tint: the tint goes back on.
+/mob/living/create_splatter(splatter_dir = pick(GLOB.cardinals))
+	. = ..()
+	for(var/obj/effect/temp_visual/dir_setting/bloodsplatter/splatter in get_turf(src))
+		if(GLOB.cyberware_time_dilated[splatter])
+			splatter.update_atom_colour()
+
+/// A gib's meat and bone are a KEEP_APART, RESET_COLOR overlay that the tint in `color` skips: tinted, it wears the
+/// wash over its own colour too, and gets its colour back when the tint comes off (cyberware_time_tint_off()).
+/obj/effect/decal/cleanable/blood/gibs/update_overlays()
+	. = ..()
+	if(!sandy_time_tinted())
+		return
+	for(var/mutable_appearance/bit in .)
+		if(bit.appearance_flags & RESET_COLOR)
+			bit.color = cyberware_time_tint_of(istext(bit.color) ? bit.color : COLOR_WHITE)
 
 /// Flattens a sprite to luminance and paints it the dilation's green (#5AFF96).
 /proc/cyberware_time_stop_green()
@@ -445,6 +542,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/ring_reach = 0
 	/// The recording of this slow-mo, played back when it ends (ware_sandy_replay.dm). Only a player's field has one.
 	var/datum/sandy_replay/replay
+	/// Tinted blood decals and gut strands, checked each tick for drips, trail pieces or strand pictures new in their vis_contents.
+	var/list/blood_holders = list()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, _time_scale = 1, _user_multiplier = 1)
 	time_scale = _time_scale > 0 ? _time_scale : 1
@@ -558,6 +657,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	RegisterSignal(A, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
 	if(tint)
 		into_the_negative_zone(A)
+		if(istype(A, /obj/effect/decal/cleanable/blood) || istype(A, /obj/effect/ebeam))
+			tint_blood_bits(A)
 	return TRUE
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/setup_field_turf(turf/target)
@@ -584,6 +685,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	held_turrets -= A
 	held_grenades -= A
 	frozen_structures -= A
+	blood_holders -= A
 	user_shots -= A
 	slowed_tags -= A
 	own_scales -= A
@@ -806,6 +908,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	tint_timers -= thing
 	own_scales -= thing
 	frozen_structures -= thing
+	blood_holders -= thing
 	frozen_things -= thing
 	GLOB.cyberware_time_dilated -= thing
 
@@ -841,6 +944,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			continue
 		unfreeze_atom(boss)
 		released[boss] = TRUE
+	for(var/obj/effect/holder as anything in blood_holders)
+		tint_blood_bits(holder)
 	senses?.refresh_weather()
 
 /// Whether `thing` is what the user is riding or piloting: a vehicle with them aboard, or anything they're buckled to.
@@ -871,14 +976,40 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(!tint_timers[A])
 			tint_timers[A] = addtimer(CALLBACK(src, PROC_REF(ring_reached), A), wait, TIMER_STOPPABLE)
 		return
-	A.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+	cyberware_time_tint_on(A)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/escape_the_negative_zone(atom/A)
 	if(tint_timers[A])
 		deltimer(tint_timers[A])
 	tint_timers -= A
+	if(!tinted[A])
+		return
 	tinted -= A
-	return ..()
+	cyberware_time_tint_off(A)
+
+/// Drips and trail pieces are blood drawn in a blood decal's vis_contents with RESET_COLOR, and a gut strand (a beam)
+/// draws its picture from one shared object in each segment's vis_contents: the holder's tint never reaches them. Each
+/// is tinted on its own like the holder, and let go with the field. Blood that drips onto a tinted decal later is
+/// picked up by tick().
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/tint_blood_bits(obj/effect/holder)
+	blood_holders[holder] = TRUE // a new drip or trail has no bits yet: they come as more blood lands on it
+	if(!length(holder.vis_contents))
+		return
+	for(var/obj/effect/bit in holder.vis_contents)
+		if(!istype(bit, /obj/effect/decal/cleanable/blood) && !istype(bit, /obj/effect/ebeam))
+			continue
+		if(frozen_things[bit] || QDELETED(bit))
+			continue
+		GLOB.cyberware_time_dilated[bit] = src
+		frozen_things[bit] = TRUE
+		frozen_structures += bit
+		RegisterSignal(bit, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+		tinted[bit] = TRUE // not recorded: the replay draws the decal, not what is in its vis_contents
+		var/wait = ring_wait(bit)
+		if(wait > 0)
+			tint_timers[bit] = addtimer(CALLBACK(src, PROC_REF(ring_reached), bit), wait, TIMER_STOPPABLE)
+		else
+			cyberware_time_tint_on(bit)
 
 /// The ring starts rolling out from `center` to `reach` tiles over `time`: everything it hasn't reached yet loses
 /// its tint until the ring's front passes it.
@@ -893,7 +1024,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		var/wait = ring_wait(thing)
 		if(wait <= 0)
 			continue
-		thing.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
+		cyberware_time_tint_off(thing)
 		tint_timers[thing] = addtimer(CALLBACK(src, PROC_REF(ring_reached), thing), wait, TIMER_STOPPABLE)
 
 /// How long until the rolling ring's front reaches `thing`, or 0 if it already has. The ring grows with a sine
@@ -913,7 +1044,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	tint_timers -= thing
 	if(QDELETED(thing) || !tinted[thing])
 		return
-	thing.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+	cyberware_time_tint_on(thing)
 
 // =========================================================================
 // THE WINDOW'S SIDE
@@ -1059,3 +1190,4 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 #undef SANDY_STOP_SAME_RATE
 #undef SANDY_STOP_OUTLINE
 #undef SANDY_STOP_FLASH
+#undef SANDY_STOP_TINT
