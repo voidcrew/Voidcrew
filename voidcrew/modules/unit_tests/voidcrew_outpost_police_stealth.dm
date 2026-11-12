@@ -191,6 +191,33 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "Telling an officer with a radio in person did not make the report")
 
+/// Owner decision 19: a radio that goes down before the call silences that report for good; it does not go out once the radio works again
+/datum/unit_test/voidcrew_stealth_live/police/radio_back
+
+/datum/unit_test/voidcrew_stealth_live/police/radio_back/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 4, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/obj/item/radio/headset = officer.ears
+	TEST_ASSERT(istype(headset), "An officer has no headset")
+	var/mob/living/carbon/human/brawler = visitor_at(4, 4)
+	var/mob/living/carbon/human/victim = person_at(5, 4, FALSE)
+	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", victim), "An officer's report counted before its call")
+	TEST_ASSERT_NOTNULL(brain.pending_call, "The witness has no call going")
+	// The radio dies before the call (an EMP switches it off for a while), then comes back
+	headset.set_on(FALSE)
+	police.tick_warrants()
+	headset.set_on(TRUE)
+	brain.stealth_rewind(4 SECONDS)
+	brain.stealth_deliver_call()
+	police.tick_warrants()
+	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "A report went out on a radio that was down while it waited")
+	TEST_ASSERT_NULL(brain.pending_call, "The witness called it in again once its radio worked")
+	police.confirm_reports(officer)
+	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "A later call made a report whose radio had been down")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The report was dropped while the witness lives")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "The witness stopped acting on what it saw")
+
 /// A trader's report counts at once
 /datum/unit_test/voidcrew_stealth_live/police/trader
 

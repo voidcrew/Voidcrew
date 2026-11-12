@@ -48,6 +48,11 @@
 #define POLICE_WITNESS_HEARD 2
 #define POLICE_WITNESS_CAMERA 3
 
+/// How an offender's last report went, for the half-second fold (police_wanted.dm report_crime(), recent_reports)
+#define POLICE_REPORT_UNSEEN 0
+#define POLICE_REPORT_PENDING 1
+#define POLICE_REPORT_COUNTED 2
+
 /// How far a player witness sees a crime (and how far apart two tiles may be to be in sight of each other)
 #define OUTPOST_POLICE_WITNESS_RANGE 9
 /// How far a trader, checkpoint guard, townsperson or camera sees a crime (an officer sees by stealth's rules)

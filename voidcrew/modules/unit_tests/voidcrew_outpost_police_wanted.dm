@@ -762,3 +762,57 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(warrant.heat, 49, "Heat did not fade from someone in crit with no arrest on them")
 	suspect.stat = CONSCIOUS
+
+// ===== THE HALF-SECOND FOLD =====
+
+/// A perception in which only `seen_victim` sees the crime done to them
+/datum/outpost_police_perception/test_victim_sees
+	var/atom/seen_victim
+
+/datum/outpost_police_perception/test_victim_sees/witness_of(mob/living/offender, crime, atom/victim, obj/item/source)
+	last_witness = null
+	last_witnesses = null
+	if(victim && victim == seen_victim)
+		last_witness = victim
+		return 1 // POLICE_WITNESS_SAW
+	return 0 // POLICE_WITNESS_NONE
+
+/**
+ * Inside the half second: a hit folded into a pending report brings its weapon and victim to it, and after an unseen
+ * hit a hit on someone else is looked at again (it used to be dropped, whoever saw it).
+ */
+/datum/unit_test/voidcrew_outpost_police_fold_pending
+
+/datum/unit_test/voidcrew_outpost_police_fold_pending/Run()
+	var/datum/outpost_police/police = wanted_outpost().police
+	var/datum/outpost_police_perception/test_delayed/slow = new(police)
+	qdel(police.perception)
+	police.perception = slow
+	var/mob/living/carbon/human/brawler = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/first_victim = wanted_person(wanted_spot(1, 0))
+	var/mob/living/carbon/human/second_victim = wanted_person(wanted_spot(0, 1))
+	var/obj/item/crowbar/first = allocate(/obj/item/crowbar)
+	var/obj/item/wrench/second = allocate(/obj/item/wrench)
+
+	TEST_ASSERT_NULL(police.report_crime(brawler, "unarmed", first_victim, first), "A report with a delay counted at once")
+	TEST_ASSERT_NULL(police.report_crime(brawler, "unarmed", second_victim, second), "A folded report counted")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "A report in the same instant was queued on its own")
+	var/datum/outpost_pending_report/report = police.pending_reports[1]
+	report.due = world.time
+	police.tick_warrants()
+	var/datum/outpost_warrant/warrant = police.warrants[brawler.mind]
+	TEST_ASSERT_EQUAL(warrant?.heat, 6, "A folded report added heat, or the report was not made")
+	TEST_ASSERT(WEAKREF(second) in warrant.evidence, "A weapon folded into a pending report was lost")
+	TEST_ASSERT(warrant.recent_victims?[WEAKREF(second_victim)], "A victim folded into a pending report was lost")
+	police.remove_warrant(warrant)
+	police.recent_reports.Cut()
+
+	var/datum/outpost_police_perception/test_victim_sees/picky = new(police)
+	qdel(police.perception)
+	police.perception = picky
+	picky.seen_victim = second_victim
+	TEST_ASSERT_NULL(police.report_crime(brawler, "armed", first_victim, first), "An unseen hit counted")
+	TEST_ASSERT_NULL(police.warrants[brawler.mind], "An unseen hit made a warrant")
+	TEST_ASSERT_EQUAL(police.report_crime(brawler, "armed", second_victim, first), 0, "A seen hit on someone else just after an unseen one was dropped")
+	TEST_ASSERT_EQUAL(police.warrants[brawler.mind]?.heat, 9, "A seen hit after an unseen one put the wrong heat on")
+	picky.seen_victim = null
