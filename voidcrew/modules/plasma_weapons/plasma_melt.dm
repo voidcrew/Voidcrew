@@ -13,6 +13,8 @@
 /// Key moments, from the hit
 #define PLASMA_MELT_HEAT_END (0.35 SECONDS)
 #define PLASMA_MELT_GONE (1.6 SECONDS)
+/// The hand has run off: a held item falls out of it (storyboard: the third gobbet, 1.14 s)
+#define PLASMA_MELT_LET_GO (1.15 SECONDS)
 #define PLASMA_MELT_STUMP_COOL (2.4 SECONDS)
 #define PLASMA_MELT_POOL_COOL (2.2 SECONDS)
 #define PLASMA_MELT_COOLED (4.5 SECONDS)
@@ -31,6 +33,12 @@
 #define PLASMA_MELT_POOL_TILE_Y 21
 /// Row and column of a falling drop's lowest pixel in its own tile
 #define PLASMA_MELT_DROP_TILE 16
+/// Rows (from the sprite top) where a standing body's hand and foot are, for a dropped item's fall
+#define PLASMA_MELT_HAND_ROW 22
+#define PLASMA_MELT_FOOT_ROW 30
+/// Where a dropped item's middle comes to rest, below the sprite centre: at the feet standing, under a lying body
+#define PLASMA_MELT_ITEM_FLOOR -14
+#define PLASMA_MELT_ITEM_FLOOR_LYING -18
 /// While the body slid onto its tile this recently, drips fall straight to the floor under it
 #define PLASMA_MELT_GLIDE_WAIT (0.4 SECONDS)
 
@@ -290,6 +298,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		pieces = pair("[base]_[frame]", "[base]_far_[frame]", hot)
 		if(shoes_masked)
 			pieces += shoes_masked
+		// the held item stays in the slumping hand until it lets go (its in-hand look is first in worn_look)
+		for(var/obj/item/thing as anything in hidden_items)
+			if(hidden_items[thing] == "held")
+				pieces += worn_look[1]
+				break
 	show(pieces)
 	if(frame < frames)
 		addtimer(CALLBACK(src, PROC_REF(play_frame), id, base, frame + 1, frames, delay, hot, heat), delay)
@@ -309,8 +322,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	play((is_arm() && melt_lying) ? "[zone]_melt_floor" : "[zone]_melt", 25, 0.05 SECONDS)
 	if(is_arm())
 		burn_sleeve()
-	// a held item drops out of the hand as it loses its shape
-	reveal_items("held")
+	// a held item falls out once the hand has run off
+	addtimer(CALLBACK(src, PROC_REF(reveal_items), "held"), PLASMA_MELT_LET_GO - PLASMA_MELT_HEAT_END)
 	find_pool_spot()
 	var/list/geometry = GLOB.plasma_melt_geometry[zone]?["[melt_dir]"]
 	var/list/drop_list = (is_arm() && !melt_lying && geometry) ? geometry[4] : list()
@@ -374,12 +387,53 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 
 /datum/plasma_melt/proc/on_hidden_item_moved(obj/item/source)
 	SIGNAL_HANDLER
-	reveal_item(source)
+	UnregisterSignal(source, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+	hidden_items -= source
+	source.alpha = initial(source.alpha)
 
+/// Shows a hidden item falling out of the melt: from the hand or foot as the body stands or lies now, down to a
+/// spot on the floor at the feet (standing) or under the body (lying). tg's own drop animation played while it was
+/// hidden, so this stands in for it.
 /datum/plasma_melt/proc/reveal_item(obj/item/thing)
 	UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+	var/kind = hidden_items[thing]
 	hidden_items -= thing
 	thing.alpha = initial(thing.alpha)
+	if(!victim || QDELETED(thing) || thing.loc != get_turf(victim) || moving())
+		return
+	var/list/geometry = GLOB.plasma_melt_geometry[zone]?["[victim.dir]"]
+	if(!geometry)
+		return
+	var/lying = victim.body_position == LYING_DOWN
+	// the hand or foot, from the sprite centre (y up)
+	var/u = geometry[1] - 15.5
+	var/v = 15.5 - (is_arm() ? PLASMA_MELT_HAND_ROW : PLASMA_MELT_FOOT_ROW)
+	if(lying)
+		var/matrix/turn = victim.transform
+		var/screen_x = geometry[2] - 15.5
+		var/screen_y = 15.5 - geometry[3]
+		u = turn.a * screen_x + turn.b * screen_y + turn.c
+		v = turn.d * screen_x + turn.e * screen_y + turn.f
+	else if(kind == "held" && length(geometry[4]))
+		var/list/drop = geometry[4][1]
+		u = drop[3] - 15.5
+	var/body_x = victim.pixel_x + victim.pixel_w
+	var/body_y = victim.pixel_y + victim.pixel_z
+	var/from_x = thing.base_pixel_x + round(u + body_x)
+	var/from_y = thing.base_pixel_y + round(v + body_y)
+	var/to_x = thing.base_pixel_x + clamp(round(u + body_x) + rand(-2, 2), -10, 10)
+	var/to_y = thing.base_pixel_y + body_y + (lying ? PLASMA_MELT_ITEM_FLOOR_LYING : PLASMA_MELT_ITEM_FLOOR) + rand(-1, 1)
+	to_y = min(to_y, from_y - 1)
+	var/matrix/old_transform = thing.transform
+	var/matrix/animation_matrix = matrix(old_transform)
+	animation_matrix.Turn(pick(-20, 20))
+	thing.pixel_x = from_x
+	thing.pixel_y = from_y
+	thing.transform = animation_matrix
+	var/fall_time = plasma_melt_fall_time(from_y - to_y)
+	animate(thing, pixel_x = to_x, pixel_y = to_y, transform = old_transform, time = fall_time, easing = QUAD_EASING | EASE_IN)
+	animate(pixel_y = to_y + 1, time = 0.05 SECONDS)
+	animate(pixel_y = to_y, time = 0.05 SECONDS)
 
 /// Shows the hidden items of one `kind`, or all of them
 /datum/plasma_melt/proc/reveal_items(kind)
@@ -724,6 +778,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 #undef PLASMA_MELT_ICON
 #undef PLASMA_MELT_HEAT_END
 #undef PLASMA_MELT_GONE
+#undef PLASMA_MELT_LET_GO
+#undef PLASMA_MELT_HAND_ROW
+#undef PLASMA_MELT_FOOT_ROW
+#undef PLASMA_MELT_ITEM_FLOOR
+#undef PLASMA_MELT_ITEM_FLOOR_LYING
 #undef PLASMA_MELT_STUMP_COOL
 #undef PLASMA_MELT_POOL_COOL
 #undef PLASMA_MELT_COOLED

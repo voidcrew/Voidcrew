@@ -179,6 +179,9 @@
 	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_R_ARM), SOUTH), "The arm did not melt off")
 	TEST_ASSERT(tool.loc != victim, "The melted hand still holds the tool")
 	TEST_ASSERT_EQUAL(tool.alpha, 0, "The dropped tool shows before the hand melts")
+	leg_melt = victim.plasma_melts[BODY_ZONE_R_ARM]
+	leg_melt.pose_melt()
+	TEST_ASSERT_EQUAL(tool.alpha, 0, "The tool fell out as the arm began to sag, before the hand ran off")
 	tool.forceMove(get_step(get_turf(victim), EAST))
 	TEST_ASSERT_EQUAL(tool.alpha, 255, "Moving the hidden tool did not show it")
 
