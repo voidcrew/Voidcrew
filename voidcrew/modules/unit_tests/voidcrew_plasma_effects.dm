@@ -133,6 +133,11 @@
 	burst.show(WEAKREF(hit))
 	TEST_ASSERT(findtext(burst.icon_state, "sp_[burst.look]") == 1, "an ordinary hit drew [burst.icon_state]")
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/plasma_burst_bloom) in get_turf(hit), "a burst had no bloom")
+	// The light is on the body, not on the spray's canvas offset
+	var/obj/effect/temp_visual/plasma_burst_light/glow = locate() in get_turf(hit)
+	TEST_ASSERT_NOTNULL(glow, "a burst had no light")
+	TEST_ASSERT(glow.light_on, "a burst's light was not on")
+	TEST_ASSERT(abs(glow.pixel_w) <= ICON_SIZE_X / 2 && abs(glow.pixel_z) <= ICON_SIZE_Y / 2, "a burst's light sat off the body at [glow.pixel_w],[glow.pixel_z]")
 	var/obj/effect/temp_visual/plasma_burst_body/stuck = locate() in hit.vis_contents
 	TEST_ASSERT_NOTNULL(stuck, "nothing stuck to a body hit from the front")
 	TEST_ASSERT(stuck.vis_flags & VIS_INHERIT_DIR, "what sticks to the body does not turn with it")

@@ -62,6 +62,11 @@
 	stop = clamp(stop, 0, max(full, 0) + ICON_SIZE_ALL / 2)
 	var/anim_time = full > 0 ? animate_time * stop / full : 0
 	animate(src, pixel_x = pixel_x + dx * stop, pixel_y = pixel_y + dy * stop, time = anim_time, flags = ANIMATION_PARALLEL | ANIMATION_CONTINUE)
+	// A person's burst shows a tick after the hit (a splash shows at once): a bolt that stops early, as on the
+	// near edge of a body lying down, waits at its stop until the burst is up instead of leaving empty frames.
+	// The bolt is deleted by then anyway, so it never sits over the burst for more than a frame.
+	if(impact_point && impact_turf == loc && anim_time < world.tick_lag)
+		animate(alpha = 255, time = 2 * world.tick_lag - anim_time, flags = ANIMATION_CONTINUE)
 	animate(alpha = 0, time = 0, flags = ANIMATION_CONTINUE)
 	return TRUE
 

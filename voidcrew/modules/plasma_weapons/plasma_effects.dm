@@ -71,9 +71,11 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		plasma_take_back_block_star(target_turf)
 		behind_body = (side == NORTH && !victim.lying_angle)
 		// A held shield takes it on the shooter's side of the body
-		if(locate(/obj/item/shield) in victim.held_items)
+		var/obj/item/shield/shield = locate() in victim.held_items
+		if(shield)
 			at_shield = TRUE
-			var/list/hit = plasma_burst_hit(victim, side, "c")
+			// Facing a shot from the south, the shield is out to one side of the chest, on the hand it is in
+			var/list/hit = plasma_burst_hit(victim, (side == SOUTH && victim.dir == SOUTH && !victim.lying_angle) ? (IS_LEFT_INDEX(victim.get_held_index_of_item(shield)) ? EAST : WEST) : side, "c")
 			splash_x = hit[4] - 16
 			splash_y = hit[5] - 16
 			// Behind a standing body, at the shoulders, so it shows over them
@@ -367,11 +369,6 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	icon_state = null
 	duration = PLASMA_BURST_DURATION
 	randomdir = FALSE
-	light_system = OVERLAY_LIGHT
-	light_range = 2
-	light_power = 1.5
-	light_color = PLASMA_LIGHT_COLOR
-	light_on = FALSE
 	/// Who was hit, until the look is picked
 	var/mob/living/carbon/human/victim
 	/// The limb hit
@@ -410,8 +407,9 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	limb = victim.get_bodypart(check_zone(bolt.def_zone))
 	had_critical = !!limb?.get_wound_type(/datum/wound/burn/flesh/critical)
 	hit = plasma_burst_hit(victim, side, band)
-	// The bolt's sprite stops where the burst draws
-	bolt.impact_point = list(hit[4] - ICON_SIZE_X / 2, hit[5] - ICON_SIZE_Y / 2)
+	// The bolt's sprite stops where the burst draws; on a standing body's back it goes out behind the head
+	// instead of running over it
+	bolt.impact_point = list(hit[4] - ICON_SIZE_X / 2, side == NORTH && !victim.lying_angle ? ICON_SIZE_Y / 2 : hit[5] - ICON_SIZE_Y / 2)
 	bolt.impact_turf = get_turf(victim)
 	lying = !!victim.lying_angle
 	body_layer = victim.layer
@@ -497,8 +495,12 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 			body_side = SOUTH
 		new /obj/effect/temp_visual/plasma_burst_body(null, hit_body, plasma_burst_icon(look, "body"), "bd_[look][small ? "p" : "r"]_[plasma_burst_dir_letter(plasma_burst_body_side(body_side, facing))][band]")
 
-	set_light_on(TRUE)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_on), FALSE), look == PLASMA_BURST_SPLATTER ? 0.3 SECONDS : 0.4 SECONDS)
+	// The light sits on the hit itself: on the spray it would ride the canvas offset a tile or two off the body
+	var/obj/effect/temp_visual/plasma_burst_light/glow = new(loc)
+	glow.pixel_w = hit[4] - ICON_SIZE_X / 2
+	glow.pixel_z = hit[5] - ICON_SIZE_Y / 2
+	if(look == PLASMA_BURST_SPLATTER)
+		addtimer(CALLBACK(glow, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.3 SECONDS)
 
 /// The side `side` of a body facing `facing`, named as the same side of a body facing south: the body
 /// states are named by it and hold one dir per facing
@@ -514,6 +516,18 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	if(flipped)
 		burst_part.transform = matrix(-1, 0, 0, 0, 1, 0)
 	burst_part.add_overlay(emissive_appearance(burst_part.icon, overlay_state, burst_part))
+
+/// The burst's light, on the hit point
+/obj/effect/temp_visual/plasma_burst_light
+	icon = null
+	icon_state = null
+	duration = 0.4 SECONDS
+	randomdir = FALSE
+	light_system = OVERLAY_LIGHT
+	light_range = 2
+	light_power = 1.5
+	light_color = PLASMA_LIGHT_COLOR
+	light_on = TRUE
 
 /// Floor slag and anything the body hides
 /obj/effect/temp_visual/plasma_burst_low
