@@ -1,1 +1,45 @@
-{}
+{
+	"nan": {
+		"look": [
+			"{fixer} takes the case, opens it a crack, peers in and shuts it again.",
+			"{fixer} sets the case on the table, tips the lid up a finger's width and looks.",
+			"{fixer} gives the case a little shake, listens, and opens it just enough to see."
+		],
+		"stow": [
+			"{fixer} slides the case under the table with a foot.",
+			"{fixer} tucks the case down beside the seat."
+		]
+	},
+	"lot": {
+		"look": [
+			"{fixer} lays the case on the counter, cracks it an inch and checks inside against the clipboard.",
+			"{fixer} opens the case an inch, ticks something off the clipboard and shuts it.",
+			"{fixer} turns the case over once, opens it a crack and gives the inside a long look."
+		],
+		"stow": [
+			"{fixer} slides the case under the counter and ticks a box.",
+			"{fixer} shoves the case behind the coffee machine."
+		]
+	},
+	"quill": {
+		"look": [
+			"{fixer} sets the case on the bar, thumbs the lid up an inch and looks in. The lid goes down again.",
+			"{fixer} glances inside the case without a word and shuts it.",
+			"{fixer} taps the lock twice, opens the case a crack, and closes it."
+		],
+		"stow": [
+			"{fixer} drops the case under the stool without looking at it.",
+			"{fixer} slips the case under the bar."
+		]
+	},
+	"stand_in": {
+		"look": [
+			"{fixer} takes the case, opens it a crack, looks in and shuts it again.",
+			"{fixer} checks inside the case for a moment, then closes it."
+		],
+		"stow": [
+			"{fixer} puts the case out of sight.",
+			"{fixer} slides the case under the seat."
+		]
+	}
+}
