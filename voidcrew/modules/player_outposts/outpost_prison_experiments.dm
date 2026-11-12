@@ -10,12 +10,17 @@
  * - The serum, the specimen jar and the food it taints (outpost_prison_serum.dm) only work in a
  *   member's hands, on this wing's prisoners, for 10 minutes, and never leave the level.
  * - A serum subject twitches for a minute, with the form's tells in the last 40 seconds, then
- *   turns into a hulk, a fly person or a nightmare (outpost_prison_creatures.dm). A specimen host
- *   goes to the changeling event (outpost_changeling_infect(), outpost_prison_changeling.dm).
- * - The wing is paid a fee when a creature shows (experiment_creature_appeared()) and a bonus when
- *   it is put down (experiment_creature_down()) if the crew did half its damage or more
- *   (/datum/component/experiment_damage_ledger). Each is paid once per experiment. Put down, it
- *   lies there, "awaiting pickup" on the console, until Kessler's team beams in for it (kessler_collect()).
+ *   their own body becomes a hulk, a fly person or a nightmare by tg's own genes and species
+ *   (outpost_prison_experiment_forms.dm). A specimen host goes to the changeling event
+ *   (outpost_changeling_infect(), outpost_prison_changeling.dm).
+ * - The wing is paid a fee when a creature shows (experiment_creature_appeared()). A creature that goes
+ *   down (dead, or in crit, stamcrit, asleep or cuffed: outpost_experiment_down_state()) lies there,
+ *   "awaiting pickup" on the console, until Kessler's team beams in for it (kessler_collect()), keeps it
+ *   down with a real tranquilliser dart, and beams it away. The containment bonus is paid, if the crew
+ *   did half its damage or more (/datum/component/experiment_damage_ledger), when it dies, or for one
+ *   taken alive when Kessler has it, at the subdued rate if it was held. Each is paid once per
+ *   experiment. One that gets back up before Kessler has it (revived, woken, out of its cuffs) is loose
+ *   again.
  * - A creature stays until the crew puts it down or an admin ends the experiment. One that gets out
  *   of the wing sets off the containment breach alarm. One taken off the outpost (onto a ship, say)
  *   is recovered by Kessler at once, for a fee that becomes debt (experiment_recover()). The one
@@ -29,7 +34,7 @@
  * Every clock here counts only while a member of the wing is home (crew_home()).
  */
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Dosed or carrying a specimen: their death is the experiment's, not staff's
 	var/experiment_subject = FALSE
 
@@ -37,7 +42,7 @@
 	/// The experiment under way, or just ended (the console shows the result for a while)
 	var/datum/outpost_experiment/experiment
 	/// The researcher, while visiting with an offer
-	var/mob/living/basic/outpost_kessler_staff/researcher/researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/researcher
 	/// Crew-home seconds until the researcher is due; null before the first arrival and while an offer, item or experiment is out
 	var/researcher_wait
 	/// The researcher's visits have been scheduled: the wing has had its first arrival
@@ -114,7 +119,7 @@
  * bursts from the body.
  */
 /datum/outpost_prison/proc/subject_tick(seconds, home)
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	if(!subject || subject.prison != src || subject.phase != PRISONER_PRESENT)
 		experiment_failed("the subject is gone")
 		return FALSE
@@ -134,14 +139,14 @@
 /datum/outpost_prison/proc/experiment_paused()
 	if(!experiment_active() || !crew_home())
 		return TRUE
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	return subject && subject.stat != DEAD && (get_area(subject) != wing || !in_cell_block(subject))
 
 /// A minute of twitching, then the change. The form's tells show in the last OUTPOST_EXPERIMENT_TELLS seconds.
 /datum/outpost_prison/proc/twitch_tick(seconds, home)
 	if(!home)
 		return
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	experiment.twitch_left -= seconds
 	experiment.stage = experiment.twitch_left > OUTPOST_EXPERIMENT_TELLS ? "dosed" : "twitching"
 	if(experiment.twitch_left <= 0)
@@ -162,21 +167,29 @@
 		else
 			subject.say_context("experiment_dose")
 
-/// The serum takes: the subject becomes the creature where they stand
+/// The serum takes: the subject's body becomes the creature where they stand (outpost_prison_experiment_forms.dm)
 /datum/outpost_prison/proc/transform_subject()
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
-	var/creature_type = outpost_experiment_creature_type(experiment.form)
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	var/turf/spot = get_turf(subject)
-	if(!subject || !creature_type || !spot)
+	if(!subject || !outpost_experiment_form_type(experiment.form) || !spot)
 		experiment_failed("the serum did not take")
 		return null
-	var/mob/living/basic/outpost_experiment/creature = new creature_type(spot, src, subject)
-	add_log("[subject.real_name] turned into [creature.form_name].")
-	log_game("PLAYER OUTPOST PRISON: [subject.real_name] turned into [creature.form_name] at '[outpost?.name]' [AREACOORD(spot)]")
+	var/subject_name = subject.real_name
+	var/personality = subject.personality
 	experiment.subject_ref = null
-	qdel(subject)
-	experiment_creature_appeared(creature, experiment.form)
-	return creature
+	// The same body, no longer an inmate: off the roster (its cell waits a refill), the prisoner's own
+	// reactions off. The form brings its own mind, side and refusals.
+	subject.stand_down_for_experiment()
+	forget(subject)
+	var/mob/living/carbon/human/body = subject
+	var/datum/component/outpost_experiment_form/form = outpost_experiment_turn(body, experiment.form, src, personality)
+	if(!form)
+		experiment_failed("the serum did not take")
+		return null
+	add_log("[subject_name] turned into [form.form_name].")
+	log_game("PLAYER OUTPOST PRISON: [subject_name] turned into [form.form_name] at '[outpost?.name]' [AREACOORD(spot)]")
+	experiment_creature_appeared(body, experiment.form)
+	return body
 
 /**
  * The creatures and the leash. A creature off the outpost is recovered at once (for the fee only
@@ -196,6 +209,10 @@
 		return
 	var/out_of_wing = FALSE
 	for(var/mob/living/creature as anything in live)
+		// A body the serum took is down when tg says so: crit, stamcrit, asleep, cuffed or dead.
+		if(outpost_experiment_down_state(creature))
+			experiment_creature_down(creature)
+			continue
 		if(!outpost_holds(creature))
 			// Its own move into space (on_moved()) usually got there first; this catches the rest.
 			var/mob/living/basic/outpost_experiment/horror/spaced = creature
@@ -208,6 +225,12 @@
 			return
 		if(get_area(creature) != wing)
 			out_of_wing = TRUE
+	// Down and waiting for Kessler, but dragged off the outpost: Kessler's beam takes it at once.
+	for(var/key in experiment.awaiting.Copy())
+		var/datum/weakref/creature_ref = experiment.creature_refs[key]
+		var/mob/living/creature = creature_ref?.resolve()
+		if(!QDELETED(creature) && !outpost_holds(creature) && !HAS_TRAIT_FROM(creature, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT))
+			kessler_finish_collect(creature_ref)
 	if(out_of_wing && !experiment.breach_announced)
 		experiment.breach_announced = TRUE
 		add_log("An experiment creature got out of the wing.")
@@ -230,7 +253,7 @@
  * does the admin panel with `forced`, which skips the cell block rule. One experiment at a time,
  * on a living prisoner of this wing. Returns TRUE if it started.
  */
-/datum/outpost_prison/proc/start_experiment(form, mob/living/basic/outpost_prisoner/subject, forced = FALSE)
+/datum/outpost_prison/proc/start_experiment(form, mob/living/carbon/human/npc/outpost_prisoner/subject, forced = FALSE)
 	if(!(form in list("hulk", "fly", "nightmare", "changeling")))
 		return FALSE
 	if(QDELETED(subject) || subject.prison != src || subject.phase != PRISONER_PRESENT || subject.stat == DEAD)
@@ -262,7 +285,7 @@
 		experiment.stage = "dosed"
 		experiment.twitch_left = OUTPOST_EXPERIMENT_TWITCH
 		experiment.effect_left = rand(3, 5)
-		INVOKE_ASYNC(subject, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "experiment_dose")
+		INVOKE_ASYNC(subject, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "experiment_dose")
 	return TRUE
 
 // ===== CREATURES AND PAY =====
@@ -290,7 +313,10 @@
 	experiment.creature_refs[key] = WEAKREF(creature)
 	experiment.creature_kinds[key] = kind
 	experiment.revealed = TRUE
-	creature.AddComponent(/datum/component/experiment_damage_ledger)
+	var/datum/component/experiment_damage_ledger/ledger = creature.AddComponent(/datum/component/experiment_damage_ledger)
+	// The crew's lights are their weapon against a nightmare: what the light burns is theirs.
+	if(kind == "nightmare" && istype(ledger))
+		ledger.light_is_players = TRUE
 	RegisterSignal(creature, COMSIG_LIVING_DEATH, PROC_REF(on_creature_death))
 	RegisterSignal(creature, COMSIG_QDELETING, PROC_REF(on_creature_deleted))
 	experiment.stage = kind == "horror" ? "horror" : "live"
@@ -304,36 +330,86 @@
 	return TRUE
 
 /**
- * A creature was put down: killed, or `subdued` alive (worn out on stamina). Pays the containment
- * bonus, once per experiment, if players did at least OUTPOST_EXPERIMENT_PLAYER_SHARE of its
- * damage. It lies there, and the console shows it awaiting pickup, until Kessler's team comes for
- * it OUTPOST_EXPERIMENT_PICKUP seconds later. With no creature left the experiment is over.
- * Returns TRUE if it counted.
+ * A creature went down (outpost_experiment_down_state()): dead, or a body the serum took in crit,
+ * stamcrit, asleep or cuffed. It lies there, and the console shows it awaiting pickup, until Kessler's
+ * team comes for it OUTPOST_EXPERIMENT_PICKUP seconds later (kessler_collect()). A dead one earns the
+ * containment bonus now (once per experiment, so reviving it earns nothing more); one down alive earns it
+ * when Kessler has it, by the state the team finds it in. With nothing left loose or down alive, the
+ * experiment is contained. Returns TRUE if it counted.
  */
-/datum/outpost_prison/proc/experiment_creature_down(mob/living/creature, subdued = FALSE)
+/datum/outpost_prison/proc/experiment_creature_down(mob/living/creature)
 	if(!experiment || !creature)
 		return FALSE
 	var/key = REF(creature)
 	if(!experiment.creature_refs[key] || experiment.downed[key])
 		return FALSE
+	var/state = outpost_experiment_down_state(creature) || OUTPOST_EXPERIMENT_DOWN_DEAD
 	experiment.downed[key] = TRUE
-	experiment.awaiting[key] = subdued ? "subdued" : "down"
-	var/kind = experiment.creature_kinds[key]
-	if(!experiment.bonus_done && !experiment.resolved)
-		experiment.bonus_done = TRUE
-		var/datum/component/experiment_damage_ledger/ledger = creature.GetComponent(/datum/component/experiment_damage_ledger)
-		var/share = ledger ? ledger.player_share() : 1
-		if(share >= OUTPOST_EXPERIMENT_PLAYER_SHARE)
-			var/bonus = round(outpost_experiment_bonus(kind, subdued) * experiment.multiplier)
-			if(pay_treasury(bonus, "Kessler Biolabs containment bonus"))
-				experiment.bonus_paid = bonus
-				add_log("[creature.name] was [subdued ? "subdued" : "put down"]. Kessler Biolabs paid a [bonus] cr containment bonus.")
-		else
-			add_log("[creature.name] was [subdued ? "subdued" : "put down"]. Kessler Biolabs paid no bonus.")
-	addtimer(CALLBACK(src, PROC_REF(kessler_collect), WEAKREF(creature), FALSE), OUTPOST_EXPERIMENT_PICKUP SECONDS, TIMER_DELETE_ME)
-	if(!experiment.resolved && !length(experiment.live_creatures()))
-		resolve_experiment("contained")
+	experiment.awaiting[key] = state
+	if(state != OUTPOST_EXPERIMENT_DOWN_DEAD)
+		var/datum/component/outpost_experiment_form/form = creature.GetComponent(/datum/component/outpost_experiment_form)
+		creature.visible_message(span_danger("[creature] [form?.down_message || "collapses, spent."]"))
+		creature.balloon_alert_to_viewers(state)
+	else
+		if(ishuman(creature))
+			creature.balloon_alert_to_viewers("dead")
+		pay_containment(creature)
+	addtimer(CALLBACK(src, PROC_REF(kessler_collect), WEAKREF(creature)), OUTPOST_EXPERIMENT_PICKUP SECONDS, TIMER_DELETE_ME)
+	experiment_check_contained()
 	return TRUE
+
+/// Contained: nothing of the experiment's is loose, or down alive waiting for Kessler (which could still get up)
+/datum/outpost_prison/proc/experiment_check_contained()
+	if(!experiment || experiment.resolved || length(experiment.live_creatures()))
+		return FALSE
+	for(var/key in experiment.awaiting)
+		if(experiment.awaiting[key] != OUTPOST_EXPERIMENT_DOWN_DEAD)
+			return FALSE
+	resolve_experiment("contained")
+	return TRUE
+
+/// Whether `creature` lies down waiting for Kessler's team
+/datum/outpost_prison/proc/experiment_awaiting_pickup(mob/living/creature)
+	if(!experiment)
+		return FALSE
+	return !!experiment.awaiting[REF(creature)]
+
+/**
+ * A creature that went down is back on its feet before Kessler had it (revived, woken, out of its
+ * cuffs): it is loose again, and the experiment goes on. One the experiment has already been settled
+ * for (contained, paid) is Kessler's: the beam takes it as it stands.
+ */
+/datum/outpost_prison/proc/experiment_creature_back_up(mob/living/creature)
+	if(!experiment)
+		return
+	var/key = REF(creature)
+	experiment.awaiting -= key
+	if(experiment.resolved)
+		kessler_take(creature)
+		return
+	experiment.downed -= key
+	add_log("[creature.name] got back up before Kessler Biolabs came for [creature.p_them()].")
+
+/**
+ * The containment bonus, once per experiment, for the creature Kessler is taking: if players did at least
+ * OUTPOST_EXPERIMENT_PLAYER_SHARE of its damage, at the subdued rate when it was taken alive and held.
+ */
+/datum/outpost_prison/proc/pay_containment(mob/living/creature)
+	var/key = REF(creature)
+	if(experiment.bonus_done || experiment.resolved)
+		return
+	experiment.bonus_done = TRUE
+	var/subdued = experiment.awaiting[key] == OUTPOST_EXPERIMENT_DOWN_SUBDUED
+	var/kind = experiment.creature_kinds[key]
+	var/datum/component/experiment_damage_ledger/ledger = creature.GetComponent(/datum/component/experiment_damage_ledger)
+	var/share = ledger ? ledger.player_share() : 1
+	if(share < OUTPOST_EXPERIMENT_PLAYER_SHARE)
+		add_log("[creature.name] was [subdued ? "subdued" : "put down"]. Kessler Biolabs paid no bonus.")
+		return
+	var/bonus = round(outpost_experiment_bonus(kind, subdued) * experiment.multiplier)
+	if(pay_treasury(bonus, "Kessler Biolabs containment bonus"))
+		experiment.bonus_paid = bonus
+		add_log("[creature.name] was [subdued ? "subdued" : "put down"]. Kessler Biolabs paid a [bonus] cr containment bonus.")
 
 /**
  * A tracked creature died: that is it put down. Gibbed or dusted (a bomb, a shuttle), it never took
@@ -342,14 +418,14 @@
  */
 /datum/outpost_prison/proc/on_creature_death(mob/living/creature, gibbed)
 	SIGNAL_HANDLER
-	var/unspent = creature.health
+	var/unspent = max(0, creature.health)
 	var/mob/living/basic/outpost_experiment/experiment_creature = creature
 	if(istype(experiment_creature))
 		unspent = experiment_creature.unspent_health()
 	if(gibbed && unspent > 0)
 		var/datum/component/experiment_damage_ledger/ledger = creature.GetComponent(/datum/component/experiment_damage_ledger)
 		ledger?.add_damage(unspent, FALSE)
-	INVOKE_ASYNC(src, PROC_REF(experiment_creature_down), creature, FALSE)
+	INVOKE_ASYNC(src, PROC_REF(experiment_creature_down), creature)
 
 /// A tracked creature is gone. A serum creature deleted before it was put down or recovered takes the experiment with it.
 /datum/outpost_prison/proc/on_creature_deleted(mob/living/creature)
@@ -378,7 +454,8 @@
 		return FALSE
 	for(var/mob/living/creature as anything in experiment.live_creatures())
 		experiment.downed[REF(creature)] = TRUE
-		kessler_collect(WEAKREF(creature), FALSE)
+		kessler_take(creature)
+	take_awaiting_creatures()
 	add_log("The experiment failed: [reason].")
 	log_game("PLAYER OUTPOST PRISON: experiment failed at '[outpost?.name]' ([reason])")
 	resolve_experiment("failed")
@@ -399,7 +476,8 @@
 		fee = max(fee, outpost_experiment_recovery_fee(experiment.creature_kinds[key]))
 		names += creature.name
 		experiment.downed[key] = TRUE
-		kessler_collect(WEAKREF(creature), TRUE)
+		outpost_kessler_team(creature, "kessler_recovery", tranquilise = FALSE)
+		kessler_take(creature)
 	var/charged = 0
 	if(charge && fee > 0)
 		charged = charge_fine(fee, "Kessler Biolabs recovery fee")
@@ -450,8 +528,9 @@
 					qdel(creature)
 		for(var/mob/living/creature as anything in experiment.live_creatures())
 			experiment.downed[REF(creature)] = TRUE
-			kessler_collect(WEAKREF(creature), FALSE)
-		var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+			kessler_take(creature)
+		take_awaiting_creatures()
+		var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 		if(subject)
 			subject.experiment_subject = FALSE
 			outpost_experiment_clear_tells(subject)
@@ -482,7 +561,7 @@
 	experiment.resolved = TRUE
 	experiment.stage = outcome
 	experiment.result_left = OUTPOST_EXPERIMENT_RESULT_SHOWN
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	if(subject && subject.stat != DEAD)
 		subject.experiment_subject = FALSE
 		outpost_experiment_clear_tells(subject)
@@ -492,7 +571,7 @@
 	// absorbed who was not a prisoner. Its witnesses join the experiment's, once each.
 	if(!QDELETED(experiment.changeling))
 		for(var/datum/weakref/witness_ref as anything in experiment.changeling.witnesses)
-			var/mob/living/basic/outpost_prisoner/witness = witness_ref?.resolve()
+			var/mob/living/carbon/human/npc/outpost_prisoner/witness = witness_ref?.resolve()
 			if(witness)
 				experiment.witnesses[REF(witness)] = witness_ref
 #endif
@@ -510,7 +589,7 @@
 /datum/outpost_prison/proc/experiment_aftermath()
 	for(var/key in experiment.witnesses)
 		var/datum/weakref/witness_ref = experiment.witnesses[key]
-		var/mob/living/basic/outpost_prisoner/witness = witness_ref?.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/witness = witness_ref?.resolve()
 		if(!witness || witness.prison != src || witness.stat == DEAD || witness.phase != PRISONER_PRESENT)
 			continue
 		witness.adjust_mood(-OUTPOST_EXPERIMENT_SAW_DEATH_MOOD)
@@ -520,37 +599,138 @@
 	experiment.creature_kills = 0
 
 /**
- * Kessler takes a creature away: a team beams in around it, and OUTPOST_KESSLER_TEAM_TIME later
- * the beam takes it. One that was put down is collected where it lies; one still on its feet (a
- * `recovery` off the outpost, or an experiment called off) is tranquilised and drops first. It is
- * held still and cannot be hurt meanwhile.
+ * Kessler's team comes for a creature that went down (experiment_creature_down()): two agents beam in
+ * around it, a living one gets a real chloral hydrate dart to keep it down (owner ruling OC-3), and
+ * OUTPOST_KESSLER_TEAM_TIME later, if it is still down, the containment bonus is paid and the beam takes
+ * it. The bonus goes by the state it was found in. One already back on its feet is loose again.
  */
-/datum/outpost_prison/proc/kessler_collect(datum/weakref/creature_ref, recovery = FALSE)
+/datum/outpost_prison/proc/kessler_collect(datum/weakref/creature_ref)
 	var/mob/living/creature = creature_ref?.resolve()
-	if(QDELETED(creature) || HAS_TRAIT_FROM(creature, TRAIT_GODMODE, OUTPOST_KESSLER_TRAIT))
+	if(QDELETED(creature) || !experiment || HAS_TRAIT_FROM(creature, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT))
 		return
-	var/already_down = creature.stat == DEAD || creature.body_position == LYING_DOWN
-	ADD_TRAIT(creature, TRAIT_GODMODE, OUTPOST_KESSLER_TRAIT)
-	ADD_TRAIT(creature, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT)
-	ADD_TRAIT(creature, TRAIT_INCAPACITATED, OUTPOST_KESSLER_TRAIT)
-	ADD_TRAIT(creature, TRAIT_HANDS_BLOCKED, OUTPOST_KESSLER_TRAIT)
-	ADD_TRAIT(creature, TRAIT_FLOORED, OUTPOST_KESSLER_TRAIT)
-	creature.ai_controller?.CancelActions()
+	var/key = REF(creature)
+	if(!experiment.awaiting[key])
+		return
+	var/state = outpost_experiment_down_state(creature)
+	if(!state)
+		experiment_creature_back_up(creature)
+		return
+	experiment.awaiting[key] = state
+	outpost_kessler_team(creature, "kessler_collect", tranquilise = FALSE)
+	if(creature.stat != DEAD)
+		outpost_kessler_dart(creature)
+	addtimer(CALLBACK(src, PROC_REF(kessler_finish_collect), creature_ref), OUTPOST_KESSLER_TEAM_TIME, TIMER_DELETE_ME)
+
+/// The team's beam takes a creature still down, and Kessler pays for it if it hasn't yet. With nothing left loose or down alive, the experiment is contained.
+/datum/outpost_prison/proc/kessler_finish_collect(datum/weakref/creature_ref)
+	var/mob/living/creature = creature_ref?.resolve()
+	if(QDELETED(creature) || !experiment || HAS_TRAIT_FROM(creature, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT))
+		return
+	var/key = REF(creature)
+	if(!experiment.awaiting[key])
+		return
+	if(!outpost_experiment_down_state(creature))
+		experiment_creature_back_up(creature)
+		return
+	pay_containment(creature)
+	add_log("Kessler Biolabs collected [creature.name].")
+	experiment.awaiting -= key
+	kessler_take(creature)
+	experiment_check_contained()
+
+/**
+ * Kessler's beam takes a creature away for good: held still and harmless for the beam, then gone. A
+ * transporter, never godmode (defaults 1.8): nothing that happens during it changes what was paid. The
+ * crew's restraints stay behind.
+ */
+/datum/outpost_prison/proc/kessler_take(mob/living/creature)
+	if(QDELETED(creature) || HAS_TRAIT_FROM(creature, TRAIT_IMMOBILIZED, OUTPOST_KESSLER_TRAIT))
+		return
+	creature.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED, TRAIT_HANDS_BLOCKED), OUTPOST_KESSLER_TRAIT)
+	creature.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	creature.pulledby?.stop_pulling()
-	if(recovery)
-		outpost_kessler_team(creature, "kessler_recovery", tranquilise = TRUE)
-	else
-		outpost_kessler_team(creature, "kessler_collect", tranquilise = !already_down)
-	if(already_down && !recovery)
-		add_log("Kessler Biolabs collected [creature.name].")
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_kessler_beam_away), creature), OUTPOST_KESSLER_TEAM_TIME, TIMER_DELETE_ME)
+	creature.stop_pulling()
+	creature.buckled?.unbuckle_mob(creature, force = TRUE)
+	var/turf/spot = get_turf(creature)
+	if(spot)
+		creature.visible_message(span_notice("A transporter beam takes [creature] away."))
+		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
+		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_KESSLER_BEAM_TIME + 0.5 SECONDS)
+	transporter_dematerialise(creature, OUTPOST_KESSLER_BEAM_TIME)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_kessler_finish_take), WEAKREF(creature)), OUTPOST_KESSLER_BEAM_TIME, TIMER_DELETE_ME)
+
+/// Everything down and waiting for Kessler goes with the beam now, unpaid: the experiment is over before the team came
+/datum/outpost_prison/proc/take_awaiting_creatures()
+	for(var/key in experiment.awaiting.Copy())
+		var/datum/weakref/creature_ref = experiment.creature_refs[key]
+		experiment.awaiting -= key
+		kessler_take(creature_ref?.resolve())
+
+/// The end of Kessler's beam: restraints the crew put on it stay, and the rest goes
+/proc/outpost_kessler_finish_take(datum/weakref/creature_ref)
+	var/mob/living/creature = creature_ref?.resolve()
+	if(QDELETED(creature))
+		return
+	var/turf/spot = get_turf(creature)
+	var/mob/living/carbon/held = creature
+	if(spot && istype(held))
+		for(var/obj/item/restraints/worn in list(held.handcuffed, held.legcuffed))
+			held.transferItemToLoc(worn, spot, force = TRUE)
+	if(spot)
+		new /obj/effect/temp_visual/transporter_flash/departure(spot)
+		transporter_sparks(spot)
+		playsound(spot, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
+	qdel(creature)
+
+/**
+ * A Kessler agent's tranquilliser: a real dart of chloral hydrate, fired from beside `creature`, which tg's
+ * reagent and the target's clothing decide the rest of.
+ */
+/proc/outpost_kessler_dart(mob/living/creature)
+	var/turf/target_turf = get_turf(creature)
+	if(!target_turf)
+		return null
+	var/turf/from = target_turf
+	for(var/turf/open/tile in shuffle(orange(1, target_turf)))
+		if(!tile.is_blocked_turf(TRUE))
+			from = tile
+			break
+	var/obj/projectile/bullet/dart/dart = new(from)
+	dart.reagents.add_reagent(/datum/reagent/toxin/chloralhydrate, OUTPOST_KESSLER_DART_DOSE)
+	dart.original = creature
+	playsound(from, 'sound/items/syringeproj.ogg', 50, TRUE)
+	dart.aim_projectile(creature, from)
+	dart.fire(direct_target = creature)
+	return dart
+
+/**
+ * Whether a creature is down for Kessler, and how, by tg's own states: OUTPOST_EXPERIMENT_DOWN_DEAD;
+ * OUTPOST_EXPERIMENT_DOWN_SUBDUED for a body alive on the floor (crit, stamcrit, asleep) and held (cuffed
+ * or asleep); OUTPOST_EXPERIMENT_DOWN_DOWN for one on the floor or cuffed but not both. Null while it is
+ * up and free. The horror and the headslug, monsters, are down only once dead.
+ */
+/proc/outpost_experiment_down_state(mob/living/creature)
+	if(QDELETED(creature))
+		return null
+	if(creature.stat == DEAD)
+		return OUTPOST_EXPERIMENT_DOWN_DEAD
+	if(!iscarbon(creature))
+		return null
+	var/asleep = creature.stat == UNCONSCIOUS || creature.IsSleeping() || creature.IsUnconscious()
+	var/floored = asleep || creature.stat >= SOFT_CRIT || HAS_TRAIT_FROM(creature, TRAIT_INCAPACITATED, STAMINA)
+	var/held = asleep || HAS_TRAIT(creature, TRAIT_RESTRAINED)
+	if(floored && held)
+		return OUTPOST_EXPERIMENT_DOWN_SUBDUED
+	if(floored || held)
+		return OUTPOST_EXPERIMENT_DOWN_DOWN
+	return null
 
 // ===== PRISONERS =====
 
 /// Prisoners who could be the researcher's subjects: in the wing, alive, not loose and not dosed already
 /datum/outpost_prison/proc/researcher_prisoner_count()
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && prisoner.trouble != PRISONER_TROUBLE_LOOSE && !prisoner.experiment_subject)
 			count++
 	return count
@@ -560,7 +740,7 @@
  * researcher says so. A changeling host dying is the changeling event's to handle. Anyone else a
  * creature (not staff) killed counts toward the aftermath, with everyone in sight of it a witness.
  */
-/datum/outpost_prison/on_prisoner_death(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/on_prisoner_death(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	. = ..()
 	if(!experiment_active())
 		return
@@ -575,12 +755,12 @@
 	if(!creature_live() || prisoner.death_blamed)
 		return
 	experiment.creature_kills++
-	for(var/mob/living/basic/outpost_prisoner/witness in viewers(OUTPOST_EXPERIMENT_WITNESS_RANGE, get_turf(prisoner)))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/witness in viewers(OUTPOST_EXPERIMENT_WITNESS_RANGE, get_turf(prisoner)))
 		if(witness != prisoner && witness.prison == src && witness.stat != DEAD)
 			experiment.witnesses[REF(witness)] = WEAKREF(witness)
 
 /// A dosed subject earns nothing: their pay and release bonus are forfeit
-/datum/outpost_prison/pay_factor(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/pay_factor(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner?.experiment_subject)
 		return 0
 	return ..()
@@ -592,7 +772,7 @@
  * of the cell block stays on the roster (body_tick()).
  * Once the experiment is over the usual rules apply again.
  */
-/datum/outpost_prison/proc/held_for_experiment(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/held_for_experiment(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner || !experiment_active())
 		return FALSE
 	if(prisoner == experiment.subject())
@@ -604,12 +784,12 @@
 	return FALSE
 
 /// A dosed subject is not released at the end of their sentence
-/datum/outpost_prison/check_release(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/check_release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(held_for_experiment(prisoner))
 		return
 	return ..()
 
-/datum/outpost_prison/release(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(held_for_experiment(prisoner))
 		return 0
 	return ..()
@@ -740,7 +920,7 @@
 	var/list/witnesses = list()
 	var/creature_kills = 0
 
-/datum/outpost_experiment/New(datum/outpost_prison/owner, form, mob/living/basic/outpost_prisoner/subject)
+/datum/outpost_experiment/New(datum/outpost_prison/owner, form, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	. = ..()
 	prison = owner
 	src.form = form
@@ -972,6 +1152,9 @@
 	/// While set, the damage it takes is the players' whoever struck last: fire a player is credited
 	/// with (the horror's take_fire_damage()). It is not a blow, so recent_player() keeps its time.
 	var/crediting_players = FALSE
+	/// A nightmare's: burns it takes standing in the light, with nobody striking it, are the players'
+	/// (the crew's lights are their weapon)
+	var/light_is_players = FALSE
 
 /datum/component/experiment_damage_ledger/Initialize()
 	if(!isliving(parent))
@@ -1021,6 +1204,11 @@
 	if(crediting_players)
 		add_damage(damage, TRUE)
 		return
+	if(light_is_players && damagetype == BURN && last_attack_time != world.time)
+		var/turf/lit = get_turf(parent)
+		if(lit && lit.get_lumcount() >= SHADOW_SPECIES_LIGHT_THRESHOLD)
+			add_damage(damage, TRUE)
+			return
 	if(last_attack_time == world.time)
 		if(!last_attack_prisoner)
 			add_damage(damage, last_attack_player)
@@ -1095,7 +1283,7 @@
 	return TRUE
 
 /// Starts a changeling event in `host`, a prisoner of `prison`, and returns it
-/proc/outpost_changeling_infect(mob/living/basic/outpost_prisoner/host, datum/outpost_prison/prison)
+/proc/outpost_changeling_infect(mob/living/carbon/human/npc/outpost_prisoner/host, datum/outpost_prison/prison)
 	var/datum/outpost_changeling_event/event = new
 	event.prison = prison
 	event.host_ref = WEAKREF(host)

@@ -8,10 +8,12 @@
  *
  * Balance shape mirrors Vex's counter: credits buy the street and pro-utility
  * ware, vouchers gate everything that changes how you fight. Splice's intake
- * ledger buys back ONLY the ladder-base rungs, the street chrome a customer
- * outgrows, at half list, credits only, so climbing a slot ladder feels like
- * climbing and never becomes an arbitrage loop (you can't refund vouchers, and
- * a removed piece resold at 50% is always a loss).
+ * ledger buys back every piece he sells for credits (owner D7), at half list,
+ * credits only, so climbing a slot ladder feels like climbing and never becomes
+ * an arbitrage loop (voucher chrome bought at a counter is never bought back,
+ * and a removed piece resold at 50% is always a loss). Found chrome with no
+ * trade-in row (voucher-shelf pieces and loot-only ones) sells on four price
+ * bands instead, which refuse anything bought at a counter.
  *
  * Splice is not the only source any more. The roster also rides the zone loot
  * tables (modules/loot/themes/) at the tier that matches what he charges for
@@ -73,6 +75,33 @@
 		/datum/shop_sku/ripperdoc/rockjaw,
 		/datum/shop_sku/ripperdoc/fixers,
 		/datum/shop_sku/ripperdoc/dermal_mesh,
+		/datum/shop_sku/ripperdoc/ghostskin_street,
+		/datum/shop_sku/ripperdoc/mantis_street,
+		/datum/shop_sku/ripperdoc/governor_street,
+		/datum/shop_sku/ripperdoc/redline_street,
+		/datum/shop_sku/ripperdoc/cascade_street,
+		// The phase 2 street models, street passives and optics.
+		/datum/shop_sku/ripperdoc/spyglass,
+		/datum/shop_sku/ripperdoc/cuffer_wrists,
+		/datum/shop_sku/ripperdoc/medic_palms,
+		/datum/shop_sku/ripperdoc/subvocal_mic,
+		/datum/shop_sku/ripperdoc/fixers_street,
+		/datum/shop_sku/ripperdoc/muffler_ear,
+		/datum/shop_sku/ripperdoc/clotter_node,
+		/datum/shop_sku/ripperdoc/assay_optics,
+		/datum/shop_sku/ripperdoc/coolant_street,
+		/datum/shop_sku/ripperdoc/frostline,
+		/datum/shop_sku/ripperdoc/atlas_street,
+		/datum/shop_sku/ripperdoc/doppler_street,
+		/datum/shop_sku/ripperdoc/second_wind_deep,
+		/datum/shop_sku/ripperdoc/slipwire_street,
+		/datum/shop_sku/ripperdoc/hopper_street,
+		/datum/shop_sku/ripperdoc/adrenal_pump,
+		/datum/shop_sku/ripperdoc/gorilla_street,
+		/datum/shop_sku/ripperdoc/rockjaw_deepcore,
+		/datum/shop_sku/ripperdoc/ronin_holdout,
+		/datum/shop_sku/ripperdoc/longsight,
+		/datum/shop_sku/ripperdoc/hardweave,
 		// ---- Pro Chrome (mixed) ----
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/hemoglass,
@@ -90,11 +119,20 @@
 		/datum/shop_sku/ripperdoc/atlas,
 		/datum/shop_sku/ripperdoc/gorilla,
 		/datum/shop_sku/ripperdoc/monowire,
+		/datum/shop_sku/ripperdoc/monowire_live,
 		/datum/shop_sku/ripperdoc/rigger,
 		/datum/shop_sku/ripperdoc/slabskin,
 		/datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/mantis_scorch,
 		/datum/shop_sku/ripperdoc/ghostskin,
 		/datum/shop_sku/ripperdoc/lazarus,
+		/datum/shop_sku/ripperdoc/governor_milspec,
+		/datum/shop_sku/ripperdoc/redline_milspec,
+		/datum/shop_sku/ripperdoc/cascade_milspec,
+		/datum/shop_sku/ripperdoc/hopper_milspec,
+		/datum/shop_sku/ripperdoc/slipwire_milspec,
+		/datum/shop_sku/ripperdoc/deadeye_milspec,
+		/datum/shop_sku/ripperdoc/lookout,
 		// ---- Legend Chrome (the chase, always listed) ----
 		/datum/shop_sku/ripperdoc/governor_delete,
 		/datum/shop_sku/ripperdoc/redline,
@@ -104,12 +142,58 @@
 		/datum/shop_sku/ripperdoc/buster_rockets,
 	)
 	buyback_types = list(
-		// The trade-in ladder: only the street rungs a customer outgrows.
+		// The trade-in ladder: every piece on the shelf priced in credits.
 		/datum/shop_buyback/ripperdoc/nightshade,
 		/datum/shop_buyback/ripperdoc/shock_coils,
 		/datum/shop_buyback/ripperdoc/second_wind,
 		/datum/shop_buyback/ripperdoc/dermal_mesh,
 		/datum/shop_buyback/ripperdoc/scrapper,
+		// The cyberware lines' street models (ware_line_*.dm).
+		/datum/shop_buyback/ripperdoc/ghostskin_street,
+		/datum/shop_buyback/ripperdoc/mantis_street,
+		/datum/shop_buyback/ripperdoc/governor_street,
+		/datum/shop_buyback/ripperdoc/redline_street,
+		/datum/shop_buyback/ripperdoc/cascade_street,
+		// The phase 2 street models, street passives and optics.
+		/datum/shop_buyback/ripperdoc/spyglass,
+		/datum/shop_buyback/ripperdoc/cuffer_wrists,
+		/datum/shop_buyback/ripperdoc/medic_palms,
+		/datum/shop_buyback/ripperdoc/subvocal_mic,
+		/datum/shop_buyback/ripperdoc/fixers_street,
+		/datum/shop_buyback/ripperdoc/muffler_ear,
+		/datum/shop_buyback/ripperdoc/clotter_node,
+		/datum/shop_buyback/ripperdoc/assay_optics,
+		/datum/shop_buyback/ripperdoc/coolant_street,
+		/datum/shop_buyback/ripperdoc/frostline,
+		/datum/shop_buyback/ripperdoc/atlas_street,
+		/datum/shop_buyback/ripperdoc/doppler_street,
+		/datum/shop_buyback/ripperdoc/second_wind_deep,
+		/datum/shop_buyback/ripperdoc/slipwire_street,
+		/datum/shop_buyback/ripperdoc/hopper_street,
+		/datum/shop_buyback/ripperdoc/adrenal_pump,
+		/datum/shop_buyback/ripperdoc/gorilla_street,
+		/datum/shop_buyback/ripperdoc/rockjaw_deepcore,
+		/datum/shop_buyback/ripperdoc/ronin_holdout,
+		/datum/shop_buyback/ripperdoc/longsight,
+		/datum/shop_buyback/ripperdoc/hardweave,
+		// The rest of the credit shelf (owner D7).
+		/datum/shop_buyback/ripperdoc/hopper,
+		/datum/shop_buyback/ripperdoc/coolant,
+		/datum/shop_buyback/ripperdoc/fixers,
+		/datum/shop_buyback/ripperdoc/rockjaw,
+		/datum/shop_buyback/ripperdoc/gecko,
+		/datum/shop_buyback/ripperdoc/hemoglass,
+		/datum/shop_buyback/ripperdoc/angler,
+		/datum/shop_buyback/ripperdoc/registry_uplink,
+		/datum/shop_buyback/ripperdoc/cargo_cavity,
+		/datum/shop_buyback/ripperdoc/gastro,
+		/datum/shop_buyback/ripperdoc/chromatic_dermis,
+		/datum/shop_buyback/burnt_chrome,
+		// Found chrome that has no trade-in row, by price band.
+		/datum/shop_buyback/found_chrome/fitted,
+		/datum/shop_buyback/found_chrome/pro,
+		/datum/shop_buyback/found_chrome/military,
+		/datum/shop_buyback/found_chrome/legend,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -444,7 +528,7 @@
 /datum/shop_sku/ripperdoc/cascade
 	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Legend Chrome"
-	desc = "A Sandevistan reflex lattice in a sealed surgical case."
+	desc = "A full-spine reflex lattice in a sealed surgical case."
 	item_path = /obj/item/organ/cyberimp/cyberware/cascade
 	price_vouchers = 8
 	stock_min = 1
@@ -476,10 +560,20 @@
 
 // =========================================================================
 // SPLICE'S INTAKE LEDGER: the trade-in ladder
-// Half list, credits only, street rungs only. Removed chrome resold here is
+// Half list, credits only, credit-priced chrome only. Removed chrome resold here is
 // always a loss (you can't refund vouchers, and 50% never beats buying up the
 // ladder), so this reads as "trade up" and never as an arbitrage loop.
+//
+// The ripperdoc trade-in is the one ledger that takes chrome bought over a
+// counter (owner decision, 2026-11-07): every other buyer and every export
+// refuses anything carrying the trader-goods mark (trade/resale.dm). It holds
+// because each entry pays half the lowest list price of the piece and a special
+// takes at most 30% off, so a bought piece always sells back at a loss. The
+// voidcrew_ripperdoc_resale unit test pins both halves of that.
 // =========================================================================
+
+/datum/shop_buyback/ripperdoc
+	buys_shop_stock = TRUE
 
 /datum/shop_buyback/ripperdoc/nightshade
 	name = "Nightshade Optics (pulled)"
@@ -492,7 +586,7 @@
 
 /datum/shop_buyback/ripperdoc/shock_coils
 	name = "Shock Coils (pulled)"
-	desc = "Reflex legs, lightly used. Trade-in credit toward the jump pistons."
+	desc = "Reflex legs, lightly used."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/shock_coils
 	pay_credits = 250
@@ -501,9 +595,11 @@
 
 /datum/shop_buyback/ripperdoc/second_wind
 	name = "Second Wind Bladder (pulled)"
-	desc = "A used air reserve. Worth half toward something with a longer bladder."
+	desc = "A used air reserve."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/second_wind
+	// The Deep-lung is a subtype with its own, higher entry (ware_models_b.dm).
+	match_subtypes = FALSE
 	pay_credits = 450
 	demand_min = 2
 	demand_max = 3
@@ -513,6 +609,8 @@
 	desc = "Light plating you've outgrown. Splice recycles the weave toward the heavy slab."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/dermal_mesh
+	// The Hardweave is a subtype with its own, higher entry (ware_models_b.dm).
+	match_subtypes = FALSE
 	pay_credits = 1000
 	demand_min = 1
 	demand_max = 2
@@ -526,3 +624,244 @@
 	pay_credits = 200
 	demand_min = 2
 	demand_max = 4
+
+// =========================================================================
+// THE REST OF THE CREDIT SHELF (owner D7): every piece he sells for credits
+// comes back at half list, credits only. Exact types, so a ladder rung above
+// or below (Spring calves, Vaulter, Tinker's, Deepcore, Heat-sink) keeps its
+// own entry or none. Ratchet's subtypes carry his wording.
+// =========================================================================
+
+/datum/shop_buyback/ripperdoc/hopper
+	name = "Hopper piston calves (pulled)"
+	desc = "Piston calves, still sprung."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/hopper
+	match_subtypes = FALSE
+	pay_credits = 1800
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/coolant
+	name = "Coolant Loop lattice (pulled)"
+	desc = "A drained coolant lattice."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/coolant
+	match_subtypes = FALSE
+	pay_credits = 1800
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/fixers
+	name = "Fixer's Fingers (pulled)"
+	desc = "A fingertip tool suite, pulled."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
+	match_subtypes = FALSE
+	pay_credits = 900
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/rockjaw
+	name = "Rockjaw drill fist (pulled)"
+	desc = "A drill fist with plenty of bit left."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/gecko
+	name = "Gecko Grip palm pads (pulled)"
+	desc = "Palm pads, a bit worn."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/gecko
+	match_subtypes = FALSE
+	pay_credits = 450
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/hemoglass
+	name = "Hemoglass filter (pulled)"
+	desc = "A blood filter, flushed."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/hemoglass
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/angler
+	name = "Harpoon Spool (pulled)"
+	desc = "A wrist spool and its line."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/angler
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/registry_uplink
+	name = "Registry uplink (pulled)"
+	desc = "A registry uplink, pulled."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/registry_uplink
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/cargo_cavity
+	name = "Cargo Cavity (pulled)"
+	desc = "An empty rib compartment."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/cargo_cavity
+	match_subtypes = FALSE
+	pay_credits = 500
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/gastro
+	name = "Gastro Reactor (pulled)"
+	desc = "A used stomach liner."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/gastro
+	match_subtypes = FALSE
+	pay_credits = 200
+	demand_min = 2
+	demand_max = 3
+
+/datum/shop_buyback/ripperdoc/chromatic_dermis
+	name = "Chromatic Dermis ink suite (pulled)"
+	desc = "A sheet of circuit ink, peeled."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/chromatic_dermis
+	match_subtypes = FALSE
+	pay_credits = 200
+	demand_min = 2
+	demand_max = 3
+
+/**
+ * Dead chrome off a dead (or opened-up) human NPC (/obj/item/burnt_chrome, human_npc.dm). Scrap money only:
+ * 50 cr is a fifth of the cheapest piece Splice sells for credits, so burning out bought chrome in a captive
+ * to sell the husk is always a loss, and the round's demand caps it. Not a ripperdoc trade-in row: those
+ * buy back shelf stock, and no shelf sells burnt chrome.
+ */
+/datum/shop_buyback/burnt_chrome
+	name = "Burnt-out chrome"
+	desc = "Dead implants. Splice strips them for the parts that didn't melt."
+	category = "Scrap"
+	item_path = /obj/item/burnt_chrome
+	pay_credits = 50
+	demand_min = 4
+	demand_max = 8
+
+/datum/shop_buyback/burnt_chrome/street_doc
+	desc = "Dead implants. Ratchet melts them down for the metal."
+
+// =========================================================================
+// FOUND CHROME: the pieces no trade-in row takes
+// Voucher-shelf chrome and loot-only chrome, out of caches or off the dead.
+// Priced by band against the shelf: 1-voucher pieces pay 400 cr, 2-voucher
+// pieces 900 cr (a paired arm counts as half its pair), 3-voucher and dearer
+// pieces 1 voucher, the loot-only Piledriver 2. Each band names exact types,
+// none of which any trade-in row matches, so no piece fits two rows.
+//
+// Not a /datum/shop_buyback/ripperdoc subtype on purpose: those take shop
+// stock and pay credits only (voidcrew_ripperdoc_resale pins that). These
+// refuse anything bought at a counter, so a voucher payout here only ever
+// buys chrome nobody paid a shop for.
+// =========================================================================
+
+/datum/shop_buyback/found_chrome
+	category = "Found Chrome"
+	item_path = /obj/item/organ
+	icon_override = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	/// Exact chrome types this band pays for
+	var/list/wanted_chrome
+
+/datum/shop_buyback/found_chrome/buyback_wanted_kind(obj/item/offered)
+	return (offered.type in wanted_chrome) && !shop_buyback_inside_body(offered)
+
+/datum/shop_buyback/found_chrome/matches(obj/item/offered)
+	if(!..() || !(offered.type in wanted_chrome))
+		return FALSE
+	var/obj/item/organ/ware = offered
+	return !(ware.organ_flags & ORGAN_FAILING)
+
+/// The stock refusal keys off item_path, which here is every organ (buyback_listed.dm).
+/datum/shop_buyback/found_chrome/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/found_chrome/fitted
+	name = "fitted chrome"
+	desc = "Icepicks, sonar, field optics, grave hooks. Clean them up and they sell again."
+	icon_state_override = "icepick"
+	wanted_chrome = list(
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick,
+		/obj/item/organ/cyberimp/cyberware/doppler,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber,
+		/obj/item/organ/eyes/robotic/cyberware/prospector,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook,
+	)
+	pay_credits = 400
+	demand_min = 2
+	demand_max = 3
+
+/datum/shop_buyback/found_chrome/pro
+	name = "pro chrome"
+	desc = "Combat optics, reflex wiring, one arm of a matched pair. Splice knows who's shopping."
+	icon_state_override = "mantis"
+	wanted_chrome = list(
+		/obj/item/organ/eyes/robotic/cyberware/deadeye,
+		/obj/item/organ/cyberimp/cyberware/slipwire,
+		/obj/item/organ/cyberimp/cyberware/dead_channel,
+		/obj/item/organ/cyberimp/cyberware/atlas,
+		/obj/item/organ/cyberimp/cyberware/gorilla_arms,
+		/obj/item/organ/cyberimp/cyberware/gorilla_arms/left,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch/left,
+	)
+	pay_credits = 900
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/found_chrome/military
+	name = "military chrome"
+	desc = "Monowire, gun arms, slab plating, milspec builds. The big names too, if they still work."
+	icon_state_override = "ronin"
+	wanted_chrome = list(
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
+		/obj/item/organ/cyberimp/cyberware/rigger,
+		/obj/item/organ/cyberimp/cyberware/slabskin,
+		/obj/item/organ/cyberimp/cyberware/ghostskin,
+		/obj/item/organ/cyberimp/cyberware/lazarus,
+		/obj/item/organ/eyes/robotic/cyberware/lookout,
+		/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec,
+		/obj/item/organ/cyberimp/cyberware/slipwire/milspec,
+		/obj/item/organ/cyberimp/cyberware/hopper/milspec,
+		/obj/item/organ/cyberimp/cyberware/governor_delete/milspec,
+		/obj/item/organ/cyberimp/cyberware/redline/milspec,
+		/obj/item/organ/cyberimp/cyberware/cascade/milspec,
+		/obj/item/organ/cyberimp/cyberware/governor_delete,
+		/obj/item/organ/cyberimp/cyberware/redline,
+		/obj/item/organ/cyberimp/cyberware/cascade,
+	)
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/found_chrome/legend
+	name = "Piledriver"
+	desc = "Splice has never had one on the bench. He'd like to."
+	icon_state_override = "piledriver"
+	wanted_chrome = list(/obj/item/organ/cyberimp/cyberware/piledriver)
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 1

@@ -71,7 +71,7 @@
  * calls this once the host has eaten the tainted food. Returns the event, or null if it cannot
  * start (a dead host, someone else's prisoner, or a changeling already running in the wing).
  */
-/proc/outpost_changeling_infect(mob/living/basic/outpost_prisoner/host, datum/outpost_prison/prison)
+/proc/outpost_changeling_infect(mob/living/carbon/human/npc/outpost_prisoner/host, datum/outpost_prison/prison)
 	if(QDELETED(host) || QDELETED(prison) || host.stat == DEAD || host.prison != prison)
 		return null
 	if(prison.active_changeling && prison.active_changeling.stage != "done")
@@ -89,7 +89,7 @@
 	/// Why it ended, once it has
 	var/end_reason
 	var/datum/outpost_prison/prison
-	var/mob/living/basic/outpost_prisoner/host
+	var/mob/living/carbon/human/npc/outpost_prisoner/host
 	var/mob/living/basic/headslug/beakless/outpost/slug
 	var/mob/living/basic/outpost_experiment/horror/horror
 	/// The vent the slug is in, or the one that is giving way
@@ -141,7 +141,7 @@
 	/// Prisoners whose deaths are watched while a creature is loose
 	var/list/watched_prisoners = list()
 
-/datum/outpost_changeling_event/New(mob/living/basic/outpost_prisoner/new_host, datum/outpost_prison/new_prison)
+/datum/outpost_changeling_event/New(mob/living/carbon/human/npc/outpost_prisoner/new_host, datum/outpost_prison/new_prison)
 	. = ..()
 	prison = new_prison
 	prison.active_changeling = src
@@ -256,21 +256,41 @@
 
 // ===== THE HOST =====
 
-/datum/outpost_changeling_event/proc/link_host(mob/living/basic/outpost_prisoner/new_host)
+/datum/outpost_changeling_event/proc/link_host(mob/living/carbon/human/npc/outpost_prisoner/new_host)
 	host = new_host
 	host.experiment_subject = TRUE
 	host.update_bubble()
 	RegisterSignal(host, COMSIG_LIVING_DEATH, PROC_REF(on_host_death))
 	RegisterSignal(host, COMSIG_QDELETING, PROC_REF(on_host_deleted))
+	// EX-8: the specimen is a real thing in their chest, which surgery can cut out.
+	var/obj/item/organ/body_egg/outpost_specimen/specimen = new()
+	specimen.event_ref = WEAKREF(src)
+	if(!specimen.Insert(new_host, special = TRUE))
+		qdel(specimen)
+
+/// The specimen in the host, if there is one
+/datum/outpost_changeling_event/proc/host_specimen()
+	if(QDELETED(host))
+		return null
+	return locate(/obj/item/organ/body_egg/outpost_specimen) in host.organs
+
+/// Takes the specimen out of the host for good, as the burst or the end of the experiment does
+/datum/outpost_changeling_event/proc/remove_specimen()
+	var/obj/item/organ/body_egg/outpost_specimen/specimen = host_specimen()
+	if(!specimen)
+		return
+	specimen.event_ref = null
+	specimen.Remove(specimen.owner, special = TRUE)
+	qdel(specimen)
 
 /// Lets go of the host: signals off and back on their feet. `cured` also ends their part in the experiment.
 /datum/outpost_changeling_event/proc/release_host(cured = FALSE)
 	if(!host)
 		return
-	var/mob/living/basic/outpost_prisoner/was_host = host
+	remove_specimen()
+	var/mob/living/carbon/human/npc/outpost_prisoner/was_host = host
 	host = null
 	UnregisterSignal(was_host, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
-	was_host.remove_traits(list(TRAIT_FLOORED, TRAIT_INCAPACITATED, TRAIT_IMMOBILIZED), CHANGELING_HOST_TRAIT)
 	if(istype(was_host.activity, /datum/prisoner_activity/changeling_bed))
 		was_host.end_activity()
 	if(cured && !QDELETED(was_host))
@@ -319,7 +339,7 @@
 	if(!said_pain && incubation_elapsed >= OUTPOST_CHANGELING_TELL_PAIN)
 		said_pain = TRUE
 		INVOKE_ASYNC(host, TYPE_PROC_REF(/atom, manual_emote), "rubs [host.p_their()] stomach and winces.")
-		INVOKE_ASYNC(host, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "experiment_dose")
+		INVOKE_ASYNC(host, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "experiment_dose")
 		prison.add_log("[host.real_name] complains of stomach pain.")
 		return
 	if(!said_retch && incubation_elapsed >= OUTPOST_CHANGELING_TELL_RETCH)
@@ -368,25 +388,33 @@
 	heave_left = rand(3, 5)
 	heave()
 
-/// The host goes down, on their bunk if they got there: groaning, and draggable
+/**
+ * The host goes down, on their bunk if they got there: groaning, and draggable. They lie down the way
+ * anyone sick does, and the heaves keep knocking them flat (heave()).
+ */
 /datum/outpost_changeling_event/proc/host_lie_down()
 	if(host_down || QDELETED(host))
 		return
 	host_down = TRUE
-	host.add_traits(list(TRAIT_FLOORED, TRAIT_INCAPACITATED, TRAIT_IMMOBILIZED), CHANGELING_HOST_TRAIT)
+	host.set_resting(TRUE, silent = TRUE)
+	host.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
 	host.visible_message(span_warning("[host] curls up, groaning, arms wrapped around [host.p_their()] belly."))
 
-/// The host's belly heaves; now and then a neighbour notices
+/// The host's belly heaves, and they are sick and knocked flat by it; now and then a neighbour notices
 /datum/outpost_changeling_event/proc/heave()
 	host.Shake(1, 0, 0.6 SECONDS)
 	playsound(host, 'sound/effects/meatslap.ogg', 15, TRUE, -2)
+	if(host.stat != DEAD)
+		if(prob(40))
+			host.vomit(VOMIT_CATEGORY_KNOCKDOWN, lost_nutrition = 0)
+		host.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
 	if(prob(50))
 		host.visible_message(span_warning("Something moves under [host]'s jumpsuit. [host.p_Their()] belly heaves."))
 	else
 		INVOKE_ASYNC(host, TYPE_PROC_REF(/atom, manual_emote), pick("groans.", "moans.", "whimpers."))
 	if(!prob(30))
 		return
-	for(var/mob/living/basic/outpost_prisoner/neighbour in shuffle(prison.prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/neighbour in shuffle(prison.prisoners))
 		if(neighbour == host || neighbour.stat != CONSCIOUS || neighbour.phase != PRISONER_PRESENT || !(host in view(6, neighbour)))
 			continue
 		INVOKE_ASYNC(neighbour, TYPE_PROC_REF(/atom, manual_emote), pick("stares at [host].", "backs away from [host].", "covers [neighbour.p_their()] mouth.", "calls out to [host]. No answer."))
@@ -427,7 +455,7 @@
 	if(!spot)
 		lose_specimen("the host is gone")
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/victim = host
+	var/mob/living/carbon/human/npc/outpost_prisoner/victim = host
 	release_host()
 	stage = "burst"
 	early_burst_left = 0
@@ -495,7 +523,7 @@
 /// Prisoners who saw it scream
 /datum/outpost_changeling_event/proc/scream_near(turf/spot)
 	var/screamed = 0
-	for(var/mob/living/basic/outpost_prisoner/witness in view(7, spot))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/witness in view(7, spot))
 		if(witness.stat != CONSCIOUS || witness.phase != PRISONER_PRESENT || witness.can_be_dragged())
 			continue
 		INVOKE_ASYNC(witness, TYPE_PROC_REF(/atom, manual_emote), pick("screams!", "shrieks and scrambles back!", "yells in horror!"))
@@ -656,13 +684,13 @@
 	if(level < 2 || !prison.wing_can_speak())
 		return FALSE
 	var/context = level >= 3 ? "creature_panic" : "vent_noise"
-	for(var/mob/living/basic/outpost_prisoner/listener in shuffle(prison.prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/listener in shuffle(prison.prisoners))
 		if(listener.stat != CONSCIOUS || listener.phase != PRISONER_PRESENT || listener.can_be_dragged() || !listener.ai_running())
 			continue
 		if(get_dist(listener, vent) > 7)
 			continue
 		prison.note_speech()
-		INVOKE_ASYNC(listener, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), context)
+		INVOKE_ASYNC(listener, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), context)
 		return TRUE
 	return FALSE
 
@@ -813,13 +841,13 @@
 /datum/outpost_changeling_event/proc/horror_remark(context)
 	if(QDELETED(horror) || QDELETED(prison) || !prison.wing_can_speak())
 		return FALSE
-	for(var/mob/living/basic/outpost_prisoner/witness in shuffle(prison.prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/witness in shuffle(prison.prisoners))
 		if(witness.stat != CONSCIOUS || witness.phase != PRISONER_PRESENT || witness.can_be_dragged() || !witness.ai_running())
 			continue
 		if(!(horror in view(7, witness)))
 			continue
 		prison.note_speech()
-		INVOKE_ASYNC(witness, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), context)
+		INVOKE_ASYNC(witness, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), context)
 		return TRUE
 	return FALSE
 
@@ -909,7 +937,7 @@
 /datum/outpost_changeling_event/proc/panic_prisoners()
 	panicked = TRUE
 	var/shouts = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
 		if(prisoner == host || !prisoner.routine_allowed() || prisoner.is_confined())
 			continue
 		if(istype(prisoner.activity, /datum/prisoner_activity/flee_creature) || istype(prisoner.activity, /datum/prisoner_activity/creature_panic))
@@ -921,11 +949,11 @@
 		prisoner.start_activity(flee)
 		if(shouts < 2 && prisoner.ai_running())
 			shouts++
-			INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "creature_panic")
+			INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "creature_panic")
 
 /// Watches the prisoners' deaths while a creature is loose
 /datum/outpost_changeling_event/proc/watch_prisoners()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
 		if(prisoner.stat == DEAD || watched_prisoners[prisoner])
 			continue
 		watched_prisoners[prisoner] = TRUE
@@ -933,7 +961,7 @@
 		RegisterSignal(prisoner, COMSIG_QDELETING, PROC_REF(on_watched_prisoner_deleted))
 
 /datum/outpost_changeling_event/proc/unwatch_prisoners()
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in watched_prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in watched_prisoners)
 		UnregisterSignal(prisoner, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 	watched_prisoners.Cut()
 
@@ -943,7 +971,7 @@
 	watched_prisoners -= source
 
 /// A prisoner died while a creature was loose: the creature's kill if it was beside them
-/datum/outpost_changeling_event/proc/on_prisoner_died(mob/living/basic/outpost_prisoner/victim, gibbed)
+/datum/outpost_changeling_event/proc/on_prisoner_died(mob/living/carbon/human/npc/outpost_prisoner/victim, gibbed)
 	SIGNAL_HANDLER
 	var/mob/living/creature = current_creature()
 	note_death(victim, creature && get_dist(creature, victim) <= 2)
@@ -962,7 +990,7 @@
 	var/turf/spot = get_turf(victim)
 	if(!spot)
 		return TRUE
-	for(var/mob/living/basic/outpost_prisoner/witness in view(7, spot))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/witness in view(7, spot))
 		if(witness == victim || witness.stat != CONSCIOUS || witness.phase != PRISONER_PRESENT)
 			continue
 		witnesses |= WEAKREF(witness)
@@ -978,7 +1006,7 @@
 	if(QDELETED(prison))
 		return
 	for(var/datum/weakref/ref as anything in witnesses)
-		var/mob/living/basic/outpost_prisoner/witness = ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/witness = ref.resolve()
 		if(QDELETED(witness) || witness.stat == DEAD || !(witness in prison.prisoners))
 			continue
 		witness.adjust_mood(-OUTPOST_CHANGELING_WITNESS_MOOD)
@@ -1421,3 +1449,34 @@
 #undef CHANGELING_HOST_TRAIT
 #undef HEADSLUG_VENT_TRAIT
 #undef BB_OUTPOST_HEADSLUG_VENT
+
+// ===== THE SPECIMEN IN A BODY =====
+
+/**
+ * The specimen growing in a host with a body (EX-8): a real organ in the chest, as tg's alien embryo is.
+ * The event's clock grows it and bursts the host; the organ is what is there to find on a scanner or cut
+ * out in surgery. Cut out, it dies, and the experiment loses its specimen.
+ */
+/obj/item/organ/body_egg/outpost_specimen
+	name = "Kessler specimen"
+	desc = "A small, wet, curled-up thing that never stops moving."
+	icon_state = "innards"
+	/// The changeling event it is part of
+	var/datum/weakref/event_ref
+
+/obj/item/organ/body_egg/outpost_specimen/Destroy()
+	event_ref = null
+	return ..()
+
+/obj/item/organ/body_egg/outpost_specimen/on_mob_remove(mob/living/carbon/egg_owner, special, movement_flags)
+	. = ..()
+	// The event's own removals (the burst, the end of the experiment) are special.
+	if(special)
+		return
+	var/datum/outpost_changeling_event/event = event_ref?.resolve()
+	event_ref = null
+	// Cut out: it dies outside a body, and the specimen is lost.
+	if(event)
+		INVOKE_ASYNC(event, TYPE_PROC_REF(/datum/outpost_changeling_event, lose_specimen), "the specimen was cut out")
+	visible_message(span_warning("[src] shudders and goes still."))
+	QDEL_IN(src, 1)

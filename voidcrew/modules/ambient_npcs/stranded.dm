@@ -31,7 +31,7 @@
 	)
 	chance = 5
 	spot_room = 2
-	npc_type = /mob/living/basic/ambient_npc/stray/stranded
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/stray/stranded
 
 // Oceanic planets see a few more pods come down (spec 4.1)
 /datum/ambient_site_kind/stranded/chance_on(datum/ambient_planet/record)
@@ -44,10 +44,9 @@
 		return FALSE
 	var/atom/fire = build_camp(site)
 	var/turf/where = (fire && ambient_free_turf_near(get_turf(fire), 1)) || ambient_free_turf_near(site.center, 2) || site.center
-	var/mob/living/basic/ambient_npc/stray/stranded/npc = new npc_type(where, site.data["identity"])
-	npc.set_place(site)
-	npc.scale_health(site.health_multiplier())
-	site.state = AMBIENT_SITE_ACTIVE
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/npc = site.spawn_npc(npc_type, where, site.data["identity"])
+	if(!npc)
+		return FALSE
 	site.data["identity"] = npc.stray_identity()
 	ambient_offer_recruit(npc)
 	return TRUE
@@ -158,15 +157,13 @@
 // THE STRANDED SURVIVOR
 // =========================================================================
 
-/mob/living/basic/ambient_npc/stray/stranded
+/mob/living/carbon/human/npc/ambient_npc/stray/stranded
 	name = "stranded spacer"
 	desc = "Sunburnt, grubby and very glad to see a ship."
-	outfit_choices = list(
-		/datum/outfit/ambient_stranded,
-		/datum/outfit/ambient_stranded/hauler,
-		/datum/outfit/ambient_stranded/engineer,
-	)
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_stranded
 	dialogue_section = "stranded"
+	gives_gifts = TRUE
 	routine = list(
 		/datum/ambient_activity/stray_fire = 3,
 		/datum/ambient_activity/stray_flare = 1,
@@ -193,6 +190,20 @@
 	name = "Stranded Engineer"
 	uniform = /obj/item/clothing/under/rank/engineering/engineer
 	suit = null
+
+/// Further out, an armour vest pulled off the wreck
+/datum/outfit/ambient_stranded/vest
+	name = "Stranded Spacer in a vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/datum/outfit/ambient_stranded/hauler/vest
+	name = "Stranded Hauler in a vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/// The stranded by band (AM-1)
+/datum/human_npc_outfit_table/ambient_stranded
+	green = list(/datum/outfit/ambient_stranded = 1, /datum/outfit/ambient_stranded/hauler = 1, /datum/outfit/ambient_stranded/engineer = 1)
+	red = list(/datum/outfit/ambient_stranded/vest = 1, /datum/outfit/ambient_stranded/hauler/vest = 1)
 
 // =========================================================================
 // WHAT THEY DO

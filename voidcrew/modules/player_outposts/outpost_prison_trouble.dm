@@ -11,10 +11,10 @@
  *   first; a few seconds later the prisoner may swing. Nobody squares up to someone who just fed,
  *   treated or clothed them.
  * - Two prisoners below PRISONER_FIGHT_MOOD near each other may argue, then scuffle until one
- *   yields. Prisoners never kill each other.
- * - At PRISONER_BEATEN_BELOW percent health they collapse for a while and can be dragged.
- * - No single blow kills a prisoner on their feet: it leaves them at 1 health, collapsed. Only a
- *   prisoner who is already down can be killed.
+ *   yields: real punches, or a real shiv in a stabbing (outpost_prison_incidents.dm). A loser who has
+ *   had enough gives up and lies down, and the winner leaves anyone down alone. A stabbing can kill.
+ * - Put down for real (tg crit, stamina crit, a knockdown) they collapse, and can be dragged until
+ *   they get up. Nothing stops a blow killing them: tg's crit band usually leaves them down, not dead.
  * - Below PRISONER_CLIMB_MOOD, a serving hatch left open on both sides gets climbed.
  * Staff who hit a prisoner making trouble, or one who just struck them, cost that prisoner no mood.
  * A player's blow on a calm prisoner on their feet makes them hit back for a while, or back off
@@ -28,8 +28,6 @@
  * level; confront() is the strike itself.
  */
 
-/// Trait source for a prisoner lying beaten
-#define PRISONER_BEATEN_TRAIT "outpost_prisoner_beaten"
 /// Offset source for a prisoner half way over a serving hatch
 #define PRISONER_CLIMB_OFFSET "outpost_prisoner_climb"
 #define PRISONER_CLIMB_HOP_OFFSET "outpost_prisoner_climb_hop"
@@ -41,22 +39,17 @@
 #define ACTIVITY_CONTINUE 0
 #define ACTIVITY_DONE 1
 
-/mob/living/basic/outpost_prisoner
-	// Swings at staff and each other; rioters with a shiv hit harder, and can wound (update_melee()).
-	melee_damage_lower = PRISONER_PUNCH_MIN
-	melee_damage_upper = PRISONER_PUNCH_MAX
-	attack_verb_continuous = "punches"
-	attack_verb_simple = "punch"
-	attack_sound = 'sound/items/weapons/punch1.ogg'
-	attack_vis_effect = ATTACK_EFFECT_PUNCH
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// 0 (furious) to 100 (content)
 	var/mood = PRISONER_MOOD_START
 	/// What trouble they are in: null, or PRISONER_TROUBLE_FIGHT, _RIOT, _BREAKOUT, _LOOSE or _WRECK
 	var/trouble
 	/// world.time their last trouble ended; staff finishing a subdual just after it are not to blame
 	var/trouble_ended_at = 0
-	/// Seconds left lying beaten, or 0
-	var/beaten_left = 0
+	/// They went down (crit, stamina crit, a knockdown) and haven't got up yet: collapse() to recover()
+	var/beaten = FALSE
+	/// A fighter who gave up lies down by choice until this world.time (yield_fight())
+	var/yielded_until = 0
 	/// The member of staff they are squaring up to, and the seconds before they decide to swing
 	var/datum/weakref/threat_ref
 	var/threat_left = 0
@@ -89,7 +82,7 @@
 	/// Who they last swung at themselves, and when: hitting back is not held against staff
 	var/datum/weakref/struck_ref
 	var/struck_at = 0
-	/// A baton hit stops their blows until this world.time
+	/// A baton hit stops their blows until this world.time (tg's baton knockdown and stamina do the rest)
 	var/baton_stop_until = 0
 	/// REF() of people who fed, treated or clothed them -> world.time; they are not threatened for a while
 	var/list/helped_by
@@ -113,12 +106,13 @@
 	COOLDOWN_DECLARE(talk_cooldown)
 
 /// Hooks up what trouble needs: who hit them, the baton, turret fire, help and talk from staff
-/mob/living/basic/outpost_prisoner/proc/setup_trouble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_trouble()
 	AddElement(/datum/element/relay_attackers)
 	AddElement(/datum/element/outpost_prisoner_gratitude)
 	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
 	RegisterSignal(src, COMSIG_MOB_BATONED, PROC_REF(on_batoned))
-	RegisterSignal(src, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_projectile_prehit))
+	// Turret fire is noted (outpost_prison_security.dm); every shot lands as it would on anyone.
+	RegisterSignal(src, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_shot))
 	// A member's empty hand opens the talk menu (on_talk_menu_click() in outpost_prison_warden_tools.dm), where the talk-down is.
 
 /**
@@ -129,7 +123,7 @@
  * the empty-level shortcuts run in front of people: fend_for_self() had prisoners eat food and
  * change into uniforms off a hatch across the yard, without walking over.
  */
-/proc/outpost_prison_ai_running(mob/living/basic/npc)
+/proc/outpost_prison_ai_running(mob/living/npc)
 	var/datum/ai_controller/controller = npc?.ai_controller
 	if(!controller || npc.stat == DEAD)
 		return FALSE
@@ -141,35 +135,35 @@
 	return length(SSmobs.clients_by_zlevel[here.z]) > 0
 
 /// Whether their AI is running, which it is only while someone is on the level to see them
-/mob/living/basic/outpost_prisoner/proc/ai_running()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/ai_running()
 	return outpost_prison_ai_running(src)
 
 /// Whether anything about trouble has them busy, so their routine waits: trouble itself, being talked to, cuffs going on or off, or going at a creature (outpost_prison_panic.dm)
-/mob/living/basic/outpost_prisoner/proc/in_trouble()
-	return trouble || threat_ref || swing_ref || climb_ref || beaten_left > 0 || talking || cuff_work || creature_foe()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/in_trouble()
+	return trouble || threat_ref || swing_ref || climb_ref || beaten || talking || cuff_work || creature_foe()
 
 /// Whether they are on their feet and able to go after a target
-/mob/living/basic/outpost_prisoner/proc/trouble_can_act()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/trouble_can_act()
 	return stat == CONSCIOUS && phase == PRISONER_PRESENT && !can_be_dragged() && !pulledby && !climb_ref
 
 /// Rioting or breaking out, inside the cell block
-/mob/living/basic/outpost_prisoner/proc/is_rioting()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_rioting()
 	return trouble == PRISONER_TROUBLE_RIOT || trouble == PRISONER_TROUBLE_BREAKOUT
 
 /// Whether the treasury is paid for them now: not while fighting, rioting, loose or wrecking their cell
-/mob/living/basic/outpost_prisoner/proc/earning_pay()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/earning_pay()
 	return !trouble
 
 /// Whether their sentence runs: not while rioting or loose, or while an experiment under way needs them (outpost_prison_experiments.dm)
-/mob/living/basic/outpost_prisoner/proc/serving_sentence()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/serving_sentence()
 	return !is_rioting() && trouble != PRISONER_TROUBLE_LOOSE && !prison?.held_for_experiment(src)
 
 /// Their trouble just ended; staff finishing it off in the next few seconds are not to blame
-/mob/living/basic/outpost_prisoner/proc/note_trouble_ended()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/note_trouble_ended()
 	trouble_ended_at = world.time
 
 /// Says a line for `context`, or failing that one for `fallback`
-/mob/living/basic/outpost_prisoner/proc/say_context_or(context, fallback, mob/living/basic/outpost_prisoner/other)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/say_context_or(context, fallback, mob/living/carbon/human/npc/outpost_prisoner/other)
 	if(say_context(context, other))
 		return TRUE
 	return fallback ? say_context(fallback, other) : FALSE
@@ -177,7 +171,7 @@
 // ===== MOOD =====
 
 /// How hard losses hit them, by personality, and harder or softer for some bounty prisoners (outpost_prison_bounty.dm)
-/mob/living/basic/outpost_prisoner/proc/mood_scale()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/mood_scale()
 	. = 1
 	switch(personality)
 		if("grumpy")
@@ -191,13 +185,13 @@
 	. *= bounty_mood_scale()
 
 /// Changes their mood at once. Losses are scaled by personality.
-/mob/living/basic/outpost_prisoner/proc/adjust_mood(amount)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/adjust_mood(amount)
 	if(amount < 0)
 		amount *= mood_scale()
 	mood = clamp(mood + amount, 0, 100)
 	return mood
 
-/mob/living/basic/outpost_prisoner/proc/set_mood(amount)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/set_mood(amount)
 	mood = clamp(amount, 0, 100)
 
 /**
@@ -205,7 +199,7 @@
  * (needs_mood_per_minute()), the state of the wing (wing_mood_per_minute()) and the rest below.
  * In the quiet after a riot the wing's state costs nothing and every other loss is halved.
  */
-/mob/living/basic/outpost_prisoner/proc/mood_drift_per_minute()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/mood_drift_per_minute()
 	var/list/from_needs = needs_mood_per_minute()
 	var/list/from_wing = wing_mood_per_minute()
 	var/subdued = prison?.subdued_left > 0
@@ -232,32 +226,15 @@
 	return gain - loss * mood_scale()
 
 /// Time passing: their mood drifts
-/mob/living/basic/outpost_prisoner/proc/drift_mood(seconds)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/drift_mood(seconds)
 	if(stat == DEAD)
 		return
 	mood = clamp(mood + mood_drift_per_minute() * seconds / 60, 0, 100)
 
 // ===== BEING HIT =====
 
-/**
- * No single blow kills a prisoner on their feet: damage that would leaves them at 1 health, and
- * they collapse. A prisoner who is already down can be killed, which is always someone's choice.
- * Forced damage (admin tools) and gibbing are not spared.
- */
-/mob/living/basic/outpost_prisoner/adjust_health(amount, updating_health = TRUE, forced = FALSE)
-	var/spared = FALSE
-	// Cuffed but on their feet still counts as on their feet.
-	if(amount > 0 && !forced && stat == CONSCIOUS && phase == PRISONER_PRESENT && !is_down())
-		var/health_left = maxHealth - bruteloss
-		if(amount >= health_left)
-			amount = max(0, health_left - 1)
-			spared = TRUE
-	. = ..()
-	if(spared)
-		INVOKE_ASYNC(src, PROC_REF(collapse))
-
 /// Anyone on staff hitting them is noted (hit_by_staff()), and a player's blow may make them hit back (react_to_hit())
-/mob/living/basic/outpost_prisoner/proc/on_attacked(datum/source, atom/attacker, attack_flags)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
 		return
@@ -265,7 +242,7 @@
 	react_to_hit(attacker, stamina_only = !(attack_flags & ATTACKER_DAMAGING_ATTACK))
 
 /// A baton hit: noted like any other, and whatever blows they were throwing stop at once
-/mob/living/basic/outpost_prisoner/proc/on_batoned(datum/source, mob/living/user, obj/item/melee/baton/baton)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_batoned(datum/source, mob/living/user, obj/item/melee/baton/baton)
 	SIGNAL_HANDLER
 	hit_by_staff(user)
 	stop_blows()
@@ -274,31 +251,27 @@
 	// A stabbing or a snap they were working up to is off (outpost_prison_incidents.dm).
 	prison?.wildcard_batoned(src, user)
 
-/// Drops the shiv and pauses their attacks for PRISONER_BATON_STOP
-/mob/living/basic/outpost_prisoner/proc/stop_blows()
-	drop_shiv()
+/// Pauses their attacks for PRISONER_BATON_STOP. The baton's own knockdown makes them drop what they hold, as anyone does.
+/mob/living/carbon/human/npc/outpost_prisoner/proc/stop_blows()
 	baton_stop_until = world.time + PRISONER_BATON_STOP
 	changeNext_move(PRISONER_BATON_STOP)
 
 /**
- * Shots from machines (outpost turrets) put a death down to staff, but never cost mood. A machine
- * never finishes off a prisoner who is already down: its shots pass over them, so a turret stops
- * a runner and does not kill them.
+ * Shots from machines (outpost turrets) put a death down to staff, but never cost mood. Every shot lands
+ * as it would on anyone; which prisoner a turret fires at, and with what, is the turret's choice
+ * (outpost_prison_security.dm).
  */
-/mob/living/basic/outpost_prisoner/proc/on_projectile_prehit(datum/source, obj/projectile/shot)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_shot(datum/source, obj/projectile/shot)
 	SIGNAL_HANDLER
 	if(!shot.is_hostile_projectile() || !ismachinery(shot.firer))
-		return NONE
-	if(can_be_dragged())
-		return PROJECTILE_INTERRUPT_HIT_PHASE
+		return
 	// Someone watching may remark on a turret's shot (outpost_prison_security.dm)
 	if(istype(shot.firer, /obj/machinery/porta_turret))
 		prison?.note_turret_hit(src)
 	hit_by_staff(shot.firer)
-	return NONE
 
 /// Whether an attacker counts as staff: people, borgs, anyone with a mind, and mechs
-/mob/living/basic/outpost_prisoner/proc/is_staff_attacker(atom/attacker)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_staff_attacker(atom/attacker)
 	return ismecha(attacker) || is_outpost_prison_staff(attacker)
 
 /**
@@ -307,7 +280,7 @@
  * moment ago, or struck this attacker themselves in the last PRISONER_PROVOKED_TIME. Hitting back
  * at the player who started it by hitting them while calm is no excuse for that player (provoker_ref).
  */
-/mob/living/basic/outpost_prisoner/proc/hit_justified(atom/attacker)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/hit_justified(atom/attacker)
 	// A guard only ever strikes violence already under way (outpost_prison_guards.dm).
 	if(is_outpost_prison_guard(attacker))
 		return TRUE
@@ -333,8 +306,9 @@
  * Other prisoners, creatures and NPCs are not staff. Machines (turrets) get the blame for a death
  * but do not cost mood. Returns TRUE if it cost mood.
  */
-/mob/living/basic/outpost_prisoner/proc/hit_by_staff(atom/attacker)
-	if(phase != PRISONER_PRESENT || is_outpost_prisoner(attacker))
+/mob/living/carbon/human/npc/outpost_prisoner/proc/hit_by_staff(atom/attacker)
+	// A guard's baton only ever meets violence already under way: never held against staff.
+	if(phase != PRISONER_PRESENT || is_outpost_prisoner(attacker) || is_outpost_prison_guard(attacker))
 		return FALSE
 	var/machine = ismachinery(attacker)
 	if(!machine && !is_staff_attacker(attacker))
@@ -349,7 +323,7 @@
 		if(died_at == world.time)
 			prison?.blame_death(src)
 		return FALSE
-	if(beaten_left > 0 && collapsed_at == world.time)
+	if(beaten && collapsed_at == world.time)
 		blame_collapse()
 	if(machine || !COOLDOWN_FINISHED(src, staff_hit_cooldown))
 		return FALSE
@@ -362,12 +336,12 @@
 	return TRUE
 
 /// Whether staff hit them in the last few seconds, so what happens next is on staff
-/mob/living/basic/outpost_prisoner/proc/staff_to_blame()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/staff_to_blame()
 	return last_staff_hit && world.time - last_staff_hit <= PRISONER_STAFF_BLAME_TIME
 
 // ===== HITTING BACK =====
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// The player they are hitting back at, the same weakref as swing_ref while it lasts
 	var/datum/weakref/retaliate_ref
 	/// Seconds that player has been out of reach or out of sight
@@ -405,8 +379,8 @@
  * awake, on their feet and free, and the attacker is a player. Guards, machines, mechs, creatures
  * and other prisoners are not players.
  */
-/mob/living/basic/outpost_prisoner/proc/may_react_to_hit(atom/attacker)
-	if(!prison?.trouble_enabled || phase != PRISONER_PRESENT || stat != CONSCIOUS || can_be_dragged() || climb_ref || beaten_left > 0)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/may_react_to_hit(atom/attacker)
+	if(!prison?.trouble_enabled || phase != PRISONER_PRESENT || stat != CONSCIOUS || can_be_dragged() || climb_ref || beaten)
 		return FALSE
 	if(!isliving(attacker) || is_outpost_prison_guard(attacker))
 		return FALSE
@@ -417,7 +391,7 @@
  * standing PRISONER_STAMINA_REACT_DELAY later, so a baton that puts them down gets nothing. The
  * reaction itself is hit_reaction(). Returns TRUE if one is coming.
  */
-/mob/living/basic/outpost_prisoner/proc/react_to_hit(atom/attacker, stamina_only = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/react_to_hit(atom/attacker, stamina_only = FALSE)
 	if(!may_react_to_hit(attacker) || !COOLDOWN_FINISHED(src, hit_reaction_cooldown))
 		return FALSE
 	COOLDOWN_START(src, hit_reaction_cooldown, PRISONER_HIT_REACTION_GAP)
@@ -428,7 +402,7 @@
 	return TRUE
 
 /// A stamina hit's reaction, if they are still standing
-/mob/living/basic/outpost_prisoner/proc/react_after_stamina_hit(datum/weakref/attacker_ref)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/react_after_stamina_hit(datum/weakref/attacker_ref)
 	var/mob/living/attacker = attacker_ref?.resolve()
 	if(QDELETED(src) || !attacker)
 		return
@@ -440,7 +414,7 @@
  * One already rioting, fighting, squaring up or wrecking goes for the attacker instead, and a
  * loose one's own AI takes the attacker as its target. Returns PRISONER_HIT_FIGHT, _COWER or null.
  */
-/mob/living/basic/outpost_prisoner/proc/hit_reaction(mob/living/attacker)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/hit_reaction(mob/living/attacker)
 	if(QDELETED(src) || QDELETED(attacker) || !may_react_to_hit(attacker))
 		return null
 	if(trouble == PRISONER_TROUBLE_LOOSE)
@@ -467,7 +441,7 @@
  * apply. They chase only PRISONER_RETALIATE_CHASE tiles, inside the cell block. `quiet`: already
  * in trouble, they turn on the attacker without squaring up.
  */
-/mob/living/basic/outpost_prisoner/proc/start_retaliation(mob/living/attacker, quiet = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/start_retaliation(mob/living/attacker, quiet = FALSE)
 	threat_ref = null
 	threat_left = 0
 	if(trouble)
@@ -489,11 +463,11 @@
 	say_context("retaliate")
 
 /// Whether they are hitting back at a player now
-/mob/living/basic/outpost_prisoner/proc/retaliating()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/retaliating()
 	return !!retaliate_ref && swing_ref == retaliate_ref
 
 /// Whether `target` is close enough to go after: in sight, within PRISONER_RETALIATE_CHASE tiles, and in the cell block
-/mob/living/basic/outpost_prisoner/proc/retaliation_in_reach(atom/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/retaliation_in_reach(atom/target)
 	if(!target || target.z != z || get_dist(src, target) > PRISONER_RETALIATE_CHASE || !prison?.in_cell_block(target))
 		return FALSE
 	return (target in view(PRISONER_RETALIATE_CHASE, src))
@@ -504,11 +478,11 @@
  * of them is down, or once the attacker has been out of reach for PRISONER_RETALIATE_LOST_TIME.
  * Called every tick of the prison.
  */
-/mob/living/basic/outpost_prisoner/proc/retaliation_tick(seconds)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/retaliation_tick(seconds)
 	if(!retaliate_ref)
 		return
 	var/mob/living/attacker = retaliate_ref.resolve()
-	if(!retaliating() || !attacker || attacker.stat != CONSCIOUS || stat != CONSCIOUS || can_be_dragged() || beaten_left > 0)
+	if(!retaliating() || !attacker || attacker.stat != CONSCIOUS || stat != CONSCIOUS || can_be_dragged() || beaten)
 		end_retaliation()
 		return
 	if(retaliation_in_reach(attacker))
@@ -519,7 +493,7 @@
 		end_retaliation()
 
 /// Lets it drop: the swing ends, and they won't square up to anyone for the threat cooldown
-/mob/living/basic/outpost_prisoner/proc/end_retaliation()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/end_retaliation()
 	if(retaliating())
 		swing_ref = null
 		swing_left = 0
@@ -528,7 +502,7 @@
 	retaliate_lost = 0
 
 /// Backs off a few tiles from `attacker` with a line, and stays there a moment
-/mob/living/basic/outpost_prisoner/proc/cower_from(mob/living/attacker)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/cower_from(mob/living/attacker)
 	end_activity()
 	stand_up()
 	face_atom(attacker)
@@ -572,39 +546,45 @@
 
 // ===== BEATEN =====
 
-/// Collapses when a hit leaves them at PRISONER_BEATEN_BELOW percent or less
-/mob/living/basic/outpost_prisoner/proc/check_beaten()
-	if(stat == DEAD || beaten_left > 0 || phase != PRISONER_PRESENT || !prison?.trouble_enabled)
+/// Whether they went down and haven't got up yet (collapse())
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_beaten()
+	return beaten
+
+/**
+ * After a real hit: if it put them down (tg crit, stamina crit, a knockdown), they collapse. Getting
+ * up again is tg's too: out of crit, stamina back, the knockdown over (beaten_tick()).
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/check_beaten()
+	if(stat == DEAD || beaten || phase != PRISONER_PRESENT || !prison?.trouble_enabled)
 		return FALSE
-	if(health_factor() > PRISONER_BEATEN_BELOW)
+	if(!is_down())
 		return FALSE
 	collapse()
 	return TRUE
 
 /**
- * Down for `down_time` seconds, or until treated above PRISONER_RECOVER_ABOVE percent. `quiet`
- * leaves the message and line to the caller (a fighter yielding).
+ * They go down. Already down (the hit that called check_beaten()), it is the moment they hit the
+ * floor; still on their feet (a creature slamming them), they are knocked down for real first.
+ * `quiet` leaves the message and line to the caller (a fighter yielding).
  */
-/mob/living/basic/outpost_prisoner/proc/collapse(down_time = PRISONER_BEATEN_TIME, quiet = FALSE)
-	if(stat == DEAD || beaten_left > 0)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/collapse(quiet = FALSE)
+	if(stat == DEAD || beaten)
 		return
-	beaten_left = down_time
+	if(!is_down())
+		Knockdown(PRISONER_COLLAPSE_KNOCKDOWN)
+	beaten = TRUE
 	collapsed_at = world.time
 	beaten_by_staff = FALSE
 	if(!quiet)
 		visible_message(span_danger("[src] collapses!"))
-	// Being down ends whatever they were up to (on_downed()).
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEATEN_TRAIT)
-	ADD_TRAIT(src, TRAIT_FLOORED, PRISONER_BEATEN_TRAIT)
-	ADD_TRAIT(src, TRAIT_INCAPACITATED, PRISONER_BEATEN_TRAIT)
 	update_bubble()
 	if(staff_to_blame())
 		blame_collapse()
-	if(!quiet)
+	if(!quiet && stat == CONSCIOUS)
 		say_context("beaten")
 
 /// Staff beat them down. Unless they had it coming, their mood drops, and while the wing is restless it riots.
-/mob/living/basic/outpost_prisoner/proc/blame_collapse()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/blame_collapse()
 	if(beaten_by_staff)
 		return
 	beaten_by_staff = TRUE
@@ -614,25 +594,51 @@
 	adjust_mood(-PRISONER_MOOD_BEATEN_BY_STAFF)
 	prison?.trouble_event(PRISON_SPIKE_BEATEN, "[real_name] was beaten down by staff")
 
-/// Gets up again
-/mob/living/basic/outpost_prisoner/proc/recover()
-	if(beaten_left <= 0 && !HAS_TRAIT_FROM(src, TRAIT_INCAPACITATED, PRISONER_BEATEN_TRAIT))
+/**
+ * Every tick of the prison: a fighter who gave up gets up once they've lain long enough (their own
+ * choice), and anyone who went down and is up again has recovered.
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/beaten_tick()
+	if(yielded_until && world.time >= yielded_until)
+		yielded_until = 0
+		// Getting up takes a moment, as it does for anyone (tg's get_up() do_after); not in the prison's tick.
+		if(resting && stat == CONSCIOUS)
+			INVOKE_ASYNC(src, TYPE_PROC_REF(/mob/living, set_resting), FALSE, TRUE)
+	if(beaten && stat == CONSCIOUS && !is_down() && !yielded_until)
+		recover()
+
+/// Back on their feet
+/mob/living/carbon/human/npc/outpost_prisoner/proc/recover()
+	if(!beaten)
 		return
-	beaten_left = 0
-	REMOVE_TRAIT(src, TRAIT_INCAPACITATED, PRISONER_BEATEN_TRAIT)
-	REMOVE_TRAIT(src, TRAIT_FLOORED, PRISONER_BEATEN_TRAIT)
-	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEATEN_TRAIT)
+	beaten = FALSE
 	if(stat == CONSCIOUS)
 		say_context("recovered")
 	prison?.refresh_prisoner_reach(src)
 	update_bubble()
+
+// The base's own crit hook: in crit they collapse (and the prison's lines, not a human NPC voice, are said).
+/mob/living/carbon/human/npc/outpost_prisoner/npc_on_downed()
+	. = ..()
+	INVOKE_ASYNC(src, PROC_REF(check_beaten))
+
+/// The prison speaks for them (say_context()); a few of tg's changes map onto their lines.
+/mob/living/carbon/human/npc/outpost_prisoner/npc_bark(kind, force = FALSE)
+	if(QDELETED(src) || phase != PRISONER_PRESENT)
+		return FALSE
+	switch(kind)
+		if(HUMAN_NPC_BARK_CUFFED)
+			return say_context("cuffed")
+		if(HUMAN_NPC_BARK_UNCUFFED)
+			return say_context("cuffs_off")
+	return FALSE
 
 /**
  * Knocked down, stunned, beaten, cuffed or dead: whatever trouble they were making stops. A rioter
  * drops their shiv and stops swinging, but stays a rioter until shut in a cell: up and free again,
  * they riot on (back_to_rioting()). A fight is over; a wreck stops.
  */
-/mob/living/basic/outpost_prisoner/proc/on_downed()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_downed()
 	if(QDELETED(src))
 		return
 	cancel_threat()
@@ -648,7 +654,7 @@
 		prison?.stop_wreck(src)
 
 /// Drops every kind of trouble at once, for a prisoner who died or is leaving
-/mob/living/basic/outpost_prisoner/proc/clear_trouble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/clear_trouble()
 	cancel_threat()
 	stop_climb()
 	clear_turret_reaction()
@@ -665,29 +671,25 @@
 	riot_target_ref = null
 	riot_target_hits = 0
 	riot_victim_ref = null
-	if(beaten_left > 0 || HAS_TRAIT_FROM(src, TRAIT_INCAPACITATED, PRISONER_BEATEN_TRAIT))
-		beaten_left = 0
-		REMOVE_TRAIT(src, TRAIT_INCAPACITATED, PRISONER_BEATEN_TRAIT)
-		REMOVE_TRAIT(src, TRAIT_FLOORED, PRISONER_BEATEN_TRAIT)
-		REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEATEN_TRAIT)
+	beaten = FALSE
+	yielded_until = 0
 	update_bubble()
 
 /**
  * Up and free again, a rioter grabs their shiv back if it lies at their feet. Returns TRUE if
  * they did. Staff who kick it away or pick it up leave them their fists.
  */
-/mob/living/basic/outpost_prisoner/proc/back_to_rioting()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/back_to_rioting()
 	if(QDELETED(src) || !is_rioting() || surrendered_to_turret() || stat != CONSCIOUS || can_be_dragged() || has_shiv() || held_item || !isturf(loc))
 		return FALSE
 	var/obj/item/knife/shiv/shiv = locate() in loc
 	if(!shiv || !take_item(shiv))
 		return FALSE
-	update_melee()
 	visible_message(span_warning("[src] snatches [shiv] back up!"))
 	return TRUE
 
 /// A rioter stops, when the riot is over: the shiv drops, any breakout clock stops, and they settle at PRISONER_RIOT_CALM_MOOD
-/mob/living/basic/outpost_prisoner/proc/calm_down()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/calm_down()
 	if(!is_rioting())
 		return
 	trouble = null
@@ -699,88 +701,37 @@
 	riot_victim_ref = null
 	drop_shiv()
 	set_mood(PRISONER_RIOT_CALM_MOOD)
-	update_melee()
 	update_bubble()
 
-/// Losing a fight: they give up and stay down for PRISONER_FIGHT_YIELD_TIME
-/mob/living/basic/outpost_prisoner/proc/yield_fight()
+/**
+ * Losing a fight, they decide they've had enough: they give up and lie down, and stay down for
+ * PRISONER_FIGHT_YIELD_TIME seconds by choice (tg resting). The winner leaves anyone down alone (strike()).
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/yield_fight()
 	var/datum/outpost_prison_fight/brawl = fight
 	visible_message(span_warning("[src] gives up and goes down."))
 	say_context_or("fight_yield", "beaten")
-	collapse(PRISONER_FIGHT_YIELD_TIME, quiet = TRUE)
+	if(stat == CONSCIOUS)
+		set_resting(TRUE, silent = TRUE)
+	yielded_until = world.time + PRISONER_FIGHT_YIELD_TIME * (1 SECONDS)
+	collapse(quiet = TRUE)
 	if(brawl && !QDELETED(brawl))
 		prison?.end_fight(brawl)
 
 // ===== WEAPONS =====
 
 /// Whether they have a shiv out
-/mob/living/basic/outpost_prisoner/proc/has_shiv()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/has_shiv()
 	return istype(held_item, /obj/item/knife/shiv)
 
-/// Pulls out a shiv made from who knows what, putting down whatever else they held
-/mob/living/basic/outpost_prisoner/proc/draw_shiv()
-	if(has_shiv())
-		return held_item
-	drop_held_item()
-	var/obj/item/knife/shiv/shiv = new(src)
-	held_item = shiv
-	update_melee()
-	update_appearance(UPDATE_OVERLAYS)
-	return shiv
-
 /// Drops a shiv they hold, as a real one on the floor
-/mob/living/basic/outpost_prisoner/proc/drop_shiv()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/drop_shiv()
 	if(!has_shiv())
 		return null
 	var/obj/item/knife/shiv/shiv = drop_held_item()
 	if(shiv)
 		visible_message(span_warning("[src] drops [shiv]."))
-	update_melee()
 	return shiv
-
-/**
- * Fists or a shiv, for the next blow. A shiv hits people as tg's glass shiv does in someone's hand,
- * only harder: each blow a stab or a slash (even odds) with the shiv's wound bonus, so it can leave
- * a puncture or a cut that bleeds. Fists are blunt and never wound. tg's basic mob attack
- * (/mob/living/attack_animal()) hands these vars to apply_damage(); a basic mob's wound_bonus starts
- * at CANT_WOUND, which is why a shiv never wounded anyone before. Blows at other prisoners are
- * strike()'s own and take only the verb and sound from here.
- */
-/mob/living/basic/outpost_prisoner/proc/update_melee()
-	if(has_shiv())
-		melee_damage_lower = PRISONER_SHIV_MIN
-		melee_damage_upper = PRISONER_SHIV_MAX
-		wound_bonus = PRISONER_SHIV_WOUND_BONUS
-		exposed_wound_bonus = PRISONER_SHIV_EXPOSED_WOUND_BONUS
-		attack_sound = 'sound/items/weapons/bladeslice.ogg'
-		attack_vis_effect = ATTACK_EFFECT_SLASH
-		if(prob(50))
-			sharpness = SHARP_POINTY
-			attack_verb_continuous = "stabs"
-			attack_verb_simple = "stab"
-		else
-			sharpness = SHARP_EDGED
-			attack_verb_continuous = "slashes"
-			attack_verb_simple = "slash"
-	else
-		melee_damage_lower = PRISONER_PUNCH_MIN
-		melee_damage_upper = PRISONER_PUNCH_MAX
-		wound_bonus = CANT_WOUND
-		exposed_wound_bonus = 0
-		attack_verb_continuous = "punches"
-		attack_verb_simple = "punch"
-		attack_sound = pick('sound/items/weapons/punch1.ogg', 'sound/items/weapons/punch2.ogg', 'sound/items/weapons/punch3.ogg')
-		attack_vis_effect = ATTACK_EFFECT_PUNCH
-		sharpness = NONE
-	// Some bounty prisoners hit harder (outpost_prison_bounty.dm).
-	melee_damage_lower *= bounty_damage_mult()
-	melee_damage_upper *= bounty_damage_mult()
-
-// Every blow is set up afresh, whether the trouble AI (strike()) or the breakout AI (the outpost
-// patrol's melee) throws it: a new stab or slash, and never a shiv's edge on bare hands.
-/mob/living/basic/outpost_prisoner/melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
-	update_melee()
-	return ..()
 
 // ===== STRIKING =====
 
@@ -789,7 +740,7 @@
  * (outpost_prison_panic.dm), the member of staff they decided to swing at, the other fighter, or a
  * rioter's target. Null means hold still.
  */
-/mob/living/basic/outpost_prisoner/proc/trouble_target()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/trouble_target()
 	if(!trouble_can_act())
 		return null
 	// A bounty boss winding up a riot move, running it or reeling from it holds still (outpost_prison_boss_moves.dm)
@@ -809,13 +760,12 @@
 	return null
 
 /**
- * One blow at `target`, which must be next to them: staff are hit for real, another prisoner is
- * hit but never killed, a serving hatch open on both sides is climbed, a tile (a rioter's way out
+ * One blow at `target`, which must be next to them: people (staff and other prisoners) are hit for real, a serving hatch open on both sides is climbed, a tile (a rioter's way out
  * of the cell block) is stepped onto, and anything else is smashed. While a fight is still an
  * argument they only square up; in a riot's wind-up and after a baton hit, no blows land. Returns
  * TRUE if they acted.
  */
-/mob/living/basic/outpost_prisoner/proc/confront(atom/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/confront(atom/target)
 	if(QDELETED(target) || !trouble_can_act() || world.time < baton_stop_until)
 		return FALSE
 	if(is_rioting() && prison?.riot_windup_left > 0)
@@ -844,7 +794,7 @@
  * Whether a target is close enough to hit. A serving hatch counts from the next tile: its own
  * window door, shut, would otherwise keep them from touching the counter behind it.
  */
-/mob/living/basic/outpost_prisoner/proc/within_reach(atom/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/within_reach(atom/target)
 	if(istype(target, /obj/structure/table/reinforced/prison_hatch))
 		return get_dist(src, target) <= 1
 	return Adjacent(target)
@@ -853,7 +803,7 @@
  * At a serving hatch, from straight in front of it on the yard side: over the counter if both
  * sides are open, otherwise another blow at its window doors.
  */
-/mob/living/basic/outpost_prisoner/proc/work_hatch(obj/structure/table/reinforced/prison_hatch/hatch)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/work_hatch(obj/structure/table/reinforced/prison_hatch/hatch)
 	var/turf/yard_side = hatch.yard_side_turf()
 	if(!yard_side)
 		return FALSE
@@ -865,34 +815,29 @@
 	return smash(hatch)
 
 /**
- * A punch or a stab at someone beside them. At staff it is a real attack, remembered so staff
- * hitting back is not held against them. At another prisoner it is a scuffle: PRISONER_FIGHT_HIT
- * brute, never a killing blow, and a fighter left at PRISONER_FIGHT_YIELD percent or less yields.
+ * A punch, or a stab with the shiv in their hand, at someone beside them: a real attack through their
+ * own hands (outpost_prison_npc_hit()), with tg's damage, armour, wounds and bleeding. At staff it is
+ * remembered, so staff hitting back is not held against them. At another prisoner it is a scuffle:
+ * nobody puts the boot in on someone already down, and a fighter who has taken too much yields
+ * (yield_fight()). A stabbing can kill.
  */
-/mob/living/basic/outpost_prisoner/proc/strike(mob/living/target)
-	if(target.stat == DEAD)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/strike(mob/living/target)
+	if(target.stat == DEAD || world.time < next_move)
 		return FALSE
-	update_melee()
 	if(!is_outpost_prisoner(target))
 		// A blow at an experiment's creature is no blow at staff (outpost_prison_panic.dm).
 		if(!is_outpost_experiment_mob(target))
 			struck_ref = WEAKREF(target)
 			struck_at = world.time
 		trouble_line("fight")
-		return !!melee_attack(target)
-	var/mob/living/basic/outpost_prisoner/other = target
-	// Nobody puts the boot in on a prisoner who is already down, and no prisoner kills another.
+		return outpost_prison_npc_hit(src, target, has_shiv() ? held_item : null)
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = target
+	// Nobody puts the boot in on a prisoner who is already down.
 	if(other.can_be_dragged())
 		return FALSE
-	// A shiv (a stabbing, outpost_prison_incidents.dm) hits harder than a fist, though not as hard as at staff.
-	var/damage = min((has_shiv() ? rand(PRISONER_STAB_MIN, PRISONER_STAB_MAX) : rand(PRISONER_FIGHT_HIT_MIN, PRISONER_FIGHT_HIT_MAX)) * bounty_damage_mult(), other.health - 1)
-	do_attack_animation(other, attack_vis_effect)
-	playsound(other, attack_sound, 50, TRUE)
-	other.visible_message(span_danger("[src] [attack_verb_continuous] [other]!"))
-	changeNext_move(melee_attack_cooldown)
 	trouble_line("fight", other)
-	if(damage > 0)
-		other.apply_damage(damage, BRUTE)
+	if(!outpost_prison_npc_hit(src, other, has_shiv() ? held_item : null))
+		return FALSE
 	if(fight && other.fight == fight && other.stat == CONSCIOUS && !other.can_be_dragged() && other.health_factor() <= PRISONER_FIGHT_YIELD)
 		other.yield_fight()
 	return TRUE
@@ -902,11 +847,11 @@
  * judge (hit_exit(), outpost_prison_breakout.dm). Any other door, and anything that is outpost
  * property, is only banged on: it shakes and booms but takes no damage.
  */
-/mob/living/basic/outpost_prisoner/proc/smash(obj/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/smash(obj/target)
 	if(!istype(target) || QDELETED(target))
 		return FALSE
 	do_attack_animation(target, ATTACK_EFFECT_SMASH)
-	changeNext_move(melee_attack_cooldown)
+	changeNext_move(CLICK_CD_MELEE)
 	riot_target_hits++
 	if(prison?.is_exit_blocker(target))
 		return prison.hit_exit(src, target)
@@ -928,7 +873,7 @@
 	return TRUE
 
 /// Now and then a line while fighting, rioting or wrecking, or one for `fallback` when `context` has none
-/mob/living/basic/outpost_prisoner/proc/trouble_line(context, mob/living/basic/outpost_prisoner/other, fallback)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/trouble_line(context, mob/living/carbon/human/npc/outpost_prisoner/other, fallback)
 	if(!COOLDOWN_FINISHED(src, trouble_speech_cooldown) || !prob(35))
 		return FALSE
 	COOLDOWN_START(src, trouble_speech_cooldown, 8 SECONDS)
@@ -946,6 +891,9 @@
 	// A guard that is down, arriving or leaving is nobody's staff.
 	if(is_outpost_prison_guard(person))
 		return is_outpost_prison_guard(person, on_duty = TRUE)
+	// Other human NPCs (Kessler's staff, anyone passing through) are people, but not the wing's staff.
+	if(ishumannpc(person) && isnull(person.client))
+		return FALSE
 	if(ismonkey(person) && isnull(person.mind))
 		return FALSE
 	return ishuman(person) || issilicon(person) || !isnull(person.mind)
@@ -954,7 +902,7 @@
  * The nearest member of staff within `range` tiles who is in the cell block. `spare_helpers`
  * leaves out anyone who fed, treated or clothed them in the last PRISONER_HELPED_GRACE.
  */
-/mob/living/basic/outpost_prisoner/proc/staff_nearby(range, spare_helpers = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/staff_nearby(range, spare_helpers = FALSE)
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/person in view(range, src))
@@ -969,7 +917,7 @@
 	return nearest
 
 /// Squares up to `person`: a threat, and in a few seconds maybe a swing
-/mob/living/basic/outpost_prisoner/proc/threaten(mob/living/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/threaten(mob/living/person)
 	end_activity()
 	stand_up()
 	threat_ref = WEAKREF(person)
@@ -979,7 +927,7 @@
 	say_context("threaten_staff")
 	return TRUE
 
-/mob/living/basic/outpost_prisoner/proc/cancel_threat()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/cancel_threat()
 	if(!threat_ref && !swing_ref)
 		return
 	threat_ref = null
@@ -992,7 +940,7 @@
  * A threat's time is up: maybe a swing. Next to them it lands at once; a tile further off, the AI
  * closes in for it. Returns TRUE if they decided to swing.
  */
-/mob/living/basic/outpost_prisoner/proc/decide_swing(mob/living/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/decide_swing(mob/living/person)
 	threat_ref = null
 	threat_left = 0
 	threat_cooldown = PRISONER_THREAT_COOLDOWN
@@ -1007,19 +955,19 @@
 // ===== HELP AND TALK =====
 
 /// Someone fed, treated or clothed them (or tried to): no threats at them for a while, and a threat at them ends
-/mob/living/basic/outpost_prisoner/proc/note_helped(mob/living/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/note_helped(mob/living/person)
 	if(!istype(person))
 		return
 	LAZYSET(helped_by, REF(person), world.time)
 	if(threat_ref?.resolve() == person || swing_ref?.resolve() == person)
 		cancel_threat()
 
-/mob/living/basic/outpost_prisoner/proc/recently_helped_by(mob/living/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/recently_helped_by(mob/living/person)
 	var/when = LAZYACCESS(helped_by, REF(person))
 	return when && world.time - when <= PRISONER_HELPED_GRACE
 
 /// Whether they will listen to anyone right now
-/mob/living/basic/outpost_prisoner/proc/will_listen()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/will_listen()
 	return !is_rioting() && trouble != PRISONER_TROUBLE_LOOSE && trouble != PRISONER_TROUBLE_WRECK && mood >= PRISONER_TALK_MIN_MOOD
 
 /**
@@ -1028,7 +976,7 @@
  * the loose, cell wreckers and anyone below PRISONER_TALK_MIN_MOOD won't listen. Returns TRUE if
  * the talk did anything.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_down(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_down(mob/living/user)
 	if(talking || QDELETED(user))
 		return FALSE
 	if(!will_listen())
@@ -1064,7 +1012,7 @@
 	face_atom(user)
 	var/said = FALSE
 	if(fight && !fight.fighting)
-		var/mob/living/basic/outpost_prisoner/opponent = fight.opponent_of(src)
+		var/mob/living/carbon/human/npc/outpost_prisoner/opponent = fight.opponent_of(src)
 		prison?.end_fight(fight)
 		said = say_context("fight_talked_down", opponent)
 		prison?.add_log("[user.name] talked down a fight between [real_name] and [opponent?.real_name].")
@@ -1089,7 +1037,7 @@
  * Starts over a serving hatch left open on both sides, from the yard side. Takes PRISONER_CLIMB_TIME
  * seconds: they scramble up onto the counter halfway through, then drop down on the office side.
  */
-/mob/living/basic/outpost_prisoner/proc/start_climb(obj/structure/table/reinforced/prison_hatch/hatch)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/start_climb(obj/structure/table/reinforced/prison_hatch/hatch)
 	if(climb_ref || !hatch?.both_sides_open() || loc != hatch.yard_side_turf() || !trouble_can_act())
 		return FALSE
 	stand_up()
@@ -1105,11 +1053,11 @@
 	return TRUE
 
 /// Whether a climber is up on the counter
-/mob/living/basic/outpost_prisoner/proc/on_hatch_counter(obj/structure/table/reinforced/prison_hatch/hatch)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_hatch_counter(obj/structure/table/reinforced/prison_hatch/hatch)
 	return hatch && loc == hatch.loc
 
 /// Advances a climb: up onto the counter halfway, down the office side when the time is up; back down to the yard if a side shuts or they are stopped
-/mob/living/basic/outpost_prisoner/proc/climb_tick(seconds)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/climb_tick(seconds)
 	var/obj/structure/table/reinforced/prison_hatch/hatch = climb_ref?.resolve()
 	if(!hatch || !hatch.both_sides_open() || stat != CONSCIOUS || can_be_dragged() || pulledby || get_dist(src, hatch) > 1)
 		stop_climb(fell = TRUE)
@@ -1131,7 +1079,7 @@
 	return TRUE
 
 /// Moves them onto `destination` next to them, gliding over from where they stood rather than blinking there
-/mob/living/basic/outpost_prisoner/proc/hop_to(turf/destination)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/hop_to(turf/destination)
 	var/turf/from = get_turf(src)
 	forceMove(destination)
 	if(!from || loc != destination)
@@ -1139,7 +1087,7 @@
 	add_offsets(PRISONER_CLIMB_HOP_OFFSET, x_add = (from.x - destination.x) * ICON_SIZE_X, y_add = (from.y - destination.y) * ICON_SIZE_Y, animate = FALSE)
 	remove_offsets(PRISONER_CLIMB_HOP_OFFSET)
 
-/mob/living/basic/outpost_prisoner/proc/stop_climb(fell = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/stop_climb(fell = FALSE)
 	if(!climb_ref)
 		return
 	var/obj/structure/table/reinforced/prison_hatch/hatch = climb_ref.resolve()
@@ -1161,7 +1109,7 @@
 /datum/ai_planning_subtree/outpost_prisoner_trouble
 
 /datum/ai_planning_subtree/outpost_prisoner_trouble/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	if(!istype(prisoner))
 		return
 	// Walking away from a turret's warning comes first (outpost_prison_security.dm), then a rioter
@@ -1187,12 +1135,12 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(QDELETED(target))
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	prisoner.confront_waits = 0
 	set_movement_target(controller, target)
 
 /datum/ai_behavior/outpost_prisoner_confront/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	var/atom/target = controller.blackboard[target_key]
 	// Broken, or something else comes first now (staff in reach, a way out opened): not a failure to
 	// reach it, so a rioter can come back to the door they were breaking.
@@ -1217,11 +1165,11 @@
 	var/atom/target = controller.blackboard[target_key]
 	controller.clear_blackboard_key(target_key)
 	if(!succeeded)
-		var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 		prisoner?.trouble_move_failed(target)
 
 /// Could not get to a target: a rioter leaves it alone for a while
-/mob/living/basic/outpost_prisoner/proc/trouble_move_failed(atom/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/trouble_move_failed(atom/target)
 	if(!target)
 		return
 	if(riot_target_ref?.resolve() == target)
@@ -1318,7 +1266,7 @@
 			focus = tile
 			break
 	if(!focus)
-		for(var/mob/living/basic/outpost_prisoner/other in prisoner.prison.prisoners)
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoner.prison.prisoners)
 			if(other != prisoner && prisoner.walkable[get_turf(other)])
 				focus = get_turf(other)
 				break
@@ -1415,7 +1363,7 @@
 
 /datum/element/outpost_prisoner_gratitude/Attach(datum/target)
 	. = ..()
-	if(!istype(target, /mob/living/basic/outpost_prisoner))
+	if(!istype(target, /mob/living/carbon/human/npc/outpost_prisoner))
 		return ELEMENT_INCOMPATIBLE
 	RegisterSignal(target, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_item_interaction))
 
@@ -1423,7 +1371,7 @@
 	UnregisterSignal(source, COMSIG_ATOM_ITEM_INTERACTION)
 	return ..()
 
-/datum/element/outpost_prisoner_gratitude/proc/on_item_interaction(mob/living/basic/outpost_prisoner/source, mob/living/user, obj/item/tool, list/modifiers)
+/datum/element/outpost_prisoner_gratitude/proc/on_item_interaction(mob/living/carbon/human/npc/outpost_prisoner/source, mob/living/user, obj/item/tool, list/modifiers)
 	SIGNAL_HANDLER
 	if(!istype(user) || user.combat_mode)
 		return NONE

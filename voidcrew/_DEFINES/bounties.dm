@@ -28,12 +28,14 @@
 #define BOUNTY_ARCHETYPE_BOSS "boss"
 
 // ===== FIGHTING STYLES =====
-// A normal criminal fights in one of the first six; a meek one always carries the holdout.
+// A normal criminal fights in one of the first eight; a meek one always carries the holdout.
 
 #define BOUNTY_STYLE_BRAWLER "brawler"
 #define BOUNTY_STYLE_KNIFE "knife"
 #define BOUNTY_STYLE_PISTOL "pistol"
 #define BOUNTY_STYLE_SHOTGUN "shotgun"
+#define BOUNTY_STYLE_SMG "smg"
+#define BOUNTY_STYLE_REVOLVER "revolver"
 #define BOUNTY_STYLE_CLUB "club"
 #define BOUNTY_STYLE_BOTTLE "bottle"
 #define BOUNTY_STYLE_HOLDOUT "holdout"
@@ -46,6 +48,8 @@
 #define BOUNTY_KIT_DEMOLITIONIST "demolitionist"
 #define BOUNTY_KIT_GHOST "ghost"
 #define BOUNTY_KIT_HEAVY "heavy"
+/// Its kit is its chrome (chrome/bounty_cyberpsycho.dm): the rarest
+#define BOUNTY_KIT_CYBERPSYCHO "cyberpsycho"
 
 // ===== PLACEMENT KINDS =====
 
@@ -70,10 +74,10 @@
 // What capture_state() (P2) returns, listed in the order it checks them. The pad pays by these (P5).
 
 #define BOUNTY_STATE_DEAD "dead"
-/// At or below the downed line, cuffed or not
+/// In crit (tg's TRAIT_CRITICAL_CONDITION, soft or hard), cuffed or not
 #define BOUNTY_STATE_DOWNED "downed"
 #define BOUNTY_STATE_RESTRAINED "restrained"
-/// Stamina crit, knocked down, paralysed, or surrendered (TRAIT_BOUNTY_SURRENDERED)
+/// Stamina crit, knocked down, stunned, paralysed (tg's *surrender too), unconscious or asleep
 #define BOUNTY_STATE_STUNNED "stunned"
 /// Standing and free: the pad refuses it
 #define BOUNTY_STATE_FREE "free"
@@ -117,14 +121,12 @@
 
 /// Trait source for everything the bounty packages put on a mob
 #define BOUNTY_TRAIT "bounty"
-/// A normal criminal has given up (P3): it can't attack, and capture_state() (P2) reads it as BOUNTY_STATE_STUNNED
-#define TRAIT_BOUNTY_SURRENDERED "bounty_surrendered"
 
 // ===== SIGNALS =====
 
-/// Sent by P2 on a criminal when its health falls to the downed line: ()
+/// Sent by P2 on a criminal when it goes into tg's crit (soft or hard): ()
 #define COMSIG_BOUNTY_CRIMINAL_DOWNED "bounty_criminal_downed"
-/// Sent by P2 on a criminal when it gets back up after the recovery time: ()
+/// Sent by P2 on a criminal when it comes out of crit, or gets up from stamina crit: ()
 #define COMSIG_BOUNTY_CRIMINAL_RECOVERED "bounty_criminal_recovered"
 /// Sent by P2 on a criminal when restraints go on: (mob/user)
 #define COMSIG_BOUNTY_CRIMINAL_RESTRAINED "bounty_criminal_restrained"

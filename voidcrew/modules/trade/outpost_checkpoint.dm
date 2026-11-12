@@ -941,7 +941,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 	if(REVERSE_DIR(to_dir) != dir)
 		return FALSE
 	// The outpost's own people go out through it only when they are leaving for good
-	var/mob/living/basic/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
+	var/mob/living/carbon/human/npc/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
 	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave))
 		return FALSE
 	return TRUE

@@ -51,7 +51,9 @@
 	))
 
 /datum/mission/field_expedition/build_objectives()
-	add_objective(new /datum/mission_objective/field/plant_quest)
+	var/datum/mission_objective/field/plant_quest/plant = new
+	plant.scene_type = /datum/mission_scene/crash
+	add_objective(plant)
 	add_objective(new /datum/mission_objective/deliver/bound)
 
 /// Picking the core up can wake the neighborhood (once per era)
@@ -64,7 +66,7 @@
 	UnregisterSignal(source, COMSIG_ITEM_PICKUP)
 	if(failed || completed || !wave_theme || !prob(ambush_chance))
 		return
-	new wave_theme(get_turf(taker), list(1, 2))
+	new wave_theme(get_turf(taker), list(1, 2), TRUE)
 	servant?.ship_notify("[name]: ground team disturbed something at the crash site.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 /datum/mission/field_expedition/update_text()

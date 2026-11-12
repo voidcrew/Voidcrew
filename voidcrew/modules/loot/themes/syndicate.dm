@@ -9,6 +9,11 @@
 // Cyberware rides the same two channels: the parlor's smuggling cavity and
 // door spike sit at uncommon, and the three voucher-only pieces an operative
 // would carry (cloak weave, wire, reflex shunt) sit at the bottom of prime.
+// The camo and reflex lines follow the same split: the street weave and the
+// taped reflex rig at uncommon, the service lattice in prime, and the live
+// wire beside the plain one in the red melee extras. The chrome added with the
+// cyberware lines sits at about half the weight of the older entries, so the
+// syndicate tables stay mostly guns, gear and contraband.
 // =========================================================================
 
 /datum/loot_theme/syndicate
@@ -17,12 +22,14 @@
 	gun_pool = LOOT_GUN_POOL_SYNDICATE
 	gun_extras = list(
 		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher = 1,
 			/obj/item/gun/ballistic/automatic/pistol/deagle = 1,
 			/obj/item/gun/ballistic/revolver = 1,
 			/obj/item/gun/ballistic/revolver/c38/housecall = 1,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/rifle/sniper_rifle = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/ballistic/shotgun/automatic/combat = 1,
 		),
 	)
@@ -30,6 +37,7 @@
 		LOOT_WEAPON_RED = list(
 			/obj/item/knife/understudy = 1,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire = 1,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live = 1,
 		),
 	)
 	guard_themes = list(/obj/effect/zone_mobs/syndicate, /obj/effect/zone_mobs/syndicate/boss)
@@ -45,6 +53,14 @@
 		/datum/shop_sku/ripperdoc/slipwire,
 		/datum/shop_sku/ripperdoc/monowire,
 		/datum/shop_sku/ripperdoc/ghostskin,
+		/datum/shop_sku/ripperdoc/ghostskin_street,
+		/datum/shop_sku/ripperdoc/cascade_street,
+		/datum/shop_sku/ripperdoc/cascade_milspec,
+		/datum/shop_sku/ripperdoc/monowire_live,
+		/datum/shop_sku/ripperdoc/subvocal_mic,
+		/datum/shop_sku/ripperdoc/slipwire_street,
+		/datum/shop_sku/ripperdoc/adrenal_pump,
+		/datum/shop_sku/ripperdoc/slipwire_milspec,
 	)
 	loot_common = list(
 		/obj/item/soap/syndie = 10,
@@ -54,6 +70,8 @@
 		/obj/item/encryptionkey/syndicate = 6,
 		/obj/item/grenade/empgrenade = 5,
 		/obj/item/storage/medkit/tactical = 4,
+		// a throat mic nobody nearby hears
+		/obj/item/organ/cyberimp/cyberware/subvocal_mic = 2,
 	)
 	loot_uncommon = list(
 		/obj/item/grenade/c4 = 6,
@@ -69,6 +87,12 @@
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/mind_reader = 2,
 		/obj/item/dnainjector/loot/anti_glow = 2,
+		// knockoff operative chrome: a patchy camo weave and a taped reflex rig
+		/obj/item/organ/cyberimp/cyberware/ghostskin/street = 2,
+		/obj/item/organ/cyberimp/cyberware/cascade/street = 1,
+		// street operative chrome: a twitchy reflex shunt and an adrenal pump
+		/obj/item/organ/cyberimp/cyberware/slipwire/street = 2,
+		/obj/item/organ/cyberimp/cyberware/adrenal_pump = 2,
 	)
 	loot_prime = list(
 		/obj/item/pen/sleepy = 4,
@@ -77,6 +101,9 @@
 		// Operative chrome: the reflex shunt and refraction weave.
 		/obj/item/organ/cyberimp/cyberware/slipwire = 3,
 		/obj/item/organ/cyberimp/cyberware/ghostskin = 2,
+		/obj/item/organ/cyberimp/cyberware/cascade/milspec = 1,
+		// the boarding team's shunt
+		/obj/item/organ/cyberimp/cyberware/slipwire/milspec = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -101,29 +128,30 @@
 /// Syndicate holdouts: operatives left guarding whatever the base was for.
 /obj/effect/zone_mobs/syndicate
 	name = "zone mob spawner (syndicate)"
+	wave_pod_style = /datum/pod_style/syndicate
 	mobs_green = list(
-		/mob/living/basic/trooper/syndicate/melee = 14,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate = 14,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/syndicate/melee/sword = 8,
-		/mob/living/basic/trooper/syndicate/ranged = 12,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/sword = 8,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner = 12,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/syndicate/ranged/smg = 8,
-		/mob/living/basic/trooper/syndicate/ranged/shotgun = 6,
-		/mob/living/basic/trooper/syndicate/melee/sword = 5,
-		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper = 2,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg = 8,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/shotgun = 6,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/sword = 5,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper = 2,
 	)
 
 /obj/effect/zone_mobs/syndicate/boss
 	name = "zone mob spawner (syndicate boss)"
 	mobs_green = list(
-		/mob/living/basic/trooper/syndicate/melee = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate = 1,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/syndicate/ranged = 2,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner = 2,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper = 1,
-		/mob/living/basic/trooper/syndicate/ranged/shotgun/space/stormtrooper = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper/shotgun = 1,
 	)

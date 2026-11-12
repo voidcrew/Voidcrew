@@ -17,12 +17,8 @@
 #define BOUNTY_DECOY_FLEE_DISTANCE 5
 /// How long a decoy keeps backing off
 #define BOUNTY_DECOY_FLEE_TIME (4 SECONDS)
-/// Move delay of someone walking out to the hangar: a walk, not a run
-#define BOUNTY_OUTPOST_EXIT_DELAY 4
-/// Anyone still walking out after this fades where they are
-#define BOUNTY_OUTPOST_EXIT_TIMEOUT (45 SECONDS)
-/// How long the fade out takes
-#define BOUNTY_OUTPOST_FADE_TIME (1 SECONDS)
+// Walking out to the hangar lift is the human NPC base's npc_walk_out() (human_npc_states.dm): a walk
+// at the body's own pace, with no timeout and no fade. They leave on the lift or out of sight.
 
 /// Trait source for everything P6 puts on a mob
 #define BOUNTY_OUTPOST_TRAIT "bounty_outpost"

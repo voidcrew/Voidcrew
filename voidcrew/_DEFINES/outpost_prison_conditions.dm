@@ -66,9 +66,6 @@
 #define PRISON_RAT_AFTER (3 MINUTES)
 #define PRISON_RAT_CHANCE 20
 #define PRISON_RAT_MAX 2
-/// Brute per 5 seconds on unsafe air, never below PRISON_AIR_HEALTH_FLOOR percent health
-#define PRISON_AIR_DAMAGE 1
-#define PRISON_AIR_HEALTH_FLOOR 30
 /// Unsafe air: pressure (kPa), temperature (K) and plasma (mol) limits
 #define PRISON_AIR_PRESSURE_MIN 60
 #define PRISON_AIR_PRESSURE_MAX 150

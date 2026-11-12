@@ -57,7 +57,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("extrasowner")
 	TEST_ASSERT_NOTNULL(home, "The extras test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 
 	// The warden console's extras block, whatever the packages put in it (build plan section 8)
 	var/list/extras = prison.ui_payload(null)["extras"]

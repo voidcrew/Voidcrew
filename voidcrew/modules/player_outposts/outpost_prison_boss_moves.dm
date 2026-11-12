@@ -49,11 +49,11 @@
 	/// Weakrefs to guards the kingpin paid off, until they are back at work
 	var/list/boss_bribed_guards = list()
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Their riot move, made the first time a riot needs it (boss_move_datum()), or null
 	var/datum/prison_boss_move/boss_move
 
-/mob/living/basic/outpost_prison_guard
+/mob/living/carbon/human/npc/outpost_prison_guard
 	/// world.time until which they stay out of a riot, paid off by the kingpin
 	var/prison_bribed_until = 0
 
@@ -78,6 +78,9 @@
 			return /datum/prison_boss_move/slip_cuffs
 		if(BOUNTY_KIT_HEAVY)
 			return /datum/prison_boss_move/barricade
+		// Its chrome stays out of prison (decision 7): the Juggernaut's charge
+		if(BOUNTY_KIT_CYBERPSYCHO)
+			return /datum/prison_boss_move/charge
 	return null
 
 /**
@@ -88,7 +91,7 @@
 	boss_bribes_tick()
 	if(!trouble_enabled || !riot_active)
 		return
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		var/datum/prison_boss_move/move = prisoner.boss_move_datum()
 		if(!move)
 			continue
@@ -96,7 +99,7 @@
 		move.try_start()
 
 /// A prisoner is leaving the roster (extras_prisoner_leaving()): their move stops
-/datum/outpost_prison/proc/boss_moves_prisoner_leaving(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/boss_moves_prisoner_leaving(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	QDEL_NULL(prisoner.boss_move)
 
 /// The prison is being deleted (extras_destroy())
@@ -108,25 +111,25 @@
  * cell, past the riot's wind-up, awake and on their feet, not held, climbing or batoned, with a member
  * of the wing home and someone on the level. Uncuffed, or cuffed if `cuffed`.
  */
-/datum/outpost_prison/proc/boss_riot_ok(mob/living/basic/outpost_prisoner/prisoner, cuffed = FALSE)
+/datum/outpost_prison/proc/boss_riot_ok(mob/living/carbon/human/npc/outpost_prisoner/prisoner, cuffed = FALSE)
 	if(!trouble_enabled || !riot_active || riot_windup_left > 0 || !crew_home())
 		return FALSE
 	if(QDELETED(prisoner) || prisoner.prison != src || prisoner.stat != CONSCIOUS || !prisoner.riot_at_large())
 		return FALSE
 	if(!in_cell_block(prisoner) || !isturf(prisoner.loc) || !prisoner.ai_running())
 		return FALSE
-	if(prisoner.is_down() || prisoner.pulledby || prisoner.climb_ref || prisoner.beaten_left > 0 || prisoner.surrendered_to_turret() || world.time < prisoner.baton_stop_until)
+	if(prisoner.is_down() || prisoner.pulledby || prisoner.climb_ref || prisoner.is_beaten() || prisoner.surrendered_to_turret() || world.time < prisoner.baton_stop_until)
 		return FALSE
-	return cuffed ? !!prisoner.cuffs : !prisoner.cuffs
+	return cuffed ? !!prisoner.handcuffed : !prisoner.handcuffed
 
 /// Whether a move of `prisoner`'s may land on `person`: awake staff the riot goes for, in the cell block where `prisoner` can get at them
-/datum/outpost_prison/proc/boss_may_hit(mob/living/basic/outpost_prisoner/prisoner, mob/living/person)
+/datum/outpost_prison/proc/boss_may_hit(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/person)
 	if(QDELETED(person) || person == prisoner || !is_outpost_prison_staff(person))
 		return FALSE
 	return in_cell_block(person) && !!prisoner.reachable?[get_turf(person)]
 
 /// The nearest staff a move of `prisoner`'s may land on (boss_may_hit()) within `range` and in sight, or null
-/datum/outpost_prison/proc/boss_nearest_staff(mob/living/basic/outpost_prisoner/prisoner, range = PRISON_BOSS_SIGHT)
+/datum/outpost_prison/proc/boss_nearest_staff(mob/living/carbon/human/npc/outpost_prisoner/prisoner, range = PRISON_BOSS_SIGHT)
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/person in view(range, prisoner))
@@ -151,7 +154,7 @@
 // ===== THE PRISONER'S SIDE =====
 
 /// Their riot move, made the first time it is asked for; null for anyone without one (bounty_boss_move_type())
-/mob/living/basic/outpost_prisoner/proc/boss_move_datum()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/boss_move_datum()
 	if(boss_move)
 		return boss_move
 	var/move_type = bounty_boss_move_type(bounty_record)
@@ -161,7 +164,7 @@
 	return boss_move
 
 /// Whether they are winding up or in the middle of their move (or reeling from it), so they hold still (trouble_target())
-/mob/living/basic/outpost_prisoner/proc/boss_move_busy()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/boss_move_busy()
 	return !!boss_move && boss_move.busy_until > world.time
 
 // ===== A MOVE =====
@@ -174,7 +177,7 @@
  * call finish_windup(pending_serial) instead of waiting.
  */
 /datum/prison_boss_move
-	/// The prisoner whose move it is (/mob/living/basic/outpost_prisoner)
+	/// The prisoner whose move it is (/mob/living/carbon/human/npc/outpost_prisoner)
 	var/datum/weakref/prisoner_ref
 	/// How long it winds up, telegraphing, before anything happens
 	var/windup = 1 SECONDS
@@ -196,7 +199,7 @@
 	/// Weakrefs to the wind-up's marks still showing
 	var/list/telegraphs
 
-/datum/prison_boss_move/New(mob/living/basic/outpost_prisoner/owner)
+/datum/prison_boss_move/New(mob/living/carbon/human/npc/outpost_prisoner/owner)
 	. = ..()
 	prisoner_ref = WEAKREF(owner)
 
@@ -207,18 +210,18 @@
 
 /// The prisoner, while they exist
 /datum/prison_boss_move/proc/owner()
-	var/mob/living/basic/outpost_prisoner/prisoner = prisoner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = prisoner_ref?.resolve()
 	return QDELETED(prisoner) ? null : prisoner
 
 /// Every tick of a riot, before try_start(): anything the move keeps track of
-/datum/prison_boss_move/proc/observe(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/proc/observe(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return
 
 /// Starts the move if it is ready, the boss may use it and there is something to use it on. Returns TRUE if it started.
 /datum/prison_boss_move/proc/try_start()
 	if(pending_serial || world.time < busy_until || world.time < ready_at)
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = owner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = owner()
 	var/datum/outpost_prison/prison = prisoner?.prison
 	if(!prison || (once_per_riot && used_in_riot == prison.boss_riot_serial))
 		return FALSE
@@ -243,14 +246,14 @@
 	return TRUE
 
 /// Whether the boss is still free to finish the wind-up under way
-/datum/prison_boss_move/proc/may_finish(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/proc/may_finish(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !!prisoner?.prison?.boss_riot_ok(prisoner, needs_cuffs)
 
 /// During the wind-up: stopped if the boss is no longer free to finish it (knocked down, dragged, cuffed, out of the riot)
 /datum/prison_boss_move/proc/watch_windup(serial)
 	if(!serial || serial != pending_serial)
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = owner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = owner()
 	if(!may_finish(prisoner))
 		cancel()
 		interrupted(prisoner)
@@ -266,7 +269,7 @@
 	if(!serial || serial != pending_serial)
 		return FALSE
 	var/atom/target = pending_target?.resolve()
-	var/mob/living/basic/outpost_prisoner/prisoner = owner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = owner()
 	if(!may_finish(prisoner))
 		cancel()
 		interrupted(prisoner)
@@ -288,24 +291,24 @@
 	pending_target = null
 	busy_until = 0
 	clear_telegraphs()
-	var/mob/living/basic/outpost_prisoner/prisoner = owner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = owner()
 	if(prisoner)
 		REMOVE_TRAIT(prisoner, TRAIT_IMMOBILIZED, PRISON_BOSS_MOVE_TRAIT)
 
 /// What the move goes for now, or null: a member of staff, or a thing near them
-/datum/prison_boss_move/proc/find_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/proc/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return null
 
 /// Shows everyone what is coming, with a sound and a line
-/datum/prison_boss_move/proc/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/proc/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	return
 
 /// Does it. `target` may be gone by now. Returns TRUE if anything happened.
-/datum/prison_boss_move/proc/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/proc/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	return FALSE
 
 /// The wind-up was stopped before it finished
-/datum/prison_boss_move/proc/interrupted(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/proc/interrupted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return
 
 /// Marks `turfs` for the wind-up, with the field kits' floor marks
@@ -340,7 +343,7 @@
 	return ..()
 
 /// The nearest staff in sight, PRISON_BOSS_CHARGE_MIN_RANGE to _RANGE tiles off, on a line he could run clear to them
-/datum/prison_boss_move/charge/find_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/charge/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison/prison = prisoner.prison
 	var/mob/living/best
 	var/best_distance = INFINITY
@@ -359,7 +362,7 @@
  * The line from the boss toward `target`, PRISON_BOSS_CHARGE_RANGE tiles long: it stops at the first
  * wall, and never runs past the cell block's edge.
  */
-/datum/prison_boss_move/charge/proc/charge_line(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/charge/proc/charge_line(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	. = list()
 	var/datum/outpost_prison/prison = prisoner.prison
 	var/turf/origin = get_turf(prisoner)
@@ -382,7 +385,7 @@
 			break
 
 /// Whether the line toward `person` reaches them with nothing solid and nobody else before them
-/datum/prison_boss_move/charge/proc/clear_run_to(mob/living/basic/outpost_prisoner/prisoner, mob/living/person)
+/datum/prison_boss_move/charge/proc/clear_run_to(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/person)
 	var/turf/aim = get_turf(person)
 	for(var/turf/spot as anything in charge_line(prisoner, person))
 		if(spot == aim)
@@ -392,14 +395,14 @@
 	return FALSE
 
 /// Whether a charge can run onto `spot`: in the cell block, ground the boss could walk, nothing solid on it
-/datum/outpost_prison/proc/boss_run_tile_ok(mob/living/basic/outpost_prisoner/prisoner, turf/spot)
+/datum/outpost_prison/proc/boss_run_tile_ok(mob/living/carbon/human/npc/outpost_prisoner/prisoner, turf/spot)
 	if(!spot || spot.z != prisoner.z || isclosedturf(spot) || !in_cell_block(spot) || !prisoner.walkable?[spot])
 		return FALSE
 	if(isgroundlessturf(spot) || islava(spot) || ischasm(spot))
 		return FALSE
 	return !spot.is_blocked_turf(exclude_mobs = TRUE)
 
-/datum/prison_boss_move/charge/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/charge/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	path = charge_line(prisoner, target)
 	prisoner.visible_message(span_boldwarning("[prisoner] drops [prisoner.p_their()] shoulder and lowers [prisoner.p_their()] head!"))
 	playsound(prisoner, 'sound/mobs/non-humanoids/gorilla/gorilla.ogg', 60, TRUE)
@@ -407,7 +410,7 @@
 	mark_turfs(path, "#c8a060")
 	prisoner.say_context("boss_move_charge")
 
-/datum/prison_boss_move/charge/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/charge/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	if(!length(path) || get_dist(prisoner, path[1]) > 1)
 		path = null
 		return FALSE
@@ -427,7 +430,7 @@
  * slams into it and reels. Nothing is broken, and he never leaves the cell block.
  */
 /datum/prison_boss_move/charge/proc/charge_step(serial)
-	var/mob/living/basic/outpost_prisoner/prisoner = owner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = owner()
 	var/datum/outpost_prison/prison = prisoner?.prison
 	if(!serial || serial != charge_serial || !prison || !prison.boss_riot_ok(prisoner))
 		end_charge()
@@ -452,7 +455,7 @@
 	addtimer(CALLBACK(src, PROC_REF(charge_step), serial), PRISON_BOSS_CHARGE_STEP, TIMER_DELETE_ME)
 
 /// Knocks `person` off their feet: brute through melee armour and a knockdown (a guard, who can't be knocked down, takes the blow)
-/datum/prison_boss_move/charge/proc/slam_into(mob/living/basic/outpost_prisoner/prisoner, mob/living/person)
+/datum/prison_boss_move/charge/proc/slam_into(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/person)
 	prisoner.face_atom(person)
 	prisoner.do_attack_animation(person, ATTACK_EFFECT_SMASH)
 	person.visible_message(span_danger("[prisoner] slams into [person]!"), span_userdanger("[prisoner] slams into you!"))
@@ -463,7 +466,7 @@
 	log_combat(prisoner, person, "shoulder-charged")
 
 /// Ran into something solid on `spot`: stopped dead, reeling for PRISON_BOSS_CHARGE_REEL. It takes no harm.
-/datum/prison_boss_move/charge/proc/bounce(mob/living/basic/outpost_prisoner/prisoner, turf/spot)
+/datum/prison_boss_move/charge/proc/bounce(mob/living/carbon/human/npc/outpost_prisoner/prisoner, turf/spot)
 	end_charge()
 	if(prisoner.stat != CONSCIOUS)
 		return
@@ -502,7 +505,7 @@
 	return ..()
 
 /// A bunk within PRISON_BOSS_FIRE_RANGE tiles, in sight with nothing in the way, with staff standing where it would burn
-/datum/prison_boss_move/bed_fire/find_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/bed_fire/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(fire_ref?.resolve())
 		return null
 	var/datum/outpost_prison/prison = prisoner.prison
@@ -533,14 +536,14 @@
 			continue
 		. += beside
 
-/datum/prison_boss_move/bed_fire/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/bed_fire/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	patch = prisoner.prison.boss_fire_patch(target)
 	prisoner.visible_message(span_boldwarning("[prisoner] strikes a match and eyes [target]."))
 	playsound(prisoner, 'sound/items/match_strike.ogg', 60, TRUE)
 	mark_turfs(patch, "#ff5a1f", "target_circle")
 	prisoner.say_context("boss_move_fire")
 
-/datum/prison_boss_move/bed_fire/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/bed_fire/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	var/obj/structure/bed/bunk = target
 	var/list/burning = patch
 	patch = null
@@ -618,7 +621,7 @@
  * The way out of the cell block he is breaking now, beside him, once the riot's blows have been at it
  * (note_exit_attacked()): a staff door, a serving hatch not yet open, or a window. Never anything else.
  */
-/datum/prison_boss_move/rigged_charge/find_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/rigged_charge/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison/prison = prisoner.prison
 	var/obj/target = prisoner.riot_target_ref?.resolve()
 	if(!isobj(target) || !prison.is_exit_blocker(target) || !prisoner.within_reach(target))
@@ -630,13 +633,13 @@
 		return null
 	return target
 
-/datum/prison_boss_move/rigged_charge/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/rigged_charge/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	prisoner.visible_message(span_boldwarning("[prisoner] crouches by [target] and packs something against it."))
 	playsound(prisoner, 'sound/machines/click.ogg', 60, TRUE)
 	mark_turfs(list(get_turf(target)), COLOR_RED)
 	prisoner.say_context("boss_move_rig")
 
-/datum/prison_boss_move/rigged_charge/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/rigged_charge/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	var/datum/outpost_prison/prison = prisoner.prison
 	if(QDELETED(target) || !prison.is_exit_blocker(target))
 		return FALSE
@@ -746,48 +749,56 @@
 	/// world.time they were first seen cuffed this time, 0 while they are not
 	var/cuffed_at = 0
 
-/datum/prison_boss_move/slip_cuffs/observe(mob/living/basic/outpost_prisoner/prisoner)
-	if(!prisoner.cuffs)
+/datum/prison_boss_move/slip_cuffs/observe(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	if(!prisoner.handcuffed)
 		cuffed_at = 0
 	else if(!cuffed_at)
 		cuffed_at = world.time
 
 /// Their cuffs, once they have worn them PRISON_BOSS_SLIP_DELAY, with staff in sight to get away from
-/datum/prison_boss_move/slip_cuffs/find_target(mob/living/basic/outpost_prisoner/prisoner)
-	if(!prisoner.cuffs || !cuffed_at || world.time - cuffed_at < PRISON_BOSS_SLIP_DELAY)
+/datum/prison_boss_move/slip_cuffs/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	if(!prisoner.handcuffed || !cuffed_at || world.time - cuffed_at < PRISON_BOSS_SLIP_DELAY)
 		return null
 	if(!prisoner.prison.boss_nearest_staff(prisoner))
 		return null
-	return prisoner.cuffs
+	return prisoner.handcuffed
 
-/datum/prison_boss_move/slip_cuffs/may_finish(mob/living/basic/outpost_prisoner/prisoner)
-	return ..() && prisoner.cuffs == pending_target?.resolve()
+/datum/prison_boss_move/slip_cuffs/may_finish(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	return ..() && prisoner.handcuffed == pending_target?.resolve()
 
-/datum/prison_boss_move/slip_cuffs/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/slip_cuffs/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	prisoner.visible_message(span_boldwarning("[prisoner] starts twisting at [target], working a hand loose."))
 	playsound(prisoner, 'sound/items/weapons/handcuffs.ogg', 40, TRUE)
 	prisoner.Shake(1, 0, windup)
 	prisoner.say_context("boss_move_slip")
 
-/datum/prison_boss_move/slip_cuffs/interrupted(mob/living/basic/outpost_prisoner/prisoner)
-	if(prisoner?.stat == CONSCIOUS && prisoner.cuffs)
-		prisoner.visible_message(span_notice("[prisoner] loses [prisoner.p_their()] grip on [prisoner.cuffs]."))
+/datum/prison_boss_move/slip_cuffs/interrupted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	if(prisoner?.stat == CONSCIOUS && prisoner.handcuffed)
+		prisoner.visible_message(span_notice("[prisoner] loses [prisoner.p_their()] grip on [prisoner.handcuffed]."))
 
-/datum/prison_boss_move/slip_cuffs/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
-	var/obj/item/restraints/handcuffs/worn = prisoner.cuffs
+/**
+ * After the telegraph, they work at the cuffs the way anyone does (tg's cuff_resist(): the cuffs' own
+ * breakout time, broken by being moved or knocked down). Out of them, they slip away in a shimmer.
+ */
+/datum/prison_boss_move/slip_cuffs/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
+	var/obj/item/restraints/handcuffs/worn = prisoner.handcuffed
 	if(!worn || worn != target)
 		return FALSE
-	// Without a user they drop where they stand: the same cuffs, on the floor
-	prisoner.remove_cuffs()
+	INVOKE_ASYNC(src, PROC_REF(work_free), prisoner, worn)
+	return TRUE
+
+/datum/prison_boss_move/slip_cuffs/proc/work_free(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/restraints/handcuffs/worn)
+	prisoner.cuff_resist(worn)
+	if(QDELETED(prisoner) || prisoner.handcuffed == worn || prisoner.stat != CONSCIOUS)
+		return
 	prisoner.visible_message(span_danger("[prisoner] slips out of [worn]!"))
 	playsound(prisoner, 'sound/effects/magic/smoke.ogg', 40, TRUE)
 	prisoner.apply_status_effect(/datum/status_effect/prison_boss_shimmer)
-	return TRUE
 
 /**
- * The shimmer after a Ghost slips their cuffs, as the field cloak: faint and blurred for
- * PRISON_BOSS_SHIMMER_TIME, and PRISON_BOSS_SHIMMER_MISS percent of blows, throws and shots miss. A hit
- * that lands or a flash ends it.
+ * The shimmer after a Ghost slips their cuffs: faint and blurred for PRISON_BOSS_SHIMMER_TIME, a look
+ * and nothing more. A Ghost's dodging is their real chrome (a Slipwire shunt, outpost_prison_bounty.dm;
+ * owner ruling OC-6), which works with the shimmer or without it. A hit that lands or a flash ends it.
  */
 /datum/status_effect/prison_boss_shimmer
 	id = "prison_boss_shimmer"
@@ -797,47 +808,23 @@
 	alert_type = null
 	/// Broken by a hit or a flash, which says so itself
 	var/broken = FALSE
-	/// The miss message shows at most every second, so a burst of fire doesn't flood chat
-	COOLDOWN_DECLARE(miss_message_cooldown)
 
 /datum/status_effect/prison_boss_shimmer/on_apply()
 	if(owner.stat != CONSCIOUS)
 		return FALSE
 	animate(owner, alpha = PRISON_BOSS_SHIMMER_ALPHA, time = 0.3 SECONDS)
 	owner.add_filter("prison_boss_shimmer", 2, list("type" = "blur", "size" = 1))
-	RegisterSignal(owner, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(on_check_block))
-	RegisterSignal(owner, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_prehit))
 	RegisterSignal(owner, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
 	RegisterSignal(owner, COMSIG_MOB_FLASHED, PROC_REF(on_flashed))
 	owner.visible_message(span_warning("[owner] fades into a faint shimmer!"))
 	return TRUE
 
 /datum/status_effect/prison_boss_shimmer/on_remove()
-	UnregisterSignal(owner, list(COMSIG_LIVING_CHECK_BLOCK, COMSIG_PROJECTILE_PREHIT, COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_MOB_FLASHED))
+	UnregisterSignal(owner, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_MOB_FLASHED))
 	animate(owner, alpha = 255, time = 0.3 SECONDS)
 	owner.remove_filter("prison_boss_shimmer")
 	if(!broken && owner.stat != DEAD)
 		owner.visible_message(span_notice("The shimmer around [owner] fades."))
-
-/datum/status_effect/prison_boss_shimmer/proc/miss_message(message)
-	if(!COOLDOWN_FINISHED(src, miss_message_cooldown))
-		return
-	COOLDOWN_START(src, miss_message_cooldown, 1 SECONDS)
-	owner.visible_message(message)
-
-/datum/status_effect/prison_boss_shimmer/proc/on_check_block(mob/living/source, atom/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
-	SIGNAL_HANDLER
-	if(owner.stat != CONSCIOUS || !prob(PRISON_BOSS_SHIMMER_MISS))
-		return NONE
-	miss_message(span_warning("[attack_text] passes through the shimmer where [owner] was!"))
-	return SUCCESSFUL_BLOCK
-
-/datum/status_effect/prison_boss_shimmer/proc/on_prehit(mob/living/source, obj/projectile/shot)
-	SIGNAL_HANDLER
-	if(shot.firer == owner || owner.stat != CONSCIOUS || !prob(PRISON_BOSS_SHIMMER_MISS))
-		return NONE
-	miss_message(span_warning("[shot] passes through the shimmer around [owner]!"))
-	return PROJECTILE_INTERRUPT_HIT_PHASE
 
 /datum/status_effect/prison_boss_shimmer/proc/on_damaged(mob/living/source, damage, damagetype)
 	SIGNAL_HANDLER
@@ -879,7 +866,7 @@
  * The nearest table beside him that tg lets be flipped, to go over toward the nearest staff in sight;
  * failing that, a locker beside him to shove into the doorway of a staff door staff are coming through.
  */
-/datum/prison_boss_move/barricade/find_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/barricade/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison/prison = prisoner.prison
 	var/mob/living/nearest = prison.boss_staff_about(prisoner, PRISON_BOSS_BARRICADE_SIGHT)
 	if(!nearest)
@@ -905,7 +892,7 @@
 	return null
 
 /// The nearest awake staff in sight within `range` anywhere in the wing, the office included: who a barricade is against
-/datum/outpost_prison/proc/boss_staff_about(mob/living/basic/outpost_prisoner/prisoner, range)
+/datum/outpost_prison/proc/boss_staff_about(mob/living/carbon/human/npc/outpost_prisoner/prisoner, range)
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/person in view(range, prisoner))
@@ -941,7 +928,7 @@
 	return FALSE
 
 /// The tile straight in front of the staff door on `door_tile`, on the yard side, that `prisoner` can walk and nothing stands on, or null
-/datum/outpost_prison/proc/boss_doorway_front(turf/door_tile, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/boss_doorway_front(turf/door_tile, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	for(var/direction in GLOB.cardinals)
 		var/turf/front = get_step(door_tile, direction)
 		if(!front || !cell_block[front] || isclosedturf(front) || !prisoner.walkable?[front] || front.is_blocked_turf())
@@ -950,7 +937,7 @@
 	return null
 
 /// Whether a heavy may shove `locker`: a shut locker or crate, loose on the floor, in the cell block where `prisoner` can get at it, and not outpost property
-/datum/outpost_prison/proc/boss_locker_shovable(obj/structure/closet/locker, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/boss_locker_shovable(obj/structure/closet/locker, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(locker) || locker.anchored || !locker.density || !isturf(locker.loc))
 		return FALSE
 	if((locker.resistance_flags & INDESTRUCTIBLE) || HAS_TRAIT(locker, TRAIT_OUTPOST_PROPERTY))
@@ -961,7 +948,7 @@
 /datum/outpost_prison/proc/boss_shove_tile_ok(turf/spot)
 	return spot && cell_block[spot] && !isclosedturf(spot) && prisoner_can_stand(spot) && !spot.is_blocked_turf()
 
-/datum/prison_boss_move/barricade/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/barricade/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	if(shove_to)
 		shove_ref = WEAKREF(target)
 		prisoner.visible_message(span_boldwarning("[prisoner] puts [prisoner.p_their()] shoulder to [target]."))
@@ -973,7 +960,7 @@
 		mark_turfs(list(get_turf(target)), "#c0c0c0")
 	prisoner.say_context("boss_move_barricade")
 
-/datum/prison_boss_move/barricade/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/barricade/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	var/datum/outpost_prison/prison = prisoner.prison
 	if(shove_to)
 		var/obj/structure/closet/locker = target
@@ -1000,7 +987,7 @@
  * It stops in the doorway, at anything or anyone in the way, or when the heavy can't follow.
  */
 /datum/prison_boss_move/barricade/proc/shove_step(serial)
-	var/mob/living/basic/outpost_prisoner/prisoner = owner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = owner()
 	var/datum/outpost_prison/prison = prisoner?.prison
 	var/obj/structure/closet/locker = shove_ref?.resolve()
 	if(!serial || serial != shove_serial || !prison || !prison.boss_riot_ok(prisoner) || QDELETED(locker) || !shove_to)
@@ -1042,9 +1029,9 @@
 	boss_riot_serial++
 	if(forced_riot || !crew_home())
 		return joining
-	var/mob/living/basic/outpost_prisoner/kingpin
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in joining)
-		if(prisoner.bounty_record?.archetype != BOUNTY_ARCHETYPE_KINGPIN || prisoner.stat != CONSCIOUS || prisoner.cuffs)
+	var/mob/living/carbon/human/npc/outpost_prisoner/kingpin
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in joining)
+		if(prisoner.bounty_record?.archetype != BOUNTY_ARCHETYPE_KINGPIN || prisoner.stat != CONSCIOUS || prisoner.handcuffed)
 			continue
 		if(!in_cell_block(prisoner) || prisoner.is_confined() || !prisoner.ai_running())
 			continue
@@ -1053,7 +1040,7 @@
 	if(!kingpin)
 		return joining
 	var/list/swayed = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if((prisoner in joining) || !prisoner.can_join_riot())
 			continue
 		if(prisoner.mood < prisoner.riot_join_mood() + PRISON_BOSS_WORD_BONUS)
@@ -1070,11 +1057,11 @@
 	once_per_riot = TRUE
 
 /// The nearest of the wing's own NPC guards in sight and on duty, never a player
-/datum/prison_boss_move/bribe/find_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/prison_boss_move/bribe/find_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison/prison = prisoner.prison
-	var/mob/living/basic/outpost_prison_guard/best
+	var/mob/living/carbon/human/npc/outpost_prison_guard/best
 	var/best_distance = INFINITY
-	for(var/mob/living/basic/outpost_prison_guard/guard in view(PRISON_BOSS_BRIBE_RANGE, prisoner))
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in view(PRISON_BOSS_BRIBE_RANGE, prisoner))
 		var/distance = get_dist(prisoner, guard)
 		if(distance < best_distance && prison.boss_bribable(guard))
 			best = guard
@@ -1082,20 +1069,20 @@
 	return best
 
 /// Whether the kingpin may pay off `guard`: one of this wing's guards, on duty, not already paid, and nobody's playing them
-/datum/outpost_prison/proc/boss_bribable(mob/living/basic/outpost_prison_guard/guard)
+/datum/outpost_prison/proc/boss_bribable(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	if(!istype(guard) || QDELETED(guard) || guard.prison != src || !guard.on_duty())
 		return FALSE
 	return isnull(guard.mind) && isnull(guard.client)
 
-/datum/prison_boss_move/bribe/telegraph(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/bribe/telegraph(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	prisoner.visible_message(span_boldwarning("[prisoner] catches [target]'s eye and taps [prisoner.p_their()] pocket."))
 	playsound(prisoner, 'sound/items/coinflip.ogg', 50, TRUE)
 	mark_turfs(list(get_turf(target)), "#e0c050", "target_circle")
 	prisoner.say_context("boss_move_bribe")
 
-/datum/prison_boss_move/bribe/effect(mob/living/basic/outpost_prisoner/prisoner, atom/target)
+/datum/prison_boss_move/bribe/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	var/datum/outpost_prison/prison = prisoner.prison
-	var/mob/living/basic/outpost_prison_guard/guard = target
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = target
 	if(!prison.boss_bribable(guard) || get_dist(prisoner, guard) > PRISON_BOSS_BRIBE_RANGE || !(guard in view(PRISON_BOSS_BRIBE_RANGE, prisoner)))
 		return FALSE
 	prison.boss_bribe_guard(guard)
@@ -1106,7 +1093,7 @@
  * no riot response, no baton, and rioters leave them be), standing back in the office's far corner.
  * boss_bribes_tick() sends them back to work.
  */
-/datum/outpost_prison/proc/boss_bribe_guard(mob/living/basic/outpost_prison_guard/guard)
+/datum/outpost_prison/proc/boss_bribe_guard(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	guard.prison_bribed_until = world.time + PRISON_BOSS_BRIBE_TIME
 	guard.end_response()
 	guard.set_baton(FALSE)
@@ -1121,7 +1108,7 @@
 /// Paid-off guards whose time is up go back to work
 /datum/outpost_prison/proc/boss_bribes_tick()
 	for(var/datum/weakref/ref as anything in boss_bribed_guards.Copy())
-		var/mob/living/basic/outpost_prison_guard/guard = ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prison_guard/guard = ref.resolve()
 		if(QDELETED(guard))
 			boss_bribed_guards -= ref
 			continue
@@ -1134,7 +1121,7 @@
 			guard.visible_message(span_notice("[guard] squares [guard.p_their()] shoulders and gets back to work."))
 
 /// Whether the kingpin has them standing back from the riot (on_duty())
-/mob/living/basic/outpost_prison_guard/proc/boss_bribed()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/boss_bribed()
 	return prison_bribed_until > world.time
 
 /**

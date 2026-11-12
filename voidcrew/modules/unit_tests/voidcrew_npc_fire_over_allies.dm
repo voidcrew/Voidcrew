@@ -1,0 +1,114 @@
+// NPC shots pass over their own side (voidcrew/edits/modules/projectiles/projectile_npc_allies.dm).
+// A mob nobody plays (no ckey) is an NPC; a mob with a ckey is a player.
+
+/datum/unit_test/voidcrew_npc_fire_over_allies
+
+/datum/unit_test/voidcrew_npc_fire_over_allies/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent, start)
+	var/mob/living/carbon/human/consistent/ally = allocate(/mob/living/carbon/human/consistent, locate(start.x + 2, start.y, start.z))
+	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, locate(start.x + 4, start.y, start.z))
+	shooter.faction = list("npc_fire_test_side")
+	ally.faction = list("npc_fire_test_side")
+	target.faction = list("npc_fire_test_other")
+
+	// An NPC's bullet flies past its ally and hits the player behind
+	var/obj/item/ammo_casing/c38/round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round didn't fire")
+	wait_for_hit(target)
+	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's bullet never reached the target behind its ally")
+	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's bullet hit its own ally on the way")
+
+	// Buckshot: every pellet flies past the ally
+	target.fully_heal()
+	var/obj/item/ammo_casing/shotgun/buckshot/shell = allocate(/obj/item/ammo_casing/shotgun/buckshot)
+	shell.variance = 0
+	TEST_ASSERT(shell.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's shell didn't fire")
+	wait_for_hit(target)
+	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's buckshot never reached the target behind its ally")
+	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's buckshot hit its own ally on the way")
+	wait_for_quiet()
+	ally.fully_heal()
+	target.fully_heal()
+
+	// Aimed at its ally, it hits its ally
+	var/obj/item/ammo_casing/c38/aimed = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(aimed.fire_casing(ally, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's aimed round didn't fire")
+	wait_for_hit(ally)
+	TEST_ASSERT(ally.getBruteLoss() > 0, "An NPC's shot aimed at its own ally passed over it")
+
+	// A player on the same side still hits the ally in the way
+	ally.fully_heal()
+	target.fully_heal()
+	shooter.key = "NpcFireOverAlliesTestKey"
+	var/obj/item/ammo_casing/c38/player_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(player_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The player's round didn't fire")
+	wait_for_hit(ally)
+	shooter.key = null
+	TEST_ASSERT(ally.getBruteLoss() > 0, "A player's bullet passed over the ally in the way")
+	TEST_ASSERT_EQUAL(target.getBruteLoss(), 0, "A player's bullet went through the ally in the way")
+
+	// A shot someone else turns around stops sparing the NPC's side
+	var/obj/projectile/bullet/c38/turned = allocate(/obj/projectile/bullet/c38, locate(start.x + 1, start.y, start.z))
+	turned.impacted = list()
+	turned.ignored_factions = shooter.faction.Copy()
+	turned.npc_side_shooter = WEAKREF(shooter)
+	turned.firer = shooter
+	TEST_ASSERT(!turned.can_hit_target(ally, FALSE, TRUE), "Test fixture: the NPC's shot would hit its ally")
+	turned.firer = target
+	TEST_ASSERT(turned.can_hit_target(ally, FALSE, TRUE), "A reflected NPC shot still passes over the NPC's side")
+	turned.firer = null
+
+	// An ally held by the NPC's enemy is a shield: the shot hits them
+	wait_for_quiet()
+	var/mob/living/carbon/human/consistent/holder = allocate(/mob/living/carbon/human/consistent, locate(start.x + 2, start.y + 1, start.z))
+	holder.faction = list("npc_fire_test_other")
+	ally.fully_heal()
+	target.fully_heal()
+	TEST_ASSERT(holder.start_pulling(ally, supress_message = TRUE), "Test fixture: the enemy couldn't grab the ally")
+	holder.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT_EQUAL(ally.body_position, STANDING_UP, "Test fixture: the held ally isn't standing")
+	var/obj/item/ammo_casing/c38/shield_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(shield_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round at the shield didn't fire")
+	wait_for_hit(ally)
+	TEST_ASSERT(ally.getBruteLoss() > 0, "The NPC's bullet passed over its ally held by the enemy")
+	TEST_ASSERT_EQUAL(target.getBruteLoss(), 0, "The NPC's bullet went through its ally held by the enemy")
+
+	// Only dragged along (a passive pull), the ally is still passed over
+	ally.fully_heal()
+	holder.setGrabState(GRAB_PASSIVE)
+	var/obj/item/ammo_casing/c38/pulled_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(pulled_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round past the dragged ally didn't fire")
+	wait_for_hit(target)
+	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's bullet never passed its ally dragged by the enemy")
+	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's bullet hit its ally only dragged by the enemy")
+
+	// Held by someone on its own side, the ally is still passed over
+	target.fully_heal()
+	holder.faction = list("npc_fire_test_side")
+	holder.setGrabState(GRAB_AGGRESSIVE)
+	var/obj/item/ammo_casing/c38/friendly_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(friendly_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round past the friendly-held ally didn't fire")
+	wait_for_hit(target)
+	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's bullet never passed its ally held by its own side")
+	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's bullet hit its ally held by its own side")
+	holder.stop_pulling()
+
+/// Waits up to two seconds for `victim` to take brute damage.
+/datum/unit_test/voidcrew_npc_fire_over_allies/proc/wait_for_hit(mob/living/victim)
+	for(var/i in 1 to 20)
+		if(victim.getBruteLoss() > 0)
+			return
+		sleep(0.1 SECONDS)
+
+/// Waits up to three seconds for every shot in the test room to land, so a late pellet can't hit the next check.
+/datum/unit_test/voidcrew_npc_fire_over_allies/proc/wait_for_quiet()
+	for(var/i in 1 to 30)
+		var/flying = FALSE
+		for(var/turf/spot as anything in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
+			if(locate(/obj/projectile) in spot)
+				flying = TRUE
+				break
+		if(!flying)
+			return
+		sleep(0.1 SECONDS)

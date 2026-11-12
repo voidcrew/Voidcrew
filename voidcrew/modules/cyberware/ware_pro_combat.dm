@@ -6,11 +6,17 @@
  *
  * - /datum/component/cyberware_dodge: THE one projectile-dodge arbiter.
  *   Slipwire registers a 15% source here, Cascade Lattice (ware_legend.dm)
- *   registers a 40% source during its window, and the component rolls the
+ *   registers a 60% source during its window, and the component rolls the
  *   single HIGHEST live source. Never additive: Slipwire + Cascade together
- *   is still 40%, not 49%. Any future dodge chrome must register a source
+ *   is still 60%, not 75%. Any future dodge chrome must register a source
  *   through cyberware_register_dodge_source() rather than hanging its own
- *   COMSIG_ATOM_PRE_BULLET_ACT handler.
+ *   COMSIG_ATOM_PRE_BULLET_ACT handler. A source registered with melee = TRUE
+ *   (the Cascade line's windows) also dodges blows, through tg's own
+ *   check_block() via COMSIG_LIVING_CHECK_BLOCK, so a dodged blow is a real
+ *   miss and never fake damage. The same arbiter rolls the dermal plating's
+ *   bullet deflection (see cyberware_register_deflect_source()), capped so a
+ *   dodge and a deflect together never stop more than CYBERWARE_AVOID_CAP
+ *   percent of shots.
  * - cyberware_is_ally(): the crew filter for auto-targeting ware (Deadeye's
  *   tag, Widowline's cleave). Allies are people who share a ship team with
  *   you; NPC boarders standing on your deck are NOT allies, and rival players
@@ -22,6 +28,12 @@
 
 /// A dodge source only fires while its bearer moved within this window.
 #define CYBERWARE_DODGE_MOVE_WINDOW (1 SECONDS)
+/// The shortest gap between two dodge lines from a bearer nobody is playing (an NPC under fire).
+#define CYBERWARE_DODGE_LINE_GAP (1.5 SECONDS)
+/// Dodge and deflect together never stop more than this percent of shots.
+#define CYBERWARE_AVOID_CAP 60
+/// Stamina each deflected bullet costs the bearer, so focused fire still wears them down.
+#define CYBERWARE_DEFLECT_STAMINA 5
 
 /**
  * The one dodge roll for all cyberware. Lives on the mob; wares and status
@@ -36,13 +48,26 @@
  *   fading decoy and a bullet-miss crack. Dodging reads to the shooter.
  * - COMPONENT_BULLET_PIERCED means the round keeps flying into whoever is
  *   behind; accepted as flavor.
+ * - Melee sources dodge damaging blows (weapons, fists, claws and bites)
+ *   whether moving or not, but never grabs, tackles or shoves (zero-damage
+ *   attempts), and never once the bearer is pinned: lying down, stunned,
+ *   cuffed, buckled, held in an aggressive grab or in a finisher's hold.
+ *   A melee dodge blurs in place; it never steps the bearer out of reach.
  */
 /datum/component/cyberware_dodge
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	/// key -> /datum/callback returning that source's live dodge chance.
 	var/list/dodge_sources = list()
+	/// key -> /datum/callback for the sources that also dodge blows. Each is in dodge_sources too.
+	var/list/melee_sources = list()
+	/// key -> /datum/callback returning that source's live bullet-deflect chance (the dermal plating).
+	var/list/deflect_sources = list()
+	/// Dodge and deflect together never stop more than this percent of shots.
+	var/avoid_cap = CYBERWARE_AVOID_CAP
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
+	/// world.time a dodge was last announced: an NPC under fire says it at most once every CYBERWARE_DODGE_LINE_GAP, so chat isn't flooded
+	var/last_message_at = -INFINITY
 
 /datum/component/cyberware_dodge/Initialize()
 	if(!isliving(parent))
@@ -51,12 +76,15 @@
 /datum/component/cyberware_dodge/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_ATOM_PRE_BULLET_ACT, PROC_REF(on_pre_bullet_act))
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
+	RegisterSignal(parent, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(on_check_block))
 
 /datum/component/cyberware_dodge/UnregisterFromParent()
-	UnregisterSignal(parent, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_MOVABLE_MOVED))
+	UnregisterSignal(parent, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_CHECK_BLOCK))
 
 /datum/component/cyberware_dodge/Destroy()
 	dodge_sources = null
+	melee_sources = null
+	deflect_sources = null
 	return ..()
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: timestamp the movement window.
@@ -64,30 +92,146 @@
 	SIGNAL_HANDLER
 	last_move_time = world.time
 
-/// Signal proc for [COMSIG_ATOM_PRE_BULLET_ACT]: the actual dodge roll.
+/**
+ * Signal proc for [COMSIG_ATOM_PRE_BULLET_ACT]: the dodge roll, then the
+ * deflect roll. One handler for both, so the cap on the two together holds
+ * no matter which chrome registered first.
+ */
 /datum/component/cyberware_dodge/proc/on_pre_bullet_act(mob/living/source, obj/projectile/hitting_projectile, def_zone, piercing_hit, blocked)
 	SIGNAL_HANDLER
-	if(world.time - last_move_time > CYBERWARE_DODGE_MOVE_WINDOW)
-		return NONE
-	if(source.stat != CONSCIOUS || source.body_position == LYING_DOWN || source.buckled)
-		return NONE
 	if(!istype(hitting_projectile) || !hitting_projectile.is_hostile_projectile())
 		return NONE
+	var/dodge_chance = live_dodge_chance(source, hitting_projectile)
+	if(dodge_chance > 0 && prob(dodge_chance))
+		INVOKE_ASYNC(src, PROC_REF(perform_sidestep), source, hitting_projectile)
+		return COMPONENT_BULLET_PIERCED
+	var/deflect_chance = min(live_deflect_chance(source, hitting_projectile), cyberware_deflect_cap(dodge_chance, avoid_cap))
+	if(deflect_chance <= 0 || !prob(deflect_chance))
+		return NONE
+	glance(source, hitting_projectile)
+	return COMPONENT_BULLET_PIERCED
+
+/// The dodge chance against this shot right now: 0 unless the bearer is moving, upright and not point-blank.
+/datum/component/cyberware_dodge/proc/live_dodge_chance(mob/living/source, obj/projectile/hitting_projectile)
+	if(!length(dodge_sources))
+		return 0
+	if(world.time - last_move_time > CYBERWARE_DODGE_MOVE_WINDOW)
+		return 0
+	if(source.stat != CONSCIOUS || source.body_position == LYING_DOWN || source.buckled)
+		return 0
 	// Point-blank shots always land: an adjacent shooter is inside the
 	// reflex loop. This is the anti-"unhittable in a brawl" rule.
 	var/atom/shooter = hitting_projectile.firer
 	if(shooter && shooter != source && get_dist(source, shooter) <= 1)
-		return NONE
-	var/best_chance = 0
-	for(var/key in dodge_sources)
-		var/datum/callback/chance_callback = dodge_sources[key]
+		return 0
+	return best_chance(dodge_sources)
+
+/**
+ * The deflect chance against this shot right now. Only real bullets (and
+ * each buckshot pellet on its own, since every pellet is its own projectile)
+ * glance off; lasers, energy and everything else never do. The plate only
+ * covers what the bearer is facing: a shot into the back always lands.
+ */
+/datum/component/cyberware_dodge/proc/live_deflect_chance(mob/living/source, obj/projectile/hitting_projectile)
+	if(!length(deflect_sources))
+		return 0
+	if(!istype(hitting_projectile, /obj/projectile/bullet) || hitting_projectile.armor_flag != BULLET)
+		return 0
+	if(source.stat == DEAD)
+		return 0
+	if(cyberware_shot_from_behind(source, hitting_projectile))
+		return 0
+	return best_chance(deflect_sources)
+
+/**
+ * The real glance: the bullet's heading turns back off the plate at a random
+ * angle and the round keeps flying (COMPONENT_BULLET_PIERCED, the same exit
+ * tg's own reflect takes), so it can still hit whoever stands in its new
+ * path. It loses energy like any tg ricochet. The bearer stays in the
+ * bullet's impacted list, so it can't come back for them.
+ */
+/datum/component/cyberware_dodge/proc/glance(mob/living/source, obj/projectile/bullet)
+	bullet.set_angle(SIMPLIFY_DEGREES(bullet.angle + pick(-1, 1) * rand(100, 170)))
+	bullet.damage *= bullet.ricochet_decay_damage
+	bullet.stamina *= bullet.ricochet_decay_damage
+	INVOKE_ASYNC(src, PROC_REF(perform_glance), source, bullet.name)
+
+/// The visible and physical half of a glance: sparks, a ping, and the stamina the hit still costs.
+/datum/component/cyberware_dodge/proc/perform_glance(mob/living/source, bullet_name)
+	if(QDELETED(source))
+		return
+	do_sparks(1, TRUE, source)
+	playsound(source, SFX_RICOCHET, 60, TRUE)
+	source.adjustStaminaLoss(CYBERWARE_DEFLECT_STAMINA)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("\The [bullet_name] glances off [source]!"),
+			span_danger("\The [bullet_name] glances off you!"),
+		)
+
+/// The highest live chance among these sources. Never additive.
+/datum/component/cyberware_dodge/proc/best_chance(list/sources)
+	. = 0
+	for(var/key in sources)
+		var/datum/callback/chance_callback = sources[key]
 		var/chance = chance_callback?.Invoke()
 		if(isnum(chance))
-			best_chance = max(best_chance, chance)
+			. = max(., chance)
+
+/// Signal proc for [COMSIG_LIVING_CHECK_BLOCK]: the melee dodge roll, from tg's own check_block().
+/datum/component/cyberware_dodge/proc/on_check_block(mob/living/source, atom/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
+	SIGNAL_HANDLER
+	if(!length(melee_sources) || !cyberware_can_dodge_blow(source, hit_by, damage, attack_text, attack_type))
+		return FAILED_BLOCK
+	var/best_chance = best_chance(melee_sources)
 	if(best_chance <= 0 || !prob(best_chance))
-		return NONE
-	INVOKE_ASYNC(src, PROC_REF(perform_sidestep), source, hitting_projectile)
-	return COMPONENT_BULLET_PIERCED
+		return FAILED_BLOCK
+	INVOKE_ASYNC(src, PROC_REF(perform_blow_dodge), source, attack_text)
+	return SUCCESSFUL_BLOCK
+
+/// The visible half of a dodged blow: the same blur decoy, a whiff, and a line. No step.
+/datum/component/cyberware_dodge/proc/perform_blow_dodge(mob/living/source, attack_text)
+	if(QDELETED(source))
+		return
+	new /obj/effect/temp_visual/decoy/fading/halfsecond(source.loc, source)
+	playsound(source, 'sound/items/weapons/punchmiss.ogg', 50, TRUE)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("[source] blurs out of the way of [attack_text]!"),
+			span_danger("You blur out of the way of [attack_text]!"),
+		)
+
+/**
+ * Whether the bearer can dodge this blow at all. Only damaging melee and
+ * unarmed blows from someone else; never while the bearer is down, stunned,
+ * cuffed, buckled, held tight, or in a finisher's hold, so grabs, finishers,
+ * the garrote and executions are never dodged once they have started.
+ */
+/proc/cyberware_can_dodge_blow(mob/living/bearer, atom/hit_by, damage, attack_text, attack_type)
+	if(attack_type != MELEE_ATTACK && attack_type != UNARMED_ATTACK)
+		return FALSE
+	if(!isnum(damage) || damage <= 0)
+		// tg checks a person's bare hands before it knows what they do, with no damage and the
+		// attacker's name as the text. Only a hand thrown in combat mode counts; a grab
+		// ("[name]'s grab"), a tackle and a friendly touch never do.
+		if(!isliving(hit_by))
+			return FALSE
+		var/mob/living/attacker = hit_by
+		if(!attacker.combat_mode || attack_text != attacker.name)
+			return FALSE
+	if(hit_by == bearer || (isitem(hit_by) && hit_by.loc == bearer))
+		return FALSE
+	if(bearer.stat != CONSCIOUS || bearer.body_position == LYING_DOWN || bearer.buckled)
+		return FALSE
+	if(HAS_TRAIT(bearer, TRAIT_INCAPACITATED) || HAS_TRAIT(bearer, TRAIT_FLOORED) || HAS_TRAIT(bearer, TRAIT_RESTRAINED) || HAS_TRAIT(bearer, TRAIT_IMMOBILIZED))
+		return FALSE
+	if(bearer.pulledby && bearer.pulledby.grab_state >= GRAB_AGGRESSIVE)
+		return FALSE
+	if(bearer.has_status_effect(/datum/status_effect/hv_finisher_hold))
+		return FALSE
+	return TRUE
 
 /// The visible half of a successful dodge: blur decoy, bullet-miss crack,
 /// and a one-tile sidestep perpendicular to the shot when the floor allows.
@@ -96,10 +240,12 @@
 		return
 	new /obj/effect/temp_visual/decoy/fading/halfsecond(source.loc, source)
 	playsound(source, SFX_BULLET_MISS, 60, TRUE)
-	source.visible_message(
-		span_danger("[source] blurs sideways out of [dodged]'s path!"),
-		span_danger("You blur out of [dodged]'s path!"),
-	)
+	if(source.client || world.time - last_message_at >= CYBERWARE_DODGE_LINE_GAP)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("[source] blurs sideways out of [dodged]'s path!"),
+			span_danger("You blur out of [dodged]'s path!"),
+		)
 	var/incoming_dir = QDELETED(dodged) ? source.dir : dodged.dir
 	var/list/side_dirs = shuffle(list(turn(incoming_dir, 90), turn(incoming_dir, -90)))
 	for(var/step_dir in side_dirs)
@@ -111,12 +257,17 @@
  * arbiter component on first use. The callback is polled per incoming
  * projectile and must return the source's CURRENT chance, return 0 while
  * disabled (ORGAN_FAILING etc.) rather than unregistering per-flicker.
+ * With melee = TRUE the same chance also dodges blows (see on_check_block()).
  */
-/proc/cyberware_register_dodge_source(mob/living/bearer, key, datum/callback/chance_callback)
+/proc/cyberware_register_dodge_source(mob/living/bearer, key, datum/callback/chance_callback, melee = FALSE)
 	if(!istype(bearer) || !key || !chance_callback)
 		return
 	var/datum/component/cyberware_dodge/arbiter = bearer.LoadComponent(/datum/component/cyberware_dodge)
 	arbiter.dodge_sources[key] = chance_callback
+	if(melee)
+		arbiter.melee_sources[key] = chance_callback
+	else
+		arbiter.melee_sources -= key
 
 /// Removes a keyed dodge source; the arbiter cleans itself up with the last one.
 /proc/cyberware_unregister_dodge_source(mob/living/bearer, key)
@@ -124,8 +275,45 @@
 	if(!arbiter)
 		return
 	arbiter.dodge_sources -= key
-	if(!length(arbiter.dodge_sources))
+	arbiter.melee_sources -= key
+	if(!length(arbiter.dodge_sources) && !length(arbiter.deflect_sources))
 		qdel(arbiter)
+
+/**
+ * Adds (or refreshes) a keyed bullet-deflect source on the bearer, through
+ * the same arbiter as the dodge. The callback returns the source's CURRENT
+ * chance. Never additive: the highest live source rolls.
+ */
+/proc/cyberware_register_deflect_source(mob/living/bearer, key, datum/callback/chance_callback)
+	if(!istype(bearer) || !key || !chance_callback)
+		return
+	var/datum/component/cyberware_dodge/arbiter = bearer.LoadComponent(/datum/component/cyberware_dodge)
+	arbiter.deflect_sources[key] = chance_callback
+
+/// Removes a keyed deflect source; the arbiter cleans itself up with the last source of either kind.
+/proc/cyberware_unregister_deflect_source(mob/living/bearer, key)
+	var/datum/component/cyberware_dodge/arbiter = bearer?.GetComponent(/datum/component/cyberware_dodge)
+	if(!arbiter)
+		return
+	arbiter.deflect_sources -= key
+	if(!length(arbiter.dodge_sources) && !length(arbiter.deflect_sources))
+		qdel(arbiter)
+
+/**
+ * The most a deflect may roll after a dodge roll at dodge_chance missed, so
+ * that dodge and deflect together never stop more than avoid_cap
+ * percent of shots: dodge + (1 - dodge) * deflect <= cap.
+ */
+/proc/cyberware_deflect_cap(dodge_chance, avoid_cap = CYBERWARE_AVOID_CAP)
+	dodge_chance = clamp(dodge_chance, 0, 100)
+	if(dodge_chance >= avoid_cap)
+		return 0
+	return (avoid_cap - dodge_chance) * 100 / (100 - dodge_chance)
+
+/// Whether this shot is travelling the way the bearer faces, so it strikes them in the back.
+/proc/cyberware_shot_from_behind(mob/living/bearer, obj/projectile/shot)
+	var/offset = SIMPLIFY_DEGREES(shot.angle - dir2angle(bearer.dir) + 180) - 180
+	return abs(offset) < 90
 
 // ---- Shared ally filter ------------------------------------------------
 
@@ -158,6 +346,9 @@
 		return TRUE
 	if(!istype(user) || !istype(target))
 		return FALSE
+	// A bounty criminal's own companions and creatures (voidcrew/modules/bounties)
+	if(bounty_ai_same_gang(user, target))
+		return TRUE
 	var/datum/team/user_team = cyberware_crew_team(user)
 	if(!user_team)
 		return FALSE
@@ -189,7 +380,7 @@
  */
 /obj/item/organ/eyes/robotic/cyberware/deadeye
 	name = "\improper Deadeye link"
-	desc = "Milspec optics built around a target-processing coprocessor. Paint someone and the link walks your next few rounds onto them, whatever the barrel was actually pointed at."
+	desc = "Military optics built around a targeting coprocessor. It decides where your rounds go, and you aren't consulted."
 	icon_state = "deadeye"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -197,6 +388,14 @@
 		/datum/action/cooldown/cyberware/deadeye_tag,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
+	/// How far a tag can be planted, and how far homing keeps correcting.
+	var/tag_range = CYBERWARE_DEADEYE_TAG_RANGE
+	/// Homing shots granted per tag.
+	var/tag_shots = CYBERWARE_DEADEYE_TAG_SHOTS
+	/// How long a tag lasts, spent or not.
+	var/tag_duration = CYBERWARE_DEADEYE_TAG_DURATION
 	/// Weakref to the currently tagged target.
 	var/datum/weakref/tagged_ref
 	/// Homing shots remaining on the current tag.
@@ -217,14 +416,14 @@
 /obj/item/organ/eyes/robotic/cyberware/deadeye/proc/start_tag(mob/living/target)
 	end_tag(owner)
 	tagged_ref = WEAKREF(target)
-	shots_left = CYBERWARE_DEADEYE_TAG_SHOTS
+	shots_left = tag_shots
 	RegisterSignal(owner, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_owner_fired))
 	target.add_filter(CYBERWARE_DEADEYE_MARK_FILTER, 2, list("type" = "outline", "color" = "#ff3300", "size" = 1))
 	new /obj/effect/temp_visual/smartgun_target(get_turf(target))
 	playsound(owner, 'sound/machines/synth/synth_yes.ogg', 30, TRUE)
 	owner.balloon_alert(owner, "target tagged")
 	to_chat(target, span_userdanger("A red targeting glint settles on you!"))
-	tag_timer = addtimer(CALLBACK(src, PROC_REF(on_tag_expired)), CYBERWARE_DEADEYE_TAG_DURATION, TIMER_STOPPABLE)
+	tag_timer = addtimer(CALLBACK(src, PROC_REF(on_tag_expired)), tag_duration, TIMER_STOPPABLE)
 
 /obj/item/organ/eyes/robotic/cyberware/deadeye/proc/on_tag_expired()
 	tag_timer = null
@@ -255,7 +454,7 @@
 	if(!istype(projectile))
 		return
 	var/mob/living/target = tagged_ref?.resolve()
-	if(QDELETED(target) || target.stat == DEAD || target.z != user.z || get_dist(user, target) > CYBERWARE_DEADEYE_TAG_RANGE)
+	if(QDELETED(target) || target.stat == DEAD || target.z != user.z || get_dist(user, target) > tag_range)
 		end_tag(user)
 		return
 	projectile.set_homing_target(target)
@@ -267,7 +466,7 @@
 
 /datum/action/cooldown/cyberware/deadeye_tag
 	name = "Deadeye Tag"
-	desc = "Tag a hostile in view. Your next three shots track them automatically. The tag refuses to take a crewmate."
+	desc = "Tag a hostile in view. Your next three shots track them."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "sniper_zoom"
 	cooldown_time = 25 SECONDS
@@ -287,7 +486,7 @@
 	if(cyberware_is_ally(owner, victim))
 		owner.balloon_alert(owner, "friendly, tag refused!")
 		return FALSE
-	if(!can_see(owner, victim, CYBERWARE_DEADEYE_TAG_RANGE))
+	if(!can_see(owner, victim, optics.tag_range))
 		owner.balloon_alert(owner, "no line of sight!")
 		return FALSE
 	StartCooldown()
@@ -309,17 +508,22 @@
  * sidestep (never point-blank, never while browned out) plus a small
  * always-on gait boost. The dodge itself lives in the shared arbiter above;
  * this organ just contributes a source whose chance drops to zero the moment
- * the ware is EMP-scrambled or browned out.
+ * the ware is EMP-scrambled or browned out. The chance and the gait boost are
+ * vars, so the street and service models (ware_models_b.dm) retune them.
  */
 /obj/item/organ/cyberimp/cyberware/slipwire
 	name = "\improper Slipwire reflex shunt"
-	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps incoming fire on its own, roughly one shot in seven misses because your body moved before you told it to."
+	desc = "A reflex arc spliced in parallel with the spinal trunk. Your body gets out of the way before you've decided to."
 	icon_state = "slipwire"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 4
 	tier = CYBERWARE_TIER_2
+	/// Percent of hostile projectiles dodged while the bearer is moving.
+	var/dodge_chance = CYBERWARE_SLIPWIRE_DODGE_CHANCE
+	/// The gait boost the ware adds while it runs. Null for none.
+	var/datum/movespeed_modifier/gait_modifier = /datum/movespeed_modifier/cyberware_slipwire
 
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -335,17 +539,19 @@
 // add/remove is idempotent and needs no applied-state guard.
 /obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+	if(gait_modifier)
+		bearer?.add_movespeed_modifier(gait_modifier)
 
 /obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+	if(gait_modifier)
+		bearer?.remove_movespeed_modifier(gait_modifier)
 
 /// Dodge-source callback: dead weight while failing, 15% otherwise.
 /obj/item/organ/cyberimp/cyberware/slipwire/proc/get_dodge_chance()
 	if(organ_flags & ORGAN_FAILING)
 		return 0
-	return CYBERWARE_SLIPWIRE_DODGE_CHANCE
+	return dodge_chance
 
 /datum/movespeed_modifier/cyberware_slipwire
 	multiplicative_slowdown = -0.1
@@ -391,7 +597,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel
 	name = "\improper Dead Channel pain editor"
-	desc = "A signal processor clamped over the pain nerves. You stop feeling injuries entirely, which keeps you upright and moving where anyone else would fold. The catch is that you can't tell how bad it's gotten. The colour draining out of the world is the only gauge you get."
+	desc = "A signal processor clamped over the pain nerves. Nothing hurts. That isn't the same as nothing being wrong."
 	icon_state = "dead_channel"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -608,7 +814,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/hopper
 	name = "\improper Hopper piston calves"
-	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way. Flat is the operative word: they will not put you over a wall."
+	desc = "Paired myomer pistons sleeved over both calves, for clearing railings, tables and whoever's in the way."
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -622,14 +828,34 @@
 	tier = CYBERWARE_TIER_2
 	aug_overlay = "hopper"
 	actions_types = list(/datum/action/cooldown/cyberware/hopper_leap)
+	// The models in the line (ware_line_models_a.dm) retune these by setting vars.
+	/// Leap distance in tiles.
+	var/leap_range = CYBERWARE_HOPPER_RANGE
+	/// Gap between leaps. The button reads it when it is built.
+	var/leap_cooldown = 8 SECONDS
+	/// Tooltip for the button when this model's numbers differ from the button's
+	/// own text. Null keeps the button's own.
+	var/leap_action_desc
 
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
-	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
+	desc = "Leap up to four tiles over gaps, tables and people."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body does not get to leap out of it.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE
+
+/datum/action/cooldown/cyberware/hopper_leap/New(Target, original = TRUE)
+	. = ..()
+	// The pistons this button belongs to set its cooldown and tooltip.
+	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = organ
+	if(!istype(pistons))
+		return
+	cooldown_time = pistons.leap_cooldown
+	if(pistons.leap_action_desc)
+		desc = pistons.leap_action_desc
 
 /datum/action/cooldown/cyberware/hopper_leap/Activate(atom/target)
 	if(!isliving(owner))
@@ -642,10 +868,12 @@
 	if(jumper.buckled || !isturf(jumper.loc))
 		jumper.balloon_alert(jumper, "can't jump from here!")
 		return FALSE
-	if(get_dist(here, destination) > CYBERWARE_HOPPER_RANGE)
+	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = organ
+	var/leap_range = istype(pistons) ? pistons.leap_range : CYBERWARE_HOPPER_RANGE
+	if(get_dist(here, destination) > leap_range)
 		jumper.balloon_alert(jumper, "too far!")
 		return FALSE
-	if(!can_see(jumper, destination, CYBERWARE_HOPPER_RANGE))
+	if(!can_see(jumper, destination, leap_range))
 		jumper.balloon_alert(jumper, "no line of sight!")
 		return FALSE
 	if(destination.is_blocked_turf() || islava(destination) || ischasm(destination))
@@ -656,12 +884,13 @@
 		return FALSE
 	StartCooldown()
 	playsound(here, 'sound/items/weapons/punchmiss.ogg', 40, TRUE, -1)
-	new /obj/effect/temp_visual/decoy/fading/halfsecond(here, jumper)
+	var/obj/effect/temp_visual/decoy/fading/halfsecond/afterimage = new(here, jumper)
 	jumper.visible_message(
 		span_warning("[jumper]'s legs fire like pistons and [jumper.p_they()] vault[jumper.p_s()] into the air!"),
 		span_notice("You fire the pistons and leap."),
 	)
-	animate(jumper, pixel_z = 20, time = CYBERWARE_HOPPER_AIRTIME, flags = ANIMATION_RELATIVE, easing = QUAD_EASING|EASE_OUT)
+	// A crouch, dust, and an arc over to the landing; the body stays on its tile until it lands (cyberware_anim2.dm).
+	cyberware_leap_takeoff_fx(jumper, here, destination, CYBERWARE_HOPPER_AIRTIME, 20, 26, afterimage)
 	addtimer(CALLBACK(src, PROC_REF(land), destination), CYBERWARE_HOPPER_AIRTIME)
 	return TRUE
 
@@ -671,7 +900,7 @@
 	var/mob/living/jumper = owner
 	if(QDELETED(jumper))
 		return
-	animate(jumper, pixel_z = -20, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
+	cyberware_leap_touchdown_fx(jumper)
 	var/turf/final = destination
 	if(QDELETED(final) || final.is_blocked_turf())
 		final = null
@@ -683,10 +912,13 @@
 		jumper.balloon_alert(jumper, "landing fouled!")
 		return
 	jumper.forceMove(final)
-	new /obj/effect/temp_visual/mook_dust(final)
+	cyberware_grey_dust(final)
 	playsound(final, 'sound/effects/gravhit.ogg', 50, TRUE)
 
 #undef CYBERWARE_DODGE_MOVE_WINDOW
+#undef CYBERWARE_DODGE_LINE_GAP
+#undef CYBERWARE_AVOID_CAP
+#undef CYBERWARE_DEFLECT_STAMINA
 #undef CYBERWARE_DEADEYE_TAG_RANGE
 #undef CYBERWARE_DEADEYE_TAG_SHOTS
 #undef CYBERWARE_DEADEYE_TAG_DURATION

@@ -1,0 +1,317 @@
+/**
+ * # The Widowline's cut
+ *
+ * What a landed wire swing does to the bodies it passes through, on top of its damage
+ * (cyberware/ware_military_arms.dm):
+ * - It cuts clean (wire_seams.dm): no fan of blood, a thin line and a few drops.
+ * - An aimed cut takes off an arm or leg that is already badly hurt (WIRE_SEVER_AT of its max damage before
+ *   the hit), or less hurt on someone already down (WIRE_SEVER_AT_DOWN). Never a corpse, never through an
+ *   Atlas frame (tg's can_dismember()), never an ally. The limb is off at the hit; it stays drawn on for a
+ *   beat and slides off after (wire_sever_fx.dm). Someone on their feet who loses a leg goes down once it has
+ *   dropped (wire_leg_fall()): tg's own knockdown, so the fall is tg's and they get up again on one leg.
+ * - The Arc's charged wire sears the stump shut: little blood, no spray (wire_sever_fx.dm).
+ * - It carries on into one body standing right behind the target, along the swing's line, and nobody else, as a
+ *   line of the one hit message. Hurting someone at a trader outpost this way counts as an attack there.
+ * - With a wire out in each hand, every third landed hit in a row crosses both through the target: both wires
+ *   lash out, and the sever takes a limb at half the usual damage.
+ * - The aimed sever, the crossing cut and the garrote are the wielder's moves, open to whoever
+ *   hv_wire_moves_allowed() lets use them (wire_users.dm); the rest belongs to the weapon.
+ *
+ * The hooks run inside the hit: wire_cut_begin() before the parent attack(), on_cut() from the target's
+ * own damage signal while tg resolves it, wire_cut_end() after.
+ */
+
+/obj/item/melee/cyberware_monowire
+	/// The body this swing is cutting, from wire_cut_begin() to wire_cut_end().
+	var/mob/living/cutting
+	/// Whether that body was already dead when the swing began.
+	var/cut_on_corpse = FALSE
+	/// Whether that body was already down when the swing began.
+	var/cut_on_downed = FALSE
+	/// The zone this swing was aimed at, read when it began: the target doll, or what wire_aimed_swing() was told.
+	var/cut_aim
+	/// The next landed hit crosses, whatever the count (wire_crossing_swing()).
+	var/force_cross = FALSE
+	/// The body zone the last landed cut went into, for the lash drawn after the hit (wire_lash_at()).
+	var/lash_zone
+	/// The next lash this wire draws is its half of a crossing cut, through the middle of the chest (wire_lash_at()).
+	var/lash_crossing = FALSE
+	/// Who the last landed cut carried on into, right behind its target (wire_cleave()): the lash drawn after the hit
+	/// runs on to them (wire_lash_through()).
+	var/datum/weakref/lash_through
+
+/mob/living
+	/// Landed Widowline hits in a row with a wire out in each hand, and when the last one landed.
+	var/wire_cross_hits = 0
+	var/wire_cross_last = 0
+
+/// Opens the cut on `target`: it cuts clean, and the damage signal tells us where it landed.
+/obj/item/melee/cyberware_monowire/proc/wire_cut_begin(mob/living/target, mob/living/user)
+	if(!isliving(target) || !isliving(user) || QDELETED(target))
+		return
+	cutting = target
+	cut_on_corpse = target.stat == DEAD
+	cut_on_downed = hv_finisher_is_down(target)
+	cut_aim = user.zone_selected
+	// A crossing cut whose lash was never drawn (its target gone) doesn't carry over to this swing. Nor a through-cut's.
+	lash_crossing = FALSE
+	lash_through = null
+	ADD_TRAIT(target, TRAIT_HV_CLEAN_CUT, REF(src))
+	RegisterSignal(target, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_cut), override = TRUE)
+
+/// Closes the cut on `target`.
+/obj/item/melee/cyberware_monowire/proc/wire_cut_end(mob/living/target)
+	if(isliving(target))
+		UnregisterSignal(target, COMSIG_MOB_AFTER_APPLY_DAMAGE)
+		REMOVE_TRAIT(target, TRAIT_HV_CLEAN_CUT, REF(src))
+		target.hv_wire_owed_sever = null
+	cutting = null
+	cut_aim = null
+
+/// The swing landed: the wire's brute damage was just applied to `source`.
+/obj/item/melee/cyberware_monowire/proc/on_cut(mob/living/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+	SIGNAL_HANDLER
+	if(source != cutting || attacking_item != src || damagetype != BRUTE)
+		return
+	// One cut per swing: the burn rider and anything the hit sets off are not cuts.
+	UnregisterSignal(source, COMSIG_MOB_AFTER_APPLY_DAMAGE)
+	var/mob/living/user = loc
+	if(!isliving(user))
+		return
+	var/obj/item/bodypart/cut_part = isbodypart(def_zone) ? def_zone : null
+	lash_zone = cut_part ? cut_part.body_zone : check_zone(def_zone)
+	var/cross = wire_count_landed(user)
+	var/obj/item/bodypart/severed = wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross)
+	// The lash meets the limb that comes off, whichever part the blow landed on.
+	if(severed)
+		lash_zone = severed.body_zone
+	if(cross)
+		wire_cross_lash(user, source)
+	if(severed)
+		// The cut shows when the limb slides off (wire_sever_fx.dm), and the wire comes away wet then too.
+		addtimer(CALLBACK(src, PROC_REF(wire_bloody), source), WIRE_CUT_DELAY)
+	else
+		wire_bloody(source, def_zone)
+	wire_cleave(source, user, clean = !isnull(severed) || cross)
+
+// ---- The crossing cut ----
+
+/// How many Widowlines `user` has out.
+/proc/wire_count_held(mob/living/user)
+	. = 0
+	for(var/obj/item/melee/cyberware_monowire/wire in user.held_items)
+		.++
+
+/// Whether the next landed hit is the crossing one.
+/obj/item/melee/cyberware_monowire/proc/wire_cross_due(mob/living/user)
+	if(!hv_wire_moves_allowed(user) || wire_count_held(user) < 2)
+		return FALSE
+	if(force_cross)
+		return TRUE
+	return user.wire_cross_hits >= WIRE_CROSS_HITS - 1 && world.time - user.wire_cross_last <= WIRE_CROSS_WINDOW
+
+/// Counts a landed hit. Returns TRUE if it is the crossing one.
+/obj/item/melee/cyberware_monowire/proc/wire_count_landed(mob/living/user)
+	if(wire_count_held(user) < 2 || !hv_wire_moves_allowed(user))
+		user.wire_cross_hits = 0
+		return FALSE
+	if(force_cross)
+		user.wire_cross_hits = 0
+		return TRUE
+	if(world.time - user.wire_cross_last > WIRE_CROSS_WINDOW)
+		user.wire_cross_hits = 0
+	user.wire_cross_hits++
+	user.wire_cross_last = world.time
+	if(user.wire_cross_hits < WIRE_CROSS_HITS)
+		return FALSE
+	user.wire_cross_hits = 0
+	return TRUE
+
+/// The other wire's lash in a crossing cut follows this wire's by this much.
+#define WIRE_CROSS_LASH_LAG (0.1 SECONDS)
+
+/**
+ * The crossing cut: the other hand's wire lashes into the target a beat after this one's. Each line runs from its own
+ * hand through the middle of the target's chest and a little past it, so the two cross there (wire_lash_at()).
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_cross_lash(mob/living/swinger, mob/living/target)
+	swinger.mob_light(2, 1, cross_light_color(), 0.3 SECONDS)
+	lash_crossing = TRUE
+	for(var/obj/item/melee/cyberware_monowire/other in swinger.held_items)
+		if(other == src)
+			continue
+		addtimer(CALLBACK(other, PROC_REF(wire_lash_at), swinger, target, lash_zone, TRUE), WIRE_CROSS_LASH_LAG)
+	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
+
+/obj/item/melee/cyberware_monowire/proc/cross_light_color()
+	return "#ff8cf8"
+
+/obj/item/melee/cyberware_monowire/live/cross_light_color()
+	return "#9fe4ff"
+
+// ---- Severing ----
+
+/// Whether this wire may take `limb` off: an arm or leg, on a body that was alive when the swing began
+/// (`corpse`), that can lose it (an Atlas frame can't), and that isn't the wielder's ally.
+/obj/item/melee/cyberware_monowire/proc/wire_can_sever(obj/item/bodypart/limb, mob/living/user, corpse)
+	if(isnull(corpse))
+		corpse = cut_on_corpse
+	var/mob/living/carbon/victim = limb?.owner
+	if(!victim || corpse || !(limb.body_zone in GLOB.hv_wire_sever_zones))
+		return FALSE
+	if(!limb.can_dismember() || HAS_TRAIT(victim, TRAIT_GODMODE))
+		return FALSE
+	return !cyberware_is_ally(user, victim)
+
+/**
+ * Takes the limb the cut landed on, if it was aimed there and was hurt enough before the hit, or the limb tg's
+ * own roll wanted off this hit. Returns the severed limb, or null.
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_try_sever(mob/living/source, mob/living/user, def_zone, damage_dealt, spray_dir, cross)
+	if(!iscarbon(source))
+		return null
+	var/mob/living/carbon/victim = source
+	var/obj/item/bodypart/owed = victim.hv_wire_owed_sever
+	victim.hv_wire_owed_sever = null
+	if(owed?.owner == victim && wire_can_sever(owed, user))
+		return wire_sever(owed, user, spray_dir, cross)
+	// The aimed sever is a move of the wielder's (wire_users.dm); tg's own roll above is the weapon's.
+	if(!hv_wire_moves_allowed(user))
+		return null
+	var/obj/item/bodypart/limb = isbodypart(def_zone) ? def_zone : victim.get_bodypart(check_zone(def_zone))
+	if(!limb || limb.owner != victim || check_zone(cut_aim) != limb.body_zone)
+		return null
+	if(!wire_can_sever(limb, user))
+		return null
+	var/needed = cut_on_downed ? WIRE_SEVER_AT_DOWN : WIRE_SEVER_AT
+	if(cross)
+		needed = needed * WIRE_CROSS_SEVER_SHARE / 100
+	if(round((limb.get_damage() - damage_dealt) * 100) < round(limb.max_damage * needed))
+		return null
+	return wire_sever(limb, user, spray_dir, cross)
+
+// Its full penetration is for its cuts. At #509's crit gates a collar, helmet or plating counts against it as
+// against any blade (owner D33): the crit roll treats it as no penetration at all.
+/obj/item/melee/cyberware_monowire/hv_crit_armour_pen()
+	return 0
+
+/// Whether this wire sears what it cuts on `victim` shut. Only the Arc's charge, and only where its shock reaches.
+/obj/item/melee/cyberware_monowire/proc/wire_sears(mob/living/victim)
+	return FALSE
+
+/obj/item/melee/cyberware_monowire/live/wire_sears(mob/living/victim)
+	return !HAS_TRAIT(victim, TRAIT_SHOCKIMMUNE)
+
+/**
+ * Takes `limb` off at the hit. The body is real at once (the arm is gone, its hand's grip with it); the picture
+ * lags: the limb stays drawn on until it slides off (wire_sever_fx.dm). Returns the severed limb, or null.
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_sever(obj/item/bodypart/limb, mob/living/user, spray_dir, cross)
+	var/mob/living/carbon/victim = limb.owner
+	var/zone = limb.body_zone
+	var/zone_name = limb.plaintext_zone
+	var/seared = wire_sears(victim)
+	// Drawn while the limb is still on, so it can be held there.
+	var/obj/effect/abstract/cyberware_anim/wire_ghost/ghost = wire_ghost_limb(victim, limb, seared, spray_dir)
+	LAZYSET(victim.hv_stump_reveal_at, zone, world.time + WIRE_CUT_DELAY)
+	if(seared)
+		LAZYSET(victim.hv_stump_burnt, zone, TRUE)
+	// tg pulls the shoes off a leg that comes off; they go with the leg.
+	var/obj/item/shoes = (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG) && ishuman(victim) ? victim.get_item_by_slot(ITEM_SLOT_FEET) : null
+	// No blood on the floor yet: it starts when the limb slides off (wire_ghost/slide()).
+	ADD_TRAIT(victim, TRAIT_HV_CLEAN_CUT, "wire_sever")
+	var/obj/item/bodypart/severed = hv_wire_take_part(limb, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, splatter = FALSE)
+	REMOVE_TRAIT(victim, TRAIT_HV_CLEAN_CUT, "wire_sever")
+	if(!severed)
+		LAZYREMOVE(victim.hv_stump_reveal_at, zone)
+		LAZYREMOVE(victim.hv_stump_burnt, zone)
+		qdel(ghost)
+		return null
+	if(seared)
+		severed.wire_char()
+	else
+		severed.wire_clean_look()
+	ghost?.hold_severed(severed)
+	if(shoes)
+		ghost?.hold_shoes(shoes)
+	wire_seam_fx(victim, zone, seared)
+	if(seared)
+		victim.hv_add_hit_line("[victim]'s [zone_name] drops away, the stump seared shut!", HV_LINE_HUGE, "Your [zone_name] drops away, the stump seared shut!", DEFAULT_MESSAGE_RANGE)
+	else
+		victim.hv_add_hit_line("[victim]'s [zone_name] comes away clean!", HV_LINE_HUGE, "Your [zone_name] comes away clean!", DEFAULT_MESSAGE_RANGE)
+	log_combat(user, victim, "severed the [zone_name] of", src, cross ? "(crossing cut)" : null)
+	if(zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_leg_fall), victim, zone), WIRE_LEG_FALL_DELAY)
+	return severed
+
+/// Someone still on their feet without the leg in `zone` goes down: tg's knockdown, as a shove gives.
+/proc/wire_leg_fall(mob/living/carbon/victim, zone)
+	if(QDELETED(victim) || victim.stat == DEAD || victim.body_position != STANDING_UP || victim.get_bodypart(zone))
+		return
+	if(victim.movement_type & (FLYING | FLOATING))
+		return
+	victim.Knockdown(WIRE_LEG_KNOCKDOWN)
+
+// ---- Through ----
+
+/**
+ * The wire carries on past the target into one body at most: the first one standing on the tile right behind it, along
+ * the swing, that the swing's lash can run on through the target to (wire_through_line()). It is picked by that same
+ * line before anything is cut, so whoever the wire carries into always gets the line (wire_lash_through()), even when
+ * the target's own cut shows as well (`clean`: a limb coming off, a crossing cut). Nobody else beside the target is
+ * touched. The cut deals the wire's cleave share, cuts clean, and never takes a limb off. Its line joins the hit's message.
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_cleave(mob/living/target, mob/living/user, clean = FALSE)
+	var/mob/living/behind = wire_through_target(target, user)
+	if(!behind)
+		return
+	var/direction = get_dir(user, target)
+	wire_cleave_cut(behind, user)
+	if(QDELETED(behind))
+		return
+	wire_through_fx(user, target, behind, direction, clean)
+	lash_through = WEAKREF(behind)
+	target.hv_add_hit_line("The wire carries through into [behind]!", HV_LINE_BOLD)
+	to_chat(behind, span_userdanger("The wire carries through into you!"))
+	playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
+
+/// Who a swing at `target` carries on into (wire_cleave()): the first living body, not the wielder's crew, on the tile
+/// right behind it along the swing that a line can run to from the hand through `target`, or null. Not a garrote's blow.
+/obj/item/melee/cyberware_monowire/proc/wire_through_target(mob/living/target, mob/living/user)
+	if(garrote_no_cleave || !isliving(target) || !isliving(user))
+		return null
+	var/turf/from = get_turf(user)
+	var/turf/first = get_turf(target)
+	if(!from || !first || from == first)
+		return null
+	var/turf/behind_turf = get_step(first, get_dir(from, first))
+	if(!behind_turf)
+		return null
+	for(var/mob/living/candidate in behind_turf)
+		if(candidate == user || candidate == target || candidate.stat == DEAD)
+			continue
+		if(!can_see(target, candidate, 1))
+			continue
+		if(cyberware_is_ally(user, candidate))
+			continue
+		if(!wire_through_line(user, target, candidate))
+			continue
+		return candidate
+	return null
+
+/// One cut on `behind`: both halves of the wire's damage at the cleave share, one armour roll, cut clean. A limb tg's
+/// wound roll wanted stays on: only the swing's own target loses limbs to the wire.
+/obj/item/melee/cyberware_monowire/proc/wire_cleave_cut(mob/living/behind, mob/living/user)
+	// A cleave is an attack like the swing itself, so trader outposts see it.
+	GLOB.outpost_pvp_enforcement?.register_pvp_aggression(behind, user)
+	var/cleave_block = behind.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
+	ADD_TRAIT(behind, TRAIT_HV_CLEAN_CUT, REF(src))
+	behind.apply_damage(force * cleave_mult, BRUTE, BODY_ZONE_CHEST, cleave_block, wound_bonus = wound_bonus, sharpness = SHARP_EDGED, attack_direction = get_dir(user, behind))
+	if(!QDELETED(behind))
+		behind.apply_damage(charge_burn * cleave_mult, BURN, BODY_ZONE_CHEST, cleave_block)
+	if(QDELETED(behind))
+		return
+	REMOVE_TRAIT(behind, TRAIT_HV_CLEAN_CUT, REF(src))
+	behind.hv_wire_owed_sever = null
+
+#undef WIRE_CROSS_LASH_LAG

@@ -66,6 +66,8 @@
 	if(emp_timer)
 		deltimer(emp_timer)
 		emp_timer = null
+	var/obj/item/organ/ware = parent
+	ware?.cyberware_anim_clear()
 	install_context_ref = null
 	install_context_forced = FALSE
 	return ..()
@@ -101,6 +103,8 @@
 	settle_passives(old_owner)
 	set_browned_out(FALSE)
 	cyberware_reevaluate_brownout(old_owner)
+	var/obj/item/organ/ware = parent
+	ware.cyberware_anim_clear(old_owner)
 
 /// Signal proc for [COMSIG_CARBON_GAIN_ORGAN] and [COMSIG_CARBON_LOSE_ORGAN]
 /// on the bearer. Every installed ware listens with its own component, so a
@@ -131,6 +135,8 @@
 	if(emp_timer)
 		deltimer(emp_timer)
 	emp_timer = addtimer(CALLBACK(src, PROC_REF(finish_emp_reboot)), CYBERWARE_EMP_DOWNTIME / max(severity, 1), TIMER_STOPPABLE)
+	// Static, arcs, then dark (cyberware_anim.dm). Only the picture staggers.
+	cyberware_emp_hit_fx(parent)
 
 /datum/component/cyberware/proc/finish_emp_reboot()
 	emp_timer = null
@@ -141,6 +147,9 @@
 	var/obj/item/organ/ware = parent
 	if(ware.owner && !(ware.organ_flags & ORGAN_FAILING))
 		ware.owner.balloon_alert(ware.owner, "[ware.name] back online")
+		cyberware_emp_reboot_fx(ware)
+	else
+		ware.owner?.update_body_parts()
 
 /// Cradle tune-up: cancels any pending EMP reboot and repairs the organ
 /// outright. Cannot fix a brownout, that is a load problem, not damage.
@@ -149,9 +158,11 @@
 		deltimer(emp_timer)
 		emp_timer = null
 	emp_down = FALSE
+	emp_look = null
 	var/obj/item/organ/ware = parent
 	ware.set_organ_damage(0)
 	update_failing()
+	ware.owner?.update_body_parts()
 
 /// Settles ORGAN_FAILING from our two failure sources. Careful not to clear
 /// a failure earned through organ damage: only lift the flag while the organ
@@ -415,6 +426,9 @@ GLOBAL_LIST_INIT(installed_capacity_costs, list(
 			newly_tripped = TRUE
 		else
 			any_recovered = TRUE
+	if(newly_tripped || any_recovered)
+		// Worn chrome stutters down or back up (cyberware_anim2.dm).
+		cyberware_brownout_fx(target, newly_tripped)
 	if(newly_tripped)
 		target.balloon_alert(target, "chrome brownout!")
 		to_chat(target, span_boldwarning("Your chrome goes dark."))

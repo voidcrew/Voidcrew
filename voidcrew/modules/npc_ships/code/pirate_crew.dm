@@ -8,8 +8,15 @@
  *
  * Once alerted, a crew knows where every hostile on its battlefield is, refreshed every few
  * seconds, and sends its hunters after them. Players can dodge but can't hide. The captain
- * and one guard hold the helm until most of the crew is dead. The per-mob behaviour lives in
- * pirate_crew_ai.dm.
+ * and one guard hold the helm until most of the crew is out of the fight. The per-mob behaviour
+ * lives in pirate_crew_ai.dm, and for the human NPC crews every NPC ship now has, in
+ * pirate_crew_human.dm.
+ *
+ * A member counts as out of the fight once it is dead, in crit or cuffed (human_npc_out_of_fight(),
+ * owner ruling OC-7): it no longer hunts or holds the helm. A member adrift in space with no player
+ * near enough to see it is cleaned up after PIRATE_CREW_ADRIFT_TIME (check_adrift()): it can't get
+ * back aboard, and a body drifting alive forever would hold its crew open. That is bookkeeping, not a
+ * death: one drifting where a player can see it stays.
  */
 
 /// Defending crews, by REF() of the NPC hull they crew
@@ -38,9 +45,14 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	"Fine. I'll do it myself.",
 ))
 
+/// Whether `recruit` is a body a pirate crew can take on: a basic mob, or a human NPC
+/// (voidcrew/modules/human_npcs/). Human members still need their own ranged and breach behaviours.
+/proc/pirate_crew_can_enlist(mob/living/recruit)
+	return isbasicmob(recruit) || ishumannpc(recruit)
+
 /// Enlists `recruit` in the crew defending `hull`, making the crew if it has none yet
 /proc/pirate_crew_enlist_defender(mob/living/recruit, obj/structure/overmap/ship/hull, role = PIRATE_ROLE_HUNTER)
-	if(QDELETED(hull) || !isbasicmob(recruit) || QDELETED(recruit))
+	if(QDELETED(hull) || !pirate_crew_can_enlist(recruit) || QDELETED(recruit))
 		return FALSE
 	var/datum/pirate_crew/crew = pirate_crew_of(hull, FALSE)
 	if(!crew)
@@ -49,7 +61,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 
 /// Enlists `recruit` in the raid on `target`, making the raid if there is none yet
 /proc/pirate_crew_enlist_raider(mob/living/recruit, obj/structure/overmap/ship/target)
-	if(QDELETED(target) || !isbasicmob(recruit) || QDELETED(recruit))
+	if(QDELETED(target) || !pirate_crew_can_enlist(recruit) || QDELETED(recruit))
 		return FALSE
 	var/datum/pirate_crew/crew = pirate_crew_of(target, TRUE)
 	if(!crew)
@@ -64,8 +76,10 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	var/datum/pirate_crew/crew = registry[REF(ship)]
 	return QDELETED(crew) ? null : crew
 
-/// The controller a pirate gets when it joins a crew: ranged if it was a ranged trooper
-/proc/pirate_crew_controller_type(mob/living/basic/recruit)
+/// The controller a pirate gets when it joins a crew: the human one for a human NPC, else ranged if it was a ranged trooper
+/proc/pirate_crew_controller_type(mob/living/recruit)
+	if(ishumannpc(recruit))
+		return /datum/ai_controller/basic_controller/pirate_crew/human
 	var/datum/ai_controller/current = recruit?.ai_controller
 	if(istype(current, /datum/ai_controller/basic_controller/trooper/ranged) || istype(current, /datum/ai_controller/basic_controller/pirate_crew/ranged))
 		return /datum/ai_controller/basic_controller/pirate_crew/ranged
@@ -73,15 +87,23 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 
 /// What `speaker` says for a PIRATE_BARK_* moment. Faction pirates may carry their own lines.
 /proc/pirate_crew_bark_lines(mob/living/speaker, kind)
+	var/list/alert_lines
+	var/list/spot_lines
 	var/mob/living/basic/trooper/pirate/faction/faction_pirate = speaker
+	var/mob/living/carbon/human/npc/faction_pirate/crewman = speaker
 	if(istype(faction_pirate))
-		switch(kind)
-			if(PIRATE_BARK_ALERT)
-				if(length(faction_pirate.crew_alert_lines))
-					return faction_pirate.crew_alert_lines
-			if(PIRATE_BARK_SPOT)
-				if(length(faction_pirate.crew_spot_lines))
-					return faction_pirate.crew_spot_lines
+		alert_lines = faction_pirate.crew_alert_lines
+		spot_lines = faction_pirate.crew_spot_lines
+	else if(istype(crewman))
+		alert_lines = crewman.crew_alert_lines
+		spot_lines = crewman.crew_spot_lines
+	switch(kind)
+		if(PIRATE_BARK_ALERT)
+			if(length(alert_lines))
+				return alert_lines
+		if(PIRATE_BARK_SPOT)
+			if(length(spot_lines))
+				return spot_lines
 	switch(kind)
 		if(PIRATE_BARK_ALERT)
 			return GLOB.pirate_crew_alert_lines
@@ -148,6 +170,8 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	var/battlefield_dirty = TRUE
 	/// Whether the raiding crew has had its arrival line
 	var/arrival_barked = FALSE
+	/// Members adrift in space, mob -> world.time they were first found adrift
+	var/list/adrift_since = list()
 	COOLDOWN_DECLARE(intel_cooldown)
 	COOLDOWN_DECLARE(battlefield_cooldown)
 	COOLDOWN_DECLARE(spot_bark_cooldown)
@@ -191,6 +215,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 				controller.reset_ai_status()
 	members.Cut()
 	home_turfs.Cut()
+	adrift_since.Cut()
 	for(var/mob/living/hostile in known_hostiles)
 		UnregisterSignal(hostile, COMSIG_QDELETING)
 	known_hostiles.Cut()
@@ -207,7 +232,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
  * role. A defending crew's first non-captain becomes the guard; a melee recruit takes the
  * job off a ranged guard while the crew is still calm.
  */
-/datum/pirate_crew/proc/enlist(mob/living/basic/recruit, role = PIRATE_ROLE_HUNTER)
+/datum/pirate_crew/proc/enlist(mob/living/recruit, role = PIRATE_ROLE_HUNTER)
 	if(QDELETED(recruit) || recruit.stat == DEAD)
 		return FALSE
 	if(raiding || isnull(role))
@@ -220,7 +245,6 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 			home_turfs -= recruit
 		return FALSE
 	if(!already_member)
-		pirate_crew_arm(recruit)
 		RegisterSignal(recruit, COMSIG_LIVING_DEATH, PROC_REF(on_member_lost))
 		RegisterSignal(recruit, COMSIG_QDELETING, PROC_REF(on_member_lost))
 		if(!raiding && role != PIRATE_ROLE_CAPTAIN)
@@ -236,10 +260,15 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	return TRUE
 
 /// Puts `member` on a pirate crew controller wired to this crew. Returns the controller.
-/datum/pirate_crew/proc/attach_controller(mob/living/basic/member, role)
+/datum/pirate_crew/proc/attach_controller(mob/living/member, role)
 	var/datum/ai_controller/basic_controller/pirate_crew/controller = swap_basic_ai_controller(member, pirate_crew_controller_type(member))
 	if(!istype(controller))
 		return null
+	// A human NPC's family decides who it keeps attacking (pirates: until hard crit); a fresh controller
+	// starts on its type's default
+	if(ishumannpc(member))
+		var/mob/living/carbon/human/npc/human_member = member
+		controller.set_blackboard_key(BB_TARGET_MINIMUM_STAT, human_member.npc_target_stat)
 	// A member handed over from another crew starts this crew's bookkeeping afresh
 	if(controller.blackboard[BB_PIRATE_CREW] != src)
 		controller.last_battlefield_turf = null
@@ -277,8 +306,10 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 		set_role(guard, PIRATE_ROLE_HUNTER)
 		set_role(recruit, PIRATE_ROLE_GUARD)
 
-/// Whether `member` fights at range
+/// Whether `member` fights at range: a human carrying a gun it may use, or a basic mob on the ranged controller
 /proc/pirate_crew_is_ranged(mob/living/member)
+	if(ishuman(member))
+		return pirate_crew_human_gunner(member)
 	return istype(member?.ai_controller, /datum/ai_controller/basic_controller/pirate_crew/ranged)
 
 /datum/pirate_crew/proc/on_member_lost(mob/living/source)
@@ -291,6 +322,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	UnregisterSignal(member, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 	members -= member
 	home_turfs -= member
+	adrift_since -= member
 	if(!length(members))
 		qdel(src)
 
@@ -484,7 +516,8 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 /datum/pirate_crew/proc/assign_hunts()
 	var/list/hunters = list()
 	for(var/mob/living/member in members)
-		if(QDELETED(member) || member.stat == DEAD || !member.ai_controller)
+		// Down or cuffed: not hunting anyone
+		if(QDELETED(member) || human_npc_out_of_fight(member) || !member.ai_controller)
 			continue
 		if(holds_post(member))
 			member.ai_controller.clear_blackboard_key(BB_PIRATE_HUNT_TARGET)
@@ -568,13 +601,13 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 			controller.can_idle = TRUE
 			controller.reset_ai_status()
 
-/// The captain and the guard join the hunt once the rest of the crew is mostly dead
+/// The captain and the guard join the hunt once the rest of the crew is mostly out of the fight
 /datum/pirate_crew/proc/check_promotion()
 	if(promoted || raiding)
 		return
 	var/living = 0
 	for(var/mob/living/member in members)
-		if(members[member] != PIRATE_ROLE_CAPTAIN && member.stat != DEAD)
+		if(members[member] != PIRATE_ROLE_CAPTAIN && !human_npc_out_of_fight(member))
 			living++
 	if(living > min(starting_crew / 3, 1))
 		return
@@ -584,13 +617,14 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 
 // ===== BARKS =====
 
+/// A crew shout from `speaker`. Ordinary speech (defaults PI-18): a gagged or muted pirate says nothing.
 /datum/pirate_crew/proc/bark(mob/living/speaker, kind)
-	if(QDELETED(speaker) || speaker.stat != CONSCIOUS)
+	if(QDELETED(speaker) || speaker.stat != CONSCIOUS || !speaker.can_speak())
 		return FALSE
 	var/list/lines = pirate_crew_bark_lines(speaker, kind)
 	if(!length(lines))
 		return FALSE
-	INVOKE_ASYNC(speaker, TYPE_PROC_REF(/atom/movable, say), message = pick(lines), forced = "pirate crew")
+	INVOKE_ASYNC(speaker, TYPE_PROC_REF(/atom/movable, say), message = pick(lines))
 	return TRUE
 
 /// `member` saw `target`: tell the crew, and maybe shout about it
@@ -627,6 +661,9 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	check_members()
 	if(QDELETED(src))
 		return PROCESS_KILL
+	check_adrift()
+	if(QDELETED(src))
+		return PROCESS_KILL
 	if(!alerted)
 		if(hostile_on_battlefield())
 			raise_alert()
@@ -646,7 +683,8 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
  */
 /datum/pirate_crew/proc/check_members()
 	var/list/stranded = list()
-	for(var/mob/living/basic/member in members)
+	// Every member, human NPCs included: a loop typed to basic mobs skipped them silently.
+	for(var/mob/living/member in members)
 		if(QDELETED(member) || member.stat == DEAD || GET_CLIENT(member))
 			continue
 		var/datum/ai_controller/controller = member.ai_controller
@@ -660,12 +698,46 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 		var/obj/structure/overmap/ship/other = pirate_crew_ship_at(where)
 		if(other && other != home_ship)
 			stranded[member] = other
-	for(var/mob/living/basic/member as anything in stranded)
+	for(var/mob/living/member as anything in stranded)
 		var/obj/structure/overmap/ship/other = stranded[member]
 		remove_member(member)
 		pirate_crew_enlist_raider(member, other)
 		if(QDELETED(src))
 			return
+
+/**
+ * Cleans up members adrift in space that no player can see, once they have drifted for
+ * PIRATE_CREW_ADRIFT_TIME. Space kills a pirate without a suit on its own; a suited one would drift
+ * alive forever, off its battlefield, holding its crew and its hull's pool slot open. A human NPC goes
+ * the way one that walks out does (npc_vanish(): what it carries that isn't gear, a ship key, drops where
+ * it was). See the top of this file.
+ */
+/datum/pirate_crew/proc/check_adrift()
+	for(var/mob/living/member as anything in members.Copy())
+		if(QDELETED(member) || member.stat == DEAD || GET_CLIENT(member) || !pirate_crew_member_adrift(member))
+			adrift_since -= member
+			continue
+		if(isnull(adrift_since[member]))
+			adrift_since[member] = world.time
+			continue
+		if(world.time < adrift_since[member] + PIRATE_CREW_ADRIFT_TIME || human_npc_watched(member))
+			continue
+		log_shuttle("PIRATE_CREW: [member] was lost adrift at [AREACOORD(member)]")
+		remove_member(member)
+		if(ishumannpc(member))
+			var/mob/living/carbon/human/npc/lost = member
+			lost.npc_vanish()
+		else
+			qdel(member)
+		if(QDELETED(src))
+			return
+
+/// Whether `member` is floating in space, off any ship's deck
+/proc/pirate_crew_member_adrift(mob/living/member)
+	var/turf/where = get_turf(member)
+	if(isnull(where) || !isturf(member.loc))
+		return FALSE
+	return isspaceturf(where) || istype(get_area(where), /area/space)
 
 // ===== HOME SHIP SIGNALS =====
 
@@ -710,9 +782,12 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 		behavior_names += replacetext("[behavior.type]", "/datum/ai_behavior/", "")
 	text += ": [controller.ai_status][controller.can_idle ? " (may idle)" : ""][controller.able_to_plan ? "" : " (planning blocked)"][controller.on_failed_planning_timeout ? " (planning timeout)" : ""]"
 	text += ", doing [length(behavior_names) ? jointext(behavior_names, " + ") : "nothing"]"
-	var/datum/component/pirate_gun/gun = pirate_gun_of(member)
-	if(gun)
-		text += ", [gun.status_text()]"
+	if(ishuman(member))
+		var/obj/item/gun/gun = human_npc_held_gun(member)
+		if(gun)
+			text += ", holding [gun][gun.can_shoot() ? "" : " (empty)"]"
+		if(human_npc_out_of_fight(member))
+			text += " (out of the fight)"
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	text += ", target [target ? "[target]" : "none"]"
 	var/mob/hunt = controller.blackboard[BB_PIRATE_HUNT_TARGET]

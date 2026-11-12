@@ -232,6 +232,7 @@
 		mission.fail("No mission pad to dispense the capture crate to.")
 		return FALSE
 	kit = new(kit_turf)
+	mission_pad_delivery_effect(kit_turf)
 	kit.objective_ref = WEAKREF(src)
 	mission.bind_item(kit)
 	// One crate per contract: losing it voids the capture
