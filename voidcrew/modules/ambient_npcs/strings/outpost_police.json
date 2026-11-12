@@ -1,5 +1,5 @@
 {
-	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% and %LOOK% fill only in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm. P13 adds stealth's lines as contexts named for their bark kinds (stealth_*); %PLACE% fills in the radio calls and %NAME% in the missing-friend lines, each with a plain line beside it.",
+	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% and %LOOK% fill only in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm. P13 adds stealth's lines as contexts named for their bark kinds (stealth_*); %PLACE% fills in the radio calls and %NAME% in the missing-friend lines, each with a plain line beside it. Outpost floors (P6) adds floor_warrant (the squad arriving on a floor under warrant), floor_breach (setting a charge) and floor_walk (a word to a visitor on a walk through an Open floor).",
 	"halcyon": {
 		"knock": [
 			"Hey. Knock it off.",
@@ -348,6 +348,22 @@
 			"Desk, do you read? Desk?",
 			"Radio's dead.",
 			"Nothing but static."
+		],
+		"floor_warrant": [
+			"Security! Warrant!",
+			"Security! Warrant! Nobody move!",
+			"Halcyon Security! We have a warrant!"
+		],
+		"floor_breach": [
+			"Breaching!",
+			"Breaching! Stand back!",
+			"Charge set! Back!"
+		],
+		"floor_walk": [
+			"Evening. All quiet?",
+			"Just looking in. Carry on.",
+			"Everyone behaving up here?",
+			"Nice place. Keep it civil."
 		]
 	},
 	"quartermain": {
@@ -695,6 +711,22 @@
 			"Desk? Desk, respond.",
 			"My radio's out.",
 			"Nothing. Radio's dead."
+		],
+		"floor_warrant": [
+			"Security! Warrant!",
+			"Depot Security! Warrant! Stay put!",
+			"Security! Warrant! Hands where I can see them!"
+		],
+		"floor_breach": [
+			"Breaching!",
+			"Charge set. Clear!",
+			"Breaching! Get back!"
+		],
+		"floor_walk": [
+			"Security. Just walking through.",
+			"All in order up here?",
+			"Carry on.",
+			"Keeping it clean up here?"
 		]
 	},
 	"undertow": {
@@ -1042,6 +1074,22 @@
 			"Desk? Hello?",
 			"Radio's dead.",
 			"Nothing. Great."
+		],
+		"floor_warrant": [
+			"Security! Warrant!",
+			"Guards! Warrant! Nobody move!",
+			"Warrant! Don't be stupid!"
+		],
+		"floor_breach": [
+			"Breaching!",
+			"Mind your heads!",
+			"Stand back. Breaching!"
+		],
+		"floor_walk": [
+			"Just looking. Don't mind me.",
+			"Anyone causing trouble up here?",
+			"Evening. Behave yourselves.",
+			"Nice. Try not to burn it down."
 		]
 	}
 }
