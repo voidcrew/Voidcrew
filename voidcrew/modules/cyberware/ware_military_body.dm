@@ -264,7 +264,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/slabskin
 	name = "\improper Slabskin plate"
-	desc = "A keel and rib plates of sintered ceramic, grown into the skin of the chest and back. Bullets leave scuffs and a noise like a dropped pan."
+	desc = "A keel and rib plates of sintered ceramic, grown into the skin of the chest and back. Bullets leave scuffs, when they don't bounce off with a noise like a dropped pan."
 	icon_state = "slabskin"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_DERMAL
@@ -276,6 +276,8 @@
 	/// TRUE while the plate armor is mixed into the bearer's physiology.
 	/// Guards the failing-gated passive hooks against double add/subtract.
 	var/plate_armor_applied = FALSE
+	/// Percent of bullets from the front that glance off, through the shared dodge arbiter. The top of the dermal ladder.
+	var/deflect_chance = 45
 
 /obj/item/organ/cyberimp/cyberware/slabskin/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -283,6 +285,7 @@
 
 /obj/item/organ/cyberimp/cyberware/slabskin/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
+	cyberware_register_deflect_source(bearer, REF(src), CALLBACK(src, PROC_REF(get_deflect_chance)))
 	if(plate_armor_applied || !ishuman(bearer))
 		return
 	plate_armor_applied = TRUE
@@ -291,6 +294,7 @@
 
 /obj/item/organ/cyberimp/cyberware/slabskin/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
+	cyberware_unregister_deflect_source(bearer, REF(src))
 	if(!plate_armor_applied)
 		return
 	plate_armor_applied = FALSE // reset before the validity skip, or the plate never re-arms after a bearer deletes
@@ -302,6 +306,12 @@
 /obj/item/organ/cyberimp/cyberware/slabskin/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	UnregisterSignal(organ_owner, COMSIG_MOB_APPLY_DAMAGE)
+
+/// Deflect-source callback: nothing while failing.
+/obj/item/organ/cyberimp/cyberware/slabskin/proc/get_deflect_chance()
+	if(organ_flags & ORGAN_FAILING)
+		return 0
+	return deflect_chance
 
 /**
  * Signal proc for [COMSIG_MOB_APPLY_DAMAGE]: the telegraph. Solid brute or

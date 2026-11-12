@@ -206,7 +206,9 @@
 	// The other hand's wire lashes out too, a beat later; nothing is drawn over the target.
 	sleep(0.2 SECONDS)
 	TEST_ASSERT(locate(/obj/effect/abstract/wire_reach) in get_turf(user), "The crossing cut didn't lash the other wire")
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in victim.vis_contents), "The crossing cut drew over its target")
+	// The arm's own sever seam (wire_sever_fx.dm) shows on the body; the old crossing X must not.
+	for(var/obj/effect/abstract/cyberware_anim/drawn in victim.vis_contents)
+		TEST_ASSERT(!findtext(drawn.icon_state, "cross"), "The crossing cut drew over its target ([drawn.icon_state])")
 	TEST_ASSERT_EQUAL(user.wire_cross_hits, 0, "The count didn't start again after the crossing cut")
 
 	// Hits too far apart start the count again.
@@ -220,6 +222,7 @@
 		qdel(old_lash)
 	user.zone_selected = BODY_ZONE_HEAD
 	TEST_ASSERT(wire.wire_crossing_swing(user, victim, BODY_ZONE_CHEST), "wire_crossing_swing() didn't swing")
+	sleep(0.2 SECONDS) // the other hand's wire lashes out a beat later, as above
 	var/lashes = 0
 	for(var/obj/effect/abstract/wire_reach/lash in get_turf(user))
 		lashes++
@@ -501,6 +504,8 @@
 
 	// Wet again, stowed: drops in front, the look clears, the DNA stays.
 	cut(user, victim, BODY_ZONE_CHEST)
+	// The cut throws its own drops off the seam (wire_seams.dm); let them land so only the fan is counted.
+	sleep(1 SECONDS)
 	user.setDir(EAST)
 	var/list/plan = wire_fan_plan(EAST, "right")
 	TEST_ASSERT_EQUAL(length(plan), 6, "The fan isn't six drops") // WIRE_FLICK_DROPS
@@ -830,7 +835,8 @@
 
 	// Soft crit, nowhere near hard crit: the Arc takes the head.
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
-	victim.apply_damage(110, OXY)
+	// Brute, not oxygen: past 50 oxyloss tg knocks a body out (check_passout()), which is not soft crit.
+	victim.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Fixture: not in soft crit")
 	victim.set_body_position(LYING_DOWN)
 	TEST_ASSERT(garrote_through(user, victim), "The Arc's garrote didn't start on someone in soft crit")
