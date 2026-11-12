@@ -1,1 +1,158 @@
-{}
+{
+	"dock_hand": {
+		"idle": [
+			"Third pallet this week with a bent corner.",
+			"Somebody signed for these and then wandered off.",
+			"If it's sealed, it's not my problem.",
+			"Count them again. Same three."
+		],
+		"talk": [
+			"Don't lean on the freight, friend.",
+			"Kessler's. Sealed, tagged, nothing to see.",
+			"Ask the office. I only stack them."
+		],
+		"work": [
+			"Tagged, tagged, tagged.",
+			"Corner's crushed again.",
+			"Who stacks them like that?"
+		],
+		"attacked": [
+			"Hey! Hands off!",
+			"I just stack the things!"
+		],
+		"violence": [
+			"Whoa, whoa!",
+			"Not by the freight!"
+		],
+		"wreck": [
+			"Look at that! The lid's torn right off!",
+			"Who in the... Kessler will have my hide!"
+		],
+		"officer": [
+			"Officer! Somebody's torn open Kessler's crates!",
+			"Over here! They've wrecked the freight!"
+		],
+		"break": [
+			"Coffee. Mind the crates a minute.",
+			"Back in a minute. Nobody touch anything."
+		],
+		"back": [
+			"Still there. Good.",
+			"Right. Where was I?"
+		],
+		"collect": [
+			"That's your time. The freight's collected.",
+			"That's the lot. Wheel it out."
+		],
+		"leave": [
+			"Shift's over.",
+			"That's me done."
+		],
+		"cover": [
+			"Get down!",
+			"Behind the crates!"
+		]
+	},
+	"fitter": {
+		"idle": [
+			"Needs level feet. Always needs level feet.",
+			"The instructions said four bolts. The instructions lie.",
+			"Twenty minutes, they said."
+		],
+		"talk": [
+			"Don't touch. It isn't wired yet.",
+			"Brightline. Brand new. Please don't lean on it."
+		],
+		"work": [
+			"Hold still, you.",
+			"Where's the other bolt?",
+			"Almost level."
+		],
+		"attacked": [
+			"Oi! I'm only fitting it!",
+			"Get off me!"
+		],
+		"violence": [
+			"Not near the machine!",
+			"Easy, easy!"
+		],
+		"wreck": [
+			"Oh, you have got to be kidding me.",
+			"That was brand new! Brand new!"
+		],
+		"officer": [
+			"Somebody's wrecked the machine!",
+			"Officer! My machine!"
+		],
+		"break": [
+			"Need a coffee. Back in a minute.",
+			"Five minutes. It isn't going anywhere."
+		],
+		"back": [
+			"Still in one piece. Good.",
+			"Right. Bolts."
+		],
+		"collect": [
+			"All installed. That's me done.",
+			"Time's up. I'm packing up."
+		],
+		"leave": [
+			"I'm not paid enough for this.",
+			"That's it. I'm off."
+		],
+		"cover": [
+			"Down! Get down!",
+			"Behind the machine!"
+		]
+	},
+	"courier": {
+		"idle": [
+			"Stand here. Watch the rack. Get paid.",
+			"Drives don't guard themselves."
+		],
+		"talk": [
+			"Courier. The rack's sealed. Move along.",
+			"Step back from the lock."
+		],
+		"work": [
+			"Lock's fine.",
+			"Seal's intact."
+		],
+		"attacked": [
+			"Back off!",
+			"Get away from me!"
+		],
+		"violence": [
+			"Easy!",
+			"Hands where I can see them!"
+		],
+		"wreck": [
+			"That was cargo! That was my cargo!",
+			"They've cooked the lot!"
+		],
+		"officer": [
+			"Security! The rack's been hit!",
+			"Officer, over here! Somebody's cooked the drives!"
+		],
+		"break": [
+			"Two minutes. Don't touch it.",
+			"Back shortly. It's sealed."
+		],
+		"back": [
+			"Still sealed. Good.",
+			"Right, back on it."
+		],
+		"collect": [
+			"Pickup's here. I'm off.",
+			"That's my hand-over. Rack goes with me."
+		],
+		"leave": [
+			"I'm done here.",
+			"Not my problem any more."
+		],
+		"cover": [
+			"Get down!",
+			"Cover!"
+		]
+	}
+}
