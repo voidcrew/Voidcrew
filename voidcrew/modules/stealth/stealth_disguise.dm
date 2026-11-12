@@ -181,6 +181,8 @@
 	var/list/made
 	/// REF(mob) => world.time until which it lets them be, after it checked their pass
 	var/list/passes
+	/// REF(mob) => list of world.time it waved them on after reading their pass (stealth_rechecked())
+	var/list/waved
 	/// Weakref to whoever it has stopped to check
 	var/datum/weakref/challenge
 	/// Where they stood when it stopped them
@@ -318,12 +320,33 @@
 	stealth_bark(prob(25) ? STEALTH_BARK_SMOKE : STEALTH_BARK_GREET, null, stealth_card_name(who))
 
 /**
+ * Whether stopping the one under `key` again is a stop too many: it waved them on within
+ * STEALTH_PASS_RECHECK_COOLDOWN, or STEALTH_PASS_RECHECK_MAX times within STEALTH_PASS_RECHECK_MEMORY. The same shape
+ * as a door's cue throttle (stealth_doors.dm), so taking the pass off and on can't pull a guard over again and again.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_rechecked(key)
+	var/list/stamps = waved?[key]
+	if(!stamps)
+		return FALSE
+	for(var/index in length(stamps) to 1 step -1)
+		if(world.time - stamps[index] > STEALTH_PASS_RECHECK_MEMORY)
+			stamps.Cut(index, index + 1)
+	if(!length(stamps))
+		LAZYREMOVE(waved, key)
+		return FALSE
+	return length(stamps) >= STEALTH_PASS_RECHECK_MAX || world.time - stamps[length(stamps)] < STEALTH_PASS_RECHECK_COOLDOWN
+
+/**
  * Stops `who` to see their pass: suspicious of them, facing and pointing at them, with the challenge line. From
  * here stealth_check_challenge() decides, once a scan.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_challenge(mob/living/who)
 	var/mob/living/guard = pawn
 	if(QDELETED(who) || stealth_driven() || stealth_state() == STEALTH_ALERT || challenge?.resolve() == who)
+		return
+	// Waved on a moment ago, or too often: a pass that keeps coming off is no pass (decision 40 throttle).
+	if(stealth_rechecked(REF(who)))
+		stealth_blow(who)
 		return
 	var/turf/where = get_turf(who)
 	if(stealth_state() == STEALTH_SUSPICIOUS)
@@ -394,6 +417,7 @@
 			return
 		stealth_bark(STEALTH_BARK_ID_PASS, null, stealth_card_name(who), TRUE)
 		LAZYSET(passes, key, world.time + STEALTH_PASS_TIME)
+		LAZYADDASSOCLIST(waved, key, world.time)
 		stealth_go_unaware()
 		return
 	if(!warned && world.time - checked_at >= STEALTH_CHALLENGE_WARN_TIME)

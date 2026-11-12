@@ -56,10 +56,8 @@
 #define STEALTH_SCAN_INTERVAL (1 SECONDS)
 #define STEALTH_SIGHT_RANGE 8
 #define STEALTH_ALERT_MAX_RANGE 7
-#define STEALTH_DARK_SIGHT_RANGE 4
 #define STEALTH_DARK_LUMCOUNT 0.2
 #define STEALTH_DARK_MULT 0.5
-#define STEALTH_CLOSE_RANGE 2
 /// Elbow to elbow: someone this close in its cone is seen whatever the light (decision 31)
 #define STEALTH_ADJACENT_RANGE 1
 /// Point-blank (decision 32): someone it can see in its cone this close is an alert on that look
@@ -68,9 +66,6 @@
 #define STEALTH_NEAR_RANGE 4
 #define STEALTH_NEAR_MULT 3
 #define STEALTH_CONE_HALF_ANGLE 60
-#define STEALTH_WARY_HALF_ANGLE 75
-#define STEALTH_SEARCH_HALF_ANGLE 90
-#define STEALTH_NOTICE_RATE 1.0
 #define STEALTH_NOTICE_MIN_FALLOFF 0.25
 #define STEALTH_SUSPICIOUS_AT 1.0
 #define STEALTH_ALERT_AT 2.5
@@ -85,7 +80,6 @@
 #define STEALTH_SEARCHING_MULT 2
 #define STEALTH_WARY_MULT 1.5
 #define STEALTH_MAX_CANDIDATES 8
-#define STEALTH_INVESTIGATE_DELAY (2 SECONDS)
 #define STEALTH_LOOK_AROUND_TIME (4 SECONDS)
 #define STEALTH_SUSPICIOUS_TIMEOUT (12 SECONDS)
 #define STEALTH_LOSE_TARGET_TIME (4 SECONDS)
@@ -206,8 +200,6 @@
 #define STEALTH_TURN_LEAN 3
 /// How long the lean takes to show and to go
 #define STEALTH_TURN_LEAN_TIME (0.2 SECONDS)
-/// After a turn where it stands, nothing is plain to it at a glance for this long (yellow; the skill holds the number)
-#define STEALTH_TURN_GRACE (1 SECONDS)
 
 #define FACTION_SCAV "scav"
 
@@ -244,6 +236,11 @@
 #define STEALTH_CHALLENGE_LEASH 2
 /// How long a guard that read their pass lets them be
 #define STEALTH_PASS_TIME (5 MINUTES)
+/// Someone it waved on is stopped again (the pass came off and went back on) within STEALTH_PASS_RECHECK_COOLDOWN of a
+/// wave, or after STEALTH_PASS_RECHECK_MAX waves within STEALTH_PASS_RECHECK_MEMORY: it sees through them instead.
+#define STEALTH_PASS_RECHECK_COOLDOWN (60 SECONDS)
+#define STEALTH_PASS_RECHECK_MEMORY (5 MINUTES)
+#define STEALTH_PASS_RECHECK_MAX 2
 /// How long a guard remembers the wearer of a disguise it saw through (a face it remembers for good)
 #define STEALTH_MADE_TIME (5 MINUTES)
 /// Tiles within which a guard has a word for one of its own

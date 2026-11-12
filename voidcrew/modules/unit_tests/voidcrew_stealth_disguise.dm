@@ -163,10 +163,60 @@
 	stealth_scans(guard, 10)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard stopped someone again right after reading their pass")
 	TEST_ASSERT_EQUAL(stealth_notice_of(guard, person), 0, "Someone it has passed gained notice")
-	// The pass comes off: the guard's leave goes with it.
+	// The pass comes off a while later: the guard's leave goes with it.
+	stealth_ai.stealth_rewind(61 SECONDS)
 	TEST_ASSERT(person.dropItemToGround(person.wear_id), "The pass wouldn't come off")
 	stealth_scans(guard, 1)
 	TEST_ASSERT_EQUAL(stealth_ai.challenge?.resolve(), person, "With the pass gone the guard didn't stop them again")
+	qdel(block)
+
+/// Taking the pass off and on to pull a guard over: a second stop within 60 s of a wave, or a third within 5 min, sees
+/// through them. Waves older than 5 min are forgotten.
+/datum/unit_test/voidcrew_stealth_disguise_recheck
+
+/datum/unit_test/voidcrew_stealth_disguise_recheck/Run()
+	var/datum/turf_reservation/block = stealth_block(20, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	for(var/how in list("at once", "third time"))
+		var/mob/living/carbon/human/npc/guard = stealth_guard(block, 6, 2)
+		var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+		var/mob/living/carbon/human/person = stealth_person(block, 8, 2)
+		stealth_dress(person)
+		var/waves = how == "at once" ? 1 : 2
+		for(var/wave in 1 to waves)
+			if(wave > 1)
+				stealth_ai.stealth_rewind(61 SECONDS)
+				TEST_ASSERT(person.dropItemToGround(person.wear_id), "[how]: the pass wouldn't come off")
+				stealth_scans(guard, 1)
+				TEST_ASSERT_EQUAL(stealth_ai.challenge?.resolve(), person, "[how]: a minute after a wave the guard didn't stop them")
+				stealth_dress(person, FALSE, FALSE, TRUE)
+			else
+				stealth_scans(guard, 1)
+				TEST_ASSERT_EQUAL(stealth_ai.challenge?.resolve(), person, "[how]: the guard didn't stop someone in the whole set")
+			stealth_scans(guard, 1)
+			stealth_ai.stealth_rewind(2 SECONDS)
+			stealth_scans(guard, 1)
+			TEST_ASSERT_EQUAL(guard.npc_last_bark, "stealth_id_pass", "[how]: wave [wave] didn't pass")
+			TEST_ASSERT_EQUAL(length(stealth_ai.waved?[REF(person)]), wave, "[how]: the guard didn't count wave [wave]")
+		if(how == "third time")
+			stealth_ai.stealth_rewind(61 SECONDS)
+		TEST_ASSERT(person.dropItemToGround(person.wear_id), "[how]: the pass wouldn't come off")
+		stealth_scans(guard, 1)
+		TEST_ASSERT_NULL(stealth_ai.challenge?.resolve(), "[how]: the guard stopped them once more instead of seeing through it")
+		TEST_ASSERT(stealth_ai.made?[REF(person)] > world.time, "[how]: the guard doesn't remember who it saw through")
+		TEST_ASSERT_EQUAL(guard.npc_last_bark, "stealth_blown", "[how]: the guard saw through them without a word")
+		TEST_ASSERT(!stealth_ai.stealth_fooled(person), "[how]: the disguise still holds for that guard")
+		qdel(guard)
+		qdel(person)
+	// Old waves are forgotten.
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 6, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	LAZYADDASSOCLIST(stealth_ai.waved, "someone", world.time)
+	LAZYADDASSOCLIST(stealth_ai.waved, "someone", world.time)
+	TEST_ASSERT(stealth_ai.stealth_rechecked("someone"), "Two fresh waves didn't count")
+	stealth_ai.stealth_rewind(5 MINUTES + 1 SECONDS)
+	TEST_ASSERT(!stealth_ai.stealth_rechecked("someone"), "Waves over 5 minutes old still counted")
+	TEST_ASSERT_NULL(stealth_ai.waved?["someone"], "Old waves weren't cleared")
 	qdel(block)
 
 /// No pass: asked again at 3 s, blown at 6 s. Walking off or running is blown at once. A pass put on in time passes.

@@ -258,6 +258,7 @@
 	heard_now = null
 	made = null
 	passes = null
+	waved = null
 	challenge = null
 	start_turf = null
 	return ..()
@@ -589,6 +590,10 @@
 		bark_ready_at[kind] -= time
 	for(var/key in stop_skip_until)
 		stop_skip_until[key] -= time
+	for(var/key in waved)
+		var/list/stamps = waved[key]
+		for(var/index in 1 to length(stamps))
+			stamps[index] -= time
 
 // ===== The scan =====
 
