@@ -194,11 +194,13 @@ Crimes pile up against the person who did them, shown as **stars** on your alert
 | Stars | What the officers do |
 |---|---|
 | 1-2 | Order you to stop, stun and cuff you, take what you used, and walk you to the desk by the lobby |
-| 3 | Some officers shoot to kill. The rest carry stun batons and disablers and take you alive, straight to jail |
+| 3 | Some officers shoot to kill. The rest carry stun batons and disablers and take you alive, straight to jail. At the Undertow they all shoot to kill |
 | 4 | As 3, plus your crewmates at the outpost are arrested and the crew is under embargo there |
 | 5 | As 4, with the marshal on scene and a longer embargo |
 
-More officers arrive through the staff lifts as your stars rise, and they keep coming. Nobody shoots someone who is down, cuffed or in a cell: an officer comes over and cuffs them instead. Get away from them and you are fair game again.
+More officers arrive through the staff lifts as your stars rise, and they keep coming. A downed suspect is cuffed, not shot, and nobody fires on someone who is cuffed or in a cell. Get away from them and you are fair game again.
+
+The Undertow is the exception. From 3 stars up every officer there shoots to kill, and keeps shooting a downed suspect until they are dead.
 
 Stars fade if you stay out of sight of the officers long enough, or if you leave the outpost. At 3 stars and up they will not fade while you are still in the outpost. After a warrant fades, the officers remember you for a while.
 
@@ -212,7 +214,7 @@ Stand still, drop your weapon and put your hands down, or use `*surrender` at 1-
 - **If it is not.** You go to jail, three minutes at 1 star and six at 2. Your gear comes off, you are given a prison jumpsuit and shoes, and your things go into a property locker outside the cells. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
 - **At 3 stars and up.** There is no fine. You go straight to jail, stripped the same way: 10 minutes at 3 stars, 15 at 4 and 20 at 5, with no paying your way out.
 
-If you die in a cell, the door opens and your term is over.
+If you go down in a cell, the door opens for a medic and your time stops. Only dying ends it early.
 
 ### Getting your things back
 
