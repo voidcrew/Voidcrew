@@ -175,6 +175,8 @@
 	var/datum/plasma_melt/leg_melt = victim.plasma_melts[BODY_ZONE_R_LEG]
 	leg_melt.pose_stump("stump_bubble", TRUE)
 	TEST_ASSERT_EQUAL(boots.alpha, 255, "The shoes stayed hidden after the leg melted away")
+	boots.forceMove(get_step(get_turf(victim), WEST))
+	TEST_ASSERT(boots.pixel_x == boots.base_pixel_x && boots.pixel_y == boots.base_pixel_y && boots.pixel_z == boots.base_pixel_z, "Moved shoes kept the offset of the spot they fell to")
 
 	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_R_ARM), SOUTH), "The arm did not melt off")
 	TEST_ASSERT(tool.loc != victim, "The melted hand still holds the tool")

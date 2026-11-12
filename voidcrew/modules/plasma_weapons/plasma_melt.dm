@@ -216,7 +216,16 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	victim = null
 	start_turf = null
 	for(var/obj/item/thing as anything in hidden_items)
-		on_hidden_item_moved(thing)
+		if(hidden_items[thing] != "landed")
+			on_hidden_item_moved(thing)
+			continue
+		// an item still lying where it fell stays put as a plain floor item: its drop goes into pixel_y
+		UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+		animate(thing)
+		thing.pixel_y += thing.pixel_z - thing.base_pixel_z
+		thing.pixel_z = thing.base_pixel_z
+		thing.transform = matrix(thing.transform).Turn(thing.icon_angle)
+	hidden_items.Cut()
 	falling.Cut()
 	QDEL_NULL(limb_light)
 	if(!QDELETED(pool)) // a pool still hot when the melt ends sets where it is
@@ -398,12 +407,14 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	RegisterSignals(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_hidden_item_moved))
 
 /// Shows a hidden item as it always looks. One that fell out of the melt lies drawn lower and turned flat on its
-/// tile; that goes too once anyone moves it.
+/// tile; once anyone moves it, it sits at its tile's middle with its own look.
 /datum/plasma_melt/proc/on_hidden_item_moved(obj/item/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 	if(hidden_items[source] == "landed")
 		animate(source)
+		source.pixel_x = source.base_pixel_x
+		source.pixel_y = source.base_pixel_y
 		source.pixel_z = source.base_pixel_z
 		source.transform = matrix(source.transform).Turn(source.icon_angle)
 	hidden_items -= source
