@@ -53,6 +53,15 @@
    "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
    "tier": "none"
   },
+  "/obj/item/storage/bag/excavation": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "",
+   "name": "find satchel",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
   "/obj/item/storage/bag/fishing": {
    "confidence": "high",
    "group": "work bags",

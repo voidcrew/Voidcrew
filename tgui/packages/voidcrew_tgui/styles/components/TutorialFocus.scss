@@ -1,0 +1,21 @@
+// The tutorial checklist's in-window pointer (components/TutorialFocus.tsx). Outline and
+// inset glow only, both drawn inside the element's box, so nothing moves and a clipping
+// parent can't hide it. #FFC83C matches the in-game outlines.
+@keyframes TutorialFocus__pulse {
+  0%,
+  100% {
+    outline-color: rgba(255, 200, 60, 1);
+    box-shadow: inset 0 0 6px 1px rgba(255, 200, 60, 0.55);
+  }
+
+  50% {
+    outline-color: rgba(255, 200, 60, 0.35);
+    box-shadow: inset 0 0 2px 0 rgba(255, 200, 60, 0.15);
+  }
+}
+
+.TutorialFocus {
+  outline: 2px solid rgba(255, 200, 60, 1) !important;
+  outline-offset: -2px !important;
+  animation: TutorialFocus__pulse 1.6s ease-in-out infinite;
+}

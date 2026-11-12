@@ -33,6 +33,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
+import { TutorialFocus } from '../components/TutorialFocus';
 import { Window } from '../layouts';
 import {
   type CourseSegment,
@@ -240,6 +241,8 @@ type DockFeeQuote = {
 };
 
 type Data = {
+  /** The tutorial checklist's focus key for this window (TutorialFocus), or null. */
+  tutorial_focus?: string | null;
   isViewer: BooleanLike;
   isNotCrew: BooleanLike;
   isAbandoned: BooleanLike;
@@ -530,6 +533,8 @@ const contactKey = (contact: Pick<Contact, 'ref' | 'contactRef'>) =>
  * button already does the job.
  */
 const DOCKABLE_KINDS: ContactKind[] = ['planet', 'ruin', 'outpost'];
+/** OUTPOST_DOCK_VARIANT_BAY: a crew outpost's ship bay berth. */
+const DOCK_VARIANT_BAY = 'ship_bay';
 const canTravelDock = (contact: Contact) =>
   DOCKABLE_KINDS.includes(contact.kind) && contact.dist > 0 && !!contact.target;
 
@@ -3301,6 +3306,8 @@ const ContactMenu = (props: {
     hint?: string;
     disabled?: boolean;
     onClick: () => void;
+    /** TutorialFocus key for this entry. */
+    focus?: string;
   }[] = [];
 
   if (unknown) {
@@ -3336,6 +3343,8 @@ const ContactMenu = (props: {
         disabled: locked || state !== 'flying',
         onClick: () =>
           act('dock', { target: option.ref, variant: option.variant }),
+        focus:
+          option.variant === DOCK_VARIANT_BAY ? 'helm_dock_bay' : undefined,
       });
     }
   }
@@ -3419,19 +3428,20 @@ const ContactMenu = (props: {
         <div className="Helm__menuEmpty">No actions available</div>
       ) : (
         items.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            className="Helm__menuItem"
-            disabled={item.disabled}
-            onClick={() => {
-              item.onClick();
-              onClose();
-            }}
-          >
-            <span className="Helm__menuLabel">{item.label}</span>
-            {!!item.hint && <span className="Helm__menuHint">{item.hint}</span>}
-          </button>
+          <TutorialFocus key={item.label} id={item.focus ?? ''}>
+            <button
+              type="button"
+              className="Helm__menuItem"
+              disabled={item.disabled}
+              onClick={() => {
+                item.onClick();
+                onClose();
+              }}
+            >
+              <span className="Helm__menuLabel">{item.label}</span>
+              {!!item.hint && <span className="Helm__menuHint">{item.hint}</span>}
+            </button>
+          </TutorialFocus>
         ))
       )}
     </div>
@@ -3468,20 +3478,24 @@ const DockPickerMenu = (props: {
         <div className="Helm__menuEmpty">Nothing to dock with</div>
       ) : (
         options.map((option) => (
-          <button
+          <TutorialFocus
             key={`${option.ref ?? 'empty'}:${option.variant ?? 'default'}`}
-            type="button"
-            className="Helm__menuItem"
-            onClick={() => {
-              act('dock', option.ref ? { target: option.ref, variant: option.variant } : {});
-              onClose();
-            }}
+            id={option.variant === DOCK_VARIANT_BAY ? 'helm_dock_bay' : ''}
           >
-            <span className="Helm__menuLabel">{option.name}</span>
-            {!!feeHint(option.fee) && (
-              <span className="Helm__menuHint">{feeHint(option.fee)}</span>
-            )}
-          </button>
+            <button
+              type="button"
+              className="Helm__menuItem"
+              onClick={() => {
+                act('dock', option.ref ? { target: option.ref, variant: option.variant } : {});
+                onClose();
+              }}
+            >
+              <span className="Helm__menuLabel">{option.name}</span>
+              {!!feeHint(option.fee) && (
+                <span className="Helm__menuHint">{feeHint(option.fee)}</span>
+              )}
+            </button>
+          </TutorialFocus>
         ))
       )}
     </div>
@@ -4152,20 +4166,24 @@ const DockVariantButtons = (props: { target?: string | null }) => {
   return (data.dockOptions ?? [])
     .filter((option) => option.ref === props.target && option.variant)
     .map((option) => (
-      <button
+      <TutorialFocus
         key={`${option.ref}:${option.variant}`}
-        type="button"
-        className="Helm__btn"
-        disabled={locked || data.state !== 'flying'}
-        title={feeHint(option.fee) ?? 'Dock for ship construction'}
-        onClick={(event) => {
-          event.stopPropagation();
-          act('dock', { target: option.ref, variant: option.variant });
-        }}
+        id={option.variant === DOCK_VARIANT_BAY ? 'helm_dock_bay' : ''}
       >
-        {option.label ?? option.name}
-        {Number(option.fee) > 0 ? ` · ${Number(option.fee)} cr` : ''}
-      </button>
+        <button
+          type="button"
+          className="Helm__btn"
+          disabled={locked || data.state !== 'flying'}
+          title={feeHint(option.fee) ?? 'Dock for ship construction'}
+          onClick={(event) => {
+            event.stopPropagation();
+            act('dock', { target: option.ref, variant: option.variant });
+          }}
+        >
+          {option.label ?? option.name}
+          {Number(option.fee) > 0 ? ` · ${Number(option.fee)} cr` : ''}
+        </button>
+      </TutorialFocus>
     ));
 };
 
@@ -4483,45 +4501,47 @@ const HelmRose = () => {
 
   return (
     <div className="Helm__rose">
-      <div className="Helm__roseGrid">
-        {ROSE_CELLS.map(([name, direction, rotation]) => {
-          const isStop = direction === BURN_STOP;
-          const lit = isStop
-            ? burnDirection === BURN_STOP
-            : commandedCourse === direction;
-          return (
-            <button
-              key={name}
-              type="button"
-              className={`Helm__dirBtn ${isStop ? 'Helm--stop' : ''} ${lit ? 'Helm--lit' : ''}`}
-              aria-label={isStop ? 'Brake' : `Fly ${name.toLowerCase()}`}
-              title={
-                isStop
-                  ? zone_transitioning
-                    ? 'Cancel zone transition'
-                    : burnDirection === BURN_STOP
-                      ? 'Braking, click to coast'
-                      : 'Brake'
-                  : lit
-                    ? `Flying ${name.toLowerCase()}, click to coast`
-                    : `Fly ${name.toLowerCase()}, drift is shed automatically`
-              }
-              disabled={isStop ? !flyable && !zone_transitioning : !canMove}
-              onClick={() =>
-                isStop ? act('stop') : act('change_heading', { dir: direction })
-              }
-            >
-              {isStop ? (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <rect x={6} y={6} width={12} height={12} rx={1} />
-                </svg>
-              ) : (
-                <Arrow rotation={rotation} />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <TutorialFocus id="helm_course">
+        <div className="Helm__roseGrid">
+          {ROSE_CELLS.map(([name, direction, rotation]) => {
+            const isStop = direction === BURN_STOP;
+            const lit = isStop
+              ? burnDirection === BURN_STOP
+              : commandedCourse === direction;
+            return (
+              <button
+                key={name}
+                type="button"
+                className={`Helm__dirBtn ${isStop ? 'Helm--stop' : ''} ${lit ? 'Helm--lit' : ''}`}
+                aria-label={isStop ? 'Brake' : `Fly ${name.toLowerCase()}`}
+                title={
+                  isStop
+                    ? zone_transitioning
+                      ? 'Cancel zone transition'
+                      : burnDirection === BURN_STOP
+                        ? 'Braking, click to coast'
+                        : 'Brake'
+                    : lit
+                      ? `Flying ${name.toLowerCase()}, click to coast`
+                      : `Fly ${name.toLowerCase()}, drift is shed automatically`
+                }
+                disabled={isStop ? !flyable && !zone_transitioning : !canMove}
+                onClick={() =>
+                  isStop ? act('stop') : act('change_heading', { dir: direction })
+                }
+              >
+                {isStop ? (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <rect x={6} y={6} width={12} height={12} rx={1} />
+                  </svg>
+                ) : (
+                  <Arrow rotation={rotation} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </TutorialFocus>
     </div>
   );
 };
@@ -4604,10 +4624,12 @@ const OpsButton = (props: {
   state?: 'armed' | 'active' | 'distress';
   title: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Extra classes, e.g. from TutorialFocus. */
+  className?: string;
 }) => (
   <button
     type="button"
-    className={`Helm__opBtn ${props.state ? `Helm--${props.state}` : ''}`}
+    className={`Helm__opBtn ${props.state ? `Helm--${props.state}` : ''} ${props.className ?? ''}`}
     disabled={props.disabled}
     title={props.title}
     onClick={props.onClick}
@@ -4742,61 +4764,68 @@ const OpsRow = () => {
 
   return (
     <div className="Helm__ops">
-      <OpsButton
-        label="Undock"
-        // The countdown belongs on the face of the button, not only in its
-        // tooltip: "moorings" next to a dead button says nothing about why.
-        sub={
-          undockWarmup
-            ? `${deciToSeconds(undockWarmupRemaining)}s`
-            : undockCooldown
-              ? `hold ${deciToSeconds(undockCooldownRemaining)}s`
-              : undockLocked
-                ? `locked ${deciToSeconds(undockLockoutRemaining)}s`
-                : integrityLockout
-                  ? `recert ${deciToClock(integrityLockoutRemaining)}`
-                  : cargoShuttlePresent
-                    ? 'shuttle aboard'
-                    : manoeuvring
-                      ? `${state}…`
-                      : 'moorings'
-        }
-        path="M9 4h6v4h5v12H4V8h5V4zm3 5v7m0 0l-3-3m3 3l3-3"
-        disabled={undockDisabled}
-        state={undockWarmup ? 'armed' : undefined}
-        title={undockReason()}
-        onClick={() => act('undock')}
-      />
-      <OpsButton
-        label="Dock"
-        // Says what is actually under the ship. This button used to only ever dock
-        // into empty space and refused outright when anything shared the tile, then
-        // only ever offered the first real candidate found, now it lists every
-        // dockable thing sharing the tile and only asks the crew to choose when
-        // there's more than one.
-        sub={
-          dockWarmup
-            ? `${deciToSeconds(dockWarmupRemaining)}s`
-            : manoeuvring
-              ? `${state}…`
-              : multipleDockOptions
-                ? `${options.length} options`
-                : dockName
-        }
-        path="M12 3v10m0 0l-3-3m3 3l3-3M4 17h16v4H4z"
-        disabled={
-          !flyable ||
-          tooFastToDock ||
-          !!dockWarmup ||
-          !!zone_transitioning ||
-          !!hiddenInNebula
-        }
-        state={dockWarmup ? 'armed' : undefined}
-        title={dockReason()}
-        onClick={(event) =>
-          multipleDockOptions ? openDockPicker(event) : runDock(primaryDockOption)
-        }
-      />
+      <TutorialFocus id="helm_undock">
+        <OpsButton
+          label="Undock"
+          // The countdown belongs on the face of the button, not only in its
+          // tooltip: "moorings" next to a dead button says nothing about why.
+          sub={
+            undockWarmup
+              ? `${deciToSeconds(undockWarmupRemaining)}s`
+              : undockCooldown
+                ? `hold ${deciToSeconds(undockCooldownRemaining)}s`
+                : undockLocked
+                  ? `locked ${deciToSeconds(undockLockoutRemaining)}s`
+                  : integrityLockout
+                    ? `recert ${deciToClock(integrityLockoutRemaining)}`
+                    : cargoShuttlePresent
+                      ? 'shuttle aboard'
+                      : manoeuvring
+                        ? `${state}…`
+                        : 'moorings'
+          }
+          path="M9 4h6v4h5v12H4V8h5V4zm3 5v7m0 0l-3-3m3 3l3-3"
+          disabled={undockDisabled}
+          state={undockWarmup ? 'armed' : undefined}
+          title={undockReason()}
+          onClick={() => act('undock')}
+        />
+      </TutorialFocus>
+      {/* With several berths, Dock opens the list that holds the ship bay. */}
+      <TutorialFocus
+        id={multipleDockOptions ? ['helm_dock', 'helm_dock_bay'] : 'helm_dock'}
+      >
+        <OpsButton
+          label="Dock"
+          // Says what is actually under the ship. This button used to only ever dock
+          // into empty space and refused outright when anything shared the tile, then
+          // only ever offered the first real candidate found, now it lists every
+          // dockable thing sharing the tile and only asks the crew to choose when
+          // there's more than one.
+          sub={
+            dockWarmup
+              ? `${deciToSeconds(dockWarmupRemaining)}s`
+              : manoeuvring
+                ? `${state}…`
+                : multipleDockOptions
+                  ? `${options.length} options`
+                  : dockName
+          }
+          path="M12 3v10m0 0l-3-3m3 3l3-3M4 17h16v4H4z"
+          disabled={
+            !flyable ||
+            tooFastToDock ||
+            !!dockWarmup ||
+            !!zone_transitioning ||
+            !!hiddenInNebula
+          }
+          state={dockWarmup ? 'armed' : undefined}
+          title={dockReason()}
+          onClick={(event) =>
+            multipleDockOptions ? openDockPicker(event) : runDock(primaryDockOption)
+          }
+        />
+      </TutorialFocus>
       <OpsButton
         label={hiddenInNebula ? 'Emerge' : 'Cloak'}
         sub={
@@ -4914,14 +4943,16 @@ const AbandonedOverlay = () => {
             : 'No command authorization is registered to this ship. Claiming it makes you its commanding officer.'}
         </div>
         <div className="Helm__overlayActions">
-          <button
-            type="button"
-            className="Helm__btn"
-            onClick={() => act('claim_abandoned')}
-            disabled={!!data.isRetired}
-          >
-            Claim this ship
-          </button>
+          <TutorialFocus id="helm_claim">
+            <button
+              type="button"
+              className="Helm__btn"
+              onClick={() => act('claim_abandoned')}
+              disabled={!!data.isRetired}
+            >
+              Claim this ship
+            </button>
+          </TutorialFocus>
         </div>
       </div>
     </div>

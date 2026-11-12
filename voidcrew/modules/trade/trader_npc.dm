@@ -441,6 +441,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 /datum/outpost_trader_ui/shop/ui_data(mob/user)
 	var/list/data = list()
+	// Tutorial checklist pointer (voidcrew/modules/tutorials)
+	data["tutorial_focus"] = tutorial_ui_focus(user, "trader")
 	var/datum/outpost_shop/shop = npc.shop
 
 	data["barred"] = npc.outpost ? npc.outpost.is_user_barred(user) : FALSE
@@ -594,6 +596,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 /datum/outpost_trader_ui/contracts/ui_data(mob/user)
 	var/list/data = list()
+	// Tutorial checklist pointer (voidcrew/modules/tutorials)
+	data["tutorial_focus"] = tutorial_ui_focus(user, "board")
 	var/obj/structure/overmap/trader_outpost/outpost = npc.outpost
 
 	var/datum/outpost_shop/shop = outpost?.shop
