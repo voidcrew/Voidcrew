@@ -236,6 +236,7 @@
 		qdel(overlay)
 	watchers = null
 	QDEL_NULL(meter)
+	QDEL_NULL(beam)
 	QDEL_NULL(torch)
 	light_lit = FALSE
 	sweeping = FALSE

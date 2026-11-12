@@ -179,6 +179,57 @@
 
 /// Decision 41, real lighting: the beam is a wedge. It lights 1 to 4 tiles ahead and the tiles beside 2 and 3
 /// ahead; the guard's own tile, its sides, its back, 5 ahead and two tiles off the line stay dark. A wall stops it.
+/// Decision 42: the cone players see shows and hides with the light, points where the beam points, and stops at a wall.
+/datum/unit_test/voidcrew_stealth_light_cone
+
+/datum/unit_test/voidcrew_stealth_light_cone/Run()
+	// STEALTH_BEAM_LENGTHS: the unit tests are included before voidcrew/_DEFINES, so the number is written out
+	var/open_reach = 22
+	var/datum/turf_reservation/block = stealth_block(12, 7)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 3)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	for(var/dx in 0 to 11)
+		for(var/dy in 0 to 6)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = TRUE
+	guard.setDir(EAST)
+	stealth_ai.stealth_update_light()
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark has no beam")
+	var/obj/effect/abstract/stealth_beam/beam = stealth_ai.beam
+	TEST_ASSERT_NOTNULL(beam, "A lit guard shows no cone")
+	TEST_ASSERT_EQUAL(beam.holder, guard, "The cone isn't on its guard")
+	TEST_ASSERT(beam in guard.vis_contents, "The cone isn't drawn on its guard")
+	TEST_ASSERT_EQUAL(beam.shown_dir, EAST, "The cone doesn't point the way the guard faces")
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_[open_reach]", "An open beam's cone is cut short, or has no glow facing sideways")
+	TEST_ASSERT_EQUAL(PLANE_TO_TRUE(beam.plane), O_LIGHTING_VISUAL_PLANE, "The cone isn't drawn as light")
+	// It follows the beam through a turn, and facing away the lamp's glow is hidden by the body.
+	guard.setDir(NORTH)
+	TEST_ASSERT_EQUAL(beam.shown_dir, NORTHEAST, "The cone didn't pass through the diagonal with the beam")
+	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	TEST_ASSERT_EQUAL(beam.shown_dir, NORTH, "The cone didn't land on the new facing")
+	TEST_ASSERT(findtext(beam.icon_state, "back_") == 1, "A guard facing away shows its lamp's glow through its body")
+	// A turn of its own: the cone leads it with the beam.
+	stealth_ai.stealth_turn_to(EAST)
+	TEST_ASSERT_EQUAL(beam.shown_dir, NORTHEAST, "The cone didn't lead a turn the guard makes on its own")
+	stealth_ai.stealth_finish_turn(EAST, stealth_ai.turn_planned_at)
+	TEST_ASSERT_EQUAL(beam.shown_dir, EAST, "The cone didn't land when the led turn finished")
+	// A wall two tiles ahead cuts it at the wall.
+	var/turf/wall = stealth_at(block, 4, 3)
+	wall.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT_EQUAL(stealth_beam_reach(get_turf(guard), EAST), 7, "The cone doesn't stop on a wall two tiles ahead")
+	TEST_ASSERT_EQUAL(stealth_beam_reach(stealth_at(block, 6, 3), EAST), open_reach, "The cone stops with nothing ahead")
+	stealth_ai.stealth_place_torch()
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_7", "The cone runs through a wall two tiles ahead")
+	// Off with the light, and gone with the guard.
+	stealth_ai.stealth_set_light(FALSE)
+	TEST_ASSERT_NULL(beam.holder, "The cone stayed on with the light off")
+	TEST_ASSERT(!(beam in guard.vis_contents), "The cone is still drawn with the light off")
+	stealth_ai.stealth_set_light(TRUE)
+	TEST_ASSERT_EQUAL(beam.holder, guard, "The cone didn't come back with the light")
+	qdel(guard)
+	TEST_ASSERT(QDELETED(beam), "The cone outlived its guard")
+	qdel(block)
+
 /datum/unit_test/voidcrew_stealth_light_beam
 
 /datum/unit_test/voidcrew_stealth_light_beam/Run()

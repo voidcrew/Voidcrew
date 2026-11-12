@@ -13,6 +13,9 @@
  * back stay dark. tg's lighting stops it at walls and closed solid doors and lets it through glass, like any lamp
  * (numbers in data/stealth/STATUS.md, decision 41).
  *
+ * What the eye sees on top (decision 42): a cone in the air from the guard's lamp and a small glow there
+ * (/obj/effect/abstract/stealth_beam), so the beam visibly starts at the guard. Only the eye sees it.
+ *
  * The beam moves like a hand moves it. Before a turn the guard makes on its own, the beam swings halfway there
  * while the body leans (stealth_turns.dm), so the light shows where it is about to look. Any other turn of 90
  * degrees or more passes through the halfway point. A step at a walk carries the beam half a tile at a time. A
@@ -123,6 +126,89 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 /obj/effect/abstract/stealth_torch/get_light_offset()
 	return list(beam_x, beam_y)
 
+/**
+ * What the eye sees of a guard's beam (decision 42): a cone of light in the air, narrow at its lamp and widening
+ * ahead, with a small glow at the lamp. It sits on tg's overlay-light plane and adds to the light there, as tg's own
+ * flashlight cones do, so it brightens what it falls on, shows in the dark and all but vanishes in a lit room. It is
+ * part of the guard (vis_contents), so it glides with every step. It is only for the eye: guards see, and tiles count
+ * as lit, by the real lamp alone. It stops at the first wall or solid door ahead (stealth_beam_reach()).
+ */
+/obj/effect/abstract/stealth_beam
+	name = "flashlight beam"
+	icon = 'voidcrew/icons/effects/stealth_beam.dmi'
+	icon_state = "beam_22"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	blocks_emissive = EMISSIVE_BLOCK_NONE
+	blend_mode = BLEND_ADD
+	appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
+	// The icon's bottom middle on the guard's tile centre
+	pixel_x = -48
+	pixel_y = 16
+	/// The guard it is shown on, or null
+	var/mob/living/holder
+	/// The way it points now, or 0
+	var/shown_dir = 0
+	/// The facing of the guard when it was last aimed (the lamp's place on the body follows that)
+	var/shown_body_dir = 0
+
+/obj/effect/abstract/stealth_beam/Destroy()
+	stealth_hide()
+	return ..()
+
+/// Takes it off its guard.
+/obj/effect/abstract/stealth_beam/proc/stealth_hide()
+	if(holder)
+		holder.vis_contents -= src
+		holder = null
+	shown_dir = 0
+	shown_body_dir = 0
+
+/// Shows it on `guard`, pointing `beam_dir` and `reach` eighths of a tile long. Touches nothing that is already so.
+/obj/effect/abstract/stealth_beam/proc/stealth_show(mob/living/guard, beam_dir, reach)
+	if(holder != guard)
+		stealth_hide()
+		holder = guard
+		guard.vis_contents += src
+	SET_PLANE_EXPLICIT(src, O_LIGHTING_VISUAL_PLANE, guard)
+	// Pointing away from the camera, the guard's body hides the lamp: no glow, and the cone comes out past its back.
+	var/away = guard.dir & NORTH
+	var/state = "[away ? "back" : "beam"]_[reach]"
+	if(icon_state != state)
+		icon_state = state
+	if(shown_dir == beam_dir && shown_body_dir == guard.dir)
+		return
+	shown_dir = beam_dir
+	shown_body_dir = guard.dir
+	// The lamp is at its belt: a little ahead facing away, a little below the middle facing the camera or sideways.
+	var/forward = away ? 4 : ((guard.dir & SOUTH) ? -6 : 0)
+	var/drop = (guard.dir & (EAST|WEST)) && !(guard.dir & (NORTH|SOUTH)) ? -3 : 0
+	var/matrix/aim = matrix()
+	aim.Translate(0, STEALTH_BEAM_PIVOT + forward)
+	aim.Turn(dir2angle(beam_dir))
+	aim.Translate(0, drop - STEALTH_BEAM_PIVOT)
+	transform = aim
+
+/// How long a guard's visible cone is from `spot` pointing `beam_dir`, in eighths of a tile: up to a little onto the
+/// first wall or solid door (what stops tg's light), or STEALTH_BEAM_LENGTHS for nothing in its reach.
+/proc/stealth_beam_reach(turf/spot, beam_dir)
+	var/diagonal = !(beam_dir in GLOB.cardinals)
+	var/turf/here = spot
+	for(var/steps in 1 to STEALTH_TORCH_RANGE)
+		var/turf/next = get_step(here, beam_dir)
+		var/blocked = isnull(next) || IS_OPAQUE_TURF(next)
+		if(!blocked && diagonal)
+			// Light doesn't squeeze between two corners.
+			var/turf/one_side = get_step(here, beam_dir & (NORTH|SOUTH))
+			var/turf/other_side = get_step(here, beam_dir & (EAST|WEST))
+			blocked = (isnull(one_side) || IS_OPAQUE_TURF(one_side)) && (isnull(other_side) || IS_OPAQUE_TURF(other_side))
+		if(blocked)
+			// to the blocker's near face, then 6 px onto it
+			var/pixels = (steps - 0.5) * (diagonal ? 45 : 32) + 6
+			return clamp(round(pixels / 8, 1), 1, STEALTH_BEAM_LENGTHS - 1)
+		here = next
+	return STEALTH_BEAM_LENGTHS
+
 /// How much every guard's lamp adds to `tile` right now, in get_lumcount() units.
 /proc/stealth_torch_share(turf/tile)
 	. = 0
@@ -162,6 +248,8 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/light_lit = FALSE
 	/// The lamp behind its beam, made the first time it is switched on
 	var/obj/effect/abstract/stealth_torch/torch
+	/// The cone players see over its beam (decision 42), made with the lamp
+	var/obj/effect/abstract/stealth_beam/beam
 	/// Where it points the beam off its facing, in 45 degree steps anticlockwise: a sweep, or the lead of a turn
 	var/torch_aim = 0
 	/// The way the beam points for a moment in the middle of a turn, or 0
@@ -247,13 +335,18 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/mob/living/guard = pawn
 	var/turf/spot = ((light_lit || flash) && !QDELETED(guard) && isturf(guard.loc)) ? guard.loc : null
 	if(isnull(spot))
+		beam?.stealth_hide()
 		if(torch?.light_on)
 			torch.set_light_on(FALSE)
 			torch.update_light()
 		return
 	if(QDELETED(torch))
 		torch = new(spot)
+	if(QDELETED(beam))
+		beam = new(null)
 	var/beam_dir = stealth_beam_dir()
+	// The cone glides with the guard, so it needs no half steps; it is cut where the light is stopped.
+	beam.stealth_show(guard, beam_dir, stealth_beam_reach(spot, beam_dir))
 	// The beam starts at its hand, ahead of its own tile, less whatever a step in progress still holds back.
 	var/start_x = torch_lag_x - STEALTH_TORCH_FORWARD * ((beam_dir & EAST) ? 1 : ((beam_dir & WEST) ? -1 : 0))
 	var/start_y = torch_lag_y - STEALTH_TORCH_FORWARD * ((beam_dir & NORTH) ? 1 : ((beam_dir & SOUTH) ? -1 : 0))

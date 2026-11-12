@@ -183,6 +183,10 @@
 #define STEALTH_TORCH_SPUTTER_FLASH (0.1 SECONDS)
 /// Loudness of the click when a guard switches its light
 #define STEALTH_TORCH_CLICK_VOLUME 25
+/// The visible cone (decision 42) comes in this many lengths, an eighth of a tile apart; the last is an open beam
+#define STEALTH_BEAM_LENGTHS 22
+/// Pixels from the guard's tile centre to its icon's centre (stealth_beam.dmi is 128x192, the guard at its bottom middle)
+#define STEALTH_BEAM_PIVOT 96
 /// A lit light someone carries within this many tiles of an unaware guard standing in the dark draws its notice
 /// even behind it (never further than the light itself reaches)
 #define STEALTH_STRAY_LIGHT_RANGE 5
