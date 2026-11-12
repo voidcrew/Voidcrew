@@ -409,10 +409,17 @@
 	TEST_ASSERT_EQUAL(vended.anchor(), machine, "The coffee was taken from somewhere other than the machine")
 	qdel(vended)
 
-	// A plain stop: the radio check-in, not more than once in its gap
+	// A plain stop: the radio check-in, not more than once in its gap, and never "all quiet" with a case open
 	var/datum/outpost_police_voice/voice = police.life_voice()
 	voice.next_check_in_at = 0
+	police.cases["test case"] = TRUE
+	police.stop_activity_for(officer, "watch")
+	police.cases -= "test case"
+	TEST_ASSERT_EQUAL(voice.next_check_in_at, 0, "A beat officer checked in all quiet with a case open")
 	TEST_ASSERT_NULL(police.stop_activity_for(officer, "watch"), "A plain stop with nobody asleep near gave an activity")
-	TEST_ASSERT(voice.next_check_in_at > world.time, "A beat officer at a plain stop never checked in")
+	var/next_at = voice.next_check_in_at
+	TEST_ASSERT(next_at > world.time, "A beat officer at a plain stop never checked in")
+	police.stop_activity_for(officer, "watch")
+	TEST_ASSERT_EQUAL(voice.next_check_in_at, next_at, "A beat officer checked in twice inside the gap")
 
 #undef POLICE_STEALTH_BEAT

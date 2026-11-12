@@ -119,6 +119,7 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = lethal.ai_controller
 	brain.stealth_setup()
 	brain.stealth_target_downed(suspect)
+	police.sleep_tick() // the new case woke it
 	var/datum/outpost_police_case/case = police.cases[suspect.mind]
 	TEST_ASSERT_NOTNULL(case, "A three-star suspect in stamina crit is not under arrest")
 	TEST_ASSERT_EQUAL(case.arresting(), stunner, "The arrest went to [case.arresting()], not the free stun officer")
@@ -126,6 +127,7 @@
 	for(var/i in 1 to 6)
 		if(QDELETED(case) || suspect.handcuffed)
 			break
+		suspect.adjustStaminaLoss(200) // still down however long the steps take
 		case.process_case()
 		police_arrest_wait(case)
 	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "The stun officer did not cuff the downed suspect (the case is on [QDELETED(case) ? "nothing" : case.step])")
@@ -268,6 +270,8 @@
 	var/mob/living/carbon/human/other = police_arrest_person(police_arrest_beside(busy))
 	var/datum/outpost_warrant/other_warrant = police_pin_warrant(police, other.mind, 12) // one star
 	police.open_case(other_warrant)
+	// Opening a case wakes the police tick: its dispatch, warrants and the other case would run through the waits below
+	police.sleep_tick()
 	TEST_ASSERT_EQUAL(busy.case, police.cases[other.mind], "The stun officer is not on the other arrest")
 
 	var/mob/living/carbon/human/suspect = police_arrest_person(police_arrest_beside(barker))
@@ -276,12 +280,15 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = barker.ai_controller
 	brain.stealth_setup()
 	brain.stealth_target_downed(suspect)
+	police.sleep_tick()
 	var/datum/outpost_police_case/case = police.cases[suspect.mind]
 	TEST_ASSERT_NOTNULL(case, "Nobody followed up on a three-star suspect the officer saw go down")
 	TEST_ASSERT_EQUAL(case?.arresting(), barker, "With no stun officer free, the arrest went to [case?.arresting()], not the officer who saw it")
 	for(var/i in 1 to 6)
 		if(QDELETED(case) || suspect.handcuffed)
 			break
+		// Still down however long the steps take: a suspect back on their feet at three stars is the squad's, not this arrest's
+		suspect.adjustStaminaLoss(200)
 		case.process_case()
 		police_arrest_wait(case)
 	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "The lethal officer did not cuff the suspect himself")
@@ -320,6 +327,7 @@
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(brain.blackboard[BB_TARGETING_STRATEGY])
 	TEST_ASSERT(!strategy.can_attack(officer, suspect, 9), "A suspect in crit is still a target")
 	brain.stealth_target_downed(suspect)
+	police.sleep_tick() // the new case woke it
 	TEST_ASSERT(brain.stealth_state() != "alert", "The officer stayed on alert over a suspect in crit")
 	var/datum/outpost_police_case/case = police.cases[suspect.mind]
 	TEST_ASSERT_NOTNULL(case, "Nobody followed up on a suspect in crit")

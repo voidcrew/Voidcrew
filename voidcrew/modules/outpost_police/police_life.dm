@@ -316,10 +316,13 @@
 		answered += officer
 		addtimer(CALLBACK(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_RADIO_ACK, null, TRUE), (1 SECONDS) + (i * 1.5 SECONDS), TIMER_DELETE_ME)
 
-/// A beat officer reporting in over the radio, and the desk answering; not too often
+/// A beat officer reporting in over the radio, and the desk answering; not too often, and never "all quiet" while
+/// someone wanted is at the outpost or a case is open
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_check_in()
 	var/datum/outpost_police_voice/voice = police?.life_voice()
 	if(!voice || voice.next_check_in_at > world.time)
+		return
+	if(length(police.cases) || length(police.suspects_at_outpost()))
 		return
 	voice.next_check_in_at = world.time + POLICE_CHECK_IN_GAP
 	if(!police_say("check_in", null, TRUE))

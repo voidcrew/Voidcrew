@@ -792,6 +792,10 @@
 					else if(istype(thing, /obj/structure/chair))
 						chairs++
 			TEST_ASSERT(toilets && chairs && !benches, "[outpost_type]'s cell [cell.cell_id] has [toilets] toilets, [chairs] chairs and [benches] benches")
+		// Decision 29: the checkpoint guard sits behind a desk
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard = locate() in outpost.traders
+		TEST_ASSERT_NOTNULL(guard, "[outpost_type] has no checkpoint guard")
+		TEST_ASSERT_NOTNULL(locate(/obj/structure/table) in orange(1, get_turf(guard)), "[outpost_type]'s checkpoint guard at [AREACOORD(guard)] has no desk")
 		TEST_ASSERT_NOTNULL(police.evidence_locker, "[outpost_type] has no evidence locker")
 		TEST_ASSERT(length(police.lockers) >= 2, "[outpost_type] has [length(police.lockers)] property lockers")
 
