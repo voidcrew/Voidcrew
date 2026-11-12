@@ -1,7 +1,7 @@
-// Package: P2 guns and flask. The sealed plasma chamber cell: refuses outside charge, magic charge,
+// Package: P2 guns and cartridges. The sealed plasma chamber cell: refuses outside charge, magic charge,
 // corruption, explosion and reagents.
 //
-// Its charge is mol of plasma, and plasma only comes in from a flask or by feeding (plasma_guns.dm).
+// Its charge is mol of plasma, and plasma only comes in from a seated cartridge (plasma_guns.dm).
 // Everything that would charge a normal cell is refused here. The gun also keeps the chamber out of
 // its contents (plasma_weapon/Initialize), because some tg code writes `charge` straight onto every
 // power_store in a mob's contents (battery plants, yellow regenerative extracts, the experimentor),
@@ -9,7 +9,7 @@
 
 /obj/item/stock_parts/power_store/cell/plasma_chamber
 	desc = "A sealed glass chamber."
-	maxcharge = PLASMA_FLASK_CAPACITY
+	maxcharge = PLASMA_CARTRIDGE_CAPACITY
 	empty = TRUE
 	ratingdesc = FALSE
 	charge_light_type = null

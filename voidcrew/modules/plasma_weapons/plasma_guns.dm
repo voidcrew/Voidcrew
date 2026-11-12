@@ -1,20 +1,20 @@
-// Package: P2 guns and flask. The Cinder, Furnace and Old Furnace: loading, unloading and feeding,
+// Package: P2 guns and cartridges. The Cinder, Furnace and Old Furnace: loading and unloading,
 // chamber access, spawn fills, EMP, sprite state, and the shot hooks into heat, sound and pinch.
 //
-// The chamber (`cell`) holds the seated flask's plasma while it is in the gun; the flask itself reads
-// empty until it comes out, when the chamber is written back into it. So the plasma a gun and its flask
-// hold together is always chamber_mol() + flask.stored, and only feeding raises it.
+// The chamber (`cell`) holds the seated cartridge's plasma while it is in the gun; the cartridge itself
+// reads spent until it comes out, when the chamber is written back into it. So the plasma a gun and its
+// cartridge hold together is always chamber_mol() + cartridge.stored, and nothing raises it.
 
 /obj/item/gun/energy/plasma_weapon
 	automatic_charge_overlays = FALSE
 	vary_fire_sound = FALSE
 	// A turret or emitter fires a gun's bolts off the power grid; plasma bolts only come from plasma
 	gun_flags = TURRET_INCOMPATIBLE
-	/// do_after to seat a flask
-	var/flask_load_delay = PLASMA_LOAD_DELAY_PISTOL
-	/// Spawn with a flask seated: full, or (spawn_fill_random) 0-50% full. Never set FALSE on a sold gun.
-	var/spawn_with_flask = TRUE
-	/// Loot guns spawn with a part-filled flask
+	/// do_after to seat a cartridge
+	var/cartridge_load_delay = PLASMA_LOAD_DELAY_PISTOL
+	/// Spawn with a cartridge seated: full, or (spawn_fill_random) 0-50% full. Never set FALSE on a sold gun.
+	var/spawn_with_cartridge = TRUE
+	/// Loot guns spawn with a part-used cartridge
 	var/spawn_fill_random = FALSE
 
 /obj/item/gun/energy/plasma_weapon/pistol
@@ -28,7 +28,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	slot_flags = ITEM_SLOT_BELT
 
-/// A Cinder found in the field: its flask is anywhere from empty to half full
+/// A Cinder found in the field: its cartridge is anywhere from spent to half full
 /obj/item/gun/energy/plasma_weapon/pistol/loot
 	spawn_fill_random = TRUE
 
@@ -42,9 +42,9 @@
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
-	flask_load_delay = PLASMA_LOAD_DELAY_RIFLE
+	cartridge_load_delay = PLASMA_LOAD_DELAY_RIFLE
 
-/// A Furnace found in the field: its flask is anywhere from empty to half full
+/// A Furnace found in the field: its cartridge is anywhere from spent to half full
 /obj/item/gun/energy/plasma_weapon/rifle/loot
 	spawn_fill_random = TRUE
 
@@ -55,19 +55,20 @@
 	. = ..()
 	// Keep the sealed chamber out of contents; see plasma_chamber.dm. Exited() keeps `cell` set.
 	cell?.moveToNullspace()
-	if(spawn_with_flask)
-		var/obj/item/plasma_flask/spawned = new(src)
-		spawned.stored = spawn_fill_random ? rand(0, round(PLASMA_FLASK_CAPACITY / 2)) : PLASMA_FLASK_CAPACITY
-		seat_flask(spawned)
+	if(spawn_with_cartridge)
+		var/obj/item/plasma_cartridge/spawned = new(src)
+		if(spawn_fill_random)
+			spawned.stored = rand(0, round(PLASMA_CARTRIDGE_CAPACITY / 2))
+		seat_cartridge(spawned)
 
 /obj/item/gun/energy/plasma_weapon/Destroy()
-	// Drop the flask with the chamber's plasma written back (Exited does the write-back)
-	if(flask)
+	// Drop the cartridge with the chamber's plasma written back (Exited does the write-back)
+	if(cartridge)
 		var/atom/drop_at = drop_location()
 		if(drop_at)
-			flask.forceMove(drop_at)
+			cartridge.forceMove(drop_at)
 		else
-			QDEL_NULL(flask)
+			QDEL_NULL(cartridge)
 	return ..()
 
 /obj/item/gun/energy/plasma_weapon/Exited(atom/movable/gone, direction)
@@ -78,11 +79,11 @@
 		cell = kept
 		return
 	. = ..()
-	if(gone == flask)
-		flask = null
-		var/obj/item/plasma_flask/left = gone
+	if(gone == cartridge)
+		cartridge = null
+		var/obj/item/plasma_cartridge/left = gone
 		if(cell)
-			left.stored = min(left.stored + cell.charge, PLASMA_FLASK_CAPACITY)
+			left.stored = min(left.stored + cell.charge, PLASMA_CARTRIDGE_CAPACITY)
 			cell.charge = 0
 		left.update_appearance()
 		chamber_changed()
@@ -100,74 +101,54 @@
 	recharge_newshot(TRUE)
 	update_appearance()
 
-/// Puts `new_flask` (already inside the gun) in the seat and moves its plasma into the chamber
-/obj/item/gun/energy/plasma_weapon/proc/seat_flask(obj/item/plasma_flask/new_flask)
-	flask = new_flask
+/// Puts `new_cartridge` (already inside the gun) in the seat and moves its plasma into the chamber
+/obj/item/gun/energy/plasma_weapon/proc/seat_cartridge(obj/item/plasma_cartridge/new_cartridge)
+	cartridge = new_cartridge
 	if(cell)
-		cell.charge = clamp(new_flask.stored, 0, cell.maxcharge)
-		new_flask.stored = 0
+		cell.charge = clamp(new_cartridge.stored, 0, cell.maxcharge)
+		new_cartridge.stored = 0
+	new_cartridge.update_appearance()
 	chamber_changed()
 
-/// Seats `flask` and moves its plasma into the chamber. TRUE on success.
-/obj/item/gun/energy/plasma_weapon/proc/load_flask(obj/item/plasma_flask/new_flask, mob/user)
-	if(QDELETED(new_flask) || new_flask == flask || !cell)
+/// Seats `new_cartridge` and moves its plasma into the chamber. TRUE on success.
+/// A seated cartridge comes out first: to `user`'s hand, or at their feet if it is spent.
+/obj/item/gun/energy/plasma_weapon/proc/load_cartridge(obj/item/plasma_cartridge/new_cartridge, mob/user)
+	if(QDELETED(new_cartridge) || new_cartridge == cartridge || !cell)
+		return FALSE
+	if(new_cartridge.stored <= 0)
+		if(user)
+			balloon_alert(user, "it's spent")
 		return FALSE
 	if(user)
-		if(!do_after(user, flask_load_delay, target = src))
+		if(!do_after(user, cartridge_load_delay, target = src))
 			return FALSE
-		if(QDELETED(new_flask) || new_flask.loc != user)
+		if(QDELETED(new_cartridge) || new_cartridge.loc != user)
 			return FALSE
-	if(flask)
-		unload_flask(user)
+	if(cartridge)
+		unload_cartridge(user, drop_if_spent = TRUE)
 	if(user)
-		if(!user.transferItemToLoc(new_flask, src))
+		if(!user.transferItemToLoc(new_cartridge, src))
 			return FALSE
 	else
-		new_flask.forceMove(src)
-	seat_flask(new_flask)
+		new_cartridge.forceMove(src)
+	seat_cartridge(new_cartridge)
 	playsound(src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE)
 	return TRUE
 
-/// Writes the chamber back into the seated flask and hands it to `user`. Returns the flask.
-/obj/item/gun/energy/plasma_weapon/proc/unload_flask(mob/user)
-	if(!flask)
+/// Writes the chamber back into the seated cartridge and hands it to `user`. Returns the cartridge.
+/// With drop_if_spent, a cartridge with nothing left falls at the gun's feet instead.
+/obj/item/gun/energy/plasma_weapon/proc/unload_cartridge(mob/user, drop_if_spent = FALSE)
+	if(!cartridge)
 		return null
-	var/obj/item/plasma_flask/out = flask
+	var/obj/item/plasma_cartridge/out = cartridge
+	var/spent = chamber_mol() <= 0
 	// Exited() writes the chamber back as it leaves
-	if(user)
+	if(user && !(drop_if_spent && spent))
 		user.put_in_hands(out)
 	if(out.loc == src)
 		out.forceMove(drop_location())
 	playsound(src, 'voidcrew/modules/plasma_weapons/sound/flask_unload.ogg', 50, TRUE)
 	return out
-
-/// Feeds a plasma sheet or ore stack into the chamber, one unit per do_after. Returns mol added.
-/// Needs a seated flask. A unit goes in only when there is room for all of it. No user, no delay.
-/obj/item/gun/energy/plasma_weapon/proc/feed_plasma(obj/item/stack/fuel, mob/user)
-	var/per_unit = plasma_fuel_mol_per_unit(fuel)
-	if(!per_unit || !cell)
-		return 0
-	if(!flask)
-		if(user)
-			balloon_alert(user, "no flask")
-		return 0
-	var/added = 0
-	while(!QDELETED(fuel) && fuel.get_amount() > 0)
-		if(!flask || cell.charge + per_unit > cell.maxcharge)
-			if(!added && user && flask)
-				balloon_alert(user, "it's full")
-			break
-		if(user && !do_after(user, PLASMA_FEED_DELAY, target = src))
-			break
-		if(QDELETED(fuel) || !flask || cell.charge + per_unit > cell.maxcharge || !fuel.use(1))
-			break
-		cell.charge += per_unit
-		added += per_unit
-		playsound(src, PLASMA_SOUND_FEED_SHEET, 20, TRUE)
-	if(added)
-		playsound(src, PLASMA_SOUND_FEED_CLICK, 30, TRUE)
-		chamber_changed()
-	return added
 
 /// Mol of plasma in the chamber
 /obj/item/gun/energy/plasma_weapon/proc/chamber_mol()
@@ -217,14 +198,11 @@
 	return ..()
 
 /obj/item/gun/energy/plasma_weapon/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(istype(tool, /obj/item/plasma_flask))
-		return load_flask(tool, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING
-	if(istype(tool, /obj/item/stack/sheet/mineral/plasma) || istype(tool, /obj/item/stack/ore/plasma))
-		feed_plasma(tool, user)
-		return ITEM_INTERACT_SUCCESS
+	if(istype(tool, /obj/item/plasma_cartridge))
+		return load_cartridge(tool, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING
 	return ..()
 
 /obj/item/gun/energy/plasma_weapon/click_alt(mob/user)
 	if(!user.is_holding(src))
 		return CLICK_ACTION_BLOCKING
-	return unload_flask(user) ? CLICK_ACTION_SUCCESS : CLICK_ACTION_BLOCKING
+	return unload_cartridge(user) ? CLICK_ACTION_SUCCESS : CLICK_ACTION_BLOCKING

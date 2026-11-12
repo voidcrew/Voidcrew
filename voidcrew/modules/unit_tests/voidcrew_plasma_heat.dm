@@ -17,7 +17,7 @@
 	var/list/plasma = air.gases[/datum/gas/plasma]
 	return plasma ? plasma[MOLES] : 0
 
-/// A full flask fired flat out in room air never boils.
+/// A full cartridge fired flat out in room air never boils.
 /datum/unit_test/voidcrew_plasma_heat_air
 
 /datum/unit_test/voidcrew_plasma_heat_air/Run()
@@ -78,7 +78,7 @@
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
 
 	// A full chamber
-	gun.cell.charge = PLASMA_FLASK_CAPACITY
+	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
 	gun.barrel_heat = 80
 	var/chamber_before = gun.chamber_mol()
 	var/turf_before = plasma_heat_test_plasma(air)
@@ -109,7 +109,7 @@
 	TEST_ASSERT(lost >= 0 && lost <= 3, "A vent from a 3 mol chamber took [lost] mol")
 
 	// A boil conserves the same way.
-	gun.cell.charge = PLASMA_FLASK_CAPACITY
+	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
 	chamber_before = gun.chamber_mol()
 	turf_before = plasma_heat_test_plasma(air)
 	gun.barrel_heat = PLASMA_HEAT_BOIL

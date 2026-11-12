@@ -32,8 +32,8 @@
 	var/datum/pirate_gun_loadout/rifle_loadout = GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/plasma_rifle]
 	TEST_ASSERT_NOTNULL(pistol_loadout, "The plasma pistol loadout has no shared copy")
 	TEST_ASSERT_NOTNULL(rifle_loadout, "The plasma rifle loadout has no shared copy")
-	TEST_ASSERT_EQUAL(pistol_loadout.magazine_size(), 15, "The plasma pistol's flask isn't 15 shots")
-	TEST_ASSERT_EQUAL(rifle_loadout.magazine_size(), 12, "The plasma rifle's flask isn't 12 shots")
+	TEST_ASSERT_EQUAL(pistol_loadout.magazine_size(), 15, "A plasma pistol cartridge isn't 15 shots")
+	TEST_ASSERT_EQUAL(rifle_loadout.magazine_size(), 12, "A plasma rifle cartridge isn't 12 shots")
 	var/obj/projectile/heavy = rifle_loadout.make_projectile(spot(4, 4))
 	TEST_ASSERT(istype(heavy, /obj/projectile/energy/plasma_bolt/heavy), "The plasma rifle loadout fires [heavy?.type], not a heavy plasma bolt")
 	qdel(heavy)
