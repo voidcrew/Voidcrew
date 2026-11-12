@@ -276,3 +276,72 @@
 	wait_over(user)
 	TEST_ASSERT(user.appearance == real, "The dead user's body doesn't look as it really ended")
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "A dead user crashed")
+
+/// A user who goes into crit in the window is replayed upright from their first tile and goes down at the frame they
+/// went down, and after the replay is exactly as they really are: still down, still in crit, not held
+/datum/unit_test/voidcrew_cyberware_timestop/replay/user_crit
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/user_crit/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycrit")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	user.Move(spot(0, 1), NORTH)
+	sleep(0.5 SECONDS)
+	user.apply_damage(user.health - user.crit_threshold + 10, BRUTE, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(user.stat, SOFT_CRIT, "Test fixture: the user should be in soft crit")
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "Test fixture: a user in crit should be lying down")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT_EQUAL(replay.state, 1, "Crit ended the slow-mo")
+	press_again(user)
+	deltimer(replay.begin_timer)
+	var/real = user.appearance
+	var/real_angle = user.lying_angle
+	var/matrix/real_turn = matrix(user.transform)
+	TEST_ASSERT(!(real_turn ~= matrix()), "Test fixture: a user lying in crit should be turned")
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay of a user in crit didn't start")
+	TEST_ASSERT(GLOB.sandy_replay_masked[user], "The user in crit isn't replayed")
+	TEST_ASSERT_EQUAL(user.pixel_z, -32, "The user in crit isn't drawn back on their first tile")
+	TEST_ASSERT(user.transform ~= matrix(), "The user in crit isn't drawn upright at frame 0")
+	var/down_at = 0
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		if(!down_at && !(user.transform ~= matrix()))
+			down_at = world.time
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT(down_at > replay.play_started, "The user in crit never goes down in their replay, or is down from its first frame")
+	TEST_ASSERT(user.appearance == real, "The user in crit doesn't look as they really are after the replay: [look_difference(user, real)]")
+	TEST_ASSERT(user.transform ~= real_turn, "The user in crit isn't turned as they really lie after the replay")
+	TEST_ASSERT_EQUAL(user.stat, SOFT_CRIT, "The replay changed the user's stat")
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "The user in crit stood up after the replay")
+	TEST_ASSERT_EQUAL(user.lying_angle, real_angle, "The user in crit's lying angle changed over the replay")
+	TEST_ASSERT(!held(user), "The user in crit is still held after the replay")
+
+/// A user knocked down in the window whose knockdown wears off during the replay gets up once it ends: the replay's
+/// input lock fails tg's get-up while it plays
+/datum/unit_test/voidcrew_cyberware_timestop/replay/gets_up_after
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/gets_up_after/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayknock")
+	set_window(user, 3 SECONDS)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
+	lattice.crash_stamina = 0 // the crash's stamina dump would floor them again
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	user.Paralyze(20 SECONDS)
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "Test fixture: a paralyzed user should be lying down")
+	sleep(0.3 SECONDS)
+	press_again(user)
+	deltimer(replay.begin_timer)
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	user.SetParalyzed(0) // wears off mid-replay
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "Test fixture: the replay's lock should keep the user from getting up while it plays")
+	wait_over(user)
+	var/until = world.time + 3 SECONDS
+	while(user.body_position == LYING_DOWN && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(user.body_position, STANDING_UP, "A user whose knockdown wore off during the replay never got up after it")
+	TEST_ASSERT_EQUAL(user.lying_angle, 0, "The user got up but is still turned")

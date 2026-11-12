@@ -24,7 +24,8 @@
  * For the length of the replay AIs are paused and the user and their crewmates can't act. Life() keeps running:
  * this is a lock on decisions and input only, no stun and no damage. A player who isn't crew coming near ends the
  * replay at once, a watchdog timer ends it whatever happens, and finish() can be called any number of times.
- * The surge's crash starts when the replay ends.
+ * The surge's crash starts when the replay ends. A user who went down in the slow-mo still watches it: their crit,
+ * oxygen, damage and knocked-out screens are off their view while it plays and back as it ends (clear_view()).
  *
  * It looks and sounds like a surge: the surge-on sound plays at the start, the sounds made in the field play again
  * at normal pitch (playsound() hands them over), and every surger in it (the user, or a mob on its own surge) leaves
@@ -191,6 +192,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	/// The user's client pixel offsets before the replay.
 	var/eye_pixel_x = 0
 	var/eye_pixel_y = 0
+	/// The user's crit and knocked-out screens were taken off their view for the replay (clear_view()).
+	var/view_cleared = FALSE
 	/// The crash waiting for the replay to end: list(length, stamina).
 	var/list/crash
 	var/finished = FALSE
@@ -520,6 +523,49 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		eye_pixel_x = user.client.pixel_x
 		eye_pixel_y = user.client.pixel_y
 		user.reset_perspective(eye)
+		clear_view()
+
+/// Fullscreens that follow the user's real health (update_damage_hud()): crit, crit vision, oxygen and the brute and
+/// burn vignette. With the blindness of being knocked out (only when nothing else blinds them) they'd paint the
+/// user's present state over a replay of the moments before it.
+#define SANDY_REPLAY_CRIT_SCREENS list("crit", "critvision", "oxy", "brute")
+
+/**
+ * A user who went down in the slow-mo watches their replay like anyone else: their health and knocked-out screens
+ * come off their client's view (not off the mob, so tg keeps updating them) and go back in finish(). Called at the
+ * start and every frame, as Life() can put one back.
+ */
+/datum/sandy_replay/proc/clear_view()
+	var/client/viewer = user?.client
+	if(!eye || !viewer)
+		return
+	for(var/category in SANDY_REPLAY_CRIT_SCREENS)
+		var/atom/movable/screen/fullscreen/screen = user.screens[category]
+		if(screen && (screen in viewer.screen))
+			viewer.screen -= screen
+			view_cleared = TRUE
+	var/datum/status_effect/grouped/blindness/blind = user.has_status_effect(/datum/status_effect/grouped/blindness)
+	if(!blind || length(blind.sources) != 1 || !(UNCONSCIOUS_TRAIT in blind.sources))
+		return
+	var/atom/movable/screen/fullscreen/dark = user.screens[blind.id]
+	if(dark && (dark in viewer.screen))
+		viewer.screen -= dark
+		view_cleared = TRUE
+	if(user.remove_client_colour(REF(blind)))
+		view_cleared = TRUE
+
+/// Puts back what clear_view() took off, as the user's real state now has it.
+/datum/sandy_replay/proc/restore_view()
+	if(!view_cleared || QDELETED(user))
+		return
+	view_cleared = FALSE
+	// Worked out again from the user's state now (Life() ran on through the replay), then shown.
+	user.update_damage_hud()
+	var/datum/status_effect/grouped/blindness/blind = user.has_status_effect(/datum/status_effect/grouped/blindness)
+	blind?.update_blindness()
+	user.reload_fullscreen()
+
+#undef SANDY_REPLAY_CRIT_SCREENS
 
 /// Holds every mob and mech near the user, in the bubble or not: a crewmate or an NPC just outside it can't act on
 /// the held ones (or on the user) while the replay plays. Called at the start and every frame, for arrivals.
@@ -560,6 +606,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(QDELETED(body))
 		return
 	body.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED, TRAIT_AI_PAUSED), SANDY_REPLAY_TRAIT)
+	// A knockdown or crit that ended mid-replay tried to stand them up then (get_up()'s do_after), and the lock's
+	// TRAIT_INCAPACITATED failed it: nothing would try again, so they'd lie there. tg's own end-of-floored step.
+	if(body.stat != DEAD && body.body_position == LYING_DOWN && !HAS_TRAIT(body, TRAIT_FLOORED))
+		body.on_floored_end()
 	if(isanimal(body) && isnum(was))
 		var/mob/living/simple_animal/animal = body
 		if(animal.AIStatus == AI_OFF)
@@ -869,6 +919,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			return
 		frame = min(frame, total)
 		hold_nearby()
+		clear_view()
 		play_sounds(frame)
 		for(var/datum/sandy_replay_track/track as anything in puppets)
 			var/atom/movable/thing = track.thing
@@ -976,6 +1027,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				animate(viewer, pixel_x = eye_pixel_x, pixel_y = eye_pixel_y, time = 0, flags = ANIMATION_END_NOW)
 				if(viewer.eye == eye)
 					user.reset_perspective()
+		try
+			restore_view()
+		catch(var/exception/error)
+			LAZYADD(problems, "[error] ([error.file]:[error.line])")
 	QDEL_NULL(eye)
 	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1)
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
