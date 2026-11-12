@@ -1,0 +1,407 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/bed/maint,
+/obj/item/bedsheet/orange{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"b" = (
+/obj/structure/closet/secure_closet/personal/bunk/cabinet,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"c" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"d" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"e" = (
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"f" = (
+/obj/structure/chair/sofa/right{
+	dir = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = -6;
+	pixel_y = -8
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"g" = (
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"h" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"i" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"k" = (
+/obj/structure/sign/poster/contraband/random/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"l" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/item/bedsheet/green{
+	dir = 8
+	},
+/obj/item/newspaper{
+	pixel_x = -7;
+	pixel_y = 3
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"m" = (
+/obj/structure/closet/crate/wooden,
+/obj/machinery/light/small/directional/south,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"n" = (
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"o" = (
+/turf/closed/indestructible/reinforced/rusty,
+/area/voidcrew/player_outpost/service_room/quarters)
+"q" = (
+/obj/structure/cable/outpost,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"s" = (
+/obj/structure/closet/secure_closet/personal/bunk/cabinet,
+/obj/structure/sign/poster/contraband/random/directional/north,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"t" = (
+/obj/structure/chair/sofa/left{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"u" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/quarters)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"x" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/cigbutt/roach{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"y" = (
+/obj/item/trash/can{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"z" = (
+/obj/structure/bed/maint,
+/obj/item/bedsheet/grey{
+	dir = 8
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"A" = (
+/obj/structure/chair/stool{
+	dir = 4
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"B" = (
+/obj/machinery/washing_machine,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"C" = (
+/obj/item/kirbyplants/random/dead,
+/obj/structure/sign/clock/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"D" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/quarters)
+"E" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"F" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_y = 3
+	},
+/obj/item/paper/crumpled{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"I" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/brown{
+	dir = 4
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"J" = (
+/obj/structure/noticeboard/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"K" = (
+/obj/structure/closet/secure_closet/personal/bunk/cabinet,
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"M" = (
+/obj/structure/chair/plastic{
+	dir = 2
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"O" = (
+/obj/item/kirbyplants/random/dead,
+/obj/structure/sign/poster/contraband/random/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"Q" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -3;
+	pixel_y = 9
+	},
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = 1
+	},
+/obj/item/cigbutt/roach{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"R" = (
+/obj/structure/table/wood,
+/obj/item/trash/can{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/quarters)
+"S" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/quarters)
+"U" = (
+/obj/structure/sign/poster/ripped/directional/north,
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = -6
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"V" = (
+/obj/machinery/door/airlock/outpost/service/wood,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"X" = (
+/obj/structure/dresser,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+"Z" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/book/random{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/quarters)
+
+(1,1,1) = {"
+o
+o
+o
+o
+o
+o
+o
+o
+o
+"}
+(2,1,1) = {"
+o
+D
+u
+I
+Q
+a
+k
+t
+o
+"}
+(3,1,1) = {"
+o
+S
+u
+e
+e
+P
+e
+f
+o
+"}
+(4,1,1) = {"
+o
+C
+e
+n
+A
+n
+e
+m
+o
+"}
+(5,1,1) = {"
+o
+b
+P
+n
+R
+w
+P
+E
+o
+"}
+(6,1,1) = {"
+o
+K
+e
+M
+F
+d
+e
+q
+V
+"}
+(7,1,1) = {"
+o
+s
+E
+h
+x
+n
+E
+g
+o
+"}
+(8,1,1) = {"
+o
+b
+e
+n
+i
+n
+e
+B
+o
+"}
+(9,1,1) = {"
+o
+U
+y
+P
+e
+e
+e
+c
+o
+"}
+(10,1,1) = {"
+o
+X
+e
+z
+Z
+l
+J
+O
+o
+"}
+(11,1,1) = {"
+o
+o
+o
+o
+o
+o
+o
+o
+o
+"}

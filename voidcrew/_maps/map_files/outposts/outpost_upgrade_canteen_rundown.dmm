@@ -1,0 +1,393 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"b" = (
+/obj/machinery/jukebox/no_access,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"c" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"d" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"e" = (
+/obj/machinery/door/airlock/outpost/service/wood,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"f" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt{
+	pixel_x = 5;
+	pixel_y = -6
+	},
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"g" = (
+/obj/structure/table/wood,
+/obj/machinery/processor,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"h" = (
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"j" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/trash/can{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"k" = (
+/obj/structure/cable/outpost,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"l" = (
+/obj/structure/chair/stool{
+	dir = 8
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"m" = (
+/obj/structure/sink/kitchen/directional/south,
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"n" = (
+/obj/structure/table/wood,
+/obj/structure/desk_bell{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/paper/crumpled{
+	pixel_x = -7;
+	pixel_y = -2
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"o" = (
+/obj/item/kirbyplants/organic/plant10,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"r" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"s" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/canteen)
+"t" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"u" = (
+/obj/structure/chair/plastic{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"v" = (
+/obj/structure/table/wood,
+/obj/machinery/chem_dispenser/drinks{
+	dir = 2
+	},
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"w" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/obj/structure/sign/poster/contraband/random/directional/west,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"y" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"A" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"E" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"F" = (
+/obj/item/kirbyplants/random/dead,
+/obj/structure/sign/poster/contraband/random/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"G" = (
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"I" = (
+/obj/structure/table/wood,
+/obj/machinery/chem_dispenser/drinks/beer{
+	dir = 2
+	},
+/obj/machinery/barsign/all_access/directional/north,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"J" = (
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"K" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 3;
+	pixel_y = 7
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"L" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"M" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"N" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"P" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_x = 2;
+	pixel_y = 7
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"Q" = (
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"R" = (
+/turf/closed/indestructible/reinforced/rusty,
+/area/voidcrew/player_outpost/service_room/canteen)
+"S" = (
+/obj/structure/table/wood,
+/obj/machinery/microwave,
+/obj/structure/sign/clock/directional/north,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"V" = (
+/obj/machinery/griddle,
+/obj/effect/decal/cleanable/food/flour,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"W" = (
+/obj/machinery/oven/range,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"X" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/canteen)
+"Y" = (
+/obj/structure/closet/secure_closet/freezer/empty/open,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+"Z" = (
+/obj/machinery/smartfridge/food,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/player_outpost/service_room/canteen)
+
+(1,1,1) = {"
+R
+R
+R
+R
+R
+R
+R
+R
+R
+"}
+(2,1,1) = {"
+R
+Z
+y
+w
+C
+M
+u
+c
+R
+"}
+(3,1,1) = {"
+R
+W
+G
+P
+L
+A
+a
+J
+s
+"}
+(4,1,1) = {"
+R
+V
+q
+Q
+L
+N
+l
+t
+s
+"}
+(5,1,1) = {"
+R
+S
+G
+n
+L
+J
+C
+d
+R
+"}
+(6,1,1) = {"
+R
+m
+G
+j
+L
+t
+J
+k
+e
+"}
+(7,1,1) = {"
+R
+g
+f
+K
+L
+X
+u
+h
+R
+"}
+(8,1,1) = {"
+R
+I
+G
+P
+J
+A
+a
+J
+s
+"}
+(9,1,1) = {"
+R
+v
+G
+C
+C
+N
+l
+C
+s
+"}
+(10,1,1) = {"
+R
+Y
+r
+F
+b
+E
+C
+o
+R
+"}
+(11,1,1) = {"
+R
+R
+R
+R
+R
+R
+R
+R
+R
+"}

@@ -1,0 +1,466 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/workshop)
+"b" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"c" = (
+/obj/structure/rack,
+/obj/item/storage/box{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"d" = (
+/turf/closed/indestructible/reinforced/titanium/nodiagonal,
+/area/voidcrew/player_outpost/service_room/workshop)
+"e" = (
+/obj/machinery/light/cold/directional/west,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"f" = (
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/workshop)
+"g" = (
+/obj/structure/rack,
+/obj/item/clothing/head/cone{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/clothing/head/cone{
+	pixel_x = 5;
+	pixel_y = 6
+	},
+/obj/machinery/light/cold/directional/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"h" = (
+/obj/structure/noticeboard/directional/east,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"k" = (
+/obj/structure/sign/departments/engineering/directional/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"l" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"m" = (
+/obj/structure/table/reinforced,
+/obj/item/paper{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 3;
+	pixel_y = 7
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"n" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"p" = (
+/obj/structure/rack,
+/obj/item/folder/yellow{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/item/clipboard{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"q" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"r" = (
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"s" = (
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"t" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"u" = (
+/obj/structure/closet/crate/bin,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"v" = (
+/obj/item/clothing/head/cone{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"w" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"x" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = -3;
+	pixel_y = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"z" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"C" = (
+/obj/structure/closet/crate/engineering,
+/obj/effect/turf_decal/delivery,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"D" = (
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"E" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/mug/nanotrasen{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/obj/item/paper{
+	pixel_x = -5;
+	pixel_y = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"F" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -4;
+	pixel_y = 9
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"G" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"H" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"I" = (
+/obj/structure/sign/poster/official/random/directional/west,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"K" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"L" = (
+/obj/machinery/light/cold/directional/south,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"M" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"N" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"O" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"P" = (
+/obj/structure/table/reinforced,
+/obj/item/folder{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"Q" = (
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"S" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"T" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"U" = (
+/obj/structure/sign/clock/directional/south,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"V" = (
+/obj/machinery/autolathe,
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/workshop)
+"W" = (
+/obj/machinery/door/airlock/outpost/service,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/workshop)
+"X" = (
+/obj/structure/closet{
+	name = "tool locker"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"Y" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -3;
+	pixel_y = 10
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	pixel_y = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+"Z" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/machinery/light/cold/directional/east,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/player_outpost/service_room/workshop)
+
+(1,1,1) = {"
+d
+d
+d
+d
+d
+d
+d
+d
+d
+"}
+(2,1,1) = {"
+d
+c
+S
+e
+I
+N
+v
+C
+d
+"}
+(3,1,1) = {"
+d
+g
+N
+K
+q
+w
+N
+C
+d
+"}
+(4,1,1) = {"
+d
+p
+N
+z
+V
+T
+N
+N
+d
+"}
+(5,1,1) = {"
+d
+k
+N
+b
+G
+l
+N
+L
+d
+"}
+(6,1,1) = {"
+d
+x
+N
+N
+Y
+M
+O
+f
+W
+"}
+(7,1,1) = {"
+d
+E
+H
+r
+m
+N
+N
+a
+d
+"}
+(8,1,1) = {"
+d
+s
+N
+N
+m
+M
+Q
+U
+d
+"}
+(9,1,1) = {"
+d
+F
+H
+N
+N
+N
+N
+u
+d
+"}
+(10,1,1) = {"
+d
+X
+n
+P
+Z
+t
+h
+D
+d
+"}
+(11,1,1) = {"
+d
+d
+d
+d
+d
+d
+d
+d
+d
+"}
