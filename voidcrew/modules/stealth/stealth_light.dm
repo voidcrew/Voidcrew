@@ -166,6 +166,8 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/torch_aim = 0
 	/// The way the beam points for a moment in the middle of a turn, or 0
 	var/torch_pass = 0
+	/// world.time of that turn: a step in the same tick (tg turns a walker before it moves) keeps it
+	var/torch_passed_at = 0
 	/// How far behind its tile the beam still is in the middle of a step, in tiles
 	var/torch_lag_x = 0
 	var/torch_lag_y = 0
@@ -280,17 +282,22 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 		stealth_update_light()
 		return
 	var/mob/living/guard = pawn
+	var/walked = isturf(old_loc) && isturf(guard.loc) && guard.move_intent == MOVE_INTENT_WALK && old_loc.z == guard.z && get_dist(old_loc, guard) == 1
 	torch_moved_at = world.time
 	torch_aim = 0
-	torch_pass = 0
+	// A step that turns a corner keeps its turn's halfway point, so the beam doesn't snap round the corner.
+	if(torch_passed_at != world.time)
+		torch_pass = 0
 	torch_lag_x = 0
 	torch_lag_y = 0
 	sweep_step = 0
 	torch_serial++
-	if(isturf(old_loc) && isturf(guard.loc) && guard.move_intent == MOVE_INTENT_WALK && old_loc.z == guard.z && get_dist(old_loc, guard) == 1)
+	if(walked)
 		torch_lag_x = 0.5 * (guard.x - old_loc.x)
 		torch_lag_y = 0.5 * (guard.y - old_loc.y)
 		addtimer(CALLBACK(src, PROC_REF(stealth_torch_settle), torch_serial), STEALTH_TORCH_HALF_STEP)
+	else if(torch_pass)
+		addtimer(CALLBACK(src, PROC_REF(stealth_torch_settle), torch_serial), STEALTH_TORCH_TURN_STEP)
 	stealth_place_torch()
 
 /// It turned from `old_dir`: the beam follows, through the halfway point when the turn is 90 degrees or more.
@@ -306,11 +313,14 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	torch_pass = 0
 	sweep_step = 0
 	var/swing = stealth_swing(was, new_dir)
-	// Mid-step the half step's timer lands the beam; a turn on the spot gets its own.
-	if(abs(swing) > 45 && !torch_lag_x && !torch_lag_y)
-		torch_serial++
+	// Mid-step (a diagonal step turns the walker after it moves) the half step's timer lands the beam; a turn on the
+	// spot gets its own.
+	if(abs(swing) > 45)
 		torch_pass = turn(new_dir, swing > 0 ? -45 : 45)
-		addtimer(CALLBACK(src, PROC_REF(stealth_torch_settle), torch_serial), STEALTH_TORCH_TURN_STEP)
+		torch_passed_at = world.time
+		if(!torch_lag_x && !torch_lag_y)
+			torch_serial++
+			addtimer(CALLBACK(src, PROC_REF(stealth_torch_settle), torch_serial), STEALTH_TORCH_TURN_STEP)
 	stealth_place_torch()
 
 /// The beam lands: the half step or the halfway point of a turn is over.

@@ -132,6 +132,19 @@
 	guard.forceMove(stealth_at(block, 6, 3))
 	TEST_ASSERT_EQUAL(get_turf(torch), stealth_at(block, 6, 3), "The lamp didn't follow the guard")
 	TEST_ASSERT_EQUAL(torch.beam_x, -0.5, "A jump of three tiles held the beam back")
+	// A walked corner (tg turns a walker, then moves it, in one tick): the beam passes the diagonal as it steps.
+	guard.setDir(NORTH)
+	guard.forceMove(stealth_at(block, 6, 4))
+	TEST_ASSERT_EQUAL(torch.light_dir, NORTHEAST, "A step round a corner snapped the beam round")
+	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	TEST_ASSERT_EQUAL(torch.light_dir, NORTH, "The beam didn't land after a step round a corner")
+	TEST_ASSERT_EQUAL(torch.beam_y, -0.5, "The beam didn't land half a tile ahead after a step round a corner")
+	// A diagonal step turns the walker after it moves: the beam still passes the diagonal.
+	guard.forceMove(stealth_at(block, 6, 3))
+	guard.setDir(EAST)
+	TEST_ASSERT_EQUAL(torch.light_dir, NORTHEAST, "A turn just after a step snapped the beam round")
+	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	TEST_ASSERT_EQUAL(torch.light_dir, EAST, "The beam didn't land after a turn just after a step")
 	// Searching, standing: one side, back, the other side, back.
 	// Its sweep runs only while its AI does (a dormant level sweeps nothing).
 	stealth_ai.stealth_go_searching(stealth_at(block, 8, 3))
