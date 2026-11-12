@@ -416,7 +416,7 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	small = !istype(bolt, /obj/projectile/energy/plasma_bolt/heavy)
 	was_alive = victim.stat != DEAD
 	limb = victim.get_bodypart(check_zone(bolt.def_zone))
-	had_critical = !!limb?.get_wound_type(/datum/wound/burn/flesh/critical)
+	had_critical = plasma_limb_burned_through(limb)
 	hit = plasma_burst_hit(victim, side, band)
 	// The bolt's sprite stops where the burst draws; on a standing body's back it goes out behind the head
 	// instead of running over it
@@ -453,7 +453,7 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	if(damagetype != BURN)
 		return
 	var/killed = was_alive && source.stat == DEAD
-	var/burned = !had_critical && limb?.owner == source && !!limb.get_wound_type(/datum/wound/burn/flesh/critical)
+	var/burned = !had_critical && limb?.owner == source && plasma_limb_burned_through(limb)
 	draw(killed || burned)
 
 /// Picks the look in the tick of the hit, and shows it once the bolt's sprite has reached the body
