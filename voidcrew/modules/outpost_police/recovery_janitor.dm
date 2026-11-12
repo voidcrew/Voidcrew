@@ -286,6 +286,13 @@
 	cleaning_gave_up = null
 	return ..()
 
+// Stood still with nobody on the concourse: the give-ups and the idle clock count only time they could work
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/shift_times(delay)
+	. = ..()
+	idle_since = ambient_shifted(idle_since, delay)
+	for(var/atom/old as anything in cleaning_gave_up)
+		cleaning_gave_up[old] = ambient_shifted(cleaning_gave_up[old], delay)
+
 // The lost-crew ladder (4.2) counts a janitor who dies at work
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/death(gibbed)
 	var/was_alive = stat != DEAD

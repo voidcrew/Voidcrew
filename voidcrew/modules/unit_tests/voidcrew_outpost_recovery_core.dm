@@ -512,3 +512,26 @@
 	recovery.call_wave()
 	TEST_ASSERT(!recovery.wave_active, "A body in a tray called a crew wave")
 	body.forceMove(wanted_spot(1, 1))
+
+/// The clocks stand still with the concourse: a patient's retry moves on too. A worker a player went into is
+/// never faded out with the crew and does not keep a wave alive.
+/datum/unit_test/voidcrew_outpost_recovery_paused_retry_and_played_worker
+
+/datum/unit_test/voidcrew_outpost_recovery_paused_retry_and_played_worker/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/patient = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(2, 2))
+	var/datum/weakref/patient_ref = WEAKREF(patient)
+	var/retry = world.time + 30 SECONDS
+	recovery.patient_retry[patient_ref] = retry
+	recovery.shift_times(5 MINUTES)
+	TEST_ASSERT_EQUAL(recovery.patient_retry[patient_ref], retry + 5 MINUTES, "A patient's retry ran on while nobody was on the concourse")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = recovery_worker(outpost, wanted_spot(3, 1))
+	recovery.wave_active = TRUE
+	TEST_ASSERT(worker in recovery.live_wave_workers(), "Setup: the worker is not on the wave")
+	worker.mind_initialize()
+	allocated += worker.mind
+	TEST_ASSERT(!(worker in recovery.live_wave_workers()), "A worker a player went into still counts as the wave's")
+	recovery.retire_crew()
+	TEST_ASSERT(!worker.fading && !QDELETED(worker), "A worker a player went into was faded out with the crew")

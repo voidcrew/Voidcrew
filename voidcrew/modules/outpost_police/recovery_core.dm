@@ -536,6 +536,8 @@
 		stars_away[away] = ambient_shifted(stars_away[away], delay)
 	for(var/datum/weakref/ref as anything in retry_at)
 		retry_at[ref] = ambient_shifted(retry_at[ref], delay)
+	for(var/datum/weakref/ref as anything in patient_retry)
+		patient_retry[ref] = ambient_shifted(patient_retry[ref], delay)
 	for(var/datum/outpost_shop/shop as anything in posts)
 		var/datum/outpost_recovery_post/post = posts[shop]
 		if(post)
@@ -733,12 +735,12 @@
 		if(QDELETED(who))
 			wave_workers -= ref
 
-/// The wave's workers (morgue and janitors) that are alive
+/// The wave's workers (morgue and janitors) that are alive. One a player is in (revived with a player's brain) works for nobody.
 /datum/outpost_recovery/proc/live_wave_workers()
 	. = list()
 	for(var/datum/weakref/ref as anything in wave_workers)
 		var/mob/living/who = ref.resolve()
-		if(!QDELETED(who) && who.stat != DEAD)
+		if(!QDELETED(who) && who.stat != DEAD && !outpost_npc_played(who))
 			. += who
 
 /// Whether any officer of this outpost's roster is alive (the escort rule asks)
@@ -878,7 +880,8 @@
 /datum/outpost_recovery/proc/retire_crew()
 	for(var/datum/weakref/ref as anything in crew.Copy())
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = ref.resolve()
-		if(istype(worker) && !QDELETED(worker) && worker.stat != DEAD)
+		// A worker a player is in is theirs now: never faded out from under them (review S4)
+		if(istype(worker) && !QDELETED(worker) && worker.stat != DEAD && !outpost_npc_played(worker, "crew retired"))
 			worker.fade_out()
 	crew.Cut()
 	wave_workers.Cut()

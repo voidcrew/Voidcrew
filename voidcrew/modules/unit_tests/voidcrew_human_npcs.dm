@@ -327,6 +327,14 @@
 	npc.npc_died_at = world.time - npc.npc_corpse_lifetime - 1
 	TEST_ASSERT(npc.npc_corpse_expired(), "An old corpse nobody is near can't be cleaned up")
 
+	// A body a player was put into (brain transplant) is a person's corpse, even after they log off
+	var/datum/mind/played = new("corpse_sweep_test_key")
+	npc.last_mind = played
+	TEST_ASSERT(!npc.npc_corpse_expired(), "The corpse sweep would delete a body a player was in")
+	npc.last_mind = null
+	qdel(played)
+	TEST_ASSERT(npc.npc_corpse_expired(), "Test fixture: clearing last_mind did not free the corpse")
+
 	var/mob/living/carbon/human/consistent/dragger = allocate(/mob/living/carbon/human/consistent)
 	dragger.start_pulling(npc)
 	TEST_ASSERT(!npc.npc_corpse_expired(), "A corpse being dragged can be cleaned up")

@@ -274,3 +274,19 @@
 	found[open_tile] = 1
 	var/list/job = janitor.nearest_work(found)
 	TEST_ASSERT_EQUAL(job?[1], open_tile, "Tiles given up on hid mess the janitor could reach")
+
+/// A janitor standing still with the concourse empty: the give-ups and the idle clock move on by as long
+/datum/unit_test/voidcrew_outpost_recovery_janitor_shift
+
+/datum/unit_test/voidcrew_outpost_recovery_janitor_shift/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	var/turf/tile = pa_tile(2, 2)
+	janitor.give_up_on(tile)
+	var/until = LAZYACCESS(janitor.cleaning_gave_up, tile)
+	janitor.idle_since = max(world.time, 1)
+	var/idle = janitor.idle_since
+	janitor.shift_times(5 MINUTES)
+	TEST_ASSERT_EQUAL(LAZYACCESS(janitor.cleaning_gave_up, tile), until + 5 MINUTES, "A given-up tile's wait ran on while nobody was there")
+	TEST_ASSERT_EQUAL(janitor.idle_since, idle + 5 MINUTES, "The janitor's idle clock ran on while nobody was there")
