@@ -133,9 +133,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	new /datum/plasma_melt(victim, zone, drawn, worn_look, shoes_look, dropped)
 	if(ishuman(victim))
 		// Hyperviolence (#512) cut the sleeve the moment the arm came off; it stays until the melt burns it
-		var/mob/living/carbon/human/wearer = victim
-		wearer.update_worn_undersuit()
-		wearer.update_worn_oversuit()
+		victim.hv_update_gore_overlays()
 	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, 'voidcrew/modules/plasma_weapons/sound/plasma_melt.ogg', 60, TRUE)
@@ -165,7 +163,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/list/drawn
 	/// What this melt has on the body right now
 	var/list/shown = list()
-	/// TRUE once the jumpsuit sleeve at this (arm) zone has burned away
+	/// TRUE once the jumpsuit and coat sleeves at this (arm) zone have burned away
 	var/sleeve_burned = FALSE
 	/// Facing and posture when the melt began running, which pick the melt frames, drops and pool spot
 	var/melt_dir
@@ -229,10 +227,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		if(LAZYACCESS(victim.plasma_melts, zone) == src)
 			LAZYREMOVE(victim.plasma_melts, zone)
 		UnregisterSignal(victim, list(COMSIG_CARBON_POST_ATTACH_LIMB, COMSIG_QDELETING, COMSIG_MOVABLE_MOVED))
-		if(sleeve_burned && ishuman(victim) && !QDELETED(victim))
-			sleeve_burned = FALSE
-			var/mob/living/carbon/human/wearer = victim
-			wearer.update_worn_undersuit()
+		// with the melt gone, #512 masks the arm like any other lost arm (or not at all, if it came back)
+		sleeve_burned = FALSE
+		if(ishuman(victim) && !QDELETED(victim))
+			victim.hv_update_gore_overlays()
 	victim = null
 	start_turf = null
 	for(var/obj/item/thing as anything in hidden_items)
@@ -506,17 +504,19 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		if(hidden_items[thing] != "landed" && (!kind || hidden_items[thing] == kind))
 			reveal_item(thing)
 
-/// Burns the jumpsuit sleeve away at this missing arm (masked on the uniform overlay, see update_worn_undersuit)
+/// Burns the jumpsuit and coat sleeves away at this missing arm. Hyperviolence (#512) does the cutting, with the mask it
+/// uses for every lost arm (hv_mask_sleeves()); that mask leaves the chest's own pixels alone, so no chest is bared.
 /datum/plasma_melt/proc/burn_sleeve()
 	if(sleeve_burned || !ishuman(victim))
 		return
 	sleeve_burned = TRUE
 	var/mob/living/carbon/human/wearer = victim
-	wearer.update_worn_undersuit()
-	wearer.update_worn_oversuit()
+	wearer.hv_update_gore_overlays()
 
 // Hyperviolence (#512) cuts a lost arm's sleeve off the jumpsuit and suit at once (sleeve_mask.dm). A melting arm keeps
-// its sleeve until the sleeve burns (burn_sleeve()), so the melt plays on the arm as it was dressed.
+// its sleeve until the sleeve burns (burn_sleeve()), so the melt plays on the arm as it was dressed. Under #512 this is the
+// only sleeve cut: #540's own jumpsuit and coat masks are left out here, and the redraws go through
+// hv_update_gore_overlays() so #512's record of what it last cut stays true.
 /mob/living/carbon/human/hv_sleeve_mask_zones()
 	. = ..()
 	for(var/zone in plasma_melts)
@@ -706,35 +706,6 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	slag.pixel_x = clamp(px, -16, 16)
 	slag.pixel_y = clamp(py, -16, 16)
 	return slag
-
-// ===== Sleeve =====
-
-/// A plasma-melted arm takes its jumpsuit sleeve with it: tg keeps the sleeve on a missing arm, so mask it off the
-/// uniform overlay the way tg masks gloves on a missing hand. Only arms that melted, and only until they come back.
-/mob/living/carbon/human/update_worn_undersuit(update_obscured = TRUE)
-	. = ..(update_obscured)
-	var/list/burned = list()
-	for(var/zone in plasma_melts)
-		var/datum/plasma_melt/melt = plasma_melts[zone]
-		if(melt.sleeve_burned)
-			burned += zone
-	if(!length(burned))
-		return
-	var/mutable_appearance/uniform_overlay = overlays_standing[UNIFORM_LAYER]
-	if(!istype(uniform_overlay))
-		return
-	remove_overlay(UNIFORM_LAYER)
-	var/static/atom/movable/sleeve_mask
-	if(isnull(sleeve_mask))
-		sleeve_mask = new(null)
-	for(var/zone in burned)
-		sleeve_mask.icon = PLASMA_MELT_ZONE_ICON(zone)
-		sleeve_mask.icon_state = "[zone]_sleeve_mask"
-		sleeve_mask.render_target = "*PlasmaSleeve [REF(src)] [zone]"
-		uniform_overlay.add_overlay(sleeve_mask)
-		uniform_overlay.filters += filter(type = "alpha", render_source = sleeve_mask.render_target, flags = MASK_INVERSE)
-	overlays_standing[UNIFORM_LAYER] = uniform_overlay
-	apply_overlay(UNIFORM_LAYER)
 
 // ===== Effects =====
 

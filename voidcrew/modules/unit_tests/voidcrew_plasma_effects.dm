@@ -161,3 +161,28 @@
 	TEST_ASSERT_EQUAL(plasma_burst_body_side(SOUTH, NORTH), NORTH, "the back of a body facing north is not its back")
 	TEST_ASSERT_EQUAL(plasma_burst_body_side(WEST, NORTH), EAST, "the left side of a body facing north is not its left")
 	TEST_ASSERT_EQUAL(plasma_burst_body_side(NORTH, WEST), WEST, "the right side of a body facing west is not its right")
+
+/// A bolt that hits a wall leaves one mark, its glow on the wall face, and no soot on the floor in front of it
+/datum/unit_test/voidcrew_plasma_wall_one_mark
+
+/datum/unit_test/voidcrew_plasma_wall_one_mark/Run()
+	var/turf/open/in_front = run_loc_floor_bottom_left
+	var/turf/wall = get_step(in_front, EAST)
+	var/old_type = wall.type
+	wall = wall.ChangeTurf(/turf/closed/wall)
+	var/obj/projectile/energy/plasma_bolt/bolt = allocate(/obj/projectile/energy/plasma_bolt, in_front)
+	bolt.angle = 90
+	// the old floor soot was a coin flip per hit
+	for(var/i in 1 to 10)
+		bolt.plasma_impact_visuals(wall, 0)
+	var/soot = locate(/obj/effect/decal/cleanable/plasma_soot) in in_front
+	var/glow = locate(/obj/effect/temp_visual/plasma_wall_glow) in wall
+	for(var/atom/movable/thing in wall)
+		if(istype(thing, /obj/effect/temp_visual))
+			qdel(thing)
+	for(var/atom/movable/thing in in_front)
+		if(istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/effect/decal/cleanable/plasma_soot))
+			qdel(thing)
+	wall.ChangeTurf(old_type)
+	TEST_ASSERT_NULL(soot, "A wall hit left soot on the floor in front of the wall")
+	TEST_ASSERT_NOTNULL(glow, "A wall hit left no glow on the wall")
