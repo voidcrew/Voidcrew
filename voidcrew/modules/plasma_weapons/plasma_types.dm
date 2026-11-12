@@ -159,7 +159,7 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 
 /obj/effect/temp_visual/plasma_pinch
 	icon = 'voidcrew/modules/plasma_weapons/icons/effects.dmi'
-	icon_state = "pinch_ball"
+	icon_state = "pinch"
 
 // ===== Pirate loadouts (S12) =====
 
