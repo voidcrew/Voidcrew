@@ -377,8 +377,9 @@
 	floor.entry_policy = "open" // OUTPOST_FLOOR_ENTRY_OPEN
 	police.tick_floors()
 	floor.lay_ground(/turf/open/floor/plating/outpost_deck)
-	var/turf/epicenter = floor_tile(floor, 6, 6)
-	var/turf/crew_wall = floor_tile(floor, 7, 6)
+	// The blast is set on the wall, as a breaching charge is: devastation 1 reaches its own tile only
+	var/turf/crew_wall = floor_tile(floor, 6, 6)
+	var/turf/epicenter = crew_wall
 	crew_wall.place_on_top(/turf/closed/wall)
 	var/mob/living/carbon/human/caught = police_test_person(floor_tile(floor, 6, 7))
 	TEST_ASSERT(!is_trader_outpost_protected(crew_wall), "A public floor is blast-protected")
@@ -387,4 +388,4 @@
 	// The size of a breaching charge: devastation 1, heavy 0, light 2
 	explosion(epicenter, devastation_range = 1, heavy_impact_range = 0, light_impact_range = 2, flame_range = 0, flash_range = 0, adminlog = FALSE, ignorecap = TRUE, silent = TRUE)
 	apply_blast()
-	TEST_ASSERT(!istype(crew_wall, /turf/closed/wall), "A blast on a public floor left a crew-built wall standing beside it")
+	TEST_ASSERT(!istype(crew_wall, /turf/closed/wall), "A blast on a public floor left a crew-built wall standing")

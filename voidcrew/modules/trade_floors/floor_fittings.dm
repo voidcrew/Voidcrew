@@ -571,8 +571,8 @@
 	pixel_x = (wall_dir & EAST) ? 32 : ((wall_dir & WEST) ? -32 : 0)
 	pixel_y = (wall_dir & NORTH) ? 32 : ((wall_dir & SOUTH) ? -32 : 0)
 	// The picture stays the front view whichever wall it is on, so the mount is made by hand and not by facing
-	var/datum/component/wall_mounted/by_facing = GetComponent(/datum/component/wall_mounted)
-	if(by_facing)
+	// wall_mounted allows duplicates, so GetComponent() would warn: drop every copy
+	for(var/datum/component/wall_mounted/by_facing as anything in GetComponents(/datum/component/wall_mounted))
 		qdel(by_facing)
 	if(iswallturf(wall))
 		AddComponent(/datum/component/wall_mounted, wall, knock_down_callback)

@@ -38,7 +38,8 @@
 			if(initial(sku_type.is_chart))
 				continue // intel SKUs legitimately dispense nothing
 			var/item_path = initial(sku_type.item_path)
-			if(!ispath(item_path, /atom/movable))
+			// An outpost floor is a lease, not an item: buying it lets the floor (trade_floors/floor_registry.dm)
+			if(!ispath(item_path, /atom/movable) && !ispath(sku_type, /datum/shop_sku/outpost_floor))
 				TEST_FAIL("[sku_type] has item_path [item_path], which is not a spawnable movable, buying it hands over nothing")
 			if(initial(sku_type.price_credits) < 0 || initial(sku_type.price_vouchers) < 0)
 				TEST_FAIL("[sku_type] has a negative price")

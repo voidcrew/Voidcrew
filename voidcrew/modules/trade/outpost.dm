@@ -314,6 +314,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		if(npc.flags_1 & INITIALIZED_1)
 			npc.setup_from_shop()
 	make_floors() // OUTPOST FLOORS seam: the floors to let (trade_floors/floor_registry.dm)
+	place_outpost_directory(src) // OUTPOST FLOORS seam: the concourse board (trade_floors/floor_directory.dm)
 
 /**
  * Resolves the shop a linked machine sells for. A null shop_type means the

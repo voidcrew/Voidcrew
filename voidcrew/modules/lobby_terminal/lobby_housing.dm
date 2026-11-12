@@ -23,7 +23,7 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	if(QDELETED(building))
 		return home.name
 	// A trader outpost's name carries \improper, which a list row would show as a stray character
-	return "[home.name], [format_text(building.name)]"
+	return "[floor_host.floor.floor_name || home.name], [format_text(building.name)]"
 
 /// Outposts a lobby player can see: loaded and owned.
 /datum/lobby_terminal/proc/housing_outposts()

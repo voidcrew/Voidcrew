@@ -231,7 +231,8 @@ SUBSYSTEM_DEF(ambient_npcs)
  */
 /datum/controller/subsystem/ambient_npcs/proc/arrive_next(datum/ambient_place/outpost/place, list/roles)
 	var/obj/structure/overmap/trader_outpost/outpost = place?.outpost()
-	if(!outpost || length(place.living_npcs()) >= AMBIENT_OUTPOST_TRANSIENT_CAP)
+	// OUTPOST FLOORS seam: the people up on its floors count against the same cap (trade_floors/floor_customers.dm)
+	if(!outpost || length(place.living_npcs()) + outpost_floor_npc_count(outpost) >= AMBIENT_OUTPOST_TRANSIENT_CAP)
 		return null
 	var/list/due = list()
 	for(var/datum/ambient_outpost_role/role as anything in (roles || get_outpost_roles()))
@@ -263,7 +264,8 @@ SUBSYSTEM_DEF(ambient_npcs)
 	if(!outpost || place.occupied || !place.needs_settling || budget <= 0)
 		return 0
 	var/made = 0
-	var/living = length(place.living_npcs())
+	// OUTPOST FLOORS seam: the people up on its floors count against the same cap (trade_floors/floor_customers.dm)
+	var/living = length(place.living_npcs()) + outpost_floor_npc_count(outpost)
 	for(var/datum/ambient_outpost_role/role as anything in (roles || get_outpost_roles()))
 		if(living >= AMBIENT_OUTPOST_TRANSIENT_CAP)
 			break

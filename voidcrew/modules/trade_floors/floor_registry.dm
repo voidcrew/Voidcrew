@@ -15,6 +15,7 @@
 	for(var/number in 1 to floor_count)
 		if(!floors[number])
 			floors[number] = new /datum/outpost_floor(src, number)
+	name_tenants() // floor_life.dm: each unlet floor's tenant business
 
 /// The lowest-numbered floor that can be sold now, or null. A floor its owner gave up is taken in person, not sold.
 /obj/structure/overmap/trader_outpost/proc/floor_to_let()

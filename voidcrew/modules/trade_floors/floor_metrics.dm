@@ -2,7 +2,7 @@
  * # Outpost floors: round metrics
  *
  * Owner: P9 (spec 10). One helper every floors package calls: record_floor_metric(). Every row is category "floor"
- * (METRIC_FLOOR below), written once per occurrence through record_metric(). Round metrics must be on and the
+ * (METRIC_FLOOR, voidcrew/_DEFINES/metrics.dm), written once per occurrence through record_metric(). Round metrics must be on and the
  * round_metric table present; with either missing the call costs one variable read and does nothing.
  *
  * Event catalog. `credits` and `vouchers` are signed from the player's or the floor's side: money gained is
@@ -37,9 +37,6 @@
  * The category and the events here never do.
  */
 
-/// The category of every row in this file (voidcrew/_DEFINES/metrics.dm has the others)
-#define METRIC_FLOOR "floor"
-
 /**
  * Records `event` for `floor`: `actor` is the person it is about (null when it is about nobody), `amount` is the
  * number the event carries (see the catalog above). Safe to call from anywhere: it only queues a row.
@@ -71,4 +68,3 @@
 	var/obj/structure/overmap/ship/crew_ship = (actor || QDELETED(floor_host)) ? null : floor_host.get_owner_ship()
 	record_metric(METRIC_FLOOR, event, ckey = person_key, other_ckey = (owner_key && owner_key != person_key) ? owner_key : null, ship = crew_ship, zone = QDELETED(building) ? null : metric_zone(building), subject = "[place], floor [floor.number]", credits = credits, vouchers = vouchers, quantity = quantity, details = list("floor" = floor.number, "entry" = floor.entry_policy), actor = actor)
 
-#undef METRIC_FLOOR

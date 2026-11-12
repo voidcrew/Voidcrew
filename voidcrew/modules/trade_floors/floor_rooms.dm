@@ -134,9 +134,8 @@
 	var/obj/structure/overmap/trader_outpost/building = floor?.outpost
 	if(!building)
 		return ..()
-	// A trader outpost's name carries \improper, which a chart row would show as a stray character
-	var/building_name = format_text(building.name)
-	return floor.floor_name ? "[floor.floor_name], [building_name]" : building_name
+	// An unnamed floor's advert names only its outpost (format_text: the outpost's name carries \improper)
+	return floor.floor_name ? outpost_place_name(src) : format_text(building.name)
 
 /obj/structure/overmap/dynamic/player_outpost/floor/advert_coords()
 	return floor?.outpost?.get_relative_overmap_coords()

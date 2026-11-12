@@ -211,3 +211,49 @@
 	officer.forceMove(ground.bottom_left_turfs[1])
 	TEST_ASSERT_NULL(brain.breach_walk_review(), "A walk-through is not over once the officer is off the floor")
 	TEST_ASSERT_NULL(brain.breach_walk_ref, "An officer back from a walk-through still has its floor")
+
+/// The empty-concourse pause never holds still an officer walking a floor or answering a floor warrant; one woken for
+/// a floor holds still again once it is back off the floors with nobody on the concourse
+/datum/unit_test/voidcrew_outpost_floors/breach_duty_not_paused
+
+/datum/unit_test/voidcrew_outpost_floors/breach_duty_not_paused/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_floor/floor = test_floor(outpost)
+	if(!floor)
+		return
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	place.occupied = FALSE
+	floor.entry_policy = "open" // OUTPOST_FLOOR_ENTRY_OPEN
+	floor.public_ground = TRUE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_test_officer(outpost, deck_tile(floor, 4))
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	TEST_ASSERT(istype(brain), "A beat officer has no police brain")
+	if(!istype(brain))
+		return
+	officer.pause_routine()
+	TEST_ASSERT(officer.paused_at, "An officer with no floor duty is not held still on an empty concourse")
+	officer.resume_routine()
+	brain.breach_walk_begin(floor, null)
+	officer.pause_routine()
+	TEST_ASSERT(!officer.paused_at, "An officer walking a floor was held still because the concourse is empty")
+	brain.breach_walk_clear()
+	floor.warrant_in_force = TRUE
+	officer.pause_routine()
+	TEST_ASSERT(!officer.paused_at, "An officer answering a floor warrant was held still because the concourse is empty")
+	floor.warrant_in_force = FALSE
+	// Held still, woken for the floor, and held again only once off it
+	officer.pause_routine()
+	TEST_ASSERT(officer.paused_at, "Fixture: the officer is not held still")
+	police.floors_wake_officer(officer)
+	TEST_ASSERT(!officer.paused_at, "A held officer did not wake for a floor")
+	police.floors_settle_woken()
+	TEST_ASSERT(!officer.paused_at, "An officer still up on a floor was held still")
+	var/datum/turf_reservation/ground = test_ground(4, 4)
+	if(!ground)
+		return
+	officer.forceMove(ground.bottom_left_turfs[1])
+	police.floors_settle_woken()
+	TEST_ASSERT(officer.paused_at, "An officer back off the floors was not held still again on an empty concourse")
+	TEST_ASSERT(!LAZYLEN(police.floors_woken), "An officer held still again is still on the woken list")
+	officer.resume_routine()

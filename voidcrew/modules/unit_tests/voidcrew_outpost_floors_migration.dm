@@ -233,6 +233,8 @@
 	var/subject = "[format_text(outpost.name)], floor 1"
 	var/list/row
 
+	// The fixture's own rows (people and a host made for the test) are not the floor's
+	SSmetrics.pending = list()
 	// A sale: the buyer spends credits and vouchers, and is the floor's owner, so nobody else is named
 	record_floor_metric("floor_bought", floor, owner, 6000) // OUTPOST_FLOOR_COST_CREDITS
 	row = queued_row(0)

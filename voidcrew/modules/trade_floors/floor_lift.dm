@@ -50,6 +50,8 @@
 	log_game("OUTPOST FLOORS: [user ? key_name(user) : "the game"] set floor [number] of [outpost] from '[old_entry]' to '[new_entry]'.")
 	record_floor_metric("floor_setting", src, user)
 	outpost?.refresh_elevator_uis()
+	// An Open floor keeps the police tick awake (police_floors.dm floors_have_work())
+	outpost?.police?.wake()
 	return TRUE
 
 /// Whether the lift goes to this floor at all: it has been let and its shell stands

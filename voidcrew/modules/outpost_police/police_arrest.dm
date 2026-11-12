@@ -1353,6 +1353,10 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/pause_routine()
 	if(case && !QDELETED(case))
 		return
+	// Outpost floors: the players may all be upstairs, so an officer walking a floor or answering a floor warrant
+	// keeps going with the concourse empty (trade_floors/police_breach.dm)
+	if(police_floor_duty())
+		return
 	return ..()
 
 /// Owns the officer while it has a case step to do

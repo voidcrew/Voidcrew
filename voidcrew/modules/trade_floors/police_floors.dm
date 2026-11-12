@@ -51,9 +51,13 @@
 			continue
 		floors_keep_warrant(floor, suspects_on[floor])
 		floors_keep_public(floor)
+	floors_settle_woken()
+	breach_walk_offer_idle()
 
 /// Whether a floor gives the police something to do: a warrant, public ground, or an Open floor not yet marked public
 /datum/outpost_police/proc/floors_have_work()
+	if(LAZYLEN(floors_woken))
+		return TRUE
 	for(var/datum/outpost_floor/floor in outpost?.floors)
 		if(floor.warrant_in_force || floor.public_ground)
 			return TRUE
@@ -105,6 +109,7 @@
 		floor.police_stood_down_at = 0
 		if(!floor.warrant_in_force)
 			floor.warrant_in_force = TRUE
+			floors_warrant_wake()
 			log_game("OUTPOST POLICE: a warrant is in force on floor [floor.number] of [outpost].")
 		// The lift tells security where the car went: they always know which floor, never where on it
 		var/turf/landing = floors_landing_point(floor)
@@ -343,6 +348,9 @@
 /datum/outpost_floor/proc/visitors_upstairs()
 	. = list()
 	for(var/mob/living/person as anything in police_people())
+		// NPC customers and patrons are no visitors: they would keep a narrowed floor public (P11)
+		if(istype(person, /mob/living/carbon/human/npc/ambient_npc) && !person.ckey)
+			continue
 		if(outpost_npc_played(person) && !is_member(person))
 			. += person
 	var/datum/outpost_police/police = outpost?.police

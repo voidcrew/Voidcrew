@@ -96,6 +96,8 @@
 	var/breach_walk_look_at = 0
 	/// Weakref to the officer walking a floor now
 	var/datum/weakref/breach_walker
+	/// Officers woken from the empty-concourse pause for a floor (floors_wake_officer()); lazy
+	var/list/floors_woken
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police
 	/// world.time its way to its quarry first showed blocked or gone, or 0
@@ -682,7 +684,10 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
 	if(!istype(brain) || officer.unit_kind != POLICE_UNIT_BEAT || isnull(brain.route_id) || brain.breach_walk_ref)
 		return FALSE
-	if(officer.client || officer.case || officer.dispatch_riding || officer.dispatch_responding() || !dispatch_can_respond(officer))
+	if(officer.client || officer.case || officer.dispatch_riding || officer.dispatch_responding())
+		return FALSE
+	// dispatch_can_respond() without its pause rule: an officer held still on an empty concourse may still go up
+	if(officer.stat != CONSCIOUS || officer.npc_exit || officer.fading || human_npc_out_of_fight(officer))
 		return FALSE
 	if(brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
 		return FALSE
@@ -717,6 +722,8 @@
 	brain.breach_walk_begin(floor, get_turf(officer))
 	floor.breach_walk_due_at = world.time + rand(POLICE_FLOOR_WALKTHROUGH_LOW, POLICE_FLOOR_WALKTHROUGH_HIGH)
 	breach_walker = WEAKREF(officer)
+	// The visitors are upstairs, so the concourse may be empty and the officer held still there
+	floors_wake_officer(officer)
 	log_game("OUTPOST POLICE: [officer] walks through floor [floor.number] of [outpost].")
 
 /// Sets out to walk `floor`, from `from` on the concourse
@@ -754,6 +761,66 @@
 		police_lost_route = null
 	if(route_id)
 		stealth_rejoin_route()
+
+/**
+ * On floor duty: walking a floor through, or its outpost has a floor under warrant. The empty-concourse pause never
+ * holds it still then (police_arrest.dm pause_routine()), because the players it is there for may all be upstairs.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_floor_duty()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
+	if(istype(brain) && brain.breach_walk_ref?.resolve())
+		return TRUE
+	for(var/datum/outpost_floor/floor in police?.outpost?.floors)
+		if(floor.warrant_in_force)
+			return TRUE
+	return FALSE
+
+/**
+ * With nobody on the concourse the officers' own tick stops before the walk is offered (dispatch_recall_when_empty()),
+ * though the visitors upstairs are still there: the floors tick offers it instead.
+ */
+/datum/outpost_police/proc/breach_walk_offer_idle()
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[outpost]
+	if(!istype(place) || place.occupied || world.time < breach_walk_look_at)
+		return
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(officer.unit_kind != POLICE_UNIT_BEAT)
+			continue
+		breach_walk_offer(officer)
+		if(world.time < breach_walk_look_at)
+			return
+
+/// A floor warrant began: every officer held still on an empty concourse wakes for it
+/datum/outpost_police/proc/floors_warrant_wake()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		floors_wake_officer(officer)
+
+/// Wakes `officer` if the empty concourse holds it still, and keeps it on floors_woken to hold still again after
+/datum/outpost_police/proc/floors_wake_officer(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(QDELETED(officer) || officer.stat == DEAD || !officer.paused_at)
+		return
+	officer.resume_routine()
+	LAZYOR(floors_woken, officer)
+
+/**
+ * Officers woken for a floor hold still again once their duty there is over, they are back off the floors and the
+ * concourse is still empty. Once someone is on the concourse the usual pause takes them as it takes everyone.
+ */
+/datum/outpost_police/proc/floors_settle_woken()
+	if(!LAZYLEN(floors_woken))
+		return
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[outpost]
+	if(!istype(place) || place.occupied)
+		LAZYNULL(floors_woken)
+		return
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in floors_woken.Copy())
+		if(QDELETED(officer) || officer.stat == DEAD)
+			LAZYREMOVE(floors_woken, officer)
+			continue
+		if(officer.case || officer.police_floor_duty() || outpost.floor_at(get_turf(officer)))
+			continue
+		LAZYREMOVE(floors_woken, officer)
+		officer.pause_routine()
 
 /**
  * The stage the walk is at, from where it stands and what its floor is now; null once it is over. Any stage but

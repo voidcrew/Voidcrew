@@ -137,23 +137,27 @@
 /datum/outpost_floor/proc/npc_outpost_full()
 	return outpost_floor_ambient_count(outpost) >= AMBIENT_OUTPOST_TRANSIENT_CAP
 
-/// Living ambient NPCs of `outpost`'s concourse and of all its floors
+/**
+ * Living ambient NPCs of `outpost`: its concourse's and every floor's (customers, patrons, fitters). The one count the
+ * outpost's cap is held to by the concourse (SSambient_npcs), the customers and the fitters alike (A47).
+ */
 /proc/outpost_floor_ambient_count(obj/structure/overmap/trader_outpost/outpost)
 	. = 0
-	if(!outpost)
+	if(QDELETED(outpost))
 		return
 	var/datum/ambient_place/outpost/concourse = SSambient_npcs.outposts[outpost]
 	if(concourse)
 		. += length(concourse.living_npcs())
 	. += outpost_floor_npc_count(outpost)
 
-/// Living ambient NPCs on `outpost`'s floors. The concourse's own arrivals (SSambient_npcs.arrive_next() and
-/// settle_outpost()) do not count these yet; a one-line seam there would make the cap exact both ways.
+/// Living ambient NPCs up on `outpost`'s floors: customers and patrons (npc_place) and fitters (life_place)
 /proc/outpost_floor_npc_count(obj/structure/overmap/trader_outpost/outpost)
 	. = 0
 	for(var/datum/outpost_floor/floor in outpost?.floors)
 		if(floor.npc_place)
 			. += length(floor.npc_place.living_npcs())
+		if(floor.life_place)
+			. += length(floor.life_place.living_npcs())
 
 /**
  * Every tile a visitor could walk to from `start` (the first alcove tile if null) on this floor, by doors that let
@@ -240,7 +244,12 @@
 		return
 	if(npc_place && length(npc_place.living_npcs()) >= FLOOR_CUSTOMERS_AT_ONCE)
 		return
-	if(npc_custom_denial(check_route = FALSE))
+	var/denial = npc_custom_denial(check_route = FALSE)
+	if(denial == "full")
+		// A shopper or drinker downstairs heads home a little early, and the customer comes once there is room
+		floor_life_make_room(outpost, 1)
+		return
+	if(denial)
 		return
 	if(npc_bring_customer())
 		npc_next_visit = world.time + rand(OUTPOST_FLOOR_NPC_VISIT_LOW, OUTPOST_FLOOR_NPC_VISIT_HIGH)

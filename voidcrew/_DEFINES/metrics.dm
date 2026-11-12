@@ -26,6 +26,8 @@
 #define METRIC_COMBAT "combat"
 /// Player deaths and revivals.
 #define METRIC_DEATH "death"
+/// Outpost floors: sales, lettings, settings, supplies and the rest (trade_floors/floor_metrics.dm lists the events).
+#define METRIC_FLOOR "floor"
 
 /// Rows held in memory while they can't be written. Past this the oldest are dropped.
 #define METRIC_MAX_PENDING 20000

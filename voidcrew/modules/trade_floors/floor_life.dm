@@ -15,7 +15,7 @@
  *   beside the front door sounds through the floor; a note from the outpost waits just inside the door.
  *
  * Caps (A47): movers and fitters count against AMBIENT_OUTPOST_TRANSIENT_CAP with the concourse's people
- * (floor_life_npc_count()). When the outpost is full, one or two of its shoppers or drinkers head for the lift a little
+ * (outpost_floor_ambient_count(), floor_customers.dm). When the outpost is full, one or two of its shoppers or drinkers head for the lift a little
  * early to make room (floor_life_make_room()); nobody is made over the cap. Their dropped cash comes out of the
  * concourse's AMBIENT_OUTPOST_CASH_CAP. Killing them brings nobody sooner: movers come once a letting and fitters once a
  * room, whatever happens to them.
@@ -45,7 +45,7 @@
 
 /datum/outpost_floor
 	/// The ambient place this floor's fitters belong to, made with the first of them
-	var/datum/ambient_place/floor_life/life_place
+	var/datum/ambient_place/outpost_floor/fitters/life_place
 	/// Weakrefs to the rooms fitters have already been sent for (or would have been, had anyone been there)
 	var/list/life_fitted
 	/// Visits waiting for room at the outpost: lists of kind, people still to come, deadline and the room's weakref
@@ -223,22 +223,6 @@
 	return SSambient_npcs.outpost_players(outpost)
 
 /**
- * Ambient NPCs at `outpost` now: its concourse's and the fitters on its floors. Movers belong to the concourse.
- * Floor customers (floor_customers.dm, P11) keep their own count, outpost_floor_ambient_count(); the two are joined at
- * integration so both read the same number.
- */
-/proc/floor_life_npc_count(obj/structure/overmap/trader_outpost/outpost)
-	. = 0
-	if(QDELETED(outpost))
-		return
-	var/datum/ambient_place/outpost/concourse = SSambient_npcs.outposts[outpost]
-	if(concourse)
-		. += length(concourse.living_npcs())
-	for(var/datum/outpost_floor/floor in outpost.floors)
-		if(floor.life_place)
-			. += length(floor.life_place.living_npcs())
-
-/**
  * The outpost is full and `needed` more people are waiting to come: that many of its shoppers and drinkers, less any
  * already on their way out, head for the lift a little early. They go as anyone leaving goes; the role system brings
  * people back as it always does. Officers, staff and traders are never sent. Returns how many were sent.
@@ -293,7 +277,7 @@
 		if(!still_wanted || left <= 0)
 			LAZYREMOVE(life_visits, list(visit))
 			continue
-		var/room_left = AMBIENT_OUTPOST_TRANSIENT_CAP - floor_life_npc_count(outpost)
+		var/room_left = AMBIENT_OUTPOST_TRANSIENT_CAP - outpost_floor_ambient_count(outpost)
 		while(left > 0 && room_left > 0)
 			var/mob/living/carbon/human/npc/ambient_npc/brought = (kind == FLOOR_LIFE_VISIT_FITTERS) ? life_bring_fitter(room) : life_bring_mover()
 			if(!brought)
@@ -311,7 +295,7 @@
 /// This floor's place for its fitters, made if it has none
 /datum/outpost_floor/proc/life_place_for()
 	if(QDELETED(life_place))
-		life_place = new /datum/ambient_place/floor_life(src)
+		life_place = new /datum/ambient_place/outpost_floor/fitters(src)
 	return life_place
 
 // ===== MOVING DAY =====
@@ -600,20 +584,16 @@
 
 /**
  * A floor's fitters. They keep to the floor, off the landing; they leave by the goods lift. SSambient_npcs never ticks
- * it: their AI drives them, and they go when their time is up. Their dropped cash comes out of the concourse's cap.
+ * it: their AI drives them, and they go when their time is up. It is the customers' place (floor_customers.dm), so
+ * the floor, the leash, the concourse's cash cap and the law against hitting them are shared.
  */
-/datum/ambient_place/floor_life
-	name = "a floor"
-	/// The floor
-	var/datum/weakref/floor_ref
+/datum/ambient_place/outpost_floor/fitters
 
-/datum/ambient_place/floor_life/New(datum/outpost_floor/floor)
+/datum/ambient_place/outpost_floor/fitters/New(datum/outpost_floor/floor)
 	. = ..()
-	floor_ref = WEAKREF(floor)
-	name = "floor [floor.number] of [floor.outpost || "an outpost"]"
 	RegisterSignal(floor, COMSIG_QDELETING, PROC_REF(on_floor_deleted))
 
-/datum/ambient_place/floor_life/Destroy()
+/datum/ambient_place/outpost_floor/fitters/Destroy()
 	var/datum/outpost_floor/floor = served_floor()
 	if(floor)
 		UnregisterSignal(floor, COMSIG_QDELETING)
@@ -622,48 +602,29 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in npcs.Copy())
 		if(!QDELETED(npc))
 			qdel(npc)
-	floor_ref = null
 	return ..()
 
-/// The floor, if it is still there
-/datum/ambient_place/floor_life/proc/served_floor()
-	var/datum/outpost_floor/floor = floor_ref?.resolve()
-	return QDELETED(floor) ? null : floor
-
-/datum/ambient_place/floor_life/proc/on_floor_deleted(datum/source)
+/datum/ambient_place/outpost_floor/fitters/proc/on_floor_deleted(datum/source)
 	SIGNAL_HANDLER
 	qdel(src)
 
-/datum/ambient_place/floor_life/leash_ok(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
-	var/datum/outpost_floor/floor = served_floor()
-	return !!floor?.contains_turf(tile)
-
 // The deck, never the landing (the crew's door is between) nor the lift alcove
-/datum/ambient_place/floor_life/spot_allowed(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
+/datum/ambient_place/outpost_floor/fitters/spot_allowed(turf/tile, mob/living/carbon/human/npc/ambient_npc/npc)
 	var/datum/outpost_floor/floor = served_floor()
 	return !!floor && floor.contains_turf(tile) && !floor.in_landing(tile) && !(tile in floor.alcove_turfs)
 
 // Back down the goods lift
-/datum/ambient_place/floor_life/exit_turf(mob/living/carbon/human/npc/ambient_npc/npc)
+/datum/ambient_place/outpost_floor/fitters/exit_turf(mob/living/carbon/human/npc/ambient_npc/npc)
 	var/datum/outpost_floor/floor = served_floor()
 	if(!floor || !length(floor.goods_turfs))
 		return null
 	return get_closest_atom(/turf, floor.goods_turfs, npc)
 
-/datum/ambient_place/floor_life/cash_for(mob/living/carbon/human/npc/ambient_npc/npc, amount)
-	var/datum/outpost_floor/floor = served_floor()
-	var/datum/ambient_place/outpost/concourse = floor?.outpost ? SSambient_npcs.outpost_place(floor.outpost) : null
-	return concourse ? concourse.cash_for(npc, amount) : 0
+// A fitter killed keeps no customer away
+/datum/ambient_place/outpost_floor/fitters/npc_died(mob/living/carbon/human/npc/ambient_npc/npc)
+	return
 
-// A real blow on ground the law covers is violence there, as against a visitor downstairs
-/datum/ambient_place/floor_life/npc_attacked(mob/living/carbon/human/npc/ambient_npc/npc, atom/attacker, attack_flags)
-	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
-		return
-	var/obj/structure/overmap/trader_outpost/outpost = served_floor()?.outpost
-	if(outpost && get_trader_outpost_for_turf(get_turf(npc)) == outpost)
-		outpost.register_aggression(attacker, OUTPOST_CRIME_ASSAULT_CIVILIAN, npc)
-
-/datum/ambient_place/floor_life/describe()
+/datum/ambient_place/outpost_floor/fitters/describe()
 	return "[name]: [length(living_npcs())] fitter\s"
 
 // ===== THE LIFT CHIME =====

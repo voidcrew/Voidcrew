@@ -127,7 +127,7 @@
 		// Across the claims every room lands once in every turn.
 		for(var/claim in 1 to rooms)
 			var/obj/structure/overmap/dynamic/player_outpost/home = upgrade_test_claim("roomstyles[claim]")
-			TEST_ASSERT_NOTNULL(home, "The room style test claim did not load")
+			TEST_ASSERT_NOTNULL(home, "The room style test claim [claim] of [rooms] ([style]) did not load")
 			home.outpost_style = style
 			var/list/placed_turfs = list()
 			for(var/side in 1 to length(rotations))
@@ -143,6 +143,8 @@
 				for(var/problem in room.contract_problems())
 					TEST_FAIL("The [style] [prototype.name], turned [rotation]: [problem]")
 			settle_room_air(placed_turfs)
+			// Each claim is a level of its own: let it go before the next, or a long catalogue runs out of levels
+			qdel(home)
 
 /// Every ship bay style loads into its reservation and links its dock, consoles, lift and signs.
 /datum/unit_test/voidcrew_outpost_ship_bay_styles
