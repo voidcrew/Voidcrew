@@ -349,6 +349,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		if(istype(thing, /obj/effect/decal/cleanable/blood)) // blood's colour is its own, worked out as it dries
 			var/obj/effect/decal/cleanable/blood/blood = thing
 			copy.color = blood.sandy_replay_colour()
+			if(istype(blood, /obj/effect/decal/cleanable/blood/gibs)) // its meat overlay carries the tint too
+				var/obj/effect/decal/cleanable/blood/gibs/gibs = blood
+				gibs.sandy_untinted_overlays(copy)
 		else
 			copy.color = untinted_colour(thing)
 		copy.appearance_flags |= KEEP_TOGETHER // update_atom_colour() leaves this on once anything was ever coloured

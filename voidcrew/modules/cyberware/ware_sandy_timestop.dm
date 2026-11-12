@@ -390,15 +390,46 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(GLOB.cyberware_time_dilated[splatter])
 			splatter.update_atom_colour()
 
+/// tg's Draw() gives a beam's last, cut-short segment the beam's colour right after making it, over the tint the
+/// field put on it as it was made (a gut strand's end showed raw in the slow-mo): the tint goes back on, and a
+/// strand drawn in the slow-mo has its picture in vis_contents tinted at once rather than on the next field tick.
+/datum/beam/Draw()
+	. = ..()
+	for(var/obj/effect/ebeam/segment as anything in elements)
+		if(QDELETED(segment) || !cyberware_time_has_tint(segment))
+			continue
+		if(istext(segment.color) && !LAZYACCESS(segment.atom_colours, FIXED_COLOUR_PRIORITY))
+			segment.add_atom_colour(segment.color, FIXED_COLOUR_PRIORITY) // its own colour again once the tint comes off
+		segment.update_atom_colour()
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = GLOB.cyberware_time_dilated[segment]
+		if(istype(field))
+			field.tint_blood_bits(segment)
+
+/obj/effect/decal/cleanable/blood/gibs
+	/// Set while sandy_untinted_overlays() builds the overlays as they are without the slow-mo's tint.
+	var/sandy_skip_tint = FALSE
+
 /// A gib's meat and bone are a KEEP_APART, RESET_COLOR overlay that the tint in `color` skips: tinted, it wears the
 /// wash over its own colour too, and gets its colour back when the tint comes off (cyberware_time_tint_off()).
 /obj/effect/decal/cleanable/blood/gibs/update_overlays()
 	. = ..()
-	if(!sandy_time_tinted())
+	if(sandy_skip_tint || !sandy_time_tinted())
 		return
 	for(var/mutable_appearance/bit in .)
 		if(bit.appearance_flags & RESET_COLOR)
 			bit.color = cyberware_time_tint_of(istext(bit.color) ? bit.color : COLOR_WHITE)
+
+/// Swaps the tinted meat overlay in `look` (a copy of this gib's appearance) for the untinted one, so the replay
+/// shows the meat in its own colour (ware_sandy_replay.dm, clean_look()).
+/obj/effect/decal/cleanable/blood/gibs/proc/sandy_untinted_overlays(mutable_appearance/look)
+	if(managed_overlays)
+		look.overlays -= managed_overlays
+	sandy_skip_tint = TRUE
+	var/list/plain = update_overlays()
+	sandy_skip_tint = FALSE
+	for(var/overlay in plain)
+		if(overlay)
+			look.overlays += overlay
 
 /// Flattens a sprite to luminance and paints it the dilation's green (#5AFF96).
 /proc/cyberware_time_stop_green()

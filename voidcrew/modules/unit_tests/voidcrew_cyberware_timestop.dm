@@ -334,6 +334,9 @@
 	var/fired_at = turret.last_fired
 	mech.cooldown_vehicle_move = world.time + 5
 	var/move_at = mech.cooldown_vehicle_move
+	// A gut strand drawn in the slow-mo: one tile across and one up is 45 px, so its last segment is cut short and
+	// drawn with its own icon, which tg's Draw() colours after the field has tinted it
+	var/datum/beam/strand = raider.Beam(turret, "gut_beam", 'voidcrew/modules/hyperviolence/braingut/icons/gore_guts.dmi', INFINITY, 10, /obj/effect/ebeam/hv_gut, emissive = FALSE)
 
 	sleep(0.5 SECONDS)
 	// Blood and gore take the world's tint, including what a `color` tint can't reach (RESET_COLOR overlays and vis_contents)
@@ -342,6 +345,9 @@
 	TEST_ASSERT(tinted(drop), "A drip drawn in another drip's vis_contents kept its colour in the slow-mo")
 	TEST_ASSERT(islist(drop.color), "A drip in the slow-mo isn't drawn with the tint")
 	TEST_ASSERT(gib_bits_tinted(gibs), "A gib's meat overlay kept its colour in the slow-mo")
+	TEST_ASSERT(length(strand.elements) == 2, "Test fixture: the strand isn't two segments ([length(strand.elements)])")
+	for(var/obj/effect/ebeam/segment as anything in strand.elements)
+		TEST_ASSERT(islist(segment.color), "A gut strand segment drawn in the slow-mo kept its colour ([segment.color], own icon: [isicon(segment.icon)])")
 	// 0.5 s at 20% is 1 decisecond of the NPC's own time: a 2 decisecond gap is still waiting, at full speed it's long gone
 	TEST_ASSERT(cyberware_burst_wait(raider, raider_gun.cyberware_burst_start, 2, 1) > 0, "A queued burst shot fired at full speed")
 	TEST_ASSERT(raider_gun.cyberware_burst_start > gun_start, "The NPC's burst clock wasn't pushed back")
@@ -358,7 +364,14 @@
 	TEST_ASSERT(istext(pool.color), "Blood kept the slow-mo's tint, or lost its own colour, after the dilation")
 	TEST_ASSERT(!tinted(raider), "An NPC kept the slow-mo's tint after the dilation")
 	TEST_ASSERT(!tinted(drop) && istext(drop.color), "A drip kept the slow-mo's tint, or lost its own colour, after the dilation")
-	TEST_ASSERT(!gib_bits_tinted(gibs), "A gib's meat overlay kept the slow-mo's tint after the dilation")
+	// The replay is playing now: the gib shows its recorded look, which must be untinted too
+	TEST_ASSERT(GLOB.sandy_replays[user], "Test fixture: no replay after the slow-mo")
+	TEST_ASSERT(!gib_bits_tinted(gibs), "A gib's meat overlay kept the slow-mo's tint in the replay ([gib_diag(gibs)])")
+	for(var/obj/effect/ebeam/segment as anything in strand.elements)
+		TEST_ASSERT(!islist(segment.color), "A gut strand segment kept the slow-mo's tint after the dilation")
+	wait_replay(user)
+	TEST_ASSERT(!gib_bits_tinted(gibs), "A gib's meat overlay kept the slow-mo's tint after the replay ([gib_diag(gibs)])")
+	qdel(strand)
 	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A grenade's fuse didn't lose its slowed time")
 	TEST_ASSERT(bomb.cyberware_fuse_at > world.time, "A grenade's fuse has nothing left after losing time")
 	bomb.cyberware_fuse_at = 0 // don't let it go off after the test
@@ -374,6 +387,14 @@
 		if(bit.icon_state == "[gibs.icon_state]-overlay" && islist(bit.color))
 			return TRUE
 	return FALSE
+
+/// What `gibs` is drawn with, for a failure message
+/datum/unit_test/voidcrew_cyberware_timestop/proc/gib_diag(obj/effect/decal/cleanable/blood/gibs/gibs)
+	var/list/meat = list()
+	for(var/mutable_appearance/bit as anything in gibs.overlays)
+		if(bit.icon_state == "[gibs.icon_state]-overlay")
+			meat += json_encode(bit.color)
+	return "meat [meat.Join(" ")], color [json_encode(gibs.color)], atom_colours [json_encode(gibs.atom_colours)], dilated [!!GLOB.cyberware_time_dilated[gibs]], puppet [!!GLOB.sandy_replay_masked[gibs]]"
 
 /// A raider NPC at `where` with its own Cascade lattice (or `lattice_type`)
 /datum/unit_test/voidcrew_cyberware_timestop/proc/make_surger(turf/where, lattice_type = /obj/item/organ/cyberimp/cyberware/cascade)
