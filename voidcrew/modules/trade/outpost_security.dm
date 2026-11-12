@@ -181,15 +181,49 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	outpost_note_armed(src, user)
 	return ..()
 
+// A grenade sewn into a plush is armed by whoever sewed it in. Petting the plush sets it off (tg arms it with the
+// petter as the user), and the one petting it is its victim, never its bomber.
+/obj/item/toy/plush/attackby(obj/item/I, mob/living/user, list/modifiers, list/attack_modifiers)
+	var/obj/item/grenade/before = grenade
+	. = ..()
+	if(grenade && grenade != before)
+		outpost_note_armed(grenade, user)
+
+/obj/item/toy/plush/attack_self(mob/user)
+	var/obj/item/grenade/trap = grenade
+	var/was_active = trap?.active
+	var/datum/weakref/sewn_by = trap?.outpost_armed_by
+	. = ..()
+	if(trap && !was_active && !QDELETED(trap) && trap.active)
+		trap.outpost_armed_by = sewn_by
+
 /obj/item/grenade/c4/plant_c4(atom/bomb_target, mob/living/user)
 	. = ..()
 	if(.)
 		outpost_note_armed(src, user)
 
-// Set off by a signaller: whoever pressed it (usr, through the signaller's own UI)
-/obj/item/grenade/c4/receive_signal()
-	if(isliving(usr))
-		outpost_note_armed(src, usr)
+/// `bomb` was set off by `user` and nobody had armed it before: the one who set it off armed it
+/proc/outpost_note_armed_unless_armed(obj/bomb, mob/user)
+	if(!QDELETED(bomb) && !bomb.outpost_armed_by?.resolve())
+		outpost_note_armed(bomb, user)
+
+// A trigger (a signaller, a timer, a sensor) wired into C4 or a chem grenade arms it: whoever wired it in (usr, at the
+// wires window). Whoever later presses the signaller, walks past the sensor or speaks to it is never blamed: tg runs
+// those pulses with that person as usr, so usr at the pulse would frame a passer-by.
+/datum/wires/explosive/attach_assembly(color, obj/item/assembly/S)
+	. = ..()
+	if(. && isobj(holder) && isliving(usr))
+		outpost_note_armed(holder, usr)
+
+// Pulsing or cutting C4's wires by hand sets it off: that hand armed it, unless a planter or a wired trigger already had
+/datum/wires/explosive/c4/on_pulse(wire, mob/living/user)
+	if(isliving(user))
+		outpost_note_armed_unless_armed(holder, user)
+	return ..()
+
+/datum/wires/explosive/c4/on_cut(wire, mend, source)
+	if(!mend && isliving(source))
+		outpost_note_armed_unless_armed(holder, source)
 	return ..()
 
 /obj/structure/reagent_dispensers/fueltank/bullet_act(obj/projectile/hitting_projectile)
@@ -209,9 +243,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 
 /**
  * Who set off a blast: the firer of a projectile (a mech's pilot), otherwise whoever armed the explosive
- * (outpost_armed_by). Only an explosive nobody armed (one set off by another blast, a fire) falls back to tg's own
- * blame, the last person to touch it (fingerprintslast). Null when that is nobody living, or the cause is not an
- * atom (a chemical reaction).
+ * (outpost_armed_by). An explosive nobody armed (one set off by another blast or a fire) is blamed on nobody: the
+ * last hand to touch it (tg's fingerprintslast) may be anyone who moved it, so it is never asked. Null too when the
+ * armer is no longer living, or the cause is not an atom (a chemical reaction).
  */
 /proc/outpost_bomber_of(atom/explosion_cause)
 	if(isprojectile(explosion_cause))
@@ -224,15 +258,11 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 				return pilot
 			return null
 		explosion_cause = shot.firer
-	if(isobj(explosion_cause))
-		var/obj/bomb = explosion_cause
-		if(bomb.outpost_armed_by)
-			var/mob/living/armer = bomb.outpost_armed_by.resolve()
-			return isliving(armer) ? armer : null
-	if(!isatom(explosion_cause) || !explosion_cause.fingerprintslast)
+	if(!isobj(explosion_cause))
 		return null
-	var/mob/living/bomber = get_mob_by_ckey(explosion_cause.fingerprintslast)
-	return isliving(bomber) ? bomber : null
+	var/obj/bomb = explosion_cause
+	var/mob/living/armer = bomb.outpost_armed_by?.resolve()
+	return isliving(armer) ? armer : null
 
 /**
  * A blast caught `victims` at a trader outpost: it is an attack by its bomber on each, through the same routes as a

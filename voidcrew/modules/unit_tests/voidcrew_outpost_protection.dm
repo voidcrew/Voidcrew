@@ -210,6 +210,27 @@
 	TEST_ASSERT_EQUAL(outpost_bomber_of(rocket), bomber, "A rocket's blast was not blamed on its firer")
 	var/obj/item/pen/untouched = allocate(/obj/item/pen)
 	TEST_ASSERT_NULL(outpost_bomber_of(untouched), "A bomb nobody touched was blamed on someone")
+	// Review D1: the last hand on a bomb is never blame (whoever moved it), only whoever armed it
+	untouched.fingerprintslast = "[bomber.ckey || "bomber"]"
+	TEST_ASSERT_NULL(outpost_bomber_of(untouched), "A bomb nobody armed was blamed on the last hand to touch it")
+	outpost_note_armed_unless_armed(untouched, visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(untouched), visitor, "A bomb set off by hand was not blamed on that hand")
+	outpost_note_armed_unless_armed(untouched, bomber)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(untouched), visitor, "Setting off a bomb someone else armed took the blame off the armer")
+	untouched.outpost_armed_by = null
+	// A grenade sewn into a plush is the sewer's bomb, not that of whoever pets the plush and sets it off
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, get_turf(bomber))
+	plush.stuffed = FALSE
+	var/obj/item/grenade/smokebomb/sewn = allocate(/obj/item/grenade/smokebomb, get_turf(bomber))
+	sewn.det_time = 1 HOURS
+	bomber.put_in_hands(sewn)
+	plush.attackby(sewn, bomber)
+	TEST_ASSERT_EQUAL(plush.grenade, sewn, "Setup: the grenade was not sewn into the plush")
+	plush.attack_self(visitor)
+	TEST_ASSERT(sewn.active, "Setup: petting the plush did not set the grenade off")
+	TEST_ASSERT_EQUAL(outpost_bomber_of(sewn), bomber, "A grenade sewn into a plush was blamed on [outpost_bomber_of(sewn)], not whoever sewed it in")
+	plush.grenade = null
+	qdel(sewn)
 
 	explosion(epicenter, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE, explosion_cause = rocket)
 	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[visitor.mind], bomber.mind), "A bombing at the outpost did not count as an attack on the visitor")

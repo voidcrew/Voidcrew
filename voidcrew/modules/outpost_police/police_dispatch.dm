@@ -111,6 +111,10 @@
 
 /datum/outpost_police_wave/Destroy()
 	orders.Cut()
+	// Built members still pointing here would keep it from going
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in living_members())
+		if(member.dispatch_wave == src)
+			member.dispatch_wave = null
 	members.Cut()
 	point = null
 	sector = null
@@ -406,6 +410,8 @@
 	if(length(dispatch_players_at_outpost()) || length(suspects_at_outpost()))
 		dispatch_empty_since = 0
 		return FALSE
+	// Nobody here is wanted at three stars or more: the squad's stun and lethal roles go (owner decision 37)
+	clear_roles()
 	if(!dispatch_empty_since)
 		dispatch_empty_since = world.time
 		return TRUE
@@ -562,7 +568,11 @@
 			if(!dispatch_is_response_unit(farthest))
 				continue
 			var/turf/exit = dispatch_nearest_lift_point(sector_of(farthest), farthest) || dispatch_nearest_lift_point(null, farthest)
-			farthest.npc_walk_out(exit || get_turf(farthest))
+			// No lift on their level: they stay about until the outpost empties (dispatch_recall_when_empty()). An exit
+			// on their own tile would have them vanish where they stand, in front of whoever is watching.
+			if(!exit)
+				continue
+			farthest.npc_walk_out(exit)
 			if(!called_in)
 				called_in = TRUE
 				INVOKE_ASYNC(farthest, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_CLEAR, null, TRUE)
@@ -865,6 +875,9 @@
 	if(QDELETED(wave))
 		return
 	officer.dispatch_wave = wave
+	// The lift arrives: one chime for the wave (spec 5.3), as the ride's own arrival has
+	if(wave.point && !length(wave.members) && get_turf(officer) == wave.point)
+		playsound(wave.point, 'sound/machines/ding.ogg', 50, TRUE)
 	wave.members += WEAKREF(officer)
 	if(!wave.released_at)
 		ADD_TRAIT(officer, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)

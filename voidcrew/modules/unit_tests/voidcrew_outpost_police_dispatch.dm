@@ -416,3 +416,48 @@
 	TEST_ASSERT(QDELETED(officer) || !(officer in police.officers), "An officer carried off the outpost is still on the roster")
 	TEST_ASSERT(QDELETED(officer), "An officer carried off with nobody about was not deleted")
 	dispatch_clear(police)
+
+/**
+ * Review D1. A response officer standing down with no lift on their level stays about rather than vanishing where they
+ * stand; a wave that goes leaves no member pointing at it; and with nobody at the outpost the squad's roles go.
+ */
+/datum/unit_test/voidcrew_outpost_police_dispatch_stand_down_no_lift
+
+/datum/unit_test/voidcrew_outpost_police_dispatch_stand_down_no_lift/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	var/list/old_lifts = police.lift_turfs
+	var/list/old_alcove = outpost.lobby_alcove_turfs
+	police.lift_turfs = list()
+	outpost.lobby_alcove_turfs = list()
+	var/mob/living/suspect = dispatch_suspect(outpost, 50)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	officer.resume_routine() // as if someone were on the concourse
+	officer.dispatch_mind = WEAKREF(suspect.mind)
+	police.dispatch_next_wave = world.time + 1 MINUTES
+	police_pin_warrant(police, suspect.mind, 0)
+	police.dispatch_respond(police.alert_level())
+	TEST_ASSERT(!QDELETED(officer), "A response officer with no lift to leave by was deleted on standing down")
+	TEST_ASSERT_NULL(officer.npc_exit, "A response officer with no lift to leave by was sent out from where they stand")
+	TEST_ASSERT(!officer.dispatch_responding(), "A stood-down officer is still responding")
+
+	// A wave that goes takes its members' pointer with it
+	var/datum/outpost_police_wave/wave = police.dispatch_new_wave("concourse", null) // POLICE_SECTOR_CONCOURSE
+	officer.dispatch_wave = wave
+	wave.members += WEAKREF(officer)
+	police.dispatch_waves -= wave
+	qdel(wave)
+	TEST_ASSERT_NULL(officer.dispatch_wave, "An officer still points at a wave that was deleted")
+
+	// Nobody at the outpost: the stun and lethal roles go (owner decision 37)
+	officer.police_role = "stun" // POLICE_ROLE_STUN
+	qdel(suspect)
+	police.dispatch_recall_when_empty()
+	TEST_ASSERT_NULL(officer.police_role, "A role stayed on an officer with nobody at the outpost")
+
+	police.lift_turfs = old_lifts
+	outpost.lobby_alcove_turfs = old_alcove
+	dispatch_clear(police)
