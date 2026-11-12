@@ -24,6 +24,10 @@
  * For the length of the replay AIs are paused and the user and their crewmates can't act. Life() keeps running:
  * this is a lock on decisions and input only, no stun and no damage. A player who isn't crew coming near ends the
  * replay at once, a watchdog timer ends it whatever happens, and finish() can be called any number of times.
+ * That hold would cut short an execution or finisher still going when the slow-mo ends (their checks fail on a held
+ * body), so the replay waits for it (moves_running()): the world goes back to normal speed on time, nobody is held,
+ * and the recording runs on at a frame a tick until the move is over, then the replay plays it all. A move still
+ * going after SANDY_REPLAY_WAIT_MAX gets no replay at all.
  * The surge's crash starts when the replay ends. A user who went down in the slow-mo still watches it: their crit,
  * oxygen, damage and knocked-out screens are off their view while it plays and back as it ends (clear_view()).
  *
@@ -33,7 +37,8 @@
  *
  * Not replayed (they show as they really are): lights, fire, smoke and particles, turf changes, attack lunges,
  * flick()s, tweens other than steps and turns (flinches, the spin and arc of flying gore, blood drying and
- * spreading), anything in vis_contents, runechat, and looping sounds (machines, weather).
+ * spreading), anything in vis_contents, runechat, and looping sounds (machines, weather). The finisher rigs' posed
+ * pictures of a body (chrome_puppet_rig.dm, mantis_rig.dm) aren't either: the body they hid is drawn as it stood.
  */
 
 /// Trait source of the replay's AI pause and input lock.
@@ -66,6 +71,13 @@
 #define SANDY_REPLAY_HOLD_RANGE 11
 /// The most sounds one recording keeps.
 #define SANDY_REPLAY_MAX_SOUNDS 200
+/// The longest the replay waits, after the slow-mo, for an execution or finisher in it to end. A move still going
+/// then gets no replay rather than being cut short by the replay's hold.
+#define SANDY_REPLAY_WAIT_MAX (8 SECONDS)
+/// The filters the finisher rigs hide a body under while its posed pictures stand in for it (CHROME_RIG_HIDE_FILTER in
+/// chrome_puppet_rig.dm, MANTIS_RIG_HIDE_FILTER in mantis_rig.dm). The pictures aren't recorded, so the replay draws
+/// the body itself.
+#define SANDY_REPLAY_RIG_HIDES list("chrome_rig_hide", "mantis_rig_hide")
 
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
@@ -208,6 +220,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/sound_at = 1
 	/// Afterimages the replay's surgers left.
 	var/afterimages = 0
+	/// The slow-mo is over but a move in it is still going (moves_running()): recording goes on, a frame a tick, from
+	/// this world.time and this frame, until it ends.
+	var/wait_started = 0
+	var/wait_frame = 0
+	/// How long the last wait was, for tests and recordings.
+	var/waited = 0
+	/// Every body that was mid-move during the wait: what turns up around them is recorded.
+	var/list/wait_bodies = list()
 
 /datum/sandy_replay/New(datum/proximity_monitor/advanced/timestop/sandevistan/_field, mob/living/_user)
 	field = _field
@@ -232,6 +252,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		track.owner = null
 	tracks.Cut()
 	gone.Cut()
+	wait_bodies.Cut()
 	puppets.Cut()
 	standins.Cut()
 	user_track = null
@@ -251,6 +272,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/frame_now()
 	if(state != SANDY_REPLAY_RECORDING)
 		return total
+	if(wait_started)
+		return wait_frame + round((world.time - wait_started) / world.tick_lag)
 	return round((world.time - started) / interval)
 
 /// Whether `thing` is recorded at all.
@@ -294,9 +317,22 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/sample()
 	if(state != SANDY_REPLAY_RECORDING)
 		return
+	var/list/moving = wait_started ? moves_running() : null
+	if(wait_started)
+		// No field hands things over now: what the move leaves around the bodies doing it (a torn-off limb, a head,
+		// blood, gibs) is picked up here, and drawn from the frame it turns up in. The bodies are kept to the end, so
+		// what the move's last blow makes, in the tick it ends, is picked up too.
+		wait_bodies |= moving
+		for(var/mob/living/body as anything in wait_bodies)
+			if(QDELETED(body) || !isturf(body.loc))
+				continue
+			for(var/atom/movable/thing in range(3, body))
+				notice(thing)
 	var/frame = frame_now()
 	for(var/atom/movable/thing as anything in tracks)
 		sample_track(tracks[thing], frame)
+	if(wait_started && (!length(moving) || world.time - wait_started >= SANDY_REPLAY_WAIT_MAX))
+		end_wait(!length(moving))
 
 /// Adds a frame to `track` if the thing changed since its last one.
 /datum/sandy_replay/proc/sample_track(datum/sandy_replay_track/track, frame)
@@ -343,7 +379,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/clean_look(atom/movable/thing)
 	var/tinted = field?.tinted[thing]
 	var/outlined = thing == user && thing.filter_data?[SANDY_REPLAY_OUTLINE]
-	if(!tinted && !outlined)
+	// A finisher rig hides the body and draws it as posed pictures, which aren't recorded: the body is drawn instead.
+	var/rigged = FALSE
+	if(isliving(thing))
+		for(var/name in SANDY_REPLAY_RIG_HIDES)
+			if(thing.filter_data?[name])
+				rigged = TRUE
+				break
+	if(!tinted && !outlined && !rigged)
 		return thing.appearance
 	var/mutable_appearance/copy = new(thing)
 	// Bodies and items wear the tint as a filter (cyberware_time_tints_by_filter()), the rest in `color`.
@@ -358,10 +401,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		else
 			copy.color = untinted_colour(thing)
 		copy.appearance_flags |= KEEP_TOGETHER // update_atom_colour() leaves this on once anything was ever coloured
-	if(outlined || filtered)
+	if(outlined || filtered || rigged)
 		copy.filters = null
 		for(var/name in thing.filter_data)
-			if(name == SANDY_REPLAY_OUTLINE || name == SANDY_REPLAY_TINT)
+			if(name == SANDY_REPLAY_OUTLINE || name == SANDY_REPLAY_TINT || (name in SANDY_REPLAY_RIG_HIDES))
 				continue
 			var/list/data = thing.filter_data[name]
 			var/list/arguments = data.Copy()
@@ -419,12 +462,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// A sound was played on `source`, in the field: kept, to play again in the replay. `arguments` are the rest of
 /// playsound()'s, from soundin on, without the channel.
 /datum/sandy_replay/proc/hear(turf/source, list/arguments)
-	if(state != SANDY_REPLAY_RECORDING || !field || length(sounds) >= SANDY_REPLAY_MAX_SOUNDS)
+	if(state != SANDY_REPLAY_RECORDING || (!field && !wait_started) || length(sounds) >= SANDY_REPLAY_MAX_SOUNDS)
 		return
-	var/turf/centre = get_turf(field.host)
-	if(!centre || centre.z != source.z || get_dist(centre, source) > field.current_range)
+	// Waiting out a move after the slow-mo: the sounds around the user, as the hold's reach.
+	var/turf/centre = get_turf(field ? field.host : user)
+	if(!centre || centre.z != source.z || get_dist(centre, source) > (field ? field.current_range : SANDY_REPLAY_HOLD_RANGE))
 		return
-	sounds += list(list((world.time - started) / interval, source) + arguments)
+	sounds += list(list(wait_started ? frame_now() : (world.time - started) / interval, source) + arguments)
 
 /// Signal proc for [COMSIG_QDELETING] on anything recorded.
 /datum/sandy_replay/proc/on_thing_deleted(atom/movable/thing)
@@ -454,14 +498,42 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// The field is over (it ran out, or the user ended it): playback starts next tick, once the slow-mo's own looks
 /// are off everything.
 /datum/sandy_replay/proc/field_over()
+	if(state != SANDY_REPLAY_RECORDING || wait_started)
+		return
+	field = null
+	if(!length(moves_running()))
+		end_wait(TRUE)
+		return
+	// An execution or finisher in the field is still going. The replay's hold would cut it short (its checks fail on a
+	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done.
+	wait_frame = frame_now()
+	wait_started = world.time
+	deltimer(sample_timer)
+	sample_timer = addtimer(CALLBACK(src, PROC_REF(sample)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/**
+ * The recording is over: playback starts next tick, once the slow-mo's own looks are off everything. Without
+ * [replays] (a move still going when the wait ran out) nothing replays.
+ */
+/datum/sandy_replay/proc/end_wait(replays)
 	if(state != SANDY_REPLAY_RECORDING)
 		return
 	total = max(frame_now(), 1)
+	waited = wait_started ? world.time - wait_started : 0
 	state = SANDY_REPLAY_PENDING
-	field = null
 	deltimer(sample_timer)
 	sample_timer = null
+	if(!replays)
+		finish()
+		return
 	begin_timer = addtimer(CALLBACK(src, PROC_REF(begin)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// The bodies in the recording in the middle of an execution or finisher, either side of it.
+/datum/sandy_replay/proc/moves_running()
+	. = list()
+	for(var/atom/movable/thing as anything in tracks)
+		if(isliving(thing) && sandy_replay_mid_move(thing))
+			. += thing
 
 // =========================================================================
 // PLAYBACK
@@ -733,6 +805,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		track.turn_to = matrix(now.transform)
 		track.turn_time = SANDY_REPLAY_TURN_TIME
 		track.turn_until = world.time + SANDY_REPLAY_TURN_TIME
+		// A half turn (a body flipped from lying one way to the other, as a rig move leaves it) blends through a
+		// matrix of no size halfway: the body would vanish for the tween. It flips at once instead.
+		var/matrix/halfway = start.Interpolate(track.turn_to, 0.5)
+		if(abs(halfway.a * halfway.e - halfway.b * halfway.d) < 0.25)
+			track.turn_until = 0
 	// Tween from where it was drawn to where it is now.
 	var/stepped = frames[old + SANDY_FRAME_X] != frames[at + SANDY_FRAME_X] || frames[old + SANDY_FRAME_Y] != frames[at + SANDY_FRAME_Y]
 	var/move_x = (frames[old + SANDY_FRAME_X] - frames[at + SANDY_FRAME_X]) * ICON_SIZE_X + (was.pixel_x + was.pixel_w) - (now.pixel_x + now.pixel_w) + carry_x
@@ -1108,10 +1185,29 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// Returns TRUE if it took the crash.
 /proc/sandy_replay_defer_crash(mob/living/user, length, stamina)
 	var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-	if(!replay || replay.finished || (replay.state != SANDY_REPLAY_PENDING && replay.state != SANDY_REPLAY_PLAYING))
+	if(!replay || replay.finished)
+		return FALSE
+	if(replay.state != SANDY_REPLAY_PENDING && replay.state != SANDY_REPLAY_PLAYING && !(replay.state == SANDY_REPLAY_RECORDING && replay.wait_started))
 		return FALSE
 	replay.crash = list(length, stamina)
 	return TRUE
+
+/**
+ * Whether `body` is in the middle of an execution or a finisher, either side of it: a #509 finisher (the Gorilla
+ * moves, the scissor, the garrote, the bosses'), a gun's execution wind-up, or a rig move (the impale, the slam, the
+ * haymaker) with the body hidden under its posed pictures.
+ */
+/proc/sandy_replay_mid_move(mob/living/body)
+	if(QDELETED(body))
+		return FALSE
+	if(body.has_status_effect(/datum/status_effect/hv_finishing) || body.has_status_effect(/datum/status_effect/hv_finisher_hold))
+		return TRUE
+	if(DOING_INTERACTION(body, DOAFTER_SOURCE_HV_EXECUTION))
+		return TRUE
+	for(var/name in SANDY_REPLAY_RIG_HIDES)
+		if(body.filter_data?[name])
+			return TRUE
+	return FALSE
 
 /// Called from playsound(): a sound played in a slow-mo is recorded for its replay. A /sound datum is a looping
 /// sound's next segment (machines, weather), which plays on live and isn't recorded.
@@ -1210,6 +1306,17 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(track)
 		sandy_replay_remask(track)
 
+// tg's offsets (grabs, lying, a finisher's lean) write all four pixel offsets outright. On a puppet that would
+// overwrite the shift that draws it on its recorded tile, and fold() would carry the difference over to the real
+// body as an offset: the body left drawn tiles away from where it stands after the replay.
+/mob/living/update_offsets(animate = FALSE)
+	if(!sandy_replay_masks)
+		return ..()
+	var/datum/sandy_replay_track/track = sandy_replay_unmask(src)
+	. = ..()
+	if(track)
+		sandy_replay_remask(track)
+
 /mob/living/death(gibbed)
 	if(!sandy_replay_masks)
 		return ..()
@@ -1242,6 +1349,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 #undef SANDY_REPLAY_HUE_STEP
 #undef SANDY_REPLAY_MAX_SOUNDS
 #undef SANDY_REPLAY_HOLD_RANGE
+#undef SANDY_REPLAY_WAIT_MAX
+#undef SANDY_REPLAY_RIG_HIDES
 #undef SANDY_FRAME_SIZE
 #undef SANDY_FRAME_INDEX
 #undef SANDY_FRAME_LOOK
