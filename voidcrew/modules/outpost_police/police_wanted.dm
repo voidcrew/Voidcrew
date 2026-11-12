@@ -121,6 +121,8 @@
 	// Abuse SF4: the perception keeps no hard reference to a witness once read (a deleted officer or player would hang on it)
 	perception.last_witness = null
 	perception.last_witnesses = null
+	// An officer who saw it says so to their face (police_life.dm)
+	witness_shout(witness, offender, crime)
 	var/delay = perception.report_delay(witness, crime)
 	if(delay > 0 || perception.reports_by_call(witness))
 		var/datum/outpost_pending_report/report = queue_report(offender, crime, victim, source, witnesses || list(witness), delay)

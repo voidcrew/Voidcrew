@@ -521,6 +521,10 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	if(!locker || !locker.reserve_for(prisoner))
 		return FALSE
 	var/delay = max(1, round(OUTPOST_POLICE_STRIP_TIME * GLOB.outpost_police_property_time_scale))
+	if(istype(officer, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stripper = officer
+		stripper.face_atom(prisoner)
+		stripper.police_say(POLICE_LINE_STRIP)
 	if(officer && !do_after(officer, delay, prisoner, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer)))
 		locker.release_reservation()
 		return FALSE

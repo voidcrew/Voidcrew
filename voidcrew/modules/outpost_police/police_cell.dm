@@ -28,6 +28,10 @@
 #define CELL_UNCUFF_TIME (2 SECONDS)
 /// Longest a booking waits for a knocked-down officer to get up and take the cuffs off
 #define CELL_UNCUFF_WAIT (10 SECONDS)
+/// Banging on a cell door is heard no more often than this
+#define CELL_KNOCK_GAP (2 SECONDS)
+/// How far off an officer who can see a cell door answers a bang on it
+#define CELL_KNOCK_HEARD 7
 
 // =========================================================================
 // THE CELL
@@ -794,6 +798,15 @@
 			prisoner.uncuff()
 			return
 
+/// Someone bangs on the door of `cell`: the nearest officer who can see the door tells them to knock it off
+/datum/outpost_police_cell/proc/answer_knock(mob/living/knocker)
+	var/turf/door_turf = get_turf(door)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police?.life_nearest_officer(door_turf, CELL_KNOCK_HEARD)
+	if(!officer || officer.client || !(door_turf in view(CELL_KNOCK_HEARD, officer)))
+		return null
+	officer.face_atom(door)
+	return officer.police_say(POLICE_LINE_KNOCK)
+
 /// The sergeant says `line` (a POLICE_LINE_* context) at the station; with none alive, whoever is on the radio
 /datum/outpost_police/proc/cell_station_say(line)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
@@ -854,6 +867,8 @@
 	var/datum/outpost_police_cell/holding_cell
 	/// Permission for the next open() call only
 	var/cell_open_permitted = FALSE
+	/// Banging on the glass makes a noise no more often than this
+	COOLDOWN_DECLARE(knock_cooldown)
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/Destroy()
 	if(holding_cell?.door == src)
@@ -885,7 +900,13 @@
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	add_fingerprint(user)
-	return TRUE // handled, and nothing happens
+	// Nothing opens; a hand on the shut door bangs on the glass, and an officer nearby tells them to stop
+	if(density && isliving(user) && Adjacent(user) && COOLDOWN_FINISHED(src, knock_cooldown))
+		COOLDOWN_START(src, knock_cooldown, CELL_KNOCK_GAP)
+		user.visible_message(span_notice("[user] bangs on [src]."), span_notice("You bang on [src]."))
+		playsound(src, 'sound/effects/glass/glassknock.ogg', 50, TRUE)
+		holding_cell?.answer_knock(user)
+	return TRUE // handled
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
 	return
@@ -912,3 +933,5 @@
 #undef CELL_OFFICER_PASS
 #undef CELL_UNCUFF_TIME
 #undef CELL_UNCUFF_WAIT
+#undef CELL_KNOCK_GAP
+#undef CELL_KNOCK_HEARD

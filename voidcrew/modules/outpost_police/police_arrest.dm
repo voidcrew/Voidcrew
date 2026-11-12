@@ -1114,11 +1114,28 @@
 		if(!suspect || !keep_pulling(officer, suspect))
 			return
 		say_once(officer, POLICE_LINE_WALK, suspect)
+		make_way(officer, suspect)
 	var/atom/desk = evidence_spot(officer)
 	if(!desk || route_to(officer, desk, 1))
 		set_step(CASE_STEP_DESK)
 		return
 	check_evidence_stall(officer, desk)
+
+/**
+ * Walking a suspect in: someone standing in the way, on either of the next two tiles the officer faces, is told to
+ * make way. Two tiles looked at, once a second; the line's own gaps keep it from repeating.
+ */
+/datum/outpost_police_case/proc/make_way(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	var/turf/ahead = get_turf(officer)
+	for(var/i in 1 to 2)
+		ahead = get_step(ahead, officer.dir)
+		if(!ahead || ahead.density)
+			return null
+		for(var/mob/living/someone in ahead)
+			if(someone == suspect || someone.stat != CONSCIOUS || istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+				continue
+			return officer.police_say(POLICE_LINE_MAKE_WAY)
+	return null
 
 /**
  * Where the evidence goes: the evidence locker, or the desk when the station has none or the locker can't be got to,
@@ -1170,6 +1187,7 @@
 	var/mob/living/carbon/suspect = get_suspect()
 	if(!suspect || !keep_pulling(officer, suspect))
 		return
+	make_way(officer, suspect)
 	var/turf/door = police.cell_door_turf()
 	if(!door || route_to(officer, door, 1))
 		set_step(CASE_STEP_BOOK)

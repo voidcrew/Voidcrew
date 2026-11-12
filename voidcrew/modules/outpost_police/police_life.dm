@@ -310,6 +310,45 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/speaker = life_dispatcher()
 	return speaker?.police_say(line, values, TRUE)
 
+/// How far off an officer who saw a crime still shouts at whoever did it
+#define POLICE_SHOUT_RANGE 7
+
+/**
+ * `witness` saw `offender` do `crime` (report_crime()): an officer shouts at them. A hand in a property locker is
+ * "locker_thief"; anything else that leaves them under one star is "knock", one that makes it one star "warn". Two
+ * stars and up is the arrest's and the fight's to voice, and so is anyone an arrest is already on. Never sleeps.
+ */
+/datum/outpost_police/proc/witness_shout(atom/witness, mob/living/offender, crime)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = witness
+	if(!istype(officer) || QDELETED(offender) || !offender.mind || officer.client)
+		return null
+	if(officer.z != offender.z || get_dist(officer, offender) > POLICE_SHOUT_RANGE)
+		return null
+	var/line
+	switch(crime)
+		if(OUTPOST_CRIME_LOCKER_THEFT)
+			line = POLICE_LINE_LOCKER_THIEF
+		// Said to someone the police already have in hand, or not seen in person
+		if(OUTPOST_CRIME_RESIST, OUTPOST_CRIME_SLIP_CUFFS, OUTPOST_CRIME_ABET, OUTPOST_CRIME_ACCOMPLICE, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_ASSAULT_OFFICER, OUTPOST_CRIME_KILL_OFFICER)
+			return null
+		else
+			var/datum/outpost_police_case/case = cases[offender.mind]
+			if(case && !QDELETED(case))
+				return null
+			var/datum/outpost_warrant/warrant = warrants[offender.mind]
+			var/heat = warrant ? max(warrant.heat, current_prior(warrant)) : 0
+			switch(stars_of(heat_after(heat, crime)))
+				if(0)
+					line = POLICE_LINE_KNOCK
+				if(1)
+					line = POLICE_LINE_WARN
+				else
+					return null
+	officer.face_atom(offender)
+	return officer.police_say(line)
+
+#undef POLICE_SHOUT_RANGE
+
 /// Up to `count` officers answer the desk, nearest `where` first, a moment apart
 /datum/outpost_police/proc/life_acknowledge(count, turf/where, mob/living/except)
 	var/list/answered = list()

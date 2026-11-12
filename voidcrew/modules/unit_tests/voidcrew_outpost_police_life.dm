@@ -374,3 +374,144 @@
 	patrol.end_activity()
 	TEST_ASSERT_NULL(patrol.start_activity(new /datum/ambient_activity/police_check(patrol)), "An officer nagged the same sleeper again at once")
 	TEST_ASSERT_NOTNULL(place, "The place went missing")
+
+// =========================================================================
+// WHAT THEY SHOUT AT PEOPLE (knock, warn, locker_thief, make_way, strip)
+// =========================================================================
+
+/// A person with a mind at `where`
+/datum/unit_test/proc/police_line_person(turf/where)
+	var/mob/living/carbon/human/someone = allocate(/mob/living/carbon/human/consistent, where)
+	someone.mind_initialize()
+	allocated += someone.mind
+	return someone
+
+/// An officer who sees a scuffle that stays under one star tells them to knock it off; two stars is not his to shout
+/datum/unit_test/voidcrew_outpost_police_line_knock
+
+/datum/unit_test/voidcrew_outpost_police_line_knock/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/brawler = police_line_person(pa_tile(2, 0))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	TEST_ASSERT(police.witness_shout(officer, brawler, "unarmed"), "An officer said nothing to someone throwing a punch") // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT(voice.context_free_at["knock"] > world.time, "A punch under one star did not get a knock-it-off") // POLICE_LINE_KNOCK
+	TEST_ASSERT(!voice.context_free_at["warn"], "A punch under one star got the one-star warning")
+
+	// Two stars is the arrest's to voice, not a shout from the witness
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police_pin_warrant(police, brawler.mind, 30)
+	TEST_ASSERT_NULL(police.witness_shout(officer, brawler, "unarmed"), "An officer shouted at a two-star suspect as if it were a scuffle")
+	TEST_ASSERT_EQUAL(length(voice.context_free_at), 0, "A two-star crime got a witness shout")
+
+/// A crime that makes it one star gets the warning, from an officer and nobody else
+/datum/unit_test/voidcrew_outpost_police_line_warn
+
+/datum/unit_test/voidcrew_outpost_police_line_warn/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/brawler = police_line_person(pa_tile(2, 0))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	police_pin_warrant(police, brawler.mind, 5)
+	TEST_ASSERT(police.witness_shout(officer, brawler, "unarmed"), "An officer said nothing to a punch that makes one star") // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT(voice.context_free_at["warn"] > world.time, "A one-star crime did not get the warning") // POLICE_LINE_WARN
+	TEST_ASSERT_EQUAL(officer.dir, EAST, "The officer did not turn to the one he warned")
+
+	// Seen by someone who is not an officer: no shout
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(1, 2))
+	TEST_ASSERT_NULL(police.witness_shout(bystander, brawler, "unarmed"), "A bystander's sighting made an officer shout")
+
+/// Someone seen taking from a property locker is shouted at, at any stars
+/datum/unit_test/voidcrew_outpost_police_line_locker_thief
+
+/datum/unit_test/voidcrew_outpost_police_line_locker_thief/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/thief = police_line_person(pa_tile(2, 1))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	police_pin_warrant(police, thief.mind, 30)
+	TEST_ASSERT(police.witness_shout(officer, thief, "locker_theft"), "An officer said nothing to a locker thief") // OUTPOST_CRIME_LOCKER_THEFT
+	TEST_ASSERT(voice.context_free_at["locker_thief"] > world.time, "A locker thief was not shouted at") // POLICE_LINE_LOCKER_THIEF
+
+/// Walking a suspect in, someone in the way is told to make way; the suspect and other officers are not
+/datum/unit_test/voidcrew_outpost_police_line_make_way
+
+/datum/unit_test/voidcrew_outpost_police_line_make_way/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 2))
+	var/mob/living/carbon/human/suspect = police_line_person(pa_tile(0, 1))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	var/datum/outpost_police_case/case = allocate(/datum/outpost_police_case, police, null)
+
+	// Nobody ahead: nothing said
+	officer.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "An officer called make way with nobody ahead")
+	// The suspect ahead is his to walk, and a partner steps aside on his own
+	suspect.forceMove(pa_tile(1, 2))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/partner = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(2, 2))
+	officer.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "An officer told his own suspect or a partner to make way")
+	TEST_ASSERT_EQUAL(length(voice.context_free_at), 0, "Something was said with only the suspect and a partner ahead")
+
+	// A bystander two tiles ahead
+	partner.forceMove(pa_tile(4, 0))
+	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(2, 2))
+	officer.setDir(EAST)
+	TEST_ASSERT(case.make_way(officer, suspect), "An officer walking a suspect said nothing to someone in the way")
+	TEST_ASSERT(voice.context_free_at["make_way"] > world.time, "Make way was not said") // POLICE_LINE_MAKE_WAY
+	TEST_ASSERT_NOTNULL(bystander, "The bystander went missing")
+
+/// The jail strip starts with the officer telling the prisoner to empty out
+/datum/unit_test/voidcrew_outpost_police_line_strip
+	var/saved_scale
+
+/datum/unit_test/voidcrew_outpost_police_line_strip/Destroy()
+	if(!isnull(saved_scale))
+		GLOB.outpost_police_property_time_scale = saved_scale
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_line_strip/Run()
+	saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/list/lockers = list()
+	for(var/index in 0 to 3)
+		lockers += allocate(/obj/structure/closet/secure_closet/personal/outpost_police, pa_tile(index, 4))
+	var/obj/structure/closet/secure_closet/outpost_evidence/evidence = allocate(/obj/structure/closet/secure_closet/outpost_evidence, pa_tile(4, 3))
+	police.lockers += lockers
+	police.evidence_locker = evidence
+	police.build_property(police.lockers, evidence)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 1))
+	var/mob/living/carbon/human/prisoner = police_line_person(pa_tile(2, 1))
+	prisoner.equip_to_slot_if_possible(allocate(/obj/item/clothing/under/color/grey), ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	TEST_ASSERT(police.store_property(prisoner, officer), "The strip failed with free lockers")
+	TEST_ASSERT(voice.context_free_at["strip"] > world.time, "The officer said nothing at the jail strip") // POLICE_LINE_STRIP
+
+/// A bang on a shut cell door makes the noise, and the nearest officer who can see the door says to knock it off
+/datum/unit_test/voidcrew_outpost_police_line_cell_knock
+
+/datum/unit_test/voidcrew_outpost_police_line_cell_knock/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = allocate(/obj/machinery/door/airlock/outpost/glass/police_cell, pa_tile(2, 3))
+	var/datum/outpost_police_cell/cell = allocate(/datum/outpost_police_cell, police, "test")
+	cell.door = door
+	door.holding_cell = cell
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/knocker = police_line_person(pa_tile(2, 2))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	TEST_ASSERT(door.density, "Setup: the cell door is open")
+	door.try_to_activate_door(knocker)
+	TEST_ASSERT(door.density, "Banging on a cell door opened it")
+	TEST_ASSERT(voice.context_free_at["knock"] > world.time, "Nobody told the knocker to knock it off") // POLICE_LINE_KNOCK
+	TEST_ASSERT_NOTNULL(officer, "The officer went missing")
+	cell.retire()
