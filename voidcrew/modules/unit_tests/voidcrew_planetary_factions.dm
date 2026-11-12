@@ -163,7 +163,7 @@
 	for(var/mob_type in prizes)
 		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
 		var/mob/living/basic/trooper/pirate/faction/pirate = spawn_npc_in_zone(mob_type, floor, context)
-		var/expected = length(pirate.rare_loot_pool) ? (prizes[mob_type] in pirate.rolled_rare_loot) : 1
+		var/expected = (prizes[mob_type] in pirate.rare_loot_pool) ? (prizes[mob_type] in pirate.rolled_rare_loot) : 1
 		var/list/before = floor.get_all_contents()
 		pirate.death(TRUE)
 		var/count = 0
