@@ -17,6 +17,14 @@
 		source.update_corners()
 		source.needs_update = LIGHTING_NO_UPDATE
 
+/// Applies `lamp`'s queued light now, without waiting, as SSlighting would: for checks that a beam's short timers
+/// would outrun.
+/datum/unit_test/proc/stealth_apply_light(atom/movable/lamp)
+	var/datum/light_source/source = lamp?.light
+	if(source?.needs_update)
+		source.update_corners()
+		source.needs_update = LIGHTING_NO_UPDATE
+
 /// The guard switches its light on in the dark and while on edge, off in the light, and can't while it is cut out.
 /datum/unit_test/voidcrew_stealth_light_switch
 
@@ -197,21 +205,29 @@
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark has no beam")
 	var/obj/effect/abstract/stealth_beam/beam = stealth_ai.beam
 	TEST_ASSERT_NOTNULL(beam, "A lit guard shows no cone")
+	stealth_settle_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.holder, guard, "The cone isn't on its guard")
 	TEST_ASSERT(beam in guard.vis_contents, "The cone isn't drawn on its guard")
 	TEST_ASSERT_EQUAL(beam.shown_dir, EAST, "The cone doesn't point the way the guard faces")
 	TEST_ASSERT_EQUAL(beam.icon_state, "beam_[open_reach]", "An open beam's cone is cut short, or has no glow facing sideways")
 	TEST_ASSERT_EQUAL(PLANE_TO_TRUE(beam.plane), O_LIGHTING_VISUAL_PLANE, "The cone isn't drawn as light")
-	// It follows the beam through a turn, and facing away the lamp's glow is hidden by the body.
+	// It follows the beam through a turn, and facing away the lamp's glow is hidden by the body. It never moves ahead
+	// of the light on the floor: until the lamp's turn is applied, it still points the old way.
 	guard.setDir(NORTH)
+	TEST_ASSERT(stealth_ai.torch.light?.needs_update, "A turn didn't queue the lamp's light")
+	TEST_ASSERT_EQUAL(beam.shown_dir, EAST, "The cone turned before the light on the floor did")
+	stealth_apply_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.shown_dir, NORTHEAST, "The cone didn't pass through the diagonal with the beam")
 	stealth_ai.stealth_torch_settle(stealth_ai.torch_serial)
+	stealth_apply_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.shown_dir, NORTH, "The cone didn't land on the new facing")
 	TEST_ASSERT(findtext(beam.icon_state, "back_") == 1, "A guard facing away shows its lamp's glow through its body")
 	// A turn of its own: the cone leads it with the beam.
 	stealth_ai.stealth_turn_to(EAST)
+	stealth_apply_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.shown_dir, NORTHEAST, "The cone didn't lead a turn the guard makes on its own")
 	stealth_ai.stealth_finish_turn(EAST, stealth_ai.turn_planned_at)
+	stealth_apply_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.shown_dir, EAST, "The cone didn't land when the led turn finished")
 	// A wall two tiles ahead cuts it at the wall.
 	var/turf/wall = stealth_at(block, 4, 3)
@@ -219,12 +235,14 @@
 	TEST_ASSERT_EQUAL(stealth_beam_reach(get_turf(guard), EAST), 7, "The cone doesn't stop on a wall two tiles ahead")
 	TEST_ASSERT_EQUAL(stealth_beam_reach(stealth_at(block, 6, 3), EAST), open_reach, "The cone stops with nothing ahead")
 	stealth_ai.stealth_place_torch()
+	stealth_apply_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.icon_state, "beam_7", "The cone runs through a wall two tiles ahead")
-	// Off with the light, and gone with the guard.
+	// Off with the light at once, and gone with the guard.
 	stealth_ai.stealth_set_light(FALSE)
 	TEST_ASSERT_NULL(beam.holder, "The cone stayed on with the light off")
 	TEST_ASSERT(!(beam in guard.vis_contents), "The cone is still drawn with the light off")
 	stealth_ai.stealth_set_light(TRUE)
+	stealth_settle_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(beam.holder, guard, "The cone didn't come back with the light")
 	qdel(guard)
 	TEST_ASSERT(QDELETED(beam), "The cone outlived its guard")

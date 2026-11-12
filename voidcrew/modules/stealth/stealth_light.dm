@@ -132,6 +132,8 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
  * flashlight cones do, so it brightens what it falls on, shows in the dark and all but vanishes in a lit room. It is
  * part of the guard (vis_contents), so it glides with every step. It is only for the eye: guards see, and tiles count
  * as lit, by the real lamp alone. It stops at the first wall or solid door ahead (stealth_beam_reach()).
+ * It never shows ahead of the lamp's light on the floor: a new aim waits until SSlighting has applied the lamp
+ * (stealth_queue(), COMSIG_LIGHT_SOURCE_APPLIED), so when lighting runs slow the whole flashlight is slow together.
  */
 /obj/effect/abstract/stealth_beam
 	name = "flashlight beam"
@@ -151,6 +153,12 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/shown_dir = 0
 	/// The facing of the guard when it was last aimed (the lamp's place on the body follows that)
 	var/shown_body_dir = 0
+	/// The guard it waits to be shown on once the lamp's light is applied, or null
+	var/mob/living/pending_guard
+	/// What it will show then: the way it points, its length and the guard's facing
+	var/pending_dir = 0
+	var/pending_reach = 0
+	var/pending_body_dir = 0
 
 /obj/effect/abstract/stealth_beam/Destroy()
 	stealth_hide()
@@ -158,31 +166,50 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 
 /// Takes it off its guard.
 /obj/effect/abstract/stealth_beam/proc/stealth_hide()
+	pending_guard = null
 	if(holder)
 		holder.vis_contents -= src
 		holder = null
 	shown_dir = 0
 	shown_body_dir = 0
 
-/// Shows it on `guard`, pointing `beam_dir` and `reach` eighths of a tile long. Touches nothing that is already so.
-/obj/effect/abstract/stealth_beam/proc/stealth_show(mob/living/guard, beam_dir, reach)
+/// Shows it as stealth_show() once the lamp's light has been applied (stealth_flush()). Until then it stays as it was.
+/obj/effect/abstract/stealth_beam/proc/stealth_queue(mob/living/guard, beam_dir, reach)
+	pending_guard = guard
+	pending_dir = beam_dir
+	pending_reach = reach
+	pending_body_dir = guard.dir
+
+/// The lamp's light is applied: shows what was waiting for it, if its guard is still about.
+/obj/effect/abstract/stealth_beam/proc/stealth_flush()
+	var/mob/living/guard = pending_guard
+	pending_guard = null
+	if(!QDELETED(guard))
+		stealth_show(guard, pending_dir, pending_reach, pending_body_dir)
+
+/// Shows it on `guard`, pointing `beam_dir` and `reach` eighths of a tile long, for the guard facing `body_dir` (its
+/// facing now by default). Touches nothing that is already so.
+/obj/effect/abstract/stealth_beam/proc/stealth_show(mob/living/guard, beam_dir, reach, body_dir)
+	pending_guard = null
+	if(!body_dir)
+		body_dir = guard.dir
 	if(holder != guard)
 		stealth_hide()
 		holder = guard
 		guard.vis_contents += src
 	SET_PLANE_EXPLICIT(src, O_LIGHTING_VISUAL_PLANE, guard)
 	// Pointing away from the camera, the guard's body hides the lamp: no glow, and the cone comes out past its back.
-	var/away = guard.dir & NORTH
+	var/away = body_dir & NORTH
 	var/state = "[away ? "back" : "beam"]_[reach]"
 	if(icon_state != state)
 		icon_state = state
-	if(shown_dir == beam_dir && shown_body_dir == guard.dir)
+	if(shown_dir == beam_dir && shown_body_dir == body_dir)
 		return
 	shown_dir = beam_dir
-	shown_body_dir = guard.dir
+	shown_body_dir = body_dir
 	// The lamp is at its belt: a little ahead facing away, a little below the middle facing the camera or sideways.
-	var/forward = away ? 4 : ((guard.dir & SOUTH) ? -6 : 0)
-	var/drop = (guard.dir & (EAST|WEST)) && !(guard.dir & (NORTH|SOUTH)) ? -3 : 0
+	var/forward = away ? 4 : ((body_dir & SOUTH) ? -6 : 0)
+	var/drop = (body_dir & (EAST|WEST)) && !(body_dir & (NORTH|SOUTH)) ? -3 : 0
 	var/matrix/aim = matrix()
 	aim.Translate(0, STEALTH_BEAM_PIVOT + forward)
 	aim.Turn(dir2angle(beam_dir))
@@ -342,11 +369,12 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 		return
 	if(QDELETED(torch))
 		torch = new(spot)
+		RegisterSignal(torch, COMSIG_LIGHT_SOURCE_APPLIED, PROC_REF(stealth_torch_applied))
 	if(QDELETED(beam))
 		beam = new(null)
 	var/beam_dir = stealth_beam_dir()
 	// The cone glides with the guard, so it needs no half steps; it is cut where the light is stopped.
-	beam.stealth_show(guard, beam_dir, stealth_beam_reach(spot, beam_dir))
+	var/reach = stealth_beam_reach(spot, beam_dir)
 	// The beam starts at its hand, ahead of its own tile, less whatever a step in progress still holds back.
 	var/start_x = torch_lag_x - STEALTH_TORCH_FORWARD * ((beam_dir & EAST) ? 1 : ((beam_dir & WEST) ? -1 : 0))
 	var/start_y = torch_lag_y - STEALTH_TORCH_FORWARD * ((beam_dir & NORTH) ? 1 : ((beam_dir & SOUTH) ? -1 : 0))
@@ -354,14 +382,23 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	// A move rebuilds the light by itself (the source follows its host's Moved).
 	if(torch.loc != spot)
 		torch.abstract_move(spot)
-	if(!changed)
-		return
-	torch.beam_x = start_x
-	torch.beam_y = start_y
-	torch.set_light_dir(beam_dir)
-	torch.set_light_on(TRUE)
-	// tg's light setters don't rebuild a COMPLEX_LIGHT source on their own (see /obj/item/flashlight/update_brightness()).
-	torch.update_light()
+	if(changed)
+		torch.beam_x = start_x
+		torch.beam_y = start_y
+		torch.set_light_dir(beam_dir)
+		torch.set_light_on(TRUE)
+		// tg's light setters don't rebuild a COMPLEX_LIGHT source on their own (see /obj/item/flashlight/update_brightness()).
+		torch.update_light()
+	// The cone never shows ahead of the light on the floor: while the lamp waits on SSlighting, so does the cone.
+	if(torch.light?.needs_update)
+		beam.stealth_queue(guard, beam_dir, reach)
+	else
+		beam.stealth_show(guard, beam_dir, reach)
+
+/// SSlighting (or a test) applied its lamp's light: the cone catches up.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_torch_applied(datum/source)
+	SIGNAL_HANDLER
+	beam?.stealth_flush()
 
 /// Whether its light is on with its beam showing (for admins and tests).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light_shows()
