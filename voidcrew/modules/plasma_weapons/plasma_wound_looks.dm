@@ -4,6 +4,8 @@
 // visible, one emissive) so it can pulse and cool with animate() instead of a per-tick redraw. No light is cast.
 
 #define PLASMA_WOUND_LOOK_ICON 'voidcrew/modules/plasma_weapons/icons/plasma_wounds.dmi'
+/// The sprites are drawn for human-shaped limbs; monkeys and husks show none.
+#define PLASMA_WOUND_LOOK_DRAWS(limb) (limb.dmg_overlay_type == "human")
 /// One breath of the glow: 100% -> 72% -> 100% alpha.
 #define PLASMA_WOUND_GLOW_PULSE (1.2 SECONDS)
 #define PLASMA_WOUND_GLOW_PULSE_ALPHA 184
@@ -20,7 +22,7 @@
 
 /// Called by the wound core on every state change.
 /datum/wound/burn/flesh/plasma/proc/update_look()
-	if(QDELETED(src) || !victim || !limb || !limb.dmg_overlay_type)
+	if(QDELETED(src) || !victim || !limb || !PLASMA_WOUND_LOOK_DRAWS(limb))
 		clear_look_glow()
 	else if(look_state() == "hot")
 		start_look_glow()
@@ -70,7 +72,7 @@
 
 /datum/wound/burn/flesh/plasma/proc/add_look_overlays(mob/living/carbon/source, list/overlays)
 	SIGNAL_HANDLER
-	if(!limb || limb.owner != source || !limb.dmg_overlay_type)
+	if(!limb || limb.owner != source || !PLASMA_WOUND_LOOK_DRAWS(limb))
 		return
 	var/kind = (look_state() == "raw") ? "raw" : "set" // hot draws the glass under its glow
 	overlays += mutable_appearance(PLASMA_WOUND_LOOK_ICON, "[limb.body_zone]_[look_tier()]_[kind]", -DAMAGE_LAYER)
@@ -184,6 +186,7 @@
 	vis_flags = VIS_INHERIT_DIR | VIS_INHERIT_ID
 
 #undef PLASMA_WOUND_LOOK_ICON
+#undef PLASMA_WOUND_LOOK_DRAWS
 #undef PLASMA_WOUND_GLOW_PULSE
 #undef PLASMA_WOUND_GLOW_PULSE_ALPHA
 #undef PLASMA_WOUND_GLOW_QUENCH

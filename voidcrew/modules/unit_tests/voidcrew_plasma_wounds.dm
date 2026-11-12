@@ -379,6 +379,10 @@
 	var/beads = 0
 	for(var/obj/item/plasma_slag/bead in get_turf(second))
 		beads++
+		// Worthless by design: nothing to recycle, grind, juice or melt down
+		TEST_ASSERT(!length(bead.custom_materials), "the slag bead has materials")
+		TEST_ASSERT(!length(bead.grind_results) && !bead.juice_typepath, "the slag bead grinds or juices into something")
+		TEST_ASSERT(!bead.reagents?.total_volume, "the slag bead holds reagents")
 	TEST_ASSERT_EQUAL(beads, 1, "a picked severe dropped [beads] beads")
 
 	// Critical on your own chest, hemostat, scanned: four picks at x1.5 x0.5, one bead.

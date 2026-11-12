@@ -217,8 +217,6 @@
 	slag = max(round(slag - removed, 0.01), 0)
 	if(slag <= 0)
 		slag_cleared(user)
-	else
-		plasma_state_changed()
 	return removed
 
 /// Cools the wound at once. Returns TRUE if it was hot.
@@ -368,10 +366,9 @@
 		return
 	if(!plasma_burn_source(attack_direction) && !plasma_burn_source(damage_source))
 		return
-	var/was_hot = heat > 0
 	heat = initial(heat)
-	if(!was_hot)
-		plasma_state_changed()
+	// Re-times the glow from full heat, or lights it again if it had cooled
+	plasma_state_changed()
 
 /datum/wound/burn/flesh/plasma/handle_process(seconds_per_tick, times_fired)
 	if(!victim || HAS_TRAIT(victim, TRAIT_STASIS))
