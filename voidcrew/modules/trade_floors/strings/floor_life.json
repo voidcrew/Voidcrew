@@ -1,10 +1,130 @@
 {
-	"tenants_general": [],
-	"tenants_outfitter": [],
-	"tenants_black_market": [],
-	"note_general": [],
-	"note_outfitter": [],
-	"note_black_market": [],
-	"mover_lines": [],
-	"fitter_lines": []
+	"_owner": "P8 (floor_life.dm). Tenant businesses per outpost, the note under a new floor's door, and the lines of tenants' people, movers and fitters. Placeholders: {name}, {other}, {place}; {business} for tenants' people; {outpost}, {floor}, {holder} in notes.",
+	"tenants_general": [
+		"Halvorsen Customs Brokers",
+		"Mbeki & Daughters, Chandlers",
+		"Orbital Notary Services",
+		"Kestrel Freight Insurance",
+		"Lindqvist Bail Bonds",
+		"Halcyon Survey Office",
+		"Pell Street Noodle Wholesale",
+		"Greywater Crew Agency",
+		"Okafor Hull Assessors"
+	],
+	"tenants_outfitter": [
+		"Duarte Armour Fitting",
+		"Coldiron Ammunition Factors",
+		"Reyes Hardsuit Repair",
+		"Vantage Optics",
+		"Brannock Surplus",
+		"Steelhaven Provisioners",
+		"Iwu Tool Hire",
+		"Marrow & Finch Rigging",
+		"Castellan Range Supply"
+	],
+	"tenants_black_market": [
+		"No Questions Storage",
+		"Sal's Pawn",
+		"Dregs Bail Office",
+		"Moss Brothers Salvage",
+		"The Quiet Room",
+		"Grady's Clinic",
+		"Ninefingers Exchange",
+		"Undertow Ink",
+		"Lucky Vell's"
+	],
+	"note_general": [
+		"Welcome to {outpost}.\n\nFloor {floor} is yours, {holder}. The lift runs all hours and the mains are paid with the lease. Please keep the landing clear.\n\nThe Management",
+		"{holder},\n\nThe last tenants have gone and the floor has been swept, mostly. If anything of theirs turns up, it is yours now.\n\nWelcome to {outpost}.\n\nThe Management"
+	],
+	"note_outfitter": [
+		"Floor {floor}, {outpost}.\n\nThe door is coded to you, {holder}. Try not to scratch the deck. We just had it done.\n\nYard Office",
+		"{holder},\n\nYour floor is ready. The last lot left their shelving bolts in the deck. Mind your boots.\n\nYard Office, {outpost}"
+	],
+	"note_black_market": [
+		"So you're the new one on {floor}.\n\nRent's paid, so nobody asks. Keep your door shut and your noise down and we'll get on fine.\n\nThe landlord",
+		"{holder},\n\nWelcome to the Undertow. The last tenant left in a hurry. Don't go looking for him.\n\nThe landlord"
+	],
+	"mover_lines": {
+		"idle": [
+			"Who packs a filing cabinet with bricks?",
+			"Last load. Nearly.",
+			"Mind the corner, mind the corner."
+		],
+		"talk": [
+			"Coming through. Heavy one.",
+			"Can't stop, they want that floor empty.",
+			"Not ours, we just carry it."
+		],
+		"crate": [
+			"Down here's fine.",
+			"That's the lot from upstairs.",
+			"Stack it with the rest."
+		],
+		"leave": [
+			"One more trip and we're done.",
+			"Right. Lift."
+		],
+		"attacked": [
+			"Hey! I'm carrying!",
+			"Watch it!"
+		],
+		"violence": [
+			"Down! Drop the box!",
+			"Not paid enough for this!"
+		]
+	},
+	"fitter_lines": {
+		"idle": [
+			"Who drew these plans?",
+			"Seam's off by a hair. Nobody'll notice.",
+			"Pass me the bigger one."
+		],
+		"talk": [
+			"Mind the sparks.",
+			"Almost done. Almost.",
+			"Don't lean on that wall, it's still warm."
+		],
+		"work": [
+			"Hold that steady.",
+			"There she goes.",
+			"Bit more flux."
+		],
+		"leave": [
+			"That'll hold. Back down.",
+			"Done. Somebody sign for it."
+		],
+		"attacked": [
+			"Oi! I've got a lit torch here!",
+			"Back off!"
+		],
+		"violence": [
+			"Torch off, get down!",
+			"Not on my job!"
+		]
+	},
+	"tenant_lines": {
+		"idle": [
+			"{business} won't run itself. Shame.",
+			"Third trip down today.",
+			"If the lift breaks again I'm taking the stairs. There are no stairs."
+		],
+		"talk": [
+			"I'm with {business}, upstairs.",
+			"Can't stop, I've got papers to drop off.",
+			"Office is upstairs, if you're after {business}."
+		],
+		"leave": [
+			"Back up to the office.",
+			"Right, back to it."
+		],
+		"attacked": [
+			"Hey! I'm just the clerk!",
+			"Get off!"
+		],
+		"violence": [
+			"Not again. Get down!",
+			"I'm going back upstairs!"
+		]
+	}
 }
