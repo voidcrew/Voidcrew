@@ -11,3 +11,5 @@ kestrel_far.ogg - distant_shots/laser_pistol.ogg
 hornet_far.ogg - distant_shots/rcw.ogg
 cinder_far.ogg - distant_shots/plasma_pistol.ogg
 furnace_far.ogg - distant_shots/plasma_3.ogg
+
+plasma_melt.ogg - new sounds

@@ -4,11 +4,15 @@
 // into a pool in front of the feet, legs and arms on a lying body slump into the pool. A molten stump bubbles,
 // chars and stays on the body until the limb is put back or regrown. The pool cools into a lasting slag decal.
 // tg's ash pile and its dismember blood splatter are not shown; the slag stands in for both.
-// Every melt frame lives in plasma_melt.dmi in the body's own sprite space, so it turns with a lying body.
+// Every melt frame lives in a plasma_melt_<zone>.dmi in the body's own sprite space, so it turns with a lying body.
+// One file per limb: a client loads a whole icon file the first time it draws from it, and all four limbs in one file
+// stalled it for a few hundred ms when the first melt began. The pool, drops and slag share plasma_melt.dmi.
 // Each body state comes as a pair: "<state>" holds the near facings and draws in front of the body,
 // "<state>_far" holds only the facing where the limb is on the far side and draws behind it.
 
 #define PLASMA_MELT_ICON 'voidcrew/modules/plasma_weapons/icons/plasma_melt.dmi'
+/// The body frames, stumps and sleeve mask of one limb
+#define PLASMA_MELT_ZONE_ICON(zone) (zone == BODY_ZONE_R_ARM ? 'voidcrew/modules/plasma_weapons/icons/plasma_melt_r_arm.dmi' : (zone == BODY_ZONE_L_ARM ? 'voidcrew/modules/plasma_weapons/icons/plasma_melt_l_arm.dmi' : (zone == BODY_ZONE_R_LEG ? 'voidcrew/modules/plasma_weapons/icons/plasma_melt_r_leg.dmi' : 'voidcrew/modules/plasma_weapons/icons/plasma_melt_l_leg.dmi')))
 
 /// Key moments, from the hit
 #define PLASMA_MELT_HEAT_END (0.35 SECONDS)
@@ -36,9 +40,13 @@
 /// Rows (from the sprite top) where a standing body's hand and foot are, for a dropped item's fall
 #define PLASMA_MELT_HAND_ROW 22
 #define PLASMA_MELT_FOOT_ROW 30
-/// Where a dropped item's middle comes to rest, below the sprite centre: at the feet standing, under a lying body
-#define PLASMA_MELT_ITEM_FLOOR -14
-#define PLASMA_MELT_ITEM_FLOOR_LYING -18
+/// Where a dropped item's middle comes to rest, below the sprite centre: beside the feet standing, under a lying body
+#define PLASMA_MELT_ITEM_FLOOR -13
+#define PLASMA_MELT_ITEM_FLOOR_LYING -16
+/// How far to the side of a standing body's middle a dropped item comes to rest, clear of the other foot
+#define PLASMA_MELT_ITEM_SIDE 11
+/// Cooldown key: limbs melting off one body together make one melt sound
+#define COOLDOWN_PLASMA_MELT_SOUND "plasma_melt_sound"
 /// While the body slid onto its tile this recently, drips fall straight to the floor under it
 #define PLASMA_MELT_GLIDE_WAIT (0.4 SECONDS)
 
@@ -108,6 +116,9 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		if(!QDELETED(thing) && thing.loc != victim)
 			dropped[thing] = may_drop[thing]
 	new /datum/plasma_melt(victim, zone, drawn, worn_look, shoes_look, dropped)
+	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
+		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
+		playsound(victim, 'voidcrew/modules/plasma_weapons/sound/plasma_melt.ogg', 60, TRUE)
 	return TRUE
 
 /// tg's dismember bleeds the body; on a plasma melt the blood is lost but no splatter lands (the slag stands in)
@@ -204,7 +215,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 			wearer.update_worn_undersuit()
 	victim = null
 	start_turf = null
-	reveal_items()
+	for(var/obj/item/thing as anything in hidden_items)
+		on_hidden_item_moved(thing)
 	falling.Cut()
 	QDEL_NULL(limb_light)
 	if(!QDELETED(pool)) // a pool still hot when the melt ends sets where it is
@@ -267,12 +279,12 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 /// One body frame as its near/far pair (and their glow while hot)
 /datum/plasma_melt/proc/pair(near_state, far_state, hot)
 	. = list(
-		mutable_appearance(PLASMA_MELT_ICON, near_state, -BODY_FRONT_LAYER),
-		mutable_appearance(PLASMA_MELT_ICON, far_state, -BODY_BEHIND_LAYER),
+		mutable_appearance(PLASMA_MELT_ZONE_ICON(zone), near_state, -BODY_FRONT_LAYER),
+		mutable_appearance(PLASMA_MELT_ZONE_ICON(zone), far_state, -BODY_BEHIND_LAYER),
 	)
 	if(hot)
-		. += emissive_appearance(PLASMA_MELT_ICON, near_state, victim, -BODY_FRONT_LAYER)
-		. += emissive_appearance(PLASMA_MELT_ICON, far_state, victim, -BODY_BEHIND_LAYER)
+		. += emissive_appearance(PLASMA_MELT_ZONE_ICON(zone), near_state, victim, -BODY_FRONT_LAYER)
+		. += emissive_appearance(PLASMA_MELT_ZONE_ICON(zone), far_state, victim, -BODY_BEHIND_LAYER)
 
 /// Steps the body through `frames` single-frame states "<base>_<n>" (and "<base>_far_<n>"), `delay` apart.
 /// An overlay runs on its parent's animation clock, so a one-shot DMI animation on a body would show only its last
@@ -292,8 +304,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		pieces += worn_look
 		if(shoes_look)
 			pieces += shoes_look
-		pieces += mutable_appearance(PLASMA_MELT_ICON, "[base]_[frame]", -BODY_FRONT_LAYER)
-		pieces += emissive_appearance(PLASMA_MELT_ICON, "[base]_[frame]", victim, -BODY_FRONT_LAYER)
+		pieces += mutable_appearance(PLASMA_MELT_ZONE_ICON(zone), "[base]_[frame]", -BODY_FRONT_LAYER)
+		pieces += emissive_appearance(PLASMA_MELT_ZONE_ICON(zone), "[base]_[frame]", victim, -BODY_FRONT_LAYER)
 	else
 		pieces = pair("[base]_[frame]", "[base]_far_[frame]", hot)
 		if(shoes_masked)
@@ -371,7 +383,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	var/static/atom/movable/limb_mask
 	if(isnull(limb_mask))
 		limb_mask = new(null)
-	limb_mask.icon = PLASMA_MELT_ICON
+	limb_mask.icon = PLASMA_MELT_ZONE_ICON(zone)
 	limb_mask.icon_state = "[zone]_sleeve_mask"
 	limb_mask.render_target = "*PlasmaMeltWorn [REF(victim)] [zone]"
 	masked.add_overlay(limb_mask)
@@ -385,25 +397,30 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	thing.alpha = 0
 	RegisterSignals(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_hidden_item_moved))
 
+/// Shows a hidden item as it always looks. One that fell out of the melt lies drawn lower and turned flat on its
+/// tile; that goes too once anyone moves it.
 /datum/plasma_melt/proc/on_hidden_item_moved(obj/item/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+	if(hidden_items[source] == "landed")
+		animate(source)
+		source.pixel_z = source.base_pixel_z
+		source.transform = matrix(source.transform).Turn(source.icon_angle)
 	hidden_items -= source
 	source.alpha = initial(source.alpha)
 
-/// Shows a hidden item falling out of the melt: from the hand or foot as the body stands or lies now, down to a
-/// spot on the floor at the feet (standing) or under the body (lying). tg's own drop animation played while it was
-/// hidden, so this stands in for it.
+/// Shows a hidden item falling out of the melt, from the hand or foot as the body stands or lies now, to the floor
+/// beside the feet (standing) or under the body (lying). tg's own drop animation played while it was hidden, so this
+/// stands in for it. The item stays on the body's row and drops through pixel_z, so it draws under the body the
+/// whole way, as a dropped item does.
 /datum/plasma_melt/proc/reveal_item(obj/item/thing)
-	UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 	var/kind = hidden_items[thing]
-	hidden_items -= thing
+	var/list/geometry = victim && GLOB.plasma_melt_geometry[zone]?["[victim.dir]"]
+	if(!geometry || QDELETED(thing) || thing.loc != get_turf(victim) || moving())
+		on_hidden_item_moved(thing)
+		return
+	hidden_items[thing] = "landed"
 	thing.alpha = initial(thing.alpha)
-	if(!victim || QDELETED(thing) || thing.loc != get_turf(victim) || moving())
-		return
-	var/list/geometry = GLOB.plasma_melt_geometry[zone]?["[victim.dir]"]
-	if(!geometry)
-		return
 	var/lying = victim.body_position == LYING_DOWN
 	// the hand or foot, from the sprite centre (y up)
 	var/u = geometry[1] - 15.5
@@ -418,27 +435,44 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 		var/list/drop = geometry[4][1]
 		u = drop[3] - 15.5
 	var/body_x = victim.pixel_x + victim.pixel_w
-	var/body_y = victim.pixel_y + victim.pixel_z
+	// beside the feet on the limb's side facing N or S, behind the heels facing E or W
+	var/side = u < 0 ? -1 : 1
+	if(victim.dir == EAST)
+		side = -1
+	else if(victim.dir == WEST)
+		side = 1
 	var/from_x = thing.base_pixel_x + round(u + body_x)
-	var/from_y = thing.base_pixel_y + round(v + body_y)
-	var/to_x = thing.base_pixel_x + clamp(round(u + body_x) + rand(-2, 2), -10, 10)
-	var/to_y = thing.base_pixel_y + body_y + (lying ? PLASMA_MELT_ITEM_FLOOR_LYING : PLASMA_MELT_ITEM_FLOOR) + rand(-1, 1)
+	var/from_y = thing.base_pixel_z + round(v + victim.pixel_z)
+	var/to_x = thing.base_pixel_x + (lying ? clamp(round(u + body_x) + rand(-2, 2), -10, 10) : round(body_x) + side * (PLASMA_MELT_ITEM_SIDE + rand(0, 2)))
+	var/to_y = thing.base_pixel_z + victim.pixel_z + (lying ? PLASMA_MELT_ITEM_FLOOR_LYING : PLASMA_MELT_ITEM_FLOOR) + rand(-1, 1)
 	to_y = min(to_y, from_y - 1)
+	// starts the size and angle it had in the hand (or on the foot) and ends flat on the floor
 	var/matrix/old_transform = thing.transform
 	var/matrix/animation_matrix = matrix(old_transform)
-	animation_matrix.Turn(pick(-20, 20))
+	animation_matrix.Scale(kind == "held" ? 0.6 : 0.85)
+	animation_matrix.Turn(pick(-25, 25))
+	animate(thing)
+	thing.pixel_y = thing.base_pixel_y + victim.pixel_y
 	thing.pixel_x = from_x
-	thing.pixel_y = from_y
+	thing.pixel_z = from_y
 	thing.transform = animation_matrix
+	old_transform = matrix(old_transform).Turn(-thing.icon_angle)
 	var/fall_time = plasma_melt_fall_time(from_y - to_y)
-	animate(thing, pixel_x = to_x, pixel_y = to_y, transform = old_transform, time = fall_time, easing = QUAD_EASING | EASE_IN)
-	animate(pixel_y = to_y + 1, time = 0.05 SECONDS)
-	animate(pixel_y = to_y, time = 0.05 SECONDS)
+	if(from_y - to_y < 6)
+		// a short drop (shoes off a foot already at the floor) tips up and over to the side instead
+		fall_time = 0.1 SECONDS
+		animate(thing, pixel_x = (from_x + to_x) / 2, pixel_z = from_y + 3, transform = matrix(animation_matrix).Turn(pick(-15, 15)), time = fall_time, easing = QUAD_EASING | EASE_OUT)
+		animate(pixel_x = to_x, pixel_z = to_y, transform = old_transform, time = fall_time + 0.05 SECONDS, easing = QUAD_EASING | EASE_IN)
+	else
+		// never quicker than 0.2 s, so it is seen shrinking out of the hand and turning flat as it drops
+		animate(thing, pixel_x = to_x, pixel_z = to_y, transform = old_transform, time = max(fall_time, 0.2 SECONDS), easing = QUAD_EASING | EASE_IN)
+	animate(pixel_z = to_y + 1, time = 0.05 SECONDS)
+	animate(pixel_z = to_y, time = 0.05 SECONDS)
 
-/// Shows the hidden items of one `kind`, or all of them
+/// Lets the hidden items of one `kind`, or all of them, fall out of the melt
 /datum/plasma_melt/proc/reveal_items(kind)
 	for(var/obj/item/thing as anything in hidden_items)
-		if(!kind || hidden_items[thing] == kind)
+		if(hidden_items[thing] != "landed" && (!kind || hidden_items[thing] == kind))
 			reveal_item(thing)
 
 /// Burns the jumpsuit sleeve away at this missing arm (masked on the uniform overlay, see update_worn_undersuit)
@@ -653,7 +687,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	if(isnull(sleeve_mask))
 		sleeve_mask = new(null)
 	for(var/zone in burned)
-		sleeve_mask.icon = PLASMA_MELT_ICON
+		sleeve_mask.icon = PLASMA_MELT_ZONE_ICON(zone)
 		sleeve_mask.icon_state = "[zone]_sleeve_mask"
 		sleeve_mask.render_target = "*PlasmaSleeve [REF(src)] [zone]"
 		uniform_overlay.add_overlay(sleeve_mask)
@@ -776,6 +810,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	return ..()
 
 #undef PLASMA_MELT_ICON
+#undef PLASMA_MELT_ZONE_ICON
 #undef PLASMA_MELT_HEAT_END
 #undef PLASMA_MELT_GONE
 #undef PLASMA_MELT_LET_GO
@@ -783,6 +818,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 #undef PLASMA_MELT_FOOT_ROW
 #undef PLASMA_MELT_ITEM_FLOOR
 #undef PLASMA_MELT_ITEM_FLOOR_LYING
+#undef PLASMA_MELT_ITEM_SIDE
+#undef COOLDOWN_PLASMA_MELT_SOUND
 #undef PLASMA_MELT_STUMP_COOL
 #undef PLASMA_MELT_POOL_COOL
 #undef PLASMA_MELT_COOLED

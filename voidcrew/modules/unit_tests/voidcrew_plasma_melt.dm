@@ -10,7 +10,7 @@
 /// Whether `victim` draws any overlay from the melt icon
 /proc/voidcrew_plasma_melt_drawn(mob/living/carbon/victim)
 	for(var/mutable_appearance/overlay as anything in victim.overlays)
-		if(overlay.icon == 'voidcrew/modules/plasma_weapons/icons/plasma_melt.dmi')
+		if(findtext("[overlay.icon]", "plasma_melt"))
 			return TRUE
 	return FALSE
 
