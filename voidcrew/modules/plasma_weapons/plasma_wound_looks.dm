@@ -6,19 +6,20 @@
 #define PLASMA_WOUND_LOOK_ICON 'voidcrew/modules/plasma_weapons/icons/plasma_wounds.dmi'
 /// The sprites are drawn for human-shaped limbs; monkeys and husks show none.
 #define PLASMA_WOUND_LOOK_DRAWS(limb) (limb.dmg_overlay_type == "human")
-/// One breath of the glow: 100% -> 72% -> 100% alpha.
+/// One breath of the glow: 100% -> 62% -> 100% alpha.
 #define PLASMA_WOUND_GLOW_PULSE (1.2 SECONDS)
-#define PLASMA_WOUND_GLOW_PULSE_ALPHA 184
+#define PLASMA_WOUND_GLOW_PULSE_ALPHA 160
 /// How fast a quench cuts the glow.
 #define PLASMA_WOUND_GLOW_QUENCH (0.3 SECONDS)
-/// Fraction of the hot time at which the emissive starts to fade out.
-#define PLASMA_WOUND_GLOW_FADE_START 0.85
+/// A colour matrix for the glow sprite: keeps `keep` of its own colour, adds its green channel tinted by
+/// tint_r/g/b and adds a flat `add` of white. The fade and the breathing run on the alpha var, not in here.
+#define PLASMA_WOUND_GLOW_MATRIX(keep, tint_r, tint_g, tint_b, add_r, add_g, add_b) list(	keep, 0, 0, 	tint_r, keep + tint_g, tint_b, 	0, 0, keep, 	add_r, add_g, add_b)
 
 /datum/wound/burn/flesh/plasma
 	/// The visible glow while the slag is hot.
 	var/obj/effect/abstract/plasma_wound_glow/look_glow
 	/// The emissive twin of the glow, so it shows in the dark.
-	var/obj/effect/abstract/plasma_wound_glow/emissive/look_emissive
+	var/obj/effect/abstract/plasma_wound_glow_emissive/look_emissive
 
 /// Called by the wound core on every state change.
 /datum/wound/burn/flesh/plasma/proc/update_look()
@@ -98,55 +99,74 @@
 	var/left = clamp(heat, 0, hot_time)
 	var/done = 1 - left / hot_time
 
-	// The glow's colour runs the melt ramp: white-hot, then green, then deep green, then out.
-	// Keys are fractions of the hot time, each with a colour multiplier and alpha.
-	var/static/list/ramp_at = list(0, 0.3, 0.6, PLASMA_WOUND_GLOW_FADE_START, 1)
+	// The glow cools from white-hot through pale green and #74FFA0 to a deep, dim green, fading the whole way.
+	// Keys are fractions of the hot time, each a colour matrix over the green sprite and an alpha.
+	var/static/list/ramp_at = list(0, 0.3, 0.55, 0.85, 1)
 	var/static/list/ramp = list(
-		list(255, 255, 255, 255),
-		list(255, 255, 255, 255),
-		list(150, 255, 185, 255),
-		list(40, 150, 80, 255),
-		list(40, 150, 80, 0),
+		PLASMA_WOUND_GLOW_MATRIX(0.25, 0, 0, 0, 0.75, 0.75, 0.75), // white-hot
+		PLASMA_WOUND_GLOW_MATRIX(0.55, 0, 0, 0, 0.3, 0.42, 0.33), // pale green
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.455, 1, 0.627, 0, 0, 0), // #74FFA0
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.12, 0.5, 0.25, 0, 0, 0), // deep green
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.12, 0.5, 0.25, 0, 0, 0),
 	)
+	var/static/list/ramp_alpha = list(255, 215, 165, 90, 0)
 	var/key = 1
 	while(key < length(ramp_at) && ramp_at[key + 1] <= done)
 		key++
 	var/list/now
+	var/now_alpha
 	if(key >= length(ramp_at))
 		now = ramp[length(ramp)]
+		now_alpha = 0
 	else
 		var/span = (done - ramp_at[key]) / (ramp_at[key + 1] - ramp_at[key])
-		var/list/from_col = ramp[key]
-		var/list/to_col = ramp[key + 1]
+		var/list/from_matrix = ramp[key]
+		var/list/to_matrix = ramp[key + 1]
 		now = list()
-		for(var/i in 1 to 4)
-			now += round(from_col[i] + (to_col[i] - from_col[i]) * span)
+		for(var/i in 1 to length(from_matrix))
+			now += from_matrix[i] + (to_matrix[i] - from_matrix[i]) * span
+		now_alpha = round(ramp_alpha[key] + (ramp_alpha[key + 1] - ramp_alpha[key]) * span)
 	// A zero-time first step: a glow the client has not drawn yet would otherwise start from the end of the ramp
-	animate(look_glow, color = rgb(now[1], now[2], now[3], now[4]), time = 0)
+	animate(look_glow, color = now, time = 0)
 	var/at = done
 	for(var/i in (key + 1) to length(ramp_at))
-		var/list/col = ramp[i]
-		animate(color = rgb(col[1], col[2], col[3], col[4]), time = max((ramp_at[i] - at) * hot_time * 1 SECONDS, 0))
+		animate(color = ramp[i], time = max((ramp_at[i] - at) * hot_time * 1 SECONDS, 0))
 		at = ramp_at[i]
-	// The slow breathing runs on alpha, alongside the colour.
-	animate(look_glow, alpha = PLASMA_WOUND_GLOW_PULSE_ALPHA, time = PLASMA_WOUND_GLOW_PULSE / 2, easing = SINE_EASING, loop = -1, flags = ANIMATION_PARALLEL)
-	animate(alpha = 255, time = PLASMA_WOUND_GLOW_PULSE / 2, easing = SINE_EASING)
+	// Alpha fades with the ramp and breathes on the way down: each half breath is one step.
+	animate(look_glow, alpha = now_alpha, time = 0, flags = ANIMATION_PARALLEL)
+	var/left_ds = left * 1 SECONDS
+	var/elapsed = 0
+	var/dim = TRUE
+	while(elapsed < left_ds)
+		var/step = min(PLASMA_WOUND_GLOW_PULSE / 2, left_ds - elapsed)
+		elapsed += step
+		var/fraction = done + (1 - done) * elapsed / left_ds
+		var/target = plasma_glow_alpha_at(fraction, ramp_at, ramp_alpha)
+		if(dim)
+			target = round(target * PLASMA_WOUND_GLOW_PULSE_ALPHA / 255)
+		animate(alpha = target, time = step, easing = SINE_EASING)
+		dim = !dim
 
-	// The emissive stays full until the last of the cooling, then fades out with the glow.
-	if(done < PLASMA_WOUND_GLOW_FADE_START)
-		animate(look_emissive, color = GLOB.emissive_color, time = 0)
-		animate(time = (PLASMA_WOUND_GLOW_FADE_START - done) * hot_time * 1 SECONDS)
-		animate(color = _EMISSIVE_COLOR(0), time = (1 - PLASMA_WOUND_GLOW_FADE_START) * hot_time * 1 SECONDS)
-	else
-		animate(look_emissive, color = _EMISSIVE_COLOR((1 - done) / (1 - PLASMA_WOUND_GLOW_FADE_START)), time = 0)
-		animate(color = _EMISSIVE_COLOR(0), time = (1 - done) * hot_time * 1 SECONDS)
+	// The emissive dims steadily with the glow across the whole hot time.
+	animate(look_emissive, color = _EMISSIVE_COLOR(1 - done), time = 0)
+	animate(color = _EMISSIVE_COLOR(0), time = left * 1 SECONDS)
+
+/// The ramp's alpha at a fraction of the hot time.
+/datum/wound/burn/flesh/plasma/proc/plasma_glow_alpha_at(fraction, list/ramp_at, list/ramp_alpha)
+	if(fraction >= 1)
+		return 0
+	for(var/i in 1 to length(ramp_at) - 1)
+		if(fraction < ramp_at[i + 1])
+			var/span = (fraction - ramp_at[i]) / (ramp_at[i + 1] - ramp_at[i])
+			return round(ramp_alpha[i] + (ramp_alpha[i + 1] - ramp_alpha[i]) * span)
+	return 0
 
 /// Cuts the glow quickly, as water hitting it would.
 /datum/wound/burn/flesh/plasma/proc/fade_look_glow()
 	if(!look_glow)
 		return
 	var/obj/effect/abstract/plasma_wound_glow/glow = look_glow
-	var/obj/effect/abstract/plasma_wound_glow/emissive/emissive = look_emissive
+	var/obj/effect/abstract/plasma_wound_glow_emissive/emissive = look_emissive
 	look_glow = null
 	look_emissive = null
 	animate(glow, alpha = 0, time = PLASMA_WOUND_GLOW_QUENCH)
@@ -175,14 +195,21 @@
 	icon_state = glow_state
 
 /// The emissive mask of the glow, on its own plane so it lights up in the dark.
-/obj/effect/abstract/plasma_wound_glow/emissive
+/obj/effect/abstract/plasma_wound_glow_emissive
 	name = "slag glow"
+	icon = PLASMA_WOUND_LOOK_ICON
+	layer = -HIGHEST_LAYER
 	appearance_flags = EMISSIVE_APPEARANCE_FLAGS|PIXEL_SCALE|TILE_BOUND
 	vis_flags = VIS_INHERIT_DIR | VIS_INHERIT_ID
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/abstract/plasma_wound_glow_emissive/Initialize(mapload, glow_state)
+	. = ..()
+	icon_state = glow_state
 
 #undef PLASMA_WOUND_LOOK_ICON
 #undef PLASMA_WOUND_LOOK_DRAWS
 #undef PLASMA_WOUND_GLOW_PULSE
 #undef PLASMA_WOUND_GLOW_PULSE_ALPHA
 #undef PLASMA_WOUND_GLOW_QUENCH
-#undef PLASMA_WOUND_GLOW_FADE_START
+#undef PLASMA_WOUND_GLOW_MATRIX
