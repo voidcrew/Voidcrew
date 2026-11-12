@@ -1,1 +1,114 @@
-{}
+{
+	"ward": {
+		"idle": [
+			"Same four walls.",
+			"I've counted the tiles. Twice.",
+			"Anybody got a smoke?",
+			"This chair's older than me.",
+			"Any minute now."
+		],
+		"talk": [
+			"Do I know you?",
+			"Not now, friend.",
+			"Keep walking."
+		],
+		"heckle": [
+			"When do I get my call?",
+			"Hey, Sergeant! The coffee in here is a crime.",
+			"I know my rights. Most of them.",
+			"How about a window seat?",
+			"You'll miss me when I'm gone."
+		],
+		"arrived": [
+			"Took you long enough.",
+			"About time.",
+			"There you are. Let's go."
+		],
+		"follow": [
+			"Right behind you.",
+			"Lead the way.",
+			"After you."
+		],
+		"wait": [
+			"Get the door first.",
+			"Can't walk through glass, pal."
+		],
+		"refuse": [
+			"Do I know you?",
+			"You're not who I'm waiting for.",
+			"I'll stay put, thanks."
+		],
+		"attacked": [
+			"Hey! Whose side are you on?",
+			"Watch it!",
+			"Ow! What was that for?"
+		],
+		"violence": [
+			"Keep your head down!",
+			"They're shooting!",
+			"Get down!"
+		],
+		"cover": [
+			"Down, down!",
+			"Not like this."
+		],
+		"storm": [
+			"Hear that out there?",
+			"Glad I'm not outside."
+		],
+		"leave": [
+			"I'm off.",
+			"Time I went."
+		],
+		"lost": [
+			"Alright, alright. I'm done.",
+			"Don't shoot. I'm coming quietly.",
+			"Fine. Hands up. Happy?"
+		],
+		"aboard": [
+			"Thanks. I owe you one.",
+			"Never thought I'd see a deck again. Thank you.",
+			"Good ship. Good people. Thanks."
+		]
+	},
+	"passenger": {
+		"idle": [
+			"Nice to sit somewhere with no bars.",
+			"Where are we headed?",
+			"I'll stay out of your way.",
+			"Best ride I've had in a while."
+		],
+		"talk": [
+			"Thanks again.",
+			"Just drop me at the next port.",
+			"I'm not touching anything, promise."
+		],
+		"attacked": [
+			"Hey! I thought we were friends!",
+			"Watch it!"
+		],
+		"violence": [
+			"Out of the frying pan...",
+			"Get down!"
+		],
+		"cover": [
+			"Down, down!",
+			"Not again."
+		],
+		"storm": [
+			"Rough out there.",
+			"Hold on to something."
+		],
+		"leave": [
+			"This is my stop. Thanks for the ride.",
+			"I'll make my own way from here. Thanks."
+		]
+	},
+	"sergeant": {
+		"transfer": [
+			"Transfer's here.",
+			"Your ride's here. On your feet.",
+			"Transfer. Up you get."
+		]
+	}
+}
