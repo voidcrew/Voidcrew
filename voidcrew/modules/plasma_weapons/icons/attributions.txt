@@ -26,4 +26,4 @@ flask.dmi
 	flask_3 - mojave/icons/objects/ammo/ammo_world.dmi plasma
 	flask_1, flask_2 - drawn from plasma and plasma_empty, modified
 
-projectiles.dmi and effects.dmi are original Voidcrew art.
+projectiles.dmi, effects.dmi and the plasma_melt*.dmi files are original Voidcrew art (plasma_melt*.dmi: new sprites).

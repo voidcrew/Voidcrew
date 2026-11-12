@@ -7479,6 +7479,7 @@
 #include "voidcrew\modules\plasma_weapons\plasma_flask.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_guns.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_heat.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_melt.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_pinch.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_pirates.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_shop.dm"

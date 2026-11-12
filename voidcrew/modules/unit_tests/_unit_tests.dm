@@ -199,6 +199,7 @@
 #include "voidcrew_plasma_effects.dm"
 #include "voidcrew_plasma_flask.dm"
 #include "voidcrew_plasma_heat.dm"
+#include "voidcrew_plasma_melt.dm"
 #include "voidcrew_plasma_pirates.dm"
 #include "voidcrew_plasma_supply.dm"
 #include "voidcrew_player_outpost.dm"

@@ -18,3 +18,4 @@ plasma_hit_pistol.ogg
 plasma_hit_rifle.ogg
 plasma_burnthrough_1.ogg
 plasma_burnthrough_2.ogg
+plasma_melt.ogg
