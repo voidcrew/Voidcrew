@@ -898,3 +898,37 @@
 			continue
 		TEST_ASSERT_EQUAL(knife.loc, police.get_evidence_locker(), "[outpost_type]: the knife is in [knife.loc || "nowhere"], not the evidence locker")
 	wanted_cleanup(ships)
+
+/// Two stars and given the order: nobody fires on them while they have the time to comply, the cover included; once they are to be subdued, they do
+/datum/unit_test/voidcrew_outpost_police_arrest_order_hold_fire
+
+/datum/unit_test/voidcrew_outpost_police_arrest_order_hold_fire/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/list/parts = police_arrest_setup(outpost, 30) // two stars (OUTPOST_POLICE_STAR_HEAT 25)
+	if(!parts)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = police_officer(outpost, where = police_arrest_beside(suspect))
+	police_arrest_kit(cover)
+	case.staff()
+	TEST_ASSERT_EQUAL(case.cover(), cover, "The second officer beside the suspect is not the cover")
+
+	case.set_step("order")
+	case.step_order()
+	TEST_ASSERT(police.order_pending(suspect), "A two-star suspect given the order is not held fire on")
+	cover.ai_controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	case.plan_for(cover.ai_controller, cover)
+	TEST_ASSERT_NOTEQUAL(cover.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], suspect, "The cover took aim at a suspect still in the time to comply")
+
+	case.set_step("subdue")
+	TEST_ASSERT(!police.order_pending(suspect), "A suspect to be subdued is still held fire on")
+
+	case.set_step("order")
+	police_pin_warrant(police, suspect.mind, 55) // three stars
+	TEST_ASSERT(!police.order_pending(suspect), "A three-star suspect is held fire on for an order")
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)

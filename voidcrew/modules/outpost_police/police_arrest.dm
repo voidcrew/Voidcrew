@@ -152,7 +152,9 @@
 	// Covering someone else's arrest is not making one: he leaves that to see this one through
 	if(istype(barker) && barker.case && barker.case != case && barker.case.arresting() != barker)
 		barker.case.drop_officer(barker)
-	if(istype(barker) && lead != barker && !barker.case && case.officer_fit(barker))
+	// Not in the middle of something on the body (the cuffs, the search), and not once they are in cuffs: whoever has
+	// them in hand sees it through
+	if(istype(barker) && lead != barker && !barker.case && !case.acting && !case.cuffed && case.officer_fit(barker))
 		if(!lead || (get_stars(fallen.mind) >= 3 && role_of(lead) != POLICE_ROLE_STUN))
 			if(lead)
 				case.drop_officer(lead)
@@ -160,6 +162,18 @@
 			case.officers.Insert(1, WEAKREF(barker))
 			case.staff()
 	return TRUE
+
+/**
+ * Whether `target` has just been given an arrest's order and is still in the time to comply (one or two stars):
+ * nobody fires on them meanwhile. Fire comes with the subdue (spec 6), never on someone standing still as told.
+ */
+/datum/outpost_police/proc/order_pending(mob/living/target)
+	if(!isliving(target) || !target.mind)
+		return FALSE
+	var/datum/outpost_police_case/case = cases[target.mind]
+	if(!case || QDELETED(case) || case.step != CASE_STEP_ORDER || case.get_suspect() != target)
+		return FALSE
+	return get_stars(target.mind) <= 2
 
 /// Closes `who`'s arrest, if any
 /datum/outpost_police/proc/close_case(datum/mind/who)
@@ -1378,8 +1392,8 @@
 			INVOKE_ASYNC(src, PROC_REF(strike), officer, suspect)
 		queue_walk(controller, officer, goal, goal_distance)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	// The cover
-	if(suspect && (step == CASE_STEP_ORDER || step == CASE_STEP_SUBDUE) && police?.force_level(suspect) >= POLICE_FORCE_STUN)
+	// The cover: fires only once the suspect is to be subdued, never while they are given the time to comply
+	if(suspect && step == CASE_STEP_SUBDUE && police?.force_level(suspect) >= POLICE_FORCE_STUN)
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
 		if(strategy?.can_attack(officer, suspect))
 			controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)

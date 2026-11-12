@@ -243,6 +243,12 @@
 			officer.face_atom(target)
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
 		return SUBTREE_RETURN_FINISH_PLANNING
+	// An arrest has just given them the order: everyone holds fire and watches while they make up their mind
+	if(level == POLICE_FORCE_STUN && !officer.case && officer.police.order_pending(target))
+		if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters))
+			officer.face_atom(target)
+		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+		return SUBTREE_RETURN_FINISH_PLANNING
 	if(level < POLICE_FORCE_STUN || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || LAZYLEN(officer.do_afters))
 		return
 	if(isnull(human_npc_loaded_gun(officer)))
