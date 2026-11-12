@@ -201,6 +201,7 @@
 #include "voidcrew_plasma_heat.dm"
 #include "voidcrew_plasma_pirates.dm"
 #include "voidcrew_plasma_supply.dm"
+#include "voidcrew_plasma_wounds.dm"
 #include "voidcrew_player_outpost.dm"
 #include "voidcrew_plumbing_shuttle_move.dm"
 #include "voidcrew_puzzle_containment.dm"
