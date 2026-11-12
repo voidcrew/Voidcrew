@@ -223,6 +223,7 @@
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)), melee = TRUE)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
 	owner.add_client_colour(colour_type, id)
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
 	owner.visible_message(
@@ -240,7 +241,7 @@
 	set_perks(FALSE)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
-	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH))
 	owner.remove_client_colour(id)
 	// A slow-mo that ran to its end replays first, and the crash lands when the replay is over (ware_sandy_replay.dm).
 	if(!QDELETED(owner) && owner.stat != DEAD && !sandy_replay_defer_crash(owner, crash_duration, crash_stamina))
@@ -248,6 +249,11 @@
 	if(!QDELETED(owner))
 		cyberware_cascade_window_end_fx(owner)
 	return ..()
+
+/// Signal proc for [COMSIG_LIVING_DEATH]: the bearer's slow-mo ends with them (its replay still plays).
+/datum/status_effect/cyberware_cascade_window/proc/on_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	end_time_stop() // ware_sandy_timestop.dm
 
 /// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()

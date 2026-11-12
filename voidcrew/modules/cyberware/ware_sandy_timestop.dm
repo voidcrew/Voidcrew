@@ -266,15 +266,23 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/static/list/tint = list(0.26,0.28,0.27, 0.52,0.56,0.54, 0.10,0.11,0.105, 0.02,0.05,0.04)
 	return tint
 
-/// Blood the field tints like the world around it (it is only looked at, never held).
+/// Blood and loose gore the field tints like the world around it (it is only looked at, never held): nothing about
+/// gore is in colour in the slow-mo. Severed parts and spilled intestines are items, which otherwise keep their colour
+/// on the floor.
 /proc/cyberware_time_tinted_blood(atom/thing)
 	var/static/list/blood = typecacheof(list(
 		/obj/effect/decal/cleanable/blood,
 		/obj/effect/temp_visual/dir_setting/bloodsplatter,
 		/obj/effect/temp_visual/hv_blood_bead,
 		/obj/effect/temp_visual/wire_blood_drop,
+		/obj/item/hv_intestines,
+		/obj/effect/ebeam/hv_gut,
+		/obj/item/bodypart,
+		/obj/item/organ,
 	))
-	return !!blood[thing.type]
+	if(!blood[thing.type])
+		return FALSE
+	return isturf(thing.loc) // a part or organ still in a body, a hand or a bag is not loose gore
 
 /// tg works a blood decal's drying colour out of its `color` (blending it toward the dried colour), and its sprite is
 /// white, coloured by that `color`. With the slow-mo's tint matrix in `color` it would be drawn white and its drying
