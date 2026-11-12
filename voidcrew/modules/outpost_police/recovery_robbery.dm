@@ -234,6 +234,10 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	till_robbed_by = WEAKREF(robber.mind)
 	// Stolen property: it goes back where it came from at the arrest (evidence_candidates(), evidence_empty_case())
 	police.mark_stolen(taken, robber.mind)
+	// Takings that were destroyed since the last stick-up are dropped here, so the list stays small all round
+	for(var/datum/weakref/old_ref in police.takings?.Copy())
+		if(QDELETED(old_ref.resolve()))
+			police.takings -= old_ref
 	LAZYSET(police.takings, WEAKREF(taken), record)
 	if(!robber.put_in_hands(taken))
 		taken.forceMove(counter)
