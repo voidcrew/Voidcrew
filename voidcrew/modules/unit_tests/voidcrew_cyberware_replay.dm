@@ -312,7 +312,11 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
 	TEST_ASSERT(down_at > replay.play_started, "The user in crit never goes down in their replay, or is down from its first frame")
-	TEST_ASSERT(user.appearance == real, "The user in crit doesn't look as they really are after the replay: [look_difference(user, real)]")
+	// the crash lands when the replay ends and plays its node looks, so the whole appearance can't match; compare the
+	// parts the replay drew over
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "Test fixture: the crash should land on a user in crit")
+	var/difference = look_difference(user, real)
+	TEST_ASSERT(difference == "nothing in the vars compared", "The user in crit doesn't look as they really are after the replay: [difference]")
 	TEST_ASSERT(user.transform ~= real_turn, "The user in crit isn't turned as they really lie after the replay")
 	TEST_ASSERT_EQUAL(user.stat, SOFT_CRIT, "The replay changed the user's stat")
 	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "The user in crit stood up after the replay")
