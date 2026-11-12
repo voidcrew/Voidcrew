@@ -146,7 +146,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/list/drawn
 	/// What this melt has on the body right now
 	var/list/shown = list()
-	/// TRUE once the jumpsuit sleeve at this (arm) zone has burned away
+	/// TRUE once the jumpsuit and coat sleeves at this (arm) zone have burned away
 	var/sleeve_burned = FALSE
 	/// Facing and posture when the melt began running, which pick the melt frames, drops and pool spot
 	var/melt_dir
@@ -214,6 +214,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 			sleeve_burned = FALSE
 			var/mob/living/carbon/human/wearer = victim
 			wearer.update_worn_undersuit()
+			wearer.update_worn_oversuit()
 	victim = null
 	start_turf = null
 	for(var/obj/item/thing as anything in hidden_items)
@@ -487,13 +488,16 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		if(hidden_items[thing] != "landed" && (!kind || hidden_items[thing] == kind))
 			reveal_item(thing)
 
-/// Burns the jumpsuit sleeve away at this missing arm (masked on the uniform overlay, see update_worn_undersuit)
+/// Burns the jumpsuit and coat sleeves away at this missing arm (masked on the worn overlays, see plasma_mask_burned_sleeves).
+/// The sleeve mask leaves out every pixel over the chest: where the arm hangs across the torso (the near arm facing
+/// east or west) the cloth under it is the shirt, and cutting it would bare the chest in the shape of the lost arm.
 /datum/plasma_melt/proc/burn_sleeve()
 	if(sleeve_burned || !ishuman(victim))
 		return
 	sleeve_burned = TRUE
 	var/mob/living/carbon/human/wearer = victim
 	wearer.update_worn_undersuit()
+	wearer.update_worn_oversuit()
 
 /// Where the pool lies on the victim's turf: in front of the feet standing, under the limb's place lying
 /datum/plasma_melt/proc/find_pool_spot()
@@ -680,10 +684,19 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 
 // ===== Sleeve =====
 
-/// A plasma-melted arm takes its jumpsuit sleeve with it: tg keeps the sleeve on a missing arm, so mask it off the
-/// uniform overlay the way tg masks gloves on a missing hand. Only arms that melted, and only until they come back.
+/// A plasma-melted arm takes its sleeves with it: tg keeps the jumpsuit and coat sleeves on a missing arm, so mask
+/// them off the uniform and suit overlays the way tg masks gloves on a missing hand. Only arms that melted, and only
+/// until they come back.
 /mob/living/carbon/human/update_worn_undersuit(update_obscured = TRUE)
 	. = ..(update_obscured)
+	plasma_mask_burned_sleeves(UNIFORM_LAYER)
+
+/mob/living/carbon/human/update_worn_oversuit(update_obscured = TRUE)
+	. = ..(update_obscured)
+	plasma_mask_burned_sleeves(SUIT_LAYER)
+
+/// Cuts every burned sleeve out of the worn overlay at `layer`
+/mob/living/carbon/human/proc/plasma_mask_burned_sleeves(layer)
 	var/list/burned = list()
 	for(var/zone in plasma_melts)
 		var/datum/plasma_melt/melt = plasma_melts[zone]
@@ -691,21 +704,21 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 			burned += zone
 	if(!length(burned))
 		return
-	var/mutable_appearance/uniform_overlay = overlays_standing[UNIFORM_LAYER]
-	if(!istype(uniform_overlay))
+	var/mutable_appearance/worn_overlay = overlays_standing[layer]
+	if(!istype(worn_overlay))
 		return
-	remove_overlay(UNIFORM_LAYER)
+	remove_overlay(layer)
 	var/static/atom/movable/sleeve_mask
 	if(isnull(sleeve_mask))
 		sleeve_mask = new(null)
 	for(var/zone in burned)
 		sleeve_mask.icon = PLASMA_MELT_ZONE_ICON(zone)
 		sleeve_mask.icon_state = "[zone]_sleeve_mask"
-		sleeve_mask.render_target = "*PlasmaSleeve [REF(src)] [zone]"
-		uniform_overlay.add_overlay(sleeve_mask)
-		uniform_overlay.filters += filter(type = "alpha", render_source = sleeve_mask.render_target, flags = MASK_INVERSE)
-	overlays_standing[UNIFORM_LAYER] = uniform_overlay
-	apply_overlay(UNIFORM_LAYER)
+		sleeve_mask.render_target = "*PlasmaSleeve [REF(src)] [zone] [layer]"
+		worn_overlay.add_overlay(sleeve_mask)
+		worn_overlay.filters += filter(type = "alpha", render_source = sleeve_mask.render_target, flags = MASK_INVERSE)
+	overlays_standing[layer] = worn_overlay
+	apply_overlay(layer)
 
 // ===== Effects =====
 
