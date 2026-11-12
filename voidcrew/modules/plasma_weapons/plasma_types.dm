@@ -12,16 +12,21 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	name = "plasma bolt"
 	icon = 'voidcrew/modules/plasma_weapons/icons/projectiles.dmi'
 	icon_state = "plasma_bolt"
-	/// Fire stacks added to a carbon this bolt hits
-	var/fire_stacks_on_hit = PLASMA_FIRE_STACKS_ON_HIT
-	/// An arm or leg this close to its max damage after the hit burns away
+	/// An arm or leg this close to its max damage after the hit melts, if it was already hurt before it
 	var/ash_margin = PLASMA_ASH_MARGIN_PISTOL
+	/// Whether this bolt also melts an arm or leg that already carried a critical burn
+	var/ash_critical_burns = FALSE
+	/// Zone, damage and critical-burn state of the limb this bolt hit, read in on_hit before the damage lands
+	var/ash_zone
+	var/ash_prior_damage = 0
+	var/ash_prior_critical = FALSE
 	/// Lazy list of mobs this bolt has already hissed past
 	var/list/hissed_mobs
 
 /obj/projectile/energy/plasma_bolt/heavy
 	icon_state = "plasma_bolt_heavy"
 	ash_margin = PLASMA_ASH_MARGIN_RIFLE
+	ash_critical_burns = TRUE
 
 /obj/item/ammo_casing/energy/plasma_bolt
 	projectile_type = /obj/projectile/energy/plasma_bolt

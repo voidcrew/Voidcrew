@@ -26,12 +26,17 @@
 #define PLASMA_BOLT_EXPOSE_TEMP 1000
 /// Volume a passing bolt exposes its turf with (hotspot_expose)
 #define PLASMA_BOLT_EXPOSE_VOLUME 10
-/// Fire stacks a bolt adds to a carbon it hits
-#define PLASMA_FIRE_STACKS_ON_HIT 2
-/// A pistol bolt ashes an arm or leg within this much of its max damage
-#define PLASMA_ASH_MARGIN_PISTOL 5
-/// A rifle bolt ashes an arm or leg within this much of its max damage
-#define PLASMA_ASH_MARGIN_RIFLE 15
+/// A pistol bolt melts an arm or leg left within this much of its max damage
+#define PLASMA_ASH_MARGIN_PISTOL 10
+/// A rifle bolt melts an arm or leg left within this much of its max damage
+#define PLASMA_ASH_MARGIN_RIFLE 20
+/// The margin only counts on a limb that already had this much damage before the bolt, so no bolt melts
+/// an unhurt arm or leg in one hit
+#define PLASMA_ASH_PRIOR_DAMAGE 10
+/// Structure and door damage multiplier (demolition_mod) for a pistol bolt
+#define PLASMA_DEMOLITION_PISTOL 1.5
+/// Structure and door damage multiplier (demolition_mod) for a rifle bolt
+#define PLASMA_DEMOLITION_RIFLE 2
 
 // ===== Heat and venting (Furnace and Old Furnace) =====
 
