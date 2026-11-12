@@ -220,3 +220,25 @@
 	var/listeners = victim._listen_lookup?[COMSIG_MOB_AFTER_APPLY_DAMAGE]
 	TEST_ASSERT(islist(listeners) ? !(third in listeners) : listeners != third, "a deleted bolt is still registered on its target")
 	TEST_ASSERT_NULL(third.hissed_mobs, "a deleted bolt kept its hiss-by list")
+
+/// Sound plumbing: no tg sizzle on a plasma burn, no tg dismember sound mid-melt, and a shield slot that falls back to the shield
+/datum/unit_test/voidcrew_plasma_sound_slots
+
+/datum/unit_test/voidcrew_plasma_sound_slots/Run()
+	for(var/datum/wound/burn/flesh/plasma/wound_type as anything in typesof(/datum/wound/burn/flesh/plasma))
+		TEST_ASSERT_NULL(initial(wound_type.sound_effect), "[wound_type] plays a tg wound sound on top of the bolt's")
+
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(!plasma_melt_in_progress(victim), "A body counts as mid-melt with no melt running")
+	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
+	TEST_ASSERT(plasma_melt_in_progress(victim), "A body mid-melt does not count as mid-melt")
+	GLOB.plasma_melt_no_splatter = null
+
+	var/obj/projectile/energy/plasma_bolt/bolt = allocate(/obj/projectile/energy/plasma_bolt)
+	var/obj/item/shield/riot/shield = allocate(/obj/item/shield/riot)
+	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
+	bolt.shield_block_sound = 'sound/machines/click.ogg'
+	TEST_ASSERT_EQUAL(bolt.blocked_sound_for(shield), 'sound/machines/click.ogg', "A set shield sound does not replace the shield's own")
+	TEST_ASSERT_NULL(bolt.blocked_sound_for(knife), "The shield sound replaced a non-shield's block sound")
+	bolt.shield_block_sound = null
+	TEST_ASSERT_NULL(bolt.blocked_sound_for(shield), "An unset shield sound does not fall back to the shield's own")

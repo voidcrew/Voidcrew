@@ -17,7 +17,8 @@
 	if(!silent)
 		limb_owner.visible_message(span_danger("<B>[limb_owner]'s [name] is violently dismembered!</B>"))
 	INVOKE_ASYNC(limb_owner, TYPE_PROC_REF(/mob, emote), "scream")
-	playsound(get_turf(limb_owner), 'sound/effects/dismember.ogg', 80, TRUE)
+	if(!plasma_melt_in_progress(limb_owner)) // VOIDCREW EDIT CHANGE - plasma_weapons: a plasma melt plays its own sound
+		playsound(get_turf(limb_owner), 'sound/effects/dismember.ogg', 80, TRUE)
 	limb_owner.add_mood_event("dismembered_[body_zone]", /datum/mood_event/dismembered, src)
 	limb_owner.add_mob_memory(/datum/memory/was_dismembered, lost_limb = src)
 

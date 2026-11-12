@@ -18,7 +18,7 @@
 	reflectable = NONE
 	dismemberment = 0
 	hitsound = 'voidcrew/modules/plasma_weapons/sound/plasma_hit_pistol.ogg'
-	hitsound_wall = 'sound/items/weapons/effects/searwall.ogg'
+	hitsound_wall = PLASMA_SOUND_IMPACT_WALL
 	impact_effect_type = null
 	light_system = OVERLAY_LIGHT
 	light_range = 2
@@ -43,6 +43,12 @@
 	var/turf/impact_turf
 	/// Whether the sprite also slides sideways onto impact_point on its last step, as onto a held shield
 	var/impact_slide = FALSE
+	/// Played when it hits a window or windoor
+	var/hitsound_glass = PLASMA_SOUND_IMPACT_GLASS
+	/// Played to someone it passes close by
+	var/near_miss_sound = PLASMA_SOUND_NEAR_MISS
+	/// Played instead of a held shield's own block sound when one stops it; null keeps the shield's
+	var/shield_block_sound = PLASMA_SOUND_SHIELD_BLOCK
 
 /obj/projectile/energy/plasma_bolt/Destroy()
 	hissed_mobs = null
@@ -102,7 +108,14 @@
 	where.hotspot_expose(PLASMA_BOLT_EXPOSE_TEMP, PLASMA_BOLT_EXPOSE_VOLUME)
 
 /obj/projectile/energy/plasma_bolt/on_hit(atom/target, blocked = 0, pierce_hit)
+	// One sound per hit. tg plays the person sound on anything that isn't a wall; here it is kept for a person the bolt
+	// reaches, a block plays only the blocker's own sound, and anything else gets its surface sound below.
+	var/person_sound = hitsound
+	if(!isliving(target) || blocked >= 100)
+		hitsound = null
 	. = ..()
+	hitsound = person_sound
+	plasma_surface_sound(target)
 	plasma_impact_visuals(target, blocked)
 	plasma_expose_turf(get_turf(target))
 	if(. != BULLET_ACT_HIT || !iscarbon(target) || blocked >= 100)
@@ -116,6 +129,29 @@
 	ash_prior_damage = limb.get_damage()
 	ash_prior_critical = plasma_burn_through_ready(limb)
 	RegisterSignal(victim, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(plasma_check_ash), override = TRUE)
+
+/// The sound of a bolt hitting something that isn't alive. tg already plays hitsound_wall on a turf.
+/obj/projectile/energy/plasma_bolt/proc/plasma_surface_sound(atom/target)
+	if(isturf(target) || isliving(target))
+		return
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf)
+		return
+	if(istype(target, /obj/structure/window) || istype(target, /obj/machinery/door/window))
+		playsound(target_turf, hitsound_glass, 50, TRUE, -1)
+		return
+	playsound(target_turf, hitsound_wall, clamp(vol_by_damage() + (suppressed ? 0 : 20), 0, 100), TRUE, -1)
+
+/// The sound a held item plays when it blocks this, in place of its own block_sound; null keeps the item's.
+/// Called from tg's /obj/item/proc/hit_reaction (VOIDCREW EDIT).
+/atom/movable/proc/blocked_sound_for(obj/item/blocker)
+	return null
+
+/// A held shield that stops a bolt plays the bolt's shield sound instead of its own, when it has one
+/obj/projectile/energy/plasma_bolt/blocked_sound_for(obj/item/blocker)
+	if(istype(blocker, /obj/item/shield))
+		return shield_block_sound
+	return null
 
 /// Plasma breaks structures and doors faster; mechs, turrets and other machines take normal damage.
 /obj/projectile/energy/plasma_bolt/get_demolition_modifier(obj/target)

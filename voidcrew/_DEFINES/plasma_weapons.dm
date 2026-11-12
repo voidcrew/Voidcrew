@@ -99,6 +99,25 @@
 /// Furthest a bolt's sprite slides across its path onto a held shield on its last step, in pixels
 #define PLASMA_BOLT_MAX_SLIDE 6
 
+// ===== Sounds =====
+// Slots for the plasma weapons' own sounds. Each holds a stock sound for now; drop a new file in here to replace it.
+
+/// A bolt passing close by someone's head
+#define PLASMA_SOUND_NEAR_MISS 'sound/items/weapons/plasma_cutter.ogg'
+/// A bolt hitting a wall, floor, machine or anything else hard
+#define PLASMA_SOUND_IMPACT_WALL 'sound/items/weapons/effects/searwall.ogg'
+/// A bolt hitting a window or windoor
+#define PLASMA_SOUND_IMPACT_GLASS 'sound/effects/glass/glasshit.ogg'
+/// A held shield stopping a bolt. null plays the shield's own block sound.
+#define PLASMA_SOUND_SHIELD_BLOCK null
+/// The Furnace venting its heat
+#define PLASMA_SOUND_FURNACE_VENT 'sound/machines/hiss.ogg'
+/// The Furnace boiling its flask over
+#define PLASMA_SOUND_FURNACE_BOIL 'sound/effects/gas_hissing.ogg'
+/// A sheet fed into a flask, and the click after it
+#define PLASMA_SOUND_FEED_SHEET 'sound/items/tools/welder.ogg'
+#define PLASMA_SOUND_FEED_CLICK 'sound/machines/click.ogg'
+
 // ===== Wounds =====
 
 /// Slag in a fresh plasma burn, by severity

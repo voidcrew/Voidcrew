@@ -103,6 +103,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		old_ash += pile
 	var/datum/wound/loss/melt = new
+	// The melt sound below is the only one: no tg dismember sound (see plasma_melt_in_progress())
+	melt.sound_effect = null
 	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
 	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
 	GLOB.plasma_melt_no_splatter = null
@@ -121,6 +123,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, 'voidcrew/modules/plasma_weapons/sound/plasma_melt.ogg', 60, TRUE)
 	return TRUE
+
+/// TRUE while a plasma melt is taking this body's limb. tg's dismember() checks it to skip its own sound (VOIDCREW EDIT).
+/proc/plasma_melt_in_progress(mob/living/body)
+	return GLOB.plasma_melt_no_splatter && GLOB.plasma_melt_no_splatter.resolve() == body
 
 /// tg's dismember bleeds the body; on a plasma melt the blood is lost but no splatter lands (the slag stands in)
 /mob/living/add_splatter_floor(turf/splatter_turf, small_drip = FALSE)

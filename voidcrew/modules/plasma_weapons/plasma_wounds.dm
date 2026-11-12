@@ -84,6 +84,8 @@
 	name = "Plasma Burns"
 	undiagnosed_name = "Plasma Burns"
 	default_scar_file = PLASMA_SCAR_FILE
+	// The bolt's own hit and burn-through sounds carry the wound; no tg sizzle on top
+	sound_effect = null
 	// The slag tools (hemostat, wirecutters, scalpel) are gated in plasma_wound_care.dm's item_can_treat().
 
 	/// Slag still in the wound
@@ -183,7 +185,6 @@
 	occur_text = "burns straight through, slag fusing to the bone"
 	severity = WOUND_SEVERITY_CRITICAL
 	damage_multiplier_penalty = 1.3
-	sound_effect = 'sound/effects/wounds/sizzle2.ogg'
 	threshold_penalty = 25
 	status_effect_type = /datum/status_effect/wound/burn/flesh/plasma/critical
 	treatable_by = list(/obj/item/flashlight/pen/paramedic, /obj/item/stack/medical/ointment, /obj/item/stack/medical/mesh)

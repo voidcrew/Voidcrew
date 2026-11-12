@@ -100,7 +100,6 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		behind_body = (angle > 135 && angle < 225)
 	else if(istype(target, /obj/structure/window) || istype(target, /obj/machinery/door/window))
 		splash_state = "splash_glass"
-		playsound(target_turf, 'sound/effects/glass/glasshit.ogg', 50, TRUE, -1)
 
 	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body)
 
@@ -294,7 +293,7 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 		if(LAZYFIND(hissed_mobs, listener_ref))
 			continue
 		LAZYADD(hissed_mobs, listener_ref)
-		listener.playsound_local(here, 'sound/items/weapons/plasma_cutter.ogg', 25, TRUE)
+		listener.playsound_local(here, near_miss_sound, 25, TRUE)
 
 // ===== Procs called by the guns (P2, P3, P4, P6) =====
 

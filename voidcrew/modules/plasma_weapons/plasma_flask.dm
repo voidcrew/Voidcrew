@@ -30,10 +30,10 @@
 			break
 		stored += per_unit
 		added += per_unit
-		playsound(src, 'sound/items/tools/welder.ogg', 20, TRUE)
+		playsound(src, PLASMA_SOUND_FEED_SHEET, 20, TRUE)
 		update_appearance()
 	if(added)
-		playsound(src, 'sound/machines/click.ogg', 30, TRUE)
+		playsound(src, PLASMA_SOUND_FEED_CLICK, 30, TRUE)
 	return added
 
 /obj/item/plasma_flask/item_interaction(mob/living/user, obj/item/tool, list/modifiers)

@@ -163,9 +163,9 @@
 			break
 		cell.charge += per_unit
 		added += per_unit
-		playsound(src, 'sound/items/tools/welder.ogg', 20, TRUE)
+		playsound(src, PLASMA_SOUND_FEED_SHEET, 20, TRUE)
 	if(added)
-		playsound(src, 'sound/machines/click.ogg', 30, TRUE)
+		playsound(src, PLASMA_SOUND_FEED_CLICK, 30, TRUE)
 		chamber_changed()
 	return added
 

@@ -22,7 +22,7 @@
 	barrel_heat = max(barrel_heat - PLASMA_BOIL_COOL, 0)
 	if(where)
 		where.visible_message(span_warning("[src] hisses and spits gas!"))
-		playsound(where, 'sound/effects/gas_hissing.ogg', 50, TRUE)
+		playsound(where, PLASMA_SOUND_FURNACE_BOIL, 50, TRUE)
 	take_damage(PLASMA_BOIL_INTEGRITY, sound_effect = FALSE)
 
 /// Takes up to `mol` from the chamber and releases it on the turf at the barrel's temperature. Returns mol released.
@@ -99,7 +99,7 @@
 	next_vent_at = world.time + PLASMA_VENT_COOLDOWN
 	vent_lock_until = world.time + PLASMA_VENT_LOCK
 	barrel_heat = max(barrel_heat - PLASMA_VENT_COOL, 0)
-	playsound(src, 'sound/machines/hiss.ogg', 50, TRUE)
+	playsound(src, PLASMA_SOUND_FURNACE_VENT, 50, TRUE)
 	update_heat_step()
 	return TRUE
 
