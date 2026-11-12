@@ -121,17 +121,12 @@
 		now = list()
 		for(var/i in 1 to 4)
 			now += round(from_col[i] + (to_col[i] - from_col[i]) * span)
-	look_glow.color = rgb(now[1], now[2], now[3], now[4])
-	var/first = TRUE
+	// A zero-time first step: a glow the client has not drawn yet would otherwise start from the end of the ramp
+	animate(look_glow, color = rgb(now[1], now[2], now[3], now[4]), time = 0)
 	var/at = done
 	for(var/i in (key + 1) to length(ramp_at))
 		var/list/col = ramp[i]
-		var/step_time = max((ramp_at[i] - at) * hot_time * 1 SECONDS, 0)
-		if(first)
-			animate(look_glow, color = rgb(col[1], col[2], col[3], col[4]), time = step_time)
-			first = FALSE
-		else
-			animate(color = rgb(col[1], col[2], col[3], col[4]), time = step_time)
+		animate(color = rgb(col[1], col[2], col[3], col[4]), time = max((ramp_at[i] - at) * hot_time * 1 SECONDS, 0))
 		at = ramp_at[i]
 	// The slow breathing runs on alpha, alongside the colour.
 	animate(look_glow, alpha = PLASMA_WOUND_GLOW_PULSE_ALPHA, time = PLASMA_WOUND_GLOW_PULSE / 2, easing = SINE_EASING, loop = -1, flags = ANIMATION_PARALLEL)
@@ -139,12 +134,12 @@
 
 	// The emissive stays full until the last of the cooling, then fades out with the glow.
 	if(done < PLASMA_WOUND_GLOW_FADE_START)
-		look_emissive.color = GLOB.emissive_color
-		animate(look_emissive, time = (PLASMA_WOUND_GLOW_FADE_START - done) * hot_time * 1 SECONDS)
+		animate(look_emissive, color = GLOB.emissive_color, time = 0)
+		animate(time = (PLASMA_WOUND_GLOW_FADE_START - done) * hot_time * 1 SECONDS)
 		animate(color = _EMISSIVE_COLOR(0), time = (1 - PLASMA_WOUND_GLOW_FADE_START) * hot_time * 1 SECONDS)
 	else
-		look_emissive.color = _EMISSIVE_COLOR((1 - done) / (1 - PLASMA_WOUND_GLOW_FADE_START))
-		animate(look_emissive, color = _EMISSIVE_COLOR(0), time = (1 - done) * hot_time * 1 SECONDS)
+		animate(look_emissive, color = _EMISSIVE_COLOR((1 - done) / (1 - PLASMA_WOUND_GLOW_FADE_START)), time = 0)
+		animate(color = _EMISSIVE_COLOR(0), time = (1 - done) * hot_time * 1 SECONDS)
 
 /// Cuts the glow quickly, as water hitting it would.
 /datum/wound/burn/flesh/plasma/proc/fade_look_glow()
