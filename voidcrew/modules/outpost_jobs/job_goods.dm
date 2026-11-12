@@ -7,8 +7,9 @@
  *
  * Job people and the fixers are not part of the ambient crowd's 8-person cap (L24): while the ambient subsystem
  * counts an outpost for its cap (arrive_next(), settle_outpost()), living_npcs() leaves them out, and count_role()
- * puts a fixer back for his own role's count. Everywhere else (ducking from a fight, the convoy, crowding a tile)
- * they are townspeople like any other.
+ * puts a fixer back for his own role's count. The fixer's role is tried first, in a pass that ignores the cap.
+ * Everywhere else (ducking from a fight, the convoy, the shootout, crowding a tile) they are townspeople like any
+ * other.
  */
 
 /// The trait source of a job person's containment ban, lifted while they are dead so the morgue can bag the body
@@ -116,7 +117,7 @@
 /proc/fixer_crowd_exempt(mob/living/carbon/human/npc/ambient_npc/npc)
 	return istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/fixer) || !!npc?.fixer_job_ref
 
-// ----- the cap (L24) -----
+// ----- the cap (L24): the one rule for the fixer and every job person -----
 
 /datum/ambient_place/outpost
 	/// Set while the ambient subsystem counts this outpost against its cap: living_npcs() then leaves out the fixer
@@ -140,22 +141,64 @@
 		if(npc.role == role_type && fixer_crowd_exempt(npc) && !QDELETED(npc) && npc.stat != DEAD && !npc.fading)
 			.++
 
-/datum/controller/subsystem/ambient_npcs/arrive_next(datum/ambient_place/outpost/place, list/roles)
-	if(!place)
+// The cap is not the floor: someone settling or stepping off the lift still keeps off a fixer's or job person's tile
+/datum/ambient_place/outpost/crowd_count(turf/tile, mob/living/carbon/human/npc/ambient_npc/asker, atom/ignore)
+	if(!fixer_cap_count)
 		return ..()
+	fixer_cap_count = FALSE
+	. = ..()
+	fixer_cap_count = TRUE
+
+/// `roles` (or every outpost role) split into list(fixer roles, the crowd's roles)
+/datum/controller/subsystem/ambient_npcs/proc/fixer_split_roles(list/roles)
+	var/list/fixers = list()
+	var/list/crowd = list()
+	for(var/datum/ambient_outpost_role/role as anything in (roles || get_outpost_roles()))
+		if(istype(role, /datum/ambient_outpost_role/fixer))
+			fixers += role
+		else
+			crowd += role
+	return list(fixers, crowd)
+
+/// A fixer who is due comes off the lift first, whatever the crowd; then anyone else as before, under the cap
+/datum/controller/subsystem/ambient_npcs/arrive_next(datum/ambient_place/outpost/place, list/roles)
+	var/obj/structure/overmap/trader_outpost/outpost = place?.outpost()
+	if(!outpost)
+		return ..()
+	var/list/split = fixer_split_roles(roles)
 	var/was_counting = place.fixer_cap_count
 	place.fixer_cap_count = TRUE
-	. = ..()
+	for(var/datum/ambient_outpost_role/role as anything in split[1])
+		if(. || !role.npc_type || !role.applies_to(outpost) || place.role_next_at[role.type] > world.time || place.open_slots(role) <= 0)
+			continue
+		var/turf/arrival = lift_arrival_turf(outpost)
+		if(!arrival)
+			break
+		place.role_next_at[role.type] = world.time + rand(role.gap_low, role.gap_high)
+		. = role.arrive(place, arrival)
+	if(!.)
+		. = ..(place, split[2])
 	if(!QDELETED(place))
 		place.fixer_cap_count = was_counting
 
+/// The fixer is settled in a pass of his own before the crowd's, so a full concourse never keeps him away
 /datum/controller/subsystem/ambient_npcs/settle_outpost(datum/ambient_place/outpost/place, list/roles, budget = AMBIENT_OUTPOST_SETTLE_PER_FIRE)
-	if(!place)
+	var/obj/structure/overmap/trader_outpost/outpost = place?.outpost()
+	if(!outpost || budget <= 0 || !place.needs_settling || place.occupied)
 		return ..()
+	var/list/split = fixer_split_roles(roles)
 	var/was_counting = place.fixer_cap_count
 	place.fixer_cap_count = TRUE
-	. = ..()
+	var/made = 0
+	for(var/datum/ambient_outpost_role/role as anything in split[1])
+		if(made >= budget || !role.npc_type || !role.applies_to(outpost))
+			continue
+		if(place.open_slots(role) > 0 && role.settle(place))
+			made++
+	if(made < budget)
+		made += ..(place, split[2], budget - made)
 	if(!QDELETED(place))
 		place.fixer_cap_count = was_counting
+	return made
 
 #undef FIXER_JOB_PERSON_TRAIT

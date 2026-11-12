@@ -633,6 +633,9 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		return FALSE
 	if(thing == suspect.handcuffed || thing == suspect.legcuffed)
 		return FALSE
+	// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): a fixer job's goods are never evidence (L15), nor is what holds them
+	if(locate(/obj/item/mission_recovery/fixer_goods) in thing.get_all_contents())
+		return FALSE
 	// Their ID stays, and so does anything it is inside (a PDA)
 	var/obj/item/card/id/card = suspect.get_idcard(FALSE) || suspect.get_idcard(TRUE)
 	if(card && (thing == card || (card in thing.get_all_contents())))

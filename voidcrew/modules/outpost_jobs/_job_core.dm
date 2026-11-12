@@ -215,9 +215,10 @@
 		servant = null
 	return ..(notice || reason)
 
-/// The fixer's receipt on the ship's console (spec 4.5): one line, no reputation, no grade
+/// The fixer's receipt (spec 4.5): the one "Paid to the ship" line, to the whole crew wherever they are (the pay is
+/// made at a fixer, not aboard). No reputation, no grade. Nothing else says it.
 /datum/mission/fixer_job/notify_completed(reputation_gain)
-	servant.ship_notify("Paid to the ship: [fixer_credits_text(value)].", "ACCOUNT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	servant.ship_notify("Paid to the ship: [fixer_credits_text(value)] cr.", "ACCOUNT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50, TRUE)
 
 /// The network hears of the pay while the job still knows its crew and outposts (before the shell qdels it)
 /datum/mission/fixer_job/finish_mission(atom/reward_anchor)
@@ -294,7 +295,8 @@
 /datum/mission/fixer_job/proc/offer_tokens()
 	return list()
 
-/// Up to FIXER_NOTE_LINES strings for the note, each within FIXER_BOUND_NOTE_LINE. Each job package overrides.
+/// Up to FIXER_NOTE_LINES strings for the note, each already cut to FIXER_BOUND_NOTE_LINE and then html_encode()d
+/// (the job encodes; the note uses them as they are). Each job package overrides.
 /datum/mission/fixer_job/proc/note_lines()
 	return list()
 
@@ -401,7 +403,7 @@
 	if(goods_type)
 		var/obj/item/goods = goods_ref?.resolve()
 		if(QDELETED(goods) || !(goods in user.held_items))
-			return FIXER_LINE_NOTHING
+			return FIXER_LINE_WHERE
 	if(ledger?.pending() > 0)
 		return FIXER_LINE_WAIT
 	return null
@@ -425,7 +427,6 @@
 		paid_noise = null
 		return 0
 	log_game("FIXER JOB: [key_name(user)] of the [ship_name] was paid [paid] cr by [fixer] at noise [job_noise].")
-	to_chat(user, span_notice("Paid to the ship: [fixer_credits_text(paid)]."))
 	return paid
 
 /**
@@ -519,6 +520,12 @@
 	RegisterSignal(outpost, COMSIG_QDELETING, PROC_REF(on_outpost_deleted))
 	return TRUE
 
+/// The zone the job is gated and paid by: the same reading as pay_zone() (green when the outpost's tile has no zone)
+/datum/mission_target/outpost/fixer/get_zone_type()
+	if(!outpost)
+		return null
+	return fixer_outpost_zone(outpost)
+
 // =========================================================================
 // GLOBAL HELPERS
 // =========================================================================
@@ -537,16 +544,6 @@
 		return ZONE_GREEN
 	var/zone = SSovermap_zones?.get_zone_type(get_turf(outpost))
 	return (zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) ? zone : ZONE_GREEN
-
-/// "6,240 cr"
-/proc/fixer_credits_text(credits)
-	var/digits = num2text(round(credits), 12)
-	var/list/groups = list()
-	while(length(digits) > 3)
-		groups.Insert(1, copytext(digits, -3))
-		digits = copytext(digits, 1, -3)
-	groups.Insert(1, digits)
-	return "[groups.Join(",")] cr"
 
 /// Whether `who` is a player for the hands rule: a living mob with a mind that is not one of the town's NPCs
 /proc/fixer_job_is_player(mob/living/who)

@@ -90,6 +90,10 @@
 			"Wrong door, dear. Read your note again.",
 			"Not mine. It goes where the note says."
 		],
+		"where": [
+			"And where is it, dear? I don't see it.",
+			"Bring it with you next time, love."
+		],
 		"offer_sabotage": [
 			"{name}, by {place}. I'd like it broken before the {clock}. No fuss, dear.",
 			"There's {name} by {place}. See it ruined before the {clock}, dear. Quietly."
@@ -215,6 +219,10 @@
 			"Wrong depot. Check your slip.",
 			"That's not addressed to me.",
 			"Deliver it where the slip says."
+		],
+		"where": [
+			"Nothing on the count. Where is it?",
+			"No goods, no tally. Bring it here."
 		],
 		"offer_sabotage": [
 			"One item, {name}, by {place}. Write it off before the {clock}.",
@@ -342,6 +350,10 @@
 			"Wrong man.",
 			"Elsewhere."
 		],
+		"where": [
+			"Where is it?",
+			"Empty hands. Come back with it."
+		],
 		"offer_sabotage": [
 			"{name}. By {place}. Broken before the {clock}.",
 			"{name}, by {place}. Ruined. Before the {clock}."
@@ -449,6 +461,10 @@
 		"wrong_fixer": [
 			"Not for me. Read the note.",
 			"Wrong place."
+		],
+		"where": [
+			"Where's the thing?",
+			"You've brought nothing. Go and fetch it."
 		],
 		"offer_sabotage": [
 			"{name}, by {place}. Broken before the {clock}. Quietly.",

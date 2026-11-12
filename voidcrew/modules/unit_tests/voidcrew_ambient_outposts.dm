@@ -898,6 +898,11 @@
 		TEST_ASSERT(FACTION_TURRET in npc.faction, "The outpost's staff would not count [npc_type] as their own")
 		npc.apply_damage(npc.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 		TEST_ASSERT_EQUAL(npc.stat, DEAD, "[npc_type] did not die of their wounds")
+		// OUTPOST JOBS seam (voidcrew/modules/outpost_jobs): someone who carries no cash (a fixer, a jailbreak ward) drops none
+		if(!npc.death_cash_high)
+			TEST_ASSERT_EQUAL(ambient_test_cash_on(spot), cash_before, "[npc_type] carries no cash but dropped some")
+			qdel(npc)
+			continue
 		var/dropped = ambient_test_cash_on(spot) - cash_before
 		TEST_ASSERT(dropped >= 5 && dropped <= 30, "[npc_type] dropped [dropped] cr, not 5 to 30") // AMBIENT_DEATH_CASH_LOW/HIGH
 		npc.revive(ADMIN_HEAL_ALL)

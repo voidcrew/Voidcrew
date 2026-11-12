@@ -210,7 +210,7 @@
 	TEST_ASSERT_EQUAL(fixer_job_pay(1500, 1, 1), 2040, "A green hit with some noise does not pay 60% of the bonus")
 	TEST_ASSERT_EQUAL(fixer_job_pay(800, 1, 2), 920, "Green sabotage at noise 2 does not pay 25% of the bonus")
 	TEST_ASSERT_EQUAL(fixer_job_pay(800, 1, 7), 800, "Noise past 3 paid more than the base")
-	TEST_ASSERT_EQUAL(fixer_credits_text(9980), "9,980 cr", "The receipt's figure has no thousands separator")
+	TEST_ASSERT_EQUAL(fixer_credits_text(9980), "9,980", "The receipt's figure has no thousands separator")
 
 /// The deadline stops at the deed and the collect backstop takes over; a shut port holds the deadline off
 /datum/unit_test/voidcrew_outpost_jobs_core/deadline
@@ -309,3 +309,20 @@
 	var/list/run = fixer_job_spot(outpost, "open", null, 2) // FIXER_SPOT_OPEN
 	if(length(run) == 2)
 		TEST_ASSERT_EQUAL(get_dist(run[1], run[2]), 1, "Two open spots asked for together are not side by side")
+
+/// A fixer job's goods are never taken in a search, nor is a bag holding them (L15)
+/datum/unit_test/voidcrew_outpost_jobs_core/goods_not_evidence
+
+/datum/unit_test/voidcrew_outpost_jobs_core/goods_not_evidence/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = jobs_outpost()
+	var/mob/living/carbon/human/suspect = jobs_person(jobs_spot(0, 0))
+	var/obj/item/mission_recovery/fixer_goods/goods = allocate(/obj/item/mission_recovery/fixer_goods, jobs_spot(0, 0))
+	var/obj/item/storage/box/box = allocate(/obj/item/storage/box, jobs_spot(0, 0))
+	var/obj/item/storage/box/empty_box = allocate(/obj/item/storage/box, jobs_spot(0, 0))
+	goods.forceMove(box)
+	TEST_ASSERT(suspect.put_in_hands(box), "Setup: the suspect could not hold the box")
+	TEST_ASSERT(suspect.put_in_hands(empty_box), "Setup: the suspect could not hold the empty box")
+	TEST_ASSERT(outpost.police.evidence_can_take(empty_box, suspect), "Setup: a search could not take an ordinary box")
+	TEST_ASSERT(!outpost.police.evidence_can_take(box, suspect), "A search could take a box holding a fixer job's goods")
+	goods.forceMove(get_turf(suspect))
+	TEST_ASSERT(!outpost.police.evidence_can_take(goods, suspect), "A search could take a fixer job's goods at the suspect's feet")

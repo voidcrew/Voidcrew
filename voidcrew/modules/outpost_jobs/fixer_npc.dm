@@ -16,9 +16,7 @@
  *   counted crime against one burns the offender (fixer_network.dm). A dead one's place stays empty for the role's
  *   killed-slot time; then a stand-in comes, same type, a new name (2.6). A fixer drops nothing.
  * - The crowd cap (L24): fixers are never counted against AMBIENT_OUTPOST_TRANSIENT_CAP and never crowd out the
- *   regulars. Like the police (outpost_police/police_life.dm), they are left out of an outpost's living_npcs() and
- *   settled and brought off the lift in a pass of their own; crowd_count(), the fight ducking and the kingpin's
- *   shootout put them back for the things they do take part in.
+ *   regulars. Their role is settled and brought off the lift in a pass of its own, before the crowd's (job_goods.dm).
  */
 
 /// Trait source: a living fixer can't be boxed
@@ -229,9 +227,11 @@
 		.[FIXER_TALK_TAKE] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_yes")
 	var/datum/mission/fixer_job/held = network.crew_job(crew)
 	if(held)
-		if(held.deed_done)
+		// A run to another fixer (a smuggle) is done when its case is handed over here: the hand-over is its deed
+		var/obj/item/goods = held.goods_ref?.resolve()
+		if(held.deed_done || (held.pay_outpost && held.pay_outpost == outpost && !QDELETED(goods) && (goods in user.held_items)))
 			.[FIXER_TALK_DONE] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_buy")
-		else
+		if(!held.deed_done)
 			.[FIXER_TALK_DROP] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_no")
 
 /// The talk radial for `user`. Sleeps.
@@ -358,7 +358,7 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/fixer/proc/report_done(mob/living/user)
 	var/datum/fixer_network/network = GLOB.fixer_network
 	var/datum/mission/fixer_job/job = network.crew_job(fixer_crew_of(user))
-	if(!job?.deed_done)
+	if(!job || (!job.deed_done && !job.pay_outpost))
 		answer(FIXER_LINE_NOTHING)
 		return 0
 	if(!job.on_roster(user.mind))
@@ -381,8 +381,8 @@
 	var/paid = job.pay_out(user, src)
 	if(paid <= 0)
 		return 0
+	// The job's receipt (notify_completed()) is the one "Paid to the ship" line
 	answer(noise <= 0 ? FIXER_LINE_PAY_CLEAN : (noise >= 3 ? FIXER_LINE_PAY_LOUD : FIXER_LINE_PAY_SOME))
-	to_chat(user, span_notice("Paid to the ship: [fixer_credits_text(paid)] cr."))
 	return paid
 
 /// The receiving fixer opens the case `user` holds a crack and looks inside before saying a word (spec 8)
@@ -501,7 +501,11 @@
 		default_raw_text = text
 	return ..()
 
-/// The note's text for `job`: up to FIXER_NOTE_LINES of the job's lines, then the pay and `initial`
+/**
+ * The note's text for `job`: up to FIXER_NOTE_LINES of the job's lines, then the pay and `initial`. The job's lines
+ * come already cut and html_encode()d (note_lines()), so they are used as they are: cutting or encoding them again
+ * would break an entity or show "&amp;".
+ */
 /proc/fixer_note_text(datum/mission/fixer_job/job, initial)
 	var/list/out = list()
 	var/list/lines = job?.note_lines()
@@ -509,9 +513,10 @@
 		if(length(out) >= FIXER_NOTE_LINES)
 			break
 		if(istext(line) && length(line))
-			out += html_encode(fixer_cut(line, FIXER_BOUND_NOTE_LINE))
+			out += line // xss-safe: note_lines() are cut and html_encode()d by the job
+	// The quote the job was bound with (base x zone, the higher of both ends for a run); the table if it is unbound
 	var/list/zone_pay = FIXER_ZONE_PAY
-	var/pay = round((job?.base_pay || 0) * zone_pay[fixer_outpost_band(job?.job_outpost)], 10)
+	var/pay = job?.bind_target() ? job.value : round((job?.base_pay || 0) * zone_pay[fixer_outpost_band(job?.job_outpost)], 10)
 	out += "[fixer_credits_text(pay)] cr. - [html_encode(initial)]"
 	return jointext(out, "<br>")
 
@@ -585,14 +590,6 @@
 	gap_low = 20 SECONDS
 	gap_high = 40 SECONDS
 
-// Fixers are not part of the crowd living_npcs() counts, so this is how many are missing, not how many there should be
-/datum/ambient_outpost_role/fixer/wanted(datum/ambient_place/outpost/place)
-	var/present = 0
-	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place?.npcs)
-		if(!QDELETED(npc) && npc.role == type && npc.stat != DEAD && !npc.fading)
-			present++
-	return max(0, max_count - present)
-
 /datum/ambient_outpost_role/fixer/settle(datum/ambient_place/outpost/place)
 	. = ..()
 	fixer_came(.)
@@ -625,15 +622,8 @@
 	outpost_types = list(/obj/structure/overmap/trader_outpost/black_market)
 
 // =========================================================================
-// THE CROWD CAP (L24): fixers are never counted
+// THE CROWD CAP (L24): see job_goods.dm, which holds the one rule for fixers and job people
 // =========================================================================
-
-// The crowd leaves fixers out: they never fill the cap or crowd out a regular (see the header)
-/datum/ambient_place/outpost/living_npcs()
-	. = list()
-	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in ..())
-		if(!istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/fixer))
-			. += npc
 
 /// This place's living fixers
 /datum/ambient_place/outpost/proc/living_fixers()
@@ -641,83 +631,5 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer in npcs)
 		if(!QDELETED(fixer) && fixer.stat != DEAD && !fixer.fading)
 			. += fixer
-
-// ...but they take up room like anyone, so nobody settles on top of one
-/datum/ambient_place/outpost/crowd_count(turf/tile, mob/living/carbon/human/npc/ambient_npc/asker, atom/ignore)
-	. = ..()
-	if(. == INFINITY || !tile)
-		return
-	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer as anything in living_fixers())
-		if(fixer == asker || fixer == ignore)
-			continue
-		var/datum/ambient_activity/current = fixer.activity
-		var/turf/at = (current && current.spot && !current.at_spot()) ? current.spot : get_turf(fixer)
-		if(!at || at.z != tile.z)
-			continue
-		if(at == tile)
-			return INFINITY
-		if(get_dist(at, tile) <= AMBIENT_CROWD_RADIUS)
-			.++
-
-// ...and they duck from a fight like anyone
-/datum/ambient_place/outpost/on_violence(datum/source, mob/living/offender)
-	SIGNAL_HANDLER
-	. = ..()
-	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer as anything in living_fixers())
-		if(get_dist(fixer, offender) <= AMBIENT_VIOLENCE_RANGE)
-			fixer.react_violence(offender)
-
-// ...and take cover from the kingpin's shootout like anyone
-/datum/controller/subsystem/ambient_npcs/check_shootout(datum/ambient_place/outpost/place)
-	var/turf/before = place?.shootout_refuge
-	. = ..()
-	if(!place?.occupied || place.shootout_refuge == before)
-		return
-	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer as anything in place.living_fixers())
-		if(place.shootout_refuge)
-			fixer.react_shootout(place.shootout_refuge)
-		else
-			fixer.shootout_over()
-
-/**
- * Fixers are settled in a pass of their own before the crowd's, and the crowd's pass is given only the crowd's roles,
- * so a full concourse never keeps a fixer away (L24). A test's own `roles` are split the same way.
- */
-/datum/controller/subsystem/ambient_npcs/settle_outpost(datum/ambient_place/outpost/place, list/roles, budget = AMBIENT_OUTPOST_SETTLE_PER_FIRE)
-	if(budget <= 0 || !place?.needs_settling || place.occupied)
-		return ..()
-	var/obj/structure/overmap/trader_outpost/outpost = place.outpost()
-	var/list/crowd = list()
-	var/made = 0
-	for(var/datum/ambient_outpost_role/role as anything in (roles || get_outpost_roles()))
-		if(!istype(role, /datum/ambient_outpost_role/fixer))
-			crowd += role
-			continue
-		if(made >= budget || !outpost || !role.npc_type || !role.applies_to(outpost))
-			continue
-		if(place.open_slots(role) > 0 && role.settle(place))
-			made++
-	if(made >= budget)
-		return made
-	return made + ..(place, crowd, budget - made)
-
-/// A fixer who is due comes off the lift whatever the crowd (L24); anyone else as before
-/datum/controller/subsystem/ambient_npcs/arrive_next(datum/ambient_place/outpost/place, list/roles)
-	var/obj/structure/overmap/trader_outpost/outpost = place?.outpost()
-	var/list/crowd = list()
-	for(var/datum/ambient_outpost_role/role as anything in (roles || get_outpost_roles()))
-		if(!istype(role, /datum/ambient_outpost_role/fixer))
-			crowd += role
-			continue
-		if(!outpost || !role.npc_type || !role.applies_to(outpost) || place.role_next_at[role.type] > world.time || place.open_slots(role) <= 0)
-			continue
-		var/turf/arrival = lift_arrival_turf(outpost)
-		if(!arrival)
-			break
-		place.role_next_at[role.type] = world.time + rand(role.gap_low, role.gap_high)
-		var/mob/living/carbon/human/npc/ambient_npc/npc = role.arrive(place, arrival)
-		if(npc)
-			return npc
-	return ..(place, crowd)
 
 #undef FIXER_ALIVE_TRAIT

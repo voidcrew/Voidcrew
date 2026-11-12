@@ -9,7 +9,8 @@
  *   on a board. Two on a slate are never the same kind, and a kind already running at that outpost is not offered
  *   there (one live job of a kind per outpost; a smuggle is one per outpost pair). A taken entry comes back
  *   FIXER_SLATE_REFILL later; an entry nobody took for FIXER_OFFER_EXPIRY is swapped at once. Several crews can be
- *   offered one entry: the first to take it has it.
+ *   offered one entry: the first to take it has it. L25: when none of the entries is open to the asking crew but some
+ *   kind would be, the oldest entry nobody holds an offer on gives way to one that is (fit_entry()).
  * - Trust (3.3): jobs paid, per crew record. Rest (3.4): per crew record and outpost, only ever pushed later.
  *   Burn (3.5): per crew record and per mind, so a new crew record does not shed it.
  *
@@ -369,13 +370,68 @@ GLOBAL_DATUM_INIT(fixer_network, /datum/fixer_network, new)
 		return FALSE
 	return !!job.allowed_at(outpost, crew)
 
-/// The entries on `outpost`'s slate `crew` may be offered, oldest first
+/// The entries on `outpost`'s slate `crew` may be offered, oldest first. With none, one is fitted for them (L25).
 /datum/fixer_network/proc/open_entries(obj/structure/overmap/trader_outpost/outpost, datum/voidcrew_crew_record/crew)
 	. = list()
 	var/datum/fixer_slate/slate = slate_for(outpost)
 	for(var/datum/mission/fixer_job/job as anything in slate?.entries)
 		if(entry_open_to(job, crew, outpost))
 			. += job
+	if(!length(.) && auto_fill && crew && length(slate?.entries))
+		var/datum/mission/fixer_job/fitted = fit_entry(slate, outpost, crew)
+		if(fitted)
+			. += fitted
+
+/// Whether a crew holds a live offer of `job` on `slate`, or someone is taking it now
+/datum/fixer_network/proc/entry_held(datum/fixer_slate/slate, datum/mission/fixer_job/job)
+	if(taking[job])
+		return TRUE
+	for(var/crew_key in slate.offers)
+		var/list/offer = slate.offers[crew_key]
+		if(islist(offer) && offer[1] == job && world.time < offer[2])
+			return TRUE
+	return FALSE
+
+/**
+ * L25: a slate always holds a job the asking crew may take when any kind is allowed for them. The oldest entry no crew
+ * holds an offer on gives way to a job of a kind `crew` may take (by trust, zone and the job's own test); with every
+ * entry on offer, the new one joins the slate beside them. The job, or null when no kind is allowed for that crew here.
+ */
+/datum/fixer_network/proc/fit_entry(datum/fixer_slate/slate, obj/structure/overmap/trader_outpost/outpost, datum/voidcrew_crew_record/crew)
+	if(!slate || !crew || !crew.can_work_in_zone(fixer_outpost_band(outpost)))
+		return null
+	var/datum/mission/fixer_job/gives_way
+	for(var/datum/mission/fixer_job/entry as anything in slate.entries)
+		if(!entry_held(slate, entry))
+			gives_way = entry
+			break
+	var/list/held_kinds = list()
+	for(var/datum/mission/fixer_job/held as anything in slate.entries)
+		if(held != gives_way)
+			held_kinds[held.job_kind] = TRUE
+	var/trust = trust_of(crew)
+	var/list/weights = job_weights().Copy()
+	for(var/job_type in weights.Copy())
+		var/datum/mission/fixer_job/cast = job_type
+		var/kind = initial(cast.job_kind)
+		if(trust < initial(cast.trust_tier) || held_kinds[kind] || kind_live_at(kind, outpost))
+			weights -= job_type
+	while(length(weights))
+		var/job_type = pick_weight(weights)
+		weights -= job_type
+		var/datum/mission/fixer_job/job = new_job(job_type, outpost)
+		if(!job)
+			continue
+		if(!entry_open_to(job, crew, outpost))
+			qdel(job)
+			continue
+		if(gives_way)
+			drop_entry(slate, gives_way)
+			qdel(gives_way)
+		slate.entries += job
+		slate.made_at[job] = world.time
+		return job
+	return null
 
 /// The entry offered to `crew` at `outpost` and still open, or null
 /datum/fixer_network/proc/live_offer(obj/structure/overmap/trader_outpost/outpost, datum/voidcrew_crew_record/crew)
@@ -575,7 +631,7 @@ GLOBAL_DATUM_INIT(fixer_network, /datum/fixer_network, new)
 		return
 	var/list/talkers = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.living_npcs())
-		if(istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+		if(istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) || fixer_crowd_exempt(npc))
 			continue
 		talkers += npc
 	for(var/count in 1 to min(2, length(talkers)))
@@ -670,7 +726,7 @@ GLOBAL_DATUM_INIT(fixer_network, /datum/fixer_network, new)
 		FIXER_LINE_NO_SHIP, FIXER_LINE_NO_TRUST, FIXER_LINE_WANTED, FIXER_LINE_OFFICER, FIXER_LINE_NOTHING,
 		FIXER_LINE_BURNED, FIXER_LINE_TROUBLE, FIXER_LINE_BUSY, FIXER_LINE_GONE, FIXER_LINE_TAKEN,
 		FIXER_LINE_PAY_CLEAN, FIXER_LINE_PAY_SOME, FIXER_LINE_PAY_LOUD, FIXER_LINE_FAILED, FIXER_LINE_SPOILED,
-		FIXER_LINE_WAIT, FIXER_LINE_NOT_YOURS, FIXER_LINE_WRONG_FIXER, FIXER_LINE_OFFER_SABOTAGE,
+		FIXER_LINE_WAIT, FIXER_LINE_NOT_YOURS, FIXER_LINE_WRONG_FIXER, FIXER_LINE_WHERE, FIXER_LINE_OFFER_SABOTAGE,
 		FIXER_LINE_OFFER_SMUGGLE, FIXER_LINE_OFFER_BREAKIN, FIXER_LINE_OFFER_HIT, FIXER_LINE_OFFER_EVIDENCE,
 		FIXER_LINE_OFFER_JAILBREAK, FIXER_LINE_REPEAT, FIXER_LINE_IDLE,
 	)

@@ -59,6 +59,19 @@
 	slate.made_at[job] = world.time
 	return job
 
+/// A job whose staging always finds room, so the take path is tested apart from any job package's staging. Weight 0:
+/// never on a real slate.
+/datum/mission/fixer_job/fixer_test
+	job_kind = "sabotage" // FIXER_JOB_SABOTAGE
+	slate_weight = 0
+
+/datum/mission/fixer_job/fixer_test/stage()
+	return TRUE
+
+/// A second kind, for a slate of two
+/datum/mission/fixer_job/fixer_test/other
+	job_kind = "smuggle" // FIXER_JOB_SMUGGLE
+
 /// The refusals come in spec 3.2's order: each check is only reached once every check before it passes
 /datum/unit_test/voidcrew_outpost_jobs_fixer/refusal_order
 
@@ -116,8 +129,8 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer = make_fixer(outpost)
 	var/mob/living/carbon/human/asker = crew_person()
 	var/datum/voidcrew_crew_record/crew = asker.mind.get_reputation_crew()
-	var/datum/mission/fixer_job/first = slate_job(outpost, /datum/mission/fixer_job/sabotage)
-	var/datum/mission/fixer_job/second = slate_job(outpost, /datum/mission/fixer_job/smuggle)
+	var/datum/mission/fixer_job/first = slate_job(outpost, /datum/mission/fixer_job/fixer_test)
+	var/datum/mission/fixer_job/second = slate_job(outpost, /datum/mission/fixer_job/fixer_test/other)
 	TEST_ASSERT(first && second, "Setup: the slate jobs could not be made")
 
 	var/list/options = fixer.talk_options(asker)
@@ -162,7 +175,7 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer = make_fixer(outpost)
 	var/mob/living/carbon/human/first = crew_person(2, 3)
 	var/mob/living/carbon/human/rival = crew_person(1, 2)
-	var/datum/mission/fixer_job/job = slate_job(outpost, /datum/mission/fixer_job/sabotage)
+	var/datum/mission/fixer_job/job = slate_job(outpost, /datum/mission/fixer_job/fixer_test)
 	TEST_ASSERT(job, "Setup: the slate job could not be made")
 	var/datum/voidcrew_crew_record/first_crew = first.mind.get_reputation_crew()
 	var/datum/voidcrew_crew_record/rival_crew = rival.mind.get_reputation_crew()
@@ -187,7 +200,7 @@
 	var/mob/living/carbon/human/crewmate = jobs_person(jobs_spot(3, 3))
 	var/datum/team/voidcrew/team = first_crew.teams[1]
 	team.join_member(crewmate.mind)
-	var/datum/mission/fixer_job/another = slate_job(outpost, /datum/mission/fixer_job/smuggle)
+	var/datum/mission/fixer_job/another = slate_job(outpost, /datum/mission/fixer_job/fixer_test/other)
 	network.make_offer(outpost, first_crew, another)
 	TEST_ASSERT_EQUAL(network.accept(crewmate, fixer), "busy", "A crew holding a job took a second") // FIXER_LINE_BUSY
 	TEST_ASSERT(!another.active, "A crew's second job started")
@@ -304,20 +317,60 @@
 	TEST_ASSERT(!HAS_TRAIT(fixer, "no_containment"), "A fixer's body can't be bagged") // TRAIT_NO_CONTAINMENT
 	TEST_ASSERT(network.lost_originals[REF(outpost)], "A fixer's death did not leave the seat to a stand-in")
 
-/// Fixers are not counted in the crowd's cap, and their role wants one only while none is there (L24)
+/// Fixers are not counted in the crowd's cap, and their role has room for one only while none is there (L24)
 /datum/unit_test/voidcrew_outpost_jobs_fixer/crowd
 
 /datum/unit_test/voidcrew_outpost_jobs_fixer/crowd/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = jobs_outpost()
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
 	var/datum/ambient_outpost_role/fixer/nan/role = allocate(/datum/ambient_outpost_role/fixer/nan)
-	TEST_ASSERT_EQUAL(role.wanted(place), 1, "An outpost with no fixer does not want one")
+	TEST_ASSERT_EQUAL(place.open_slots(role), 1, "An outpost with no fixer has no room for one")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/fixer = make_fixer(outpost)
 	fixer.role = role.type
-	TEST_ASSERT(!(fixer in place.living_npcs()), "A fixer counts in the crowd")
+	TEST_ASSERT((fixer in place.living_npcs()), "A fixer is not one of the town's people outside the cap count")
 	TEST_ASSERT((fixer in place.living_fixers()), "A fixer is not among the place's fixers")
-	TEST_ASSERT_EQUAL(role.wanted(place), 0, "An outpost with its fixer wants another")
+	TEST_ASSERT_EQUAL(place.open_slots(role), 0, "An outpost with its fixer has room for another")
+	place.fixer_cap_count = TRUE
+	TEST_ASSERT(!(fixer in place.living_npcs()), "A fixer counts against the crowd's cap")
+	TEST_ASSERT_EQUAL(place.open_slots(role), 0, "While the cap is counted, an outpost with its fixer has room for another")
 	TEST_ASSERT_EQUAL(place.crowd_count(get_turf(fixer)), INFINITY, "Someone could settle on a fixer's tile")
+	place.fixer_cap_count = FALSE
+
+/// L25: a crew that may take some kind of job always finds one on the slate, even when the slate held only work above it
+/datum/unit_test/voidcrew_outpost_jobs_fixer/fitted_slate
+
+/datum/unit_test/voidcrew_outpost_jobs_fixer/fitted_slate/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = jobs_outpost()
+	var/mob/living/carbon/human/asker = crew_person()
+	var/datum/voidcrew_crew_record/crew = asker.mind.get_reputation_crew()
+	network.set_trust(crew, 0)
+	var/datum/mission/fixer_job/hit = slate_job(outpost, /datum/mission/fixer_job/hit)
+	var/datum/mission/fixer_job/evidence = slate_job(outpost, /datum/mission/fixer_job/breakin/evidence)
+	TEST_ASSERT(hit && evidence, "Setup: the slate's jobs could not be made")
+	TEST_ASSERT(!length(network.open_entries(outpost, crew)), "Setup: a new crew was offered work above it")
+
+	// Whether any kind is open to this crew here at all (a job package's own test may say no in this room)
+	var/any_kind = FALSE
+	for(var/job_type in network.job_weights())
+		var/datum/mission/fixer_job/probe = network.new_job(job_type, outpost)
+		if(probe && network.entry_open_to(probe, crew, outpost))
+			any_kind = TRUE
+		qdel(probe)
+
+	network.auto_fill = TRUE
+	var/list/open = network.open_entries(outpost, crew)
+	network.auto_fill = FALSE
+	var/datum/fixer_slate/slate = network.slate_for(outpost)
+	jobs |= slate.entries
+	if(!any_kind)
+		TEST_ASSERT(!length(open), "A crew no kind is open to was fitted a job")
+		return
+	TEST_ASSERT_EQUAL(length(open), 1, "A crew that may take some kind found nothing on the slate")
+	var/datum/mission/fixer_job/fitted = open[1]
+	TEST_ASSERT(fitted in slate.entries, "The fitted job is not on the slate")
+	TEST_ASSERT_EQUAL(length(slate.entries), 2, "Fitting a job did not swap out an entry") // FIXER_SLATE_SIZE
+	TEST_ASSERT(QDELETED(hit), "The oldest entry nobody held did not give way")
+	TEST_ASSERT(!QDELETED(evidence) && (evidence in slate.entries), "An entry that did not need to give way was dropped")
 
 /// The strings: every speaker has every line, at least two of each, inside the bounds and free of the rules' words
 /datum/unit_test/voidcrew_outpost_jobs_fixer/strings

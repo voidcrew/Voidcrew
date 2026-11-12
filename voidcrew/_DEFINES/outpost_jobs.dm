@@ -166,6 +166,8 @@
 #define FIXER_LINE_WAIT "wait"
 #define FIXER_LINE_NOT_YOURS "not_yours"
 #define FIXER_LINE_WRONG_FIXER "wrong_fixer"
+/// "It's done." with the deed done but the goods not in hand (integration)
+#define FIXER_LINE_WHERE "where"
 #define FIXER_LINE_OFFER_SABOTAGE "offer_sabotage"
 #define FIXER_LINE_OFFER_SMUGGLE "offer_smuggle"
 #define FIXER_LINE_OFFER_BREAKIN "offer_breakin"
