@@ -691,7 +691,7 @@
 		if(!(cell_id in tiles_by_id))
 			log_mapping("OUTPOST POLICE: [outpost] has a cell sign for '[cell_id]' and no cell.")
 	if(!length(cells))
-		log_mapping("OUTPOST POLICE: [outpost] has no holding cell; arrests there end with a fine and a release.")
+		log_mapping("OUTPOST POLICE: [outpost] has no holding cell; a one or two star arrest is fined and let go, three or more is held cuffed at the desk.")
 
 /// The usable cell with the fewest prisoners, the one nearest `near` of equals. Null if there is none.
 /datum/outpost_police/proc/cell_best(atom/near)

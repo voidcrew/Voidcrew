@@ -749,3 +749,72 @@
 	police.tick_cells()
 	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner whose time was up is still held")
 	TEST_ASSERT_NULL(prisoner.handcuffed, "A prisoner let out after their term is still in police cuffs")
+
+/**
+ * Each of the three outposts as mapped: the police find a desk, a lift, two usable cells with a door, a sign and a
+ * lobby tile each, the evidence locker and the property lockers, and a patrol group with at least two routes whose
+ * tagged stops each have what their activity needs at hand.
+ */
+/datum/unit_test/voidcrew_outpost_police_map_kit
+
+/datum/unit_test/voidcrew_outpost_police_map_kit/Run()
+	var/list/known_tags = list("shopfront", "coffee", "chat", "bench", "bar", "cells", "desk")
+	for(var/outpost_type in list(
+		/obj/structure/overmap/trader_outpost/general,
+		/obj/structure/overmap/trader_outpost/outfitter,
+		/obj/structure/overmap/trader_outpost/black_market,
+	))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			continue
+		var/datum/outpost_police/police = outpost.police
+		TEST_ASSERT_NOTNULL(police.desk_turf, "[outpost_type] has no police desk")
+		TEST_ASSERT(length(police.lift_turfs) > 0, "[outpost_type] has no police lift")
+		for(var/turf/lift as anything in police.lift_turfs)
+			TEST_ASSERT(!lift.density, "[outpost_type]'s police lift at [AREACOORD(lift)] is a wall")
+			TEST_ASSERT_NOTNULL(locate(/obj/machinery/door/airlock/outpost/police) in range(3, lift), "[outpost_type]'s police lift at [AREACOORD(lift)] has no police door by it")
+		TEST_ASSERT_EQUAL(length(police.cells), 2, "[outpost_type] built [length(police.cells)] cells, not 2")
+		for(var/datum/outpost_police_cell/cell as anything in police.cells)
+			TEST_ASSERT(cell.usable(), "[outpost_type]'s cell [cell.cell_id] cannot be used")
+			TEST_ASSERT_NOTNULL(cell.outside_turf, "[outpost_type]'s cell [cell.cell_id] has no lobby tile outside its door")
+			TEST_ASSERT_NOTNULL(cell.sign, "[outpost_type]'s cell [cell.cell_id] has no sign")
+			TEST_ASSERT(length(cell.tiles) >= 2, "[outpost_type]'s cell [cell.cell_id] has [length(cell.tiles)] floor tiles")
+			// Decision 28: a toilet and a chair, no bench
+			var/toilets = 0
+			var/chairs = 0
+			var/benches = 0
+			for(var/turf/tile as anything in cell.tiles)
+				for(var/obj/structure/thing in tile)
+					if(istype(thing, /obj/structure/toilet))
+						toilets++
+					else if(istype(thing, /obj/structure/chair/sofa/bench))
+						benches++
+					else if(istype(thing, /obj/structure/chair))
+						chairs++
+			TEST_ASSERT(toilets && chairs && !benches, "[outpost_type]'s cell [cell.cell_id] has [toilets] toilets, [chairs] chairs and [benches] benches")
+		TEST_ASSERT_NOTNULL(police.evidence_locker, "[outpost_type] has no evidence locker")
+		TEST_ASSERT(length(police.lockers) >= 2, "[outpost_type] has [length(police.lockers)] property lockers")
+
+		var/datum/stealth_group/group = police.patrol_group()
+		TEST_ASSERT_NOTNULL(group, "[outpost_type]'s police have no patrol group")
+		if(!group)
+			continue
+		var/routes = 0
+		for(var/route in group.routes)
+			if(length(group.routes[route]) > 1)
+				routes++
+		TEST_ASSERT(routes >= 2, "[outpost_type] has [routes] police beats")
+		for(var/turf/spot as anything in police.stop_activities)
+			var/tag = police.stop_activities[spot]
+			if(!length(tag))
+				continue
+			TEST_ASSERT(tag in known_tags, "[outpost_type]'s stop at [AREACOORD(spot)] has an unknown tag \"[tag]\"")
+			switch(tag)
+				if("coffee")
+					TEST_ASSERT((locate(/obj/machinery/vending/coffee) in range(3, spot)) || (locate(/obj/structure/table) in range(3, spot)), "[outpost_type]'s coffee stop at [AREACOORD(spot)] has no machine or counter at hand")
+				if("bar")
+					TEST_ASSERT_NOTNULL(locate(/obj/structure/table) in range(3, spot), "[outpost_type]'s bar stop at [AREACOORD(spot)] has no counter at hand")
+				if("bench")
+					TEST_ASSERT_NOTNULL(locate(/obj/structure/chair) in range(3, spot), "[outpost_type]'s bench stop at [AREACOORD(spot)] has no seat at hand")
+				if("shopfront")
+					TEST_ASSERT_NOTNULL(locate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader) in range(7, spot), "[outpost_type]'s shopfront stop at [AREACOORD(spot)] has no trader near")

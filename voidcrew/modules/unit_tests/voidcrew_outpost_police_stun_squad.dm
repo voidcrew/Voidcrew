@@ -394,9 +394,10 @@
 	dispatch_clear(police)
 
 /**
- * Owner decision 39: at the red zone's outpost (its profile finishes the downed) the squad at three stars is all
- * lethal, and a three-star suspect who goes down is finished, not cuffed: still a target, no arrest, no alert
- * dropped. At two stars the downed are still arrested there.
+ * Owner decisions 39 and 43: at the red zone's outpost (its profile finishes the downed) the squad at three stars is
+ * all lethal, and a three-star suspect who goes down is shot until dead, not cuffed: still a target, no arrest, no
+ * alert dropped, and no officer, the marshal included, has a finishing move. At two stars the downed are still
+ * arrested there.
  */
 /datum/unit_test/voidcrew_outpost_police_stun_squad_red_finishes
 
@@ -440,4 +441,9 @@
 	TEST_ASSERT(police.arrest_downed(suspect, officer), "A downed two-star suspect in the red zone was not arrested")
 	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)
+
+	// Gunfire only: nobody on the squad, nor the marshal at the top of the ladder, can do a gun execution
+	var/list/everyone = squad + stun_squad_officers(outpost, 1, /mob/living/carbon/human/npc/ambient_npc/outpost/police/marshal)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in everyone)
+		TEST_ASSERT(!member.hv_can_execute(), "A red zone [member.type] can do a finishing move")
 	dispatch_clear(police)

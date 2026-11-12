@@ -455,8 +455,8 @@
 
 /**
  * What `officer` does at a stop tagged `tag`, or null to stand: a word at a shop front, a coffee at the machine, a
- * chat with someone at hand, a seat on a bench, a look at the cells, the desk. "watch" (an untagged stop) is only
- * the look in on a sleeper, which any stop but the desk does first.
+ * chat with someone at hand, a seat on a bench, a look at the cells, the desk. "watch" (an untagged stop) is the
+ * look in on a sleeper, which any stop but the desk does first, or else now and then a radio check-in.
  */
 /datum/outpost_police/proc/stop_activity_for(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, tag)
 	// Someone asleep on the floor nearby comes first: a look and a word to move along (police_life.dm), never at the desk
@@ -472,6 +472,10 @@
 			var/obj/machinery/vending/coffee/machine = locate() in range(OUTPOST_POLICE_STOP_REACH, officer)
 			if(machine)
 				return new /datum/ambient_activity/police_coffee(officer, machine)
+			// No machine at hand (Halcyon's diner stop has a coffee maker on its counter): a cup at the counter
+			var/obj/structure/table/coffee_counter = locate() in range(OUTPOST_POLICE_STOP_REACH, officer)
+			if(coffee_counter)
+				return new /datum/ambient_activity/drink/police(officer, coffee_counter)
 		if("bar")
 			var/obj/structure/table/counter = locate() in range(OUTPOST_POLICE_STOP_REACH, officer)
 			if(counter)
@@ -488,9 +492,12 @@
 			return new /datum/ambient_activity/police_cells(officer)
 		if("desk")
 			return new /datum/ambient_activity/police_desk(officer)
+		if("watch")
+			// A plain stop on the beat: now and then a word to the desk over the radio (police_life.dm)
+			officer.life_check_in()
 	return null
 
-/// A coffee at the bar counter on the beat (Undertow has no machine on its concourse): never a drink on duty
+/// A coffee at a counter on the beat, at a "bar" stop or a "coffee" stop with no machine: never a drink on duty
 /datum/ambient_activity/drink/police
 	name = "having a coffee at the bar"
 	reagent_type = /datum/reagent/consumable/coffee

@@ -390,4 +390,29 @@
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer stayed on a suspect with no stars")
 	TEST_ASSERT_EQUAL(brain.route_id, "a", "An officer stood down lost its beat")
 
+/// A coffee stop with no coffee machine at hand but a counter (Halcyon's diner) has a cup at the counter; with neither it stands. A plain stop checks in over the radio.
+/datum/unit_test/voidcrew_stealth_live/police/coffee_counter
+
+/datum/unit_test/voidcrew_stealth_live/police/coffee_counter/Run()
+	TEST_ASSERT(police_room(9, 5), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, NORTH)
+	var/datum/ambient_activity/bare = police.stop_activity_for(officer, "coffee")
+	TEST_ASSERT_NULL(bare, "A coffee stop with no machine and no counter gave [bare?.type]")
+	var/obj/structure/table/counter = allocate(/obj/structure/table, at(3, 3))
+	var/datum/ambient_activity/cup = police.stop_activity_for(officer, "coffee")
+	TEST_ASSERT(istype(cup, /datum/ambient_activity/drink/police), "A coffee stop by a counter with no machine gave [cup?.type || "nothing"]")
+	TEST_ASSERT_EQUAL(cup.anchor(), counter, "The coffee was taken somewhere other than the counter")
+	qdel(cup)
+	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, at(1, 3))
+	var/datum/ambient_activity/vended = police.stop_activity_for(officer, "coffee")
+	TEST_ASSERT(istype(vended, /datum/ambient_activity/police_coffee), "A coffee stop with a machine at hand did not use it ([vended?.type || "nothing"])")
+	TEST_ASSERT_EQUAL(vended.anchor(), machine, "The coffee was taken from somewhere other than the machine")
+	qdel(vended)
+
+	// A plain stop: the radio check-in, not more than once in its gap
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	voice.next_check_in_at = 0
+	TEST_ASSERT_NULL(police.stop_activity_for(officer, "watch"), "A plain stop with nobody asleep near gave an activity")
+	TEST_ASSERT(voice.next_check_in_at > world.time, "A beat officer at a plain stop never checked in")
+
 #undef POLICE_STEALTH_BEAT
