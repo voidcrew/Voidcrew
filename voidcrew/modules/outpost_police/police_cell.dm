@@ -26,6 +26,8 @@
 #define CELL_OFFICER_PASS (2 SECONDS)
 /// Taking a pair of cuffs off (spec 6.2)
 #define CELL_UNCUFF_TIME (2 SECONDS)
+/// Longest a booking waits for a knocked-down officer to get up and take the cuffs off
+#define CELL_UNCUFF_WAIT (10 SECONDS)
 
 // =========================================================================
 // THE CELL
@@ -527,6 +529,8 @@
 /// `prisoner` is let out: the warrant closes, the door opens, the sergeant says `line`
 /datum/outpost_police_cell/proc/release(datum/mind/prisoner, mob/living/body, line)
 	forget_prisoner(prisoner)
+	// Booked while the officer could not get the cuffs off: nobody walks out of a served term in police cuffs
+	outpost_police_drop_used_cuffs(body)
 	police.close_warrant(prisoner, TRUE)
 	SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_RELEASED, body)
 	police.cell_station_say(line)
@@ -720,10 +724,16 @@
 	var/datum/outpost_police_case/case = cases[who.mind]
 	if(case && !QDELETED(case) && case.cuffed && case.get_suspect() == who)
 		return TRUE
+	return !!cell_holding(who.mind)
+
+/// The cell holding `who`, or null
+/datum/outpost_police/proc/cell_holding(datum/mind/who)
+	if(!who)
+		return null
 	for(var/datum/outpost_police_cell/cell in cells)
-		if(who.mind in cell.prisoners)
-			return TRUE
-	return FALSE
+		if(who in cell.prisoners)
+			return cell
+	return null
 
 /**
  * Books `suspect`, brought to a cell by `officer`: into the emptier cell with the officer, the fine, then
@@ -740,15 +750,19 @@
 		return FALSE
 	if(suspect.stat == DEAD || HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION) || officer.stat == DEAD)
 		return FALSE
-	for(var/datum/outpost_police_cell/held in cells)
-		if(prisoner in held.prisoners)
-			return FALSE
+	if(cell_holding(prisoner))
+		return FALSE
+	// The emptiest cell, however many it holds already: a cell takes more than one (lead decision L-A2)
 	var/datum/outpost_police_cell/cell = cell_best(officer)
-	if(!cell)
-		return cell_book_fallback(suspect, officer, warrant)
-	return cell.book_in(suspect, officer, warrant)
+	if(cell)
+		return cell.book_in(suspect, officer, warrant)
+	// No cell at three stars and up: no fine and no letting go (owner decision 37). The arrest holds them until a
+	// cell can be had (police_arrest.dm, CASE_STEP_HOLD).
+	if(get_stars(prisoner) >= 3)
+		return FALSE
+	return cell_book_fallback(suspect, officer, warrant)
 
-/// An outpost with no usable cell: the fine is tried on the spot and they are let go
+/// An outpost with no usable cell, one or two stars: the fine is tried on the spot and they are let go
 /datum/outpost_police/proc/cell_book_fallback(mob/living/carbon/suspect, mob/living/officer, datum/outpost_warrant/warrant)
 	var/datum/mind/prisoner = suspect.mind
 	charge_fine(warrant)
@@ -760,9 +774,18 @@
 	SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_RELEASED, suspect)
 	return TRUE
 
-/// `officer` takes `prisoner`'s cuffs off, a real do_after. If the officer cannot, the cuffs stay on.
+/**
+ * `officer` takes `prisoner`'s cuffs off, a real do_after, three tries. An officer knocked down or out meanwhile
+ * gets up and tries again, CELL_UNCUFF_WAIT at most. If the officer cannot, the cuffs stay on (a served term
+ * drops them, release()).
+ */
 /datum/outpost_police/proc/cell_remove_cuffs(mob/living/carbon/prisoner, mob/living/officer)
+	var/wait_until = world.time + CELL_UNCUFF_WAIT
 	for(var/attempt in 1 to 3)
+		if(QDELETED(prisoner) || (!prisoner.handcuffed && !prisoner.legcuffed))
+			return
+		while(!QDELETED(officer) && officer.stat != DEAD && (officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED)) && world.time < wait_until)
+			sleep(0.5 SECONDS)
 		if(QDELETED(prisoner) || (!prisoner.handcuffed && !prisoner.legcuffed))
 			return
 		if(QDELETED(officer) || officer.stat != CONSCIOUS)
@@ -888,3 +911,4 @@
 #undef CELL_BOOKING_STALE
 #undef CELL_OFFICER_PASS
 #undef CELL_UNCUFF_TIME
+#undef CELL_UNCUFF_WAIT

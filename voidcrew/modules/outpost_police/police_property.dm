@@ -459,10 +459,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 
 /// Whether `who` is a prisoner in any cell right now
 /datum/outpost_police/proc/property_held_in_cells(datum/mind/who)
-	for(var/datum/outpost_police_cell/cell as anything in cells)
-		if(who in cell.prisoners)
-			return TRUE
-	return FALSE
+	return !!cell_holding(who)
 
 /// The locker holding `thing` among its listed goods, if any
 /datum/outpost_police/proc/property_locker_holding(obj/item/thing)

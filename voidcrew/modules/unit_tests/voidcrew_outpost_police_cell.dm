@@ -692,3 +692,60 @@
 	cell.admit(person, world.time + 300)
 	TEST_ASSERT(police.in_custody(person), "A prisoner is not in custody")
 	TEST_ASSERT_EQUAL(police.cell_best(), police_cell_named(police, "b"), "The next booking does not go to the empty cell")
+
+/**
+ * Lead decision L-A2: at three stars every cell taking someone already is no reason to let a suspect go; the booking
+ * goes to the emptiest cell anyway, with no fine. With no cell at all, three stars are never fined or let go.
+ */
+/datum/unit_test/voidcrew_outpost_police_cell_three_stars_crowded
+
+/datum/unit_test/voidcrew_outpost_police_cell_three_stars_crowded/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	// Placed by hand: two in a, one in b
+	for(var/list/spot in list(list(cell_a, 1), list(cell_a, 2), list(cell_b, 1)))
+		var/datum/outpost_police_cell/cell = spot[1]
+		var/mob/living/carbon/human/held = police_cell_person(cell.tiles[spot[2]])
+		police_pin_warrant(police, held.mind, 55)
+		cell.admit(held, world.time + 6000)
+	var/list/result = police_test_book(police, 3, TRUE)
+	TEST_ASSERT_NOTNULL(result, "A three-star suspect was not booked with every cell holding someone")
+	TEST_ASSERT_EQUAL(result[3], cell_b, "The booking did not go to the emptier cell")
+	TEST_ASSERT_EQUAL(length(cell_b.prisoners), 2, "The emptier cell does not hold both prisoners")
+	TEST_ASSERT_EQUAL(police.fine_tries, 0, "A three-star booking tried the fine")
+
+	// No cell at all: nothing taken, the cuffs stay on and the warrant stays open, for the arrest to hold them
+	var/datum/outpost_police/cell_test/bare = allocate(/datum/outpost_police/cell_test)
+	bare.pinned_stars = 3
+	bare.fine_result = TRUE
+	var/mob/living/carbon/human/suspect = police_cell_person(run_loc_floor_top_right)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(run_loc_floor_top_right, SOUTH))
+	police_pin_warrant(bare, suspect.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	TEST_ASSERT(!bare.book(suspect, officer), "book() with no cell let a three-star suspect go")
+	TEST_ASSERT_EQUAL(bare.fine_tries, 0, "A three-star suspect with no cell was fined")
+	TEST_ASSERT_NOTNULL(suspect.handcuffed, "A three-star suspect with no cell had the cuffs taken off")
+	TEST_ASSERT_EQUAL(length(bare.closed), 0, "A three-star suspect with no cell had the warrant closed")
+
+/// A booking officer knocked down while taking the cuffs off gets up and finishes; a term served still in a used police pair ends out of it
+/datum/unit_test/voidcrew_outpost_police_cell_never_left_cuffed
+
+/datum/unit_test/voidcrew_outpost_police_cell_never_left_cuffed/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	var/mob/living/carbon/human/suspect = police_cell_person(cell.tiles[1])
+	var/mob/living/carbon/human/officer = police_cell_person(cell.tiles[2])
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	officer.Paralyze(2 SECONDS)
+	police.cell_remove_cuffs(suspect, officer)
+	TEST_ASSERT_NULL(suspect.handcuffed, "The cuffs stayed on when the officer was knocked down taking them off")
+
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[3])
+	police_pin_warrant(police, prisoner.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(prisoner, officer), "Setup: the prisoner did not get cuffed")
+	cell.admit(prisoner, world.time + 300)
+	cell.prisoners[prisoner.mind] = world.time
+	police.tick_cells()
+	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner whose time was up is still held")
+	TEST_ASSERT_NULL(prisoner.handcuffed, "A prisoner let out after their term is still in police cuffs")

@@ -932,3 +932,101 @@
 	TEST_ASSERT(!police.order_pending(suspect), "A three-star suspect is held fire on for an order")
 	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)
+
+/**
+ * Lead decision L-A2: a three-star suspect in cuffs with no cell to be had is held by the desk, never fined or let
+ * go, and taken to a cell again on the next try once there is one. A cell that can't be got to holds them the same way.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_hold_for_cell
+	var/datum/outpost_police/saved_police
+	var/list/saved_cells
+
+/datum/unit_test/voidcrew_outpost_police_arrest_hold_for_cell/Destroy()
+	if(saved_police && saved_cells)
+		saved_police.cells = saved_cells
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_arrest_hold_for_cell/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.searched = TRUE
+	case.cuffs_on(suspect)
+	case.disposed_at = world.time
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 55) // three stars (OUTPOST_POLICE_STAR_HEAT 50)
+	officer.start_pulling(suspect)
+	saved_police = police
+	saved_cells = police.cells
+	police.cells = list()
+
+	case.act_book(officer, suspect)
+	TEST_ASSERT(!QDELETED(case), "A three-star arrest with no cell was closed")
+	TEST_ASSERT_EQUAL(case.step, "hold", "A three-star suspect with no cell is not held") // CASE_STEP_HOLD
+	TEST_ASSERT_EQUAL(suspect.handcuffed, cuffs, "A three-star suspect with no cell came out of the cuffs")
+	TEST_ASSERT_EQUAL(police.warrants[suspect.mind], warrant, "A three-star suspect with no cell had the warrant closed")
+	TEST_ASSERT(police.in_custody(suspect), "A suspect held for want of a cell is not in custody")
+	case.step_started_at = world.time - 120 SECONDS
+	case.hold_retry_at = 0
+	case.process_case()
+	TEST_ASSERT_EQUAL(case.step, "hold", "A held suspect was let go or reset with still no cell")
+
+	// A cell again: the next try takes them to it
+	police.cells = saved_cells
+	case.hold_retry_at = 0
+	case.step_hold()
+	TEST_ASSERT_EQUAL(case.step, "desk", "A held suspect was not taken to a cell once there was one")
+
+	// A cell that can't be got to: the walk times out into the hold, not back to the start
+	case.step_started_at = world.time - 61 SECONDS // OUTPOST_POLICE_STEP_TIMEOUT is 60 s
+	case.process_case()
+	TEST_ASSERT_EQUAL(case.step, "hold", "A three-star suspect whose cell can't be reached was not held")
+	TEST_ASSERT_EQUAL(case.resets, 0, "An unreachable cell counted as a stuck arrest")
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
+
+/// A release nobody gets done goes to another officer, and once that fails too the used pair comes off: nobody let go stays in police cuffs
+/datum/unit_test/voidcrew_outpost_police_arrest_release_handoff
+
+/datum/unit_test/voidcrew_outpost_police_arrest_release_handoff/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = police_officer(outpost)
+	police_arrest_kit(other)
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.cuffs_on(suspect)
+	case.finish()
+	TEST_ASSERT_EQUAL(case.step, "release", "An arrest called off in our cuffs did not go to the release")
+
+	case.step_started_at = world.time - 61 SECONDS // OUTPOST_POLICE_STEP_TIMEOUT is 60 s
+	case.process_case()
+	TEST_ASSERT(!QDELETED(case), "A release closed on the first officer's timeout")
+	TEST_ASSERT_NOTEQUAL(officer.case, case, "The officer who did not get the release done still has it")
+	TEST_ASSERT_NOTEQUAL(case.arresting(), officer, "The release went back to the officer who did not get it done")
+	TEST_ASSERT_EQUAL(suspect.handcuffed, cuffs, "The cuffs came off before another officer had a go")
+
+	for(var/tries in 1 to 3)
+		if(QDELETED(case))
+			break
+		case.step_started_at = world.time - 61 SECONDS
+		case.process_case()
+	TEST_ASSERT(QDELETED(case), "A release nobody gets done never ends")
+	TEST_ASSERT_NULL(suspect.handcuffed, "A suspect let go is still in police cuffs")
+	police_pin_warrant(police, suspect.mind, 0)

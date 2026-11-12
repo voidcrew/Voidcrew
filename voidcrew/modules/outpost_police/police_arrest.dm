@@ -47,6 +47,9 @@
 #define CASE_STEP_DOWNED "standby"
 /// The arrest is called off with our cuffs still on them: an officer goes and takes them off
 #define CASE_STEP_RELEASE "release"
+/// Three stars and up with no cell to be had (none, or none that can be got to): held in cuffs by the desk, and the
+/// booking tried again every CASE_HOLD_RETRY. Never a fine (owner decision 37, lead decision L-A2).
+#define CASE_STEP_HOLD "hold"
 
 // ===== ACTIONS (`case.acting`) =====
 
@@ -84,6 +87,12 @@
 #define CASE_LIFT_PATIENCE (8 SECONDS)
 /// ...and left out of every lift choice for this long
 #define CASE_LIFT_SKIP (30 SECONDS)
+/// How often a suspect held for want of a cell is taken to one again
+#define CASE_HOLD_RETRY (30 SECONDS)
+/// A release no officer has done in a step's time goes to another officer, this many times; then the cuffs come off
+#define CASE_RELEASE_HANDOFFS 2
+/// Longest a release waits for an officer at all before the cuffs come off where the suspect stands
+#define CASE_RELEASE_LIMIT (3 MINUTES)
 /// A walk to the evidence locker (then the desk) that gets no nearer for this long tries the next place
 #define CASE_EVIDENCE_PATIENCE (20 SECONDS)
 
@@ -266,6 +275,14 @@
 	var/lift_best_at = 0
 	/// Walks to the evidence locker that went nowhere: 1, the desk instead; 2, wherever the officer stands
 	var/evidence_stalls = 0
+	/// world.time a suspect held for want of a cell is next taken to one (CASE_STEP_HOLD)
+	var/hold_retry_at = 0
+	/// world.time the release step began
+	var/release_since = 0
+	/// Officers who had the release and did not get it done: not given it again
+	var/list/release_tried
+	/// Times the release went to another officer
+	var/release_handoffs = 0
 
 /datum/outpost_police_case/New(datum/outpost_police/new_police, datum/outpost_warrant/new_warrant)
 	. = ..()
@@ -288,8 +305,14 @@
 			releaser = officer
 		drop_officer(officer)
 	// Called off with police cuffs still on and nobody booking them: whoever stands by takes them off
-	if(cuffed && police_cuffs && !booked_at && releaser && suspect && suspect.stat != DEAD && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police))
-		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_police_take_cuffs_off), releaser, suspect)
+	if(cuffed && police_cuffs && !booked_at && suspect && suspect.stat != DEAD && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police))
+		if(step == CASE_STEP_RELEASE)
+			// The release is over and no officer got the cuffs off (lead decision L-A2): the used pair comes off where
+			// they stand, so nobody let go stays in police cuffs
+			if(!police?.cell_holding(suspect.mind))
+				outpost_police_drop_used_cuffs(suspect)
+		else if(releaser)
+			INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_police_take_cuffs_off), releaser, suspect)
 	if(police && warrant?.mind && police.cases[warrant.mind] == src)
 		police.cases -= warrant.mind
 	officers = list()
@@ -342,6 +365,7 @@
 		unregister_order(suspect)
 		lift_goal = null
 		set_step(CASE_STEP_RELEASE)
+		release_since = world.time
 		return
 	close()
 
@@ -403,7 +427,7 @@
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = ref?.resolve()
 		if(!officer || (officer in kept))
 			continue
-		if(officer.case == src && officer_fit(officer))
+		if(officer.case == src && officer_fit(officer) && !(release_tried && (WEAKREF(officer) in release_tried)))
 			kept += officer
 		else
 			drop_officer(officer)
@@ -440,6 +464,8 @@
 	var/best_score = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police?.officers)
 		if(officer.case || (officer in exclude) || !officer_fit(officer))
+			continue
+		if(release_tried && (WEAKREF(officer) in release_tried))
 			continue
 		var/turf/officer_turf = get_turf(officer)
 		var/score = (where && officer_turf?.z == where.z) ? get_dist(officer_turf, where) : 500
@@ -575,7 +601,11 @@
 		// Nobody to work it: the case waits for dispatch, and the clock waits with it
 		step_started_at = world.time
 		return
-	if(step != CASE_STEP_DOWNED && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
+	if(step != CASE_STEP_DOWNED && step != CASE_STEP_HOLD && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
+		// Three stars and up, in cuffs with the evidence handed in, and the cell can't be got to: held, not let go
+		if((step == CASE_STEP_DESK || step == CASE_STEP_BOOK) && hold_for_cell())
+			start_hold()
+			return
 		reset_case()
 		return
 	// Nobody stands over someone in crit for ever (review-1 S1): the arrest is called off and the cuffs come off
@@ -588,10 +618,16 @@
 		return
 	run_step()
 
-/// The release step, once a second: an officer walks up to the suspect and takes our cuffs off. It ends when they
-/// are off, the suspect is gone, or the step's time is up.
+/**
+ * The release step, once a second: an officer walks up to the suspect and takes our cuffs off. An officer who gets
+ * no nearer in a step's time hands it to another, up to CASE_RELEASE_HANDOFFS times; after that, or after
+ * CASE_RELEASE_LIMIT in all, the case ends and the used pair comes off where they stand (Destroy()).
+ */
 /datum/outpost_police_case/proc/process_release()
 	if(!needs_release())
+		close()
+		return
+	if(world.time - release_since >= CASE_RELEASE_LIMIT)
 		close()
 		return
 	staff()
@@ -599,10 +635,21 @@
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 	if(!officer)
+		// Every officer about has had a go: nobody is left to do it
+		if(LAZYLEN(release_tried))
+			close()
+			return
 		step_started_at = world.time
 		return
 	if(world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
-		close()
+		if(release_handoffs >= CASE_RELEASE_HANDOFFS)
+			close()
+			return
+		release_handoffs++
+		LAZYADD(release_tried, WEAKREF(officer))
+		drop_officer(officer)
+		staff()
+		step_started_at = world.time
 		return
 	step_release()
 
@@ -629,6 +676,8 @@
 			step_downed()
 		if(CASE_STEP_RELEASE)
 			step_release()
+		if(CASE_STEP_HOLD)
+			step_hold()
 
 /**
  * Whether the case is over, and closes it if so: the warrant gone, no stars, three or more stars on someone
@@ -1169,6 +1218,39 @@
 	if(!searched)
 		begin_action(CASE_ACT_SEARCHING)
 
+/**
+ * Held for want of a cell: the officer keeps hold of them and stands them by the desk, and every CASE_HOLD_RETRY
+ * takes them back to a cell if there is one. No timeout: they are held until booked, let go or out of the cuffs.
+ */
+/datum/outpost_police_case/proc/step_hold()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
+	var/mob/living/carbon/suspect = get_suspect()
+	if(!officer || !suspect)
+		return
+	if(!keep_pulling(officer, suspect))
+		return
+	if(world.time >= hold_retry_at)
+		hold_retry_at = world.time + CASE_HOLD_RETRY
+		if(police.cell_best(officer))
+			set_step(CASE_STEP_DESK)
+			return
+	if(police.desk_turf)
+		route_to(officer, police.desk_turf, CASE_COVER_DISTANCE)
+
+/// Whether a booking that cannot be done now holds the suspect instead (three stars and up, in our hands, evidence in)
+/datum/outpost_police_case/proc/hold_for_cell()
+	var/mob/living/carbon/suspect = get_suspect()
+	if(!suspect || !cuffed || suspect_lost || !disposed_at || !warrant?.mind || suspect.stat == DEAD)
+		return FALSE
+	return police.get_stars(warrant.mind) >= 3
+
+/// Holds the suspect by the desk until a cell can be had (CASE_STEP_HOLD)
+/datum/outpost_police_case/proc/start_hold()
+	booked_at = 0
+	lift_goal = null
+	set_step(CASE_STEP_HOLD)
+	hold_retry_at = world.time + CASE_HOLD_RETRY
+
 /// Release: up to the suspect (who may have walked off in our cuffs), then the cuffs off
 /datum/outpost_police_case/proc/step_release()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
@@ -1289,7 +1371,10 @@
 	disposed_at = world.time
 	evidence_ref = null
 
-/// The cell (P6). The case closes after, booked or not.
+/**
+ * The cell (P6). The case closes after, booked or not. At three stars and up a booking that fails holds the suspect
+ * in cuffs until a cell can be had, and is never a fine (owner decision 37, lead decision L-A2).
+ */
 /datum/outpost_police_case/proc/act_book(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
 	if(booked_at || !suspect)
 		return
@@ -1298,12 +1383,20 @@
 	var/shut = police.book(suspect, officer)
 	if(QDELETED(src))
 		return
+	if(shut && !QDELETED(suspect) && !police.cell_holding(suspect.mind) && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used))
+		// Let go with no cell (fined on the spot) but the cuffs would not come off: the release step sees to them
+		booked_at = 0
+		finish()
+		return
 	if(!shut)
 		log_game("OUTPOST POLICE: [key_name(suspect)] was not put in a cell at [police.outpost] ([AREACOORD(suspect)]).")
-		// No cell to be had: the fine on the spot and the cuffs off, never a suspect left in cuffs
+		if(hold_for_cell())
+			start_hold()
+			return
+		// No cell to be had: the fine on the spot (never at three stars and up) and the cuffs off
 		var/datum/outpost_warrant/booked_warrant = suspect.mind ? police.get_warrant(suspect.mind) : null
 		if(!QDELETED(suspect) && suspect.stat != DEAD && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police) && officer.Adjacent(suspect))
-			if(booked_warrant)
+			if(booked_warrant && police.get_stars(suspect.mind) < 3)
 				police.cell_book_fallback(suspect, officer, booked_warrant)
 			else
 				police.cell_remove_cuffs(suspect, officer)
@@ -1357,6 +1450,20 @@
 		return
 	if(suspect.handcuffed == cuffs)
 		suspect.dropItemToGround(cuffs, TRUE)
+
+/**
+ * The used police pair comes off `suspect` with nobody taking it off: only once the police are done with them and no
+ * officer could do it (a release nobody got to, a term served still in them). The pair is gone once off. TRUE if it came off.
+ */
+/proc/outpost_police_drop_used_cuffs(mob/living/carbon/suspect)
+	if(!iscarbon(suspect) || QDELETED(suspect))
+		return FALSE
+	var/obj/item/cuffs = suspect.handcuffed
+	if(!istype(cuffs, /obj/item/restraints/handcuffs/outpost_police/used))
+		return FALSE
+	log_game("OUTPOST POLICE: the used police cuffs came off [key_name(suspect)] with no officer to take them off ([AREACOORD(suspect)]).")
+	suspect.dropItemToGround(cuffs, TRUE)
+	return TRUE
 
 // =========================================================================
 // THE OFFICER'S BRAIN
@@ -1462,12 +1569,18 @@
 #undef CASE_STEP_DESK
 #undef CASE_STEP_BOOK
 #undef CASE_STEP_DOWNED
+#undef CASE_STEP_RELEASE
+#undef CASE_STEP_HOLD
+#undef CASE_HOLD_RETRY
+#undef CASE_RELEASE_HANDOFFS
+#undef CASE_RELEASE_LIMIT
 #undef CASE_ACT_CUFFING
 #undef CASE_ACT_SEARCHING
 #undef CASE_ACT_RIDING
 #undef CASE_ACT_DISPOSING
 #undef CASE_ACT_BOOKING
 #undef CASE_ACT_RECOVERING
+#undef CASE_ACT_RELEASING
 #undef BB_OUTPOST_POLICE_CASE_GOAL
 #undef CASE_ACTION_STUCK
 #undef CASE_REOPEN_HOLD
