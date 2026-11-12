@@ -449,11 +449,11 @@
   "/obj/item/organ/cyberimp/cyberware/dermal_mesh": {
    "confidence": "high",
    "group": "Armor and frame",
-   "hash": "5b60dbb7a15c8084",
+   "hash": "",
    "name": "Dermal Mesh weave",
-   "note": "While online, adds physiology armor to a human wearer: melee 15, bullet 15, laser 10, wound 5. The armor is removed during an EMP reboot or an over-capacity brownout.",
+   "note": "While online, adds physiology armor to a human wearer: melee 15, bullet 15, laser 10, wound 5. Bullets and buckshot pellets from the front glance off at 15% (each pellet rolls on its own), keep flying at reduced damage and cost the wearer 5 stamina each. Never lasers, energy, melee or shots into the back. Shares the dodge arbiter: dodge plus glance never stop more than 60% of shots. The armor and the glance are off during an EMP reboot or an over-capacity brownout.",
    "rank": 5,
-   "reason": "15 melee, 15 bullet, 10 laser on the whole body, on top of whatever you wear. A clear step up for load 2 and 2,000 cr. EMP switches it off for 9 s.",
+   "reason": "15 melee, 15 bullet, 10 laser on the whole body, on top of whatever you wear, and one bullet in seven from the front glances off. A clear step up for load 2 and 2,000 cr. EMP switches it off for 9 s.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave": {
@@ -461,9 +461,9 @@
    "group": "Armor and frame",
    "hash": "",
    "name": "Hardweave plating",
-   "note": "While online, adds physiology armor to a human wearer: melee 20, bullet 20, laser 15, energy 10, wound 10. The armor is removed during an EMP reboot or an over-capacity brownout.",
+   "note": "While online, adds physiology armor to a human wearer: melee 20, bullet 20, laser 15, energy 10, wound 10. Bullets and buckshot pellets from the front glance off at 30% (each pellet rolls on its own), keep flying at reduced damage and cost the wearer 5 stamina each. Never lasers, energy, melee or shots into the back. Shares the dodge arbiter: dodge plus glance never stop more than 60% of shots. The armor and the glance are off during an EMP reboot or an over-capacity brownout.",
    "rank": 3,
-   "reason": "20 melee, 20 bullet, 15 laser, 10 energy and 10 wound armor on the whole body, on top of whatever you wear. A size up from the Mesh and well short of the Slabskin Plate, which adds bomb, fire and acid. Load 3, 3,000 cr at reputation 4. EMP switches it off for 9 s.",
+   "reason": "20 melee, 20 bullet, 15 laser, 10 energy and 10 wound armor on the whole body, on top of whatever you wear, and nearly a third of bullets from the front glance off. A size up from the Mesh and well short of the Slabskin Plate, which adds bomb, fire, acid and a bigger glance. Load 3, 3,000 cr at reputation 4. Strong for yellow against gunfire from the front, still useless against lasers and flanking. EMP switches it off for 9 s.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/doppler": {
@@ -779,11 +779,11 @@
   "/obj/item/organ/cyberimp/cyberware/slabskin": {
    "confidence": "high",
    "group": "Armor and frame",
-   "hash": "7b785a3adf8b7c37",
+   "hash": "",
    "name": "Slabskin plate",
-   "note": "While online it adds built-in armor to the bearer (melee 25, bullet 25, laser 25, energy 20, bomb 25, fire 20, acid 20, wound 15), and any brute or burn hit of 5 or more throws sparks and often a ricochet sound so others can see the plate. The armor switches off while the ware is EMP'd or browned out.",
+   "note": "While online it adds built-in armor to the bearer (melee 25, bullet 25, laser 25, energy 20, bomb 25, fire 20, acid 20, wound 15), and any brute or burn hit of 5 or more throws sparks and often a ricochet sound so others can see the plate. Bullets and buckshot pellets from the front glance off at 45% (each pellet rolls on its own), keep flying at reduced damage and cost the wearer 5 stamina each. Never lasers, energy, melee or shots into the back. Shares the dodge arbiter: dodge plus glance never stop more than 60% of shots. The armor and the glance switch off while the ware is EMP'd or browned out.",
    "rank": 1,
-   "reason": "25 armor against melee, bullets and lasers on the whole body, multiplied on top of whatever you wear, plus bomb, fire, acid and wounds. About a second armor vest that covers your head and limbs. Load 6, 3 vouchers at reputation 22. EMP switches it off for 9 s.",
+   "reason": "25 armor against melee, bullets and lasers on the whole body, multiplied on top of whatever you wear, plus bomb, fire, acid and wounds, and almost half of bullets from the front glance off. About a second armor vest that covers your head and limbs, and the best answer to a gunline in the game. Load 6, 3 vouchers at reputation 22. EMP switches it off for 9 s.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/slipwire": {
