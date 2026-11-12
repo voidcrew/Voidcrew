@@ -128,3 +128,7 @@
 /obj/item/ammo_casing/energy/plasma_bolt/heavy
 	e_cost = PLASMA_SHOT_MOL_RIFLE
 	fire_sound = 'voidcrew/modules/plasma_weapons/sound/furnace_fire.ogg'
+
+/// Sears the bleeding cuts on a limb a bolt just hit. Seam stub; the bolt hooks fill it in.
+/proc/plasma_sear_cuts(obj/item/bodypart/limb)
+	return
