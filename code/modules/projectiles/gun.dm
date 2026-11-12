@@ -448,6 +448,12 @@
 	if(!user || !firing_burst)
 		firing_burst = FALSE
 		return FALSE
+	// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): each burst shot waits for the shooter's own clock, so a burst slows or stops with them
+	var/dilation_wait = cyberware_burst_wait(user, cyberware_burst_start, cyberware_burst_gap, iteration - 1)
+	if(dilation_wait > 0)
+		addtimer(CALLBACK(src, PROC_REF(process_burst), user, target, message, params, zone_override, random_spread, burst_spread_mult, iteration), dilation_wait)
+		return TRUE
+	// VOIDCREW EDIT ADDITION END
 	if(!issilicon(user))
 		if(iteration > 1 && !(user.is_holding(src))) //for burst firing
 			firing_burst = FALSE
@@ -517,6 +523,11 @@
 	if(user && HAS_TRAIT(user, TRAIT_DOUBLE_TAP))
 		modified_burst_delay = ROUND_UP(burst_delay * 0.5)
 		modified_fire_delay = ROUND_UP(fire_delay * 0.5)
+	// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): a slowed shooter's gun cycles slowly too
+	cyberware_burst_start = cyberware_burst_clock(user)
+	cyberware_burst_gap = modified_burst_delay
+	modified_fire_delay = cyberware_dilated_time(user, modified_fire_delay)
+	// VOIDCREW EDIT ADDITION END
 
 	if(burst_size > 1)
 		firing_burst = TRUE

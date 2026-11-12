@@ -37,17 +37,24 @@
 		var/matrix/fallen = matrix(transform)
 		var/matrix/upright = matrix(transform)
 		upright.Turn(-angle)
+		// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) it runs slow.
+		var/list/real = cyberware_dilated_steps(src, list(HV_DEATH_THROES_TIME, UPDATE_TRANSFORM_ANIMATION_TIME)) || list(HV_DEATH_THROES_TIME, UPDATE_TRANSFORM_ANIMATION_TIME)
 		animate(src, transform = upright, time = 0)
-		animate(transform = upright, time = HV_DEATH_THROES_TIME)
-		animate(transform = fallen, time = UPDATE_TRANSFORM_ANIMATION_TIME, easing = EASE_IN|EASE_OUT)
+		animate(transform = upright, time = real[1])
+		animate(transform = fallen, time = real[2], easing = EASE_IN|EASE_OUT)
 	// The shudder: sideways offsets that die down, each step relative to the last, ending where it began.
 	var/static/list/shudder = list(3, -3, 2, -2, 2, -1, 1, 0)
 	var/step_time = HV_DEATH_THROES_TIME / length(shudder)
+	var/list/shudder_times = list()
+	for(var/i in 1 to length(shudder))
+		shudder_times += step_time
+	var/list/shudder_real = cyberware_dilated_steps(src, shudder_times)
 	var/offset = 0
 	for(var/i in 1 to length(shudder))
 		var/shift = shudder[i] - offset
 		offset = shudder[i]
+		var/time = shudder_real ? shudder_real[i] : step_time
 		if(i == 1)
-			animate(src, pixel_w = shift, time = step_time, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
+			animate(src, pixel_w = shift, time = time, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
 		else
-			animate(pixel_w = shift, time = step_time, flags = ANIMATION_RELATIVE)
+			animate(pixel_w = shift, time = time, flags = ANIMATION_RELATIVE)

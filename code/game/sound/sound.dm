@@ -31,6 +31,10 @@
 	var/turf/turf_source = get_turf(source)
 	if (!turf_source)
 		return
+	// VOIDCREW EDIT ADDITION START - cyberware: a Sandevistan slow-mo keeps its sounds for its replay (voidcrew/modules/cyberware/ware_sandy_replay.dm)
+	if(length(GLOB.sandy_replays))
+		sandy_replay_hear(turf_source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
+	// VOIDCREW EDIT ADDITION END
 
 	//allocate a channel if necessary now so its the same for everyone
 	channel = channel || SSsounds.random_available_channel()
@@ -200,6 +204,14 @@
 	if(HAS_TRAIT(src, TRAIT_SOUND_DEBUGGED))
 		to_chat(src, span_admin("Max Range-[max_distance] Distance-[distance] Vol-[round(sound_to_use.volume, 0.01)] Sound-[sound_to_use.file]"))
 
+	// VOIDCREW EDIT CHANGE START - cyberware: a Sandevistan user hears the slowed world slowed (voidcrew/modules/cyberware/ware_sandy_senses.dm)
+	if(length(GLOB.cyberware_time_fields))
+		var/sandy_frequency = sound_to_use.frequency
+		cyberware_dilate_heard(src, turf_source, sound_to_use, usr)
+		SEND_SOUND(src, sound_to_use)
+		sound_to_use.frequency = sandy_frequency // the datum can be shared with the next listener
+		return
+	// VOIDCREW EDIT CHANGE END
 	SEND_SOUND(src, sound_to_use)
 
 /proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S)

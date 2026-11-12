@@ -708,7 +708,7 @@
 
 	SEND_SIGNAL(user, COMSIG_MOB_USED_CLICK_MECH_MELEE, src)
 	if(target.mech_melee_attack(src, user))
-		TIMER_COOLDOWN_START(src, COOLDOWN_MECHA_MELEE_ATTACK, melee_cooldown)
+		TIMER_COOLDOWN_START(src, COOLDOWN_MECHA_MELEE_ATTACK, cyberware_dilated_time(src, melee_cooldown)) // VOIDCREW EDIT CHANGE - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm). ORIGINAL: TIMER_COOLDOWN_START(src, COOLDOWN_MECHA_MELEE_ATTACK, melee_cooldown)
 
 /// Driver alt clicks anything while in mech
 /obj/vehicle/sealed/mecha/proc/on_click_alt(mob/user, atom/target, params)

@@ -90,6 +90,11 @@
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	/// How fast the world runs through the window when no other player is near (ware_sandy_timestop.dm).
+	var/dilation_scale = 0.2
+	/// How much faster than normal the bearer runs in the window. A surging mob in someone else's field runs at its
+	/// multiplier over theirs.
+	var/time_multiplier = 5
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -125,10 +130,29 @@
 	cooldown_time = 60 SECONDS
 	click_to_activate = FALSE
 
+/// Whether a press now would end a running window: a player's own press only. An NPC's AI never turns its surge off.
+/datum/action/cooldown/cyberware/cascade_surge/proc/can_cut_short()
+	if(!isliving(owner))
+		return FALSE
+	var/mob/living/surger = owner
+	return !!surger.ckey && !!surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// The cooldown starts as the window opens, so pressing again to end the window early looks past it.
+/datum/action/cooldown/cyberware/cascade_surge/IsAvailable(feedback = FALSE)
+	if(!can_cut_short())
+		return ..()
+	var/cooldown_end = next_use_time
+	next_use_time = 0
+	. = ..()
+	next_use_time = cooldown_end
+
 /datum/action/cooldown/cyberware/cascade_surge/Activate(atom/target)
 	if(!isliving(owner))
 		return FALSE
 	var/mob/living/surger = owner
+	if(can_cut_short()) // the second press: back to real time, and the crash
+		surger.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+		return TRUE
 	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
 		surger.balloon_alert(surger, "lattice still cycling!")
 		return FALSE
@@ -172,6 +196,8 @@
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
 	/// Steps taken so far, for the afterimage cadence.
 	var/steps_taken = 0
+	/// Whether the surge's own speed, quicker blows, crit and dodge are on now (refresh_perks()).
+	var/perks_on = FALSE
 
 /// Optional second argument: the lattice whose numbers this window runs on.
 /datum/status_effect/cyberware_cascade_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/cascade/lattice)
@@ -188,15 +214,16 @@
 		online_message = lattice.online_message
 		crash_duration = lattice.crash_duration
 		crash_stamina = lattice.crash_stamina
+		dilation_scale = lattice.dilation_scale
+		time_multiplier = lattice.time_multiplier
 	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
 	trail_hue = rand(0, 359)
-	owner.add_movespeed_modifier(speed_type)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)), melee = TRUE)
-	owner.hv_crit_set_attacker_bonus(id, crit_bonus)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
 	owner.add_client_colour(colour_type, id)
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
 	owner.visible_message(
@@ -205,30 +232,57 @@
 	)
 	owner.balloon_alert(owner, "cascade online")
 	cyberware_cascade_window_fx(owner)
+	try_time_stop() // ware_sandy_timestop.dm
+	refresh_perks()
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
-	owner.remove_movespeed_modifier(speed_type)
+	end_time_stop()
+	set_perks(FALSE)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
-	owner.hv_crit_set_attacker_bonus(id, null)
-	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH))
 	owner.remove_client_colour(id)
-	if(!QDELETED(owner) && owner.stat != DEAD)
+	// A slow-mo that ran to its end replays first, and the crash lands when the replay is over (ware_sandy_replay.dm).
+	if(!QDELETED(owner) && owner.stat != DEAD && !sandy_replay_defer_crash(owner, crash_duration, crash_stamina))
 		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash_duration, crash_stamina)
 	if(!QDELETED(owner))
 		cyberware_cascade_window_end_fx(owner)
 	return ..()
 
+/// Signal proc for [COMSIG_LIVING_DEATH]: the bearer's slow-mo ends with them (its replay still plays).
+/datum/status_effect/cyberware_cascade_window/proc/on_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	end_time_stop() // ware_sandy_timestop.dm
+
 /// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()
-	return melee_mult
+	return perks_on ? melee_mult : 1
+
+/**
+ * The surge's own edge (speed, quicker blows, crit, dodge) is off while a slow-mo carries the surger: its own
+ * (ware_sandy_timestop.dm), or someone else's that runs it at its relative rate. There it moves and swings at
+ * normal speed and only the world around it is slowed. Call whenever either changes.
+ */
+/datum/status_effect/cyberware_cascade_window/proc/refresh_perks()
+	set_perks(!time_stop && !cyberware_surge_in_field(owner))
+
+/datum/status_effect/cyberware_cascade_window/proc/set_perks(on)
+	if(on == perks_on)
+		return
+	perks_on = on
+	if(on)
+		owner.add_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, crit_bonus)
+	else
+		owner.remove_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, null)
 
 /// Dodge-source callback for the shared arbiter: flat chance while the window
 /// lives (the arbiter itself enforces the moving-only and point-blank rules
 /// for shots, and the pinned rules for blows).
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
-	return dodge_chance
+	return perks_on ? dodge_chance : 0
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
 /// telegraph everyone in the fight can read. Each step shifts the hue, so the
@@ -240,6 +294,10 @@
 	steps_taken++
 	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
 		return
+	if(time_stop) // green while the world is slowed
+		stopped_afterimage(old_loc)
+		return
+	trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
 	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
 	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
 
@@ -299,7 +357,6 @@
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
 	owner.adjustStaminaLoss(crash_stamina)
-	owner.add_client_colour(/datum/client_colour/cyberware_cascade_crash, id)
 	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 	owner.visible_message(
 		span_warning("[owner] staggers, every movement suddenly leaden."),
@@ -311,7 +368,6 @@
 
 /datum/status_effect/cyberware_cascade_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "systems restabilized")
 	if(!QDELETED(owner))
@@ -330,13 +386,6 @@
 	color = list(1.1, 0, 0.08, 0.05, 1.05, 0.1, 0.1, 0, 1.2)
 	fade_in = 3
 	fade_out = 3
-
-/// The crash's screen: drained and gray-brown.
-/datum/client_colour/cyberware_cascade_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.55, 0.3, 0.25, 0.35, 0.55, 0.25, 0.25, 0.25, 0.5)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // REDLINE CORE
@@ -777,7 +826,6 @@
 /datum/status_effect/cyberware_redline_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
 	owner.adjustStaminaLoss(stamina_dump)
-	owner.add_client_colour(/datum/client_colour/cyberware_redline_crash, id)
 	owner.visible_message(
 		span_warning("[owner] sags as the red drains out of [owner.p_their()] eyes."),
 		span_userdanger("The core slams shut and your legs go out from under you."),
@@ -789,7 +837,6 @@
 
 /datum/status_effect/cyberware_redline_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "core recovered")
 	if(!QDELETED(owner))
@@ -805,13 +852,6 @@
 	color = list(1, 0, 0, 0.55, 0.5, 0, 0.55, 0, 0.5)
 	fade_in = 2
 	fade_out = 10
-
-/// The crash's screen: burnt out, brown-gray.
-/datum/client_colour/cyberware_redline_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.6, 0.35, 0.3, 0.3, 0.5, 0.25, 0.25, 0.25, 0.45)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // GOVERNOR DELETE

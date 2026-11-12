@@ -28,8 +28,14 @@ GLOBAL_VAR(hv_vis_spray_origin)
 /obj/effect/decal/cleanable/blood/proc/hv_vis_paint(list/keys)
 	var/reached = world.time
 	var/list/timed = list()
+	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) the paint runs slow.
+	var/list/times = list()
 	for(var/list/key as anything in keys)
-		reached += key[3]
+		times += key[3]
+	var/list/real = cyberware_dilated_steps(src, times)
+	for(var/i in 1 to length(keys))
+		var/list/key = keys[i]
+		reached += real ? real[i] : key[3]
 		timed += list(list(key[1], key[2], reached, key[4]))
 	hv_vis_painting = timed
 	hv_vis_paint_on()
@@ -58,6 +64,9 @@ GLOBAL_VAR(hv_vis_spray_origin)
 	var/matrix/from = behind[1]
 	var/matrix/current = from.Interpolate(ahead[1], progress)
 	animate(src, transform = current, alpha = behind[2] + (ahead[2] - behind[2]) * progress, time = 0, tag = HV_VIS_TAG_PAINT)
+	if(now < behind[3]) // held by a frozen moment before it starts
+		animate(transform = current, alpha = behind[2], time = behind[3] - now)
+		now = behind[3]
 	animate(transform = ahead[1], alpha = ahead[2], time = ahead[3] - now, easing = ahead[4])
 	for(var/i in heading + 1 to length(keys))
 		var/list/key = keys[i]
