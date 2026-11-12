@@ -110,13 +110,16 @@
 	TEST_ASSERT_NOTNULL(slagged, "no severe plasma burn")
 	var/old_slag = slagged.slag
 	TEST_ASSERT(old_slag > 0, "a fresh severe plasma burn holds no slag")
+	// Part-cooled, so a carried heat can be told from a fresh one.
+	slagged.heat = 7
 	// A fire's critical roll, with no plasma source.
 	other_arm.check_wounding(WOUND_BURN, 1, 199, 0, null, null, FALSE)
 	var/list/fire_after = burns_on(other_arm)
 	TEST_ASSERT_EQUAL(length(fire_after), 1, "a fire roll left [length(fire_after)] burns on a slagged arm")
 	var/datum/wound/burn/flesh/plasma/upgraded = fire_after[1]
 	TEST_ASSERT(istype(upgraded, critical_path), "a tg critical over a slagged plasma burn became [upgraded.type]")
-	TEST_ASSERT(upgraded.slag >= old_slag, "a tg burn over a plasma burn burned the slag away ([upgraded.slag] of [old_slag] left)")
+	TEST_ASSERT_EQUAL(upgraded.slag, old_slag, "a tg burn over a plasma burn changed the slag from [old_slag] to [upgraded.slag]")
+	TEST_ASSERT_EQUAL(upgraded.heat, 7, "a tg burn over a plasma burn changed its heat from 7 to [upgraded.heat]")
 
 /// 3. tg's wound picker never hands out a plasma burn.
 /datum/unit_test/voidcrew_plasma_wounds/never_picked
@@ -259,10 +262,13 @@
 
 	burn.on_xadone(burn.get_xadone_progress_to_qdel() * 3)
 	TEST_ASSERT(!QDELETED(burn), "cryo closed a slagged burn")
+	TEST_ASSERT(burn.cryo_progress <= burn.get_xadone_progress_to_qdel(), "cryo progress on a slagged burn ran past the closing point")
 
 	// The last of the slag comes out: stored healing is released and the burn closes as tg's would.
-	burn.remove_slag(burn.slag, medic)
+	var/had_slag = burn.slag
+	TEST_ASSERT_EQUAL(burn.remove_slag(had_slag + 5, medic), had_slag, "remove_slag did not return the amount it took out")
 	TEST_ASSERT_EQUAL(burn.slag, 0, "removing all the slag left [burn.slag]")
+	TEST_ASSERT_EQUAL(burn.remove_slag(3, medic), 0, "remove_slag took slag out of an empty wound")
 	TEST_ASSERT_EQUAL(burn.stored_healing, 0, "stored healing was kept after the slag came out")
 	TEST_ASSERT(burn.flesh_healing > 0, "stored healing was not released when the slag came out")
 	for(var/tick in 1 to 120)
@@ -271,6 +277,50 @@
 		burn.handle_process(1, tick)
 	TEST_ASSERT(QDELETED(burn), "a clean, treated burn did not close in two minutes")
 	clean_up(turf_at(2, 1))
+
+/// 6b. On a stasis bed the slag cools with no cooking and a moderate still sheds; cryo quenches only in a
+/// frozen body.
+/datum/unit_test/voidcrew_plasma_wounds/stasis_and_cryo_cooling
+
+/datum/unit_test/voidcrew_plasma_wounds/stasis_and_cryo_cooling/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	ADD_TRAIT(victim, TRAIT_STASIS, "voidcrew_plasma_wounds_test")
+	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
+	var/datum/wound/burn/flesh/plasma/severe = give_burn(chest, "severe")
+	TEST_ASSERT_NOTNULL(severe, "no severe plasma burn")
+	var/start_burn = chest.burn_dam
+	for(var/tick in 1 to PLASMA_WOUND_HEAT_SEVERE + 2)
+		severe.on_stasis(1, tick)
+	TEST_ASSERT(severe.heat <= 0, "a severe on stasis was still hot after [PLASMA_WOUND_HEAT_SEVERE + 2] seconds")
+	TEST_ASSERT_EQUAL(chest.burn_dam, start_burn, "a severe cooked on a stasis bed")
+	TEST_ASSERT_EQUAL(severe.slag, PLASMA_WOUND_SLAG_SEVERE, "a severe lost slag on a stasis bed")
+
+	var/datum/wound/burn/flesh/plasma/moderate = give_burn(victim.get_bodypart(BODY_ZONE_L_ARM), "moderate")
+	TEST_ASSERT_NOTNULL(moderate, "no moderate plasma burn")
+	var/shed_ticks = PLASMA_WOUND_HEAT_MODERATE + CEILING(PLASMA_WOUND_SLAG_MODERATE / PLASMA_WOUND_SHED_RATE, 1) + 5
+	for(var/tick in 1 to shed_ticks)
+		if(QDELETED(moderate) || moderate.slag <= 0)
+			break
+		moderate.on_stasis(1, tick)
+	TEST_ASSERT(QDELETED(moderate) || moderate.slag <= 0, "a moderate on stasis still held [moderate.slag] slag after [shed_ticks] seconds")
+	TEST_ASSERT_NULL(locate(/obj/item/plasma_slag) in get_turf(victim), "a moderate that shed on stasis dropped a bead")
+	REMOVE_TRAIT(victim, TRAIT_STASIS, "voidcrew_plasma_wounds_test")
+
+	// Pyroxadone on a warm body leaves the slag hot; cryoxadone in a frozen body quenches it.
+	var/mob/living/carbon/human/consistent/warm = allocate(/mob/living/carbon/human/consistent, turf_at(2, 2))
+	var/datum/wound/burn/flesh/plasma/warm_burn = give_burn(warm.get_bodypart(BODY_ZONE_CHEST), "severe")
+	TEST_ASSERT_NOTNULL(warm_burn, "no severe plasma burn")
+	warm_burn.on_xadone(1)
+	TEST_ASSERT_EQUAL(warm_burn.heat, PLASMA_WOUND_HEAT_SEVERE, "xadone on a warm body cooled the slag")
+
+	var/mob/living/carbon/human/consistent/frozen = allocate(/mob/living/carbon/human/consistent, turf_at(2, 3))
+	var/datum/wound/burn/flesh/plasma/frozen_burn = give_burn(frozen.get_bodypart(BODY_ZONE_CHEST), "severe")
+	TEST_ASSERT_NOTNULL(frozen_burn, "no severe plasma burn")
+	frozen.bodytemperature = T0C - 20
+	frozen_burn.on_xadone(1)
+	frozen.bodytemperature = BODYTEMP_NORMAL
+	TEST_ASSERT(frozen_burn.heat <= 0, "cryo in a frozen body left the slag hot at [frozen_burn.heat]")
+	TEST_ASSERT(!QDELETED(frozen_burn), "cryo closed a slagged burn")
 
 /// 7. Field picks with each tool: time, slag removed, brute dealt, one bead for a severe or critical only.
 /datum/unit_test/voidcrew_plasma_wounds/pick_slag
