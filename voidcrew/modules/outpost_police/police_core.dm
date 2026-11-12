@@ -161,9 +161,10 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 		tick_timer = null
 	idle_since = 0
 
-/// Whether there is a warrant, a response unit or a prisoner to look after
+/// Whether there is a warrant, a report still to be made, a response unit or a prisoner to look after
 /datum/outpost_police/proc/has_work()
-	if(length(warrants) || length(cases))
+	// A witness still walking a report over (no radio) is only heard from the tick (review-1 S6)
+	if(length(warrants) || length(cases) || length(pending_reports))
 		return TRUE
 	for(var/datum/outpost_police_cell/cell as anything in cells)
 		if(length(cell.prisoners))

@@ -511,7 +511,11 @@
 	TEST_ASSERT_EQUAL(crime[1], prisoner, "A prisoner who never walked back was not the one reported")
 	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never walked back is still held")
 
-/// A prisoner in crit or dead in the cell: the door opens at once and is held for a medic, the term is over, the warrant closed
+/**
+ * A prisoner in crit: the door opens at once and is held for a medic, and the term stops but stands (abuse review 3
+ * SF1). Up again in the cell, the clock runs on; up again outside, they have the time to walk back or it is a
+ * jailbreak. Dead: the term is over and the warrant closed.
+ */
 /datum/unit_test/voidcrew_outpost_police_cell_downed
 
 /datum/unit_test/voidcrew_outpost_police_cell_downed/Run()
@@ -522,18 +526,44 @@
 	cell.admit(prisoner, world.time + 1800, TRUE)
 	ADD_TRAIT(prisoner, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
 	police.tick_cells()
-	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner in crit is still serving a term")
-	TEST_ASSERT_EQUAL(length(police.closed), 1, "A prisoner in crit did not get their warrant closed")
-	TEST_ASSERT(prisoner in police.released, "A prisoner in crit was not let out")
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "Going into crit ended a prisoner's term")
+	TEST_ASSERT_EQUAL(length(police.closed), 0, "Going into crit closed a prisoner's warrant")
+	TEST_ASSERT(!(prisoner in police.released), "A prisoner in crit was let out")
+	TEST_ASSERT(police.in_custody(prisoner), "A prisoner in crit is out of custody")
+	TEST_ASSERT(cell.time_left[prisoner.mind] > 1700, "A prisoner in crit lost the time left on their term ([cell.time_left[prisoner.mind]])")
 	TEST_ASSERT("medic" in police.lines, "Nobody called a medic") // POLICE_LINE_MEDIC
 	TEST_ASSERT(cell.medic_until >= world.time + 1100, "The door is not held open for about two minutes") // OUTPOST_POLICE_CELL_MEDIC_OPEN, 2 MINUTES
 	sleep(2 SECONDS)
 	TEST_ASSERT(!cell.door.density, "The door did not open for a prisoner in crit")
 	cell.close_check()
 	TEST_ASSERT(!cell.door.density, "The door shut on a body still in the cell")
-	prisoner.forceMove(cell.outside_turf) // the medics take them out
+	// A long while in crit: the term does not run meanwhile
+	police.tick_cells()
+	TEST_ASSERT(cell.time_left[prisoner.mind] > 1700, "The term ran on while the prisoner was in crit")
+
+	// Up again in the cell: the clock runs from where it stopped, and the door shuts
+	REMOVE_TRAIT(prisoner, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
+	police.tick_cells()
+	TEST_ASSERT(!(prisoner.mind in cell.return_by), "A prisoner up again in the cell is still waited for")
+	TEST_ASSERT(cell.prisoners[prisoner.mind] - world.time > 1600, "A prisoner up again in the cell has [(cell.prisoners[prisoner.mind] - world.time) / 10] seconds left")
 	cell.close_check()
-	TEST_ASSERT(cell.door.density, "The door stayed open after the body was out")
+	TEST_ASSERT(cell.door.density, "The door stayed open once the prisoner was up")
+
+	// Down again and taken out; up outside and never back: a jailbreak, not time served
+	ADD_TRAIT(prisoner, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
+	police.tick_cells()
+	prisoner.forceMove(cell.outside_turf) // the medics take them out
+	police.tick_cells()
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "A prisoner taken out in crit is not held")
+	REMOVE_TRAIT(prisoner, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
+	prisoner.mind.key = null
+	cell.return_by[prisoner.mind] = world.time - 1
+	police.tick_cells()
+	var/list/crime = police_last_crime(police)
+	TEST_ASSERT_NOTNULL(crime, "A prisoner who never walked back after crit was not reported")
+	TEST_ASSERT_EQUAL(crime?[1], prisoner, "A prisoner who never walked back after crit was not the one reported")
+	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never walked back after crit is still held")
+	TEST_ASSERT_EQUAL(length(police.closed), 0, "A prisoner who ran after crit got their warrant closed as served")
 
 	// Dead, in the other cell
 	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
@@ -543,7 +573,7 @@
 	corpse.death()
 	police.tick_cells()
 	TEST_ASSERT(!(corpse.mind in cell_b.prisoners), "A dead prisoner is still serving a term")
-	TEST_ASSERT_EQUAL(length(police.closed), 2, "A dead prisoner did not get their warrant closed")
+	TEST_ASSERT_EQUAL(length(police.closed), 1, "A dead prisoner did not get their warrant closed")
 	sleep(2 SECONDS)
 	TEST_ASSERT(!cell_b.door.density, "The door did not open for a dead prisoner")
 
@@ -638,7 +668,7 @@
 	for(var/datum/outpost_police_cell/each in police.cells)
 		TEST_ASSERT(length(each.sign.message1) <= 8 && length(each.sign.message2) <= 8, "A cell sign has a line over 8 characters: '[each.sign.message1]' / '[each.sign.message2]'")
 
-/// Custody runs from police cuffs on to release
+/// Custody runs from an arrest's cuffs going on to release; police cuffs with no arrest behind them are not custody (review-1 S5)
 /datum/unit_test/voidcrew_outpost_police_cell_custody
 
 /datum/unit_test/voidcrew_outpost_police_cell_custody/Run()
@@ -649,7 +679,14 @@
 	TEST_ASSERT(!police.in_custody(person), "Somebody walking about is in custody")
 	TEST_ASSERT(!police.in_custody(null), "Nobody is in custody")
 	TEST_ASSERT_NOTNULL(police_cell_cuff(person, officer), "Setup: the person did not get cuffed")
-	TEST_ASSERT(police.in_custody(person), "Somebody in police cuffs is not in custody")
+	TEST_ASSERT(!police.in_custody(person), "Somebody in police cuffs that no arrest put on is in custody")
+	var/datum/outpost_police_case/case = new(police, police_pin_warrant(police, person.mind, 12)) // one star
+	police.cases[person.mind] = case
+	TEST_ASSERT(!police.in_custody(person), "Somebody an arrest has not cuffed yet is in custody")
+	case.cuffed = TRUE
+	TEST_ASSERT(police.in_custody(person), "Somebody an arrest has cuffed is not in custody")
+	police.close_case(person.mind)
+	TEST_ASSERT(!police.in_custody(person), "Somebody whose arrest ended is still in custody")
 	person.uncuff()
 	TEST_ASSERT(!police.in_custody(person), "Somebody with the cuffs off and no cell is in custody")
 	cell.admit(person, world.time + 300)

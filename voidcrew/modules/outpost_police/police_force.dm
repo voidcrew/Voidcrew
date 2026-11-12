@@ -66,7 +66,8 @@
 			return FALSE
 		// Down (crit, stamina crit, stunned): the cuffs are the arrest's job at every star, never a fight
 		// (owner decision 37). Nobody goes back on alert over someone lying there; they are fought again once up.
-		if(police_suspect_down(living_target))
+		// Except where the zone finishes the downed at three stars and up (owner decision 39)
+		if(police_suspect_down(living_target) && !police.finishes_downed(living_target, src))
 			return FALSE
 		var/level = force_for(living_target)
 		if(level >= POLICE_FORCE_LETHAL)
@@ -98,6 +99,17 @@
 /proc/police_suspect_down(mob/living/person)
 	return person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(person, TRAIT_INCAPACITATED)
 
+/**
+ * Owner decision 39: in a zone whose officers finish the downed (its profile's spares_downed is off: the red zone),
+ * someone at lethal force (three stars and up, as `officer` knows it) who goes down is shot until dead, never
+ * cuffed. Someone already in custody is not (force_level() is NONE for them). Everywhere else, and below three
+ * stars, the downed are cuffed (decision 37).
+ */
+/datum/outpost_police/proc/finishes_downed(mob/living/target, mob/living/officer)
+	if(!profile || profile.spares_downed || !isliving(target))
+		return FALSE
+	return force_level(target, officer) >= POLICE_FORCE_LETHAL
+
 // =========================================================================
 // ROLES (owner decision 37)
 // =========================================================================
@@ -115,6 +127,10 @@
  */
 /datum/outpost_police/proc/role_of(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	if(officer.police_role)
+		return officer.police_role
+	// A zone that finishes the downed sends no stun officers: everyone is lethal (owner decision 39)
+	if(profile && !profile.spares_downed)
+		officer.police_role = POLICE_ROLE_LETHAL
 		return officer.police_role
 	var/squad = 1
 	var/stun = 0

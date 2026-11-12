@@ -655,3 +655,81 @@
 	TEST_ASSERT_NOTNULL(police.warrants[brawler.mind], "An engaged hunter's hit on a person was excused")
 	crew.stand_down()
 	kingpin_test_end()
+
+/**
+ * Abuse review 3 MF1: a bomb is blamed on whoever armed it, never on the last hand to touch it. A primed grenade picked
+ * up by someone standing beside an officer, which then catches the officer, puts no stars on the one holding it; the
+ * one who primed it, out of sight, gets none either. Primed in view, the officer it catches sees who did it.
+ */
+/datum/unit_test/voidcrew_outpost_police_bomb_blame
+
+/datum/unit_test/voidcrew_outpost_police_bomb_blame/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	police.sleep_tick()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost)
+	var/mob/living/carbon/human/thrower = police_arrest_person(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/hero = police_arrest_person(police_arrest_beside(officer))
+	TEST_ASSERT(get_trader_outpost_for_turf(get_turf(thrower)) != outpost, "Setup: the one who primed it is at the outpost")
+
+	// A smoke grenade: armed the same way as any, with no shrapnel cloud to tidy up
+	var/obj/item/grenade/smokebomb/grenade = allocate(/obj/item/grenade/smokebomb, get_turf(thrower))
+	grenade.arm_grenade(thrower, 1 HOURS, FALSE)
+	grenade.forceMove(get_turf(hero))
+	hero.put_in_hands(grenade)
+	grenade.add_fingerprint(hero)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(grenade), thrower, "A primed grenade was blamed on [outpost_bomber_of(grenade)], not whoever primed it")
+
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(grenade, list(officer))
+	police.process_pending_reports()
+	TEST_ASSERT_EQUAL(police.get_stars(hero.mind), 0, "Holding someone else's primed grenade when it went off put [police.get_stars(hero.mind)] stars on them")
+	TEST_ASSERT_EQUAL(police.get_stars(thrower.mind), 0, "A bomber nobody saw is wanted")
+
+	// The same grenade primed by someone in view of the officer it catches
+	sleep(1 SECONDS) // past the half-second report fold
+	thrower.forceMove(get_turf(hero))
+	var/obj/item/grenade/smokebomb/seen = allocate(/obj/item/grenade/smokebomb, get_turf(thrower))
+	seen.arm_grenade(thrower, 1 HOURS, FALSE)
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(seen, list(officer))
+	police.process_pending_reports()
+	TEST_ASSERT(police.get_stars(thrower.mind) >= 3, "A bomber the officer saw is at [police.get_stars(thrower.mind)] stars, not three") // ASSAULT_OFFICER's floor
+	TEST_ASSERT_EQUAL(police.get_stars(hero.mind), 0, "A bystander was charged for a bomb someone else primed")
+	police.close_warrant(thrower.mind, FALSE)
+
+/**
+ * Review-1 M2: a four-star leader in custody or dead makes no accomplices, so crewmates are not swept up again and
+ * again while the leader sits out a sentence. Free and alive at the outpost, the leader still does.
+ */
+/datum/unit_test/voidcrew_outpost_police_abet_leader_held
+
+/datum/unit_test/voidcrew_outpost_police_abet_leader_held/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/mate = wanted_person(wanted_spot(1, 0))
+	var/obj/structure/overmap/ship/ship = wanted_ship(leader)
+	ship.ship_team.join_member(mate.mind)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, leader.mind, 100) // four stars
+	warrant.crew = leader.mind.get_reputation_crew()
+
+	// In custody (an arrest has them in hand)
+	var/datum/outpost_police_case/case = new(police, warrant)
+	police.cases[leader.mind] = case
+	case.cuffed = TRUE
+	TEST_ASSERT(police.in_custody(leader), "Setup: the leader is not in custody")
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 0, "A crewmate was made an accomplice of a leader in custody")
+	police.close_case(leader.mind)
+
+	// Free and alive: the crewmate is an accomplice, as before
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 2, "A crewmate at the outpost is not an accomplice of a free four-star leader")
+	police.remove_warrant(police.get_warrant(mate.mind))
+
+	// Dead: their body makes no accomplices
+	leader.death()
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 0, "A crewmate was made an accomplice of a dead leader")
+	wanted_cleanup(list(ship))

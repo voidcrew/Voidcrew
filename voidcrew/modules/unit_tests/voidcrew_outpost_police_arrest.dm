@@ -190,6 +190,11 @@
 	police_arrest_wait(case)
 	TEST_ASSERT(case.disposed_at, "The desk step did not deal with the evidence")
 	TEST_ASSERT(!case.booked_at, "The desk booked the suspect")
+	// Booking needs the suspect in hand at the cell door (review-1 S2)
+	case.set_step("book")
+	case.step_book()
+	TEST_ASSERT_EQUAL(case.step, "desk", "A suspect not held at the cell door was booked")
+	police_jail_carry(officer, suspect, police.cell_door_turf())
 	case.set_step("book")
 	case.step_book()
 	police_arrest_wait(case, 40 SECONDS)
@@ -351,6 +356,97 @@
 	warrant.heat = POLICE_ARREST_TEST_HEAT_3
 	police.tick_cases()
 	TEST_ASSERT(!QDELETED(third), "A cuffed suspect's arrest was called off at three stars")
+
+/**
+ * Review-1 M1: an officer held still by the empty-outpost pause wakes when put on an arrest, and stays awake for it
+ * however empty the concourse gets; one held for anything else (a wave still in its lift) is never put on one. Off the
+ * case, with nobody about, he holds still again.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_no_freeze
+
+/datum/unit_test/voidcrew_outpost_police_arrest_no_freeze/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/waiting = police_officer(outpost)
+	ADD_TRAIT(waiting, TRAIT_AI_PAUSED, "outpost_police_test_wave")
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		REMOVE_TRAIT(waiting, TRAIT_AI_PAUSED, "outpost_police_test_wave")
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	TEST_ASSERT(!HAS_TRAIT(officer, TRAIT_AI_PAUSED), "An officer put on an arrest at an empty outpost is still held still")
+	TEST_ASSERT(!officer.paused_at, "An officer put on an arrest still has the empty-outpost clock stopped")
+	TEST_ASSERT(!case.officer_fit(waiting), "An officer still held in a wave is fit for an arrest")
+	for(var/datum/weakref/ref as anything in case.officers)
+		TEST_ASSERT(ref.resolve() != waiting, "An officer still held in a wave was put on an arrest")
+	// The concourse empties: the officer on the arrest carries on
+	officer.pause_routine()
+	TEST_ASSERT(!HAS_TRAIT(officer, TRAIT_AI_PAUSED), "The empty-outpost pause froze an officer working an arrest")
+	case.staff()
+	TEST_ASSERT_EQUAL(case.arresting(), officer, "The arresting officer was swapped out")
+
+	// The arrest over and nobody about: held still again
+	police_pin_warrant(police, suspect.mind, 0)
+	police.close_case(suspect.mind)
+	TEST_ASSERT(HAS_TRAIT(officer, TRAIT_AI_PAUSED), "An officer off an arrest at an empty outpost is not held still again")
+	REMOVE_TRAIT(waiting, TRAIT_AI_PAUSED, "outpost_police_test_wave")
+
+/**
+ * Review-1 M3: a search broken off (the suspect pulled from the officer mid-search) with the crime tool still on them
+ * is not done: the step searches again, and the tool is taken. The officer holds the suspect while searching.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_search_broken
+
+/datum/unit_test/voidcrew_outpost_police_arrest_search_broken/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	// The crime tool in a pocket, so it goes where they go
+	var/obj/item/knife/kitchen/weapon = allocate(/obj/item/knife/kitchen)
+	suspect.equip_to_slot(weapon, ITEM_SLOT_LPOCKET)
+	TEST_ASSERT_EQUAL(weapon.loc, suspect, "Setup: the knife is not in the suspect's pocket")
+	var/datum/outpost_warrant/warrant = police.warrants[suspect.mind]
+	LAZYADD(warrant.evidence, WEAKREF(weapon))
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.step_cuff()
+	TEST_ASSERT_EQUAL(case.step, "search", "Cuffs on did not lead to the search")
+	TEST_ASSERT(length(police.evidence_candidates(suspect)), "Setup: the search would find nothing on the suspect")
+
+	case.step_search()
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "The officer does not hold the suspect while searching them")
+	TEST_ASSERT(case.acting, "The search did not start")
+	// Pulled away mid-search (a crewmate's doing)
+	officer.stop_pulling()
+	var/turf/away = police_floor(outpost)
+	suspect.forceMove(away)
+	police_arrest_wait(case, 20 SECONDS)
+	TEST_ASSERT(!case.searched, "A search broken off counts as done")
+	TEST_ASSERT_EQUAL(case.step, "search", "After a broken-off search the case is on [case.step], not the search")
+	TEST_ASSERT_EQUAL(weapon.loc, suspect, "The crime tool is in [weapon.loc], not still on the suspect")
+
+	// Back beside the officer: searched again, and the tool taken
+	suspect.forceMove(police_arrest_beside(officer))
+	case.step_search()
+	police_arrest_wait(case, 20 SECONDS)
+	TEST_ASSERT(case.searched, "The second search did not finish")
+	TEST_ASSERT_EQUAL(case.step, "escort", "After the second search the case is on [case.step], not the escort")
+	var/obj/item/evidence = case.evidence_ref?.resolve()
+	TEST_ASSERT(evidence && (weapon in evidence.get_all_contents()), "The crime tool is in [weapon.loc], not the evidence case")
+	police.close_case(suspect.mind)
 
 // ===== PLAYTEST 1 (owner decision 34): NO ARREST STALLS =====
 

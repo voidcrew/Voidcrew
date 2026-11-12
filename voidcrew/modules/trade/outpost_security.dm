@@ -160,10 +160,58 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		LAZYADD(victims, victim)
 	return victims
 
+// ----- who armed a bomb (abuse review 3 MF1) -----
+
+/obj
+	/// Who armed this as a bomb: primed a grenade, planted or signalled C4, shot or lit a fuel tank. Blame for its
+	/// blast at a trader outpost (outpost_bomber_of()); never the last hand to touch it.
+	var/datum/weakref/outpost_armed_by
+
+/// `bomb` was armed by `user`
+/proc/outpost_note_armed(obj/bomb, mob/user)
+	if(isliving(user) && !QDELETED(bomb))
+		bomb.outpost_armed_by = WEAKREF(user)
+
+/obj/item/grenade/arm_grenade(mob/user, delayoverride, msg = TRUE, volume = 60)
+	outpost_note_armed(src, user)
+	return ..()
+
+// Its own arm_grenade() never calls the base one
+/obj/item/grenade/chem_grenade/arm_grenade(mob/user, delayoverride, msg = TRUE, volume = 60)
+	outpost_note_armed(src, user)
+	return ..()
+
+/obj/item/grenade/c4/plant_c4(atom/bomb_target, mob/living/user)
+	. = ..()
+	if(.)
+		outpost_note_armed(src, user)
+
+// Set off by a signaller: whoever pressed it (usr, through the signaller's own UI)
+/obj/item/grenade/c4/receive_signal()
+	if(isliving(usr))
+		outpost_note_armed(src, usr)
+	return ..()
+
+/obj/structure/reagent_dispensers/fueltank/bullet_act(obj/projectile/hitting_projectile)
+	var/datum/weakref/before = outpost_armed_by
+	outpost_note_armed(src, hitting_projectile.firer)
+	. = ..()
+	// Still standing: the shot set nothing off
+	if(!QDELETED(src))
+		outpost_armed_by = before
+
+/obj/structure/reagent_dispensers/fueltank/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	var/datum/weakref/before = outpost_armed_by
+	outpost_note_armed(src, user)
+	. = ..()
+	if(!QDELETED(src))
+		outpost_armed_by = before
+
 /**
- * Who set off a blast, by tg's own blame: the firer of a projectile (a mech's pilot), otherwise the last person to
- * touch the explosive (fingerprintslast, the key tg's own explosion log names). Null when that is nobody living,
- * or the cause is not an atom (a chemical reaction).
+ * Who set off a blast: the firer of a projectile (a mech's pilot), otherwise whoever armed the explosive
+ * (outpost_armed_by). Only an explosive nobody armed (one set off by another blast, a fire) falls back to tg's own
+ * blame, the last person to touch it (fingerprintslast). Null when that is nobody living, or the cause is not an
+ * atom (a chemical reaction).
  */
 /proc/outpost_bomber_of(atom/explosion_cause)
 	if(isprojectile(explosion_cause))
@@ -176,6 +224,11 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 				return pilot
 			return null
 		explosion_cause = shot.firer
+	if(isobj(explosion_cause))
+		var/obj/bomb = explosion_cause
+		if(bomb.outpost_armed_by)
+			var/mob/living/armer = bomb.outpost_armed_by.resolve()
+			return isliving(armer) ? armer : null
 	if(!isatom(explosion_cause) || !explosion_cause.fingerprintslast)
 		return null
 	var/mob/living/bomber = get_mob_by_ckey(explosion_cause.fingerprintslast)

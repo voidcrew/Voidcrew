@@ -22,6 +22,13 @@
 		police_arrest_kit(officer)
 		. += officer
 
+/// An open arrest on `suspect` that has them in hand, as if its cuffs just went on (no officer staffed); in_custody() reads it
+/datum/unit_test/proc/stun_squad_holding(datum/outpost_police/police, mob/living/carbon/suspect)
+	var/datum/outpost_police_case/case = new(police, police.warrants[suspect.mind])
+	police.cases[suspect.mind] = case
+	case.cuffed = TRUE
+	return case
+
 /// How many of `officers` have `role`
 /datum/unit_test/proc/stun_squad_count(list/officers, role)
 	. = 0
@@ -170,9 +177,13 @@
 
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
 	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	// Our cuffs with nobody walking them in: got away from the escort, fair game again (review-1 S5)
+	TEST_ASSERT(lethal.police_will_fight(suspect), "A lethal officer will not fight a three-star suspect who got away in our cuffs")
+	stun_squad_holding(police, suspect)
 	TEST_ASSERT(!lethal.police_will_fight(suspect), "A lethal officer will fight a suspect in our cuffs")
 	TEST_ASSERT(!police_plans_shot(lethal, suspect), "A lethal officer plans a shot at a suspect in our cuffs")
 
+	police.close_case(suspect.mind)
 	suspect.uncuff()
 	var/datum/outpost_police_cell/cell = police.cell_best()
 	TEST_ASSERT_NOTNULL(cell, "The outpost has no cell")
@@ -368,6 +379,7 @@
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
 	var/mob/living/carbon/carbon_suspect = suspect
 	carbon_suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	stun_squad_holding(police, carbon_suspect)
 	police.dispatch_respond(police.alert_level())
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in responders)
 		TEST_ASSERT(officer.npc_exit, "A response officer stayed on once the three-star suspect was in custody")
@@ -376,6 +388,56 @@
 		if(officer.stat != DEAD && !officer.npc_exit)
 			staying++
 	TEST_ASSERT_EQUAL(staying, length(patrol), "[staying] officers stay on, not the [length(patrol)] on the beat")
+	police.close_case(carbon_suspect.mind)
 	carbon_suspect.uncuff()
+	police_pin_warrant(police, suspect.mind, 0)
+	dispatch_clear(police)
+
+/**
+ * Owner decision 39: at the red zone's outpost (its profile finishes the downed) the squad at three stars is all
+ * lethal, and a three-star suspect who goes down is finished, not cuffed: still a target, no arrest, no alert
+ * dropped. At two stars the downed are still arrested there.
+ */
+/datum/unit_test/voidcrew_outpost_police_stun_squad_red_finishes
+
+/datum/unit_test/voidcrew_outpost_police_stun_squad_red_finishes/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(/obj/structure/overmap/trader_outpost/black_market)
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT(!police.profile.spares_downed, "Setup: the red zone's police spare the downed")
+	police.sleep_tick()
+	stun_squad_isolate(police)
+	var/list/turf/row = dispatch_row(outpost)
+	TEST_ASSERT_NOTNULL(row, "No three free tiles in a row on the concourse")
+	var/list/squad = stun_squad_officers(outpost, 4)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = squad[1]
+	officer.forceMove(row[1])
+	var/mob/living/carbon/human/suspect = police_arrest_person(row[3])
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 55) // three stars
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in squad)
+		police.role_of(member)
+	TEST_ASSERT_EQUAL(stun_squad_count(squad, "lethal"), 4, "At three stars the red zone's squad of four has [stun_squad_count(squad, "stun")] stun officers")
+
+	// Down at three stars: finished, not cuffed
+	suspect.adjustStaminaLoss(200)
+	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_INCAPACITATED), "200 stamina damage did not put the suspect down")
+	TEST_ASSERT(police.finishes_downed(suspect, officer), "The red zone does not finish a downed three-star suspect")
+	TEST_ASSERT(officer.police_will_fight(suspect), "A red zone officer stopped fighting a downed three-star suspect")
+	TEST_ASSERT(police_plans_shot(officer, suspect), "A red zone officer plans no shot at a downed three-star suspect")
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	officer.police_alert_on(suspect)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "A red zone officer will not go on alert at a downed three-star suspect") // STEALTH_ALERT
+	TEST_ASSERT(!police.arrest_downed(suspect, officer), "A downed three-star suspect in the red zone was put under arrest")
+	TEST_ASSERT_NULL(police.open_case(warrant, TRUE), "An arrest opened on a downed three-star suspect in the red zone")
+	TEST_ASSERT_NULL(police.cases[suspect.mind], "A downed three-star suspect in the red zone has an arrest")
+	TEST_ASSERT_NULL(suspect.handcuffed, "A downed three-star suspect in the red zone was cuffed")
+
+	// Two stars there: still taken alive
+	police_pin_warrant(police, suspect.mind, 30) // two stars
+	TEST_ASSERT(!police.finishes_downed(suspect, officer), "The red zone finishes a downed two-star suspect")
+	TEST_ASSERT(police.arrest_downed(suspect, officer), "A downed two-star suspect in the red zone was not arrested")
+	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)
 	dispatch_clear(police)
