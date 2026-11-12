@@ -129,8 +129,9 @@
 	for(var/obj/effect/decal/cleanable/leftover in range(4, spot))
 		qdel(leftover)
 
-/// A barely hurt arm stays; a pistol bolt melts a hurt arm within its margin; a rifle bolt melts an arm
-/// already carrying a critical burn and a pistol bolt does not; chests and heads never melt.
+/// A barely hurt arm stays; a pistol bolt melts a hurt arm within its margin; a rifle bolt melts a leg
+/// carrying a slagged plasma critical and a pistol bolt does not; a tg critical burn alone sets up no melt;
+/// chests and heads never melt.
 /datum/unit_test/voidcrew_plasma_bolt/ash_limits
 
 /datum/unit_test/voidcrew_plasma_bolt/ash_limits/Run()
@@ -154,20 +155,33 @@
 	hurt.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, from, BODY_ZONE_L_LEG), BODY_ZONE_L_LEG)
 	TEST_ASSERT_NOTNULL(hurt.get_bodypart(BODY_ZONE_L_LEG), "a pistol bolt melted a leg that was barely hurt")
 
-	// A critical burn and no damage: the rifle bolt burns through, the pistol bolt does not.
+	// A slagged plasma critical and no damage: the rifle bolt burns through, the pistol bolt does not.
 	for(var/bolt_type in list(/obj/projectile/energy/plasma_bolt, /obj/projectile/energy/plasma_bolt/heavy))
 		var/mob/living/carbon/human/consistent/burned = allocate(/mob/living/carbon/human/consistent, turf_at(2, 2))
 		var/obj/item/bodypart/leg = burned.get_bodypart(BODY_ZONE_R_LEG)
-		leg.force_wound_upwards(/datum/wound/burn/flesh/critical)
+		leg.force_wound_upwards(/datum/wound/burn/flesh/plasma/critical)
 		leg.heal_damage(brute = 200, burn = 200)
-		TEST_ASSERT_NOTNULL(leg.get_wound_type(/datum/wound/burn/flesh/critical), "could not give a leg a critical burn")
+		var/datum/wound/burn/flesh/plasma/critical/slagged = leg.get_wound_type(/datum/wound/burn/flesh/plasma/critical)
+		TEST_ASSERT_NOTNULL(slagged, "could not give a leg a plasma critical burn")
+		TEST_ASSERT(slagged.slag > 0, "a fresh plasma critical carries no slag")
 		var/obj/projectile/energy/plasma_bolt/bolt = make_bolt(bolt_type, from, BODY_ZONE_R_LEG)
 		bolt.damage = 5
 		burned.bullet_act(bolt, BODY_ZONE_R_LEG)
 		if(bolt.ash_critical_burns)
-			TEST_ASSERT_NULL(burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt left a critically burnt leg attached")
+			TEST_ASSERT_NULL(burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt left a leg with a slagged plasma critical attached")
 		else
 			TEST_ASSERT_NOTNULL(burned.get_bodypart(BODY_ZONE_R_LEG), "a pistol bolt melted a critically burnt leg with no damage")
+
+	// A tg critical burn alone (fire, a laser) does not set up the rifle's burn-through.
+	var/mob/living/carbon/human/consistent/fire_burned = allocate(/mob/living/carbon/human/consistent, turf_at(2, 2))
+	var/obj/item/bodypart/fire_leg = fire_burned.get_bodypart(BODY_ZONE_R_LEG)
+	fire_leg.force_wound_upwards(/datum/wound/burn/flesh/critical)
+	fire_leg.heal_damage(brute = 200, burn = 200)
+	TEST_ASSERT_NOTNULL(fire_leg.get_wound_type(/datum/wound/burn/flesh/critical), "could not give a leg a tg critical burn")
+	var/obj/projectile/energy/plasma_bolt/rifle_bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, from, BODY_ZONE_R_LEG)
+	rifle_bolt.damage = 5
+	fire_burned.bullet_act(rifle_bolt, BODY_ZONE_R_LEG)
+	TEST_ASSERT_NOTNULL(fire_burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt melted a leg with only a tg critical burn")
 
 	for(var/zone in list(BODY_ZONE_CHEST, BODY_ZONE_HEAD))
 		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 2))

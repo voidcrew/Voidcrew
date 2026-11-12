@@ -325,14 +325,28 @@
 /// 7. Field picks with each tool: time, slag removed, brute dealt, one bead for a severe or critical only.
 /datum/unit_test/voidcrew_plasma_wounds/pick_slag
 
-/// Picks every bit of slag out of `burn`; returns list(elapsed deciseconds, brute dealt).
+/// Picks every bit of slag out of `burn`; returns list(elapsed deciseconds, brute the tool dealt).
+/// The brute is summed from the tool's own damage events, not read off the limb, because the body heals
+/// a little brute on its own between picks.
 /datum/unit_test/voidcrew_plasma_wounds/pick_slag/proc/pick_all(datum/wound/burn/flesh/plasma/burn, mob/living/carbon/human/user, obj/item/tool)
 	user.put_in_active_hand(tool, forced = TRUE)
-	var/obj/item/bodypart/limb = burn.limb
-	var/start_brute = limb.brute_dam
+	var/mob/living/carbon/patient = burn.victim
 	var/start_time = world.time
+	tool_brute = 0
+	picking_tool = tool
+	RegisterSignal(patient, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(count_tool_brute))
 	burn.pick_slag(tool, user)
-	return list(world.time - start_time, limb.brute_dam - start_brute)
+	UnregisterSignal(patient, COMSIG_MOB_AFTER_APPLY_DAMAGE)
+	picking_tool = null
+	return list(world.time - start_time, tool_brute)
+
+/datum/unit_test/voidcrew_plasma_wounds/pick_slag/var/tool_brute = 0
+/datum/unit_test/voidcrew_plasma_wounds/pick_slag/var/obj/item/picking_tool
+
+/datum/unit_test/voidcrew_plasma_wounds/pick_slag/proc/count_tool_brute(mob/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
+	SIGNAL_HANDLER
+	if(damagetype == BRUTE && attacking_item == picking_tool)
+		tool_brute += damage_dealt
 
 /datum/unit_test/voidcrew_plasma_wounds/pick_slag/Run()
 	// Moderate, scalpel, someone else: one pick, no bead.
@@ -467,7 +481,7 @@
 	TEST_ASSERT_EQUAL(severe.reagents.get_reagent_amount(/datum/reagent/toxin/plasma), 0, "a severe put plasma in the blood")
 
 /// 10. The rifle melts a limb with a slagged critical in one bolt, and not once the slag is out; a tg
-/// critical no longer sets it up; the worn-through rule is unchanged.
+/// critical no longer sets it up; the worn-through rule is unchanged. A hit that melts a limb plays burst C.
 /datum/unit_test/voidcrew_plasma_wounds/burn_through_melt
 
 /datum/unit_test/voidcrew_plasma_wounds/burn_through_melt/Run()
@@ -483,6 +497,8 @@
 	bolt.damage = 5
 	slagged.bullet_act(bolt, BODY_ZONE_R_LEG)
 	TEST_ASSERT_NULL(slagged.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt left a leg with a slagged critical attached")
+	var/obj/effect/temp_visual/plasma_burst/melt_burst = locate() in get_turf(slagged)
+	TEST_ASSERT_EQUAL(melt_burst?.look, "C", "the hit that melted a leg did not play the burn-through")
 
 	var/mob/living/carbon/human/consistent/cleaned = allocate(/mob/living/carbon/human/consistent, turf_at(2, 2))
 	var/obj/item/bodypart/clean_leg = cleaned.get_bodypart(BODY_ZONE_R_LEG)
@@ -514,6 +530,8 @@
 	hurt_arm.receive_damage(brute = 15, wound_bonus = CANT_WOUND)
 	hurt.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, from, BODY_ZONE_L_ARM), BODY_ZONE_L_ARM)
 	TEST_ASSERT_NULL(hurt.get_bodypart(BODY_ZONE_L_ARM), "a pistol bolt left a hurt arm at 47/50 attached")
+	var/obj/effect/temp_visual/plasma_burst/worn_burst = locate() in get_turf(hurt)
+	TEST_ASSERT_EQUAL(worn_burst?.look, "C", "the hit that melted a worn-through arm did not play the burn-through")
 	clean_up(from)
 
 /// 11. A bolt sears the cuts on the limb it hits: a moderate cut closes, a critical drops to severe.

@@ -65,7 +65,7 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		var/mob/living/carbon/human/victim = target
 		var/side = REVERSE_DIR(angle2dir_cardinal(angle))
 		if(blocked < 100)
-			new /obj/effect/temp_visual/plasma_burst(target_turf, victim, src, side)
+			burst_ref = WEAKREF(new /obj/effect/temp_visual/plasma_burst(target_turf, victim, src, side))
 			return
 		plasma_take_back_block_star(target_turf)
 		behind_body = (side == NORTH && !victim.lying_angle)
@@ -405,6 +405,8 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	var/facing = SOUTH
 	/// The look picked in the tick of the hit, shown PLASMA_BURST_DELAY later
 	var/look
+	/// Whether the bolt melted the hit limb: that counts as a burn-through
+	var/melted = FALSE
 
 /obj/effect/temp_visual/plasma_burst/Initialize(mapload, mob/living/carbon/human/struck, obj/projectile/energy/plasma_bolt/bolt, from_side)
 	. = ..()
@@ -466,11 +468,27 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 		return
 	var/mob/living/carbon/human/hit_body = victim
 	forget_victim()
+	burned_through = burned_through || melted
 	look = burned_through ? PLASMA_BURST_THROUGH : plasma_burst_pick(hit_body)
 	// The burn-through sizzles on top of the hit
 	if(burned_through)
-		playsound(hit_body, pick('voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_1.ogg', 'voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_2.ogg'), 60, TRUE)
+		plasma_burst_sizzle(hit_body)
 	addtimer(CALLBACK(src, PROC_REF(show), WEAKREF(hit_body)), PLASMA_BURST_DELAY)
+
+/// The burn-through's sizzle
+/proc/plasma_burst_sizzle(atom/where)
+	playsound(where, pick('voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_1.ogg', 'voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_2.ogg'), 60, TRUE)
+
+/// The bolt melted the hit limb (plasma_check_ash). A melt is a burn-through: before the look is picked this
+/// sets it up; after, it swaps a picked look for the burn-through, as long as nothing is on screen yet.
+/obj/effect/temp_visual/plasma_burst/proc/limb_melted()
+	if(QDELETED(src))
+		return
+	melted = TRUE
+	if(!drawn || icon_state || look == PLASMA_BURST_THROUGH)
+		return
+	look = PLASMA_BURST_THROUGH
+	plasma_burst_sizzle(src)
 
 /// Draws the spray, the bloom and what sticks to the body
 /obj/effect/temp_visual/plasma_burst/proc/show(datum/weakref/body_ref)

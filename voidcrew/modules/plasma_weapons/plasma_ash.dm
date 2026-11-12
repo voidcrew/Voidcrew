@@ -24,4 +24,8 @@
 	var/worn_through = ash_prior_damage >= PLASMA_ASH_PRIOR_DAMAGE && limb.get_damage() >= limb.max_damage - ash_margin
 	if(!burned_through && !worn_through)
 		return
-	plasma_melt_limb(limb, attack_direction) // tg's WOUND_BURN loss, plus the melt picture (plasma_melt.dm)
+	if(!plasma_melt_limb(limb, attack_direction)) // tg's WOUND_BURN loss, plus the melt picture (plasma_melt.dm)
+		return
+	// A melt is a burn-through: the burst on this hit plays C
+	var/obj/effect/temp_visual/plasma_burst/burst = burst_ref?.resolve()
+	burst?.limb_melted()

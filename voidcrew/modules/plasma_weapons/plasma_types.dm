@@ -14,12 +14,15 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	icon_state = "plasma_bolt"
 	/// An arm or leg this close to its max damage after the hit melts, if it was already hurt before it
 	var/ash_margin = PLASMA_ASH_MARGIN_PISTOL
-	/// Whether this bolt also melts an arm or leg that already carried a critical burn
+	/// Whether this bolt also melts an arm or leg that already carried a Plasma Burn-Through with slag still in it
 	var/ash_critical_burns = FALSE
-	/// Zone, damage and critical-burn state of the limb this bolt hit, read in on_hit before the damage lands
+	/// Zone (any, for searing cuts), damage and slagged burn-through state of the limb this bolt hit,
+	/// read in on_hit before the damage lands
 	var/ash_zone
 	var/ash_prior_damage = 0
 	var/ash_prior_critical = FALSE
+	/// The burst this bolt left on the person it hit; a melt there plays the burn-through
+	var/datum/weakref/burst_ref
 	/// Lazy list of mobs this bolt has already hissed past
 	var/list/hissed_mobs
 

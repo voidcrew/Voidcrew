@@ -173,4 +173,6 @@
 	desc = "A bead of black glass with a green heart. It came out of somebody."
 	icon = 'icons/obj/debris.dmi'
 	icon_state = "plasmatiny"
+	// tg's pink plasma glass, turned black with green in the bright bits
+	color = list(0,0,0, 0.12,1.5,0.35, 0,0,0, 0,-0.12,0)
 	w_class = WEIGHT_CLASS_TINY

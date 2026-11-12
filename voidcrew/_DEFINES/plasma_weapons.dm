@@ -133,6 +133,6 @@
 #define PLASMA_WOUND_LIMP_CHANCE 40
 #define PLASMA_WOUND_FUMBLE 1.25
 /// Blood flow a bolt takes off each bleeding wound on the limb it hits
-#define PLASMA_SEAR_FLOW 1.5
+#define PLASMA_SEAR_FLOW 1.6
 /// Scar text file for plasma burns
 #define PLASMA_SCAR_FILE "wounds/plasma_scar_desc.json"
