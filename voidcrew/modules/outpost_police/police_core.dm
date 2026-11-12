@@ -259,9 +259,6 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	var/turf/last_seen_turf
 	/// world.time since when no officer has seen them, or 0
 	var/unseen_since = 0
-	/// An arrest stood by them in crit and gave up (police_arrest.dm step_downed()): while they lie in crit, nobody
-	/// counts as seeing them, so the hide clock runs. Cleared once they are out of crit.
-	var/left_lying = FALSE
 	/// world.time since when they have been away from the outpost, or 0
 	var/away_since = 0
 	/// world.time until which they are refused service (a faded warrant of three stars or more)

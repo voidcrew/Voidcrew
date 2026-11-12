@@ -733,3 +733,32 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 0, "A crewmate was made an accomplice of a dead leader")
 	wanted_cleanup(list(ship))
+
+/**
+ * Owner decisions 34 and 37: someone in crit with an arrest on its way to cuff them keeps their stars until the cuffs
+ * are on. Before, crit counted as away: a one-star warrant drained to nothing and the arrest closed with them left
+ * lying, and three stars fell to two and were fined instead of jailed. With no arrest on them, crit still fades.
+ */
+/datum/unit_test/voidcrew_outpost_police_crit_arrest_holds
+
+/datum/unit_test/voidcrew_outpost_police_crit_arrest_holds/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/suspect = wanted_person(wanted_spot(0, 0))
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 50) // three stars
+	suspect.stat = HARD_CRIT
+	warrant.away_since = world.time - 10 MINUTES
+
+	var/datum/outpost_police_case/case = new(police, warrant)
+	police.cases[suspect.mind] = case
+	TEST_ASSERT(police.arrest_on(suspect), "Setup: no arrest on the suspect")
+	TEST_ASSERT(!police.in_custody(suspect), "Setup: the suspect is already in custody")
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(warrant.heat, 50, "Heat faded from someone in crit with an arrest on its way to them")
+	TEST_ASSERT_EQUAL(police.get_stars(suspect.mind), 3, "A three-star suspect in crit fell below three stars before the cuffs")
+	police.close_case(suspect.mind)
+
+	// Nobody coming for them: in crit is away, and it fades as before
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(warrant.heat, 49, "Heat did not fade from someone in crit with no arrest on them")
+	suspect.stat = CONSCIOUS

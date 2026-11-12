@@ -608,6 +608,11 @@
 	var/turf/where = body ? get_turf(body) : null
 	var/here = !!where && get_trader_outpost_for_turf(where) == outpost
 	var/downed = !body || body.stat == DEAD || body.stat == HARD_CRIT
+	// In crit at the outpost with an arrest on its way to cuff them where they lie (owner decision 34): as good as in
+	// custody, so nothing fades before the cuffs are on. Lying there uncuffed, the warrant would drain as "away" and
+	// the arrest close at no stars, or a three-star suspect fall to two and be fined instead of jailed (decision 37).
+	if(here && downed && body && body.stat != DEAD && arrest_on(body))
+		return
 	var/old_stars = stars_of(warrant.heat)
 	var/was_away = !!warrant.away_since
 	var/was_unseen = !!warrant.unseen_since
@@ -620,9 +625,7 @@
 		warrant.away_since = 0
 	// Seen: an officer sees them, or a checkpoint scan has them. Cleared only by a sighting.
 	var/seen = FALSE
-	if(warrant.left_lying && !(body && HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)))
-		warrant.left_lying = FALSE
-	if(here && !downed && !warrant.left_lying)
+	if(here && !downed)
 		seen = suspect_seen(body)
 	if(seen)
 		warrant.last_seen_at = world.time
@@ -660,6 +663,13 @@
 
 	if(warrant.heat <= 0 && current_prior(warrant) <= 0 && warrant.barred_until <= world.time)
 		remove_warrant(warrant)
+
+/// Whether an open arrest is on `body` (cuffed or not yet)
+/datum/outpost_police/proc/arrest_on(mob/living/body)
+	if(!body?.mind)
+		return FALSE
+	var/datum/outpost_police_case/case = cases[body.mind]
+	return !QDELETED(case) && case.get_suspect() == body
 
 /// Heat just reached 0 by fading: the peak becomes the prior
 /datum/outpost_police/proc/warrant_faded(datum/outpost_warrant/warrant)
