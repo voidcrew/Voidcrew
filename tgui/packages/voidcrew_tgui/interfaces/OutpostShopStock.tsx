@@ -54,6 +54,10 @@ type Sale = {
   qty: number;
   total: number;
   taken: BooleanLike;
+  // A leased floor's shop only (trade_floors/floor_shopfront.dm): where the
+  // sale was made, and whether a passing customer paid in cash
+  where?: string | null;
+  npc?: BooleanLike;
 };
 
 type Data = {
@@ -69,6 +73,13 @@ type Data = {
 };
 
 const ALL = '__all__';
+/** One line, cut with an ellipsis: every name here is somebody's own text. */
+const CLIP = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+} as const;
+const PLACES = { till: 'Till', shelf: 'Shelf' };
 const DRAG_THRESHOLD = 4;
 const KEY_A = 65;
 const KEY_ESCAPE = 27;
@@ -507,6 +518,7 @@ const CategoryRow = (props: CategoryRowProps) => {
     <div data-category={id}>
       <Button
         fluid
+        ellipsis
         selected={active}
         color={hovered ? 'good' : undefined}
         onClick={onClick}
@@ -632,11 +644,15 @@ const StockRow = (props: StockRowProps) => {
             fallback={<Icon name="box" size={1.5} />}
           />
         </Stack.Item>
-        <Stack.Item grow>{listing.name}</Stack.Item>
-        <Stack.Item width="110px" color="label">
+        <Stack.Item grow basis={0} style={{ minWidth: 0 }}>
+          <div style={CLIP} title={listing.name}>
+            {listing.name}
+          </div>
+        </Stack.Item>
+        <Stack.Item width="70px" color="label" style={CLIP}>
           {empty ? 'Empty' : listing.units}
         </Stack.Item>
-        <Stack.Item width="120px" textAlign="right">
+        <Stack.Item width="130px" textAlign="right" style={CLIP}>
           {listing.price > 0 ? (
             <Box color="good">
               {listing.price} cr{listing.per_unit ? ' each' : ''}
@@ -652,18 +668,31 @@ const StockRow = (props: StockRowProps) => {
 
 const SalesList = (props: { sales: Sale[] }) => {
   const { sales } = props;
+  // Only a leased floor's shop says where: an outpost's has the one register
+  const showPlace = sales.some((sale) => !!sale.where);
   return (
     <Section fill scrollable>
       {sales.length === 0 ? <NoticeBox>No sales yet.</NoticeBox> : null}
       {sales.map((sale, index) => (
-        <Stack key={index} mb={0.5}>
+        <Stack key={index} mb={0.5} align="center">
           <Stack.Item width="50px" color="label">
             {sale.when}
           </Stack.Item>
-          <Stack.Item grow>
-            {sale.buyer}: {sale.qty}x {sale.name}
+          <Stack.Item grow basis={0} style={{ minWidth: 0 }}>
+            <div
+              style={CLIP}
+              title={`${sale.buyer}: ${sale.qty}x ${sale.name}`}
+            >
+              {sale.buyer}: {sale.qty}x {sale.name}
+            </div>
           </Stack.Item>
-          <Stack.Item textAlign="right">
+          {showPlace ? (
+            <Stack.Item width="110px" color="label" style={CLIP}>
+              {PLACES[sale.where || ''] || 'Register'}
+              {sale.npc ? ', cash' : ''}
+            </Stack.Item>
+          ) : null}
+          <Stack.Item width="110px" textAlign="right" style={CLIP}>
             {sale.taken ? (
               <Box color="average">Taken</Box>
             ) : (
