@@ -94,7 +94,8 @@
 	if(far_air?.return_pressure() >= ONE_ATMOSPHERE && source_air?.return_pressure() >= ONE_ATMOSPHERE)
 		TEST_ASSERT(far in picked, "A listener 25 tiles away in air was not picked for the far sound")
 
-/// A held shield that blocks a plasma bolt stops it and takes the hit itself, and the hit splashes off it.
+/// A held shield that blocks a plasma bolt stops it and takes the hit itself, and the bolt splashes on the shield,
+/// coats it and drips off as slag; with the body in the way it all draws under the holder.
 /datum/unit_test/voidcrew_plasma_bolt/shield_block
 
 /datum/unit_test/voidcrew_plasma_bolt/shield_block/Run()
@@ -103,15 +104,52 @@
 	shield.block_chance = INFINITY
 	victim.put_in_active_hand(shield, forced = TRUE)
 	var/integrity_before = shield.get_integrity()
-	victim.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 1)), BODY_ZONE_CHEST)
+	var/turf/victim_turf = get_turf(victim)
+
+	// Facing the shot: it meets the shield in view
+	victim.setDir(SOUTH)
+	var/obj/projectile/energy/plasma_bolt/heavy/bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(2, 0))
+	var/side = REVERSE_DIR(angle2dir_cardinal(bolt.angle))
+	var/key = plasma_shield_key(victim, shield, side)
+	TEST_ASSERT_EQUAL(key, "riot_[IS_LEFT_INDEX(victim.get_held_index_of_item(shield)) ? "L" : "R"]S[plasma_burst_dir_letter(side)]", "a riot shield block picked the wrong baked look")
+	var/list/anchor = GLOB.plasma_shield_anchors[key]
+	TEST_ASSERT_NOTNULL(anchor, "no anchor for a riot shield block")
+	victim.bullet_act(bolt, BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "a plasma bolt burned through a shield with a forced block")
 	TEST_ASSERT(shield.get_integrity() < integrity_before, "a shield that blocked a plasma bolt took no damage")
-	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_burst) in get_turf(victim), "a shield block made a flesh burst")
-	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/block) in get_turf(victim), "a shield block of a plasma bolt left tg's block star")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_burst) in victim_turf, "a shield block made a flesh burst")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/block) in victim_turf, "a shield block of a plasma bolt left tg's block star")
+	TEST_ASSERT_EQUAL(bolt.layer < victim.layer, !!anchor[3], "a blocked bolt drew on the wrong side of the holder")
 	// The splash waits a tick for the bolt's sprite to reach the shield
 	sleep(world.tick_lag * 3)
-	var/obj/effect/temp_visual/plasma_splash/splash = locate() in get_turf(victim)
-	TEST_ASSERT_EQUAL(splash?.icon_state, "splash_armour", "a shield block made no armour splash")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_splash) in victim_turf, "a shield block made the old armour splash")
+	var/list/parts = list()
+	for(var/obj/effect/temp_visual/plasma_shield_splash/part in victim_turf)
+		parts[part.icon_state] = part
+	var/obj/effect/temp_visual/plasma_shield_splash/low = parts["l_[key]"]
+	TEST_ASSERT_NOTNULL(low, "a shield block left no slag")
+	TEST_ASSERT(low.layer < victim.layer, "a shield block's slag drew over the holder")
+	var/obj/effect/temp_visual/plasma_shield_coat/coat = locate() in victim.vis_contents
+	if(anchor[3])
+		TEST_ASSERT_NULL(parts["h_[key]"], "a shield block behind the body drew over the holder")
+		TEST_ASSERT_NULL(coat, "a shield block behind the body coated the shield in view")
+	else
+		var/obj/effect/temp_visual/plasma_shield_splash/high = parts["h_[key]"]
+		TEST_ASSERT_NOTNULL(high, "a shield block in view drew nothing over the holder")
+		TEST_ASSERT(high.layer > victim.layer, "a shield block in view drew under the holder")
+		TEST_ASSERT_NOTNULL(coat, "a shield block in view left no molten coat on the shield")
+		TEST_ASSERT_EQUAL(coat.icon_state, "c_[key]", "the molten coat was baked for another pose")
+		// Turning away takes the coat with the pose it was drawn for
+		victim.setDir(NORTH)
+		TEST_ASSERT(QDELETED(coat), "the molten coat stayed on after the holder turned")
+
+	// Every baked case has its anchor, slag and, in view, its coat
+	for(var/baked_key in GLOB.plasma_shield_anchors)
+		var/list/baked = GLOB.plasma_shield_anchors[baked_key]
+		TEST_ASSERT(icon_exists('voidcrew/modules/plasma_weapons/icons/plasma_shield.dmi', "l_[baked_key]"), "no slag state for [baked_key]")
+		if(!baked[3])
+			TEST_ASSERT(icon_exists('voidcrew/modules/plasma_weapons/icons/plasma_shield.dmi', "h_[baked_key]"), "no splash state for [baked_key]")
+			TEST_ASSERT(icon_exists('voidcrew/modules/plasma_weapons/icons/plasma_shield_coat.dmi', "c_[baked_key]"), "no coat state for [baked_key]")
 
 /// Ordinary person hits alternate the splatter and the flash; a killing hit burns through.
 /datum/unit_test/voidcrew_plasma_bolt/burst_pick

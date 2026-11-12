@@ -95,3 +95,6 @@
 
 /// Light colour of a plasma bolt and of its splash and gutter-out
 #define PLASMA_LIGHT_COLOR "#74FFA0"
+
+/// Furthest a bolt's sprite slides across its path onto a held shield on its last step, in pixels
+#define PLASMA_BOLT_MAX_SLIDE 6

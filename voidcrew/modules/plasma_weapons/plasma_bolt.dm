@@ -41,6 +41,8 @@
 	var/list/impact_point
 	/// The turf impact_point is measured on
 	var/turf/impact_turf
+	/// Whether the sprite also slides sideways onto impact_point on its last step, as onto a held shield
+	var/impact_slide = FALSE
 
 /obj/projectile/energy/plasma_bolt/Destroy()
 	hissed_mobs = null
@@ -61,11 +63,24 @@
 	if(impact_point && impact_turf == loc)
 		stop = (impact_point[1] - pixel_x) * dx + (impact_point[2] - pixel_y) * dy - offset
 	stop = clamp(stop, 0, max(full, 0) + ICON_SIZE_ALL / 2)
+	// Onto a held shield it slides a few pixels across its path, so it meets the shield and not the air beside it
+	var/slide_x = 0
+	var/slide_y = 0
+	if(impact_slide && impact_point && impact_turf == loc)
+		var/across = clamp((impact_point[1] - pixel_x) * dy - (impact_point[2] - pixel_y) * dx, -PLASMA_BOLT_MAX_SLIDE, PLASMA_BOLT_MAX_SLIDE)
+		slide_x = dy * across
+		slide_y = -dx * across
 	var/anim_time = full > 0 ? animate_time * stop / full : 0
 	// Drop this tick's earlier steps first: a step taken before the bolt crossed into the target's turf is in
 	// the last turf's pixels, and chained after it this one would overshoot the stop by up to a tile
 	animate(src)
-	animate(src, pixel_x = pixel_x + dx * stop, pixel_y = pixel_y + dy * stop, time = anim_time, flags = ANIMATION_PARALLEL)
+	if(impact_slide && impact_turf == loc)
+		// On the holder's own screen row, so its layer alone puts it in front of the holder or behind
+		pixel_z += pixel_y
+		pixel_y = 0
+		animate(src, pixel_x = pixel_x + dx * stop + slide_x, pixel_z = pixel_z + dy * stop + slide_y, time = anim_time, flags = ANIMATION_PARALLEL)
+	else
+		animate(src, pixel_x = pixel_x + dx * stop + slide_x, pixel_y = pixel_y + dy * stop + slide_y, time = anim_time, flags = ANIMATION_PARALLEL)
 	// A person's burst shows a tick after the hit (a splash shows at once): a bolt that stops early, as on the
 	// near edge of a body lying down, waits at its stop until the burst is up instead of leaving empty frames.
 	// The bolt is deleted by then anyway, so it never sits over the burst for more than a frame.
