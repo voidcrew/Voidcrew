@@ -368,10 +368,10 @@
 /datum/unit_test/voidcrew_cyberware_timestop/proc/tinted(atom/thing)
 	return cyberware_time_has_tint(thing)
 
-/// Whether one of `gibs`' RESET_COLOR overlays (its meat and bone) is drawn with a colour matrix
+/// Whether `gibs`' meat and bone overlay is drawn with a colour matrix
 /datum/unit_test/voidcrew_cyberware_timestop/proc/gib_bits_tinted(obj/effect/decal/cleanable/blood/gibs/gibs)
 	for(var/mutable_appearance/bit as anything in gibs.overlays)
-		if((bit.appearance_flags & RESET_COLOR) && islist(bit.color))
+		if(bit.icon_state == "[gibs.icon_state]-overlay" && islist(bit.color))
 			return TRUE
 	return FALSE
 

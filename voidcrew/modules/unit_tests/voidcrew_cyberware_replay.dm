@@ -263,11 +263,9 @@
 	sleep(0.5 SECONDS)
 	user.Move(spot(0, 1), NORTH)
 	sleep(0.5 SECONDS)
-	user.death()
-	sleep(0.3 SECONDS)
-	if(user.has_status_effect(/datum/status_effect/cyberware_cascade_window))
-		press_again(user)
-	TEST_ASSERT_EQUAL(replay.state, 2, "The slow-mo of a user who died didn't queue its replay")
+	user.death() // ends the slow-mo there and then; the replay starts a tick later
+	TEST_ASSERT_EQUAL(replay.state, 2, "The slow-mo of a user who died didn't end at death with its replay queued")
+	deltimer(replay.begin_timer)
 	var/real = user.appearance
 	replay.begin()
 	TEST_ASSERT_EQUAL(replay.state, 3, "The replay of a user who died didn't start")
