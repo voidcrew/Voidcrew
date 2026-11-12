@@ -246,7 +246,7 @@
 	for(var/section in list("halcyon", "quartermain", "undertow"))
 		for(var/kind in kinds)
 			var/list/lines = ambient_dialogue_lines(file, section, kind)
-			TEST_ASSERT(length(lines) >= 2, "[section] has fewer than two [kind] lines")
+			TEST_ASSERT(length(lines) >= 4, "[section] has fewer than four [kind] lines")
 			for(var/line in lines)
 				TEST_ASSERT(istext(line) && length(line) <= 72, "[section] [kind] has a line that is not text or runs past 72 characters: [line]")
 				TEST_ASSERT(!findtext(line, "%"), "[section] [kind] has a placeholder that is not filled: [line]")

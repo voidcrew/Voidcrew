@@ -22,9 +22,19 @@
 	var/datum/outpost_recovery/outpost_recovery
 	/// The wave they came with (R2 counts waves; a number)
 	var/wave = 0
+	/// The last line they said, aloud or on the radio, which they don't say again straight after
+	var/last_line
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/Destroy()
 	outpost_recovery = null
+	return ..()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/get_lines(context)
+	return outpost_fresh_lines(..(), last_line)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/say_line(line)
+	// A radio line carries its ";" key; remember the words
+	last_line = copytext(line, 1, 2) == ";" ? copytext(line, 2) : line
 	return ..()
 
 // =========================================================================

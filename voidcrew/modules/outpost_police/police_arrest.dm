@@ -1010,7 +1010,10 @@
 		return
 	if(officer.force != POLICE_FORCE_ARREST)
 		officer.set_force(POLICE_FORCE_ARREST)
-	if(police.get_stars(warrant.mind) >= 2)
+	// Off and running: "Stop!"; close, at two stars or more: "On the ground!"
+	if(get_dist(officer, suspect) > 2)
+		say_once(officer, POLICE_LINE_CHASE, suspect)
+	else if(police.get_stars(warrant.mind) >= 2)
 		say_once(officer, POLICE_LINE_STUN, suspect)
 	if(!officer.Adjacent(suspect))
 		route_to(officer, suspect, 1)

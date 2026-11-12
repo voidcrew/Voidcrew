@@ -46,7 +46,7 @@
 	for(var/section in list("halcyon", "quartermain", "undertow"))
 		for(var/kind in line_kinds)
 			var/list/lines = ambient_dialogue_lines("outpost_police.json", section, kind) // AMBIENT_STRINGS_POLICE
-			TEST_ASSERT(length(lines) >= 3, "[section] has [length(lines)] lines for [kind], not 3 or more")
+			TEST_ASSERT(length(lines) >= 4, "[section] has [length(lines)] lines for [kind], not 4 or more")
 			var/plain = 0
 			for(var/line in lines)
 				TEST_ASSERT(istext(line) && length(line), "[section] has an empty line for [kind]")
@@ -59,7 +59,7 @@
 					plain++
 			TEST_ASSERT(plain >= 3, "[section] has fewer than 3 plain lines for [kind]")
 		var/list/entry = ambient_dialogue_section("outpost_police.json", section)
-		TEST_ASSERT(length(entry["conversations"]) >= 3, "[section] has fewer than 3 conversations")
+		TEST_ASSERT(length(entry["conversations"]) >= 4, "[section] has fewer than 4 conversations")
 
 /// Tokens fill from clean values; a line that needs a token the caller lacks is never picked
 /datum/unit_test/voidcrew_outpost_police_tokens
@@ -161,6 +161,12 @@
 	outpost.police.life_voice().context_free_at.Cut()
 	outpost.police.life_voice().text_free_at.Cut()
 	TEST_ASSERT(istext(outpost.police.say_dispatch("check_in")), "The desk could not call the radio")
+
+	// Everyday lines: nobody says the same one twice running
+	var/first_idle = speaker.get_lines("idle")[1]
+	speaker.say_line(first_idle)
+	TEST_ASSERT(!(first_idle in speaker.get_lines("idle")), "An officer can say the same everyday line twice running")
+	TEST_ASSERT(length(speaker.get_lines("idle")) >= 3, "Leaving out the last line left too few")
 	TEST_ASSERT_EQUAL(outpost.police.life_dispatcher(), speaker, "The sergeant is not the one on the radio")
 
 /// A change of level is called by the desk, an officer falls and is called down, the outpost goes quiet and reports clear
@@ -197,6 +203,25 @@
 	voice.text_free_at.Cut()
 	police.life_call_clear()
 	TEST_ASSERT(voice.context_free_at["clear"] > world.time, "Nobody reported clear") // POLICE_LINE_CLEAR
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(voice.context_free_at["check_in_reply"] > world.time, "The desk did not copy the all clear")
+	TEST_ASSERT(!voice.context_free_at["radio_ack"], "The desk answered the all clear as if it were on its way") // POLICE_LINE_RADIO_ACK
+
+	// Two officers answer a hot call: the second is not refused as a chorus of the first
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/acks = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+		if(officer.stat == CONSCIOUS)
+			acks++
+	police.life_acknowledge(2, get_turf(desk))
+	sleep(8 SECONDS)
+	var/list/ack_lines = ambient_dialogue_lines("outpost_police.json", desk.life_voice_section(), "radio_ack") // AMBIENT_STRINGS_POLICE
+	var/answered = 0
+	for(var/said_text in voice.text_free_at)
+		if(said_text in ack_lines)
+			answered++
+	TEST_ASSERT_EQUAL(answered, min(acks, 2), "[answered] officers answered the desk, not [min(acks, 2)]")
 	TEST_ASSERT(desk.stat == CONSCIOUS && watcher.stat == CONSCIOUS, "The test has no officers left to report")
 
 	// The tick with nothing going on says nothing and does not runtime

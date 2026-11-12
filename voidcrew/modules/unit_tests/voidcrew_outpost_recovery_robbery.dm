@@ -459,13 +459,14 @@
 	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "The till is not full again once its takings are back")
 	qdel(shop.holdup)
 
-/// Every zone has its three lines for each kind
+/// Every zone has four or more lines for each kind, and an alarm line that needs no place or look
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines
 
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines/Run()
 	for(var/section in list("halcyon", "quartermain", "undertow"))
 		for(var/key in list("hands_up", "hand_over", "empty", "alarm", "gate_down"))
 			var/list/lines = ambient_dialogue_lines("outpost_robbery.json", section, key) // AMBIENT_STRINGS_ROBBERY
-			TEST_ASSERT_EQUAL(length(lines), 3, "[section] has [length(lines)] '[key]' lines, not 3")
+			TEST_ASSERT(length(lines) >= 4, "[section] has [length(lines)] '[key]' lines, not 4 or more")
 			for(var/line in lines)
 				TEST_ASSERT(istext(line) && length(line) > 0 && length(line) <= 80, "[section] '[key]' has a line that is not a short piece of text")
+			TEST_ASSERT(istext(outpost_police_pick_line(lines, list())), "[section] '[key]' has no line for a robber with no place or look")

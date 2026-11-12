@@ -211,6 +211,8 @@
 	/// Weakref to the coffee machine they use, and when it was last looked for
 	var/datum/weakref/coffee_ref
 	var/coffee_looked_at = 0
+	/// The last everyday line they said (say_line()), which they don't say again straight after
+	var/last_line
 
 // The beat is a stealth patrol route; what a beat officer does at each stop is the stop's (police_stealth.dm)
 
@@ -228,7 +230,17 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/get_lines(context)
 	var/list/lines = ambient_dialogue_lines(AMBIENT_STRINGS_POLICE, life_voice_section(), context)
-	return length(lines) ? lines : ..()
+	return outpost_fresh_lines(length(lines) ? lines : ..(), last_line)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/say_line(line)
+	last_line = line
+	return ..()
+
+/// `lines` without `last` (what the speaker said last), unless that would leave nothing
+/proc/outpost_fresh_lines(list/lines, last)
+	if(!last || length(lines) < 2 || !(last in lines))
+		return lines
+	return lines - last
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/pick_conversation()
 	var/list/entry = ambient_dialogue_section(AMBIENT_STRINGS_POLICE, life_voice_section())
@@ -314,7 +326,8 @@
 		if(!officer)
 			break
 		answered += officer
-		addtimer(CALLBACK(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_RADIO_ACK, null, TRUE), (1 SECONDS) + (i * 1.5 SECONDS), TIMER_DELETE_ME)
+		// Spaced past POLICE_SAY_GAP, or every answer after the first is refused as a chorus
+		addtimer(CALLBACK(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_RADIO_ACK, null, TRUE), (2.5 SECONDS) + ((i - 1) * (POLICE_SAY_GAP + 0.5 SECONDS)), TIMER_DELETE_ME)
 
 /// A beat officer reporting in over the radio, and the desk answering; not too often, and never "all quiet" while
 /// someone wanted is at the outpost or a case is open
@@ -442,8 +455,9 @@
 	if(!reporter?.police_say(POLICE_LINE_CLEAR, null, TRUE))
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/desk = life_dispatcher()
+	// The desk copies it ("check_in_reply"); radio_ack is an officer on their way
 	if(desk && desk != reporter)
-		addtimer(CALLBACK(desk, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_RADIO_ACK, null, TRUE), 2 SECONDS, TIMER_DELETE_ME)
+		addtimer(CALLBACK(desk, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), "check_in_reply", null, TRUE), 2 SECONDS, TIMER_DELETE_ME)
 
 /// The warrant at the outpost with the most stars, or null
 /datum/outpost_police/proc/life_top_warrant()

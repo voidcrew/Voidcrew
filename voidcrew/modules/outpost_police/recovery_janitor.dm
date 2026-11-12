@@ -346,6 +346,7 @@
 		say_line(line)
 		return TRUE
 	next_line_at = world.time + rand(AMBIENT_SPEECH_COOLDOWN_LOW, AMBIENT_SPEECH_COOLDOWN_HIGH) * speech_pace
+	last_line = line
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, say), ";[line]")
 	return TRUE
 
