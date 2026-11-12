@@ -48,6 +48,7 @@
 /// A room has just been placed: the fitters come up (floor_life.dm)
 /obj/structure/overmap/dynamic/player_outpost/floor/on_upgrade_placed(datum/outpost_upgrade/upgrade)
 	floor?.on_room_placed(upgrade)
+	floor?.shop_refresh_signs() // a new Shop room puts OPEN or SHUT on the signs
 
 // ===== PLACEMENT =====
 

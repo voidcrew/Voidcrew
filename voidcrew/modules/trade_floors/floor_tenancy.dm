@@ -73,6 +73,7 @@
 /// when asked. Anything that draws them once (the nameplate, the floor signs) is to be redrawn from here.
 /datum/outpost_floor/proc/tenancy_identity_changed()
 	outpost?.refresh_elevator_uis()
+	shop_refresh_signs()
 
 /**
  * Names the floor: one line, OUTPOST_FLOOR_NAME_MAX, reject_bad_text(), then PLAYER_OUTPOST_RENAME_COOLDOWN before the
@@ -593,16 +594,19 @@
  * and a `ref` is only ever looked for among the candidates or on the list it names, so nothing typed is taken (A66).
  */
 /obj/structure/overmap/dynamic/player_outpost/floor/floor_ui_act(action, list/params, mob/living/user)
-	if(!floor || !istext(action))
+	if(!istext(action))
 		return FALSE
 	// A floor has no docking, berths or ship bay. The console does not show them, and a message made by hand finds
 	// them shut: a floor in lockdown would turn visitors away from its cloning bay, its pad and its cryopods.
+	// Refused before the floor is asked for, so a host losing its floor is never put in lockdown either.
 	var/static/list/not_on_a_floor = list(
 		"set_dock_mode", "approve_request", "deny_request", "ban_ship", "unban_ship", "revoke_approval",
 		"install_ship_bay", "approve_bay_silo", "revoke_bay_silo",
 	)
 	if(action in not_on_a_floor)
 		return TRUE
+	if(!floor)
+		return FALSE
 	if(findtext(action, "floor_") != 1)
 		return FALSE
 	. = TRUE

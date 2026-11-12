@@ -240,6 +240,25 @@
 	supply_delivered.Cut()
 	return ..()
 
+// The console's words for the goods lift (the seam in cargo_shuttle.dm)
+/datum/voidcrew_cargo_shuttle/outpost/floor/freight_name()
+	return "Goods Lift"
+
+/datum/voidcrew_cargo_shuttle/outpost/floor/freight_call_text()
+	return "Call lift"
+
+/datum/voidcrew_cargo_shuttle/outpost/floor/freight_called_text()
+	return "Goods lift called."
+
+/// A call pays for the first orders in the cart, as many as the lift takes (dispatch_orders()); the rest wait
+/datum/voidcrew_cargo_shuttle/outpost/floor/call_cost(list/datum/supply_order/orders)
+	. = 0
+	var/room = min(OUTPOST_FLOOR_GOODS_CRATES, length(goods_tiles()))
+	for(var/datum/supply_order/order as anything in orders)
+		if(room-- <= 0)
+			break
+		. += order.get_final_cost()
+
 #undef FLOOR_GOODS_RETRY
 
 // ===== THE GOODS LIFT =====

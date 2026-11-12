@@ -242,6 +242,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 				continue // decals, markers and other non-things stay put
 			passenger.forceMove(target_turf)
 			riders += passenger
+			// OUTPOST FLOORS seam: forceMove() leaves a bed's or a wheelchair's riders behind, still buckled to it.
+			// They were judged with it (lift_leaves_behind() reads buckled mobs), so they go with it and are strapped
+			// back in (a living mob's forceMove() unbuckles it).
+			for(var/mob/living/strapped as anything in passenger.buckled_mobs?.Copy())
+				if(strapped.loc != source_turf)
+					continue
+				strapped.forceMove(target_turf)
+				passenger.buckle_mob(strapped, force = TRUE)
+				riders += strapped
 	playsound(destination[1], 'sound/machines/ding.ogg', 50, TRUE)
 	SStgui.update_uis(src)
 	outpost.on_lift_ride(src, floor_id, rider, riders) // OUTPOST FLOORS seam

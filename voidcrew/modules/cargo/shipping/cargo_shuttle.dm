@@ -44,6 +44,27 @@
 	/// Whether a loan was accepted and items should spawn on arrival
 	var/loan_accepted = FALSE
 
+// OUTPOST FLOORS seam: the console asks the freight what it is called and what a call charges, so a floor's goods
+// lift (trade_floors/floor_supply.dm) reads as a lift and checks only the orders it takes.
+
+/// What the console calls this freight
+/datum/voidcrew_cargo_shuttle/proc/freight_name()
+	return "Cargo Shuttle"
+
+/// The console's call button
+/datum/voidcrew_cargo_shuttle/proc/freight_call_text()
+	return "Call shuttle"
+
+/// What the console says once the freight is called
+/datum/voidcrew_cargo_shuttle/proc/freight_called_text()
+	return "Cargo shuttle called. ETA 30 seconds."
+
+/// What a call charges for `orders` (the console's cart): every order in it
+/datum/voidcrew_cargo_shuttle/proc/call_cost(list/datum/supply_order/orders)
+	. = 0
+	for(var/datum/supply_order/order as anything in orders)
+		. += order.get_final_cost()
+
 /**
  * Records a transaction in the history
  */

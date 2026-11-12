@@ -313,7 +313,8 @@
 	qdel(panel)
 	TEST_ASSERT_NULL(floor.panel, "A deleted panel is still its floor's")
 
-/// A player outpost's new hooks answer as an outpost always has, and the stubs answer as if there were no floors
+/// A floor host that has lost its floor answers every new hook safely: no claim, no console, no tills, no hands, and a
+/// pad that follows no docking mode and lets nobody through (P4's lock, settled at integration)
 /datum/unit_test/voidcrew_outpost_floors/seam_host_defaults
 
 /datum/unit_test/voidcrew_outpost_floors/seam_host_defaults/Run()
@@ -324,8 +325,8 @@
 	TEST_ASSERT(!host.can_take_over(someone), "A lease can be taken over before the rule is written")
 	TEST_ASSERT_NULL(host.floor_ui_data(someone), "The management console has floor data with no floor section")
 	TEST_ASSERT(!host.floor_ui_act("floor_set_entry", list("entry" = "open"), someone), "An unknown console action was handled")
-	TEST_ASSERT(host.pad_follows_dock_modes(), "An outpost's pad no longer follows its docking modes")
-	TEST_ASSERT(host.pad_admits(someone), "An outpost's pad has a new lock")
+	TEST_ASSERT(!host.pad_follows_dock_modes(), "A floor's pad follows docking modes a floor does not have")
+	TEST_ASSERT(!host.pad_admits(someone), "A floor host with no floor lets a stranger through its pad")
 	TEST_ASSERT_EQUAL(host.advert_place(), host.name, "An advert no longer names its outpost")
 	TEST_ASSERT(!host.owns_till(null), "An outpost has tills")
 	TEST_ASSERT(!host.is_shop_hand(someone), "An outpost has hired hands")
@@ -335,7 +336,7 @@
 	var/datum/outpost_upgrade/service/shop/room = new
 	TEST_ASSERT(host.offers_upgrade(room), "An outpost does not sell the Shop room")
 	room.floors_only = TRUE
-	TEST_ASSERT(!host.offers_upgrade(room), "An outpost sells a floors-only room before a floor says it may")
+	TEST_ASSERT(host.offers_upgrade(room), "A floor does not sell a floors-only room")
 	qdel(room)
 
 	TEST_ASSERT(outpost_floor_build_allowed(someone, run_loc_floor_bottom_left), "Building is refused off any floor")

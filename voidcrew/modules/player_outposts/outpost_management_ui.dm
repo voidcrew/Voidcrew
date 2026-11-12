@@ -195,7 +195,7 @@
 			ship_links[linked_ship] = link
 	var/list/rows = list()
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship) || ship.docked != outpost || ship.state != OVERMAP_SHIP_IDLE)
+		if(QDELETED(ship) || !outpost.ship_is_home(ship) || ship.state != OVERMAP_SHIP_IDLE) // OUTPOST FLOORS seam
 			continue
 		var/datum/outpost_research_link/link = ship_links[ship]
 		ship_links -= ship
@@ -292,7 +292,7 @@
 			research_error = null
 			var/obj/structure/overmap/ship/ship = locate(params["ship"]) in SSovermap.simulated_ships
 			var/obj/machinery/rnd/server/ship/server = locate(params["server"]) in GLOB.ship_research_servers
-			if(!ship || ship.docked != outpost || ship.state != OVERMAP_SHIP_IDLE)
+			if(!ship || !outpost.ship_is_home(ship) || ship.state != OVERMAP_SHIP_IDLE) // OUTPOST FLOORS seam
 				research_error = "Ship is no longer docked"
 			else if(!server?.source_code_hdd || get_research_service_site(server) != outpost)
 				research_error = "Research server unavailable"

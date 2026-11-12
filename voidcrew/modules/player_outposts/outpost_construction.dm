@@ -198,7 +198,8 @@
 		return ITEM_INTERACT_BLOCKING
 	if(mode != RCD_DECONSTRUCT && !outpost_service_build_allowed(user, target))
 		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(target)
-		if(!home?.can_build(user))
+		// OUTPOST FLOORS seam: a floor's own builders are still kept off its hull, landing and goods lift (A5)
+		if(!home?.can_build(user) || !outpost_floor_build_allowed(user, target))
 			balloon_alert(user, "outpost property!")
 			return ITEM_INTERACT_BLOCKING
 	return ..()

@@ -351,6 +351,8 @@
 	if(front_door)
 		host.shell_front_door = WEAKREF(front_door)
 		host.key_front_door()
+	// The floor is named before its shell loads (let_to()): the mapped nameplate shows it from the start
+	shop_refresh_signs()
 	return TRUE
 
 /**

@@ -96,13 +96,15 @@ const VoidcrewCargoStatus = () => {
     shuttle_error,
     points,
     loan,
+    freight_name = 'Cargo Shuttle',
+    freight_call = 'Call shuttle',
   } = data;
 
   // Determine button text and state
   const getButtonText = () => {
     switch (shuttle_state) {
       case CARGO_SHUTTLE_AWAY:
-        return 'Call shuttle';
+        return freight_call;
       case CARGO_SHUTTLE_ARRIVING:
         return `Arriving...`;
       case CARGO_SHUTTLE_DOCKED:
@@ -110,7 +112,7 @@ const VoidcrewCargoStatus = () => {
       case CARGO_SHUTTLE_DEPARTING:
         return `Departing...`;
       default:
-        return 'Cargo Shuttle';
+        return freight_name;
     }
   };
 
@@ -157,13 +159,13 @@ const VoidcrewCargoStatus = () => {
         <LabeledList.Item label="Paying account">
           {data.account_name || 'Linked bank account'}
         </LabeledList.Item>
-        <LabeledList.Item label="Cargo Shuttle">
+        <LabeledList.Item label={freight_name}>
           <Button
             color={getButtonColor()}
             disabled={isButtonDisabled()}
             tooltip={
               isButtonDisabled() && shuttle_state === CARGO_SHUTTLE_AWAY
-                ? shuttle_error || 'Cannot call shuttle'
+                ? shuttle_error || 'Unavailable'
                 : null
             }
             content={getButtonText()}

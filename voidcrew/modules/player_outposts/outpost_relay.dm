@@ -17,7 +17,8 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 
 /// Invitations bind a docked ship and physical source disk, even before a relay exists.
 /obj/structure/overmap/dynamic/player_outpost/proc/propose_research_link(mob/user, obj/machinery/rnd/server/ship/server, obj/structure/overmap/ship/ship, obj/item/computer_disk/ship_disk/expected_disk)
-	if(!can_manage(user) || QDELETED(server) || QDELETED(ship) || ship.docked != src || ship.state != OVERMAP_SHIP_IDLE)
+	// OUTPOST FLOORS seam: ship_is_home() is "docked here", or docked at a floor's building (trade_floors/floor_rooms.dm)
+	if(!can_manage(user) || QDELETED(server) || QDELETED(ship) || !ship_is_home(ship) || ship.state != OVERMAP_SHIP_IDLE)
 		return null
 	if(get_research_service_site(server) != src || !expected_disk || server.source_code_hdd != expected_disk || expected_disk.loc != server)
 		return null
@@ -112,7 +113,7 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 /datum/outpost_research_link/proc/approve(mob/living/user, obj/machinery/rnd/server/relay/relay)
 	var/obj/structure/overmap/dynamic/player_outpost/home = home_ref?.resolve()
 	var/obj/structure/overmap/ship/ship = ship_ref?.resolve()
-	if(ship_approved || !valid_endpoints() || QDELETED(relay) || relay.connection || get_service_site(relay) != ship || !relay.can_manage_connection(user) || ship.docked != home || ship.state != OVERMAP_SHIP_IDLE)
+	if(ship_approved || !valid_endpoints() || QDELETED(relay) || relay.connection || get_service_site(relay) != ship || !relay.can_manage_connection(user) || !home.ship_is_home(ship) || ship.state != OVERMAP_SHIP_IDLE) // OUTPOST FLOORS seam
 		return FALSE
 	var/obj/machinery/rnd/server/ship/server = home_server.resolve()
 	if(!server.is_operational || !relay.is_operational || server.research_disabled || relay.research_disabled)
@@ -238,12 +239,21 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	var/obj/structure/overmap/ship/ship = astype(get_service_site(src))
 	if(!ship || ship.state != OVERMAP_SHIP_IDLE)
 		return options
-	var/obj/structure/overmap/dynamic/player_outpost/home = astype(ship.docked)
-	for(var/datum/outpost_research_link/link as anything in home?.research_links)
-		if(link.ship_approved || link.ship_ref.resolve() != ship || !link.valid_endpoints())
-			continue
-		var/obj/machinery/rnd/server/ship/server = link.home_server.resolve()
-		options["[length(options) + 1]. [home.name] - [server.name]"] = link
+	// OUTPOST FLOORS seam: a ship docked at a trader outpost may be invited by any floor that counts it as home
+	var/list/obj/structure/overmap/dynamic/player_outpost/homes = list()
+	if(istype(ship.docked, /obj/structure/overmap/dynamic/player_outpost))
+		homes += ship.docked
+	else if(istype(ship.docked, /obj/structure/overmap/trader_outpost))
+		var/obj/structure/overmap/trader_outpost/building = ship.docked
+		for(var/datum/outpost_floor/floor in building.floors)
+			if(floor.host?.ship_is_home(ship))
+				homes += floor.host
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in homes)
+		for(var/datum/outpost_research_link/link as anything in home.research_links)
+			if(link.ship_approved || link.ship_ref.resolve() != ship || !link.valid_endpoints())
+				continue
+			var/obj/machinery/rnd/server/ship/server = link.home_server.resolve()
+			options["[length(options) + 1]. [home.name] - [server.name]"] = link
 	return options
 
 /obj/machinery/rnd/server/relay/attack_hand(mob/living/user, list/modifiers)

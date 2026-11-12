@@ -312,6 +312,9 @@
 	data["shuttle_timer"] = cargo_shuttle?.get_remaining_time() || 0
 	data["can_call_shuttle"] = can_call_cargo_shuttle()
 	data["shuttle_error"] = get_shuttle_error_message()
+	// OUTPOST FLOORS seam: a floor's freight is its goods lift, not a shuttle (trade_floors/floor_supply.dm)
+	data["freight_name"] = cargo_shuttle ? cargo_shuttle.freight_name() : "Cargo Shuttle"
+	data["freight_call"] = cargo_shuttle ? cargo_shuttle.freight_call_text() : "Call shuttle"
 
 	// Transaction history
 	data["history"] = cargo_shuttle?.transaction_history || list()
@@ -539,7 +542,7 @@
 							return TRUE
 
 					// Check if we have enough credits for the order
-					var/total_cost = get_cart_total()
+					var/total_cost = cargo_shuttle.call_cost(checkout_list) // OUTPOST FLOORS seam: only what this call charges
 					// A siphon on the account freezes ordering: shipping the balance out
 					// as crates while a pirate drains it is just laundering. A loan-only
 					// call brings credits in, so that one still goes.
@@ -558,7 +561,7 @@
 						say("Error: [call_error].")
 						usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 					else
-						say("Cargo shuttle called. ETA 30 seconds.")
+						say(cargo_shuttle.freight_called_text()) // OUTPOST FLOORS seam
 						usr.investigate_log("called the [cargo_account().account_holder] cargo shuttle.", INVESTIGATE_CARGO)
 
 				if(CARGO_SHUTTLE_DOCKED)

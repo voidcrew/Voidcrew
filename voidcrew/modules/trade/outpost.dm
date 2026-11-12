@@ -313,6 +313,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc as anything in traders)
 		if(npc.flags_1 & INITIALIZED_1)
 			npc.setup_from_shop()
+	make_floors() // OUTPOST FLOORS seam: the floors to let (trade_floors/floor_registry.dm)
 
 /**
  * Resolves the shop a linked machine sells for. A null shop_type means the
