@@ -1,1 +1,23 @@
-{}
+{
+	"clerk": {
+		"check": [
+			"Seal's intact. Good.",
+			"Door's shut, seal's whole. Writing it down.",
+			"Nobody's been at it. Lovely."
+		],
+		"write": [
+			"Date, time, seal intact. Initials.",
+			"Dock fees are up again. That goes in the book too.",
+			"Four lines a day for the firm. I'm a poet."
+		],
+		"slip_taken": [
+			"Hey! That's the firm's!",
+			"Put that back. That's not yours.",
+			"Oi! Hands out of my pocket!"
+		],
+		"empty": [
+			"That's my lot. Everything goes back to the office.",
+			"Firm wants it upstairs. I'm off."
+		]
+	}
+}
