@@ -228,8 +228,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 
 /// Notices, hums and whispers, the brewing riot's chant and the riot's roar, once a second (after trouble has set the stage)
 /datum/outpost_prison/proc/ambience_tick(seconds)
-	var/z = wing_z()
-	note_people_inside((z && z <= length(SSmobs.clients_by_zlevel)) ? SSmobs.clients_by_zlevel[z] : list())
+	note_people_inside(wing_clients()) // OUTPOST FLOORS seam (outpost_prison_riot.dm)
 	yard_sounds_tick(seconds)
 	chant_tick(seconds)
 	roar_tick()

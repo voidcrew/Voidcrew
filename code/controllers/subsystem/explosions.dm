@@ -405,6 +405,9 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	// VOIDCREW EDIT ADDITION START: who the blast caught at a trader outpost (voidcrew/modules/trade/outpost_security.dm)
 	var/list/outpost_blast_victims
 	// VOIDCREW EDIT ADDITION END
+	// VOIDCREW EDIT ADDITION START: the leased outpost floor the blast is on, if any (voidcrew/modules/trade_floors/_floor_types.dm)
+	var/datum/outpost_floor/blast_floor = get_outpost_floor_for_turf(epicenter)
+	// VOIDCREW EDIT ADDITION END
 
 	//lists are guaranteed to contain at least 1 turf at this point
 	//we presuppose that we'll be iterating away from the epicenter
@@ -424,6 +427,13 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 				var/our_block = cached_exp_block[get_step_towards(explode, epicenter)]
 				block += our_block
 				cached_exp_block[explode] = our_block + explode.explosive_resistance
+
+		// VOIDCREW EDIT ADDITION START: a blast never crosses the edge of a leased outpost floor, with or without
+		// reactionary explosions (voidcrew/modules/trade_floors/_floor_types.dm). It sits after the block cache so the
+		// turfs beyond a skipped one still count what stood in the way.
+		if(outpost_floor_blast_excludes(blast_floor, explode))
+			continue
+		// VOIDCREW EDIT ADDITION END
 
 		var/severity = EXPLODE_NONE
 		if(dist + (block * EXPLOSION_BLOCK_DEV) < devastation_range)

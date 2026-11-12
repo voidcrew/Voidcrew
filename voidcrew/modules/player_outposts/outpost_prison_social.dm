@@ -427,11 +427,8 @@
 
 /// The fair or brute member at home (awake on the wing's level) with the score furthest from 0, or null
 /datum/outpost_prison/proc/rep_notable_home()
-	var/z = wing_z()
-	if(!z || z > length(SSmobs.clients_by_zlevel))
-		return null
 	var/datum/prison_staff_record/best
-	for(var/mob/living/person in SSmobs.clients_by_zlevel[z])
+	for(var/mob/living/person in wing_clients()) // OUTPOST FLOORS seam (outpost_prison_riot.dm)
 		if(QDELETED(person) || person.stat != CONSCIOUS || is_outpost_prisoner(person) || !is_member(person))
 			continue
 		var/datum/prison_staff_record/record = rep_record(rep_key(person))

@@ -55,7 +55,8 @@
 
 /// Staff (management or pricing) open or close the shop. Null when done, else a refusal.
 /datum/outpost_upgrade/service/shop/proc/set_open(mob/living/user, open)
-	if(QDELETED(outpost) || !(outpost.is_current_management_user(user) || outpost.is_current_pricing_user(user)))
+	// OUTPOST FLOORS seam: a hired hand opens and shuts too
+	if(QDELETED(outpost) || !(outpost.is_current_management_user(user) || outpost.is_current_pricing_user(user) || outpost.is_shop_hand(user)))
 		return "Staff only."
 	open = !!open
 	if(open == is_open)
@@ -63,6 +64,7 @@
 	is_open = open
 	log_game("PLAYER OUTPOST: [key_name(user)] [open ? "opened" : "closed"] the shop at '[outpost.name]'")
 	get_stock()?.mark_dirty()
+	outpost.shop_state_changed(src, user) // OUTPOST FLOORS seam: signs, the board, the opening call
 	return null
 
 /datum/outpost_upgrade/service/shop/service_ui_data(mob/user)
@@ -108,7 +110,8 @@
 /obj/machinery/computer/outpost_shop_register/proc/get_shop()
 	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
 	var/datum/outpost_upgrade/service/shop/shop = home?.service_upgrade("shop")
-	if(!istype(shop) || shop.register_ref?.resolve() != src)
+	// OUTPOST FLOORS seam: a leased floor's tills sell from the same shop (trade_floors/floor_shopfront.dm)
+	if(!istype(shop) || (shop.register_ref?.resolve() != src && !home.owns_till(src)))
 		return null
 	return shop
 

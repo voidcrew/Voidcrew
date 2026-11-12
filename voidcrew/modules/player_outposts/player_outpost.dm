@@ -688,7 +688,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 /obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user, admin_override = FALSE)
 	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
 		return
-	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
+	announce_abandoned() // OUTPOST FLOORS seam: a floor says it on its concourse only
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
 	// Intake closes and the prisoners are transferred out (outpost_prison_economy.dm).
 	running_prison()?.on_outpost_abandoned()
@@ -757,4 +757,70 @@ GLOBAL_LIST_EMPTY(player_outposts)
 
 /// A claim must be vacant and visited in person; prior ownership never disqualifies a player.
 /obj/structure/overmap/dynamic/player_outpost/proc/can_claim(mob/living/user)
-	return !founder_ckey && loaded && !loading && is_management_candidate(user) && user.mind.current == user
+	// OUTPOST FLOORS seam: claim_denial() is the one-floor-a-crew rule on a floor, and nothing anywhere else
+	return !founder_ckey && loaded && !loading && is_management_candidate(user) && user.mind.current == user && !claim_denial(user)
+
+// ===== OUTPOST FLOORS seam (voidcrew/modules/trade_floors) =====
+// A leased floor of a trader outpost is a player outpost with no level of its own (/obj/structure/overmap/dynamic/player_outpost/floor).
+// Wherever an outpost's code would give a floor the wrong answer it asks one of these. Each answers as an outpost
+// always has; the floor host overrides them in trade_floors/.
+
+/// Tells the world this outpost has no owner any more
+/obj/structure/overmap/dynamic/player_outpost/proc/announce_abandoned()
+	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
+
+/// Why `user` may not claim this ownerless outpost, as text, or null when they may
+/obj/structure/overmap/dynamic/player_outpost/proc/claim_denial(mob/living/user)
+	return null
+
+/// Whether `user` may take over the lease from an owner who has gone (floors only)
+/obj/structure/overmap/dynamic/player_outpost/proc/can_take_over(mob/living/user)
+	return FALSE
+
+/// More keys for the management console's data, or null (build plan, OutpostManagement)
+/obj/structure/overmap/dynamic/player_outpost/proc/floor_ui_data(mob/user)
+	return null
+
+/// An action the management console does not know. TRUE when it was handled. Checks its own permissions.
+/obj/structure/overmap/dynamic/player_outpost/proc/floor_ui_act(action, list/params, mob/living/user)
+	return FALSE
+
+/// Whether this outpost sells `upgrade` at its console
+/obj/structure/overmap/dynamic/player_outpost/proc/offers_upgrade(datum/outpost_upgrade/upgrade)
+	return !upgrade.floors_only
+
+/// A room has just been placed
+/obj/structure/overmap/dynamic/player_outpost/proc/on_upgrade_placed(datum/outpost_upgrade/upgrade)
+	return
+
+/// Whether the network pad's arrivals follow the docking modes (lockdown, approved crews). A floor has no docking.
+/obj/structure/overmap/dynamic/player_outpost/proc/pad_follows_dock_modes()
+	return TRUE
+
+/// Where pad_follows_dock_modes() is FALSE: whether `traveller` may arrive by the pad
+/obj/structure/overmap/dynamic/player_outpost/proc/pad_admits(mob/living/traveller)
+	return TRUE
+
+/// The place an advert names
+/obj/structure/overmap/dynamic/player_outpost/proc/advert_place()
+	return name
+
+/// The overmap coordinates an advert gives, or null
+/obj/structure/overmap/dynamic/player_outpost/proc/advert_coords()
+	return get_relative_overmap_coords()
+
+/// Whether `ship` is at this outpost for research links
+/obj/structure/overmap/dynamic/player_outpost/proc/ship_is_home(obj/structure/overmap/ship/ship)
+	return ship.docked == src
+
+/// Whether `register` sells from this outpost's shop although it is not the Shop room's own (a floor's tills)
+/obj/structure/overmap/dynamic/player_outpost/proc/owns_till(obj/machinery/computer/outpost_shop_register/register)
+	return FALSE
+
+/// Whether `user` is a hired hand: may stock the shop, serve and open or shut it, and pass Staff doors. Nothing else.
+/obj/structure/overmap/dynamic/player_outpost/proc/is_shop_hand(mob/user)
+	return FALSE
+
+/// The shop has just opened or shut
+/obj/structure/overmap/dynamic/player_outpost/proc/shop_state_changed(datum/outpost_upgrade/service/shop/shop, mob/user)
+	return

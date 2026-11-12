@@ -578,6 +578,39 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 		return null
 	return berths[floor_id]
 
+// ===== OUTPOST FLOORS seam (voidcrew/modules/trade_floors) =====
+// What the lift asks its host about a destination. These answer as the lift always has; a trader outpost
+// overrides them for its floors in trade_floors/floor_lift.dm.
+
+/// Whether `rider` may send the car to `floor_id`. Only a standard berth's own crew may go down to it.
+/obj/structure/overmap/proc/may_enter_floor(floor_id, mob/rider)
+	var/datum/outpost_berth/destination_berth = get_floor_berth(floor_id)
+	return !destination_berth || destination_berth.allows_entry(rider)
+
+/// More rows for the lift's list, after the berths and bays: a list of row lists (build plan, OutpostElevator)
+/obj/structure/overmap/proc/extra_floor_rows(mob/user)
+	return list()
+
+/// Whether the car must leave `thing` behind when `rider` sends it to `floor_id`
+/obj/structure/overmap/proc/lift_leaves_behind(atom/movable/thing, floor_id, mob/rider)
+	return FALSE
+
+/// The car has arrived at `floor_id` from `panel`. `rider` sent it (null when they were gone by then); `passengers` rode.
+/obj/structure/overmap/proc/on_lift_ride(obj/machinery/outpost_elevator/panel, floor_id, mob/rider, list/passengers)
+	return
+
+/// Someone used an emag on `panel`. TRUE when it did something.
+/obj/structure/overmap/proc/on_lift_emagged(obj/machinery/outpost_elevator/panel, mob/user)
+	return FALSE
+
+/// What the lift says when it will not take a rider to `floor_id`: a balloon, or the panel's spoken line
+/obj/structure/overmap/proc/lift_refusal_text(floor_id, spoken = FALSE)
+	return spoken ? "Berth [floor_id] is crew only." : "crew only!"
+
+/// The turf whose overmap zone a network pad on this host reads. A floor is not on the overmap and answers its outpost's.
+/obj/structure/overmap/proc/network_zone_turf()
+	return get_turf(src)
+
 /// Pushes fresh data to every elevator panel UI (floor list changed).
 /obj/structure/overmap/proc/refresh_elevator_uis()
 	for(var/obj/machinery/outpost_elevator/lobby_panel as anything in lobby_panels)

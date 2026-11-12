@@ -39,6 +39,13 @@
 	var/moving = FALSE
 	/// Timer for the fake travel delay (TIMER_STOPPABLE)
 	var/move_timer
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors)
+	/// The leased floor this panel is on, or null
+	var/datum/outpost_floor/floor
+	/// world.time until which this panel sends the car to any floor (it was forced); written by floor_lift.dm
+	var/forced_until = 0
+	/// world.time before which forcing this panel again does nothing; written by floor_lift.dm
+	var/force_ready_at = 0
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
@@ -49,6 +56,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	if(berth?.panel == src)
 		berth.panel = null
 	berth = null
+	if(floor?.panel == src) // OUTPOST FLOORS seam
+		floor.panel = null
+	floor = null
 	if(outpost)
 		outpost.lobby_panels -= src
 		outpost = null
@@ -68,6 +78,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
 /// The floor this panel is on: 0 = concourse, 1..N = berth number, -1 = unlinked.
 /obj/machinery/outpost_elevator/proc/get_current_floor()
+	if(floor) // OUTPOST FLOORS seam: a leased floor's id is 101 and up
+		return floor.lift_id()
 	if(berth)
 		return berth.berth_number
 	if(is_lobby)
@@ -76,6 +88,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
 /// The alcove turfs this panel teleports from.
 /obj/machinery/outpost_elevator/proc/get_own_alcove()
+	if(floor) // OUTPOST FLOORS seam
+		return floor.alcove_turfs
 	if(berth)
 		return berth.alcove_turfs
 	if(is_lobby)
@@ -84,6 +98,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
 /obj/machinery/outpost_elevator/examine(mob/user)
 	. = ..()
+	if(floor) // OUTPOST FLOORS seam
+		. += span_notice("The floor indicator reads: FLOOR [floor.number].")
+		return
 	var/floor_id = get_current_floor()
 	if(istype(berth, /datum/outpost_berth/ship_bay))
 		var/datum/outpost_berth/ship_bay/bay = berth
@@ -137,6 +154,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 					"occupied" = bay && length(bay.alcove_turfs) > 0,
 					"your_ship" = !!(bay?.ship?.ship_team in user?.mind?.ship_teams),
 				))
+	// OUTPOST FLOORS seam: the leased floors this rider may visit, and no others (trade_floors/floor_lift.dm)
+	if(outpost)
+		floors += outpost.extra_floor_rows(user)
 	data["floors"] = floors
 	return data
 
@@ -161,7 +181,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 		balloon_alert(ui.user, "step into the elevator first!")
 		return TRUE
 	if(!may_ride_to(floor_id, ui.user))
-		balloon_alert(ui.user, "crew only!")
+		balloon_alert(ui.user, outpost.lift_refusal_text(floor_id)) // OUTPOST FLOORS seam
 		return TRUE
 	moving = TRUE
 	playsound(src, 'sound/machines/chime.ogg', 50, TRUE)
@@ -171,8 +191,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
 /// Whether this rider may send the car to the floor. Only a standard berth's own crew may go down to it.
 /obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
-	var/datum/outpost_berth/destination_berth = outpost?.get_floor_berth(floor_id)
-	return !destination_berth || destination_berth.allows_entry(rider)
+	// OUTPOST FLOORS seam: the host decides (the berth rule is /obj/structure/overmap/proc/may_enter_floor())
+	return outpost ? outpost.may_enter_floor(floor_id, rider) : TRUE
 
 /**
  * The actual "ride": re-validates the destination (a berth can be torn down
@@ -200,14 +220,17 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 		rider = null
 	if(!may_ride_to(floor_id, rider))
 		playsound(src, 'sound/machines/buzz/buzz-two.ogg', 50, TRUE)
-		say("Berth [floor_id] is crew only.")
+		say(outpost.lift_refusal_text(floor_id, TRUE)) // OUTPOST FLOORS seam (positional: an override may name it differently)
 		SStgui.update_uis(src)
 		return
+	var/list/atom/movable/riders = list() // OUTPOST FLOORS seam: who rode, for on_lift_ride()
 	for(var/i in 1 to length(own_alcove))
 		var/turf/source_turf = own_alcove[i]
 		var/turf/target_turf = destination[min(i, length(destination))]
 		for(var/atom/movable/passenger as anything in source_turf.contents.Copy())
 			if(passenger.anchored)
+				continue
+			if(outpost.lift_leaves_behind(passenger, floor_id, rider)) // OUTPOST FLOORS seam
 				continue
 			if(isobserver(passenger))
 				continue
@@ -218,5 +241,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 			else if(istype(passenger, /obj/effect))
 				continue // decals, markers and other non-things stay put
 			passenger.forceMove(target_turf)
+			riders += passenger
 	playsound(destination[1], 'sound/machines/ding.ogg', 50, TRUE)
 	SStgui.update_uis(src)
+	outpost.on_lift_ride(src, floor_id, rider, riders) // OUTPOST FLOORS seam
+
+/// OUTPOST FLOORS seam: forcing the lift (trade_floors/floor_lift.dm). The host decides what an emag does;
+/// on a host with no floors it does nothing.
+/obj/machinery/outpost_elevator/emag_act(mob/user, obj/item/card/emag/emag_card)
+	. = ..()
+	if(outpost?.on_lift_emagged(src, user))
+		return TRUE

@@ -10,7 +10,8 @@
 /obj/structure/overmap/dynamic/player_outpost/proc/research_ship_options()
 	var/list/options = list()
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(!QDELETED(ship) && ship.docked == src && ship.state == OVERMAP_SHIP_IDLE)
+		// OUTPOST FLOORS seam: on a leased floor "docked here" is the crew's ship in one of the outpost's berths
+		if(!QDELETED(ship) && ship_is_home(ship) && ship.state == OVERMAP_SHIP_IDLE)
 			options["[length(options) + 1]. [ship.name]"] = ship
 	return options
 

@@ -317,6 +317,9 @@
  * other visitor (abuse review B-12). Everywhere else this says yes.
  */
 /proc/outpost_service_build_allowed(mob/builder, atom/target)
+	// OUTPOST FLOORS seam (trade_floors/floor_building.dm): on a leased floor only its own people build
+	if(!outpost_floor_build_allowed(builder, target))
+		return FALSE
 	if(!is_outpost_service_tile(target))
 		return TRUE
 	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(get_turf(target))

@@ -97,10 +97,7 @@
 
 /// Whether someone who is not a member of the wing is in it
 /datum/outpost_prison/proc/visitors_in_wing()
-	var/z = wing_z()
-	if(!z || z > length(SSmobs.clients_by_zlevel))
-		return FALSE
-	for(var/mob/living/person as anything in SSmobs.clients_by_zlevel[z])
+	for(var/mob/living/person as anything in wing_clients()) // OUTPOST FLOORS seam (outpost_prison_riot.dm)
 		if(QDELETED(person) || person.stat == DEAD || get_area(person) != wing || is_outpost_prisoner(person))
 			continue
 		if(!is_member(person))

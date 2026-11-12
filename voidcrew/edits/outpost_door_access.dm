@@ -31,12 +31,17 @@
 		balloon_alert(user, lock.sign_text())
 
 /obj/machinery/door/airlock/allowed(mob/user)
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors/police_floors.dm): officers on a floor under warrant
+	if(police_floor_door_override(src, user))
+		return TRUE
 	if(outpost_access_refuses(user))
 		tell_outpost_access_refusal(user)
 		return FALSE
 	return ..()
 
 /obj/machinery/door/window/allowed(mob/user)
+	if(police_floor_door_override(src, user)) // OUTPOST FLOORS seam
+		return TRUE
 	if(outpost_access_refuses(user))
 		tell_outpost_access_refusal(user)
 		return FALSE

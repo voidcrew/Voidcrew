@@ -176,7 +176,8 @@
 /// Owner and stewards, in their current bodies
 /obj/machinery/outpost_shop_stock/proc/can_stock(mob/user)
 	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost()
-	return !!home?.is_current_management_user(user)
+	// OUTPOST FLOORS seam: a hired hand stocks. owner_action() gives a stocker insert_held and toggle_open only.
+	return !!(home?.is_current_management_user(user) || home?.is_shop_hand(user))
 
 /// Owner, treasurers and pricers, in their current bodies
 /obj/machinery/outpost_shop_stock/proc/can_price(mob/user)

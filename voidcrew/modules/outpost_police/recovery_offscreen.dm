@@ -49,7 +49,8 @@
 		if(QDELETED(player) || !player.client || player.stat == DEAD)
 			continue
 		var/turf/where = get_turf(player)
-		if(where && get_trader_outpost_for_turf(where) == outpost)
+		// OUTPOST FLOORS seam: someone up on a leased floor does not hold up the concourse (abuse A71)
+		if(where && get_trader_outpost_for_turf(where) == outpost && !get_outpost_floor_for_turf(where))
 			return TRUE
 	return FALSE
 

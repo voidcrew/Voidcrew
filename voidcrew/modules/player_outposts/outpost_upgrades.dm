@@ -107,6 +107,8 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 	/// Placement refusals of a snap upgrade: off every joint, and the wall at the joint not whole
 	var/snap_refusal = "Must join a matching wall."
 	var/seam_refusal = "Repair the wall first."
+	/// OUTPOST FLOORS seam: sold only on a leased floor of a trader outpost (offers_upgrade(), player_outpost.dm)
+	var/floors_only = FALSE
 	/// The side of the joint this one was placed against, "right" or "left"
 	var/snap_side
 	/// The offer this one was placed from (snap_offer()), for on_installed()
@@ -348,6 +350,8 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 	var/datum/outpost_upgrade/prototype = GLOB.outpost_upgrade_catalog[upgrade_id]
 	if(!prototype)
 		return "Unknown upgrade."
+	if(!offers_upgrade(prototype)) // OUTPOST FLOORS seam: a floor sells no cell block, cargo dock or ship bay
+		return "Not sold here."
 	if(pending_upgrade(upgrade_id))
 		return "Blueprint already bought."
 	if(length(owned_upgrades(upgrade_id)) >= prototype.max_owned)
@@ -592,6 +596,7 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 		blueprint.placed_offer = offer
 	blueprint.collect_snaps(footprint_turfs)
 	blueprint.on_installed(user)
+	on_upgrade_placed(blueprint) // OUTPOST FLOORS seam
 	join_rooms_to_grid() // a corridor may already reach this room's door; the wing/dock/room joins right away
 	var/list/entrance = footprint["entrance"]
 	playsound(entrance[CEILING(length(entrance) / 2, 1)], 'sound/machines/ding.ogg', 60, TRUE)
@@ -1016,6 +1021,8 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 	var/style = outpost?.outpost_style || OUTPOST_STYLE_DEFAULT
 	for(var/upgrade_id in GLOB.outpost_upgrade_catalog)
 		var/datum/outpost_upgrade/upgrade = GLOB.outpost_upgrade_catalog[upgrade_id]
+		if(outpost && !outpost.offers_upgrade(upgrade)) // OUTPOST FLOORS seam: the console lists only what is sold here
+			continue
 		var/datum/map_template/template = upgrade.get_template(style = style)
 		catalog += list(list(
 			"id" = upgrade_id,
@@ -1077,6 +1084,8 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 	var/list/states = list()
 	for(var/upgrade_id in GLOB.outpost_upgrade_catalog)
 		var/datum/outpost_upgrade/prototype = GLOB.outpost_upgrade_catalog[upgrade_id]
+		if(!outpost.offers_upgrade(prototype)) // OUTPOST FLOORS seam
+			continue
 		var/datum/outpost_upgrade/pending = outpost.pending_upgrade(upgrade_id)
 		var/state = "available"
 		if(pending)

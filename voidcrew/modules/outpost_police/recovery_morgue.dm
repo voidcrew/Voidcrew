@@ -297,6 +297,9 @@
 		return FALSE
 	if(get_ship_from_atom(where))
 		return FALSE
+	// OUTPOST FLOORS seam: on a leased floor the floor's own rule says who is near enough to keep a body
+	if(get_outpost_floor_for_turf(where))
+		return floor_body_free(body, where)
 	for(var/mob/living/someone in range(OUTPOST_RECOVERY_FREE_RANGE, where))
 		if(someone.stat == CONSCIOUS && morgue_is_player(someone))
 			return FALSE

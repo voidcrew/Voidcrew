@@ -105,6 +105,6 @@
 
 /datum/ai_controller/outpost_yard_droid/get_expected_ai_status()
 	var/turf/pawn_turf = get_turf(pawn)
-	if(isnull(pawn_turf) || !able_to_run || on_failed_planning_timeout || !length(SSmobs.clients_by_zlevel[pawn_turf.z]))
+	if(isnull(pawn_turf) || !able_to_run || on_failed_planning_timeout || !length(outpost_site_clients(pawn_turf))) // OUTPOST FLOORS seam: on a leased floor, only who is on that floor
 		return AI_STATUS_OFF
 	return should_idle() ? AI_STATUS_IDLE : AI_STATUS_ON

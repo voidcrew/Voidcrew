@@ -1127,8 +1127,9 @@
 /mob/living/basic/outpost_experiment/horror/proc/find_prey()
 	var/mob/living/best
 	var/best_distance = INFINITY
-	if(z <= length(SSmobs.clients_by_zlevel))
-		for(var/mob/living/player as anything in SSmobs.clients_by_zlevel[z])
+	if(z)
+		// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): on a leased floor, only whoever is on that floor
+		for(var/mob/living/player as anything in outpost_site_clients(get_turf(src)))
 			if(!isliving(player) || !valid_quarry(player))
 				continue
 			var/distance = get_dist(src, player)

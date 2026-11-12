@@ -53,6 +53,9 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	(OUTPOST_CRIME_KILL_STAFF) = list(60, 5, 4),
 	(OUTPOST_CRIME_GATE_TAMPER) = list(0, 2, 2),
 	(OUTPOST_CRIME_ARMED_ROBBERY) = list(30, 3, 2),
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): forcing the lift is the gate rule; an abduction brings the squad
+	(OUTPOST_CRIME_LIFT_TAMPER) = list(0, 2, 2),
+	(OUTPOST_CRIME_ABDUCTION) = list(0, 3, 3),
 ))
 
 // =========================================================================
@@ -142,6 +145,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /// Once a second while awake. Each step belongs to its package; the order is frozen.
 /datum/outpost_police/proc/tick()
 	tick_warrants() // P1, police_wanted.dm
+	tick_floors() // OUTPOST FLOORS seam: warrants and public ground on leased floors, trade_floors/police_floors.dm
 	tick_dispatch() // P4, police_dispatch.dm
 	tick_cases() // P5, police_arrest.dm
 	tick_cells() // P6, police_cell.dm
@@ -164,7 +168,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /// Whether there is a warrant, a report still to be made, a response unit or a prisoner to look after
 /datum/outpost_police/proc/has_work()
 	// A witness still walking a report over (no radio) is only heard from the tick (review-1 S6)
-	if(length(warrants) || length(cases) || length(pending_reports))
+	if(length(warrants) || length(cases) || length(pending_reports) || floors_have_work()) // OUTPOST FLOORS seam
 		return TRUE
 	for(var/datum/outpost_police_cell/cell as anything in cells)
 		if(length(cell.prisoners))

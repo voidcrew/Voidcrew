@@ -137,6 +137,10 @@
 	data["upgrades"] = upgrade_ui_data(user)
 	data["upgrade_surveying"] = outpost.upgrade_surveying
 	market_ui_data(user, data, can_manage)
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): a leased floor's own section
+	var/list/floor_data = outpost.floor_ui_data(user)
+	if(floor_data)
+		data += floor_data
 	return data
 
 /// The roster, construction grants and research servers: management only
@@ -254,6 +258,9 @@
 		return TRUE
 	// Pricing, room settings and bay eviction actions check their own permissions
 	if(market_action(action, params, user))
+		return TRUE
+	// OUTPOST FLOORS seam: a leased floor's actions (all named floor_*) check their own permissions
+	if(outpost.floor_ui_act(action, params, user))
 		return TRUE
 	if(!outpost.is_current_management_user(user))
 		return

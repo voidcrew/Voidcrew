@@ -117,12 +117,20 @@
 	var/list/bounds = upgrade?.footprint_bounds
 	return length(bounds) >= 5 ? bounds[5] : 0
 
+/**
+ * OUTPOST FLOORS seam (voidcrew/modules/trade_floors): the players who count as being at the wing. On an outpost
+ * that is everyone on its level, as before. On a leased floor it is whoever is on that floor: the level is shared
+ * with the concourse, the berths and other floors (abuse A1).
+ */
+/datum/outpost_prison/proc/wing_clients()
+	var/list/bounds = upgrade?.footprint_bounds
+	if(length(bounds) < 5)
+		return list()
+	return outpost_site_clients(locate(bounds[1], bounds[2], bounds[5]))
+
 /// Whether a member of the wing (is_member()) is awake, playing and on the wing's level
 /datum/outpost_prison/proc/find_crew_home()
-	var/z = wing_z()
-	if(!z || z > length(SSmobs.clients_by_zlevel))
-		return FALSE
-	for(var/mob/living/person as anything in SSmobs.clients_by_zlevel[z])
+	for(var/mob/living/person as anything in wing_clients())
 		if(QDELETED(person) || !person.client || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 			continue
 		if(is_member(person))

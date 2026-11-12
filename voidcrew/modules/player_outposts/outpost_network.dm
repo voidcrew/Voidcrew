@@ -164,7 +164,7 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 /obj/machinery/outpost_network_pad/proc/get_zone()
 	if(isnull(zone_type))
 		var/obj/structure/overmap/host = host_ref?.resolve()
-		var/turf/overmap_turf = host && get_turf(host)
+		var/turf/overmap_turf = host?.network_zone_turf() // OUTPOST FLOORS seam: a floor answers its outpost's turf
 		if(overmap_turf && SSovermap_zones)
 			zone_type = SSovermap_zones.resolve_zone_for_overmap_turf(overmap_turf)
 	return zone_type
@@ -315,6 +315,9 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 
 /// The owner's arrival rules for a non-member, or null when they are admitted
 /obj/machinery/outpost_network_pad/proc/policy_denial(obj/structure/overmap/dynamic/player_outpost/home, mob/living/traveller, obj/machinery/outpost_network_pad/source)
+	// OUTPOST FLOORS seam: a leased floor has no docking; its pad admits whoever its setting admits (abuse A54)
+	if(!home.pad_follows_dock_modes())
+		return home.pad_admits(traveller) ? null : "Private"
 	if(home.dock_mode == OUTPOST_DOCK_MODE_LOCKDOWN)
 		return "Lockdown"
 	var/datum/outpost_upgrade/service/teleporter/room = home.service_upgrade("teleporter")

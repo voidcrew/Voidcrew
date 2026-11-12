@@ -84,6 +84,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	/// Board clock is independent of visits, acceptance and the supply convoy.
 	var/next_contract_refill = 0
 	var/contract_refill_timer
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): the floors above the concourse
+	/// This outpost's floors: floors\[n] is floor n, or null once it is deleted. Made by make_floors() (floor_registry.dm).
+	var/list/datum/outpost_floor/floors = list()
+	/// How many floors this outpost has
+	var/floor_count = OUTPOST_FLOORS_PER_OUTPOST
 
 /// A market, as against a crew's own colony. Both are "Outposts" on the readout.
 /obj/structure/overmap/trader_outpost/get_contact_variant()
@@ -139,6 +144,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(restock_timer)
 		deltimer(restock_timer)
 		restock_timer = null
+	// OUTPOST FLOORS seam: the floors go first, while the outpost they point at is still whole (abuse A35)
+	QDEL_LIST(floors)
 	GLOB.trader_outposts -= src
 	// Admin deletion must not leak six hangar reservations
 	for(var/datum/outpost_berth/berth as anything in berths)
@@ -543,6 +550,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			return outpost
 		for(var/datum/outpost_berth/berth as anything in outpost.berths)
 			if(berth?.contains_turf(T))
+				return outpost
+		// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): a floor is this outpost's ground for the law only
+		// while it is public ground or a warrant is in force on it. get_outpost_floor_for_turf() finds it always.
+		for(var/datum/outpost_floor/floor in outpost.floors)
+			if((floor.public_ground || floor.warrant_in_force) && floor.contains_turf(T))
 				return outpost
 	return null
 

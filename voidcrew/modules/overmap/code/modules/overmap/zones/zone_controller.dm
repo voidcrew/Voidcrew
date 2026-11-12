@@ -230,6 +230,10 @@ SUBSYSTEM_DEF(overmap_zones)
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		if(reservation_contains_turf(outpost.reservation, T))
 			return outpost
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): a leased floor is part of its trader outpost
+	var/datum/outpost_floor/leased_floor = get_outpost_floor_for_turf(T)
+	if(leased_floor)
+		return leased_floor.outpost
 	// Planets and flat encounters: a footprint rectangle inside a map zone's level. This
 	// is the highest-blast-radius lookup in the codebase - it feeds loot tiering, ore
 	// yields, fauna difficulty, mission kill grading and off-ship parallax - and a bare

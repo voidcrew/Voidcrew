@@ -21,11 +21,19 @@
 	var/turf/location = get_turf(target)
 	if(!location)
 		return FALSE
-	return istype(get_area(location), /area/voidcrew/trader_outpost) || !isnull(get_trader_outpost_for_turf(location))
+	if(istype(get_area(location), /area/voidcrew/trader_outpost))
+		return TRUE
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors, lead decision L28): a floor is never blast-protected,
+	// whatever the law says of it. Explosions work on every floor, or a breaching charge would do nothing during a
+	// warrant. Its hull and deck hold by their own types.
+	if(get_outpost_floor_for_turf(location))
+		return FALSE
+	return !isnull(get_trader_outpost_for_turf(location))
 
 /// Engine hazards transported into a market, or into a player outpost's service room, must stop before processing damage.
 /proc/neutralize_trader_outpost_hazard(atom/movable/hazard)
-	if(!is_trader_outpost_protected(hazard) && !is_outpost_service_tile(hazard))
+	// OUTPOST FLOORS seam: engine hazards are stopped on every floor, whatever its setting (abuse A2)
+	if(!is_trader_outpost_protected(hazard) && !is_outpost_service_tile(hazard) && !get_outpost_floor_for_turf(get_turf(hazard)))
 		return FALSE
 	log_game("OUTPOST PROTECTION: Neutralized [hazard] ([hazard.type]) at [AREACOORD(hazard)].")
 	qdel(hazard)
@@ -154,7 +162,8 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	var/checked = FALSE
 	for(var/mob/living/victim in blasted)
 		if(!checked)
-			if(!is_trader_outpost_protected(blasted))
+			// OUTPOST FLOORS seam: a floor is not blast-protected, but a bomb on public ground is still an attack
+			if(!is_trader_outpost_protected(blasted) && !get_trader_outpost_for_turf(blasted))
 				return victims
 			checked = TRUE
 		LAZYADD(victims, victim)

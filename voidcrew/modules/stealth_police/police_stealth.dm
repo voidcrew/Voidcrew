@@ -55,6 +55,7 @@
 		/datum/ai_planning_subtree/human_npc_walk_out,
 		/datum/ai_planning_subtree/outpost_police_case,
 		/datum/ai_planning_subtree/stealth_react,
+		/datum/ai_planning_subtree/outpost_police_breach, // OUTPOST FLOORS seam (trade_floors/police_breach.dm): plans nothing off a floor under warrant
 		/datum/ai_planning_subtree/outpost_police_force,
 		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/human_npc_arm,

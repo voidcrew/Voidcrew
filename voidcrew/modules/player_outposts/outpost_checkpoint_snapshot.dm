@@ -50,6 +50,15 @@ GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 	/obj/structure/outpost_yard_droid,
 	// A trader outpost morgue crew's bag (outpost_police/recovery_morgue.dm): only ever the crew's, never a ship's.
 	/obj/structure/closet/body_bag/outpost_morgue,
+	// OUTPOST FLOORS (voidcrew/modules/trade_floors): a leased floor's fixtures and fittings are the outpost's.
+	/obj/machinery/power/outpost_mains,
+	/obj/machinery/door/airlock/outpost_floor_front,
+	/obj/machinery/computer/outpost_shop_register/floor_till,
+	/obj/machinery/outpost_directory,
+	/obj/structure/outpost_goods_lift,
+	/obj/structure/outpost_floor_shelf,
+	/obj/structure/sign/outpost_floor,
+	/obj/structure/outpost_breach_charge,
 )))
 
 /**

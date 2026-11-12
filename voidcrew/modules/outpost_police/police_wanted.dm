@@ -606,7 +606,8 @@
 		// The cells keep the prisoner's time (police_cell.dm); nothing fades and nothing is dropped meanwhile
 		return
 	var/turf/where = body ? get_turf(body) : null
-	var/here = !!where && get_trader_outpost_for_turf(where) == outpost
+	// OUTPOST FLOORS seam: riding up to a leased floor is never leaving the outpost (abuse A19)
+	var/here = !!where && !!outpost?.holds_turf(where)
 	var/downed = !body || body.stat == DEAD || body.stat == HARD_CRIT
 	var/old_stars = stars_of(warrant.heat)
 	var/was_away = !!warrant.away_since

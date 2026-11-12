@@ -1375,10 +1375,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /// Members of the wing awake and playing on the wing's level
 /datum/outpost_prison/proc/guard_members_about()
 	var/list/members = list()
-	var/z = wing_z()
-	if(!z || z > length(SSmobs.clients_by_zlevel))
-		return members
-	for(var/mob/living/person as anything in SSmobs.clients_by_zlevel[z])
+	for(var/mob/living/person as anything in wing_clients()) // OUTPOST FLOORS seam (outpost_prison_riot.dm)
 		if(QDELETED(person) || !person.client || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 			continue
 		if(is_member(person))

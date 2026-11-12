@@ -39,6 +39,37 @@
 #define OUTPOST_CRIME_GATE_TAMPER "gate_tamper"
 /// A trader held up at its counter (10)
 #define OUTPOST_CRIME_ARMED_ROBBERY "armed_robbery"
+// Outpost floors (voidcrew/modules/trade_floors)
+/// A lift panel forced with an emag in sight of a witness
+#define OUTPOST_CRIME_LIFT_TAMPER "lift_tamper"
+/// Riding up to a leased floor with a restrained or unconscious player who is not yours
+#define OUTPOST_CRIME_ABDUCTION "abduction"
+
+// ===== LEASED FLOORS (trade_floors/police_floors.dm, police_breach.dm) =====
+
+/// A suspect with this many stars on any floor brings the squad up
+#define POLICE_FLOOR_WARRANT_STARS 3
+/// Between an officer's walks through an Open floor with visitors
+#define POLICE_FLOOR_WALKTHROUGH_LOW (8 MINUTES)
+#define POLICE_FLOOR_WALKTHROUGH_HIGH (12 MINUTES)
+#define POLICE_FLOOR_WALKTHROUGH_STAY_LOW (60 SECONDS)
+#define POLICE_FLOOR_WALKTHROUGH_STAY_HIGH (90 SECONDS)
+/// With no 3+ star suspect alive on the floor for this long, the squad leaves
+#define POLICE_FLOOR_WARRANT_TAIL (60 SECONDS)
+/// The longest a floor stays outpost ground after that, whoever is still up there
+#define POLICE_FLOOR_WARRANT_MAX_TAIL (5 MINUTES)
+/// An officer with no way to the suspect for this long asks for a breach
+#define POLICE_BREACH_STALL (4 SECONDS)
+#define POLICE_BREACH_PLANT_TIME (2 SECONDS)
+#define POLICE_BREACH_FUSE (4 SECONDS)
+/// Tiles the squad backs off from a set charge
+#define POLICE_BREACH_STANDOFF 3
+/// Between two charges on one floor
+#define POLICE_BREACH_GAP (6 SECONDS)
+/// What a breakable blocked tile costs the breach search; an open tile costs 1
+#define POLICE_BREACH_BLOCKED_COST 20
+/// With no route and nothing to breach for this long, the squad holds where it is
+#define POLICE_BREACH_GIVE_UP (60 SECONDS)
 
 // ===== WITNESSES (police_perception.dm) =====
 

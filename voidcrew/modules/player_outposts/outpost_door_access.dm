@@ -145,7 +145,8 @@ GLOBAL_LIST_EMPTY(outpost_access_doors)
 		if(OUTPOST_DOOR_MEMBERS)
 			return is_outpost_member(user)
 		if(OUTPOST_DOOR_STAFF)
-			return is_current_management_user(user) || is_current_treasury_user(user) || is_current_pricing_user(user)
+			// OUTPOST FLOORS seam: a hired hand is staff
+			return is_current_management_user(user) || is_current_treasury_user(user) || is_current_pricing_user(user) || is_shop_hand(user)
 		if(OUTPOST_DOOR_OWNER)
 			return is_owner(user) && is_current_management_user(user)
 	return FALSE

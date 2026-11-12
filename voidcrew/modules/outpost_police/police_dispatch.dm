@@ -159,7 +159,8 @@
 	for(var/datum/outpost_berth/berth as anything in outpost.berths)
 		if(berth?.contains_turf(where))
 			return berth
-	return POLICE_SECTOR_OUTSIDE
+	// OUTPOST FLOORS seam: a leased floor under warrant is a sector of its own (trade_floors/police_floors.dm)
+	return floor_sector_of(where) || POLICE_SECTOR_OUTSIDE
 
 /**
  * A lift point serving `sector`: one no suspect at the outpost (nor `avoid_sight_of`) sees, the farthest from
@@ -680,7 +681,7 @@
 	var/datum/outpost_berth/berth = sector
 	if(istype(berth) && (berth in outpost?.berths))
 		return berth.alcove_turfs
-	return list()
+	return floor_lift_tiles(sector) // OUTPOST FLOORS seam
 
 /// Whether `where` is any lift tile of this outpost
 /datum/outpost_police/proc/dispatch_is_lift_tile(turf/where)
@@ -689,7 +690,7 @@
 	for(var/datum/outpost_berth/berth as anything in outpost?.berths)
 		if(berth && (where in berth.alcove_turfs))
 			return TRUE
-	return FALSE
+	return floor_is_lift_tile(where) // OUTPOST FLOORS seam
 
 /// The lift point of `sector` nearest `from` (of any sector for null); skipped points left out
 /datum/outpost_police/proc/dispatch_nearest_lift_point(sector, atom/from)
@@ -728,7 +729,8 @@
 /datum/outpost_police/proc/dispatch_players_at_outpost()
 	. = list()
 	for(var/mob/living/player as anything in GLOB.alive_player_list)
-		if(player.client && dispatch_at_outpost(player))
+		// OUTPOST FLOORS seam: someone up on a leased floor does not keep the squad out (abuse A71)
+		if(player.client && dispatch_at_outpost(player) && !get_outpost_floor_for_turf(get_turf(player)))
 			. += player
 
 /// Whether `officer` can be sent somewhere: alive, up, free and not walking out

@@ -130,9 +130,10 @@
 	if(controller.ai_status == AI_STATUS_ON)
 		return TRUE
 	var/turf/here = get_turf(npc)
-	if(!here || here.z > length(SSmobs.clients_by_zlevel))
+	if(!here)
 		return FALSE
-	return length(SSmobs.clients_by_zlevel[here.z]) > 0
+	// OUTPOST FLOORS seam (voidcrew/modules/trade_floors): on a leased floor, only a player on that floor wakes the wing
+	return length(outpost_site_clients(here)) > 0
 
 /// Whether their AI is running, which it is only while someone is on the level to see them
 /mob/living/carbon/human/npc/outpost_prisoner/proc/ai_running()

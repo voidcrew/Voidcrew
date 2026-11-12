@@ -787,11 +787,8 @@
 
 /// Living players on the wing's level beyond the first, capped: the horror gets tougher for each
 /datum/outpost_changeling_event/proc/extra_players()
-	var/z = prison?.wing_z()
-	if(!z || z > length(SSmobs.clients_by_zlevel))
-		return 0
 	var/players = 0
-	for(var/mob/living/person as anything in SSmobs.clients_by_zlevel[z])
+	for(var/mob/living/person as anything in prison?.wing_clients()) // OUTPOST FLOORS seam (outpost_prison_riot.dm)
 		if(QDELETED(person) || !isliving(person) || person.stat == DEAD || !person.client)
 			continue
 		players++

@@ -192,6 +192,10 @@
  * drone stripped one; the plating left behind would take a visitor's walls and grilles.
  */
 /obj/item/construction/rcd/rcd_create(atom/target, mob/user)
+	// OUTPOST FLOORS seam: on a leased floor a stranger's RCD takes nothing apart either (abuse A77)
+	if(mode == RCD_DECONSTRUCT && !outpost_floor_build_allowed(user, target))
+		balloon_alert(user, "outpost property!")
+		return ITEM_INTERACT_BLOCKING
 	if(mode != RCD_DECONSTRUCT && !outpost_service_build_allowed(user, target))
 		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(target)
 		if(!home?.can_build(user))

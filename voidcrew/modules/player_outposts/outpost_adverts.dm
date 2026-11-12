@@ -26,9 +26,9 @@ GLOBAL_LIST_EMPTY(outpost_adverts)
 /datum/outpost_advert/New(obj/structure/overmap/dynamic/player_outpost/outpost)
 	..()
 	outpost_ref = WEAKREF(outpost)
-	outpost_name = outpost.name
+	outpost_name = outpost.advert_place() // OUTPOST FLOORS seam: a floor names its outpost
 	blurb = length(outpost.memo) ? outpost.memo : "All frequencies welcome."
-	var/list/coords = outpost.get_relative_overmap_coords()
+	var/list/coords = outpost.advert_coords() // OUTPOST FLOORS seam
 	coord_x = coords ? coords[1] : 0
 	coord_y = coords ? coords[2] : 0
 	expires_at = world.time + OUTPOST_ADVERT_DURATION
