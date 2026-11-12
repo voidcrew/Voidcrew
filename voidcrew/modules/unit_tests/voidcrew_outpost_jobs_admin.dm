@@ -594,7 +594,9 @@
 	TEST_ASSERT(panel.admin_jump(operator, target, "a target"), "The admin did not jump: [panel.error]")
 	TEST_ASSERT_EQUAL(get_turf(operator), jobs_spot(3, 3), "The admin did not land on the target's turf")
 	TEST_ASSERT_EQUAL(length(panel.operations), 1, "Jumping was logged [length(panel.operations)] times")
-	var/obj/item/paper/nowhere = allocate(/obj/item/paper)
+	// allocate() always places an atom on the test floor: this one is made in nullspace
+	var/obj/item/paper/nowhere = new(null)
+	allocated += nowhere
 	TEST_ASSERT(!panel.admin_jump(operator, nowhere, "a paper"), "The admin jumped to a thing in nullspace")
 	TEST_ASSERT(!panel.admin_jump(operator, null, "nothing"), "The admin jumped to nothing")
 	TEST_ASSERT_EQUAL(get_turf(operator), jobs_spot(3, 3), "A refused jump moved the admin")
@@ -736,10 +738,11 @@
 	TEST_ASSERT_EQUAL(details["reason"], "deadline", "The failed row does not carry the reason") // FIXER_FAIL_DEADLINE
 	TEST_ASSERT_EQUAL(details["kind"], "admin_test", "The failed row's details lose the kind")
 
-	// With no reason set: the clock running out is the deadline, anything else is unknown
+	// With no reason set: the clock running out (the shell's on_timeout()) is the deadline, and any other fail is a
+	// drop ("Forget it.", or the ship's console)
 	SSmetrics.pending = list()
 	var/datum/mission/fixer_job/admin_test/timed_out = make_job(ship, outpost, crewman)
-	timed_out.fail("Mission timed out!")
+	timed_out.on_timeout()
 	failed = rows_of("fixer_job_failed")
 	TEST_ASSERT_EQUAL(length(failed), 1, "A job whose clock ran out wrote [length(failed)] fixer_job_failed rows, not one")
 	row = failed[1]
@@ -753,7 +756,7 @@
 	TEST_ASSERT_EQUAL(length(failed), 1, "A job failed with no reason wrote [length(failed)] fixer_job_failed rows, not one")
 	row = failed[1]
 	details = json_decode(row["details"])
-	TEST_ASSERT_EQUAL(details["reason"], "unknown", "A job failed with no reason was given one")
+	TEST_ASSERT_EQUAL(details["reason"], "dropped", "A job failed with no reason was not a drop") // FIXER_FAIL_DROPPED
 
 	// An offer nobody accepted writes nothing
 	SSmetrics.pending = list()

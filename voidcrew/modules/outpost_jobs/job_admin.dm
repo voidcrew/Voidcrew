@@ -13,8 +13,8 @@
  * prompt but weakrefs.
  *
  * What it can do, and the package that owns the thing it touches:
- * - Give a job to a ship, staged now: a new /datum/mission/fixer_job subtype, `job_outpost` and `giver_outpost` set,
- *   then start_mission() (P2's on_mission_started() does the roster, stage() and the ledger). See admin_make_job().
+ * - Give a job to a ship, staged now: GLOB.fixer_network.new_job() (P1), `giver_outpost` set, then the ship's own
+ *   accept_mission() (P2's on_mission_started() does the roster, stage() and the ledger). See admin_make_job().
  * - Finish the deed: mark_deed() with a living roster member as the doer (P2).
  * - Set the noise: `admin_noise` below, read by noise() until it is cleared.
  * - Pay: pay_out() with a living roster member as the asker and the living fixer there (P2, P1's fixer_at()).
@@ -496,23 +496,23 @@ ADMIN_VERB(fixer_jobs, R_ADMIN, "Fixer Jobs", "Give, finish, pay and fail fixer 
 // ===== ACTIONS =====
 
 /**
- * Makes a `job_type` job for `outpost`'s fixer, not yet started. The one place that knows how a job is made for an
- * outpost: `job_outpost` and `giver_outpost` are the outpost, `quote_zone` is its zone (a job with a target needs
- * the two to match to start), and a smuggle's `pay_outpost` is `destination`. Returns the job, or null if it could
- * not be generated.
+ * Makes a `job_type` job for `outpost`'s fixer, not yet started, the way a slate entry is made
+ * (GLOB.fixer_network.new_job()): `job_outpost` and `giver_outpost` are the outpost, and a smuggle's `pay_outpost`
+ * is `destination`. The target and quote zone are bound when the ship accepts it. Named and signed as the fixer
+ * there would sign it. Returns the job, or null if it could not be generated.
  */
 /datum/fixer_admin_panel/proc/admin_make_job(job_type, obj/structure/overmap/trader_outpost/outpost, obj/structure/overmap/trader_outpost/destination)
-	var/datum/mission/fixer_job/job = new job_type(null)
-	if(job.generation_failed)
-		qdel(job)
+	var/datum/mission/fixer_job/job = GLOB.fixer_network.new_job(job_type, outpost)
+	if(!job)
 		return null
-	job.job_outpost = outpost
 	job.giver_outpost = outpost
-	var/turf/where = get_turf(outpost)
-	if(where)
-		job.quote_zone = SSovermap_zones?.get_zone_type(where)
 	if(!QDELETED(destination))
 		job.pay_outpost = destination
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/fixer/giver = GLOB.fixer_network.fixer_at(outpost)
+	if(istype(giver))
+		job.author = giver.speech_name()
+		job.name = "A favour for [giver.speech_name()]"
+		job.desc = "See the note."
 	return job
 
 /**
@@ -538,10 +538,14 @@ ADMIN_VERB(fixer_jobs, R_ADMIN, "Fixer Jobs", "Give, finish, pay and fail fixer 
 	if(!job)
 		return refuse(user, "A [kind] job could not be made right now.")
 	job.admin_touched = TRUE
-	if(!job.start_mission(ship))
+	// The ship's own accept, as a fixer's "I'll take it." does (fixer_network do_accept())
+	ship.available_missions += job
+	var/result = ship.accept_mission(job)
+	if(result != TRUE)
+		ship.available_missions -= job
 		if(!QDELETED(job))
 			qdel(job)
-		return refuse(user, "[site_name(ship)] could not start the [kind] job. The ship may not be cleared for [outpost_name(outpost)]'s zone, or the job found no room.")
+		return refuse(user, "[site_name(ship)] could not start the [kind] job: [istext(result) ? result : "the job found no room"]")
 	log_action(user, "give a [kind] job at [outpost_name(outpost)] to [site_name(ship)]")
 	tell(user, span_notice("[site_name(ship)] now holds a [kind] job from [outpost_name(outpost)]'s fixer."))
 	return job

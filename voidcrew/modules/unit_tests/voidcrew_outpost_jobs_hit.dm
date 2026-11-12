@@ -10,6 +10,7 @@
 /datum/unit_test/proc/jobs_hit_setup(obj/structure/overmap/trader_outpost/outpost, dx = 2, dy = 2)
 	var/datum/mission/fixer_job/hit/job = allocate(/datum/mission/fixer_job/hit)
 	job.job_outpost = outpost
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/job_mark/mark = job.make_mark(jobs_spot(dx, dy))
 	if(!mark)
 		TEST_FAIL("make_mark() made no mark")

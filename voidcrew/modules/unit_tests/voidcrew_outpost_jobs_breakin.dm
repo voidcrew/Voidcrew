@@ -16,10 +16,14 @@
 		return null
 	return list(text2num(parse.group[1]), text2num(parse.group[2]))
 
+/// Presses one of the safe's buttons as `user`, through an open (interactive) window: tgui's ui_act() refuses a null one
+/datum/unit_test/proc/breakin_press(obj/structure/safe/fixer/safe, mob/living/carbon/human/user, action, list/params)
+	var/datum/tgui/safe_ui = allocate(/datum/tgui, user, safe, "Safe")
+	world.push_usr(user, CALLBACK(safe, TYPE_PROC_REF(/datum, ui_act), action, params || list(), safe_ui))
+
 /// Turns the safe's dial as `user` does from the buttons: `left` is the "Left" button (its action is named the other way round)
 /datum/unit_test/proc/breakin_turn(obj/structure/safe/fixer/safe, mob/living/carbon/human/user, left, ticks)
-	usr = user
-	safe.ui_act(left ? "turnright" : "turnleft", list("num" = ticks), null, null)
+	breakin_press(safe, user, left ? "turnright" : "turnleft", list("num" = ticks))
 
 /// The slip's numbers are the safe's tumblers, in the order the dial takes them, and turning the dial as it says opens the safe
 /datum/unit_test/voidcrew_outpost_jobs_breakin_slip_opens_safe
@@ -47,8 +51,7 @@
 	TEST_ASSERT(safe.locked, "One number opened the safe")
 	breakin_turn(safe, user, FALSE, right_ticks)
 	TEST_ASSERT(!safe.locked, "Turning the dial as the slip says did not unlock the safe")
-	usr = user
-	safe.ui_act("open", list(), null, null)
+	breakin_press(safe, user, "open")
 	TEST_ASSERT(safe.open, "The unlocked safe would not open")
 
 /// Opening the safe and taking the ledger out are each a locker theft, once per person
@@ -89,6 +92,7 @@
 	var/mob/living/carbon/human/thief = jobs_person(jobs_spot(0, 1))
 	var/datum/mission/fixer_job/breakin/job = allocate(/datum/mission/fixer_job/breakin)
 	job.job_outpost = outpost
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 	job.roster = list(WEAKREF(thief.mind))
 	var/obj/structure/safe/fixer/safe = job.place_safe(jobs_spot(1, 1))
 	TEST_ASSERT_NOTNULL(safe, "The job built no safe")
@@ -212,6 +216,7 @@
 	var/datum/outpost_police/police = outpost.police
 	var/datum/mission/fixer_job/breakin/evidence/job = allocate(/datum/mission/fixer_job/breakin/evidence)
 	job.job_outpost = outpost
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 
 	// No locker: not offered, and staging fails
 	police.evidence_locker = null

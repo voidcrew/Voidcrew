@@ -27,6 +27,7 @@
 /datum/unit_test/voidcrew_outpost_jobs_sabotage/proc/sabotage_job(obj/structure/overmap/trader_outpost/outpost, set_kind, list/turf/spots)
 	var/datum/mission/fixer_job/sabotage/job = allocate(/datum/mission/fixer_job/sabotage)
 	job.job_outpost = outpost
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 	job.set_kind = set_kind
 	job.build_targets(spots)
 	return job
@@ -77,6 +78,8 @@
 	var/mob/living/carbon/human/basher = jobs_person(jobs_spot(0, 0))
 	var/mob/living/carbon/human/tamperer = jobs_person(jobs_spot(1, 0))
 	var/datum/mission/fixer_job/sabotage/job = sabotage_job(outpost, "crates", crate_spots()) // SABOTAGE_SET_CRATES
+	// The crew's own hands: an outsider's would spoil the job and take the set away
+	job.roster = list(WEAKREF(basher.mind), WEAKREF(tamperer.mind))
 	var/obj/structure/fixer_target/hit_crate = job.live_target_at(1)
 	var/obj/structure/fixer_target/prised_crate = job.live_target_at(2)
 
@@ -99,6 +102,7 @@
 
 	// Nobody saw: nothing is counted, and the crate is ruined all the same
 	var/mob/living/carbon/human/sneak = jobs_person(jobs_spot(2, 0))
+	job.roster += WEAKREF(sneak.mind)
 	jobs_witness(outpost).seen = FALSE
 	var/obj/structure/fixer_target/quiet_crate = job.live_target_at(3)
 	TEST_ASSERT(quiet_crate.advance_tamper(sneak, tool(/obj/item/crowbar)), "The crowbar was not the crate's tamper tool the third time")
@@ -114,6 +118,9 @@
 	var/datum/mission/fixer_job/sabotage/crates = sabotage_job(outpost, "crates", crate_spots()) // SABOTAGE_SET_CRATES
 	var/datum/mission/fixer_job/sabotage/kiosk_job = sabotage_job(outpost, "kiosk", list(jobs_spot(4, 3))) // SABOTAGE_SET_KIOSK
 	var/datum/mission/fixer_job/sabotage/rack_job = sabotage_job(outpost, "rack", list(jobs_spot(4, 1))) // SABOTAGE_SET_RACK
+	// The crew's own hands: an outsider's would spoil the job and take the set away
+	for(var/datum/mission/fixer_job/sabotage/each as anything in list(crates, kiosk_job, rack_job))
+		each.roster = list(WEAKREF(person.mind))
 	var/obj/structure/fixer_target/crate = crates.live_target_at(1)
 	var/obj/structure/fixer_target/kiosk = kiosk_job.live_target_at(1)
 	var/obj/structure/fixer_target/rack = rack_job.live_target_at(1)

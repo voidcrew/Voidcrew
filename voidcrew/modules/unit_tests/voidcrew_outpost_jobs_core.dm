@@ -179,7 +179,21 @@
 	TEST_ASSERT_NULL(job.can_pay(crewman, fixer), "The crew still cannot be paid once the report landed")
 
 	var/expected = fixer_job_pay(1000, job.pay_zone(), 1)
+	// The real pay path writes the fixer_job_paid row (job_admin.dm), with what was paid and the noise
+	var/list/old_pending = SSmetrics.pending
+	SSmetrics.pending = list()
+	SSmetrics.accepting = TRUE
 	var/paid = job.pay_out(crewman, fixer)
+	SSmetrics.accepting = FALSE
+	var/list/paid_rows = list()
+	for(var/list/row as anything in SSmetrics.pending)
+		if(row["event"] == "fixer_job_paid")
+			paid_rows += list(row)
+	SSmetrics.pending = old_pending
+	TEST_ASSERT_EQUAL(length(paid_rows), 1, "Paying a job wrote [length(paid_rows)] fixer_job_paid rows, not one")
+	var/list/paid_row = paid_rows[1]
+	TEST_ASSERT_EQUAL(paid_row["credits"], expected, "The fixer_job_paid row does not carry what was paid")
+	TEST_ASSERT_EQUAL(paid_row["points"], 1, "The fixer_job_paid row does not carry the noise the job was paid at")
 	TEST_ASSERT_EQUAL(paid, expected, "The pay for a punch under a star is not the noise-1 rate")
 	TEST_ASSERT(job.completed, "A paid job is not completed")
 	TEST_ASSERT_EQUAL(job.noise(), 1, "A paid job forgot the noise it was paid at")

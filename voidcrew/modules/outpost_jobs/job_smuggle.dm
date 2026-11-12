@@ -204,17 +204,8 @@
 /datum/mission/fixer_job/smuggle/proc/destination_unmanned()
 	return !QDELETED(pay_outpost) && !GLOB.fixer_network.fixer_at(pay_outpost)
 
-/// The run waits while its destination has no fixer, so killing the fixer cannot fail it (abuse J12, spec 4.6)
-/datum/mission/fixer_job/smuggle/hold_deadline()
-	. = ..()
-	if(.)
-		return
-	if(deed_done || failed || completed || QDELETED(src) || !destination_unmanned())
-		return FALSE
-	if(timeout_timer)
-		deltimer(timeout_timer)
-	timeout_timer = addtimer(CALLBACK(src, PROC_REF(on_timeout)), FIXER_DEADLINE_HOLD, TIMER_STOPPABLE)
-	return TRUE
+// The run waits while its destination has no fixer, so killing the fixer cannot fail it (abuse J12, spec 4.6).
+// The base hold_deadline() does this for any job with a pay_outpost, and re-arms the deadline itself.
 
 // ===== THE DEED AND THE PAY =====
 

@@ -96,6 +96,7 @@
 	var/obj/item/mission_recovery/fixer_goods/case/case = allocate(/obj/item/mission_recovery/fixer_goods/case, jobs_spot(0, 1))
 	var/datum/mission/fixer_job/smuggle/outpost_jobs_test/job = new
 	job.pay_outpost = far
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 	job.roster = list(WEAKREF(runner.mind))
 	job.bind_item(case)
 	job.case_ref = WEAKREF(case)
@@ -131,6 +132,7 @@
 	var/mob/living/carbon/human/outsider = jobs_person(jobs_spot(1, 0))
 	var/obj/item/mission_recovery/fixer_goods/case/case = allocate(/obj/item/mission_recovery/fixer_goods/case, jobs_spot(0, 1))
 	var/datum/mission/fixer_job/smuggle/outpost_jobs_test/job = new
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 	job.roster = list(WEAKREF(runner.mind))
 	job.bind_item(case)
 	case.bind_job(job)

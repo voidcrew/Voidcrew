@@ -955,10 +955,12 @@
 	// The outpost's people drop no more than 300 cr between them in a round
 	place.cash_dropped = 295
 	var/turf/purse_spot = pa_tile(0, 0)
+	// Cash already lying there (the killed customer above may have fallen on this tile) is not this death's
+	var/purse_before = ambient_test_cash_on(purse_spot)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/rich = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, purse_spot, place)
 	rich.death()
 	var/last_cash = ambient_test_cash_on(purse_spot)
-	TEST_ASSERT(last_cash <= 5, "Someone dropped [last_cash] cr with 5 left under the outpost's cap") // AMBIENT_OUTPOST_CASH_CAP
+	TEST_ASSERT(last_cash - purse_before <= 5, "Someone dropped [last_cash - purse_before] cr with 5 left under the outpost's cap ([purse_before] cr already lay there)") // AMBIENT_OUTPOST_CASH_CAP
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/broke = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, purse_spot, place)
 	broke.death()
 	TEST_ASSERT_EQUAL(ambient_test_cash_on(purse_spot), last_cash, "Someone dropped cash past the outpost's cap")

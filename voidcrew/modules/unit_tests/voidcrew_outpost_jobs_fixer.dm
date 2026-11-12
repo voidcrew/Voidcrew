@@ -210,6 +210,9 @@
 
 /datum/unit_test/voidcrew_outpost_jobs_fixer/trust_tiers/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = jobs_outpost()
+	// What the evidence job and the jailbreak need at an outpost before they are offered at all: a locker and a cell
+	outpost.police.evidence_locker = allocate(/obj/structure/closet/secure_closet/outpost_evidence, jobs_spot(4, 4))
+	TEST_ASSERT_NOTNULL(jobs_cells(outpost.police), "Setup: the outpost has no cells")
 	var/mob/living/carbon/human/asker = crew_person()
 	var/datum/voidcrew_crew_record/crew = asker.mind.get_reputation_crew()
 	var/list/expect = list(

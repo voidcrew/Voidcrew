@@ -82,6 +82,9 @@
 /datum/mission/fixer_job/jailbreak/Destroy()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/job_ward/ward = ward()
 	if(ward)
+		// The parent's unstage() runs after ward_ref is cleared below: take him off the tracked list first, or it deletes him
+		if(job_atoms)
+			job_atoms -= WEAKREF(ward)
 		ward.job_over(src)
 	ward_ref = null
 	ward_identity = null

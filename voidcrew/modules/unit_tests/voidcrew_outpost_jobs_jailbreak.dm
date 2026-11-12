@@ -42,6 +42,7 @@
 	job.servant = ship
 	job.accepting_crew = ship.get_crew_record()
 	job.roster += WEAKREF(crew.mind)
+	job.active = TRUE // accepted: the shell's deed and hands rules only run on a live job
 	if(!job.stage())
 		TEST_FAIL("A jailbreak would not stage at an outpost with two empty cells")
 		return null
