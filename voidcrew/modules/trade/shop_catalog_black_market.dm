@@ -52,6 +52,7 @@
 		"Exploit Software",
 		"Infiltration",
 		"Combat Medical",
+		"Colonial Registry",
 		"Intel & Charts",
 		"Mystery Cargo",
 		"Sundries",
@@ -128,6 +129,8 @@
 		// Combat Medical
 		/datum/shop_sku/black_market/tactical_medkit,
 		/datum/shop_sku/black_market/stimulants,
+		// Colonial Registry: the same floor lease the other two counters sell, at the same price
+		/datum/shop_sku/outpost_floor,
 		// Intel & Charts: named ruin tips are dealt onto the rotating shelf
 		// from chart_pool below; the generic tip is the cheap standing rung.
 		/datum/shop_sku/rumor,

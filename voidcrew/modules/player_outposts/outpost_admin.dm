@@ -50,12 +50,11 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
 		if(QDELETED(home))
 			continue
-		var/list/coords = home.get_relative_overmap_coords()
-		outposts += list(list("ref" = REF(home), "name" = home.name, "owner" = home.founder_ckey || "Unowned", "coords" = "[coords[1]], [coords[2]]", "loaded" = home.loaded))
+		// OUTPOST FLOORS seam: a floor has no overmap position, and its own name does not say where it is
+		outposts += list(list("ref" = REF(home), "name" = outpost_place_name(home), "owner" = home.founder_ckey || "Unowned", "coords" = site_position(home), "loaded" = home.loaded))
 	if(QDELETED(selected) || !(selected in GLOB.player_outposts))
 		selected = null
 		return data
-	var/list/coords = selected.get_relative_overmap_coords()
 	var/freight_state = "Away"
 	switch(selected.freight?.state)
 		if(CARGO_SHUTTLE_ARRIVING)
@@ -69,8 +68,8 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		if(!QDELETED(member))
 			people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "steward" = (member in selected.stewards), "treasurer" = (member in selected.treasurers), "pricer" = (member in selected.pricers)))
 	data["selected"] = list(
-		"ref" = REF(selected), "name" = selected.name, "owner" = selected.founder_ckey || "Unowned",
-		"coords" = "[coords[1]], [coords[2]]", "shell" = selected.shell_template?.name || "Unloaded",
+		"ref" = REF(selected), "name" = outpost_place_name(selected), "owner" = selected.founder_ckey || "Unowned",
+		"coords" = site_position(selected), "shell" = site_shell(selected),
 		"balance" = selected.treasury?.account_balance || 0, "dock_mode" = selected.dock_mode,
 		"resident_mode" = selected.resident_mode,
 		"resident_active" = selected.active_resident_count(), "residents" = people,
@@ -103,6 +102,30 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 /// Also called after every modal prompt, before using its result.
 /datum/outpost_manipulator/proc/valid_selection(obj/structure/overmap/dynamic/player_outpost/home, mob/user)
 	return authorized(user) && !QDELETED(home) && home == selected && (home in GLOB.player_outposts) && !home.loading
+
+/**
+ * OUTPOST FLOORS seam (P9): where the panel says a site is. An outpost has overmap coordinates; a floor is made in
+ * nullspace and has none, so it reads as its place in the trader outpost, with that outpost's coordinates.
+ */
+/datum/outpost_manipulator/proc/site_position(obj/structure/overmap/dynamic/player_outpost/home)
+	var/obj/structure/overmap/dynamic/player_outpost/floor/floor_host = home
+	if(istype(floor_host))
+		var/obj/structure/overmap/trader_outpost/building = floor_host.floor?.outpost
+		if(QDELETED(building))
+			return "Floor, no outpost"
+		var/where = "Floor [floor_host.floor.number], [format_text(building.name)]"
+		var/list/building_coords = building.get_relative_overmap_coords()
+		if(length(building_coords) >= 2)
+			where += " ([building_coords[1]], [building_coords[2]])"
+		return where
+	var/list/coords = home.get_relative_overmap_coords()
+	return length(coords) >= 2 ? "[coords[1]], [coords[2]]" : "Not on the overmap"
+
+/// The shell line of the selected site: a floor's shell is not kept once it is loaded
+/datum/outpost_manipulator/proc/site_shell(obj/structure/overmap/dynamic/player_outpost/home)
+	if(istype(home, /obj/structure/overmap/dynamic/player_outpost/floor))
+		return "Floor shell"
+	return home.shell_template?.name || "Unloaded"
 
 /datum/outpost_manipulator/proc/record(mob/user, obj/structure/overmap/dynamic/player_outpost/home, operation)
 	log_admin("[key_name(user)] used Outpost Manipulator to [operation] on '[home.name]' ([REF(home)]).")
@@ -191,6 +214,18 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 /datum/outpost_manipulator/proc/manage_outpost(obj/structure/overmap/dynamic/player_outpost/home, mob/user, action, list/params)
 	if(!valid_selection(home, user))
 		return
+	// OUTPOST FLOORS seam: a floor has no bay, no docking and no place on the overmap, whatever the panel asks
+	if(istype(home, /obj/structure/overmap/dynamic/player_outpost/floor))
+		switch(action)
+			if("install_bays")
+				error = "A floor has no ship bay."
+				return
+			if("dock_mode")
+				error = "A floor has no docking."
+				return
+			if("jump_overmap")
+				error = "A floor is not on the overmap."
+				return
 	if(action in list("install_bays", "remove_bays", "bay_jump", "bay_vv", "bay_grant_materials", "bay_revoke_materials", "bay_select_silo"))
 		manage_ship_bays(home, user, action, params)
 		return
@@ -311,12 +346,14 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 				return
 			home.revoke_research_links()
 		if("delete")
-			if(!confirm(home, user, "Permanently delete this outpost and its contents?"))
+			// OUTPOST FLOORS seam: deleting a floor frees its ground and puts it back on the counter
+			var/deleting_floor = istype(home, /obj/structure/overmap/dynamic/player_outpost/floor)
+			if(!confirm(home, user, deleting_floor ? "Delete this floor and everything on it? It goes back on sale." : "Permanently delete this outpost and its contents?"))
 				return
 			error = deletion_denial(home)
 			if(error)
 				return
-			record(user, home, "delete the outpost")
+			record(user, home, deleting_floor ? "delete the floor" : "delete the outpost")
 			qdel(home)
 			selected = null
 			return

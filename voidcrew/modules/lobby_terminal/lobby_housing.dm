@@ -10,6 +10,21 @@
 /// Move-in requests: "[ckey]|[outpost ref]" = world.time asked, and "[ckey]" = world.time of the last request anywhere.
 GLOBAL_LIST_EMPTY(lobby_housing_requests)
 
+/**
+ * What a player outpost is called to the people choosing where to live: its name, or for a floor of a trader outpost
+ * "<floor name>, <outpost>" (OUTPOST FLOORS seam, P9). A floor's name alone says nothing about where it is.
+ * The outpost admin panel reads the same line.
+ */
+/proc/outpost_place_name(obj/structure/overmap/dynamic/player_outpost/home)
+	if(!home)
+		return ""
+	var/obj/structure/overmap/dynamic/player_outpost/floor/floor_host = home
+	var/obj/structure/overmap/trader_outpost/building = istype(floor_host) ? floor_host.floor?.outpost : null
+	if(QDELETED(building))
+		return home.name
+	// A trader outpost's name carries \improper, which a list row would show as a stray character
+	return "[home.name], [format_text(building.name)]"
+
 /// Outposts a lobby player can see: loaded and owned.
 /datum/lobby_terminal/proc/housing_outposts()
 	. = list()
@@ -68,7 +83,7 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in housing_outposts())
 		outposts += list(list(
 			"ref" = REF(home),
-			"name" = home.name,
+			"name" = outpost_place_name(home),
 			"mode" = home.resident_mode,
 			"residents" = home.active_resident_count(),
 			"cleared" = !!home.has_resident_clearance(player_key),
@@ -128,7 +143,7 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	if(!try_join_lock(player))
 		set_notice("Already on your way.", "warn")
 		return
-	set_notice("Moving in at [home.name].", "ok")
+	set_notice("Moving in at [outpost_place_name(home)].", "ok")
 	INVOKE_ASYNC(src, PROC_REF(housing_finish_move_in), player, home, attempt, player_key)
 
 /**
@@ -160,7 +175,7 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 		if(wait)
 			to_chat(player, span_warning("The keypad is locked. Try again in [wait] seconds."))
 			return
-		attempt = tgui_input_text(player, "Enter the resident password for [home.name].", "Resident Arrival", max_length = 64, encode = FALSE, timeout = 60 SECONDS)
+		attempt = tgui_input_text(player, "Enter the resident password for [outpost_place_name(home)].", "Resident Arrival", max_length = 64, encode = FALSE, timeout = 60 SECONDS)
 		if(isnull(attempt) || QDELETED(player) || QDELETED(home) || QDELETED(src))
 			return
 		if(lock_key != housing_code_key(home))
@@ -199,16 +214,16 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 			continue
 		recipients |= member.current
 	if(!length(recipients))
-		set_notice("Nobody's home at [home.name].", "warn")
+		set_notice("Nobody's home at [outpost_place_name(home)].", "warn")
 		return
 	GLOB.lobby_housing_requests[player_key] = world.time
 	GLOB.lobby_housing_requests["[player_key]|[REF(home)]"] = world.time
-	var/safe_name = html_encode(home.name)
+	var/safe_name = html_encode(outpost_place_name(home))
 	var/safe_key = html_encode(player.key)
 	for(var/mob/resident as anything in recipients)
 		to_chat(resident, span_notice("[safe_name] housing office: [safe_key] is asking to move in."))
 	log_game("[key_name(player)] asked to move in at outpost [home.name] ([length(recipients)] residents told)")
-	set_notice("Request sent to [home.name].", "ok")
+	set_notice("Request sent to [outpost_place_name(home)].", "ok")
 
 #undef LOBBY_HOUSING_REQUEST_COOLDOWN
 #undef LOBBY_HOUSING_REQUEST_GAP
