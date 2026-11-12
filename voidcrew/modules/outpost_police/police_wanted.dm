@@ -61,8 +61,6 @@
 	/// warrant when it is made, as a folded report's do on a counted one
 	var/list/datum/weakref/folded_victims
 	var/list/datum/weakref/folded_sources
-	/// Witnesses whose radio was down while this waited (owner decision 19): they can tell it in person, never call it in
-	var/list/datum/weakref/radio_lost
 
 /// One four or five star incident of one crew at this outpost: the embargo here (decision 25: this outpost only)
 /datum/outpost_incident
@@ -183,20 +181,10 @@
 		if(witness)
 			report.witnesses += WEAKREF(witness)
 	pending_reports += report
-	note_radio_lost(report)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
 		INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
 	wake()
 	return report
-
-/// Marks the witnesses of `report` whose radio is down now: that report never goes out on their radio (decision 19)
-/datum/outpost_police/proc/note_radio_lost(datum/outpost_pending_report/report)
-	if(report.confirmed)
-		return
-	for(var/datum/weakref/ref as anything in report.witnesses)
-		var/atom/witness = ref.resolve()
-		if(!QDELETED(witness) && perception.radio_down(witness))
-			LAZYOR(report.radio_lost, ref)
 
 /// Confirms the reports whose witness has finished their call; drops those nobody can make any more
 /datum/outpost_police/proc/process_pending_reports()
@@ -204,7 +192,6 @@
 		if(QDELETED(report))
 			pending_reports -= report
 			continue
-		note_radio_lost(report)
 		var/mob/living/offender = report.offender?.resolve()
 		var/list/atom/able = list()
 		var/any_alive = !length(report.witnesses)
@@ -265,8 +252,8 @@
 	var/datum/weakref/witness_ref = WEAKREF(witness)
 	var/found = FALSE
 	for(var/datum/outpost_pending_report/report as anything in pending_reports)
-		// A witness whose radio was down while it waited does not make it by a later call (owner decision 19)
-		if((witness_ref in report.witnesses) && !(witness_ref in report.radio_lost))
+		// A radio that was down (an EMP, a jammer) still calls it in once it is back, inside the keep (owner decision 42)
+		if(witness_ref in report.witnesses)
 			report.confirmed = TRUE
 			found = TRUE
 	if(found)
@@ -310,7 +297,9 @@
 		return null
 	var/datum/outpost_warrant/warrant = ensure_warrant(mind)
 	var/old_stars = stars_of(warrant.heat)
-	warrant.heat = heat_after(max(warrant.heat, current_prior(warrant)), crime)
+	// An accomplice is counted as a crewmate with a clean record: their old prior stays out of it (owner decision 44)
+	var/from_heat = crime == OUTPOST_CRIME_ACCOMPLICE ? warrant.heat : max(warrant.heat, current_prior(warrant))
+	warrant.heat = heat_after(from_heat, crime)
 	warrant.peak = max(warrant.peak, warrant.heat)
 	warrant.last_crime_at = world.time
 	if(!derived)

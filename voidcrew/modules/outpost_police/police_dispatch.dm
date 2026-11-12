@@ -26,6 +26,8 @@
 #define POLICE_WAVE_WAIT_MAX (15 SECONDS)
 /// Response units are sent away unseen after nobody has been at the outpost this long (spec 5.4)
 #define POLICE_EMPTY_RECALL (60 SECONDS)
+/// A stood-down response unit with no lift to leave by goes, unseen, after waiting this long (players may never all leave)
+#define POLICE_NO_LIFT_LEAVE (2 MINUTES)
 /// Tiles looked at when picking one out of sight (M2)
 #define POLICE_UNSEEN_TRIES 60
 
@@ -72,6 +74,8 @@
 	var/datum/weakref/dispatch_mind
 	/// Mid-ride on a lift
 	var/dispatch_riding = FALSE
+	/// world.time since when they have stood down with no lift to leave by, or 0
+	var/dispatch_no_lift_since = 0
 	/// world.time since when a person has been pulling them, or 0 (M11)
 	var/dispatch_pull_since = 0
 	/// Weakref to who stands in their line of fire (M11)
@@ -475,6 +479,7 @@
 			if(!nearest)
 				continue
 			pick.dispatch_mind = WEAKREF(nearest.mind)
+			pick.dispatch_no_lift_since = 0
 			on_scene += pick
 	// New units by lift
 	var/short = wanted - length(on_scene) - length(dispatch_orders)
@@ -568,9 +573,15 @@
 			if(!dispatch_is_response_unit(farthest))
 				continue
 			var/turf/exit = dispatch_nearest_lift_point(sector_of(farthest), farthest) || dispatch_nearest_lift_point(null, farthest)
-			// No lift on their level: they stay about until the outpost empties (dispatch_recall_when_empty()). An exit
-			// on their own tile would have them vanish where they stand, in front of whoever is watching.
+			// No lift anywhere: they stay about until the outpost empties (dispatch_recall_when_empty()), or, as players
+			// may never all leave, until they have waited POLICE_NO_LIFT_LEAVE and nobody can see them. An exit on their
+			// own tile would have them vanish where they stand, in front of whoever is watching.
 			if(!exit)
+				if(!farthest.dispatch_no_lift_since)
+					farthest.dispatch_no_lift_since = world.time
+				else if(world.time - farthest.dispatch_no_lift_since >= POLICE_NO_LIFT_LEAVE && !human_npc_watched(farthest) && !outpost_npc_played(farthest))
+					farthest.npc_drop_not_gear()
+					qdel(farthest)
 				continue
 			farthest.npc_walk_out(exit)
 			if(!called_in)
@@ -942,4 +953,5 @@
 #undef POLICE_WAVE_FORM_UP
 #undef POLICE_WAVE_WAIT_MAX
 #undef POLICE_EMPTY_RECALL
+#undef POLICE_NO_LIFT_LEAVE
 #undef POLICE_UNSEEN_TRIES

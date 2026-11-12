@@ -723,9 +723,13 @@
 	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 0, "A crewmate was made an accomplice of a leader in custody")
 	police.close_case(leader.mind)
 
-	// Free and alive: the crewmate is an accomplice, as before
+	// Free and alive: the crewmate is an accomplice, as before. Owner decision 44: an old prior (five stars, faded a
+	// moment ago) stays out of it, and the accomplice is arrested at two stars like a crewmate with a clean record.
+	var/datum/outpost_warrant/mate_warrant = police_pin_warrant(police, mate.mind, 0)
+	mate_warrant.prior = 140
+	mate_warrant.prior_set_at = world.time
 	police.tick_warrants()
-	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 2, "A crewmate at the outpost is not an accomplice of a free four-star leader")
+	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 2, "A crewmate at the outpost is not an accomplice of a free four-star leader at two stars")
 	police.remove_warrant(police.get_warrant(mate.mind))
 
 	// Dead: their body makes no accomplices

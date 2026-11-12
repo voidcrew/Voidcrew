@@ -231,6 +231,34 @@
 	TEST_ASSERT_EQUAL(outpost_bomber_of(sewn), bomber, "A grenade sewn into a plush was blamed on [outpost_bomber_of(sewn)], not whoever sewed it in")
 	plush.grenade = null
 	qdel(sewn)
+	// Review D2: a rigged fuel tank stays its rigger's bomb when someone else knocks on it, and is nobody's once unrigged
+	var/obj/structure/reagent_dispensers/fueltank/fuel = allocate(/obj/structure/reagent_dispensers/fueltank, get_turf(bomber))
+	var/obj/item/assembly_holder/rig = allocate(/obj/item/assembly_holder, fuel)
+	fuel.rig = rig
+	fuel.outpost_armed_by = WEAKREF(bomber)
+	fuel.attackby(untouched, visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(fuel), bomber, "A rigged fuel tank was blamed on [outpost_bomber_of(fuel)], not whoever rigged it")
+	rig.forceMove(get_turf(bomber))
+	TEST_ASSERT_NULL(outpost_bomber_of(fuel), "A fuel tank with its rig taken off was still someone's bomb")
+	// A transfer valve's tank goes off, not the valve: it is the valve's armer's bomb
+	var/obj/item/transfer_valve/valve = allocate(/obj/item/transfer_valve, get_turf(bomber))
+	var/obj/item/tank/internals/oxygen/valve_tank = allocate(/obj/item/tank/internals/oxygen, valve)
+	valve.outpost_armed_by = WEAKREF(bomber)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(valve_tank), bomber, "A transfer valve's tank was not blamed on whoever armed the valve")
+	// A pipe bomb is armed by whoever wires its trigger in, and by whoever starts that trigger
+	var/obj/item/sliced_pipe/pipe = allocate(/obj/item/sliced_pipe, get_turf(bomber))
+	pipe.wires_are_in = TRUE
+	var/obj/item/assembly/timer/fuse = allocate(/obj/item/assembly/timer, get_turf(bomber))
+	fuse.toggle_secure()
+	bomber.put_in_hands(fuse)
+	pipe.attackby(fuse, bomber)
+	var/obj/item/grenade/iedcasing/pipebomb = fuse.loc
+	TEST_ASSERT(istype(pipebomb), "Setup: no pipe bomb was made")
+	fuse.time = 3600
+	TEST_ASSERT_EQUAL(outpost_bomber_of(pipebomb), bomber, "A pipe bomb was not blamed on whoever wired its trigger in")
+	pipebomb.attack_self(visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(pipebomb), visitor, "A pipe bomb was not blamed on whoever started it")
+	qdel(pipebomb)
 
 	explosion(epicenter, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE, explosion_cause = rocket)
 	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[visitor.mind], bomber.mind), "A bombing at the outpost did not count as an attack on the visitor")

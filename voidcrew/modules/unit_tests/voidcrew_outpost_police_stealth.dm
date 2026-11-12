@@ -191,7 +191,7 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "Telling an officer with a radio in person did not make the report")
 
-/// Owner decision 19: a radio that goes down before the call silences that report for good; it does not go out once the radio works again
+/// Owner decision 42: a radio knocked out before the call (an EMP, a jammer) loses that call, and the witness calls it in once the radio is back
 /datum/unit_test/voidcrew_stealth_live/police/radio_back
 
 /datum/unit_test/voidcrew_stealth_live/police/radio_back/Run()
@@ -204,19 +204,22 @@
 	var/mob/living/carbon/human/victim = person_at(5, 4, FALSE)
 	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", victim), "An officer's report counted before its call")
 	TEST_ASSERT_NOTNULL(brain.pending_call, "The witness has no call going")
-	// The radio dies before the call (an EMP switches it off for a while), then comes back
+	// The radio dies before the call (an EMP switches it off for a while): that call is lost
 	headset.set_on(FALSE)
 	police.tick_warrants()
+	brain.stealth_rewind(4 SECONDS)
+	brain.stealth_deliver_call()
+	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "A report went out on a radio that was down")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The report was dropped while the witness lives")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "The witness stopped acting on what it saw")
+	// The radio comes back inside the report's keep: the witness calls it in
 	headset.set_on(TRUE)
+	police.tick_warrants()
+	TEST_ASSERT_NOTNULL(brain.pending_call, "The witness did not call it in again once its radio was back")
 	brain.stealth_rewind(4 SECONDS)
 	brain.stealth_deliver_call()
 	police.tick_warrants()
-	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "A report went out on a radio that was down while it waited")
-	TEST_ASSERT_NULL(brain.pending_call, "The witness called it in again once its radio worked")
-	police.confirm_reports(officer)
-	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "A later call made a report whose radio had been down")
-	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The report was dropped while the witness lives")
-	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "The witness stopped acting on what it saw")
+	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "A witness whose radio came back never called the report in")
 
 /// A trader's report counts at once
 /datum/unit_test/voidcrew_stealth_live/police/trader

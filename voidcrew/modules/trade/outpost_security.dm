@@ -163,8 +163,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 // ----- who armed a bomb (abuse review 3 MF1) -----
 
 /obj
-	/// Who armed this as a bomb: primed a grenade, planted or signalled C4, shot or lit a fuel tank. Blame for its
-	/// blast at a trader outpost (outpost_bomber_of()); never the last hand to touch it.
+	/// Who armed this as a bomb: primed a grenade, planted or wired C4, rigged, shot or lit a fuel tank, welded a tank
+	/// bomb, wired or opened a transfer valve, wired or started a pipe bomb. Blame for its blast at a trader outpost
+	/// (outpost_bomber_of()); never the last hand to touch it.
 	var/datum/weakref/outpost_armed_by
 
 /// `bomb` was armed by `user`
@@ -234,12 +235,71 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	if(!QDELETED(src))
 		outpost_armed_by = before
 
+// A welder or a lit lighter put to it sets it off: that hand armed it
 /obj/structure/reagent_dispensers/fueltank/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
 	var/datum/weakref/before = outpost_armed_by
+	var/obj/item/assembly_holder/old_rig = rig
 	outpost_note_armed(src, user)
 	. = ..()
-	if(!QDELETED(src))
+	// Still standing and not newly rigged: nothing was set off
+	if(!QDELETED(src) && rig == old_rig)
 		outpost_armed_by = before
+
+// An igniter rigged onto a tank arms it: whoever rigged it, never whoever later pulses the rig or trips its mousetrap
+/obj/structure/reagent_dispensers/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	var/obj/item/assembly_holder/old_rig = rig
+	. = ..()
+	if(rig && rig != old_rig)
+		outpost_note_armed(src, user)
+
+// The rig taken off: the tank is no bomb any more
+/obj/structure/reagent_dispensers/Exited(atom/movable/gone, direction)
+	var/was_rig = rig && gone == rig
+	. = ..()
+	if(was_rig)
+		outpost_armed_by = null
+
+// A tank bomb is armed when its valve is welded shut
+/obj/item/tank/welder_act(mob/living/user, obj/item/tool)
+	var/was_armed = bomb_status
+	. = ..()
+	if(!was_armed && bomb_status)
+		outpost_note_armed(src, user)
+
+// A transfer valve bomb is armed by whoever wires a trigger to it or opens its valve by hand. The blast comes from
+// one of its tanks, so outpost_bomber_of() asks the valve the tank sits in.
+/obj/item/transfer_valve/attackby(obj/item/item, mob/user, params)
+	var/obj/item/assembly/old_device = attached_device
+	. = ..()
+	if(attached_device && attached_device != old_device)
+		outpost_note_armed(src, user)
+
+/obj/item/transfer_valve/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	var/was_open = valve_open
+	var/datum/weakref/before = outpost_armed_by
+	if(action == "toggle")
+		outpost_note_armed(src, usr)
+	. = ..()
+	if(action == "toggle" && (was_open || !valve_open))
+		outpost_armed_by = before
+
+// A pipe bomb is armed by whoever wires its trigger in, and again by whoever starts that trigger by hand
+/obj/item/sliced_pipe/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	var/obj/item/grenade/iedcasing/pipebomb = item?.loc
+	if(istype(pipebomb) && pipebomb.activator == item)
+		outpost_note_armed(pipebomb, user)
+
+/obj/item/grenade/iedcasing/attack_self(mob/user)
+	var/starts = activator && !istype(activator, /obj/item/assembly/signaler) && COOLDOWN_FINISHED(src, spam_cd)
+	. = ..()
+	if(starts)
+		outpost_note_armed(src, user)
+
+// Its own arm_grenade() never calls the base one
+/obj/item/grenade/firecracker/arm_grenade(mob/user, delayoverride, msg = TRUE, volume = 80)
+	outpost_note_armed(src, user)
+	return ..()
 
 /**
  * Who set off a blast: the firer of a projectile (a mech's pilot), otherwise whoever armed the explosive
@@ -262,6 +322,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		return null
 	var/obj/bomb = explosion_cause
 	var/mob/living/armer = bomb.outpost_armed_by?.resolve()
+	// A transfer valve's tank goes off, not the valve
+	if(!armer && istype(bomb.loc, /obj/item/transfer_valve))
+		var/obj/item/transfer_valve/valve = bomb.loc
+		armer = valve.outpost_armed_by?.resolve()
 	return isliving(armer) ? armer : null
 
 /**

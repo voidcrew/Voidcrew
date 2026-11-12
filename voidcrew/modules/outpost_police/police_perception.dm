@@ -177,10 +177,6 @@
 /datum/outpost_police_perception/proc/can_report(atom/witness)
 	return TRUE
 
-/// Whether `witness` reports by radio and its radio is down now (owner decision 19: a report it waits on never goes out on it)
-/datum/outpost_police_perception/proc/radio_down(atom/witness)
-	return FALSE
-
 // =========================================================================
 // THE STEALTH RULES (spec-stealth 2; owner decision 19)
 // =========================================================================
@@ -369,28 +365,17 @@
 		return !HAS_TRAIT(person, TRAIT_RESTRAINED)
 	return TRUE
 
-/datum/outpost_police_perception/stealth/radio_down(atom/witness)
-#ifdef UNIT_TESTS
-	if(test_plain)
-		return FALSE
-#endif
-	if(!is_officer(witness))
-		return FALSE
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = witness
-	return !officer.stealth_radio_ready()
-
 /**
  * `witness` (an officer) has a report waiting. With a working radio it gets a call going if none is (a call lost to
- * a stun is tried again once it can be). Without one, or if its radio went down at any time while this waited (it
- * never calls that report in), TRUE while it stands within OUTPOST_POLICE_RADIOLESS_RANGE of an officer with a
- * working radio, or of the desk: telling them in person.
+ * a stun, an EMP or a jammer is tried again once it can be, inside the report's keep: owner decision 42). Without
+ * one, TRUE while it stands within OUTPOST_POLICE_RADIOLESS_RANGE of an officer with a working radio, or of the desk:
+ * telling them in person.
  */
 /datum/outpost_police_perception/stealth/nudge_witness(atom/witness, datum/outpost_pending_report/report)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = witness
 	if(!is_officer(officer) || !can_report(officer))
 		return FALSE
-	// Its radio went down while this waited (EMP, jammer, switched off): it only tells someone in person, even once it works again
-	if(!(WEAKREF(officer) in report.radio_lost) && officer.stealth_radio_ready())
+	if(officer.stealth_radio_ready())
 		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer.ai_controller
 		if(istype(brain) && isnull(brain.pending_call))
 			var/mob/living/offender = report.offender?.resolve()

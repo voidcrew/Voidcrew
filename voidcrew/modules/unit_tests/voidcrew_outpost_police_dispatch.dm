@@ -458,6 +458,14 @@
 	police.dispatch_recall_when_empty()
 	TEST_ASSERT_NULL(officer.police_role, "A role stayed on an officer with nobody at the outpost")
 
+	// Players may never all leave: a unit with no lift waits a while, then goes once nobody can see it
+	police.dispatch_stand_down(0)
+	TEST_ASSERT(!QDELETED(officer), "A response officer with no lift to leave by went before waiting")
+	TEST_ASSERT(officer.dispatch_no_lift_since, "A response officer with no lift to leave by never started waiting")
+	officer.dispatch_no_lift_since = world.time - 3 MINUTES
+	police.dispatch_stand_down(0)
+	TEST_ASSERT(QDELETED(officer), "A stood-down unit with no lift waited for ever while players stayed")
+
 	police.lift_turfs = old_lifts
 	outpost.lobby_alcove_turfs = old_alcove
 	dispatch_clear(police)
