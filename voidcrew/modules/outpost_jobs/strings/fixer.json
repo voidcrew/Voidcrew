@@ -1,1 +1,514 @@
-{}
+{
+	"nan": {
+		"no_ship": [
+			"You've no ship, dear. I don't hire walkers.",
+			"Get yourself a ship first, dear. Then we'll talk.",
+			"No ship? Then no, dear. Sit down and have a cup of tea instead."
+		],
+		"no_trust": [
+			"I don't know you. Start with something small.",
+			"Small things first, dear. We'll see how you do.",
+			"You're new to me. I've nothing that size for new faces."
+		],
+		"wanted": [
+			"Not with security looking for you. Off you go.",
+			"You're being looked for, dear. Come back when you aren't.",
+			"Not while security wants a word with your lot."
+		],
+		"officer": [
+			"Later, dear.",
+			"Not now. Later.",
+			"Mind the uniform, dear. Later."
+		],
+		"nothing": [
+			"Nothing just now. Give it a little while.",
+			"Nothing for you today, dear. Ask me again later.",
+			"I've nothing. Come back in a bit."
+		],
+		"burned": [
+			"You laid hands on one of mine. Go away.",
+			"I heard what you did. Go away, dear.",
+			"Not after that. Off with you."
+		],
+		"trouble": [
+			"Not today. Look around you.",
+			"Not while the place is like this, dear.",
+			"With bodies on the floor? Not today."
+		],
+		"busy": [
+			"Finish what you're on first.",
+			"One thing at a time, dear. You've something on already.",
+			"You've work already. See to it."
+		],
+		"gone": [
+			"Gone. Somebody was quicker.",
+			"Too slow, dear. Someone else took it.",
+			"That's spoken for now. Somebody was quicker."
+		],
+		"taken": [
+			"Good. It's on the paper. Burn it after.",
+			"Good. It's all written down. Don't lose it, dear.",
+			"That's settled then. Read it somewhere quiet."
+		],
+		"pay_clean": [
+			"Not a whisper about it. That's how I like it. A little extra, dear.",
+			"Nobody's said a word. I like that. Something extra for you.",
+			"Not a peep from anyone. Here's a little more for your trouble."
+		],
+		"pay_some": [
+			"People are talking, but not about much. It'll do.",
+			"A bit of talk, dear. Nothing I can't live with.",
+			"I've heard a whisper or two. It'll do."
+		],
+		"pay_loud": [
+			"Half the port saw you. You get what we said and not a chip more.",
+			"The whole place is talking, dear. What we agreed, and that's all.",
+			"You made a racket. You get the price and nothing on top."
+		],
+		"failed": [
+			"Too late. Come back when I've stopped being cross.",
+			"You let me down, dear. Leave it a while.",
+			"That's a mess left on my plate. Come back later."
+		],
+		"spoiled": [
+			"Somebody else did that. I don't pay you for their work.",
+			"That wasn't your hand, dear. No pay for other people's work.",
+			"Someone beat you to it. I pay for what you did, not them."
+		],
+		"wait": [
+			"Give it a minute. Let's hear what the port says first.",
+			"Not yet, dear. Let things settle.",
+			"Sit a moment. I want to hear the talk first."
+		],
+		"not_yours": [
+			"That wasn't your job, dear.",
+			"I didn't give that one to you.",
+			"Send whoever I gave it to."
+		],
+		"wrong_fixer": [
+			"That's not for me, dear. Take it where you were told.",
+			"Wrong door, dear. Read your note again.",
+			"Not mine. It goes where the note says."
+		],
+		"offer_sabotage": [
+			"{name}, by {place}. I'd like it broken before the {clock}. No fuss, dear.",
+			"There's {name} by {place}. See it ruined before the {clock}, dear. Quietly."
+		],
+		"offer_smuggle": [
+			"A sealed case for a friend at {to}. It stays shut and it never meets a scanner, dear.",
+			"I need a case taken to {to}. Don't open it, and keep it away from the scanners."
+		],
+		"offer_breakin": [
+			"{name} keeps a ledger in a safe by {place}. I'd like that ledger, dear.",
+			"There's a safe by {place}. {name}'s. Bring me what's inside, dear. Quietly."
+		],
+		"offer_hit": [
+			"{name}. {look}. He's on the {clock} shuttle and I'd like him to miss it. No fuss, dear.",
+			"{name}, {look}. Booked out on the {clock}. I'd rather he never boarded, dear."
+		],
+		"offer_evidence": [
+			"Security took a bag off a friend of mine. It's in their locker. Bring it to me, dear.",
+			"There's a bag in the security locker that should be mine. Fetch it, dear."
+		],
+		"offer_jailbreak": [
+			"{name} is sitting in a cell here. {look}. Walk him out and onto your ship, dear.",
+			"A friend of mine, {name}, is in a cell. {look}. Get him aboard your ship, dear."
+		],
+		"repeat": [
+			"As I said, dear.",
+			"I'll say it once more, dear."
+		],
+		"idle": [
+			"Mm.",
+			"That's a good bit.",
+			"Where did I put my glasses?",
+			"Lovely soup today."
+		]
+	},
+	"lot": {
+		"no_ship": [
+			"No vessel on file. Can't book you.",
+			"No ship, no booking.",
+			"I only book crews with a hull under them."
+		],
+		"no_trust": [
+			"New account. Small consignment first.",
+			"No history on file. Small orders only.",
+			"We start new accounts on small freight."
+		],
+		"wanted": [
+			"You're flagged. Come back unflagged.",
+			"Your crew's on a list here. Not doing business.",
+			"Security has your name. Clear it first."
+		],
+		"officer": [
+			"Not on the clock.",
+			"Later. Busy.",
+			"Inventory. Come back later."
+		],
+		"nothing": [
+			"Nothing on the manifest. Try me later.",
+			"Manifest's empty for you right now.",
+			"Nothing booked. Check back."
+		],
+		"burned": [
+			"Account closed.",
+			"You touched staff. Account closed.",
+			"We don't do business with you any more."
+		],
+		"trouble": [
+			"Port's a write-off today.",
+			"Not with the floor like this.",
+			"Operations are suspended. Look around."
+		],
+		"busy": [
+			"You've an open consignment.",
+			"Close out your current order first.",
+			"One open order per account."
+		],
+		"gone": [
+			"Somebody else booked it.",
+			"That slot's filled. Somebody was quicker.",
+			"Gone. First come, first served."
+		],
+		"taken": [
+			"Booked. Details on the slip.",
+			"Order confirmed. Read the slip.",
+			"Done. It's all on the slip."
+		],
+		"pay_clean": [
+			"Tidy books. There's a margin in that for you.",
+			"Not a line out of place. You've earned a margin.",
+			"Smooth delivery. I'm adding a margin."
+		],
+		"pay_some": [
+			"Some shrinkage. Acceptable.",
+			"A few dents. Within tolerance.",
+			"Minor losses. It'll balance."
+		],
+		"pay_loud": [
+			"Messy. Contract rate, nothing on top.",
+			"That was a write-off and a half. Base rate.",
+			"Loud work. You get the rate and that's it."
+		],
+		"failed": [
+			"Missed the window. That's a loss on my side.",
+			"Order cancelled. I'll remember it.",
+			"You missed delivery. Don't ask me for a while."
+		],
+		"spoiled": [
+			"Wrong carrier. No fee.",
+			"Someone else delivered. I don't pay you for that.",
+			"Not your delivery. No fee."
+		],
+		"wait": [
+			"Not while the count's open.",
+			"Hold on. Still counting.",
+			"Give me a minute to reconcile."
+		],
+		"not_yours": [
+			"Not your order.",
+			"Account doesn't match. Send the right one.",
+			"That order isn't on your name."
+		],
+		"wrong_fixer": [
+			"Wrong depot. Check your slip.",
+			"That's not addressed to me.",
+			"Deliver it where the slip says."
+		],
+		"offer_sabotage": [
+			"One item, {name}, by {place}. Write it off before the {clock}.",
+			"{name} is sitting by {place}. I need it damaged before the {clock}. Quietly."
+		],
+		"offer_smuggle": [
+			"One sealed case to {to}. It doesn't clear inspection, so don't let it.",
+			"Courier work. A case for {to}. Keep it shut and away from the scanners."
+		],
+		"offer_breakin": [
+			"A safe by {place}. {name}'s. I need the ledger in it.",
+			"{name} keeps books in a safe by {place}. I want those books."
+		],
+		"offer_hit": [
+			"One passenger, {name}, {look}, on the {clock}. I need that booking written off. Quietly.",
+			"{name}. {look}. On the {clock}. Write him off."
+		],
+		"offer_evidence": [
+			"Security is holding a bag of mine. Evidence locker. Recover it.",
+			"There's an item of mine logged in their evidence locker. Get it back."
+		],
+		"offer_jailbreak": [
+			"{name}, {look}, is held in a cell here. Ship him out on your vessel.",
+			"I've a consignment in a cell. {name}. {look}. Get him aboard."
+		],
+		"repeat": [
+			"Again, for the record.",
+			"Repeating the order."
+		],
+		"idle": [
+			"Forty, forty-one...",
+			"Who signed for this?",
+			"Never balances.",
+			"Hm. Short again."
+		]
+	},
+	"quill": {
+		"no_ship": [
+			"No ship. No.",
+			"Ship first.",
+			"No hull. No."
+		],
+		"no_trust": [
+			"Prove it. Small.",
+			"Small first.",
+			"Don't know you. Small."
+		],
+		"wanted": [
+			"You're glowing. Walk.",
+			"They're looking. Walk.",
+			"Hot. Go."
+		],
+		"officer": [
+			"Later.",
+			"Not now.",
+			"Later. Go."
+		],
+		"nothing": [
+			"Nothing.",
+			"Nothing today.",
+			"Ask later."
+		],
+		"burned": [
+			"No.",
+			"You know why. No.",
+			"Not you."
+		],
+		"trouble": [
+			"Not today.",
+			"Look around. No.",
+			"Too much blood. No."
+		],
+		"busy": [
+			"One at a time.",
+			"Finish yours.",
+			"One. Not two."
+		],
+		"gone": [
+			"Gone. Quicker hands.",
+			"Taken.",
+			"Someone else."
+		],
+		"taken": [
+			"Good.",
+			"Read it. Burn it.",
+			"Fine."
+		],
+		"pay_clean": [
+			"Quiet. I like quiet.",
+			"Nothing heard. Good. Extra.",
+			"Silent. Worth more."
+		],
+		"pay_some": [
+			"Heard about it. Barely.",
+			"A murmur. Fine.",
+			"Some talk. It'll pass."
+		],
+		"pay_loud": [
+			"Loud. The price was the price.",
+			"Everyone heard. The price. Nothing else.",
+			"Loud. Agreed rate."
+		],
+		"failed": [
+			"Gone. So is this.",
+			"Missed it. Leave me be.",
+			"Too late. Later."
+		],
+		"spoiled": [
+			"Not your work.",
+			"Other hands. No pay.",
+			"Someone else did it. No."
+		],
+		"wait": [
+			"Wait.",
+			"Not yet.",
+			"Let it settle."
+		],
+		"not_yours": [
+			"Not yours.",
+			"Not given to you.",
+			"Wrong face."
+		],
+		"wrong_fixer": [
+			"Not mine.",
+			"Wrong man.",
+			"Elsewhere."
+		],
+		"offer_sabotage": [
+			"{name}. By {place}. Broken before the {clock}.",
+			"{name}, by {place}. Ruined. Before the {clock}."
+		],
+		"offer_smuggle": [
+			"A case. To {to}. Shut. No scanners.",
+			"One case. {to}. Unopened."
+		],
+		"offer_breakin": [
+			"{name}'s safe. By {place}. The ledger.",
+			"A safe, by {place}. {name}'s. Bring me the ledger."
+		],
+		"offer_hit": [
+			"{name}. {look}. The {clock}. See that he misses it.",
+			"{name}. {look}. Not on the {clock}."
+		],
+		"offer_evidence": [
+			"Security's locker. A bag. Mine.",
+			"A bag in their locker. Bring it."
+		],
+		"offer_jailbreak": [
+			"{name}. {look}. In a cell. Out, and onto your ship.",
+			"{name}, in a cell. {look}. Aboard your ship."
+		],
+		"repeat": [
+			"Again.",
+			"Once more."
+		],
+		"idle": [
+			"Hm.",
+			"Deal.",
+			"...",
+			"Again."
+		]
+	},
+	"stand_in": {
+		"no_ship": [
+			"No ship, no work.",
+			"Come back with a ship."
+		],
+		"no_trust": [
+			"I don't know you. Something small first.",
+			"Small jobs for new faces."
+		],
+		"wanted": [
+			"Security wants you. Not here.",
+			"You're wanted. Walk away."
+		],
+		"officer": [
+			"Later.",
+			"Not with them about."
+		],
+		"nothing": [
+			"Nothing right now.",
+			"Nothing for you. Later."
+		],
+		"burned": [
+			"You hurt one of ours. No.",
+			"Not after what you did."
+		],
+		"trouble": [
+			"Not today. Look at the place.",
+			"Not with the port like this."
+		],
+		"busy": [
+			"You've work already.",
+			"Finish what you have."
+		],
+		"gone": [
+			"Gone. Somebody was quicker.",
+			"Someone else took it."
+		],
+		"taken": [
+			"Good. It's on the paper.",
+			"Done. Read the note."
+		],
+		"pay_clean": [
+			"Not a word from anyone. Extra for that.",
+			"Nobody's talking. You earned a bit more."
+		],
+		"pay_some": [
+			"Bit of talk. It'll do.",
+			"Some people noticed. Fine."
+		],
+		"pay_loud": [
+			"Everyone saw. The price and no more.",
+			"Loud. You get what we said."
+		],
+		"failed": [
+			"Too late. Leave it a while.",
+			"You let it slip. Not for a while."
+		],
+		"spoiled": [
+			"That wasn't you. No pay.",
+			"Someone else did it. No pay."
+		],
+		"wait": [
+			"Wait a minute.",
+			"Let it settle first."
+		],
+		"not_yours": [
+			"That wasn't yours.",
+			"Not your job."
+		],
+		"wrong_fixer": [
+			"Not for me. Read the note.",
+			"Wrong place."
+		],
+		"offer_sabotage": [
+			"{name}, by {place}. Broken before the {clock}. Quietly.",
+			"There's {name} by {place}. Ruin it before the {clock}."
+		],
+		"offer_smuggle": [
+			"A sealed case to {to}. Shut, and away from the scanners.",
+			"Take a case to {to}. Don't open it. No scanners."
+		],
+		"offer_breakin": [
+			"A safe by {place}. {name}'s. Bring me the ledger.",
+			"{name} keeps a ledger in a safe by {place}. I want it."
+		],
+		"offer_hit": [
+			"{name}. {look}. On the {clock}. See he misses it.",
+			"{name}, {look}. He shouldn't make the {clock}."
+		],
+		"offer_evidence": [
+			"There's a bag in the security locker. Bring it.",
+			"Security took a bag. It's in their locker. Get it."
+		],
+		"offer_jailbreak": [
+			"{name}, {look}, is in a cell. Get him onto your ship.",
+			"{name} is in a cell. {look}. Out and aboard."
+		],
+		"repeat": [
+			"Like I said.",
+			"Again."
+		],
+		"idle": [
+			"The old one's not coming back. You get me.",
+			"Different face, same table.",
+			"Hm."
+		]
+	},
+	"gossip": {
+		"sabotage": [
+			"Somebody wrecked that new delivery. Did you see?",
+			"Somebody did the new drinks machine in. Shame.",
+			"Heard a crate got smashed out on the floor."
+		],
+		"smuggle": [
+			"Someone walked a case past the scanners, they say.",
+			"There's talk of a case that never got checked."
+		],
+		"breakin": [
+			"Somebody cracked a safe here. Can you believe it?",
+			"A safe got opened and nobody saw a thing."
+		],
+		"hit": [
+			"Did you hear about the man who missed his shuttle?",
+			"Someone got done in here. Keep your head down."
+		],
+		"evidence": [
+			"Something walked out of the security locker, I heard.",
+			"Security lost a bag from their own locker. Ha."
+		],
+		"jailbreak": [
+			"Somebody broke a man out of the cells!",
+			"Did you hear? One of the cells is empty."
+		]
+	}
+}
