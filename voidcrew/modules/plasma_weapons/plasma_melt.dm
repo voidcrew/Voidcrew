@@ -825,7 +825,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 /// What a plasma melt leaves on the floor
 /obj/effect/decal/cleanable/plasma_slag
 	name = "slag"
-	desc = "A puddle of green-black slag, cooled hard."
+	desc = "A puddle of purple-black slag, cooled hard."
 	icon = PLASMA_MELT_ICON
 	icon_state = "slag"
 	beauty = -50

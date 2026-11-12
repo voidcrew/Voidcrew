@@ -11,9 +11,9 @@
 #define PLASMA_WOUND_GLOW_PULSE_ALPHA 160
 /// How fast a quench cuts the glow.
 #define PLASMA_WOUND_GLOW_QUENCH (0.3 SECONDS)
-/// A colour matrix for the glow sprite: keeps `keep` of its own colour, adds its green channel tinted by
+/// A colour matrix for the glow sprite: keeps `keep` of its own colour, adds its blue channel tinted by
 /// tint_r/g/b and adds a flat `add` of white. The fade and the breathing run on the alpha var, not in here.
-#define PLASMA_WOUND_GLOW_MATRIX(keep, tint_r, tint_g, tint_b, add_r, add_g, add_b) list(	keep, 0, 0, 	tint_r, keep + tint_g, tint_b, 	0, 0, keep, 	add_r, add_g, add_b)
+#define PLASMA_WOUND_GLOW_MATRIX(keep, tint_r, tint_g, tint_b, add_r, add_g, add_b) list(	keep, 0, 0, 	0, keep, 0, 	tint_r, tint_g, keep + tint_b, 	add_r, add_g, add_b)
 
 /datum/wound/burn/flesh/plasma
 	/// The visible glow while the slag is hot.
@@ -99,15 +99,15 @@
 	var/left = clamp(heat, 0, hot_time)
 	var/done = 1 - left / hot_time
 
-	// The glow cools from white-hot through pale green and #74FFA0 to a deep, dim green, fading the whole way.
-	// Keys are fractions of the hot time, each a colour matrix over the green sprite and an alpha.
+	// The glow cools from white-hot through pale pink and #F17FFF to a deep, dim purple, fading the whole way.
+	// Keys are fractions of the hot time, each a colour matrix over the purple sprite and an alpha.
 	var/static/list/ramp_at = list(0, 0.3, 0.55, 0.85, 1)
 	var/static/list/ramp = list(
 		PLASMA_WOUND_GLOW_MATRIX(0.25, 0, 0, 0, 0.75, 0.75, 0.75), // white-hot
-		PLASMA_WOUND_GLOW_MATRIX(0.55, 0, 0, 0, 0.3, 0.42, 0.33), // pale green
-		PLASMA_WOUND_GLOW_MATRIX(0, 0.455, 1, 0.627, 0, 0, 0), // #74FFA0
-		PLASMA_WOUND_GLOW_MATRIX(0, 0.12, 0.5, 0.25, 0, 0, 0), // deep green
-		PLASMA_WOUND_GLOW_MATRIX(0, 0.12, 0.5, 0.25, 0, 0, 0),
+		PLASMA_WOUND_GLOW_MATRIX(0.55, 0, 0, 0, 0.41, 0.31, 0.42), // pale pink
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.946, 0.499, 1, 0, 0, 0), // #F17FFF
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.462, 0.15, 0.5, 0, 0, 0), // deep purple
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.462, 0.15, 0.5, 0, 0, 0),
 	)
 	var/static/list/ramp_alpha = list(255, 215, 165, 90, 0)
 	var/key = 1

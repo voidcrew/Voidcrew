@@ -1,6 +1,6 @@
 // Package: P9 pinch. The barrel pinch when a plasma gun fires.
 //
-// A ball swells at the barrel with a flash on the hands and a small green light, snaps small as the bolt
+// A ball swells at the barrel with a flash on the hands and a small purple light, snaps small as the bolt
 // leaves it, and a ring opens where the ball was.
 //
 // Placement is a local table of pixel offsets by facing, read off the wielded in-hand sprite. The
@@ -30,7 +30,7 @@
 	/// Where the pinch sits on the shooter, as "[dir]" = list(pixel_x, pixel_y). Null for a gun with no pinch
 	var/list/pinch_offsets
 
-// The Furnace's emitter is the green tip of its wielded in-hand sprite: the east and west sprites end
+// The Furnace's emitter is the purple tip of its wielded in-hand sprite: the east and west sprites end
 // at (32, 17) and (1, 17) in icon pixels. Facing north or south the rifle lies across the body, so
 // the ball forms on the bolt's path in front of the chest instead (design decision 5).
 /obj/item/gun/energy/plasma_weapon/rifle
@@ -107,7 +107,7 @@
 	shooter.vis_contents -= src
 	shooter = null
 
-/// The pinch's small green light, on the ball. The bolt's copy takes the light over at this size when the ball snaps
+/// The pinch's small purple light, on the ball. The bolt's copy takes the light over at this size when the ball snaps
 /obj/effect/temp_visual/plasma_burst_light/pinch
 	duration = PLASMA_PINCH_SNAP_TIME
 	light_range = 1

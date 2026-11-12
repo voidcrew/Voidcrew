@@ -170,7 +170,7 @@
 /// What comes out of a plasma burn. Worth nothing: no materials, no reagents, no export.
 /obj/item/plasma_slag
 	name = "plasma slag"
-	desc = "A bead of black glass with a green heart. It came out of somebody."
+	desc = "A bead of black glass with a purple heart. It came out of somebody."
 	icon = 'voidcrew/modules/plasma_weapons/icons/plasma_wounds.dmi'
 	icon_state = "slag_bead"
 	w_class = WEIGHT_CLASS_TINY
