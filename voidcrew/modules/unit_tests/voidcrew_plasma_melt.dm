@@ -193,3 +193,22 @@
 	for(var/obj/effect/thing in where)
 		if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light) || istype(thing, /obj/effect/temp_visual))
 			qdel(thing)
+
+/// A burnt sleeve never bares the chest: the arm sleeve masks leave out every pixel the chest draws, in every facing
+/datum/unit_test/voidcrew_plasma_melt_sleeve_mask
+
+/datum/unit_test/voidcrew_plasma_melt_sleeve_mask/Run()
+	var/list/files = list(
+		BODY_ZONE_R_ARM = 'voidcrew/modules/plasma_weapons/icons/plasma_melt_r_arm.dmi',
+		BODY_ZONE_L_ARM = 'voidcrew/modules/plasma_weapons/icons/plasma_melt_l_arm.dmi',
+	)
+	for(var/zone in files)
+		for(var/facing in GLOB.cardinals)
+			var/icon/mask = icon(files[zone], "[zone]_sleeve_mask", facing)
+			for(var/chest_state in list("human_chest_m", "human_chest_f"))
+				var/icon/chest = icon('icons/mob/human/bodyparts_greyscale.dmi', chest_state, facing)
+				for(var/x in 1 to 32)
+					for(var/y in 1 to 32)
+						if(mask.GetPixel(x, y) && chest.GetPixel(x, y))
+							TEST_FAIL("The [zone] sleeve mask cuts the [chest_state] facing [dir2text(facing)] at [x],[y]")
+							return

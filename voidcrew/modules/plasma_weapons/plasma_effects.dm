@@ -105,11 +105,8 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 			plasma_soot_at(target, impact_x, impact_y)
 		return
 
+	// One hit, one mark: the glow on the wall face, nothing on the floor in front of it
 	plasma_wall_glow_at(target, impact_x, impact_y)
-	// Soot falls on the open floor in front of the wall face, the tile the bolt was in
-	var/turf/open/in_front = get_turf(src)
-	if(isopenturf(in_front) && prob(50))
-		plasma_soot_at(in_front, round(sin(angle) * 10), round(cos(angle) * 10))
 
 /// The splash of a bolt a person blocked, shown once the bolt's sprite has reached it
 /proc/plasma_block_splash(turf/where, px, py, turn_angle, behind_body, at_shield)
