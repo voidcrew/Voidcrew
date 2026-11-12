@@ -73,7 +73,7 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark didn't switch its light on")
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	// Its pool lands ahead of it (decision 39): the tile behind it stays dark.
 	TEST_ASSERT(stealth_tile_is_dark(behind), "The guard's pool lights the tile behind it")
 	stealth_scans(guard, 10)
@@ -101,7 +101,7 @@
 	TEST_ASSERT_EQUAL(person.move_intent, MOVE_INTENT_WALK, "Test fixture: the person isn't walking")
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark didn't switch its light on")
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	// A walk round its back: behind, behind-diagonal and the tiles two back, every step a new tile.
 	var/list/path = list(list(4, 3), list(4, 4), list(3, 4), list(3, 3), list(3, 2), list(4, 2), list(4, 3), list(3, 3))
 	for(var/list/step as anything in path)
@@ -128,13 +128,13 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/second_ai = stealth_ai(second)
 	first_ai.stealth_update_light()
 	TEST_ASSERT(first_ai.stealth_light_shows(), "The first guard didn't switch its light on in the dark")
-	stealth_settle_light()
+	stealth_settle_light(first_ai.torch)
 	var/turf/spot = get_turf(second)
 	TEST_ASSERT(!stealth_tile_is_dark(spot), "The first guard's pool doesn't reach the second, so this test proves nothing")
 	TEST_ASSERT(stealth_tile_is_dark(spot, no_guard_lights = TRUE), "Without guard lights the second guard's spot isn't dark")
 	second_ai.stealth_update_light()
 	TEST_ASSERT(second_ai.stealth_light_shows(), "A guard in the dark left its light off because a friend's light was on it")
-	stealth_settle_light()
+	stealth_settle_light(second_ai.torch)
 	second_ai.light_hold_until = 0
 	second_ai.stealth_update_light()
 	TEST_ASSERT(second_ai.stealth_light_shows(), "A guard switched its light off because a friend's light was on it")

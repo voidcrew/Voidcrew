@@ -300,7 +300,7 @@
 	stealth_ai = stealth_ai(guard)
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard standing in the dark didn't switch its light on")
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	TEST_ASSERT(!stealth_tile_is_dark(spot), "The guard's pool doesn't light the tile it lands on")
 	TEST_ASSERT(!stealth_tile_is_dark(stealth_at(block, 6, 2)), "The guard's pool doesn't light the tile past it")
 	TEST_ASSERT(stealth_tile_is_dark(get_turf(guard)), "The guard's pool lights its own tile")
@@ -342,7 +342,7 @@
 	light.disabled_time = 0
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A searching guard's light didn't come on")
-	stealth_settle_light()
+	stealth_settle_light(stealth_ai.torch)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_range_onto(body_turf), profile.sight_range, "A guard's pool doesn't light the body it lands on")
 	stealth_ai.next_body_scan = 0
 	stealth_ai.stealth_check_bodies()
