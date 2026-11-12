@@ -1,4 +1,57 @@
 {
-	"customer_lines": [],
-	"patron_lines": []
+	"customer_lines": {
+		"arrive": [
+			"Is this the place?",
+			"Huh. Nicer than downstairs.",
+			"Somebody said there's a shop up here.",
+			"Hello? You open?"
+		],
+		"browse": [
+			"Let's see what you've got.",
+			"Hm.",
+			"What's this one?",
+			"Don't mind me, just looking.",
+			"Is this all of it?"
+		],
+		"buy": [
+			"I'll take the {item}.",
+			"One {item}, thanks.",
+			"Go on then. The {item}.",
+			"Just the {item}."
+		],
+		"too_dear": [
+			"For a {item}? I'll pass.",
+			"Bit rich for me.",
+			"Maybe next trip.",
+			"I'm not paying that."
+		],
+		"nothing": [
+			"Nothing for me today.",
+			"Just looking.",
+			"Hm. No."
+		],
+		"leave": [
+			"Right. Back down.",
+			"Thanks. See you.",
+			"Better get back to the ship."
+		]
+	},
+	"patron_lines": {
+		"sit": [
+			"Ah. Off my feet.",
+			"Mind if I sit?",
+			"First proper sit all day."
+		],
+		"chat": [
+			"Not bad, this.",
+			"Better than what the galley makes.",
+			"Quiet up here.",
+			"I should come up here more."
+		],
+		"done": [
+			"That hit the spot.",
+			"Right. Back to it.",
+			"Thanks. Good stuff."
+		]
+	}
 }
