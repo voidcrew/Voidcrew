@@ -226,6 +226,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/wait_frame = 0
 	/// How long the last wait was, for tests and recordings.
 	var/waited = 0
+	/// Every body that was mid-move during the wait: what turns up around them is recorded.
+	var/list/wait_bodies = list()
 
 /datum/sandy_replay/New(datum/proximity_monitor/advanced/timestop/sandevistan/_field, mob/living/_user)
 	field = _field
@@ -250,6 +252,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		track.owner = null
 	tracks.Cut()
 	gone.Cut()
+	wait_bodies.Cut()
 	puppets.Cut()
 	standins.Cut()
 	user_track = null
@@ -316,10 +319,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	var/list/moving = wait_started ? moves_running() : null
 	if(wait_started)
-		// No field hands things over now: what the move leaves next to the bodies doing it (a torn-off limb, a head,
-		// gibs) is picked up here, and drawn from the frame it turns up in.
-		for(var/mob/living/body as anything in moving)
-			for(var/atom/movable/thing in range(1, body))
+		// No field hands things over now: what the move leaves around the bodies doing it (a torn-off limb, a head,
+		// blood, gibs) is picked up here, and drawn from the frame it turns up in. The bodies are kept to the end, so
+		// what the move's last blow makes, in the tick it ends, is picked up too.
+		wait_bodies |= moving
+		for(var/mob/living/body as anything in wait_bodies)
+			if(QDELETED(body) || !isturf(body.loc))
+				continue
+			for(var/atom/movable/thing in range(3, body))
 				notice(thing)
 	var/frame = frame_now()
 	for(var/atom/movable/thing as anything in tracks)
@@ -798,6 +805,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		track.turn_to = matrix(now.transform)
 		track.turn_time = SANDY_REPLAY_TURN_TIME
 		track.turn_until = world.time + SANDY_REPLAY_TURN_TIME
+		// A half turn (a body flipped from lying one way to the other, as a rig move leaves it) blends through a
+		// matrix of no size halfway: the body would vanish for the tween. It flips at once instead.
+		var/matrix/halfway = start.Interpolate(track.turn_to, 0.5)
+		if(abs(halfway.a * halfway.e - halfway.b * halfway.d) < 0.25)
+			track.turn_until = 0
 	// Tween from where it was drawn to where it is now.
 	var/stepped = frames[old + SANDY_FRAME_X] != frames[at + SANDY_FRAME_X] || frames[old + SANDY_FRAME_Y] != frames[at + SANDY_FRAME_Y]
 	var/move_x = (frames[old + SANDY_FRAME_X] - frames[at + SANDY_FRAME_X]) * ICON_SIZE_X + (was.pixel_x + was.pixel_w) - (now.pixel_x + now.pixel_w) + carry_x
