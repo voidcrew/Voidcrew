@@ -197,6 +197,13 @@
 			"Step away from that locker!",
 			"Leave that alone! It's not yours!"
 		],
+		"body": [
+			"Desk, beat. There's a body on the floor by %PLACE%. Send the morgue, please.",
+			"Desk, I've got someone down and gone by %PLACE%. Morgue, please.",
+			"Desk, beat. Got a body here. Can we get the morgue down?",
+			"Beat to desk. Someone's passed on out here. Morgue, when you can.",
+			"Desk, beat. Body on the concourse. Keep folk back till the morgue's here."
+		],
 		"idle": [
 			"Quiet today.",
 			"Another quiet one.",
@@ -684,6 +691,13 @@
 			"Step away from the locker!",
 			"That's not yours! Drop it!"
 		],
+		"body": [
+			"Desk, beat. Body by %PLACE%. Morgue.",
+			"Body on the floor, %PLACE%. Get the morgue down.",
+			"Desk, beat. One dead on the concourse. Morgue.",
+			"Beat to desk. Body. Need the morgue.",
+			"Desk, got a stiff out here. Morgue, sharpish."
+		],
 		"idle": [
 			"Quiet.",
 			"Nothing doing.",
@@ -1170,6 +1184,13 @@
 			"Hands off the lockers!",
 			"Touch that again and lose the hand.",
 			"Step off the locker."
+		],
+		"body": [
+			"Desk, another one by %PLACE%. Morgue.",
+			"Body by %PLACE%. Somebody tell the morgue.",
+			"Desk, beat. Got a body. Morgue's got work.",
+			"Beat to desk. One more for the morgue.",
+			"Desk. Body on the floor. Morgue."
 		],
 		"idle": [
 			"Quiet. I hate quiet.",

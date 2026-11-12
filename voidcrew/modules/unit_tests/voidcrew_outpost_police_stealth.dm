@@ -422,4 +422,84 @@
 	police.stop_activity_for(officer, "watch")
 	TEST_ASSERT_EQUAL(voice.next_check_in_at, next_at, "A beat officer checked in twice inside the gap")
 
+/// A body on the floor near a stop is called in to the desk once, by whoever sees it first; a bagged one is not
+/datum/unit_test/voidcrew_stealth_live/police/body_on_floor
+
+/datum/unit_test/voidcrew_stealth_live/police/body_on_floor/Run()
+	TEST_ASSERT(police_room(9, 5), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/partner = officer_at(2, 3, EAST)
+	officer.resume_routine()
+	partner.resume_routine()
+	var/mob/living/carbon/human/body = person_at(5, 2, FALSE)
+	body.death()
+	TEST_ASSERT_EQUAL(body.stat, DEAD, "The body is not dead")
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	var/datum/ambient_activity/police_body/call_in = officer.start_activity(police.stop_activity_for(officer, "watch"))
+	TEST_ASSERT(istype(call_in), "An officer at a stop paid no mind to a body on the floor ([officer.activity?.type || "nothing"])")
+	officer.activity_step(1)
+	TEST_ASSERT(voice.context_free_at["body"] > world.time, "An officer looking at a body did not call it in") // POLICE_LINE_BODY
+	TEST_ASSERT_NULL(partner.life_body_near(), "A second officer would call in a body already called in")
+	officer.end_activity()
+
+	// A body already bagged is in hand
+	var/mob/living/carbon/human/bagged = person_at(5, 3, FALSE)
+	bagged.death()
+	var/obj/structure/closet/body_bag/bag = allocate(/obj/structure/closet/body_bag, at(6, 3))
+	bagged.forceMove(bag)
+	TEST_ASSERT_NULL(officer.life_body_near(), "An officer would call in a body in a bag")
+
+/// A sergeant who comes in away from the desk heads for it and leaves the beat routes alone; from the desk, now and then a coffee from the machine beside it, drunk back at the desk
+/datum/unit_test/voidcrew_stealth_live/police/sergeant_post
+
+/datum/unit_test/voidcrew_stealth_live/police/sergeant_post/Run()
+	TEST_ASSERT(police_room(20, 7), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	police_stop(2, 2, "a", 1, 5 SECONDS, null)
+	police_stop(8, 2, "a", 2, 5 SECONDS, null)
+	police.desk_turf = at(14, 4)
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	place.public_floor = list()
+	for(var/turf/open/tile in block(room.bottom_left_turfs[1], room.top_right_turfs[1]))
+		place.public_floor[tile] = TRUE
+	place.floor_built_at = world.time
+
+	// Off a lift that stands on a beat stop
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/sergeant = officer_at(2, 2, NORTH, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant)
+	sergeant.resume_routine()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = sergeant.ai_controller
+	brain.stealth_setup()
+	TEST_ASSERT_NULL(brain.route_id, "A sergeant took beat route [brain.route_id]")
+	TEST_ASSERT_EQUAL(brain.home_turf, police.desk_turf, "A sergeant who came in away from the desk does not head for it")
+	TEST_ASSERT_EQUAL(police.free_route(brain.group), "a", "A sergeant kept the beat off its route")
+
+	// At the desk, with the coffee machine two tiles off
+	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, at(16, 4))
+	sergeant.forceMove(police.desk_turf)
+	sergeant.next_desk_coffee = 0
+	TEST_ASSERT_EQUAL(brain.police_stop_tag_now(), "desk", "The sergeant at the desk is not at the desk")
+	var/datum/ambient_activity/police_coffee/coffee = sergeant.start_activity(police.stop_activity_for(sergeant, "desk"))
+	TEST_ASSERT(istype(coffee), "The sergeant never went for a coffee from the desk ([sergeant.activity?.type || "nothing"])")
+	TEST_ASSERT_EQUAL(coffee.anchor(), machine, "The sergeant went to some other machine")
+	TEST_ASSERT(coffee.carry_on, "The sergeant would drink it at the machine, not back at the desk")
+	TEST_ASSERT(sergeant.next_desk_coffee > world.time, "Nothing keeps the sergeant from going straight back for another")
+	sergeant.forceMove(coffee.spot)
+	TEST_ASSERT_EQUAL(brain.police_stop_tag_now(), "desk", "At the machine beside the desk, the sergeant's coffee was cut short")
+	sergeant.activity_step(1)
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/mug = sergeant.held_item
+	TEST_ASSERT(istype(mug) && mug.reagents.has_reagent(/datum/reagent/consumable/coffee), "The sergeant at the machine holds no coffee")
+	sergeant.end_activity()
+	TEST_ASSERT(!QDELETED(mug) && sergeant.held_item == mug, "The sergeant left the coffee at the machine")
+	TEST_ASSERT_NULL(brain.police_stop_tag_now(), "Off the desk with nothing to do, the sergeant is not sent back to it")
+
+	// Back at the desk: the desk, and the coffee is drunk there
+	sergeant.forceMove(police.desk_turf)
+	var/datum/ambient_activity/police_desk/at_desk = sergeant.start_activity(police.stop_activity_for(sergeant, "desk"))
+	TEST_ASSERT(istype(at_desk), "Back at the desk the sergeant did not take it ([sergeant.activity?.type || "nothing"])")
+	var/before = mug.reagents.total_volume
+	at_desk.next_sip = 0
+	sergeant.activity_step(1)
+	TEST_ASSERT(mug.reagents.total_volume < before, "The sergeant never drank the coffee at the desk")
+	sergeant.end_activity()
+
 #undef POLICE_STEALTH_BEAT

@@ -68,6 +68,8 @@
 	var/harder_until = 0
 	/// world.time the next routine radio check-in may be made
 	var/next_check_in_at = 0
+	/// REF() of each body on the floor an officer has called in, so it is called in once (capped, oldest out)
+	var/list/bodies_called = list()
 
 /// Declared here, not in police_core.dm: the core is frozen and this is only mine
 /datum/outpost_police
@@ -213,6 +215,8 @@
 	var/coffee_looked_at = 0
 	/// The last everyday line they said (say_line()), which they don't say again straight after
 	var/last_line
+	/// world.time the sergeant may next leave the desk for a coffee (stop_activity_for(): the desk)
+	var/next_desk_coffee = 0
 
 // The beat is a stealth patrol route; what a beat officer does at each stop is the stop's (police_stealth.dm)
 
@@ -759,6 +763,14 @@
 	var/turf/fight = ambient_kingpin_fight_center(get_outpost())
 	return fight && tile && tile.z == fight.z && get_dist(fight, tile) <= AMBIENT_VIOLENCE_RANGE + 3
 
+/// The coffee machine the sergeant can step over to from the desk, or null (one across the room is not theirs to wander to)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_desk_coffee()
+	var/turf/desk = police?.desk_turf
+	var/obj/machinery/vending/coffee/machine = desk ? life_coffee_machine() : null
+	if(!machine || machine.z != desk.z || get_dist(machine, desk) > OUTPOST_POLICE_STOP_REACH)
+		return null
+	return machine
+
 // The coffee break is taken at the machine by the desk
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/pick_activity()
 	return pick_anchored(routine, life_coffee_machine(), list(/datum/ambient_activity/police_coffee))
@@ -885,7 +897,8 @@
 		return FALSE
 	go_to(stand)
 	set_duration()
-	carry_on = prob(70)
+	// The sergeant takes it back to the desk
+	carry_on = istype(doer, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant) || prob(70)
 	return TRUE
 
 /datum/ambient_activity/police_coffee/arrive()
@@ -936,6 +949,7 @@
 	var/next_write = 0
 	var/next_cell_look = 0
 	var/next_guard_word = 0
+	var/next_sip = 0
 
 /datum/ambient_activity/police_desk/setup()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
@@ -949,6 +963,7 @@
 	next_write = world.time + rand(3 SECONDS, 8 SECONDS)
 	next_cell_look = world.time + rand(20 SECONDS, 40 SECONDS)
 	next_guard_word = world.time + rand(60 SECONDS, 120 SECONDS)
+	next_sip = world.time + rand(6 SECONDS, 12 SECONDS)
 	return TRUE
 
 /datum/ambient_activity/police_desk/Destroy()
@@ -966,6 +981,10 @@
 	if(world.time >= next_write)
 		next_write = world.time + rand(8 SECONDS, 16 SECONDS)
 		playsound(doer, pick('sound/effects/writing_pen/writing_pen1.ogg', 'sound/effects/writing_pen/writing_pen2.ogg', 'sound/effects/writing_pen/writing_pen3.ogg'), 15, TRUE, -5)
+	// The coffee they brought back from the machine
+	if(doer.held_item && world.time >= next_sip)
+		next_sip = world.time + rand(12 SECONDS, 25 SECONDS)
+		outpost_police_sip(doer)
 	if(world.time >= next_cell_look)
 		next_cell_look = world.time + rand(25 SECONDS, 45 SECONDS)
 		var/datum/outpost_police_cell/cell = officer.police?.life_occupied_cell()
@@ -999,6 +1018,7 @@
 	next_write = ambient_shifted(next_write, delay)
 	next_cell_look = ambient_shifted(next_cell_look, delay)
 	next_guard_word = ambient_shifted(next_guard_word, delay)
+	next_sip = ambient_shifted(next_sip, delay)
 
 /// Someone asleep or out cold in sight within `reach` they have not looked in on lately, or null
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_sleeper_near(reach = POLICE_CHECK_RANGE)
@@ -1062,4 +1082,74 @@
 	target_ref = null
 	return ..()
 
+/// How far off an officer at a stop sees a body on the floor
+#define POLICE_BODY_RANGE 7
+
+/// A dead body lying in sight within `reach` that no officer has called in yet, or null. Officers are stealth's
+/// to find (a fallen colleague); a body bagged, on a bed, in a tray or being carried is in hand already.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_body_near(reach = POLICE_BODY_RANGE)
+	var/datum/outpost_police_voice/voice = police?.life_voice()
+	if(!voice)
+		return null
+	for(var/mob/living/carbon/human/body in range(reach, src))
+		if(body.stat != DEAD || !isturf(body.loc) || body.buckled || body.pulledby)
+			continue
+		if(istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || voice.bodies_called[REF(body)])
+			continue
+		if(life_keeps_off(get_turf(body)) || !police.perception?.sees(src, body))
+			continue
+		return body
+	return null
+
+/**
+ * A body on the floor near a stop: the officer looks over at it and calls it in to the desk, who copies. Only
+ * words: the morgue crew is the recovery's to send. Each body is called in once, by whoever sees it first.
+ */
+/datum/ambient_activity/police_body
+	name = "calling in a body"
+	duration_low = 6 SECONDS
+	duration_high = 10 SECONDS
+	var/datum/weakref/body_ref
+
+/datum/ambient_activity/police_body/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	if(!istype(officer))
+		return FALSE
+	var/mob/living/carbon/human/body = anchor_ref?.resolve() || officer.life_body_near()
+	var/datum/outpost_police_voice/voice = officer.police?.life_voice()
+	if(QDELETED(body) || body.stat != DEAD || !voice || voice.bodies_called[REF(body)])
+		return FALSE
+	body_ref = WEAKREF(body)
+	voice.bodies_called[REF(body)] = TRUE
+	if(length(voice.bodies_called) > 40)
+		voice.bodies_called.Cut(1, 2)
+	set_duration()
+	return TRUE
+
+/datum/ambient_activity/police_body/arrive()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/mob/living/body = body_ref?.resolve()
+	if(QDELETED(body))
+		return
+	if(!doer.buckled)
+		doer.face_atom(body)
+	if(!officer.police_say(POLICE_LINE_BODY, list("place" = officer.police?.life_nearest_shop_name(get_turf(body))), TRUE))
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/desk = officer.police?.life_dispatcher()
+	if(desk && desk != officer)
+		addtimer(CALLBACK(desk, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), "check_in_reply", null, TRUE), 2.5 SECONDS, TIMER_DELETE_ME)
+
+/datum/ambient_activity/police_body/act(seconds)
+	var/mob/living/body = body_ref?.resolve()
+	if(QDELETED(body) || !isturf(body.loc))
+		return AMBIENT_STEP_DONE
+	if(!doer.buckled)
+		doer.face_atom(body)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_body/Destroy()
+	body_ref = null
+	return ..()
+
+#undef POLICE_BODY_RANGE
 #undef POLICE_CHECK_RANGE

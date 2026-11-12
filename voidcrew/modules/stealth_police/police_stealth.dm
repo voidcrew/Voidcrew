@@ -160,8 +160,18 @@
 	if(was_ready || !stealth_ready)
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
-	if(istype(officer))
-		officer.home_police()?.add_officer(officer)
+	if(!istype(officer))
+		return
+	officer.home_police()?.add_officer(officer)
+	// The sergeant's post is the desk wherever they came in (a replacement steps off a lift), and never a beat
+	// route: one held the lift tile as its post and stood there all round, keeping a beat officer off that route
+	var/turf/desk = officer.police?.desk_turf
+	var/turf/here = get_turf(officer)
+	if(officer.unit_kind == POLICE_UNIT_SERGEANT && desk && here && desk.z == here.z)
+		route_id = null
+		at_stop = FALSE
+		home_retry_at = 0
+		home_turf = desk
 
 // Its own seat (the desk chair, a bench at a stop) is not being held: it still looks about and can report
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_captive()
@@ -465,6 +475,10 @@
 		var/mob/living/carbon/human/sleeper = officer.life_sleeper_near(OUTPOST_POLICE_STOP_REACH - 1)
 		if(sleeper)
 			return new /datum/ambient_activity/police_check(officer, sleeper)
+		// Then a body on the floor in sight: called in to the desk, once a body
+		var/mob/living/carbon/human/body = officer.life_body_near()
+		if(body)
+			return new /datum/ambient_activity/police_body(officer, body)
 	switch(tag)
 		if("shopfront")
 			return new /datum/ambient_activity/police_shopfront(officer)
@@ -491,9 +505,16 @@
 		if("cells")
 			return new /datum/ambient_activity/police_cells(officer)
 		if("desk")
+			// Now and then a coffee from the machine by the desk, brought back to it
+			var/obj/machinery/vending/coffee/desk_machine = world.time >= officer.next_desk_coffee ? officer.life_desk_coffee() : null
+			if(desk_machine)
+				officer.next_desk_coffee = world.time + rand(5 MINUTES, 10 MINUTES)
+				return new /datum/ambient_activity/police_coffee(officer, desk_machine)
 			return new /datum/ambient_activity/police_desk(officer)
 		if("watch")
-			// A plain stop on the beat: now and then a word to the desk over the radio (police_life.dm)
+			// A plain stop on the beat: a sip of the coffee they carry, and now and then a word to the desk over the radio (police_life.dm)
+			if(officer.held_item)
+				outpost_police_sip(officer)
 			officer.life_check_in()
 	return null
 
@@ -529,8 +550,11 @@
 			return null
 		// An untagged stop is watched from where they stand, unless someone sleeps nearby
 		return officer.police.stop_tag(home_turf) || "watch"
-	if(officer.unit_kind == POLICE_UNIT_SERGEANT && officer.police.desk_turf && get_turf(officer) == officer.police.desk_turf)
-		return "desk"
+	var/turf/desk = officer.police.desk_turf
+	if(officer.unit_kind == POLICE_UNIT_SERGEANT && desk)
+		// At the desk, or stepped over to the coffee machine beside it
+		if(get_turf(officer) == desk || (istype(officer.activity, /datum/ambient_activity/police_coffee) && get_dist(officer, desk) <= OUTPOST_POLICE_STOP_REACH + 2))
+			return "desk"
 	return null
 
 /**

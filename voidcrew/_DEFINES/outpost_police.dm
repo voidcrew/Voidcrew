@@ -215,6 +215,7 @@
 #define POLICE_LINE_STRIP "strip"
 #define POLICE_LINE_BAIL "bail"
 #define POLICE_LINE_LOCKER_THIEF "locker_thief"
+#define POLICE_LINE_BODY "body"
 
 /// The officers' dialogue file in AMBIENT_STRINGS_DIR
 #define AMBIENT_STRINGS_POLICE "outpost_police.json"
