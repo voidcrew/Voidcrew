@@ -29,7 +29,7 @@
 	TEST_ASSERT(voidcrew_plasma_melt_drawn(victim), "Nothing of the melt is drawn on the body")
 
 	// the splatter guard is only for the body mid-melt, and only stops the splatter
-	GLOB.plasma_melt_no_splatter = victim
+	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
 	victim.add_splatter_floor(where)
 	GLOB.plasma_melt_no_splatter = null
 	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(where, /obj/effect/decal/cleanable/blood), 0, "The guard let a splatter through")

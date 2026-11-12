@@ -65,8 +65,9 @@ GLOBAL_LIST_INIT(plasma_melt_geometry, list(
 
 /// Every slag decal, oldest first
 GLOBAL_LIST_EMPTY(plasma_slag_decals)
-/// The carbon whose limb is melting off right now, while tg's dismember runs: its blood loss stays, its splatter doesn't
-GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
+/// The carbon whose limb is melting off right now, while tg's dismember runs: its blood loss stays, its splatter doesn't.
+/// A weakref, so a runtime inside the dismember can't leave a hard ref to the body behind.
+GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 
 /// The plasma melts on this body by zone; each keeps its stump drawn until that limb comes back
 /mob/living/carbon/var/list/plasma_melts
@@ -102,7 +103,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		old_ash += pile
 	var/datum/wound/loss/melt = new
-	GLOB.plasma_melt_no_splatter = victim
+	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
 	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
 	GLOB.plasma_melt_no_splatter = null
 	// tg leaves an ash pile from the burnt limb; the slag is the remains here
@@ -123,7 +124,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /mob/living)
 
 /// tg's dismember bleeds the body; on a plasma melt the blood is lost but no splatter lands (the slag stands in)
 /mob/living/add_splatter_floor(turf/splatter_turf, small_drip = FALSE)
-	if(GLOB.plasma_melt_no_splatter == src)
+	if(GLOB.plasma_melt_no_splatter && GLOB.plasma_melt_no_splatter.resolve() == src)
 		return
 	return ..()
 
