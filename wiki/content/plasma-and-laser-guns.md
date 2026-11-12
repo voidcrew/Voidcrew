@@ -2,7 +2,7 @@
 title: Plasma & Frontier Lasers
 category: Danger
 order: 1.2
-blurb: The Kestrel and Hornet lasers, the Cinder and Furnace plasma guns, plasma flasks and keeping a Furnace cool.
+blurb: The Kestrel and Hornet lasers, the Cinder and Furnace plasma guns, plasma flasks, plasma burns and keeping a Furnace cool.
 ---
 
 Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are ordinary laser guns that charge in a recharger. The Cinder pistol and Furnace rifle fire bolts of burning plasma, and you feed them by hand with plasma sheets or ore. See [Weapons & Gear](weapons-and-gear.md) for the rest of the armoury.
@@ -54,13 +54,40 @@ Plasma ore turns up in every zone, so a crew that mines can keep a plasma gun fe
 Plasma bolts are slower than lasers and bullets, so a target far away can step out of the way.
 
 - **Armour:** bolts are energy hits. Ablative armour and reflective vests cannot reflect them.
-- **Burns:** bolts leave deep burns that get worse with every hit on the same spot. They do not set people on fire. Treat them like any other burn.
-- **Limbs:** an arm or leg that is already badly hurt melts away under a bolt. A rifle bolt also melts an arm or leg that already carries a critical burn. One bolt never melts a healthy limb. Heads and chests never melt.
+- **Burns:** bolts leave plasma burns that get worse with every hit on the same spot. They do not set people on fire. See [Plasma burns](#plasma-burns) below.
+- **Cuts:** a bolt sears the cuts on the limb it hits, so they bleed less.
+- **Limbs:** an arm or leg that is already badly hurt melts away under a bolt. A rifle bolt also melts an arm or leg with a Plasma Burn-Through that still has slag in it. One bolt never melts a healthy limb. Heads and chests never melt.
 - **Glass and doors:** bolts stop at windows and break them. They break windows, tables, other structures and doors faster than other guns: a shuttle window takes two rifle bolts or four pistol bolts, an airlock about four rifle bolts. Grilles and blast doors shrug them off, and mechs and machines take no extra damage.
 - **Fuel gas:** a bolt passing through plasma, tritium or hydrogen in the air can light it. Clean air never lights.
 - **Canisters:** bolts do not damage gas canisters.
 
 Hits leave scorch marks on the floor that stay until they are cleaned. Scorch marks on a ship are gone after a ship save.
+
+## Plasma burns
+
+A plasma bolt that wounds leaves a plasma burn instead of an ordinary burn. Molten slag sticks in the wound.
+
+| Burn | What it is |
+|---|---|
+| Slag Spatter Burns | Flecks of slag on the skin. They fall off by themselves a little while after they cool. |
+| Embedded Slag Burns | Slag fused into the flesh. It stays until someone cuts it out. |
+| Plasma Burn-Through | Slag fused down to the bone. A leg limps and an arm fumbles until the slag is out, and a little plasma gets into the blood. |
+
+- **Hot slag** keeps burning the limb for up to half a minute after the hit. It doesn't cool while the person is on fire.
+- **A burn with slag in it won't heal.** Ointment, mesh, salves, cryo and rest can't close it. Treatment given early isn't wasted: it takes effect once the slag is out.
+- **It still gets infected** like any burn left alone, so don't leave it for long.
+
+### Treating a plasma burn
+
+1. **Cool it.** Water stops the burning at once: a fire extinguisher, a shower, a splash from a sink or bucket, or anything wet. Cold air, a cryo tube or a stasis bed cool it more slowly.
+2. **Cut the slag out.** Aim at the burned limb and use a hemostat on the patient, with combat mode off. Wirecutters or a scalpel work too, but slower and rougher. Each cut does a little brute damage, and cutting hot slag makes the patient scream, so cool it first. A deep burn takes a few cuts. Scanning the wound with a health or wound analyzer first makes the job quicker, and working on yourself is slower. Take off a hardsuit or MODsuit covering the limb first.
+3. **Cover it.** Then treat it like any other burn: ointment, regenerative mesh, synthflesh or gauze.
+
+In surgery, **Excise plasma slag** takes the slag out of a resting patient without the brute damage, and dresses the burn in the same operation.
+
+Slag cut out of a deep burn comes out as a small bead of black glass. It's worth nothing.
+
+Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle's next bolt.
 
 ## Heat and venting (Furnace only)
 

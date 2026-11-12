@@ -98,3 +98,44 @@
 
 /// Furthest a bolt's sprite slides across its path onto a held shield on its last step, in pixels
 #define PLASMA_BOLT_MAX_SLIDE 6
+
+// ===== Wounds =====
+
+/// Slag in a fresh plasma burn, by severity
+#define PLASMA_WOUND_SLAG_MODERATE 3
+#define PLASMA_WOUND_SLAG_SEVERE 6
+#define PLASMA_WOUND_SLAG_CRITICAL 12
+/// Seconds a fresh plasma burn stays hot, by severity
+#define PLASMA_WOUND_HEAT_MODERATE 10
+#define PLASMA_WOUND_HEAT_SEVERE 20
+#define PLASMA_WOUND_HEAT_CRITICAL 30
+/// Burn a second a hot plasma burn deals, by severity
+#define PLASMA_WOUND_COOK_SEVERE 0.3
+#define PLASMA_WOUND_COOK_CRITICAL 0.5
+/// Slag a moderate plasma burn sheds a second once cool
+#define PLASMA_WOUND_SHED_RATE 0.1
+/// Heat decay multipliers for a cold body and for cold air
+#define PLASMA_WOUND_COLD_BODY_FACTOR 4
+#define PLASMA_WOUND_COLD_AIR_FACTOR 2
+/// kPa the cold air needs to count
+#define PLASMA_WOUND_COLD_AIR_PRESSURE 20
+/// Time for one field pick
+#define PLASMA_WOUND_PICK_TIME (2.5 SECONDS)
+/// Slag taken out per field pick and per surgery step
+#define PLASMA_WOUND_PICK_SLAG 3
+#define PLASMA_WOUND_SURGERY_SLAG 6
+/// Brute dealt per pick, with a proper tool and with an improvised one
+#define PLASMA_WOUND_PICK_BRUTE 3
+#define PLASMA_WOUND_PICK_BRUTE_IMPROVISED 6
+/// Pick time multiplier for wirecutters or a scalpel
+#define PLASMA_WOUND_IMPROVISED_TIME 1.25
+/// Units of plasma a fresh critical tops the blood up to
+#define PLASMA_WOUND_BLOOD_PLASMA 4
+/// Critical with slag: limp slowdown, limp chance, fumble multiplier
+#define PLASMA_WOUND_LIMP_SLOWDOWN 3
+#define PLASMA_WOUND_LIMP_CHANCE 40
+#define PLASMA_WOUND_FUMBLE 1.25
+/// Blood flow a bolt takes off each bleeding wound on the limb it hits
+#define PLASMA_SEAR_FLOW 1.6
+/// Scar text file for plasma burns
+#define PLASMA_SCAR_FILE "wounds/plasma_scar_desc.json"

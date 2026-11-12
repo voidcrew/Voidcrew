@@ -108,13 +108,13 @@
 	if(. != BULLET_ACT_HIT || !iscarbon(target) || blocked >= 100)
 		return
 	var/mob/living/carbon/victim = target
-	// on_hit runs before the damage lands: note the limb's state now, and check for a melt after it.
+	// on_hit runs before the damage lands: note the limb's state now, then sear its cuts and check for a melt after it.
 	var/obj/item/bodypart/limb = victim.get_bodypart(check_zone(def_zone))
-	if(!limb || !(limb.body_zone in GLOB.limb_zones))
+	if(!limb)
 		return
 	ash_zone = limb.body_zone
 	ash_prior_damage = limb.get_damage()
-	ash_prior_critical = !!limb.get_wound_type(/datum/wound/burn/flesh/critical)
+	ash_prior_critical = plasma_burn_through_ready(limb)
 	RegisterSignal(victim, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(plasma_check_ash), override = TRUE)
 
 /// Plasma breaks structures and doors faster; mechs, turrets and other machines take normal damage.
@@ -143,3 +143,20 @@
 /obj/item/ammo_casing/energy/plasma_bolt/heavy
 	e_cost = PLASMA_SHOT_MOL_RIFLE
 	fire_sound = 'voidcrew/modules/plasma_weapons/sound/furnace_fire.ogg'
+
+/// Sears the bleeding cuts on a limb a bolt just hit: each bleeding wound loses PLASMA_SEAR_FLOW blood flow,
+/// and tg's own slash and pierce code closes or demotes it. One line if any cut closed or dropped a tier.
+/proc/plasma_sear_cuts(obj/item/bodypart/limb)
+	var/mob/living/carbon/victim = limb?.owner
+	if(!victim || !LAZYLEN(limb.wounds))
+		return
+	var/seared = FALSE
+	for(var/datum/wound/cut as anything in limb.wounds.Copy())
+		if(cut.blood_flow <= 0)
+			continue
+		cut.adjust_blood_flow(-PLASMA_SEAR_FLOW)
+		// A cut that closed is deleted; one that dropped a tier was replaced and left the limb
+		if(QDELETED(cut) || !(cut in limb.wounds))
+			seared = TRUE
+	if(seared)
+		victim.visible_message(span_warning("The cuts on [victim]'s [limb.plaintext_zone] sear shut!"), span_warning("The cuts on your [limb.plaintext_zone] sear shut!"))

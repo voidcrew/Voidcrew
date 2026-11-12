@@ -27,3 +27,5 @@ flask.dmi
 	flask_1, flask_2 - drawn from plasma and plasma_empty, modified
 
 projectiles.dmi, effects.dmi and the plasma_melt*.dmi files are original Voidcrew art (plasma_melt*.dmi: new sprites).
+
+plasma_wounds.dmi is new Voidcrew art (new sprites).

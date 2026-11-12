@@ -1,0 +1,18 @@
+{
+	"plasmamoderate": [
+		"a scatter of small, glossy pockmarks",
+		"a spray of pale pinprick scars"
+	],
+
+	"plasmasevere": [
+		"a cluster of smooth, glassy pits",
+		"round scars with a faint green sheen",
+		"dimpled skin flecked with black glass"
+	],
+
+	"plasmacritical": [
+		"a sunken, glass-smooth crater of scar tissue",
+		"a puckered scar the width of a fist, shot through with green-black glass",
+		"a knot of shiny scar tissue where something burned clean through"
+	]
+}
