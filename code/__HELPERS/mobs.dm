@@ -246,9 +246,17 @@ GLOBAL_LIST_INIT(skin_tone_names, list(
 
 	var/endtime = world.time + delay
 	var/starttime = world.time
+	var/dilation_tick = world.time // VOIDCREW EDIT ADDITION - cyberware time dilation
 	. = TRUE
 	while (world.time < endtime)
 		stoplag(1)
+
+		// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): a slowed body works slower, a frozen one not at all
+		var/dilation_lost = cyberware_time_lost(user, world.time - dilation_tick)
+		dilation_tick = world.time
+		endtime += dilation_lost
+		starttime += dilation_lost
+		// VOIDCREW EDIT ADDITION END
 
 		if(!QDELETED(progbar))
 			progbar.update(world.time - starttime)

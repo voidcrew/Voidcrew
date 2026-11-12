@@ -125,7 +125,7 @@
 		hv_vis_play_over(hv_vis_hold_then_fall_steps(HV_VIS_HITSTOP_TIME, 2))
 	if(hv_vis_hit_damage >= HV_VIS_FULL_SLIDE_DAMAGE && hv_vis_can_slide_tile(hit_dir))
 		// Next tick: the blow that killed it may still be resolving (a shotgun's other pellets).
-		addtimer(CALLBACK(src, PROC_REF(hv_vis_slide_tile), hit_dir), 1, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(hv_vis_slide_tile), hit_dir), cyberware_dilated_time(src, 1), TIMER_DELETE_ME) // slower in a Sandevistan field
 		return
 	hv_vis_slide_in_tile(hit_dir, hv_vis_hit_damage, big ? HV_VIS_HITSTOP_TIME : 0)
 	hv_vis_twitches(rand(3, 5), big ? 6 : 4)
@@ -176,7 +176,7 @@
 /mob/living/carbon/proc/hv_vis_slide_tile(slide_dir)
 	if(QDELETED(src) || stat != DEAD)
 		return
-	if(hv_vis_can_slide_tile(slide_dir) && Move(get_step(loc, slide_dir), slide_dir, DELAY_TO_GLIDE_SIZE(HV_VIS_SLIDE_TIME)))
+	if(hv_vis_can_slide_tile(slide_dir) && Move(get_step(loc, slide_dir), slide_dir, DELAY_TO_GLIDE_SIZE(cyberware_dilated_time(src, HV_VIS_SLIDE_TIME))))
 		// Thrown back as it falls: a little lift over the slide.
 		var/matrix/base = matrix(transform)
 		hv_vis_play(HV_VIS_TAG_FALL, list(

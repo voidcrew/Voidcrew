@@ -166,7 +166,7 @@
 	active = TRUE
 	icon_state = (base_icon_state || initial(icon_state)) + "_active"
 	SEND_SIGNAL(src, COMSIG_GRENADE_ARMED, det_time, delayoverride)
-	addtimer(CALLBACK(src, PROC_REF(detonate)), isnull(delayoverride)? det_time : delayoverride)
+	addtimer(CALLBACK(src, PROC_REF(cyberware_fuse_done)), isnull(delayoverride)? det_time : delayoverride) // VOIDCREW EDIT CHANGE - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): the fuse burns slow in a slowed field. ORIGINAL: addtimer(CALLBACK(src, PROC_REF(detonate)), isnull(delayoverride)? det_time : delayoverride)
 
 /**
  * detonate (formerly prime) refers to when the grenade actually delivers its payload (whether or not a boom/bang/detonation is involved)

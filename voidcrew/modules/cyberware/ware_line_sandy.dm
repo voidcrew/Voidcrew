@@ -52,6 +52,8 @@
 	afterimage_alpha = 120
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "REFLEX RIG ONLINE."
+	dilation_scale = 0.5
+	time_multiplier = 2
 
 /datum/action/cooldown/cyberware/cascade_surge/street
 	name = "Reflex Surge"
@@ -89,6 +91,8 @@
 	afterimage_alpha = 160
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "LATTICE ONLINE."
+	dilation_scale = 0.35
+	time_multiplier = 1 / 0.35
 
 /datum/action/cooldown/cyberware/cascade_surge/milspec
 	name = "Reflex Surge"
