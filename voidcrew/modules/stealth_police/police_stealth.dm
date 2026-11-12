@@ -15,6 +15,8 @@
  *   do does that stop's `police_activity` with the ambient routine runner (outpost_police_stop below); the
  *   sergeant does the desk at its post.
  * - Stealth's barks are police lines (stealth_bark() below, contexts "stealth_*" in AMBIENT_STRINGS_POLICE).
+ * - Outpost floors (trade_floors/police_breach.dm): the breach subtree, and a beat officer's walk through an Open
+ *   floor, offered by the tick below and walked by its own subtree.
  * - Overrides: the leash (anywhere at the outpost), the walk (another sector goes by the police lift), becoming a
  *   sentry (a route is taken back on return), the radio call (it makes the officer's waiting reports), setup (on
  *   the roster), a seat of its own is not captivity, and the alert (who the police set it on).
@@ -54,14 +56,17 @@
 		/datum/ai_planning_subtree/ambient_escape,
 		/datum/ai_planning_subtree/human_npc_walk_out,
 		/datum/ai_planning_subtree/outpost_police_case,
+		// OUTPOST FLOORS seam (trade_floors/police_breach.dm): plans nothing off a floor under warrant. Ahead of stealth's
+		// reactions, which take every plan of a searching officer, so one that lost sight of its suspect breaches too.
+		/datum/ai_planning_subtree/outpost_police_breach,
 		/datum/ai_planning_subtree/stealth_react,
-		/datum/ai_planning_subtree/outpost_police_breach, // OUTPOST FLOORS seam (trade_floors/police_breach.dm): plans nothing off a floor under warrant
 		/datum/ai_planning_subtree/outpost_police_force,
 		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/human_npc_arm,
 		/datum/ai_planning_subtree/stealth_closet,
 		/datum/ai_planning_subtree/human_npc_shoot,
 		/datum/ai_planning_subtree/human_npc_melee,
+		/datum/ai_planning_subtree/outpost_police_floor_walk, // OUTPOST FLOORS seam (trade_floors/police_breach.dm): a beat officer's walk through an Open floor
 		/datum/ai_planning_subtree/outpost_police_stop,
 		/datum/ai_planning_subtree/stealth_patrol,
 	)
@@ -452,6 +457,10 @@
 		var/datum/ai_controller/basic_controller/human_npc/stealth/member_ai = member.ai_controller
 		if(istype(member_ai) && member_ai.route_id == route)
 			return TRUE
+		// OUTPOST FLOORS seam (trade_floors/police_breach.dm): an officer walking a floor keeps the beat it rode up from
+		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/police_ai = member_ai
+		if(istype(police_ai) && police_ai.breach_walk_ref && police_ai.police_lost_route == route)
+			return TRUE
 	return FALSE
 
 /**
@@ -592,5 +601,9 @@
 		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)
-	if(officer.unit_kind == POLICE_UNIT_BEAT && !assigned && isnull(brain.route_id) && brain.stealth_state() == STEALTH_UNAWARE)
+	// OUTPOST FLOORS seam (trade_floors/police_breach.dm): one walking a floor has a beat to come back to
+	if(officer.unit_kind == POLICE_UNIT_BEAT && !assigned && isnull(brain.route_id) && brain.stealth_state() == STEALTH_UNAWARE && isnull(brain.breach_walk_ref))
 		officer.police_claim_route()
+	// OUTPOST FLOORS seam: now and then a free beat officer walks through an Open floor (spec 6.3)
+	if(officer.unit_kind == POLICE_UNIT_BEAT && !assigned)
+		breach_walk_offer(officer)
