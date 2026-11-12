@@ -614,7 +614,9 @@
 		return FALSE
 	// The fine, with the door shut on the two of them
 	var/paid = no_fine ? FALSE : police.charge_fine(warrant)
-	if(!paid)
+	if(paid)
+		police.say_fine_paid(officer)
+	else
 		// Gear into a locker before the cuffs come off (abuse M25)
 		police.store_property(suspect, officer)
 		if(!holds(prisoner, suspect))
@@ -769,7 +771,8 @@
 /// An outpost with no usable cell, one or two stars: the fine is tried on the spot and they are let go
 /datum/outpost_police/proc/cell_book_fallback(mob/living/carbon/suspect, mob/living/officer, datum/outpost_warrant/warrant)
 	var/datum/mind/prisoner = suspect.mind
-	charge_fine(warrant)
+	if(charge_fine(warrant))
+		say_fine_paid(officer)
 	cell_remove_cuffs(suspect, officer)
 	if(QDELETED(suspect))
 		return FALSE
@@ -807,6 +810,12 @@
 	officer.face_atom(door)
 	return officer.police_say(POLICE_LINE_KNOCK)
 
+/// `officer` tells the prisoner their fine went through: the receipt, said in the cell
+/datum/outpost_police/proc/say_fine_paid(mob/living/officer)
+	if(!istype(officer, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		return
+	INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_FINE_PAID)
+
 /// The sergeant says `line` (a POLICE_LINE_* context) at the station; with none alive, whoever is on the radio
 /datum/outpost_police/proc/cell_station_say(line)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
@@ -826,7 +835,7 @@
 
 /// A door officers use between the concourse and their lift: it opens for an officer's ID and for nothing else
 /obj/machinery/door/airlock/outpost/police
-	desc = "Staff lift."
+	desc = "A door to the staff lift."
 
 // Abuse M1: an emagged airlock stands open and broken, which would open the lift to anyone
 /obj/machinery/door/airlock/outpost/police/emag_act(mob/user, obj/item/card/emag/emag_card)

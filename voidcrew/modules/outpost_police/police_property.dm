@@ -92,7 +92,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
  */
 /obj/structure/closet/secure_closet/personal/outpost_police
 	name = "property locker"
-	desc = "A prisoner's things. The lock has seen better days."
+	desc = "A locker for a prisoner's things."
 	anchored = TRUE
 	anchorable = FALSE
 	can_weld_shut = FALSE
@@ -138,6 +138,11 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 // Nothing comes with it (abuse M18)
 /obj/structure/closet/secure_closet/personal/outpost_police/PopulateContents()
 	return
+
+// A booking registers a card, and tg then offers a pen it never takes here (tool_interact())
+/obj/structure/closet/secure_closet/personal/outpost_police/examine(mob/user)
+	. = ..()
+	. -= span_notice("It can be [EXAMINE_HINT("marked")] with a pen.")
 
 /// No painting, renaming or re-wiring it (abuse M18)
 /obj/structure/closet/secure_closet/personal/outpost_police/tool_interact(obj/item/weapon, mob/living/user)
@@ -414,6 +419,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 
 /// What a jailed prisoner wears. Gone the moment it comes off (abuse M23).
 /obj/item/clothing/under/rank/prisoner/outpost_police
+	desc = "An orange jumpsuit from an outpost holding cell. Its suit sensors are stuck on."
 	flags_1 = parent_type::flags_1 | NO_NEW_GAGS_PREVIEW_1 // same icon and colour as the base type
 	item_flags = parent_type::item_flags | DROPDEL
 

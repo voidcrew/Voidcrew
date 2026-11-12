@@ -74,6 +74,9 @@
 /datum/outpost_police/cell_test/cell_station_say(line)
 	lines += line
 
+/datum/outpost_police/cell_test/say_fine_paid(mob/living/officer)
+	lines += "fine_paid" // POLICE_LINE_FINE_PAID
+
 /**
  * Two cells on the test room's floor, built the way link_interior() builds them: cell "a" is 2x2 at the bottom
  * left with its door east of the bottom row (the lobby tile outside is x+3); cell "b" is 1x2, three rows up. The
@@ -264,6 +267,8 @@
 		var/list/booking = police.booked[length(police.booked)]
 		TEST_ASSERT_EQUAL(booking[1], suspect, "The booking signal named another suspect")
 		TEST_ASSERT(!booking[2], "The booking signal said a paid fine was jail")
+		TEST_ASSERT("fine_paid" in police.lines, "Nobody told the prisoner their fine was paid") // POLICE_LINE_FINE_PAID
+		police.lines.Cut()
 
 /// An unpaid fine strips the suspect before the cuffs come off, and holds them 3 min at one star and 6 at two
 /datum/unit_test/voidcrew_outpost_police_cell_book_jail
@@ -286,6 +291,7 @@
 		TEST_ASSERT(!isnull(cell.bail_due[suspect.mind]), "A jailed prisoner has no bail retry")
 		var/list/booking = police.booked[length(police.booked)]
 		TEST_ASSERT(booking[2], "The booking signal said a jail term was a paid fine")
+		TEST_ASSERT(!("fine_paid" in police.lines), "An unpaid fine was called paid")
 
 /// A booking with no warrant, a downed suspect or an already held one takes nothing and moves nobody
 /datum/unit_test/voidcrew_outpost_police_cell_book_refused

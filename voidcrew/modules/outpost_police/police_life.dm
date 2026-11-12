@@ -495,7 +495,9 @@
 			reporter = officer
 			if(officer.case || officer.force != POLICE_FORCE_NONE)
 				break
-	if(!reporter?.police_say(POLICE_LINE_CLEAR, null, TRUE))
+	// A response unit standing down may have called it this same tick (dispatch runs first): the desk still copies it
+	var/just_called = life_voice().context_free_at[POLICE_LINE_CLEAR] > world.time
+	if(!just_called && !reporter?.police_say(POLICE_LINE_CLEAR, null, TRUE))
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/desk = life_dispatcher()
 	// The desk copies it ("check_in_reply"); radio_ack is an officer on their way

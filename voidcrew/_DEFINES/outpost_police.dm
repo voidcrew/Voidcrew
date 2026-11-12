@@ -214,6 +214,7 @@
 #define POLICE_LINE_EVIDENCE "evidence"
 #define POLICE_LINE_STRIP "strip"
 #define POLICE_LINE_BAIL "bail"
+#define POLICE_LINE_FINE_PAID "fine_paid"
 #define POLICE_LINE_LOCKER_THIEF "locker_thief"
 #define POLICE_LINE_BODY "body"
 

@@ -33,7 +33,7 @@
 	var/list/line_kinds = list(
 		"warn", "order", "chase", "stun", "shots", "all_units", "marshal", "lost", "cuff", "walk", "make_way", "book",
 		"release", "medic", "officer_down", "clear", "knock", "cell_alarm", "move_along", "radio_call", "radio_ack",
-		"search", "evidence", "strip", "bail", "locker_thief", "body", // POLICE_LINE_*
+		"search", "evidence", "strip", "bail", "fine_paid", "locker_thief", "body", // POLICE_LINE_*
 		"idle", "talk", "chat", "reply", "work", // AMBIENT_LINE_*
 		"radio_call_hot", "check_in", "check_in_reply", "beat", "trader_reply", "guard", "guard_reply", "cell_check", "cell_reply", "talk_prior", // P3's own
 		"stealth_suspicious", "stealth_give_up", "stealth_search", "stealth_hit_unseen", "stealth_body", "stealth_chatter",
@@ -206,6 +206,14 @@
 	sleep(2.5 SECONDS)
 	TEST_ASSERT(voice.context_free_at["check_in_reply"] > world.time, "The desk did not copy the all clear")
 	TEST_ASSERT(!voice.context_free_at["radio_ack"], "The desk answered the all clear as if it were on its way") // POLICE_LINE_RADIO_ACK
+
+	// A unit standing down called clear first (dispatch ticks before the chatter): the desk still copies it
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	watcher.police_say("clear", null, TRUE) // POLICE_LINE_CLEAR
+	police.life_call_clear()
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(voice.context_free_at["check_in_reply"] > world.time, "The desk did not copy a clear a standing-down unit had called")
 
 	// Two officers answer a hot call: the second is not refused as a chorus of the first
 	voice.context_free_at.Cut()

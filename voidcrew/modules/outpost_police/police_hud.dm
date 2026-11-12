@@ -5,7 +5,7 @@
  *
  * One standard tg alert per wanted person, category "outpost_wanted": one to five stars lit left to right,
  * and a second set that blinks while no officer has them in sight or while they are away from the outpost.
- * Nothing else is shown: the name is "Wanted" and the description is the force's name.
+ * Nothing else is shown: the name is "Wanted" and the description says who by.
  *
  * The alert shows the warrant at the outpost the person is at; with none there, the one with the most
  * stars at any outpost (they are away from it, so it blinks). update_hud() is the one entry point: the
@@ -18,7 +18,7 @@
 
 /atom/movable/screen/alert/outpost_wanted
 	name = "Wanted"
-	desc = "Outpost Security."
+	desc = "Wanted by outpost security."
 	icon = 'voidcrew/modules/outpost_police/icons/wanted.dmi'
 	icon_state = "wanted1"
 	/// The person it shows, so the alert can follow them and clear itself
@@ -37,7 +37,7 @@
 /atom/movable/screen/alert/outpost_wanted/proc/show_wanted(datum/mind/who, stars, blink, force_name)
 	wanted_mind = WEAKREF(who)
 	icon_state = "wanted[clamp(stars, 1, 5)][blink ? "_fade" : ""]"
-	desc = "[capitalize(force_name)]."
+	desc = "Wanted by [force_name || "outpost security"]."
 	if(!refresh_timer)
 		refresh_timer = addtimer(CALLBACK(src, PROC_REF(refresh)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 

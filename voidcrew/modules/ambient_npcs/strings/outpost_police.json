@@ -190,6 +190,13 @@
 			"Your friends came through. You're out.",
 			"Someone settled your fine. Off you go."
 		],
+		"fine_paid": [
+			"That's your fine settled. Sit tight.",
+			"Fine's paid. You won't be here long.",
+			"Paid in full. Not long now.",
+			"Your fine's covered. Have a seat.",
+			"All paid. We'll have you out shortly."
+		],
 		"locker_thief": [
 			"That's not yours!",
 			"Put it back! That's a prisoner's property!",
@@ -684,6 +691,13 @@
 			"Fine's covered. Out.",
 			"Someone bailed you. Go."
 		],
+		"fine_paid": [
+			"Fine's paid. Sit.",
+			"Fine taken. Wait.",
+			"Paid. You'll be out soon.",
+			"Account charged. Sit down.",
+			"Fine's settled. Don't get comfortable."
+		],
 		"locker_thief": [
 			"Not yours. Put it down.",
 			"Hands off the lockers!",
@@ -1177,6 +1191,13 @@
 			"You've got friends. Out.",
 			"Someone wants you back. Go.",
 			"Paid. Get out."
+		],
+		"fine_paid": [
+			"Fine's paid. Lucky you.",
+			"Your crew paid. Sit.",
+			"Paid. Don't get comfortable.",
+			"Money's in. Wait.",
+			"Fine's covered. You'll live."
 		],
 		"locker_thief": [
 			"Hey! Not yours!",

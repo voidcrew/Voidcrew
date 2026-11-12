@@ -193,7 +193,8 @@
 	. = ..()
 	if(stat == DEAD)
 		return
-	if(shop)
+	// A checkpoint guard keeps a desk, not a counter (their desc says so)
+	if(shop && !istype(src, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard))
 		. += span_notice("[name] runs the counter at [shop.outpost_name].")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")
