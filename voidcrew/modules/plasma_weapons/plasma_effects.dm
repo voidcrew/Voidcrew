@@ -67,7 +67,6 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		if(blocked < 100)
 			new /obj/effect/temp_visual/plasma_burst(target_turf, victim, src, side)
 			return
-		splash_state = "splash_armour"
 		plasma_take_back_block_star(target_turf)
 		behind_body = (side == NORTH && !victim.lying_angle)
 		// A held shield takes it on the shooter's side of the body
@@ -81,6 +80,12 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 			// Behind a standing body, at the shoulders, so it shows over them
 			if(behind_body)
 				splash_y += PLASMA_SHIELD_BACK_RAISE
+		// The bolt's sprite stops on the splash (above the head on a back hit, as a burst does), and the splash
+		// waits for it there
+		impact_point = list(splash_x, behind_body ? ICON_SIZE_Y / 2 : splash_y)
+		impact_turf = target_turf
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(plasma_block_splash), target_turf, splash_x, splash_y, turn_angle, behind_body, at_shield), PLASMA_BURST_DELAY)
+		return
 	else if(isliving(target))
 		if(blocked >= 100)
 			splash_state = "splash_armour"
@@ -93,13 +98,7 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		splash_state = "splash_glass"
 		playsound(target_turf, 'sound/effects/glass/glasshit.ogg', 50, TRUE, -1)
 
-	var/obj/effect/temp_visual/plasma_splash/splash = new(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body)
-	if(at_shield && !QDELETED(splash))
-		// pixel_w/pixel_z keep it on the body's screen row, so the layer alone decides front or back
-		splash.pixel_w = splash.pixel_x
-		splash.pixel_z = splash.pixel_y
-		splash.pixel_x = 0
-		splash.pixel_y = 0
+	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body)
 
 	if(!iswallturf(target))
 		if(isopenturf(target))
@@ -111,6 +110,18 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	var/turf/open/in_front = get_turf(src)
 	if(isopenturf(in_front) && prob(50))
 		plasma_soot_at(in_front, round(sin(angle) * 10), round(cos(angle) * 10))
+
+/// The splash of a bolt a person blocked, shown once the bolt's sprite has reached it
+/proc/plasma_block_splash(turf/where, px, py, turn_angle, behind_body, at_shield)
+	if(!where)
+		return
+	var/obj/effect/temp_visual/plasma_splash/splash = new(where, px, py, "splash_armour", turn_angle, behind_body)
+	if(at_shield && !QDELETED(splash))
+		// pixel_w/pixel_z keep it on the body's screen row, so the layer alone decides front or back
+		splash.pixel_w = splash.pixel_x
+		splash.pixel_z = splash.pixel_y
+		splash.pixel_x = 0
+		splash.pixel_y = 0
 
 /// Removes tg's block star a held item made for this bolt in this tick: a plasma block shows only its splash
 /proc/plasma_take_back_block_star(turf/where)
@@ -456,6 +467,9 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	var/mob/living/carbon/human/hit_body = victim
 	forget_victim()
 	look = burned_through ? PLASMA_BURST_THROUGH : plasma_burst_pick(hit_body)
+	// The burn-through sizzles on top of the hit
+	if(burned_through)
+		playsound(hit_body, pick('voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_1.ogg', 'voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_2.ogg'), 60, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(show), WEAKREF(hit_body)), PLASMA_BURST_DELAY)
 
 /// Draws the spray, the bloom and what sticks to the body
@@ -499,8 +513,11 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	var/obj/effect/temp_visual/plasma_burst_light/glow = new(loc)
 	glow.pixel_w = hit[4] - ICON_SIZE_X / 2
 	glow.pixel_z = hit[5] - ICON_SIZE_Y / 2
-	if(look == PLASMA_BURST_SPLATTER)
-		addtimer(CALLBACK(glow, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.3 SECONDS)
+	// It dims over its last few ticks instead of snapping off
+	var/fade_time = look == PLASMA_BURST_SPLATTER ? 0.2 SECONDS : 0.25 SECONDS
+	for(var/steps in 1 to 4)
+		addtimer(CALLBACK(glow, TYPE_PROC_REF(/atom, set_light_power), glow.light_power * (1 - steps * 0.2)), fade_time + (steps - 1) * world.tick_lag)
+	addtimer(CALLBACK(glow, TYPE_PROC_REF(/atom, set_light_on), FALSE), fade_time + 4 * world.tick_lag)
 
 /// The side `side` of a body facing `facing`, named as the same side of a body facing south: the body
 /// states are named by it and hold one dir per facing
@@ -521,7 +538,7 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 /obj/effect/temp_visual/plasma_burst_light
 	icon = null
 	icon_state = null
-	duration = 0.4 SECONDS
+	duration = 0.6 SECONDS
 	randomdir = FALSE
 	light_system = OVERLAY_LIGHT
 	light_range = 2
@@ -608,8 +625,10 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	GLOB.plasma_wall_glows_by_z[glow_z_key] += 1
 	// The emissive keeps the ember lit in the dark; it fades with our alpha and keeps its own colour
 	add_overlay(emissive_appearance(icon, icon_state, spokesman || src))
+	// It cools down the plasma's own ramp: green, deep green, then char
 	animate(src, color = "#33FF88", time = 0.5 SECONDS)
-	animate(color = "#AA4422", time = 3.5 SECONDS)
+	animate(color = "#1E873E", time = 1.5 SECONDS)
+	animate(color = "#2C3427", time = 2 SECONDS)
 	animate(alpha = 0, time = PLASMA_GLOW_DURATION - 4 SECONDS)
 
 /obj/effect/temp_visual/plasma_wall_glow/Destroy()

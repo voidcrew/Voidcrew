@@ -11,3 +11,10 @@ kestrel_far.ogg - distant_shots/laser_pistol.ogg
 hornet_far.ogg - distant_shots/rcw.ogg
 cinder_far.ogg - distant_shots/plasma_pistol.ogg
 furnace_far.ogg - distant_shots/plasma_3.ogg
+
+New sounds, original to this codebase:
+
+plasma_hit_pistol.ogg
+plasma_hit_rifle.ogg
+plasma_burnthrough_1.ogg
+plasma_burnthrough_2.ogg

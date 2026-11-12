@@ -17,7 +17,7 @@
 	// Plasma is matter: no mirror turns it, and glass and grilles stop it (pass_flags stays PASSTABLE).
 	reflectable = NONE
 	dismemberment = 0
-	hitsound = 'sound/items/weapons/sear.ogg'
+	hitsound = 'voidcrew/modules/plasma_weapons/sound/plasma_hit_pistol.ogg'
 	hitsound_wall = 'sound/items/weapons/effects/searwall.ogg'
 	impact_effect_type = null
 	light_system = OVERLAY_LIGHT
@@ -27,6 +27,7 @@
 
 /obj/projectile/energy/plasma_bolt/heavy
 	damage = 45
+	hitsound = 'voidcrew/modules/plasma_weapons/sound/plasma_hit_rifle.ogg'
 	armour_penetration = 20
 	wound_bonus = 20
 	exposed_wound_bonus = 30
@@ -61,7 +62,10 @@
 		stop = (impact_point[1] - pixel_x) * dx + (impact_point[2] - pixel_y) * dy - offset
 	stop = clamp(stop, 0, max(full, 0) + ICON_SIZE_ALL / 2)
 	var/anim_time = full > 0 ? animate_time * stop / full : 0
-	animate(src, pixel_x = pixel_x + dx * stop, pixel_y = pixel_y + dy * stop, time = anim_time, flags = ANIMATION_PARALLEL | ANIMATION_CONTINUE)
+	// Drop this tick's earlier steps first: a step taken before the bolt crossed into the target's turf is in
+	// the last turf's pixels, and chained after it this one would overshoot the stop by up to a tile
+	animate(src)
+	animate(src, pixel_x = pixel_x + dx * stop, pixel_y = pixel_y + dy * stop, time = anim_time, flags = ANIMATION_PARALLEL)
 	// A person's burst shows a tick after the hit (a splash shows at once): a bolt that stops early, as on the
 	// near edge of a body lying down, waits at its stop until the burst is up instead of leaving empty frames.
 	// The bolt is deleted by then anyway, so it never sits over the burst for more than a frame.

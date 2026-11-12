@@ -106,10 +106,12 @@
 	victim.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 1)), BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "a plasma bolt burned through a shield with a forced block")
 	TEST_ASSERT(shield.get_integrity() < integrity_before, "a shield that blocked a plasma bolt took no damage")
-	var/obj/effect/temp_visual/plasma_splash/splash = locate() in get_turf(victim)
-	TEST_ASSERT_EQUAL(splash?.icon_state, "splash_armour", "a shield block made no armour splash")
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_burst) in get_turf(victim), "a shield block made a flesh burst")
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/block) in get_turf(victim), "a shield block of a plasma bolt left tg's block star")
+	// The splash waits a tick for the bolt's sprite to reach the shield
+	sleep(world.tick_lag * 3)
+	var/obj/effect/temp_visual/plasma_splash/splash = locate() in get_turf(victim)
+	TEST_ASSERT_EQUAL(splash?.icon_state, "splash_armour", "a shield block made no armour splash")
 
 /// Ordinary person hits alternate the splatter and the flash; a killing hit burns through.
 /datum/unit_test/voidcrew_plasma_bolt/burst_pick
