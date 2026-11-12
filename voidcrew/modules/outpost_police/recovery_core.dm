@@ -873,7 +873,8 @@
 /datum/outpost_recovery/proc/crew_lost(mob/living/worker)
 	if(QDELETED(src) || !istype(worker, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
 		return
-	var/key = REF(worker)
+	// A weakref, not REF(): BYOND hands a deleted mob's ref to the next one made (review N1)
+	var/datum/weakref/key = WEAKREF(worker)
 	if(lost_workers[key])
 		return
 	lost_workers[key] = TRUE

@@ -102,11 +102,26 @@
 	TEST_ASSERT(recovery_is_mess(blood), "Fresh blood is not mess")
 
 	recovery.set_state(2) // OUTPOST_RECOVERY_CLEANUP
+	TEST_ASSERT_EQUAL(recovery.unseen_wait, 10 MINUTES, "The recovery does not wait 10 minutes with nobody there") // RECOVERY_UNSEEN_WAIT, owner decision 40
 	TEST_ASSERT(!recovery.player_at_outpost(), "The test world has a player at the outpost")
-	TEST_ASSERT(!recovery.unseen_ready(), "The recovery finished without waiting out the grace")
-	TEST_ASSERT(recovery.unseen_since, "Nobody being there did not start the grace")
+	TEST_ASSERT(!recovery.unseen_ready(), "The recovery finished without waiting out the wait")
+	TEST_ASSERT(recovery.unseen_since, "Nobody being there did not start the wait")
+	// Most of the wait gone: still nothing
+	recovery.unseen_since = world.time - 9 MINUTES
+	TEST_ASSERT(!recovery.unseen_ready(), "The recovery finished a minute before its wait was up")
+	// A shortened wait, run out: ready, and the tick does it all at once
+	recovery.unseen_wait = 1 SECONDS
+	recovery.unseen_since = world.time - 2 SECONDS
+	TEST_ASSERT(recovery.unseen_ready(), "The recovery did not finish once nobody had been there for its wait")
+	// A shut port holds it (review SF3), and the lost-wave ladder is not wiped by the unseen finish
+	recovery.port_shut_until = world.time + 1 MINUTES
+	TEST_ASSERT(!recovery.unseen_ready(), "The recovery finished unseen while the port was shut")
+	recovery.port_shut_until = 0
+	recovery.waves_lost = 2
 
-	recovery.finish_unseen()
+	recovery.tick()
+	recovery.unseen_wait = initial(recovery.unseen_wait)
+	TEST_ASSERT_EQUAL(recovery.waves_lost, 2, "Leaving the outpost wiped the lost-wave ladder")
 	TEST_ASSERT_EQUAL(recovery.state, 0, "The outpost is not back to normal") // OUTPOST_RECOVERY_NORMAL
 	TEST_ASSERT(QDELETED(npc_body), "The NPC body is still there")
 	TEST_ASSERT(QDELETED(blood), "The blood was not washed")

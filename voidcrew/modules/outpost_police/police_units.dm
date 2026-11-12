@@ -485,8 +485,9 @@
  * deleted. Rostering and the caps are police_dispatch.dm's (abuse M12).
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/give_up_leash()
-	if(human_npc_watched(src))
+	if(human_npc_watched(src) || outpost_npc_played(src))
 		return
+	npc_drop_not_gear()
 	fade_out(instant = TRUE)
 
 // ----- what they carry -----
