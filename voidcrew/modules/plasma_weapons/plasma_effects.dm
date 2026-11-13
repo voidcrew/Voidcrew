@@ -103,6 +103,18 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	else if(istype(target, /obj/structure/window) || istype(target, /obj/machinery/door/window))
 		splash_state = "splash_glass"
 
+	// A wall is struck on its face, where the bolt's nose stops: the splash and the stop are that one point, across the
+	// face where the shot was aimed
+	if(iswallturf(target) && movement_vector)
+		var/dx = movement_vector.pixel_x
+		var/dy = movement_vector.pixel_y
+		var/along = entry_x * dx + entry_y * dy
+		var/across = splash_y * dx - splash_x * dy
+		splash_x = along * dx - across * dy
+		splash_y = along * dy + across * dx
+		impact_point = list(splash_x, splash_y)
+		impact_turf = target_turf
+
 	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body)
 
 	if(!iswallturf(target))
@@ -110,8 +122,8 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 			plasma_soot_at(target, impact_x, impact_y)
 		return
 
-	// One hit, one mark: the glow on the wall face, nothing on the floor in front of it
-	plasma_wall_glow_at(target, impact_x, impact_y)
+	// One hit, one mark: the glow on the wall face where the splash was, nothing on the floor in front of it
+	plasma_wall_glow_at(target, splash_x, splash_y)
 
 /// The splash of a bolt a person blocked, shown once the bolt's sprite has reached it
 /proc/plasma_block_splash(turf/where, px, py, turn_angle, behind_body)

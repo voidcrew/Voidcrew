@@ -11,46 +11,71 @@
 #define PLASMA_PINCH_SNAP_TIME (0.14 SECONDS)
 /// How long the ring takes to open and fade
 #define PLASMA_PINCH_RING_TIME (0.2 SECONDS)
-/// How far the bolt's nose sits ahead of its icon centre
-#define PLASMA_PINCH_BOLT_NOSE 13
-/// How far past the ball the bolt's nose shows when it appears
-#define PLASMA_PINCH_BOLT_LEAD 12
 /// Layer of a bolt while it leaves the pinch, just over the ball and ring
 #define PLASMA_PINCH_BOLT_LAYER (ABOVE_MOB_LAYER + 0.01)
 /// How much faster than the real bolt its copy closes on it, in pixels per decisecond (the bolt flies 32)
 #define PLASMA_PINCH_CATCH_UP 12
-/// Shot north, how far past the shooter's centre the bolt's centre is before it shows: its tail is clear of the head
-#define PLASMA_PINCH_NORTH_CLEAR 32
 /// The pinch light's brightness as an overlay light's alpha (light_power 1)
 #define PLASMA_PINCH_LIGHT_ALPHA 150
 /// How long the light takes to grow from the pinch light to the bolt's, from the snap
 #define PLASMA_PINCH_LIGHT_RAMP (0.2 SECONDS)
 
 /obj/item/gun/energy/plasma_weapon
-	/// Where the pinch sits on the shooter, as "[dir]" = list(pixel_x, pixel_y). Null for a gun with no pinch
+	/// Where the pinch sits on the shooter, as "[dir]" = list(pixel_x, pixel_y), held in the right hand. Null for a
+	/// gun with no pinch
 	var/list/pinch_offsets
+	/// The same for the north and south facings held in the left hand, where the gun lies across the body the other way
+	var/list/pinch_offsets_left
+	/// Size of the pinch and its light
+	var/pinch_scale = 1
 
-// The Furnace's emitter is the purple tip of its wielded in-hand sprite: the east and west sprites end
-// at (32, 17) and (1, 17) in icon pixels. Facing north or south the rifle lies across the body, so
-// the ball forms on the bolt's path in front of the chest instead (design decision 5).
+// Every offset is the muzzle of the held in-hand sprite: its farthest pixel the way the gun points, on that pixel's
+// row. The Furnace's is the purple tip of its wielded sprite. Facing north or south both guns lie across the body,
+// pointing to one side, so the ball forms at that side's tip and the bolt swings onto its path as it leaves.
 /obj/item/gun/energy/plasma_weapon/rifle
 	pinch_offsets = list(
-		"1" = list(0, 1),
-		"2" = list(0, 1),
+		"1" = list(-15, 1),
+		"2" = list(14, 1),
 		"4" = list(15, 1),
 		"8" = list(-16, 1),
 	)
+	pinch_offsets_left = list(
+		"1" = list(13, 1),
+		"2" = list(-15, 1),
+	)
+
+// The Cinder's pinch is the rifle's at the size of its small bursts
+/obj/item/gun/energy/plasma_weapon/pistol
+	pinch_offsets = list(
+		"1" = list(13, -3),
+		"2" = list(-15, -3),
+		"4" = list(5, -3),
+		"8" = list(-10, -3),
+	)
+	pinch_offsets_left = list(
+		"1" = list(-15, -3),
+		"2" = list(13, -3),
+	)
+	pinch_scale = 0.6
+
+/// Where the pinch sits on `user` as they face now, or null
+/obj/item/gun/energy/plasma_weapon/proc/pinch_offset(mob/living/user)
+	if(!pinch_offsets || !istype(user))
+		return null
+	var/key = "[user.dir]"
+	if(pinch_offsets_left?[key] && IS_LEFT_INDEX(user.get_held_index_of_item(src)))
+		return pinch_offsets_left[key]
+	return pinch_offsets[key]
 
 /// The plasma ball and ring at the barrel as `user` fires at `target`
 /obj/item/gun/energy/plasma_weapon/proc/plasma_pinch(mob/living/user, atom/target)
-	if(!pinch_offsets || !istype(user) || loc != user || !isturf(user.loc))
+	if(loc != user || !isturf(user.loc))
 		return
-	var/list/offset = pinch_offsets["[user.dir]"]
+	var/list/offset = pinch_offset(user)
 	if(!offset)
 		return
-	// Shooting away from the viewer, the muzzle is on the far side of the body
-	var/new_layer = user.dir == NORTH ? BELOW_MOB_LAYER : ABOVE_MOB_LAYER
-	new /obj/effect/temp_visual/plasma_pinch(null, user, offset[1], offset[2], new_layer)
+	// The muzzle sticks out past the body in every facing
+	new /obj/effect/temp_visual/plasma_pinch(null, user, offset[1], offset[2], ABOVE_MOB_LAYER, pinch_scale)
 
 /obj/effect/temp_visual/plasma_pinch
 	name = "plasma"
@@ -63,10 +88,13 @@
 	/// Who we are drawn on
 	var/atom/movable/shooter
 
-/obj/effect/temp_visual/plasma_pinch/Initialize(mapload, atom/movable/holder, px = 0, py = 0, new_layer = ABOVE_MOB_LAYER)
+/obj/effect/temp_visual/plasma_pinch/Initialize(mapload, atom/movable/holder, px = 0, py = 0, new_layer = ABOVE_MOB_LAYER, scale = 1)
 	. = ..()
 	pixel_x = px
 	pixel_y = py
+	// The ball is centred on the icon, so it shrinks in place
+	if(scale != 1)
+		transform = matrix() * scale
 	layer = new_layer
 	// In front of the body we draw above the lighting, off the game world's ambient occlusion: its drop shadow under
 	// a bright ball darkened the floor around it. Behind the body we stay on the shooter's plane so the body hides us
@@ -123,20 +151,26 @@
 /obj/projectile/energy/plasma_bolt
 	/// The copy we see while this bolt leaves the barrel pinch, null once this bolt shows
 	var/obj/effect/abstract/plasma_pinch_bolt/pinch_copy
+	/// How far our nose sits ahead of our icon centre
+	var/pinch_nose = 7
+	/// How far past the ball our nose shows when we appear
+	var/pinch_lead = 7
+
+/obj/projectile/energy/plasma_bolt/heavy
+	pinch_nose = 13
+	pinch_lead = 12
 
 /obj/projectile/energy/plasma_bolt/fire(fire_angle, atom/direct_target)
 	var/obj/item/gun/energy/plasma_weapon/gun = fired_from
-	var/list/offset = istype(gun) && firer && gun.loc == firer ? gun.pinch_offsets?["[firer.dir]"] : null
+	var/list/offset = istype(gun) && firer && gun.loc == firer ? gun.pinch_offset(firer) : null
 	var/turf/barrel_turf = get_turf(firer)
-	var/shot_north = firer?.dir == NORTH
 	. = ..()
 	if(!offset || QDELETED(src) || deletion_queued || !isturf(loc) || !movement_vector || !barrel_turf)
 		return
-	// The bolt leaves over the ring. Shot north it is past the body, on the row behind, by the time it shows
-	if(!shot_north)
-		layer = PLASMA_PINCH_BOLT_LAYER
-		addtimer(VARSET_CALLBACK(src, layer, initial(layer)), PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_RING_TIME)
-	pinch_copy = new(null, src, barrel_turf, offset, shot_north)
+	// The bolt leaves over the ring
+	layer = PLASMA_PINCH_BOLT_LAYER
+	addtimer(VARSET_CALLBACK(src, layer, initial(layer)), PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_RING_TIME)
+	pinch_copy = new(null, src, barrel_turf, offset)
 
 // plasma_bolt.dm's own move_animate() (the stop at an impact) runs first, through ..()
 /obj/projectile/energy/plasma_bolt/move_animate(animate_x, animate_y, animate_time = world.tick_lag, deleting = FALSE)
@@ -174,8 +208,6 @@
 	/// When we show, and how long we then take to close on the bolt
 	var/show_at = PLASMA_PINCH_SNAP_TIME
 	var/catch_up_time = 0
-	/// Shot north: how far along the shot the bolt's centre is before we show
-	var/north_clear
 	/// Whether our queue shows us yet
 	var/shown = FALSE
 	/// Whether the real bolt shows. We stay on it, unseen, to carry its light until the light has grown
@@ -183,7 +215,7 @@
 	/// Carries the bolt's light on us, from the pinch light's size up to the bolt's
 	var/obj/effect/abstract/glow_holder
 
-/obj/effect/abstract/plasma_pinch_bolt/Initialize(mapload, obj/projectile/energy/plasma_bolt/real_bolt, turf/barrel_turf, list/offset, shot_north)
+/obj/effect/abstract/plasma_pinch_bolt/Initialize(mapload, obj/projectile/energy/plasma_bolt/real_bolt, turf/barrel_turf, list/offset)
 	. = ..()
 	if(!real_bolt || !isturf(real_bolt.loc) || !real_bolt.movement_vector || !barrel_turf)
 		return INITIALIZE_HINT_QDEL
@@ -201,14 +233,10 @@
 	pixel_y = 0
 	var/dx = bolt.movement_vector.pixel_x
 	var/dy = bolt.movement_vector.pixel_y
-	if(shot_north)
-		// The ball is behind the body: we show on the bolt itself once its tail is clear of the head
-		north_clear = barrel_turf.x * ICON_SIZE_X * dx + barrel_turf.y * ICON_SIZE_Y * dy + PLASMA_PINCH_NORTH_CLEAR
-	else
-		// Our nose shows just past the ball, on the bolt's path
-		var/distance = offset[1] * dx + offset[2] * dy + PLASMA_PINCH_BOLT_LEAD - PLASMA_PINCH_BOLT_NOSE
-		start_x = barrel_turf.x * ICON_SIZE_X + dx * distance
-		start_y = barrel_turf.y * ICON_SIZE_Y + dy * distance
+	// Our nose shows just past the ball, along the shot
+	var/lead = bolt.pinch_lead - bolt.pinch_nose
+	start_x = barrel_turf.x * ICON_SIZE_X + offset[1] + dx * lead
+	start_y = barrel_turf.y * ICON_SIZE_Y + offset[2] + dy * lead
 	alpha = 0
 	// fire() moved the bolt its first pixel over a tick. We start our queue with that move, in the same message
 	var/bolt_x = bolt.loc.x * ICON_SIZE_X + bolt.pixel_x
@@ -231,7 +259,13 @@
 		glow_holder.underlays += mask
 		glow_holder.alpha = 0
 		var/mask_size = (lighting.range - 1) * 64 + 32
-		glow_holder.transform = matrix() * (ICON_SIZE_X / mask_size)
+		// The client scales the mask about the middle of its own icon, which its transform has moved half a size up and
+		// right of ours. Moved back by what the scale leaves of that, it shrinks about our centre and grows back in place
+		var/scale = ICON_SIZE_X / mask_size
+		var/pivot = (1 - scale) * (mask_size - ICON_SIZE_X) / 2
+		var/matrix/small = matrix() * scale
+		small.Translate(-pivot, -pivot)
+		glow_holder.transform = small
 		animate(glow_holder, time = PLASMA_PINCH_SNAP_TIME)
 		animate(alpha = min(255, 255 * PLASMA_PINCH_LIGHT_ALPHA / max(lighting.set_alpha, 1)), time = 0)
 		animate(alpha = 255, transform = matrix(), time = PLASMA_PINCH_LIGHT_RAMP)
@@ -288,15 +322,6 @@
 		handover()
 		return
 	queued_to = move_end
-	var/dx = bolt.movement_vector.pixel_x
-	var/dy = bolt.movement_vector.pixel_y
-	// Shot north we show when the bolt's centre passes the head
-	if(!shown && !isnull(north_clear))
-		var/along0 = x0 * dx + y0 * dy
-		var/along1 = x1 * dx + y1 * dy
-		show_at = INFINITY
-		if(along1 >= north_clear)
-			show_at = along1 > along0 ? move_start + time * clamp((north_clear - along0) / (along1 - along0), 0, 1) : move_start
 	// The snap falls in this move: our offset from the bolt then sets how long we take to close it
 	if(isnull(show_x) && move_end >= show_at)
 		var/progress = time > 0 ? clamp((show_at - move_start) / time, 0, 1) : 1
@@ -344,9 +369,6 @@
 #undef PLASMA_PINCH_SNAP_TIME
 #undef PLASMA_PINCH_RING_TIME
 #undef PLASMA_PINCH_BOLT_LAYER
-#undef PLASMA_PINCH_BOLT_NOSE
-#undef PLASMA_PINCH_BOLT_LEAD
 #undef PLASMA_PINCH_CATCH_UP
-#undef PLASMA_PINCH_NORTH_CLEAR
 #undef PLASMA_PINCH_LIGHT_ALPHA
 #undef PLASMA_PINCH_LIGHT_RAMP
