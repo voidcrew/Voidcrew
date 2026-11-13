@@ -339,8 +339,13 @@
 	stun_beam.firer = pilot
 	sleeper.bullet_act(stun_beam, BODY_ZONE_CHEST)
 	TEST_ASSERT_NULL(police.get_warrant(pilot.mind), "A disabler beam on an outpost sleeper counted as vandalism")
+	// Someone has to see the hit: a trader standing where they work
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/watcher = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, get_step(protected_turf, EAST))
+	outpost.traders += watcher
 	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
 	sleeper.attacked_by(bar, pilot)
+	outpost.traders -= watcher
+	qdel(watcher)
 	TEST_ASSERT(WEAKREF(bar) in police.get_warrant(pilot.mind)?.evidence, "Hitting an outpost sleeper did not record the weapon on the warrant")
 	police.admin_lift(pilot.mind)
 	police.recent_reports.Cut()

@@ -352,7 +352,7 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = r1_keeper(shop, counter)
 	recovery.register_posts()
 	var/datum/outpost_recovery_post/post = recovery.posts[shop]
-	TEST_ASSERT_NOTNULL(post, "Setup: main shop post was not registered")
+	TEST_ASSERT_NOTNULL(post, "Setup: main shop post was not registered (loaded [outpost.loaded], listed [(shop in outpost.get_all_shops())], keeper [recovery.counter_keeper(shop)], main shop [outpost.shop == shop])")
 
 	// Player mind in the keeper's body closes the shop and vacates the counter
 	keeper.mind_initialize()

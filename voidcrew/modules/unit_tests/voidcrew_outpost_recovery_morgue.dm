@@ -311,7 +311,9 @@
 	hauler.forceMove(stand)
 	var/datum/ambient_activity/recover_body/tray_job = hauler.start_activity(new /datum/ambient_activity/recover_body(hauler))
 	TEST_ASSERT_NOTNULL(tray_job, "Worker could not start on player body")
-	TEST_ASSERT(tray_job.bag_body(), "Worker did not bag player body")
+	var/free_before = recovery.body_free(dead_player)
+	var/adjacent_before = hauler.Adjacent(dead_player)
+	TEST_ASSERT(tray_job.bag_body(), "Worker did not bag player body (free [free_before], adjacent [adjacent_before], body at [AREACOORD(dead_player)], worker at [AREACOORD(hauler)], job left [QDELETED(tray_job)])")
 	var/obj/structure/closet/body_bag/outpost_morgue/player_bag = dead_player.loc
 	var/turf/corner = run_loc_floor_bottom_left
 	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, locate(corner.x + 1, corner.y + 1, corner.z))

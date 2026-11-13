@@ -456,6 +456,8 @@
 	berth.reservation = reservation
 	outpost.berths[1] = berth
 	var/turf/berth_tile = reservation.bottom_left_turfs[1]
+	// A berth has a floor; a fresh reservation is open space, which no officer walks on
+	berth_tile = berth_tile.ChangeTurf(/turf/open/floor/iron)
 	TEST_ASSERT_EQUAL(get_trader_outpost_for_turf(berth_tile), outpost, "Test fixture: the berth's ground is not part of the outpost")
 	TEST_ASSERT(officer.leash_ok(berth_tile), "An officer may not walk into a hangar berth")
 	outpost.berths[1] = null

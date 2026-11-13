@@ -106,8 +106,9 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(checkpoint.inner_door.density, "The inner door was left open when the gate came back")
 	TEST_ASSERT(checkpoint.outer_door.density, "The outer door was left open when the gate came back")
-	// Whoever stands in the chamber is scanned on the next cycle
-	TEST_ASSERT(checkpoint.request_cycle(person), "The inner door did not take a scan request once the gate was back")
+	// Whoever stands in the chamber is scanned once both doors are shut, or on the next request
+	if(checkpoint.state != "scanning") // CHECKPOINT_SCANNING
+		TEST_ASSERT(checkpoint.request_cycle(person), "The inner door did not take a scan request once the gate was back")
 	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The gate does not scan again after it came back") // CHECKPOINT_SCANNING
 
 /// A second emag inside 5 minutes of the gate coming back (or while it is down) does nothing (M36)
@@ -624,6 +625,9 @@
 	var/till_share = stolen_chip.credits
 	TEST_ASSERT(till_share > 0 && shop.till_ready_at > world.time, "Setup: shop till was not emptied by the stick-up")
 	var/obj/item/holochip/own_chip = allocate(/obj/item/holochip, get_turf(person), 5000)
+	// The robber puts the gun down to take their own chip out (the stolen one is in the other hand)
+	if(gun in person.held_items)
+		person.dropItemToGround(gun)
 	TEST_ASSERT(person.put_in_hands(own_chip), "Setup: could not put robber's own holochip in hand")
 	TEST_ASSERT_EQUAL(own_chip.item_interaction(person, stolen_chip, list()), ITEM_INTERACT_SUCCESS, "Setup: holochips did not merge")
 	TEST_ASSERT(QDELETED(stolen_chip), "Setup: merged stolen holochip was not deleted")
