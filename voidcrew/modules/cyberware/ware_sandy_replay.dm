@@ -188,6 +188,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/oneshot = FALSE
 	/// Playback: the glide playing now is a step to another tile, not a pose's own shift on the spot.
 	var/glide_step = FALSE
+	/// Each shot it fired: list(the frame it is first drawn in, x, y of the real tile it was fired from), where its
+	/// muzzle flash and bullet are recorded. A step glides onto that tile by then, or they are drawn ahead of the gun
+	/// (shooting_at()).
+	var/list/shot_frames
 
 /// Carries the recorded look of something that is gone, or isn't on a turf any more.
 /obj/effect/abstract/sandy_replay_standin
@@ -416,6 +420,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(istype(thing, /obj/effect/temp_visual))
 		track.oneshot = TRUE
 		intro(track)
+		if(ismovable(thing.loc) && shown_on(thing)) // a muzzle flash, drawn on the shooter's tile
+			shot_from(thing.loc, track.first)
+	else if(track.flier && shot_fired(thing))
+		var/obj/projectile/shot = thing
+		shot_from(shot.firer, track.first)
 	if(sandy_rig_picture(thing) || track.oneshot || track.flier)
 		var/matrix/turned = thing.transform
 		event_log += "notice [thing.type] f[frame_exact()] first=[track.first] on=[shown_on(thing) ? "map" : "off"] dir=[thing.dir] T=[turned.a],[turned.b],[turned.d],[turned.e]"
@@ -1052,7 +1061,25 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!track || state != SANDY_REPLAY_RECORDING)
 		return
 	track.last_raw = null
-	sample_track(track, max(track.first, frame_now()))
+	var/frame = max(track.first, frame_now())
+	sample_track(track, frame)
+	shot_from(shot.firer, frame)
+
+/// `shooter` fired a shot first drawn in `frame`, on the tile it stands on for real (shooting_at()).
+/datum/sandy_replay/proc/shot_from(atom/movable/shooter, frame)
+	var/datum/sandy_replay_track/track = shooter && tracks[shooter]
+	var/turf/spot = track && get_turf(shooter)
+	if(spot)
+		LAZYADD(track.shot_frames, list(list(frame, spot.x, spot.y)))
+
+/// The first frame from `from` on that `track`'s thing has a shot of its own drawn in on tile `x`, `y`, or 0. A shot
+/// fired from the tile it stepped off in the same frame isn't one: it is drawn there, where the step starts.
+/datum/sandy_replay/proc/shooting_at(datum/sandy_replay_track/track, from, x, y)
+	var/next = 0
+	for(var/list/shot as anything in track.shot_frames)
+		if(shot[1] >= from && shot[2] == x && shot[3] == y && (!next || shot[1] < next))
+			next = shot[1]
+	return next
 
 /// Whether one more shot in the air can be recorded. Logs it, once a recording, when one can't.
 /datum/sandy_replay/proc/shot_room()
@@ -1613,6 +1640,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			var/due = (next_event[1] - frame) * world.tick_lag
 			if(due >= 0 && due < time)
 				time = max(due, world.tick_lag / 2)
+		// It shoots sooner (it stepped and stopped to fire): it is on the tile by the frame its muzzle flash and bullet are
+		// drawn on it, or they are drawn ahead of the gun while it is still gliding there.
+		var/shot_frame = shooting_at(track, frames[at + SANDY_FRAME_INDEX], frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y])
+		if(shot_frame)
+			time = min(time, max((shot_frame - frame) * world.tick_lag, 0))
 	else if(left > 0)
 		time = left
 	track.glide_x = move_x
