@@ -273,6 +273,8 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	// Stay awake while anyone is at the wing's outpost; get_expected_ai_status() narrows tg's z-level check.
 	can_idle = FALSE
 	planning_subtrees = list(
+		// Walking out of Processing to their cell, or into it to leave (outpost_prison_processing.dm).
+		/datum/ai_planning_subtree/outpost_prisoner_processing,
 		// Cuffed, nothing at all (outpost_prison_capture.dm).
 		/datum/ai_planning_subtree/outpost_prisoner_cuffed,
 		// Threats, fights and riots come first (outpost_prison_trouble.dm).
@@ -1470,7 +1472,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 		prisoner.drop_held_item()
 	return ..()
 
-/// The end of their sentence: back to their cell to be beamed out
+/// The last of their sentence: back to their cell, to leave from there
 /datum/prisoner_activity/go_home
 	name = "heading to their cell"
 	weight = 0

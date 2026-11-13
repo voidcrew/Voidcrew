@@ -689,14 +689,14 @@
 			TEST_ASSERT(prisoner.arrival_brute >= 15 && prisoner.arrival_brute <= 40, "A roughed-up arrival carried [prisoner.arrival_brute] brute")
 	TEST_ASSERT(stained >= 45 && stained <= 95, "[stained] of 200 arrivals came in stained, not about 70")
 	TEST_ASSERT(hurt >= 20 && hurt <= 60, "[hurt] of 200 arrivals came in hurt, not about 40")
-	// The injury lands as they beam in, with no attacker: no blood, and a hurt bubble.
+	// The injury lands as they arrive, with no attacker: no blood, and a hurt bubble.
 	prisoner.roll_arrival()
 	prisoner.arrival_brute = 25
-	prisoner.beam_in()
-	TEST_ASSERT_EQUAL(prisoner.health, 75, "Beaming in roughed up left [prisoner.health] health, not 75")
+	prisoner.arrive()
+	TEST_ASSERT_EQUAL(prisoner.health, 75, "Arriving roughed up left [prisoner.health] health, not 75")
 	TEST_ASSERT(prisoner.arrived_hurt, "A roughed-up arrival was not marked hurt")
 	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in get_turf(prisoner), "A transfer injury bled on the floor")
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(present), prisoner), 6 SECONDS), "The arrival never finished beaming in")
+	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(present), prisoner), 6 SECONDS), "The arrival was never present")
 	prisoner.set_hunger(100)
 	prisoner.set_uniform_grime(0)
 	TEST_ASSERT_EQUAL(prisoner.bubble, "hurt", "A roughed-up arrival did not show the hurt bubble")
@@ -1353,90 +1353,4 @@
 	TEST_ASSERT(!prisoner.ai_running(), "A prisoner's AI counted as running with nobody on the level")
 	prison.tick(5)
 	TEST_ASSERT(QDELETED(unwatched_food), "A prisoner left alone on an empty level did not eat off the hatch")
-	settle_prison_air(home)
-
-// ===== NOTHING UNTIL THEY ARE ALL THE WAY IN =====
-
-/**
- * A prisoner beaming in knits together inside the column over the beam's 3 seconds
- * (OUTPOST_PRISON_BEAM_TIME), hidden under the transporter's mask from the first frame, and does
- * nothing at all until the knit is over. Until then the routine plans nothing, they say nothing,
- * show no thought bubble and are held still; after it they are solid, free and able to talk.
- * Beaming out, the same holds from the start. Guards beaming in keep quiet too.
- */
-/datum/unit_test/voidcrew_outpost_prison_beam_gates
-	parent_type = /datum/unit_test/voidcrew_outpost_management
-
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/knitting(atom/movable/arrival)
-	return !!arrival.get_filter("transporter_dissolve")
-
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/all_in(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/carbon/human/npc/outpost_prison_guard/guard)
-	return prisoner.phase == "present" && guard.phase == "present"
-
-/// Whether nothing about the prisoner can act, talk or show: the gates an arriving or leaving prisoner must fail
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/check_held(mob/living/carbon/human/npc/outpost_prisoner/prisoner, when)
-	var/datum/ai_planning_subtree/outpost_prisoner_routine/routine = GLOB.ai_subtrees[/datum/ai_planning_subtree/outpost_prisoner_routine]
-	TEST_ASSERT(!prisoner.routine_allowed(), "The routine was allowed [when]")
-	TEST_ASSERT_NULL(routine.SelectBehaviors(prisoner.ai_controller, 1), "The routine planned something [when]")
-	TEST_ASSERT_NULL(prisoner.activity, "The prisoner started an activity [when]")
-	TEST_ASSERT(!prisoner.may_speak(), "The prisoner could speak [when]")
-	TEST_ASSERT(!prisoner.say_context("arrival"), "The prisoner said something [when]")
-	TEST_ASSERT(HAS_TRAIT(prisoner, TRAIT_IMMOBILIZED), "The prisoner could move [when]")
-	TEST_ASSERT_NULL(prisoner.bubble, "A thought bubble was due [when]")
-	TEST_ASSERT_NULL(prisoner.popped_bubble, "A thought bubble showed [when]")
-
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/Run()
-	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("beamgateowner")
-	TEST_ASSERT_NOTNULL(home, "The beam gate test prison did not load")
-	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/carbon/human/npc/outpost_prisoner/other = test_prisoner(prison, prison_spot(home, 9, 8))
-	REMOVE_TRAIT(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
-	prison.refresh_reach()
-	// Hungry (PRISONER_HUNGER_HUNGRY 40), so a meal and a thought bubble would both be due.
-	prisoner.arrival_brute = 0
-	prisoner.set_hunger(20)
-	prisoner.beam_in()
-	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, /mob/living/carbon/human/npc/outpost_prison_guard)
-	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record?.guard
-	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
-
-	// In the beam they are knitting together from the start, under the mask at its lowest
-	// (TRANSPORTER_MASK_TRAVEL -58), so nothing of them shows before the beam does: arriving, and held.
-	for(var/mob/living/arrival as anything in list(prisoner, guard))
-		TEST_ASSERT(knitting(arrival), "[arrival] was not knitting together inside the beam")
-		TEST_ASSERT_EQUAL(arrival.filter_data?["transporter_dissolve"]?["y"], -58, "[arrival]'s knit did not start hidden under the mask")
-	TEST_ASSERT_EQUAL(prisoner.phase, "arriving", "Beaming in did not make the prisoner arriving") // PRISONER_ARRIVING
-	check_held(prisoner, "in the beam")
-	TEST_ASSERT(!other.start_conversation(prisoner), "A prisoner opened a conversation with one still beaming in")
-	TEST_ASSERT_EQUAL(guard.phase, "arriving", "The guard skipped the beam") // OUTPOST_GUARD_ARRIVING
-	TEST_ASSERT(!guard.say_guard("arrival"), "A guard still beaming in spoke")
-	TEST_ASSERT(!guard.on_duty(), "A guard still beaming in was on duty")
-
-	// Most of the way through the knit: still arriving, still held.
-	sleep(2 SECONDS)
-	TEST_ASSERT(knitting(prisoner), "The prisoner stopped knitting together before the beam was over")
-	TEST_ASSERT_EQUAL(prisoner.phase, "arriving", "The prisoner was present before they finished knitting together")
-	check_held(prisoner, "while knitting together")
-	TEST_ASSERT_EQUAL(guard.phase, "arriving", "The guard was on duty before they finished knitting together")
-	TEST_ASSERT(!guard.say_guard("arrival"), "A guard spoke while knitting together")
-
-	// All the way in as the beam ends: solid, free and able to talk.
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(all_in), prisoner, guard), 3 SECONDS), "The arrivals never finished beaming in")
-	TEST_ASSERT_EQUAL(prisoner.alpha, 255, "The prisoner is not solid once in")
-	TEST_ASSERT_NULL(prisoner.get_filter("transporter_dissolve"), "The prisoner still wears the knit once in")
-	TEST_ASSERT(!HAS_TRAIT(prisoner, TRAIT_IMMOBILIZED), "The prisoner is still held once in")
-	TEST_ASSERT(prisoner.routine_allowed(), "The prisoner's routine did not start once in")
-	TEST_ASSERT(prisoner.may_speak(), "The prisoner cannot speak once in")
-	TEST_ASSERT_EQUAL(prisoner.bubble, "hungry", "The hungry arrival has no thought bubble once in")
-	TEST_ASSERT(guard.on_duty(), "The guard is not on duty once in")
-	TEST_ASSERT_EQUAL(guard.alpha, 255, "The guard is not solid once in")
-
-	// Beaming out: held, silent and without a bubble from the start.
-	prisoner.beam_out()
-	TEST_ASSERT_EQUAL(prisoner.phase, "leaving", "Beaming out did not make the prisoner leaving") // PRISONER_LEAVING
-	check_held(prisoner, "beaming out")
-	TEST_ASSERT(!other.start_conversation(prisoner), "A prisoner opened a conversation with one beaming out")
-	guard.beam_out()
-	TEST_ASSERT(!guard.say_guard("recalled"), "A guard beaming out spoke")
 	settle_prison_air(home)

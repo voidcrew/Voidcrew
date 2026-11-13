@@ -240,8 +240,9 @@
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 1, "Only one prisoner should arrive at a time")
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = prison.prisoners[1]
-	TEST_ASSERT_EQUAL(first.console_status(), "arriving", "A prisoner in the beam was not arriving")
-	TEST_ASSERT(HAS_TRAIT(first, TRAIT_IMMOBILIZED), "A prisoner could move inside the beam")
+	// The fixture wing has no Processing room, so an arrival is simply in their cell (outpost_prison_processing.dm).
+	TEST_ASSERT_EQUAL(first.console_status(), "present", "An arrival in a wing with no Processing room is [first.console_status()], not present")
+	TEST_ASSERT(first.came_by_intake, "An arrival through intake was not marked as one")
 	var/list/seen_cells = list()
 	for(var/i in 1 to 3)
 		var/gap = prison.arrival_countdown
@@ -309,9 +310,8 @@
 	// ...and beam out when it ends, from wherever they stand if they did not get there.
 	var/datum/weakref/leaver_ref = WEAKREF(leaver)
 	prison.tick(25)
-	TEST_ASSERT_EQUAL(leaver.phase, "leaving", "A released prisoner was not beamed out")
-	TEST_ASSERT(HAS_TRAIT(leaver, TRAIT_IMMOBILIZED), "A prisoner could walk out of the beam")
-	TEST_ASSERT(wait_until(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(is_qdeleted_ref), leaver_ref), 6 SECONDS), "The beam never took the released prisoner")
+	TEST_ASSERT_EQUAL(leaver.phase, "leaving", "A released prisoner was not leaving")
+	TEST_ASSERT(wait_until(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(is_qdeleted_ref), leaver_ref), 6 SECONDS), "The released prisoner never left")
 	TEST_ASSERT_NULL(leaver_cell.occupant, "The released prisoner's cell was not freed")
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 3, "The released prisoner stayed on the roster")
 	// The freed cell takes nobody for 60-120 seconds (OUTPOST_PRISON_REFILL_MIN/MAX).

@@ -3,9 +3,9 @@
  *
  * An NPC inmate of a trader outpost's lockup (outpost_prison_core.dm), and a real human body
  * (voidcrew/modules/human_npcs/): they breathe, bleed, bruise, stamcrit, go into crit, die and can be
- * revived through tg's own code, like anyone. Each prisoner owns one cell, beams into it on arrival
- * and out of it on release, and fills the time in between with the routine in
- * outpost_prison_routine.dm. They talk (outpost_prison_dialogue.dm), and when unhappy they threaten,
+ * revived through tg's own code, like anyone. Each prisoner owns one cell, walks to it out of Processing
+ * on arrival and back into Processing on release (outpost_prison_processing.dm), and fills the time in
+ * between with the routine in outpost_prison_routine.dm. They talk (outpost_prison_dialogue.dm), and when unhappy they threaten,
  * fight, riot and escape (outpost_prison_trouble.dm, outpost_prison_riot.dm).
  *
  * Needs, on 0-100 scales: `hunger` falls over time and food restores it, by how good the food
@@ -23,8 +23,6 @@
  * resists it, as anyone can. Cuffs (tg's) and lockdown are in outpost_prison_capture.dm.
  */
 
-/// Trait source for the beam holding a prisoner still
-#define PRISONER_BEAM_TRAIT "outpost_prisoner_beam"
 /// Offset source for sitting on a bed edge
 #define PRISONER_SITTING_OFFSET "outpost_prisoner_sitting"
 /// Trait source for what only an awake prisoner on their feet refuses (a bag, a locker)
@@ -105,7 +103,11 @@
 	var/well_fed_left = 0
 	/// Came in wearing a stained transfer uniform
 	var/arrived_stained = FALSE
-	/// Health they lose to a rough transfer, as bruising when they beam in, and whether they came in hurt
+	/// Came in through intake (arrive()), not booked in by hand
+	var/came_by_intake = FALSE
+	/// Seconds their body has lain in the cell block with no client able to see it
+	var/body_unseen = 0
+	/// Health they lose to a rough transfer, as bruising when they arrive, and whether they came in hurt
 	var/arrival_brute = 0
 	var/arrived_hurt = FALSE
 	/// Seconds the thought bubble has shown the current set of needs, for cycling through them
@@ -188,9 +190,11 @@
 	clear_trouble()
 	QDEL_NULL(boss_move)
 	contraband_clear_carried()
+	prison?.processing_leavers -= src
 	prison?.forget(src)
 	prison = null
 	cell = null
+	processing_goal = null
 	bounty_record = null
 	walkable = null
 	reachable = null
@@ -219,7 +223,7 @@
 
 /**
  * How they come in: hungry, a third in a stained transfer uniform, a fifth roughed up in transfer.
- * The injury waits for beam_in(), so a prisoner made any other way (an admin, a test) starts whole.
+ * The injury waits for arrive(), so a prisoner made any other way (an admin, a test) starts whole.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/roll_arrival()
 	hunger = rand(PRISONER_ARRIVAL_HUNGER_MIN, PRISONER_ARRIVAL_HUNGER_MAX)
@@ -230,91 +234,6 @@
 /// Their first name, for dialogue. (Not called first_name(): inside it, that would call itself.)
 /mob/living/carbon/human/npc/outpost_prisoner/proc/speech_name()
 	return first_name(real_name)
-
-// ===== BEAMING IN AND OUT =====
-
-/**
- * Materialises them where they stand: beam_out() backwards. The column comes down and they knit
- * together inside it from nothing, from the feet up, over the whole beam. They stay
- * PRISONER_ARRIVING, and so do nothing at all (no walking, routine, trouble, speech or thought
- * bubble), until finish_beam_in() as the beam ends.
- */
-/mob/living/carbon/human/npc/outpost_prisoner/proc/beam_in()
-	phase = PRISONER_ARRIVING
-	if(arrival_brute > 0)
-		// Roughed up in transfer: real bruising spread over their limbs, with no attacker, so no blame.
-		outpost_prison_bruise(src, arrival_brute)
-		arrival_brute = 0
-		arrived_hurt = TRUE
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEAM_TRAIT)
-	update_bubble()
-	// A bubble ignores the knit: one already up would hang over an empty tile.
-	drop_bubble()
-	var/turf/spot = get_turf(src)
-	if(spot)
-		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_PRISON_BEAM_TIME + 0.5 SECONDS)
-	// Hidden under the mask from the first frame. finish_beam_in() takes the effects off, so a
-	// prisoner beamed out mid-knit keeps beam_out()'s.
-	transporter_materialise(src, 255, OUTPOST_PRISON_BEAM_TIME, restore = FALSE)
-	addtimer(CALLBACK(src, PROC_REF(finish_beam_in)), OUTPOST_PRISON_BEAM_TIME)
-
-/// Fully there as the beam ends: the flash, and only now are they present, free to move, and say hello
-/mob/living/carbon/human/npc/outpost_prisoner/proc/finish_beam_in()
-	if(phase != PRISONER_ARRIVING)
-		return
-	var/turf/spot = get_turf(src)
-	if(spot)
-		new /obj/effect/temp_visual/transporter_flash(spot)
-		transporter_sparks(spot)
-		playsound(spot, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
-	// Whatever is left of the knit, gone: they are solid from here on.
-	transporter_restore(src, 255)
-	phase = PRISONER_PRESENT
-	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEAM_TRAIT)
-	update_bubble()
-	// A bounty prisoner names the crew that caught them (outpost_prison_bounty.dm)
-	if(bounty_arrival_speech())
-		return
-	// How they came in, if it shows; otherwise hello.
-	if(arrived_hurt && say_context("arrival_hurt"))
-		return
-	if(arrived_stained && say_context("arrival_stained"))
-		return
-	say_context("arrival")
-
-/**
- * Dematerialises them where they stand and deletes them at the end of the beam. From the start
- * they are PRISONER_LEAVING: held still, with no routine, trouble, speech or thought bubble.
- */
-/mob/living/carbon/human/npc/outpost_prisoner/proc/beam_out()
-	if(phase == PRISONER_LEAVING)
-		return
-	phase = PRISONER_LEAVING
-	end_activity()
-	clear_trouble()
-	drop_held_item()
-	remove_cuffs()
-	stand_up()
-	pulledby?.stop_pulling()
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEAM_TRAIT)
-	update_bubble()
-	drop_bubble()
-	var/turf/spot = get_turf(src)
-	if(spot)
-		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_PRISON_BEAM_TIME + 0.5 SECONDS)
-	new /obj/effect/abstract/particle_holder(src, /particles/transporter_motes, PARTICLE_ATTACH_MOB)
-	transporter_dematerialise(src, OUTPOST_PRISON_BEAM_TIME)
-	addtimer(CALLBACK(src, PROC_REF(finish_beam_out)), OUTPOST_PRISON_BEAM_TIME)
-
-/mob/living/carbon/human/npc/outpost_prisoner/proc/finish_beam_out()
-	var/turf/spot = get_turf(src)
-	if(spot)
-		new /obj/effect/temp_visual/transporter_flash/departure(spot)
-		transporter_sparks(spot)
-		playsound(spot, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
-	qdel(src)
 
 /// What the warden's roster calls them: present, arriving, leaving or dead
 /mob/living/carbon/human/npc/outpost_prisoner/proc/console_status()
@@ -663,7 +582,7 @@
 	if(thought)
 		vis_contents -= thought
 
-/// Takes any bubble down at once, with no fade: for when they beam in or out
+/// Takes any bubble down at once, with no fade: for when they are in Processing or on their way out
 /mob/living/carbon/human/npc/outpost_prisoner/proc/drop_bubble()
 	deltimer(bubble_timer)
 	end_bubble()
@@ -1091,7 +1010,7 @@
 		note_carer(user)
 		return NONE
 	var/obj/item/clothing/under/rank/prisoner/outpost/offered = tool
-	// Not while they beam in or out, invisible or half there.
+	// Not while they are in Processing or on their way out.
 	if(!istype(offered) || user.combat_mode || stat != CONSCIOUS || phase != PRISONER_PRESENT)
 		return NONE
 	if(handcuffed)
@@ -1230,6 +1149,5 @@
 	name = "Outpost prisoner (beanie)"
 	head = /obj/item/clothing/head/beanie/orange
 
-#undef PRISONER_BEAM_TRAIT
 #undef PRISONER_SITTING_OFFSET
 #undef PRISONER_AWAKE_TRAIT

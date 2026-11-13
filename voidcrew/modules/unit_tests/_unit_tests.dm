@@ -327,6 +327,8 @@
 #include "voidcrew_survey_research_links.dm"
 #include "voidcrew_teleport_blocker.dm"
 #include "voidcrew_trade_prison_host.dm"
+#include "voidcrew_trade_prison_map.dm"
+#include "voidcrew_trade_prison_processing.dm"
 #include "voidcrew_trader_checkpoint.dm"
 #include "voidcrew_trader_rental_locker.dm"
 #include "voidcrew_trader_shipyard_berths.dm"

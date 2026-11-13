@@ -3,20 +3,23 @@
  *
  * The wing's NPC guards: named people on its roster who keep a peaceful routine, step in on spats,
  * arguments, fights, threats and hatch climbs, and hold the staff doors in a riot. Nobody hires or
- * pays them. Their routine and activities are in outpost_prison_guard_routine.dm; numbers in
- * voidcrew/_DEFINES/outpost_prison_guards.dm.
+ * pays them: the roster is always OUTPOST_GUARD_MAX (keep_guard_roster()). Their routine and
+ * activities are in outpost_prison_guard_routine.dm; numbers in voidcrew/_DEFINES/outpost_prison_guards.dm.
  *
  * A guard is a real human body (voidcrew/modules/human_npcs/, owner ruling OC-2): stuns, stamina,
  * batons, bleeding, crit and death work on them as on anyone, and nothing tops their health up. Hurt,
- * they patch themselves up with the office first-aid kit (outpost_prison_guard_routine.dm). In crit
- * for OUTPOST_GUARD_RECALL_DELAY the corrections service medevacs the real body; a dead guard's body
- * is collected OUTPOST_GUARD_BODY_COLLECT_DELAY after they die. Either way their record waits
- * OUTPOST_GUARD_RETURN_TIME, then sends them back (the same face, from the record). Their kit is
- * locked to them (D3): it never becomes loot.
+ * they patch themselves up with the office first-aid kit (outpost_prison_guard_routine.dm). Down in
+ * crit they stay where they fell, a body like anyone's: nobody takes them away. One who dies, or is
+ * carried out of the wing for a minute, is off the roster, and OUTPOST_GUARD_RETURN_TIME later
+ * someone new comes on shift in their place, whether or not anyone is at the outpost. A dead guard's
+ * body is cleared once no client has been able to see it for OUTPOST_PRISON_BODY_UNSEEN. Their kit
+ * is locked to them (D3): it never becomes loot.
  *
  * Each guard is a record on the prison (name, rank, personality, face, when they are back). The
- * guard on the wing is a mob made from the record; when a guard goes down or is called away the
- * mob beams out and the record waits to send them back.
+ * guard on the wing is a mob made from the record. Guards come and go through the staff closet in
+ * the office, a small room behind a door: a new one is made inside it with the door shut and walks
+ * out, and one going off shift walks in and is gone once the door has shut behind them. A wing with
+ * no staff closet mapped (the unit tests' wing) uses the office floor.
  *
  * Guards are security only: they never feed, clothe, treat, clean or light anything. They never
  * strike players, pets, bots or other NPCs, and they strike a
@@ -62,14 +65,14 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	npc_outfit = /datum/outfit/outpost_prison_guard
 	// They stop once a prisoner is down (defaults 1.13), and only ever go for prisoners.
 	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
-	// The corrections service collects a guard's body (guards_tick()); the base never cleans it up.
+	// The wing clears its own dead (guard_down_tick()); the base never cleans the body up.
 	npc_corpse_lifetime = 0
 
 	/// The prison they work
 	var/datum/outpost_prison/prison
 	/// Who they are on the payroll: name, rank, personality, when they are back
 	var/datum/outpost_guard_record/record
-	/// OUTPOST_GUARD_ARRIVING, _PRESENT, _DOWN, _DISMISSED or _LEAVING
+	/// OUTPOST_GUARD_ARRIVING, _PRESENT, _DOWN or _DISMISSED
 	var/phase = OUTPOST_GUARD_ARRIVING
 	/// A guard personality from the dialogue file
 	var/personality = "by_the_book"
@@ -85,18 +88,20 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/response_skips
 	/// Whether the stun baton is out in their hand
 	var/baton_out = FALSE
-	/// world.time they went down (crit) or died, for the medevac and the body's collection
+	/// world.time they went down (crit) or died
 	var/down_since = 0
 	/// The last thing they said, so they don't repeat it at once
 	var/last_line
-	/// Down: seconds until they are beamed out
-	var/down_left = 0
-	/// Killed rather than downed: the body is collected, and the record's wait starts after
+	/// Killed rather than downed
 	var/died_on_duty = FALSE
-	/// Dismissed: seconds left to walk to the office before they beam out wherever they are
+	/// Off shift: seconds left to walk to the staff closet before they may go from wherever they are
 	var/dismiss_left = 0
-	/// Dismissed: where they walk to before beaming out
+	/// Off shift: where they walk to, a tile of the staff closet
 	var/turf/leave_spot
+	/// Just come on shift: they say so once they are out of the staff closet
+	var/fresh_on_shift = FALSE
+	/// Seconds their body has lain, or they have stood off shift, with no client able to see them
+	var/unseen_seconds = 0
 	/// Seconds counted outside the wing, for the leash
 	var/outside_seconds = 0
 	COOLDOWN_DECLARE(baton_cooldown)
@@ -109,7 +114,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	. = ..(mapload)
 	AddElement(/datum/element/relay_attackers)
 	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
-	// Nothing moves a guard but their own feet and the prison's beam.
+	// Nothing moves a guard but their own feet.
 	RegisterSignal(src, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport))
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
 	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
@@ -124,7 +129,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	end_activity(cancel_ai = FALSE)
 	if(record?.guard == src)
 		record.guard = null
-		// Gone some other way than the prison's own beam (an admin delete): back later, like a downed guard.
+		// Gone some other way than off shift (an admin delete): someone is back later.
 		if(!record.dismissed && record.away_left <= 0)
 			record.away_left = OUTPOST_GUARD_RETURN_TIME / (1 SECONDS)
 	record = null
@@ -222,20 +227,19 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 // ===== HURT, DOWN AND DEAD =====
 
 /**
- * Into crit: they go down. The corrections service medevacs the real body after
- * OUTPOST_GUARD_RECALL_DELAY (guards_tick()); treated and back out of crit before then, they are back on duty.
+ * Into crit: they go down and stay down, a real body on the floor. Nobody comes for them: treated or
+ * back out of crit on their own they are on duty again; they can as well bleed out, or be finished off.
  */
 /mob/living/carbon/human/npc/outpost_prison_guard/npc_on_downed()
 	. = ..()
 	go_down()
 
-/// Back out of crit before the medevac came: on their feet and on duty again
+/// Back out of crit: on their feet and on duty again
 /mob/living/carbon/human/npc/outpost_prison_guard/npc_on_recovered()
 	. = ..()
 	if(phase != OUTPOST_GUARD_DOWN || died_on_duty || stat == DEAD || HAS_TRAIT(src, TRAIT_CRITICAL_CONDITION))
 		return
 	phase = OUTPOST_GUARD_PRESENT
-	down_left = 0
 	down_since = 0
 	set_guard_upright(TRUE)
 	prison?.add_log("[real_name] is back on [p_their()] feet.")
@@ -254,32 +258,29 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return
 	died_on_duty = TRUE
 	set_guard_upright(FALSE)
-	if(phase == OUTPOST_GUARD_LEAVING || !prison)
+	if(!prison)
 		return
 	end_response()
 	end_activity()
 	baton_out = FALSE
 	phase = OUTPOST_GUARD_DOWN
 	down_since = world.time
-	down_left = OUTPOST_GUARD_BODY_COLLECT_DELAY / (1 SECONDS)
+	unseen_seconds = 0
 	prison.guard_killed(src)
 
 /**
- * Down in crit: lying there, and OUTPOST_GUARD_RECALL_DELAY later the corrections service medevacs the
- * body, to send them back OUTPOST_GUARD_RETURN_TIME after that (guards_tick()). Nothing protects them
- * meanwhile: they can bleed out, or be finished off.
+ * Down in crit: lying there, off duty until they are back on their feet (npc_on_recovered()). Nothing
+ * protects them meanwhile: they can bleed out, or be finished off.
  */
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/go_down()
-	if(QDELETED(src) || phase == OUTPOST_GUARD_DOWN || phase == OUTPOST_GUARD_LEAVING)
+	if(QDELETED(src) || phase == OUTPOST_GUARD_DOWN)
 		return FALSE
-	var/was_leaving = phase == OUTPOST_GUARD_DISMISSED
 	phase = OUTPOST_GUARD_DOWN
 	end_response()
 	end_activity()
 	baton_out = FALSE
 	set_guard_upright(FALSE)
 	down_since = world.time
-	down_left = was_leaving ? 0 : OUTPOST_GUARD_RECALL_DELAY / (1 SECONDS)
 	visible_message(span_danger("[src] goes down!"))
 	prison?.add_log("[real_name] went down.")
 	return TRUE
@@ -307,100 +308,66 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		log_combat(attacker, src, "attacked a prison guard")
 	return TRUE
 
-// ===== BEAMING IN AND OUT =====
+// ===== ON AND OFF SHIFT =====
 
 /**
- * Materialises them where they stand, like a prisoner: they knit together inside the column over
- * the whole beam. They stay OUTPOST_GUARD_ARRIVING (held still, no routine, no responses, no
- * speech) until finish_beam_in() as the beam ends.
+ * On shift. They are made in the staff closet with its door shut (spawn_guard()) and are on duty at once:
+ * their routine walks them out by the door, which opens for them like any staff door. They say so once
+ * they are out of the closet (announce_arrival(), from guards_tick()).
  */
-/mob/living/carbon/human/npc/outpost_prison_guard/proc/beam_in()
-	phase = OUTPOST_GUARD_ARRIVING
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, OUTPOST_GUARD_BEAM_TRAIT)
-	var/turf/spot = get_turf(src)
-	if(spot)
-		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_PRISON_BEAM_TIME + 0.5 SECONDS)
-	// Hidden under the mask from the first frame; finish_beam_in() takes the effects off.
-	transporter_materialise(src, 255, OUTPOST_PRISON_BEAM_TIME, restore = FALSE)
-	addtimer(CALLBACK(src, PROC_REF(finish_beam_in)), OUTPOST_PRISON_BEAM_TIME)
-
-/// Fully there as the beam ends: the flash, and only now are they on duty, and say so
-/mob/living/carbon/human/npc/outpost_prison_guard/proc/finish_beam_in()
-	if(phase != OUTPOST_GUARD_ARRIVING)
-		return FALSE
-	var/turf/spot = get_turf(src)
-	if(spot)
-		new /obj/effect/temp_visual/transporter_flash(spot)
-		transporter_sparks(spot)
-		playsound(spot, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
-	// Whatever is left of the knit, gone: they are solid from here on.
-	transporter_restore(src, 255)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/arrive()
 	phase = OUTPOST_GUARD_PRESENT
-	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, OUTPOST_GUARD_BEAM_TRAIT)
+	fresh_on_shift = TRUE
+	unseen_seconds = 0
+	return TRUE
+
+/// Out of the staff closet and on the floor: they say so, once
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/announce_arrival()
+	if(!fresh_on_shift || phase != OUTPOST_GUARD_PRESENT)
+		return FALSE
+	fresh_on_shift = FALSE
 	if(say_guard("arrival"))
 		prison?.note_speech()
 	return TRUE
 
 /**
- * Dematerialises them and deletes them at the end of the beam. Their record, if they are still on
- * the payroll, sends them back after `away_seconds` (guards_tick()).
+ * Off shift: their place on the roster is free for whoever comes on after `away_seconds`, and they walk
+ * to the staff closet. They are gone once its door has shut behind them, or from wherever they stand once
+ * the walk is given up and no client can see them (/datum/outpost_prison/proc/guard_gone_off()). Until
+ * then they are a body like anyone's.
  */
-/mob/living/carbon/human/npc/outpost_prison_guard/proc/beam_out(away_seconds = 0)
-	if(phase == OUTPOST_GUARD_LEAVING)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/go_off(away_seconds = 0)
+	if(phase == OUTPOST_GUARD_DISMISSED)
 		return FALSE
-	phase = OUTPOST_GUARD_LEAVING
-	end_response()
-	end_activity()
-	set_baton(FALSE)
-	if(record?.guard == src)
-		record.guard = null
-		if(!record.dismissed)
-			record.away_left = max(record.away_left, away_seconds)
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, OUTPOST_GUARD_BEAM_TRAIT)
-	var/turf/spot = get_turf(src)
-	if(spot)
-		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_PRISON_BEAM_TIME + 0.5 SECONDS)
-	new /obj/effect/abstract/particle_holder(src, /particles/transporter_motes, PARTICLE_ATTACH_MOB)
-	transporter_dematerialise(src, OUTPOST_PRISON_BEAM_TIME)
-	addtimer(CALLBACK(src, PROC_REF(finish_beam_out)), OUTPOST_PRISON_BEAM_TIME)
-	return TRUE
-
-/mob/living/carbon/human/npc/outpost_prison_guard/proc/finish_beam_out()
-	var/turf/spot = get_turf(src)
-	if(spot)
-		new /obj/effect/temp_visual/transporter_flash/departure(spot)
-		transporter_sparks(spot)
-		playsound(spot, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
-	qdel(src)
-
-/// Called back from somewhere they should not be (off the wing's level, or out of the wing with nobody about)
-/mob/living/carbon/human/npc/outpost_prison_guard/proc/recall(away_seconds = OUTPOST_GUARD_OFF_LEVEL_AWAY)
-	if(phase != OUTPOST_GUARD_PRESENT)
-		return FALSE
-	say_guard("recalled")
-	prison?.add_log("[real_name] was called back to the wing.")
-	return beam_out(away_seconds)
-
-/**
- * Off the payroll: they say `context`, walk back to the office and beam out there, or wherever
- * they are after OUTPOST_GUARD_DISMISS_WALK seconds. Down or arriving, they beam out at once.
- */
-/mob/living/carbon/human/npc/outpost_prison_guard/proc/leave(context = "dismissed")
-	if(phase == OUTPOST_GUARD_LEAVING || phase == OUTPOST_GUARD_DISMISSED)
-		return FALSE
-	if(phase != OUTPOST_GUARD_PRESENT || stat != CONSCIOUS)
-		return beam_out()
 	phase = OUTPOST_GUARD_DISMISSED
 	end_response()
 	end_activity()
 	set_baton(FALSE)
 	set_prison_pace(hurry = FALSE)
-	say_guard(context)
+	if(record?.guard == src)
+		record.guard = null
+		if(!record.dismissed)
+			record.away_left = max(record.away_left, away_seconds)
 	dismiss_left = OUTPOST_GUARD_DISMISS_WALK
-	leave_spot = prison?.guard_office_spot(src)
+	leave_spot = prison?.guard_leave_spot(src)
+	unseen_seconds = 0
 	return TRUE
+
+/// Called back from somewhere they should not be (off the wing's level, or out of the wing and unable to walk back)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/recall(away_seconds = OUTPOST_GUARD_OFF_LEVEL_AWAY)
+	if(phase != OUTPOST_GUARD_PRESENT)
+		return FALSE
+	say_guard("recalled")
+	prison?.add_log("[real_name] was called back to the wing.")
+	return go_off(away_seconds)
+
+/// Off the roster: they say `context` if they can, and go off shift for good
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/leave(context = "dismissed")
+	if(phase == OUTPOST_GUARD_DISMISSED)
+		return FALSE
+	if(phase == OUTPOST_GUARD_PRESENT && stat == CONSCIOUS)
+		say_guard(context)
+	return go_off()
 
 // ===== SPEECH =====
 
@@ -438,9 +405,9 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			usable += line
 	return usable
 
-/// Says a line for `context`. Returns TRUE if they said something. Never while beaming in or out, invisible or half there.
+/// Says a line for `context`. Returns TRUE if they said something. Never before they are on shift.
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/say_guard(context, list/values)
-	if(QDELETED(src) || stat == DEAD || phase == OUTPOST_GUARD_ARRIVING || phase == OUTPOST_GUARD_LEAVING)
+	if(QDELETED(src) || stat == DEAD || phase == OUTPOST_GUARD_ARRIVING)
 		return FALSE
 	var/line = pick_guard_line(context, values)
 	if(!line)
@@ -505,7 +472,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /**
  * Their baton's cell is flat. The office recharger can't take a baton that is locked to its guard
- * (human_npc_gear.dm), so the corrections service swaps the shift: they say so and beam out, and the
+ * (human_npc_gear.dm), so they swap shifts: they say so and go off by the staff closet, and the
  * record sends them back with a charged baton after OUTPOST_GUARD_SHIFT_SWAP_TIME.
  */
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/baton_flat()
@@ -513,7 +480,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return FALSE
 	say_guard("recalled")
 	prison.add_log("[real_name]'s baton went flat. [p_They()] went to swap shifts.")
-	return beam_out(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
+	return go_off(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
 
 /// Strikes a rioter beside them. Returns TRUE if they struck.
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/strike_adjacent_rioter()
@@ -675,7 +642,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!stand)
 		return TRUE
 	// Any office tile beside the counter will do; the one past it is where they head for.
-	if(loc != stand && !(get_dist(src, hatch) <= 1 && prison.staff_ground?[loc]))
+	if(loc != stand && !(get_dist(src, hatch) <= 1 && prison.office_ground()[loc]))
 		job.set_goal(stand)
 		return FALSE
 	job.set_goal(null)
@@ -787,7 +754,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	/// An admin's guard: not counted against guard_max()
 	var/free = FALSE
 	var/dismissed = FALSE
-	/// Seconds until they are sent back while away (down, recalled); they come only while someone is there to see it
+	/// Seconds until someone comes on shift in this slot while it is empty (a death, a recall), audience or none
 	var/away_left = 0
 	/// What the guard is made as (tests use a subtype)
 	var/guard_type = /mob/living/carbon/human/npc/outpost_prison_guard
@@ -817,15 +784,13 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /datum/outpost_guard_record/proc/full_name()
 	return "[rank] [surname]"
 
-/// Seconds before this slot could have a guard on the wing again: the down time and the return, or the time still away
+/// Seconds before this slot has a guard on the wing again, 0 while it has one
 /datum/outpost_guard_record/proc/pending_wait()
-	if(guard)
-		return guard.phase == OUTPOST_GUARD_DOWN ? max(0, guard.down_left) + OUTPOST_GUARD_RETURN_TIME / (1 SECONDS) : 0
-	return max(0, away_left)
+	return guard ? 0 : max(0, away_left)
 
 /// What the console calls them: arriving, post, rounds, routine, responding, riot, down or away
 /datum/outpost_guard_record/proc/status()
-	if(!guard || guard.phase == OUTPOST_GUARD_LEAVING || guard.phase == OUTPOST_GUARD_DISMISSED)
+	if(!guard || guard.phase == OUTPOST_GUARD_DISMISSED)
 		return "away"
 	switch(guard.phase)
 		if(OUTPOST_GUARD_ARRIVING)
@@ -861,6 +826,18 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/guard_loose_called = list()
 	/// Whether the guards' riot hold was called out this riot
 	var/guard_riot_announced = FALSE
+	/// Whether the wing keeps its own roster full (keep_guard_roster()); the unit tests' wing does not
+	var/roster_kept = TRUE
+	/// Whether the wing clears its own dead once nobody can see them (guard_down_tick(), body_tick()); the unit tests' wing does not
+	var/bodies_cleared = TRUE
+	/// Whether the wing keeps a cleanbot (keep_cleanbot()); the unit tests' wing does not
+	var/bot_kept = TRUE
+	/// The wing's cleanbot
+	var/datum/weakref/cleanbot_ref
+	/// Seconds since the cleanbot was last pointed at a mess
+	var/cleanbot_clock = 0
+	/// The office: staff_ground a guard can walk to from the yard's staff doors without passing another door (office_ground())
+	var/list/office_cache
 
 /// Guards on the wing's roster
 /datum/outpost_prison/proc/guard_max()
@@ -873,21 +850,24 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			return "Sergeant"
 	return "Officer"
 
-/// A new guard on the roster, beamed into the office at once. `free` is an admin's guard. Returns the record.
+/// A new guard on the roster, on shift at once if the staff closet is free. `free` is an admin's guard. Returns the record.
 /datum/outpost_prison/proc/add_guard_record(free = FALSE, guard_type)
 	var/datum/outpost_guard_record/record = new(src, next_guard_rank(), free, guard_type)
 	guard_records += record
 	spawn_guard(record)
 	return record
 
-/// Beams a record's guard into the office. Returns the guard, or null if there is nowhere to stand.
+/**
+ * Brings a record's guard on shift: made in the staff closet with its door shut, to walk out by it. Returns
+ * the guard, or null while the closet is not free (its door open, or someone standing in it).
+ */
 /datum/outpost_prison/proc/spawn_guard(datum/outpost_guard_record/record)
 	if(!record || record.dismissed || record.guard)
 		return null
-	var/turf/spot = guard_office_spot()
+	var/turf/spot = guard_arrival_spot()
 	if(!spot)
 		return null
-	// Nobody is sent into an office with air nobody can breathe; the slot waits for it to be fixed.
+	// Nobody is sent into a wing with air nobody can breathe; the slot waits for it to be fixed.
 	if(outpost_prison_unsafe_air(spot.return_air()))
 		return null
 	var/datum/npc_spawn_context/context = new(outpost, role = "exempt")
@@ -896,12 +876,14 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	guard.join(src, record)
 	context.finalize()
 	record.away_left = 0
-	guard.beam_in()
+	guard.arrive()
+	// A cleanbot lost since the last change of shift comes in with this one
+	keep_cleanbot(spot)
 	if(isnull(guard_rounds_left))
 		guard_rounds_left = rand(OUTPOST_GUARD_ROUNDS_GAP_MIN, OUTPOST_GUARD_ROUNDS_GAP_MAX) / (1 SECONDS)
 	return guard
 
-/// Takes a guard off the roster (the admin panel's hook): they say `context` and walk out
+/// Takes a guard off the roster (the admin panel's hook): they say `context` and go off shift
 /datum/outpost_prison/proc/dismiss_guard(datum/outpost_guard_record/record, context = "dismissed")
 	if(!record || record.dismissed)
 		return FALSE
@@ -918,42 +900,41 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 // ===== TIME =====
 
 /**
- * Advances the guards by `seconds`: returns,
- * the downed and the dismissed, healing, the rounds clock, and every
- * OUTPOST_GUARD_CHECK_SECONDS the leash, greetings and reports, and the yard saying hello; then the
- * response dispatcher.
+ * Advances the guards by `seconds`: the roster, whoever is due on shift, the downed and the dead, those
+ * going off shift, the rounds clock, and every OUTPOST_GUARD_CHECK_SECONDS the leash, greetings and
+ * reports, and the yard saying hello; then the cleanbot and the response dispatcher.
  */
 /datum/outpost_prison/proc/guards_tick(seconds)
+	keep_guard_roster()
 	if(!length(guard_records) && !length(guard_mobs))
 		return
-	// Returns before the downed beam out, so a wait starts counting on the next tick
-	var/home = has_audience()
+	// Whoever is due comes on shift, with or without anyone there to see it
 	for(var/datum/outpost_guard_record/record as anything in guard_records.Copy())
 		if(record.guard)
 			continue
 		record.away_left = max(0, record.away_left - seconds)
-		if(record.away_left <= 0 && home)
+		if(record.away_left <= 0)
 			spawn_guard(record)
 	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs.Copy())
 		if(QDELETED(guard))
 			continue
 		switch(guard.phase)
 			if(OUTPOST_GUARD_DOWN)
-				guard.down_left -= seconds
-				if(guard.down_left <= 0)
-					guard_medevac(guard)
+				guard_down_tick(guard, seconds)
 			if(OUTPOST_GUARD_DISMISSED)
 				guard.dismiss_left -= seconds
-				if(guard.dismiss_left <= 0 || (guard.leave_spot && guard.loc == guard.leave_spot) || !guard.ai_running())
-					guard.beam_out()
+				if(guard_gone_off(guard, seconds))
+					qdel(guard)
 			if(OUTPOST_GUARD_PRESENT)
 				guard.shake_off_pull()
-				// Bad air in the wing (a breach, a fire): guards carry no air of their own, so the corrections
-				// service calls them off it until the office is fit to stand in again (spawn_guard()).
+				if(guard.fresh_on_shift && !(get_turf(guard) in staff_closet_turfs))
+					guard.announce_arrival()
+				// Bad air in the wing (a breach, a fire): guards carry no air of their own, so they go off shift
+				// until the wing is fit to stand in again (spawn_guard()).
 				if(guard.stat == CONSCIOUS && outpost_prison_unsafe_air(guard.loc?.return_air()))
 					guard.say_guard("recalled")
 					add_log("[guard.real_name] was called off the wing: bad air.")
-					guard.beam_out(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
+					guard.go_off(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
 	guard_rounds_tick(seconds)
 	guard_check_clock += seconds
 	if(guard_check_clock >= OUTPOST_GUARD_CHECK_SECONDS)
@@ -961,37 +942,168 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		guard_leash_check()
 		guard_greet_check()
 		guard_yard_chatter()
+	cleanbot_tick(seconds)
 	dispatch_guards()
 
-/**
- * The corrections service takes a downed guard's real body away (a transport: the same beam as
- * everyone's, with no heal), or a dead guard's body once it has lain for OUTPOST_GUARD_BODY_COLLECT_DELAY.
- * Their record sends them back after
- * OUTPOST_GUARD_RETURN_TIME. The service locks on to its own staff wherever the body is: zipped in a bag,
- * shut in a locker, carried off. Otherwise a body stashed out of sight would hold the slot for the rest
- * of the round, and lie there for anyone to cut up.
- */
-/datum/outpost_prison/proc/guard_medevac(mob/living/carbon/human/npc/outpost_prison_guard/guard)
-	if(QDELETED(guard) || guard.phase != OUTPOST_GUARD_DOWN)
-		return FALSE
-	if(!isturf(guard.loc))
-		var/turf/out_of_it = get_turf(guard)
-		if(isnull(out_of_it))
-			return FALSE
-		guard.forceMove(out_of_it)
-	guard.pulledby?.stop_pulling()
-	guard.buckled?.unbuckle_mob(guard, force = TRUE)
-	add_log(guard.stat == DEAD ? "The corrections service collected [guard.real_name]'s body." : "The corrections service took [guard.real_name] away for treatment.")
-	return guard.beam_out(OUTPOST_GUARD_RETURN_TIME / (1 SECONDS))
+/// The wing is never short a guard on its books: OUTPOST_GUARD_MAX of them, with nobody hiring them
+/datum/outpost_prison/proc/keep_guard_roster()
+	if(!roster_kept)
+		return
+	var/on_books = 0
+	for(var/datum/outpost_guard_record/record as anything in guard_records)
+		if(!record.free && !record.dismissed)
+			on_books++
+	while(on_books < guard_max())
+		add_guard_record()
+		on_books++
+
+/// Whether a body is in someone's hands or shut in something: dragged, carried, buckled, bagged
+/proc/outpost_prison_body_held(mob/living/body)
+	return !isturf(body.loc) || !!body.pulledby || !!body.buckled
 
 /**
- * A guard was killed on duty. Logged with whoever last hurt them (the wing's log and the game log),
- * and the yard hears of it. The slot waits out the body's collection and the return before anyone is sent.
+ * A guard who is down stays a real body: nobody takes them away. Alive, they lie there until they are
+ * treated, get up on their own or die. Dead, the body is cleared once no client has been able to see it
+ * for OUTPOST_PRISON_BODY_UNSEEN: never a body a player is or was in, and never one being dragged or
+ * carried. Out of the wing for OUTPOST_GUARD_BODY_COLLECT_DELAY, alive or dead, they are off the roster
+ * and no longer the wing's business (guard_carried_off()).
+ */
+/datum/outpost_prison/proc/guard_down_tick(mob/living/carbon/human/npc/outpost_prison_guard/guard, seconds)
+	if(get_area(guard) != wing)
+		guard.outside_seconds += seconds
+		if(guard.outside_seconds >= OUTPOST_GUARD_BODY_COLLECT_DELAY / (1 SECONDS))
+			guard_carried_off(guard)
+		return
+	guard.outside_seconds = 0
+	if(guard.stat != DEAD || !bodies_cleared)
+		return
+	if(outpost_prison_body_held(guard) || seen_by_client(guard))
+		guard.unseen_seconds = 0
+		return
+	guard.unseen_seconds += seconds
+	if(guard.unseen_seconds < OUTPOST_PRISON_BODY_UNSEEN || guard.npc_ever_played())
+		return
+	add_log("[guard.real_name]'s body was taken away.")
+	qdel(guard)
+
+/**
+ * A guard, down or dead, has been out of the wing for a minute: carried off. Their place on the roster goes to
+ * someone new, and the body is whoever's has it: left alone, it is cleared like any human NPC's once nobody is
+ * near (outpost_prison_clear_unseen()).
+ */
+/datum/outpost_prison/proc/guard_carried_off(mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	if(QDELETED(guard) || guard.prison != src)
+		return FALSE
+	add_log("[guard.real_name] was carried out of the wing.")
+	guard_slot_vacated(guard)
+	guard_mobs -= guard
+	guard.prison = null
+	guard.end_response(cancel_ai = FALSE)
+	guard.end_activity(cancel_ai = FALSE)
+	outpost_prison_clear_unseen(guard)
+	return TRUE
+
+/**
+ * The slot of a guard who died or was carried off: after OUTPOST_GUARD_RETURN_TIME someone new comes on shift in
+ * it, with their own name and face. An admin's extra guard is not replaced.
+ */
+/datum/outpost_prison/proc/guard_slot_vacated(mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	var/datum/outpost_guard_record/old = guard.record
+	guard.record = null
+	if(!old || old.guard != guard)
+		return null
+	old.guard = null
+	if(old.dismissed)
+		return null
+	guard_records -= old
+	var/datum/outpost_guard_record/next_up
+	if(!old.free)
+		next_up = new(src, old.rank, FALSE, old.guard_type)
+		next_up.away_left = OUTPOST_GUARD_RETURN_TIME / (1 SECONDS)
+		guard_records += next_up
+	qdel(old)
+	return next_up
+
+/**
+ * Whether a guard who is off shift is gone: standing in the staff closet with its door shut behind them, or,
+ * the walk there given up (or nobody at the outpost for their legs to carry them), out of every client's sight.
+ * In a wing with no staff closet they go from the office tile they walked to. Never a body a player is or was in.
+ */
+/datum/outpost_prison/proc/guard_gone_off(mob/living/carbon/human/npc/outpost_prison_guard/guard, seconds)
+	if(guard.npc_ever_played())
+		return FALSE
+	if(get_turf(guard) in staff_closet_turfs)
+		var/obj/machinery/door/airlock/door = staff_closet_door()
+		if(!door || (door.density && !door.operating))
+			return TRUE
+		processing_work_door(door, FALSE)
+		return FALSE
+	if(!length(staff_closet_turfs) && guard.leave_spot && guard.loc == guard.leave_spot)
+		return TRUE
+	if(guard.dismiss_left > 0 && guard.stat == CONSCIOUS && guard.ai_running())
+		return FALSE
+	return !outpost_prison_body_held(guard) && !seen_by_client(guard)
+
+/**
+ * A guard was killed on duty. Logged with whoever last hurt them (the wing's log and the game log). The body
+ * stays where it fell (guard_down_tick()), and someone new takes the slot after OUTPOST_GUARD_RETURN_TIME.
  */
 /datum/outpost_prison/proc/guard_killed(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	var/mob/killer = guard.lastattacker ? get_mob_by_ckey(guard.lastattackerckey) : null
 	add_log("[guard.real_name] was killed on duty.")
 	log_game("OUTPOST LOCKUP: '[outpost_log_name()]': guard [guard.real_name] was killed[killer ? " (last hit by [key_name(killer)])" : ""]")
+	guard_slot_vacated(guard)
+
+// ===== THE CLEANBOT =====
+
+/// The lockup's cleanbot: tg's, with nobody able to take it over, and no radio to answer a call on
+/mob/living/basic/bot/cleanbot/outpost_lockup
+	bot_mode_flags = BOT_MODE_ON | BOT_MODE_REMOTE_ENABLED
+	radio_key = null
+	radio_channel = null
+
+/// The wing's cleanbot, if it has one that still works
+/datum/outpost_prison/proc/cleanbot()
+	var/mob/living/basic/bot/cleanbot/bot = cleanbot_ref?.resolve()
+	if(QDELETED(bot) || bot.stat == DEAD)
+		return null
+	return bot
+
+/**
+ * The wing keeps one cleanbot: tg's own, mopping the yard. It comes in with a guard coming on shift (`spot`, the
+ * staff closet tile they were made on), so one that is lost is replaced at the next change of guard.
+ */
+/datum/outpost_prison/proc/keep_cleanbot(turf/spot)
+	if(!bot_kept || !spot || cleanbot())
+		return null
+	var/mob/living/basic/bot/cleanbot/outpost_lockup/bot = new(spot)
+	cleanbot_ref = WEAKREF(bot)
+	return bot
+
+/// Every so often an idle cleanbot is called to the nearest mess in the cell block, as anyone calls a bot (summon_bot())
+/datum/outpost_prison/proc/cleanbot_tick(seconds)
+	cleanbot_clock += seconds
+	if(cleanbot_clock < OUTPOST_PRISON_BOT_CALL_GAP)
+		return
+	cleanbot_clock = 0
+	var/mob/living/basic/bot/cleanbot/bot = cleanbot()
+	if(!bot || bot.mode != BOT_IDLE || bot.client || !has_audience())
+		return
+	var/turf/nearest
+	var/nearest_distance = INFINITY
+	for(var/turf/tile as anything in cell_block)
+		if(isclosedturf(tile))
+			continue
+		var/obj/effect/decal/cleanable/mess = locate() in tile
+		if(!mess || istype(mess, /obj/effect/decal/cleanable/crayon) || istype(mess, /obj/effect/decal/cleanable/cobweb))
+			continue
+		var/distance = get_dist(bot, tile)
+		if(distance < nearest_distance)
+			nearest = tile
+			nearest_distance = distance
+	// Close by, it finds the mess with its own eyes
+	if(nearest && nearest_distance > 3)
+		bot.summon_bot(bot, nearest)
 
 /**
  * The rounds clock: every OUTPOST_GUARD_ROUNDS_GAP_MIN to _MAX one free guard walks the cell
@@ -1016,9 +1128,9 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	guard_rounds_left = rand(OUTPOST_GUARD_ROUNDS_GAP_MIN, OUTPOST_GUARD_ROUNDS_GAP_MAX) / (1 SECONDS)
 
 /**
- * The leash: a guard off the wing's level is recalled at once; one out of the wing for
+ * The leash: a guard on their feet off the wing's level is recalled at once; one out of the wing for
  * OUTPOST_GUARD_LEASH_SECONDS walks back, or with nobody about to see it (or still out after
- * twice that), is recalled.
+ * twice that), is recalled: off shift, and back after OUTPOST_GUARD_OFF_LEVEL_AWAY.
  */
 /datum/outpost_prison/proc/guard_leash_check()
 	var/z = wing_z()
@@ -1348,17 +1460,90 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 // ===== PLACES =====
 
-/// Staff doors that open onto the cell block: the ones the guards hold in a riot and stand post beside
+/// Staff doors that open onto the cell block: the ones the guards hold in a riot and stand post beside. Not Processing's.
 /datum/outpost_prison/proc/guard_yard_doors()
 	var/list/doors = list()
 	for(var/turf/tile as anything in staff_door_turfs)
-		if(cell_block[tile])
+		if(cell_block[tile] && !(locate(/obj/machinery/door/airlock/security/prison_staff/processing) in tile))
 			doors += tile
 	return doors
 
+/**
+ * The office: the staff side's open ground a guard can walk to from the yard's staff doors without passing
+ * another door. A mapped lockup's staff side also holds the front room, Processing and the staff closet, which
+ * are no place for a guard's post. Found once, and again when the wing's layout changes.
+ */
+/datum/outpost_prison/proc/office_ground()
+	if(office_cache)
+		return office_cache
+	var/list/found = list()
+	var/list/queue = list()
+	for(var/turf/door_tile as anything in guard_yard_doors())
+		for(var/direction in GLOB.cardinals)
+			var/turf/beside = get_step(door_tile, direction)
+			if(beside && staff_ground?[beside] && !found[beside] && !(locate(/obj/machinery/door) in beside))
+				found[beside] = TRUE
+				queue += beside
+	var/index = 1
+	while(index <= length(queue))
+		var/turf/current = queue[index++]
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(current, direction)
+			if(!next || found[next] || !staff_ground?[next] || (locate(/obj/machinery/door) in next))
+				continue
+			found[next] = TRUE
+			queue += next
+	// A wing with no staff door onto the cell block: the whole staff side
+	if(!length(found))
+		if(!length(staff_ground))
+			return found
+		found = staff_ground.Copy()
+	office_cache = found
+	return office_cache
+
+/// The staff closet's door, or null
+/datum/outpost_prison/proc/staff_closet_door()
+	for(var/turf/tile as anything in staff_closet_turfs)
+		for(var/direction in GLOB.cardinals)
+			var/turf/beside = get_step(tile, direction)
+			if(!beside || (beside in staff_closet_turfs))
+				continue
+			var/obj/machinery/door/airlock/door = locate() in beside
+			if(door)
+				return door
+	return null
+
+/**
+ * Where a guard coming on shift is made: a tile of the staff closet with nobody on it, and only while the
+ * closet's door is shut (an open one is asked to close first). A wing with no staff closet: the office.
+ */
+/datum/outpost_prison/proc/guard_arrival_spot()
+	if(!length(staff_closet_turfs))
+		return guard_office_spot()
+	var/obj/machinery/door/airlock/door = staff_closet_door()
+	if(door && !(door.density && !door.operating))
+		processing_work_door(door, FALSE)
+		return null
+	for(var/turf/tile as anything in staff_closet_turfs)
+		if(!(locate(/mob/living/carbon) in tile))
+			return tile
+	return null
+
+/// Where a guard going off shift walks to: a tile of the staff closet, or the office in a wing with none
+/datum/outpost_prison/proc/guard_leave_spot(mob/living/except)
+	for(var/turf/tile as anything in staff_closet_turfs)
+		var/taken = FALSE
+		for(var/mob/living/carbon/person in tile)
+			if(person != except)
+				taken = TRUE
+				break
+		if(!taken)
+			return tile
+	return guard_office_spot(except)
+
 /// Whether a guard could stand on an office tile: open, nothing solid on it, no door
 /datum/outpost_prison/proc/guard_office_tile(turf/tile)
-	return isopenturf(tile) && tile.loc == wing && staff_ground?[tile] && !tile.is_blocked_turf(TRUE) && !(locate(/obj/machinery/door) in tile)
+	return isopenturf(tile) && tile.loc == wing && office_ground()[tile] && !tile.is_blocked_turf(TRUE) && !(locate(/obj/machinery/door) in tile)
 
 /// Whether a guard could stand on a tile of the yard: in the cell block, not in a cell, open, nothing solid, no door
 /datum/outpost_prison/proc/guard_yard_tile(turf/tile)
@@ -1394,7 +1579,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				sides |= tile
 	return sides + fronts
 
-/// A free office tile near the staff door: where guards beam in and go when told to keep clear
+/// A free office tile near the staff door: where guards go when told to keep clear
 /datum/outpost_prison/proc/guard_office_spot(mob/living/except)
 	var/atom/anchor
 	var/list/doors = guard_yard_doors()
@@ -1402,7 +1587,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		anchor = doors[1]
 	var/turf/best
 	var/best_distance = INFINITY
-	for(var/turf/tile as anything in staff_ground)
+	for(var/turf/tile as anything in office_ground())
 		if(!guard_office_tile(tile) || guard_spot_taken(tile, except))
 			continue
 		var/distance = anchor ? get_dist(anchor, tile) : 0
@@ -1417,7 +1602,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/doors = guard_yard_doors()
 	var/turf/best
 	var/best_distance = -1
-	for(var/turf/tile as anything in staff_ground)
+	for(var/turf/tile as anything in office_ground())
 		if(!guard_office_tile(tile) || guard_spot_taken(tile, except))
 			continue
 		var/nearest_door = INFINITY
@@ -1494,6 +1679,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	guard_greeted.Cut()
 	guard_reported.Cut()
 	guard_loose_called.Cut()
+	var/mob/living/basic/bot/cleanbot/bot = cleanbot_ref?.resolve()
+	cleanbot_ref = null
+	if(!QDELETED(bot))
+		qdel(bot)
+	office_cache = null
 
 // ===== LOOK =====
 

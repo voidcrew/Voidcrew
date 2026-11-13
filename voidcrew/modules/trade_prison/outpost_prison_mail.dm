@@ -2,20 +2,17 @@
  * # Prison mail call
  *
  * Owner: XF (extras-plan.md 4.15). Mail comes in waves (owner, 2026-09-25): every
- * OUTPOST_MAIL_WAVE_GAP_MIN to _MAX of the crew being home, tg's supply pod drops tg's mail crate
- * into the warden's office, holding letters for a share of the prisoners (mail_wave_recipients()) and
- * nothing else (owner: "mail should come in the mail crate"). An empty crate stays a crate. The
- * pod is harmless: no explosion, damage, stun or sparks, and it never lands on anyone, on anything
- * dense or in the cell block. A member carries each letter to its prisoner, by hand or on a serving
- * hatch, and the prisoner reads it on the spot: good news, bad news, a drawing from a kid. Opening a
+ * OUTPOST_MAIL_WAVE_GAP_MIN to _MAX of someone being at the outpost, letters for a share of the
+ * prisoners (mail_wave_recipients()) are put out on a serving hatch from the office side, and each
+ * prisoner comes for theirs. Anyone in the yard can take one off the counter first and hand it over,
+ * and the prisoner reads it on the spot: good news, bad news, a drawing from a kid. Opening a
  * letter first shows what it says and anything packed in it, at the cost of that prisoner's trust.
- * Letters never lie. The pod aims for the office side of the first serving hatch
- * (mail_office_spot()); an admin's single letter beams onto the office table nearest it. Numbers in
- * voidcrew/_DEFINES/outpost_prison_contraband.dm.
+ * Letters never lie. An admin's single letter goes on the office table nearest the first serving
+ * hatch (mail_office_spot()). Numbers in voidcrew/_DEFINES/outpost_prison_contraband.dm.
  *
  * A letter is tg's envelope (/obj/item/mail/envelope, so sorters and disposals treat it as mail)
  * holding the letter itself and, for a contraband letter, a razor blade or a packet of yeast. The
- * prison tracks the letter paper by weakref from arrival (the crate landing) until it is read,
+ * prison tracks the letter paper by weakref from arrival (on the hatch) until it is read,
  * returned, lost off the level or its prisoner leaves. It never calls tg's initialize_for_recipient()
  * (goodies and money).
  *
@@ -46,26 +43,12 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	var/mail_had_letter = FALSE
 
 /datum/outpost_prison
-	/// Seconds of the crew being home until the next mail pod; set on the first tick
+	/// Seconds of someone being at the outpost until the next mail call; set on the first tick
 	var/mail_next_in
 	/// Seconds since the letters were last looked for (off the level, on a hatch)
 	var/mail_check_clock = 0
 	/// Letters on their way, as weakrefs to the letter (inside its envelope until someone opens it)
 	var/list/mail_letters = list()
-
-// ===== THE MAIL POD =====
-
-/// tg's supply pod, made harmless: no explosion, damage, stun or sparks. It drops its mail crate and leaves.
-/obj/structure/closet/supplypod/outpost_prison_mail
-	name = "mail pod"
-	desc = "A small drop pod from the postal service. It drops its mail crate and flies off again."
-	specialised = TRUE
-	bluespace = TRUE
-	explosionSize = list(0, 0, 0, 0)
-	damage = 0
-	effectStun = FALSE
-	create_sparks = FALSE
-	soundVolume = 50
 
 // ===== THE LETTER =====
 
@@ -172,11 +155,11 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 
 // ===== THE PRISON: ARRIVALS AND THE CLOCK =====
 
-/// Mail pods, expiry, letters carried off the level and prisoners fetching mail from the hatches
+/// Mail calls, expiry, letters carried off the level and prisoners fetching mail from the hatches
 /datum/outpost_prison/proc/mail_tick(seconds)
 	if(isnull(mail_next_in))
 		mail_next_in = mail_gap()
-	// The mail clock and expiry count only while the crew is home to deliver it.
+	// The mail clock and expiry count only while someone is at the outpost.
 	if(has_audience())
 		mail_next_in -= seconds
 		if(mail_next_in <= 0)
@@ -189,7 +172,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	mail_check_clock = 0
 	mail_check()
 
-/// Seconds of the crew being home before the next mail pod
+/// Seconds of someone being at the outpost before the next mail call
 /datum/outpost_prison/proc/mail_gap()
 	return rand(OUTPOST_MAIL_WAVE_GAP_MIN, OUTPOST_MAIL_WAVE_GAP_MAX) / (1 SECONDS)
 
@@ -212,7 +195,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return null
 
 /**
- * Who a mail pod's letters are for: OUTPOST_MAIL_WAVE_SHARE_MIN to _MAX percent of the living
+ * Who a mail call's letters are for: OUTPOST_MAIL_WAVE_SHARE_MIN to _MAX percent of the living
  * prisoners present, rounded, at least one and never all of them (a lone prisoner can still get
  * theirs). They are picked from those who are not loose, have OUTPOST_MAIL_MIN_SENTENCE left and
  * have had no letter this stay, so a wave may carry fewer. Returns the prisoners, maybe none.
@@ -237,96 +220,40 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return picked
 
 /**
- * Mail call: a harmless supply pod drops tg's mail crate, holding only letters for
- * mail_wave_recipients(), on mail_pod_landing_turf(). tg's populate() is never called, so no station
- * mail comes with them. The letters count as waiting from when the crate lands (mail_crate_moved()).
- * Returns how many letters are on their way, 0 when nobody is due one or the pod has nowhere to land.
+ * Mail call: a letter for each of mail_wave_recipients() is put out on a serving hatch with room for it,
+ * from the office side, and counts as waiting from then. Its prisoner comes for it as for anything left
+ * on a hatch for them (mail_hatch_stocked()). Returns how many letters went out: 0 when nobody is due
+ * one or no hatch has room.
  */
 /datum/outpost_prison/proc/mail_wave()
 	var/list/recipients = mail_wave_recipients()
 	if(!length(recipients))
 		return 0
-	var/turf/spot = mail_pod_landing_turf()
-	if(!spot)
-		return 0
-	var/obj/structure/closet/supplypod/outpost_prison_mail/pod = new()
-	var/obj/structure/closet/crate/mail/crate = new(pod)
-	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in recipients)
-		mail_make_letter(prisoner, null, null, crate)
-	crate.update_appearance()
-	RegisterSignal(crate, COMSIG_MOVABLE_MOVED, PROC_REF(mail_crate_moved))
-	new /obj/effect/pod_landingzone(spot, pod)
-	log_game("OUTPOST LOCKUP: a mail pod with [length(recipients)] letter\s is coming down in the prison wing at '[outpost_log_name()]' ([spot.x],[spot.y],[spot.z])")
-	return length(recipients)
-
-/// A mail pod dropped its crate onto the floor: it has landed. Signal handler; never sleeps.
-/datum/outpost_prison/proc/mail_crate_moved(obj/structure/closet/crate/mail/crate, atom/old_loc, dir, forced, list/old_locs)
-	SIGNAL_HANDLER
-	if(!isturf(crate.loc))
-		return
-	UnregisterSignal(crate, COMSIG_MOVABLE_MOVED)
-	mail_wave_landed(crate)
-
-/// A mail pod's crate came to rest: its letters count as waiting from now. Mail that came down off the wing's level is thrown away. Never sleeps.
-/datum/outpost_prison/proc/mail_wave_landed(obj/structure/closet/crate/mail/crate)
-	var/turf/spot = get_turf(crate)
-	var/z = wing_z()
 	var/count = 0
-	var/list/envelopes = list()
-	for(var/obj/item/mail/envelope/outpost_prison/envelope in crate)
-		envelopes += envelope
-	for(var/obj/item/mail/envelope/outpost_prison/envelope as anything in envelopes)
-		var/obj/item/paper/outpost_prison_letter/letter = locate() in envelope
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in recipients)
+		var/obj/structure/table/reinforced/prison_hatch/hatch = mail_hatch_with_room()
+		if(!hatch)
+			break
+		var/obj/item/paper/outpost_prison_letter/letter = mail_make_letter(prisoner, null, null, hatch.loc)
 		if(!letter)
-			continue
-		if(!spot || (z && spot.z != z))
-			qdel(envelope)
 			continue
 		mail_letters += WEAKREF(letter)
 		count++
+		on_hatch_stocked(hatch, list(letter.loc), null)
 	if(count)
-		add_log("Mail call: a pod dropped [count] letter\s.")
+		add_log("Mail call: [count] letter\s on the hatch.")
 	return count
 
-/**
- * Where a mail pod comes down: the free floor tile of the office nearest mail_office_spot()
- * where a crate cuts nothing off (mail_office_stays_open()). Never in the cell block. Null when
- * there is nowhere.
- */
-/datum/outpost_prison/proc/mail_pod_landing_turf()
-	var/list/office = list()
-	var/list/walkable = mail_office_walkable()
-	for(var/turf/tile as anything in walkable)
-		if(mail_pod_can_land(tile))
-			office += tile
-	var/turf/anchor = mail_office_spot()
-	while(length(office))
-		var/turf/best = mail_nearest_turf(office, anchor)
-		if(mail_office_stays_open(walkable, best))
-			return best
-		office -= best
-	// A lockup has no door out to land a pod beside: with no room in the office, this wave's mail does not come
-	return null
-
-/**
- * Whether a mail pod may come down on `tile`: open floor with ground, nobody on it, nothing dense,
- * no machine or fixture, and no door on it or beside it, so a landed pod never blocks a doorway
- */
-/datum/outpost_prison/proc/mail_pod_can_land(turf/tile)
-	if(!isopenturf(tile) || isspaceturf(tile) || isgroundlessturf(tile) || tile.is_blocked_turf(exclude_mobs = FALSE))
-		return FALSE
-	if(locate(/mob/living) in tile)
-		return FALSE
-	for(var/obj/thing in tile)
-		if(thing.density || istype(thing, /obj/machinery) || issupplypod(thing) || istype(thing, /obj/effect/pod_landingzone))
-			return FALSE
-		if(istype(thing, /obj/structure) && !istype(thing, /obj/structure/cable) && !HAS_TRAIT(thing, TRAIT_UNDERFLOOR))
-			return FALSE
-	for(var/direction in GLOB.cardinals)
-		var/turf/beside = get_step(tile, direction)
-		if(beside && (locate(/obj/machinery/door) in beside))
-			return FALSE
-	return TRUE
+/// The serving hatch with the most room left on its counter, or null when every one is full
+/datum/outpost_prison/proc/mail_hatch_with_room()
+	var/obj/structure/table/reinforced/prison_hatch/best
+	var/best_room = 0
+	for(var/obj/structure/table/reinforced/prison_hatch/hatch as anything in hatches())
+		var/room = hatch.room_left()
+		if(room > best_room)
+			best = hatch
+			best_room = room
+	return best
 
 /// Of `tiles`, the one nearest `target`, ties picked at random; null for none
 /datum/outpost_prison/proc/mail_nearest_turf(list/tiles, turf/target)
@@ -344,60 +271,6 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 		else if(distance == best_distance)
 			best += tile
 	return pick(best)
-
-/// The office's floor that nothing dense stands on, as tile -> TRUE: the wing outside the cell block, people aside
-/datum/outpost_prison/proc/mail_office_walkable()
-	var/list/walkable = list()
-	for(var/turf/tile as anything in wing_turfs())
-		if(isopenturf(tile) && !in_cell_block(tile) && !tile.is_blocked_turf(exclude_mobs = TRUE))
-			walkable[tile] = TRUE
-	return walkable
-
-/**
- * Whether a mail crate on `tile` leaves the office usable: everything beside it that people use (a
- * table, a machine, a hatch, a locker) still has free floor of its own beside it, and the rest of the
- * office floor (`walkable`, from mail_office_walkable()) stays in one piece
- */
-/datum/outpost_prison/proc/mail_office_stays_open(list/walkable, turf/tile)
-	for(var/direction in GLOB.cardinals)
-		var/turf/beside = get_step(tile, direction)
-		if(!beside || walkable[beside] || beside.loc != wing || isclosedturf(beside) || in_cell_block(beside))
-			continue
-		var/used = FALSE
-		for(var/obj/thing in beside)
-			if(thing.density && !istype(thing, /obj/structure/window) && !istype(thing, /obj/structure/grille))
-				used = TRUE
-				break
-		if(!used)
-			continue
-		var/still_reached = FALSE
-		for(var/other_direction in GLOB.cardinals)
-			var/turf/other = get_step(beside, other_direction)
-			if(other != tile && walkable[other])
-				still_reached = TRUE
-				break
-		if(!still_reached)
-			return FALSE
-	var/turf/start
-	for(var/turf/floor as anything in walkable)
-		if(floor != tile)
-			start = floor
-			break
-	if(!start)
-		return TRUE
-	var/list/reached = list()
-	reached[start] = TRUE
-	var/list/queue = list(start)
-	var/index = 1
-	while(index <= length(queue))
-		var/turf/current = queue[index++]
-		for(var/direction in GLOB.cardinals)
-			var/turf/next = get_step(current, direction)
-			if(!next || next == tile || !walkable[next] || reached[next])
-				continue
-			reached[next] = TRUE
-			queue += next
-	return length(reached) >= length(walkable) - (walkable[tile] ? 1 : 0)
 
 /**
  * The office spot mail goes to: the office side of the first serving hatch, where staff pass things
@@ -429,7 +302,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return mail_nearest_turf(office, middle)
 
 /**
- * Where an admin's single letter beams in: onto the office table nearest mail_office_spot() (never a
+ * Where an admin's single letter is put: on the office table nearest mail_office_spot() (never a
  * serving hatch), or with no table, onto that spot itself
  */
 /datum/outpost_prison/proc/mail_letter_drop_turf()
@@ -446,7 +319,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	return anchor
 
 /**
- * A single letter for `prisoner` beams onto the office table (mail_letter_drop_turf()), outside the
+ * A single letter for `prisoner` is put on the office table (mail_letter_drop_turf()), outside the
  * waves (the admin panel's prison_mail): `kind` (by weight when not given), and for a contraband
  * letter `enclosure_type` (a razor blade or yeast by chance when not given). Returns the letter, or null.
  */
@@ -457,10 +330,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	if(!spot)
 		return null
 	var/obj/item/paper/outpost_prison_letter/letter = mail_make_letter(prisoner, kind, enclosure_type, spot)
-	var/obj/item/mail/envelope/outpost_prison/envelope = letter.loc
 	mail_letters += WEAKREF(letter)
-	transporter_materialise(envelope)
-	transporter_sparks(spot)
 	playsound(spot, 'sound/machines/ding_short.ogg', 30, TRUE)
 	add_log("Mail for [prisoner.real_name].")
 	return letter
@@ -735,16 +605,16 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 
 /**
  * prison_mail {ref, kind}: a letter of that kind for that prisoner, on the office table now.
- * prison_mail_wave {}: a mail pod now, past its clock, which starts over.
+ * prison_mail_wave {}: a mail call now, past its clock, which starts over.
  * A log line, list("error" = text), or null.
  */
 /datum/outpost_prison/proc/mail_admin_act(action, list/params, mob/user)
 	if(action == "prison_mail_wave")
 		var/sent = mail_wave()
 		if(!sent)
-			return list("error" = "No prisoner is due a letter, or the pod has nowhere to land.")
+			return list("error" = "No prisoner is due a letter, or the hatches are full.")
 		mail_next_in = mail_gap()
-		return "call a prison mail pod with [sent] letter\s"
+		return "call prison mail with [sent] letter\s"
 	if(action != "prison_mail")
 		return null
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = locate(params?["ref"]) in prisoners

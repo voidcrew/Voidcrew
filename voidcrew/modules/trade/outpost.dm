@@ -89,6 +89,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/datum/outpost_floor/floors = list()
 	/// How many floors this outpost has
 	var/floor_count = OUTPOST_FLOORS_PER_OUTPOST
+	// OUTPOST PRISON seam (voidcrew/modules/trade_prison): the lockup mapped onto this outpost
+	/// This outpost's lockup, or null when its map has none. Made by ensure_prison() (trade_prison/outpost_prison_host.dm).
+	var/datum/outpost_prison/prison
 
 /// A market, as against a crew's own colony. Both are "Outposts" on the readout.
 /obj/structure/overmap/trader_outpost/get_contact_variant()
@@ -160,6 +163,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	template_bottom_left = null
 	embargoed_ships.Cut()
 	clear_checkpoint_state()
+	QDEL_NULL(prison) // OUTPOST PRISON seam: the wing goes before the police
 	QDEL_NULL(police)
 	QDEL_NULL(recovery)
 	self_defense_targets.Cut()
@@ -260,8 +264,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			police_landmarks += police_mark
 		for(var/obj/effect/landmark/outpost_police_cell/police_mark in interior_turf)
 			police_landmarks += police_mark
-		for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
-			police_lockers += locker
+		// OUTPOST PRISON seam: the lockup's front room has property lockers of its own; they are not the station's
+		if(!istype(interior_turf.loc, /area/voidcrew/outpost_lockup))
+			for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
+				police_lockers += locker
 		police_evidence ||= locate(/obj/structure/closet/secure_closet/outpost_evidence) in interior_turf
 		for(var/obj/effect/landmark/outpost_morgue/recovery_mark in interior_turf)
 			recovery_landmarks += recovery_mark
@@ -286,6 +292,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				police_signs += machine
 			else if(istype(machine, /obj/machinery/outpost_checkpoint_sensor))
 				checkpoint_sensors += machine
+			else if(istype(machine, /obj/machinery/outpost_elevator/lockup))
+				// OUTPOST PRISON seam: the lockup's panel is not a concourse panel; ensure_prison() links it to its wing
+				var/obj/machinery/outpost_elevator/lockup_panel = machine
+				lockup_panel.outpost = src
 			else if(istype(machine, /obj/machinery/outpost_elevator))
 				var/obj/machinery/outpost_elevator/panel = machine
 				panel.outpost = src
@@ -305,6 +315,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	build_checkpoints(checkpoint_doors, checkpoint_chambers, checkpoint_sensors)
 	ensure_police().link_interior(police_landmarks, police_doors, police_signs, police_lockers, police_evidence)
 	ensure_recovery().link_rooms(recovery_landmarks)
+	ensure_prison() // OUTPOST PRISON seam: the mapped lockup, if this outpost has one (trade_prison/outpost_prison_host.dm)
 	start_armed_sweep()
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized

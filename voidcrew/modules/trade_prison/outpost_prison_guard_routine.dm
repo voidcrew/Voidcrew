@@ -842,7 +842,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /// The wing's first-aid kit in the office with something in it, if there is one
 /datum/outpost_prison/proc/guard_first_aid_kit()
-	for(var/turf/tile as anything in staff_ground)
+	for(var/turf/tile as anything in office_ground())
 		if(tile.loc != wing)
 			continue
 		for(var/obj/item/storage/medkit/kit in tile)

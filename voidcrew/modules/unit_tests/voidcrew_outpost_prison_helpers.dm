@@ -68,7 +68,9 @@
  * coordinates apply, and a prison running on the wing's area. The prison's own clock is stopped; tests
  * drive it with tick(). Intake is shut and trouble (threats, fights, riots, escapes), wildcards and wing
  * events are off, so these tests see the quiet side on its own; trouble_test_claim() turns trouble back
- * on. Somebody is always there to see it (audience_override): a test world has no clients. The fixture
+ * on. The wing does not keep itself either: no galley, no standing roster of guards, no cleanbot, and
+ * its dead lie where they fell, so each test stocks, staffs and clears what it is about; the tests of
+ * those things turn them on. Somebody is always there to see it (audience_override): a test world has no clients. The fixture
  * wing draws its power from its own APC, so the power tests still have a switch to throw; a mapped lockup
  * never loses power. `owner_key` is the key of the tests' player (see /datum/outpost_prison/unit_test);
  * `style` is ignored, there is one fixture map.
@@ -99,6 +101,10 @@
 	// Random incidents and wing events would land in the middle of other tests; their own tests turn them on.
 	prison.wildcards_enabled = FALSE
 	prison.wing_events_enabled = FALSE
+	prison.galley_on = FALSE
+	prison.roster_kept = FALSE
+	prison.bot_kept = FALSE
+	prison.bodies_cleared = FALSE
 	prison.audience_override = TRUE
 	prison.refresh_conditions()
 	home.fixture_prison = prison

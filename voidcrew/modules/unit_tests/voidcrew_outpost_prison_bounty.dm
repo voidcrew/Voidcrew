@@ -523,7 +523,7 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/downed = new(prison_spot(home, 7, 8), downed_record)
 	TEST_ASSERT_EQUAL(downed.arrival_brute, 50, "Caught nearly dead, they come in [downed.arrival_brute] health down, not half their 100")
 	prison.admit(downed)
-	downed.beam_in()
+	downed.arrive()
 	TEST_ASSERT_EQUAL(downed.health, 50, "A downed delivery arrived at [downed.health] health, not half")
 	TEST_ASSERT(downed.health_factor() >= 50, "A bounty prisoner arrived below half health")
 	TEST_ASSERT(downed.arrived_hurt, "A downed delivery did not arrive hurt")

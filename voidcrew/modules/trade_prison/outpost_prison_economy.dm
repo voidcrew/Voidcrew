@@ -3,7 +3,8 @@
  *
  * Intake (arrivals and each cell's wait), releases, deaths and what becomes of a body. Nobody is
  * paid for holding prisoners and nobody is fined for losing them. The numbers are in
- * voidcrew/_DEFINES/outpost_prison_economy.dm.
+ * voidcrew/_DEFINES/outpost_prison_economy.dm. Everyone comes and goes through Processing
+ * (outpost_prison_processing.dm).
  *
  * Each cell keeps the world.time from which it takes a new arrival, and opening or closing intake
  * never brings that forward. Arrivals come one at a time, with a gap after each, so an empty wing
@@ -112,22 +113,34 @@
  */
 /datum/outpost_prison/proc/intake_tick(seconds)
 	arrival_gap = max(arrival_gap - seconds, 0)
-	if(arrivals_allowed() && arrival_gap <= 0 && free_slots())
+	if(arrivals_allowed() && arrival_gap <= 0 && free_slots() && arrival_way_clear())
 		admit_next()
 	arrival_countdown = next_arrival_in()
+
+/// Whether an arrival would come through Processing: the wing has one, and someone is at the outpost to see them walk in
+/datum/outpost_prison/proc/arrives_through_processing()
+	return has_processing() && has_audience()
+
+/// Whether the next arrival can come in now: Processing is free, or they would not come through it
+/datum/outpost_prison/proc/arrival_way_clear()
+	return !arrives_through_processing() || processing_free()
 
 /// After an arrival the next waits OUTPOST_PRISON_ARRIVAL_GAP_MIN to _MAX seconds, never less than it already had to
 /datum/outpost_prison/proc/start_arrival_gap()
 	arrival_gap = max(arrival_gap, rand(OUTPOST_PRISON_ARRIVAL_GAP_MIN, OUTPOST_PRISON_ARRIVAL_GAP_MAX))
 
 /**
- * Brings a new prisoner into the lowest-numbered cell that can take one: empty, ready and its door
- * not bolted or welded, and starts the gap before the next (start_arrival_gap()). `forced` (for the
- * admin panel) skips the wait and the door, though it still starts a new gap. Returns the prisoner,
- * or null.
+ * Brings a new prisoner in for the lowest-numbered cell that can take one: empty, ready and its door
+ * not bolted or welded, and starts the gap before the next (start_arrival_gap()). They come through
+ * Processing and walk to the cell; with nobody at the outpost to see it, or Processing busy when an
+ * admin forces it, they are simply in the cell. `forced` (for the admin panel) skips the wait and the
+ * door, though it still starts a new gap. Returns the prisoner, or null.
  */
 /datum/outpost_prison/proc/admit_next(forced = FALSE)
 	if(!free_slots())
+		return null
+	// Processing is busy: the next one waits their turn
+	if(!forced && !arrival_way_clear())
 		return null
 	for(var/datum/outpost_prison_cell/cell as anything in cells)
 		if(cell.occupant)
@@ -137,10 +150,13 @@
 		var/turf/spot = cell.arrival_turf()
 		if(!spot)
 			continue
+		var/through_processing = arrives_through_processing() && processing_free()
+		if(through_processing)
+			spot = processing_turfs[1]
 		// An ordinary arrival may be a caught bounty criminal from the pool; the admin panel's never is (outpost_prison_bounty.dm).
 		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot, forced ? null : bounty_pool_take(src))
 		admit(prisoner, cell)
-		prisoner.beam_in()
+		prisoner.arrive(through_processing)
 		start_arrival_gap()
 		arrival_countdown = next_arrival_in()
 		return prisoner
@@ -180,7 +196,7 @@
 		// Time to head back to the cell; the routine picks this up.
 		prisoner.end_activity()
 
-/// Sentence served: the prisoner leaves from wherever they stand. TRUE if they were released.
+/// Sentence served: the prisoner says goodbye and heads for Processing. TRUE if they were released.
 /datum/outpost_prison/proc/release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD)
 		return FALSE
@@ -190,17 +206,19 @@
 	// Friends may say goodbye instead (outpost_prison_life.dm).
 	if(!on_prisoner_releasing(prisoner, average))
 		prisoner.say_context("release")
-	prisoner.beam_out()
+	prisoner.leave()
 	return TRUE
 
 /**
- * A prisoner died. Nobody comes for the body (body_tick()): it keeps its cell until it is carried
- * out of the cell block. A death blamed on staff is taken hard by the yard (blame_death()).
+ * A prisoner died. The body lies where it fell and keeps its cell (body_tick()) until it is carried
+ * out of the cell block, or nobody has been able to see it for a while. A death blamed on staff is
+ * taken hard by the yard (blame_death()).
  */
 /datum/outpost_prison/proc/on_prisoner_death(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	add_log("[prisoner.real_name] died.")
 	close_bounty_record(prisoner, BOUNTY_RECORD_DEAD)
 	prisoner.died_at = world.time
+	prisoner.body_unseen = 0
 	prisoner.clear_trouble()
 	if(prisoner.staff_to_blame())
 		blame_death(prisoner)
@@ -209,15 +227,27 @@
 	update_riot_lights()
 
 /**
- * Nobody comes for a body. While it lies in the cell block it keeps its cell and sours the yard
- * (bodies_in_cell_block()); once it is out of the cell block (carried out, spaced, anywhere)
- * it leaves the roster, and its cell waits a refill.
+ * A body is a body. While it lies in the cell block it keeps its cell and sours the yard
+ * (bodies_in_cell_block()). Once it is out of the cell block (carried out, anywhere) it leaves the
+ * roster, and its cell waits a refill. Lying in the cell block with no client able to see it for
+ * OUTPOST_PRISON_BODY_UNSEEN, it is cleared away: never a body a player is or was in, and never one
+ * being dragged, carried or shut in something.
  */
-/datum/outpost_prison/proc/body_tick(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
-	if(in_cell_block(prisoner))
+/datum/outpost_prison/proc/body_tick(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds = 1)
+	if(!in_cell_block(prisoner))
+		add_log("[prisoner.real_name]'s body is out of the cell block.")
+		forget(prisoner)
 		return
-	add_log("[prisoner.real_name]'s body is out of the cell block.")
-	forget(prisoner)
+	if(!bodies_cleared)
+		return
+	if(outpost_prison_body_held(prisoner) || seen_by_client(prisoner))
+		prisoner.body_unseen = 0
+		return
+	prisoner.body_unseen += seconds
+	if(prisoner.body_unseen < OUTPOST_PRISON_BODY_UNSEEN || prisoner.npc_ever_played())
+		return
+	add_log("[prisoner.real_name]'s body was taken away.")
+	qdel(prisoner)
 
 /// Prisoners' bodies lying in the cell block, which nobody comes for
 /datum/outpost_prison/proc/bodies_in_cell_block()

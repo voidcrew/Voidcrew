@@ -104,7 +104,7 @@
 	return FALSE
 
 /**
- * Whether they may say anything now: awake and all the way here. Never while beaming in or out,
+ * Whether they may say anything now: awake and all the way here. Never while in Processing or leaving,
  * when they are invisible or only half there.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/may_speak()

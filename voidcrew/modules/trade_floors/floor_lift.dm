@@ -214,6 +214,8 @@
 
 /// A leased floor's alcove for ids 101 and up, while the lift serves it; the concourse and the berths as ever
 /obj/structure/overmap/trader_outpost/get_floor_alcove(floor_id)
+	if(floor_id == OUTPOST_LIFT_LOCKUP) // OUTPOST PRISON seam: the Lockup stop is its wing's front room
+		return length(prison?.alcove_turfs) ? prison.alcove_turfs : null
 	if(!LIFT_IS_FLOOR_ID(floor_id))
 		return ..()
 	var/datum/outpost_floor/floor = floor_by_id(floor_id)
@@ -221,6 +223,8 @@
 
 /// The lock on a floor: its setting and lists, or a panel forced in the rider's car. Riding down is the berth rule.
 /obj/structure/overmap/trader_outpost/may_enter_floor(floor_id, mob/rider)
+	if(floor_id == OUTPOST_LIFT_LOCKUP) // OUTPOST PRISON seam: anyone may ride to the lockup's front room
+		return !!prison
 	if(!LIFT_IS_FLOOR_ID(floor_id))
 		return ..()
 	var/datum/outpost_floor/floor = floor_by_id(floor_id)
@@ -232,6 +236,14 @@
 /// The floors `user` may ride to and no others, their own first; the one they stand on is always there
 /obj/structure/overmap/trader_outpost/extra_floor_rows(mob/user)
 	. = ..()
+	// OUTPOST PRISON seam: one row for the lockup, listed with the concourse and the berths, when this outpost has a wing
+	if(length(prison?.alcove_turfs))
+		. += list(list(
+			"id" = OUTPOST_LIFT_LOCKUP,
+			"name" = "Lockup",
+			"occupied" = TRUE,
+			"your_ship" = FALSE,
+		))
 	if(!length(floors))
 		return
 	var/forced = lift_forced_for(user)
@@ -364,6 +376,8 @@
 	for(var/datum/outpost_floor/floor in floors)
 		if(floor.panel)
 			SStgui.update_uis(floor.panel)
+	if(prison?.lift_panel) // OUTPOST PRISON seam
+		SStgui.update_uis(prison.lift_panel)
 
 // ===== HELPERS =====
 
@@ -378,6 +392,8 @@
 	for(var/datum/outpost_floor/floor in floors)
 		if(floor.panel)
 			. += floor.panel
+	if(prison?.lift_panel) // OUTPOST PRISON seam
+		. += prison.lift_panel
 
 /// The lift alcove `where` is a tile of: the concourse's, a berth's or a floor's. Null when it is in none.
 /obj/structure/overmap/trader_outpost/proc/lift_car_at(turf/where)
@@ -391,6 +407,8 @@
 	for(var/datum/outpost_floor/floor in floors)
 		if(where in floor.alcove_turfs)
 			return floor.alcove_turfs
+	if(prison && (where in prison.alcove_turfs)) // OUTPOST PRISON seam
+		return prison.alcove_turfs
 	return null
 
 /// Whether the car `where` is a tile of has a forced panel

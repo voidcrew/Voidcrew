@@ -28,8 +28,6 @@
 #define OUTPOST_PRISON_REFILL_MAX 120
 /// Seconds of sentence left when a prisoner heads back to their cell to leave
 #define OUTPOST_PRISON_RELEASE_WALK 30
-/// How long a transporter beam takes to deliver or collect a prisoner (deciseconds)
-#define OUTPOST_PRISON_BEAM_TIME (3 SECONDS)
 /// Log entries the wing keeps
 #define OUTPOST_PRISON_LOG_LENGTH 8
 

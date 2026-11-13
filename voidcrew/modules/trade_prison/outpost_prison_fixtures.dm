@@ -65,6 +65,10 @@
 	pass_flags_self = LETPASSTHROW
 	COOLDOWN_DECLARE(full_message_cooldown)
 
+/obj/structure/table/reinforced/prison_hatch
+	/// Whether the galley's next round here is a meal, not a clean uniform (/datum/outpost_prison/proc/galley_serve())
+	var/galley_meal_next = TRUE
+
 /obj/structure/table/reinforced/prison_hatch/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/outpost_property)
@@ -193,7 +197,7 @@
 
 // ===== RATIONS =====
 
-/// The wing's own ration, put on the hatches by the admin panel's fill. The vendor sells tg's prison food.
+/// The wing's own ration, put on the hatches by the galley and by the admin panel's fill.
 /obj/item/food/prison_ration
 	name = "prison ration"
 	desc = "A dense protein bar in a plain wrapper. Filling, and that's all anyone says about it."
@@ -208,8 +212,9 @@
 // ===== SUSTENANCE VENDOR =====
 
 /**
- * The lockup office's food vendor: tg's Sustenance Vendor with its usual stock (soggy tofu, moldy
- * bread, ice cups, candy corn, plastic spoons) and no contraband. It serves the wing's staff, not
+ * A lockup food vendor: tg's Sustenance Vendor with its usual stock (soggy tofu, moldy
+ * bread, ice cups, candy corn, plastic spoons) and no contraband. No lockup maps one: the galley
+ * stocks the hatches (outpost_prison_core.dm). It serves the wing's staff, not
  * prisoner IDs, and charges nothing. No refill canisters reach an outpost, so it restocks itself
  * while powered: one item every OUTPOST_PRISON_VENDOR_RESTOCK_TIME, most likely whatever it is
  * shortest of. The tofu and candy corn feed a prisoner like a ration (outpost_prisoner_food_tier()).

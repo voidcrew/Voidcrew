@@ -16,13 +16,13 @@
 /mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test/ai_running()
 	return TRUE
 
-/// An admin's guard (no fee, no wage), beamed in and standing at `spot`, on duty
+/// An admin's guard, on shift and standing at `spot`, on duty, their hello already said
 /datum/unit_test/voidcrew_outpost_management/proc/guard_test_spawn(datum/outpost_prison/prison, turf/spot, awake = TRUE)
 	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, awake ? /mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test : /mob/living/carbon/human/npc/outpost_prison_guard)
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	if(!guard)
 		return null
-	guard.finish_beam_in()
+	guard.announce_arrival()
 	guard.forceMove(spot)
 	return guard
 
@@ -112,7 +112,7 @@
 
 // ===== THE ROSTER =====
 
-/// A new guard beams into the office, an officer then a sergeant, two at most; staff doors and the staff checks; dismissal
+/// A new guard comes on shift in the office (the fixture has no staff closet), an officer then a sergeant, two at most; staff doors and the staff checks; dismissal
 /datum/unit_test/voidcrew_outpost_prison_guard_hiring
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -121,18 +121,19 @@
 	TEST_ASSERT_NOTNULL(home, "The guard hiring test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 
-	// The guard beams into the office at once.
+	// The guard is on shift in the office at once.
 	prison.add_guard_record()
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "Adding a guard made no record")
 	var/datum/outpost_guard_record/first = prison.guard_records[1]
 	var/mob/living/carbon/human/npc/outpost_prison_guard/officer = first.guard
-	TEST_ASSERT_NOTNULL(officer, "The hired guard did not beam in")
+	TEST_ASSERT_NOTNULL(officer, "The new guard did not come on shift")
 	TEST_ASSERT_EQUAL(first.rank, "Officer", "The first guard is not an officer")
 	TEST_ASSERT_EQUAL(officer.real_name, "Officer [first.surname]", "The guard is not named for their rank")
-	TEST_ASSERT(prison.staff_ground[get_turf(officer)], "The guard did not beam into the office")
-	TEST_ASSERT_EQUAL(officer.phase, "arriving", "The guard skipped the beam") // OUTPOST_GUARD_ARRIVING
-	TEST_ASSERT(!is_outpost_prison_staff(officer), "A guard still beaming in counted as staff")
-	officer.finish_beam_in()
+	TEST_ASSERT(prison.office_ground()[get_turf(officer)], "The guard did not come on shift in the office")
+	TEST_ASSERT_EQUAL(officer.phase, "present", "A guard on shift is [officer.phase], not present") // OUTPOST_GUARD_PRESENT
+	TEST_ASSERT(officer.fresh_on_shift, "A new guard has already said hello")
+	prison.guards_tick(1)
+	TEST_ASSERT(!officer.fresh_on_shift, "A guard out on the floor did not say they were on shift")
 	TEST_ASSERT(is_outpost_prison_staff(officer), "A guard on duty did not count as staff")
 	TEST_ASSERT(is_outpost_prison_guard(officer, on_duty = TRUE), "A guard on duty was not on duty")
 	TEST_ASSERT(is_outpost_prison_mob(officer), "A guard is not one of the prison's own mobs")
@@ -160,11 +161,15 @@
 	TEST_ASSERT_EQUAL(second.rank, "Sergeant", "The second guard is not a sergeant")
 	TEST_ASSERT_EQUAL(prison.guard_max(), 2, "The wing has [prison.guard_max()] guard posts, not 2") // OUTPOST_GUARD_MAX
 
-	// Dismissal: the guard walks out.
+	// Dismissal: the guard goes off shift.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/sergeant = second.guard
 	TEST_ASSERT(prison.dismiss_guard(second), "A guard could not be dismissed")
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "A dismissed guard stayed on the roster")
-	TEST_ASSERT_EQUAL(sergeant.phase, "leaving", "A dismissed guard still beaming in did not beam out") // OUTPOST_GUARD_LEAVING
+	TEST_ASSERT_EQUAL(sergeant.phase, "dismissed", "A dismissed guard did not go off shift") // OUTPOST_GUARD_DISMISSED
+	// With nobody able to see them and no staff closet to walk to, they are gone once the walk is given up (OUTPOST_GUARD_DISMISS_WALK 20).
+	var/datum/weakref/sergeant_ref = WEAKREF(sergeant)
+	prison.guards_tick(21)
+	TEST_ASSERT(is_qdeleted_ref(sergeant_ref), "A guard off shift with nobody watching was still there")
 	settle_prison_air(home)
 
 // ===== THE BATON =====
@@ -368,7 +373,7 @@
 	TEST_ASSERT(one_spot != two_spot, "Both guards took the same hold position")
 	for(var/turf/spot as anything in list(one_spot, two_spot))
 		TEST_ASSERT_EQUAL(get_dist(spot, door), 1, "A hold position is not beside the staff door")
-		TEST_ASSERT(prison.staff_ground[spot], "A hold position is not in the office")
+		TEST_ASSERT(prison.office_ground()[spot], "A hold position is not in the office")
 	TEST_ASSERT(prison.guard_riot_announced, "The guards' hold was never called out")
 	// Said aloud and logged as "Name: \"line\"", once; nothing goes out over the outpost.
 	var/holds_logged = 0
@@ -406,7 +411,7 @@
 
 // ===== DOWN AND BACK =====
 
-/// A guard is a real body (OC-2): in crit they go down and are medevaced ten seconds later, killed they are collected a minute later; either way back ten minutes after, with the same face
+/// A guard is a real body (OC-2): in crit they go down and stay down, nobody takes them away; killed, the body lies where it fell and someone new comes on shift ten minutes later
 /datum/unit_test/voidcrew_outpost_prison_guard_down
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -417,13 +422,10 @@
 	prison.add_guard_record()
 	var/datum/outpost_guard_record/record = prison.guard_records[1]
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
-	var/guard_name = guard.real_name
-	guard.finish_beam_in()
+	guard.announce_arrival()
 
 	// Real damage into tg crit: down, and nothing protects them there.
 	TEST_ASSERT(length(record.look), "The payroll did not keep the guard's face")
-	var/face_skin = LAZYACCESS(record.look, "skin_tone")
-	var/face_hair = LAZYACCESS(record.look, "hairstyle")
 	// On the chest, which counts in full (limbs count for less of a body's health)
 	guard.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_CRITICAL_CONDITION), "110 brute did not put a guard in crit")
@@ -434,47 +436,55 @@
 	guard.adjustBruteLoss(5)
 	TEST_ASSERT(guard.health < health_down, "A downed guard took no more damage")
 
-	// Ten seconds later they beam out, and they are back ten minutes after that.
-	prison.tick(9)
-	TEST_ASSERT_EQUAL(guard.phase, "down", "A downed guard left early")
-	prison.tick(1) // OUTPOST_GUARD_RECALL_DELAY
-	TEST_ASSERT_EQUAL(guard.phase, "leaving", "A downed guard was not beamed out after ten seconds")
-	TEST_ASSERT_NULL(record.guard, "The payroll still points at the guard beaming out")
-	TEST_ASSERT_EQUAL(record.away_left, 600, "A downed guard is away for [record.away_left] s, not 600") // OUTPOST_GUARD_RETURN_TIME
-	TEST_ASSERT_EQUAL(record.status(), "away", "The console does not show the guard as away")
-	prison.audience_override = TRUE
-	prison.tick(599)
-	TEST_ASSERT_NULL(record.guard, "A downed guard came back early")
-	prison.tick(1)
-	TEST_ASSERT_NOTNULL(record.guard, "A downed guard did not come back after ten minutes")
-	TEST_ASSERT_EQUAL(record.guard.real_name, guard_name, "A different guard came back")
-	TEST_ASSERT_EQUAL(record.guard.skin_tone, face_skin, "The guard came back with someone else's face")
-	TEST_ASSERT_EQUAL(record.guard.hairstyle, face_hair, "The guard came back with someone else's hair")
-	TEST_ASSERT(record.guard.health >= record.guard.maxHealth, "The guard came back hurt")
+	// Nobody comes for them: a minute on they still lie there, on the roster.
+	var/turf/fell_at = get_turf(guard)
+	prison.guards_tick(60)
+	TEST_ASSERT(!QDELETED(guard), "A downed guard was taken away")
+	TEST_ASSERT_EQUAL(get_turf(guard), fell_at, "A downed guard was moved")
+	TEST_ASSERT_EQUAL(record.guard, guard, "The roster let go of a guard who is only down")
+	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "A downed guard changed the roster")
 
-	// Killed on duty: the body lies a minute, then the corrections service collects it; back ten minutes later.
-	var/mob/living/carbon/human/npc/outpost_prison_guard/victim = record.guard
-	victim.finish_beam_in()
-	victim.death()
-	TEST_ASSERT_EQUAL(victim.stat, DEAD, "A guard could not die")
-	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard is [victim.phase], not down")
-	TEST_ASSERT(locate(/obj/item/melee/baton/security) in victim.get_all_contents(), "A dead guard's baton left the body")
-	TEST_ASSERT(human_npc_gear_locked(locate(/obj/item/melee/baton/security) in victim.get_all_contents()), "A dead guard's baton is not locked to the body (D3)")
-	// Zipped into a bag out of sight, the body is still collected: the service locks on to its own staff.
-	var/stash = allocate(/obj/structure/closet/body_bag, get_turf(victim))
-	victim.forceMove(stash)
-	prison.tick(59)
-	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard's body was collected early")
-	prison.tick(1) // OUTPOST_GUARD_BODY_COLLECT_DELAY
-	TEST_ASSERT_EQUAL(victim.phase, "leaving", "A dead guard's body was not collected after a minute")
-	TEST_ASSERT(isturf(victim.loc), "A dead guard's body was left in the bag it was stashed in")
-	TEST_ASSERT_EQUAL(record.away_left, 600, "A killed guard is away for [record.away_left] s, not 600") // OUTPOST_GUARD_RETURN_TIME
-	prison.tick(600)
-	TEST_ASSERT_NOTNULL(record.guard, "A killed guard's slot was not filled again after ten minutes")
+	// Killed on duty: the body stays, with its kit, and the slot goes to someone new ten minutes later (OUTPOST_GUARD_RETURN_TIME).
+	guard.death()
+	TEST_ASSERT_EQUAL(guard.stat, DEAD, "A guard could not die")
+	TEST_ASSERT_EQUAL(guard.phase, "down", "A dead guard is [guard.phase], not down")
+	TEST_ASSERT(locate(/obj/item/melee/baton/security) in guard.get_all_contents(), "A dead guard's baton left the body")
+	TEST_ASSERT(human_npc_gear_locked(locate(/obj/item/melee/baton/security) in guard.get_all_contents()), "A dead guard's baton is not locked to the body (D3)")
+	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "Killing a guard left [length(prison.guard_records)] slots on the roster, not 1")
+	var/datum/outpost_guard_record/next_up = prison.guard_records[1]
+	TEST_ASSERT(next_up != record, "A dead guard's own record was kept for whoever comes next")
+	TEST_ASSERT_NULL(next_up.guard, "Someone was on shift in a dead guard's place at once")
+	TEST_ASSERT_EQUAL(next_up.away_left, 600, "A dead guard's slot is empty for [next_up.away_left] s, not 600")
+	TEST_ASSERT_EQUAL(next_up.status(), "away", "The slot does not show as away")
+	// With nobody there to see it, too
+	prison.audience_override = FALSE
+	prison.guards_tick(599)
+	TEST_ASSERT_NULL(next_up.guard, "A dead guard was replaced early")
+	TEST_ASSERT(!QDELETED(guard), "A dead guard's body went while the wing was told to leave its dead")
+	prison.guards_tick(1)
+	TEST_ASSERT_NOTNULL(next_up.guard, "A dead guard was not replaced after ten minutes")
+	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "Replacing a dead guard made [length(prison.guard_records)] slots, not 1")
+	TEST_ASSERT(next_up.guard.health >= next_up.guard.maxHealth, "The new guard came on shift hurt")
+	prison.audience_override = TRUE
+
+	// The body is cleared once nobody has been able to see it for a minute (OUTPOST_PRISON_BODY_UNSEEN 60): never while it is in someone's hands.
+	var/datum/weakref/body_ref = WEAKREF(guard)
+	prison.bodies_cleared = TRUE
+	var/obj/structure/closet/body_bag/stash = allocate(/obj/structure/closet/body_bag, get_turf(guard))
+	guard.forceMove(stash)
+	prison.guards_tick(120)
+	TEST_ASSERT(!is_qdeleted_ref(body_ref), "A dead guard's body was cleared out of the bag someone put it in")
+	guard.forceMove(fell_at)
+	prison.guards_tick(59)
+	TEST_ASSERT(!is_qdeleted_ref(body_ref), "A dead guard's body was cleared early")
+	prison.guards_tick(1)
+	TEST_ASSERT(is_qdeleted_ref(body_ref), "A dead guard's body nobody could see was still there after a minute")
+	guard = null
+	record = next_up
 
 	// Down again, by the admin panel, and dismissed.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/back = record.guard
-	back.finish_beam_in()
+	back.announce_arrival()
 	var/downed = prison.guards_admin_act("prison_guard_down", list("ref" = REF(record)), null)
 	TEST_ASSERT(istext(downed), "The admin could not put a guard down")
 	TEST_ASSERT_EQUAL(back.phase, "down", "The admin's down did not put the guard down")
@@ -538,9 +548,9 @@
 	var/datum/outpost_guard_record/wanderer_record = wanderer.record
 	for(var/i in 1 to 10)
 		prison.guards_tick(5)
-		if(wanderer.phase == "leaving")
+		if(wanderer.phase == "dismissed")
 			break
-	TEST_ASSERT_EQUAL(wanderer.phase, "leaving", "A guard out of the wing was not called back")
+	TEST_ASSERT_EQUAL(wanderer.phase, "dismissed", "A guard out of the wing was not called back") // OUTPOST_GUARD_DISMISSED
 	TEST_ASSERT_EQUAL(wanderer_record.away_left, 60, "A called-back guard is away for [wanderer_record.away_left] s, not 60")
 	settle_prison_air(home)
 

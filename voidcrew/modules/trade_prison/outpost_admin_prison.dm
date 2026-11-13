@@ -49,7 +49,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_actions, list(
 	"prison_mail_wave", // {}: a mail pod now, with letters for a share of the prisoners
 	"prison_lead", // {ref}: that prisoner carries a lead and the wing is ready to give one
 	// Bounty prisoners (outpost_prison_bounty.dm)
-	"prison_bounty_admit", // {id}: that pool record beams into the first free cell now
+	"prison_bounty_admit", // {id}: that pool record is put in the first free cell now
 	"prison_bounty_make", // {tier}: a test record of that tier joins the pool, reserved for this wing
 	"prison_bounty_intake", // {setting: all|no_most_wanted|none}
 	"prison_bounty_clear", // {}: every record in the pool is closed
@@ -90,7 +90,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 			if(!arrival)
 				error = "No free cell."
 				return
-			record_prison(user, prison, "beam prisoner [arrival.real_name] into cell [arrival.cell?.number]")
+			record_prison(user, prison, "admit prisoner [arrival.real_name] to cell [arrival.cell?.number]")
 		if("prison_fill")
 			var/count = 0
 			while(prison.admit_next(TRUE))
@@ -363,9 +363,9 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 	if(stat == DEAD)
 		return "dead"
 	if(phase == PRISONER_ARRIVING)
-		return "beaming in"
+		return "in Processing"
 	if(phase == PRISONER_LEAVING)
-		return "beaming out"
+		return "leaving"
 	if(pulledby)
 		return "being dragged"
 	if(beaten)

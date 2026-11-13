@@ -104,6 +104,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 		. += span_notice("The floor indicator reads: FLOOR [floor.number].")
 		return
 	var/floor_id = get_current_floor()
+	if(floor_id == OUTPOST_LIFT_LOCKUP) // OUTPOST PRISON seam: the panel in a lockup's front room (trade_prison/outpost_prison_host.dm)
+		. += span_notice("The floor indicator reads: LOCKUP.")
+		return
 	if(istype(berth, /datum/outpost_berth/ship_bay))
 		var/datum/outpost_berth/ship_bay/bay = berth
 		. += span_notice("The floor indicator reads: SHIP BAY [bay.bay_number].")

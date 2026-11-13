@@ -88,15 +88,21 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 // drag one through who is down or cuffed; nobody else may, visitors let in included. A loose
 // prisoner is out already: an open staff door is only a door to them.
 /obj/machinery/door/airlock/security/prison_staff/CanAllowThrough(atom/movable/mover, border_dir)
-	if(is_outpost_prisoner(mover) && !outpost_prisoner_loose(mover) && !outpost_prisoner_escorted(src, mover))
+	if(is_outpost_prisoner(mover) && !outpost_prisoner_loose(mover) && !outpost_prisoner_escorted(src, mover) && !lets_prisoner(mover))
 		return FALSE
 	return ..()
+
+/// Whether this door lets a prisoner in custody walk through on their own. A staff door never does; Processing's
+/// doors do for whoever Processing is working for (outpost_prison_host.dm).
+/obj/machinery/door/airlock/security/prison_staff/proc/lets_prisoner(atom/movable/mover)
+	return FALSE
 
 // Their own AI never paths through, dragged or not, until they are loose.
 /obj/machinery/door/airlock/security/prison_staff/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	var/atom/requester = pass_info.requester_ref?.resolve()
 	if(is_outpost_prisoner(requester) && !outpost_prisoner_loose(requester))
-		return FALSE
+		// Processing has opened its door for them: the way is clear. Shut, it is never theirs to open.
+		return !density && lets_prisoner(requester)
 	return ..()
 
 /// Whether `thing` is a loose prisoner: out of the cell block and on the run

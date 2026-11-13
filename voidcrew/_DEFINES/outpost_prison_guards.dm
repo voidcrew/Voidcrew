@@ -3,9 +3,7 @@
 
 /// Guards on a wing's roster: one on the door, one in the yard
 #define OUTPOST_GUARD_MAX 2
-/// From going into crit to the corrections service's medevac of the body
-#define OUTPOST_GUARD_RECALL_DELAY (10 SECONDS)
-/// From a guard's death to the corrections service collecting the body
+/// How long a guard, down or dead, can be out of the wing before they are off its roster: carried off
 #define OUTPOST_GUARD_BODY_COLLECT_DELAY (60 SECONDS)
 /// A guard whose baton went flat is back with a charged one after this
 #define OUTPOST_GUARD_SHIFT_SWAP_TIME (1 MINUTES)
@@ -62,16 +60,14 @@
 #define OUTPOST_GUARD_NOTICE_RANGE 3
 
 // A guard's phase (text, so tests and the admin panel can read it)
-/// Beaming in
+/// Not yet on shift: a guard just made
 #define OUTPOST_GUARD_ARRIVING "arriving"
 /// On the wing and on duty
 #define OUTPOST_GUARD_PRESENT "present"
-/// Down (godmode, lying) and waiting to be beamed out
+/// Down in crit, or dead: a body on the floor
 #define OUTPOST_GUARD_DOWN "down"
-/// Dismissed or quitting: walking back to the office to beam out
+/// Off shift (dismissed, recalled, swapping): walking to the staff closet to go
 #define OUTPOST_GUARD_DISMISSED "dismissed"
-/// Beaming out
-#define OUTPOST_GUARD_LEAVING "leaving"
 
 // Response priorities, most urgent highest. One guard per incident on the ladder (threat, argument, fight,
 // climb); a riot, an experiment and the leash take every guard they apply to. Spats and loose prisoners
@@ -83,7 +79,5 @@
 #define OUTPOST_GUARD_PRIORITY_RIOT 7
 #define OUTPOST_GUARD_PRIORITY_LEASH 8
 
-/// Trait source for the beam holding a guard still
-#define OUTPOST_GUARD_BEAM_TRAIT "outpost_guard_beam"
 /// Trait source for what a guard on their feet refuses (lockers, bags)
 #define OUTPOST_GUARD_UPRIGHT_TRAIT "outpost_guard_upright"

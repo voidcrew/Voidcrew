@@ -8,6 +8,8 @@
  *
  * This file holds the wing itself, its area, its cells, supplies and furniture, claims, speech and
  * the clock. The rest of the prison lives beside it:
+ * - outpost_prison_host.dm and outpost_prison_processing.dm: the wing on its outpost's map, its lift
+ *   stop, and Processing, the room everyone comes and goes through;
  * - outpost_prison_economy.dm: intake, arrivals, releases, deaths;
  * - outpost_prison_conditions.dm: the clean, lit and powered scores and the riot strobe;
  * - outpost_prison_containment.dm: reach, the cell block, confinement, staff and inmates;
@@ -20,12 +22,14 @@
  *
  * Supplies: prisoners take food and clean uniforms only from the serving hatches (or from a
  * person's hand), never off a floor or a table, so the hatches, OUTPOST_PRISON_HATCH_CAPACITY
- * items each, are the wing's only stockpile. Stocking a hatch gets a call-out from the yard; a
- * hatch left empty while prisoners wait for it is noted in the wing's log.
+ * items each, are the wing's only stockpile. The galley keeps them stocked (galley_tick()): every
+ * OUTPOST_PRISON_GALLEY_GAP each hatch with room gains a meal or a clean uniform, in turn. Stocking
+ * a hatch gets a call-out from the yard; a hatch left empty while prisoners wait for it is noted in
+ * the wing's log.
  *
  * Everything that advances with time goes through tick(seconds), which process() calls every
  * second, so tests can advance a prison by minutes in one call. The random mess prisoners leave,
- * drips of blood and what they say come from process() alone. Beams run on timers.
+ * drips of blood and what they say come from process() alone.
  */
 
 GLOBAL_LIST_EMPTY(outpost_prisons)
@@ -110,6 +114,10 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	COOLDOWN_DECLARE(mess_hall_cooldown)
 	/// Between the mood a staff member's basket gives the players
 	COOLDOWN_DECLARE(staff_basket_cooldown)
+	/// Whether the galley stocks the hatches (galley_tick()); the unit tests' wing stocks its own
+	var/galley_on = TRUE
+	/// Seconds since the galley's last round
+	var/galley_clock = 0
 
 /datum/outpost_prison/New(obj/structure/overmap/trader_outpost/host, area/voidcrew/outpost_lockup/wing_area)
 	. = ..()
@@ -127,6 +135,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 
 /datum/outpost_prison/Destroy()
 	STOP_PROCESSING(SSprocessing, src)
+	processing_destroy()
 	extras_destroy()
 	GLOB.outpost_prisons -= src
 	set_riot_lights(FALSE)
@@ -153,6 +162,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	cell_block.Cut()
 	table_eaters.Cut()
 	wing_block_cache = null
+	host_destroy()
 	outpost = null
 	wing = null
 	return ..()
@@ -446,8 +456,8 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	return "The hatch is out of [missing] and [waiting] prisoner[waiting == 1 ? " is" : "s are"] waiting."
 
 /**
- * Fills every serving hatch to capacity for free: meals up to OUTPOST_PRISON_FILL_MEAL_SHARE of
- * it, then clean uniforms. For the admin panel. Returns the items added.
+ * Fills every serving hatch to capacity: meals up to OUTPOST_PRISON_FILL_MEAL_SHARE of it, then
+ * clean uniforms. For the admin panel. Returns the items added.
  */
 /datum/outpost_prison/proc/fill_hatches()
 	var/added = 0
@@ -464,6 +474,66 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 			new /obj/item/clothing/under/rank/prisoner/outpost(hatch.loc)
 			added++
 	return added
+
+/**
+ * The galley's clock: every OUTPOST_PRISON_GALLEY_GAP one round, each serving hatch getting one thing
+ * (galley_serve()). One round a step, however long the step.
+ */
+/datum/outpost_prison/proc/galley_tick(seconds)
+	if(!galley_on)
+		return
+	galley_clock += seconds
+	if(galley_clock < OUTPOST_PRISON_GALLEY_GAP)
+		return
+	galley_clock = 0
+	for(var/obj/structure/table/reinforced/prison_hatch/hatch as anything in hatches())
+		galley_serve(hatch)
+
+/**
+ * One round at one hatch, from the galley side: a meal or a clean uniform, in turn, each up to its share of the
+ * counter (OUTPOST_PRISON_FILL_MEAL_SHARE), and never past the hatch's capacity. A counter full of dirty
+ * uniforms would end the meals, so with no room left one dirty uniform goes back to the wash first. The yard
+ * calls it out as it does anyone's stocking (on_hatch_stocked()). Returns what was put down, or null.
+ */
+/datum/outpost_prison/proc/galley_serve(obj/structure/table/reinforced/prison_hatch/hatch)
+	var/turf/counter = hatch?.loc
+	if(!isturf(counter))
+		return null
+	var/meals = 0
+	var/clean_suits = 0
+	var/obj/item/clothing/under/rank/prisoner/outpost/dirty
+	for(var/obj/item/thing in counter)
+		if(istype(thing, /obj/item/food))
+			meals++
+			continue
+		var/obj/item/clothing/under/rank/prisoner/outpost/suit = thing
+		if(!istype(suit))
+			continue
+		if(suit.grime < PRISONER_GRIME_DIRTY)
+			clean_suits++
+		else
+			dirty ||= suit
+	var/meal_share = round(OUTPOST_PRISON_HATCH_CAPACITY * OUTPOST_PRISON_FILL_MEAL_SHARE, 1)
+	var/suit_share = OUTPOST_PRISON_HATCH_CAPACITY - meal_share
+	var/serve_meal = hatch.galley_meal_next
+	if(serve_meal && meals >= meal_share)
+		serve_meal = FALSE
+	else if(!serve_meal && clean_suits >= suit_share)
+		serve_meal = TRUE
+	if(serve_meal ? (meals >= meal_share) : (clean_suits >= suit_share))
+		return null
+	if(hatch.room_left() <= 0)
+		if(!dirty)
+			return null
+		qdel(dirty)
+	hatch.galley_meal_next = !serve_meal
+	var/obj/item/served
+	if(serve_meal)
+		served = new /obj/item/food/prison_ration(counter)
+	else
+		served = new /obj/item/clothing/under/rank/prisoner/outpost(counter)
+	on_hatch_stocked(hatch, list(served), null)
+	return served
 
 /**
  * The nearest thing in the prisoner's reach that they want: food anywhere in the wing (a serving
@@ -517,8 +587,8 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 			. += meal
 
 /**
- * Staff put something on a serving hatch. Prisoners who want it leave whatever they were idling
- * at to go and get it, one prisoner who can see it and wants it calls it out ("Food's up!", "Clean
+ * Staff or the galley put something on a serving hatch. Prisoners who want it leave whatever they
+ * were idling at to go and get it, one prisoner who can see it and wants it calls it out ("Food's up!", "Clean
  * suits!"), and someone already waiting at that hatch for it thanks them. Returns the prisoner who
  * called it out, or null.
  */
@@ -763,9 +833,9 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 
 /**
  * Advances the prison by `seconds`, in a fixed order: who is home, the condition scores, reach,
- * supplies; then for each prisoner their body (body_tick()), sentence, needs, confinement, cuffs
- * and lockdown (outpost_prison_capture.dm), mood, and release; then trouble
- * (outpost_prison_riot.dm) and arrivals.
+ * the galley and supplies; then for each prisoner their body (body_tick()), sentence, needs,
+ * confinement, cuffs and lockdown (outpost_prison_capture.dm), mood, and release; then trouble
+ * (outpost_prison_riot.dm), Processing and arrivals.
  * Rioting or loose, a prisoner's sentence stops. Each part keeps its own cadence inside its own
  * tick proc; keep this order as it is.
  */
@@ -773,12 +843,13 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	presence_tick(seconds)
 	conditions_tick(seconds)
 	containment_tick(seconds)
+	galley_tick(seconds)
 	supply_tick(seconds)
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT)
 			continue
 		if(prisoner.stat == DEAD)
-			body_tick(prisoner)
+			body_tick(prisoner, seconds)
 			continue
 		var/serving = prisoner.serving_sentence()
 		if(serving)
@@ -798,6 +869,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 			check_release(prisoner)
 	trouble_tick(seconds)
 	extras_tick(seconds)
+	processing_tick(seconds)
 	intake_tick(seconds)
 
 // ===== COMINGS AND GOINGS =====

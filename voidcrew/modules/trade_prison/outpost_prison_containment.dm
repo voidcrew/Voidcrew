@@ -317,6 +317,7 @@
 		if(inside)
 			cell.set_inside(inside)
 	refresh_cell_block()
+	office_cache = null
 	refresh_reach()
 
 /**
@@ -426,8 +427,8 @@
 /**
  * Brought back (a defibrillator, strange reagent: tg's revival works on them as on anyone). Still on the
  * roster, they are the same inmate again: the death stays on the books (its record closed, the yard's
- * blame not taken back) and the log says so. Revived after their body left the roster, the corrections
- * service takes them back off the outpost.
+ * blame not taken back) and the log says so. Revived after their body left the roster, they are nobody's
+ * prisoner and slip away once nobody is looking (leave()).
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/on_revived(datum/source, full_heal_flags)
 	SIGNAL_HANDLER
@@ -437,7 +438,7 @@
 		died_at = 0
 		return
 	if(phase != PRISONER_LEAVING)
-		INVOKE_ASYNC(src, PROC_REF(beam_out))
+		INVOKE_ASYNC(src, PROC_REF(leave))
 
 /**
  * Whether they are shut in their cell: standing in a cell with its door bolted shut, or with

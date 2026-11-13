@@ -427,7 +427,7 @@
 	prison.contraband_force_rolls = null
 	settle_prison_air(home)
 
-// ===== MAIL: WAVES BY DROP POD =====
+// ===== MAIL: WAVES ON THE HATCH =====
 
 /datum/unit_test/voidcrew_outpost_prison_mail_arrivals
 	parent_type = /datum/unit_test/voidcrew_outpost_management
@@ -464,181 +464,65 @@
 	third.mail_had_letter = TRUE
 	fourth.mail_had_letter = TRUE
 	TEST_ASSERT_EQUAL(length(prison.mail_wave_recipients()), 0, "A wave picked someone with nobody due a letter")
-	TEST_ASSERT_EQUAL(prison.mail_wave(), 0, "A mail pod came with nobody due a letter")
-	TEST_ASSERT_NULL(find_landing_zone(prison), "A mail pod is coming with nobody due a letter")
+	TEST_ASSERT_EQUAL(prison.mail_wave(), 0, "Mail came with nobody due a letter")
+	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), 0, "A letter is waiting with nobody due one")
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in everyone)
 		prisoner.mail_had_letter = FALSE
 		prisoner.sentence_left = 3600
 
-	// Mail is aimed at the office side of a serving hatch.
-	var/list/hatch_sides = list()
-	for(var/turf/tile as anything in prison.wing_turfs())
-		var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in tile
-		if(hatch)
-			hatch_sides += hatch.staff_side_turf()
-	TEST_ASSERT_EQUAL(length(hatch_sides), 2, "The wing should have two serving hatches")
-	TEST_ASSERT(prison.mail_office_spot() in hatch_sides, "Mail is not aimed at a serving hatch's office side")
-
-	// The landing spot: a free floor tile of the office, off the cell block, with nothing on it, no
-	// door beside it, and leaving the office in one piece.
-	var/turf/landing = prison.mail_pod_landing_turf()
-	TEST_ASSERT_NOTNULL(landing, "The mail pod has nowhere to land in the office")
-	TEST_ASSERT(get_dist(landing, prison.mail_office_spot()) <= 2, "The mail pod lands [get_dist(landing, prison.mail_office_spot())] tiles from the hatch")
-	check_landing(prison, landing)
-	TEST_ASSERT_EQUAL(landing.loc, prison.wing, "The mail pod lands outside the wing with the office free")
-	// Never on a mob or anything dense
-	var/mob/living/carbon/human/in_the_way = make_player(landing, "xfmailinway")
-	TEST_ASSERT(prison.mail_pod_landing_turf() != landing, "The mail pod would land on someone")
-	in_the_way.forceMove(run_loc_floor_bottom_left)
-	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, landing)
-	TEST_ASSERT(prison.mail_pod_landing_turf() != landing, "The mail pod would land on a crate")
-	qdel(crate)
+	// Mail goes out on a serving hatch.
+	var/list/obj/structure/table/reinforced/prison_hatch/hatches = prison.hatches()
+	TEST_ASSERT_EQUAL(length(hatches), 2, "The wing should have two serving hatches")
+	TEST_ASSERT_NOTNULL(prison.mail_hatch_with_room(), "An empty hatch has no room for mail")
 
 	// The clock: nobody home, it waits
 	prison.audience_override = FALSE
 	prison.mail_next_in = 1
 	prison.mail_tick(10)
 	TEST_ASSERT_EQUAL(prison.mail_next_in, 1, "The mail clock ran with nobody home")
-	TEST_ASSERT_NULL(find_landing_zone(prison), "A mail pod came with nobody home")
+	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), 0, "Mail came with nobody home")
 
-	// Home: the clock runs out, a pod comes down, and the next is 15 to 25 minutes off
-	// (OUTPOST_MAIL_WAVE_GAP_MIN, _MAX). Its letters only count as waiting once the crate lands.
+	// Home: the clock runs out, the letters are out at once, and the next call is 15 to 25 minutes off
+	// (OUTPOST_MAIL_WAVE_GAP_MIN, _MAX). No pod, no crate: each is in its envelope in the cell block, on the
+	// hatch or already in its prisoner's hands.
 	prison.audience_override = TRUE
 	prison.mail_tick(1)
-	TEST_ASSERT(prison.mail_next_in >= 900 && prison.mail_next_in <= 1500, "The next mail pod is [prison.mail_next_in] seconds off")
-	var/obj/effect/pod_landingzone/zone = find_landing_zone(prison)
-	TEST_ASSERT_NOTNULL(zone, "No mail pod came when the clock ran out")
-	var/turf/pod_turf = get_turf(zone)
-	check_landing(prison, pod_turf, ignore_zone = TRUE)
-	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), 0, "Letters counted as waiting before the pod landed")
-	// Someone standing beside the landing comes to no harm
-	var/turf/beside_pod
-	for(var/turf/open/floor in orange(1, pod_turf))
-		if(!floor.is_blocked_turf(exclude_mobs = FALSE) && floor.loc == prison.wing && !prison.in_cell_block(floor))
-			beside_pod = floor
-			break
-	TEST_ASSERT_NOTNULL(beside_pod, "No floor beside the landing for a bystander")
-	var/mob/living/carbon/human/bystander = make_player(beside_pod, "xfmailbystander")
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(crate_on), pod_turf), 12 SECONDS), "The mail pod never dropped its crate")
-	// tg's mail crate, shut, holding this wave's prison letters and nothing else
-	var/obj/structure/closet/crate/mail/mail_crate = locate() in pod_turf
-	TEST_ASSERT_EQUAL(mail_crate.type, /obj/structure/closet/crate/mail, "The mail pod dropped [mail_crate.type], not tg's mail crate")
-	TEST_ASSERT(!mail_crate.opened && mail_crate.icon_state == "mailsealed", "The mail crate did not land shut")
-	var/letters_in_crate = 0
-	for(var/atom/movable/inside as anything in mail_crate.contents)
-		TEST_ASSERT(istype(inside, /obj/item/mail/envelope/outpost_prison), "The mail crate holds [inside.type]")
-		letters_in_crate++
-	TEST_ASSERT(letters_in_crate >= 1 && letters_in_crate <= 2, "The crate holds [letters_in_crate] letters for four prisoners")
-	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), letters_in_crate, "The crate's letters do not all count as waiting")
-	TEST_ASSERT(findtext(contraband_last_log(prison), "Mail call: a pod dropped [letters_in_crate] letter"), "The mail call was not logged: [contraband_last_log(prison)]")
-	var/lettered = 0
-	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in everyone)
-		if(prisoner.mail_had_letter)
-			lettered++
-	TEST_ASSERT(lettered < length(everyone), "Every prisoner had a letter")
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(pod_gone), pod_turf), 8 SECONDS), "The mail pod never left")
-	TEST_ASSERT_EQUAL(bystander.get_total_damage(), 0, "The mail pod hurt someone beside it")
-	TEST_ASSERT(bystander.body_position == STANDING_UP && !bystander.IsKnockdown() && !bystander.IsStun() && !bystander.IsParalyzed(), "The mail pod knocked down or stunned someone beside it")
-	TEST_ASSERT(!QDELETED(mail_crate) && mail_crate.loc == pod_turf, "The mail crate left with the pod")
-	check_office_open(prison)
-	// Opened, it lets the letters out onto the floor, still waiting, and stays behind as an empty crate
-	TEST_ASSERT(mail_crate.open(null, TRUE), "The mail crate would not open")
-	var/letters_out = 0
-	for(var/obj/item/mail/envelope/outpost_prison/envelope in pod_turf)
-		letters_out++
-	TEST_ASSERT_EQUAL(letters_out, letters_in_crate, "Opening the crate let out [letters_out] of [letters_in_crate] letters")
-	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), letters_in_crate, "Opening the crate changed the letters waiting")
-	TEST_ASSERT_EQUAL(mail_crate.icon_state, "mailopen", "The emptied mail crate does not look empty")
-
-	// prison_mail_wave calls a pod now, for those still due a letter, and starts the clock over.
-	// It comes down somewhere other than the first crate.
-	prison.mail_next_in = 5
-	var/waiting_before = length(prison.mail_waiting_letters())
-	TEST_ASSERT(istext(prison.mail_admin_act("prison_mail_wave", list(), null)), "prison_mail_wave called no pod")
-	TEST_ASSERT(prison.mail_next_in >= 900 && prison.mail_next_in <= 1500, "prison_mail_wave did not start the mail clock over")
-	var/obj/effect/pod_landingzone/admin_zone = find_landing_zone(prison)
-	TEST_ASSERT_NOTNULL(admin_zone, "prison_mail_wave called no pod")
-	var/turf/admin_turf = get_turf(admin_zone)
-	TEST_ASSERT(admin_turf != pod_turf, "The admin's mail pod came down on the first crate")
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(crate_on), admin_turf), 12 SECONDS), "The admin's mail pod never dropped its crate")
-	TEST_ASSERT(length(prison.mail_waiting_letters()) > waiting_before, "The admin's mail pod brought no letters")
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(pod_gone), admin_turf), 8 SECONDS), "The admin's mail pod never left")
-	check_office_open(prison)
-	// With the office full, no pod comes: a lockup has no door out to land one beside.
+	TEST_ASSERT(prison.mail_next_in >= 900 && prison.mail_next_in <= 1500, "The next mail call is [prison.mail_next_in] seconds off")
+	var/list/waiting = prison.mail_waiting_letters()
+	TEST_ASSERT(length(waiting) >= 1 && length(waiting) <= 2, "A mail call for four prisoners put out [length(waiting)] letters, not 1 or 2")
+	for(var/obj/item/paper/outpost_prison_letter/letter as anything in waiting)
+		var/mob/living/carbon/human/npc/outpost_prisoner/addressee = letter.letter_prisoner_ref?.resolve()
+		TEST_ASSERT(addressee in everyone, "A letter came for someone who is not a prisoner here")
+		TEST_ASSERT(addressee.mail_had_letter, "A prisoner sent a letter could be sent another this stay")
+		TEST_ASSERT(istype(letter.loc, /obj/item/mail/envelope/outpost_prison), "A letter came out of its envelope")
+		TEST_ASSERT(prison.in_cell_block(letter), "A letter was put out somewhere the yard cannot get it")
 	for(var/turf/tile as anything in prison.wing_turfs())
-		if(!prison.in_cell_block(tile) && prison.mail_pod_can_land(tile))
-			allocate(/obj/structure/closet/crate, tile)
-	TEST_ASSERT_NULL(prison.mail_pod_landing_turf(), "With the office full the mail pod still has somewhere to land")
+		TEST_ASSERT_NULL(locate(/obj/structure/closet/supplypod) in tile, "A supply pod came with the mail")
+		TEST_ASSERT_NULL(locate(/obj/effect/pod_landingzone) in tile, "A supply pod is coming with the mail")
+		TEST_ASSERT_NULL(locate(/obj/structure/closet/crate/mail) in tile, "A mail crate came with the mail")
+
+	// Every counter full: the mail does not come.
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in everyone)
+		prisoner.mail_had_letter = FALSE
+	for(var/obj/structure/table/reinforced/prison_hatch/hatch as anything in hatches)
+		while(hatch.room_left() > 0)
+			new /obj/item/food/prison_ration(hatch.loc)
+	TEST_ASSERT_NULL(prison.mail_hatch_with_room(), "A full hatch has room for mail")
+	var/waiting_before = length(prison.mail_waiting_letters())
+	TEST_ASSERT_EQUAL(prison.mail_wave(), 0, "Mail went out with every hatch full")
+	TEST_ASSERT_EQUAL(length(prison.mail_waiting_letters()), waiting_before, "A letter went out with every hatch full")
+	TEST_ASSERT(islist(prison.mail_admin_act("prison_mail_wave", list(), null)), "prison_mail_wave put mail on a full hatch")
+
+	// prison_mail_wave calls the mail now, for those still due a letter, and starts the clock over.
+	var/obj/structure/table/reinforced/prison_hatch/cleared = hatches[1]
+	for(var/obj/item/food/prison_ration/ration in cleared.loc)
+		qdel(ration)
+	prison.mail_next_in = 5
+	TEST_ASSERT(istext(prison.mail_admin_act("prison_mail_wave", list(), null)), "prison_mail_wave put out no mail")
+	TEST_ASSERT(prison.mail_next_in >= 900 && prison.mail_next_in <= 1500, "prison_mail_wave did not start the mail clock over")
+	TEST_ASSERT(length(prison.mail_waiting_letters()) > waiting_before, "prison_mail_wave put out no letter")
 	prison.audience_override = null
 	settle_prison_air(home)
-
-/// Fails the test unless `tile` is somewhere a mail pod may land
-/**
- * Fails the test unless the office's free floor is in one piece and reaches both serving hatches'
- * office sides, with whatever mail crates have landed on it
- */
-/datum/unit_test/voidcrew_outpost_prison_mail_arrivals/proc/check_office_open(datum/outpost_prison/prison)
-	var/list/floor = list()
-	for(var/turf/tile as anything in prison.wing_turfs())
-		if(isopenturf(tile) && !prison.in_cell_block(tile) && !tile.is_blocked_turf(exclude_mobs = TRUE))
-			floor[tile] = TRUE
-	var/turf/start = floor[1]
-	var/list/reached = list()
-	reached[start] = TRUE
-	var/list/queue = list(start)
-	var/index = 1
-	while(index <= length(queue))
-		var/turf/current = queue[index++]
-		for(var/direction in GLOB.cardinals)
-			var/turf/next = get_step(current, direction)
-			if(next && floor[next] && !reached[next])
-				reached[next] = TRUE
-				queue += next
-	TEST_ASSERT_EQUAL(length(reached), length(floor), "A mail crate split the office floor")
-	for(var/turf/tile as anything in prison.wing_turfs())
-		var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in tile
-		if(hatch)
-			TEST_ASSERT(reached[hatch.staff_side_turf()], "A mail crate cut off a serving hatch from the office")
-
-/datum/unit_test/voidcrew_outpost_prison_mail_arrivals/proc/check_landing(datum/outpost_prison/prison, turf/tile, ignore_zone = FALSE)
-	TEST_ASSERT(isopenturf(tile) && !isspaceturf(tile), "The mail pod lands on [tile]")
-	TEST_ASSERT(!prison.in_cell_block(tile), "The mail pod lands in the cell block")
-	TEST_ASSERT_NULL(locate(/mob/living) in tile, "The mail pod lands on someone")
-	for(var/obj/thing in tile)
-		if(ignore_zone && istype(thing, /obj/effect/pod_landingzone))
-			continue
-		TEST_ASSERT(!thing.density, "The mail pod lands on [thing]")
-	for(var/direction in GLOB.cardinals)
-		TEST_ASSERT_NULL(locate(/obj/machinery/door) in get_step(tile, direction), "The mail pod lands beside a door")
-
-/// The mail pod on its way to the wing, found by its landing marker in or just outside the wing
-/datum/unit_test/voidcrew_outpost_prison_mail_arrivals/proc/find_landing_zone(datum/outpost_prison/prison)
-	var/min_x = world.maxx
-	var/min_y = world.maxy
-	var/max_x = 1
-	var/max_y = 1
-	var/wing_z
-	for(var/turf/wing_tile as anything in prison.wing_turfs())
-		min_x = min(min_x, wing_tile.x)
-		min_y = min(min_y, wing_tile.y)
-		max_x = max(max_x, wing_tile.x)
-		max_y = max(max_y, wing_tile.y)
-		wing_z = wing_tile.z
-	if(!wing_z)
-		return null
-	for(var/turf/tile as anything in block(max(1, min_x - 3), max(1, min_y - 3), wing_z, min(world.maxx, max_x + 3), min(world.maxy, max_y + 3), wing_z))
-		var/obj/effect/pod_landingzone/zone = locate() in tile
-		if(zone)
-			return zone
-	return null
-
-/// Whether a mail crate has come to rest on `tile`
-/datum/unit_test/voidcrew_outpost_prison_mail_arrivals/proc/crate_on(turf/tile)
-	return !!(locate(/obj/structure/closet/crate/mail) in tile)
-
-/// Whether the mail pod has gone from `tile`
-/datum/unit_test/voidcrew_outpost_prison_mail_arrivals/proc/pod_gone(turf/tile)
-	return !(locate(/obj/structure/closet/supplypod) in tile)
 
 // ===== MAIL: DELIVERY, OPENED LETTERS, CONTRABAND IN THE POST =====
 

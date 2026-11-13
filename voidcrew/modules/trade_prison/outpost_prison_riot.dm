@@ -960,7 +960,7 @@
 		add_log("[rioter.real_name] was transferred out.")
 		if(rioter.has_shiv())
 			qdel(rioter.held_item)
-		rioter.beam_out()
+		rioter.leave()
 	log_game("OUTPOST LOCKUP: [length(rioters)] rioter\s transferred out of '[outpost_log_name()]'")
 	end_riot()
 	return length(rioters)
@@ -1395,7 +1395,7 @@
 	say_context("recaptured")
 
 /**
- * Out of time: gone for good, walls or no walls, and the corrections service counts them lost.
+ * Out of time: they have got away. The wing counts them lost, and they leave through Processing (leave()).
  */
 /datum/outpost_prison/proc/escaped_for_good(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	close_bounty_record(prisoner, BOUNTY_RECORD_ESCAPED)
@@ -1403,7 +1403,7 @@
 	add_log("[prisoner.real_name] got away.")
 	if(prisoner.has_shiv())
 		qdel(prisoner.held_item)
-	prisoner.beam_out()
+	prisoner.leave()
 	if(!loose_count() && !riot_active)
 		broke_out = FALSE
 	update_riot_lights()

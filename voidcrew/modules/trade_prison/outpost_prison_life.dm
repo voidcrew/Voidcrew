@@ -8,7 +8,7 @@
  *
  * Affinity is kept per pair, -100 to 100, keyed by the two prisoners' REF()s in sorted order, and
  * dropped when either leaves. Nothing here holds a prisoner itself, so a hard delete leaves no
- * dangling reference. Only an arrival who beams in through intake can turn out to know someone
+ * dangling reference. Only an arrival who comes in through intake can turn out to know someone
  * inside or have a birthday; a prisoner made any other way (an admin spawn, a test) starts with no
  * history.
  *
@@ -257,27 +257,27 @@
 
 // ===== ARRIVALS =====
 
-/// A prisoner was booked in. Whether they know anyone inside, and their birthday, wait until they beam in.
+/// A prisoner was booked in. Whether they know anyone inside, and their birthday, wait until they have arrived.
 /datum/outpost_prison/proc/on_prisoner_admitted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
-	// admit_next() beams them in straight after admit(); anyone booked in any other way stays put.
+	// admit_next() has them arrive() straight after admit(); anyone booked in any other way stays put.
 	addtimer(CALLBACK(src, PROC_REF(greet_arrival), WEAKREF(prisoner)), 1)
 
-/// An arrival beaming in through intake: a crewmate or a rival already inside, a birthday, marks on the wall
+/// An arrival who came in through intake: a crewmate or a rival already inside, a birthday, marks on the wall
 /datum/outpost_prison/proc/greet_arrival(datum/weakref/prisoner_ref)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = prisoner_ref?.resolve()
-	if(!prisoner || prisoner.prison != src || prisoner.phase != PRISONER_ARRIVING)
+	if(!prisoner || prisoner.prison != src || !prisoner.came_by_intake)
 		return FALSE
 	roll_crew_tie(prisoner)
 	if(roll_birthday())
 		give_birthday(prisoner)
 	if(prisoner.cell && cell_has_marks(prisoner.cell) && prob(PRISON_CELL_MARKS_LINE_CHANCE))
-		queue_life_line(prisoner, "cell_marks", null, OUTPOST_PRISON_BEAM_TIME / (1 SECONDS) + PRISON_CELL_MARKS_LINE_DELAY)
+		queue_life_line(prisoner, "cell_marks", null, PRISON_CELL_MARKS_LINE_DELAY)
 	return TRUE
 
 /**
  * Whether an arrival crewed with someone already inside (+PRISON_CREW_TIE) or fell out with them
  * (-PRISON_CREW_TIE). `forced` is "friend" or "rival" to skip the roll. The arrival says so once
- * they have beamed in. Returns the other prisoner, or null.
+ * they are out of Processing. Returns the other prisoner, or null.
  */
 /datum/outpost_prison/proc/roll_crew_tie(mob/living/carbon/human/npc/outpost_prisoner/prisoner, forced)
 	var/list/others = list()
@@ -296,7 +296,7 @@
 		return null
 	var/mob/living/carbon/human/npc/outpost_prisoner/other = pick(others)
 	set_affinity(prisoner, other, tie == "friend" ? PRISON_CREW_TIE : -PRISON_CREW_TIE)
-	var/delay = (prisoner.phase == PRISONER_ARRIVING ? OUTPOST_PRISON_BEAM_TIME / (1 SECONDS) : 0) + PRISON_CREW_LINE_DELAY
+	var/delay = PRISON_CREW_LINE_DELAY
 	queue_life_line(prisoner, tie == "friend" ? "arrival_crew_friend" : "arrival_crew_rival", other, delay)
 	return other
 
@@ -308,7 +308,7 @@
 /datum/outpost_prison/proc/give_birthday(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	prisoner.has_birthday = TRUE
 	prisoner.party_done = FALSE
-	var/delay = (prisoner.phase == PRISONER_ARRIVING ? OUTPOST_PRISON_BEAM_TIME / (1 SECONDS) : 0) + PRISON_BIRTHDAY_LINE_DELAY
+	var/delay = PRISON_BIRTHDAY_LINE_DELAY
 	queue_life_line(prisoner, "birthday_arrival", null, delay)
 
 // ===== LINES DUE =====
@@ -317,7 +317,7 @@
 /datum/outpost_prison/proc/queue_life_line(mob/living/carbon/human/npc/outpost_prisoner/prisoner, context, mob/living/carbon/human/npc/outpost_prisoner/other, seconds)
 	LAZYADD(prisoner.life_lines, list(list(seconds, context, other ? WEAKREF(other) : null)))
 
-/// Counts down queued lines and says the ones that are due, once the speaker has beamed in
+/// Counts down queued lines and says the ones that are due, once the speaker is out of Processing
 /datum/outpost_prison/proc/life_lines_tick(seconds)
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!length(prisoner.life_lines))
@@ -365,8 +365,8 @@
 /**
  * A prisoner is being released after a stay that averaged `average` care x conditions. A stay kept
  * well ends with a wave at the nearest member and thanks; a poor one with a bitter word. Friends in
- * sight say goodbye, a second or so apart, and feel it; the leaver answers the first before the beam
- * takes them. Returns TRUE if any of that replaced the usual release line.
+ * sight say goodbye, a second or so apart, and feel it; the leaver answers the first before they
+ * go. Returns TRUE if any of that replaced the usual release line.
  */
 /datum/outpost_prison/proc/on_prisoner_releasing(mob/living/carbon/human/npc/outpost_prisoner/prisoner, average)
 	var/spoke = FALSE
@@ -388,8 +388,8 @@
 			friends += other
 	if(!length(friends))
 		return spoke
-	// The first goodbye and the leaver's answer come before the beam starts, since nobody talks while
-	// beaming out; later friends call after them anyway, a second or two apart.
+	// The first goodbye and the leaver's answer come before they turn to go, since nobody talks on the
+	// way out; later friends call after them anyway, a second or two apart.
 	var/delay = 0
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/friend as anything in friends)
 		friend.adjust_mood(-PRISON_FAREWELL_MOOD)

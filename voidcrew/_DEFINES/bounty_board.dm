@@ -132,7 +132,7 @@
 
 // ===== THE PAD =====
 
-/// How long the pad's beam takes to take the criminal (OUTPOST_PRISON_BEAM_TIME, the prisoner beam)
+/// How long the pad's beam takes to take the criminal
 #define BOUNTY_BEAM_TIME (3 SECONDS)
 /// Between two lines the pad says about a bounty target landing on it, so dragging on and off doesn't spam
 #define BOUNTY_PAD_ANNOUNCE_COOLDOWN (5 SECONDS)

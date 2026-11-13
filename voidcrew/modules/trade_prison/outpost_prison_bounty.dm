@@ -36,8 +36,8 @@
  * staff door to dart through it when staff open it. Both are leisure activities below, which the
  * prisoner's routine picks by weight like any other.
  *
- * A bounty prisoner remembers the crew who caught them: they name that ship as they beam in
- * (bounty_arrival_speech(), from finish_beam_in()) and now and then call its crew out in the yard
+ * A bounty prisoner remembers the crew who caught them: they name that ship as they come in
+ * (bounty_arrival_speech(), from finish_arrival()) and now and then call its crew out in the yard
  * (bounty_extra_speech(), from extra_speech()). Those lines are in strings/outpost_prison_bounty.json,
  * one of the extras' dialogue files, since they name the ship through {place}.
  *
@@ -418,7 +418,7 @@ GLOBAL_VAR(bounty_pool_timer)
 	return "all"
 
 /**
- * Beams the prisoner `record` names into the first free cell now, ready or not: the admin panel's
+ * Puts the prisoner `record` names in the first free cell now, ready or not: the admin panel's
  * forced admission, which takes this record and no other from the pool. Returns the prisoner, or
  * null with no free cell or the record gone from the pool.
  */
@@ -435,7 +435,7 @@ GLOBAL_VAR(bounty_pool_timer)
 		record.status = BOUNTY_RECORD_IMPRISONED
 		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot, record)
 		admit(prisoner, cell)
-		prisoner.beam_in()
+		prisoner.arrive()
 		start_arrival_gap()
 		arrival_countdown = next_arrival_in()
 		return prisoner
@@ -480,7 +480,7 @@ GLOBAL_VAR(bounty_pool_timer)
 	if(length(personalities))
 		personality = pick(personalities)
 	// As hurt as they were caught, but never below BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH percent: real
-	// damage spread over their limbs when they beam in (beam_in())
+	// damage spread over their limbs when they arrive (arrive())
 	arrival_brute = round(maxHealth * clamp(record.hurt_fraction || 0, 0, 1 - BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH / 100))
 	record.status = BOUNTY_RECORD_IMPRISONED
 
@@ -898,9 +898,9 @@ GLOBAL_VAR(bounty_pool_timer)
 	return list("{place}" = bounty_record.captor_name)
 
 /**
- * A bounty prisoner's first words as the beam ends name the crew who caught them ("So this is where
+ * A bounty prisoner's first words in the yard name the crew who caught them ("So this is where
  * the Meridian crew sends people."), in place of the usual hello. Returns TRUE if they said it.
- * finish_beam_in() calls it before its own arrival lines.
+ * finish_arrival() calls it before its own arrival lines.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_arrival_speech()
 	var/list/values = bounty_captor_values()
@@ -967,7 +967,7 @@ GLOBAL_VAR(bounty_pool_timer)
 /**
  * An admin action for bounty prisoners: a line for the admin log, list("error" = text) when
  * refused, or null when it isn't one (extras_admin_act()).
- * - "prison_bounty_admit" {id}: that record's prisoner beams in now, into the first free cell
+ * - "prison_bounty_admit" {id}: that record's prisoner is put in the first free cell now
  * - "prison_bounty_make" {tier}: a new record of that tier joins the pool, reserved for this wing
  * - "prison_bounty_intake" {setting}: the wing's bounty intake setting
  * - "prison_bounty_clear" {}: every record in the pool is closed
