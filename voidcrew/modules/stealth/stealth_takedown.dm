@@ -116,7 +116,7 @@
 	RegisterSignals(attacker, list(COMSIG_QDELETING, COMSIG_LIVING_DEATH), PROC_REF(on_gone))
 	RegisterSignal(victim, COMSIG_QDELETING, PROC_REF(on_gone))
 	if(wire)
-		RegisterSignal(wire, COMSIG_QDELETING, PROC_REF(on_gone))
+		RegisterSignal(wire, COMSIG_QDELETING, PROC_REF(on_wire_gone))
 
 /datum/stealth_takedown/Destroy()
 	if(!ended)
@@ -129,6 +129,11 @@
 /datum/stealth_takedown/proc/on_gone(datum/source)
 	SIGNAL_HANDLER
 	end(FALSE)
+
+/// The wire is gone, so the hold on the neck goes with it.
+/datum/stealth_takedown/proc/on_wire_gone(datum/source)
+	SIGNAL_HANDLER
+	end(TRUE)
 
 /// The wind-up, then the hold closes. Runs async.
 /datum/stealth_takedown/proc/start()

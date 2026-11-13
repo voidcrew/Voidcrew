@@ -98,6 +98,16 @@
 	TEST_ASSERT(QDELETED(other_hold), "Letting go didn't end the garrotte")
 	TEST_ASSERT(!HAS_TRAIT_FROM(second, TRAIT_MUTE, "stealth_takedown"), "The mute stayed after letting go")
 	TEST_ASSERT_NULL(strangler.stealth_takedown_doing, "The garroter is still marked busy")
+	// A wire that's destroyed lets go too.
+	var/mob/living/carbon/human/npc/third = d45_bare_guard(block, 7, 3)
+	var/mob/living/carbon/human/cutter = stealth_person(block, 6, 3)
+	var/obj/item/garrotte/third_wire = takedown_garrotte(cutter)
+	var/datum/stealth_takedown/third_hold = new(cutter, third, "garrotte", third_wire)
+	TEST_ASSERT(third_hold.close(), "The third garrotte didn't close")
+	qdel(third_wire)
+	TEST_ASSERT(QDELETED(third_hold), "A destroyed garrotte didn't end the hold")
+	TEST_ASSERT_NULL(cutter.pulling, "A destroyed garrotte still holds him")
+	TEST_ASSERT(!HAS_TRAIT_FROM(third, TRAIT_MUTE, "stealth_takedown"), "The mute stayed after the wire was destroyed")
 
 /// The chokehold puts him out and lets go by itself, alive; a helmet slows the garrotte.
 /datum/unit_test/voidcrew_stealth_takedown_choke
