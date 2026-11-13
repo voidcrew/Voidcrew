@@ -242,7 +242,9 @@ GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
 	TEST_ASSERT_EQUAL(session.max_length, 30 SECONDS, "A shared slow-mo isn't capped at 30 seconds")
 	var/datum/sandy_replay/recording = session.replay
 	session.max_length = world.time - session.started + 0.5 SECONDS // the cap, brought within the test's reach
-	sleep(0.8 SECONDS)
+	var/until = world.time + 2 SECONDS
+	while(!QDELETED(one) && world.time < until) // checked the tick it ends: the replay of so short a slow-mo is short too
+		sleep(world.tick_lag)
 	TEST_ASSERT(QDELETED(one) && QDELETED(two), "A member's window outlived the cap")
 	TEST_ASSERT(!length(GLOB.cyberware_time_fields), "A field outlived the cap")
 	TEST_ASSERT(!QDELETED(recording) && recording.state >= 2, "The replay didn't start at the cap")
