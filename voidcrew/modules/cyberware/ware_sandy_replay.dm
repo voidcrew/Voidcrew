@@ -88,6 +88,10 @@
 /// chrome_puppet_rig.dm, MANTIS_RIG_HIDE_FILTER in mantis_rig.dm). A body wearing one is in the middle of a move.
 #define SANDY_REPLAY_RIG_HIDES list("chrome_rig_hide", "mantis_rig_hide")
 
+/// The most shots in the air one recording follows at once. A room's worth of rounds is far fewer; past it a new shot is
+/// left out of the replay and the recording says so (shots_capped, and once in the game log).
+#define SANDY_REPLAY_MAX_SHOTS 64
+
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
 #define SANDY_FRAME_INDEX 1
@@ -169,6 +173,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/list/chain_shift
 	/// Playback: the look the stand-in was last given.
 	var/drawn_look
+	/// A shot (a projectile): it flies in a line between its frames, a frame at a time (fly()).
+	var/flier = FALSE
 
 /// Carries the recorded look of something that is gone, or isn't on a turf any more.
 /obj/effect/abstract/sandy_replay_standin
@@ -273,6 +279,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/list/event_log = list()
 	/// Every body that was mid-move during the wait: what turns up around them is recorded.
 	var/list/wait_bodies = list()
+	/// Shots being recorded that are still in the air.
+	var/shots_live = 0
+	/// Shots left out because SANDY_REPLAY_MAX_SHOTS were already in the air.
+	var/shots_capped = 0
+	/// Shots still flying when the recording ended, held where they are until the replay is over (hold_shots()).
+	var/list/held_shots = list()
+	/// The longest one frame's sample of everything recorded took, in milliseconds, for tests and recordings.
+	var/sample_cost = 0
 
 /datum/sandy_replay/New(datum/proximity_monitor/advanced/timestop/sandevistan/_field, mob/living/_user)
 	field = _field
@@ -355,15 +369,22 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return FALSE
 	if(sandy_rig_picture(thing)) // a finisher rig's posed piece of a body: the move is replayed with it
 		return TRUE
+	if(isprojectile(thing))
+		var/obj/projectile/shot = thing
+		if(shot.hitscan) // crosses the room in a tick: its tracer, muzzle and impact effects are what is seen, and recorded
+			return FALSE
 	return !skipped[thing.type]
 
 /// The field saw `thing`: start recording it.
 /datum/sandy_replay/proc/notice(atom/movable/thing)
 	if(state != SANDY_REPLAY_RECORDING || tracks[thing] || !recordable(thing))
 		return
+	if(isprojectile(thing) && !shot_room())
+		return
 	var/datum/sandy_replay_track/track = new
 	track.owner = src
 	track.thing = thing
+	track.flier = isprojectile(thing)
 	track.first = (covering && !sandy_rig_picture(thing)) ? 0 : round(frame_due()) // a rig picture is made by the move: it was never there before it
 	tracks[thing] = track
 	RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(on_thing_deleted))
@@ -397,8 +418,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				continue
 			for(var/atom/movable/thing in range(3, body))
 				notice(thing)
+	var/cost_from = TICK_USAGE
 	for(var/atom/movable/thing as anything in tracks)
 		sample_track(tracks[thing], frame)
+	sample_cost = max(sample_cost, TICK_USAGE_TO_MS(cost_from))
 	if(wait_started && (!length(moving) || world.time - wait_started >= SANDY_REPLAY_WAIT_MAX))
 		end_wait(!length(moving))
 
@@ -431,6 +454,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/look = clean_look(thing)
 	if(wet)
 		look = wet_look(wet, look)
+	if(track.flier)
+		look = shot_look(thing, look)
 	if(at >= 0)
 		if(frames[at + SANDY_FRAME_LOOK] == look && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 			return
@@ -540,19 +565,23 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/datum/sandy_replay_track/track = tracks[thing]
 	tracks -= thing
 	pending_hidden -= thing
+	held_shots -= thing
 	if(!track)
 		return
 	if(GLOB.sandy_replay_masked[thing] == track)
 		GLOB.sandy_replay_masked -= thing
 		sandy_replay_masks = length(GLOB.sandy_replay_masked)
+	var/ended = (track.flier || istype(thing, /obj/effect/projectile)) ? shot_gone(track) : 0
 	track.thing = null
 	if(state == SANDY_REPLAY_RECORDING || state == SANDY_REPLAY_PENDING)
 		// Drawn up to the frame the recording next sampled without it: a rig picture goes in the frame its body's
 		// own look comes back, not one before (the body would be gone for a frame).
-		track.last = max(last_sampled + 1, track.first + 1)
+		track.last = max(last_sampled + 1, track.first + 1, ended)
 		gone += track
 		return
 	puppets -= track
+	if(track.flier && state == SANDY_REPLAY_PLAYING)
+		shot_to_standin(track)
 
 /// A player cut the slow-mo short: nothing replays.
 /datum/sandy_replay/proc/cancel()
@@ -585,6 +614,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(replays)
 		hide_progress_bars()
 		hide_pending()
+		hold_shots()
 	deltimer(sample_timer)
 	sample_timer = null
 	if(!replays)
@@ -818,6 +848,92 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		animate(arglist(arguments))
 	track.expect = thing.appearance
 	chains_resumed++
+
+// =========================================================================
+// SHOTS
+// =========================================================================
+// A shot's own loop moves it a few pixels a tick and keeps its spot in the tile in pixel_x and pixel_y, so a frame's
+// sample (its turf and look) is where it was, to the pixel. On top of that a shot needs: the spot it stopped at when it
+// hits (it is deleted between two samples), a straight line from frame to frame, and the shots still flying when the
+// recording ends held where they are for the replay, so the one real shot is never drawn twice or jumping ahead.
+
+/// Whether one more shot in the air can be recorded. Logs it, once a recording, when one can't.
+/datum/sandy_replay/proc/shot_room()
+	if(shots_live < SANDY_REPLAY_MAX_SHOTS)
+		shots_live++
+		return TRUE
+	if(!shots_capped)
+		log_game("Sandevistan replay of [key_name(user)]: more than [SANDY_REPLAY_MAX_SHOTS] shots in the air at once, the rest are not replayed.")
+	shots_capped++
+	return FALSE
+
+/// `look` (`shot`'s) as it is on screen. A shot that has hit fades out on the client as it reaches the spot
+/// (process_movement()), and its vars already hold the end of that: it is drawn reaching the spot.
+/datum/sandy_replay/proc/shot_look(obj/projectile/shot, look)
+	if(!shot.deletion_queued || shot.alpha == initial(shot.alpha))
+		return look
+	var/mutable_appearance/copy = new(look)
+	copy.alpha = initial(shot.alpha)
+	return copy.appearance
+
+/// `track`'s shot, or a beam's tracer, muzzle or impact effect, is being deleted: the spot and look it ends with are
+/// recorded. Returns the first frame it is gone in (0 when it isn't being recorded).
+/datum/sandy_replay/proc/shot_gone(datum/sandy_replay_track/track)
+	if(state != SANDY_REPLAY_RECORDING)
+		return 0
+	var/list/frames = track.frames
+	var/at = length(frames) ? frames[length(frames) - SANDY_FRAME_SIZE + SANDY_FRAME_INDEX] : track.first
+	var/end
+	if(track.flier)
+		shots_live--
+		end = max(last_sampled + 1, at + 1) // its last frame is where it was a frame ago; this one is where it stopped
+	else
+		end = max(round(frame_due()), at) // an effect made and gone between two samples: one frame, with its finished look
+	track.last_raw = null
+	sample_track(track, end)
+	return end + 1
+
+/// A shot flies in a straight line from the spot it was drawn at to this frame's, over the `frames` frames between them
+/// (one, unless the replay's timer skipped one: it can come every other tick), as it did between the samples.
+/datum/sandy_replay/proc/fly(datum/sandy_replay_track/track, move_x, move_y, frames)
+	if((!move_x && !move_y) || abs(move_x) > SANDY_REPLAY_REACH * ICON_SIZE_X || abs(move_y) > SANDY_REPLAY_REACH * ICON_SIZE_Y)
+		return TRUE
+	track.glide_x = move_x
+	track.glide_y = move_y
+	track.glide_time = clamp(frames, 1, 4) * world.tick_lag
+	track.glide_until = world.time + track.glide_time
+	return TRUE
+
+/**
+ * The recording is over: the shots still flying stop where they are until the replay is over, as everyone near the
+ * user holds still for it. The replay draws them flying up to that spot and they fly on from it after, so a shot is
+ * never drawn twice (the replay's and the real one) or jumping on by however far it got while the replay played.
+ */
+/datum/sandy_replay/proc/hold_shots()
+	for(var/atom/movable/thing as anything in tracks)
+		var/datum/sandy_replay_track/track = tracks[thing]
+		if(!track.flier)
+			continue
+		var/obj/projectile/shot = thing
+		if(shot.paused || shot.deletion_queued || !shot.fired)
+			continue
+		shot.paused = TRUE
+		held_shots += shot
+
+/// The replay is over: the shots it held fly on.
+/datum/sandy_replay/proc/release_shots()
+	for(var/obj/projectile/shot as anything in held_shots)
+		if(!QDELETED(shot))
+			shot.paused = FALSE
+	held_shots.Cut()
+
+/// A shot drawn on itself was deleted mid-replay (it hit something in the recording's last tick): a stand-in flies
+/// the rest of its path.
+/datum/sandy_replay/proc/shot_to_standin(datum/sandy_replay_track/track)
+	track.mode = SANDY_TRACK_STANDIN
+	track.last = total + 1
+	standins += track
+	show(track)
 
 // =========================================================================
 // PLAYBACK
@@ -1179,6 +1295,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/stepped = frames[old + SANDY_FRAME_X] != frames[at + SANDY_FRAME_X] || frames[old + SANDY_FRAME_Y] != frames[at + SANDY_FRAME_Y]
 	var/move_x = (frames[old + SANDY_FRAME_X] - frames[at + SANDY_FRAME_X]) * ICON_SIZE_X + (was.pixel_x + was.pixel_w) - (now.pixel_x + now.pixel_w) + carry_x
 	var/move_y = (frames[old + SANDY_FRAME_Y] - frames[at + SANDY_FRAME_Y]) * ICON_SIZE_Y + (was.pixel_y + was.pixel_z) - (now.pixel_y + now.pixel_z) + carry_y
+	if(track.flier)
+		return fly(track, move_x, move_y, frames[at + SANDY_FRAME_INDEX] - frames[old + SANDY_FRAME_INDEX])
 	if((!move_x && !move_y) || abs(move_x) > SANDY_REPLAY_GLIDE_MAX || abs(move_y) > SANDY_REPLAY_GLIDE_MAX)
 		return TRUE
 	var/time = world.tick_lag
@@ -1472,6 +1590,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	sandy_replay_masks = length(GLOB.sandy_replay_masked)
 	for(var/datum/sandy_replay_track/track as anything in standins)
 		QDEL_NULL(track.standin)
+	release_shots()
 	show_progress_bars()
 	show_pending()
 	for(var/atom/movable/thing as anything in unborn)
@@ -1788,6 +1907,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 #undef SANDY_TRACK_PUPPET
 #undef SANDY_TRACK_STANDIN
 #undef SANDY_REPLAY_REACH
+#undef SANDY_REPLAY_MAX_SHOTS
 #undef SANDY_REPLAY_GLIDE_MAX
 #undef SANDY_REPLAY_WATCHDOG
 #undef SANDY_REPLAY_TURN_TIME

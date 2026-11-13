@@ -612,3 +612,119 @@
 	TEST_ASSERT(bystander.pixel_w == bystander.base_pixel_w && bystander.pixel_z == bystander.base_pixel_z, "The bystander is left drawn off their tile")
 	TEST_ASSERT(bystander.alpha == 255, "The bystander is left hidden")
 	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z && user.alpha == 255, "The user is left drawn off their tile or hidden")
+
+/// Fires a harmless bullet from `from` at `target`, by `firer`
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/fire_shot(turf/from, mob/living/firer, atom/target)
+	var/obj/projectile/bullet/shot = new(from)
+	shot.damage = 0
+	shot.stamina = 0
+	shot.firer = firer
+	shot.fired_from = firer
+	shot.aim_projectile(target, from)
+	shot.fire()
+	return shot
+
+/// Whether a replay stand-in is anywhere near `user`
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/standin_near(mob/living/user)
+	for(var/obj/effect/abstract/sandy_replay_standin/standin in range(8, user))
+		return TRUE
+	return FALSE
+
+/// The user's shot, fired and spent inside the slow-mo, is in the replay from the muzzle to the spot it hit, along its
+/// path, and gone after it: nothing is left behind.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_spent_inside
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_spent_inside/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayshot")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/npc/target = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/projectile/shot = fire_shot(spot(0, 0), user, target)
+	var/datum/sandy_replay_track/track = replay.tracks[shot]
+	TEST_ASSERT_NOTNULL(track, "The shot wasn't recorded")
+	TEST_ASSERT(track.flier, "The shot wasn't recorded as a shot")
+	var/until = world.time + 3.5 SECONDS
+	while(!QDELETED(shot) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(QDELETED(shot), "The shot never hit in the slow-mo")
+	TEST_ASSERT(track in replay.gone, "The spent shot isn't kept to be drawn")
+	var/list/frames = track.frames
+	var/count = length(frames) / 6
+	TEST_ASSERT(count >= 3, "The shot's flight has [count] frames")
+	TEST_ASSERT(track.last > frames[length(frames) - 5], "The spot the shot hit is never shown (last [track.last])")
+	var/prev = -INFINITY
+	for(var/i = 1, i <= length(frames), i += 6)
+		var/mutable_appearance/look = new(frames[i + 1])
+		var/at = frames[i + 2] * 32 + look.pixel_x
+		TEST_ASSERT(at >= prev, "The shot goes back on itself at frame [frames[i]]: [prev] -> [at]")
+		TEST_ASSERT(look.alpha > 0, "The shot is drawn invisible at frame [frames[i]]")
+		prev = at
+	TEST_ASSERT_EQUAL(frames[length(frames) - 3], target.x, "The shot's last frame isn't on the tile it hit")
+	press_again(user)
+	until = world.time + 2 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	var/drawn = 0
+	var/drawn_after = 0
+	while(!QDELETED(replay) && replay.state == 3)
+		var/frame = round((world.time - replay.play_started) / world.tick_lag)
+		if(track.standin?.loc)
+			drawn++
+			if(frame > track.last)
+				drawn_after++
+		sleep(world.tick_lag)
+	log_test("replay/shot_spent_inside: [count] frames, first [track.first], last [track.last], drawn [drawn] ticks")
+	TEST_ASSERT(drawn >= count - 1, "The shot was drawn for [drawn] ticks of its [count] frames")
+	TEST_ASSERT_EQUAL(drawn_after, 0, "The shot was drawn after the frame it hit in")
+	wait_over(user)
+	TEST_ASSERT(!standin_near(user), "A stand-in is left after the replay")
+	TEST_ASSERT_EQUAL(length(GLOB.sandy_replay_masked), 0, "Puppets are left after the replay")
+
+/// A shot still flying when the slow-mo ends is drawn by itself (one shot, never two), held where the recording left
+/// it while the replay plays, and flies on from there after, with its own look back.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_flying_at_end
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_flying_at_end/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayflying")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/npc/gunman = allocate(/mob/living/carbon/human/npc, spot(1, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/projectile/shot = fire_shot(spot(1, 2), gunman, spot(6, 2))
+	var/turf/fired_at = get_turf(shot)
+	sleep(0.8 SECONDS)
+	TEST_ASSERT(!QDELETED(shot), "The shot was gone before the slow-mo ended")
+	TEST_ASSERT(replay.tracks[shot], "The shot wasn't recorded")
+	press_again(user)
+	var/until = world.time + 2 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(!QDELETED(shot), "The shot was gone before the replay")
+	var/datum/sandy_replay_track/track = replay.tracks[shot]
+	var/list/frames = track.frames
+	var/turf/held_at = get_turf(shot)
+	var/real_x = shot.pixel_x
+	TEST_ASSERT(shot.paused && (shot in replay.held_shots), "The shot flies on while the replay plays")
+	TEST_ASSERT(GLOB.sandy_replay_masked[shot], "The shot isn't drawn from the recording")
+	TEST_ASSERT(held_at != fired_at, "The shot never moved in the slow-mo")
+	TEST_ASSERT(frames[length(frames) - 3] == held_at.x && frames[length(frames) - 2] == held_at.y, "The recording's last frame isn't where the shot is held")
+	var/standins = 0
+	while(!QDELETED(replay) && replay.state == 3)
+		TEST_ASSERT_EQUAL(get_turf(shot), held_at, "The shot moved during the replay")
+		if(standin_near(user))
+			standins++
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(standins, 0, "A second shot was drawn beside the real one")
+	wait_over(user)
+	TEST_ASSERT(!QDELETED(shot), "The shot was gone after the replay")
+	TEST_ASSERT(!shot.paused, "The shot is still held after the replay")
+	TEST_ASSERT(!GLOB.sandy_replay_masked[shot], "The shot is still drawn from the recording")
+	TEST_ASSERT_EQUAL(shot.pixel_x, real_x, "The shot isn't back on its real spot")
+	TEST_ASSERT(shot.pixel_w == 0 && shot.pixel_z == 0 && shot.alpha > 0, "The shot is left drawn off its spot, or hidden")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(QDELETED(shot) || get_turf(shot) != held_at, "The shot didn't fly on after the replay")
+	if(!QDELETED(shot))
+		qdel(shot)
