@@ -100,3 +100,14 @@
 #define WOUND_SERIES_HV_CAROTID "wound_series_hv_carotid"
 /// A torn aorta.
 #define WOUND_SERIES_HV_AORTA "wound_series_hv_aorta"
+
+// Knife executions (voidcrew/modules/hyperviolence/overlays_exec/knife_executions.dm).
+
+/// Wind-up before a knife execution cuts the throat.
+#define HV_KNIFE_EXECUTION_WINDUP (1.5 SECONDS)
+/// do_after interaction key for a knife execution wind-up.
+#define HV_KNIFE_EXECUTION_DOAFTER "hv_knife_execution"
+/// Combined head melee cover below which a knife execution opens a critical slash and slices the neck.
+#define HV_KNIFE_EXECUTION_LOW_COVER 20
+/// Combined head melee cover at or above which (or under a sealed helmet) a knife execution leaves only a moderate slash.
+#define HV_KNIFE_EXECUTION_HIGH_COVER 50

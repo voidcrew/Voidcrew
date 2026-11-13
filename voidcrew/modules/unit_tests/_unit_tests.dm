@@ -96,6 +96,7 @@
 #include "voidcrew_human_npcs_ruins.dm"
 #include "voidcrew_human_npcs_shared.dm"
 #include "voidcrew_hv_finishers.dm"
+#include "voidcrew_hv_knife_executions.dm"
 #include "voidcrew_hyperviolence_blood.dm"
 #include "voidcrew_hyperviolence_braingut.dm"
 #include "voidcrew_hyperviolence_crits.dm"
