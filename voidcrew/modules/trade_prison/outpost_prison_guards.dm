@@ -1056,11 +1056,24 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 // ===== THE CLEANBOT =====
 
-/// The lockup's cleanbot: tg's, with nobody able to take it over, and no radio to answer a call on
+/// The lockup's cleanbot: tg's, with nobody able to take it over or call it away, and no radio to answer a call on
 /mob/living/basic/bot/cleanbot/outpost_lockup
-	bot_mode_flags = BOT_MODE_ON | BOT_MODE_REMOTE_ENABLED
+	bot_mode_flags = BOT_MODE_ON
 	radio_key = null
 	radio_channel = null
+
+/mob/living/basic/bot/cleanbot/outpost_lockup/enable_possession(user, mapload = FALSE)
+	return
+
+/// Sends the bot to `target` without announcing "Responding." aloud on every dispatch
+/mob/living/basic/bot/cleanbot/outpost_lockup/proc/send_to_mess(turf/target)
+	if(!target)
+		return FALSE
+	bot_reset()
+	ai_controller?.set_blackboard_key(BB_BOT_SUMMON_TARGET, target)
+	access_card?.set_access(initial_access)
+	update_bot_mode(new_mode = BOT_SUMMON)
+	return TRUE
 
 /// The wing's cleanbot, if it has one that still works
 /datum/outpost_prison/proc/cleanbot()
@@ -1080,7 +1093,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	cleanbot_ref = WEAKREF(bot)
 	return bot
 
-/// Every so often an idle cleanbot is called to the nearest mess in the cell block, as anyone calls a bot (summon_bot())
+/// Every so often an idle cleanbot is sent to the nearest reachable mess in the cell block that it cannot already see close by
 /datum/outpost_prison/proc/cleanbot_tick(seconds)
 	cleanbot_clock += seconds
 	if(cleanbot_clock < OUTPOST_PRISON_BOT_CALL_GAP)
@@ -1092,7 +1105,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/turf/nearest
 	var/nearest_distance = INFINITY
 	for(var/turf/tile as anything in cell_block)
-		if(isclosedturf(tile))
+		if(isclosedturf(tile) || !cell_block_passable(tile))
+			continue
+		var/datum/outpost_prison_cell/cell = cell_at(tile)
+		var/obj/machinery/door/airlock/cell_door = cell?.door()
+		if(cell_door && cell_door.density && (cell_door.locked || cell_door.welded || !cell_door.hasPower()))
 			continue
 		var/obj/effect/decal/cleanable/mess = locate() in tile
 		if(!mess || istype(mess, /obj/effect/decal/cleanable/crayon) || istype(mess, /obj/effect/decal/cleanable/cobweb))
@@ -1101,8 +1118,13 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		if(distance < nearest_distance)
 			nearest = tile
 			nearest_distance = distance
-	// Close by, it finds the mess with its own eyes
-	if(nearest && nearest_distance > 3)
+	// Close by and in sight, it finds the mess with its own eyes
+	if(!nearest || (nearest in view(3, bot)))
+		return
+	var/mob/living/basic/bot/cleanbot/outpost_lockup/lockup_bot = bot
+	if(istype(lockup_bot))
+		lockup_bot.send_to_mess(nearest)
+	else
 		bot.summon_bot(bot, nearest)
 
 /**

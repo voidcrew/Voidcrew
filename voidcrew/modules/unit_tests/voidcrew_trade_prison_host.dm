@@ -74,6 +74,16 @@
 	TEST_ASSERT(!prison.is_staff(prisoner), "A prisoner counts as staff")
 	TEST_ASSERT(!prison.is_inmate(prisoner), "An NPC prisoner counts as a player inmate")
 	TEST_ASSERT_EQUAL(prison.guard_max(), 2, "The roster is not two guards") // OUTPOST_GUARD_MAX
+	var/obj/machinery/door/window/brigdoor/outpost_prison_staff/hatch_door = locate() in prison_spot(home, 13, 6)
+	TEST_ASSERT_NOTNULL(hatch_door, "The serving hatch's staff window is not where the map puts it")
+	prisoner.trouble = "loose" // PRISONER_TROUBLE_LOOSE
+	TEST_ASSERT(!staff_door.CanAStarPass(NORTH, new /datum/can_pass_info(prisoner)), "A loose prisoner's pathing treated a shut staff airlock as passable")
+	TEST_ASSERT(!staff_door.CanAStarPass(NORTH, new /datum/can_pass_info(visitor)), "A visitor's pathing treated a shut staff airlock as passable")
+	TEST_ASSERT(staff_door.CanAStarPass(NORTH, new /datum/can_pass_info(guard)), "A guard's pathing could not pass a shut staff airlock")
+	TEST_ASSERT(!hatch_door.CanAStarPass(hatch_door.dir, new /datum/can_pass_info(prisoner)), "A loose prisoner's pathing treated a shut hatch window as passable")
+	TEST_ASSERT(!hatch_door.CanAStarPass(hatch_door.dir, new /datum/can_pass_info(visitor)), "A visitor's pathing treated a shut hatch window as passable")
+	TEST_ASSERT(hatch_door.CanAStarPass(hatch_door.dir, new /datum/can_pass_info(guard)), "A guard's pathing could not pass a shut hatch window")
+	prisoner.trouble = null
 
 	// Another wing's guard cannot open this wing's staff doors, and a player possessing a guard or officer loses staff privileges
 	var/mob/living/carbon/human/npc/outpost_prison_guard/other_guard = allocate(/mob/living/carbon/human/npc/outpost_prison_guard, yard_tile)
@@ -302,6 +312,11 @@
  */
 /datum/unit_test/voidcrew_trade_prison_keeping
 	parent_type = /datum/unit_test/voidcrew_outpost_management
+	var/list/bot_heard = list()
+
+/datum/unit_test/voidcrew_trade_prison_keeping/proc/on_bot_say(datum/source, list/speech_args)
+	SIGNAL_HANDLER
+	bot_heard += speech_args[SPEECH_MESSAGE]
 
 /datum/unit_test/voidcrew_trade_prison_keeping/proc/galley_count_on(obj/structure/table/reinforced/prison_hatch/hatch, item_type)
 	. = 0
@@ -391,4 +406,28 @@
 		TEST_ASSERT(record.guard != doomed, "The dead guard is back on the roster")
 	prison.guards_tick(700)
 	TEST_ASSERT_EQUAL(length(prison.guard_mobs), 3, "A second replacement came for one death")
+
+	// The lockup's cleanbot cannot be hijacked remotely or possessed, skips bolted cells, and dispatches silently past walls
+	prison.bot_kept = TRUE
+	var/mob/living/basic/bot/cleanbot/outpost_lockup/bot = prison.keep_cleanbot(prison_spot(home, 14, 11))
+	TEST_ASSERT_NOTNULL(bot, "keep_cleanbot() did not make a cleanbot")
+	TEST_ASSERT(!(bot.bot_mode_flags & BOT_MODE_REMOTE_ENABLED), "The lockup cleanbot accepts remote PDA control")
+	bot.bot_control("patrolon", null)
+	TEST_ASSERT(!(bot.bot_mode_flags & BOT_MODE_AUTOPATROL), "Remote PDA control turned autopatrol on for the lockup cleanbot")
+	bot.enable_possession(null)
+	TEST_ASSERT(!bot.can_be_possessed, "The lockup cleanbot allowed ghost possession")
+	RegisterSignal(bot, COMSIG_MOB_SAY, PROC_REF(on_bot_say))
+	var/turf/cell_mess_tile = prison_spot(home, 14, 13)
+	var/obj/effect/decal/cleanable/dirt/cell_mess = new(cell_mess_tile)
+	var/obj/machinery/door/airlock/cell_four_door = prison.cells[4].door()
+	cell_four_door.bolt()
+	prison.cleanbot_tick(60) // OUTPOST_PRISON_BOT_CALL_GAP
+	TEST_ASSERT_EQUAL(bot.mode, BOT_IDLE, "The cleanbot was sent after a mess shut inside a bolted cell")
+	cell_four_door.unbolt()
+	prison.cleanbot_tick(60) // OUTPOST_PRISON_BOT_CALL_GAP
+	TEST_ASSERT_EQUAL(bot.mode, BOT_SUMMON, "The cleanbot was not sent to a mess two tiles off behind a cell wall")
+	TEST_ASSERT_EQUAL(bot.ai_controller.blackboard[BB_BOT_SUMMON_TARGET], cell_mess_tile, "The cleanbot was sent to the wrong tile")
+	TEST_ASSERT_EQUAL(length(bot_heard), 0, "Sending the lockup cleanbot to a mess made it speak aloud")
+	qdel(cell_mess)
+	bot = null
 	settle_prison_air(home)

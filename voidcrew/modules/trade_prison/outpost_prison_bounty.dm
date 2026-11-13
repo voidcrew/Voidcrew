@@ -56,8 +56,8 @@
 #define BOUNTY_PRISON_CAPTOR_LINE_CHANCE 30
 /// How long a bounty prisoner waits before calling out their captors again
 #define BOUNTY_PRISON_CAPTOR_LINE_GAP (3 MINUTES)
-/// How far a bounty prisoner looks for someone off the ship that caught them
-#define BOUNTY_PRISON_CAPTOR_VIEW 5
+/// How far a bounty prisoner looks for someone off the ship that caught them (matches view/hearing across the gallery glass)
+#define BOUNTY_PRISON_CAPTOR_VIEW 7
 
 // ===== PRIVATE STATE =====
 

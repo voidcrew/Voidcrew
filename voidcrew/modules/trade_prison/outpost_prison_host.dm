@@ -78,13 +78,31 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 /obj/machinery/door/airlock/security/prison_staff/processing/allowed(mob/accessor)
 	return isAdminGhostAI(accessor)
 
-// Whoever Processing is working for walks through; no other prisoner does.
+// Whoever Processing is working for walks through; nobody else steps or paths into the room from outside.
 /obj/machinery/door/airlock/security/prison_staff/processing/lets_prisoner(atom/movable/mover)
 	var/datum/outpost_prison/prison = get_outpost_prison(src)
 	return !!prison && prison.processing_who() == mover
 
-/// The front room side
+/obj/machinery/door/airlock/security/prison_staff/processing/CanAllowThrough(atom/movable/mover, border_dir)
+	if(isliving(mover) && !lets_prisoner(mover))
+		var/datum/outpost_prison/prison = get_outpost_prison(src)
+		if(prison && !prison.in_processing(mover) && get_turf(mover) != loc)
+			return FALSE
+	return ..()
+
+/obj/machinery/door/airlock/security/prison_staff/processing/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	return !density && lets_prisoner(pass_info.requester_ref?.resolve())
+
+/// The front room side. Anyone other than a prisoner ever caught inside may let themselves back out once the yard door is shut.
 /obj/machinery/door/airlock/security/prison_staff/processing/outer
+
+/obj/machinery/door/airlock/security/prison_staff/processing/outer/allowed(mob/accessor)
+	if(..())
+		return TRUE
+	if(!isliving(accessor) || is_outpost_prisoner(accessor))
+		return FALSE
+	var/datum/outpost_prison/prison = get_outpost_prison(src)
+	return !!prison && prison.in_processing(accessor) && prison.processing_shut(prison.processing_door(TRUE))
 
 /// The yard side
 /obj/machinery/door/airlock/security/prison_staff/processing/inner

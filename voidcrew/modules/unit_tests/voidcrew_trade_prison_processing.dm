@@ -48,8 +48,11 @@
 	prison.admit(bystander, prison.cells[2])
 	TEST_ASSERT(!inner.lets_prisoner(leaver), "Processing's inner door lets a prisoner through who is going nowhere")
 
-	// With a player standing in the room nothing starts: no arrival is put in, and nobody is called in to leave
+	// With a player standing in the room nothing starts: no arrival is put in, and nobody is called in to leave.
+	// Caught inside with the yard door shut, a non-prisoner may let themselves back out into the front room, never into the yard.
 	squatter.forceMove(prison.processing_turfs[2])
+	TEST_ASSERT(outer.allowed(squatter), "Processing's outer door trapped a player inside while the inner door was shut")
+	TEST_ASSERT(!inner.allowed(squatter), "Processing's inner door would let an inside player into the yard")
 	TEST_ASSERT(!prison.processing_free(), "Processing is free with a player standing in it")
 	TEST_ASSERT(!prison.processing_send_in(bystander), "Someone was put into Processing with a player standing in it")
 	TEST_ASSERT_EQUAL(get_turf(bystander), prison.cells[2].arrival_turf(), "A refused arrival was moved")
@@ -73,11 +76,29 @@
 	TEST_ASSERT(door_is_shut(outer), "Processing's outer door opened for a prisoner leaving from the yard")
 	TEST_ASSERT(inner.lets_prisoner(leaver), "Processing's open inner door would not let the prisoner it opened for through")
 	TEST_ASSERT(!inner.lets_prisoner(bystander), "Processing's open inner door would let another prisoner through")
+	var/mob/living/carbon/human/npc/outpost_prison_guard/test_guard = allocate(/mob/living/carbon/human/npc/outpost_prison_guard, prison.guard_office_spot())
+	test_guard.prison = prison
+	var/mob/living/basic/bot/cleanbot/outpost_lockup/test_bot = allocate(/mob/living/basic/bot/cleanbot/outpost_lockup, prison.guard_office_spot())
+	TEST_ASSERT(inner.CanAllowThrough(leaver, get_dir(leaver, inner)), "Processing's open inner door blocked the prisoner it opened for")
+	TEST_ASSERT(!inner.CanAllowThrough(bystander, SOUTH), "Processing's open inner door let another prisoner step in")
+	TEST_ASSERT(!inner.CanAllowThrough(squatter, SOUTH), "Processing's open inner door let a player step in from outside")
+	TEST_ASSERT(!inner.CanAllowThrough(test_guard, SOUTH), "Processing's open inner door let a guard step in from outside")
+	TEST_ASSERT(!inner.CanAllowThrough(test_bot, SOUTH), "Processing's open inner door let a cleanbot step in from outside")
+	TEST_ASSERT(inner.CanAStarPass(SOUTH, new /datum/can_pass_info(leaver)), "Processing's open inner door refused JPS pathing to the prisoner it opened for")
+	TEST_ASSERT(!inner.CanAStarPass(SOUTH, new /datum/can_pass_info(bystander)), "Processing's open inner door allowed JPS pathing to another prisoner")
+	TEST_ASSERT(!inner.CanAStarPass(SOUTH, new /datum/can_pass_info(test_guard)), "Processing's open inner door allowed JPS pathing to a guard")
+	TEST_ASSERT(!inner.CanAStarPass(SOUTH, new /datum/can_pass_info(test_bot)), "Processing's open inner door allowed JPS pathing to a cleanbot")
+	test_guard.prison = null
 	prison.processing_tick(1)
 	TEST_ASSERT(leaver.processing_goal in prison.processing_turfs, "A prisoner leaving was not sent into Processing")
 
 	// In the room: nothing becomes of them until the door has shut behind them, and not while a player is in there with them
 	leaver.forceMove(leaver.processing_goal)
+	TEST_ASSERT(!outer.allowed(leaver), "Processing's outer door would open for a prisoner inside")
+	squatter.forceMove(prison.processing_spot(leaver))
+	TEST_ASSERT(!outer.allowed(squatter), "Processing's outer door would open for a player while the inner door was still open")
+	TEST_ASSERT(inner.CanAllowThrough(squatter, NORTH), "A player already inside Processing could not step back out through an open door")
+	squatter.forceMove(prison.alcove_turfs[1])
 	prison.processing_tick(1)
 	TEST_ASSERT(!is_qdeleted_ref(leaver_ref), "A prisoner was taken out of Processing with its inner door open")
 	TEST_ASSERT(work_until(prison, inner, FALSE), "Processing's inner door never shut behind the prisoner")
@@ -155,6 +176,21 @@
 	prison.processing_tick(60)
 	TEST_ASSERT(is_qdeleted_ref(watched_ref), "A prisoner nobody could see any more was still there after a minute")
 	watched = null
+
+	// A leaver already outside the wing does not cycle the front-room door open, and still clears once unseen for a minute
+	var/mob/living/carbon/human/npc/outpost_prisoner/off_wing = prison.admit_next(TRUE)
+	TEST_ASSERT_NOTNULL(off_wing, "No prisoner arrived for the off-wing leaving check")
+	off_wing.forceMove(off_wing.cell.arrival_turf())
+	prison.processing_tick(1)
+	off_wing.forceMove(outpost.lobby_alcove_turfs[1])
+	var/datum/weakref/off_wing_ref = WEAKREF(off_wing)
+	off_wing.leave()
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing started on a leaver already outside the wing") // OUTPOST_PROCESSING_IDLE
+	TEST_ASSERT(door_is_shut(inner) && door_is_shut(outer), "Processing opened a door for a leaver outside the wing")
+	prison.processing_tick(59)
+	TEST_ASSERT(is_qdeleted_ref(off_wing_ref), "An off-wing leaver unseen for a minute was not cleared")
+	off_wing = null
 
 	// With nobody at the outpost an arrival is simply in their cell, and Processing is not used
 	prison.audience_override = FALSE

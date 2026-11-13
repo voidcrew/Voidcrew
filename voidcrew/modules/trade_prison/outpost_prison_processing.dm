@@ -202,7 +202,7 @@
 	if(!length(processing_leavers) || !processing_free())
 		return
 	for(var/mob/living/leaver in processing_leavers)
-		if(leaver.stat != CONSCIOUS)
+		if(leaver.stat != CONSCIOUS || get_area(leaver) != wing)
 			continue
 		processing_state = OUTPOST_PROCESSING_OUT
 		processing_who_ref = WEAKREF(leaver)

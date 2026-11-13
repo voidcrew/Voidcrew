@@ -752,6 +752,10 @@
 	TEST_ASSERT_NULL(prison.bounty_extra_speech(caught, 100), "They called the same crew out again at once")
 	COOLDOWN_RESET(caught, prison_captor_line_cooldown)
 	TEST_ASSERT(islist(prison.bounty_extra_speech(caught, 100)), "Once the gap was over, they never called the crew out again")
+	// Six tiles off across glass (gallery distance), they still spot the crew that caught them.
+	crewman.forceMove(prison_spot(home, 8, 2))
+	COOLDOWN_RESET(caught, prison_captor_line_cooldown)
+	TEST_ASSERT(islist(prison.bounty_extra_speech(caught, 100)), "A bounty prisoner missed a captor six tiles away across glass")
 	// Someone off another ship is nobody to them.
 	COOLDOWN_RESET(caught, prison_captor_line_cooldown)
 	team.ship = board_test_ship()
