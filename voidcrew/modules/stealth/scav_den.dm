@@ -59,8 +59,14 @@
 		return null
 	. = ..()
 	if(.)
-		// A den nobody ever flies to would hold the one-den slot for the round: the scavs move on.
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(scav_den_move_on), WEAKREF(.)), 60 MINUTES)
+		scav_den_claim(.)
+
+/// Sets up a den the moment it's revealed.
+/proc/scav_den_claim(obj/structure/overmap/space_ruin/den)
+	// No contract may hold it on the chart: a held den would rebuild fresh (guards, vault and all) on the next visit.
+	den.mission_exclusive = TRUE
+	// A den nobody ever flies to would hold the one-den slot for the round: the scavs move on.
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(scav_den_move_on), WEAKREF(den)), 60 MINUTES)
 
 /// Takes a revealed den off the overmap if nobody has docked at it (its interior was never built) in the hour since.
 /proc/scav_den_move_on(datum/weakref/den_ref)

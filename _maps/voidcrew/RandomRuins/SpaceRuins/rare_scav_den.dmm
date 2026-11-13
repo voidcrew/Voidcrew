@@ -287,21 +287,13 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "bg" = (
-/obj/item/dice/d6{
-	pixel_x = 6
-	},
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "bh" = (
-/obj/structure/rack,
-/obj/item/coin/gold{
-	pixel_x = -5
-	},
-/obj/item/coin/silver{
-	pixel_x = 5;
-	pixel_y = 4
-	},
+/obj/machinery/light/small/directional/north,
+/obj/structure/closet/crate/secure/scav_vault,
+/obj/effect/turf_decal/bot,
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/space/has_grav/powered)
 "bk" = (
@@ -313,21 +305,19 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "bn" = (
-/obj/structure/rack,
-/obj/item/storage/briefcase{
-	pixel_y = 4
-	},
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark/smooth_large,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "br" = (
-/obj/machinery/light/small/directional/north,
-/obj/structure/closet/crate/secure/scav_vault,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark/smooth_large,
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "bu" = (
-/obj/machinery/light/small/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "bv" = (
@@ -337,30 +327,31 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "bw" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/landmark/stealth_patrol{
-	route = "d";
-	order = 2;
-	facing = 1
+/obj/structure/table,
+/obj/item/toy/cards/deck{
+	pixel_y = 4
 	},
-/obj/effect/spawner/human_npc/ruin/scav/den/gunner{
-	dir = 1
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -8;
+	pixel_y = 8
 	},
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "cg" = (
-/obj/structure/bed/maint,
-/obj/item/bedsheet/brown,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "ch" = (
-/obj/machinery/light/cold/directional/south,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "cj" = (
-/obj/machinery/light/small/directional/east,
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 3;
+	wait = 0
+	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "ck" = (
@@ -368,47 +359,56 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/red/dim/directional/west,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "cq" = (
-/obj/effect/turf_decal/tile/red/full,
+/obj/item/storage/backpack/duffelbag,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "ct" = (
+/obj/machinery/light/cold/dim/directional/north,
 /obj/structure/closet/crate/freezer,
-/obj/item/food/meat/slab/human,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "cv" = (
-/obj/structure/closet/crate,
-/obj/effect/turf_decal/bot,
-/obj/effect/spawner/random/maintenance,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "cL" = (
-/obj/item/bodybag,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"dd" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 1
-	},
+/obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
+"dd" = (
+/obj/structure/kitchenspike,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
 "de" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "df" = (
-/obj/item/ammo_box/magazine/m9mm,
-/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/belt/utility,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "dq" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
-/obj/effect/decal/cleanable/blood/oil,
+/obj/structure/table,
+/obj/item/multitool{
+	pixel_x = -4
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"dA" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/food_or_drink/booze,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "dB" = (
@@ -416,14 +416,13 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "dJ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/drip,
+/obj/structure/closet/crate,
+/obj/item/bodypart/leg/left/robot,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "dO" = (
-/obj/structure/chair/stool,
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/plating,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "dR" = (
 /obj/effect/turf_decal/bot,
@@ -431,19 +430,16 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "dS" = (
-/obj/structure/chair/wood{
-	dir = 1
-	},
+/obj/effect/landmark/stealth_restricted,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "eg" = (
-/obj/structure/sink/directional/south,
-/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "em" = (
-/obj/structure/closet/crate/bin,
-/obj/effect/spawner/random/trash/garbage,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "eO" = (
@@ -451,18 +447,26 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "eW" = (
-/obj/effect/spawner/random/food_or_drink/cups,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/dinner,
+/obj/item/kitchen/fork{
+	pixel_x = -8
+	},
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "fa" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 2
+/obj/structure/rack,
+/obj/item/storage/briefcase{
+	pixel_y = 4
 	},
+/obj/effect/turf_decal/bot,
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/space/has_grav/powered)
 "fE" = (
-/obj/structure/closet/crate/zone_loot/medical,
-/turf/open/floor/iron/freezer,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "fK" = (
 /obj/item/restraints/handcuffs/cable/zipties,
@@ -470,16 +474,15 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "fN" = (
-/obj/structure/chair{
-	dir = 4
-	},
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/iron/dark,
+/obj/machinery/light/small/red/dim/directional/north,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "fS" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/cigbutt,
-/turf/open/floor/plating/rust,
+/obj/machinery/light/small/red/dim/directional/north,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "ga" = (
 /obj/effect/turf_decal/tile/red/full,
@@ -489,69 +492,84 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "gu" = (
-/obj/effect/decal/cleanable/blood/splatter,
-/obj/effect/spawner/human_npc/ruin/scav/den{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"gG" = (
-/obj/machinery/light/cold/directional/north,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"ha" = (
-/obj/structure/closet/crate/wooden,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"hg" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/limb,
-/obj/effect/decal/cleanable/blood/oil,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"hi" = (
-/obj/structure/closet/crate/freezer/blood,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"hI" = (
-/obj/structure/closet/crate,
-/obj/effect/turf_decal/bot,
-/obj/effect/spawner/random/entertainment/money_small,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"hJ" = (
-/obj/item/bedsheet/brown,
 /obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"hL" = (
-/obj/structure/chair/office{
-	dir = 2
-	},
-/obj/effect/spawner/human_npc/ruin/scav/den/boss{
-	dir = 2
-	},
-/turf/open/floor/carpet/red,
-/area/ruin/space/has_grav/powered)
-"hN" = (
-/obj/effect/spawner/random/maintenance/two,
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"hO" = (
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"hW" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
-"ic" = (
-/obj/machinery/light/small/red/dim/directional/south,
+"gG" = (
+/obj/machinery/computer/operating{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ha" = (
+/obj/item/trash/chips,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"hg" = (
+/obj/structure/table,
+/obj/item/knife/butcher{
+	pixel_y = 5
+	},
+/obj/item/stack/spacecash/c200{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"hi" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ht" = (
+/obj/structure/bed/maint,
+/obj/item/bedsheet/brown,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"hI" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"hJ" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"hL" = (
+/obj/machinery/scav_camera/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered)
+"hN" = (
+/obj/item/clothing/shoes/sneakers/black,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"hO" = (
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"hW" = (
+/obj/machinery/light/small/directional/west,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ic" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/landmark/stealth_patrol{
+	route = "e";
+	order = 4;
+	wait = 0
+	},
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "ik" = (
 /obj/effect/decal/cleanable/dirt,
@@ -561,56 +579,67 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "iz" = (
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 8
+	},
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "iU" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/spawner/human_npc/ruin/scav/den/lookout{
+	dir = 8
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "jj" = (
+/obj/structure/table/optable,
+/obj/effect/mob_spawn/corpse/human,
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "jo" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 1;
+	facing = 8
+	},
+/obj/effect/spawner/human_npc/ruin/scav/den/gunner{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"jA" = (
+/obj/effect/decal/cleanable/vomit/old,
+/obj/item/reagent_containers/cup/bucket,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"jE" = (
+/obj/structure/chair/office{
+	dir = 2
+	},
+/obj/effect/spawner/human_npc/ruin/scav/den/boss{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"kt" = (
+/obj/machinery/light/small/red/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"kw" = (
 /obj/effect/spawner/random/trash/garbage,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
-"jA" = (
-/obj/structure/table,
-/obj/item/restraints/handcuffs/cable/zipties{
-	pixel_x = -5
-	},
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = 6;
-	pixel_y = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"jE" = (
-/obj/structure/chair/wood{
-	dir = 1
-	},
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"kt" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"kw" = (
-/obj/machinery/light/small/directional/south,
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 8
-	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
 "ky" = (
-/obj/machinery/light/small/red/dim/directional/north,
+/obj/structure/chair/stool,
+/obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "kL" = (
@@ -621,11 +650,11 @@
 /area/ruin/space/has_grav/powered)
 "kM" = (
 /obj/structure/table,
-/obj/item/multitool{
-	pixel_x = -4
+/obj/item/bodypart/arm/left/robot{
+	pixel_y = 4
 	},
-/obj/item/stack/cable_coil{
-	pixel_x = 6
+/obj/item/screwdriver{
+	pixel_x = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
@@ -635,11 +664,11 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "kS" = (
-/obj/item/reagent_containers/cup/glass/bottle/beer{
-	pixel_x = -6;
-	pixel_y = 4
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/snack,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -6
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "kW" = (
@@ -649,15 +678,14 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "li" = (
-/obj/item/reagent_containers/blood/o_minus{
-	pixel_x = 5
-	},
+/obj/effect/decal/cleanable/blood/old,
 /obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "lp" = (
-/obj/effect/spawner/random/structure/chair_flipped,
-/turf/open/floor/iron/dark,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "lB" = (
 /obj/structure/closet/crate/internals,
@@ -665,88 +693,73 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "lC" = (
-/obj/machinery/light/small/directional/south,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"lY" = (
-/obj/item/clothing/under/color/grey,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"mt" = (
-/obj/structure/closet,
-/obj/item/storage/medkit/regular,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"mu" = (
-/obj/structure/sign/warning/no_smoking,
-/turf/closed/wall,
-/area/ruin/space/has_grav/powered)
-"mC" = (
 /obj/structure/table,
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = -5;
-	pixel_y = 6
+/obj/item/restraints/handcuffs/cable/zipties{
+	pixel_x = -5
 	},
-/obj/item/reagent_containers/cup/beaker/organ_jar{
+/obj/item/reagent_containers/cup/glass/mug{
 	pixel_x = 6;
 	pixel_y = 4
 	},
-/obj/item/reagent_containers/cup/bottle/formaldehyde{
-	pixel_y = -5
-	},
-/turf/open/floor/iron/freezer,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"lY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"mt" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"mu" = (
+/obj/effect/landmark/stealth_group,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"mC" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "mG" = (
-/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/turf_decal/tile/red/full,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "mS" = (
-/obj/structure/table,
-/obj/machinery/microwave{
-	pixel_y = 6
-	},
+/obj/structure/closet/secure_closet/freezer/fridge,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "mW" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/landmark/stealth_patrol{
-	route = "e";
-	order = 3;
-	facing = 4
-	},
-/obj/effect/spawner/human_npc/ruin/scav/den/lookout{
-	dir = 4
-	},
-/turf/open/floor/iron/dark,
+/obj/effect/decal/remains/robot,
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "nz" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/spawner/random/trash/garbage,
-/obj/effect/landmark/stealth_patrol{
-	route = "e";
-	order = 2;
-	wait = 0
+/obj/structure/rack,
+/obj/item/bodypart/arm/left/robot,
+/obj/item/bodypart/arm/right/robot{
+	pixel_y = 6
 	},
-/turf/open/floor/iron/dark,
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "nJ" = (
-/obj/effect/spawner/human_npc/ruin/scav/den/lookout{
-	dir = 8
-	},
-/turf/open/floor/plating,
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "nL" = (
 /obj/effect/turf_decal/tile/red/full,
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 5;
+	wait = 0
+	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "nV" = (
-/obj/machinery/door/airlock{
-	name = "Bunks";
-	req_one_access = list("scav")
+/obj/item/clothing/head/soft/black{
+	pixel_y = 6
 	},
-/obj/effect/turf_decal/tile/red/full,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "oq" = (
@@ -758,8 +771,9 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "oD" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/tracks{
-	dir = 4
+	dir = 1
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
@@ -770,55 +784,70 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "oQ" = (
-/obj/item/stack/medical/suture,
-/obj/effect/decal/cleanable/blood/old,
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/bottle/formaldehyde{
+	pixel_x = 2;
+	pixel_y = -4
+	},
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "oS" = (
-/obj/structure/closet/crate/freezer,
-/obj/item/reagent_containers/blood/random,
+/obj/item/reagent_containers/syringe{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "oW" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/item/trash/chips,
+/obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
+"oX" = (
+/obj/item/flashlight/flare,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 "oY" = (
-/obj/item/clothing/shoes/sneakers/black,
-/obj/effect/decal/cleanable/blood/old,
+/obj/structure/closet,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "pb" = (
-/obj/effect/spawner/human_npc/ruin/scav/den{
-	dir = 8
-	},
+/obj/structure/reagent_dispensers/beerkeg,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "pc" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"ph" = (
-/obj/item/radio{
-	pixel_x = -4
-	},
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"pk" = (
-/obj/machinery/light/cold/dim/directional/south,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"pq" = (
 /obj/structure/table,
-/obj/item/circular_saw{
-	pixel_y = 4
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = -4;
+	pixel_y = 6
 	},
-/obj/item/cautery{
+/obj/item/clothing/mask/surgical{
 	pixel_x = 6;
 	pixel_y = -4
 	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ph" = (
+/obj/machinery/light/small/dim/directional/north,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"pk" = (
+/obj/effect/spawner/random/trash/graffiti,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"pq" = (
+/obj/structure/sink/directional/south,
+/obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "pz" = (
@@ -828,37 +857,43 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "pC" = (
-/obj/machinery/light/cold/dim/directional/north,
-/obj/structure/closet/crate/freezer,
+/obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "pZ" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/food/meat/slab/human{
-	pixel_x = -4
+/obj/structure/table,
+/obj/item/organ/liver/cybernetic{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/organ/lungs/cybernetic{
+	pixel_x = 5;
+	pixel_y = -2
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "qf" = (
-/obj/effect/decal/remains/robot,
-/turf/open/floor/plating/rust,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "qh" = (
-/obj/item/stack/rods{
-	amount = 2
-	},
-/turf/open/floor/plating/rust,
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/bot,
+/obj/effect/spawner/random/entertainment/money_small,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "qt" = (
 /obj/structure/table,
-/obj/effect/spawner/random/food_or_drink/booze,
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = 8
+/obj/machinery/microwave{
+	pixel_y = 6
 	},
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "qC" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "qO" = (
@@ -866,124 +901,132 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/powered)
 "qP" = (
-/obj/item/trash/chips,
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "qZ" = (
-/obj/machinery/light/small/dim/directional/north,
+/obj/item/dice/d6{
+	pixel_x = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "rc" = (
-/obj/machinery/scav_camera/directional/south,
-/turf/open/floor/iron/dark/smooth_large,
+/turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/powered)
 "rd" = (
-/obj/structure/closet/crate,
-/obj/item/bodypart/leg/left/robot,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"re" = (
-/obj/structure/sign/warning/biohazard,
-/turf/closed/wall,
-/area/ruin/space/has_grav/powered)
-"rg" = (
-/obj/structure/reagent_dispensers/water_cooler,
-/turf/open/floor/iron/cafeteria,
-/area/ruin/space/has_grav/powered)
-"ro" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"rq" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 8
-	},
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"rs" = (
-/obj/structure/chair/stool,
-/turf/open/floor/iron/cafeteria,
-/area/ruin/space/has_grav/powered)
-"rF" = (
-/obj/effect/spawner/random/trash/food_packaging,
-/turf/open/floor/iron/cafeteria,
-/area/ruin/space/has_grav/powered)
-"rJ" = (
 /obj/effect/spawner/random/structure/crate_abandoned,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
-"rK" = (
-/obj/structure/table/wood,
-/obj/item/flashlight/lamp/green{
-	pixel_x = -4;
-	pixel_y = 6
-	},
-/turf/open/floor/carpet/red,
-/area/ruin/space/has_grav/powered)
-"sf" = (
-/obj/structure/closet/cabinet,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"sh" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"sq" = (
-/obj/structure/closet/crate/freezer,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"sH" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"sZ" = (
+"re" = (
 /obj/effect/decal/remains/human,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/plating,
+/obj/item/flashlight{
+	pixel_x = 6
+	},
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
-"th" = (
-/obj/machinery/light/small/directional/north,
+"rg" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/item/stack/spacecash/c50{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"ro" = (
+/obj/structure/bed/maint,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"rq" = (
+/obj/machinery/light/small/broken/directional/north,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
-"tk" = (
-/obj/structure/kitchenspike,
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/blood/gibs/old,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"tn" = (
-/obj/effect/turf_decal/tile/red/full,
+"rs" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/item/trash/chips,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"rF" = (
+/obj/structure/closet,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"rJ" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/spawner/random/trash/garbage,
 /obj/effect/landmark/stealth_patrol{
-	route = "a";
+	route = "e";
 	order = 2;
 	wait = 0
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
-"tx" = (
+"rK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered)
+"sf" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"sh" = (
+/obj/item/bodybag,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"sq" = (
+/obj/item/clothing/suit/apron/surgical{
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"sH" = (
+/obj/structure/displaycase/noalert,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered)
+"sZ" = (
+/obj/machinery/scav_camera/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"th" = (
+/obj/item/bedsheet/brown,
 /obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"tk" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"tn" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"tx" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "tD" = (
-/obj/machinery/scav_camera/directional/south,
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 1
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/food/meat/slab/human{
+	pixel_x = -4
 	},
-/turf/open/floor/iron/dark,
+/turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "tH" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 1
+/obj/structure/chair{
+	dir = 4
 	},
-/turf/open/floor/plating,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "tO" = (
-/obj/effect/landmark/stealth_restricted,
+/obj/machinery/light/small/directional/south,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "tR" = (
@@ -995,9 +1038,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "tT" = (
-/obj/structure/table/optable,
-/obj/effect/decal/remains/human,
-/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "ub" = (
@@ -1017,12 +1058,14 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "uf" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/iron/dark,
+/obj/item/reagent_containers/blood/o_minus{
+	pixel_x = 5
+	},
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "uj" = (
-/obj/structure/bookcase/random,
+/obj/item/kirbyplants/random,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "us" = (
@@ -1030,18 +1073,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "uu" = (
-/obj/structure/rack,
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = -6;
-	pixel_y = 6
-	},
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/reagent_containers/cup/bottle/formaldehyde{
-	pixel_x = 2;
-	pixel_y = -4
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
 	},
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
@@ -1051,113 +1084,86 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "vh" = (
-/obj/machinery/iv_drip,
-/obj/effect/decal/cleanable/blood/old,
+/obj/structure/table,
+/obj/item/surgicaldrill{
+	pixel_y = 3
+	},
+/obj/item/clothing/gloves/latex{
+	pixel_x = -6;
+	pixel_y = -5
+	},
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "vE" = (
-/obj/item/bedsheet/brown,
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/item/restraints/handcuffs/cable/zipties,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "vH" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/landmark/stealth_patrol{
-	route = "a";
-	order = 3;
-	wait = 0
-	},
-/turf/open/floor/iron/dark,
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "vI" = (
 /obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/landmark/stealth_patrol{
-	route = "a";
-	order = 1;
-	facing = 8
-	},
-/obj/effect/spawner/human_npc/ruin/scav/den/gunner{
-	dir = 8
-	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "vO" = (
-/obj/machinery/light/small/directional/west,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "vX" = (
-/obj/structure/displaycase/noalert,
-/turf/open/floor/iron/dark/smooth_large,
-/area/ruin/space/has_grav/powered)
-"vY" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"vZ" = (
-/obj/item/cigarette{
-	pixel_x = 4;
-	pixel_y = 6
+/obj/item/stack/spacecash/c20{
+	pixel_x = 4
 	},
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
-"wg" = (
-/obj/item/reagent_containers/cup/glass/bottle/beer{
-	pixel_x = 6
-	},
-/obj/item/cigarette{
-	pixel_x = -6
-	},
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"wF" = (
-/obj/structure/sign/poster/contraband/random,
-/turf/closed/wall,
-/area/ruin/space/has_grav/powered)
-"wR" = (
-/obj/structure/kitchenspike,
+"vY" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/blood/gibs/old,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"wW" = (
-/obj/structure/table,
-/obj/item/organ/liver/cybernetic{
-	pixel_x = -4;
-	pixel_y = 5
-	},
-/obj/item/organ/lungs/cybernetic{
-	pixel_x = 5;
-	pixel_y = -2
+/obj/item/stack/medical/gauze{
+	pixel_x = 4
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
+"vZ" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"wg" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"wF" = (
+/obj/structure/closet/crate/freezer,
+/obj/item/reagent_containers/blood/random,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"wR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"wW" = (
+/obj/structure/kitchenspike,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
 "xm" = (
-/obj/item/reagent_containers/cup/glass/bottle/whiskey{
-	pixel_x = 4;
-	pixel_y = -8
+/obj/item/storage/briefcase{
+	pixel_x = -4
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "xp" = (
-/obj/item/flashlight/flare,
+/obj/effect/spawner/random/entertainment/cigarette_pack,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "xq" = (
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"xt" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 1
-	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"xz" = (
 /obj/structure/table,
 /obj/item/organ/heart/cybernetic{
 	pixel_x = -5;
@@ -1168,38 +1174,48 @@
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
+"xt" = (
+/obj/machinery/scav_camera/directional/south,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xz" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
 "xZ" = (
 /obj/structure/closet/crate/large,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "yj" = (
-/obj/effect/decal/cleanable/vomit/old,
-/turf/open/floor/iron/freezer,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "yr" = (
-/obj/structure/table/rolling,
-/obj/item/surgical_drapes,
-/obj/item/stack/medical/gauze,
-/turf/open/floor/iron/freezer,
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall,
 /area/ruin/space/has_grav/powered)
 "yw" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/structure/closet/crate/freezer,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "yF" = (
-/obj/structure/closet/secure_closet/freezer/fridge,
+/obj/effect/spawner/random/trash/food_packaging,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "yG" = (
-/obj/structure/closet/crate,
-/obj/effect/spawner/random/maintenance/two,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "yQ" = (
-/obj/structure/closet/crate/wooden,
-/obj/effect/spawner/random/food_or_drink/booze,
-/obj/effect/spawner/random/food_or_drink/booze,
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_x = 6
+	},
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "yR" = (
@@ -1207,15 +1223,15 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "zh" = (
-/obj/structure/rack,
-/obj/item/stack/spacecash/c100{
-	pixel_y = 4
+/obj/item/cigarette{
+	pixel_x = 4;
+	pixel_y = 6
 	},
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark/smooth_large,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "zq" = (
-/obj/effect/spawner/random/trash/cigbutt,
+/obj/item/clothing/under/color/grey,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "zw" = (
@@ -1228,24 +1244,19 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "zF" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/landmark/stealth_patrol{
-	route = "a";
-	order = 5;
-	wait = 0
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "zI" = (
-/obj/item/clothing/suit/apron/surgical,
-/obj/effect/decal/cleanable/blood/drip,
+/obj/structure/table/optable,
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/gibs/old,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "zZ" = (
-/obj/structure/closet/crate,
-/obj/item/storage/box/lethalshot,
-/obj/effect/spawner/random/contraband/narcotics,
+/obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Ad" = (
@@ -1261,25 +1272,19 @@
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "Be" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/landmark/stealth_patrol{
-	route = "a";
-	order = 4;
-	facing = 4
-	},
-/turf/open/floor/iron/dark,
+/obj/item/stack/medical/suture,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "Bf" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/table,
-/obj/effect/spawner/random/food_or_drink/dinner,
-/obj/item/kitchen/fork{
-	pixel_x = -8
-	},
+/obj/item/trash/can,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "Bp" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/reagent_containers/syringe{
+	pixel_x = -5
+	},
+/obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "Br" = (
@@ -1290,34 +1295,19 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "BG" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/landmark/stealth_patrol{
-	route = "e";
-	order = 1;
-	facing = 1
-	},
+/obj/machinery/light/small/directional/north,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "BU" = (
-/obj/structure/table,
-/obj/item/bodypart/arm/right/robot{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/weldingtool{
-	pixel_x = 6;
-	pixel_y = -6
-	},
-/turf/open/floor/plating,
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "Ca" = (
-/obj/structure/closet/crate/freezer/blood,
-/turf/open/floor/iron/freezer,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "CG" = (
-/obj/structure/bed/medical,
-/obj/item/restraints/handcuffs/cable/zipties,
+/obj/machinery/iv_drip,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
@@ -1326,8 +1316,9 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Do" = (
-/obj/machinery/computer/operating{
-	dir = 2
+/obj/item/storage/box/bodybags,
+/obj/item/storage/organbox{
+	pixel_y = 8
 	},
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
@@ -1339,30 +1330,26 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Dx" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "DE" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/white,
+/obj/structure/sign/warning/no_smoking,
+/turf/closed/wall,
 /area/ruin/space/has_grav/powered)
 "DG" = (
-/obj/item/trash/can,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "DK" = (
-/obj/item/reagent_containers/cup/glass/bottle/rum{
-	pixel_x = 6
-	},
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cabinet,
+/obj/item/clothing/head/fedora,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "DO" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/stack/medical/gauze{
-	pixel_x = 4
-	},
+/obj/structure/table/rolling,
+/obj/item/surgical_drapes,
+/obj/item/stack/medical/gauze,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "DV" = (
@@ -1371,47 +1358,43 @@
 /area/ruin/space/has_grav/powered)
 "DY" = (
 /obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 2;
+	wait = 0
+	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Eh" = (
-/obj/structure/table,
-/obj/item/wrench,
-/obj/item/crowbar{
-	pixel_y = 6
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"Eu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/plastic{
+	amount = 5
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
-"Eu" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
 "Ev" = (
-/obj/structure/table,
-/obj/effect/spawner/random/food_or_drink/booze,
-/obj/item/stack/spacecash/c50{
-	pixel_x = 4;
-	pixel_y = -4
+/obj/effect/spawner/human_npc/ruin/scav/den{
+	dir = 8
 	},
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "EG" = (
-/obj/item/clothing/gloves/latex{
-	pixel_x = 6
-	},
-/obj/effect/decal/cleanable/blood/splatter,
-/turf/open/floor/iron/white,
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "ET" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/floor/iron/cafeteria,
+/obj/structure/closet,
+/obj/item/storage/medkit/regular,
+/turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "Fq" = (
-/obj/item/reagent_containers/syringe{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/effect/decal/cleanable/blood/old,
+/obj/structure/closet/crate/freezer/blood,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "Fy" = (
@@ -1419,43 +1402,26 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "FC" = (
-/obj/effect/decal/remains/human,
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/flashlight{
-	pixel_x = 6
-	},
+/obj/machinery/light/small/red/directional/west,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "FH" = (
-/obj/structure/bed/maint,
-/obj/effect/spawner/random/bedsheet,
-/turf/open/floor/iron/grimy,
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "FM" = (
-/obj/item/reagent_containers/syringe{
-	pixel_x = -5
+/obj/machinery/light/small/directional/south,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 8
 	},
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/white,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "FO" = (
 /obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "Ge" = (
-/obj/structure/table,
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = -6;
-	pixel_y = 5
-	},
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = 6;
-	pixel_y = 7
-	},
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = 0;
-	pixel_y = -3
-	},
+/obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "Gh" = (
@@ -1464,49 +1430,30 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Gn" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "d";
+	order = 1;
+	facing = 4;
+	chatter = 1;
+	route_mode = "pingpong"
+	},
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "Gp" = (
-/obj/effect/decal/cleanable/blood/drip,
+/obj/machinery/light/small/red/directional/east,
+/obj/item/stack/rods{
+	amount = 2
+	},
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "Gv" = (
-/obj/structure/closet/crate/zone_loot/medical,
+/obj/structure/bed/medical,
+/obj/item/restraints/handcuffs/cable/zipties,
+/obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "GE" = (
-/obj/item/stack/spacecash/c20{
-	pixel_x = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"GH" = (
-/obj/effect/spawner/random/structure/crate_abandoned,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"GI" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/glass/bottle/whiskey{
-	pixel_y = 6
-	},
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = 8
-	},
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"GK" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
-/obj/effect/decal/cleanable/blood/oil,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"GO" = (
-/obj/structure/chair/stool,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"Hj" = (
 /obj/structure/table/wood,
 /obj/item/stack/spacecash/c500{
 	pixel_x = 4
@@ -1520,154 +1467,49 @@
 	},
 /turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/powered)
+"GH" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"GI" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"GK" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "e";
+	order = 3;
+	facing = 4
+	},
+/obj/effect/spawner/human_npc/ruin/scav/den/lookout{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"GO" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"Hj" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered)
 "Hp" = (
-/obj/effect/decal/cleanable/blood/old,
+/obj/structure/closet/crate/freezer,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "Hq" = (
-/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 8
+	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Ht" = (
-/obj/structure/kitchenspike,
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"HH" = (
-/obj/machinery/light/small/broken/directional/north,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"HM" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"HR" = (
-/obj/item/storage/backpack/duffelbag,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"Ik" = (
-/obj/structure/table,
-/obj/effect/spawner/random/food_or_drink/snack,
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = -6
-	},
-/turf/open/floor/iron/cafeteria,
-/area/ruin/space/has_grav/powered)
-"Iq" = (
-/obj/structure/kitchenspike,
-/obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"Iz" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/item/stack/sheet/plastic{
-	amount = 5
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"II" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"IL" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"JJ" = (
-/obj/structure/table,
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = -4;
-	pixel_y = 6
-	},
-/obj/item/clothing/mask/surgical{
-	pixel_x = 6;
-	pixel_y = -4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"Kb" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/spawner/random/structure/crate_abandoned,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"KD" = (
-/obj/structure/sign/warning/secure_area,
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/powered)
-"KS" = (
-/obj/structure/closet,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Lh" = (
-/obj/structure/closet/cabinet,
-/obj/item/clothing/head/fedora,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Lp" = (
-/obj/machinery/door/airlock/freezer{
-	name = "Cold Room";
-	req_one_access = list("scav")
-	},
-/obj/effect/turf_decal/tile/red/full,
-/turf/open/floor/iron/freezer,
-/area/ruin/space/has_grav/powered)
-"LH" = (
-/obj/structure/table,
-/obj/item/bodypart/arm/left/robot{
-	pixel_y = 4
-	},
-/obj/item/screwdriver{
-	pixel_x = 8
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"LO" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"LZ" = (
-/obj/effect/decal/cleanable/vomit/old,
-/obj/item/reagent_containers/cup/bucket,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Md" = (
-/obj/machinery/light/small/broken/directional/south,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/powered)
-"Mi" = (
-/obj/structure/rack,
-/obj/item/knife/combat/survival{
-	pixel_y = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Mo" = (
-/obj/machinery/iv_drip,
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"MI" = (
-/obj/structure/mop_bucket,
-/obj/item/mop,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"MJ" = (
-/obj/effect/spawner/random/entertainment/cigarette_pack,
-/obj/effect/spawner/random/entertainment/lighter,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"Nc" = (
-/obj/structure/chair/comfy/black{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"Nu" = (
 /obj/effect/turf_decal/tile/red/full,
 /obj/effect/landmark/stealth_patrol{
 	route = "b";
@@ -1680,112 +1522,25 @@
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
-"NB" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"NH" = (
-/obj/structure/table,
-/obj/item/surgicaldrill{
-	pixel_y = 3
-	},
-/obj/item/clothing/gloves/latex{
-	pixel_x = -6;
-	pixel_y = -5
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"NO" = (
-/obj/machinery/light/warm/directional/north,
-/obj/structure/table,
-/obj/item/storage/box/donkpockets{
-	pixel_y = 4
-	},
-/obj/item/kitchen/fork{
-	pixel_x = 8
-	},
-/turf/open/floor/iron/cafeteria,
-/area/ruin/space/has_grav/powered)
-"NP" = (
-/obj/structure/chair/stool,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Od" = (
+"HH" = (
+/obj/structure/kitchenspike,
 /obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/powered)
-"Ok" = (
-/obj/structure/table,
-/obj/item/toy/cards/deck{
-	pixel_y = 4
-	},
-/obj/item/reagent_containers/cup/glass/bottle/vodka{
-	pixel_x = -8;
-	pixel_y = 8
-	},
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"Os" = (
-/obj/effect/decal/cleanable/blood/oil,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"OP" = (
-/obj/structure/table,
-/obj/item/stack/cable_coil{
-	pixel_x = -4
-	},
-/obj/item/screwdriver{
-	pixel_x = 6;
-	pixel_y = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"OT" = (
-/obj/effect/spawner/random/entertainment/cigarette_pack,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Pc" = (
-/obj/structure/closet,
-/obj/effect/spawner/random/maintenance,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"Pf" = (
-/obj/structure/bed/maint,
-/obj/item/bedsheet/brown,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Pg" = (
-/obj/item/clothing/head/soft/black{
-	pixel_y = 6
-	},
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/powered)
-"Pp" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/landmark/stealth_patrol{
-	route = "e";
-	order = 4;
-	wait = 0
-	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"Pq" = (
-/obj/item/storage/belt/utility,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Ps" = (
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
-"Pw" = (
-/obj/effect/turf_decal/tile/red/full,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
-"PF" = (
+"HM" = (
+/obj/structure/closet/secure_closet/freezer/meat,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"HR" = (
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 6
+	},
+/obj/item/cigarette{
+	pixel_x = -6
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"Ik" = (
 /obj/structure/table,
 /obj/item/reagent_containers/cup/glass/bottle/whiskey{
 	pixel_x = -6;
@@ -1796,16 +1551,102 @@
 	},
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
-"PS" = (
-/obj/effect/landmark/stealth_group,
-/obj/effect/decal/cleanable/blood/drip,
+"Iq" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/bottle/formaldehyde{
+	pixel_y = -5
+	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"Iz" = (
+/obj/structure/chair/stool,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"II" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"IL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"JJ" = (
+/obj/structure/mop_bucket,
+/obj/item/mop,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
-"QF" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/floor/iron/grimy,
+"Kb" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
-"QP" = (
+"KD" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"KS" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Lh" = (
+/obj/structure/rack,
+/obj/item/coin/gold{
+	pixel_x = -5
+	},
+/obj/item/coin/silver{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered)
+"Lp" = (
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"LH" = (
+/obj/structure/table,
+/obj/item/wrench,
+/obj/item/crowbar{
+	pixel_y = 6
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"LO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"LZ" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/stealth_patrol{
+	route = "e";
+	order = 1;
+	facing = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Md" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"Mi" = (
+/obj/structure/closet/cabinet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Mo" = (
 /obj/structure/table,
 /obj/item/scalpel{
 	pixel_x = -6;
@@ -1820,11 +1661,174 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
+"MI" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"MJ" = (
+/obj/item/radio{
+	pixel_x = -4
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"Nc" = (
+/obj/structure/rack,
+/obj/item/bodypart/leg/right,
+/obj/item/bodypart/arm/left,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Nu" = (
+/obj/machinery/door/airlock/freezer{
+	name = "Cold Room";
+	req_one_access = list("scav")
+	},
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
+"NB" = (
+/obj/effect/landmark/stealth_restricted{
+	allowed = 0
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered)
+"NH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"NO" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"NP" = (
+/obj/structure/table,
+/obj/item/bodypart/arm/right/robot{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/weldingtool{
+	pixel_x = 6;
+	pixel_y = -6
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Od" = (
+/obj/structure/table,
+/obj/item/circular_saw{
+	pixel_y = 4
+	},
+/obj/item/cautery{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Ok" = (
+/obj/structure/chair/stool,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"Os" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4;
+	facing = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"OP" = (
+/obj/structure/table,
+/obj/item/stack/cable_coil{
+	pixel_x = -4
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"OT" = (
+/obj/machinery/light/small/red/dim/directional/west,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Pc" = (
+/obj/structure/bed/maint,
+/obj/item/bedsheet/brown,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"Pf" = (
+/obj/structure/closet/crate,
+/obj/item/storage/box/lethalshot,
+/obj/effect/spawner/random/contraband/narcotics,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Pg" = (
+/obj/effect/spawner/random/entertainment/cigarette_pack,
+/obj/effect/spawner/random/entertainment/lighter,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"Pp" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Pq" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/limb,
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Ps" = (
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/bot,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Pw" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/powered)
+"PF" = (
+/obj/machinery/light/warm/directional/north,
+/obj/structure/table,
+/obj/item/storage/box/donkpockets{
+	pixel_y = 4
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 8
+	},
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"PS" = (
+/obj/item/clothing/gloves/latex{
+	pixel_x = 6
+	},
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"QF" = (
+/obj/structure/bed/maint,
+/obj/item/bedsheet/brown,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/powered)
+"QP" = (
+/obj/structure/kitchenspike,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
 "QT" = (
-/obj/structure/filingcabinet,
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Ru" = (
+/obj/machinery/light/cold/directional/south,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
@@ -1844,40 +1848,43 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Sa" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/landmark/stealth_patrol{
-	route = "d";
-	order = 1;
-	facing = 4;
-	chatter = 1;
-	route_mode = "pingpong"
-	},
+/obj/structure/chair/stool,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "Sm" = (
-/obj/structure/closet/crate/freezer,
-/turf/open/floor/iron/freezer,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "SR" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/floor/iron/dark,
+/obj/item/bedsheet/brown,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "SV" = (
-/obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/iron/dark,
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/effect/spawner/human_npc/ruin/scav/den{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "SW" = (
-/obj/machinery/smartfridge/organ,
+/obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "Ta" = (
-/obj/effect/spawner/random/trash/food_packaging,
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "d";
+	order = 2;
+	facing = 1
+	},
+/obj/effect/spawner/human_npc/ruin/scav/den/gunner{
+	dir = 1
+	},
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "Tl" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/blood/drip,
+/obj/machinery/light/cold/dim/directional/south,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "Tr" = (
@@ -1886,14 +1893,23 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Tw" = (
-/turf/open/floor/carpet/red,
+/obj/structure/rack,
+/obj/item/stack/spacecash/c100{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
 /area/ruin/space/has_grav/powered)
 "TH" = (
-/obj/machinery/light/warm/directional/east,
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "TJ" = (
-/obj/structure/closet/secure_closet/freezer/meat,
+/obj/structure/closet/crate/zone_loot/medical,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "TV" = (
@@ -1910,24 +1926,34 @@
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
+"UH" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 "UM" = (
 /obj/structure/closet/crate/bin,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "UW" = (
-/obj/structure/closet/crate/wooden,
-/obj/effect/spawner/random/food_or_drink/booze,
+/obj/structure/rack,
+/obj/item/knife/combat/survival{
+	pixel_y = 4
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "VG" = (
+/obj/machinery/door/airlock{
+	name = "Bunks";
+	req_one_access = list("scav")
+	},
 /obj/effect/turf_decal/tile/red/full,
-/turf/open/floor/iron/cafeteria,
+/turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "VN" = (
-/obj/item/clothing/suit/apron/surgical{
-	pixel_y = -4
-	},
+/obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "VQ" = (
@@ -1939,38 +1965,51 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "VX" = (
-/obj/effect/turf_decal/tile/red/full,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating/rust,
+/obj/structure/closet/crate/freezer,
+/obj/item/food/meat/slab/human,
+/turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "VY" = (
-/obj/item/storage/briefcase{
-	pixel_x = -4
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 8
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Wc" = (
-/obj/item/kirbyplants/random,
-/turf/open/floor/wood,
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance/two,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Wg" = (
-/obj/structure/rack,
-/obj/item/bodypart/arm/left/robot,
-/obj/item/bodypart/arm/right/robot{
-	pixel_y = 6
-	},
+/obj/effect/spawner/random/maintenance/two,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "Wu" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
+/turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "WJ" = (
-/obj/effect/landmark/stealth_restricted{
-	allowed = 0
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = 0;
+	pixel_y = 6
 	},
-/turf/open/floor/iron/dark/smooth_large,
+/obj/item/paper/crumpled/bloody{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "price list";
+	default_raw_text = "Hearts 4000. Livers 2500. Lungs 2000. Eyes 1500 the pair. Chrome by weight. No refunds.";
+	pixel_x = 8;
+	pixel_y = 2
+	},
+/turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/powered)
 "Xe" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1990,7 +2029,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Xn" = (
-/obj/machinery/scav_camera/directional/north,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Xz" = (
@@ -2000,45 +2039,40 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "XE" = (
-/obj/machinery/light/small/red/dim/directional/north,
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/turf/open/floor/plating,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "XI" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark/smooth_large,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = 4;
+	pixel_y = -8
+	},
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "XJ" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 4
-	},
+/obj/item/clothing/suit/apron/surgical,
+/obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "XK" = (
-/obj/effect/spawner/random/trash/graffiti,
-/turf/closed/wall,
-/area/ruin/space/has_grav/powered)
-"XO" = (
-/obj/effect/decal/cleanable/cobweb,
+/obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
+"XO" = (
+/obj/machinery/smartfridge/organ,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/powered)
 "Yd" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/full,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "Yj" = (
-/obj/item/storage/box/bodybags,
-/obj/item/storage/organbox{
-	pixel_y = 8
-	},
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "Yx" = (
-/obj/effect/decal/remains/human,
-/obj/effect/decal/cleanable/blood/splatter,
-/obj/item/restraints/handcuffs/cable/zipties,
+/obj/machinery/light/small/red/dim/directional/south,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "YE" = (
@@ -2046,57 +2080,44 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "YK" = (
-/obj/structure/rack,
-/obj/item/bodypart/leg/right,
-/obj/item/bodypart/arm/left,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Zk" = (
-/obj/structure/bed/maint,
-/obj/item/bedsheet/brown,
+/obj/effect/spawner/random/trash/food_packaging,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "Zo" = (
-/obj/structure/table,
-/obj/item/knife/butcher{
-	pixel_y = 5
-	},
-/obj/item/stack/spacecash/c200{
-	pixel_x = -6;
-	pixel_y = -4
-	},
-/turf/open/floor/plating,
+/obj/effect/spawner/random/food_or_drink/cups,
+/turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "ZB" = (
-/obj/structure/table/optable,
-/obj/effect/mob_spawn/corpse/human,
-/obj/effect/decal/cleanable/blood/splatter,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/cup/beaker/organ_jar{
+	pixel_x = 0;
+	pixel_y = -3
+	},
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "ZF" = (
-/obj/machinery/light/small/directional/south,
+/obj/structure/bookcase/random,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "ZV" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/beaker/organ_jar{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/obj/item/paper/crumpled/bloody{
-	pixel_x = -6;
-	pixel_y = -4
-	},
-/obj/item/paper{
-	name = "price list";
-	default_raw_text = "Hearts 4000. Livers 2500. Lungs 2000. Eyes 1500 the pair. Chrome by weight. No refunds.";
-	pixel_x = 8;
-	pixel_y = 2
-	},
-/turf/open/floor/carpet/red,
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/powered)
 "ZX" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/structure/closet/crate/freezer/blood,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 
@@ -2213,7 +2234,7 @@ ac
 ac
 ac
 qO
-XE
+fS
 aj
 ac
 ac
@@ -2285,17 +2306,17 @@ ac
 ac
 ac
 ac
+fE
+aP
+re
 IL
 aP
-FC
-AG
-bu
 aP
 AG
 FO
-aP
-fS
-kt
+FC
+bu
+Md
 II
 AG
 ac
@@ -2369,7 +2390,7 @@ ac
 ac
 ac
 ac
-kt
+Md
 ac
 ac
 ac
@@ -2406,7 +2427,7 @@ aj
 aj
 aj
 aj
-wF
+yr
 aj
 aj
 aj
@@ -2417,7 +2438,7 @@ aj
 aj
 aj
 aj
-re
+xz
 aj
 aj
 aj
@@ -2445,25 +2466,25 @@ ac
 ac
 ac
 aj
-FH
 ro
-GO
+wg
+Ok
 ae
-lY
-FH
+zq
+ro
+aj
+cL
+Ca
 aj
 XO
 Dx
-aj
 SW
+ad
 HM
+ad
 xq
 ad
 TJ
-ad
-xz
-ad
-fE
 aj
 ac
 ac
@@ -2488,24 +2509,24 @@ ac
 ac
 aj
 ae
-wg
-Ok
+HR
+bw
 ae
-zq
+bg
 ae
-wF
+yr
 al
-Wu
+Sm
 aj
+wF
+ad
+Wu
+ad
 oS
 ad
+ad
 sh
-ad
 Fq
-ad
-ad
-cL
-Ca
 aj
 ac
 ac
@@ -2529,25 +2550,25 @@ ac
 ac
 ac
 aj
-FH
+ro
 ae
-GO
+Ok
 ae
-bg
+qZ
 ae
 aj
-vY
+yj
 al
 aj
+ct
+ad
+vY
 pC
 ad
 DO
+ad
+ad
 yw
-ad
-yr
-ad
-ad
-Sm
 aj
 ac
 ac
@@ -2571,25 +2592,25 @@ ac
 ac
 ac
 aj
-qZ
-HR
+ph
+cq
 ae
-bw
+Ta
 ae
 ae
 am
-Wu
+Sm
 al
 aj
-Sm
+yw
 ad
 ad
 ad
 ad
 ad
 ad
-yj
-ct
+Lp
+VX
 aj
 aI
 aI
@@ -2613,27 +2634,27 @@ ac
 ac
 ac
 aj
+QF
+ae
+MJ
+Yd
 Zk
 ae
-ph
-cq
-Ta
-ae
 aj
-Wu
+Sm
+XK
+aj
+ad
+ad
+Ht
 hO
-aj
-ad
-ad
+hO
+hO
+hO
+hO
+hO
 Nu
 Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Lp
-VX
 av
 aD
 aL
@@ -2656,19 +2677,19 @@ ac
 ac
 aj
 ae
-QF
-MJ
-cq
-ae
+mt
+Pg
 Yd
+ae
+cg
 aj
-HH
+rq
 al
-XK
-Ht
-xq
+pk
+HH
+SW
 ad
-xq
+SW
 ad
 ad
 ad
@@ -2697,25 +2718,25 @@ ac
 ac
 ac
 aj
-FH
-Pg
+ro
+nV
 ae
-cq
+Yd
 ae
-cg
+Pc
 aj
 al
-lp
+mC
 aj
+wW
+lp
+ad
 tk
+ad
+ad
+ad
+ad
 Tl
-ad
-rq
-ad
-ad
-ad
-ad
-pk
 aj
 ac
 ac
@@ -2739,25 +2760,25 @@ ac
 ac
 ac
 aj
-Pc
-ae
-QF
-cq
+rF
 ae
 mt
+Yd
+ae
+ET
 aj
-Dx
+Ca
 al
 aj
+dd
+tD
+ad
+tk
+ad
+ad
+ad
 Iq
 pZ
-ad
-rq
-ad
-ad
-ad
-mC
-wW
 aj
 ac
 ac
@@ -2784,7 +2805,7 @@ aj
 aj
 aj
 aj
-nV
+VG
 aj
 aj
 aj
@@ -2792,13 +2813,13 @@ al
 al
 aj
 aj
-wF
+yr
 aj
 aj
 an
 aj
 aj
-wF
+yr
 aj
 aj
 aj
@@ -2823,26 +2844,26 @@ ac
 ac
 ac
 aj
-yF
+mS
 aC
+rs
+mG
+yF
 oW
-VG
-rF
-ET
 aj
-XO
-Wu
+cL
+Sm
 al
-vY
-Wu
-Wu
-oD
-dd
+yj
+Sm
+Sm
+zF
 vO
-dd
+hW
+vO
+oD
+vO
 xt
-dd
-tD
 aj
 dB
 ux
@@ -2865,27 +2886,27 @@ ac
 ac
 ac
 aj
-mS
+qt
 aC
-rs
-VG
+Sa
 mG
+NO
 aC
-wF
-Wu
-tn
-Hq
-Hq
-nL
-Hq
-Hq
+yr
+Sm
+DY
 vI
-Hq
+vI
+tn
+vI
+vI
+jo
+vI
+tn
+vI
 nL
 Hq
-zF
-hW
-wF
+yr
 lB
 us
 aS
@@ -2907,26 +2928,26 @@ ac
 ac
 ac
 aj
+PF
+Sa
 NO
-rs
 mG
-VG
 aC
 aC
 aj
 al
-DY
+hi
 aj
 aj
-re
+xz
 aj
 ak
 aj
-wF
+yr
 aj
 aj
-Hq
-jo
+vI
+kw
 aj
 ah
 aS
@@ -2949,26 +2970,26 @@ ac
 ac
 ac
 aj
-qt
+iz
 aC
 aC
-Sa
-rF
+Gn
+yF
 aC
 aj
-Wu
-Hq
+Sm
+vI
 aj
+QP
+sq
 wR
 VN
 Bp
-ZX
-FM
 aa
-hi
+ZX
 aj
-nL
-kw
+tn
+FM
 aj
 Ry
 aS
@@ -2991,26 +3012,26 @@ ac
 ac
 ac
 aj
-iz
-Gn
-rs
-PF
+pb
+DG
+Sa
+Ik
 aC
 aC
 aO
 al
-DY
+hi
 au
+ZB
+aa
+Yj
 Ge
-aa
 Mo
-Hp
-QP
 aa
-sq
+Hp
 au
+vI
 Hq
-hW
 aj
 aS
 aS
@@ -3034,25 +3055,25 @@ ac
 ac
 aj
 aC
-DG
+Bf
 aC
-Ik
-rs
+kS
+Sa
 aC
 aj
-Wu
-nL
+Sm
+tn
 aj
+MI
+tx
 gG
 jj
+aa
+aa
 Do
-ZB
-aa
-aa
-Yj
 aj
+vI
 Hq
-hW
 aj
 aQ
 Dt
@@ -3076,25 +3097,25 @@ ac
 ac
 aj
 aC
-Bf
-kS
-pb
+eW
+TH
+Ev
 aC
-rs
-wF
+Sa
+yr
 al
-Hq
-wF
+vI
+yr
+pc
+aa
+aa
+SV
+aa
+Ge
 JJ
-aa
-aa
-gu
-aa
-Hp
-MI
 aj
-Hq
-tx
+vI
+gu
 aj
 Xg
 aS
@@ -3117,26 +3138,26 @@ ac
 ac
 ac
 aj
-rg
-rs
-eW
+BU
+Sa
+Zo
 aC
-TH
-Ev
+Eh
+rg
 aj
-Wu
-Hq
+Sm
+vI
 aj
+pq
+wR
+mu
 eg
-Bp
 PS
-Ru
-EG
 aa
-ch
+Ru
 aj
-pc
-SV
+EG
+ch
 aY
 yR
 eO
@@ -3167,18 +3188,18 @@ aI
 aI
 aI
 al
-Hq
-wF
+vI
+yr
 aa
+tT
+aa
+li
 Od
+eg
 aa
 DE
-pq
-Ru
-aa
-mu
-Hq
-vY
+vI
+yj
 aj
 eO
 aS
@@ -3201,25 +3222,25 @@ ac
 ac
 ac
 aI
-LH
+kM
 yR
-BU
-Zo
-Eh
+NP
+hg
+LH
 aS
 aI
-Dx
-DY
+Ca
+hi
 aj
-gG
-Od
-aa
+MI
 tT
 aa
-li
+zI
+aa
+uf
 aa
 aj
-nL
+tn
 al
 aj
 aS
@@ -3243,26 +3264,26 @@ ac
 ac
 ac
 aI
-kM
+dq
 aS
 aS
-NP
+Iz
 aS
-hg
+Pq
 aI
 al
-Hq
+vI
 au
+oQ
+aa
+CG
 uu
-aa
 vh
-XJ
-NH
 aa
-zI
+XJ
 au
-Hq
-uf
+vI
+NH
 aj
 aS
 kW
@@ -3288,24 +3309,24 @@ aI
 aS
 yR
 aS
-Pq
+df
 aS
 aS
 ap
 al
-Hq
+vI
 aj
+vH
+aa
+aa
+uu
+eg
+Be
 Gv
-aa
-aa
-XJ
-Ru
-oQ
-CG
 aj
-nL
+tn
 al
-wF
+yr
 aS
 aS
 aL
@@ -3329,23 +3350,23 @@ ac
 aI
 aQ
 aS
-dq
+yG
 aS
-Iz
+Eu
 aS
 au
-hO
-Hq
+XK
+vI
 aj
 aj
-wF
+yr
 aj
 ak
 aj
-wF
+yr
 aj
 aj
-Hq
+vI
 al
 aj
 aS
@@ -3369,25 +3390,25 @@ ac
 ac
 ac
 aI
-yG
+Wc
 aS
 aT
 aS
-Eu
-df
+YK
+em
 aI
 al
-vH
-nL
-Hq
-Hq
-Hq
-DY
-Hq
-nL
-DY
-nL
-Be
+cj
+tn
+vI
+vI
+vI
+hi
+vI
+tn
+hi
+tn
+Os
 al
 aj
 CN
@@ -3411,26 +3432,26 @@ ac
 ac
 ac
 aI
-YK
+Nc
 aS
 aS
 aS
 aS
-em
+GI
 aI
+sZ
+Sm
+yj
+al
+al
+dO
+Hq
+vO
+vO
+oD
+vO
+vO
 Xn
-Wu
-vY
-al
-al
-cj
-hW
-dd
-dd
-xt
-dd
-dd
-Os
 aj
 DV
 aS
@@ -3456,11 +3477,11 @@ aA
 aj
 aj
 aj
-wF
+yr
 aj
 aj
 aj
-vY
+yj
 al
 aj
 aj
@@ -3495,26 +3516,26 @@ aA
 aA
 aA
 aA
+vZ
+xm
+ZF
 QT
 VY
 uj
-Nc
-GI
-Wc
 aj
 al
 al
 al
-fN
-vY
-cv
+tH
+yj
+Ps
 aI
-ky
-sZ
+fN
+cv
 ay
 eO
 aS
-dO
+ky
 aI
 ac
 ac
@@ -3533,30 +3554,30 @@ ax
 ac
 ac
 aA
-zh
-XI
+Tw
+rK
 aE
 aA
-QT
-ab
-tO
 vZ
-xm
-ZF
+ab
+dS
+zh
+XI
+tO
 aj
-th
+BG
 al
 al
 al
-Wu
-ha
+Sm
+Pp
 aI
-hJ
-qP
+th
+ha
 aG
-tH
+hJ
 aS
-Ps
+qP
 aI
 ac
 ac
@@ -3575,22 +3596,22 @@ ax
 ac
 ac
 aA
-bn
+fa
 aE
+hL
+ZV
+uj
+bn
+rc
 rc
 KD
-Wc
 qC
-Tw
-Tw
-rK
-dS
 aj
 al
-BG
-DY
-DY
-Pp
+LZ
+hi
+hi
+ic
 al
 aW
 aI
@@ -3618,29 +3639,29 @@ ac
 ac
 aA
 aE
-WJ
-fa
+NB
+Hj
 aH
 ab
 ab
-Tw
-hL
-ZV
+rc
+jE
+WJ
 ab
 ao
 al
-nL
-Dx
+tn
+Ca
 al
-Hq
-Wu
+vI
+Sm
 aI
-LZ
+jA
 aS
 ay
 aS
 yR
-ic
+Yx
 aI
 ac
 ac
@@ -3659,35 +3680,35 @@ ax
 ac
 ac
 aA
-br
+bh
 aE
-XI
+rK
 aA
 ab
-NB
-Tw
-Tw
-Hj
-jE
+LO
+rc
+rc
+GE
+br
 aj
 al
-Hq
+vI
 aW
 aI
-nL
+tn
 al
 aI
 aS
-Yx
+vE
 aG
-tH
+hJ
 aS
 aS
 aI
 ac
 ac
 ac
-kt
+Md
 ac
 ac
 ac
@@ -3701,22 +3722,22 @@ ax
 ac
 ac
 aA
-vX
-bh
+sH
+Lh
 aE
 aA
-LO
+sf
 ab
 ab
 ab
 ab
-GE
+vX
 aj
-hO
-Hq
+XK
+vI
 aI
 aI
-nL
+tn
 al
 aI
 aI
@@ -3752,26 +3773,26 @@ ab
 ab
 ab
 ab
-sf
-wF
-Dx
+Mi
+yr
+Ca
+nJ
+aI
+aI
+vI
+KS
+aI
+fN
 SR
-aI
-aI
-Hq
-lC
-aI
-ky
-vE
 ay
 eO
 aS
-jA
+lC
 aI
 ac
 ac
 ac
-Md
+kt
 ac
 ac
 ac
@@ -3796,19 +3817,19 @@ aI
 aI
 aI
 aI
-Wu
-Hq
+Sm
+vI
 aI
 aW
-Hq
-Wu
+vI
+Sm
 aI
-iU
-oY
+qf
+hN
 aG
 aS
-nJ
-KS
+iU
+oY
 aI
 ac
 ac
@@ -3831,18 +3852,18 @@ ac
 ac
 ac
 aI
-sH
+zZ
 us
 aS
 aS
-Ps
-Lh
+OT
+DK
 aI
-Dx
-Hq
+Ca
+vI
 al
 al
-Hq
+vI
 al
 aI
 aI
@@ -3873,7 +3894,7 @@ ac
 ac
 ac
 aI
-Mi
+UW
 aS
 aS
 aB
@@ -3881,18 +3902,18 @@ aS
 aS
 az
 al
-nz
-Hq
-Hq
-mW
+rJ
+vI
+vI
+GK
 al
 aj
 aI
+nz
+aP
+mW
+aP
 Wg
-aP
-qf
-aP
-hN
 aI
 ac
 ac
@@ -3915,24 +3936,24 @@ ac
 ac
 ac
 aI
-zZ
-OT
-DK
+Pf
+xp
+yQ
 aS
 aS
 yR
 aI
-Wu
+Sm
 al
-Dx
-Dx
-Wu
-hI
-wF
+Ca
+Ca
+Sm
+qh
+yr
 aI
-rJ
+rd
 aP
-GK
+hI
 aP
 aP
 aI
@@ -3957,31 +3978,31 @@ ac
 ac
 ac
 aI
-Pf
-xp
+ht
+oX
 aS
-yQ
+UH
 aS
-UW
+dA
 aI
 al
 al
-vY
-Wu
+yj
+Sm
 al
 al
 aj
 aI
-de
+XE
 aP
 aP
 aP
-rd
+dJ
 aI
 ac
 ac
 ac
-AG
+de
 ac
 ac
 ac
@@ -4052,20 +4073,20 @@ ac
 ac
 ac
 ac
-kt
+Md
 ac
 ac
 ac
 ac
 ac
-kt
+Md
 ac
 ac
 ac
 ac
 ac
 ac
-kt
+Md
 ac
 ac
 ac
@@ -4094,20 +4115,20 @@ ac
 ac
 ac
 ac
-de
+XE
+aP
+GO
+lY
+FH
+Md
+aP
+Md
 aP
 Gp
-dJ
 aP
-kt
-aP
-kt
-aP
-qh
-aP
-kt
+Md
 AG
-de
+XE
 ac
 ac
 ac

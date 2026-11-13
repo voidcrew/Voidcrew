@@ -67,6 +67,9 @@
 	chart.spawn_zone = 2
 	TEST_ASSERT_NULL(chart.reveal(null), "A second den opened while one was out there")
 	TEST_ASSERT(!chart.revealed, "A refused den chart was used up")
+	// A revealed den is never a contract's site (a held den would rebuild with a fresh vault).
+	scav_den_claim(den)
+	TEST_ASSERT(den.mission_exclusive, "A revealed den can be held by a contract")
 	// Nobody docked within the hour: it leaves and frees the slot.
 	scav_den_move_on(WEAKREF(den))
 	TEST_ASSERT(QDELETED(den), "An unvisited den stayed on the overmap")
