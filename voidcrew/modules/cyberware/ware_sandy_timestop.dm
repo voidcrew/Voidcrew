@@ -952,6 +952,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	escape_the_negative_zone(shot) // in case it was tinted before it had a firer
 	if(held_shots[shot])
 		return
+	// Another field (a crewmate's, in a shared slow-mo) took it as it was made: it lets go first, or both would slow
+	// it, and whichever let go last would leave it flying at the slowed pace after the slow-mo.
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[shot]
+	if(istype(holder) && holder != src)
+		holder.unfreeze_atom(shot)
 	hold_shot(shot)
 	GLOB.cyberware_time_dilated[shot] = src
 	frozen_things[shot] = TRUE

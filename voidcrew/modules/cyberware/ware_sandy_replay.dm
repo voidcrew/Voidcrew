@@ -511,8 +511,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// `thing`'s appearance without the slow-mo's own look: the field's tint and the user's edge glow.
 /datum/sandy_replay/proc/clean_look(atom/movable/thing)
-	var/tinted = field?.tinted[thing]
-	var/outlined = thing == user && thing.filter_data?[SANDY_REPLAY_OUTLINE]
+	// In a shared slow-mo another member's field may tint it, and every member wears the edge glow (ware_sandy_timestop_shared.dm).
+	var/tinted = field?.tinted[thing] || sandy_session_tints(src, thing)
+	var/outlined = (thing == user || sandy_session_member(src, thing)) && thing.filter_data?[SANDY_REPLAY_OUTLINE]
 	if(!tinted && !outlined)
 		return thing.appearance
 	var/mutable_appearance/copy = new(thing)
@@ -663,14 +664,31 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!replays)
 		finish()
 		return
-	if(user?.client || sandy_session_watched(src)) // or a crewmate's, in a shared slow-mo (ware_sandy_timestop_shared.dm)
+	if(watched())
 		// The cut into the replay is one frame: the slow-mo's last frame, then the replay's first, in this same tick,
 		// so no frame of the world as it really is now (the dead where they fell, the gore at its landing spots) goes
 		// out between them. What ends the slow-mo after this (the outline coming off, the release flash) lands on the
-		// real looks under the puppets. Without a client nobody sees the cut: the replay starts next tick.
+		// real looks under the puppets. With nobody looking on nobody sees the cut: the replay starts next tick.
 		begin()
 		return
 	begin_timer = addtimer(CALLBACK(src, PROC_REF(begin)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// Whether anyone sees the replay start: its user, a crewmate of a shared slow-mo (ware_sandy_timestop_shared.dm), or
+/// any other client looking on from near one of them (a ghost, a crewmate whose own time is out).
+/datum/sandy_replay/proc/watched()
+	if(user?.client || sandy_session_watched(src))
+		return TRUE
+	var/list/here = centres()
+	if(!length(here))
+		return FALSE
+	for(var/client/viewer as anything in GLOB.clients)
+		var/turf/eye_at = get_turf(viewer?.eye)
+		if(!eye_at)
+			continue
+		for(var/turf/centre as anything in here)
+			if(eye_at.z == centre.z && get_dist(eye_at, centre) <= SANDY_REPLAY_REACH)
+				return TRUE
+	return FALSE
 
 /// The bodies in the recording in the middle of an execution or finisher, either side of it.
 /datum/sandy_replay/proc/moves_running()

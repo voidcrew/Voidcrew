@@ -561,6 +561,22 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 /proc/sandy_session_watched(datum/sandy_replay/replay)
 	return length(sandy_session_others(replay)) > 0
 
+/// Called from clean_look(): whether a field of `replay`'s shared slow-mo tints `thing`.
+/proc/sandy_session_tints(datum/sandy_replay/replay, atom/thing)
+	var/datum/sandy_session/session = sandy_session_of_replay(replay)
+	if(!session)
+		return FALSE
+	for(var/mob/living/member as anything in session.members)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = sandy_session_field(session.members[member])
+		if(field?.tinted[thing])
+			return TRUE
+	return FALSE
+
+/// Called from clean_look(): whether `thing` is a member of `replay`'s shared slow-mo.
+/proc/sandy_session_member(datum/sandy_replay/replay, atom/thing)
+	var/datum/sandy_session/session = sandy_session_of_replay(replay)
+	return !!session && ismob(thing) && (thing in session.members)
+
 /// Called from hear(): a sound outside the recording's own field may be inside another member's.
 /proc/sandy_session_hears(datum/sandy_replay/replay, turf/source)
 	var/datum/sandy_session/session = GLOB.sandy_session_of[replay.user]
