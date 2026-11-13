@@ -592,7 +592,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	// Waiting out a move after the slow-mo: the sounds around the user, as the hold's reach.
 	var/turf/centre = get_turf(field ? field.host : user)
 	if(!centre || centre.z != source.z || get_dist(centre, source) > (field ? field.current_range : SANDY_REPLAY_HOLD_RANGE))
-		return
+		if(!sandy_session_hears(src, source)) // or in a crewmate's field of a shared slow-mo (ware_sandy_timestop_shared.dm)
+			return
 	sounds += list(list(frame_exact(), source) + arguments)
 
 /// Signal proc for [COMSIG_QDELETING] on anything recorded.
@@ -1110,6 +1111,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	for(var/atom/movable/screen/fullscreen/flash/sandy_release/flash in user.client?.screen)
 		user.client.screen -= flash
 	play_started = world.time
+	sandy_member_views() // each member of a shared slow-mo watches its own replayed self (ware_sandy_timestop_shared.dm)
 	// The surge coming on, as the replay's user did at its first frame.
 	var/turf/first = user_track ? locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) : null
 	playsound(first || user, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
@@ -1211,6 +1213,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		var/obj/vehicle/sealed/mecha/mech = get_atom_on_turf(found, /obj/vehicle/sealed/mecha)
 		if(istype(mech)) // a pilot, or something hearing inside one
 			hold_mech(mech)
+	sandy_hold_members() // and around every member of a shared slow-mo (ware_sandy_timestop_shared.dm)
 
 /// Switches `mech` off for the replay.
 /datum/sandy_replay/proc/hold_mech(obj/vehicle/sealed/mecha/mech)
@@ -1624,6 +1627,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				show(track)
 			if(track.events)
 				play_events(track, frame)
+		sandy_member_follow() // ware_sandy_timestop_shared.dm
 	catch(var/exception/error)
 		GLOB.sandy_replay_echoing = FALSE
 		finish()
@@ -1720,6 +1724,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
 		user.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash[1], crash[2])
 	crash = null
+	sandy_session_replay_over(src) // a shared slow-mo's other crashes and views (ware_sandy_timestop_shared.dm)
 	if(!QDELING(src))
 		qdel(src)
 	if(problems)
@@ -1791,6 +1796,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// The surge window is closing on `user`: if their replay is about to play or playing, the crash waits for it.
 /// Returns TRUE if it took the crash.
 /proc/sandy_replay_defer_crash(mob/living/user, length, stamina)
+	if(sandy_session_defer_crash(user, length, stamina)) // a shared slow-mo's crashes wait for its one replay (ware_sandy_timestop_shared.dm)
+		return TRUE
 	var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
 	if(!replay || replay.finished)
 		return FALSE

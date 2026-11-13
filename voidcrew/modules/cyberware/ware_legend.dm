@@ -94,6 +94,8 @@
 	var/online_balloon = "cascade online"
 	var/crash_balloon = "cascade crash!"
 	var/part_word = "lattice"
+	/// What the bearer's balloons call the part ("cascade online", "rig still cycling!"). Read through sandy_part_balloon_word().
+	var/balloon_word = "cascade"
 	/// How long the window lasts when it slows the world (no other player near, ware_sandy_timestop.dm). A plain
 	/// surge, or one that a player cuts short, lasts window_duration.
 	var/slowmo_duration = 13 SECONDS
@@ -128,6 +130,12 @@
 	owner.remove_status_effect(/datum/status_effect/cyberware_cascade_window) // on_remove applies the crash
 	for(var/datum/action/cooldown/cyberware/cascade_surge/surge in actions)
 		surge.StartCooldown()
+
+/// What `user`'s balloons call their reflex part: "cascade" on the top model, "lattice" on the service model, "rig" on the street model.
+/proc/sandy_part_balloon_word(mob/living/user)
+	var/mob/living/carbon/carbon_user = user
+	var/obj/item/organ/cyberimp/cyberware/cascade/part = iscarbon(carbon_user) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_user.organs) : null
+	return part?.balloon_word || "cascade"
 
 /datum/action/cooldown/cyberware/cascade_surge
 	name = "Cascade Surge"
@@ -164,9 +172,9 @@
 		else
 			qdel(window)
 		return TRUE
-	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
-		var/obj/item/organ/cyberimp/cyberware/cascade/lattice = organ
-		surger.balloon_alert(surger, "[istype(lattice) ? lattice.part_word : "lattice"] still cycling!")
+	// A member of a shared slow-mo whose time is out waits for its crash too (ware_sandy_timestop_shared.dm).
+	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash) || GLOB.sandy_session_of[surger])
+		surger.balloon_alert(surger, "[sandy_part_balloon_word(surger)] still cycling!")
 		return FALSE
 	StartCooldown()
 	// The lattice hands the window its numbers (an organ-less call falls back to the T4 defaults).
