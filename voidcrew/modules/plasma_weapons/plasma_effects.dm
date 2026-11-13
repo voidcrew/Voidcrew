@@ -799,8 +799,11 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	GLOB.plasma_wall_glows_by_z[glow_z_key] += 1
 	// The emissive keeps the ember lit in the dark; it fades with our alpha and keeps its own colour
 	add_overlay(emissive_appearance(icon, icon_state, spokesman || src))
-	// It cools down the plasma's own ramp: violet, deep purple, then char
-	animate(src, color = "#EB43FF", time = 0.5 SECONDS)
+	// It shows under the splash as the splash goes, already violet, and cools down the plasma's own ramp: deep purple,
+	// then char
+	color = "#EB43FF"
+	alpha = 0
+	animate(src, alpha = 255, time = 0.3 SECONDS)
 	animate(color = "#7C2687", time = 1.5 SECONDS)
 	animate(color = "#332D34", time = 2 SECONDS)
 	animate(alpha = 0, time = PLASMA_GLOW_DURATION - 4 SECONDS)

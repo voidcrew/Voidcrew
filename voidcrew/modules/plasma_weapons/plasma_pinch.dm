@@ -92,9 +92,10 @@
 	. = ..()
 	pixel_x = px
 	pixel_y = py
-	// The ball is centred on the icon, so it shrinks in place
+	// The ball is centred on the icon, so it shrinks in place. Shrunk, it is smoothed: a few hard pixels read as a square
 	if(scale != 1)
 		transform = matrix() * scale
+		appearance_flags &= ~PIXEL_SCALE
 	layer = new_layer
 	// In front of the body we draw above the lighting, off the game world's ambient occlusion: its drop shadow under
 	// a bright ball darkened the floor around it. Behind the body we stay on the shooter's plane so the body hides us
@@ -116,9 +117,7 @@
 	animate(alpha = 0, time = 0)
 	if(!holder)
 		return
-	var/obj/effect/temp_visual/plasma_burst_light/pinch/glow = new(holder.loc)
-	glow.pixel_w = px
-	glow.pixel_z = py
+	// The ball's light is the bolt's own, carried by the bolt's copy from the shot (plasma_pinch_bolt)
 	shooter = holder
 	shooter.vis_contents += src
 	RegisterSignal(shooter, COMSIG_QDELETING, PROC_REF(shooter_gone))
@@ -134,12 +133,6 @@
 	UnregisterSignal(shooter, COMSIG_QDELETING)
 	shooter.vis_contents -= src
 	shooter = null
-
-/// The pinch's small purple light, on the ball. The bolt's copy takes the light over at this size when the ball snaps
-/obj/effect/temp_visual/plasma_burst_light/pinch
-	duration = PLASMA_PINCH_SNAP_TIME
-	light_range = 1
-	light_power = 1
 
 // A bolt from a gun with a pinch stays out of sight until the ball snaps: the ball is the bolt forming. By then the
 // real bolt is most of a tile ahead, so a copy of it shows at the ball and closes on it. The copy rides the real bolt's
@@ -222,6 +215,9 @@
 	bolt = real_bolt
 	fired_at = world.time
 	last_move_at = world.time
+	// Until a tick has passed we can't measure the bolt's pace: take a full tick's flight. Left at nothing, a few
+	// pixels' move in the shot's own tick queued as seconds and held the bolt out of sight long after the ball snapped
+	tick_pixels = min(world.tick_lag * SSprojectiles.pixels_per_decisecond * bolt.speed, SSprojectiles.max_pixels_per_tick)
 	// The bolt's light goes with us until the handover. Off before we take its look, or its light comes along
 	bolt.set_light_on(FALSE)
 	appearance = bolt.appearance
@@ -237,7 +233,12 @@
 	var/lead = bolt.pinch_lead - bolt.pinch_nose
 	start_x = barrel_turf.x * ICON_SIZE_X + offset[1] + dx * lead
 	start_y = barrel_turf.y * ICON_SIZE_Y + offset[2] + dy * lead
+	// We show when the ball snaps, on the client's own clock like the ball's frames. On the queue of moves below
+	// the show could land a tick or two off the snap, before the ball had gone or after a gap. This sequence comes
+	// first: the moves continue the newest one
 	alpha = 0
+	animate(src, time = PLASMA_PINCH_SNAP_TIME, flags = ANIMATION_PARALLEL)
+	animate(alpha = 255, time = 0)
 	// fire() moved the bolt its first pixel over a tick. We start our queue with that move, in the same message
 	var/bolt_x = bolt.loc.x * ICON_SIZE_X + bolt.pixel_x
 	var/bolt_y = bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y
@@ -248,8 +249,8 @@
 	else
 		animate(src, time = world.tick_lag, flags = ANIMATION_PARALLEL)
 	queued_to = world.tick_lag
-	// The bolt's light mask, shown at the pinch light's size and brightness when the ball snaps, then grown to the
-	// bolt's. The holder's alpha and size carry over to the mask
+	// The bolt's light mask: the ball's small light from the shot, grown to the bolt's own from the snap. We sit on the
+	// ball until the snap, so the light does too. The holder's alpha and size carry over to the mask
 	var/datum/component/overlay_lighting/lighting = bolt.GetComponent(/datum/component/overlay_lighting)
 	if(lighting?.visible_mask)
 		var/mutable_appearance/mask = new(lighting.visible_mask)
@@ -257,7 +258,7 @@
 		glow_holder = new(null)
 		glow_holder.appearance_flags = RESET_ALPHA | RESET_TRANSFORM | RESET_COLOR | KEEP_APART
 		glow_holder.underlays += mask
-		glow_holder.alpha = 0
+		glow_holder.alpha = min(255, 255 * PLASMA_PINCH_LIGHT_ALPHA / max(lighting.set_alpha, 1))
 		var/mask_size = (lighting.range - 1) * 64 + 32
 		// The client scales the mask about the middle of its own icon, which its transform has moved half a size up and
 		// right of ours. Moved back by what the scale leaves of that, it shrinks about our centre and grows back in place
@@ -267,7 +268,6 @@
 		small.Translate(-pivot, -pivot)
 		glow_holder.transform = small
 		animate(glow_holder, time = PLASMA_PINCH_SNAP_TIME)
-		animate(alpha = min(255, 255 * PLASMA_PINCH_LIGHT_ALPHA / max(lighting.set_alpha, 1)), time = 0)
 		animate(alpha = 255, transform = matrix(), time = PLASMA_PINCH_LIGHT_RAMP)
 		vis_contents += glow_holder
 	bolt_icon = bolt.icon
@@ -339,8 +339,7 @@
 		var/progress = time > 0 ? (stop - move_start) / time : 1
 		var/list/offset = offset_at(stop, x0 + (x1 - x0) * progress, y0 + (y1 - y0) * progress)
 		animate(src, pixel_w = offset[1], pixel_z = offset[2], time = max(stop - last, 0), flags = ANIMATION_PARALLEL | ANIMATION_CONTINUE)
-		if(!shown && stop >= show_at)
-			animate(alpha = 255, time = 0, flags = ANIMATION_CONTINUE)
+		if(stop >= show_at)
 			shown = TRUE
 		last = stop
 
