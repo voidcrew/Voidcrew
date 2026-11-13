@@ -619,6 +619,77 @@
 	if(!QDELETED(shop.holdup))
 		qdel(shop.holdup)
 
+/// Merging stolen till credits with a robber's own holochip neither launders the till claim nor swallows the robber's legitimate excess credits on search or jail strip
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holochip_merge_and_seizure
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holochip_merge_and_seizure/Run()
+	if(!holdup_fixture())
+		return
+	var/saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+
+	// 1. Merging the stolen chip INTO the robber's own 5,000 cr chip keeps the till claim, and a 2-star search takes only the till's share
+	if(!hold_up())
+		GLOB.outpost_police_property_time_scale = saved_scale
+		return
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	var/obj/item/holochip/stolen_chip
+	for(var/obj/item/holochip/candidate in person.get_all_contents())
+		stolen_chip = candidate
+		break
+	if(!stolen_chip)
+		for(var/obj/item/holochip/candidate in range(2, trader))
+			stolen_chip = candidate
+			break
+	TEST_ASSERT_NOTNULL(stolen_chip, "Setup: stick-up handed over no holochip")
+	var/till_share = stolen_chip.credits
+	TEST_ASSERT(till_share > 0 && shop.till_ready_at > world.time, "Setup: shop till was not emptied by the stick-up")
+	var/obj/item/holochip/own_chip = allocate(/obj/item/holochip, get_turf(person), 5000)
+	TEST_ASSERT(person.put_in_hands(own_chip), "Setup: could not put robber's own holochip in hand")
+	TEST_ASSERT_EQUAL(own_chip.item_interaction(person, stolen_chip, list()), ITEM_INTERACT_SUCCESS, "Setup: holochips did not merge")
+	TEST_ASSERT(QDELETED(stolen_chip), "Setup: merged stolen holochip was not deleted")
+	TEST_ASSERT_EQUAL(own_chip.credits, 5000 + till_share, "Merged holochip did not sum both credit amounts")
+	TEST_ASSERT_NOTNULL(police.takings?[WEAKREF(own_chip)], "Merging a stolen holochip into the robber's own chip laundered the till claim")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/searcher = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_turf(person))
+	police_pin_warrant(police, person.mind, 30)
+	var/obj/item/outpost_sealed_case/evidence/case = police.confiscate(person, searcher)
+	TEST_ASSERT_NOTNULL(case, "confiscate() produced no evidence case for merged stolen takings")
+	TEST_ASSERT(!QDELETED(own_chip) && own_chip.credits == 5000, "confiscate() took the robber's own 5,000 cr instead of splitting off only the [till_share] cr till share")
+	TEST_ASSERT_EQUAL(get_atom_on_turf(own_chip), person, "The robber's own 5,000 cr chip left their person during a 2-star search")
+	police.dispose_evidence(searcher)
+	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "Disposing the split evidence case did not refill the shop's till")
+	if(!QDELETED(first_hold))
+		qdel(first_hold)
+
+	// 2. Merging the robber's own 5,000 cr chip INTO a fresh stolen chip and running a 3-star jail strip returns the till share and locks the 5,000 cr in their property locker
+	var/obj/item/holochip/second_stolen = shop.holdup_take(trader, person)
+	TEST_ASSERT(istype(second_stolen) && second_stolen.credits == till_share, "Setup: refilled till did not hand over a second holochip")
+	TEST_ASSERT_EQUAL(second_stolen.item_interaction(person, own_chip, list()), ITEM_INTERACT_SUCCESS, "Setup: reverse holochip merge failed")
+	TEST_ASSERT_EQUAL(second_stolen.credits, 5000 + till_share, "Reverse merge did not sum credits")
+	TEST_ASSERT(person.put_in_hands(second_stolen) || get_atom_on_turf(second_stolen) == person, "Setup: merged chip is not on the prisoner")
+	TEST_ASSERT(length(police.cells) && length(police.lockers), "Loaded outpost has no holding cell or property lockers")
+	var/datum/outpost_police_cell/cell = police.cells[1]
+	var/turf/cell_floor = cell.tiles[1]
+	var/list/floor_before = list()
+	for(var/obj/item/existing in cell_floor)
+		floor_before += existing
+	person.forceMove(cell_floor)
+	searcher.forceMove(cell_floor)
+	police_pin_warrant(police, person.mind, 55)
+	TEST_ASSERT(police.store_property(person, searcher), "store_property() failed on a robber carrying a merged holochip")
+	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "Jail strip did not return the stolen till share to the shop")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = police.property_locker_for(person)
+	TEST_ASSERT_NOTNULL(locker, "Prisoner was assigned no property locker")
+	TEST_ASSERT(!QDELETED(second_stolen) && second_stolen.credits == 5000, "Jail strip did not leave the prisoner's legitimate 5,000 cr intact")
+	TEST_ASSERT_EQUAL(second_stolen.loc, locker, "Prisoner's legitimate 5,000 cr holochip was not stored in their property locker (loc: [second_stolen.loc])")
+	TEST_ASSERT(locker.holds(second_stolen), "Property locker did not record the prisoner's legitimate 5,000 cr holochip")
+	for(var/obj/item/loose in cell_floor)
+		if(!(loose in floor_before))
+			TEST_FAIL("Jail strip left [loose] ([loose.type]) loose on the cell floor")
+
+	GLOB.outpost_police_property_time_scale = saved_scale
+
 /// Every zone has four or more lines for each kind, and an alarm line that needs no place or look
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines
 

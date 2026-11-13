@@ -253,7 +253,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	if(!isliving(top))
 		return
 	// Officers carrying evidence are not thieves; the arrest sorts it out
-	if(istype(top, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(is_outpost_police_npc(top))
 		return
 	var/mob/living/taker = top
 	if(is_authorised(taker))
@@ -723,11 +723,17 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	for(var/obj/item/thing as anything in take)
 		if(QDELETED(thing))
 			continue
-		outpost_police_salvage(thing, floor)
-		case.add_evidence(thing, prisoner)
+		var/obj/item/seized = prepare_seized_evidence(thing, floor)
+		if(!QDELETED(seized))
+			case.add_evidence(seized, prisoner)
 	var/obj/structure/closet/secure_closet/outpost_evidence/store = get_evidence_locker()
 	. = evidence_empty_case(case, floor, store)
 	qdel(case)
+
+/// Prepares `thing` before it enters an evidence case (overridden by recovery_robbery.dm to split till claims off larger holochips)
+/datum/outpost_police/proc/prepare_seized_evidence(obj/item/thing, turf/floor)
+	outpost_police_salvage(thing, floor)
+	return thing
 
 /// Stores a non-disposable restraint removed right after `store_property()` so it never stays loose on the cell floor
 /datum/outpost_police/proc/store_extra_property(mob/living/carbon/prisoner, obj/item/thing)
@@ -865,8 +871,9 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		if(QDELETED(thing))
 			continue
 		// A ship key or the like inside a tool being taken stays with the suspect
-		outpost_police_salvage(thing, floor)
-		case.add_evidence(thing, suspect)
+		var/obj/item/seized = prepare_seized_evidence(thing, floor)
+		if(!QDELETED(seized))
+			case.add_evidence(seized, suspect)
 	// The pat-down ran to the end, whatever it could take (act_search() does not search again)
 	if(islist(status_out))
 		status_out["completed"] = TRUE

@@ -211,9 +211,9 @@
 		if(OUTPOST_CRIME_WEAPON_DRAWN, OUTPOST_CRIME_CHECKPOINT_BREACH, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_TRESPASS, OUTPOST_CRIME_ACCOMPLICE)
 			// The scanner, the cell and the officers' own sighting see these
 			return POLICE_WITNESS_CAMERA
-	// At once: the traders and checkpoint guards, players not on the offender's crew (the victim first), the cameras
+	// At once: traders at their counter and checkpoint guards in their booth, players not on the offender's crew (the victim first), the cameras
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in police.outpost.traders)
-		if(can_report(trader) && sees(trader, offender))
+		if(trader_at_desk(trader) && can_report(trader) && sees(trader, offender))
 			last_witness = trader
 			return POLICE_WITNESS_SAW
 	var/datum/voidcrew_crew_record/own_crew = offender.mind?.get_reputation_crew()
@@ -231,7 +231,7 @@
 		if(sees(camera, offender))
 			last_witness = camera
 			return POLICE_WITNESS_CAMERA
-	// Delayed witnesses: every officer who saw it (radio call) and every ambient civilian/crew member who saw it (3s delay).
+	// Delayed witnesses: every officer who saw it (radio call) and every ambient civilian/crew member (or off-counter trader) who saw it (3s delay).
 	// Keeping all of them on the report means silencing one witness does not blind another standing right beside them.
 	var/list/officers_saw = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
@@ -241,8 +241,11 @@
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[police.outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(!person.mind && !person.client && !is_officer(person) && !(person in police.outpost.traders) && sees(person, offender))
-				civilians_saw += person
+			if(!person.mind && !person.client && !is_officer(person) && !trader_at_desk(person) && sees(person, offender))
+				civilians_saw |= person
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/off_desk in police.outpost.traders)
+		if(!off_desk.mind && !off_desk.client && !trader_at_desk(off_desk) && sees(off_desk, offender))
+			civilians_saw |= off_desk
 	if(length(civilians_saw) && length(officers_saw))
 		last_witnesses = civilians_saw + officers_saw
 		last_witness = civilians_saw[1]
@@ -259,8 +262,18 @@
 
 /// Whether `thing` is an NPC police officer (never a player in an officer's body, abuse SF3)
 /datum/outpost_police_perception/proc/is_officer(atom/thing)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = thing
-	return istype(officer) && !officer.mind && !officer.client
+	return is_outpost_police_npc(thing)
+
+/// Whether `thing` is a trader at their counter or a gate guard at their booth, within reach of the desk alarm (spec-rehydrate 3.3)
+/datum/outpost_police_perception/proc/trader_at_desk(atom/thing)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = thing
+	if(!istype(trader) || trader.mind || trader.client || trader.fading || istype(trader.activity, /datum/ambient_activity/leave))
+		return FALSE
+	var/turf/counter = trader.shop?.counter_turf || trader.home
+	if(!counter)
+		return TRUE
+	var/turf/standing = get_turf(trader)
+	return !!(standing && standing.z == counter.z && get_dist(standing, counter) <= 1) // OUTPOST_TRADER_COUNTER_REACH
 
 /// Whether `thing` is an NPC slipping away down a lift (fade_out()) and no longer here to watch or report
 /datum/outpost_police_perception/proc/is_fading_npc(atom/thing)
@@ -367,9 +380,9 @@
 	if(test_plain)
 		return 0
 #endif
-	// Townspeople take a moment; a trader or gate guard (ambient NPCs since R1) reports at once, as an officer's desk would
+	// Townspeople, recovery crews and traders away from their counter take a moment; a trader at their counter or gate guard reports at once
 	var/mob/living/carbon/human/npc/ambient_npc/npc = witness
-	if(istype(npc) && !npc.mind && !npc.client && !is_officer(npc) && !istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+	if(istype(npc) && !npc.mind && !npc.client && !is_officer(npc) && !trader_at_desk(npc))
 		return OUTPOST_POLICE_CIVILIAN_REPORT_TIME
 	return 0
 

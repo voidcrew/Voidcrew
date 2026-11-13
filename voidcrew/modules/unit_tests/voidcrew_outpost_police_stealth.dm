@@ -221,16 +221,31 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "A witness whose radio came back never called the report in")
 
-/// A trader's report counts at once
+/// A trader at their counter reports at once; dragged away from their counter, they report after the civilian delay and can be silenced before it lands
 /datum/unit_test/voidcrew_stealth_live/police/trader
 
 /datum/unit_test/voidcrew_stealth_live/police/trader/Run()
 	TEST_ASSERT(police_room(12, 6), "No room for the test")
-	pa_trader(outpost, at(1, 1), at(1, 2), /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = pa_trader(outpost, at(1, 1), at(1, 2), /datum/outpost_shop/vendor/bait_shop)
 	var/mob/living/carbon/human/brawler = visitor_at(4, 1)
 	var/mob/living/carbon/human/victim = person_at(5, 1, FALSE)
-	TEST_ASSERT_NOTNULL(police.report_crime(brawler, "shot", victim), "A trader's report did not count at once")
+	TEST_ASSERT_NOTNULL(police.report_crime(brawler, "shot", victim), "A trader's report at their counter did not count at once")
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "A trader's report put the wrong heat on")
+
+	police.close_warrant(brawler.mind, TRUE)
+	keeper.forceMove(at(3, 4)) // off the counter (home is 1,1): no desk alarm within reach
+	TEST_ASSERT_EQUAL(police.report_crime(brawler, "shot", victim), 0, "A trader away from their counter reported instantaneously instead of queueing a civilian report")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "An off-counter trader queued [length(police.pending_reports)] pending reports, not 1")
+	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An off-counter trader's delayed report put heat on immediately")
+
+	var/datum/outpost_pending_report/pending = police.pending_reports[1]
+	pending.due_at = world.time - 1
+	keeper.set_stat(UNCONSCIOUS)
+	police.tick_warrants()
+	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An unconscious off-counter trader still delivered their delayed report")
+	keeper.set_stat(CONSCIOUS)
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "An awake off-counter trader's delayed report never landed once due")
 
 // ===== SOUND SUMMONS =====
 

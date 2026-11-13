@@ -134,6 +134,11 @@
 		LAZYREMOVE(first_takers, ref)
 		UnregisterSignal(part, COMSIG_MOVABLE_MOVED)
 
+/// Whether `thing` is an NPC police officer (never a player in an officer's body, abuse SF3)
+/proc/is_outpost_police_npc(atom/thing)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = thing
+	return istype(officer) && !officer.mind && !officer.client
+
 /// A seized item moved. Inside, or lying where an open door spilled it, is fine; in a hand it has been taken.
 /obj/structure/closet/secure_closet/outpost_evidence/proc/on_watched_moved(obj/item/source, atom/old_loc, movement_dir, forced, list/old_locs)
 	SIGNAL_HANDLER
@@ -148,7 +153,7 @@
 		return
 	var/mob/living/taker = top
 	// Officers, and anyone with police access, may take what they like
-	if(istype(taker, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || allowed(taker))
+	if(is_outpost_police_npc(taker) || allowed(taker))
 		unwatch(source)
 		return
 	if(!taker.mind)

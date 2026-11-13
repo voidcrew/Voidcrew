@@ -73,6 +73,8 @@
 
 /// The one watcher for every trader in the world: it hears tg's hold-up land on a trader (below) and the supply convoy
 GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
+/// Weakrefs to police instances holding active `takings`, so merging two holochips carries stolen till claims across
+GLOBAL_LIST_EMPTY(outpost_takings_police)
 
 /datum/outpost_holdup_watcher
 	/// Every stick-up in progress
@@ -303,6 +305,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		if(QDELETED(old_ref.resolve()))
 			police.takings -= old_ref
 	LAZYSET(police.takings, WEAKREF(taken), record)
+	GLOB.outpost_takings_police |= WEAKREF(police)
 	if(!robber.put_in_hands(taken))
 		taken.forceMove(counter)
 	return taken
@@ -638,6 +641,100 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 			take |= stolen
 	return take
 
+// Merging a stolen till holochip into another holochip carries the till's claim onto the combined chip instead of laundering it
+/obj/item/holochip/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	var/obj/item/holochip/other = istype(tool, /obj/item/holochip) ? tool : null
+	var/datum/weakref/other_ref = other ? WEAKREF(other) : null
+	. = ..()
+	if(. == ITEM_INTERACT_SUCCESS && other_ref)
+		outpost_transfer_holochip_takings(other_ref, src)
+
+/// Moves any stolen till claim from `from_ref` onto `into` when one holochip is merged into another
+/proc/outpost_transfer_holochip_takings(datum/weakref/from_ref, obj/item/holochip/into)
+	if(!from_ref || QDELETED(into))
+		return
+	var/datum/weakref/into_ref = WEAKREF(into)
+	for(var/datum/weakref/police_ref as anything in GLOB.outpost_takings_police?.Copy())
+		var/datum/outpost_police/police = police_ref?.resolve()
+		if(QDELETED(police) || !length(police.takings))
+			GLOB.outpost_takings_police -= police_ref
+			continue
+		var/list/moved = police.takings[from_ref]
+		if(!moved)
+			continue
+		police.takings -= from_ref
+		var/list/existing = police.takings[into_ref]
+		if(!existing)
+			police.takings[into_ref] = moved
+			continue
+		outpost_merge_takings_records(existing, moved)
+
+/// Adds `amount` owed to `shop_ref` onto `target`
+/proc/outpost_add_shop_claim(list/target, datum/weakref/shop_ref, amount)
+	if(!shop_ref || amount <= 0)
+		return
+	if(!target["shop"])
+		target["shop"] = shop_ref
+		target["amount"] = amount
+		return
+	if(target["shop"] == shop_ref)
+		target["amount"] = (target["amount"] || 0) + amount
+		return
+	var/list/extras = target["extra_shops"]
+	if(!extras)
+		extras = list()
+		target["extra_shops"] = extras
+	extras[shop_ref] = (extras[shop_ref] || 0) + amount
+
+/// Folds `moved` (and any sub-claims on it) into `target`
+/proc/outpost_merge_takings_records(list/target, list/moved)
+	outpost_add_shop_claim(target, moved["shop"], moved["amount"] || 0)
+	var/list/moved_extras = moved["extra_shops"]
+	for(var/datum/weakref/extra_shop as anything in moved_extras)
+		outpost_add_shop_claim(target, extra_shop, moved_extras[extra_shop])
+
+/// Total till credits owed on `record` across one or more robbed shops
+/proc/outpost_takings_owed(list/record)
+	var/total = record["amount"] || 0
+	var/list/extras = record["extra_shops"]
+	for(var/datum/weakref/extra_shop as anything in extras)
+		total += extras[extra_shop] || 0
+	return total
+
+/// Whether `item` is recorded as a crime tool on a warrant or pending report (distinct from stolen till takings)
+/datum/outpost_police/proc/is_recorded_crime_tool(obj/item/item)
+	var/datum/weakref/ref = WEAKREF(item)
+	for(var/datum/mind/mind as anything in warrants)
+		var/datum/outpost_warrant/warrant = warrants[mind]
+		if(warrant && (ref in warrant.evidence))
+			return TRUE
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(QDELETED(report))
+			continue
+		if(report.source == ref || (ref in report.folded_sources))
+			return TRUE
+	return FALSE
+
+/// When a suspect merged stolen till credits onto their own larger holochip, seize only the stolen share so their own credits stay with them (or go into their property locker on a jail strip)
+/datum/outpost_police/prepare_seized_evidence(obj/item/thing, turf/floor)
+	. = ..()
+	if(!istype(., /obj/item/holochip))
+		return
+	var/obj/item/holochip/chip = .
+	var/datum/weakref/ref = WEAKREF(chip)
+	var/list/record = takings?[ref]
+	if(!record)
+		return
+	var/owed = outpost_takings_owed(record)
+	if(owed > 0 && chip.credits > owed && !is_recorded_crime_tool(chip))
+		var/taken_back = chip.spend(owed, TRUE)
+		if(taken_back > 0)
+			var/obj/item/holochip/stolen_share = new(floor || get_turf(chip), taken_back)
+			takings -= ref
+			takings[WEAKREF(stolen_share)] = record
+			GLOB.outpost_takings_police |= WEAKREF(src)
+			return stolen_share
+
 /// Stolen takings in an emptied evidence case go back where they came from (a holochip's credits to the till, a shelf item to its shelf); the rest is the case's business
 /datum/outpost_police/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill, obj/structure/closet/secure_closet/outpost_evidence/store)
 	for(var/obj/item/thing as anything in case.contents.Copy())
@@ -649,27 +746,45 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		return_takings(thing, record, spill)
 	return ..()
 
+/// Refunds one shop's till share from `returned` credits recovered off a seized holochip
+/datum/outpost_police/proc/refund_shop_till(datum/outpost_shop/shop, amount, returned)
+	if(QDELETED(shop) || amount <= 0)
+		return
+	// Only what came back refills the till: a chip split down to 1 cr takes only its share off the wait
+	if(returned >= amount || shop.till_ready_at <= world.time)
+		shop.till_ready_at = 0
+		shop.till_extras = 0
+		shop.till_robbed_by = null
+	else if(returned > 0)
+		shop.till_ready_at = max(world.time + 1, shop.till_ready_at - round(OUTPOST_HOLDUP_TILL_REFILL * returned / amount))
+		addtimer(CALLBACK(shop, TYPE_PROC_REF(/datum/outpost_shop, till_refilled)), shop.till_ready_at - world.time, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
+
 /// `thing` was stolen from a counter: back to it (the cap on what a counter loses in a round is not given back)
 /datum/outpost_police/proc/return_takings(obj/item/thing, list/record, turf/spill)
-	var/datum/weakref/shop_ref = record["shop"]
-	var/datum/outpost_shop/shop = shop_ref?.resolve()
-	if(QDELETED(shop) || QDELETED(thing))
+	if(QDELETED(thing))
 		return
-	var/amount = record["amount"]
-	if(amount && istype(thing, /obj/item/holochip))
+	var/owed = outpost_takings_owed(record)
+	if(owed && istype(thing, /obj/item/holochip))
 		var/obj/item/holochip/chip = thing
-		var/returned = chip.spend(min(chip.credits, amount), TRUE)
-		// Only what came back refills the till: a chip split down to 1 cr takes only its share off the wait
-		if(returned >= amount || shop.till_ready_at <= world.time)
-			shop.till_ready_at = 0
-			shop.till_extras = 0
-			shop.till_robbed_by = null
-		else if(returned > 0)
-			shop.till_ready_at = max(world.time + 1, shop.till_ready_at - round(OUTPOST_HOLDUP_TILL_REFILL * returned / amount))
-			addtimer(CALLBACK(shop, TYPE_PROC_REF(/datum/outpost_shop, till_refilled)), shop.till_ready_at - world.time, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
+		var/primary_amount = record["amount"] || 0
+		if(primary_amount > 0)
+			var/datum/weakref/primary_ref = record["shop"]
+			var/returned = QDELETED(chip) ? 0 : chip.spend(min(chip.credits, primary_amount), TRUE)
+			refund_shop_till(primary_ref?.resolve(), primary_amount, returned)
+		var/list/extras = record["extra_shops"]
+		for(var/datum/weakref/extra_ref as anything in extras)
+			var/extra_amount = extras[extra_ref] || 0
+			if(extra_amount <= 0)
+				continue
+			var/returned = QDELETED(chip) ? 0 : chip.spend(min(chip.credits, extra_amount), TRUE)
+			refund_shop_till(extra_ref?.resolve(), extra_amount, returned)
 		// Whatever else was on the chip is theirs
 		if(!QDELETED(chip) && spill)
 			chip.forceMove(spill)
+		return
+	var/datum/weakref/shop_ref = record["shop"]
+	var/datum/outpost_shop/shop = shop_ref?.resolve()
+	if(QDELETED(shop))
 		return
 	var/datum/weakref/sku_ref = record["sku"]
 	var/datum/shop_sku/sku = sku_ref?.resolve()
@@ -684,16 +799,16 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 
 /**
  * Who, other than the held-up trader (whose report is its alarm), sees `robber` hold `trader` up, in the order
- * witness_of() asks: the outpost's other traders, players not on the robber's crew, cameras, then every officer and
- * townsperson who saw. One witness, or those townspeople then those officers (the townspeople's report is on a timer);
- * empty if nobody did.
+ * witness_of() asks: the outpost's other traders at their counters, players not on the robber's crew, cameras, then
+ * every officer and townsperson (or off-counter trader) who saw. One witness, or those townspeople then those officers
+ * (the townspeople's report is on a timer); empty if nobody did.
  */
 /datum/outpost_police_perception/proc/holdup_witnesses(mob/living/robber, mob/living/trader)
 	var/obj/structure/overmap/trader_outpost/outpost = police?.outpost
 	if(!outpost || !robber)
 		return list()
 	for(var/mob/living/other in outpost.traders)
-		if(other != trader && can_report(other) && sees(other, robber))
+		if(other != trader && trader_at_desk(other) && can_report(other) && sees(other, robber))
 			return list(other)
 	var/datum/voidcrew_crew_record/own_crew = robber.mind?.get_reputation_crew()
 	for(var/mob/living/player in GLOB.alive_player_list)
@@ -712,8 +827,11 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(!person.mind && !person.client && !is_officer(person) && !(person in outpost.traders) && sees(person, robber))
-				civilians_saw += person
+			if(person != trader && !person.mind && !person.client && !is_officer(person) && !trader_at_desk(person) && sees(person, robber))
+				civilians_saw |= person
+	for(var/mob/living/other_trader in outpost.traders)
+		if(other_trader != trader && !other_trader.mind && !other_trader.client && !trader_at_desk(other_trader) && sees(other_trader, robber))
+			civilians_saw |= other_trader
 	if(length(civilians_saw) && length(officers_saw))
 		return civilians_saw + officers_saw
 	if(length(officers_saw))

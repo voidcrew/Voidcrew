@@ -992,4 +992,23 @@
 	sleep(1 SECONDS)
 	TEST_ASSERT(!door.density, "A crowbar pried an open cell door shut")
 
+	// SF3: a player mind in an officer's body pulling a prisoner out of a cell is charged with jailbreak like any player
+	door.mend_hack()
+	prisoner.forceMove(cell_a.tiles[1])
+	police_pin_warrant(police, prisoner.mind, 12)
+	cell_a.admit(prisoner, world.time + 10 MINUTES)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/played_cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, cell_a.outside_turf)
+	played_cop.mind_initialize()
+	allocated += played_cop.mind
+	crimes_before = length(police.crimes)
+	played_cop.start_pulling(prisoner)
+	prisoner.forceMove(cell_a.outside_turf)
+	police.tick_cells()
+	played_cop.stop_pulling()
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before + 1, "A player mind in an officer body pulling a prisoner out of a cell reported no crime")
+	crime = police_last_crime(police)
+	TEST_ASSERT_EQUAL(crime?[1], played_cop, "A player mind in an officer body pulling a prisoner out blamed [crime?[1]], not the played officer")
+	TEST_ASSERT_EQUAL(crime?[2], "jailbreak", "A player mind in an officer body pulling a prisoner out reported [crime?[2]], not jailbreak") // OUTPOST_CRIME_JAILBREAK
+	cell_a.forget_prisoner(prisoner.mind)
+
 

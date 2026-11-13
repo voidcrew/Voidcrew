@@ -684,4 +684,28 @@
 	TEST_ASSERT_EQUAL(length(recorder.crimes), 2, "Evidence returned to the locker and stolen again did not report the new thief")
 	TEST_ASSERT_EQUAL(recorder.crimes[2][1], thief_two, "Second evidence theft blamed [recorder.crimes[2][1]], not thief_two")
 
+	// 6. SF3: a player mind in an officer body (whose police ID is stripped on possession) is treated as a thief on both property and evidence lockers
+	seized.forceMove(evidence)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/played_cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_turf(evidence))
+	played_cop.mind_initialize()
+	allocated += played_cop.mind
+	played_cop.leave_roster_for_player()
+	played_cop.put_in_hands(seized)
+	TEST_ASSERT_EQUAL(length(recorder.crimes), 3, "A player mind in an officer body taking from the evidence locker was exempted as an NPC officer")
+	TEST_ASSERT_EQUAL(recorder.crimes[3][1], played_cop, "Evidence theft by a played officer body blamed [recorder.crimes[3][1]]")
+	played_cop.dropItemToGround(seized)
+
+	var/obj/structure/closet/secure_closet/personal/outpost_police/target_locker = bank[1]
+	target_locker.police_ref = WEAKREF(recorder)
+	target_locker.open(null, TRUE)
+	var/obj/item/looted_gear
+	for(var/obj/item/candidate in target_locker.live_items())
+		looted_gear = candidate
+		break
+	TEST_ASSERT_NOTNULL(looted_gear, "Setup: occupied property locker had no stored item to loot")
+	played_cop.put_in_hands(looted_gear)
+	TEST_ASSERT_EQUAL(length(recorder.crimes), 4, "A player mind in an officer body looting another prisoner's property locker was exempted as an NPC officer")
+	TEST_ASSERT_EQUAL(recorder.crimes[4][1], played_cop, "Property locker theft by a played officer body blamed [recorder.crimes[4][1]]")
+	target_locker.police_ref = WEAKREF(police)
+
 

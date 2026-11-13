@@ -897,6 +897,12 @@
 	INVOKE_ASYNC(checkpoint, TYPE_PROC_REF(/datum/outpost_checkpoint, force_inner), user, emag_card)
 	return TRUE
 
+// A checkpoint's inner door and a holding cell's door take a standard emag as well as an airlock override card (decision 47)
+/obj/item/card/emag/can_emag(atom/target, mob/user)
+	if(istype(target, /obj/machinery/door/airlock/outpost/checkpoint/inner) || istype(target, /obj/machinery/door/airlock/outpost/glass/police_cell))
+		return TRUE
+	return ..()
+
 /obj/machinery/door/airlock/outpost/checkpoint/inner/proc/set_breached(new_state)
 	if(breached == new_state)
 		return
