@@ -935,7 +935,7 @@
 	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD).brute_dam, head_brute, "The torn arm was used to beat the victim's head")
 	// Thrown away behind the bearer: on its way, never on the victim's tile
 	var/obj/item/bodypart/arm/left/torn
-	for(var/obj/item/bodypart/arm/left/found in range(GORILLA_RIP_THROW_TILES, bearer))
+	for(var/obj/item/bodypart/arm/left/found in range(2, bearer))
 		torn = found
 	TEST_ASSERT_NOTNULL(torn, "The torn arm wasn't thrown out into the room")
 	TEST_ASSERT(get_turf(torn) != get_turf(victim), "The torn arm was dropped on the victim instead of thrown")
