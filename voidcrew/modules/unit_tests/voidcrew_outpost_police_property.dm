@@ -464,3 +464,112 @@
 	TEST_ASSERT_EQUAL(get_atom_on_turf(key), prisoner, "A ship key in a bag was locked away (it is in [key.loc])")
 	TEST_ASSERT(prisoner.is_holding(key) || prisoner.l_store == key || prisoner.r_store == key, "The ship key is on the prisoner but not in a pocket or hand")
 	TEST_ASSERT(!locker.holds(key), "A ship key is listed in the locker")
+
+/// Owner bug 1: searching a suspect downed in soft or hard crit takes pending-report weapons and dropped stolen locker loot
+/datum/unit_test/voidcrew_outpost_police_property/confiscate_crit
+
+/datum/unit_test/voidcrew_outpost_police_property/confiscate_crit/Run()
+	fixture(4)
+	var/mob/living/carbon/human/victim = outfitted()
+	var/obj/item/crowbar/stolen_crowbar = victim.get_active_held_item()
+	TEST_ASSERT(police.store_property(victim, officer_beside(victim)), "Setup: victim could not be stripped")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/victim_locker = police.property_locker_for(victim)
+
+	var/mob/living/carbon/human/suspect = outfitted()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_step(suspect, EAST) || get_step(suspect, WEST))
+	victim_locker.open(null, TRUE)
+	suspect.put_in_hands(stolen_crowbar)
+	// Going into crit drops held items onto the floor
+	suspect.dropItemToGround(stolen_crowbar)
+
+	var/obj/item/gun/ballistic/automatic/pistol/dropped_gun = allocate(/obj/item/gun/ballistic/automatic/pistol, get_turf(suspect))
+	var/obj/item/screwdriver/bag_knife = allocate(/obj/item/screwdriver)
+	var/obj/item/storage/backpack/bag = suspect.back
+	bag.atom_storage.attempt_insert(bag_knife, suspect, TRUE)
+
+	// Witnessed by `cop` in a pending report before the radio call finishes
+	var/datum/outpost_pending_report/pending = new
+	pending.crime = "assault" // OUTPOST_CRIME_ASSAULT
+	pending.offender = WEAKREF(suspect)
+	pending.source = WEAKREF(dropped_gun)
+	pending.folded_sources = list(WEAKREF(bag_knife))
+	pending.witnesses = list(WEAKREF(cop))
+	pending.due = world.time + 300
+	pending.expires = world.time + 600
+	police.pending_reports += pending
+
+	ADD_TRAIT(suspect, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
+	suspect.set_stat(SOFT_CRIT)
+	var/obj/item/outpost_sealed_case/evidence/case = police.confiscate(suspect, cop)
+	TEST_ASSERT_NOTNULL(case, "confiscate failed on a suspect downed in soft crit")
+	TEST_ASSERT(dropped_gun in case.contents, "Dropped weapon from a pending witness report was not confiscated in crit")
+	TEST_ASSERT(bag_knife in case.contents, "Backpack weapon from a folded pending report was not confiscated in crit")
+	TEST_ASSERT(stolen_crowbar in case.contents, "Stolen locker gear dropped when entering crit was not confiscated")
+
+	police.dispose_evidence(cop)
+	TEST_ASSERT_EQUAL(stolen_crowbar.loc, victim_locker, "Recovered stolen locker gear did not return to the victim's locker")
+	TEST_ASSERT_EQUAL(dropped_gun.loc, evidence, "Confiscated gun from crit suspect did not reach the evidence locker")
+	TEST_ASSERT_EQUAL(bag_knife.loc, evidence, "Confiscated knife from crit suspect did not reach the evidence locker")
+	police.pending_reports -= pending
+	qdel(pending)
+
+	// Hard crit / unconscious pat-down also works
+	var/mob/living/carbon/human/hard_crit = outfitted()
+	var/mob/living/carbon/human/hard_cop = officer_beside(hard_crit)
+	var/obj/item/gun/ballistic/automatic/pistol/hard_gun = allocate(/obj/item/gun/ballistic/automatic/pistol, get_turf(hard_crit))
+	var/datum/outpost_warrant/warrant = new
+	warrant.mind = hard_crit.mind
+	warrant.evidence = list(WEAKREF(hard_gun))
+	police.warrants[hard_crit.mind] = warrant
+	ADD_TRAIT(hard_crit, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
+	hard_crit.set_stat(UNCONSCIOUS)
+	var/obj/item/outpost_sealed_case/evidence/hard_case = police.confiscate(hard_crit, hard_cop)
+	TEST_ASSERT_NOTNULL(hard_case, "confiscate failed on an unconscious suspect in hard crit")
+	TEST_ASSERT(hard_gun in hard_case.contents, "Hard-crit pat-down did not take the recorded weapon")
+
+/// Nested items in a stolen bag do not frame a bystander; unanchored crates do not jam open lockers; active MODsuits and extra cuffs strip cleanly
+/datum/unit_test/voidcrew_outpost_police_property/nested_framing_and_modsuit
+
+/datum/unit_test/voidcrew_outpost_police_property/nested_framing_and_modsuit/Run()
+	fixture(4)
+	var/mob/living/carbon/human/owner = outfitted()
+	var/obj/item/storage/backpack/bag = owner.back
+	var/obj/item/screwdriver/nested_tool = allocate(/obj/item/screwdriver)
+	bag.atom_storage.attempt_insert(nested_tool, owner, TRUE)
+	TEST_ASSERT(police.store_property(owner, officer_beside(owner)), "Setup: owner could not be stripped")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = police.property_locker_for(owner)
+
+	var/mob/living/carbon/human/thief = person()
+	var/mob/living/carbon/human/bystander = person()
+	locker.open(null, TRUE)
+	thief.put_in_hands(bag)
+	TEST_ASSERT(LAZYACCESS(locker.thieves, WEAKREF(thief.mind)), "Thief taking the bag was not recorded")
+	thief.dropItemToGround(bag)
+	bystander.put_in_hands(bag)
+	bystander.put_in_hands(nested_tool)
+	TEST_ASSERT(!LAZYACCESS(locker.thieves, WEAKREF(bystander.mind)), "Bystander removing an item from a stolen bag was falsely framed for locker theft")
+
+	// Unanchored crate on an open free locker is pushed clear when reserving it
+	var/obj/structure/closet/secure_closet/personal/outpost_police/second_locker = bank[2]
+	second_locker.open(null, TRUE)
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, get_turf(second_locker))
+	var/mob/living/carbon/human/mod_prisoner = person()
+	mod_prisoner.equip_to_slot_if_possible(allocate(/obj/item/card/id), ITEM_SLOT_ID, disable_warning = TRUE)
+	var/obj/item/mod/control/pre_equipped/standard/mod_suit = allocate(/obj/item/mod/control/pre_equipped/standard)
+	TEST_ASSERT(mod_prisoner.equip_to_slot_if_possible(mod_suit, ITEM_SLOT_BACK, disable_warning = TRUE), "Setup: MODsuit did not equip to back")
+	mod_suit.quick_activation()
+	TEST_ASSERT(mod_suit.active, "Setup: MODsuit did not activate")
+	var/obj/item/restraints/handcuffs/extra_cuffs = allocate(/obj/item/restraints/handcuffs, get_turf(mod_prisoner))
+
+	TEST_ASSERT(second_locker.reserve_for(mod_prisoner), "Unanchored crate on an open property locker blocked reserve_for()")
+	TEST_ASSERT(get_turf(crate) != get_turf(second_locker) || !second_locker.opened, "Unanchored crate prevented the property locker from closing")
+	second_locker.release_reservation()
+
+	TEST_ASSERT(police.store_property(mod_prisoner, officer_beside(mod_prisoner)), "store_property failed on a prisoner wearing an active MODsuit")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/mod_locker = police.property_locker_for(mod_prisoner)
+	TEST_ASSERT(!mod_suit.active, "Active MODsuit remained sealed on a jailed prisoner")
+	TEST_ASSERT_EQUAL(mod_suit.loc, mod_locker, "Retracted MODsuit did not go into the property locker")
+	TEST_ASSERT(police.store_extra_property(mod_prisoner, extra_cuffs), "store_extra_property did not store non-police cuffs")
+	TEST_ASSERT_EQUAL(extra_cuffs.loc, mod_locker, "Non-police cuffs removed at booking did not enter the property locker")
+	TEST_ASSERT(mod_locker.holds(extra_cuffs), "Stored non-police cuffs are not recorded by the property locker")
+

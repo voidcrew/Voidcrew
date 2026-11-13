@@ -828,3 +828,60 @@
 					TEST_ASSERT_NOTNULL(locate(/obj/structure/chair) in range(3, spot), "[outpost_type]'s bench stop at [AREACOORD(spot)] has no seat at hand")
 				if("shopfront")
 					TEST_ASSERT_NOTNULL(locate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader) in range(7, spot), "[outpost_type]'s shopfront stop at [AREACOORD(spot)] has no trader near")
+
+/// Owner bug 3: booking walks the suspect and officer through the cell doorway via Move() with zero forceMove teleports
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks
+	var/forced_moves = 0
+	var/list/suspect_steps = list()
+	var/list/officer_steps = list()
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks/proc/note_suspect_move(atom/movable/source, atom/old_loc, movement_dir, forced)
+	SIGNAL_HANDLER
+	if(forced)
+		forced_moves++
+	var/turf/spot = get_turf(source)
+	if(spot)
+		suspect_steps += spot
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks/proc/note_officer_move(atom/movable/source, atom/old_loc, movement_dir, forced)
+	SIGNAL_HANDLER
+	if(forced)
+		forced_moves++
+	var/turf/spot = get_turf(source)
+	if(spot)
+		officer_steps += spot
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	TEST_ASSERT_EQUAL(police.cell_door_turf(cell_b.outside_turf), cell_b.outside_turf, "cell_door_turf(near) did not choose the nearer empty cell")
+	TEST_ASSERT_EQUAL(police.cell_door_turf(cell_a.outside_turf), cell_a.outside_turf, "cell_door_turf(near) did not choose cell a when standing by cell a")
+
+	police.pinned_stars = 1
+	police.fine_result = TRUE
+	var/mob/living/carbon/human/suspect = police_cell_person(cell_a.outside_turf)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(cell_a.outside_turf, NORTH))
+	officer.move_intent = MOVE_INTENT_WALK
+	police_pin_warrant(police, suspect.mind, 12)
+	var/obj/item/restraints/handcuffs/own_cuffs = allocate(/obj/item/restraints/handcuffs)
+	own_cuffs.apply_cuffs(suspect, officer, FALSE)
+	TEST_ASSERT_EQUAL(suspect.handcuffed, own_cuffs, "Setup: regular cuffs were not applied")
+
+	RegisterSignal(suspect, COMSIG_MOVABLE_MOVED, PROC_REF(note_suspect_move))
+	RegisterSignal(officer, COMSIG_MOVABLE_MOVED, PROC_REF(note_officer_move))
+	TEST_ASSERT(police.book(suspect, officer), "book() failed to walk the suspect into cell a")
+	UnregisterSignal(suspect, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(officer, COMSIG_MOVABLE_MOVED)
+
+	var/turf/door_turf = get_turf(cell_a.door)
+	TEST_ASSERT_EQUAL(forced_moves, 0, "Booking used forceMove [forced_moves] time(s) instead of physically walking")
+	TEST_ASSERT(door_turf in suspect_steps, "The suspect did not physically step through the cell doorway")
+	TEST_ASSERT(door_turf in officer_steps, "The officer did not physically step through the cell doorway")
+	TEST_ASSERT(get_turf(suspect) in cell_a.tiles, "The suspect did not end inside cell a")
+	TEST_ASSERT_EQUAL(get_turf(officer), cell_a.outside_turf, "The officer did not step back out to outside_turf")
+	TEST_ASSERT_EQUAL(officer.move_intent, MOVE_INTENT_WALK, "Booking did not restore the officer's move intent")
+	TEST_ASSERT(cell_a.door.density, "Cell a's door was left open after booking")
+	TEST_ASSERT_NULL(suspect.handcuffed, "The suspect is still handcuffed after booking")
+	TEST_ASSERT(suspect.is_holding(own_cuffs), "A paid suspect's non-police cuffs were left on the cell floor instead of handed back")
+

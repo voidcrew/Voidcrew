@@ -265,11 +265,11 @@
 	return null
 
 /// Whether `body`, out of the cell, could walk back by itself: up, free, not held or carried, and its player at the keys
-/datum/outpost_police_cell/proc/can_walk_back(mob/living/body)
+/datum/outpost_police_cell/proc/can_walk_back(mob/living/body, datum/mind/prisoner)
 	if(body.incapacitated || HAS_TRAIT(body, TRAIT_RESTRAINED) || body.pulledby || body.buckled || body.throwing)
 		return FALSE
 	// Asleep at the keyboard (a player's mind and no client): the clock waits for them
-	if(body.mind?.key && !body.client)
+	if((body.mind?.key || prisoner?.key) && !body.client)
 		return FALSE
 	return TRUE
 
@@ -412,6 +412,17 @@
 	if(forcing || !still_forceable())
 		return FALSE
 	forcing = TRUE
+	tool?.play_tool_sound(door, 50)
+	if(tool)
+		user.visible_message(
+			span_warning("[user] wedges [tool] into [door] and starts forcing it!"),
+			span_notice("You wedge [tool] into [door] and start forcing it."),
+		)
+	else
+		user.visible_message(
+			span_warning("[user] starts forcing [door]!"),
+			span_notice("You start forcing [door]."),
+		)
 	if(length(prisoners))
 		playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 		police?.cell_station_say(POLICE_LINE_CELL_ALARM)
@@ -422,11 +433,17 @@
 	forcing = FALSE
 	if(!succeeded)
 		return FALSE
+	if(!QDELETED(door))
+		tool?.play_tool_sound(door, 50)
+		user.visible_message(
+			span_danger("[user] forces [door] open!"),
+			span_notice("You force [door] open."),
+		)
 	log_game("OUTPOST POLICE: [key_name(user)] forced [door] at [AREACOORD(door)].")
 	var/held = length(prisoners)
 	open_door(OUTPOST_POLICE_CELL_OPEN)
 	if(held)
-		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, tool)
+		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, QDELETED(tool) ? null : tool)
 	return TRUE
 
 // ----- the wall clock -----
@@ -488,7 +505,7 @@
 				walked_out -= prisoner
 				carry_reported -= prisoner
 				end_medic_hold(body)
-			else if(!can_walk_back(body))
+			else if(!can_walk_back(body, prisoner))
 				// Down, held, carried or asleep: the time to walk back starts once they can (abuse MF1)
 				return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
 			else if(world.time >= return_by[prisoner])
@@ -522,7 +539,7 @@
 		return
 	time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
 	return_by[prisoner] = world.time + OUTPOST_POLICE_CELL_RETURN
-	if(mover && mover != body)
+	if(mover && mover != body && !istype(mover, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
 		police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
 
 /// `prisoner` walked out (or was teleported out): they are not held any more, and that is a jailbreak
@@ -560,7 +577,7 @@
 	if(!(get_turf(body) in tiles) && !carry_reported[prisoner])
 		var/datum/weakref/ref = carried_by[prisoner]
 		var/mob/living/mover = ref?.resolve() || mover_now(body)
-		if(mover && mover != body && mover.mind)
+		if(mover && mover != body && mover.mind && !istype(mover, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
 			carry_reported[prisoner] = TRUE
 			police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
 
@@ -584,116 +601,218 @@
 	police.cell_station_say(POLICE_LINE_MEDIC)
 	open_door(0)
 
-/// One physical cardinal `Move()` step for booking, keeping hold of `keep_pulled` when swapping places
-/datum/outpost_police_cell/proc/cell_walk_step(mob/living/mover, turf/next_turf, mob/living/keep_pulled = null)
-	if(QDELETED(mover) || mover.stat == DEAD || !next_turf)
-		return FALSE
-	if(get_turf(mover) == next_turf)
-		return TRUE
-	mover.set_combat_mode(FALSE)
-	var/saved_grab = mover.grab_state
-	mover.Move(next_turf, get_dir(mover, next_turf))
-	if(keep_pulled && !QDELETED(keep_pulled) && mover.Adjacent(keep_pulled) && mover.pulling != keep_pulled)
-		mover.start_pulling(keep_pulled, supress_message = TRUE)
-		mover.grab_state = saved_grab
-	var/pause = round(0.1 SECONDS * GLOB.outpost_police_property_time_scale)
-	if(pause > 0)
-		sleep(pause)
-	return !QDELETED(mover) && get_turf(mover) == next_turf
+/// The cell floor tile right inside `door`, or null
+/datum/outpost_police_cell/proc/cell_entry_tile()
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf)
+		return null
+	for(var/direction in GLOB.cardinals)
+		var/turf/candidate = get_step(door_turf, direction)
+		if((candidate in tiles) && !candidate.density)
+			return candidate
+	return null
 
-/// Walks `officer` physically out of the cell through `door` onto `outside_turf`
+/// Any standing dense mob on `spot` other than `ignore_a` or `ignore_b`
+/datum/outpost_police_cell/proc/cell_standing_on(turf/spot, mob/living/ignore_a, mob/living/ignore_b)
+	if(!spot)
+		return null
+	for(var/mob/living/someone in spot)
+		if(someone == ignore_a || someone == ignore_b || !someone.density)
+			continue
+		return someone
+	return null
+
+/// A cardinal neighbor of `from_tile` inside `tiles` with no dense obstacle or standing mob
+/datum/outpost_police_cell/proc/cell_open_neighbor(turf/from_tile, mob/living/ignore_a, mob/living/ignore_b)
+	if(!from_tile)
+		return null
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(from_tile, direction)
+		if((neighbor in tiles) && !neighbor.density && !cell_standing_on(neighbor, ignore_a, ignore_b))
+			return neighbor
+	return null
+
+/// Delay between physical walk steps when entering or leaving a cell
+/datum/outpost_police_cell/proc/cell_step_pause()
+	return max(1, round(0.15 SECONDS * GLOB.outpost_police_property_time_scale))
+
+/**
+ * Physically walks `officer` and `suspect` into the cell through `door` using real movement and pulling (never
+ * forceMove; owner bug 3). Leaves `suspect` on a cell tile and `officer` adjacent inside the cell (or in the open
+ * doorway when every other cell tile is already occupied). Sleeps. TRUE if `suspect` is inside and in reach.
+ */
+/datum/outpost_police_cell/proc/cell_walk_in(mob/living/carbon/suspect, mob/living/officer)
+	var/turf/door_turf = get_turf(door)
+	var/turf/entry_tile = cell_entry_tile()
+	if(!door_turf || !entry_tile || !outside_turf)
+		return FALSE
+	if(suspect.z != door_turf.z || officer.z != door_turf.z || get_dist(suspect, door_turf) > 3 || get_dist(officer, door_turf) > 3)
+		return FALSE
+	if(!open_door(OUTPOST_POLICE_CELL_OPEN, TRUE))
+		return FALSE
+	if(QDELETED(suspect) || QDELETED(officer) || officer.stat == DEAD)
+		return FALSE
+	if(suspect.buckled)
+		suspect.buckled.unbuckle_mob(suspect, TRUE)
+	var/old_officer_intent = officer.move_intent
+	var/old_officer_combat = officer.combat_mode
+	var/old_suspect_intent = suspect.move_intent
+	officer.move_intent = MOVE_INTENT_RUN
+	officer.combat_mode = FALSE
+	suspect.move_intent = MOVE_INTENT_RUN
+	var/pause = cell_step_pause()
+
+	if(!(get_turf(suspect) in tiles))
+		for(var/step_try in 1 to 4)
+			if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || officer.stat == DEAD || officer.Adjacent(suspect))
+				break
+			step_towards(officer, suspect)
+			sleep(pause)
+		if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || officer.stat == DEAD || !officer.Adjacent(suspect))
+			suspect?.move_intent = old_suspect_intent
+			officer?.move_intent = old_officer_intent
+			officer?.combat_mode = old_officer_combat
+			return FALSE
+		if(officer.pulling != suspect)
+			officer.start_pulling(suspect)
+		if(officer.pulling != suspect)
+			suspect.move_intent = old_suspect_intent
+			officer.move_intent = old_officer_intent
+			officer.combat_mode = old_officer_combat
+			return FALSE
+
+		for(var/step_try in 1 to 3)
+			if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || officer.stat == DEAD)
+				break
+			var/turf/here = get_turf(officer)
+			if(!here || here == outside_turf || here == door_turf || (here in tiles))
+				break
+			step_towards(officer, outside_turf)
+			sleep(pause)
+
+		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && get_turf(officer) != door_turf && !(get_turf(officer) in tiles))
+			if(officer.pulling != suspect && officer.Adjacent(suspect))
+				officer.start_pulling(suspect)
+			officer.Move(door_turf, get_dir(officer, door_turf))
+			sleep(pause)
+
+		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && !(get_turf(officer) in tiles))
+			var/mob/living/entry_blocker = cell_standing_on(entry_tile, suspect, officer)
+			if(entry_blocker)
+				var/turf/aside = cell_open_neighbor(entry_tile, suspect, officer)
+				if(aside == get_step(entry_tile, get_dir(door_turf, entry_tile)) && ishuman(officer) && ishuman(entry_blocker))
+					var/mob/living/carbon/human/cop = officer
+					cop.disarm(entry_blocker)
+			if(!cell_standing_on(entry_tile, suspect, officer))
+				if(officer.pulling != suspect && officer.Adjacent(suspect))
+					officer.start_pulling(suspect)
+				officer.Move(entry_tile, get_dir(officer, entry_tile))
+				sleep(pause)
+
+		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && get_turf(officer) == entry_tile)
+			var/turf/inner_tile = cell_open_neighbor(entry_tile, suspect, officer)
+			if(inner_tile)
+				if(officer.pulling != suspect && officer.Adjacent(suspect))
+					officer.start_pulling(suspect)
+				officer.Move(inner_tile, get_dir(officer, inner_tile))
+				sleep(pause)
+				officer.stop_pulling()
+				// Keep the officer between the prisoner and the door so an uncuffed prisoner cannot block the exit
+				if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && get_turf(suspect) == entry_tile && get_turf(officer) == inner_tile)
+					officer.Move(entry_tile, get_dir(officer, entry_tile))
+					sleep(pause)
+			else if(!(get_turf(suspect) in tiles) && get_turf(suspect) == door_turf)
+				if(officer.pulling != suspect && officer.Adjacent(suspect))
+					officer.start_pulling(suspect)
+				officer.Move(door_turf, get_dir(officer, door_turf))
+				sleep(pause)
+		officer?.stop_pulling()
+	else
+		officer.stop_pulling()
+		if(!officer.Adjacent(suspect))
+			if(get_turf(officer) != door_turf && !(get_turf(officer) in tiles))
+				officer.Move(door_turf, get_dir(officer, door_turf))
+				sleep(pause)
+			if(!QDELETED(officer) && !QDELETED(suspect) && !officer.Adjacent(suspect) && !cell_standing_on(entry_tile, suspect, officer))
+				officer.Move(entry_tile, get_dir(officer, entry_tile))
+				sleep(pause)
+
+	if(!QDELETED(suspect))
+		suspect.move_intent = old_suspect_intent
+	if(!QDELETED(officer))
+		officer.move_intent = old_officer_intent
+		officer.combat_mode = old_officer_combat
+	return !QDELETED(src) && !QDELETED(suspect) && !QDELETED(officer) && officer.stat != DEAD && (get_turf(suspect) in tiles) && officer.Adjacent(suspect)
+
+/// Physically walks `officer` back out of the cell onto `outside_turf` using real Move() steps. Sleeps.
 /datum/outpost_police_cell/proc/cell_walk_out(mob/living/officer)
-	if(QDELETED(officer) || officer.stat == DEAD || QDELETED(door) || !outside_turf)
+	if(QDELETED(src) || QDELETED(officer) || officer.stat == DEAD || !outside_turf)
 		return FALSE
 	var/turf/door_turf = get_turf(door)
-	if(!door_turf || !((get_turf(officer) in tiles) || get_turf(officer) == door_turf))
-		return get_turf(officer) == outside_turf
-	if(door.density && !open_door(CELL_OFFICER_PASS, TRUE))
+	if(!door_turf)
 		return FALSE
-	for(var/step_num in 1 to (length(tiles) + 2))
-		if(QDELETED(officer) || officer.stat == DEAD)
-			return FALSE
-		var/turf/here = get_turf(officer)
-		if(here == outside_turf)
-			return TRUE
-		if(here == door_turf)
-			cell_walk_step(officer, outside_turf)
-			break
-		if(get_dist(here, door_turf) == 1)
-			cell_walk_step(officer, door_turf)
-			continue
-		var/turf/closer
-		var/best_dist = get_dist(here, door_turf)
-		for(var/dir in GLOB.cardinals)
-			var/turf/candidate = get_step(here, dir)
-			if((candidate in tiles) && !candidate.is_blocked_turf(exclude_mobs = TRUE) && get_dist(candidate, door_turf) < best_dist)
-				closer = candidate
-				best_dist = get_dist(candidate, door_turf)
-		if(!closer || !cell_walk_step(officer, closer))
-			break
-	if(!QDELETED(officer) && officer.stat != DEAD && get_turf(officer) == door_turf)
-		cell_walk_step(officer, outside_turf)
+	if(get_turf(officer) == outside_turf)
+		return TRUE
+	if(!(get_turf(officer) in tiles) && get_turf(officer) != door_turf)
+		return FALSE
+	if((get_turf(officer) in tiles) && !open_door(CELL_OFFICER_PASS, TRUE))
+		return FALSE
+	if(QDELETED(src) || QDELETED(officer) || officer.stat == DEAD)
+		return FALSE
+	var/old_intent = officer.move_intent
+	var/old_combat = officer.combat_mode
+	officer.move_intent = MOVE_INTENT_RUN
+	officer.combat_mode = FALSE
+	officer.stop_pulling()
+	var/pause = cell_step_pause()
+	var/turf/entry_tile = cell_entry_tile()
+
+	if((get_turf(officer) in tiles) && entry_tile && get_turf(officer) != entry_tile)
+		for(var/step_try in 1 to 4)
+			if(QDELETED(src) || QDELETED(officer) || officer.stat == DEAD || get_turf(officer) == entry_tile)
+				break
+			var/turf/next_step = get_step_towards(officer, entry_tile)
+			var/mob/living/blocker = cell_standing_on(next_step, null, officer)
+			if(blocker && blocker.combat_mode && ishuman(officer) && ishuman(blocker))
+				var/mob/living/carbon/human/cop = officer
+				cop.disarm(blocker)
+			step_towards(officer, entry_tile)
+			sleep(pause)
+
+	if(!QDELETED(src) && !QDELETED(officer) && officer.stat != DEAD && get_turf(officer) == entry_tile)
+		var/mob/living/door_blocker = cell_standing_on(door_turf, null, officer)
+		if(door_blocker)
+			if(door_blocker.combat_mode && ishuman(officer) && ishuman(door_blocker))
+				var/mob/living/carbon/human/cop = officer
+				cop.disarm(door_blocker)
+		officer.Move(door_turf, get_dir(officer, door_turf))
+		sleep(pause)
+
+	if(!QDELETED(src) && !QDELETED(officer) && officer.stat != DEAD && get_turf(officer) == door_turf)
+		var/mob/living/outside_blocker = cell_standing_on(outside_turf, null, officer)
+		if(outside_blocker)
+			if(outside_blocker.combat_mode && ishuman(officer) && ishuman(outside_blocker))
+				var/mob/living/carbon/human/cop = officer
+				cop.disarm(outside_blocker)
+		officer.Move(outside_turf, get_dir(officer, outside_turf))
+		sleep(pause)
+
+	if(!QDELETED(officer))
+		officer.move_intent = old_intent
+		officer.combat_mode = old_combat
 	return !QDELETED(officer) && get_turf(officer) == outside_turf
 
 /**
- * Brings `suspect` in and books them: physically walks and pulls them through the cell door, shuts it, tries the
- * fine, then processing (paid) or the jail strip (not paid), takes the cuffs off, and walks the officer back out.
- * At three stars and up there is no fine: the jail strip and a sentence that grows with the stars (owner decision 37).
- * Sleeps. TRUE once the suspect is held; FALSE (nothing taken) if they could not be.
+ * Brings `suspect` in and books them: the fine, then processing (paid) or the jail strip (not paid), the cuffs
+ * off, the officer out. At three stars and up there is no fine: the jail strip and a sentence that grows with the
+ * stars (owner decision 37). Sleeps. TRUE once the suspect is held; FALSE (nothing taken) if they could not be.
  */
 /datum/outpost_police_cell/proc/book_in(mob/living/carbon/suspect, mob/living/officer, datum/outpost_warrant/warrant)
-	var/turf/door_turf = get_turf(door)
-	if(!door_turf || !outside_turf || officer.z != door_turf.z || suspect.z != door_turf.z)
-		return FALSE
-	if(get_dist(officer, door_turf) > 2 || get_dist(suspect, door_turf) > 2)
-		return FALSE
-	var/turf/entry_tile
-	for(var/dir in GLOB.cardinals)
-		var/turf/candidate = get_step(door_turf, dir)
-		if((candidate in tiles) && !candidate.is_blocked_turf(exclude_mobs = TRUE))
-			entry_tile = candidate
-			break
-	if(!entry_tile)
-		return FALSE
 	var/datum/mind/prisoner = suspect.mind
 	var/full_stars = clamp(police.get_stars(prisoner), 1, 5)
 	var/no_fine = full_stars >= 3
 	var/stars = clamp(full_stars, 1, 2)
-	if(suspect.buckled)
-		suspect.buckled.unbuckle_mob(suspect, TRUE)
-	officer.set_combat_mode(FALSE)
-	if(!officer.Adjacent(suspect))
-		var/turf/towards = get_step_towards(officer, suspect)
-		if(towards)
-			cell_walk_step(officer, towards)
-	if(officer.pulling != suspect && officer.Adjacent(suspect))
-		officer.start_pulling(suspect, supress_message = TRUE)
-	if(officer.pulling != suspect && !(get_turf(suspect) in tiles))
-		return FALSE
-	if(!open_door(OUTPOST_POLICE_CELL_OPEN, TRUE))
-		return FALSE
-	// Walk the officer and pulled suspect physically through the doorway into the cell
-	if(!(get_turf(officer) in tiles) && get_turf(officer) != door_turf && get_turf(officer) != outside_turf)
-		cell_walk_step(officer, outside_turf, suspect)
-	if(get_turf(officer) == outside_turf && !(get_turf(suspect) in tiles))
-		cell_walk_step(officer, door_turf, suspect)
-	if(get_turf(officer) == door_turf)
-		cell_walk_step(officer, entry_tile, suspect)
-	if(!(get_turf(suspect) in tiles) && get_turf(officer) == entry_tile)
-		for(var/pass in 1 to 2)
-			for(var/dir in GLOB.cardinals)
-				var/turf/deeper = get_step(entry_tile, dir)
-				if(!(deeper in tiles) || deeper.is_blocked_turf(exclude_mobs = (pass == 2)))
-					continue
-				if(cell_walk_step(officer, deeper, suspect) && (get_turf(suspect) in tiles))
-					break
-			if(get_turf(suspect) in tiles)
-				break
-		if(!(get_turf(suspect) in tiles) && get_turf(officer) == entry_tile && get_turf(suspect) == door_turf)
-			cell_walk_step(officer, door_turf, suspect)
-	if(QDELETED(suspect) || suspect.stat == DEAD || !(get_turf(suspect) in tiles))
-		if(!QDELETED(officer) && officer.pulling == suspect)
-			officer.stop_pulling()
+	if(!cell_walk_in(suspect, officer))
 		cell_walk_out(officer)
 		shut_door(TRUE)
 		return FALSE
@@ -701,15 +820,19 @@
 	admit(suspect, world.time + OUTPOST_POLICE_HOLDS[stars])
 	booking[prisoner] = world.time
 	// The booking line is the arresting officer's (police_arrest.dm act_book())
-	if(get_turf(officer) != door_turf)
+	var/guarding_doorway = (get_turf(officer) == get_turf(door))
+	var/old_guard_combat = officer.combat_mode
+	if(guarding_doorway)
+		officer.combat_mode = TRUE
+	else if(!doorway_blocked())
 		shut_door(TRUE)
 	if(!holds(prisoner, suspect))
-		if(!QDELETED(officer) && officer.pulling == suspect)
-			officer.stop_pulling()
+		if(!QDELETED(officer) && guarding_doorway)
+			officer.combat_mode = old_guard_combat
 		cell_walk_out(officer)
 		shut_door(TRUE)
 		return FALSE
-	// The fine, with the door shut on the two of them
+	// The fine, with the door shut on the two of them (or the officer blocking the doorway when every cell tile is full)
 	var/paid = no_fine ? FALSE : police.charge_fine(warrant)
 	if(paid)
 		police.say_fine_paid(officer)
@@ -717,24 +840,34 @@
 		// Gear into a locker before the cuffs come off (abuse M25)
 		police.store_property(suspect, officer)
 		if(!holds(prisoner, suspect))
-			if(!QDELETED(officer) && officer.pulling == suspect)
-				officer.stop_pulling()
+			if(!QDELETED(officer) && guarding_doorway)
+				officer.combat_mode = old_guard_combat
 			cell_walk_out(officer)
 			shut_door(TRUE)
 			return FALSE
-	// Step to the doorway side before taking the cuffs off so an uncuffed prisoner cannot block the exit in a 1x2 cell
-	if(!QDELETED(officer) && officer.stat != DEAD && (get_turf(officer) in tiles) && get_turf(officer) != entry_tile && officer.Adjacent(entry_tile))
-		if(officer.pulling != suspect && officer.Adjacent(suspect))
-			officer.start_pulling(suspect, supress_message = TRUE)
-		cell_walk_step(officer, entry_tile, suspect)
-	if(!QDELETED(officer) && officer.pulling == suspect)
-		officer.stop_pulling()
+	var/list/worn_restraints = list()
+	if(suspect.handcuffed)
+		worn_restraints += suspect.handcuffed
+	if(suspect.legcuffed)
+		worn_restraints += suspect.legcuffed
 	police.cell_remove_cuffs(suspect, officer)
+	for(var/obj/item/restraint as anything in worn_restraints)
+		if(QDELETED(restraint) || restraint == suspect.handcuffed || restraint == suspect.legcuffed)
+			continue
+		if(paid)
+			if(isturf(restraint.loc) && !QDELETED(suspect))
+				suspect.put_in_hands(restraint)
+		else
+			police.store_extra_property(suspect, restraint)
 	if(!holds(prisoner, suspect))
+		if(!QDELETED(officer) && guarding_doorway)
+			officer.combat_mode = old_guard_combat
 		cell_walk_out(officer)
 		shut_door(TRUE)
 		return FALSE
-	// The officer walks out through the cell door
+	if(!QDELETED(officer) && guarding_doorway)
+		officer.combat_mode = old_guard_combat
+	// The officer steps out
 	cell_walk_out(officer)
 	var/term = paid ? OUTPOST_POLICE_HOLDS[stars] : OUTPOST_POLICE_JAIL[full_stars]
 	prisoners[prisoner] = world.time + term
@@ -807,25 +940,32 @@
 	if(!length(cells))
 		log_mapping("OUTPOST POLICE: [outpost] has no holding cell; a one or two star arrest is fined and let go, three or more is held cuffed at the desk.")
 
-/// The usable cell with the fewest prisoners, the one nearest `near` of equals. Null if there is none.
+/// The usable cell with the fewest prisoners, the one with free standing room and nearest `near` of equals. Null if there is none.
 /datum/outpost_police/proc/cell_best(atom/near)
 	var/datum/outpost_police_cell/best
 	var/best_load
+	var/best_room
 	var/best_distance
 	for(var/datum/outpost_police_cell/cell in cells)
 		if(!cell.usable())
 			continue
 		var/load = length(cell.prisoners)
+		var/room = 0
+		for(var/turf/tile as anything in cell.tiles)
+			if(!tile.density && !cell.cell_standing_on(tile))
+				room = 1
+				break
 		var/distance = near ? get_dist(near, cell.door) : 0
-		if(isnull(best) || load < best_load || (load == best_load && distance < best_distance))
+		if(isnull(best) || load < best_load || (load == best_load && room > best_room) || (load == best_load && room == best_room && distance < best_distance))
 			best = cell
 			best_load = load
+			best_room = room
 			best_distance = distance
 	return best
 
 /// The lobby tile outside the door of the cell the next booking uses, or null
-/datum/outpost_police/proc/cell_door_turf()
-	return cell_best()?.outside_turf
+/datum/outpost_police/proc/cell_door_turf(atom/near)
+	return cell_best(near)?.outside_turf
 
 /**
  * Whether `who` is in police custody: from an arrest's cuffs (or grip) going on to release from a cell. By the police's
@@ -905,7 +1045,7 @@
 			return
 		if(QDELETED(officer) || officer.stat != CONSCIOUS)
 			return
-		if(do_after(officer, CELL_UNCUFF_TIME, prisoner, IGNORE_TARGET_LOC_CHANGE | IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer)))
+		if(do_after(officer, CELL_UNCUFF_TIME, prisoner, IGNORE_HELD_ITEM, interaction_key = "outpost_police_uncuff"))
 			prisoner.uncuff()
 			return
 
