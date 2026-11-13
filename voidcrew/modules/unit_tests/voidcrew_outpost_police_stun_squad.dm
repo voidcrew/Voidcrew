@@ -643,6 +643,11 @@
 	stunner.set_force(2) // POLICE_FORCE_STUN
 	TEST_ASSERT(!stunner.is_holding(stun_baton), "At stun force an officer kept an uncharged baton out as a club")
 	stun_sidearm.cell.charge = stun_sidearm.cell.maxcharge
+	// Nobody changes weapons halfway through another action: the stow above may still be under way
+	for(var/i in 1 to 20)
+		if(!LAZYLEN(stunner.do_afters))
+			break
+		sleep(0.5 SECONDS)
 	stunner.sync_force(2) // POLICE_FORCE_STUN
 	TEST_ASSERT_EQUAL(stunner.police_loaded_gun_for(2), stun_sidearm, "A stun officer did not redraw its recharged sidearm (gun in [stun_sidearm.loc], shoots [stun_sidearm.can_shoot()], lethal [outpost_police_mode_lethal(stun_sidearm)], handles [stunner.police_can_handle_gun(stun_sidearm)], force [stunner.force], held [english_list(stunner.held_items)], blocked [HAS_TRAIT(stunner, TRAIT_HANDS_BLOCKED)], do_afters [LAZYLEN(stunner.do_afters)])")
 	TEST_ASSERT(!outpost_police_mode_lethal(stun_sidearm), "A redrawn stun sidearm was left on lethal")

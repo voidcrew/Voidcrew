@@ -959,6 +959,19 @@
 		if(dist < progress_dist)
 			progress_dist = dist
 			step_started_at = world.time
+	// Someone in hand out through the exit gate: square up to it and go straight through (police_movement.dm)
+	if(from_sector == POLICE_SECTOR_CONCOURSE && to_sector == POLICE_SECTOR_LOBBY && isliving(officer.pulling))
+		var/obj/structure/outpost_exit_gate/exit_gate = police.escort_exit_gate(here)
+		var/turf/line_up = exit_gate ? outpost_police_gate_lineup(officer, exit_gate) : null
+		if(line_up)
+			lift_goal = null
+			approach_goal = null
+			approach_target_turf = null
+			if(line_up == get_turf(officer))
+				set_goal(null)
+			else
+				set_goal(line_up, 0)
+			return FALSE
 	if(from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE)
 		lift_goal = null
 		approach_goal = null
@@ -1431,23 +1444,12 @@
 /**
  * `blocker`, an outpost NPC standing where `walker` is going, takes one real step out of the way: to the side first,
  * then on ahead of `walker`, never back toward them, never onto `keep_clear`, a doorway or someone else. Players,
- * traders at their posts, and anyone held, cuffed, buckled, paused, down or holding someone, stay put. TRUE if they moved.
+ * traders at their posts, and anyone held, cuffed, buckled, paused (outpost_npc_can_make_room()), down or holding someone,
+ * stay put. TRUE if they moved.
  */
 /proc/outpost_npc_step_aside(mob/living/blocker, mob/living/walker, list/turf/keep_clear)
-	if(!istype(blocker, /mob/living/carbon/human/npc) || blocker.client || blocker.mind || blocker.stat != CONSCIOUS)
-		return FALSE
-	if(blocker.buckled || blocker.pulledby || blocker.pulling || blocker.has_buckled_mobs() || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || HAS_TRAIT(blocker, TRAIT_INCAPACITATED) || HAS_TRAIT(blocker, TRAIT_AI_PAUSED) || blocker.has_status_effect(/datum/status_effect/grouped/heldup))
-		return FALSE
-	if(!(blocker.mobility_flags & MOBILITY_MOVE) || blocker.body_position == LYING_DOWN)
-		return FALSE
-	var/mob/living/carbon/human/npc/ambient_npc/ambient_blocker = blocker
-	if(istype(ambient_blocker))
-		if(ambient_blocker.fading)
-			return FALSE
-		if(istype(ambient_blocker, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) && get_turf(ambient_blocker) == ambient_blocker.home)
-			return FALSE
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer_blocker = blocker
-	if(istype(officer_blocker) && officer_blocker.dispatch_riding)
+	// Who can move is outpost_npc_can_make_room() (police_movement.dm); someone holding someone else stays put here
+	if(!outpost_npc_can_make_room(blocker) || blocker.pulling)
 		return FALSE
 	var/turf/from = get_turf(blocker)
 	var/turf/walker_turf = get_turf(walker)

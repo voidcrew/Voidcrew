@@ -362,6 +362,7 @@
 	TEST_ASSERT(!recovery.keeper_alive(keeper), "A keeper body controlled by a player still counted as an NPC keeper")
 	TEST_ASSERT(post in recovery.vacant_posts(), "A player-inhabited keeper blocked replacement staff")
 	keeper.mind.set_current(null)
+	keeper.mind = null
 	keeper.last_mind = null
 	TEST_ASSERT(shop.is_open(), "Clearing the test mind did not reopen the shop")
 
