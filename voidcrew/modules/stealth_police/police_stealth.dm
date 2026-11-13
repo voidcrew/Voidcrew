@@ -84,6 +84,24 @@
 	police_hunt = null
 	return ..()
 
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/SelectBehaviors(seconds_per_tick)
+	police_clear_for_duty()
+	return ..()
+
+/// Ends a stop or desk activity (standing up from a bench or desk chair) and sets a drink down once on police business
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_clear_for_duty()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(!istype(officer) || officer.stat != CONSCIOUS)
+		return
+	if(stealth_state() == STEALTH_UNAWARE && !blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && !officer.case && !officer.npc_exit && !officer.dispatch_riding && !officer.dispatch_responding())
+		return
+	if(officer.activity)
+		officer.end_activity()
+	if(officer.buckled && officer.own_buckle(officer.buckled))
+		officer.stand_up()
+	if(officer.held_item)
+		officer.put_drink_down(null)
+
 // Anywhere at the outpost is in reach: an officer searches its whole station, not 24 tiles round its last stop
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_leash(turf/where)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
@@ -112,7 +130,11 @@
 	var/to_sector = police.sector_of(dest)
 	if(from_sector == to_sector || from_sector == POLICE_SECTOR_OUTSIDE || to_sector == POLICE_SECTOR_OUTSIDE)
 		return FALSE
-	return length(police.dispatch_lift_tiles(from_sector)) > 0 && length(police.dispatch_lift_tiles(to_sector)) > 0
+	var/next_ride_sector = police.next_elevator_sector(from_sector, to_sector)
+	if(!next_ride_sector)
+		return FALSE
+	var/board_sector = police.elevator_board_sector(from_sector)
+	return length(police.dispatch_elevator_tiles(board_sector)) > 0 && length(police.dispatch_elevator_tiles(next_ride_sector)) > 0
 
 /**
  * A walk into another sector goes on foot between concourse and lobby (exit gate one way, checkpoint the other)
@@ -141,17 +163,6 @@
 			goto_result = "failed"
 			stealth_walk_failed()
 		return
-	if(!length(police.dispatch_lift_tiles(from_sector)) || !length(police.dispatch_lift_tiles(to_sector)))
-		if(here.z == dest.z && !istype(from_sector, /datum/outpost_berth) && !istype(to_sector, /datum/outpost_berth))
-			return ..()
-		if(goto_dest != dest)
-			stealth_drop_walk()
-			goto_dest = dest
-		goto_purpose = purpose
-		if(goto_result != "failed")
-			goto_result = "failed"
-			stealth_walk_failed()
-		return
 	if(officer.dispatch_riding)
 		return
 	if(from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE)
@@ -161,22 +172,54 @@
 				stealth_drop_walk()
 				queue_behavior(/datum/ai_behavior/stealth_stand)
 				return
+			if(goto_dest == gate_step && goto_result == "arrived")
+				goto_result = null
+				goto_turf = null
 			return ..(gate_step, purpose)
 	else
 		police.clear_checkpoint_crossing(officer)
 	var/next_ride_sector = police.next_elevator_sector(from_sector, to_sector)
 	if(!next_ride_sector)
-		return ..()
+		if(here.z == dest.z)
+			return ..()
+		if(goto_dest != dest)
+			stealth_drop_walk()
+			goto_dest = dest
+		goto_purpose = purpose
+		if(goto_result != "failed")
+			goto_result = "failed"
+			stealth_walk_failed()
+		return
 	var/board_sector = police.elevator_board_sector(from_sector)
-	var/turf/lift = police.dispatch_nearest_elevator_point(board_sector, officer, officer)
-	if(!lift)
-		return ..()
-	if(here != lift)
-		if(isnull(goto_turf) || (police.dispatch_is_lift_tile(goto_turf) && goto_turf != lift))
+	var/list/turf/board_tiles = police.dispatch_elevator_tiles(board_sector)
+	if(!length(board_tiles) || !length(police.dispatch_elevator_tiles(next_ride_sector)))
+		if(goto_dest != dest)
+			stealth_drop_walk()
+			goto_dest = dest
+		goto_purpose = purpose
+		if(goto_result != "failed")
+			goto_result = "failed"
+			stealth_walk_failed()
+		return
+	if(goto_dest != dest)
+		stealth_drop_walk()
+		goto_dest = dest
+	goto_purpose = purpose
+	if(goto_result == "failed")
+		return
+	if(!(here in board_tiles))
+		var/turf/lift = police.dispatch_nearest_elevator_point(board_sector, officer, officer) || police.dispatch_nearest_lift_point(board_sector, officer)
+		if(!lift)
+			goto_result = "failed"
+			stealth_walk_failed()
+			return
+		goto_result = null
+		if(isnull(goto_turf) || goto_turf == goto_dest || (police.dispatch_is_lift_tile(goto_turf) && goto_turf != lift))
 			goto_turf = stealth_next_leg(lift)
 		queue_behavior(/datum/ai_behavior/stealth_goto)
 		return
 	if(world.time < police_ride_retry_at)
+		queue_behavior(/datum/ai_behavior/stealth_stand)
 		return
 	police_ride_retry_at = world.time + 3 SECONDS
 	stealth_drop_walk()
@@ -253,25 +296,47 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	if(!istype(officer))
 		return
-	if(new_state != STEALTH_UNAWARE && officer.held_item)
-		officer.put_drink_down(null)
+	if(new_state != STEALTH_UNAWARE)
+		police_clear_for_duty()
 	if(officer.case)
 		human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
 
 // Alert on a wanted person: that is who it is hunting until the police stand it down
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_alert(atom/target)
 	. = ..()
-	var/mob/living/person = ismecha(target) ? bounty_ai_pilot_of(target) : target
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/mob/living/person = istype(officer) ? officer.police_mech_suspect(target) : (ismecha(target) ? bounty_ai_pilot_of(target) : target)
 	if(isliving(person) && person.mind)
 		police_hunt = WEAKREF(person.mind)
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_target_set(datum/source)
 	SIGNAL_HANDLER
 	..()
+	police_clear_for_duty()
 	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	var/mob/living/person = ismecha(target) ? bounty_ai_pilot_of(target) : target
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/mob/living/person = istype(officer) ? officer.police_mech_suspect(target) : (ismecha(target) ? bounty_ai_pilot_of(target) : target)
 	if(isliving(person) && person.mind)
 		police_hunt = WEAKREF(person.mind)
+
+// A standing suspect in plain sight who is now in custody, restrained under arrest, or cleared was not lost: stand down instead of searching
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_keep_target()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/atom/remembered = blackboard[BB_BASIC_MOB_CURRENT_TARGET] || blackboard[BB_STEALTH_FOCUS]
+	if(istype(officer) && officer.police && !QDELETED(remembered) && !stealth_closet_of(remembered))
+		if(!officer.police_will_fight(remembered) && get_dist(officer, remembered) <= HUMAN_NPC_SIGHT_RANGE && can_see(officer, remembered, HUMAN_NPC_SIGHT_RANGE))
+			clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+			clear_blackboard_key(BB_STEALTH_FOCUS)
+			var/mob/living/fallen = remembered
+			if(isliving(fallen) && police_suspect_down(fallen))
+				stealth_target_downed(fallen)
+				return
+			if(isliving(fallen))
+				notice_map -= REF(fallen)
+			police_hunt = null
+			stealth_go_unaware()
+			return
+	return ..()
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_try_closet()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
@@ -498,6 +563,18 @@
 	if(brain.stealth_state() != STEALTH_UNAWARE)
 		brain.stealth_go_unaware()
 
+/// A stood-down unit walking to a lift stands easy, holsters its weapons and keeps stealth's 60-step pathfinder
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_walk_out(atom/exit, datum/callback/on_left)
+	police_stand_easy()
+	if(force != POLICE_FORCE_NONE)
+		set_force(POLICE_FORCE_NONE)
+	. = ..()
+	if(.)
+		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
+		if(istype(brain))
+			QDEL_NULL(brain.meter)
+			human_npc_set_ai_movement(brain, /datum/ai_movement/jps/stealth)
+
 /**
  * Sends this officer to look for `mind` where the police last saw them (spec-stealth 1.4: arriving units, and a
  * search that ran out while the warrant still has stars). TRUE if it went.
@@ -712,6 +789,8 @@
 	if(isnull(tag))
 		if(officer.activity)
 			officer.end_activity()
+		if(officer.buckled && officer.own_buckle(officer.buckled))
+			officer.stand_up()
 		if(officer.held_item && (controller.stealth_state() != STEALTH_UNAWARE || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) || officer.case || officer.npc_exit || officer.dispatch_riding || officer.dispatch_responding()))
 			officer.put_drink_down(null)
 		return
@@ -752,14 +831,19 @@
 	if(brain.police_hunt && (!hunted || force_level(hunted.current, officer) == POLICE_FORCE_NONE))
 		brain.police_hunt = null
 		var/atom/target = brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-		var/mob/living/target_mob = ismecha(target) ? bounty_ai_pilot_of(target) : target
-		if(brain.stealth_state() != STEALTH_UNAWARE && (isnull(target) || (isliving(target_mob) && target_mob.mind == hunted)))
-			brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
-			brain.stealth_go_unaware()
+		if(!QDELETED(target) && officer.police_will_fight(target))
+			var/mob/living/next_suspect = officer.police_mech_suspect(target)
+			if(isliving(next_suspect) && next_suspect.mind)
+				brain.police_hunt = WEAKREF(next_suspect.mind)
+		else if(brain.stealth_state() != STEALTH_UNAWARE)
+			var/mob/living/target_mob = ismecha(target) ? bounty_ai_pilot_of(target) : target
+			if(isnull(target) || ismecha(target) || (isliving(target_mob) && target_mob.mind == hunted))
+				brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+				brain.stealth_go_unaware()
 	var/datum/mind/assigned = officer.dispatch_mind?.resolve()
 	// Someone down or in custody is the arrest's: nobody goes looking for them (owner decision 37)
 	var/mob/living/assigned_body = assigned?.current
-	if(isliving(assigned_body) && ((police_suspect_down(assigned_body) && !finishes_downed(assigned_body, officer)) || in_custody(assigned_body)))
+	if(isliving(assigned_body) && ((police_suspect_down(assigned_body) && !finishes_downed(assigned_body, officer)) || in_custody(assigned_body) || (HAS_TRAIT(assigned_body, TRAIT_RESTRAINED) && arrest_on(assigned_body) && force_level(assigned_body, officer) < POLICE_FORCE_LETHAL)))
 		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)

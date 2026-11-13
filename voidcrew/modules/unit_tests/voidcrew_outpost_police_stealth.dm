@@ -716,4 +716,160 @@
 	police.recent_reports.Cut()
 	TEST_ASSERT_EQUAL(police.report_crime(suspect, "shot", played), 2, "A player victim in an officer's body did not report immediately at two stars")
 
+/// Seated officers unbuckle and put coffee down on duty; non-case watchers stand down when a standing suspect is cuffed; multi-occupant mechs track the wanted rider; departing officers disarm and keep stealth JPS
+/datum/unit_test/voidcrew_stealth_live/police/duty_unbuckle_and_stand_down
+
+/datum/unit_test/voidcrew_stealth_live/police/duty_unbuckle_and_stand_down/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+
+	// 1. Seated officer with coffee unbuckles and sets the drink down when given a case while unaware, or when put into searching
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(4, 3, EAST)
+	officer.resume_routine()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/obj/structure/chair/chair = allocate(/obj/structure/chair, at(4, 3))
+	TEST_ASSERT(officer.sit_on(chair), "Setup: the officer could not sit on the chair")
+	officer.take_drink(/datum/reagent/consumable/coffee)
+	TEST_ASSERT(officer.buckled == chair && !isnull(officer.held_item), "Setup: the officer is not seated with a coffee")
+
+	var/mob/living/carbon/human/suspect = visitor_at(8, 3)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	police.sleep_tick()
+	TEST_ASSERT_NOTNULL(case, "Setup: no arrest case opened at two stars")
+	TEST_ASSERT_EQUAL(officer.case, case, "Setup: the seated officer was not assigned the case")
+	brain.SelectBehaviors(1)
+	brain.planned_behaviors.Cut()
+	TEST_ASSERT(!officer.buckled, "A seated officer assigned a case stayed buckled when case planning ran before outpost_police_stop")
+	TEST_ASSERT_NULL(officer.held_item, "A seated officer assigned a case kept holding their coffee")
+	police.close_case(suspect.mind)
+	brain.stealth_go_unaware()
+
+	TEST_ASSERT(officer.sit_on(chair), "Setup: the officer could not sit on the chair a second time")
+	officer.take_drink(/datum/reagent/consumable/coffee)
+	brain.stealth_go_searching(at(8, 3))
+	TEST_ASSERT(!officer.buckled, "A seated officer put into searching stayed buckled to their chair")
+	TEST_ASSERT_NULL(officer.held_item, "A seated officer put into searching kept holding their coffee")
+	brain.stealth_go_unaware()
+	qdel(officer)
+
+	// 2. A non-case watching officer stands down to unaware (not searching) when a standing suspect is cuffed into an open arrest
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = officer_at(7, 3, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = officer_at(5, 3, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
+	case = police.open_case(warrant)
+	police.sleep_tick()
+	TEST_ASSERT_NOTNULL(case, "Setup: could not reopen the two-star case")
+	if(watcher.case)
+		case.drop_officer(watcher)
+	watcher_brain.stealth_go_alert(suspect)
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "alert", "Setup: the watching officer is not alert on the suspect")
+	var/obj/item/restraints/handcuffs/outpost_police/used/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	TEST_ASSERT(suspect.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED, disable_warning = TRUE), "Setup: could not cuff the standing suspect")
+	case.cuffs_on(suspect)
+	TEST_ASSERT(!watcher_brain.stealth_keep_target(), "A non-case watching officer kept a cuffed arrestee as a fight target")
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "A non-case watching officer went [watcher_brain.stealth_state()] instead of unaware when a standing suspect was cuffed")
+	TEST_ASSERT_NULL(watcher_brain.police_hunt, "A stood-down watching officer kept police_hunt set")
+	watcher.dispatch_mind = WEAKREF(suspect.mind)
+	watcher_brain.police_research_at = 0
+	police.stealth_tick_officer(watcher)
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "stealth_tick_officer sent an officer searching for a restrained suspect already under arrest")
+	watcher.dispatch_mind = null
+	suspect.dropItemToGround(cuffs, TRUE)
+	qdel(cuffs)
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
+	qdel(arresting)
+	qdel(watcher)
+
+	// 3. Multi-occupant mech with clean pilot and three-star passenger keeps police_hunt on the wanted passenger without flapping
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hunter = officer_at(6, 5, EAST, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/hunter_brain = hunter.ai_controller
+	var/mob/living/carbon/human/pilot = visitor_at(10, 5)
+	var/mob/living/carbon/human/passenger = visitor_at(10, 5)
+	var/datum/outpost_warrant/passenger_warrant = police_pin_warrant(police, passenger.mind, 55) // three stars
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, at(10, 5))
+	mech.max_occupants = 2
+	mech.mob_enter(pilot, silent = TRUE)
+	mech.mob_enter(passenger, silent = TRUE)
+	TEST_ASSERT_EQUAL(mech.occupants[1], pilot, "Setup: clean pilot is not the first mech occupant")
+	hunter_brain.stealth_go_alert(mech)
+	TEST_ASSERT_EQUAL(hunter_brain.police_hunt?.resolve(), passenger.mind, "stealth_go_alert tracked the clean pilot instead of the wanted mech passenger")
+	police.stealth_tick_officer(hunter)
+	TEST_ASSERT_EQUAL(hunter_brain.stealth_state(), "alert", "stealth_tick_officer dropped alert on a mech with a clean pilot and wanted passenger")
+	passenger_warrant.heat = 0
+	police.stealth_tick_officer(hunter)
+	TEST_ASSERT_EQUAL(hunter_brain.stealth_state(), "unaware", "stealth_tick_officer kept alert on a mech after its wanted passenger's warrant cleared")
+	mech.mob_exit(passenger, silent = TRUE)
+	mech.mob_exit(pilot, silent = TRUE)
+	qdel(mech)
+
+	// 4. Departing response officer stands easy, holsters weapons, clears its overhead stealth mark and keeps the 60-step stealth JPS pathfinder
+	hunter.set_force(3) // POLICE_FORCE_LETHAL
+	hunter_brain.stealth_go_searching(at(12, 5))
+	hunter_brain.meter = new(hunter_brain, hunter)
+	hunter_brain.meter.update()
+	TEST_ASSERT(hunter.npc_walk_out(at(16, 5)), "npc_walk_out failed on a conscious officer")
+	TEST_ASSERT_EQUAL(hunter_brain.stealth_state(), "unaware", "A departing officer walking out stayed in [hunter_brain.stealth_state()]")
+	TEST_ASSERT_EQUAL(hunter.force, 0, "A departing officer walking out kept force [hunter.force] drawn")
+	TEST_ASSERT_NULL(hunter_brain.meter, "A departing officer walking out kept its overhead stealth mark")
+	TEST_ASSERT(istype(hunter_brain.ai_movement, /datum/ai_movement/jps/stealth), "A departing officer lost the stealth JPS pathfinder ([hunter_brain.ai_movement?.type])")
+	hunter.npc_stop_leaving()
+
 #undef POLICE_STEALTH_BEAT
+
+/// Cross-sector concourse <-> lobby walks are foot walks (not unfinished lift rides), while lobby -> hangar berth walks redirect cleanly toward the hangar elevator alcove
+/datum/unit_test/voidcrew_outpost_police_stealth_sector_walks
+
+/datum/unit_test/voidcrew_outpost_police_stealth_sector_walks/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	police.sleep_tick()
+	TEST_ASSERT(length(outpost.lobby_alcove_turfs), "The outpost has no lobby elevator alcove")
+	var/turf/concourse_tile = police_floor(outpost)
+	TEST_ASSERT_NOTNULL(concourse_tile, "No free concourse tile found")
+	var/turf/lobby_tile
+	for(var/turf/candidate as anything in RANGE_TURFS(8, outpost.lobby_alcove_turfs[1]))
+		if(isopenturf(candidate) && !candidate.is_blocked_turf(TRUE) && police.sector_of(candidate) == "lobby" && !(candidate in outpost.lobby_alcove_turfs))
+			lobby_tile = candidate
+			break
+	TEST_ASSERT_NOTNULL(lobby_tile, "No open lobby floor tile outside the elevator alcove found")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, concourse_tile)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	TEST_ASSERT(!brain.police_cross_sector_lift_walk(lobby_tile), "Concourse-to-lobby walk was treated as needing a lift ride")
+	officer.forceMove(lobby_tile)
+	TEST_ASSERT(!brain.police_cross_sector_lift_walk(concourse_tile), "Lobby-to-concourse walk was treated as needing a lift ride")
+
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(3, 3, 1, requester = "police stealth sector walk test")
+	TEST_ASSERT_NOTNULL(claimed, "Could not reserve a 3x3 hangar alcove")
+	var/datum/outpost_berth/berth = new(outpost, 1, null)
+	berth.reservation = claimed
+	for(var/turf/tile as anything in berth.get_block())
+		tile.ChangeTurf(/turf/open/floor/iron)
+	var/list/old_berths = outpost.berths
+	outpost.berths = list(berth)
+	var/turf/berth_tile = berth.get_block()[5]
+
+	// With no elevator alcove tiles on the berth, a cross-sector walk there fails cleanly instead of looping to the lobby alcove
+	berth.alcove_turfs = list()
+	TEST_ASSERT(!brain.police_cross_sector_lift_walk(berth_tile), "A berth with no elevator alcove still counted as a rideable lift walk")
+	brain.stealth_walk(berth_tile, "search")
+	TEST_ASSERT_EQUAL(brain.goto_result, "failed", "A walk to an unrideable berth did not fail cleanly")
+	brain.stealth_drop_walk()
+
+	// With real alcove tiles on the berth, redirecting from an earlier walk updates goto_dest and aims goto_turf toward the lobby elevator alcove
+	berth.alcove_turfs = berth.get_block()
+	TEST_ASSERT(brain.police_cross_sector_lift_walk(berth_tile), "Lobby-to-berth walk did not register as needing the hangar elevator")
+	brain.goto_dest = concourse_tile
+	brain.goto_turf = concourse_tile
+	brain.stealth_walk(berth_tile, "search")
+	brain.planned_behaviors.Cut()
+	TEST_ASSERT_EQUAL(brain.goto_dest, berth_tile, "Redirecting a stealth walk to a hangar berth did not update goto_dest")
+	TEST_ASSERT(!isnull(brain.goto_turf) && brain.goto_turf != concourse_tile && brain.goto_turf != berth_tile, "Redirecting a stealth walk to a hangar berth kept stale goto_turf [brain.goto_turf]")
+
+	brain.stealth_drop_walk()
+	qdel(berth)
+	outpost.berths = old_berths
+	dispatch_clear(police)

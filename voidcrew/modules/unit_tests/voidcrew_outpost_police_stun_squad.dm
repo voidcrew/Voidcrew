@@ -557,3 +557,128 @@
 
 	police_pin_warrant(police, runaway.mind, 0)
 	dispatch_clear(police)
+
+/**
+ * Pass 4 force edge cases: a wanted player in an officer body is fought and tracked for cuff stripping; multi-occupant
+ * mechs resolve to their wanted passenger while holding lethal fire for a clean pilot; flat stun batons are stowed
+ * rather than swung as clubs and recharged stun sidearms are redrawn; lethal sync flips stun sidearms to kill, clears
+ * off-hand props for two-handed heavy guns, and falls back to the lethal sidearm when an arm is lost.
+ */
+/datum/unit_test/voidcrew_outpost_police_force_edge_cases
+
+/datum/unit_test/voidcrew_outpost_police_force_edge_cases/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	police.sleep_tick()
+	stun_squad_isolate(police)
+	var/list/turf/row = dispatch_row(outpost)
+	TEST_ASSERT_NOTNULL(row, "No three free tiles in a row on the concourse")
+
+	var/list/squad = stun_squad_officers(outpost, 2)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lethal = squad[1]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stunner = squad[2]
+	lethal.police_role = "lethal"
+	stunner.police_role = "stun"
+	lethal.forceMove(row[1])
+	stunner.forceMove(row[1])
+	var/mob/living/carbon/human/suspect = police_arrest_person(row[3])
+
+	// 1. A player transplanted into an officer body is fought when wanted, tracked on cuff-strip, and checked when sleeping
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/played = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, row[3])
+	var/mob/living/carbon/human/donor = police_arrest_person(police_floor(outpost))
+	donor.mind.transfer_to(played)
+	police_pin_warrant(police, played.mind, 55) // three stars
+	TEST_ASSERT(lethal.police_will_fight(played), "An officer refused to fight a wanted player in an officer body")
+
+	var/datum/outpost_warrant/strip_warrant = police_pin_warrant(police, suspect.mind, 15) // one star
+	var/datum/outpost_police_case/strip_case = new(police, strip_warrant)
+	police.cases[suspect.mind] = strip_case
+	var/obj/item/restraints/handcuffs/strip_cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(strip_cuffs, ITEM_SLOT_HANDCUFFED)
+	strip_case.cuffs_on(suspect)
+	SEND_SIGNAL(suspect, COMSIG_BEING_STRIPPED, stunner, strip_cuffs)
+	TEST_ASSERT_NULL(strip_case.stripper_ref, "An AI officer touching cuffs was recorded as an abettor")
+	SEND_SIGNAL(suspect, COMSIG_BEING_STRIPPED, played, strip_cuffs)
+	TEST_ASSERT_EQUAL(strip_case.stripper_ref?.resolve(), played, "A player in an officer body stripping cuffs was not recorded for abet")
+	police.close_case(suspect.mind)
+	suspect.uncuff()
+	police_pin_warrant(police, suspect.mind, 0)
+	police_pin_warrant(police, played.mind, 0)
+
+	played.SetSleeping(10 SECONDS)
+	stunner.SetSleeping(10 SECONDS)
+	TEST_ASSERT(lethal.life_is_sleeper(played), "A player sleeping in an officer body was skipped as an AI officer")
+	TEST_ASSERT(!lethal.life_is_sleeper(stunner), "An AI officer sleeping was treated as a public sleeper")
+	played.SetSleeping(0)
+	stunner.SetSleeping(0)
+	qdel(played)
+
+	// 2. Multi-occupant mech: police_mech_suspect finds the wanted passenger, and bystander_in_line holds lethal fire for a clean pilot
+	var/obj/vehicle/sealed/mecha/ripley/coop_mech = allocate(/obj/vehicle/sealed/mecha/ripley, row[2])
+	coop_mech.max_occupants = 2
+	var/mob/living/carbon/human/clean_pilot = police_arrest_person(row[2])
+	var/mob/living/carbon/human/wanted_rider = police_arrest_person(row[2])
+	police_pin_warrant(police, wanted_rider.mind, 100) // four stars
+	coop_mech.mob_enter(clean_pilot, silent = TRUE)
+	coop_mech.mob_enter(wanted_rider, silent = TRUE)
+	TEST_ASSERT_EQUAL(lethal.police_mech_suspect(coop_mech), wanted_rider, "police_mech_suspect returned [lethal.police_mech_suspect(coop_mech)] instead of the wanted passenger")
+	police_pin_warrant(police, suspect.mind, 55) // three stars on row[3]
+	lethal.set_force(3) // POLICE_FORCE_LETHAL
+	TEST_ASSERT_EQUAL(lethal.bystander_in_line(suspect), clean_pilot, "Lethal fire did not hold for a clean pilot aboard a multi-occupant mech in the line")
+	coop_mech.mob_exit(wanted_rider, silent = TRUE)
+	coop_mech.mob_exit(clean_pilot, silent = TRUE)
+	qdel(coop_mech)
+	police_pin_warrant(police, wanted_rider.mind, 0)
+
+	// 3. Flat stun batons are stowed at arrest and stun force, and a recharged stun sidearm is redrawn
+	var/obj/item/gun/energy/stun_sidearm = stunner.get_sidearm()
+	var/obj/item/melee/baton/security/stun_baton = stunner.get_baton()
+	stun_sidearm.cell.charge = 0
+	stun_baton.cell.charge = 0
+	stun_baton.active = FALSE
+	stunner.set_force(1) // POLICE_FORCE_ARREST
+	TEST_ASSERT(!stunner.is_holding(stun_baton), "At arrest force an officer kept an uncharged baton out as a club")
+	stunner.set_force(2) // POLICE_FORCE_STUN
+	TEST_ASSERT(!stunner.is_holding(stun_baton), "At stun force an officer kept an uncharged baton out as a club")
+	stun_sidearm.cell.charge = stun_sidearm.cell.maxcharge
+	stunner.sync_force(2) // POLICE_FORCE_STUN
+	TEST_ASSERT_EQUAL(stunner.police_loaded_gun_for(2), stun_sidearm, "A stun officer did not redraw its recharged sidearm")
+	TEST_ASSERT(!outpost_police_mode_lethal(stun_sidearm), "A redrawn stun sidearm was left on lethal")
+
+	// 4. Lethal mode checks, two-handed WEAPON_HEAVY off-hand clearing, and one-handed sidearm fallback
+	var/obj/item/gun/energy/lethal_sidearm = lethal.get_sidearm()
+	lethal.set_force(2) // POLICE_FORCE_STUN
+	TEST_ASSERT_NULL(lethal.police_loaded_gun_for(3), "A stun-mode energy sidearm counted as a ready lethal gun")
+	lethal.force = 3 // POLICE_FORCE_LETHAL
+	lethal.sync_force(3)
+	TEST_ASSERT(outpost_police_mode_lethal(lethal_sidearm), "sync_force at lethal left the energy sidearm on stun")
+	TEST_ASSERT_EQUAL(lethal.police_loaded_gun_for(3), lethal_sidearm, "After flipping to lethal, the energy sidearm was not ready")
+
+	var/list/tactical_list = stun_squad_officers(outpost, 1, /mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical = tactical_list[1]
+	tactical.forceMove(row[1])
+	var/obj/item/gun/longgun = tactical.get_longgun()
+	var/obj/item/gun/energy/tac_sidearm = tactical.get_sidearm()
+	longgun.weapon_weight = WEAPON_HEAVY
+	tactical.set_force(3) // POLICE_FORCE_LETHAL
+	tactical.set_held(/obj/item/wrench)
+	TEST_ASSERT_EQUAL(tactical.get_num_held_items(), 2, "Fixture: tactical officer did not have a prop in its off-hand")
+	TEST_ASSERT_NULL(tactical.police_loaded_gun_for(3), "A WEAPON_HEAVY longgun counted as ready with the off-hand occupied")
+	tactical.sync_force(3)
+	TEST_ASSERT_EQUAL(tactical.get_num_held_items(), 1, "sync_force at lethal did not clear the off-hand for a WEAPON_HEAVY longgun")
+	TEST_ASSERT_EQUAL(tactical.police_loaded_gun_for(3), longgun, "After clearing the off-hand, the WEAPON_HEAVY longgun was not ready")
+
+	var/free_zone = tactical.get_hand_zone_of_item(longgun) == BODY_ZONE_L_ARM ? BODY_ZONE_R_ARM : BODY_ZONE_L_ARM
+	var/obj/item/bodypart/off_arm = tactical.get_bodypart(free_zone)
+	off_arm.drop_limb()
+	qdel(off_arm)
+	TEST_ASSERT(!tactical.police_can_handle_gun(longgun), "A one-armed officer still counted as able to fire a WEAPON_HEAVY longgun")
+	tactical.sync_force(3)
+	TEST_ASSERT(!tactical.is_holding(longgun), "A one-armed officer kept holding an unusable WEAPON_HEAVY longgun")
+	TEST_ASSERT_EQUAL(tactical.police_loaded_gun_for(3), tac_sidearm, "A one-armed tactical officer at lethal did not fall back to its sidearm")
+	TEST_ASSERT(outpost_police_mode_lethal(tac_sidearm), "A one-armed tactical officer's fallback sidearm was not on lethal")
+
+	police_pin_warrant(police, suspect.mind, 0)
+	dispatch_clear(police)

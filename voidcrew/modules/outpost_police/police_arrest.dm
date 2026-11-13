@@ -603,7 +603,7 @@
  */
 /datum/outpost_police_case/proc/on_suspect_stripped(mob/living/carbon/source, mob/stripper, obj/item/item)
 	SIGNAL_HANDLER
-	if(!item || item != source.handcuffed || stripper == source || istype(stripper, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(!item || item != source.handcuffed || stripper == source || (istype(stripper, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !stripper.mind && !stripper.client))
 		return
 	stripper_ref = WEAKREF(stripper)
 	stripped_at = world.time

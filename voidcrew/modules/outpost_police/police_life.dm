@@ -1204,7 +1204,7 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_is_sleeper(mob/living/carbon/human/candidate)
 	if(!istype(candidate) || candidate == src || candidate.stat == DEAD)
 		return FALSE
-	if(istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
+	if((istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery)) && !candidate.mind && !candidate.client)
 		return FALSE
 	if((candidate.stat != UNCONSCIOUS && !candidate.IsSleeping()) || HAS_TRAIT(candidate, TRAIT_CRITICAL_CONDITION))
 		return FALSE
