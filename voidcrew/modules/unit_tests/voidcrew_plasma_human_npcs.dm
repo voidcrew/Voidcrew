@@ -7,6 +7,10 @@
 	var/turf/from = run_loc_floor_bottom_left
 	var/turf/where = locate(from.x + 2, from.y, from.z)
 	var/mob/living/carbon/human/npc/sample/gunner/npc = allocate(/mob/living/carbon/human/npc/sample/gunner, where)
+	// Bare, as the player test's arm is: through clothes or armour tg's wound roll can come up short, on anyone
+	for(var/obj/item/clothing/worn in npc.get_equipped_items())
+		if(worn.body_parts_covered & ARMS)
+			qdel(worn)
 	var/obj/projectile/energy/plasma_bolt/heavy/bolt = allocate(/obj/projectile/energy/plasma_bolt/heavy, from)
 	bolt.starting = from
 	bolt.def_zone = BODY_ZONE_L_ARM
