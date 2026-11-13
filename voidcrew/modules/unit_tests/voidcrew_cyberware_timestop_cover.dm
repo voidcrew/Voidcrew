@@ -12,15 +12,11 @@
 	var/turf/here = spot(0, 0)
 	var/turf/near_spot = locate(here.x + 11, here.y, here.z) || locate(here.x - 11, here.y, here.z)
 	var/turf/far_spot = locate(here.x + 20, here.y, here.z) || locate(here.x - 20, here.y, here.z)
-	var/turf/outsider_spot = locate(here.x + 14, here.y + 1, here.z) || locate(here.x - 14, here.y + 1, here.z)
-	TEST_ASSERT(near_spot && far_spot && outsider_spot, "Test fixture: no turfs 11, 14 and 20 tiles from the test room")
+	TEST_ASSERT(near_spot && far_spot, "Test fixture: no turfs 11 and 20 tiles from the test room")
 	var/mob/living/carbon/human/user = make_user(here, "sandycover[type]")
 	set_window(user, 2 SECONDS)
 	var/mob/living/carbon/human/near = allocate(/mob/living/carbon/human/consistent, near_spot)
 	var/mob/living/carbon/human/far = allocate(/mob/living/carbon/human/consistent, far_spot)
-	var/mob/living/carbon/human/outsider = allocate(/mob/living/carbon/human/consistent, outsider_spot)
-	outsider.key = "sandycoveroutsider[type]"
-	TEST_ASSERT(!cyberware_time_stop_witnessed(user), "Test fixture: a player 14 tiles out counts as a witness")
 	surge(user)
 	TEST_ASSERT(cyberware_time_stopping(user), "The slow-mo didn't start")
 	sleep(0.6 SECONDS) // a few field ticks: the room is taken a batch at a time
@@ -34,8 +30,14 @@
 	TEST_ASSERT(!field.tinted[far_spot], "The ground 20 tiles out is taken")
 	TEST_ASSERT(!GLOB.cyberware_time_dilated[far], "A body 20 tiles out is slowed")
 	TEST_ASSERT(!cyberware_time_has_tint(far_spot), "The ground 20 tiles out is tinted")
+	// A player from another crew the field reaches (its room can run past the witness range) is never held. Made after
+	// the slow-mo started and handed to the field directly: anywhere near, they would end it as a witness.
+	var/turf/away = locate(here.x + 40, here.y, here.z) || locate(1, here.y, here.z)
+	var/mob/living/carbon/human/outsider = allocate(/mob/living/carbon/human/consistent, away)
+	outsider.key = "sandycoveroutsider[type]" // a player before the field ever sees them
+	outsider.forceMove(spot(1, 1))
+	TEST_ASSERT(!field.freeze_atom(outsider), "The field took a player from another crew")
 	TEST_ASSERT(!GLOB.cyberware_time_dilated[outsider], "A player from another crew is slowed")
-	TEST_ASSERT_EQUAL(cyberware_time_scale(outsider), 1, "A player from another crew runs slow")
 	outsider.key = null
 
 /**

@@ -131,8 +131,10 @@
 			cover_light(viewer, FALSE)
 		else if(viewer.client)
 			sandy_slowmo_light(viewer, TRUE) // a reconnect or a new body builds new plane masters
-	for(var/mob/living/held as anything in held_mobs)
-		if(held.client && !lit_viewers[held] && !cover_outsider(held))
+	for(var/mob/living/held as anything in held_mobs.Copy())
+		if(cover_outsider(held)) // a held body a player from another crew took over: let go
+			unfreeze_atom(held)
+		else if(held.client && !lit_viewers[held])
 			cover_light(held, TRUE)
 
 /// Queues the ground of the room the user stands in, if it is a new one.
