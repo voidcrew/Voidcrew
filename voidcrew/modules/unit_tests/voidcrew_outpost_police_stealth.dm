@@ -667,4 +667,53 @@
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "Restraining one of two witnessing townspeople silenced the other")
 	REMOVE_TRAIT(first_local, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
 
+/// Fading-out NPCs neither witness crimes, hold a suspect's hide clock, nor finish delayed reports, and a player in an officer's body reports immediately on stealth rules
+/datum/unit_test/voidcrew_stealth_live/police/fading_and_played_witness
+
+/datum/unit_test/voidcrew_stealth_live/police/fading_and_played_witness/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	var/datum/outpost_police_perception/stealth/perception = police.perception
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+
+	// A departing officer fading out down the lift neither sees a crime nor holds suspect_seen()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/departing = officer_at(4, 4, EAST)
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	var/mob/living/carbon/human/dummy = person_at(7, 4, FALSE)
+	TEST_ASSERT(police.suspect_seen(suspect), "Setup: an awake officer facing the suspect did not see them")
+	departing.fading = TRUE
+	TEST_ASSERT(!police.suspect_seen(suspect), "A fading-out officer still held suspect_seen()")
+	TEST_ASSERT_NULL(police.report_crime(suspect, "unarmed", dummy), "A fading-out officer witnessed a crime")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "A fading-out officer queued a crime report")
+	departing.fading = FALSE
+	qdel(departing)
+
+	// A townsperson who starts fading out before their 3s report finishes cannot complete the report, nor witness a new one
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, at(5, 4))
+	local.set_place(place)
+	police.recent_reports.Cut()
+	TEST_ASSERT_NULL(police.report_crime(suspect, "shot", dummy), "A townsperson's report counted without waiting")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "Setup: the townsperson's report was not queued")
+	var/datum/outpost_pending_report/pending = police.pending_reports[1]
+	local.fading = TRUE
+	pending.due = world.time
+	police.tick_warrants()
+	TEST_ASSERT_NULL(police.get_warrant(suspect.mind), "A fading-out townsperson completed their delayed report")
+	pending.expires = world.time
+	police.tick_warrants()
+	police.recent_reports.Cut()
+	TEST_ASSERT_NULL(police.report_crime(suspect, "shot", dummy), "A fading-out townsperson witnessed a new crime")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "A fading-out townsperson queued a new report")
+	local.fading = FALSE
+	qdel(local)
+
+	// Under stealth rules, a player in an officer's body sees all-round like a player and reports immediately (no 3s delay or radio-call gate)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/played = officer_at(8, 4, EAST) // facing away from suspect at (6, 4)
+	var/mob/living/carbon/human/donor = visitor_at(1, 1)
+	donor.mind.transfer_to(played)
+	TEST_ASSERT(perception.sees(played, suspect), "A player in an officer's body was cone-gated like an AI officer")
+	TEST_ASSERT_EQUAL(perception.report_delay(played, "shot"), 0, "A player in an officer's body was given a civilian report delay")
+	TEST_ASSERT(!perception.reports_by_call(played), "A player in an officer's body was gated on an AI radio call")
+	police.recent_reports.Cut()
+	TEST_ASSERT_EQUAL(police.report_crime(suspect, "shot", played), 2, "A player victim in an officer's body did not report immediately at two stars")
+
 #undef POLICE_STEALTH_BEAT

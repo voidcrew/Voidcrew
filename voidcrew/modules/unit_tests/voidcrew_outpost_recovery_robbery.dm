@@ -522,6 +522,65 @@
 	TEST_ASSERT_EQUAL(checkpoint.inner_door.crowbar_act(person, crowbar), ITEM_INTERACT_SUCCESS, "Crowbarring a disabled inner door failed")
 	TEST_ASSERT(!checkpoint.forcing && checkpoint.state != "forced", "Crowbarring a disabled inner door started a forced breach") // CHECKPOINT_FORCED
 
+/// An able trader's alarm still counts when a witness's report is pending and absorbs that report without double-counting; upgraded robberies and takings near the officer also count
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_pending_witness_and_takings
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_pending_witness_and_takings/Run()
+	if(!holdup_fixture())
+		return
+	police.perception.test_plain = FALSE
+	if(!hold_up())
+		return
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_turf(person))
+	first_hold.report_to_others()
+	TEST_ASSERT(first_hold.pending_report(), "A watching officer on stealth rules queued no pending robbery report")
+	// Even if the witness dies right as the alarm fires, the able trader's alarm counts the robbery once and absorbs the pending report
+	watcher.death()
+	first_hold.try_alarm()
+	TEST_ASSERT_EQUAL(police.get_warrant(person.mind)?.heat, 30, "An able trader's alarm was dropped while a witness report was pending")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "The trader's alarm left the witness's pending robbery report behind to double-count")
+	police.confirm_reports(watcher)
+	TEST_ASSERT_EQUAL(police.get_warrant(person.mind)?.heat, 30, "Confirming the witness after the trader's alarm double-counted the robbery")
+	police.perception.test_plain = TRUE
+	if(!QDELETED(first_hold))
+		qdel(first_hold)
+
+	// An upgraded robbery inside the grace window marks the active stick-up counted so its alarm does not add another 30 heat
+	var/mob/living/carbon/human/second_robber = mind_person(get_turf(person))
+	var/obj/item/gun/energy/disabler/second_gun = allocate(/obj/item/gun/energy/disabler)
+	second_robber.put_in_hands(second_gun)
+	shop.held_up(trader, second_robber, second_gun)
+	var/datum/outpost_holdup/second_hold = shop.holdup
+	TEST_ASSERT_NOTNULL(second_hold, "Second robber started no stick-up")
+	second_hold.hand_over(trader, second_robber)
+	police.apply_upgraded_crime(second_robber, 0, "robbery", null, second_gun) // OUTPOST_CRIME_ARMED_ROBBERY
+	TEST_ASSERT(second_hold.counted, "An upgraded robbery did not mark the stick-up counted")
+	second_hold.try_alarm()
+	TEST_ASSERT_EQUAL(police.get_warrant(second_robber.mind)?.heat, 30, "The stick-up alarm double-counted an upgraded robbery")
+
+	// Stolen takings dropped beside the searching officer (beyond 2 tiles of the suspect) are still collected as evidence
+	var/obj/item/holochip/chip
+	for(var/obj/item/holochip/candidate in second_robber.get_all_contents())
+		chip = candidate
+		break
+	if(!chip)
+		for(var/obj/item/holochip/candidate in range(2, trader))
+			chip = candidate
+			break
+	TEST_ASSERT_NOTNULL(chip, "The till handed no chip to the second robber")
+	var/turf/far_spot = police_floor(outpost)
+	for(var/turf/open/candidate in orange(10, second_robber))
+		if(get_dist(candidate, second_robber) >= 4 && !candidate.is_blocked_turf(exclude_mobs = TRUE))
+			far_spot = candidate
+			break
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/searcher = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, far_spot)
+	chip.forceMove(far_spot)
+	TEST_ASSERT(get_dist(chip, second_robber) > 2, "Setup: could not place the dropped chip past two tiles from the robber")
+	TEST_ASSERT(chip in police.evidence_candidates(second_robber, searcher), "evidence_candidates() missed stolen takings at the searching officer's feet")
+	if(!QDELETED(second_hold))
+		qdel(second_hold)
+
 /// Every zone has four or more lines for each kind, and an alarm line that needs no place or look
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines
 

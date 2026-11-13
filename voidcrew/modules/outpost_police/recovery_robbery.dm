@@ -483,7 +483,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 				watch_timer = addtimer(CALLBACK(src, PROC_REF(watch_robber)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 		return
 	var/datum/outpost_police/police = shop.outpost?.police
-	if(!counted && !pending_report() && police)
+	if(!counted && police)
 		police.count_crime(robber, OUTPOST_CRIME_ARMED_ROBBERY, null, weapon_ref?.resolve())
 		relay_alarm(trader, robber)
 	settle()
@@ -548,15 +548,24 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	/// Stolen takings: weakref to the item -> list("shop" = weakref, "amount" = credits of a holochip, "sku" = weakref of a shelf item) (R7)
 	var/list/takings
 
-/// A robbery counted against someone is the one the stick-up in progress would have raised; its alarm need not count it again
+/// A robbery counted against someone is the one the stick-up in progress would have raised; its alarm and any pending witness report need not count it again
+/datum/outpost_police/proc/note_robbery_counted(mob/living/offender)
+	GLOB.outpost_holdups.note_counted(offender)
+	absorb_pending_crime(offender, OUTPOST_CRIME_ARMED_ROBBERY)
+
 /datum/outpost_police/count_crime(mob/living/offender, crime, atom/victim, obj/item/source, derived = FALSE)
 	. = ..()
 	if(crime == OUTPOST_CRIME_ARMED_ROBBERY)
-		GLOB.outpost_holdups.note_counted(offender)
+		note_robbery_counted(offender)
+
+/datum/outpost_police/apply_upgraded_crime(mob/living/offender, base_heat, crime, atom/victim, obj/item/source)
+	. = ..()
+	if(crime == OUTPOST_CRIME_ARMED_ROBBERY)
+		note_robbery_counted(offender)
 
 /// The Search step also takes stolen takings the suspect has on them or at their feet
-/datum/outpost_police/evidence_candidates(mob/living/carbon/suspect)
-	var/list/take = ..()
+/datum/outpost_police/evidence_candidates(mob/living/carbon/suspect, mob/living/officer)
+	var/list/take = ..(suspect, officer)
 	if(!islist(take))
 		take = list()
 	for(var/datum/weakref/ref in takings?.Copy())
@@ -564,7 +573,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		if(QDELETED(stolen))
 			takings -= ref
 			continue
-		if(evidence_can_take(stolen, suspect))
+		if(evidence_can_take(stolen, suspect, officer))
 			take |= stolen
 	return take
 
@@ -642,7 +651,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(!is_officer(person) && !(person in outpost.traders) && sees(person, robber))
+			if(!person.mind && !person.client && !is_officer(person) && !(person in outpost.traders) && sees(person, robber))
 				civilians_saw += person
 	if(length(civilians_saw) && length(officers_saw))
 		return civilians_saw + officers_saw

@@ -386,6 +386,7 @@
 	. = ..()
 	ban_from_containment()
 	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempt))
+	RegisterSignals(src, list(COMSIG_MOB_MIND_INITIALIZED, COMSIG_MOB_MIND_TRANSFERRED_INTO), PROC_REF(on_player_mind))
 	// Their ID reads their name, as a person's does
 	var/obj/item/card/id/card = wear_id
 	if(istype(card))
@@ -393,7 +394,8 @@
 		card.update_label()
 	desc = "[unit_title()], [kit.force_name]."
 	// On the roster of the police who keep this outpost, if any (roles and dispatch add them as well: no harm)
-	home_police()?.add_officer(src)
+	if(!mind && !client)
+		home_police()?.add_officer(src)
 
 /**
  * A person is never on an officer's side: players and officers share the neutral faction, and stealth's scan,
@@ -402,7 +404,7 @@
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/faction_check_atom(atom/movable/target, exact_match)
 	var/mob/living/person = target
-	if(isliving(person) && (person.mind || person.client) && !istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(isliving(person) && (person.mind || person.client))
 		return FALSE
 	return ..()
 
@@ -453,6 +455,8 @@
 	var/obj/item/weapon = struck_source_at == world.time ? struck_source_ref?.resolve() : null
 	struck_source_ref = null
 	struck_source_at = -1
+	if(mind || client)
+		return
 	police?.officer_struck(src, attacker, attack_flags, weapon)
 	react_attacked(attacker)
 
@@ -472,17 +476,26 @@
 
 // Abuse SF3: a player in an officer's body (a brain transplant) is a person, not an officer: off the roster, so no
 // stray sweep, recall or corpse cap ever deletes them
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/Login()
-	. = ..()
-	if(!. || isnull(client) || !police)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/leave_roster_for_player()
+	if(!police)
 		return
 	police.remove_officer(src)
 	police.dispatch_strays -= src
 
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_player_mind(datum/source, datum/extra)
+	SIGNAL_HANDLER
+	if(mind || client)
+		leave_roster_for_player()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/Login()
+	. = ..()
+	if(. && client)
+		leave_roster_for_player()
+
 /// Someone is putting cuffs on them (abuse M3)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_cuff_attempt(datum/source, mob/living/user)
 	SIGNAL_HANDLER
-	if(user == src)
+	if(user == src || mind || client)
 		return
 	police?.officer_cuff_attempt(src, user)
 

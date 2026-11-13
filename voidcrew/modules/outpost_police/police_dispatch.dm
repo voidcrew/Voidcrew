@@ -1187,7 +1187,7 @@
 /// Abuse M11: a person pulling an officer resists, once every OUTPOST_POLICE_BLOCK_TIME
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/dispatch_check_pull()
 	var/mob/living/puller = pulledby
-	if(!isliving(puller) || !puller.mind || istype(puller, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(mind || client || !isliving(puller) || !puller.mind || police?.perception?.is_officer(puller))
 		dispatch_pull_since = 0
 		return
 	if(!dispatch_pull_since)

@@ -939,3 +939,62 @@
 	qdel(temp_mind)
 	TEST_ASSERT_EQUAL(length(police.warrants), 1, "Deleting a mind left its warrant behind")
 	wanted_cleanup(list(first_ship, second_ship))
+
+/// Abuse SF3: a player mind in an officer's body is treated as a visitor (self-defence, murder, arrest interference, faction), and killing an officer never revives an expired ship embargo
+/datum/unit_test/voidcrew_outpost_police_transplanted_officer_and_expired_embargo
+
+/datum/unit_test/voidcrew_outpost_police_transplanted_officer_and_expired_embargo/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/real_officer = wanted_officer(outpost, wanted_spot(4, 4))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/transplanted = wanted_officer(outpost, wanted_spot(1, 0))
+	var/mob/living/carbon/human/donor = wanted_person(wanted_spot(0, 4))
+	donor.mind.transfer_to(transplanted)
+
+	TEST_ASSERT(!(transplanted in police.officers), "A mind transferred into an officer's body stayed on the police roster")
+	TEST_ASSERT(!police.perception.is_officer(transplanted), "Perception still treated a player in an officer's body as an NPC officer")
+	TEST_ASSERT(!real_officer.faction_check_atom(transplanted), "An NPC officer treated a player in an officer's body as faction-allied")
+
+	// Provoked self-defence against a player in an officer's body does not trigger ASSAULT_OFFICER
+	var/mob/living/carbon/human/defender = wanted_person(wanted_spot(1, 1))
+	outpost.register_pvp_aggression(defender, transplanted, "unarmed")
+	SEND_SIGNAL(transplanted, COMSIG_ATOM_WAS_ATTACKED, defender, ATTACKER_STAMINA_ATTACK)
+	SEND_SIGNAL(transplanted, COMSIG_CARBON_CUFF_ATTEMPTED, defender)
+	outpost.register_pvp_aggression(transplanted, defender, "unarmed")
+	TEST_ASSERT_NULL(police.warrants[defender.mind], "Defending against a player in an officer's body raised an officer-assault warrant")
+
+	// Murdering a player in an officer's body is witnessed by them and counts as MURDER (+60), not dropped as a foreign officer
+	var/mob/living/carbon/human/murderer = wanted_person(wanted_spot(2, 0))
+	TEST_ASSERT_EQUAL(police.report_crime(murderer, "shot", transplanted), 2, "A player in an officer's body did not witness being shot")
+	transplanted.death()
+	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.heat, 85, "Killing a player in an officer's body did not count as murder") // 25 + 60
+	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.officers_killed, 0, "Killing a player in an officer's body counted as killing a police officer")
+
+	// A player in an officer's body pulling a cuffed prisoner away from an arrest is charged RESIST
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/meddler = wanted_officer(outpost, wanted_spot(2, 2))
+	var/mob/living/carbon/human/second_donor = wanted_person(wanted_spot(0, 5))
+	second_donor.mind.transfer_to(meddler)
+	var/mob/living/carbon/human/suspect = wanted_person(wanted_spot(2, 3))
+	var/datum/outpost_warrant/suspect_warrant = police_pin_warrant(police, suspect.mind, 15)
+	var/datum/outpost_police_case/case = new(police, suspect_warrant)
+	police.cases[suspect.mind] = case
+	case.cuffed = TRUE
+	suspect.pulledby = meddler
+	case.check_interference(suspect)
+	suspect.pulledby = null
+	police.close_case(suspect.mind)
+	TEST_ASSERT_EQUAL(police.warrants[meddler.mind]?.heat, 8, "A player in an officer's body interfering with an arrest was excused") // OUTPOST_CRIME_RESIST
+
+	// officer_killed_by() extends active embargoes without reviving an already-expired custom ship embargo
+	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(3, 0))
+	var/obj/structure/overmap/ship/active_ship = wanted_ship(leader)
+	var/datum/voidcrew_crew_record/crew = leader.mind.get_reputation_crew()
+	var/obj/structure/overmap/ship/expired_ship = wanted_ship(null, 0, crew)
+	var/datum/outpost_warrant/leader_warrant = police_pin_warrant(police, leader.mind, 100) // four stars
+	leader_warrant.crew = crew
+	police.tick_warrants()
+	outpost.embargoed_ships[expired_ship] = world.time - 1 // lapsed custom embargo not yet lazily pruned
+	police.officer_killed_by(leader_warrant)
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[active_ship], world.time + 20 MINUTES, "Killing an officer did not extend the active ship embargo")
+	TEST_ASSERT(!outpost.is_ship_embargoed(expired_ship), "Killing an officer resurrected an already-expired ship embargo")
+	wanted_cleanup(list(active_ship, expired_ship))

@@ -396,9 +396,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	for(var/mob/living/victim as anything in victims)
 		if(QDELETED(victim) || victim == bomber || victim.stat == DEAD)
 			continue
-		if(istype(victim, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !victim.client)
+		if(istype(victim, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !victim.mind && !victim.client)
 			officers += victim
-		else if(victim.mind && (!istype(victim, /mob/living/carbon/human/npc) || victim.client))
+		else if(victim.mind)
 			visitors += victim
 		else
 			locals += victim

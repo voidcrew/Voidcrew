@@ -811,7 +811,7 @@
 /// Someone other than an officer pulling the suspect once the order is given: RESIST, every OUTPOST_POLICE_BLOCK_TIME
 /datum/outpost_police_case/proc/check_interference(mob/living/carbon/suspect)
 	var/mob/living/puller = suspect.pulledby
-	if(!isliving(puller) || !puller.mind || puller == suspect || istype(puller, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(!isliving(puller) || !puller.mind || puller == suspect || police?.perception?.is_officer(puller))
 		return
 	if(!order_at && !cuffed)
 		return

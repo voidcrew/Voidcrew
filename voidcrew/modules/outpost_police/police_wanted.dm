@@ -189,15 +189,16 @@
 
 /// Tells the first police officer among the witnesses to call out `crime` to `offender`
 /datum/outpost_police/proc/shout_for_witnesses(atom/witness, list/witnesses, mob/living/offender, crime)
-	if(!istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(!perception.is_officer(witness))
 		var/seen_by_person = ismob(witness)
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
-			witness = officer
-			break
+			if(perception.is_officer(officer))
+				witness = officer
+				break
 		// A trader or a player made the report, but an officer watching it happen still calls it out
-		if(seen_by_person && !istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		if(seen_by_person && !perception.is_officer(witness))
 			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-				if(perception.sees(officer, offender))
+				if(perception.is_officer(officer) && perception.sees(officer, offender))
 					witness = officer
 					break
 	witness_shout(witness, offender, crime)
@@ -270,7 +271,7 @@
 		if(new_ref in report.witnesses)
 			continue
 		report.witnesses += new_ref
-		if(istype(new_witness, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		if(perception.is_officer(new_witness))
 			INVOKE_ASYNC(new_witness, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
 	last[3] = crime
 	last[4] = victim ? WEAKREF(victim) : null
@@ -356,7 +357,8 @@
 			report.witnesses += WEAKREF(witness)
 	pending_reports += report
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
-		INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
+		if(perception.is_officer(officer))
+			INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
 	wake()
 	return report
 
@@ -432,6 +434,26 @@
 		if(followup[1] == OUTPOST_CRIME_KILL_OFFICER && warrant)
 			warrant.officers_killed++
 			officer_killed_by(warrant)
+
+/// Absorbs any pending reports of `crime` against `offender` once the same act has already been counted directly, keeping their folded tools, victims and followups
+/datum/outpost_police/proc/absorb_pending_crime(mob/living/offender, crime)
+	if(!offender || !length(pending_reports))
+		return
+	var/datum/weakref/mind_ref = offender.mind ? WEAKREF(offender.mind) : null
+	var/list/seen = mind_ref ? recent_reports[mind_ref] : null
+	for(var/datum/outpost_pending_report/report as anything in pending_reports.Copy())
+		if(QDELETED(report) || report.crime != crime || report.offender?.resolve() != offender)
+			continue
+		pending_reports -= report
+		if(seen && seen[2] == POLICE_REPORT_PENDING)
+			var/datum/weakref/pending_ref = seen[5]
+			if(pending_ref?.resolve() == report)
+				seen[2] = POLICE_REPORT_COUNTED
+				seen[5] = null
+		if(offender.mind)
+			fold_crime(offender.mind, report.victim?.resolve(), report.source?.resolve())
+			apply_report_extras(report, offender)
+		qdel(report)
 
 /// `witness` has made its call (police_stealth.dm): every report it was waiting to make counts now
 /datum/outpost_police/proc/confirm_reports(atom/witness)
@@ -975,24 +997,24 @@
 		return
 	// The outpost's recovery tracks its dead (recovery_core.dm, R2); it checks the turf itself
 	outpost.recovery?.note_death(dead)
-	var/is_ours = (dead in officers)
+	var/is_ours = (dead in officers) && perception.is_officer(dead)
 	if(!is_ours && !length(warrants) && !length(pending_reports))
 		return
 	var/crime
 	if(is_ours)
 		crime = OUTPOST_CRIME_KILL_OFFICER
-	else if(istype(dead, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	else if(perception.is_officer(dead))
 		return
 	else
 		var/turf/where = get_turf(dead)
 		if(!where || get_trader_outpost_for_turf(where) != outpost)
 			return
-		if(istype(dead, OUTPOST_TRADER_MOB)) // a trader or checkpoint guard (spec-rehydrate 1.4)
+		if(dead.mind)
+			crime = OUTPOST_CRIME_MURDER
+		else if(istype(dead, OUTPOST_TRADER_MOB)) // a trader or checkpoint guard (spec-rehydrate 1.4)
 			crime = OUTPOST_CRIME_KILL_STAFF
 		else if(istype(dead, /mob/living/carbon/human/npc/ambient_npc))
 			crime = OUTPOST_CRIME_KILL_CIVILIAN
-		else if(dead.mind)
-			crime = OUTPOST_CRIME_MURDER
 		else
 			return
 	var/datum/weakref/dead_ref = WEAKREF(dead)
@@ -1040,7 +1062,7 @@
 	incident.officers_killed++
 	incident.ends_at = min(incident.ends_at + OUTPOST_POLICE_EMBARGO_PER_KILL, incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
 	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
-		if(outpost.embargoed_ships[ship])
+		if(outpost.is_ship_embargoed(ship))
 			outpost.embargoed_ships[ship] = incident.ends_at
 
 // =========================================================================

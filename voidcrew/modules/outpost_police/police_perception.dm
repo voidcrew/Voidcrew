@@ -59,7 +59,7 @@
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[police.outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(sees(person, offender))
+			if(!person.mind && !person.client && sees(person, offender))
 				last_witness = person
 				return POLICE_WITNESS_SAW
 	var/datum/voidcrew_crew_record/own_crew = offender.mind?.get_reputation_crew()
@@ -115,7 +115,7 @@
 		return FALSE
 	var/mob/living/watcher = isliving(viewer) ? viewer : null
 	if(watcher)
-		if(watcher.stat != CONSCIOUS || watcher.is_blind())
+		if(watcher.stat != CONSCIOUS || watcher.is_blind() || is_fading_npc(watcher))
 			return FALSE
 	else if(!is_camera(viewer))
 		return FALSE
@@ -235,7 +235,7 @@
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[police.outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(!is_officer(person) && !(person in police.outpost.traders) && sees(person, offender))
+			if(!person.mind && !person.client && !is_officer(person) && !(person in police.outpost.traders) && sees(person, offender))
 				civilians_saw += person
 	if(length(civilians_saw) && length(officers_saw))
 		last_witnesses = civilians_saw + officers_saw
@@ -251,9 +251,15 @@
 		return POLICE_WITNESS_SAW
 	return POLICE_WITNESS_NONE
 
-/// Whether `thing` is an officer
+/// Whether `thing` is an NPC police officer (never a player in an officer's body, abuse SF3)
 /datum/outpost_police_perception/proc/is_officer(atom/thing)
-	return istype(thing, /mob/living/carbon/human/npc/ambient_npc/outpost/police)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = thing
+	return istype(officer) && !officer.mind && !officer.client
+
+/// Whether `thing` is an NPC slipping away down a lift (fade_out()) and no longer here to watch or report
+/datum/outpost_police_perception/proc/is_fading_npc(atom/thing)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = thing
+	return istype(npc) && npc.fading && !npc.mind && !npc.client
 
 /datum/outpost_police_perception/stealth/sees(atom/viewer, mob/living/target)
 	if(QDELETED(viewer) || QDELETED(target))
@@ -286,7 +292,7 @@
 /datum/outpost_police_perception/stealth/proc/all_round_sees(atom/viewer, mob/living/target, see_cloaks)
 	if(isliving(viewer))
 		var/mob/living/living_viewer = viewer
-		if(living_viewer.is_blind())
+		if(living_viewer.is_blind() || is_fading_npc(living_viewer))
 			return FALSE
 	var/atom/seen_target = isvehicle(target.loc) ? target.loc : target
 	var/turf/where = seen_target.loc
@@ -312,7 +318,7 @@
  * is never hidden (stealth_ai.dm). Also the "seen" test that holds the hide clock (police_wanted.dm tick_warrants()).
  */
 /datum/outpost_police_perception/stealth/proc/officer_sees(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/target)
-	if(officer.stat != CONSCIOUS || officer.is_blind())
+	if(officer.stat != CONSCIOUS || officer.is_blind() || is_fading_npc(officer))
 		return FALSE
 	var/atom/seen_target = isvehicle(target.loc) ? target.loc : target
 	var/turf/where = seen_target.loc
@@ -356,7 +362,8 @@
 		return 0
 #endif
 	// Townspeople take a moment; a trader or gate guard (ambient NPCs since R1) reports at once, as an officer's desk would
-	if(istype(witness, /mob/living/carbon/human/npc/ambient_npc) && !is_officer(witness) && !istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+	var/mob/living/carbon/human/npc/ambient_npc/npc = witness
+	if(istype(npc) && !npc.mind && !npc.client && !is_officer(npc) && !istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 		return OUTPOST_POLICE_CIVILIAN_REPORT_TIME
 	return 0
 
@@ -373,8 +380,10 @@
 	if(!isliving(witness))
 		return TRUE
 	var/mob/living/person = witness
-	if(person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_INCAPACITATED))
+	if(person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_INCAPACITATED) || is_fading_npc(person))
 		return FALSE
+	if(person.mind || person.client)
+		return TRUE
 	if(is_officer(person))
 		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = person.ai_controller
 		return !istype(brain) || !brain.stealth_captive()
