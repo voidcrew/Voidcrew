@@ -164,7 +164,7 @@
 /datum/outpost_prison/proc/has_audience()
 	if(!isnull(audience_override))
 		return audience_override
-	return sync_audience()
+	return audience_present
 
 /**
  * The mood a new arrival starts with: part of the way from PRISONER_MOOD_START to the yard's

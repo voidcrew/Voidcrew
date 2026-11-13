@@ -117,7 +117,7 @@
 
 /**
  * Whether an outpost prison NPC's AI is running, which it is only while someone is at the wing's
- * outpost to see them (or anywhere on the level once they have broken out). tg's controller also
+ * outpost to see them (anyone on the level, once they have broken out). tg's controller also
  * switches itself off for AI_FAILED_PLANNING_COOLDOWN after any plan that queued nothing (an
  * activity that would not start, a walk given up, a prisoner knocked down), and that blink still
  * counts as running while anyone is at the outpost. Counted as asleep, it let the empty-level
@@ -128,18 +128,14 @@
 	var/datum/ai_controller/controller = npc?.ai_controller
 	if(!controller || npc.stat == DEAD)
 		return FALSE
-	if(!istype(controller, /datum/ai_controller/basic_controller/outpost_breakout))
-		var/datum/outpost_prison/prison
-		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = npc
-		if(istype(prisoner))
-			prison = prisoner.prison || get_outpost_prison(prisoner)
-		else
-			var/mob/living/carbon/human/npc/outpost_prison_guard/guard = npc
-			if(istype(guard))
-				prison = guard.prison || get_outpost_prison(guard)
-		if(prison)
-			return prison.find_audience()
-	return controller.ai_status == AI_STATUS_ON
+	if(controller.ai_status == AI_STATUS_ON)
+		return TRUE
+	// Asleep, it still counts while a player is at the wing's outpost: the same test as has_audience(), less its override
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = npc
+	if(istype(prisoner))
+		return !!prisoner.prison?.audience_present
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = npc
+	return istype(guard) && !!guard.prison?.audience_present
 
 /// Whether their AI is running, which it is only while someone is on the level to see them
 /mob/living/carbon/human/npc/outpost_prisoner/proc/ai_running()

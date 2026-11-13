@@ -104,7 +104,7 @@
 	user.visible_message(span_notice("[user] starts taking [worn] off [src]."), span_notice("You start taking [worn] off [src]."))
 	var/done = do_after(user, PRISONER_UNCUFF_TIME, target = src)
 	cuff_work = FALSE
-	if(!done || QDELETED(src) || QDELETED(user) || handcuffed != worn || !(prison?.is_staff(user) || prison?.is_inmate(user)))
+	if(!done || QDELETED(src) || QDELETED(user) || handcuffed != worn || !prison?.is_staff(user))
 		return FALSE
 	var/cut = istype(worn, /obj/item/restraints/handcuffs/cable)
 	user.visible_message(span_notice("[user] [cut ? "cuts" : "takes"] [worn] off [src]."), span_notice("You [cut ? "cut" : "take"] [worn] off [src]."))

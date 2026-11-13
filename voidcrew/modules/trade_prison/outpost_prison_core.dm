@@ -523,7 +523,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
  * called it out, or null.
  */
 /datum/outpost_prison/proc/on_hatch_stocked(obj/structure/table/reinforced/prison_hatch/hatch, list/stocked, mob/user)
-	if(!hatch || !length(stocked) || (user && !is_staff(user) && !is_inmate(user)))
+	if(!hatch || !length(stocked) || (user && !is_staff(user)))
 		return null
 	// A birthday cake or a letter is the extras' business (outpost_prison_extras.dm).
 	if(extras_hatch_stocked(hatch, stocked, user))

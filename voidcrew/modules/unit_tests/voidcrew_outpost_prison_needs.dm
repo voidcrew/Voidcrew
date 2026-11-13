@@ -983,18 +983,6 @@
 	warden.put_in_active_hand(by_hand)
 	TEST_ASSERT_EQUAL(hatch.table_place_act(warden, by_hand, list()), ITEM_INTERACT_SUCCESS, "Putting a ration on a hatch with room failed")
 	TEST_ASSERT(!COOLDOWN_FINISHED(prison, hatch_call_cooldown), "Stocking the hatch by hand drew no call-out")
-	// A non-staff inmate putting washed uniforms on the hatch also gets a call-out and reputation credit.
-	COOLDOWN_RESET(prison, hatch_call_cooldown)
-	home.fixture_prison.inmate_key = "hatchinmate"
-	var/mob/living/carbon/human/inmate = make_player(yard_side, "hatchinmate")
-	TEST_ASSERT(!prison.is_staff(inmate) && prison.is_inmate(inmate), "The hatch test inmate is not a non-staff inmate")
-	watcher.set_uniform_grime(90)
-	var/obj/item/clothing/under/rank/prisoner/outpost/clean_suit = allocate(__IMPLIED_TYPE__)
-	inmate.put_in_active_hand(clean_suit)
-	TEST_ASSERT_EQUAL(hatch.table_place_act(inmate, clean_suit, list()), ITEM_INTERACT_SUCCESS, "An inmate putting a clean suit on a hatch failed")
-	TEST_ASSERT(!COOLDOWN_FINISHED(prison, hatch_call_cooldown), "An inmate stocking a clean suit drew no call-out")
-	TEST_ASSERT_NOTNULL(prison.rep_record_for(inmate), "An inmate stocking the hatch got no reputation record")
-	watcher.set_uniform_grime(0)
 	// A dirty uniform on the hatch is nothing to call about.
 	COOLDOWN_RESET(prison, hatch_call_cooldown)
 	var/obj/item/clothing/under/rank/prisoner/outpost/grubby = new(hatch_turf)
@@ -1244,17 +1232,6 @@
 	TEST_ASSERT(!prisoner.start_sick_call(), "A prisoner at 95% health asked for treatment")
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 	medic.drop_all_held_items()
-	// A non-staff inmate holding dressings in the yard also draws a sick call.
-	home.fixture_prison.inmate_key = "livelyinmate"
-	var/mob/living/carbon/human/inmate_medic = make_player(prison_spot(home, 12, 8), "livelyinmate")
-	TEST_ASSERT(!prison.is_staff(inmate_medic) && prison.is_inmate(inmate_medic), "The sick-call test inmate is not a non-staff inmate")
-	inmate_medic.put_in_active_hand(dressing)
-	prisoner.adjustBruteLoss(30)
-	COOLDOWN_RESET(prisoner, sick_call_cooldown)
-	TEST_ASSERT(prisoner.start_sick_call(), "A hurt prisoner did not go to a non-staff inmate holding dressings")
-	prisoner.end_activity(cancel_ai = FALSE)
-	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
-	inmate_medic.drop_all_held_items()
 
 	// Basketball with staff: a member sinking a shot while two play cheers them up by 10, once per
 	// 5 minutes (PRISONER_MOOD_STAFF_BASKET, OUTPOST_PRISON_STAFF_BASKET_GAP).

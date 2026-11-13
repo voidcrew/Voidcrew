@@ -264,19 +264,6 @@
 	TEST_ASSERT(capture_uncuffed(prisoner), "A member's Uncuff left the cuffs on")
 	TEST_ASSERT(warden.is_holding(cuffs), "The real cuffs did not go to the warden's hand")
 	TEST_ASSERT(!prisoner.can_be_dragged(), "An uncuffed prisoner on their feet can still be dragged")
-	// A non-staff inmate cannot cuff a prisoner, yet can take cuffs off through the talk menu.
-	home.fixture_prison.inmate_key = "cuffsinmate"
-	var/mob/living/carbon/human/inmate = make_player(prison_spot(home, 9, 8), "cuffsinmate")
-	TEST_ASSERT(!prison.is_staff(inmate) && prison.is_inmate(inmate), "The cuffs test inmate is not a non-staff inmate")
-	TEST_ASSERT_EQUAL(prisoner.cuff_refusal(inmate), "staff only", "A non-staff inmate could cuff a prisoner")
-	warden.drop_all_held_items()
-	TEST_ASSERT(outpost_prison_test_cuff(prisoner, cuffs), "The cuffs did not go back on for the inmate check")
-	inmate.set_combat_mode(FALSE)
-	TEST_ASSERT("Uncuff" in prisoner.talk_menu_choices(inmate), "A cuffed prisoner's talk menu has no Uncuff for an inmate")
-	TEST_ASSERT(prisoner.talk_menu_act(inmate, "Uncuff"), "A non-staff inmate's Uncuff did not take the cuffs off")
-	TEST_ASSERT(capture_uncuffed(prisoner), "A non-staff inmate's Uncuff left the cuffs on")
-	TEST_ASSERT(inmate.is_holding(cuffs), "The real cuffs did not go to the inmate's hand")
-	inmate.drop_all_held_items()
 	// The clock falls two seconds a second once they are off (PRISONER_LOCKED_IN_RECOVERY).
 	prison.update_cuffed(prisoner, 10)
 	TEST_ASSERT_EQUAL(prisoner.cuffed_seconds, clock - 20, "Ten seconds uncuffed left the clock at [prisoner.cuffed_seconds], not [clock - 20]")
