@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # Gorilla door pry
  *
@@ -171,3 +174,5 @@
  */
 /proc/gorilla_door_seam_stepped(obj/machinery/door/airlock/door)
 	return !!findtext("[door.icon]", "/airlocks/station/")
+
+#undef animate

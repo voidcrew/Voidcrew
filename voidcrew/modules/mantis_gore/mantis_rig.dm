@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # The blade rig: the impale and the scissor, drawn around the victim
  *
@@ -359,6 +362,8 @@
 	picture.pixel_w = base_w + lean_w + picture.shift_w
 	picture.pixel_z = base_z + lean_z + picture.shift_z
 	puppets[key] = picture
+	// In a Sandevistan slow-mo it looks like whose it is: the victim's blood, or a piece of the bearer
+	cyberware_time_rig_picture(picture, (key in list("wound", "drip")) ? victim : bearer)
 	return picture
 
 /**
@@ -517,6 +522,8 @@
 	spray.pixel_w = base_w + lean_w - ICON_SIZE_X
 	spray.pixel_z = base_z + lean_z - ICON_SIZE_Y + own_y() - spray.pixel_y
 	QDEL_IN(spray, lifetime)
+	if(blood)
+		cyberware_time_rig_picture(spray, victim) // tinted with the world in a Sandevistan slow-mo, like all blood
 	return spray
 
 /**
@@ -566,3 +573,5 @@
 
 #undef MANTIS_RIG_HIDE_FILTER
 #undef MANTIS_RIG_LAYER_STEP
+
+#undef animate

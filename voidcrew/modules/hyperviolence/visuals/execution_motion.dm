@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // Hyperviolence visuals: gun executions (overlays_exec/executions.dm).
 // 17. The press: the shooter leans in over the victim, the victim trembles, and both go still for a
 //     short, deliberate moment before the shot. The shot: a big muzzle flash at the head the barrel is
@@ -124,3 +127,5 @@
 	scaled.Scale(scale)
 	scaled.Translate(x, y)
 	return scaled
+
+#undef animate

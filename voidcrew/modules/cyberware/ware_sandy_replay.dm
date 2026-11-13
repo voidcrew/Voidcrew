@@ -24,10 +24,13 @@
  * For the length of the replay AIs are paused and the user and their crewmates can't act. Life() keeps running:
  * this is a lock on decisions and input only, no stun and no damage. A player who isn't crew coming near ends the
  * replay at once, a watchdog timer ends it whatever happens, and finish() can be called any number of times.
- * That hold would cut short an execution or finisher still going when the slow-mo ends (their checks fail on a held
- * body), so the replay waits for it (moves_running()): the world goes back to normal speed on time, nobody is held,
- * and the recording runs on at a frame a tick until the move is over, then the replay plays it all. A move still
- * going after SANDY_REPLAY_WAIT_MAX gets no replay at all.
+ * A slow-mo never ends while its user is in the middle of an execution or finisher: it holds until the move is over
+ * (cyberware_cascade_window/proc/slowmo_time_up(), ware_sandy_timestop.dm), so the whole move is in the recording and
+ * the replay's hold never cuts it short. Another body still mid-move when it ends (an NPC's execution) is waited out:
+ * the world goes back to normal speed, nobody is held, and the recording runs on until the move is over
+ * (moves_running()). A move still going after SANDY_REPLAY_WAIT_MAX gets no replay at all.
+ * While any recorded body is mid-move a frame is one real tick, not one tick of the slowed world: the walk-up replays
+ * compressed, the move itself at the speed it really had, so its poses (a tick or two each) can be shown.
  * The surge's crash starts when the replay ends. A user who went down in the slow-mo still watches it: their crit,
  * oxygen, damage and knocked-out screens are off their view while it plays and back as it ends (clear_view()).
  *
@@ -35,10 +38,13 @@
  * at normal pitch (playsound() hands them over), and every surger in it (the user, or a mob on its own surge) leaves
  * the surge's rolling-hue afterimage trail. A turn of a body (a fall) is tweened, as tg's lying turn is.
  *
+ * A finisher rig hides a body and draws it as posed pictures (chrome_puppet_rig.dm, mantis_rig.dm). Those pictures are
+ * recorded like anything else, and the animate() chains that pose them are journaled (sandy_replay_animate(), routed
+ * there by a macro in the rig and finisher files) and played again on their stand-ins: the replay shows the move.
+ *
  * Not replayed (they show as they really are): lights, fire, smoke and particles, turf changes, attack lunges,
- * flick()s, tweens other than steps and turns (flinches, the spin and arc of flying gore, blood drying and
- * spreading), anything in vis_contents, runechat, and looping sounds (machines, weather). The finisher rigs' posed
- * pictures of a body (chrome_puppet_rig.dm, mantis_rig.dm) aren't either: the body they hid is drawn as it stood.
+ * flick()s, tweens on bodies other than steps and turns (flinches, a gun execution's lean, the spin and arc of flying
+ * gore, blood drying and spreading), anything in vis_contents, runechat, camera shakes, and looping sounds.
  */
 
 /// Trait source of the replay's AI pause and input lock.
@@ -75,8 +81,7 @@
 /// then gets no replay rather than being cut short by the replay's hold.
 #define SANDY_REPLAY_WAIT_MAX (8 SECONDS)
 /// The filters the finisher rigs hide a body under while its posed pictures stand in for it (CHROME_RIG_HIDE_FILTER in
-/// chrome_puppet_rig.dm, MANTIS_RIG_HIDE_FILTER in mantis_rig.dm). The pictures aren't recorded, so the replay draws
-/// the body itself.
+/// chrome_puppet_rig.dm, MANTIS_RIG_HIDE_FILTER in mantis_rig.dm). A body wearing one is in the middle of a move.
 #define SANDY_REPLAY_RIG_HIDES list("chrome_rig_hide", "mantis_rig_hide")
 
 // A track's frames are a flat list, this many entries a frame.
@@ -147,6 +152,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/unmasked = FALSE
 	/// Stand-in: the effect.
 	var/obj/effect/abstract/sandy_replay_standin/standin
+	/// Animations played on the thing while it was recorded (sandy_replay_journal()), each list(frame, look before it,
+	/// time scale, list(step arguments...)).
+	var/list/events
+	/// Playback: the next animation to play, and when the ones playing end.
+	var/event_at = 1
+	var/anim_until = 0
+	/// Playback: the look the stand-in was last given.
+	var/drawn_look
 
 /// Carries the recorded look of something that is gone, or isn't on a turf any more.
 /obj/effect/abstract/sandy_replay_standin
@@ -223,7 +236,18 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	/// The slow-mo is over but a move in it is still going (moves_running()): recording goes on, a frame a tick, from
 	/// this world.time and this frame, until it ends.
 	var/wait_started = 0
-	var/wait_frame = 0
+	/// The recording's clock: frames are counted from `clock_frame` at world.time `clock_time`, `clock_rate` frames a
+	/// decisecond. In the slow-mo a frame is one tick of the slowed world; while an execution or finisher runs in it (or
+	/// is waited out after it) a frame is one real tick, so the replay plays the move at the speed it really had.
+	var/clock_frame = 0
+	var/clock_time = 0
+	var/clock_rate = 1
+	/// The last frame the sample timer took.
+	var/last_sampled = -1
+	/// Recording: the animation being journaled now (sandy_replay_journal()), to add its next steps to.
+	var/list/open_event
+	/// Animations journaled, for tests and recordings.
+	var/journaled = 0
 	/// How long the last wait was, for tests and recordings.
 	var/waited = 0
 	/// Every body that was mid-move during the wait: what turns up around them is recorded.
@@ -234,11 +258,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	user = _user
 	started = world.time
 	interval = world.tick_lag / field.time_scale
+	clock_time = started
+	clock_rate = 1 / interval
 	var/datum/sandy_replay/old = GLOB.sandy_replays[user]
 	if(old)
 		qdel(old) // a replay still showing ends here
 	GLOB.sandy_replays[user] = src
-	sample_timer = addtimer(CALLBACK(src, PROC_REF(sample)), interval, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
+	sample_timer = addtimer(CALLBACK(src, PROC_REF(sample)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	notice(user)
 
 /datum/sandy_replay/Destroy()
@@ -272,9 +298,21 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/frame_now()
 	if(state != SANDY_REPLAY_RECORDING)
 		return total
-	if(wait_started)
-		return wait_frame + round((world.time - wait_started) / world.tick_lag)
-	return round((world.time - started) / interval)
+	return clock_frame + round((world.time - clock_time) * clock_rate + 0.001)
+
+/// The frame the recording is at now, with the part of it gone by.
+/datum/sandy_replay/proc/frame_exact()
+	if(state != SANDY_REPLAY_RECORDING)
+		return total
+	return clock_frame + (world.time - clock_time) * clock_rate
+
+/// From now on a frame of the recording is 1 / `rate` deciseconds.
+/datum/sandy_replay/proc/set_rate(rate)
+	if(rate == clock_rate)
+		return
+	clock_frame = max(frame_now(), last_sampled + 1)
+	clock_time = world.time
+	clock_rate = rate
 
 /// Whether `thing` is recorded at all.
 /datum/sandy_replay/proc/recordable(atom/movable/thing)
@@ -292,6 +330,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return FALSE
 	if(ismob(thing) && !isliving(thing)) // ghosts and camera eyes
 		return FALSE
+	if(sandy_rig_picture(thing)) // a finisher rig's posed piece of a body: the move is replayed with it
+		return TRUE
 	return !skipped[thing.type]
 
 /// The field saw `thing`: start recording it.
@@ -313,11 +353,16 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		track.last_raw = null
 		sample_track(track, frame_now())
 
-/// The sample timer: one frame of everything recorded.
+/// The sample timer, every tick: one frame of everything recorded, when the clock is on a new one.
 /datum/sandy_replay/proc/sample()
 	if(state != SANDY_REPLAY_RECORDING)
 		return
-	var/list/moving = wait_started ? moves_running() : null
+	var/list/moving = moves_running()
+	set_rate((wait_started || length(moving)) ? 1 / world.tick_lag : 1 / interval)
+	var/frame = frame_now()
+	if(frame <= last_sampled)
+		return
+	last_sampled = frame
 	if(wait_started)
 		// No field hands things over now: what the move leaves around the bodies doing it (a torn-off limb, a head,
 		// blood, gibs) is picked up here, and drawn from the frame it turns up in. The bodies are kept to the end, so
@@ -328,7 +373,6 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				continue
 			for(var/atom/movable/thing in range(3, body))
 				notice(thing)
-	var/frame = frame_now()
 	for(var/atom/movable/thing as anything in tracks)
 		sample_track(tracks[thing], frame)
 	if(wait_started && (!length(moving) || world.time - wait_started >= SANDY_REPLAY_WAIT_MAX))
@@ -379,14 +423,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/clean_look(atom/movable/thing)
 	var/tinted = field?.tinted[thing]
 	var/outlined = thing == user && thing.filter_data?[SANDY_REPLAY_OUTLINE]
-	// A finisher rig hides the body and draws it as posed pictures, which aren't recorded: the body is drawn instead.
-	var/rigged = FALSE
-	if(isliving(thing))
-		for(var/name in SANDY_REPLAY_RIG_HIDES)
-			if(thing.filter_data?[name])
-				rigged = TRUE
-				break
-	if(!tinted && !outlined && !rigged)
+	if(!tinted && !outlined)
 		return thing.appearance
 	var/mutable_appearance/copy = new(thing)
 	// Bodies and items wear the tint as a filter (cyberware_time_tints_by_filter()), the rest in `color`.
@@ -401,10 +438,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		else
 			copy.color = untinted_colour(thing)
 		copy.appearance_flags |= KEEP_TOGETHER // update_atom_colour() leaves this on once anything was ever coloured
-	if(outlined || filtered || rigged)
+	if(outlined || filtered)
 		copy.filters = null
 		for(var/name in thing.filter_data)
-			if(name == SANDY_REPLAY_OUTLINE || name == SANDY_REPLAY_TINT || (name in SANDY_REPLAY_RIG_HIDES))
+			if(name == SANDY_REPLAY_OUTLINE || name == SANDY_REPLAY_TINT)
 				continue
 			var/list/data = thing.filter_data[name]
 			var/list/arguments = data.Copy()
@@ -468,7 +505,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/turf/centre = get_turf(field ? field.host : user)
 	if(!centre || centre.z != source.z || get_dist(centre, source) > (field ? field.current_range : SANDY_REPLAY_HOLD_RANGE))
 		return
-	sounds += list(list(wait_started ? frame_now() : (world.time - started) / interval, source) + arguments)
+	sounds += list(list(frame_exact(), source) + arguments)
 
 /// Signal proc for [COMSIG_QDELETING] on anything recorded.
 /datum/sandy_replay/proc/on_thing_deleted(atom/movable/thing)
@@ -506,10 +543,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	// An execution or finisher in the field is still going. The replay's hold would cut it short (its checks fail on a
 	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done.
-	wait_frame = frame_now()
 	wait_started = world.time
-	deltimer(sample_timer)
-	sample_timer = addtimer(CALLBACK(src, PROC_REF(sample)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
+	set_rate(1 / world.tick_lag)
 
 /**
  * The recording is over: playback starts next tick, once the slow-mo's own looks are off everything. Without
@@ -534,6 +569,86 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	for(var/atom/movable/thing as anything in tracks)
 		if(isliving(thing) && sandy_replay_mid_move(thing))
 			. += thing
+
+// =========================================================================
+// THE ANIMATION JOURNAL
+// =========================================================================
+// A finisher rig poses its pictures with animate() chains. The server only holds where each chain ends, so a sample
+// can't see the poses on the way. The rig and finisher files send their animate() calls through
+// sandy_replay_animate() (a file-local macro, SANDY_REPLAY_JOURNAL_ON in those files), which plays them as usual and,
+// while a replay records their target, journals them to play again on its stand-in.
+
+/// An animate() call on `target` (null: a further step of the last one) with these named arguments.
+/datum/sandy_replay/proc/journal(target, list/step, atom/movable/started_on)
+	if(state != SANDY_REPLAY_RECORDING)
+		return
+	if(isnull(target))
+		if(open_event)
+			var/list/steps = open_event[4]
+			steps += list(step)
+		return
+	open_event = null
+	var/datum/sandy_replay_track/track = ismovable(target) ? tracks[target] : null
+	if(!track || !(sandy_rig_picture(target) || isliving(target)))
+		return
+	// The look it had before this call: what it was drawn as when the chain began, direct writes included.
+	open_event = list(frame_exact(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
+	LAZYADD(track.events, list(open_event))
+	journaled++
+
+/// Plays `track`'s journaled animations due by `frame` on its stand-in, or on its puppet (a body's lean or flinch:
+/// shifted to where the puppet is drawn).
+/datum/sandy_replay/proc/play_events(datum/sandy_replay_track/track, frame)
+	var/atom/movable/standin = track.mode == SANDY_TRACK_STANDIN ? track.standin : track.thing
+	var/shift_x = 0
+	var/shift_y = 0
+	if(track.mode == SANDY_TRACK_PUPPET && standin && track.cursor >= 0 && isturf(standin.loc))
+		var/turf/here = standin.loc
+		shift_x = (track.frames[track.cursor + SANDY_FRAME_X] - here.x) * ICON_SIZE_X
+		shift_y = (track.frames[track.cursor + SANDY_FRAME_Y] - here.y) * ICON_SIZE_Y
+	while(track.event_at <= length(track.events))
+		var/list/event = track.events[track.event_at]
+		if(event[1] >= frame + 1)
+			return
+		track.event_at++
+		if(!standin?.loc || (track.mode == SANDY_TRACK_PUPPET && (track.unmasked || standin.alpha == 0 || track.glide_until > world.time)))
+			continue
+		var/list/steps = event[4]
+		var/list/first = steps[1]
+		var/parallel = first["flags"] & ANIMATION_PARALLEL
+		var/relative = first["flags"] & ANIMATION_RELATIVE
+		var/look = event[2]
+		if(track.mode == SANDY_TRACK_STANDIN && look && look != track.drawn_look && !parallel)
+			animate(standin, time = 0, flags = ANIMATION_END_NOW)
+			standin.appearance = look
+			standin.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+			track.drawn_look = look
+		var/scale = event[3]
+		var/length = 0
+		for(var/i in 1 to length(steps))
+			var/list/arguments = list()
+			if(i == 1)
+				arguments += standin
+			var/list/step = steps[i]
+			for(var/name in step)
+				var/value = step[name]
+				if(name == "time" || name == "delay")
+					value *= scale
+				else if(!relative && name == "pixel_w")
+					value += shift_x
+				else if(!relative && name == "pixel_z")
+					value += shift_y
+				arguments[name] = value
+			if(i == 1 && event[1] > frame) // when in this tick it started
+				arguments["delay"] = (arguments["delay"] || 0) + (event[1] - frame) * world.tick_lag
+			length += (arguments["time"] || 0) + (arguments["delay"] || 0)
+			animate(arglist(arguments))
+		var/loops = first["loop"]
+		if(loops && loops < 0)
+			length = INFINITY
+		else if(loops > 1)
+			length *= loops
+		track.anim_until = parallel ? max(track.anim_until, world.time + length) : world.time + length
 
 // =========================================================================
 // PLAYBACK
@@ -576,7 +691,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			hold_mech(thing)
 		if(length(track.frames) == SANDY_FRAME_SIZE && track.first == 0)
 			continue // it never changed: nothing to show
-		if(isturf(thing.loc))
+		if(sandy_rig_picture(thing))
+			// A rig picture still fading out as the move hands the body back: it goes in a moment. Drawn on a stand-in,
+			// and the real one is hidden now rather than fading over the replay's start.
+			animate(thing)
+			thing.alpha = 0
+			track.mode = SANDY_TRACK_STANDIN
+			standins += track
+		else if(isturf(thing.loc))
 			track.mode = SANDY_TRACK_PUPPET
 			puppets += track
 			mask(track)
@@ -849,7 +971,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		else
 			track.standin.loc = spot // ours, abstract and on no grid: nothing to tell
 		var/obj/effect/abstract/sandy_replay_standin/standin = track.standin
+		if(track.anim_until > world.time)
+			return // a journaled animation is playing on it: it ends where this frame's look is
 		standin.appearance = frames[at + SANDY_FRAME_LOOK]
+		track.drawn_look = frames[at + SANDY_FRAME_LOOK]
 		standin.dir = frames[at + SANDY_FRAME_DIR]
 		standin.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		standin.opacity = FALSE
@@ -972,14 +1097,18 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA)
 	. = ..(mapload, null, hue, start_alpha)
-	if(look)
-		appearance = look
+	// The whole look goes on in one assignment, then the fade starts on it. Set piece by piece under the parent's fade,
+	// the client tweened the hue in from full colour: the first afterimage read as a copy of the user beside them.
+	var/mutable_appearance/copy = new(look || src)
+	copy.name = ""
+	copy.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	copy.alpha = start_alpha
+	copy.color = cascade_tint_matrix(hue)
+	copy.appearance_flags |= KEEP_TOGETHER // a recorded look need not draw as one piece; the hue must reach all of it
+	animate(src)
+	appearance = copy.appearance
 	dir = facing
-	name = ""
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	opacity = FALSE
-	alpha = start_alpha
-	color = cascade_tint_matrix(hue)
 	animate(src, alpha = 0, time = duration)
 
 /// The playback timer: one frame a tick.
@@ -1017,6 +1146,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 					follow()
 			if(moved_on && track.surger)
 				surger_frame(track)
+			if(track.events)
+				play_events(track, frame)
 		for(var/datum/sandy_replay_track/track as anything in standins.Copy())
 			if(frame >= track.last)
 				QDEL_NULL(track.standin)
@@ -1024,6 +1155,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				continue
 			if(advance(track, frame))
 				show(track)
+			if(track.events)
+				play_events(track, frame)
 	catch(var/exception/error)
 		GLOB.sandy_replay_echoing = FALSE
 		finish()
@@ -1217,6 +1350,46 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	for(var/user in GLOB.sandy_replays)
 		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
 		replay.hear(source, list(soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference))
+
+#define SANDY_ANIM_UNSET "\[sandy_replay_unset]"
+/**
+ * animate(), journaled for the Sandevistan replay. The rig and finisher files call this in place of animate() through
+ * a file-local macro (`#define animate(arguments...) sandy_replay_animate(arguments)`). It takes every named argument
+ * those files use; one it doesn't know is a runtime error, so add it here before using it there.
+ */
+/proc/sandy_replay_animate(Object = SANDY_ANIM_UNSET, time = SANDY_ANIM_UNSET, loop = SANDY_ANIM_UNSET, easing = SANDY_ANIM_UNSET, flags = SANDY_ANIM_UNSET, delay = SANDY_ANIM_UNSET, tag = SANDY_ANIM_UNSET, transform = SANDY_ANIM_UNSET, pixel_x = SANDY_ANIM_UNSET, pixel_y = SANDY_ANIM_UNSET, pixel_w = SANDY_ANIM_UNSET, pixel_z = SANDY_ANIM_UNSET, alpha = SANDY_ANIM_UNSET, color = SANDY_ANIM_UNSET, layer = SANDY_ANIM_UNSET, dir = SANDY_ANIM_UNSET, icon_state = SANDY_ANIM_UNSET, x = SANDY_ANIM_UNSET, y = SANDY_ANIM_UNSET, size = SANDY_ANIM_UNSET, offset = SANDY_ANIM_UNSET, radius = SANDY_ANIM_UNSET)
+	var/static/list/names = list("time", "loop", "easing", "flags", "delay", "tag", "transform", "pixel_x", "pixel_y", "pixel_w", "pixel_z", "alpha", "color", "layer", "dir", "icon_state", "x", "y", "size", "offset", "radius")
+	var/list/values = list(time, loop, easing, flags, delay, tag, transform, pixel_x, pixel_y, pixel_w, pixel_z, alpha, color, layer, dir, icon_state, x, y, size, offset, radius)
+	var/list/step = list()
+	for(var/i in 1 to length(names))
+		var/value = values[i]
+		if(value == SANDY_ANIM_UNSET)
+			continue
+		var/name = names[i]
+		if(isnull(value))
+			// arglist() drops a named null; animate() reads these as their plain values
+			switch(name)
+				if("transform")
+					value = matrix()
+				if("color")
+					value = COLOR_WHITE
+				else
+					continue
+		step[name] = value
+	var/given = Object != SANDY_ANIM_UNSET
+	if(length(GLOB.sandy_replays))
+		for(var/user in GLOB.sandy_replays)
+			var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+			replay.journal(given ? Object : null, step, (given && ismovable(Object)) ? Object : null)
+	var/list/arguments = given ? list(Object) : list()
+	for(var/name in step)
+		arguments[name] = step[name]
+	animate(arglist(arguments))
+#undef SANDY_ANIM_UNSET
+
+/// Whether `thing` is a finisher rig's posed piece of a body, or a loose picture of the move's (a blood spray).
+/proc/sandy_rig_picture(atom/thing)
+	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx)
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)

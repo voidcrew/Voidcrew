@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // The housing side of the Mantis line's gore: the combat stance while a blade is out (the guard pose,
 // the fists raised, a glint now and then), the flick of blood on the way back in, and the stain the
 // housing keeps until it is washed. See mantis_core.dm for the overview.
@@ -234,3 +237,5 @@
 	. += stain
 
 #undef MANTIS_FLICK_FLIGHT
+
+#undef animate

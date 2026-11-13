@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # The puppet rig ("arm rig")
  *
@@ -408,6 +411,7 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	if(copy_transform)
 		puppet.transform = body.transform
 	puppets[key] = puppet
+	cyberware_time_rig_picture(puppet, body) // in a Sandevistan slow-mo it looks like the body it stands for
 	// Stood up after the rig was packed, in the same tick: into the same file
 	if(sheet?.made_at == world.time)
 		sheet.redraw()
@@ -801,3 +805,5 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 #undef CHROME_RIG_SWING_STEP
 #undef CHROME_RIG_SWAP
 #undef CHROME_RIG_MIN_ARM_LENGTH
+
+#undef animate

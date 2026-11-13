@@ -151,7 +151,11 @@
 		return FALSE
 	var/mob/living/surger = owner
 	if(can_cut_short()) // the second press: back to real time, and the crash
-		surger.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+		var/datum/status_effect/cyberware_cascade_window/window = surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+		if(window.time_stop)
+			window.slowmo_time_up() // a slow-mo waits for an execution in progress (ware_sandy_timestop.dm)
+		else
+			qdel(window)
 		return TRUE
 	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
 		surger.balloon_alert(surger, "lattice still cycling!")

@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // The scissor: both blades out, head aimed, a swing at someone adjacent who is dying. The blades rise,
 // catch the light, then come down and close on the neck, one blade behind it and one in front, and #509's
 // decapitation takes the head. The bearer is drawn by the blade rig (mantis_rig.dm) from the raise to the
@@ -346,3 +349,5 @@
 /// The bearer straightens up out of the cut.
 /datum/hv_finisher_stage/recover/mantis
 	duration = 0.5 SECONDS
+
+#undef animate

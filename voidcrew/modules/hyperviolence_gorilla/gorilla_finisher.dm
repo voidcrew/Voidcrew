@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # Gorilla finishers (owner D39)
  *
@@ -2126,3 +2129,5 @@
 	qdel(src)
 
 #undef BACK_WAIST_PIVOT_Y
+
+#undef animate

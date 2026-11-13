@@ -71,6 +71,8 @@
 #define SANDY_STOP_FLASH "sandy_time_stop_flash"
 /// Filter name (and KEEP_TOGETHER source) of the slow-mo's tint on bodies and items. Same as SANDY_REPLAY_TINT.
 #define SANDY_STOP_TINT "sandy_time_stop_tint"
+/// The longest a slow-mo is held past its end for its user's execution or finisher to finish inside it.
+#define SANDY_STOP_HOLD_MAX (6 SECONDS)
 
 /// Every atom the dilation has hold of, to its field.
 GLOBAL_LIST_EMPTY(cyberware_time_dilated)
@@ -285,7 +287,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// covers the whole drawn atom, overlays included. It also leaves `atom_colours` alone, so a body's own temporary
 /// colour (a chem, a perk) is still there when the tint comes off.
 /proc/cyberware_time_tints_by_filter(atom/thing)
-	return isliving(thing) || isitem(thing)
+	return isliving(thing) || isitem(thing) || sandy_rig_picture(thing) // a rig picture animates its own colour (a flash)
 
 /// Puts the slow-mo's tint on `thing`.
 /proc/cyberware_time_tint_on(atom/thing)
@@ -492,6 +494,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/slow_scale = 1
 	/// The user's own time multiplier (their surge model's), for surging mobs' relative rates.
 	var/user_multiplier = 1
+	/// The timer that ends the slow-mo when its time is up.
+	var/end_timer
 
 /// `immune_atoms` must be list(user). `time` is the whole effect, all of it at `scale`. `multiplier` is the user's
 /// surge model's time multiplier.
@@ -503,12 +507,25 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	return ..(mapload, radius, time, immune_atoms, start, TRUE)
 
 /obj/effect/timestop/sandevistan/Destroy()
+	deltimer(end_timer)
+	end_timer = null
 	user = null
 	return ..()
 
+/// The slow-mo's time is up. Its user's surge window decides when it really ends; without one it ends now.
+/obj/effect/timestop/sandevistan/proc/time_up()
+	end_timer = null
+	var/datum/status_effect/cyberware_cascade_window/window = user?.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	if(window?.time_stop == src)
+		window.slowmo_time_up()
+		return
+	qdel(src)
+
 /obj/effect/timestop/sandevistan/timestop()
 	target = get_turf(src)
-	QDEL_IN(src, duration)
+	// A tick before the window would close, so the window hears it first: an execution in progress holds the slow-mo
+	// (cyberware_cascade_window/proc/slowmo_time_up()).
+	end_timer = addtimer(CALLBACK(src, PROC_REF(time_up)), max(duration - world.tick_lag, world.tick_lag), TIMER_STOPPABLE | TIMER_DELETE_ME)
 	if(QDELETED(user))
 		return
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = new(user, freezerange, FALSE, immune, antimagic_flags, FALSE, slow_scale, user_multiplier) // a user inside a mech still slows the world
@@ -575,6 +592,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/datum/sandy_replay/replay
 	/// Tinted blood decals and gut strands, checked each tick for drips, trail pieces or strand pictures new in their vis_contents.
 	var/list/blood_holders = list()
+	/// The user's finisher rig pictures, to the glow drawn under each (glow_rig_picture()).
+	var/list/rig_glows = list()
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/New(atom/_host, range, _ignore_if_not_on_turf = TRUE, list/immune, antimagic_flags, channelled, _time_scale = 1, _user_multiplier = 1)
 	time_scale = _time_scale > 0 ? _time_scale : 1
@@ -700,6 +719,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	replay?.covering = FALSE
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/unfreeze_all()
+	for(var/obj/effect/picture as anything in rig_glows)
+		drop_rig_glow(picture)
 	for(var/atom/movable/thing as anything in frozen_things)
 		unfreeze_atom(thing)
 	for(var/turf/ground as anything in frozen_turfs)
@@ -1077,6 +1098,75 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		return
 	cyberware_time_tint_on(thing)
 
+// ----- finisher rigs -----
+
+/// The user's edge glow is on their body, which a finisher rig hides while posed pictures of it stand in its place
+/// (chrome_puppet_rig.dm, mantis_rig.dm). Each picture of the user gets a solid copy in the glow's colour, a pixel
+/// bigger, drawn under all of the user's pictures: together they show as one rim round the whole posed body.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/glow_rig_picture(obj/effect/picture)
+	if(rig_glows[picture])
+		return
+	var/obj/effect/abstract/sandy_rig_glow/glow = new(null)
+	if(istype(picture, /obj/effect/abstract/mantis_puppet))
+		// The blade rig's pieces stand on other rows (pixel_y, SIDE_MAP): a copy with a layer of its own would sort on
+		// the tile's row, over the piece. Each is drawn under its own piece instead.
+		glow.vis_flags |= VIS_UNDERLAY
+	else
+		glow.layer = picture.layer - 0.05
+	picture.vis_contents += glow
+	rig_glows[picture] = glow
+	RegisterSignal(picture, COMSIG_QDELETING, PROC_REF(rig_picture_gone))
+
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/drop_rig_glow(obj/effect/picture)
+	var/obj/effect/abstract/sandy_rig_glow/glow = rig_glows[picture]
+	rig_glows -= picture
+	UnregisterSignal(picture, COMSIG_QDELETING)
+	if(glow)
+		picture.vis_contents -= glow
+		qdel(glow)
+
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/rig_picture_gone(obj/effect/picture)
+	SIGNAL_HANDLER
+	drop_rig_glow(picture)
+
+/// A rig picture of a body the field tints: tinted like it, and let go with the field.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/take_rig_picture(obj/effect/picture)
+	if(frozen_things[picture])
+		return
+	GLOB.cyberware_time_dilated[picture] = src
+	frozen_things[picture] = TRUE
+	frozen_structures += picture // looks only
+	RegisterSignal(picture, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+	into_the_negative_zone(picture)
+
+/// The solid copy under one of the user's rig pictures. It takes the picture's icon, facing and turn.
+/obj/effect/abstract/sandy_rig_glow
+	name = ""
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = RESET_COLOR | PIXEL_SCALE
+	vis_flags = VIS_INHERIT_ICON | VIS_INHERIT_ICON_STATE | VIS_INHERIT_DIR | VIS_INHERIT_PLANE
+	color = list(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.82, 0.353, 1, 0.588, 0)
+
+/obj/effect/abstract/sandy_rig_glow/Initialize(mapload)
+	. = ..()
+	add_filter("sandy_rig_glow", 1, outline_filter(1, "#5AFF96D2"))
+
+/**
+ * A finisher rig stood up `picture`, a posed piece of `body` (or a loose picture of the move's, like the victim's
+ * blood spraying). In a Sandevistan slow-mo it looks like the body it stands for: the user's carry the user's edge
+ * glow, a held body's are tinted with the world.
+ */
+/proc/cyberware_time_rig_picture(obj/effect/picture, mob/living/body)
+	if(!length(GLOB.cyberware_time_fields) || QDELETED(picture) || isnull(body))
+		return
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(field.host == body)
+			field.glow_rig_picture(picture)
+			return
+		if(field.tinted[body])
+			field.take_rig_picture(picture)
+			return
+
 // =========================================================================
 // THE WINDOW'S SIDE
 // =========================================================================
@@ -1088,6 +1178,13 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/time_multiplier = 5
 	/// The running dilation, if any.
 	var/obj/effect/timestop/sandevistan/time_stop
+	/// world.time the window closes on its own, before any hold.
+	var/natural_end = 0
+	/// The slow-mo is held for an execution in progress until this world.time at most (slowmo_time_up()). 0 when not holding.
+	var/hold_until = 0
+	/// This surge's one hold is used.
+	var/hold_spent = FALSE
+	var/hold_timer
 
 /// Slows the world for the whole window if the bearer is a player and nobody else is near. Called as the window
 /// opens, while `duration` is still its length.
@@ -1100,6 +1197,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/turf/here = get_turf(owner)
 	if(!here)
 		return FALSE
+	natural_end = world.time + duration
 	time_stop = new(here, SANDY_STOP_FIELD_RANGE, duration, list(owner), TRUE, TRUE, dilation_scale, time_multiplier)
 	if(QDELETED(time_stop))
 		time_stop = null
@@ -1114,20 +1212,63 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	owner.add_filter(SANDY_STOP_OUTLINE, 2, outline_filter(1, "#5AFF96D2"))
 	return TRUE
 
-/// Signal proc for [COMSIG_QDELETING] on the dilation (a player came near): time runs normally and the rest of the
-/// window carries on.
+/**
+ * The slow-mo's time is up, or the user pressed the surge again. If the user is in the middle of an execution or a
+ * finisher, the slow-mo holds until the move is over (once a surge, at most SANDY_STOP_HOLD_MAX past now), so the
+ * move plays out inside it and its replay shows it. Otherwise the window closes now, and the slow-mo with it.
+ */
+/datum/status_effect/cyberware_cascade_window/proc/slowmo_time_up()
+	if(hold_until)
+		return // already holding: it ends when the move does
+	if(time_stop && !hold_spent && sandy_replay_mid_move(owner))
+		hold_spent = TRUE
+		hold_until = world.time + SANDY_STOP_HOLD_MAX
+		duration = max(duration, hold_until + world.tick_lag) // the window outlasts the hold; hold_check() closes it
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
+		if(field)
+			field.ends_at = hold_until
+		hold_timer = addtimer(CALLBACK(src, PROC_REF(hold_check)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
+		return
+	qdel(src)
+
+/// Every tick of a hold: the move is over, so the window (and the slow-mo) closes. At the cap the move is still
+/// going: the slow-mo ends without a replay, rather than the replay's hold cutting the move short.
+/datum/status_effect/cyberware_cascade_window/proc/hold_check()
+	if(QDELETED(owner) || !time_stop)
+		qdel(src)
+		return
+	if(sandy_replay_mid_move(owner))
+		if(world.time < hold_until)
+			return
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
+		field?.replay?.cancel()
+	qdel(src)
+
+/// Signal proc for [COMSIG_QDELETING] on the dilation when the window didn't end it (a player came near): time runs
+/// normally and the rest of the window carries on as an ordinary surge, in its own colour.
 /datum/status_effect/cyberware_cascade_window/proc/time_stop_over(datum/source)
 	SIGNAL_HANDLER
 	time_stop = null
 	if(QDELETED(owner))
 		return
+	stop_hold()
 	owner.remove_filter(SANDY_STOP_OUTLINE)
 	sandy_release_flash(owner)
+	if(world.time >= natural_end)
+		QDEL_IN(src, 0) // it came during a hold, past the window's own end
+		return
+	duration = natural_end
 	owner.add_client_colour(colour_type, id)
 	refresh_perks() // the rest of the window is an ordinary surge
 
+/datum/status_effect/cyberware_cascade_window/proc/stop_hold()
+	deltimer(hold_timer)
+	hold_timer = null
+	hold_until = 0
+
 /// Ends the dilation early (the window is closing).
 /datum/status_effect/cyberware_cascade_window/proc/end_time_stop()
+	stop_hold()
 	if(!time_stop)
 		return
 	UnregisterSignal(time_stop, COMSIG_QDELETING)
@@ -1222,3 +1363,4 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 #undef SANDY_STOP_OUTLINE
 #undef SANDY_STOP_FLASH
 #undef SANDY_STOP_TINT
+#undef SANDY_STOP_HOLD_MAX

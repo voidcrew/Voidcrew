@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // The impaling lunge. A lunge that arrives with both blades on someone already hurt or down skewers them:
 // held up on the blades for a beat (pinned to the wall for longer, if one is right behind them), then the
 // blades rip out with a spray and they drop. The bearer is rooted with full hands the whole time, and
@@ -600,3 +603,5 @@
 			blade.show_inhand()
 	if(!QDELETED(src))
 		qdel(src)
+
+#undef animate

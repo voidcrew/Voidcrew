@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // Hyperviolence visuals: the animation pass over the gore. Bodies flinch, snap, lurch and limp when
 // hit, fall away from the killing blow and twitch after, severed parts and brains tumble through
 // the air, blood paints in, drips, spreads and floats, guts slither, and executions and
@@ -405,3 +408,5 @@
 /// Holds this mob's named sequences until one of `end_flags` happens or `duration` passes.
 /mob/living/proc/hv_vis_hold(list/tags, end_flags, duration)
 	AddComponent(/datum/component/hv_motion_hold, tags, end_flags, duration)
+
+#undef animate

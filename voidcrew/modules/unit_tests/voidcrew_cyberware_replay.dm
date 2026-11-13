@@ -357,18 +357,34 @@
 	TEST_ASSERT(victim.hv_is_helpless(), "Test fixture: the victim isn't down")
 	return victim
 
-/// The user's own look on a replay frame: never hidden, and never wearing a finisher rig's hide
+/// The user's own look on a replay frame: never hidden. A finisher rig's hide only while a stand-in of one of the
+/// rig's pictures is drawn in their place.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/proc/check_seen(mob/living/user, datum/sandy_replay/replay)
 	var/datum/sandy_replay_track/track = replay.tracks[user]
 	if(!track || track.cursor < 0 || !GLOB.sandy_replay_masked[user])
 		return
 	TEST_ASSERT(user.alpha > 0 && user.invisibility < INVISIBILITY_ABSTRACT, "The user is drawn hidden on replay frame [track.frames[track.cursor + 1]]")
-	TEST_ASSERT(!user.filter_data?["chrome_rig_hide"] && !user.filter_data?["mantis_rig_hide"], "The user's puppet wears a rig's hide on replay frame [track.frames[track.cursor + 1]]")
+	if(!user.filter_data?["chrome_rig_hide"] && !user.filter_data?["mantis_rig_hide"])
+		return
+	var/pictures = 0
+	for(var/datum/sandy_replay_track/standin_track as anything in replay.standins)
+		if(standin_track.standin?.loc && length(standin_track.events))
+			pictures++
+	TEST_ASSERT(pictures, "The user's puppet wears a rig's hide with no rig picture drawn for it on replay frame [track.frames[track.cursor + 1]]")
+
+/// Whether `user` sees the surge's own screen colour
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/surge_tinted(mob/living/user)
+	return !!user.get_client_colour("cyberware_cascade_window")
+
+/// `user`'s surge window
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/window_of(mob/living/user)
+	return user.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 
 /**
- * A gun execution still in its wind-up when the slow-mo ends (playtest bug 2026-11-12): the replay waits for it,
- * holding nobody, so it goes off for real; then it plays, the user never hidden; then the user is exactly where and
- * as they really are, nothing shifted.
+ * A gun execution in its wind-up when the slow-mo is asked to end (its time is up, or a second press; playtest bug
+ * 2026-11-12): the slow-mo holds, with the user's edge glow on, until the shot goes off for real, then ends and
+ * replays. Nobody is held while it holds. The user is never hidden in the replay, sees no surge colour during or
+ * after it, and is left exactly where and as they really are; the crash lands after.
  */
 /datum/unit_test/voidcrew_cyberware_timestop/replay/execution_running_at_end
 
@@ -382,6 +398,7 @@
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	var/head_brute = head.brute_dam
 	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
 	sleep(0.6 SECONDS)
 	user.Move(spot(0, 0), SOUTH) // off the tile the replay starts on: its puppet is drawn a tile up
 	sleep(0.3 SECONDS)
@@ -390,25 +407,36 @@
 	sleep(0.4 SECONDS)
 	TEST_ASSERT(sandy_replay_mid_move(user), "The wind-up isn't seen as a move in progress")
 
-	press_again(user)
+	var/asked = world.time
+	window.slowmo_time_up() // what its time running out and a second press both do
 	sleep(world.tick_lag)
-	TEST_ASSERT_EQUAL(replay.state, 1, "The replay didn't wait for the execution")
-	TEST_ASSERT(replay.wait_started, "The replay didn't wait for the execution")
+	TEST_ASSERT_NOTNULL(window.time_stop, "The slow-mo ended in the middle of the user's execution")
+	TEST_ASSERT(window.hold_until, "The slow-mo isn't holding for the execution")
+	TEST_ASSERT(user.filter_data?["sandy_time_stop_outline"], "The user's edge glow went off while the slow-mo holds")
+	TEST_ASSERT_EQUAL(replay.state, 1, "The recording stopped while the slow-mo holds")
 	TEST_ASSERT(!held(user), "The user is held while their execution plays out")
+	TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen in the slow-mo")
+	var/until = world.time + 7 SECONDS
+	while(replay.state == 1 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!QDELETED(replay) && replay.state >= 2, "The slow-mo never ended after the execution, or nothing replayed")
+	TEST_ASSERT(world.time - asked <= 6.5 SECONDS, "The hold ran past its cap")
+	TEST_ASSERT(!sandy_replay_mid_move(user), "The slow-mo ended before the execution did")
+	head = victim.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT(!head || head.brute_dam > head_brute, "The execution didn't go off")
+	TEST_ASSERT(!window_of(user), "The surge window outlived the slow-mo it held")
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't wait for the replay")
-	var/until = world.time + 6 SECONDS
-	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+	while(replay.state != 3 && GLOB.sandy_replays[user] && world.time < until)
 		sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(replay.state, 3, "The replay never played after the execution")
-	TEST_ASSERT(replay.waited >= 0.5 SECONDS, "The replay didn't wait long enough for the wind-up ([replay.waited] ds)")
-	head = victim.get_bodypart(BODY_ZONE_HEAD)
-	TEST_ASSERT(!head || head.brute_dam > head_brute, "The execution didn't go off: the replay cut it short")
-	// Frame 0 has the user a tile up, never hidden. Then every frame to the end.
+	// Frame 0 has the user a tile up, never hidden. Then every frame to the end, with no surge colour.
 	TEST_ASSERT_EQUAL(user.pixel_z, 32, "The user isn't drawn back on their first tile")
-	while(GLOB.sandy_replays[user] && world.time < until + 5 SECONDS)
+	while(GLOB.sandy_replays[user] && world.time < until + 8 SECONDS)
 		check_seen(user, replay)
+		TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen during the replay")
 		sleep(world.tick_lag)
 	wait_over(user)
+	TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen after the replay")
 	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "The user is left drawn off their tile: [user.pixel_w],[user.pixel_z]")
 	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "The user is left shifted: [user.pixel_x],[user.pixel_y]")
 	TEST_ASSERT(user.alpha == 255 && user.invisibility == initial(user.invisibility), "The user is left hidden")
@@ -417,9 +445,42 @@
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
 
 /**
- * A rig move done inside the slow-mo: the body it hid (the rig's posed pictures aren't recorded) is drawn in the
- * replay, never hidden. And tg's offsets set on a puppet mid-replay (a finisher letting go, a grab) land on the real
- * body, not on the puppet's shift: nothing is left drawn off its tile.
+ * A move still going when the hold's cap runs out: the slow-mo ends without a replay (the replay's hold would cut the
+ * move short), the move isn't touched, and the crash lands. Asking again while it holds changes nothing.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_capped
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_capped/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycap")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	// A rig's hide is what marks a move in progress that has no status of its own (the impale, the slam)
+	user.add_filter("chrome_rig_hide", 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+	TEST_ASSERT(sandy_replay_mid_move(user), "Test fixture: the user isn't mid-move")
+	var/asked = world.time
+	window.slowmo_time_up()
+	TEST_ASSERT(window.hold_until, "The slow-mo isn't holding for the move")
+	TEST_ASSERT(window.hold_until - asked <= 6 SECONDS, "The hold's cap is [window.hold_until - asked] ds")
+	window.slowmo_time_up() // asked again (a second press) while holding: still holding
+	TEST_ASSERT_NOTNULL(window.time_stop, "A second ask ended a holding slow-mo")
+	var/until = world.time + 8 SECONDS
+	while(window_of(user) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!window_of(user), "The hold never ended")
+	TEST_ASSERT(world.time - asked >= 6 SECONDS - world.tick_lag, "The hold ended before its cap with the move still going")
+	TEST_ASSERT(world.time - asked <= 6.5 SECONDS, "The hold ran past its cap")
+	TEST_ASSERT(QDELETED(replay) && !GLOB.sandy_replays[user], "A slow-mo that ended on its cap replayed")
+	TEST_ASSERT(user.filter_data?["chrome_rig_hide"], "Ending the slow-mo touched the move")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land")
+	TEST_ASSERT(!surge_tinted(user), "The surge's colour stayed on the user's screen")
+	user.remove_filter("chrome_rig_hide")
+
+/**
+ * A rig move done inside the slow-mo is replayed: its posed pictures are recorded and drawn as stand-ins, with the
+ * animations that posed them played again, and the user's puppet wears the rig's hide only while they are. In the
+ * slow-mo the user's pictures carry the edge glow. And tg's offsets set on a puppet mid-replay (a finisher letting
+ * go, a grab) land on the real body, not on the puppet's shift: nothing is left drawn off its tile.
  */
 /datum/unit_test/voidcrew_cyberware_timestop/replay/rig_move_inside
 
@@ -427,18 +488,28 @@
 	var/mob/living/carbon/human/user = make_user(spot(0, 1), "sandyreplayrig")
 	set_window(user, 3 SECONDS)
 	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
 	sleep(0.6 SECONDS)
 	user.Move(spot(0, 0), SOUTH)
 	var/datum/chrome_rig/rig = new(user, EAST)
 	TEST_ASSERT(rig.snapshot(), "Test fixture: the rig couldn't picture the user")
+	rig.rig_arms()
 	rig.conceal()
 	TEST_ASSERT(user.filter_data?["chrome_rig_hide"], "Test fixture: the rig didn't hide the user")
 	TEST_ASSERT(sandy_replay_mid_move(user), "A rigged body isn't seen as mid-move")
-	sleep(0.4 SECONDS)
+	var/side = rig.near_side()
+	var/obj/effect/abstract/chrome_puppet/arm = rig.puppet(side)
+	TEST_ASSERT_NOTNULL(arm, "Test fixture: the rig has no arm")
+	TEST_ASSERT(replay.tracks[arm], "The rig's picture isn't recorded")
+	TEST_ASSERT(locate(/obj/effect/abstract/sandy_rig_glow) in arm.vis_contents, "The user's rig picture has no edge glow in the slow-mo")
+	var/journaled = replay.journaled
+	rig.swing_arm(side, 90, 0.4 SECONDS)
+	TEST_ASSERT(replay.journaled > journaled, "The rig's swing wasn't journaled for the replay")
+	sleep(0.5 SECONDS)
 	qdel(rig)
 	sleep(0.3 SECONDS)
-	press_again(user)
-	TEST_ASSERT_EQUAL(replay.state, 2, "A finished move held the replay back")
+	window.slowmo_time_up()
+	TEST_ASSERT_EQUAL(replay.state, 2, "A finished move held the slow-mo")
 	replay.begin()
 	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
 	TEST_ASSERT_EQUAL(user.pixel_z, 32, "The user isn't drawn back on their first tile")
@@ -446,11 +517,16 @@
 	user.add_offsets("sandy_replay_test", null, 6, 4)
 	sleep(world.tick_lag)
 	user.remove_offsets("sandy_replay_test")
+	var/saw_swing = FALSE
 	var/until = world.time + 5 SECONDS
 	while(GLOB.sandy_replays[user] && world.time < until)
 		check_seen(user, replay)
+		for(var/datum/sandy_replay_track/track as anything in replay.standins)
+			if(track.standin?.loc && track.event_at > 1)
+				saw_swing = TRUE
 		sleep(world.tick_lag)
 	wait_over(user)
+	TEST_ASSERT(saw_swing, "The rig's pictures and their swing weren't played in the replay")
 	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "Offsets set mid-replay left the user drawn off their tile: [user.pixel_w],[user.pixel_z]")
 	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "Offsets set mid-replay left the user shifted: [user.pixel_x],[user.pixel_y]")
 	TEST_ASSERT(!user.filter_data?["chrome_rig_hide"] && user.alpha == 255, "The user is left hidden")
