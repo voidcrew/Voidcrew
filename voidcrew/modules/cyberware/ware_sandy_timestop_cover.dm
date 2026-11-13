@@ -92,6 +92,21 @@
 		T.color = old_colour
 		animate(T, color = tinted_colour, time = SANDY_COVER_FADE)
 
+/// Before the field takes its first ground: the user's lattice is about to roll its ring out from here (try_time_stop()),
+/// so what the field takes now waits for the ring's front at once, instead of being tinted, untinted by sweep_ring() and
+/// tinted again a moment later.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/cover_preset_ring()
+	if(!isliving(host))
+		return
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = cyberware_bearer_lattice(host)
+	var/turf/here = get_turf(host)
+	if(!lattice || !here)
+		return
+	ring_center = here
+	ring_start = world.time
+	ring_time = lattice.ring_time
+	ring_reach = lattice.stop_ring_scale
+
 /// The field has its ground: the user's light goes grey, and from here on new ground fades in.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/cover_start()
 	cover_ready = TRUE
