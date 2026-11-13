@@ -1058,7 +1058,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 // ===== THE CLEANBOT =====
 
-/// The lockup's cleanbot: tg's, with nobody able to take it over, unlock, arm or call it away, and no radio to answer a call on
+/// The lockup's cleanbot: tg's, with nobody able to unlock, arm or call it away, and no radio to answer a call on
 /mob/living/basic/bot/cleanbot/outpost_lockup
 	bot_mode_flags = BOT_MODE_ON
 	radio_key = null
@@ -1067,27 +1067,12 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /mob/living/basic/bot/cleanbot/outpost_lockup/allowed(mob/living/user)
 	return isAdminGhostAI(user)
 
-/mob/living/basic/bot/cleanbot/outpost_lockup/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
-	if(!allowed(ui.user))
-		balloon_alert(ui.user, "access denied!")
-		return
-	return ..()
-
-/mob/living/basic/bot/cleanbot/outpost_lockup/enable_possession(user, mapload = FALSE)
-	return
-
-/mob/living/basic/bot/cleanbot/outpost_lockup/insertpai(mob/user, obj/item/pai_card/card)
-	return
-
 /mob/living/basic/bot/cleanbot/outpost_lockup/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
 
 /mob/living/basic/bot/cleanbot/outpost_lockup/on_attack_by(datum/source, obj/item/used_item, mob/living/user)
 	SIGNAL_HANDLER
 	return
-
-/mob/living/basic/bot/cleanbot/outpost_lockup/deputize(obj/item/knife, mob/user)
-	return FALSE
 
 /// Sends the bot to `target` without announcing "Responding." aloud on every dispatch
 /mob/living/basic/bot/cleanbot/outpost_lockup/proc/send_to_mess(turf/target)
@@ -1126,10 +1111,9 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/mob/living/basic/bot/cleanbot/bot = cleanbot()
 	if(!bot)
 		return
+	// Taken out of the lockup: it is whoever took it's now, and the next change of guard brings another
 	if(wing && get_area(bot) != wing)
-		if(!outpost_prison_body_held(bot) && !seen_by_client(bot))
-			cleanbot_ref = null
-			qdel(bot)
+		cleanbot_ref = null
 		return
 	if(!(bot.bot_mode_flags & BOT_MODE_ON))
 		bot.turn_on()

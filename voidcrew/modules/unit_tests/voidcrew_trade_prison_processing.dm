@@ -49,11 +49,11 @@
 	TEST_ASSERT(!inner.lets_prisoner(leaver), "Processing's inner door lets a prisoner through who is going nowhere")
 
 	// With a player standing in the room nothing starts: no arrival is put in, and nobody is called in to leave.
-	// Caught inside with the yard door shut, a non-prisoner may let themselves back out into the front room, never into the yard.
+	// Neither door opens or paths for them: only code works Processing's doors.
 	squatter.forceMove(prison.processing_turfs[2])
-	TEST_ASSERT(outer.allowed(squatter), "Processing's outer door trapped a player inside while the inner door was shut")
+	TEST_ASSERT(!outer.allowed(squatter), "Processing's outer door would open for a player inside")
 	TEST_ASSERT(!inner.allowed(squatter), "Processing's inner door would let an inside player into the yard")
-	TEST_ASSERT(outer.CanAStarPass(EAST, new /datum/can_pass_info(squatter)), "Processing's shut outer door blocked JPS pathing out while the inner door was shut")
+	TEST_ASSERT(!outer.CanAStarPass(EAST, new /datum/can_pass_info(squatter)), "Processing's shut outer door allowed JPS pathing")
 	TEST_ASSERT(!inner.CanAStarPass(WEST, new /datum/can_pass_info(squatter)), "Processing's shut inner door allowed JPS pathing into the yard")
 	TEST_ASSERT(!prison.processing_free(), "Processing is free with a player standing in it")
 	TEST_ASSERT(!prison.processing_send_in(bystander), "Someone was put into Processing with a player standing in it")

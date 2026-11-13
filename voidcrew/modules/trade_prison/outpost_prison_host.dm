@@ -100,24 +100,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			return !!prison && (prison.in_processing(requester) || get_turf(requester) == loc)
 	return FALSE
 
-/// The front room side. Anyone other than a prisoner ever caught inside may let themselves back out once the yard door is shut.
+/// The front room side
 /obj/machinery/door/airlock/security/prison_staff/processing/outer
-
-/obj/machinery/door/airlock/security/prison_staff/processing/outer/allowed(mob/accessor)
-	if(..())
-		return TRUE
-	if(!isliving(accessor) || is_outpost_prisoner(accessor))
-		return FALSE
-	var/datum/outpost_prison/prison = get_outpost_prison(src)
-	return !!prison && prison.in_processing(accessor) && prison.processing_shut(prison.processing_door(TRUE))
-
-/obj/machinery/door/airlock/security/prison_staff/processing/outer/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
-	if(..())
-		return TRUE
-	if(!density || locked || welded || !hasPower() || pass_info?.no_id)
-		return FALSE
-	var/mob/living/requester = pass_info?.requester_ref?.resolve()
-	return istype(requester) && allowed(requester)
 
 /// The yard side
 /obj/machinery/door/airlock/security/prison_staff/processing/inner

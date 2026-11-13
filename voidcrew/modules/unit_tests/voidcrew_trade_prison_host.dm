@@ -287,12 +287,7 @@
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "The roster grew past 2")
 	// With the closet full nobody else is made in it
 	TEST_ASSERT_NULL(prison.guard_arrival_spot(), "A third guard could be made in a full staff closet")
-	// The lift leaves the wing's cleanbot behind too, and nobody is made or vanished around a player in the staff closet
-	rider.forceMove(prison.alcove_turfs[1])
-	bot.forceMove(prison.alcove_turfs[3])
-	wing_panel.complete_ride(0, WEAKREF(rider))
-	TEST_ASSERT(get_turf(rider) in outpost.lobby_alcove_turfs, "The second ride from the lockup did not move the rider")
-	TEST_ASSERT_EQUAL(get_turf(bot), prison.alcove_turfs[3], "The lift carried the lockup's cleanbot out of the lockup")
+	// Nobody is made or vanished around a player in the staff closet
 	bot.forceMove(prison.staff_closet_turfs[1])
 	var/mob/living/carbon/human/npc/outpost_prison_guard/first_guard = prison.guard_mobs[1]
 	var/mob/living/carbon/human/npc/outpost_prison_guard/second_guard = prison.guard_mobs[2]
@@ -427,15 +422,13 @@
 	prison.guards_tick(700)
 	TEST_ASSERT_EQUAL(length(prison.guard_mobs), 3, "A second replacement came for one death")
 
-	// The lockup's cleanbot cannot be hijacked remotely or possessed, skips bolted cells, and dispatches silently past walls
+	// The lockup's cleanbot cannot be taken over remotely, skips bolted cells, and dispatches silently past walls
 	prison.bot_kept = TRUE
 	var/mob/living/basic/bot/cleanbot/outpost_lockup/bot = prison.keep_cleanbot(prison_spot(home, 14, 11))
 	TEST_ASSERT_NOTNULL(bot, "keep_cleanbot() did not make a cleanbot")
 	TEST_ASSERT(!(bot.bot_mode_flags & BOT_MODE_REMOTE_ENABLED), "The lockup cleanbot accepts remote PDA control")
 	bot.bot_control("patrolon", null)
 	TEST_ASSERT(!(bot.bot_mode_flags & BOT_MODE_AUTOPATROL), "Remote PDA control turned autopatrol on for the lockup cleanbot")
-	bot.enable_possession(null)
-	TEST_ASSERT(!bot.can_be_possessed, "The lockup cleanbot allowed ghost possession")
 	RegisterSignal(bot, COMSIG_MOB_SAY, PROC_REF(on_bot_say))
 	var/turf/cell_mess_tile = prison_spot(home, 14, 13)
 	var/obj/effect/decal/cleanable/dirt/cell_mess = new(cell_mess_tile)
@@ -458,7 +451,7 @@
 	TEST_ASSERT(bot.bot_access_flags & BOT_COVER_LOCKED, "A ship janitor's ID unlocked the lockup cleanbot")
 	var/obj/item/knife/knife = allocate(/obj/item/knife, janitor.loc)
 	janitor.put_in_hands(knife)
-	TEST_ASSERT(!bot.deputize(knife, janitor) && isnull(bot.weapon), "A knife was attached to the lockup cleanbot")
+	TEST_ASSERT(!SEND_SIGNAL(bot, COMSIG_ATOM_ATTACKBY, knife, janitor), "The lockup cleanbot took a knife")
 	TEST_ASSERT(!bot.emag_act(janitor, null) && (bot.bot_access_flags & BOT_COVER_LOCKED), "An emag unlocked or hacked the lockup cleanbot")
 	var/obj/item/pai_card/pai = allocate(/obj/item/pai_card, janitor.loc)
 	bot.insertpai(janitor, pai)
