@@ -1401,4 +1401,33 @@
 		TEST_ASSERT(!marked(spot), "Something was marked at [spot.x],[spot.y] with no boss in the riot")
 	TEST_ASSERT(!warden.IsKnockdown() && !warden.getBruteLoss() && !warden.getFireLoss(), "The warden was hurt by a riot move with no boss in the riot")
 	prison.admin_calm()
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in nobodies)
+		prison.forget(prisoner)
+		qdel(prisoner)
+	nobodies = null
+
+	// Deleting an unbooked boss prisoner, or deleting a prison mid-windup, cleans up the move datum and floor marks
+	var/datum/bounty_record/solo_record = make_record(3, "boss")
+	solo_record.kit = "juggernaut" // BOUNTY_KIT_JUGGERNAUT
+	var/mob/living/carbon/human/npc/outpost_prisoner/solo = new(prison_spot(home, 3, 9), solo_record)
+	var/datum/weakref/solo_move_ref = WEAKREF(solo.boss_move_datum())
+	TEST_ASSERT_NOTNULL(solo_move_ref.resolve(), "An unbooked juggernaut had no boss move datum")
+	qdel(solo)
+	solo = null
+	TEST_ASSERT(is_qdeleted_ref(solo_move_ref), "Deleting an unbooked boss prisoner leaked their boss move datum")
+
+	var/mob/living/carbon/human/npc/outpost_prisoner/juggernaut = boss_prisoner(prison, prison_spot(home, 3, 11), "juggernaut", name = "Hank Coil") // BOUNTY_KIT_JUGGERNAUT
+	warden.forceMove(prison_spot(home, 6, 11))
+	prison.refresh_reach()
+	TEST_ASSERT(boss_riot(prison), "The cleanup riot did not start")
+	var/datum/prison_boss_move/charge/move = juggernaut.boss_move_datum()
+	TEST_ASSERT(move.try_start(), "The juggernaut did not wind up before prison deletion")
+	TEST_ASSERT(marked(prison_spot(home, 4, 11)), "The charge telegraph did not mark the floor")
+	var/datum/weakref/move_ref = WEAKREF(move)
+	move = null
+	juggernaut = null
+	home.fixture_prison = null
+	qdel(prison)
+	TEST_ASSERT(is_qdeleted_ref(move_ref), "Deleting a prison leaked a boss prisoner's riot move datum")
+	TEST_ASSERT(!marked(prison_spot(home, 4, 11)), "Deleting a prison mid-windup left a boss telegraph mark on the floor")
 	settle_prison_air(home)

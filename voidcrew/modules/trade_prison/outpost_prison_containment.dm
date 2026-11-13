@@ -67,6 +67,8 @@
 		return FALSE
 	if(isAdminGhostAI(person))
 		return TRUE
+	if(person.mind || person.client)
+		return FALSE
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = person
 	if(istype(guard))
 		return guard.prison == src
@@ -83,17 +85,16 @@
  * forever trying to reach the yard's mess.
  */
 /proc/may_use_outpost_prison_staff_door(atom/door, mob/accessor)
-	if(is_outpost_prisoner(accessor))
+	if(!ismob(accessor) || is_outpost_prisoner(accessor))
 		return FALSE
-	// The wing's own guards (outpost_prison_guards.dm)
-	if(is_outpost_prison_guard(accessor))
-		return TRUE
 	if(isAdminGhostAI(accessor))
 		return TRUE
-	if(istype(accessor, /mob/living/basic/bot/cleanbot) && isnull(accessor.mind))
+	if(istype(accessor, /mob/living/basic/bot/cleanbot) && isnull(accessor.mind) && isnull(accessor.client))
 		return TRUE
 	var/datum/outpost_prison/prison = get_outpost_prison(door)
-	return !prison || prison.is_staff(accessor)
+	if(prison)
+		return prison.is_staff(accessor)
+	return is_ai_outpost_prison_guard(accessor)
 
 /**
  * Whether a prisoner is being taken through a staff door: down or cuffed (can_be_dragged()) and

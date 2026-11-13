@@ -116,25 +116,30 @@
 	// A member's empty hand opens the talk menu (on_talk_menu_click() in outpost_prison_warden_tools.dm), where the talk-down is.
 
 /**
- * Whether an outpost prison NPC's AI is running, which it is only while someone is on the level to
- * see them. tg's controller also switches itself off for AI_FAILED_PLANNING_COOLDOWN after any plan
- * that queued nothing (an activity that would not start, a walk given up, a prisoner knocked down),
- * and that blink still counts as running while anyone is on the level. Counted as asleep, it let
- * the empty-level shortcuts run in front of people: fend_for_self() had prisoners eat food and
- * change into uniforms off a hatch across the yard, without walking over.
+ * Whether an outpost prison NPC's AI is running, which it is only while someone is at the wing's
+ * outpost to see them (or anywhere on the level once they have broken out). tg's controller also
+ * switches itself off for AI_FAILED_PLANNING_COOLDOWN after any plan that queued nothing (an
+ * activity that would not start, a walk given up, a prisoner knocked down), and that blink still
+ * counts as running while anyone is at the outpost. Counted as asleep, it let the empty-level
+ * shortcuts run in front of people: fend_for_self() had prisoners eat food and change into uniforms
+ * off a hatch across the yard, without walking over.
  */
 /proc/outpost_prison_ai_running(mob/living/npc)
 	var/datum/ai_controller/controller = npc?.ai_controller
 	if(!controller || npc.stat == DEAD)
 		return FALSE
-	if(controller.ai_status == AI_STATUS_ON)
-		return TRUE
-	// Asleep, it still counts while a player is at the wing's outpost: the same test as has_audience(), less its override
-	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = npc
-	if(istype(prisoner))
-		return !!prisoner.prison?.find_audience()
-	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = npc
-	return istype(guard) && !!guard.prison?.find_audience()
+	if(!istype(controller, /datum/ai_controller/basic_controller/outpost_breakout))
+		var/datum/outpost_prison/prison
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = npc
+		if(istype(prisoner))
+			prison = prisoner.prison || get_outpost_prison(prisoner)
+		else
+			var/mob/living/carbon/human/npc/outpost_prison_guard/guard = npc
+			if(istype(guard))
+				prison = guard.prison || get_outpost_prison(guard)
+		if(prison)
+			return prison.find_audience()
+	return controller.ai_status == AI_STATUS_ON
 
 /// Whether their AI is running, which it is only while someone is on the level to see them
 /mob/living/carbon/human/npc/outpost_prisoner/proc/ai_running()
@@ -280,7 +285,7 @@
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/hit_justified(atom/attacker)
 	// A guard only ever strikes violence already under way (outpost_prison_guards.dm).
-	if(is_outpost_prison_guard(attacker))
+	if(is_ai_outpost_prison_guard(attacker))
 		return TRUE
 	if(trouble || climb_ref)
 		return TRUE
@@ -306,7 +311,7 @@
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/hit_by_staff(atom/attacker)
 	// A guard's baton only ever meets violence already under way: never held against staff.
-	if(phase != PRISONER_PRESENT || is_outpost_prisoner(attacker) || is_outpost_prison_guard(attacker))
+	if(phase != PRISONER_PRESENT || is_outpost_prisoner(attacker) || is_ai_outpost_prison_guard(attacker))
 		return FALSE
 	var/machine = ismachinery(attacker)
 	if(!machine && !is_staff_attacker(attacker))
@@ -380,7 +385,7 @@
 /mob/living/carbon/human/npc/outpost_prisoner/proc/may_react_to_hit(atom/attacker)
 	if(!prison?.trouble_enabled || phase != PRISONER_PRESENT || stat != CONSCIOUS || can_be_dragged() || climb_ref || beaten)
 		return FALSE
-	if(!isliving(attacker) || is_outpost_prison_guard(attacker))
+	if(!isliving(attacker) || is_ai_outpost_prison_guard(attacker))
 		return FALSE
 	return is_outpost_prison_staff(attacker)
 
@@ -881,11 +886,11 @@
 /proc/is_outpost_prison_staff(mob/living/person)
 	if(!istype(person) || is_outpost_prisoner(person) || person.stat != CONSCIOUS)
 		return FALSE
-	// A guard that is down, arriving or leaving is nobody's staff.
-	if(is_outpost_prison_guard(person))
+	// A guard that is down, arriving or leaving is nobody's staff; a player in a guard's body counts as a player.
+	if(is_ai_outpost_prison_guard(person))
 		return is_outpost_prison_guard(person, on_duty = TRUE)
 	// Other human NPCs (anyone passing through) are people, but not the wing's staff.
-	if(ishumannpc(person) && isnull(person.client))
+	if(ishumannpc(person) && isnull(person.client) && isnull(person.mind))
 		return FALSE
 	if(ismonkey(person) && isnull(person.mind))
 		return FALSE

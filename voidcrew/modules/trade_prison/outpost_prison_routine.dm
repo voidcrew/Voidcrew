@@ -270,7 +270,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	ai_movement = /datum/ai_movement/jps
 	// The routine plans everything, idle time included.
 	idle_behavior = null
-	// Stay awake while anyone is on the level.
+	// Stay awake while anyone is at the wing's outpost; get_expected_ai_status() narrows tg's z-level check.
 	can_idle = FALSE
 	planning_subtrees = list(
 		// Cuffed, nothing at all (outpost_prison_capture.dm).
@@ -279,6 +279,15 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 		/datum/ai_planning_subtree/outpost_prisoner_trouble,
 		/datum/ai_planning_subtree/outpost_prisoner_routine,
 	)
+
+/datum/ai_controller/basic_controller/outpost_prisoner/get_expected_ai_status()
+	. = ..()
+	if(. != AI_STATUS_ON)
+		return .
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = pawn
+	var/datum/outpost_prison/prison = istype(prisoner) ? (prisoner.prison || get_outpost_prison(prisoner)) : null
+	if(prison && !prison.find_audience())
+		return AI_STATUS_OFF
 
 /// Walks to the current activity's spot, or ticks it once there
 /datum/ai_planning_subtree/outpost_prisoner_routine

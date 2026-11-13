@@ -438,7 +438,7 @@
 	else
 		actor.manual_emote("starts pacing, muttering under [actor.p_their()] breath.")
 	restart_activity(actor)
-	log_game("OUTPOST LOCKUP: [actor.real_name] is working up to [kind == "stab" ? "stabbing [target?.real_name]" : "snapping"] at '[prison?.outpost?.name]'")
+	log_game("OUTPOST LOCKUP: [actor.real_name] is working up to [kind == "stab" ? "stabbing [target?.real_name]" : "snapping"] at '[prison ? prison.outpost_log_name() : "unknown outpost"]'")
 
 /// Starts the tell's activity again if something ended it
 /datum/outpost_prison_wildcard/proc/restart_activity(mob/living/carbon/human/npc/outpost_prisoner/actor)

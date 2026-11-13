@@ -104,6 +104,8 @@
 
 /// The prison is being deleted (extras_destroy())
 /datum/outpost_prison/proc/boss_moves_destroy()
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
+		QDEL_NULL(prisoner.boss_move)
 	boss_bribed_guards.Cut()
 
 /**

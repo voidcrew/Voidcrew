@@ -41,7 +41,7 @@
 	if(is_outpost_prisoner(target))
 		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = target
 		return prisoner.turret_verdict(turret)
-	if(is_outpost_prison_guard(target))
+	if(is_ai_outpost_prison_guard(target))
 		return OUTPOST_PRISON_TURRET_SPARE
 	return OUTPOST_PRISON_TURRET_NOT_MINE
 

@@ -198,7 +198,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	ai_movement = /datum/ai_movement/jps
 	// The routine plans everything, idle time included.
 	idle_behavior = null
-	// Stay awake while anyone is on the level.
+	// Stay awake while anyone is at the wing's outpost; get_expected_ai_status() narrows tg's z-level check.
 	can_idle = FALSE
 	// No finding targets: guards only ever strike through the dispatcher (outpost_prison_guards.dm),
 	// so turrets never read them as hostile.
@@ -207,6 +207,15 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/outpost_prison_guard,
 	)
+
+/datum/ai_controller/basic_controller/outpost_prison_guard/get_expected_ai_status()
+	. = ..()
+	if(. != AI_STATUS_ON)
+		return .
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = pawn
+	var/datum/outpost_prison/prison = istype(guard) ? (guard.prison || get_outpost_prison(guard)) : null
+	if(prison && !prison.find_audience())
+		return AI_STATUS_OFF
 
 /// Walks to the response's goal, else the activity's, or ticks the activity once there
 /datum/ai_planning_subtree/outpost_prison_guard

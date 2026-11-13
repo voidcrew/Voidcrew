@@ -824,7 +824,7 @@
 		prisoner.manual_emote("tucks something under the mattress.")
 		home.stash_shiv = TRUE
 		prisoner.contraband_shiv_sour = 0
-		log_game("OUTPOST LOCKUP: [prisoner.real_name] hid a shiv in cell [home.number] at '[prison?.outpost?.name]'")
+		log_game("OUTPOST LOCKUP: [prisoner.real_name] hid a shiv in cell [home.number] at '[prison ? prison.outpost_log_name() : "unknown outpost"]'")
 		return ACTIVITY_DONE
 	scrape_left -= seconds
 	if(scrape_left <= 0)

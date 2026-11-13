@@ -405,7 +405,7 @@ GLOBAL_VAR(bounty_pool_timer)
 			record.prison_notice_at = 0
 	add_log("Bounty transfers: [bounty_intake_text(setting)].")
 	if(user)
-		log_game("OUTPOST LOCKUP: [key_name(user)] set bounty transfers to [setting] at '[outpost?.name]'")
+		log_game("OUTPOST LOCKUP: [key_name(user)] set bounty transfers to [setting] at '[outpost_log_name()]'")
 	return TRUE
 
 /// How the log puts a bounty intake setting

@@ -235,7 +235,7 @@ GLOBAL_LIST_INIT(outpost_prison_overflow_reagents, list(
 		playsound(source, 'sound/effects/bubbles/bubbles2.ogg', 50, TRUE)
 		source.Shake(1, 0, 0.5 SECONDS)
 		source.visible_message(span_warning(kind == "toilet" ? "[source] gurgles. The water in the bowl is rising." : "[source] gurgles and knocks."))
-	log_game("OUTPOST LOCKUP: a [kind] event started backing up in the prison wing at '[outpost?.name]' ([length(sources)] source\s)")
+	log_game("OUTPOST LOCKUP: a [kind] event started backing up in the prison wing at '[outpost_log_name()]' ([length(sources)] source\s)")
 	return kind
 
 /// The gurgle goes on, louder halfway, and then it backs up

@@ -103,9 +103,26 @@
 
 // ===== THE AUDIENCE, ARRIVALS AND CONFINEMENT =====
 
-/// Advances presence by `seconds`: works out whether a player is at the wing's outpost
+/// Advances presence by `seconds`: works out whether a player is at the wing's outpost, and wakes or rests the wing's AI when that changes
 /datum/outpost_prison/proc/presence_tick(seconds)
-	audience_present = find_audience()
+	sync_audience()
+
+/// Updates `audience_present` from `find_audience()` and reconciles the wing's AI controllers whenever presence flips
+/datum/outpost_prison/proc/sync_audience()
+	var/present = find_audience()
+	if(present != audience_present)
+		audience_present = present
+		reconcile_ai_status()
+	return present
+
+/// Re-evaluates the AI status of every prisoner and guard of the wing
+/datum/outpost_prison/proc/reconcile_ai_status()
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
+		if(!QDELETED(prisoner))
+			prisoner.ai_controller?.reset_ai_status()
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
+		if(!QDELETED(guard))
+			guard.ai_controller?.reset_ai_status()
 
 /// The z-level the wing is on, or 0
 /datum/outpost_prison/proc/wing_z()
@@ -147,7 +164,7 @@
 /datum/outpost_prison/proc/has_audience()
 	if(!isnull(audience_override))
 		return audience_override
-	return audience_present
+	return sync_audience()
 
 /**
  * The mood a new arrival starts with: part of the way from PRISONER_MOOD_START to the yard's
@@ -775,7 +792,7 @@
 		rioter.start_rioting(shouts++ < 2)
 	send_bystanders_home(joining)
 	add_log("Riot in the yard: [length(joining)] prisoner\s.")
-	log_game("OUTPOST LOCKUP: riot at '[outpost?.name]' ([reason])")
+	log_game("OUTPOST LOCKUP: riot at '[outpost_log_name()]' ([reason])")
 	play_alarm()
 	announce("Riot in the prison wing!", SHIP_NOTIFY_DANGER)
 	update_riot_lights()
@@ -944,7 +961,7 @@
 		if(rioter.has_shiv())
 			qdel(rioter.held_item)
 		rioter.beam_out()
-	log_game("OUTPOST LOCKUP: [length(rioters)] rioter\s transferred out of '[outpost?.name]'")
+	log_game("OUTPOST LOCKUP: [length(rioters)] rioter\s transferred out of '[outpost_log_name()]'")
 	end_riot()
 	return length(rioters)
 
@@ -1175,7 +1192,7 @@
 
 /// What used to be told to a wing's owner: nobody owns one, so it goes to the game log and no player hears it
 /datum/outpost_prison/proc/announce(message, level = SHIP_NOTIFY_WARNING)
-	log_game("OUTPOST LOCKUP: '[outpost?.name]': [message]")
+	log_game("OUTPOST LOCKUP: '[outpost_log_name()]': [message]")
 
 /// Prisoners on the patrol AI, still in the wing's custody
 /datum/outpost_prison/proc/loose_count()

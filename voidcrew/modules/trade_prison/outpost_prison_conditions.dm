@@ -622,7 +622,7 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
 	var/turf/spot = pick(light_tiles)
 	var/mob/living/basic/mouse/rat = new(spot)
 	rat_refs += WEAKREF(rat)
-	log_game("OUTPOST LOCKUP: a rat turned up in the prison wing at '[outpost?.name]'")
+	log_game("OUTPOST LOCKUP: a rat turned up in the prison wing at '[outpost_log_name()]'")
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in view(7, spot))
 		if(prisoner.prison == src && prisoner.stat == CONSCIOUS && prisoner.say_context("rat"))
 			note_speech()

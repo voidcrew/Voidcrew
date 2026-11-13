@@ -256,7 +256,7 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	crate.update_appearance()
 	RegisterSignal(crate, COMSIG_MOVABLE_MOVED, PROC_REF(mail_crate_moved))
 	new /obj/effect/pod_landingzone(spot, pod)
-	log_game("OUTPOST LOCKUP: a mail pod with [length(recipients)] letter\s is coming down in the prison wing at '[outpost?.name]' ([spot.x],[spot.y],[spot.z])")
+	log_game("OUTPOST LOCKUP: a mail pod with [length(recipients)] letter\s is coming down in the prison wing at '[outpost_log_name()]' ([spot.x],[spot.y],[spot.z])")
 	return length(recipients)
 
 /// A mail pod dropped its crate onto the floor: it has landed. Signal handler; never sleeps.

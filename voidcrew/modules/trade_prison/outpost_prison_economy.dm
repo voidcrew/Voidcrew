@@ -45,7 +45,7 @@
 /// A prisoner is lost to the wing for good (escaped, or moved on after a riot)
 /datum/outpost_prison/proc/note_prisoner_lost(mob/living/carbon/human/npc/outpost_prisoner/prisoner, reason)
 	lost_log += world.time
-	log_game("OUTPOST LOCKUP: '[outpost?.name]' lost [prisoner?.real_name || "a prisoner"] ([reason || "lost"]), [lost_recently()] lost recently")
+	log_game("OUTPOST LOCKUP: '[outpost_log_name()]' lost [prisoner?.real_name || "a prisoner"] ([reason || "lost"]), [lost_recently()] lost recently")
 
 /// Prisoners lost within the last OUTPOST_PRISON_LOST_WINDOW
 /datum/outpost_prison/proc/lost_recently()
@@ -65,7 +65,7 @@
 		arrival_gap = max(arrival_gap, OUTPOST_PRISON_FIRST_ARRIVAL)
 	arrival_countdown = next_arrival_in()
 	if(user)
-		log_game("OUTPOST LOCKUP: [key_name(user)] [intake_open ? "opened" : "closed"] intake at '[outpost?.name]'")
+		log_game("OUTPOST LOCKUP: [key_name(user)] [intake_open ? "opened" : "closed"] intake at '[outpost_log_name()]'")
 	return TRUE
 
 /// Whether prisoners may arrive now: intake open and power
@@ -157,6 +157,7 @@
 	var/starting_mood = arrival_mood()
 	prisoner.prison = src
 	prisoners |= prisoner
+	prisoner.ai_controller?.reset_ai_status()
 	if(into)
 		into.occupant = prisoner
 		prisoner.cell = into

@@ -186,9 +186,12 @@
 /mob/living/carbon/human/npc/outpost_prisoner/Destroy()
 	end_activity(cancel_ai = FALSE)
 	clear_trouble()
+	QDEL_NULL(boss_move)
+	contraband_clear_carried()
 	prison?.forget(src)
 	prison = null
 	cell = null
+	bounty_record = null
 	walkable = null
 	reachable = null
 	held_item = null

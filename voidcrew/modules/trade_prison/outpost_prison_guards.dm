@@ -42,6 +42,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return FALSE
 	return !on_duty || guard.on_duty()
 
+/// Whether `thing` is an AI-driven prison guard (nobody playing them)
+/proc/is_ai_outpost_prison_guard(atom/thing)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = thing
+	return istype(guard) && isnull(guard.mind) && isnull(guard.client)
+
 /// A top-level entry of the guards' dialogue file, or an empty list
 /proc/outpost_guard_dialogue(key)
 	return outpost_prisoner_extra_dialogue(OUTPOST_GUARD_DIALOGUE_FILE, key)
@@ -134,6 +139,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	record = hired
 	hired.guard = src
 	owner.guard_mobs |= src
+	ai_controller?.reset_ai_status()
 	if(length(hired.look))
 		outpost_prison_apply_look(src, hired.look)
 	else
@@ -985,7 +991,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /datum/outpost_prison/proc/guard_killed(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	var/mob/killer = guard.lastattacker ? get_mob_by_ckey(guard.lastattackerckey) : null
 	add_log("[guard.real_name] was killed on duty.")
-	log_game("OUTPOST LOCKUP: '[outpost?.name]': guard [guard.real_name] was killed[killer ? " (last hit by [key_name(killer)])" : ""]")
+	log_game("OUTPOST LOCKUP: '[outpost_log_name()]': guard [guard.real_name] was killed[killer ? " (last hit by [key_name(killer)])" : ""]")
 
 /**
  * The rounds clock: every OUTPOST_GUARD_ROUNDS_GAP_MIN to _MAX one free guard walks the cell

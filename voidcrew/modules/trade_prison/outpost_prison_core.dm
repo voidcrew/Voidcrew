@@ -52,6 +52,16 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	. = ..()
 	repel_megafauna(arrived, src)
 
+/area/voidcrew/outpost_lockup/Destroy()
+	if(prison)
+		var/datum/outpost_prison/closing = prison
+		prison = null
+		if(closing.wing == src)
+			closing.wing = null
+		if(!QDELETED(closing))
+			qdel(closing)
+	return ..()
+
 /// The prison whose wing holds this atom, if any
 /proc/get_outpost_prison(atom/thing)
 	var/area/voidcrew/outpost_lockup/wing = get_area(thing)
@@ -104,6 +114,8 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 /datum/outpost_prison/New(obj/structure/overmap/trader_outpost/host, area/voidcrew/outpost_lockup/wing_area)
 	. = ..()
 	outpost = host
+	if(outpost)
+		RegisterSignal(outpost, COMSIG_QDELETING, PROC_REF(on_outpost_deleted))
 	wing = wing_area
 	wing.prison = src
 	GLOB.outpost_prisons += src
@@ -129,6 +141,13 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 		prisoner.cell = null
 	QDEL_LIST(leaving)
 	QDEL_LIST(cells)
+	for(var/turf/tile as anything in door_watch_turfs)
+		UnregisterSignal(tile, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
+	door_watch_turfs.Cut()
+	staff_door_turfs.Cut()
+	staff_ground = null
+	loose_food_refs = null
+	reset_exit_alerts()
 	claims.Cut()
 	fixtures.Cut()
 	cell_block.Cut()
@@ -137,6 +156,13 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	outpost = null
 	wing = null
 	return ..()
+
+/// Deletes the prison with its host outpost so neither the wing nor its mobs hold a reference to a deleted outpost
+/datum/outpost_prison/proc/on_outpost_deleted(datum/source)
+	SIGNAL_HANDLER
+	outpost = null
+	if(!QDELETED(src))
+		qdel(src)
 
 // ===== THE WING =====
 
@@ -304,7 +330,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 		door.bolt()
 	else
 		INVOKE_ASYNC(src, PROC_REF(close_and_bolt), door)
-	log_game("OUTPOST LOCKUP: [key_name(user)] toggled the bolts of cell [number] at '[outpost?.name]'")
+	log_game("OUTPOST LOCKUP: [key_name(user)] toggled the bolts of cell [number] at '[outpost_log_name()]'")
 	refresh_reach()
 	return TRUE
 
@@ -807,11 +833,15 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	table_eaters -= prisoner
 	on_cell_emptied(emptied)
 
+/// The host outpost's name with any \improper marker stripped, for game logs
+/datum/outpost_prison/proc/outpost_log_name()
+	return outpost ? format_text(outpost.name) : "unknown outpost"
+
 /datum/outpost_prison/proc/add_log(text)
 	entries = list(list("time" = station_time_timestamp("hh:mm"), "text" = text)) + entries
 	if(length(entries) > OUTPOST_PRISON_LOG_LENGTH)
 		entries.Cut(OUTPOST_PRISON_LOG_LENGTH + 1)
-	log_game("OUTPOST LOCKUP: '[outpost?.name]': [text]")
+	log_game("OUTPOST LOCKUP: '[outpost_log_name()]': [text]")
 
 // ===== CELL =====
 
