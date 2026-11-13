@@ -82,27 +82,34 @@
 /// their friends can name them (stealth_first_name()).
 /mob/living/carbon/human/npc/ruin/trooper/scav/den
 	npc_name = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ruin/scav_den
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/den/npc_dress(datum/human_npc_order/order)
 	. = ..()
 	scav_den_name_self()
+	scav_den_chrome_eyes()
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/gunner/den
 	npc_name = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ruin/scav_den/gunner
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/gunner/den/npc_dress(datum/human_npc_order/order)
 	. = ..()
 	scav_den_name_self()
+	scav_den_chrome_eyes()
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/den
 	npc_name = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ruin/scav_den/gunner
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/den/npc_dress(datum/human_npc_order/order)
 	. = ..()
 	scav_den_name_self()
+	scav_den_chrome_eyes()
 
-/// The den's boss: a lookout with the vault pass.
+/// The den's boss: a lookout with the vault pass, dressed as the head harvester.
 /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/den/boss
+	npc_outfit_table = /datum/human_npc_outfit_table/ruin/scav_den/boss
 
 /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/den/boss/npc_dress(datum/human_npc_order/order)
 	. = ..()
@@ -124,6 +131,121 @@
 	var/obj/item/card/id/card = wear_id?.GetID()
 	if(istype(card, /obj/item/card/id/advanced/black/scav))
 		card.registered_name = real_name
+
+/**
+ * Gives a den guard chrome eyes that glow red. tg's own robotic eyes (they flash and EMP like anyone's), recoloured;
+ * the glow is only drawn, it lights nothing. Behind glasses or a mask that hides the eyes it doesn't show.
+ */
+/mob/living/carbon/human/npc/proc/scav_den_chrome_eyes()
+	var/obj/item/organ/eyes/robotic/chrome = new()
+	chrome.eye_color_left = "#ff2a1a"
+	chrome.eye_color_right = "#ff2a1a"
+	chrome.overlay_ignore_lighting = TRUE
+	if(!chrome.Insert(src, special = TRUE, movement_flags = DELETE_IF_REPLACED))
+		qdel(chrome)
+		return
+	update_body()
+
+// ===== The den guards' look =====
+// A chrome-mad harvester gang. The scavs' fatigues go under everything (scav_guards.dm), and every outfit leaves the
+// mask slot free for the scav balaclava, so a guard still carries the disguise set (stealth_disguise.dm). The suits here
+// are read into stealth_guard_suits(). Armour by zone never goes above the old sword and gunner tables.
+
+/// Rippers: leather and a blade, red lenses.
+/datum/outfit/ruin_npc/scav_den
+	name = "Ruin NPC: den ripper"
+	uniform = /obj/item/clothing/under/syndicate/scav
+	suit = /obj/item/clothing/suit/jacket/leather/biker
+	shoes = /obj/item/clothing/shoes/jackboots
+	gloves = /obj/item/clothing/gloves/fingerless
+	glasses = /obj/item/clothing/glasses/red
+	r_hand = /obj/item/hatchet
+
+/datum/outfit/ruin_npc/scav_den/vest
+	name = "Ruin NPC: den ripper in plates"
+	suit = /obj/item/clothing/suit/armor/vest
+	r_hand = /obj/item/claymore/shortsword
+
+/datum/outfit/ruin_npc/scav_den/vest/helmet
+	name = "Ruin NPC: den ripper, red zone"
+	head = /obj/item/clothing/head/helmet
+	l_pocket = /obj/item/reagent_containers/hypospray/medipen
+
+/// Harvesters: the ones who do the cutting. Bloodied waders, black latex and a bone saw; no lenses over the chrome.
+/datum/outfit/ruin_npc/scav_den/butcher
+	name = "Ruin NPC: den harvester"
+	suit = /obj/item/clothing/suit/apron/waders
+	gloves = /obj/item/clothing/gloves/latex/coroner
+	head = /obj/item/clothing/head/utility/surgerycap/black
+	glasses = null
+	r_hand = /obj/item/knife/butcher
+
+/datum/outfit/ruin_npc/scav_den/butcher/saw
+	name = "Ruin NPC: den harvester with a saw"
+	r_hand = /obj/item/circular_saw/cruel
+
+/datum/outfit/ruin_npc/scav_den/butcher/saw/red
+	name = "Ruin NPC: den harvester, red zone"
+	l_pocket = /obj/item/reagent_containers/hypospray/medipen
+
+/// Blood on the apron, the gloves and the blade.
+/datum/outfit/ruin_npc/scav_den/butcher/post_equip(mob/living/carbon/human/user, visuals_only = FALSE)
+	. = ..()
+	var/list/blood = user.get_blood_dna_list()
+	if(!length(blood))
+		return
+	user.add_blood_DNA_to_items(blood, ITEM_SLOT_GLOVES | ITEM_SLOT_OCLOTHING)
+	for(var/obj/item/held in user.held_items)
+		held.add_blood_DNA(blood)
+
+/// Gunners: a cheap Makarov, or a mini Uzi in the red zone.
+/datum/outfit/ruin_npc/scav_den/gunner
+	name = "Ruin NPC: den gunner"
+	suit = /obj/item/clothing/suit/jacket/leather
+	r_hand = /obj/item/gun/ballistic/automatic/pistol
+	l_pocket = /obj/item/ammo_box/magazine/m9mm
+	r_pocket = /obj/item/ammo_box/magazine/m9mm
+
+/datum/outfit/ruin_npc/scav_den/gunner/vest
+	name = "Ruin NPC: den gunner in plates"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/datum/outfit/ruin_npc/scav_den/gunner/vest/helmet
+	name = "Ruin NPC: den gunner, red zone"
+	head = /obj/item/clothing/head/helmet
+	r_hand = /obj/item/gun/ballistic/automatic/mini_uzi
+	l_pocket = /obj/item/ammo_box/magazine/uzim9mm
+	r_pocket = /obj/item/ammo_box/magazine/uzim9mm
+
+/// The head harvester: the butcher's apron with a pistol.
+/datum/outfit/ruin_npc/scav_den/butcher/boss
+	name = "Ruin NPC: den head harvester"
+	r_hand = /obj/item/gun/ballistic/automatic/pistol
+	l_pocket = /obj/item/ammo_box/magazine/m9mm
+	r_pocket = /obj/item/ammo_box/magazine/m9mm
+
+/datum/outfit/ruin_npc/scav_den/butcher/boss/smg
+	name = "Ruin NPC: den head harvester, red zone"
+	r_hand = /obj/item/gun/ballistic/automatic/mini_uzi
+	l_pocket = /obj/item/ammo_box/magazine/uzim9mm
+	r_pocket = /obj/item/ammo_box/magazine/uzim9mm
+
+/// Den blades: rippers and harvesters, half and half.
+/datum/human_npc_outfit_table/ruin/scav_den
+	green = list(/datum/outfit/ruin_npc/scav_den = 1, /datum/outfit/ruin_npc/scav_den/butcher = 1)
+	yellow = list(/datum/outfit/ruin_npc/scav_den/vest = 1, /datum/outfit/ruin_npc/scav_den/butcher/saw = 1)
+	red = list(/datum/outfit/ruin_npc/scav_den/vest/helmet = 1, /datum/outfit/ruin_npc/scav_den/butcher/saw/red = 1)
+
+/// Den guns: SMGs only in the red zone (the trooper weapon ladder).
+/datum/human_npc_outfit_table/ruin/scav_den/gunner
+	green = list(/datum/outfit/ruin_npc/scav_den/gunner = 1)
+	yellow = list(/datum/outfit/ruin_npc/scav_den/gunner/vest = 1)
+	red = list(/datum/outfit/ruin_npc/scav_den/gunner/vest/helmet = 1)
+
+/datum/human_npc_outfit_table/ruin/scav_den/boss
+	green = list(/datum/outfit/ruin_npc/scav_den/butcher/boss = 1)
+	yellow = list(/datum/outfit/ruin_npc/scav_den/butcher/boss = 1)
+	red = list(/datum/outfit/ruin_npc/scav_den/butcher/boss/smg = 1)
 
 /obj/effect/spawner/human_npc/ruin/scav/den
 	name = "den guard spawner"

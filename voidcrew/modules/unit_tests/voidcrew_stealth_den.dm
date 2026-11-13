@@ -133,3 +133,39 @@
 	camera.emp_act(EMP_LIGHT)
 	TEST_ASSERT_EQUAL(camera.cam_state, 4, "An EMP didn't shut the camera off")
 	TEST_ASSERT_EQUAL(camera.cone.alpha, 0, "An EMP'd camera still shows its cone")
+
+/// The den's harvester gang: every outfit keeps the disguise set reachable (scav fatigues showing, the mask slot free for
+/// the balaclava, its suit read as a guard's own), and no den guard carries Syndicate kit. Their fatigues are loot, the
+/// rest stays locked. They have red chrome eyes, and a harvester's apron, gloves and blade are bloodied.
+/datum/unit_test/voidcrew_stealth_den_look
+
+/datum/unit_test/voidcrew_stealth_den_look/Run()
+	var/list/suits = stealth_guard_suits()
+	for(var/table_type in list(/datum/human_npc_outfit_table/ruin/scav_den, /datum/human_npc_outfit_table/ruin/scav_den/gunner, /datum/human_npc_outfit_table/ruin/scav_den/boss))
+		var/datum/human_npc_outfit_table/table = human_npc_singleton(table_type)
+		for(var/list/outfits in list(table.green, table.yellow, table.red))
+			for(var/datum/outfit/outfit as anything in outfits)
+				TEST_ASSERT_NULL(initial(outfit.mask), "[outfit] takes the mask slot the balaclava needs")
+				var/obj/item/clothing/suit/suit = initial(outfit.suit)
+				if(suit)
+					TEST_ASSERT(!(initial(suit.flags_inv) & HIDEJUMPSUIT), "[outfit]'s suit hides the fatigues")
+					TEST_ASSERT(suits[suit], "[outfit]'s suit isn't read as a guard's own")
+				for(var/hand in list(initial(outfit.r_hand), initial(outfit.l_hand)))
+					TEST_ASSERT(!ispath(hand, /obj/item/melee/energy) && !ispath(hand, /obj/item/shield/energy), "[outfit] still carries Syndicate kit")
+	for(var/guard_type in list(/mob/living/carbon/human/npc/ruin/trooper/scav/den, /mob/living/carbon/human/npc/ruin/trooper/scav/gunner/den, /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/den, /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/den/boss))
+		var/mob/living/carbon/human/npc/guard = allocate(guard_type, run_loc_floor_bottom_left)
+		TEST_ASSERT(istype(guard.w_uniform, /obj/item/clothing/under/syndicate/scav), "[guard_type] isn't in scav fatigues")
+		TEST_ASSERT(!HAS_TRAIT(guard.w_uniform, TRAIT_NO_STRIP), "[guard_type]'s fatigues are locked to it")
+		if(guard.wear_suit)
+			TEST_ASSERT(HAS_TRAIT(guard.wear_suit, TRAIT_NO_STRIP), "[guard_type]'s [guard.wear_suit] can be looted")
+		var/obj/item/organ/eyes/eyes = guard.get_organ_slot(ORGAN_SLOT_EYES)
+		TEST_ASSERT(istype(eyes, /obj/item/organ/eyes/robotic), "[guard_type] has no chrome eyes")
+		TEST_ASSERT_EQUAL(eyes.eye_color_left, "#ff2a1a", "[guard_type]'s chrome eyes aren't red")
+	var/mob/living/carbon/human/consistent/butcher = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	butcher.equipOutfit(/datum/outfit/ruin_npc/scav_den/butcher/saw)
+	TEST_ASSERT(istype(butcher.wear_suit, /obj/item/clothing/suit/apron/waders), "The harvester has no waders")
+	TEST_ASSERT(GET_ATOM_BLOOD_DNA_LENGTH(butcher.wear_suit), "The harvester's apron is clean")
+	TEST_ASSERT(GET_ATOM_BLOOD_DNA_LENGTH(butcher.gloves), "The harvester's gloves are clean")
+	var/obj/item/circular_saw/cruel/saw = locate() in butcher.held_items
+	TEST_ASSERT_NOTNULL(saw, "The harvester has no saw")
+	TEST_ASSERT(GET_ATOM_BLOOD_DNA_LENGTH(saw), "The harvester's saw is clean")
