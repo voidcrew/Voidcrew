@@ -1,5 +1,5 @@
 {
-	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% and %LOOK% fill only in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm. P13 adds stealth's lines as contexts named for their bark kinds (stealth_*); %PLACE% fills in the radio calls and %NAME% in the missing-friend lines, each with a plain line beside it.",
+	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% fills in radio_call, radio_call_hot and body, and %LOOK% in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm. P13 adds stealth's lines as contexts named for their bark kinds (stealth_*); %PLACE% fills in the radio calls and %NAME% in the missing-friend lines, each with a plain line beside it.",
 	"halcyon": {
 		"knock": [
 			"Hey. Knock it off.",
@@ -58,7 +58,7 @@
 			"Lifts closed until further notice."
 		],
 		"lost": [
-			"Lost him. Check the stalls.",
+			"Lost them. Check the stalls.",
 			"Where did they go? Check the stalls.",
 			"Lost sight. Spread out and look.",
 			"I've lost them. Check behind the counters.",
@@ -386,7 +386,7 @@
 		],
 		"stealth_body": [
 			"Officer down! Over here!",
-			"Man down! I need help here!",
+			"One of ours is down! I need help here!",
 			"We've got someone down here!",
 			"Someone's hurt! Over here!",
 			"Body here! Get help!"
@@ -887,7 +887,7 @@
 		],
 		"stealth_body": [
 			"Officer down! Over here!",
-			"Man down! Send help!",
+			"Officer down! Send help!",
 			"We have a casualty here!",
 			"Body here! Get medical!",
 			"Someone's down! Over here!"
@@ -1388,7 +1388,7 @@
 		],
 		"stealth_body": [
 			"Guard down! Over here!",
-			"Man down! Get over here!",
+			"One of ours is down! Get over here!",
 			"Someone's down here!",
 			"Body! Over here!",
 			"Guard down here! Move!"

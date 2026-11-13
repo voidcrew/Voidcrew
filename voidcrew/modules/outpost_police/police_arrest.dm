@@ -1129,10 +1129,10 @@
 	var/turf/ahead = get_turf(officer)
 	for(var/i in 1 to 2)
 		ahead = get_step(ahead, officer.dir)
-		if(!ahead || ahead.density)
+		if(!ahead || ahead.density || (locate(/obj/structure/table) in ahead) || (locate(/obj/structure/window) in ahead))
 			return null
 		for(var/mob/living/someone in ahead)
-			if(someone == suspect || someone.stat != CONSCIOUS || istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			if(someone == suspect || someone.stat != CONSCIOUS || !someone.density || istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
 				continue
 			return officer.police_say(POLICE_LINE_MAKE_WAY)
 	return null

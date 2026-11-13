@@ -185,7 +185,11 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_set_state(new_state)
 	. = ..()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
-	if(istype(officer) && officer.case)
+	if(!istype(officer))
+		return
+	if(new_state != STEALTH_UNAWARE && officer.held_item)
+		officer.put_drink_down(null)
+	if(officer.case)
 		human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
 
 // Alert on a wanted person: that is who it is hunting until the police stand it down
@@ -573,6 +577,8 @@
 	if(isnull(tag))
 		if(officer.activity)
 			officer.end_activity()
+		if(officer.held_item && (controller.stealth_state() != STEALTH_UNAWARE || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) || officer.case || officer.npc_exit || officer.dispatch_riding || officer.dispatch_responding()))
+			officer.put_drink_down(null)
 		return
 	if(!officer.activity)
 		// A stop's activity runs once a visit (a sentry's desk starts again when it ends)
