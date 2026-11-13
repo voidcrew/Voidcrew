@@ -5,8 +5,7 @@
  * prisoner go for another with a blade, snap and riot on their own, or pick a fight. Mood decides
  * how often (the chance rises with tension) and how far it spreads (others join a riot only below
  * their usual lines). Numbers in voidcrew/_DEFINES/outpost_prison_incidents.dm. They are called
- * "wildcards" in the code, since "incident" already names a riot's run of fines
- * (outpost_prison_economy.dm).
+ * "wildcards" in the code.
  *
  * The clock rolls once a minute, and only while someone is there to see it (has_audience()), trouble
  * is on, at least PRISON_INCIDENT_MIN_PRISONERS are in the cell block, and nothing else is going on:
@@ -26,9 +25,8 @@
  * - A fight: two prisoners argue, then fight, whatever their mood; the argument is the tell, and a
  *   talk ends it as usual.
  * Examining someone in a tell shows it too (wildcard_examine()). A riot that starts meanwhile, or the
- * one they were after going out of reach, lets it blow over; a creature that has them running holds
- * the tell until they calm down (outpost_prison_panic.dm).
- * No wildcard fines anyone by itself; what follows (a riot, an escape, a death, injuries to treat)
+ * one they were after going out of reach, lets it blow over.
+ * What follows a wildcard (a riot, an escape, a death, injuries to treat)
  * has its usual consequences. The XF rule that shivs only come out in riots has this one
  * exception, at the owner's request.
  */

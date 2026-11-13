@@ -35,7 +35,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /**
  * Something the dispatcher sent a guard to deal with: an argument or fight ("fight"), a threat, a
- * hatch climb, a riot, a creature out ("shelter") or wandering off ("leash"). The guard's
+ * hatch climb, a riot or wandering off ("leash"). The guard's
  * perform_response() sets `goal` each second, which the AI walks them to.
  */
 /datum/outpost_guard_response

@@ -362,7 +362,7 @@
 	if(!isliving(user) || is_outpost_prisoner(user) || !cell_at(get_turf(source)))
 		return NONE
 	if(!is_inmate(user))
-		source.balloon_alert(user, "members only")
+		source.balloon_alert(user, "can't search that")
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 	if(source.has_buckled_mobs())
 		// A prisoner lying on it can be told to get up from the talk menu, or shaken awake; the balloon only says who is in the way.
@@ -414,7 +414,7 @@
 	if(source.swirlie || isliving(user.pulling))
 		return NONE
 	if(!is_inmate(user))
-		source.balloon_alert(user, "members only")
+		source.balloon_alert(user, "can't search that")
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 	if(source.has_buckled_mobs())
 		source.balloon_alert(user, "someone's sitting on it")

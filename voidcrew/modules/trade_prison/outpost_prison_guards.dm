@@ -60,7 +60,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	// The corrections service collects a guard's body (guards_tick()); the base never cleans it up.
 	npc_corpse_lifetime = 0
 
-	/// The prison that hired them
+	/// The prison they work
 	var/datum/outpost_prison/prison
 	/// Who they are on the payroll: name, rank, personality, when they are back
 	var/datum/outpost_guard_record/record
@@ -500,7 +500,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /**
  * Their baton's cell is flat. The office recharger can't take a baton that is locked to its guard
  * (human_npc_gear.dm), so the corrections service swaps the shift: they say so and beam out, and the
- * record sends them back with a charged baton after OUTPOST_GUARD_SHIFT_SWAP_TIME. Their wages stop meanwhile.
+ * record sends them back with a charged baton after OUTPOST_GUARD_SHIFT_SWAP_TIME.
  */
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/baton_flat()
 	if(phase != OUTPOST_GUARD_PRESENT || !prison)

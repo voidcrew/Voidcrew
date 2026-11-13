@@ -382,25 +382,6 @@
 				"Nothing happening, {boss}. Which I like."
 			]
 		},
-		"greet_owner": {
-			"any": [
-				"Boss.",
-				"Hey, boss.",
-				"Evening, boss."
-			],
-			"by_the_book": [
-				"Boss. All in order.",
-				"Good to see you, boss."
-			],
-			"easygoing": [
-				"Hey, boss! How's it going?",
-				"Boss! Come to check on us?"
-			],
-			"tired": [
-				"Oh. Hey, boss.",
-				"Boss. Still standing."
-			]
-		},
 		"greet_member": {
 			"any": [
 				"Hey, {boss}.",
@@ -622,21 +603,6 @@
 				"Someone should really go get {prisoner}. {place}, last I saw."
 			]
 		},
-		"creature_flee": {
-			"any": [
-				"Not my job. I'm staying in the office.",
-				"Whatever that is, I'm not touching it.",
-				"I'll be in the office. Behind the door."
-			],
-			"by_the_book": [
-				"Science is not my department. Office.",
-				"Experiment under way. Keeping clear."
-			],
-			"tired": [
-				"Nope. Not today.",
-				"I didn't sign up for that."
-			]
-		},
 		"downed": {
 			"any": [
 				"Ugh. I'm down.",
@@ -669,25 +635,6 @@
 			"easygoing": [
 				"Guess I wandered off. Back soon!",
 				"Oops. Be right back."
-			]
-		},
-		"unpaid": {
-			"any": [
-				"No pay, no guard. I'm off.",
-				"Wages or nothing. I'm done.",
-				"I don't work for free."
-			],
-			"by_the_book": [
-				"Two missed wages. I'm resigning.",
-				"The contract says paid. I'm leaving."
-			],
-			"hard_nosed": [
-				"Pay me or find someone else.",
-				"Nobody stiffs me twice."
-			],
-			"tired": [
-				"Unpaid and exhausted. Bye.",
-				"Not even getting paid for this. I'm out."
 			]
 		},
 		"dismissed": {

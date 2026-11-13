@@ -43,7 +43,7 @@
 /// Why `user` can't put cuffs on them now, as a balloon alert, or null if they can
 /mob/living/carbon/human/npc/outpost_prisoner/proc/cuff_refusal(mob/living/user)
 	if(!prison || !prison.is_staff(user))
-		return "members only"
+		return "staff only"
 	if(stat == DEAD || phase != PRISONER_PRESENT)
 		return "can't cuff [p_them()]"
 	return null

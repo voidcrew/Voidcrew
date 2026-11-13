@@ -1,15 +1,8 @@
 // ===== OUTPOST PRISON: NPC GUARDS (see outpost_prison_guards.dm) =====
-// Owner: XA. Values from extras-plan.md 4.1. Guards are security only: they never feed, clothe,
-// treat, clean or light anything, so they cannot raise pay.
+// Guards are security only: they never feed, clothe, treat, clean or light anything.
 
-/// Guards a wing can hire: one on the door, one in the yard
+/// Guards on a wing's roster: one on the door, one in the yard
 #define OUTPOST_GUARD_MAX 2
-/// Credits charged from the treasury before a hired guard beams in; refused if short, never debt
-#define OUTPOST_GUARD_HIRE_COST 1000
-/// Credits per minute per guard, only for time a wing member was home
-#define OUTPOST_GUARD_WAGE 2
-/// Wages skipped in a row (the treasury could not cover them) before the guards walk off
-#define OUTPOST_GUARD_UNPAID_LEAVE 2
 /// From going into crit to the corrections service's medevac of the body
 #define OUTPOST_GUARD_RECALL_DELAY (10 SECONDS)
 /// From a guard's death to the corrections service collecting the body
@@ -18,7 +11,7 @@
 #define OUTPOST_GUARD_SHIFT_SWAP_TIME (1 MINUTES)
 /// A guard with this much brute and burn damage or more patches up from the office first-aid kit when nothing is going on
 #define OUTPOST_GUARD_TREAT_ABOVE 20
-/// A downed or recalled guard comes back free after this, if still hired and a member is home
+/// A downed or recalled guard comes back after this, while someone is there to see it
 #define OUTPOST_GUARD_RETURN_TIME (10 MINUTES)
 #define OUTPOST_GUARD_BATON_COOLDOWN (2 SECONDS)
 /// Percent chance a guard arriving at an argument ends it with words
@@ -89,7 +82,6 @@
 #define OUTPOST_GUARD_PRIORITY_CLIMB 6
 #define OUTPOST_GUARD_PRIORITY_RIOT 7
 #define OUTPOST_GUARD_PRIORITY_LEASH 8
-#define OUTPOST_GUARD_PRIORITY_SHELTER 9
 
 /// Trait source for the beam holding a guard still
 #define OUTPOST_GUARD_BEAM_TRAIT "outpost_guard_beam"

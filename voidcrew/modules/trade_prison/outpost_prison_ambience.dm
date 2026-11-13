@@ -1,7 +1,7 @@
 /**
  * # Prison ambience: the yard notices you, readable moods, a riot you hear coming
  *
- * Owner: XB (extras-plan.md 4.5 and 4.7). Heads turn when a member walks into the cell block;
+ * Heads turn when an inmate (is_inmate()) walks into the cell block;
  * examining a prisoner describes their mood in words (with every package's extra lines from
  * examine_extra_lines()); sour prisoners sulk and content ones hum; a restless yard hushes, a
  * brewing riot slams the tables and chants, and the riot starts with a roar.

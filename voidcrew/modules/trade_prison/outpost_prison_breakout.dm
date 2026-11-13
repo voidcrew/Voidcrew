@@ -19,8 +19,8 @@
  * crew. Broken doors and windows stay broken until the crew repairs or replaces them.
  *
  * Once a way is open, rioters go through it (escape_spot()), and anyone outside the cell block on
- * their own feet has escaped, as any escape (outpost_prison_riot.dm): the loose clock, recapture,
- * the fines. The first damaging blow at each way out is announced, once a riot.
+ * their own feet has escaped, as any escape (outpost_prison_riot.dm): the loose clock and recapture.
+ * The first damaging blow at each way out is logged, once a riot.
  *
  * Fixtures (lights, tables, windows inside the cell block) are the side activity: with no way out
  * they can get at, while waiting their turn at a crowded one, and now and then on the way

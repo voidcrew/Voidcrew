@@ -147,7 +147,8 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 /datum/outpost_prison/proc/wing_turfs()
 	if(!wing)
 		return list()
-	if(isnull(wing_block_cache))
+	// Kept only once there is something to keep: a wing asked before its map has loaded is asked again
+	if(!length(wing_block_cache))
 		wing_block_cache = list()
 		for(var/list/zlevel_turfs as anything in wing.get_zlevel_turf_lists())
 			wing_block_cache += zlevel_turfs

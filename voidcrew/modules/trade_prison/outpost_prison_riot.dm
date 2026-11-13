@@ -36,9 +36,7 @@
  * without passing a staff door or a serving hatch. A prisoner outside it on their own feet, or
  * outside the wing in any state, has escaped: they go loose on the breakout AI and have the
  * rest of their clock before they are gone for good; cuffed, the clock
- * waits. Brought back into the cell block down or cuffed, they are recaptured. A riot, its
- * breakout and its escapes are one incident, whose fines are capped together
- * (outpost_prison_economy.dm).
+ * waits. Brought back into the cell block down or cuffed, they are recaptured.
  *
  * A prisoner bolted into their cell long enough, and miserable enough, wrecks it; the bolts shear
  * PRISONER_WRECK_TIME seconds later and they come out rioting.
@@ -111,7 +109,7 @@
 
 /// The z-level the wing is on, or 0
 /datum/outpost_prison/proc/wing_z()
-	if(isnull(wing_block_cache))
+	if(!length(wing_block_cache))
 		wing_turfs()
 	if(!length(wing_block_cache))
 		return 0
@@ -217,8 +215,7 @@
 	return FALSE
 
 /**
- * Staff killed a prisoner. No fine: the cost is the worst spark there is, the pay and bonus they
- * forfeit, and a body to deal with (body_tick()).
+ * Staff killed a prisoner: the worst spark there is, and a body to deal with (body_tick()).
  */
 /datum/outpost_prison/proc/blame_death(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.death_blamed)

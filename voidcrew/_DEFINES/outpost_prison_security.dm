@@ -1,6 +1,6 @@
 // ===== OUTPOST PRISON: BUILT TURRETS AND AMBIENCE (see outpost_prison_security.dm, outpost_prison_ambience.dm) =====
 // Turrets players build follow the prison's rules on its mobs: prisoners only while they make real
-// trouble, and only ever with a stun shot; never a guard or Kessler's people. Ambience values are
+// trouble, and only ever with a stun shot; never a guard. Ambience values are
 // from extras-plan.md 4.5 and 4.7.
 
 /// What outpost_prison_turret_verdict() says about a mob: not the prison's, spare it, or shoot it

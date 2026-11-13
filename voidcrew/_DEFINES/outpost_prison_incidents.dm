@@ -2,8 +2,8 @@
 // See outpost_prison_incidents.dm and outpost_prison_wing_events.dm. Owner decision 2026-09-25:
 // trouble is not only mood. Even a well kept wing now and then has a stabbing, a prisoner who
 // snaps and riots alone, or a fight; mood decides how often and how far it spreads. The wing's
-// fixtures also fail now and then: lights blow, a vent backs up, a toilet overflows. None of it
-// fines anyone by itself, and every clock here counts only while the crew is home.
+// fixtures also fail now and then: lights blow, a scrubber backs up, a toilet overflows. Every
+// clock here counts only while someone is there to see it.
 
 // Incidents
 /// Seconds of crew-home time per incident roll

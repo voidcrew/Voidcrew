@@ -1,7 +1,7 @@
 /**
  * # Outpost prisoner
  *
- * An inmate of a player outpost's prison wing (outpost_prison_core.dm), and a real human body
+ * An NPC inmate of a trader outpost's lockup (outpost_prison_core.dm), and a real human body
  * (voidcrew/modules/human_npcs/): they breathe, bleed, bruise, stamcrit, go into crit, die and can be
  * revived through tg's own code, like anyone. Each prisoner owns one cell, beams into it on arrival
  * and out of it on release, and fills the time in between with the routine in

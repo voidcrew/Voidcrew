@@ -5,8 +5,7 @@
 // hatches), each tile's pieces weighted and capped, per 100 floor tiles counted when the wing was
 // placed. Lit: light measured on the tiles prisoners stand on. Power: the equipment channel, with
 // a grace for blips. Conditions = PRISON_WEIGHT_CLEAN x Clean + PRISON_WEIGHT_LIT x Lit +
-// PRISON_WEIGHT_POWER x Power, and pay is scaled by OUTPOST_PRISON_CONDITIONS_PAY_FLOOR +
-// (1 - OUTPOST_PRISON_CONDITIONS_PAY_FLOOR) x Conditions / 100.
+// PRISON_WEIGHT_POWER x Power.
 
 /// Mood lost per minute at a wing score of 0: dirty and dark scale down to nothing at
 /// PRISON_WING_MOOD_LINE; no power scales with how far Power is below 100
@@ -41,8 +40,6 @@
 #define PRISON_WEIGHT_CLEAN 0.45
 #define PRISON_WEIGHT_LIT 0.35
 #define PRISON_WEIGHT_POWER 0.20
-/// Share of pay a wing at conditions 0 still earns
-#define OUTPOST_PRISON_CONDITIONS_PAY_FLOOR 0.5
 /// Atoms looked at per mess scan; the next scan carries on where it stopped
 #define PRISON_SCAN_BUDGET 3000
 /// Seconds between light samples, and between furniture refreshes

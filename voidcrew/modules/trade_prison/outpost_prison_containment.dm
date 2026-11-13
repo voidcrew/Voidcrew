@@ -13,7 +13,7 @@
  * wing is rebuilt. A prisoner outside the cell block on their own feet has escaped
  * (outpost_prison_riot.dm).
  *
- * Owners may rebuild the wing. An airlock built where a staff door or a cell door stood becomes
+ * The wing may be rebuilt (an admin, a test). An airlock built where a staff door or a cell door stood becomes
  * one again, and every PRISON_LAYOUT_CHECK_SECONDS the wing's walls and doors are compared with
  * the last look; when they changed, the cells and the cell block are worked out again.
  */
