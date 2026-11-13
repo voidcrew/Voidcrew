@@ -554,7 +554,7 @@
 	var/datum/outpost_holdup/second_hold = shop.holdup
 	TEST_ASSERT_NOTNULL(second_hold, "Second robber started no stick-up")
 	second_hold.hand_over(trader, second_robber)
-	police.apply_upgraded_crime(second_robber, 0, OUTPOST_CRIME_ARMED_ROBBERY, null, second_gun)
+	police.apply_upgraded_crime(second_robber, 0, "armed_robbery", null, second_gun) // OUTPOST_CRIME_ARMED_ROBBERY
 	TEST_ASSERT(second_hold.counted, "An upgraded robbery did not mark the stick-up counted")
 	second_hold.try_alarm()
 	TEST_ASSERT_EQUAL(police.get_warrant(second_robber.mind)?.heat, 30, "The stick-up alarm double-counted an upgraded robbery")
