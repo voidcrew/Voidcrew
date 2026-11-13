@@ -327,6 +327,16 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return total
 	return clock_frame + (world.time - clock_time) * clock_rate
 
+/**
+ * The frame a change made right now is drawn from. Everything recorded is sampled once a frame, in one pass: once this
+ * frame's pass has run, what else changes in this tick (the rig hiding the body its pictures stand in for, or showing
+ * it again) is only seen in the next frame's pass. So a picture made, or a pose started, after the pass belongs to the
+ * next frame too, or the replay shows it a frame before the body's matching change: the user drawn twice as a move
+ * starts, and fading with its pictures as it ends.
+ */
+/datum/sandy_replay/proc/frame_due()
+	return max(frame_exact(), last_sampled + 1)
+
 /// Whether `thing` is recorded at all.
 /datum/sandy_replay/proc/recordable(atom/movable/thing)
 	var/static/list/skipped = typecacheof(list(
@@ -354,10 +364,12 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/datum/sandy_replay_track/track = new
 	track.owner = src
 	track.thing = thing
-	track.first = (covering && !sandy_rig_picture(thing)) ? 0 : frame_now() // a rig picture is made by the move: it was never there before it
+	track.first = (covering && !sandy_rig_picture(thing)) ? 0 : round(frame_due()) // a rig picture is made by the move: it was never there before it
 	tracks[thing] = track
 	RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(on_thing_deleted))
 	sample_track(track, track.first)
+	if(sandy_rig_picture(thing))
+		event_log += "notice [thing.type] f[frame_exact()] first=[track.first]"
 
 /// The field just changed how `thing` looks (its tint): take the sample again.
 /datum/sandy_replay/proc/resample(atom/movable/thing)
@@ -612,7 +624,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!track || !(sandy_rig_picture(target) || isliving(target)))
 		return
 	// The look it had before this call: what it was drawn as when the chain began, direct writes included.
-	open_event = list(frame_exact(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
+	open_event = list(frame_due(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
 	LAZYADD(track.events, list(open_event))
 	journaled++
 	event_log += "journal [track.thing.type] f[open_event[1]] tag=[step["tag"]] t=[step["time"]] pw=[step["pixel_w"]]"
@@ -673,6 +685,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		var/late = (frame - event[1]) * world.tick_lag
 		if(late > 0 && !relative && (!loops || loops == 1))
 			chain = trim_chain(chain, late, standin)
+		if(track.mode == SANDY_TRACK_PUPPET && !relative)
+			keep_flip(chain, standin.transform)
 		for(var/list/arguments as anything in chain)
 			length += (arguments["time"] || 0) + (arguments["delay"] || 0)
 			animate(arglist(arguments))
@@ -730,6 +744,25 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	return list(last)
 
 /**
+ * A pose chain (a lift, a lean) holds the body's turn as it was when the chain started. A rig that flips a lying body
+ * the other way in that same tick leaves the chain on the old turn and the recorded frame on the new one, and a tween
+ * between the two halves passes through a matrix of no size: the body vanishes for it. Such a turn in `chain` (animate()
+ * argument lists, changed in place) is set to `now`, the turn the recorded frame shows.
+ */
+/datum/sandy_replay/proc/keep_flip(list/chain, matrix/now)
+	if(!istype(now))
+		return
+	var/size = abs(now.a * now.e - now.b * now.d)
+	for(var/list/arguments as anything in chain)
+		var/matrix/target = arguments["transform"]
+		if(!istype(target))
+			continue
+		var/matrix/halfway = matrix(now).Interpolate(target, 0.5)
+		if(abs(halfway.a * halfway.e - halfway.b * halfway.d) < size * 0.25)
+			arguments["transform"] = matrix(now)
+			event_log += "keep_flip [now.a],[now.b],[now.d],[now.e] over [target.a],[target.b],[target.d],[target.e]"
+
+/**
  * A puppet was given a new frame's look while a journaled chain was playing on it, which ends the chain: plays the
  * rest of it again from where it had got to. `shift_x`, `shift_y`: the pixel shift the puppet is drawn with now.
  */
@@ -780,6 +813,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			arguments["pixel_z"] += move_y
 		rest += list(arguments)
 		at += span
+	keep_flip(rest, thing.transform)
 	for(var/list/arguments as anything in rest)
 		animate(arglist(arguments))
 	track.expect = thing.appearance
