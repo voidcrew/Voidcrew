@@ -122,8 +122,16 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 			plasma_soot_at(target, impact_x, impact_y)
 		return
 
-	// One hit, one mark: the glow on the wall face where the splash was, nothing on the floor in front of it
-	plasma_wall_glow_at(target, splash_x, splash_y)
+	// One hit, one mark: the glow on the wall face where the splash was, nothing on the floor in front of it. It lies along
+	// the face like the splash, a few pixels into the wall so it sits on the wall and not on the floor in front
+	var/glow_in = movement_vector ? 3 : 0
+	var/obj/effect/temp_visual/plasma_wall_glow/glow = plasma_wall_glow_at(target, splash_x + movement_vector?.pixel_x * glow_in, splash_y + movement_vector?.pixel_y * glow_in)
+	if(glow)
+		var/matrix/laid = matrix()
+		if(splash_scale != 1)
+			laid.Scale(splash_scale)
+		laid.Turn(turn_angle)
+		glow.transform = laid
 
 /// The splash of a bolt a person blocked, shown once the bolt's sprite has reached it
 /proc/plasma_block_splash(turf/where, px, py, turn_angle, behind_body)

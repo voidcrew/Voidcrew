@@ -178,8 +178,8 @@
 	paused = TRUE
 	pinch_leave_at = world.time + PLASMA_PINCH_SNAP_TIME
 	addtimer(CALLBACK(src, PROC_REF(leave_pinch)), PLASMA_PINCH_SNAP_TIME)
-	// The bolt leaves over the ring
-	layer = PLASMA_PINCH_BOLT_LAYER
+	// The bolt leaves over the ring. Fired away from us it leaves behind the shooter's body, which hides it
+	layer = dy > 0.5 ? BELOW_MOB_LAYER : PLASMA_PINCH_BOLT_LAYER
 	addtimer(VARSET_CALLBACK(src, layer, initial(layer)), PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_RING_TIME)
 	pinch_copy = new(barrel_turf, src, barrel_turf, offset)
 
