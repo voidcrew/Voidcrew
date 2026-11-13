@@ -1122,9 +1122,20 @@
 /datum/hv_finisher/chrome/gorilla/rip/proc/strain_shake()
 	if(!running)
 		return
-	// Until the arm gives, if the tear comes a tick late
-	bearer_rig?.tremble(GORILLA_RIP_STRAIN_TIME * 2)
-	victim_rig?.tremble(GORILLA_RIP_STRAIN_TIME * 2)
+	// Until the arm gives, if the tear comes a tick late. Every puppet of both bodies takes the same steps, so the fists
+	// stay on the wrist; each step is relative and they add up to nothing, so nothing is left off its place
+	var/static/list/shakes = list(2, -4, 4, -4, 4, -2)
+	var/step_time = GORILLA_RIP_STRAIN_TIME * 2 / length(shakes)
+	var/list/parts = list()
+	for(var/datum/chrome_rig/rig as anything in list(bearer_rig, victim_rig))
+		for(var/key_name in rig?.puppets)
+			parts += rig.puppets[key_name]
+	for(var/obj/effect/abstract/chrome_puppet/part as anything in parts)
+		for(var/i in 1 to length(shakes))
+			if(i == 1)
+				animate(part, pixel_w = shakes[i], time = step_time, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+			else
+				animate(pixel_w = shakes[i], time = step_time, flags = ANIMATION_RELATIVE)
 
 /**
  * Degrees (clockwise) to turn the body lying as [flat] turns it about its feet as the arm is hauled toward [point] (pixels
@@ -1186,12 +1197,19 @@
  * stump and all; else the arm is still its own piece.
  */
 /datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bodies(torn)
-	bearer_rig?.redraw_arms()
+	// His own new pictures (the blood that ran back over him) wait until his arms have swung through the throw: a
+	// picture made now holds his puppets on the client until it lands, and he would stand frozen as the arm flies off
+	addtimer(CALLBACK(src, PROC_REF(redraw_bearer)), GORILLA_RIP_THROW_TIME, TIMER_DELETE_ME)
 	if(QDELETED(victim) || !victim_rig?.snapshot())
 		return
 	victim_rig.repaint("body", torn ? victim_rig.flat : victim_rig.cut_without_arms(side))
 	if(!torn)
 		victim_rig.repaint("arm_[side]", victim_rig.arm_picture(side))
+
+/// The bearer's stand-ins take on how he looks now.
+/datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bearer()
+	if(running)
+		bearer_rig?.redraw_arms()
 
 /// Blood bursts every way from the socket the arm just left, where the shoulder is drawn at that moment.
 /datum/hv_finisher/chrome/gorilla/rip/proc/shoulder_burst()
