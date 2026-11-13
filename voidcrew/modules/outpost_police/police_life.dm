@@ -513,9 +513,10 @@
 		return
 	if(length(police.cases) || length(police.dispatch_active_suspects()))
 		return
+	// The gap starts with the attempt, as before: an officer who can't get the words out doesn't try at every stop
+	voice.next_check_in_at = world.time + POLICE_CHECK_IN_GAP
 	if(!police_say("check_in", null, TRUE))
 		return
-	voice.next_check_in_at = world.time + POLICE_CHECK_IN_GAP
 	police.life_schedule_desk_reply(src, 2 SECONDS)
 
 // ----- what they say when someone talks to them -----

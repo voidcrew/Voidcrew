@@ -409,7 +409,9 @@
 	TEST_ASSERT_EQUAL(vended.anchor(), machine, "The coffee was taken from somewhere other than the machine")
 	qdel(vended)
 
-	// A plain stop: the radio check-in, not more than once in its gap, and never "all quiet" with a case open
+	// A plain stop: the radio check-in, not more than once in its gap, and never "all quiet" with a case open.
+	// Stops only run for an officer who is up and about, not one held still with nobody around.
+	officer.resume_routine()
 	var/datum/outpost_police_voice/voice = police.life_voice()
 	voice.next_check_in_at = 0
 	police.cases["test case"] = TRUE

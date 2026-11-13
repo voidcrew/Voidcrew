@@ -227,7 +227,15 @@
 	TEST_ASSERT(WEAKREF(baton) in stun_warrant.evidence, "Stamina-hitting a trader did not record the held baton as evidence")
 
 	// Bombing a trader records ASSAULT_STAFF with the trader as victim and the explosive as evidence
-	var/mob/living/carbon/human/bomber = wanted_person(wanted_spot(5, 3))
+	// The bomber stands on open floor in the medic's sight
+	var/turf/bomber_spot
+	for(var/facing in GLOB.alldirs)
+		var/turf/candidate = get_step(medic, facing)
+		if(isfloorturf(candidate) && !candidate.is_blocked_turf(exclude_mobs = FALSE))
+			bomber_spot = candidate
+			break
+	TEST_ASSERT_NOTNULL(bomber_spot, "Setup: no free floor beside the medic")
+	var/mob/living/carbon/human/bomber = wanted_person(bomber_spot)
 	var/obj/item/grenade/smokebomb/bomb = allocate(/obj/item/grenade/smokebomb)
 	bomb.outpost_armed_by = WEAKREF(bomber)
 	GLOB.outpost_pvp_enforcement.on_outpost_bombing(bomb, list(medic))

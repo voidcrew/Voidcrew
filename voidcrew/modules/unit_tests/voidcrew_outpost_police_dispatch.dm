@@ -315,6 +315,8 @@
 	var/datum/ai_controller/controller = officer.ai_controller
 	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
 	controller.set_blackboard_key("human_npc_next_shot", 0) // BB_HUMAN_NPC_NEXT_SHOT
+	// The force subtree sets the officer's force for the target before it plans a shot (outpost_police_force)
+	officer.force = officer.force_for(target)
 	var/datum/ai_behavior/shoot = GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_shoot/outpost_police)
 	shoot.perform(1, controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 	TEST_ASSERT(!controller.blackboard["human_npc_next_shot"], "An officer fired with a bystander in the line")
@@ -523,10 +525,11 @@
 	officer.forceMove(lobby_side)
 	officer.start_pulling(prisoner)
 	prisoner.grabbedby(officer, TRUE)
+	var/grip_before = officer.grab_state
 	gate.carry_through(prisoner)
 	TEST_ASSERT_NOTEQUAL(get_turf(prisoner), gate_turf, "The exit gate did not step the pulled prisoner into the lobby")
 	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "Stepping a pulled prisoner through the exit gate broke the officer's pull")
-	TEST_ASSERT(officer.grab_state >= GRAB_AGGRESSIVE, "Stepping a pulled prisoner through the exit gate downgraded the officer's grip")
+	TEST_ASSERT(officer.grab_state >= grip_before, "Stepping a pulled prisoner through the exit gate downgraded the officer's grip")
 	officer.stop_pulling()
 
 	var/obj/structure/closet/body_bag/outpost_morgue/bag = allocate(/obj/structure/closet/body_bag/outpost_morgue, gate_turf)

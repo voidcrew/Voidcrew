@@ -541,7 +541,10 @@
 	tester.dropItemToGround(locked_pen, force = TRUE)
 
 	var/obj/item/pen/normal_pen = allocate(/obj/item/pen)
+	// Pockets hang off a jumpsuit
+	player.equip_to_slot_if_possible(allocate(/obj/item/clothing/under/color/grey), ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
 	player.equip_to_slot_if_possible(normal_pen, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(player.l_store, normal_pen, "Test fixture: the ordinary pen was not placed in the left pocket")
 	TEST_ASSERT_EQUAL(left_slot.get_obscuring(player), STRIPPABLE_OBSCURING_HIDDEN, "An ordinary unlocked pocket item no longer obscures the pocket")
 	qdel(left_slot)
 	qdel(right_slot)

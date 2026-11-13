@@ -1052,7 +1052,7 @@
 		return
 	var/datum/outpost_police/police = outpost.police
 
-	// A 1-star suspect already in crit can open a case directly, and a tactical officer with full hands pats them down
+	// A 1-star suspect already in crit is taken down, and a tactical officer with full hands pats them down
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical/tac = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical)
 	police_arrest_kit(tac)
 	var/turf/beside = police_arrest_beside(tac)
@@ -1082,9 +1082,10 @@
 	if(baton)
 		human_npc_take_in_hand(tac, baton)
 
-	var/datum/outpost_police_case/case = police.open_case(warrant)
+	// Dispatch opens a downed suspect's case as a takedown (dispatch_open_cases())
+	var/datum/outpost_police_case/case = police.open_case(warrant, TRUE)
 	police.sleep_tick()
-	TEST_ASSERT_NOTNULL(case, "open_case() refused a one-star suspect in crit")
+	TEST_ASSERT_NOTNULL(case, "open_case() refused a takedown of a one-star suspect in crit")
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
 	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
 	case.cuffs_on(suspect)

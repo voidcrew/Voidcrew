@@ -551,6 +551,12 @@
 
 	// Unanchored crate on an open free locker is pushed clear when reserving it
 	var/obj/structure/closet/secure_closet/personal/outpost_police/second_locker = bank[2]
+	// Faces open floor, as a mapped locker does: the crate needs somewhere to go
+	for(var/facing in GLOB.cardinals)
+		var/turf/ahead = get_step(second_locker, facing)
+		if(isfloorturf(ahead) && !ahead.is_blocked_turf(exclude_mobs = TRUE) && !(locate(/obj/structure/closet) in ahead))
+			second_locker.setDir(facing)
+			break
 	second_locker.open(null, TRUE)
 	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, get_turf(second_locker))
 	var/mob/living/carbon/human/mod_prisoner = person()

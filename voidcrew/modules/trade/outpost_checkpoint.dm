@@ -1146,6 +1146,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 			passer.forceMove(out)
 	if(puller && !QDELETED(puller) && !QDELETED(passer) && puller.pulling != passer && get_dist(puller, passer) <= 1)
 		puller.start_pulling(passer, state = saved_grab, supress_message = TRUE)
+	// Still in hand but the step loosened the grip: the same hold as before the gate
+	if(puller && !QDELETED(puller) && puller.pulling == passer && puller.grab_state < saved_grab)
+		puller.setGrabState(saved_grab)
 
 // =========================================================================
 // THE LOCKERS

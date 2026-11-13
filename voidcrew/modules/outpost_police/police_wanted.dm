@@ -189,9 +189,16 @@
 /// Tells the first police officer among the witnesses to call out `crime` to `offender`
 /datum/outpost_police/proc/shout_for_witnesses(atom/witness, list/witnesses, mob/living/offender, crime)
 	if(!istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		var/seen_by_person = ismob(witness)
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
 			witness = officer
 			break
+		// A trader or a player made the report, but an officer watching it happen still calls it out
+		if(seen_by_person && !istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+				if(perception.sees(officer, offender))
+					witness = officer
+					break
 	witness_shout(witness, offender, crime)
 
 /// Upgrades an already-counted grace-window report when a graver crime in the same instant is also witnessed
