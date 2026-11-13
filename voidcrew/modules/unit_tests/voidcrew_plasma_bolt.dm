@@ -188,7 +188,7 @@
 	fire_leg.heal_damage(brute = 200, burn = 200)
 	TEST_ASSERT_NOTNULL(fire_leg.get_wound_type(/datum/wound/burn/flesh/critical), "could not give a leg a tg critical burn")
 	var/obj/projectile/energy/plasma_bolt/rifle_bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, from, BODY_ZONE_R_LEG)
-	rifle_bolt.damage = 5
+	rifle_bolt.damage = PLASMA_ASH_MIN_LANDED
 	fire_burned.bullet_act(rifle_bolt, BODY_ZONE_R_LEG)
 	TEST_ASSERT_NOTNULL(fire_burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt melted a leg with only a tg critical burn")
 

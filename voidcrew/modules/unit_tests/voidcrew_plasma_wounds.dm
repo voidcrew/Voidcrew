@@ -511,7 +511,7 @@
 	leg.heal_damage(brute = 200, burn = 200)
 	TEST_ASSERT(plasma_burn_through_ready(leg), "a slagged critical is not ready to burn through")
 	var/obj/projectile/energy/plasma_bolt/bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, from, BODY_ZONE_R_LEG)
-	bolt.damage = 5
+	bolt.damage = PLASMA_ASH_MIN_LANDED
 	slagged.bullet_act(bolt, BODY_ZONE_R_LEG)
 	TEST_ASSERT_NULL(slagged.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt left a leg with a slagged critical attached")
 	var/obj/effect/temp_visual/plasma_burst/melt_burst = locate() in get_turf(slagged)
@@ -526,7 +526,7 @@
 	TEST_ASSERT(!plasma_burn_through_ready(clean_leg), "a critical with its slag out is still ready to burn through")
 	TEST_ASSERT(plasma_limb_burned_through(clean_leg), "a critical with its slag out no longer counts as burned through for the burst")
 	bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, from, BODY_ZONE_R_LEG)
-	bolt.damage = 5
+	bolt.damage = PLASMA_ASH_MIN_LANDED
 	cleaned.bullet_act(bolt, BODY_ZONE_R_LEG)
 	TEST_ASSERT_NOTNULL(cleaned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt melted a leg whose slag was cut out")
 
@@ -537,7 +537,7 @@
 	TEST_ASSERT_NOTNULL(fire_leg.get_wound_type(/datum/wound/burn/flesh/critical), "could not give a leg a tg critical burn")
 	TEST_ASSERT(!plasma_burn_through_ready(fire_leg), "a tg critical burn is ready for the rifle's burn-through")
 	bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, from, BODY_ZONE_R_LEG)
-	bolt.damage = 5
+	bolt.damage = PLASMA_ASH_MIN_LANDED
 	fire_burned.bullet_act(bolt, BODY_ZONE_R_LEG)
 	TEST_ASSERT_NOTNULL(fire_burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt melted a leg with only a tg critical burn")
 
