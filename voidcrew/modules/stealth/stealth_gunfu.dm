@@ -191,12 +191,12 @@
 	playsound(src, 'sound/items/weapons/thudswoosh.ogg', 60, TRUE, -1)
 	gunfu_after_move(victim, GUNFU_MOVE_FLIP)
 	gunfu_vis_flip(victim, landing)
-	victim.throw_at(landing, 1, 1, src, spin = FALSE, callback = CALLBACK(src, PROC_REF(gunfu_landed), victim, GUNFU_FLIP_KNOCKDOWN, GUNFU_FLIP_DAMAGE, BODY_ZONE_CHEST))
+	victim.throw_at(landing, 1, 1, src, spin = FALSE, callback = CALLBACK(src, PROC_REF(gunfu_landed), victim, GUNFU_FLIP_KNOCKDOWN, GUNFU_FLIP_DAMAGE, BODY_ZONE_CHEST, FALSE))
 	return TRUE
 
 /// A thrown or flipped body hits the floor: tg's knockdown and the fall's brute through its armour. A throw that hit
 /// a wall or a body already got tg's own crash; the floor still puts them down.
-/mob/living/carbon/human/proc/gunfu_landed(mob/living/victim, knockdown, damage, zone)
+/mob/living/carbon/human/proc/gunfu_landed(mob/living/victim, knockdown, damage, zone, thud = TRUE)
 	if(QDELETED(victim) || victim.stat == DEAD)
 		return
 	if(damage)
@@ -207,7 +207,9 @@
 	if(world.time >= victim.gunfu_down_grace_until)
 		victim.Knockdown(knockdown)
 		victim.gunfu_down_grace_until = world.time + knockdown + GUNFU_KNOCKDOWN_GRACE
-	playsound(victim, 'sound/effects/hit_kick.ogg', 50, TRUE, -1)
+	// The flip's slam sound is played by its picture, on the frame the body hits the floor (stealth_gunfu_motion_flip.dm).
+	if(thud)
+		playsound(victim, 'sound/effects/hit_kick.ogg', 50, TRUE, -1)
 
 // ---------------------------------------------------------------------------------------------
 // Right-click with the gun: the wall slam and the disarm
