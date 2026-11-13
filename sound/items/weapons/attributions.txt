@@ -2,3 +2,5 @@
 	rust_sower_armbomb.ogg - EnterTheJake
 	rust_sower_explode.ogg - EnterTheJake
 }
+
+laser.ogg and laser2.ogg are e-fire.ogg and heavy_laser.ogg from Shiptest (https://github.com/shiptest-ss13/Shiptest), CC BY-SA 3.0.

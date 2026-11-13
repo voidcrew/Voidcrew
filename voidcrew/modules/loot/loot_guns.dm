@@ -47,11 +47,14 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 	LOOT_GUN_POOL_ARMORY = list(
 		LOOT_WEAPON_GREEN = list(
 			/obj/item/gun/ballistic/rifle/boltaction/surplus = 10,
+			/obj/item/gun/energy/frontier_laser/pistol = 10,
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/energy/laser = 10,
 			/obj/item/gun/energy/e_gun = 10,
 			/obj/item/gun/ballistic/automatic/wt550 = 10,
+			/obj/item/gun/energy/frontier_laser/smg = 10,
+			/obj/item/gun/energy/plasma_weapon/pistol/loot = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/energy/laser/carbine = 10,
@@ -82,11 +85,14 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/revolver = 10,
+			/obj/item/gun/energy/plasma_weapon/pistol/loot = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 10,
 			/obj/item/gun/energy/laser/hellgun = 10,
 			/obj/item/gun/ballistic/automatic/tommygun = 10,
+			/obj/item/gun/energy/plasma_weapon/rifle/loot = 10,
+			/obj/item/gun/energy/plasma_weapon/rifle/old_furnace = 1,
 		),
 	),
 	LOOT_GUN_POOL_FREIGHT = list(
@@ -95,6 +101,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 			/obj/item/gun/ballistic/automatic/pistol = 10,
 			/obj/item/gun/ballistic/revolver/c38/detective = 10,
 			/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
+			/obj/item/gun/energy/frontier_laser/pistol = 10,
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/shotgun/riot = 10,

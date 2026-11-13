@@ -18,6 +18,7 @@
 // END_PREFERENCES
 
 // BEGIN_INCLUDE
+#include "__byond_var_id_padding.dm"
 #include "__odlint.dm"
 #include "_maps\_basemap.dm"
 #include "code\__byond_version_compat.dm"
@@ -34,6 +35,7 @@
 #include "code\__DEFINES\_tick.dm"
 #include "voidcrew\_DEFINES\core_integration.dm" // VOIDCREW EDIT: shared hooks must precede upstream macro use.
 #include "voidcrew\_DEFINES\modular_hooks.dm" // VOIDCREW EDIT: shared hooks must precede upstream macro use.
+#include "voidcrew\_DEFINES\plasma_weapons.dm" // VOIDCREW EDIT: the plasma_weapons unit tests read these defines, and tests compile before voidcrew\_DEFINES.
 #include "code\__DEFINES\access.dm"
 #include "code\__DEFINES\achievements.dm"
 #include "code\__DEFINES\acid.dm"
@@ -6834,6 +6836,7 @@
 #include "voidcrew\edits\controllers\subsystem\weather.dm"
 #include "voidcrew\edits\controllers\subsystem\networks\bitrunning.dm"
 #include "voidcrew\edits\datums\alarm.dm"
+#include "voidcrew\edits\datums\cogbar.dm"
 #include "voidcrew\edits\datums\actions\mobs\charge.dm"
 #include "voidcrew\edits\datums\components\gps.dm"
 #include "voidcrew\edits\datums\components\overlay_lighting.dm"
@@ -6925,6 +6928,7 @@
 #include "voidcrew\edits\modules\power\supermatter_anomalies.dm"
 #include "voidcrew\edits\modules\power\turbine\turbine.dm"
 #include "voidcrew\edits\modules\projectiles\boxes_magazines\_box_magazine.dm"
+#include "voidcrew\edits\modules\projectiles\projectile\beams.dm"
 #include "voidcrew\edits\modules\research\designs.dm"
 #include "voidcrew\edits\modules\research\designs\comp_board_designs.dm"
 #include "voidcrew\edits\modules\research\designs\machine_designs.dm"
@@ -7468,6 +7472,24 @@
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_teleport.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_weather.dm"
 #include "voidcrew\modules\paperwork\faxes.dm"
+#include "voidcrew\modules\plasma_weapons\burn_wound_looks.dm"
+#include "voidcrew\modules\plasma_weapons\frontier_lasers.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_ash.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_bolt.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_cartridge.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_chamber.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_effects.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_guns.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_heat.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_melt.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_pinch.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_pirates.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_press.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_shop.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_types.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_wound_care.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_wound_looks.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_wounds.dm"
 #include "voidcrew\modules\player_outposts\outpost_admin.dm"
 #include "voidcrew\modules\player_outposts\outpost_admin_bays.dm"
 #include "voidcrew\modules\player_outposts\outpost_admin_checkpoints.dm"

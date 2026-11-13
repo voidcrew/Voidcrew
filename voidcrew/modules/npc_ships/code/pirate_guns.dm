@@ -155,16 +155,20 @@ GLOBAL_LIST_INIT(pirate_gun_default_weights, list(
 
 // ===== ARMING =====
 
-/// The loadout weights for `gunner`'s faction: type => weight, or null to keep its own gun
+/// The loadout weights for `gunner`'s faction: type => weight, or null to keep its own gun. Yellow- and
+/// red-zone gunners can also roll plasma guns (plasma_pirate_gun_weights(), plasma_weapons module).
 /proc/pirate_gun_weights_for(mob/living/basic/gunner)
+	var/list/weights
 	var/mob/living/basic/trooper/pirate/faction/faction_pirate = gunner
 	if(istype(faction_pirate))
 		if(faction_pirate.crew_keeps_gun)
 			return null
-		return faction_pirate.crew_gun_weights || GLOB.pirate_gun_default_weights
-	if(istype(gunner, /mob/living/basic/trooper/pirate))
-		return GLOB.pirate_gun_default_weights
-	return null
+		weights = faction_pirate.crew_gun_weights || GLOB.pirate_gun_default_weights
+	else if(istype(gunner, /mob/living/basic/trooper/pirate))
+		weights = GLOB.pirate_gun_default_weights
+	if(!weights)
+		return null
+	return plasma_pirate_gun_weights(gunner, weights)
 
 /**
  * Hands `gunner` a rolled pirate gun in place of its stock ranged attack: the gun shows in its hand

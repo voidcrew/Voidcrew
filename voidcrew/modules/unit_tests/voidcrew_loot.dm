@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 1, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(2, 5, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 2, 5), "freight" = list(5, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -300,7 +300,8 @@
 			var/list/pool = classes[class]
 			TEST_ASSERT_EQUAL(length(pool), counts[text2num(class)], "Main gun class changed size")
 			for(var/entry in pool)
-				TEST_ASSERT_EQUAL(pool[entry], 10, "Main gun class is not uniform")
+				// The Old Furnace is the one rare unique in the main pools
+				TEST_ASSERT_EQUAL(pool[entry], entry == /obj/item/gun/energy/plasma_weapon/rifle/old_furnace ? 1 : 10, "Main gun class is not uniform")
 	var/list/melee_counts = list(9, 6, 4)
 	for(var/class in GLOB.loot_melee_pools)
 		var/list/pool = GLOB.loot_melee_pools[class]
@@ -711,6 +712,7 @@
 			/obj/item/gun/ballistic/shotgun/musket,
 			/obj/item/gun/ballistic/shotgun/toy,
 			/obj/item/gun/ballistic/shotgun/toy/crossbow,
+			/obj/item/gun/energy/frontier_laser/pistol,
 			/obj/item/hatchet,
 			/obj/item/knife/combat,
 			/obj/item/knife/combat/bone,
@@ -763,12 +765,14 @@
 			/obj/item/gun/energy/e_gun/dragnet,
 			/obj/item/gun/energy/e_gun/mini,
 			/obj/item/gun/energy/e_gun/old,
+			/obj/item/gun/energy/frontier_laser/smg,
 			/obj/item/gun/energy/ionrifle,
 			/obj/item/gun/energy/ionrifle/carbine,
 			/obj/item/gun/energy/laser,
 			/obj/item/gun/energy/laser/luxurypaywall,
 			/obj/item/gun/energy/laser/retro,
 			/obj/item/gun/energy/laser/retro/old,
+			/obj/item/gun/energy/plasma_weapon/pistol/loot,
 			/obj/item/gun/magic/hook/marlinspike,
 			/obj/item/gun/syringe/rapidsyringe,
 			/obj/item/gun/syringe/syndicate,
@@ -826,6 +830,8 @@
 			/obj/item/gun/energy/laser/hellgun,
 			/obj/item/gun/energy/laser/scatter,
 			/obj/item/gun/energy/lasercannon/unrestricted,
+			/obj/item/gun/energy/plasma_weapon/rifle/loot,
+			/obj/item/gun/energy/plasma_weapon/rifle/old_furnace,
 			/obj/item/gun/energy/recharge/ebow,
 			/obj/item/gun/energy/temperature/unrestricted,
 			/obj/item/gun/energy/xray,
