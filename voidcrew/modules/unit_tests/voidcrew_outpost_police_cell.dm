@@ -19,6 +19,8 @@
 	var/fine_tries = 0
 	/// Times store_property() was asked
 	var/store_calls = 0
+	/// When TRUE, store_property() kills `officer` mid-strip and returns FALSE
+	var/fail_strip_kill = FALSE
 	/// For each store_property() call: whether the prisoner's cuffs were still on
 	var/list/stored_cuffed = list()
 	/// close_warrant() calls: list(mind, served)
@@ -62,6 +64,9 @@
 /datum/outpost_police/cell_test/store_property(mob/living/carbon/prisoner, mob/living/officer)
 	store_calls++
 	stored_cuffed += !!prisoner.handcuffed
+	if(fail_strip_kill)
+		officer?.death()
+		return FALSE
 	return TRUE
 
 /datum/outpost_police/cell_test/close_warrant(datum/mind/who, served)
@@ -883,4 +888,108 @@
 	TEST_ASSERT(cell_a.door.density, "Cell a's door was left open after booking")
 	TEST_ASSERT_NULL(suspect.handcuffed, "The suspect is still handcuffed after booking")
 	TEST_ASSERT(suspect.is_holding(own_cuffs), "A paid suspect's non-police cuffs were left on the cell floor instead of handed back")
+
+/// Strip retries & failure cleanup, door seals blocked, WIRE_TIMING repair, assembly-triggered jailbreak & mend, and empty-cell close guards
+/datum/unit_test/voidcrew_outpost_police_cell_strip_and_door_edges
+
+/datum/unit_test/voidcrew_outpost_police_cell_strip_and_door_edges/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	var/turf/park = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z)
+
+	// 1. A stunned booking officer waits to recover and finishes stripping once back up
+	var/mob/living/carbon/human/suspect = police_cell_person(cell_a.tiles[1])
+	var/mob/living/carbon/human/officer = police_cell_person(cell_a.tiles[2])
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	officer.Paralyze(2 SECONDS)
+	TEST_ASSERT(police.cell_strip_prisoner(suspect, officer), "A stunned officer did not finish stripping once back up")
+	TEST_ASSERT_EQUAL(police.store_calls, 1, "cell_strip_prisoner did not strip once")
+	suspect.uncuff()
+	suspect.forceMove(park)
+	officer.forceMove(park)
+
+	// 2. If the officer dies before stripping finishes, book() aborts without uncuffing or admitting, and opens the cell
+	police.pinned_stars = 3
+	police.fail_strip_kill = TRUE
+	var/mob/living/carbon/human/unstripped = police_cell_person(cell_b.outside_turf)
+	var/mob/living/carbon/human/dying_cop = police_cell_person(get_step(cell_b.outside_turf, NORTH))
+	police_pin_warrant(police, unstripped.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(unstripped, dying_cop), "Setup: the suspect did not get cuffed")
+	TEST_ASSERT(!police.book(unstripped, dying_cop), "book() succeeded when the officer died mid-strip")
+	TEST_ASSERT_NOTNULL(unstripped.handcuffed, "An unstripped prisoner had their cuffs removed when the officer died")
+	TEST_ASSERT(!(unstripped.mind in cell_b.prisoners), "A failed strip left the prisoner admitted to the cell")
+	TEST_ASSERT(!(unstripped.mind in cell_b.booking), "A failed strip left a stale booking entry")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell_b.door.density, "An empty cell stayed shut on the unstripped prisoner and dead officer")
+	police.fail_strip_kill = FALSE
+
+	// 3. Door seal blocked, WIRE_TIMING repair keeps autoclose off, safety/shock cleared on take-over, remote assembly hack & mend, and empty-cell close guards
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = cell_a.door
+	door.AddElement(/datum/element/outpost_property)
+	var/mob/living/carbon/human/hacker = police_cell_person(cell_a.outside_turf)
+	var/obj/item/door_seal/seal = allocate(/obj/item/door_seal)
+	seal.seal_time = 1
+	hacker.put_in_hands(seal)
+	seal.melee_attack_chain(hacker, door)
+	TEST_ASSERT_NULL(door.seal, "A pneumatic door seal was placed on an outpost cell door")
+	hacker.dropItemToGround(seal)
+	seal.forceMove(park)
+
+	door.panel_open = TRUE
+	door.wires.cut(WIRE_TIMING, hacker)
+	TEST_ASSERT(!door.autoclose, "Cutting WIRE_TIMING turned autoclose on")
+	door.wires.repair()
+	TEST_ASSERT(!door.autoclose, "Repairing WIRE_TIMING turned autoclose on")
+
+	door.wires.pulse(WIRE_SAFETY, hacker)
+	door.panel_open = FALSE
+	TEST_ASSERT(!door.safe, "Setup: pulsing WIRE_SAFETY did not disable door safeties")
+	TEST_ASSERT(door.still_hacked(), "still_hacked() missed disabled door safeties once the panel shut")
+	door.set_electrified(30)
+	TEST_ASSERT(door.isElectrified(), "Setup: the cell door did not electrify")
+	door.cell_take_over()
+	TEST_ASSERT(door.safe, "cell_take_over() left door safeties off")
+	TEST_ASSERT(!door.isElectrified(), "cell_take_over() left the door electrified")
+
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell_a.tiles[1])
+	police_pin_warrant(police, prisoner.mind, 12)
+	cell_a.admit(prisoner, world.time + 10 MINUTES)
+	door.panel_open = TRUE
+	door.note_hack(hacker)
+	var/obj/item/assembly/timer/timer = allocate(/obj/item/assembly/timer)
+	var/open_color = door.wires.get_color_of_wire(WIRE_OPEN)
+	TEST_ASSERT_NOTNULL(door.wires.attach_assembly(open_color, timer), "Setup: timer assembly did not attach to WIRE_OPEN")
+	door.wires.cut(WIRE_IDSCAN, hacker)
+	door.last_hack_at -= 30 SECONDS
+	var/crimes_before = length(police.crimes)
+	TEST_ASSERT(door.wires.pulse_assembly(timer), "pulse_assembly() did not pulse the attached wire")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!door.density, "A remote assembly pulse with WIRE_IDSCAN cut did not open the cell door")
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before + 1, "A remote assembly opening a held cell reported no crime")
+	var/list/crime = police_last_crime(police)
+	TEST_ASSERT_EQUAL(crime?[1], hacker, "A delayed assembly pulse did not credit the installer with the jailbreak")
+	TEST_ASSERT_EQUAL(crime?[2], "jailbreak", "A delayed assembly pulse did not report a jailbreak") // OUTPOST_CRIME_JAILBREAK
+
+	hacker.forceMove(park)
+	door.mend_hack()
+	TEST_ASSERT_EQUAL(timer.loc, cell_a.outside_turf, "mend_hack() did not detach the wire assembly onto outside_turf")
+	TEST_ASSERT(!length(door.wires.assemblies), "mend_hack() left an assembly attached to the wires")
+	TEST_ASSERT(!door.autoclose, "mend_hack() turned autoclose on")
+	TEST_ASSERT(!door.still_hacked(), "still_hacked() remained TRUE after mend_hack()")
+
+	// Empty cell with a bystander inside while open: neither close() nor an unpowered crowbar pry shuts the door on them
+	cell_a.forget_prisoner(prisoner.mind)
+	TEST_ASSERT(!door.density, "Setup: door should still stand open")
+	TEST_ASSERT(!door.close(BYPASS_DOOR_CHECKS), "close() shut an empty cell's door on a bystander inside")
+	TEST_ASSERT(!door.density, "An empty cell's door closed on a bystander")
+	hacker.forceMove(cell_a.outside_turf)
+	for(var/power_wire in list(WIRE_POWER1, WIRE_POWER2, WIRE_BACKUP1, WIRE_BACKUP2))
+		door.wires.cut(power_wire, hacker)
+	var/obj/item/crowbar/crowbar = allocate(/obj/item/crowbar)
+	hacker.put_in_hands(crowbar)
+	door.crowbar_act(hacker, crowbar)
+	sleep(1 SECONDS)
+	TEST_ASSERT(!door.density, "A crowbar pried an open cell door shut")
+
 

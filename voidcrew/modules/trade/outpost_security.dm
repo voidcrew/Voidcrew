@@ -672,11 +672,12 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /**
  * A bluespace RPED skips the panel_open check in exchange_parts(), so blocking the
  * screwdriver doesn't keep the parts inside on its own. An RPD (pipe dispenser) clicked on
- * a pipe or atmos machine unwrenches, repaints or reprograms it without any tool signal.
+ * a pipe or atmos machine unwrenches, repaints or reprograms it without any tool signal, and
+ * a pneumatic door seal or airlock painter acts straight from airlock attackby().
  */
 /datum/element/outpost_property/proc/block_part_replacer(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
-	if(istype(tool, /obj/item/pipe_dispenser))
+	if(istype(tool, /obj/item/pipe_dispenser) || istype(tool, /obj/item/door_seal) || istype(tool, /obj/item/airlock_painter))
 		source.balloon_alert(user, "outpost property!")
 		return ITEM_INTERACT_BLOCKING
 	if(!istype(tool, /obj/item/storage/part_replacer))

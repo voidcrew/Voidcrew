@@ -18,6 +18,8 @@
 	paint_jobs = null
 	delivery_icon = null
 	req_access = list(ACCESS_OUTPOST_POLICE)
+	/// Weakref to the outpost police that owns this locker, when linked directly
+	var/datum/weakref/police_ref
 	/// Weakrefs to the seized items put in here that have not been taken out by a hand yet
 	var/list/watched
 	/// Weakref of watched item -> weakref of the first unauthorised mind that took it
@@ -35,6 +37,7 @@
 		var/obj/item/thing = ref?.resolve()
 		if(thing)
 			UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
+	police_ref = null
 	watched = null
 	first_takers = null
 	return ..()
@@ -68,7 +71,7 @@
 
 /// The police of the outpost this locker stands in, if any
 /obj/structure/closet/secure_closet/outpost_evidence/proc/evidence_police()
-	return get_trader_outpost_for_turf(get_turf(src))?.police
+	return police_ref?.resolve() || get_trader_outpost_for_turf(get_turf(src))?.police
 
 /// The emag wears off: the lock works again, the door shuts once its doorway is clear and locks once nobody is inside
 /obj/structure/closet/secure_closet/outpost_evidence/proc/mend_lock()
@@ -153,12 +156,10 @@
 	var/datum/weakref/item_ref = WEAKREF(source)
 	var/datum/weakref/taker_ref = WEAKREF(taker.mind)
 	var/datum/weakref/first = LAZYACCESS(first_takers, item_ref)
-	if(first && first != taker_ref)
+	if(first)
 		return
 	for(var/obj/item/part as anything in source.get_all_contents_type(/obj/item))
 		var/datum/weakref/part_ref = WEAKREF(part)
 		if((part_ref in watched) && !LAZYACCESS(first_takers, part_ref))
 			LAZYSET(first_takers, part_ref, taker_ref)
-	LAZYREMOVE(watched, item_ref)
-	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 	evidence_police()?.report_crime(taker, OUTPOST_CRIME_LOCKER_THEFT, null, source)

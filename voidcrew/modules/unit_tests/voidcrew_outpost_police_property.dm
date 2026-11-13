@@ -579,3 +579,109 @@
 	TEST_ASSERT_EQUAL(extra_cuffs.loc, mod_locker, "Non-police cuffs removed at booking did not enter the property locker")
 	TEST_ASSERT(mod_locker.holds(extra_cuffs), "Stored non-police cuffs are not recorded by the property locker")
 
+/// Resisting cuffs does not block MODsuit retraction or overslotted gear; bare prisoners get a locked locker for own cuffs; jammed lockers skip; full bank still strips evidence; returned evidence re-arms watch
+/datum/unit_test/voidcrew_outpost_police_property/resisting_modsuit_jammed_locker_and_evidence
+
+/datum/unit_test/voidcrew_outpost_police_property/resisting_modsuit_jammed_locker_and_evidence/Run()
+	fixture(4)
+
+	// 1. Active MODsuit with overslotted sneakers while prisoner has an active self-do_after (cuff breakout) and shuffled a tile away
+	var/mob/living/carbon/human/mod_prisoner = person()
+	var/obj/item/card/id/mod_id = allocate(/obj/item/card/id)
+	var/obj/item/clothing/shoes/sneakers/black/overslot_shoes = allocate(/obj/item/clothing/shoes/sneakers/black)
+	mod_prisoner.equip_to_slot_if_possible(mod_id, ITEM_SLOT_ID, disable_warning = TRUE)
+	mod_prisoner.equip_to_slot_if_possible(overslot_shoes, ITEM_SLOT_FEET, disable_warning = TRUE)
+	var/obj/item/mod/control/pre_equipped/standard/mod_suit = allocate(/obj/item/mod/control/pre_equipped/standard)
+	TEST_ASSERT(mod_prisoner.equip_to_slot_if_possible(mod_suit, ITEM_SLOT_BACK, disable_warning = TRUE), "Setup: MODsuit did not equip")
+	mod_suit.quick_activation()
+	TEST_ASSERT(mod_suit.active, "Setup: MODsuit did not activate")
+	TEST_ASSERT(overslot_shoes.loc != mod_prisoner, "Setup: sneakers were not overslotted into the MOD boots")
+
+	var/mob/living/carbon/human/mod_officer = officer_beside(mod_prisoner)
+	var/turf/step_away = get_step(mod_officer, get_dir(mod_prisoner, mod_officer))
+	if(step_away && isfloorturf(step_away) && !step_away.is_blocked_turf(exclude_mobs = TRUE))
+		mod_officer.forceMove(step_away)
+	LAZYSET(mod_prisoner.do_afters, mod_prisoner, 1)
+	var/stripped_mod = police.store_property(mod_prisoner, mod_officer)
+	LAZYREMOVE(mod_prisoner.do_afters, mod_prisoner)
+	TEST_ASSERT(stripped_mod, "store_property failed while prisoner was resisting cuffs or a tile away")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/mod_locker = police.property_locker_for(mod_prisoner)
+	TEST_ASSERT(!mod_suit.active, "MODsuit stayed active when prisoner was resisting cuffs during strip")
+	TEST_ASSERT_EQUAL(mod_suit.loc, mod_locker, "MODsuit did not enter the property locker")
+	TEST_ASSERT_EQUAL(overslot_shoes.loc, mod_locker, "Overslotted sneakers were left out of the property locker ([overslot_shoes.loc])")
+
+	// 2. Prisoner with only an ID card and non-police cuffs still gets an owned, unlockable locker from store_extra_property()
+	var/mob/living/carbon/human/bare_prisoner = person()
+	var/obj/item/card/id/bare_card = allocate(/obj/item/card/id)
+	bare_prisoner.equip_to_slot_if_possible(bare_card, ITEM_SLOT_ID, disable_warning = TRUE)
+	var/obj/item/restraints/handcuffs/bare_cuffs = allocate(/obj/item/restraints/handcuffs, get_turf(bare_prisoner))
+	TEST_ASSERT(police.store_property(bare_prisoner, officer_beside(bare_prisoner)), "Bare prisoner strip failed")
+	TEST_ASSERT(police.store_extra_property(bare_prisoner, bare_cuffs), "store_extra_property failed on a prisoner with no prior stored items")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/bare_locker = police.property_locker_holding(bare_cuffs)
+	TEST_ASSERT_NOTNULL(bare_locker, "Extra cuffs were not recorded in any property locker")
+	TEST_ASSERT_EQUAL(bare_locker.owner(), bare_prisoner.mind, "Locker assigned by store_extra_property has no owner")
+	TEST_ASSERT(bare_locker.locked, "Locker assigned by store_extra_property was left unlocked")
+	TEST_ASSERT(bare_locker.is_authorised(bare_prisoner, bare_card), "Prisoner cannot unlock the locker holding their removed cuffs")
+
+	// 3. An open released locker jammed by an anchored girder is skipped in favour of another usable locker
+	var/datum/outpost_police_cell/cell = allocate(/datum/outpost_police_cell, police, "a")
+	police.cells += cell
+	for(var/index in 3 to 4)
+		var/mob/living/carbon/human/inmate = outfitted()
+		TEST_ASSERT(police.store_property(inmate, officer_beside(inmate)), "Setup: inmate [index] strip failed")
+		var/obj/structure/closet/secure_closet/personal/outpost_police/inmate_locker = police.property_locker_for(inmate)
+		inmate_locker.released_at = world.time - 2 MINUTES
+	mod_locker.released_at = world.time - 10 MINUTES
+	bare_locker.released_at = world.time - 5 MINUTES
+	mod_locker.open(null, TRUE)
+	var/obj/structure/girder/jam = allocate(/obj/structure/girder, get_turf(mod_locker))
+	TEST_ASSERT(!mod_locker.can_shut(), "Setup: girder did not jam the open locker")
+	var/mob/living/carbon/human/unjammed_prisoner = outfitted()
+	TEST_ASSERT(police.store_property(unjammed_prisoner, officer_beside(unjammed_prisoner)), "A single jammed open locker blocked stripping into other released lockers")
+	TEST_ASSERT(police.property_locker_for(unjammed_prisoner) != mod_locker, "Jammed open locker was chosen anyway")
+	qdel(jam)
+	mod_locker.free_up()
+
+	// 4. All 4 lockers held by cell inmates: cell_strip_prisoner leaves clothes on but still confiscates warrant crime tools to evidence
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/each_locker as anything in bank)
+		each_locker.evict()
+	for(var/slot in 1 to 4)
+		var/mob/living/carbon/human/held_inmate = outfitted()
+		cell.prisoners[held_inmate.mind] = world.time + 10 MINUTES
+		TEST_ASSERT(police.store_property(held_inmate, officer_beside(held_inmate)), "Setup: held inmate [slot] strip failed")
+	var/mob/living/carbon/human/overflow = outfitted()
+	var/obj/item/clothing/under/overflow_suit = overflow.w_uniform
+	var/obj/item/gun/ballistic/automatic/pistol/warrant_gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	var/obj/item/storage/backpack/overflow_bag = overflow.back
+	overflow_bag.atom_storage.attempt_insert(warrant_gun, overflow, TRUE)
+	var/datum/outpost_warrant/overflow_warrant = police_pin_warrant(police, overflow.mind, 55)
+	overflow_warrant.evidence = list(WEAKREF(warrant_gun))
+	TEST_ASSERT(police.cell_strip_prisoner(overflow, officer_beside(overflow)), "cell_strip_prisoner failed when all property lockers held cell inmates")
+	TEST_ASSERT_EQUAL(overflow.w_uniform, overflow_suit, "Overflow prisoner lost their clothes with no locker available")
+	TEST_ASSERT_EQUAL(warrant_gun.loc, evidence, "Warrant weapon remained on an overflow prisoner instead of going to evidence")
+
+	// 5. Evidence locker watch: reports first thief once, ignores bystander, and re-arms if returned to the evidence locker
+	var/datum/outpost_police/cell_test/recorder = allocate(/datum/outpost_police/cell_test)
+	evidence.police_ref = WEAKREF(recorder)
+	var/obj/item/gun/ballistic/automatic/pistol/seized = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	TEST_ASSERT(evidence.take_evidence(seized), "Setup: evidence locker did not take seized gun")
+	evidence.open(null, TRUE)
+	var/mob/living/carbon/human/thief_one = person()
+	var/mob/living/carbon/human/passerby = person()
+	var/mob/living/carbon/human/thief_two = person()
+	thief_one.put_in_hands(seized)
+	TEST_ASSERT_EQUAL(length(recorder.crimes), 1, "Taking seized item from evidence locker did not report theft once")
+	TEST_ASSERT_EQUAL(recorder.crimes[1][1], thief_one, "First evidence theft blamed [recorder.crimes[1][1]], not thief_one")
+	TEST_ASSERT_EQUAL(recorder.crimes[1][2], "locker_theft", "Evidence theft reported [recorder.crimes[1][2]]") // OUTPOST_CRIME_LOCKER_THEFT
+	thief_one.dropItemToGround(seized)
+	thief_one.put_in_hands(seized)
+	TEST_ASSERT_EQUAL(length(recorder.crimes), 1, "Re-picking up the same stolen evidence spammed locker_theft")
+	thief_one.dropItemToGround(seized)
+	passerby.put_in_hands(seized)
+	TEST_ASSERT_EQUAL(length(recorder.crimes), 1, "Bystander picking up dropped evidence was framed for locker_theft")
+	seized.forceMove(evidence)
+	thief_two.put_in_hands(seized)
+	TEST_ASSERT_EQUAL(length(recorder.crimes), 2, "Evidence returned to the locker and stolen again did not report the new thief")
+	TEST_ASSERT_EQUAL(recorder.crimes[2][1], thief_two, "Second evidence theft blamed [recorder.crimes[2][1]], not thief_two")
+
+

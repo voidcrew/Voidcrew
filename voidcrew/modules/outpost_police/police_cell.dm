@@ -108,6 +108,7 @@
 	stepped_at.Cut()
 	shoved_by.Cut()
 	medic_bodies.Cut()
+	carry_reported.Cut()
 	return ..()
 
 /// This cell is being replaced by a rebuild: it lets go of its door and sign without opening anything
@@ -885,8 +886,18 @@
 	if(paid)
 		police.say_fine_paid(officer)
 	else
-		// Gear into a locker before the cuffs come off (abuse M25)
-		police.store_property(suspect, officer)
+		// Gear into a locker before the cuffs come off (abuse M25); never uncuff or book an unstripped prisoner
+		if(!police.cell_strip_prisoner(suspect, officer))
+			forget_prisoner(prisoner)
+			if(!QDELETED(officer) && guarding_doorway)
+				officer.combat_mode = old_guard_combat
+			cell_walk_out(officer)
+			if(length(prisoners))
+				shut_door(TRUE)
+			else if(stray_inside())
+				open_door(OUTPOST_POLICE_CELL_OPEN)
+			update_sign()
+			return FALSE
 		if(!holds(prisoner, suspect))
 			if(!QDELETED(officer) && guarding_doorway)
 				officer.combat_mode = old_guard_combat
@@ -905,8 +916,8 @@
 		if(paid)
 			if(isturf(restraint.loc) && !QDELETED(suspect))
 				suspect.put_in_hands(restraint)
-		else
-			police.store_extra_property(suspect, restraint)
+		else if(!police.store_extra_property(suspect, restraint) && isturf(restraint.loc) && !outpost_police_untouchable(restraint) && usable())
+			restraint.forceMove(outside_turf)
 	if(!holds(prisoner, suspect))
 		if(!QDELETED(officer) && guarding_doorway)
 			officer.combat_mode = old_guard_combat
@@ -1079,6 +1090,41 @@
 	return TRUE
 
 /**
+ * `officer` strips `prisoner` for jail (`store_property()`), three tries, waiting up to `CELL_UNCUFF_WAIT` if the
+ * officer was stunned or knocked down meanwhile. When every property locker belongs to inmates still in the cells,
+ * clothes stay on (spec) while warrant crime tools and stolen goods still come off to evidence so no weapon enters
+ * the cell. FALSE if the officer could not finish stripping an unstripped prisoner.
+ */
+/datum/outpost_police/proc/cell_strip_prisoner(mob/living/carbon/prisoner, mob/living/officer)
+	var/wait_until = world.time + CELL_UNCUFF_WAIT
+	for(var/attempt in 1 to 3)
+		if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+			return FALSE
+		while(!QDELETED(officer) && officer.stat != DEAD && (officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED)) && world.time < wait_until)
+			sleep(0.5 SECONDS)
+		if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+			return FALSE
+		if(QDELETED(officer) || officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+			return FALSE
+		if(!property_strip_check(prisoner, officer))
+			return FALSE
+		if(store_property(prisoner, officer))
+			return TRUE
+		if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+			return FALSE
+		if(QDELETED(officer) || officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+			continue
+		if(length(lockers) && !property_locker_for(prisoner, must_shut = TRUE))
+			var/delay = max(1, round(OUTPOST_POLICE_STRIP_TIME * GLOB.outpost_police_property_time_scale))
+			if(!do_after(officer, delay, prisoner, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE | IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer), interaction_key = "outpost_police_strip"))
+				continue
+			if(QDELETED(prisoner) || QDELETED(officer) || officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+				continue
+			strip_evidence(prisoner, officer)
+			return TRUE
+	return FALSE
+
+/**
  * `officer` takes `prisoner`'s cuffs off, a real do_after, three tries. An officer knocked down or out meanwhile
  * gets up and tries again, CELL_UNCUFF_WAIT at most. If the officer cannot, the cuffs stay on (a served term
  * drops them, release()).
@@ -1236,6 +1282,13 @@
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_force_door_open(force_type = DEFAULT_DOOR_CHECKS)
 	return ..(BYPASS_DOOR_CHECKS)
 
+// Abuse MF2: nothing shuts an empty cell's door on a body or a bystander, even a pulsed wire while the station is idle
+/obj/machinery/door/airlock/outpost/glass/police_cell/close(forced = DEFAULT_DOOR_CHECKS, force_crush = FALSE)
+	if(holding_cell && !length(holding_cell.prisoners) && holding_cell.stray_inside())
+		holding_cell.schedule_close_check(5 SECONDS)
+		return FALSE
+	return ..()
+
 /// `who` worked on the door: they answer for what it does next, and a mend is coming
 /obj/machinery/door/airlock/outpost/glass/police_cell/proc/note_hack(mob/living/who)
 	if(mending || QDELETED(src))
@@ -1278,7 +1331,13 @@
 	mending = TRUE
 	obj_flags &= ~EMAGGED
 	panel_open = FALSE
-	wires.repair()
+	if(wires && length(wires.assemblies))
+		var/turf/drop_at = holding_cell?.outside_turf || get_turf(src)
+		for(var/color in wires.assemblies.Copy())
+			var/obj/item/assembly/attached = wires.detach_assembly(color)
+			if(attached && drop_at)
+				attached.forceMove(drop_at)
+	wires?.repair()
 	security_level = initial(security_level)
 	set_electrified(MACHINE_NOT_ELECTRIFIED)
 	regainMainPower()
@@ -1286,6 +1345,7 @@
 	lights = TRUE
 	safe = TRUE
 	normalspeed = TRUE
+	autoclose = FALSE
 	emergency = FALSE
 	aiControlDisabled = initial(aiControlDisabled)
 	unbolt()
@@ -1305,7 +1365,7 @@
 
 /// Whether anything a hack leaves is still wrong with it
 /obj/machinery/door/airlock/outpost/glass/police_cell/proc/still_hacked()
-	return panel_open || (obj_flags & EMAGGED) || length(wires?.cut_wires) || locked || !hasPower() || isElectrified() || security_level != initial(security_level)
+	return panel_open || (obj_flags & EMAGGED) || length(wires?.cut_wires) || length(wires?.assemblies) || locked || !hasPower() || isElectrified() || !lights || !safe || !normalspeed || emergency || autoclose || aiControlDisabled != initial(aiControlDisabled) || security_level != initial(security_level)
 
 // Outpost property: hacked, never taken apart or plated over
 /obj/machinery/door/airlock/outpost/glass/police_cell/should_try_removing_electronics()
@@ -1314,10 +1374,14 @@
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_reinforce(mob/user, obj/item/stack/sheet/material, amt_required, new_security_level)
 	return FALSE
 
-/// The station's door control lifts the bolts for an officer at work (booking, release, a medic): see open_door()
+/// The station's door control lifts the bolts and clears hazards for an officer at work (booking, release, a medic): see open_door()
 /obj/machinery/door/airlock/outpost/glass/police_cell/proc/cell_take_over()
 	if(locked)
 		unbolt()
+	safe = TRUE
+	autoclose = FALSE
+	if(isElectrified())
+		set_electrified(MACHINE_NOT_ELECTRIFIED)
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
@@ -1335,7 +1399,7 @@
 
 // A pry the normal way once its power is out; with the power on only the slow force works (crowbar_act())
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
-	if(hasPower() || isnull(tool))
+	if(!density || hasPower() || isnull(tool))
 		return
 	note_hack(user)
 	return ..()
@@ -1344,8 +1408,14 @@
 /obj/machinery/door/airlock/outpost/glass/police_cell/outpost_hackable(obj/item/tool)
 	return tool?.tool_behaviour == TOOL_SCREWDRIVER || tool?.tool_behaviour == TOOL_WIRECUTTER
 
-/// A cell door's wires: whoever cuts or pulses one is noted as working the door
+/// A cell door's wires: whoever cuts, pulses or wires an assembly onto one is noted as working the door
 /datum/wires/airlock/security/outpost_cell
+	/// Assembly weakref -> weakref of the mob who attached it, so a remote pulse still knows its hacker
+	var/list/assembly_installers
+
+/datum/wires/airlock/security/outpost_cell/Destroy()
+	assembly_installers = null
+	return ..()
 
 /datum/wires/airlock/security/outpost_cell/cut(wire, mob/living/source)
 	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
@@ -1353,10 +1423,44 @@
 		door.note_hack(source)
 	return ..()
 
+// A cell door never auto-closes: its cell drives when it shuts, and mending WIRE_TIMING must not turn autoclose on
+/datum/wires/airlock/security/outpost_cell/on_cut(wire, mend = FALSE, mob/living/source = null)
+	if(wire == WIRE_TIMING)
+		var/obj/machinery/door/airlock/door = holder
+		if(istype(door))
+			door.autoclose = FALSE
+		return
+	return ..()
+
 /datum/wires/airlock/security/outpost_cell/pulse(wire, mob/living/user, force = FALSE)
 	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
 	if(istype(door))
 		door.note_hack(user)
+	return ..()
+
+/datum/wires/airlock/security/outpost_cell/attach_assembly(color, obj/item/assembly/S)
+	var/mob/living/holder_mob = isliving(S?.loc) ? S.loc : null
+	. = ..()
+	if(!.)
+		return
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
+	var/mob/living/installer = isliving(usr) ? usr : (holder_mob || (istype(door) ? door.hack_culprit() : null))
+	if(installer)
+		LAZYSET(assembly_installers, WEAKREF(S), WEAKREF(installer))
+	if(istype(door))
+		door.note_hack(installer)
+
+/datum/wires/airlock/security/outpost_cell/detach_assembly(color)
+	. = ..()
+	if(.)
+		LAZYREMOVE(assembly_installers, WEAKREF(.))
+
+/datum/wires/airlock/security/outpost_cell/pulse_assembly(obj/item/assembly/S)
+	var/datum/weakref/installer_ref = S ? LAZYACCESS(assembly_installers, WEAKREF(S)) : null
+	var/mob/living/installer = installer_ref?.resolve()
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
+	if(istype(door) && isliving(installer))
+		door.note_hack(installer)
 	return ..()
 
 // Someone got into the doorway as it shut: it opens again for them, and its cell closes it once they have moved
@@ -1388,6 +1492,8 @@
 	return TRUE
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/crowbar_act(mob/living/user, obj/item/tool)
+	if(!density)
+		return ITEM_INTERACT_BLOCKING
 	// The power out (its wires cut): a pry the normal way
 	if(!hasPower() && !locked && !welded)
 		return ..()
