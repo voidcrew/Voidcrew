@@ -331,7 +331,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(!tint_filter)
 		return FALSE
 	var/list/flashed = cyberware_time_tint_after(flash)
-	animate(tint_filter, color = flashed, time = times[1], easing = LINEAR_EASING)
+	// Beside the body's own animations: with a killing blow's death slump started the same tick, the client played the
+	// flash seconds late and near white, a corpse glowing in the middle of the slow-mo.
+	animate(tint_filter, color = flashed, time = times[1], easing = LINEAR_EASING, flags = ANIMATION_PARALLEL)
 	animate(color = flashed, time = times[2], easing = LINEAR_EASING)
 	animate(color = cyberware_time_stop_tint(), time = times[3], easing = LINEAR_EASING)
 	return TRUE
