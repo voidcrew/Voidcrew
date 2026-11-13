@@ -147,7 +147,8 @@
 /// The backstab (one path for every sharp knife, the knife execution): from behind on an unaware guard it goes for the
 /// throat whatever is aimed at, and the cut is tg's critical slash and neck_slice; the guard can't speak. Not from the
 /// front, not a blunt blade, not through a SWAT helmet, not when held in a grab (tg's own slit). The mute goes with the
-/// cut. The finish is called straight, so the wind-up's timing doesn't decide the test (hv_knife_execution_kill does).
+/// cut. An unaware guard is cut on the click itself, with no hold (decision 45 amended): a patrolling guard would walk out
+/// of a 1.5 s hold. A helpless guard still gets the hold.
 /datum/unit_test/voidcrew_stealth_d45_backstab
 
 /datum/unit_test/voidcrew_stealth_d45_backstab/Run()
@@ -164,9 +165,11 @@
 	TEST_ASSERT(!knife.hv_knife_execution_possible(person, guard), "The knife backstabs from the front")
 	person.forceMove(stealth_at(block, 3, 1))
 	TEST_ASSERT(knife.hv_knife_execution_possible(person, guard), "The knife doesn't backstab an unaware guard from behind with the chest aimed at")
-	// The cut.
-	TEST_ASSERT(knife.hv_finish_knife_execution(person, guard, list(), list()), "The backstab didn't land")
-	TEST_ASSERT(guard.has_status_effect(/datum/status_effect/neck_slice), "A backstab didn't cut the throat")
+	TEST_ASSERT(knife.hv_knife_execution_instant(person, guard), "An unaware guard from behind waits for the hold")
+	// The cut lands on the click, no hold.
+	knife.melee_attack_chain(person, guard, list())
+	TEST_ASSERT(!DOING_INTERACTION(person, "hv_knife_execution"), "The backstab on an unaware guard started a hold")
+	TEST_ASSERT(guard.has_status_effect(/datum/status_effect/neck_slice), "A backstab didn't cut the throat on the click")
 	var/obj/item/bodypart/head = guard.get_bodypart(BODY_ZONE_HEAD)
 	var/critical_slash = FALSE
 	for(var/datum/wound/cut as anything in head.wounds)
@@ -187,6 +190,15 @@
 	stabber.set_combat_mode(TRUE)
 	stabber.zone_selected = BODY_ZONE_CHEST
 	TEST_ASSERT(blade.hv_knife_execution_possible(stabber, second), "A plain combat knife doesn't backstab")
+	// A helpless guard taken from the front keeps the hold.
+	stabber.forceMove(stealth_at(block, 5, 3))
+	stabber.zone_selected = BODY_ZONE_HEAD
+	second.Knockdown(30 SECONDS)
+	TEST_ASSERT(blade.hv_knife_execution_possible(stabber, second), "A knife can't execute a helpless guard from the front")
+	TEST_ASSERT(!blade.hv_knife_execution_instant(stabber, second), "A helpless guard from the front was cut without the hold")
+	second.SetKnockdown(0)
+	stabber.forceMove(stealth_at(block, 3, 3))
+	stabber.zone_selected = BODY_ZONE_CHEST
 	var/obj/item/knife/plastic/spork = allocate(/obj/item/knife/plastic)
 	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
 		TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A blunt plastic knife backstabs")

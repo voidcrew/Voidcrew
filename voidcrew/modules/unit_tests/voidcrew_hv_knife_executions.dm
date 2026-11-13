@@ -54,7 +54,8 @@
 	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
 		TEST_ASSERT(!spork.hv_knife_execution_possible(attacker, victim), "A blunt plastic knife started an execution")
 
-/// A held wind-up from behind ends in tg's real throat slit (decision 45's maths).
+/// A held wind-up from behind ends in tg's real throat slit (decision 45's maths). A player victim keeps the 1.5 s hold;
+/// only an unaware stealth guard is cut on the click (voidcrew_stealth_d45_backstab).
 /datum/unit_test/hv_knife_execution_kill
 
 /datum/unit_test/hv_knife_execution_kill/Run()
@@ -63,6 +64,7 @@
 	var/obj/item/knife/combat/knife = hv_knife_exec_setup(attacker, victim)
 	victim.setDir(EAST)
 
+	TEST_ASSERT(!knife.hv_knife_execution_instant(attacker, victim), "A non-guard victim was cut without the hold")
 	knife.melee_attack_chain(attacker, victim, list())
 	TEST_ASSERT(DOING_INTERACTION(attacker, "hv_knife_execution"), "The knife click did not start the wind-up")
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)

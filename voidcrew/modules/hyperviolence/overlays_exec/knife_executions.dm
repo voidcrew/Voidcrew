@@ -7,7 +7,8 @@
 // Never on a body the attacker holds in an aggressive grab or tighter (that is tg's own slow throat slit), never on a
 // throat already cut. Only players and boss-rank human NPCs do it (hv_can_execute()), never pacifists.
 //
-// Both hold still for HV_KNIFE_EXECUTION_WINDUP; moving, losing the blade or turning to face the attacker breaks the
+// A stealth guard caught off guard from behind is cut on the click (hv_knife_execution_instant()). Anyone else: both
+// hold still for HV_KNIFE_EXECUTION_WINDUP; moving, losing the blade or turning to face the attacker breaks the
 // wind-up cleanly. If it holds, the cut is decision 45's: tg's throat slit maths (hv_finish_knife_execution()). The
 // throat blood follows the wound that landed (hv_knife_exec_spray). Nothing extra kills, stuns or roots the victim;
 // death comes only from tg's real damage and bleeding. A cut throat is mute (voidcrew/edits/datums/neck_slice_mute.dm).
@@ -63,10 +64,24 @@
 	var/mob/living/carbon/human/npc/guard = victim
 	return istype(guard) && istype(guard.ai_controller, /datum/ai_controller/basic_controller/human_npc/stealth)
 
-/// Grabs the victim, presses the blade to their throat and, if both hold still, cuts.
+/**
+ * Whether this execution lands on the click with no hold: a stealth guard caught off guard from behind (decision 45,
+ * amended). A patrolling guard walks most of the time and tg's do_after breaks on his first step, so a 1.5 s hold
+ * could only land on a guard standing at a stop. Players, other NPCs and helpless targets keep the hold.
+ */
+/obj/item/knife/proc/hv_knife_execution_instant(mob/living/user, mob/living/carbon/victim)
+	if(!hv_knife_is_stealth_guard(victim) || !check_behind(user, victim))
+		return FALSE
+	var/mob/living/carbon/human/npc/guard = victim
+	return guard.stealth_caught_off_guard(user)
+
+/// Grabs the victim, presses the blade to their throat and, if both hold still, cuts. An unaware guard is cut at once.
 /obj/item/knife/proc/hv_start_knife_execution(mob/living/user, mob/living/carbon/victim, list/modifiers, list/attack_modifiers)
 	if(DOING_INTERACTION(user, HV_KNIFE_EXECUTION_DOAFTER) || !hv_knife_execution_possible(user, victim))
 		return FALSE
+	// The outcome lands now; the motion's grab and cut play over it as decoration (knife_execution_motion.dm).
+	if(hv_knife_execution_instant(user, victim))
+		return hv_finish_knife_execution(user, victim, modifiers, attack_modifiers)
 	var/from_behind = check_behind(user, victim)
 	var/unseen = from_behind || victim.is_blind() || !(user in viewers(7, victim))
 	if(from_behind)
