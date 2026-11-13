@@ -21,7 +21,8 @@
   "foam",
   "magazines built into a gun",
   "energy lenses built into a gun",
-  "spent casings and oddities"
+  "spent casings and oddities",
+  "plasma cartridges"
  ],
  "items": {
   "/obj/item/ammo_box/a357": {
@@ -1444,6 +1445,15 @@
    "reason": "Built into a floral somatoray. Plants only.",
    "tier": "none"
   },
+  "/obj/item/ammo_casing/energy/frontier_laser": {
+   "confidence": "high",
+   "group": "energy lenses built into a gun",
+   "hash": "2d1a8f4bd2432f8e",
+   "name": "energy weapon lens",
+   "rank": 30,
+   "reason": "Built into the Kestrel, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
   "/obj/item/ammo_casing/energy/gravity/attract": {
    "confidence": "high",
    "group": "energy lenses built into a gun",
@@ -1623,6 +1633,15 @@
    "reason": "Built into the Cybersun S-120, never on its own. Rated with the gun.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_casing/energy/lasergun/frontier_smg": {
+   "confidence": "high",
+   "group": "energy lenses built into a gun",
+   "hash": "dcd0be31b16f80ed",
+   "name": "energy weapon lens",
+   "rank": 18,
+   "reason": "Built into the Hornet, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_casing/energy/lasergun/old": {
    "confidence": "high",
    "group": "energy lenses built into a gun",
@@ -1662,6 +1681,24 @@
    "rank": 26,
    "reason": "Built into the plasma cutters, never on its own. Rated with the gun.",
    "tier": "green"
+  },
+  "/obj/item/ammo_casing/energy/plasma_bolt": {
+   "confidence": "high",
+   "group": "energy lenses built into a gun",
+   "hash": "e0406267eef6d9d0",
+   "name": "energy weapon lens",
+   "rank": 15,
+   "reason": "Built into the Cinder, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_casing/energy/plasma_bolt/heavy": {
+   "confidence": "high",
+   "group": "energy lenses built into a gun",
+   "hash": "f460264afa2157aa",
+   "name": "energy weapon lens",
+   "rank": 9,
+   "reason": "Built into the Furnace and Old Furnace, never on its own. Rated with the gun.",
+   "tier": "red"
   },
   "/obj/item/ammo_casing/energy/scatter": {
    "confidence": "high",
@@ -2213,6 +2250,15 @@
    "rank": 5,
    "reason": "The spring inside every syringe gun, never on its own. Rated with the plain syringe gun.",
    "tier": "green"
+  },
+  "/obj/item/plasma_cartridge": {
+   "confidence": "medium",
+   "group": "plasma cartridges",
+   "hash": "336e2080d817089c",
+   "name": "plasma cartridge",
+   "rank": 1,
+   "reason": "Loads the Cinder (yellow) and the Furnace (red); takes the lower. Single use, pressed from 3 plasma sheets.",
+   "tier": "yellow"
   }
  },
  "method": "A round takes the tier of the guns that fire it, using the gun ratings; a box or loose round that fits several guns takes the lowest real one, so a crew holding that gun can feed it. It moves up only where the round itself is the power (walls, one-hit stuns, fire, blast), plain common rounds for green guns are none, and lenses and built-in magazines copy their gun.",
