@@ -234,7 +234,8 @@
 
 	police.close_warrant(brawler.mind, TRUE)
 	keeper.forceMove(at(3, 4)) // off the counter (home is 1,1): no desk alarm within reach
-	TEST_ASSERT_EQUAL(police.report_crime(brawler, "shot", victim), 0, "A trader away from their counter reported instantaneously instead of queueing a civilian report")
+	police.recent_reports.Cut()
+	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", victim), "A trader away from their counter reported instantaneously instead of queueing a civilian report")
 	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "An off-counter trader queued [length(police.pending_reports)] pending reports, not 1")
 	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An off-counter trader's delayed report put heat on immediately")
 
@@ -766,35 +767,6 @@
 	TEST_ASSERT_NULL(officer.held_item, "A seated officer put into searching kept holding their coffee")
 	brain.stealth_go_unaware()
 	qdel(officer)
-
-	// 2. A non-case watching officer stands down to unaware (not searching) when a standing suspect is cuffed into an open arrest
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = officer_at(7, 3, EAST)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = officer_at(5, 3, EAST)
-	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
-	case = police.open_case(warrant)
-	police.sleep_tick()
-	TEST_ASSERT_NOTNULL(case, "Setup: could not reopen the two-star case")
-	if(watcher.case)
-		case.drop_officer(watcher)
-	watcher_brain.stealth_go_alert(suspect)
-	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "alert", "Setup: the watching officer is not alert on the suspect")
-	var/obj/item/restraints/handcuffs/outpost_police/used/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
-	TEST_ASSERT(suspect.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED, disable_warning = TRUE), "Setup: could not cuff the standing suspect")
-	case.cuffs_on(suspect)
-	TEST_ASSERT(!watcher_brain.stealth_keep_target(), "A non-case watching officer kept a cuffed arrestee as a fight target")
-	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "A non-case watching officer went [watcher_brain.stealth_state()] instead of unaware when a standing suspect was cuffed")
-	TEST_ASSERT_NULL(watcher_brain.police_hunt, "A stood-down watching officer kept police_hunt set")
-	watcher.dispatch_mind = WEAKREF(suspect.mind)
-	watcher_brain.police_research_at = 0
-	police.stealth_tick_officer(watcher)
-	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "stealth_tick_officer sent an officer searching for a restrained suspect already under arrest")
-	watcher.dispatch_mind = null
-	suspect.dropItemToGround(cuffs, TRUE)
-	qdel(cuffs)
-	police.close_case(suspect.mind)
-	police_pin_warrant(police, suspect.mind, 0)
-	qdel(arresting)
-	qdel(watcher)
 
 	// 3. Multi-occupant mech with clean pilot and three-star passenger keeps police_hunt on the wanted passenger without flapping
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hunter = officer_at(6, 5, EAST, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)

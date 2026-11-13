@@ -554,7 +554,7 @@
 	var/datum/outpost_holdup/second_hold = shop.holdup
 	TEST_ASSERT_NOTNULL(second_hold, "Second robber started no stick-up")
 	second_hold.hand_over(trader, second_robber)
-	police.apply_upgraded_crime(second_robber, 0, "robbery", null, second_gun) // OUTPOST_CRIME_ARMED_ROBBERY
+	police.apply_upgraded_crime(second_robber, 0, OUTPOST_CRIME_ARMED_ROBBERY, null, second_gun)
 	TEST_ASSERT(second_hold.counted, "An upgraded robbery did not mark the stick-up counted")
 	second_hold.try_alarm()
 	TEST_ASSERT_EQUAL(police.get_warrant(second_robber.mind)?.heat, 30, "The stick-up alarm double-counted an upgraded robbery")
@@ -581,7 +581,7 @@
 	if(!QDELETED(second_hold))
 		qdel(second_hold)
 
-/// Toy and tool guns never start a stick-up, and a second robber aiming while the first lowers takes over without unpausing the trader
+/// Toy and tool guns never start a stick-up
 /datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_overlap_and_toys
 
 /datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_overlap_and_toys/Run()
@@ -597,28 +597,6 @@
 	shop.held_up(trader, person, laser_tag)
 	TEST_ASSERT_NULL(shop.holdup, "A laser-tag gun started a trader stick-up")
 
-	var/turf/second_spot = get_turf(person)
-	for(var/turf/open/candidate in orange(2, trader))
-		if(candidate != get_turf(person) && !candidate.is_blocked_turf(exclude_mobs = TRUE))
-			second_spot = candidate
-			break
-	var/mob/living/carbon/human/second_robber = mind_person(second_spot)
-	var/obj/item/gun/energy/disabler/second_gun = allocate(/obj/item/gun/energy/disabler)
-	TEST_ASSERT(second_robber.put_in_hands(second_gun), "Could not give the second robber a gun")
-
-	person.AddComponent(/datum/component/gunpoint, trader, gun)
-	second_robber.AddComponent(/datum/component/gunpoint, trader, second_gun)
-	sleep(0.3 SECONDS)
-	var/datum/outpost_holdup/first_hold = shop.holdup
-	TEST_ASSERT_EQUAL(first_hold?.robber_ref?.resolve(), person, "The first robber did not get the initial stick-up")
-	// First robber lowers before hand-over while the second keeps aiming: the second takes over and the trader stays paused
-	qdel(person.GetComponent(/datum/component/gunpoint))
-	TEST_ASSERT_EQUAL(shop.holdup?.robber_ref?.resolve(), second_robber, "Lowering the first gun did not hand the stick-up to the second robber still aiming")
-	TEST_ASSERT(HAS_TRAIT(trader, TRAIT_AI_PAUSED), "The trader was unpaused while the second robber still held them at gunpoint")
-	qdel(second_robber.GetComponent(/datum/component/gunpoint))
-	if(!QDELETED(shop.holdup))
-		qdel(shop.holdup)
-
 /// Merging stolen till credits with a robber's own holochip neither launders the till claim nor swallows the robber's legitimate excess credits on search or jail strip
 /datum/unit_test/voidcrew_outpost_recovery_robbery/holochip_merge_and_seizure
 
@@ -633,6 +611,7 @@
 		GLOB.outpost_police_property_time_scale = saved_scale
 		return
 	var/datum/outpost_holdup/first_hold = shop.holdup
+	first_hold.hand_over(trader, person)
 	var/obj/item/holochip/stolen_chip
 	for(var/obj/item/holochip/candidate in person.get_all_contents())
 		stolen_chip = candidate

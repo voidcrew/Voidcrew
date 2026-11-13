@@ -624,8 +624,6 @@
 	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in list(outer_door, inner_door))
 		if(!QDELETED(door) && !door.density)
 			close_door(door)
-	if(outer_door?.density && inner_door?.density && length(chamber_people()))
-		start_scan()
 	// The scanner is seen coming back, not just found working (owner decision 33)
 	if(!QDELETED(sensor))
 		do_sparks(2, TRUE, sensor)

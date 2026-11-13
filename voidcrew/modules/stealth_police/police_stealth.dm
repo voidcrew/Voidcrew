@@ -319,25 +319,6 @@
 	if(isliving(person) && person.mind)
 		police_hunt = WEAKREF(person.mind)
 
-// A standing suspect in plain sight who is now in custody, restrained under arrest, or cleared was not lost: stand down instead of searching
-/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_keep_target()
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
-	var/atom/remembered = blackboard[BB_BASIC_MOB_CURRENT_TARGET] || blackboard[BB_STEALTH_FOCUS]
-	if(istype(officer) && officer.police && !QDELETED(remembered) && !stealth_closet_of(remembered))
-		if(!officer.police_will_fight(remembered) && get_dist(officer, remembered) <= HUMAN_NPC_SIGHT_RANGE && can_see(officer, remembered, HUMAN_NPC_SIGHT_RANGE))
-			clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
-			clear_blackboard_key(BB_STEALTH_FOCUS)
-			var/mob/living/fallen = remembered
-			if(isliving(fallen) && police_suspect_down(fallen))
-				stealth_target_downed(fallen)
-				return
-			if(isliving(fallen))
-				notice_map -= REF(fallen)
-			police_hunt = null
-			stealth_go_unaware()
-			return
-	return ..()
-
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_try_closet()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	var/obj/structure/closet/box = shut_in
