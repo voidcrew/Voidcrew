@@ -11,9 +11,9 @@
  *   over it. tg's closet does the taking; the crew bag only lets in the body it was opened for and the limbs and
  *   organs picked up with it (M32: nothing living, nothing else on the tile).
  * - Haul: tg's pull. An NPC body goes to the nearest lift tile of its sector (the staff lift behind a police
- *   door, a berth's alcove or the lobby alcove) and down the lift. A player's body rides police.ride() to the
- *   lobby and goes into a free tray (the tray's own drag-onto and close), or onto the morgue floor when every
- *   tray is full.
+ *   door, a berth's alcove or the lobby alcove) and down the lift. A player's body is pulled on foot out through
+ *   the exit gate to the lobby (from a hangar berth, police.ride() to the lobby first) and goes into a free tray
+ *   (the tray's own drag-onto and close), or onto the morgue floor when every tray is full.
  * - Steps that take time on a body (bagging, the lift, the tray) run as one action at a time (begin_action()),
  *   so the routine never sleeps.
  *
@@ -47,6 +47,8 @@
 #define MORGUE_UNBAGGABLE_RETRY (10 MINUTES)
 /// An open crew bag with nothing in it goes after this long
 #define MORGUE_EMPTY_BAG_TIME (2 MINUTES)
+/// With no bodies left to collect they take the lift out after this long
+#define MORGUE_IDLE_LEAVE (45 SECONDS)
 
 /// The job's stages
 #define MORGUE_STAGE_FETCH "fetch"
@@ -71,6 +73,8 @@
 	// On the station's radio net: what they see goes out on their headset, or not at all (stealth_radio.dm)
 	stealth_radio = TRUE
 	routine = list(/datum/ambient_activity/recover_body = 1)
+	/// world.time since when they have had no body to collect, or 0
+	var/idle_since = 0
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
@@ -79,11 +83,69 @@
 	if(istype(card))
 		card.registered_name = real_name
 		card.update_label()
+	var/obj/item/radio/headset = ears
+	if(istype(headset))
+		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
 	// The zone's voice, as its officers have
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
 	var/section = outpost?.police?.profile?.voice_section
 	if(section)
 		dialogue_section = section
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/shift_times(delay)
+	. = ..()
+	idle_since = ambient_shifted(idle_since, delay)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/get_lines(context)
+	var/obj/structure/overmap/trader_outpost/outpost = morgue_recovery()?.outpost || get_outpost()
+	var/section = outpost?.police?.profile?.voice_section
+	if(section)
+		dialogue_section = section
+	var/static/list/morgue_contexts = list(
+		"idle" = TRUE,
+		"talk" = TRUE,
+		"work" = TRUE,
+		"chat" = TRUE,
+		"reply" = TRUE,
+		"attacked" = TRUE,
+		"violence" = TRUE,
+		"leave" = TRUE,
+	)
+	if(morgue_contexts[context])
+		var/list/lines = ambient_dialogue_lines(dialogue_file, dialogue_section, "morgue_[context]")
+		if(length(lines))
+			return outpost_fresh_lines(lines, last_line)
+	return ..()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/pick_conversation()
+	var/list/entry = ambient_dialogue_section(dialogue_file, dialogue_section)
+	var/list/conversations = entry?["morgue_conversations"]
+	if(!length(conversations))
+		return null
+	var/list/conversation = pick(conversations)
+	if(!islist(conversation) || !istext(conversation["opener"]))
+		return null
+	var/list/replies = conversation["replies"]
+	return list(conversation["opener"], length(replies) ? pick(replies) : null)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/pick_activity()
+	var/datum/outpost_recovery/rec = morgue_recovery()
+	var/mob/living/target = rec?.next_body(src)
+	if(target && needs_checkpoint_cross(target))
+		idle_since = 0
+		var/datum/ambient_activity/cross = start_activity(new /datum/ambient_activity/cross_checkpoint(src))
+		if(cross)
+			return cross
+	var/datum/ambient_activity/job = start_activity(new /datum/ambient_activity/recover_body(src))
+	if(job)
+		idle_since = 0
+		return job
+	if(!idle_since)
+		idle_since = max(world.time, 1)
+	if(world.time - idle_since >= MORGUE_IDLE_LEAVE && (!rec || (!length(rec.npc_bodies()) && !length(rec.player_bodies()))))
+		morgue_radio(RECOVERY_LINE_LIFT)
+		return start_activity(new /datum/ambient_activity/leave(src))
+	return start_activity(new /datum/ambient_activity/idle(src))
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/death(gibbed)
 	var/was_alive = stat != DEAD
@@ -180,6 +242,43 @@
 		return
 	qdel(src)
 
+/// Someone revived in a crew bag inside a closed morgue tray can always push the tray and bag open
+/obj/structure/closet/body_bag/outpost_morgue/relaymove(mob/living/user, direction)
+	if(user.stat)
+		return
+	if(istype(loc, /obj/structure/bodycontainer))
+		container_resist_act(user)
+		return
+	return ..()
+
+/obj/structure/closet/body_bag/outpost_morgue/container_resist_act(mob/living/user, loc_required = TRUE)
+	var/obj/structure/bodycontainer/tray = loc
+	if(!opened && istype(tray))
+		if(!tray.locked)
+			COOLDOWN_RESET(tray, open_close_cd)
+			tray.open()
+			if(isturf(loc) && !welded && !locked)
+				open(user)
+			return
+		if(DOING_INTERACTION_WITH_TARGET(user, tray))
+			return
+		user.changeNext_move(CLICK_CD_BREAKOUT)
+		user.last_special = world.time + CLICK_CD_BREAKOUT
+		user.visible_message(null,
+			span_notice("You lean on the back of [tray] and start pushing the tray open..."),
+			span_hear("You hear a metallic creaking from [tray]."))
+		if(!do_after(user, 1 MINUTES, target = tray))
+			return
+		if(QDELETED(user) || user.stat != CONSCIOUS || user.loc != src || loc != tray)
+			return
+		tray.locked = FALSE
+		COOLDOWN_RESET(tray, open_close_cd)
+		tray.open()
+		if(isturf(loc) && !welded && !locked)
+			open(user)
+		return
+	return ..()
+
 // =========================================================================
 // HELPERS
 // =========================================================================
@@ -255,7 +354,7 @@
 			return TRUE
 	return FALSE
 
-/// Whether `tray` can take a body: it has its tray, and nothing alive, no body and no bag in it or on it
+/// Whether `tray` can take a body: it has its tray, and nothing alive or dead in it or on it (an empty bag is lifted off)
 /proc/morgue_tray_free(obj/structure/bodycontainer/morgue/tray)
 	if(QDELETED(tray) || !tray.connected)
 		return FALSE
@@ -264,7 +363,7 @@
 		var/turf/tray_turf = get_turf(tray.connected)
 		things += tray_turf.get_all_contents()
 	for(var/atom/thing as anything in things)
-		if(isliving(thing) || istype(thing, /obj/structure/closet/body_bag))
+		if(isliving(thing))
 			return FALSE
 	return TRUE
 
@@ -314,6 +413,8 @@
  */
 /datum/outpost_recovery/proc/next_body(mob/living/worker)
 	var/turf/from = get_turf(worker)
+	var/datum/outpost_police/police = outpost?.police
+	var/worker_sector = (from && police) ? police.sector_of(from) : null
 	for(var/datum/weakref/old_ref as anything in retry_at.Copy())
 		if(!old_ref?.resolve())
 			retry_at -= old_ref
@@ -338,6 +439,8 @@
 			continue
 		var/turf/body_turf = get_turf(body)
 		var/score = (from && body_turf?.z == from.z) ? get_dist(from, body_turf) : 500
+		if(police && worker_sector != police.sector_of(body_turf))
+			score += 200
 		// Officers and traders first
 		if(istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || istype(body, OUTPOST_TRADER_MOB))
 			score -= 1000
@@ -415,6 +518,8 @@
 	var/give_up_at = 0
 	var/approach_tries = 0
 	var/ride_tries = 0
+	/// Hangar berth or lobby sector being ridden to via the hangar elevator
+	var/ride_sector
 
 /datum/ambient_activity/recover_body/setup()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/worker = doer
@@ -428,21 +533,28 @@
 		return FALSE
 	body_ref = WEAKREF(body)
 	give_up_at = world.time + MORGUE_JOB_TIMEOUT
+	var/datum/outpost_police/police = recovery.outpost?.police
+	var/worker_sector = police?.sector_of(worker)
+	var/body_sector = police?.sector_of(body)
+	var/berth_jump = police && worker_sector != body_sector && (istype(worker_sector, /datum/outpost_berth) || istype(body_sector, /datum/outpost_berth))
 	var/obj/structure/closet/body_bag/outpost_morgue/crew_bag = body.loc
 	if(istype(crew_bag))
 		// Bagged already (its worker went down): haul it on
 		bag_ref = WEAKREF(crew_bag)
 		stage = MORGUE_STAGE_HAUL
-		go_to(get_turf(crew_bag), 1)
+		if(!berth_jump)
+			go_to(get_turf(crew_bag), 1)
 	else
 		doer.set_held(/obj/item/bodybag/outpost_morgue)
-		go_to(get_turf(body), 1)
+		if(!berth_jump)
+			go_to(get_turf(body), 1)
 	speak_of(body)
 	return TRUE
 
 /datum/ambient_activity/recover_body/Destroy()
 	recovery = null
 	goal = null
+	ride_sector = null
 	return ..()
 
 /// A word on finding a body: the first of the wave, or an officer
@@ -542,9 +654,25 @@
 
 // ----- fetch -----
 
-/// Beside the body: bag it. Not beside it: walk up.
+/// Beside the body: bag it. In a hangar berth (or heading into one): ride the hangar elevator. Otherwise: walk up.
 /datum/ambient_activity/recover_body/proc/fetch_step(mob/living/body)
 	var/atom/target = morgue_bag_target(body)
+	var/datum/outpost_police/police = recovery?.outpost?.ensure_police()
+	var/worker_sector = police?.sector_of(doer)
+	var/body_sector = police?.sector_of(target)
+	if(police && worker_sector != body_sector && (istype(worker_sector, /datum/outpost_berth) || istype(body_sector, /datum/outpost_berth)))
+		var/next_sector = istype(worker_sector, /datum/outpost_berth) ? POLICE_SECTOR_LOBBY : body_sector
+		var/lift_sector = istype(worker_sector, /datum/outpost_berth) ? worker_sector : POLICE_SECTOR_LOBBY
+		var/turf/lift = police.dispatch_nearest_lift_point(lift_sector, doer)
+		if(!lift)
+			give_up(TRUE)
+			return AMBIENT_STEP_DONE
+		if(doer.loc != lift)
+			go_to(lift)
+			return AMBIENT_STEP_MOVE
+		ride_sector = next_sector
+		begin_action(PROC_REF(ride_for_body))
+		return AMBIENT_STEP_CONTINUE
 	if(!doer.Adjacent(target))
 		if(++approach_tries > MORGUE_APPROACH_TRIES)
 			give_up(TRUE)
@@ -557,6 +685,25 @@
 		return AMBIENT_STEP_MOVE
 	begin_action(PROC_REF(bag_body))
 	return AMBIENT_STEP_CONTINUE
+
+/// Rides the hangar elevator between the lobby alcove and a hangar berth to reach a body there. Sleeps.
+/datum/ambient_activity/recover_body/proc/ride_for_body()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/worker = doer
+	var/datum/outpost_police/police = recovery?.outpost?.ensure_police()
+	if(!istype(worker) || !police || !ride_sector)
+		give_up(TRUE)
+		return FALSE
+	worker.morgue_radio(RECOVERY_LINE_LIFT)
+	var/arrived = police.ride(worker, ride_sector)
+	if(QDELETED(src))
+		return FALSE
+	ride_sector = null
+	if(!arrived)
+		if(++ride_tries >= MORGUE_RIDE_TRIES)
+			give_up(TRUE)
+		return FALSE
+	ride_tries = 0
+	return TRUE
 
 /**
  * Bags the body: a do_after beside it, then the bag is unfolded on its tile and closed over it with the limbs
@@ -711,9 +858,9 @@
 	return !QDELETED(tray) && morgue_tray_free(tray)
 
 /**
- * Where the bag goes from here: an NPC's down the nearest lift of the sector the worker stands in; a player's to
- * a free tray, the morgue floor or (no morgue on the map) where it is, once in the lobby, and to the lobby by
- * the nearest lift before that. FALSE when there is nowhere.
+ * Where the bag goes from here: an NPC's down the nearest lift of the sector the worker stands in; a player's
+ * pulled on foot through the exit gate and lobby to a free morgue tray or the morgue floor (riding the hangar
+ * elevator to the lobby first only when bagged down in a hangar berth). FALSE when there is nowhere.
  */
 /datum/ambient_activity/recover_body/proc/pick_goal(mob/living/body)
 	goal = null
@@ -729,7 +876,7 @@
 		goal = police.dispatch_nearest_lift_point(sector, doer)
 		goal_kind = MORGUE_GOAL_LIFT_OUT
 		return !!goal
-	if(sector != POLICE_SECTOR_LOBBY)
+	if(istype(sector, /datum/outpost_berth))
 		goal = police.dispatch_nearest_lift_point(sector, doer)
 		goal_kind = MORGUE_GOAL_RIDE
 		return !!goal
@@ -855,13 +1002,16 @@
 		if(QDELETED(src) || QDELETED(worker) || QDELETED(bag) || QDELETED(tray) || !tray.connected)
 			return FALSE
 	tray_turf = get_turf(tray.connected)
-	// Nobody may be on it; loose things are lifted off
+	// Nobody may be on it; loose things and empty bags are lifted off
 	if(locate(/mob/living) in tray_turf)
 		goal = null
 		return FALSE
 	for(var/obj/item/junk in tray_turf)
 		if(!junk.anchored)
 			junk.forceMove(get_turf(worker))
+	for(var/obj/structure/closet/body_bag/empty_bag in tray_turf)
+		if(empty_bag != bag && !empty_bag.anchored && !(locate(/mob/living) in empty_bag))
+			empty_bag.forceMove(get_turf(worker))
 	if(!worker.Adjacent(tray_turf) || get_dist(bag, worker) > 1 || bag.opened || morgue_holds_life(bag))
 		goal = null
 		return FALSE
@@ -906,6 +1056,7 @@
 #undef MORGUE_APPROACH_TRIES
 #undef MORGUE_UNBAGGABLE_RETRY
 #undef MORGUE_EMPTY_BAG_TIME
+#undef MORGUE_IDLE_LEAVE
 #undef MORGUE_STAGE_FETCH
 #undef MORGUE_STAGE_HAUL
 #undef MORGUE_STAGE_DONE

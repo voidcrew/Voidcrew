@@ -259,6 +259,10 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Initialize(mapload)
 	. = ..()
+	var/obj/item/card/id/card = wear_id
+	if(istype(card))
+		card.registered_name = real_name
+		card.update_label()
 	for(var/obj/item/held in held_items)
 		if(istype(held, /obj/item/mop))
 			crew_mop = held
@@ -331,9 +335,12 @@
  * place's pauses between lines are kept unless `force`. TRUE if they spoke.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/crew_say(context, radio = FALSE, atom/other, force = FALSE)
-	if(stat != CONSCIOUS || fading || paused_at)
+	if(stat != CONSCIOUS || fading || paused_at || !human_npc_can_talk(src))
 		return FALSE
 	if(!force && (world.time < next_line_at || (place && world.time < place.next_line_at)))
+		return FALSE
+	var/obj/item/radio/headset = ears
+	if(radio && (!istype(headset) || !headset.is_on() || is_within_radio_jammer_range(src)))
 		return FALSE
 	var/list/lines = get_lines(context)
 	if(!length(lines))
@@ -342,9 +349,11 @@
 	if(!istext(line))
 		return FALSE
 	line = fill_line(line, other)
-	if(!radio || !istype(ears, /obj/item/radio))
+	if(!radio)
 		say_line(line)
 		return TRUE
+	if(headset.frequency != OUTPOST_POLICE_RADIO_FREQ)
+		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
 	next_line_at = world.time + rand(AMBIENT_SPEECH_COOLDOWN_LOW, AMBIENT_SPEECH_COOLDOWN_HIGH) * speech_pace
 	last_line = line
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, say), ";[line]")
@@ -502,8 +511,8 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/nearest_work(list/found)
 	var/list/distances = list()
 	for(var/turf/tile as anything in found)
-		// Tiles given up on are left out here, so a dozen of them nearest never hide mess they can reach
-		if(LAZYACCESS(cleaning_gave_up, tile) > world.time)
+		// Tiles given up on or past a closed checkpoint wait until they can be walked to
+		if(LAZYACCESS(cleaning_gave_up, tile) > world.time || needs_checkpoint_cross(tile))
 			continue
 		distances[tile] = get_dist(src, tile)
 	if(!length(distances))
@@ -518,8 +527,8 @@
 
 /**
  * The next thing to do: list(tile, patrol stop or null, RECOVERY_WORK_* flags), or null. The patrol stops with work
- * left come first, nearest first, and each is worked out to its edge before the next; mess outside every stop's
- * reach is what they find round themselves.
+ * left on their side of the checkpoint come first, nearest first, and each is worked out to its edge before the next;
+ * mess outside every stop's reach is what they find round themselves.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/find_job()
 	var/turf/here = get_turf(src)
@@ -530,7 +539,7 @@
 	if(recovery)
 		var/list/dirty = list()
 		for(var/turf/stop as anything in recovery.work_stops())
-			if(stop.z == here.z && recovery.stop_dirty(stop))
+			if(stop.z == here.z && !needs_checkpoint_cross(stop) && recovery.stop_dirty(stop))
 				dirty[stop] = get_dist(here, stop)
 		if(length(dirty))
 			for(var/turf/stop as anything in sortTim(dirty, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE))
@@ -542,6 +551,16 @@
 		return list(stray[1], null, stray[2])
 	return null
 
+/// Whether any patrol stop on the concourse needs cleaning while this janitor stands in the lobby
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/dirty_stop_across_checkpoint()
+	var/datum/outpost_recovery/recovery = my_recovery()
+	if(!recovery)
+		return FALSE
+	for(var/turf/stop as anything in recovery.work_stops())
+		if(needs_checkpoint_cross(stop) && recovery.stop_dirty(stop))
+			return TRUE
+	return FALSE
+
 // ----- what they do -----
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/pick_activity()
@@ -549,6 +568,11 @@
 	if(job)
 		idle_since = 0
 		return job
+	if(dirty_stop_across_checkpoint())
+		idle_since = 0
+		var/datum/ambient_activity/cross = start_activity(new /datum/ambient_activity/cross_checkpoint(src))
+		if(cross)
+			return cross
 	if(!idle_since)
 		idle_since = max(world.time, 1)
 	// Nothing left but what the morgue crew has yet to take: they wait; clean, they take the lift out

@@ -186,13 +186,27 @@
 		if(!morgue_tray_free(tray))
 			continue
 		if(tray.connected.loc == tray)
+			for(var/obj/structure/closet/body_bag/empty_bag in tray)
+				if(!locate(/mob/living) in empty_bag)
+					empty_bag.forceMove(get_step(tray, tray.dir) || get_turf(tray))
 			bag.forceMove(tray)
+			tray.update_morgue_status()
 			tray.update_appearance()
 			return
-		bag.forceMove(get_turf(tray.connected))
+		var/turf/tray_turf = get_turf(tray.connected)
+		var/turf/aside = morgue_turf || get_turf(tray)
+		for(var/obj/item/junk in tray_turf)
+			if(!junk.anchored)
+				junk.forceMove(aside)
+		for(var/obj/structure/closet/body_bag/empty_bag in tray_turf)
+			if(!empty_bag.anchored && !(locate(/mob/living) in empty_bag))
+				empty_bag.forceMove(aside)
+		bag.forceMove(tray_turf)
+		COOLDOWN_RESET(tray, open_close_cd)
 		if(tray.close() && bag.loc == tray)
+			tray.update_morgue_status()
+			tray.update_appearance()
 			return
-		break
 	bag.forceMove(morgue_turf || get_turf(bag))
 	bag.delivered = TRUE
 
@@ -221,15 +235,15 @@
 	if(medic && !QDELETED(medic))
 		medic.fade_out(instant = TRUE)
 
-/// Washes the mess and takes the litter within reach of the patrol stops (the whole box with no stops)
+/// Washes the mess and takes the litter within reach of the patrol stops (and the whole box once map decor is marked)
 /datum/outpost_recovery/proc/unseen_clean()
 	var/list/tiles = list()
 	var/list/stops = work_stops()
-	if(length(stops))
-		for(var/turf/stop as anything in stops)
-			for(var/turf/tile as anything in RANGE_TURFS(OUTPOST_RECOVERY_STOP_RANGE, stop))
-				tiles[tile] = TRUE
-	else
+	for(var/turf/stop as anything in stops)
+		for(var/turf/tile as anything in RANGE_TURFS(OUTPOST_RECOVERY_STOP_RANGE, stop))
+			tiles[tile] = TRUE
+	var/list/notes = ambient_outpost_notes(outpost)
+	if(!length(stops) || notes?["decor marked"])
 		var/list/bounds = bounty_outpost_bounds(outpost)
 		if(bounds)
 			for(var/turf/tile as anything in block(locate(bounds[1], bounds[2], bounds[5]), locate(bounds[3], bounds[4], bounds[5])))

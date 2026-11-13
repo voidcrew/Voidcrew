@@ -369,6 +369,21 @@
 		if(!QDELETED(body) && !morgue_body_done(body))
 			. += body
 
+/// Player bodies a morgue worker can collect right now (or already holds), so a guarded corpse never holds CLEANUP open
+/datum/outpost_recovery/proc/player_bodies_due()
+	. = list()
+	for(var/mob/living/body as anything in player_bodies())
+		var/datum/weakref/key = WEAKREF(body)
+		if(claim_holder(key))
+			. += body
+			continue
+		if(retry_at[key] > world.time)
+			continue
+		if(body_free(body))
+			. += body
+		else
+			retry_at[key] = world.time + OUTPOST_RECOVERY_BODY_RETRY
+
 /// Whether there is anything for a crew to do: a body, a dirty stop, or someone down for the medics
 /datum/outpost_recovery/proc/has_cleanup_work()
 	return length(npc_bodies()) || length(player_bodies()) || dirty_count() || length(patients_due())
@@ -627,11 +642,14 @@
 	if(world.time - quiet_since >= OUTPOST_RECOVERY_CLEANUP_MAX)
 		finish_cleanup()
 		return
-	if(!length(npc_bodies()) && !length(patients_due()) && clean_share() * 100 >= OUTPOST_RECOVERY_CLEAN_SHARE)
+	if(!length(npc_bodies()) && !length(player_bodies_due()) && !length(patients_due()) && clean_share() * 100 >= OUTPOST_RECOVERY_CLEAN_SHARE)
 		finish_cleanup()
 		return
 	if(wave_active)
 		build_pending()
+		if(wave_morgue_left <= 0 && wave_janitors_left <= 0 && wave_medics_left <= 0 && !length(live_wave_workers()))
+			wave_active = FALSE
+			next_wave_at = max(next_wave_at, world.time + OUTPOST_RECOVERY_BODY_RETRY)
 	else if(world.time >= quiet_since + OUTPOST_RECOVERY_FIRST_WAVE)
 		call_wave()
 
@@ -763,7 +781,7 @@
 	if(length(live_wave_workers()))
 		return
 	var/bodies = length(npc_bodies())
-	var/need_morgue = bodies || length(player_bodies())
+	var/need_morgue = bodies || length(player_bodies_due())
 	var/need_janitors = bodies || dirty_count()
 	var/hurt = length(patients_due())
 	if(!need_morgue && !need_janitors && !hurt)

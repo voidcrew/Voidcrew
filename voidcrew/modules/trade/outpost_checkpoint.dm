@@ -1101,9 +1101,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 /obj/structure/outpost_exit_gate/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	if(REVERSE_DIR(to_dir) != dir)
 		return FALSE
-	// The outpost's own people go out through it only when they are leaving for good
+	// The outpost's own people go out through it only when they are leaving for good, or a recovery worker hauling to the lobby
 	var/mob/living/carbon/human/npc/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
-	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave))
+	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave) && !istype(townsperson, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
 		return FALSE
 	return TRUE
 

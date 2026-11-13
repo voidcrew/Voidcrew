@@ -37,6 +37,17 @@
 	last_line = copytext(line, 1, 2) == ";" ? copytext(line, 2) : line
 	return ..()
 
+/// Whether `src` stands in the checkpoint lobby while `target` is past the checkpoint on the concourse
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/proc/needs_checkpoint_cross(atom/target)
+	var/turf/here = get_turf(src)
+	var/turf/dest = get_turf(target)
+	if(!here || !dest || !istype(here.loc, /area/voidcrew/trader_outpost/checkpoint))
+		return FALSE
+	var/obj/structure/overmap/trader_outpost/outpost = outpost_recovery?.outpost || get_outpost()
+	if(!outpost || !outpost.is_secured_turf(dest) || !outpost.lobby_checkpoint(src))
+		return FALSE
+	return TRUE
+
 // =========================================================================
 // MORGUE HALF (R3)
 // =========================================================================
