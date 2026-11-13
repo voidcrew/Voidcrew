@@ -89,24 +89,25 @@
 #define STEALTH_BARK_RADIO_DEAD "stealth_radio_dead"
 
 // ===== Numbers (first playtest defaults; the owner tunes them) =====
-// Reach in open air, in tiles. Each is at or under how far a player hears the same tg sound.
-#define STEALTH_NOISE_RANGE_GUN_QUIET 4
-#define STEALTH_NOISE_RANGE_GUN_PISTOL 9
-#define STEALTH_NOISE_RANGE_GUN_SMG 11
-#define STEALTH_NOISE_RANGE_GUN_LONG 14
-#define STEALTH_NOISE_RANGE_IMPACT 5
+// Reach in open air, in tiles. Each is at or under how far a player hears the same tg sound. Lowered in decision 43
+// (playtest 2: "the distance they can hear things from seems a bit absurd, like running for example").
+#define STEALTH_NOISE_RANGE_GUN_QUIET 3
+#define STEALTH_NOISE_RANGE_GUN_PISTOL 8
+#define STEALTH_NOISE_RANGE_GUN_SMG 10
+#define STEALTH_NOISE_RANGE_GUN_LONG 12
+#define STEALTH_NOISE_RANGE_IMPACT 4
 #define STEALTH_NOISE_RANGE_IMPACT_QUIET 1
-#define STEALTH_NOISE_RANGE_BLAST 16
-#define STEALTH_NOISE_RANGE_GLASS 8
-#define STEALTH_NOISE_RANGE_THROWN_SMALL 4
-#define STEALTH_NOISE_RANGE_THROWN_MEDIUM 6
-#define STEALTH_NOISE_RANGE_THROWN_HEAVY 8
+#define STEALTH_NOISE_RANGE_BLAST 14
+#define STEALTH_NOISE_RANGE_GLASS 7
+#define STEALTH_NOISE_RANGE_THROWN_SMALL 3
+#define STEALTH_NOISE_RANGE_THROWN_MEDIUM 5
+#define STEALTH_NOISE_RANGE_THROWN_HEAVY 6
 #define STEALTH_NOISE_RANGE_KNOCK 5
-#define STEALTH_NOISE_RANGE_BASH 7
-#define STEALTH_NOISE_RANGE_DOOR 4
-#define STEALTH_NOISE_RANGE_THUD 4
-#define STEALTH_NOISE_RANGE_VOICE 5
-#define STEALTH_NOISE_RANGE_SCREAM 9
+#define STEALTH_NOISE_RANGE_BASH 6
+#define STEALTH_NOISE_RANGE_DOOR 3
+#define STEALTH_NOISE_RANGE_THUD 3
+#define STEALTH_NOISE_RANGE_VOICE 4
+#define STEALTH_NOISE_RANGE_SCREAM 8
 #define STEALTH_NOISE_RANGE_SHOUT 9
 /// A step on glass (tg plays it at 50: a player hears it 12 tiles off)
 #define STEALTH_NOISE_RANGE_CRUNCH 4
@@ -159,12 +160,12 @@
 #define STEALTH_RELAY_VOICE_RANGE 5
 #define STEALTH_RELAY_VOICE_RESPONDERS 2
 /// How far a running step on plain floor in shoes carries to a guard
-#define STEALTH_FOOTSTEP_RANGE 5
+#define STEALTH_FOOTSTEP_RANGE 3
 /// How far a player hears that same step (tg: volume 75, range 17 - 1 - 6)
 #define STEALTH_FOOTSTEP_PLAYER_RANGE 8
 /// The furthest any step is listened for
-#define STEALTH_FOOTSTEP_MAX_RANGE 7
-#define STEALTH_FOOTSTEP_CRAWL_RANGE 2
+#define STEALTH_FOOTSTEP_MAX_RANGE 5
+#define STEALTH_FOOTSTEP_CRAWL_RANGE 1
 /// Notice a heard step adds
 #define STEALTH_FOOTSTEP_NOTICE 0.5
 /// How long the admin noise view keeps one event on screen
