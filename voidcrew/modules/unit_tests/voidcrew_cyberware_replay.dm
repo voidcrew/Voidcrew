@@ -795,3 +795,84 @@
 	TEST_ASSERT(!QDELETED(cracks), "Test fixture: the cracks ran out before the replay ended")
 	TEST_ASSERT_EQUAL(cracks.alpha, 255, "The cracks aren't at full strength after the replay")
 	qdel(victim.GetComponent(/datum/component/gorilla_fold))
+
+/// A gun's muzzle flash (tg's, made inside the shooter and shown in their vis_contents) is recorded on the shooter's
+/// tile from the frame it was made in, so a replayed shot has its flash with it.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_flash_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_flash_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayflash")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/temp_visual/dir_setting/firing_effect/flash = new(user, EAST)
+	var/datum/sandy_replay_track/track = replay.tracks[flash]
+	TEST_ASSERT_NOTNULL(track, "The muzzle flash wasn't recorded")
+	TEST_ASSERT(track.oneshot, "The muzzle flash wasn't recorded as a one-shot effect")
+	var/list/frames = track.frames
+	TEST_ASSERT(length(frames) >= 6, "The muzzle flash has no frame")
+	TEST_ASSERT_EQUAL(frames[1], track.first, "The muzzle flash's first frame isn't the frame it was made in")
+	TEST_ASSERT_EQUAL(frames[3], user.x, "The muzzle flash isn't drawn on the shooter's tile (x)")
+	TEST_ASSERT_EQUAL(frames[4], user.y, "The muzzle flash isn't drawn on the shooter's tile (y)")
+	TEST_ASSERT_EQUAL(frames[6], EAST, "The muzzle flash lost the way the shot went")
+	press_again(user)
+	wait_over(user)
+
+/// A one-shot effect that only fades (a muzzle flash), compressed past two frames, is held whole for a frame by a step
+/// that changes nothing and then faded: never by a `delay`, through which the client draws it already faded out.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayfade")
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/obj/effect/abstract/sandy_replay_standin/standin = allocate(/obj/effect/abstract/sandy_replay_standin, spot(1, 0))
+	standin.alpha = 255
+	var/list/fade = list(standin)
+	fade["alpha"] = 0
+	fade["time"] = world.tick_lag / 2
+	var/list/chain = list(fade)
+	replay.stretch_oneshot(chain)
+	TEST_ASSERT_EQUAL(length(chain), 2, "The fade wasn't given a frame held whole first")
+	var/list/hold = chain[1]
+	var/list/rest = chain[2]
+	TEST_ASSERT_EQUAL(hold[1], standin, "The held step isn't on the stand-in")
+	TEST_ASSERT_EQUAL(hold["alpha"], 255, "The held step changes the flash")
+	TEST_ASSERT_EQUAL(hold["time"], world.tick_lag, "The flash isn't held for a frame")
+	TEST_ASSERT_NULL(hold["delay"], "The flash is held by a delay")
+	TEST_ASSERT_NULL(rest["delay"], "The fade waits on a delay")
+	TEST_ASSERT_EQUAL(rest["alpha"], 0, "The flash doesn't fade after its held frame")
+	TEST_ASSERT(rest[1] != standin, "The fade starts a new animation instead of following the held frame")
+	press_again(user)
+	wait_over(user)
+
+/// A shot is put on the floor before fire() turns it the way it flies: its first frame is taken once it is fired, so the
+/// replay never draws it unturned on the shooter. One spent before it flew (point blank) isn't drawn at all.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_first_frame_turned
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_first_frame_turned/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayturn")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/npc/target = allocate(/mob/living/carbon/human/npc, spot(3, 0))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/projectile/bullet/shot = new(spot(0, 0))
+	shot.damage = 0
+	shot.stamina = 0
+	shot.firer = user
+	shot.fired_from = user
+	var/datum/sandy_replay_track/track = replay.tracks[shot]
+	TEST_ASSERT_NOTNULL(track, "The shot wasn't recorded")
+	TEST_ASSERT_EQUAL(length(track.frames), 0, "The shot has a frame before it was fired")
+	shot.aim_projectile(target, spot(0, 0))
+	shot.fire()
+	TEST_ASSERT(length(track.frames) >= 6, "The shot has no frame once fired")
+	var/mutable_appearance/look = new(track.frames[2])
+	TEST_ASSERT_EQUAL(track.frames[1], track.first, "The shot's first frame isn't the frame it was seen in")
+	TEST_ASSERT(!(look.transform ~= matrix()), "The shot's first frame isn't turned the way it flies")
+	var/obj/projectile/bullet/blank = new(spot(0, 0))
+	var/datum/sandy_replay_track/blank_track = replay.tracks[blank]
+	TEST_ASSERT_NOTNULL(blank_track, "The point-blank shot wasn't recorded")
+	qdel(blank)
+	TEST_ASSERT_EQUAL(length(blank_track.frames), 0, "A shot spent before it flew is drawn")
+	press_again(user)
+	wait_over(user)
