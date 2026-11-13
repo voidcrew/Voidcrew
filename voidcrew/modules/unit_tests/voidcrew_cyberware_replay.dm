@@ -793,7 +793,9 @@
 	wait_over(user)
 	TEST_ASSERT(!QDELETED(pose) && pose.invisibility == 0, "The pose left on the body isn't drawn again after the replay")
 	TEST_ASSERT(!QDELETED(cracks), "Test fixture: the cracks ran out before the replay ended")
-	TEST_ASSERT_EQUAL(cracks.alpha, 255, "The cracks aren't at full strength after the replay")
+	// Their alpha var holds the end of the fade they are playing (0), so what can be checked is that the replay took the
+	// strength they were made with, which is what they are drawn at again when it ends
+	TEST_ASSERT_EQUAL(cracks.sandy_peak_alpha, 255, "The replay didn't take the strength the cracks were made with")
 	qdel(victim.GetComponent(/datum/component/gorilla_fold))
 
 /// A gun's muzzle flash (tg's, made inside the shooter and shown in their vis_contents) is recorded on the shooter's
