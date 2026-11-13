@@ -437,3 +437,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/police_c
  */
 /obj/proc/outpost_forceable()
 	return FALSE
+
+/**
+ * Whether outpost property lets `tool` (a screwdriver or wirecutters) get at this the way it would any door: only a
+ * cell door says yes (police_cell.dm), so its panel opens and its wires can be cut like a ship's airlock.
+ */
+/obj/proc/outpost_hackable(obj/item/tool)
+	return FALSE

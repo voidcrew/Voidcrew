@@ -195,7 +195,8 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(rebuilt.door.density, "A rebuild opened a cell door")
 
-/// Nothing but the cell opens a cell door; an emag does nothing to it or to a police door; a crowbar on an empty cell does nothing
+/// A bump, a click or a powered pry never opens a cell door; an emag does nothing to a police door; a crowbar on an empty cell does nothing.
+/// (Hacking a cell door, an emag included, is decision 47: voidcrew_outpost_police_cell_hacked.)
 /datum/unit_test/voidcrew_outpost_police_cell_doors
 
 /datum/unit_test/voidcrew_outpost_police_cell_doors/Run()
@@ -212,8 +213,6 @@
 	TEST_ASSERT(door.density, "A bump or a click opened a cell door")
 
 	var/obj/item/card/emag/emag = allocate(/obj/item/card/emag)
-	TEST_ASSERT(!door.emag_act(person, emag), "An emag was accepted by a cell door")
-	TEST_ASSERT(!(door.obj_flags & EMAGGED), "An emag broke a cell door")
 	var/obj/machinery/door/airlock/outpost/police/lift_door = allocate(/obj/machinery/door/airlock/outpost/police, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z))
 	TEST_ASSERT(!lift_door.emag_act(person, emag), "An emag was accepted by a police door")
 	TEST_ASSERT(!(lift_door.obj_flags & EMAGGED), "An emag broke a police door")

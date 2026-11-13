@@ -292,7 +292,13 @@
 		if(pulled_in && !(get_turf(pulled_in) in own_alcove) && officer.Adjacent(pulled_in))
 			for(var/dir in GLOB.cardinals)
 				var/turf/deeper = get_step(officer, dir)
-				if((deeper in own_alcove) && !deeper.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer))
+				if(!(deeper in own_alcove))
+					continue
+				// An outpost NPC standing there steps out of the car for them
+				for(var/mob/living/someone in deeper)
+					if(someone != pulled_in && someone.density)
+						outpost_npc_step_aside(someone, officer, own_alcove)
+				if(!deeper.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer))
 					if(officer.Move(deeper, dir))
 						break
 		var/wait_until = world.time + OUTPOST_ELEVATOR_TRAVEL_TIME + 1 SECONDS
@@ -357,6 +363,10 @@
 /// Once a second (police_core.dm tick()): responders, waves, caps, stand-downs, bodies, cases to open
 /datum/outpost_police/proc/tick_dispatch()
 	if(!outpost)
+		return
+	// Before the round starts no NPC's AI or Life() runs (SSai_controllers, SSmobs): units sent now would stand frozen
+	// on their lift point, so nothing is sent or opened until it starts
+	if(!SSticker.HasRoundStarted())
 		return
 	dispatch_prune_orders()
 	dispatch_check_strays()
@@ -547,6 +557,7 @@
 		clear_roles()
 	if(level <= 0 || !length(suspects))
 		dispatch_stand_down(0)
+		dispatch_check_idle()
 		return
 	var/wanted = OUTPOST_POLICE_UNITS[level]
 	var/list/on_scene = list()
@@ -607,6 +618,7 @@
 			dispatch_next_wave = world.time + OUTPOST_POLICE_CADENCE[level]
 	if(length(on_scene) > wanted)
 		dispatch_stand_down(wanted, on_scene)
+	dispatch_check_idle(on_scene)
 
 /**
  * Sends a wave of `size` units for `sector`, all from one lift point (no suspect watching it if possible).
@@ -689,21 +701,92 @@
 			farthest.dispatch_mind = null
 			if(!dispatch_is_response_unit(farthest))
 				continue
-			var/turf/exit = dispatch_nearest_lift_point(sector_of(farthest), farthest) || dispatch_nearest_lift_point(null, farthest)
-			// No lift anywhere: they stay about until the outpost empties (dispatch_recall_when_empty()), or, as players
-			// may never all leave, until they have waited POLICE_NO_LIFT_LEAVE and nobody can see them. An exit on their
-			// own tile would have them vanish where they stand, in front of whoever is watching.
-			if(!exit)
-				if(!farthest.dispatch_no_lift_since)
-					farthest.dispatch_no_lift_since = world.time
-				else if(world.time - farthest.dispatch_no_lift_since >= POLICE_NO_LIFT_LEAVE && !human_npc_watched(farthest) && !outpost_npc_played(farthest))
-					farthest.npc_drop_not_gear()
-					qdel(farthest)
+			if(!dispatch_send_home(farthest))
 				continue
-			farthest.npc_walk_out(exit)
 			if(!called_in)
 				called_in = TRUE
 				INVOKE_ASYNC(farthest, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_CLEAR, null, TRUE)
+
+/**
+ * A response unit goes home: they walk to the nearest lift tile nobody stands on or is already headed for, and leave
+ * by it. TRUE once they are on their way. No lift anywhere: they stay about until the outpost empties
+ * (dispatch_recall_when_empty()), or, as players may never all leave, until they have waited POLICE_NO_LIFT_LEAVE and
+ * nobody can see them.
+ */
+/datum/outpost_police/proc/dispatch_send_home(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	officer.dispatch_mind = null
+	var/turf/exit = dispatch_free_exit(officer)
+	if(!exit)
+		if(!officer.dispatch_no_lift_since)
+			officer.dispatch_no_lift_since = world.time
+		else if(world.time - officer.dispatch_no_lift_since >= POLICE_NO_LIFT_LEAVE && !human_npc_watched(officer) && !outpost_npc_played(officer))
+			officer.npc_drop_not_gear()
+			qdel(officer)
+		return FALSE
+	officer.dispatch_no_lift_since = 0
+	return officer.npc_walk_out(exit)
+
+/**
+ * The lift tile `officer` leaves by: one of their own sector's (else any) that no one else stands on or is headed
+ * for, nearest first; failing that, the nearest. Their own tile when they already stand in a lift.
+ */
+/datum/outpost_police/proc/dispatch_free_exit(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/turf/here = get_turf(officer)
+	if(!here)
+		return null
+	if(dispatch_is_lift_tile(here))
+		return here
+	var/list/turf/taken = list()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other in officers)
+		if(other != officer && other.npc_exit)
+			taken |= other.npc_exit
+	// Free and nobody else headed there, then free, in their own sector before any other
+	for(var/share in list(FALSE, TRUE))
+		for(var/sector in list(sector_of(here), null))
+			var/turf/best
+			var/best_distance = INFINITY
+			var/list/turf/points
+			if(isnull(sector))
+				points = lift_turfs.Copy()
+				points |= outpost?.lobby_alcove_turfs
+				for(var/datum/outpost_berth/berth as anything in outpost?.berths)
+					if(berth)
+						points |= berth.alcove_turfs
+			else
+				points = dispatch_lift_tiles(sector)
+			for(var/turf/point as anything in points)
+				if(!point || point.z != here.z || dispatch_skipped[point] > world.time || (!share && (point in taken)) || lift_point_blocked(point, officer))
+					continue
+				var/distance = get_dist(here, point)
+				if(distance < best_distance)
+					best = point
+					best_distance = distance
+			if(best)
+				return best
+	return dispatch_nearest_lift_point(sector_of(here), officer) || dispatch_nearest_lift_point(null, officer)
+
+/**
+ * Nobody waits in a lift for good: a response unit with no suspect to go after and no case (theirs is in custody, or
+ * gone) goes home; one walking home whose exit someone else now stands on picks another; one standing in any lift is
+ * home (npc_may_vanish()).
+ */
+/datum/outpost_police/proc/dispatch_check_idle(list/on_scene)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(officer.stat != CONSCIOUS || !dispatch_is_response_unit(officer) || officer.case || officer.dispatch_riding)
+			continue
+		if(officer.npc_exit)
+			var/turf/exit = officer.npc_exit
+			if(get_turf(officer) != exit && lift_point_blocked(exit, officer))
+				var/turf/other = dispatch_free_exit(officer)
+				if(other && other != exit)
+					officer.npc_walk_out(other)
+			continue
+		if(!dispatch_can_respond(officer) || officer.dispatch_responding() || (on_scene && (officer in on_scene)))
+			continue
+		// Still forming up behind the lift door with their wave
+		if(officer.dispatch_wave && !officer.dispatch_wave.released_at)
+			continue
+		dispatch_send_home(officer)
 
 /// Suspects at the outpost who are not in custody (cuffed by us or in a cell)
 /datum/outpost_police/proc/dispatch_active_suspects()
@@ -1120,12 +1203,15 @@
 
 /// Unwatched departing officers vanish along their walk; watched ones at an open lift alcove call the car and wait its travel delay
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_may_vanish()
-	if(!..())
+	// The base's own checks (human_npc_states.dm), less its exit-tile rule, which follows here
+	if(isnull(npc_exit) || stat != CONSCIOUS || human_npc_out_of_fight(src) || INCAPACITATED_IGNORING(src, NONE) || pulledby || buckled || !isturf(loc))
 		dispatch_exit_arrived_at = 0
 		return FALSE
 	if(!human_npc_watched(src))
 		return TRUE
-	if(get_turf(src) != npc_exit)
+	// Standing in any lift is as good as their own exit: nobody waits in one for a tile someone else holds
+	var/turf/here = get_turf(src)
+	if(here != npc_exit && !police?.dispatch_is_lift_tile(here))
 		dispatch_exit_arrived_at = 0
 		return FALSE
 	if(!dispatch_exit_arrived_at)
@@ -1136,7 +1222,7 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_vanish()
 	var/turf/exit_turf = get_turf(src)
-	var/arrived_watched = dispatch_exit_arrived_at > 0 && exit_turf == npc_exit
+	var/arrived_watched = dispatch_exit_arrived_at > 0 && (exit_turf == npc_exit || police?.dispatch_is_lift_tile(exit_turf))
 	dispatch_exit_arrived_at = 0
 	if(arrived_watched && exit_turf)
 		playsound(exit_turf, 'sound/machines/ding.ogg', 50, TRUE)

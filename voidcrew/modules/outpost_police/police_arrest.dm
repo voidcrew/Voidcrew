@@ -1183,20 +1183,90 @@
 	check_evidence_stall(officer, desk)
 
 /**
- * Walking a suspect in: someone standing in the way, on either of the next two tiles the officer faces, is told to
- * make way. Two tiles looked at, once a second; the line's own gaps keep it from repeating.
+ * Walking a suspect in: whoever stands on the next two tiles the officer faces, or the next step toward where they
+ * are walking, is moved out of the way. An outpost NPC (another officer included) steps aside with a real step, or
+ * on ahead where there is no room to the side (a 1-wide hall); a player is told to make way. Once a second.
+ * Returns what the line returned, or null when nothing was said.
  */
 /datum/outpost_police_case/proc/make_way(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
-	var/turf/ahead = get_turf(officer)
+	var/turf/here = get_turf(officer)
+	if(!here)
+		return null
+	var/list/turf/path = list()
+	var/turf/ahead = here
 	for(var/i in 1 to 2)
 		ahead = get_step(ahead, officer.dir)
 		if(!ahead || ahead.density || (locate(/obj/structure/table) in ahead) || (locate(/obj/structure/window) in ahead))
-			return null
-		for(var/mob/living/someone in ahead)
-			if(someone == suspect || someone.stat != CONSCIOUS || !someone.density || istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			break
+		path += ahead
+	var/datum/ai_controller/brain = officer.ai_controller
+	var/atom/goal_atom = brain ? brain.blackboard[BB_OUTPOST_POLICE_CASE_GOAL] : null
+	if(!QDELETED(goal_atom) && get_turf(goal_atom) != here)
+		var/turf/toward = get_step_towards(officer, goal_atom)
+		if(toward && toward != here)
+			path |= toward
+	var/told = FALSE
+	for(var/turf/tile as anything in path)
+		for(var/mob/living/someone in tile)
+			if(someone == suspect || someone == officer || someone.stat != CONSCIOUS || !someone.density)
 				continue
-			return officer.police_say(POLICE_LINE_MAKE_WAY)
-	return null
+			if(outpost_npc_step_aside(someone, officer, path))
+				continue
+			if(!told && !istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+				told = TRUE
+				. = officer.police_say(POLICE_LINE_MAKE_WAY)
+
+/**
+ * `blocker`, an outpost NPC standing where `walker` is going, takes one real step out of the way: to the side first,
+ * then on ahead of `walker`, never back toward them, never onto `keep_clear`, a doorway or someone else. Players,
+ * and anyone held, cuffed, buckled, down or holding someone, stay put. TRUE if they moved.
+ */
+/proc/outpost_npc_step_aside(mob/living/blocker, mob/living/walker, list/turf/keep_clear)
+	if(!istype(blocker, /mob/living/carbon/human/npc) || blocker.client || blocker.stat != CONSCIOUS)
+		return FALSE
+	if(blocker.buckled || blocker.pulledby || blocker.pulling || blocker.has_buckled_mobs() || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || HAS_TRAIT(blocker, TRAIT_INCAPACITATED))
+		return FALSE
+	if(!(blocker.mobility_flags & MOBILITY_MOVE) || blocker.body_position == LYING_DOWN)
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer_blocker = blocker
+	if(istype(officer_blocker) && officer_blocker.dispatch_riding)
+		return FALSE
+	var/turf/from = get_turf(blocker)
+	var/turf/walker_turf = get_turf(walker)
+	if(!from || !walker_turf)
+		return FALSE
+	var/travel = get_dir(walker_turf, from)
+	var/list/turf/avoid = list(walker_turf)
+	if(keep_clear)
+		avoid |= keep_clear
+	var/mob/living/towed = walker.pulling
+	if(isliving(towed))
+		avoid |= get_turf(towed)
+	var/turf/best
+	var/best_score = INFINITY
+	for(var/direction in GLOB.alldirs)
+		var/turf/spot = get_step(from, direction)
+		if(!spot || (spot in avoid) || spot.density || isspaceturf(spot))
+			continue
+		// Never back toward the walker
+		if(direction & REVERSE_DIR(travel))
+			continue
+		if(spot.is_blocked_turf(exclude_mobs = FALSE, source_atom = blocker) || (locate(/obj/machinery/door) in spot))
+			continue
+		if(!from.Adjacent(spot, null, blocker))
+			continue
+		// Square to the side first, then a diagonal step aside, then straight on ahead
+		var/score = 3
+		if(!(direction & travel) && (direction in GLOB.cardinals))
+			score = 1
+		else if(!(direction in GLOB.cardinals))
+			score = 2
+		if(score < best_score)
+			best = spot
+			best_score = score
+	if(!best)
+		return FALSE
+	return blocker.Move(best, get_dir(from, best)) && get_turf(blocker) == best
 
 /**
  * Where the evidence goes: the evidence locker, or the desk when the station has none or the locker can't be got to,

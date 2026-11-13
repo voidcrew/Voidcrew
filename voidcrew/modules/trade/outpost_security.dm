@@ -663,6 +663,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	// A checkpoint's inner door can be forced (outpost_checkpoint.dm)
 	if(tool?.tool_behaviour == TOOL_CROWBAR && source.outpost_forceable())
 		return NONE
+	// A cell door's panel and wires are hacked like any airlock's (police_cell.dm)
+	if(tool && source.outpost_hackable(tool))
+		return NONE
 	source.balloon_alert(user, "outpost property!")
 	return ITEM_INTERACT_BLOCKING
 

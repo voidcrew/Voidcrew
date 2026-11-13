@@ -108,15 +108,19 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 	var/turf/center = get_turf(guard)
 	if(isnull(center))
 		return list()
-	var/list/buckets = new /list(range + 1)
-	for(var/mob/living/found in SSspatial_grid.orthogonal_range_search(center, SPATIAL_GRID_CONTENTS_TYPE_HEARING, range))
+	// One bucket per whole tile of distance, 0 to range: a fractional, zero or negative range never overflows it
+	var/max_dist = max(0, round(range))
+	var/list/buckets = new /list(max_dist + 1)
+	for(var/mob/living/found in SSspatial_grid.orthogonal_range_search(center, SPATIAL_GRID_CONTENTS_TYPE_HEARING, max_dist))
 		if(found == guard || found.stat == DEAD)
 			continue
 		var/turf/found_turf = get_turf(found)
 		if(isnull(found_turf) || found_turf.z != center.z)
 			continue
-		var/dist = get_dist(center, found_turf)
-		if(dist > range)
+		// BYOND's get_dist() of a turf with itself is -1, not 0: someone sharing the guard's tile (lying under him,
+		// held, stepped over) is at distance 0
+		var/dist = (found_turf == center) ? 0 : get_dist(center, found_turf)
+		if(dist < 0 || dist > max_dist)
 			continue
 		if(guard.faction_check_atom(found))
 			continue

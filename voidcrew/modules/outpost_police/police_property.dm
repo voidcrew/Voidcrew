@@ -554,8 +554,21 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		locker?.release_reservation()
 		return FALSE
 
+	// Crime tools on the warrant still on them, however deep (a bag in a bag, a MODsuit's storage, suit storage, a
+	// holster), and stolen goods go to the evidence locker or back to their owner's locker, never into this one
+	strip_evidence(prisoner, officer)
+
+	// What they wear now, taken before the MODsuit folds away: retracting its chestplate drops whatever is in suit
+	// storage on the floor (tg), and that goes in the locker with the rest, never left lying in the cell
+	var/list/worn_before = prisoner.get_equipped_items(INCLUDE_POCKETS | INCLUDE_HELD)
+	// tg drops pockets, suit storage and belt when the jumpsuit or suit comes off; what stays on them is put back after
+	var/list/pocketed = list()
+	for(var/obj/item/slotted as anything in list(person.l_store, person.r_store, person.s_store, person.belt))
+		if(slotted && outpost_police_untouchable(slotted))
+			pocketed[slotted] = person.get_slot_by_item(slotted)
+
 	// Unseal and retract any worn MODsuit so its parts fold into the control unit and strip cleanly into the locker
-	for(var/obj/item/mod/control/mod_suit in prisoner.get_equipped_items(INCLUDE_POCKETS | INCLUDE_HELD))
+	for(var/obj/item/mod/control/mod_suit in worn_before)
 		if(outpost_police_untouchable(mod_suit))
 			continue
 		if(mod_suit.active && !mod_suit.toggle_activate(officer || prisoner, force_deactivate = TRUE))
@@ -572,6 +585,10 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		prisoner.temporarilyRemoveItemFromInventory(card, TRUE)
 
 	var/list/gear = prisoner.get_equipped_items(INCLUDE_POCKETS | INCLUDE_HELD)
+	// Anything the MODsuit dropped on the way (suit storage) is still theirs to store
+	for(var/obj/item/dropped as anything in worn_before)
+		if(!QDELETED(dropped) && isturf(dropped.loc) && get_dist(dropped, prisoner) <= 1)
+			gear |= dropped
 	list_clear_nulls(gear)
 	if(card)
 		gear -= card
@@ -579,11 +596,6 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		gear -= prisoner.handcuffed
 	if(prisoner.legcuffed)
 		gear -= prisoner.legcuffed
-	// tg drops pockets, suit storage and belt when the jumpsuit or suit comes off; what stays on them is put back after
-	var/list/pocketed = list()
-	for(var/obj/item/slotted as anything in list(person.l_store, person.r_store, person.s_store, person.belt))
-		if(slotted && outpost_police_untouchable(slotted))
-			pocketed[slotted] = person.get_slot_by_item(slotted)
 	// Suit storage before the suit and the jumpsuit last, so tg never drops anything on the floor behind us
 	var/list/ordered = list()
 	var/list/outside = list()
@@ -652,6 +664,27 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	locker.finish_assignment(card)
 	log_game("OUTPOST POLICE: [key_name(prisoner)] was stripped at [outpost]: [stored] items to a property locker.")
 	return TRUE
+
+/**
+ * The jail strip's search: crime tools on `prisoner`'s warrant (or witnessed in a report still going in) and goods
+ * listed in another prisoner's locker, wherever they are on them or within reach, go through a sealed case to the
+ * evidence locker (stolen goods back to their owner's locker), as the Search step sends them. Returns how many went.
+ */
+/datum/outpost_police/proc/strip_evidence(mob/living/carbon/prisoner, mob/living/officer)
+	var/list/take = evidence_candidates(prisoner, officer)
+	if(!length(take))
+		return 0
+	var/turf/floor = get_turf(prisoner)
+	var/obj/item/outpost_sealed_case/evidence/case = new(floor)
+	case.police_ref = WEAKREF(src)
+	for(var/obj/item/thing as anything in take)
+		if(QDELETED(thing))
+			continue
+		outpost_police_salvage(thing, floor)
+		case.add_evidence(thing, prisoner)
+	var/obj/structure/closet/secure_closet/outpost_evidence/store = get_evidence_locker()
+	. = evidence_empty_case(case, floor, store)
+	qdel(case)
 
 /// Stores a non-disposable restraint removed right after `store_property()` so it never stays loose on the cell floor
 /datum/outpost_police/proc/store_extra_property(mob/living/carbon/prisoner, obj/item/thing)
