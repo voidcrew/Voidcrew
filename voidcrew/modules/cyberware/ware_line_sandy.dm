@@ -52,6 +52,9 @@
 	afterimage_alpha = 120
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "REFLEX RIG ONLINE."
+	online_balloon = "rig online"
+	crash_balloon = "rig burnout!"
+	part_word = "rig"
 	slowmo_duration = 11 SECONDS
 	dilation_scale = 0.4
 	time_multiplier = 2.5
@@ -92,6 +95,8 @@
 	afterimage_alpha = 160
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "LATTICE ONLINE."
+	online_balloon = "lattice online"
+	crash_balloon = "lattice crash!"
 	slowmo_duration = 12 SECONDS
 	dilation_scale = 0.25
 	time_multiplier = 4
