@@ -42,7 +42,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/outpost_prison_yard, 0)
 	return ..()
 
 /obj/machinery/door/window/brigdoor/outpost_prison_staff/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
-	var/atom/requester = pass_info.requester_ref?.resolve()
+	var/atom/requester = pass_info?.requester_ref?.resolve()
 	if(is_outpost_prisoner(requester))
 		return FALSE
 	if(density && dir == to_dir && !may_use_outpost_prison_staff_door(src, requester))
@@ -102,7 +102,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 
 // Their own AI never paths through, dragged or not, until they are loose.
 /obj/machinery/door/airlock/security/prison_staff/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
-	var/atom/requester = pass_info.requester_ref?.resolve()
+	var/atom/requester = pass_info?.requester_ref?.resolve()
 	if(is_outpost_prisoner(requester) && !outpost_prisoner_loose(requester))
 		// Processing has opened its door for them: the way is clear. Shut, it is never theirs to open.
 		return !density && lets_prisoner(requester)

@@ -1030,9 +1030,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * In a wing with no staff closet they go from the office tile they walked to. Never a body a player is or was in.
  */
 /datum/outpost_prison/proc/guard_gone_off(mob/living/carbon/human/npc/outpost_prison_guard/guard, seconds)
-	if(guard.npc_ever_played())
+	if(guard.npc_ever_played() || outpost_prison_body_held(guard))
 		return FALSE
 	if(get_turf(guard) in staff_closet_turfs)
+		if(staff_closet_player_inside() || seen_by_client(guard))
+			return FALSE
 		var/obj/machinery/door/airlock/door = staff_closet_door()
 		if(!door || (door.density && !door.operating))
 			return TRUE
@@ -1042,7 +1044,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return TRUE
 	if(guard.dismiss_left > 0 && guard.stat == CONSCIOUS && guard.ai_running())
 		return FALSE
-	return !outpost_prison_body_held(guard) && !seen_by_client(guard)
+	return !seen_by_client(guard)
 
 /**
  * A guard was killed on duty. Logged with whoever last hurt them (the wing's log and the game log). The body
@@ -1056,14 +1058,36 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 // ===== THE CLEANBOT =====
 
-/// The lockup's cleanbot: tg's, with nobody able to take it over or call it away, and no radio to answer a call on
+/// The lockup's cleanbot: tg's, with nobody able to take it over, unlock, arm or call it away, and no radio to answer a call on
 /mob/living/basic/bot/cleanbot/outpost_lockup
 	bot_mode_flags = BOT_MODE_ON
 	radio_key = null
 	radio_channel = null
 
+/mob/living/basic/bot/cleanbot/outpost_lockup/allowed(mob/living/user)
+	return isAdminGhostAI(user)
+
+/mob/living/basic/bot/cleanbot/outpost_lockup/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(!allowed(ui.user))
+		balloon_alert(ui.user, "access denied!")
+		return
+	return ..()
+
 /mob/living/basic/bot/cleanbot/outpost_lockup/enable_possession(user, mapload = FALSE)
 	return
+
+/mob/living/basic/bot/cleanbot/outpost_lockup/insertpai(mob/user, obj/item/pai_card/card)
+	return
+
+/mob/living/basic/bot/cleanbot/outpost_lockup/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
+
+/mob/living/basic/bot/cleanbot/outpost_lockup/on_attack_by(datum/source, obj/item/used_item, mob/living/user)
+	SIGNAL_HANDLER
+	return
+
+/mob/living/basic/bot/cleanbot/outpost_lockup/deputize(obj/item/knife, mob/user)
+	return FALSE
 
 /// Sends the bot to `target` without announcing "Responding." aloud on every dispatch
 /mob/living/basic/bot/cleanbot/outpost_lockup/proc/send_to_mess(turf/target)
@@ -1100,7 +1124,16 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return
 	cleanbot_clock = 0
 	var/mob/living/basic/bot/cleanbot/bot = cleanbot()
-	if(!bot || bot.mode != BOT_IDLE || bot.client || !has_audience())
+	if(!bot)
+		return
+	if(wing && get_area(bot) != wing)
+		if(!outpost_prison_body_held(bot) && !seen_by_client(bot))
+			cleanbot_ref = null
+			qdel(bot)
+		return
+	if(!(bot.bot_mode_flags & BOT_MODE_ON))
+		bot.turn_on()
+	if(bot.mode != BOT_IDLE || bot.client || !has_audience())
 		return
 	var/turf/nearest
 	var/nearest_distance = INFINITY
@@ -1535,9 +1568,23 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				return door
 	return null
 
+/// Everyone in the staff closet, including anyone shut in a crate, locker or mech
+/datum/outpost_prison/proc/staff_closet_occupants()
+	. = list()
+	for(var/turf/tile as anything in staff_closet_turfs)
+		. |= tile.get_all_contents_type(/mob/living)
+
+/// Whether a player is in the staff closet: nobody is made or taken away around one
+/datum/outpost_prison/proc/staff_closet_player_inside()
+	for(var/mob/living/person as anything in staff_closet_occupants())
+		if(person.client || person.mind)
+			return TRUE
+	return FALSE
+
 /**
- * Where a guard coming on shift is made: a tile of the staff closet with nobody on it, and only while the
- * closet's door is shut (an open one is asked to close first). A wing with no staff closet: the office.
+ * Where a guard coming on shift is made: a tile of the staff closet with nobody on it, no player inside and no
+ * client able to see it, and only while the closet's door is shut (an open one is asked to close first). A wing
+ * with no staff closet: the office.
  */
 /datum/outpost_prison/proc/guard_arrival_spot()
 	if(!length(staff_closet_turfs))
@@ -1546,16 +1593,22 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(door && !(door.density && !door.operating))
 		processing_work_door(door, FALSE)
 		return null
+	if(staff_closet_player_inside())
+		return null
 	for(var/turf/tile as anything in staff_closet_turfs)
-		if(!(locate(/mob/living/carbon) in tile))
+		if(tile.is_blocked_turf(TRUE) || seen_by_client(tile))
+			continue
+		if(!length(tile.get_all_contents_type(/mob/living/carbon)))
 			return tile
 	return null
 
 /// Where a guard going off shift walks to: a tile of the staff closet, or the office in a wing with none
 /datum/outpost_prison/proc/guard_leave_spot(mob/living/except)
 	for(var/turf/tile as anything in staff_closet_turfs)
+		if(tile.is_blocked_turf(TRUE))
+			continue
 		var/taken = FALSE
-		for(var/mob/living/carbon/person in tile)
+		for(var/mob/living/carbon/person as anything in tile.get_all_contents_type(/mob/living/carbon))
 			if(person != except)
 				taken = TRUE
 				break

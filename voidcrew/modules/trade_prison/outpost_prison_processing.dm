@@ -75,12 +75,11 @@
 	var/turf/spot = get_turf(thing)
 	return !!spot && (spot in processing_turfs)
 
-/// Everyone in the room
+/// Everyone in the room, including anyone shut in a crate, locker or mech
 /datum/outpost_prison/proc/processing_occupants()
 	. = list()
 	for(var/turf/tile as anything in processing_turfs)
-		for(var/mob/living/person in tile)
-			. += person
+		. |= tile.get_all_contents_type(/mob/living)
 
 /// Whether a player is in the room: nobody is taken away around one
 /datum/outpost_prison/proc/processing_player_inside()
@@ -97,11 +96,13 @@
 		return FALSE
 	return !length(processing_occupants())
 
-/// A tile of the room nobody stands on, or null
+/// A passable tile of the room nobody stands on, or null
 /datum/outpost_prison/proc/processing_spot(mob/living/except)
 	for(var/turf/tile as anything in processing_turfs)
+		if(tile.is_blocked_turf(TRUE))
+			continue
 		var/taken = FALSE
-		for(var/mob/living/person in tile)
+		for(var/mob/living/person as anything in tile.get_all_contents_type(/mob/living))
 			if(person != except)
 				taken = TRUE
 				break
@@ -124,7 +125,8 @@
 	if(!spot || !islist(SSmobs.clients_by_zlevel) || spot.z > length(SSmobs.clients_by_zlevel))
 		return FALSE
 	for(var/mob/viewer in SSmobs.clients_by_zlevel[spot.z])
-		if(get_dist(viewer, spot) <= OUTPOST_PRISON_SEEN_RANGE && can_see(viewer, spot, OUTPOST_PRISON_SEEN_RANGE))
+		var/turf/viewer_turf = get_turf(viewer)
+		if(viewer_turf && get_dist(viewer_turf, spot) <= OUTPOST_PRISON_SEEN_RANGE && can_see(viewer_turf, spot, OUTPOST_PRISON_SEEN_RANGE))
 			return TRUE
 	return FALSE
 
@@ -146,7 +148,7 @@
 		if(person != who)
 			return FALSE
 	if(!in_processing(who))
-		who.forceMove(processing_turfs[1])
+		who.forceMove(processing_spot(who) || processing_turfs[1])
 	processing_state = OUTPOST_PROCESSING_IN
 	processing_who_ref = WEAKREF(who)
 	processing_entry_ref = null
@@ -191,7 +193,7 @@
 		else
 			processing_idle_tick()
 
-/// Nothing on: both doors are shut, and the next one waiting to leave gets the room
+/// Nothing on: both doors are shut, unseen dead bodies inside are cleared, and the next one waiting to leave gets the room
 /datum/outpost_prison/proc/processing_idle_tick()
 	if(!has_processing())
 		return
@@ -199,6 +201,8 @@
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
 	processing_work_door(inner, FALSE)
 	processing_work_door(outer, FALSE)
+	if(processing_shut(inner) && processing_shut(outer) && !processing_player_inside())
+		processing_clear_dead()
 	if(!length(processing_leavers) || !processing_free())
 		return
 	for(var/mob/living/leaver in processing_leavers)
@@ -209,6 +213,22 @@
 		processing_entry_ref = WEAKREF(in_cell_block(leaver) ? inner : outer)
 		processing_seconds = 0
 		return
+
+/// With both solid doors shut and no player inside, clears any unseen dead NPC or pest body blocking the room
+/datum/outpost_prison/proc/processing_clear_dead()
+	for(var/mob/living/body as anything in processing_occupants())
+		if(QDELETED(body) || body.stat != DEAD || body.client || body.mind)
+			continue
+		var/mob/living/carbon/human/npc/npc = body
+		if(istype(npc) && npc.npc_ever_played())
+			continue
+		if(outpost_prison_body_held(body) || seen_by_client(body))
+			continue
+		if((body in prisoners) && !bodies_cleared)
+			continue
+		if(body in prisoners)
+			add_log("[body.real_name]'s body was taken away.")
+		qdel(body)
 
 /**
  * An arrival: with the outer door shut the inner one opens, they walk out, and the job is over once they are in
@@ -228,6 +248,16 @@
 		if(prisoner?.phase == PRISONER_ARRIVING)
 			prisoner.phase = PRISONER_PRESENT
 			prisoner.processing_goal = null
+		processing_done()
+		return
+	if(prisoner && !(prisoner in prisoners))
+		prisoner.processing_goal = null
+		if(in_processing(prisoner) && processing_shut(processing_door(TRUE)) && processing_shut(processing_door(FALSE)) && !processing_player_inside())
+			processing_remove(prisoner)
+		else if(in_processing(prisoner))
+			processing_send_out(prisoner)
+		else
+			outpost_prison_clear_unseen(prisoner)
 		processing_done()
 		return
 	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
@@ -318,15 +348,19 @@
 			if(prisoner?.phase == PRISONER_LEAVING)
 				prisoner.phase = PRISONER_PRESENT
 				prisoner.processing_goal = null
+			if(prisoner && !(prisoner in prisoners))
+				outpost_prison_clear_unseen(prisoner)
 			continue
 		if(!prisoner)
 			continue
+		if(prisoner.cell && wing && get_area(prisoner) != wing)
+			vacate_cell(prisoner)
 		if(!room)
 			processing_remove(prisoner)
 			continue
 		if(in_processing(prisoner))
 			continue
-		if(seen_by_client(prisoner))
+		if(outpost_prison_body_held(prisoner) || seen_by_client(prisoner))
 			prisoner.leave_unseen = 0
 			continue
 		prisoner.leave_unseen += seconds
@@ -334,6 +368,16 @@
 			if(processing_who() == prisoner)
 				processing_done()
 			processing_remove(prisoner)
+
+/// Frees `prisoner`'s cell and starts its refill wait while keeping `prisoner` on the wing until they are gone
+/datum/outpost_prison/proc/vacate_cell(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	var/datum/outpost_prison_cell/emptied = prisoner?.cell
+	if(!emptied)
+		return
+	if(emptied.occupant == prisoner)
+		emptied.occupant = null
+	prisoner.cell = null
+	on_cell_emptied(emptied)
 
 /// Lets go of the room's doors and everyone waiting on it (Destroy())
 /datum/outpost_prison/proc/processing_destroy()
@@ -408,6 +452,8 @@
 	update_bubble()
 	drop_bubble()
 	if(prison)
+		if(prison.wing && get_area(src) != prison.wing)
+			prison.vacate_cell(src)
 		prison.processing_send_out(src)
 	else
 		outpost_prison_clear_unseen(src)

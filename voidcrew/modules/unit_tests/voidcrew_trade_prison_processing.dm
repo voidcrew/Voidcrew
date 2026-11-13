@@ -53,6 +53,8 @@
 	squatter.forceMove(prison.processing_turfs[2])
 	TEST_ASSERT(outer.allowed(squatter), "Processing's outer door trapped a player inside while the inner door was shut")
 	TEST_ASSERT(!inner.allowed(squatter), "Processing's inner door would let an inside player into the yard")
+	TEST_ASSERT(outer.CanAStarPass(EAST, new /datum/can_pass_info(squatter)), "Processing's shut outer door blocked JPS pathing out while the inner door was shut")
+	TEST_ASSERT(!inner.CanAStarPass(WEST, new /datum/can_pass_info(squatter)), "Processing's shut inner door allowed JPS pathing into the yard")
 	TEST_ASSERT(!prison.processing_free(), "Processing is free with a player standing in it")
 	TEST_ASSERT(!prison.processing_send_in(bystander), "Someone was put into Processing with a player standing in it")
 	TEST_ASSERT_EQUAL(get_turf(bystander), prison.cells[2].arrival_turf(), "A refused arrival was moved")
@@ -67,6 +69,14 @@
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing started on someone with a player standing in it")
 	TEST_ASSERT(door_is_shut(inner) && door_is_shut(outer), "A door of Processing moved with a player standing in it")
 	squatter.forceMove(prison.alcove_turfs[1])
+	TEST_ASSERT(!inner.CanAStarPass(SOUTH, null) && !outer.CanAStarPass(NORTH, null), "Processing doors passed CanAStarPass with null pass_info")
+	var/obj/structure/closet/hideout = allocate(/obj/structure/closet, prison.processing_turfs[1])
+	squatter.forceMove(hideout)
+	TEST_ASSERT(prison.processing_player_inside(), "A player shut inside a closet in Processing was missed")
+	TEST_ASSERT(!prison.processing_free(), "Processing looked free with a player inside a closet")
+	squatter.forceMove(prison.alcove_turfs[1])
+	TEST_ASSERT_EQUAL(prison.processing_spot(), prison.processing_turfs[2], "processing_spot() picked a tile blocked by a closed closet")
+	qdel(hideout)
 
 	// The room is theirs: the inner door opens for them, with the outer shut, and for nobody else
 	prison.processing_tick(1)
@@ -88,6 +98,10 @@
 	TEST_ASSERT(!inner.CanAStarPass(SOUTH, new /datum/can_pass_info(bystander)), "Processing's open inner door allowed JPS pathing to another prisoner")
 	TEST_ASSERT(!inner.CanAStarPass(SOUTH, new /datum/can_pass_info(test_guard)), "Processing's open inner door allowed JPS pathing to a guard")
 	TEST_ASSERT(!inner.CanAStarPass(SOUTH, new /datum/can_pass_info(test_bot)), "Processing's open inner door allowed JPS pathing to a cleanbot")
+	test_guard.forceMove(prison.processing_turfs[2])
+	TEST_ASSERT(inner.CanAStarPass(WEST, new /datum/can_pass_info(test_guard)), "Processing's open inner door blocked an inside guard's JPS pathing out")
+	TEST_ASSERT(!outer.CanAStarPass(EAST, new /datum/can_pass_info(test_guard)), "Processing's shut outer door allowed JPS pathing while the inner door was open")
+	test_guard.forceMove(prison.guard_office_spot())
 	test_guard.prison = null
 	prison.processing_tick(1)
 	TEST_ASSERT(leaver.processing_goal in prison.processing_turfs, "A prisoner leaving was not sent into Processing")
@@ -167,30 +181,68 @@
 	SSmobs.clients_by_zlevel[cell_front.z] += onlooker
 	watched.forceMove(get_step(cell_front, get_dir(watched.cell.door_turf, cell_front)))
 	TEST_ASSERT(prison.seen_by_client(watched), "A client two tiles off across open floor cannot see a prisoner")
+	var/obj/structure/closet/viewer_closet = allocate(/obj/structure/closet, cell_front)
+	onlooker.forceMove(viewer_closet)
+	TEST_ASSERT(prison.seen_by_client(watched), "A client inside a container on an adjacent tile could not see a prisoner")
+	onlooker.forceMove(cell_front)
+	qdel(viewer_closet)
 	var/datum/weakref/watched_ref = WEAKREF(watched)
 	watched.leave()
 	prison.processing_tick(120)
 	prison.processing_tick(1)
 	TEST_ASSERT(!is_qdeleted_ref(watched_ref), "A prisoner was taken from where they stood in front of a player")
 	SSmobs.clients_by_zlevel[cell_front.z] -= onlooker
+	squatter.forceMove(cell_front)
+	squatter.start_pulling(watched)
+	prison.processing_tick(60)
+	TEST_ASSERT(!is_qdeleted_ref(watched_ref), "A leaving prisoner being pulled by a player was deleted unseen")
+	squatter.stop_pulling()
+	squatter.forceMove(prison.alcove_turfs[1])
 	prison.processing_tick(60)
 	TEST_ASSERT(is_qdeleted_ref(watched_ref), "A prisoner nobody could see any more was still there after a minute")
 	watched = null
 
-	// A leaver already outside the wing does not cycle the front-room door open, and still clears once unseen for a minute
+	// A leaver already outside the wing frees their cell at once, does not cycle the front-room door open, and clears once unseen for a minute
 	var/mob/living/carbon/human/npc/outpost_prisoner/off_wing = prison.admit_next(TRUE)
 	TEST_ASSERT_NOTNULL(off_wing, "No prisoner arrived for the off-wing leaving check")
+	var/datum/outpost_prison_cell/off_wing_cell = off_wing.cell
 	off_wing.forceMove(off_wing.cell.arrival_turf())
 	prison.processing_tick(1)
 	off_wing.forceMove(outpost.lobby_alcove_turfs[1])
 	var/datum/weakref/off_wing_ref = WEAKREF(off_wing)
 	off_wing.leave()
+	TEST_ASSERT_NULL(off_wing_cell.occupant, "An off-wing leaver kept occupying their lockup cell")
+	TEST_ASSERT_NULL(off_wing.cell, "An off-wing leaver kept a cell reference")
 	prison.processing_tick(1)
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing started on a leaver already outside the wing") // OUTPOST_PROCESSING_IDLE
 	TEST_ASSERT(door_is_shut(inner) && door_is_shut(outer), "Processing opened a door for a leaver outside the wing")
 	prison.processing_tick(59)
 	TEST_ASSERT(is_qdeleted_ref(off_wing_ref), "An off-wing leaver unseen for a minute was not cleared")
 	off_wing = null
+
+	// A corpse shut inside Processing is cleared once both doors are shut, and an arrival dropped from the roster does not jam Processing
+	prison.bodies_cleared = TRUE
+	var/mob/living/carbon/human/npc/outpost_prisoner/dead_arrival = prison.admit_next(TRUE)
+	TEST_ASSERT_NOTNULL(dead_arrival, "No prisoner arrived for the Processing corpse check")
+	var/datum/outpost_prison_cell/dead_cell = dead_arrival.cell
+	var/datum/weakref/dead_arrival_ref = WEAKREF(dead_arrival)
+	dead_arrival.death()
+	dead_arrival = null
+	prison.tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "A dead arrival left Processing in [prison.processing_state]")
+	prison.processing_tick(1)
+	TEST_ASSERT(is_qdeleted_ref(dead_arrival_ref), "An unseen corpse shut inside Processing was not cleared")
+	TEST_ASSERT_NULL(dead_cell.occupant, "Clearing a corpse inside Processing did not free their cell")
+	TEST_ASSERT(prison.processing_free(), "Processing stayed blocked after clearing a corpse inside")
+	prison.bodies_cleared = FALSE
+	var/mob/living/carbon/human/npc/outpost_prisoner/orphan = prison.admit_next(TRUE)
+	TEST_ASSERT_NOTNULL(orphan, "No prisoner arrived for the orphaned arrival check")
+	var/datum/weakref/orphan_ref = WEAKREF(orphan)
+	prison.forget(orphan)
+	orphan = null
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "An arrival dropped from the roster left Processing stuck in [prison.processing_state]")
+	TEST_ASSERT(is_qdeleted_ref(orphan_ref), "An unwatched arrival dropped from the roster was not cleared")
 
 	// With nobody at the outpost an arrival is simply in their cell, and Processing is not used
 	prison.audience_override = FALSE

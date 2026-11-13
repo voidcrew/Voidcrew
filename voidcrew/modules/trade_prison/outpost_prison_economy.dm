@@ -152,7 +152,7 @@
 			continue
 		var/through_processing = arrives_through_processing() && processing_free()
 		if(through_processing)
-			spot = processing_turfs[1]
+			spot = processing_spot() || processing_turfs[1]
 		// An ordinary arrival may be a caught bounty criminal from the pool; the admin panel's never is (outpost_prison_bounty.dm).
 		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot, forced ? null : bounty_pool_take(src))
 		admit(prisoner, cell)
@@ -234,7 +234,7 @@
  * being dragged, carried or shut in something.
  */
 /datum/outpost_prison/proc/body_tick(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds = 1)
-	if(!in_cell_block(prisoner))
+	if(!in_cell_block(prisoner) && !in_processing(prisoner))
 		add_log("[prisoner.real_name]'s body is out of the cell block.")
 		forget(prisoner)
 		return

@@ -282,7 +282,7 @@
 	var/list/mob/living/people = lift_people_in(thing)
 	if(!length(people))
 		return FALSE
-	if(locate(/mob/living/carbon/human/npc/outpost_prisoner) in people)
+	if((locate(/mob/living/carbon/human/npc/outpost_prisoner) in people) || (locate(/mob/living/basic/bot/cleanbot/outpost_lockup) in people)) // OUTPOST PRISON seam
 		return TRUE
 	if(!floor || escorted)
 		return FALSE

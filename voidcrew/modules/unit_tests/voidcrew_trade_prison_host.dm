@@ -83,6 +83,8 @@
 	TEST_ASSERT(!hatch_door.CanAStarPass(hatch_door.dir, new /datum/can_pass_info(prisoner)), "A loose prisoner's pathing treated a shut hatch window as passable")
 	TEST_ASSERT(!hatch_door.CanAStarPass(hatch_door.dir, new /datum/can_pass_info(visitor)), "A visitor's pathing treated a shut hatch window as passable")
 	TEST_ASSERT(hatch_door.CanAStarPass(hatch_door.dir, new /datum/can_pass_info(guard)), "A guard's pathing could not pass a shut hatch window")
+	TEST_ASSERT(!staff_door.CanAStarPass(NORTH, null), "A shut staff airlock passed CanAStarPass with null pass_info")
+	TEST_ASSERT(!hatch_door.CanAStarPass(hatch_door.dir, null), "A shut hatch window passed CanAStarPass with null pass_info")
 	prisoner.trouble = null
 
 	// Another wing's guard cannot open this wing's staff doors, and a player possessing a guard or officer loses staff privileges
@@ -285,6 +287,24 @@
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "The roster grew past 2")
 	// With the closet full nobody else is made in it
 	TEST_ASSERT_NULL(prison.guard_arrival_spot(), "A third guard could be made in a full staff closet")
+	// The lift leaves the wing's cleanbot behind too, and nobody is made or vanished around a player in the staff closet
+	rider.forceMove(prison.alcove_turfs[1])
+	bot.forceMove(prison.alcove_turfs[3])
+	wing_panel.complete_ride(0, WEAKREF(rider))
+	TEST_ASSERT(get_turf(rider) in outpost.lobby_alcove_turfs, "The second ride from the lockup did not move the rider")
+	TEST_ASSERT_EQUAL(get_turf(bot), prison.alcove_turfs[3], "The lift carried the lockup's cleanbot out of the lockup")
+	bot.forceMove(prison.staff_closet_turfs[1])
+	var/mob/living/carbon/human/npc/outpost_prison_guard/first_guard = prison.guard_mobs[1]
+	var/mob/living/carbon/human/npc/outpost_prison_guard/second_guard = prison.guard_mobs[2]
+	first_guard.forceMove(prison.guard_office_spot())
+	second_guard.forceMove(prison.staff_closet_turfs[2])
+	rider.forceMove(prison.staff_closet_turfs[1])
+	TEST_ASSERT(prison.staff_closet_player_inside(), "A player standing in the staff closet was not detected")
+	TEST_ASSERT_NULL(prison.guard_arrival_spot(), "guard_arrival_spot() picked a tile with a player standing in the staff closet")
+	TEST_ASSERT(!prison.guard_gone_off(second_guard, 1), "guard_gone_off() vanished a guard in front of a player in the staff closet")
+	rider.forceMove(outpost.lobby_alcove_turfs[1])
+	first_guard = null
+	second_guard = null
 	bot = null
 
 	// The outpost goes, with the wing full: nothing of the wing is left behind (abuse 28)
@@ -429,5 +449,23 @@
 	TEST_ASSERT_EQUAL(bot.ai_controller.blackboard[BB_BOT_SUMMON_TARGET], cell_mess_tile, "The cleanbot was sent to the wrong tile")
 	TEST_ASSERT_EQUAL(length(bot_heard), 0, "Sending the lockup cleanbot to a mess made it speak aloud")
 	qdel(cell_mess)
+	var/mob/living/carbon/human/janitor = make_player(prison_spot(home, 13, 11), "lockupjanitor")
+	var/obj/item/card/id/advanced/janitor_id = allocate(/obj/item/card/id/advanced, janitor)
+	janitor_id.access = list(ACCESS_JANITOR, ACCESS_ROBOTICS)
+	janitor.equip_to_slot_or_del(janitor_id, ITEM_SLOT_ID)
+	TEST_ASSERT(!bot.allowed(janitor), "A ship janitor's ID had access to the lockup cleanbot")
+	bot.unlock_with_id(janitor)
+	TEST_ASSERT(bot.bot_access_flags & BOT_COVER_LOCKED, "A ship janitor's ID unlocked the lockup cleanbot")
+	var/obj/item/knife/knife = allocate(/obj/item/knife, janitor.loc)
+	janitor.put_in_hands(knife)
+	TEST_ASSERT(!bot.deputize(knife, janitor) && isnull(bot.weapon), "A knife was attached to the lockup cleanbot")
+	TEST_ASSERT(!bot.emag_act(janitor, null) && (bot.bot_access_flags & BOT_COVER_LOCKED), "An emag unlocked or hacked the lockup cleanbot")
+	var/obj/item/pai_card/pai = allocate(/obj/item/pai_card, janitor.loc)
+	bot.insertpai(janitor, pai)
+	TEST_ASSERT_NULL(bot.paicard, "A pAI card was inserted into the lockup cleanbot")
+	bot.turn_off()
+	TEST_ASSERT(!(bot.bot_mode_flags & BOT_MODE_ON), "turn_off() did not switch the cleanbot off")
+	prison.cleanbot_tick(60) // OUTPOST_PRISON_BOT_CALL_GAP
+	TEST_ASSERT(bot.bot_mode_flags & BOT_MODE_ON, "cleanbot_tick() did not turn a powered-off lockup cleanbot back on")
 	bot = null
 	settle_prison_air(home)
