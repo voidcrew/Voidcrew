@@ -17,7 +17,7 @@
  *   takes it away.
  * - Someone on the concourse side can walk into the inner door to cycle the chamber outward the same
  *   way (the exterior hatches need that; the lobby checkpoints have a one-way exit gate as well).
- * - The inner door can be pried open with a crowbar or jaws of life, or hacked with an emag. It takes
+ * - The inner door can be pried open with a crowbar or jaws of life, or hacked with an airlock override card. It takes
  *   OUTPOST_CHECKPOINT_FORCE_TIME and raises the alarm; anyone who then goes through it from the
  *   chamber is reported to the outpost police as a breach (voidcrew/modules/outpost_police/), the
  *   forcer's tool with them.
@@ -894,12 +894,6 @@
 		return FALSE
 	INVOKE_ASYNC(checkpoint, TYPE_PROC_REF(/datum/outpost_checkpoint, force_inner), user, emag_card)
 	return TRUE
-
-// A checkpoint's inner door and a holding cell's door take a standard emag as well as an airlock override card (decision 47)
-/obj/item/card/emag/can_emag(atom/target, mob/user)
-	if(istype(target, /obj/machinery/door/airlock/outpost/checkpoint/inner) || istype(target, /obj/machinery/door/airlock/outpost/glass/police_cell))
-		return TRUE
-	return ..()
 
 /obj/machinery/door/airlock/outpost/checkpoint/inner/proc/set_breached(new_state)
 	if(breached == new_state)

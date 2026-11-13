@@ -272,7 +272,7 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(door.density, "Setup: the mended door did not shut")
 
-	// An airlock authentication override card, and a standard emag through click interaction (can_emag + interact_with_atom)
+	// An airlock authentication override card
 	hacker.forceMove(cell.outside_turf)
 	before = length(police.crimes)
 	var/obj/item/card/emag/doorjack/doorjack = allocate(/obj/item/card/emag/doorjack)
@@ -288,6 +288,7 @@
 	TEST_ASSERT(!(door.obj_flags & EMAGGED), "The emag mend left the door broken")
 	TEST_ASSERT(!door.locked, "The emag mend left the bolts down")
 
+	// A standard emag does nothing to a cell door or a checkpoint inner door, as on any other airlock (decision 48)
 	cell.open_until = 0
 	cell.close_check()
 	sleep(2 SECONDS)
@@ -296,20 +297,15 @@
 	before = length(police.crimes)
 	var/obj/item/card/emag/plain_emag = allocate(/obj/item/card/emag)
 	var/obj/machinery/door/airlock/outpost/checkpoint/inner/inner_sample = allocate(/obj/machinery/door/airlock/outpost/checkpoint/inner, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z))
-	var/obj/machinery/door/airlock/outpost/checkpoint/outer/outer_sample = allocate(/obj/machinery/door/airlock/outpost/checkpoint/outer, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 5, run_loc_floor_bottom_left.z))
-	TEST_ASSERT(plain_emag.can_emag(door, hacker), "A standard emag was blocked by airlock type_blacklist on a cell door")
-	TEST_ASSERT(plain_emag.can_emag(inner_sample, hacker), "A standard emag was blocked by airlock type_blacklist on a checkpoint inner door")
-	TEST_ASSERT(!plain_emag.can_emag(outer_sample, hacker), "A standard emag was allowed on a checkpoint outer door")
+	TEST_ASSERT(!plain_emag.can_emag(door, hacker), "A standard emag was allowed on a cell door")
+	TEST_ASSERT(!plain_emag.can_emag(inner_sample, hacker), "A standard emag was allowed on a checkpoint inner door")
 	qdel(inner_sample)
-	qdel(outer_sample)
-	TEST_ASSERT_EQUAL(plain_emag.interact_with_atom(door, hacker, list()), ITEM_INTERACT_SUCCESS, "Clicking a cell door with a standard emag did not succeed")
+	plain_emag.interact_with_atom(door, hacker, list())
 	sleep(3 SECONDS)
-	TEST_ASSERT(!door.density, "Clicking a cell door with a standard emag did not open it")
-	TEST_ASSERT_EQUAL(length(police.crimes), before + 1, "Opening a cell door with a standard emag reported no jailbreak")
-	crime = police_last_crime(police)
-	TEST_ASSERT_EQUAL(crime?[3], plain_emag, "Opening a cell door with a standard emag did not record the emag as evidence")
+	TEST_ASSERT(door.density, "Clicking a cell door with a standard emag opened it")
+	TEST_ASSERT(!(door.obj_flags & EMAGGED), "A standard emag left a mark on the cell door")
+	TEST_ASSERT_EQUAL(length(police.crimes), before, "A standard emag that did nothing reported a jailbreak")
 	hacker.forceMove(locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z))
-	door.mend_emag()
 
 	// Release through a door still hacked: bolted and without power, the cell's own control still lets them out
 	cell.open_until = 0

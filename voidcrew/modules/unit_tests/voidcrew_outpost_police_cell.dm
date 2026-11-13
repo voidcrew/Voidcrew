@@ -1001,8 +1001,10 @@
 	played_cop.mind_initialize()
 	allocated += played_cop.mind
 	crimes_before = length(police.crimes)
-	played_cop.start_pulling(prisoner)
+	// forceMove() breaks a pull, so the prisoner is put outside first and the played officer holds them there
 	prisoner.forceMove(cell_a.outside_turf)
+	played_cop.start_pulling(prisoner)
+	TEST_ASSERT_EQUAL(prisoner.pulledby, played_cop, "Setup: the played officer could not take hold of the prisoner")
 	police.tick_cells()
 	played_cop.stop_pulling()
 	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before + 1, "A player mind in an officer body pulling a prisoner out of a cell reported no crime")

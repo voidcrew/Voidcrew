@@ -464,7 +464,7 @@
 	return TRUE
 
 /**
- * The door was hacked open (a pulsed wire, a pry with the power out, an emag or an override card): it stands open a
+ * The door was hacked open (a pulsed wire, a pry with the power out, an override card): it stands open a
  * while as a forced door does, and opening it while somebody is held is `culprit`'s jailbreak, as forcing it is.
  */
 /datum/outpost_police_cell/proc/door_hacked_open(mob/living/culprit, obj/item/tool = null)
@@ -1249,8 +1249,8 @@
 /**
  * A holding cell's door. A bump, a click or an ID never opens it: its cell does (build_cells()), to bring a prisoner
  * in, let an officer out, on release and for a medic. Otherwise it is hacked like any airlock (owner decision 47): a
- * screwdriver opens its panel, its wires cut and pulse as usual (bolts, power, the door motor and the rest), an emag
- * or an airlock authentication override card opens it, and a crowbar pries it once its power is out. With the power
+ * screwdriver opens its panel, its wires cut and pulse as usual (bolts, power, the door motor and the rest), an
+ * airlock authentication override card opens it, and a crowbar pries it once its power is out. With the power
  * on, a crowbar or jaws force it the slow way (force_door()). Opened on a held prisoner by any of these, it is the
  * hacker's jailbreak, as forcing it is. A hacked door mends itself after OUTPOST_CHECKPOINT_EMAG_TIME, once nobody
  * stands in the doorway: panel shut, wires whole, power, lights and bolts back.
@@ -1267,7 +1267,7 @@
 	var/datum/outpost_police_cell/holding_cell
 	/// Permission for the next open() call only
 	var/cell_open_permitted = FALSE
-	/// Set while an emag or override card swings it open
+	/// Set while an override card swings it open
 	var/hack_opening = FALSE
 	/// Who last worked its panel, wires or lock (the jailbreak is theirs)
 	var/datum/weakref/last_hacker
@@ -1299,7 +1299,7 @@
 	var/by_cell = cell_open_permitted
 	cell_open_permitted = FALSE
 	// A plain request (a bump, a click, a remote) gets nowhere; the cell's say-so, a pulsed wire, a pry with the power
-	// out, an emag or an override card does
+	// out, an override card does
 	if(!by_cell && forced == DEFAULT_DOOR_CHECKS && !hack_opening)
 		return FALSE
 	// Who did it and with what, taken now: the door swings open over a second or two

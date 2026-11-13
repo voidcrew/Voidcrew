@@ -641,7 +641,7 @@
 	panel.outpost = outpost
 	panel.berth = berth
 	berth.panel = panel
-	var/datum/checkpoint_construction/locked_build = new
+	var/datum/checkpoint_construction/police_test/locked_build = new
 	locked_build.captain_ckey = "other_captain_test"
 	berth.rebuild_owner = WEAKREF(locked_build)
 
@@ -663,7 +663,7 @@
 	TEST_ASSERT(police.ride(officer, "lobby"), "Hangar elevator ride failed when pulling a diagonally adjacent prisoner") // POLICE_SECTOR_LOBBY
 	TEST_ASSERT(!HAS_TRAIT_FROM(officer, TRAIT_AI_PAUSED, "outpost_police_ride") && !officer.dispatch_riding, "Completed ride left the officer paused or marked riding")
 	TEST_ASSERT((get_turf(officer) in outpost.lobby_alcove_turfs) && (get_turf(prisoner) in outpost.lobby_alcove_turfs), "Diagonal pull outside the alcove was left behind on the hangar floor")
-	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "Hangar elevator ride dropped the pulled prisoner")
+	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "Hangar elevator ride dropped the pulled prisoner (officer at [AREACOORD(officer)], prisoner at [AREACOORD(prisoner)], lobby alcove [length(outpost.lobby_alcove_turfs)] tiles)")
 	officer.stop_pulling()
 
 	// If the alcove has no room to step deeper for a pulled person outside it, ride() refuses rather than riding alone
@@ -724,3 +724,9 @@
 	qdel(berth)
 	outpost.berths = old_berths
 	dispatch_clear(police)
+
+/// A rebuild job that owns a berth without a snapshot behind it
+/datum/checkpoint_construction/police_test
+
+/datum/checkpoint_construction/police_test/New()
+	return

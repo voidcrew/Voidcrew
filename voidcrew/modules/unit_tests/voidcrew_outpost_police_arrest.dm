@@ -301,8 +301,8 @@
 	friend.start_pulling(suspect)
 	TEST_ASSERT_EQUAL(suspect.pulledby, friend, "The friend could not take hold of the suspect")
 	case.process_case()
-	TEST_ASSERT(LAZYACCESS(case.resist_reports, friend.mind), "A friend pulling the suspect was not reported")
-	TEST_ASSERT(!LAZYACCESS(case.resist_reports, suspect.mind), "The suspect was reported for being pulled")
+	TEST_ASSERT(LAZYACCESS(case.resist_reports, WEAKREF(friend.mind)), "A friend pulling the suspect was not reported")
+	TEST_ASSERT(!LAZYACCESS(case.resist_reports, WEAKREF(suspect.mind)), "The suspect was reported for being pulled")
 
 /// A stuck step goes back to the start; the third time the case closes; at three stars the arrest is called off unless the cuffs are on
 /datum/unit_test/voidcrew_outpost_police_arrest_timeouts
@@ -1268,6 +1268,8 @@
 	TEST_ASSERT(!QDELETED(case), "Lifting a warrant closed the case without taking police cuffs off")
 	TEST_ASSERT_EQUAL(case.step, "release", "Lifting a warrant on a cuffed suspect did not enter release") // CASE_STEP_RELEASE
 	TEST_ASSERT_NULL(case.warrant, "Release held onto a deleted warrant reference")
+	// The release step staffs itself on its next tick
+	case.staff()
 	if(get_dist(far_officer, suspect) > get_dist(near_officer, suspect))
 		TEST_ASSERT_EQUAL(case.arresting(), near_officer, "Release did not pick the officer standing beside the cuffed suspect")
 
