@@ -164,16 +164,32 @@
 #define HV_VIS_KNIFE_HUNCH_HOLD (0.4 SECONDS)
 /// How long a standing survivor takes to return from the forward hunch to their true pose.
 #define HV_VIS_KNIFE_HUNCH_OUT (0.3 SECONDS)
-/// Pixels the attacker steps toward the victim during a knife execution (under a third of a 32 px tile).
-#define HV_VIS_KNIFE_STEP_IN 9
+/// Pixels a side-on (E/W) attacker steps toward the victim so their chest meets the victim's back.
+/// Deliberate exception to _motion_core.dm's "offsets under a third of a tile" rule: pixel_w/pixel_z
+/// never change the SIDE_MAP sort row (y + pixel_y), so sort order across tiles is preserved.
+#define HV_VIS_KNIFE_STEP_SIDE 19
+/// Pixels a north/south attacker steps toward the victim so their chest meets the victim's back.
+/// Deliberate exception to _motion_core.dm's third-of-a-tile rule: pixel_z never changes sort row,
+/// so an attacker north of a south-facing victim still sorts behind them.
+#define HV_VIS_KNIFE_STEP_FRONT 15
+/// Per-axis pixels a diagonal attacker steps toward a helpless victim.
+#define HV_VIS_KNIFE_STEP_DIAG 13
 /// Degrees a side-facing standing victim is tilted back toward the attacker about their feet.
-#define HV_VIS_KNIFE_TILT_SIDE 2
+#define HV_VIS_KNIFE_TILT_SIDE 7
 /// Degrees a north- or south-facing standing victim leans sideways during the wind-up (0 keeps throat centred).
 #define HV_VIS_KNIFE_TILT_FRONT 0
+/// Pixels a north- or south-facing standing victim shifts back toward the attacker during the wind-up.
+#define HV_VIS_KNIFE_PULL_FRONT 2
+/// Feet-anchored vertical stretch added to a north- or south-facing victim so their head draws 1 px up.
+#define HV_VIS_KNIFE_HEAD_STRETCH 0.042
 /// Degrees a lying victim is tugged toward the attacker during the wind-up.
 #define HV_VIS_KNIFE_TILT_LYING 2
 /// Degrees a standing survivor hunches forward about their feet after the throat is cut.
 #define HV_VIS_KNIFE_HUNCH_TILT 9
+/// Native pixel length from fist centre (rows 16-17) to shoulder top (row 11) on human arm sprites.
+#define HV_VIS_KNIFE_ARM_BASE_LEN 6
+/// Maximum lengthwise stretch factor allowed on the attacker's forearm prop.
+#define HV_VIS_KNIFE_ARM_MAX_STRETCH 2
 /// Scale applied to a 32x32 diagonal knife sprite so the prop renders ~10 px long in a 32 px hand.
 #define HV_VIS_KNIFE_SCALE 0.28
 /// Unscaled axial sprite coordinate (from 32x32 centre) of a knife's grip under the holder's fist.
