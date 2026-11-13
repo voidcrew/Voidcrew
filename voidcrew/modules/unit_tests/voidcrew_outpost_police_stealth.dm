@@ -815,6 +815,90 @@
 	TEST_ASSERT(istype(hunter_brain.ai_movement, /datum/ai_movement/jps/stealth), "A departing officer lost the stealth JPS pathfinder ([hunter_brain.ai_movement?.type])")
 	hunter.npc_stop_leaving()
 
+/// Stop activities check line of sight, reachability and partner eligibility, and preserve desk coffee cooldowns when blocked
+/datum/unit_test/voidcrew_stealth_live/police/stop_filters
+
+/datum/unit_test/voidcrew_stealth_live/police/stop_filters/Run()
+	TEST_ASSERT(police_room(18, 9), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(4, 4, EAST)
+	officer.resume_routine()
+
+	// 1. Chat partner skips traders, recovery crews and walled-off NPCs, and reaches a free customer two tiles off
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, at(5, 4))
+	keeper.outpost = outpost
+	outpost.traders += keeper
+	keeper.home = at(5, 4)
+	keeper.resume_routine()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/coroner = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue, at(4, 5))
+	coroner.resume_routine()
+	for(var/dy in 0 to 8)
+		var/turf/wall_spot = at(2, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/walled_npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, at(1, 4))
+	walled_npc.resume_routine()
+	TEST_ASSERT_NULL(officer.police_chat_partner(), "An officer chose a trader, recovery worker or walled-off NPC to chat with")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/townsperson = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, at(6, 4))
+	townsperson.set_place(SSambient_npcs.outpost_place(outpost))
+	townsperson.resume_routine()
+	qdel(keeper)
+	TEST_ASSERT_EQUAL(officer.police_chat_partner(), townsperson, "An officer did not pick the free visible townsperson to chat with")
+	var/datum/ambient_activity/chat/talk = officer.start_activity(police.stop_activity_for(officer, "chat"))
+	TEST_ASSERT(istype(talk) && get_dist(talk.spot, officer) <= 3, "A two-tile chat stop failed setup or picked a spot outside stop reach")
+	officer.end_activity()
+	townsperson.end_activity()
+	qdel(townsperson)
+	qdel(coroner)
+	qdel(walled_npc)
+
+	// 2. Walled-off coffee machine is skipped in favour of a visible counter, and drink/police stays within stop reach
+	var/obj/machinery/vending/coffee/walled_machine = allocate(/obj/machinery/vending/coffee, at(1, 3))
+	var/obj/structure/table/bar_counter = allocate(/obj/structure/table, at(5, 4))
+	var/obj/structure/table/far_table = allocate(/obj/structure/table, at(10, 4))
+	var/obj/structure/chair/far_stool = allocate(/obj/structure/chair, at(10, 5))
+	var/datum/ambient_activity/drink/police/bar_cup = officer.start_activity(police.stop_activity_for(officer, "coffee"))
+	TEST_ASSERT(istype(bar_cup) && bar_cup.anchor() == bar_counter, "Coffee stop used a walled-off machine instead of the visible counter")
+	TEST_ASSERT(get_dist(bar_cup.spot, officer) <= 3 && bar_cup.spot != get_turf(far_stool), "Counter coffee wandered to a distant booth outside stop reach")
+	officer.end_activity()
+	qdel(walled_machine)
+	qdel(bar_counter)
+	qdel(far_table)
+	qdel(far_stool)
+
+	// 3. A boxed-in sleeper with no reachable adjacent tile falls through to calling in a visible corpse
+	var/mob/living/carbon/human/boxed_sleeper = visitor_at(6, 4)
+	boxed_sleeper.Sleeping(5 MINUTES)
+	var/list/box_tables = list()
+	for(var/turf/around as anything in RANGE_TURFS(1, at(6, 4)))
+		if(around != at(6, 4))
+			box_tables += allocate(/obj/structure/table, around)
+	var/mob/living/carbon/human/corpse = person_at(8, 4, FALSE)
+	corpse.death()
+	var/datum/ambient_activity/police_body/body_call = officer.start_activity(police.stop_activity_for(officer, "watch"))
+	TEST_ASSERT(istype(body_call), "A boxed-in sleeper blocked the stop from calling in a visible corpse ([officer.activity?.type || "nothing"])")
+	officer.end_activity()
+	for(var/obj/structure/table/blocker as anything in box_tables)
+		qdel(blocker)
+	qdel(boxed_sleeper)
+	qdel(corpse)
+
+	// 4. Blocking every tile beside the sergeant's coffee machine falls back to the desk without burning next_desk_coffee
+	police.desk_turf = at(13, 4)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/sergeant = officer_at(13, 4, SOUTH, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant)
+	sergeant.resume_routine()
+	sergeant.next_desk_coffee = 0
+	var/obj/machinery/vending/coffee/desk_machine = allocate(/obj/machinery/vending/coffee, at(15, 4))
+	var/list/machine_blockers = list()
+	for(var/turf/around as anything in RANGE_TURFS(1, at(15, 4)))
+		if(around != at(15, 4))
+			machine_blockers += allocate(/obj/structure/table, around)
+	var/datum/ambient_activity/fallback = sergeant.start_activity(police.stop_activity_for(sergeant, "desk"))
+	TEST_ASSERT(istype(fallback, /datum/ambient_activity/police_desk), "A blocked desk coffee machine did not fall back to police_desk ([fallback?.type || "nothing"])")
+	TEST_ASSERT_EQUAL(sergeant.next_desk_coffee, 0, "A blocked desk coffee machine burned next_desk_coffee")
+	sergeant.end_activity()
+	for(var/obj/structure/table/blocker as anything in machine_blockers)
+		qdel(blocker)
+	qdel(desk_machine)
+
 #undef POLICE_STEALTH_BEAT
 
 /// Cross-sector concourse <-> lobby walks are foot walks (not unfinished lift rides), while lobby -> hangar berth walks redirect cleanly toward the hangar elevator alcove

@@ -726,7 +726,7 @@
 				continue
 			if(!dispatch_send_home(farthest))
 				continue
-			if(!called_in)
+			if(!called_in && keep <= 0 && !length(cases))
 				called_in = TRUE
 				INVOKE_ASYNC(farthest, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_CLEAR, null, TRUE)
 

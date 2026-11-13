@@ -537,6 +537,12 @@
 	officer.resume_routine()
 	if(officer.activity)
 		officer.end_activity()
+	if(officer.buckled && officer.own_buckle(officer.buckled))
+		officer.stand_up()
+	if(officer.held_item)
+		officer.put_drink_down(null)
+	if(officer.held_visual || officer.held_prop)
+		officer.set_held(null)
 	officer.ai_controller?.CancelActions()
 	var/mob/living/carbon/suspect = get_suspect()
 	// On their feet and in view: on them. Someone down is only walked up to and cuffed.
@@ -1367,22 +1373,46 @@
  * on ahead where there is no room to the side (a 1-wide hall); a player is told to make way. Once a second.
  * Returns what the line returned, or null when nothing was said.
  */
+/// Whether a step from `from` onto `to_tile` is open to walk across, mobs aside (no wall, shut door, window, table or rail)
+/proc/outpost_police_way_step_ok(turf/from, turf/to_tile)
+	if(!from || !to_tile || to_tile == from || from.z != to_tile.z || get_dist(from, to_tile) > 1 || to_tile.density)
+		return FALSE
+	var/out_dir = get_dir(from, to_tile)
+	if(!(out_dir in GLOB.cardinals))
+		var/turf/mid_ns = get_step(from, out_dir & (NORTH | SOUTH))
+		var/turf/mid_ew = get_step(from, out_dir & (EAST | WEST))
+		return (outpost_police_way_step_ok(from, mid_ns) && outpost_police_way_step_ok(mid_ns, to_tile)) || (outpost_police_way_step_ok(from, mid_ew) && outpost_police_way_step_ok(mid_ew, to_tile))
+	var/in_dir = REVERSE_DIR(out_dir)
+	for(var/obj/border in from)
+		if(border.density && (border.flags_1 & ON_BORDER_1) && ((border.dir & out_dir) || (border.dir & (border.dir - 1))))
+			return FALSE
+	for(var/obj/blocker in to_tile)
+		if(!blocker.density)
+			continue
+		if(blocker.flags_1 & ON_BORDER_1)
+			if((blocker.dir & in_dir) || (blocker.dir & (blocker.dir - 1)))
+				return FALSE
+		else
+			return FALSE
+	return TRUE
+
 /datum/outpost_police_case/proc/make_way(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
 	var/turf/here = get_turf(officer)
 	if(!here)
 		return null
 	var/list/turf/path = list()
-	var/turf/ahead = here
+	var/turf/prev = here
 	for(var/i in 1 to 2)
-		ahead = get_step(ahead, officer.dir)
-		if(!ahead || ahead.density || (locate(/obj/structure/table) in ahead) || (locate(/obj/structure/window) in ahead))
+		var/turf/ahead = get_step(prev, officer.dir)
+		if(!outpost_police_way_step_ok(prev, ahead))
 			break
 		path += ahead
+		prev = ahead
 	var/datum/ai_controller/brain = officer.ai_controller
 	var/atom/goal_atom = brain ? brain.blackboard[BB_OUTPOST_POLICE_CASE_GOAL] : null
 	if(!QDELETED(goal_atom) && get_turf(goal_atom) != here)
 		var/turf/toward = get_step_towards(officer, goal_atom)
-		if(toward && toward != here)
+		if(outpost_police_way_step_ok(here, toward))
 			path |= toward
 	var/told = FALSE
 	for(var/turf/tile as anything in path)
@@ -1391,28 +1421,34 @@
 				continue
 			if(outpost_npc_step_aside(someone, officer, path))
 				continue
-			if(!told && !istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			if(!told && !(istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !someone.mind && !someone.client))
 				told = TRUE
 				. = officer.police_say(POLICE_LINE_MAKE_WAY)
 
 /**
  * `blocker`, an outpost NPC standing where `walker` is going, takes one real step out of the way: to the side first,
  * then on ahead of `walker`, never back toward them, never onto `keep_clear`, a doorway or someone else. Players,
- * and anyone held, cuffed, buckled, down or holding someone, stay put. TRUE if they moved.
+ * traders at their posts, and anyone held, cuffed, buckled, paused, down or holding someone, stay put. TRUE if they moved.
  */
 /proc/outpost_npc_step_aside(mob/living/blocker, mob/living/walker, list/turf/keep_clear)
-	if(!istype(blocker, /mob/living/carbon/human/npc) || blocker.client || blocker.stat != CONSCIOUS)
+	if(!istype(blocker, /mob/living/carbon/human/npc) || blocker.client || blocker.mind || blocker.stat != CONSCIOUS)
 		return FALSE
-	if(blocker.buckled || blocker.pulledby || blocker.pulling || blocker.has_buckled_mobs() || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || HAS_TRAIT(blocker, TRAIT_INCAPACITATED))
+	if(blocker.buckled || blocker.pulledby || blocker.pulling || blocker.has_buckled_mobs() || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || HAS_TRAIT(blocker, TRAIT_INCAPACITATED) || HAS_TRAIT(blocker, TRAIT_AI_PAUSED) || blocker.has_status_effect(/datum/status_effect/grouped/heldup))
 		return FALSE
 	if(!(blocker.mobility_flags & MOBILITY_MOVE) || blocker.body_position == LYING_DOWN)
 		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/ambient_blocker = blocker
+	if(istype(ambient_blocker))
+		if(ambient_blocker.fading)
+			return FALSE
+		if(istype(ambient_blocker, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) && get_turf(ambient_blocker) == ambient_blocker.home)
+			return FALSE
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer_blocker = blocker
 	if(istype(officer_blocker) && officer_blocker.dispatch_riding)
 		return FALSE
 	var/turf/from = get_turf(blocker)
 	var/turf/walker_turf = get_turf(walker)
-	if(!from || !walker_turf)
+	if(!from || !walker_turf || from.z != walker_turf.z)
 		return FALSE
 	var/travel = get_dir(walker_turf, from)
 	var/list/turf/avoid = list(walker_turf)
@@ -1425,14 +1461,14 @@
 	var/best_score = INFINITY
 	for(var/direction in GLOB.alldirs)
 		var/turf/spot = get_step(from, direction)
-		if(!spot || (spot in avoid) || spot.density || isspaceturf(spot))
+		if(!spot || (spot in avoid) || spot.density || isspaceturf(spot) || isgroundlessturf(spot) || islava(spot) || ischasm(spot))
 			continue
 		// Never back toward the walker
 		if(direction & REVERSE_DIR(travel))
 			continue
-		if(spot.is_blocked_turf(exclude_mobs = FALSE, source_atom = blocker) || (locate(/obj/machinery/door) in spot))
+		if(spot.is_blocked_turf(exclude_mobs = FALSE, source_atom = blocker) || (locate(/obj/machinery/door) in spot) || (locate(/obj/structure/outpost_exit_gate) in spot) || (locate(/obj/effect/landmark/outpost_checkpoint_chamber) in spot))
 			continue
-		if(!from.Adjacent(spot, null, blocker))
+		if(!outpost_police_way_step_ok(from, spot))
 			continue
 		// Square to the side first, then a diagonal step aside, then straight on ahead
 		var/score = 3

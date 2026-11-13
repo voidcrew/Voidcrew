@@ -753,3 +753,122 @@
 	TEST_ASSERT_NOTNULL(trader, "The trader went missing")
 	police.cells -= cell
 	cell.retire()
+
+/// On a real outpost map, the sergeant at the checkpoint desk can reach and take coffee from the station's coffee machine
+/datum/unit_test/voidcrew_outpost_police_station_coffee
+
+/datum/unit_test/voidcrew_outpost_police_station_coffee/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT_NOTNULL(police.desk_turf, "The loaded outpost has no police desk")
+	TEST_ASSERT(istype(police.desk_turf.loc, /area/voidcrew/trader_outpost/checkpoint), "The police desk is not in the checkpoint area")
+	for(var/mob/living/occupant in police.desk_turf)
+		occupant.forceMove(police_floor(outpost))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/sergeant = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+	sergeant.next_desk_coffee = 0
+	var/obj/machinery/vending/coffee/machine = sergeant.life_desk_coffee()
+	TEST_ASSERT_NOTNULL(machine, "The sergeant at the real checkpoint desk could not reach the station's coffee machine")
+	var/datum/ambient_activity/police_coffee/coffee = sergeant.start_activity(police.stop_activity_for(sergeant, "desk"))
+	TEST_ASSERT(istype(coffee), "The sergeant at the real checkpoint desk could not start a coffee run ([sergeant.activity?.type || "nothing"])")
+	sergeant.end_activity()
+
+/// Counter sleepers, shopfront targets, mind-bearing officer bodies, case hand cleanup, make_way barriers and stand-down radio calls
+/datum/unit_test/voidcrew_outpost_police_life_and_way_edges
+
+/datum/unit_test/voidcrew_outpost_police_life_and_way_edges/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/awake_trader = pa_trader(outpost, pa_tile(2, 4), pa_tile(2, 3), /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 2))
+	police_headset_on(officer)
+
+	// 1. A sleeper passed out right in front of a shop counter is still checked on
+	var/mob/living/carbon/human/sleeper = police_line_person(pa_tile(2, 2))
+	sleeper.Sleeping(5 MINUTES)
+	var/datum/ambient_activity/police_check/check = officer.start_activity(new /datum/ambient_activity/police_check(officer, sleeper))
+	TEST_ASSERT(istype(check), "An officer could not check a sleeper lying in front of a counter ([police_spot_report(officer, sleeper)])")
+	officer.end_activity()
+	qdel(sleeper)
+
+	// 2. Shopfront skips checkpoint guards and unconscious keepers to watch an awake shop keeper in sight
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/gate_guard = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard, pa_tile(0, 2))
+	gate_guard.outpost = outpost
+	outpost.traders += gate_guard
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ko_trader = pa_trader(outpost, pa_tile(0, 3), null, /datum/outpost_shop/vendor/diner)
+	ko_trader.Unconscious(20 SECONDS)
+	TEST_ASSERT_EQUAL(ko_trader.stat, UNCONSCIOUS, "Fixture: ko_trader is not unconscious")
+	var/datum/ambient_activity/police_shopfront/shopfront = officer.start_activity(new /datum/ambient_activity/police_shopfront(officer))
+	TEST_ASSERT(istype(shopfront) && shopfront.trader_ref?.resolve() == awake_trader, "Shopfront picked [shopfront?.trader_ref?.resolve() || "nobody"] instead of the awake shop keeper")
+	officer.end_activity()
+	qdel(gate_guard)
+	qdel(ko_trader)
+
+	// 3. A mind-bearing officer body (disconnected transplanted player) does not speak AI lines, and its corpse off the roster is called in
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/played = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(3, 2))
+	played.mind_initialize()
+	allocated += played.mind
+	TEST_ASSERT(!played.police_can_speak(), "A mind-bearing officer body was allowed to speak AI police lines")
+	police.remove_officer(played)
+	played.death()
+	TEST_ASSERT(officer.life_is_uncalled_body(played), "A dead player in a former officer body off the roster was ignored as an NPC officer corpse")
+	qdel(played)
+
+	// 4. police_put_away() and take_officer() clear a carried coffee glass
+	officer.take_drink()
+	TEST_ASSERT(officer.police_put_away(officer.held_item) && isnull(officer.held_item), "police_put_away() did not clear a held coffee glass")
+	officer.take_drink()
+	var/datum/outpost_police_case/case = allocate(/datum/outpost_police_case, police, null)
+	case.take_officer(officer)
+	TEST_ASSERT_NULL(officer.held_item, "Drafting an officer onto a case left a coffee mug in hand")
+	case.drop_officer(officer)
+	officer.resume_routine()
+
+	// 5. make_way() stops at closed doors and directional border windows, and step_aside leaves posted traders and paused/minded NPCs alone
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/mob/living/carbon/human/suspect = police_line_person(pa_tile(0, 1))
+	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(3, 1))
+	officer.forceMove(pa_tile(1, 1))
+	officer.setDir(EAST)
+	officer.ai_controller.set_blackboard_key("outpost_police_case_goal", bystander) // BB_OUTPOST_POLICE_CASE_GOAL
+	var/obj/machinery/door/airlock/closed_door = allocate(/obj/machinery/door/airlock, pa_tile(2, 1))
+	TEST_ASSERT(closed_door.density, "Fixture: airlock is not closed")
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "make_way shouted across a closed airlock")
+	qdel(closed_door)
+	bystander.forceMove(pa_tile(2, 1))
+	var/obj/structure/window/pane = allocate(/obj/structure/window, pa_tile(1, 1))
+	pane.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "make_way shouted through a directional border window")
+	qdel(pane)
+	officer.ai_controller.clear_blackboard_key("outpost_police_case_goal") // BB_OUTPOST_POLICE_CASE_GOAL
+	TEST_ASSERT(!outpost_npc_step_aside(awake_trader, officer, null) && get_turf(awake_trader) == awake_trader.home, "step_aside shoved a shop keeper off its counter post")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/patron = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, pa_tile(2, 0))
+	ADD_TRAIT(patron, TRAIT_AI_PAUSED, "unit_test")
+	TEST_ASSERT(!outpost_npc_step_aside(patron, officer, null), "step_aside moved a paused NPC")
+	REMOVE_TRAIT(patron, TRAIT_AI_PAUSED, "unit_test")
+	patron.mind_initialize()
+	allocated += patron.mind
+	TEST_ASSERT(!outpost_npc_step_aside(patron, officer, null), "step_aside moved a mind-bearing NPC")
+	qdel(patron)
+
+	// 6. Standing down surplus response units only calls all-clear when keep == 0 and no cases remain open
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police.lift_turfs = list(pa_tile(0, 4))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/responder = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, pa_tile(1, 0))
+	police_headset_on(responder)
+	police.cases[suspect.mind] = case
+	police.dispatch_stand_down(0, null)
+	TEST_ASSERT_EQUAL(responder.npc_exit, pa_tile(0, 4), "Surplus response officer did not start walking out")
+	TEST_ASSERT(!voice.context_free_at["clear"], "A departing responder called all-clear while an arrest case was still open") // POLICE_LINE_CLEAR
+	police.cases -= suspect.mind
+	responder.npc_stop_leaving()
+	police.dispatch_stand_down(0, null)
+	TEST_ASSERT(voice.context_free_at["clear"] > world.time, "A departing responder did not call all-clear once no cases or suspects remained") // POLICE_LINE_CLEAR
+	qdel(responder)
+	qdel(suspect)
+	qdel(bystander)

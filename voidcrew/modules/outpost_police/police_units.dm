@@ -512,15 +512,15 @@
 
 // ----- the leash -----
 
-/// Anywhere on their outpost: the concourse, the lobby and the hangars, not the concourse only
+/// Anywhere on their outpost's walkable ground: the concourse, the lobby and the hangars, never open space
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/leash_ok(turf/tile)
-	var/obj/structure/overmap/trader_outpost/keep = police?.outpost
-	if(!keep)
-		return ..()
 	tile = get_turf(tile)
-	if(!tile)
+	if(!tile || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
 		return FALSE
-	return get_trader_outpost_for_turf(tile) == keep
+	var/obj/structure/overmap/trader_outpost/keep = police?.outpost || get_outpost()
+	if(keep?.template_bottom_left)
+		return get_trader_outpost_for_turf(tile) == keep
+	return ..()
 
 /**
  * Carried off their outpost with no way back. Never gone in front of a player: while anyone is within
@@ -551,6 +551,12 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_put_away(obj/item/thing)
 	if(QDELETED(thing) || !is_holding(thing))
 		return TRUE
+	if(thing == held_item)
+		put_drink_down(null)
+		return !is_holding(thing)
+	if(thing == held_prop)
+		set_held(null)
+		return !is_holding(thing)
 	for(var/obj/item/holder in list(belt, back))
 		if(holder?.atom_storage?.attempt_insert(thing, src, messages = FALSE))
 			return TRUE

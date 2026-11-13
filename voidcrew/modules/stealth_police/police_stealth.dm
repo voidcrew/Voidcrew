@@ -372,7 +372,7 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	if(!istype(officer))
 		return ..()
-	if(officer.stat != CONSCIOUS || officer.client)
+	if(officer.stat != CONSCIOUS || officer.client || officer.mind)
 		return FALSE
 	if(!always && world.time < bark_ready_at[kind])
 		return FALSE
@@ -687,8 +687,8 @@
 /datum/outpost_police/proc/stop_activity_for(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, tag)
 	// Someone asleep on the floor nearby comes first: a look and a word to move along (police_life.dm), never at the desk
 	if(tag != "desk")
-		// Close enough that the spot beside them is still within the stop's reach
-		var/mob/living/carbon/human/sleeper = officer.life_sleeper_near(OUTPOST_POLICE_STOP_REACH - 1)
+		// Close enough that the spot beside them is reachable within the stop's reach
+		var/mob/living/carbon/human/sleeper = officer.police_stop_sleeper()
 		if(sleeper)
 			return new /datum/ambient_activity/police_check(officer, sleeper)
 		// Then a body on the floor in sight: called in to the desk, once a body
@@ -699,15 +699,15 @@
 		if("shopfront")
 			return new /datum/ambient_activity/police_shopfront(officer)
 		if("coffee")
-			var/obj/machinery/vending/coffee/machine = locate() in range(OUTPOST_POLICE_STOP_REACH, officer)
+			var/obj/machinery/vending/coffee/machine = officer.police_stop_coffee_machine()
 			if(machine)
 				return new /datum/ambient_activity/police_coffee(officer, machine)
 			// No machine at hand (Halcyon's diner stop has a coffee maker on its counter): a cup at the counter
-			var/obj/structure/table/coffee_counter = locate() in range(OUTPOST_POLICE_STOP_REACH, officer)
+			var/obj/structure/table/coffee_counter = officer.police_stop_counter()
 			if(coffee_counter)
 				return new /datum/ambient_activity/drink/police(officer, coffee_counter)
 		if("bar")
-			var/obj/structure/table/counter = locate() in range(OUTPOST_POLICE_STOP_REACH, officer)
+			var/obj/structure/table/counter = officer.police_stop_counter()
 			if(counter)
 				return new /datum/ambient_activity/drink/police(officer, counter)
 		if("chat")
@@ -716,7 +716,7 @@
 				return new /datum/ambient_activity/chat(officer, partner)
 		if("bench")
 			for(var/obj/structure/chair/seat in range(OUTPOST_POLICE_STOP_REACH, officer))
-				if(officer.seat_usable(seat))
+				if(seat.z == officer.z && get_dist(seat, officer) <= OUTPOST_POLICE_STOP_REACH && officer.seat_usable(seat) && can_see(officer, seat, OUTPOST_POLICE_STOP_REACH + 1))
 					return new /datum/ambient_activity/sit(officer, seat)
 		if("cells")
 			return new /datum/ambient_activity/police_cells(officer)
@@ -741,17 +741,99 @@
 	duration_low = 20 SECONDS
 	duration_high = 40 SECONDS
 
-/// Someone at hand to talk to at a chat stop: a townsperson, or an officer idling at a stop of its own
+/datum/ambient_activity/drink/police/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/obj/structure/table/counter = anchor()
+	if(!istype(officer) || !istype(counter))
+		return FALSE
+	var/obj/structure/chair/seat = officer.police_counter_seat(counter, failed_spots)
+	if(seat)
+		seat_ref = WEAKREF(seat)
+		go_to(get_turf(seat))
+	else
+		var/turf/stand = officer.free_tile_beside(counter, 1, failed_spots)
+		if(!stand || stand.z != officer.z || get_dist(stand, officer) > OUTPOST_POLICE_STOP_REACH)
+			return FALSE
+		go_to(stand)
+	table_ref = WEAKREF(counter)
+	set_duration()
+	return TRUE
+
+/// A sleeper near a beat stop with a free tile beside them inside `OUTPOST_POLICE_STOP_REACH`, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_stop_sleeper()
+	for(var/mob/living/carbon/human/candidate in range(OUTPOST_POLICE_STOP_REACH - 1, src))
+		if(!life_is_sleeper(candidate))
+			continue
+		if(LAZYACCESS(reaction_cooldowns, "check [REF(candidate)]") > world.time)
+			continue
+		if(!police?.perception?.sees(src, candidate))
+			continue
+		var/turf/stand = free_tile_beside(candidate, 1, null, TRUE)
+		if(stand && stand.z == z && get_dist(stand, src) <= OUTPOST_POLICE_STOP_REACH)
+			return candidate
+	return null
+
+/// A visible coffee machine within stop reach that has a standable spot inside stop reach, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_stop_coffee_machine()
+	for(var/obj/machinery/vending/coffee/machine in range(OUTPOST_POLICE_STOP_REACH, src))
+		if(!can_see(src, machine, OUTPOST_POLICE_STOP_REACH + 1))
+			continue
+		var/turf/stand = free_tile_beside(machine, 1)
+		if(stand && stand.z == z && get_dist(stand, src) <= OUTPOST_POLICE_STOP_REACH)
+			return machine
+	return null
+
+/// A usable seat right at `counter` within stop reach, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_counter_seat(obj/structure/table/counter, list/avoid)
+	var/turf/center = get_turf(counter)
+	if(!center)
+		return null
+	for(var/turf/tile as anything in RANGE_TURFS(1, center))
+		if(tile.z != z || get_dist(tile, src) > OUTPOST_POLICE_STOP_REACH)
+			continue
+		for(var/obj/structure/chair/seat in tile)
+			if(seat_usable(seat, avoid) && can_see(src, seat, OUTPOST_POLICE_STOP_REACH + 1))
+				return seat
+	return null
+
+/// A visible counter table within stop reach with a seat or standing spot at hand, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_stop_counter()
+	for(var/obj/structure/table/counter in range(OUTPOST_POLICE_STOP_REACH, src))
+		if(!can_see(src, counter, OUTPOST_POLICE_STOP_REACH + 1))
+			continue
+		if(police_counter_seat(counter))
+			return counter
+		var/turf/stand = free_tile_beside(counter, 1)
+		if(stand && stand.z == z && get_dist(stand, src) <= OUTPOST_POLICE_STOP_REACH)
+			return counter
+	return null
+
+/// Someone at hand to talk to at a chat stop: a free townsperson in sight, or an officer idling at a stop of its own
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_chat_partner()
 	for(var/mob/living/carbon/human/npc/ambient_npc/other in range(OUTPOST_POLICE_STOP_REACH, src))
-		if(other == src || other.stat != CONSCIOUS || other.fading || other.client)
+		if(other == src || other.client || other.mind || !other.can_act() || HAS_TRAIT(other, TRAIT_AI_PAUSED))
+			continue
+		if(istype(other, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) || istype(other, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
+			continue
+		if(other.activity && !other.activity.accepts_company)
+			continue
+		if(!can_see(src, other, OUTPOST_POLICE_STOP_REACH + 1))
 			continue
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = other
 		if(istype(colleague))
 			var/datum/ai_controller/basic_controller/human_npc/stealth/colleague_ai = colleague.ai_controller
-			if(!istype(colleague_ai) || colleague_ai.stealth_state() != STEALTH_UNAWARE || !colleague_ai.at_stop || colleague.case)
+			if(!istype(colleague_ai) || colleague_ai.stealth_state() != STEALTH_UNAWARE || !colleague_ai.at_stop || colleague.case || colleague.npc_exit || colleague.dispatch_riding || colleague.dispatch_responding())
 				continue
-		return other
+		if(other.z == z && get_dist(src, other) <= 1 && Adjacent(other))
+			return other
+		var/turf/other_turf = get_turf(other)
+		if(!other_turf)
+			continue
+		for(var/turf/tile as anything in RANGE_TURFS(1, other_turf))
+			if(tile == other_turf || tile.z != z || get_dist(src, tile) > OUTPOST_POLICE_STOP_REACH)
+				continue
+			if(tile.Adjacent(other) && loiter_spot_ok(tile, null, other))
+				return other
 	return null
 
 /// What a stop asks of it now: its tag while it waits at a stop, unaware with nothing else to do; "desk" for the sergeant at its post
@@ -769,7 +851,7 @@
 	var/turf/desk = officer.police.desk_turf
 	if(officer.unit_kind == POLICE_UNIT_SERGEANT && desk)
 		// At the desk, or stepped over to the coffee machine beside it
-		if(get_turf(officer) == desk || (istype(officer.activity, /datum/ambient_activity/police_coffee) && get_dist(officer, desk) <= OUTPOST_POLICE_STOP_REACH + 2))
+		if(get_turf(officer) == desk || (istype(officer.activity, /datum/ambient_activity/police_coffee) && officer.z == desk.z && get_dist(officer, desk) <= OUTPOST_POLICE_STOP_REACH + 2))
 			return "desk"
 	return null
 
@@ -805,7 +887,7 @@
 	var/datum/ambient_activity/current = officer.activity
 	if(!current.at_spot())
 		var/turf/spot = get_turf(current.spot)
-		if(!spot || get_dist(spot, officer) > OUTPOST_POLICE_STOP_REACH)
+		if(!spot || spot.z != officer.z || get_dist(spot, officer) > OUTPOST_POLICE_STOP_REACH)
 			officer.end_activity()
 			return
 		controller.set_blackboard_key(BB_AMBIENT_DESTINATION, current.spot)

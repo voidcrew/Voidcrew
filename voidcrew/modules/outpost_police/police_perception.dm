@@ -92,7 +92,7 @@
 			continue
 		if(officer == victim)
 			return officer
-		var/dist = get_dist(officer, offender)
+		var/dist = (offender && officer.z == offender.z) ? get_dist(officer, offender) : 1000
 		if(!nearest || dist < nearest_dist)
 			nearest = officer
 			nearest_dist = dist
@@ -125,6 +125,12 @@
 	if(!ismecha(seen_target) && (!watcher || !watcher.mind) && cyberware_camo_hides(target, viewer))
 		return FALSE
 	return TRUE
+
+/// Unblocked line of sight on the same z-level within `max_dist`, facing and camo aside (for furniture and routine small talk)
+/proc/outpost_police_clear_line(atom/from, atom/to_atom, max_dist = OUTPOST_POLICE_WITNESS_RANGE)
+	var/turf/from_turf = get_turf(from)
+	var/turf/to_turf = get_turf(to_atom)
+	return from_turf && to_turf && from_turf.z == to_turf.z && can_see(from, to_atom, max_dist)
 
 /// Whether `thing` is one of the outpost's cameras
 /datum/outpost_police_perception/proc/is_camera(atom/thing)
@@ -349,7 +355,7 @@
 		return sees(officer, offender)
 #endif
 	var/atom/seen_target = isvehicle(offender.loc) ? offender.loc : offender
-	if(officer.stat != CONSCIOUS || officer.is_blind() || !isturf(seen_target.loc))
+	if(officer.stat != CONSCIOUS || officer.is_blind() || !isturf(seen_target.loc) || officer.z != seen_target.z)
 		return FALSE
 	var/dist = get_dist(officer, seen_target)
 	if(dist > STEALTH_SIGHT_RANGE || (!ismecha(seen_target) && dist > STEALTH_CLOSE_RANGE && stealth_is_cloaked(offender)))

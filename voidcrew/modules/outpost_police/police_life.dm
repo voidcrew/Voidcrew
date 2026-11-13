@@ -152,7 +152,7 @@
 
 /// Whether this officer can speak a police line right now (and transmit over a live headset if `radio_only`)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_can_speak(radio_only = FALSE)
-	if(QDELETED(src) || client || stat != CONSCIOUS || fading || paused_at)
+	if(QDELETED(src) || client || mind || stat != CONSCIOUS || fading || paused_at)
 		return FALSE
 	if(HAS_TRAIT(src, TRAIT_INCAPACITATED) || !human_npc_can_talk(src))
 		return FALSE
@@ -495,7 +495,8 @@
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/candidate in officers)
 			if(candidate == except || (candidate in answered) || !candidate.police_can_speak(radio_only = TRUE))
 				continue
-			var/distance = where ? get_dist(candidate, where) : rand(1, 20)
+			var/turf/cand_turf = get_turf(candidate)
+			var/distance = where ? ((cand_turf && cand_turf.z == where.z) ? get_dist(cand_turf, where) : 1000) : rand(1, 20)
 			if(distance < best_distance)
 				officer = candidate
 				best_distance = distance
@@ -582,13 +583,13 @@
 	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
 		return
 	var/mob/prisoner = speaker
-	if(get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind) || !reaction_ready("cell reply", 20 SECONDS))
+	if(prisoner.z != z || get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind) || !reaction_ready("cell reply", 20 SECONDS))
 		return
 	addtimer(CALLBACK(src, PROC_REF(life_answer_cell), WEAKREF(prisoner)), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/life_answer_cell(datum/weakref/prisoner_ref)
 	var/mob/prisoner = prisoner_ref?.resolve()
-	if(QDELETED(prisoner) || !police_can_speak() || case || get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind))
+	if(QDELETED(prisoner) || !police_can_speak() || case || prisoner.z != z || get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind))
 		return
 	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
 	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
@@ -916,11 +917,62 @@
 	var/turf/fight = ambient_kingpin_fight_center(get_outpost())
 	return fight && tile && tile.z == fight.z && get_dist(fight, tile) <= AMBIENT_VIOLENCE_RANGE + 3
 
-/// The coffee machine the sergeant can step over to from the desk, or null (one across the room is not theirs to wander to)
+/**
+ * Officers belong in the checkpoint lobby and behind police doors as well as on the concourse, and may step up to
+ * a free counter for coffee, while still keeping out of lifts, cells, scan chambers, the exit gate, doorways, back
+ * rooms, hives, the kingpin's lounge and behind shop counters.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/standable(turf/tile, list/avoid, ignore_floor = FALSE)
+	if(!isturf(tile) || LAZYACCESS(avoid, tile))
+		return FALSE
+	if(!isopenturf(tile) || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile) || istype(tile, /turf/open/water))
+		return FALSE
+	if(tile != loc && ambient_outpost_tile_blocked(tile, src))
+		return FALSE
+	if(!leash_ok(tile))
+		return FALSE
+	if((locate(/obj/machinery/door) in tile) || (locate(/obj/structure/outpost_exit_gate) in tile) || (locate(/obj/effect/landmark/outpost_checkpoint_chamber) in tile))
+		return FALSE
+	var/obj/structure/overmap/trader_outpost/keep = police?.outpost || get_outpost()
+	for(var/datum/outpost_checkpoint/gate as anything in keep?.checkpoints)
+		if(tile in gate?.chamber_turfs)
+			return FALSE
+	if(police && (police.dispatch_is_lift_tile(tile) || police.life_in_cell(tile)))
+		return FALSE
+	if(ignore_floor)
+		return TRUE
+	if(keep?.recovery?.back_rooms?[tile] || ambient_in_kingpin_lounge(tile, 2) || life_keeps_off(tile))
+		return FALSE
+	for(var/turf/alcove as anything in keep?.lobby_alcove_turfs)
+		if(alcove.z == tile.z && get_dist(alcove, tile) <= 1)
+			return FALSE
+	for(var/obj/structure/beebox/hive as anything in ambient_outpost_find_all(keep, /obj/structure/beebox))
+		if(hive.z == tile.z && get_dist(hive, tile) <= 2)
+			return FALSE
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in keep?.traders)
+		if(QDELETED(trader) || trader.z != tile.z || istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard))
+			continue
+		var/dist = get_dist(trader, tile)
+		if(dist <= 1 || (dist <= 2 && ambient_counter_customer(trader)))
+			return FALSE
+	return TRUE
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/loiter_spot_ok(turf/tile, list/avoid, atom/ignore)
+	if(!standable(tile, avoid))
+		return FALSE
+	for(var/cdir in GLOB.cardinals)
+		if(locate(/obj/machinery/door/airlock) in get_step(tile, cdir))
+			return FALSE
+	return !place || !place.crowded(tile, src, ignore)
+
+/// The coffee machine the sergeant can step over to from the desk, or null (one across the room or blocked is left alone)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_desk_coffee()
 	var/turf/desk = police?.desk_turf
 	var/obj/machinery/vending/coffee/machine = desk ? life_coffee_machine() : null
-	if(!machine || machine.z != desk.z || get_dist(machine, desk) > OUTPOST_POLICE_STOP_REACH)
+	if(!machine || machine.z != desk.z || get_dist(machine, desk) > OUTPOST_POLICE_STOP_REACH || !outpost_police_clear_line(desk, machine, OUTPOST_POLICE_STOP_REACH + 1))
+		return null
+	var/turf/stand = free_tile_beside(machine, 1)
+	if(!stand || stand.z != desk.z || get_dist(stand, desk) > OUTPOST_POLICE_STOP_REACH + 2 || get_dist(stand, src) > OUTPOST_POLICE_STOP_REACH)
 		return null
 	return machine
 
@@ -984,11 +1036,32 @@
 	var/next_sip = 0
 	var/spoke = FALSE
 
+/// Whether `trader` is awake, unheld, able to talk, and free to exchange small talk with an officer
+/proc/outpost_police_trader_available(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
+	if(QDELETED(trader) || trader.stat != CONSCIOUS || trader.fading || trader.client || trader.mind)
+		return FALSE
+	if(HAS_TRAIT(trader, TRAIT_AI_PAUSED) || trader.has_status_effect(/datum/status_effect/grouped/heldup) || !human_npc_can_talk(trader))
+		return FALSE
+	return TRUE
+
+/// Schedules `trader` to answer `speaker` if `trader` is still conscious, able to talk and not held up when the reply fires
+/proc/outpost_police_trader_reply(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, atom/movable/speaker, section, context, max_distance)
+	if(!outpost_police_trader_available(trader) || QDELETED(speaker))
+		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_police_trader_answer), WEAKREF(trader), WEAKREF(speaker), section, context, max_distance), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
+
+/proc/outpost_police_trader_answer(datum/weakref/trader_ref, datum/weakref/speaker_ref, section, context, max_distance)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
+	var/atom/movable/speaker = speaker_ref?.resolve()
+	if(!outpost_police_trader_available(trader) || QDELETED(speaker) || trader.z != speaker.z)
+		return FALSE
+	return ambient_trader_answer(trader_ref, speaker_ref, AMBIENT_STRINGS_POLICE, section, context, max_distance)
+
 /datum/ambient_activity/police_shopfront/setup()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/best
 	var/best_distance = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in range(7, doer))
-		if(trader.stat == DEAD)
+		if(istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard) || !outpost_police_trader_available(trader) || !outpost_police_clear_line(doer, trader, 8))
 			continue
 		var/distance = get_dist(trader, doer)
 		if(distance < best_distance)
@@ -1004,13 +1077,13 @@
 
 /datum/ambient_activity/police_shopfront/arrive()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
-	if(QDELETED(trader) || trader.stat == DEAD)
+	if(!outpost_police_trader_available(trader) || trader.z != doer.z || !outpost_police_clear_line(doer, trader, 8))
 		return
 	if(!doer.buckled)
 		doer.face_atom(trader)
 	if(prob(60) && doer.speak_context("beat", trader, force = TRUE))
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
-		ambient_trader_reply(trader, doer, AMBIENT_STRINGS_POLICE, officer.life_voice_section(), "trader_reply", 6)
+		outpost_police_trader_reply(trader, doer, officer.life_voice_section(), "trader_reply", 6)
 
 /datum/ambient_activity/police_shopfront/act(seconds)
 	if(doer.held_item && world.time >= next_sip)
@@ -1177,14 +1250,14 @@
 		next_guard_word = world.time + rand(90 SECONDS, 180 SECONDS)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/found in range(9, doer))
-			if(found.stat != DEAD && officer.police?.perception?.sees(doer, found))
+			if(outpost_police_trader_available(found) && outpost_police_clear_line(doer, found, 10))
 				guard = found
 				break
 		if(guard)
 			if(!doer.buckled)
 				doer.face_atom(guard)
 			if(doer.speak_context("guard", guard, force = TRUE))
-				ambient_trader_reply(guard, doer, AMBIENT_STRINGS_POLICE, officer.life_voice_section(), "guard_reply", 9)
+				outpost_police_trader_reply(guard, doer, officer.life_voice_section(), "guard_reply", 9)
 	chatter(AMBIENT_LINE_WORK, 40 SECONDS, 80 SECONDS)
 	return AMBIENT_STEP_CONTINUE
 
@@ -1247,7 +1320,7 @@
 	var/mob/living/carbon/human/sleeper = anchor_ref?.resolve() || officer.life_sleeper_near()
 	if(!officer.life_is_sleeper(sleeper))
 		return FALSE
-	var/turf/stand = doer.free_tile_beside(sleeper, 1, failed_spots)
+	var/turf/stand = doer.free_tile_beside(sleeper, 1, failed_spots, TRUE)
 	if(!stand)
 		return FALSE
 	target_ref = WEAKREF(sleeper)
@@ -1269,7 +1342,7 @@
 /datum/ambient_activity/police_check/act(seconds)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
 	var/mob/living/carbon/human/target = target_ref?.resolve()
-	if(!istype(officer) || !officer.life_is_sleeper(target) || get_dist(doer, target) > 3)
+	if(!istype(officer) || !officer.life_is_sleeper(target) || target.z != doer.z || get_dist(doer, target) > 3)
 		return AMBIENT_STEP_DONE
 	if(!doer.buckled)
 		doer.face_atom(target)
@@ -1287,7 +1360,7 @@
 	var/datum/outpost_police_voice/voice = police?.life_voice()
 	if(!voice || !istype(body) || body.stat != DEAD || !isturf(body.loc) || body.buckled || body.pulledby)
 		return FALSE
-	if(istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || outpost_police_weakref_seen(voice.bodies_called, body))
+	if((istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !body.mind && !body.client) || outpost_police_weakref_seen(voice.bodies_called, body))
 		return FALSE
 	var/turf/tile = body.loc
 	if(police.life_in_cell(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile))
@@ -1343,7 +1416,7 @@
 
 /datum/ambient_activity/police_body/act(seconds)
 	var/mob/living/body = body_ref?.resolve()
-	if(QDELETED(body) || body.stat != DEAD || !isturf(body.loc))
+	if(QDELETED(body) || body.stat != DEAD || !isturf(body.loc) || body.z != doer.z || get_dist(doer, body) > POLICE_BODY_RANGE + 2)
 		return AMBIENT_STEP_DONE
 	if(!doer.buckled)
 		doer.face_atom(body)

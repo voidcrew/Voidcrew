@@ -1014,7 +1014,8 @@
 			if(!tile.density && !cell.cell_standing_on(tile))
 				room = 1
 				break
-		var/distance = near ? get_dist(near, cell.door) : 0
+		var/turf/near_turf = get_turf(near)
+		var/distance = near ? ((near_turf && cell.door && near_turf.z == cell.door.z) ? get_dist(near_turf, cell.door) : 1000) : 0
 		if(isnull(best) || load < best_load || (load == best_load && room > best_room) || (load == best_load && room == best_room && distance < best_distance))
 			best = cell
 			best_load = load
