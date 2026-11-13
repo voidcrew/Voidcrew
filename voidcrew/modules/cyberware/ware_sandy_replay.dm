@@ -250,6 +250,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/list/hidden_bars = list()
 	/// Mechs switched off, to what completely_disabled was.
 	var/list/mechs = list()
+	/// Turrets and lit grenades whose clocks the hold has stopped (hold_machines()), to TRUE.
+	var/list/held_machines = list()
 	/// The user's own track, for the camera.
 	var/datum/sandy_replay_track/user_track
 	/// What the user's view follows.
@@ -1456,6 +1458,31 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		if(istype(mech)) // a pilot, or something hearing inside one
 			hold_mech(mech)
 	sandy_hold_members() // and around every member of a shared slow-mo (ware_sandy_timestop_shared.dm)
+	hold_machines()
+
+/// Stops the clocks of the turrets and lit grenades the slow-mo slows (cyberware_push_machine_deadlines()) near the
+/// user and every member: a turret doesn't track or fire (see tryToShootAt() below) and a fuse doesn't burn while the
+/// replay holds everyone. A turret someone is steering by hand is theirs and is left alone.
+/datum/sandy_replay/proc/hold_machines()
+	for(var/turf/here as anything in centres())
+		for(var/obj/thing in range(SANDY_REPLAY_HOLD_RANGE, here))
+			if(held_machines[thing] || QDELETED(thing))
+				continue
+			if(istype(thing, /obj/machinery/porta_turret))
+				var/obj/machinery/porta_turret/turret = thing
+				if(turret.manual_control)
+					continue
+			else if(!cyberware_lit_grenade(thing))
+				continue
+			held_machines[thing] = TRUE
+			sandy_replay_clock_stop(thing)
+
+/// A turret a replay holds doesn't pick a target. Every automatic turret's scan ends here (cyberware_stealth.dm);
+/// manual control goes through target() and isn't touched.
+/obj/machinery/porta_turret/tryToShootAt(list/atom/movable/targets)
+	if(GLOB.sandy_replay_stopped_clocks[src])
+		return FALSE
+	return ..()
 
 /// Switches `mech` off for the replay.
 /datum/sandy_replay/proc/hold_mech(obj/vehicle/sealed/mecha/mech)
@@ -2015,6 +2042,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		if(!QDELETED(mech))
 			mech.completely_disabled = mechs[mech]
 	mechs.Cut()
+	for(var/obj/thing as anything in held_machines)
+		sandy_replay_clock_start(thing)
+	held_machines.Cut()
 	if(!QDELETED(user))
 		UnregisterSignal(user, COMSIG_MOVABLE_Z_CHANGED)
 		if(eye)

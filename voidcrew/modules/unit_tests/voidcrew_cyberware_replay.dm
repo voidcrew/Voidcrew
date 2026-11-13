@@ -955,6 +955,56 @@
 	TEST_ASSERT(mech_left <= 10 && mech_left >= 10 - world.tick_lag - 0.01, "The mech's move cooldown had 10 ds left when the replay began and [mech_left] when it ended")
 	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[gunner] && !GLOB.sandy_replay_stopped_clocks[mech], "The replay left a stopped clock behind")
 
+/// A turret that counts every target it is handed and shoots none, switched off so only the test drives it
+/obj/machinery/porta_turret/sandy_replay_test_probe
+	var/aimed = 0
+
+/obj/machinery/porta_turret/sandy_replay_test_probe/target(atom/movable/target)
+	aimed++
+	return FALSE
+
+/// The hold pauses the machines the slow-mo slows: a turret near the user takes no aim during it and has as long to
+/// its next shot after it, and a lit grenade's fuse has as long left, instead of going off while everyone is held.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_turrets
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_turrets/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayturret")
+	set_window(user, 3 SECONDS)
+	var/obj/machinery/porta_turret/sandy_replay_test_probe/turret = allocate(/obj/machinery/porta_turret/sandy_replay_test_probe, spot(3, 0))
+	turret.on = FALSE
+	turret.check_should_process()
+	turret.raised = TRUE
+	var/obj/item/grenade/bomb = allocate(/obj/item/grenade, spot(2, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(1.2 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
+	turret.last_fired = world.time + 1 - turret.shot_delay // next shot due before the hold is over
+	bomb.arm_grenade(null, 1, msg = FALSE) // due before the hold is over
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(replay.held_machines[turret], "The replay didn't hold a turret in reach")
+	TEST_ASSERT(replay.held_machines[bomb], "The replay didn't hold a lit grenade in reach")
+	var/began = world.time
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		turret.tryToShootAt(list(user))
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	var/held_for = world.time - began
+	TEST_ASSERT(held_for >= 3 * world.tick_lag, "The replay was over too fast to test anything ([held_for] ds)")
+	TEST_ASSERT_EQUAL(turret.aimed, 0, "A held turret took aim during the replay")
+	var/shot_left = turret.last_fired + turret.shot_delay - world.time
+	var/fuse_left = bomb.cyberware_fuse_at - world.time
+	log_test("replay/hold_pauses_turrets: held [held_for] ds; left after: turret shot [shot_left], fuse [fuse_left]")
+	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A held grenade went off during the replay")
+	TEST_ASSERT(shot_left <= 1 && shot_left >= 1 - world.tick_lag - 0.01, "The turret's next shot had 1 ds left when the replay began and [shot_left] when it ended")
+	TEST_ASSERT(fuse_left <= 1 && fuse_left >= 1 - world.tick_lag - 0.01, "The grenade's fuse had 1 ds left when the replay began and [fuse_left] when it ended")
+	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[turret] && !GLOB.sandy_replay_stopped_clocks[bomb], "The replay left a stopped clock behind")
+	bomb.cyberware_fuse_at = 0 // don't let it go off after the test
+	turret.tryToShootAt(list(user))
+	TEST_ASSERT_EQUAL(turret.aimed, 1, "The turret still won't take aim after the replay")
+
 /// Two replays holding one NPC at once push its clocks once, so it has the same time left when the last lets go, and
 /// a player's clocks are never stopped.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/overlapping_holds_push_once
