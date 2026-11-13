@@ -706,7 +706,8 @@
 	var/datum/sandy_replay_track/track = replay.tracks[shot]
 	var/list/frames = track.frames
 	var/turf/held_at = get_turf(shot)
-	var/real_x = shot.pixel_x
+	var/mutable_appearance/real_look = new(track.saved_look) // the shot is drawn from the recording now: its real look is kept aside
+	var/real_x = real_look.pixel_x
 	TEST_ASSERT(shot.paused && (shot in replay.held_shots), "The shot flies on while the replay plays")
 	TEST_ASSERT(GLOB.sandy_replay_masked[shot], "The shot isn't drawn from the recording")
 	TEST_ASSERT(held_at != fired_at, "The shot never moved in the slow-mo")
