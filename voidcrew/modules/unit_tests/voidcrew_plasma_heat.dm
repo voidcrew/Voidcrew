@@ -98,15 +98,27 @@
 		TEST_ASSERT(gun.can_fire_heat(), "The vent lock outlived vent_lock_until")
 
 	// A chamber short of a full vent gives up what it has, no more, and the turf gets exactly that.
+	// It also cools in proportion to what it vented.
 	gun.next_vent_at = 0
 	gun.cell.charge = 3
+	gun.barrel_heat = 80
 	chamber_before = gun.chamber_mol()
 	turf_before = plasma_heat_test_plasma(air)
 	gun.attack_self(user)
 	lost = chamber_before - gun.chamber_mol()
 	gained = plasma_heat_test_plasma(air) - turf_before
 	TEST_ASSERT_EQUAL(gained, lost, "A short vent put [gained] mol on the turf but took [lost] mol from the chamber")
-	TEST_ASSERT(lost >= 0 && lost <= 3, "A vent from a 3 mol chamber took [lost] mol")
+	TEST_ASSERT_EQUAL(lost, 3, "A vent from a 3 mol chamber took [lost] mol")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 80 - PLASMA_VENT_COOL * 3 / PLASMA_VENT_MOL, "A 3 mol vent cooled the barrel to [gun.barrel_heat]")
+
+	// A barrel too cool to glow doesn't vent at all.
+	gun.next_vent_at = 0
+	gun.vent_lock_until = 0
+	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
+	gun.barrel_heat = PLASMA_HEAT_STEP_1 - 1
+	gun.attack_self(user)
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), PLASMA_CARTRIDGE_CAPACITY, "A cool Furnace vented plasma")
+	TEST_ASSERT(gun.can_fire_heat(), "Venting a cool Furnace locked its trigger")
 
 	// A boil conserves the same way.
 	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY

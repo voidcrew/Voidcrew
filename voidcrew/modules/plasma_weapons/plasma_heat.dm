@@ -92,13 +92,16 @@
 	. = ..()
 	if(.)
 		return
-	if(!uses_heat || world.time < next_vent_at)
+	// A barrel not hot enough to glow has nothing to vent
+	if(!uses_heat || world.time < next_vent_at || barrel_heat < PLASMA_HEAT_STEP_1)
 		return
-	if(!vent_plasma(PLASMA_VENT_MOL, user))
+	var/vented = vent_plasma(PLASMA_VENT_MOL, user)
+	if(!vented)
 		return
 	next_vent_at = world.time + PLASMA_VENT_COOLDOWN
 	vent_lock_until = world.time + PLASMA_VENT_LOCK
-	barrel_heat = max(barrel_heat - PLASMA_VENT_COOL, 0)
+	// A short chamber vents less and cools less
+	barrel_heat = max(barrel_heat - PLASMA_VENT_COOL * vented / PLASMA_VENT_MOL, 0)
 	playsound(src, PLASMA_SOUND_FURNACE_VENT, 50, TRUE)
 	update_heat_step()
 	return TRUE
