@@ -1173,9 +1173,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /datum/status_effect/cyberware_cascade_window
 	/// How fast the world runs in slow-mo, if nobody else is near when the window opens. Copied from the lattice.
-	var/dilation_scale = 0.2
+	var/dilation_scale = 0.1
 	/// How much faster than normal the bearer runs: sets surging mobs' relative rates in each other's fields.
-	var/time_multiplier = 5
+	var/time_multiplier = 10
+	/// How long the window runs when it slows the world. Copied from the lattice; 0 keeps the plain length.
+	var/slowmo_duration = 0
+	/// world.time a plain surge from the same start would have ended: a slow-mo a player cuts short carries on as a
+	/// plain surge no longer than this.
+	var/plain_end = 0
 	/// The running dilation, if any.
 	var/obj/effect/timestop/sandevistan/time_stop
 	/// world.time the window closes on its own, before any hold.
@@ -1197,10 +1202,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/turf/here = get_turf(owner)
 	if(!here)
 		return FALSE
+	plain_end = world.time + duration
+	duration = max(duration, slowmo_duration) // the slow-mo runs longer than the plain surge
 	natural_end = world.time + duration
 	time_stop = new(here, SANDY_STOP_FIELD_RANGE, duration, list(owner), TRUE, TRUE, dilation_scale, time_multiplier)
 	if(QDELETED(time_stop))
 		time_stop = null
+		duration = plain_end - world.time // no slow-mo: a plain surge's length
+		natural_end = plain_end
 		return FALSE
 	RegisterSignal(time_stop, COMSIG_QDELETING, PROC_REF(time_stop_over))
 	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = cyberware_bearer_lattice(owner)
@@ -1254,10 +1263,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	stop_hold()
 	owner.remove_filter(SANDY_STOP_OUTLINE)
 	sandy_release_flash(owner)
-	if(world.time >= natural_end)
-		QDEL_IN(src, 0) // it came during a hold, past the window's own end
+	var/ends = min(natural_end, plain_end) // a plain surge's length: the slow-mo's extra time goes with the slow-mo
+	if(world.time >= ends)
+		QDEL_IN(src, 0) // past where a plain surge would have ended (or the window's own end, during a hold)
 		return
-	duration = natural_end
+	duration = ends
 	owner.add_client_colour(colour_type, id)
 	refresh_perks() // the rest of the window is an ordinary surge
 

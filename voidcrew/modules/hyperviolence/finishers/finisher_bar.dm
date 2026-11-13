@@ -15,6 +15,9 @@
 /// Matches tg's PROGRESSBAR_ANIMATION_TIME: the fade in and out
 #define HV_EXEC_BAR_FADE 5
 
+/// Every execution bar in the world (the Sandevistan replay hides them while it plays).
+GLOBAL_LIST_EMPTY(hv_exec_bars)
+
 /obj/effect/abstract/hv_exec_bar
 	name = "progress"
 	icon = 'icons/effects/progressbar.dmi'
@@ -54,9 +57,12 @@
 	RegisterSignal(owner, COMSIG_QDELETING, PROC_REF(on_owner_deleted))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
 	tick()
-	sandy_replay_picture_made(src, executioner) // a Sandevistan replay draws it over the executioner's puppet
+	GLOB.hv_exec_bars += src
+	if(sandy_replay_hides_bars_at(get_turf(src))) // cyberware/ware_sandy_replay.dm: no bar shows in a replay
+		invisibility = INVISIBILITY_ABSTRACT
 
 /obj/effect/abstract/hv_exec_bar/Destroy()
+	GLOB.hv_exec_bars -= src
 	if(update_timer)
 		deltimer(update_timer)
 		update_timer = null

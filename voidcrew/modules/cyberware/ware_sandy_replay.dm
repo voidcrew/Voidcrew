@@ -218,6 +218,8 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	var/list/standins = list()
 	/// Mobs with their AI paused or input locked, to their simple-animal AI status (or TRUE).
 	var/list/locked = list()
+	/// Progress bars hidden for the replay (hide_progress_bars()), shown again at the end if still there.
+	var/list/hidden_bars = list()
 	/// Mechs switched off, to what completely_disabled was.
 	var/list/mechs = list()
 	/// The user's own track, for the camera.
@@ -759,13 +761,43 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 // PLAYBACK
 // =========================================================================
 
-/// The user's do_after bars hang on their real body, not where its puppet is drawn: one still fading out when the
-/// replay starts would float off the puppet, so the user stops seeing them.
+/// No progress bar shows during a replay (owner, 2026-11-12): tg's do_after bars (client images on the body's own
+/// screen) of the user and every body the replay holds, and the execution bars (finisher_bar.dm, objects on the
+/// executioner's tile, seen by all) within the replay's reach. Bars made while it plays are hidden as they are made
+/// (sandy_replay_hides_bars_at()). Whatever is still running at the end is shown again.
 /datum/sandy_replay/proc/hide_progress_bars()
-	for(var/target in user.progressbars)
-		for(var/datum/progressbar/progress as anything in user.progressbars[target])
-			progress.user_client?.images -= progress.bar
-			event_log += "bar hidden on [target]"
+	hide_body_bars(user)
+	for(var/obj/effect/abstract/hv_exec_bar/bar as anything in GLOB.hv_exec_bars)
+		if(bar.invisibility < INVISIBILITY_ABSTRACT && bar_reach(get_turf(bar)))
+			bar.invisibility = INVISIBILITY_ABSTRACT
+			hidden_bars += bar
+
+/// Hides `body`'s own do_after bars from its client.
+/datum/sandy_replay/proc/hide_body_bars(mob/living/body)
+	for(var/target in body?.progressbars)
+		for(var/datum/progressbar/progress as anything in body.progressbars[target])
+			if(progress.user_client && (progress.bar in progress.user_client.images))
+				progress.user_client.images -= progress.bar
+				hidden_bars += progress
+
+/// Whether `spot` is close enough to the user for the replay to hide a bar on it.
+/datum/sandy_replay/proc/bar_reach(turf/spot)
+	var/turf/here = get_turf(user)
+	return spot && here && spot.z == here.z && get_dist(spot, here) <= SANDY_REPLAY_HOLD_RANGE
+
+/// Shows again the bars the replay hid that still exist.
+/datum/sandy_replay/proc/show_progress_bars()
+	for(var/datum/thing as anything in hidden_bars)
+		if(QDELETED(thing))
+			continue
+		if(istype(thing, /obj/effect/abstract/hv_exec_bar))
+			var/obj/effect/abstract/hv_exec_bar/bar = thing
+			bar.invisibility = initial(bar.invisibility)
+		else if(istype(thing, /datum/progressbar))
+			var/datum/progressbar/progress = thing
+			if(progress.user_client && progress.bar)
+				progress.user_client.images |= progress.bar
+	hidden_bars.Cut()
 
 /// Starts the replay: the last sample is everything's real final state, then everything goes back to frame 0.
 /datum/sandy_replay/proc/begin()
@@ -900,6 +932,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	if(locked[body] || QDELETED(body))
 		return
 	locked[body] = TRUE
+	hide_body_bars(body)
 	if(body.ckey && body.stat != DEAD)
 		body.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED), SANDY_REPLAY_TRAIT)
 	if(body.ai_controller)
@@ -1334,6 +1367,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	sandy_replay_masks = length(GLOB.sandy_replay_masked)
 	for(var/datum/sandy_replay_track/track as anything in standins)
 		QDEL_NULL(track.standin)
+	show_progress_bars()
 	for(var/mob/living/body as anything in locked)
 		try
 			unlock(body)
@@ -1459,13 +1493,13 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 			return TRUE
 	return FALSE
 
-/// A picture of `body`'s move was just made off any field turf's hand-over (the execution bar over them,
-/// finisher_bar.dm): every recording that has `body` records it too, so the replay draws it over the body's puppet.
-/proc/sandy_replay_picture_made(atom/movable/picture, mob/living/body)
+/// Whether an execution bar at `spot` falls inside a replay showing now (owner: no progress bar in a replay).
+/proc/sandy_replay_hides_bars_at(turf/spot)
 	for(var/user in GLOB.sandy_replays)
 		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-		if(replay.tracks[body])
-			replay.notice(picture)
+		if(replay.state == SANDY_REPLAY_PLAYING && !replay.finished && replay.bar_reach(spot))
+			return TRUE
+	return FALSE
 
 /// `body` is about to start an execution or finisher whose first poses come before sandy_replay_mid_move() can see it.
 /proc/sandy_replay_move_starting(mob/living/body)
@@ -1521,7 +1555,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 
 /// Whether `thing` is a finisher rig's posed piece of a body, or a loose picture of the move's (a blood spray).
 /proc/sandy_rig_picture(atom/thing)
-	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx) || istype(thing, /obj/effect/abstract/hv_exec_bar)
+	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx)
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)

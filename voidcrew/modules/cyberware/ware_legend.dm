@@ -90,11 +90,14 @@
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	/// How long the window lasts when it slows the world (no other player near, ware_sandy_timestop.dm). A plain
+	/// surge, or one that a player cuts short, lasts window_duration.
+	var/slowmo_duration = 13 SECONDS
 	/// How fast the world runs through the window when no other player is near (ware_sandy_timestop.dm).
-	var/dilation_scale = 0.2
+	var/dilation_scale = 0.1
 	/// How much faster than normal the bearer runs in the window. A surging mob in someone else's field runs at its
 	/// multiplier over theirs.
-	var/time_multiplier = 5
+	var/time_multiplier = 10
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -220,6 +223,7 @@
 		crash_stamina = lattice.crash_stamina
 		dilation_scale = lattice.dilation_scale
 		time_multiplier = lattice.time_multiplier
+		slowmo_duration = lattice.slowmo_duration
 	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()

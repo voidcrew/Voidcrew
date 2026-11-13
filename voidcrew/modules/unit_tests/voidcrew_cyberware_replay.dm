@@ -372,6 +372,18 @@
 			pictures++
 	TEST_ASSERT(pictures, "The user's puppet wears a rig's hide with no rig picture drawn for it on replay frame [track.frames[track.cursor + 1]]")
 
+/// No progress bar is drawn while a replay plays (owner, 2026-11-12): no execution bar near the user, and no do_after
+/// bar image on the user's screen.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/check_no_bars(mob/living/user)
+	var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+	if(!replay || replay.state != 3)
+		return
+	for(var/obj/effect/abstract/hv_exec_bar/bar as anything in GLOB.hv_exec_bars)
+		TEST_ASSERT(bar.invisibility >= INVISIBILITY_ABSTRACT || get_dist(bar, user) > 11, "An execution bar shows during the replay")
+	for(var/target in user.progressbars)
+		for(var/datum/progressbar/progress as anything in user.progressbars[target])
+			TEST_ASSERT(!progress.user_client || !(progress.bar in progress.user_client.images), "A progress bar shows on the user's screen during the replay")
+
 /// Whether `user` sees the surge's own screen colour
 /datum/unit_test/voidcrew_cyberware_timestop/replay/proc/surge_tinted(mob/living/user)
 	return !!user.get_client_colour("cyberware_cascade_window")
@@ -434,6 +446,7 @@
 	while(GLOB.sandy_replays[user] && world.time < until + 8 SECONDS)
 		check_seen(user, replay)
 		TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen during the replay")
+		check_no_bars(user)
 		sleep(world.tick_lag)
 	wait_over(user)
 	TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen after the replay")
@@ -589,6 +602,7 @@
 	while(GLOB.sandy_replays[user] && world.time < play_started + 15 SECONDS)
 		if(world.time - play_started < (total - 1) * world.tick_lag)
 			TEST_ASSERT(held(user), "The user was let go before the replay was over")
+		check_no_bars(user)
 		sleep(world.tick_lag)
 	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
 	TEST_ASSERT(world.time - play_started <= (total + 2) * world.tick_lag + 0.2 SECONDS, "The replay was ended by its watchdog, not by playing out ([world.time - play_started] for [total] frames)")

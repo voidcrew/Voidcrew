@@ -42,6 +42,7 @@
 /datum/unit_test/voidcrew_cyberware_timestop/proc/set_window(mob/living/carbon/human/user, length)
 	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
 	lattice.window_duration = length
+	lattice.slowmo_duration = length // the tests that set a length mean the slow-mo too
 
 /// `user`'s surge button
 /datum/unit_test/voidcrew_cyberware_timestop/proc/surge_button(mob/living/carbon/human/user)
@@ -73,7 +74,7 @@
 	TEST_ASSERT(istype(field), "The dilation has no field")
 
 	// Slow-mo from the start: a walk under a movespeed modifier, no freeze and no Stun.
-	TEST_ASSERT(abs(field.time_scale - 0.2) < 0.001, "The Cascade's world doesn't run at 20% from the start ([field.time_scale])")
+	TEST_ASSERT(abs(field.time_scale - 0.1) < 0.001, "The Cascade's world doesn't run at 10% from the start ([field.time_scale])")
 	TEST_ASSERT(raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The NPC isn't slowed as the window opens")
 	TEST_ASSERT(!frozen(raider), "The NPC was frozen")
 	TEST_ASSERT(!raider.IsStun(), "The dilation stunned the NPC")
@@ -109,9 +110,9 @@
 
 /datum/unit_test/voidcrew_cyberware_timestop/full_window/Run()
 	var/list/models = list(
-		/obj/item/organ/cyberimp/cyberware/cascade/street = list(6 SECONDS, 0.5),
-		/obj/item/organ/cyberimp/cyberware/cascade/milspec = list(7 SECONDS, 0.35),
-		/obj/item/organ/cyberimp/cyberware/cascade = list(8 SECONDS, 0.2),
+		/obj/item/organ/cyberimp/cyberware/cascade/street = list(11 SECONDS, 0.4),
+		/obj/item/organ/cyberimp/cyberware/cascade/milspec = list(12 SECONDS, 0.25),
+		/obj/item/organ/cyberimp/cyberware/cascade = list(13 SECONDS, 0.1),
 	)
 	for(var/model in models)
 		var/list/expected = models[model]
@@ -181,13 +182,16 @@
 /datum/unit_test/voidcrew_cyberware_timestop/player_walks_in/Run()
 	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
 	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human/consistent, spot(3, 3))
+	var/opened = world.time
 	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
 	sleep(0.1 SECONDS)
 	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	TEST_ASSERT_EQUAL(window.duration - opened, 13 SECONDS, "The slow-mo doesn't run its own, longer length")
 	other.key = "sandytimestopother"
 	sleep(0.5 SECONDS) // a couple of field ticks
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo carried on with a player in range")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_window), "The surge ended with the slow-mo")
+	TEST_ASSERT_EQUAL(window.duration - opened, 8 SECONDS, "The surge carries on past a plain surge's length once a player is near")
 	var/turf/start = get_turf(user)
 	user.Move(spot(0, 1), NORTH)
 	TEST_ASSERT(get_turf(user) != start, "Test fixture: the user couldn't step")
@@ -206,6 +210,7 @@
 	TEST_ASSERT_NOTNULL(window, "The lattice's window didn't open")
 	sleep(0.1 SECONDS)
 	TEST_ASSERT_NULL(window.time_stop, "Time slowed with another player in sight")
+	TEST_ASSERT(window.duration - world.time <= 8 SECONDS, "A plain surge got the slow-mo's longer length")
 	TEST_ASSERT(!raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The NPC was slowed without a dilation")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
@@ -510,22 +515,22 @@
 	var/obj/item/organ/cyberimp/cyberware/cascade/street/street = allocate(/obj/item/organ/cyberimp/cyberware/cascade/street)
 	var/obj/item/organ/cyberimp/cyberware/cascade/milspec/service = allocate(/obj/item/organ/cyberimp/cyberware/cascade/milspec)
 	var/obj/item/organ/cyberimp/cyberware/cascade/cascade = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
-	TEST_ASSERT_EQUAL(street.time_multiplier, 2, "The street rig isn't 2x")
-	TEST_ASSERT(abs(service.time_multiplier - 2.857) < 0.01, "The service lattice isn't about 2.86x ([service.time_multiplier])")
-	TEST_ASSERT_EQUAL(cascade.time_multiplier, 5, "The Cascade isn't 5x")
+	TEST_ASSERT_EQUAL(street.time_multiplier, 2.5, "The street rig isn't 2.5x")
+	TEST_ASSERT_EQUAL(service.time_multiplier, 4, "The service lattice isn't 4x")
+	TEST_ASSERT_EQUAL(cascade.time_multiplier, 10, "The Cascade isn't 10x")
 
 	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
 	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
 	sleep(0.1 SECONDS)
 	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
-	TEST_ASSERT_EQUAL(field.user_multiplier, 5, "A Cascade user's field doesn't know they run at 5x")
-	TEST_ASSERT(abs(field.relative_rate(2) - 0.4) < 0.001, "A street surger in a Cascade's field isn't at 40%")
-	TEST_ASSERT_EQUAL(field.relative_rate(5), 1, "An equal surger isn't at full speed")
-	field.user_multiplier = 2 // as a street user's field
-	TEST_ASSERT_EQUAL(field.relative_rate(5), 2, "A Cascade surger in a street user's field isn't capped at 200%")
-	TEST_ASSERT(abs(field.relative_rate(1 / 0.35) - 1.4286) < 0.001, "A service surger in a street user's field isn't at about 143%")
-	field.user_multiplier = 5
+	TEST_ASSERT_EQUAL(field.user_multiplier, 10, "A Cascade user's field doesn't know they run at 10x")
+	TEST_ASSERT(abs(field.relative_rate(2.5) - 0.25) < 0.001, "A street surger in a Cascade's field isn't at 25%")
+	TEST_ASSERT_EQUAL(field.relative_rate(10), 1, "An equal surger isn't at full speed")
+	field.user_multiplier = 2.5 // as a street user's field
+	TEST_ASSERT_EQUAL(field.relative_rate(10), 2, "A Cascade surger in a street user's field isn't capped at 200%")
+	TEST_ASSERT(abs(field.relative_rate(4) - 1.6) < 0.001, "A service surger in a street user's field isn't at 160%")
+	field.user_multiplier = 10
 	end_surge(user)
 
 /// A slower surger in the user's field is held at its relative rate for the whole window, never frozen or tinted
@@ -540,14 +545,14 @@
 	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
 	TEST_ASSERT(field.surging[raider], "The field didn't notice the NPC's surge")
-	TEST_ASSERT(abs(cyberware_time_scale(raider) - 0.4) < 0.001, "A street surger in a Cascade's field isn't at 40% ([cyberware_time_scale(raider)])")
+	TEST_ASSERT(abs(cyberware_time_scale(raider) - 0.25) < 0.001, "A street surger in a Cascade's field isn't at 25% ([cyberware_time_scale(raider)])")
 	TEST_ASSERT(!frozen(raider), "A surging NPC was frozen")
 	TEST_ASSERT(!tinted(raider), "A surging NPC was tinted")
 	TEST_ASSERT(raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "A slower surger isn't slowed")
 	var/lost = cyberware_time_lost(raider, 10)
-	TEST_ASSERT(lost > 5.9 && lost < 6.1, "A slower surger's clock didn't run at 40% (lost [lost] of 10)")
+	TEST_ASSERT(lost > 7.4 && lost < 7.6, "A slower surger's clock didn't run at 25% (lost [lost] of 10)")
 	sleep(1.2 SECONDS) // later in the window: the surger keeps its own rate
-	TEST_ASSERT(abs(cyberware_time_scale(raider) - 0.4) < 0.001, "A surger's rate changed mid-window ([cyberware_time_scale(raider)])")
+	TEST_ASSERT(abs(cyberware_time_scale(raider) - 0.25) < 0.001, "A surger's rate changed mid-window ([cyberware_time_scale(raider)])")
 	TEST_ASSERT(raider.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "A slower surger stopped being slowed mid-window")
 	end_surge(user)
 	end_surge(raider)
@@ -565,7 +570,7 @@
 	sleep(0.1 SECONDS)
 	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
-	TEST_ASSERT_EQUAL(field.user_multiplier, 2, "A street user's field doesn't know they run at 2x")
+	TEST_ASSERT_EQUAL(field.user_multiplier, 2.5, "A street user's field doesn't know they run at 2.5x")
 	TEST_ASSERT(field.held_shots[shot], "Test fixture: the NPC's shot isn't held before it surges")
 
 	TEST_ASSERT_NOTNULL(surge(raider), "The NPC's window didn't open")
@@ -724,3 +729,27 @@
 		if(overlay:icon == 'icons/effects/glow_weather.dmi')
 			continue // rain has no glow state: that overlay draws nothing either way
 		. += overlay:icon_state
+
+/// A slow-mo cut short by a player arriving after a plain surge's length has passed ends the surge at once: the
+/// slow-mo's extra seconds never carry on as a plain surge in front of another player.
+/datum/unit_test/voidcrew_cyberware_timestop/late_witness_clamped
+
+/datum/unit_test/voidcrew_cyberware_timestop/late_witness_clamped/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopuser")
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
+	lattice.window_duration = 1 SECONDS
+	lattice.slowmo_duration = 4 SECONDS
+	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human/consistent, spot(3, 3))
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	sleep(1.5 SECONDS) // past the plain length, inside the slow-mo's
+	TEST_ASSERT(window_of_user(user), "The slow-mo ended at the plain surge's length")
+	other.key = "sandytimestopother"
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(!window_of_user(user), "The surge carried on after the slow-mo with a plain surge's time already spent")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't follow")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/datum/unit_test/voidcrew_cyberware_timestop/proc/window_of_user(mob/living/user)
+	return user.has_status_effect(/datum/status_effect/cyberware_cascade_window)
