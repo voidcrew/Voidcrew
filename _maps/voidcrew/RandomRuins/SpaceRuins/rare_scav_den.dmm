@@ -1175,7 +1175,10 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "xt" = (
-/obj/machinery/scav_camera/directional/south,
+/obj/machinery/scav_camera/directional/south{
+	facing_offset = 45;
+	sweep = 45
+	},
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 1
 	},

@@ -69,6 +69,8 @@
 	armor_type = /datum/armor/machinery_camera
 	/// Degrees each side of its facing that it sweeps
 	var/sweep = 50
+	/// Degrees clockwise its mount is turned from straight out of its wall (a corner camera looks along both corridors)
+	var/facing_offset = 0
 	/// Degrees each side of its aim that it sees
 	var/view_half = 18
 	/// Tiles it sees
@@ -125,7 +127,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 
 /// The way it looks out from its wall, in degrees clockwise from north (a camera hung on the north wall faces south)
 /obj/machinery/scav_camera/proc/scav_cam_facing()
-	return dir2angle(REVERSE_DIR(dir))
+	return SIMPLIFY_DEGREES(dir2angle(REVERSE_DIR(dir)) + facing_offset)
 
 /obj/machinery/scav_camera/examine(mob/user)
 	. = ..()
@@ -347,7 +349,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	if(instant)
 		animate(cone, transform = pointing, time = 0)
 	else
-		animate(cone, transform = pointing, time = 2 DECISECONDS)
+		// Linear: a turned and stretched matrix tweened by angle can flip and swing the cone the long way round.
+		animate(cone, transform = pointing, time = 2 DECISECONDS, flags = ANIMATION_LINEAR_TRANSFORM)
 
 /// How long the drawn cone is along its aim, in quarter tiles: to the first wall or solid door, at most the beam's full length.
 /obj/machinery/scav_camera/proc/scav_cam_reach()
