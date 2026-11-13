@@ -300,6 +300,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/shots_capped = 0
 	/// Shots still flying when the recording ended, held where they are until the replay is over (hold_shots()).
 	var/list/held_shots = list()
+	/// Gore in flight held for the replay (hold_gore()): move loops, and tumbles to the time left to their next step.
+	var/list/held_gore = list()
 	/// The longest one frame's sample of everything recorded took, in milliseconds, for tests and recordings.
 	var/sample_cost = 0
 
@@ -404,12 +406,17 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	track.first = (covering && !sandy_rig_picture(thing)) ? 0 : round(frame_due()) // a rig picture is made by the move: it was never there before it
 	tracks[thing] = track
 	RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(on_thing_deleted))
+	if(track.flier && !shot_fired(thing))
+		// Seen as it is put on the floor, before fire() turns it the way it flies: its first frame is taken once it is
+		// fired (on_shot_fired()), or the replay draws it upright on the shooter for a frame.
+		RegisterSignal(thing, COMSIG_PROJECTILE_FIRE, PROC_REF(on_shot_fired))
 	sample_track(track, track.first)
 	if(istype(thing, /obj/effect/temp_visual))
 		track.oneshot = TRUE
 		intro(track)
-	if(sandy_rig_picture(thing))
-		event_log += "notice [thing.type] f[frame_exact()] first=[track.first]"
+	if(sandy_rig_picture(thing) || track.oneshot || track.flier)
+		var/matrix/turned = thing.transform
+		event_log += "notice [thing.type] f[frame_exact()] first=[track.first] on=[shown_on(thing) ? "map" : "off"] dir=[thing.dir] T=[turned.a],[turned.b],[turned.d],[turned.e]"
 
 /**
  * A temp visual that animates itself in its own Initialize() (tg's ring) is first seen with its vars already at the
@@ -469,7 +476,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// Adds a frame to `track` if the thing changed since its last one.
 /datum/sandy_replay/proc/sample_track(datum/sandy_replay_track/track, frame)
 	var/atom/movable/thing = track.thing
-	var/turf/here = thing.loc
+	if(track.flier && !shot_fired(thing))
+		return // not turned the way it flies yet (notice())
+	var/turf/here = shown_on(thing)
 	var/x = 0
 	var/y = 0
 	var/z = 0
@@ -508,6 +517,19 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			frames[at + SANDY_FRAME_DIR] = facing
 			return
 	frames += list(frame, look, x, y, z, facing)
+
+/**
+ * The turf `thing` is drawn on: its loc, or, for an effect shown in the vis_contents of what it was made in (tg's muzzle
+ * flash, made inside the shooter), the turf that holder stands on. Null when it isn't drawn on the map.
+ */
+/datum/sandy_replay/proc/shown_on(atom/movable/thing)
+	var/atom/here = thing.loc
+	if(isturf(here))
+		return here
+	if(!istype(thing, /obj/effect/temp_visual) || !ismovable(here) || !isturf(here.loc))
+		return null
+	var/atom/movable/holder = here
+	return (thing in holder.vis_contents) ? holder.loc : null
 
 /// `thing`'s appearance without the slow-mo's own look: the field's tint and the user's edge glow.
 /datum/sandy_replay/proc/clean_look(atom/movable/thing)
@@ -658,6 +680,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		hide_progress_bars()
 		hide_pending()
 		hold_shots()
+		hold_gore()
 	deltimer(sample_timer)
 	sample_timer = null
 	if(!replays)
@@ -701,8 +724,17 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!track && (sandy_rig_picture(target) || istype(target, /obj/effect/temp_visual)) && near_centre(target))
 		notice(target) // made this tick (a shot's muzzle flash, a drop of blood): its first pose is this call
 		track = tracks[target]
-	if(!track || !(sandy_rig_picture(target) || isliving(target) || track.oneshot))
+	var/thrown_gib = istype(target, /obj/effect/decal/cleanable/blood/gibs)
+	if(!track || !(sandy_rig_picture(target) || isliving(target) || track.oneshot || thrown_gib))
 		return
+	if(thrown_gib)
+		// A burst head's gib (flying_gore.dm): tg has already stepped it off the head's tile, and its arc starts back at
+		// the head from there. Its first frame is taken again where it is now, so the arc is drawn from the head to its
+		// landing in the replay too, not as a gib lying on the floor from the blow on.
+		var/list/frames = track.frames
+		if(length(frames) && frames[length(frames) - SANDY_FRAME_SIZE + SANDY_FRAME_INDEX] >= frame_now())
+			track.last_raw = null
+			sample_track(track, frames[length(frames) - SANDY_FRAME_SIZE + SANDY_FRAME_INDEX])
 	// The look it had before this call: what it was drawn as when the chain began, direct writes included.
 	open_event = list(frame_due(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
 	LAZYADD(track.events, list(open_event))
@@ -807,8 +839,22 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			arguments["time"] *= factor
 		if(i > 1 && arguments["delay"])
 			arguments["delay"] *= factor
-	if(fades)
-		first["delay"] = (first["delay"] || 0) + world.tick_lag
+	if(!fades)
+		return
+	// Held whole for a frame by a step that changes nothing, then faded. Not by a `delay` on the fade: through a delay the
+	// client draws where the chain ends (faded out), so an execution's flash showed a frame after its head burst.
+	var/atom/movable/target = first[1]
+	if(!ismovable(target))
+		return
+	var/list/hold = list(target)
+	hold["alpha"] = target.alpha
+	hold["time"] = world.tick_lag
+	for(var/name in list("tag", "flags", "delay", "loop"))
+		if(!isnull(first[name]))
+			hold[name] = first[name]
+			first -= name
+	first.Cut(1, 2)
+	chain.Insert(1, list(hold))
 
 /// `chain` (animate() argument lists, the first naming `thing`) with its first `late` deciseconds already gone by: the
 /// steps that were over are dropped, the one under way is shortened. A chain wholly over jumps to its last step's pose.
@@ -934,6 +980,22 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 // hits (it is deleted between two samples), a straight line from frame to frame, and the shots still flying when the
 // recording ends held where they are for the replay, so the one real shot is never drawn twice or jumping ahead.
 
+/// Whether `thing` (a shot) has been fired: turned the way it flies and on its way.
+/datum/sandy_replay/proc/shot_fired(atom/movable/thing)
+	var/obj/projectile/shot = thing
+	return shot.fired
+
+/// Signal proc for [COMSIG_PROJECTILE_FIRE] on a shot seen before it was fired: its first frame, in the frame it was
+/// seen in, now that it is turned the way it flies.
+/datum/sandy_replay/proc/on_shot_fired(obj/projectile/shot)
+	SIGNAL_HANDLER
+	UnregisterSignal(shot, COMSIG_PROJECTILE_FIRE)
+	var/datum/sandy_replay_track/track = tracks[shot]
+	if(!track || state != SANDY_REPLAY_RECORDING)
+		return
+	track.last_raw = null
+	sample_track(track, max(track.first, frame_now()))
+
 /// Whether one more shot in the air can be recorded. Logs it, once a recording, when one can't.
 /datum/sandy_replay/proc/shot_room()
 	if(shots_live < SANDY_REPLAY_MAX_SHOTS)
@@ -963,6 +1025,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/end
 	if(track.flier)
 		shots_live--
+		if(!shot_fired(track.thing))
+			return 0 // spent before it flew (a shot at point blank lands inside fire()): never drawn, as it never is live
 		end = max(last_sampled + 1, at + 1) // its last frame is where it was a frame ago; this one is where it stopped
 	else
 		end = max(round(frame_due()), at) // an effect made and gone between two samples: one frame, with its finished look
@@ -1003,6 +1067,45 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		if(!QDELETED(shot))
 			shot.paused = FALSE
 	held_shots.Cut()
+	release_gore()
+
+/**
+ * Gore still flying when the recording ends (a gib sliding off on tg's streak, a torn-off part or organ on its
+ * tumble) holds where it is until the replay is over, as the shots do. Left to fly on, it lands while the replay plays
+ * and pops to its landing spot, with the blood it left on the way, the moment the replay hands back.
+ */
+/datum/sandy_replay/proc/hold_gore()
+	for(var/atom/movable/thing as anything in tracks)
+		if(QDELETED(thing) || isliving(thing) || track_is_shot(thing))
+			continue
+		var/datum/move_loop/loop = thing.move_packet?.running_loop
+		if(loop && (loop.status & MOVELOOP_STATUS_RUNNING) && !(loop.status & MOVELOOP_STATUS_PAUSED))
+			loop.pause_loop()
+			held_gore += loop
+		var/datum/component/hv_tumble/tumble = thing.GetComponent(/datum/component/hv_tumble)
+		if(tumble?.step_timer)
+			held_gore[tumble] = max(timeleft(tumble.step_timer), world.tick_lag)
+			deltimer(tumble.step_timer)
+			tumble.step_timer = null
+
+/// Whether `thing` is a shot (held by hold_shots()).
+/datum/sandy_replay/proc/track_is_shot(atom/movable/thing)
+	var/datum/sandy_replay_track/track = tracks[thing]
+	return track?.flier
+
+/// The replay is over: the gore hold_gore() held flies on from where it was.
+/datum/sandy_replay/proc/release_gore()
+	for(var/datum/held as anything in held_gore)
+		if(QDELETED(held))
+			continue
+		if(istype(held, /datum/move_loop))
+			var/datum/move_loop/loop = held
+			loop.resume_loop()
+		else if(istype(held, /datum/component/hv_tumble))
+			var/datum/component/hv_tumble/tumble = held
+			if(!tumble.step_timer)
+				tumble.step_timer = addtimer(CALLBACK(tumble, TYPE_PROC_REF(/datum/component/hv_tumble, take_step)), held_gore[held], TIMER_STOPPABLE|TIMER_DELETE_ME)
+	held_gore.Cut()
 
 /// A shot drawn on itself was deleted mid-replay (it hit something in the recording's last tick): a stand-in flies
 /// the rest of its path.
@@ -1928,8 +2031,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	for(var/user in GLOB.sandy_replays)
 		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && get_dist(replay.user, thing) <= SANDY_REPLAY_HOLD_RANGE)
+		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && get_dist(replay.user, get_turf(thing)) <= SANDY_REPLAY_HOLD_RANGE)
 			replay.notice(thing)
+
+/// tg's muzzle flash is made inside the shooter and shown in their vis_contents, where no field sees it: every
+/// recording near it takes it here, so a replayed shot has its flash (shown_on() draws it on the shooter's tile).
+/obj/effect/temp_visual/dir_setting/firing_effect/Initialize(mapload, set_dir)
+	. = ..()
+	sandy_replay_made(src)
 
 /**
  * What a temp visual that animates itself in Initialize() looks like before its animation, and the animation: list(the
