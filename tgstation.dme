@@ -6842,6 +6842,7 @@
 #include "voidcrew\edits\controllers\subsystem\weather.dm"
 #include "voidcrew\edits\controllers\subsystem\networks\bitrunning.dm"
 #include "voidcrew\edits\datums\alarm.dm"
+#include "voidcrew\edits\datums\cogbar.dm"
 #include "voidcrew\edits\datums\actions\mobs\charge.dm"
 #include "voidcrew\edits\datums\components\gps.dm"
 #include "voidcrew\edits\datums\components\overlay_lighting.dm"
