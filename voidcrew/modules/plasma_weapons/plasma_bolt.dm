@@ -229,7 +229,7 @@
 /// and tg's own slash and pierce code closes or demotes it. One line if any cut closed or dropped a tier.
 /proc/plasma_sear_cuts(obj/item/bodypart/limb)
 	var/mob/living/carbon/victim = limb?.owner
-	if(!victim || !LAZYLEN(limb.wounds))
+	if(!victim || !LAZYLEN(limb.wounds) || !plasma_limb_is_flesh(limb))
 		return
 	var/seared = FALSE
 	for(var/datum/wound/cut as anything in limb.wounds.Copy())

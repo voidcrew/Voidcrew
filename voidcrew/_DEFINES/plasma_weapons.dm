@@ -119,6 +119,8 @@
 #define PLASMA_SOUND_FURNACE_VENT 'sound/machines/hiss.ogg'
 /// The Furnace boiling its chamber over
 #define PLASMA_SOUND_FURNACE_BOIL 'sound/effects/gas_hissing.ogg'
+/// A limb with no flesh (robotic, bone, stone) melting off
+#define PLASMA_SOUND_METAL_MELT 'sound/items/tools/welder2.ogg'
 /// A cartridge pressed by hand
 #define PLASMA_SOUND_PRESS 'sound/items/tools/welder.ogg'
 /// Hot slag in a wound quenched with water, an extinguisher or cryo

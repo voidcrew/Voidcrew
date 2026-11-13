@@ -78,6 +78,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	if(!victim)
 		return FALSE
 	var/zone = limb.body_zone
+	if(!plasma_limb_is_flesh(limb))
+		return plasma_melt_limb_dry(limb, attack_direction)
 	var/list/drawn = plasma_melt_capture(victim, limb)
 	// tg drops what this limb wore or held the moment it comes off; keep their look on the body while it melts
 	var/list/worn_look = list()
@@ -122,6 +124,36 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, 'voidcrew/modules/plasma_weapons/sound/plasma_melt.ogg', 60, TRUE)
+	return TRUE
+
+/// FALSE for a limb with no flesh to melt: robotic, or bone, stone or plasma with no BIO_FLESH
+/proc/plasma_limb_is_flesh(obj/item/bodypart/limb)
+	return (limb.biological_state & BIO_FLESH) && !(limb.bodytype & BODYTYPE_ROBOTIC)
+
+/// A limb with no flesh melts off without the flesh look: tg's dismember, a slag pool, sparks and a hiss of
+/// hot metal. No gobbets, no stump and no wet sound. TRUE if it came off.
+/proc/plasma_melt_limb_dry(obj/item/bodypart/limb, attack_direction)
+	var/mob/living/carbon/victim = limb.owner
+	var/zone = limb.body_zone
+	var/turf/where = get_turf(victim)
+	var/list/old_ash = list()
+	for(var/obj/effect/decal/cleanable/ash/pile in where)
+		old_ash += pile
+	var/datum/wound/loss/melt = new
+	melt.sound_effect = null
+	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
+	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
+	GLOB.plasma_melt_no_splatter = null
+	for(var/obj/effect/decal/cleanable/ash/pile in where)
+		if(!(pile in old_ash))
+			qdel(pile)
+	if(QDELETED(victim) || victim.get_bodypart(zone) == limb)
+		return FALSE
+	plasma_slag_at(where)
+	do_sparks(3, FALSE, victim)
+	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
+		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
+		playsound(victim, PLASMA_SOUND_METAL_MELT, 60, TRUE)
 	return TRUE
 
 /// TRUE while a plasma melt is taking this body's limb. tg's dismember() checks it to skip its own sound (VOIDCREW EDIT).
