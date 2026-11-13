@@ -223,6 +223,13 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = who
 	if(!istype(prisoner))
 		prisoner = null
+	if(who.stat == DEAD)
+		// Dead before they stepped out: a body like any other, the wing's to deal with (body_tick())
+		if(prisoner?.phase == PRISONER_ARRIVING)
+			prisoner.phase = PRISONER_PRESENT
+			prisoner.processing_goal = null
+		processing_done()
+		return
 	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
 	var/turf/here = get_turf(who)
