@@ -272,3 +272,8 @@
 	var/turf/away = get_ranged_target_turf(victim, turn(get_dir(src, victim), pick(-45, 45)), GUNFU_DISARM_THROW_RANGE)
 	held.throw_at(away, GUNFU_DISARM_THROW_RANGE, 2, src, spin = TRUE)
 	return TRUE
+
+/// Scav den loot (decision 51's hook, decision 54): a den vault may pay the gun kata chip.
+/obj/structure/closet/crate/secure/scav_vault/scav_vault_stealth_loot()
+	. = ..()
+	.[/obj/item/organ/cyberimp/cyberware/gun_kata] = 2

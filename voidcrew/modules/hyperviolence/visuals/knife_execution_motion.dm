@@ -244,9 +244,6 @@
 	var/was_standing = victim.body_position == STANDING_UP
 	var/pre_pixel_y = victim.pixel_y
 	var/matrix/pre_base = matrix(victim.transform)
-	var/sealed_before = !isnull(victim.is_mouth_covered(ITEM_SLOT_HEAD))
-	var/obj/item/bodypart/head/head_before = victim.get_bodypart(BODY_ZONE_HEAD)
-	var/cover_before = head_before ? hv_crit_cover_rating(victim, head_before, MELEE, armour_penetration) : 100
 
 	// Suppress hv_blood_on_damaged's 3-fan hit spray during the stab so we fire our own forward throat spray.
 	var/prev_spray_until = victim.hv_blood_spray_until
@@ -268,7 +265,7 @@
 		return
 
 	hv_vis_cut_landed = TRUE
-	hv_vis_play_knife_cut_and_release(user, victim, was_standing, pre_pixel_y, pre_base, sealed_before, cover_before)
+	hv_vis_play_knife_cut_and_release(user, victim, was_standing, pre_pixel_y, pre_base)
 
 // ---- Wind-up, cut and release choreography ----
 
@@ -405,7 +402,7 @@
 	hv_vis_knife_arm_ref = WEAKREF(knife_arm)
 
 /// Runs Beats 3 and 4 once the wind-up succeeded and the real stab + slash wound landed.
-/obj/item/knife/proc/hv_vis_play_knife_cut_and_release(mob/living/user, mob/living/carbon/victim, was_standing, pre_pixel_y, matrix/pre_base, sealed_before, cover_before)
+/obj/item/knife/proc/hv_vis_play_knife_cut_and_release(mob/living/user, mob/living/carbon/victim, was_standing, pre_pixel_y, matrix/pre_base)
 	var/cut_total = HV_VIS_KNIFE_CUT_TIME + HV_VIS_KNIFE_CUT_HOLD
 	if(!QDELETED(user))
 		user.hv_vis_stop(list(HV_VIS_TAG_HITSTOP))
@@ -495,9 +492,10 @@
 	// Blood from the throat in the direction the victim faces, starting now as the wound lands.
 	var/spray_dir = victim.dir || toward || SOUTH
 	var/obj/item/bodypart/head/head_after = victim.get_bodypart(BODY_ZONE_HEAD)
-	var/can_bleed_throat = (head_after ? head_after.can_bleed() : victim.can_bleed()) && !(sealed_before && cover_before >= HV_KNIFE_EXECUTION_HIGH_COVER)
+	// As much blood as the wound that landed (hv_finish_knife_execution() sets hv_knife_exec_spray): none without one.
+	var/spray_tiles = hv_knife_exec_spray
+	var/can_bleed_throat = spray_tiles > 0 && (head_after ? head_after.can_bleed() : victim.can_bleed())
 	if(can_bleed_throat)
-		var/spray_tiles = (sealed_before || cover_before >= HV_KNIFE_EXECUTION_LOW_COVER) ? 1 : 2
 		victim.hv_blood_spray_until = 0
 		victim.hv_blood_spray_strength = 0
 		victim.hv_blood_spray(spray_dir, spray_tiles)

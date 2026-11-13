@@ -41,6 +41,10 @@
 	TEST_ASSERT(!knife.hv_knife_execution_possible(attacker, victim), "A knife out of combat mode started an execution")
 	attacker.set_combat_mode(TRUE)
 	TEST_ASSERT(!knife.hv_knife_execution_possible(attacker, attacker), "The attacker could execute himself")
+	attacker.start_pulling(victim, supress_message = TRUE)
+	attacker.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT(!knife.hv_knife_execution_possible(attacker, victim), "A knife execution took over tg's grab slit")
+	attacker.stop_pulling()
 
 	victim.setDir(WEST)
 	victim.Knockdown(30 SECONDS)
@@ -50,7 +54,7 @@
 	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
 		TEST_ASSERT(!spork.hv_knife_execution_possible(attacker, victim), "A blunt plastic knife started an execution")
 
-/// A held wind-up from behind ends in tg's real throat slit plus a boosted stab to the head.
+/// A held wind-up from behind ends in tg's real throat slit (decision 45's maths).
 /datum/unit_test/hv_knife_execution_kill
 
 /datum/unit_test/hv_knife_execution_kill/Run()
@@ -67,7 +71,7 @@
 	TEST_ASSERT(!DOING_INTERACTION(attacker, "hv_knife_execution"), "The wind-up never ended")
 	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/neck_slice), "An unarmoured victim's neck was not sliced")
 	TEST_ASSERT_NOTNULL(hv_knife_exec_test_slash(victim, WOUND_SEVERITY_CRITICAL), "An unarmoured victim got no critical slash on the head")
-	TEST_ASSERT(head.brute_dam >= knife.force * 1.5, "The stab was not boosted ([head.brute_dam] head brute from a [knife.force] force knife)")
+	TEST_ASSERT(head.brute_dam > 0, "The cut did no damage to the head")
 	TEST_ASSERT_EQUAL(attacker.pixel_w, 0, "The attacker was left offset after the move")
 	TEST_ASSERT_EQUAL(attacker.pixel_z, 0, "The attacker was left offset after the move")
 
@@ -102,7 +106,8 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/neck_slice), "Stepping away did not break the wind-up")
 
-/// A helmet, and dermal plating under the skin, weaken the result.
+/// Head protection works as tg's slit maths says (decision 45): melee armour weakens the stab, wound armour (worn, or
+/// physiology armour such as dermal cyberware) keeps the throat from being cut.
 /datum/unit_test/hv_knife_execution_armour
 
 /datum/unit_test/hv_knife_execution_armour/Run()
@@ -112,27 +117,28 @@
 	bare.setDir(EAST)
 	TEST_ASSERT(knife.hv_finish_knife_execution(attacker, bare, list(), list()), "The bare execution did not land")
 	var/bare_brute = bare.get_bodypart(BODY_ZONE_HEAD).brute_dam
+	TEST_ASSERT(bare.has_status_effect(/datum/status_effect/neck_slice), "A bare throat was not cut")
 
 	var/mob/living/carbon/human/consistent/helmeted = allocate(/mob/living/carbon/human/consistent)
-	helmeted.equip_to_slot_or_del(allocate(/obj/item/clothing/head/helmet/sec), ITEM_SLOT_HEAD)
+	helmeted.equip_to_slot_or_del(allocate(/obj/item/clothing/head/helmet/swat), ITEM_SLOT_HEAD)
 	bare.forceMove(run_loc_floor_top_right)
 	helmeted.forceMove(get_step(attacker, EAST))
 	helmeted.setDir(EAST)
 	TEST_ASSERT(knife.hv_finish_knife_execution(attacker, helmeted, list(), list()), "The helmeted execution did not land")
 	var/helmet_brute = helmeted.get_bodypart(BODY_ZONE_HEAD).brute_dam
 	TEST_ASSERT(helmet_brute < bare_brute, "A helmet did not weaken the stab ([helmet_brute] vs [bare_brute])")
-	TEST_ASSERT(!helmeted.has_status_effect(/datum/status_effect/neck_slice), "A helmet did not keep the neck from being sliced")
-	TEST_ASSERT_NULL(hv_knife_exec_test_slash(helmeted, WOUND_SEVERITY_CRITICAL), "A helmet did not soften the throat slash")
+	TEST_ASSERT(!helmeted.has_status_effect(/datum/status_effect/neck_slice), "A SWAT helmet did not keep the neck from being cut")
+	TEST_ASSERT_NULL(hv_knife_exec_test_slash(helmeted, WOUND_SEVERITY_CRITICAL), "A SWAT helmet did not keep the critical slash out")
 
 	var/mob/living/carbon/human/consistent/plated = allocate(/mob/living/carbon/human/consistent)
-	plated.physiology.armor = plated.physiology.armor.generate_new_with_modifiers(list(MELEE = 30))
+	plated.physiology.armor = plated.physiology.armor.generate_new_with_modifiers(list(MELEE = 30, WOUND = 20))
 	helmeted.forceMove(run_loc_floor_top_right)
 	plated.forceMove(get_step(attacker, EAST))
 	plated.setDir(EAST)
 	TEST_ASSERT(knife.hv_finish_knife_execution(attacker, plated, list(), list()), "The plated execution did not land")
 	var/plated_brute = plated.get_bodypart(BODY_ZONE_HEAD).brute_dam
 	TEST_ASSERT(plated_brute < bare_brute, "Plating under the skin did not weaken the stab ([plated_brute] vs [bare_brute])")
-	TEST_ASSERT(!plated.has_status_effect(/datum/status_effect/neck_slice), "Plating under the skin did not keep the neck from being sliced")
+	TEST_ASSERT(!plated.has_status_effect(/datum/status_effect/neck_slice), "Plating under the skin did not keep the neck from being cut")
 
 /// Human NPCs below boss rank never execute; bosses and players do.
 /datum/unit_test/hv_knife_execution_npc_rank

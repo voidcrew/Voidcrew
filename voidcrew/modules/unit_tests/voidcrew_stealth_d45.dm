@@ -1,5 +1,5 @@
 // Decision 45: the stealth head shot graded by the round and the head's protection, shields and shots in the back, and
-// the matte knife's throat slit from behind (voidcrew/modules/stealth/stealth_crits.dm, stealth_knife.dm,
+// the throat cut from behind (voidcrew/modules/stealth/stealth_crits.dm, hyperviolence/overlays_exec/knife_executions.dm,
 // voidcrew/edits/objects/items/shield_rear.dm, voidcrew/edits/datums/neck_slice_mute.dm). Unit tests compile before
 // voidcrew/_DEFINES, so values are written out: STEALTH_HEAD_SHOT_BRAIN_DAMAGE 120, STEALTH_CALL_ALARM 3.
 
@@ -144,9 +144,10 @@
 	TEST_ASSERT(!holder.vc_shot_in_back, "The shot-in-the-back mark stayed on after the shot")
 	qdel(block)
 
-/// The matte knife from behind on an unaware guard slits the throat, whatever is aimed at: tg's critical slash and
-/// neck_slice, and the guard can't speak. Not from the front, not a plain knife, not through a SWAT helmet, not when
-/// held in a grab (tg's own slit). The mute goes with the cut.
+/// The backstab (one path for every sharp knife, the knife execution): from behind on an unaware guard it goes for the
+/// throat whatever is aimed at, and the cut is tg's critical slash and neck_slice; the guard can't speak. Not from the
+/// front, not a blunt blade, not through a SWAT helmet, not when held in a grab (tg's own slit). The mute goes with the
+/// cut. The finish is called straight, so the wind-up's timing doesn't decide the test (hv_knife_execution_kill does).
 /datum/unit_test/voidcrew_stealth_d45_backstab
 
 /datum/unit_test/voidcrew_stealth_d45_backstab/Run()
@@ -158,13 +159,13 @@
 	person.put_in_active_hand(knife, forced = TRUE)
 	person.set_combat_mode(TRUE)
 	person.zone_selected = BODY_ZONE_CHEST
-	// From the front: no slit.
+	// From the front: no backstab.
 	person.forceMove(stealth_at(block, 5, 1))
-	TEST_ASSERT(!knife.backstab_slits(guard, person), "The knife slits a throat from the front")
+	TEST_ASSERT(!knife.hv_knife_execution_possible(person, guard), "The knife backstabs from the front")
 	person.forceMove(stealth_at(block, 3, 1))
-	TEST_ASSERT(knife.backstab_slits(guard, person), "The knife doesn't slit an unaware guard's throat from behind")
-	// The stab.
-	knife.attack(guard, person)
+	TEST_ASSERT(knife.hv_knife_execution_possible(person, guard), "The knife doesn't backstab an unaware guard from behind with the chest aimed at")
+	// The cut.
+	TEST_ASSERT(knife.hv_finish_knife_execution(person, guard, list(), list()), "The backstab didn't land")
 	TEST_ASSERT(guard.has_status_effect(/datum/status_effect/neck_slice), "A backstab didn't cut the throat")
 	var/obj/item/bodypart/head = guard.get_bodypart(BODY_ZONE_HEAD)
 	var/critical_slash = FALSE
@@ -172,19 +173,23 @@
 		if(istype(cut, /datum/wound/slash) && cut.severity == WOUND_SEVERITY_CRITICAL)
 			critical_slash = TRUE
 	TEST_ASSERT(critical_slash, "A backstab left no critical slash on the head")
+	TEST_ASSERT_EQUAL(knife.hv_knife_exec_spray, 2, "A cut throat didn't spray the most blood")
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_MUTE), "A cut throat isn't mute")
 	TEST_ASSERT(!guard.can_speak(), "A guard with a cut throat can speak")
+	TEST_ASSERT(!knife.hv_knife_execution_possible(person, guard), "A cut throat can be cut again")
 	guard.remove_status_effect(/datum/status_effect/neck_slice)
 	TEST_ASSERT(!HAS_TRAIT(guard, TRAIT_MUTE), "The mute stayed after the cut")
-	// A plain combat knife is a plain knife.
+	// Any sharp-edged knife backstabs; a blunt one doesn't.
 	var/mob/living/carbon/human/npc/second = d45_bare_guard(block, 4, 3)
 	var/mob/living/carbon/human/stabber = stealth_person(block, 3, 3)
 	var/obj/item/knife/combat/blade = allocate(/obj/item/knife/combat)
 	stabber.put_in_active_hand(blade, forced = TRUE)
 	stabber.set_combat_mode(TRUE)
 	stabber.zone_selected = BODY_ZONE_CHEST
-	blade.attack(second, stabber)
-	TEST_ASSERT(!second.has_status_effect(/datum/status_effect/neck_slice), "A plain knife slit a throat")
+	TEST_ASSERT(blade.hv_knife_execution_possible(stabber, second), "A plain combat knife doesn't backstab")
+	var/obj/item/knife/plastic/spork = allocate(/obj/item/knife/plastic)
+	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
+		TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A blunt plastic knife backstabs")
 	// A SWAT helmet (wound 15): tg's wound maths keeps the critical slash out; an ordinary stab to the head.
 	var/mob/living/carbon/human/npc/helmeted = d45_bare_guard(block, 4, 5)
 	d45_helmet(helmeted, /obj/item/clothing/head/helmet/swat)
@@ -193,16 +198,17 @@
 	third.put_in_active_hand(other_knife, forced = TRUE)
 	third.set_combat_mode(TRUE)
 	TEST_ASSERT(!other_knife.slit_gets_through(helmeted, helmeted.get_bodypart(BODY_ZONE_HEAD)), "A slit got through a SWAT helmet")
-	other_knife.attack(helmeted, third)
+	TEST_ASSERT(other_knife.hv_finish_knife_execution(third, helmeted, list(), list()), "The stab at a helmeted guard didn't land")
 	TEST_ASSERT(!helmeted.has_status_effect(/datum/status_effect/neck_slice), "A helmeted guard's throat was cut")
 	TEST_ASSERT(helmeted.get_bodypart(BODY_ZONE_HEAD).brute_dam > 0, "The stab at a protected throat did nothing")
+	TEST_ASSERT(other_knife.hv_knife_exec_spray < 2, "A protected throat sprayed like a cut one")
 	TEST_ASSERT(helmeted.can_speak(), "A guard whose throat was protected can't speak")
 	// Held in an aggressive grab: tg's own slit, not this one.
 	var/mob/living/carbon/human/npc/held = d45_bare_guard(block, 6, 5)
 	third.forceMove(stealth_at(block, 5, 5))
 	third.start_pulling(held, supress_message = TRUE)
 	third.setGrabState(GRAB_AGGRESSIVE)
-	TEST_ASSERT(!other_knife.backstab_slits(held, third), "The backstab took over tg's grab slit")
+	TEST_ASSERT(!other_knife.hv_knife_execution_possible(third, held), "The backstab took over tg's grab slit")
 	third.stop_pulling()
 	qdel(block)
 

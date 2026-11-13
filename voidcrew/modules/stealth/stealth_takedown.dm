@@ -310,3 +310,15 @@
 		UnregisterSignal(wire, COMSIG_QDELETING)
 	if(!QDELETED(src))
 		qdel(src)
+
+/**
+ * A closed takedown holds the victim on his own tile and on his feet, facing away, with no pull offsets (close()). tg
+ * places a held body again on every drag step or turn (set_pull_offsets()), which would turn him round and, through the
+ * hostage's upright rule (stealth_hostage.dm), floor him again as an ordinary neck grab. The takedown keeps him as it
+ * holds him; a hostage is on the holder's own tile and is never a takedown's victim.
+ */
+/mob/living/set_pull_offsets(mob/living/mob_to_set, grab_state = GRAB_PASSIVE, animate = TRUE)
+	var/datum/stealth_takedown/hold = mob_to_set?.stealth_takedown_caught
+	if(hold?.closed && !hold.ended && hold.attacker == src)
+		return
+	return ..()

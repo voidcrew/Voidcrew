@@ -39,3 +39,8 @@
 			user.balloon_alert(user, "the wire won't bite!")
 			return TRUE
 	return TRUE
+
+/// Scav den loot (decision 51's hook, 3b.7): a den vault may pay a garrotte.
+/obj/structure/closet/crate/secure/scav_vault/scav_vault_stealth_loot()
+	. = ..()
+	.[/obj/item/garrotte] = 1

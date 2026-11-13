@@ -1,27 +1,25 @@
-// Hyperviolence: knife executions.
+// Hyperviolence: knife executions, the one backstab path (decisions 45 and 46).
 //
-// Modelled on gun executions in executions.dm. A combat-mode click with an edged knife aimed at the
-// head or mouth of an adjacent carbon with a head starts a knife execution when the attacker is
-// either behind the target (check_behind()) or the target is helpless (hv_can_be_executed()). Only
-// players and boss-rank human NPCs execute (hv_can_execute()), never pacifists.
+// A combat-mode click with any sharp-edged knife on an adjacent carbon with a head starts it when:
+// - the target is a stealth guard caught off guard (stealth_caught_off_guard()) and the attacker is behind it
+//   (check_behind()), whatever zone is aimed at (decision 45);
+// - or anyone else is taken from behind, or anyone is helpless (hv_can_be_executed()), with the head or mouth aimed at.
+// Never on a body the attacker holds in an aggressive grab or tighter (that is tg's own slow throat slit), never on a
+// throat already cut. Only players and boss-rank human NPCs do it (hv_can_execute()), never pacifists.
 //
-// Both hold still for HV_KNIFE_EXECUTION_WINDUP; moving, losing the blade, switching zones or turning
-// to face the attacker breaks the wind-up cleanly. If it holds, the knife stabs the head through its
-// real attack() path at HV_EXECUTION_POINT_BLANK_MULT force and opens a slash wound on the head whose
-// severity is tempered by the head's combined melee cover (worn armour plus physiology armour, such
-// as dermal cyberware, minus the blade's armour penetration) and sealed helmets: unarmoured throats
-// take a critical slash and tg's neck_slice bleed, light cover downgrades to a severe slash without
-// neck_slice, and heavy cover or a sealed helmet leaves only a moderate slash. Nothing extra kills,
-// stuns or roots the victim; death comes only from tg's real damage and bleeding.
+// Both hold still for HV_KNIFE_EXECUTION_WINDUP; moving, losing the blade or turning to face the attacker breaks the
+// wind-up cleanly. If it holds, the cut is decision 45's: tg's throat slit maths (hv_finish_knife_execution()). The
+// throat blood follows the wound that landed (hv_knife_exec_spray). Nothing extra kills, stuns or roots the victim;
+// death comes only from tg's real damage and bleeding. A cut throat is mute (voidcrew/edits/datums/neck_slice_mute.dm).
 
 /obj/item/knife
-	/// Set while the execution's own head stab runs through attack(), so our override passes to parent.
-	var/hv_knife_executing = FALSE
 	/// Brute and burn damage this knife dealt to the victim's head during an execution stab.
 	var/hv_knife_execution_head_damage = 0
+	/// How far the last execution's throat blood sprays (0-2 tiles), by the worst cut it left on the head.
+	var/hv_knife_exec_spray = 0
 
 /obj/item/knife/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(hv_knife_executing || !hv_knife_execution_possible(user, target_mob))
+	if(!hv_knife_execution_possible(user, target_mob))
 		return ..()
 	if(!DOING_INTERACTION(user, HV_KNIFE_EXECUTION_DOAFTER))
 		var/list/saved_modifiers = islist(modifiers) ? modifiers.Copy() : null
@@ -29,20 +27,41 @@
 		INVOKE_ASYNC(src, PROC_REF(hv_start_knife_execution), user, target_mob, saved_modifiers, saved_attack_modifiers)
 	return TRUE
 
-/// Whether a melee click with this knife by `user` on `target` starts a knife execution.
+/// Whether a melee click with this knife by `user` on `target` starts a knife execution (the one backstab path).
 /obj/item/knife/proc/hv_knife_execution_possible(mob/living/user, mob/living/target)
 	if(!isliving(user) || !iscarbon(target) || user == target)
 		return FALSE
 	if(!user.combat_mode || HAS_TRAIT(user, TRAIT_PACIFISM) || !user.hv_can_execute())
-		return FALSE
-	if(user.zone_selected != BODY_ZONE_HEAD && user.zone_selected != BODY_ZONE_PRECISE_MOUTH)
 		return FALSE
 	if(force <= 0 || !(get_sharpness() & SHARP_EDGED))
 		return FALSE
 	var/mob/living/carbon/victim = target
 	if(isnull(victim.get_bodypart(BODY_ZONE_HEAD)) || !user.Adjacent(victim))
 		return FALSE
-	return check_behind(user, victim) || victim.hv_can_be_executed()
+	// Held in an aggressive grab or tighter: tg's own slow throat slit (butchering.dm), not this.
+	if(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE)
+		return FALSE
+	if(victim.has_status_effect(/datum/status_effect/neck_slice))
+		return FALSE
+	var/behind = check_behind(user, victim)
+	// A stealth guard caught off guard from behind: the throat whatever is aimed at (decision 45). On guard, only helpless.
+	if(hv_knife_is_stealth_guard(victim))
+		var/mob/living/carbon/human/npc/guard = victim
+		if(behind && guard.stealth_caught_off_guard(user))
+			return TRUE
+		return hv_knife_aims_at_throat(user) && victim.hv_can_be_executed()
+	if(!hv_knife_aims_at_throat(user))
+		return FALSE
+	return behind || victim.hv_can_be_executed()
+
+/// Whether `user` aims at the head or the mouth.
+/obj/item/knife/proc/hv_knife_aims_at_throat(mob/living/user)
+	return user.zone_selected == BODY_ZONE_HEAD || user.zone_selected == BODY_ZONE_PRECISE_MOUTH
+
+/// Whether `victim` is a stealth guard (its awareness decides a backstab, decision 45).
+/obj/item/knife/proc/hv_knife_is_stealth_guard(mob/living/victim)
+	var/mob/living/carbon/human/npc/guard = victim
+	return istype(guard) && istype(guard.ai_controller, /datum/ai_controller/basic_controller/human_npc/stealth)
 
 /// Grabs the victim, presses the blade to their throat and, if both hold still, cuts.
 /obj/item/knife/proc/hv_start_knife_execution(mob/living/user, mob/living/carbon/victim, list/modifiers, list/attack_modifiers)
@@ -82,77 +101,78 @@
 		return FALSE
 	if(force <= 0 || !(get_sharpness() & SHARP_EDGED))
 		return FALSE
-	if(user.zone_selected != BODY_ZONE_HEAD && user.zone_selected != BODY_ZONE_PRECISE_MOUTH)
-		return FALSE
 	if(isnull(victim.get_bodypart(BODY_ZONE_HEAD)) || !user.Adjacent(victim))
+		return FALSE
+	if(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE)
+		return FALSE
+	// A stealth guard taken from behind goes for the throat whatever is aimed at; anyone else needs the head or mouth.
+	if(!hv_knife_is_stealth_guard(victim) && !hv_knife_aims_at_throat(user))
 		return FALSE
 	return victim.hv_can_be_executed() || check_behind(user, victim)
 
-/// Lands the knife execution: stabs the head at point-blank force, opens a cover-scaled head slash wound, and slices exposed throats.
+/**
+ * Lands the knife execution: tg's throat slit (butchering.dm, startNeckSlice()) from its do_after on, as decision 45 built
+ * it. The knife's force goes to the head through its melee armour; if tg's wound maths lets a critical cut through what
+ * protects the head (slit_gets_through()), a critical slash and tg's neck_slice (mute, neck_slice_mute.dm). Otherwise
+ * the blade turns: an ordinary stab to the head with tg's own wound roll, and he can still shout.
+ */
 /obj/item/knife/proc/hv_finish_knife_execution(mob/living/user, mob/living/carbon/victim, list/modifiers, list/attack_modifiers)
 	if(!hv_knife_execution_holds(user, victim))
 		return FALSE
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	if(isnull(head))
 		return FALSE
-
-	var/sealed_helmet = !isnull(victim.is_mouth_covered(ITEM_SLOT_HEAD))
-	var/cover = hv_crit_cover_rating(victim, head, MELEE, armour_penetration)
-	var/wound_severity = WOUND_SEVERITY_CRITICAL
-	var/slice_neck = TRUE
-	if(sealed_helmet || cover >= HV_KNIFE_EXECUTION_HIGH_COVER)
-		wound_severity = WOUND_SEVERITY_MODERATE
-		slice_neck = FALSE
-	else if(cover >= HV_KNIFE_EXECUTION_LOW_COVER)
-		wound_severity = WOUND_SEVERITY_SEVERE
-		slice_neck = FALSE
-
-	var/list/stab_modifiers = islist(attack_modifiers) ? attack_modifiers.Copy() : list()
-	MODIFY_ATTACK_FORCE_MULTIPLIER(stab_modifiers, HV_EXECUTION_POINT_BLANK_MULT)
-
-	// Bypass the knife's butchering component for this synchronous hit so an aggressive grab or a
-	// corpse with butcher results takes the real stab instead of starting startNeckSlice / startButcher.
-	var/datum/component/butchering/butchering = GetComponent(/datum/component/butchering)
-	if(butchering)
-		butchering.UnregisterSignal(src, COMSIG_ITEM_ATTACK)
-
-	var/previous_zone = user.zone_selected
-	user.zone_selected = BODY_ZONE_HEAD
+	hv_knife_exec_spray = 0
 	hv_knife_execution_head_damage = 0
 	RegisterSignal(victim, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(hv_knife_execution_hit))
-	hv_knife_executing = TRUE
-	attack(victim, user, modifiers, stab_modifiers)
-	hv_knife_executing = FALSE
-	if(!QDELETED(user))
-		user.zone_selected = previous_zone
+	user.do_attack_animation(victim)
+	user.changeNext_move(CLICK_CD_MELEE)
+	playsound(victim, 'sound/effects/butcher.ogg', 50, TRUE, -1)
+	var/blocked = victim.run_armor_check(head, MELEE, armour_penetration = armour_penetration, silent = TRUE)
+	var/slit = slit_gets_through(victim, head)
+	if(slit)
+		log_combat(user, victim, "wounded via throat slitting", src, "(knife execution)")
+		victim.apply_damage(force, BRUTE, head, blocked, wound_bonus = CANT_WOUND, attack_direction = get_dir(user, victim), attacking_item = src)
+		if(victim.cause_wound_of_type_and_severity(WOUND_SLASH, head, WOUND_SEVERITY_CRITICAL, wound_source = src))
+			victim.apply_status_effect(/datum/status_effect/neck_slice)
+	else
+		log_combat(user, victim, "stabbed at the throat of", src, "(knife execution, protected throat)")
+		victim.apply_damage(force, BRUTE, head, blocked, wound_bonus = wound_bonus, exposed_wound_bonus = exposed_wound_bonus, sharpness = get_sharpness(), attack_direction = get_dir(user, victim), attacking_item = src)
 	if(!QDELETED(victim))
 		UnregisterSignal(victim, COMSIG_MOB_APPLY_DAMAGE)
-	if(!QDELETED(src) && !QDELETED(butchering))
-		butchering.RegisterSignal(src, COMSIG_ITEM_ATTACK, TYPE_PROC_REF(/datum/component/butchering, onItemAttack))
-
-	if(!QDELETED(victim))
 		head = victim.get_bodypart(BODY_ZONE_HEAD)
-		if(head)
-			victim.cause_wound_of_type_and_severity(WOUND_SLASH, head, wound_severity, wound_source = src)
-			if(slice_neck)
-				var/has_critical_slash = FALSE
-				for(var/datum/wound/wound as anything in head.wounds)
-					if(wound.severity >= WOUND_SEVERITY_CRITICAL)
-						has_critical_slash = TRUE
-						break
-				if(has_critical_slash)
-					victim.apply_status_effect(/datum/status_effect/neck_slice)
-				victim.hv_add_hit_line("[user] cuts [victim]'s throat!", HV_LINE_HUGE, "[user] cuts your throat!", COMBAT_MESSAGE_RANGE)
-			else if(wound_severity == WOUND_SEVERITY_SEVERE)
-				victim.hv_add_hit_line("[user] slashes [victim]'s neck!", HV_LINE_BOLD, "[user] slashes your neck!", COMBAT_MESSAGE_RANGE)
-			else
-				var/blocked_by = sealed_helmet ? "helmet" : "collar"
-				victim.hv_add_hit_line("[src] skids off [victim]'s [blocked_by].", HV_LINE_BOLD, "[src] skids off your [blocked_by].", COMBAT_MESSAGE_RANGE)
-
-	log_combat(user, victim, "knife-executed", src, "([round(hv_knife_execution_head_damage, 0.1)] damage to the head, slash severity [wound_severity])")
-	if(!QDELETED(victim))
+		// The blood follows the wound that landed: a cut throat sprays, a lesser cut runs, no wound no spray.
+		var/worst = 0
+		for(var/datum/wound/cut as anything in head?.wounds)
+			if((istype(cut, /datum/wound/slash) || istype(cut, /datum/wound/pierce)) && cut.severity > worst)
+				worst = cut.severity
+		if(worst >= WOUND_SEVERITY_CRITICAL)
+			hv_knife_exec_spray = 2
+		else if(worst >= WOUND_SEVERITY_MODERATE)
+			hv_knife_exec_spray = 1
+		if(victim.has_status_effect(/datum/status_effect/neck_slice))
+			victim.hv_add_hit_line("[user] cuts [victim]'s throat!", HV_LINE_HUGE, "[user] cuts your throat!", COMBAT_MESSAGE_RANGE)
+		else
+			victim.hv_add_hit_line("[user] stabs at [victim]'s throat, but the blade turns!", HV_LINE_BOLD, "[user] stabs at your throat!", COMBAT_MESSAGE_RANGE)
+		// The victim felt that: the same signal a normal blow sends (tg's relay_attackers), after the cut.
+		SEND_SIGNAL(victim, COMSIG_ATOM_AFTER_ATTACKEDBY, src, user, modifiers, attack_modifiers)
 		hv_execution_witnesses(user, victim)
+	add_fingerprint(user)
+	log_combat(user, victim, "knife-executed", src, "([round(hv_knife_execution_head_damage, 0.1)] damage to the head, throat [slit ? "cut" : "protected"])")
 	return TRUE
+
+/**
+ * Whether the slit gets through what protects this throat, by tg's own wound maths (decision 45): a placed cut is the
+ * best roll tg's wound roll allows (WOUND_MAX_CONSIDERED_DAMAGE to the power WOUND_DAMAGE_EXPONENT), plus this knife's
+ * wound bonus, through check_woundings_mods() (worn wound armour on the head, physiology wound armour such as dermal
+ * cyberware, the head's own resistance and its existing wounds). It gets through if that reaches tg's critical slash
+ * threshold.
+ */
+/obj/item/knife/proc/slit_gets_through(mob/living/carbon/victim, obj/item/bodypart/throat)
+	var/datum/wound_pregen_data/critical = GLOB.all_wound_pregen_data[/datum/wound/slash/flesh/critical]
+	var/best_roll = round(WOUND_MAX_CONSIDERED_DAMAGE ** WOUND_DAMAGE_EXPONENT)
+	var/roll = throat.check_woundings_mods(WOUND_SLASH, best_roll, force, wound_bonus, exposed_wound_bonus, FALSE)
+	return roll >= critical.threshold_minimum
 
 /// Sums brute and burn damage this knife deals to the victim's head during an execution stab.
 /obj/item/knife/proc/hv_knife_execution_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/attacking_item)
