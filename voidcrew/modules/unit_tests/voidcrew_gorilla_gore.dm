@@ -915,7 +915,7 @@
 	TEST_ASSERT_NOTNULL(framed.get_bodypart(BODY_ZONE_HEAD), "The Atlas frame's head burst")
 	qdel(frame_finisher)
 
-/// The limb rip tears the aimed arm off and leaves it on the victim's tile.
+/// The limb rip tears the aimed arm off and throws it away behind the bearer, quickly, with no blow after.
 /datum/unit_test/voidcrew_gorilla_gore/finisher_rip
 
 /datum/unit_test/voidcrew_gorilla_gore/finisher_rip/Run()
@@ -927,11 +927,19 @@
 	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The limb rip didn't start")
 	var/datum/hv_finisher/chrome/gorilla/rip/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip")
+	TEST_ASSERT(finisher.total_duration() <= 1.6 SECONDS, "The limb rip runs [finisher.total_duration() / 10] s, longer than its one pull and throw")
+	var/head_brute = victim.get_bodypart(BODY_ZONE_HEAD).brute_dam
 	run_to_end(finisher)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The aimed arm wasn't torn off")
 	TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_R_ARM), "The wrong arm was torn off")
-	var/obj/item/bodypart/arm/left/torn = locate() in get_turf(victim)
-	TEST_ASSERT_NOTNULL(torn, "The torn arm wasn't left on the victim's tile")
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD).brute_dam, head_brute, "The torn arm was used to beat the victim's head")
+	// Thrown away behind the bearer: on its way, never on the victim's tile
+	var/obj/item/bodypart/arm/left/torn
+	for(var/obj/item/bodypart/arm/left/found in range(GORILLA_RIP_THROW_TILES, bearer))
+		torn = found
+	TEST_ASSERT_NOTNULL(torn, "The torn arm wasn't thrown out into the room")
+	TEST_ASSERT(get_turf(torn) != get_turf(victim), "The torn arm was dropped on the victim instead of thrown")
+	TEST_ASSERT(get_dist(torn, victim) >= get_dist(bearer, victim), "The torn arm was thrown toward the victim")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "The limb rip left puppets behind")
 	// The blood is the tear's, laid under the shoulder as the arm came off: nothing fresh when the arm is dropped
 	var/obj/effect/decal/cleanable/blood/pool

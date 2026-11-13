@@ -323,23 +323,30 @@
 #define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
 /// How long the let-go body takes to slide back to where tg lays it (tg's own offset slide).
 #define GORILLA_RIP_LET_GO (0.2 SECONDS)
-/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The plant's own
-/// 0.3 s still ends inside its stage.
+/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The grab
+/// (GORILLA_RIP_GRAB_TIME) still ends inside the plant's stage.
 #define GORILLA_RIP_START_HOLD (0.15 SECONDS)
-/// Seen from behind, how long the torn arm takes to come down with his fist and hang beside him.
-#define GORILLA_RIP_HANG_TIME (0.25 SECONDS)
 /// The limb rip's blood: how many drops burst from the socket as the arm comes away, and the furthest (pixels) the pool
 /// under the shoulder is laid from the middle of the body's tile.
 #define GORILLA_RIP_BURST_DROPS 12
 #define GORILLA_RIP_POOL_REACH 10
-/// The limb rip's blow with the torn arm: up over his head, then down on theirs. The hit lands as it comes down.
-#define GORILLA_CLUB_RAISE (0.2 SECONDS)
-#define GORILLA_CLUB_STRIKE (0.1 SECONDS)
-/// How long before the arm is all the way down the blow lands (recorded 0 to 0.12 s late without it).
-#define GORILLA_CLUB_HIT_LEAD (0.05 SECONDS)
-/// How far his arms push out on that blow, and the most the torn arm in his fists stretches to reach, as shares of their length.
-#define GORILLA_CLUB_REACH 1.6
-#define GORILLA_CLUB_MAX_STRETCH 1.5
+/// The limb rip's pace: how long his fists take to close on the wrist, how long the one haul takes from the grab to the
+/// full lean, and how long the arm shakes in its socket at the end of it before it gives.
+#define GORILLA_RIP_GRAB_TIME (0.25 SECONDS)
+#define GORILLA_RIP_HAUL_TIME (0.4 SECONDS)
+#define GORILLA_RIP_STRAIN_TIME (0.2 SECONDS)
+/// Seen from the front or the back, pixels aside of his middle the arm is hauled to, so it shows beside his body.
+#define GORILLA_RIP_HAUL_ASIDE 6
+/// Tiles the torn arm is flung, and the degrees his arms swing back as it goes (seen from the side).
+#define GORILLA_RIP_THROW_TILES 2
+#define GORILLA_RIP_THROW_SWING 40
+/// The throw: how long the arm is in the air, the animation steps it flies in (each turn a short one), the whole turns
+/// it spins, the pixels it rises at the top of its arc, and the pixels short of the middle of its tile it comes down.
+#define GORILLA_RIP_THROW_TIME (0.3 SECONDS)
+#define GORILLA_RIP_THROW_STEPS 8
+#define GORILLA_RIP_THROW_SPINS 2
+#define GORILLA_RIP_THROW_ARC 10
+#define GORILLA_RIP_THROW_SHORT 6
 /// Pixels toward the viewer a backbroken body lies on the bearer's tile, so he doesn't hide it, and the offset's source.
 #define GORILLA_BACK_IN_FRONT 10
 #define GORILLA_LAID_IN_FRONT_OFFSET "gorilla_laid_in_front"
