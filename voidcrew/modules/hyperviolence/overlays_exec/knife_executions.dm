@@ -52,18 +52,18 @@
 	var/unseen = from_behind || victim.is_blind() || !(user in viewers(7, victim))
 	if(from_behind)
 		user.visible_message(
-			span_danger("[user] grabs [victim] from behind and presses [src] to [victim.p_their()] throat!"),
-			span_danger("You grab [victim] from behind and press [src] to [victim.p_their()] throat!"),
+			span_danger("[user] grabs [victim] from behind and presses [src] to [victim.p_their()] throat."),
+			span_danger("You grab [victim] from behind and press [src] to [victim.p_their()] throat."),
 			ignored_mobs = victim,
 		)
-		to_chat(victim, span_userdanger((unseen ? "Someone grabs you from behind and presses cold steel to your throat!" : "[user] grabs you from behind and presses [src] to your throat!")))
+		to_chat(victim, span_userdanger((unseen ? "Someone grabs you from behind and presses a blade to your throat!" : "[user] grabs you from behind and presses [src] to your throat!")))
 	else
 		user.visible_message(
-			span_danger("[user] grabs [victim]'s head and presses [src] to [victim.p_their()] throat!"),
-			span_danger("You grab [victim]'s head and press [src] to [victim.p_their()] throat!"),
+			span_danger("[user] grabs [victim]'s head and presses [src] to [victim.p_their()] throat."),
+			span_danger("You grab [victim]'s head and press [src] to [victim.p_their()] throat."),
 			ignored_mobs = victim,
 		)
-		to_chat(victim, span_userdanger((unseen ? "Someone grabs your head and presses cold steel to your throat!" : "[user] grabs your head and presses [src] to your throat!")))
+		to_chat(victim, span_userdanger((unseen ? "Someone grabs your head and presses a blade to your throat!" : "[user] grabs your head and presses [src] to your throat!")))
 	var/held = do_after(
 		user,
 		HV_KNIFE_EXECUTION_WINDUP,
@@ -146,12 +146,12 @@
 						break
 				if(has_critical_slash)
 					victim.apply_status_effect(/datum/status_effect/neck_slice)
-				victim.hv_add_hit_line("[user] cuts [victim]'s throat!", HV_LINE_HUGE, null, COMBAT_MESSAGE_RANGE)
-				to_chat(victim, span_userdanger("Cold steel opens your throat!"))
+				victim.hv_add_hit_line("[user] cuts [victim]'s throat!", HV_LINE_HUGE, "[user] cuts your throat!", COMBAT_MESSAGE_RANGE)
 			else if(wound_severity == WOUND_SEVERITY_SEVERE)
-				victim.hv_add_hit_line("[user] slashes [victim]'s neck!", HV_LINE_BOLD, null, COMBAT_MESSAGE_RANGE)
+				victim.hv_add_hit_line("[user] slashes [victim]'s neck!", HV_LINE_BOLD, "[user] slashes your neck!", COMBAT_MESSAGE_RANGE)
 			else
-				victim.hv_add_hit_line("[src] skids off [victim]'s [(sealed_helmet ? "helmet" : "collar")].", HV_LINE_BOLD, null, COMBAT_MESSAGE_RANGE)
+				var/blocked_by = sealed_helmet ? "helmet" : "collar"
+				victim.hv_add_hit_line("[src] skids off [victim]'s [blocked_by].", HV_LINE_BOLD, "[src] skids off your [blocked_by].", COMBAT_MESSAGE_RANGE)
 
 	log_combat(user, victim, "knife-executed", src, "([round(hv_knife_execution_head_damage, 0.1)] damage to the head, slash severity [wound_severity])")
 	if(!QDELETED(victim))

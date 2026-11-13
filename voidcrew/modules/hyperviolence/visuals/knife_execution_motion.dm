@@ -1,20 +1,21 @@
 // Hyperviolence visuals: knife executions (overlays_exec/knife_executions.dm).
 //
 // Beats over the execution's own wind-up and kill (purely visual; every sequence ends where it began):
-// 1. Wind-up grab (0 - 0.3 s): the attacker steps in toward the victim, the victim's head tilts back
-//    about their feet, and for S/E/W facings a scaled (~11 px) blade prop and small skin-tinted hand
-//    prop move from the attacker's real knife hand to the start of the throat cut, grip under the hand
-//    every frame. When the victim faces NORTH the cut is hidden behind their head, so no blade or hand
-//    prop is drawn.
-// 2. Hold (0.3 - 1.5 s): the attacker stays pressed in while the victim trembles and then goes still.
-// 3. The cut (1.5 - 1.75 s, held 0.1 s): the blade draws across the drawn throat from cutting-edge
-//    heel to tip, ending with the tip on the throat and the hand on the grip; a short jet spurts off
-//    the front of the neck (S/E/W) and a forward floor spray runs along the victim's facing once the
-//    wound lands.
-// 4. Release: the blade and knife-hand props vanish together, the attacker steps back to zero offset,
-//    and a survivor still standing hunches 9 deg forward about their feet (0.15 s in, 0.4 s hold,
-//    0.3 s out) while their own hand clutches their throat; if the blow dropped them, tg's own fall
-//    and death_falls.dm take over. A broken wind-up releases everything cleanly with no blood.
+// 1. Wind-up grab (0 - 0.3 s): the attacker steps in toward the victim, a side-facing victim's head
+//    tilts back 2 deg about their feet, and for S/E/W facings a scaled (~10 px) blade prop and small
+//    skin-tinted hand prop move from the attacker's real knife hand to the throat, grip under the hand
+//    every frame. When a standing victim faces NORTH the cut is hidden behind their head, so no blade
+//    or hand prop is drawn.
+// 2. Hold (0.3 - 1.5 s): attacker, victim, blade and hand hold steady together so the cutting edge
+//    stays locked on the drawn throat every frame.
+// 3. The cut (1.5 - 1.75 s, held 0.1 s): the blade draws across the throat so the edge crosses the
+//    throat and the sharp tip finishes on the front of the throat with the hand on the grip; a short
+//    jet spurts off the front of the neck (S/E/W) and a forward floor spray runs along the victim's
+//    facing once the wound lands.
+// 4. Release: the blade and knife-hand props vanish together, the attacker steps back to exact zero
+//    offset, and a survivor still standing hunches 9 deg forward about their feet (0.15 s in, 0.4 s
+//    hold, 0.3 s out) while their own hand clutches their throat; if the blow dropped them, tg's own
+//    fall and death_falls.dm take over. A broken wind-up releases everything in 0.2 s with no blood.
 
 /mob/living
 	/// Suppresses tg's centre-body lunge and floating item flick during the execution's own head stab.
@@ -59,7 +60,7 @@
 	return ..()
 
 /mob/living/carbon/hv_vis_on_death(gibbed)
-	if(world.time >= hv_vis_knife_t2)
+	if(hv_vis_knife_t0 >= 0)
 		hv_vis_knife_clear_pose()
 		hv_vis_stop(list(HV_VIS_TAG_KNIFE_VICTIM))
 	return ..()
@@ -68,8 +69,8 @@
 /proc/hv_knife_exec_throat_point(mob/living/victim)
 	if(!isliving(victim))
 		return list(0, 0)
-	var/base_x = (victim.dir & EAST) ? 3 : ((victim.dir & WEST) ? -4 : 0)
-	var/base_y = 6
+	var/base_x = (victim.dir & EAST) ? 3.5 : ((victim.dir & WEST) ? -3.5 : -0.5)
+	var/base_y = 5.5
 	var/angle = victim.hv_vis_knife_pose_angle()
 	var/list/lurch = victim.hv_vis_knife_pose_lurch()
 	var/held_upright = victim.hv_vis_knife_pose_base && world.time < victim.hv_vis_knife_upright_until
@@ -77,8 +78,8 @@
 	var/pivot = held_upright ? (HV_VIS_FEET_Y * victim.current_size) : victim.hv_vis_pivot()
 	var/matrix/pose = hv_vis_turned(base, angle, pivot)
 	return list(
-		round(pose.a * base_x + pose.b * base_y + pose.c + lurch[1], 0.1),
-		round(pose.d * base_x + pose.e * base_y + pose.f + lurch[2], 0.1),
+		round(pose.a * base_x + pose.b * base_y + pose.c + lurch[1], 0.01),
+		round(pose.d * base_x + pose.e * base_y + pose.f + lurch[2], 0.01),
 	)
 
 /// Current clockwise lean angle (degrees) our knife execution animation adds to this mob at world.time.
@@ -172,7 +173,7 @@
 
 // ---- Wind-up, cut and release choreography ----
 
-/// Starts Beats 1 and 2: attacker step-in, victim head-pull + tremble, and (for S/E/W) scaled blade + hand props.
+/// Starts Beats 1 and 2: attacker step-in, steady victim head-pull, and (for S/E/W) scaled blade + hand props.
 /obj/item/knife/proc/hv_vis_begin_knife_windup(mob/living/user, mob/living/carbon/victim)
 	hv_vis_clear_exec_props()
 	var/turf/victim_turf = get_turf(victim)
@@ -185,6 +186,10 @@
 	var/step_dx = HV_VIS_DX(toward) * step_px
 	var/step_dy = HV_VIS_DY(toward) * step_px
 
+	// Stop any prior sequence on these tags so nothing overlaps when the wind-up starts.
+	user.hv_vis_stop(list(HV_VIS_TAG_KNIFE_STEP))
+	victim.hv_vis_stop(list(HV_VIS_TAG_KNIFE_VICTIM, HV_VIS_TAG_TREMBLE))
+
 	// Attacker steps in behind the victim and stays pressed in until the cut releases.
 	var/matrix/attacker_base = matrix(user.transform)
 	var/matrix/attacker_lean = hv_vis_turned(attacker_base, HV_VIS_DX(toward) * 4, user.hv_vis_pivot())
@@ -194,7 +199,7 @@
 		list(user.pixel_w, user.pixel_z, attacker_base, HV_VIS_KNIFE_RELEASE_TIME, SINE_EASING),
 	))
 
-	// Victim is pulled back a few degrees about their feet and trembles until the press pause.
+	// Victim is pulled back about their feet and held steady so the blade edge stays on the throat every frame.
 	var/tilt = victim.hv_vis_knife_windup_tilt(user)
 	var/matrix/victim_base = matrix(victim.transform)
 	var/matrix/victim_tilted = hv_vis_turned(victim_base, tilt, victim.hv_vis_pivot())
@@ -215,20 +220,20 @@
 		list(victim.pixel_w, victim.pixel_z, victim_tilted, cut_hold_total - HV_VIS_KNIFE_GRAB_TIME + 0.5 SECONDS, LINEAR_EASING),
 		list(victim.pixel_w, victim.pixel_z, victim_base, HV_VIS_KNIFE_RELEASE_TIME, SINE_EASING),
 	))
-	victim.hv_vis_tremble(HV_KNIFE_EXECUTION_WINDUP - HV_VIS_PRESS_PAUSE, 1)
 
-	// Facing NORTH: the throat and reach are completely behind the victim's head and attacker's body.
-	if(victim.dir & NORTH)
+	// Standing victim facing NORTH: the throat and reach are completely behind the victim's head and attacker's body.
+	if((victim.dir & NORTH) && victim.body_position == STANDING_UP)
 		return
 
-	// Compute the throat target at full wind-up tilt (t1..t2) so the blade rests right on the tilted throat.
+	// Compute the throat target at full wind-up tilt (t1..t2) so the blade edge rests right on the tilted throat.
 	var/list/tilted_throat = victim.hv_vis_throat_for_angle(tilt)
 	var/throat_w = victim.pixel_w + tilted_throat[1]
 	var/throat_z = victim.pixel_z + tilted_throat[2]
 
 	var/knife_zone = user.get_hand_zone_of_item(src) || BODY_ZONE_R_ARM
 	var/list/knife_hand_start = hv_vis_hand_in_victim_frame(user, victim, knife_zone, 0, 0)
-	var/blade_deg = hv_vis_knife_blade_angle(victim, knife_zone)
+	var/hold_deg = hv_vis_knife_hold_angle(victim, knife_zone)
+	var/hold_along = hv_vis_knife_hold_contact(victim)
 
 	var/obj/effect/temp_visual/hv_knife_exec_blade/blade = new(
 		victim_turf,
@@ -237,27 +242,25 @@
 		victim.pixel_y,
 		0,
 		0,
-		blade_deg,
+		hold_deg,
 		HV_VIS_KNIFE_BLADE_LAYER,
 		cut_hold_total + 1 SECONDS,
 	)
-	var/list/grip_off = blade.hv_point_offset(blade_deg, HV_VIS_KNIFE_SPRITE_GRIP)
-	var/list/heel_off = blade.hv_point_offset(blade_deg, HV_VIS_KNIFE_SPRITE_HEEL)
+	var/list/grip_off = blade.hv_point_offset(hold_deg, HV_VIS_KNIFE_SPRITE_GRIP)
+	var/list/hold_off = blade.hv_point_offset(hold_deg, hold_along)
 
-	// Start with the scaled knife's grip at the attacker's real knife hand, then bring the heel to the throat.
-	var/start_blade_w = round(knife_hand_start[1] - grip_off[1], 1)
-	var/start_blade_z = round(knife_hand_start[2] - grip_off[2], 1)
-	var/cut_start_w = round(throat_w - heel_off[1], 1)
-	var/cut_start_z = round(throat_z - heel_off[2], 1)
-	var/fist_start_w = round(start_blade_w + grip_off[1], 1)
-	var/fist_start_z = round(start_blade_z + grip_off[2], 1)
-	var/fist_in_w = round(cut_start_w + grip_off[1], 1)
-	var/fist_in_z = round(cut_start_z + grip_off[2], 1)
+	// Start with the scaled knife's grip at the attacker's real knife hand, then bring hold_along onto the throat.
+	var/start_blade_w = knife_hand_start[1] - grip_off[1]
+	var/start_blade_z = knife_hand_start[2] - grip_off[2]
+	var/cut_start_w = throat_w - hold_off[1]
+	var/cut_start_z = throat_z - hold_off[2]
+	var/fist_start_w = start_blade_w + grip_off[1]
+	var/fist_start_z = start_blade_z + grip_off[2]
+	var/fist_in_w = cut_start_w + grip_off[1]
+	var/fist_in_z = cut_start_z + grip_off[2]
 
-	blade.pixel_w = start_blade_w
-	blade.pixel_z = start_blade_z
-	var/matrix/blade_turn = blade.hv_turn_matrix(blade_deg)
-	animate(blade, pixel_w = cut_start_w, pixel_z = cut_start_z, transform = blade_turn, time = HV_VIS_KNIFE_GRAB_TIME, easing = QUAD_EASING|EASE_OUT)
+	blade.hv_place_at(start_blade_w, start_blade_z, hold_deg)
+	blade.hv_animate_to(cut_start_w, cut_start_z, hold_deg, HV_VIS_KNIFE_GRAB_TIME, QUAD_EASING|EASE_OUT)
 	hv_vis_blade_ref = WEAKREF(blade)
 
 	// Small skin-tinted hand prop centred on the fist, locked onto the scaled knife's grip every frame.
@@ -272,7 +275,7 @@
 		HV_VIS_KNIFE_HAND_LAYER,
 		cut_hold_total + 1 SECONDS,
 	)
-	animate(knife_arm, pixel_w = fist_in_w, pixel_z = fist_in_z, time = HV_VIS_KNIFE_GRAB_TIME, easing = QUAD_EASING|EASE_OUT)
+	knife_arm.hv_animate_to(fist_in_w, fist_in_z, HV_VIS_KNIFE_GRAB_TIME, QUAD_EASING|EASE_OUT)
 	hv_vis_knife_arm_ref = WEAKREF(knife_arm)
 
 /// Runs Beats 3 and 4 once the wind-up succeeded and the real stab + slash wound landed.
@@ -284,11 +287,11 @@
 	if(QDELETED(victim) || !isturf(victim.loc))
 		hv_vis_clear_exec_props()
 		if(!QDELETED(user))
-			user.hv_vis_release(HV_VIS_TAG_KNIFE_STEP, HV_VIS_KNIFE_RELEASE_TIME)
+			user.hv_vis_release(HV_VIS_TAG_KNIFE_STEP, HV_VIS_KNIFE_ABORT_TIME)
 		return
 
-	// Keep the victim steady in the attacker's grip across the 0.25 s throat draw rather than flinching away early.
-	victim.hv_vis_stop(list(HV_VIS_TAG_FLINCH, HV_VIS_TAG_TREMBLE))
+	// Stop the wind-up sequence and any hit flinch before starting the cut/release pose on the victim.
+	victim.hv_vis_stop(list(HV_VIS_TAG_FLINCH, HV_VIS_TAG_TREMBLE, HV_VIS_TAG_KNIFE_VICTIM))
 	victim.hv_vis_flash()
 
 	// If the stab dropped a standing victim into crit (non-dead), hold them upright through the 0.25 s cut
@@ -297,7 +300,6 @@
 	if(fell_now && victim.hv_vis_can_hold_fall())
 		victim.hv_vis_knife_upright_until = world.time + cut_total
 		if(victim.stat != DEAD)
-			victim.hv_vis_stop(list(HV_VIS_TAG_KNIFE_VICTIM))
 			var/matrix/tilted_upright = hv_vis_turned(pre_base, victim.hv_vis_knife_tilt, HV_VIS_FEET_Y * victim.current_size)
 			victim.hv_vis_play_over(list(
 				list(pre_pixel_y, tilted_upright, 0, LINEAR_EASING),
@@ -312,7 +314,7 @@
 	var/row_pixel_y = (fell_now && victim.hv_vis_can_hold_fall()) ? pre_pixel_y : victim.pixel_y
 
 	var/knife_zone = (!QDELETED(user) && user.get_hand_zone_of_item(src)) || BODY_ZONE_R_ARM
-	var/blade_deg = hv_vis_knife_blade_angle(victim, knife_zone)
+	var/cut_deg = hv_vis_knife_cut_angle(victim, knife_zone)
 
 	var/toward = !QDELETED(user) ? (get_dir(user, victim) || user.dir || SOUTH) : SOUTH
 	var/step_px = (HV_VIS_DX(toward) && HV_VIS_DY(toward)) ? round(HV_VIS_KNIFE_STEP_IN * 0.78, 1) : HV_VIS_KNIFE_STEP_IN
@@ -323,19 +325,18 @@
 	var/obj/effect/temp_visual/hv_knife_exec_arm/knife_arm = hv_vis_knife_arm_ref?.resolve()
 	if(blade && !QDELETED(blade))
 		blade.pixel_y = row_pixel_y
-		var/list/tip_off = blade.hv_point_offset(blade_deg, HV_VIS_KNIFE_SPRITE_TIP)
-		var/list/grip_off = blade.hv_point_offset(blade_deg, HV_VIS_KNIFE_SPRITE_GRIP)
-		// End of Beat 3: blade draws across the throat so the tip lands on (throat_w, throat_z) and grip stays under the hand.
-		var/cut_end_w = round(throat_w - tip_off[1], 1)
-		var/cut_end_z = round(throat_z - tip_off[2], 1)
-		var/fist_end_w = round(cut_end_w + grip_off[1], 1)
-		var/fist_end_z = round(cut_end_z + grip_off[2], 1)
-		var/matrix/blade_turn = blade.hv_turn_matrix(blade_deg)
-		animate(blade, pixel_w = cut_end_w, pixel_z = cut_end_z, transform = blade_turn, time = HV_VIS_KNIFE_CUT_TIME, easing = QUAD_EASING|EASE_OUT)
+		var/list/tip_off = blade.hv_point_offset(cut_deg, HV_VIS_KNIFE_SPRITE_TIP)
+		var/list/grip_off = blade.hv_point_offset(cut_deg, HV_VIS_KNIFE_SPRITE_GRIP)
+		// End of Beat 3: blade draws across the throat so the sharp tip lands on (throat_w, throat_z) and grip stays under the hand.
+		var/cut_end_w = throat_w - tip_off[1]
+		var/cut_end_z = throat_z - tip_off[2]
+		var/fist_end_w = cut_end_w + grip_off[1]
+		var/fist_end_z = cut_end_z + grip_off[2]
+		blade.hv_animate_to(cut_end_w, cut_end_z, cut_deg, HV_VIS_KNIFE_CUT_TIME, QUAD_EASING|EASE_OUT)
 		QDEL_IN(blade, cut_total)
 		if(knife_arm && !QDELETED(knife_arm))
 			knife_arm.pixel_y = row_pixel_y
-			animate(knife_arm, pixel_w = fist_end_w, pixel_z = fist_end_z, time = HV_VIS_KNIFE_CUT_TIME, easing = QUAD_EASING|EASE_OUT)
+			knife_arm.hv_animate_to(fist_end_w, fist_end_z, HV_VIS_KNIFE_CUT_TIME, QUAD_EASING|EASE_OUT)
 			QDEL_IN(knife_arm, cut_total)
 	else if(knife_arm && !QDELETED(knife_arm))
 		qdel(knife_arm)
@@ -366,11 +367,13 @@
 				spray_tiles,
 			)
 
-	// Beat 4 release: attacker steps back to exact zero offset after the cut + hold.
+	// Beat 4 release: stop the wind-up step tag first, then hold through cut_total and step back to exact zero offset.
 	if(!QDELETED(user) && isturf(user.loc))
+		user.hv_vis_stop(list(HV_VIS_TAG_KNIFE_STEP))
 		var/matrix/attacker_base = matrix(user.transform)
 		var/matrix/attacker_lean = hv_vis_turned(attacker_base, HV_VIS_DX(toward) * 4, user.hv_vis_pivot())
 		user.hv_vis_play(HV_VIS_TAG_KNIFE_STEP, list(
+			list(user.pixel_w + step_dx, user.pixel_z + step_dy, attacker_lean, 0, LINEAR_EASING),
 			list(user.pixel_w + step_dx, user.pixel_z + step_dy, attacker_lean, cut_total, LINEAR_EASING),
 			list(user.pixel_w, user.pixel_z, attacker_base, HV_VIS_KNIFE_RELEASE_TIME, SINE_EASING),
 		))
@@ -394,6 +397,7 @@
 		victim.hv_vis_knife_lurch_y = lurch_dy
 
 		victim.hv_vis_play(HV_VIS_TAG_KNIFE_VICTIM, list(
+			list(victim.pixel_w, victim.pixel_z, tilted, 0, LINEAR_EASING),
 			list(victim.pixel_w, victim.pixel_z, tilted, cut_total, LINEAR_EASING),
 			list(victim.pixel_w + lurch_dx, victim.pixel_z + lurch_dy, hunched, HV_VIS_KNIFE_HUNCH_IN, QUAD_EASING|EASE_OUT),
 			list(victim.pixel_w + lurch_dx, victim.pixel_z + lurch_dy, hunched, HV_VIS_KNIFE_HUNCH_HOLD, LINEAR_EASING),
@@ -402,7 +406,7 @@
 		victim.hv_vis_hold(list(HV_VIS_TAG_KNIFE_VICTIM), HV_VIS_END_LIE|HV_VIS_END_DEATH, hunch_total)
 		if(!(victim.dir & NORTH))
 			addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob/living/carbon, hv_vis_spawn_clutch_hand), hunch_angle, lurch_dx, lurch_dy), cut_total, TIMER_DELETE_ME)
-	else if(!fell_now)
+	else if(victim.stat != DEAD && !fell_now)
 		victim.hv_vis_knife_t2 = world.time + cut_total
 		victim.hv_vis_knife_hunch = 0
 		victim.hv_vis_knife_lurch_x = 0
@@ -410,9 +414,12 @@
 		var/matrix/base_lying = matrix(victim.transform)
 		var/matrix/tilted_lying = hv_vis_turned(base_lying, victim.hv_vis_knife_tilt, victim.hv_vis_pivot())
 		victim.hv_vis_play(HV_VIS_TAG_KNIFE_VICTIM, list(
+			list(victim.pixel_w, victim.pixel_z, tilted_lying, 0, LINEAR_EASING),
 			list(victim.pixel_w, victim.pixel_z, tilted_lying, cut_total, LINEAR_EASING),
 			list(victim.pixel_w, victim.pixel_z, base_lying, HV_VIS_KNIFE_RELEASE_TIME, SINE_EASING),
 		))
+	else
+		victim.hv_vis_knife_clear_pose()
 
 /// Spawns a small prop of this standing victim's own visible hand reaching up to clutch their throat during Beat 4.
 /mob/living/carbon/proc/hv_vis_spawn_clutch_hand(hunch_angle, lurch_dx = 0, lurch_dy = 0)
@@ -445,16 +452,16 @@
 	animate(pixel_w = clutch_w, pixel_z = clutch_z, time = HV_VIS_KNIFE_HUNCH_HOLD, easing = LINEAR_EASING)
 	animate(pixel_w = start_w, pixel_z = start_z, time = HV_VIS_KNIFE_HUNCH_OUT, easing = SINE_EASING)
 
-/// Beat 5: wind-up broke early; ease both bodies straight back to their exact starting poses with no blood.
+/// Beat 5: wind-up broke early; ease both bodies straight back to their exact starting poses in under 0.3 s with no blood.
 /obj/item/knife/proc/hv_vis_abort_knife_windup(mob/living/user, mob/living/carbon/victim)
 	hv_vis_clear_exec_props()
 	if(!QDELETED(user))
-		user.hv_vis_release(HV_VIS_TAG_KNIFE_STEP, 2)
+		user.hv_vis_release(HV_VIS_TAG_KNIFE_STEP, HV_VIS_KNIFE_ABORT_TIME)
 	if(!QDELETED(victim))
 		victim.hv_vis_knife_clear_pose()
 		if(victim.stat != DEAD)
-			victim.hv_vis_release(HV_VIS_TAG_KNIFE_VICTIM, 2)
-			victim.hv_vis_release(HV_VIS_TAG_TREMBLE, 1)
+			victim.hv_vis_release(HV_VIS_TAG_KNIFE_VICTIM, HV_VIS_KNIFE_ABORT_TIME)
+			victim.hv_vis_stop(list(HV_VIS_TAG_TREMBLE))
 		else
 			victim.hv_vis_stop(list(HV_VIS_TAG_KNIFE_VICTIM, HV_VIS_TAG_TREMBLE))
 
@@ -473,12 +480,12 @@
 
 /// Throat offset list(x, y) from this mob's icon centre when leaned by `angle` degrees clockwise.
 /mob/living/proc/hv_vis_throat_for_angle(angle)
-	var/base_x = (dir & EAST) ? 3 : ((dir & WEST) ? -4 : 0)
-	var/base_y = 6
+	var/base_x = (dir & EAST) ? 3.5 : ((dir & WEST) ? -3.5 : -0.5)
+	var/base_y = 5.5
 	var/matrix/pose = hv_vis_turned(matrix(transform), angle, hv_vis_pivot())
 	return list(
-		round(pose.a * base_x + pose.b * base_y + pose.c, 0.1),
-		round(pose.d * base_x + pose.e * base_y + pose.f, 0.1),
+		round(pose.a * base_x + pose.b * base_y + pose.c, 0.01),
+		round(pose.d * base_x + pose.e * base_y + pose.f, 0.01),
 	)
 
 /// Clockwise tilt angle (degrees) that pulls this victim's head back toward `attacker`.
@@ -501,15 +508,31 @@
 		return HV_VIS_KNIFE_HUNCH_TILT
 	if(dir & WEST)
 		return -HV_VIS_KNIFE_HUNCH_TILT
-	return hv_vis_knife_tilt >= 0 ? -HV_VIS_KNIFE_HUNCH_TILT : HV_VIS_KNIFE_HUNCH_TILT
+	return (dir & NORTH) ? -HV_VIS_KNIFE_HUNCH_TILT : HV_VIS_KNIFE_HUNCH_TILT
 
-/// Clockwise angle from EAST (0 deg) along which the knife blade points while crossing `victim`'s throat.
-/proc/hv_vis_knife_blade_angle(mob/living/victim, knife_zone)
-	if(victim.dir & EAST)
-		return -10
-	if(victim.dir & WEST)
-		return 190
+/// Clockwise angle from EAST (0 deg) along which the knife blade points while held against `victim`'s throat.
+/proc/hv_vis_knife_hold_angle(mob/living/victim, knife_zone)
+	if(victim.body_position == STANDING_UP)
+		if(victim.dir & EAST)
+			return -12
+		if(victim.dir & WEST)
+			return 192
 	return (knife_zone == BODY_ZONE_R_ARM) ? 0 : 180
+
+/// Clockwise angle from EAST (0 deg) along which the knife blade finishes at the end of the throat cut.
+/proc/hv_vis_knife_cut_angle(mob/living/victim, knife_zone)
+	if(victim.body_position == STANDING_UP)
+		if(victim.dir & EAST)
+			return 6
+		if(victim.dir & WEST)
+			return 174
+	return (knife_zone == BODY_ZONE_R_ARM) ? 0 : 180
+
+/// Unscaled axial sprite coordinate on the blade that rests on `victim`'s throat during the wind-up hold.
+/proc/hv_vis_knife_hold_contact(mob/living/victim)
+	if(victim.body_position == STANDING_UP && (victim.dir & (EAST|WEST)))
+		return HV_VIS_KNIFE_SPRITE_SIDE_HOLD
+	return HV_VIS_KNIFE_SPRITE_HEEL
 
 /// Pixel offset list(x, y) of `arm_zone`'s hand (rows 16-17 in bodyparts_greyscale.dmi) from `holder`'s icon centre.
 /proc/hv_vis_local_hand_offset(mob/living/holder, arm_zone)
@@ -595,18 +618,33 @@
 	layer = draw_layer
 	pixel_x = row_x
 	pixel_y = row_y
-	pixel_w = start_w
-	pixel_z = start_z
-	transform = hv_turn_matrix(blade_deg)
+	hv_place_at(start_w, start_z, blade_deg)
 
-/// Matrix scaling this knife to ~11 px overall and orienting its blade along `blade_deg` clockwise from EAST.
-/obj/effect/temp_visual/hv_knife_exec_blade/proc/hv_turn_matrix(blade_deg)
+/// Matrix scaling this knife to ~10 px overall, orienting its blade along `blade_deg` clockwise from EAST, with optional sub-pixel shift.
+/obj/effect/temp_visual/hv_knife_exec_blade/proc/hv_turn_matrix(blade_deg, shift_x = 0, shift_y = 0)
 	var/axis_span = max(abs(cos(hv_native_icon_angle)), abs(sin(hv_native_icon_angle)), 0.7071)
 	var/blade_scale = HV_VIS_KNIFE_SCALE * (axis_span / 0.7071)
 	var/matrix/turned = matrix()
 	turned.Scale(blade_scale, blade_scale)
 	turned.Turn(blade_deg - hv_native_icon_angle)
+	if(shift_x || shift_y)
+		turned.Translate(shift_x, shift_y)
 	return turned
+
+/// Places this blade prop at exact float `(exact_w, exact_z)` and `blade_deg`, putting the sub-pixel remainder in `transform`.
+/obj/effect/temp_visual/hv_knife_exec_blade/proc/hv_place_at(exact_w, exact_z, blade_deg)
+	var/int_w = round(exact_w, 1)
+	var/int_z = round(exact_z, 1)
+	pixel_w = int_w
+	pixel_z = int_z
+	transform = hv_turn_matrix(blade_deg, exact_w - int_w, exact_z - int_z)
+
+/// Animates this blade prop to exact float `(exact_w, exact_z)` and `blade_deg` with sub-pixel accuracy.
+/obj/effect/temp_visual/hv_knife_exec_blade/proc/hv_animate_to(exact_w, exact_z, blade_deg, anim_time, anim_easing)
+	var/int_w = round(exact_w, 1)
+	var/int_z = round(exact_z, 1)
+	var/matrix/blade_turn = hv_turn_matrix(blade_deg, exact_w - int_w, exact_z - int_z)
+	animate(src, pixel_w = int_w, pixel_z = int_z, transform = blade_turn, time = anim_time, easing = anim_easing)
 
 /// Pixel offset list(dx, dy) from this blade prop's centre for axial sprite point `along_px`, through `hv_turn_matrix`.
 /obj/effect/temp_visual/hv_knife_exec_blade/proc/hv_point_offset(blade_deg, along_px)
@@ -639,11 +677,28 @@
 	layer = draw_layer
 	pixel_x = row_x
 	pixel_y = row_y
-	pixel_w = fist_w
-	pixel_z = fist_z
+	var/int_w = round(fist_w, 1)
+	var/int_z = round(fist_z, 1)
+	pixel_w = int_w
+	pixel_z = int_z
+	transform = hv_shift_matrix(fist_w - int_w, fist_z - int_z)
 	var/mutable_appearance/hand_overlay = hv_vis_build_hand_overlay(holder, arm_zone)
 	if(hand_overlay)
 		add_overlay(hand_overlay)
+
+/// Sub-pixel translation matrix for keeping the hand prop locked to the scaled knife grip.
+/obj/effect/temp_visual/hv_knife_exec_arm/proc/hv_shift_matrix(shift_x = 0, shift_y = 0)
+	var/matrix/shifted = matrix()
+	if(shift_x || shift_y)
+		shifted.Translate(shift_x, shift_y)
+	return shifted
+
+/// Animates this hand prop to exact float `(exact_w, exact_z)` with sub-pixel accuracy.
+/obj/effect/temp_visual/hv_knife_exec_arm/proc/hv_animate_to(exact_w, exact_z, anim_time, anim_easing)
+	var/int_w = round(exact_w, 1)
+	var/int_z = round(exact_z, 1)
+	var/matrix/shifted = hv_shift_matrix(exact_w - int_w, exact_z - int_z)
+	animate(src, pixel_w = int_w, pixel_z = int_z, transform = shifted, time = anim_time, easing = anim_easing)
 
 /// Small skin-tinted hand prop for a standing survivor clutching their own throat after release; vanishes early if they move or fall.
 /obj/effect/temp_visual/hv_knife_clutch_hand
