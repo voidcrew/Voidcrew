@@ -267,7 +267,7 @@
 /// It has seen through a disguise
 #define STEALTH_BARK_BLOWN "stealth_blown"
 
-// ===== Stealth crits and the backstab knife (step 3a, stealth_crits.dm) =====
+// ===== Stealth crits, the head shot and the backstab knife (step 3a, decision 45; stealth_crits.dm, stealth_knife.dm) =====
 // Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
 // so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".
 /// Added when the guard was unaware of everyone as the blow began
@@ -276,17 +276,38 @@
 #define STEALTH_CRIT_SUSPICIOUS_BONUS 15
 /// Added on top of either when the attacker aimed at the head (head, eyes or mouth)
 #define STEALTH_CRIT_HEAD_BONUS 35
-/// Added when the backstab knife strikes from behind (tg's check_behind()), whatever the guard's state
-#define STEALTH_BACKSTAB_BONUS 40
-/// The head shot crit (a bullet through the skull) needs a roll this high, and only a stealth hit can roll it
-#define STEALTH_HEAD_SHOT_THRESHOLD 80
-/// Least damage after armour a head shot crit needs
-#define STEALTH_HEAD_SHOT_MIN_DAMAGE 20
-/// A helmet this good against the bullet (after its armour penetration) stops a head shot crit outright
-#define STEALTH_HEAD_SHOT_HELMET_ARMOUR 30
-/// Brain damage a head shot crit deals (brains die at 200)
-#define STEALTH_HEAD_SHOT_BRAIN_DAMAGE 40
-/// How long a head shot crit knocks the guard down
-#define STEALTH_HEAD_SHOT_KNOCKDOWN (4 SECONDS)
+// The head shot (decision 45): a bullet aimed at the head of a guard caught off guard. Graded by what the round can do
+// against what is on the head. Numbers and the gun table: data/stealth/STATUS.md, "Decision 45".
+// The round's power gives burst, down or nothing; each protection step on the head moves it one down the ladder.
+/// Nothing happens beyond the hit itself
+#define STEALTH_HEAD_SHOT_NONE 0
+/// Stopped short of the skull: knocked out for STEALTH_HEAD_SHOT_HELMET_TIME
+#define STEALTH_HEAD_SHOT_HELMET 1
+/// Through the skull: brain damage, a heavy bleed, out cold until the bleed takes him
+#define STEALTH_HEAD_SHOT_DOWN 2
+/// The head bursts (hv_burst_head_apart())
+#define STEALTH_HEAD_SHOT_BURST 3
+/// Head protection (tg's armour against the round after its penetration, plus wound armour) for one step down
+#define STEALTH_HEAD_SHOT_STEP_ONE 20
+/// For two steps down
+#define STEALTH_HEAD_SHOT_STEP_TWO 50
+/// For three steps down: nothing beyond the hit
+#define STEALTH_HEAD_SHOT_STEP_THREE 80
+/// Least power for a round through the skull (power: the round's damage, plus half a positive wound bonus, plus the caliber bonus)
+#define STEALTH_HEAD_SHOT_MIN_POWER 15
+/// Power at which the head bursts
+#define STEALTH_HEAD_SHOT_BURST_POWER 40
+/// Added to the power of a rifle or shotgun round (stealth_heavy_caliber()), once per shot
+#define STEALTH_HEAD_SHOT_HEAVY_CALIBER 15
+/// The power of a round from a suppressed gun is multiplied by this
+#define STEALTH_HEAD_SHOT_SUPPRESSED_MULT 0.75
+/// Brain damage a round through the skull deals (BRAIN_DAMAGE_SEVERE is 100, brains die at 200)
+#define STEALTH_HEAD_SHOT_BRAIN_DAMAGE 120
+/// Blood flow of the wound a round through the skull leaves (tg's critical puncture is 3, a cut throat about 4)
+#define STEALTH_HEAD_SHOT_FLOW 8
+/// How long a round through the skull knocks him out: longer than the bleed takes to put him under for good
+#define STEALTH_HEAD_SHOT_DOWN_TIME (90 SECONDS)
+/// How long a round a helmet stopped knocks him out
+#define STEALTH_HEAD_SHOT_HELMET_TIME (6 SECONDS)
 /// A bullet through the head
 #define WOUND_SERIES_HV_HEAD_SHOT "wound_series_hv_head_shot"

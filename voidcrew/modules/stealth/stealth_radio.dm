@@ -38,6 +38,9 @@
 		return FALSE
 	if(guard.stat != CONSCIOUS || stealth_driven() || isnull(where))
 		return FALSE
+	// A guard that can't speak (a cut throat, a gag) doesn't reach for the earpiece (decision 45).
+	if(!human_npc_can_talk(guard))
+		return FALSE
 	if(pending_call)
 		if(pending_call[STEALTH_CALL_KIND] >= kind)
 			return TRUE

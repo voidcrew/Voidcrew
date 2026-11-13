@@ -241,6 +241,7 @@
 #include "voidcrew_stealth_d37.dm"
 #include "voidcrew_stealth_d39.dm"
 #include "voidcrew_stealth_d44.dm"
+#include "voidcrew_stealth_d45.dm"
 #include "voidcrew_stealth_disguise.dm"
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_light.dm"
