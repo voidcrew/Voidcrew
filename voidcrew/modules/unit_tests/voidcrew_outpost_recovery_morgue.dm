@@ -278,6 +278,8 @@
 	npc_body.npc_remains = list(WEAKREF(boxed_arm), WEAKREF(other_arm))
 	morgue_gather_parts(npc_body, body_turf)
 	TEST_ASSERT_EQUAL(boxed_arm.loc, box_closet, "morgue_gather_parts() pulled a limb out of a closet")
+	// A closet on the tile would stop a body bag closing there later on
+	qdel(box_closet)
 	if(run_loc_floor_bottom_left.z != body_turf.z)
 		TEST_ASSERT_EQUAL(other_arm.loc, run_loc_floor_bottom_left, "morgue_gather_parts() teleported a limb across z-levels")
 
@@ -311,13 +313,7 @@
 	hauler.forceMove(stand)
 	var/datum/ambient_activity/recover_body/tray_job = hauler.start_activity(new /datum/ambient_activity/recover_body(hauler))
 	TEST_ASSERT_NOTNULL(tray_job, "Worker could not start on player body")
-	var/free_before = recovery.body_free(dead_player)
-	var/job_body_before = tray_job.body()
-	var/adjacent_before = hauler.Adjacent(dead_player)
-	var/list/on_tile = list()
-	for(var/atom/movable/thing in get_turf(dead_player))
-		on_tile += "[thing.type][thing.density ? " (dense)" : ""]"
-	TEST_ASSERT(tray_job.bag_body(), "Worker did not bag player body (on the tile: [jointext(on_tile, ", ")]; size [dead_player.mob_size], lying [dead_player.body_position], buckled [dead_player.buckled]) (free [free_before], adjacent [adjacent_before], body at [AREACOORD(dead_player)], worker at [AREACOORD(hauler)], job left [QDELETED(tray_job)], job body [job_body_before], retry [recovery.retry_at[WEAKREF(dead_player)] ? recovery.retry_at[WEAKREF(dead_player)] - world.time : "none"])")
+	TEST_ASSERT(tray_job.bag_body(), "Worker did not bag player body")
 	var/obj/structure/closet/body_bag/outpost_morgue/player_bag = dead_player.loc
 	var/turf/corner = run_loc_floor_bottom_left
 	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, locate(corner.x + 1, corner.y + 1, corner.z))
