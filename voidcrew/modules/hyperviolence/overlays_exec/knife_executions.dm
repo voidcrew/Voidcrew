@@ -72,6 +72,9 @@
 /obj/item/knife/proc/hv_knife_execution_instant(mob/living/user, mob/living/carbon/victim)
 	if(!hv_knife_is_stealth_guard(victim) || !check_behind(user, victim))
 		return FALSE
+	// tg's check_behind() counts anyone lying down as "behind"; a helpless guard keeps the hold.
+	if(victim.hv_can_be_executed())
+		return FALSE
 	var/mob/living/carbon/human/npc/guard = victim
 	return guard.stealth_caught_off_guard(user)
 

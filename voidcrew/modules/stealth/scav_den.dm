@@ -145,13 +145,16 @@
 		qdel(chrome)
 		return
 	update_body()
+	// A balaclava's eye holes don't line up with bare eyes: a masked guard without lenses gets the gang's red ones.
+	if(istype(wear_mask, /obj/item/clothing/mask/balaclava) && isnull(glasses))
+		equip_to_slot_or_del(new /obj/item/clothing/glasses/red(src), ITEM_SLOT_EYES)
 
 // ===== The den guards' look =====
 // A chrome-mad harvester gang. The scavs' fatigues go under everything (scav_guards.dm), and every outfit leaves the
 // mask slot free for the scav balaclava, so a guard still carries the disguise set (stealth_disguise.dm). The suits here
 // are read into stealth_guard_suits(). Armour by zone never goes above the old sword and gunner tables.
 
-/// Rippers: leather and a blade, red lenses.
+/// Rippers: leather and a knife, red lenses.
 /datum/outfit/ruin_npc/scav_den
 	name = "Ruin NPC: den ripper"
 	uniform = /obj/item/clothing/under/syndicate/scav
@@ -159,12 +162,12 @@
 	shoes = /obj/item/clothing/shoes/jackboots
 	gloves = /obj/item/clothing/gloves/fingerless
 	glasses = /obj/item/clothing/glasses/red
-	r_hand = /obj/item/hatchet
+	r_hand = /obj/item/knife/combat/survival
 
 /datum/outfit/ruin_npc/scav_den/vest
 	name = "Ruin NPC: den ripper in plates"
 	suit = /obj/item/clothing/suit/armor/vest
-	r_hand = /obj/item/claymore/shortsword
+	r_hand = /obj/item/knife/combat
 
 /datum/outfit/ruin_npc/scav_den/vest/helmet
 	name = "Ruin NPC: den ripper, red zone"
@@ -194,9 +197,9 @@
 	var/list/blood = user.get_blood_dna_list()
 	if(!length(blood))
 		return
-	user.add_blood_DNA_to_items(blood, ITEM_SLOT_GLOVES | ITEM_SLOT_OCLOTHING)
-	for(var/obj/item/held in user.held_items)
-		held.add_blood_DNA(blood)
+	for(var/obj/item/stained in list(user.gloves, user.wear_suit) + user.held_items)
+		stained.add_blood_DNA(blood)
+	user.update_clothing(ITEM_SLOT_GLOVES | ITEM_SLOT_OCLOTHING | ITEM_SLOT_HANDS)
 
 /// Gunners: a cheap Makarov, or a mini Uzi in the red zone.
 /datum/outfit/ruin_npc/scav_den/gunner
