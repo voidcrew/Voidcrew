@@ -159,8 +159,19 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/datum/wound/loss/melt = new
 	melt.sound_effect = null
 	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
+	// Hyperviolence (#512), as in plasma_melt_limb(): no reel, spray or hit-stop, and a seared stump, not a wet one
+	var/old_sever_spray = victim.hv_sever_spray
+	victim.hv_sever_spray = 0
+	LAZYSET(victim.hv_stump_burnt, zone, TRUE)
 	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
 	GLOB.plasma_melt_no_splatter = null
+	if(!QDELETED(victim))
+		victim.hv_sever_spray = old_sever_spray
+		if(victim.get_bodypart(zone) == limb)
+			LAZYREMOVE(victim.hv_stump_burnt, zone)
+		else
+			LAZYREMOVE(victim.hv_stump_torn_at, zone)
+			victim.hv_update_gore_overlays()
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		if(!(pile in old_ash))
 			qdel(pile)
@@ -458,6 +469,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 /// Hides an item tg dropped off the melting limb until it falls out of the melt. Only its look changes; anyone who
 /// picks it up or moves it gets it back at once.
 /datum/plasma_melt/proc/hide_item(obj/item/thing, kind)
+	// A human NPC's gear is locked to its body (human_npc_gear.dm) and is deleted the tick it lands on the floor.
+	// A look-alike that can't be touched falls out of the melt in its place and sinks into the slag.
+	if(HAS_TRAIT(thing, TRAIT_HUMAN_NPC_GEAR) && isturf(thing.loc))
+		thing = new /obj/item/plasma_melt_lost_gear(thing.loc, thing)
 	hidden_items[thing] = kind
 	thing.alpha = 0
 	RegisterSignals(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_hidden_item_moved))
@@ -882,3 +897,26 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 #undef PLASMA_MELT_DROP_TILE
 #undef PLASMA_MELT_GLIDE_WAIT
 #undef PLASMA_SLAG_GLOBAL_CAP
+
+/// The look of a human NPC's locked gear (human_npc_gear.dm) falling out of a melt. It can't be clicked, picked up or
+/// moved, and sinks into the slag a moment after it lands, so the gear is never loot.
+/obj/item/plasma_melt_lost_gear
+	item_flags = ABSTRACT
+	anchored = TRUE
+	move_resist = INFINITY
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+
+/obj/item/plasma_melt_lost_gear/Initialize(mapload, obj/item/gear)
+	. = ..()
+	if(gear)
+		appearance = gear.appearance
+		base_pixel_x = gear.base_pixel_x
+		base_pixel_y = gear.base_pixel_y
+		base_pixel_z = gear.base_pixel_z
+		icon_angle = gear.icon_angle
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	addtimer(CALLBACK(src, PROC_REF(sink)), 2.6 SECONDS)
+
+/obj/item/plasma_melt_lost_gear/proc/sink()
+	animate(src, alpha = 0, time = 0.6 SECONDS, flags = ANIMATION_PARALLEL)
+	QDEL_IN(src, 0.6 SECONDS)
