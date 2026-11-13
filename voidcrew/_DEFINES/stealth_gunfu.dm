@@ -36,8 +36,6 @@
 /// Disarm: how far the knocked-away item skids.
 #define GUNFU_DISARM_THROW_RANGE 2
 
-/// Human shield: how far in front of the holder the held body is drawn, in pixels.
-#define GUNFU_SHIELD_SHIFT 12
 /// Human shield: shots within this many degrees of the holder's facing hit the held body.
 #define GUNFU_SHIELD_ARC 67.5
 
