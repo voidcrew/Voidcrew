@@ -245,6 +245,7 @@
 #include "voidcrew_stealth_disguise.dm"
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_light.dm"
+#include "voidcrew_stealth_takedown.dm"
 #include "voidcrew_survey_archive.dm"
 #include "voidcrew_survey_capabilities.dm"
 #include "voidcrew_survey_identity.dm"
