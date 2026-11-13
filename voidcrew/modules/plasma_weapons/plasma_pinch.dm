@@ -9,12 +9,14 @@
 
 /// When the ball snaps small, at the end of its swell frame. The bolt shows and the ring opens from here
 #define PLASMA_PINCH_SNAP_TIME (0.14 SECONDS)
+/// When the bolt's copy shows: a tick after the snap, as the client starts the ball's frames a little after our clock
+#define PLASMA_PINCH_SHOW_TIME (PLASMA_PINCH_SNAP_TIME + 0.05 SECONDS)
 /// How long the ring takes to open and fade
 #define PLASMA_PINCH_RING_TIME (0.2 SECONDS)
 /// Layer of a bolt while it leaves the pinch, just over the ball and ring
 #define PLASMA_PINCH_BOLT_LAYER (ABOVE_MOB_LAYER + 0.01)
-/// How much faster than the real bolt its copy closes on it, in pixels per decisecond (the bolt flies 32)
-#define PLASMA_PINCH_CATCH_UP 12
+/// How long a bolt takes from the snap to close from the ball onto its own path, about the first tile of its flight
+#define PLASMA_PINCH_CLOSE_TIME (0.12 SECONDS)
 /// The pinch light's brightness as an overlay light's alpha (light_power 1)
 #define PLASMA_PINCH_LIGHT_ALPHA 150
 /// How long the light takes to grow from the pinch light to the bolt's, from the snap
@@ -134,15 +136,15 @@
 	shooter.vis_contents -= src
 	shooter = null
 
-// A bolt from a gun with a pinch stays out of sight until the ball snaps: the ball is the bolt forming. By then the
-// real bolt is most of a tile ahead, so a copy of it shows at the ball and closes on it. The copy rides the real bolt's
-// vis_contents. Every move the bolt makes, the copy queues a change of its offset over the same time, so the copy
-// holds still at the ball and then closes on the bolt in step with the bolt's own moves, however late they come. The
-// real bolt shows only once the copy has lain on it for a while. Until then the bolt has no icon: it keeps its alpha,
-// so its own fade at a hit takes the copy out with it. Nothing here animates the real bolt: its movement steps continue
-// its newest animation sequence, and a hold or offset of ours would make them queue.
+// A bolt from a gun with a pinch stays out of sight until the ball snaps: the ball is the bolt forming. By then the real
+// bolt is most of a tile ahead, so a copy of it shows at the ball and closes onto it. The copy rides the real bolt's
+// vis_contents with one sequence of its own, set at the shot and run on the client's clock like the ball's frames: an
+// offset that holds it on the ball against the bolt's flight, shown at the snap, then closed to nothing over the first
+// tile. Nothing waits on the server's moves. Once the copy lies on the bolt the bolt shows and the copy hides. Until then
+// the bolt has no icon: it keeps its alpha, so its own fade at a hit takes the copy out with it. Nothing here animates
+// the real bolt: its movement steps continue its newest animation sequence.
 /obj/projectile/energy/plasma_bolt
-	/// The copy we see while this bolt leaves the barrel pinch, null once this bolt shows
+	/// The copy we see while this bolt leaves the barrel pinch, null once its light has handed over
 	var/obj/effect/abstract/plasma_pinch_bolt/pinch_copy
 	/// How far our nose sits ahead of our icon centre
 	var/pinch_nose = 7
@@ -167,10 +169,9 @@
 
 // plasma_bolt.dm's own move_animate() (the stop at an impact) runs first, through ..()
 /obj/projectile/energy/plasma_bolt/move_animate(animate_x, animate_y, animate_time = world.tick_lag, deleting = FALSE)
-	var/from_x = pixel_x
-	var/from_y = pixel_y
 	. = ..()
-	pinch_copy?.follow(from_x, from_y, animate_x, animate_y, animate_time, deleting)
+	if(deleting)
+		pinch_copy?.land(animate_time)
 
 /obj/projectile/energy/plasma_bolt/Destroy()
 	QDEL_NULL(pinch_copy)
@@ -184,25 +185,6 @@
 	var/obj/projectile/energy/plasma_bolt/bolt
 	/// The real bolt's icon, given back at the handover
 	var/bolt_icon
-	/// world.time of the shot. Times below are deciseconds after it, on the bolt's queue of moves
-	var/fired_at = 0
-	/// world.time of the bolt's last move, so we know how far it moves in a tick
-	var/last_move_at = 0
-	/// How many pixels the bolt moves this tick, over one tick
-	var/tick_pixels = 0
-	/// When the bolt's queued moves, and our offsets with them, end
-	var/queued_to = 0
-	/// Map pixel where our centre shows when the ball snaps, or null to show on the real bolt
-	var/start_x
-	var/start_y
-	/// Our offset from the bolt when we show, null until the bolt's moves reach that point
-	var/show_x
-	var/show_y
-	/// When we show, and how long we then take to close on the bolt
-	var/show_at = PLASMA_PINCH_SNAP_TIME
-	var/catch_up_time = 0
-	/// Whether our queue shows us yet
-	var/shown = FALSE
 	/// Whether the real bolt shows. We stay on it, unseen, to carry its light until the light has grown
 	var/handed_over = FALSE
 	/// Carries the bolt's light on us, from the pinch light's size up to the bolt's
@@ -213,11 +195,6 @@
 	if(!real_bolt || !isturf(real_bolt.loc) || !real_bolt.movement_vector || !barrel_turf)
 		return INITIALIZE_HINT_QDEL
 	bolt = real_bolt
-	fired_at = world.time
-	last_move_at = world.time
-	// Until a tick has passed we can't measure the bolt's pace: take a full tick's flight. Left at nothing, a few
-	// pixels' move in the shot's own tick queued as seconds and held the bolt out of sight long after the ball snapped
-	tick_pixels = min(world.tick_lag * SSprojectiles.pixels_per_decisecond * bolt.speed, SSprojectiles.max_pixels_per_tick)
 	// The bolt's light goes with us until the handover. Off before we take its look, or its light comes along
 	bolt.set_light_on(FALSE)
 	appearance = bolt.appearance
@@ -229,26 +206,21 @@
 	pixel_y = 0
 	var/dx = bolt.movement_vector.pixel_x
 	var/dy = bolt.movement_vector.pixel_y
-	// Our nose shows just past the ball, along the shot
+	// Where our centre shows when the ball snaps: our nose just past the ball, along the shot
 	var/lead = bolt.pinch_lead - bolt.pinch_nose
-	start_x = barrel_turf.x * ICON_SIZE_X + offset[1] + dx * lead
-	start_y = barrel_turf.y * ICON_SIZE_Y + offset[2] + dy * lead
-	// We show when the ball snaps, on the client's own clock like the ball's frames. On the queue of moves below
-	// the show could land a tick or two off the snap, before the ball had gone or after a gap. This sequence comes
-	// first: the moves continue the newest one
+	var/start_x = barrel_turf.x * ICON_SIZE_X + offset[1] + dx * lead
+	var/start_y = barrel_turf.y * ICON_SIZE_Y + offset[2] + dy * lead
+	// fire() has moved the bolt its first pixel over a tick. From then it flies at its pace, so where it is at the snap
+	// is known now
+	var/flown = SSprojectiles.pixels_per_decisecond * bolt.speed * max(PLASMA_PINCH_SHOW_TIME - world.tick_lag, 0)
+	var/now_x = start_x - (bolt.loc.x * ICON_SIZE_X + bolt.pixel_x)
+	var/now_y = start_y - (bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y)
 	alpha = 0
-	animate(src, time = PLASMA_PINCH_SNAP_TIME, flags = ANIMATION_PARALLEL)
+	pixel_w = now_x
+	pixel_z = now_y
+	animate(src, pixel_w = now_x - dx * flown, pixel_z = now_y - dy * flown, time = PLASMA_PINCH_SHOW_TIME)
 	animate(alpha = 255, time = 0)
-	// fire() moved the bolt its first pixel over a tick. We start our queue with that move, in the same message
-	var/bolt_x = bolt.loc.x * ICON_SIZE_X + bolt.pixel_x
-	var/bolt_y = bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y
-	if(!isnull(start_x))
-		pixel_w = start_x - (bolt_x - dx)
-		pixel_z = start_y - (bolt_y - dy)
-		animate(src, pixel_w = start_x - bolt_x, pixel_z = start_y - bolt_y, time = world.tick_lag, flags = ANIMATION_PARALLEL)
-	else
-		animate(src, time = world.tick_lag, flags = ANIMATION_PARALLEL)
-	queued_to = world.tick_lag
+	animate(pixel_w = 0, pixel_z = 0, time = PLASMA_PINCH_CLOSE_TIME)
 	// The bolt's light mask: the ball's small light from the shot, grown to the bolt's own from the snap. We sit on the
 	// ball until the snap, so the light does too. The holder's alpha and size carry over to the mask
 	var/datum/component/overlay_lighting/lighting = bolt.GetComponent(/datum/component/overlay_lighting)
@@ -267,13 +239,16 @@
 		var/matrix/small = matrix() * scale
 		small.Translate(-pivot, -pivot)
 		glow_holder.transform = small
-		animate(glow_holder, time = PLASMA_PINCH_SNAP_TIME)
+		animate(glow_holder, time = PLASMA_PINCH_SHOW_TIME)
 		animate(alpha = 255, transform = matrix(), time = PLASMA_PINCH_LIGHT_RAMP)
 		vis_contents += glow_holder
 	bolt_icon = bolt.icon
 	bolt.icon = null
 	bolt.update_appearance(UPDATE_OVERLAYS)
 	bolt.vis_contents += src
+	// We lie on the bolt from the end of the close. A tick later the bolt shows, so a client a little behind never sees
+	// a gap
+	addtimer(CALLBACK(src, PROC_REF(handover)), PLASMA_PINCH_SHOW_TIME + PLASMA_PINCH_CLOSE_TIME + world.tick_lag)
 
 /obj/effect/abstract/plasma_pinch_bolt/Destroy()
 	if(bolt)
@@ -289,59 +264,11 @@
 		QDEL_NULL(glow_holder)
 	return ..()
 
-/// Our offset from the bolt `at` after the shot, while the bolt's centre is at map pixel (bolt_x, bolt_y)
-/obj/effect/abstract/plasma_pinch_bolt/proc/offset_at(at, bolt_x, bolt_y)
-	if(isnull(start_x))
-		return list(0, 0)
-	if(isnull(show_x) || at <= show_at)
-		return list(start_x - bolt_x, start_y - bolt_y)
-	var/left = catch_up_time > 0 ? max(0, 1 - (at - show_at) / catch_up_time) : 0
-	return list(show_x * left, show_y * left)
-
-/// The bolt is about to move from (from_x, from_y) to (to_x, to_y) on its turf, once its queued moves end. We queue
-/// our offset over the same time, split where we show and where we land on the bolt
-/obj/effect/abstract/plasma_pinch_bolt/proc/follow(from_x, from_y, to_x, to_y, time_given, deleting)
-	if(handed_over || QDELETED(bolt) || !isturf(bolt.loc))
+/// The bolt hits something before we lie on it: from wherever we are we close onto its stop over its last stretch
+/obj/effect/abstract/plasma_pinch_bolt/proc/land(time)
+	if(handed_over)
 		return
-	var/now = world.time - fired_at
-	// The bolt's moves in a tick take one tick between them, each by its share of the tick's pixels. We can't see
-	// that total, but at a whole number of pixels per tick it is what the time since the last move gives
-	if(world.time != last_move_at)
-		tick_pixels = min((world.time - last_move_at) * SSprojectiles.pixels_per_decisecond * bolt.speed, SSprojectiles.max_pixels_per_tick)
-		last_move_at = world.time
-	var/turf/bolt_turf = bolt.loc
-	var/x0 = bolt_turf.x * ICON_SIZE_X + from_x
-	var/y0 = bolt_turf.y * ICON_SIZE_Y + from_y
-	var/x1 = bolt_turf.x * ICON_SIZE_X + to_x
-	var/y1 = bolt_turf.y * ICON_SIZE_Y + to_y
-	var/time = deleting ? time_given : world.tick_lag * sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2) / max(tick_pixels, 1)
-	var/move_start = max(now, queued_to)
-	var/move_end = move_start + time
-	// We have lain on the bolt for two ticks of its moves: it shows from here, even if the client runs a little behind
-	if(shown && !deleting && move_start >= show_at + catch_up_time + 2 * world.tick_lag)
-		handover()
-		return
-	queued_to = move_end
-	// The snap falls in this move: our offset from the bolt then sets how long we take to close it
-	if(isnull(show_x) && move_end >= show_at)
-		var/progress = time > 0 ? clamp((show_at - move_start) / time, 0, 1) : 1
-		var/list/show_offset = offset_at(show_at, x0 + (x1 - x0) * progress, y0 + (y1 - y0) * progress)
-		show_x = show_offset[1]
-		show_y = show_offset[2]
-		catch_up_time = sqrt(show_x ** 2 + show_y ** 2) / PLASMA_PINCH_CATCH_UP
-	var/list/stops = list()
-	for(var/stop in list(show_at, show_at + catch_up_time))
-		if(stop > move_start && stop < move_end)
-			stops += stop
-	stops += move_end
-	var/last = move_start
-	for(var/stop in stops)
-		var/progress = time > 0 ? (stop - move_start) / time : 1
-		var/list/offset = offset_at(stop, x0 + (x1 - x0) * progress, y0 + (y1 - y0) * progress)
-		animate(src, pixel_w = offset[1], pixel_z = offset[2], time = max(stop - last, 0), flags = ANIMATION_PARALLEL | ANIMATION_CONTINUE)
-		if(stop >= show_at)
-			shown = TRUE
-		last = stop
+	animate(src, pixel_w = 0, pixel_z = 0, alpha = 255, time = time)
 
 /// The real bolt shows where we lie on it. We hide and carry its light until the light has grown to the bolt's own
 /obj/effect/abstract/plasma_pinch_bolt/proc/handover()
@@ -351,7 +278,7 @@
 	bolt.icon = bolt_icon
 	bolt.update_appearance(UPDATE_OVERLAYS)
 	animate(src, alpha = 0, time = 0)
-	var/light_left = fired_at + PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_LIGHT_RAMP - world.time
+	var/light_left = PLASMA_PINCH_LIGHT_RAMP - PLASMA_PINCH_CLOSE_TIME - world.tick_lag
 	if(!glow_holder || light_left <= 0)
 		light_handover()
 		return
@@ -366,8 +293,9 @@
 	qdel(src)
 
 #undef PLASMA_PINCH_SNAP_TIME
+#undef PLASMA_PINCH_SHOW_TIME
 #undef PLASMA_PINCH_RING_TIME
 #undef PLASMA_PINCH_BOLT_LAYER
-#undef PLASMA_PINCH_CATCH_UP
+#undef PLASMA_PINCH_CLOSE_TIME
 #undef PLASMA_PINCH_LIGHT_ALPHA
 #undef PLASMA_PINCH_LIGHT_RAMP
