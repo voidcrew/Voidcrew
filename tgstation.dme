@@ -7232,6 +7232,7 @@
 #include "voidcrew\modules\cyberware\ware_sandy_replay.dm"
 #include "voidcrew\modules\cyberware\ware_sandy_senses.dm"
 #include "voidcrew\modules\cyberware\ware_sandy_timestop.dm"
+#include "voidcrew\modules\cyberware\ware_sandy_timestop_cover.dm"
 #include "voidcrew\modules\cyberware\ware_sandy_timestop_shared.dm"
 #include "voidcrew\modules\cyberware\ware_second_wind.dm"
 #include "voidcrew\modules\cyberware\ware_street.dm"

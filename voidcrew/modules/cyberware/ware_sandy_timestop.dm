@@ -57,14 +57,17 @@
 
 /// Another player within this many tiles of the user means no dilation.
 #define SANDY_STOP_WITNESS_RANGE 11
-/// Radius of the field around the user (a widescreen view is 9 tiles to each side).
-#define SANDY_STOP_FIELD_RANGE 9
+/// Radius of the field around the user (a 19x15 widescreen view is 9 tiles to each side and 7 up and down). It also
+/// takes the rest of the user's room (ware_sandy_timestop_cover.dm).
+#define SANDY_STOP_FIELD_RANGE 11
 /// How long a boss stays slowed before it shrugs the field off.
 #define SANDY_STOP_BOSS_HOLD (1 SECONDS)
 /// The fastest a surging mob runs in someone else's field, relative to normal speed.
 #define SANDY_STOP_MAX_RELATIVE 2
 /// Relative rates this close to 1 count as the same speed: the mob is left alone.
 #define SANDY_STOP_SAME_RATE 0.01
+/// How long the tint's front takes per tile past the ring's own size, out to the field's edge and the room beyond.
+#define SANDY_STOP_RING_TAIL 0.4
 /// Filter name of the user's edge glow.
 #define SANDY_STOP_OUTLINE "sandy_time_stop_outline"
 /// Fullscreen category of the release flash.
@@ -476,6 +479,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		"pirate_breach_started",
 		"pirate_no_path_at",
 		"pirate_breach_progress_at",
+		"pirate_next_execution", // BB_PIRATE_NEXT_EXECUTION
+		"BB_outpost_horror_hunt_at", // BB_OUTPOST_HORROR_HUNT_AT
 	)
 	return keys
 
@@ -610,6 +615,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(recorded.ckey)
 			replay = new(src, recorded) // before the field takes its first turf, so it sees everything
 	. = ..()
+	cover_start() // ware_sandy_timestop_cover.dm
 	STOP_PROCESSING(SSfastprocess, src) // tick() runs on tick_timer instead
 	tick_timer = addtimer(CALLBACK(src, PROC_REF(tick)), 0.2 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	RegisterSignal(host, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_user_fire))
@@ -618,6 +624,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/Destroy()
 	QDEL_NULL(senses)
+	cover_end() // ware_sandy_timestop_cover.dm
 	deltimer(tick_timer)
 	tick_timer = null
 	if(host)
@@ -813,6 +820,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		gun.cyberware_burst_start += push
 	if(ranged)
 		ranged.cyberware_burst_start += push
+	victim.cyberware_push_clocks(push) // its own clocks (ware_sandy_timestop_cover.dm)
 
 // ----- mobs on their own surge -----
 
@@ -1011,6 +1019,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	for(var/obj/effect/holder as anything in blood_holders)
 		tint_blood_bits(holder)
 	senses?.refresh_weather()
+	cover_tick() // ware_sandy_timestop_cover.dm
 
 /// Whether `thing` is what the user is riding or piloting: a vehicle with them aboard, or anything they're buckled to.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/own_ride(atom/movable/thing)
@@ -1094,12 +1103,16 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// How long until the rolling ring's front reaches `thing`, or 0 if it already has. The ring grows with a sine
 /// ease-out (cyberware_time_ring).
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/ring_wait(atom/thing)
-	if(!ring_center || world.time >= ring_start + ring_time)
+	if(!ring_center)
 		return 0
 	var/turf/spot = get_turf(thing)
 	if(!spot || spot.z != ring_center.z)
 		return 0
 	var/dist = sqrt((spot.x - ring_center.x) ** 2 + (spot.y - ring_center.y) ** 2)
+	if(dist > ring_reach) // past the ring's own size the front keeps rolling out at SANDY_STOP_RING_TAIL a tile, not all at once
+		return max(ring_start + ring_time + (dist - ring_reach) * SANDY_STOP_RING_TAIL - world.time, 0)
+	if(world.time >= ring_start + ring_time)
+		return 0
 	var/reached = clamp((dist - 0.2) / max(ring_reach - 0.2, 0.1), 0, 1)
 	return ring_start + ring_time * arcsin(reached) / 90 - world.time
 
@@ -1407,6 +1420,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 #undef SANDY_STOP_WITNESS_RANGE
 #undef SANDY_STOP_FIELD_RANGE
+#undef SANDY_STOP_RING_TAIL
 #undef SANDY_STOP_BOSS_HOLD
 #undef SANDY_STOP_MAX_RELATIVE
 #undef SANDY_STOP_SAME_RATE

@@ -20,8 +20,8 @@
  * Each member is paced by its own field only: the other members' fields leave it alone (sandy_session_shares()).
  */
 
-/// Two fields this close (their hosts' distance, in tiles) touch: two SANDY_STOP_FIELD_RANGE (9) radii and the tile between.
-#define SANDY_SHARED_TOUCH 19
+/// Two fields this close (their hosts' distance, in tiles) touch: two SANDY_STOP_FIELD_RANGE (11) radii and the tile between.
+#define SANDY_SHARED_TOUCH 23
 /// Relative rates this close to 1 count as the same speed (SANDY_STOP_SAME_RATE in ware_sandy_timestop.dm).
 #define SANDY_SHARED_SAME_RATE 0.01
 /// A shared slow-mo ends this long after its first member's press, however many crewmates join and extend it.
