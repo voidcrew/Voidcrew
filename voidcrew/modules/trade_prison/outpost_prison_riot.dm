@@ -122,20 +122,23 @@
  */
 /datum/outpost_prison/proc/wing_clients()
 	var/list/here = list()
+	var/z = wing_z()
+	if(!z || !islist(SSmobs.clients_by_zlevel) || z > length(SSmobs.clients_by_zlevel))
+		return here
 	var/turf/corner = outpost?.template_bottom_left
 	var/datum/map_template/template = outpost?.outpost_template
-	if(!corner || !template || !islist(SSmobs.clients_by_zlevel) || corner.z > length(SSmobs.clients_by_zlevel))
-		return here
-	for(var/mob/person in SSmobs.clients_by_zlevel[corner.z])
+	for(var/mob/person in SSmobs.clients_by_zlevel[z])
 		var/turf/spot = get_turf(person)
-		if(spot && spot.x >= corner.x && spot.y >= corner.y && spot.x < corner.x + template.width && spot.y < corner.y + template.height)
+		if(!spot)
+			continue
+		if(contains_turf(spot) || (corner && template && corner.z == z && spot.x >= corner.x && spot.y >= corner.y && spot.x < corner.x + template.width && spot.y < corner.y + template.height))
 			here += person
 	return here
 
 /// Whether a player is awake and playing inside the host outpost's own map
 /datum/outpost_prison/proc/find_audience()
 	for(var/mob/living/person in wing_clients())
-		if(QDELETED(person) || !person.client || person.stat != CONSCIOUS || is_outpost_prisoner(person))
+		if(QDELETED(person) || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 			continue
 		return TRUE
 	return FALSE

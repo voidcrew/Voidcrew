@@ -168,7 +168,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	if(QDELETED(prisoner) || QDELETED(user) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 		return FALSE
 	if(!is_inmate(user))
-		prisoner.balloon_alert(user, "not your prisoner")
+		prisoner.balloon_alert(user, "won't talk to you")
 		return FALSE
 	// Not talking: the talk menu may hold that while it hands this question over.
 	if(prisoner.lead_questioned || prisoner.trouble || prisoner.fight || prisoner.threat_ref || prisoner.swing_ref || prisoner.climb_ref || prisoner.is_beaten())

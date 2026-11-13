@@ -322,8 +322,18 @@
 	TEST_ASSERT_EQUAL(open_oldest.status, "closed", "A record dropped from a full pool is [open_oldest.status]") // BOUNTY_RECORD_CLOSED
 
 	// The admin panel's forced admission takes the chosen record and no other.
+	var/saved_outpost_name = prison.outpost.name
+	prison.outpost.name = "\improper Waystation Halcyon"
 	var/list/admin_block = prison.bounty_admin_payload()
+	var/datum/bounty_admin_panel/bounty_panel = allocate(__IMPLIED_TYPE__)
+	var/panel_prison_name = bounty_panel.prison_name(prison)
+	var/panel_site_name = bounty_panel.site_name(prison.outpost)
+	prison.outpost.name = saved_outpost_name
 	TEST_ASSERT_EQUAL(length(admin_block["pool"]), 20, "The admin block lists [length(admin_block["pool"])] records, not the pool's 20")
+	var/list/first_pool_row = admin_block["pool"][1]
+	TEST_ASSERT_EQUAL(first_pool_row["reserved_for"], "Waystation Halcyon", "bounty_admin_payload leaked improper bytes in reserved_for: [first_pool_row["reserved_for"]]")
+	TEST_ASSERT_EQUAL(panel_prison_name, "Waystation Halcyon", "bounty_admin_panel prison_name leaked improper bytes: [panel_prison_name]")
+	TEST_ASSERT_EQUAL(panel_site_name, "Waystation Halcyon", "bounty_admin_panel site_name leaked improper bytes: [panel_site_name]")
 	TEST_ASSERT("prison_bounty_admit" in GLOB.outpost_admin_prison_actions, "The manipulator does not route the bounty actions to the prison")
 	var/datum/bounty_record/chosen = GLOB.bounty_prisoner_pool[10]
 	var/result = prison.bounty_admin_act("prison_bounty_admit", list("id" = chosen.id), null)

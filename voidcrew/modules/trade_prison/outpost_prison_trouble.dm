@@ -132,9 +132,9 @@
 	// Asleep, it still counts while a player is at the wing's outpost: the same test as has_audience(), less its override
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = npc
 	if(istype(prisoner))
-		return !!prisoner.prison?.audience_present
+		return !!prisoner.prison?.find_audience()
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = npc
-	return istype(guard) && !!guard.prison?.audience_present
+	return istype(guard) && !!guard.prison?.find_audience()
 
 /// Whether their AI is running, which it is only while someone is on the level to see them
 /mob/living/carbon/human/npc/outpost_prisoner/proc/ai_running()

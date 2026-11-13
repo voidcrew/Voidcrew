@@ -771,7 +771,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 /datum/bounty_admin_panel/proc/site_name(obj/structure/overmap/site)
 	if(QDELETED(site))
 		return "no site"
-	return site.display_name || site.name
+	return site.display_name || format_text(site.name)
 
 /// The name of zone band `zone`, as a posting pays for it
 /datum/bounty_admin_panel/proc/zone_word(zone)
@@ -791,7 +791,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 /datum/bounty_admin_panel/proc/prison_name(datum/outpost_prison/prison)
 	if(QDELETED(prison))
 		return "any prison"
-	return prison.outpost?.name || "an unnamed prison"
+	return format_text(prison.outpost?.name) || "an unnamed prison"
 
 /**
  * One posting as the panel shows it: tier, name, placement kind, place and the zone it pays for,

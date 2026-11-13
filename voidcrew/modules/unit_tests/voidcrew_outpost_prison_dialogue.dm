@@ -25,7 +25,6 @@
 		"spat", "fight_argue_food", "fight_argue_ball", "fight_argue_bed", "fight_yield",
 		"fight_talked_down", "calm_talk", "talk_refuse", "unbolted", "wreck", "riot_imminent",
 		"riot_bystander", "rat", "no_air", "lights_flicker", "arrival_stained", "arrival_hurt",
-		"absorbed",
 		"hatch_empty", "subdued", "fight_argue_none", "threat_backed_down",
 		"cuffed", "cuffs_off", "lockdown", "lockdown_over",
 		"turret_backs_off", "turret_gives_up", "turret_defies",
@@ -63,6 +62,8 @@
 	var/list/personalities = outpost_prisoner_dialogue("personalities")
 	var/list/conversations = outpost_prisoner_dialogue("conversations")
 	TEST_ASSERT(length(lines), "The dialogue file has no lines")
+	for(var/dead_context in list("hulk", "fly", "nightmare_fear", "absorbed"))
+		TEST_ASSERT(!(dead_context in lines), "Deleted Kessler context [dead_context] is still in the dialogue file")
 
 	// Every context the other files say by name is there, with at least 8 shared lines. Prisoner
 	// contexts have lines for at least two personalities. The visitors' lines are one plain

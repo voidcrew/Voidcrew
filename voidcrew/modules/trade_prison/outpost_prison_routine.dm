@@ -188,11 +188,11 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 			return fixture
 	return pick(options)
 
-/// Whether `person` is a member of the wing awake in the cell block, close by, holding dressings
+/// Whether `person` is staff or an inmate of the wing awake in the cell block, close by, holding dressings
 /mob/living/carbon/human/npc/outpost_prisoner/proc/is_medic(mob/living/person)
 	if(!istype(person) || QDELETED(person) || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 		return FALSE
-	if(get_dist(src, person) > PRISONER_SICK_CALL_RANGE || !prison?.in_cell_block(person) || !prison.is_staff(person))
+	if(get_dist(src, person) > PRISONER_SICK_CALL_RANGE || !prison?.in_cell_block(person) || !(prison.is_staff(person) || prison.is_inmate(person)))
 		return FALSE
 	return !!person.is_holding_item_of_type(/obj/item/stack/medical)
 

@@ -53,15 +53,20 @@
 /datum/outpost_prison/unit_test
 	/// The key of the tests' player
 	var/member_key
+	/// The key of a player who stands in for a booked inmate only, never staff
+	var/inmate_key
 
 /datum/outpost_prison/unit_test/proc/is_test_member(mob/person)
 	return ismob(person) && !!member_key && !!person.ckey && person.ckey == ckey(member_key)
+
+/datum/outpost_prison/unit_test/proc/is_test_inmate(mob/person)
+	return ismob(person) && !!inmate_key && !!person.ckey && person.ckey == ckey(inmate_key)
 
 /datum/outpost_prison/unit_test/is_staff(mob/person)
 	return is_test_member(person) || ..()
 
 /datum/outpost_prison/unit_test/is_inmate(mob/person)
-	return is_test_member(person) || ..()
+	return is_test_member(person) || is_test_inmate(person) || ..()
 
 /**
  * A bare trader outpost with the fixture wing loaded into a block of its own, unrotated, so authored map

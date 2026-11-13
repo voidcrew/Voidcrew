@@ -70,6 +70,22 @@
 	TEST_ASSERT(!prison.is_inmate(prisoner), "An NPC prisoner counts as a player inmate")
 	TEST_ASSERT_EQUAL(prison.guard_max(), 2, "The roster is not two guards") // OUTPOST_GUARD_MAX
 
+	// A client mob outside the wing and outpost wakes nothing; inside the wing it wakes find_audience() and ai_running() at once
+	var/mob/living/carbon/human/consistent/onlooker = allocate(/mob/living/carbon/human/consistent, outside)
+	SSmobs.clients_by_zlevel[yard_tile.z] += onlooker
+	var/outside_clients = length(prison.wing_clients())
+	var/outside_audience = prison.find_audience()
+	var/outside_running = prisoner.ai_running()
+	onlooker.forceMove(yard_tile)
+	var/inside_counted = (onlooker in prison.wing_clients())
+	var/inside_audience = prison.find_audience()
+	var/inside_running = prisoner.ai_running()
+	SSmobs.clients_by_zlevel[yard_tile.z] -= onlooker
+	TEST_ASSERT_EQUAL(outside_clients, 0, "A client mob outside the wing and outpost was counted in wing_clients()")
+	TEST_ASSERT(!outside_audience && !outside_running, "A client mob outside the wing woke find_audience() or ai_running()")
+	TEST_ASSERT(inside_counted, "A client mob inside the wing was not counted in wing_clients()")
+	TEST_ASSERT(inside_audience && inside_running, "A client mob inside the wing did not wake find_audience() and ai_running()")
+
 	// A plain prison judges the tests' own player as the game would
 	var/mob/living/carbon/human/member = make_player(yard_tile, "lockuphost")
 	TEST_ASSERT(prison.is_staff(member), "The fixture does not let its own player stand in for staff")

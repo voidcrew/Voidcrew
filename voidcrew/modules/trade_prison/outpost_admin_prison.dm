@@ -64,7 +64,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 
 /// Logs an admin's action on a lockup, as record() does for an outpost
 /datum/outpost_manipulator/proc/record_prison(mob/user, datum/outpost_prison/prison, operation)
-	var/place = prison?.outpost?.name || "a lockup"
+	var/place = format_text(prison?.outpost?.name) || "a lockup"
 	log_admin("[key_name(user)] used Outpost Manipulator to [operation] at the lockup of '[place]' ([REF(prison)]).")
 	message_admins("[key_name_admin(user)] used Outpost Manipulator to [operation] at the lockup of '[place]'.")
 

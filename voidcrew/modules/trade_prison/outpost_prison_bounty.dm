@@ -115,7 +115,7 @@ GLOBAL_VAR(bounty_pool_timer)
 			break
 		bounty_pool_remove(dropped, BOUNTY_RECORD_CLOSED, "the pool was full")
 	var/datum/outpost_prison/reserved = record.preferred_prison?.resolve()
-	log_game("BOUNTY POOL: [record.name] ([bounty_tier_name(record.tier)]) joined the prisoner pool[reserved ? ", reserved for the prison at '[reserved.outpost?.name]'" : ""], [length(GLOB.bounty_prisoner_pool)] waiting")
+	log_game("BOUNTY POOL: [record.name] ([bounty_tier_name(record.tier)]) joined the prisoner pool[reserved ? ", reserved for the prison at '[format_text(reserved.outpost?.name)]'" : ""], [length(GLOB.bounty_prisoner_pool)] waiting")
 	bounty_pool_start_tick()
 	return TRUE
 
@@ -134,7 +134,7 @@ GLOBAL_VAR(bounty_pool_timer)
 		return null
 	bounty_pool_remove(record)
 	record.status = BOUNTY_RECORD_IMPRISONED
-	log_game("BOUNTY POOL: [record.name] ([bounty_tier_name(record.tier)]) taken by the prison at '[prison.outpost?.name]', [length(GLOB.bounty_prisoner_pool)] waiting")
+	log_game("BOUNTY POOL: [record.name] ([bounty_tier_name(record.tier)]) taken by the prison at '[format_text(prison.outpost?.name)]', [length(GLOB.bounty_prisoner_pool)] waiting")
 	return record
 
 /**
@@ -950,9 +950,9 @@ GLOBAL_VAR(bounty_pool_timer)
 			"archetype" = record.archetype,
 			"age" = round((world.time - record.prison_pooled_at) / (1 SECONDS)),
 			"left" = max(0, round((record.prison_pooled_at + BOUNTY_RECORD_LIFE - world.time) / (1 SECONDS))),
-			"reserved_for" = reserved?.outpost?.name,
+			"reserved_for" = format_text(reserved?.outpost?.name) || null,
 			"ours" = reserved == src,
-			"named_to" = named?.outpost?.name,
+			"named_to" = format_text(named?.outpost?.name) || null,
 			"accepts" = bounty_accepts(record),
 		))
 	return list(

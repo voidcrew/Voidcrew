@@ -415,6 +415,9 @@
 	TEST_ASSERT_EQUAL(prison.lead_newest_vouchable(voucher), lie, "Tip on the witness's menu is not about the tip they saw")
 	TEST_ASSERT(!(choice in prison.leads_talk_choices(teller, member)), "The teller could be asked about their own tip")
 	TEST_ASSERT(!(choice in prison.leads_talk_choices(newcomer, member)), "A prisoner who did not see the tip could be asked about it")
+	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 9, 9), "leadsstranger")
+	TEST_ASSERT(!prison.lead_can_ask(voucher, stranger), "A non-inmate visitor could ask a prisoner about a lead")
+	TEST_ASSERT(!(choice in prison.leads_talk_choices(voucher, stranger)), "A non-inmate visitor was offered the tip question")
 
 	voucher.set_mood(20)
 	TEST_ASSERT_EQUAL(prison.lead_vouch(voucher, lie, member), "refuse", "A sour witness did not refuse")
