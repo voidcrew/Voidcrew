@@ -16,6 +16,9 @@
  * - A player from another crew near any member's field ends it for everyone, with no replay.
  * - It lasts at most SANDY_SHARED_MAX_LENGTH from the first press: then it ends as if the last member's time ran out.
  * - The release flash only shows to a member when no replay follows (the cut to the replay is the change of scene).
+ * - When the last active member's time is up while any member is mid-move, the slow-mo holds for it as a solo one does
+ *   (sandy_session_mid_move()), so the replay never waits with the world running. A hold may run past
+ *   SANDY_SHARED_MAX_LENGTH by its own cap; nobody joins while it holds.
  *
  * Each member is paced by its own field only: the other members' fields leave it alone (sandy_session_shares()).
  */
@@ -111,7 +114,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		return FALSE
 	var/datum/sandy_session/session = GLOB.sandy_session_of[host]
 	if(session)
-		return !session.ending && !!session.replay && session.replay.state == SANDY_SHARED_RECORDING && !session.replay.wait_started
+		return !session.ending && !session.holding() && !!session.replay && session.replay.state == SANDY_SHARED_RECORDING && !session.replay.wait_started
 	var/datum/status_effect/cyberware_cascade_window/window = (hint?.owner == host) ? hint : sandy_session_window(host)
 	if(!window || window.time_stop != field.stopper || window.hold_until)
 		return FALSE
@@ -134,7 +137,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	if(QDELETED(field))
 		return
 	var/datum/sandy_session/capped = GLOB.sandy_session_of[field.host]
-	if(capped && !capped.ending && world.time >= capped.started + capped.max_length)
+	if(capped && !capped.ending && !capped.holding() && world.time >= capped.started + capped.max_length)
 		capped.cap()
 		return
 	if(length(GLOB.cyberware_time_fields) < 2 || !sandy_session_joinable(field, hint))
@@ -242,8 +245,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	var/ends = world.time
 	for(var/mob/living/member as anything in active)
 		var/datum/status_effect/cyberware_cascade_window/window = active[member]
-		ends = max(ends, window.hold_until || window.natural_end)
-	ends = min(ends, started + max_length)
+		ends = max(ends, window.hold_until || min(window.natural_end, started + max_length))
 	for(var/mob/living/member as anything in members)
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = sandy_session_field(members[member])
 		if(!field)
@@ -296,6 +298,31 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	note("[member] out of time")
 	repace()
 
+/// Whether a member's window is holding the slow-mo for a move in progress (slowmo_time_up()).
+/datum/sandy_session/proc/holding()
+	for(var/mob/living/member as anything in active)
+		var/datum/status_effect/cyberware_cascade_window/window = active[member]
+		if(window.hold_until)
+			return TRUE
+	return FALSE
+
+/**
+ * Whether `window`'s slow-mo must hold for a move in progress: its owner's, or, when it is the last window of a shared
+ * slow-mo with time left, any member's. Ending then would leave the replay waiting for that move with the world
+ * running at full speed (sandy_replay/proc/field_over()).
+ */
+/proc/sandy_session_mid_move(datum/status_effect/cyberware_cascade_window/window)
+	var/mob/living/owner = window.owner
+	if(sandy_replay_mid_move(owner))
+		return TRUE
+	var/datum/sandy_session/session = GLOB.sandy_session_of[owner]
+	if(!session || session.ending || session.active[owner] != window || length(session.active) > 1)
+		return FALSE
+	for(var/mob/living/member as anything in session.members)
+		if(member != owner && sandy_replay_mid_move(member))
+			return TRUE
+	return FALSE
+
 /// The last active member's time is out: every field ends now and the recording plays once.
 /datum/sandy_session/proc/finish_all(datum/status_effect/cyberware_cascade_window/last)
 	ending = TRUE
@@ -312,6 +339,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	for(var/mob/living/member as anything in everyone)
 		if(!QDELETED(member) && member.stat != DEAD && !sandy_replay_showing(member))
 			sandy_release_flash(member)
+			note("flash [member]")
 	if(!replay && !QDELETED(src))
 		disband()
 
@@ -323,9 +351,16 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	var/list/windows = list()
 	for(var/mob/living/member as anything in active)
 		windows += active[member]
+	var/datum/status_effect/cyberware_cascade_window/last = length(windows) ? windows[length(windows)] : null
 	for(var/datum/status_effect/cyberware_cascade_window/window as anything in windows)
-		if(!QDELETED(window))
-			qdel(window) // on_remove() -> end_time_stop() -> sandy_session_window_ends(): the last one ends it all
+		if(window != last && !QDELETED(window))
+			qdel(window) // on_remove() -> end_time_stop() -> sandy_session_window_ends(): time_out()
+	// The last one ends it all, or holds first for a member's move in progress, as its time running out would.
+	if(!QDELETED(last))
+		if(last.time_stop)
+			last.slowmo_time_up()
+		else
+			qdel(last)
 	capping = FALSE
 
 /// Ends every member's field. With `flash` each member's screen gets the release flash as the world speeds up.
@@ -344,6 +379,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 			member.remove_filter(SANDY_SHARED_OUTLINE)
 			if(flash && member.stat != DEAD)
 				sandy_release_flash(member)
+				note("flash [member]")
 	for(var/mob/living/member as anything in active)
 		var/datum/status_effect/cyberware_cascade_window/window = active[member]
 		if(!QDELETED(window.time_stop))

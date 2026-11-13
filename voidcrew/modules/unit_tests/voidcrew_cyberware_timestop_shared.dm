@@ -309,3 +309,59 @@ GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
 	TEST_ASSERT_EQUAL(shot.speed, shot_speed, "A member's shot is still slowed after the shared slow-mo")
 	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// The last member's time runs out while a member who already dropped out is mid-move: the shared slow-mo holds, as a
+/// solo one does, until the move is over. The world never runs live between the slow-mo and its replay: the fields end
+/// and the replay starts without waiting, and nobody gets the release flash.
+/datum/unit_test/voidcrew_cyberware_timestop/shared/holds_for_member_move
+
+/datum/unit_test/voidcrew_cyberware_timestop/shared/holds_for_member_move/Run()
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandytwo[type]")
+	make_crew(list(first, second))
+	set_window(first, 2 SECONDS)
+	set_window(second, 3 SECONDS)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(1, 2))
+	var/datum/status_effect/cyberware_cascade_window/one = surge(first)
+	sleep(0.2 SECONDS)
+	surge(second)
+	sleep(0.3 SECONDS)
+	var/datum/sandy_session/session = session_of(first)
+	TEST_ASSERT_NOTNULL(session, "Test fixture: the two slow-mos didn't join")
+	var/datum/sandy_replay/recording = session.replay
+	var/datum/action/cooldown/cyberware/cascade_surge/button = surge_button(second)
+	TEST_ASSERT(button.Trigger(), "Test fixture: the second press did nothing")
+	TEST_ASSERT(!second.has_status_effect(/datum/status_effect/cyberware_cascade_window), "Test fixture: the second member is still on its own time")
+	// A rig's hide marks a move in progress that has no status of its own (the impale, the slam)
+	second.add_filter("chrome_rig_hide", 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+	TEST_ASSERT(sandy_replay_mid_move(second), "Test fixture: the second member isn't mid-move")
+
+	sleep(2 SECONDS) // the first one's own time is up
+	TEST_ASSERT(!QDELETED(one) && one.hold_until, "The shared slow-mo didn't hold for the other member's move")
+	TEST_ASSERT_EQUAL(length(GLOB.cyberware_time_fields), 2, "A field ended while the slow-mo holds")
+	TEST_ASSERT(abs(cyberware_time_scale(raider) - 0.1) < 0.01, "The world isn't slowed while the slow-mo holds ([cyberware_time_scale(raider)])")
+	TEST_ASSERT(abs(cyberware_time_scale(second) - 0.1) < 0.01, "The member mid-move isn't slowed with the world ([cyberware_time_scale(second)])")
+	TEST_ASSERT_EQUAL(recording.state, 1, "The recording stopped while the slow-mo holds")
+	TEST_ASSERT(!recording.wait_started, "The replay is waiting with the world running")
+	TEST_ASSERT(!sandy_session_joinable(sandy_session_field(one.time_stop)), "A crewmate could join a holding slow-mo")
+	sleep(1 SECONDS)
+	TEST_ASSERT(!QDELETED(one) && one.time_stop, "The hold ended with the move still going")
+
+	second.remove_filter("chrome_rig_hide") // the move is over
+	var/until = world.time + 2 SECONDS
+	while(length(GLOB.cyberware_time_fields) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!length(GLOB.cyberware_time_fields), "The slow-mo never ended after the move")
+	TEST_ASSERT(QDELETED(one), "The window outlived the slow-mo it held")
+	// The tick the fields end: the recording is over without a wait. (With a member's client watching, begin() runs in
+	// this same tick; with none, end_wait() starts it next tick.)
+	TEST_ASSERT(!QDELETED(recording) && recording.state >= 2, "The replay didn't follow the slow-mo at once")
+	TEST_ASSERT(!recording.wait_started, "The replay waited for a move with the world running")
+	TEST_ASSERT(abs(cyberware_time_scale(raider) - 1) < 0.01, "The world is still slowed after the slow-mo")
+	for(var/entry in session.log)
+		TEST_ASSERT(!findtext(entry, "flash"), "A member got the release flash with a replay following: [entry]")
+	wait_replay(first)
+	TEST_ASSERT(GLOB.sandy_replay_last["played"], "The shared replay didn't play")
+	TEST_ASSERT(first.has_status_effect(/datum/status_effect/cyberware_cascade_crash) && second.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "A crash didn't land after the replay")
+	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

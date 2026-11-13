@@ -1294,13 +1294,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /datum/status_effect/cyberware_cascade_window/proc/slowmo_time_up()
 	if(hold_until)
 		return // already holding: it ends when the move does
-	if(time_stop && !hold_spent && sandy_replay_mid_move(owner))
+	if(time_stop && !hold_spent && sandy_session_mid_move(src)) // or a crewmate's, at a shared slow-mo's end (ware_sandy_timestop_shared.dm)
 		hold_spent = TRUE
 		hold_until = world.time + SANDY_STOP_HOLD_MAX
 		duration = max(duration, hold_until + world.tick_lag) // the window outlasts the hold; hold_check() closes it
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
 		if(field)
 			field.ends_at = hold_until
+		GLOB.sandy_session_of[owner]?.repace() // every member's field holds with it
 		hold_timer = addtimer(CALLBACK(src, PROC_REF(hold_check)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 		return
 	qdel(src)
@@ -1311,7 +1312,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(QDELETED(owner) || !time_stop)
 		qdel(src)
 		return
-	if(sandy_replay_mid_move(owner))
+	if(sandy_session_mid_move(src))
 		tail_until = 0
 		if(world.time < hold_until)
 			return
