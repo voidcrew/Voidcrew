@@ -239,7 +239,7 @@
 	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An off-counter trader's delayed report put heat on immediately")
 
 	var/datum/outpost_pending_report/pending = police.pending_reports[1]
-	pending.due_at = world.time - 1
+	pending.due = world.time - 1
 	keeper.set_stat(UNCONSCIOUS)
 	police.tick_warrants()
 	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An unconscious off-counter trader still delivered their delayed report")

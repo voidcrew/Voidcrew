@@ -1370,12 +1370,6 @@
 		return
 	check_evidence_stall(officer, desk)
 
-/**
- * Walking a suspect in: whoever stands on the next two tiles the officer faces, or the next step toward where they
- * are walking, is moved out of the way. An outpost NPC (another officer included) steps aside with a real step, or
- * on ahead where there is no room to the side (a 1-wide hall); a player is told to make way. Once a second.
- * Returns what the line returned, or null when nothing was said.
- */
 /// Whether a step from `from` onto `to_tile` is open to walk across, mobs aside (no wall, shut door, window, table or rail)
 /proc/outpost_police_way_step_ok(turf/from, turf/to_tile)
 	if(!from || !to_tile || to_tile == from || from.z != to_tile.z || get_dist(from, to_tile) > 1 || to_tile.density)
@@ -1399,6 +1393,12 @@
 			return FALSE
 	return TRUE
 
+/**
+ * Walking a suspect in: whoever stands on the next two tiles the officer faces, or the next step toward where they
+ * are walking, is moved out of the way. An outpost NPC (another officer included) steps aside with a real step, or
+ * on ahead where there is no room to the side (a 1-wide hall); a player is told to make way. Once a second.
+ * Returns what the line returned, or null when nothing was said.
+ */
 /datum/outpost_police_case/proc/make_way(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
 	var/turf/here = get_turf(officer)
 	if(!here)
