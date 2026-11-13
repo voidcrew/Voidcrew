@@ -76,9 +76,14 @@
 	// Landing: tg's knockdown and real damage.
 	victim.throwing?.finalize()
 	victim.SetKnockdown(0)
+	victim.gunfu_down_grace_until = 0
 	mover.gunfu_landed(victim, 2 SECONDS, 5)
 	TEST_ASSERT(victim.IsKnockdown(), "Landing didn't knock them down")
 	TEST_ASSERT(victim.getBruteLoss() > 0, "Landing did no damage")
+	// No stunlock: thrown again straight away, they land without a fresh knockdown.
+	victim.SetKnockdown(0)
+	mover.gunfu_landed(victim, 2 SECONDS, 5)
+	TEST_ASSERT(!victim.IsKnockdown(), "A second throw at once knocked them down again")
 	// The flip: a neck grab puts them on the mover's tile; they go onto the next tile.
 	var/mob/living/carbon/human/flipped = stealth_person(block, 2, 2)
 	mover.gunfu_next_move = 0

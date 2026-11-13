@@ -77,6 +77,10 @@
 // ---------------------------------------------------------------------------------------------
 // Who can move
 
+/mob/living
+	/// world.time until which a gun-fu throw or flip lands this body without a fresh knockdown.
+	var/gunfu_down_grace_until = 0
+
 /mob/living/carbon/human
 	/// world.time the next gun-fu move is ready.
 	var/gunfu_next_move = 0
@@ -199,7 +203,10 @@
 		var/hit_zone = zone || pick(BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 		var/armour = victim.run_armor_check(hit_zone, MELEE, silent = TRUE)
 		victim.apply_damage(damage, BRUTE, hit_zone, armour)
-	victim.Knockdown(knockdown)
+	// A body just put down by a throw or flip lands without a fresh knockdown, so throws can't chain into a stunlock.
+	if(world.time >= victim.gunfu_down_grace_until)
+		victim.Knockdown(knockdown)
+		victim.gunfu_down_grace_until = world.time + knockdown + GUNFU_KNOCKDOWN_GRACE
 	playsound(victim, 'sound/effects/hit_kick.ogg', 50, TRUE, -1)
 
 // ---------------------------------------------------------------------------------------------

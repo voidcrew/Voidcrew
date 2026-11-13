@@ -26,6 +26,9 @@
 /// Hip throw: brute on landing, through tg's armour (melee).
 #define GUNFU_HIP_THROW_DAMAGE 5
 
+/// After a throw or flip knockdown ends, this long before another throw or flip knocks the same body down again.
+#define GUNFU_KNOCKDOWN_GRACE (4 SECONDS)
+
 /// Shoulder flip: lands on the next tile, flat on their back.
 #define GUNFU_FLIP_KNOCKDOWN (3 SECONDS)
 #define GUNFU_FLIP_DAMAGE 8
