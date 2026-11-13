@@ -614,7 +614,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		var/mob/living/recorded = _host
 		if(recorded.ckey)
 			replay = new(src, recorded) // before the field takes its first turf, so it sees everything
-	cover_preset_ring() // ware_sandy_timestop_cover.dm
+	cover_preset_ring(_host) // ware_sandy_timestop_cover.dm
 	. = ..()
 	cover_start() // ware_sandy_timestop_cover.dm
 	STOP_PROCESSING(SSfastprocess, src) // tick() runs on tick_timer instead

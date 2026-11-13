@@ -95,11 +95,11 @@
 /// Before the field takes its first ground: the user's lattice is about to roll its ring out from here (try_time_stop()),
 /// so what the field takes now waits for the ring's front at once, instead of being tinted, untinted by sweep_ring() and
 /// tinted again a moment later.
-/datum/proximity_monitor/advanced/timestop/sandevistan/proc/cover_preset_ring()
-	if(!isliving(host))
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/cover_preset_ring(atom/user) // `host` isn't set yet
+	if(!isliving(user))
 		return
-	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = cyberware_bearer_lattice(host)
-	var/turf/here = get_turf(host)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = cyberware_bearer_lattice(user)
+	var/turf/here = get_turf(user)
 	if(!lattice || !here)
 		return
 	ring_center = here
