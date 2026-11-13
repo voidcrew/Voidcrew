@@ -255,7 +255,15 @@
 	var/turf/where = get_turf(victim)
 	TEST_ASSERT(plasma_melt_limb(robot_arm, SOUTH), "the robot arm did not melt off")
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_R_ARM), "the melted robot arm is still attached")
-	TEST_ASSERT(voidcrew_plasma_melt_count(where, /obj/effect/decal/cleanable/plasma_slag) > 0, "a melted robot arm left no slag")
+	var/obj/effect/plasma_melt_pool/pool = locate() in where
+	TEST_ASSERT_NOTNULL(pool, "a melted robot arm left no slag pool")
+	TEST_ASSERT(pool.pixel_y < 0, "a standing body's dry melt pool lies under the body, not in front of its feet")
+	var/pool_x = pool.pixel_x
+	var/pool_y = pool.pixel_y
+	pool.set_slag()
+	var/obj/effect/decal/cleanable/plasma_slag/slag = locate() in where
+	TEST_ASSERT_NOTNULL(slag, "the dry melt pool set into no slag")
+	TEST_ASSERT(slag.pixel_x == pool_x && slag.pixel_y == pool_y, "the slag set somewhere other than the pool")
 	TEST_ASSERT(!length(victim.plasma_melts), "a robot arm melted with the flesh look")
 	TEST_ASSERT(!voidcrew_plasma_melt_drawn(victim), "a robot arm's melt drew flesh on the body")
 	for(var/obj/effect/decal/cleanable/leftover in where)

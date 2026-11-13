@@ -52,6 +52,11 @@
 
 /// Most slag decals in the world at once; the oldest goes first
 #define PLASMA_SLAG_GLOBAL_CAP 150
+/// A no-flesh limb's pool: it grows in this many steps this far apart, crusts, then sets into slag
+#define PLASMA_DRY_POOL_STEPS 4
+#define PLASMA_DRY_POOL_STEP_TIME (0.1 SECONDS)
+#define PLASMA_DRY_POOL_COOL (1.2 SECONDS)
+#define PLASMA_DRY_POOL_SET (3.5 SECONDS)
 
 /// Per limb and facing, from the approved storyboard (melt_v4.py), in the body sprite's pixels from its top left:
 /// list(pool column standing, limb middle x lying, limb middle y lying, list(drops: list(release time cs, size, x, start row)))
@@ -153,6 +158,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/mob/living/carbon/victim = limb.owner
 	var/zone = limb.body_zone
 	var/turf/where = get_turf(victim)
+	// where the limb runs off, taken before it comes off: a lost leg drops the body
+	var/list/spot = plasma_melt_floor_spot(victim, zone)
+	var/pool_x = spot[1] + victim.pixel_x + victim.pixel_w
+	var/pool_y = spot[2] + victim.pixel_y + victim.pixel_z
 	var/list/old_ash = list()
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		old_ash += pile
@@ -177,8 +186,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 			qdel(pile)
 	if(QDELETED(victim) || victim.get_bodypart(zone) == limb)
 		return FALSE
-	plasma_slag_at(where)
-	do_sparks(3, FALSE, victim)
+	plasma_dry_pool(where, pool_x, pool_y)
+	new /obj/effect/temp_visual/plasma_dry_sparks(where)
 	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, PLASMA_SOUND_METAL_MELT, 60, TRUE)
@@ -670,6 +679,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 
 /// Under the limb's place on the body as it lies or stands now, as offsets for the pool tile
 /datum/plasma_melt/proc/spot_now()
+	return plasma_melt_floor_spot(victim, zone)
+
+/// Where a melting `zone` of `victim` runs onto the floor, as it stands or lies now, as offsets for the pool tile: in
+/// front of the feet standing, under the limb's place lying (an arm out past it, so the torso doesn't cover the pool)
+/proc/plasma_melt_floor_spot(mob/living/carbon/victim, zone)
 	var/list/geometry = GLOB.plasma_melt_geometry[zone]?["[victim.dir]"]
 	if(!geometry)
 		return list(0, 0)
@@ -678,7 +692,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/u = geometry[2] - 15.5
 	var/v = 15.5 - geometry[3]
 	var/matrix/turn = victim.transform
-	return list(round(turn.a * u + turn.b * v + turn.c + 0.5), round(turn.d * u + turn.e * v + turn.f + 5.5 + plasma_melt_lying_side(turn, u, v) * lying_front()))
+	var/front = (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_L_ARM) ? PLASMA_MELT_POOL_FRONT_LYING : 0
+	return list(round(turn.a * u + turn.b * v + turn.c + 0.5), round(turn.d * u + turn.e * v + turn.f + 5.5 + plasma_melt_lying_side(turn, u, v) * front))
 
 /datum/plasma_melt/proc/make_pool()
 	if(!isopenturf(start_turf))
@@ -846,6 +861,48 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	cut_overlays()
 	add_overlay(emissive_appearance(icon, icon_state, src))
 
+/// The pool of a limb with no flesh (plasma_melt_limb_dry()): the metal or bone runs out at once, crusts and sets into slag
+/proc/plasma_dry_pool(turf/open/where, px, py)
+	if(!isopenturf(where))
+		return null
+	var/obj/effect/plasma_melt_pool/pool = new(where)
+	pool.pixel_x = clamp(px, -16, 16)
+	pool.pixel_y = clamp(py, -16, 16)
+	for(var/step in 1 to PLASMA_DRY_POOL_STEPS)
+		var/grow_to = round(step * PLASMA_MELT_POOL_STEPS / PLASMA_DRY_POOL_STEPS)
+		addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/plasma_melt_pool, grow), grow_to), (step - 1) * PLASMA_DRY_POOL_STEP_TIME)
+	addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/plasma_melt_pool, start_cooling)), PLASMA_DRY_POOL_COOL)
+	addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/plasma_melt_pool, set_slag)), PLASMA_DRY_POOL_SET)
+	return pool
+
+/// The sparks of a limb with no flesh melting off. tg's do_sparks() sparks drift for two seconds with their light on;
+/// these burst once where the limb was and go out. They still heat the floor as sparks do, so they can light a fire.
+/obj/effect/temp_visual/plasma_dry_sparks
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "sparks"
+	layer = ABOVE_MOB_LAYER
+	duration = 0.7 SECONDS
+	light_system = OVERLAY_LIGHT
+	light_range = 1.5
+	light_power = 0.8
+	light_color = LIGHT_COLOR_FIRE
+	light_on = TRUE
+
+/obj/effect/temp_visual/plasma_dry_sparks/Initialize(mapload)
+	. = ..()
+	flick(icon_state, src)
+	playsound(src, SFX_SPARKS, 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	var/turf/open/where = loc
+	if(isopenturf(where))
+		where.hotspot_expose(1000, 100)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_power), 0.4), 0.2 SECONDS)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.4 SECONDS)
+
+/// The pool sets into a lasting slag decal where it lies
+/obj/effect/plasma_melt_pool/proc/set_slag()
+	plasma_slag_at(get_turf(src), pixel_x, pixel_y)
+	qdel(src)
+
 /// Light at the melting limb
 /obj/effect/plasma_melt_light
 	anchored = TRUE
@@ -897,6 +954,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 #undef PLASMA_MELT_DROP_TILE
 #undef PLASMA_MELT_GLIDE_WAIT
 #undef PLASMA_SLAG_GLOBAL_CAP
+#undef PLASMA_DRY_POOL_STEPS
+#undef PLASMA_DRY_POOL_STEP_TIME
+#undef PLASMA_DRY_POOL_COOL
+#undef PLASMA_DRY_POOL_SET
 
 /// The look of a human NPC's locked gear (human_npc_gear.dm) falling out of a melt. It can't be clicked, picked up or
 /// moved, and sinks into the slag a moment after it lands, so the gear is never loot.
