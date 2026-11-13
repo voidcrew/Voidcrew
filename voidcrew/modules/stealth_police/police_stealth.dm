@@ -87,27 +87,50 @@
 	return ..()
 
 /**
- * A walk into another sector (the lobby, a hangar) goes by the police lift: to the nearest lift point of its own
- * sector, a ride, then on. A beat officer is never taken to a hangar (spec-stealth 1.5): that walk is over at once,
- * as a walk the pathfinder gave up on.
+ * A walk into a hangar goes via the lobby and the hangar elevator; a walk between the concourse and the lobby stays
+ * on foot (out through the exit gate, back in through the checkpoint). A beat officer is never taken to a hangar
+ * (spec-stealth 1.5): that walk is over at once, as a walk the pathfinder gave up on.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_walk(turf/dest, purpose)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	var/datum/outpost_police/police = istype(officer) ? officer.police : null
 	var/turf/here = get_turf(officer)
 	if(!police || !dest || !here)
+		police?.clear_checkpoint_crossing(officer)
 		return ..()
 	var/from_sector = police.sector_of(here)
 	var/to_sector = police.sector_of(dest)
 	if(from_sector == to_sector || from_sector == POLICE_SECTOR_OUTSIDE || to_sector == POLICE_SECTOR_OUTSIDE)
+		police.clear_checkpoint_crossing(officer)
 		return ..()
 	if(istype(to_sector, /datum/outpost_berth) && !police.dispatch_is_response_unit(officer))
+		police.clear_checkpoint_crossing(officer)
 		if(goto_dest != dest)
 			stealth_drop_walk()
 			goto_dest = dest
 		goto_purpose = purpose
 		goto_result = "failed"
 		return
+	// Concourse <-> berth goes by way of the lobby on foot, then the hangar elevator
+	if(from_sector == POLICE_SECTOR_CONCOURSE && istype(to_sector, /datum/outpost_berth) && length(police.outpost?.lobby_alcove_turfs))
+		to_sector = POLICE_SECTOR_LOBBY
+	else if(istype(from_sector, /datum/outpost_berth) && to_sector == POLICE_SECTOR_CONCOURSE && length(police.outpost?.lobby_alcove_turfs))
+		to_sector = POLICE_SECTOR_LOBBY
+	// Same floor: concourse -> lobby walks out through the exit gate; lobby -> concourse crosses the checkpoint
+	if(police.dispatch_same_floor(from_sector, to_sector))
+		if(from_sector == POLICE_SECTOR_CONCOURSE)
+			police.clear_checkpoint_crossing(officer)
+			var/turf/walk_goal = (to_sector == POLICE_SECTOR_LOBBY && police.sector_of(dest) != POLICE_SECTOR_LOBBY) ? police.lift_point(POLICE_SECTOR_LOBBY, null, officer) : dest
+			return ..(walk_goal || dest, purpose)
+		var/list/step_info = police.checkpoint_step_goal(officer, dest)
+		if(!step_info)
+			return ..()
+		var/turf/step_turf = get_turf(step_info[1])
+		if(!step_turf)
+			stealth_drop_walk()
+			return
+		return ..(step_turf, purpose)
+	police.clear_checkpoint_crossing(officer)
 	if(officer.dispatch_riding)
 		return
 	var/turf/lift = police.dispatch_nearest_lift_point(from_sector, officer)

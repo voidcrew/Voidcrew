@@ -68,16 +68,19 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		if(where)
 			part.forceMove(where)
 
-/// Whether `thing` is on `person` (worn, held, in a bag) or loose on the floor within two tiles of them
-/proc/outpost_police_in_reach(obj/item/thing, mob/living/person)
-	if(QDELETED(thing) || QDELETED(person) || !isturf(person.loc))
+/// Whether `thing` is on `person` (worn, held, in a bag) or loose on the floor in reach of them or `officer`
+/proc/outpost_police_in_reach(obj/item/thing, mob/living/person, mob/living/officer = null)
+	var/turf/person_turf = get_turf(person)
+	if(QDELETED(thing) || QDELETED(person) || !person_turf)
 		return FALSE
-	var/atom/movable/top = get_atom_on_turf(thing)
-	if(top == person)
+	if(thing in person.get_all_contents())
 		return TRUE
-	if(top != thing || !isturf(thing.loc))
+	if(!isturf(thing.loc) || thing.z != person_turf.z)
 		return FALSE
-	return thing.z == person.z && get_dist(thing, person) <= 2
+	var/reach = police_suspect_down(person) ? 4 : 2
+	if(get_dist(thing, person_turf) <= reach)
+		return TRUE
+	return !QDELETED(officer) && thing.z == officer.z && get_dist(thing, officer) <= 2
 
 // =========================================================================
 // THE PROPERTY LOCKER
@@ -391,6 +394,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 /obj/item/outpost_sealed_case/evidence
 	name = "evidence case"
 	desc = "A hard case with an evidence tag across the latch."
+	w_class = WEIGHT_CLASS_NORMAL
 	/// Weakref to the police that filled it
 	var/datum/weakref/police_ref
 	/// Weakref of an item inside -> who it was taken from, for the log
@@ -403,6 +407,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 			return FALSE
 	else
 		thing.forceMove(src)
+	w_class = max(w_class, thing.w_class)
 	LAZYSET(taken_from, WEAKREF(thing), holder ? key_name(holder) : "the floor")
 	return TRUE
 
@@ -531,7 +536,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stripper = officer
 		stripper.face_atom(prisoner)
 		stripper.police_say(POLICE_LINE_STRIP)
-	if(officer && !do_after(officer, delay, prisoner, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer)))
+	if(officer && !do_after(officer, delay, prisoner, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE | IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer)))
 		locker.release_reservation()
 		return FALSE
 	if(QDELETED(prisoner) || QDELETED(locker))
@@ -635,8 +640,8 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 			victim.give_back(part)
 
 /// Whether the Search step may take `thing` off `suspect`
-/datum/outpost_police/proc/evidence_can_take(obj/item/thing, mob/living/carbon/suspect)
-	if(outpost_police_untouchable(thing) || outpost_police_holds_mob(thing) || !outpost_police_in_reach(thing, suspect))
+/datum/outpost_police/proc/evidence_can_take(obj/item/thing, mob/living/carbon/suspect, mob/living/officer = null)
+	if(outpost_police_untouchable(thing) || outpost_police_holds_mob(thing) || !outpost_police_in_reach(thing, suspect, officer))
 		return FALSE
 	if(thing == suspect.handcuffed || thing == suspect.legcuffed)
 		return FALSE
@@ -647,45 +652,63 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	return TRUE
 
 /// What the Search step takes from `suspect` now: the crime tools on the warrant and stolen property, in reach
-/datum/outpost_police/proc/evidence_candidates(mob/living/carbon/suspect)
+/datum/outpost_police/proc/evidence_candidates(mob/living/carbon/suspect, mob/living/officer = null)
 	var/list/take = list()
 	var/datum/outpost_warrant/warrant = suspect.mind ? get_warrant(suspect.mind) : null
 	if(warrant)
 		for(var/datum/weakref/ref in warrant.evidence)
 			var/obj/item/tool = ref.resolve()
-			if(isitem(tool) && evidence_can_take(tool, suspect))
+			if(isitem(tool) && evidence_can_take(tool, suspect, officer))
 				take |= tool
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
 		if(QDELETED(locker) || (locker.owner() && locker.owner() == suspect.mind))
 			continue
 		for(var/obj/item/stolen as anything in locker.live_items())
 			// Goods lying about are nobody's loot; only what the suspect carries is taken back
-			if(get_atom_on_turf(stolen) == suspect && evidence_can_take(stolen, suspect))
+			if((stolen in suspect.get_all_contents()) && evidence_can_take(stolen, suspect, officer))
 				take |= stolen
 	return take
 
 /datum/outpost_police/proc/property_search_check(mob/living/carbon/suspect, mob/living/officer)
-	return !QDELETED(suspect) && !QDELETED(officer) && officer.Adjacent(suspect)
+	if(QDELETED(suspect) || QDELETED(officer))
+		return FALSE
+	if(officer.Adjacent(suspect))
+		return TRUE
+	// Someone downed in soft crit may crawl a tile during a pat-down: step beside them rather than breaking off
+	if(police_suspect_down(suspect) && isturf(officer.loc) && isturf(suspect.loc) && officer.z == suspect.z && get_dist(officer, suspect) == 2 && !HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+		var/turf/towards = get_step_towards(officer, suspect)
+		if(towards)
+			officer.Move(towards, get_dir(officer, towards))
+		if(officer.Adjacent(suspect))
+			return TRUE
+	return FALSE
 
 /**
  * The Search step: takes the crime tools on `suspect`'s warrant, and any property still listed in another
- * prisoner's locker, off them or off the floor within two tiles into an evidence case in `officer`'s hand.
- * Sleeps. Returns the case, or null when there was nothing to take or the search was interrupted.
+ * prisoner's locker, off them or off the floor in reach into an evidence case in `officer`'s hand.
+ * Sleeps. Returns the case, or null when there was nothing to take or the search was interrupted. When `status_out`
+ * is passed, `status_out["completed"]` is set TRUE whenever the pat-down ran to completion.
  */
-/datum/outpost_police/proc/confiscate(mob/living/carbon/suspect, mob/living/officer)
-	if(QDELETED(suspect) || QDELETED(officer))
+/datum/outpost_police/proc/confiscate(mob/living/carbon/suspect, mob/living/officer, list/status_out = null)
+	if(QDELETED(suspect) || QDELETED(officer) || !property_search_check(suspect, officer))
 		return null
-	var/list/take = evidence_candidates(suspect)
+	var/list/take = evidence_candidates(suspect, officer)
 	if(!length(take))
+		if(islist(status_out))
+			status_out["completed"] = TRUE
 		return null
+	officer.face_atom(suspect)
+	officer.visible_message(span_warning("[officer] pats down [suspect]."), span_notice("You pat down [suspect]."))
 	var/delay = max(1, round(min(length(take) * OUTPOST_POLICE_SEARCH_ITEM, OUTPOST_POLICE_SEARCH_MAX) * GLOB.outpost_police_property_time_scale))
-	if(!do_after(officer, delay, suspect, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(property_search_check), suspect, officer)))
+	if(!do_after(officer, delay, suspect, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE | IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(property_search_check), suspect, officer)))
 		return null
 	if(QDELETED(suspect) || QDELETED(officer))
 		return null
 	// They may have moved things while the officer was looking
-	take = evidence_candidates(suspect)
+	take = evidence_candidates(suspect, officer)
 	if(!length(take))
+		if(islist(status_out))
+			status_out["completed"] = TRUE
 		return null
 	var/obj/item/outpost_sealed_case/evidence/case = new(get_turf(officer))
 	case.police_ref = WEAKREF(src)
@@ -696,6 +719,8 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		// A ship key or the like inside a tool being taken stays with the suspect
 		outpost_police_salvage(thing, floor)
 		case.add_evidence(thing, suspect)
+	if(islist(status_out))
+		status_out["completed"] = TRUE
 	if(!length(case.contents))
 		qdel(case)
 		return null

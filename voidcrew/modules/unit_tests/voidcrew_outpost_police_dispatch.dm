@@ -206,7 +206,7 @@
 	TEST_ASSERT_EQUAL(police.sector_of(built), "concourse", "The out-of-sight unit was built outside the sector")
 	dispatch_clear(police)
 
-/// A ride takes the officer and whoever they pull from a concourse lift to the lobby's, still pulling them
+/// Concourse-to-lobby never teleports; a hangar berth elevator ride carries the officer and pulled prisoner to the lobby alcove
 /datum/unit_test/voidcrew_outpost_police_dispatch_ride
 
 /datum/unit_test/voidcrew_outpost_police_dispatch_ride/Run()
@@ -218,21 +218,35 @@
 	var/list/turf/lifts = dispatch_two_lifts(outpost)
 	var/turf/start = lifts[1]
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, start)
-	var/turf/beside
-	for(var/direction in GLOB.cardinals)
-		var/turf/candidate = get_step(start, direction)
-		if(isopenturf(candidate) && !candidate.is_blocked_turf())
-			beside = candidate
-			break
-	TEST_ASSERT_NOTNULL(beside, "No free tile beside the lift point")
-	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, beside)
+	TEST_ASSERT(!police.ride(officer, "lobby"), "An officer teleported from concourse to lobby instead of walking")
+	TEST_ASSERT_EQUAL(get_turf(officer), start, "Refusing a concourse-to-lobby ride still moved the officer")
+
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(3, 3, 1, requester = "police dispatch ride test")
+	TEST_ASSERT_NOTNULL(claimed, "Could not reserve a 3x3 hangar alcove")
+	var/datum/outpost_berth/berth = new(outpost, 1, null)
+	berth.reservation = claimed
+	for(var/turf/tile as anything in berth.get_block())
+		tile.ChangeTurf(/turf/open/floor/iron)
+	berth.alcove_turfs = berth.get_block()
+	var/list/old_berths = outpost.berths
+	outpost.berths = list(berth)
+	var/obj/machinery/outpost_elevator/panel = allocate(/obj/machinery/outpost_elevator, berth.alcove_turfs[1])
+	panel.outpost = outpost
+	panel.berth = berth
+	berth.panel = panel
+
+	officer.forceMove(berth.alcove_turfs[5])
+	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, berth.alcove_turfs[2])
 	officer.start_pulling(prisoner)
 	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "The officer could not pull the prisoner")
-	TEST_ASSERT(police.ride(officer, "lobby"), "The ride did not arrive")
-	TEST_ASSERT(get_turf(officer) in outpost.lobby_alcove_turfs, "The officer did not arrive at the lobby lift")
-	TEST_ASSERT_EQUAL(get_turf(prisoner), get_turf(officer), "The pulled prisoner was left behind")
-	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "The officer is not pulling the prisoner after the ride")
+	TEST_ASSERT(police.ride(officer, "lobby"), "The hangar elevator ride did not arrive at the lobby")
+	TEST_ASSERT(get_turf(officer) in outpost.lobby_alcove_turfs, "The officer did not arrive at the lobby elevator alcove")
+	TEST_ASSERT(get_turf(prisoner) in outpost.lobby_alcove_turfs, "The pulled prisoner was left behind by the hangar elevator")
+	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "The officer is not pulling the prisoner after the hangar elevator ride")
 	officer.stop_pulling()
+	qdel(panel)
+	qdel(berth)
+	outpost.berths = old_berths
 	dispatch_clear(police)
 
 /// Whom officers fight: a three-star suspect and carp, never a clean player, an outpost resident or a fugitive at the outpost

@@ -82,6 +82,8 @@
 	var/datum/weakref/dispatch_block_ref
 	/// world.time since when they have stood there, or since they were last charged for it
 	var/dispatch_block_since = 0
+	/// world.time they may next ask a lobby checkpoint door or scan cycle to run
+	var/dispatch_checkpoint_ask_at = 0
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/Destroy()
 	if(dispatch_wave)
@@ -169,24 +171,105 @@
 			return berth
 	return POLICE_SECTOR_OUTSIDE
 
+/// Whether `from_sector` and `to_sector` share the outpost's main floor (concourse <-> lobby: walked on foot, never a lift)
+/datum/outpost_police/proc/dispatch_same_floor(from_sector, to_sector)
+	return (from_sector == POLICE_SECTOR_CONCOURSE && to_sector == POLICE_SECTOR_LOBBY) || (from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE)
+
+/// Clears the checkpoint-crossing trait set while an officer walks from the lobby into the concourse
+/datum/outpost_police/proc/clear_checkpoint_crossing(mob/living/officer)
+	if(!QDELETED(officer))
+		REMOVE_TRAIT(officer, TRAIT_CHECKPOINT_CROSSING, "outpost_police_checkpoint")
+
+/**
+ * Drives an officer physically from the lobby through `lobby_checkpoint()` into the concourse: outer door -> scan
+ * chamber -> scan cycle -> inner door -> concourse floor. Returns `list(goal_atom, distance)`, `list(null, 0)` while
+ * waiting at a door or scan cycle, or `null` when no checkpoint can be used (so the caller falls back to direct pathing).
+ */
+/datum/outpost_police/proc/checkpoint_step_goal(mob/living/officer, atom/fallback_target = null)
+	var/turf/here = get_turf(officer)
+	var/datum/outpost_checkpoint/post = outpost?.lobby_checkpoint(officer)
+	if(!here || QDELETED(post) || QDELETED(post.outer_door) || QDELETED(post.inner_door))
+		clear_checkpoint_crossing(officer)
+		return null
+	ADD_TRAIT(officer, TRAIT_CHECKPOINT_CROSSING, "outpost_police_checkpoint")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = officer
+	var/turf/inner_turf = get_turf(post.inner_door)
+	var/turf/outer_turf = get_turf(post.outer_door)
+	if(here == inner_turf || (here in post.chamber_turfs))
+		if(here == inner_turf || (!post.inner_door.density && !post.inner_door.operating))
+			var/turf/ahead = post.secured_turf
+			if(!ahead || (ahead != officer.loc && ahead.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer)))
+				ahead = null
+				for(var/dir in GLOB.cardinals)
+					var/turf/step_out = get_step(inner_turf, dir)
+					if(step_out && outpost?.is_secured_turf(step_out) && !step_out.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer))
+						ahead = step_out
+						break
+			return list(ahead || post.secured_turf || fallback_target, 0)
+		// Pulling someone: step deeper into the chamber so they are inside before the outer door shuts
+		if(officer.pulling && !(get_turf(officer.pulling) in post.chamber_turfs) && get_turf(officer.pulling) != inner_turf)
+			var/turf/deeper
+			var/deeper_dist = get_dist(here, inner_turf)
+			for(var/turf/tile as anything in post.chamber_turfs)
+				if(tile == here || tile.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer))
+					continue
+				if(get_dist(tile, inner_turf) < deeper_dist)
+					deeper = tile
+					deeper_dist = get_dist(tile, inner_turf)
+			if(deeper)
+				return list(deeper, 0)
+		if(post.state == CHECKPOINT_IDLE && post.outer_door.density && !post.outer_door.operating && (!istype(cop) || world.time >= cop.dispatch_checkpoint_ask_at))
+			if(istype(cop))
+				cop.dispatch_checkpoint_ask_at = world.time + 1.5 SECONDS
+			post.request_cycle(officer)
+		return list(null, 0)
+	if(here != outer_turf && post.lobby_turf && get_dist(here, post.lobby_turf) > 1)
+		return list(post.lobby_turf, 1)
+	var/outer_open = !post.outer_door.density && !post.outer_door.operating
+	if(here == outer_turf || (outer_open && post.state == CHECKPOINT_IDLE))
+		var/turf/entry
+		var/best_dist = INFINITY
+		for(var/turf/tile as anything in post.chamber_turfs)
+			if(tile != officer.loc && tile.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer))
+				continue
+			var/dist = get_dist(tile, inner_turf)
+			if(dist < best_dist)
+				entry = tile
+				best_dist = dist
+		return list(entry, 0)
+	if(post.state == CHECKPOINT_IDLE && !outer_open && post.inner_door.density && !post.outer_door.operating && !post.inner_door.operating && (!istype(cop) || world.time >= cop.dispatch_checkpoint_ask_at))
+		if(istype(cop))
+			cop.dispatch_checkpoint_ask_at = world.time + 1.5 SECONDS
+		post.request_outer(officer)
+	return list(null, 0)
+
 /**
  * A lift point serving `sector`: one no suspect at the outpost (nor `avoid_sight_of`) sees, the farthest from
  * them first; if every point is watched, the farthest (abuse M13). Points skipped for being blocked (M2) are
- * left out. Null if the sector has none left.
+ * left out. When `rider` is pulling someone onto a multi-tile elevator alcove, interior alcove tiles come first
+ * so the pulled person steps inside the alcove too. Null if the sector has none left.
  */
 /datum/outpost_police/proc/lift_point(sector, atom/avoid_sight_of, mob/living/rider)
 	var/list/watchers = dispatch_suspect_mobs()
 	if(isliving(avoid_sight_of))
 		watchers |= avoid_sight_of
+	var/list/turf/tiles = dispatch_lift_tiles(sector)
+	var/prefer_inner = !!(rider?.pulling && length(tiles) > 2)
 	var/turf/best
 	var/best_watched = TRUE
+	var/best_neighbors = -1
 	var/best_distance = -1
-	for(var/turf/point as anything in dispatch_lift_tiles(sector))
+	for(var/turf/point as anything in tiles)
 		if(!point || dispatch_skipped[point] > world.time)
 			continue
 		// Someone standing on it: the officer could never step on (review-1 S4)
 		if(lift_point_blocked(point, rider))
 			continue
+		var/neighbors = 0
+		if(prefer_inner)
+			for(var/dir in GLOB.cardinals)
+				if(get_step(point, dir) in tiles)
+					neighbors++
 		var/watched = FALSE
 		var/distance = INFINITY
 		for(var/mob/living/watcher as anything in watchers)
@@ -195,9 +278,20 @@
 			var/turf/watcher_turf = get_turf(watcher)
 			if(watcher_turf?.z == point.z)
 				distance = min(distance, get_dist(watcher_turf, point))
-		if(!best || (best_watched && !watched) || (best_watched == watched && distance > best_distance))
+		var/better = FALSE
+		if(!best)
+			better = TRUE
+		else if(best_watched && !watched)
+			better = TRUE
+		else if(best_watched == watched)
+			if(prefer_inner && neighbors != best_neighbors)
+				better = neighbors > best_neighbors
+			else if(distance > best_distance)
+				better = TRUE
+		if(better)
 			best = point
 			best_watched = watched
+			best_neighbors = neighbors
 			best_distance = distance
 	return best
 
@@ -209,10 +303,33 @@
 		return TRUE
 	return FALSE
 
+/// The hangar elevator panel serving the alcove `start` belongs to, or null
+/datum/outpost_police/proc/dispatch_elevator_for(turf/start)
+	if(!start || !outpost)
+		return null
+	if(start in outpost.lobby_alcove_turfs)
+		for(var/obj/machinery/outpost_elevator/panel as anything in outpost.lobby_panels)
+			if(!QDELETED(panel))
+				return panel
+		return null
+	for(var/datum/outpost_berth/berth as anything in outpost.berths)
+		if(berth && (start in berth.alcove_turfs) && !QDELETED(berth.panel))
+			return berth.panel
+	return null
+
+/// The hangar elevator floor id for `sector` (0 for the lobby, berth_number for a berth), or null
+/datum/outpost_police/proc/dispatch_elevator_floor(sector)
+	if(sector == POLICE_SECTOR_LOBBY)
+		return 0
+	var/datum/outpost_berth/berth = sector
+	if(istype(berth))
+		return berth.berth_number
+	return null
+
 /**
- * `officer` rides the lift from the lift point they stand on to a point of `sector`, with whoever they pull.
- * The car takes OUTPOST_ELEVATOR_TRAVEL_TIME, as the outpost's own lift does; they must still be awake and on
- * the tile when it arrives. Sleeps the ride. TRUE on arrival.
+ * `officer` rides the hangar elevator from the alcove they stand in to `sector`, with whoever they pull, the same
+ * way players use the elevator panel. Concourse <-> lobby and concourse <-> berth never teleport across the map:
+ * officers walk between the concourse and the lobby on foot. Sleeps the ride. TRUE on arrival.
  */
 /datum/outpost_police/proc/ride(mob/living/officer, sector)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/rider = officer
@@ -221,33 +338,43 @@
 	var/turf/start = get_turf(officer)
 	if(!start || !dispatch_is_lift_tile(start))
 		return FALSE
-	var/turf/destination = lift_point(sector)
-	if(!destination || destination == start)
+	var/from_sector = sector_of(start)
+	if(dispatch_same_floor(from_sector, sector))
 		return FALSE
-	if(istype(rider))
-		rider.dispatch_riding = TRUE
-	playsound(start, 'sound/machines/chime.ogg', 50, TRUE)
-	sleep(OUTPOST_ELEVATOR_TRAVEL_TIME)
-	if(istype(rider) && !QDELETED(rider))
-		rider.dispatch_riding = FALSE
-	if(QDELETED(src) || QDELETED(officer) || officer.stat != CONSCIOUS || get_turf(officer) != start)
+	if((from_sector == POLICE_SECTOR_CONCOURSE && sector != POLICE_SECTOR_CONCOURSE) || (sector == POLICE_SECTOR_CONCOURSE && from_sector != POLICE_SECTOR_CONCOURSE))
 		return FALSE
-	// The far end may have gone during the ride (a berth torn down)
-	if(!(destination in dispatch_lift_tiles(sector)))
-		destination = lift_point(sector)
-		if(!destination || destination == start)
+	var/obj/machinery/outpost_elevator/panel = dispatch_elevator_for(start)
+	var/floor_id = dispatch_elevator_floor(sector)
+	if(panel && !isnull(floor_id))
+		var/list/turf/own_alcove = panel.get_own_alcove()
+		// Pulling someone still a step outside the alcove: one step deeper brings them onto the car floor
+		var/atom/movable/pulled_in = officer.pulling
+		if(pulled_in && !(get_turf(pulled_in) in own_alcove) && officer.Adjacent(pulled_in))
+			for(var/dir in GLOB.cardinals)
+				var/turf/deeper = get_step(officer, dir)
+				if((deeper in own_alcove) && !deeper.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer))
+					if(officer.Move(deeper, dir))
+						break
+		var/wait_until = world.time + OUTPOST_ELEVATOR_TRAVEL_TIME + 1 SECONDS
+		while(!QDELETED(panel) && panel.moving && world.time < wait_until)
+			sleep(0.5 SECONDS)
+		if(QDELETED(src) || QDELETED(panel) || QDELETED(officer) || officer.stat != CONSCIOUS)
 			return FALSE
-	var/atom/movable/pulled = officer.pulling
-	if(pulled)
-		var/mob/pulled_mob = pulled
-		if(pulled.anchored || get_dist(pulled, start) > 1 || (ismob(pulled) && pulled_mob.buckled))
-			pulled = null
-	officer.forceMove(destination)
-	if(pulled && !QDELETED(pulled))
-		pulled.forceMove(destination)
-		officer.start_pulling(pulled, supress_message = TRUE)
-	playsound(destination, 'sound/machines/ding.ogg', 50, TRUE)
-	return TRUE
+		if(!panel.start_ride(floor_id, officer))
+			return FALSE
+		if(istype(rider))
+			rider.dispatch_riding = TRUE
+		var/ride_until = world.time + OUTPOST_ELEVATOR_TRAVEL_TIME + 2 SECONDS
+		while(!QDELETED(panel) && panel.moving && world.time < ride_until)
+			sleep(0.5 SECONDS)
+		if(istype(rider) && !QDELETED(rider))
+			rider.dispatch_riding = FALSE
+		if(QDELETED(src) || QDELETED(officer) || officer.stat != CONSCIOUS)
+			return FALSE
+		var/list/turf/arrived_alcove = outpost?.get_floor_alcove(floor_id)
+		return !!(arrived_alcove && (get_turf(officer) in arrived_alcove))
+	// No elevator panel here (a mapping gap): no ride, they walk instead
+	return FALSE
 
 /// Queues one unit of `unit_kind` (POLICE_UNIT_*) for `sector`. Returns the spawn order, or null.
 /datum/outpost_police/proc/order_unit(unit_kind, sector)

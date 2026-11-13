@@ -504,11 +504,13 @@
 		return cuffs
 	return null
 
-/// Puts `thing` from their hand back where it is carried (its slot, a pocket, the belt or the bag). TRUE once it is out of their hands.
+/// Puts `thing` from their hand back where it is carried (its slot, suit storage, a pocket, the belt or the bag). TRUE once it is out of their hands.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_put_away(obj/item/thing)
 	if(QDELETED(thing) || !is_holding(thing))
 		return TRUE
 	if(equip_to_appropriate_slot(thing))
+		return TRUE
+	if(wear_suit && !s_store && isgun(thing) && equip_to_slot_if_possible(thing, ITEM_SLOT_SUITSTORE, disable_warning = TRUE))
 		return TRUE
 	for(var/obj/item/holder in list(belt, back))
 		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
@@ -521,6 +523,12 @@
 		return TRUE
 	for(var/obj/item/held in held_items)
 		if(istype(held, /obj/item/outpost_sealed_case/evidence))
+			continue
+		if(police_put_away(held) && length(get_empty_held_indexes()))
+			return TRUE
+	// Still full (for instance a tactical long gun with no sling slot): an evidence case that fits in the bag can ride there
+	for(var/obj/item/held in held_items)
+		if(!istype(held, /obj/item/outpost_sealed_case/evidence))
 			continue
 		if(police_put_away(held) && length(get_empty_held_indexes()))
 			return TRUE

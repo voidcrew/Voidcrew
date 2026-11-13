@@ -254,9 +254,21 @@
 			return TRUE
 	return FALSE
 
+/// Whether `person` is an on-duty officer of `outpost`, or a prisoner in custody being escorted by one
+/proc/outpost_checkpoint_police_cleared(mob/living/person, obj/structure/overmap/trader_outpost/outpost)
+	if(!isliving(person) || !outpost)
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = person
+	if(istype(cop) && cop.police?.outpost == outpost)
+		return TRUE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = person.pulledby
+	if(istype(escort) && escort.police?.outpost == outpost && escort.police.in_custody(person))
+		return TRUE
+	return FALSE
+
 /**
  * What the scan refuses: chamber atom -> CHECKPOINT_LINE_ARMED or CHECKPOINT_LINE_BARRED. A weapon
- * passes when the person carrying it holds a valid permit; anything loose on the floor never does.
+ * passes when the person carrying it holds a valid permit or is outpost security; anything loose on the floor never does.
  */
 /datum/outpost_checkpoint/proc/inspect_chamber()
 	var/list/refused = list()
@@ -267,11 +279,11 @@
 			for(var/atom/movable/content as anything in thing.get_all_contents_skipping_traits(TRAIT_CONTRABAND_BLOCKER))
 				if(isliving(content))
 					var/mob/living/person = content
-					if(person.mind && outpost?.is_user_barred(person))
+					if(person.mind && outpost?.is_user_barred(person) && !outpost_checkpoint_police_cleared(person, outpost))
 						refused[thing] = CHECKPOINT_LINE_BARRED
 				else if(outpost_checkpoint_weapon(content) && !refused[thing])
 					var/mob/living/carrier = outpost_weapon_carrier(content)
-					if(!carrier || !outpost?.has_weapons_permit(carrier))
+					if(!carrier || (!outpost?.has_weapons_permit(carrier) && !outpost_checkpoint_police_cleared(carrier, outpost)))
 						refused[thing] = CHECKPOINT_LINE_ARMED
 	return refused
 
@@ -1101,9 +1113,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 /obj/structure/outpost_exit_gate/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	if(REVERSE_DIR(to_dir) != dir)
 		return FALSE
-	// The outpost's own people go out through it only when they are leaving for good
+	// The outpost's own people go out through it only when they are leaving for good, or when an officer walks to the lobby
 	var/mob/living/carbon/human/npc/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
-	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave))
+	if(istype(townsperson) && !istype(townsperson, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !istype(townsperson.activity, /datum/ambient_activity/leave))
 		return FALSE
 	return TRUE
 
@@ -1118,8 +1130,22 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 	var/turf/out = get_step(src, dir)
 	if(!out)
 		return
+	var/mob/living/puller = isliving(passer.pulledby) ? passer.pulledby : null
+	var/saved_grab = puller ? puller.grab_state : GRAB_PASSIVE
 	if(!step(passer, dir) && passer.loc == loc)
+		passer.Move(out, dir)
+	if(passer.loc == loc)
+		for(var/side_dir in list(turn(dir, 90), turn(dir, -90)))
+			var/turf/open/side = get_step(out, side_dir)
+			if(!istype(side) || side.is_blocked_turf(exclude_mobs = FALSE, source_atom = passer))
+				continue
+			if(passer.Move(side, get_dir(passer, side)) && passer.loc != loc)
+				break
+	if(passer.loc == loc)
 		passer.forceMove(out)
+	if(!QDELETED(puller) && !QDELETED(passer) && puller.Adjacent(passer) && puller.pulling != passer)
+		puller.start_pulling(passer, supress_message = TRUE)
+		puller.grab_state = saved_grab
 
 // =========================================================================
 // THE LOCKERS

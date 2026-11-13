@@ -163,14 +163,31 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	if(!may_ride_to(floor_id, ui.user))
 		balloon_alert(ui.user, "crew only!")
 		return TRUE
+	start_ride(floor_id, ui.user)
+	return TRUE
+
+/// Starts a ride to `floor_id` sent by `rider` standing in the alcove. TRUE if the car started moving.
+/obj/machinery/outpost_elevator/proc/start_ride(floor_id, mob/living/rider)
+	if(moving || !outpost || !isliving(rider) || rider.stat != CONSCIOUS)
+		return FALSE
+	if(isnull(floor_id) || floor_id == get_current_floor())
+		return FALSE
+	var/list/turf/own_alcove = get_own_alcove()
+	if(!own_alcove || !outpost.get_floor_alcove(floor_id) || !(get_turf(rider) in own_alcove))
+		return FALSE
+	if(!may_ride_to(floor_id, rider))
+		return FALSE
 	moving = TRUE
 	playsound(src, 'sound/machines/chime.ogg', 50, TRUE)
-	move_timer = addtimer(CALLBACK(src, PROC_REF(complete_ride), floor_id, WEAKREF(ui.user)), OUTPOST_ELEVATOR_TRAVEL_TIME, TIMER_STOPPABLE)
+	move_timer = addtimer(CALLBACK(src, PROC_REF(complete_ride), floor_id, WEAKREF(rider)), OUTPOST_ELEVATOR_TRAVEL_TIME, TIMER_STOPPABLE)
 	SStgui.update_uis(src)
 	return TRUE
 
-/// Whether this rider may send the car to the floor. Only a standard berth's own crew may go down to it.
+/// Whether this rider may send the car to the floor. Only a standard berth's own crew, or the outpost's police, may go down to it.
 /obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = rider
+	if(istype(cop) && cop.police?.outpost == outpost)
+		return TRUE
 	var/datum/outpost_berth/destination_berth = outpost?.get_floor_berth(floor_id)
 	return !destination_berth || destination_berth.allows_entry(rider)
 
@@ -203,6 +220,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 		say("Berth [floor_id] is crew only.")
 		SStgui.update_uis(src)
 		return
+	// Police sent the car to a crew-only berth: only officers and whoever they hold come along, never hitchhikers
+	var/datum/outpost_berth/locked_berth = outpost.get_floor_berth(floor_id)
+	if(!istype(rider, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || !locked_berth || locked_berth.allows_entry(null))
+		locked_berth = null
+	var/list/active_pulls = list()
+	for(var/turf/source_turf as anything in own_alcove)
+		for(var/mob/living/puller in source_turf)
+			var/atom/movable/pullee = puller.pulling
+			if(pullee && (get_turf(pullee) in own_alcove))
+				active_pulls += list(list(puller, pullee, puller.grab_state))
 	for(var/i in 1 to length(own_alcove))
 		var/turf/source_turf = own_alcove[i]
 		var/turf/target_turf = destination[min(i, length(destination))]
@@ -217,6 +244,24 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 					continue // travels with whatever it's buckled to
 			else if(istype(passenger, /obj/effect))
 				continue // decals, markers and other non-things stay put
+			if(locked_berth && !outpost_elevator_police_passenger(passenger, locked_berth))
+				continue
 			passenger.forceMove(target_turf)
+	for(var/list/saved_pull as anything in active_pulls)
+		var/mob/living/puller = saved_pull[1]
+		var/atom/movable/pullee = saved_pull[2]
+		if(!QDELETED(puller) && !QDELETED(pullee) && puller.Adjacent(pullee) && puller.pulling != pullee)
+			puller.start_pulling(pullee, state = saved_pull[3], supress_message = TRUE)
 	playsound(destination[1], 'sound/machines/ding.ogg', 50, TRUE)
 	SStgui.update_uis(src)
+
+/// On a police ride to a crew-only berth: whether `passenger` goes along (officers, people an officer holds, and
+/// things with nobody inside who couldn't go themselves)
+/proc/outpost_elevator_police_passenger(atom/movable/passenger, datum/outpost_berth/berth)
+	for(var/mob/living/person in passenger.get_all_contents())
+		if(istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || berth.allows_entry(person))
+			continue
+		if(person == passenger && istype(person.pulledby, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			continue
+		return FALSE
+	return TRUE

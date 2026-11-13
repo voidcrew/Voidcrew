@@ -1030,3 +1030,198 @@
 	TEST_ASSERT(QDELETED(case), "A release nobody gets done never ends")
 	TEST_ASSERT_NULL(suspect.handcuffed, "A suspect let go is still in police cuffs")
 	police_pin_warrant(police, suspect.mind, 0)
+
+/**
+ * Playtest bug 1: searching a suspect downed in crit succeeds (both soft crit and hard crit, including when a
+ * tactical officer holds a bulky rifle or the weapon fell a few tiles away on going into crit), never drags the
+ * crit suspect, and never loops forever once the pat-down completes.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_crit_search
+	var/saved_scale
+
+/datum/unit_test/voidcrew_outpost_police_arrest_crit_search/Destroy()
+	if(!isnull(saved_scale))
+		GLOB.outpost_police_property_time_scale = saved_scale
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_arrest_crit_search/Run()
+	saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+
+	// A 1-star suspect already in crit can open a case directly, and a tactical officer with full hands pats them down
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical/tac = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical)
+	police_arrest_kit(tac)
+	var/turf/beside = police_arrest_beside(tac)
+	TEST_ASSERT_NOTNULL(beside, "No floor beside the tactical officer")
+	var/mob/living/carbon/human/suspect = police_arrest_person(beside)
+	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
+	suspect.equip_to_slot(knife, ITEM_SLOT_LPOCKET)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 12) // one star (OUTPOST_POLICE_STAR_HEAT 10)
+	LAZYADD(warrant.evidence, WEAKREF(knife))
+
+	// Put a dropped crime weapon 3 tiles away if possible (dropped on entering crit)
+	var/obj/item/crowbar/dropped_tool
+	var/turf/near_floor = get_step(beside, NORTH)
+	if(near_floor && isopenturf(near_floor) && !near_floor.is_blocked_turf(TRUE))
+		dropped_tool = allocate(/obj/item/crowbar, near_floor)
+		LAZYADD(warrant.evidence, WEAKREF(dropped_tool))
+
+	suspect.adjustOxyLoss(120)
+	suspect.updatehealth()
+	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION), "Setup: suspect is not in crit")
+
+	// Fill both of the tactical officer's hands so stowing must work with a bulky longgun
+	var/obj/item/longgun = locate(/obj/item/gun) in tac.get_all_contents()
+	var/obj/item/baton = tac.get_baton()
+	if(longgun)
+		human_npc_take_in_hand(tac, longgun)
+	if(baton)
+		human_npc_take_in_hand(tac, baton)
+
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	police.sleep_tick()
+	TEST_ASSERT_NOTNULL(case, "open_case() refused a one-star suspect in crit")
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.cuffs_on(suspect)
+	case.process_case()
+	TEST_ASSERT_EQUAL(case.step, "standby", "A cuffed crit suspect did not enter standby") // CASE_STEP_DOWNED
+
+	case.step_downed()
+	police_arrest_wait(case)
+	TEST_ASSERT(case.searched, "Pat-down of a cuffed suspect in crit failed")
+	TEST_ASSERT(tac.pulling != suspect, "An officer pulled a suspect in crit during the search")
+	var/obj/item/evidence = case.evidence_ref?.resolve()
+	TEST_ASSERT_NOTNULL(evidence, "Confiscation on a crit suspect created no evidence case")
+	TEST_ASSERT(knife in evidence.get_all_contents(), "Pocket weapon on a crit suspect was not confiscated")
+	if(dropped_tool)
+		TEST_ASSERT(dropped_tool in evidence.get_all_contents(), "Weapon dropped beside a crit suspect was not confiscated")
+	TEST_ASSERT(evidence in tac.get_all_contents(), "Tactical officer failed to carry the evidence case after patting down a crit suspect")
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
+
+/**
+ * Playtest bug 3: escorting from concourse to lobby sets a walking goal (never rides a concourse lift), officers
+ * pass the concourse exit gate and security checkpoint with their kit, and cell booking physically walks both
+ * officer and suspect through the doorway with zero forced teleports.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_no_teleport
+	var/saved_scale
+	var/forced_moves = 0
+
+/datum/unit_test/voidcrew_outpost_police_arrest_no_teleport/Destroy()
+	if(!isnull(saved_scale))
+		GLOB.outpost_police_property_time_scale = saved_scale
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_arrest_no_teleport/proc/note_move(atom/movable/source, atom/old_loc, dir, forced, list/old_locs)
+	SIGNAL_HANDLER
+	if(forced)
+		forced_moves++
+
+/datum/unit_test/voidcrew_outpost_police_arrest_no_teleport/Run()
+	saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	// 1. Escort route from concourse to lobby cell door walks on foot, never rides a concourse lift
+	var/turf/door_spot = police.cell_door_turf()
+	TEST_ASSERT_NOTNULL(door_spot, "Loaded outpost has no lobby cell door turf")
+	TEST_ASSERT_EQUAL(police.sector_of(officer), "concourse", "Setup: officer did not start on the concourse")
+	TEST_ASSERT_EQUAL(police.sector_of(door_spot), "lobby", "Setup: cell door turf is not in the lobby")
+	case.route_to(officer, door_spot, 1)
+	TEST_ASSERT_NULL(case.lift_goal, "Concourse-to-lobby escort picked a lift tile instead of walking")
+	TEST_ASSERT_NOTEQUAL(case.acting, "riding", "Concourse-to-lobby escort started a lift teleport")
+	TEST_ASSERT_NOTNULL(case.goal, "Concourse-to-lobby escort set no walking goal")
+
+	var/obj/structure/outpost_exit_gate/gate = allocate(/obj/structure/outpost_exit_gate, run_loc_floor_bottom_left)
+	gate.setDir(NORTH)
+	var/datum/can_pass_info/pass_info = new(officer)
+	TEST_ASSERT(gate.CanAStarPass(SOUTH, pass_info), "Pathfinder refuses to route an officer out through the concourse exit gate")
+
+	var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint(officer)
+	if(post && length(post.chamber_turfs))
+		var/turf/saved_turf = get_turf(officer)
+		officer.forceMove(post.chamber_turfs[1])
+		TEST_ASSERT_EQUAL(length(post.inspect_chamber()), 0, "Checkpoint rejected an on-duty police officer carrying duty weapons")
+		officer.forceMove(saved_turf)
+
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
+
+	// 2. Booking into both 2x2 and 1x2 cells uses physical Move() steps only (zero forceMove teleports), even with combat_mode on
+	var/datum/outpost_police/cell_test/cell_police = police_cells_fixture()
+	cell_police.fine_result = TRUE
+	for(var/cell_id in list("a", "b"))
+		var/datum/outpost_police_cell/cell = police_cell_named(cell_police, cell_id)
+		TEST_ASSERT_NOTNULL(cell, "Cell [cell_id] missing")
+		var/mob/living/carbon/human/prisoner = police_cell_person(cell.outside_turf)
+		var/mob/living/carbon/human/jailer = police_cell_person(get_step(cell.outside_turf, NORTH))
+		prisoner.set_combat_mode(TRUE)
+		police_pin_warrant(cell_police, prisoner.mind, 12)
+		TEST_ASSERT_NOTNULL(police_cell_cuff(prisoner, jailer), "Setup: prisoner in cell [cell_id] was not cuffed")
+		jailer.start_pulling(prisoner)
+
+		forced_moves = 0
+		RegisterSignal(prisoner, COMSIG_MOVABLE_MOVED, PROC_REF(note_move))
+		RegisterSignal(jailer, COMSIG_MOVABLE_MOVED, PROC_REF(note_move))
+		var/booked = cell.book_in(prisoner, jailer, cell_police.warrants[prisoner.mind])
+		UnregisterSignal(prisoner, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(jailer, COMSIG_MOVABLE_MOVED)
+
+		TEST_ASSERT(booked, "Physical walk-in booking failed on cell [cell_id]")
+		TEST_ASSERT_EQUAL(forced_moves, 0, "Booking into cell [cell_id] used [forced_moves] forced teleport(s) instead of walking")
+		TEST_ASSERT(get_turf(prisoner) in cell.tiles, "Prisoner did not end inside cell [cell_id]")
+		TEST_ASSERT_EQUAL(get_turf(jailer), cell.outside_turf, "Officer did not walk back out of cell [cell_id]")
+		TEST_ASSERT(cell.door.density, "Cell [cell_id] door was left open after booking")
+		TEST_ASSERT_NULL(prisoner.handcuffed, "Prisoner in cell [cell_id] was left in cuffs")
+
+/// Context awareness: an officer unbuckles a chair-buckled suspect before pulling them, and opens an unlocked closet a suspect hid in after contact
+/datum/unit_test/voidcrew_outpost_police_arrest_closet_buckle
+
+/datum/unit_test/voidcrew_outpost_police_arrest_closet_buckle/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	// Buckled to a chair: keep_pulling() unbuckles them so the escort pull holds
+	var/obj/structure/chair/chair = allocate(/obj/structure/chair, get_turf(suspect))
+	TEST_ASSERT(chair.buckle_mob(suspect, force = TRUE), "Setup: could not buckle suspect to chair")
+	TEST_ASSERT(case.keep_pulling(officer, suspect), "keep_pulling() failed on a chair-buckled suspect")
+	TEST_ASSERT_NULL(suspect.buckled, "Officer did not unbuckle the suspect before pulling")
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "Officer is not pulling the unbuckled suspect")
+	officer.stop_pulling()
+	qdel(chair)
+
+	// Inside a closed unlocked closet after contact: expose_suspect() opens it so the step proceeds
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, get_turf(suspect))
+	locker.open()
+	suspect.forceMove(get_turf(locker))
+	TEST_ASSERT(locker.close(), "Setup: could not close closet over suspect")
+	TEST_ASSERT_EQUAL(suspect.loc, locker, "Setup: suspect is not inside the closed closet")
+	TEST_ASSERT(case.expose_suspect(officer, suspect), "Officer did not open the closet holding the suspect")
+	TEST_ASSERT(locker.opened, "The closet is still shut")
+	TEST_ASSERT(isturf(suspect.loc), "The suspect is still inside the closet after opening")
+
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
