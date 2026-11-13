@@ -57,6 +57,8 @@
 #define SANDY_REPLAY_UNBORN "sandy_replay_unborn"
 /// Filter name hiding what the recording saw change, in the tick between the slow-mo's end and the replay's start.
 #define SANDY_REPLAY_PENDING_HIDE "sandy_replay_pending_hide"
+/// Fullscreen category of the slow-mo's release flash (SANDY_STOP_FLASH in ware_sandy_timestop.dm).
+#define SANDY_REPLAY_RELEASE_FLASH "sandy_time_stop_flash"
 
 #define SANDY_REPLAY_RECORDING 1
 #define SANDY_REPLAY_PENDING 2
@@ -566,6 +568,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	tracks -= thing
 	pending_hidden -= thing
 	held_shots -= thing
+	unborn -= thing
 	if(!track)
 		return
 	if(GLOB.sandy_replay_masked[thing] == track)
@@ -619,6 +622,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	sample_timer = null
 	if(!replays)
 		finish()
+		return
+	if(user?.client)
+		// The cut into the replay is one frame: the slow-mo's last frame, then the replay's first, in this same tick,
+		// so no frame of the world as it really is now (the dead where they fell, the gore at its landing spots) goes
+		// out between them. What ends the slow-mo after this (the outline coming off, the release flash) lands on the
+		// real looks under the puppets. Without a client nobody sees the cut: the replay starts next tick.
+		begin()
 		return
 	begin_timer = addtimer(CALLBACK(src, PROC_REF(begin)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
@@ -1030,6 +1040,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	if(finished)
 		return
+	// The cut to the replay is the change of scene: the slow-mo's pale release flash would only wash out its first frames.
+	// It is already fading on its own (out of user.screens), so it is taken off the client's screen directly.
+	user.clear_fullscreen(SANDY_REPLAY_RELEASE_FLASH, FALSE)
+	for(var/atom/movable/screen/fullscreen/flash/sandy_release/flash in user.client?.screen)
+		user.client.screen -= flash
 	play_started = world.time
 	// The surge coming on, as the replay's user did at its first frame.
 	var/turf/first = user_track ? locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) : null
@@ -1050,10 +1065,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		if(length(track.frames) == SANDY_FRAME_SIZE && track.first == 0)
 			continue // it never changed: nothing to show
 		if(sandy_rig_picture(thing))
-			// A rig picture still fading out as the move hands the body back: it goes in a moment. Drawn on a stand-in,
-			// and the real one is hidden now rather than fading over the replay's start.
-			animate(thing)
-			thing.alpha = 0
+			// A rig picture still showing (fading out as the move hands the body back, or holding the body in a pose
+			// past the slow-mo): drawn on a stand-in, and the real one is hidden for the replay by a filter, not its
+			// alpha. Its own animations run on underneath and finish() shows it again as it really is by then.
+			unborn[thing] = TRUE
+			thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
 			track.mode = SANDY_TRACK_STANDIN
 			standins += track
 		else if(isturf(thing.loc))
@@ -1779,6 +1795,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// execution's muzzle flash).
 /proc/sandy_rig_picture(atom/thing)
 	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx) || istype(thing, /obj/effect/temp_visual/hv_muzzle_flash)
+
+/// The slow-mo's release flash isn't put on the screen of a user whose replay is starting: the cut to the replay is the
+/// change of scene (begin()).
+/atom/movable/screen/fullscreen/flash/sandy_release/should_show_to(mob/mymob)
+	if(isliving(mymob) && sandy_replay_showing(mymob))
+		return FALSE
+	return ..()
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)
