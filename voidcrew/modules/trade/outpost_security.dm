@@ -203,6 +203,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	if(.)
 		outpost_note_armed(src, user)
 
+/obj/item/grenade/c4/suicide_act(mob/living/user)
+	outpost_note_armed(src, user)
+	return ..()
+
 /// `bomb` was set off by `user` and nobody had armed it before: the one who set it off armed it
 /proc/outpost_note_armed_unless_armed(obj/bomb, mob/user)
 	if(!QDELETED(bomb) && !bomb.outpost_armed_by?.resolve())
@@ -227,6 +231,26 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		outpost_note_armed_unless_armed(holder, source)
 	return ..()
 
+// A syndicate bomb is armed by whoever starts its countdown or pulses its activate wire; defusing clears the blame,
+// while a failed defusal on a boom wire leaves the original armer's blame intact (owner decision 45).
+/obj/machinery/syndicatebomb/settings(mob/user)
+	var/was_active = active
+	. = ..()
+	if(!was_active && active)
+		outpost_note_armed(src, user)
+
+/datum/wires/syndicatebomb/on_pulse(wire, mob/user)
+	var/obj/machinery/syndicatebomb/bomb = holder
+	var/was_active = bomb?.active
+	. = ..()
+	if(bomb && !was_active && bomb.active)
+		outpost_note_armed(bomb, user)
+
+/obj/machinery/syndicatebomb/defuse()
+	. = ..()
+	outpost_armed_by = null
+
+// A fuel tank's own bullet_act() and attackby() set it off without calling the base ones, so it keeps its own hooks
 /obj/structure/reagent_dispensers/fueltank/bullet_act(obj/projectile/hitting_projectile)
 	var/datum/weakref/before = outpost_armed_by
 	outpost_note_armed(src, hitting_projectile.firer)
@@ -245,12 +269,25 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	if(!QDELETED(src) && rig == old_rig)
 		outpost_armed_by = before
 
-// An igniter rigged onto a tank arms it: whoever rigged it, never whoever later pulses the rig or trips its mousetrap
+// Any other dispenser with fuel in it goes off when shot or smashed to pieces
+/obj/structure/reagent_dispensers/bullet_act(obj/projectile/hitting_projectile)
+	var/datum/weakref/before = outpost_armed_by
+	outpost_note_armed(src, hitting_projectile.firer)
+	. = ..()
+	// Still standing: the shot set nothing off
+	if(!QDELETED(src))
+		outpost_armed_by = before
+
+// A blow that breaks it sets it off; an igniter rigged onto it arms it for whoever rigged it, never whoever later pulses the rig
 /obj/structure/reagent_dispensers/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	var/datum/weakref/before = outpost_armed_by
 	var/obj/item/assembly_holder/old_rig = rig
+	outpost_note_armed(src, user)
 	. = ..()
 	if(rig && rig != old_rig)
 		outpost_note_armed(src, user)
+	else if(!QDELETED(src))
+		outpost_armed_by = before
 
 // The rig taken off: the tank is no bomb any more
 /obj/structure/reagent_dispensers/Exited(atom/movable/gone, direction)
@@ -322,10 +359,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		return null
 	var/obj/bomb = explosion_cause
 	var/mob/living/armer = bomb.outpost_armed_by?.resolve()
-	// A transfer valve's tank goes off, not the valve
-	if(!armer && istype(bomb.loc, /obj/item/transfer_valve))
-		var/obj/item/transfer_valve/valve = bomb.loc
-		armer = valve.outpost_armed_by?.resolve()
+	// A transfer valve's tank or a syndicate bomb's payload goes off, not its outer shell
+	if(!armer && (istype(bomb.loc, /obj/item/transfer_valve) || istype(bomb.loc, /obj/machinery/syndicatebomb)))
+		var/obj/shell = bomb.loc
+		armer = shell.outpost_armed_by?.resolve()
 	return isliving(armer) ? armer : null
 
 /**
@@ -338,6 +375,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	if(!bomber?.mind)
 		return
 	var/obj/item/bomb = isitem(explosion_cause) ? explosion_cause : null
+	if(!bomb && isprojectile(explosion_cause))
+		var/obj/projectile/shot = explosion_cause
+		if(isitem(shot.fired_from))
+			bomb = shot.fired_from
 	var/list/officers = list()
 	var/list/locals = list()
 	var/list/visitors = list()
@@ -354,9 +395,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		return
 	log_game("OUTPOST BOMBING: [key_name(bomber)] caught [length(officers) + length(locals) + length(visitors)] at [AREACOORD(victims[1])] with [explosion_cause].")
 	for(var/mob/living/officer as anything in officers)
-		// The bomb is the weapon. The signal alone would find none in the bomber's hands and call it resisting.
+		// The bomb is the weapon. Even when the cause is a fuel tank, shell or rocket rather than an item, it is an armed assault, never resisting.
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(officer))
-		outpost?.police?.officer_struck(officer, bomber, ATTACKER_DAMAGING_ATTACK, bomb)
+		outpost?.police?.officer_struck(officer, bomber, ATTACKER_DAMAGING_ATTACK, bomb, armed = TRUE)
 		SEND_SIGNAL(officer, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
 	for(var/mob/living/local as anything in locals)
 		SEND_SIGNAL(local, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)

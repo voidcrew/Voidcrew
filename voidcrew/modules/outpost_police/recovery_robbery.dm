@@ -590,15 +590,16 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 
 /**
  * Who, other than the held-up trader (whose report is its alarm), sees `robber` hold `trader` up, in the order
- * witness_of() asks: the outpost's other traders, players not on the robber's crew, cameras, officers (all who saw), then townspeople.
- * A list of one witness (or all the officers who saw); empty if nobody did.
+ * witness_of() asks: the outpost's other traders, players not on the robber's crew, cameras, then every officer and
+ * townsperson who saw. One witness, or those townspeople then those officers (the townspeople's report is on a timer);
+ * empty if nobody did.
  */
 /datum/outpost_police_perception/proc/holdup_witnesses(mob/living/robber, mob/living/trader)
 	var/obj/structure/overmap/trader_outpost/outpost = police?.outpost
 	if(!outpost || !robber)
 		return list()
 	for(var/mob/living/other in outpost.traders)
-		if(other != trader && sees(other, robber))
+		if(other != trader && can_report(other) && sees(other, robber))
 			return list(other)
 	var/datum/voidcrew_crew_record/own_crew = robber.mind?.get_reputation_crew()
 	for(var/mob/living/player in GLOB.alive_player_list)
@@ -613,14 +614,17 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
 		if(sees(officer, robber))
 			officers_saw += officer
-	if(length(officers_saw))
-		return officers_saw
+	var/list/civilians_saw = list()
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
 			if(!is_officer(person) && !(person in outpost.traders) && sees(person, robber))
-				return list(person)
-	return list()
+				civilians_saw += person
+	if(length(civilians_saw) && length(officers_saw))
+		return civilians_saw + officers_saw
+	if(length(officers_saw))
+		return officers_saw
+	return civilians_saw
 
 // ----- the gate emag, to the police (spec-rehydrate.md 9) -----
 

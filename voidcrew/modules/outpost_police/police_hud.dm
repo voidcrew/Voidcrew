@@ -91,4 +91,10 @@
 	SHOULD_NOT_SLEEP(TRUE)
 	refresh_outpost_wanted_alert(who)
 
+/// Clears the wanted alert from `body` when its mind has moved on
+/proc/clear_outpost_wanted_alert(mob/body)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!QDELETED(body))
+		body.clear_alert(OUTPOST_WANTED_ALERT)
+
 #undef OUTPOST_WANTED_ALERT
