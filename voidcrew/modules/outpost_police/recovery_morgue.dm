@@ -729,8 +729,8 @@
 		goal = police.dispatch_nearest_lift_point(sector, doer)
 		goal_kind = MORGUE_GOAL_LIFT_OUT
 		return !!goal
-	if(sector != POLICE_SECTOR_LOBBY)
-		goal = police.dispatch_nearest_lift_point(sector, doer)
+	if(istype(sector, /datum/outpost_berth))
+		goal = police.dispatch_nearest_elevator_point(sector, doer, doer)
 		goal_kind = MORGUE_GOAL_RIDE
 		return !!goal
 	var/obj/structure/bodycontainer/morgue/tray = free_tray()

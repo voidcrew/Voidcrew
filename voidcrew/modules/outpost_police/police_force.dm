@@ -285,7 +285,7 @@
 	switch(level)
 		if(POLICE_FORCE_ARREST)
 			if(gun && is_holding(gun))
-				gun.equip_to_best_slot(src)
+				police_put_away(gun)
 			if(baton && police_draw(baton, longgun))
 				human_npc_ready_weapon(src, baton)
 		if(POLICE_FORCE_STUN)
@@ -293,20 +293,20 @@
 				outpost_police_set_gun_mode(gun, lethal = FALSE)
 				police_draw(gun, longgun || baton)
 				if(baton && is_holding(baton))
-					baton.equip_to_best_slot(src)
+					police_put_away(baton)
 		if(POLICE_FORCE_LETHAL)
 			if(longgun)
 				police_draw(longgun, gun || baton)
 				for(var/obj/item/sidearm in list(gun, baton))
 					if(is_holding(sidearm))
-						sidearm.equip_to_best_slot(src)
+						police_put_away(sidearm)
 			else if(gun)
 				outpost_police_set_gun_mode(gun, lethal = TRUE)
 				police_draw(gun, baton)
 		else
 			for(var/obj/item/weapon in list(gun, baton))
 				if(is_holding(weapon))
-					weapon.equip_to_best_slot(src)
+					police_put_away(weapon)
 
 /**
  * Takes `weapon` in hand, making room first: a routine's prop goes, then `stow` (the other weapon) goes back on
@@ -320,7 +320,7 @@
 	if(!length(get_empty_held_indexes()))
 		put_away_prop()
 	if(!length(get_empty_held_indexes()) && stow && is_holding(stow))
-		stow.equip_to_best_slot(src)
+		police_put_away(stow)
 	if(!length(get_empty_held_indexes()))
 		for(var/obj/item/held in held_items)
 			if(held == weapon || held == stow)
@@ -328,7 +328,7 @@
 			if(HAS_TRAIT(held, TRAIT_AMBIENT_PROP))
 				qdel(held)
 			else
-				held.equip_to_best_slot(src)
+				police_put_away(held)
 			break
 	return human_npc_take_in_hand(src, weapon)
 

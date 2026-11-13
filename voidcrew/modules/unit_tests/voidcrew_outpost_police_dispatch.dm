@@ -218,6 +218,8 @@
 	var/list/turf/lifts = dispatch_two_lifts(outpost)
 	var/turf/start = lifts[1]
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, start)
+	TEST_ASSERT_NULL(police.next_elevator_sector("concourse", "lobby"), "Concourse to lobby still routes via an elevator ride")
+	TEST_ASSERT_NULL(police.next_elevator_sector("lobby", "concourse"), "Lobby to concourse still routes via an elevator ride")
 	TEST_ASSERT(!police.ride(officer, "lobby"), "An officer teleported from concourse to lobby instead of walking")
 	TEST_ASSERT_EQUAL(get_turf(officer), start, "Refusing a concourse-to-lobby ride still moved the officer")
 
@@ -238,6 +240,7 @@
 	officer.forceMove(berth.alcove_turfs[5])
 	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, berth.alcove_turfs[2])
 	officer.start_pulling(prisoner)
+	prisoner.grabbedby(officer, TRUE)
 	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "The officer could not pull the prisoner")
 	TEST_ASSERT(police.ride(officer, "lobby"), "The hangar elevator ride did not arrive at the lobby")
 	TEST_ASSERT(get_turf(officer) in outpost.lobby_alcove_turfs, "The officer did not arrive at the lobby elevator alcove")
@@ -482,4 +485,129 @@
 
 	police.lift_turfs = old_lifts
 	outpost.lobby_alcove_turfs = old_alcove
+	dispatch_clear(police)
+
+/// Officers and recovery staff walk concourse -> lobby through the exit gate with pulled suspects/bags, and armed officers pass lobby checkpoint scans
+/datum/unit_test/voidcrew_outpost_police_dispatch_concourse_lobby_walk
+
+/datum/unit_test/voidcrew_outpost_police_dispatch_concourse_lobby_walk/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/morgue_worker = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue, police_floor(outpost))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/townsperson = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, police_floor(outpost))
+
+	var/obj/structure/outpost_exit_gate/gate
+	var/turf/bottom_left = outpost.template_bottom_left
+	if(bottom_left && outpost.outpost_template)
+		var/turf/top_right = locate(bottom_left.x + outpost.outpost_template.width - 1, bottom_left.y + outpost.outpost_template.height - 1, bottom_left.z)
+		for(var/turf/tile as anything in block(bottom_left, top_right))
+			gate = locate(/obj/structure/outpost_exit_gate) in tile
+			if(gate)
+				break
+	TEST_ASSERT_NOTNULL(gate, "The loaded outpost has no exit gate")
+	var/out_dir = REVERSE_DIR(gate.dir)
+	var/datum/can_pass_info/police_pass = new(officer)
+	var/datum/can_pass_info/morgue_pass = new(morgue_worker)
+	var/datum/can_pass_info/town_pass = new(townsperson)
+	TEST_ASSERT(gate.CanAStarPass(out_dir, police_pass), "An officer on duty cannot path through the concourse exit gate")
+	TEST_ASSERT(gate.CanAStarPass(out_dir, morgue_pass), "A morgue worker on duty cannot path through the concourse exit gate")
+	TEST_ASSERT(!gate.CanAStarPass(out_dir, town_pass), "An idle townsperson was allowed to path out through the exit gate")
+
+	var/turf/gate_turf = get_turf(gate)
+	var/turf/lobby_side = get_step(gate, gate.dir)
+	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, gate_turf)
+	officer.forceMove(lobby_side)
+	officer.start_pulling(prisoner)
+	prisoner.grabbedby(officer, TRUE)
+	gate.carry_through(prisoner)
+	TEST_ASSERT_NOTEQUAL(get_turf(prisoner), gate_turf, "The exit gate did not step the pulled prisoner into the lobby")
+	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "Stepping a pulled prisoner through the exit gate broke the officer's pull")
+	TEST_ASSERT(officer.grab_state >= GRAB_AGGRESSIVE, "Stepping a pulled prisoner through the exit gate downgraded the officer's grip")
+	officer.stop_pulling()
+
+	var/obj/structure/closet/body_bag/outpost_morgue/bag = allocate(/obj/structure/closet/body_bag/outpost_morgue, gate_turf)
+	morgue_worker.forceMove(lobby_side)
+	morgue_worker.start_pulling(bag)
+	gate.carry_through(bag)
+	TEST_ASSERT_NOTEQUAL(get_turf(bag), gate_turf, "The exit gate did not carry a pulled morgue body bag into the lobby")
+	TEST_ASSERT_EQUAL(morgue_worker.pulling, bag, "Carrying a morgue body bag through the exit gate broke the worker's pull")
+	morgue_worker.stop_pulling()
+
+	// Armed police officer in the lobby checkpoint chamber is never refused for carrying police weapons
+	if(length(outpost.lobby_alcove_turfs))
+		officer.forceMove(outpost.lobby_alcove_turfs[1])
+		var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint(officer)
+		TEST_ASSERT_NOTNULL(post, "The loaded outpost has no lobby checkpoint")
+		if(post && length(post.chamber_turfs))
+			officer.forceMove(post.chamber_turfs[1])
+			var/list/refused = post.inspect_chamber()
+			TEST_ASSERT(!length(refused), "An armed tactical officer in the checkpoint chamber was refused ([length(refused)])")
+			var/turf/step_goal = police.checkpoint_step_to_concourse(officer)
+			TEST_ASSERT_NOTNULL(step_goal, "checkpoint_step_to_concourse returned null for an officer in the lobby checkpoint")
+			police.clear_checkpoint_crossing(officer)
+	dispatch_clear(police)
+
+/// Wave teardown unpauses built members, stood-down response units turn back when stars rise again, and corpse collection drops non-gear and cleans empty morgue bags
+/datum/unit_test/voidcrew_outpost_police_dispatch_recall_and_wave_cleanup
+
+/datum/unit_test/voidcrew_outpost_police_dispatch_recall_and_wave_cleanup/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	dispatch_two_lifts(outpost)
+
+	// Deleting an unreleased wave must remove TRAIT_AI_PAUSED ("outpost_police_wave") from built members
+	var/mob/living/suspect = dispatch_suspect(outpost, 50)
+	police.dispatch_build_now = TRUE
+	var/datum/outpost_police_wave/wave = police.dispatch_send_wave(3, 1, "concourse", police.get_warrant(suspect.mind))
+	TEST_ASSERT_NOTNULL(wave, "No wave was created")
+	var/list/members = wave.living_members()
+	TEST_ASSERT_EQUAL(length(members), 1, "Wave did not build its member")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/held = members[1]
+	TEST_ASSERT(HAS_TRAIT_FROM(held, TRAIT_AI_PAUSED, "outpost_police_wave"), "Wave member was not held before release")
+	police.dispatch_waves -= wave
+	qdel(wave)
+	TEST_ASSERT(!HAS_TRAIT_FROM(held, TRAIT_AI_PAUSED, "outpost_police_wave"), "Deleting an unreleased wave left its member permanently AI-paused")
+	dispatch_clear(police)
+
+	// Stood-down response officers walking out (npc_exit set) are recalled when active heat rises again instead of deadlocking OUTPOST_POLICE_CAP_OUTPOST
+	var/list/leaving_units = list()
+	for(var/i in 1 to 12) // OUTPOST_POLICE_CAP_OUTPOST
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/responder = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+		responder.resume_routine()
+		responder.npc_walk_out(police.lift_turfs[1])
+		leaving_units += responder
+	TEST_ASSERT_EQUAL(police.dispatch_live_count(), 12, "Setup: outpost is not at its 12-officer cap")
+	police_pin_warrant(police, suspect.mind, 50) // 3 stars -> wants 4 units
+	police.dispatch_respond(police.alert_level())
+	var/recalled = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/responder as anything in leaving_units)
+		if(!responder.npc_exit && responder.dispatch_responding())
+			recalled++
+	TEST_ASSERT_EQUAL(recalled, 4, "Expected 4 stood-down officers to turn back at 3 stars when at the outpost cap, got [recalled]")
+	dispatch_clear(police)
+
+	// Corpse cap collection drops non-gear items onto the turf and deletes an emptied outpost_morgue bag
+	var/turf/bag_spot = police_floor(outpost)
+	var/obj/structure/closet/body_bag/outpost_morgue/morgue_bag = allocate(/obj/structure/closet/body_bag/outpost_morgue, bag_spot)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/oldest = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, bag_spot)
+	oldest.death()
+	oldest.timeofdeath = world.time - 200 SECONDS
+	var/obj/item/paper/note = allocate(/obj/item/paper)
+	oldest.equip_to_slot_if_possible(note, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+	oldest.forceMove(morgue_bag)
+	for(var/i in 1 to 8) // OUTPOST_POLICE_CORPSE_CAP
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/newer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, bag_spot)
+		newer.death()
+		newer.timeofdeath = world.time - (100 - i) SECONDS
+	police.dispatch_collect_bodies()
+	TEST_ASSERT(QDELETED(oldest), "The oldest bagged officer corpse was not collected")
+	TEST_ASSERT(!QDELETED(note) && get_turf(note) == bag_spot, "Collecting a corpse deleted or stranded a non-gear item on it")
+	TEST_ASSERT(QDELETED(morgue_bag), "Collecting the only corpse in an outpost_morgue bag left an empty bag behind")
 	dispatch_clear(police)

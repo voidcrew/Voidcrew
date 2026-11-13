@@ -138,6 +138,34 @@
 /obj/item/restraints/handcuffs/outpost_police/used/apply_cuffs(mob/living/carbon/target, mob/user, dispense = FALSE)
 	return
 
+/// Security belt storage that also holsters an officer's miniature energy sidearm so both pockets stay empty
+/datum/storage/security_belt/outpost_police
+
+/datum/storage/security_belt/outpost_police/New(atom/parent, max_slots, max_specific_storage, max_total_storage, rustle_sound, remove_rustle_sound)
+	. = ..()
+	set_holdable(list(
+		/obj/item/ammo_box,
+		/obj/item/ammo_casing/shotgun,
+		/obj/item/assembly/flash/handheld,
+		/obj/item/clothing/glasses,
+		/obj/item/clothing/gloves,
+		/obj/item/flashlight/seclite,
+		/obj/item/food/donut,
+		/obj/item/grenade,
+		/obj/item/gun/energy/e_gun/mini,
+		/obj/item/holosign_creator/security,
+		/obj/item/knife/combat,
+		/obj/item/melee/baton,
+		/obj/item/radio,
+		/obj/item/reagent_containers/spray/pepper,
+		/obj/item/restraints/handcuffs,
+		/obj/item/restraints/legcuffs/bola,
+	))
+
+/// Security belt worn by outpost officers: holds baton, cuffs and sidearm without using a pocket
+/obj/item/storage/belt/security/outpost_police
+	storage_type = /datum/storage/security_belt/outpost_police
+
 // ----- outfits -----
 // Built from clothing that already exists (npc-outfit skill), each worn look checked on a mannequin.
 // Every outfit has a uniform, so each one equips on its own (tg's outfit_sanity test builds them all).
@@ -146,21 +174,21 @@
 // officer and the marshal add a gas mask, flash-proof eyewear and a ballistic long gun (abuse M5: no gas
 // or flash trick, and no energy weapon for an EMP to take).
 
-/// Every officer: radio, an ID that opens the police doors, a belt with baton and cuffs, an energy gun in a pocket
+/// Every officer: radio, an ID that opens the police doors, and a belt with baton, cuffs and sidearm (pockets empty)
 /datum/outfit/outpost_police
 	name = "Outpost Police"
 	uniform = /obj/item/clothing/under/rank/security/officer/spacepol
 	shoes = /obj/item/clothing/shoes/jackboots
 	gloves = /obj/item/clothing/gloves/color/black
 	ears = /obj/item/radio/headset/headset_sec
-	belt = /obj/item/storage/belt/security
+	belt = /obj/item/storage/belt/security/outpost_police
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,
 		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/gun/energy/e_gun/mini = 1,
 	)
 	id = /obj/item/card/id/advanced
 	id_trim = /datum/id_trim/outpost_police
-	r_pocket = /obj/item/gun/energy/e_gun/mini
 
 // ----- beat officers: the uniform and a cap -----
 
@@ -233,6 +261,7 @@
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,
 		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/gun/energy/e_gun/mini = 1,
 		/obj/item/grenade/flashbang = 1,
 	)
 
@@ -271,6 +300,7 @@
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,
 		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/gun/energy/e_gun/mini = 1,
 		/obj/item/grenade/flashbang = 1,
 	)
 
@@ -504,16 +534,29 @@
 		return cuffs
 	return null
 
-/// Puts `thing` from their hand back where it is carried (its slot, suit storage, a pocket, the belt or the bag). TRUE once it is out of their hands.
+/// Puts `thing` from their hand back where it is carried (the belt, the bag or a non-pocket worn slot). TRUE once it is out of their hands.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_put_away(obj/item/thing)
 	if(QDELETED(thing) || !is_holding(thing))
 		return TRUE
-	if(equip_to_appropriate_slot(thing))
-		return TRUE
-	if(wear_suit && !s_store && isgun(thing) && equip_to_slot_if_possible(thing, ITEM_SLOT_SUITSTORE, disable_warning = TRUE))
-		return TRUE
 	for(var/obj/item/holder in list(belt, back))
-		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+		if(holder?.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+			return TRUE
+	var/static/list/non_pocket_slots = list(
+		ITEM_SLOT_SUITSTORE,
+		ITEM_SLOT_BACK,
+		ITEM_SLOT_BELT,
+		ITEM_SLOT_HEAD,
+		ITEM_SLOT_MASK,
+		ITEM_SLOT_EYES,
+		ITEM_SLOT_EARS,
+		ITEM_SLOT_GLOVES,
+		ITEM_SLOT_FEET,
+		ITEM_SLOT_OCLOTHING,
+		ITEM_SLOT_ICLOTHING,
+		ITEM_SLOT_ID,
+	)
+	for(var/slot in non_pocket_slots)
+		if(equip_to_slot_if_possible(thing, slot, disable_warning = TRUE))
 			return TRUE
 	return !is_holding(thing)
 

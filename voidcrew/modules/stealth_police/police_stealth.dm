@@ -87,8 +87,8 @@
 	return ..()
 
 /**
- * A walk into a hangar goes via the lobby and the hangar elevator; a walk between the concourse and the lobby stays
- * on foot (out through the exit gate, back in through the checkpoint). A beat officer is never taken to a hangar
+ * A walk into another sector goes on foot between concourse and lobby (exit gate one way, checkpoint the other)
+ * and by the hangar elevator between the lobby and a hangar berth. A beat officer is never taken to a hangar
  * (spec-stealth 1.5): that walk is over at once, as a walk the pathfinder gave up on.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_walk(turf/dest, purpose)
@@ -111,29 +111,23 @@
 		goto_purpose = purpose
 		goto_result = "failed"
 		return
-	// Concourse <-> berth goes by way of the lobby on foot, then the hangar elevator
-	if(from_sector == POLICE_SECTOR_CONCOURSE && istype(to_sector, /datum/outpost_berth) && length(police.outpost?.lobby_alcove_turfs))
-		to_sector = POLICE_SECTOR_LOBBY
-	else if(istype(from_sector, /datum/outpost_berth) && to_sector == POLICE_SECTOR_CONCOURSE && length(police.outpost?.lobby_alcove_turfs))
-		to_sector = POLICE_SECTOR_LOBBY
-	// Same floor: concourse -> lobby walks out through the exit gate; lobby -> concourse crosses the checkpoint
-	if(police.dispatch_same_floor(from_sector, to_sector))
-		if(from_sector == POLICE_SECTOR_CONCOURSE)
-			police.clear_checkpoint_crossing(officer)
-			var/turf/walk_goal = (to_sector == POLICE_SECTOR_LOBBY && police.sector_of(dest) != POLICE_SECTOR_LOBBY) ? police.lift_point(POLICE_SECTOR_LOBBY, null, officer) : dest
-			return ..(walk_goal || dest, purpose)
-		var/list/step_info = police.checkpoint_step_goal(officer, dest)
-		if(!step_info)
-			return ..()
-		var/turf/step_turf = get_turf(step_info[1])
-		if(!step_turf)
-			stealth_drop_walk()
-			return
-		return ..(step_turf, purpose)
-	police.clear_checkpoint_crossing(officer)
 	if(officer.dispatch_riding)
 		return
-	var/turf/lift = police.dispatch_nearest_lift_point(from_sector, officer)
+	if(from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE)
+		var/turf/gate_step = police.checkpoint_step_to_concourse(officer)
+		if(gate_step)
+			if(gate_step == here)
+				stealth_drop_walk()
+				queue_behavior(/datum/ai_behavior/stealth_stand)
+				return
+			return ..(gate_step, purpose)
+	else
+		police.clear_checkpoint_crossing(officer)
+	var/next_ride_sector = police.next_elevator_sector(from_sector, to_sector)
+	if(!next_ride_sector)
+		return ..()
+	var/board_sector = police.elevator_board_sector(from_sector)
+	var/turf/lift = police.dispatch_nearest_elevator_point(board_sector, officer, officer)
 	if(!lift)
 		return ..()
 	if(here != lift)
@@ -142,7 +136,7 @@
 		return
 	police_ride_retry_at = world.time + 3 SECONDS
 	stealth_drop_walk()
-	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, ride), officer, to_sector)
+	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, ride), officer, next_ride_sector)
 
 /// Carried off (abuse M29): it holds where it is, as stealth has it, but remembers its route for when it is back
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_become_sentry(turf/where)

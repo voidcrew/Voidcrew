@@ -496,6 +496,7 @@
 	if(QDELETED(officer))
 		return
 	var/mob/living/carbon/suspect = suspect_ref?.resolve()
+	police?.clear_checkpoint_crossing(officer)
 	if(officer.case == src)
 		officer.case = null
 	if(suspect && officer.pulling == suspect)
@@ -839,9 +840,9 @@
 	return FALSE
 
 /**
- * Gets `officer` within `distance` of `target`: on foot on the same floor (through the concourse exit gate or the
- * security checkpoint between concourse and lobby), or by the hangar elevator between lobby and berths.
- * TRUE once there; otherwise it has set the goal or started the elevator ride.
+ * Gets `officer` within `distance` of `target`: on foot within or between connected rooms (exit gate and checkpoint
+ * between concourse and lobby), and by the hangar elevator between the lobby and hangar berths. TRUE once there;
+ * otherwise it has set the goal or started the ride.
  */
 /datum/outpost_police_case/proc/route_to(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, atom/target, distance = 1)
 	var/turf/here = get_turf(officer)
@@ -850,8 +851,10 @@
 		police?.clear_checkpoint_crossing(officer)
 		set_goal(null)
 		return FALSE
-	if(here.z == there.z && get_dist(here, there) <= distance)
-		police?.clear_checkpoint_crossing(officer)
+	var/from_sector = police.sector_of(here)
+	var/to_sector = police.sector_of(there)
+	if(here.z == there.z && get_dist(here, there) <= distance && (from_sector == to_sector || here == there || here.Adjacent(there)))
+		police.clear_checkpoint_crossing(officer)
 		set_goal(null)
 		return TRUE
 	// Closing in (a chase, a long walk) is progress: the step only times out once the officer stops getting nearer
@@ -862,42 +865,34 @@
 	if(dist < progress_dist)
 		progress_dist = dist
 		step_started_at = world.time
-	var/from_sector = police.sector_of(here)
-	var/to_sector = police.sector_of(there)
-	// Concourse <-> berth goes by foot through the lobby, then the hangar elevator
-	if(from_sector == POLICE_SECTOR_CONCOURSE && istype(to_sector, /datum/outpost_berth) && length(police.outpost?.lobby_alcove_turfs))
-		to_sector = POLICE_SECTOR_LOBBY
-	else if(istype(from_sector, /datum/outpost_berth) && to_sector == POLICE_SECTOR_CONCOURSE && length(police.outpost?.lobby_alcove_turfs))
-		to_sector = POLICE_SECTOR_LOBBY
-	if(from_sector == to_sector || world.time < ride_failed_until)
+	if(from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE)
+		lift_goal = null
+		var/turf/gate_step = police.checkpoint_step_to_concourse(officer)
+		if(gate_step)
+			step_started_at = world.time
+			if(gate_step == here)
+				set_goal(null)
+			else
+				set_goal(gate_step, 0)
+			return FALSE
+	else
 		police.clear_checkpoint_crossing(officer)
+	var/next_ride_sector = (world.time < ride_failed_until) ? null : police.next_elevator_sector(from_sector, to_sector)
+	if(!next_ride_sector)
 		lift_goal = null
 		set_goal(target, distance)
 		return FALSE
-	if(police.dispatch_same_floor(from_sector, to_sector))
-		lift_goal = null
-		if(from_sector == POLICE_SECTOR_CONCOURSE)
-			police.clear_checkpoint_crossing(officer)
-			var/atom/walk_target = (police.sector_of(there) == POLICE_SECTOR_LOBBY) ? target : (police.lift_point(POLICE_SECTOR_LOBBY, null, officer) || target)
-			set_goal(walk_target, walk_target == target ? distance : 0)
-			return FALSE
-		var/list/step_info = police.checkpoint_step_goal(officer, target)
-		if(!step_info)
-			set_goal(target, distance)
-			return FALSE
-		set_goal(step_info[1], step_info[2])
-		return FALSE
-	police.clear_checkpoint_crossing(officer)
-	if(!lift_goal || police.sector_of(lift_goal) != from_sector)
-		lift_goal = police.lift_point(from_sector, null, officer)
+	var/board_sector = police.elevator_board_sector(from_sector)
+	if(!lift_goal || !(lift_goal in police.dispatch_elevator_tiles(board_sector)))
+		lift_goal = police.dispatch_nearest_elevator_point(board_sector, officer, officer)
 		lift_best = INFINITY
 		lift_best_at = world.time
 	if(!lift_goal)
-		// No lift from here: try the walk
+		// No elevator alcove from here: try the walk
 		set_goal(target, distance)
 		return FALSE
 	if(here != lift_goal)
-		// A lift point the officer gets no nearer to (someone stands on it, or it is boxed in) is given up for
+		// An alcove spot the officer gets no nearer to (someone stands on it, or it is boxed in) is given up for
 		// another (review-1 S4)
 		var/lift_dist = here.z == lift_goal.z ? get_dist(here, lift_goal) : INFINITY
 		if(lift_dist < lift_best)
@@ -911,7 +906,7 @@
 		set_goal(lift_goal, 0)
 		return FALSE
 	set_goal(null)
-	ride_sector = to_sector
+	ride_sector = next_ride_sector
 	begin_action(CASE_ACT_RIDING)
 	return FALSE
 
@@ -1450,8 +1445,8 @@
 	if(QDELETED(src))
 		return
 	if(!arrived)
-		// The lift went nowhere (no lift point on the far side, or the ride was broken off): walk for a while
-		ride_failed_until = world.time + 30 SECONDS
+		// Busy elevator car: try again shortly; otherwise walk for a while
+		ride_failed_until = world.time + (police.elevator_busy(police.sector_of(officer)) ? 2 SECONDS : 30 SECONDS)
 	lift_goal = null
 	ride_sector = null
 
