@@ -797,6 +797,10 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 /// Every puppet flashes white and fades back.
 /datum/chrome_rig/proc/flash()
 	for(var/key in puppets)
+		// In a Sandevistan slow-mo the flash plays through the puppet's tint filter: a second colour filter animated over
+		// the tint was drawn stuck at its flash by the client, a near-white body until the rig let go (ware_sandy_timestop.dm)
+		if(cyberware_time_flash(puppets[key], list(0.4,0,0, 0,0.4,0, 0,0,0.4, 0.6,0.6,0.62), list(0, 0, 0.2 SECONDS)))
+			continue
 		cyberware_flash_fx(puppets[key], 0.2 SECONDS)
 
 #undef CHROME_RIG_HIDE_FILTER
