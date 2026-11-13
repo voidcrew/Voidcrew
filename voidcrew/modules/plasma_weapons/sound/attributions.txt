@@ -1,16 +1,17 @@
 Mojave Sun (https://github.com/Mojave-Sun/mojave-sun-13), commit 1302c0c1f01. Its README puts icons under the mojave directory under CC BY-NC-SA 3.0 and does not name sounds; these sounds are used under the same CC BY-NC-SA 3.0 terms.
-Files are renamed copies of the originals listed below, from mojave/sound/ms13weapons/.
+Files come from the originals listed below, from mojave/sound/ms13weapons/. Files marked (edited) were changed
+from the original: trimmed, faded out, re-levelled or equalised. The others are renamed, unedited copies.
 
-kestrel_fire.ogg - gunsounds/laspistol/las_pistol_1.ogg
-hornet_fire.ogg - gunsounds/lasrcw/rcw_5.ogg
+kestrel_fire.ogg - gunsounds/laspistol/las_pistol_1.ogg (edited)
+hornet_fire.ogg - gunsounds/lasrcw/rcw_5.ogg (edited)
 cinder_fire.ogg - gunsounds/plaspistol/plasma_3.ogg
-furnace_fire.ogg - gunsounds/plasrifle/plasma_3.ogg
-flask_load.ogg - gunsounds/lasrifle/energy_reload.ogg
-flask_unload.ogg - gunsounds/lasrifle/energy_unload.ogg
-kestrel_far.ogg - distant_shots/laser_pistol.ogg
-hornet_far.ogg - distant_shots/rcw.ogg
+furnace_fire.ogg - gunsounds/plasrifle/plasma_3.ogg (edited)
+flask_load.ogg - gunsounds/lasrifle/energy_reload.ogg (edited)
+flask_unload.ogg - gunsounds/lasrifle/energy_unload.ogg (edited)
+kestrel_far.ogg - distant_shots/laser_pistol.ogg (edited)
+hornet_far.ogg - distant_shots/rcw.ogg (edited)
 cinder_far.ogg - distant_shots/plasma_pistol.ogg
-furnace_far.ogg - distant_shots/plasma_3.ogg
+furnace_far.ogg - distant_shots/plasma_3.ogg (edited)
 
 New sounds, original to this codebase:
 

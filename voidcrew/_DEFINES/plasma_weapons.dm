@@ -178,3 +178,10 @@
 #define PLASMA_SEAR_FLOW 1.6
 /// Scar text file for plasma burns
 #define PLASMA_SCAR_FILE "wounds/plasma_scar_desc.json"
+
+/// Furthest a distant firing sound carries, in tiles
+#define PLASMA_FAR_SOUND_RANGE 40
+/// Distant sound volume at the near edge of its band
+#define PLASMA_FAR_SOUND_VOL_NEAR 38
+/// Distant sound volume at PLASMA_FAR_SOUND_RANGE
+#define PLASMA_FAR_SOUND_VOL_FAR 5

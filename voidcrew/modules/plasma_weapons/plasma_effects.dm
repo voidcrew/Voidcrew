@@ -5,12 +5,6 @@
 // game state. Lights are OVERLAY_LIGHT only, steam uses the shared particle pool, wall glows are capped
 // per z-level and soot is capped globally.
 
-/// Furthest a distant firing sound carries, in tiles
-#define PLASMA_FAR_SOUND_RANGE 40
-/// Distant sound volume at the near edge of its band
-#define PLASMA_FAR_SOUND_VOL_NEAR 38
-/// Distant sound volume at PLASMA_FAR_SOUND_RANGE
-#define PLASMA_FAR_SOUND_VOL_FAR 5
 /// A bolt must be this many tiles from where it was fired before it hisses past anyone
 #define PLASMA_HISSBY_MIN_TRAVEL 3
 /// Shared particle pool for the flesh splash's steam, kept apart because its holders take the splash's layer
@@ -309,8 +303,10 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	var/turf/here = get_turf(src)
 	if(!here || !starting || get_dist(starting, here) < PLASMA_HISSBY_MIN_TRAVEL)
 		return
-	for(var/mob/living/listener in range(1, here))
-		if(!listener.client || listener == firer)
+	// view(), not range(): a bolt on the far side of a wall doesn't hiss past anyone. The mob it was fired at
+	// hears it hit instead.
+	for(var/mob/living/listener in view(1, here))
+		if(!listener.client || listener == firer || listener == original)
 			continue
 		// Refs, not mobs, so a deleted listener never leaves a hard reference here
 		var/listener_ref = REF(listener)
@@ -347,11 +343,15 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	. = list()
 	var/datum/gas_mixture/source_air = source_turf.return_air_readonly()
 	var/source_pressure = source_air ? source_air.return_pressure() : 0
+	// Packed encounters share a z-level; playsound() drops listeners in another region, so this does too
+	var/datum/source_region = map_region_for_turf(source_turf)
 	for(var/mob/listener as anything in candidates)
 		if(!listener)
 			continue
 		var/turf/listener_turf = get_turf(listener)
 		if(!listener_turf || listener_turf.z != source_turf.z)
+			continue
+		if(source_region && map_region_excludes_turf(source_region, listener_turf))
 			continue
 		var/volume = plasma_far_sound_volume(listener_turf, source_turf)
 		if(!volume)
@@ -958,9 +958,6 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	remove_shared_particles(/particles/smoke/steam/mild)
 	return ..()
 
-#undef PLASMA_FAR_SOUND_RANGE
-#undef PLASMA_FAR_SOUND_VOL_NEAR
-#undef PLASMA_FAR_SOUND_VOL_FAR
 #undef PLASMA_HISSBY_MIN_TRAVEL
 #undef PLASMA_SPLASH_STEAM_KEY
 #undef PLASMA_BURST_SPLATTER

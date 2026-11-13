@@ -82,7 +82,7 @@ A plasma bolt that wounds leaves a plasma burn instead of an ordinary burn. Molt
 ### Treating a plasma burn
 
 1. **Cool it.** Water stops the burning at once: a fire extinguisher, a shower, a splash from a sink or bucket, or anything wet. Cold air, a cryo tube or a stasis bed cool it more slowly.
-2. **Cut the slag out.** Aim at the burned limb and use a hemostat on the patient, with combat mode off. Wirecutters or a scalpel work too, but slower and rougher. Each cut does a little brute damage, and cutting hot slag makes the patient scream, so cool it first. A deep burn takes a few cuts. Scanning the wound with a health or wound analyzer first makes the job quicker, and working on yourself is slower. Take off a hardsuit or MODsuit covering the limb first.
+2. **Cut the slag out.** Aim at the burned limb and use a hemostat on the patient, with combat mode off. Wirecutters or a scalpel work too, but slower and rougher. Each cut does a little brute damage, and cutting hot slag makes the patient scream, so cool it first. A deep burn takes a few cuts. Scanning the wound with a wound analyzer first makes the job quicker, and working on yourself is slower. Take off a hardsuit or MODsuit covering the limb first.
 3. **Cover it.** Then treat it like any other burn: ointment, regenerative mesh, synthflesh or gauze.
 
 In surgery, **Excise plasma slag** takes the slag out of a resting patient without the brute damage, and dresses the burn in the same operation.
