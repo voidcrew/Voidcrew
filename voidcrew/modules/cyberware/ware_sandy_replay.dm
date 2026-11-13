@@ -94,6 +94,12 @@
 /// left out of the replay and the recording says so (shots_capped, and once in the game log).
 #define SANDY_REPLAY_MAX_SHOTS 64
 
+/// The shortest a one-shot effect's animation plays in the replay: two frames. Compressed ten times a muzzle flash or an
+/// impact ring would be over between two frames and never drawn.
+#define SANDY_REPLAY_ONESHOT_MIN (world.tick_lag * 2)
+/// How long a surger's afterimage lasts in real time: the live trail's (/obj/effect/temp_visual/decoy/fading/cascade).
+#define SANDY_REPLAY_TRAIL_LIFE 8
+
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
 #define SANDY_FRAME_INDEX 1
@@ -177,6 +183,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/drawn_look
 	/// A shot (a projectile): it flies in a line between its frames, a frame at a time (fly()).
 	var/flier = FALSE
+	/// A one-shot effect (a temp visual: a muzzle flash, an impact ring, cracks): its animations play for at least
+	/// SANDY_REPLAY_ONESHOT_MIN, so a compressed one is drawn at all, and its stand-in stays until they are done.
+	var/oneshot = FALSE
+	/// Playback: the glide playing now is a step to another tile, not a pose's own shift on the spot.
+	var/glide_step = FALSE
 
 /// Carries the recorded look of something that is gone, or isn't on a turf any more.
 /obj/effect/abstract/sandy_replay_standin
@@ -362,6 +373,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		/obj/effect/temp_visual/cyberware_time_ring,
 		/obj/effect/hotspot,
 		/obj/effect/particle_effect,
+		/obj/effect/dummy/lighting_obj, // a flash of light (a gunshot's): its light is an underlay, drawn whole on a stand-in
 		/obj/effect/landmark,
 		/atom/movable/screen,
 	))
@@ -391,8 +403,31 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	tracks[thing] = track
 	RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(on_thing_deleted))
 	sample_track(track, track.first)
+	if(istype(thing, /obj/effect/temp_visual))
+		track.oneshot = TRUE
+		intro(track)
 	if(sandy_rig_picture(thing))
 		event_log += "notice [thing.type] f[frame_exact()] first=[track.first]"
+
+/**
+ * A temp visual that animates itself in its own Initialize() (tg's ring) is first seen with its vars already at the
+ * tween's end (grown, faded out): it would replay as nothing. Its sandy_replay_intro() gives the look it starts with and
+ * the animations it plays, and those go in its track as if journaled.
+ */
+/datum/sandy_replay/proc/intro(datum/sandy_replay_track/track)
+	var/obj/effect/temp_visual/effect = track.thing
+	var/list/intro = effect.sandy_replay_intro()
+	if(!length(intro))
+		return
+	// The look it starts with goes on as an animation of no length before the rest: a later sample of it (the field's
+	// tint coming on in the same frame) can't take its place.
+	var/list/start = intro[1]
+	start["time"] = 0
+	LAZYADD(track.events, list(list(track.first, null, world.tick_lag * clock_rate, list(start))))
+	for(var/list/steps as anything in intro[2])
+		LAZYADD(track.events, list(list(track.first, null, world.tick_lag * clock_rate, steps)))
+		journaled++
+	event_log += "intro [effect.type] f[track.first] chains=[length(intro[2])]"
 
 /// The field just changed how `thing` looks (its tint): take the sample again.
 /datum/sandy_replay/proc/resample(atom/movable/thing)
@@ -407,7 +442,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	var/list/moving = moves_running()
 	var/frame = frame_now()
-	if(frame <= last_sampled)
+	// The first frame is taken again every tick of its span, the last take standing: it is what the replay opens on, and
+	// the surge's own first tick (the user mid-activation) is no picture to open on.
+	if(frame <= last_sampled && frame != 0)
 		return
 	last_sampled = frame
 	if(wait_started)
@@ -658,10 +695,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	open_event = null
 	var/datum/sandy_replay_track/track = ismovable(target) ? tracks[target] : null
-	if(!track && sandy_rig_picture(target) && user && get_dist(user, target) <= SANDY_REPLAY_HOLD_RANGE)
-		notice(target) // made this tick (a shot's muzzle flash): its first pose is this call
+	if(!track && (sandy_rig_picture(target) || istype(target, /obj/effect/temp_visual)) && user && get_dist(user, target) <= SANDY_REPLAY_HOLD_RANGE)
+		notice(target) // made this tick (a shot's muzzle flash, a drop of blood): its first pose is this call
 		track = tracks[target]
-	if(!track || !(sandy_rig_picture(target) || isliving(target)))
+	if(!track || !(sandy_rig_picture(target) || isliving(target) || track.oneshot))
 		return
 	// The look it had before this call: what it was drawn as when the chain began, direct writes included.
 	open_event = list(frame_due(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
@@ -683,10 +720,12 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		var/list/event = track.events[track.event_at]
 		if(event[1] >= frame + 1)
 			return
-		if(track.mode == SANDY_TRACK_PUPPET && track.glide_until > world.time + max(event[1] - frame, 0) * world.tick_lag && standin?.loc && !track.unmasked)
-			return // still gliding to the tile it starts on: it starts when the glide is done
+		// Still gliding to the tile it starts on: it starts when the glide is done. A glide on the spot is the frame's own
+		// shift, the pose this chain moves it to (the lift of a body put on the blades): it doesn't hold the chain.
+		if(track.mode == SANDY_TRACK_PUPPET && track.glide_step && track.glide_until > world.time + max(event[1] - frame, 0) * world.tick_lag && standin?.loc && !track.unmasked)
+			return
 		track.event_at++
-		if(!standin?.loc || (track.mode == SANDY_TRACK_PUPPET && (track.unmasked || standin.alpha == 0)))
+		if(!standin?.loc || (track.mode == SANDY_TRACK_PUPPET && (track.unmasked || (standin.alpha == 0 && !track.oneshot)))) // a one-shot's alpha is its own animation's
 			event_log += "skip [track.thing?.type] f[event[1]] at [frame] a=[standin?.alpha] u=[track.unmasked]"
 			continue
 		events_played++
@@ -727,6 +766,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			chain = trim_chain(chain, late, standin)
 		if(track.mode == SANDY_TRACK_PUPPET && !relative)
 			keep_flip(chain, standin.transform)
+		if(track.oneshot && (!loops || loops == 1))
+			stretch_oneshot(chain)
 		for(var/list/arguments as anything in chain)
 			length += (arguments["time"] || 0) + (arguments["delay"] || 0)
 			animate(arglist(arguments))
@@ -742,6 +783,29 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				track.chain = chain
 				track.chain_start = world.time
 				track.chain_shift = list(shift_x, shift_y)
+
+/**
+ * `chain` (animate() argument lists, changed in place) is a one-shot effect's animation, compressed: one shorter than
+ * SANDY_REPLAY_ONESHOT_MIN is stretched to it, or it would be over before a frame is drawn. One that only fades out (a
+ * muzzle flash) is shown whole for a frame first and fades in the next.
+ */
+/datum/sandy_replay/proc/stretch_oneshot(list/chain)
+	var/span = 0
+	for(var/list/arguments as anything in chain)
+		span += arguments["time"] || 0
+	if(span <= 0 || span >= SANDY_REPLAY_ONESHOT_MIN)
+		return
+	var/list/first = chain[1]
+	var/fades = length(chain) == 1 && first["alpha"] == 0
+	var/factor = (fades ? world.tick_lag : SANDY_REPLAY_ONESHOT_MIN) / span
+	for(var/i in 1 to length(chain))
+		var/list/arguments = chain[i]
+		if(arguments["time"])
+			arguments["time"] *= factor
+		if(i > 1 && arguments["delay"])
+			arguments["delay"] *= factor
+	if(fades)
+		first["delay"] = (first["delay"] || 0) + world.tick_lag
 
 /// `chain` (animate() argument lists, the first naming `thing`) with its first `late` deciseconds already gone by: the
 /// steps that were over are dropped, the one under way is shortened. A chain wholly over jumps to its last step's pose.
@@ -1300,8 +1364,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			start = turning.Interpolate(track.turn_to, 1 - turn_left / track.turn_time)
 		track.turn_from = start
 		track.turn_to = matrix(now.transform)
-		track.turn_time = SANDY_REPLAY_TURN_TIME
-		track.turn_until = world.time + SANDY_REPLAY_TURN_TIME
+		// On the replay's clock, as everything else: compressed ten times a fall is a fifth of a frame. A rig's own
+		// snap (a body brought upright onto the blades) is then upright the frame it was, not turning through the move.
+		track.turn_time = SANDY_REPLAY_TURN_TIME * world.tick_lag * clock_rate
+		track.turn_until = world.time + track.turn_time
 		// A half turn (a body flipped from lying one way to the other, as a rig move leaves it) blends through a
 		// matrix of no size halfway: the body would vanish for the tween. It flips at once instead.
 		var/matrix/halfway = start.Interpolate(track.turn_to, 0.5)
@@ -1336,6 +1402,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		time = left
 	track.glide_x = move_x
 	track.glide_y = move_y
+	track.glide_step = stepped || (left > 0 && track.glide_step) // what is left of a step glides on with this one
 	track.glide_time = time
 	track.glide_until = world.time + time
 	return TRUE
@@ -1385,6 +1452,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		thing.dir = track.saved_dir
 		pin(track)
 		thing.alpha = 0
+		// Game code writing its alpha or colour straight on (blood a later spray lands on) would show it until the next
+		// frame's fold(): a filter that draws nothing keeps it hidden through that. Its next look replaces the filters.
+		thing.filters += filter(type = "color", color = list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 		thing.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		track.expect = thing.appearance
 		return
@@ -1456,11 +1526,15 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	// Two steps can fall between two samples: each tile it crossed gets its afterimage, as each step would.
 	var/list/crossed = get_line(left, reached)
 	crossed -= reached
+	// The trail is on the replay's clock too: an afterimage fades as many times faster as the walk is, so the trail is as
+	// long as a live one behind a walk that fast, and it is gone a frame after the replay is.
+	var/life = SANDY_REPLAY_TRAIL_LIFE * world.tick_lag * clock_rate
+	life = clamp(life, world.tick_lag, max(total + 2 - frames[dest + SANDY_FRAME_INDEX], 1) * world.tick_lag)
 	for(var/turf/step_from as anything in crossed)
 		track.trail_steps++
 		if(track.trail_steps % max(1, track.trail_every))
 			continue
-		new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha)
+		new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha, life)
 		afterimages++
 		track.trail_hue = (track.trail_hue + SANDY_REPLAY_HUE_STEP) % 360
 
@@ -1481,7 +1555,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// One afterimage of a surger's trail in the replay: a recorded look, washed in one hue like the live trail.
 /obj/effect/temp_visual/decoy/fading/cascade/replay
 
-/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA)
+/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life)
+	if(life)
+		duration = life // before the parent's timer and fade read it
 	. = ..(mapload, null, hue, start_alpha)
 	// The whole look goes on in one assignment, then the fade starts on it. Set piece by piece under the parent's fade,
 	// the client tweened the hue in from full colour: the first afterimage read as a copy of the user beside them.
@@ -1491,6 +1567,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	copy.alpha = start_alpha
 	copy.color = cascade_tint_matrix(hue)
 	copy.appearance_flags |= KEEP_TOGETHER // a recorded look need not draw as one piece; the hue must reach all of it
+	// Drawn on the floor, under everyone standing: a trail lies behind its surger, never over them (on the game plane a
+	// copy a row nearer the camera would sort over the surger).
+	SET_PLANE_EXPLICIT(copy, FLOOR_PLANE, src)
+	copy.layer = CLEANABLE_FLOOR_OBJECT_LAYER
 	animate(src)
 	appearance = copy.appearance
 	dir = facing
@@ -1536,7 +1616,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			if(track.events)
 				play_events(track, frame)
 		for(var/datum/sandy_replay_track/track as anything in standins.Copy())
-			if(frame >= track.last)
+			if(frame >= track.last && !(track.oneshot && track.anim_until > world.time)) // a one-shot plays out its animation
 				QDEL_NULL(track.standin)
 				standins -= track
 				continue
@@ -1796,6 +1876,35 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /proc/sandy_rig_picture(atom/thing)
 	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx) || istype(thing, /obj/effect/temp_visual/hv_muzzle_flash)
 
+/// A one-shot effect was just made: every recording near it takes it now, from this frame. Called by effects whose
+/// animation isn't journaled (it is in their Initialize()), and by those a move makes after its slow-mo has ended, when no
+/// field hands new things over.
+/proc/sandy_replay_made(atom/movable/thing)
+	if(!length(GLOB.sandy_replays))
+		return
+	for(var/user in GLOB.sandy_replays)
+		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && get_dist(replay.user, thing) <= SANDY_REPLAY_HOLD_RANGE)
+			replay.notice(thing)
+
+/**
+ * What a temp visual that animates itself in Initialize() looks like before its animation, and the animation: list(the
+ * vars it starts with, as animate() arguments; list(chains: each a list of animate() argument lists, the first without
+ * the object)). Null when it has none.
+ */
+/obj/effect/temp_visual/proc/sandy_replay_intro()
+	return null
+
+/obj/effect/temp_visual/circle_wave/sandy_replay_intro()
+	return list(list("transform" = matrix().Scale(0.1), "alpha" = initial(alpha)), list(
+		list(list("transform" = matrix().Scale(amount_to_scale), "time" = duration, "flags" = ANIMATION_PARALLEL)),
+		list(list("alpha" = max_alpha, "time" = duration * 0.6, "flags" = ANIMATION_PARALLEL), list("alpha" = 0, "time" = duration * 0.4)),
+	))
+
+/// Called before its fade starts: the alpha it has now is the one it starts with.
+/obj/effect/temp_visual/cyberware_impact_cracks/sandy_replay_intro()
+	return list(list("alpha" = alpha), list(list(list("alpha" = alpha, "time" = duration - 2 SECONDS), list("alpha" = 0, "time" = 2 SECONDS))))
+
 /// The slow-mo's release flash isn't put on the screen of a user whose replay is starting: the cut to the replay is the
 /// change of scene (begin()).
 /atom/movable/screen/fullscreen/flash/sandy_release/should_show_to(mob/mymob)
@@ -1931,6 +2040,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 #undef SANDY_TRACK_STANDIN
 #undef SANDY_REPLAY_REACH
 #undef SANDY_REPLAY_MAX_SHOTS
+#undef SANDY_REPLAY_ONESHOT_MIN
+#undef SANDY_REPLAY_TRAIL_LIFE
 #undef SANDY_REPLAY_GLIDE_MAX
 #undef SANDY_REPLAY_WATCHDOG
 #undef SANDY_REPLAY_TURN_TIME

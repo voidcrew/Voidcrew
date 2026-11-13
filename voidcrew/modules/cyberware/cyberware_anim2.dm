@@ -710,7 +710,8 @@
 
 /obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2)
 	amount_to_scale = reach + 0.5
-	return ..()
+	. = ..()
+	sandy_replay_made(src) // a Sandevistan replay plays the ring again (ware_sandy_replay.dm)
 
 /// The same ring drawn on the floor, under everyone and everything standing in its way, whichever side of the
 /// landing they are on. The Piledriver's own; the plain one is also what a Gorilla fist throws.
@@ -735,6 +736,7 @@
 		return INITIALIZE_HINT_QDEL
 	icon_state = state
 	alpha = peak_alpha
+	sandy_replay_made(src) // a Sandevistan replay plays the cracks again, from this look (ware_sandy_replay.dm)
 	animate(src, alpha = peak_alpha, time = duration - 2 SECONDS)
 	animate(alpha = 0, time = 2 SECONDS)
 
