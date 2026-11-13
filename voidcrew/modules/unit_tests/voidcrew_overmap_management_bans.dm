@@ -79,6 +79,16 @@
 	panel.error = null
 	panel.ban_act("ban_add", list("outpost" = REF(outpost), "kind" = "aggressor", "target" = REF(wanted_mind), "minutes" = "3"), operator)
 	TEST_ASSERT(panel.error, "The removed violence mark was accepted")
+
+	// Lifting a cell prisoner wakes a sleeping police tick so `tick_cell()` lets them out, even if their warrant was already gone
+	if(police.tick_timer)
+		deltimer(police.tick_timer)
+		police.tick_timer = null
+	panel.error = null
+	panel.ban_act("ban_lift", list("outpost" = REF(outpost), "kind" = "wanted", "target" = REF(prisoner_mind)), operator)
+	TEST_ASSERT_NULL(panel.error, "Lifting a held cell prisoner failed with [panel.error]")
+	TEST_ASSERT(police.tick_timer, "Lifting a cell prisoner did not wake the police tick to open their cell")
+	cell.prisoners -= prisoner_mind
 	SSovermap.simulated_ships -= ship
 
 /// A player-keyed mind on a body in the world, so the panel can offer it

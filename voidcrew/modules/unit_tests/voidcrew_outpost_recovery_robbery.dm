@@ -106,8 +106,9 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(checkpoint.inner_door.density, "The inner door was left open when the gate came back")
 	TEST_ASSERT(checkpoint.outer_door.density, "The outer door was left open when the gate came back")
-	// Whoever stands in the chamber is scanned on the next cycle
-	TEST_ASSERT(checkpoint.request_cycle(person), "The inner door did not take a scan request once the gate was back")
+	// Whoever stands in the chamber is scanned once both doors are shut, or on the next request
+	if(checkpoint.state != "scanning") // CHECKPOINT_SCANNING
+		TEST_ASSERT(checkpoint.request_cycle(person), "The inner door did not take a scan request once the gate was back")
 	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The gate does not scan again after it came back") // CHECKPOINT_SCANNING
 
 /// A second emag inside 5 minutes of the gate coming back (or while it is down) does nothing (M36)
@@ -261,6 +262,7 @@
 	var/obj/item/second = shop.holdup_take(trader, person)
 	if(had_item)
 		TEST_ASSERT_NOTNULL(second, "An empty till with a cheap item on the shelf gave nothing")
+		TEST_ASSERT(is_trader_good(second), "A shelf item handed over at gunpoint was not stamped as trader goods")
 	else
 		TEST_ASSERT_NULL(second, "An empty till gave something with no cheap item on the shelf")
 	TEST_ASSERT_EQUAL(stock_before - shelf_stock(), had_item ? 1 : 0, "The shelf stock did not fall by one for the item")
@@ -459,13 +461,226 @@
 	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "The till is not full again once its takings are back")
 	qdel(shop.holdup)
 
-/// Every zone has its three lines for each kind
+/// A stolen chip split down to 1 cr and seized gives back only its share of the till's wait, not the whole till
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_takings_partial_return
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_takings_partial_return/Run()
+	if(!holdup_fixture())
+		return
+	if(!hold_up())
+		return
+	var/pay = round(200 * police.profile.fine_multiplier)
+	shop.holdup.hand_over(trader, person)
+	var/obj/item/holochip/chip = robbed_chip()
+	TEST_ASSERT_NOTNULL(chip, "The till gave the robber nothing")
+	chip.spend(pay - 1, TRUE) // the rest split off onto a chip nobody tracks
+	var/obj/item/outpost_sealed_case/evidence/small_case = allocate(/obj/item/outpost_sealed_case/evidence)
+	small_case.police_ref = WEAKREF(police)
+	TEST_ASSERT(small_case.add_evidence(chip, person), "Could not seize the 1 cr chip")
+	police.evidence_empty_case(small_case, get_turf(person))
+	TEST_ASSERT(shop.till_ready_at > world.time + 15000, "Returning 1 cr refilled the 30 minute till")
+	TEST_ASSERT_NOTNULL(shop.till_robbed_by, "Returning 1 cr cleared till_robbed_by")
+	qdel(shop.holdup)
+
+/// Lowering the gun unpauses the trader's AI while keeping the first robber's alarm, and a second robber can still hold the trader up
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_second_robber
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_second_robber/Run()
+	if(!holdup_fixture())
+		return
+	if(!hold_up())
+		return
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	first_hold.hand_over(trader, person)
+	trader.apply_status_effect(/datum/status_effect/grouped/heldup, REF(person))
+	trader.remove_status_effect(/datum/status_effect/grouped/heldup, REF(person))
+	TEST_ASSERT(!HAS_TRAIT_FROM(trader, TRAIT_AI_PAUSED, REF(first_hold)), "Trader stayed AI-paused after gunpoint ended")
+
+	var/mob/living/carbon/human/second_robber = mind_person(get_turf(person))
+	var/obj/item/gun/energy/disabler/second_gun = allocate(/obj/item/gun/energy/disabler)
+	second_robber.put_in_hands(second_gun)
+	shop.held_up(trader, second_robber, second_gun)
+	TEST_ASSERT(shop.holdup && shop.holdup != first_hold, "A second robber aiming at the trader started no hold-up")
+	TEST_ASSERT(HAS_TRAIT_FROM(trader, TRAIT_AI_PAUSED, REF(shop.holdup)), "Trader did not pause for the second robber's gunpoint")
+	shop.raise_holdup_alarm(trader)
+	TEST_ASSERT_EQUAL(police.get_stars(person.mind), 2, "First robber's alarm was lost when a second robber aimed")
+	TEST_ASSERT_EQUAL(police.get_stars(second_robber.mind), 2, "Second robber's alarm did not fire")
+	if(!QDELETED(first_hold))
+		qdel(first_hold)
+	if(!QDELETED(shop.holdup))
+		qdel(shop.holdup)
+
+/// Crowbarring or emagging the inner door while the gate is already down from a scanner emag never starts a breach
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_down_no_breach
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_down_no_breach/Run()
+	if(!gate_fixture())
+		return
+	quiet_witnesses(checkpoint.sensor)
+	TEST_ASSERT(checkpoint.sensor.emag_act(person, emag), "An emag on the wall scanner did nothing")
+	TEST_ASSERT(!checkpoint.inner_door.emag_act(person, emag), "The inner door took an emag while the gate was already down")
+	var/obj/item/crowbar/crowbar = allocate(/obj/item/crowbar, person)
+	TEST_ASSERT_EQUAL(checkpoint.inner_door.crowbar_act(person, crowbar), ITEM_INTERACT_SUCCESS, "Crowbarring a disabled inner door failed")
+	TEST_ASSERT(!checkpoint.forcing && checkpoint.state != "forced", "Crowbarring a disabled inner door started a forced breach") // CHECKPOINT_FORCED
+
+/// An able trader's alarm still counts when a witness's report is pending and absorbs that report without double-counting; upgraded robberies and takings near the officer also count
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_pending_witness_and_takings
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_pending_witness_and_takings/Run()
+	if(!holdup_fixture())
+		return
+	police.perception.test_plain = FALSE
+	if(!hold_up())
+		return
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_turf(person))
+	first_hold.report_to_others()
+	TEST_ASSERT(first_hold.pending_report(), "A watching officer on stealth rules queued no pending robbery report")
+	// Even if the witness dies right as the alarm fires, the able trader's alarm counts the robbery once and absorbs the pending report
+	watcher.death()
+	first_hold.try_alarm()
+	TEST_ASSERT_EQUAL(police.get_warrant(person.mind)?.heat, 30, "An able trader's alarm was dropped while a witness report was pending")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "The trader's alarm left the witness's pending robbery report behind to double-count")
+	police.confirm_reports(watcher)
+	TEST_ASSERT_EQUAL(police.get_warrant(person.mind)?.heat, 30, "Confirming the witness after the trader's alarm double-counted the robbery")
+	police.perception.test_plain = TRUE
+	if(!QDELETED(first_hold))
+		qdel(first_hold)
+
+	// An upgraded robbery inside the grace window marks the active stick-up counted so its alarm does not add another 30 heat
+	var/mob/living/carbon/human/second_robber = mind_person(get_turf(person))
+	var/obj/item/gun/energy/disabler/second_gun = allocate(/obj/item/gun/energy/disabler)
+	second_robber.put_in_hands(second_gun)
+	shop.held_up(trader, second_robber, second_gun)
+	var/datum/outpost_holdup/second_hold = shop.holdup
+	TEST_ASSERT_NOTNULL(second_hold, "Second robber started no stick-up")
+	second_hold.hand_over(trader, second_robber)
+	police.apply_upgraded_crime(second_robber, 0, "armed_robbery", null, second_gun) // OUTPOST_CRIME_ARMED_ROBBERY
+	TEST_ASSERT(second_hold.counted, "An upgraded robbery did not mark the stick-up counted")
+	second_hold.try_alarm()
+	TEST_ASSERT_EQUAL(police.get_warrant(second_robber.mind)?.heat, 30, "The stick-up alarm double-counted an upgraded robbery")
+
+	// Stolen takings dropped beside the searching officer (beyond 2 tiles of the suspect) are still collected as evidence
+	var/obj/item/holochip/chip
+	for(var/obj/item/holochip/candidate in second_robber.get_all_contents())
+		chip = candidate
+		break
+	if(!chip)
+		for(var/obj/item/holochip/candidate in range(2, trader))
+			chip = candidate
+			break
+	TEST_ASSERT_NOTNULL(chip, "The till handed no chip to the second robber")
+	var/turf/far_spot = police_floor(outpost)
+	for(var/turf/open/candidate in orange(10, second_robber))
+		if(get_dist(candidate, second_robber) >= 4 && !candidate.is_blocked_turf(exclude_mobs = TRUE))
+			far_spot = candidate
+			break
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/searcher = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, far_spot)
+	chip.forceMove(far_spot)
+	TEST_ASSERT(get_dist(chip, second_robber) > 2, "Setup: could not place the dropped chip past two tiles from the robber")
+	TEST_ASSERT(chip in police.evidence_candidates(second_robber, searcher), "evidence_candidates() missed stolen takings at the searching officer's feet")
+	if(!QDELETED(second_hold))
+		qdel(second_hold)
+
+/// Toy and tool guns never start a stick-up
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_overlap_and_toys
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_overlap_and_toys/Run()
+	if(!holdup_fixture())
+		return
+	var/obj/item/gun/energy/laser/redtag/laser_tag = allocate(/obj/item/gun/energy/laser/redtag)
+	var/obj/item/gun/ballistic/automatic/toy/foam_gun = allocate(/obj/item/gun/ballistic/automatic/toy)
+	var/obj/item/gun/medbeam/med_gun = allocate(/obj/item/gun/medbeam)
+	TEST_ASSERT(!outpost_holdup_gun(laser_tag), "A laser-tag gun counted as a stick-up threat")
+	TEST_ASSERT(!outpost_holdup_gun(foam_gun), "A foam-dart toy gun counted as a stick-up threat")
+	TEST_ASSERT(!outpost_holdup_gun(med_gun), "A medbeam gun counted as a stick-up threat")
+	TEST_ASSERT(outpost_holdup_gun(gun), "A disabler did not count as a stick-up threat")
+	shop.held_up(trader, person, laser_tag)
+	TEST_ASSERT_NULL(shop.holdup, "A laser-tag gun started a trader stick-up")
+
+/// Merging stolen till credits with a robber's own holochip neither launders the till claim nor swallows the robber's legitimate excess credits on search or jail strip
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holochip_merge_and_seizure
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holochip_merge_and_seizure/Run()
+	if(!holdup_fixture())
+		return
+	var/saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+
+	// 1. Merging the stolen chip INTO the robber's own 5,000 cr chip keeps the till claim, and a 2-star search takes only the till's share
+	if(!hold_up())
+		GLOB.outpost_police_property_time_scale = saved_scale
+		return
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	first_hold.hand_over(trader, person)
+	var/obj/item/holochip/stolen_chip
+	for(var/obj/item/holochip/candidate in person.get_all_contents())
+		stolen_chip = candidate
+		break
+	if(!stolen_chip)
+		for(var/obj/item/holochip/candidate in range(2, trader))
+			stolen_chip = candidate
+			break
+	TEST_ASSERT_NOTNULL(stolen_chip, "Setup: stick-up handed over no holochip")
+	var/till_share = stolen_chip.credits
+	TEST_ASSERT(till_share > 0 && shop.till_ready_at > world.time, "Setup: shop till was not emptied by the stick-up")
+	var/obj/item/holochip/own_chip = allocate(/obj/item/holochip, get_turf(person), 5000)
+	// The robber puts the gun down to take their own chip out (the stolen one is in the other hand)
+	if(gun in person.held_items)
+		person.dropItemToGround(gun)
+	TEST_ASSERT(person.put_in_hands(own_chip), "Setup: could not put robber's own holochip in hand")
+	TEST_ASSERT_EQUAL(own_chip.item_interaction(person, stolen_chip, list()), ITEM_INTERACT_SUCCESS, "Setup: holochips did not merge")
+	TEST_ASSERT(QDELETED(stolen_chip), "Setup: merged stolen holochip was not deleted")
+	TEST_ASSERT_EQUAL(own_chip.credits, 5000 + till_share, "Merged holochip did not sum both credit amounts")
+	TEST_ASSERT_NOTNULL(police.takings?[WEAKREF(own_chip)], "Merging a stolen holochip into the robber's own chip laundered the till claim")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/searcher = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_turf(person))
+	police_pin_warrant(police, person.mind, 30)
+	var/obj/item/outpost_sealed_case/evidence/case = police.confiscate(person, searcher)
+	TEST_ASSERT_NOTNULL(case, "confiscate() produced no evidence case for merged stolen takings")
+	TEST_ASSERT(!QDELETED(own_chip) && own_chip.credits == 5000, "confiscate() took the robber's own 5,000 cr instead of splitting off only the [till_share] cr till share")
+	TEST_ASSERT_EQUAL(get_atom_on_turf(own_chip), person, "The robber's own 5,000 cr chip left their person during a 2-star search")
+	police.dispose_evidence(searcher)
+	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "Disposing the split evidence case did not refill the shop's till")
+	if(!QDELETED(first_hold))
+		qdel(first_hold)
+
+	// 2. Merging the robber's own 5,000 cr chip INTO a fresh stolen chip and running a 3-star jail strip returns the till share and locks the 5,000 cr in their property locker
+	var/obj/item/holochip/second_stolen = shop.holdup_take(trader, person)
+	TEST_ASSERT(istype(second_stolen) && second_stolen.credits == till_share, "Setup: refilled till did not hand over a second holochip")
+	TEST_ASSERT_EQUAL(second_stolen.item_interaction(person, own_chip, list()), ITEM_INTERACT_SUCCESS, "Setup: reverse holochip merge failed")
+	TEST_ASSERT_EQUAL(second_stolen.credits, 5000 + till_share, "Reverse merge did not sum credits")
+	TEST_ASSERT(person.put_in_hands(second_stolen) || get_atom_on_turf(second_stolen) == person, "Setup: merged chip is not on the prisoner")
+	TEST_ASSERT(length(police.cells) && length(police.lockers), "Loaded outpost has no holding cell or property lockers")
+	var/datum/outpost_police_cell/cell = police.cells[1]
+	var/turf/cell_floor = cell.tiles[1]
+	var/list/floor_before = list()
+	for(var/obj/item/existing in cell_floor)
+		floor_before += existing
+	person.forceMove(cell_floor)
+	searcher.forceMove(cell_floor)
+	police_pin_warrant(police, person.mind, 55)
+	TEST_ASSERT(police.store_property(person, searcher), "store_property() failed on a robber carrying a merged holochip")
+	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "Jail strip did not return the stolen till share to the shop")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = police.property_locker_for(person)
+	TEST_ASSERT_NOTNULL(locker, "Prisoner was assigned no property locker")
+	TEST_ASSERT(!QDELETED(second_stolen) && second_stolen.credits == 5000, "Jail strip did not leave the prisoner's legitimate 5,000 cr intact")
+	TEST_ASSERT_EQUAL(second_stolen.loc, locker, "Prisoner's legitimate 5,000 cr holochip was not stored in their property locker (loc: [second_stolen.loc])")
+	TEST_ASSERT(locker.holds(second_stolen), "Property locker did not record the prisoner's legitimate 5,000 cr holochip")
+	for(var/obj/item/loose in cell_floor)
+		if(!(loose in floor_before))
+			TEST_FAIL("Jail strip left [loose] ([loose.type]) loose on the cell floor")
+
+	GLOB.outpost_police_property_time_scale = saved_scale
+
+/// Every zone has four or more lines for each kind, and an alarm line that needs no place or look
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines
 
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines/Run()
 	for(var/section in list("halcyon", "quartermain", "undertow"))
 		for(var/key in list("hands_up", "hand_over", "empty", "alarm", "gate_down"))
 			var/list/lines = ambient_dialogue_lines("outpost_robbery.json", section, key) // AMBIENT_STRINGS_ROBBERY
-			TEST_ASSERT_EQUAL(length(lines), 3, "[section] has [length(lines)] '[key]' lines, not 3")
+			TEST_ASSERT(length(lines) >= 4, "[section] has [length(lines)] '[key]' lines, not 4 or more")
 			for(var/line in lines)
 				TEST_ASSERT(istext(line) && length(line) > 0 && length(line) <= 80, "[section] '[key]' has a line that is not a short piece of text")
+			TEST_ASSERT(istext(outpost_police_pick_line(lines, list())), "[section] '[key]' has no line for a robber with no place or look")

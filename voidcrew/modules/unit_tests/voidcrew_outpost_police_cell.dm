@@ -19,6 +19,8 @@
 	var/fine_tries = 0
 	/// Times store_property() was asked
 	var/store_calls = 0
+	/// When TRUE, store_property() kills `officer` mid-strip and returns FALSE
+	var/fail_strip_kill = FALSE
 	/// For each store_property() call: whether the prisoner's cuffs were still on
 	var/list/stored_cuffed = list()
 	/// close_warrant() calls: list(mind, served)
@@ -62,6 +64,9 @@
 /datum/outpost_police/cell_test/store_property(mob/living/carbon/prisoner, mob/living/officer)
 	store_calls++
 	stored_cuffed += !!prisoner.handcuffed
+	if(fail_strip_kill)
+		officer?.death()
+		return FALSE
 	return TRUE
 
 /datum/outpost_police/cell_test/close_warrant(datum/mind/who, served)
@@ -73,6 +78,9 @@
 
 /datum/outpost_police/cell_test/cell_station_say(line)
 	lines += line
+
+/datum/outpost_police/cell_test/say_fine_paid(mob/living/officer)
+	lines += "fine_paid" // POLICE_LINE_FINE_PAID
 
 /**
  * Two cells on the test room's floor, built the way link_interior() builds them: cell "a" is 2x2 at the bottom
@@ -192,7 +200,8 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(rebuilt.door.density, "A rebuild opened a cell door")
 
-/// Nothing but the cell opens a cell door; an emag does nothing to it or to a police door; a crowbar on an empty cell does nothing
+/// A bump, a click or a powered pry never opens a cell door; an emag does nothing to a police door; a crowbar on an empty cell does nothing.
+/// (Hacking a cell door, an emag included, is decision 47: voidcrew_outpost_police_cell_hacked.)
 /datum/unit_test/voidcrew_outpost_police_cell_doors
 
 /datum/unit_test/voidcrew_outpost_police_cell_doors/Run()
@@ -209,8 +218,6 @@
 	TEST_ASSERT(door.density, "A bump or a click opened a cell door")
 
 	var/obj/item/card/emag/emag = allocate(/obj/item/card/emag)
-	TEST_ASSERT(!door.emag_act(person, emag), "An emag was accepted by a cell door")
-	TEST_ASSERT(!(door.obj_flags & EMAGGED), "An emag broke a cell door")
 	var/obj/machinery/door/airlock/outpost/police/lift_door = allocate(/obj/machinery/door/airlock/outpost/police, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z))
 	TEST_ASSERT(!lift_door.emag_act(person, emag), "An emag was accepted by a police door")
 	TEST_ASSERT(!(lift_door.obj_flags & EMAGGED), "An emag broke a police door")
@@ -264,6 +271,8 @@
 		var/list/booking = police.booked[length(police.booked)]
 		TEST_ASSERT_EQUAL(booking[1], suspect, "The booking signal named another suspect")
 		TEST_ASSERT(!booking[2], "The booking signal said a paid fine was jail")
+		TEST_ASSERT("fine_paid" in police.lines, "Nobody told the prisoner their fine was paid") // POLICE_LINE_FINE_PAID
+		police.lines.Cut()
 
 /// An unpaid fine strips the suspect before the cuffs come off, and holds them 3 min at one star and 6 at two
 /datum/unit_test/voidcrew_outpost_police_cell_book_jail
@@ -286,6 +295,7 @@
 		TEST_ASSERT(!isnull(cell.bail_due[suspect.mind]), "A jailed prisoner has no bail retry")
 		var/list/booking = police.booked[length(police.booked)]
 		TEST_ASSERT(booking[2], "The booking signal said a jail term was a paid fine")
+		TEST_ASSERT(!("fine_paid" in police.lines), "An unpaid fine was called paid")
 
 /// A booking with no warrant, a downed suspect or an already held one takes nothing and moves nobody
 /datum/unit_test/voidcrew_outpost_police_cell_book_refused
@@ -692,3 +702,399 @@
 	cell.admit(person, world.time + 300)
 	TEST_ASSERT(police.in_custody(person), "A prisoner is not in custody")
 	TEST_ASSERT_EQUAL(police.cell_best(), police_cell_named(police, "b"), "The next booking does not go to the empty cell")
+
+/**
+ * Lead decision L-A2: at three stars every cell taking someone already is no reason to let a suspect go; the booking
+ * goes to the emptiest cell anyway, with no fine. With no cell at all, three stars are never fined or let go.
+ */
+/datum/unit_test/voidcrew_outpost_police_cell_three_stars_crowded
+
+/datum/unit_test/voidcrew_outpost_police_cell_three_stars_crowded/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	// Placed by hand: two in a, one in b
+	for(var/list/spot in list(list(cell_a, 1), list(cell_a, 2), list(cell_b, 1)))
+		var/datum/outpost_police_cell/cell = spot[1]
+		var/mob/living/carbon/human/held = police_cell_person(cell.tiles[spot[2]])
+		police_pin_warrant(police, held.mind, 55)
+		cell.admit(held, world.time + 6000)
+	var/list/result = police_test_book(police, 3, TRUE)
+	TEST_ASSERT_NOTNULL(result, "A three-star suspect was not booked with every cell holding someone")
+	TEST_ASSERT_EQUAL(result[3], cell_b, "The booking did not go to the emptier cell")
+	TEST_ASSERT_EQUAL(length(cell_b.prisoners), 2, "The emptier cell does not hold both prisoners")
+	TEST_ASSERT_EQUAL(police.fine_tries, 0, "A three-star booking tried the fine")
+
+	// No cell at all: nothing taken, the cuffs stay on and the warrant stays open, for the arrest to hold them
+	var/datum/outpost_police/cell_test/bare = allocate(/datum/outpost_police/cell_test)
+	bare.pinned_stars = 3
+	bare.fine_result = TRUE
+	var/mob/living/carbon/human/suspect = police_cell_person(run_loc_floor_top_right)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(run_loc_floor_top_right, SOUTH))
+	police_pin_warrant(bare, suspect.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	TEST_ASSERT(!bare.book(suspect, officer), "book() with no cell let a three-star suspect go")
+	TEST_ASSERT_EQUAL(bare.fine_tries, 0, "A three-star suspect with no cell was fined")
+	TEST_ASSERT_NOTNULL(suspect.handcuffed, "A three-star suspect with no cell had the cuffs taken off")
+	TEST_ASSERT_EQUAL(length(bare.closed), 0, "A three-star suspect with no cell had the warrant closed")
+
+/// A booking officer knocked down while taking the cuffs off gets up and finishes; a term served still in a used police pair ends out of it
+/datum/unit_test/voidcrew_outpost_police_cell_never_left_cuffed
+
+/datum/unit_test/voidcrew_outpost_police_cell_never_left_cuffed/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	var/mob/living/carbon/human/suspect = police_cell_person(cell.tiles[1])
+	var/mob/living/carbon/human/officer = police_cell_person(cell.tiles[2])
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	officer.Paralyze(2 SECONDS)
+	police.cell_remove_cuffs(suspect, officer)
+	TEST_ASSERT_NULL(suspect.handcuffed, "The cuffs stayed on when the officer was knocked down taking them off")
+
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[3])
+	police_pin_warrant(police, prisoner.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(prisoner, officer), "Setup: the prisoner did not get cuffed")
+	cell.admit(prisoner, world.time + 300)
+	cell.prisoners[prisoner.mind] = world.time
+	police.tick_cells()
+	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner whose time was up is still held")
+	TEST_ASSERT_NULL(prisoner.handcuffed, "A prisoner let out after their term is still in police cuffs")
+
+/**
+ * Each of the three outposts as mapped: the police find a desk, a lift, two usable cells with a door, a sign and a
+ * lobby tile each, the evidence locker and the property lockers, and a patrol group with at least two routes whose
+ * tagged stops each have what their activity needs at hand.
+ */
+/datum/unit_test/voidcrew_outpost_police_map_kit
+
+/datum/unit_test/voidcrew_outpost_police_map_kit/Run()
+	var/list/known_tags = list("shopfront", "coffee", "chat", "bench", "bar", "cells", "desk")
+	for(var/outpost_type in list(
+		/obj/structure/overmap/trader_outpost/general,
+		/obj/structure/overmap/trader_outpost/outfitter,
+		/obj/structure/overmap/trader_outpost/black_market,
+	))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			continue
+		var/datum/outpost_police/police = outpost.police
+		TEST_ASSERT_NOTNULL(police.desk_turf, "[outpost_type] has no police desk")
+		TEST_ASSERT(length(police.lift_turfs) > 0, "[outpost_type] has no police lift")
+		for(var/turf/lift as anything in police.lift_turfs)
+			TEST_ASSERT(!lift.density, "[outpost_type]'s police lift at [AREACOORD(lift)] is a wall")
+			TEST_ASSERT_NOTNULL(locate(/obj/machinery/door/airlock/outpost/police) in range(3, lift), "[outpost_type]'s police lift at [AREACOORD(lift)] has no police door by it")
+		TEST_ASSERT_EQUAL(length(police.cells), 2, "[outpost_type] built [length(police.cells)] cells, not 2")
+		for(var/datum/outpost_police_cell/cell as anything in police.cells)
+			TEST_ASSERT(cell.usable(), "[outpost_type]'s cell [cell.cell_id] cannot be used")
+			TEST_ASSERT_NOTNULL(cell.outside_turf, "[outpost_type]'s cell [cell.cell_id] has no lobby tile outside its door")
+			TEST_ASSERT_NOTNULL(cell.sign, "[outpost_type]'s cell [cell.cell_id] has no sign")
+			TEST_ASSERT(length(cell.tiles) >= 2, "[outpost_type]'s cell [cell.cell_id] has [length(cell.tiles)] floor tiles")
+			// Decision 28: a toilet and a chair, no bench
+			var/toilets = 0
+			var/chairs = 0
+			var/benches = 0
+			for(var/turf/tile as anything in cell.tiles)
+				for(var/obj/structure/thing in tile)
+					if(istype(thing, /obj/structure/toilet))
+						toilets++
+					else if(istype(thing, /obj/structure/chair/sofa/bench))
+						benches++
+					else if(istype(thing, /obj/structure/chair))
+						chairs++
+			TEST_ASSERT(toilets && chairs && !benches, "[outpost_type]'s cell [cell.cell_id] has [toilets] toilets, [chairs] chairs and [benches] benches")
+		// Decision 29: the checkpoint guard sits behind a desk
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard = locate() in outpost.traders
+		TEST_ASSERT_NOTNULL(guard, "[outpost_type] has no checkpoint guard")
+		TEST_ASSERT_NOTNULL(locate(/obj/structure/table) in orange(1, get_turf(guard)), "[outpost_type]'s checkpoint guard at [AREACOORD(guard)] has no desk")
+		TEST_ASSERT_NOTNULL(police.evidence_locker, "[outpost_type] has no evidence locker")
+		TEST_ASSERT(length(police.lockers) >= 2, "[outpost_type] has [length(police.lockers)] property lockers")
+
+		var/datum/stealth_group/group = police.patrol_group()
+		TEST_ASSERT_NOTNULL(group, "[outpost_type]'s police have no patrol group")
+		if(!group)
+			continue
+		var/routes = 0
+		for(var/route in group.routes)
+			if(length(group.routes[route]) > 1)
+				routes++
+		TEST_ASSERT(routes >= 2, "[outpost_type] has [routes] police beats")
+		for(var/turf/spot as anything in police.stop_activities)
+			var/tag = police.stop_activities[spot]
+			if(!length(tag))
+				continue
+			TEST_ASSERT(tag in known_tags, "[outpost_type]'s stop at [AREACOORD(spot)] has an unknown tag \"[tag]\"")
+			switch(tag)
+				if("coffee")
+					TEST_ASSERT((locate(/obj/machinery/vending/coffee) in range(3, spot)) || (locate(/obj/structure/table) in range(3, spot)), "[outpost_type]'s coffee stop at [AREACOORD(spot)] has no machine or counter at hand")
+				if("bar")
+					TEST_ASSERT_NOTNULL(locate(/obj/structure/table) in range(3, spot), "[outpost_type]'s bar stop at [AREACOORD(spot)] has no counter at hand")
+				if("bench")
+					TEST_ASSERT_NOTNULL(locate(/obj/structure/chair) in range(3, spot), "[outpost_type]'s bench stop at [AREACOORD(spot)] has no seat at hand")
+				if("shopfront")
+					TEST_ASSERT_NOTNULL(locate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader) in range(7, spot), "[outpost_type]'s shopfront stop at [AREACOORD(spot)] has no trader near")
+
+/// Owner bug 3: booking walks the suspect and officer through the cell doorway via Move() with zero forceMove teleports
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks
+	var/forced_moves = 0
+	var/list/suspect_steps = list()
+	var/list/officer_steps = list()
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks/proc/note_suspect_move(atom/movable/source, atom/old_loc, movement_dir, forced)
+	SIGNAL_HANDLER
+	if(forced)
+		forced_moves++
+	var/turf/spot = get_turf(source)
+	if(spot)
+		suspect_steps += spot
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks/proc/note_officer_move(atom/movable/source, atom/old_loc, movement_dir, forced)
+	SIGNAL_HANDLER
+	if(forced)
+		forced_moves++
+	var/turf/spot = get_turf(source)
+	if(spot)
+		officer_steps += spot
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_walks/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	TEST_ASSERT_EQUAL(police.cell_door_turf(cell_b.outside_turf), cell_b.outside_turf, "cell_door_turf(near) did not choose the nearer empty cell")
+	TEST_ASSERT_EQUAL(police.cell_door_turf(cell_a.outside_turf), cell_a.outside_turf, "cell_door_turf(near) did not choose cell a when standing by cell a")
+
+	police.pinned_stars = 1
+	police.fine_result = TRUE
+	var/mob/living/carbon/human/suspect = police_cell_person(cell_a.outside_turf)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(cell_a.outside_turf, NORTH))
+	officer.move_intent = MOVE_INTENT_WALK
+	police_pin_warrant(police, suspect.mind, 12)
+	var/obj/item/restraints/handcuffs/own_cuffs = allocate(/obj/item/restraints/handcuffs)
+	own_cuffs.apply_cuffs(suspect, officer, FALSE)
+	TEST_ASSERT_EQUAL(suspect.handcuffed, own_cuffs, "Setup: regular cuffs were not applied")
+
+	RegisterSignal(suspect, COMSIG_MOVABLE_MOVED, PROC_REF(note_suspect_move))
+	RegisterSignal(officer, COMSIG_MOVABLE_MOVED, PROC_REF(note_officer_move))
+	TEST_ASSERT(police.book(suspect, officer), "book() failed to walk the suspect into cell a")
+	UnregisterSignal(suspect, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(officer, COMSIG_MOVABLE_MOVED)
+
+	var/turf/door_turf = get_turf(cell_a.door)
+	TEST_ASSERT_EQUAL(forced_moves, 0, "Booking used forceMove [forced_moves] time(s) instead of physically walking")
+	TEST_ASSERT(door_turf in suspect_steps, "The suspect did not physically step through the cell doorway")
+	TEST_ASSERT(door_turf in officer_steps, "The officer did not physically step through the cell doorway")
+	TEST_ASSERT(get_turf(suspect) in cell_a.tiles, "The suspect did not end inside cell a")
+	TEST_ASSERT_EQUAL(get_turf(officer), cell_a.outside_turf, "The officer did not step back out to outside_turf")
+	TEST_ASSERT_EQUAL(officer.move_intent, MOVE_INTENT_WALK, "Booking did not restore the officer's move intent")
+	TEST_ASSERT(cell_a.door.density, "Cell a's door was left open after booking")
+	TEST_ASSERT_NULL(suspect.handcuffed, "The suspect is still handcuffed after booking")
+	TEST_ASSERT(suspect.is_holding(own_cuffs), "A paid suspect's non-police cuffs were left on the cell floor instead of handed back")
+
+/// Strip retries & failure cleanup, door seals blocked, WIRE_TIMING repair, assembly-triggered jailbreak & mend, and empty-cell close guards
+/datum/unit_test/voidcrew_outpost_police_cell_strip_and_door_edges
+
+/datum/unit_test/voidcrew_outpost_police_cell_strip_and_door_edges/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	var/turf/park = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z)
+
+	// 1. A stunned booking officer waits to recover and finishes stripping once back up
+	var/mob/living/carbon/human/suspect = police_cell_person(cell_a.tiles[1])
+	var/mob/living/carbon/human/officer = police_cell_person(cell_a.tiles[2])
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	officer.Paralyze(2 SECONDS)
+	TEST_ASSERT(police.cell_strip_prisoner(suspect, officer), "A stunned officer did not finish stripping once back up")
+	TEST_ASSERT_EQUAL(police.store_calls, 1, "cell_strip_prisoner did not strip once")
+	suspect.uncuff()
+	suspect.forceMove(park)
+	officer.forceMove(park)
+
+	// 2. If the officer dies before stripping finishes, book() aborts without uncuffing or admitting, and opens the cell
+	police.pinned_stars = 3
+	police.fail_strip_kill = TRUE
+	var/mob/living/carbon/human/unstripped = police_cell_person(cell_b.outside_turf)
+	var/mob/living/carbon/human/dying_cop = police_cell_person(get_step(cell_b.outside_turf, NORTH))
+	police_pin_warrant(police, unstripped.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(unstripped, dying_cop), "Setup: the suspect did not get cuffed")
+	TEST_ASSERT(!police.book(unstripped, dying_cop), "book() succeeded when the officer died mid-strip")
+	TEST_ASSERT_NOTNULL(unstripped.handcuffed, "An unstripped prisoner had their cuffs removed when the officer died")
+	TEST_ASSERT(!(unstripped.mind in cell_b.prisoners), "A failed strip left the prisoner admitted to the cell")
+	TEST_ASSERT(!(unstripped.mind in cell_b.booking), "A failed strip left a stale booking entry")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell_b.door.density, "An empty cell stayed shut on the unstripped prisoner and dead officer")
+	police.fail_strip_kill = FALSE
+
+	// 3. Door seal blocked, WIRE_TIMING repair keeps autoclose off, safety/shock cleared on take-over, remote assembly hack & mend, and empty-cell close guards
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = cell_a.door
+	door.AddElement(/datum/element/outpost_property)
+	var/mob/living/carbon/human/hacker = police_cell_person(cell_a.outside_turf)
+	var/obj/item/door_seal/seal = allocate(/obj/item/door_seal)
+	seal.seal_time = 1
+	hacker.put_in_hands(seal)
+	seal.melee_attack_chain(hacker, door)
+	TEST_ASSERT_NULL(door.seal, "A pneumatic door seal was placed on an outpost cell door")
+	hacker.dropItemToGround(seal)
+	seal.forceMove(park)
+
+	door.panel_open = TRUE
+	door.wires.cut(WIRE_TIMING, hacker)
+	TEST_ASSERT(!door.autoclose, "Cutting WIRE_TIMING turned autoclose on")
+	door.wires.repair()
+	TEST_ASSERT(!door.autoclose, "Repairing WIRE_TIMING turned autoclose on")
+
+	door.wires.pulse(WIRE_SAFETY, hacker)
+	door.panel_open = FALSE
+	TEST_ASSERT(!door.safe, "Setup: pulsing WIRE_SAFETY did not disable door safeties")
+	TEST_ASSERT(door.still_hacked(), "still_hacked() missed disabled door safeties once the panel shut")
+	door.set_electrified(30)
+	TEST_ASSERT(door.isElectrified(), "Setup: the cell door did not electrify")
+	door.cell_take_over()
+	TEST_ASSERT(door.safe, "cell_take_over() left door safeties off")
+	TEST_ASSERT(!door.isElectrified(), "cell_take_over() left the door electrified")
+
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell_a.tiles[1])
+	police_pin_warrant(police, prisoner.mind, 12)
+	cell_a.admit(prisoner, world.time + 10 MINUTES)
+	door.panel_open = TRUE
+	door.note_hack(hacker)
+	var/obj/item/assembly/timer/timer = allocate(/obj/item/assembly/timer)
+	var/open_color = door.wires.get_color_of_wire(WIRE_OPEN)
+	TEST_ASSERT_NOTNULL(door.wires.attach_assembly(open_color, timer), "Setup: timer assembly did not attach to WIRE_OPEN")
+	door.wires.cut(WIRE_IDSCAN, hacker)
+	door.last_hack_at -= 30 SECONDS
+	var/crimes_before = length(police.crimes)
+	TEST_ASSERT(door.wires.pulse_assembly(timer), "pulse_assembly() did not pulse the attached wire")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!door.density, "A remote assembly pulse with WIRE_IDSCAN cut did not open the cell door")
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before + 1, "A remote assembly opening a held cell reported no crime")
+	var/list/crime = police_last_crime(police)
+	TEST_ASSERT_EQUAL(crime?[1], hacker, "A delayed assembly pulse did not credit the installer with the jailbreak")
+	TEST_ASSERT_EQUAL(crime?[2], "jailbreak", "A delayed assembly pulse did not report a jailbreak") // OUTPOST_CRIME_JAILBREAK
+
+	hacker.forceMove(park)
+	door.mend_hack()
+	TEST_ASSERT_EQUAL(timer.loc, cell_a.outside_turf, "mend_hack() did not detach the wire assembly onto outside_turf")
+	TEST_ASSERT(!length(door.wires.assemblies), "mend_hack() left an assembly attached to the wires")
+	TEST_ASSERT(!door.autoclose, "mend_hack() turned autoclose on")
+	TEST_ASSERT(!door.still_hacked(), "still_hacked() remained TRUE after mend_hack()")
+
+	// Empty cell with a bystander inside while open: neither close() nor an unpowered crowbar pry shuts the door on them
+	cell_a.forget_prisoner(prisoner.mind)
+	TEST_ASSERT(!door.density, "Setup: door should still stand open")
+	TEST_ASSERT(!door.close(BYPASS_DOOR_CHECKS), "close() shut an empty cell's door on a bystander inside")
+	TEST_ASSERT(!door.density, "An empty cell's door closed on a bystander")
+	hacker.forceMove(cell_a.outside_turf)
+	for(var/power_wire in list(WIRE_POWER1, WIRE_POWER2, WIRE_BACKUP1, WIRE_BACKUP2))
+		door.wires.cut(power_wire, hacker)
+	var/obj/item/crowbar/crowbar = allocate(/obj/item/crowbar)
+	hacker.put_in_hands(crowbar)
+	door.crowbar_act(hacker, crowbar)
+	sleep(1 SECONDS)
+	TEST_ASSERT(!door.density, "A crowbar pried an open cell door shut")
+
+	// SF3: a player mind in an officer's body pulling a prisoner out of a cell is charged with jailbreak like any player
+	door.mend_hack()
+	prisoner.forceMove(cell_a.tiles[1])
+	police_pin_warrant(police, prisoner.mind, 12)
+	cell_a.admit(prisoner, world.time + 10 MINUTES)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/played_cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, cell_a.outside_turf)
+	played_cop.mind_initialize()
+	allocated += played_cop.mind
+	crimes_before = length(police.crimes)
+	// forceMove() breaks a pull, so the prisoner is put outside first and the played officer holds them there
+	prisoner.forceMove(cell_a.outside_turf)
+	played_cop.start_pulling(prisoner)
+	TEST_ASSERT_EQUAL(prisoner.pulledby, played_cop, "Setup: the played officer could not take hold of the prisoner")
+	police.tick_cells()
+	played_cop.stop_pulling()
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before + 1, "A player mind in an officer body pulling a prisoner out of a cell reported no crime")
+	crime = police_last_crime(police)
+	TEST_ASSERT_EQUAL(crime?[1], played_cop, "A player mind in an officer body pulling a prisoner out blamed [crime?[1]], not the played officer")
+	TEST_ASSERT_EQUAL(crime?[2], "jailbreak", "A player mind in an officer body pulling a prisoner out reported [crime?[2]], not jailbreak") // OUTPOST_CRIME_JAILBREAK
+	cell_a.forget_prisoner(prisoner.mind)
+
+/// Crowded 2x2 cell entry shove, gibbed prisoner warrant/locker cleanup, and mind-swapped prisoner body handling
+/datum/unit_test/voidcrew_outpost_police_cell_crowded_entry_and_lifecycle
+
+/datum/unit_test/voidcrew_outpost_police_cell_crowded_entry_and_lifecycle/Run()
+	var/old_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	var/turf/park = run_loc_floor_top_right
+
+	// 1. Crowded 2x2 cell with a standing prisoner right on entry_tile (tiles[2]): book() shoves them deeper inside and books cleanly
+	for(var/idx in list(1, 2))
+		var/mob/living/carbon/human/b_inmate = police_cell_person(cell_b.tiles[idx])
+		police_pin_warrant(police, b_inmate.mind, 55)
+		cell_b.admit(b_inmate, world.time + 10 MINUTES)
+	var/mob/living/carbon/human/entry_inmate = police_cell_person(cell_a.tiles[2])
+	police_pin_warrant(police, entry_inmate.mind, 55)
+	cell_a.admit(entry_inmate, world.time + 10 MINUTES)
+	TEST_ASSERT_EQUAL(police.cell_best(), cell_a, "Setup: cell_a should be the emptier cell")
+
+	police.pinned_stars = 3
+	var/mob/living/carbon/human/newcomer = police_cell_person(cell_a.outside_turf)
+	var/mob/living/carbon/human/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_step(cell_a.outside_turf, NORTH))
+	police_pin_warrant(police, newcomer.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(newcomer, officer), "Setup: newcomer did not get cuffed")
+	var/crimes_before = length(police.crimes)
+	TEST_ASSERT(police.book(newcomer, officer), "book() failed when a 2x2 cell had an inmate standing on its entry tile")
+	TEST_ASSERT(get_turf(entry_inmate) in cell_a.tiles, "Shoving the entry-tile inmate pushed them out of cell_a")
+	TEST_ASSERT(get_turf(newcomer) in cell_a.tiles, "The newly booked prisoner did not end up inside cell_a")
+	TEST_ASSERT(!(get_turf(officer) in cell_a.tiles), "The booking officer remained shut inside cell_a")
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before, "Shoving an entry-tile inmate deeper into the cell reported a crime")
+	cell_a.forget_prisoner(entry_inmate.mind)
+	cell_a.forget_prisoner(newcomer.mind)
+	entry_inmate.forceMove(park)
+	newcomer.forceMove(park)
+	officer.forceMove(park)
+
+	// 2. Gibbed/deleted prisoner body in a cell: tick_cells() closes the warrant as served and marks their property locker released
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = allocate(/obj/structure/closet/secure_closet/personal/outpost_police, get_step(park, WEST))
+	police.lockers += locker
+	var/mob/living/carbon/human/doomed = allocate(/mob/living/carbon/human/consistent, cell_a.tiles[1])
+	doomed.mind_initialize()
+	var/datum/mind/doomed_mind = doomed.mind
+	allocated += doomed_mind
+	locker.owner_mind = WEAKREF(doomed_mind)
+	police_pin_warrant(police, doomed_mind, 55)
+	cell_a.admit(doomed, world.time + 10 MINUTES, TRUE)
+	var/closed_before = length(police.closed)
+	qdel(doomed)
+	police.tick_cells()
+	TEST_ASSERT(!(doomed_mind in cell_a.prisoners), "A deleted prisoner body remained held in the cell")
+	TEST_ASSERT_EQUAL(length(police.closed), closed_before + 1, "A gibbed/deleted cell prisoner did not close their warrant")
+	TEST_ASSERT_EQUAL(police.closed[length(police.closed)][1], doomed_mind, "The wrong mind's warrant was closed")
+	TEST_ASSERT_EQUAL(police.closed[length(police.closed)][2], TRUE, "A gibbed/deleted cell prisoner's warrant did not close as served")
+	TEST_ASSERT_EQUAL(locker.released_at, world.time, "A gibbed/deleted cell prisoner's property locker kept released_at = 0")
+
+	// 3. Mind swap out of a jailed body: active warrant stays on the prisoner's mind, while an innocent swapped mind is freed without a jailbreak charge
+	var/mob/living/carbon/human/jailed_body = police_cell_person(cell_a.tiles[1])
+	var/mob/living/carbon/human/innocent_body = police_cell_person(cell_a.outside_turf)
+	var/datum/mind/convict_mind = jailed_body.mind
+	var/datum/mind/innocent_mind = innocent_body.mind
+	allocated += convict_mind
+	allocated += innocent_mind
+	police_pin_warrant(police, convict_mind, 55)
+	cell_a.admit(jailed_body, world.time + 10 MINUTES, TRUE)
+	cell_a.door.close(BYPASS_DOOR_CHECKS)
+	convict_mind.transfer_to(innocent_body)
+	innocent_mind.transfer_to(jailed_body)
+	TEST_ASSERT(!cell_a.holds(convict_mind, jailed_body), "holds() still matched a body after another mind transferred into it")
+	TEST_ASSERT_NULL(cell_a.prisoner_of(jailed_body), "prisoner_of() blamed the jailed body on convict_mind after an innocent mind entered it")
+	closed_before = length(police.closed)
+	crimes_before = length(police.crimes)
+	police.tick_cells()
+	TEST_ASSERT(!(convict_mind in cell_a.prisoners), "convict_mind stayed in cell_a.prisoners after mind-transferring out")
+	TEST_ASSERT_EQUAL(length(police.closed), closed_before, "Mind-transferring out of a jailed body closed convict_mind's active warrant for free")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell_a.door.density, "The empty cell stayed shut on the innocent mind swapped into the old body")
+	jailed_body.forceMove(cell_a.outside_turf)
+	police.tick_cells()
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before, "An innocent mind walking out in the old body was charged with jailbreak")
+	GLOB.outpost_police_property_time_scale = old_scale
+
+
+

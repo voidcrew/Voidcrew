@@ -40,6 +40,8 @@
 #define RECOVERY_SPOT_CHECKS 12
 /// Mess or a sink they could not get to is left alone this long
 #define RECOVERY_GIVE_UP_TIME (3 MINUTES)
+/// At most this many tiles and sinks are left alone at once (the oldest is let back in past it)
+#define RECOVERY_GIVE_UP_MAX 64
 /// A patrol stop's clean state is looked at again after this long
 #define RECOVERY_STOP_RECHECK (3 SECONDS)
 /// With nothing left to do they take the lift out after this long
@@ -255,8 +257,12 @@
 	/// The lift is no use to them (it could not be reached) until this world.time
 	var/haul_blocked_until = 0
 
-/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
+	var/obj/item/card/id/card = wear_id
+	if(istype(card))
+		card.registered_name = real_name
+		card.update_label()
 	for(var/obj/item/held in held_items)
 		if(istype(held, /obj/item/mop))
 			crew_mop = held
@@ -277,12 +283,23 @@
 	var/obj/item/radio/headset = ears
 	if(istype(headset))
 		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
+	var/section = outpost?.police?.profile?.voice_section
+	if(section)
+		dialogue_section = section
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Destroy()
 	crew_mop = null
 	crew_bag = null
 	cleaning_gave_up = null
 	return ..()
+
+// Stood still with nobody on the concourse: the give-ups and the idle clock count only time they could work
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/shift_times(delay)
+	. = ..()
+	idle_since = ambient_shifted(idle_since, delay)
+	for(var/atom/old as anything in cleaning_gave_up)
+		cleaning_gave_up[old] = ambient_shifted(cleaning_gave_up[old], delay)
 
 // The lost-crew ladder (4.2) counts a janitor who dies at work
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/death(gibbed)
@@ -293,11 +310,13 @@
 
 /// The outpost recovery they work for: the one that sent them, or their outpost's
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/my_recovery()
-	return outpost_recovery || get_outpost()?.recovery
+	if(outpost_recovery && !QDELETED(outpost_recovery))
+		return outpost_recovery
+	return get_outpost()?.recovery
 
 // Their voice is their outpost's: the police profile's section, as the officers' lines are
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/get_lines(context)
-	var/obj/structure/overmap/trader_outpost/outpost = get_outpost()
+	var/obj/structure/overmap/trader_outpost/outpost = my_recovery()?.outpost || get_outpost()
 	var/section = outpost?.police?.profile?.voice_section
 	if(section)
 		dialogue_section = section
@@ -322,9 +341,12 @@
  * place's pauses between lines are kept unless `force`. TRUE if they spoke.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/crew_say(context, radio = FALSE, atom/other, force = FALSE)
-	if(stat != CONSCIOUS || fading || paused_at)
+	if(stat != CONSCIOUS || fading || paused_at || !human_npc_can_talk(src))
 		return FALSE
 	if(!force && (world.time < next_line_at || (place && world.time < place.next_line_at)))
+		return FALSE
+	var/obj/item/radio/headset = ears
+	if(radio && (!istype(headset) || !headset.is_on() || is_within_radio_jammer_range(src)))
 		return FALSE
 	var/list/lines = get_lines(context)
 	if(!length(lines))
@@ -333,10 +355,13 @@
 	if(!istext(line))
 		return FALSE
 	line = fill_line(line, other)
-	if(!radio || !istype(ears, /obj/item/radio))
+	if(!radio)
 		say_line(line)
 		return TRUE
+	if(headset.frequency != OUTPOST_POLICE_RADIO_FREQ)
+		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
 	next_line_at = world.time + rand(AMBIENT_SPEECH_COOLDOWN_LOW, AMBIENT_SPEECH_COOLDOWN_HIGH) * speech_pace
+	last_line = line
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, say), ";[line]")
 	return TRUE
 
@@ -361,8 +386,12 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/give_up_on(atom/thing)
 	if(!thing)
 		return
+	// Waited-out entries go first, so a big patch they can't reach is never let back in early and walked at again
+	for(var/atom/old as anything in cleaning_gave_up?.Copy())
+		if(cleaning_gave_up[old] <= world.time)
+			cleaning_gave_up -= old
 	LAZYSET(cleaning_gave_up, thing, world.time + RECOVERY_GIVE_UP_TIME)
-	if(length(cleaning_gave_up) > 16)
+	if(length(cleaning_gave_up) > RECOVERY_GIVE_UP_MAX)
 		cleaning_gave_up.Cut(1, 2)
 
 /**
@@ -372,21 +401,26 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/haul_spot()
 	if(world.time < haul_blocked_until)
 		return null
-	var/obj/structure/overmap/trader_outpost/outpost = get_outpost()
+	var/obj/structure/overmap/trader_outpost/outpost = my_recovery()?.outpost || get_outpost()
 	var/turf/here = get_turf(src)
 	if(!outpost || !here)
 		return null
 	var/list/lifts = (outpost.police && outpost.is_secured_turf(here)) ? outpost.police.lift_turfs : outpost.lobby_alcove_turfs
-	var/turf/best
-	var/best_distance = INFINITY
+	var/turf/best_free
+	var/best_free_distance = INFINITY
+	var/turf/best_any
+	var/best_any_distance = INFINITY
 	for(var/turf/lift as anything in lifts)
-		if(lift.z != here.z)
+		if(!lift || lift.z != here.z || LAZYACCESS(cleaning_gave_up, lift) > world.time || lift.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		var/distance = get_dist(here, lift)
-		if(distance < best_distance)
-			best = lift
-			best_distance = distance
-	return best
+		if(distance < best_any_distance)
+			best_any = lift
+			best_any_distance = distance
+		if(!outpost.police?.lift_point_blocked(lift, src) && distance < best_free_distance)
+			best_free = lift
+			best_free_distance = distance
+	return best_free || best_any
 
 /// Whether litter can be picked up now: the bag has room, or the lift is there to empty it
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/litter_ok()
@@ -488,6 +522,9 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/nearest_work(list/found)
 	var/list/distances = list()
 	for(var/turf/tile as anything in found)
+		// Tiles given up on or past a closed checkpoint wait until they can be walked to
+		if(LAZYACCESS(cleaning_gave_up, tile) > world.time || needs_checkpoint_cross(tile))
+			continue
 		distances[tile] = get_dist(src, tile)
 	if(!length(distances))
 		return null
@@ -501,8 +538,8 @@
 
 /**
  * The next thing to do: list(tile, patrol stop or null, RECOVERY_WORK_* flags), or null. The patrol stops with work
- * left come first, nearest first, and each is worked out to its edge before the next; mess outside every stop's
- * reach is what they find round themselves.
+ * left on their side of the checkpoint come first, nearest first, and each is worked out to its edge before the next;
+ * mess outside every stop's reach is what they find round themselves.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/find_job()
 	var/turf/here = get_turf(src)
@@ -513,7 +550,7 @@
 	if(recovery)
 		var/list/dirty = list()
 		for(var/turf/stop as anything in recovery.work_stops())
-			if(stop.z == here.z && recovery.stop_dirty(stop))
+			if(stop.z == here.z && !needs_checkpoint_cross(stop) && recovery.stop_dirty(stop))
 				dirty[stop] = get_dist(here, stop)
 		if(length(dirty))
 			for(var/turf/stop as anything in sortTim(dirty, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE))
@@ -525,6 +562,16 @@
 		return list(stray[1], null, stray[2])
 	return null
 
+/// Whether any patrol stop on the concourse needs cleaning while this janitor stands in the lobby
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/dirty_stop_across_checkpoint()
+	var/datum/outpost_recovery/recovery = my_recovery()
+	if(!recovery)
+		return FALSE
+	for(var/turf/stop as anything in recovery.work_stops())
+		if(needs_checkpoint_cross(stop) && recovery.stop_dirty(stop))
+			return TRUE
+	return FALSE
+
 // ----- what they do -----
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/pick_activity()
@@ -532,6 +579,11 @@
 	if(job)
 		idle_since = 0
 		return job
+	if(dirty_stop_across_checkpoint())
+		idle_since = 0
+		var/datum/ambient_activity/cross = start_activity(new /datum/ambient_activity/cross_checkpoint(src))
+		if(cross)
+			return cross
 	if(!idle_since)
 		idle_since = max(world.time, 1)
 	// Nothing left but what the morgue crew has yet to take: they wait; clean, they take the lift out
@@ -737,7 +789,9 @@
 			if(RECOVERY_TASK_WET)
 				janitor.give_up_on(source_ref?.resolve())
 			if(RECOVERY_TASK_HAUL)
-				janitor.haul_blocked_until = world.time + RECOVERY_GIVE_UP_TIME
+				janitor.give_up_on(spot)
+				if(!janitor.haul_spot())
+					janitor.haul_blocked_until = world.time + RECOVERY_GIVE_UP_TIME
 			else
 				janitor.give_up_on(work_tile)
 	return ..()
@@ -756,6 +810,7 @@
 #undef RECOVERY_STRAY_RANGE
 #undef RECOVERY_SPOT_CHECKS
 #undef RECOVERY_GIVE_UP_TIME
+#undef RECOVERY_GIVE_UP_MAX
 #undef RECOVERY_STOP_RECHECK
 #undef RECOVERY_IDLE_LEAVE
 #undef RECOVERY_STROKES_MAX

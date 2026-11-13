@@ -448,7 +448,10 @@
 	var/mob/living/carbon/human/friend = visitor(chamber[2])
 	allocate(/obj/item/gun/ballistic/automatic/pistol, friend)
 	var/obj/item/paper/weapons_permit/receipt = allocate(/obj/item/paper/weapons_permit, friend)
+	holder.real_name = "Jane <script>alert(1)</script>"
 	receipt.fill_in(holder, host, host.weapon_permits[holder.mind])
+	TEST_ASSERT(!findtext(receipt.get_raw_text(), "<script>"), "Weapons permit receipt left raw HTML unescaped")
+	holder.real_name = "Jane"
 	TEST_ASSERT(scan_now(friend), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "Someone else's permit let a gun through") // CHECKPOINT_REJECTING
 	settle()
@@ -800,3 +803,97 @@
 	// Already past it, nobody sets off through it
 	ambient_cross_checkpoint_on_arrival(npc, host)
 	TEST_ASSERT_NULL(npc.activity, "Someone on the concourse set off through the checkpoint")
+	// Emagged gate: an arriving NPC still crosses cleanly without freezing when the interlock is down
+	checkpoint.disabled_until = world.time + 1800
+	npc.forceMove(lobby)
+	ambient_cross_checkpoint_on_arrival(npc, host)
+	crossing = npc.activity
+	TEST_ASSERT(istype(crossing), "An NPC did not cross an emagged checkpoint")
+	crossing.next_ask_at = 0
+	npc.activity_step(1)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "An NPC could not open the outer door of an emagged checkpoint")
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "An NPC did not enter the chamber of an emagged checkpoint") // AMBIENT_STEP_MOVE
+	npc.forceMove(crossing.spot)
+	crossing.next_ask_at = 0
+	npc.activity_step(1)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!inner.density, "An NPC in the chamber could not open the inner door while outer was still open on an emagged gate")
+	npc.end_activity()
+	checkpoint.disabled_until = 0
+
+	// Stale weakref on an unlocked empty checkpoint locker does not wedge it against new claims
+	var/obj/structure/closet/secure_closet/outpost_rental/checkpoint/locker = allocate(/obj/structure/closet/secure_closet/outpost_rental/checkpoint, lobby)
+	var/obj/item/card/id/vanished = new(lobby)
+	locker.id_card = WEAKREF(vanished)
+	locker.locked = FALSE
+	qdel(vanished)
+	var/mob/living/carbon/human/claimer = visitor(lobby)
+	var/obj/item/card/id/fresh_id = allocate(/obj/item/card/id, claimer)
+	fresh_id.registered_name = "Fresh Visitor"
+	locker.attackby(fresh_id, claimer, list(), list())
+	TEST_ASSERT(locker.locked && locker.id_card?.resolve() == fresh_id, "A destroyed ID card wedged an unlocked checkpoint locker")
+
+	// Player-possessed officer body does not get police checkpoint clearance for weapons
+	host.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, chamber[1])
+	host.police.add_officer(cop)
+	TEST_ASSERT(outpost_checkpoint_police_cleared(cop, host), "On-duty NPC officer was not cleared at the checkpoint")
+	TEST_ASSERT(!length(checkpoint.inspect_chamber()), "On-duty NPC officer's kit was refused by the checkpoint scan")
+	cop.mind_initialize()
+	TEST_ASSERT(!outpost_checkpoint_police_cleared(cop, host), "Player-minded officer body bypassed checkpoint weapon clearance")
+	TEST_ASSERT(length(checkpoint.inspect_chamber()) > 0, "Armed player-minded officer body was not refused by the checkpoint scan")
+	qdel(cop)
+
+	// lobby_checkpoint() prefers an unjammed checkpoint over a closer one stuck in rejecting with contraband on the floor
+	var/datum/outpost_checkpoint/second = new
+	second.outpost = host
+	second.checkpoint_id = "second_checkpoint"
+	second.lobby_turf = locate(host.template_bottom_left.x + 4, host.template_bottom_left.y + 1, host.template_bottom_left.z)
+	second.state = "idle" // CHECKPOINT_IDLE
+	host.checkpoints["second_checkpoint"] = second
+	var/obj/item/gun/energy/e_gun/mini/jam_gun = allocate(/obj/item/gun/energy/e_gun/mini, chamber[1])
+	checkpoint.state = "rejecting" // CHECKPOINT_REJECTING
+	TEST_ASSERT_EQUAL(host.lobby_checkpoint(lobby), second, "lobby_checkpoint picked a jammed rejecting checkpoint over a working one")
+	qdel(jam_gun)
+	checkpoint.state = "idle" // CHECKPOINT_IDLE
+	host.checkpoints -= "second_checkpoint"
+	second.outpost = null
+	qdel(second)
+
+/// A guard booth door never opens from outside because of a distant police lift, and a mended gate waits for both doors to shut before scanning
+/datum/unit_test/voidcrew_trader_checkpoint/booth_door_and_mend_interlock/Run()
+	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
+	host.ensure_police()
+	var/turf/desk = guard.shop.counter_turf
+	var/turf/inside_booth = get_step(desk, SOUTH)
+	var/turf/booth_door_turf = get_step(inside_booth, SOUTH)
+	var/turf/outside_booth = get_step(booth_door_turf, SOUTH)
+	inside_booth.ChangeTurf(/turf/open/indestructible)
+	booth_door_turf.ChangeTurf(/turf/open/indestructible)
+	outside_booth.ChangeTurf(/turf/open/indestructible)
+	var/obj/machinery/door/airlock/outpost/police/booth_door = allocate(/obj/machinery/door/airlock/outpost/police, booth_door_turf)
+	booth_door.outpost = host
+	// Put a police lift across the map on the outside side of the booth door
+	var/turf/distant_lift = locate(outside_booth.x, max(1, outside_booth.y - 6), outside_booth.z)
+	host.police.lift_turfs = list(distant_lift)
+	var/mob/living/carbon/human/lobby_visitor = visitor(outside_booth)
+	TEST_ASSERT(!booth_door.unrestricted_side(lobby_visitor), "A distant police lift let an unbadged visitor open the guard booth from outside")
+	lobby_visitor.forceMove(inside_booth)
+	TEST_ASSERT(booth_door.unrestricted_side(lobby_visitor), "Someone inside the guard booth could not open the booth door to leave")
+
+	// When a disabled gate mends while both doors were open and the inner door is still open, outer closing waits for inner before scanning
+	var/mob/living/carbon/human/occupant = visitor(chamber[1])
+	TEST_ASSERT_NOTNULL(occupant, "Could not place an occupant in the chamber")
+	checkpoint.disabled_until = world.time - 1
+	outer.density = TRUE
+	inner.density = FALSE
+	checkpoint.on_door_closed(outer)
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The checkpoint started scanning while the inner door was still open") // CHECKPOINT_IDLE
+	inner.density = TRUE
+	checkpoint.on_door_closed(inner)
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The checkpoint did not scan its chamber once the inner door finished closing") // CHECKPOINT_SCANNING
+	checkpoint.set_state("idle") // CHECKPOINT_IDLE
+	checkpoint.end_disable()
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "end_disable() left someone waiting in a closed chamber unscanned") // CHECKPOINT_SCANNING
+	checkpoint.set_state("idle") // CHECKPOINT_IDLE

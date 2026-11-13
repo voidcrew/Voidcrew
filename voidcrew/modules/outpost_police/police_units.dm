@@ -138,6 +138,34 @@
 /obj/item/restraints/handcuffs/outpost_police/used/apply_cuffs(mob/living/carbon/target, mob/user, dispense = FALSE)
 	return
 
+/// Security belt storage that also holsters an officer's miniature energy sidearm so both pockets stay empty
+/datum/storage/security_belt/outpost_police
+
+/datum/storage/security_belt/outpost_police/New(atom/parent, max_slots, max_specific_storage, max_total_storage, rustle_sound, remove_rustle_sound)
+	. = ..()
+	set_holdable(list(
+		/obj/item/ammo_box,
+		/obj/item/ammo_casing/shotgun,
+		/obj/item/assembly/flash/handheld,
+		/obj/item/clothing/glasses,
+		/obj/item/clothing/gloves,
+		/obj/item/flashlight/seclite,
+		/obj/item/food/donut,
+		/obj/item/grenade,
+		/obj/item/gun/energy/e_gun/mini,
+		/obj/item/holosign_creator/security,
+		/obj/item/knife/combat,
+		/obj/item/melee/baton,
+		/obj/item/radio,
+		/obj/item/reagent_containers/spray/pepper,
+		/obj/item/restraints/handcuffs,
+		/obj/item/restraints/legcuffs/bola,
+	))
+
+/// Security belt worn by outpost officers: holds baton, cuffs and sidearm without using a pocket
+/obj/item/storage/belt/security/outpost_police
+	storage_type = /datum/storage/security_belt/outpost_police
+
 // ----- outfits -----
 // Built from clothing that already exists (npc-outfit skill), each worn look checked on a mannequin.
 // Every outfit has a uniform, so each one equips on its own (tg's outfit_sanity test builds them all).
@@ -146,21 +174,21 @@
 // officer and the marshal add a gas mask, flash-proof eyewear and a ballistic long gun (abuse M5: no gas
 // or flash trick, and no energy weapon for an EMP to take).
 
-/// Every officer: radio, an ID that opens the police doors, a belt with baton and cuffs, an energy gun in a pocket
+/// Every officer: radio, an ID that opens the police doors, and a belt with baton, cuffs and sidearm (pockets empty)
 /datum/outfit/outpost_police
 	name = "Outpost Police"
 	uniform = /obj/item/clothing/under/rank/security/officer/spacepol
 	shoes = /obj/item/clothing/shoes/jackboots
 	gloves = /obj/item/clothing/gloves/color/black
 	ears = /obj/item/radio/headset/headset_sec
-	belt = /obj/item/storage/belt/security
+	belt = /obj/item/storage/belt/security/outpost_police
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,
 		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/gun/energy/e_gun/mini = 1,
 	)
 	id = /obj/item/card/id/advanced
 	id_trim = /datum/id_trim/outpost_police
-	r_pocket = /obj/item/gun/energy/e_gun/mini
 
 // ----- beat officers: the uniform and a cap -----
 
@@ -233,6 +261,7 @@
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,
 		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/gun/energy/e_gun/mini = 1,
 		/obj/item/grenade/flashbang = 1,
 	)
 
@@ -271,6 +300,7 @@
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,
 		/obj/item/restraints/handcuffs/outpost_police = 1,
+		/obj/item/gun/energy/e_gun/mini = 1,
 		/obj/item/grenade/flashbang = 1,
 	)
 
@@ -356,6 +386,7 @@
 	. = ..()
 	ban_from_containment()
 	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempt))
+	RegisterSignals(src, list(COMSIG_MOB_MIND_INITIALIZED, COMSIG_MOB_MIND_TRANSFERRED_INTO), PROC_REF(on_player_mind))
 	// Their ID reads their name, as a person's does
 	var/obj/item/card/id/card = wear_id
 	if(istype(card))
@@ -363,7 +394,8 @@
 		card.update_label()
 	desc = "[unit_title()], [kit.force_name]."
 	// On the roster of the police who keep this outpost, if any (roles and dispatch add them as well: no harm)
-	home_police()?.add_officer(src)
+	if(!mind && !client)
+		home_police()?.add_officer(src)
 
 /**
  * A person is never on an officer's side: players and officers share the neutral faction, and stealth's scan,
@@ -372,7 +404,7 @@
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/faction_check_atom(atom/movable/target, exact_match)
 	var/mob/living/person = target
-	if(isliving(person) && (person.mind || person.client) && !istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	if(isliving(person) && (person.mind || person.client))
 		return FALSE
 	return ..()
 
@@ -423,6 +455,8 @@
 	var/obj/item/weapon = struck_source_at == world.time ? struck_source_ref?.resolve() : null
 	struck_source_ref = null
 	struck_source_at = -1
+	if(mind || client)
+		return
 	police?.officer_struck(src, attacker, attack_flags, weapon)
 	react_attacked(attacker)
 
@@ -442,17 +476,26 @@
 
 // Abuse SF3: a player in an officer's body (a brain transplant) is a person, not an officer: off the roster, so no
 // stray sweep, recall or corpse cap ever deletes them
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/Login()
-	. = ..()
-	if(!. || isnull(client) || !police)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/leave_roster_for_player()
+	if(!police)
 		return
 	police.remove_officer(src)
 	police.dispatch_strays -= src
 
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_player_mind(datum/source, datum/extra)
+	SIGNAL_HANDLER
+	if(mind || client)
+		leave_roster_for_player()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/Login()
+	. = ..()
+	if(. && client)
+		leave_roster_for_player()
+
 /// Someone is putting cuffs on them (abuse M3)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/on_cuff_attempt(datum/source, mob/living/user)
 	SIGNAL_HANDLER
-	if(user == src)
+	if(user == src || mind || client)
 		return
 	police?.officer_cuff_attempt(src, user)
 
@@ -469,15 +512,15 @@
 
 // ----- the leash -----
 
-/// Anywhere on their outpost: the concourse, the lobby and the hangars, not the concourse only
+/// Anywhere on their outpost's walkable ground: the concourse, the lobby and the hangars, never open space
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/leash_ok(turf/tile)
-	var/obj/structure/overmap/trader_outpost/keep = police?.outpost
-	if(!keep)
-		return ..()
 	tile = get_turf(tile)
-	if(!tile)
+	if(!tile || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
 		return FALSE
-	return get_trader_outpost_for_turf(tile) == keep
+	var/obj/structure/overmap/trader_outpost/keep = police?.outpost || get_outpost()
+	if(keep?.template_bottom_left)
+		return get_trader_outpost_for_turf(tile) == keep
+	return ..()
 
 /**
  * Carried off their outpost with no way back. Never gone in front of a player: while anyone is within
@@ -504,36 +547,79 @@
 		return cuffs
 	return null
 
-/// Puts `thing` from their hand back where it is carried (its slot, a pocket, the belt or the bag). TRUE once it is out of their hands.
+/// Puts `thing` from their hand back where it is carried (the belt, the bag or a non-pocket worn slot). TRUE once it is out of their hands.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_put_away(obj/item/thing)
 	if(QDELETED(thing) || !is_holding(thing))
 		return TRUE
-	if(equip_to_appropriate_slot(thing))
-		return TRUE
+	if(thing == held_item)
+		put_drink_down(null)
+		return !is_holding(thing)
+	if(thing == held_prop)
+		set_held(null)
+		return !is_holding(thing)
 	for(var/obj/item/holder in list(belt, back))
-		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+		if(holder?.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+			return TRUE
+	var/static/list/non_pocket_slots = list(
+		ITEM_SLOT_SUITSTORE,
+		ITEM_SLOT_BACK,
+		ITEM_SLOT_BELT,
+		ITEM_SLOT_HEAD,
+		ITEM_SLOT_MASK,
+		ITEM_SLOT_EYES,
+		ITEM_SLOT_EARS,
+		ITEM_SLOT_GLOVES,
+		ITEM_SLOT_FEET,
+		ITEM_SLOT_OCLOTHING,
+		ITEM_SLOT_ICLOTHING,
+		ITEM_SLOT_ID,
+	)
+	for(var/slot in non_pocket_slots)
+		if(equip_to_slot_if_possible(thing, slot, disable_warning = TRUE))
 			return TRUE
 	return !is_holding(thing)
 
-/// A hand free for what they are about to take: if both are full, something held goes away. TRUE if a hand is free.
+/// First usable empty hand index (not a missing limb), or 0
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_empty_hand()
+	for(var/i in 1 to length(held_items))
+		if(!held_items[i] && has_hand_for_held_index(i))
+			return i
+	return 0
+
+/// A hand free for what they are about to take: if all usable hands are full, something held goes away. TRUE if a usable hand is free.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_free_hand()
-	if(length(get_empty_held_indexes()))
+	var/hand = police_empty_hand()
+	if(hand)
+		swap_hand(hand, silent = TRUE)
 		return TRUE
 	for(var/obj/item/held in held_items)
 		if(istype(held, /obj/item/outpost_sealed_case/evidence))
 			continue
-		if(police_put_away(held) && length(get_empty_held_indexes()))
-			return TRUE
-	return length(get_empty_held_indexes()) > 0
+		if(police_put_away(held))
+			hand = police_empty_hand()
+			if(hand)
+				swap_hand(hand, silent = TRUE)
+				return TRUE
+	// Still full (for instance a tactical long gun with no sling slot): an evidence case that fits in the bag can ride there
+	for(var/obj/item/held in held_items)
+		if(!istype(held, /obj/item/outpost_sealed_case/evidence))
+			continue
+		if(police_put_away(held))
+			hand = police_empty_hand()
+			if(hand)
+				swap_hand(hand, silent = TRUE)
+				return TRUE
+	return FALSE
 
 /// Takes `thing` into a free hand (making one free), or failing that into the belt or the bag. TRUE if they have it.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_carry(obj/item/thing)
 	if(QDELETED(thing))
 		return FALSE
-	if(police_free_hand() && put_in_hands(thing))
+	var/hand = police_free_hand() ? police_empty_hand() : 0
+	if(hand && put_in_hand(thing, hand))
 		return TRUE
 	for(var/obj/item/holder in list(belt, back))
-		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+		if(holder?.atom_storage?.attempt_insert(thing, src, messages = FALSE))
 			return TRUE
 	return thing in get_all_contents()
 

@@ -263,9 +263,6 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	var/turf/last_seen_turf
 	/// world.time since when no officer has seen them, or 0
 	var/unseen_since = 0
-	/// An arrest stood by them in crit and gave up (police_arrest.dm step_downed()): while they lie in crit, nobody
-	/// counts as seeing them, so the hide clock runs. Cleared once they are out of crit.
-	var/left_lying = FALSE
 	/// world.time since when they have been away from the outpost, or 0
 	var/away_since = 0
 	/// world.time until which they are refused service (a faded warrant of three stars or more)
@@ -443,4 +440,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/police_c
  * Declared here rather than in trade/ so the police module, included earlier, can override it.
  */
 /obj/proc/outpost_forceable()
+	return FALSE
+
+/**
+ * Whether outpost property lets `tool` (a screwdriver or wirecutters) get at this the way it would any door: only a
+ * cell door says yes (police_cell.dm), so its panel opens and its wires can be cut like a ship's airlock.
+ */
+/obj/proc/outpost_hackable(obj/item/tool)
 	return FALSE

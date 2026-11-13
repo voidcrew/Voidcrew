@@ -41,10 +41,6 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/hook_holdup()
 	outpost_holdup_hook(src)
 
-/// `robber` holds this trader up with `weapon` (the hold has just started)
-/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_held_up(mob/living/robber, obj/item/gun/weapon)
-	shop?.held_up(src, robber, weapon)
-
 /// The trader reports the robbery from its counter (OUTPOST_CRIME_ARMED_ROBBERY, the gun as source)
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/raise_alarm()
 	shop?.raise_holdup_alarm(src)
@@ -53,17 +49,41 @@
 // THE STICK-UP (R7)
 // =========================================================================
 
+#define TRAIT_OUTPOST_HOLDUP_TARGET "outpost_holdup_target"
+
+/// Whether `weapon` is a real threat for a stick-up, rather than a toy, laser-tag gun or harmless tool
+/proc/outpost_holdup_gun(obj/item/weapon)
+	if(!istype(weapon, /obj/item/gun))
+		return FALSE
+	var/static/list/harmless_guns
+	if(!harmless_guns)
+		harmless_guns = typecacheof(list(
+			/obj/item/gun/energy/floragun,
+			/obj/item/gun/energy/wiremod_gun,
+			/obj/item/gun/energy/recharge/fisher,
+			/obj/item/gun/medbeam,
+			/obj/item/gun/energy/laser/bluetag,
+			/obj/item/gun/energy/laser/redtag,
+			/obj/item/gun/ballistic/automatic/toy,
+			/obj/item/gun/ballistic/automatic/pistol/toy,
+			/obj/item/gun/ballistic/shotgun/toy,
+			/obj/item/gun/magic/wand/nothing,
+		))
+	return !is_type_in_typecache(weapon, harmless_guns)
+
 /// The one watcher for every trader in the world: it hears tg's hold-up land on a trader (below) and the supply convoy
 GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
+/// Weakrefs to police instances holding active `takings`, so merging two holochips carries stolen till claims across
+GLOBAL_LIST_EMPTY(outpost_takings_police)
 
 /datum/outpost_holdup_watcher
 	/// Every stick-up in progress
 	var/list/datum/outpost_holdup/active = list()
 
 /**
- * `trader` was just made: register what tells it it is held up (tg's /datum/status_effect/grouped/heldup lands on
- * it; COMSIG_LIVING_STATUS_APPLIED). tg sends nothing of its own for a hold-up and applies that status from inside
- * the gunpoint component's Initialize, so the shooter is looked for a moment later. Runs from Initialize: never sleeps.
+ * `trader` was just made: mark it so tg's /datum/status_effect/grouped/heldup notifies us as each shooter aims or
+ * lowers their gun. tg applies that status from inside the gunpoint component's Initialize, so a new shooter is
+ * resolved a tick later once the component is attached. Runs from Initialize: never sleeps.
  */
 /proc/outpost_holdup_hook(mob/living/trader)
 	if(QDELETED(trader))
@@ -71,8 +91,18 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	GLOB.outpost_holdups.watch(trader)
 
 /datum/outpost_holdup_watcher/proc/watch(mob/living/trader)
-	RegisterSignal(trader, COMSIG_LIVING_STATUS_APPLIED, PROC_REF(on_status_applied), override = TRUE)
+	ADD_TRAIT(trader, TRAIT_OUTPOST_HOLDUP_TARGET, REF(src))
 	RegisterSignal(trader, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempted), override = TRUE)
+
+/datum/status_effect/grouped/heldup/source_added(source, ...)
+	..()
+	if(owner && HAS_TRAIT(owner, TRAIT_OUTPOST_HOLDUP_TARGET))
+		GLOB.outpost_holdups.on_source_added(owner, src, source)
+
+/datum/status_effect/grouped/heldup/source_removed(source, removing)
+	..()
+	if(owner && HAS_TRAIT(owner, TRAIT_OUTPOST_HOLDUP_TARGET))
+		GLOB.outpost_holdups.on_source_removed(owner, src, source, removing)
 
 /// Someone tries to cuff a living trader: assault on the staff, as grabbing one is (abuse SF6: cuffs never silence a stick-up for free)
 /datum/outpost_holdup_watcher/proc/on_cuff_attempted(mob/living/source, mob/living/user)
@@ -94,27 +124,44 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		if(shop)
 			shop.till_robbed_by = null
 
-/datum/outpost_holdup_watcher/proc/on_status_applied(mob/living/source, datum/status_effect/effect)
-	SIGNAL_HANDLER
-	if(!istype(effect, /datum/status_effect/grouped/heldup))
-		return
-	// The shooter is on the effect's sources only once the component has finished, and the component is on the shooter
-	addtimer(CALLBACK(src, PROC_REF(resolve_hold), WEAKREF(source), WEAKREF(effect)), 1, TIMER_DELETE_ME)
+/datum/outpost_holdup_watcher/proc/on_source_added(mob/living/trader, datum/status_effect/grouped/heldup/effect, source_key)
+	// The gunpoint component finishes attaching after applying the status effect
+	addtimer(CALLBACK(src, PROC_REF(resolve_hold), WEAKREF(trader), WEAKREF(effect), source_key), 1, TIMER_DELETE_ME)
+
+/datum/outpost_holdup_watcher/proc/on_source_removed(mob/living/trader, datum/status_effect/grouped/heldup/effect, source_key, removing)
+	var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
+	var/datum/outpost_holdup/current = shop?.holdup
+	if(current && (removing || REF(current.robber_ref?.resolve()) == source_key))
+		current.end_hold()
+	if(!removing && (!shop?.holdup || !shop.holdup.holding))
+		resolve_hold(WEAKREF(trader), WEAKREF(effect))
 
 /// Finds who holds `trader_ref` up and hands the hold to the trader's shop
-/datum/outpost_holdup_watcher/proc/resolve_hold(datum/weakref/trader_ref, datum/weakref/effect_ref)
+/datum/outpost_holdup_watcher/proc/resolve_hold(datum/weakref/trader_ref, datum/weakref/effect_ref, preferred_source = null)
 	var/mob/living/trader = trader_ref.resolve()
 	var/datum/status_effect/effect = effect_ref.resolve()
 	if(QDELETED(trader) || QDELETED(effect) || effect.owner != trader)
 		return
+	var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
+	if(!shop)
+		return
+	var/mob/living/fallback
+	var/obj/item/gun/fallback_weapon
 	// The gunpoint keeps its shooter within 2 tiles of the target
 	for(var/mob/living/candidate in orange(3, trader))
-		var/datum/component/gunpoint/hold = candidate.GetComponent(/datum/component/gunpoint)
-		if(hold?.target != trader)
+		if(!candidate.mind)
 			continue
-		var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
-		shop?.held_up(trader, candidate, hold.weapon)
-		return
+		var/datum/component/gunpoint/hold = candidate.GetComponent(/datum/component/gunpoint)
+		if(hold?.target != trader || !outpost_holdup_gun(hold.weapon))
+			continue
+		if(preferred_source && REF(candidate) == preferred_source)
+			shop.held_up(trader, candidate, hold.weapon)
+			return
+		if(!fallback)
+			fallback = candidate
+			fallback_weapon = hold.weapon
+	if(fallback)
+		shop.held_up(trader, fallback, fallback_weapon)
 
 /// A crime counted against `robber` is the robbery of one of the stick-ups in progress: the trader's alarm need not count it again
 /datum/outpost_holdup_watcher/proc/note_counted(mob/living/robber)
@@ -151,17 +198,24 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
  * else, M40), not a player, and not for anyone without a mind (nobody could be wanted for it).
  */
 /datum/outpost_shop/proc/held_up(mob/living/trader, mob/living/robber, obj/item/gun/weapon)
-	if(QDELETED(src) || QDELETED(trader) || QDELETED(robber) || !robber.mind || !outpost?.police)
+	if(QDELETED(src) || QDELETED(trader) || QDELETED(robber) || !robber.mind || !outpost?.police || !outpost_holdup_gun(weapon))
 		return
 	if(istype(src, /datum/outpost_shop/vendor/checkpoint) || trader.client || trader.mind)
 		return
-	if(trader.stat != CONSCIOUS || keeper?.resolve() != trader || get_dist(trader, holdup_counter(trader)) > 1)
+	var/turf/trader_turf = get_turf(trader)
+	var/turf/counter = holdup_counter(trader)
+	if(trader.stat != CONSCIOUS || keeper?.resolve() != trader || !trader_turf || !counter || trader_turf.z != counter.z || get_dist(trader_turf, counter) > 1)
 		return
 	if(holdup)
 		// The same robber pointing again while the alarm is still out: another hand-over (an empty till gives less)
 		if(holdup.robber_ref?.resolve() == robber)
 			holdup.rehold(weapon)
-		return
+			return
+		if(holdup.holding)
+			return
+		// First robber lowered their gun while the alarm is still pending: leave that holdup in active so its alarm
+		// still fires, and start a fresh hold so the trader pauses for the new gunpoint instead of getting shot.
+		holdup = null
 	GLOB.outpost_holdups.watch_convoy(outpost)
 	holdup = new /datum/outpost_holdup(src, trader, robber, weapon)
 
@@ -186,6 +240,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
  */
 /datum/outpost_shop/proc/raise_holdup_alarm(mob/living/trader)
 	holdup?.try_alarm(TRUE)
+	for(var/datum/outpost_holdup/past as anything in GLOB.outpost_holdups.active.Copy())
+		if(!QDELETED(past) && past.shop == src)
+			past.try_alarm(TRUE)
 
 /**
  * Whether `trader` can still work the counter and the alarm under it: awake, not tied up or stunned, still the
@@ -194,7 +251,8 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 /datum/outpost_shop/proc/holdup_trader_able(mob/living/trader, turf/counter)
 	if(QDELETED(src) || QDELETED(trader) || trader.stat != CONSCIOUS || keeper?.resolve() != trader)
 		return FALSE
-	if(counter && get_dist(trader, counter) > 1)
+	var/turf/trader_turf = get_turf(trader)
+	if(!trader_turf || (counter && (trader_turf.z != counter.z || get_dist(trader_turf, counter) > 1)))
 		return FALSE
 	return outpost?.police ? outpost.police.perception.can_report(trader) : TRUE
 
@@ -228,7 +286,11 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	else if(till_extras < 1)
 		var/datum/shop_sku/sku = holdup_pick_sku(room)
 		if(sku)
-			taken = create_trader_goods(sku.item_path, counter, sku.dispense_amount)
+			var/atom/movable/goods = create_trader_goods(sku.item_path, counter, sku.dispense_amount)
+			var/atom/movable/handed = outpost_seal_goods(goods)
+			mark_trader_goods(handed)
+			if(isitem(handed))
+				taken = handed
 			sku.stock--
 			record["sku"] = WEAKREF(sku)
 			recovery.note_loss(sku.get_credit_price())
@@ -238,7 +300,12 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	till_robbed_by = WEAKREF(robber.mind)
 	// Stolen property: it goes back where it came from at the arrest (evidence_candidates(), evidence_empty_case())
 	police.mark_stolen(taken, robber.mind)
+	// Takings that were destroyed since the last stick-up are dropped here, so the list stays small all round
+	for(var/datum/weakref/old_ref in police.takings?.Copy())
+		if(QDELETED(old_ref.resolve()))
+			police.takings -= old_ref
 	LAZYSET(police.takings, WEAKREF(taken), record)
+	GLOB.outpost_takings_police |= WEAKREF(police)
 	if(!robber.put_in_hands(taken))
 		taken.forceMove(counter)
 	return taken
@@ -335,6 +402,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	if(alarm_done)
 		return
 	holding = TRUE
+	var/mob/living/trader = trader_ref?.resolve()
+	if(trader)
+		ADD_TRAIT(trader, TRAIT_AI_PAUSED, REF(src))
 	if(weapon)
 		weapon_ref = WEAKREF(weapon)
 	trader_says(ROBBERY_LINE_HANDS_UP)
@@ -361,15 +431,24 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		return
 	qdel(src)
 
+/// The robber's hold on the trader ended: unpause the trader and finish unless an alarm is still pending
+/datum/outpost_holdup/proc/end_hold()
+	if(!holding)
+		return
+	holding = FALSE
+	var/mob/living/trader = trader_ref?.resolve()
+	if(trader)
+		REMOVE_TRAIT(trader, TRAIT_AI_PAUSED, REF(src))
+	deltimer(steady_timer)
+	steady_timer = null
+	maybe_end()
+
 /// The hold ended (the robber lowered the gun, left, or the trader was moved or shot)
 /datum/outpost_holdup/proc/on_status_removed(mob/living/source, datum/status_effect/effect)
 	SIGNAL_HANDLER
 	if(!istype(effect, /datum/status_effect/grouped/heldup))
 		return
-	holding = FALSE
-	deltimer(steady_timer)
-	steady_timer = null
-	maybe_end()
+	end_hold()
 
 /// The hold has been on for OUTPOST_HOLDUP_STEADY: when tg says it is steady and the trader is still at its counter, it pays
 /datum/outpost_holdup/proc/check_steady()
@@ -380,8 +459,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		return settle_if_lost(trader)
 	var/datum/component/gunpoint/hold = robber.GetComponent(/datum/component/gunpoint)
 	if(hold?.target != trader)
-		holding = FALSE
-		return maybe_end()
+		return end_hold()
 	if(hold.stage < 2)
 		if(++steady_tries <= 5)
 			steady_timer = addtimer(CALLBACK(src, PROC_REF(check_steady)), 1 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
@@ -425,8 +503,10 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	if(alarm_overdue)
 		try_alarm()
 		return
+	var/turf/trader_turf = get_turf(trader)
+	var/turf/robber_turf = get_turf(robber)
 	var/datum/outpost_police_perception/perception = shop?.outpost?.police?.perception
-	if(get_dist(trader, robber) > OUTPOST_HOLDUP_ALARM_RANGE || !perception?.sees(trader, robber))
+	if(!trader_turf || !robber_turf || trader_turf.z != robber_turf.z || get_dist(trader_turf, robber_turf) > OUTPOST_HOLDUP_ALARM_RANGE || !perception?.sees(trader, robber))
 		try_alarm()
 
 /// The robber fired a gun: the alarm goes at once
@@ -467,7 +547,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 				watch_timer = addtimer(CALLBACK(src, PROC_REF(watch_robber)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 		return
 	var/datum/outpost_police/police = shop.outpost?.police
-	if(!counted && !pending_report() && police)
+	if(!counted && police)
 		police.count_crime(robber, OUTPOST_CRIME_ARMED_ROBBERY, null, weapon_ref?.resolve())
 		relay_alarm(trader, robber)
 	settle()
@@ -532,15 +612,24 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	/// Stolen takings: weakref to the item -> list("shop" = weakref, "amount" = credits of a holochip, "sku" = weakref of a shelf item) (R7)
 	var/list/takings
 
-/// A robbery counted against someone is the one the stick-up in progress would have raised; its alarm need not count it again
+/// A robbery counted against someone is the one the stick-up in progress would have raised; its alarm and any pending witness report need not count it again
+/datum/outpost_police/proc/note_robbery_counted(mob/living/offender)
+	GLOB.outpost_holdups.note_counted(offender)
+	absorb_pending_crime(offender, OUTPOST_CRIME_ARMED_ROBBERY)
+
 /datum/outpost_police/count_crime(mob/living/offender, crime, atom/victim, obj/item/source, derived = FALSE)
 	. = ..()
 	if(crime == OUTPOST_CRIME_ARMED_ROBBERY)
-		GLOB.outpost_holdups.note_counted(offender)
+		note_robbery_counted(offender)
+
+/datum/outpost_police/apply_upgraded_crime(mob/living/offender, base_heat, crime, atom/victim, obj/item/source)
+	. = ..()
+	if(crime == OUTPOST_CRIME_ARMED_ROBBERY)
+		note_robbery_counted(offender)
 
 /// The Search step also takes stolen takings the suspect has on them or at their feet
-/datum/outpost_police/evidence_candidates(mob/living/carbon/suspect)
-	var/list/take = ..()
+/datum/outpost_police/evidence_candidates(mob/living/carbon/suspect, mob/living/officer)
+	var/list/take = ..(suspect, officer)
 	if(!islist(take))
 		take = list()
 	for(var/datum/weakref/ref in takings?.Copy())
@@ -548,9 +637,103 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		if(QDELETED(stolen))
 			takings -= ref
 			continue
-		if(evidence_can_take(stolen, suspect))
+		if(evidence_can_take(stolen, suspect, officer))
 			take |= stolen
 	return take
+
+// Merging a stolen till holochip into another holochip carries the till's claim onto the combined chip instead of laundering it
+/obj/item/holochip/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	var/obj/item/holochip/other = istype(tool, /obj/item/holochip) ? tool : null
+	var/datum/weakref/other_ref = other ? WEAKREF(other) : null
+	. = ..()
+	if(. == ITEM_INTERACT_SUCCESS && other_ref)
+		outpost_transfer_holochip_takings(other_ref, src)
+
+/// Moves any stolen till claim from `from_ref` onto `into` when one holochip is merged into another
+/proc/outpost_transfer_holochip_takings(datum/weakref/from_ref, obj/item/holochip/into)
+	if(!from_ref || QDELETED(into))
+		return
+	var/datum/weakref/into_ref = WEAKREF(into)
+	for(var/datum/weakref/police_ref as anything in GLOB.outpost_takings_police?.Copy())
+		var/datum/outpost_police/police = police_ref?.resolve()
+		if(QDELETED(police) || !length(police.takings))
+			GLOB.outpost_takings_police -= police_ref
+			continue
+		var/list/moved = police.takings[from_ref]
+		if(!moved)
+			continue
+		police.takings -= from_ref
+		var/list/existing = police.takings[into_ref]
+		if(!existing)
+			police.takings[into_ref] = moved
+			continue
+		outpost_merge_takings_records(existing, moved)
+
+/// Adds `amount` owed to `shop_ref` onto `target`
+/proc/outpost_add_shop_claim(list/target, datum/weakref/shop_ref, amount)
+	if(!shop_ref || amount <= 0)
+		return
+	if(!target["shop"])
+		target["shop"] = shop_ref
+		target["amount"] = amount
+		return
+	if(target["shop"] == shop_ref)
+		target["amount"] = (target["amount"] || 0) + amount
+		return
+	var/list/extras = target["extra_shops"]
+	if(!extras)
+		extras = list()
+		target["extra_shops"] = extras
+	extras[shop_ref] = (extras[shop_ref] || 0) + amount
+
+/// Folds `moved` (and any sub-claims on it) into `target`
+/proc/outpost_merge_takings_records(list/target, list/moved)
+	outpost_add_shop_claim(target, moved["shop"], moved["amount"] || 0)
+	var/list/moved_extras = moved["extra_shops"]
+	for(var/datum/weakref/extra_shop as anything in moved_extras)
+		outpost_add_shop_claim(target, extra_shop, moved_extras[extra_shop])
+
+/// Total till credits owed on `record` across one or more robbed shops
+/proc/outpost_takings_owed(list/record)
+	var/total = record["amount"] || 0
+	var/list/extras = record["extra_shops"]
+	for(var/datum/weakref/extra_shop as anything in extras)
+		total += extras[extra_shop] || 0
+	return total
+
+/// Whether `item` is recorded as a crime tool on a warrant or pending report (distinct from stolen till takings)
+/datum/outpost_police/proc/is_recorded_crime_tool(obj/item/item)
+	var/datum/weakref/ref = WEAKREF(item)
+	for(var/datum/mind/mind as anything in warrants)
+		var/datum/outpost_warrant/warrant = warrants[mind]
+		if(warrant && (ref in warrant.evidence))
+			return TRUE
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(QDELETED(report))
+			continue
+		if(report.source == ref || (ref in report.folded_sources))
+			return TRUE
+	return FALSE
+
+/// When a suspect merged stolen till credits onto their own larger holochip, seize only the stolen share so their own credits stay with them (or go into their property locker on a jail strip)
+/datum/outpost_police/prepare_seized_evidence(obj/item/thing, turf/floor)
+	. = ..()
+	if(!istype(., /obj/item/holochip))
+		return
+	var/obj/item/holochip/chip = .
+	var/datum/weakref/ref = WEAKREF(chip)
+	var/list/record = takings?[ref]
+	if(!record)
+		return
+	var/owed = outpost_takings_owed(record)
+	if(owed > 0 && chip.credits > owed && !is_recorded_crime_tool(chip))
+		var/taken_back = chip.spend(owed, TRUE)
+		if(taken_back > 0)
+			var/obj/item/holochip/stolen_share = new(floor || get_turf(chip), taken_back)
+			takings -= ref
+			takings[WEAKREF(stolen_share)] = record
+			GLOB.outpost_takings_police |= WEAKREF(src)
+			return stolen_share
 
 /// Stolen takings in an emptied evidence case go back where they came from (a holochip's credits to the till, a shelf item to its shelf); the rest is the case's business
 /datum/outpost_police/evidence_empty_case(obj/item/outpost_sealed_case/evidence/case, turf/spill, obj/structure/closet/secure_closet/outpost_evidence/store)
@@ -563,42 +746,69 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		return_takings(thing, record, spill)
 	return ..()
 
-/// `thing` was stolen from a counter: back to it (the cap on what a counter loses in a round is not given back)
-/datum/outpost_police/proc/return_takings(obj/item/thing, list/record, turf/spill)
-	var/datum/weakref/shop_ref = record["shop"]
-	var/datum/outpost_shop/shop = shop_ref?.resolve()
-	if(QDELETED(shop) || QDELETED(thing))
+/// Refunds one shop's till share from `returned` credits recovered off a seized holochip
+/datum/outpost_police/proc/refund_shop_till(datum/outpost_shop/shop, amount, returned)
+	if(QDELETED(shop) || amount <= 0)
 		return
-	var/amount = record["amount"]
-	if(amount && istype(thing, /obj/item/holochip))
-		var/obj/item/holochip/chip = thing
-		chip.spend(min(chip.credits, amount), TRUE)
+	// Only what came back refills the till: a chip split down to 1 cr takes only its share off the wait
+	if(returned >= amount || shop.till_ready_at <= world.time)
 		shop.till_ready_at = 0
 		shop.till_extras = 0
 		shop.till_robbed_by = null
+	else if(returned > 0)
+		shop.till_ready_at = max(world.time + 1, shop.till_ready_at - round(OUTPOST_HOLDUP_TILL_REFILL * returned / amount))
+		addtimer(CALLBACK(shop, TYPE_PROC_REF(/datum/outpost_shop, till_refilled)), shop.till_ready_at - world.time, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
+
+/// `thing` was stolen from a counter: back to it (the cap on what a counter loses in a round is not given back)
+/datum/outpost_police/proc/return_takings(obj/item/thing, list/record, turf/spill)
+	if(QDELETED(thing))
+		return
+	var/owed = outpost_takings_owed(record)
+	if(owed && istype(thing, /obj/item/holochip))
+		var/obj/item/holochip/chip = thing
+		var/primary_amount = record["amount"] || 0
+		if(primary_amount > 0)
+			var/datum/weakref/primary_ref = record["shop"]
+			var/returned = QDELETED(chip) ? 0 : chip.spend(min(chip.credits, primary_amount), TRUE)
+			refund_shop_till(primary_ref?.resolve(), primary_amount, returned)
+		var/list/extras = record["extra_shops"]
+		for(var/datum/weakref/extra_ref as anything in extras)
+			var/extra_amount = extras[extra_ref] || 0
+			if(extra_amount <= 0)
+				continue
+			var/returned = QDELETED(chip) ? 0 : chip.spend(min(chip.credits, extra_amount), TRUE)
+			refund_shop_till(extra_ref?.resolve(), extra_amount, returned)
 		// Whatever else was on the chip is theirs
 		if(!QDELETED(chip) && spill)
 			chip.forceMove(spill)
+		return
+	var/datum/weakref/shop_ref = record["shop"]
+	var/datum/outpost_shop/shop = shop_ref?.resolve()
+	if(QDELETED(shop))
 		return
 	var/datum/weakref/sku_ref = record["sku"]
 	var/datum/shop_sku/sku = sku_ref?.resolve()
 	if(sku && !QDELETED(sku))
 		sku.stock++
+	// A sealed case spills what it holds when deleted: the stock went back on the shelf, so the goods go with it
+	for(var/atom/movable/inside as anything in thing.contents.Copy())
+		qdel(inside)
 	qdel(thing)
 
 // ----- what the police's witnesses make of it -----
 
 /**
  * Who, other than the held-up trader (whose report is its alarm), sees `robber` hold `trader` up, in the order
- * witness_of() asks: the outpost's other traders, players not on the robber's crew, cameras, officers (all who saw), then townspeople.
- * A list of one witness (or all the officers who saw); empty if nobody did.
+ * witness_of() asks: the outpost's other traders at their counters, players not on the robber's crew, cameras, then
+ * every officer and townsperson (or off-counter trader) who saw. One witness, or those townspeople then those officers
+ * (the townspeople's report is on a timer); empty if nobody did.
  */
 /datum/outpost_police_perception/proc/holdup_witnesses(mob/living/robber, mob/living/trader)
 	var/obj/structure/overmap/trader_outpost/outpost = police?.outpost
 	if(!outpost || !robber)
 		return list()
 	for(var/mob/living/other in outpost.traders)
-		if(other != trader && sees(other, robber))
+		if(other != trader && trader_at_desk(other) && can_report(other) && sees(other, robber))
 			return list(other)
 	var/datum/voidcrew_crew_record/own_crew = robber.mind?.get_reputation_crew()
 	for(var/mob/living/player in GLOB.alive_player_list)
@@ -613,14 +823,20 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
 		if(sees(officer, robber))
 			officers_saw += officer
-	if(length(officers_saw))
-		return officers_saw
+	var/list/civilians_saw = list()
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(!is_officer(person) && !(person in outpost.traders) && sees(person, robber))
-				return list(person)
-	return list()
+			if(person != trader && !person.mind && !person.client && !is_officer(person) && !trader_at_desk(person) && sees(person, robber))
+				civilians_saw |= person
+	for(var/mob/living/other_trader in outpost.traders)
+		if(other_trader != trader && !other_trader.mind && !other_trader.client && !trader_at_desk(other_trader) && sees(other_trader, robber))
+			civilians_saw |= other_trader
+	if(length(civilians_saw) && length(officers_saw))
+		return civilians_saw + officers_saw
+	if(length(officers_saw))
+		return officers_saw
+	return civilians_saw
 
 // ----- the gate emag, to the police (spec-rehydrate.md 9) -----
 
@@ -642,4 +858,5 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 				return FALSE
 	return ..()
 
+#undef TRAIT_OUTPOST_HOLDUP_TARGET
 #undef OUTPOST_HOLDUP_STEADY

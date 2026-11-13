@@ -723,9 +723,13 @@
 	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 0, "A crewmate was made an accomplice of a leader in custody")
 	police.close_case(leader.mind)
 
-	// Free and alive: the crewmate is an accomplice, as before
+	// Free and alive: the crewmate is an accomplice, as before. Owner decision 44: an old prior (five stars, faded a
+	// moment ago) stays out of it, and the accomplice is arrested at two stars like a crewmate with a clean record.
+	var/datum/outpost_warrant/mate_warrant = police_pin_warrant(police, mate.mind, 0)
+	mate_warrant.prior = 140
+	mate_warrant.prior_set_at = world.time
 	police.tick_warrants()
-	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 2, "A crewmate at the outpost is not an accomplice of a free four-star leader")
+	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 2, "A crewmate at the outpost is not an accomplice of a free four-star leader at two stars")
 	police.remove_warrant(police.get_warrant(mate.mind))
 
 	// Dead: their body makes no accomplices
@@ -733,3 +737,316 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_stars(mate.mind), 0, "A crewmate was made an accomplice of a dead leader")
 	wanted_cleanup(list(ship))
+
+/**
+ * Owner decisions 34 and 37: someone in crit with an arrest on its way to cuff them keeps their stars until the cuffs
+ * are on. Before, crit counted as away: a one-star warrant drained to nothing and the arrest closed with them left
+ * lying, and three stars fell to two and were fined instead of jailed. With no arrest on them, crit still fades.
+ */
+/datum/unit_test/voidcrew_outpost_police_crit_arrest_holds
+
+/datum/unit_test/voidcrew_outpost_police_crit_arrest_holds/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/suspect = wanted_person(wanted_spot(0, 0))
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 50) // three stars
+	suspect.stat = HARD_CRIT
+	warrant.away_since = world.time - 10 MINUTES
+
+	var/datum/outpost_police_case/case = new(police, warrant)
+	police.cases[suspect.mind] = case
+	TEST_ASSERT(police.arrest_on(suspect), "Setup: no arrest on the suspect")
+	TEST_ASSERT(!police.in_custody(suspect), "Setup: the suspect is already in custody")
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(warrant.heat, 50, "Heat faded from someone in crit with an arrest on its way to them")
+	TEST_ASSERT_EQUAL(police.get_stars(suspect.mind), 3, "A three-star suspect in crit fell below three stars before the cuffs")
+	police.close_case(suspect.mind)
+
+	// Nobody coming for them: in crit is away, and it fades as before
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(warrant.heat, 49, "Heat did not fade from someone in crit with no arrest on them")
+	suspect.stat = CONSCIOUS
+
+// ===== THE HALF-SECOND FOLD =====
+
+/// A perception in which only `seen_victim` sees the crime done to them
+/datum/outpost_police_perception/test_victim_sees
+	var/atom/seen_victim
+
+/datum/outpost_police_perception/test_victim_sees/witness_of(mob/living/offender, crime, atom/victim, obj/item/source)
+	last_witness = null
+	last_witnesses = null
+	if(victim && victim == seen_victim)
+		last_witness = victim
+		return 1 // POLICE_WITNESS_SAW
+	return 0 // POLICE_WITNESS_NONE
+
+/**
+ * Inside the half second: a hit folded into a pending report brings its weapon and victim to it, and after an unseen
+ * hit a hit on someone else is looked at again (it used to be dropped, whoever saw it).
+ */
+/datum/unit_test/voidcrew_outpost_police_fold_pending
+
+/datum/unit_test/voidcrew_outpost_police_fold_pending/Run()
+	var/datum/outpost_police/police = wanted_outpost().police
+	var/datum/outpost_police_perception/test_delayed/slow = new(police)
+	qdel(police.perception)
+	police.perception = slow
+	var/mob/living/carbon/human/brawler = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/first_victim = wanted_person(wanted_spot(1, 0))
+	var/mob/living/carbon/human/second_victim = wanted_person(wanted_spot(0, 1))
+	var/obj/item/crowbar/first = allocate(/obj/item/crowbar)
+	var/obj/item/wrench/second = allocate(/obj/item/wrench)
+
+	TEST_ASSERT_NULL(police.report_crime(brawler, "unarmed", first_victim, first), "A report with a delay counted at once")
+	TEST_ASSERT_NULL(police.report_crime(brawler, "unarmed", second_victim, second), "A folded report counted")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "A report in the same instant was queued on its own")
+	var/datum/outpost_pending_report/report = police.pending_reports[1]
+	report.due = world.time
+	police.tick_warrants()
+	var/datum/outpost_warrant/warrant = police.warrants[brawler.mind]
+	TEST_ASSERT_EQUAL(warrant?.heat, 6, "A folded report added heat, or the report was not made")
+	TEST_ASSERT(WEAKREF(second) in warrant.evidence, "A weapon folded into a pending report was lost")
+	TEST_ASSERT(warrant.recent_victims?[WEAKREF(second_victim)], "A victim folded into a pending report was lost")
+	police.remove_warrant(warrant)
+	police.recent_reports.Cut()
+
+	var/datum/outpost_police_perception/test_victim_sees/picky = new(police)
+	qdel(police.perception)
+	police.perception = picky
+	picky.seen_victim = second_victim
+	TEST_ASSERT_NULL(police.report_crime(brawler, "armed", first_victim, first), "An unseen hit counted")
+	TEST_ASSERT_NULL(police.warrants[brawler.mind], "An unseen hit made a warrant")
+	TEST_ASSERT_EQUAL(police.report_crime(brawler, "armed", second_victim, first), 0, "A seen hit on someone else just after an unseen one was dropped")
+	TEST_ASSERT_EQUAL(police.warrants[brawler.mind]?.heat, 9, "A seen hit after an unseen one put the wrong heat on")
+	picky.seen_victim = null
+
+/**
+ * Inside the half second: a graver witnessed crime (a bullet hitting a visitor or officer right after gunfire) upgrades
+ * the warrant from the pre-window baseline instead of being swallowed by the weaker first report, while same-crime
+ * pellets still fold without double-counting and an unseen impact never upgrades.
+ */
+/datum/unit_test/voidcrew_outpost_police_grace_upgrade
+
+/datum/unit_test/voidcrew_outpost_police_grace_upgrade/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = wanted_officer(outpost, wanted_spot(3, 3))
+	var/mob/living/carbon/human/visitor = wanted_person(wanted_spot(1, 0))
+	var/obj/item/crowbar/gun_standin = allocate(/obj/item/crowbar)
+
+	// Gunfire (15 heat, 1 star) followed in the same instant by a seen shot into a visitor (25 heat, 2 stars)
+	var/mob/living/carbon/human/shooter = wanted_person(wanted_spot(0, 0))
+	TEST_ASSERT_EQUAL(police.report_crime(shooter, "gunfire", null, gun_standin), 1, "Gunfire did not put one star on the shooter")
+	TEST_ASSERT_EQUAL(police.report_crime(shooter, "shot", visitor, gun_standin), 2, "A bullet hitting a visitor right after gunfire was swallowed by the grace fold")
+	TEST_ASSERT_EQUAL(police.warrants[shooter.mind]?.heat, 25, "Upgrading gunfire to a visitor shot came to [police.warrants[shooter.mind]?.heat] heat, not 25")
+	// A second shotgun pellet in the same instant folds without adding another 25 heat
+	TEST_ASSERT_NULL(police.report_crime(shooter, "shot", visitor, gun_standin), "A second pellet of the same crime counted again inside the grace")
+	TEST_ASSERT_EQUAL(police.warrants[shooter.mind]?.heat, 25, "A second pellet stacked heat inside the grace")
+
+	// Gunfire (15 heat, 1 star) followed in the same instant by hitting an officer (50 heat floor, 3 stars)
+	var/mob/living/carbon/human/cop_shooter = wanted_person(wanted_spot(0, 1))
+	TEST_ASSERT_EQUAL(police.report_crime(cop_shooter, "gunfire", null, gun_standin), 1, "Gunfire did not put one star on the cop shooter")
+	TEST_ASSERT_EQUAL(police.report_crime(cop_shooter, "officer", officer, gun_standin), 3, "A bullet hitting an officer right after gunfire stayed below three stars")
+	TEST_ASSERT_EQUAL(police.warrants[cop_shooter.mind]?.heat, 50, "Upgrading gunfire to an officer hit came to [police.warrants[cop_shooter.mind]?.heat] heat, not 50")
+
+	// An unseen impact inside the grace never upgrades a seen crime
+	var/datum/outpost_police_perception/test_victim_sees/picky = new(police)
+	qdel(police.perception)
+	police.perception = picky
+	var/mob/living/carbon/human/stray_shooter = wanted_person(wanted_spot(0, 2))
+	var/mob/living/carbon/human/seen_target = wanted_person(wanted_spot(1, 2))
+	var/mob/living/carbon/human/unseen_target = wanted_person(wanted_spot(2, 2))
+	picky.seen_victim = seen_target
+	TEST_ASSERT_EQUAL(police.report_crime(stray_shooter, "unarmed", seen_target), 0, "Setup: the seen punch did not count")
+	TEST_ASSERT_NULL(police.report_crime(stray_shooter, "shot", unseen_target), "An unseen shot upgraded an earlier report")
+	TEST_ASSERT_EQUAL(police.warrants[stray_shooter.mind]?.heat, 6, "An unseen shot changed the warrant's heat")
+	picky.seen_victim = null
+
+/// A killing while the first crime is still a pending report (with no warrants at the outpost yet) still counts when confirmed
+/datum/unit_test/voidcrew_outpost_police_pending_kill
+
+/datum/unit_test/voidcrew_outpost_police_pending_kill/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_perception/test_delayed/slow = new(police)
+	qdel(police.perception)
+	police.perception = slow
+
+	var/mob/living/carbon/human/killer = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/victim = wanted_person(wanted_spot(1, 0))
+	TEST_ASSERT_EQUAL(length(police.warrants), 0, "Setup: warrants is not empty")
+	TEST_ASSERT_NULL(police.report_crime(killer, "shot", victim), "A delayed report counted at once")
+	police.on_wanted_death(null, victim, FALSE)
+	var/datum/outpost_pending_report/report = police.pending_reports[1]
+	report.due = world.time
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.warrants[killer.mind]?.heat, 85, "A murder before the witness finished reporting was lost when warrants was empty") // 25 + 60
+	TEST_ASSERT_EQUAL(police.get_stars(killer.mind), 3, "A confirmed pending murder did not reach three stars")
+	police.remove_warrant(police.warrants[killer.mind])
+	police.recent_reports.Cut()
+
+	// Killing an officer while the officer assault is still pending counts officers_killed and extends the crew's embargo
+	var/mob/living/carbon/human/cop_killer = wanted_person(wanted_spot(0, 1))
+	var/obj/structure/overmap/ship/ship = wanted_ship(cop_killer)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = wanted_officer(outpost, wanted_spot(2, 1))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/backup = wanted_officer(outpost, wanted_spot(2, 2))
+	TEST_ASSERT_NOTNULL(backup, "Setup: no backup officer")
+	TEST_ASSERT_NULL(police.report_crime(cop_killer, "officer", officer), "A delayed officer assault counted at once")
+	police.on_wanted_death(null, officer, FALSE)
+	var/datum/outpost_pending_report/cop_report = police.pending_reports[1]
+	cop_report.due = world.time
+	police.tick_warrants()
+	var/datum/outpost_warrant/cop_warrant = police.warrants[cop_killer.mind]
+	TEST_ASSERT_EQUAL(cop_warrant?.heat, 95, "A pending officer kill did not come to 95 heat") // 50 + 45
+	TEST_ASSERT_EQUAL(cop_warrant?.officers_killed, 1, "A pending officer kill did not increment officers_killed")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 20 MINUTES, "A pending officer kill did not add 5 minutes to the 15-minute embargo")
+	wanted_cleanup(list(ship))
+
+/// A new ship acquired by an embargoed crew during an active incident is embargoed on the next tick, and wanted HUD alerts follow mind transfers
+/datum/unit_test/voidcrew_outpost_police_incident_ship_and_hud
+
+/datum/unit_test/voidcrew_outpost_police_incident_ship_and_hud/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(0, 0))
+	var/obj/structure/overmap/ship/first_ship = wanted_ship(leader)
+	var/datum/voidcrew_crew_record/crew = leader.mind.get_reputation_crew()
+	police.admin_set_stars(leader.mind, 4)
+	TEST_ASSERT(outpost.is_ship_embargoed(first_ship), "Four stars did not embargo the first ship")
+	var/obj/structure/overmap/ship/second_ship = wanted_ship(null, 0, crew)
+	TEST_ASSERT(!outpost.is_ship_embargoed(second_ship), "Setup: the newly joined ship started embargoed")
+	police.tick_warrants()
+	TEST_ASSERT(outpost.is_ship_embargoed(second_ship), "A ship acquired during an active incident escaped the embargo")
+	// An admin's lift on one ship sticks: the incident does not put it back
+	outpost.embargoed_ships -= second_ship
+	police.tick_warrants()
+	TEST_ASSERT(!outpost.is_ship_embargoed(second_ship), "A lifted embargo came back on the next tick")
+
+	// HUD alert follows a mind transfer immediately and clears from the old body
+	TEST_ASSERT_NOTNULL(leader.alerts["outpost_wanted"], "Four stars threw no wanted alert on the leader")
+	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human/consistent, wanted_spot(1, 0))
+	leader.mind.transfer_to(new_body)
+	TEST_ASSERT_NULL(leader.alerts["outpost_wanted"], "The old body kept the wanted alert after mind transfer")
+	TEST_ASSERT_NOTNULL(new_body.alerts["outpost_wanted"], "The new body did not receive the wanted alert on mind transfer")
+
+	// Deleting a wanted mind drops its warrant cleanly
+	var/mob/living/carbon/human/temp = allocate(/mob/living/carbon/human/consistent, wanted_spot(2, 0))
+	temp.mind_initialize()
+	var/datum/mind/temp_mind = temp.mind
+	police.admin_set_stars(temp_mind, 2)
+	TEST_ASSERT_NOTNULL(police.warrants[temp_mind], "Setup: temp mind has no warrant")
+	qdel(temp_mind)
+	TEST_ASSERT_EQUAL(length(police.warrants), 1, "Deleting a mind left its warrant behind")
+	wanted_cleanup(list(first_ship, second_ship))
+
+/// Abuse SF3: a player mind in an officer's body is treated as a visitor (self-defence, murder, arrest interference, faction), and killing an officer never revives an expired ship embargo
+/datum/unit_test/voidcrew_outpost_police_transplanted_officer_and_expired_embargo
+
+/datum/unit_test/voidcrew_outpost_police_transplanted_officer_and_expired_embargo/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/real_officer = wanted_officer(outpost, wanted_spot(4, 4))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/transplanted = wanted_officer(outpost, wanted_spot(1, 0))
+	var/mob/living/carbon/human/donor = wanted_person(wanted_spot(0, 4))
+	donor.mind.transfer_to(transplanted)
+
+	TEST_ASSERT(!(transplanted in police.officers), "A mind transferred into an officer's body stayed on the police roster")
+	TEST_ASSERT(!police.perception.is_officer(transplanted), "Perception still treated a player in an officer's body as an NPC officer")
+	TEST_ASSERT(!real_officer.faction_check_atom(transplanted), "An NPC officer treated a player in an officer's body as faction-allied")
+
+	// Provoked self-defence against a player in an officer's body does not trigger ASSAULT_OFFICER
+	var/mob/living/carbon/human/defender = wanted_person(wanted_spot(1, 1))
+	outpost.register_pvp_aggression(defender, transplanted, "unarmed")
+	SEND_SIGNAL(transplanted, COMSIG_ATOM_WAS_ATTACKED, defender, ATTACKER_STAMINA_ATTACK)
+	SEND_SIGNAL(transplanted, COMSIG_CARBON_CUFF_ATTEMPTED, defender)
+	outpost.register_pvp_aggression(transplanted, defender, "unarmed")
+	TEST_ASSERT_NULL(police.warrants[defender.mind], "Defending against a player in an officer's body raised an officer-assault warrant")
+
+	// Murdering a player in an officer's body is witnessed by them and counts as MURDER (+60), not dropped as a foreign officer
+	var/mob/living/carbon/human/murderer = wanted_person(wanted_spot(2, 0))
+	TEST_ASSERT_EQUAL(police.report_crime(murderer, "shot", transplanted), 2, "A player in an officer's body did not witness being shot")
+	transplanted.death()
+	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.heat, 85, "Killing a player in an officer's body did not count as murder") // 25 + 60
+	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.officers_killed, 0, "Killing a player in an officer's body counted as killing a police officer")
+
+	// A player in an officer's body pulling a cuffed prisoner away from an arrest is charged RESIST
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/meddler = wanted_officer(outpost, wanted_spot(2, 2))
+	var/mob/living/carbon/human/second_donor = wanted_person(wanted_spot(0, 5))
+	second_donor.mind.transfer_to(meddler)
+	var/mob/living/carbon/human/suspect = wanted_person(wanted_spot(2, 3))
+	var/datum/outpost_warrant/suspect_warrant = police_pin_warrant(police, suspect.mind, 15)
+	var/datum/outpost_police_case/case = new(police, suspect_warrant)
+	police.cases[suspect.mind] = case
+	case.cuffed = TRUE
+	suspect.pulledby = meddler
+	case.check_interference(suspect)
+	suspect.pulledby = null
+	police.close_case(suspect.mind)
+	TEST_ASSERT_EQUAL(police.warrants[meddler.mind]?.heat, 8, "A player in an officer's body interfering with an arrest was excused") // OUTPOST_CRIME_RESIST
+
+	// officer_killed_by() extends active embargoes without reviving an already-expired custom ship embargo
+	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(3, 0))
+	var/obj/structure/overmap/ship/active_ship = wanted_ship(leader)
+	var/datum/voidcrew_crew_record/crew = leader.mind.get_reputation_crew()
+	var/obj/structure/overmap/ship/expired_ship = wanted_ship(null, 0, crew)
+	var/datum/outpost_warrant/leader_warrant = police_pin_warrant(police, leader.mind, 100) // four stars
+	leader_warrant.crew = crew
+	police.tick_warrants()
+	outpost.embargoed_ships[expired_ship] = world.time - 1 // lapsed custom embargo not yet lazily pruned
+	police.officer_killed_by(leader_warrant)
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[active_ship], world.time + 20 MINUTES, "Killing an officer did not extend the active ship embargo")
+	TEST_ASSERT(!outpost.is_ship_embargoed(expired_ship), "Killing an officer resurrected an already-expired ship embargo")
+	wanted_cleanup(list(active_ship, expired_ship))
+
+/// Admin lift and admin star adjustments purge queued pending reports, clear arrest holds, and cleanly downgrade peak, bar, fine cache, and crew incidents
+/datum/unit_test/voidcrew_outpost_police_admin_lift_and_downgrade
+
+/datum/unit_test/voidcrew_outpost_police_admin_lift_and_downgrade/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_perception/test_delayed/slow = new(police)
+	qdel(police.perception)
+	police.perception = slow
+
+	var/mob/living/carbon/human/suspect = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/victim = wanted_person(wanted_spot(1, 0))
+	var/obj/structure/overmap/ship/first_ship = wanted_ship(suspect)
+	var/datum/voidcrew_crew_record/crew = suspect.mind.get_reputation_crew()
+
+	// Delayed report queued, then admin lifts before the radio call completes: report never lands afterwards
+	TEST_ASSERT_NULL(police.report_crime(suspect, "shot", victim), "Setup: delayed report counted immediately")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "Setup: pending report was not queued")
+	LAZYSET(police.case_holds, WEAKREF(suspect.mind), world.time + 2 MINUTES)
+	police.admin_lift(suspect.mind)
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "admin_lift() left a pending crime report queued")
+	TEST_ASSERT_NULL(LAZYACCESS(police.case_holds, WEAKREF(suspect.mind)), "admin_lift() left a case hold on the lifted mind")
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_stars(suspect.mind), 0, "A pending report re-added stars after admin_lift()")
+
+	// Admin sets 4 stars, caches a 2-star fine_level, then downgrades to 1 star: peak, bar, fine_level, case_holds, and crew incident all adjust
+	LAZYSET(police.case_holds, WEAKREF(suspect.mind), world.time + 2 MINUTES)
+	police.admin_set_stars(suspect.mind, 4)
+	TEST_ASSERT_NULL(LAZYACCESS(police.case_holds, WEAKREF(suspect.mind)), "admin_set_stars() left a case hold blocking arrest")
+	TEST_ASSERT_NOTNULL(police.incidents[crew], "Four admin stars did not start a crew incident")
+	var/datum/outpost_warrant/warrant = police.warrants[suspect.mind]
+	warrant.fine_level = 2
+	police.admin_set_stars(suspect.mind, 1)
+	TEST_ASSERT_EQUAL(police.get_stars(suspect.mind), 1, "Admin downgrade did not set one star")
+	TEST_ASSERT_EQUAL(warrant.peak, 10, "Admin downgrade from 4 stars to 1 star kept the 4-star peak") // OUTPOST_POLICE_STAR_HEAT[1]
+	TEST_ASSERT_EQUAL(warrant.fine_level, 0, "Admin star change did not reset cached fine_level")
+	TEST_ASSERT_EQUAL(warrant.barred_until, 0, "Admin downgrade below three stars kept the three-star bar")
+	TEST_ASSERT_NULL(police.incidents[crew], "Admin downgrade below four stars left an active crew incident")
+	// Existing ship embargo stands until explicitly lifted, while newly joined ships are no longer auto-embargoed
+	TEST_ASSERT(outpost.is_ship_embargoed(first_ship), "Ending the crew incident silently removed the existing ship embargo")
+	var/obj/structure/overmap/ship/later_ship = wanted_ship(null, 0, crew)
+	police.tick_warrants()
+	TEST_ASSERT(!outpost.is_ship_embargoed(later_ship), "A downgraded incident still auto-embargoed a newly acquired ship")
+
+	// Admin lift on a 4-star warrant also ends the crew incident when no other crewmate has 4+ stars
+	police.admin_set_stars(suspect.mind, 4)
+	TEST_ASSERT_NOTNULL(police.incidents[crew], "Setup: four stars did not recreate the crew incident")
+	police.admin_lift(suspect.mind)
+	TEST_ASSERT_NULL(police.incidents[crew], "admin_lift() on the sole four-star crewmate left the crew incident active")
+	wanted_cleanup(list(first_ship, later_ship))
+

@@ -334,7 +334,7 @@
 	var/list/still_away = list()
 	for(var/datum/outpost_warrant/warrant as anything in police.suspects_at_outpost())
 		var/mob/living/holder = warrant.mind?.current
-		if(!isliving(holder) || holder.stat == DEAD)
+		if(!isliving(holder) || holder.stat == DEAD || police.in_custody(holder))
 			continue
 		var/turf/where = get_turf(holder)
 		if(where && police.dispatch_in_box(where) && (holder.client || !warrant.mind.key))
@@ -357,20 +357,36 @@
 	. = list()
 	for(var/datum/weakref/ref as anything in npc_dead)
 		var/mob/living/carbon/human/npc/body = ref.resolve()
-		if(!QDELETED(body))
+		if(!QDELETED(body) && body.stat == DEAD && morgue_npc_body(body))
 			. += body
 
-/// The bodies of minds that died here and still lie here
+/// The bodies of minds that died here and still lie here, not yet in a tray or left bagged in the morgue room
+/// (a delivered body is no work: it stays on player_dead until revived or taken away, and calls no wave)
 /datum/outpost_recovery/proc/player_bodies()
 	. = list()
 	for(var/datum/weakref/ref as anything in player_dead)
 		var/mob/living/body = ref.resolve()
-		if(!QDELETED(body))
+		if(!QDELETED(body) && body.stat == DEAD && !morgue_body_done(body) && get_trader_outpost_for_turf(get_turf(body)) == outpost)
 			. += body
+
+/// Player bodies a morgue worker can collect right now (or already holds), so a guarded corpse never holds CLEANUP open
+/datum/outpost_recovery/proc/player_bodies_due()
+	. = list()
+	for(var/mob/living/body as anything in player_bodies())
+		var/datum/weakref/key = WEAKREF(body)
+		if(claim_holder(key))
+			. += body
+			continue
+		if(retry_at[key] > world.time)
+			continue
+		if(body_free(body))
+			. += body
+		else
+			retry_at[key] = world.time + OUTPOST_RECOVERY_BODY_RETRY
 
 /// Whether there is anything for a crew to do: a body, a dirty stop, or someone down for the medics
 /datum/outpost_recovery/proc/has_cleanup_work()
-	return length(npc_bodies()) || length(player_bodies()) || dirty_count() || length(patients_due())
+	return length(npc_bodies()) || length(player_bodies_due()) || dirty_count() || length(patients_due())
 
 /// How many patrol stops are found dirty (R4 may leave a cleaned stop in the list as FALSE)
 /datum/outpost_recovery/proc/dirty_count()
@@ -449,6 +465,14 @@
 			if(!QDELETED(body) && ishumannpc(body))
 				var/mob/living/carbon/human/npc/revived = body
 				revived.npc_corpse_lifetime = HUMAN_NPC_CORPSE_LIFETIME
+			continue
+		// A player went into the body after it died (a brain put into the corpse): a person's body from now on, kept
+		// for a tray and never handed to the sweep or the body cap (abuse SF3)
+		if(!morgue_npc_body(body))
+			npc_dead -= ref
+			retry_at -= ref
+			if(!(ref in player_dead))
+				player_dead += ref
 	for(var/datum/weakref/ref as anything in player_dead.Copy())
 		var/mob/living/body = ref.resolve()
 		if(QDELETED(body) || body.stat != DEAD)
@@ -457,6 +481,10 @@
 		var/turf/where = get_turf(body)
 		if(!where || get_trader_outpost_for_turf(where) != outpost)
 			player_dead -= ref
+	// Patients waited out or gone are forgotten, so the list does not grow for the round
+	for(var/datum/weakref/ref as anything in patient_retry.Copy())
+		if(patient_retry[ref] <= world.time || !ref.resolve())
+			patient_retry -= ref
 
 /**
  * More than OUTPOST_RECOVERY_BODY_CAP NPC bodies (officers' included): the oldest is collected (deleted) even if
@@ -488,6 +516,11 @@
 		var/mob/living/carbon/human/npc/body = ref.resolve()
 		if(QDELETED(body) || body.stat != DEAD)
 			continue
+		// Never a body a player has been in: the sweep would delete it (abuse SF3)
+		if(!morgue_npc_body(body))
+			if(!(ref in player_dead))
+				player_dead += ref
+			continue
 		body.npc_corpse_lifetime = HUMAN_NPC_CORPSE_LIFETIME
 		SShuman_npcs.track_corpse(body)
 
@@ -518,6 +551,8 @@
 		stars_away[away] = ambient_shifted(stars_away[away], delay)
 	for(var/datum/weakref/ref as anything in retry_at)
 		retry_at[ref] = ambient_shifted(retry_at[ref], delay)
+	for(var/datum/weakref/ref as anything in patient_retry)
+		patient_retry[ref] = ambient_shifted(patient_retry[ref], delay)
 	for(var/datum/outpost_shop/shop as anything in posts)
 		var/datum/outpost_recovery_post/post = posts[shop]
 		if(post)
@@ -578,8 +613,9 @@
 	if(QDELETED(src) || QDELETED(outpost) || !outpost.loaded)
 		return
 	register_posts()
-	// A counter with nobody at it, or someone of the outpost's down and nobody coming for them (decision 31)
-	if(state == OUTPOST_RECOVERY_NORMAL && (length(vacant_posts()) || length(patients_due())))
+	prune_dead()
+	// A counter with nobody at it, someone of the outpost's down, or a dead player now free to collect (M35, decision 31)
+	if(state == OUTPOST_RECOVERY_NORMAL && (length(vacant_posts()) || length(patients_due()) || length(player_bodies_due())))
 		begin_trouble()
 
 // ----- TROUBLE to CLEANUP -----
@@ -607,11 +643,14 @@
 	if(world.time - quiet_since >= OUTPOST_RECOVERY_CLEANUP_MAX)
 		finish_cleanup()
 		return
-	if(!length(npc_bodies()) && !length(patients_due()) && clean_share() * 100 >= OUTPOST_RECOVERY_CLEAN_SHARE)
+	if(!length(npc_bodies()) && !length(player_bodies_due()) && !length(patients_due()) && clean_share() * 100 >= OUTPOST_RECOVERY_CLEAN_SHARE)
 		finish_cleanup()
 		return
 	if(wave_active)
 		build_pending()
+		if(wave_morgue_left <= 0 && wave_janitors_left <= 0 && wave_medics_left <= 0 && !length(live_wave_workers()))
+			wave_active = FALSE
+			next_wave_at = max(next_wave_at, world.time + OUTPOST_RECOVERY_BODY_RETRY)
 	else if(world.time >= quiet_since + OUTPOST_RECOVERY_FIRST_WAVE)
 		call_wave()
 
@@ -715,12 +754,12 @@
 		if(QDELETED(who))
 			wave_workers -= ref
 
-/// The wave's workers (morgue and janitors) that are alive
+/// The wave's workers (morgue and janitors) that are alive. One a player is in (revived with a player's brain) works for nobody.
 /datum/outpost_recovery/proc/live_wave_workers()
 	. = list()
 	for(var/datum/weakref/ref as anything in wave_workers)
 		var/mob/living/who = ref.resolve()
-		if(!QDELETED(who) && who.stat != DEAD)
+		if(!QDELETED(who) && who.stat != DEAD && !outpost_npc_played(who))
 			. += who
 
 /// Whether any officer of this outpost's roster is alive (the escort rule asks)
@@ -743,7 +782,7 @@
 	if(length(live_wave_workers()))
 		return
 	var/bodies = length(npc_bodies())
-	var/need_morgue = bodies || length(player_bodies())
+	var/need_morgue = bodies || length(player_bodies_due())
 	var/need_janitors = bodies || dirty_count()
 	var/hurt = length(patients_due())
 	if(!need_morgue && !need_janitors && !hurt)
@@ -860,7 +899,8 @@
 /datum/outpost_recovery/proc/retire_crew()
 	for(var/datum/weakref/ref as anything in crew.Copy())
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = ref.resolve()
-		if(istype(worker) && !QDELETED(worker) && worker.stat != DEAD)
+		// A worker a player is in is theirs now: never faded out from under them (review S4)
+		if(istype(worker) && !QDELETED(worker) && worker.stat != DEAD && !outpost_npc_played(worker, "crew retired"))
 			worker.fade_out()
 	crew.Cut()
 	wave_workers.Cut()

@@ -5,11 +5,11 @@
  * release, and the police doors and cell doors (types in police_core.dm). Spec 6.2-6.4 and the cell half of 7.
  *
  * A cell is one /datum/outpost_police_cell per cell_id, built from the landmarks, door and sign the map
- * placed (build_cells()). Its door opens only for the cell itself: a bump, a click, an ID, a wire or a pry
- * never gets it open, and an emag does nothing. The cell opens it to bring a prisoner in, to let an officer
- * out, on release, for a medic, and for a minute-long forced door (a crowbar or jaws, from either side while
- * somebody is held or it is shut on someone it does not hold). A cell holding nobody never shuts on a body or a
- * person (abuse MF2).
+ * placed (build_cells()). A bump, a click or an ID never opens its door. The cell opens it to bring a prisoner
+ * in, to let an officer out, on release, for a medic, and for a forced door (a crowbar or jaws, from either side
+ * while somebody is held or it is shut on someone it does not hold). Otherwise it is hacked like any airlock and
+ * mends itself (owner decision 47; the door type below). A cell holding nobody never shuts on a body or a person
+ * (abuse MF2).
  *
  * A prisoner is a mind in `prisoners` (mind -> world.time they are let out). `jailed` marks the ones who could
  * not pay. Everything slow about a booking happens in book() on the officer's own actions (the fine, the
@@ -26,6 +26,12 @@
 #define CELL_OFFICER_PASS (2 SECONDS)
 /// Taking a pair of cuffs off (spec 6.2)
 #define CELL_UNCUFF_TIME (2 SECONDS)
+/// Longest a booking waits for a knocked-down officer to get up and take the cuffs off
+#define CELL_UNCUFF_WAIT (10 SECONDS)
+/// Banging on a cell door is heard no more often than this
+#define CELL_KNOCK_GAP (2 SECONDS)
+/// How far off an officer who can see a cell door answers a bang on it
+#define CELL_KNOCK_HEARD 7
 
 // =========================================================================
 // THE CELL
@@ -58,6 +64,9 @@
 	var/forcing = FALSE
 	/// The door stays open until this
 	var/open_until = 0
+	/// Until this, the cell drives its door past a hack (lifts its bolts, shuts it whatever its wires say) for an
+	/// officer at work: booking, release, a medic (decision 47)
+	var/override_until = 0
 	/// The door is held open for a body to be taken out until this (a prisoner in crit or dead)
 	var/medic_until = 0
 	/// Weakrefs to those bodies
@@ -99,6 +108,7 @@
 	stepped_at.Cut()
 	shoved_by.Cut()
 	medic_bodies.Cut()
+	carry_reported.Cut()
 	return ..()
 
 /// This cell is being replaced by a rebuild: it lets go of its door and sign without opening anything
@@ -162,7 +172,7 @@
 
 /// Whether `prisoner` is still held with `body` alive and about (a booking checks this between its steps)
 /datum/outpost_police_cell/proc/holds(datum/mind/prisoner, mob/living/body)
-	return !QDELETED(src) && !QDELETED(body) && (prisoner in prisoners)
+	return !QDELETED(src) && !QDELETED(body) && body.mind == prisoner && (prisoner in prisoners)
 
 // ----- the prisoner list -----
 
@@ -205,7 +215,7 @@
 /// The prisoner whose body `body` is, or null
 /datum/outpost_police_cell/proc/prisoner_of(mob/living/body)
 	for(var/datum/mind/held in bodies)
-		if(body_of(held) == body)
+		if(body_of(held) == body && body.mind == held)
 			return held
 	return null
 
@@ -259,11 +269,11 @@
 	return null
 
 /// Whether `body`, out of the cell, could walk back by itself: up, free, not held or carried, and its player at the keys
-/datum/outpost_police_cell/proc/can_walk_back(mob/living/body)
+/datum/outpost_police_cell/proc/can_walk_back(mob/living/body, datum/mind/prisoner)
 	if(body.incapacitated || HAS_TRAIT(body, TRAIT_RESTRAINED) || body.pulledby || body.buckled || body.throwing)
 		return FALSE
 	// Asleep at the keyboard (a player's mind and no client): the clock waits for them
-	if(body.mind?.key && !body.client)
+	if((body.mind?.key || prisoner?.key) && !body.client)
 		return FALSE
 	return TRUE
 
@@ -305,11 +315,16 @@
 		sleep(0.5 SECONDS)
 	return !QDELETED(door) && door.density
 
-/// Opens the door and keeps it open for `duration` (waits for it to be open if `wait`). TRUE if it is, or will be.
-/datum/outpost_police_cell/proc/open_door(duration, wait = FALSE)
+/**
+ * Opens the door and keeps it open for `duration` (waits for it to be open if `wait`). TRUE if it is, or will be.
+ * `take_over`: an officer is at work, so the cell drives the door past any hack until it is shut behind them.
+ */
+/datum/outpost_police_cell/proc/open_door(duration, wait = FALSE, take_over = TRUE)
 	if(QDELETED(door))
 		return FALSE
 	open_until = max(open_until, world.time + duration)
+	if(take_over)
+		override_until = max(override_until, open_until + 10 SECONDS)
 	schedule_close_check(max(duration, 1 SECONDS))
 	if(!door.density)
 		return TRUE
@@ -325,6 +340,8 @@
 			return FALSE
 		if(!door.density)
 			return TRUE
+		if(world.time < override_until)
+			door.cell_take_over()
 		door.cell_open_permitted = TRUE
 		if(door.open())
 			return TRUE
@@ -389,7 +406,13 @@
 	if(!length(prisoners) && stray_inside())
 		schedule_close_check(5 SECONDS)
 		return
-	door.close(FORCING_DOOR_CHECKS)
+	// An officer at work: the cell shuts its door whatever a hack did to it. Otherwise a door bolted open stays open
+	// until it mends (decision 47).
+	if(world.time < override_until)
+		door.cell_take_over()
+		door.close(BYPASS_DOOR_CHECKS)
+	else
+		door.close(FORCING_DOOR_CHECKS)
 	if(!QDELETED(src) && !QDELETED(door) && !door.density)
 		schedule_close_check(1 SECONDS)
 
@@ -406,6 +429,17 @@
 	if(forcing || !still_forceable())
 		return FALSE
 	forcing = TRUE
+	tool?.play_tool_sound(door, 50)
+	if(tool)
+		user.visible_message(
+			span_warning("[user] wedges [tool] into [door] and starts forcing it!"),
+			span_notice("You wedge [tool] into [door] and start forcing it."),
+		)
+	else
+		user.visible_message(
+			span_warning("[user] starts forcing [door]!"),
+			span_notice("You start forcing [door]."),
+		)
 	if(length(prisoners))
 		playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 		police?.cell_station_say(POLICE_LINE_CELL_ALARM)
@@ -416,12 +450,34 @@
 	forcing = FALSE
 	if(!succeeded)
 		return FALSE
+	if(!QDELETED(door))
+		tool?.play_tool_sound(door, 50)
+		user.visible_message(
+			span_danger("[user] forces [door] open!"),
+			span_notice("You force [door] open."),
+		)
 	log_game("OUTPOST POLICE: [key_name(user)] forced [door] at [AREACOORD(door)].")
 	var/held = length(prisoners)
-	open_door(OUTPOST_POLICE_CELL_OPEN)
+	open_door(OUTPOST_POLICE_CELL_OPEN, take_over = FALSE)
 	if(held)
-		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, tool)
+		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, QDELETED(tool) ? null : tool)
 	return TRUE
+
+/**
+ * The door was hacked open (a pulsed wire, a pry with the power out, an override card): it stands open a
+ * while as a forced door does, and opening it while somebody is held is `culprit`'s jailbreak, as forcing it is.
+ */
+/datum/outpost_police_cell/proc/door_hacked_open(mob/living/culprit, obj/item/tool = null)
+	if(QDELETED(src) || QDELETED(door))
+		return
+	open_door(OUTPOST_POLICE_CELL_OPEN, take_over = FALSE)
+	log_game("OUTPOST POLICE: [culprit ? key_name(culprit) : "nobody known"] hacked [door] open at [AREACOORD(door)].")
+	if(!length(prisoners))
+		return
+	playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+	police?.cell_station_say(POLICE_LINE_CELL_ALARM)
+	if(culprit)
+		police?.report_crime(culprit, OUTPOST_CRIME_JAILBREAK, null, QDELETED(tool) ? null : tool)
 
 // ----- the wall clock -----
 
@@ -456,6 +512,15 @@
 		var/mob/living/body = body_of(prisoner)
 		if(!body)
 			forget_prisoner(prisoner)
+			police.close_warrant(prisoner, TRUE)
+			police.mark_locker_released(prisoner)
+			continue
+		if(body.mind != prisoner)
+			var/was_booking = !isnull(booking[prisoner])
+			forget_prisoner(prisoner)
+			if(!was_booking)
+				outpost_police_drop_used_cuffs(body)
+			police.mark_locker_released(prisoner)
 			continue
 		if(body.stat == DEAD)
 			down_prisoner(prisoner, body)
@@ -482,7 +547,7 @@
 				walked_out -= prisoner
 				carry_reported -= prisoner
 				end_medic_hold(body)
-			else if(!can_walk_back(body))
+			else if(!can_walk_back(body, prisoner))
 				// Down, held, carried or asleep: the time to walk back starts once they can (abuse MF1)
 				return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
 			else if(world.time >= return_by[prisoner])
@@ -516,7 +581,7 @@
 		return
 	time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
 	return_by[prisoner] = world.time + OUTPOST_POLICE_CELL_RETURN
-	if(mover && mover != body)
+	if(mover && mover != body && !is_outpost_police_npc(mover))
 		police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
 
 /// `prisoner` walked out (or was teleported out): they are not held any more, and that is a jailbreak
@@ -527,6 +592,8 @@
 /// `prisoner` is let out: the warrant closes, the door opens, the sergeant says `line`
 /datum/outpost_police_cell/proc/release(datum/mind/prisoner, mob/living/body, line)
 	forget_prisoner(prisoner)
+	// Booked while the officer could not get the cuffs off: nobody walks out of a served term in police cuffs
+	outpost_police_drop_used_cuffs(body)
 	police.close_warrant(prisoner, TRUE)
 	SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_RELEASED, body)
 	police.cell_station_say(line)
@@ -552,7 +619,7 @@
 	if(!(get_turf(body) in tiles) && !carry_reported[prisoner])
 		var/datum/weakref/ref = carried_by[prisoner]
 		var/mob/living/mover = ref?.resolve() || mover_now(body)
-		if(mover && mover != body && mover.mind)
+		if(mover && mover != body && mover.mind && !is_outpost_police_npc(mover))
 			carry_reported[prisoner] = TRUE
 			police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
 
@@ -576,6 +643,223 @@
 	police.cell_station_say(POLICE_LINE_MEDIC)
 	open_door(0)
 
+/// The cell floor tile right inside `door`, or null
+/datum/outpost_police_cell/proc/cell_entry_tile()
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf)
+		return null
+	for(var/direction in GLOB.cardinals)
+		var/turf/candidate = get_step(door_turf, direction)
+		if((candidate in tiles) && !candidate.density)
+			return candidate
+	return null
+
+/// Any standing dense mob on `spot` other than `ignore_a` or `ignore_b`
+/datum/outpost_police_cell/proc/cell_standing_on(turf/spot, mob/living/ignore_a, mob/living/ignore_b)
+	if(!spot)
+		return null
+	for(var/mob/living/someone in spot)
+		if(someone == ignore_a || someone == ignore_b || !someone.density)
+			continue
+		return someone
+	return null
+
+/// A cardinal neighbor of `from_tile` inside `tiles` with no dense obstacle or standing mob
+/datum/outpost_police_cell/proc/cell_open_neighbor(turf/from_tile, mob/living/ignore_a, mob/living/ignore_b)
+	if(!from_tile)
+		return null
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(from_tile, direction)
+		if((neighbor in tiles) && !neighbor.density && !cell_standing_on(neighbor, ignore_a, ignore_b))
+			return neighbor
+	return null
+
+/// An outpost NPC standing on `next`, the officer's next step in or out of the cell, steps out of the way first
+/datum/outpost_police_cell/proc/cell_clear_step(mob/living/officer, turf/next)
+	if(!next || QDELETED(officer))
+		return
+	var/turf/door_turf = get_turf(door)
+	for(var/mob/living/someone in next)
+		if(someone == officer || officer.pulling == someone || !someone.density || prisoner_of(someone))
+			continue
+		outpost_npc_step_aside(someone, officer, list(next, door_turf))
+
+/// Delay between physical walk steps when entering or leaving a cell
+/datum/outpost_police_cell/proc/cell_step_pause()
+	return max(1, round(0.15 SECONDS * GLOB.outpost_police_property_time_scale))
+
+/**
+ * Physically walks `officer` and `suspect` into the cell through `door` using real movement and pulling (never
+ * forceMove; owner bug 3). Leaves `suspect` on a cell tile and `officer` adjacent inside the cell (or in the open
+ * doorway when every other cell tile is already occupied). Sleeps. TRUE if `suspect` is inside and in reach.
+ */
+/datum/outpost_police_cell/proc/cell_walk_in(mob/living/carbon/suspect, mob/living/officer)
+	var/turf/door_turf = get_turf(door)
+	var/turf/entry_tile = cell_entry_tile()
+	if(!door_turf || !entry_tile || !outside_turf)
+		return FALSE
+	if(suspect.z != door_turf.z || officer.z != door_turf.z || get_dist(suspect, door_turf) > 3 || get_dist(officer, door_turf) > 3)
+		return FALSE
+	if(!open_door(OUTPOST_POLICE_CELL_OPEN, TRUE))
+		return FALSE
+	if(QDELETED(suspect) || QDELETED(officer) || officer.stat == DEAD)
+		return FALSE
+	if(suspect.buckled)
+		suspect.buckled.unbuckle_mob(suspect, TRUE)
+	var/old_officer_intent = officer.move_intent
+	var/old_officer_combat = officer.combat_mode
+	var/old_suspect_intent = suspect.move_intent
+	officer.move_intent = MOVE_INTENT_RUN
+	officer.combat_mode = FALSE
+	suspect.move_intent = MOVE_INTENT_RUN
+	var/pause = cell_step_pause()
+
+	if(!(get_turf(suspect) in tiles))
+		for(var/step_try in 1 to 4)
+			if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || officer.stat == DEAD || officer.Adjacent(suspect))
+				break
+			step_towards(officer, suspect)
+			sleep(pause)
+		if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || officer.stat == DEAD || !officer.Adjacent(suspect))
+			suspect?.move_intent = old_suspect_intent
+			officer?.move_intent = old_officer_intent
+			officer?.combat_mode = old_officer_combat
+			return FALSE
+		if(officer.pulling != suspect)
+			officer.start_pulling(suspect)
+		if(officer.pulling != suspect)
+			suspect.move_intent = old_suspect_intent
+			officer.move_intent = old_officer_intent
+			officer.combat_mode = old_officer_combat
+			return FALSE
+
+		for(var/step_try in 1 to 3)
+			if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || officer.stat == DEAD)
+				break
+			var/turf/here = get_turf(officer)
+			if(!here || here == outside_turf || here == door_turf || (here in tiles))
+				break
+			cell_clear_step(officer, get_step_towards(officer, outside_turf))
+			step_towards(officer, outside_turf)
+			sleep(pause)
+
+		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && get_turf(officer) != door_turf && !(get_turf(officer) in tiles))
+			if(officer.pulling != suspect && officer.Adjacent(suspect))
+				officer.start_pulling(suspect)
+			cell_clear_step(officer, door_turf)
+			officer.Move(door_turf, get_dir(officer, door_turf))
+			sleep(pause)
+
+		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && !(get_turf(officer) in tiles))
+			cell_clear_step(officer, entry_tile)
+			var/mob/living/entry_blocker = cell_standing_on(entry_tile, suspect, officer)
+			if(entry_blocker && ishuman(officer) && ishuman(entry_blocker))
+				var/turf/shove_tile = get_step(entry_tile, get_dir(door_turf, entry_tile))
+				if(shove_tile && ((shove_tile in tiles) || shove_tile.density))
+					var/mob/living/carbon/human/cop = officer
+					cop.disarm(entry_blocker)
+			if(!cell_standing_on(entry_tile, suspect, officer))
+				if(officer.pulling != suspect && officer.Adjacent(suspect))
+					officer.start_pulling(suspect)
+				officer.Move(entry_tile, get_dir(officer, entry_tile))
+				sleep(pause)
+
+		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && get_turf(officer) == entry_tile)
+			var/turf/inner_tile = cell_open_neighbor(entry_tile, suspect, officer)
+			if(inner_tile)
+				if(officer.pulling != suspect && officer.Adjacent(suspect))
+					officer.start_pulling(suspect)
+				officer.Move(inner_tile, get_dir(officer, inner_tile))
+				sleep(pause)
+				officer.stop_pulling()
+				// Keep the officer between the prisoner and the door so an uncuffed prisoner cannot block the exit
+				if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && get_turf(suspect) == entry_tile && get_turf(officer) == inner_tile)
+					officer.Move(entry_tile, get_dir(officer, entry_tile))
+					sleep(pause)
+			else if(!(get_turf(suspect) in tiles) && get_turf(suspect) == door_turf)
+				if(officer.pulling != suspect && officer.Adjacent(suspect))
+					officer.start_pulling(suspect)
+				officer.Move(door_turf, get_dir(officer, door_turf))
+				sleep(pause)
+		officer?.stop_pulling()
+	else
+		officer.stop_pulling()
+		if(!officer.Adjacent(suspect))
+			if(get_turf(officer) != door_turf && !(get_turf(officer) in tiles))
+				officer.Move(door_turf, get_dir(officer, door_turf))
+				sleep(pause)
+			if(!QDELETED(officer) && !QDELETED(suspect) && !officer.Adjacent(suspect) && !cell_standing_on(entry_tile, suspect, officer))
+				officer.Move(entry_tile, get_dir(officer, entry_tile))
+				sleep(pause)
+
+	if(!QDELETED(suspect))
+		suspect.move_intent = old_suspect_intent
+	if(!QDELETED(officer))
+		officer.move_intent = old_officer_intent
+		officer.combat_mode = old_officer_combat
+	return !QDELETED(src) && !QDELETED(suspect) && !QDELETED(officer) && officer.stat != DEAD && (get_turf(suspect) in tiles) && officer.Adjacent(suspect)
+
+/// Physically walks `officer` back out of the cell onto `outside_turf` using real Move() steps. Sleeps.
+/datum/outpost_police_cell/proc/cell_walk_out(mob/living/officer)
+	if(QDELETED(src) || QDELETED(officer) || officer.stat == DEAD || !outside_turf)
+		return FALSE
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf)
+		return FALSE
+	if(get_turf(officer) == outside_turf)
+		return TRUE
+	if(!(get_turf(officer) in tiles) && get_turf(officer) != door_turf)
+		return FALSE
+	if((get_turf(officer) in tiles) && !open_door(CELL_OFFICER_PASS, TRUE))
+		return FALSE
+	if(QDELETED(src) || QDELETED(officer) || officer.stat == DEAD)
+		return FALSE
+	var/old_intent = officer.move_intent
+	var/old_combat = officer.combat_mode
+	officer.move_intent = MOVE_INTENT_RUN
+	officer.combat_mode = FALSE
+	officer.stop_pulling()
+	var/pause = cell_step_pause()
+	var/turf/entry_tile = cell_entry_tile()
+
+	if((get_turf(officer) in tiles) && entry_tile && get_turf(officer) != entry_tile)
+		for(var/step_try in 1 to 4)
+			if(QDELETED(src) || QDELETED(officer) || officer.stat == DEAD || get_turf(officer) == entry_tile)
+				break
+			var/turf/next_step = get_step_towards(officer, entry_tile)
+			cell_clear_step(officer, next_step)
+			var/mob/living/blocker = cell_standing_on(next_step, null, officer)
+			if(blocker && blocker.combat_mode && ishuman(officer) && ishuman(blocker))
+				var/mob/living/carbon/human/cop = officer
+				cop.disarm(blocker)
+			step_towards(officer, entry_tile)
+			sleep(pause)
+
+	if(!QDELETED(src) && !QDELETED(officer) && officer.stat != DEAD && get_turf(officer) == entry_tile)
+		cell_clear_step(officer, door_turf)
+		var/mob/living/door_blocker = cell_standing_on(door_turf, null, officer)
+		if(door_blocker)
+			if(door_blocker.combat_mode && ishuman(officer) && ishuman(door_blocker))
+				var/mob/living/carbon/human/cop = officer
+				cop.disarm(door_blocker)
+		officer.Move(door_turf, get_dir(officer, door_turf))
+		sleep(pause)
+
+	if(!QDELETED(src) && !QDELETED(officer) && officer.stat != DEAD && get_turf(officer) == door_turf)
+		cell_clear_step(officer, outside_turf)
+		var/mob/living/outside_blocker = cell_standing_on(outside_turf, null, officer)
+		if(outside_blocker)
+			if(outside_blocker.combat_mode && ishuman(officer) && ishuman(outside_blocker))
+				var/mob/living/carbon/human/cop = officer
+				cop.disarm(outside_blocker)
+		officer.Move(outside_turf, get_dir(officer, outside_turf))
+		sleep(pause)
+
+	if(!QDELETED(officer))
+		officer.move_intent = old_intent
+		officer.combat_mode = old_combat
+	return !QDELETED(officer) && get_turf(officer) == outside_turf
+
 /**
  * Brings `suspect` in and books them: the fine, then processing (paid) or the jail strip (not paid), the cuffs
  * off, the officer out. At three stars and up there is no fine: the jail strip and a sentence that grows with the
@@ -586,38 +870,73 @@
 	var/full_stars = clamp(police.get_stars(prisoner), 1, 5)
 	var/no_fine = full_stars >= 3
 	var/stars = clamp(full_stars, 1, 2)
-	if(!open_door(OUTPOST_POLICE_CELL_OPEN, TRUE))
+	if(!cell_walk_in(suspect, officer))
+		cell_walk_out(officer)
+		shut_door(TRUE)
 		return FALSE
-	// In: the officer brings them
-	var/turf/suspect_tile = free_tile()
-	var/turf/officer_tile = free_tile(suspect_tile)
-	officer.stop_pulling()
-	if(suspect.buckled)
-		suspect.buckled.unbuckle_mob(suspect, TRUE)
-	suspect.forceMove(suspect_tile)
-	if(!QDELETED(officer) && officer.stat != DEAD)
-		officer.forceMove(officer_tile)
 	// Until the booking is over they are held but not on a clock
 	admit(suspect, world.time + OUTPOST_POLICE_HOLDS[stars])
 	booking[prisoner] = world.time
 	// The booking line is the arresting officer's (police_arrest.dm act_book())
-	shut_door(TRUE)
+	var/guarding_doorway = (get_turf(officer) == get_turf(door))
+	var/old_guard_combat = officer.combat_mode
+	if(guarding_doorway)
+		officer.combat_mode = TRUE
+	else if(!doorway_blocked())
+		shut_door(TRUE)
 	if(!holds(prisoner, suspect))
+		if(!QDELETED(officer) && guarding_doorway)
+			officer.combat_mode = old_guard_combat
+		cell_walk_out(officer)
+		shut_door(TRUE)
 		return FALSE
-	// The fine, with the door shut on the two of them
+	// The fine, with the door shut on the two of them (or the officer blocking the doorway when every cell tile is full)
 	var/paid = no_fine ? FALSE : police.charge_fine(warrant)
-	if(!paid)
-		// Gear into a locker before the cuffs come off (abuse M25)
-		police.store_property(suspect, officer)
-		if(!holds(prisoner, suspect))
+	if(paid)
+		police.say_fine_paid(officer)
+	else
+		// Gear into a locker before the cuffs come off (abuse M25); never uncuff or book an unstripped prisoner
+		if(!police.cell_strip_prisoner(suspect, officer))
+			forget_prisoner(prisoner)
+			if(!QDELETED(officer) && guarding_doorway)
+				officer.combat_mode = old_guard_combat
+			cell_walk_out(officer)
+			if(length(prisoners))
+				shut_door(TRUE)
+			else if(stray_inside())
+				open_door(OUTPOST_POLICE_CELL_OPEN)
+			update_sign()
 			return FALSE
+		if(!holds(prisoner, suspect))
+			if(!QDELETED(officer) && guarding_doorway)
+				officer.combat_mode = old_guard_combat
+			cell_walk_out(officer)
+			shut_door(TRUE)
+			return FALSE
+	var/list/worn_restraints = list()
+	if(suspect.handcuffed)
+		worn_restraints += suspect.handcuffed
+	if(suspect.legcuffed)
+		worn_restraints += suspect.legcuffed
 	police.cell_remove_cuffs(suspect, officer)
+	for(var/obj/item/restraint as anything in worn_restraints)
+		if(QDELETED(restraint) || restraint == suspect.handcuffed || restraint == suspect.legcuffed)
+			continue
+		if(paid)
+			if(isturf(restraint.loc) && !QDELETED(suspect))
+				suspect.put_in_hands(restraint)
+		else if(!police.store_extra_property(suspect, restraint) && isturf(restraint.loc) && !outpost_police_untouchable(restraint) && usable())
+			restraint.forceMove(outside_turf)
 	if(!holds(prisoner, suspect))
+		if(!QDELETED(officer) && guarding_doorway)
+			officer.combat_mode = old_guard_combat
+		cell_walk_out(officer)
+		shut_door(TRUE)
 		return FALSE
+	if(!QDELETED(officer) && guarding_doorway)
+		officer.combat_mode = old_guard_combat
 	// The officer steps out
-	if(!QDELETED(officer) && officer.stat != DEAD && (get_turf(officer) in tiles))
-		if(open_door(CELL_OFFICER_PASS, TRUE))
-			officer.forceMove(outside_turf)
+	cell_walk_out(officer)
 	var/term = paid ? OUTPOST_POLICE_HOLDS[stars] : OUTPOST_POLICE_JAIL[full_stars]
 	prisoners[prisoner] = world.time + term
 	if(!paid)
@@ -687,27 +1006,35 @@
 		if(!(cell_id in tiles_by_id))
 			log_mapping("OUTPOST POLICE: [outpost] has a cell sign for '[cell_id]' and no cell.")
 	if(!length(cells))
-		log_mapping("OUTPOST POLICE: [outpost] has no holding cell; arrests there end with a fine and a release.")
+		log_mapping("OUTPOST POLICE: [outpost] has no holding cell; a one or two star arrest is fined and let go, three or more is held cuffed at the desk.")
 
-/// The usable cell with the fewest prisoners, the one nearest `near` of equals. Null if there is none.
+/// The usable cell with the fewest prisoners, the one with free standing room and nearest `near` of equals. Null if there is none.
 /datum/outpost_police/proc/cell_best(atom/near)
 	var/datum/outpost_police_cell/best
 	var/best_load
+	var/best_room
 	var/best_distance
 	for(var/datum/outpost_police_cell/cell in cells)
 		if(!cell.usable())
 			continue
 		var/load = length(cell.prisoners)
-		var/distance = near ? get_dist(near, cell.door) : 0
-		if(isnull(best) || load < best_load || (load == best_load && distance < best_distance))
+		var/room = 0
+		for(var/turf/tile as anything in cell.tiles)
+			if(!tile.density && !cell.cell_standing_on(tile))
+				room = 1
+				break
+		var/turf/near_turf = get_turf(near)
+		var/distance = near ? ((near_turf && cell.door && near_turf.z == cell.door.z) ? get_dist(near_turf, cell.door) : 1000) : 0
+		if(isnull(best) || load < best_load || (load == best_load && room > best_room) || (load == best_load && room == best_room && distance < best_distance))
 			best = cell
 			best_load = load
+			best_room = room
 			best_distance = distance
 	return best
 
 /// The lobby tile outside the door of the cell the next booking uses, or null
-/datum/outpost_police/proc/cell_door_turf()
-	return cell_best()?.outside_turf
+/datum/outpost_police/proc/cell_door_turf(atom/near)
+	return cell_best(near)?.outside_turf
 
 /**
  * Whether `who` is in police custody: from an arrest's cuffs (or grip) going on to release from a cell. By the police's
@@ -718,12 +1045,19 @@
 	if(!who?.mind)
 		return FALSE
 	var/datum/outpost_police_case/case = cases[who.mind]
-	if(case && !QDELETED(case) && case.cuffed && case.get_suspect() == who)
+	var/mob/living/carbon/carbon_who = who
+	if(istype(carbon_who) && case && !QDELETED(case) && case.get_suspect() == carbon_who && case.suspect_restrained(carbon_who))
 		return TRUE
+	return !!cell_holding(who.mind)
+
+/// The cell holding `who`, or null
+/datum/outpost_police/proc/cell_holding(datum/mind/who)
+	if(!who)
+		return null
 	for(var/datum/outpost_police_cell/cell in cells)
-		if(who.mind in cell.prisoners)
-			return TRUE
-	return FALSE
+		if(who in cell.prisoners)
+			return cell
+	return null
 
 /**
  * Books `suspect`, brought to a cell by `officer`: into the emptier cell with the officer, the fine, then
@@ -740,18 +1074,23 @@
 		return FALSE
 	if(suspect.stat == DEAD || HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION) || officer.stat == DEAD)
 		return FALSE
-	for(var/datum/outpost_police_cell/held in cells)
-		if(prisoner in held.prisoners)
-			return FALSE
+	if(cell_holding(prisoner))
+		return FALSE
+	// The emptiest cell, however many it holds already: a cell takes more than one (lead decision L-A2)
 	var/datum/outpost_police_cell/cell = cell_best(officer)
-	if(!cell)
-		return cell_book_fallback(suspect, officer, warrant)
-	return cell.book_in(suspect, officer, warrant)
+	if(cell)
+		return cell.book_in(suspect, officer, warrant)
+	// No cell at three stars and up: no fine and no letting go (owner decision 37). The arrest holds them until a
+	// cell can be had (police_arrest.dm, CASE_STEP_HOLD).
+	if(get_stars(prisoner) >= 3)
+		return FALSE
+	return cell_book_fallback(suspect, officer, warrant)
 
-/// An outpost with no usable cell: the fine is tried on the spot and they are let go
+/// An outpost with no usable cell, one or two stars: the fine is tried on the spot and they are let go
 /datum/outpost_police/proc/cell_book_fallback(mob/living/carbon/suspect, mob/living/officer, datum/outpost_warrant/warrant)
 	var/datum/mind/prisoner = suspect.mind
-	charge_fine(warrant)
+	if(charge_fine(warrant))
+		say_fine_paid(officer)
 	cell_remove_cuffs(suspect, officer)
 	if(QDELETED(suspect))
 		return FALSE
@@ -760,21 +1099,94 @@
 	SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_RELEASED, suspect)
 	return TRUE
 
-/// `officer` takes `prisoner`'s cuffs off, a real do_after. If the officer cannot, the cuffs stay on.
-/datum/outpost_police/proc/cell_remove_cuffs(mob/living/carbon/prisoner, mob/living/officer)
+/**
+ * `officer` strips `prisoner` for jail (`store_property()`), three tries, waiting up to `CELL_UNCUFF_WAIT` if the
+ * officer was stunned or knocked down meanwhile. When every property locker belongs to inmates still in the cells,
+ * clothes stay on (spec) while warrant crime tools and stolen goods still come off to evidence so no weapon enters
+ * the cell. FALSE if the officer could not finish stripping an unstripped prisoner.
+ */
+/datum/outpost_police/proc/cell_strip_prisoner(mob/living/carbon/prisoner, mob/living/officer)
+	var/wait_until = world.time + CELL_UNCUFF_WAIT
 	for(var/attempt in 1 to 3)
+		if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+			return FALSE
+		while(!QDELETED(officer) && officer.stat != DEAD && (officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED)) && world.time < wait_until)
+			sleep(0.5 SECONDS)
+		if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+			return FALSE
+		if(QDELETED(officer) || officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+			return FALSE
+		if(!property_strip_check(prisoner, officer))
+			return FALSE
+		if(store_property(prisoner, officer))
+			return TRUE
+		if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
+			return FALSE
+		if(QDELETED(officer) || officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+			continue
+		if(length(lockers) && !property_locker_for(prisoner, must_shut = TRUE))
+			var/delay = max(1, round(OUTPOST_POLICE_STRIP_TIME * GLOB.outpost_police_property_time_scale))
+			if(!do_after(officer, delay, prisoner, IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE | IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(property_strip_check), prisoner, officer), interaction_key = "outpost_police_strip"))
+				continue
+			if(QDELETED(prisoner) || QDELETED(officer) || officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
+				continue
+			strip_evidence(prisoner, officer)
+			return TRUE
+	return FALSE
+
+/**
+ * `officer` takes `prisoner`'s cuffs off, a real do_after, three tries. An officer knocked down or out meanwhile
+ * gets up and tries again, CELL_UNCUFF_WAIT at most. If the officer cannot, the cuffs stay on (a served term
+ * drops them, release()).
+ */
+/datum/outpost_police/proc/cell_remove_cuffs(mob/living/carbon/prisoner, mob/living/officer)
+	var/wait_until = world.time + CELL_UNCUFF_WAIT
+	for(var/attempt in 1 to 3)
+		if(QDELETED(prisoner) || (!prisoner.handcuffed && !prisoner.legcuffed))
+			return
+		while(!QDELETED(officer) && officer.stat != DEAD && (officer.stat != CONSCIOUS || HAS_TRAIT(officer, TRAIT_INCAPACITATED)) && world.time < wait_until)
+			sleep(0.5 SECONDS)
 		if(QDELETED(prisoner) || (!prisoner.handcuffed && !prisoner.legcuffed))
 			return
 		if(QDELETED(officer) || officer.stat != CONSCIOUS)
 			return
-		if(do_after(officer, CELL_UNCUFF_TIME, prisoner))
+		if(do_after(officer, CELL_UNCUFF_TIME, prisoner, IGNORE_HELD_ITEM, interaction_key = "outpost_police_uncuff"))
 			prisoner.uncuff()
 			return
 
-/// The sergeant says `line` (a POLICE_LINE_* context) at the station; with none alive, whoever is on the radio
+/// Someone bangs on the door of `cell`: the nearest officer who can see the door tells them to knock it off
+/datum/outpost_police_cell/proc/answer_knock(mob/living/knocker)
+	if(is_outpost_police_npc(knocker))
+		return null
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf || !police)
+		return null
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
+	var/best_distance = CELL_KNOCK_HEARD + 1
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+		if(!officer.police_can_speak() || officer.z != door_turf.z)
+			continue
+		var/distance = get_dist(officer, door_turf)
+		if(distance >= best_distance || !(door_turf in view(CELL_KNOCK_HEARD, officer)))
+			continue
+		best = officer
+		best_distance = distance
+	if(!best)
+		return null
+	if(!best.buckled)
+		best.face_atom(door)
+	return best.police_say(POLICE_LINE_KNOCK)
+
+/// `officer` tells the prisoner their fine went through: the receipt, said in the cell
+/datum/outpost_police/proc/say_fine_paid(mob/living/officer)
+	if(!istype(officer, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		return
+	INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_FINE_PAID)
+
+/// The sergeant says `line` (a POLICE_LINE_* context) at the station; with none able to speak, whoever is on the radio
 /datum/outpost_police/proc/cell_station_say(line)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-		if(officer.stat != DEAD && officer.unit_kind == POLICE_UNIT_SERGEANT)
+		if(officer.unit_kind == POLICE_UNIT_SERGEANT && officer.police_can_speak())
 			INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), line)
 			return
 	INVOKE_ASYNC(src, PROC_REF(say_dispatch), line)
@@ -790,14 +1202,25 @@
 
 /// A door officers use between the concourse and their lift: it opens for an officer's ID and for nothing else
 /obj/machinery/door/airlock/outpost/police
-	desc = "Staff lift."
+	desc = "A door to the staff lift."
 
 // Abuse M1: an emagged airlock stands open and broken, which would open the lift to anyone
 /obj/machinery/door/airlock/outpost/police/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
 
-// Abuse SF5: from the lift side anyone may leave, so nobody who followed an officer in is shut in the lift closet.
-// The lift side is the one nearer a police lift than the door itself. Coming in still takes an officer's ID.
+/// Whether `from`, next to `door_turf`, is on the inside of the small closet or booth anchored at `anchor`
+/proc/outpost_inside_pocket(turf/from, turf/door_turf, turf/anchor)
+	if(!anchor || anchor.z != door_turf.z || get_dist(from, door_turf) != 1 || get_dist(door_turf, anchor) > 4)
+		return FALSE
+	var/dot = (from.x - door_turf.x) * (anchor.x - door_turf.x) + (from.y - door_turf.y) * (anchor.y - door_turf.y)
+	if(dot <= 0)
+		return FALSE
+	var/from_manhattan = abs(from.x - anchor.x) + abs(from.y - anchor.y)
+	var/door_manhattan = abs(door_turf.x - anchor.x) + abs(door_turf.y - anchor.y)
+	return from_manhattan < door_manhattan
+
+// Abuse SF5: from the inside of a lift closet or a guard booth anyone may leave, so nobody who followed staff in is shut inside.
+// Only a lift or booth desk right behind this door counts, never a police lift across the concourse. Coming in still takes an officer's ID.
 /obj/machinery/door/airlock/outpost/police/unrestricted_side(mob/opener)
 	. = ..()
 	if(. || !opener)
@@ -806,49 +1229,283 @@
 	var/datum/outpost_police/police = istype(home) ? home.police : null
 	var/turf/door_turf = get_turf(src)
 	var/turf/from = get_turf(opener)
-	if(!police || !door_turf || !from || from == door_turf)
+	if(!police || !door_turf || !from || from.z != door_turf.z || from == door_turf)
 		return
-	var/from_distance = INFINITY
-	var/door_distance = INFINITY
 	for(var/turf/lift as anything in police.lift_turfs)
-		if(lift.z != door_turf.z)
+		if(outpost_inside_pocket(from, door_turf, lift))
+			return TRUE
+	for(var/datum/outpost_shop/shop as anything in home.get_all_shops())
+		if(!istype(shop, /datum/outpost_shop/vendor/checkpoint))
 			continue
-		from_distance = min(from_distance, get_dist(from, lift))
-		door_distance = min(door_distance, get_dist(door_turf, lift))
-	return from_distance < door_distance
+		var/datum/outpost_recovery_post/post = home.recovery?.posts?[shop]
+		var/turf/desk = post?.spot || shop.counter_turf
+		if(!desk && istype(shop.trader_npc, /mob/living/carbon/human/npc/ambient_npc))
+			var/mob/living/carbon/human/npc/ambient_npc/guard_npc = shop.trader_npc
+			desk = guard_npc.home
+		if(outpost_inside_pocket(from, door_turf, desk))
+			return TRUE
+	return FALSE
 
 /**
- * A holding cell's door. Nothing opens it but its cell (police_cell.dm, build_cells()): a bump, a click, an
- * ID, a wire, a spell or a pry gets a refusal, and an emag does nothing (abuse M1). A crowbar or jaws work on
- * it only while somebody is held or shut in, as a forced door (force_door()).
+ * A holding cell's door. A bump, a click or an ID never opens it: its cell does (build_cells()), to bring a prisoner
+ * in, let an officer out, on release and for a medic. Otherwise it is hacked like any airlock (owner decision 47): a
+ * screwdriver opens its panel, its wires cut and pulse as usual (bolts, power, the door motor and the rest), an
+ * airlock authentication override card opens it, and a crowbar pries it once its power is out. With the power
+ * on, a crowbar or jaws force it the slow way (force_door()). Opened on a held prisoner by any of these, it is the
+ * hacker's jailbreak, as forcing it is. A hacked door mends itself after OUTPOST_CHECKPOINT_EMAG_TIME, once nobody
+ * stands in the doorway: panel shut, wires whole, power, lights and bolts back.
  */
 /obj/machinery/door/airlock/outpost/glass/police_cell
 	desc = "A cell door with a view."
 	autoclose = FALSE
+	// Wired like a ship's security door: no plating over the wires, and the open wire needs the ID wire cut first
+	security_level = 0 // AIRLOCK_SECURITY_NONE (airlock.dm undefines it)
+	req_access = list(ACCESS_BRIG)
 	// Nobody plans a route through a cell: it is a dead end, and an open door must not draw anyone in
 	can_astar_pass = CANASTARPASS_ALWAYS_PROC
 	/// The cell this door shuts, set by build_cells()
 	var/datum/outpost_police_cell/holding_cell
 	/// Permission for the next open() call only
 	var/cell_open_permitted = FALSE
+	/// Set while an override card swings it open
+	var/hack_opening = FALSE
+	/// Who last worked its panel, wires or lock (the jailbreak is theirs)
+	var/datum/weakref/last_hacker
+	/// What they last worked it with, so the arrest takes the hacking tool as evidence
+	var/datum/weakref/last_hack_tool
+	/// ...and when
+	var/last_hack_at = 0
+	/// A mend is on its way
+	var/mend_pending = FALSE
+	/// Set while it mends, so putting its wires back is not taken for more hacking
+	var/mending = FALSE
+	/// Banging on the glass makes a noise no more often than this
+	COOLDOWN_DECLARE(knock_cooldown)
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/Destroy()
 	if(holding_cell?.door == src)
 		holding_cell.door = null
 	holding_cell = null
+	last_hacker = null
+	last_hack_tool = null
 	return ..()
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/get_wires()
+	return new /datum/wires/airlock/security/outpost_cell(src)
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/open(forced = DEFAULT_DOOR_CHECKS)
 	if(!density)
 		return TRUE
-	if(!cell_open_permitted)
-		return FALSE
+	var/by_cell = cell_open_permitted
 	cell_open_permitted = FALSE
-	return ..()
+	// A plain request (a bump, a click, a remote) gets nowhere; the cell's say-so, a pulsed wire, a pry with the power
+	// out, an override card does
+	if(!by_cell && forced == DEFAULT_DOOR_CHECKS && !hack_opening)
+		return FALSE
+	// Who did it and with what, taken now: the door swings open over a second or two
+	var/mob/living/culprit = by_cell ? null : hack_culprit()
+	var/obj/item/tool = culprit ? hack_tool() : null
+	. = ..()
+	if(. && !by_cell && !QDELETED(src))
+		holding_cell?.door_hacked_open(culprit, tool)
 
-// The cell's permission is the only check an opening needs: no power, no ID, no wires
+// Once an opening is allowed above, power, ID and wires do not stop it
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_force_door_open(force_type = DEFAULT_DOOR_CHECKS)
 	return ..(BYPASS_DOOR_CHECKS)
+
+// Abuse MF2: nothing shuts an empty cell's door on a body or a bystander, even a pulsed wire while the station is idle
+/obj/machinery/door/airlock/outpost/glass/police_cell/close(forced = DEFAULT_DOOR_CHECKS, force_crush = FALSE)
+	if(holding_cell && !length(holding_cell.prisoners) && holding_cell.stray_inside())
+		holding_cell.schedule_close_check(5 SECONDS)
+		return FALSE
+	return ..()
+
+/// `who` worked on the door: they answer for what it does next, and a mend is coming
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/note_hack(mob/living/who, obj/item/tool = null)
+	if(mending || QDELETED(src))
+		return
+	if(isliving(who))
+		var/same_hacker = (last_hacker?.resolve() == who) && last_hack_at && (world.time - last_hack_at <= 10 SECONDS)
+		last_hacker = WEAKREF(who)
+		last_hack_at = world.time
+		if(isitem(tool) && !QDELETED(tool))
+			last_hack_tool = WEAKREF(tool)
+		else if(!same_hacker || !last_hack_tool?.resolve())
+			last_hack_tool = null
+	if(mend_pending)
+		return
+	mend_pending = TRUE
+	addtimer(CALLBACK(src, PROC_REF(mend_hack)), OUTPOST_CHECKPOINT_EMAG_TIME, TIMER_DELETE_ME)
+
+/// Whoever worked the door in the last few seconds, or null
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/hack_culprit()
+	if(!last_hack_at || world.time - last_hack_at > 10 SECONDS)
+		return null
+	var/mob/living/culprit = last_hacker?.resolve()
+	return isliving(culprit) ? culprit : null
+
+/// What they last worked the door with in the last few seconds, or null
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/hack_tool()
+	if(!last_hack_at || world.time - last_hack_at > 10 SECONDS)
+		return null
+	var/obj/item/tool = last_hack_tool?.resolve()
+	return isitem(tool) && !QDELETED(tool) ? tool : null
+
+/// Whether anyone (standing or lying) or anything bulky is in the doorway
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/doorway_occupied()
+	for(var/atom/movable/thing in get_turf(src))
+		if(thing == src || iseffect(thing))
+			continue
+		if(isliving(thing) || thing.density)
+			return TRUE
+	return FALSE
+
+/// The hack wears off once nobody stands in the doorway: panel shut, wires whole, power, lights and bolts back
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/mend_hack()
+	if(QDELETED(src))
+		return
+	if(!still_hacked())
+		mend_pending = FALSE
+		return
+	if(operating || doorway_occupied())
+		addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
+		return
+	mend_pending = FALSE
+	mending = TRUE
+	obj_flags &= ~EMAGGED
+	panel_open = FALSE
+	if(wires && length(wires.assemblies))
+		var/turf/drop_at = holding_cell?.outside_turf || get_turf(src)
+		for(var/color in wires.assemblies.Copy())
+			var/obj/item/assembly/attached = wires.detach_assembly(color)
+			if(attached && drop_at)
+				attached.forceMove(drop_at)
+	wires?.repair()
+	security_level = initial(security_level)
+	set_electrified(MACHINE_NOT_ELECTRIFIED)
+	regainMainPower()
+	regainBackupPower()
+	lights = TRUE
+	safe = TRUE
+	normalspeed = TRUE
+	autoclose = FALSE
+	emergency = FALSE
+	aiControlDisabled = initial(aiControlDisabled)
+	unbolt()
+	mending = FALSE
+	last_hacker = null
+	last_hack_tool = null
+	last_hack_at = 0
+	do_sparks(2, TRUE, src)
+	visible_message(span_notice("[src] sparks, and its lights come back on."))
+	update_appearance()
+	holding_cell?.schedule_close_check(1 SECONDS)
+
+// The outpost doors' emag mend (outpost_security.dm) is this door's whole mend
+/obj/machinery/door/airlock/outpost/glass/police_cell/mend_emag()
+	if(QDELETED(src) || !(obj_flags & EMAGGED))
+		return
+	mend_hack()
+
+/// Whether anything a hack leaves is still wrong with it
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/still_hacked()
+	return panel_open || (obj_flags & EMAGGED) || length(wires?.cut_wires) || length(wires?.assemblies) || locked || !hasPower() || isElectrified() || !lights || !safe || !normalspeed || emergency || autoclose || aiControlDisabled != initial(aiControlDisabled) || security_level != initial(security_level)
+
+// Outpost property: hacked, never taken apart or plated over
+/obj/machinery/door/airlock/outpost/glass/police_cell/should_try_removing_electronics()
+	return FALSE
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/try_reinforce(mob/user, obj/item/stack/sheet/material, amt_required, new_security_level)
+	return FALSE
+
+/// The station's door control lifts the bolts and clears hazards for an officer at work (booking, release, a medic): see open_door()
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/cell_take_over()
+	if(locked)
+		unbolt()
+	safe = TRUE
+	autoclose = FALSE
+	if(isElectrified())
+		set_electrified(MACHINE_NOT_ELECTRIFIED)
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/screwdriver_act(mob/living/user, obj/item/tool)
+	. = ..()
+	note_hack(user, tool)
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/emag_act(mob/user, obj/item/card/emag/emag_card)
+	. = ..()
+	if(.)
+		note_hack(user, emag_card)
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/finish_emag_act()
+	hack_opening = TRUE
+	. = ..()
+	hack_opening = FALSE
+
+// A pry the normal way once its power is out; with the power on only the slow force works (crowbar_act())
+/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
+	if(!density || hasPower() || isnull(tool))
+		return
+	note_hack(user, tool)
+	return ..()
+
+// Its screwdriver and wirecutters get past outpost property (see /datum/element/outpost_property)
+/obj/machinery/door/airlock/outpost/glass/police_cell/outpost_hackable(obj/item/tool)
+	return tool?.tool_behaviour == TOOL_SCREWDRIVER || tool?.tool_behaviour == TOOL_WIRECUTTER
+
+/// A cell door's wires: whoever cuts, pulses or wires an assembly onto one is noted as working the door
+/datum/wires/airlock/security/outpost_cell
+	/// Assembly weakref -> weakref of the mob who attached it, so a remote pulse still knows its hacker
+	var/list/assembly_installers
+
+/datum/wires/airlock/security/outpost_cell/Destroy()
+	assembly_installers = null
+	return ..()
+
+/datum/wires/airlock/security/outpost_cell/cut(wire, mob/living/source)
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
+	if(istype(door))
+		door.note_hack(source, isliving(source) ? source.get_active_held_item() : null)
+	return ..()
+
+// A cell door never auto-closes: its cell drives when it shuts, and mending WIRE_TIMING must not turn autoclose on
+/datum/wires/airlock/security/outpost_cell/on_cut(wire, mend = FALSE, mob/living/source = null)
+	if(wire == WIRE_TIMING)
+		var/obj/machinery/door/airlock/door = holder
+		if(istype(door))
+			door.autoclose = FALSE
+		return
+	return ..()
+
+/datum/wires/airlock/security/outpost_cell/pulse(wire, mob/living/user, force = FALSE)
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
+	if(istype(door))
+		door.note_hack(user, isliving(user) ? user.get_active_held_item() : null)
+	return ..()
+
+/datum/wires/airlock/security/outpost_cell/attach_assembly(color, obj/item/assembly/S)
+	var/mob/living/holder_mob = isliving(S?.loc) ? S.loc : null
+	. = ..()
+	if(!.)
+		return
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
+	var/mob/living/installer = isliving(usr) ? usr : (holder_mob || (istype(door) ? door.hack_culprit() : null))
+	if(installer)
+		LAZYSET(assembly_installers, WEAKREF(S), WEAKREF(installer))
+	if(istype(door))
+		door.note_hack(installer, S)
+
+/datum/wires/airlock/security/outpost_cell/detach_assembly(color)
+	. = ..()
+	if(.)
+		LAZYREMOVE(assembly_installers, WEAKREF(.))
+
+/datum/wires/airlock/security/outpost_cell/pulse_assembly(obj/item/assembly/S)
+	var/datum/weakref/installer_ref = S ? LAZYACCESS(assembly_installers, WEAKREF(S)) : null
+	var/mob/living/installer = installer_ref?.resolve()
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
+	if(istype(door) && isliving(installer))
+		door.note_hack(installer, S)
+	return ..()
 
 // Someone got into the doorway as it shut: it opens again for them, and its cell closes it once they have moved
 /obj/machinery/door/airlock/outpost/glass/police_cell/CheckForMobs()
@@ -862,14 +1519,13 @@
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	add_fingerprint(user)
-	return TRUE // handled, and nothing happens
-
-/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
-	return
-
-// Not an emag target (abuse M1)
-/obj/machinery/door/airlock/outpost/glass/police_cell/emag_act(mob/user, obj/item/card/emag/emag_card)
-	return FALSE
+	// Nothing opens; a hand on the shut door bangs on the glass, and an officer nearby tells them to stop
+	if(density && isliving(user) && Adjacent(user) && COOLDOWN_FINISHED(src, knock_cooldown))
+		COOLDOWN_START(src, knock_cooldown, CELL_KNOCK_GAP)
+		user.visible_message(span_notice("[user] bangs on [src]."), span_notice("You bang on [src]."))
+		playsound(src, 'sound/effects/glass/glassknock.ogg', 50, TRUE)
+		holding_cell?.answer_knock(user)
+	return TRUE // handled
 
 // A dead end for every walker, open or shut
 /obj/machinery/door/airlock/outpost/glass/police_cell/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
@@ -880,6 +1536,11 @@
 	return TRUE
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/crowbar_act(mob/living/user, obj/item/tool)
+	if(!density)
+		return ITEM_INTERACT_BLOCKING
+	// The power out (its wires cut): a pry the normal way
+	if(!hasPower() && !locked && !welded)
+		return ..()
 	if(!density || !holding_cell || holding_cell.forcing || !holding_cell.still_forceable())
 		return ITEM_INTERACT_BLOCKING
 	INVOKE_ASYNC(holding_cell, TYPE_PROC_REF(/datum/outpost_police_cell, force_door), user, tool)
@@ -888,3 +1549,6 @@
 #undef CELL_BOOKING_STALE
 #undef CELL_OFFICER_PASS
 #undef CELL_UNCUFF_TIME
+#undef CELL_UNCUFF_WAIT
+#undef CELL_KNOCK_GAP
+#undef CELL_KNOCK_HEARD

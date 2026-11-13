@@ -23,8 +23,9 @@
 // =========================================================================
 
 /datum/outpost_police
-	/// weakref to a mind -> list(world.time, TRUE if that report counted): folds the same offender's reports within a
-	/// half second. Weak, so a deleted mind is not held here.
+	/// weakref to a mind -> list(world.time, POLICE_REPORT_*, the crime, weakref to the victim or null, weakref to the
+	/// pending report or null, baseline heat before the grace window): folds the same offender's reports within a half
+	/// second, while letting a graver witnessed crime in that window upgrade the charge.
 	var/list/recent_reports = list()
 	/// Reports waiting on a witness's delay (/datum/outpost_pending_report), confirmed in tick_warrants()
 	var/list/pending_reports = list()
@@ -35,11 +36,30 @@
 	/// Whether the death hook is registered
 	var/events_hooked = FALSE
 
+/datum/outpost_police/Destroy()
+	if(events_hooked)
+		UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH)
+		events_hooked = FALSE
+	for(var/datum/voidcrew_crew_record/crew as anything in watched_crews.Copy())
+		if(!QDELETED(crew))
+			UnregisterSignal(crew, COMSIG_QDELETING)
+	watched_crews.Cut()
+	for(var/datum/mind/mind as anything in warrants)
+		if(!QDELETED(mind))
+			UnregisterSignal(mind, list(COMSIG_QDELETING, COMSIG_MIND_TRANSFERRED))
+	QDEL_LIST(pending_reports)
+	QDEL_LIST_ASSOC_VAL(incidents)
+	recent_reports.Cut()
+	case_holds = null
+	return ..()
+
 /**
  * A report that waits for its witnesses (perception.report_delay() above 0, or perception.reports_by_call()). Until
  * it counts, the warrant exists for nobody but those witnesses: no stars, no dispatch, no bar (spec-stealth 2.3).
  */
 /datum/outpost_pending_report
+	/// world.time the crime happened and the report was queued
+	var/created_at = 0
 	/// world.time the witness finishes reporting (a witness that reports by call waits for `confirmed` instead)
 	var/due = 0
 	/// world.time it is dropped if nobody has made it: a witness out cold may come round meanwhile
@@ -48,6 +68,8 @@
 	var/confirmed = FALSE
 	/// world.time a radioless witness started telling someone in person, or 0
 	var/relay_since = 0
+	/// Baseline heat when upgrading an already-counted crime from the same grace window, or -1
+	var/upgrade_base = -1
 	var/crime
 	var/datum/weakref/offender
 	var/datum/weakref/victim
@@ -56,6 +78,20 @@
 	var/list/datum/weakref/witnesses
 	/// What followed while it waited, counted with it: list(crime, weakref to the victim) each (a killing)
 	var/list/followups
+	/// Victims and weapons of the offender's reports folded into this one (report_crime()), weakrefs: they join the
+	/// warrant when it is made, as a folded report's do on a counted one
+	var/list/datum/weakref/folded_victims
+	var/list/datum/weakref/folded_sources
+
+/datum/outpost_pending_report/Destroy()
+	offender = null
+	victim = null
+	source = null
+	witnesses = null
+	followups = null
+	folded_victims = null
+	folded_sources = null
+	return ..()
 
 /// One four or five star incident of one crew at this outpost: the embargo here (decision 25: this outpost only)
 /datum/outpost_incident
@@ -66,6 +102,14 @@
 	/// world.time the embargo ends
 	var/ends_at = 0
 	var/officers_killed = 0
+	/// Weakrefs to the crew's ships this incident has embargoed, so a ship the crew gets later is embargoed once and an
+	/// admin's lift on one sticks
+	var/list/datum/weakref/ships_embargoed = list()
+
+/datum/outpost_incident/Destroy()
+	crew = null
+	ships_embargoed = null
+	return ..()
 
 // =========================================================================
 // REPORTING A CRIME
@@ -91,16 +135,34 @@
 				return null
 	var/datum/mind/mind = offender.mind
 	var/datum/weakref/mind_ref = WEAKREF(mind)
-	// One report per offender per half second; a folded one still lends its weapon and victim to a counted crime
+	// One report per offender per half second; a folded one still lends its weapon and victim to the report it joins,
+	// while a graver witnessed crime in the same window (e.g. a shot hitting an officer right after gunfire) upgrades it.
+	// After an unseen one, a different crime or victim is looked at again: someone else may see that one (a struck officer).
 	prune_recent_reports()
 	var/list/last = recent_reports[mind_ref]
 	if(last)
-		if(last[2])
-			fold_crime(mind, victim, source)
-		return null
+		switch(last[2])
+			if(POLICE_REPORT_COUNTED)
+				var/base_heat = last[6]
+				var/datum/outpost_warrant/warrant = warrants[mind]
+				if(warrant && crime != last[3] && heat_after(base_heat, crime) > warrant.heat)
+					return upgrade_counted_crime(offender, mind_ref, last, crime, victim, source)
+				fold_crime(mind, victim, source)
+				return null
+			if(POLICE_REPORT_PENDING)
+				var/datum/weakref/report_ref = last[5]
+				var/datum/outpost_pending_report/pending = report_ref?.resolve()
+				var/base_heat = last[6]
+				if(!QDELETED(pending) && (pending in pending_reports) && crime != pending.crime && heat_after(base_heat, crime) > heat_after(base_heat, pending.crime))
+					return upgrade_pending_crime(offender, mind_ref, last, pending, crime, victim, source)
+				fold_pending(pending, victim, source)
+				return null
+		if(last[3] == crime && last[4] == (victim ? WEAKREF(victim) : null))
+			return null
+	var/base_heat = baseline_heat_for(mind, crime)
 	var/witnessed = perception.witness_of(offender, crime, victim, source)
 	if(witnessed == POLICE_WITNESS_NONE)
-		recent_reports[mind_ref] = list(world.time, FALSE)
+		recent_reports[mind_ref] = list(world.time, POLICE_REPORT_UNSEEN, crime, victim ? WEAKREF(victim) : null, null, base_heat)
 		log_game("OUTPOST POLICE: [key_name(offender)] committed [crime] at [outpost] ([AREACOORD(offender)]) and nobody saw.")
 		return null
 	var/atom/witness = perception.last_witness
@@ -108,13 +170,138 @@
 	// Abuse SF4: the perception keeps no hard reference to a witness once read (a deleted officer or player would hang on it)
 	perception.last_witness = null
 	perception.last_witnesses = null
+	// An officer who saw it says so to their face (police_life.dm)
+	shout_for_witnesses(witness, witnesses, offender, crime)
 	var/delay = perception.report_delay(witness, crime)
 	if(delay > 0 || perception.reports_by_call(witness))
-		recent_reports[mind_ref] = list(world.time, FALSE)
-		queue_report(offender, crime, victim, source, witnesses || list(witness), delay)
+		var/datum/outpost_pending_report/report = queue_report(offender, crime, victim, source, witnesses || list(witness), delay)
+		recent_reports[mind_ref] = list(world.time, POLICE_REPORT_PENDING, crime, victim ? WEAKREF(victim) : null, WEAKREF(report), base_heat)
 		return null
-	recent_reports[mind_ref] = list(world.time, TRUE)
+	recent_reports[mind_ref] = list(world.time, POLICE_REPORT_COUNTED, crime, victim ? WEAKREF(victim) : null, null, base_heat)
 	return count_crime(offender, crime, victim, source)
+
+/// Baseline heat `crime` would build on for `mind` right now
+/datum/outpost_police/proc/baseline_heat_for(datum/mind/mind, crime)
+	var/datum/outpost_warrant/warrant = warrants[mind]
+	if(!warrant)
+		return 0
+	return crime == OUTPOST_CRIME_ACCOMPLICE ? warrant.heat : max(warrant.heat, current_prior(warrant))
+
+/// Tells the first police officer among the witnesses to call out `crime` to `offender`
+/datum/outpost_police/proc/shout_for_witnesses(atom/witness, list/witnesses, mob/living/offender, crime)
+	if(!perception.is_officer(witness))
+		var/seen_by_person = ismob(witness)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
+			if(perception.is_officer(officer))
+				witness = officer
+				break
+		// A trader or a player made the report, but an officer watching it happen still calls it out
+		if(seen_by_person && !perception.is_officer(witness))
+			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+				if(perception.is_officer(officer) && perception.sees(officer, offender))
+					witness = officer
+					break
+	witness_shout(witness, offender, crime)
+
+/// Upgrades an already-counted grace-window report when a graver crime in the same instant is also witnessed
+/datum/outpost_police/proc/upgrade_counted_crime(mob/living/offender, datum/weakref/mind_ref, list/last, crime, atom/victim, obj/item/source)
+	var/witnessed = perception.witness_of(offender, crime, victim, source)
+	if(witnessed == POLICE_WITNESS_NONE)
+		// Unseen: it folds into the counted one, as any other hit in the half second does
+		fold_crime(offender.mind, victim, source)
+		return null
+	var/atom/witness = perception.last_witness
+	var/list/witnesses = perception.last_witnesses
+	perception.last_witness = null
+	perception.last_witnesses = null
+	shout_for_witnesses(witness, witnesses, offender, crime)
+	var/base_heat = last[6]
+	var/delay = perception.report_delay(witness, crime)
+	if(delay > 0 || perception.reports_by_call(witness))
+		var/datum/outpost_pending_report/report = queue_report(offender, crime, victim, source, witnesses || list(witness), delay)
+		report.upgrade_base = base_heat
+		recent_reports[mind_ref] = list(last[1], POLICE_REPORT_PENDING, crime, victim ? WEAKREF(victim) : null, WEAKREF(report), base_heat)
+		return null
+	last[3] = crime
+	last[4] = victim ? WEAKREF(victim) : null
+	return apply_upgraded_crime(offender, base_heat, crime, victim, source)
+
+/// Upgrades a pending grace-window report when a graver crime in the same instant is witnessed
+/datum/outpost_police/proc/upgrade_pending_crime(mob/living/offender, datum/weakref/mind_ref, list/last, datum/outpost_pending_report/report, crime, atom/victim, obj/item/source)
+	var/witnessed = perception.witness_of(offender, crime, victim, source)
+	if(witnessed == POLICE_WITNESS_NONE)
+		// Unseen: it folds into the pending one, as any other hit in the half second does
+		fold_pending(report, victim, source)
+		return null
+	var/atom/witness = perception.last_witness
+	var/list/witnesses = perception.last_witnesses
+	perception.last_witness = null
+	perception.last_witnesses = null
+	shout_for_witnesses(witness, witnesses, offender, crime)
+	var/base_heat = last[6]
+	if(report.source)
+		LAZYOR(report.folded_sources, report.source)
+	if(report.victim)
+		LAZYOR(report.folded_victims, report.victim)
+	var/delay = perception.report_delay(witness, crime)
+	if(delay <= 0 && !perception.reports_by_call(witness))
+		pending_reports -= report
+		recent_reports[mind_ref] = list(last[1], POLICE_REPORT_COUNTED, crime, victim ? WEAKREF(victim) : null, null, base_heat)
+		var/stars = report.upgrade_base >= 0 ? apply_upgraded_crime(offender, report.upgrade_base, crime, victim, source) : count_crime(offender, crime, victim, source)
+		apply_report_extras(report, offender)
+		qdel(report)
+		return stars
+	report.crime = crime
+	report.source = source ? WEAKREF(source) : null
+	report.victim = victim ? WEAKREF(victim) : null
+	if(delay > 0)
+		var/had_non_call = FALSE
+		for(var/datum/weakref/existing_ref as anything in report.witnesses)
+			var/atom/existing_witness = existing_ref.resolve()
+			if(existing_witness && !perception.reports_by_call(existing_witness))
+				had_non_call = TRUE
+				break
+		if(!had_non_call)
+			report.due = world.time + delay
+			report.expires = max(report.expires, world.time + max(delay, OUTPOST_POLICE_PENDING_KEEP))
+	for(var/atom/new_witness as anything in (witnesses || list(witness)))
+		if(!new_witness)
+			continue
+		var/datum/weakref/new_ref = WEAKREF(new_witness)
+		if(new_ref in report.witnesses)
+			continue
+		report.witnesses += new_ref
+		if(perception.is_officer(new_witness))
+			INVOKE_ASYNC(new_witness, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
+	last[3] = crime
+	last[4] = victim ? WEAKREF(victim) : null
+	return null
+
+/// Applies `crime` onto `offender`'s warrant from `base_heat`, raising heat without stacking onto a weaker crime from the same act
+/datum/outpost_police/proc/apply_upgraded_crime(mob/living/offender, base_heat, crime, atom/victim, obj/item/source)
+	var/datum/mind/mind = offender?.mind
+	if(!mind || QDELETED(src))
+		return null
+	var/datum/outpost_warrant/warrant = ensure_warrant(mind)
+	var/old_stars = stars_of(warrant.heat)
+	warrant.heat = max(warrant.heat, heat_after(base_heat, crime))
+	warrant.peak = max(warrant.peak, warrant.heat)
+	warrant.last_crime_at = world.time
+	warrant.last_seen_at = world.time
+	warrant.last_seen_turf = get_turf(offender)
+	warrant.unseen_since = 0
+	if(source)
+		note_evidence(warrant, source)
+	if(isliving(victim) && victim != offender)
+		record_victim(warrant, victim)
+	log_game("OUTPOST POLICE: [key_name(offender)] committed [crime][victim ? " against [victim]" : ""][source ? " with [source] ([source.type])" : ""] at [outpost] ([AREACOORD(offender)]): [warrant.heat] heat.")
+	var/new_stars = stars_of(warrant.heat)
+	if(new_stars >= 3)
+		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
+	if(new_stars != old_stars)
+		stars_changed(warrant, old_stars, new_stars)
+	wake()
+	return new_stars
 
 /// Forgets reports older than the grace
 /datum/outpost_police/proc/prune_recent_reports()
@@ -134,12 +321,28 @@
 	if(isliving(victim))
 		record_victim(warrant, victim)
 
+/// A report folded into the offender's pending one: its weapon and victim join that report (count_report())
+/datum/outpost_police/proc/fold_pending(datum/outpost_pending_report/report, atom/victim, obj/item/source)
+	if(QDELETED(report) || !(report in pending_reports))
+		return
+	if(source)
+		LAZYOR(report.folded_sources, WEAKREF(source))
+	if(isliving(victim))
+		var/datum/weakref/victim_ref = WEAKREF(victim)
+		if(victim_ref != report.victim)
+			LAZYOR(report.folded_victims, victim_ref)
+
+/// Whether `victim_ref` was hit in `report`: its own victim or a folded one
+/datum/outpost_police/proc/report_hit(datum/outpost_pending_report/report, datum/weakref/victim_ref)
+	return report.victim == victim_ref || (victim_ref in report.folded_victims)
+
 /**
  * Queues a report that `witnesses` will make in `delay` deciseconds, or (perception.reports_by_call()) when the first
  * of them gets the call out. An officer who saw it acts on it at once (police_stealth.dm, police_witness_saw()).
  */
 /datum/outpost_police/proc/queue_report(mob/living/offender, crime, atom/victim, obj/item/source, list/witnesses, delay)
 	var/datum/outpost_pending_report/report = new
+	report.created_at = world.time
 	report.due = world.time + delay
 	report.expires = world.time + max(delay, OUTPOST_POLICE_PENDING_KEEP)
 	report.crime = crime
@@ -154,8 +357,10 @@
 			report.witnesses += WEAKREF(witness)
 	pending_reports += report
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
-		INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
+		if(perception.is_officer(officer))
+			INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
 	wake()
+	return report
 
 /// Confirms the reports whose witness has finished their call; drops those nobody can make any more
 /datum/outpost_police/proc/process_pending_reports()
@@ -165,6 +370,7 @@
 			continue
 		var/mob/living/offender = report.offender?.resolve()
 		var/list/atom/able = list()
+		var/non_call_able = FALSE
 		var/any_alive = !length(report.witnesses)
 		for(var/datum/weakref/ref as anything in report.witnesses)
 			var/atom/witness = ref.resolve()
@@ -176,7 +382,9 @@
 			any_alive = TRUE
 			if(perception.can_report(witness))
 				able += witness
-		var/made = !!length(able) && (report.confirmed || (world.time >= report.due && !perception.reports_by_call(able[1])))
+				if(!perception.reports_by_call(witness))
+					non_call_able = TRUE
+		var/made = !!length(able) && (report.confirmed || (non_call_able && world.time >= report.due))
 		if(!made && length(able) && !report.confirmed)
 			// Officers: a call going, or the words said in person
 			var/telling = FALSE
@@ -201,10 +409,51 @@
 
 /// Counts a pending report that was made, and what followed it while it waited
 /datum/outpost_police/proc/count_report(datum/outpost_pending_report/report, mob/living/offender)
-	count_crime(offender, report.crime, report.victim?.resolve(), report.source?.resolve())
+	if(report.upgrade_base >= 0)
+		apply_upgraded_crime(offender, report.upgrade_base, report.crime, report.victim?.resolve(), report.source?.resolve())
+	else
+		count_crime(offender, report.crime, report.victim?.resolve(), report.source?.resolve())
+	apply_report_extras(report, offender)
+
+/// Folds `report`'s extra weapons, victims and followup killings onto `offender`'s warrant
+/datum/outpost_police/proc/apply_report_extras(datum/outpost_pending_report/report, mob/living/offender)
+	var/datum/outpost_warrant/warrant = warrants[offender.mind]
+	if(warrant)
+		for(var/datum/weakref/source_ref as anything in report.folded_sources)
+			var/obj/item/source = source_ref.resolve()
+			if(source)
+				note_evidence(warrant, source)
+		for(var/datum/weakref/victim_ref as anything in report.folded_victims)
+			var/mob/living/victim = victim_ref.resolve()
+			if(isliving(victim) && victim != offender)
+				record_victim(warrant, victim)
 	for(var/list/followup as anything in report.followups)
 		var/datum/weakref/victim_ref = followup[2]
 		count_crime(offender, followup[1], victim_ref?.resolve(), derived = TRUE)
+		warrant = warrants[offender.mind]
+		if(followup[1] == OUTPOST_CRIME_KILL_OFFICER && warrant)
+			warrant.officers_killed++
+			officer_killed_by(warrant)
+
+/// Absorbs any pending reports of `crime` against `offender` once the same act has already been counted directly, keeping their folded tools, victims and followups
+/datum/outpost_police/proc/absorb_pending_crime(mob/living/offender, crime)
+	if(!offender || !length(pending_reports))
+		return
+	var/datum/weakref/mind_ref = offender.mind ? WEAKREF(offender.mind) : null
+	var/list/seen = mind_ref ? recent_reports[mind_ref] : null
+	for(var/datum/outpost_pending_report/report as anything in pending_reports.Copy())
+		if(QDELETED(report) || report.crime != crime || report.offender?.resolve() != offender)
+			continue
+		pending_reports -= report
+		if(seen && seen[2] == POLICE_REPORT_PENDING)
+			var/datum/weakref/pending_ref = seen[5]
+			if(pending_ref?.resolve() == report)
+				seen[2] = POLICE_REPORT_COUNTED
+				seen[5] = null
+		if(offender.mind)
+			fold_crime(offender.mind, report.victim?.resolve(), report.source?.resolve())
+			apply_report_extras(report, offender)
+		qdel(report)
 
 /// `witness` has made its call (police_stealth.dm): every report it was waiting to make counts now
 /datum/outpost_police/proc/confirm_reports(atom/witness)
@@ -213,6 +462,7 @@
 	var/datum/weakref/witness_ref = WEAKREF(witness)
 	var/found = FALSE
 	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		// A radio that was down (an EMP, a jammer) still calls it in once it is back, inside the keep (owner decision 42)
 		if(witness_ref in report.witnesses)
 			report.confirmed = TRUE
 			found = TRUE
@@ -240,7 +490,10 @@
 			if(!raised)
 				raised = TRUE
 				heat = max(heat, warrant ? current_prior(warrant) : 0)
-			heat = heat_after(heat, report.crime)
+			if(report.upgrade_base >= 0)
+				heat = max(heat, heat_after(report.upgrade_base, report.crime))
+			else
+				heat = heat_after(heat, report.crime)
 			for(var/list/followup as anything in report.followups)
 				heat = heat_after(heat, followup[1])
 	return stars_of(heat)
@@ -257,7 +510,9 @@
 		return null
 	var/datum/outpost_warrant/warrant = ensure_warrant(mind)
 	var/old_stars = stars_of(warrant.heat)
-	warrant.heat = heat_after(max(warrant.heat, current_prior(warrant)), crime)
+	// An accomplice is counted as a crewmate with a clean record: their old prior stays out of it (owner decision 44)
+	var/from_heat = crime == OUTPOST_CRIME_ACCOMPLICE ? warrant.heat : max(warrant.heat, current_prior(warrant))
+	warrant.heat = heat_after(from_heat, crime)
 	warrant.peak = max(warrant.peak, warrant.heat)
 	warrant.last_crime_at = world.time
 	if(!derived)
@@ -294,9 +549,26 @@
 		warrant = new
 		warrant.mind = mind
 		warrants[mind] = warrant
+		RegisterSignal(mind, COMSIG_QDELETING, PROC_REF(on_warrant_mind_deleted), override = TRUE)
+		RegisterSignal(mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_warrant_mind_transferred), override = TRUE)
 	if(!warrant.crew)
 		set_warrant_crew(warrant, mind.get_reputation_crew())
 	return warrant
+
+/datum/outpost_police/proc/on_warrant_mind_deleted(datum/mind/mind)
+	SIGNAL_HANDLER
+	LAZYREMOVE(case_holds, WEAKREF(mind))
+	close_case(mind)
+	var/datum/outpost_warrant/warrant = warrants[mind]
+	warrants -= mind
+	if(warrant)
+		warrant.mind = null
+		qdel(warrant)
+
+/datum/outpost_police/proc/on_warrant_mind_transferred(datum/mind/mind, mob/previous_body)
+	SIGNAL_HANDLER
+	clear_outpost_wanted_alert(previous_body)
+	update_hud(mind)
 
 /**
  * The crew `warrant`'s holder is on now, kept on the warrant (abuse MF6): the fine, the embargo and the accomplices
@@ -504,14 +776,48 @@
 		update_hud(who)
 	wake()
 
+/// Drops any unconfirmed pending reports, fold state and arrest hold queued against `who`
+/datum/outpost_police/proc/clear_pending_reports(datum/mind/who)
+	if(!who)
+		return
+	var/datum/weakref/who_ref = WEAKREF(who)
+	if(who_ref)
+		recent_reports -= who_ref
+		LAZYREMOVE(case_holds, who_ref)
+	for(var/datum/outpost_pending_report/report as anything in pending_reports.Copy())
+		var/mob/living/offender = report.offender?.resolve()
+		if(offender?.mind == who)
+			pending_reports -= report
+			qdel(report)
+
+/// Ends `crew`'s active incident once none of its members hold four or more stars here (existing ship embargoes stand)
+/datum/outpost_police/proc/prune_crew_incident(datum/voidcrew_crew_record/crew)
+	if(QDELETED(crew))
+		return
+	var/datum/outpost_incident/incident = incidents[crew]
+	if(!incident)
+		return
+	for(var/datum/mind/mate as anything in crew.minds)
+		if(get_stars(mate) >= 4)
+			return
+	end_incident(incident)
+
 /// An admin lifts `who`'s record here: warrant, prior and bar. A prisoner's cell lets them out on its next tick.
 /datum/outpost_police/proc/admin_lift(datum/mind/who)
-	var/datum/outpost_warrant/warrant = warrants[who]
-	if(!warrant)
+	if(!who)
 		return
-	if(warrant.peak > 0)
-		warrant_ended(warrant, "closed")
-	remove_warrant(warrant)
+	clear_pending_reports(who)
+	var/datum/voidcrew_crew_record/crew = who.get_reputation_crew()
+	var/datum/outpost_warrant/warrant = warrants[who]
+	if(warrant)
+		if(warrant.crew && !crew)
+			crew = warrant.crew
+		if(warrant.peak > 0)
+			warrant_ended(warrant, "closed")
+		remove_warrant(warrant)
+	prune_crew_incident(crew)
+	if(cases[who] || cell_holding(who))
+		wake()
 
 /**
  * An admin puts `who` on the wanted list here at `stars` (1-5): the heat that earns exactly those stars, seen
@@ -520,11 +826,14 @@
 /datum/outpost_police/proc/admin_set_stars(datum/mind/who, stars)
 	if(!who)
 		return
+	clear_pending_reports(who)
 	var/list/star_heat = OUTPOST_POLICE_STAR_HEAT
 	var/datum/outpost_warrant/warrant = ensure_warrant(who)
 	var/old_stars = stars_of(warrant.heat)
 	warrant.heat = star_heat[clamp(stars, 1, 5)]
-	warrant.peak = max(warrant.peak, warrant.heat)
+	var/new_stars = stars_of(warrant.heat)
+	warrant.peak = new_stars < old_stars ? warrant.heat : max(warrant.peak, warrant.heat)
+	warrant.fine_level = 0
 	warrant.last_crime_at = world.time
 	warrant.last_seen_at = world.time
 	warrant.unseen_since = 0
@@ -532,9 +841,12 @@
 	var/mob/body = who.current
 	if(body)
 		warrant.last_seen_turf = get_turf(body)
-	var/new_stars = stars_of(warrant.heat)
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
+	else if(old_stars >= 3)
+		warrant.barred_until = 0
+	if(new_stars < 4 && old_stars >= 4)
+		prune_crew_incident(current_warrant_crew(warrant))
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
 	else
@@ -547,6 +859,7 @@
 	if(mind)
 		warrants -= mind
 	if(!QDELETED(mind))
+		UnregisterSignal(mind, list(COMSIG_QDELETING, COMSIG_MIND_TRANSFERRED))
 		update_hud(mind)
 	qdel(warrant)
 
@@ -609,6 +922,11 @@
 	// OUTPOST FLOORS seam: riding up to a leased floor is never leaving the outpost (abuse A19)
 	var/here = !!where && !!outpost?.holds_turf(where)
 	var/downed = !body || body.stat == DEAD || body.stat == HARD_CRIT
+	// In crit at the outpost with an arrest on its way to cuff them where they lie (owner decision 34): as good as in
+	// custody, so nothing fades before the cuffs are on. Lying there uncuffed, the warrant would drain as "away" and
+	// the arrest close at no stars, or a three-star suspect fall to two and be fined instead of jailed (decision 37).
+	if(here && downed && body && body.stat != DEAD && arrest_on(body))
+		return
 	var/old_stars = stars_of(warrant.heat)
 	var/was_away = !!warrant.away_since
 	var/was_unseen = !!warrant.unseen_since
@@ -621,9 +939,7 @@
 		warrant.away_since = 0
 	// Seen: an officer sees them, or a checkpoint scan has them. Cleared only by a sighting.
 	var/seen = FALSE
-	if(warrant.left_lying && !(body && HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)))
-		warrant.left_lying = FALSE
-	if(here && !downed && !warrant.left_lying)
+	if(here && !downed)
 		seen = suspect_seen(body)
 	if(seen)
 		warrant.last_seen_at = world.time
@@ -661,6 +977,13 @@
 
 	if(warrant.heat <= 0 && current_prior(warrant) <= 0 && warrant.barred_until <= world.time)
 		remove_warrant(warrant)
+
+/// Whether an open arrest is on `body` (cuffed or not yet)
+/datum/outpost_police/proc/arrest_on(mob/living/body)
+	if(!body?.mind)
+		return FALSE
+	var/datum/outpost_police_case/case = cases[body.mind]
+	return !QDELETED(case) && case.get_suspect() == body
 
 /// Heat just reached 0 by fading: the peak becomes the prior
 /datum/outpost_police/proc/warrant_faded(datum/outpost_warrant/warrant)
@@ -715,38 +1038,30 @@
 		return
 	// The outpost's recovery tracks its dead (recovery_core.dm, R2); it checks the turf itself
 	outpost.recovery?.note_death(dead)
-	var/is_ours = (dead in officers)
-	if(!is_ours && !length(warrants))
+	var/is_ours = (dead in officers) && perception.is_officer(dead)
+	if(!is_ours && !length(warrants) && !length(pending_reports))
 		return
 	var/crime
 	if(is_ours)
 		crime = OUTPOST_CRIME_KILL_OFFICER
-	else if(istype(dead, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+	else if(perception.is_officer(dead))
 		return
 	else
 		var/turf/where = get_turf(dead)
 		if(!where || get_trader_outpost_for_turf(where) != outpost)
 			return
-		if(istype(dead, OUTPOST_TRADER_MOB)) // a trader or checkpoint guard (spec-rehydrate 1.4)
+		if(dead.mind)
+			crime = OUTPOST_CRIME_MURDER
+		else if(istype(dead, OUTPOST_TRADER_MOB)) // a trader or checkpoint guard (spec-rehydrate 1.4)
 			crime = OUTPOST_CRIME_KILL_STAFF
 		else if(istype(dead, /mob/living/carbon/human/npc/ambient_npc))
 			crime = OUTPOST_CRIME_KILL_CIVILIAN
-		else if(dead.mind)
-			crime = OUTPOST_CRIME_MURDER
 		else
 			return
 	var/datum/weakref/dead_ref = WEAKREF(dead)
-	// A hit still waiting on its witness's call: the killing goes with it, and counts if the report is made
-	for(var/datum/outpost_pending_report/report as anything in pending_reports)
-		if(report.victim != dead_ref || world.time - (report.expires - OUTPOST_POLICE_PENDING_KEEP) > OUTPOST_POLICE_KILL_WINDOW)
-			continue
-		var/already = FALSE
-		for(var/list/followup as anything in report.followups)
-			if(followup[2] == dead_ref)
-				already = TRUE
-		if(!already)
-			LAZYADD(report.followups, list(list(crime, dead_ref)))
 	var/mob/living/killer
+	// Minds whose counted hit made this killing theirs now: a pending report of theirs does not count it again
+	var/list/datum/mind/counted = list()
 	for(var/datum/mind/mind as anything in warrants.Copy())
 		var/datum/outpost_warrant/warrant = warrants[mind]
 		var/hit_at = warrant?.recent_victims?[dead_ref]
@@ -756,11 +1071,25 @@
 		var/mob/living/offender = mind.current
 		if(!isliving(offender))
 			continue
+		counted += mind
 		count_crime(offender, crime, dead, derived = TRUE)
 		if(is_ours)
 			killer = offender
 			warrant.officers_killed++
 			officer_killed_by(warrant)
+	// A hit still waiting on its witness's call: the killing goes with it, and counts if the report is made
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(!report_hit(report, dead_ref) || world.time - report.created_at > OUTPOST_POLICE_KILL_WINDOW)
+			continue
+		var/mob/living/offender = report.offender?.resolve()
+		if(offender?.mind && (offender.mind in counted))
+			continue
+		var/already = FALSE
+		for(var/list/followup as anything in report.followups)
+			if(followup[2] == dead_ref)
+				already = TRUE
+		if(!already)
+			LAZYADD(report.followups, list(list(crime, dead_ref)))
 	if(is_ours)
 		SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_OFFICER_DOWN, dead, killer)
 
@@ -774,7 +1103,7 @@
 	incident.officers_killed++
 	incident.ends_at = min(incident.ends_at + OUTPOST_POLICE_EMBARGO_PER_KILL, incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
 	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
-		if(outpost.embargoed_ships[ship])
+		if(outpost.is_ship_embargoed(ship))
 			outpost.embargoed_ships[ship] = incident.ends_at
 
 // =========================================================================
@@ -782,16 +1111,18 @@
 // =========================================================================
 
 /**
- * An officer was hit (relay_attackers): a stamina weapon or disabler, or a weapon or bullet, is ASSAULT_OFFICER;
- * a shove, or bare fists, is RESIST (abuse M3). `source` is the weapon when the caller knows it; without it the
- * attacker's held weapon is taken.
+ * An officer was hit (relay_attackers): a stamina weapon or disabler, or a weapon, bullet or bomb (`armed`), is
+ * ASSAULT_OFFICER; a shove, or bare fists, is RESIST (abuse M3). `source` is the weapon when the caller knows it;
+ * without it (and when not `armed`) the attacker's held weapon is taken.
  */
-/datum/outpost_police/proc/officer_struck(mob/living/officer, atom/attacker, attack_flags, obj/item/source)
+/datum/outpost_police/proc/officer_struck(mob/living/officer, atom/attacker, attack_flags, obj/item/source, armed = FALSE)
 	SHOULD_NOT_SLEEP(TRUE)
-	if(!isliving(attacker) || attacker == officer)
+	if(ismecha(attacker))
+		armed = TRUE
+	var/mob/living/hitter = outpost_living_attacker(attacker)
+	if(!hitter || hitter == officer)
 		return
-	var/mob/living/hitter = attacker
-	if(!source)
+	if(!source && !armed)
 		source = held_weapon_of(hitter)
 	var/crime
 	if(attack_flags & ATTACKER_STAMINA_ATTACK)
@@ -799,7 +1130,7 @@
 	else if(attack_flags & ATTACKER_SHOVING)
 		crime = OUTPOST_CRIME_RESIST
 	else if(attack_flags & ATTACKER_DAMAGING_ATTACK)
-		crime = source ? OUTPOST_CRIME_ASSAULT_OFFICER : OUTPOST_CRIME_RESIST
+		crime = (armed || source) ? OUTPOST_CRIME_ASSAULT_OFFICER : OUTPOST_CRIME_RESIST
 	else
 		return
 	report_crime(hitter, crime, officer, crime == OUTPOST_CRIME_ASSAULT_OFFICER ? source : null)
@@ -917,11 +1248,21 @@
 	incident.ends_at = min(max(incident.ends_at, world.time + length_for), incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
 	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(crew))
 		outpost.embargo_ship(ship, max(1, incident.ends_at - world.time))
+		incident.ships_embargoed |= WEAKREF(ship)
 	sync_incident(incident)
 	record_metric(METRIC_COMBAT, "police_embargo", actor = warrant.mind?.current, points = stars, quantity = round((incident.ends_at - world.time) / (1 MINUTES)))
 
-/// Crewmates of an embargoed crew on secured turf here
+/// Crewmates and ships of an embargoed crew at this outpost
 /datum/outpost_police/proc/sync_incident(datum/outpost_incident/incident)
+	// A ship the crew got during the incident is embargoed once, for what is left of it
+	var/remaining = incident.ends_at - world.time
+	if(remaining > 0)
+		for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
+			var/datum/weakref/ship_ref = WEAKREF(ship)
+			if(ship_ref in incident.ships_embargoed)
+				continue
+			incident.ships_embargoed += ship_ref
+			outpost.embargo_ship(ship, remaining)
 	// Crewmates who walked in past the embargo are barred from secured turf: an arrest
 	for(var/datum/mind/mate as anything in incident.crew.minds)
 		var/mob/living/body = mate.current

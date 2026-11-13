@@ -59,7 +59,7 @@
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[police.outpost]
 	if(place)
 		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(sees(person, offender))
+			if(!person.mind && !person.client && sees(person, offender))
 				last_witness = person
 				return POLICE_WITNESS_SAW
 	var/datum/voidcrew_crew_record/own_crew = offender.mind?.get_reputation_crew()
@@ -92,7 +92,7 @@
 			continue
 		if(officer == victim)
 			return officer
-		var/dist = get_dist(officer, offender)
+		var/dist = (offender && officer.z == offender.z) ? get_dist(officer, offender) : 1000
 		if(!nearest || dist < nearest_dist)
 			nearest = officer
 			nearest_dist = dist
@@ -108,20 +108,29 @@
 /datum/outpost_police_perception/proc/sees(atom/viewer, mob/living/target)
 	if(QDELETED(viewer) || QDELETED(target))
 		return FALSE
+	var/atom/seen_target = isvehicle(target.loc) ? target.loc : target
 	if(isturf(viewer))
-		return can_see(viewer, target, OUTPOST_POLICE_WITNESS_RANGE)
+		return can_see(viewer, seen_target, OUTPOST_POLICE_WITNESS_RANGE)
+	if(!isturf(seen_target.loc))
+		return FALSE
 	var/mob/living/watcher = isliving(viewer) ? viewer : null
 	if(watcher)
-		if(watcher.stat != CONSCIOUS)
+		if(watcher.stat != CONSCIOUS || watcher.is_blind() || is_fading_npc(watcher))
 			return FALSE
 	else if(!is_camera(viewer))
 		return FALSE
-	if(!can_see(viewer, target, OUTPOST_POLICE_WITNESS_RANGE))
+	if(!can_see(viewer, seen_target, OUTPOST_POLICE_WITNESS_RANGE))
 		return FALSE
-	// Optical camo fools AI and cameras; a player with eyes is not fooled
-	if((!watcher || !watcher.mind) && cyberware_camo_hides(target, viewer))
+	// Optical camo fools AI and cameras; a player with eyes is not fooled, and a mech is never cloaked
+	if(!ismecha(seen_target) && (!watcher || !watcher.mind) && cyberware_camo_hides(target, viewer))
 		return FALSE
 	return TRUE
+
+/// Unblocked line of sight on the same z-level within `max_dist`, facing and camo aside (for furniture and routine small talk)
+/proc/outpost_police_clear_line(atom/from, atom/to_atom, max_dist = OUTPOST_POLICE_WITNESS_RANGE)
+	var/turf/from_turf = get_turf(from)
+	var/turf/to_turf = get_turf(to_atom)
+	return from_turf && to_turf && from_turf.z == to_turf.z && can_see(from, to_atom, max_dist)
 
 /// Whether `thing` is one of the outpost's cameras
 /datum/outpost_police_perception/proc/is_camera(atom/thing)
@@ -203,9 +212,9 @@
 		if(OUTPOST_CRIME_WEAPON_DRAWN, OUTPOST_CRIME_CHECKPOINT_BREACH, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_TRESPASS, OUTPOST_CRIME_ACCOMPLICE)
 			// The scanner, the cell and the officers' own sighting see these
 			return POLICE_WITNESS_CAMERA
-	// At once: the traders and checkpoint guards, players not on the offender's crew (the victim first), the cameras
+	// At once: traders at their counter and checkpoint guards in their booth, players not on the offender's crew (the victim first), the cameras
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in police.outpost.traders)
-		if(sees(trader, offender))
+		if(trader_at_desk(trader) && can_report(trader) && sees(trader, offender))
 			last_witness = trader
 			return POLICE_WITNESS_SAW
 	var/datum/voidcrew_crew_record/own_crew = offender.mind?.get_reputation_crew()
@@ -223,27 +232,54 @@
 		if(sees(camera, offender))
 			last_witness = camera
 			return POLICE_WITNESS_CAMERA
-	// By radio: every officer who saw it, the one it was done to included
+	// Delayed witnesses: every officer who saw it (radio call) and every ambient civilian/crew member (or off-counter trader) who saw it (3s delay).
+	// Keeping all of them on the report means silencing one witness does not blind another standing right beside them.
 	var/list/officers_saw = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
 		if(officer == victim ? struck_sees(officer, offender) : sees(officer, offender))
 			officers_saw += officer
+	var/list/civilians_saw = list()
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[police.outpost]
+	if(place)
+		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
+			if(!person.mind && !person.client && !is_officer(person) && !trader_at_desk(person) && sees(person, offender))
+				civilians_saw |= person
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/off_desk in police.outpost.traders)
+		if(!off_desk.mind && !off_desk.client && !trader_at_desk(off_desk) && sees(off_desk, offender))
+			civilians_saw |= off_desk
+	if(length(civilians_saw) && length(officers_saw))
+		last_witnesses = civilians_saw + officers_saw
+		last_witness = civilians_saw[1]
+		return POLICE_WITNESS_SAW
 	if(length(officers_saw))
 		last_witnesses = officers_saw
 		last_witness = officers_saw[1]
 		return POLICE_WITNESS_SAW
-	// The townspeople, who take a moment to tell anyone
-	var/datum/ambient_place/outpost/place = SSambient_npcs.outposts?[police.outpost]
-	if(place)
-		for(var/mob/living/carbon/human/npc/ambient_npc/person in place.npcs)
-			if(!is_officer(person) && sees(person, offender))
-				last_witness = person
-				return POLICE_WITNESS_SAW
+	if(length(civilians_saw))
+		last_witnesses = civilians_saw
+		last_witness = civilians_saw[1]
+		return POLICE_WITNESS_SAW
 	return POLICE_WITNESS_NONE
 
-/// Whether `thing` is an officer
+/// Whether `thing` is an NPC police officer (never a player in an officer's body, abuse SF3)
 /datum/outpost_police_perception/proc/is_officer(atom/thing)
-	return istype(thing, /mob/living/carbon/human/npc/ambient_npc/outpost/police)
+	return is_outpost_police_npc(thing)
+
+/// Whether `thing` is a trader at their counter or a gate guard at their booth, within reach of the desk alarm (spec-rehydrate 3.3)
+/datum/outpost_police_perception/proc/trader_at_desk(atom/thing)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = thing
+	if(!istype(trader) || trader.mind || trader.client || trader.fading || istype(trader.activity, /datum/ambient_activity/leave))
+		return FALSE
+	var/turf/counter = trader.shop?.counter_turf || trader.home
+	if(!counter)
+		return TRUE
+	var/turf/standing = get_turf(trader)
+	return !!(standing && standing.z == counter.z && get_dist(standing, counter) <= 1) // OUTPOST_TRADER_COUNTER_REACH
+
+/// Whether `thing` is an NPC slipping away down a lift (fade_out()) and no longer here to watch or report
+/datum/outpost_police_perception/proc/is_fading_npc(atom/thing)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = thing
+	return istype(npc) && npc.fading && !npc.mind && !npc.client
 
 /datum/outpost_police_perception/stealth/sees(atom/viewer, mob/living/target)
 	if(QDELETED(viewer) || QDELETED(target))
@@ -274,11 +310,18 @@
  * all but a camera beyond STEALTH_CLOSE_RANGE.
  */
 /datum/outpost_police_perception/stealth/proc/all_round_sees(atom/viewer, mob/living/target, see_cloaks)
-	var/turf/where = target.loc
+	if(isliving(viewer))
+		var/mob/living/living_viewer = viewer
+		if(living_viewer.is_blind() || is_fading_npc(living_viewer))
+			return FALSE
+	var/atom/seen_target = isvehicle(target.loc) ? target.loc : target
+	var/turf/where = seen_target.loc
 	var/turf/from = get_turf(viewer)
 	if(!isturf(where) || !from || from.z != where.z)
 		return FALSE
 	var/dist = get_dist(from, where)
+	if(ismecha(seen_target))
+		return dist <= OUTPOST_POLICE_NPC_WITNESS_RANGE && can_see(viewer, seen_target, OUTPOST_POLICE_NPC_WITNESS_RANGE)
 	var/reach = OUTPOST_POLICE_NPC_WITNESS_RANGE
 	if(dist > STEALTH_CLOSE_RANGE && stealth_tile_is_dark(where))
 		reach = STEALTH_DARK_SIGHT_RANGE
@@ -286,35 +329,38 @@
 		return FALSE
 	if(!see_cloaks && dist > STEALTH_CLOSE_RANGE && stealth_is_cloaked(target))
 		return FALSE
-	return can_see(viewer, target, reach)
+	return can_see(viewer, seen_target, reach)
 
 /**
  * An officer: stealth's sight (stealth_ai.dm stealth_look()). Within STEALTH_SIGHT_RANGE and in its cone (wider
  * when wary or searching), STEALTH_DARK_SIGHT_RANGE onto a dark tile, or within STEALTH_CLOSE_RANGE whatever its
- * facing where the light lets it. A cloak hides beyond STEALTH_CLOSE_RANGE; a box or a locker hides always.
- * Also the "seen" test that holds the hide clock (police_wanted.dm tick_warrants()).
+ * facing where the light lets it. A cloak hides beyond STEALTH_CLOSE_RANGE; a box or a locker hides always; a mech
+ * is never hidden (stealth_ai.dm). Also the "seen" test that holds the hide clock (police_wanted.dm tick_warrants()).
  */
 /datum/outpost_police_perception/stealth/proc/officer_sees(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/target)
-	if(officer.stat != CONSCIOUS)
+	if(officer.stat != CONSCIOUS || officer.is_blind() || is_fading_npc(officer))
 		return FALSE
-	var/turf/where = target.loc
+	var/atom/seen_target = isvehicle(target.loc) ? target.loc : target
+	var/turf/where = seen_target.loc
 	var/turf/here = get_turf(officer)
 	if(!isturf(where) || !here || here.z != where.z)
 		return FALSE
 	var/dist = get_dist(here, where)
 	if(dist > STEALTH_SIGHT_RANGE)
 		return FALSE
+	if(ismecha(seen_target))
+		return can_see(officer, seen_target, STEALTH_SIGHT_RANGE)
 	if(dist > STEALTH_CLOSE_RANGE && stealth_is_cloaked(target))
 		return FALSE
 	var/dark = !HAS_TRAIT(officer, TRAIT_NIGHT_VISION) && stealth_tile_is_dark(where)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer.ai_controller
 	var/half_angle = istype(brain) ? brain.stealth_half_angle() : STEALTH_CONE_HALF_ANGLE
 	var/in_view = FALSE
-	if(!officer.is_blind() && officer.body_position != LYING_DOWN && stealth_in_cone(officer, where, half_angle))
+	if(officer.body_position != LYING_DOWN && stealth_in_cone(officer, where, half_angle))
 		in_view = dist <= ((dist <= STEALTH_ADJACENT_RANGE || !dark) ? STEALTH_SIGHT_RANGE : STEALTH_DARK_SIGHT_RANGE)
 	if(!in_view && dist <= STEALTH_CLOSE_RANGE && !dark)
 		in_view = TRUE
-	return in_view && can_see(officer, target, STEALTH_SIGHT_RANGE)
+	return in_view && can_see(officer, seen_target, STEALTH_SIGHT_RANGE)
 
 /// An officer just struck by `offender` sees them in range and line of sight, its facing aside (stealth's rule for a hit)
 /datum/outpost_police_perception/stealth/proc/struck_sees(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/offender)
@@ -322,20 +368,22 @@
 	if(test_plain)
 		return sees(officer, offender)
 #endif
-	if(officer.stat != CONSCIOUS || !isturf(offender.loc))
+	var/atom/seen_target = isvehicle(offender.loc) ? offender.loc : offender
+	if(officer.stat != CONSCIOUS || officer.is_blind() || !isturf(seen_target.loc) || officer.z != seen_target.z)
 		return FALSE
-	var/dist = get_dist(officer, offender)
-	if(dist > STEALTH_SIGHT_RANGE || (dist > STEALTH_CLOSE_RANGE && stealth_is_cloaked(offender)))
+	var/dist = get_dist(officer, seen_target)
+	if(dist > STEALTH_SIGHT_RANGE || (!ismecha(seen_target) && dist > STEALTH_CLOSE_RANGE && stealth_is_cloaked(offender)))
 		return FALSE
-	return can_see(officer, offender, STEALTH_SIGHT_RANGE)
+	return can_see(officer, seen_target, STEALTH_SIGHT_RANGE)
 
 /datum/outpost_police_perception/stealth/report_delay(atom/witness, crime)
 #ifdef UNIT_TESTS
 	if(test_plain)
 		return 0
 #endif
-	// Townspeople take a moment; a trader or gate guard (ambient NPCs since R1) reports at once, as an officer's desk would
-	if(istype(witness, /mob/living/carbon/human/npc/ambient_npc) && !is_officer(witness) && !istype(witness, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+	// Townspeople, recovery crews and traders away from their counter take a moment; a trader at their counter or gate guard reports at once
+	var/mob/living/carbon/human/npc/ambient_npc/npc = witness
+	if(istype(npc) && !npc.mind && !npc.client && !is_officer(npc) && !trader_at_desk(npc))
 		return OUTPOST_POLICE_CIVILIAN_REPORT_TIME
 	return 0
 
@@ -352,8 +400,10 @@
 	if(!isliving(witness))
 		return TRUE
 	var/mob/living/person = witness
-	if(person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_INCAPACITATED))
+	if(person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_INCAPACITATED) || is_fading_npc(person))
 		return FALSE
+	if(person.mind || person.client)
+		return TRUE
 	if(is_officer(person))
 		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = person.ai_controller
 		return !istype(brain) || !brain.stealth_captive()
@@ -368,8 +418,9 @@
 
 /**
  * `witness` (an officer) has a report waiting. With a working radio it gets a call going if none is (a call lost to
- * a stun or a dead radio is tried again once it can be). Without one, TRUE while it stands within
- * OUTPOST_POLICE_RADIOLESS_RANGE of an officer with a working radio, or of the desk: telling them in person.
+ * a stun, an EMP or a jammer is tried again once it can be, inside the report's keep: owner decision 42). Without
+ * one, TRUE while it stands within OUTPOST_POLICE_RADIOLESS_RANGE of an officer with a working radio, or of the desk:
+ * telling them in person.
  */
 /datum/outpost_police_perception/stealth/nudge_witness(atom/witness, datum/outpost_pending_report/report)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = witness

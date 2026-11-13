@@ -141,6 +141,15 @@
 	offender.mind.key = null
 	TEST_ASSERT(recovery.stars_present(), "A wanted person back at the keys does not hold TROUBLE")
 	TEST_ASSERT(!(offender.mind in recovery.stars_away), "A wanted person back at the keys is still counted as away")
+
+	// Locked in police custody (cuffed in an arrest or held in a cell): trouble is contained so recovery can proceed
+	var/datum/outpost_police_case/case = new(outpost.police, outpost.police.warrants[offender.mind])
+	outpost.police.cases[offender.mind] = case
+	case.cuffed = TRUE
+	TEST_ASSERT(outpost.police.in_custody(offender), "Setup: offender is not in custody")
+	TEST_ASSERT(!recovery.stars_present(), "A suspect locked in police custody still held TROUBLE open")
+	outpost.police.close_case(offender.mind)
+	TEST_ASSERT(recovery.stars_present(), "A suspect who escaped custody did not hold TROUBLE again")
 	outpost.police.warrants -= offender.mind
 
 /// CLEANUP is over fifteen minutes after quiet at the latest, body or no body
@@ -480,3 +489,149 @@
 		TEST_ASSERT(recovery.back_rooms[recovery.closet_turf], "[outpost_type]'s janitor closet is not a closed room")
 		// The morgue and closet are small rooms behind doors (RECOVERY_ROOM_MAX is 60): never the lobby with them
 		TEST_ASSERT(length(recovery.back_rooms) <= 40, "[outpost_type]'s back rooms run out into the outpost ([length(recovery.back_rooms)] tiles)")
+
+/// A player put into an NPC's corpse (a brain transplant after death) makes it a person's body: off the NPC list,
+/// never handed to the corpse sweep; and a player's body already in a tray calls no crew wave
+/datum/unit_test/voidcrew_outpost_recovery_corpse_taken_over
+
+/datum/unit_test/voidcrew_outpost_recovery_corpse_taken_over/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/body = recovery_corpse(outpost, wanted_spot(1, 1))
+	TEST_ASSERT(WEAKREF(body) in recovery.npc_dead, "Setup: the NPC body is not on the outpost's list")
+	body.mind_initialize()
+	allocated += body.mind
+	recovery.prune_dead()
+	TEST_ASSERT(!(WEAKREF(body) in recovery.npc_dead), "A corpse a player went into is still on the NPC list")
+	TEST_ASSERT(WEAKREF(body) in recovery.player_dead, "A corpse a player went into is not kept as a person's")
+	// Even if it is still on the NPC list when the bodies go back to the sweep
+	recovery.npc_dead += WEAKREF(body)
+	recovery.hand_back_bodies(force = TRUE)
+	TEST_ASSERT_EQUAL(body.npc_corpse_lifetime, 0, "A corpse a player went into was handed to the corpse sweep")
+	TEST_ASSERT(!(body in SShuman_npcs.corpses), "A corpse a player went into is on the corpse sweep")
+
+	// In a tray it is done: no morgue crew is called for it
+	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, wanted_spot(3, 3))
+	body.forceMove(tray)
+	TEST_ASSERT(morgue_body_done(body), "A body in a tray is not done")
+	recovery.npc_dead.Cut()
+	recovery.dirty_stops.Cut()
+	TEST_ASSERT_EQUAL(length(recovery.player_bodies()), 0, "A body in a tray is still waiting for the morgue crew")
+	TEST_ASSERT(!recovery.has_cleanup_work(), "A body in a tray is cleanup work")
+	recovery.call_wave()
+	TEST_ASSERT(!recovery.wave_active, "A body in a tray called a crew wave")
+	body.forceMove(wanted_spot(1, 1))
+
+/// The clocks stand still with the concourse: a patient's retry moves on too. A worker a player went into is
+/// never faded out with the crew and does not keep a wave alive.
+/datum/unit_test/voidcrew_outpost_recovery_paused_retry_and_played_worker
+
+/datum/unit_test/voidcrew_outpost_recovery_paused_retry_and_played_worker/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/patient = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(2, 2))
+	var/datum/weakref/patient_ref = WEAKREF(patient)
+	var/retry = world.time + 30 SECONDS
+	recovery.patient_retry[patient_ref] = retry
+	recovery.shift_times(5 MINUTES)
+	TEST_ASSERT_EQUAL(recovery.patient_retry[patient_ref], retry + 5 MINUTES, "A patient's retry ran on while nobody was on the concourse")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = recovery_worker(outpost, wanted_spot(3, 1))
+	recovery.wave_active = TRUE
+	TEST_ASSERT(worker in recovery.live_wave_workers(), "Setup: the worker is not on the wave")
+	worker.mind_initialize()
+	allocated += worker.mind
+	TEST_ASSERT(!(worker in recovery.live_wave_workers()), "A worker a player went into still counts as the wave's")
+	recovery.retire_crew()
+	TEST_ASSERT(!worker.fading && !QDELETED(worker), "A worker a player went into was faded out with the crew")
+
+/// A free dead player alone holds CLEANUP open and calls a morgue wave; a guarded dead player does not block RESTAFF
+/datum/unit_test/voidcrew_outpost_recovery_player_body_cleanup
+
+/datum/unit_test/voidcrew_outpost_recovery_player_body_cleanup/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/dead_player = wanted_person(wanted_spot(2, 2))
+	dead_player.death()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "A player death in the box did not start TROUBLE") // OUTPOST_RECOVERY_TROUBLE
+	recovery.last_death_at = world.time - 3 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "TROUBLE did not move to CLEANUP after quiet") // OUTPOST_RECOVERY_CLEANUP
+
+	// CLEANUP stays open for an unguarded dead player and calls a morgue wave after a minute
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "CLEANUP ended early while an unguarded dead player lay on the floor")
+	recovery.quiet_since = world.time - 1 MINUTES
+	recovery.tick()
+	TEST_ASSERT(recovery.wave_active, "An unguarded dead player did not call a morgue wave")
+	TEST_ASSERT_EQUAL(recovery.wave_morgue_left, 2, "A player-only morgue wave did not queue two morgue workers")
+
+	// Abuse R7: a conscious crewmate standing over the body keeps CLEANUP from hanging
+	var/mob/living/carbon/human/guard_friend = wanted_person(wanted_spot(2, 3))
+	guard_friend.mock_client = allocate(/datum/client_interface)
+	TEST_ASSERT_EQUAL(length(recovery.player_bodies_due()), 0, "A guarded player body counted as due for morgue collection")
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 3, "A guarded player body blocked RESTAFF") // OUTPOST_RECOVERY_RESTAFF
+
+/// A wave whose workers all left without dying (the lift out when idle) is over, so another can come
+/datum/unit_test/voidcrew_outpost_recovery_wave_stalled
+
+/datum/unit_test/voidcrew_outpost_recovery_wave_stalled/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	recovery_corpse(outpost, wanted_spot(1, 1))
+	recovery.state = 2 // OUTPOST_RECOVERY_CLEANUP
+	recovery.quiet_since = world.time - 2 MINUTES
+	recovery.wave_active = TRUE
+	recovery.wave_morgue_left = 0
+	recovery.wave_janitors_left = 0
+	recovery.wave_medics_left = 0
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/fled = recovery_worker(outpost, wanted_spot(2, 2))
+	qdel(fled)
+	recovery.tick_cleanup()
+	TEST_ASSERT(!recovery.wave_active, "A wave with no pending or living workers stayed active forever")
+
+/// watch() wakes NORMAL for an uncollected dead player (and ignores a revived one); finish_unseen() bags a dead player-inhabited worker body into a tray instead of deleting it and retires escorts
+/datum/unit_test/voidcrew_outpost_recovery_watch_player_and_unseen_crew
+
+/datum/unit_test/voidcrew_outpost_recovery_watch_player_and_unseen_crew/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	outpost.loaded = TRUE
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/dead_player = wanted_person(wanted_spot(2, 2))
+	dead_player.death()
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
+
+	// Revived before watch(): pruned and calls no trouble
+	dead_player.revive(ADMIN_HEAL_ALL)
+	TEST_ASSERT_EQUAL(length(recovery.player_bodies()), 0, "A revived player remained in player_bodies()")
+	recovery.watch()
+	TEST_ASSERT_EQUAL(recovery.state, 0, "A revived player woke recovery from NORMAL") // OUTPOST_RECOVERY_NORMAL
+
+	// Dead and free in NORMAL (ejected from an undocked ship or left after a friend walked off): watch() wakes trouble
+	dead_player.death()
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
+	recovery.watch()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "An uncollected free dead player did not wake recovery from NORMAL") // OUTPOST_RECOVERY_TROUBLE
+	qdel(dead_player)
+	recovery.player_dead.Cut()
+
+	// Player mind in a worker body that died and ghosted: finish_unseen() puts it in a morgue tray, never deletes it
+	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, wanted_spot(4, 4))
+	recovery.morgue_trays = list(tray)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/played_worker = recovery_worker(outpost, wanted_spot(1, 2))
+	played_worker.mind_initialize()
+	allocated += played_worker.mind
+	played_worker.death()
+	played_worker.last_mind = played_worker.mind
+	played_worker.mind.set_current(null)
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/escort = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, wanted_spot(3, 1))
+	escort.recovery_escort = TRUE
+	recovery.crew += WEAKREF(escort)
+
+	recovery.finish_unseen()
+	TEST_ASSERT(!QDELETED(played_worker), "finish_unseen() deleted a dead worker body a player had inhabited")
+	TEST_ASSERT(istype(played_worker.loc, /obj/structure/closet/body_bag/outpost_morgue), "The player's dead worker body was not bagged by unseen recovery")
+	TEST_ASSERT_EQUAL(played_worker.loc.loc, tray, "The player's dead worker body was not placed in a morgue tray")
+	TEST_ASSERT(QDELETED(escort), "finish_unseen() left an unplayed recovery escort officer behind")

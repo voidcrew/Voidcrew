@@ -17,7 +17,7 @@
  *   takes it away.
  * - Someone on the concourse side can walk into the inner door to cycle the chamber outward the same
  *   way (the exterior hatches need that; the lobby checkpoints have a one-way exit gate as well).
- * - The inner door can be pried open with a crowbar or jaws of life, or hacked with an emag. It takes
+ * - The inner door can be pried open with a crowbar or jaws of life, or hacked with an airlock override card. It takes
  *   OUTPOST_CHECKPOINT_FORCE_TIME and raises the alarm; anyone who then goes through it from the
  *   chamber is reported to the outpost police as a breach (voidcrew/modules/outpost_police/), the
  *   forcer's tool with them.
@@ -254,9 +254,21 @@
 			return TRUE
 	return FALSE
 
+/// Whether `person` is an on-duty officer of `outpost`, or a prisoner in custody being escorted by one
+/proc/outpost_checkpoint_police_cleared(mob/living/person, obj/structure/overmap/trader_outpost/outpost)
+	if(!isliving(person) || !outpost)
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = person
+	if(istype(cop) && !cop.mind && !cop.client && cop.police?.outpost == outpost)
+		return TRUE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = person.pulledby
+	if(istype(escort) && !escort.mind && !escort.client && escort.police?.outpost == outpost && escort.police.in_custody(person))
+		return TRUE
+	return FALSE
+
 /**
  * What the scan refuses: chamber atom -> CHECKPOINT_LINE_ARMED or CHECKPOINT_LINE_BARRED. A weapon
- * passes when the person carrying it holds a valid permit; anything loose on the floor never does.
+ * passes when the person carrying it holds a valid permit or is outpost security; anything loose on the floor never does.
  */
 /datum/outpost_checkpoint/proc/inspect_chamber()
 	var/list/refused = list()
@@ -267,11 +279,11 @@
 			for(var/atom/movable/content as anything in thing.get_all_contents_skipping_traits(TRAIT_CONTRABAND_BLOCKER))
 				if(isliving(content))
 					var/mob/living/person = content
-					if(person.mind && outpost?.is_user_barred(person))
+					if(person.mind && outpost?.is_user_barred(person) && !outpost_checkpoint_police_cleared(person, outpost))
 						refused[thing] = CHECKPOINT_LINE_BARRED
 				else if(outpost_checkpoint_weapon(content) && !refused[thing])
 					var/mob/living/carrier = outpost_weapon_carrier(content)
-					if(!carrier || !outpost?.has_weapons_permit(carrier))
+					if(!carrier || (!outpost?.has_weapons_permit(carrier) && !outpost_checkpoint_police_cleared(carrier, outpost)))
 						refused[thing] = CHECKPOINT_LINE_ARMED
 	return refused
 
@@ -394,6 +406,12 @@
 		inner_door.set_breached(FALSE)
 		if(state == CHECKPOINT_PASSING || state == CHECKPOINT_FORCED)
 			set_state(CHECKPOINT_IDLE)
+			return
+		if(state == CHECKPOINT_IDLE && !is_disabled() && outer_door?.density)
+			var/requested = scan_when_closed
+			scan_when_closed = FALSE
+			if(requested || length(chamber_people()))
+				start_scan()
 		return
 	// The outer door
 	switch(state)
@@ -405,6 +423,10 @@
 			scan_when_closed = FALSE
 			set_state(CHECKPOINT_IDLE)
 			exit_request = requested && leaving
+			// If both doors were open when a disable ended, wait until the inner door is shut too
+			if(!inner_door?.density)
+				scan_when_closed = requested
+				return
 			// A gate that is down scans nobody
 			if(!is_disabled() && (requested || length(chamber_people())))
 				start_scan()
@@ -569,6 +591,7 @@
 	deltimer(phase_timer)
 	phase_timer = null
 	scan_when_closed = FALSE
+	forcing = FALSE
 	if(state == CHECKPOINT_FORCED)
 		end_breach()
 	else
@@ -609,10 +632,13 @@
 
 /// The gate is down: `door` opens for whoever asked, like a plain airlock, and shuts again once its doorway is clear. TRUE if it opens.
 /datum/outpost_checkpoint/proc/open_freely(obj/machinery/door/airlock/outpost/checkpoint/door)
-	if(QDELETED(door) || !door.density || door.operating)
+	if(QDELETED(door) || door.operating)
 		return FALSE
+	if(!door.density)
+		addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
+		return TRUE
 	open_door(door)
-	addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
 	return TRUE
 
 /**
@@ -637,6 +663,8 @@
 
 /// `user` starts prying or hacking the inner door. Sleeps for the whole attempt; TRUE if it gave.
 /datum/outpost_checkpoint/proc/force_inner(mob/living/user, obj/item/tool)
+	if(is_disabled())
+		return open_freely(inner_door)
 	if(forcing || state == CHECKPOINT_FORCED || QDELETED(inner_door) || !inner_door.density)
 		return FALSE
 	forcing = TRUE
@@ -648,7 +676,7 @@
 	if(QDELETED(src))
 		return FALSE
 	forcing = FALSE
-	if(!succeeded)
+	if(!succeeded || is_disabled())
 		update_sensor()
 		return FALSE
 	breacher_ref = WEAKREF(user)
@@ -657,7 +685,7 @@
 	return TRUE
 
 /datum/outpost_checkpoint/proc/still_forceable()
-	return !QDELETED(inner_door) && inner_door.density && state != CHECKPOINT_FORCED
+	return !QDELETED(inner_door) && inner_door.density && state != CHECKPOINT_FORCED && !is_disabled()
 
 /// The inner door gives: it stays open for a while, and anyone going through it from the chamber is flagged
 /datum/outpost_checkpoint/proc/breach(mob/living/user)
@@ -852,6 +880,9 @@
 /obj/machinery/door/airlock/outpost/checkpoint/inner/crowbar_act(mob/living/user, obj/item/tool)
 	if(!density || !checkpoint)
 		return ITEM_INTERACT_BLOCKING
+	if(checkpoint.is_disabled())
+		checkpoint.open_freely(src)
+		return ITEM_INTERACT_SUCCESS
 	if(checkpoint.forcing)
 		balloon_alert(user, "already being forced!")
 		return ITEM_INTERACT_BLOCKING
@@ -859,7 +890,7 @@
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/door/airlock/outpost/checkpoint/inner/emag_act(mob/user, obj/item/card/emag/emag_card)
-	if(!density || !checkpoint || !isliving(user) || checkpoint.forcing)
+	if(!density || !checkpoint || !isliving(user) || checkpoint.forcing || checkpoint.is_disabled())
 		return FALSE
 	INVOKE_ASYNC(checkpoint, TYPE_PROC_REF(/datum/outpost_checkpoint, force_inner), user, emag_card)
 	return TRUE
@@ -1101,15 +1132,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 /obj/structure/outpost_exit_gate/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	if(REVERSE_DIR(to_dir) != dir)
 		return FALSE
-	// The outpost's own people go out through it only when they are leaving for good
+	// Police and recovery staff cross to the lobby on duty; townspeople go out through it only when leaving for good
 	var/mob/living/carbon/human/npc/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
-	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave))
+	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave) && !istype(townsperson, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !istype(townsperson, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
 		return FALSE
 	return TRUE
 
 /obj/structure/outpost_exit_gate/proc/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	SIGNAL_HANDLER
-	if(isliving(arrived) || istype(arrived, /obj/vehicle))
+	if(isliving(arrived) || istype(arrived, /obj/vehicle) || arrived.pulledby)
 		addtimer(CALLBACK(src, PROC_REF(carry_through), arrived), 1, TIMER_DELETE_ME)
 
 /obj/structure/outpost_exit_gate/proc/carry_through(atom/movable/passer)
@@ -1118,8 +1149,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 	var/turf/out = get_step(src, dir)
 	if(!out)
 		return
+	var/mob/living/puller = isliving(passer.pulledby) ? passer.pulledby : null
+	var/saved_grab = puller ? puller.grab_state : GRAB_PASSIVE
 	if(!step(passer, dir) && passer.loc == loc)
-		passer.forceMove(out)
+		if(!step(passer, turn(dir, 45)) && !step(passer, turn(dir, -45)) && passer.loc == loc && !out.is_blocked_turf(exclude_mobs = TRUE, source_atom = passer))
+			passer.forceMove(out)
+	if(puller && !QDELETED(puller) && !QDELETED(passer) && puller.pulling != passer && get_dist(puller, passer) <= 1)
+		puller.start_pulling(passer, state = saved_grab, supress_message = TRUE)
+	// Still in hand but the step loosened the grip: the same hold as before the gate
+	if(puller && !QDELETED(puller) && puller.pulling == passer && puller.grab_state < saved_grab)
+		puller.setGrabState(saved_grab)
 
 // =========================================================================
 // THE LOCKERS
@@ -1154,6 +1193,9 @@ GLOBAL_LIST_EMPTY(outpost_checkpoint_lockers)
 	var/obj/item/card/id/id = weapon.GetID()
 	if(isnull(id) || opened || broken)
 		return ..()
+	if(id_card && !id_card.resolve() && !locked)
+		id_card = null
+		name = initial(name)
 	if(id_card) // claimed: the lock handles the rest
 		togglelock(user)
 		return TRUE

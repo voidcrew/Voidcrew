@@ -289,7 +289,8 @@
 /obj/item/paper/weapons_permit/proc/fill_in(mob/living/holder, obj/structure/overmap/trader_outpost/outpost, runs_out)
 	var/holder_name = holder?.real_name || "the bearer"
 	name = "weapons permit ([holder_name])"
-	var/where = outpost?.name || "this outpost"
+	var/safe_holder = html_encode(holder_name)
+	var/safe_where = html_encode(outpost?.name || "this outpost")
 	var/until = runs_out ? station_time_timestamp("hh:mm", runs_out) : "--:--"
-	add_raw_text("<center><b>WEAPONS PERMIT</b><br>[where]</center><hr>Issued to: <b>[holder_name]</b><br>Valid until: <b>[until]</b> station time<br>Valid at this outpost only. Not transferable.")
+	add_raw_text("<center><b>WEAPONS PERMIT</b><br>[safe_where]</center><hr>Issued to: <b>[safe_holder]</b><br>Valid until: <b>[until]</b> station time<br>Valid at this outpost only. Not transferable.")
 	update_appearance()

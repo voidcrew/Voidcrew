@@ -22,10 +22,31 @@
 	var/datum/outpost_recovery/outpost_recovery
 	/// The wave they came with (R2 counts waves; a number)
 	var/wave = 0
+	/// The last line they said, aloud or on the radio, which they don't say again straight after
+	var/last_line
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/Destroy()
 	outpost_recovery = null
 	return ..()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/get_lines(context)
+	return outpost_fresh_lines(..(), last_line)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/say_line(line)
+	// A radio line carries its ";" key; remember the words
+	last_line = copytext(line, 1, 2) == ";" ? copytext(line, 2) : line
+	return ..()
+
+/// Whether `src` stands in the checkpoint lobby while `target` is past the checkpoint on the concourse
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/proc/needs_checkpoint_cross(atom/target)
+	var/turf/here = get_turf(src)
+	var/turf/dest = get_turf(target)
+	if(!here || !dest || !istype(here.loc, /area/voidcrew/trader_outpost/checkpoint))
+		return FALSE
+	var/obj/structure/overmap/trader_outpost/outpost = outpost_recovery?.outpost || get_outpost()
+	if(!outpost || !outpost.is_secured_turf(dest) || !outpost.lobby_checkpoint(src))
+		return FALSE
+	return TRUE
 
 // =========================================================================
 // MORGUE HALF (R3)

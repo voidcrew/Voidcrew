@@ -246,9 +246,106 @@
 	for(var/section in list("halcyon", "quartermain", "undertow"))
 		for(var/kind in kinds)
 			var/list/lines = ambient_dialogue_lines(file, section, kind)
-			TEST_ASSERT(length(lines) >= 2, "[section] has fewer than two [kind] lines")
+			TEST_ASSERT(length(lines) >= 4, "[section] has fewer than four [kind] lines")
 			for(var/line in lines)
 				TEST_ASSERT(istext(line) && length(line) <= 72, "[section] [kind] has a line that is not text or runs past 72 characters: [line]")
 				TEST_ASSERT(!findtext(line, "%"), "[section] [kind] has a placeholder that is not filled: [line]")
 		var/list/entry = ambient_dialogue_section(file, section)
 		TEST_ASSERT(length(entry["conversations"]), "[section] has no conversations")
+
+/// Mess they can't reach is left alone however much of it there is, and never hides mess they can reach
+/datum/unit_test/voidcrew_outpost_recovery_janitor_gave_up
+
+/datum/unit_test/voidcrew_outpost_recovery_janitor_gave_up/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	var/list/given_up = list()
+	for(var/turf/tile as anything in block(pa_tile(0, 0), pa_tile(4, 3)))
+		janitor.give_up_on(tile)
+		given_up += tile
+	for(var/turf/tile as anything in given_up)
+		TEST_ASSERT(LAZYACCESS(janitor.cleaning_gave_up, tile) > world.time, "A tile given up on was let back in early ([length(given_up)] given up)")
+	// Twenty given-up tiles nearest, and one they can work further off: they go for that one
+	var/list/found = list()
+	for(var/turf/tile as anything in given_up)
+		found[tile] = 1 // RECOVERY_WORK_MESS
+	var/turf/open_tile = pa_tile(4, 4)
+	found[open_tile] = 1
+	var/list/job = janitor.nearest_work(found)
+	TEST_ASSERT_EQUAL(job?[1], open_tile, "Tiles given up on hid mess the janitor could reach")
+
+/// A janitor standing still with the concourse empty: the give-ups and the idle clock move on by as long
+/datum/unit_test/voidcrew_outpost_recovery_janitor_shift
+
+/datum/unit_test/voidcrew_outpost_recovery_janitor_shift/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	var/turf/tile = pa_tile(2, 2)
+	janitor.give_up_on(tile)
+	var/until = LAZYACCESS(janitor.cleaning_gave_up, tile)
+	janitor.idle_since = max(world.time, 1)
+	var/idle = janitor.idle_since
+	janitor.shift_times(5 MINUTES)
+	TEST_ASSERT_EQUAL(LAZYACCESS(janitor.cleaning_gave_up, tile), until + 5 MINUTES, "A given-up tile's wait ran on while nobody was there")
+	TEST_ASSERT_EQUAL(janitor.idle_since, idle + 5 MINUTES, "The janitor's idle clock ran on while nobody was there")
+
+/// Morgue workers and medics speak their own lines in every zone, not the janitors'
+/datum/unit_test/voidcrew_outpost_recovery_crew_voices
+
+/datum/unit_test/voidcrew_outpost_recovery_crew_voices/Run()
+	var/file = "outpost_recovery.json" // AMBIENT_STRINGS_RECOVERY
+	var/list/role_kinds = list("idle", "talk", "work", "chat", "reply", "attacked", "violence", "leave")
+	for(var/section in list("halcyon", "quartermain", "undertow"))
+		for(var/prefix in list("morgue", "medic"))
+			for(var/kind in role_kinds)
+				var/key = "[prefix]_[kind]"
+				var/list/lines = ambient_dialogue_lines(file, section, key)
+				TEST_ASSERT(length(lines) >= 4, "[section] has fewer than four [key] lines")
+				for(var/line in lines)
+					TEST_ASSERT(istext(line) && length(line) <= 72, "[section] [key] has an invalid or overlong line: [line]")
+					TEST_ASSERT(!findtext(line, "%"), "[section] [key] has an unfilled placeholder: [line]")
+			var/list/entry = ambient_dialogue_section(file, section)
+			TEST_ASSERT(length(entry["[prefix]_conversations"]), "[section] has no [prefix]_conversations")
+
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/medic = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic, pa_tile(1, 0), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/morgue = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue, pa_tile(2, 0), place)
+	TEST_ASSERT(!(medic.get_lines("attacked")[1] in janitor.get_lines("attacked")), "A medic uses janitor mop lines when attacked")
+	TEST_ASSERT(!(morgue.get_lines("attacked")[1] in janitor.get_lines("attacked")), "A morgue worker uses janitor mop lines when attacked")
+
+/// One occupied or unreachable lift tile falls back to another free lift tile before locking out hauling
+/datum/unit_test/voidcrew_outpost_recovery_janitor_lift_fallback
+
+/datum/unit_test/voidcrew_outpost_recovery_janitor_lift_fallback/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	outpost.ensure_police()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/turf/near_lift = pa_tile(1, 0)
+	var/turf/far_lift = pa_tile(3, 0)
+	outpost.lobby_alcove_turfs = list(near_lift, far_lift)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	TEST_ASSERT_EQUAL(janitor.haul_spot(), near_lift, "Setup: janitor did not pick the nearest free lift tile")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/stander = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, near_lift, place)
+	TEST_ASSERT_EQUAL(janitor.haul_spot(), far_lift, "Janitor targeted a lift tile someone stood on when another lift tile was free")
+	qdel(stander)
+
+	var/obj/effect/decal/cleanable/blood/blood = allocate(/obj/effect/decal/cleanable/blood, pa_tile(2, 2))
+	janitor.crew_mop.reagents.add_reagent(/datum/reagent/water, 15)
+	var/datum/ambient_activity/recovery_clean/clean = janitor.start_activity(new /datum/ambient_activity/recovery_clean(janitor))
+	TEST_ASSERT_NOTNULL(clean, "Setup: janitor could not start recovery_clean")
+	clean.task = 4 // RECOVERY_TASK_HAUL
+	clean.spot = near_lift
+	clean.spot_unreachable()
+	TEST_ASSERT_EQUAL(janitor.haul_blocked_until, 0, "One unreachable lift tile locked out hauling while another lift tile remained free")
+	TEST_ASSERT_EQUAL(janitor.haul_spot(), far_lift, "Janitor did not fall back to the second lift tile after giving up on the first")
+
+	clean.spot = far_lift
+	clean.spot_unreachable()
+	TEST_ASSERT(janitor.haul_blocked_until > world.time, "Hauling was not blocked once every lift tile had been given up on")
+	janitor.end_activity()
+	qdel(blood)

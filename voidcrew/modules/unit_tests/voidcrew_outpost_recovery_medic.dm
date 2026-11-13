@@ -67,6 +67,37 @@
 	player.apply_damage(120, BRUTE, BODY_ZONE_CHEST)
 	TEST_ASSERT(!recovery.patient_ok(player), "A player in crit was taken as a patient")
 
+/// A medic with nothing left in the kit and no epinephrine working in an oxy-crit patient releases them instead of standing over them
+/datum/unit_test/voidcrew_outpost_recovery_medic_untreatable_yields
+
+/datum/unit_test/voidcrew_outpost_recovery_medic_untreatable_yields/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_recovery/recovery = outpost.ensure_recovery()
+	var/turf/patient_turf = morgue_floor(outpost)
+	TEST_ASSERT_NOTNULL(patient_turf, "No concourse floor for the patient")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/patient = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, patient_turf)
+	patient.death_cash_low = 0
+	patient.death_cash_high = 0
+	patient.apply_damage(130, OXY)
+	TEST_ASSERT(recovery_in_crit(patient), "130 oxy did not put the patient in crit")
+
+	var/turf/stand = morgue_beside(patient_turf)
+	TEST_ASSERT_NOTNULL(stand, "No floor beside the patient")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/medic = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic, stand)
+	medic.outpost_recovery = recovery
+	// Pens spent: nothing in the kit treats pure oxy damage
+	for(var/obj/item/reagent_containers/hypospray/medipen/pen in medic.get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen))
+		qdel(pen)
+	TEST_ASSERT_NULL(medic.next_treatment(patient), "The medic found a treatment for pure oxy damage with no pens left")
+	var/datum/ambient_activity/treat_patient/job = medic.start_activity(new /datum/ambient_activity/treat_patient(medic))
+	TEST_ASSERT_NOTNULL(job, "The medic could not start on the patient")
+	TEST_ASSERT_EQUAL(job.act(1), 2, "A medic with nothing left in the kit for a crit patient froze instead of moving on") // AMBIENT_STEP_DONE
+	TEST_ASSERT(recovery.patient_retry[WEAKREF(patient)] > world.time, "Giving up on an untreatable patient set no retry timer")
+	TEST_ASSERT_NULL(recovery.patient_holder(WEAKREF(patient)), "Giving up on an untreatable patient kept the claim")
+	medic.end_activity()
+
 /// With nobody at the outpost the recovery finishes at once: NPC bodies gone, a player's body in a tray, mess washed
 /datum/unit_test/voidcrew_outpost_recovery_offscreen
 

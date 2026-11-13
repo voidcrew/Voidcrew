@@ -656,6 +656,12 @@
 	LAZYSET(reaction_cooldowns, kind, world.time + cooldown)
 	return TRUE
 
+// relay_attackers skips non-mob projectile firers; a mecha's gun sets firer to the chassis
+/mob/living/carbon/human/npc/ambient_npc/bullet_act(obj/projectile/bullet, def_zone, piercing_hit = FALSE)
+	if(bullet?.is_hostile_projectile() && ismecha(bullet.firer))
+		SEND_SIGNAL(src, COMSIG_ATOM_WAS_ATTACKED, bullet.firer, bullet.damage_type == STAMINA ? ATTACKER_STAMINA_ATTACK : ATTACKER_DAMAGING_ATTACK)
+	return ..()
+
 /mob/living/carbon/human/npc/ambient_npc/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))

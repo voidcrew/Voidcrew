@@ -456,6 +456,8 @@
 	berth.reservation = reservation
 	outpost.berths[1] = berth
 	var/turf/berth_tile = reservation.bottom_left_turfs[1]
+	// A berth has a floor; a fresh reservation is open space, which no officer walks on
+	berth_tile = berth_tile.ChangeTurf(/turf/open/floor/iron)
 	TEST_ASSERT_EQUAL(get_trader_outpost_for_turf(berth_tile), outpost, "Test fixture: the berth's ground is not part of the outpost")
 	TEST_ASSERT(officer.leash_ok(berth_tile), "An officer may not walk into a hangar berth")
 	outpost.berths[1] = null
@@ -486,7 +488,100 @@
 		TEST_ASSERT(human_npc_gear_locked(card), "[outpost_type]'s guard's card is not locked to the body")
 		TEST_ASSERT(HAS_TRAIT(card, TRAIT_NO_STRIP), "[outpost_type]'s guard's card can be stripped")
 		guard.death()
-		card.forceMove(get_turf(guard))
+		// Through the inventory, so the body lets go of it (a bare forceMove left wear_id on the card: a hard delete)
+		guard.dropItemToGround(card, force = TRUE)
+		TEST_ASSERT_NULL(guard.wear_id, "[outpost_type]'s dead guard still wears the card")
 		sleep(2)
 		TEST_ASSERT(QDELETED(card), "[outpost_type]'s dead guard's card survived being taken off the body")
 		qdel(outpost)
+
+// =========================================================================
+// POCKETS AND HOLSTERING (owner bug 2)
+// =========================================================================
+
+/// Officers never carry or stow gear in a pocket, and locked NPC pocket items never show an untakeable strip-menu bulge
+/datum/unit_test/voidcrew_outpost_police_units_pockets_and_holster
+
+/datum/unit_test/voidcrew_outpost_police_units_pockets_and_holster/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_units_room_outpost(/obj/structure/overmap/trader_outpost/general)
+	var/list/types = police_units_types()
+	var/datum/strippable_item/mob_item_slot/pocket/left/left_slot = new
+	var/datum/strippable_item/mob_item_slot/pocket/right/right_slot = new
+	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	for(var/kind in types)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = allocate(types[kind], run_loc_floor_bottom_left)
+		var/label = "[kind] officer"
+		TEST_ASSERT_NULL(officer.l_store, "[label] spawned with [officer.l_store] in left pocket")
+		TEST_ASSERT_NULL(officer.r_store, "[label] spawned with [officer.r_store] in right pocket")
+		TEST_ASSERT(locate(/obj/item/gun/energy/e_gun/mini) in officer.belt?.contents, "[label] does not carry their mini energy gun in their belt")
+		TEST_ASSERT_EQUAL(left_slot.get_obscuring(officer), STRIPPABLE_OBSCURING_NONE, "[label] shows a left pocket bulge with empty pockets")
+		TEST_ASSERT_EQUAL(right_slot.get_obscuring(officer), STRIPPABLE_OBSCURING_NONE, "[label] shows a right pocket bulge with empty pockets")
+
+		// Draw and holster across every force level and explicit put-away: pockets must stay empty
+		for(var/level in list(1, 2, 3, 0)) // POLICE_FORCE_ARREST, _STUN, _LETHAL, _NONE
+			officer.set_force(level)
+			TEST_ASSERT_NULL(officer.l_store, "[label] put [officer.l_store] in left pocket at force [level]")
+			TEST_ASSERT_NULL(officer.r_store, "[label] put [officer.r_store] in right pocket at force [level]")
+		for(var/obj/item/tool as anything in list(officer.get_cuffs(), officer.get_baton(), officer.get_sidearm()))
+			if(!tool)
+				continue
+			if(human_npc_take_in_hand(officer, tool))
+				TEST_ASSERT(officer.police_put_away(tool), "[label] could not put [tool] away without pockets")
+			TEST_ASSERT_NULL(officer.l_store, "[label] stowed [officer.l_store] into left pocket")
+			TEST_ASSERT_NULL(officer.r_store, "[label] stowed [officer.r_store] into right pocket")
+		qdel(officer)
+
+	// Even if locked NPC gear is placed in a pocket, players see no pocket bulge and cannot start pickpocketing it,
+	// whereas ordinary unlocked items still behave like normal tg pocket items
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/tester = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, run_loc_floor_bottom_left)
+	var/obj/item/pen/locked_pen = allocate(/obj/item/pen)
+	ADD_TRAIT(locked_pen, TRAIT_NO_STRIP, "outpost_police_test")
+	tester.equip_to_slot_if_possible(locked_pen, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(tester.l_store, locked_pen, "Test fixture: locked pen was not placed in left pocket")
+	TEST_ASSERT_EQUAL(left_slot.get_obscuring(tester), STRIPPABLE_OBSCURING_NONE, "A TRAIT_NO_STRIP item in left pocket still shows an untakeable bulge")
+	TEST_ASSERT(!left_slot.start_unequip(tester, player), "A TRAIT_NO_STRIP item in left pocket started pickpocketing")
+	tester.dropItemToGround(locked_pen, force = TRUE)
+
+	var/obj/item/pen/normal_pen = allocate(/obj/item/pen)
+	// Pockets hang off a jumpsuit
+	player.equip_to_slot_if_possible(allocate(/obj/item/clothing/under/color/grey), ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
+	player.equip_to_slot_if_possible(normal_pen, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(player.l_store, normal_pen, "Test fixture: the ordinary pen was not placed in the left pocket")
+	TEST_ASSERT_EQUAL(left_slot.get_obscuring(player), STRIPPABLE_OBSCURING_HIDDEN, "An ordinary unlocked pocket item no longer obscures the pocket")
+	qdel(left_slot)
+	qdel(right_slot)
+	qdel(tester)
+	qdel(outpost)
+
+/// Dismembered officers stow and draw with their remaining hand instead of treating a missing arm as an empty hand or dropping evidence on the floor
+/datum/unit_test/voidcrew_outpost_police_units_one_armed_hands
+
+/datum/unit_test/voidcrew_outpost_police_units_one_armed_hands/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_units_room_outpost(/obj/structure/overmap/trader_outpost/general)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, run_loc_floor_bottom_left)
+	// Remove left arm (hand index 1, the default active hand) so only index 2 works
+	qdel(cop.get_bodypart(BODY_ZONE_L_ARM))
+	TEST_ASSERT_EQUAL(cop.usable_hands, 1, "Setup: dismembered officer does not have 1 usable hand")
+	var/obj/item/melee/baton/baton = cop.get_baton()
+	var/obj/item/gun/energy/sidearm = cop.get_sidearm()
+	TEST_ASSERT(baton && sidearm, "Setup: officer is missing baton or sidearm")
+	TEST_ASSERT(cop.police_draw(baton, null) && cop.is_holding(baton), "One-armed officer could not draw baton into their remaining hand")
+	// With baton filling their only working hand, police_draw(sidearm, baton) must stow baton and draw sidearm
+	TEST_ASSERT(cop.police_draw(sidearm, baton) && cop.is_holding(sidearm), "One-armed officer holding baton failed to stow it and draw sidearm")
+	TEST_ASSERT(!cop.is_holding(baton) && (baton in cop.get_all_contents()), "Stowed baton left the one-armed officer's inventory")
+
+	var/obj/item/outpost_sealed_case/evidence/case_box = allocate(/obj/item/outpost_sealed_case/evidence, run_loc_floor_bottom_left)
+	TEST_ASSERT(cop.police_carry(case_box), "One-armed officer could not carry an evidence case")
+	TEST_ASSERT(cop.is_holding(case_box) && !isturf(case_box.loc), "One-armed officer dropped the evidence case onto the floor instead of holding it")
+
+	// Zero-armed tactical officer: police_free_hand is FALSE and police_carry stores in backpack without dropping on the floor
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical/armless = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical, run_loc_floor_bottom_left)
+	qdel(armless.get_bodypart(BODY_ZONE_L_ARM))
+	qdel(armless.get_bodypart(BODY_ZONE_R_ARM))
+	TEST_ASSERT(!armless.police_free_hand(), "Zero-armed officer reported a free hand")
+	var/obj/item/outpost_sealed_case/evidence/bag_box = allocate(/obj/item/outpost_sealed_case/evidence, armless)
+	TEST_ASSERT(armless.police_carry(bag_box), "Zero-armed tactical officer could not store evidence in their backpack")
+	TEST_ASSERT_EQUAL(bag_box.loc, armless.back, "Zero-armed tactical officer did not put evidence into their backpack")
+	qdel(cop)
+	qdel(armless)
+	qdel(outpost)

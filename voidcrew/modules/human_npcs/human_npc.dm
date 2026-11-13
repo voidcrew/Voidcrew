@@ -586,16 +586,24 @@
 
 /**
  * Whether its corpse may be cleaned up now: dead for npc_corpse_lifetime, with no player within
- * HUMAN_NPC_CORPSE_WATCH_RANGE, and not being dragged, carried or held.
+ * HUMAN_NPC_CORPSE_WATCH_RANGE, and not being dragged, carried or held. Never a body a player is or was in
+ * (a brain transplant puts one in an NPC's body): that is a person's corpse, kept like any other.
  */
 /mob/living/carbon/human/npc/proc/npc_corpse_expired()
 	if(stat != DEAD || !npc_corpse_lifetime || !npc_died_at)
+		return FALSE
+	if(npc_ever_played())
 		return FALSE
 	if(world.time < npc_died_at + npc_corpse_lifetime)
 		return FALSE
 	if(pulledby || buckled || ismob(loc))
 		return FALSE
 	return !human_npc_watched(src)
+
+/// Whether a player is in this body, or ever was: NPCs never get a mind, and mind transfer sets last_mind, which
+/// outlives the mind leaving. Same rule as the outpost police's outpost_npc_played().
+/mob/living/carbon/human/npc/proc/npc_ever_played()
+	return !!(ckey || client || mind || last_mind)
 
 /// Deletes its corpse, and the limbs and organs it lost that lie unwatched on the floor.
 /mob/living/carbon/human/npc/proc/npc_fade()
