@@ -41,11 +41,11 @@
 /obj/item/organ/cyberimp/cyberware/gun_kata/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	RegisterSignal(organ_owner, COMSIG_ATOM_PRE_BULLET_ACT, PROC_REF(on_owner_shot))
-	RegisterSignal(organ_owner, COMSIG_ATOM_DIR_CHANGE, PROC_REF(on_owner_turned))
+	RegisterSignal(organ_owner, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_owner_turned))
 
 /obj/item/organ/cyberimp/cyberware/gun_kata/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	UnregisterSignal(organ_owner, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_ATOM_DIR_CHANGE))
+	UnregisterSignal(organ_owner, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_ATOM_POST_DIR_CHANGE))
 	if(isliving(organ_owner.pulling))
 		organ_owner.set_pull_offsets(organ_owner.pulling, organ_owner.grab_state)
 

@@ -239,5 +239,8 @@
 	if(stealth_hostage_of(src) == held)
 		if(HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
 			REMOVE_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
+			// tg's own stand-up after the floor goes is a 1 s do_after; held up, they're on their feet at once.
+			// get_up() still refuses a body that is resting or floored by anything else (a stun, crit).
+			held.get_up(instant = TRUE)
 	else if(grab_state >= GRAB_NECK && !HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
 		ADD_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
