@@ -136,7 +136,7 @@
 // A bolt from a gun with a pinch waits at the muzzle, out of sight, until the ball snaps: the ball is the bolt forming, and
 // the bolt leaves it as it snaps. It waits moved up its line to level with the ball. Facing north or south the muzzle is
 // off to one side of the bolt's line, so a copy of the bolt shows at the ball and closes sideways onto the bolt's line
-// while keeping pace with it; then the bolt shows under it and the copy goes. The copy sits on the barrel's turf and
+// while keeping pace with it; then the bolt shows under it and the copy goes. The copy sits by the barrel and
 // flies one path, set at the shot and run on the client's clock like the ball's frames. Nothing rides the bolt: its
 // sprite jumps a tile for a frame as it crosses into a new turf. The copy also carries the bolt's light, from the ball's
 // small one up to the bolt's own. Nothing here animates the real bolt: its movement steps continue its newest animation
@@ -181,7 +181,10 @@
 	// The bolt leaves over the ring. Fired away from us it leaves behind the shooter's body, which hides it
 	layer = dy > 0.5 ? BELOW_MOB_LAYER : PLASMA_PINCH_BOLT_LAYER
 	addtimer(VARSET_CALLBACK(src, layer, initial(layer)), PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_RING_TIME)
-	pinch_copy = new(barrel_turf, src, barrel_turf, offset)
+	// The map draws whatever stands further north behind, whatever its layer says. Fired north, the copy sits a turf
+	// north of the shooter and shows from there, so the shooter's head hides it
+	var/turf/copy_turf = dy > 0.5 ? get_step(barrel_turf, NORTH) : null
+	pinch_copy = new(copy_turf || barrel_turf, src, barrel_turf, offset)
 
 /// The ball snaps: we fly
 /obj/projectile/energy/plasma_bolt/proc/leave_pinch()
@@ -232,7 +235,8 @@
 	var/obj/projectile/energy/plasma_bolt/bolt
 	/// The real bolt's icon, given back at the handover
 	var/bolt_icon
-	/// Map pixel of our turf's corner, to turn map pixels into our offsets
+	/// Map pixel of our turf's corner, to turn map pixels into our offsets. Our turf is the barrel's, or the one north
+	/// of it for a shot fired north
 	var/base_x = 0
 	var/base_y = 0
 	/// Carries the bolt's light on us, from the pinch light's size up to the bolt's
@@ -240,7 +244,7 @@
 
 /obj/effect/abstract/plasma_pinch_bolt/Initialize(mapload, obj/projectile/energy/plasma_bolt/real_bolt, turf/barrel_turf, list/offset)
 	. = ..()
-	if(!real_bolt || !isturf(real_bolt.loc) || !real_bolt.movement_vector || !barrel_turf)
+	if(!real_bolt || !isturf(real_bolt.loc) || !real_bolt.movement_vector || !barrel_turf || !isturf(loc))
 		return INITIALIZE_HINT_QDEL
 	bolt = real_bolt
 	// The bolt's light goes with us until the handover. Off before we take its look, or its light comes along
@@ -249,14 +253,14 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	pixel_x = 0
 	pixel_y = 0
-	base_x = barrel_turf.x * ICON_SIZE_X
-	base_y = barrel_turf.y * ICON_SIZE_Y
+	base_x = loc.x * ICON_SIZE_X
+	base_y = loc.y * ICON_SIZE_Y
 	var/dx = bolt.movement_vector.pixel_x
 	var/dy = bolt.movement_vector.pixel_y
 	// Where our centre shows when the ball snaps: our nose just past the ball, along the shot
 	var/lead = bolt.pinch_lead - bolt.pinch_nose
-	var/start_x = base_x + offset[1] + dx * lead
-	var/start_y = base_y + offset[2] + dy * lead
+	var/start_x = barrel_turf.x * ICON_SIZE_X + offset[1] + dx * lead
+	var/start_y = barrel_turf.y * ICON_SIZE_Y + offset[2] + dy * lead
 	// The bolt waits where it is until the snap and then flies at its pace, so where it will be is known
 	var/pace = SSprojectiles.pixels_per_decisecond * bolt.speed
 	var/bolt_x = bolt.loc.x * ICON_SIZE_X + bolt.pixel_x
