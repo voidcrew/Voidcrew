@@ -777,3 +777,24 @@
 
 /datum/unit_test/voidcrew_cyberware_timestop/proc/window_of_user(mob/living/user)
 	return user.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// A hit flash on a body in the slow-mo plays at its real length: a flash stretched with the body lasted seconds,
+/// a glowing corpse in the middle of the slow-mo
+/datum/unit_test/voidcrew_cyberware_timestop/hit_flash_not_slowed
+
+/datum/unit_test/voidcrew_cyberware_timestop/hit_flash_not_slowed/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyflashuser")
+	set_window(user, 2 SECONDS)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS) // the field starts async
+	TEST_ASSERT_NOTNULL(window?.time_stop, "Test fixture: time didn't slow")
+	var/list/slowed = cyberware_dilated_steps(raider, list(0.5, 1.5, 1))
+	TEST_ASSERT(length(slowed) == 3 && slowed[1] > 0.5, "Test fixture: the NPC's animations aren't slowed")
+	var/list/times = raider.hv_vis_flash_times()
+	TEST_ASSERT(length(times) == 3 && times[1] == 0.5 && times[2] == 1.5 && times[3] == 1, "A hit flash in the slow-mo is slowed ([jointext(times, ",")])")
+	raider.hv_vis_flash()
+	TEST_ASSERT_NULL(raider.get_filter("hv_vis_flash"), "A tinted body's flash didn't play through its tint")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	wait_replay(user)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

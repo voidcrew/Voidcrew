@@ -303,18 +303,30 @@
 
 /// A pale flash over the body for the frames of a hit-stop. A colour filter, gone again half a second later.
 /mob/living/proc/hv_vis_flash()
-	if(cyberware_time_flash(src, list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), cyberware_dilated_steps(src, list(0.5, HV_VIS_HITSTOP_TIME, 1)) || list(0.5, HV_VIS_HITSTOP_TIME, 1)))
+	// A body a finisher rig hides has nothing to flash: its puppets flash (chrome_rig/flash()). A colour animated on the
+	// hidden body was drawn by the client through its hide filter, a near-white corpse until the rig let it go.
+	if(sandy_rig_hidden(src))
+		return
+	var/list/times = hv_vis_flash_times()
+	if(cyberware_time_flash(src, list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), times))
 		return // in a Sandevistan slow-mo the flash plays through the slow-mo's tint filter (ware_sandy_timestop.dm)
 	if(!get_filter(HV_VIS_FLASH_FILTER))
 		add_filter(HV_VIS_FLASH_FILTER, 10, color_matrix_filter(list(1,0,0, 0,1,0, 0,0,1, 0,0,0)))
 	var/flash = get_filter(HV_VIS_FLASH_FILTER)
 	if(!flash)
 		return
-	var/list/real = cyberware_dilated_steps(src, list(0.5, HV_VIS_HITSTOP_TIME, 1)) || list(0.5, HV_VIS_HITSTOP_TIME, 1)
-	animate(flash, color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = real[1], easing = LINEAR_EASING)
-	animate(color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = real[2], easing = LINEAR_EASING)
-	animate(color = list(1,0,0, 0,1,0, 0,0,1, 0,0,0), time = real[3], easing = LINEAR_EASING)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, remove_filter), HV_VIS_FLASH_FILTER), cyberware_dilated_time(src, 0.5 SECONDS), TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
+	animate(flash, color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = times[1], easing = LINEAR_EASING)
+	animate(color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = times[2], easing = LINEAR_EASING)
+	animate(color = list(1,0,0, 0,1,0, 0,0,1, 0,0,0), time = times[3], easing = LINEAR_EASING)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, remove_filter), HV_VIS_FLASH_FILTER), 0.5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
+
+/**
+ * The hit flash's steps (in, hold, out). Never slowed by a Sandevistan slow-mo: the flash is a screen effect, like the
+ * user's afterimages, not part of the slowed world. Stretched by the slow-mo, a flash on a body in it lasted seconds and
+ * read as a glowing corpse.
+ */
+/mob/living/proc/hv_vis_flash_times()
+	return list(0.5, HV_VIS_HITSTOP_TIME, 1)
 
 /// The attacker's side of a hit-stop: the blow sticks for a few frames. A melee attacker stays leaned
 /// into the victim; a shooter stays rocked back, even with the barrel against them (`shot`).

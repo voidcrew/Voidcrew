@@ -2036,6 +2036,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return TRUE
 	if(body.GetComponent(/datum/component/gorilla_fold))
 		return FALSE // a broken back left drawn bent (gorilla_finisher.dm): a pose that lasts, not a move
+	return sandy_rig_hidden(body)
+
+/// Whether a finisher rig hides `body` behind its puppets.
+/proc/sandy_rig_hidden(atom/body)
 	for(var/name in SANDY_REPLAY_RIG_HIDES)
 		if(body.filter_data?[name])
 			return TRUE
