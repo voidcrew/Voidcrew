@@ -340,6 +340,8 @@
 #define GORILLA_RIP_STRAIN_TIME (0.2 SECONDS)
 /// Seen from the front or the back, pixels aside of his middle the arm is hauled to, so it shows beside his body.
 #define GORILLA_RIP_HAUL_ASIDE 12
+/// The same facing away: his arms reach past his back and head, so the arm goes out past his shoulder.
+#define GORILLA_RIP_HAUL_ASIDE_AWAY 20
 /// Seen from the front or the back the body lies across his way. Pixels from where it lay to the middle of his tile
 /// that his step in leaves open (his soles 15 below his middle, half a lying body 8, tg's lying drop 6 and a pixel
 /// to spare), so his boots stop at its edge; and the pixels he steps back off it as he hauls.

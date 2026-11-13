@@ -949,7 +949,8 @@
 	var/to_x = (left[1] + right[1]) / 2
 	if(!side_view())
 		// From the front or the back, aside of his middle on the arm's own side: straight at him, his body hides it
-		to_x += (shoulder_at[1] < to_x ? -1 : 1) * GORILLA_RIP_HAUL_ASIDE
+		// Facing away, his arms reach past his back and head, which hide them: further out, past his shoulder
+		to_x += (shoulder_at[1] < to_x ? -1 : 1) * (facing == NORTH ? GORILLA_RIP_HAUL_ASIDE_AWAY : GORILLA_RIP_HAUL_ASIDE)
 	var/angle = arctan(to_x - shoulder_at[1], (left[2] + right[2]) / 2 - shoulder_at[2])
 	if(side_view())
 		// Up toward the top of the screen, never past it
