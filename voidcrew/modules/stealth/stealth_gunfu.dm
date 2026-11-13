@@ -159,6 +159,7 @@
 
 /// Hip throw: lets go of `victim` and throws them toward `toward` with tg's throw; they go down where they land.
 /mob/living/carbon/human/proc/gunfu_hip_throw(mob/living/victim, turf/toward)
+	setDir(get_cardinal_dir(src, toward))
 	stop_pulling()
 	visible_message(
 		span_danger("[src] throws [victim] over [p_their()] hip!"),
@@ -171,9 +172,12 @@
 	victim.throw_at(toward, GUNFU_HIP_THROW_RANGE, 1, src, spin = FALSE, callback = CALLBACK(src, PROC_REF(gunfu_landed), victim, GUNFU_HIP_THROW_KNOCKDOWN, GUNFU_HIP_THROW_DAMAGE))
 	return TRUE
 
-/// Shoulder flip: `victim`, held on this tile, goes over onto the next tile toward `toward` and lands flat.
+/// Shoulder flip: `victim`, held on this tile, goes over onto the next tile toward `toward` (the way the mover turns to
+/// face) and lands flat.
 /mob/living/carbon/human/proc/gunfu_flip(mob/living/victim, turf/toward)
-	var/turf/landing = get_step(src, get_dir(src, toward))
+	var/flip_dir = get_cardinal_dir(src, toward)
+	var/turf/landing = get_step(src, flip_dir)
+	setDir(flip_dir)
 	stop_pulling()
 	visible_message(
 		span_danger("[src] flips [victim] over [p_their()] shoulder!"),
