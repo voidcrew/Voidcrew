@@ -212,6 +212,8 @@
 // ===== Disguises (decision 40, stealth_disguise.dm) =====
 /// The den's own doors
 #define ACCESS_SCAV "scav"
+/// The den boss's vault (scav_den.dm): only his pass opens it
+#define ACCESS_SCAV_VAULT "scav_vault"
 // What someone wears of the scavs' own
 /// Their face is hidden (tg's get_face_name() finds none)
 #define STEALTH_PIECE_MASK (1<<0)
