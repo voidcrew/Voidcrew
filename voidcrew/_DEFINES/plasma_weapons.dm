@@ -36,6 +36,8 @@
 /// The margin only counts on a limb that already had this much damage before the bolt, so no bolt melts
 /// an unhurt arm or leg in one hit
 #define PLASMA_ASH_PRIOR_DAMAGE 10
+/// A bolt only melts a limb when at least this much of its own burn gets through armour
+#define PLASMA_ASH_MIN_LANDED 10
 /// Structure and door damage multiplier (demolition_mod) for a pistol bolt
 #define PLASMA_DEMOLITION_PISTOL 1.5
 /// Structure and door damage multiplier (demolition_mod) for a rifle bolt

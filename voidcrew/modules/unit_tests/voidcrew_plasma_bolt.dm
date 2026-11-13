@@ -129,6 +129,15 @@
 	for(var/obj/effect/decal/cleanable/leftover in range(4, spot))
 		qdel(leftover)
 
+	// A bolt that armour stopped most of melts nothing, however hurt the arm
+	var/mob/living/carbon/human/consistent/armoured = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/bodypart/right_arm = armoured.get_bodypart(BODY_ZONE_R_ARM)
+	right_arm.receive_damage(brute = 45, wound_bonus = CANT_WOUND)
+	var/obj/projectile/energy/plasma_bolt/glancing = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(1, 1), BODY_ZONE_R_ARM)
+	glancing.damage = PLASMA_ASH_MIN_LANDED - 1
+	armoured.bullet_act(glancing, BODY_ZONE_R_ARM)
+	TEST_ASSERT_NOTNULL(armoured.get_bodypart(BODY_ZONE_R_ARM), "a bolt that landed under [PLASMA_ASH_MIN_LANDED] burn melted an arm")
+
 /// A barely hurt arm stays; a pistol bolt melts a hurt arm within its margin; a rifle bolt melts a leg
 /// carrying a slagged plasma critical and a pistol bolt does not; a tg critical burn alone sets up no melt;
 /// chests and heads never melt.
@@ -165,7 +174,7 @@
 		TEST_ASSERT_NOTNULL(slagged, "could not give a leg a plasma critical burn")
 		TEST_ASSERT(slagged.slag > 0, "a fresh plasma critical carries no slag")
 		var/obj/projectile/energy/plasma_bolt/bolt = make_bolt(bolt_type, from, BODY_ZONE_R_LEG)
-		bolt.damage = 5
+		bolt.damage = PLASMA_ASH_MIN_LANDED
 		burned.bullet_act(bolt, BODY_ZONE_R_LEG)
 		if(bolt.ash_critical_burns)
 			TEST_ASSERT_NULL(burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt left a leg with a slagged plasma critical attached")

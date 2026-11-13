@@ -5,8 +5,9 @@
 /// cuts on the hit limb, any zone. Then the arm or leg melts
 /// through tg's WOUND_BURN loss (no spray, ash decal) when it was already hurt before this bolt
 /// (PLASMA_ASH_PRIOR_DAMAGE) and is now within ash_margin of its max damage, or, for a rifle bolt, when
-/// it already carried a plasma burn-through with slag still in it. No bolt melts an unhurt limb in one hit.
-/// Heads and chests never melt.
+/// it already carried a plasma burn-through with slag still in it. No bolt melts an unhurt limb in one hit, a
+/// bolt that armour stopped most of (under PLASMA_ASH_MIN_LANDED landed) melts nothing, and the damage a limb
+/// must reach never drops below half its max. Heads and chests never melt.
 /obj/projectile/energy/plasma_bolt/proc/plasma_check_ash(mob/living/carbon/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_MOB_AFTER_APPLY_DAMAGE)
@@ -15,7 +16,9 @@
 	var/obj/item/bodypart/limb = isbodypart(def_zone) ? def_zone : source.get_bodypart(check_zone(def_zone))
 	if(!limb || limb.owner != source || limb.body_zone != ash_zone)
 		return
-	if(!plasma_check_melt(limb, attack_direction))
+	// What armour let through of this bolt; damage_dealt is capped by the limb's max, so it can't tell
+	var/landed = damage * (100 - blocked) / 100
+	if(landed < PLASMA_ASH_MIN_LANDED || !plasma_check_melt(limb, attack_direction))
 		// A limb that stays on gets its cuts seared; a melted one is gone, cuts and all
 		plasma_sear_cuts(limb)
 		return
@@ -30,7 +33,7 @@
 	if(!limb.can_dismember() || (limb.bodypart_flags & BODYPART_UNREMOVABLE))
 		return FALSE
 	var/burned_through = ash_critical_burns && ash_prior_critical
-	var/worn_through = ash_prior_damage >= PLASMA_ASH_PRIOR_DAMAGE && limb.get_damage() >= limb.max_damage - ash_margin
+	var/worn_through = ash_prior_damage >= PLASMA_ASH_PRIOR_DAMAGE && limb.get_damage() >= max(limb.max_damage - ash_margin, limb.max_damage / 2)
 	if(!burned_through && !worn_through)
 		return FALSE
 	return plasma_melt_limb(limb, attack_direction) // tg's WOUND_BURN loss, plus the melt picture (plasma_melt.dm)
