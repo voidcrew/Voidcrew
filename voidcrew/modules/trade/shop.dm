@@ -889,7 +889,7 @@
 	if(!counter_turf)
 		return TRUE
 	var/mob/living/current = keeper?.resolve()
-	if(QDELETED(current) || current.stat != CONSCIOUS)
+	if(QDELETED(current) || current.stat != CONSCIOUS || HAS_TRAIT(current, TRAIT_INCAPACITATED) || HAS_TRAIT(current, TRAIT_RESTRAINED))
 		return FALSE
 	var/turf/standing = get_turf(current)
 	if(!standing || standing.z != counter_turf.z || get_dist(standing, counter_turf) > OUTPOST_TRADER_COUNTER_REACH)

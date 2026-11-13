@@ -569,6 +569,7 @@
 	deltimer(phase_timer)
 	phase_timer = null
 	scan_when_closed = FALSE
+	forcing = FALSE
 	if(state == CHECKPOINT_FORCED)
 		end_breach()
 	else
@@ -609,10 +610,13 @@
 
 /// The gate is down: `door` opens for whoever asked, like a plain airlock, and shuts again once its doorway is clear. TRUE if it opens.
 /datum/outpost_checkpoint/proc/open_freely(obj/machinery/door/airlock/outpost/checkpoint/door)
-	if(QDELETED(door) || !door.density || door.operating)
+	if(QDELETED(door) || door.operating)
 		return FALSE
+	if(!door.density)
+		addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
+		return TRUE
 	open_door(door)
-	addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
 	return TRUE
 
 /**
@@ -637,6 +641,8 @@
 
 /// `user` starts prying or hacking the inner door. Sleeps for the whole attempt; TRUE if it gave.
 /datum/outpost_checkpoint/proc/force_inner(mob/living/user, obj/item/tool)
+	if(is_disabled())
+		return open_freely(inner_door)
 	if(forcing || state == CHECKPOINT_FORCED || QDELETED(inner_door) || !inner_door.density)
 		return FALSE
 	forcing = TRUE
@@ -648,7 +654,7 @@
 	if(QDELETED(src))
 		return FALSE
 	forcing = FALSE
-	if(!succeeded)
+	if(!succeeded || is_disabled())
 		update_sensor()
 		return FALSE
 	breacher_ref = WEAKREF(user)
@@ -657,7 +663,7 @@
 	return TRUE
 
 /datum/outpost_checkpoint/proc/still_forceable()
-	return !QDELETED(inner_door) && inner_door.density && state != CHECKPOINT_FORCED
+	return !QDELETED(inner_door) && inner_door.density && state != CHECKPOINT_FORCED && !is_disabled()
 
 /// The inner door gives: it stays open for a while, and anyone going through it from the chamber is flagged
 /datum/outpost_checkpoint/proc/breach(mob/living/user)
@@ -852,6 +858,9 @@
 /obj/machinery/door/airlock/outpost/checkpoint/inner/crowbar_act(mob/living/user, obj/item/tool)
 	if(!density || !checkpoint)
 		return ITEM_INTERACT_BLOCKING
+	if(checkpoint.is_disabled())
+		checkpoint.open_freely(src)
+		return ITEM_INTERACT_SUCCESS
 	if(checkpoint.forcing)
 		balloon_alert(user, "already being forced!")
 		return ITEM_INTERACT_BLOCKING
@@ -859,7 +868,7 @@
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/door/airlock/outpost/checkpoint/inner/emag_act(mob/user, obj/item/card/emag/emag_card)
-	if(!density || !checkpoint || !isliving(user) || checkpoint.forcing)
+	if(!density || !checkpoint || !isliving(user) || checkpoint.forcing || checkpoint.is_disabled())
 		return FALSE
 	INVOKE_ASYNC(checkpoint, TYPE_PROC_REF(/datum/outpost_checkpoint, force_inner), user, emag_card)
 	return TRUE
@@ -1118,7 +1127,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 	var/turf/out = get_step(src, dir)
 	if(!out)
 		return
-	if(!step(passer, dir) && passer.loc == loc)
+	if(!step(passer, dir) && passer.loc == loc && !out.is_blocked_turf(exclude_mobs = TRUE, source_atom = passer))
 		passer.forceMove(out)
 
 // =========================================================================
@@ -1154,6 +1163,9 @@ GLOBAL_LIST_EMPTY(outpost_checkpoint_lockers)
 	var/obj/item/card/id/id = weapon.GetID()
 	if(isnull(id) || opened || broken)
 		return ..()
+	if(id_card && !id_card.resolve() && !locked)
+		id_card = null
+		name = initial(name)
 	if(id_card) // claimed: the lock handles the rest
 		togglelock(user)
 		return TRUE

@@ -448,7 +448,10 @@
 	var/mob/living/carbon/human/friend = visitor(chamber[2])
 	allocate(/obj/item/gun/ballistic/automatic/pistol, friend)
 	var/obj/item/paper/weapons_permit/receipt = allocate(/obj/item/paper/weapons_permit, friend)
+	holder.real_name = "Jane <script>alert(1)</script>"
 	receipt.fill_in(holder, host, host.weapon_permits[holder.mind])
+	TEST_ASSERT(!findtext(receipt.get_raw_text(), "<script>"), "Weapons permit receipt left raw HTML unescaped")
+	holder.real_name = "Jane"
 	TEST_ASSERT(scan_now(friend), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "Someone else's permit let a gun through") // CHECKPOINT_REJECTING
 	settle()
@@ -800,3 +803,33 @@
 	// Already past it, nobody sets off through it
 	ambient_cross_checkpoint_on_arrival(npc, host)
 	TEST_ASSERT_NULL(npc.activity, "Someone on the concourse set off through the checkpoint")
+	// Emagged gate: an arriving NPC still crosses cleanly without freezing when the interlock is down
+	checkpoint.disabled_until = world.time + 1800
+	npc.forceMove(lobby)
+	ambient_cross_checkpoint_on_arrival(npc, host)
+	crossing = npc.activity
+	TEST_ASSERT(istype(crossing), "An NPC did not cross an emagged checkpoint")
+	crossing.next_ask_at = 0
+	npc.activity_step(1)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "An NPC could not open the outer door of an emagged checkpoint")
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "An NPC did not enter the chamber of an emagged checkpoint") // AMBIENT_STEP_MOVE
+	npc.forceMove(crossing.spot)
+	crossing.next_ask_at = 0
+	npc.activity_step(1)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!inner.density, "An NPC in the chamber could not open the inner door while outer was still open on an emagged gate")
+	npc.end_activity()
+	checkpoint.disabled_until = 0
+
+	// Stale weakref on an unlocked empty checkpoint locker does not wedge it against new claims
+	var/obj/structure/closet/secure_closet/outpost_rental/checkpoint/locker = allocate(/obj/structure/closet/secure_closet/outpost_rental/checkpoint, lobby)
+	var/obj/item/card/id/vanished = new(lobby)
+	locker.id_card = WEAKREF(vanished)
+	locker.locked = FALSE
+	qdel(vanished)
+	var/mob/living/carbon/human/claimer = visitor(lobby)
+	var/obj/item/card/id/fresh_id = allocate(/obj/item/card/id, claimer)
+	fresh_id.registered_name = "Fresh Visitor"
+	locker.attackby(fresh_id, claimer, list(), list())
+	TEST_ASSERT(locker.locked && locker.id_card?.resolve() == fresh_id, "A destroyed ID card wedged an unlocked checkpoint locker")

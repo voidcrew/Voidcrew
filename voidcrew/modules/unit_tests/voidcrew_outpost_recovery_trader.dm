@@ -87,11 +87,19 @@
 	TEST_ASSERT(sku.can_trade(buyer, keeper), "A customer at the counter can't trade (keeper's shop [keeper.shop == shop ? "this one" : keeper.shop], buyer barred [outpost.is_user_barred(buyer)], keeper on the site [outpost.contains_site_turf(get_turf(keeper))], keeper's outpost [keeper.outpost == outpost ? "this one" : keeper.outpost])")
 	TEST_ASSERT(GLOB.trader_counter_state.can_use_topic(keeper, buyer) > UI_CLOSE, "The storefront closed with the keeper at the counter")
 
-	// Held up: shut while it lasts
+	// Held up: shut while it lasts, and nearby violence does not make them crouch out of hands-up
 	keeper.apply_status_effect(/datum/status_effect/grouped/heldup, REF(buyer))
 	TEST_ASSERT(!shop.is_open(), "The shop trades while its keeper is held up")
+	keeper.duck(buyer)
+	TEST_ASSERT(!keeper.crouching, "A keeper held at gunpoint crouched instead of keeping hands up")
 	keeper.remove_status_effect(/datum/status_effect/grouped/heldup, REF(buyer))
 	TEST_ASSERT(shop.is_open(), "The shop stayed shut after the hold-up")
+
+	// Restrained or incapacitated: shut while tied up or knocked down
+	ADD_TRAIT(keeper, TRAIT_RESTRAINED, "r1_test")
+	TEST_ASSERT(!shop.is_open(), "The shop trades while its keeper is handcuffed")
+	REMOVE_TRAIT(keeper, TRAIT_RESTRAINED, "r1_test")
+	TEST_ASSERT(shop.is_open(), "The shop stayed shut after handcuffs came off")
 
 	// Off the counter: shut
 	keeper.forceMove(wanted_spot(2, 5))
@@ -177,6 +185,16 @@
 	TEST_ASSERT_EQUAL(bar_sku.stock, 2, "A robbed keeper dropped a shelf item")
 	TEST_ASSERT_EQUAL(outpost.recovery.losses, 0, "A robbed keeper's death counted a loss")
 
+	// Reserved contract stock is never dropped on death
+	var/datum/outpost_shop/shed = outpost.get_shop(/datum/outpost_shop/vendor/potting_shed)
+	var/datum/shop_sku/shed_sku = r1_one_sku(shed)
+	if(shed_sku)
+		shed_sku.stock = 1
+		shed_sku.reserved_stock = 1
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/gardener = r1_keeper(shed, wanted_spot(6, 4))
+		r1_kill(gardener)
+		TEST_ASSERT_EQUAL(shed_sku.stock, 1, "A trader death drop consumed stock reserved for a contract")
+
 /// Hitting a trader is counted with the trader as the victim; killing one right after is KILL_STAFF, 4 stars at least
 /datum/unit_test/voidcrew_outpost_recovery_trader_kill
 
@@ -195,6 +213,38 @@
 	r1_kill(keeper)
 	police.on_wanted_death(null, keeper, FALSE)
 	TEST_ASSERT(police.get_stars(killer.mind) >= 4, "Killing a trader is [police.get_stars(killer.mind)] stars, not 4 or more") // OUTPOST_CRIME_KILL_STAFF floor
+
+	// Stamina hits (e.g. stunbaton) and thrown items on a trader also record the trader as victim and weapon as evidence
+	var/datum/outpost_shop/clinic = outpost.get_shop(/datum/outpost_shop/vendor/patchup_clinic)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/medic = r1_keeper(clinic, wanted_spot(5, 5))
+	var/mob/living/carbon/human/stunner = wanted_person(wanted_spot(5, 4))
+	var/obj/item/melee/baton/security/baton = allocate(/obj/item/melee/baton/security)
+	stunner.put_in_hands(baton)
+	SEND_SIGNAL(medic, COMSIG_ATOM_WAS_ATTACKED, stunner, ATTACKER_STAMINA_ATTACK)
+	var/datum/outpost_warrant/stun_warrant = police.warrants[stunner.mind]
+	TEST_ASSERT_NOTNULL(stun_warrant, "Stamina-hitting a trader gave no warrant")
+	TEST_ASSERT(stun_warrant.recent_victims?[WEAKREF(medic)], "Stamina-hitting a trader did not record the trader as victim")
+	TEST_ASSERT(WEAKREF(baton) in stun_warrant.evidence, "Stamina-hitting a trader did not record the held baton as evidence")
+
+	// Bombing a trader records ASSAULT_STAFF with the trader as victim and the explosive as evidence
+	var/mob/living/carbon/human/bomber = wanted_person(wanted_spot(5, 3))
+	var/obj/item/grenade/smokebomb/bomb = allocate(/obj/item/grenade/smokebomb)
+	bomb.outpost_armed_by = WEAKREF(bomber)
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(bomb, list(medic))
+	var/datum/outpost_warrant/bomb_warrant = police.warrants[bomber.mind]
+	TEST_ASSERT_NOTNULL(bomb_warrant, "Bombing a trader gave no warrant")
+	TEST_ASSERT(bomb_warrant.recent_victims?[WEAKREF(medic)], "Bombing a trader did not record the trader as victim")
+	TEST_ASSERT(WEAKREF(bomb) in bomb_warrant.evidence, "Bombing a trader did not record the explosive as evidence")
+
+	// Attacking outpost property records the weapon used as vandalism evidence
+	var/mob/living/carbon/human/vandal = wanted_person(wanted_spot(4, 4))
+	var/obj/structure/chair/stool = allocate(/obj/structure/chair, wanted_spot(4, 5))
+	stool.AddElement(/datum/element/outpost_property)
+	var/obj/item/knife/kitchen/cleaver = allocate(/obj/item/knife/kitchen)
+	stool.attackby(cleaver, vandal)
+	var/datum/outpost_warrant/vandal_warrant = police.warrants[vandal.mind]
+	TEST_ASSERT_NOTNULL(vandal_warrant, "Striking outpost property gave no vandalism warrant")
+	TEST_ASSERT(WEAKREF(cleaver) in vandal_warrant.evidence, "Striking outpost property did not record the weapon as evidence")
 
 /// The gate guard dies: his desk shuts, he drops nothing, and the checkpoint scans on through its wall scanner
 /datum/unit_test/voidcrew_trader_checkpoint/guard_killed

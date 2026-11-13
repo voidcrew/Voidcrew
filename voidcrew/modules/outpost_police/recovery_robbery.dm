@@ -157,7 +157,12 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		// The same robber pointing again while the alarm is still out: another hand-over (an empty till gives less)
 		if(holdup.robber_ref?.resolve() == robber)
 			holdup.rehold(weapon)
-		return
+			return
+		if(holdup.holding)
+			return
+		// First robber lowered their gun while the alarm is still pending: leave that holdup in active so its alarm
+		// still fires, and start a fresh hold so the trader pauses for the new gunpoint instead of getting shot.
+		holdup = null
 	GLOB.outpost_holdups.watch_convoy(outpost)
 	holdup = new /datum/outpost_holdup(src, trader, robber, weapon)
 
@@ -182,6 +187,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
  */
 /datum/outpost_shop/proc/raise_holdup_alarm(mob/living/trader)
 	holdup?.try_alarm(TRUE)
+	for(var/datum/outpost_holdup/past as anything in GLOB.outpost_holdups.active.Copy())
+		if(!QDELETED(past) && past.shop == src)
+			past.try_alarm(TRUE)
 
 /**
  * Whether `trader` can still work the counter and the alarm under it: awake, not tied up or stunned, still the
@@ -224,7 +232,11 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	else if(till_extras < 1)
 		var/datum/shop_sku/sku = holdup_pick_sku(room)
 		if(sku)
-			taken = create_trader_goods(sku.item_path, counter, sku.dispense_amount)
+			var/atom/movable/goods = create_trader_goods(sku.item_path, counter, sku.dispense_amount)
+			var/atom/movable/handed = outpost_seal_goods(goods)
+			mark_trader_goods(handed)
+			if(isitem(handed))
+				taken = handed
 			sku.stock--
 			record["sku"] = WEAKREF(sku)
 			recovery.note_loss(sku.get_credit_price())
@@ -335,6 +347,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	if(alarm_done)
 		return
 	holding = TRUE
+	var/mob/living/trader = trader_ref?.resolve()
+	if(trader)
+		ADD_TRAIT(trader, TRAIT_AI_PAUSED, REF(src))
 	if(weapon)
 		weapon_ref = WEAKREF(weapon)
 	trader_says(ROBBERY_LINE_HANDS_UP)
@@ -367,6 +382,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	if(!istype(effect, /datum/status_effect/grouped/heldup))
 		return
 	holding = FALSE
+	REMOVE_TRAIT(source, TRAIT_AI_PAUSED, REF(src))
 	deltimer(steady_timer)
 	steady_timer = null
 	maybe_end()
@@ -572,10 +588,15 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	var/amount = record["amount"]
 	if(amount && istype(thing, /obj/item/holochip))
 		var/obj/item/holochip/chip = thing
-		chip.spend(min(chip.credits, amount), TRUE)
-		shop.till_ready_at = 0
-		shop.till_extras = 0
-		shop.till_robbed_by = null
+		var/returned = chip.spend(min(chip.credits, amount), TRUE)
+		// Only what came back refills the till: a chip split down to 1 cr takes only its share off the wait
+		if(returned >= amount || shop.till_ready_at <= world.time)
+			shop.till_ready_at = 0
+			shop.till_extras = 0
+			shop.till_robbed_by = null
+		else if(returned > 0)
+			shop.till_ready_at = max(world.time + 1, shop.till_ready_at - round(OUTPOST_HOLDUP_TILL_REFILL * returned / amount))
+			addtimer(CALLBACK(shop, TYPE_PROC_REF(/datum/outpost_shop, till_refilled)), shop.till_ready_at - world.time, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
 		// Whatever else was on the chip is theirs
 		if(!QDELETED(chip) && spill)
 			chip.forceMove(spill)
@@ -584,6 +605,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	var/datum/shop_sku/sku = sku_ref?.resolve()
 	if(sku && !QDELETED(sku))
 		sku.stock++
+	// A sealed case spills what it holds when deleted: the stock went back on the shelf, so the goods go with it
+	for(var/atom/movable/inside as anything in thing.contents.Copy())
+		qdel(inside)
 	qdel(thing)
 
 // ----- what the police's witnesses make of it -----

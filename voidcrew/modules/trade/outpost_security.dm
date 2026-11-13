@@ -149,15 +149,26 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 // it off (/datum/element/outpost_property). tg's explosion damage raises none of the attack signals above, so
 // propagate_blastwave() hands over who it caught here, and the bomb is an attack on each of them.
 
-/// Adds the living mobs on `blasted` to `victims` (made on first use) when it is trader outpost ground. Returns the list.
+/// Adds the living mobs on `blasted` (and in a closet, crate or mech there the blast reaches) to `victims` (made on first use) when it is trader outpost ground. Returns the list.
 /proc/note_outpost_blast_victims(turf/blasted, list/victims)
-	var/checked = FALSE
-	for(var/mob/living/victim in blasted)
-		if(!checked)
-			if(!is_trader_outpost_protected(blasted))
-				return victims
-			checked = TRUE
-		LAZYADD(victims, victim)
+	// Runs for every blasted turf anywhere: one plain pass, and the outpost check and container search only when needed
+	var/list/found
+	for(var/atom/movable/thing as anything in blasted)
+		if(isliving(thing))
+			var/mob/living/victim = thing
+			if(victim.stat != DEAD)
+				LAZYADD(found, victim)
+		else if(length(thing.contents) && !(thing.flags_1 & PREVENT_CONTENTS_EXPLOSION_1))
+			LAZYADD(found, thing)
+	if(!found || !is_trader_outpost_protected(blasted))
+		return victims
+	for(var/atom/movable/thing as anything in found)
+		if(isliving(thing))
+			LAZYADD(victims, thing)
+			continue
+		for(var/mob/living/inside in thing.get_all_contents(PREVENT_CONTENTS_EXPLOSION_1))
+			if(inside.stat != DEAD)
+				LAZYADD(victims, inside)
 	return victims
 
 // ----- who armed a bomb (abuse review 3 MF1) -----
@@ -342,11 +353,11 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	var/list/locals = list()
 	var/list/visitors = list()
 	for(var/mob/living/victim as anything in victims)
-		if(QDELETED(victim) || victim == bomber)
+		if(QDELETED(victim) || victim == bomber || victim.stat == DEAD)
 			continue
-		if(istype(victim, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		if(istype(victim, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !victim.client)
 			officers += victim
-		else if(victim.mind && !istype(victim, /mob/living/carbon/human/npc))
+		else if(victim.mind && (!istype(victim, /mob/living/carbon/human/npc) || victim.client))
 			visitors += victim
 		else
 			locals += victim
@@ -359,6 +370,14 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		outpost?.police?.officer_struck(officer, bomber, ATTACKER_DAMAGING_ATTACK, bomb)
 		SEND_SIGNAL(officer, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
 	for(var/mob/living/local as anything in locals)
+		if(istype(local, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+			var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/staff = local
+			staff.outpost?.register_aggression(bomber, OUTPOST_CRIME_ASSAULT_STAFF, staff, bomb)
+		else if(istype(local, /mob/living/carbon/human/npc/ambient_npc))
+			var/mob/living/carbon/human/npc/ambient_npc/townsperson = local
+			if(istype(townsperson.place, /datum/ambient_place/outpost))
+				var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(townsperson))
+				outpost?.register_aggression(bomber, OUTPOST_CRIME_ASSAULT_CIVILIAN, townsperson, bomb)
 		SEND_SIGNAL(local, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
 	for(var/mob/living/visitor as anything in visitors)
 		register_pvp_aggression(visitor, bomber, OUTPOST_CRIME_ASSAULT_ARMED, bomb)
@@ -433,13 +452,14 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	INVOKE_ASYNC(src, PROC_REF(close))
 
 /obj/machinery/door/airlock/outpost/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && outpost)
-		outpost.register_aggression(user)
+	if(attacking_item.force && attacking_item.damtype != STAMINA && outpost)
+		outpost.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /obj/machinery/door/airlock/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(outpost && isliving(hitting_projectile.firer))
-		outpost.register_aggression(hitting_projectile.firer)
+	if(outpost && isliving(hitting_projectile.firer) && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 /**
@@ -453,27 +473,29 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	desc = "Layered torpedo-rated plating. The scorch marks are from people who needed convincing."
 
 /turf/closed/indestructible/reinforced/titanium/outpost/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && isliving(user))
+	if(attacking_item.force && attacking_item.damtype != STAMINA && isliving(user))
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
-		outpost?.register_aggression(user)
+		outpost?.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /turf/closed/indestructible/reinforced/titanium/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(isliving(hitting_projectile.firer))
+	if(isliving(hitting_projectile.firer) && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
-		outpost?.register_aggression(hitting_projectile.firer)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost?.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 /turf/closed/indestructible/syndicate/outpost/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && isliving(user))
+	if(attacking_item.force && attacking_item.damtype != STAMINA && isliving(user))
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
-		outpost?.register_aggression(user)
+		outpost?.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /turf/closed/indestructible/syndicate/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(isliving(hitting_projectile.firer))
+	if(isliving(hitting_projectile.firer) && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
-		outpost?.register_aggression(hitting_projectile.firer)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost?.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 // =========================================================================
@@ -619,23 +641,24 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	return ITEM_INTERACT_BLOCKING
 
 /// Shoves, bare hands and stamina hits aren't vandalism; only a real damaging hit is
-/datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker)
+/datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker, obj/item/weapon)
 	if(!isliving(attacker))
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(source))
-	outpost?.register_aggression(attacker)
+	outpost?.register_aggression(attacker, OUTPOST_CRIME_VANDALISM, null, weapon)
 
 /datum/element/outpost_property/proc/on_melee_attack(obj/source, obj/item/weapon, mob/attacker, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
 	if(!weapon.force || weapon.damtype == STAMINA)
 		return
-	register_hit(source, attacker)
+	register_hit(source, attacker, weapon)
 
 /datum/element/outpost_property/proc/on_projectile_hit(obj/source, obj/projectile/hit_projectile)
 	SIGNAL_HANDLER
 	if(!hit_projectile.is_hostile_projectile() || hit_projectile.damage_type == STAMINA)
 		return
-	register_hit(source, hit_projectile.firer)
+	var/obj/item/fired_from = hit_projectile.fired_from
+	register_hit(source, hit_projectile.firer, isitem(fired_from) ? fired_from : null)
 
 /datum/element/outpost_property/proc/on_thrown_hit(obj/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
 	SIGNAL_HANDLER
@@ -644,7 +667,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	var/obj/item/hit_item = hit_atom
 	if(!hit_item.throwforce || hit_item.damtype == STAMINA)
 		return
-	register_hit(source, throwingdatum?.get_thrower())
+	register_hit(source, throwingdatum?.get_thrower(), hit_item)
 
 /datum/element/outpost_property/proc/on_hulk_attack(obj/source, mob/attacker)
 	SIGNAL_HANDLER
