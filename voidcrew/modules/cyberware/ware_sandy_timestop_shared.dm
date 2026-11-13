@@ -94,7 +94,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 
 /// Whether `field` is a player's running slow-mo that a crewmate's can join: its host's window is still slowing the
 /// world (or the host is in a session not yet over), and its recording is still going.
-/proc/sandy_session_joinable(datum/proximity_monitor/advanced/timestop/sandevistan/field)
+/proc/sandy_session_joinable(datum/proximity_monitor/advanced/timestop/sandevistan/field, datum/status_effect/cyberware_cascade_window/hint)
 	if(QDELETED(field) || QDELETED(field.stopper) || !isliving(field.host))
 		return FALSE
 	var/mob/living/host = field.host
@@ -103,7 +103,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	var/datum/sandy_session/session = GLOB.sandy_session_of[host]
 	if(session)
 		return !session.ending && !!session.replay && session.replay.state == SANDY_SHARED_RECORDING && !session.replay.wait_started
-	var/datum/status_effect/cyberware_cascade_window/window = sandy_session_window(host)
+	var/datum/status_effect/cyberware_cascade_window/window = (hint?.owner == host) ? hint : sandy_session_window(host)
 	if(!window || window.time_stop != field.stopper || window.hold_until)
 		return FALSE
 	return !!field.replay && field.replay.state == SANDY_SHARED_RECORDING && !field.replay.wait_started
@@ -121,10 +121,10 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
  * Called every field tick and when a slow-mo starts: if `field` touches a crewmate's running slow-mo that isn't
  * already the same session, the two become one. The younger one joins the older one, whose recording is kept.
  */
-/proc/sandy_session_check_touch(datum/proximity_monitor/advanced/timestop/sandevistan/field)
+/proc/sandy_session_check_touch(datum/proximity_monitor/advanced/timestop/sandevistan/field, datum/status_effect/cyberware_cascade_window/hint)
 	if(QDELETED(field))
 		return
-	if(length(GLOB.cyberware_time_fields) < 2 || !sandy_session_joinable(field))
+	if(length(GLOB.cyberware_time_fields) < 2 || !sandy_session_joinable(field, hint))
 		return
 	var/datum/sandy_session/mine = GLOB.sandy_session_of[field.host]
 	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/other as anything in GLOB.cyberware_time_fields)
@@ -136,7 +136,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		if(!sandy_session_touching(field, other))
 			continue
 		var/datum/sandy_session/older = theirs || sandy_session_of_one(other)
-		var/datum/sandy_session/younger = mine || sandy_session_of_one(field)
+		var/datum/sandy_session/younger = mine || sandy_session_of_one(field, hint)
 		if(!older || !younger)
 			return
 		if(older.replay.started > younger.replay.started)
@@ -147,9 +147,9 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		return // one join a tick
 
 /// A session for a solo slow-mo that's about to be joined.
-/proc/sandy_session_of_one(datum/proximity_monitor/advanced/timestop/sandevistan/field)
+/proc/sandy_session_of_one(datum/proximity_monitor/advanced/timestop/sandevistan/field, datum/status_effect/cyberware_cascade_window/hint)
 	var/mob/living/host = field.host
-	var/datum/status_effect/cyberware_cascade_window/window = sandy_session_window(host)
+	var/datum/status_effect/cyberware_cascade_window/window = (hint?.owner == host) ? hint : sandy_session_window(host)
 	if(!window || !field.replay)
 		return null
 	var/datum/sandy_session/session = new

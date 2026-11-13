@@ -1241,7 +1241,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	owner.remove_client_colour(id) // the user sees the slowed world as it is
 	owner.add_filter(SANDY_STOP_OUTLINE, 2, outline_filter(1, "#5AFF96D2"))
 	if(field)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sandy_session_check_touch), field), world.tick_lag) // a crewmate's slow-mo this touches becomes one with it, once this window is on its owner (ware_sandy_timestop_shared.dm)
+		sandy_session_check_touch(field, src) // a crewmate's slow-mo this touches becomes one with it (ware_sandy_timestop_shared.dm)
 	return TRUE
 
 /**
