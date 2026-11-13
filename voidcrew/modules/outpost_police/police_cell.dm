@@ -410,7 +410,9 @@
 	// until it mends (decision 47).
 	if(world.time < override_until)
 		door.cell_take_over()
-		door.close(BYPASS_DOOR_CHECKS)
+		// An ordinary close, with the door's own sound; only a door left broken by a hack is forced shut
+		if(!door.close(FORCING_DOOR_CHECKS) && !QDELETED(door) && !door.density && !door.operating && (door.obj_flags & EMAGGED))
+			door.close(BYPASS_DOOR_CHECKS)
 	else
 		door.close(FORCING_DOOR_CHECKS)
 	if(!QDELETED(src) && !QDELETED(door) && !door.density)

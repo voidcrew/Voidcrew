@@ -7592,6 +7592,7 @@
 #include "voidcrew\modules\outpost_police\police_force.dm"
 #include "voidcrew\modules\outpost_police\police_hud.dm"
 #include "voidcrew\modules\outpost_police\police_life.dm"
+#include "voidcrew\modules\outpost_police\police_movement.dm"
 #include "voidcrew\modules\outpost_police\police_perception.dm"
 #include "voidcrew\modules\outpost_police\police_property.dm"
 #include "voidcrew\modules\outpost_police\police_units.dm"
