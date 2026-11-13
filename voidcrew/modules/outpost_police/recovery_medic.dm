@@ -28,6 +28,8 @@
 #define MEDIC_APPROACH_TRIES 3
 /// A patient given up waits this long before a medic looks at them again
 #define MEDIC_PATIENT_RETRY (60 SECONDS)
+/// With no patients left to treat they take the lift out after this long
+#define MEDIC_IDLE_LEAVE (45 SECONDS)
 /// The order the stacks are tried in once the bleeding is stopped: the bruises, the burns, then sutures for what brute is left
 #define MEDIC_STACK_ORDER list(/obj/item/stack/medical/bruise_pack, /obj/item/stack/medical/ointment, /obj/item/stack/medical/suture)
 
@@ -87,6 +89,8 @@
 	// On the station's radio net, as the morgue crew
 	stealth_radio = TRUE
 	routine = list(/datum/ambient_activity/treat_patient = 1)
+	/// world.time since when they have had no patient to treat, or 0
+	var/idle_since = 0
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
@@ -94,10 +98,68 @@
 	if(istype(card))
 		card.registered_name = real_name
 		card.update_label()
+	var/obj/item/radio/headset = ears
+	if(istype(headset))
+		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
 	var/section = outpost?.police?.profile?.voice_section
 	if(section)
 		dialogue_section = section
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/shift_times(delay)
+	. = ..()
+	idle_since = ambient_shifted(idle_since, delay)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/get_lines(context)
+	var/obj/structure/overmap/trader_outpost/outpost = medic_recovery()?.outpost || get_outpost()
+	var/section = outpost?.police?.profile?.voice_section
+	if(section)
+		dialogue_section = section
+	var/static/list/medic_contexts = list(
+		"idle" = TRUE,
+		"talk" = TRUE,
+		"work" = TRUE,
+		"chat" = TRUE,
+		"reply" = TRUE,
+		"attacked" = TRUE,
+		"violence" = TRUE,
+		"leave" = TRUE,
+	)
+	if(medic_contexts[context])
+		var/list/lines = ambient_dialogue_lines(dialogue_file, dialogue_section, "medic_[context]")
+		if(length(lines))
+			return outpost_fresh_lines(lines, last_line)
+	return ..()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/pick_conversation()
+	var/list/entry = ambient_dialogue_section(dialogue_file, dialogue_section)
+	var/list/conversations = entry?["medic_conversations"]
+	if(!length(conversations))
+		return null
+	var/list/conversation = pick(conversations)
+	if(!islist(conversation) || !istext(conversation["opener"]))
+		return null
+	var/list/replies = conversation["replies"]
+	return list(conversation["opener"], length(replies) ? pick(replies) : null)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/pick_activity()
+	var/datum/outpost_recovery/rec = medic_recovery()
+	var/mob/living/target = rec?.next_patient(src)
+	if(target && needs_checkpoint_cross(target))
+		idle_since = 0
+		var/datum/ambient_activity/cross = start_activity(new /datum/ambient_activity/cross_checkpoint(src))
+		if(cross)
+			return cross
+	var/datum/ambient_activity/job = start_activity(new /datum/ambient_activity/treat_patient(src))
+	if(job)
+		idle_since = 0
+		return job
+	if(!idle_since)
+		idle_since = max(world.time, 1)
+	if(world.time - idle_since >= MEDIC_IDLE_LEAVE && (!rec || !length(rec.patients())))
+		crew_radio(RECOVERY_LINE_LIFT)
+		return start_activity(new /datum/ambient_activity/leave(src))
+	return start_activity(new /datum/ambient_activity/idle(src))
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/death(gibbed)
 	var/was_alive = stat != DEAD
@@ -303,9 +365,11 @@
 		return null
 	return medic
 
-/// The patient `medic` should go to next: nobody else's, not waiting out a retry, the nearest. Null if none.
+/// The patient `medic` should go to next: nobody else's, not waiting out a retry, same side of the checkpoint first, then the nearest. Null if none.
 /datum/outpost_recovery/proc/next_patient(mob/living/medic)
 	var/turf/from = get_turf(medic)
+	var/datum/outpost_police/police = outpost?.police
+	var/medic_sector = (from && police) ? police.sector_of(from) : null
 	var/mob/living/best
 	var/best_distance = INFINITY
 	for(var/mob/living/patient as anything in patients())
@@ -317,6 +381,8 @@
 			continue
 		var/turf/where = get_turf(patient)
 		var/distance = (from && where.z == from.z) ? get_dist(from, where) : 500
+		if(police && medic_sector != police.sector_of(where))
+			distance += 200
 		if(distance < best_distance)
 			best = patient
 			best_distance = distance
@@ -452,13 +518,18 @@
 			go_to(get_turf(patient), 1)
 		return AMBIENT_STEP_MOVE
 	approach_tries = 0
-	// Nothing more in the kit for them: they wait with the patient while the epinephrine works
-	if(medic.next_treatment(patient))
-		begin_action(patient)
+	// Nothing more in the kit for them: they wait with the patient while the epinephrine works, else let them go for now
+	if(!medic.next_treatment(patient))
+		if(patient.reagents?.has_reagent(/datum/reagent/medicine/epinephrine))
+			return AMBIENT_STEP_CONTINUE
+		give_up()
+		return AMBIENT_STEP_DONE
+	begin_action(patient)
 	return AMBIENT_STEP_CONTINUE
 
 #undef MEDIC_JOB_TIMEOUT
 #undef MEDIC_ACTION_STUCK
 #undef MEDIC_APPROACH_TRIES
 #undef MEDIC_PATIENT_RETRY
+#undef MEDIC_IDLE_LEAVE
 #undef MEDIC_STACK_ORDER

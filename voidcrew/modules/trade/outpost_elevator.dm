@@ -184,9 +184,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	return TRUE
 
 /// Whether this rider may send the car to the floor. Only a standard berth's own crew, or the outpost's police, may go down to it.
-/obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
+/// The outpost's own security and recovery crews, on duty: they go down to any berth
+/proc/outpost_elevator_staff(mob/rider, obj/structure/overmap/outpost)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = rider
-	if(istype(cop) && cop.police?.outpost == outpost)
+	if(istype(cop))
+		return cop.police?.outpost == outpost
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = rider
+	return istype(worker) && worker.outpost_recovery?.outpost == outpost
+
+/obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
+	if(outpost_elevator_staff(rider, outpost))
 		return TRUE
 	var/datum/outpost_berth/destination_berth = outpost?.get_floor_berth(floor_id)
 	return !destination_berth || destination_berth.allows_entry(rider)
@@ -220,9 +227,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 		say("Berth [floor_id] is crew only.")
 		SStgui.update_uis(src)
 		return
-	// Police sent the car to a crew-only berth: only officers and whoever they hold come along, never hitchhikers
+	// Staff sent the car to a crew-only berth: only staff and whoever they hold come along, never hitchhikers
 	var/datum/outpost_berth/locked_berth = outpost.get_floor_berth(floor_id)
-	if(!istype(rider, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || !locked_berth || locked_berth.allows_entry(null))
+	if(!outpost_elevator_staff(rider, outpost) || !locked_berth || locked_berth.allows_entry(null))
 		locked_berth = null
 	var/list/active_pulls = list()
 	for(var/turf/source_turf as anything in own_alcove)
@@ -255,13 +262,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	playsound(destination[1], 'sound/machines/ding.ogg', 50, TRUE)
 	SStgui.update_uis(src)
 
-/// On a police ride to a crew-only berth: whether `passenger` goes along (officers, people an officer holds, and
-/// things with nobody inside who couldn't go themselves)
+/// On a staff ride to a crew-only berth: whether `passenger` goes along (staff, people an officer holds, bodies the
+/// morgue crew haul, and things with nobody inside who couldn't go themselves)
 /proc/outpost_elevator_police_passenger(atom/movable/passenger, datum/outpost_berth/berth)
 	for(var/mob/living/person in passenger.get_all_contents())
-		if(istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || berth.allows_entry(person))
+		if(istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery) || berth.allows_entry(person))
 			continue
 		if(person == passenger && istype(person.pulledby, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			continue
+		// A body in a morgue crew's bag (or on their gurney) goes where they take it
+		if(person.stat == DEAD && passenger != person && istype(passenger.pulledby, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
 			continue
 		return FALSE
 	return TRUE

@@ -535,3 +535,49 @@
 	TEST_ASSERT(!(worker in recovery.live_wave_workers()), "A worker a player went into still counts as the wave's")
 	recovery.retire_crew()
 	TEST_ASSERT(!worker.fading && !QDELETED(worker), "A worker a player went into was faded out with the crew")
+
+/// A free dead player alone holds CLEANUP open and calls a morgue wave; a guarded dead player does not block RESTAFF
+/datum/unit_test/voidcrew_outpost_recovery_player_body_cleanup
+
+/datum/unit_test/voidcrew_outpost_recovery_player_body_cleanup/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/dead_player = wanted_person(wanted_spot(2, 2))
+	dead_player.death()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "A player death in the box did not start TROUBLE") // OUTPOST_RECOVERY_TROUBLE
+	recovery.last_death_at = world.time - 3 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "TROUBLE did not move to CLEANUP after quiet") // OUTPOST_RECOVERY_CLEANUP
+
+	// CLEANUP stays open for an unguarded dead player and calls a morgue wave after a minute
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "CLEANUP ended early while an unguarded dead player lay on the floor")
+	recovery.quiet_since = world.time - 1 MINUTES
+	recovery.tick()
+	TEST_ASSERT(recovery.wave_active, "An unguarded dead player did not call a morgue wave")
+	TEST_ASSERT_EQUAL(recovery.wave_morgue_left, 2, "A player-only morgue wave did not queue two morgue workers")
+
+	// Abuse R7: a conscious crewmate standing over the body keeps CLEANUP from hanging
+	var/mob/living/carbon/human/guard_friend = wanted_person(wanted_spot(2, 3))
+	guard_friend.mock_client = allocate(/datum/client_interface)
+	TEST_ASSERT_EQUAL(length(recovery.player_bodies_due()), 0, "A guarded player body counted as due for morgue collection")
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 3, "A guarded player body blocked RESTAFF") // OUTPOST_RECOVERY_RESTAFF
+
+/// A wave whose workers all left without dying (the lift out when idle) is over, so another can come
+/datum/unit_test/voidcrew_outpost_recovery_wave_stalled
+
+/datum/unit_test/voidcrew_outpost_recovery_wave_stalled/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	recovery_corpse(outpost, wanted_spot(1, 1))
+	recovery.state = 2 // OUTPOST_RECOVERY_CLEANUP
+	recovery.quiet_since = world.time - 2 MINUTES
+	recovery.wave_active = TRUE
+	recovery.wave_morgue_left = 0
+	recovery.wave_janitors_left = 0
+	recovery.wave_medics_left = 0
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/fled = recovery_worker(outpost, wanted_spot(2, 2))
+	qdel(fled)
+	recovery.tick_cleanup()
+	TEST_ASSERT(!recovery.wave_active, "A wave with no pending or living workers stayed active forever")

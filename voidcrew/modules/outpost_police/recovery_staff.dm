@@ -184,15 +184,11 @@
 /datum/outpost_recovery/proc/send_keeper(datum/outpost_recovery_post/post)
 	if(!ispath(post.keeper_type, /mob/living) || !post.spot)
 		return
-	var/turf/arrival
-	if(post.kind == RECOVERY_POST_GUARD)
+	var/turf/arrival = keeper_arrival_turf()
+	if(!arrival && post.kind == RECOVERY_POST_GUARD && !post.spot.is_blocked_turf(exclude_mobs = FALSE) && !human_npc_watched(post.spot))
 		arrival = post.spot
-		if(!arrival || arrival.is_blocked_turf(exclude_mobs = FALSE))
-			return
-	else
-		arrival = keeper_arrival_turf()
-		if(!arrival)
-			return
+	if(!arrival)
+		return
 	var/mob/living/replacement = new post.keeper_type(arrival)
 	post.replacement = WEAKREF(replacement)
 	post.replacement_at = world.time

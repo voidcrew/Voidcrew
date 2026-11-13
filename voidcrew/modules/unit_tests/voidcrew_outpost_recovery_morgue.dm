@@ -201,3 +201,56 @@
 	empty_bag.open()
 	empty_bag.close()
 	TEST_ASSERT(QDELETED(empty_bag), "An empty crew bag stayed after it was shut")
+
+/// Concourse player haul walks to the morgue tray instead of riding a lift; empty bags do not block trays; revived players escape shut trays
+/datum/unit_test/voidcrew_outpost_recovery_morgue_tray_escape_and_no_ride
+
+/datum/unit_test/voidcrew_outpost_recovery_morgue_tray_escape_and_no_ride/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_recovery/recovery = outpost.ensure_recovery()
+	var/turf/body_turf = morgue_floor(outpost)
+	TEST_ASSERT_NOTNULL(body_turf, "No concourse floor for the player body")
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/consistent, body_turf)
+	body.mind_initialize()
+	body.death()
+	recovery.player_dead += WEAKREF(body)
+
+	var/turf/stand = morgue_beside(body_turf)
+	TEST_ASSERT_NOTNULL(stand, "No floor beside the player body")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/worker = morgue_worker(outpost, stand)
+	var/datum/ambient_activity/recover_body/job = worker.start_activity(new /datum/ambient_activity/recover_body(worker))
+	TEST_ASSERT_NOTNULL(job, "The worker could not start on the concourse player body")
+	TEST_ASSERT(job.bag_body(), "The worker did not bag the concourse player body")
+	TEST_ASSERT(job.pick_goal(body), "The worker found no morgue goal from the concourse")
+	TEST_ASSERT_EQUAL(job.goal_kind, "tray", "A concourse player haul chose [job.goal_kind] instead of walking to a morgue tray") // MORGUE_GOAL_TRAY
+	worker.end_activity()
+
+	// Exit gate lets recovery workers path from concourse to lobby while still holding ordinary townsfolk in
+	var/obj/structure/outpost_exit_gate/gate = locate() in block(outpost.template_bottom_left, locate(outpost.template_bottom_left.x + outpost.outpost_template.width - 1, outpost.template_bottom_left.y + outpost.outpost_template.height - 1, outpost.template_bottom_left.z))
+	if(gate)
+		var/datum/can_pass_info/worker_pass = new(worker)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/customer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, stand)
+		var/datum/can_pass_info/customer_pass = new(customer)
+		TEST_ASSERT(gate.CanAStarPass(REVERSE_DIR(gate.dir), worker_pass), "Exit gate blocked a recovery worker pathing to the lobby")
+		TEST_ASSERT(!gate.CanAStarPass(REVERSE_DIR(gate.dir), customer_pass), "Exit gate allowed a non-leaving customer to path out")
+		qdel(customer)
+
+	// Empty body bag does not block morgue_tray_free(), and a revived player escapes a closed crew bag inside a closed tray
+	var/turf/corner = run_loc_floor_bottom_left
+	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, locate(corner.x + 1, corner.y + 1, corner.z))
+	tray.setDir(EAST)
+	var/obj/structure/closet/body_bag/leftover = allocate(/obj/structure/closet/body_bag, tray)
+	TEST_ASSERT(morgue_tray_free(tray), "An empty body bag inside a morgue tray marked it full")
+	qdel(leftover)
+
+	var/obj/structure/closet/body_bag/outpost_morgue/bag = body.loc
+	TEST_ASSERT(istype(bag), "Setup: player is not in a crew bag")
+	bag.forceMove(tray)
+	TEST_ASSERT_EQUAL(bag.loc, tray, "Setup: crew bag is not inside the closed morgue tray")
+	body.revive(ADMIN_HEAL_ALL)
+	TEST_ASSERT_EQUAL(body.stat, CONSCIOUS, "Setup: revived player is not conscious")
+	bag.relaymove(body, EAST)
+	TEST_ASSERT(isturf(bag.loc), "Revived player pressing move did not slide the morgue tray open")
+	TEST_ASSERT(bag.opened && isturf(body.loc), "Revived player pressing move did not open the crew bag onto the floor")

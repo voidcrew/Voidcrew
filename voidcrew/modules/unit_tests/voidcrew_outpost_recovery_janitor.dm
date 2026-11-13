@@ -290,3 +290,29 @@
 	janitor.shift_times(5 MINUTES)
 	TEST_ASSERT_EQUAL(LAZYACCESS(janitor.cleaning_gave_up, tile), until + 5 MINUTES, "A given-up tile's wait ran on while nobody was there")
 	TEST_ASSERT_EQUAL(janitor.idle_since, idle + 5 MINUTES, "The janitor's idle clock ran on while nobody was there")
+
+/// Morgue workers and medics speak their own lines in every zone, not the janitors'
+/datum/unit_test/voidcrew_outpost_recovery_crew_voices
+
+/datum/unit_test/voidcrew_outpost_recovery_crew_voices/Run()
+	var/file = "outpost_recovery.json" // AMBIENT_STRINGS_RECOVERY
+	var/list/role_kinds = list("idle", "talk", "work", "chat", "reply", "attacked", "violence", "leave")
+	for(var/section in list("halcyon", "quartermain", "undertow"))
+		for(var/prefix in list("morgue", "medic"))
+			for(var/kind in role_kinds)
+				var/key = "[prefix]_[kind]"
+				var/list/lines = ambient_dialogue_lines(file, section, key)
+				TEST_ASSERT(length(lines) >= 4, "[section] has fewer than four [key] lines")
+				for(var/line in lines)
+					TEST_ASSERT(istext(line) && length(line) <= 72, "[section] [key] has an invalid or overlong line: [line]")
+					TEST_ASSERT(!findtext(line, "%"), "[section] [key] has an unfilled placeholder: [line]")
+			var/list/entry = ambient_dialogue_section(file, section)
+			TEST_ASSERT(length(entry["[prefix]_conversations"]), "[section] has no [prefix]_conversations")
+
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/medic = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic, pa_tile(1, 0), place)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/morgue = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue, pa_tile(2, 0), place)
+	TEST_ASSERT(!(medic.get_lines("attacked")[1] in janitor.get_lines("attacked")), "A medic uses janitor mop lines when attacked")
+	TEST_ASSERT(!(morgue.get_lines("attacked")[1] in janitor.get_lines("attacked")), "A morgue worker uses janitor mop lines when attacked")
