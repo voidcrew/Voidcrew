@@ -218,3 +218,26 @@
 	lines[STEALTH_BARK_HOSTAGE_RELEASED] = list("Now!", "Take them!", "Get clear!")
 	emotes[STEALTH_BARK_HOSTAGE] = list("raises a hand slowly.", "keeps their gun low.")
 	emotes[STEALTH_BARK_HOSTAGE_DROP] = list("lets their weapon fall.")
+
+// ---------------------------------------------------------------------------------------------
+// Held at gunpoint, held upright (decision 62)
+
+/**
+ * tg's neck grab floors the held body (TRAIT_FLOORED from CHOKEHOLD_TRAIT). Held at gunpoint as a hostage, it is held
+ * up on its feet instead: still tg's chokehold (immobilized, hands blocked), only not floored, so it stands in front of
+ * its holder and takes the shots that come at them (tg's projectiles skip a floored, pinned body). Settled every time
+ * tg places a held body (the grab, each step, each turn); tg's own release clears the chokehold either way.
+ */
+/mob/living/set_pull_offsets(mob/living/mob_to_set, grab_state = GRAB_PASSIVE, animate = TRUE)
+	stealth_hold_upright(mob_to_set)
+	return ..()
+
+/// Lifts `held` off the floor while this mob holds it at gunpoint, and puts tg's chokehold floor back when it doesn't.
+/mob/living/proc/stealth_hold_upright(mob/living/held)
+	if(!isliving(held) || pulling != held)
+		return
+	if(stealth_hostage_of(src) == held)
+		if(HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
+			REMOVE_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
+	else if(grab_state >= GRAB_NECK && !HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
+		ADD_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
