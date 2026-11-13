@@ -239,7 +239,17 @@
 	user.forceMove(other_mech) // moved_inside() wants a client
 	if(!other_mech.is_occupant(user))
 		other_mech.add_occupant(user)
-	sleep(0.3 SECONDS)
+	// Two of the field's own ticks after the climb (its clock is a looping timer, which can run late under load).
+	var/climbed = world.time
+	var/until = world.time + 2 SECONDS
+	var/ticks_seen = 0
+	var/last_seen = field.last_tick
+	while(ticks_seen < 2 && world.time < until && !QDELETED(field))
+		sleep(world.tick_lag)
+		if(field.last_tick != last_seen && field.last_tick > climbed)
+			ticks_seen++
+			last_seen = field.last_tick
+	TEST_ASSERT(ticks_seen >= 2, "Test fixture: the field stopped ticking")
 	TEST_ASSERT(!field.held_mechs[other_mech], "A mech the user climbed into stayed slowed")
 	TEST_ASSERT(!tinted(other_mech), "A mech the user climbed into stayed tinted")
 	other_mech.mob_exit(user, silent = TRUE)

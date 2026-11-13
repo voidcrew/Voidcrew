@@ -426,6 +426,9 @@
 	var/mob/living/carbon/human/user = make_user(spot(0, 1), "sandyreplayexec")
 	set_window(user, 4 SECONDS)
 	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	// An execution round goes through tg's hit-zone roll (projectile.dm, ran_zone at 93% a tile away): about one in
+	// fifteen lands on another limb and does nothing to the head. That is the execution's own problem, not the slow-mo's.
+	ADD_TRAIT(victim, TRAIT_DESIGNATED_TARGET, "sandy_replay_test")
 	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
 	TEST_ASSERT(user.put_in_active_hand(pistol), "Test fixture: the pistol wouldn't go in the user's hand")
 	user.zone_selected = BODY_ZONE_HEAD
@@ -745,7 +748,11 @@
 	TEST_ASSERT(!QDELETED(shot), "The shot was gone after the replay")
 	TEST_ASSERT(!shot.paused, "The shot is still held after the replay")
 	TEST_ASSERT(!GLOB.sandy_replay_masked[shot], "The shot is still drawn from the recording")
-	TEST_ASSERT_EQUAL(shot.pixel_x, real_x, "The shot isn't back on its real spot")
+	// Back on its real spot when the replay let it go; it may have flown on east since (it is not held any more), but
+	// never sits behind where it was held (a recorded frame left on it).
+	var/real_spot = held_at.x * ICON_SIZE_X + real_x
+	var/now_spot = shot.x * ICON_SIZE_X + shot.pixel_x
+	TEST_ASSERT(now_spot >= real_spot, "The shot isn't back on its real spot ([now_spot - real_spot] px)")
 	TEST_ASSERT(shot.pixel_w == 0 && shot.pixel_z == 0 && shot.alpha > 0, "The shot is left drawn off its spot, or hidden")
 	sleep(0.3 SECONDS)
 	TEST_ASSERT(QDELETED(shot) || get_turf(shot) != held_at, "The shot didn't fly on after the replay")
