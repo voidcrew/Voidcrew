@@ -261,6 +261,7 @@
 	var/obj/item/second = shop.holdup_take(trader, person)
 	if(had_item)
 		TEST_ASSERT_NOTNULL(second, "An empty till with a cheap item on the shelf gave nothing")
+		TEST_ASSERT(is_trader_good(second), "A shelf item handed over at gunpoint was not stamped as trader goods")
 	else
 		TEST_ASSERT_NULL(second, "An empty till gave something with no cheap item on the shelf")
 	TEST_ASSERT_EQUAL(stock_before - shelf_stock(), had_item ? 1 : 0, "The shelf stock did not fall by one for the item")
@@ -458,6 +459,68 @@
 	TEST_ASSERT(QDELETED(chip), "The stolen takings were not taken out of the world")
 	TEST_ASSERT_EQUAL(shop.till_ready_at, 0, "The till is not full again once its takings are back")
 	qdel(shop.holdup)
+
+/// A stolen chip split down to 1 cr and seized gives back only its share of the till's wait, not the whole till
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_takings_partial_return
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_takings_partial_return/Run()
+	if(!holdup_fixture())
+		return
+	if(!hold_up())
+		return
+	var/pay = round(200 * police.profile.fine_multiplier)
+	shop.holdup.hand_over(trader, person)
+	var/obj/item/holochip/chip = robbed_chip()
+	TEST_ASSERT_NOTNULL(chip, "The till gave the robber nothing")
+	chip.spend(pay - 1, TRUE) // the rest split off onto a chip nobody tracks
+	var/obj/item/outpost_sealed_case/evidence/small_case = allocate(/obj/item/outpost_sealed_case/evidence)
+	small_case.police_ref = WEAKREF(police)
+	TEST_ASSERT(small_case.add_evidence(chip, person), "Could not seize the 1 cr chip")
+	police.evidence_empty_case(small_case, get_turf(person))
+	TEST_ASSERT(shop.till_ready_at > world.time + 15000, "Returning 1 cr refilled the 30 minute till")
+	TEST_ASSERT_NOTNULL(shop.till_robbed_by, "Returning 1 cr cleared till_robbed_by")
+	qdel(shop.holdup)
+
+/// Lowering the gun unpauses the trader's AI while keeping the first robber's alarm, and a second robber can still hold the trader up
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_second_robber
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_second_robber/Run()
+	if(!holdup_fixture())
+		return
+	if(!hold_up())
+		return
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	first_hold.hand_over(trader, person)
+	trader.apply_status_effect(/datum/status_effect/grouped/heldup, REF(person))
+	trader.remove_status_effect(/datum/status_effect/grouped/heldup, REF(person))
+	TEST_ASSERT(!HAS_TRAIT_FROM(trader, TRAIT_AI_PAUSED, REF(first_hold)), "Trader stayed AI-paused after gunpoint ended")
+
+	var/mob/living/carbon/human/second_robber = mind_person(get_turf(person))
+	var/obj/item/gun/energy/disabler/second_gun = allocate(/obj/item/gun/energy/disabler)
+	second_robber.put_in_hands(second_gun)
+	shop.held_up(trader, second_robber, second_gun)
+	TEST_ASSERT(shop.holdup && shop.holdup != first_hold, "A second robber aiming at the trader started no hold-up")
+	TEST_ASSERT(HAS_TRAIT_FROM(trader, TRAIT_AI_PAUSED, REF(shop.holdup)), "Trader did not pause for the second robber's gunpoint")
+	shop.raise_holdup_alarm(trader)
+	TEST_ASSERT_EQUAL(police.get_stars(person.mind), 2, "First robber's alarm was lost when a second robber aimed")
+	TEST_ASSERT_EQUAL(police.get_stars(second_robber.mind), 2, "Second robber's alarm did not fire")
+	if(!QDELETED(first_hold))
+		qdel(first_hold)
+	if(!QDELETED(shop.holdup))
+		qdel(shop.holdup)
+
+/// Crowbarring or emagging the inner door while the gate is already down from a scanner emag never starts a breach
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_down_no_breach
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/gate_down_no_breach/Run()
+	if(!gate_fixture())
+		return
+	quiet_witnesses(checkpoint.sensor)
+	TEST_ASSERT(checkpoint.sensor.emag_act(person, emag), "An emag on the wall scanner did nothing")
+	TEST_ASSERT(!checkpoint.inner_door.emag_act(person, emag), "The inner door took an emag while the gate was already down")
+	var/obj/item/crowbar/crowbar = allocate(/obj/item/crowbar, person)
+	TEST_ASSERT_EQUAL(checkpoint.inner_door.crowbar_act(person, crowbar), ITEM_INTERACT_SUCCESS, "Crowbarring a disabled inner door failed")
+	TEST_ASSERT(!checkpoint.forcing && checkpoint.state != "forced", "Crowbarring a disabled inner door started a forced breach") // CHECKPOINT_FORCED
 
 /// Every zone has four or more lines for each kind, and an alarm line that needs no place or look
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines

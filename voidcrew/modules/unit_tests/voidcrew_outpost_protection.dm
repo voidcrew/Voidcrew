@@ -292,6 +292,15 @@
 	TEST_ASSERT_NULL(outpost.self_defense_targets[bomber.mind], "The bombed visitor was counted as the attacker")
 	apply_blast()
 
+	// A visitor inside a blast-vulnerable closet on outpost ground is still counted among blast victims
+	var/mob/living/carbon/human/consistent/crated = allocate(/mob/living/carbon/human/consistent, get_step(epicenter, WEST))
+	crated.mind_initialize()
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, get_step(epicenter, WEST))
+	crated.forceMove(crate)
+	var/list/caught = note_outpost_blast_victims(get_step(epicenter, WEST), null)
+	TEST_ASSERT(crated in caught, "A living person inside a crate on blasted outpost ground was missed")
+	crated.forceMove(get_step(epicenter, WEST))
+
 /datum/unit_test/voidcrew_outpost_protection/fixtures/Run()
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, protected_turf)
 	door.AddElement(/datum/element/outpost_property)

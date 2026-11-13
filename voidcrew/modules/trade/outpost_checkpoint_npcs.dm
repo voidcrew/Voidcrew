@@ -82,11 +82,12 @@
 	var/turf/inner_turf = get_turf(post.inner_door)
 	var/turf/outer_turf = get_turf(post.outer_door)
 	// In the chamber: through the inner door once it opens, asking for a scan if nobody has
+	var/free_pass = post.is_disabled() || post.state == CHECKPOINT_FORCED
 	if(here == inner_turf || (here in post.chamber_turfs))
 		if(here == inner_turf || (!post.inner_door.density && !post.inner_door.operating))
 			go_to(concourse_step(post))
 			return AMBIENT_STEP_MOVE
-		if(post.state == CHECKPOINT_IDLE && post.outer_door.density && !post.outer_door.operating && world.time >= next_ask_at)
+		if((post.is_disabled() || (post.state == CHECKPOINT_IDLE && post.outer_door.density && !post.outer_door.operating)) && !post.inner_door.operating && world.time >= next_ask_at)
 			next_ask_at = world.time + OUTPOST_CHECKPOINT_NPC_ASK_GAP
 			post.request_cycle(doer)
 		return AMBIENT_STEP_CONTINUE
@@ -95,13 +96,13 @@
 		go_to(post.lobby_turf, 1)
 		return AMBIENT_STEP_MOVE
 	var/outer_open = !post.outer_door.density && !post.outer_door.operating
-	if(here == outer_turf || (outer_open && post.state == CHECKPOINT_IDLE))
+	if(here == outer_turf || (outer_open && (post.state == CHECKPOINT_IDLE || free_pass)))
 		var/turf/entry = chamber_entry(post)
 		if(entry)
 			go_to(entry)
 			return AMBIENT_STEP_MOVE
 		return AMBIENT_STEP_CONTINUE
-	if(post.state == CHECKPOINT_IDLE && !outer_open && post.inner_door.density && !post.outer_door.operating && !post.inner_door.operating && world.time >= next_ask_at)
+	if(!outer_open && !post.outer_door.operating && (free_pass || (post.state == CHECKPOINT_IDLE && post.inner_door.density && !post.inner_door.operating)) && world.time >= next_ask_at)
 		next_ask_at = world.time + OUTPOST_CHECKPOINT_NPC_ASK_GAP
 		post.request_outer(doer)
 	return AMBIENT_STEP_CONTINUE

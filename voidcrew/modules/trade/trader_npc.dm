@@ -71,6 +71,11 @@
 	var/dressed_for_shop = FALSE
 	/// The first keeper of their counter: only they drop anything when killed
 	var/first_keeper = FALSE
+	/// Last thrown item that struck us, and the tick it landed, for on_attacked() weapon attribution
+	var/datum/weakref/struck_source_ref
+	var/struck_source_at = -1
+	/// world.time we died, so a lethal blow's synchronous on_attacked() still counts while later corpse hits do not
+	var/died_at = -1
 	/// Minimum delay between idle chatter lines
 	COOLDOWN_DECLARE(idle_line_cooldown)
 	/// Minimum delay between any spoken lines (don't spam on bulk purchases)
@@ -82,6 +87,7 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/Initialize(mapload, datum/human_npc_order/order)
 	if(shop)
 		take_shop_look()
+	RegisterSignal(src, COMSIG_ATOM_PREHITBY, PROC_REF(note_thrown_at))
 	. = ..()
 	// NOMOBSWAP stops help-intent walkers from place-swapping through the counter
 	ADD_TRAIT(src, TRAIT_NOMOBSWAP, INNATE_TRAIT)
@@ -289,6 +295,7 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_revived(datum/source, full_heal_flags)
 	SIGNAL_HANDLER
+	died_at = -1
 	guard_alive(TRUE)
 	if(shop?.keeper?.resolve() == src && home)
 		leash_to(home)
@@ -340,6 +347,8 @@
 	// outpost may legitimately be null: standalone stalls (the colosseum's
 	// lanista) run a shop with no station behind it
 	if(!shop || !is_serving())
+		if(shop && stat == CONSCIOUS && !QDELETED(user))
+			balloon_alert(user, "counter's closed!")
 		return
 	if(outpost?.is_user_barred(user))
 		speak_line(TRADER_LINE_REFUSAL)
@@ -436,10 +445,57 @@
 	return ..()
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE, blocked = 0)
-	if(outpost && stat != DEAD && isliving(hitting_projectile.firer))
-		var/obj/item/fired_from = hitting_projectile.fired_from
-		outpost.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_ASSAULT_STAFF, src, isitem(fired_from) ? fired_from : null)
+	if(outpost && stat != DEAD && hitting_projectile.is_hostile_projectile())
+		var/mob/living/shooter
+		if(isliving(hitting_projectile.firer))
+			shooter = hitting_projectile.firer
+		else if(ismecha(hitting_projectile.firer))
+			var/obj/vehicle/sealed/mecha/mech = hitting_projectile.firer
+			for(var/mob/living/pilot in mech.return_drivers())
+				shooter = pilot
+				break
+		if(shooter)
+			var/obj/item/fired_from = hitting_projectile.fired_from
+			outpost.register_aggression(shooter, OUTPOST_CRIME_ASSAULT_STAFF, src, isitem(fired_from) ? fired_from : null)
 	return ..()
+
+/// Thrown items land before hitby() deals damage, so a lethal throw still records the trader as victim before death()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/note_thrown_at(datum/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	if(!isitem(hit_atom))
+		return
+	var/obj/item/hit_item = hit_atom
+	struck_source_ref = WEAKREF(hit_item)
+	struck_source_at = world.time
+	if(hit_item.throwforce && outpost && stat != DEAD)
+		var/mob/living/thrower = throwingdatum?.get_thrower()
+		if(isliving(thrower))
+			outpost.register_aggression(thrower, OUTPOST_CRIME_ASSAULT_STAFF, src, hit_item)
+
+// Traders have no ambient `place`, so stamina hits (stunbatons), shoves, thrown items, hulks, mechs and animals report here
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/on_attacked(datum/source, atom/attacker, attack_flags)
+	SIGNAL_HANDLER
+	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))
+		return
+	if(stat == DEAD && died_at != world.time)
+		return
+	var/mob/living/hitter
+	if(isliving(attacker))
+		hitter = attacker
+	else if(ismecha(attacker))
+		var/obj/vehicle/sealed/mecha/mech = attacker
+		for(var/mob/living/pilot in mech.return_drivers())
+			hitter = pilot
+			break
+	if(outpost && hitter && hitter != src)
+		var/obj/item/weapon = (struck_source_at == world.time) ? struck_source_ref?.resolve() : null
+		if(!weapon && !(attack_flags & ATTACKER_SHOVING))
+			var/obj/item/held = hitter.get_active_held_item()
+			if(held && (held.force > 0 || (attack_flags & ATTACKER_STAMINA_ATTACK)))
+				weapon = held
+		outpost.register_aggression(hitter, OUTPOST_CRIME_ASSAULT_STAFF, src, weapon)
+	place?.npc_attacked(src, attacker, attack_flags)
+	react_attacked(hitter || attacker)
 
 // Hurt: a line, then down behind the counter, or off to the lift when it is bad (a guard stays in the booth)
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/react_attacked(atom/attacker)
@@ -454,7 +510,7 @@
 
 // A fight near the counter
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/react_violence(mob/living/offender)
-	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/leave) || !reaction_ready("violence"))
+	if(stat != CONSCIOUS || fading || has_status_effect(/datum/status_effect/grouped/heldup) || istype(activity, /datum/ambient_activity/leave) || !reaction_ready("violence"))
 		return
 	duck(offender)
 
@@ -465,7 +521,7 @@
 
 /// Down behind the counter for a while, facing the trouble
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/duck(atom/trouble)
-	if(istype(activity, /datum/ambient_activity/leave))
+	if(istype(activity, /datum/ambient_activity/leave) || has_status_effect(/datum/status_effect/grouped/heldup))
 		return
 	if(!istype(activity, /datum/ambient_activity/trader_duck) && !start_activity(new /datum/ambient_activity/trader_duck(src)))
 		return
@@ -493,8 +549,11 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/death(gibbed)
 	var/was_alive = stat != DEAD
+	if(was_alive)
+		died_at = world.time
 	. = ..()
 	if(!was_alive || stat != DEAD)
+		died_at = -1
 		return
 	guard_alive(FALSE)
 	shop?.update_signs()
@@ -531,7 +590,7 @@
 		return null
 	var/list/datum/shop_sku/eligible = list()
 	for(var/datum/shop_sku/sku as anything in shop.skus)
-		if(sku.stock <= 0 || sku.shelf == SHELF_FAVOR || sku.price_vouchers > 0 || sku.is_chart)
+		if(sku.stock - sku.reserved_stock <= 0 || sku.shelf == SHELF_FAVOR || sku.price_vouchers > 0 || sku.is_chart)
 			continue
 		if(istype(sku, /datum/shop_sku/barter) || !ispath(sku.item_path, /obj/item))
 			continue
