@@ -11,13 +11,24 @@
 	name = "evidence locker"
 	desc = "A locker for seized goods."
 	anchored = TRUE
+	anchorable = FALSE
+	can_weld_shut = FALSE
+	can_install_electronics = FALSE
+	divable = FALSE
+	paint_jobs = null
+	delivery_icon = null
 	req_access = list(ACCESS_OUTPOST_POLICE)
 	/// Weakrefs to the seized items put in here that have not been taken out by a hand yet
 	var/list/watched
+	/// Weakref of watched item -> weakref of the first unauthorised mind that took it
+	var/list/first_takers
 
 /obj/structure/closet/secure_closet/outpost_evidence/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/outpost_property)
+
+/obj/structure/closet/secure_closet/outpost_evidence/PopulateContents()
+	return
 
 /obj/structure/closet/secure_closet/outpost_evidence/Destroy()
 	for(var/datum/weakref/ref as anything in watched)
@@ -25,6 +36,7 @@
 		if(thing)
 			UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
 	watched = null
+	first_takers = null
 	return ..()
 
 /**
@@ -96,19 +108,28 @@
 	if(!opened && !broken && !locked && !(locate(/mob/living) in src))
 		lock()
 		update_appearance()
+	else if(opened && !broken)
+		addtimer(CALLBACK(src, PROC_REF(shut_when_clear)), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
 	return TRUE
 
-/// Watches `thing` until a hand takes it out
+/// Watches `thing` (and any items inside it) until an unauthorised hand takes it out
 /obj/structure/closet/secure_closet/outpost_evidence/proc/watch(obj/item/thing)
-	var/datum/weakref/ref = WEAKREF(thing)
-	if(ref in watched)
-		return
-	LAZYADD(watched, ref)
-	RegisterSignal(thing, COMSIG_MOVABLE_MOVED, PROC_REF(on_watched_moved))
+	for(var/obj/item/part as anything in thing.get_all_contents_type(/obj/item))
+		if(QDELETED(part) || isorgan(part) || isbodypart(part))
+			continue
+		var/datum/weakref/ref = WEAKREF(part)
+		LAZYREMOVE(first_takers, ref)
+		if(ref in watched)
+			continue
+		LAZYADD(watched, ref)
+		RegisterSignal(part, COMSIG_MOVABLE_MOVED, PROC_REF(on_watched_moved))
 
 /obj/structure/closet/secure_closet/outpost_evidence/proc/unwatch(obj/item/thing)
-	LAZYREMOVE(watched, WEAKREF(thing))
-	UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
+	for(var/obj/item/part as anything in thing.get_all_contents_type(/obj/item))
+		var/datum/weakref/ref = WEAKREF(part)
+		LAZYREMOVE(watched, ref)
+		LAZYREMOVE(first_takers, ref)
+		UnregisterSignal(part, COMSIG_MOVABLE_MOVED)
 
 /// A seized item moved. Inside, or lying where an open door spilled it, is fine; in a hand it has been taken.
 /obj/structure/closet/secure_closet/outpost_evidence/proc/on_watched_moved(obj/item/source, atom/old_loc, movement_dir, forced, list/old_locs)
@@ -116,11 +137,28 @@
 	if(QDELETED(source) || QDELETED(src) || !source.loc)
 		return
 	var/atom/movable/top = get_atom_on_turf(source)
+	if(top == src)
+		for(var/obj/item/part as anything in source.get_all_contents_type(/obj/item))
+			LAZYREMOVE(first_takers, WEAKREF(part))
+		return
 	if(!isliving(top))
 		return
-	unwatch(source)
 	var/mob/living/taker = top
 	// Officers, and anyone with police access, may take what they like
-	if(istype(taker, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || allowed(taker) || !taker.mind)
+	if(istype(taker, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || allowed(taker))
+		unwatch(source)
 		return
+	if(!taker.mind)
+		return
+	var/datum/weakref/item_ref = WEAKREF(source)
+	var/datum/weakref/taker_ref = WEAKREF(taker.mind)
+	var/datum/weakref/first = LAZYACCESS(first_takers, item_ref)
+	if(first && first != taker_ref)
+		return
+	for(var/obj/item/part as anything in source.get_all_contents_type(/obj/item))
+		var/datum/weakref/part_ref = WEAKREF(part)
+		if((part_ref in watched) && !LAZYACCESS(first_takers, part_ref))
+			LAZYSET(first_takers, part_ref, taker_ref)
+	LAZYREMOVE(watched, item_ref)
+	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 	evidence_police()?.report_crime(taker, OUTPOST_CRIME_LOCKER_THEFT, null, source)

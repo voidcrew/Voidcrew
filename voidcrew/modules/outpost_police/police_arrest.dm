@@ -1188,7 +1188,7 @@
 	if(!suspect || !keep_pulling(officer, suspect))
 		return
 	make_way(officer, suspect)
-	var/turf/door = police.cell_door_turf()
+	var/turf/door = police.cell_door_turf(officer)
 	if(!door || route_to(officer, door, 1))
 		set_step(CASE_STEP_BOOK)
 
@@ -1204,7 +1204,7 @@
 		return
 	// Booked only when brought to the door in hand. Got away and caught somewhere else, they are walked back to it
 	// first: booking never moves anyone further than through the door (review-1 S2)
-	var/turf/door = police.cell_door_turf()
+	var/turf/door = police.cell_door_turf(officer)
 	if(officer.pulling != suspect || (door && (officer.z != door.z || get_dist(officer, door) > 1)))
 		set_step(CASE_STEP_DESK)
 		return
@@ -1359,7 +1359,7 @@
 	var/obj/item/found = police.confiscate(suspect, officer)
 	if(QDELETED(src))
 		return
-	if(QDELETED(found) && !QDELETED(suspect) && length(police.evidence_candidates(suspect)))
+	if(QDELETED(found) && !QDELETED(suspect) && length(police.evidence_candidates(suspect, officer)))
 		// Broken off with the crime tools still on them: searched again
 		return
 	searched = TRUE
