@@ -346,6 +346,7 @@
 /datum/unit_test/voidcrew_outpost_recovery_keeper_played_and_container_turnaround/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
 	r1_site(outpost)
+	outpost.loaded = TRUE
 	var/datum/outpost_recovery/recovery = outpost.recovery
 	var/datum/outpost_shop/shop = outpost.ensure_main_shop()
 	var/turf/counter = wanted_spot(2, 2)

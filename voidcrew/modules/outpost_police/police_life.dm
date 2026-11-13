@@ -934,7 +934,8 @@
 	if((locate(/obj/machinery/door) in tile) || (locate(/obj/structure/outpost_exit_gate) in tile) || (locate(/obj/effect/landmark/outpost_checkpoint_chamber) in tile))
 		return FALSE
 	var/obj/structure/overmap/trader_outpost/keep = police?.outpost || get_outpost()
-	for(var/datum/outpost_checkpoint/gate as anything in keep?.checkpoints)
+	for(var/checkpoint_id in keep?.checkpoints)
+		var/datum/outpost_checkpoint/gate = keep.checkpoints[checkpoint_id]
 		if(tile in gate?.chamber_turfs)
 			return FALSE
 	if(police && (police.dispatch_is_lift_tile(tile) || police.life_in_cell(tile)))

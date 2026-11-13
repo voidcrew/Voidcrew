@@ -859,7 +859,8 @@
 	voice.context_free_at.Cut()
 	voice.text_free_at.Cut()
 	police.lift_turfs = list(pa_tile(0, 4))
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/responder = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, pa_tile(1, 0))
+	// The test room is no sector an officer walks out of, so the responder already stands in the lift
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/responder = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, pa_tile(0, 4))
 	police_headset_on(responder)
 	police.cases[suspect.mind] = case
 	police.dispatch_stand_down(0, null)

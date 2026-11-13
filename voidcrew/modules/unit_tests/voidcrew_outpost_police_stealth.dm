@@ -237,13 +237,13 @@
 	police.recent_reports.Cut()
 	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", victim), "A trader away from their counter reported instantaneously instead of queueing a civilian report")
 	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "An off-counter trader queued [length(police.pending_reports)] pending reports, not 1")
-	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An off-counter trader's delayed report put heat on immediately")
+	TEST_ASSERT(!police.get_warrant(brawler.mind)?.heat, "An off-counter trader's delayed report put heat on immediately") // a closed warrant may stay on file at no heat
 
 	var/datum/outpost_pending_report/pending = police.pending_reports[1]
 	pending.due = world.time - 1
 	keeper.set_stat(UNCONSCIOUS)
 	police.tick_warrants()
-	TEST_ASSERT_NULL(police.get_warrant(brawler.mind), "An unconscious off-counter trader still delivered their delayed report")
+	TEST_ASSERT(!police.get_warrant(brawler.mind)?.heat, "An unconscious off-counter trader still delivered their delayed report") // a closed warrant may stay on file at no heat
 	keeper.set_stat(CONSCIOUS)
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "An awake off-counter trader's delayed report never landed once due")

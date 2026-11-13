@@ -261,7 +261,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	for(var/list/saved_pull as anything in active_pulls)
 		var/mob/living/puller = saved_pull[1]
 		var/atom/movable/pullee = saved_pull[2]
-		if(!QDELETED(puller) && !QDELETED(pullee) && puller.Adjacent(pullee) && puller.pulling != pullee)
+		if(QDELETED(puller) || QDELETED(pullee) || puller.pulling == pullee)
+			continue
+		// The two floors' cars need not be the same shape: whoever was held comes out beside whoever held them
+		if(!puller.Adjacent(pullee) && (get_turf(puller) in destination) && (get_turf(pullee) in destination))
+			for(var/turf/beside as anything in destination)
+				if(beside != get_turf(puller) && puller.Adjacent(beside) && !beside.is_blocked_turf(exclude_mobs = FALSE))
+					pullee.forceMove(beside)
+					break
+		if(puller.Adjacent(pullee))
 			puller.start_pulling(pullee, state = saved_pull[3], supress_message = TRUE)
 	playsound(destination[1], 'sound/machines/ding.ogg', 50, TRUE)
 	SStgui.update_uis(src)

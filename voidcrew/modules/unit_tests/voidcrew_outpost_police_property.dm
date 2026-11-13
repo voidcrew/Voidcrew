@@ -684,12 +684,14 @@
 	TEST_ASSERT_EQUAL(length(recorder.crimes), 2, "Evidence returned to the locker and stolen again did not report the new thief")
 	TEST_ASSERT_EQUAL(recorder.crimes[2][1], thief_two, "Second evidence theft blamed [recorder.crimes[2][1]], not thief_two")
 
-	// 6. SF3: a player mind in an officer body (whose police ID is stripped on possession) is treated as a thief on both property and evidence lockers
+	// 6. SF3: a player mind in an officer body is not exempt as an NPC officer on either locker. Their police ID still opens
+	// what it opens for anyone who wears it, so this one has taken it off.
 	seized.forceMove(evidence)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/played_cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_turf(evidence))
 	played_cop.mind_initialize()
 	allocated += played_cop.mind
 	played_cop.leave_roster_for_player()
+	qdel(played_cop.wear_id)
 	played_cop.put_in_hands(seized)
 	TEST_ASSERT_EQUAL(length(recorder.crimes), 3, "A player mind in an officer body taking from the evidence locker was exempted as an NPC officer")
 	TEST_ASSERT_EQUAL(recorder.crimes[3][1], played_cop, "Evidence theft by a played officer body blamed [recorder.crimes[3][1]]")
