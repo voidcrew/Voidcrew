@@ -330,16 +330,20 @@
 /// under the shoulder is laid from the middle of the body's tile.
 #define GORILLA_RIP_BURST_DROPS 12
 #define GORILLA_RIP_POOL_REACH 10
+/// Pixels out past the torn shoulder, away from the body, the pool under it is laid, so it shows from the tear.
+#define GORILLA_RIP_POOL_OUT 6
 /// The limb rip's pace: how long his fists take to close on the wrist, how long the one haul takes from the grab to the
 /// full lean, and how long the arm shakes in its socket at the end of it before it gives.
 #define GORILLA_RIP_GRAB_TIME (0.25 SECONDS)
 #define GORILLA_RIP_HAUL_TIME (0.4 SECONDS)
 #define GORILLA_RIP_STRAIN_TIME (0.2 SECONDS)
 /// Seen from the front or the back, pixels aside of his middle the arm is hauled to, so it shows beside his body.
-#define GORILLA_RIP_HAUL_ASIDE 6
-/// Tiles the torn arm is flung, and the degrees his arms swing back as it goes (seen from the side).
+#define GORILLA_RIP_HAUL_ASIDE 9
+/// Tiles the torn arm is flung, the degrees his arms swing on as it goes (back seen from the side, out wide from the
+/// front or back), and the pixels of piston they push out with.
 #define GORILLA_RIP_THROW_TILES 2
 #define GORILLA_RIP_THROW_SWING 40
+#define GORILLA_RIP_THROW_REACH 2
 /// The throw: how long the arm is in the air, the animation steps it flies in (each turn a short one), the whole turns
 /// it spins, the pixels it rises at the top of its arc, and the pixels short of the middle of its tile it comes down.
 #define GORILLA_RIP_THROW_TIME (0.3 SECONDS)

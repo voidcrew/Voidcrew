@@ -899,8 +899,9 @@
 				arms_to(side_view() ? 25 : 15, GORILLA_RIP_HAUL_TIME, 1)
 				addtimer(CALLBACK(bearer_rig, TYPE_PROC_REF(/datum/chrome_rig, tremble), GORILLA_RIP_STRAIN_TIME), GORILLA_RIP_HAUL_TIME - GORILLA_RIP_STRAIN_TIME, TIMER_DELETE_ME)
 		if("tear")
-			// The arm gives: he comes upright and both arms swing on back with it, throwing it behind him
-			bearer_rig?.bend_and_swing(0, side_view() ? -GORILLA_RIP_THROW_SWING : 0, 0.15 SECONDS)
+			// The arm gives: he comes upright and both arms swing on with it, flinging it away: back past him seen
+			// from the side, out wide from the front or back
+			bearer_rig?.bend_and_swing(0, side_view() ? -GORILLA_RIP_THROW_SWING : GORILLA_RIP_THROW_SWING, 0.15 SECONDS, GORILLA_RIP_THROW_REACH)
 		if("recover")
 			// Down the way they point: not back up over his head the way they came
 			bearer_rig?.unwind_arms()
@@ -1121,8 +1122,9 @@
 /datum/hv_finisher/chrome/gorilla/rip/proc/strain_shake()
 	if(!running)
 		return
-	bearer_rig?.tremble(GORILLA_RIP_STRAIN_TIME)
-	victim_rig?.tremble(GORILLA_RIP_STRAIN_TIME)
+	// Until the arm gives, if the tear comes a tick late
+	bearer_rig?.tremble(GORILLA_RIP_STRAIN_TIME * 2)
+	victim_rig?.tremble(GORILLA_RIP_STRAIN_TIME * 2)
 
 /**
  * Degrees (clockwise) to turn the body lying as [flat] turns it about its feet as the arm is hauled toward [point] (pixels
@@ -1218,6 +1220,14 @@
 	// Off a body still on its feet it lands at them
 	if(victim.body_position != LYING_DOWN)
 		joint[2] = CHROME_RIG_FEET_Y + victim.pixel_y + victim.pixel_z
+	else
+		// Out past the stump, where the body lying over it doesn't hide it as it runs
+		var/out_x = joint[1] - (victim.pixel_x + victim.pixel_w)
+		var/out_y = joint[2] - (victim.pixel_y + victim.pixel_z)
+		var/out = sqrt(out_x * out_x + out_y * out_y)
+		if(out)
+			joint[1] += out_x / out * GORILLA_RIP_POOL_OUT
+			joint[2] += out_y / out * GORILLA_RIP_POOL_OUT
 	var/list/back = grab_pull_back()
 	return list(clamp(round(joint[1] + back[1] / 2), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH), clamp(round(joint[2] + back[2] / 2), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH))
 
@@ -1341,6 +1351,9 @@
 			else
 				hit_stop(victim)
 			var/outcome = gorilla_limb_rip(victim, target_zone, user, fist(), pool_spot())
+			// The blow's pale flash is on the real body, hidden behind its stand-ins, which flash on their own: redrawn
+			// from it now, they would stay pale until he lets go
+			victim.remove_filter(HV_VIS_FLASH_FILTER)
 			// Both bodies are hidden behind their stand-ins, and so is what this just did to them (the stump, the blood
 			// that ran back over him): the stand-ins take it on now, or it would only show when they come down
 			redraw_bodies(outcome == "torn")
@@ -1433,19 +1446,31 @@
 			animate(torn, pixel_x = to_x, pixel_y = to_y, pixel_z = height, transform = spun, time = GORILLA_RIP_THROW_TIME / steps)
 		else
 			animate(pixel_x = to_x, pixel_y = to_y, pixel_z = height, transform = spun, time = GORILLA_RIP_THROW_TIME / steps)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(gorilla_torn_arm_landed), torn, land, blood_dna, initial(torn.layer)), GORILLA_RIP_THROW_TIME, TIMER_DELETE_ME)
+	if(length(blood_dna))
+		// A drop half way and one under it where it lands, each showing as it gets there by the client's own clock
+		var/turf/half_way = best > 1 ? get_step(start, get_dir(start, land)) : null
+		if(half_way)
+			gorilla_drop_in_time(half_way, blood_dna, round((from[1] - dx + rest_x) / 2 + (start.x - half_way.x) * ICON_SIZE_X + dx), round((from[2] - dy + rest_y) / 2 + (start.y - half_way.y) * ICON_SIZE_Y + dy), GORILLA_RIP_THROW_TIME / 2)
+		gorilla_drop_in_time(land, blood_dna, rest_x, rest_y, GORILLA_RIP_THROW_TIME)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(gorilla_torn_arm_landed), torn, land, initial(torn.layer)), GORILLA_RIP_THROW_TIME, TIMER_DELETE_ME)
 
-/// The thrown arm has come down on [land]: it lies with everything else on the floor, and a little of its blood is under it.
-/proc/gorilla_torn_arm_landed(obj/item/bodypart/torn, turf/land, list/blood_dna, rest_layer)
+/// A drop of blood laid on [spot] at [x], [y] pixels from its middle that shows only [delay] from now.
+/proc/gorilla_drop_in_time(turf/spot, list/blood_dna, x, y, delay)
+	var/obj/effect/decal/cleanable/blood/drip/drop = new(spot, null, blood_dna)
+	if(QDELETED(drop))
+		return
+	gorilla_place_blood(drop, x, y)
+	var/shown = drop.alpha
+	drop.alpha = 0
+	animate(drop, alpha = 0, time = delay)
+	animate(alpha = shown, time = 0)
+
+/// The thrown arm has come down on [land]: a wet slap, and it lies with everything else on the floor.
+/proc/gorilla_torn_arm_landed(obj/item/bodypart/torn, turf/land, rest_layer)
 	if(QDELETED(torn) || torn.loc != land)
 		return
 	torn.layer = rest_layer
 	playsound(torn, 'sound/misc/moist_impact.ogg', 40, TRUE)
-	if(!length(blood_dna))
-		return
-	var/obj/effect/decal/cleanable/blood/drip/drop = new(land, null, blood_dna)
-	if(!QDELETED(drop))
-		gorilla_place_blood(drop, torn.pixel_x, torn.pixel_y)
 
 /// The arm just torn from [victim] at [zone], waiting in nullspace, or null.
 /proc/gorilla_last_torn_limb(mob/living/carbon/victim, zone)
