@@ -44,7 +44,13 @@
 /mob/living/basic/trooper/pirate/faction/boss/proc/arm_plasma_rifle()
 	if(plasma_pirate_zone(src) != ZONE_RED)
 		return null
-	return pirate_crew_arm(src, /datum/pirate_gun_loadout/plasma_rifle)
+	. = pirate_crew_arm(src, /datum/pirate_gun_loadout/plasma_rifle)
+	if(!. || !l_hand)
+		return
+	// The Furnace takes both hands: whatever was in the other one goes
+	l_hand = null
+	if(use_dynamic_appearance)
+		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand)
 
 // A boss's zone can resolve after Initialize; the weapon ladder runs again when it does.
 /mob/living/basic/trooper/pirate/faction/boss/interdyne/apply_npc_weapon_ladder()
@@ -72,3 +78,12 @@
 	if(QDELETED(owner) || owner.stat != CONSCIOUS)
 		return
 	plasma_vent_puff(get_turf(owner))
+
+// A plasma pirate's shots carry as far as a player's (plasma_weapons_far_sound())
+/datum/component/pirate_gun/shoot_once(fire_serial)
+	. = ..()
+	if(!.)
+		return
+	var/obj/item/gun/energy/plasma_weapon/gun_path = loadout.gun_type
+	if(ispath(gun_path, /obj/item/gun/energy/plasma_weapon))
+		plasma_weapons_far_sound(parent, initial(gun_path.far_fire_sound))
