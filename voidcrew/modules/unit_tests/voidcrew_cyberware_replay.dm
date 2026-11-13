@@ -35,6 +35,22 @@
 /datum/unit_test/voidcrew_cyberware_timestop/replay/proc/held(mob/living/body)
 	return HAS_TRAIT_FROM(body, TRAIT_AI_PAUSED, "sandy_replay") || HAS_TRAIT_FROM(body, TRAIT_IMMOBILIZED, "sandy_replay") || HAS_TRAIT_FROM(body, TRAIT_INCAPACITATED, "sandy_replay")
 
+/// `thing`'s own look while its replay waits to start: without the replay's hide (sandy_replay_pending_hide), which is
+/// the replay's, not the thing's
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/real_look(atom/movable/thing)
+	if(!thing.filter_data?["sandy_replay_pending_hide"])
+		return thing.appearance
+	var/mutable_appearance/look = new(thing)
+	look.filters = null
+	for(var/name in thing.filter_data)
+		if(name == "sandy_replay_pending_hide")
+			continue
+		var/list/arguments = thing.filter_data[name]
+		arguments = arguments.Copy()
+		arguments -= "priority"
+		look.filters += filter(arglist(arguments))
+	return look.appearance
+
 /// Names what differs between `thing`'s look now and the appearance `was`
 /datum/unit_test/voidcrew_cyberware_timestop/replay/proc/look_difference(atom/movable/thing, was)
 	var/mutable_appearance/now = new(thing)
@@ -110,7 +126,7 @@
 	var/list/real_spot = list()
 	var/list/real_dir = list()
 	for(var/atom/movable/thing as anything in things)
-		real[thing] = thing.appearance
+		real[thing] = real_look(thing)
 		real_spot[thing] = thing.loc
 		real_dir[thing] = thing.dir
 	var/raider_overlays = length(raider.overlays)
@@ -227,7 +243,7 @@
 	raider.forceMove(spot(3, 0))
 	sleep(0.5 SECONDS)
 	press_again(user)
-	var/real = raider.appearance
+	var/real = real_look(raider)
 	replay.begin()
 	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
 	TEST_ASSERT_EQUAL(raider.pixel_w, -32, "The NPC isn't replayed")

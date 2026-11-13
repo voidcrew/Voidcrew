@@ -364,7 +364,10 @@
 	TEST_ASSERT(!mech.completely_disabled, "The dilation shut a mech down")
 	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A grenade's fuse burned through at full speed")
 
-	sleep(1.8 SECONDS) // past the window
+	// Just past the window: the replay of a 2 s slow-mo is over in a few tenths at the deeper slow-mos, so look as it starts
+	var/window_until = world.time + 2 SECONDS
+	while(!QDELETED(window) && window.time_stop && world.time < window_until)
+		sleep(world.tick_lag)
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo outlived the window")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The NPC's clock stayed slow after the dilation")
 	TEST_ASSERT_NULL(cyberware_time_field(pool), "Blood stayed slowed after the dilation")
