@@ -130,6 +130,9 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	desc = "A glass cartridge of pressed plasma in a steel jacket."
 	icon = 'voidcrew/modules/plasma_weapons/icons/cartridge.dmi'
 	icon_state = "cartridge_3"
+	inhand_icon_state = "cartridge_3"
+	lefthand_file = 'voidcrew/modules/plasma_weapons/icons/cartridge_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/plasma_weapons/icons/cartridge_righthand.dmi'
 	custom_materials = list(/datum/material/iron = PLASMA_CARTRIDGE_IRON)
 	/// Mol of plasma held. Only ever falls.
 	var/stored = PLASMA_CARTRIDGE_CAPACITY
