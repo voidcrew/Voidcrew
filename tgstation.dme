@@ -7730,6 +7730,8 @@
 #include "voidcrew\modules\shuttle\survey\survey_data_disk.dm"
 #include "voidcrew\modules\shuttle\survey\survey_designs.dm"
 #include "voidcrew\modules\slime_extract_piles\slime_extract_piles.dm"
+#include "voidcrew\modules\stealth\scav_camera.dm"
+#include "voidcrew\modules\stealth\scav_den.dm"
 #include "voidcrew\modules\stealth\scav_guards.dm"
 #include "voidcrew\modules\stealth\stealth_admin.dm"
 #include "voidcrew\modules\stealth\stealth_admin_noise.dm"

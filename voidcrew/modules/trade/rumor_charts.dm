@@ -147,6 +147,8 @@
 	var/rumor_desc
 	/// Zone band the ruin spawns in on reveal
 	var/spawn_zone = ZONE_RED
+	/// The sealed rumor a purchase uploads (a subtype can refuse to reveal, e.g. the one-at-a-time scav den)
+	var/chart_type = /datum/rumor_chart
 
 /datum/shop_sku/ruin_chart/get_denial_reason(mob/living/user)
 	. = ..()
@@ -178,7 +180,7 @@
 
 	stock--
 
-	var/datum/rumor_chart/chart = new
+	var/datum/rumor_chart/chart = new chart_type
 	chart.name = rumor_name || name
 	chart.desc = rumor_desc || desc
 	chart.ruin_template_path = ruin_template_path
