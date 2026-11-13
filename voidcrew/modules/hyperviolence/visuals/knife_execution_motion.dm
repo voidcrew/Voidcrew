@@ -1071,7 +1071,7 @@
 		add_overlay(hand_overlay)
 	if(victim)
 		hv_owner_ref = WEAKREF(victim)
-		RegisterSignal(victim, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_LIVING_DEATH), PROC_REF(hv_drop_clutch))
+		RegisterSignals(victim, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_LIVING_DEATH), PROC_REF(hv_drop_clutch))
 
 /obj/effect/temp_visual/hv_knife_clutch_hand/Destroy()
 	var/mob/living/victim = hv_owner_ref?.resolve()
