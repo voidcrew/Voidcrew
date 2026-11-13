@@ -13,8 +13,8 @@
 #define PLASMA_PINCH_RING_TIME (0.2 SECONDS)
 /// Layer of a bolt while it leaves the pinch, just over the ball and ring
 #define PLASMA_PINCH_BOLT_LAYER (ABOVE_MOB_LAYER + 0.01)
-/// How long a bolt takes from the snap to close from the ball onto its own path, about the first tile of its flight
-#define PLASMA_PINCH_CLOSE_TIME (0.12 SECONDS)
+/// How long a bolt takes from the snap to close from the ball onto its own path, under the first tile of its flight
+#define PLASMA_PINCH_CLOSE_TIME (0.08 SECONDS)
 /// The pinch light's brightness as an overlay light's alpha (light_power 1)
 #define PLASMA_PINCH_LIGHT_ALPHA 150
 /// How long the light takes to grow from the pinch light to the bolt's, from the snap
@@ -149,6 +149,8 @@
 	var/pinch_nose = 7
 	/// How far past the ball our nose shows when we appear
 	var/pinch_lead = 7
+	/// Whether our light has been moved forward onto our head
+	var/nose_lit = FALSE
 
 /obj/projectile/energy/plasma_bolt/heavy
 	pinch_nose = 13
@@ -160,6 +162,7 @@
 	var/turf/barrel_turf = get_turf(firer)
 	. = ..()
 	if(!offset || QDELETED(src) || deletion_queued || !isturf(loc) || !movement_vector || !barrel_turf)
+		nose_light()
 		return
 	// The bolt leaves over the ring
 	layer = PLASMA_PINCH_BOLT_LAYER
@@ -176,6 +179,28 @@
 /obj/projectile/energy/plasma_bolt/Destroy()
 	QDEL_NULL(pinch_copy)
 	return ..()
+
+/// How far ahead of our icon centre our light sits: on the round head, a little behind the nose
+/obj/projectile/energy/plasma_bolt/proc/light_lead()
+	return pinch_nose - 2
+
+/// Moves our light forward from our icon centre onto our head, along the shot, so it never trails the bolt. The light's
+/// mask ignores our turn, so it moves in screen pixels
+/obj/projectile/energy/plasma_bolt/proc/nose_light()
+	if(nose_lit || QDELETED(src) || !movement_vector)
+		return
+	var/datum/component/overlay_lighting/lighting = GetComponent(/datum/component/overlay_lighting)
+	if(!lighting?.visible_mask)
+		return
+	nose_lit = TRUE
+	var/was_on = light_on
+	if(was_on)
+		set_light_on(FALSE)
+	var/matrix/moved = lighting.visible_mask.transform ? matrix(lighting.visible_mask.transform) : matrix()
+	moved.Translate(movement_vector.pixel_x * light_lead(), movement_vector.pixel_y * light_lead())
+	lighting.visible_mask.transform = moved
+	if(was_on)
+		set_light_on(TRUE)
 
 /// The bolt as it leaves the pinch, flying from the ball onto the real bolt
 /obj/effect/abstract/plasma_pinch_bolt
@@ -245,6 +270,9 @@
 		glow_holder.transform = small
 		animate(glow_holder, time = PLASMA_PINCH_SNAP_TIME)
 		animate(alpha = 255, transform = matrix(), time = PLASMA_PINCH_LIGHT_RAMP)
+		// On the ball until the snap, then forward onto the head as the bolt closes, where the bolt's own light takes over
+		animate(glow_holder, time = PLASMA_PINCH_SNAP_TIME, flags = ANIMATION_PARALLEL)
+		animate(pixel_w = dx * bolt.light_lead(), pixel_z = dy * bolt.light_lead(), time = PLASMA_PINCH_CLOSE_TIME)
 		vis_contents += glow_holder
 	bolt_icon = bolt.icon
 	bolt.icon = null
@@ -286,6 +314,7 @@
 	if(QDELETED(src))
 		return
 	if(!QDELETED(bolt))
+		bolt.nose_light()
 		bolt.set_light_on(TRUE)
 	qdel(src)
 

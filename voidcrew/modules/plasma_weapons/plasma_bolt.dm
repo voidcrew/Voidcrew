@@ -33,6 +33,7 @@
 	exposed_wound_bonus = 30
 	demolition_mod = PLASMA_DEMOLITION_RIFLE
 	range = 25
+	splash_scale = 1
 	light_range = 2.5
 	light_power = 1.6
 
@@ -43,6 +44,8 @@
 	var/turf/impact_turf
 	/// Whether the sprite also slides sideways onto impact_point on its last step, as onto a held shield
 	var/impact_slide = FALSE
+	/// Size of its splash on a wall, a window or a body it doesn't burst on
+	var/splash_scale = 0.6
 	/// Played when it hits a window or windoor
 	var/hitsound_glass = PLASMA_SOUND_IMPACT_GLASS
 	/// Played to someone it passes close by
@@ -68,6 +71,12 @@
 	var/stop = full - offset
 	if(impact_point && impact_turf == loc)
 		stop = (impact_point[1] - pixel_x) * dx + (impact_point[2] - pixel_y) * dy - offset
+	// A wall stops us in the turf before it: its face point is measured on the wall's turf, a tile on from ours. Without
+	// this we would stop where tg put the hit, up to half a tile inside the wall
+	else if(impact_point && isturf(loc) && impact_turf?.z == loc.z && get_dist(impact_turf, loc) == 1)
+		var/face_x = impact_point[1] + (impact_turf.x - loc.x) * ICON_SIZE_X
+		var/face_y = impact_point[2] + (impact_turf.y - loc.y) * ICON_SIZE_Y
+		stop = (face_x - pixel_x) * dx + (face_y - pixel_y) * dy - offset
 	stop = clamp(stop, 0, max(full, 0) + ICON_SIZE_ALL / 2)
 	// Onto a held shield it slides a few pixels across its path, so it meets the shield and not the air beside it
 	var/slide_x = 0

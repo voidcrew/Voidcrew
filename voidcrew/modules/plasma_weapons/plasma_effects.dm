@@ -115,7 +115,7 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		impact_point = list(splash_x, splash_y)
 		impact_turf = target_turf
 
-	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body)
+	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body, splash_scale)
 
 	if(!iswallturf(target))
 		if(isopenturf(target))
@@ -411,13 +411,18 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	/// Whether this splash carries the steam pool, so Destroy gives it back
 	var/steaming = FALSE
 
-/obj/effect/temp_visual/plasma_splash/Initialize(mapload, px = 0, py = 0, splash_state = "splash_wall", turn_angle = 0, behind_body = FALSE)
+/obj/effect/temp_visual/plasma_splash/Initialize(mapload, px = 0, py = 0, splash_state = "splash_wall", turn_angle = 0, behind_body = FALSE, scale = 1)
 	icon_state = splash_state
 	. = ..()
 	pixel_x = px
 	pixel_y = py
+	var/matrix/turned = matrix()
+	if(scale != 1)
+		turned.Scale(scale)
+		set_light_range(light_range * scale)
 	if(turn_angle)
-		transform = matrix().Turn(turn_angle)
+		turned.Turn(turn_angle)
+	transform = turned
 	// Walls and glass sit behind whoever stands in front of them; a body hit from behind hides its splash
 	if(behind_body || splash_state == "splash_wall" || splash_state == "splash_glass")
 		layer = BELOW_MOB_LAYER
@@ -791,14 +796,21 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	color = COLOR_WHITE
 	/// The z-level key this glow counts against
 	var/glow_z_key
+	/// Carries our emissive, so it can go out as we cool while our colour stays
+	var/obj/effect/abstract/lit
 
 /// `z_level` is the level the glow counts against; `spokesman` is the atom it draws with, for emissive planes
 /obj/effect/temp_visual/plasma_wall_glow/Initialize(mapload, z_level, atom/spokesman)
 	. = ..()
 	glow_z_key = "[z_level || z]"
 	GLOB.plasma_wall_glows_by_z[glow_z_key] += 1
-	// The emissive keeps the ember lit in the dark; it fades with our alpha and keeps its own colour
-	add_overlay(emissive_appearance(icon, icon_state, spokesman || src))
+	// The emissive keeps the ember lit in the dark and keeps its own colour. It goes out as the ember turns to char, or
+	// the char would show grey in the dark
+	lit = new(null)
+	lit.add_overlay(emissive_appearance(icon, icon_state, spokesman || src))
+	vis_contents += lit
+	animate(lit, alpha = 255, time = 1.6 SECONDS)
+	animate(alpha = 0, time = 1.2 SECONDS)
 	// It shows under the splash as the splash goes, already violet, and cools down the plasma's own ramp: deep purple,
 	// then char
 	color = "#EB43FF"
@@ -809,6 +821,9 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	animate(alpha = 0, time = PLASMA_GLOW_DURATION - 4 SECONDS)
 
 /obj/effect/temp_visual/plasma_wall_glow/Destroy()
+	if(lit)
+		vis_contents -= lit
+		QDEL_NULL(lit)
 	if(glow_z_key)
 		GLOB.plasma_wall_glows_by_z[glow_z_key] -= 1
 		if(GLOB.plasma_wall_glows_by_z[glow_z_key] <= 0)
