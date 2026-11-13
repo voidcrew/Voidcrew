@@ -316,3 +316,36 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/morgue = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue, pa_tile(2, 0), place)
 	TEST_ASSERT(!(medic.get_lines("attacked")[1] in janitor.get_lines("attacked")), "A medic uses janitor mop lines when attacked")
 	TEST_ASSERT(!(morgue.get_lines("attacked")[1] in janitor.get_lines("attacked")), "A morgue worker uses janitor mop lines when attacked")
+
+/// One occupied or unreachable lift tile falls back to another free lift tile before locking out hauling
+/datum/unit_test/voidcrew_outpost_recovery_janitor_lift_fallback
+
+/datum/unit_test/voidcrew_outpost_recovery_janitor_lift_fallback/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	outpost.ensure_police()
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/turf/near_lift = pa_tile(1, 0)
+	var/turf/far_lift = pa_tile(3, 0)
+	outpost.lobby_alcove_turfs = list(near_lift, far_lift)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = recovery_janitor_at(place, pa_tile(0, 0))
+	TEST_ASSERT_EQUAL(janitor.haul_spot(), near_lift, "Setup: janitor did not pick the nearest free lift tile")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/stander = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, near_lift, place)
+	TEST_ASSERT_EQUAL(janitor.haul_spot(), far_lift, "Janitor targeted a lift tile someone stood on when another lift tile was free")
+	qdel(stander)
+
+	var/obj/effect/decal/cleanable/blood/blood = allocate(/obj/effect/decal/cleanable/blood, pa_tile(2, 2))
+	janitor.crew_mop.reagents.add_reagent(/datum/reagent/water, 15)
+	var/datum/ambient_activity/recovery_clean/clean = janitor.start_activity(new /datum/ambient_activity/recovery_clean(janitor))
+	TEST_ASSERT_NOTNULL(clean, "Setup: janitor could not start recovery_clean")
+	clean.task = 4 // RECOVERY_TASK_HAUL
+	clean.spot = near_lift
+	clean.spot_unreachable()
+	TEST_ASSERT_EQUAL(janitor.haul_blocked_until, 0, "One unreachable lift tile locked out hauling while another lift tile remained free")
+	TEST_ASSERT_EQUAL(janitor.haul_spot(), far_lift, "Janitor did not fall back to the second lift tile after giving up on the first")
+
+	clean.spot = far_lift
+	clean.spot_unreachable()
+	TEST_ASSERT(janitor.haul_blocked_until > world.time, "Hauling was not blocked once every lift tile had been given up on")
+	janitor.end_activity()
+	qdel(blood)

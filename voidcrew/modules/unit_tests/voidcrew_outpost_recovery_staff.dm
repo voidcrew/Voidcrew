@@ -339,3 +339,44 @@
 	recovery.tick_restaff()
 	TEST_ASSERT_EQUAL(length(recovery.crew), 0, "An idle crew did not leave")
 	TEST_ASSERT_NOTNULL(second, "The test worker is gone")
+
+/// A player-possessed or fleeing keeper vacates the shop and counter; a replacement inside a container does not block the original returning
+/datum/unit_test/voidcrew_outpost_recovery_keeper_played_and_container_turnaround
+
+/datum/unit_test/voidcrew_outpost_recovery_keeper_played_and_container_turnaround/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	r1_site(outpost)
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/datum/outpost_shop/shop = outpost.ensure_main_shop()
+	var/turf/counter = wanted_spot(2, 2)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/keeper = r1_keeper(shop, counter)
+	recovery.register_posts()
+	var/datum/outpost_recovery_post/post = recovery.posts[shop]
+	TEST_ASSERT_NOTNULL(post, "Setup: main shop post was not registered")
+
+	// Player mind in the keeper's body closes the shop and vacates the counter
+	keeper.mind_initialize()
+	allocated += keeper.mind
+	TEST_ASSERT(!shop.is_open(), "A keeper body controlled by a player kept the shop open")
+	TEST_ASSERT(!recovery.keeper_alive(keeper), "A keeper body controlled by a player still counted as an NPC keeper")
+	TEST_ASSERT(post in recovery.vacant_posts(), "A player-inhabited keeper blocked replacement staff")
+	keeper.mind.set_current(null)
+	keeper.last_mind = null
+	TEST_ASSERT(shop.is_open(), "Clearing the test mind did not reopen the shop")
+
+	// Fleeing keeper (leave activity) closes the shop and vacates the counter
+	keeper.start_activity(new /datum/ambient_activity/leave(keeper, wanted_spot(8, 8)))
+	TEST_ASSERT(!shop.is_open(), "A fleeing keeper kept the shop open")
+	TEST_ASSERT(!recovery.keeper_alive(keeper), "A fleeing keeper still held the post")
+	keeper.end_activity()
+
+	// Replacement shut inside a locker far from the counter (get_dist == 0 trap) still yields to the original keeper
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/replacement = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, wanted_spot(8, 8))
+	post.replacement = WEAKREF(replacement)
+	shop.set_keeper(replacement)
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, wanted_spot(8, 8))
+	replacement.forceMove(locker)
+	recovery.turn_round_replacements()
+	TEST_ASSERT_NULL(post.replacement, "A replacement inside a distant locker appeared adjacent to the counter and stayed")
+	TEST_ASSERT_EQUAL(shop.keeper?.resolve(), keeper, "The original keeper did not take the shop back from a boxed replacement")
+	replacement.forceMove(wanted_spot(8, 8))

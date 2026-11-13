@@ -257,7 +257,7 @@
 	/// The lift is no use to them (it could not be reached) until this world.time
 	var/haul_blocked_until = 0
 
-/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
 	var/obj/item/card/id/card = wear_id
 	if(istype(card))
@@ -283,6 +283,10 @@
 	var/obj/item/radio/headset = ears
 	if(istype(headset))
 		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
+	var/section = outpost?.police?.profile?.voice_section
+	if(section)
+		dialogue_section = section
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/Destroy()
 	crew_mop = null
@@ -306,11 +310,13 @@
 
 /// The outpost recovery they work for: the one that sent them, or their outpost's
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/my_recovery()
-	return outpost_recovery || get_outpost()?.recovery
+	if(outpost_recovery && !QDELETED(outpost_recovery))
+		return outpost_recovery
+	return get_outpost()?.recovery
 
 // Their voice is their outpost's: the police profile's section, as the officers' lines are
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/get_lines(context)
-	var/obj/structure/overmap/trader_outpost/outpost = get_outpost()
+	var/obj/structure/overmap/trader_outpost/outpost = my_recovery()?.outpost || get_outpost()
 	var/section = outpost?.police?.profile?.voice_section
 	if(section)
 		dialogue_section = section
@@ -395,21 +401,26 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/haul_spot()
 	if(world.time < haul_blocked_until)
 		return null
-	var/obj/structure/overmap/trader_outpost/outpost = get_outpost()
+	var/obj/structure/overmap/trader_outpost/outpost = my_recovery()?.outpost || get_outpost()
 	var/turf/here = get_turf(src)
 	if(!outpost || !here)
 		return null
 	var/list/lifts = (outpost.police && outpost.is_secured_turf(here)) ? outpost.police.lift_turfs : outpost.lobby_alcove_turfs
-	var/turf/best
-	var/best_distance = INFINITY
+	var/turf/best_free
+	var/best_free_distance = INFINITY
+	var/turf/best_any
+	var/best_any_distance = INFINITY
 	for(var/turf/lift as anything in lifts)
-		if(lift.z != here.z)
+		if(!lift || lift.z != here.z || LAZYACCESS(cleaning_gave_up, lift) > world.time || lift.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		var/distance = get_dist(here, lift)
-		if(distance < best_distance)
-			best = lift
-			best_distance = distance
-	return best
+		if(distance < best_any_distance)
+			best_any = lift
+			best_any_distance = distance
+		if(!outpost.police?.lift_point_blocked(lift, src) && distance < best_free_distance)
+			best_free = lift
+			best_free_distance = distance
+	return best_free || best_any
 
 /// Whether litter can be picked up now: the bag has room, or the lift is there to empty it
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/litter_ok()
@@ -778,7 +789,9 @@
 			if(RECOVERY_TASK_WET)
 				janitor.give_up_on(source_ref?.resolve())
 			if(RECOVERY_TASK_HAUL)
-				janitor.haul_blocked_until = world.time + RECOVERY_GIVE_UP_TIME
+				janitor.give_up_on(spot)
+				if(!janitor.haul_spot())
+					janitor.haul_blocked_until = world.time + RECOVERY_GIVE_UP_TIME
 			else
 				janitor.give_up_on(work_tile)
 	return ..()

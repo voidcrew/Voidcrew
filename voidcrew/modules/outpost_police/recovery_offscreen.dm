@@ -85,18 +85,38 @@
 	unseen_since = 0
 	paused_at = 0
 	log_game("OUTPOST RECOVERY: [outpost.name] recovered with nobody there ([length(npc_bodies())] NPC bodies, [length(player_bodies())] player bodies).")
+	// Unbuilt escort waves will not come now; living escorts leave with the crews
+	var/datum/outpost_police/police = outpost.police
+	for(var/datum/weakref/wave_ref as anything in escort_waves.Copy())
+		var/datum/outpost_police_wave/wave = wave_ref?.resolve()
+		if(QDELETED(wave))
+			continue
+		for(var/datum/human_npc_order/order as anything in wave.orders.Copy())
+			police?.dispatch_orders -= order
+			qdel(order)
+		police?.dispatch_waves -= wave
+		qdel(wave)
+	release_escorts()
 	// The crews go first, so nothing is still held or pulled
 	for(var/datum/weakref/ref as anything in crew.Copy())
-		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = ref.resolve()
-		if(istype(worker) && !QDELETED(worker))
-			if(worker.pulling)
-				worker.stop_pulling()
-			// A worker a player has taken over is theirs now: off the crew, never deleted (review S4)
-			if(outpost_npc_played(worker, "unseen recovery"))
-				crew -= ref
-				continue
-			worker.npc_drop_not_gear()
-			worker.fade_out(instant = TRUE)
+		var/mob/living/carbon/human/npc/ambient_npc/member = ref.resolve()
+		if(!istype(member) || QDELETED(member))
+			crew -= ref
+			continue
+		if(member.pulling)
+			member.stop_pulling()
+		// Dead bodies go by unseen_npc_body() / unseen_player_body() below; a body a player is or was in is never deleted (review S4)
+		if(member.stat == DEAD || !morgue_npc_body(member) || outpost_npc_played(member, "unseen recovery"))
+			crew -= ref
+			continue
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = member
+		if(istype(escort) && escort.case)
+			crew -= ref
+			continue
+		member.npc_drop_not_gear()
+		member.fade_out(instant = TRUE)
+	crew.Cut()
+	wave_workers.Cut()
 	claims.Cut()
 	retry_at.Cut()
 	patient_claims.Cut()

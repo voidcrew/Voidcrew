@@ -581,3 +581,48 @@
 	qdel(fled)
 	recovery.tick_cleanup()
 	TEST_ASSERT(!recovery.wave_active, "A wave with no pending or living workers stayed active forever")
+
+/// watch() wakes NORMAL for an uncollected dead player (and ignores a revived one); finish_unseen() bags a dead player-inhabited worker body into a tray instead of deleting it and retires escorts
+/datum/unit_test/voidcrew_outpost_recovery_watch_player_and_unseen_crew
+
+/datum/unit_test/voidcrew_outpost_recovery_watch_player_and_unseen_crew/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	outpost.loaded = TRUE
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	var/mob/living/carbon/human/dead_player = wanted_person(wanted_spot(2, 2))
+	dead_player.death()
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
+
+	// Revived before watch(): pruned and calls no trouble
+	dead_player.revive(ADMIN_HEAL_ALL)
+	TEST_ASSERT_EQUAL(length(recovery.player_bodies()), 0, "A revived player remained in player_bodies()")
+	recovery.watch()
+	TEST_ASSERT_EQUAL(recovery.state, 0, "A revived player woke recovery from NORMAL") // OUTPOST_RECOVERY_NORMAL
+
+	// Dead and free in NORMAL (ejected from an undocked ship or left after a friend walked off): watch() wakes trouble
+	dead_player.death()
+	recovery.set_state(0) // OUTPOST_RECOVERY_NORMAL
+	recovery.watch()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "An uncollected free dead player did not wake recovery from NORMAL") // OUTPOST_RECOVERY_TROUBLE
+	qdel(dead_player)
+	recovery.player_dead.Cut()
+
+	// Player mind in a worker body that died and ghosted: finish_unseen() puts it in a morgue tray, never deletes it
+	var/obj/structure/bodycontainer/morgue/tray = allocate(/obj/structure/bodycontainer/morgue, wanted_spot(4, 4))
+	recovery.morgue_trays = list(tray)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/played_worker = recovery_worker(outpost, wanted_spot(1, 2))
+	played_worker.mind_initialize()
+	allocated += played_worker.mind
+	played_worker.death()
+	played_worker.last_mind = played_worker.mind
+	played_worker.mind.set_current(null)
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/escort = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, wanted_spot(3, 1))
+	escort.recovery_escort = TRUE
+	recovery.crew += WEAKREF(escort)
+
+	recovery.finish_unseen()
+	TEST_ASSERT(!QDELETED(played_worker), "finish_unseen() deleted a dead worker body a player had inhabited")
+	TEST_ASSERT(istype(played_worker.loc, /obj/structure/closet/body_bag/outpost_morgue), "The player's dead worker body was not bagged by unseen recovery")
+	TEST_ASSERT_EQUAL(played_worker.loc.loc, tray, "The player's dead worker body was not placed in a morgue tray")
+	TEST_ASSERT(QDELETED(escort), "finish_unseen() left an unplayed recovery escort officer behind")

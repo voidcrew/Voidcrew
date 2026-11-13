@@ -357,7 +357,7 @@
 	. = list()
 	for(var/datum/weakref/ref as anything in npc_dead)
 		var/mob/living/carbon/human/npc/body = ref.resolve()
-		if(!QDELETED(body))
+		if(!QDELETED(body) && body.stat == DEAD && morgue_npc_body(body))
 			. += body
 
 /// The bodies of minds that died here and still lie here, not yet in a tray or left bagged in the morgue room
@@ -366,7 +366,7 @@
 	. = list()
 	for(var/datum/weakref/ref as anything in player_dead)
 		var/mob/living/body = ref.resolve()
-		if(!QDELETED(body) && !morgue_body_done(body))
+		if(!QDELETED(body) && body.stat == DEAD && !morgue_body_done(body) && get_trader_outpost_for_turf(get_turf(body)) == outpost)
 			. += body
 
 /// Player bodies a morgue worker can collect right now (or already holds), so a guarded corpse never holds CLEANUP open
@@ -386,7 +386,7 @@
 
 /// Whether there is anything for a crew to do: a body, a dirty stop, or someone down for the medics
 /datum/outpost_recovery/proc/has_cleanup_work()
-	return length(npc_bodies()) || length(player_bodies()) || dirty_count() || length(patients_due())
+	return length(npc_bodies()) || length(player_bodies_due()) || dirty_count() || length(patients_due())
 
 /// How many patrol stops are found dirty (R4 may leave a cleaned stop in the list as FALSE)
 /datum/outpost_recovery/proc/dirty_count()
@@ -613,8 +613,9 @@
 	if(QDELETED(src) || QDELETED(outpost) || !outpost.loaded)
 		return
 	register_posts()
-	// A counter with nobody at it, or someone of the outpost's down and nobody coming for them (decision 31)
-	if(state == OUTPOST_RECOVERY_NORMAL && (length(vacant_posts()) || length(patients_due())))
+	prune_dead()
+	// A counter with nobody at it, someone of the outpost's down, or a dead player now free to collect (M35, decision 31)
+	if(state == OUTPOST_RECOVERY_NORMAL && (length(vacant_posts()) || length(patients_due()) || length(player_bodies_due())))
 		begin_trouble()
 
 // ----- TROUBLE to CLEANUP -----

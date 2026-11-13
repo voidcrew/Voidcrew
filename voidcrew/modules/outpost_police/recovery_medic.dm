@@ -174,13 +174,15 @@
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
 	return outpost?.ensure_recovery()
 
-/// Anywhere on their outpost, as the morgue crew: the hurt lie anywhere
+/// Anywhere on their outpost, as the morgue crew: the hurt lie anywhere, never open space
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/leash_ok(turf/tile)
+	tile = get_turf(tile)
+	if(!tile || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
+		return FALSE
 	var/obj/structure/overmap/trader_outpost/keep = outpost_recovery?.outpost
 	if(!keep)
 		return ..()
-	tile = get_turf(tile)
-	return tile && get_trader_outpost_for_turf(tile) == keep
+	return get_trader_outpost_for_turf(tile) == keep
 
 /**
  * The next thing to use on `patient` from the kit: list(item, zone), or null when nothing they carry helps now.
@@ -508,6 +510,11 @@
 		give_up()
 		return AMBIENT_STEP_DONE
 	if(!medic.Adjacent(patient))
+		if(medic.needs_checkpoint_cross(patient))
+			release()
+			patient_ref = null
+			go_to(null)
+			return AMBIENT_STEP_DONE
 		if(++approach_tries > MEDIC_APPROACH_TRIES)
 			give_up()
 			return AMBIENT_STEP_DONE

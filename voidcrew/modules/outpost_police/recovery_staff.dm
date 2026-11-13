@@ -91,9 +91,14 @@
 			post.kind = RECOVERY_POST_GUARD
 		posts[shop] = post
 
-/// Whether `who` is up: there, and not dead
+/// Whether `who` is up as an NPC keeper: there, not dead, not a player, and not already leaving
 /datum/outpost_recovery/proc/keeper_alive(mob/living/who)
-	return !QDELETED(who) && who.stat != DEAD
+	if(QDELETED(who) || who.stat == DEAD || outpost_npc_played(who))
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/walker = who
+	if(istype(walker) && (walker.fading || istype(walker.activity, /datum/ambient_activity/leave)))
+		return FALSE
+	return TRUE
 
 /// Whether `who` is up and in the outpost's own box (concourse, lobby, closets): not carried off into a hangar or a docked ship
 /datum/outpost_recovery/proc/keeper_on_post(mob/living/who)
@@ -192,6 +197,7 @@
 	var/mob/living/replacement = new post.keeper_type(arrival)
 	post.replacement = WEAKREF(replacement)
 	post.replacement_at = world.time
+	post.away_since = 0
 	post.shop.set_keeper(replacement)
 	var/mob/living/carbon/human/npc/ambient_npc/walker = replacement
 	if(istype(walker))
@@ -264,7 +270,7 @@
 		// An original still carried off never takes the counter back (abuse MF3)
 		if(!keeper_on_post(original) || !keeper_alive(replacement) || original == replacement)
 			continue
-		if(!post.spot || get_dist(replacement, post.spot) <= 1)
+		if(!post.spot || (isturf(replacement.loc) && replacement.z == post.spot.z && get_dist(replacement, post.spot) <= 1))
 			continue
 		post.shop.set_keeper(original)
 		post.replacement = null

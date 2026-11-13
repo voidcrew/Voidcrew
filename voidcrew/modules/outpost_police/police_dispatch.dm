@@ -963,8 +963,8 @@
 			return TRUE
 	return FALSE
 
-/// The lift point of `sector` nearest `from` (of any sector for null); skipped points left out
-/datum/outpost_police/proc/dispatch_nearest_lift_point(sector, atom/from)
+/// The lift point of `sector` nearest `from` (of any sector for null); skipped points left out, free ones preferred when `rider` is given
+/datum/outpost_police/proc/dispatch_nearest_lift_point(sector, atom/from, mob/living/rider = null)
 	var/turf/from_turf = get_turf(from)
 	if(!from_turf)
 		return null
@@ -977,16 +977,21 @@
 				points |= berth.alcove_turfs
 	else
 		points = dispatch_lift_tiles(sector)
-	var/turf/best
-	var/best_distance = INFINITY
+	var/turf/best_free
+	var/best_free_distance = INFINITY
+	var/turf/best_any
+	var/best_any_distance = INFINITY
 	for(var/turf/point as anything in points)
-		if(!point || point.z != from_turf.z || dispatch_skipped[point] > world.time)
+		if(!point || point.z != from_turf.z || dispatch_skipped[point] > world.time || point.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		var/distance = get_dist(from_turf, point)
-		if(distance < best_distance)
-			best = point
-			best_distance = distance
-	return best
+		if(distance < best_any_distance)
+			best_any = point
+			best_any_distance = distance
+		if((!rider || !lift_point_blocked(point, rider)) && distance < best_free_distance)
+			best_free = point
+			best_free_distance = distance
+	return best_free || best_any
 
 /// The hangar elevator alcove tiles of `sector` (`lobby` or a hangar berth; never concourse closets)
 /datum/outpost_police/proc/dispatch_elevator_tiles(sector)
@@ -1005,7 +1010,7 @@
 	var/turf/best
 	var/best_distance = INFINITY
 	for(var/turf/point as anything in dispatch_elevator_tiles(sector))
-		if(!point || point.z != from_turf.z || dispatch_skipped[point] > world.time)
+		if(!point || point.z != from_turf.z || dispatch_skipped[point] > world.time || point.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		if(rider && lift_point_blocked(point, rider))
 			continue
