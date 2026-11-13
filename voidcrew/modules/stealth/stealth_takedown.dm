@@ -189,10 +189,15 @@
 
 /// tg's strangle, closed at once: the same states grippedby() steps through, in the same order.
 /datum/stealth_takedown/proc/close()
+	var/facing = victim.dir
+	var/standing = victim.body_position == STANDING_UP
 	if(attacker.pulling != victim && !attacker.start_pulling(victim, supress_message = TRUE))
 		return FALSE
 	if(attacker.pulling != victim)
 		return FALSE
+	// tg's pull turns him to face the puller and shifts him toward him: he stays as he stood, facing away.
+	victim.remove_offsets(GRABBING_TRAIT, animate = FALSE)
+	victim.setDir(facing)
 	var/cover = stealth_takedown_neck_cover(victim)
 	if(cover >= STEALTH_TAKEDOWN_MAX_COVER)
 		return FALSE
@@ -201,12 +206,15 @@
 	if(attacker.grab_state < GRAB_AGGRESSIVE)
 		attacker.setGrabState(GRAB_AGGRESSIVE)
 		victim.stop_pulling()
-	attacker.setGrabState(GRAB_KILL)
 	// Unlike grippedby(), the victim stays on his own tile and on his feet, held up from behind: tg's neck grab floors
-	// him (CHOKEHOLD_TRAIT), this takes that one source off again. He can't move or use his hands (tg's aggressive grab
-	// traits) and goes down by tg's own rules when he passes out. No pull offsets: they would turn him to face the
-	// attacker; the visuals pull him in instead.
+	// him (CHOKEHOLD_TRAIT), this takes that one source off again, and TRAIT_FORCED_STANDING for the same moment stops
+	// him dropping and getting back up a second later. He can't move or use his hands (tg's aggressive grab traits) and
+	// goes down by tg's own rules when he passes out. No pull offsets; the visuals pull him in instead.
+	if(standing)
+		ADD_TRAIT(victim, TRAIT_FORCED_STANDING, STEALTH_TAKEDOWN_TRAIT)
+	attacker.setGrabState(GRAB_KILL)
 	REMOVE_TRAIT(victim, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
+	REMOVE_TRAIT(victim, TRAIT_FORCED_STANDING, STEALTH_TAKEDOWN_TRAIT)
 	victim.update_incapacitated()
 	closed = TRUE
 	ADD_TRAIT(victim, TRAIT_MUTE, STEALTH_TAKEDOWN_TRAIT)
