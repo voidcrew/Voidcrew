@@ -123,9 +123,8 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		return
 
 	// One hit, one mark: the glow on the wall face where the splash was, nothing on the floor in front of it. It lies along
-	// the face like the splash, a few pixels into the wall so it sits on the wall and not on the floor in front
-	var/glow_in = movement_vector ? 3 : 0
-	var/obj/effect/temp_visual/plasma_wall_glow/glow = plasma_wall_glow_at(target, splash_x + movement_vector?.pixel_x * glow_in, splash_y + movement_vector?.pixel_y * glow_in)
+	// the face like the splash
+	var/obj/effect/temp_visual/plasma_wall_glow/glow = plasma_wall_glow_at(target, splash_x, splash_y)
 	if(glow)
 		var/matrix/laid = matrix()
 		if(splash_scale != 1)
