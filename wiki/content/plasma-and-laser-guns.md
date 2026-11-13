@@ -32,7 +32,7 @@ The **Old Furnace** is a Furnace with a hand-wound coil. It runs cooler and shoo
 
 The guns restore one unit per hour and cartridges come in with the trade convoys. Guns bought at a counter come with a full cartridge seated. See [Trader Outposts](trader-outposts.md) and [Crews & Reputation](zone-reputation.md).
 
-In loot, Kestrels turn up in green armory and freight caches, Hornets and Cinders in yellow caches, and Furnaces in red plunder, where an Old Furnace is a rare find. A plasma gun found in loot carries a cartridge that is at most half full. Pirates in yellow and red zones fire plasma guns, and in red zones Director Prime and the Chief Auditor carry Furnaces and can drop the Old Furnace. They never drop it anywhere else. See [Pirates & NPC Ships](pirates-and-npc-ships.md).
+In loot, Kestrels turn up in green armory and freight caches, Hornets and Cinders in yellow caches, and Furnaces in red plunder, where an Old Furnace is a rare find. A plasma gun found in loot carries a cartridge that is at most half full. Pirate ship crews and boarders in yellow and red zones fire plasma guns; pirates holed up in ruins don't. In red zones Director Prime and the Chief Auditor carry Furnaces and can drop the Old Furnace. They never drop it anywhere else. See [Pirates & NPC Ships](pirates-and-npc-ships.md).
 
 Plasma and frontier guns cannot be crafted, printed or ordered through cargo, and no one buys them back.
 
