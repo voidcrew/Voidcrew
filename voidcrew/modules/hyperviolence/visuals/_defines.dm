@@ -159,9 +159,9 @@
 /// How long a standing survivor takes to pitch into a forward throat-clutch hunch after release.
 #define HV_VIS_KNIFE_HUNCH_IN (0.15 SECONDS)
 /// How long a standing survivor holds the forward throat-clutch hunch before returning upright.
-#define HV_VIS_KNIFE_HUNCH_HOLD (0.2 SECONDS)
+#define HV_VIS_KNIFE_HUNCH_HOLD (0.4 SECONDS)
 /// How long a standing survivor takes to return from the forward hunch to their true pose.
-#define HV_VIS_KNIFE_HUNCH_OUT (0.25 SECONDS)
+#define HV_VIS_KNIFE_HUNCH_OUT (0.3 SECONDS)
 /// Pixels the attacker steps toward the victim during a knife execution (under a third of a 32 px tile).
 #define HV_VIS_KNIFE_STEP_IN 9
 /// Degrees a side-facing standing victim is tilted back toward the attacker about their feet.
@@ -170,22 +170,16 @@
 #define HV_VIS_KNIFE_TILT_FRONT 5
 /// Degrees a lying victim is tugged toward the attacker during the wind-up.
 #define HV_VIS_KNIFE_TILT_LYING 4
-/// Degrees a standing survivor hunches forward after the throat is cut.
-#define HV_VIS_KNIFE_HUNCH_TILT 8
-/// Pixels from the blade prop's centre back along its spine to the grip held in the attacker's hand.
-#define HV_VIS_KNIFE_GRIP_BACK 6
-/// Pixels from the blade prop's centre forward along its edge to where the cut begins on the throat.
-#define HV_VIS_KNIFE_CUT_START_REACH 2
-/// Pixels from the blade prop's centre forward along its edge to the tip/edge that ends on the throat.
-#define HV_VIS_KNIFE_EDGE_REACH 8
-/// Layer for the grabbing far arm behind the victim (above BELOW_MOB_LAYER 3.7, below LYING_MOB_LAYER 3.8).
-#define HV_VIS_KNIFE_FAR_ARM_LAYER 3.71
-/// Layer for the knife blade when occluded behind a north-facing victim's head and back.
-#define HV_VIS_KNIFE_BEHIND_LAYER 3.72
-/// Layer for the knife hand when occluded behind a north-facing victim's head and back.
-#define HV_VIS_KNIFE_BEHIND_HAND_LAYER 3.73
-/// Layer for the throat blood spurt when occluded behind a north-facing victim's neck.
-#define HV_VIS_KNIFE_BEHIND_SPURT_LAYER 3.74
+/// Degrees a standing survivor hunches forward about their feet after the throat is cut.
+#define HV_VIS_KNIFE_HUNCH_TILT 9
+/// Scale applied to a 32x32 diagonal knife sprite so the prop renders ~11 px long in a 32 px hand.
+#define HV_VIS_KNIFE_SCALE 0.28
+/// Unscaled axial sprite coordinate (from 32x32 centre) of a knife's grip under the holder's fist.
+#define HV_VIS_KNIFE_SPRITE_GRIP -9.5
+/// Unscaled axial sprite coordinate (from 32x32 centre) of the cutting edge heel where the draw begins.
+#define HV_VIS_KNIFE_SPRITE_HEEL -2
+/// Unscaled axial sprite coordinate (from 32x32 centre) of the blade tip that finishes on the throat.
+#define HV_VIS_KNIFE_SPRITE_TIP 12.5
 /// Layer for the knife blade when visible in front of the victim's neck (above MOB_LAYER 4.0).
 #define HV_VIS_KNIFE_BLADE_LAYER 4.05
 /// Layer for the attacker's knife hand in front of the blade grip and the victim's neck.

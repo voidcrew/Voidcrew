@@ -70,6 +70,7 @@
 		victim,
 		extra_checks = CALLBACK(src, PROC_REF(hv_knife_execution_holds), user, victim),
 		interaction_key = HV_KNIFE_EXECUTION_DOAFTER,
+		hidden = TRUE, // no cog over his head: the grab itself is what people see
 	)
 	if(!held || QDELETED(src) || QDELETED(user) || QDELETED(victim))
 		return FALSE
@@ -145,12 +146,12 @@
 						break
 				if(has_critical_slash)
 					victim.apply_status_effect(/datum/status_effect/neck_slice)
-				victim.hv_add_hit_line("[user] draws [src] across [victim]'s throat!", HV_LINE_HUGE, null, COMBAT_MESSAGE_RANGE)
+				victim.hv_add_hit_line("[user] cuts [victim]'s throat!", HV_LINE_HUGE, null, COMBAT_MESSAGE_RANGE)
 				to_chat(victim, span_userdanger("Cold steel opens your throat!"))
 			else if(wound_severity == WOUND_SEVERITY_SEVERE)
-				victim.hv_add_hit_line("[src] cuts deep into [victim]'s neck, turned short of the artery!", HV_LINE_BOLD, null, COMBAT_MESSAGE_RANGE)
+				victim.hv_add_hit_line("[user] slashes [victim]'s neck!", HV_LINE_BOLD, null, COMBAT_MESSAGE_RANGE)
 			else
-				victim.hv_add_hit_line("[victim]'s protection turns the worst of [src] from [victim.p_their()] throat!", HV_LINE_BOLD, null, COMBAT_MESSAGE_RANGE)
+				victim.hv_add_hit_line("[src] skids off [victim]'s [(sealed_helmet ? "helmet" : "collar")].", HV_LINE_BOLD, null, COMBAT_MESSAGE_RANGE)
 
 	log_combat(user, victim, "knife-executed", src, "([round(hv_knife_execution_head_damage, 0.1)] damage to the head, slash severity [wound_severity])")
 	if(!QDELETED(victim))
