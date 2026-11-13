@@ -573,31 +573,47 @@
 			return TRUE
 	return !is_holding(thing)
 
-/// A hand free for what they are about to take: if both are full, something held goes away. TRUE if a hand is free.
+/// First usable empty hand index (not a missing limb), or 0
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_empty_hand()
+	for(var/i in 1 to length(held_items))
+		if(!held_items[i] && has_hand_for_held_index(i))
+			return i
+	return 0
+
+/// A hand free for what they are about to take: if all usable hands are full, something held goes away. TRUE if a usable hand is free.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_free_hand()
-	if(length(get_empty_held_indexes()))
+	var/hand = police_empty_hand()
+	if(hand)
+		swap_hand(hand, silent = TRUE)
 		return TRUE
 	for(var/obj/item/held in held_items)
 		if(istype(held, /obj/item/outpost_sealed_case/evidence))
 			continue
-		if(police_put_away(held) && length(get_empty_held_indexes()))
-			return TRUE
+		if(police_put_away(held))
+			hand = police_empty_hand()
+			if(hand)
+				swap_hand(hand, silent = TRUE)
+				return TRUE
 	// Still full (for instance a tactical long gun with no sling slot): an evidence case that fits in the bag can ride there
 	for(var/obj/item/held in held_items)
 		if(!istype(held, /obj/item/outpost_sealed_case/evidence))
 			continue
-		if(police_put_away(held) && length(get_empty_held_indexes()))
-			return TRUE
-	return length(get_empty_held_indexes()) > 0
+		if(police_put_away(held))
+			hand = police_empty_hand()
+			if(hand)
+				swap_hand(hand, silent = TRUE)
+				return TRUE
+	return FALSE
 
 /// Takes `thing` into a free hand (making one free), or failing that into the belt or the bag. TRUE if they have it.
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_carry(obj/item/thing)
 	if(QDELETED(thing))
 		return FALSE
-	if(police_free_hand() && put_in_hands(thing))
+	var/hand = police_free_hand() ? police_empty_hand() : 0
+	if(hand && put_in_hand(thing, hand))
 		return TRUE
 	for(var/obj/item/holder in list(belt, back))
-		if(holder.atom_storage?.attempt_insert(thing, src, messages = FALSE))
+		if(holder?.atom_storage?.attempt_insert(thing, src, messages = FALSE))
 			return TRUE
 	return thing in get_all_contents()
 

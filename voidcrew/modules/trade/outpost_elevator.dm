@@ -184,8 +184,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	return TRUE
 
 /// Whether this rider may send the car to the floor. Only a standard berth's own crew, or the outpost's police, may go down to it.
-/// The outpost's own security and recovery crews, on duty: they go down to any berth
+/// The outpost's own security and recovery crews, on duty (never a player-controlled body): they go down to any berth
 /proc/outpost_elevator_staff(mob/rider, obj/structure/overmap/outpost)
+	if(!rider || !outpost || rider.mind || rider.client)
+		return FALSE
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = rider
 	if(istype(cop))
 		return cop.police?.outpost == outpost
@@ -266,12 +268,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 /// morgue crew haul, and things with nobody inside who couldn't go themselves)
 /proc/outpost_elevator_police_passenger(atom/movable/passenger, datum/outpost_berth/berth)
 	for(var/mob/living/person in passenger.get_all_contents())
-		if(istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || istype(person, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery) || berth.allows_entry(person))
+		if(outpost_elevator_staff(person, berth.outpost) || berth.allows_entry(person))
 			continue
-		if(person == passenger && istype(person.pulledby, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = person.pulledby
+		if(person == passenger && istype(escort) && outpost_elevator_staff(escort, berth.outpost))
 			continue
 		// A body in a morgue crew's bag (or on their gurney) goes where they take it
-		if(person.stat == DEAD && passenger != person && istype(passenger.pulledby, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/hauler = passenger.pulledby
+		if(person.stat == DEAD && passenger != person && istype(hauler) && outpost_elevator_staff(hauler, berth.outpost))
 			continue
 		return FALSE
 	return TRUE

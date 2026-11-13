@@ -230,6 +230,10 @@
 	var/turf/approach_goal
 	/// The target turf `approach_goal` was chosen for
 	var/turf/approach_target_turf
+	/// Current checkpoint step turf for `route_to()` lobby -> concourse crossing
+	var/turf/gate_goal
+	/// Nearest the officer has got to `gate_goal`
+	var/gate_best = INFINITY
 	/// world.time the order was given, or 0
 	var/order_at = 0
 	/// The suspect took a step of their own after the order
@@ -337,6 +341,7 @@
 	lift_goal = null
 	approach_goal = null
 	approach_target_turf = null
+	gate_goal = null
 	warrant = null
 	police = null
 	suspect_ref = null
@@ -363,6 +368,8 @@
 	progress_dist = INFINITY
 	approach_goal = null
 	approach_target_turf = null
+	gate_goal = null
+	gate_best = INFINITY
 	goal = null
 
 /// Sends the arresting officer to `where`, stopping `distance` from it (null: stand)
@@ -951,13 +958,22 @@
 			officer.stop_pulling()
 		var/turf/gate_step = police.checkpoint_step_to_concourse(officer)
 		if(gate_step)
-			step_started_at = world.time
+			var/gate_dist = here.z == gate_step.z ? get_dist(here, gate_step) : INFINITY
+			if(gate_step != gate_goal)
+				gate_goal = gate_step
+				gate_best = gate_dist
+				step_started_at = world.time
+			else if(gate_dist < gate_best)
+				gate_best = gate_dist
+				step_started_at = world.time
 			if(gate_step == here)
 				set_goal(null)
 			else
 				set_goal(gate_step, 0)
 			return FALSE
 	else
+		gate_goal = null
+		gate_best = INFINITY
 		police.clear_checkpoint_crossing(officer)
 	var/next_ride_sector = (world.time < ride_failed_until) ? null : police.next_elevator_sector(from_sector, to_sector)
 	if(!next_ride_sector)

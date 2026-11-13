@@ -833,3 +833,30 @@
 	fresh_id.registered_name = "Fresh Visitor"
 	locker.attackby(fresh_id, claimer, list(), list())
 	TEST_ASSERT(locker.locked && locker.id_card?.resolve() == fresh_id, "A destroyed ID card wedged an unlocked checkpoint locker")
+
+	// Player-possessed officer body does not get police checkpoint clearance for weapons
+	host.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, chamber[1])
+	host.police.add_officer(cop)
+	TEST_ASSERT(outpost_checkpoint_police_cleared(cop, host), "On-duty NPC officer was not cleared at the checkpoint")
+	TEST_ASSERT(!length(checkpoint.inspect_chamber()), "On-duty NPC officer's kit was refused by the checkpoint scan")
+	cop.mind_initialize()
+	TEST_ASSERT(!outpost_checkpoint_police_cleared(cop, host), "Player-minded officer body bypassed checkpoint weapon clearance")
+	TEST_ASSERT(length(checkpoint.inspect_chamber()) > 0, "Armed player-minded officer body was not refused by the checkpoint scan")
+	qdel(cop)
+
+	// lobby_checkpoint() prefers an unjammed checkpoint over a closer one stuck in rejecting with contraband on the floor
+	var/datum/outpost_checkpoint/second = new
+	second.outpost = host
+	second.checkpoint_id = "second_checkpoint"
+	second.lobby_turf = locate(host.template_bottom_left.x + 4, host.template_bottom_left.y + 1, host.template_bottom_left.z)
+	second.state = "idle" // CHECKPOINT_IDLE
+	host.checkpoints["second_checkpoint"] = second
+	var/obj/item/gun/energy/e_gun/mini/jam_gun = allocate(/obj/item/gun/energy/e_gun/mini, chamber[1])
+	checkpoint.state = "rejecting" // CHECKPOINT_REJECTING
+	TEST_ASSERT_EQUAL(host.lobby_checkpoint(lobby), second, "lobby_checkpoint picked a jammed rejecting checkpoint over a working one")
+	qdel(jam_gun)
+	checkpoint.state = "idle" // CHECKPOINT_IDLE
+	host.checkpoints -= "second_checkpoint"
+	second.outpost = null
+	qdel(second)

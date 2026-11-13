@@ -259,10 +259,10 @@
 	if(!isliving(person) || !outpost)
 		return FALSE
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = person
-	if(istype(cop) && cop.police?.outpost == outpost)
+	if(istype(cop) && !cop.mind && !cop.client && cop.police?.outpost == outpost)
 		return TRUE
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = person.pulledby
-	if(istype(escort) && escort.police?.outpost == outpost && escort.police.in_custody(person))
+	if(istype(escort) && !escort.mind && !escort.client && escort.police?.outpost == outpost && escort.police.in_custody(person))
 		return TRUE
 	return FALSE
 

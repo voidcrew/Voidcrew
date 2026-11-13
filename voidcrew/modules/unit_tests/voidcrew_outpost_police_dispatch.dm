@@ -614,3 +614,113 @@
 	TEST_ASSERT(!QDELETED(note) && get_turf(note) == bag_spot, "Collecting a corpse deleted or stranded a non-gear item on it")
 	TEST_ASSERT(QDELETED(morgue_bag), "Collecting the only corpse in an outpost_morgue bag left an empty bag behind")
 	dispatch_clear(police)
+
+/// Diagonal pulls step into the elevator alcove before riding, player-possessed staff bodies are barred from locked berths, same-z unreachable exits are skipped, and occupied ship hold posts stay valid
+/datum/unit_test/voidcrew_outpost_police_dispatch_elevator_and_exits
+
+/datum/unit_test/voidcrew_outpost_police_dispatch_elevator_and_exits/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	TEST_ASSERT(length(outpost.lobby_alcove_turfs), "The outpost has no lobby lift alcove")
+
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(5, 5, 1, requester = "police elevator and exits test")
+	TEST_ASSERT_NOTNULL(claimed, "Could not reserve a 5x5 hangar block")
+	var/datum/outpost_berth/berth = new(outpost, 1, null)
+	berth.reservation = claimed
+	var/turf/origin = berth.get_bottom_left()
+	for(var/turf/tile as anything in berth.get_block())
+		tile.ChangeTurf(/turf/open/floor/iron)
+	// 2x2 elevator alcove in the top-right corner of the hangar; (origin.x + 2, origin.y + 2) is diagonally outside
+	berth.alcove_turfs = block(locate(origin.x + 3, origin.y + 3, origin.z), locate(origin.x + 4, origin.y + 4, origin.z))
+	var/list/old_berths = outpost.berths
+	outpost.berths = list(berth)
+	var/obj/machinery/outpost_elevator/panel = allocate(/obj/machinery/outpost_elevator, berth.alcove_turfs[1])
+	panel.outpost = outpost
+	panel.berth = berth
+	berth.panel = panel
+	var/datum/checkpoint_construction/locked_build = new
+	locked_build.captain_ckey = "other_captain_test"
+	berth.rebuild_owner = WEAKREF(locked_build)
+
+	// Player-possessed officer body may not send the elevator to or ride as staff into a crew-only berth
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/possessed = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, outpost.lobby_alcove_turfs[1])
+	TEST_ASSERT(outpost_elevator_staff(possessed, outpost), "NPC officer on duty did not count as elevator staff")
+	possessed.mind_initialize()
+	TEST_ASSERT(!outpost_elevator_staff(possessed, outpost), "Player-minded officer body counted as elevator staff for a crew-only berth")
+	TEST_ASSERT(!outpost_elevator_police_passenger(possessed, berth), "Player-minded officer body rode into a crew-only berth as staff")
+	qdel(possessed)
+
+	// Diagonal pull outside the alcove: ride() steps deeper until the pulled prisoner is on the car floor, then rides
+	var/turf/alcove_corner = locate(origin.x + 3, origin.y + 3, origin.z)
+	var/turf/diag_outside = locate(origin.x + 2, origin.y + 2, origin.z)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, alcove_corner)
+	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, diag_outside)
+	officer.start_pulling(prisoner)
+	TEST_ASSERT(!(get_turf(prisoner) in berth.alcove_turfs), "Setup: prisoner started inside the alcove")
+	TEST_ASSERT(police.ride(officer, "lobby"), "Hangar elevator ride failed when pulling a diagonally adjacent prisoner") // POLICE_SECTOR_LOBBY
+	TEST_ASSERT(!HAS_TRAIT_FROM(officer, TRAIT_AI_PAUSED, "outpost_police_ride") && !officer.dispatch_riding, "Completed ride left the officer paused or marked riding")
+	TEST_ASSERT((get_turf(officer) in outpost.lobby_alcove_turfs) && (get_turf(prisoner) in outpost.lobby_alcove_turfs), "Diagonal pull outside the alcove was left behind on the hangar floor")
+	TEST_ASSERT_EQUAL(officer.pulling, prisoner, "Hangar elevator ride dropped the pulled prisoner")
+	officer.stop_pulling()
+
+	// If the alcove has no room to step deeper for a pulled person outside it, ride() refuses rather than riding alone
+	berth.alcove_turfs = list(alcove_corner)
+	officer.forceMove(alcove_corner)
+	prisoner.forceMove(diag_outside)
+	officer.start_pulling(prisoner)
+	TEST_ASSERT(!police.ride(officer, "lobby"), "Officer rode away alone while their pulled prisoner was still outside a 1-tile alcove")
+	TEST_ASSERT_EQUAL(get_turf(officer), alcove_corner, "Failed pull-in still teleported the officer")
+	officer.stop_pulling()
+
+	// Same-z unreachable sector exits: an officer in the lobby with all lobby alcove tiles skipped never picks a concourse closet
+	dispatch_two_lifts(outpost)
+	var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint(null)
+	if(post?.lobby_turf)
+		officer.forceMove(post.lobby_turf)
+		for(var/turf/lobby_lift as anything in outpost.lobby_alcove_turfs)
+			police.dispatch_skipped[lobby_lift] = world.time + 60 SECONDS
+		TEST_ASSERT_NULL(police.dispatch_free_exit(officer), "Lobby officer with skipped lobby alcoves picked an unreachable concourse or berth lift tile")
+		TEST_ASSERT(!police.dispatch_send_home(officer) && officer.dispatch_no_lift_since > 0, "Lobby officer with no walkable lift did not start dispatch_no_lift_since")
+		officer.npc_stop_leaving()
+		TEST_ASSERT_EQUAL(officer.dispatch_no_lift_since, 0, "npc_stop_leaving did not clear dispatch_no_lift_since")
+		police.dispatch_skipped.Cut()
+
+	// Standing down at zero stars detaches and unpauses unreleased wave members immediately
+	var/mob/living/suspect = dispatch_suspect(outpost, 50)
+	police.dispatch_build_now = TRUE
+	var/datum/outpost_police_wave/wave = police.dispatch_send_wave(3, 1, "concourse", police.get_warrant(suspect.mind))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/wave_cop = wave.living_members()[1]
+	TEST_ASSERT(HAS_TRAIT_FROM(wave_cop, TRAIT_AI_PAUSED, "outpost_police_wave"), "Setup: wave member was not paused")
+	police_pin_warrant(police, suspect.mind, 0)
+	police.dispatch_stand_down(0)
+	TEST_ASSERT(!HAS_TRAIT_FROM(wave_cop, TRAIT_AI_PAUSED, "outpost_police_wave") && isnull(wave_cop.dispatch_wave), "Standing down an unreleased wave member left them paused on the wave")
+
+	// Ship airlock hold post stays valid even when an officer already stands on the outside hangar tile
+	berth.rebuild_owner = null
+	qdel(locked_build)
+	var/turf/hull_door_turf = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/turf/hull_inside = locate(origin.x + 1, origin.y + 3, origin.z)
+	locate(origin.x, origin.y + 2, origin.z).ChangeTurf(/turf/closed/indestructible)
+	locate(origin.x + 2, origin.y + 2, origin.z).ChangeTurf(/turf/closed/indestructible)
+	var/turf/outside_post = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/obj/machinery/door/airlock/ship_door = allocate(/obj/machinery/door/airlock, hull_door_turf)
+	var/obj/docking_port/hull_port = new(hull_door_turf)
+	hull_port.dir = NORTH
+	hull_port.width = 1
+	hull_port.height = 2
+	var/obj/structure/overmap/ship/mock_ship = allocate(/obj/structure/overmap/ship)
+	mock_ship.shuttle = hull_port
+	berth.ship = mock_ship
+	officer.forceMove(outside_post)
+	TEST_ASSERT_EQUAL(police.dispatch_hold_post(hull_inside), outside_post, "An officer already holding the ship's airlock invalidated dispatch_hold_post")
+	mock_ship.shuttle = null
+	berth.ship = null
+	qdel(hull_port, force = TRUE)
+	qdel(ship_door)
+	qdel(panel)
+	qdel(berth)
+	outpost.berths = old_berths
+	dispatch_clear(police)

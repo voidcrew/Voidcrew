@@ -1447,5 +1447,22 @@
 	TEST_ASSERT_EQUAL(armless.usable_hands, 0, "Setup: dismembered officer still has usable hands")
 	TEST_ASSERT(!case.officer_fit(armless), "An officer with no hands was counted fit for an arrest")
 
+	// Waiting at a jammed lobby checkpoint stops refreshing step_started_at once the officer stands on gate_step
+	var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint(null)
+	if(post?.lobby_turf && length(post.chamber_turfs))
+		var/obj/item/gun/energy/e_gun/mini/jam = allocate(/obj/item/gun/energy/e_gun/mini, post.chamber_turfs[1])
+		var/old_state = post.state
+		post.state = "rejecting" // CHECKPOINT_REJECTING
+		officer.forceMove(post.lobby_turf)
+		var/turf/concourse_goal = police_floor(outpost)
+		case.route_to(officer, concourse_goal, 0)
+		case.step_started_at = world.time - 30 SECONDS
+		var/pinned_start = case.step_started_at
+		case.route_to(officer, concourse_goal, 0)
+		TEST_ASSERT_EQUAL(case.step_started_at, pinned_start, "Waiting motionless at a jammed checkpoint kept resetting step_started_at")
+		police.clear_checkpoint_crossing(officer)
+		post.state = old_state
+		qdel(jam)
+
 	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)

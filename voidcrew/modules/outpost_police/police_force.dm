@@ -531,11 +531,11 @@
 		return FALSE
 	if(is_holding(weapon))
 		return TRUE
-	if(!length(get_empty_held_indexes()))
+	if(!police_empty_hand())
 		put_away_prop()
-	if(!length(get_empty_held_indexes()) && stow && is_holding(stow))
+	if(!police_empty_hand() && stow && is_holding(stow))
 		police_put_away(stow)
-	if(!length(get_empty_held_indexes()))
+	if(!police_empty_hand())
 		for(var/obj/item/held in held_items)
 			if(held == weapon || held == stow)
 				continue
@@ -544,6 +544,10 @@
 			else
 				police_put_away(held)
 			break
+	var/hand = police_empty_hand()
+	if(!hand)
+		return FALSE
+	swap_hand(hand, silent = TRUE)
 	return human_npc_take_in_hand(src, weapon)
 
 /// Switches `gun` with its own select_fire() to its first disabling (`lethal` FALSE) or killing mode

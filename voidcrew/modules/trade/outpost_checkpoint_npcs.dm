@@ -12,17 +12,25 @@
  * most once every OUTPOST_CHECKPOINT_NPC_ASK_GAP and never walk into a shut one.
  */
 
-/// The checkpoint that leads in from the lift lobby nearest `near`: one whose outer door opens onto the outpost, not space. Null if there is none.
+/// The checkpoint that leads in from the lift lobby nearest `near` (preferring one not jammed on a refusal): one whose outer door opens onto the outpost, not space. Null if there is none.
 /obj/structure/overmap/trader_outpost/proc/lobby_checkpoint(atom/near)
+	var/turf/here = get_turf(near)
 	var/datum/outpost_checkpoint/best
+	var/best_jammed = TRUE
 	var/best_distance = INFINITY
 	for(var/checkpoint_id in checkpoints)
 		var/datum/outpost_checkpoint/post = checkpoints[checkpoint_id]
 		if(QDELETED(post) || !post.lobby_turf || !istype(post.lobby_turf.loc, /area/voidcrew/trader_outpost))
 			continue
+		if(here && ((here in post.chamber_turfs) || here == get_turf(post.inner_door) || here == get_turf(post.outer_door)))
+			return post
+		var/jammed = post.state == CHECKPOINT_REJECTING && length(post.inspect_chamber()) > 0
+		if(jammed && !best_jammed)
+			continue
 		var/distance = near ? get_dist(near, post.lobby_turf) : 0
-		if(distance < best_distance)
+		if((!jammed && best_jammed) || distance < best_distance)
 			best = post
+			best_jammed = jammed
 			best_distance = distance
 	return best
 

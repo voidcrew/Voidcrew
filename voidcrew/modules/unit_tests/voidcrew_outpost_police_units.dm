@@ -550,3 +550,36 @@
 	qdel(right_slot)
 	qdel(tester)
 	qdel(outpost)
+
+/// Dismembered officers stow and draw with their remaining hand instead of treating a missing arm as an empty hand or dropping evidence on the floor
+/datum/unit_test/voidcrew_outpost_police_units_one_armed_hands
+
+/datum/unit_test/voidcrew_outpost_police_units_one_armed_hands/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_units_room_outpost(/obj/structure/overmap/trader_outpost/general)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, run_loc_floor_bottom_left)
+	// Remove left arm (hand index 1, the default active hand) so only index 2 works
+	qdel(cop.get_bodypart(BODY_ZONE_L_ARM))
+	TEST_ASSERT_EQUAL(cop.usable_hands, 1, "Setup: dismembered officer does not have 1 usable hand")
+	var/obj/item/melee/baton/baton = cop.get_baton()
+	var/obj/item/gun/energy/sidearm = cop.get_sidearm()
+	TEST_ASSERT(baton && sidearm, "Setup: officer is missing baton or sidearm")
+	TEST_ASSERT(cop.police_draw(baton, null) && cop.is_holding(baton), "One-armed officer could not draw baton into their remaining hand")
+	// With baton filling their only working hand, police_draw(sidearm, baton) must stow baton and draw sidearm
+	TEST_ASSERT(cop.police_draw(sidearm, baton) && cop.is_holding(sidearm), "One-armed officer holding baton failed to stow it and draw sidearm")
+	TEST_ASSERT(!cop.is_holding(baton) && (baton in cop.get_all_contents()), "Stowed baton left the one-armed officer's inventory")
+
+	var/obj/item/outpost_sealed_case/evidence/case_box = allocate(/obj/item/outpost_sealed_case/evidence, run_loc_floor_bottom_left)
+	TEST_ASSERT(cop.police_carry(case_box), "One-armed officer could not carry an evidence case")
+	TEST_ASSERT(cop.is_holding(case_box) && !isturf(case_box.loc), "One-armed officer dropped the evidence case onto the floor instead of holding it")
+
+	// Zero-armed tactical officer: police_free_hand is FALSE and police_carry stores in backpack without dropping on the floor
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical/armless = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical, run_loc_floor_bottom_left)
+	qdel(armless.get_bodypart(BODY_ZONE_L_ARM))
+	qdel(armless.get_bodypart(BODY_ZONE_R_ARM))
+	TEST_ASSERT(!armless.police_free_hand(), "Zero-armed officer reported a free hand")
+	var/obj/item/outpost_sealed_case/evidence/bag_box = allocate(/obj/item/outpost_sealed_case/evidence, armless)
+	TEST_ASSERT(armless.police_carry(bag_box), "Zero-armed tactical officer could not store evidence in their backpack")
+	TEST_ASSERT_EQUAL(bag_box.loc, armless.back, "Zero-armed tactical officer did not put evidence into their backpack")
+	qdel(cop)
+	qdel(armless)
+	qdel(outpost)
