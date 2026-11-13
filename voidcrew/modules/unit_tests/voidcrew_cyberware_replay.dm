@@ -919,8 +919,8 @@
 	press_again(user)
 	wait_over(user)
 
-/// The replay's hold is a pause: an NPC's clocks (its next click, a blackboard deadline, its shot cooldown) and a held
-/// mech's have as long left when the replay ends as when it began, instead of all running out during it.
+/// The replay's hold is a pause: an NPC's clocks (its next click, a blackboard deadline) and a held mech's have as long
+/// left when the replay ends as when it began, instead of running out during it, even one due a tick into the hold.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_clocks
 
 /datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_clocks/Run()
@@ -935,7 +935,7 @@
 	press_again(user)
 	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
 	TEST_ASSERT_NOTNULL(gunner.ai_controller, "The NPC has no AI")
-	gunner.next_move = world.time + 8
+	gunner.next_move = world.time + 1 // due before the hold is over
 	gunner.ai_controller.set_blackboard_key("human_npc_next_shot", world.time + 12) // BB_HUMAN_NPC_NEXT_SHOT
 	mech.cooldown_vehicle_move = world.time + 10
 	replay.begin()
@@ -950,12 +950,12 @@
 	var/shot_left = gunner.ai_controller.blackboard["human_npc_next_shot"] - world.time
 	var/mech_left = mech.cooldown_vehicle_move - world.time
 	log_test("replay/hold_pauses_clocks: held [held_for] ds; left after: next_move [move_left], next shot [shot_left], mech move [mech_left]")
-	TEST_ASSERT(move_left <= 8 && move_left >= 8 - world.tick_lag - 0.01, "The NPC's next click had 8 ds left when the replay began and [move_left] when it ended")
+	TEST_ASSERT(move_left <= 1 && move_left >= 1 - world.tick_lag - 0.01, "The NPC's next click had 1 ds left when the replay began and [move_left] when it ended")
 	TEST_ASSERT(shot_left <= 12 && shot_left >= 12 - world.tick_lag - 0.01, "The NPC's next shot had 12 ds left when the replay began and [shot_left] when it ended")
 	TEST_ASSERT(mech_left <= 10 && mech_left >= 10 - world.tick_lag - 0.01, "The mech's move cooldown had 10 ds left when the replay began and [mech_left] when it ended")
 	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[gunner] && !GLOB.sandy_replay_stopped_clocks[mech], "The replay left a stopped clock behind")
 
-/// Two replays holding one NPC at once push its clocks once, by the time from the first hold to the last release, and
+/// Two replays holding one NPC at once push its clocks once, so it has the same time left when the last lets go, and
 /// a player's clocks are never stopped.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/overlapping_holds_push_once
 
@@ -973,7 +973,7 @@
 	sandy_replay_clock_stop(npc) // a second replay takes it
 	sleep(0.3 SECONDS)
 	sandy_replay_clock_start(npc) // the first lets go: the second still holds it
-	TEST_ASSERT_EQUAL(npc.next_move, began + 20, "An NPC's clock moved while another replay still held it")
+	TEST_ASSERT_EQUAL(npc.next_move - world.time, 20, "An NPC's clock ran while another replay still held it")
 	sleep(0.3 SECONDS)
 	sandy_replay_clock_start(npc)
 	sandy_replay_clock_start(player)

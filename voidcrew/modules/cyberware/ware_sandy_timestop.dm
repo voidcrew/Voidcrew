@@ -797,12 +797,12 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	cyberware_push_deadlines(victim, push)
 
 /**
- * Pushes every timing deadline `victim` has that hasn't passed yet back by `push` deciseconds (forward, if negative).
- * The one list of a mob's clocks: the slow-mo field slows them with it, and the replay's hold (ware_sandy_replay.dm)
- * stops them with it, so a clock added here is covered by both.
+ * Pushes every timing deadline `victim` has that was still to come at `since` (default now) back by `push` deciseconds
+ * (forward, if negative). The one list of a mob's clocks: the slow-mo field slows them with it, and the replay's hold
+ * (ware_sandy_replay.dm) stops them with it, so a clock added here is covered by both.
  */
-/proc/cyberware_push_deadlines(mob/living/victim, push)
-	var/now = world.time
+/proc/cyberware_push_deadlines(mob/living/victim, push, since = world.time)
+	var/now = since
 	if(victim.next_move > now)
 		victim.next_move += push
 	for(var/datum/action/cooldown/ability in victim.actions)
@@ -920,10 +920,10 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	for(var/obj/item/grenade/bomb as anything in held_grenades)
 		cyberware_push_machine_deadlines(bomb, push)
 
-/// Pushes the clock of a held machine or grenade `thing` back by `push` deciseconds, if it hasn't run out. Shared by the
-/// field and the replay's hold (ware_sandy_replay.dm), like cyberware_push_deadlines().
-/proc/cyberware_push_machine_deadlines(atom/thing, push)
-	var/now = world.time
+/// Pushes the clock of a held machine or grenade `thing` back by `push` deciseconds, if it was still to come at `since`
+/// (default now). Shared by the field and the replay's hold (ware_sandy_replay.dm), like cyberware_push_deadlines().
+/proc/cyberware_push_machine_deadlines(atom/thing, push, since = world.time)
+	var/now = since
 	if(ismecha(thing))
 		var/obj/vehicle/sealed/mecha/mech = thing
 		if(mech.cooldown_vehicle_move > now)

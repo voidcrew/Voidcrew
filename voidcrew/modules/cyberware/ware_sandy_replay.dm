@@ -1465,14 +1465,14 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	mech.completely_disabled = TRUE
 	sandy_replay_clock_stop(mech)
 
-/// Things whose clocks a replay's hold has stopped, to list(world.time the first hold began, holds on it now).
+/// Things whose clocks a replay's hold has stopped, to list(world.time they were last pushed to, holds on it now).
 GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 
 /**
- * The replay's hold is a pause for an NPC or a machine: when it ends, every clock the slow-mo slows
- * (cyberware_push_deadlines(), cyberware_push_machine_deadlines()) is pushed back by the time it was held, so it picks
- * up where it was instead of finding every cooldown run out at once. Two replays holding the same thing at once push it
- * once, by the time from the first hold to the last release. Players' clocks are left alone.
+ * The replay's hold is a pause for an NPC or a machine: every clock the slow-mo slows (cyberware_push_deadlines(),
+ * cyberware_push_machine_deadlines()) is pushed back every frame of the hold by the time that passed, so it picks up
+ * where it was when the hold ends instead of finding every cooldown run out at once. Two replays holding the same thing
+ * at once push it once. Players' clocks are left alone.
  */
 /proc/sandy_replay_clock_stop(atom/movable/thing)
 	if(ismob(thing))
@@ -1485,22 +1485,37 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	else
 		GLOB.sandy_replay_stopped_clocks[thing] = list(world.time, 1)
 
-/// A replay let `thing` go: if no other replay still holds it, its clocks move back by the time it was held.
+/// Pushes `thing`'s stopped clocks back by the time since they were last pushed.
+/proc/sandy_replay_clock_catch_up(atom/movable/thing)
+	var/list/stop = GLOB.sandy_replay_stopped_clocks[thing]
+	if(!stop)
+		return
+	var/since = stop[1]
+	var/held = world.time - since
+	if(held <= 0)
+		return
+	stop[1] = world.time
+	if(QDELETED(thing))
+		return
+	if(isliving(thing))
+		cyberware_push_deadlines(thing, held, since)
+	else
+		cyberware_push_machine_deadlines(thing, held, since)
+
+/// Every replay frame: everything held stays where its clocks were.
+/proc/sandy_replay_clocks_tick()
+	for(var/atom/movable/thing as anything in GLOB.sandy_replay_stopped_clocks)
+		sandy_replay_clock_catch_up(thing)
+
+/// A replay let `thing` go: its clocks catch up, and run again once no other replay holds it.
 /proc/sandy_replay_clock_start(atom/movable/thing)
 	var/list/stop = GLOB.sandy_replay_stopped_clocks[thing]
 	if(!stop)
 		return
+	sandy_replay_clock_catch_up(thing)
 	stop[2] -= 1
-	if(stop[2] > 0)
-		return
-	GLOB.sandy_replay_stopped_clocks -= thing
-	var/held = world.time - stop[1]
-	if(held <= 0 || QDELETED(thing))
-		return
-	if(isliving(thing))
-		cyberware_push_deadlines(thing, held)
-	else
-		cyberware_push_machine_deadlines(thing, held)
+	if(stop[2] <= 0)
+		GLOB.sandy_replay_stopped_clocks -= thing
 
 /// Pauses `body`'s AI and locks its player's input. No stun: decisions and input only.
 /datum/sandy_replay/proc/lock(mob/living/body)
@@ -1881,6 +1896,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			return
 		frame = min(frame, total)
 		hold_nearby()
+		sandy_replay_clocks_tick() // the held stay paused
 		hide_unborn()
 		clear_view()
 		play_sounds(frame)
