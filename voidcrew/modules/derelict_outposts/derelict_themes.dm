@@ -343,7 +343,7 @@
 /datum/derelict_scene
 	/// The derelict being dressed
 	var/obj/structure/overmap/dynamic/player_outpost/derelict/site
-	/// Where the boss starts: the prison wing when there is one, else the far end of the habitat
+	/// Where the boss starts: the far end of the habitat
 	var/turf/boss_anchor
 	/// Up to two lesser clusters out in the habitat
 	var/list/turf/anchors = list()
@@ -419,40 +419,7 @@
 /// Picks the boss anchor and the lesser anchors (spec 4.3)
 /datum/derelict_scene/proc/pick_anchors()
 	var/obj/machinery/power/port_gen/pacman/generator = site.derelict_generator()
-	// The boss: in the prison wing, in its most open part and clear of its doors. The wing's cells are the only
-	// tiles 4 from every door; a boss behind a cell door would be caged, so 3 from the doors is far enough.
-	var/datum/outpost_upgrade/wing = site.outpost_upgrades["prison"]
-	var/area/wing_area = wing?.installed ? wing.installed_area : null
-	if(wing_area)
-		var/list/turf/doorways = list()
-		for(var/turf/tile as anything in floor_lookup)
-			if(locate(/obj/machinery/door) in tile)
-				doorways += tile
-		var/list/turf/wing_tiles = list()
-		for(var/turf/tile as anything in open_tiles)
-			if(get_area(tile) == wing_area)
-				wing_tiles += tile
-		var/best_score = -1
-		var/list/turf/scores = list()
-		for(var/turf/tile as anything in wing_tiles)
-			if(!hostile_can_start(tile, generator))
-				continue
-			var/gap = 3
-			for(var/turf/doorway as anything in doorways)
-				gap = min(gap, get_dist(tile, doorway))
-			var/room = 0
-			for(var/turf/other as anything in wing_tiles)
-				if(get_dist(tile, other) <= 2)
-					room++
-			scores[tile] = gap * 100 + room
-			best_score = max(best_score, scores[tile])
-		var/list/turf/best = list()
-		for(var/turf/tile as anything in scores)
-			if(scores[tile] >= best_score - 2)
-				best += tile
-		if(length(best))
-			boss_anchor = pick(best)
-	// No wing: the habitat tile farthest from the arrival point
+	// The boss: the habitat tile farthest from the arrival point
 	if(!boss_anchor)
 		var/best_distance = -1
 		var/list/turf/best = list()

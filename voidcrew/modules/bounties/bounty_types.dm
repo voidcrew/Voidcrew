@@ -82,7 +82,7 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/captor_name
 	/// Weakref to the ship that brought them in (/obj/structure/overmap/ship)
 	var/datum/weakref/captor_ship
-	/// Weakref to the prison (/datum/outpost_prison) that gets them first: the captor's own running prison
+	/// Weakref to the lockup (/datum/outpost_prison) that gets them first, if any
 	var/datum/weakref/preferred_prison
 	/// BOUNTY_RECORD_*
 	var/status = BOUNTY_RECORD_WANTED

@@ -18,8 +18,7 @@
  *   a player an outpost has marked,
  * and, through one-line calls in the files that own them, the scripted target
  * picks that never go through a /basic strategy: the club's people
- * (mafia_target_ok()), the lich's thralls and the outpost experiment forms
- * (their form's can_target()).
+ * (mafia_target_ok()) and the lich's thralls.
  *
  * What camo does NOT hide from: anything within CYBERWARE_CAMO_SPOT_RANGE
  * tiles, the mobs in GLOB.cyberware_camo_piercing_types (megafauna, elites
@@ -34,8 +33,8 @@
  * way to patch upstream behavior (the later .dme include wraps the earlier
  * definition, and `..()` calls straight into it). That only works for a proc
  * whose first definition is included BEFORE this file, so the hooks for the
- * voidcrew files that include after it (the lich, the club, the experiment
- * forms) are a single call to cyberware_camo_hides() in the proc that picks
+ * voidcrew files that include after it (the lich, the club) are a single call
+ * to cyberware_camo_hides() in the proc that picks
  * the target.
  *
  * TRAIT_CYBER_CAMO itself lives in voidcrew/_DEFINES/cyberware.dm, because
@@ -61,7 +60,6 @@ GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 	/mob/living/basic/lich,
 	/mob/living/basic/hoarfrost_matriarch,
 	/mob/living/basic/bounty_lair_boss,
-	/mob/living/basic/outpost_experiment/horror,
 	/mob/living/basic/alien/queen/large/derelict,
 	/mob/living/basic/vestige_oracle,
 	/mob/living/basic/vestige_mutant,

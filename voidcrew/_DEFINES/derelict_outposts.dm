@@ -9,7 +9,7 @@
 
 /// derelict_state: on the chart with nothing loaded
 #define DERELICT_STATE_DORMANT "dormant"
-/// derelict_state: level, prison, power and theme going down
+/// derelict_state: level, power and theme going down
 #define DERELICT_STATE_BUILDING "building"
 /// derelict_state: built and never claimed
 #define DERELICT_STATE_READY "ready"
@@ -44,6 +44,3 @@
 /// The habitat's stack lies at least this far from the generator
 #define DERELICT_FUEL_MIN_DISTANCE 8
 
-/// The prison wing's entrance door, zero-based column and row of its map as authored (both styles: (9,1) one-based)
-#define DERELICT_PRISON_DOOR_COLUMN 8
-#define DERELICT_PRISON_DOOR_ROW 0

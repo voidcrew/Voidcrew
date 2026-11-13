@@ -1,8 +1,8 @@
 // # Outpost prison: bounty prisoner defines
 //
-// Owner: P7 prison (voidcrew/modules/player_outposts/outpost_prison_bounty.dm). Only P7 edits this
-// file. The shared enums are in bounties.dm. The numbers are the balance fold-in's: the pool and
-// pay from spec.md 12.1 (balance/economy.md), the body and danger from spec.md 12.3 C10
+// For voidcrew/modules/trade_prison/outpost_prison_bounty.dm.
+// The shared enums are in bounties.dm. The numbers are the balance fold-in's: the pool
+// from spec.md 12.1 (balance/economy.md), the body and danger from spec.md 12.3 C10
 // (balance/combat.md section 6.5). A Petty prisoner is the ordinary baseline. Values marked OWN
 // are this package's where neither review gave one.
 //
@@ -34,12 +34,6 @@
 /// Bounty prisoners a wing holds at once: half its cells, rounded down
 #define OUTPOST_PRISON_BOUNTY_MAX(cells) FLOOR((cells) / 2, 1)
 
-// ===== PAY =====
-
-/// What a bounty prisoner earns the outpost (stipend, pay rate and release bonus), as a percent of an ordinary prisoner's, by tier
-#define OUTPOST_PRISON_BOUNTY_MULT_PETTY 150
-#define OUTPOST_PRISON_BOUNTY_MULT_WANTED 200
-#define OUTPOST_PRISON_BOUNTY_MULT_MOST_WANTED 250
 
 // ===== BODY =====
 

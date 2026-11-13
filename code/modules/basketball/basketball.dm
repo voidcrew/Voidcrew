@@ -21,7 +21,7 @@
 	var/pickup_restriction_ckeys = list()
 	/// Pickup restriction cooldown
 	COOLDOWN_DECLARE(pickup_cooldown)
-	// VOIDCREW EDIT ADDITION START - a quieter ball for the outpost prison's yard (voidcrew/modules/player_outposts/outpost_prison_fixtures.dm)
+	// VOIDCREW EDIT ADDITION START - a quieter ball for the outpost prison's yard (voidcrew/modules/trade_prison/outpost_prison_fixtures.dm)
 	/// Volume of its bounce
 	var/bounce_volume = 75
 	// VOIDCREW EDIT ADDITION END

@@ -1,7 +1,7 @@
 /**
  * # Outpost room power
  *
- * Every upgrade room with its own area (the service rooms, the cargo dock, the prison wing) has one
+ * Every upgrade room with its own area (the service rooms, the cargo dock) has one
  * room APC, and protected cable runs from it to under the room's exterior door. A room whose door lands
  * on the tile outside a habitat airlock (or another room's door) joins the habitat's grid when it
  * loads: the cables link and the template's powernet pass merges the nets. A room placed away from the
@@ -46,7 +46,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/outpost, APC_PIXEL_OFFSET)
 /obj/machinery/power/apc/outpost/Initialize(mapload, ndir)
 	. = ..()
 	// Same protection as every other outpost fixture (outpost_service_rooms.dm), applied here
-	// directly: the cargo dock and prison APCs never call protect_fixtures() on themselves.
+	// directly: the cargo dock's APC never calls protect_fixtures() on itself.
 	AddElement(/datum/element/outpost_property)
 	flags_1 |= PREVENT_CONTENTS_EXPLOSION_1
 	ADD_TRAIT(src, TRAIT_SINGULARITY_IMMUNE, OUTPOST_SERVICE_TRAIT)
@@ -133,7 +133,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/outpost, APC_PIXEL_OFFSET)
 /obj/structure/overmap/dynamic/player_outpost/proc/queue_room_power_join()
 	addtimer(CALLBACK(src, PROC_REF(join_rooms_to_grid)), 2 SECONDS, TIMER_UNIQUE)
 
-/// This room's own APC, or null (prison extensions run off the wing's, outside their own footprint)
+/// This room's own APC, or null (a snap upgrade runs off its host's, outside its own footprint)
 /datum/outpost_upgrade/proc/room_apc()
 	var/obj/machinery/power/apc/outpost/candidate = installed_area?.apc
 	if(!istype(candidate) || installed_area == outpost?.outpost_area || !contains_turf(get_turf(candidate)))
@@ -267,7 +267,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/outpost, APC_PIXEL_OFFSET)
 	if(own_area && outpost)
 		for(var/upgrade_key in outpost.outpost_upgrades)
 			var/datum/outpost_upgrade/other = outpost.outpost_upgrades[upgrade_key]
-			// A prison extension joins the wing's area on purpose (outpost_prison_extension.dm)
+			// A snap upgrade joins its host's area on purpose
 			if(other != src && other?.installed && !other.snap_group && other.installed_area == installed_area)
 				own_area = FALSE
 				break

@@ -31,8 +31,6 @@
 /// The landing at the south wall: the lift alcove and the foyer. Outpost ground, never built on.
 #define OUTPOST_FLOOR_LANDING_WIDTH 9
 #define OUTPOST_FLOOR_LANDING_HEIGHT 5
-/// Cell blocks a floor's prison wing may have
-#define OUTPOST_FLOOR_MAX_EXTENSIONS 0
 #define OUTPOST_FLOOR_MAINS_WATTS 60000
 
 // ===== WHO MAY COME UP =====

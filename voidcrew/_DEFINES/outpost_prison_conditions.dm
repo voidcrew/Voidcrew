@@ -51,7 +51,6 @@
 /// Most lights the riot strobe drives, nearest the cell block first
 #define PRISON_STROBE_MAX_LIGHTS 12
 /// More lights that strobe for each cell block extension joined to the wing
-#define PRISON_STROBE_LIGHTS_PER_EXTENSION 6
 /// Wing mood losses start below this score
 #define PRISON_WING_MOOD_LINE 70
 /// Mood lost per minute by a prisoner whose own cell is dark

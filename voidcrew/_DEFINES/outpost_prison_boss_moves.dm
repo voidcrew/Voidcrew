@@ -1,6 +1,6 @@
 // # Outpost prison: the bounty bosses' riot moves
 //
-// Numbers for voidcrew/modules/player_outposts/outpost_prison_boss_moves.dm. The wind-ups sit close
+// Numbers for voidcrew/modules/trade_prison/outpost_prison_boss_moves.dm. The wind-ups sit close
 // to the field kits' telegraphs (voidcrew/_DEFINES/bounty_bosses.dm); the harm is sized for a riot,
 // where a prisoner has 150 health and the crew has no posse bonus to spare.
 //

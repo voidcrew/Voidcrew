@@ -690,8 +690,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		return
 	announce_abandoned() // OUTPOST FLOORS seam: a floor says it on its concourse only
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
-	// Intake closes and the prisoners are transferred out (outpost_prison_economy.dm).
-	running_prison()?.on_outpost_abandoned()
 	stewards.Cut()
 	treasurers.Cut()
 	resident_mode = "closed"

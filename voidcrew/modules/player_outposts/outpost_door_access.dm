@@ -22,8 +22,7 @@
  * into and cannot leave. Walls built later can still shut people in, as walls always could.
  *
  * The setting lives in a component on the door, so a door that is taken apart and rebuilt is public.
- * Prison wing doors answer to the warden (outpost_prison_doors.dm), and the teleporter room's door
- * stays public (its arrival policy is the lever), so the tool refuses both.
+ * The teleporter room's door stays public (its arrival policy is the lever), so the tool refuses it.
  */
 
 /// Every door on an outpost that carries a setting other than public: the fast path in voidcrew/edits/outpost_door_access.dm
@@ -173,8 +172,6 @@ GLOBAL_LIST_EMPTY(outpost_access_doors)
 	// Outpost ground only: never a docked ship (get_outpost_from_atom() gives them up), never the cargo ferry
 	if(!isturf(spot) || !is_turf_buildable(spot) || cargo_ferry_covers(spot) || get_outpost_from_atom(spot) != src)
 		return "Not an outpost door."
-	if(is_outpost_prison_door(door))
-		return "Prison door."
 	// Its circuit decides who it opens for (wiremod/shell/airlock.dm)
 	if(istype(door, /obj/machinery/door/airlock/shell))
 		return "Circuit door."
@@ -278,14 +275,6 @@ GLOBAL_LIST_EMPTY(outpost_access_doors)
 	for(var/datum/outpost_upgrade/service/room as anything in installed_service_rooms())
 		room.apply_door_defaults()
 
-/// Whether `door` belongs to a prison wing, whose doors answer to the warden (outpost_prison_doors.dm)
-/proc/is_outpost_prison_door(obj/machinery/door/door)
-	if(istype(door, /obj/machinery/door/airlock/security/glass/outpost_prison_cell) || istype(door, /obj/machinery/door/airlock/security/prison_staff))
-		return TRUE
-	if(istype(door, /obj/machinery/door/window/brigdoor/outpost_prison_staff) || istype(door, /obj/machinery/door/window/outpost_prison_yard))
-		return TRUE
-	var/area/door_area = get_area(door)
-	return istype(door_area, /area/voidcrew/player_outpost/prison) || istype(door_area, /area/voidcrew/player_outpost/prison_extension)
 
 // ===== THE FREE SIDE =====
 
@@ -687,7 +676,7 @@ GLOBAL_LIST_EMPTY(outpost_access_doors)
 	var/list/doors = SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/airlock) + SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/window)
 	for(var/obj/machinery/door/door as anything in doors)
 		var/turf/spot = door.loc
-		if(!isturf(spot) || !is_turf_buildable(spot) || istype(spot.loc, /area/shuttle) || is_outpost_prison_door(door))
+		if(!isturf(spot) || !is_turf_buildable(spot) || istype(spot.loc, /area/shuttle))
 			continue
 		. += door
 

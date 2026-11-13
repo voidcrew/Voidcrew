@@ -19,27 +19,14 @@
 // ===== THE CATALOGUE =====
 
 /**
- * A floor sells every room an outpost does but two: the cargo dock, which needs a ferry and room to land it, and
- * the cell block extension (OUTPOST_FLOOR_MAX_EXTENSIONS, lead decision L9). It also sells the rooms made for
- * floors (floors_only), which the outposts' own answer refuses, so that answer is not asked. The ship bay is not
- * a room: ship_bay_setup_denial().
+ * A floor sells every room an outpost does but the cargo dock, which needs a ferry and room to land it. It also
+ * sells the rooms made for floors (floors_only), which the outposts' own answer refuses, so that answer is not
+ * asked. The ship bay is not a room: ship_bay_setup_denial().
  */
 /obj/structure/overmap/dynamic/player_outpost/floor/offers_upgrade(datum/outpost_upgrade/upgrade)
 	if(istype(upgrade, /datum/outpost_upgrade/cargo_dock))
 		return FALSE
-	if(istype(upgrade, /datum/outpost_upgrade/prison_extension))
-		return OUTPOST_FLOOR_MAX_EXTENSIONS > 0
 	return TRUE
-
-/// A floor's wing takes OUTPOST_FLOOR_MAX_EXTENSIONS cell blocks, whatever the catalogue allows an outpost
-/obj/structure/overmap/dynamic/player_outpost/floor/upgrade_purchase_denial(mob/user, upgrade_id)
-	. = ..()
-	if(. || !istext(upgrade_id))
-		return
-	if(!istype(GLOB.outpost_upgrade_catalog[upgrade_id], /datum/outpost_upgrade/prison_extension))
-		return
-	if(length(owned_upgrades(upgrade_id)) >= OUTPOST_FLOOR_MAX_EXTENSIONS)
-		return OUTPOST_FLOOR_MAX_EXTENSIONS == 1 ? "Already installed." : "All [OUTPOST_FLOOR_MAX_EXTENSIONS] built."
 
 /// A floor has no ship bay: the outpost's berths already have the shipyard console. Paid or granted, it is refused.
 /obj/structure/overmap/dynamic/player_outpost/floor/ship_bay_setup_denial()

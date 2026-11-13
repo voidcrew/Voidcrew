@@ -9,7 +9,7 @@
  * the upgrade allows more (max_owned); only one of each may be bought and waiting at a time.
  *
  * A snap upgrade (snap_group) is never placed freely: it joins a wall of another upgrade at a joint
- * that wall's map marks (/obj/effect/landmark/outpost_upgrade_snap, in outpost_prison_extension.dm).
+ * that wall's map marks (/obj/effect/landmark/outpost_upgrade_snap, at the end of this file).
  * Its map's first column lies over that wall as template_noop, so loading never touches the wall;
  * the upgrade opens it itself once it is built. Placement offers every free joint, one position
  * and rotation each (snap_offers()), and a joined room may carry joints of its own on its far wall.
@@ -350,7 +350,7 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 	var/datum/outpost_upgrade/prototype = GLOB.outpost_upgrade_catalog[upgrade_id]
 	if(!prototype)
 		return "Unknown upgrade."
-	if(!offers_upgrade(prototype)) // OUTPOST FLOORS seam: a floor sells no cell block, cargo dock or ship bay
+	if(!offers_upgrade(prototype)) // OUTPOST FLOORS seam: a floor sells no cargo dock or ship bay
 		return "Not sold here."
 	if(pending_upgrade(upgrade_id))
 		return "Blueprint already bought."
@@ -1167,3 +1167,24 @@ GLOBAL_LIST_INIT(outpost_upgrade_catalog, init_outpost_upgrade_catalog())
 #undef UPGRADE_CELL_RESERVED
 #undef UPGRADE_SURVEY_WINDOW
 #undef UPGRADE_PLACEMENT_WATCHDOG
+
+/// Marks the bottom end of a wall that a snap upgrade may join, on the wall tile itself. The upgrade that
+/// owns the wall reads these at install and deletes them.
+/obj/effect/landmark/outpost_upgrade_snap
+	name = "upgrade joint"
+	/// Which upgrades may join here
+	var/snap_group
+	/// "right" or "left", the side of the room this wall is on as the room is authored
+	var/side
+	/// The rows along the wall, counted from this landmark's row as 1, that open once a room joins
+	var/list/seam_openings = list(3, 8, 10)
+
+/// The room's east wall, as authored
+/obj/effect/landmark/outpost_upgrade_snap/right
+	side = "right"
+	dir = EAST
+
+/// The room's west wall, as authored
+/obj/effect/landmark/outpost_upgrade_snap/left
+	side = "left"
+	dir = WEST

@@ -101,8 +101,7 @@
 #define OUTPOST_UPGRADE_SURVEY_LIFETIME (30 SECONDS)
 
 // ===== OUTPOST PRISON =====
-// The prison wing's defines are in outpost_prison_economy.dm, outpost_prison_needs.dm,
-// outpost_prison_conditions.dm, outpost_prison_trouble.dm and outpost_prison_experiments.dm.
+// The lockup's defines (voidcrew/modules/trade_prison/) are in the outpost_prison_*.dm files beside this one.
 
 // ===== ONE LEVEL PER OUTPOST (see outpost_level_layout.dm) =====
 /// Cordon rows round the edge of an outpost's level

@@ -61,9 +61,7 @@
 /// Units of reagent an overflowing scrubber brings up, and about how many tiles its foam covers (tg's event uses 50 across a station).
 /// Each open tile the foam dies on is left with a piece of filth.
 #define PRISON_OVERFLOW_FOAM 10
-/// Pieces of filth a backed-up Kessler vent spews, and how many steps from a scrubber or vent the mess reaches
-#define PRISON_VENT_MESS_MIN 6
-#define PRISON_VENT_MESS_MAX 12
+/// How many steps from an overflowing scrubber the mess reaches
 #define PRISON_VENT_MESS_RANGE 3
 /// How far the smell and the prisoners' reactions reach, in tiles
 #define PRISON_WING_EVENT_REACT_RANGE 5

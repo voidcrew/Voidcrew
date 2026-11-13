@@ -35,7 +35,7 @@
 @include meta.load-css('./interfaces/NtosNotepad.scss');
 @include meta.load-css('./interfaces/NuclearBomb.scss');
 @include meta.load-css('./interfaces/Orbit.scss');
-// VOIDCREW EDIT REMOVAL - OutpostManagement and OutpostPrison styles ship via the bulk voidcrew_tgui/styles/main.scss include below.
+// VOIDCREW EDIT REMOVAL - OutpostManagement styles ship via the bulk voidcrew_tgui/styles/main.scss include below.
 @include meta.load-css('./interfaces/OreSilo.scss');
 @include meta.load-css('./interfaces/Paper.scss');
 @include meta.load-css('./interfaces/PreferencesMenu.scss');

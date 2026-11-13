@@ -190,18 +190,13 @@
 			new /obj/effect/temp_visual/transporter_flash/departure(proof_turf)
 		qdel(proof)
 
-	// The record: a live catch goes on to the prisons, a dead one ends here. The crew's own prison
-	// (P7's lookup) is named only if it would take them now (BUG-3).
-	var/datum/outpost_prison/prison
+	// The record: a live catch goes on to the lockups (the pool, open to every wing), a dead one ends here
 	if(claimed)
 		claimed.captor_name = ship.name
 		claimed.captor_ship = WEAKREF(ship)
 		if(live)
 			claimed.hurt_fraction = clamp(1 - criminal.health / max(criminal.maxHealth, 1), 0, 1)
-			var/datum/outpost_prison/own = bounty_captor_prison(ship)
-			claimed.preferred_prison = own ? WEAKREF(own) : null
-			if(own?.bounty_accepts(claimed))
-				prison = own
+			claimed.preferred_prison = null
 		else
 			claimed.status = BOUNTY_RECORD_DEAD
 
@@ -218,10 +213,8 @@
 	if(pay[2] > 0)
 		paid += "[pay[2]] trade voucher[pay[2] > 1 ? "s" : ""]"
 	var/how = proof ? "confirmed dead" : bounty_state_words(state)
-	// Only the crew's own prison is named: the transfer pool is the corrections service's business
-	var/after = (live && prison) ? " They're headed for your prison at [prison.outpost?.name || "your outpost"]." : ""
 	var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
-	ship.ship_notify("BOUNTY: [wanted_name] turned in, [how]. Paid [english_list(paid)].[reputation_text][after]", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship.ship_notify("BOUNTY: [wanted_name] turned in, [how]. Paid [english_list(paid)].[reputation_text]", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	// A Most Wanted catch is news for every other crew (the hunters already heard from close())
 	if(most_wanted)
 		var/news = live ? "BOUNTY: the crew of the [ship.name] brought in [wanted_name], Most Wanted." : "BOUNTY: the crew of the [ship.name] took down [wanted_name], Most Wanted."

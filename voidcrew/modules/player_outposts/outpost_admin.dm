@@ -77,7 +77,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		"freight_error" = selected.freight?.last_error, "research_connection" = selected.research_connection_summary(),
 		"ship_bays" = ship_bay_data(selected),
 		"checkpoints" = checkpoint_admin_data(selected),
-		"prison" = prison_admin_data(selected),
 	)
 	market_admin_data(selected, data["selected"])
 	return data
@@ -235,9 +234,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	if(action in list("playtest_visitor", "service_admin"))
 		manage_market(home, user, action, params)
 		return
-	if(action in GLOB.outpost_admin_prison_actions)
-		manage_prison(home, user, action, params)
-		return
 	switch(action)
 		if("jump", "jump_overmap")
 			var/turf/destination = action == "jump" ? home.arrival_turf : get_turf(home)
@@ -364,7 +360,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 /**
  * Never tear a loaded ship, occupied habitat or unfinished map load out from under it.
  * Only player bodies (anything with a mind, alive or dead) count as occupants. Mindless mobs,
- * such as service bots, prisoners and loose animals, are deleted with the outpost.
+ * such as service bots and loose animals, are deleted with the outpost.
  */
 /datum/outpost_manipulator/proc/deletion_denial(obj/structure/overmap/dynamic/player_outpost/home)
 	if(home.loading || home.freight?.load_pending || home.freight?.busy || length(home.arrival_reservations))
@@ -374,8 +370,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		if(ship.docked == home)
 			return "Undock visiting ships and cancel their approaches first."
 	for(var/mob/living/occupant as anything in GLOB.mob_living_list)
-		// Prisoners and the prison's other mobs are deleted with the outpost.
-		if(!occupant.mind || is_outpost_prison_mob(occupant))
+		if(!occupant.mind)
 			continue
 		if(get_outpost_from_atom(occupant) == home)
 			return "Move living occupants out of the outpost first."

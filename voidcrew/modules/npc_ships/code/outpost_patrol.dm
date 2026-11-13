@@ -1,9 +1,10 @@
 /**
  * # Outpost patrols
  *
- * The boarding patrol from mob_patrol.dm, pointed at a player outpost instead of a ship. Prisoners
- * who break out of an outpost's prison wing walk it door to door, search the rooms in between and
- * fight anyone who is not another prisoner (/datum/ai_controller/basic_controller/outpost_breakout).
+ * The boarding patrol from mob_patrol.dm, pointed at a player outpost instead of a ship: a pawn
+ * walks it door to door and searches the rooms in between. The breakout controller
+ * (/datum/ai_controller/basic_controller/outpost_breakout) fights anyone who is not a prisoner; a
+ * lockup's loose prisoners run it without a path, since a lockup is not a player outpost.
  *
  * The patrol subtrees use BB_MOB_PATROL_SHIP_REF only as a key into the room tables
  * (GLOB.ship_rooms, GLOB.turf_to_room, GLOB.door_to_rooms). An outpost patrol files its rooms there
@@ -12,7 +13,7 @@
  * Doors come from the outpost's own area and every installed upgrade's area on the main level
  * (outpost_owned_turfs()). Each outpost has one path list, shared by all of its patrollers and
  * rebuilt in place when the doors change. The path holds at most OUTPOST_PATROL_MAX_STOPS doors,
- * the ones nearest the prison wing. Looking for doors and rebuilding walk every tile the outpost
+ * the ones nearest where the patrol starts. Looking for doors and rebuilding walk every tile the outpost
  * owns, so both yield whenever the tick is full; callers on a subsystem use
  * assign_mob_to_outpost_patrol_async(), since a sleep there stalls the whole subsystem. A door or
  * locker that is deleted is dropped from the path and the room tables straight away, so nothing
@@ -466,12 +467,8 @@ GLOBAL_LIST_EMPTY(outpost_patrol_caches)
 			locked_doors[REF(door)] = TRUE
 	GLOB.boarding_locked_doors[key] = locked_doors
 
-/// Where escapes start from, to rank the doors by: the middle of the outpost's prison wing, else its arrival point
+/// Where a patrol starts from, to rank the doors by: the outpost's arrival point
 /datum/outpost_patrol_cache/proc/patrol_origin()
-	var/datum/outpost_prison/prison = outpost?.running_prison()
-	var/list/bounds = prison?.upgrade?.footprint_bounds
-	if(bounds)
-		return locate(round((bounds[1] + bounds[3]) / 2), round((bounds[2] + bounds[4]) / 2), bounds[5])
 	return outpost?.arrival_turf
 
 /**

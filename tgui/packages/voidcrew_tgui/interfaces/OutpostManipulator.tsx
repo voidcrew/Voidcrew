@@ -88,10 +88,8 @@ type PrisonAdminPrisoner = {
   grime: number;
   health: number;
   care: number;
-  /** 0-1: care between no pay and full pay */
-  grade?: number;
-  /** 0-1: the share of full pay they earn now */
-  pay_factor?: number;
+  /** 0-1: how well kept they are */
+  kept?: number;
   /** 0-100 */
   mood: number;
   state: PrisonerState;
@@ -120,35 +118,14 @@ type PrisonerState =
 
 type PrisonStage = 'calm' | 'grumbling' | 'restless' | 'riot';
 
-type CrewMode = 'auto' | 'home' | 'away';
-
-/** The warden console's experiment block, the same for admins */
-type PrisonExperiment = {
-  /** unknown (a blind serum not yet shown), hulk, fly, nightmare or changeling */
-  form: string;
-  /** offered, dosed, twitching, incubating, live, vents, horror, contained or failed */
-  stage: string;
-  subject: string | null;
-  /** seconds */
-  time_left: number | null;
-  researcher_present: BooleanLike;
-  fee_paid: number;
-  bonus_paid: number;
-  /** up or regenerating while the changeling's horror is out, else null */
-  horror?: string | null;
-  /** subdued or down while a creature that was put down waits for Kessler, else null */
-  pickup?: string | null;
-};
+type AudienceMode = 'auto' | 'on' | 'off';
 
 type PrisonAdminData = {
   intake_open: BooleanLike;
-  /** open, closed, suspended, debt, experiment or no_power */
+  /** open, closed or no_power */
   intake_state?: string;
   /** seconds, null when nothing is scheduled */
   next_arrival: number | null;
-  /** cr/min */
-  pay_rate: number;
-  paid_total: number;
   powered: BooleanLike;
   /** 0-100 each */
   conditions: { clean: number; lit: number; powered: number; score: number };
@@ -160,21 +137,18 @@ type PrisonAdminData = {
   /** seconds until an unresolved riot becomes a breakout, null when none */
   breakout_in: number | null;
   // Everything below may be missing from an older payload; its row is then hidden.
-  crew_home?: BooleanLike;
-  crew_mode?: CrewMode;
+  /** a player is at the outpost */
+  audience?: BooleanLike;
+  audience_mode?: AudienceMode;
   riot_active?: BooleanLike;
-  /** seconds of riot with the crew home */
+  /** seconds of riot with an audience */
   riot_elapsed?: number;
-  /** seconds of riot with nobody home, null before it is tracked */
+  /** seconds of riot with no audience, null before it is tracked */
   riot_absent?: number | null;
   /** seconds, null when not subdued */
   subdued_left?: number | null;
-  /** credits fined in the current incident */
-  incident_fined?: number | null;
   /** prisoners lost in the last 30 minutes */
   lost_recent?: number | null;
-  /** treasury debt */
-  debt?: number;
   hatch?: {
     meals: number;
     clean_suits: number;
@@ -191,8 +165,6 @@ type PrisonAdminData = {
   /** seconds of outage counted against power */
   outage_debt?: number;
   extras?: PrisonAdminExtras | null;
-  /** null with no experiment */
-  experiment?: PrisonExperiment | null;
   incidents?: PrisonIncidents | null;
 };
 
@@ -200,7 +172,7 @@ type PrisonAdminData = {
 type PrisonIncidents = {
   /** percent per minute at the wing's tension now */
   chance: number;
-  /** seconds of crew-home time before the next roll can come */
+  /** seconds of audience time before the next roll can come */
   gap_left: number;
   /** why the clock is not rolling, null when it is */
   paused: string | null;
@@ -210,7 +182,7 @@ type PrisonIncidents = {
   target: string | null;
   /** seconds of tell left, null past the tell */
   tell_left: number | null;
-  /** seconds of crew-home time before the next wing event, null before the first tick */
+  /** seconds of audience time before the next wing event, null before the first tick */
   wing_event_in: number | null;
   /** why the wing event clock is not running, null when it is */
   wing_event_paused: string | null;
@@ -304,7 +276,6 @@ type AdminBounty = {
   count: number;
   max: number;
   most_wanted: number;
-  lanes: number;
   next: { id: string; name: string; tier: string } | null;
   pool: AdminBountyRecord[];
 };
@@ -1135,39 +1106,20 @@ const tensionColor = (value: number) =>
 /** Minutes */
 const PRISON_ADVANCE = [1, 5, 10];
 
-const CREW_MODES: [CrewMode, string][] = [
+const AUDIENCE_MODES: [AudienceMode, string][] = [
   ['auto', 'Auto'],
-  ['home', 'Home'],
-  ['away', 'Away'],
+  ['on', 'On'],
+  ['off', 'Off'],
 ];
-
-/** Credits */
-const DEBT_PRESETS = [0, 1000, 5000];
 
 /** Seconds: none, past the 30 s grace, the whole ramp */
 const OUTAGE_PRESETS = [0, 60, 120];
 
-/** Seconds: none, pay stops at 2 min, wrecking at 6 min */
+/** Seconds: none, 2 min, wrecking at 6 min */
 const CONFINED_PRESETS = [0, 120, 360];
 
 /** PRISON_SUBDUED_TIME */
 const SUBDUE_SECONDS = 360;
-
-/** prison_experiment forms */
-const EXPERIMENT_FORMS = [
-  ['hulk', 'Hulk'],
-  ['fly', 'Fly'],
-  ['nightmare', 'Nightmare'],
-  ['changeling', 'Changeling'],
-] as const;
-
-type ExperimentForm = (typeof EXPERIMENT_FORMS)[number][0];
-
-/** prison_changeling_stage stages */
-const CHANGELING_STAGES = [
-  ['burst', 'Burst', 'burst'],
-  ['horror', 'Horror', 'skull-crossbones'],
-] as const;
 
 /** prison_incident kinds */
 const INCIDENT_KINDS = [
@@ -1185,8 +1137,6 @@ const WING_EVENTS = [
 
 const isNum = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
-
-const cr = (value: number) => `${Math.floor(value || 0).toLocaleString()} cr`;
 
 type PrisonProps = {
   data: PrisonAdminData;
@@ -1302,11 +1252,6 @@ const PrisonIncidentTools = ({ data, busy, act }: PrisonProps) => {
 };
 
 const PrisonTools = ({ data, busy, act }: PrisonProps) => {
-  // The form each prisoner's Experiment button starts
-  const [form, setForm] = useState<ExperimentForm>('hulk');
-  const experiment = data.experiment || null;
-  const changeling = !!experiment && experiment.form === 'changeling';
-  const horror = experiment?.horror || null;
   const open = !!data.intake_open;
   const powered = !!data.powered;
   const conditions = data.conditions || {
@@ -1342,9 +1287,9 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
   ].filter(Boolean);
   const clocks = [
     riotOn && isNum(data.riot_elapsed)
-      ? `riot ${clock(data.riot_elapsed)} home`
+      ? `riot ${clock(data.riot_elapsed)} watched`
       : '',
-    riotOn && isNum(data.riot_absent) ? `${clock(data.riot_absent)} away` : '',
+    riotOn && isNum(data.riot_absent) ? `${clock(data.riot_absent)} unwatched` : '',
     isNum(data.subdued_left) ? `subdued ${clock(data.subdued_left)}` : '',
   ].filter(Boolean);
   const hatch = data.hatch;
@@ -1384,13 +1329,6 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
           onClick={() => act('prison_fill', {})}
         >
           Fill Cells
-        </Button>
-        <Button
-          icon="coins"
-          disabled={busy}
-          onClick={() => act('prison_pay_now', {})}
-        >
-          Pay Now
         </Button>
         <Button
           icon="trash"
@@ -1504,85 +1442,8 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
         </Stack.Item>
       </Stack>
       <PrisonIncidentTools data={data} busy={busy} act={act} />
-      <Stack
-        className="OutpostPrisonAdmin__experiment"
-        align="center"
-        wrap
-        mb={1}
-      >
-        <Stack.Item width="90px" bold>
-          Experiment
-        </Stack.Item>
-        <Button
-          icon="user-doctor"
-          disabled={busy}
-          tooltip="Beam in the researcher with an offer"
-          onClick={() => act('prison_researcher', {})}
-        >
-          Researcher
-        </Button>
-        {EXPERIMENT_FORMS.map(([value, label]) => (
-          <Button
-            key={value}
-            selected={form === value}
-            disabled={busy}
-            tooltip="What a prisoner's Experiment button starts"
-            onClick={() => setForm(value)}
-          >
-            {label}
-          </Button>
-        ))}
-        {CHANGELING_STAGES.map(([stage, label, icon]) => (
-          <Button
-            key={stage}
-            icon={icon}
-            disabled={busy || !changeling}
-            tooltip="Skip the changeling ahead"
-            onClick={() => act('prison_changeling_stage', { stage })}
-          >
-            {label}
-          </Button>
-        ))}
-        <Button
-          icon="heart-pulse"
-          disabled={busy || !horror}
-          tooltip={
-            horror === 'regenerating'
-              ? 'Get the horror up now'
-              : 'Drop the horror to regenerate'
-          }
-          onClick={() => act('prison_horror', { what: 'regen' })}
-        >
-          Regen
-        </Button>
-        <Button.Confirm
-          icon="skull"
-          color="bad"
-          confirmContent="Kill?"
-          disabled={busy || !horror}
-          tooltip="Kill the horror for good"
-          onClick={() => act('prison_horror', { what: 'kill' })}
-        >
-          Kill Horror
-        </Button.Confirm>
-        <Button.Confirm
-          icon="stop"
-          color="bad"
-          confirmContent="End?"
-          disabled={busy || !experiment}
-          tooltip="No fee is paid"
-          onClick={() => act('prison_experiment_end', {})}
-        >
-          End Experiment
-        </Button.Confirm>
-      </Stack>
 
       <LabeledList>
-        <LabeledList.Item label="Pay">
-          {`${Math.round((data.pay_rate || 0) * 10) / 10} cr/min, ${Math.floor(
-            data.paid_total || 0,
-          ).toLocaleString()} cr paid`}
-        </LabeledList.Item>
         <LabeledList.Item label="Arrivals">
           {!open
             ? 'Intake closed'
@@ -1626,24 +1487,24 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
             {intakeParts.join(', ')}
           </LabeledList.Item>
         ) : null}
-        {data.crew_mode ? (
-          <LabeledList.Item label="Crew">
+        {data.audience_mode ? (
+          <LabeledList.Item label="Audience">
             <Box
               inline
               bold
               className="OutpostPrisonAdmin__crew"
-              color={data.crew_home ? 'good' : 'average'}
+              color={data.audience ? 'good' : 'average'}
               mr={1}
             >
-              {data.crew_home ? 'Home' : 'Away'}
+              {data.audience ? 'Present' : 'Nobody'}
             </Box>
-            {CREW_MODES.map(([mode, label]) => (
+            {AUDIENCE_MODES.map(([mode, label]) => (
               <Button
                 key={mode}
                 compact
-                selected={data.crew_mode === mode}
+                selected={data.audience_mode === mode}
                 disabled={busy}
-                onClick={() => act('prison_crew_home', { mode })}
+                onClick={() => act('prison_audience', { mode })}
               >
                 {label}
               </Button>
@@ -1653,59 +1514,6 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
         {clocks.length > 0 ? (
           <LabeledList.Item label="Clocks">
             {clocks.join(', ')}
-          </LabeledList.Item>
-        ) : null}
-        {experiment ? (
-          <LabeledList.Item label="Experiment">
-            {[
-              experiment.form || 'unknown',
-              experiment.stage || '?',
-              experiment.horror === 'regenerating' ? 'regenerating' : '',
-              experiment.pickup ? `${experiment.pickup}, awaiting pickup` : '',
-              experiment.subject || '',
-              isNum(experiment.time_left)
-                ? `${clock(experiment.time_left)} left`
-                : '',
-              experiment.researcher_present ? 'researcher here' : '',
-              `fee ${cr(experiment.fee_paid)}`,
-              `bonus ${cr(experiment.bonus_paid)}`,
-            ]
-              .filter(Boolean)
-              .join(', ')}
-          </LabeledList.Item>
-        ) : null}
-        {isNum(data.debt) ? (
-          <LabeledList.Item label="Debt">
-            <Box inline bold color={data.debt > 0 ? 'bad' : undefined} mr={1}>
-              {cr(data.debt)}
-            </Box>
-            <NumberInput
-              value={Math.max(0, Math.round(data.debt))}
-              minValue={0}
-              maxValue={100000}
-              step={50}
-              stepPixelSize={2}
-              width="60px"
-              disabled={busy}
-              onChange={(next) =>
-                act('prison_debt', { amount: Math.max(0, Math.round(next)) })
-              }
-            />
-            {DEBT_PRESETS.map((amount) => (
-              <Button
-                key={amount}
-                compact
-                disabled={busy}
-                onClick={() => act('prison_debt', { amount })}
-              >
-                {amount.toLocaleString()}
-              </Button>
-            ))}
-            {isNum(data.incident_fined) ? (
-              <Box inline color="label" ml={1}>
-                {`incident fined ${cr(data.incident_fined)}`}
-              </Box>
-            ) : null}
           </LabeledList.Item>
         ) : null}
         {hatch ? (
@@ -1785,7 +1593,6 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
             extras={extras}
             busy={busy}
             act={act}
-            form={form}
           />
         ))
       )}
@@ -1798,8 +1605,6 @@ type PrisonerRowProps = {
   extras?: PrisonAdminExtras | null;
   busy: boolean;
   act: DetailsProps['act'];
-  /** What the Experiment button starts */
-  form: ExperimentForm;
 };
 
 const PrisonerRow = ({
@@ -1807,7 +1612,6 @@ const PrisonerRow = ({
   extras,
   busy,
   act,
-  form,
 }: PrisonerRowProps) => {
   const dead = !!prisoner.dead;
   const locked = busy || dead;
@@ -1905,15 +1709,6 @@ const PrisonerRow = ({
           </Button>
           <Button
             compact
-            icon="flask"
-            disabled={locked}
-            tooltip={`Start a ${form} experiment`}
-            onClick={() => act('prison_experiment', { ref, form })}
-          >
-            Experiment
-          </Button>
-          <Button
-            compact
             icon="person-walking-arrow-right"
             disabled={locked}
             onClick={() => act('prison_release', { ref })}
@@ -1984,22 +1779,13 @@ const PrisonerRow = ({
         >
           {`Care ${Math.round(prisoner.care || 0)}`}
         </Stack.Item>
-        {isNum(prisoner.grade) ? (
+        {isNum(prisoner.kept) ? (
           <Stack.Item
-            className="OutpostPrisonAdmin__stat OutpostPrisonAdmin__stat--grade"
+            className="OutpostPrisonAdmin__stat OutpostPrisonAdmin__stat--kept"
             mr={1}
             color="label"
           >
-            {`Grade ${prisoner.grade.toFixed(2)}`}
-          </Stack.Item>
-        ) : null}
-        {isNum(prisoner.pay_factor) ? (
-          <Stack.Item
-            className="OutpostPrisonAdmin__stat OutpostPrisonAdmin__stat--pay"
-            mr={1}
-            color="label"
-          >
-            {`Pay ${prisoner.pay_factor.toFixed(2)}`}
+            {`Kept ${prisoner.kept.toFixed(2)}`}
           </Stack.Item>
         ) : null}
         {isNum(prisoner.confined_seconds) ? (
@@ -2476,7 +2262,7 @@ const PrisonBountyTools = ({ bounty, busy, act }: BountyToolsProps) => {
         <Box inline color="label" ml={1}>
           {`${bounty.count || 0}/${bounty.max || 0} held, ${
             bounty.most_wanted || 0
-          }/${bounty.lanes || 1} Most Wanted`}
+          }/1 Most Wanted`}
         </Box>
         {bounty.next ? (
           <Box color="average" mt={0.5}>

@@ -1,56 +1,8 @@
 /**
  * # Derelict outpost: layout and dead power
  *
- * Owner: P2. The prison wing joined to the shell, every cell drained, the fuel hidden, dark berths and the ambience.
+ * Owner: P2. Every cell drained, the fuel hidden, dark berths and the ambience.
  */
-
-/// Places the prison wing, joined to an outer airlock of the shell when it can be. Returns the wing's upgrade, or null.
-/obj/structure/overmap/dynamic/player_outpost/derelict/proc/place_derelict_prison()
-	var/datum/outpost_upgrade/prison/blueprint = outpost_upgrades["prison"]
-	if(blueprint?.installed)
-		return blueprint
-	if(!blueprint)
-		blueprint = new(src)
-		outpost_upgrades[blueprint.key] = blueprint
-	var/datum/map_template/template = blueprint.get_template()
-	if(!template)
-		log_mapping("DERELICT OUTPOST: '[name]' has no prison wing map for style '[outpost_style]'")
-		outpost_upgrades -= blueprint.key
-		qdel(blueprint)
-		return null
-	var/list/candidates = list()
-	for(var/turf/tile as anything in outpost_area.get_turfs_by_zlevel(upgrade_level_z()))
-		for(var/obj/machinery/door/airlock/external/door in tile)
-			for(var/direction in GLOB.cardinals)
-				var/turf/outside = get_step(tile, direction)
-				var/turf/inside = get_step(tile, REVERSE_DIR(direction))
-				if(!outside || !inside || !isspaceturf(outside) || isspaceturf(inside) || !is_turf_buildable(outside))
-					continue
-				candidates += list(list(door, direction))
-	shuffle_inplace(candidates)
-	for(var/list/candidate as anything in candidates)
-		var/obj/machinery/door/airlock/external/door = candidate[1]
-		var/direction = candidate[2]
-		var/turf/door_turf = get_step(door, direction)
-		var/rotation = SIMPLIFY_DEGREES(dir2angle(direction))
-		var/list/offset = rotated_template_offset(DERELICT_PRISON_DOOR_COLUMN, DERELICT_PRISON_DOOR_ROW, rotation, template.width, template.height)
-		var/turf/bottom_left = locate(door_turf.x - offset[1], door_turf.y - offset[2], door_turf.z)
-		if(!bottom_left)
-			continue
-		if(place_outpost_upgrade(blueprint, bottom_left, rotation, null))
-			continue
-		if(QDELETED(src))
-			return null
-		derelict_prison_airlock = WEAKREF(door)
-		return blueprint
-	// Unjoined fallback: north of the shell, at the test-fixture position.
-	if(!place_outpost_upgrade(blueprint, locate(template_bottom_left.x, template_bottom_left.y + shell_template.height + 3, upgrade_level_z()), 0, null))
-		log_mapping("DERELICT OUTPOST: '[name]' prison wing placed north of the shell, not joined")
-		return blueprint
-	log_mapping("DERELICT OUTPOST: '[name]' has no prison wing")
-	outpost_upgrades -= blueprint.key
-	qdel(blueprint)
-	return null
 
 /// Drains every APC, SMES and light emergency cell, empties the generator and hides its fuel
 /obj/structure/overmap/dynamic/player_outpost/derelict/proc/drain_derelict_power()
@@ -80,19 +32,13 @@
 			apc.late_process(1)
 	stash_derelict_fuel()
 
-/// Hides the shell's plasma as DERELICT_FUEL_STACKS stacks of DERELICT_FUEL_SHEETS sheets, in the wing and the habitat
+/// Hides the shell's plasma as DERELICT_FUEL_STACKS stacks of DERELICT_FUEL_SHEETS sheets about the habitat
 /obj/structure/overmap/dynamic/player_outpost/derelict/proc/stash_derelict_fuel()
 	derelict_fuel_spots = list()
 	var/z = upgrade_level_z()
 	if(!z)
 		return
 	var/obj/machinery/power/port_gen/pacman/generator = derelict_generator()
-	var/datum/outpost_upgrade/prison/wing = outpost_upgrades["prison"]
-	var/list/wing_tiles = list()
-	if(wing?.installed_area)
-		for(var/turf/open/floor/tile in wing.installed_area.get_turfs_by_zlevel(z))
-			if(!is_derelict_protected_turf(tile))
-				wing_tiles += tile
 	var/list/habitat_tiles = list()
 	if(outpost_area)
 		for(var/turf/open/floor/tile in outpost_area.get_turfs_by_zlevel(z))
@@ -102,9 +48,7 @@
 				continue
 			habitat_tiles += tile
 	var/list/spots = list()
-	if(length(wing_tiles))
-		spots += pick(wing_tiles)
-	else if(length(habitat_tiles))
+	if(length(habitat_tiles))
 		spots += pick(habitat_tiles)
 	if(length(spots) < DERELICT_FUEL_STACKS && length(habitat_tiles))
 		var/list/remaining = habitat_tiles - spots

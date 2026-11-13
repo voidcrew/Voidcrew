@@ -2,7 +2,7 @@
  * # Derelict outpost
  *
  * Owner: P1 (after the seams commit). One per round: an unclaimed player outpost that sits on the chart as an
- * unknown signal and builds the first time a ship docks (dark, dressed, with a prison wing and hostiles).
+ * unknown signal and builds the first time a ship docks (dark, dressed, with hostiles).
  * Claimed at its console like any unowned outpost; after that an ordinary player outpost.
  */
 /obj/structure/overmap/dynamic/player_outpost/derelict
@@ -24,8 +24,6 @@
 	var/list/datum/weakref/derelict_hostiles = list()
 	/// Where the fuel was left (derelict_layout.dm writes)
 	var/list/turf/derelict_fuel_spots = list()
-	/// Weakref to the shell airlock the prison wing's door was joined to; null when it was not joined (derelict_layout.dm writes)
-	var/datum/weakref/derelict_prison_airlock
 	/// Tests set this to build without a theme
 	var/derelict_skip_theme = FALSE
 	/// Counts builds, so a stalled watchdog or a superseded build can tell whether it is still its own
@@ -43,7 +41,6 @@
 		GLOB.derelict_outpost = null
 	derelict_hostiles.Cut()
 	derelict_fuel_spots.Cut()
-	derelict_prison_airlock = null
 	deltimer(derelict_watchdog_timer)
 	derelict_watchdog_timer = null
 	derelict_build_serial++
@@ -57,7 +54,7 @@
 	true_name = pick(GLOB.derelict_outpost_names)
 
 /**
- * Builds the derelict now: the level and shell, the prison wing, dead power, the theme.
+ * Builds the derelict now: the level and shell, dead power, the theme.
  * Returns TRUE when it stands built.
  */
 /obj/structure/overmap/dynamic/player_outpost/derelict/proc/build_derelict(obj/structure/overmap/ship/waiting_ship)
@@ -80,7 +77,6 @@
 	if(QDELETED(src) || serial != derelict_build_serial)
 		return FALSE
 	sync_close_overmap_objects()
-	place_derelict_prison()
 	drain_derelict_power()
 	if(!derelict_skip_theme)
 		apply_derelict_theme()

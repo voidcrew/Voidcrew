@@ -296,8 +296,3 @@
 		. += "[obstruction] stands on the landing pad"
 	. += power_problems()
 
-/datum/outpost_upgrade/prison/contract_problems()
-	. = ..()
-	if(!installed)
-		return
-	. += power_problems()

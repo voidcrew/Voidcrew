@@ -22,7 +22,7 @@
 	var/total_score = 0
 	/// The chance to score a ball into the hoop based on distance
 	var/static/list/throw_range_success = list(95, 80, 65, 50, 35, 20)
-	// VOIDCREW EDIT ADDITION START - a quieter hoop for the outpost prison's yard (voidcrew/modules/player_outposts/outpost_prison_fixtures.dm)
+	// VOIDCREW EDIT ADDITION START - a quieter hoop for the outpost prison's yard (voidcrew/modules/trade_prison/outpost_prison_fixtures.dm)
 	/// Volume of the buzzer when someone scores or is dunked
 	var/buzzer_volume = 100
 	// VOIDCREW EDIT ADDITION END

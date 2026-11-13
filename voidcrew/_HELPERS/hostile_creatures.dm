@@ -65,11 +65,6 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
  * GLOB.ai_subtrees, so this is a handful of list lookups.
  */
 /proc/is_hostile_creature(mob/living/creature)
-	// Prison experiment creatures (outpost_prison_experiment_forms.dm, outpost_prison_horror.dm): fair game
-	// anywhere while up, like the headslug, whose stock AI already reads as hostile. Their custom AI does
-	// not. First: a body the serum took is still a prisoner's body.
-	if(is_outpost_experiment_creature(creature))
-		return is_outpost_experiment_turret_target(creature)
 	// Outpost prisoners (outpost_prison_*.dm): left alone inside their wing, rioting or not;
 	// once loose outside it they are fair game. Turrets players build use outpost_prison_security.dm instead.
 	if(istype(creature, /mob/living/carbon/human/npc/outpost_prisoner))
