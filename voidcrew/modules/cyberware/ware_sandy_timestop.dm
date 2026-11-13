@@ -667,6 +667,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /datum/proximity_monitor/advanced/timestop/sandevistan/freeze_atom(atom/movable/A)
 	replay?.notice(A) // everything on, entering or made on a field turf comes through here
+	if(sandy_session_shares(src, A)) // another member of a shared slow-mo runs in its own field (ware_sandy_timestop_shared.dm)
+		return FALSE
 	if(!istype(A) || GLOB.cyberware_time_dilated[A] || global_frozen_atoms[A] || released[A] || immune[A] || surging[A])
 		return FALSE
 	if(cyberware_own_surge(A))
@@ -834,7 +836,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
  * take it back at its relative rate. Its shots go back in at the field's pace, untinted.
  */
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/surge_free(mob/living/surger, multiplier)
-	if(surging[surger])
+	if(surging[surger] || sandy_session_shares(src, surger))
 		return
 	var/list/its_shots = list()
 	if(GLOB.cyberware_time_dilated[surger] == src)
@@ -975,9 +977,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// Every 0.2 s: end if a player came in, push back the timers of everything held, let bosses go.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/tick()
 	if(QDELETED(host) || cyberware_time_stop_witnessed(host))
+		if(sandy_session_field_cut(src)) // a shared slow-mo ends for everyone in it (ware_sandy_timestop_shared.dm)
+			return
 		replay?.cancel() // cut short: nothing replays
 		if(!QDELETED(stopper))
 			qdel(stopper) // takes this field with it
+		return
+	sandy_session_check_touch(src) // a crewmate's slow-mo touching this one joins it (ware_sandy_timestop_shared.dm)
+	if(QDELETED(src))
 		return
 	var/elapsed = world.time - last_tick
 	last_tick = world.time
@@ -1233,6 +1240,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		field?.sweep_ring(here, lattice.stop_ring_scale, lattice.ring_time)
 	owner.remove_client_colour(id) // the user sees the slowed world as it is
 	owner.add_filter(SANDY_STOP_OUTLINE, 2, outline_filter(1, "#5AFF96D2"))
+	if(field)
+		sandy_session_check_touch(field) // a crewmate's slow-mo this touches becomes one with it (ware_sandy_timestop_shared.dm)
 	return TRUE
 
 /**
@@ -1265,7 +1274,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		if(world.time < hold_until)
 			return
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
-		field?.replay?.cancel()
+		if(!sandy_session_others_active(owner)) // a shared slow-mo goes on, and its replay with it
+			field?.replay?.cancel()
 		qdel(src)
 		return
 	if(!tail_until)
@@ -1304,6 +1314,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /// Ends the dilation early (the window is closing).
 /datum/status_effect/cyberware_cascade_window/proc/end_time_stop()
+	if(sandy_session_window_ends(src)) // a shared slow-mo decides (ware_sandy_timestop_shared.dm)
+		return
 	stop_hold()
 	if(!time_stop)
 		return
