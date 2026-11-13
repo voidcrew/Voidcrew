@@ -27,14 +27,13 @@
 	fixed_price = TRUE
 	contract_reward = FALSE
 
-/datum/shop_sku/outfitter/plasma_flask
+/datum/shop_sku/outfitter/plasma_cartridge
 	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
-	item_path = /obj/item/plasma_flask
-	price_credits = 150
-	stock_min = 4
-	stock_max = 4
-	restock_interval = 1 HOURS
+	item_path = /obj/item/plasma_cartridge
+	price_credits = 100
+	stock_min = 10
+	stock_max = 20
 
 // ===== Undertow Exchange black market =====
 

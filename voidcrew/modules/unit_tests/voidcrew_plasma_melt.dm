@@ -242,3 +242,21 @@
 						if(mask.GetPixel(x, y) && chest.GetPixel(x, y))
 							TEST_FAIL("The [zone] sleeve mask cuts the [chest_state] facing [dir2text(facing)] at [x],[y]")
 							return
+
+/// A robot arm melts off without the flesh look: tg's dismember, a slag pool, and no melt drawn on the body
+/datum/unit_test/voidcrew_plasma_melt_no_flesh
+
+/datum/unit_test/voidcrew_plasma_melt_no_flesh/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/bodypart/arm/right/robot/robot_arm = new
+	robot_arm.replace_limb(victim, TRUE)
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_R_ARM), robot_arm, "could not fit a robot arm")
+	TEST_ASSERT(!plasma_limb_is_flesh(robot_arm), "a robot arm counts as flesh")
+	var/turf/where = get_turf(victim)
+	TEST_ASSERT(plasma_melt_limb(robot_arm, SOUTH), "the robot arm did not melt off")
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_R_ARM), "the melted robot arm is still attached")
+	TEST_ASSERT(voidcrew_plasma_melt_count(where, /obj/effect/decal/cleanable/plasma_slag) > 0, "a melted robot arm left no slag")
+	TEST_ASSERT(!length(victim.plasma_melts), "a robot arm melted with the flesh look")
+	TEST_ASSERT(!voidcrew_plasma_melt_drawn(victim), "a robot arm's melt drew flesh on the body")
+	for(var/obj/effect/decal/cleanable/leftover in where)
+		qdel(leftover)

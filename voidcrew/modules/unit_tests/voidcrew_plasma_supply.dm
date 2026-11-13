@@ -1,6 +1,6 @@
 // Package: P5 supply. Unit tests for voidcrew/modules/plasma_weapons/.
 
-/// The guns and the flask leave a crew's hands only by use: no cargo export, buyback or peddler line covers them.
+/// The guns and the cartridge leave a crew's hands only by use: no cargo export, buyback or peddler line covers them.
 /datum/unit_test/voidcrew_plasma_no_resale
 
 /datum/unit_test/voidcrew_plasma_no_resale/Run()
@@ -12,7 +12,7 @@
 		/obj/item/gun/energy/plasma_weapon/rifle,
 		/obj/item/gun/energy/plasma_weapon/rifle/loot,
 		/obj/item/gun/energy/plasma_weapon/rifle/old_furnace,
-		/obj/item/plasma_flask,
+		/obj/item/plasma_cartridge,
 	)
 	if(!length(GLOB.exports_list))
 		setupExports()
@@ -52,7 +52,7 @@
 	var/list/lines = list(
 		/datum/shop_sku/outfitter/kestrel = list(/obj/item/gun/energy/frontier_laser/pistol, 1, 900, 0),
 		/datum/shop_sku/outfitter/cinder = list(/obj/item/gun/energy/plasma_weapon/pistol, 1, 2000, 0),
-		/datum/shop_sku/outfitter/plasma_flask = list(/obj/item/plasma_flask, 1, 150, 0),
+		/datum/shop_sku/outfitter/plasma_cartridge = list(/obj/item/plasma_cartridge, 1, 100, 0),
 		/datum/shop_sku/black_market/hornet = list(/obj/item/gun/energy/frontier_laser/smg, 1, 3500, 0),
 		/datum/shop_sku/black_market/rotating/furnace = list(/obj/item/gun/energy/plasma_weapon/rifle, 2, 5000, 1),
 	)

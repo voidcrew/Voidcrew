@@ -78,6 +78,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	if(!victim)
 		return FALSE
 	var/zone = limb.body_zone
+	if(!plasma_limb_is_flesh(limb))
+		return plasma_melt_limb_dry(limb, attack_direction)
 	var/list/drawn = plasma_melt_capture(victim, limb)
 	// tg drops what this limb wore or held the moment it comes off; keep their look on the body while it melts
 	var/list/worn_look = list()
@@ -103,6 +105,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		old_ash += pile
 	var/datum/wound/loss/melt = new
+	// The melt sound below is the only one: no tg dismember sound (see plasma_melt_in_progress())
+	melt.sound_effect = null
 	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
 	// Hyperviolence (#512): a melt is dry. hv_sever_spray holds back the spray a lost limb throws and the reel
 	// a body gives (wire_seams.dm), and the stump is drawn seared, as a hot wire's is. TRAIT_HV_CLEAN_CUT
@@ -138,6 +142,40 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, 'voidcrew/modules/plasma_weapons/sound/plasma_melt.ogg', 60, TRUE)
 	return TRUE
+
+/// FALSE for a limb with no flesh to melt: robotic, or bone, stone or plasma with no BIO_FLESH
+/proc/plasma_limb_is_flesh(obj/item/bodypart/limb)
+	return (limb.biological_state & BIO_FLESH) && !(limb.bodytype & BODYTYPE_ROBOTIC)
+
+/// A limb with no flesh melts off without the flesh look: tg's dismember, a slag pool, sparks and a hiss of
+/// hot metal. No gobbets, no stump and no wet sound. TRUE if it came off.
+/proc/plasma_melt_limb_dry(obj/item/bodypart/limb, attack_direction)
+	var/mob/living/carbon/victim = limb.owner
+	var/zone = limb.body_zone
+	var/turf/where = get_turf(victim)
+	var/list/old_ash = list()
+	for(var/obj/effect/decal/cleanable/ash/pile in where)
+		old_ash += pile
+	var/datum/wound/loss/melt = new
+	melt.sound_effect = null
+	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
+	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
+	GLOB.plasma_melt_no_splatter = null
+	for(var/obj/effect/decal/cleanable/ash/pile in where)
+		if(!(pile in old_ash))
+			qdel(pile)
+	if(QDELETED(victim) || victim.get_bodypart(zone) == limb)
+		return FALSE
+	plasma_slag_at(where)
+	do_sparks(3, FALSE, victim)
+	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
+		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
+		playsound(victim, PLASMA_SOUND_METAL_MELT, 60, TRUE)
+	return TRUE
+
+/// TRUE while a plasma melt is taking this body's limb. tg's dismember() checks it to skip its own sound (VOIDCREW EDIT).
+/proc/plasma_melt_in_progress(mob/living/body)
+	return GLOB.plasma_melt_no_splatter && GLOB.plasma_melt_no_splatter.resolve() == body
 
 /// tg's dismember bleeds the body; on a plasma melt the blood is lost but no splatter lands (the slag stands in)
 /mob/living/add_splatter_floor(turf/splatter_turf, small_drip = FALSE)
@@ -806,7 +844,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 /// What a plasma melt leaves on the floor
 /obj/effect/decal/cleanable/plasma_slag
 	name = "slag"
-	desc = "A puddle of green-black slag, cooled hard."
+	desc = "A puddle of purple-black slag, cooled hard."
 	icon = PLASMA_MELT_ICON
 	icon_state = "slag"
 	beauty = -50

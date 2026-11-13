@@ -2,28 +2,31 @@ Mojave Sun (https://github.com/Mojave-Sun/mojave-sun-13), commit 1302c0c1f01, li
 States are renamed from the originals listed below.
 
 guns.dmi
-	kestrel, kestrel_empty - mojave/icons/objects/guns/guns_world.dmi stanlas_pistol, stanlas_pistol_empty
-	hornet, hornet_empty - mojave/icons/objects/guns/guns_world.dmi rcw, rcw_empty
-	cinder - mojave/icons/objects/guns/guns_world.dmi plasmapistol
-	cinder_empty - mojave/icons/objects/guns/guns_world.dmi plasmapistol_empty, modified (plasma glass darkened)
-	furnace, furnace_empty - mojave/icons/objects/guns/guns_world.dmi enclaveplasma, enclaveplasma_empty
-	old_furnace, old_furnace_empty - mojave/icons/objects/guns/guns_world.dmi enclaveplasma, enclaveplasma_empty, modified (recoloured)
-	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/objects/guns/guns_world.dmi enclaveplasma, modified
+	kestrel, kestrel_empty - mojave/icons/objects/guns/guns_inventory.dmi stanlas_pistol, stanlas_pistol_empty, modified (recentred)
+	hornet, hornet_empty - mojave/icons/objects/guns/guns_inventory.dmi rcw, rcw_empty, modified (recentred)
+	cinder, cinder_empty - mojave/icons/objects/guns/guns_inventory.dmi plasmapistol, plasmapistol_empty, modified (recentred, recoloured)
+
+guns_wide.dmi
+	furnace, furnace_empty - mojave/icons/objects/guns/guns_inventory.dmi enclaveplasma, enclaveplasma_empty, modified (recentred, recoloured)
+	old_furnace, old_furnace_empty - mojave/icons/objects/guns/guns_inventory.dmi enclaveplasma, enclaveplasma_empty, modified (recentred, recoloured)
+	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/objects/guns/guns_inventory.dmi enclaveplasma, modified (recoloured)
 
 guns_lefthand.dmi, guns_righthand.dmi
 	kestrel - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi stanlas_pistol
-	cinder - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi plasmapistol
+	cinder - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi plasmapistol, modified (recoloured)
 	hornet_wielded - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi rcw_wielded
-	furnace_wielded - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi enclaveplasma_wielded
-	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi enclaveplasma_wielded, modified
+	furnace_wielded - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi enclaveplasma_wielded, modified (recoloured)
+	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi enclaveplasma_wielded, modified (recoloured)
 
 guns_back.dmi
 	hornet - mojave/icons/mob/worn_guns.dmi rcw
-	furnace - mojave/icons/mob/worn_guns.dmi enclaveplasma
+	furnace - mojave/icons/mob/worn_guns.dmi enclaveplasma, modified (recoloured)
 
-flask.dmi
-	flask_0 - mojave/icons/objects/ammo/ammo_world.dmi plasma_empty
-	flask_3 - mojave/icons/objects/ammo/ammo_world.dmi plasma
-	flask_1, flask_2 - drawn from plasma and plasma_empty, modified
+cartridge.dmi
+	cartridge_0 - mojave/icons/objects/ammo/ammo_world.dmi plasma_empty
+	cartridge_3 - mojave/icons/objects/ammo/ammo_world.dmi plasma, modified (fill recoloured)
+	cartridge_1, cartridge_2 - drawn from plasma and plasma_empty, modified (fill recoloured)
 
 projectiles.dmi, effects.dmi and the plasma_melt*.dmi files are original Voidcrew art (plasma_melt*.dmi: new sprites).
+
+plasma_wounds.dmi is new Voidcrew art (new sprites).

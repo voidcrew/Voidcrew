@@ -334,6 +334,8 @@
 			list(/datum/shop_sku/outfitter/laser_gun, /obj/item/gun/energy/laser, 1, 1500, 0),
 			list(/datum/shop_sku/outfitter/riot_shotgun, /obj/item/gun/ballistic/shotgun/riot, 1, 1800, 0),
 			list(/datum/shop_sku/outfitter/energy_gun, /obj/item/gun/energy/e_gun, 1, 2400, 0),
+			list(/datum/shop_sku/outfitter/kestrel, /obj/item/gun/energy/frontier_laser/pistol, 2, 900, 0),
+			list(/datum/shop_sku/outfitter/cinder, /obj/item/gun/energy/plasma_weapon/pistol, 1, 2000, 0),
 		),
 		/datum/outpost_shop/black_market = list(
 			list(/datum/shop_sku/black_market/boarding_axe, /obj/item/fireaxe/boardingaxe, 1, 2400, 0),
@@ -360,6 +362,7 @@
 			list(/datum/shop_sku/black_market/absolution, /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution, 1, 2600, 1),
 			list(/datum/shop_sku/black_market/conflagration, /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration, 1, 2200, 1),
 			list(/datum/shop_sku/black_market/rotating/mateba, /obj/item/gun/ballistic/revolver/mateba, 1, 3000, 1),
+			list(/datum/shop_sku/black_market/hornet, /obj/item/gun/energy/frontier_laser/smg, 1, 3500, 0),
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
 			list(/datum/shop_sku/ripperdoc/monowire, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire, 1, 0, 3),
@@ -400,6 +403,14 @@
 			if(ispath(sku.item_path, /obj/item/gun) || row[5])
 				TEST_ASSERT(sku.fixed_price, "A restricted weapon can be discounted")
 				TEST_ASSERT(!sku.contract_reward, "A restricted weapon can pay a contract")
+	// The Furnace is the one gun on a rotating shelf: red, one voucher, never on the core list
+	var/datum/outpost_shop/black_market/market = allocate(/datum/outpost_shop/black_market)
+	TEST_ASSERT(/datum/shop_sku/black_market/rotating/furnace in market.rotating_pool, "The black market lost the Furnace")
+	TEST_ASSERT(!(/datum/shop_sku/black_market/rotating/furnace in market.sku_types), "The Furnace moved onto a core shelf")
+	var/datum/shop_sku/furnace = allocate(/datum/shop_sku/black_market/rotating/furnace)
+	TEST_ASSERT_EQUAL(furnace.item_path, /obj/item/gun/energy/plasma_weapon/rifle, "The Furnace shelf sells the wrong gun")
+	TEST_ASSERT_EQUAL(furnace.price_vouchers, 1, "The Furnace lost its voucher price")
+	TEST_ASSERT(furnace.fixed_price && !furnace.contract_reward, "The Furnace can be discounted or paid out")
 
 /// Check removed sources across all owned shelf families, including undealt stock.
 /datum/unit_test/voidcrew_ladder_removed_shelves/Run()
@@ -430,6 +441,10 @@
 		/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
 		/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 		/obj/item/gun/ballistic/revolver/mateba,
+		/obj/item/gun/energy/frontier_laser/pistol,
+		/obj/item/gun/energy/frontier_laser/smg,
+		/obj/item/gun/energy/plasma_weapon/pistol,
+		/obj/item/gun/energy/plasma_weapon/rifle,
 	)
 	var/list/printed_gear = list(
 		/obj/item/gps, /obj/item/storage/belt/utility/full, /obj/item/weldingtool/largetank,

@@ -15,6 +15,23 @@
 	icon_state = "[initial(icon_state)][loaded ? "" : "_empty"]"
 	return ..()
 
+/// The stock energy gun drops the shot's pitch as the cell runs down; these stop at FRONTIER_LASER_MIN_PITCH and vary a little
+/obj/item/gun/energy/frontier_laser/fire_sounds()
+	var/pitch_to_use = 1
+	var/obj/item/ammo_casing/energy/shot = ammo_type[select]
+	var/shot_cost_percent = round(clamp(shot.e_cost / cell.maxcharge, 0, 1) * 100)
+	if(shot_cost_percent > 0 && shot_cost_percent < 50)
+		var/max_shots = round(100 / shot_cost_percent) - 1
+		var/shots_left = round((round(clamp(cell.charge / cell.maxcharge, 0, 1) * 100)) / shot_cost_percent) - 1
+		pitch_to_use = max(LERP(1, 0.3, (1 - (shots_left / max_shots)) ** 2), FRONTIER_LASER_MIN_PITCH)
+
+	var/sound/playing_sound = sound(suppressed ? suppressed_sound : fire_sound)
+	playing_sound.pitch = pitch_to_use
+	if(suppressed)
+		playsound(src, playing_sound, suppressed_volume, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, frequency = PLASMA_SHOT_FREQUENCY, falloff_distance = 0)
+	else
+		playsound(src, playing_sound, fire_sound_volume, TRUE, frequency = PLASMA_SHOT_FREQUENCY)
+
 /obj/item/gun/energy/frontier_laser/shoot_live_shot(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = TRUE)
 	. = ..()
 	if(!suppressed)
@@ -29,6 +46,7 @@
 	force = 10
 	spread = 0
 	recoil = 0
+	fire_sound_volume = 45
 	far_fire_sound = 'voidcrew/modules/plasma_weapons/sound/kestrel_far.ogg'
 
 /// Energy guns take fire_delay from the casing's delay (update_ammo_types), so the 0.5 s lives here.
@@ -50,6 +68,7 @@
 	force = 12
 	spread = 8
 	recoil = 0
+	fire_sound_volume = 45
 	far_fire_sound = 'voidcrew/modules/plasma_weapons/sound/hornet_far.ogg'
 
 /obj/item/gun/energy/frontier_laser/smg/Initialize(mapload)

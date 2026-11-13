@@ -5,12 +5,6 @@
 // game state. Lights are OVERLAY_LIGHT only, steam uses the shared particle pool, wall glows are capped
 // per z-level and soot is capped globally.
 
-/// Furthest a distant firing sound carries, in tiles
-#define PLASMA_FAR_SOUND_RANGE 40
-/// Distant sound volume at the near edge of its band
-#define PLASMA_FAR_SOUND_VOL_NEAR 60
-/// Distant sound volume at PLASMA_FAR_SOUND_RANGE
-#define PLASMA_FAR_SOUND_VOL_FAR 30
 /// A bolt must be this many tiles from where it was fired before it hisses past anyone
 #define PLASMA_HISSBY_MIN_TRAVEL 3
 /// Shared particle pool for the flesh splash's steam, kept apart because its holders take the splash's layer
@@ -24,8 +18,8 @@
 /// How long a burst waits after the hit before it shows: the bolt's sprite still has this far to fly on
 /// the client, and the flash belongs where it stops
 #define PLASMA_BURST_DELAY (1 TICKS)
-/// How far up a shield splash behind a standing body sits, so it shows over the shoulders
-#define PLASMA_SHIELD_BACK_RAISE 11
+/// How long a shield block's splash and slag last, the last floor slag included
+#define PLASMA_SHIELD_DURATION (2.2 SECONDS)
 
 /// Live wall and soot glows per z-level, keyed by "[z]"
 GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
@@ -45,7 +39,9 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 
 /obj/projectile/energy/plasma_bolt/update_overlays()
 	. = ..()
-	. += emissive_appearance(icon, core_state, src)
+	// No icon while the pinch copy carries the look: a lone core mask would light the floor in its shape
+	if(icon)
+		. += emissive_appearance(icon, core_state, src)
 
 // ===== Calls from the bolt (P1) =====
 
@@ -60,31 +56,38 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	var/behind_body = FALSE
 	var/splash_x = impact_x
 	var/splash_y = impact_y
-	var/at_shield = FALSE
 	if(ishuman(target))
 		var/mob/living/carbon/human/victim = target
 		var/side = REVERSE_DIR(angle2dir_cardinal(angle))
 		if(blocked < 100)
-			new /obj/effect/temp_visual/plasma_burst(target_turf, victim, src, side)
+			burst_ref = WEAKREF(new /obj/effect/temp_visual/plasma_burst(target_turf, victim, src, side))
 			return
 		plasma_take_back_block_star(target_turf)
+		// A held shield takes it on its own pixels: the bolt bursts on it, coats it and drips off as slag.
+		// Only the shield that blocked it, which the bolt noted as it blocked; one the block broke still splashes, with no coat
+		if(blocking_shield_look)
+			var/obj/item/shield/shield = blocking_shield_ref?.resolve()
+			if(shield && !(shield in victim.held_items))
+				shield = null
+			var/key = "[blocking_shield_look]_[blocking_shield_hand][plasma_burst_dir_letter(victim.dir)][plasma_burst_dir_letter(side)]"
+			var/list/anchor = GLOB.plasma_shield_anchors[key]
+			var/under = anchor[3] || !!victim.lying_angle
+			impact_point = list(anchor[1] - ICON_SIZE_X / 2 + victim.pixel_x, anchor[2] - ICON_SIZE_Y / 2 + victim.pixel_y)
+			// Lying down, the shield lies with the body: the bolt ends on the body's middle
+			if(victim.lying_angle)
+				var/list/hit = plasma_burst_hit(victim, side, "c")
+				impact_point = list(hit[4] - ICON_SIZE_X / 2, hit[5] - ICON_SIZE_Y / 2)
+			impact_turf = target_turf
+			impact_slide = TRUE
+			// A body between the shooter and the shield hides the bolt's end as well as the splash
+			layer = victim.layer + (under ? -0.02 : 0.02)
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(plasma_shield_splash), target_turf, WEAKREF(victim), WEAKREF(shield), key, victim.layer, !!victim.lying_angle), PLASMA_BURST_DELAY)
+			return
+		// Anything else that blocks it (a blade) throws an armour splash off the body
 		behind_body = (side == NORTH && !victim.lying_angle)
-		// A held shield takes it on the shooter's side of the body
-		var/obj/item/shield/shield = locate() in victim.held_items
-		if(shield)
-			at_shield = TRUE
-			// Facing a shot from the south, the shield is out to one side of the chest, on the hand it is in
-			var/list/hit = plasma_burst_hit(victim, (side == SOUTH && victim.dir == SOUTH && !victim.lying_angle) ? (IS_LEFT_INDEX(victim.get_held_index_of_item(shield)) ? EAST : WEST) : side, "c")
-			splash_x = hit[4] - 16
-			splash_y = hit[5] - 16
-			// Behind a standing body, at the shoulders, so it shows over them
-			if(behind_body)
-				splash_y += PLASMA_SHIELD_BACK_RAISE
-		// The bolt's sprite stops on the splash (above the head on a back hit, as a burst does), and the splash
-		// waits for it there
 		impact_point = list(splash_x, behind_body ? ICON_SIZE_Y / 2 : splash_y)
 		impact_turf = target_turf
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(plasma_block_splash), target_turf, splash_x, splash_y, turn_angle, behind_body, at_shield), PLASMA_BURST_DELAY)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(plasma_block_splash), target_turf, splash_x, splash_y, turn_angle, behind_body), PLASMA_BURST_DELAY)
 		return
 	else if(isliving(target))
 		if(blocked >= 100)
@@ -96,29 +99,189 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 		behind_body = (angle > 135 && angle < 225)
 	else if(istype(target, /obj/structure/window) || istype(target, /obj/machinery/door/window))
 		splash_state = "splash_glass"
-		playsound(target_turf, 'sound/effects/glass/glasshit.ogg', 50, TRUE, -1)
 
-	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body)
+	// A wall is struck on its face, where the bolt's nose stops: the splash and the stop are that one point, across the
+	// face where the shot was aimed
+	if(iswallturf(target) && movement_vector)
+		var/dx = movement_vector.pixel_x
+		var/dy = movement_vector.pixel_y
+		var/along = entry_x * dx + entry_y * dy
+		var/across = splash_y * dx - splash_x * dy
+		splash_x = along * dx - across * dy
+		splash_y = along * dy + across * dx
+		impact_point = list(splash_x, splash_y)
+		impact_turf = target_turf
+
+	new /obj/effect/temp_visual/plasma_splash(target_turf, splash_x, splash_y, splash_state, turn_angle, behind_body, splash_scale)
 
 	if(!iswallturf(target))
 		if(isopenturf(target))
 			plasma_soot_at(target, impact_x, impact_y)
 		return
 
-	// One hit, one mark: the glow on the wall face, nothing on the floor in front of it
-	plasma_wall_glow_at(target, impact_x, impact_y)
+	// One hit, one mark: the glow on the wall face where the splash was, nothing on the floor in front of it. It lies along
+	// the face like the splash
+	var/obj/effect/temp_visual/plasma_wall_glow/glow = plasma_wall_glow_at(target, splash_x, splash_y)
+	if(glow)
+		var/matrix/laid = matrix()
+		if(splash_scale != 1)
+			laid.Scale(splash_scale)
+		laid.Turn(turn_angle)
+		glow.transform = laid
 
 /// The splash of a bolt a person blocked, shown once the bolt's sprite has reached it
-/proc/plasma_block_splash(turf/where, px, py, turn_angle, behind_body, at_shield)
+/proc/plasma_block_splash(turf/where, px, py, turn_angle, behind_body)
 	if(!where)
 		return
-	var/obj/effect/temp_visual/plasma_splash/splash = new(where, px, py, "splash_armour", turn_angle, behind_body)
-	if(at_shield && !QDELETED(splash))
-		// pixel_w/pixel_z keep it on the body's screen row, so the layer alone decides front or back
-		splash.pixel_w = splash.pixel_x
-		splash.pixel_z = splash.pixel_y
-		splash.pixel_x = 0
-		splash.pixel_y = 0
+	new /obj/effect/temp_visual/plasma_splash(where, px, py, "splash_armour", turn_angle, behind_body)
+
+// ===== Shield block =====
+// Splash and slag (design decision 15), baked from the approved draft into plasma_shield.dmi and
+// plasma_shield_coat.dmi, one state per shield, hand, holder facing and side the shot came from. The bolt
+// bursts flat on the held shield; molten coats the shield's own pixels, runs down, beads on the lower rim and
+// drips to the floor as cooling slag. A shot the shield meets in view draws over the holder; a shot the body
+// stands in front of (from behind, or on the far side of the body) draws under the holder, and so does the bolt.
+
+/// Where a blocked bolt lands, by "[shield]_[hand][holder facing][side the shot came from]": list(x, y in pixels
+/// from the tile's bottom left, whether it draws under the holder)
+GLOBAL_LIST_INIT(plasma_shield_anchors, list(
+	"riot_LSS" = list(22, 14, 0), "riot_LSN" = list(16, 17, 1), "riot_LSE" = list(26, 16, 0), "riot_LSW" = list(7, 16, 1),
+	"riot_LNS" = list(16, 17, 1), "riot_LNN" = list(16, 17, 1), "riot_LNE" = list(24, 16, 1), "riot_LNW" = list(5, 16, 0),
+	"riot_LES" = list(19, 13.9, 0), "riot_LEN" = list(16, 17, 1), "riot_LEE" = list(21, 16, 0), "riot_LEW" = list(11, 16, 1),
+	"riot_LWS" = list(13, 13.9, 0), "riot_LWN" = list(16, 17, 1), "riot_LWE" = list(21, 16, 1), "riot_LWW" = list(11, 16, 0),
+	"riot_RSS" = list(10, 14, 0), "riot_RSN" = list(16, 17, 1), "riot_RSE" = list(24, 16, 1), "riot_RSW" = list(6, 16, 0),
+	"riot_RNS" = list(16, 17, 1), "riot_RNN" = list(16, 17, 1), "riot_RNE" = list(27, 16, 0), "riot_RNW" = list(7, 16, 1),
+	"riot_RES" = list(17, 13.9, 0), "riot_REN" = list(16, 17, 1), "riot_REE" = list(19, 16, 0), "riot_REW" = list(11, 16, 1),
+	"riot_RWS" = list(15, 13.9, 0), "riot_RWN" = list(16, 17, 1), "riot_RWE" = list(21, 16, 1), "riot_RWW" = list(13, 16, 0),
+	"buckler_LSS" = list(22, 13.5, 0), "buckler_LSN" = list(16, 17, 1), "buckler_LSE" = list(27, 16, 0), "buckler_LSW" = list(7, 16, 1),
+	"buckler_LNS" = list(16, 17, 1), "buckler_LNN" = list(16, 17, 1), "buckler_LNE" = list(24, 16, 1), "buckler_LNW" = list(3, 16, 0),
+	"buckler_LES" = list(22.3, 16, 0), "buckler_LEN" = list(16, 17, 1), "buckler_LEE" = list(24, 16, 0), "buckler_LEW" = list(11, 16, 1),
+	"buckler_LWS" = list(14.7, 15, 0), "buckler_LWN" = list(16, 17, 1), "buckler_LWE" = list(21, 16, 1), "buckler_LWW" = list(13, 16, 0),
+	"buckler_RSS" = list(10, 13.5, 0), "buckler_RSN" = list(16, 17, 1), "buckler_RSE" = list(24, 16, 1), "buckler_RSW" = list(5, 16, 0),
+	"buckler_RNS" = list(16, 17, 1), "buckler_RNN" = list(16, 17, 1), "buckler_RNE" = list(28, 16, 0), "buckler_RNW" = list(7, 16, 1),
+	"buckler_RES" = list(17.3, 15, 0), "buckler_REN" = list(16, 17, 1), "buckler_REE" = list(19, 16, 0), "buckler_REW" = list(11, 16, 1),
+	"buckler_RWS" = list(9.7, 16, 0), "buckler_RWN" = list(16, 17, 1), "buckler_RWE" = list(21, 16, 1), "buckler_RWW" = list(8, 16, 0),
+	"eshield_LSS" = list(22.5, 14, 0), "eshield_LSN" = list(16, 17, 1), "eshield_LSE" = list(31, 16, 0), "eshield_LSW" = list(7, 16, 1),
+	"eshield_LNS" = list(16, 17, 1), "eshield_LNN" = list(16, 17, 1), "eshield_LNE" = list(24, 16, 1), "eshield_LNW" = list(1, 16, 0),
+	"eshield_LES" = list(20.1, 14, 0), "eshield_LEN" = list(16, 17, 1), "eshield_LEE" = list(21, 16, 0), "eshield_LEW" = list(11, 16, 1),
+	"eshield_LWS" = list(11.9, 14, 0), "eshield_LWN" = list(16, 17, 1), "eshield_LWE" = list(21, 16, 1), "eshield_LWW" = list(11, 16, 0),
+	"eshield_RSS" = list(9.5, 14, 0), "eshield_RSN" = list(16, 17, 1), "eshield_RSE" = list(24, 16, 1), "eshield_RSW" = list(1, 16, 0),
+	"eshield_RNS" = list(16, 17, 1), "eshield_RNN" = list(16, 17, 1), "eshield_RNE" = list(31, 16, 0), "eshield_RNW" = list(7, 16, 1),
+	"eshield_RES" = list(18.1, 14, 0), "eshield_REN" = list(16, 17, 1), "eshield_REE" = list(19, 16, 0), "eshield_REW" = list(11, 16, 1),
+	"eshield_RWS" = list(13.9, 14, 0), "eshield_RWN" = list(16, 17, 1), "eshield_RWE" = list(21, 16, 1), "eshield_RWW" = list(13, 16, 0)
+))
+
+/// The baked look a held shield goes by: riot, buckler or eshield
+/proc/plasma_shield_look(obj/item/shield/shield)
+	var/inhand = "[shield.inhand_icon_state]"
+	if(findtext(inhand, "eshield"))
+		return "eshield"
+	if(findtext(inhand, "buckler"))
+		return "buckler"
+	return "riot"
+
+/// The anchor table key for `shield` held by `holder`, hit by a shot from `side`
+/proc/plasma_shield_key(mob/living/carbon/human/holder, obj/item/shield/shield, side)
+	var/hand = IS_LEFT_INDEX(holder.get_held_index_of_item(shield)) ? "L" : "R"
+	return "[plasma_shield_look(shield)]_[hand][plasma_burst_dir_letter(holder.dir)][plasma_burst_dir_letter(side)]"
+
+/// The splash and slag of a bolt a held shield blocked, shown once the bolt's sprite has reached the shield
+/proc/plasma_shield_splash(turf/where, datum/weakref/holder_ref, datum/weakref/shield_ref, key, holder_layer, lying)
+	if(!where)
+		return
+	var/list/anchor = GLOB.plasma_shield_anchors[key]
+	if(!anchor)
+		return
+	var/mob/living/carbon/human/holder = holder_ref?.resolve()
+	var/obj/item/shield/shield = shield_ref?.resolve()
+	var/under = anchor[3] || lying
+	var/shift_x = holder ? holder.pixel_x : 0
+	var/shift_y = holder ? holder.pixel_y : 0
+	var/anchor_x = round(anchor[1]) + shift_x
+	var/anchor_y = round(anchor[2]) + shift_y
+
+	// Floor slag, and all of it when the body is in the way
+	var/obj/effect/temp_visual/plasma_shield_splash/low = new(where)
+	low.layer = holder_layer - 0.01
+	plasma_burst_place(low, "l_[key]", shift_x - ICON_SIZE_X / 2, shift_y - ICON_SIZE_Y / 2, FALSE)
+	// The soft glow: behind the body it only backlights it
+	var/obj/effect/temp_visual/plasma_shield_splash/bloom = new(where)
+	bloom.blend_mode = BLEND_ADD
+	bloom.layer = holder_layer + (under ? -0.02 : 0.02)
+	plasma_burst_place(bloom, under ? "bu" : "bo", anchor_x - ICON_SIZE_X, anchor_y - ICON_SIZE_Y - (under ? 2 : 3), FALSE, overlay_state = under ? "bu" : "bo")
+
+	if(!under)
+		// The flash and the spatter flying off the shield's face
+		var/obj/effect/temp_visual/plasma_shield_splash/high = new(where)
+		high.layer = holder_layer + 0.01
+		plasma_burst_place(high, "h_[key]", shift_x - ICON_SIZE_X / 2, shift_y - ICON_SIZE_Y / 2, FALSE)
+		// The molten coat rides the holder; it drops off if the shield or the holder moves out of that pose
+		if(holder && shield && !QDELETED(holder) && !QDELETED(shield) && (shield in holder.held_items) && !holder.lying_angle)
+			new /obj/effect/temp_visual/plasma_shield_coat(null, holder, shield, "c_[key]")
+
+	var/obj/effect/temp_visual/plasma_burst_light/shield/glow = new(where)
+	glow.pixel_w = anchor_x - ICON_SIZE_X / 2
+	glow.pixel_z = anchor_y - ICON_SIZE_Y / 2
+	// Bright for a second, then it dims away as the coat goes dark
+	for(var/steps in 1 to 4)
+		addtimer(CALLBACK(glow, TYPE_PROC_REF(/atom, set_light_power), glow.light_power * (1 - steps * 0.2)), 0.4 SECONDS + (steps - 1) * 0.1 SECONDS)
+	addtimer(CALLBACK(glow, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.8 SECONDS)
+
+/// A shield block's light, which lasts while the coat is bright
+/obj/effect/temp_visual/plasma_burst_light/shield
+	duration = 1 SECONDS
+
+/// One layer of a shield block's splash and slag
+/obj/effect/temp_visual/plasma_shield_splash
+	icon = 'voidcrew/modules/plasma_weapons/icons/plasma_shield.dmi'
+	icon_state = null
+	duration = PLASMA_SHIELD_DURATION
+	randomdir = FALSE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/// The molten coat on the held shield; it rides the holder's vis_contents, drawn over the shield in hand
+/obj/effect/temp_visual/plasma_shield_coat
+	icon = 'voidcrew/modules/plasma_weapons/icons/plasma_shield_coat.dmi'
+	icon_state = null
+	duration = PLASMA_SHIELD_DURATION
+	randomdir = FALSE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_ID
+	/// Who holds the shield
+	var/mob/living/carbon/human/holder
+	/// The shield it coats
+	var/obj/item/shield/coated
+
+/obj/effect/temp_visual/plasma_shield_coat/Initialize(mapload, mob/living/carbon/human/new_holder, obj/item/shield/shield, state)
+	. = ..()
+	if(!new_holder || !shield)
+		return INITIALIZE_HINT_QDEL
+	holder = new_holder
+	coated = shield
+	icon_state = state
+	// Over the shield in hand, which draws on the holder's own layer
+	layer = holder.layer + 0.01
+	add_overlay(emissive_appearance(icon, "[state]_e", holder))
+	holder.vis_contents += src
+	RegisterSignals(holder, list(COMSIG_QDELETING, COMSIG_ATOM_DIR_CHANGE, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(on_pose_changed))
+	RegisterSignals(coated, list(COMSIG_QDELETING, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED), PROC_REF(on_pose_changed))
+
+/obj/effect/temp_visual/plasma_shield_coat/Destroy()
+	if(holder)
+		UnregisterSignal(holder, list(COMSIG_QDELETING, COMSIG_ATOM_DIR_CHANGE, COMSIG_LIVING_SET_BODY_POSITION))
+		holder.vis_contents -= src
+		holder = null
+	if(coated)
+		UnregisterSignal(coated, list(COMSIG_QDELETING, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED))
+		coated = null
+	return ..()
+
+/// The coat is drawn for one pose of the shield in hand; once the holder turns, lies down or lets go of it, it is gone
+/obj/effect/temp_visual/plasma_shield_coat/proc/on_pose_changed(datum/source, old_dir, new_dir)
+	SIGNAL_HANDLER
+	if(source == holder && !isnull(new_dir) && old_dir == new_dir)
+		return
+	qdel(src)
 
 /// Removes tg's block star a held item made for this bolt in this tick: a plasma block shows only its splash
 /proc/plasma_take_back_block_star(turf/where)
@@ -140,15 +303,17 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	var/turf/here = get_turf(src)
 	if(!here || !starting || get_dist(starting, here) < PLASMA_HISSBY_MIN_TRAVEL)
 		return
-	for(var/mob/living/listener in range(1, here))
-		if(!listener.client || listener == firer)
+	// view(), not range(): a bolt on the far side of a wall doesn't hiss past anyone. The mob it was fired at
+	// hears it hit instead.
+	for(var/mob/living/listener in view(1, here))
+		if(!listener.client || listener == firer || listener == original)
 			continue
 		// Refs, not mobs, so a deleted listener never leaves a hard reference here
 		var/listener_ref = REF(listener)
 		if(LAZYFIND(hissed_mobs, listener_ref))
 			continue
 		LAZYADD(hissed_mobs, listener_ref)
-		listener.playsound_local(here, 'sound/items/weapons/plasma_cutter.ogg', 25, TRUE)
+		listener.playsound_local(here, near_miss_sound, 25, TRUE)
 
 // ===== Procs called by the guns (P2, P3, P4, P6) =====
 
@@ -171,18 +336,22 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	for(var/mob/listener as anything in heard)
 		var/dist = max(get_dist(get_turf(listener), source_turf), 1)
 		// The position only gives the direction; the volume comes from the band
-		listener.playsound_local(source_turf, far_file, heard[listener], FALSE, pressure_affected = FALSE, distance_multiplier = 1 / dist)
+		listener.playsound_local(source_turf, far_file, heard[listener], TRUE, PLASMA_SHOT_FREQUENCY, pressure_affected = FALSE, distance_multiplier = 1 / dist)
 
 /// Of `candidates`, the client mobs that hear a distant shot from `source_turf`, each with its volume
 /proc/plasma_far_sound_pick(turf/source_turf, list/candidates)
 	. = list()
 	var/datum/gas_mixture/source_air = source_turf.return_air_readonly()
 	var/source_pressure = source_air ? source_air.return_pressure() : 0
+	// Packed encounters share a z-level; playsound() drops listeners in another region, so this does too
+	var/datum/source_region = map_region_for_turf(source_turf)
 	for(var/mob/listener as anything in candidates)
 		if(!listener)
 			continue
 		var/turf/listener_turf = get_turf(listener)
 		if(!listener_turf || listener_turf.z != source_turf.z)
+			continue
+		if(source_region && map_region_excludes_turf(source_region, listener_turf))
 			continue
 		var/volume = plasma_far_sound_volume(listener_turf, source_turf)
 		if(!volume)
@@ -252,13 +421,18 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 	/// Whether this splash carries the steam pool, so Destroy gives it back
 	var/steaming = FALSE
 
-/obj/effect/temp_visual/plasma_splash/Initialize(mapload, px = 0, py = 0, splash_state = "splash_wall", turn_angle = 0, behind_body = FALSE)
+/obj/effect/temp_visual/plasma_splash/Initialize(mapload, px = 0, py = 0, splash_state = "splash_wall", turn_angle = 0, behind_body = FALSE, scale = 1)
 	icon_state = splash_state
 	. = ..()
 	pixel_x = px
 	pixel_y = py
+	var/matrix/turned = matrix()
+	if(scale != 1)
+		turned.Scale(scale)
+		set_light_range(light_range * scale)
 	if(turn_angle)
-		transform = matrix().Turn(turn_angle)
+		turned.Turn(turn_angle)
+	transform = turned
 	// Walls and glass sit behind whoever stands in front of them; a body hit from behind hides its splash
 	if(behind_body || splash_state == "splash_wall" || splash_state == "splash_glass")
 		layer = BELOW_MOB_LAYER
@@ -402,6 +576,8 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	var/facing = SOUTH
 	/// The look picked in the tick of the hit, shown PLASMA_BURST_DELAY later
 	var/look
+	/// Whether the bolt melted the hit limb: that counts as a burn-through
+	var/melted = FALSE
 
 /obj/effect/temp_visual/plasma_burst/Initialize(mapload, mob/living/carbon/human/struck, obj/projectile/energy/plasma_bolt/bolt, from_side)
 	. = ..()
@@ -413,7 +589,7 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	small = !istype(bolt, /obj/projectile/energy/plasma_bolt/heavy)
 	was_alive = victim.stat != DEAD
 	limb = victim.get_bodypart(check_zone(bolt.def_zone))
-	had_critical = !!limb?.get_wound_type(/datum/wound/burn/flesh/critical)
+	had_critical = plasma_limb_burned_through(limb)
 	hit = plasma_burst_hit(victim, side, band)
 	// The bolt's sprite stops where the burst draws; on a standing body's back it goes out behind the head
 	// instead of running over it
@@ -450,7 +626,7 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	if(damagetype != BURN)
 		return
 	var/killed = was_alive && source.stat == DEAD
-	var/burned = !had_critical && limb?.owner == source && !!limb.get_wound_type(/datum/wound/burn/flesh/critical)
+	var/burned = !had_critical && limb?.owner == source && plasma_limb_burned_through(limb)
 	draw(killed || burned)
 
 /// Picks the look in the tick of the hit, and shows it once the bolt's sprite has reached the body
@@ -463,11 +639,27 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 		return
 	var/mob/living/carbon/human/hit_body = victim
 	forget_victim()
+	burned_through = burned_through || melted
 	look = burned_through ? PLASMA_BURST_THROUGH : plasma_burst_pick(hit_body)
 	// The burn-through sizzles on top of the hit
 	if(burned_through)
-		playsound(hit_body, pick('voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_1.ogg', 'voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_2.ogg'), 60, TRUE)
+		plasma_burst_sizzle(hit_body)
 	addtimer(CALLBACK(src, PROC_REF(show), WEAKREF(hit_body)), PLASMA_BURST_DELAY)
+
+/// The burn-through's sizzle
+/proc/plasma_burst_sizzle(atom/where)
+	playsound(where, pick('voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_1.ogg', 'voidcrew/modules/plasma_weapons/sound/plasma_burnthrough_2.ogg'), 60, TRUE)
+
+/// The bolt melted the hit limb (plasma_check_ash). A melt is a burn-through: before the look is picked this
+/// sets it up; after, it swaps a picked look for the burn-through, as long as nothing is on screen yet.
+/obj/effect/temp_visual/plasma_burst/proc/limb_melted()
+	if(QDELETED(src))
+		return
+	melted = TRUE
+	if(!drawn || icon_state || look == PLASMA_BURST_THROUGH)
+		return
+	look = PLASMA_BURST_THROUGH
+	plasma_burst_sizzle(src)
 
 /// Draws the spray, the bloom and what sticks to the body
 /obj/effect/temp_visual/plasma_burst/proc/show(datum/weakref/body_ref)
@@ -614,21 +806,34 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	color = COLOR_WHITE
 	/// The z-level key this glow counts against
 	var/glow_z_key
+	/// Carries our emissive, so it can go out as we cool while our colour stays
+	var/obj/effect/abstract/lit
 
 /// `z_level` is the level the glow counts against; `spokesman` is the atom it draws with, for emissive planes
 /obj/effect/temp_visual/plasma_wall_glow/Initialize(mapload, z_level, atom/spokesman)
 	. = ..()
 	glow_z_key = "[z_level || z]"
 	GLOB.plasma_wall_glows_by_z[glow_z_key] += 1
-	// The emissive keeps the ember lit in the dark; it fades with our alpha and keeps its own colour
-	add_overlay(emissive_appearance(icon, icon_state, spokesman || src))
-	// It cools down the plasma's own ramp: green, deep green, then char
-	animate(src, color = "#33FF88", time = 0.5 SECONDS)
-	animate(color = "#1E873E", time = 1.5 SECONDS)
-	animate(color = "#2C3427", time = 2 SECONDS)
+	// The emissive keeps the ember lit in the dark and keeps its own colour. It goes out as the ember turns to char, or
+	// the char would show grey in the dark
+	lit = new(null)
+	lit.add_overlay(emissive_appearance(icon, icon_state, spokesman || src))
+	vis_contents += lit
+	animate(lit, alpha = 255, time = 1.6 SECONDS)
+	animate(alpha = 0, time = 1.2 SECONDS)
+	// It shows under the splash as the splash goes, already violet, and cools down the plasma's own ramp: deep purple,
+	// then char
+	color = "#EB43FF"
+	alpha = 0
+	animate(src, alpha = 255, time = 0.3 SECONDS)
+	animate(color = "#7C2687", time = 1.5 SECONDS)
+	animate(color = "#332D34", time = 2 SECONDS)
 	animate(alpha = 0, time = PLASMA_GLOW_DURATION - 4 SECONDS)
 
 /obj/effect/temp_visual/plasma_wall_glow/Destroy()
+	if(lit)
+		vis_contents -= lit
+		QDEL_NULL(lit)
 	if(glow_z_key)
 		GLOB.plasma_wall_glows_by_z[glow_z_key] -= 1
 		if(GLOB.plasma_wall_glows_by_z[glow_z_key] <= 0)
@@ -753,9 +958,6 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	remove_shared_particles(/particles/smoke/steam/mild)
 	return ..()
 
-#undef PLASMA_FAR_SOUND_RANGE
-#undef PLASMA_FAR_SOUND_VOL_NEAR
-#undef PLASMA_FAR_SOUND_VOL_FAR
 #undef PLASMA_HISSBY_MIN_TRAVEL
 #undef PLASMA_SPLASH_STEAM_KEY
 #undef PLASMA_BURST_SPLATTER
@@ -763,4 +965,4 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 #undef PLASMA_BURST_THROUGH
 #undef PLASMA_BURST_DURATION
 #undef PLASMA_BURST_DELAY
-#undef PLASMA_SHIELD_BACK_RAISE
+#undef PLASMA_SHIELD_DURATION

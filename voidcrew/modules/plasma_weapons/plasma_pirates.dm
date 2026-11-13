@@ -7,7 +7,7 @@
 //   pirates never carry plasma;
 // - the red-zone Director Prime and Chief Auditor carry a Furnace; both may drop the Old Furnace, but
 //   only when met in a red zone;
-// - a plasma gunner changes flasks for real (load_flask(), a do_after), carrying a spare;
+// - a plasma gunner changes cartridges for real (load_cartridge(), a do_after), carrying a spare;
 // - a Furnace runs the real heat model in its hands, so the pirate minds it: it vents by hand only where
 //   the gas can't catch (near-vacuum or no oxygen), and anywhere else it holds fire and backs off once the
 //   coils are hot, until they cool. It never boils indoors.
@@ -35,8 +35,8 @@
 	shots = 2
 	shot_gap = 0.5 SECONDS
 	volley_gap = 6 SECONDS
-	reload_lines = list("Changing flasks!", "Cover me!")
-	dry_lines = list("Flask's dry!", "Out of plasma!")
+	reload_lines = list("Changing cartridges!", "Cover me!")
+	dry_lines = list("Cartridge is dry!", "Out of plasma!")
 
 /// The Furnace: one bolt every four seconds.
 /datum/pirate_gun_handling/plasma/rifle
@@ -44,7 +44,7 @@
 	shots = 1
 	volley_gap = 4 SECONDS
 
-// ===== ARMING: flasks and heat =====
+// ===== ARMING: cartridges and heat =====
 
 /// A plasma gun it holds, or null
 /proc/pirate_plasma_held_gun(mob/living/carbon/npc)
@@ -52,15 +52,15 @@
 		return gun
 	return null
 
-/// A spare flask it carries with at least a shot in it for `gun`, or null
-/proc/pirate_plasma_spare_flask(mob/living/carbon/npc, obj/item/gun/energy/plasma_weapon/gun)
+/// A spare cartridge it carries with at least a shot in it for `gun`, or null
+/proc/pirate_plasma_spare_cartridge(mob/living/carbon/npc, obj/item/gun/energy/plasma_weapon/gun)
 	var/obj/item/ammo_casing/energy/shot = length(gun.ammo_type) ? gun.ammo_type[gun.select] : null
 	var/needed = max(shot?.e_cost, 1)
-	for(var/obj/item/plasma_flask/flask in npc.get_all_contents_type(/obj/item/plasma_flask))
-		if(flask == gun.flask || flask.loc == gun || flask.stored < needed)
+	for(var/obj/item/plasma_cartridge/cartridge in npc.get_all_contents_type(/obj/item/plasma_cartridge))
+		if(cartridge == gun.cartridge || cartridge.loc == gun || cartridge.stored < needed)
 			continue
-		if(npc.is_holding(flask) || human_npc_can_draw(npc, flask))
-			return flask
+		if(npc.is_holding(cartridge) || human_npc_can_draw(npc, cartridge))
+			return cartridge
 	return null
 
 /// Whether plasma vented at `spot` can't catch: next to no air, or no oxygen in it
@@ -78,7 +78,7 @@
 	if(length(lines) && human_npc_can_talk(npc))
 		INVOKE_ASYNC(npc, TYPE_PROC_REF(/atom/movable, say), pick(lines))
 
-// A plasma gunner minds its coils and changes its own flasks before the base arming (draw a knife when dry)
+// A plasma gunner minds its coils and changes its own cartridges before the base arming (draw a knife when dry)
 /datum/ai_planning_subtree/human_npc_arm/pirate_crew/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	var/mob/living/carbon/npc = controller.pawn
 	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
@@ -94,7 +94,7 @@
 		// The second after a vent: it waits for its gun
 		controller.queue_behavior(/datum/ai_behavior/npc_combat_sense_hold)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	if(isnull(pirate_plasma_spare_flask(npc, gun)))
+	if(isnull(pirate_plasma_spare_cartridge(npc, gun)))
 		return ..()
 	controller.queue_behavior(/datum/ai_behavior/pirate_plasma_reload)
 	if(prob(PIRATE_CREW_RELOAD_BARK_CHANCE))
@@ -146,13 +146,13 @@
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
 /**
- * A player's flask change, one step per action: take the spare in the free hand, click the gun with it
- * (load_flask(): a do_after, and the spent flask comes out). Fails, and the base arming draws a knife, if
+ * A player's cartridge change, one step per action: take the spare in the free hand, click the gun with it
+ * (load_cartridge(): a do_after, and the spent cartridge comes out). Fails, and the base arming draws a knife, if
  * it has no spare or no hand free.
  */
 /datum/ai_behavior/pirate_plasma_reload
 	action_cooldown = 0.8 SECONDS
-	/// Gives up after this long, so a flask that won't go in can't hold the NPC forever
+	/// Gives up after this long, so a cartridge that won't go in can't hold the NPC forever
 	var/give_up_after = 8 SECONDS
 
 /datum/ai_behavior/pirate_plasma_reload/setup(datum/ai_controller/controller)
@@ -162,7 +162,7 @@
 	if(isnull(gun))
 		return FALSE
 	controller.set_blackboard_key(BB_HUMAN_NPC_RELOAD_UNTIL, world.time + give_up_after)
-	npc.visible_message(span_notice("[npc] changes the flask in [gun]."))
+	npc.visible_message(span_notice("[npc] changes the cartridge in [gun]."))
 
 /datum/ai_behavior/pirate_plasma_reload/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/mob/living/carbon/npc = controller.pawn
@@ -171,14 +171,14 @@
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
 	if(gun.can_shoot())
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
-	var/obj/item/plasma_flask/flask = pirate_plasma_spare_flask(npc, gun)
-	if(isnull(flask))
+	var/obj/item/plasma_cartridge/cartridge = pirate_plasma_spare_cartridge(npc, gun)
+	if(isnull(cartridge))
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	if(!npc.is_holding(flask))
-		if(!human_npc_take_in_hand(npc, flask))
+	if(!npc.is_holding(cartridge))
+		if(!human_npc_take_in_hand(npc, cartridge))
 			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
 		return AI_BEHAVIOR_DELAY
-	if(!human_npc_ready_item(npc, flask))
+	if(!human_npc_ready_item(npc, cartridge))
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
 	controller.ai_interact(target = gun, combat_mode = FALSE)
 	return AI_BEHAVIOR_DELAY
@@ -189,14 +189,6 @@
 	controller.set_blackboard_key(BB_HUMAN_NPC_ARMING_RETRY_AT, succeeded ? 0 : world.time + 10 SECONDS)
 
 // ===== DRESSING =====
-
-/// A spare flask, filled, for a pirate's pocket or belt
-/obj/item/plasma_flask/full
-	stored = PLASMA_FLASK_CAPACITY
-
-/obj/item/plasma_flask/full/Initialize(mapload)
-	. = ..()
-	update_appearance()
 
 /datum/human_npc_outfit_table/pirate
 	/// This faction's Cinder gunner, for yellow- and red-zone crews. Null: the faction carries no plasma.
@@ -265,91 +257,91 @@
 	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/irs/ranged/furnace
 	red_boss = list(/datum/outfit/piratecorpse/faction/irs/chief/armed/furnace = 1)
 
-// The gunners: the gun, a spare flask, and a knife for when the plasma runs out.
+// The gunners: the gun, a spare cartridge, and a knife for when the plasma runs out.
 
 /datum/outfit/piratecorpse/faction/silverscale/ranged/cinder
 	name = "Human NPC: Silverscale Marksman (Cinder)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/silverscale/ranged/furnace
 	name = "Human NPC: Silverscale Marksman (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/skeleton/ranged/cinder
 	name = "Human NPC: Skeleton Gunner (Cinder)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/skeleton/ranged/furnace
 	name = "Human NPC: Skeleton Gunner (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/grey/ranged/cinder
 	name = "Human NPC: Grey Tider Gunner (Cinder)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/grey/ranged/furnace
 	name = "Human NPC: Grey Tider Gunner (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/lustrous/ranged/cinder
 	name = "Human NPC: Lustrous Coruscant (Cinder)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/lustrous/ranged/furnace
 	name = "Human NPC: Lustrous Coruscant (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/interdyne/ranged/cinder
 	name = "Human NPC: Interdyne Pharmacist (Cinder)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/interdyne/ranged/furnace
 	name = "Human NPC: Interdyne Pharmacist (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/irs/ranged/cinder
 	name = "Human NPC: IRS Agent (Cinder)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
 /datum/outfit/piratecorpse/faction/irs/ranged/furnace
 	name = "Human NPC: IRS Agent (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	l_pocket = /obj/item/plasma_flask/full
+	l_pocket = /obj/item/plasma_cartridge
 	r_pocket = /obj/item/knife/combat/survival
 
-// The red-zone bosses: a Furnace in place of the laser, the spare flask on the belt.
+// The red-zone bosses: a Furnace in place of the laser, the spare cartridge on the belt.
 
 /datum/outfit/piratecorpse/faction/interdyne/prime/armed/furnace
 	name = "Human NPC: Interdyne Director Prime (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	belt = /obj/item/plasma_flask/full
+	belt = /obj/item/plasma_cartridge
 
 /datum/outfit/piratecorpse/faction/irs/chief/armed/furnace
 	name = "Human NPC: IRS Chief Auditor (Furnace)"
 	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
-	belt = /obj/item/plasma_flask/full
+	belt = /obj/item/plasma_cartridge
 
 // ===== THE OLD FURNACE =====
 

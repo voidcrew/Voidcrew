@@ -1422,7 +1422,7 @@
   "/obj/item/gun/energy/frontier_laser/pistol": {
    "confidence": "medium",
    "group": "beam weapons",
-   "hash": "",
+   "hash": "ce0c02b55402ef41",
    "name": "Kestrel laser pistol",
    "rank": 16,
    "reason": "A weaker laser gun: 20 a shot, 20 shots, fits a belt.",
@@ -1432,7 +1432,7 @@
   "/obj/item/gun/energy/frontier_laser/smg": {
    "confidence": "medium",
    "group": "beam weapons",
-   "hash": "",
+   "hash": "016ce926f54cbd1e",
    "name": "Hornet laser SMG",
    "rank": 9,
    "reason": "The laser gun's beam on a held trigger: a laser carbine's damage per second in bigger hits.",
@@ -1724,15 +1724,35 @@
   "/obj/item/gun/energy/plasma_weapon/pistol": {
    "confidence": "low",
    "group": "sidearms",
-   "hash": "",
+   "hash": "f3f86fd54d1db940",
    "name": "Cinder plasma pistol",
    "rank": 10,
-   "reason": "A plasma sidearm: slow bolts that burn, fed by hand from sheets or ore.",
+   "reason": "A plasma sidearm: slow bolts that burn, loaded with single-use plasma cartridges.",
    "score": 55,
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Fed by hand with plasma sheets or ore; no recharger."
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+    },
+    "points": {
+     "value": 15,
+     "why": "Bolts can't be reflected, break windows and doors faster, leave deep burns and can melt off a hurt limb."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/plasma_weapon/pistol/loot": {
+   "confidence": "low",
+   "group": "sidearms",
+   "hash": "c5ebd8a60a12bd25",
+   "name": "Cinder plasma pistol",
+   "rank": 10,
+   "reason": "The Cinder as found in loot, with a part-used cartridge.",
+   "score": 55,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
     },
     "points": {
      "value": 15,
@@ -1744,15 +1764,35 @@
   "/obj/item/gun/energy/plasma_weapon/rifle": {
    "confidence": "low",
    "group": "rifles",
-   "hash": "",
+   "hash": "69c26c76444f80cf",
    "name": "Furnace plasma rifle",
    "rank": 5,
-   "reason": "Close-range plasma rifle that overheats, fed by hand from sheets or ore.",
+   "reason": "Close-range plasma rifle that overheats, loaded with single-use plasma cartridges.",
    "score": 113,
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Fed by hand with plasma sheets or ore; no recharger."
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+    },
+    "points": {
+     "value": 75,
+     "why": "Beats ablative armour and mirrors, breaks windows and doors twice as fast, lights fuel, leaves deep burns and melts off limbs that can't be reattached. Its bolts can be dodged at range."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/energy/plasma_weapon/rifle/loot": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "273846473a0b4b5a",
+   "name": "Furnace plasma rifle",
+   "rank": 5,
+   "reason": "The Furnace as found in loot, with a part-used cartridge.",
+   "score": 113,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
     },
     "points": {
      "value": 75,
@@ -1764,7 +1804,7 @@
   "/obj/item/gun/energy/plasma_weapon/rifle/old_furnace": {
    "confidence": "low",
    "group": "rifles",
-   "hash": "",
+   "hash": "002e2c1c4b08e1e2",
    "name": "Old Furnace",
    "rank": 3,
    "reason": "A Furnace that runs cooler and shoots straighter.",
@@ -1772,7 +1812,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Fed by hand with plasma sheets or ore; no recharger."
+     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
     },
     "points": {
      "value": 85,
@@ -2310,6 +2350,7 @@
   "/obj/item/gun/energy/e_gun/mini/practice_phaser": "toy",
   "/obj/item/gun/energy/e_gun/stun": "no route",
   "/obj/item/gun/energy/e_gun/turret": "needs another system",
+  "/obj/item/gun/energy/frontier_laser": "abstract",
   "/obj/item/gun/energy/laser/bluetag/hitscan": "leftover",
   "/obj/item/gun/energy/laser/captain/scattershot": "leftover",
   "/obj/item/gun/energy/laser/carbine/cybersun": "needs another system",
@@ -2338,6 +2379,7 @@
   "/obj/item/gun/energy/meteorgun/pen": "admin",
   "/obj/item/gun/energy/mindflayer": "admin",
   "/obj/item/gun/energy/minigun": "needs another system",
+  "/obj/item/gun/energy/plasma_weapon": "abstract",
   "/obj/item/gun/energy/printer": "needs another system",
   "/obj/item/gun/energy/pulse": "admin",
   "/obj/item/gun/energy/pulse/carbine": "admin",

@@ -64,7 +64,7 @@
 		/datum/shop_sku/outfitter/laser_gun,
 		/datum/shop_sku/outfitter/kestrel,
 		/datum/shop_sku/outfitter/cinder,
-		/datum/shop_sku/outfitter/plasma_flask,
+		/datum/shop_sku/outfitter/plasma_cartridge,
 		/datum/shop_sku/outfitter/rubbershot,
 		/datum/shop_sku/outfitter/lethalshot,
 		/datum/shop_sku/outfitter/rifle_clip,

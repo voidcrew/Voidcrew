@@ -62,7 +62,7 @@
 		var/datum/human_npc_outfit_table/pirate/table = human_npc_singleton(table_type)
 		TEST_ASSERT_NULL(table.plasma_pistol_outfit, "[table_type] carries plasma")
 
-/// Every plasma outfit holds its gun, loaded, with a full spare flask it can reach.
+/// Every plasma outfit holds its gun, loaded, with a full spare cartridge it can reach.
 /datum/unit_test/voidcrew_plasma_pirates/dressed
 
 /datum/unit_test/voidcrew_plasma_pirates/dressed/Run()
@@ -79,9 +79,9 @@
 		var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(pirate)
 		TEST_ASSERT_NOTNULL(gun, "[outfit_type] holds no plasma gun")
 		TEST_ASSERT(gun.can_shoot(), "[outfit_type]'s gun isn't loaded")
-		var/obj/item/plasma_flask/spare = pirate_plasma_spare_flask(pirate, gun)
-		TEST_ASSERT_NOTNULL(spare, "[outfit_type] carries no spare flask it can reach")
-		TEST_ASSERT_EQUAL(spare.stored, PLASMA_FLASK_CAPACITY, "[outfit_type]'s spare flask isn't full")
+		var/obj/item/plasma_cartridge/spare = pirate_plasma_spare_cartridge(pirate, gun)
+		TEST_ASSERT_NOTNULL(spare, "[outfit_type] carries no spare cartridge it can reach")
+		TEST_ASSERT_EQUAL(spare.stored, PLASMA_CARTRIDGE_CAPACITY, "[outfit_type]'s spare cartridge isn't full")
 		qdel(pirate)
 
 /// The red-zone Director Prime and Chief Auditor carry a Furnace, elsewhere their laser; both can drop the
@@ -114,10 +114,10 @@
 				TEST_ASSERT_EQUAL((/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in drops), zone == 3, "A zone [zone] [boss_type]'s Old Furnace roll was [zone == 3 ? "dropped" : "kept"]")
 		qdel(boss)
 
-/// A dry gunner with a spare changes flasks.
-/datum/unit_test/voidcrew_plasma_pirates/flask_change
+/// A dry gunner with a spare changes cartridges.
+/datum/unit_test/voidcrew_plasma_pirates/cartridge_change
 
-/datum/unit_test/voidcrew_plasma_pirates/flask_change/Run()
+/datum/unit_test/voidcrew_plasma_pirates/cartridge_change/Run()
 	var/mob/living/carbon/human/npc/faction_pirate/gunner = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(0, 0), /datum/outfit/piratecorpse/faction/irs/ranged/cinder)
 	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(gunner)
 	TEST_ASSERT_NOTNULL(gun, "Test fixture: the gunner holds no Cinder")
@@ -130,13 +130,13 @@
 	TEST_ASSERT_NOTNULL(arm, "Test fixture: no pirate arming subtree")
 	controller.planned_behaviors = list()
 	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A dry plasma gunner with a spare did nothing")
-	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_reload)], "A dry plasma gunner with a spare didn't change flasks")
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_reload)], "A dry plasma gunner with a spare didn't change cartridges")
 	var/datum/ai_behavior/pirate_plasma_reload/reload = GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_reload)
-	var/obj/item/plasma_flask/spare = pirate_plasma_spare_flask(gunner, gun)
+	var/obj/item/plasma_cartridge/spare = pirate_plasma_spare_cartridge(gunner, gun)
 	reload.perform(1, controller)
-	TEST_ASSERT(gunner.is_holding(spare), "The gunner didn't take its spare flask in hand")
-	TEST_ASSERT(gun.load_flask(spare, null), "The spare flask wouldn't go in")
-	TEST_ASSERT(gun.can_shoot(), "A changed flask didn't load the Cinder")
+	TEST_ASSERT(gunner.is_holding(spare), "The gunner didn't take its spare cartridge in hand")
+	TEST_ASSERT(gun.load_cartridge(spare, null), "The spare cartridge wouldn't go in")
+	TEST_ASSERT(gun.can_shoot(), "A changed cartridge didn't load the Cinder")
 
 /// A hot Furnace in air: it holds fire and backs off until the coils cool, and never vents. In vacuum it vents.
 /datum/unit_test/voidcrew_plasma_pirates/heat
