@@ -1064,16 +1064,32 @@
 			still[key_name] = list(was[1], was[2], null)
 		all_poses += list(still)
 		step_times += hold
-	for(var/i in 1 to steps)
-		var/progress = (1 - cos(180 * i / steps)) / 2
-		var/matrix/bent_now = bearer_rig.bend_matrix(bend * progress)
-		var/list/poses = list()
-		for(var/key_name in there)
-			var/list/pose = there[key_name]
-			var/list/was = start[key_name]
-			poses[key_name] = list(was[1] + (pose[1] - was[1]) * progress, was[2] + (pose[2] - was[2]) * progress, key_name == "body" ? null : bent_now)
-		all_poses += list(poses)
-		step_times += time / steps
+	// His fists go down to the hand where it lies first (no further out than they take it), and only then does the arm
+	// come up with them: an arm rising on its own before he has it would look lifted by nothing
+	var/list/hand = victim_rig.hand_point(side)
+	var/list/body_at = body_origin()
+	var/list/reach_to = list(body_at[1] + hand[1], body_at[2] + hand[2])
+	var/list/fist_from = bearer_shoulder_at(grip_side, bent)
+	var/to_hand = sqrt((reach_to[1] - fist_from[1]) ** 2 + (reach_to[2] - fist_from[2]) ** 2)
+	var/to_grip = sqrt((grip[1] - fist_from[1]) ** 2 + (grip[2] - fist_from[2]) ** 2)
+	if(to_hand > to_grip && to_hand)
+		reach_to = list(fist_from[1] + (reach_to[1] - fist_from[1]) * to_grip / to_hand, fist_from[2] + (reach_to[2] - fist_from[2]) * to_grip / to_hand)
+	var/list/on_hand = poses_on(reach_to, now, bent)
+	on_hand["body"] = start["body"]
+	var/list/phases = list(list(start, on_hand, time * GORILLA_RIP_REACH_SHARE), list(on_hand, there, time * (1 - GORILLA_RIP_REACH_SHARE)))
+	for(var/list/phase as anything in phases)
+		var/list/from_poses = phase[1]
+		var/list/to_poses = phase[2]
+		for(var/i in 1 to steps)
+			var/progress = (1 - cos(180 * i / steps)) / 2
+			var/matrix/bent_now = bearer_rig.bend_matrix(bend * progress)
+			var/list/poses = list()
+			for(var/key_name in there)
+				var/list/pose = to_poses[key_name]
+				var/list/was = from_poses[key_name]
+				poses[key_name] = list(was[1] + (pose[1] - was[1]) * progress, was[2] + (pose[2] - was[2]) * progress, key_name == "body" ? null : bent_now)
+			all_poses += list(poses)
+			step_times += phase[3] / steps
 	pose_through(all_poses, step_times)
 
 /**

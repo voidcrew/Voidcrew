@@ -345,6 +345,8 @@
 /// to spare), so his boots stop at its edge; and the pixels he steps back off it as he hauls.
 #define GORILLA_RIP_STEP_GAP 18
 #define GORILLA_RIP_STEP_BACK 3
+/// The share of the grab his fists take to reach the hand where it lies, before the arm comes up with them.
+#define GORILLA_RIP_REACH_SHARE 0.55
 /// Facing away, pixels under his tile the finisher's bar is drawn: over his head it would sit on the body and the
 /// arm he hauls up off it.
 #define GORILLA_RIP_BAR_LOW -14
