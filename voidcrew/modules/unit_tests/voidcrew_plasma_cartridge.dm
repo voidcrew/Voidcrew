@@ -226,3 +226,33 @@
 	gun.take_mol(gun.chamber_mol() - shot.e_cost + 1)
 	TEST_ASSERT_EQUAL(gun.icon_state, "cinder_empty", "a Cinder short of one shot isn't shown empty")
 	TEST_ASSERT(!gun.can_shoot(), "a Cinder short of one shot can fire")
+
+/// On a swap the hand holding the new cartridge takes the old one, even with the gun in the other hand
+/datum/unit_test/voidcrew_plasma_cartridge_swap_to_hand/Run()
+	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/gun/energy/plasma_weapon/pistol/gun = allocate(/obj/item/gun/energy/plasma_weapon/pistol)
+	var/obj/item/plasma_cartridge/fresh = allocate(/obj/item/plasma_cartridge)
+	shooter.put_in_hands(gun)
+	shooter.put_in_hands(fresh)
+	TEST_ASSERT(shooter.is_holding(gun) && shooter.is_holding(fresh), "the shooter isn't holding both the gun and the cartridge")
+	gun.take_mol(8)
+	var/obj/item/plasma_cartridge/old = gun.cartridge
+	gun.cartridge_load_delay = 0
+	TEST_ASSERT(gun.load_cartridge(fresh, shooter), "couldn't swap cartridges by hand")
+	TEST_ASSERT_EQUAL(gun.cartridge, fresh, "the new cartridge isn't seated")
+	TEST_ASSERT(shooter.is_holding(old), "a part-used cartridge fell to the floor on a swap with both hands full")
+	TEST_ASSERT_EQUAL(old.stored, PLASMA_CARTRIDGE_CAPACITY - 8, "the swapped-out cartridge has the wrong fill")
+
+/// An outpost shop lists cartridges and plasma guns with different plasma apart
+/datum/unit_test/voidcrew_plasma_shop_listing/Run()
+	var/obj/machinery/outpost_shop_stock/stock = allocate(/obj/machinery/outpost_shop_stock)
+	var/obj/item/plasma_cartridge/full = allocate(/obj/item/plasma_cartridge)
+	var/obj/item/plasma_cartridge/other_full = allocate(/obj/item/plasma_cartridge)
+	var/obj/item/plasma_cartridge/spent = allocate(/obj/item/plasma_cartridge)
+	spent.stored = 0
+	TEST_ASSERT_EQUAL(stock.listing_key(full), stock.listing_key(other_full), "two full cartridges don't share a listing")
+	TEST_ASSERT_NOTEQUAL(stock.listing_key(full), stock.listing_key(spent), "a spent cartridge shares a listing with a full one")
+	var/obj/item/gun/energy/plasma_weapon/pistol/loaded = allocate(/obj/item/gun/energy/plasma_weapon/pistol)
+	var/obj/item/gun/energy/plasma_weapon/pistol/one_shot_down = allocate(/obj/item/gun/energy/plasma_weapon/pistol)
+	one_shot_down.take_mol(PLASMA_SHOT_MOL_PISTOL)
+	TEST_ASSERT_NOTEQUAL(stock.listing_key(loaded), stock.listing_key(one_shot_down), "a Cinder a shot down shares a listing with a full one")

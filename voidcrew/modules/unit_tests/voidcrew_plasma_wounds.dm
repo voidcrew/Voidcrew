@@ -436,7 +436,7 @@
 	TEST_ASSERT(surgery.can_start(surgeon, patient), "the slag surgery could not start on a slagged burn")
 	TEST_ASSERT_EQUAL(surgery.operated_wound, burn, "the slag surgery is not working on the plasma burn")
 	TEST_ASSERT_EQUAL(surgery.steps[1], step_type, "the slag surgery does not start with its own step")
-	TEST_ASSERT_EQUAL(surgery.steps[length(surgery.steps)], /datum/surgery_step/dress, "the slag surgery does not end in tg's dressing step")
+	TEST_ASSERT(ispath(surgery.steps[length(surgery.steps)], /datum/surgery_step/dress), "the slag surgery does not end in tg's dressing step")
 
 	var/datum/surgery_step/excise = new step_type
 	TEST_ASSERT(excise.repeatable, "the slag step can't be repeated")
@@ -455,6 +455,19 @@
 	TEST_ASSERT(!QDELETED(burn), "taking the slag out by surgery deleted the burn before dressing")
 	qdel(excise)
 	qdel(surgery)
+
+	// The dressing won't go on over slag, so gauze can't skip the excision
+	burn.slag = PLASMA_WOUND_SURGERY_SLAG
+	var/datum/surgery/gauzed = new surgery_type(patient, BODY_ZONE_R_ARM, arm)
+	var/dress_type = gauzed.steps[length(gauzed.steps)]
+	var/datum/surgery_step/dress = new dress_type
+	var/obj/item/stack/medical/gauze/gauze = allocate(/obj/item/stack/medical/gauze)
+	var/sanitization_before = burn.sanitization
+	TEST_ASSERT(!dress.try_op(surgeon, patient, BODY_ZONE_R_ARM, gauze, gauzed), "the slag dressing went on over slag")
+	TEST_ASSERT_EQUAL(burn.sanitization, sanitization_before, "a refused dressing still cleaned the burn")
+	burn.slag = 0
+	qdel(dress)
+	qdel(gauzed)
 
 	// No slag, no surgery.
 	var/datum/surgery/check = new surgery_type
@@ -639,4 +652,41 @@
 		TEST_ASSERT_EQUAL(LAZYLEN(arm.scars), scars_before + 1, "a healed [tier] plasma burn left no scar")
 		var/datum/scar/scar = arm.scars[LAZYLEN(arm.scars)]
 		TEST_ASSERT(scar.description in lines, "a healed [tier] plasma burn left the scar \"[scar.description]\", not one from the plasma file")
+	clean_up(turf_at(2, 1))
+
+/// 15. Slag cools at a body's own normal heat, even one that runs hot like an ethereal's.
+/datum/unit_test/voidcrew_plasma_wounds/species_cooling
+
+/datum/unit_test/voidcrew_plasma_wounds/species_cooling/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	victim.set_species(/datum/species/ethereal)
+	var/datum/wound/burn/flesh/plasma/burn = give_burn(victim.get_bodypart(BODY_ZONE_L_ARM), "severe")
+	TEST_ASSERT_NOTNULL(burn, "no severe plasma burn on an ethereal")
+	var/datum/species/species = victim.dna.species
+	TEST_ASSERT(species.bodytemp_normal > BODYTEMP_HEAT_DAMAGE_LIMIT, "ethereals no longer run hotter than a human's heat limit; this test proves nothing")
+	victim.bodytemperature = species.bodytemp_normal
+	TEST_ASSERT(burn.cooling_factor() > 0, "slag never cools in an ethereal at its normal [victim.bodytemperature] K")
+	victim.bodytemperature = species.bodytemp_heat_damage_limit + 10
+	TEST_ASSERT_EQUAL(burn.cooling_factor(), 0, "slag cooled in an ethereal over its own heat limit")
+	victim.bodytemperature = species.bodytemp_normal
+	clean_up(turf_at(2, 1))
+
+/// 16. A severed slagged limb put back on keeps its slag and heat, and doesn't dose the blood again.
+/datum/unit_test/voidcrew_plasma_wounds/reattach
+
+/datum/unit_test/voidcrew_plasma_wounds/reattach/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_R_ARM)
+	var/datum/wound/burn/flesh/plasma/burn = give_burn(arm, "critical")
+	TEST_ASSERT_NOTNULL(burn, "no critical plasma burn")
+	burn.heat = 0
+	victim.reagents.clear_reagents()
+	var/slag_before = burn.slag
+	arm.drop_limb()
+	TEST_ASSERT(arm.try_attach_limb(victim), "the severed arm would not go back on")
+	var/datum/wound/burn/flesh/plasma/back = arm.get_wound_type(/datum/wound/burn/flesh/plasma)
+	TEST_ASSERT_NOTNULL(back, "the plasma burn didn't come back with the arm")
+	TEST_ASSERT_EQUAL(back.heat, 0, "a cooled burn came back hot on a reattached arm")
+	TEST_ASSERT_EQUAL(back.slag, slag_before, "a reattached arm lost or gained slag")
+	TEST_ASSERT_EQUAL(victim.reagents.get_reagent_amount(/datum/reagent/toxin/plasma), 0, "reattaching a slagged arm put plasma in the blood")
 	clean_up(turf_at(2, 1))

@@ -77,7 +77,7 @@
 		var/turf/listener_turf = locate(source.x + dist, source.y, source.z)
 		var/volume = plasma_far_sound_volume(listener_turf, source)
 		if(expected[dist_text])
-			TEST_ASSERT(volume >= 30 && volume <= 60, "A listener [dist] tiles away got far-sound volume [volume]")
+			TEST_ASSERT(volume >= PLASMA_FAR_SOUND_VOL_FAR && volume <= PLASMA_FAR_SOUND_VOL_NEAR, "A listener [dist] tiles away got far-sound volume [volume]")
 		else
 			TEST_ASSERT_EQUAL(volume, 0, "A listener [dist] tiles away heard the far sound")
 
@@ -150,6 +150,26 @@
 		if(!baked[3])
 			TEST_ASSERT(icon_exists('voidcrew/modules/plasma_weapons/icons/plasma_shield.dmi', "h_[baked_key]"), "no splash state for [baked_key]")
 			TEST_ASSERT(icon_exists('voidcrew/modules/plasma_weapons/icons/plasma_shield_coat.dmi', "c_[baked_key]"), "no coat state for [baked_key]")
+
+/// A shield the block breaks still takes the bolt's splash where it was held, with no coat as there's no shield left.
+/datum/unit_test/voidcrew_plasma_bolt/shield_break
+
+/datum/unit_test/voidcrew_plasma_bolt/shield_break/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	var/obj/item/shield/riot/shield = allocate(/obj/item/shield/riot)
+	shield.block_chance = INFINITY
+	victim.put_in_active_hand(shield, forced = TRUE)
+	victim.setDir(SOUTH)
+	shield.update_integrity(1)
+	var/turf/victim_turf = get_turf(victim)
+	var/obj/projectile/energy/plasma_bolt/heavy/bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, turf_at(2, 0))
+	victim.bullet_act(bolt, BODY_ZONE_CHEST)
+	TEST_ASSERT(QDELETED(shield), "a riot shield at 1 integrity survived blocking a rifle bolt")
+	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "a shield that broke blocking the bolt let it through")
+	sleep(world.tick_lag * 3)
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_splash) in victim_turf, "a shield that broke blocking the bolt made the armour splash")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/plasma_shield_splash) in victim_turf, "a shield that broke blocking the bolt left no slag")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_shield_coat) in victim.vis_contents, "a broken shield left a molten coat on the holder")
 
 /// Ordinary person hits alternate the splatter and the flash; a killing hit burns through.
 /datum/unit_test/voidcrew_plasma_bolt/burst_pick
