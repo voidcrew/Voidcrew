@@ -373,13 +373,16 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard watched one of its own being grabbed and did nothing")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The watching guard isn't after the one it saw")
 	TEST_ASSERT_EQUAL(friend_ai.stealth_state(), "unaware", "A guard with its back to it all reacted")
-	// Word reaches the third guard only once an alarm has made it wary.
+	// Word reaches the third guard only through a shout or a call that reaches it (decision 44, voidcrew_stealth_d44.dm):
+	// being wary is not word.
 	TEST_ASSERT(friend_ai.stealth_fooled(person), "A guard nobody has told sees through them")
 	friend_ai.stealth_set_wary()
-	TEST_ASSERT(!friend_ai.stealth_fooled(person), "A guard the alarm reached is still fooled")
+	TEST_ASSERT(friend_ai.stealth_fooled(person), "A wary guard nobody told knows what another guard saw")
+	stealth_ai.stealth_tell(friend_ai)
+	TEST_ASSERT(!friend_ai.stealth_fooled(person), "A guard that was told is still fooled")
 	qdel(block)
 
-/// Running in a guard's earshot ends it for that guard; a face it went alert on is known unless a mask hides it.
+/// Running in a guard's earshot is only footsteps (decision 44); a face it went alert on is known unless a mask hides it.
 /datum/unit_test/voidcrew_stealth_disguise_known
 
 /datum/unit_test/voidcrew_stealth_disguise_known/Run()
@@ -397,8 +400,8 @@
 	person.toggle_move_intent()
 	person.forceMove(stealth_at(block, 8, 2))
 	stealth_scans(guard, 1)
-	TEST_ASSERT(!stealth_ai.stealth_fooled(person), "Running three tiles behind a guard didn't give them away")
-	TEST_ASSERT(!length(stealth_ai.group.made), "Running in one guard's earshot told its whole group")
+	TEST_ASSERT(stealth_ai.stealth_fooled(person), "Running three tiles behind a guard gave a disguise away by ear")
+	TEST_ASSERT(!length(stealth_ai.made), "A guard marked someone it only heard running")
 	qdel(guard)
 	qdel(person)
 	// A face it has gone alert on.

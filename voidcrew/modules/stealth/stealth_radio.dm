@@ -107,6 +107,12 @@
 			for(var/datum/stealth_check/check as anything in speaker_checks)
 				check.waiters |= WEAKREF(guard)
 		return
+	// Who it was goes out with the alarm to every receiver that got it, even inside the cooldown (decision 44).
+	var/datum/ai_controller/basic_controller/human_npc/stealth/speaker_ai = speaker.ai_controller
+	if(istype(speaker_ai))
+		for(var/mob/living/carbon/human/npc/guard as anything in guards)
+			if(guard != speaker && radio_receiver(guard))
+				speaker_ai.stealth_tell(guard.ai_controller)
 	if(world.time < next_radio_alarm)
 		return 0
 	next_radio_alarm = world.time + STEALTH_RADIO_GROUP_COOLDOWN

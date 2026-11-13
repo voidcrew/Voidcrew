@@ -8,7 +8,7 @@
  * - clothing: the scavs' own fatigues, showing, with nothing over them but what the guards' own outfits wear over
  *   theirs (stealth_guard_suits());
  * - mask: tg's own "face hidden" (get_face_name() finds no face), whatever hides it;
- * - ID: a scav pass in the ID slot.
+ * - ID: a scav pass where a door would read it (stealth_scav_pass()).
  *
  * A disguise holds for a guard while the clothing is on and the guard hasn't seen through it (stealth_fooled()).
  * While it holds, notice fills slower by stage (stealth_look()), never jumps to an alert, and stops at suspicious,
@@ -16,10 +16,10 @@
  * guard's near range, they are one of its own: no notice, and a nod.
  *
  * What ends it for a guard (stealth_blow(), stealth_make()): a weapon in hand, pulling a fallen guard, an off-limits
- * room, being seen laying hands on a guard, standing over a body as it is found, running in earshot, a failed
- * challenge, and a face it has gone alert on before (a mask hides the face). The guard remembers faces for good and a
- * blown disguise's wearer for STEALTH_MADE_TIME. Its group keeps the same list, which only a wary guard reads: wary
- * is what a shout, a radio call or a hold leaves behind, so word of it reaches exactly the guards the alarm did.
+ * room, being seen laying hands on a guard, standing over a body as it is found, a failed challenge (running while
+ * stopped is one), and a face it has gone alert on before (a mask hides the face). The guard remembers faces for good
+ * and a blown disguise's wearer for STEALTH_MADE_TIME. Another guard knows only what it saw itself or what a shout or
+ * radio call that reached it carried (stealth_tell(), decision 44): nothing spreads through the group by itself.
  *
  * Cost: what someone wears is cached on them (/datum/component/stealth_disguise) and thrown away when they put
  * anything on or take anything off; a guard's scan reads two numbers and a list or two.
@@ -94,8 +94,24 @@
 	if(istype(wearer.w_uniform, /obj/item/clothing/under/syndicate/scav) && !(wearer.check_obscured_slots() & ITEM_SLOT_ICLOTHING))
 		if(isnull(wearer.wear_suit) || stealth_guard_suits()[wearer.wear_suit.type])
 			pieces |= STEALTH_PIECE_CLOTHES
-	if(istype(wearer.wear_id?.GetID(), /obj/item/card/id/advanced/black/scav))
+	if(stealth_scav_pass(wearer))
 		pieces |= STEALTH_PIECE_ID
+
+/**
+ * The scav pass `who` carries where a door reads a card (tg's get_idcard(): a hand, the ID slot, the belt), a wallet
+ * read as a door reads it (any card in it) and a PDA by the card in it. Null if none: one in a bag never shows.
+ */
+/proc/stealth_scav_pass(mob/living/carbon/human/who)
+	for(var/obj/item/place in who.held_items + list(who.wear_id, who.belt))
+		if(istype(place, /obj/item/storage/wallet))
+			var/obj/item/card/id/advanced/black/scav/in_wallet = locate() in place
+			if(in_wallet)
+				return in_wallet
+			continue
+		var/obj/item/card/id/card = place.GetID()
+		if(istype(card, /obj/item/card/id/advanced/black/scav))
+			return card
+	return null
 
 /// The cache on `who`, worked out afresh if they changed clothes or it is older than STEALTH_DISGUISE_CACHE_TIME
 /// (a mask pulled down, a face wrecked). Null for anyone but a human.
@@ -133,9 +149,6 @@
 	var/allowed = TRUE
 
 /datum/stealth_group
-	/// Face name => TRUE, or REF(mob) => world.time the mark runs out: disguises its guards have seen through.
-	/// Read only by a guard that is wary (stealth_knows()).
-	var/list/made
 	/// Off-limits turf => whether a pass excuses being there. Null until first asked for.
 	var/list/restricted
 
@@ -194,18 +207,33 @@
 	/// world.time it may next greet one of its own
 	var/greeted = 0
 
-/// Whether it sees through `who`: it knows the face, or the wearer of a disguise it saw blown; and, while it is
-/// wary, anyone its group does.
+/// Whether it sees through `who`: it knows the face, or the wearer of a disguise it saw blown or was told of.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_knows(mob/living/who)
+	if(!made)
+		return FALSE
 	var/datum/component/stealth_disguise/cache = stealth_disguise_cache(who)
 	if(isnull(cache))
 		return FALSE
-	var/key = REF(who)
 	var/face = cache.face
-	if(made && ((face && made[face]) || made[key] > world.time))
-		return TRUE
-	var/list/told = blackboard[BB_STEALTH_WARY] ? group?.made : null
-	return !!(told && ((face && told[face]) || told[key] > world.time))
+	return !!((face && made[face]) || made[REF(who)] > world.time)
+
+/**
+ * A shout or a radio call of its reached `listener` (dispatch_shout(), radio_call()): the faces it knows and the
+ * disguises it saw through go with it (decision 44). Nothing else passes word between guards.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_tell(datum/ai_controller/basic_controller/human_npc/stealth/listener)
+	if(!made || !istype(listener) || listener == src)
+		return
+	for(var/key in made)
+		var/mark = made[key]
+		if(mark == TRUE)
+			LAZYSET(listener.made, key, TRUE)
+			continue
+		if(mark <= world.time || listener.made?[key] >= mark)
+			continue
+		LAZYSET(listener.made, key, mark)
+		if(listener.passes)
+			listener.passes -= key
 
 /// `who`'s STEALTH_PIECE_* flags if their disguise holds for this guard: the clothing is on and it hasn't seen
 /// through them. 0 otherwise.
@@ -216,24 +244,20 @@
 	return pieces
 
 /**
- * Remembers `who`: their face for good, if it shows. `blown`: also the wearer, face or no face, for
- * STEALTH_MADE_TIME (a disguise it saw through; a mask won't fix that). `word`: its group gets the same, for the
- * guards an alarm reaches.
+ * Remembers `who`, seen with its own eyes: their face for good, if it shows. `blown`: also the wearer, face or no
+ * face, for STEALTH_MADE_TIME (a disguise it saw through; a mask won't fix that). Only it knows, until it tells
+ * someone (stealth_tell()).
  */
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_make(mob/living/who, blown = TRUE, word = TRUE)
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_make(mob/living/who, blown = TRUE)
 	var/datum/component/stealth_disguise/cache = stealth_disguise_cache(who)
 	if(isnull(cache))
 		return
 	var/key = REF(who)
 	if(cache.face)
 		LAZYSET(made, cache.face, TRUE)
-		if(word && group)
-			LAZYSET(group.made, cache.face, TRUE)
 	if(!blown)
 		return
 	LAZYSET(made, key, world.time + STEALTH_MADE_TIME)
-	if(word && group)
-		LAZYSET(group.made, key, world.time + STEALTH_MADE_TIME)
 	if(passes)
 		passes -= key
 
@@ -304,7 +328,7 @@
 /// The name on the pass `who` wears, if it is one of its group's own: what its friends called them. An NPC's
 /// name, never player text; null for a pass in nobody's name or a guard with only its type's name.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_card_name(mob/living/carbon/human/who)
-	var/obj/item/card/id/card = ishuman(who) ? who.wear_id?.GetID() : null
+	var/obj/item/card/id/card = ishuman(who) ? (stealth_scav_pass(who) || who.wear_id?.GetID()) : null
 	if(!istype(card) || !card.registered_name)
 		return null
 	for(var/mob/living/carbon/human/npc/friend as anything in group?.living_members())

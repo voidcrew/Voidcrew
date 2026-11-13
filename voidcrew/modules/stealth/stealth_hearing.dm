@@ -221,9 +221,8 @@
 			continue
 		LAZYSET(heard_now, key, TRUE)
 		last_heard = list("footsteps", world.time)
-		// Nobody of the den runs about it: a disguise heard running is done for with this guard (decision 40).
-		if(walker.body_position != LYING_DOWN && (stealth_disguise_of(walker) & STEALTH_PIECE_CLOTHES))
-			stealth_make(walker, TRUE, FALSE)
+		// Running steps are only steps, disguise or not: the ear can't tell who ran. It turns to look, and once it
+		// sees them in its colours it stops them; running while stopped gives a disguise away (decision 44).
 		if(state == STEALTH_SEARCHING)
 			if(!calm_until && world.time >= next_recentre && get_dist(search_center, where) > 1)
 				next_recentre = world.time + STEALTH_RECENTRE_COOLDOWN

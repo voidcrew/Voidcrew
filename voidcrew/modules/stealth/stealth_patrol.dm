@@ -75,7 +75,6 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	members = null
 	routes = null
 	home = null
-	made = null
 	restricted = null
 	return ..()
 

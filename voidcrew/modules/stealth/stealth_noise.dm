@@ -343,7 +343,7 @@
 		if(STEALTH_HEAR_ALARM)
 			dispatch_alarm(hearers, where, spot, kind, actor)
 		if(STEALTH_HEAR_SHOUT)
-			dispatch_shout(hearers, spot)
+			dispatch_shout(hearers, spot, actor)
 
 /// A small noise: one guard goes to look, the rest glance. The second time at one spot two go; from the third
 /// everyone who hears it searches there, and they call it in.
@@ -429,11 +429,14 @@
 			guard_ai.stealth_start_call(STEALTH_CALL_ALARM, spot)
 
 /// A friend calling for help from `spot`: whoever hears it and isn't a sentry runs to them. They heard a
-/// friend, they saw nobody, so they search where the friend stood.
-/datum/stealth_group/proc/dispatch_shout(list/hearers, turf/spot)
+/// friend, they saw nobody, so they search where the friend stood. Who it was goes with the shout (decision 44).
+/datum/stealth_group/proc/dispatch_shout(list/hearers, turf/spot, mob/living/shouter)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/shouter_ai = shouter?.ai_controller
 	for(var/list/hearer as anything in hearers)
 		var/mob/living/carbon/human/npc/guard = hearer[1]
 		var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
+		if(istype(shouter_ai))
+			shouter_ai.stealth_tell(guard_ai)
 		if(guard_ai.stealth_state() == STEALTH_ALERT)
 			continue
 		if(isnull(guard_ai.route_id))

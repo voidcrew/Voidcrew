@@ -4,7 +4,6 @@
 	COMSIG_CARBON_CUFF_ATTEMPTED,\
 	COMSIG_LIVING_TRY_SYRINGE_INJECT,\
 	COMSIG_LIVING_TRY_SYRINGE_WITHDRAW,\
-	COMSIG_BEING_STRIPPED,\
 	COMSIG_ATOM_ITEM_INTERACTION,\
 	COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,\
 )
@@ -89,6 +88,7 @@
 		/datum/ai_planning_subtree/stealth_react,
 		/datum/ai_planning_subtree/human_npc_arm,
 		/datum/ai_planning_subtree/stealth_closet,
+		/datum/ai_planning_subtree/stealth_chase_lost,
 		/datum/ai_planning_subtree/human_npc_shoot,
 		/datum/ai_planning_subtree/human_npc_melee,
 		/datum/ai_planning_subtree/stealth_patrol,
@@ -205,6 +205,7 @@
 	RegisterSignal(new_pawn, COMSIG_LIVING_GET_PULLED, PROC_REF(on_pulled))
 	RegisterSignal(new_pawn, COMSIG_ATOM_BUMPED, PROC_REF(on_bumped))
 	RegisterSignals(new_pawn, STEALTH_HANDLED_SIGNALS, PROC_REF(on_handled))
+	RegisterSignal(new_pawn, COMSIG_BEING_STRIPPED, PROC_REF(on_stripped))
 	RegisterSignal(new_pawn, COMSIG_ATOM_PREHITBY, PROC_REF(on_prehitby))
 	RegisterSignal(new_pawn, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_projectile_prehit))
 	RegisterSignals(new_pawn, list(COMSIG_ATOM_EX_ACT, COMSIG_LIVING_IGNITED, COMSIG_MOB_FLASHED), PROC_REF(on_harmed))
@@ -219,6 +220,7 @@
 		UnregisterSignal(pawn, list(
 			COMSIG_LIVING_GET_PULLED,
 			COMSIG_ATOM_BUMPED,
+			COMSIG_BEING_STRIPPED,
 			COMSIG_ATOM_PREHITBY,
 			COMSIG_PROJECTILE_PREHIT,
 			COMSIG_ATOM_EX_ACT,
@@ -1021,8 +1023,37 @@
 		stealth_switch_target(pick)
 
 /**
- * Alert: keeps its target with tg's all-round can_attack() at the NPC's sight range (abuse P2). Out of
- * sight for STEALTH_LOSE_TARGET_TIME, it searches where it last saw them, not where they are now.
+ * Alert: whether the light lets it keep `thing` in view (decision 44). All round, since it is hunting them, but by
+ * the same light as noticing someone: what is lit (the room's lights, anyone's flashlight, its own beam) out to
+ * its full sight; in the dark only within its dark sight range. Beside it, always. Blind, only what is lit at its
+ * shoulder. A mech is plain whatever the light (abuse P9). Line of sight is the caller's.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_alert_lit(atom/thing)
+	var/mob/living/guard = pawn
+	var/turf/where = get_turf(thing)
+	if(isnull(where) || !isturf(guard.loc))
+		return FALSE
+	var/dist = get_dist(guard, where)
+	if(ismecha(thing) || dist <= STEALTH_ADJACENT_RANGE)
+		return TRUE
+	var/datum/stealth_skill/profile = stealth_skill()
+	var/lit = HAS_TRAIT(guard, TRAIT_NIGHT_VISION) || !stealth_tile_is_dark(where)
+	if(guard.is_blind())
+		return lit && dist <= profile.close_range
+	return lit || dist <= profile.dark_sight_range
+
+/// Alert: whether it has `thing` in view now, to fight: tg's all-round can_attack() at the NPC's sight range
+/// (abuse P2), in light it can see by (stealth_alert_lit()).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_has_in_view(atom/thing)
+	if(QDELETED(thing) || !stealth_alert_lit(thing))
+		return FALSE
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
+	return !!strategy?.can_attack(pawn, thing, HUMAN_NPC_SIGHT_RANGE)
+
+/**
+ * Alert: keeps its target while it has them in view (stealth_has_in_view()). Out of view, it goes where it last
+ * saw them (/datum/ai_planning_subtree/stealth_chase_lost), and after STEALTH_LOSE_TARGET_TIME it searches there,
+ * not where they are now.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_keep_target()
 	var/mob/living/guard = pawn
@@ -1034,8 +1065,7 @@
 	// In a locker or a box: tracked only if it saw them get in (decision 33, stealth_closet.dm).
 	if(stealth_closet_track(remembered))
 		return
-	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
-	if(strategy?.can_attack(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
+	if(stealth_has_in_view(remembered))
 		if(isturf(remembered.loc))
 			target_free_seen_at = world.time
 		lost_since = 0
@@ -1046,8 +1076,8 @@
 		if(!target)
 			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, remembered)
 		return
-	// In plain sight but no longer worth fighting.
-	if(get_dist(guard, remembered) <= HUMAN_NPC_SIGHT_RANGE && can_see(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
+	// In plain sight but no longer worth fighting. Someone in the dark beyond its dark sight is just out of view.
+	if(get_dist(guard, remembered) <= HUMAN_NPC_SIGHT_RANGE && stealth_alert_lit(remembered) && can_see(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
 		clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 		clear_blackboard_key(BB_STEALTH_FOCUS)
 		var/mob/living/fallen = remembered
@@ -1250,6 +1280,21 @@
 	SIGNAL_HANDLER
 	if(ismob(toucher))
 		stealth_touched(toucher)
+
+/**
+ * A hand in its pockets or on its clothes. Awake, that is being touched. Out cold or helpless, it feels nothing
+ * (decision 44): whoever of its group sees it done still reacts, through the witness rule here and the body rule
+ * (stealth_check_bodies()).
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_stripped(mob/living/source, mob/living/stripper)
+	SIGNAL_HANDLER
+	if(!ismob(stripper))
+		return
+	if(source.stat != CONSCIOUS || HAS_TRAIT(source, TRAIT_INCAPACITATED))
+		if(isliving(stripper) && !source.client && !source.faction_check_atom(stripper))
+			group?.witness(stripper, source)
+		return
+	stealth_touched(stripper)
 
 /// Anything thrown that lands on it, harmless or not (relay_attackers only reports what hurts).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_prehitby(atom/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
@@ -1561,6 +1606,33 @@
 				return SUBTREE_RETURN_FINISH_PLANNING
 			controller.stealth_walk(spot, STEALTH_GOTO_SEARCH)
 			return SUBTREE_RETURN_FINISH_PLANNING
+
+/**
+ * Alert with its target out of view (decision 44): it walks to where it last saw them, never to where they are
+ * now, and only its own eyes find them again (stealth_has_in_view()). Ends planning, so the shooting and melee
+ * subtrees after it never walk at or fire on someone it can't see. With them in view it leaves the fight to those.
+ * Other human NPCs never run this.
+ */
+/datum/ai_planning_subtree/stealth_chase_lost
+
+/datum/ai_planning_subtree/stealth_chase_lost/SelectBehaviors(datum/ai_controller/basic_controller/human_npc/stealth/controller, seconds_per_tick)
+	if(!istype(controller) || controller.stealth_state() != STEALTH_ALERT)
+		return
+	var/mob/living/guard = controller.pawn
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(guard.stat != CONSCIOUS || QDELETED(target))
+		return
+	if(controller.stealth_has_in_view(target))
+		controller.last_seen_turf = get_turf(target)
+		if(controller.goto_dest)
+			controller.stealth_drop_walk()
+		return
+	var/turf/last = controller.last_seen_turf
+	if(isnull(last) || controller.stealth_walk_over(last))
+		controller.queue_behavior(/datum/ai_behavior/stealth_stand)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	controller.stealth_walk(last, STEALTH_GOTO_SEARCH)
+	return SUBTREE_RETURN_FINISH_PLANNING
 
 // ===== Walking =====
 
