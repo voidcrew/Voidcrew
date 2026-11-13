@@ -552,7 +552,9 @@
 	/// The way the blade points on the victim's icon, degrees counter-clockwise from east: held, and after the cut.
 	var/blade_hold_angle = 0
 	var/blade_after_angle = 0
-	/// How long the blade is drawn once the cut is through (it swings out of sight round the throat when under 1).
+	/// How long the blade is drawn along its own length while held at the throat, and once the cut is through: under
+	/// 1 where it points away from or toward the viewer (round the far side of a neck), or swings out of sight.
+	var/blade_hold_squeeze = 1
 	var/blade_after_squeeze = 1
 	/// Pixels the knife is drawn pushed back through the hand while held at the throat. The far hand shows only where
 	/// it sticks out from behind the neck, and the blade should start at what shows of it.
@@ -706,6 +708,9 @@
 		else
 			blade_hold_angle = arctan(-knife_side * 0.95, 0.3)
 			blade_after_angle = blade_hold_angle
+			// It points on round his neck, away from us: seen end on, and all of it behind his head.
+			blade_hold_squeeze = 0.5
+			blade_after_squeeze = 0.5
 			knife_arm.hold = list(15.5 + knife_side * 0.8, 23.5)
 			knife_arm.after = list(15.5 + knife_side * 6, 22.5)
 			knife_arm.wrist_hold = list(15.5 + knife_side * 5.3, 21.3)
@@ -995,7 +1000,7 @@
 			var/from_angle = blade.native_angle - att_pose[3]
 			var/to_angle = blade_hold_angle + (blade_after_angle - blade_hold_angle) * through - vic_pose[3]
 			var/angle = from_angle + hv_ke_turn(from_angle, to_angle) * held
-			var/squeeze = 1 - (1 - blade_after_squeeze) * through * held
+			var/squeeze = 1 + (blade_hold_squeeze + (blade_after_squeeze - blade_hold_squeeze) * through - 1) * held
 			var/list/held_at = fist
 			if(blade_slide)
 				held_at = list(fist[1] - blade_slide * held * cos(angle), fist[2] - blade_slide * held * sin(angle))
