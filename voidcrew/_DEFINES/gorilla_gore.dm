@@ -340,6 +340,14 @@
 #define GORILLA_RIP_STRAIN_TIME (0.2 SECONDS)
 /// Seen from the front or the back, pixels aside of his middle the arm is hauled to, so it shows beside his body.
 #define GORILLA_RIP_HAUL_ASIDE 12
+/// Seen from the front or the back the body lies across his way. Pixels from where it lay to the middle of his tile
+/// that his step in leaves open (his soles 15 below his middle, half a lying body 8, tg's lying drop 6 and a pixel
+/// to spare), so his boots stop at its edge; and the pixels he steps back off it as he hauls.
+#define GORILLA_RIP_STEP_GAP 18
+#define GORILLA_RIP_STEP_BACK 3
+/// Facing away, pixels under his tile the finisher's bar is drawn: over his head it would sit on the body and the
+/// arm he hauls up off it.
+#define GORILLA_RIP_BAR_LOW -14
 /// Tiles the torn arm is flung, the degrees his arms swing on as it goes (back seen from the side, out wide from the
 /// front or back), and the pixels of piston they push out with.
 #define GORILLA_RIP_THROW_TILES 2

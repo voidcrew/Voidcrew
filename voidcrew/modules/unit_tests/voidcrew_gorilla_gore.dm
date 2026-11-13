@@ -963,6 +963,53 @@
 	TEST_ASSERT_NOTNULL(armoured.get_bodypart(BODY_ZONE_R_ARM).get_wound_type(/datum/wound/blunt/bone/moderate), "An armoured arm didn't dislocate")
 	qdel(armoured_rip)
 
+/// However the body lies when the grab turns it (head either way, facing any way) and whichever arm is aimed, the arm
+/// hauled up, the fists that take it and the blood all come from the shoulder at the head end of the body, on the
+/// side of the bearer's middle that shoulder is on.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_rip_shoulders
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_rip_shoulders/Run()
+	var/list/bearer_offsets = list("[NORTH]" = list(0, -1), "[SOUTH]" = list(0, 1), "[EAST]" = list(-1, 0), "[WEST]" = list(1, 0))
+	for(var/bearer_facing in bearer_offsets)
+		var/list/offset = bearer_offsets[bearer_facing]
+		for(var/angle in list(LYING_ANGLE_EAST, LYING_ANGLE_WEST))
+			for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM))
+				var/combo = "bearer facing [dir2text(text2num(bearer_facing))], body lying at [angle], [zone]"
+				clear_mess(spot(3, 3))
+				var/mob/living/carbon/human/consistent/victim = downed(spot(3, 3))
+				victim.set_lying_angle(angle)
+				var/mob/living/carbon/human/bearer = gorilla(spot(3 + offset[1], 3 + offset[2]))
+				bearer.zone_selected = zone
+				TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The limb rip didn't start: [combo]")
+				var/datum/hv_finisher/chrome/gorilla/rip/finisher = bearer.chrome_finisher
+				TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip: [combo]")
+				TEST_ASSERT_EQUAL(finisher.target_zone, zone, "The rip took the other arm: [combo]")
+				TEST_ASSERT_NOTNULL(finisher.victim_rig, "The rip drew no stand-in for the body: [combo]")
+				var/datum/chrome_rig/rig = finisher.victim_rig
+				// The way the head lies, as the body is drawn now
+				var/list/mid = chrome_rig_apply(rig.base_transform, 0, 0)
+				var/list/neck = chrome_rig_apply(rig.base_transform, 0, 10)
+				var/head_x = neck[1] - mid[1]
+				var/head_y = neck[2] - mid[2]
+				var/list/shoulder = rig.shoulder_point(finisher.side)
+				TEST_ASSERT((shoulder[1] - mid[1]) * head_x + (shoulder[2] - mid[2]) * head_y > 0, "The hauled arm's shoulder is at the feet end: [combo]")
+				// The blood pools under that shoulder: the head end of the body, past its middle
+				var/list/pool = finisher.pool_spot()
+				var/list/back = finisher.grab_pull_back()
+				var/pool_x = pool[1] - (victim.pixel_x + victim.pixel_w + back[1] / 2)
+				var/pool_y = pool[2] - (victim.pixel_y + victim.pixel_z + back[2] / 2)
+				TEST_ASSERT(pool_x * head_x + pool_y * head_y > 0, "The torn shoulder bleeds at the feet end: [combo]")
+				// Seen from the front or the back, his fists take the wrist on the shoulder's side of his middle
+				if(!finisher.side_view())
+					var/list/from = finisher.body_shoulder_at()
+					var/list/origin = finisher.bearer_origin()
+					if(abs(from[1] - origin[1]) > 1)
+						TEST_ASSERT((finisher.grip[1] - origin[1]) * (from[1] - origin[1]) > 0, "His fists took the wrist on the far side of him from its shoulder: [combo]")
+				finisher.stop(HV_FINISHER_TIMED_OUT)
+				qdel(bearer)
+				qdel(victim)
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The limb rips left puppets behind")
+
 /// The backbreaker breaks the back (they can't stand) and shoves the body onto the tile the bearer faces, or drops it
 /// at his feet if that tile is blocked; the fold comes off when the body is moved.
 /datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker

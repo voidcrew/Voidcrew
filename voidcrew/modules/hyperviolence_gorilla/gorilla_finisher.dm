@@ -845,7 +845,11 @@
 				for(var/arm_side in list("l", "r"))
 					var/obj/effect/abstract/chrome_puppet/own_arm = bearer_rig.puppet("arm_[arm_side]")
 					own_arm?.layer = user.layer - 0.01
-			lean_out = list(-round(toward[1] / ICON_SIZE_X * GORILLA_RIP_LEAN), -round(toward[2] / ICON_SIZE_Y * GORILLA_RIP_LEAN))
+			if(facing == NORTH && !QDELETED(exec_bar))
+				// Facing away, the bar over his head would sit on the body and the arm he hauls up off it: under his feet
+				exec_bar.rest_z = GORILLA_RIP_BAR_LOW
+				animate(exec_bar, pixel_z = GORILLA_RIP_BAR_LOW, alpha = 255, time = 0.5 SECONDS, easing = SINE_EASING)
+			lean_out =list(-round(toward[1] / ICON_SIZE_X * GORILLA_RIP_LEAN), -round(toward[2] / ICON_SIZE_Y * GORILLA_RIP_LEAN))
 			lean = lean_out.Copy()
 			victim_rig = new(victim, victim.dir)
 			if(bearer_rig && victim_rig.snapshot())
@@ -871,7 +875,15 @@
 				// The body stays where it lay (tg's grab draws it pulled in at once): he steps in to it as far, and drags it
 				// in by the arm as he hauls
 				body_shift = grab_pull_back()
+				if(!side_view())
+					// From the front or the back the body lies across his way: he hauls back off it, and steps in only
+					// until his boots meet it, as far whichever way he faces (it lies a few pixels low on its tile)
+					lean_out[2] = toward[2] > 0 ? GORILLA_RIP_STEP_BACK : -GORILLA_RIP_STEP_BACK
 				lean = list(lean_out[1] + body_shift[1], lean_out[2] + body_shift[2])
+				if(!side_view())
+					var/list/lay = lying_offsets || list(0, 0)
+					var/room = max(0, abs(body_origin()[2] - lay[2]) - GORILLA_RIP_STEP_GAP)
+					lean[2] = clamp(lean[2], -room, room)
 				for(var/key_name in victim_rig.puppets)
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.puppets[key_name]
 					part.pixel_x += body_shift[1]
