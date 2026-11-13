@@ -53,6 +53,11 @@
 /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
 	spread = 0
 
+/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/Initialize(mapload)
+	. = ..()
+	// A one-off prize: duplicators won't copy it and scrappers won't eat it
+	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
 /obj/item/gun/energy/plasma_weapon/Initialize(mapload)
 	. = ..()
 	// Keep the sealed chamber out of contents; see plasma_chamber.dm. Exited() keeps `cell` set.
@@ -140,13 +145,14 @@
 		if(QDELETED(new_cartridge) || new_cartridge.loc != user)
 			return FALSE
 	var/swapped = !!cartridge
-	if(cartridge)
-		unload_cartridge(user, drop_if_spent = TRUE)
+	// The new cartridge goes in first so the hand it was in is free to take the old one
 	if(user)
 		if(!user.transferItemToLoc(new_cartridge, src))
 			return FALSE
 	else
 		new_cartridge.forceMove(src)
+	if(swapped)
+		unload_cartridge(user, drop_if_spent = TRUE)
 	seat_cartridge(new_cartridge)
 	// On a swap the old cartridge's release plays first, then the new one seats
 	if(swapped)
@@ -198,6 +204,16 @@
 	SIGNAL_HANDLER
 	return
 
+/// tg's lighter trick takes a shot's charge straight off the cell; here that is plasma, so the gun re-chambers and,
+/// when it lit something, heats up as for a shot
+/obj/item/gun/energy/plasma_weapon/ignition_effect(atom/A, mob/living/user)
+	. = ..()
+	if(QDELETED(src))
+		return
+	chamber_changed()
+	if(length(.) && uses_heat)
+		add_heat(heat_per_shot)
+
 /obj/item/gun/energy/plasma_weapon/update_icon_state()
 	var/obj/item/ammo_casing/energy/shot = length(ammo_type) ? ammo_type[select] : null
 	var/loaded = cell && istype(shot) && cell.charge >= shot.e_cost
@@ -206,11 +222,18 @@
 
 /obj/item/gun/energy/plasma_weapon/shoot_live_shot(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = TRUE)
 	. = ..()
-	if(uses_heat)
-		add_heat(heat_per_shot)
 	plasma_weapons_far_sound(src, far_fire_sound)
-	// tg hands the shot's target in as pbtarget on every shot, point blank or not (process_fire, process_burst)
-	plasma_pinch(user, pbtarget)
+	// tg hands the shot's target in as pbtarget on every shot, point blank or not (process_fire, process_burst).
+	// Point blank, the bolt lands on the same tick, before the pinch could show, so there is none.
+	if(!pointblank)
+		plasma_pinch(user, pbtarget)
+	if(!uses_heat)
+		return
+	// Charge this shot before the heat step: a boil vents and re-chambers, and tg only charges a shot still
+	// sitting spent in the chamber. handle_chamber() runs again after us and finds nothing spent to charge.
+	handle_chamber()
+	add_heat(heat_per_shot)
+	// A boil can break the gun; tg skips process_chamber() on a deleted gun
 
 /obj/item/gun/energy/plasma_weapon/can_shoot()
 	if(!can_fire_heat())
