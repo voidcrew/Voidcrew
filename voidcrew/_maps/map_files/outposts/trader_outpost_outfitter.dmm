@@ -1008,11 +1008,6 @@
 /obj/structure/table/reinforced,
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
-"fL" = (
-/obj/effect/landmark/outpost_lockup_staff,
-/obj/machinery/light/small/directional/north,
-/turf/open/indestructible/dark,
-/area/voidcrew/outpost_lockup)
 "fM" = (
 /obj/machinery/door/airlock/outpost/glass/police_cell{
 	cell_id = "quartermain_cell_2"
@@ -1211,9 +1206,7 @@
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "ik" = (
-/obj/structure/chair/sofa/bench/left{
-	dir = 8
-	},
+/obj/item/kirbyplants/organic/plant22,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "im" = (
@@ -1496,18 +1489,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "kI" = (
-/obj/structure/closet,
-/obj/item/clothing/under/rank/prisoner/outpost,
-/obj/item/clothing/under/rank/prisoner/outpost,
-/obj/item/clothing/under/rank/prisoner/outpost,
-/obj/item/clothing/under/rank/prisoner/outpost,
-/obj/item/clothing/under/rank/prisoner/outpost,
-/obj/item/clothing/under/rank/prisoner/outpost,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/structure/sign/poster/official/random/directional/north,
+/obj/machinery/light/directional/west,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "kJ" = (
@@ -1787,7 +1769,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "nG" = (
-/obj/structure/closet/secure_closet/personal/outpost_police,
+/obj/structure/table/reinforced,
+/obj/machinery/door/window/brigdoor/outpost_prison_staff/directional/north,
+/obj/effect/landmark/outpost_lockup_claim,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "nH" = (
@@ -2231,7 +2215,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "sq" = (
-/obj/item/kirbyplants/organic/plant22,
+/obj/machinery/door/airlock/security/prison_staff{
+	name = "Staff"
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "sr" = (
@@ -2398,9 +2384,8 @@
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "tJ" = (
-/obj/machinery/door/airlock/security/prison_staff{
-	name = "Staff"
-	},
+/obj/effect/landmark/outpost_lockup_staff,
+/obj/machinery/light/small/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "tL" = (
@@ -3471,9 +3456,7 @@
 /turf/open/indestructible/white,
 /area/voidcrew/trader_outpost)
 "Gg" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/window/brigdoor/outpost_prison_staff/directional/north,
-/obj/effect/landmark/outpost_lockup_claim,
+/obj/effect/landmark/outpost_lockup_desk,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "Gi" = (
@@ -3524,9 +3507,7 @@
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "GP" = (
-/obj/structure/chair/sofa/bench/right{
-	dir = 8
-	},
+/obj/machinery/light/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "GV" = (
@@ -4212,7 +4193,7 @@
 /turf/open/indestructible,
 /area/voidcrew/outpost_lockup)
 "Pn" = (
-/obj/machinery/light/directional/east,
+/obj/effect/landmark/outpost_lockup_staff,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "Ps" = (
@@ -4236,7 +4217,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "PK" = (
-/obj/machinery/light/directional/west,
+/obj/structure/closet/secure_closet/personal/outpost_police,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "PW" = (
@@ -4665,7 +4646,18 @@
 /turf/open/indestructible/freezer,
 /area/voidcrew/trader_outpost)
 "Wc" = (
-/obj/effect/landmark/outpost_lockup_desk,
+/obj/structure/closet,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/structure/sign/poster/official/random/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "We" = (
@@ -4760,10 +4752,6 @@
 	dir = 4
 	},
 /turf/open/indestructible/dark/textured,
-/area/voidcrew/outpost_lockup)
-"Xk" = (
-/obj/effect/landmark/outpost_lockup_staff,
-/turf/open/indestructible/dark,
 /area/voidcrew/outpost_lockup)
 "Xm" = (
 /turf/open/indestructible/dark/textured,
@@ -7632,15 +7620,15 @@ ao
 ao
 ao
 xE
-kI
-wo
-wo
-wo
-wo
-wo
 Wc
+wo
+wo
+wo
+wo
+wo
 Gg
 nG
+wo
 wo
 xE
 xE
@@ -7682,12 +7670,12 @@ wo
 wo
 wo
 xE
-nG
-wo
 PK
 wo
+kI
 wo
-PK
+wo
+kI
 xE
 qk
 vz
@@ -7724,7 +7712,7 @@ YJ
 ei
 wo
 xE
-nG
+PK
 wo
 wo
 YO
@@ -7766,7 +7754,7 @@ NB
 wo
 wo
 xE
-nG
+PK
 wo
 wo
 Cj
@@ -7800,16 +7788,16 @@ ao
 ao
 ao
 xE
-fL
-Xk
 tJ
-wo
 Pn
-wo
 sq
-xE
+wo
 GP
+wo
 ik
+xE
+PK
+wo
 wo
 yF
 Xg
