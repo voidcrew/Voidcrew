@@ -53,6 +53,8 @@
 #define SANDY_REPLAY_OUTLINE "sandy_time_stop_outline"
 /// The slow-mo's tint filter on bodies and items (SANDY_STOP_TINT in ware_sandy_timestop.dm).
 #define SANDY_REPLAY_TINT "sandy_time_stop_tint"
+/// The filter that hides what turned up after the recording, for the length of the replay.
+#define SANDY_REPLAY_UNBORN "sandy_replay_unborn"
 
 #define SANDY_REPLAY_RECORDING 1
 #define SANDY_REPLAY_PENDING 2
@@ -218,6 +220,8 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	var/list/standins = list()
 	/// Mobs with their AI paused or input locked, to their simple-animal AI status (or TRUE).
 	var/list/locked = list()
+	/// Things that turned up after the recording ended (gore still landing from the last blow), hidden until the end.
+	var/list/unborn = list()
 	/// Progress bars hidden for the replay (hide_progress_bars()), shown again at the end if still there.
 	var/list/hidden_bars = list()
 	/// Mechs switched off, to what completely_disabled was.
@@ -780,6 +784,19 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 				progress.user_client.images -= progress.bar
 				hidden_bars += progress
 
+/// Playback, every frame: what turned up near the user after the recording ended (a gib or blood still landing
+/// from the last blow, anything made since) isn't in the past being shown: it is hidden, by a filter (looks only),
+/// until the replay ends.
+/datum/sandy_replay/proc/hide_unborn()
+	var/turf/here = get_turf(user)
+	if(!here)
+		return
+	for(var/atom/movable/thing in range(SANDY_REPLAY_HOLD_RANGE, here))
+		if(tracks[thing] || unborn[thing] || thing == user || !recordable(thing))
+			continue
+		unborn[thing] = TRUE
+		thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+
 /// Whether `spot` is close enough to the user for the replay to hide a bar on it.
 /datum/sandy_replay/proc/bar_reach(turf/spot)
 	var/turf/here = get_turf(user)
@@ -1273,6 +1290,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 			return
 		frame = min(frame, total)
 		hold_nearby()
+		hide_unborn()
 		clear_view()
 		play_sounds(frame)
 		for(var/datum/sandy_replay_track/track as anything in puppets)
@@ -1368,6 +1386,10 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	for(var/datum/sandy_replay_track/track as anything in standins)
 		QDEL_NULL(track.standin)
 	show_progress_bars()
+	for(var/atom/movable/thing as anything in unborn)
+		if(!QDELETED(thing))
+			thing.remove_filter(SANDY_REPLAY_UNBORN)
+	unborn.Cut()
 	for(var/mob/living/body as anything in locked)
 		try
 			unlock(body)
@@ -1675,6 +1697,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 #undef SANDY_REPLAY_TRAIT
 #undef SANDY_REPLAY_OUTLINE
 #undef SANDY_REPLAY_TINT
+#undef SANDY_REPLAY_UNBORN
 #undef SANDY_REPLAY_RECORDING
 #undef SANDY_REPLAY_PENDING
 #undef SANDY_REPLAY_PLAYING
