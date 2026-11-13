@@ -244,6 +244,7 @@
 #include "voidcrew_stealth_d45.dm"
 #include "voidcrew_stealth_den.dm"
 #include "voidcrew_stealth_disguise.dm"
+#include "voidcrew_stealth_gunfu.dm"
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_light.dm"
 #include "voidcrew_survey_archive.dm"
