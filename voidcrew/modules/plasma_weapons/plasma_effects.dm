@@ -8,9 +8,9 @@
 /// Furthest a distant firing sound carries, in tiles
 #define PLASMA_FAR_SOUND_RANGE 40
 /// Distant sound volume at the near edge of its band
-#define PLASMA_FAR_SOUND_VOL_NEAR 60
+#define PLASMA_FAR_SOUND_VOL_NEAR 38
 /// Distant sound volume at PLASMA_FAR_SOUND_RANGE
-#define PLASMA_FAR_SOUND_VOL_FAR 30
+#define PLASMA_FAR_SOUND_VOL_FAR 5
 /// A bolt must be this many tiles from where it was fired before it hisses past anyone
 #define PLASMA_HISSBY_MIN_TRAVEL 3
 /// Shared particle pool for the flesh splash's steam, kept apart because its holders take the splash's layer
@@ -330,7 +330,7 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	for(var/mob/listener as anything in heard)
 		var/dist = max(get_dist(get_turf(listener), source_turf), 1)
 		// The position only gives the direction; the volume comes from the band
-		listener.playsound_local(source_turf, far_file, heard[listener], FALSE, pressure_affected = FALSE, distance_multiplier = 1 / dist)
+		listener.playsound_local(source_turf, far_file, heard[listener], TRUE, PLASMA_SHOT_FREQUENCY, pressure_affected = FALSE, distance_multiplier = 1 / dist)
 
 /// Of `candidates`, the client mobs that hear a distant shot from `source_turf`, each with its volume
 /proc/plasma_far_sound_pick(turf/source_turf, list/candidates)

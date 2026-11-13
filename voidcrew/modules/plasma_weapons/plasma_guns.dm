@@ -20,6 +20,7 @@
 /obj/item/gun/energy/plasma_weapon/pistol
 	fire_sound = 'voidcrew/modules/plasma_weapons/sound/cinder_fire.ogg'
 	far_fire_sound = 'voidcrew/modules/plasma_weapons/sound/cinder_far.ogg'
+	fire_sound_volume = 55
 	fire_delay = 5
 	spread = 5
 	recoil = 0.5
@@ -35,6 +36,7 @@
 /obj/item/gun/energy/plasma_weapon/rifle
 	fire_sound = 'voidcrew/modules/plasma_weapons/sound/furnace_fire.ogg'
 	far_fire_sound = 'voidcrew/modules/plasma_weapons/sound/furnace_far.ogg'
+	fire_sound_volume = 65
 	fire_delay = 7
 	spread = 2
 	recoil = 0.75
@@ -94,6 +96,13 @@
 		left.update_appearance()
 		chamber_changed()
 
+/// Plasma isn't charge: the shot keeps its pitch down to the last one, with a little give between shots
+/obj/item/gun/energy/plasma_weapon/fire_sounds()
+	if(suppressed)
+		playsound(src, suppressed_sound, suppressed_volume, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, frequency = PLASMA_SHOT_FREQUENCY, falloff_distance = 0)
+	else
+		playsound(src, fire_sound, fire_sound_volume, TRUE, frequency = PLASMA_SHOT_FREQUENCY)
+
 /// The energy gun's own pick of fire sound and delay comes from the casing; these guns set their own
 /obj/item/gun/energy/plasma_weapon/update_ammo_types()
 	. = ..()
@@ -130,6 +139,7 @@
 			return FALSE
 		if(QDELETED(new_cartridge) || new_cartridge.loc != user)
 			return FALSE
+	var/swapped = !!cartridge
 	if(cartridge)
 		unload_cartridge(user, drop_if_spent = TRUE)
 	if(user)
@@ -138,7 +148,11 @@
 	else
 		new_cartridge.forceMove(src)
 	seat_cartridge(new_cartridge)
-	playsound(src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE)
+	// On a swap the old cartridge's release plays first, then the new one seats
+	if(swapped)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE), PLASMA_SWAP_SOUND_GAP)
+	else
+		playsound(src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE)
 	return TRUE
 
 /// Writes the chamber back into the seated cartridge and hands it to `user`. Returns the cartridge.

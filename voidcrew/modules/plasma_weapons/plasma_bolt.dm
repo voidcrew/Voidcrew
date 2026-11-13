@@ -28,6 +28,7 @@
 /obj/projectile/energy/plasma_bolt/heavy
 	damage = 45
 	hitsound = 'voidcrew/modules/plasma_weapons/sound/plasma_hit_rifle.ogg'
+	hit_volume = PLASMA_HIT_VOLUME_RIFLE
 	armour_penetration = 20
 	wound_bonus = 20
 	exposed_wound_bonus = 30
@@ -52,6 +53,10 @@
 	var/near_miss_sound = PLASMA_SOUND_NEAR_MISS
 	/// Played instead of a held shield's own block sound when one stops it; null keeps the shield's
 	var/shield_block_sound = PLASMA_SOUND_SHIELD_BLOCK
+	/// Played when armour stops all of it; null plays nothing
+	var/armour_block_sound = PLASMA_SOUND_ARMOUR_BLOCK
+	/// Volume of hitsound on a person
+	var/hit_volume = PLASMA_HIT_VOLUME_PISTOL
 
 /obj/projectile/energy/plasma_bolt/Destroy()
 	hissed_mobs = null
@@ -117,13 +122,17 @@
 	where.hotspot_expose(PLASMA_BOLT_EXPOSE_TEMP, PLASMA_BOLT_EXPOSE_VOLUME)
 
 /obj/projectile/energy/plasma_bolt/on_hit(atom/target, blocked = 0, pierce_hit)
-	// One sound per hit. tg plays the person sound on anything that isn't a wall; here it is kept for a person the bolt
-	// reaches, a block plays only the blocker's own sound, and anything else gets its surface sound below.
+	// One sound per hit. tg's own hit and wall sounds are held back and played here instead: the person sound at its
+	// own volume for a person the bolt reaches, a held block only the blocker's sound, and anything else its surface.
 	var/person_sound = hitsound
-	if(!isliving(target) || blocked >= 100)
-		hitsound = null
+	var/wall_sound = hitsound_wall
+	hitsound = null
+	hitsound_wall = null
 	. = ..()
 	hitsound = person_sound
+	hitsound_wall = wall_sound
+	if(isliving(target) && . == BULLET_ACT_HIT)
+		plasma_person_sound(target, blocked)
 	plasma_surface_sound(target)
 	plasma_impact_visuals(target, blocked)
 	plasma_expose_turf(get_turf(target))
@@ -139,9 +148,19 @@
 	ash_prior_critical = plasma_burn_through_ready(limb)
 	RegisterSignal(victim, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(plasma_check_ash), override = TRUE)
 
-/// The sound of a bolt hitting something that isn't alive. tg already plays hitsound_wall on a turf.
+/// The sound of a bolt hitting a person: the hit, or the armour splash when armour stopped all of it.
+/// A held item's block plays its own sound from hit_reaction.
+/obj/projectile/energy/plasma_bolt/proc/plasma_person_sound(mob/living/target, blocked)
+	if(blocked < 100)
+		if(hitsound)
+			playsound(src, hitsound, suppressed ? vol_by_damage() : hit_volume, TRUE, -1)
+		return
+	if(armour_block_sound && target.check_projectile_armor(def_zone, src, is_silent = TRUE) >= 100)
+		playsound(src, armour_block_sound, plasma_surface_volume(), TRUE, -1)
+
+/// The sound of a bolt hitting something that isn't alive
 /obj/projectile/energy/plasma_bolt/proc/plasma_surface_sound(atom/target)
-	if(isturf(target) || isliving(target))
+	if(isliving(target))
 		return
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf)
@@ -149,7 +168,12 @@
 	if(istype(target, /obj/structure/window) || istype(target, /obj/machinery/door/window))
 		playsound(target_turf, hitsound_glass, 50, TRUE, -1)
 		return
-	playsound(target_turf, hitsound_wall, clamp(vol_by_damage() + (suppressed ? 0 : 20), 0, 100), TRUE, -1)
+	if(hitsound_wall)
+		playsound(target_turf, hitsound_wall, plasma_surface_volume(), TRUE, -1)
+
+/// Volume of a bolt hitting a wall or anything else hard
+/obj/projectile/energy/plasma_bolt/proc/plasma_surface_volume()
+	return clamp(vol_by_damage() + (suppressed ? 0 : PLASMA_SURFACE_HIT_BONUS), 0, 100)
 
 /// The sound a held item plays when it blocks this, in place of its own block_sound; null keeps the item's.
 /// Called from tg's /obj/item/proc/hit_reaction (VOIDCREW EDIT).

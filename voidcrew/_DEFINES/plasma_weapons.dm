@@ -119,6 +119,24 @@
 #define PLASMA_SOUND_FURNACE_BOIL 'sound/effects/gas_hissing.ogg'
 /// A cartridge pressed by hand
 #define PLASMA_SOUND_PRESS 'sound/items/tools/welder.ogg'
+/// Hot slag in a wound quenched with water, an extinguisher or cryo
+#define PLASMA_SOUND_QUENCH 'sound/effects/wounds/sizzle1.ogg'
+/// A bead of slag picked out of a wound
+#define PLASMA_SOUND_SLAG_PICK 'sound/items/handling/surgery/hemostat1.ogg'
+/// A bolt splashing off armour that stops all of it. null plays nothing.
+#define PLASMA_SOUND_ARMOUR_BLOCK PLASMA_SOUND_IMPACT_WALL
+
+/// Volume of a bolt hitting a person, by bolt
+#define PLASMA_HIT_VOLUME_PISTOL 55
+#define PLASMA_HIT_VOLUME_RIFLE 68
+/// Volume added to the damage-scaled volume of a bolt hitting a wall or anything else hard
+#define PLASMA_SURFACE_HIT_BONUS 10
+/// Gap between the old cartridge coming out and the new one going in on a swap
+#define PLASMA_SWAP_SOUND_GAP (0.35 SECONDS)
+/// Random playback rate for a plasma or frontier laser shot, about 4% either way
+#define PLASMA_SHOT_FREQUENCY (rand(96, 104) / 100)
+/// Lowest pitch a frontier laser's shot drops to as its cell runs down
+#define FRONTIER_LASER_MIN_PITCH 0.85
 
 // ===== Wounds =====
 

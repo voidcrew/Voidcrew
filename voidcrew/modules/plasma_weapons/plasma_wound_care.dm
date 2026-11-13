@@ -44,6 +44,8 @@
 			break
 		var/was_hot = heat > 0
 		remove_slag(PLASMA_WOUND_PICK_SLAG, user)
+		if(PLASMA_SOUND_SLAG_PICK)
+			playsound(patient, PLASMA_SOUND_SLAG_PICK, 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		patient.apply_damage(brute, BRUTE, part, wound_bonus = CANT_WOUND, attacking_item = tool)
 		if(was_hot)
 			patient.emote("scream")

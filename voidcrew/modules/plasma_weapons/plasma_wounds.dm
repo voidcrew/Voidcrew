@@ -231,7 +231,7 @@
 			span_notice("The slag in your [limb.plaintext_zone] hisses and goes dark."),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 		)
-		playsound(victim, 'sound/effects/wounds/sizzle1.ogg', 25, TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2, ignore_walls = FALSE)
+		playsound(victim, PLASMA_SOUND_QUENCH, 25, TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2, ignore_walls = FALSE)
 		var/turf/victim_turf = get_turf(victim)
 		if(victim_turf)
 			new /obj/effect/particle_effect/steam(victim_turf)
