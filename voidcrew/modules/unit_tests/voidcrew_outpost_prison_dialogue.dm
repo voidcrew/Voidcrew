@@ -17,7 +17,6 @@
  * dialogue package; hatch_empty, subdued, fight_argue_none (a fight with no cause) and
  * threat_backed_down (a threat called off by a talk) are spares for the same systems.
  * turret_backs_off, turret_gives_up and turret_defies answer a turret's warning (outpost_prison_security.dm).
- * creature_flee is the moment a prisoner breaks and runs from a creature (outpost_prison_panic.dm).
  * riot_break_door is a rioter hammering at a way out of the cell block (outpost_prison_breakout.dm).
  */
 /datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/prisoner_contexts()
@@ -26,7 +25,7 @@
 		"spat", "fight_argue_food", "fight_argue_ball", "fight_argue_bed", "fight_yield",
 		"fight_talked_down", "calm_talk", "talk_refuse", "unbolted", "wreck", "riot_imminent",
 		"riot_bystander", "rat", "no_air", "lights_flicker", "arrival_stained", "arrival_hurt",
-		"creature_panic", "creature_flee", "vent_noise", "horror", "absorbed", "horror_down", "horror_rises",
+		"absorbed",
 		"hatch_empty", "subdued", "fight_argue_none", "threat_backed_down",
 		"cuffed", "cuffs_off", "lockdown", "lockdown_over",
 		"turret_backs_off", "turret_gives_up", "turret_defies",
@@ -39,9 +38,9 @@
 		"wing_lights_blown", "wing_scrubber_overflow", "wing_toilet_flood",
 	)
 
-/// Contexts said by the researcher and the Kessler team, who have no personality or prisoner details
+/// Contexts said by visitors, who have no personality or prisoner details (none since the Kessler team went)
 /datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/visitor_contexts()
-	return list("researcher_offer", "researcher_sweetened", "researcher_accept", "researcher_leave", "researcher_no_data", "researcher_pigsty", "kessler_recovery", "kessler_collect")
+	return list()
 
 /// A line with the four placeholders taken out
 /datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/without_placeholders(line)
@@ -135,7 +134,7 @@
 	TEST_ASSERT(abs(outpost_prisoner_complaint_chance(35) - 25) < 0.01, "A score of 35 has a complaint chance of [outpost_prisoner_complaint_chance(35)], not 25")
 	TEST_ASSERT(abs(outpost_prisoner_complaint_chance(0) - 50) < 0.01, "A score of 0 has a complaint chance of [outpost_prisoner_complaint_chance(0)], not 50")
 
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("complaintowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("complaintowner")
 	TEST_ASSERT_NOTNULL(home, "The complaint test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))

@@ -27,8 +27,8 @@
 	for(var/datum/map_template/player_outpost/shell_type as anything in outpost_selectable_shells())
 		. |= initial(shell_type.outpost_style)
 
-/// Catalog ids of the upgrades drawn once per style and placed freely: not the prison wing's
-/// extensions, which only join its walls (voidcrew_outpost_prison_styles checks them in every style)
+/// Catalog ids of the upgrades drawn once per style and placed freely: not snap upgrades, which only
+/// join another upgrade's walls
 /proc/outpost_styled_upgrade_ids()
 	. = list()
 	for(var/upgrade_id in GLOB.outpost_upgrade_catalog)
@@ -114,11 +114,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_room_styles/Run()
-	var/list/upgrade_ids = list()
-	// A placed prison wing runs a prison; voidcrew_outpost_prison_styles places it in every style.
-	for(var/upgrade_id in outpost_styled_upgrade_ids())
-		if(!istype(GLOB.outpost_upgrade_catalog[upgrade_id], /datum/outpost_upgrade/prison))
-			upgrade_ids += upgrade_id
+	var/list/upgrade_ids = outpost_styled_upgrade_ids()
 	var/rooms = length(upgrade_ids)
 	TEST_ASSERT(rooms, "The upgrade catalog is empty")
 	var/static/list/rotations = list(0, 90, 180, 270)

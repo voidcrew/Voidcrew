@@ -84,9 +84,7 @@
 		TEST_ASSERT(expected[hostile_type], "[theme_id]: [hostile_type] is not on the roster")
 	var/mob/living/first = hostiles[1]
 	TEST_ASSERT(istype(first, boss_type), "[theme_id]: the first hostile is [first.type], not the boss [boss_type]")
-	var/datum/outpost_upgrade/wing = site.outpost_upgrades["prison"]
-	if(wing?.installed_area)
-		TEST_ASSERT_EQUAL(get_area(first), wing.installed_area, "[theme_id]: the boss is not in the prison wing")
+	TEST_ASSERT_EQUAL(get_area(first), site.outpost_area, "[theme_id]: the boss does not start in the habitat")
 	var/obj/machinery/power/port_gen/pacman/generator = site.derelict_generator()
 	for(var/i in 1 to length(hostiles))
 		var/mob/living/hostile = hostiles[i]

@@ -594,7 +594,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_bounty_admin_admit/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("bountyadminowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("bountyadminowner")
 	TEST_ASSERT_NOTNULL(home, "The bounty admin test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/operator = make_player(prison_spot(home, 8, 4), "bountyadmin")
@@ -607,7 +607,7 @@
 	bounty_pool_start_tick()
 	settle_prison_air(home)
 
-/datum/unit_test/voidcrew_bounty_admin_admit/proc/run_checks(obj/structure/overmap/dynamic/player_outpost/home, datum/outpost_prison/prison, datum/bounty_admin_panel/unit_test/panel, mob/operator)
+/datum/unit_test/voidcrew_bounty_admin_admit/proc/run_checks(obj/structure/overmap/trader_outpost/prison_test_host/home, datum/outpost_prison/prison, datum/bounty_admin_panel/unit_test/panel, mob/operator)
 	// Reserved for this prison: P7 keeps it, and the pool row names it.
 	var/datum/bounty_record/record = panel.admin_pool_add(operator, 2, "normal", prison) // BOUNTY_TIER_WANTED
 	TEST_ASSERT_NOTNULL(record, "No test record was added: [panel.error]")

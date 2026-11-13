@@ -30,7 +30,6 @@
 	TEST_ASSERT_EQUAL(prisoner.bounty_riot_bonus(), 0, "An ordinary prisoner's riot line is moved")
 	TEST_ASSERT_EQUAL(prisoner.bounty_breakout_mult(), 1, "An ordinary prisoner's breakout blows are scaled")
 	TEST_ASSERT_EQUAL(prisoner.npc_damage_taken, 1, "An ordinary prisoner takes more or less from a blow than anyone")
-	TEST_ASSERT_NULL(bounty_experiment_refusal(prisoner), "Kessler refuses an ordinary prisoner")
 
 	// A prisoner made from a record keeps it.
 	var/datum/bounty_record/record = new

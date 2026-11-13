@@ -495,26 +495,17 @@
 // ===== ADMIN DELETES, LOOSE ITEMS AND THE SURVEY WINDOW =====
 
 /**
- * An admin deleting the running prison can start it again, and deleting an upgrade takes it off
- * the outpost's list, so the shop does not call it installed forever.
+ * Deleting an upgrade takes it off the outpost's list, so the shop does not call it installed forever.
  */
 /datum/unit_test/voidcrew_outpost_upgrade_admin_deletes
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_upgrade_admin_deletes/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("upgradedeleteowner")
-	TEST_ASSERT_NOTNULL(home, "The upgrade deletion test prison did not load")
-	var/datum/outpost_upgrade/prison/blueprint = home.outpost_upgrades["prison"]
-	qdel(blueprint.prison)
-	TEST_ASSERT_NULL(blueprint.prison, "The upgrade kept a deleted prison")
-	blueprint.on_installed(null)
-	TEST_ASSERT(!QDELETED(blueprint.prison), "The prison could not be started again after an admin deleted it")
-	STOP_PROCESSING(SSprocessing, blueprint.prison)
-	var/datum/outpost_prison/restarted = blueprint.prison
+	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
+	var/datum/outpost_upgrade/cargo_dock/blueprint = new(home)
+	home.outpost_upgrades["cargo_dock"] = blueprint
 	qdel(blueprint)
-	TEST_ASSERT_NULL(home.outpost_upgrades["prison"], "A deleted upgrade stayed on the outpost's list")
-	TEST_ASSERT(QDELETED(restarted), "Deleting the upgrade left its prison running")
-	settle_prison_air(home)
+	TEST_ASSERT_NULL(home.outpost_upgrades["cargo_dock"], "A deleted upgrade stayed on the outpost's list")
 
 /// Loose things on a footprint are moved out of the way before the room is built over them.
 /datum/unit_test/voidcrew_outpost_upgrade_sweep

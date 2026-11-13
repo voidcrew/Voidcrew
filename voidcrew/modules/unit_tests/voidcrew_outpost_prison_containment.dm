@@ -1,7 +1,7 @@
 /**
  * Outpost prison containment: the management panel's static pushes while placing the wing;
  * dragging, stuns, bolt buttons and bolted-in prisoners; teleports, pods, polymorph and revival;
- * breaches, confinement, members and visitors, rebuilt doors and deleting the outpost.
+ * breaches, confinement, staff and visitors, rebuilt doors and deleting the outpost.
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with
  * the define named beside them. Prisons are driven with tick(seconds) with their own processing
@@ -24,11 +24,11 @@
 	var/mob/living/carbon/human/owner = make_player(console_turf, "refreshowner")
 	var/obj/machinery/computer/player_outpost_management/console = allocate(__IMPLIED_TYPE__, console_turf)
 	var/datum/player_outpost_management_ui/management_test/push_log/panel = allocate(__IMPLIED_TYPE__, home, owner, console)
-	home.outpost_upgrades["prison"] = new /datum/outpost_upgrade/prison(home)
+	home.outpost_upgrades["storage"] = new /datum/outpost_upgrade/service/storage(home)
 	home.upgrade_survey = null
 
 	// First Place: the survey starts, runs, and is pushed exactly once when it lands.
-	act(panel, owner, "open_upgrade_map", null, list("id" = "prison"))
+	act(panel, owner, "open_upgrade_map", null, list("id" = "storage"))
 	var/deadline = world.time + 20 SECONDS
 	while(home.upgrade_surveying && world.time < deadline)
 		sleep(1)
@@ -39,14 +39,14 @@
 	TEST_ASSERT_NOTNULL(panel.ui_static_data(owner)["upgrade_survey"], "The pushed static data has no survey")
 
 	// Back at once: the close waits out the cooldown instead of refreshing the window.
-	act(panel, owner, "close_upgrade_map", null, list("id" = "prison"))
+	act(panel, owner, "close_upgrade_map", null, list("id" = "storage"))
 	TEST_ASSERT_EQUAL(length(panel.push_times), 1, "Closing the map pushed inside the refresh cooldown")
 	TEST_ASSERT(wait_for_pushes(panel, 2), "Closing the map never pushed")
 	TEST_ASSERT(panel.push_times[2] - panel.push_times[1] >= TGUI_REFRESH_FULL_UPDATE_COOLDOWN, "Two pushes came [panel.push_times[2] - panel.push_times[1]] ds apart")
 	TEST_ASSERT_NULL(panel.ui_static_data(owner)["upgrade_survey"], "The survey was still sent after the map closed")
 
 	// Place again with the survey cached: one push, again not inside the cooldown.
-	act(panel, owner, "open_upgrade_map", null, list("id" = "prison"))
+	act(panel, owner, "open_upgrade_map", null, list("id" = "storage"))
 	TEST_ASSERT(wait_for_pushes(panel, 3), "Reopening the map with a cached survey never pushed")
 	TEST_ASSERT(panel.push_times[3] - panel.push_times[2] >= TGUI_REFRESH_FULL_UPDATE_COOLDOWN, "The cached survey was pushed inside the cooldown")
 
@@ -82,7 +82,7 @@
 	return !prisoner.can_be_dragged()
 
 /datum/unit_test/voidcrew_outpost_prison_restraint/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("restraintowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("restraintowner")
 	TEST_ASSERT_NOTNULL(home, "The restraint test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -221,7 +221,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_relocation/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("relocateowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("relocateowner")
 	TEST_ASSERT_NOTNULL(home, "The relocation test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/yard = prison_spot(home, 8, 8)
@@ -285,7 +285,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_breach/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("breachowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("breachowner")
 	TEST_ASSERT_NOTNULL(home, "The breach test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/cell_one = prison_spot(home, 3, 14)
@@ -330,8 +330,7 @@
 	prison.cells = list()
 	prison.cell_block = list()
 	TEST_ASSERT(prison.in_cell_block(prison_spot(home, 9, 3)), "A wing without cells treated its office as outside")
-	var/list/bounds = prison.upgrade.footprint_bounds
-	var/turf/beyond = locate(bounds[1] - 1, bounds[2], bounds[5])
+	var/turf/beyond = run_loc_floor_bottom_left
 	TEST_ASSERT(beyond && !prison.in_cell_block(beyond), "A wing without cells treated the ground outside it as inside")
 	prison.cells = kept_cells
 	prison.refresh_cell_block()
@@ -349,7 +348,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_confinement/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("confineowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("confineowner")
 	TEST_ASSERT_NOTNULL(home, "The confinement test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 7, 14))
@@ -392,42 +391,26 @@
 	doorway.ChangeTurf(doorway_type)
 	settle_prison_air(home)
 
-// ===== MEMBERS AND VISITORS =====
+// ===== STAFF AND VISITORS =====
 
 /**
- * Staff doors and the office side of the hatches open for members of the wing only, unless the
- * warden lets visitors in; bolt buttons are for members whatever the setting. Prisoners never.
+ * Staff doors, the office side of the hatches and the bolt buttons are for the wing's staff only.
+ * The fixture's own-key player stands in for staff; any other player is a visitor. Prisoners never.
  */
 /datum/unit_test/voidcrew_outpost_prison_visitors
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_visitors/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("wingowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("wingowner")
 	TEST_ASSERT_NOTNULL(home, "The visitor test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 3, 3), "wingowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 4, 3), "wingvisitor")
-	var/mob/living/carbon/human/builder = make_player(prison_spot(home, 5, 3), "wingbuilder")
-	var/mob/living/carbon/human/resident = make_player(prison_spot(home, 6, 3), "wingresident")
-	var/mob/living/carbon/human/steward = make_player(prison_spot(home, 7, 3), "wingsteward")
-	var/mob/living/carbon/human/shipmate = make_player(prison_spot(home, 10, 3), "wingshipmate")
-	home.authorized_builder_ckeys |= "wingbuilder"
-	home.residents |= resident.mind
-	home.stewards |= steward.mind
-	// The owner's crew: a ship team with a ship, holding the owner and a shipmate
-	home.founder_mind = WEAKREF(owner.mind)
-	var/obj/structure/overmap/ship/ship = allocate(__IMPLIED_TYPE__)
-	var/datum/team/voidcrew/crew = new
-	crew.ship = ship
-	crew.members |= owner.mind
-	crew.members |= shipmate.mind
-	LAZYADD(owner.mind.ship_teams, crew)
 
-	for(var/mob/living/carbon/human/member as anything in list(owner, builder, resident, steward, shipmate))
-		TEST_ASSERT(prison.is_member(member), "[member.ckey] is not a member of the wing")
-	TEST_ASSERT(!prison.is_member(visitor), "A visitor counts as a member of the wing")
-	TEST_ASSERT(!prison.is_member(prisoner), "A prisoner counts as a member of the wing")
+	TEST_ASSERT(prison.is_staff(owner), "The stand-in player is not the wing's staff")
+	TEST_ASSERT(!prison.is_staff(visitor), "A visitor counts as the wing's staff")
+	TEST_ASSERT(!prison.is_staff(prisoner), "A prisoner counts as the wing's staff")
 
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in prison_spot(home, 9, 6)
 	var/obj/machinery/door/airlock/security/prison_staff/entrance = locate() in prison_spot(home, 9, 1)
@@ -438,32 +421,15 @@
 	var/datum/outpost_prison_cell/cell_two = prison.cell_by_number(2)
 	var/obj/machinery/door/airlock/cell_door = cell_two.door()
 
-	// Members only, by default
-	TEST_ASSERT(!prison.visitors_allowed, "Visitors are let in by default")
 	for(var/obj/machinery/door/door as anything in list(staff_door, entrance, hatch_door))
-		TEST_ASSERT(door.allowed(owner), "[door] refused the owner")
-		TEST_ASSERT(door.allowed(shipmate), "[door] refused the owner's shipmate")
+		TEST_ASSERT(door.allowed(owner), "[door] refused staff")
 		TEST_ASSERT(!door.allowed(visitor), "[door] opened for a visitor")
 		TEST_ASSERT(!door.allowed(prisoner), "[door] opened for a prisoner")
 	TEST_ASSERT(!button.attempt_press(visitor), "A visitor pressed a bolt button")
 	TEST_ASSERT(!cell_door.locked, "A visitor bolted a cell")
-	TEST_ASSERT(button.attempt_press(resident), "A resident could not press a bolt button")
-	TEST_ASSERT(cell_door.locked, "A resident's press did not bolt the cell")
-	TEST_ASSERT(button.attempt_press(resident), "A resident could not unbolt the cell")
-
-	// Visitors let in: the doors open for them, the bolt buttons still do not, prisoners still never
-	TEST_ASSERT(prison.set_visitors_allowed(TRUE, owner), "Letting visitors in changed nothing")
-	for(var/obj/machinery/door/door as anything in list(staff_door, entrance, hatch_door))
-		TEST_ASSERT(door.allowed(visitor), "[door] refused a visitor while visitors are let in")
-		TEST_ASSERT(!door.allowed(prisoner), "[door] opened for a prisoner while visitors are let in")
-	TEST_ASSERT(!button.attempt_press(visitor), "A visitor pressed a bolt button while visitors are let in")
-	TEST_ASSERT(!cell_door.locked, "A visitor bolted a cell while visitors are let in")
-	TEST_ASSERT(prison.set_visitors_allowed(FALSE, owner), "Closing the wing to visitors changed nothing")
-	TEST_ASSERT(!staff_door.allowed(visitor), "The staff door still opens for visitors after they were closed out")
-
-	LAZYREMOVE(owner.mind.ship_teams, crew)
-	crew.members.Cut()
-	qdel(crew)
+	TEST_ASSERT(button.attempt_press(owner), "Staff could not press a bolt button")
+	TEST_ASSERT(cell_door.locked, "Staff's press did not bolt the cell")
+	TEST_ASSERT(button.attempt_press(owner), "Staff could not unbolt the cell")
 	settle_prison_air(home)
 
 // ===== REBUILT DOORS =====
@@ -480,7 +446,7 @@
 	return (locate(/obj/machinery/door/airlock/security/glass/outpost_prison_cell) in tile) || (locate(/obj/machinery/door/airlock/security/prison_staff) in tile)
 
 /datum/unit_test/voidcrew_outpost_prison_rebuilt_doors/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("doorsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("doorsowner")
 	TEST_ASSERT_NOTNULL(home, "The rebuilt door test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 8, 10), "doorsowner")
@@ -529,23 +495,17 @@
 
 // ===== ADMIN DELETION =====
 
-/// Prisoners never keep an admin from deleting the outpost; they go with it.
+/// Deleting the outpost takes its prisoners with it.
 /datum/unit_test/voidcrew_outpost_prison_admin_delete
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_admin_delete/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("deleteowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("deleteowner")
 	TEST_ASSERT_NOTNULL(home, "The deletion test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 3, 14))
 	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(is_outpost_prison_mob(first), "A prisoner does not count as one of the prison's mobs")
-	var/datum/outpost_manipulator/manipulator = allocate(__IMPLIED_TYPE__, null)
-	TEST_ASSERT_NULL(manipulator.deletion_denial(home), "Prisoners blocked deleting the outpost: [manipulator.deletion_denial(home)]")
-	var/mob/living/carbon/human/stray = make_player(prison_spot(home, 9, 3), "deletevisitor")
-	TEST_ASSERT_NOTNULL(manipulator.deletion_denial(home), "A person in the outpost did not block deleting it")
-	stray.forceMove(run_loc_floor_bottom_left)
-	TEST_ASSERT_NULL(manipulator.deletion_denial(home), "Deletion stayed blocked after the person left")
 	settle_prison_air(home)
 	qdel(home)
 	TEST_ASSERT(QDELETED(first) && QDELETED(second), "Deleting the outpost left its prisoners behind")

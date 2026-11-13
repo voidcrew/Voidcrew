@@ -1143,7 +1143,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_npc_zone_guard_route/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("npczoneguard")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("npczoneguard")
 	TEST_ASSERT_NOTNULL(home, "Guard profile fixture could not load its prison")
 	home.npc_spawn_context = allocate(/datum/npc_spawn_context, home, 3)
 	var/datum/outpost_prison/prison = test_prison(home)

@@ -53,7 +53,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_conditions_basic/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("conditionsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("conditionsowner")
 	TEST_ASSERT_NOTNULL(home, "The conditions test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 
@@ -69,7 +69,6 @@
 	TEST_ASSERT_EQUAL(prison.lit_score, 100, "A fresh wing is not fully lit")
 	TEST_ASSERT_EQUAL(prison.powered_score, 100, "A fresh wing has no power")
 	TEST_ASSERT(abs(prison.conditions_score() - 100) < 0.01, "A fresh wing's conditions are [prison.conditions_score()]")
-	TEST_ASSERT(abs(prison.conditions_pay_factor() - 1) < 0.001, "A fresh wing pays [prison.conditions_pay_factor()] of full pay")
 
 	// Mess counts, and light is measured, on the cell block's floor: the cells and their doors, the
 	// yard with its tables and fixtures, and the serving hatches; not the office, the windows or
@@ -87,17 +86,11 @@
 	TEST_ASSERT(!(prison_spot(home, 9, 6) in prison.mess_floor), "The staff door is floor")
 	TEST_ASSERT(!(prison_spot(home, 8, 3) in prison.mess_floor), "The office is floor")
 
-	// Conditions weigh clean 0.45, lit 0.35 and power 0.2 (PRISON_WEIGHT_*), and pay is scaled by
-	// 0.5 + 0.5 x conditions (OUTPOST_PRISON_CONDITIONS_PAY_FLOOR).
+	// Conditions weigh clean 0.45, lit 0.35 and power 0.2 (PRISON_WEIGHT_*).
 	prison.clean_score = 60
 	prison.lit_score = 40
 	prison.powered_score = 50
 	TEST_ASSERT(abs(prison.conditions_score() - 51) < 0.01, "Clean 60, lit 40 and power 50 made conditions [prison.conditions_score()], not 51")
-	TEST_ASSERT(abs(prison.conditions_pay_factor() - 0.755) < 0.001, "Conditions 51 paid [prison.conditions_pay_factor()], not 0.755")
-	prison.clean_score = 0
-	prison.lit_score = 0
-	prison.powered_score = 0
-	TEST_ASSERT(abs(prison.conditions_pay_factor() - 0.5) < 0.001, "Conditions 0 paid [prison.conditions_pay_factor()], not half")
 
 	// The console's block.
 	prison.refresh_conditions()
@@ -114,7 +107,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_conditions_mess/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("messowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("messowner")
 	TEST_ASSERT_NOTNULL(home, "The mess test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.refresh_conditions()
@@ -232,7 +225,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_conditions_light/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("lightowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("lightowner")
 	TEST_ASSERT_NOTNULL(home, "The light test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	for(var/obj/machinery/light/fixture as anything in all_lights(prison))
@@ -331,7 +324,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_conditions_power/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("powerowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("powerowner")
 	TEST_ASSERT_NOTNULL(home, "The power test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.refresh_conditions()
@@ -402,7 +395,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_conditions_rats_air/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("ratowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("ratowner")
 	TEST_ASSERT_NOTNULL(home, "The rat test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 
@@ -479,7 +472,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_mood_wing/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("moodwingowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("moodwingowner")
 	TEST_ASSERT_NOTNULL(home, "The wing mood test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))

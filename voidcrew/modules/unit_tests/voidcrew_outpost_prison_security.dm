@@ -17,7 +17,7 @@
 
 /datum/unit_test/voidcrew_outpost_prison_security_files/Run()
 	// The file is read the way outpost_prisoner_extra_dialogue() reads it (the strings directory is a define)
-	load_strings_file("outpost_prison_security.json", "voidcrew/modules/player_outposts/strings")
+	load_strings_file("outpost_prison_security.json", "voidcrew/modules/trade_prison/strings")
 	var/list/contents = GLOB.string_cache["outpost_prison_security.json"]
 	TEST_ASSERT(islist(contents), "outpost_prison_security.json did not load")
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_security.json has no lines block")
@@ -60,7 +60,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_ambience_yard/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xbyardowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xbyardowner")
 	TEST_ASSERT_NOTNULL(home, "The yard test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 9, 8), "xbyardowner")
@@ -139,7 +139,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_ambience_riot/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xbriotowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xbriotowner")
 	TEST_ASSERT_NOTNULL(home, "The riot sounds test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	TEST_ASSERT_EQUAL(prison.wing.sound_environment, SOUND_AREA_LARGE_ENCLOSED, "The prison wing does not echo like a large hard room")

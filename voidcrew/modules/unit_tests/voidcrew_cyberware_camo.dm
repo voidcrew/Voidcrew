@@ -3,7 +3,7 @@
  *
  * The Ghostskin weave (and anything else that grants TRAIT_CYBER_CAMO) is also invisible to
  * human NPCs (their targeting strategy, pirate crews included), simple_animal hostiles, every
- * porta_turret, the outpost experiment forms and the club's people, beyond
+ * porta_turret and the club's people, beyond
  * CYBERWARE_CAMO_SPOT_RANGE, except to megafauna, elites and bosses (human NPCs of boss rank).
  * The street Flickerskin grants no trait, so none of this applies to it. voidcrew/modules/
  * cyberware/cyberware_stealth.dm owns the helper and most of the hooks.
@@ -75,7 +75,6 @@
 		/mob/living/basic/hoarfrost_matriarch,
 		/mob/living/basic/trooper/pirate/faction/boss,
 		/mob/living/basic/bounty_lair_boss/mafia_mech,
-		/mob/living/basic/outpost_experiment/horror,
 		/mob/living/basic/alien/queen/large/derelict,
 		/mob/living/basic/vestige_oracle,
 		/mob/living/basic/vestige_mutant,
@@ -254,31 +253,6 @@
 
 	var/mob/living/carbon/human/consistent/flicker = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin/street, spot(4, 3))
 	TEST_ASSERT(strategy.can_attack(gunner, flicker), "A pirate gunner was fooled by the Flickerskin")
-
-/// The experiment forms' own strategy (it never calls the basic one): a serum-turned body picks a
-/// plain person, not a camo'd one beyond range.
-/datum/unit_test/voidcrew_cyberware_camo/experiments
-
-/datum/unit_test/voidcrew_cyberware_camo/experiments/Run()
-	var/mob/living/carbon/human/consistent/creature = allocate(/mob/living/carbon/human/consistent, spot(0, 0))
-	var/datum/component/outpost_experiment_form/form = outpost_experiment_turn(creature, "hulk", null, null)
-	TEST_ASSERT_NOTNULL(form, "The hulk serum didn't take on a test body")
-	creature.ai_controller?.set_ai_status(AI_STATUS_OFF)
-	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(/datum/targeting_strategy/outpost_experiment_form)
-	TEST_ASSERT_NOTNULL(strategy, "The experiment forms' targeting strategy is gone")
-
-	var/mob/living/carbon/human/consistent/plain = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
-	TEST_ASSERT(strategy.can_attack(creature, plain), "Fixture: an experiment won't target a plain human to begin with")
-
-	var/mob/living/carbon/human/consistent/ghost = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin, spot(4, 4))
-	TEST_ASSERT(!strategy.can_attack(creature, ghost), "An experiment targeted a camo'd human 4 tiles off")
-	TEST_ASSERT(!form.can_target(ghost), "An experiment would pick a camo'd human 4 tiles off")
-	ghost.forceMove(spot(2, 0))
-	TEST_ASSERT(strategy.can_attack(creature, ghost), "An experiment missed a camo'd human 2 tiles off")
-	ghost.forceMove(spot(4, 4))
-
-	var/mob/living/carbon/human/consistent/flicker = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin/street, spot(4, 3))
-	TEST_ASSERT(strategy.can_attack(creature, flicker), "An experiment was fooled by the Flickerskin")
 
 /// The club's people: the scripted pick, mafia_target_ok(), skips a camo'd hunter beyond range,
 /// and the don, a boss, sees through it.

@@ -15,7 +15,7 @@
 
 /datum/unit_test/voidcrew_outpost_prison_life_files/Run()
 	// The file is read the way outpost_prisoner_extra_dialogue() reads it (the strings directory is a define)
-	load_strings_file("outpost_prison_life.json", "voidcrew/modules/player_outposts/strings")
+	load_strings_file("outpost_prison_life.json", "voidcrew/modules/trade_prison/strings")
 	var/list/contents = GLOB.string_cache["outpost_prison_life.json"]
 	TEST_ASSERT(islist(contents), "outpost_prison_life.json did not load")
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_life.json has no lines block")
@@ -87,7 +87,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_prison_life_base
 
 /datum/unit_test/voidcrew_outpost_prison_life_affinity/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("affinityowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("affinityowner")
 	TEST_ASSERT_NOTNULL(home, "The affinity test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/rosa = trouble_prisoner(prison, prison_spot(home, 8, 8))
@@ -239,7 +239,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_prison_life_base
 
 /datum/unit_test/voidcrew_outpost_prison_life_breakup/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("breakupowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("breakupowner")
 	TEST_ASSERT_NOTNULL(home, "The break-up test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
@@ -316,7 +316,7 @@
 	TEST_ASSERT(initial(host_type.leisure) && !initial(seat_type.leisure), "Card games are picked the wrong way")
 	TEST_ASSERT((host_type in GLOB.outpost_prisoner_leisure) && !(seat_type in GLOB.outpost_prisoner_leisure), "The leisure list has the wrong card games")
 
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("cardsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("cardsowner")
 	TEST_ASSERT_NOTNULL(home, "The cards test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/obj/item/toy/cards/deck/deck = locate() in prison_spot(home, 5, 9)
@@ -402,7 +402,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_prison_life_base
 
 /datum/unit_test/voidcrew_outpost_prison_life_dice/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("diceowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("diceowner")
 	TEST_ASSERT_NOTNULL(home, "The dice test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/obj/item/storage/dice/bag = locate() in prison_spot(home, 13, 9)
@@ -454,7 +454,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_prison_life_base
 
 /datum/unit_test/voidcrew_outpost_prison_life_birthday/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("partyowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("partyowner")
 	TEST_ASSERT_NOTNULL(home, "The birthday test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 5, 5), "partyowner")
@@ -579,7 +579,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_prison_life_base
 
 /datum/unit_test/voidcrew_outpost_prison_life_crowd/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("crowdowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("crowdowner")
 	TEST_ASSERT_NOTNULL(home, "The crowd test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/obj/structure/hoop/hoop = locate() in prison_spot(home, 9, 11)
@@ -666,7 +666,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_prison_life_base
 
 /datum/unit_test/voidcrew_outpost_prison_life_marks/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("marksowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("marksowner")
 	TEST_ASSERT_NOTNULL(home, "The marks test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/tenant = trouble_prisoner(prison, prison_spot(home, 8, 8))

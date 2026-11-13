@@ -1,30 +1,5 @@
 /// Derelict outpost tests. Owner: P2. Voidcrew defines are not visible here: literals, with the define named beside them.
 
-/datum/unit_test/voidcrew_derelict_prison_joined
-	parent_type = /datum/unit_test/voidcrew_derelict
-
-/datum/unit_test/voidcrew_derelict_prison_joined/Run()
-	for(var/shell_type in list(/datum/map_template/player_outpost/rundown, /datum/map_template/player_outpost/clean))
-		var/obj/structure/overmap/dynamic/player_outpost/derelict/site = built_derelict(shell_type, null)
-		TEST_ASSERT(site, "The [shell_type] derelict did not build")
-		var/datum/outpost_upgrade/prison/wing = site.outpost_upgrades["prison"]
-		TEST_ASSERT(wing?.installed, "The prison wing was not installed for [shell_type]")
-		var/datum/powernet/wing_net = wing.room_apc()?.terminal?.powernet
-		TEST_ASSERT_NOTNULL(wing_net, "The joined prison wing has no powernet for [shell_type]")
-		TEST_ASSERT_EQUAL(wing_net, site.outpost_area.apc?.terminal?.powernet, "The joined prison wing's APC did not join the habitat grid for [shell_type]")
-		var/obj/machinery/door/airlock/external/door = site.derelict_prison_airlock?.resolve()
-		TEST_ASSERT(istype(door), "The joined prison airlock did not resolve for [shell_type]")
-		TEST_ASSERT_EQUAL(get_area(door), site.outpost_area, "The joined prison airlock is not in the outpost area for [shell_type]")
-		var/turf/staff_turf
-		for(var/direction in GLOB.cardinals)
-			var/turf/neighbour = get_step(door, direction)
-			if(locate(/obj/machinery/door/airlock/security/prison_staff) in neighbour)
-				staff_turf = neighbour
-				break
-		TEST_ASSERT(staff_turf, "No cardinal neighbour of the joined airlock holds the staff door for [shell_type]")
-		var/list/reached = derelict_reach(site, site.lobby_alcove_turfs[1])
-		TEST_ASSERT(reached[staff_turf], "The prison staff door is not reachable from the lobby alcove for [shell_type]")
-
 /datum/unit_test/voidcrew_derelict_dead_power
 	parent_type = /datum/unit_test/voidcrew_derelict
 
@@ -70,9 +45,6 @@
 	TEST_ASSERT(generator.powernet, "The generator has no powernet once anchored")
 	TEST_ASSERT_EQUAL(generator.powernet, site.outpost_area.apc.terminal.powernet, "The generator's powernet does not match the outpost APC's grid")
 
-	// Once the habitat is fuelled and running again, the joined prison wing powers up with it too.
-	var/datum/outpost_upgrade/prison/wing = site.outpost_upgrades["prison"]
-	TEST_ASSERT_EQUAL(wing.room_apc()?.terminal?.powernet, generator.powernet, "The prison wing's APC net does not match the habitat's once refuelled")
 
 /datum/unit_test/voidcrew_derelict_berth_dark
 	parent_type = /datum/unit_test/voidcrew_derelict

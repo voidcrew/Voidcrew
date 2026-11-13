@@ -21,7 +21,7 @@
 
 /// A riot of everyone in the wing, past its wind-up, with the crew home and no fixtures on the way
 /datum/unit_test/voidcrew_outpost_management/proc/breakout_riot(datum/outpost_prison/prison)
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.riot_detour_chance = 0
 	if(!prison.start_riot("test", everyone = TRUE))
 		return FALSE
@@ -34,7 +34,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_breakout_targets/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("breakouttargets")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("breakouttargets")
 	TEST_ASSERT_NOTNULL(home, "The breakout target test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/list/rioters = list(
@@ -116,7 +116,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_breakout_doors/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("breakoutdoors")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("breakoutdoors")
 	TEST_ASSERT_NOTNULL(home, "The breakout door test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	// Out of the rioters' reach even once the door is down
@@ -132,13 +132,13 @@
 	// With nobody home a blow only booms: no damage, and nothing to announce.
 	var/full = staff_door.get_integrity()
 	TEST_ASSERT_EQUAL(full, 400, "The glass staff door has [full] integrity, not 400")
-	prison.crew_home_override = FALSE
+	prison.audience_override = FALSE
 	TEST_ASSERT(rioter.confront(staff_door), "A rioter could not bang on the staff door")
 	TEST_ASSERT_EQUAL(staff_door.get_integrity(), full, "A rioter damaged the staff door with nobody home")
 	TEST_ASSERT(!length(prison.exit_alert_queue), "A door nobody damaged was queued for an alert")
 
 	// With the crew home, 10 a blow (PRISON_RIOT_DOOR_DAMAGE), and the damage shows.
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	rioter.confront(staff_door)
 	TEST_ASSERT_EQUAL(staff_door.get_integrity(), full - 10, "A rioter's blow left the staff door at [staff_door.get_integrity()], not [full - 10]")
 	TEST_ASSERT(findtext(jointext(staff_door.examine(warden), " "), "damaged"), "Examining the damaged staff door does not show it")
@@ -162,10 +162,10 @@
 	TEST_ASSERT_EQUAL(breakout_log_count(prison, "broke through the staff door"), 1, "Breaking the staff door was not logged")
 
 	// With nobody home, nobody walks out through the gap.
-	prison.crew_home_override = FALSE
+	prison.audience_override = FALSE
 	var/atom/away_target = rioter.riot_target()
 	TEST_ASSERT(!isturf(away_target), "A rioter made for the gap with nobody home")
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 
 	// With the crew home they go through, and out of the cell block they are loose.
 	rioter.riot_target_ref = null
@@ -209,7 +209,7 @@
 	return !isnull(hatch.staff_windoor())
 
 /datum/unit_test/voidcrew_outpost_prison_breakout_hatch/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("breakouthatch")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("breakouthatch")
 	TEST_ASSERT_NOTNULL(home, "The breakout hatch test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/warden = make_player(run_loc_floor_bottom_left, "breakouthatch")

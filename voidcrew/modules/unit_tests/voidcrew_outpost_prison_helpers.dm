@@ -1,6 +1,6 @@
 /**
- * Shared fixtures for the outpost prison tests: a loaded claim with a placed prison wing, prisoners
- * booked in by hand, waits for beams and window doors, and the trouble tests' claim and helpers.
+ * Shared fixtures for the lockup tests: a bare trader outpost with the fixture wing loaded, prisoners
+ * booked in by hand, waits for beams and window doors, and the trouble tests' fixture and helpers.
  * Each prison test file keeps any further helpers of its own in that file.
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with
@@ -25,45 +25,91 @@
 
 // ===== PRISON FIXTURE =====
 
-/// A loaded claim with a running prison wing placed north of its shell, unrotated, so authored
-/// map coordinates apply. The prison's own clock is stopped; tests drive it with tick(). Trouble
-/// (threats, fights, riots, escapes) is off, so these tests see the quiet side on its own;
-/// trouble_test_claim() turns it back on. The wing is drawn in `style`, by default the test
-/// claim's own (the default style's): every style's wing is the same tile for tile.
+/// The fixture wing: 17 x 16, four cells, a yard, an office behind a staff door and two hatches. The tests read
+/// its layout tile for tile (prison_spot()).
+/datum/map_template/trade_prison_test_wing
+	name = "Lockup test wing"
+	mappath = "voidcrew/_maps/map_files/unit_tests/trade_prison_test_wing.dmm"
+
+/// A bare trader outpost (no interior of its own, as allocate() makes one) that hosts the fixture wing
+/obj/structure/overmap/trader_outpost/prison_test_host
+	/// The wing's prison (test_prison())
+	var/datum/outpost_prison/unit_test/fixture_prison
+	/// The loaded wing's south-west tile, and the block it was loaded into
+	var/turf/wing_corner
+	var/datum/turf_reservation/wing_reservation
+
+/obj/structure/overmap/trader_outpost/prison_test_host/Destroy()
+	QDEL_NULL(fixture_prison)
+	QDEL_NULL(wing_reservation)
+	wing_corner = null
+	return ..()
+
+/**
+ * The fixture's prison. No player is staff or an inmate of a real wing yet, so the tests' player (the one
+ * made with the key the fixture was asked for) stands in for both: whatever the wing lets its staff or an
+ * inmate do, they may do. Everyone else is judged as in the game.
+ */
+/datum/outpost_prison/unit_test
+	/// The key of the tests' player
+	var/member_key
+
+/datum/outpost_prison/unit_test/proc/is_test_member(mob/person)
+	return ismob(person) && !!member_key && !!person.ckey && person.ckey == ckey(member_key)
+
+/datum/outpost_prison/unit_test/is_staff(mob/person)
+	return is_test_member(person) || ..()
+
+/datum/outpost_prison/unit_test/is_inmate(mob/person)
+	return is_test_member(person) || ..()
+
+/**
+ * A bare trader outpost with the fixture wing loaded into a block of its own, unrotated, so authored map
+ * coordinates apply, and a prison running on the wing's area. The prison's own clock is stopped; tests
+ * drive it with tick(). Intake is shut and trouble (threats, fights, riots, escapes), wildcards and wing
+ * events are off, so these tests see the quiet side on its own; trouble_test_claim() turns trouble back
+ * on. Somebody is always there to see it (audience_override): a test world has no clients. The fixture
+ * wing draws its power from its own APC, so the power tests still have a switch to throw; a mapped lockup
+ * never loses power. `owner_key` is the key of the tests' player (see /datum/outpost_prison/unit_test);
+ * `style` is ignored, there is one fixture map.
+ */
 /datum/unit_test/voidcrew_outpost_management/proc/prison_test_claim(owner_key, style)
-	var/obj/structure/overmap/dynamic/player_outpost/home = upgrade_test_claim(owner_key)
-	if(!home)
-		TEST_NOTICE(src, "The test claim for [owner_key] did not load")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = allocate(/obj/structure/overmap/trader_outpost/prison_test_host)
+	var/datum/map_template/trade_prison_test_wing/template = allocate(/datum/map_template/trade_prison_test_wing)
+	home.wing_reservation = SSmapping.request_turf_block_reservation(template.width, template.height, 1)
+	if(!home.wing_reservation)
+		TEST_NOTICE(src, "No room for the test wing for [owner_key]")
 		return null
-	if(style)
-		home.outpost_style = style
-	var/datum/outpost_upgrade/prison/blueprint = new(home)
-	home.outpost_upgrades["prison"] = blueprint
-	var/turf/bottom_left = locate(home.template_bottom_left.x, home.template_bottom_left.y + home.shell_template.height + 3, home.upgrade_level_z())
-	var/refusal = home.place_outpost_upgrade(blueprint, bottom_left, 0, null)
-	if(refusal || !blueprint.prison)
-		// Rare and not reproduced on a rerun: say what was in the way, as the cargo dock tests do.
-		TEST_NOTICE(src, "The test prison for [owner_key] was not built: [refusal || "no prison"] [refusal == "Position obstructed." ? cargo_dock_blocker(home, blueprint, bottom_left, 0) : ""]")
+	home.wing_corner = home.wing_reservation.bottom_left_turfs[1]
+	if(!template.load(home.wing_corner))
+		TEST_NOTICE(src, "The test wing for [owner_key] did not load")
 		return null
-	STOP_PROCESSING(SSprocessing, blueprint.prison)
-	blueprint.prison.pay_clock = 0
-	blueprint.prison.pay_owed = 0
-	blueprint.prison.trouble_enabled = FALSE
+	var/area/voidcrew/outpost_lockup/wing = get_area(locate(home.wing_corner.x + 8, home.wing_corner.y + 8, home.wing_corner.z))
+	if(!istype(wing))
+		TEST_NOTICE(src, "The test wing for [owner_key] has no lockup area")
+		return null
+	wing.requires_power = TRUE
+	var/datum/outpost_prison/unit_test/prison = new(home, wing)
+	prison.member_key = owner_key
+	STOP_PROCESSING(SSprocessing, prison)
+	prison.intake_open = FALSE
+	prison.arrival_gap = 0
+	prison.arrival_countdown = null
+	prison.trouble_enabled = FALSE
 	// Random incidents and wing events would land in the middle of other tests; their own tests turn them on.
-	blueprint.prison.wildcards_enabled = FALSE
-	blueprint.prison.wing_events_enabled = FALSE
-	home.ensure_home_services()
+	prison.wildcards_enabled = FALSE
+	prison.wing_events_enabled = FALSE
+	prison.audience_override = TRUE
+	prison.refresh_conditions()
+	home.fixture_prison = prison
 	return home
 
-/datum/unit_test/voidcrew_outpost_management/proc/test_prison(obj/structure/overmap/dynamic/player_outpost/home)
-	var/datum/outpost_upgrade/prison/blueprint = home.outpost_upgrades["prison"]
-	return blueprint.prison
+/datum/unit_test/voidcrew_outpost_management/proc/test_prison(obj/structure/overmap/trader_outpost/prison_test_host/home)
+	return home.fixture_prison
 
 /// A tile of the unrotated wing by its authored map coordinates (1,1 is the south-west corner)
-/datum/unit_test/voidcrew_outpost_management/proc/prison_spot(obj/structure/overmap/dynamic/player_outpost/home, x, y)
-	var/datum/outpost_upgrade/prison/blueprint = home.outpost_upgrades["prison"]
-	var/list/bounds = blueprint.footprint_bounds
-	return locate(bounds[1] + x - 1, bounds[2] + y - 1, bounds[5])
+/datum/unit_test/voidcrew_outpost_management/proc/prison_spot(obj/structure/overmap/trader_outpost/prison_test_host/home, x, y)
+	return locate(home.wing_corner.x + x - 1, home.wing_corner.y + y - 1, home.wing_corner.z)
 
 /// A prisoner booked into the first free cell by hand, standing still at `spot`, fed and in a clean uniform
 /datum/unit_test/voidcrew_outpost_management/proc/test_prisoner(datum/outpost_prison/prison, turf/spot)
@@ -75,16 +121,15 @@
 	ADD_TRAIT(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	return prisoner
 
-/// Lets a freshly placed wing's air go idle before the claim is torn down
-/datum/unit_test/voidcrew_outpost_management/proc/settle_prison_air(obj/structure/overmap/dynamic/player_outpost/home)
-	var/datum/outpost_upgrade/prison/blueprint = home.outpost_upgrades["prison"]
-	var/list/bounds = blueprint?.footprint_bounds
-	if(!bounds)
+/// Lets a freshly loaded wing's air go idle before the fixture is torn down
+/datum/unit_test/voidcrew_outpost_management/proc/settle_prison_air(obj/structure/overmap/trader_outpost/prison_test_host/home)
+	var/turf/corner = home?.wing_corner
+	if(!corner)
 		return
 	var/settle_until = world.time + 30 SECONDS
 	while(world.time < settle_until)
 		var/busy = FALSE
-		for(var/turf/open/room_turf in block(bounds[1] - 1, bounds[2] - 1, bounds[5], bounds[3] + 1, bounds[4] + 1, bounds[5]))
+		for(var/turf/open/room_turf in block(corner.x, corner.y, corner.z, corner.x + 16, corner.y + 15, corner.z))
 			if(room_turf.excited)
 				busy = TRUE
 				break
@@ -161,7 +206,7 @@
 
 /// A prison claim with trouble switched on and every bulb working
 /datum/unit_test/voidcrew_outpost_management/proc/trouble_test_claim(owner_key)
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim(owner_key)
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim(owner_key)
 	if(!home)
 		return null
 	var/datum/outpost_prison/prison = test_prison(home)

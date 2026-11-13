@@ -48,7 +48,7 @@
 
 /datum/unit_test/voidcrew_outpost_prison_contraband_files/Run()
 	// The file is read the way outpost_prisoner_extra_dialogue() reads it (the strings directory is a define)
-	load_strings_file("outpost_prison_contraband.json", "voidcrew/modules/player_outposts/strings")
+	load_strings_file("outpost_prison_contraband.json", "voidcrew/modules/trade_prison/strings")
 	var/list/contents = GLOB.string_cache["outpost_prison_contraband.json"]
 	TEST_ASSERT(islist(contents), "outpost_prison_contraband.json did not load")
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_contraband.json has no lines block")
@@ -74,7 +74,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_contraband_shivs/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("xfshivowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("xfshivowner")
 	TEST_ASSERT_NOTNULL(home, "The shiv test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 3, 14))
@@ -196,7 +196,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_contraband_searches/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfsearchowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xfsearchowner")
 	TEST_ASSERT_NOTNULL(home, "The search test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/owner = trouble_prisoner(prison, prison_spot(home, 2, 14))
@@ -342,7 +342,7 @@
 	TEST_ASSERT_EQUAL(toilet.attack_hand_secondary(member, list()), SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN, "A right click on a cell toilet did not flush it")
 	TEST_ASSERT(toilet.flushing, "A right click on a cell toilet did not flush it")
 	TEST_ASSERT_EQUAL(prison.contraband_pruno(cell), bag, "Flushing took the pruno")
-	// With the lid off (tg's crowbar), a visitor's click is refused, "members only", so nobody reaches in round the search's rules
+	// With the lid off (tg's crowbar), a visitor's click is refused, "can't search that", so nobody reaches in round the search's rules
 	toilet.cistern_open = TRUE
 	TEST_ASSERT(toilet.attack_hand(visitor, list()), "A visitor's click on an open cell cistern went through")
 	TEST_ASSERT(!visitor.is_holding(bag) && prison.contraband_pruno(cell) == bag, "A visitor reached into an open cell cistern")
@@ -384,7 +384,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_contraband_stash_admin/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfstashowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xfstashowner")
 	TEST_ASSERT_NOTNULL(home, "The stash test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/owner = trouble_prisoner(prison, prison_spot(home, 3, 14))
@@ -433,7 +433,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_mail_arrivals/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfmailowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xfmailowner")
 	TEST_ASSERT_NOTNULL(home, "The mail test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
@@ -470,9 +470,7 @@
 		prisoner.mail_had_letter = FALSE
 		prisoner.sentence_left = 3600
 
-	// Mail is aimed at the office side of a serving hatch, and a crate is never put where it would
-	// cut something off: in front of hatch 1's office side (5,5), which the dispenser and the table
-	// hem in, it would seal that hatch from the office.
+	// Mail is aimed at the office side of a serving hatch.
 	var/list/hatch_sides = list()
 	for(var/turf/tile as anything in prison.wing_turfs())
 		var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in tile
@@ -480,7 +478,6 @@
 			hatch_sides += hatch.staff_side_turf()
 	TEST_ASSERT_EQUAL(length(hatch_sides), 2, "The wing should have two serving hatches")
 	TEST_ASSERT(prison.mail_office_spot() in hatch_sides, "Mail is not aimed at a serving hatch's office side")
-	TEST_ASSERT(!prison.mail_office_stays_open(prison.mail_office_walkable(), prison_spot(home, 5, 4)), "A crate at (5,4) would not cut off hatch 1's office side")
 
 	// The landing spot: a free floor tile of the office, off the cell block, with nothing on it, no
 	// door beside it, and leaving the office in one piece.
@@ -498,7 +495,7 @@
 	qdel(crate)
 
 	// The clock: nobody home, it waits
-	prison.crew_home_override = FALSE
+	prison.audience_override = FALSE
 	prison.mail_next_in = 1
 	prison.mail_tick(10)
 	TEST_ASSERT_EQUAL(prison.mail_next_in, 1, "The mail clock ran with nobody home")
@@ -506,7 +503,7 @@
 
 	// Home: the clock runs out, a pod comes down, and the next is 15 to 25 minutes off
 	// (OUTPOST_MAIL_WAVE_GAP_MIN, _MAX). Its letters only count as waiting once the crate lands.
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.mail_tick(1)
 	TEST_ASSERT(prison.mail_next_in >= 900 && prison.mail_next_in <= 1500, "The next mail pod is [prison.mail_next_in] seconds off")
 	var/obj/effect/pod_landingzone/zone = find_landing_zone(prison)
@@ -567,21 +564,12 @@
 	TEST_ASSERT(length(prison.mail_waiting_letters()) > waiting_before, "The admin's mail pod brought no letters")
 	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(pod_gone), admin_turf), 8 SECONDS), "The admin's mail pod never left")
 	check_office_open(prison)
-	// With the office full, it comes down on the ground just outside the entrance, off the wing
-	var/turf/front = prison.mail_entrance_front()
-	TEST_ASSERT_NOTNULL(front, "The wing has no ground outside its entrance")
-	for(var/turf/ground in range(2, front))
-		if(!prison.upgrade.contains_turf(ground) && (isspaceturf(ground) || isgroundlessturf(ground)))
-			ground.ChangeTurf(/turf/open/floor/plating)
+	// With the office full, no pod comes: a lockup has no door out to land one beside.
 	for(var/turf/tile as anything in prison.wing_turfs())
 		if(!prison.in_cell_block(tile) && prison.mail_pod_can_land(tile))
 			allocate(/obj/structure/closet/crate, tile)
-	var/turf/outside = prison.mail_pod_landing_turf()
-	TEST_ASSERT_NOTNULL(outside, "With the office full the mail pod has nowhere to land")
-	TEST_ASSERT(!prison.upgrade.contains_turf(outside) && outside.loc != prison.wing, "With the office full the mail pod lands in the wing")
-	TEST_ASSERT(get_dist(outside, front) <= 2, "With the office full the mail pod lands [get_dist(outside, front)] tiles from the entrance")
-	check_landing(prison, outside)
-	prison.crew_home_override = null
+	TEST_ASSERT_NULL(prison.mail_pod_landing_turf(), "With the office full the mail pod still has somewhere to land")
+	prison.audience_override = null
 	settle_prison_air(home)
 
 /// Fails the test unless `tile` is somewhere a mail pod may land
@@ -625,8 +613,20 @@
 
 /// The mail pod on its way to the wing, found by its landing marker in or just outside the wing
 /datum/unit_test/voidcrew_outpost_prison_mail_arrivals/proc/find_landing_zone(datum/outpost_prison/prison)
-	var/list/bounds = prison.upgrade.footprint_bounds
-	for(var/turf/tile as anything in block(bounds[1] - 3, bounds[2] - 3, bounds[5], bounds[3] + 3, bounds[4] + 3, bounds[5]))
+	var/min_x = world.maxx
+	var/min_y = world.maxy
+	var/max_x = 1
+	var/max_y = 1
+	var/wing_z
+	for(var/turf/wing_tile as anything in prison.wing_turfs())
+		min_x = min(min_x, wing_tile.x)
+		min_y = min(min_y, wing_tile.y)
+		max_x = max(max_x, wing_tile.x)
+		max_y = max(max_y, wing_tile.y)
+		wing_z = wing_tile.z
+	if(!wing_z)
+		return null
+	for(var/turf/tile as anything in block(max(1, min_x - 3), max(1, min_y - 3), wing_z, min(world.maxx, max_x + 3), min(world.maxy, max_y + 3), wing_z))
 		var/obj/effect/pod_landingzone/zone = locate() in tile
 		if(zone)
 			return zone
@@ -646,7 +646,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_mail_delivery/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfpostowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xfpostowner")
 	TEST_ASSERT_NOTNULL(home, "The delivery test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/reader = trouble_prisoner(prison, prison_spot(home, 8, 8))
@@ -754,12 +754,12 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_mail_cleanup/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("xfreturnowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("xfreturnowner")
 	TEST_ASSERT_NOTNULL(home, "The mail clean-up test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/waiting = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/npc/outpost_prisoner/leaving = trouble_prisoner(prison, prison_spot(home, 10, 8))
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.mail_next_in = 100000
 
 	// Fifteen minutes waiting with the crew home (OUTPOST_MAIL_EXPIRY): sent back, and 3 mood lost (OUTPOST_MAIL_EXPIRED_MOOD)
@@ -809,5 +809,5 @@
 	prison.mail_destroy()
 	TEST_ASSERT(QDELETED(letter), "A letter outlived the prison's clean-up")
 	TEST_ASSERT_EQUAL(length(prison.mail_letters), 0, "The prison still tracks letters after its clean-up")
-	prison.crew_home_override = null
+	prison.audience_override = null
 	settle_prison_air(home)

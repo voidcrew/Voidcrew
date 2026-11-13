@@ -52,8 +52,6 @@
 	TEST_ASSERT_EQUAL(site.display_name, site.true_name, "The derelict's display name is not its true name after building")
 	TEST_ASSERT_EQUAL(site.treasury.account_holder, "[site.true_name] Treasury", "The derelict's treasury is not named after its true name")
 	TEST_ASSERT(site.has_hangar_elevator(), "The derelict has no working hangar elevator")
-	var/datum/outpost_upgrade/wing = site.outpost_upgrades["prison"]
-	TEST_ASSERT(wing?.installed, "The derelict has no prison wing after building")
 	TEST_ASSERT_EQUAL(length(site.derelict_fuel_spots), 2, "The derelict's fuel was not hidden in two places") // DERELICT_FUEL_STACKS
 	TEST_ASSERT_EQUAL(site.get_dock_description(), "[site.true_name] (boarding)", "The derelict's dock description is wrong while unclaimed")
 

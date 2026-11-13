@@ -133,18 +133,9 @@
 	var/index = row * survey["width"] + column + 1
 	return copytext(survey["cells"], index, index + 1)
 
-/// Stops a freshly placed wing's own clock and its trouble, as the prison tests do: these tests drive it by hand
-/datum/unit_test/voidcrew_outpost_floors/rooms/proc/rooms_quiet_wing(datum/outpost_prison/prison)
-	STOP_PROCESSING(SSprocessing, prison)
-	prison.pay_clock = 0
-	prison.pay_owed = 0
-	prison.trouble_enabled = FALSE
-	prison.wildcards_enabled = FALSE
-	prison.wing_events_enabled = FALSE
-
 // ===== THE CATALOGUE =====
 
-/// A floor's console sells the wing and the service rooms, and no cargo dock, cell block or ship bay
+/// A floor's console sells the service rooms, and no cargo dock or ship bay
 /datum/unit_test/voidcrew_outpost_floors/rooms/catalogue
 
 /datum/unit_test/voidcrew_outpost_floors/rooms/catalogue/Run()
@@ -157,14 +148,14 @@
 	var/obj/structure/overmap/dynamic/player_outpost/old_kind = new(null)
 	made_hosts += old_kind
 
-	for(var/sold_id in list("prison", "shop", "storage", "medical_lab", "cloning_bay", "teleporter")) // "medical_lab" is OUTPOST_MEDICAL_LAB_ID
+	for(var/sold_id in list("shop", "storage", "medical_lab", "cloning_bay", "teleporter")) // "medical_lab" is OUTPOST_MEDICAL_LAB_ID
 		var/datum/outpost_upgrade/prototype = GLOB.outpost_upgrade_catalog[sold_id]
 		TEST_ASSERT_NOTNULL(prototype, "The [sold_id] room is missing from the catalogue")
 		TEST_ASSERT(host.offers_upgrade(prototype), "A floor does not sell the [prototype.name]")
 		TEST_ASSERT(old_kind.offers_upgrade(prototype), "An outpost no longer sells the [prototype.name]")
 		for(var/room_style in list("clean", "rundown")) // OUTPOST_STYLE_CLEAN, OUTPOST_STYLE_RUNDOWN
 			TEST_ASSERT_NOTNULL(prototype.get_template(style = room_style), "The [prototype.name] has no [room_style] map")
-	for(var/refused_id in list("cargo_dock", "prison_extension"))
+	for(var/refused_id in list("cargo_dock"))
 		var/datum/outpost_upgrade/prototype = GLOB.outpost_upgrade_catalog[refused_id]
 		TEST_ASSERT_NOTNULL(prototype, "The [refused_id] room is missing from the catalogue")
 		TEST_ASSERT(!host.offers_upgrade(prototype), "A floor sells the [prototype.name]")
@@ -183,7 +174,6 @@
 	TEST_ASSERT_NOTNULL(host.treasury, "A floor's host has no treasury")
 	host.treasury.adjust_money(50000, "Test float")
 	TEST_ASSERT_EQUAL(host.upgrade_purchase_denial(owner, "cargo_dock"), "Not sold here.", "The cargo dock can be bought for a floor")
-	TEST_ASSERT_EQUAL(host.upgrade_purchase_denial(owner, "prison_extension"), "Not sold here.", "A cell block can be bought for a floor")
 	TEST_ASSERT_NOTNULL(host.buy_outpost_upgrade(owner, "cargo_dock"), "The cargo dock was bought for a floor")
 	TEST_ASSERT_EQUAL(host.treasury.account_balance, 50000, "A refused room cost the treasury")
 	TEST_ASSERT_NULL(host.upgrade_purchase_denial(owner, "shop"), "The owner cannot buy a Shop for a floor")
@@ -201,7 +191,7 @@
 // ===== EVERY ROOM, BOTH STYLES =====
 
 /**
- * The wing and the five service rooms all go down on one floor of the real size, in `style`, each one working where
+ * The five service rooms all go down on one floor of the real size, in `style`, each one working where
  * it lands (contract_problems(), as the style test checks rooms on an outpost), each one finding its floor (A60),
  * none of them on the hull or the landing (A5), and the deck still under them (A4).
  */
@@ -253,7 +243,7 @@
 	TEST_ASSERT_EQUAL(doorstep_try, "Position obstructed.", "A room was placed against the landing, where it walls up the front door: [doorstep_try]")
 
 	// Along the north hull, then a second row under the first with a clear row between for the doors
-	var/list/room_ids = list("prison", "cloning_bay", "storage", "shop", "medical_lab", "teleporter") // "medical_lab" is OUTPOST_MEDICAL_LAB_ID
+	var/list/room_ids = list("cloning_bay", "storage", "shop", "medical_lab", "teleporter") // "medical_lab" is OUTPOST_MEDICAL_LAB_ID
 	var/list/datum/outpost_upgrade/placed = list()
 	var/next_dx = 1
 	var/row_top = 38
@@ -277,9 +267,6 @@
 		placed += built
 		row_bottom = min(row_bottom, dy)
 		next_dx += template.width
-		var/datum/outpost_upgrade/prison/built_wing = built
-		if(istype(built_wing) && built_wing.prison)
-			rooms_quiet_wing(built_wing.prison)
 	TEST_ASSERT_EQUAL(length(placed), length(room_ids), "Not every room fits one floor in the [style] style")
 
 	for(var/datum/outpost_upgrade/room as anything in placed)
@@ -312,10 +299,6 @@
 	var/obj/machinery/outpost_network_pad/pad = teleporter?.pad_ref?.resolve()
 	TEST_ASSERT_NOTNULL(pad, "The [style] teleporter on a floor has no pad")
 	TEST_ASSERT_EQUAL(pad.network_host(), host, "A floor's pad is not on the network")
-	var/datum/outpost_upgrade/prison/wing = host.outpost_upgrades["prison"]
-	TEST_ASSERT_NOTNULL(wing?.prison, "The [style] wing on a floor runs no prison")
-	TEST_ASSERT_EQUAL(length(wing.prison.cells), 4, "The [style] wing on a floor does not have four cells")
-	TEST_ASSERT_EQUAL(wing.prison.outpost, host, "The [style] wing on a floor is not the floor's")
 
 	// The map after: what is built is no longer open
 	survey = host.build_upgrade_survey()
@@ -595,90 +578,6 @@
 		GLOB.outpost_network_ready_at -= player_key
 	settle_room_air(rooms_built)
 
-// ===== THE WING =====
-
-/**
- * A wing on a floor takes prisoners in where it stands, pays the floor's treasury and releases. Home is the floor,
- * not the level (A1): who counts as at the wing, and whose presence wakes it, is whoever is on that floor.
- */
-/datum/unit_test/voidcrew_outpost_floors/rooms/wing
-
-/datum/unit_test/voidcrew_outpost_floors/rooms/wing/Run()
-	var/obj/structure/overmap/trader_outpost/outpost = test_outpost()
-	var/datum/outpost_floor/floor = rooms_floor(outpost, 1, 26, 26, "floorroomswingowner")
-	var/datum/outpost_floor/next_floor = test_floor(outpost, 2)
-	var/datum/turf_reservation/elsewhere = test_ground(6, 6)
-	if(!floor || !next_floor || !elsewhere)
-		return
-	var/obj/structure/overmap/dynamic/player_outpost/floor/host = floor.host
-	var/datum/outpost_upgrade/prison/wing = rooms_place(floor, /datum/outpost_upgrade/prison, 2, 5)
-	TEST_ASSERT(istype(wing), "The Prison Wing was not placed on a floor: [wing]")
-	var/datum/outpost_prison/prison = wing.prison
-	TEST_ASSERT_NOTNULL(prison, "A wing on a floor runs no prison")
-	rooms_quiet_wing(prison)
-	TEST_ASSERT_EQUAL(prison.outpost, host, "A floor's wing is not the floor's")
-	TEST_ASSERT_EQUAL(length(prison.cells), 4, "A floor's wing does not have four cells")
-
-	// Arrivals come in where the wing stands: no pad, no ferry
-	var/mob/living/carbon/human/npc/outpost_prisoner/arrival = prison.admit_next(TRUE)
-	TEST_ASSERT_NOTNULL(arrival, "No prisoner could be brought to a floor's wing")
-	TEST_ASSERT(arrival in prison.prisoners, "An arrival is not on the wing's roster")
-	TEST_ASSERT(wing.contains_turf(get_turf(arrival)) && floor.contains_turf(get_turf(arrival)), "A prisoner arrived somewhere other than the floor's wing")
-	TEST_ASSERT_NOTNULL(arrival.cell, "An arrival has no cell")
-
-	// The stipend and the release bonus are the floor's
-	host.ensure_home_services()
-	var/datum/bank_account/treasury = host.treasury
-	TEST_ASSERT_NOTNULL(treasury, "A floor's host has no treasury")
-	var/before = treasury.account_balance
-	prison.pay_owed = 36.4
-	TEST_ASSERT_EQUAL(prison.deposit_pay(), 36, "The wing's stipend was not deposited")
-	TEST_ASSERT_EQUAL(treasury.account_balance, before + 36, "The stipend did not reach the floor's treasury")
-	var/datum/outpost_prison_cell/free_cell
-	for(var/datum/outpost_prison_cell/cell as anything in prison.cells)
-		if(!cell.occupant && cell.arrival_turf())
-			free_cell = cell
-			break
-	TEST_ASSERT_NOTNULL(free_cell, "The wing has no second cell to book a prisoner into")
-	var/mob/living/carbon/human/npc/outpost_prisoner/served = new(free_cell.arrival_turf())
-	prison.admit(served, free_cell)
-	ADD_TRAIT(served, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
-	served.sentence_left = 3600
-	served.served_seconds = 600
-	served.kept_seconds = 600
-	before = treasury.account_balance
-	TEST_ASSERT_EQUAL(prison.release(served), 200, "A sentence served in full care did not pay the release bonus") // OUTPOST_PRISON_RELEASE_BONUS
-	TEST_ASSERT_EQUAL(treasury.account_balance, before + 200, "The release bonus did not reach the floor's treasury")
-
-	// Home is the floor: two of its people, one upstairs and one off the floor on the same level
-	var/turf/off_floor = elsewhere.bottom_left_turfs[1]
-	var/mob/living/carbon/human/member_up = rooms_person(floor_tile(floor, 22, 5), "floorroomswingup")
-	var/mob/living/carbon/human/member_down = rooms_person(off_floor, "floorroomswingdown")
-	var/mob/living/neighbour = test_person(deck_tile(next_floor))
-	host.residents += list(member_up.mind, member_down.mind)
-	TEST_ASSERT(prison.is_member(member_up) && prison.is_member(member_down), "Fixture: the floor's residents are not members of its wing")
-	TEST_ASSERT(member_down.z == floor.bounds[5] && neighbour.z == floor.bounds[5], "Fixture: the test floors are on different levels, so nothing is proven")
-	var/datum/ai_controller/brain = arrival.ai_controller
-	TEST_ASSERT_NOTNULL(brain, "Fixture: a prisoner has no AI")
-
-	// A player on the next floor and one of the wing's own people downstairs: nobody is at the wing, and it sleeps
-	rooms_stand_in(member_down)
-	rooms_stand_in(neighbour)
-	var/list/at_wing = prison.wing_clients()
-	TEST_ASSERT(!(member_down in at_wing), "One of the floor's people off the floor counts as home (A1)")
-	TEST_ASSERT(!(neighbour in at_wing), "A player on another floor of the level counts as at this wing (A1)")
-	brain.set_ai_status(AI_STATUS_OFF)
-	TEST_ASSERT(!outpost_prison_ai_running(arrival), "A player elsewhere on the level wakes a floor's wing (A1)")
-
-	// One of them upstairs: at the wing, and it wakes
-	rooms_stand_in(member_up)
-	at_wing = prison.wing_clients()
-	TEST_ASSERT(member_up in at_wing, "One of the floor's people on the floor does not count as home")
-	TEST_ASSERT(!(member_down in at_wing) && !(neighbour in at_wing), "Someone off the floor counts as at the wing once a player is upstairs (A1)")
-	brain.set_ai_status(AI_STATUS_OFF)
-	TEST_ASSERT(outpost_prison_ai_running(arrival), "A player on the floor does not wake its wing")
-	settle_room_air(rooms_built)
-
 // ===== THE BOARD, ADVERTS AND RESEARCH =====
 
 /// What a floor offers on the board, what its advert names, and which ship counts as docked at it
@@ -698,11 +597,6 @@
 		room.installed = TRUE
 		host.outpost_upgrades[room.key] = room
 	TEST_ASSERT_EQUAL(jointext(floor.offers(), ", "), "Clinic, Cloning, Lockers, Teleporter", "The board's words for a floor's rooms are wrong or out of order")
-	// The wing is nothing a visitor buys
-	var/datum/outpost_upgrade/prison/wing = new(host)
-	wing.installed = TRUE
-	host.outpost_upgrades[wing.key] = wing
-	TEST_ASSERT_EQUAL(length(floor.offers()), 4, "The board offers visitors the prison wing")
 
 	// Shop only while the shop is open (shop_open(), floor_shopfront.dm)
 	var/datum/outpost_upgrade/service/shop/shop = new(host)

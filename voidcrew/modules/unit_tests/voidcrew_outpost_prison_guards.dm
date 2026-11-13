@@ -1,7 +1,6 @@
 /**
  * NPC guards (outpost_prison_guards.dm, outpost_prison_guard_routine.dm). Owner: XA.
- * The dialogue file; hiring, the cap and the fee; wages and walking off unpaid; the baton and who
- * it may touch; the responses to arguments, fights, threats, spats and hatch climbs; the riot hold;
+ * The dialogue file; the roster, ranks and the cap; the baton and who it may touch; the responses to arguments, fights, threats, spats and hatch climbs; the riot hold;
  * going down and coming back; the refusals; and what a guard tells a member.
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with the
@@ -26,15 +25,6 @@
 	guard.finish_beam_in()
 	guard.forceMove(spot)
 	return guard
-
-/// Puts `amount` credits in the claim's treasury, and nothing else
-/datum/unit_test/voidcrew_outpost_management/proc/guard_test_fund(obj/structure/overmap/dynamic/player_outpost/home, amount)
-	home.ensure_home_services()
-	var/datum/bank_account/treasury = home.treasury
-	treasury.account_debt = 0
-	treasury.adjust_money(-treasury.account_balance, "Guard test")
-	treasury.adjust_money(amount, "Guard test")
-	return treasury
 
 /// Whether `line` is one of the guard lines for `context`, placeholders and all
 /proc/guard_test_is_line(line, context)
@@ -64,7 +54,7 @@
 
 /datum/unit_test/voidcrew_outpost_prison_guards_files/Run()
 	// The file is read the way outpost_prisoner_extra_dialogue() reads it (the strings directory is a define)
-	load_strings_file("outpost_prison_guards.json", "voidcrew/modules/player_outposts/strings")
+	load_strings_file("outpost_prison_guards.json", "voidcrew/modules/trade_prison/strings")
 	var/list/contents = GLOB.string_cache["outpost_prison_guards.json"]
 	TEST_ASSERT(islist(contents), "outpost_prison_guards.json did not load")
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_guards.json has no lines block")
@@ -83,9 +73,9 @@
 	var/list/guard_lines = contents["guard_lines"]
 	var/list/used = list("arrival", "post", "rounds_start", "rounds_clear", "yard_comment", "coffee", "check_on",
 		"check_on_hungry", "check_on_dirty", "check_on_hurt", "report_hatch", "report_restless", "report_hurt",
-		"report_dark", "report_all_good", "greet_owner", "greet_member", "spat_stop", "argue_stop", "fight_stop",
+		"report_dark", "report_all_good", "greet_member", "spat_stop", "argue_stop", "fight_stop",
 		"threat_stop", "climb_stop", "riot_call", "riot_hold", "follow_member", "fallback", "loose_call", "loose_nearly",
-		"creature_flee", "downed", "recalled", "unpaid", "dismissed", "attacked_by_player")
+		"downed", "recalled", "dismissed", "attacked_by_player")
 	for(var/context in used)
 		TEST_ASSERT(islist(guard_lines[context]), "The guards have no [context] lines")
 	for(var/context in guard_lines)
@@ -120,31 +110,20 @@
 		bare = replacetext(bare, placeholder, "")
 	TEST_ASSERT(!findtext(bare, "{") && !findtext(bare, "}"), "[where] has a line with an unknown placeholder: [line]")
 
-// ===== HIRING =====
+// ===== THE ROSTER =====
 
-/// Managers hire, the fee comes first, two at most, never on credit; staff doors and the staff checks; dismissal and abandonment
+/// A new guard beams into the office, an officer then a sergeant, two at most; staff doors and the staff checks; dismissal
 /datum/unit_test/voidcrew_outpost_prison_guard_hiring
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_hiring/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardhireowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("guardhireowner")
 	TEST_ASSERT_NOTNULL(home, "The guard hiring test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 3), "guardhireowner")
-	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 13, 3), "guardhirevisitor")
-	var/datum/bank_account/treasury = guard_test_fund(home, 5000)
 
-	// Managers only.
-	TEST_ASSERT(prison.guards_act("guard_hire", list(), visitor), "The console did not take a visitor's hire")
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 0, "A visitor hired a guard")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 5000, "A refused hire charged the treasury")
-	var/list/visitor_block = prison.guards_payload(visitor)
-	TEST_ASSERT(!visitor_block["can_manage"] && !visitor_block["can_hire"], "A visitor was offered the hire button")
-
-	// The fee comes out, then the guard beams into the office.
-	TEST_ASSERT(prison.guards_act("guard_hire", list(), owner), "The console did not take the owner's hire")
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "The owner's hire made no guard")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "Hiring a guard cost [5000 - treasury.account_balance], not 1000") // OUTPOST_GUARD_HIRE_COST
+	// The guard beams into the office at once.
+	prison.add_guard_record()
+	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "Adding a guard made no record")
 	var/datum/outpost_guard_record/first = prison.guard_records[1]
 	var/mob/living/carbon/human/npc/outpost_prison_guard/officer = first.guard
 	TEST_ASSERT_NOTNULL(officer, "The hired guard did not beam in")
@@ -174,89 +153,18 @@
 	var/list/called_line = prison.entries[1]
 	TEST_ASSERT(findtext(called_line["text"], officer.last_line), "The guard's call was not logged: [called_line["text"]]")
 
-	// A sergeant next; a third post does not exist, and asking costs nothing.
-	prison.guards_act("guard_hire", list(), owner)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "A second guard was refused")
+	// A sergeant next; the wing has two posts.
+	prison.add_guard_record()
+	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "A second guard was not added")
 	var/datum/outpost_guard_record/second = prison.guard_records[2]
 	TEST_ASSERT_EQUAL(second.rank, "Sergeant", "The second guard is not a sergeant")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 3000, "The second guard did not cost 1000")
-	prison.guards_act("guard_hire", list(), owner)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "A third guard was hired") // OUTPOST_GUARD_MAX
-	TEST_ASSERT_EQUAL(treasury.account_balance, 3000, "A refused third guard charged the treasury")
-	var/list/block = prison.guards_payload(owner)
-	TEST_ASSERT(block["can_manage"], "The owner cannot manage the guards")
-	TEST_ASSERT(!block["can_hire"], "The hire button was offered with both posts filled")
-	TEST_ASSERT_EQUAL(length(block["list"]), 2, "The console does not list both guards")
-	var/list/row = block["list"][1]
-	for(var/key in list("ref", "name", "rank", "status"))
-		TEST_ASSERT(key in row, "A guard's console row has no [key]")
-	TEST_ASSERT(!("back_in" in row), "A guard's console row still says when they are back")
-	TEST_ASSERT(!("unpaid" in block), "The guards block still counts missed wages")
+	TEST_ASSERT_EQUAL(prison.guard_max(), 2, "The wing has [prison.guard_max()] guard posts, not 2") // OUTPOST_GUARD_MAX
 
-	// Dismissal: managers only, no refund, and the guard walks out.
+	// Dismissal: the guard walks out.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/sergeant = second.guard
-	prison.guards_act("guard_dismiss", list("ref" = REF(second)), visitor)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "A visitor dismissed a guard")
-	prison.guards_act("guard_dismiss", list("ref" = REF(second)), owner)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "The owner could not dismiss a guard")
+	TEST_ASSERT(prison.dismiss_guard(second), "A guard could not be dismissed")
+	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "A dismissed guard stayed on the roster")
 	TEST_ASSERT_EQUAL(sergeant.phase, "leaving", "A dismissed guard still beaming in did not beam out") // OUTPOST_GUARD_LEAVING
-	TEST_ASSERT_EQUAL(treasury.account_balance, 3000, "Dismissing a guard refunded or charged something")
-
-	// An empty treasury: refused, and no debt.
-	guard_test_fund(home, 500)
-	prison.guards_act("guard_hire", list(), owner)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "A guard was hired the treasury could not pay for")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 500, "A refused hire took money")
-	TEST_ASSERT_EQUAL(treasury.account_debt, 0, "A refused hire left debt")
-
-	// Abandonment dismisses everyone, no refund.
-	prison.on_outpost_abandoned()
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 0, "Guards stayed on the payroll of an abandoned outpost")
-	TEST_ASSERT_EQUAL(officer.phase, "leaving", "A guard of an abandoned outpost did not beam out")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 500, "Abandonment refunded the guards")
-	settle_prison_air(home)
-
-// ===== WAGES =====
-
-/// 2 cr a minute each, only while a member is home; two skipped wages and they walk off, never debt
-/datum/unit_test/voidcrew_outpost_prison_guard_wages
-	parent_type = /datum/unit_test/voidcrew_outpost_management
-
-/datum/unit_test/voidcrew_outpost_prison_guard_wages/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardwageowner")
-	TEST_ASSERT_NOTNULL(home, "The guard wage test prison did not load")
-	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 3), "guardwageowner")
-	var/datum/bank_account/treasury = guard_test_fund(home, 5000)
-	prison.guards_act("guard_hire", list(), owner)
-	prison.guards_act("guard_hire", list(), owner)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "Two guards were not hired")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 3000, "Two guards did not cost 2000")
-
-	// Five minutes with a member home: 2 guards x 2 cr/min x 5 min.
-	prison.guard_wage_clock = 0
-	prison.crew_home_override = TRUE
-	prison.tick(300) // OUTPOST_PRISON_DEPOSIT_INTERVAL
-	TEST_ASSERT_EQUAL(treasury.account_balance, 2980, "Five minutes of two guards cost [3000 - treasury.account_balance], not 20") // OUTPOST_GUARD_WAGE
-	TEST_ASSERT_EQUAL(prison.guard_unpaid, 0, "A paid wage counted as skipped")
-
-	// Nobody home: nothing.
-	prison.crew_home_override = FALSE
-	prison.tick(300)
-	TEST_ASSERT_EQUAL(treasury.account_balance, 2980, "Guards were paid while nobody was home")
-
-	// An empty treasury: the wage is skipped, not owed, and after two in a row they walk off.
-	guard_test_fund(home, 0)
-	prison.crew_home_override = TRUE
-	prison.tick(300)
-	TEST_ASSERT_EQUAL(prison.guard_unpaid, 1, "A wage the treasury could not cover was not counted as skipped")
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "The guards left after one skipped wage")
-	TEST_ASSERT_EQUAL(treasury.account_debt, 0, "A skipped wage became debt")
-	prison.tick(300)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 0, "The guards stayed after two skipped wages") // OUTPOST_GUARD_UNPAID_LEAVE
-	TEST_ASSERT_EQUAL(treasury.account_debt, 0, "Unpaid guards left debt")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 0, "Unpaid guards took money on the way out")
-	TEST_ASSERT_EQUAL(prison.guard_unpaid, 0, "The skipped wages were not cleared once the guards left")
 	settle_prison_air(home)
 
 // ===== THE BATON =====
@@ -266,7 +174,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_baton/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("guardbatonowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("guardbatonowner")
 	TEST_ASSERT_NOTNULL(home, "The baton test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
@@ -320,7 +228,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_responses/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("guardresponseowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("guardresponseowner")
 	TEST_ASSERT_NOTNULL(home, "The response test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 14, 3), "guardresponseowner")
@@ -335,7 +243,7 @@
 	sulky.cancel_threat()
 	prison.forget(sulky)
 	qdel(sulky)
-	prison.dismiss_guard(sleepy.record, "dismissed", TRUE)
+	prison.dismiss_guard(sleepy.record, "dismissed")
 
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
@@ -436,7 +344,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_riot/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("guardriotowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("guardriotowner")
 	TEST_ASSERT_NOTNULL(home, "The guard riot test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/list/rioters = list(
@@ -498,17 +406,15 @@
 
 // ===== DOWN AND BACK =====
 
-/// A guard is a real body (OC-2): in crit they go down and are medevaced ten seconds later, killed they are collected a minute later; either way back ten minutes after, free, with the same face; the slot's wait survives a rehire
+/// A guard is a real body (OC-2): in crit they go down and are medevaced ten seconds later, killed they are collected a minute later; either way back ten minutes after, with the same face
 /datum/unit_test/voidcrew_outpost_prison_guard_down
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_down/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guarddownowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("guarddownowner")
 	TEST_ASSERT_NOTNULL(home, "The guard down test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 3), "guarddownowner")
-	var/datum/bank_account/treasury = guard_test_fund(home, 5000)
-	prison.guards_act("guard_hire", list(), owner)
+	prison.add_guard_record()
 	var/datum/outpost_guard_record/record = prison.guard_records[1]
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	var/guard_name = guard.real_name
@@ -527,9 +433,8 @@
 	var/health_down = guard.health
 	guard.adjustBruteLoss(5)
 	TEST_ASSERT(guard.health < health_down, "A downed guard took no more damage")
-	TEST_ASSERT_EQUAL(prison.guard_payroll(), 0, "A downed guard still draws a wage")
 
-	// Ten seconds later they beam out, and they are back ten minutes after that, at no charge.
+	// Ten seconds later they beam out, and they are back ten minutes after that.
 	prison.tick(9)
 	TEST_ASSERT_EQUAL(guard.phase, "down", "A downed guard left early")
 	prison.tick(1) // OUTPOST_GUARD_RECALL_DELAY
@@ -537,7 +442,7 @@
 	TEST_ASSERT_NULL(record.guard, "The payroll still points at the guard beaming out")
 	TEST_ASSERT_EQUAL(record.away_left, 600, "A downed guard is away for [record.away_left] s, not 600") // OUTPOST_GUARD_RETURN_TIME
 	TEST_ASSERT_EQUAL(record.status(), "away", "The console does not show the guard as away")
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.tick(599)
 	TEST_ASSERT_NULL(record.guard, "A downed guard came back early")
 	prison.tick(1)
@@ -546,7 +451,6 @@
 	TEST_ASSERT_EQUAL(record.guard.skin_tone, face_skin, "The guard came back with someone else's face")
 	TEST_ASSERT_EQUAL(record.guard.hairstyle, face_hair, "The guard came back with someone else's hair")
 	TEST_ASSERT(record.guard.health >= record.guard.maxHealth, "The guard came back hurt")
-	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "The return cost [4000 - treasury.account_balance] cr")
 
 	// Killed on duty: the body lies a minute, then the corrections service collects it; back ten minutes later.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/victim = record.guard
@@ -568,29 +472,24 @@
 	prison.tick(600)
 	TEST_ASSERT_NOTNULL(record.guard, "A killed guard's slot was not filled again after ten minutes")
 
-	// Down again and dismissed: the next hire waits out the same slot.
+	// Down again, by the admin panel, and dismissed.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/back = record.guard
 	back.finish_beam_in()
 	var/downed = prison.guards_admin_act("prison_guard_down", list("ref" = REF(record)), null)
 	TEST_ASSERT(istext(downed), "The admin could not put a guard down")
 	TEST_ASSERT_EQUAL(back.phase, "down", "The admin's down did not put the guard down")
-	prison.guards_act("guard_dismiss", list("ref" = REF(record)), owner)
+	prison.dismiss_guard(record)
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 0, "The downed guard was not dismissed")
-	prison.guards_act("guard_hire", list(), owner)
-	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "The rehire was refused")
-	var/datum/outpost_guard_record/rehired = prison.guard_records[1]
-	TEST_ASSERT_NULL(rehired.guard, "Dismissing a downed guard and hiring another skipped the wait")
-	TEST_ASSERT(rehired.away_left > 600, "The rehire waits [rehired.away_left] s, not the downed guard's wait")
 	settle_prison_air(home)
 
 // ===== REFUSALS =====
 
-/// No teleports, polymorph, containers, pulling or dragging; a player's punch gets a warning, never the baton; guards are not the crew
+/// No teleports, polymorph, containers, pulling or dragging; a player's punch gets a warning, never the baton; guards are not an audience
 /datum/unit_test/voidcrew_outpost_prison_guard_refusals
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_refusals/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardrefuseowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("guardrefuseowner")
 	TEST_ASSERT_NOTNULL(home, "The guard refusal test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 4))
@@ -606,7 +505,7 @@
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_NO_STORAGE_INSERT), "A guard can be put in a bag")
 	TEST_ASSERT(ishuman(guard), "A guard is not a real human body")
 
-	// A member of the wing may lead a guard by the arm; anyone else gets shaken off (tg's resist).
+	// Staff may lead a guard by the arm; anyone else gets shaken off (tg's resist).
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 11, 4), "guardrefuseowner")
 	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 12, 4), "guardrefusestranger")
 	stranger.start_pulling(guard)
@@ -626,10 +525,10 @@
 	TEST_ASSERT_EQUAL(owner.getStaminaLoss(), 0, "A guard hit back at a person")
 	TEST_ASSERT_EQUAL(owner.getBruteLoss(), 0, "A guard hurt a person")
 
-	// Guards on the level never count as a member being home.
-	prison.crew_home_override = null
+	// Guards at the outpost never count as someone there to see the wing.
+	prison.audience_override = null
 	prison.presence_tick(1)
-	TEST_ASSERT(!prison.crew_home(), "Guards counted as the crew being home")
+	TEST_ASSERT(!prison.has_audience(), "Guards counted as an audience")
 
 	// The leash: out of the wing for 30 seconds with nobody about to see them walk back, and they
 	// are called back for a minute (OUTPOST_GUARD_LEASH_SECONDS, OUTPOST_GUARD_OFF_LEVEL_AWAY).
@@ -652,7 +551,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_guard_reports/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardreportowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("guardreportowner")
 	TEST_ASSERT_NOTNULL(home, "The guard report test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -674,7 +573,7 @@
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 4), "guardreportowner")
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 3))
 	TEST_ASSERT(guard.greet_member(owner), "A guard did not greet the owner")
-	TEST_ASSERT(guard_test_is_line(guard.last_line, "greet_owner"), "The guard's greeting was [guard.last_line]")
+	TEST_ASSERT(guard_test_is_line(guard.last_line, "greet_member"), "The guard's greeting was [guard.last_line]")
 	TEST_ASSERT(guard.greet_member(owner), "A guard did not report to the owner")
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "report_restless"), "The guard's report was [guard.last_line]")
 	TEST_ASSERT(!guard.greet_member(owner), "A guard reported twice within three minutes") // OUTPOST_GUARD_REPORT_GAP

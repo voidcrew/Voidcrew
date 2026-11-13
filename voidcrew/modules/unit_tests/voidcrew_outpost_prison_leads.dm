@@ -12,7 +12,7 @@
 
 /datum/unit_test/voidcrew_outpost_prison_leads_files/Run()
 	// The file is read the way outpost_prisoner_extra_dialogue() reads it (the strings directory is a define)
-	load_strings_file("outpost_prison_leads.json", "voidcrew/modules/player_outposts/strings")
+	load_strings_file("outpost_prison_leads.json", "voidcrew/modules/trade_prison/strings")
 	var/list/contents = GLOB.string_cache["outpost_prison_leads.json"]
 	TEST_ASSERT(islist(contents), "outpost_prison_leads.json did not load")
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_leads.json has no lines block")
@@ -100,7 +100,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_leads_carriers/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -136,7 +136,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_leads_truth/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	TEST_ASSERT(istype(outpost_lead_overmap_turf(30, 30), /turf/open/overmap), "The test world has no overmap to point at")
 	var/datum/outpost_prison/prison = test_prison(home)
@@ -201,7 +201,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_leads_lie/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	TEST_ASSERT(istype(outpost_lead_overmap_turf(30, 30), /turf/open/overmap), "The test world has no overmap to point at")
 	var/datum/outpost_prison/prison = test_prison(home)
@@ -275,7 +275,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_leads_refusals/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/sour = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -325,7 +325,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_leads_candidates/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	TEST_ASSERT(istype(outpost_lead_overmap_turf(30, 30), /turf/open/overmap), "The test world has no overmap to point at")
 	var/datum/outpost_prison/prison = test_prison(home)
@@ -390,7 +390,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_leads_vouch/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("leadsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("leadsowner")
 	TEST_ASSERT_NOTNULL(home, "The leads test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/teller = test_prisoner(prison, prison_spot(home, 8, 8))

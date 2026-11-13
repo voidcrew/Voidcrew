@@ -16,7 +16,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_needs/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("needsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("needsowner")
 	TEST_ASSERT_NOTNULL(home, "The needs test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/yard_by_hatch = prison_spot(home, 5, 7)
@@ -194,7 +194,7 @@
 
 	// Thought bubbles: only when something needs attention; several needs take turns, every 4
 	// seconds (PRISONER_BUBBLE_CYCLE), starting from the most urgent whenever the set changes.
-	for(var/need in list("hungry", "dirty", "hurt", "riot", "experiment"))
+	for(var/need in list("hungry", "dirty", "hurt", "riot"))
 		TEST_ASSERT_NOTNULL(outpost_prisoner_bubble_item(need), "The thought bubble has no item look for [need]")
 	prisoner.set_hunger(10)
 	prisoner.set_uniform_grime(90)
@@ -207,10 +207,6 @@
 	prisoner.bubble_clock += 2
 	prisoner.update_bubble()
 	TEST_ASSERT_EQUAL(prisoner.bubble, "hungry", "The bubble changed before its 4 seconds were up")
-	prisoner.experiment_subject = TRUE
-	prisoner.update_bubble()
-	TEST_ASSERT_EQUAL(prisoner.bubble, "experiment", "An experiment's subject did not show the syringe over their needs")
-	prisoner.experiment_subject = FALSE
 	prisoner.set_hunger(100)
 	TEST_ASSERT_EQUAL(prisoner.bubble, "hurt", "The bubble did not start again at the injury when hunger was dealt with")
 	prisoner.adjustBruteLoss(-20)
@@ -338,7 +334,7 @@
 	return QDELETED(game) || !game.in_flight
 
 /datum/unit_test/voidcrew_outpost_prison_routine/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("routineowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("routineowner")
 	TEST_ASSERT_NOTNULL(home, "The routine test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/list/personalities = outpost_prisoner_dialogue("personalities")
@@ -600,7 +596,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_mood_needs/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("moodneedsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("moodneedsowner")
 	TEST_ASSERT_NOTNULL(home, "The needs mood test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
@@ -671,7 +667,7 @@
 	return prisoner.phase == "present"
 
 /datum/unit_test/voidcrew_outpost_prison_arrivals_food/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("arrivalowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("arrivalowner")
 	TEST_ASSERT_NOTNULL(home, "The arrivals test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -822,7 +818,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_hatch/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("hatchowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("hatchowner")
 	TEST_ASSERT_NOTNULL(home, "The hatch test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/hatch_turf = prison_spot(home, 5, 6)
@@ -1024,69 +1020,37 @@
 	qdel(bought)
 
 /datum/unit_test/voidcrew_outpost_prison_vendor/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("vendorowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("vendorowner")
 	TEST_ASSERT_NOTNULL(home, "The vendor test prison did not load")
-	var/datum/outpost_prison/prison = test_prison(home)
-	var/datum/bank_account/treasury = home.treasury
-	var/obj/machinery/vending/sustenance/outpost_prison/vendor = locate() in prison_spot(home, 4, 5)
-	TEST_ASSERT_NOTNULL(vendor, "The Sustenance Vendor is not where the map puts it")
+	// The fixture map has no vendor of its own: one stands in the office where the old map put it.
+	var/obj/machinery/vending/sustenance/outpost_prison/vendor = allocate(/obj/machinery/vending/sustenance/outpost_prison, prison_spot(home, 4, 5))
 	TEST_ASSERT(vendor.resistance_flags & INDESTRUCTIBLE, "The prison's vendor is not outpost property") // /datum/element/outpost_property
 	TEST_ASSERT(!length(vendor.hidden_records), "The prison's vendor has contraband to hack out")
 	vendor.set_machine_stat(vendor.machine_stat & ~NOPOWER)
-	// tg's stock at one treasury price (OUTPOST_PRISON_RATION_COST 25) an item.
 	var/datum/data/vending_product/tofu
 	for(var/datum/data/vending_product/record as anything in vendor.product_records)
-		TEST_ASSERT_EQUAL(record.price, 25, "[record.name] costs [record.price], not 25")
 		if(record.product_path == /obj/item/food/tofu/prison)
 			tofu = record
-	TEST_ASSERT_NOTNULL(tofu, "The vendor does not sell soggy tofu")
+	TEST_ASSERT_NOTNULL(tofu, "The vendor does not stock soggy tofu")
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 4, 4), "vendorowner")
-	var/mob/living/carbon/human/resident = make_player(prison_spot(home, 5, 4), "vendorresident")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 3, 4), "vendorvisitor")
-	home.residents += resident.mind
-	treasury.adjust_money(5000, "Prison test")
 
-	// A member buys: the tofu comes out into their hand and the treasury pays for it.
-	var/start = treasury.account_balance
+	// Staff take: the tofu comes out into their hand.
 	var/stocked = tofu.amount
-	TEST_ASSERT_EQUAL(buy(vendor, owner, tofu), /obj/item/food/tofu/prison, "The owner could not buy soggy tofu")
-	TEST_ASSERT_EQUAL(start - treasury.account_balance, 25, "Soggy tofu cost the treasury [start - treasury.account_balance]")
+	TEST_ASSERT_EQUAL(buy(vendor, owner, tofu), /obj/item/food/tofu/prison, "Staff could not take soggy tofu")
 	TEST_ASSERT_EQUAL(tofu.amount, stocked - 1, "The vendor's tofu went from [stocked] to [tofu.amount]")
 	// Tofu feeds a prisoner like a ration.
 	var/obj/item/food/tofu/prison/sample = allocate(__IMPLIED_TYPE__, prison_spot(home, 5, 9))
 	TEST_ASSERT_EQUAL(outpost_prisoner_food_tier(sample), "ration", "Soggy tofu does not count as a ration")
 	qdel(sample)
 
-	// A visitor is refused, and nothing is billed.
+	// Anyone else is refused, and nothing leaves the shelf.
 	TEST_ASSERT(!vendor.may_vend(visitor), "A visitor may use the prison's vendor")
 	TEST_ASSERT(!vendor.allowed(visitor), "The vendor allows a visitor in")
-	TEST_ASSERT(vendor.allowed(owner), "The vendor keeps the owner out")
-	TEST_ASSERT_EQUAL(vendor.charge(visitor, tofu), "members only", "A visitor was not told the vendor is for members")
-	start = treasury.account_balance
-	TEST_ASSERT_NULL(buy(vendor, visitor, tofu), "A visitor bought tofu on the treasury")
-	TEST_ASSERT_EQUAL(treasury.account_balance, start, "A visitor's try was billed")
-
-	// Residents take up to 8 items per 10 minutes between them (OUTPOST_PRISON_RESIDENT_ORDERS / _WINDOW);
-	// managers are never held to it.
-	for(var/i in 1 to 8)
-		TEST_ASSERT_EQUAL(buy(vendor, resident, tofu), /obj/item/food/tofu/prison, "A resident could not buy item [i] of 8")
-	start = treasury.account_balance
-	TEST_ASSERT_EQUAL(vendor.charge(resident, tofu), "order limit reached", "A resident was not held to the limit")
-	TEST_ASSERT_NULL(buy(vendor, resident, tofu), "A resident bought a ninth item inside ten minutes")
-	TEST_ASSERT_EQUAL(treasury.account_balance, start, "A refused resident was billed")
-	TEST_ASSERT_EQUAL(buy(vendor, owner, tofu), /obj/item/food/tofu/prison, "The owner was held to the residents' limit")
-	for(var/i in 1 to length(prison.resident_orders))
-		prison.resident_orders[i] -= 6000 // OUTPOST_PRISON_RESIDENT_ORDER_WINDOW
-	TEST_ASSERT_EQUAL(buy(vendor, resident, tofu), /obj/item/food/tofu/prison, "A resident could not buy once the window had passed")
-	TEST_ASSERT_EQUAL(prison.resident_orders_left(), 7, "The window did not start again after it passed")
-
-	// An empty treasury buys nothing.
-	treasury.adjust_money(-treasury.account_balance, "Prison test")
+	TEST_ASSERT(vendor.allowed(owner), "The vendor keeps staff out")
 	stocked = tofu.amount
-	TEST_ASSERT_EQUAL(vendor.charge(owner, tofu), "insufficient funds", "An empty treasury paid for tofu")
-	TEST_ASSERT_NULL(buy(vendor, owner, tofu), "Tofu came out of a vendor on an empty treasury")
-	TEST_ASSERT_EQUAL(tofu.amount, stocked, "A refused sale took tofu off the shelf")
-	treasury.adjust_money(5000, "Prison test")
+	TEST_ASSERT_NULL(buy(vendor, visitor, tofu), "A visitor took tofu")
+	TEST_ASSERT_EQUAL(tofu.amount, stocked, "A visitor's try took tofu off the shelf")
 
 	// It restocks itself: one item a minute while powered (OUTPOST_PRISON_VENDOR_RESTOCK_TIME), nothing when full or unpowered.
 	for(var/datum/data/vending_product/record as anything in vendor.product_records)
@@ -1117,7 +1081,7 @@
 	return thing.loc == prisoner
 
 /datum/unit_test/voidcrew_outpost_prison_liveliness/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("livelyowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("livelyowner")
 	TEST_ASSERT_NOTNULL(home, "The liveliness test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/table = prison_spot(home, 5, 9)
@@ -1317,7 +1281,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_reach/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("reachowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("reachowner")
 	TEST_ASSERT_NOTNULL(home, "The reach test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/hatch_turf = prison_spot(home, 5, 6)
@@ -1398,7 +1362,7 @@
  * (OUTPOST_PRISON_BEAM_TIME), hidden under the transporter's mask from the first frame, and does
  * nothing at all until the knit is over. Until then the routine plans nothing, they say nothing,
  * show no thought bubble and are held still; after it they are solid, free and able to talk.
- * Beaming out, the same holds from the start. Guards and Kessler staff beaming in keep quiet too.
+ * Beaming out, the same holds from the start. Guards beaming in keep quiet too.
  */
 /datum/unit_test/voidcrew_outpost_prison_beam_gates
 	parent_type = /datum/unit_test/voidcrew_outpost_management
@@ -1406,8 +1370,8 @@
 /datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/knitting(atom/movable/arrival)
 	return !!arrival.get_filter("transporter_dissolve")
 
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/all_in(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/carbon/human/npc/outpost_prison_guard/guard, mob/living/carbon/human/npc/outpost_kessler_staff/doctor)
-	return prisoner.phase == "present" && guard.phase == "present" && !doctor.beaming
+/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/all_in(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	return prisoner.phase == "present" && guard.phase == "present"
 
 /// Whether nothing about the prisoner can act, talk or show: the gates an arriving or leaving prisoner must fail
 /datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/check_held(mob/living/carbon/human/npc/outpost_prisoner/prisoner, when)
@@ -1422,7 +1386,7 @@
 	TEST_ASSERT_NULL(prisoner.popped_bubble, "A thought bubble showed [when]")
 
 /datum/unit_test/voidcrew_outpost_prison_beam_gates/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("beamgateowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("beamgateowner")
 	TEST_ASSERT_NOTNULL(home, "The beam gate test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -1436,12 +1400,10 @@
 	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, /mob/living/carbon/human/npc/outpost_prison_guard)
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record?.guard
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
-	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 12, 3), null)
-	doctor.beam_in()
 
 	// In the beam they are knitting together from the start, under the mask at its lowest
 	// (TRANSPORTER_MASK_TRAVEL -58), so nothing of them shows before the beam does: arriving, and held.
-	for(var/mob/living/arrival as anything in list(prisoner, guard, doctor))
+	for(var/mob/living/arrival as anything in list(prisoner, guard))
 		TEST_ASSERT(knitting(arrival), "[arrival] was not knitting together inside the beam")
 		TEST_ASSERT_EQUAL(arrival.filter_data?["transporter_dissolve"]?["y"], -58, "[arrival]'s knit did not start hidden under the mask")
 	TEST_ASSERT_EQUAL(prisoner.phase, "arriving", "Beaming in did not make the prisoner arriving") // PRISONER_ARRIVING
@@ -1450,8 +1412,6 @@
 	TEST_ASSERT_EQUAL(guard.phase, "arriving", "The guard skipped the beam") // OUTPOST_GUARD_ARRIVING
 	TEST_ASSERT(!guard.say_guard("arrival"), "A guard still beaming in spoke")
 	TEST_ASSERT(!guard.on_duty(), "A guard still beaming in was on duty")
-	TEST_ASSERT(doctor.beaming, "The researcher skipped the beam")
-	TEST_ASSERT_NULL(doctor.say_line("researcher_offer"), "A researcher still beaming in spoke")
 
 	// Most of the way through the knit: still arriving, still held.
 	sleep(2 SECONDS)
@@ -1460,11 +1420,9 @@
 	check_held(prisoner, "while knitting together")
 	TEST_ASSERT_EQUAL(guard.phase, "arriving", "The guard was on duty before they finished knitting together")
 	TEST_ASSERT(!guard.say_guard("arrival"), "A guard spoke while knitting together")
-	TEST_ASSERT(doctor.beaming, "The researcher finished beaming in before the knit was over")
-	TEST_ASSERT_NULL(doctor.say_line("researcher_offer"), "A researcher spoke while knitting together")
 
 	// All the way in as the beam ends: solid, free and able to talk.
-	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(all_in), prisoner, guard, doctor), 3 SECONDS), "The arrivals never finished beaming in")
+	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(all_in), prisoner, guard), 3 SECONDS), "The arrivals never finished beaming in")
 	TEST_ASSERT_EQUAL(prisoner.alpha, 255, "The prisoner is not solid once in")
 	TEST_ASSERT_NULL(prisoner.get_filter("transporter_dissolve"), "The prisoner still wears the knit once in")
 	TEST_ASSERT(!HAS_TRAIT(prisoner, TRAIT_IMMOBILIZED), "The prisoner is still held once in")
@@ -1473,7 +1431,6 @@
 	TEST_ASSERT_EQUAL(prisoner.bubble, "hungry", "The hungry arrival has no thought bubble once in")
 	TEST_ASSERT(guard.on_duty(), "The guard is not on duty once in")
 	TEST_ASSERT_EQUAL(guard.alpha, 255, "The guard is not solid once in")
-	TEST_ASSERT(!HAS_TRAIT(doctor, TRAIT_IMMOBILIZED), "The researcher is still held once in")
 
 	// Beaming out: held, silent and without a bubble from the start.
 	prisoner.beam_out()
@@ -1482,6 +1439,4 @@
 	TEST_ASSERT(!other.start_conversation(prisoner), "A prisoner opened a conversation with one beaming out")
 	guard.beam_out()
 	TEST_ASSERT(!guard.say_guard("recalled"), "A guard beaming out spoke")
-	doctor.beam_out()
-	TEST_ASSERT_NULL(doctor.say_line("researcher_leave"), "A researcher beaming out spoke")
 	settle_prison_air(home)

@@ -1,7 +1,7 @@
 /**
  * Wildcard incidents and wing events: the chance and the clock that rolls it, what holds the clock,
  * who a stabbing picks, each kind from the admin panel, a stabbing stopped in its tell, a lone snap
- * in a happy wing, blown lights, an overflowing scrubber (or a backed-up Kessler vent) and an
+ * in a happy wing, blown lights, an overflowing scrubber and an
  * overflowing toilet.
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with the
@@ -60,7 +60,7 @@
 	TEST_ASSERT(abs(outpost_prison_wildcard_chance(50) - 20) < 0.01, "Tension 50 has a chance of [outpost_prison_wildcard_chance(50)], not 20") // PRISON_INCIDENT_CHANCE_TENSE
 	TEST_ASSERT(outpost_prison_wildcard_chance(100) <= 30, "Tension 100 has a chance over the cap") // PRISON_INCIDENT_CHANCE_MAX
 
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("wildclockowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("wildclockowner")
 	TEST_ASSERT_NOTNULL(home, "The incident clock test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.wildcards_enabled = TRUE
@@ -72,35 +72,24 @@
 
 	// A new wing starts with the gap (PRISON_INCIDENT_GAP), and the gap only counts down with the crew home.
 	TEST_ASSERT_EQUAL(prison.wildcard_gap_left, 600, "A new wing starts [prison.wildcard_gap_left] s from its first incident")
-	prison.crew_home_override = FALSE
+	prison.audience_override = FALSE
 	prison.wildcard_tick(600)
 	TEST_ASSERT_EQUAL(prison.wildcard_gap_left, 600, "The gap ran down with nobody home")
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.wildcard_tick(300)
 	TEST_ASSERT_EQUAL(prison.wildcard_gap_left, 300, "Five minutes home left the gap at [prison.wildcard_gap_left]")
 	TEST_ASSERT(!wildcard_started(prison), "An incident started inside the gap")
 	prison.wildcard_gap_left = 0
 
-	// Nobody home, a riot, the quiet after a riot, one prisoner, trouble off: no rolls. An experiment
-	// holds nothing (owner, 2026-09-25): a roll that comes up during one starts an incident.
-	prison.crew_home_override = FALSE
+	// Nobody home, a riot, the quiet after a riot, one prisoner, trouble off: no rolls.
+	prison.audience_override = FALSE
 	prison.wildcard_tick(300)
 	TEST_ASSERT(!wildcard_started(prison), "An incident started with nobody home")
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.riot_active = TRUE
 	prison.wildcard_tick(300)
 	prison.riot_active = FALSE
 	TEST_ASSERT(!wildcard_started(prison), "An incident started during a riot")
-	var/datum/outpost_experiment/trial = allocate(/datum/outpost_experiment, prison, "hulk", null)
-	prison.experiment = trial
-	TEST_ASSERT(prison.experiment_active(), "The test experiment is not under way")
-	TEST_ASSERT_NULL(prison.wildcard_clock_paused(), "The incident clock waits for an experiment ([prison.wildcard_clock_paused()])")
-	prison.wildcard_tick(60) // PRISON_INCIDENT_ROLL_TIME
-	prison.experiment = null
-	TEST_ASSERT(wildcard_started(prison), "No incident started during an experiment")
-	wildcard_reset(prison)
-	set_moods(list(first, second), 90)
-	prison.wildcard_gap_left = 0
 	prison.set_subdued(360)
 	prison.wildcard_tick(300)
 	prison.set_subdued(0)
@@ -162,21 +151,20 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_wildcard_admin/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("wildadminowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("wildadminowner")
 	TEST_ASSERT_NOTNULL(home, "The incident admin test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
 	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
 	set_moods(list(first, second), 90)
 	prison.refresh_reach()
 	var/mob/living/carbon/human/operator = make_player(prison_spot(home, 8, 4), "wildadmin")
 	var/datum/outpost_manipulator/unit_test/prison/panel = allocate(__IMPLIED_TYPE__, operator)
-	panel.selected = home
 
 	// The Prison section carries the incident block.
-	var/list/data = panel.ui_data(operator)
-	var/list/block = data["selected"]["prison"]["incidents"]
+	var/list/section = panel.prison_admin_data(prison)
+	var/list/block = section?["incidents"]
 	TEST_ASSERT(islist(block), "The prison section sends no incident block")
 	for(var/key in list("chance", "gap_left", "paused", "running", "actor", "target", "tell_left", "wing_event_in", "wing_event_paused", "wing_event_pending"))
 		TEST_ASSERT(key in block, "The incident block sends no [key]")
@@ -184,7 +172,7 @@
 	// A stabbing, straight to the attack: the stashed shiv comes out and it is a fight past its argument.
 	first.cell.stash_shiv = TRUE
 	second.cell.stash_shiv = TRUE
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "stab"))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "stab"))
 	TEST_ASSERT_NULL(panel.error, "The stab button was refused: [panel.error]")
 	var/datum/outpost_prison_wildcard/stab = prison.wildcard
 	TEST_ASSERT_NOTNULL(stab, "The stab button started no stabbing")
@@ -214,16 +202,16 @@
 	second.cell.stash_shiv = FALSE
 
 	// A snap: a riot at once.
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "snap"))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "snap"))
 	TEST_ASSERT_NULL(panel.error, "The snap button was refused: [panel.error]")
 	TEST_ASSERT(prison.riot_active, "The snap button started no riot")
 	// Nothing else while a riot is on.
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "fight"))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "fight"))
 	TEST_ASSERT_NOTNULL(panel.error, "A fight started from the panel during a riot")
 	wildcard_reset(prison)
 
 	// A fight: its argument first, whatever their moods.
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "fight"))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "fight"))
 	TEST_ASSERT_NULL(panel.error, "The fight button was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(length(prison.fights), 1, "The fight button started [length(prison.fights)] fights")
 	var/datum/outpost_prison_fight/brawl = prison.fights[1]
@@ -234,12 +222,12 @@
 	// blade: the shivs are back under the mattresses.
 	first.cell.stash_shiv = TRUE
 	second.cell.stash_shiv = TRUE
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "stab", "tell" = 1))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "stab", "tell" = 1))
 	TEST_ASSERT_NULL(panel.error, "The stab button with a tell was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(prison.wildcard?.stage, "tell", "The stab button with a tell went straight to the attack")
 	var/mob/living/carbon/human/npc/outpost_prisoner/brooder = prison.wildcard.actor()
 	TEST_ASSERT(!brooder.has_shiv(), "A shiv came out before the tell was over")
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "snap"))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "snap"))
 	TEST_ASSERT_NOTNULL(panel.error, "A second incident started while one was in its tell")
 	// The tell runs out: the stabbing.
 	prison.wildcard_tick(20) // PRISON_INCIDENT_TELL_MAX
@@ -249,16 +237,16 @@
 	first.cell.stash_shiv = FALSE
 	second.cell.stash_shiv = FALSE
 
-	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "arson"))
+	panel.manage_prison(prison, operator, "prison_incident", list("kind" = "arson"))
 	TEST_ASSERT_NOTNULL(panel.error, "An unknown incident kind was accepted")
-	panel.manage_outpost(home, operator, "prison_wing_event", list("kind" = "flood"))
+	panel.manage_prison(prison, operator, "prison_wing_event", list("kind" = "flood"))
 	TEST_ASSERT_NOTNULL(panel.error, "An unknown wing event was accepted")
-	panel.manage_outpost(home, operator, "prison_wing_event", list("kind" = "lights"))
+	panel.manage_prison(prison, operator, "prison_wing_event", list("kind" = "lights"))
 	TEST_ASSERT_NULL(panel.error, "The lights button was refused: [panel.error]")
 	// The vent backup is now the scrubber overflow
-	panel.manage_outpost(home, operator, "prison_wing_event", list("kind" = "vent"))
+	panel.manage_prison(prison, operator, "prison_wing_event", list("kind" = "vent"))
 	TEST_ASSERT_NOTNULL(panel.error, "The old vent wing event was accepted")
-	panel.manage_outpost(home, operator, "prison_wing_event", list("kind" = "scrubber"))
+	panel.manage_prison(prison, operator, "prison_wing_event", list("kind" = "scrubber"))
 	TEST_ASSERT_NULL(panel.error, "The scrubber button was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(prison.wing_event_pending, "scrubber", "The scrubber button started no overflow")
 	prison.wing_events_destroy()
@@ -270,10 +258,10 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_wildcard_stopped/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("wildstopowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("wildstopowner")
 	TEST_ASSERT_NOTNULL(home, "The stopped stabbing test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	var/mob/living/carbon/human/npc/outpost_prisoner/attacker = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/npc/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	set_moods(list(attacker, victim), 60)
@@ -318,10 +306,10 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_wildcard_snap/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("wildsnapowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("wildsnapowner")
 	TEST_ASSERT_NOTNULL(home, "The snap test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	var/mob/living/carbon/human/npc/outpost_prisoner/snapper = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
 	var/mob/living/carbon/human/npc/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
 	var/mob/living/carbon/human/npc/outpost_prisoner/pal = trouble_prisoner(prison, prison_spot(home, 12, 8), "chatty")
@@ -354,7 +342,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_wing_lights/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("winglightsowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("winglightsowner")
 	TEST_ASSERT_NOTNULL(home, "The blown lights test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_prisoner(prison, prison_spot(home, 8, 8))
@@ -375,18 +363,18 @@
 		fixture.fix()
 	prison.wing_events_enabled = TRUE
 	prison.wing_event_force_kind = "lights"
-	prison.crew_home_override = FALSE
+	prison.audience_override = FALSE
 	prison.wing_event_left = 1
 	var/before = working_lights(prison)
 	prison.wing_events_tick(600)
 	TEST_ASSERT_EQUAL(working_lights(prison), before, "Lights blew with nobody home")
-	prison.crew_home_override = TRUE
+	prison.audience_override = TRUE
 	prison.wing_events_tick(1)
 	TEST_ASSERT(working_lights(prison) < before, "The wing event clock ran out and no lights blew")
 	TEST_ASSERT(prison.wing_event_left >= 1200 && prison.wing_event_left <= 2400, "The next wing event is [prison.wing_event_left] s off") // PRISON_WING_EVENT_GAP_MIN, PRISON_WING_EVENT_GAP_MAX
 	settle_prison_air(home)
 
-// ===== AN OVERFLOWING SCRUBBER, A BACKED-UP KESSLER VENT AND AN OVERFLOWING TOILET =====
+// ===== AN OVERFLOWING SCRUBBER AND AN OVERFLOWING TOILET =====
 
 /datum/unit_test/voidcrew_outpost_prison_wing_backups
 	parent_type = /datum/unit_test/voidcrew_outpost_management
@@ -394,7 +382,7 @@
 	var/foam_strayed = FALSE
 
 /datum/unit_test/voidcrew_outpost_prison_wing_backups/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("wingventowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("wingventowner")
 	TEST_ASSERT_NOTNULL(home, "The scrubber overflow test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	clear_wing_mess(prison)
@@ -480,28 +468,11 @@
 	TEST_ASSERT_EQUAL(prison.finish_backup(), 0, "A scrubber welded while it gurgled still overflowed")
 	TEST_ASSERT(!foam_left(prison), "A welded scrubber brought up foam")
 
-	// With every scrubber welded shut a sealed Kessler vent backs up instead: 6 to 12 pieces of
-	// filth (PRISON_VENT_MESS_MIN, _MAX) within 3 steps (PRISON_VENT_MESS_RANGE).
+	// With every scrubber welded shut nothing in the cell block can overflow.
 	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber as anything in sources)
 		scrubber.welded = TRUE
-	var/list/fallback = prison.overflow_sources()
-	TEST_ASSERT(length(fallback), "With the scrubbers welded, nothing in the cell block can back up")
-	for(var/obj/source as anything in fallback)
-		TEST_ASSERT(istype(source, /obj/structure/outpost_kessler_vent), "[source] backs up with every scrubber welded")
-	TEST_ASSERT_EQUAL(prison.start_wing_event("scrubber"), "scrubber", "No Kessler vent started to back up")
-	var/obj/vent = prison.wing_event_source_objects()[1]
-	TEST_ASSERT(istype(vent, /obj/structure/outpost_kessler_vent), "The fallback was not a Kessler vent")
-	TEST_ASSERT(prison.in_cell_block(vent), "A vent outside the cell block backed up")
-	var/list/tiles = prison.backup_tiles(get_turf(vent), 3) // PRISON_VENT_MESS_RANGE
-	TEST_ASSERT(length(tiles), "The vent has no floor around it")
-	TEST_ASSERT_EQUAL(count_filth(tiles), 0, "Filth came out while the vent was still gurgling")
-	prison.wing_events_tick(6)
-	TEST_ASSERT_NULL(prison.wing_event_pending, "The vent is still gurgling after 6 seconds")
-	filth = count_filth(tiles)
-	TEST_ASSERT(filth >= min(6, length(tiles)) && filth <= 12, "The vent spewed [filth] pieces of filth over [length(tiles)] tiles")
-	for(var/turf/tile as anything in tiles)
-		TEST_ASSERT(get_dist(tile, vent) <= 3 && prison.in_cell_block(tile), "Filth landed off the cell block or too far from the vent")
-	TEST_ASSERT(wildcard_logged(prison, "vent"), "The backup was not logged")
+	TEST_ASSERT_EQUAL(length(prison.overflow_sources()), 0, "With every scrubber welded, something in the cell block can still overflow")
+	TEST_ASSERT_NULL(prison.start_wing_event("scrubber"), "A scrubber overflow started with every scrubber welded")
 
 	// A toilet floods its own cell: wet floor and a little dirt.
 	var/list/toilets = prison.cell_toilets()
@@ -516,7 +487,7 @@
 		if(floor.GetComponent(/datum/component/wet_floor))
 			wet++
 	TEST_ASSERT(wet > 0, "The overflowing toilet left its cell dry")
-	for(var/turf/open/floor in prison.backup_tiles(get_turf(vent), 3))
+	for(var/turf/open/floor in prison.backup_tiles(get_turf(toilet), 3))
 		if(!cell.turf_set[floor])
 			TEST_ASSERT_NULL(floor.GetComponent(/datum/component/wet_floor), "The toilet flooded floor outside its cell")
 	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber as anything in sources)

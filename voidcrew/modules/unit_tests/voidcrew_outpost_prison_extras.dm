@@ -54,23 +54,10 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_extras_seams/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("extrasowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("extrasowner")
 	TEST_ASSERT_NOTNULL(home, "The extras test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
-
-	// The warden console's extras block, whatever the packages put in it (build plan section 8)
-	var/list/extras = prison.ui_payload(null)["extras"]
-	TEST_ASSERT(islist(extras), "The warden console sends no extras block")
-	var/list/guards = extras["guards"]
-	TEST_ASSERT(islist(guards), "The extras block has no guards")
-	for(var/key in list("max", "hire_cost", "wage", "can_manage", "can_hire", "list"))
-		TEST_ASSERT(key in guards, "The guards block has no [key]")
-	TEST_ASSERT(!("unpaid" in guards), "The guards block still counts missed wages")
-	// The console's stun turret is gone (built turrets follow the prison's rules), and its security block with it.
-	TEST_ASSERT(!("security" in extras), "The extras block still sends the removed security block")
-	// Letters lie on the office floor and the log calls the mail; the console counts none.
-	TEST_ASSERT(!("mail" in extras), "The extras block still sends a mail count")
 
 	// The admin panel's extras block, and an action no package knows
 	var/list/admin_extras = prison.admin_payload()["extras"]
@@ -78,7 +65,6 @@
 	for(var/key in list("guards", "social", "life", "contraband", "mail", "leads"))
 		TEST_ASSERT(islist(admin_extras[key]), "The admin extras block has no [key] list")
 	TEST_ASSERT_NULL(prison.extras_admin_act("prison_no_such_thing", list(), null), "An unknown admin action was taken by a package")
-	TEST_ASSERT(!prison.extras_act("no_such_thing", list(), null), "An unknown console action was taken by a package")
 
 	// The fan-outs return their shapes
 	TEST_ASSERT(islist(prison.examine_extra_lines(prisoner, null)), "examine_extra_lines() did not return a list")

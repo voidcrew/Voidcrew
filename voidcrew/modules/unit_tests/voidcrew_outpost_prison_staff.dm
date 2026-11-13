@@ -13,7 +13,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_staff/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("staffowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("staffowner")
 	TEST_ASSERT_NOTNULL(home, "The staff test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 4, 10))
@@ -44,7 +44,6 @@
 	// Cleanbots and the staff doors.
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in prison_spot(home, 9, 6)
 	TEST_ASSERT_NOTNULL(staff_door, "The staff door is not where the map puts it")
-	TEST_ASSERT(!prison.visitors_allowed, "Visitors are let in by default")
 	var/mob/living/basic/bot/cleanbot/cleanbot = allocate(/mob/living/basic/bot/cleanbot, prison_spot(home, 9, 5))
 	TEST_ASSERT(staff_door.allowed(cleanbot), "A cleanbot may not use the staff door")
 	TEST_ASSERT(!staff_door.allowed(prisoner), "A prisoner may use the staff door")

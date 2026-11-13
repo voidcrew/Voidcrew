@@ -472,7 +472,7 @@
 
 // ===== A LIVE CATCH =====
 
-/// A live catch reaches the pool with its captor, its hurt and the capturing crew's own running prison (decision 12)
+/// A live catch reaches the pool with its captor and its hurt, open to every wing: no crew has a prison of its own
 /datum/unit_test/voidcrew_bounty_board_live_catch
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -485,11 +485,10 @@
 	return ..()
 
 /datum/unit_test/voidcrew_bounty_board_live_catch/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("bountyowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("bountyowner")
 	TEST_ASSERT_NOTNULL(home, "The bounty test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 3, 3), "bountyowner")
-	home.founder_mind = WEAKREF(owner.mind)
 
 	var/obj/structure/overmap/ship/board_test_listener/ship = board_test_listener()
 	TEST_ASSERT_NULL(bounty_captor_prison(ship), "A ship with no prison of its own has a preferred prison")
@@ -498,7 +497,7 @@
 	crew.members |= owner.mind
 	LAZYADD(owner.mind.ship_teams, crew)
 	ship.ship_team = crew
-	TEST_ASSERT_EQUAL(bounty_captor_prison(ship), prison, "The crew's own running prison is not preferred")
+	TEST_ASSERT_NULL(bounty_captor_prison(ship), "A crew has a preferred prison of its own")
 
 	var/turf/pad_turf = run_loc_floor_bottom_left
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
@@ -509,11 +508,12 @@
 	var/hurt = clamp(1 - criminal.health / criminal.maxHealth, 0, 1)
 	TEST_ASSERT(islist(posting.board_claim(ship, pad, criminal, "restrained")), "The live catch was refused")
 	TEST_ASSERT(record in GLOB.bounty_prisoner_pool, "The live catch didn't reach the prisoner pool")
-	TEST_ASSERT_EQUAL(record.preferred_prison?.resolve(), prison, "The record isn't reserved for the crew's own prison")
+	TEST_ASSERT_NULL(record.preferred_prison?.resolve(), "The record prefers a prison")
+	TEST_ASSERT_NULL(bounty_record_reserved_for(record), "The record is reserved for a wing")
 	TEST_ASSERT_EQUAL(record.captor_ship?.resolve(), ship, "The record doesn't hold its captor ship")
 	TEST_ASSERT_EQUAL(record.captor_name, ship.name, "The record doesn't name its captor")
 	TEST_ASSERT_EQUAL(record.hurt_fraction, hurt, "The record doesn't carry how hurt they were")
-	TEST_ASSERT(ship.board_test_heard("headed for your prison at"), "The notice doesn't send the catch to the crew's own prison")
+	TEST_ASSERT(!ship.board_test_heard("headed for your prison at"), "The notice sends the catch to a prison of the crew's own")
 	bounty_pool_remove(record)
 
 	// A prison whose warden takes no bounty transfers is never promised (BUG-3)

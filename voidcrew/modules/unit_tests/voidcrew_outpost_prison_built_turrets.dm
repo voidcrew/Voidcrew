@@ -2,7 +2,8 @@
  * Turrets players build, in and around a prison wing (outpost_prison_security.dm): whom the stock
  * scan leaves them among the prison's mobs, the stun shot at prisoners whatever the mode and gun,
  * shots passing through anyone the prison spares, the warning and what a warned prisoner does
- * about it, rioters going for turrets, and a turret's controls on an outpost.
+ * about it, rioters going for turrets, and a turret's controls in a wing (staff only: the fixture's
+ * own-key player stands in for staff).
  *
  * Voidcrew defines are not visible from test files, so values appear as literals with the define
  * named beside them: the verdicts are 0 (OUTPOST_PRISON_TURRET_NOT_MINE), 1 (_SPARE) and 2
@@ -53,7 +54,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_built_turret_targets/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("btturrettargets")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("btturrettargets")
 	TEST_ASSERT_NOTNULL(home, "The built turret targets test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.riot_windup_left = 0
@@ -66,9 +67,6 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/downed = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
 	TEST_ASSERT_NOTNULL(guard, "The guard did not arrive")
-	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
-	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 11, 7), null)
-	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 7, 7), "hulk")
 	var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, prison_spot(home, 8, 7))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	TEST_ASSERT(outpost_prison_test_cuff(cuffed, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
@@ -76,27 +74,19 @@
 	prison.refresh_reach()
 	TEST_ASSERT(rioter.reachable?[get_turf(probe)], "A rioter in the yard cannot reach the turret standing in it")
 
-	// One look round: the rioter and the creature, and none of the rest
+	// One look round: the rioter, and none of the rest
 	var/list/offered = probe_targets(probe)
 	TEST_ASSERT(rioter in offered, "A built turret left a rioter it can see alone")
-	TEST_ASSERT(hulk in offered, "A built turret left an experiment creature alone")
 	TEST_ASSERT(!(calm in offered), "A built turret went for a calm prisoner")
 	TEST_ASSERT(!(cuffed in offered), "A built turret went for a cuffed prisoner")
 	TEST_ASSERT(!(downed in offered), "A built turret went for a downed prisoner")
 	TEST_ASSERT(!(guard in offered), "A built turret went for a guard")
-	TEST_ASSERT(!(doctor in offered), "A built turret went for the Kessler researcher")
-	TEST_ASSERT(!(agent in offered), "A built turret went for a Kessler agent")
 
 	// The verdicts behind it; anything that is not the prison's is left to the turret's own settings
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(rioter, probe), 2, "The rule does not shoot a rioter")
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(calm, probe), 1, "The rule does not spare a calm prisoner")
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(guard, probe), 1, "The rule does not spare a guard")
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(agent, probe), 1, "The rule does not spare a Kessler agent")
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(hulk, probe), 2, "The rule does not shoot the hulk")
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(mouse, probe), 0, "The rule claimed a mouse that is not the prison's")
-	hulk.Sleeping(10 SECONDS)
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(hulk, probe), 1, "The rule shoots a hulk that is down")
-	hulk.SetSleeping(0)
 
 	// A turret they cannot walk up to, such as one behind the office glass, covers them too
 	rioter.reachable = list()
@@ -166,7 +156,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_built_turret_shots/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("btturretshots")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("btturretshots")
 	TEST_ASSERT_NOTNULL(home, "The built turret shots test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.riot_windup_left = 0
@@ -188,7 +178,8 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
 	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
-	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 7, 7), "hulk")
+	// Not the prison's: a carp
+	var/mob/living/basic/carp/outsider = allocate(/mob/living/basic/carp, prison_spot(home, 7, 7))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.refresh_reach()
 
@@ -208,8 +199,8 @@
 
 	// Anything that is not a prisoner gets the turret's own mode
 	turret.last_fired = 0
-	var/obj/projectile/at_hulk = turret.shootAt(hulk)
-	TEST_ASSERT(istype(at_hulk, /obj/projectile/beam/laser), "A lethal laser turret fired [at_hulk?.type || "nothing"] at the hulk, not its laser")
+	var/obj/projectile/at_outsider = turret.shootAt(outsider)
+	TEST_ASSERT(istype(at_outsider, /obj/projectile/beam/laser), "A lethal laser turret fired [at_outsider?.type || "nothing"] at a carp, not its laser")
 
 	// Its shots land on whoever they meet, as anyone's do (PR-12): the rule is only the turret's choice of target.
 	var/obj/projectile/beam/disabler/stun_shot = allocate(/obj/projectile/beam/disabler, prison_spot(home, 9, 9))
@@ -220,7 +211,7 @@
 	var/obj/projectile/beam/laser/lethal_shot = allocate(/obj/projectile/beam/laser, prison_spot(home, 9, 9))
 	lethal_shot.firer = turret
 	TEST_ASSERT(lethal_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's lethal shot passed through a rioter")
-	TEST_ASSERT(lethal_shot.can_hit_target(hulk, TRUE, TRUE), "A turret's lethal shot could not land on the hulk")
+	TEST_ASSERT(lethal_shot.can_hit_target(outsider, TRUE, TRUE), "A turret's lethal shot could not land on a carp")
 
 	// Never a shot at a prisoner the rule spares, however the turret is aimed
 	warning_over(turret, calm)
@@ -255,7 +246,7 @@
 	TEST_ASSERT(nervous["give_up"] > chatty["give_up"], "Nervous rioters do not give up more")
 	TEST_ASSERT(grumpy["defy"] > chatty["defy"], "Grumpy rioters do not defy more")
 
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("btturretwarning")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("btturretwarning")
 	TEST_ASSERT_NOTNULL(home, "The built turret warning test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.riot_windup_left = 0
@@ -361,7 +352,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_built_turret_smash/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("btturretsmash")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("btturretsmash")
 	TEST_ASSERT_NOTNULL(home, "The turret smashing test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.riot_windup_left = 0
@@ -394,7 +385,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_built_turret_controls/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("btcontrolowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("btcontrolowner")
 	TEST_ASSERT_NOTNULL(home, "The turret controls test outpost did not load")
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 3, 5), "btcontrolowner")
 	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 2, 5), "btcontrolstranger")
@@ -403,9 +394,9 @@
 	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret, prison_spot(home, 4, 4))
 	turret.locked = FALSE
 	turret.turret_flags = NONE
-	TEST_ASSERT_EQUAL(get_outpost_from_atom(turret), home, "The test turret is not on the outpost")
+	TEST_ASSERT_EQUAL(get_outpost_prison(turret), test_prison(home), "The test turret is not in the wing")
 	TEST_ASSERT(turret.on && turret.anchored, "The test turret did not start switched on and bolted")
-	TEST_ASSERT(turret.outpost_controls_allowed(owner), "The owner may not work their outpost's turret")
+	TEST_ASSERT(turret.outpost_controls_allowed(owner), "Staff may not work the wing's turret")
 	TEST_ASSERT(!turret.outpost_controls_allowed(stranger), "A stranger may work an outpost's turret")
 
 	// The panel: a stranger's buttons do nothing, the owner's work
@@ -451,8 +442,4 @@
 	TEST_ASSERT(panel.lethal != was_lethal, "The owner could not switch their turrets' mode")
 	panel.toggle_lethal(owner)
 
-	// A claim nobody holds is nobody's lock
-	home.founder_ckey = null
-	TEST_ASSERT(turret.outpost_controls_allowed(stranger), "A turret on a vacant claim is still locked")
-	home.founder_ckey = "btcontrolowner"
 	settle_prison_air(home)

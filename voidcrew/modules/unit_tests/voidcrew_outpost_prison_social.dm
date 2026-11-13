@@ -59,7 +59,7 @@
 
 /datum/unit_test/voidcrew_outpost_prison_social_files/Run()
 	// The file is read the way outpost_prisoner_extra_dialogue() reads it (the strings directory is a define)
-	load_strings_file("outpost_prison_social.json", "voidcrew/modules/player_outposts/strings")
+	load_strings_file("outpost_prison_social.json", "voidcrew/modules/trade_prison/strings")
 	var/list/contents = GLOB.string_cache["outpost_prison_social.json"]
 	TEST_ASSERT(islist(contents), "outpost_prison_social.json did not load")
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_social.json has no lines block")
@@ -94,15 +94,15 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_sources/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("repowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("repowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "repowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 9, 9), "repvisitor")
-	TEST_ASSERT(prison.is_member(owner), "The claim's owner is not a member of the wing")
-	TEST_ASSERT(!prison.is_member(visitor), "A visitor is a member of the wing")
+	TEST_ASSERT(prison.is_staff(owner) && prison.is_inmate(owner), "The fixture's stand-in player is not both staff and an inmate")
+	TEST_ASSERT(!prison.is_staff(visitor) && !prison.is_inmate(visitor), "A visitor is staff or an inmate of the wing")
 
 	// Nobody on record yet: a stranger.
 	TEST_ASSERT_NULL(prison.rep_record_for(owner), "The owner had a record before doing anything")
@@ -199,7 +199,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_labels/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("labelowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("labelowner")
 	TEST_ASSERT_NOTNULL(home, "The label test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
@@ -274,7 +274,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_blows/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("blowowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("blowowner")
 	TEST_ASSERT_NOTNULL(home, "The blows test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/plain = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -320,7 +320,6 @@
 	plain.recover()
 
 	// A death put down to staff: straight to -10 (PRISON_REP_MIN).
-	trouble_fund(home, 5000)
 	record.score = 4
 	prison.blame_death(plain)
 	TEST_ASSERT(rep_score_is(record, -10), "A death put down to staff left the score at [record.score], not -10")
@@ -332,7 +331,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_effects/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("effectowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("effectowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation effects test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -383,7 +382,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_greetings/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("greetowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("greetowner")
 	TEST_ASSERT_NOTNULL(home, "The greetings test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_greet_chance = 100
@@ -484,7 +483,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_talk_menu/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("menuowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("menuowner")
 	TEST_ASSERT_NOTNULL(home, "The talk menu test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
@@ -696,7 +695,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_talk_calm/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("calmowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("calmowner")
 	TEST_ASSERT_NOTNULL(home, "The calm down test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
@@ -757,7 +756,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_talk_cuffed/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("cuffmenuowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("cuffmenuowner")
 	TEST_ASSERT_NOTNULL(home, "The cuffed talk menu test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
@@ -830,7 +829,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_get_up/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("getupowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("getupowner")
 	TEST_ASSERT_NOTNULL(home, "The get up test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
@@ -940,11 +939,11 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_order_lockin/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("lockinowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("lockinowner")
 	TEST_ASSERT_NOTNULL(home, "The lock-in test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
-	prison.crew_home_override = FALSE
+	prison.audience_override = FALSE
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "lockinowner")
@@ -966,10 +965,10 @@
 	TEST_ASSERT(prisoner.talk_menu_order(owner), "A bolted-in prisoner at 70 would not go to their chair")
 	TEST_ASSERT(istype(prisoner.activity, /datum/prisoner_activity/sent_to_cell), "The order did not send them to their chair")
 	TEST_ASSERT_EQUAL(prisoner.locked_in_seconds, 60, "The order reset the lock-in clock to [prisoner.locked_in_seconds]")
-	// And a lock-in still stops pay after 120 seconds (OUTPOST_PRISON_CONFINED_PAY_AFTER).
+	// And a lock-in still counts as badly kept after 120 seconds (OUTPOST_PRISON_CONFINED_SOUR_AFTER).
 	prison.tick(61)
 	TEST_ASSERT_EQUAL(prisoner.locked_in_seconds, 121, "Two minutes bolted in counted [prisoner.locked_in_seconds] s")
-	TEST_ASSERT_EQUAL(prison.pay_factor(prisoner), 0, "A prisoner bolted in 121 seconds still paid [prison.pay_factor(prisoner)]")
+	TEST_ASSERT_EQUAL(prison.kept_well(prisoner), 0, "A prisoner bolted in 121 seconds still counted as kept well ([prison.kept_well(prisoner)])")
 	door.unbolt()
 	settle_prison_air(home)
 
@@ -979,7 +978,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_admin/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("repadminowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("repadminowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation admin test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "repadminowner")
@@ -1019,7 +1018,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_social_holds/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("holdowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("holdowner")
 	TEST_ASSERT_NOTNULL(home, "The hold test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
@@ -1148,7 +1147,7 @@
 	return used
 
 /datum/unit_test/voidcrew_outpost_prison_social_menu_icons/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("iconowner")
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("iconowner")
 	TEST_ASSERT_NOTNULL(home, "The menu icon test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
