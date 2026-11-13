@@ -156,6 +156,8 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/shown_dir = 0
 	/// The facing of the guard when it was last aimed (the lamp's place on the body follows that)
 	var/shown_body_dir = 0
+	/// Its length now, in the icon's steps (STEALTH_BEAM_LENGTHS when nothing stops it), or 0
+	var/shown_reach = 0
 	/// The guard it waits to be shown on once the lamp's light is applied, or null
 	var/mob/living/pending_guard
 	/// What it will show then: the way it points, its length and the guard's facing
@@ -175,6 +177,7 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 		holder = null
 	shown_dir = 0
 	shown_body_dir = 0
+	shown_reach = 0
 
 /// Shows it as stealth_show() once the lamp's light has been applied (stealth_flush()). Until then it stays as it was.
 /obj/effect/abstract/stealth_beam/proc/stealth_queue(mob/living/guard, beam_dir, reach)
@@ -204,6 +207,7 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	// Pointing away from the camera, the guard's body hides the lamp: no glow, and the cone comes out past its back.
 	var/away = body_dir & NORTH
 	var/state = "[away ? "back" : "beam"]_[reach]"
+	shown_reach = reach
 	if(icon_state != state)
 		icon_state = state
 	if(shown_dir == beam_dir && shown_body_dir == body_dir)
@@ -218,6 +222,17 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	aim.Turn(dir2angle(beam_dir))
 	aim.Translate(0, drop - STEALTH_BEAM_PIVOT)
 	transform = aim
+
+/**
+ * Cuts what it shows now down to `reach` steps; never makes it longer. While a new aim waits on the lamp
+ * (stealth_queue()) the old cone stays on the guard, who may have walked on or round a corner since: this keeps
+ * that old cone from running past a wall from where the guard is now.
+ */
+/obj/effect/abstract/stealth_beam/proc/stealth_trim(reach)
+	if(isnull(holder) || reach >= shown_reach)
+		return
+	shown_reach = reach
+	icon_state = "[(shown_body_dir & NORTH) ? "back" : "beam"]_[reach]"
 
 /// How long a guard's visible cone is from `spot` pointing `beam_dir`, in eighths of a tile: up to a little onto the
 /// first wall or solid door (what stops tg's light), or STEALTH_BEAM_LENGTHS for nothing in its reach.
@@ -303,6 +318,10 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	var/cone_timer
 	/// world.time its cone started waiting on the lamp
 	var/cone_wait_since = 0
+	/// The tile it stepped off while its body still glides from it (the cone is drawn on the body), or null
+	var/turf/torch_from
+	/// world.time that glide ends
+	var/torch_from_until = 0
 
 /// Its flashlight, if it still has it on its body; else null.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_light()
@@ -382,7 +401,7 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 		beam = new(null)
 	var/beam_dir = stealth_beam_dir()
 	// The cone glides with the guard, so it needs no half steps; it is cut where the light is stopped.
-	var/reach = stealth_beam_reach(spot, beam_dir)
+	var/reach = stealth_cone_reach(spot, beam_dir)
 	// The beam starts at its hand, ahead of its own tile, less whatever a step in progress still holds back.
 	var/start_x = torch_lag_x - STEALTH_TORCH_FORWARD * ((beam_dir & EAST) ? 1 : ((beam_dir & WEST) ? -1 : 0))
 	var/start_y = torch_lag_y - STEALTH_TORCH_FORWARD * ((beam_dir & NORTH) ? 1 : ((beam_dir & SOUTH) ? -1 : 0))
@@ -400,12 +419,34 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	// The cone never shows ahead of the light on the floor: while the lamp waits on SSlighting, so does the cone.
 	if(torch.light?.needs_update)
 		beam.stealth_queue(guard, beam_dir, reach)
+		// What still shows was aimed from where it stood then: cut it at the walls round where it stands now.
+		if(beam.shown_dir)
+			beam.stealth_trim(stealth_cone_reach(spot, beam.shown_dir))
 		if(!cone_timer)
 			cone_wait_since = world.time
 			cone_timer = addtimer(CALLBACK(src, PROC_REF(stealth_cone_check)), world.tick_lag, TIMER_STOPPABLE)
 	else
 		beam.stealth_show(guard, beam_dir, reach)
 		stealth_cone_stop()
+
+/**
+ * How long its cone may be pointing `beam_dir` from `spot`, in the icon's steps: to the first wall or solid door
+ * (stealth_beam_reach()). Mid-step the body is drawn between the tile it left and `spot`, so the cone also stops at
+ * whatever is ahead of the tile it left. Without this, a guard backing away from a wall would show its cone through it
+ * until the glide ended.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_cone_reach(turf/spot, beam_dir)
+	. = stealth_beam_reach(spot, beam_dir)
+	if(torch_from && world.time < torch_from_until)
+		. = min(., stealth_beam_reach(torch_from, beam_dir))
+
+/// Its body has finished gliding off the tile it stepped from: the cone may reach as far as the light again.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_cone_landed()
+	if(isnull(torch_from) || world.time < torch_from_until)
+		return
+	torch_from = null
+	if(light_lit)
+		stealth_place_torch()
 
 /// Its cone waits on the lamp: shown once SSlighting has applied the lamp's light (or after STEALTH_BEAM_WAIT_CAP),
 /// else looked at again next tick. Runs only while something waits.
@@ -446,6 +487,13 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 	torch_lag_y = 0
 	sweep_step = 0
 	torch_serial++
+	// The body glides off the old tile over its step; until it lands the cone also stops at walls ahead of that tile.
+	torch_from = null
+	if(isturf(old_loc) && isturf(guard.loc) && old_loc.z == guard.z && get_dist(old_loc, guard) == 1 && guard.glide_size > 0)
+		var/glide = min(CEILING(ICON_SIZE_ALL / guard.glide_size, 1) * world.tick_lag, 1 SECONDS)
+		torch_from = old_loc
+		torch_from_until = world.time + glide
+		addtimer(CALLBACK(src, PROC_REF(stealth_cone_landed)), glide)
 	if(walked)
 		torch_lag_x = 0.5 * (guard.x - old_loc.x)
 		torch_lag_y = 0.5 * (guard.y - old_loc.y)

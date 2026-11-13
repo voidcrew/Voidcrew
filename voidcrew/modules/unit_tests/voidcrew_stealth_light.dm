@@ -258,6 +258,66 @@
 	TEST_ASSERT(QDELETED(beam), "The cone outlived its guard")
 	qdel(block)
 
+/// Playtest 2 (owner: "light goes through walls"): while a new aim waits on the lamp, the old cone stays on the guard.
+/// Walking toward a wall or round a corner in that wait, the old cone must still stop at the wall from where it is now.
+/// Backing away from a wall, it stops there too while the body glides off the old tile.
+/datum/unit_test/voidcrew_stealth_light_cone_wall
+
+/datum/unit_test/voidcrew_stealth_light_cone_wall/Run()
+	var/open_reach = 22
+	var/datum/turf_reservation/block = stealth_block(12, 7)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 3)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	for(var/dx in 0 to 11)
+		for(var/dy in 0 to 6)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = TRUE
+	// A wall four tiles ahead.
+	var/turf/wall = stealth_at(block, 6, 3)
+	wall.ChangeTurf(/turf/closed/wall)
+	guard.setDir(EAST)
+	stealth_ai.stealth_update_light()
+	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark has no beam")
+	var/obj/effect/abstract/stealth_beam/beam = stealth_ai.beam
+	stealth_settle_light(stealth_ai.torch)
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_15", "The cone doesn't stop on a wall four tiles ahead")
+	// One step on toward it, the lamp not yet applied: the old aim waits, cut at the wall from the new tile.
+	guard.forceMove(stealth_at(block, 3, 3))
+	TEST_ASSERT(stealth_ai.torch.light?.needs_update, "A step didn't queue the lamp's light")
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_11", "The waiting cone runs through the wall it walked toward")
+	stealth_apply_light(stealth_ai.torch)
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_11", "The cone isn't cut at the wall once the light lands")
+	// Round a corner: a step north to a tile with a wall right beside it to the east, the cone still pointing east.
+	var/turf/side_wall = stealth_at(block, 4, 4)
+	side_wall.ChangeTurf(/turf/closed/wall)
+	guard.forceMove(stealth_at(block, 3, 4))
+	TEST_ASSERT(stealth_ai.torch.light?.needs_update, "A step didn't queue the lamp's light")
+	TEST_ASSERT_EQUAL(beam.shown_dir, EAST, "Test fixture: the cone turned before the light did")
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_3", "The waiting cone runs through the wall beside its new tile")
+	stealth_apply_light(stealth_ai.torch)
+	// Backing away from the wall: until the body lands, the cone stops at the wall ahead of the tile it left.
+	guard.forceMove(stealth_at(block, 3, 3))
+	stealth_apply_light(stealth_ai.torch)
+	stealth_ai.torch_from = null
+	stealth_ai.stealth_place_torch()
+	stealth_apply_light(stealth_ai.torch)
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_11", "Test fixture: the cone isn't cut at the wall")
+	guard.set_glide_size(2)
+	guard.forceMove(stealth_at(block, 2, 3))
+	stealth_apply_light(stealth_ai.torch)
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_11", "Mid-step backing away, the cone ran past the wall ahead of the tile it left")
+	stealth_ai.torch_from_until = world.time
+	stealth_ai.stealth_cone_landed()
+	stealth_apply_light(stealth_ai.torch)
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_15", "Landed, the cone didn't reach the wall again")
+	// Nothing ahead: full length.
+	wall.ChangeTurf(/turf/open/floor/iron)
+	stealth_ai.stealth_place_torch()
+	stealth_apply_light(stealth_ai.torch)
+	TEST_ASSERT_EQUAL(beam.icon_state, "beam_[open_reach]", "An open cone is cut short")
+	qdel(guard)
+	qdel(block)
+
 /datum/unit_test/voidcrew_stealth_light_beam
 
 /datum/unit_test/voidcrew_stealth_light_beam/Run()
