@@ -238,6 +238,7 @@
 		vis_contents += glow_holder
 	bolt_icon = bolt.icon
 	bolt.icon = null
+	bolt.update_appearance(UPDATE_OVERLAYS)
 	bolt.vis_contents += src
 
 /obj/effect/abstract/plasma_pinch_bolt/Destroy()
@@ -245,6 +246,7 @@
 		bolt.vis_contents -= src
 		if(!handed_over)
 			bolt.icon = bolt_icon
+			bolt.update_appearance(UPDATE_OVERLAYS)
 		if(bolt.pinch_copy == src)
 			bolt.pinch_copy = null
 		bolt = null
@@ -323,6 +325,7 @@
 		return
 	handed_over = TRUE
 	bolt.icon = bolt_icon
+	bolt.update_appearance(UPDATE_OVERLAYS)
 	animate(src, alpha = 0, time = 0)
 	var/light_left = fired_at + PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_LIGHT_RAMP - world.time
 	if(!glow_holder || light_left <= 0)

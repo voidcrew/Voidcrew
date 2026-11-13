@@ -45,7 +45,9 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 
 /obj/projectile/energy/plasma_bolt/update_overlays()
 	. = ..()
-	. += emissive_appearance(icon, core_state, src)
+	// No icon while the pinch copy carries the look: a lone core mask would light the floor in its shape
+	if(icon)
+		. += emissive_appearance(icon, core_state, src)
 
 // ===== Calls from the bolt (P1) =====
 
