@@ -160,7 +160,8 @@
 		else
 			qdel(window)
 		return TRUE
-	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
+	// A member of a shared slow-mo whose time is out waits for its crash too (ware_sandy_timestop_shared.dm).
+	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash) || GLOB.sandy_session_of[surger])
 		surger.balloon_alert(surger, "lattice still cycling!")
 		return FALSE
 	StartCooldown()

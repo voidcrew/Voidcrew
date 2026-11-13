@@ -122,6 +122,8 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
  * already the same session, the two become one. The younger one joins the older one, whose recording is kept.
  */
 /proc/sandy_session_check_touch(datum/proximity_monitor/advanced/timestop/sandevistan/field)
+	if(QDELETED(field))
+		return
 	if(length(GLOB.cyberware_time_fields) < 2 || !sandy_session_joinable(field))
 		return
 	var/datum/sandy_session/mine = GLOB.sandy_session_of[field.host]

@@ -10,6 +10,9 @@
 	var/list/ships = list()
 	var/list/teams = list()
 
+/// Ships of earlier shared tests: test datums are only destroyed after the whole run.
+GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
+
 /datum/unit_test/voidcrew_cyberware_timestop/shared/Destroy()
 	for(var/obj/structure/overmap/ship/ship as anything in ships)
 		SSovermap.simulated_ships -= ship
@@ -22,7 +25,12 @@
 
 /// Puts every body in `bodies` on one ship's crew (cyberware_crew_team()).
 /datum/unit_test/voidcrew_cyberware_timestop/shared/proc/make_crew(list/bodies)
+	for(var/obj/structure/overmap/ship/old as anything in GLOB.sandy_shared_test_ships)
+		SSovermap.simulated_ships -= old
+		old.ship_team = null
+	GLOB.sandy_shared_test_ships.Cut()
 	var/obj/structure/overmap/ship/ship = new
+	GLOB.sandy_shared_test_ships += ship
 	var/datum/team/voidcrew/team = new
 	team.name = "Test crew"
 	team.ship = ship
@@ -44,8 +52,8 @@
 /datum/unit_test/voidcrew_cyberware_timestop/shared/join
 
 /datum/unit_test/voidcrew_cyberware_timestop/shared/join/Run()
-	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandysharedone")
-	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandysharedtwo")
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandytwo[type]")
 	make_crew(list(first, second))
 	set_window(first, 2 SECONDS)
 	set_window(second, 2 SECONDS)
@@ -100,15 +108,15 @@
 /datum/unit_test/voidcrew_cyberware_timestop/shared/drop_out
 
 /datum/unit_test/voidcrew_cyberware_timestop/shared/drop_out/Run()
-	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandysharedone")
-	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandysharedtwo")
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandytwo[type]")
 	make_crew(list(first, second))
 	set_window(first, 3 SECONDS)
 	set_window(second, 3 SECONDS)
 	var/datum/status_effect/cyberware_cascade_window/one = surge(first)
 	sleep(0.2 SECONDS)
 	surge(second)
-	sleep(0.2 SECONDS)
+	sleep(0.3 SECONDS)
 	var/datum/sandy_session/session = session_of(first)
 	TEST_ASSERT_NOTNULL(session, "Test fixture: the two slow-mos didn't join")
 	var/datum/action/cooldown/cyberware/cascade_surge/button = surge_button(second)
@@ -129,8 +137,8 @@
 /datum/unit_test/voidcrew_cyberware_timestop/shared/other_crew
 
 /datum/unit_test/voidcrew_cyberware_timestop/shared/other_crew/Run()
-	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandysharedone")
-	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandysharedtwo")
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandytwo[type]")
 	make_crew(list(first, second))
 	set_window(first, 4 SECONDS)
 	set_window(second, 4 SECONDS)
@@ -161,8 +169,8 @@
 	if(!far)
 		far = locate(run_loc_floor_bottom_left.x - 24, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	TEST_ASSERT_NOTNULL(far, "Test fixture: no turf 24 tiles from the test room")
-	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandysharedone")
-	var/mob/living/carbon/human/second = make_user(far, "sandysharedtwo")
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(far, "sandytwo[type]")
 	make_crew(list(first, second))
 	set_window(first, 1 SECONDS)
 	set_window(second, 1 SECONDS)
@@ -184,8 +192,8 @@
 /datum/unit_test/voidcrew_cyberware_timestop/shared/mixed
 
 /datum/unit_test/voidcrew_cyberware_timestop/shared/mixed/Run()
-	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandysharedone")
-	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandysharedtwo", /obj/item/organ/cyberimp/cyberware/cascade/street)
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandytwo[type]", /obj/item/organ/cyberimp/cyberware/cascade/street)
 	make_crew(list(first, second))
 	set_window(first, 1 SECONDS)
 	set_window(second, 3 SECONDS)
