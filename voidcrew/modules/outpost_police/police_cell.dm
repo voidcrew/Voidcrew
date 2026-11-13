@@ -1051,12 +1051,26 @@
 
 /// Someone bangs on the door of `cell`: the nearest officer who can see the door tells them to knock it off
 /datum/outpost_police_cell/proc/answer_knock(mob/living/knocker)
-	var/turf/door_turf = get_turf(door)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police?.life_nearest_officer(door_turf, CELL_KNOCK_HEARD)
-	if(!officer || officer.client || !(door_turf in view(CELL_KNOCK_HEARD, officer)))
+	if(istype(knocker, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
 		return null
-	officer.face_atom(door)
-	return officer.police_say(POLICE_LINE_KNOCK)
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf || !police)
+		return null
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
+	var/best_distance = CELL_KNOCK_HEARD + 1
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+		if(!officer.police_can_speak() || officer.z != door_turf.z)
+			continue
+		var/distance = get_dist(officer, door_turf)
+		if(distance >= best_distance || !(door_turf in view(CELL_KNOCK_HEARD, officer)))
+			continue
+		best = officer
+		best_distance = distance
+	if(!best)
+		return null
+	if(!best.buckled)
+		best.face_atom(door)
+	return best.police_say(POLICE_LINE_KNOCK)
 
 /// `officer` tells the prisoner their fine went through: the receipt, said in the cell
 /datum/outpost_police/proc/say_fine_paid(mob/living/officer)
@@ -1064,10 +1078,10 @@
 		return
 	INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_FINE_PAID)
 
-/// The sergeant says `line` (a POLICE_LINE_* context) at the station; with none alive, whoever is on the radio
+/// The sergeant says `line` (a POLICE_LINE_* context) at the station; with none able to speak, whoever is on the radio
 /datum/outpost_police/proc/cell_station_say(line)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-		if(officer.stat != DEAD && officer.unit_kind == POLICE_UNIT_SERGEANT)
+		if(officer.unit_kind == POLICE_UNIT_SERGEANT && officer.police_can_speak())
 			INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), line)
 			return
 	INVOKE_ASYNC(src, PROC_REF(say_dispatch), line)
