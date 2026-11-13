@@ -88,11 +88,7 @@
 		return FALSE
 	return victim.hv_can_be_executed() || check_behind(user, victim)
 
-/**
- * Lands the knife execution: stabs the head through the real attack() path with the point-blank
- * multiplier, then opens a head slash wound scaled by the head's combined melee cover and sealed
- * headgear, adding neck_slice only when the throat is unarmoured and exposed. Returns TRUE on completion.
- */
+/// Lands the knife execution: stabs the head at point-blank force, opens a cover-scaled head slash wound, and slices exposed throats.
 /obj/item/knife/proc/hv_finish_knife_execution(mob/living/user, mob/living/carbon/victim, list/modifiers, list/attack_modifiers)
 	if(!hv_knife_execution_holds(user, victim))
 		return FALSE

@@ -143,6 +143,8 @@
 #define HV_VIS_KILL_SHAKE_RANGE 7
 
 // ---- Knife executions ----
+// Step-in offsets below are a deliberate exception to _motion_core.dm's third-of-a-tile rule: pixel_w
+// and pixel_z never change the SIDE_MAP sort row (y + pixel_y), so cross-tile sort order is preserved.
 
 /// Named animation sequence for the attacker stepping in and out during a knife execution.
 #define HV_VIS_TAG_KNIFE_STEP "hv_knife_step"
@@ -152,7 +154,7 @@
 #define HV_VIS_KNIFE_GRAB_TIME (0.3 SECONDS)
 /// How long the blade takes to draw across the victim's throat at the end of the wind-up.
 #define HV_VIS_KNIFE_CUT_TIME (0.25 SECONDS)
-/// Brief hold at the end of the throat cut before the attacker lets go and the blade prop vanishes.
+/// Brief hold at the end of the throat cut before the attacker lets go and the props vanish.
 #define HV_VIS_KNIFE_CUT_HOLD (0.1 SECONDS)
 /// How long the attacker takes to step back to zero offset after the cut completes.
 #define HV_VIS_KNIFE_RELEASE_TIME (0.25 SECONDS)
@@ -165,19 +167,13 @@
 /// How long a standing survivor takes to return from the forward hunch to their true pose.
 #define HV_VIS_KNIFE_HUNCH_OUT (0.3 SECONDS)
 /// Pixels a side-on (E/W) attacker steps toward the victim so their chest meets the victim's back.
-/// Deliberate exception to _motion_core.dm's "offsets under a third of a tile" rule: pixel_w/pixel_z
-/// never change the SIDE_MAP sort row (y + pixel_y), so sort order across tiles is preserved.
 #define HV_VIS_KNIFE_STEP_SIDE 19
 /// Pixels a north/south attacker steps toward the victim so their chest meets the victim's back.
-/// Deliberate exception to _motion_core.dm's third-of-a-tile rule: pixel_z never changes sort row,
-/// so an attacker north of a south-facing victim still sorts behind them.
 #define HV_VIS_KNIFE_STEP_FRONT 15
 /// Per-axis pixels a diagonal attacker steps toward a helpless victim.
 #define HV_VIS_KNIFE_STEP_DIAG 13
 /// Degrees a side-facing standing victim is tilted back toward the attacker about their feet.
 #define HV_VIS_KNIFE_TILT_SIDE 7
-/// Degrees a north- or south-facing standing victim leans sideways during the wind-up (0 keeps throat centred).
-#define HV_VIS_KNIFE_TILT_FRONT 0
 /// Pixels a north- or south-facing standing victim shifts back toward the attacker during the wind-up.
 #define HV_VIS_KNIFE_PULL_FRONT 2
 /// Feet-anchored vertical stretch added to a north- or south-facing victim so their head draws 1 px up.
@@ -196,11 +192,11 @@
 #define HV_VIS_KNIFE_SPRITE_GRIP -8.75
 /// Unscaled axial sprite coordinate (from 32x32 centre) of the cutting edge heel where a front draw begins.
 #define HV_VIS_KNIFE_SPRITE_HEEL -2
-/// Unscaled axial sprite coordinate resting on a side-facing victim's throat while held (~1.6 px behind tip).
+/// Unscaled axial sprite coordinate resting on a side-facing victim's throat while held.
 #define HV_VIS_KNIFE_SPRITE_SIDE_HOLD 8
 /// Unscaled axial sprite coordinate (from 32x32 centre) of the blade tip that finishes on the throat.
 #define HV_VIS_KNIFE_SPRITE_TIP 12
-/// Layer for the knife blade when visible in front of the victim's neck (above MOB_LAYER 4.0).
-#define HV_VIS_KNIFE_BLADE_LAYER 4.05
-/// Layer for the attacker's knife hand in front of the blade grip and the victim's neck.
-#define HV_VIS_KNIFE_HAND_LAYER 4.06
+/// Layer for the attacker's clothed forearm and hand in front of the victim's neck (above MOB_LAYER 4.0).
+#define HV_VIS_KNIFE_ARM_LAYER 4.05
+/// Layer for the knife blade above the forearm prop so the full blade shows in front of the neck.
+#define HV_VIS_KNIFE_BLADE_LAYER 4.06

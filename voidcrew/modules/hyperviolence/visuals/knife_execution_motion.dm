@@ -398,7 +398,7 @@
 		fist_start_z,
 		anchor_start[1],
 		anchor_start[2],
-		HV_VIS_KNIFE_HAND_LAYER,
+		HV_VIS_KNIFE_ARM_LAYER,
 		cut_hold_total + 1 SECONDS,
 	)
 	knife_arm.hv_animate_to(fist_in_w, fist_in_z, anchor_in[1], anchor_in[2], HV_VIS_KNIFE_GRAB_TIME, QUAD_EASING|EASE_OUT)
@@ -418,7 +418,6 @@
 
 	// Stop the wind-up sequence and any hit flinch before starting the cut/release pose on the victim.
 	victim.hv_vis_stop(list(HV_VIS_TAG_FLINCH, HV_VIS_TAG_TREMBLE, HV_VIS_TAG_KNIFE_VICTIM))
-	victim.hv_vis_flash()
 
 	// If the stab dropped a standing victim (crit or dead), keep them in their pulled upright pose through
 	// the 0.35 s cut + hold before tg's lying fall takes over, so the throat doesn't snap mid-cut.
@@ -664,9 +663,7 @@
 	if(dir & (EAST|WEST))
 		var/back_sign = att_dx || -HV_VIS_DX(dir)
 		return back_sign * HV_VIS_KNIFE_TILT_SIDE
-	if(att_dx)
-		return att_dx * HV_VIS_KNIFE_TILT_FRONT
-	return (dir & NORTH) ? HV_VIS_KNIFE_TILT_FRONT : -HV_VIS_KNIFE_TILT_FRONT
+	return 0 // north/south: the pull is a shift toward the attacker (hv_vis_knife_windup_pull), not a lean
 
 /// Pixel shift list(dx, dy) pulling a standing N/S victim 2 px toward `attacker` during wind-up and cut.
 /mob/living/proc/hv_vis_knife_windup_pull(mob/living/attacker)
@@ -998,7 +995,7 @@
 	icon = 'icons/mob/human/bodyparts_greyscale.dmi'
 	icon_state = ""
 	plane = GAME_PLANE
-	layer = HV_VIS_KNIFE_HAND_LAYER
+	layer = HV_VIS_KNIFE_ARM_LAYER
 	appearance_flags = KEEP_TOGETHER
 	randomdir = FALSE
 	duration = 25
@@ -1006,7 +1003,7 @@
 	var/hv_last_anchor_w = 0
 	var/hv_last_anchor_z = 0
 
-/obj/effect/temp_visual/hv_knife_exec_arm/Initialize(mapload, mob/living/holder, arm_zone = BODY_ZONE_R_ARM, row_x = 0, row_y = 0, fist_w = 0, fist_z = 0, anchor_w = 0, anchor_z = 6, draw_layer = HV_VIS_KNIFE_HAND_LAYER, life = 25)
+/obj/effect/temp_visual/hv_knife_exec_arm/Initialize(mapload, mob/living/holder, arm_zone = BODY_ZONE_R_ARM, row_x = 0, row_y = 0, fist_w = 0, fist_z = 0, anchor_w = 0, anchor_z = 6, draw_layer = HV_VIS_KNIFE_ARM_LAYER, life = 25)
 	if(life > 0)
 		duration = life
 	. = ..()
