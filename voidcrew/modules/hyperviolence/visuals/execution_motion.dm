@@ -13,7 +13,6 @@
 	// The same checks that stop the wind-up before it starts.
 	var/pressing = !fire_cd && !firing_burst && !HAS_TRAIT(user, TRAIT_PACIFISM) && isturf(user.loc) && isturf(target.loc)
 	if(pressing)
-		sandy_replay_move_starting(user) // cyberware/ware_sandy_replay.dm: the press replays at the move's speed
 		user.hv_vis_press_in(target, HV_EXECUTION_WINDUP)
 		target.hv_vis_tremble(HV_EXECUTION_WINDUP - HV_VIS_PRESS_PAUSE, 1)
 	. = ..()

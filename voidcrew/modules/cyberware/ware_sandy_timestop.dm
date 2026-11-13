@@ -73,6 +73,9 @@
 #define SANDY_STOP_TINT "sandy_time_stop_tint"
 /// The longest a slow-mo is held past its end for its user's execution or finisher to finish inside it.
 #define SANDY_STOP_HOLD_MAX (6 SECONDS)
+/// How long the slow-mo still holds once that move is over: its last blow (a shot's flash, the flinch, the gore) lands
+/// inside the slow-mo, not in the first tick after it. SANDY_REPLAY_MOVE_TAIL in ware_sandy_replay.dm is as long.
+#define SANDY_STOP_HOLD_TAIL 5
 
 /// Every atom the dilation has hold of, to its field.
 GLOBAL_LIST_EMPTY(cyberware_time_dilated)
@@ -1104,9 +1107,12 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// (chrome_puppet_rig.dm, mantis_rig.dm). Each picture of the user gets a solid copy in the glow's colour, a pixel
 /// bigger, drawn under all of the user's pictures: together they show as one rim round the whole posed body.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/glow_rig_picture(obj/effect/picture)
-	if(rig_glows[picture])
+	var/obj/effect/abstract/sandy_rig_glow/glow = rig_glows[picture]
+	if(glow)
+		glow.copy_overlays_of(picture) // redrawn (the blade rig's body piece takes the bearer's look again)
 		return
-	var/obj/effect/abstract/sandy_rig_glow/glow = new(null)
+	glow = new(null)
+	glow.copy_overlays_of(picture)
 	if(istype(picture, /obj/effect/abstract/mantis_puppet))
 		// The blade rig's pieces stand on other rows (pixel_y, SIDE_MAP): a copy with a layer of its own would sort on
 		// the tile's row, over the piece. Each is drawn under its own piece instead.
@@ -1151,6 +1157,12 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	. = ..()
 	add_filter("sandy_rig_glow", 1, outline_filter(1, "#5AFF96D2"))
 
+/// A picture drawn from overlays (the blade rig's body piece is a copy of the bearer's whole look) has little or no
+/// icon of its own to inherit: the copy takes its overlays too, so it is the whole figure's shape.
+/obj/effect/abstract/sandy_rig_glow/proc/copy_overlays_of(obj/effect/picture)
+	overlays = picture.overlays.Copy()
+	underlays = picture.underlays.Copy()
+
 /**
  * A finisher rig stood up `picture`, a posed piece of `body` (or a loose picture of the move's, like the victim's
  * blood spraying). In a Sandevistan slow-mo it looks like the body it stands for: the user's carry the user's edge
@@ -1190,6 +1202,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	/// This surge's one hold is used.
 	var/hold_spent = FALSE
 	var/hold_timer
+	/// The held move is over: the slow-mo ends at this world.time (SANDY_STOP_HOLD_TAIL). 0 while it runs.
+	var/tail_until = 0
 
 /// Slows the world for the whole window if the bearer is a player and nobody else is near. Called as the window
 /// opens, while `duration` is still its length.
@@ -1247,10 +1261,21 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		qdel(src)
 		return
 	if(sandy_replay_mid_move(owner))
+		tail_until = 0
 		if(world.time < hold_until)
 			return
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
 		field?.replay?.cancel()
+		qdel(src)
+		return
+	if(!tail_until)
+		tail_until = world.time + SANDY_STOP_HOLD_TAIL
+		duration = max(duration, tail_until + world.tick_lag)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
+		if(field)
+			field.ends_at = max(field.ends_at, tail_until)
+	if(world.time < tail_until)
+		return
 	qdel(src)
 
 /// Signal proc for [COMSIG_QDELETING] on the dilation when the window didn't end it (a player came near): time runs
@@ -1275,6 +1300,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	deltimer(hold_timer)
 	hold_timer = null
 	hold_until = 0
+	tail_until = 0
 
 /// Ends the dilation early (the window is closing).
 /datum/status_effect/cyberware_cascade_window/proc/end_time_stop()
@@ -1374,3 +1400,4 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 #undef SANDY_STOP_FLASH
 #undef SANDY_STOP_TINT
 #undef SANDY_STOP_HOLD_MAX
+#undef SANDY_STOP_HOLD_TAIL

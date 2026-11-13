@@ -55,6 +55,8 @@
 #define SANDY_REPLAY_TINT "sandy_time_stop_tint"
 /// The filter that hides what turned up after the recording, for the length of the replay.
 #define SANDY_REPLAY_UNBORN "sandy_replay_unborn"
+/// Filter name hiding what the recording saw change, in the tick between the slow-mo's end and the replay's start.
+#define SANDY_REPLAY_PENDING_HIDE "sandy_replay_pending_hide"
 
 #define SANDY_REPLAY_RECORDING 1
 #define SANDY_REPLAY_PENDING 2
@@ -105,11 +107,6 @@ GLOBAL_REAL_VAR(sandy_replay_masks)
 GLOBAL_LIST_EMPTY(sandy_replay_last)
 /// A replay is playing a recorded sound: nobody records it again.
 GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
-/// How much faster than it really ran an execution or finisher plays in the replay: 1 is its real speed, the slow-mo's
-/// own scale (5 for the Cascade) plays it as compressed as the walk-up. Clamped to that range. The one tunable.
-/// 2: visibly quicker than it really ran, while the rigs' shortest poses (a tick or two) still get a frame on screen;
-/// at 5 they don't, and a Gorilla rip is over in half a second.
-GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 
 /// One recorded thing.
 /datum/sandy_replay_track
@@ -222,6 +219,8 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	var/list/locked = list()
 	/// Things that turned up after the recording ended (gore still landing from the last blow), hidden until the end.
 	var/list/unborn = list()
+	/// Things hidden in the tick between the slow-mo's end and the replay's start (hide_pending()).
+	var/list/pending_hidden = list()
 	/// Progress bars hidden for the replay (hide_progress_bars()), shown again at the end if still there.
 	var/list/hidden_bars = list()
 	/// Mechs switched off, to what completely_disabled was.
@@ -249,12 +248,13 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	var/sound_at = 1
 	/// Afterimages the replay's surgers left.
 	var/afterimages = 0
-	/// The slow-mo is over but a move in it is still going (moves_running()): recording goes on, a frame a tick, from
-	/// this world.time and this frame, until it ends.
+	/// The slow-mo is over but a move in it is still going (moves_running()): recording goes on, on the same clock, from
+	/// this world.time, until it ends.
 	var/wait_started = 0
 	/// The recording's clock: frames are counted from `clock_frame` at world.time `clock_time`, `clock_rate` frames a
-	/// decisecond. In the slow-mo a frame is one tick of the slowed world; while an execution or finisher runs in it (or
-	/// is waited out after it) a frame is GLOB.sandy_replay_move_speed real ticks (move_rate()).
+	/// decisecond. A frame is one tick of the slowed world, all the way through: the replay (a frame a tick) plays
+	/// everything, an execution in it included, as many times faster as the user was faster than the world (owner,
+	/// 2026-11-12: "based on facts"). 10x for the Cascade, 4x for the service model, 2.5x for the street model.
 	var/clock_frame = 0
 	var/clock_time = 0
 	var/clock_rate = 1
@@ -269,8 +269,6 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	/// Playback: journaled animations played, and chains played again after a redraw, for tests and recordings.
 	var/events_played = 0
 	var/chains_resumed = 0
-	/// A move is about to start (move_starting()): the clock keeps the move's rate until this world.time.
-	var/move_soon = 0
 	/// Playback: what each journaled animation was played on and when, for tests and recordings.
 	var/list/event_log = list()
 	/// Every body that was mid-move during the wait: what turns up around them is recorded.
@@ -329,28 +327,6 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		return total
 	return clock_frame + (world.time - clock_time) * clock_rate
 
-/// From now on a frame of the recording is 1 / `rate` deciseconds.
-/datum/sandy_replay/proc/set_rate(rate)
-	if(rate == clock_rate)
-		return
-	clock_frame = max(frame_now(), last_sampled + 1)
-	clock_time = world.time
-	clock_rate = rate
-
-/// The clock's rate while a move runs: GLOB.sandy_replay_move_speed real ticks to a frame (so the replay, a frame a
-/// tick, plays the move that much faster), never slower than the slow-mo's own rate.
-/datum/sandy_replay/proc/move_rate()
-	var/speed = clamp(GLOB.sandy_replay_move_speed, 1, max(interval / world.tick_lag, 1)) // interval: a slowed tick
-	return 1 / (world.tick_lag * speed)
-
-/// A move is about to start in the recording (an execution's wind-up draws before its do_after starts): the clock
-/// goes to the move's rate now, so its first poses replay at the move's speed.
-/datum/sandy_replay/proc/move_starting()
-	if(state != SANDY_REPLAY_RECORDING)
-		return
-	move_soon = world.time + world.tick_lag
-	set_rate(move_rate())
-
 /// Whether `thing` is recorded at all.
 /datum/sandy_replay/proc/recordable(atom/movable/thing)
 	var/static/list/skipped = typecacheof(list(
@@ -378,7 +354,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	var/datum/sandy_replay_track/track = new
 	track.owner = src
 	track.thing = thing
-	track.first = covering ? 0 : frame_now()
+	track.first = (covering && !sandy_rig_picture(thing)) ? 0 : frame_now() // a rig picture is made by the move: it was never there before it
 	tracks[thing] = track
 	RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(on_thing_deleted))
 	sample_track(track, track.first)
@@ -395,7 +371,6 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	if(state != SANDY_REPLAY_RECORDING)
 		return
 	var/list/moving = moves_running()
-	set_rate((wait_started || length(moving) || move_soon >= world.time) ? move_rate() : 1 / interval)
 	var/frame = frame_now()
 	if(frame <= last_sampled)
 		return
@@ -552,6 +527,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		return
 	var/datum/sandy_replay_track/track = tracks[thing]
 	tracks -= thing
+	pending_hidden -= thing
 	if(!track)
 		return
 	if(GLOB.sandy_replay_masked[thing] == track)
@@ -559,7 +535,9 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		sandy_replay_masks = length(GLOB.sandy_replay_masked)
 	track.thing = null
 	if(state == SANDY_REPLAY_RECORDING || state == SANDY_REPLAY_PENDING)
-		track.last = max(frame_now(), track.first + 1)
+		// Drawn up to the frame the recording next sampled without it: a rig picture goes in the frame its body's
+		// own look comes back, not one before (the body would be gone for a frame).
+		track.last = max(last_sampled + 1, track.first + 1)
 		gone += track
 		return
 	puppets -= track
@@ -581,7 +559,6 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	// An execution or finisher in the field is still going. The replay's hold would cut it short (its checks fail on a
 	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done.
 	wait_started = world.time
-	set_rate(move_rate())
 
 /**
  * The recording is over: playback starts next tick, once the slow-mo's own looks are off everything. Without
@@ -595,6 +572,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	state = SANDY_REPLAY_PENDING
 	if(replays)
 		hide_progress_bars()
+		hide_pending()
 	deltimer(sample_timer)
 	sample_timer = null
 	if(!replays)
@@ -628,10 +606,11 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		return
 	open_event = null
 	var/datum/sandy_replay_track/track = ismovable(target) ? tracks[target] : null
+	if(!track && sandy_rig_picture(target) && user && get_dist(user, target) <= SANDY_REPLAY_HOLD_RANGE)
+		notice(target) // made this tick (a shot's muzzle flash): its first pose is this call
+		track = tracks[target]
 	if(!track || !(sandy_rig_picture(target) || isliving(target)))
 		return
-	if(clock_rate != move_rate() && length(moves_running()))
-		set_rate(move_rate()) // the move's first pose: the sample timer switches the clock only next tick
 	// The look it had before this call: what it was drawn as when the chain began, direct writes included.
 	open_event = list(frame_exact(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
 	LAZYADD(track.events, list(open_event))
@@ -652,7 +631,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		var/list/event = track.events[track.event_at]
 		if(event[1] >= frame + 1)
 			return
-		if(track.mode == SANDY_TRACK_PUPPET && track.glide_until > world.time && standin?.loc && !track.unmasked)
+		if(track.mode == SANDY_TRACK_PUPPET && track.glide_until > world.time + max(event[1] - frame, 0) * world.tick_lag && standin?.loc && !track.unmasked)
 			return // still gliding to the tile it starts on: it starts when the glide is done
 		track.event_at++
 		if(!standin?.loc || (track.mode == SANDY_TRACK_PUPPET && (track.unmasked || standin.alpha == 0)))
@@ -688,10 +667,15 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 				arguments[name] = value
 			if(i == 1 && event[1] > frame) // when in this tick it started
 				arguments["delay"] = (arguments["delay"] || 0) + (event[1] - frame) * world.tick_lag
-			length += (arguments["time"] || 0) + (arguments["delay"] || 0)
 			chain += list(arguments)
-			animate(arglist(arguments))
 		var/loops = first["loop"]
+		// Started late (it waited out a glide): it plays from where it would have got to by now, so it ends on time.
+		var/late = (frame - event[1]) * world.tick_lag
+		if(late > 0 && !relative && (!loops || loops == 1))
+			chain = trim_chain(chain, late, standin)
+		for(var/list/arguments as anything in chain)
+			length += (arguments["time"] || 0) + (arguments["delay"] || 0)
+			animate(arglist(arguments))
 		if(loops && loops < 0)
 			length = INFINITY
 		else if(loops > 1)
@@ -704,6 +688,46 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 				track.chain = chain
 				track.chain_start = world.time
 				track.chain_shift = list(shift_x, shift_y)
+
+/// `chain` (animate() argument lists, the first naming `thing`) with its first `late` deciseconds already gone by: the
+/// steps that were over are dropped, the one under way is shortened. A chain wholly over jumps to its last step's pose.
+/datum/sandy_replay/proc/trim_chain(list/chain, late, atom/movable/thing)
+	var/list/rest = list()
+	var/at = 0
+	for(var/list/step as anything in chain)
+		var/delay = step["delay"] || 0
+		var/span = (step["time"] || 0) + delay
+		if(!length(rest) && at + span <= late)
+			at += span
+			continue
+		var/list/arguments = step.Copy()
+		if(!length(rest))
+			if(arguments[1] != thing)
+				arguments.Insert(1, thing)
+			for(var/name in list("tag", "flags"))
+				if(isnull(arguments[name]) && !isnull(chain[1][name]))
+					arguments[name] = chain[1][name]
+			var/into = late - at
+			if(into < delay)
+				arguments["delay"] = delay - into
+			else
+				arguments -= "delay"
+				arguments["time"] = max((arguments["time"] || 0) - (into - delay), 0)
+		else if(arguments[1] == thing)
+			arguments.Cut(1, 2)
+		rest += list(arguments)
+		at += span
+	if(length(rest))
+		return rest
+	var/list/last = chain[length(chain)].Copy()
+	if(last[1] != thing)
+		last.Insert(1, thing)
+	for(var/name in list("tag", "flags"))
+		if(isnull(last[name]) && !isnull(chain[1][name]))
+			last[name] = chain[1][name]
+	last -= "delay"
+	last["time"] = 0
+	return list(last)
 
 /**
  * A puppet was given a new frame's look while a journaled chain was playing on it, which ends the chain: plays the
@@ -797,6 +821,26 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		unborn[thing] = TRUE
 		thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
 
+/**
+ * The slow-mo is over and the replay starts next tick. For that tick the world would show as it really is, in its own
+ * colours: the last blow's gore at its landing spots, the dead where they fell, a moment before the replay jumps back.
+ * What the recording saw change or turn up is hidden for it (the user stays, so the view has someone in it).
+ */
+/datum/sandy_replay/proc/hide_pending()
+	for(var/atom/movable/thing as anything in tracks)
+		var/datum/sandy_replay_track/track = tracks[thing]
+		if(thing == user || QDELETED(thing) || (length(track.frames) == SANDY_FRAME_SIZE && track.first == 0))
+			continue
+		pending_hidden += thing
+		thing.add_filter(SANDY_REPLAY_PENDING_HIDE, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+
+/// The replay is starting (or isn't coming): what hide_pending() hid is drawn again, before the replay takes its looks.
+/datum/sandy_replay/proc/show_pending()
+	for(var/atom/movable/thing as anything in pending_hidden)
+		if(!QDELETED(thing))
+			thing.remove_filter(SANDY_REPLAY_PENDING_HIDE)
+	pending_hidden.Cut()
+
 /// Whether `spot` is close enough to the user for the replay to hide a bar on it.
 /datum/sandy_replay/proc/bar_reach(turf/spot)
 	var/turf/here = get_turf(user)
@@ -825,6 +869,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 		finish()
 		return
 	state = SANDY_REPLAY_PLAYING
+	show_pending()
 	hide_progress_bars()
 	watchdog = addtimer(CALLBACK(src, PROC_REF(finish)), (total + 2) * world.tick_lag + SANDY_REPLAY_WATCHDOG, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	try
@@ -1105,12 +1150,20 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	var/time = world.tick_lag
 	if(stepped)
 		// A step glides until the next one, like a walk does.
-		var/ticks = 2
+		// The last step of a walk glides two ticks, or less if the thing's next frame (a move starting on that tile)
+		// comes sooner: it is on its tile by then.
+		var/ticks = at + SANDY_FRAME_SIZE < end ? min(2, frames[at + SANDY_FRAME_SIZE + SANDY_FRAME_INDEX] - frames[at + SANDY_FRAME_INDEX]) : 2
 		for(var/next = at + SANDY_FRAME_SIZE, next < end, next += SANDY_FRAME_SIZE)
 			if(frames[next + SANDY_FRAME_X] != frames[at + SANDY_FRAME_X] || frames[next + SANDY_FRAME_Y] != frames[at + SANDY_FRAME_Y] || frames[next + SANDY_FRAME_Z] != frames[at + SANDY_FRAME_Z])
 				ticks = frames[next + SANDY_FRAME_INDEX] - frames[at + SANDY_FRAME_INDEX]
 				break
 		time = clamp(ticks, 1, 5) * world.tick_lag
+		// A move's first pose due sooner (an execution started as the step landed): the glide is done by then.
+		if(track.events && track.event_at <= length(track.events))
+			var/list/next_event = track.events[track.event_at]
+			var/due = (next_event[1] - frame) * world.tick_lag
+			if(due >= 0 && due < time)
+				time = max(due, world.tick_lag / 2)
 	else if(left > 0)
 		time = left
 	track.glide_x = move_x
@@ -1386,6 +1439,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	for(var/datum/sandy_replay_track/track as anything in standins)
 		QDEL_NULL(track.standin)
 	show_progress_bars()
+	show_pending()
 	for(var/atom/movable/thing as anything in unborn)
 		if(!QDELETED(thing))
 			thing.remove_filter(SANDY_REPLAY_UNBORN)
@@ -1523,13 +1577,6 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 			return TRUE
 	return FALSE
 
-/// `body` is about to start an execution or finisher whose first poses come before sandy_replay_mid_move() can see it.
-/proc/sandy_replay_move_starting(mob/living/body)
-	for(var/user in GLOB.sandy_replays)
-		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-		if(replay.tracks[body])
-			replay.move_starting()
-
 /// Called from playsound(): a sound played in a slow-mo is recorded for its replay. A /sound datum is a looping
 /// sound's next segment (machines, weather), which plays on live and isn't recorded.
 /proc/sandy_replay_hear(turf/source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
@@ -1575,9 +1622,10 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 	animate(arglist(arguments))
 #undef SANDY_ANIM_UNSET
 
-/// Whether `thing` is a finisher rig's posed piece of a body, or a loose picture of the move's (a blood spray).
+/// Whether `thing` is a finisher rig's posed piece of a body, or a loose picture of the move's (a blood spray, an
+/// execution's muzzle flash).
 /proc/sandy_rig_picture(atom/thing)
-	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx)
+	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx) || istype(thing, /obj/effect/temp_visual/hv_muzzle_flash)
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)
@@ -1698,6 +1746,7 @@ GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 #undef SANDY_REPLAY_OUTLINE
 #undef SANDY_REPLAY_TINT
 #undef SANDY_REPLAY_UNBORN
+#undef SANDY_REPLAY_PENDING_HIDE
 #undef SANDY_REPLAY_RECORDING
 #undef SANDY_REPLAY_PENDING
 #undef SANDY_REPLAY_PLAYING

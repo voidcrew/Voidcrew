@@ -323,6 +323,7 @@
 	body.pixel_y = body_row
 	body.pixel_w = base_w + lean_w + body.shift_w
 	body.pixel_z = base_z + lean_z + body.shift_z
+	cyberware_time_rig_picture(body, bearer) // a Sandevistan user's edge glow takes the new look (ware_sandy_timestop.dm)
 
 /**
  * The bearer's pixel_x and pixel_y under the rig's own lean: without a #509 finisher's lean (pose_user()), which
