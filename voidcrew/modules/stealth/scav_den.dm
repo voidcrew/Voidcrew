@@ -174,11 +174,11 @@
 	head = /obj/item/clothing/head/helmet
 	l_pocket = /obj/item/reagent_containers/hypospray/medipen
 
-/// Harvesters: the ones who do the cutting. Bloodied waders, black latex and a bone saw; no lenses over the chrome.
+/// Harvesters: the ones who do the cutting. Bloodied waders and black gloves, and a cleaver or a bone saw; no lenses over the chrome.
 /datum/outfit/ruin_npc/scav_den/butcher
 	name = "Ruin NPC: den harvester"
 	suit = /obj/item/clothing/suit/apron/waders
-	gloves = /obj/item/clothing/gloves/latex/coroner
+	gloves = /obj/item/clothing/gloves/color/black
 	head = /obj/item/clothing/head/utility/surgerycap/black
 	glasses = null
 	r_hand = /obj/item/knife/butcher
