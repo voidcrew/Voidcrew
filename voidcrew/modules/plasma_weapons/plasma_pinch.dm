@@ -16,6 +16,8 @@
 /// How long a bolt's copy takes from the snap to close from the ball onto the bolt's line, about its first tile. The
 /// light grows to the bolt's own over the same time
 #define PLASMA_PINCH_CLOSE_TIME (0.1 SECONDS)
+/// If a bolt never covers its first tile (stopped in a time field), it shows itself anyway after this long
+#define PLASMA_PINCH_HANDOVER_LIMIT (1 SECONDS)
 /// The pinch light's brightness as an overlay light's alpha (light_power 1)
 #define PLASMA_PINCH_LIGHT_ALPHA 150
 
@@ -136,11 +138,13 @@
 // A bolt from a gun with a pinch waits at the muzzle, out of sight, until the ball snaps: the ball is the bolt forming, and
 // the bolt leaves it as it snaps. It waits moved up its line to level with the ball. Facing north or south the muzzle is
 // off to one side of the bolt's line, so a copy of the bolt shows at the ball and closes sideways onto the bolt's line
-// while keeping pace with it; then the bolt shows under it and the copy goes. The copy sits by the barrel and
-// flies one path, set at the shot and run on the client's clock like the ball's frames. Nothing rides the bolt: its
-// sprite jumps a tile for a frame as it crosses into a new turf. The copy also carries the bolt's light, from the ball's
-// small one up to the bolt's own. Nothing here animates the real bolt: its movement steps continue its newest animation
-// sequence.
+// while keeping pace with it; then the bolt shows under it and the copy goes. The copy sits by the barrel and repeats
+// each of the bolt's movement steps as the server makes them, with the same timing, plus a sideways offset that shrinks
+// to nothing over the first tile. It never runs ahead of the bolt on its own clock: when the server runs slow, a copy
+// flown on the client's clock got up to a tile and a half ahead and the bolt showed behind it. Nothing rides the bolt:
+// its sprite jumps a tile for a frame as it crosses into a new turf, and the copy's turf never changes. The copy also
+// carries the bolt's light, from the ball's small one up to the bolt's own. Nothing here animates the real bolt: its
+// movement steps continue its newest animation sequence.
 /obj/projectile/energy/plasma_bolt
 	/// The copy we see while this bolt leaves the barrel pinch, null once it has handed over
 	var/obj/effect/abstract/plasma_pinch_bolt/pinch_copy
@@ -152,6 +156,8 @@
 	var/nose_lit = FALSE
 	/// When we leave the pinch, as world.time
 	var/pinch_leave_at = 0
+	/// Pixels we move in this tick's movement, to time the copy's steps as ours are timed
+	var/pinch_tick_px = 0
 
 /obj/projectile/energy/plasma_bolt/heavy
 	pinch_nose = 13
@@ -194,12 +200,23 @@
 	// From the snap itself, though the timer can land a little after it: the copy's path is timed from the snap
 	last_projectile_move = min(world.time, pinch_leave_at)
 
+/obj/projectile/energy/plasma_bolt/process_movement(pixels_to_move, hitscan = FALSE, tile_limit = FALSE)
+	pinch_tick_px = pixels_to_move
+	return ..()
+
 // plasma_bolt.dm's own move_animate() (the stop at an impact) runs first, through ..(), and leaves our pixel vars on
 // the stop
 /obj/projectile/energy/plasma_bolt/move_animate(animate_x, animate_y, animate_time = world.tick_lag, deleting = FALSE)
 	. = ..()
-	if(deleting && isturf(loc))
-		pinch_copy?.land(loc.x * ICON_SIZE_X + pixel_x, loc.y * ICON_SIZE_Y + pixel_y + pixel_z, animate_time)
+	if(!pinch_copy || !isturf(loc))
+		return
+	if(deleting)
+		pinch_copy.land(loc.x * ICON_SIZE_X + pixel_x, loc.y * ICON_SIZE_Y + pixel_y + pixel_z, animate_time)
+		return
+	// A plain step: projectile.dm animates us from our pixel vars to (animate_x, animate_y) over its share of the tick
+	var/step = sqrt((animate_x - pixel_x) ** 2 + (animate_y - pixel_y) ** 2)
+	var/step_time = pinch_tick_px > 0 ? world.tick_lag * step / pinch_tick_px : world.tick_lag
+	pinch_copy.follow(loc.x * ICON_SIZE_X + pixel_x, loc.y * ICON_SIZE_Y + pixel_y, loc.x * ICON_SIZE_X + animate_x, loc.y * ICON_SIZE_Y + animate_y, step_time)
 
 /obj/projectile/energy/plasma_bolt/Destroy()
 	QDEL_NULL(pinch_copy)
@@ -241,6 +258,17 @@
 	var/base_y = 0
 	/// Carries the bolt's light on us, from the pinch light's size up to the bolt's
 	var/obj/effect/abstract/glow_holder
+	/// The shot's direction, a unit vector
+	var/dir_x = 0
+	var/dir_y = 0
+	/// Map pixel where the bolt waits for the snap
+	var/bolt_start_x = 0
+	var/bolt_start_y = 0
+	/// From the bolt to where we show at the snap. We carry this offset, shrinking, over the first close_px of its path
+	var/off_x = 0
+	var/off_y = 0
+	/// How far along its line the bolt goes while we close onto it
+	var/close_px = ICON_SIZE_ALL
 
 /obj/effect/abstract/plasma_pinch_bolt/Initialize(mapload, obj/projectile/energy/plasma_bolt/real_bolt, turf/barrel_turf, list/offset)
 	. = ..()
@@ -261,23 +289,20 @@
 	var/lead = bolt.pinch_lead - bolt.pinch_nose
 	var/start_x = barrel_turf.x * ICON_SIZE_X + offset[1] + dx * lead
 	var/start_y = barrel_turf.y * ICON_SIZE_Y + offset[2] + dy * lead
-	// The bolt waits where it is until the snap and then flies at its pace, so where it will be is known
-	var/pace = SSprojectiles.pixels_per_decisecond * bolt.speed
-	var/bolt_x = bolt.loc.x * ICON_SIZE_X + bolt.pixel_x
-	var/bolt_y = bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y
-	// We see the bolt's moves a tick after they are made, each drawn over the tick that follows, so it shows a tick
-	// behind where it is. We keep to what we see: a tick at the ball's mark along the line, then its pace
-	var/seen_lag = world.tick_lag
-	var/fly_to = PLASMA_PINCH_CLOSE_TIME + 3 * world.tick_lag
-	var/lateral = seen_lag / PLASMA_PINCH_CLOSE_TIME
+	// The bolt waits where it is until the snap. We show at the ball when it snaps and then take each of its steps
+	// (follow()), so we can never get ahead of it
+	bolt_start_x = bolt.loc.x * ICON_SIZE_X + bolt.pixel_x
+	bolt_start_y = bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y
+	off_x = start_x - bolt_start_x
+	off_y = start_y - bolt_start_y
+	dir_x = dx
+	dir_y = dy
+	close_px = max(SSprojectiles.pixels_per_decisecond * bolt.speed * PLASMA_PINCH_CLOSE_TIME, 1)
 	alpha = 0
 	pixel_w = start_x - base_x
 	pixel_z = start_y - base_y
 	animate(src, time = PLASMA_PINCH_SNAP_TIME)
 	animate(alpha = 255, time = 0)
-	animate(pixel_w = start_x + (bolt_x - start_x) * lateral - base_x, pixel_z = start_y + (bolt_y - start_y) * lateral - base_y, time = seen_lag)
-	animate(pixel_w = bolt_x + dx * pace * (PLASMA_PINCH_CLOSE_TIME - seen_lag) - base_x, pixel_z = bolt_y + dy * pace * (PLASMA_PINCH_CLOSE_TIME - seen_lag) - base_y, time = PLASMA_PINCH_CLOSE_TIME - seen_lag)
-	animate(pixel_w = bolt_x + dx * pace * (fly_to - seen_lag) - base_x, pixel_z = bolt_y + dy * pace * (fly_to - seen_lag) - base_y, time = fly_to - PLASMA_PINCH_CLOSE_TIME)
 	// The bolt's light mask: the ball's small light from the shot, grown to the bolt's own as we close. We sit on the
 	// ball until the snap, so the light does too. The holder's alpha and size carry over to the mask
 	var/datum/component/overlay_lighting/lighting = bolt.GetComponent(/datum/component/overlay_lighting)
@@ -305,8 +330,9 @@
 	bolt_icon = bolt.icon
 	bolt.icon = null
 	bolt.update_appearance(UPDATE_OVERLAYS)
-	// We lie on the bolt from the end of the close. Then the bolt shows with its own light and we go
-	addtimer(CALLBACK(src, PROC_REF(handover)), PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_CLOSE_TIME)
+	// We lie on the bolt once it has covered close_px (follow()), and the bolt then shows with its own light. This is
+	// only for a bolt that never gets that far and never hits anything
+	addtimer(CALLBACK(src, PROC_REF(handover)), PLASMA_PINCH_SNAP_TIME + PLASMA_PINCH_HANDOVER_LIMIT)
 
 /obj/effect/abstract/plasma_pinch_bolt/Destroy()
 	if(bolt)
@@ -318,6 +344,16 @@
 		vis_contents -= glow_holder
 		QDEL_NULL(glow_holder)
 	return ..()
+
+/// The bolt takes a step from map pixel (from_x, from_y) to (to_x, to_y) over `time`: we take it too, on our own
+/// turf, closing sideways onto its line. A step that starts with us already on the line hands over instead: the bolt
+/// takes it in our place, so the two never show apart
+/obj/effect/abstract/plasma_pinch_bolt/proc/follow(from_x, from_y, to_x, to_y, time)
+	if((from_x - bolt_start_x) * dir_x + (from_y - bolt_start_y) * dir_y >= close_px)
+		handover()
+		return
+	var/left = max(0, 1 - ((to_x - bolt_start_x) * dir_x + (to_y - bolt_start_y) * dir_y) / close_px)
+	animate(src, pixel_w = to_x + off_x * left - base_x, pixel_z = to_y + off_y * left - base_y, time = time, flags = ANIMATION_CONTINUE)
 
 /// The bolt hits something while we fly: from wherever we are we go to its stop, map pixel (stop_x, stop_y), over its last
 /// stretch, and go out with it
@@ -347,3 +383,4 @@
 #undef PLASMA_PINCH_BOLT_LAYER
 #undef PLASMA_PINCH_CLOSE_TIME
 #undef PLASMA_PINCH_LIGHT_ALPHA
+#undef PLASMA_PINCH_HANDOVER_LIMIT

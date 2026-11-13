@@ -251,3 +251,62 @@
 	TEST_ASSERT_NULL(bolt.blocked_sound_for(knife), "The shield sound replaced a non-shield's block sound")
 	bolt.shield_block_sound = null
 	TEST_ASSERT_NULL(bolt.blocked_sound_for(shield), "An unset shield sound does not fall back to the shield's own")
+
+/// A pinched shot at a wall three tiles out: the barrel copy takes each of the bolt's steps and is never ahead of it,
+/// hands over on the bolt's line once the bolt has covered its first tile, and never shows again before the hit
+/datum/unit_test/voidcrew_plasma_bolt/pinch_follow
+
+/datum/unit_test/voidcrew_plasma_bolt/pinch_follow/Run()
+	var/turf/shooter_turf = turf_at(1, 1)
+	var/turf/wall = turf_at(4, 1)
+	var/old_type = wall.type
+	wall = wall.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent, shooter_turf)
+	shooter.setDir(EAST)
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	shooter.put_in_r_hand(gun)
+	var/obj/projectile/energy/plasma_bolt/heavy/bolt = allocate(/obj/projectile/energy/plasma_bolt/heavy, shooter_turf)
+	bolt.firer = shooter
+	bolt.fired_from = gun
+	bolt.original = wall
+	bolt.fire(90)
+	var/obj/effect/abstract/plasma_pinch_bolt/copy = bolt.pinch_copy
+	if(!istype(copy))
+		wall.ChangeTurf(old_type)
+		TEST_FAIL("a pinched shot made no barrel copy")
+		return
+	TEST_ASSERT(bolt.paused, "the bolt did not wait at the muzzle for the snap")
+	TEST_ASSERT_NULL(bolt.icon, "the bolt showed while its barrel copy carried it")
+	var/start_x = copy.bolt_start_x
+	var/start_y = copy.bolt_start_y
+	var/dir_x = copy.dir_x
+	var/dir_y = copy.dir_y
+	bolt.leave_pinch()
+	var/handed_over = FALSE
+	var/last_across = null
+	var/steps = 0
+	// Small steps, as a slow server sends them; the copy must still never be seen ahead of the bolt
+	while(!QDELETED(bolt) && !bolt.deletion_queued && steps < 60)
+		bolt.process_movement(6)
+		steps++
+		if(QDELETED(bolt) || bolt.deletion_queued)
+			break
+		var/bolt_along = (bolt.loc.x * ICON_SIZE_X + bolt.pixel_x - start_x) * dir_x + (bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y - start_y) * dir_y
+		if(!handed_over && (QDELETED(copy) || bolt.pinch_copy != copy))
+			handed_over = TRUE
+			TEST_ASSERT_NOTNULL(bolt.icon, "the bolt did not show at the handover")
+			TEST_ASSERT(!isnull(last_across) && abs(last_across) < 0.5, "the copy handed over [last_across] px off the bolt's line")
+		if(handed_over)
+			TEST_ASSERT_NULL(bolt.pinch_copy, "a barrel copy showed again after the handover")
+			continue
+		var/copy_x = copy.base_x + copy.pixel_w
+		var/copy_y = copy.base_y + copy.pixel_z
+		var/copy_along = (copy_x - start_x) * dir_x + (copy_y - start_y) * dir_y
+		TEST_ASSERT(copy_along <= bolt_along + 0.5, "the barrel copy ran [copy_along - bolt_along] px ahead of the bolt")
+		last_across = (copy_x - (bolt.loc.x * ICON_SIZE_X + bolt.pixel_x)) * dir_y - (copy_y - (bolt.loc.y * ICON_SIZE_Y + bolt.pixel_y)) * dir_x
+	TEST_ASSERT(handed_over, "the copy never handed over before the bolt hit the wall [steps] steps out")
+	TEST_ASSERT(bolt.deletion_queued || QDELETED(bolt), "the bolt never reached the wall")
+	for(var/atom/movable/thing in wall)
+		if(istype(thing, /obj/effect/temp_visual))
+			qdel(thing)
+	wall.ChangeTurf(old_type)
