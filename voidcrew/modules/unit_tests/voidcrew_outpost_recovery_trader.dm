@@ -95,6 +95,13 @@
 	keeper.remove_status_effect(/datum/status_effect/grouped/heldup, REF(buyer))
 	TEST_ASSERT(shop.is_open(), "The shop stayed shut after the hold-up")
 
+	// Cross-z violence (such as a fight in a hangar berth on another z-level) does not make a concourse keeper duck
+	var/other_z = counter.z > 1 ? 1 : min(world.maxz, 2)
+	if(other_z != counter.z)
+		var/mob/living/carbon/human/distant_brawler = wanted_person(locate(counter.x, counter.y, other_z))
+		SEND_SIGNAL(outpost, "trader_outpost_violence", distant_brawler) // COMSIG_TRADER_OUTPOST_VIOLENCE
+		TEST_ASSERT(!keeper.crouching && shop.is_open(), "A fight on another z-level made the concourse keeper duck and shut the shop")
+
 	// Restrained or incapacitated: shut while tied up or knocked down
 	ADD_TRAIT(keeper, TRAIT_RESTRAINED, "r1_test")
 	TEST_ASSERT(!shop.is_open(), "The shop trades while its keeper is handcuffed")

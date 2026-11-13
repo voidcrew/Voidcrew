@@ -860,3 +860,40 @@
 	host.checkpoints -= "second_checkpoint"
 	second.outpost = null
 	qdel(second)
+
+/// A guard booth door never opens from outside because of a distant police lift, and a mended gate waits for both doors to shut before scanning
+/datum/unit_test/voidcrew_trader_checkpoint/booth_door_and_mend_interlock/Run()
+	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
+	host.ensure_police()
+	var/turf/desk = guard.shop.counter_turf
+	var/turf/inside_booth = get_step(desk, SOUTH)
+	var/turf/booth_door_turf = get_step(inside_booth, SOUTH)
+	var/turf/outside_booth = get_step(booth_door_turf, SOUTH)
+	inside_booth.ChangeTurf(/turf/open/indestructible)
+	booth_door_turf.ChangeTurf(/turf/open/indestructible)
+	outside_booth.ChangeTurf(/turf/open/indestructible)
+	var/obj/machinery/door/airlock/outpost/police/booth_door = allocate(/obj/machinery/door/airlock/outpost/police, booth_door_turf)
+	booth_door.outpost = host
+	// Put a police lift across the map on the outside side of the booth door
+	var/turf/distant_lift = locate(outside_booth.x, max(1, outside_booth.y - 6), outside_booth.z)
+	host.police.lift_turfs = list(distant_lift)
+	var/mob/living/carbon/human/lobby_visitor = visitor(outside_booth)
+	TEST_ASSERT(!booth_door.unrestricted_side(lobby_visitor), "A distant police lift let an unbadged visitor open the guard booth from outside")
+	lobby_visitor.forceMove(inside_booth)
+	TEST_ASSERT(booth_door.unrestricted_side(lobby_visitor), "Someone inside the guard booth could not open the booth door to leave")
+
+	// When a disabled gate mends while both doors were open and the inner door is still open, outer closing waits for inner before scanning
+	var/mob/living/carbon/human/occupant = visitor(chamber[1])
+	TEST_ASSERT_NOTNULL(occupant, "Could not place an occupant in the chamber")
+	checkpoint.disabled_until = world.time - 1
+	outer.density = TRUE
+	inner.density = FALSE
+	checkpoint.on_door_closed(outer)
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The checkpoint started scanning while the inner door was still open") // CHECKPOINT_IDLE
+	inner.density = TRUE
+	checkpoint.on_door_closed(inner)
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The checkpoint did not scan its chamber once the inner door finished closing") // CHECKPOINT_SCANNING
+	checkpoint.set_state("idle") // CHECKPOINT_IDLE
+	checkpoint.end_disable()
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "end_disable() left someone waiting in a closed chamber unscanned") // CHECKPOINT_SCANNING
+	checkpoint.set_state("idle") // CHECKPOINT_IDLE

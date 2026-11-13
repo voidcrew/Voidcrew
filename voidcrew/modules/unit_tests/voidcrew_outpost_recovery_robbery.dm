@@ -581,6 +581,44 @@
 	if(!QDELETED(second_hold))
 		qdel(second_hold)
 
+/// Toy and tool guns never start a stick-up, and a second robber aiming while the first lowers takes over without unpausing the trader
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_overlap_and_toys
+
+/datum/unit_test/voidcrew_outpost_recovery_robbery/holdup_overlap_and_toys/Run()
+	if(!holdup_fixture())
+		return
+	var/obj/item/gun/energy/laser/redtag/laser_tag = allocate(/obj/item/gun/energy/laser/redtag)
+	var/obj/item/gun/ballistic/automatic/toy/foam_gun = allocate(/obj/item/gun/ballistic/automatic/toy)
+	var/obj/item/gun/medbeam/med_gun = allocate(/obj/item/gun/medbeam)
+	TEST_ASSERT(!outpost_holdup_gun(laser_tag), "A laser-tag gun counted as a stick-up threat")
+	TEST_ASSERT(!outpost_holdup_gun(foam_gun), "A foam-dart toy gun counted as a stick-up threat")
+	TEST_ASSERT(!outpost_holdup_gun(med_gun), "A medbeam gun counted as a stick-up threat")
+	TEST_ASSERT(outpost_holdup_gun(gun), "A disabler did not count as a stick-up threat")
+	shop.held_up(trader, person, laser_tag)
+	TEST_ASSERT_NULL(shop.holdup, "A laser-tag gun started a trader stick-up")
+
+	var/turf/second_spot = get_turf(person)
+	for(var/turf/open/candidate in orange(2, trader))
+		if(candidate != get_turf(person) && !candidate.is_blocked_turf(exclude_mobs = TRUE))
+			second_spot = candidate
+			break
+	var/mob/living/carbon/human/second_robber = mind_person(second_spot)
+	var/obj/item/gun/energy/disabler/second_gun = allocate(/obj/item/gun/energy/disabler)
+	TEST_ASSERT(second_robber.put_in_hands(second_gun), "Could not give the second robber a gun")
+
+	person.AddComponent(/datum/component/gunpoint, trader, gun)
+	second_robber.AddComponent(/datum/component/gunpoint, trader, second_gun)
+	sleep(0.3 SECONDS)
+	var/datum/outpost_holdup/first_hold = shop.holdup
+	TEST_ASSERT_EQUAL(first_hold?.robber_ref?.resolve(), person, "The first robber did not get the initial stick-up")
+	// First robber lowers before hand-over while the second keeps aiming: the second takes over and the trader stays paused
+	qdel(person.GetComponent(/datum/component/gunpoint))
+	TEST_ASSERT_EQUAL(shop.holdup?.robber_ref?.resolve(), second_robber, "Lowering the first gun did not hand the stick-up to the second robber still aiming")
+	TEST_ASSERT(HAS_TRAIT(trader, TRAIT_AI_PAUSED), "The trader was unpaused while the second robber still held them at gunpoint")
+	qdel(second_robber.GetComponent(/datum/component/gunpoint))
+	if(!QDELETED(shop.holdup))
+		qdel(shop.holdup)
+
 /// Every zone has four or more lines for each kind, and an alarm line that needs no place or look
 /datum/unit_test/voidcrew_outpost_recovery_robbery_lines
 

@@ -406,6 +406,12 @@
 		inner_door.set_breached(FALSE)
 		if(state == CHECKPOINT_PASSING || state == CHECKPOINT_FORCED)
 			set_state(CHECKPOINT_IDLE)
+			return
+		if(state == CHECKPOINT_IDLE && !is_disabled() && outer_door?.density)
+			var/requested = scan_when_closed
+			scan_when_closed = FALSE
+			if(requested || length(chamber_people()))
+				start_scan()
 		return
 	// The outer door
 	switch(state)
@@ -417,6 +423,10 @@
 			scan_when_closed = FALSE
 			set_state(CHECKPOINT_IDLE)
 			exit_request = requested && leaving
+			// If both doors were open when a disable ended, wait until the inner door is shut too
+			if(!inner_door?.density)
+				scan_when_closed = requested
+				return
 			// A gate that is down scans nobody
 			if(!is_disabled() && (requested || length(chamber_people())))
 				start_scan()
@@ -614,6 +624,8 @@
 	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in list(outer_door, inner_door))
 		if(!QDELETED(door) && !door.density)
 			close_door(door)
+	if(outer_door?.density && inner_door?.density && length(chamber_people()))
+		start_scan()
 	// The scanner is seen coming back, not just found working (owner decision 33)
 	if(!QDELETED(sensor))
 		do_sparks(2, TRUE, sensor)

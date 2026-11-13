@@ -272,6 +272,22 @@
 	TEST_ASSERT_NULL(outpost_bomber_of(syn_bomb.payload), "A defused syndicate bomb still carried blame")
 	qdel(syn_bomb)
 
+	// A clusterbang passes its armer to its segments and spawned payload grenades when it goes off
+	var/obj/item/grenade/clusterbuster/cluster = new(get_turf(bomber))
+	cluster.min_spawned = 2
+	cluster.max_spawned = 2
+	cluster.segment_chance = 50
+	cluster.outpost_armed_by = WEAKREF(bomber)
+	cluster.detonate()
+	var/found_child = FALSE
+	for(var/obj/item/grenade/child in range(5, get_turf(bomber)))
+		if(child == sewn)
+			continue
+		found_child = TRUE
+		TEST_ASSERT_EQUAL(outpost_bomber_of(child), bomber, "A clusterbang's child [child.type] lost its bomber attribution")
+		qdel(child)
+	TEST_ASSERT(found_child, "Clusterbang spawned no child grenades to check")
+
 	// A non-item bomb (or rocket) catching an officer is ASSAULT_OFFICER (3 stars), never bare-handed RESIST, and records a rocket's launcher
 	var/obj/item/crowbar/launcher_standin = allocate(/obj/item/crowbar)
 	rocket.fired_from = launcher_standin
@@ -309,3 +325,45 @@
 	TEST_ASSERT_EQUAL(door.get_integrity(), integrity, "Outpost property took ordinary damage")
 	TEST_ASSERT_EQUAL(door.emp_act(EMP_HEAVY), EMP_PROTECT_ALL, "Outpost property lacks full EMP protection")
 	TEST_ASSERT(!door.secondsElectrified, "An EMP electrified an outpost door")
+
+	var/datum/outpost_police/police = outpost.ensure_police()
+	police.perception.test_plain = TRUE
+	var/mob/living/carbon/human/consistent/pilot = allocate(/mob/living/carbon/human/consistent, protected_turf)
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, protected_turf)
+	pilot.mind_initialize()
+	bystander.mind_initialize()
+
+	// Stamina hits and disabler beams on outpost amenities are not vandalism; damaging hits record the weapon
+	var/obj/machinery/sleeper/outpost/sleeper = allocate(/obj/machinery/sleeper/outpost, protected_turf)
+	var/obj/projectile/beam/disabler/stun_beam = allocate(/obj/projectile/beam/disabler)
+	stun_beam.firer = pilot
+	sleeper.bullet_act(stun_beam, BODY_ZONE_CHEST)
+	TEST_ASSERT_NULL(police.get_warrant(pilot.mind), "A disabler beam on an outpost sleeper counted as vandalism")
+	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
+	sleeper.attacked_by(bar, pilot)
+	TEST_ASSERT(WEAKREF(bar) in police.get_warrant(pilot.mind)?.evidence, "Hitting an outpost sleeper did not record the weapon on the warrant")
+	police.admin_lift(pilot.mind)
+	police.recent_reports.Cut()
+
+	// A piloted mecha's gunfire and wall melee attribute crimes to the pilot
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, protected_turf)
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot, VEHICLE_CONTROL_DRIVE, TRUE)
+	var/obj/projectile/beam/laser/mech_shot = allocate(/obj/projectile/beam/laser)
+	mech_shot.firer = mech
+	SEND_SIGNAL(bystander, COMSIG_PROJECTILE_PREHIT, mech_shot)
+	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[bystander.mind], pilot.mind), "A mecha's shot on a visitor did not open self-defence against the pilot")
+	TEST_ASSERT_NOTNULL(police.get_warrant(pilot.mind), "A mecha's shot on a visitor gave the pilot no warrant")
+	police.admin_lift(pilot.mind)
+	police.recent_reports.Cut()
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, protected_turf)
+	police.add_officer(officer)
+	officer.bullet_act(mech_shot, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(police.get_stars(pilot.mind), 3, "Shooting an officer from a mecha did not give the pilot 3 stars for assaulting an officer")
+	qdel(officer)
+	police.admin_lift(pilot.mind)
+	police.recent_reports.Cut()
+
+	mech.remove_occupant(pilot)
+	pilot.forceMove(protected_turf)

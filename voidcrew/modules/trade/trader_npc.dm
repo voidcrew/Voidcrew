@@ -516,7 +516,9 @@
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_outpost_violence(datum/source, mob/living/offender)
 	SIGNAL_HANDLER
-	if(offender && get_dist(src, offender) <= AMBIENT_VIOLENCE_RANGE)
+	var/turf/here = get_turf(src)
+	var/turf/there = get_turf(offender)
+	if(here && there && here.z == there.z && get_dist(here, there) <= AMBIENT_VIOLENCE_RANGE)
 		react_violence(offender)
 
 /// Down behind the counter for a while, facing the trouble

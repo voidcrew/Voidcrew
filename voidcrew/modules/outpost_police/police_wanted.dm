@@ -1076,9 +1076,11 @@
  */
 /datum/outpost_police/proc/officer_struck(mob/living/officer, atom/attacker, attack_flags, obj/item/source, armed = FALSE)
 	SHOULD_NOT_SLEEP(TRUE)
-	if(!isliving(attacker) || attacker == officer)
+	if(ismecha(attacker))
+		armed = TRUE
+	var/mob/living/hitter = outpost_living_attacker(attacker)
+	if(!hitter || hitter == officer)
 		return
-	var/mob/living/hitter = attacker
 	if(!source && !armed)
 		source = held_weapon_of(hitter)
 	var/crime

@@ -57,13 +57,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 // Attacking the elevator panel is aggression, matching the outpost's other
 // indestructible service machinery.
 /obj/machinery/outpost_elevator/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && outpost)
-		outpost.register_aggression(user)
+	if(attacking_item.force && attacking_item.damtype != STAMINA && outpost)
+		outpost.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /obj/machinery/outpost_elevator/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(outpost && isliving(hitting_projectile.firer))
-		outpost.register_aggression(hitting_projectile.firer)
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(outpost && shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 /// The floor this panel is on: 0 = concourse, 1..N = berth number, -1 = unlinked.

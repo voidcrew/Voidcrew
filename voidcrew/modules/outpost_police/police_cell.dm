@@ -1199,8 +1199,19 @@
 /obj/machinery/door/airlock/outpost/police/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
 
-// Abuse SF5: from the lift side anyone may leave, so nobody who followed an officer in is shut in the lift closet.
-// The lift side is the one nearer a police lift than the door itself. Coming in still takes an officer's ID.
+/// Whether `from`, next to `door_turf`, is on the inside of the small closet or booth anchored at `anchor`
+/proc/outpost_inside_pocket(turf/from, turf/door_turf, turf/anchor)
+	if(!anchor || anchor.z != door_turf.z || get_dist(from, door_turf) != 1 || get_dist(door_turf, anchor) > 4)
+		return FALSE
+	var/dot = (from.x - door_turf.x) * (anchor.x - door_turf.x) + (from.y - door_turf.y) * (anchor.y - door_turf.y)
+	if(dot <= 0)
+		return FALSE
+	var/from_manhattan = abs(from.x - anchor.x) + abs(from.y - anchor.y)
+	var/door_manhattan = abs(door_turf.x - anchor.x) + abs(door_turf.y - anchor.y)
+	return from_manhattan < door_manhattan
+
+// Abuse SF5: from the inside of a lift closet or a guard booth anyone may leave, so nobody who followed staff in is shut inside.
+// Only a lift or booth desk right behind this door counts, never a police lift across the concourse. Coming in still takes an officer's ID.
 /obj/machinery/door/airlock/outpost/police/unrestricted_side(mob/opener)
 	. = ..()
 	if(. || !opener)
@@ -1209,16 +1220,22 @@
 	var/datum/outpost_police/police = istype(home) ? home.police : null
 	var/turf/door_turf = get_turf(src)
 	var/turf/from = get_turf(opener)
-	if(!police || !door_turf || !from || from == door_turf)
+	if(!police || !door_turf || !from || from.z != door_turf.z || from == door_turf)
 		return
-	var/from_distance = INFINITY
-	var/door_distance = INFINITY
 	for(var/turf/lift as anything in police.lift_turfs)
-		if(lift.z != door_turf.z)
+		if(outpost_inside_pocket(from, door_turf, lift))
+			return TRUE
+	for(var/datum/outpost_shop/shop as anything in home.get_all_shops())
+		if(!istype(shop, /datum/outpost_shop/vendor/checkpoint))
 			continue
-		from_distance = min(from_distance, get_dist(from, lift))
-		door_distance = min(door_distance, get_dist(door_turf, lift))
-	return from_distance < door_distance
+		var/datum/outpost_recovery_post/post = home.recovery?.posts?[shop]
+		var/turf/desk = post?.spot || shop.counter_turf
+		if(!desk && istype(shop.trader_npc, /mob/living/carbon/human/npc/ambient_npc))
+			var/mob/living/carbon/human/npc/ambient_npc/guard_npc = shop.trader_npc
+			desk = guard_npc.home
+		if(outpost_inside_pocket(from, door_turf, desk))
+			return TRUE
+	return FALSE
 
 /**
  * A holding cell's door. A bump, a click or an ID never opens it: its cell does (build_cells()), to bring a prisoner

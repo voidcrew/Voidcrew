@@ -27,7 +27,7 @@
 		var/jammed = post.state == CHECKPOINT_REJECTING && length(post.inspect_chamber()) > 0
 		if(jammed && !best_jammed)
 			continue
-		var/distance = near ? get_dist(near, post.lobby_turf) : 0
+		var/distance = !here ? 0 : (here.z == post.lobby_turf.z ? get_dist(here, post.lobby_turf) : 10000)
 		if((!jammed && best_jammed) || distance < best_distance)
 			best = post
 			best_jammed = jammed

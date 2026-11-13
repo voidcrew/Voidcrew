@@ -699,12 +699,23 @@ SUBSYSTEM_DEF(ambient_npcs)
 	until += opens_at
 	refill_at = refill_at ? min(refill_at, opens_at) : opens_at
 
+/// The living person behind `attacker`: `attacker` itself, or the driver of a mecha
+/proc/outpost_living_attacker(atom/attacker)
+	if(isliving(attacker))
+		return attacker
+	if(ismecha(attacker))
+		var/obj/vehicle/sealed/mecha/mech = attacker
+		for(var/mob/living/pilot in mech.return_drivers())
+			return pilot
+	return null
+
 // A real blow is violence at the outpost, as against a visitor: a crime for its police, and everyone near ducks (register_aggression())
 /datum/ambient_place/outpost/npc_attacked(mob/living/carbon/human/npc/ambient_npc/npc, atom/attacker, attack_flags)
-	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
+	var/mob/living/offender = outpost_living_attacker(attacker)
+	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !offender)
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
-	outpost?.register_aggression(attacker, OUTPOST_CRIME_ASSAULT_CIVILIAN, npc)
+	outpost?.register_aggression(offender, OUTPOST_CRIME_ASSAULT_CIVILIAN, npc)
 
 // Its people drop no more than AMBIENT_OUTPOST_CASH_CAP between them in a round
 /datum/ambient_place/outpost/cash_for(mob/living/carbon/human/npc/ambient_npc/npc, amount)

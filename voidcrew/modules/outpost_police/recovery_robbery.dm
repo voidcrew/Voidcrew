@@ -49,6 +49,28 @@
 // THE STICK-UP (R7)
 // =========================================================================
 
+#define TRAIT_OUTPOST_HOLDUP_TARGET "outpost_holdup_target"
+
+/// Whether `weapon` is a real threat for a stick-up, rather than a toy, laser-tag gun or harmless tool
+/proc/outpost_holdup_gun(obj/item/weapon)
+	if(!istype(weapon, /obj/item/gun))
+		return FALSE
+	var/static/list/harmless_guns
+	if(!harmless_guns)
+		harmless_guns = typecacheof(list(
+			/obj/item/gun/energy/floragun,
+			/obj/item/gun/energy/wiremod_gun,
+			/obj/item/gun/energy/recharge/fisher,
+			/obj/item/gun/medbeam,
+			/obj/item/gun/energy/laser/bluetag,
+			/obj/item/gun/energy/laser/redtag,
+			/obj/item/gun/ballistic/automatic/toy,
+			/obj/item/gun/ballistic/automatic/pistol/toy,
+			/obj/item/gun/ballistic/shotgun/toy,
+			/obj/item/gun/magic/wand/nothing,
+		))
+	return !is_type_in_typecache(weapon, harmless_guns)
+
 /// The one watcher for every trader in the world: it hears tg's hold-up land on a trader (below) and the supply convoy
 GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 
@@ -57,9 +79,9 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	var/list/datum/outpost_holdup/active = list()
 
 /**
- * `trader` was just made: register what tells it it is held up (tg's /datum/status_effect/grouped/heldup lands on
- * it; COMSIG_LIVING_STATUS_APPLIED). tg sends nothing of its own for a hold-up and applies that status from inside
- * the gunpoint component's Initialize, so the shooter is looked for a moment later. Runs from Initialize: never sleeps.
+ * `trader` was just made: mark it so tg's /datum/status_effect/grouped/heldup notifies us as each shooter aims or
+ * lowers their gun. tg applies that status from inside the gunpoint component's Initialize, so a new shooter is
+ * resolved a tick later once the component is attached. Runs from Initialize: never sleeps.
  */
 /proc/outpost_holdup_hook(mob/living/trader)
 	if(QDELETED(trader))
@@ -67,8 +89,18 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	GLOB.outpost_holdups.watch(trader)
 
 /datum/outpost_holdup_watcher/proc/watch(mob/living/trader)
-	RegisterSignal(trader, COMSIG_LIVING_STATUS_APPLIED, PROC_REF(on_status_applied), override = TRUE)
+	ADD_TRAIT(trader, TRAIT_OUTPOST_HOLDUP_TARGET, REF(src))
 	RegisterSignal(trader, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempted), override = TRUE)
+
+/datum/status_effect/grouped/heldup/source_added(source, ...)
+	..()
+	if(owner && HAS_TRAIT(owner, TRAIT_OUTPOST_HOLDUP_TARGET))
+		GLOB.outpost_holdups.on_source_added(owner, src, source)
+
+/datum/status_effect/grouped/heldup/source_removed(source, removing)
+	..()
+	if(owner && HAS_TRAIT(owner, TRAIT_OUTPOST_HOLDUP_TARGET))
+		GLOB.outpost_holdups.on_source_removed(owner, src, source, removing)
 
 /// Someone tries to cuff a living trader: assault on the staff, as grabbing one is (abuse SF6: cuffs never silence a stick-up for free)
 /datum/outpost_holdup_watcher/proc/on_cuff_attempted(mob/living/source, mob/living/user)
@@ -90,27 +122,44 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		if(shop)
 			shop.till_robbed_by = null
 
-/datum/outpost_holdup_watcher/proc/on_status_applied(mob/living/source, datum/status_effect/effect)
-	SIGNAL_HANDLER
-	if(!istype(effect, /datum/status_effect/grouped/heldup))
-		return
-	// The shooter is on the effect's sources only once the component has finished, and the component is on the shooter
-	addtimer(CALLBACK(src, PROC_REF(resolve_hold), WEAKREF(source), WEAKREF(effect)), 1, TIMER_DELETE_ME)
+/datum/outpost_holdup_watcher/proc/on_source_added(mob/living/trader, datum/status_effect/grouped/heldup/effect, source_key)
+	// The gunpoint component finishes attaching after applying the status effect
+	addtimer(CALLBACK(src, PROC_REF(resolve_hold), WEAKREF(trader), WEAKREF(effect), source_key), 1, TIMER_DELETE_ME)
+
+/datum/outpost_holdup_watcher/proc/on_source_removed(mob/living/trader, datum/status_effect/grouped/heldup/effect, source_key, removing)
+	var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
+	var/datum/outpost_holdup/current = shop?.holdup
+	if(current && (removing || REF(current.robber_ref?.resolve()) == source_key))
+		current.end_hold()
+	if(!removing && (!shop?.holdup || !shop.holdup.holding))
+		resolve_hold(WEAKREF(trader), WEAKREF(effect))
 
 /// Finds who holds `trader_ref` up and hands the hold to the trader's shop
-/datum/outpost_holdup_watcher/proc/resolve_hold(datum/weakref/trader_ref, datum/weakref/effect_ref)
+/datum/outpost_holdup_watcher/proc/resolve_hold(datum/weakref/trader_ref, datum/weakref/effect_ref, preferred_source = null)
 	var/mob/living/trader = trader_ref.resolve()
 	var/datum/status_effect/effect = effect_ref.resolve()
 	if(QDELETED(trader) || QDELETED(effect) || effect.owner != trader)
 		return
+	var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
+	if(!shop)
+		return
+	var/mob/living/fallback
+	var/obj/item/gun/fallback_weapon
 	// The gunpoint keeps its shooter within 2 tiles of the target
 	for(var/mob/living/candidate in orange(3, trader))
-		var/datum/component/gunpoint/hold = candidate.GetComponent(/datum/component/gunpoint)
-		if(hold?.target != trader)
+		if(!candidate.mind)
 			continue
-		var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
-		shop?.held_up(trader, candidate, hold.weapon)
-		return
+		var/datum/component/gunpoint/hold = candidate.GetComponent(/datum/component/gunpoint)
+		if(hold?.target != trader || !outpost_holdup_gun(hold.weapon))
+			continue
+		if(preferred_source && REF(candidate) == preferred_source)
+			shop.held_up(trader, candidate, hold.weapon)
+			return
+		if(!fallback)
+			fallback = candidate
+			fallback_weapon = hold.weapon
+	if(fallback)
+		shop.held_up(trader, fallback, fallback_weapon)
 
 /// A crime counted against `robber` is the robbery of one of the stick-ups in progress: the trader's alarm need not count it again
 /datum/outpost_holdup_watcher/proc/note_counted(mob/living/robber)
@@ -147,11 +196,13 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
  * else, M40), not a player, and not for anyone without a mind (nobody could be wanted for it).
  */
 /datum/outpost_shop/proc/held_up(mob/living/trader, mob/living/robber, obj/item/gun/weapon)
-	if(QDELETED(src) || QDELETED(trader) || QDELETED(robber) || !robber.mind || !outpost?.police)
+	if(QDELETED(src) || QDELETED(trader) || QDELETED(robber) || !robber.mind || !outpost?.police || !outpost_holdup_gun(weapon))
 		return
 	if(istype(src, /datum/outpost_shop/vendor/checkpoint) || trader.client || trader.mind)
 		return
-	if(trader.stat != CONSCIOUS || keeper?.resolve() != trader || get_dist(trader, holdup_counter(trader)) > 1)
+	var/turf/trader_turf = get_turf(trader)
+	var/turf/counter = holdup_counter(trader)
+	if(trader.stat != CONSCIOUS || keeper?.resolve() != trader || !trader_turf || !counter || trader_turf.z != counter.z || get_dist(trader_turf, counter) > 1)
 		return
 	if(holdup)
 		// The same robber pointing again while the alarm is still out: another hand-over (an empty till gives less)
@@ -198,7 +249,8 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 /datum/outpost_shop/proc/holdup_trader_able(mob/living/trader, turf/counter)
 	if(QDELETED(src) || QDELETED(trader) || trader.stat != CONSCIOUS || keeper?.resolve() != trader)
 		return FALSE
-	if(counter && get_dist(trader, counter) > 1)
+	var/turf/trader_turf = get_turf(trader)
+	if(!trader_turf || (counter && (trader_turf.z != counter.z || get_dist(trader_turf, counter) > 1)))
 		return FALSE
 	return outpost?.police ? outpost.police.perception.can_report(trader) : TRUE
 
@@ -376,16 +428,24 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		return
 	qdel(src)
 
+/// The robber's hold on the trader ended: unpause the trader and finish unless an alarm is still pending
+/datum/outpost_holdup/proc/end_hold()
+	if(!holding)
+		return
+	holding = FALSE
+	var/mob/living/trader = trader_ref?.resolve()
+	if(trader)
+		REMOVE_TRAIT(trader, TRAIT_AI_PAUSED, REF(src))
+	deltimer(steady_timer)
+	steady_timer = null
+	maybe_end()
+
 /// The hold ended (the robber lowered the gun, left, or the trader was moved or shot)
 /datum/outpost_holdup/proc/on_status_removed(mob/living/source, datum/status_effect/effect)
 	SIGNAL_HANDLER
 	if(!istype(effect, /datum/status_effect/grouped/heldup))
 		return
-	holding = FALSE
-	REMOVE_TRAIT(source, TRAIT_AI_PAUSED, REF(src))
-	deltimer(steady_timer)
-	steady_timer = null
-	maybe_end()
+	end_hold()
 
 /// The hold has been on for OUTPOST_HOLDUP_STEADY: when tg says it is steady and the trader is still at its counter, it pays
 /datum/outpost_holdup/proc/check_steady()
@@ -396,8 +456,7 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 		return settle_if_lost(trader)
 	var/datum/component/gunpoint/hold = robber.GetComponent(/datum/component/gunpoint)
 	if(hold?.target != trader)
-		holding = FALSE
-		return maybe_end()
+		return end_hold()
 	if(hold.stage < 2)
 		if(++steady_tries <= 5)
 			steady_timer = addtimer(CALLBACK(src, PROC_REF(check_steady)), 1 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
@@ -441,8 +500,10 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 	if(alarm_overdue)
 		try_alarm()
 		return
+	var/turf/trader_turf = get_turf(trader)
+	var/turf/robber_turf = get_turf(robber)
 	var/datum/outpost_police_perception/perception = shop?.outpost?.police?.perception
-	if(get_dist(trader, robber) > OUTPOST_HOLDUP_ALARM_RANGE || !perception?.sees(trader, robber))
+	if(!trader_turf || !robber_turf || trader_turf.z != robber_turf.z || get_dist(trader_turf, robber_turf) > OUTPOST_HOLDUP_ALARM_RANGE || !perception?.sees(trader, robber))
 		try_alarm()
 
 /// The robber fired a gun: the alarm goes at once
@@ -679,4 +740,5 @@ GLOBAL_DATUM_INIT(outpost_holdups, /datum/outpost_holdup_watcher, new)
 				return FALSE
 	return ..()
 
+#undef TRAIT_OUTPOST_HOLDUP_TARGET
 #undef OUTPOST_HOLDUP_STEADY

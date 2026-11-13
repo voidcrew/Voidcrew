@@ -97,9 +97,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 
 /datum/outpost_pvp_enforcement/proc/on_outpost_pvp_projectile(mob/living/victim, obj/projectile/hitting_projectile)
 	SIGNAL_HANDLER
-	if(hitting_projectile.is_hostile_projectile() && isliving(hitting_projectile.firer))
+	var/mob/living/shooter = hitting_projectile.is_hostile_projectile() ? outpost_living_attacker(hitting_projectile.firer) : null
+	if(shooter)
 		var/obj/item/fired_from = hitting_projectile.fired_from
-		register_pvp_aggression(victim, hitting_projectile.firer, OUTPOST_CRIME_ASSAULT_SHOT, isitem(fired_from) ? fired_from : null)
+		register_pvp_aggression(victim, shooter, OUTPOST_CRIME_ASSAULT_SHOT, isitem(fired_from) ? fired_from : null)
 
 /datum/outpost_pvp_enforcement/proc/on_outpost_pvp_thrown_item(mob/living/victim, atom/movable/hitting_atom, datum/thrownthing/throwingdatum)
 	SIGNAL_HANDLER
@@ -179,10 +180,11 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	/// (outpost_bomber_of()); never the last hand to touch it.
 	var/datum/weakref/outpost_armed_by
 
-/// `bomb` was armed by `user`
-/proc/outpost_note_armed(obj/bomb, mob/user)
-	if(isliving(user) && !QDELETED(bomb))
-		bomb.outpost_armed_by = WEAKREF(user)
+/// `bomb` was armed by `user` (or by `user`'s pilot if `user` is a mecha)
+/proc/outpost_note_armed(obj/bomb, atom/user)
+	var/mob/living/armer = outpost_living_attacker(user)
+	if(armer && !QDELETED(bomb))
+		bomb.outpost_armed_by = WEAKREF(armer)
 
 /obj/item/grenade/arm_grenade(mob/user, delayoverride, msg = TRUE, volume = 60)
 	outpost_note_armed(src, user)
@@ -349,6 +351,30 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	outpost_note_armed(src, user)
 	return ..()
 
+/// Carries a clusterbang's armer across synchronous segment and payload creation
+GLOBAL_DATUM(outpost_cluster_armer, /datum/weakref)
+
+/obj/item/grenade/Initialize(mapload)
+	. = ..()
+	if(GLOB.outpost_cluster_armer && !outpost_armed_by)
+		outpost_armed_by = GLOB.outpost_cluster_armer
+
+/obj/item/grenade/clusterbuster/detonate(mob/living/lanced_by)
+	if(isliving(lanced_by))
+		outpost_note_armed_unless_armed(src, lanced_by)
+	var/datum/weakref/previous = GLOB.outpost_cluster_armer
+	GLOB.outpost_cluster_armer = outpost_armed_by
+	. = ..()
+	GLOB.outpost_cluster_armer = previous
+
+/obj/item/grenade/clusterbuster/segment/detonate(mob/living/lanced_by)
+	if(isliving(lanced_by))
+		outpost_note_armed_unless_armed(src, lanced_by)
+	var/datum/weakref/previous = GLOB.outpost_cluster_armer
+	GLOB.outpost_cluster_armer = outpost_armed_by
+	. = ..()
+	GLOB.outpost_cluster_armer = previous
+
 /**
  * Who set off a blast: the firer of a projectile (a mech's pilot), otherwise whoever armed the explosive
  * (outpost_armed_by). An explosive nobody armed (one set off by another blast or a fire) is blamed on nobody: the
@@ -358,13 +384,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /proc/outpost_bomber_of(atom/explosion_cause)
 	if(isprojectile(explosion_cause))
 		var/obj/projectile/shot = explosion_cause
-		if(isliving(shot.firer))
-			return shot.firer
-		if(ismecha(shot.firer))
-			var/obj/vehicle/sealed/mecha/mech = shot.firer
-			for(var/mob/living/pilot in mech.return_drivers())
-				return pilot
-			return null
+		var/mob/living/shooter = outpost_living_attacker(shot.firer)
+		if(shooter)
+			return shooter
 		explosion_cause = shot.firer
 	if(!isobj(explosion_cause))
 		return null
@@ -498,9 +520,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	return ..()
 
 /obj/machinery/door/airlock/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(outpost && isliving(hitting_projectile.firer) && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(outpost && shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/item/fired_from = hitting_projectile.fired_from
-		outpost.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
+		outpost.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 /**
@@ -520,10 +543,17 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	return ..()
 
 /turf/closed/indestructible/reinforced/titanium/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(isliving(hitting_projectile.firer) && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
 		var/obj/item/fired_from = hitting_projectile.fired_from
-		outpost?.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
+		outpost?.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
+	return ..()
+
+/turf/closed/indestructible/reinforced/titanium/outpost/mech_melee_attack(obj/vehicle/sealed/mecha/mecha_attacker, mob/living/user)
+	if(user?.combat_mode && mecha_attacker?.force && mecha_attacker.damtype != STAMINA && isliving(user))
+		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
+		outpost?.register_aggression(user, OUTPOST_CRIME_VANDALISM)
 	return ..()
 
 /turf/closed/indestructible/syndicate/outpost/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
@@ -533,10 +563,17 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	return ..()
 
 /turf/closed/indestructible/syndicate/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(isliving(hitting_projectile.firer) && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
 		var/obj/item/fired_from = hitting_projectile.fired_from
-		outpost?.register_aggression(hitting_projectile.firer, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
+		outpost?.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
+	return ..()
+
+/turf/closed/indestructible/syndicate/outpost/mech_melee_attack(obj/vehicle/sealed/mecha/mecha_attacker, mob/living/user)
+	if(user?.combat_mode && mecha_attacker?.force && mecha_attacker.damtype != STAMINA && isliving(user))
+		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
+		outpost?.register_aggression(user, OUTPOST_CRIME_VANDALISM)
 	return ..()
 
 // =========================================================================
@@ -687,10 +724,11 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 
 /// Shoves, bare hands and stamina hits aren't vandalism; only a real damaging hit is
 /datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker, obj/item/weapon)
-	if(!isliving(attacker))
+	var/mob/living/offender = outpost_living_attacker(attacker)
+	if(!offender)
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(source))
-	outpost?.register_aggression(attacker, OUTPOST_CRIME_VANDALISM, null, weapon)
+	outpost?.register_aggression(offender, OUTPOST_CRIME_VANDALISM, null, weapon)
 
 /datum/element/outpost_property/proc/on_melee_attack(obj/source, obj/item/weapon, mob/attacker, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
