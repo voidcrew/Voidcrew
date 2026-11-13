@@ -664,7 +664,7 @@
 		owner.visible_message(span_danger("[owner] blocks [attack_text] with [src]!"))
 		var/owner_turf = get_turf(owner)
 		new block_effect(owner_turf, COLOR_YELLOW)
-		playsound(src, block_sound, BLOCK_SOUND_VOLUME, vary = TRUE)
+		playsound(src, hitby?.blocked_sound_for(src) || block_sound, BLOCK_SOUND_VOLUME, vary = TRUE) // VOIDCREW EDIT CHANGE - plasma_weapons: a bolt can carry its own shield block sound
 		return TRUE
 
 /**

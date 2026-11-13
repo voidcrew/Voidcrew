@@ -544,5 +544,17 @@
   "rule": "above_on_route",
   "route": "/datum/design/beamrifle",
   "reason": "Deliberate: reputation 22 and six anomaly cores are a real gate, so the Event Horizon stays craftable."
+ },
+ {
+  "path": "/obj/item/plasma_cartridge",
+  "rule": "below_reputation",
+  "route": "/datum/crafting_recipe/plasma_cartridge",
+  "reason": "Deliberate: plain reloads for yellow and red guns, pressed by hand so a looted plasma gun can be loaded in any zone. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/plasma_cartridge",
+  "rule": "below_reputation",
+  "route": "/datum/crafting_recipe/plasma_cartridge/ore",
+  "reason": "Deliberate: plain reloads for yellow and red guns, pressed by hand so a looted plasma gun can be loaded in any zone. The gun is the gate."
  }
 ]

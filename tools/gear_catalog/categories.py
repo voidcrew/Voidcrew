@@ -20,6 +20,7 @@ CATEGORIES = [
     ('/obj/item/handloaders_vise', 'gun_parts', ITEM),
     ('/obj/item/ammo_box', 'ammo', '/obj/item/ammo_box'),
     ('/obj/item/ammo_casing', 'ammo', '/obj/item/ammo_casing'),
+    ('/obj/item/plasma_cartridge', 'ammo', ITEM),
     ('/obj/item/mecha_ammo', 'mech', '/obj/item/mecha_ammo'),
     ('/obj/item/mecha_parts', 'mech', '/obj/item/mecha_parts'),
     ('/obj/item/clothing/glasses', 'eyewear', '/obj/item/clothing/glasses'),

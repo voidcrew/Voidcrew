@@ -82,6 +82,7 @@
 		/datum/shop_sku/black_market/slammer,
 		/datum/shop_sku/black_market/absolution,
 		/datum/shop_sku/black_market/conflagration,
+		/datum/shop_sku/black_market/hornet,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -161,6 +162,7 @@
 		/datum/shop_sku/black_market/rotating/mod_chameleon,
 		/datum/shop_sku/black_market/rotating/ew_runaway_burn,
 		/datum/shop_sku/black_market/rotating/ew_helm_poltergeist,
+		/datum/shop_sku/black_market/rotating/furnace,
 	)
 	rare_pool = list(
 		/datum/shop_sku/black_market/rare/energy_sword,
