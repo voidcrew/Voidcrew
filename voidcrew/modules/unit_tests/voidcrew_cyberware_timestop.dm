@@ -793,6 +793,12 @@
 	TEST_ASSERT(length(slowed) == 3 && slowed[1] > 0.5, "Test fixture: the NPC's animations aren't slowed")
 	var/list/times = raider.hv_vis_flash_times()
 	TEST_ASSERT(length(times) == 3 && times[1] == 0.5 && times[2] == 1.5 && times[3] == 1, "A hit flash in the slow-mo is slowed ([jointext(times, ",")])")
+	// The tint rolls out behind the ring: wait for it to reach the NPC
+	for(var/waited in 1 to 20)
+		if(tinted(raider))
+			break
+		sleep(0.1 SECONDS)
+	TEST_ASSERT(tinted(raider), "Test fixture: the slow-mo's tint never reached the NPC")
 	raider.hv_vis_flash()
 	TEST_ASSERT_NULL(raider.get_filter("hv_vis_flash"), "A tinted body's flash didn't play through its tint")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
