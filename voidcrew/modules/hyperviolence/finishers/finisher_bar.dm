@@ -54,6 +54,7 @@
 	RegisterSignal(owner, COMSIG_QDELETING, PROC_REF(on_owner_deleted))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
 	tick()
+	sandy_replay_picture_made(src, executioner) // a Sandevistan replay draws it over the executioner's puppet
 
 /obj/effect/abstract/hv_exec_bar/Destroy()
 	if(update_timer)

@@ -103,6 +103,11 @@ GLOBAL_REAL_VAR(sandy_replay_masks)
 GLOBAL_LIST_EMPTY(sandy_replay_last)
 /// A replay is playing a recorded sound: nobody records it again.
 GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
+/// How much faster than it really ran an execution or finisher plays in the replay: 1 is its real speed, the slow-mo's
+/// own scale (5 for the Cascade) plays it as compressed as the walk-up. Clamped to that range. The one tunable.
+/// 2: visibly quicker than it really ran, while the rigs' shortest poses (a tick or two) still get a frame on screen;
+/// at 5 they don't, and a Gorilla rip is over in half a second.
+GLOBAL_VAR_INIT(sandy_replay_move_speed, 2)
 
 /// One recorded thing.
 /datum/sandy_replay_track
@@ -158,6 +163,11 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	/// Playback: the next animation to play, and when the ones playing end.
 	var/event_at = 1
 	var/anim_until = 0
+	/// Puppet: the chain playing on it (its animate() argument lists), when it started and the pixel shift it was
+	/// played with: a redraw mid-chain (a new frame's look) plays the rest of it again (resume_chain()).
+	var/list/chain
+	var/chain_start = 0
+	var/list/chain_shift
 	/// Playback: the look the stand-in was last given.
 	var/drawn_look
 
@@ -238,7 +248,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/wait_started = 0
 	/// The recording's clock: frames are counted from `clock_frame` at world.time `clock_time`, `clock_rate` frames a
 	/// decisecond. In the slow-mo a frame is one tick of the slowed world; while an execution or finisher runs in it (or
-	/// is waited out after it) a frame is one real tick, so the replay plays the move at the speed it really had.
+	/// is waited out after it) a frame is GLOB.sandy_replay_move_speed real ticks (move_rate()).
 	var/clock_frame = 0
 	var/clock_time = 0
 	var/clock_rate = 1
@@ -250,6 +260,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/journaled = 0
 	/// How long the last wait was, for tests and recordings.
 	var/waited = 0
+	/// Playback: journaled animations played, and chains played again after a redraw, for tests and recordings.
+	var/events_played = 0
+	var/chains_resumed = 0
+	/// A move is about to start (move_starting()): the clock keeps the move's rate until this world.time.
+	var/move_soon = 0
+	/// Playback: what each journaled animation was played on and when, for tests and recordings.
+	var/list/event_log = list()
 	/// Every body that was mid-move during the wait: what turns up around them is recorded.
 	var/list/wait_bodies = list()
 
@@ -314,6 +331,20 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	clock_time = world.time
 	clock_rate = rate
 
+/// The clock's rate while a move runs: GLOB.sandy_replay_move_speed real ticks to a frame (so the replay, a frame a
+/// tick, plays the move that much faster), never slower than the slow-mo's own rate.
+/datum/sandy_replay/proc/move_rate()
+	var/speed = clamp(GLOB.sandy_replay_move_speed, 1, max(interval / world.tick_lag, 1)) // interval: a slowed tick
+	return 1 / (world.tick_lag * speed)
+
+/// A move is about to start in the recording (an execution's wind-up draws before its do_after starts): the clock
+/// goes to the move's rate now, so its first poses replay at the move's speed.
+/datum/sandy_replay/proc/move_starting()
+	if(state != SANDY_REPLAY_RECORDING)
+		return
+	move_soon = world.time + world.tick_lag
+	set_rate(move_rate())
+
 /// Whether `thing` is recorded at all.
 /datum/sandy_replay/proc/recordable(atom/movable/thing)
 	var/static/list/skipped = typecacheof(list(
@@ -358,7 +389,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(state != SANDY_REPLAY_RECORDING)
 		return
 	var/list/moving = moves_running()
-	set_rate((wait_started || length(moving)) ? 1 / world.tick_lag : 1 / interval)
+	set_rate((wait_started || length(moving) || move_soon >= world.time) ? move_rate() : 1 / interval)
 	var/frame = frame_now()
 	if(frame <= last_sampled)
 		return
@@ -544,7 +575,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	// An execution or finisher in the field is still going. The replay's hold would cut it short (its checks fail on a
 	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done.
 	wait_started = world.time
-	set_rate(1 / world.tick_lag)
+	set_rate(move_rate())
 
 /**
  * The recording is over: playback starts next tick, once the slow-mo's own looks are off everything. Without
@@ -556,6 +587,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	total = max(frame_now(), 1)
 	waited = wait_started ? world.time - wait_started : 0
 	state = SANDY_REPLAY_PENDING
+	if(replays)
+		hide_progress_bars()
 	deltimer(sample_timer)
 	sample_timer = null
 	if(!replays)
@@ -591,10 +624,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/datum/sandy_replay_track/track = ismovable(target) ? tracks[target] : null
 	if(!track || !(sandy_rig_picture(target) || isliving(target)))
 		return
+	if(clock_rate != move_rate() && length(moves_running()))
+		set_rate(move_rate()) // the move's first pose: the sample timer switches the clock only next tick
 	// The look it had before this call: what it was drawn as when the chain began, direct writes included.
 	open_event = list(frame_exact(), started_on ? clean_look(started_on) : null, world.tick_lag * clock_rate, list(step))
 	LAZYADD(track.events, list(open_event))
 	journaled++
+	event_log += "journal [track.thing.type] f[open_event[1]] tag=[step["tag"]] t=[step["time"]] pw=[step["pixel_w"]]"
 
 /// Plays `track`'s journaled animations due by `frame` on its stand-in, or on its puppet (a body's lean or flinch:
 /// shifted to where the puppet is drawn).
@@ -610,9 +646,13 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		var/list/event = track.events[track.event_at]
 		if(event[1] >= frame + 1)
 			return
+		if(track.mode == SANDY_TRACK_PUPPET && track.glide_until > world.time && standin?.loc && !track.unmasked)
+			return // still gliding to the tile it starts on: it starts when the glide is done
 		track.event_at++
-		if(!standin?.loc || (track.mode == SANDY_TRACK_PUPPET && (track.unmasked || standin.alpha == 0 || track.glide_until > world.time)))
+		if(!standin?.loc || (track.mode == SANDY_TRACK_PUPPET && (track.unmasked || standin.alpha == 0)))
+			event_log += "skip [track.thing?.type] f[event[1]] at [frame] a=[standin?.alpha] u=[track.unmasked]"
 			continue
+		events_played++
 		var/list/steps = event[4]
 		var/list/first = steps[1]
 		var/parallel = first["flags"] & ANIMATION_PARALLEL
@@ -625,6 +665,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			track.drawn_look = look
 		var/scale = event[3]
 		var/length = 0
+		var/list/chain = list()
 		for(var/i in 1 to length(steps))
 			var/list/arguments = list()
 			if(i == 1)
@@ -642,6 +683,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			if(i == 1 && event[1] > frame) // when in this tick it started
 				arguments["delay"] = (arguments["delay"] || 0) + (event[1] - frame) * world.tick_lag
 			length += (arguments["time"] || 0) + (arguments["delay"] || 0)
+			chain += list(arguments)
 			animate(arglist(arguments))
 		var/loops = first["loop"]
 		if(loops && loops < 0)
@@ -649,10 +691,81 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		else if(loops > 1)
 			length *= loops
 		track.anim_until = parallel ? max(track.anim_until, world.time + length) : world.time + length
+		event_log += "play [track.thing?.type] f[event[1]] at [frame] len=[length] steps=[length(chain)] pw=[chain[1]["pixel_w"]] t=[chain[1]["time"]] tag=[chain[1]["tag"]] shift=[shift_x],[shift_y]"
+		if(track.mode == SANDY_TRACK_PUPPET)
+			track.expect = standin.appearance // the chain's end values are ours, not game code's: nothing to fold
+			if(!parallel && !relative)
+				track.chain = chain
+				track.chain_start = world.time
+				track.chain_shift = list(shift_x, shift_y)
+
+/**
+ * A puppet was given a new frame's look while a journaled chain was playing on it, which ends the chain: plays the
+ * rest of it again from where it had got to. `shift_x`, `shift_y`: the pixel shift the puppet is drawn with now.
+ */
+/datum/sandy_replay/proc/resume_chain(datum/sandy_replay_track/track, shift_x, shift_y)
+	var/list/chain = track.chain
+	if(!length(chain) || track.anim_until <= world.time || !track.chain_shift)
+		return
+	var/atom/movable/thing = track.thing
+	var/list/first = chain[1]
+	var/cycle = 0
+	for(var/list/step as anything in chain)
+		cycle += (step["time"] || 0) + (step["delay"] || 0)
+	if(cycle <= 0)
+		return
+	var/elapsed = world.time - track.chain_start
+	var/loops = first["loop"] || 1
+	var/done_loops = round(elapsed / cycle)
+	if(loops > 0 && done_loops >= loops)
+		return
+	elapsed -= done_loops * cycle
+	var/move_x = shift_x - track.chain_shift[1]
+	var/move_y = shift_y - track.chain_shift[2]
+	var/list/rest = list()
+	var/at = 0
+	for(var/list/step as anything in chain)
+		var/span = (step["time"] || 0) + (step["delay"] || 0)
+		if(at + span <= elapsed && !length(rest))
+			at += span
+			continue
+		var/list/arguments = step.Copy()
+		if(!length(rest))
+			if(arguments[1] != thing)
+				arguments.Insert(1, thing)
+			var/into = elapsed - at
+			var/delay = arguments["delay"] || 0
+			if(into < delay)
+				arguments["delay"] = delay - into
+			else
+				arguments -= "delay"
+				arguments["time"] = max((arguments["time"] || 0) - (into - delay), 0)
+			arguments["loop"] = loops > 0 ? loops - done_loops : loops
+			arguments["flags"] = (arguments["flags"] || 0) | ANIMATION_END_NOW
+		else if(arguments[1] == thing)
+			arguments.Cut(1, 2)
+		if(!isnull(arguments["pixel_w"]))
+			arguments["pixel_w"] += move_x
+		if(!isnull(arguments["pixel_z"]))
+			arguments["pixel_z"] += move_y
+		rest += list(arguments)
+		at += span
+	for(var/list/arguments as anything in rest)
+		animate(arglist(arguments))
+	track.expect = thing.appearance
+	chains_resumed++
 
 // =========================================================================
 // PLAYBACK
 // =========================================================================
+
+/// The user's do_after bars hang on their real body, not where its puppet is drawn: one still fading out when the
+/// replay starts would float off the puppet, so the user stops seeing them.
+/datum/sandy_replay/proc/hide_progress_bars()
+	for(var/target in user.progressbars)
+		for(var/datum/progressbar/progress as anything in user.progressbars[target])
+			progress.user_client?.images -= progress.bar
+			event_log += "bar hidden on [target]"
 
 /// Starts the replay: the last sample is everything's real final state, then everything goes back to frame 0.
 /datum/sandy_replay/proc/begin()
@@ -663,6 +776,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		finish()
 		return
 	state = SANDY_REPLAY_PLAYING
+	hide_progress_bars()
 	watchdog = addtimer(CALLBACK(src, PROC_REF(finish)), (total + 2) * world.tick_lag + SANDY_REPLAY_WATCHDOG, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	try
 		setup_playback()
@@ -1009,6 +1123,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	thing.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	settle(track, thing, off_x * ICON_SIZE_X, off_y * ICON_SIZE_Y)
 	track.expect = thing.appearance
+	resume_chain(track, off_x * ICON_SIZE_X, off_y * ICON_SIZE_Y)
 
 /// Shifts `body` (just given a frame's look) by `off_x`, `off_y` pixels, and plays what is left of its tween.
 /datum/sandy_replay/proc/settle(datum/sandy_replay_track/track, atom/movable/body, off_x, off_y)
@@ -1242,7 +1357,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		catch(var/exception/error)
 			LAZYADD(problems, "[error] ([error.file]:[error.line])")
 	QDEL_NULL(eye)
-	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1)
+	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1, "events_played" = events_played, "chains_resumed" = chains_resumed, "event_log" = event_log.Copy())
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
 		user.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash[1], crash[2])
 	crash = null
@@ -1337,10 +1452,27 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return TRUE
 	if(DOING_INTERACTION(body, DOAFTER_SOURCE_HV_EXECUTION))
 		return TRUE
+	if(body.GetComponent(/datum/component/gorilla_fold))
+		return FALSE // a broken back left drawn bent (gorilla_finisher.dm): a pose that lasts, not a move
 	for(var/name in SANDY_REPLAY_RIG_HIDES)
 		if(body.filter_data?[name])
 			return TRUE
 	return FALSE
+
+/// A picture of `body`'s move was just made off any field turf's hand-over (the execution bar over them,
+/// finisher_bar.dm): every recording that has `body` records it too, so the replay draws it over the body's puppet.
+/proc/sandy_replay_picture_made(atom/movable/picture, mob/living/body)
+	for(var/user in GLOB.sandy_replays)
+		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+		if(replay.tracks[body])
+			replay.notice(picture)
+
+/// `body` is about to start an execution or finisher whose first poses come before sandy_replay_mid_move() can see it.
+/proc/sandy_replay_move_starting(mob/living/body)
+	for(var/user in GLOB.sandy_replays)
+		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+		if(replay.tracks[body])
+			replay.move_starting()
 
 /// Called from playsound(): a sound played in a slow-mo is recorded for its replay. A /sound datum is a looping
 /// sound's next segment (machines, weather), which plays on live and isn't recorded.
@@ -1389,7 +1521,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// Whether `thing` is a finisher rig's posed piece of a body, or a loose picture of the move's (a blood spray).
 /proc/sandy_rig_picture(atom/thing)
-	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx)
+	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx) || istype(thing, /obj/effect/abstract/hv_exec_bar)
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)

@@ -530,3 +530,71 @@
 	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "Offsets set mid-replay left the user drawn off their tile: [user.pixel_w],[user.pixel_z]")
 	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "Offsets set mid-replay left the user shifted: [user.pixel_x],[user.pixel_y]")
 	TEST_ASSERT(!user.filter_data?["chrome_rig_hide"] && user.alpha == 255, "The user is left hidden")
+
+/**
+ * An execution early in the slow-mo, then more happens in it (owner, 2026-11-12: "if an execution isn't the same
+ * speed, we won't get the whole replay if something happens after"). The slow-mo doesn't hold for a move that's over,
+ * the recording runs on at the slow-mo's own rate after the move, the replay shows what came after the move after
+ * the move's frames, ends on its own well before its watchdog, holds the user for exactly its length, and leaves
+ * everything as it really is.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/after_execution
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/after_execution/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayafter")
+	set_window(user, 5 SECONDS)
+	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human/consistent, spot(3, 0))
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	TEST_ASSERT(user.put_in_active_hand(pistol), "Test fixture: the pistol wouldn't go in the user's hand")
+	user.zone_selected = BODY_ZONE_HEAD
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	user.face_atom(victim)
+	INVOKE_ASYNC(pistol, TYPE_PROC_REF(/obj/item/gun, hv_start_execution), user, victim, null)
+	sleep(world.tick_lag)
+	TEST_ASSERT(sandy_replay_mid_move(user), "The wind-up isn't seen as a move in progress")
+	var/until = world.time + 4 SECONDS
+	while(sandy_replay_mid_move(user) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!sandy_replay_mid_move(user), "The execution never ended")
+	TEST_ASSERT_EQUAL(replay.state, 1, "The recording stopped when the execution ended")
+	TEST_ASSERT(window_of(user) && !window.hold_until, "The slow-mo ended, or held, for an execution that was already over")
+	var/move_over = replay.frame_now()
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(bystander.Move(spot(3, 1), NORTH), "Test fixture: the bystander couldn't step")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(replay.frame_now() - move_over <= round(1 SECONDS / replay.interval) + 2, "The recording didn't go back to the slow-mo's rate after the execution")
+	until = world.time + 6 SECONDS
+	while(replay.state == 1 && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(replay.state >= 2, "The slow-mo never ended")
+	TEST_ASSERT(!window.hold_until, "The slow-mo held at its end with no move going")
+	// The bystander's step is in the recording, after the execution's frames.
+	var/datum/sandy_replay_track/track = replay.tracks[bystander]
+	TEST_ASSERT_NOTNULL(track, "The bystander wasn't recorded")
+	var/stepped_at = -1
+	var/turf/stepped_to = spot(3, 1)
+	for(var/i in 1 to length(track.frames) step 6)
+		if(track.frames[i + 2] == stepped_to.x && track.frames[i + 3] == stepped_to.y)
+			stepped_at = track.frames[i]
+			break
+	TEST_ASSERT(stepped_at > move_over, "The step after the execution isn't in the recording after it (frame [stepped_at], move over at [move_over])")
+	while(replay.state != 3 && GLOB.sandy_replays[user] && world.time < until + 1 SECONDS)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay never played")
+	var/play_started = world.time
+	var/total = replay.total
+	TEST_ASSERT(held(user), "The user isn't held for the replay")
+	while(GLOB.sandy_replays[user] && world.time < play_started + 15 SECONDS)
+		if(world.time - play_started < (total - 1) * world.tick_lag)
+			TEST_ASSERT(held(user), "The user was let go before the replay was over")
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT(world.time - play_started <= (total + 2) * world.tick_lag + 0.2 SECONDS, "The replay was ended by its watchdog, not by playing out ([world.time - play_started] for [total] frames)")
+	TEST_ASSERT(GLOB.sandy_replay_last["played"], "Nothing replayed")
+	TEST_ASSERT(!held(user), "The user is still held after the replay")
+	TEST_ASSERT_EQUAL(get_turf(bystander), stepped_to, "The bystander isn't where they really are")
+	TEST_ASSERT(bystander.pixel_w == bystander.base_pixel_w && bystander.pixel_z == bystander.base_pixel_z, "The bystander is left drawn off their tile")
+	TEST_ASSERT(bystander.alpha == 255, "The bystander is left hidden")
+	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z && user.alpha == 255, "The user is left drawn off their tile or hidden")
