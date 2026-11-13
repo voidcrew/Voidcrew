@@ -61,7 +61,7 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Voucher** | A trade voucher: a physical chit earned from dangerous work, never bought with credits, and spent at any trader for restricted goods. Being an item, it can be stolen off you. |
 | **Chrome** | Cyberware, implantable robotic organs sold at the Chop Shop on the Undertow Exchange and the Back Bay at Quartermain Depot. See [Cyberware](cyberware.md). |
 | **Neural load** | The shared cost of chrome, implants, robotic organs, surgical enhancements and installed nanite programs against 20 capacity. Overload disables chrome and beneficial nanite programs. |
-| **Trader outpost** | One of three permanent markets, one per zone: general store in green, outfitter in yellow, black market in red. Turrets shoot people who keep starting fights. See [Trader Outposts](trader-outposts.md). |
+| **Trader outpost** | One of three permanent markets, one per zone: general store in green, outfitter in yellow, black market in red. Security officers arrest anyone seen committing a crime there, and from 3 wanted stars some shoot to kill. See [Trader Outposts](trader-outposts.md). |
 | **Player outpost** | A base a crew plants for itself using an outpost deed. See [Player Outposts](player-outposts.md). |
 | **Custom slot** | A saved spawn loadout tied to your account, swapped onto a ship's job at the cryogenic oversight console. The first is free; the second and third are bought with your persistent account credits. |
 

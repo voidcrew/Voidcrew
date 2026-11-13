@@ -282,7 +282,12 @@
 /// Cleans `tile`: its fresh mess and wrappers go, nothing else is touched
 /mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/clean_tile(turf/tile)
 	for(var/atom/movable/mess as anything in ambient_outpost_mess_on(tile))
-		qdel(mess)
+		// The wash a mop stroke gives (tg's cleaner, CLEAN_SCRUB), on the fresh mess only: the map's decor beside it
+		// stays. A wrapper goes in the bin, which this ambient janitor carries none of.
+		if(istype(mess, /obj/effect/decal/cleanable))
+			mess.wash(CLEAN_SCRUB)
+		else
+			qdel(mess)
 	LAZYSET(mopped, tile, world.time)
 	if(length(mopped) > 12)
 		mopped.Cut(1, 2)
@@ -775,7 +780,7 @@
 			target = sink
 			stand = spot
 			best_distance = distance
-	var/mob/living/basic/outpost_trader/barkeep = bar
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = bar
 	if(!target && istype(barkeep) && !ambient_counter_customer(barkeep))
 		stand = ambient_nearest_tile(doer, ambient_counter_spots(doer, barkeep, failed_spots))
 		target = stand ? barkeep : null
@@ -989,7 +994,7 @@
 	var/obj/structure/overmap/trader_outpost/outpost = istype(worker) ? worker.get_outpost() : null
 	if(!outpost)
 		return FALSE
-	var/mob/living/basic/outpost_trader/trader = outpost.trader
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = outpost.trader
 	if(QDELETED(trader))
 		var/list/traders = ambient_outpost_traders(doer.place)
 		trader = length(traders) ? traders[1] : null
@@ -1040,7 +1045,7 @@
 	doer.set_held(null)
 	playsound(doer, 'sound/items/handling/cardboard_box/cardboardbox_drop.ogg', 30, TRUE, -4)
 	if(--trips_left <= 0)
-		var/mob/living/basic/outpost_trader/trader = trader_ref?.resolve()
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
 		if(trader && prob(50))
 			ambient_trader_reply(trader, doer, AMBIENT_STRINGS_WORKERS, "sarge_convoy", "trader_reply", 6)
 		return AMBIENT_STEP_DONE

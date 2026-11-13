@@ -178,7 +178,7 @@
 			"No. Go square it with the depot first.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Easy. The turrets in here don't miss.",
+			"Easy. Depot security doesn't miss.",
 			"Do that again and the whole depot stops serving you.",
 			"I patch people up. I'd rather not start with you.",
 		),
@@ -282,5 +282,5 @@
 
 /// Ratchet behind his counter. A ripperdoc subtype, so the cradle in his bay
 /// talks through him during installs.
-/mob/living/basic/outpost_trader/ripperdoc/street_doc
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc/street_doc
 	shop_type = /datum/outpost_shop/vendor/street_doc

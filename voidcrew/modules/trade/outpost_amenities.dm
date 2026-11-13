@@ -71,15 +71,17 @@
 		/obj/item/stack/sheet/glass = 2)
 
 /obj/machinery/sleeper/outpost/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force)
+	if(attacking_item.force && attacking_item.damtype != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
-		outpost?.register_aggression(user)
+		outpost?.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /obj/machinery/sleeper/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(isliving(hitting_projectile.firer))
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
-		outpost?.register_aggression(hitting_projectile.firer)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost?.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 // =========================================================================
@@ -178,15 +180,17 @@
 
 // Attacking one is attacking outpost property
 /obj/structure/closet/secure_closet/outpost_rental/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && isliving(user))
+	if(attacking_item.force && attacking_item.damtype != STAMINA && isliving(user))
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
-		outpost?.register_aggression(user)
+		outpost?.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /obj/structure/closet/secure_closet/outpost_rental/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(isliving(hitting_projectile.firer))
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
-		outpost?.register_aggression(hitting_projectile.firer)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost?.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 #undef OUTPOST_LOCKER_RENTAL_FEE

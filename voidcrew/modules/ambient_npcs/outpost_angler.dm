@@ -311,7 +311,7 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	if(!istype(angler))
 		return FALSE
-	var/mob/living/basic/outpost_trader/pike = ambient_outpost_trader_of(doer.place, /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/pike = ambient_outpost_trader_of(doer.place, /datum/outpost_shop/vendor/bait_shop)
 	if(!pike || ambient_counter_customer(pike) || ambient_counter_crowd(pike, doer) >= 2)
 		return FALSE
 	var/turf/spot = ambient_nearest_tile(doer, ambient_counter_spots(doer, pike, failed_spots))
@@ -329,7 +329,7 @@
 
 /datum/ambient_activity/show_catch/arrive()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
-	var/mob/living/basic/outpost_trader/pike = pike_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/pike = pike_ref?.resolve()
 	switch(stage)
 		if(0)
 			stage = 1

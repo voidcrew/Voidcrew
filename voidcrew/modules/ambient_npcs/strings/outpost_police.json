@@ -1,0 +1,1506 @@
+{
+	"_owner": "P3 (outpost police life and voice): the officers' lines, one section per zone. %PLACE% fills in radio_call, radio_call_hot and body, and %LOOK% in radio_call and radio_call_hot; every other line is plain. Contexts: POLICE_LINE_* plus idle, talk, chat, reply, work and the extras named in police_life.dm. P13 adds stealth's lines as contexts named for their bark kinds (stealth_*); %PLACE% fills in the radio calls and %NAME% in the missing-friend lines, each with a plain line beside it.",
+	"halcyon": {
+		"knock": [
+			"Hey. Knock it off.",
+			"Easy there. Not in here.",
+			"Settle down, please. That's enough.",
+			"Let's keep our hands to ourselves.",
+			"Folks, that's enough now."
+		],
+		"warn": [
+			"You there. Stay where you are.",
+			"Hold it right there, please.",
+			"Stop. Stay right there.",
+			"Excuse me. A word, please.",
+			"Wait there, please. Don't move."
+		],
+		"order": [
+			"Hands where I can see them.",
+			"Stand still and keep your hands out.",
+			"Don't move. Hands out in front of you.",
+			"Hands out, please. Nice and slow.",
+			"Keep your hands still for me."
+		],
+		"chase": [
+			"Stop right there!",
+			"Security! Stop!",
+			"Hey! Stop!",
+			"Security! Stop running!",
+			"Stop! You're only making it worse!"
+		],
+		"stun": [
+			"Security! On the ground!",
+			"Down! Get down on the ground!",
+			"On the ground, now!",
+			"Get down! Down, now!",
+			"Security! Face down!"
+		],
+		"shots": [
+			"Shots fired, concourse!",
+			"Shots fired! All units!",
+			"Weapon fired! Concourse!",
+			"Shots fired! Get everyone down!",
+			"Shots fired! Clear the concourse!"
+		],
+		"all_units": [
+			"All units, all units. Concourse.",
+			"All units to the concourse.",
+			"All available units, concourse. Now.",
+			"Every unit to the concourse, please. Now.",
+			"All units, drop what you're doing. Concourse."
+		],
+		"marshal": [
+			"Close the lifts.",
+			"Lock the lifts. Nobody leaves.",
+			"Seal the lifts.",
+			"Lock the lifts down. Nobody in or out.",
+			"Lifts closed until further notice."
+		],
+		"lost": [
+			"Lost them. Check the stalls.",
+			"Where did they go? Check the stalls.",
+			"Lost sight. Spread out and look.",
+			"I've lost them. Check behind the counters.",
+			"Gone. Look in the corners, please."
+		],
+		"cuff": [
+			"Hands.",
+			"Turn around.",
+			"Hands behind your back.",
+			"Turn around for me, please.",
+			"Wrists together, please."
+		],
+		"walk": [
+			"Walk.",
+			"This way. Walk.",
+			"Keep moving. Walk.",
+			"Nice and easy. This way.",
+			"Come along now."
+		],
+		"make_way": [
+			"Make a hole.",
+			"Coming through. Make way.",
+			"Clear the way, please.",
+			"Excuse us. Coming through.",
+			"Step aside, please."
+		],
+		"book": [
+			"Cell for one. In you go.",
+			"In here. Sit tight.",
+			"Sit down. Somebody will be along.",
+			"In here, please. Mind your head.",
+			"This is you. Have a seat."
+		],
+		"release": [
+			"You're free to go.",
+			"That's all. You can go.",
+			"Off you go. Behave yourself.",
+			"Door's open. Have a better day.",
+			"All done. Take care of yourself."
+		],
+		"medic": [
+			"Medic! We need a medic here.",
+			"Somebody get a medic!",
+			"Down and not moving. Medic!",
+			"Medic, please! Someone's hurt!",
+			"We need a medic on the concourse!"
+		],
+		"officer_down": [
+			"Officer down!",
+			"Officer down! Concourse!",
+			"We have an officer down!",
+			"Officer down! I need help here!",
+			"Officer down! Somebody help!"
+		],
+		"clear": [
+			"Dispatch, show us clear.",
+			"All quiet. Show us clear.",
+			"Dispatch, we're clear here.",
+			"Desk, it's all over. Show us clear.",
+			"Desk, all handled. We're clear."
+		],
+		"cell_alarm": [
+			"Cell door! Somebody's at the cell door!",
+			"Cell door! Get over here!",
+			"Cell alarm! Somebody's forcing the door!",
+			"Cell door! Hands off it!",
+			"Someone's at the cells! Get over there!"
+		],
+		"move_along": [
+			"Excuse me. You can't sleep here.",
+			"Hey. Up you get. Not here.",
+			"Wakey wakey. Go and find a bunk.",
+			"Sorry, friend. No sleeping on the concourse.",
+			"Up you get. There are bunks for that."
+		],
+		"radio_call": [
+			"Desk to all units. Suspect in %LOOK%, near %PLACE%.",
+			"All units, be advised. Someone in %LOOK% by %PLACE%.",
+			"Desk to beat. Possible trouble by %PLACE%.",
+			"Desk to beat. Complaint from %PLACE%. Please take a look.",
+			"Desk to all units. Trouble on the concourse.",
+			"All units, check in. We have a disturbance.",
+			"Desk to beat. Please check the concourse.",
+			"Desk to all units. Reports of trouble. Please respond."
+		],
+		"radio_call_hot": [
+			"All units, weapons are out. Suspect in %LOOK%, last by %PLACE%.",
+			"All units, shots on the concourse. Suspect in %LOOK%.",
+			"Desk to all units. Armed and dangerous. Near %PLACE%.",
+			"Desk to all units. Armed suspect in %LOOK%. Take care.",
+			"All units, all units. Armed suspect on the concourse.",
+			"Desk to all units. Shots reported. Respond.",
+			"All units respond. Weapons drawn on the concourse.",
+			"All units, there's a gun on the concourse. Be careful."
+		],
+		"radio_ack": [
+			"Copy, desk. On my way.",
+			"Beat, responding.",
+			"Copy, desk. En route.",
+			"On my way, desk.",
+			"Heard, desk. Moving now.",
+			"Received. Heading over."
+		],
+		"search": [
+			"Hands off it.",
+			"Let's see what you've got.",
+			"Keep still. I'm going through your things.",
+			"Arms out, please. This won't take long.",
+			"Stand still while I check you."
+		],
+		"evidence": [
+			"Bagging this.",
+			"That goes in the bag.",
+			"I'll take that. It's evidence.",
+			"This is coming with me.",
+			"That's evidence now. Sorry."
+		],
+		"strip": [
+			"Everything in the tray, please.",
+			"Empty your pockets. All of it.",
+			"Boots, belt, bag. Everything in the locker.",
+			"Jewellery too, please.",
+			"All of it out. Slowly, please."
+		],
+		"bail": [
+			"Somebody paid for you. Out.",
+			"Your fine's been paid. You're out.",
+			"Good news. You're out.",
+			"Your friends came through. You're out.",
+			"Someone settled your fine. Off you go."
+		],
+		"fine_paid": [
+			"That's your fine settled. Sit tight.",
+			"Fine's paid. You won't be here long.",
+			"Paid in full. Not long now.",
+			"Your fine's covered. Have a seat.",
+			"All paid. We'll have you out shortly."
+		],
+		"locker_thief": [
+			"That's not yours!",
+			"Put it back! That's a prisoner's property!",
+			"Hey! Hands off that locker!",
+			"Step away from that locker!",
+			"Leave that alone! It's not yours!"
+		],
+		"body": [
+			"Desk, beat. There's a body on the floor by %PLACE%. Send the morgue, please.",
+			"Desk, I've got someone down and gone by %PLACE%. Morgue, please.",
+			"Desk, beat. Got a body here. Can we get the morgue down?",
+			"Beat to desk. Someone's passed on out here. Morgue, when you can.",
+			"Desk, beat. Body on the concourse. Keep folk back till the morgue's here."
+		],
+		"idle": [
+			"Quiet today.",
+			"Another quiet one.",
+			"Don't mind me.",
+			"Keep it civil, folks.",
+			"Lovely and calm.",
+			"Nice to see it busy."
+		],
+		"talk": [
+			"Afternoon. Keep the peace and we'll get along.",
+			"Anything I can help you with?",
+			"Halcyon Security. Move along if you've no business.",
+			"Mind the signs and enjoy your stay.",
+			"Good to see you. Stay out of trouble.",
+			"Hello there. Everything all right?"
+		],
+		"talk_prior": [
+			"I know you. Behave yourself.",
+			"You again. Stay out of trouble.",
+			"I've got my eye on you. Politely.",
+			"Nice and quiet this time, all right?",
+			"Let's not do this again, shall we?"
+		],
+		"chat": [
+			"How's your shift going?",
+			"The coffee's gone off again.",
+			"Did you see that freighter come in?",
+			"My feet hurt.",
+			"Have you tried the noodles at the diner?",
+			"The docking queue was a mess this morning."
+		],
+		"reply": [
+			"Same as ever.",
+			"Tell me about it.",
+			"I'd believe it.",
+			"Couldn't agree more.",
+			"Isn't it just.",
+			"Funny you should say."
+		],
+		"work": [
+			"Paperwork.",
+			"Nearly done.",
+			"Who loses a form like this?",
+			"Initial here, sign there.",
+			"Filed. Next one.",
+			"Where did I put the stamp?"
+		],
+		"check_in": [
+			"Beat to desk. Concourse is quiet.",
+			"Desk, beat. All quiet on the concourse.",
+			"Beat, checking in. Nothing to report.",
+			"Beat to desk. Concourse calm. Carrying on.",
+			"Desk, beat. Nothing doing out here."
+		],
+		"check_in_reply": [
+			"Desk copies.",
+			"Copy, beat.",
+			"Received. Carry on.",
+			"Thanks, beat. Carry on.",
+			"Lovely. Desk out."
+		],
+		"beat": [
+			"Everything all right here?",
+			"Any trouble today?",
+			"Anything to report?",
+			"Everything in order today?",
+			"Any trouble with customers?"
+		],
+		"trader_reply": [
+			"All quiet, officer.",
+			"Nothing to report. Thank you.",
+			"No trouble here. Not yet.",
+			"All fine. Thanks for checking.",
+			"Quiet one. Can't complain."
+		],
+		"guard": [
+			"Anyone interesting through today?",
+			"Busy at the gate?",
+			"How's the line looking?",
+			"Anybody give you trouble?",
+			"Need anything at the gate?"
+		],
+		"guard_reply": [
+			"Steady. Nothing odd.",
+			"A few. Nothing to worry about.",
+			"Same as ever.",
+			"All under control.",
+			"Couple of chatty ones. That's all."
+		],
+		"cell_check": [
+			"Quiet in there?",
+			"You all right in there?",
+			"Behave in there.",
+			"Need water in there?",
+			"Keep it down in there, please."
+		],
+		"cell_reply": [
+			"Sit down and be patient.",
+			"The clock's on the wall. Watch it.",
+			"Nobody's forgotten you.",
+			"Patience, please. We'll get to you.",
+			"Someone will be along soon."
+		],
+		"conversations": [
+			{
+				"opener": "Did the supply boat get in?",
+				"replies": [
+					"Late again.",
+					"Yesterday. You were asleep.",
+					"I heard it did."
+				]
+			},
+			{
+				"opener": "Do you think anyone reads the notices?",
+				"replies": [
+					"Nobody.",
+					"I did, once.",
+					"I read them."
+				]
+			},
+			{
+				"opener": "My boots are wrecked.",
+				"replies": [
+					"Get new ones.",
+					"Mine too.",
+					"Welcome to the beat."
+				]
+			},
+			{
+				"opener": "Who keeps parking freighters across two berths?",
+				"replies": [
+					"Same captain every time.",
+					"Write them up.",
+					"Not my department."
+				]
+			},
+			{
+				"opener": "Lunch at the diner after shift?",
+				"replies": [
+					"Go on, then.",
+					"Only if you're paying.",
+					"Can't. Paperwork."
+				]
+			}
+		],
+		"stealth_suspicious": [
+			"Hold on. What was that?",
+			"Hm. Something over there.",
+			"Did someone just move?",
+			"Hello? Anyone there?",
+			"Just a moment. What's that?"
+		],
+		"stealth_give_up": [
+			"Nothing. Back to it.",
+			"Must have been nothing.",
+			"All quiet. Carrying on.",
+			"Nobody there. Fine.",
+			"Seeing things. Carrying on."
+		],
+		"stealth_search": [
+			"Security. Come out where I can see you.",
+			"Nobody's in trouble yet. Show yourself.",
+			"I know someone's here.",
+			"Security. Come out slowly, please.",
+			"Let's not make this difficult. Come out."
+		],
+		"stealth_hit_unseen": [
+			"Ow! Who threw that?",
+			"Who did that?",
+			"Something hit me!",
+			"Ow! Who's there?",
+			"Hey! That hurt!"
+		],
+		"stealth_body": [
+			"Officer down! Over here!",
+			"One of ours is down! I need help here!",
+			"We've got someone down here!",
+			"Someone's hurt! Over here!",
+			"Body here! Get help!"
+		],
+		"stealth_chatter": [
+			"Quiet shift so far.",
+			"Docking fees went up again, did you hear?",
+			"Two more hours and I'm off.",
+			"Did you get the new rota?",
+			"My boots are killing me."
+		],
+		"stealth_target_downed": [
+			"Suspect down. Somebody call a medic.",
+			"Down. Stay there.",
+			"That's enough. Stay down.",
+			"Stay down, please. It's over.",
+			"Don't get up. Medic's coming."
+		],
+		"stealth_closet_open": [
+			"Out of there. Now.",
+			"I saw you get in. Come out.",
+			"Hiding in a locker? Really?",
+			"Come on out. Nobody's laughing.",
+			"Out of the locker, please."
+		],
+		"stealth_closet_give_up": [
+			"Can't get it open. Keep looking.",
+			"Locked tight. Search the area.",
+			"Forget the locker. Spread out.",
+			"It's jammed. Look around.",
+			"Can't shift it. Keep searching."
+		],
+		"stealth_heard": [
+			"What was that noise?",
+			"Did you hear that?",
+			"Something over there.",
+			"Hello? Who's that?",
+			"Did something fall over?"
+		],
+		"stealth_heard_again": [
+			"There it is again.",
+			"That's twice now. Checking it.",
+			"Again. I'm going to look.",
+			"Right, that's not nothing.",
+			"Again? I'm checking."
+		],
+		"stealth_gunfire": [
+			"Shots fired!",
+			"Gunfire! Get down!",
+			"Was that a gun?",
+			"Shots! Everybody down!",
+			"Gunshot! Take cover!"
+		],
+		"stealth_hold": [
+			"Holding here.",
+			"I'll keep this spot covered.",
+			"Staying put. Let me know.",
+			"I'll wait here.",
+			"Covering this way."
+		],
+		"stealth_help": [
+			"Need a hand over here!",
+			"Help! Over here!",
+			"Backup, now!",
+			"Somebody help me here!",
+			"Need a second pair of hands!"
+		],
+		"stealth_missing": [
+			"Where's %NAME%? Not answering.",
+			"Anyone seen %NAME%?",
+			"Do you read, %NAME%?",
+			"Has anyone heard from the beat?",
+			"Has anyone heard from the others?",
+			"Someone's gone quiet on us."
+		],
+		"stealth_radio_report": [
+			"Checking something by %PLACE%. Stand by.",
+			"Beat to desk, having a look by %PLACE%.",
+			"Beat to desk, checking a noise. Stand by.",
+			"Desk, having a quick look round. Stand by.",
+			"Beat to desk, something odd here. Checking.",
+			"Beat to desk. Probably nothing. Checking."
+		],
+		"stealth_radio_alarm": [
+			"Beat to all units, trouble by %PLACE%!",
+			"All units, need support by %PLACE%!",
+			"Help needed by %PLACE%! All units!",
+			"Beat to all units, need support now!",
+			"All units, trouble on the concourse!",
+			"Beat to all units, I need help here!"
+		],
+		"stealth_radio_missing": [
+			"Desk, %NAME% isn't answering. Checking.",
+			"No word from %NAME%. Going to look.",
+			"Desk, %NAME% missed check-in. Going to look.",
+			"Lost contact with a unit. Checking.",
+			"Desk, a unit's gone quiet. Checking.",
+			"Desk, missed check-in. Going to look."
+		],
+		"stealth_copy": [
+			"Copy. On my way.",
+			"Copy that, responding.",
+			"Heard. Moving.",
+			"Copy. Heading over.",
+			"On my way. Hold on."
+		],
+		"stealth_radio_dead": [
+			"Desk, do you read? Desk?",
+			"Radio's dead.",
+			"Nothing but static.",
+			"Hello? Desk? Anyone?",
+			"This radio's gone again."
+		]
+	},
+	"quartermain": {
+		"knock": [
+			"Hey. Knock it off.",
+			"Not on depot property.",
+			"Cut it out.",
+			"Pack it in.",
+			"Enough. Break it up."
+		],
+		"warn": [
+			"You. Stay right there.",
+			"Hold it. Right there.",
+			"Stop where you are.",
+			"Freeze. Depot Security.",
+			"Stay put. Don't move."
+		],
+		"order": [
+			"Hands out. Now.",
+			"Show me your hands.",
+			"Stay put. Hands where I can see them.",
+			"Hands out. Empty.",
+			"Don't move. Show your hands."
+		],
+		"chase": [
+			"Stop! Depot Security!",
+			"Halt!",
+			"Stop right there!",
+			"Stop! Now!",
+			"Depot Security! Stop running!"
+		],
+		"stun": [
+			"Depot Security! Down!",
+			"Get on the ground!",
+			"Down on the deck. Now.",
+			"Deck! Now!",
+			"Down! Face on the deck!"
+		],
+		"shots": [
+			"Shots fired, concourse!",
+			"Gunfire! Concourse!",
+			"Shots on the concourse!",
+			"Shots fired! Floor's hot!",
+			"Gunfire on the floor!"
+		],
+		"all_units": [
+			"All units, concourse.",
+			"Everybody to the concourse.",
+			"All units. Move.",
+			"All units, concourse. Double time.",
+			"Drop it and get to the concourse."
+		],
+		"marshal": [
+			"Lifts closed. Nobody leaves.",
+			"Close the lifts.",
+			"Lock down the lifts.",
+			"Lifts locked. Nobody moves.",
+			"Seal the lifts. Full lockdown."
+		],
+		"lost": [
+			"Lost them. Check the stalls.",
+			"Gone. Sweep the stalls.",
+			"No visual. Search the stalls.",
+			"Lost visual. Check the corners.",
+			"They're gone. Sweep it."
+		],
+		"cuff": [
+			"Hands.",
+			"Turn around.",
+			"Wrists.",
+			"Hands behind you.",
+			"Wrists. Together."
+		],
+		"walk": [
+			"Walk.",
+			"Move.",
+			"Keep walking.",
+			"Move. Straight ahead.",
+			"Walk. Don't stop."
+		],
+		"make_way": [
+			"Make a hole.",
+			"Clear the way.",
+			"Coming through.",
+			"Step aside.",
+			"Move. Depot Security."
+		],
+		"book": [
+			"Cell. In.",
+			"In you go. Sit.",
+			"Sit. Wait.",
+			"Your cell. Get in.",
+			"Sit there. Don't touch anything."
+		],
+		"release": [
+			"You're free to go.",
+			"Done. Go.",
+			"That's you finished. Out.",
+			"Out. Don't come back.",
+			"Clear off. You're done."
+		],
+		"medic": [
+			"Medic! Down here!",
+			"Need a medic. Now.",
+			"Medic, concourse!",
+			"Get a medic down here!",
+			"Medic! One down!"
+		],
+		"officer_down": [
+			"Officer down!",
+			"Man down! Officer down!",
+			"Officer down, concourse!",
+			"Officer down! Get help!",
+			"We've got one down! Officer down!"
+		],
+		"clear": [
+			"Dispatch, show us clear.",
+			"Clear here, desk.",
+			"Desk, we're clear.",
+			"Desk, situation over. Clear.",
+			"Clear. Back to patrol."
+		],
+		"cell_alarm": [
+			"Cell door!",
+			"Somebody's at the cell door!",
+			"Cell alarm! Move!",
+			"Cell door! Get away from it!",
+			"Cells! Somebody's on the door!"
+		],
+		"move_along": [
+			"Hey. Not here. Up.",
+			"No sleeping on depot property.",
+			"Up. Move along.",
+			"Find a bunk. Not here.",
+			"This is a concourse. Up."
+		],
+		"radio_call": [
+			"Desk to all. Subject in %LOOK%, by %PLACE%.",
+			"All units. Person of interest, %LOOK%.",
+			"Desk to beat. Trouble near %PLACE%.",
+			"Desk to beat. Complaint at %PLACE%. Check it.",
+			"Desk to all units. Disturbance on the concourse.",
+			"All units, respond to the concourse.",
+			"Desk to beat. Check the concourse.",
+			"Desk to all. Possible incident. Respond."
+		],
+		"radio_call_hot": [
+			"All units. Armed subject, %LOOK%, last by %PLACE%.",
+			"Shots fired. Subject in %LOOK%.",
+			"Weapons out near %PLACE%. All units.",
+			"All units. Armed subject in %LOOK%. Move.",
+			"All units. Armed subject on the concourse.",
+			"Shots reported. All units respond.",
+			"All units. Weapons out. Respond.",
+			"Desk to all. Gun on the floor. Respond."
+		],
+		"radio_ack": [
+			"Copy. Moving.",
+			"On it.",
+			"Copy, desk.",
+			"Moving now.",
+			"Responding.",
+			"Copy. En route."
+		],
+		"search": [
+			"Hands off.",
+			"Let's see it.",
+			"Hold still.",
+			"Arms out.",
+			"Still. I'm checking you."
+		],
+		"evidence": [
+			"Bagged.",
+			"Evidence. Mine now.",
+			"That goes in the bag.",
+			"Logged and bagged.",
+			"Evidence. Don't argue."
+		],
+		"strip": [
+			"Everything in the tray.",
+			"Pockets. All of it.",
+			"Everything goes in the locker.",
+			"Belt. Boots. Bag. Tray.",
+			"Turn it all out."
+		],
+		"bail": [
+			"Fine's paid. Out.",
+			"Somebody paid. You're out.",
+			"Paid up. Walk.",
+			"Fine's covered. Out.",
+			"Someone bailed you. Go."
+		],
+		"fine_paid": [
+			"Fine's paid. Sit.",
+			"Fine taken. Wait.",
+			"Paid. You'll be out soon.",
+			"Account charged. Sit down.",
+			"Fine's settled. Don't get comfortable."
+		],
+		"locker_thief": [
+			"Not yours. Put it down.",
+			"Hands off the lockers!",
+			"That's somebody's property. Down.",
+			"Step away from the locker!",
+			"That's not yours! Drop it!"
+		],
+		"body": [
+			"Desk, beat. Body by %PLACE%. Morgue.",
+			"Body on the floor, %PLACE%. Get the morgue down.",
+			"Desk, beat. One dead on the concourse. Morgue.",
+			"Beat to desk. Body. Need the morgue.",
+			"Desk, got a stiff out here. Morgue, sharpish."
+		],
+		"idle": [
+			"Quiet.",
+			"Nothing doing.",
+			"Depot's quiet today.",
+			"Another shift.",
+			"Clock's slow today.",
+			"Keep it moving, folks."
+		],
+		"talk": [
+			"Depot Security. State your business.",
+			"Keep moving. Nothing to see.",
+			"Keep it clean in here.",
+			"Help you?",
+			"Complaints go to the desk.",
+			"Move along. Busy day."
+		],
+		"talk_prior": [
+			"You. I remember you.",
+			"Back again. Behave.",
+			"Back again. Don't make me regret it.",
+			"I've got your file. Behave.",
+			"Keep your nose clean."
+		],
+		"chat": [
+			"Shift's slow.",
+			"Ever tried the coffee? Don't.",
+			"Another freighter in.",
+			"Audit's coming. Look busy.",
+			"They cut the coffee budget.",
+			"Docking queue's a mess."
+		],
+		"reply": [
+			"Yep.",
+			"Figures.",
+			"Don't I know it.",
+			"Typical.",
+			"Sounds right.",
+			"Could be worse."
+		],
+		"work": [
+			"Paperwork.",
+			"Forms.",
+			"Third copy.",
+			"Stamp. Sign. File.",
+			"Incident sheet.",
+			"Who filed this?"
+		],
+		"check_in": [
+			"Beat to desk. Concourse quiet.",
+			"Beat, desk. Clear.",
+			"Desk, beat. Nothing.",
+			"Beat. Concourse clear.",
+			"Desk, beat. Floor's quiet."
+		],
+		"check_in_reply": [
+			"Copy.",
+			"Desk copies.",
+			"Received.",
+			"Copy. Carry on.",
+			"Logged."
+		],
+		"beat": [
+			"All good here?",
+			"Any trouble?",
+			"Anything?",
+			"Anything odd today?",
+			"Keeping out of trouble?"
+		],
+		"trader_reply": [
+			"Quiet, officer.",
+			"Nothing to report.",
+			"All fine.",
+			"Slow day.",
+			"Nothing odd."
+		],
+		"guard": [
+			"Anyone through?",
+			"Gate busy?",
+			"Line moving?",
+			"Anything odd at the gate?",
+			"Permits all in order?"
+		],
+		"guard_reply": [
+			"Steady.",
+			"Some. Nothing odd.",
+			"Same.",
+			"Nothing I couldn't handle.",
+			"All logged."
+		],
+		"cell_check": [
+			"Quiet in there?",
+			"Behave.",
+			"You alive in there?",
+			"Keep it down in there.",
+			"Still with us?"
+		],
+		"cell_reply": [
+			"Sit.",
+			"Wait your turn.",
+			"Clock's on the wall.",
+			"Patience.",
+			"You'll be seen."
+		],
+		"conversations": [
+			{
+				"opener": "Third freighter this hour.",
+				"replies": [
+					"Fuel prices.",
+					"Busy.",
+					"Good for the depot."
+				]
+			},
+			{
+				"opener": "Coffee's off again.",
+				"replies": [
+					"Always.",
+					"Don't drink it.",
+					"You drank it?"
+				]
+			},
+			{
+				"opener": "Quiet shift.",
+				"replies": [
+					"Don't say that.",
+					"Enjoy it.",
+					"Knock on something."
+				]
+			},
+			{
+				"opener": "Audit's next week.",
+				"replies": [
+					"Again?",
+					"Hide the coffee.",
+					"Not my problem."
+				]
+			},
+			{
+				"opener": "Who left the forklift in the corridor?",
+				"replies": [
+					"Cargo.",
+					"Not me.",
+					"Write them up."
+				]
+			}
+		],
+		"stealth_suspicious": [
+			"Wait. Over there.",
+			"Hm. Something's off.",
+			"Was that movement?",
+			"Hold up. Movement.",
+			"Who's that over there?"
+		],
+		"stealth_give_up": [
+			"Nothing. As you were.",
+			"False alarm. Back to it.",
+			"Clear. Resuming patrol.",
+			"Nothing. Logging it.",
+			"Clear. Moving on."
+		],
+		"stealth_search": [
+			"Security. Make yourself known.",
+			"Step out. You're on company property.",
+			"Come out, please. We know you're here.",
+			"Depot Security. Out, now.",
+			"This area's restricted. Come out."
+		],
+		"stealth_hit_unseen": [
+			"Hey! Who threw that?",
+			"What the... who did that?",
+			"I've been hit!",
+			"Ow! Who's there?",
+			"Taking hits! Where from?"
+		],
+		"stealth_body": [
+			"Officer down! Over here!",
+			"Officer down! Send help!",
+			"We have a casualty here!",
+			"Body here! Get medical!",
+			"Someone's down! Over here!"
+		],
+		"stealth_chatter": [
+			"Did you file the incident sheet?",
+			"They cut overtime again.",
+			"Audit's next week, they say.",
+			"Third freighter this hour.",
+			"Who's got the incident forms?"
+		],
+		"stealth_target_downed": [
+			"Suspect's down. Get medical.",
+			"Stay down. It's over.",
+			"That's enough.",
+			"Subject's down.",
+			"Down and staying down."
+		],
+		"stealth_closet_open": [
+			"Out of the locker, now.",
+			"We saw you. Come out.",
+			"That's company storage. Out.",
+			"Open up and come out.",
+			"Locker's not a hiding spot. Out."
+		],
+		"stealth_closet_give_up": [
+			"Won't budge. Search around it.",
+			"It's sealed. Spread out.",
+			"Leave it. Check the area.",
+			"Jammed. Sweep the area.",
+			"Can't open it. Move on."
+		],
+		"stealth_heard": [
+			"Did you hear that?",
+			"What was that?",
+			"Noise over there.",
+			"What's that?",
+			"Hear something?"
+		],
+		"stealth_heard_again": [
+			"Again. I'm checking it.",
+			"There it is again.",
+			"Twice now. Going over.",
+			"That's not nothing.",
+			"Again. Checking."
+		],
+		"stealth_gunfire": [
+			"Shots fired!",
+			"Gunfire!",
+			"Weapons fire on the floor!",
+			"Shots! Get down!",
+			"Gunfire! Take cover!"
+		],
+		"stealth_hold": [
+			"Holding position.",
+			"I'll cover this end.",
+			"Staying here.",
+			"Covering this side.",
+			"I'll hold the door."
+		],
+		"stealth_help": [
+			"Need assistance!",
+			"Over here, now!",
+			"Backup!",
+			"Assistance, now!",
+			"Need hands here!"
+		],
+		"stealth_missing": [
+			"Has anyone seen %NAME%?",
+			"No check-in from %NAME%.",
+			"Report in, %NAME%.",
+			"Somebody's missed their check-in.",
+			"Who's missed the check-in?",
+			"One of ours isn't answering."
+		],
+		"stealth_radio_report": [
+			"Unit to desk, checking something near %PLACE%.",
+			"Desk, looking into a noise by %PLACE%.",
+			"Desk, checking a disturbance. Stand by.",
+			"Desk, checking an irregularity. Stand by.",
+			"Unit to desk, looking into something.",
+			"Unit to desk. Probably nothing. Checking."
+		],
+		"stealth_radio_alarm": [
+			"All units, incident near %PLACE%!",
+			"Support required near %PLACE%!",
+			"All units to %PLACE%, now!",
+			"All units, support required now!",
+			"All units, incident on the floor!",
+			"Unit requires support, now!"
+		],
+		"stealth_radio_missing": [
+			"Desk, no contact with %NAME%. Checking.",
+			"Desk, %NAME% isn't responding. Going to look.",
+			"Desk, no word from %NAME%. Checking it.",
+			"Lost a unit's signal. Checking.",
+			"Desk, a unit is unresponsive. Checking.",
+			"Missed check-in. Investigating."
+		],
+		"stealth_copy": [
+			"Copy, en route.",
+			"Acknowledged. Moving.",
+			"Copy that.",
+			"Responding.",
+			"Copy. On my way."
+		],
+		"stealth_radio_dead": [
+			"Desk? Desk, respond.",
+			"My radio's out.",
+			"Nothing. Radio's dead.",
+			"Desk? No signal.",
+			"Radio's down. Great."
+		]
+	},
+	"undertow": {
+		"knock": [
+			"Hey. Knock it off.",
+			"Not in front of me.",
+			"Oi. Enough.",
+			"Do that again and see.",
+			"Stop, or I stop you."
+		],
+		"warn": [
+			"You. Don't move.",
+			"Stay right there, friend.",
+			"Stop. Don't make me walk over.",
+			"Don't you move.",
+			"Stay there. I mean it."
+		],
+		"order": [
+			"Hands up. Slowly.",
+			"Hands. Where I can see them.",
+			"Don't be clever. Hands out.",
+			"Hands. Now. I won't ask twice.",
+			"Hands out or you're on the floor."
+		],
+		"chase": [
+			"Oi! Stop!",
+			"Get back here!",
+			"Run, then. See where it gets you.",
+			"You won't get far!",
+			"Stop, or I drop you!"
+		],
+		"stun": [
+			"Down! On the floor!",
+			"Guard! Get down!",
+			"Ground. Now. Or I help you.",
+			"Floor! Now!",
+			"Down! Face on the deck!"
+		],
+		"shots": [
+			"Shots fired, concourse.",
+			"Somebody's shooting. Concourse.",
+			"Gunfire. Concourse.",
+			"Shots fired! Put them down!",
+			"Gunfire! Return fire!"
+		],
+		"all_units": [
+			"All guards, concourse.",
+			"Everyone. Concourse. Now.",
+			"All units. Yes, now.",
+			"Every guard. Concourse. Run.",
+			"All guards. Bring guns."
+		],
+		"marshal": [
+			"Close the lifts.",
+			"Lifts shut. Nobody walks.",
+			"Shut the lifts. All of them.",
+			"Lifts shut. Anyone runs, drop them.",
+			"Lock it down. Nobody leaves."
+		],
+		"lost": [
+			"Lost them. Check the stalls.",
+			"Gone. Check the stalls.",
+			"Where'd they go? Stalls. Look.",
+			"Lost them. Tear the place apart.",
+			"Gone. Find them."
+		],
+		"cuff": [
+			"Hands.",
+			"Turn around.",
+			"Wrists. Don't be difficult.",
+			"Hands behind you. Now.",
+			"Don't twitch."
+		],
+		"walk": [
+			"Walk.",
+			"Move it.",
+			"Keep walking.",
+			"Walk, or get dragged.",
+			"Feet. Moving."
+		],
+		"make_way": [
+			"Make a hole.",
+			"Move. Guard coming through.",
+			"Out of the way.",
+			"Move or get moved.",
+			"Out of my way."
+		],
+		"book": [
+			"In you go.",
+			"Cell. Sit down.",
+			"In. Sit. Shut up.",
+			"In. Don't touch the door.",
+			"Home sweet home. In."
+		],
+		"release": [
+			"You're free to go.",
+			"Off you go.",
+			"Out. Try not to come back.",
+			"Out. Next time you stay.",
+			"Go. Before I change my mind."
+		],
+		"medic": [
+			"Medic. Somebody. Anybody.",
+			"Got one down. Medic.",
+			"Medic! Don't let them die on my shift.",
+			"Medic. Now.",
+			"Medic, before this one needs a bag!"
+		],
+		"officer_down": [
+			"Guard down!",
+			"Officer down!",
+			"Guard down! Concourse!",
+			"Guard down! Find who did it!",
+			"We've got a guard down!"
+		],
+		"clear": [
+			"Dispatch, show us clear.",
+			"Clear. Finally.",
+			"All clear. Can I sit down now?",
+			"Desk, it's done. Clear.",
+			"Clear. Nobody else moving."
+		],
+		"cell_alarm": [
+			"Cell door! Somebody's at the cell door!",
+			"Cell alarm. Of course.",
+			"Someone's breaking out!",
+			"Cell door! Get off it!",
+			"Someone's on the cell door. Stop them."
+		],
+		"move_along": [
+			"Hey. Wake up. Not here.",
+			"Up. This isn't a hotel.",
+			"Get up. Go and sleep it off somewhere else.",
+			"Up. Or I drag you.",
+			"Sleep somewhere else. Now."
+		],
+		"radio_call": [
+			"Desk to all. Someone in %LOOK%, by %PLACE%. Go and look.",
+			"All guards. %LOOK%. Near %PLACE%. Deal with it.",
+			"Desk to beat. Trouble by %PLACE%. Again.",
+			"Desk to beat. %PLACE%. Sort it out.",
+			"Desk to all. Trouble on the concourse. Again.",
+			"All guards. Go and look at the concourse.",
+			"Desk to beat. Something's kicking off.",
+			"Desk to all. Something's off. Go look."
+		],
+		"radio_call_hot": [
+			"All guards. Armed. %LOOK%. Last seen by %PLACE%.",
+			"Shooting. %LOOK%. Near %PLACE%. Everyone move.",
+			"Armed idiot in %LOOK%. By %PLACE%.",
+			"All guards. Armed. %LOOK%. Put them down.",
+			"All guards. Armed idiot on the concourse.",
+			"Shots fired. Everyone. Now.",
+			"All guards. Weapons out. Move.",
+			"Desk to all. Shots. Go."
+		],
+		"radio_ack": [
+			"Moving.",
+			"Yeah, yeah. Moving.",
+			"On my way.",
+			"Coming.",
+			"Heard. Moving.",
+			"Copy. Coming."
+		],
+		"search": [
+			"Hands off it.",
+			"Let's see what you're hiding.",
+			"Hold still. I'm looking.",
+			"Arms out. Don't twitch.",
+			"Let's see those pockets."
+		],
+		"evidence": [
+			"That's mine now.",
+			"Bagged. Thanks for that.",
+			"Evidence. Say goodbye to it.",
+			"Gone. Don't ask.",
+			"That's going in the bag."
+		],
+		"strip": [
+			"Everything in the tray.",
+			"Empty it all. Every pocket.",
+			"All of it in the locker. Yes, all.",
+			"Strip it. All of it.",
+			"Pockets. Boots. Everything."
+		],
+		"bail": [
+			"Somebody paid for you. Out.",
+			"Your fine's paid. Lucky you.",
+			"You've got friends. Out.",
+			"Someone wants you back. Go.",
+			"Paid. Get out."
+		],
+		"fine_paid": [
+			"Fine's paid. Lucky you.",
+			"Your crew paid. Sit.",
+			"Paid. Don't get comfortable.",
+			"Money's in. Wait.",
+			"Fine's covered. You'll live."
+		],
+		"locker_thief": [
+			"Hey! Not yours!",
+			"Put it back, thief.",
+			"Hands off the lockers!",
+			"Touch that again and lose the hand.",
+			"Step off the locker."
+		],
+		"body": [
+			"Desk, another one by %PLACE%. Morgue.",
+			"Body by %PLACE%. Somebody tell the morgue.",
+			"Desk, beat. Got a body. Morgue's got work.",
+			"Beat to desk. One more for the morgue.",
+			"Desk. Body on the floor. Morgue."
+		],
+		"idle": [
+			"Quiet. I hate quiet.",
+			"Nobody's died yet.",
+			"Another day in paradise.",
+			"Keep walking.",
+			"Eyes on you. All of you.",
+			"Smells like trouble today."
+		],
+		"talk": [
+			"What do you want?",
+			"Guard. Keep your hands to yourself.",
+			"Don't start anything. I'm tired.",
+			"Keep moving.",
+			"Got a problem? Take it outside.",
+			"Talk fast."
+		],
+		"talk_prior": [
+			"You again. Wonderful.",
+			"I remember you. Don't.",
+			"Back already? Behave.",
+			"Remember last time? I do.",
+			"One step wrong. That's all it takes."
+		],
+		"chat": [
+			"Shift never ends.",
+			"Tried the coffee? Don't.",
+			"Another night, another idiot.",
+			"Pay's late again.",
+			"Somebody stabbed the bartender again.",
+			"Lights are out on the lower deck."
+		],
+		"reply": [
+			"Tell me about it.",
+			"Hah. Yeah.",
+			"Of course.",
+			"Yeah.",
+			"Typical.",
+			"Don't start."
+		],
+		"work": [
+			"Paperwork.",
+			"Forms in triplicate.",
+			"Who writes these forms?",
+			"Forms. For a stabbing.",
+			"Who spelled this?",
+			"Another one for the file."
+		],
+		"check_in": [
+			"Beat to desk. Nobody's dead.",
+			"Desk, beat. Quiet.",
+			"Beat. Nothing. Over.",
+			"Desk, beat. Still standing.",
+			"Beat to desk. Quiet. Won't last."
+		],
+		"check_in_reply": [
+			"Desk copies.",
+			"Yeah. Copy.",
+			"Great. Carry on.",
+			"Copy. Keep your eyes open.",
+			"Fine. Desk out."
+		],
+		"beat": [
+			"Any trouble?",
+			"Anyone give you grief?",
+			"You all right here?",
+			"Seen anyone you don't like?",
+			"Anyone try anything?"
+		],
+		"trader_reply": [
+			"Nothing yet, guard.",
+			"Quiet. For once.",
+			"No trouble. Don't jinx it.",
+			"One shifty one. Gone now.",
+			"Nothing I'd call trouble."
+		],
+		"guard": [
+			"Anyone worth knowing through?",
+			"Busy at the gate?",
+			"Any more idiots?",
+			"Seen anyone armed?",
+			"Anything nasty come through?"
+		],
+		"guard_reply": [
+			"Steady.",
+			"Plenty of idiots.",
+			"Same as always.",
+			"Few blades. Nothing new.",
+			"Usual scum."
+		],
+		"cell_check": [
+			"Still breathing in there?",
+			"Quiet. Good.",
+			"Behave in there.",
+			"Make noise and I come in.",
+			"Still in one piece?"
+		],
+		"cell_reply": [
+			"Sit down.",
+			"Nobody's forgotten you. Pity.",
+			"Get comfortable.",
+			"Shut it.",
+			"Keep talking. See what happens."
+		],
+		"conversations": [
+			{
+				"opener": "Anyone ever pay you to do this?",
+				"replies": [
+					"Barely.",
+					"Not enough.",
+					"Sometimes."
+				]
+			},
+			{
+				"opener": "Another night, no bodies.",
+				"replies": [
+					"Early yet.",
+					"Don't jinx it.",
+					"Shame."
+				]
+			},
+			{
+				"opener": "Smell that?",
+				"replies": [
+					"The bar.",
+					"Plumbing.",
+					"Don't ask."
+				]
+			},
+			{
+				"opener": "Who cleaned up the bar fight?",
+				"replies": [
+					"Nobody.",
+					"The morgue.",
+					"Not me."
+				]
+			},
+			{
+				"opener": "Lights are out on the lower deck again.",
+				"replies": [
+					"Good. Can't see the mess.",
+					"Third time.",
+					"Don't go down there."
+				]
+			}
+		],
+		"stealth_suspicious": [
+			"Oi. What's that?",
+			"Something moved.",
+			"Who's there?",
+			"Something's there.",
+			"Show yourself."
+		],
+		"stealth_give_up": [
+			"Nothing. Rats.",
+			"Forget it.",
+			"Probably rats. Moving on.",
+			"Nothing. Waste of time.",
+			"Rats again."
+		],
+		"stealth_search": [
+			"Come on out. I won't ask twice.",
+			"I know you're here. Out.",
+			"Make this easy. Come out.",
+			"Come out, or I come in.",
+			"Out. Before I start shooting."
+		],
+		"stealth_hit_unseen": [
+			"Ow! Who threw that?",
+			"Right. Who did that?",
+			"Something hit me!",
+			"Who's there? Show yourself!",
+			"Right. Someone's dead."
+		],
+		"stealth_body": [
+			"Guard down! Over here!",
+			"One of ours is down! Get over here!",
+			"Someone's down here!",
+			"Body! Over here!",
+			"Guard down here! Move!"
+		],
+		"stealth_chatter": [
+			"Pay's late again.",
+			"Another night in this dump.",
+			"Saw a rat the size of a dog earlier.",
+			"Lights are out on the lower deck.",
+			"Bar fight again last night."
+		],
+		"stealth_target_downed": [
+			"Stay down.",
+			"That's you done.",
+			"Down. Good.",
+			"Stay there.",
+			"Should've stopped."
+		],
+		"stealth_closet_open": [
+			"Out of the box.",
+			"I saw you climb in. Out.",
+			"Get out of there.",
+			"Out. Slowly.",
+			"Out. Hands first."
+		],
+		"stealth_closet_give_up": [
+			"Stuck. Look around it.",
+			"Won't open. Forget it.",
+			"Leave it. Spread out.",
+			"Stuck. Fine.",
+			"Jammed. Look elsewhere."
+		],
+		"stealth_heard": [
+			"Hear that?",
+			"What was that?",
+			"Over there.",
+			"Who's that?",
+			"Something's moving."
+		],
+		"stealth_heard_again": [
+			"Again. Right.",
+			"That's twice. Going to look.",
+			"There it is again.",
+			"Enough. I'm looking.",
+			"Somebody's there."
+		],
+		"stealth_gunfire": [
+			"Shots!",
+			"Gunfire!",
+			"Someone's shooting!",
+			"Shots! Find them!",
+			"Gun! Get down!"
+		],
+		"stealth_hold": [
+			"Holding here.",
+			"I'm staying put.",
+			"I've got this end.",
+			"Holding. Come and try.",
+			"Nobody gets past me."
+		],
+		"stealth_help": [
+			"Need help here!",
+			"Over here!",
+			"Backup, now!",
+			"Get over here! Now!",
+			"Need guns here!"
+		],
+		"stealth_missing": [
+			"Where's %NAME% got to?",
+			"Not a word from %NAME%.",
+			"Answer me, %NAME%.",
+			"Someone's not answering.",
+			"Who's gone quiet?",
+			"Somebody's not checking in."
+		],
+		"stealth_radio_report": [
+			"Desk, checking something by %PLACE%.",
+			"Having a look by %PLACE%.",
+			"Desk, checking a noise.",
+			"Desk, having a look. Hang on.",
+			"Something's off here. Checking.",
+			"Desk, something's moving. Checking."
+		],
+		"stealth_radio_alarm": [
+			"All guards, trouble by %PLACE%!",
+			"Need bodies by %PLACE%, now!",
+			"Guns to %PLACE%! Now!",
+			"All guards, trouble, now!",
+			"All guards, need help here!",
+			"Trouble on the floor! Move!"
+		],
+		"stealth_radio_missing": [
+			"Desk, %NAME% gone quiet. Checking.",
+			"No word from %NAME%. Looking.",
+			"Desk, %NAME%'s not answering. Going.",
+			"Lost a guard. Going to look.",
+			"Desk, someone's gone quiet. Looking.",
+			"Missed check-in. Going to look."
+		],
+		"stealth_copy": [
+			"Copy. Coming.",
+			"On my way.",
+			"Yeah, heard. Moving.",
+			"Coming.",
+			"Copy. Moving."
+		],
+		"stealth_radio_dead": [
+			"Desk? Hello?",
+			"Radio's dead.",
+			"Nothing. Great.",
+			"Radio's out. Figures.",
+			"Desk? Answer me."
+		]
+	}
+}

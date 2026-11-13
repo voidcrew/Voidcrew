@@ -195,11 +195,11 @@
 			"I do forgive you, personally. The till doesn't. Come back later.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Oh, please don't do that, dear. The turrets get ever so cross.",
+			"Oh, please don't do that, dear. Security get ever so cross.",
 			"Now now, that's quite enough. One more and I simply can't help you.",
 		),
 		TRADER_LINE_AGGRESSION = list(
-			"In the GREEN zone?! Have you no shame? Turrets, please.",
+			"In the GREEN zone?! Have you no shame? Officer, please!",
 			"Goodness! Right. Embargo. And I'm telling everyone.",
 		),
 		TRADER_LINE_IDLE = list(

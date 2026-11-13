@@ -26,11 +26,25 @@
 /obj/item/gun
 	/// While an execution round is being fired: the damage it has dealt to the victim's head
 	var/hv_execution_head_damage = 0
+	/// Counts clicks that went to an execution, so try_fire_gun() can tell its own click took that path
+	var/hv_execution_claims = 0
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
 		return ..()
+	hv_execution_claims++
 	hv_start_execution(user, target, params)
+
+/**
+ * tg's fire_gun() returns nothing after the mouth path and after the marked head execution hook, so its click carries
+ * on down tg's attack chain and the gun also clubs the target (a pistol-whip on top of the execution). A click that
+ * went to an execution, whether the barrel was held or the wind-up was refused or broken, ends here instead.
+ */
+/obj/item/gun/try_fire_gun(atom/target, mob/living/user, params)
+	var/claims_before = hv_execution_claims
+	. = ..()
+	if(hv_execution_claims != claims_before)
+		return TRUE
 
 /// Called by tg's fire_gun() for a point-blank shot, after its own checks (safeties, firing pins, the
 /// mouth). A head-aimed one at someone who can be executed starts the execution instead of firing.
@@ -40,6 +54,7 @@
 		return FALSE
 	if(!hv_execution_possible(user, target))
 		return FALSE
+	hv_execution_claims++
 	hv_start_execution(user, target, params)
 	return TRUE
 

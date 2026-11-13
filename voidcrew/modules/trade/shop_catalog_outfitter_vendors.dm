@@ -188,7 +188,7 @@
 	contract_reward = FALSE
 
 /// One sale, both implants.
-/datum/shop_sku/skunk/strongarm/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/skunk/strongarm/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	..()
 

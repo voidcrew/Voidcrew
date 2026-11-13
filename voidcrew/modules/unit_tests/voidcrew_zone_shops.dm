@@ -242,7 +242,7 @@
 	var/grants = 0
 	var/nested_result
 
-/datum/shop_sku/zone_shop_probe/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/zone_shop_probe/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	grants++
 	if(at_dispense)
 		nested_result = at_dispense.Invoke()
@@ -436,7 +436,7 @@
 	var/datum/voidcrew_crew_record/crew = record_for(first)
 	var/obj/structure/overmap/ship/second = make_ship(crew)
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop/general)
-	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, run_loc_floor_bottom_left)
 	npc.shop = shop
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 	var/list/data = facet.ui_data(buyer)
@@ -471,7 +471,7 @@
 	var/datum/outpost_shop/shop = outpost.shop
 	TEST_ASSERT_NOTNULL(shop, "Outpost fixture has no main shop")
 	TEST_ASSERT(length(shop.skus), "Outpost fixture has no stock")
-	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, run_loc_floor_bottom_left)
 	npc.shop = shop
 	npc.outpost = outpost
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
@@ -529,7 +529,7 @@
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.add_sku(/datum/shop_sku/favor/pike_ledger, "favor")
 	var/datum/shop_sku/sku = shop.skus[1]
-	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, run_loc_floor_bottom_left)
 	npc.shop = shop
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 	var/list/data = facet.ui_data(buyer)
@@ -617,7 +617,7 @@
 	buyback.pay_credits = 300
 	buyback.demand = 3
 	shop.buybacks += buyback
-	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, run_loc_floor_bottom_left)
 	npc.shop = shop
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 	allocate(/obj/item/sea_crystal, seller)

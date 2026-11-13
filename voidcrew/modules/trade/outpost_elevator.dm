@@ -57,13 +57,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 // Attacking the elevator panel is aggression, matching the outpost's other
 // indestructible service machinery.
 /obj/machinery/outpost_elevator/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(attacking_item.force && outpost)
-		outpost.register_aggression(user)
+	if(attacking_item.force && attacking_item.damtype != STAMINA && outpost)
+		outpost.register_aggression(user, OUTPOST_CRIME_VANDALISM, null, attacking_item)
 	return ..()
 
 /obj/machinery/outpost_elevator/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
-	if(outpost && isliving(hitting_projectile.firer))
-		outpost.register_aggression(hitting_projectile.firer)
+	var/mob/living/shooter = outpost_living_attacker(hitting_projectile.firer)
+	if(outpost && shooter && hitting_projectile.is_hostile_projectile() && hitting_projectile.damage_type != STAMINA)
+		var/obj/item/fired_from = hitting_projectile.fired_from
+		outpost.register_aggression(shooter, OUTPOST_CRIME_VANDALISM, null, isitem(fired_from) ? fired_from : null)
 	return ..()
 
 /// The floor this panel is on: 0 = concourse, 1..N = berth number, -1 = unlinked.
@@ -163,14 +165,40 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	if(!may_ride_to(floor_id, ui.user))
 		balloon_alert(ui.user, "crew only!")
 		return TRUE
+	start_ride(floor_id, ui.user)
+	return TRUE
+
+/// Starts a ride to `floor_id` sent by `rider` standing in the alcove. TRUE if the car started moving.
+/obj/machinery/outpost_elevator/proc/start_ride(floor_id, mob/living/rider)
+	if(moving || !outpost || !isliving(rider) || rider.stat != CONSCIOUS)
+		return FALSE
+	if(isnull(floor_id) || floor_id == get_current_floor())
+		return FALSE
+	var/list/turf/own_alcove = get_own_alcove()
+	if(!own_alcove || !outpost.get_floor_alcove(floor_id) || !(get_turf(rider) in own_alcove))
+		return FALSE
+	if(!may_ride_to(floor_id, rider))
+		return FALSE
 	moving = TRUE
 	playsound(src, 'sound/machines/chime.ogg', 50, TRUE)
-	move_timer = addtimer(CALLBACK(src, PROC_REF(complete_ride), floor_id, WEAKREF(ui.user)), OUTPOST_ELEVATOR_TRAVEL_TIME, TIMER_STOPPABLE)
+	move_timer = addtimer(CALLBACK(src, PROC_REF(complete_ride), floor_id, WEAKREF(rider)), OUTPOST_ELEVATOR_TRAVEL_TIME, TIMER_STOPPABLE)
 	SStgui.update_uis(src)
 	return TRUE
 
-/// Whether this rider may send the car to the floor. Only a standard berth's own crew may go down to it.
+/// Whether this rider may send the car to the floor. Only a standard berth's own crew, or the outpost's police, may go down to it.
+/// The outpost's own security and recovery crews, on duty (never a player-controlled body): they go down to any berth
+/proc/outpost_elevator_staff(mob/rider, obj/structure/overmap/outpost)
+	if(!rider || !outpost || rider.mind || rider.client)
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = rider
+	if(istype(cop))
+		return cop.police?.outpost == outpost
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = rider
+	return istype(worker) && worker.outpost_recovery?.outpost == outpost
+
 /obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
+	if(outpost_elevator_staff(rider, outpost))
+		return TRUE
 	var/datum/outpost_berth/destination_berth = outpost?.get_floor_berth(floor_id)
 	return !destination_berth || destination_berth.allows_entry(rider)
 
@@ -203,6 +231,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 		say("Berth [floor_id] is crew only.")
 		SStgui.update_uis(src)
 		return
+	// Staff sent the car to a crew-only berth: only staff and whoever they hold come along, never hitchhikers
+	var/datum/outpost_berth/locked_berth = outpost.get_floor_berth(floor_id)
+	if(!outpost_elevator_staff(rider, outpost) || !locked_berth || locked_berth.allows_entry(null))
+		locked_berth = null
+	var/list/active_pulls = list()
+	for(var/turf/source_turf as anything in own_alcove)
+		for(var/mob/living/puller in source_turf)
+			var/atom/movable/pullee = puller.pulling
+			if(pullee && (get_turf(pullee) in own_alcove))
+				active_pulls += list(list(puller, pullee, puller.grab_state))
 	for(var/i in 1 to length(own_alcove))
 		var/turf/source_turf = own_alcove[i]
 		var/turf/target_turf = destination[min(i, length(destination))]
@@ -217,6 +255,37 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 					continue // travels with whatever it's buckled to
 			else if(istype(passenger, /obj/effect))
 				continue // decals, markers and other non-things stay put
+			if(locked_berth && !outpost_elevator_police_passenger(passenger, locked_berth))
+				continue
 			passenger.forceMove(target_turf)
+	for(var/list/saved_pull as anything in active_pulls)
+		var/mob/living/puller = saved_pull[1]
+		var/atom/movable/pullee = saved_pull[2]
+		if(QDELETED(puller) || QDELETED(pullee) || puller.pulling == pullee)
+			continue
+		// The two floors' cars need not be the same shape: whoever was held comes out beside whoever held them
+		if(!puller.Adjacent(pullee) && (get_turf(puller) in destination) && (get_turf(pullee) in destination))
+			for(var/turf/beside as anything in destination)
+				if(beside != get_turf(puller) && puller.Adjacent(beside) && !beside.is_blocked_turf(exclude_mobs = FALSE))
+					pullee.forceMove(beside)
+					break
+		if(puller.Adjacent(pullee))
+			puller.start_pulling(pullee, state = saved_pull[3], supress_message = TRUE)
 	playsound(destination[1], 'sound/machines/ding.ogg', 50, TRUE)
 	SStgui.update_uis(src)
+
+/// On a staff ride to a crew-only berth: whether `passenger` goes along (staff, people an officer holds, bodies the
+/// morgue crew haul, and things with nobody inside who couldn't go themselves)
+/proc/outpost_elevator_police_passenger(atom/movable/passenger, datum/outpost_berth/berth)
+	for(var/mob/living/person in passenger.get_all_contents())
+		if(outpost_elevator_staff(person, berth.outpost) || berth.allows_entry(person))
+			continue
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = person.pulledby
+		if(person == passenger && istype(escort) && outpost_elevator_staff(escort, berth.outpost))
+			continue
+		// A body in a morgue crew's bag (or on their gurney) goes where they take it
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/hauler = passenger.pulledby
+		if(person.stat == DEAD && passenger != person && istype(hauler) && outpost_elevator_staff(hauler, berth.outpost))
+			continue
+		return FALSE
+	return TRUE

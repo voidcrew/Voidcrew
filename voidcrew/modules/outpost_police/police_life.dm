@@ -1,0 +1,1431 @@
+/**
+ * # Outpost police: life and voice
+ *
+ * Owner: P3, then P13. What officers do at their patrol stops (a word at a shop front, coffee, a chat, a bench, a
+ * look at the cells, the sergeant's desk; the stops are stealth patrol routes, voidcrew/modules/stealth_police/),
+ * the ambient roles that bring them, what they say and the desk's radio calls. Spec 11 and spec-stealth 1.5.
+ * Lines come from AMBIENT_STRINGS_POLICE by profile section (`profile.voice_section`); stealth's barks are
+ * contexts there too ("stealth_*", police_stealth.dm). An officer's own call to the others is stealth's radio
+ * call (stealth_radio.dm); the desk's calls of a change of level are say_dispatch() here.
+ *
+ * How officers sit with the ambient system (build plan P0 note 18, the 8-person cap):
+ * - They are ambient outpost NPCs in their place's `npcs`, so the empty-outpost pause, the leash, the place's
+ *   speech clock and the killed-slot wait all work on them as on anyone.
+ * - They are NOT part of the crowd the cap counts: living_npcs() of an outpost leaves them out (that list is
+ *   "the crowd": the cap, the violence ducking, the convoy, the kingpin's shootout), and crowd_count() puts
+ *   them back for the one thing they matter to there, life_standing room. Their own roles count them separately
+ *   (wanted() is how many are missing), and the subsystem's settle pass is wrapped so that its running count
+ *   never includes an officer (settle_outpost() below). The ambient roles test sums only roles that apply to
+ *   an outpost, and these apply only where the map has a police station (life_has_station()), so it is unchanged.
+ *
+ * What each line context means (POLICE_LINE_*; the text is in the JSON, and a package may call any of them):
+ *   knock       the warning under one star ("Hey. Knock it off.")        warn      the first call at one star
+ *   order       the order to a suspect to comply                        chase     shouted after a runner
+ *   stun        the call at two stars ("On the ground!")                shots     "Shots fired" at three stars
+ *   all_units   the call at four stars                                  marshal   the marshal at five
+ *   lost        lost sight, look about                                  cuff/walk/make_way   the escort
+ *   book        into the cell                                           release/bail   let out / paid for
+ *   medic       a suspect or prisoner down                              officer_down / clear   radio calls
+ *   cell_alarm  a cell door being forced                                move_along   told to a sleeper
+ *   radio_call  the desk calling a change of level (with %PLACE% %LOOK%) radio_ack   an officer answering it
+ *   search / evidence / strip / locker_thief   the property steps
+ * Extra contexts of mine: radio_call_hot (the same at three stars and up), check_in / check_in_reply (a beat
+ * officer reporting in), beat / trader_reply (a word to a shop), guard / guard_reply (the sergeant and the
+ * checkpoint guard), cell_check / cell_reply (the sergeant and a prisoner), talk_prior (to someone with a record).
+ */
+
+/// The police radio frequency, the same at every outpost: messages are scoped to the speaker's network (the map
+/// region), so three outposts never hear each other, and it lies in the band any handheld radio can tune to.
+#define OUTPOST_POLICE_RADIO_FREQ 1473
+/// Nobody says a line of the same kind within this long of someone else saying it
+#define POLICE_SAY_GAP (4 SECONDS)
+/// The same words are not said again within this long
+#define POLICE_TEXT_GAP (20 SECONDS)
+/// After an officer falls every order is a level harder, in voice only, for this long
+#define POLICE_HARDER_TIME (60 SECONDS)
+/// Routine radio check-ins are no closer than this
+#define POLICE_CHECK_IN_GAP (150 SECONDS)
+/// How far round their post a sleeper is looked for
+#define POLICE_CHECK_RANGE 10
+
+// =========================================================================
+// WHAT THEY HAVE SAID (one per police, kept off the frozen core)
+// =========================================================================
+
+/// Cooldowns and the state of the radio for one outpost's officers. Holds no references to anything.
+/datum/outpost_police_voice
+	/// Context -> world.time anyone may speak a line of that kind again
+	var/list/context_free_at = list()
+	/// Text -> world.time it may be said again
+	var/list/text_free_at = list()
+	/// The alert level the desk last called
+	var/called_level = 0
+	/// The marshal has spoken for this incident
+	var/marshal_spoke = FALSE
+	/// Weakrefs to the officers already called down
+	var/list/called_down = list()
+	/// world.time until which orders run a level harder in voice
+	var/harder_until = 0
+	/// world.time the next routine radio check-in may be made
+	var/next_check_in_at = 0
+	/// Weakrefs to bodies on the floor an officer has called in, so each is called in once (capped, oldest out)
+	var/list/bodies_called = list()
+	/// Weakref to the officer who last called clear on the radio
+	var/datum/weakref/last_clear_speaker
+
+/datum/outpost_police_voice/Destroy()
+	called_down.Cut()
+	bodies_called.Cut()
+	last_clear_speaker = null
+	return ..()
+
+/// Prunes deleted entries from weakref list `refs` and returns TRUE if `thing` is in it
+/proc/outpost_police_weakref_seen(list/refs, datum/thing)
+	if(QDELETED(thing) || !islist(refs))
+		return FALSE
+	var/datum/weakref/needle = WEAKREF(thing)
+	for(var/datum/weakref/ref as anything in refs.Copy())
+		if(QDELETED(ref?.resolve()))
+			refs -= ref
+	return (needle in refs)
+
+/// Records `thing` in weakref list `refs`, pruning deleted entries and capping at `limit`
+/proc/outpost_police_weakref_note(list/refs, datum/thing, limit = 40)
+	if(QDELETED(thing) || !islist(refs) || outpost_police_weakref_seen(refs, thing))
+		return
+	refs += WEAKREF(thing)
+	if(length(refs) > limit)
+		refs.Cut(1, 2)
+
+/// Declared here, not in police_core.dm: the core is frozen and this is only mine
+/datum/outpost_police
+	/// What the officers have said lately (police_life.dm)
+	var/datum/outpost_police_voice/voice
+
+/datum/outpost_police/proc/life_voice()
+	if(!voice)
+		voice = new
+	return voice
+
+/// Whether the map gave this outpost a police station: a desk or a police lift
+/datum/outpost_police/proc/life_has_station()
+	return !!desk_turf || length(lift_turfs) > 0
+
+/// The first free tile behind a police door, or null
+/datum/outpost_police/proc/life_free_lift_turf()
+	for(var/turf/lift as anything in shuffle(lift_turfs.Copy()))
+		if(!lift.is_blocked_turf(exclude_mobs = FALSE))
+			return lift
+	return null
+
+/// Officers on the roster of this unit kind that are alive and not leaving
+/datum/outpost_police/proc/life_standing(unit_kind)
+	. = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(!QDELETED(officer) && officer.stat != DEAD && !officer.fading && officer.unit_kind == unit_kind)
+			.++
+
+/// Whether `who` is held in a cell right now
+/datum/outpost_police/proc/life_prisoner_held(datum/mind/who)
+	if(!who)
+		return FALSE
+	for(var/datum/outpost_police_cell/cell as anything in cells)
+		if(who in cell.prisoners)
+			return TRUE
+	return FALSE
+
+/// A cell with someone in it, or null
+/datum/outpost_police/proc/life_occupied_cell()
+	for(var/datum/outpost_police_cell/cell as anything in cells)
+		if(length(cell.prisoners))
+			return cell
+	return null
+
+/// Whether `tile` lies inside one of the station's holding cells
+/datum/outpost_police/proc/life_in_cell(turf/tile)
+	if(!tile)
+		return FALSE
+	for(var/datum/outpost_police_cell/cell as anything in cells)
+		if(tile in cell.tiles)
+			return TRUE
+	return FALSE
+
+/// Whether this officer can speak a police line right now (and transmit over a live headset if `radio_only`)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_can_speak(radio_only = FALSE)
+	if(QDELETED(src) || client || mind || stat != CONSCIOUS || fading || paused_at)
+		return FALSE
+	if(HAS_TRAIT(src, TRAIT_INCAPACITATED) || !human_npc_can_talk(src))
+		return FALSE
+	if(radio_only && !stealth_radio_ready())
+		return FALSE
+	return TRUE
+
+/// The sergeant, or failing that any officer who can speak on the radio
+/datum/outpost_police/proc/life_dispatcher()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/fallback
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(!officer.police_can_speak(radio_only = TRUE))
+			continue
+		if(officer.unit_kind == POLICE_UNIT_SERGEANT)
+			return officer
+		fallback ||= officer
+	return fallback
+
+/// Schedules the desk (whoever is on the radio when `delay` elapses, other than `sender`) to copy a radio call
+/datum/outpost_police/proc/life_schedule_desk_reply(mob/living/sender, delay = 2 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(life_desk_reply), sender ? WEAKREF(sender) : null), delay, TIMER_DELETE_ME)
+
+/datum/outpost_police/proc/life_desk_reply(datum/weakref/sender_ref)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/desk = life_dispatcher()
+	var/mob/living/sender = sender_ref?.resolve()
+	if(desk && desk != sender)
+		desk.police_say("check_in_reply", null, TRUE)
+
+/// The speaking officer nearest `where` within `range`, not `except`; null if none
+/datum/outpost_police/proc/life_nearest_officer(turf/where, range = 12, mob/living/except)
+	if(!where)
+		return null
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
+	var/best_distance = INFINITY
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(officer == except || !officer.police_can_speak())
+			continue
+		var/turf/there = get_turf(officer)
+		if(!there || there.z != where.z)
+			continue
+		var/distance = get_dist(there, where)
+		if(distance <= range && distance < best_distance)
+			best = officer
+			best_distance = distance
+	return best
+
+// =========================================================================
+// LINES
+// =========================================================================
+
+/**
+ * `values` as a list of cleaned text: "place" and "look" (a key may be written place, PLACE or %PLACE%).
+ * Markup is stripped and each value is bounded: speech carries only type names and catalog shop names (M15).
+ */
+/proc/outpost_police_values(list/values)
+	. = list()
+	if(!islist(values))
+		return
+	for(var/key in values)
+		var/text = values[key]
+		if(!istext(text))
+			continue
+		text = replacetext(replacetext(text, "\improper ", ""), "\proper ", "")
+		text = replacetext(replacetext(replacetext(text, "<", ""), ">", ""), "%", "")
+		text = copytext_char(trimtext(text), 1, 41)
+		if(length(text))
+			.[lowertext(replacetext("[key]", "%", ""))] = text
+
+/// Fills %PLACE%, %LOOK% and %NAME% in `line` from `values`, or returns null when a needed token is missing
+/proc/outpost_police_fill_line(line, list/values)
+	if(!istext(line))
+		return null
+	var/place = islist(values) ? values["place"] : null
+	var/look = islist(values) ? values["look"] : null
+	var/name = islist(values) ? values["name"] : null
+	if(findtext(line, "%PLACE%") && !place)
+		return null
+	if(findtext(line, "%LOOK%") && !look)
+		return null
+	if(findtext(line, "%NAME%") && !name)
+		return null
+	var/text = line
+	if(place)
+		text = replacetext(text, "%PLACE%", place)
+	if(look)
+		text = replacetext(text, "%LOOK%", look)
+	if(name)
+		text = replacetext(text, "%NAME%", name)
+	return text
+
+/**
+ * One of `lines` that `values` can fill (a line with %PLACE% needs a place, one with %LOOK% a look), filled in.
+ * When `busy_until` is given, lines still on cooldown (`busy_until[text] > world.time`) are skipped first so
+ * another free line is chosen instead of dropping the call. Null if there is none.
+ */
+/proc/outpost_police_pick_line(list/lines, list/values, list/busy_until)
+	if(!islist(lines))
+		return null
+	var/list/usable = list()
+	var/list/fresh = list()
+	for(var/line in lines)
+		var/filled = outpost_police_fill_line(line, values)
+		if(isnull(filled))
+			continue
+		usable += filled
+		if(!islist(busy_until) || busy_until[filled] <= world.time)
+			fresh += filled
+	if(!length(usable))
+		return null
+	if(islist(busy_until))
+		return length(fresh) ? pick(fresh) : null
+	return pick(usable)
+
+/// Line contexts that are strictly radio traffic (never spoken aloud into thin air when a headset is off or jammed)
+/proc/outpost_police_radio_only(context)
+	switch(context)
+		if(POLICE_LINE_RADIO_CALL, "radio_call_hot", POLICE_LINE_RADIO_ACK, POLICE_LINE_ALL_UNITS, POLICE_LINE_CLEAR, "check_in", "check_in_reply", POLICE_LINE_BODY, "stealth_radio_report", "stealth_radio_alarm", "stealth_radio_missing", "stealth_copy")
+			return TRUE
+	return FALSE
+
+/// One level harder, in voice only (after an officer falls)
+/proc/outpost_police_harder(context)
+	switch(context)
+		if(POLICE_LINE_KNOCK)
+			return POLICE_LINE_WARN
+		if(POLICE_LINE_WARN)
+			return POLICE_LINE_ORDER
+		if(POLICE_LINE_ORDER)
+			return POLICE_LINE_STUN
+		if(POLICE_LINE_STUN)
+			return POLICE_LINE_SHOTS
+	return context
+
+// Everything an officer says comes from the police file, by the zone's voice
+/mob/living/carbon/human/npc/ambient_npc/outpost/police
+	dialogue_file = AMBIENT_STRINGS_POLICE
+	dialogue_section = "halcyon"
+	speech_pace = 0.7
+	routine = list(
+		/datum/ambient_activity/idle = 3,
+		/datum/ambient_activity/chat = 1,
+	)
+	/// Weakref to the coffee machine they use, and when it was last looked for
+	var/datum/weakref/coffee_ref
+	var/coffee_looked_at = 0
+	/// The last everyday line they said (say_line()), which they don't say again straight after
+	var/last_line
+	/// The last police_say() template they used, so the same officer avoids repeating it back-to-back
+	var/last_police_line
+	/// The last two-person conversation opener they started, so they don't open with the same one twice running
+	var/last_conversation
+	/// world.time the sergeant may next leave the desk for a coffee (stop_activity_for(): the desk)
+	var/next_desk_coffee = 0
+
+// The beat is a stealth patrol route; what a beat officer does at each stop is the stop's (police_stealth.dm)
+
+/// The desk: sits, writes, looks in on the cell, a word with the guard
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant
+	routine = list(
+		/datum/ambient_activity/police_desk = 8,
+		/datum/ambient_activity/police_coffee = 1,
+		/datum/ambient_activity/chat = 1,
+	)
+
+/// The zone's voice: their section of the police file
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_voice_section()
+	return police?.profile?.voice_section || "halcyon"
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/get_lines(context)
+	var/list/lines = ambient_dialogue_lines(AMBIENT_STRINGS_POLICE, life_voice_section(), context)
+	return outpost_fresh_lines(length(lines) ? lines : ..(), last_line)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/say_line(line)
+	last_line = line
+	return ..()
+
+/// `lines` without `last` (what the speaker said last), unless that would leave nothing
+/proc/outpost_fresh_lines(list/lines, last)
+	if(!last || length(lines) < 2 || !(last in lines))
+		return lines
+	return lines - last
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/pick_conversation()
+	var/list/entry = ambient_dialogue_section(AMBIENT_STRINGS_POLICE, life_voice_section())
+	var/list/conversations = entry?["conversations"]
+	if(!length(conversations))
+		return ..()
+	var/list/fresh = list()
+	for(var/list/candidate in conversations)
+		if(islist(candidate) && istext(candidate["opener"]) && candidate["opener"] != last_conversation)
+			fresh += list(candidate)
+	var/list/conversation = length(fresh) ? pick(fresh) : pick(conversations)
+	if(!islist(conversation) || !istext(conversation["opener"]))
+		return null
+	last_conversation = conversation["opener"]
+	var/list/replies = conversation["replies"]
+	return list(conversation["opener"], length(replies) ? pick(replies) : null)
+
+/**
+ * Says one line of kind `line` (POLICE_LINE_* or one of mine), with `values` ("place", "look") filled in, on
+ * the radio too if `radio`. Nobody says a line of the same kind within POLICE_SAY_GAP of someone else, and the
+ * same words are not said twice in a row. Never sleeps. Returns the words said, or null if nothing was.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_say(line, list/values, radio = FALSE)
+	if(!police_can_speak(radio_only = (radio && outpost_police_radio_only(line))))
+		return null
+	var/datum/outpost_police_voice/voice = police?.life_voice()
+	var/context = line
+	if(voice && voice.harder_until > world.time)
+		context = outpost_police_harder(line)
+	if(voice && voice.context_free_at[context] > world.time)
+		return null
+	var/list/clean_values = outpost_police_values(values)
+	var/list/candidates = get_lines(context)
+	var/list/fresh_templates = list()
+	var/list/fallback_templates = list()
+	for(var/raw in candidates)
+		var/filled = outpost_police_fill_line(raw, clean_values)
+		if(isnull(filled))
+			continue
+		if(voice && voice.text_free_at[filled] > world.time)
+			continue
+		fallback_templates += raw
+		if(raw != last_police_line)
+			fresh_templates += raw
+	var/list/pool = length(fresh_templates) ? fresh_templates : fallback_templates
+	if(!length(pool))
+		return null
+	var/picked_raw = pick(pool)
+	var/text = outpost_police_fill_line(picked_raw, clean_values)
+	if(!text)
+		return null
+	last_police_line = picked_raw
+	if(voice)
+		voice.context_free_at[context] = world.time + POLICE_SAY_GAP
+		voice.text_free_at[text] = world.time + POLICE_TEXT_GAP
+		if(context == POLICE_LINE_CLEAR)
+			voice.last_clear_speaker = WEAKREF(src)
+		if(length(voice.text_free_at) > 30)
+			for(var/old_text in voice.text_free_at.Copy())
+				if(voice.text_free_at[old_text] <= world.time)
+					voice.text_free_at -= old_text
+	// A moment of quiet after a line that matters, so nobody chats over it
+	next_line_at = max(next_line_at, world.time + 6 SECONDS)
+	life_speak(text, radio)
+	return text
+
+/// Says `text` aloud, over the headset if `radio` and they have a live unjammed radio
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_speak(text, radio)
+	if(radio && stealth_radio_ready() && life_headset())
+		// Everyone on the roster is tuned to the frequency, so the others hear it
+		police?.life_tune_all()
+		INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, say), ";[text]")
+		return
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, say), text)
+
+/// Their headset, tuned to the police frequency, or null if they wear none
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_headset()
+	var/obj/item/radio/headset = ears
+	if(!istype(headset))
+		return null
+	if(headset.frequency != OUTPOST_POLICE_RADIO_FREQ)
+		headset.set_frequency(OUTPOST_POLICE_RADIO_FREQ)
+	return headset
+
+/// Tunes every officer's headset to the police frequency
+/datum/outpost_police/proc/life_tune_all()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		officer.life_headset()
+
+/// The desk: the sergeant (or the nearest officer) says `line` on the radio
+/datum/outpost_police/proc/say_dispatch(line, list/values)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/speaker = life_dispatcher()
+	return speaker?.police_say(line, values, TRUE)
+
+/// The heat `officer` knows `mind` has so far, including any pending reports this officer witnessed
+/datum/outpost_police/proc/life_officer_heat(mob/living/officer, datum/mind/mind)
+	if(!mind)
+		return 0
+	var/datum/outpost_warrant/warrant = warrants[mind]
+	var/heat = warrant ? max(warrant.heat, current_prior(warrant)) : 0
+	if(officer && length(pending_reports))
+		var/datum/weakref/officer_ref = WEAKREF(officer)
+		for(var/datum/outpost_pending_report/report as anything in pending_reports)
+			if(!(officer_ref in report.witnesses))
+				continue
+			var/mob/living/offender = report.offender?.resolve()
+			if(offender?.mind != mind)
+				continue
+			heat = heat_after(heat, report.crime)
+			for(var/list/followup as anything in report.followups)
+				heat = heat_after(heat, followup[1])
+	return heat
+
+/// How far off an officer who saw a crime still shouts at whoever did it
+#define POLICE_SHOUT_RANGE 7
+
+/**
+ * `witness` saw `offender` do `crime` (report_crime()): an officer shouts at them. A hand in a property locker is
+ * "locker_thief"; anything else that leaves them under one star is "knock", one that makes it one star "warn". Two
+ * stars and up is the arrest's and the fight's to voice, and so is anyone an arrest is already on. Never sleeps.
+ */
+/datum/outpost_police/proc/witness_shout(atom/witness, mob/living/offender, crime)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = witness
+	if(!istype(officer) || QDELETED(offender) || !offender.mind || !officer.police_can_speak() || officer.case)
+		return null
+	if(officer.z != offender.z || get_dist(officer, offender) > POLICE_SHOUT_RANGE)
+		return null
+	var/line
+	switch(crime)
+		if(OUTPOST_CRIME_LOCKER_THEFT)
+			line = POLICE_LINE_LOCKER_THIEF
+		// Said to someone the police already have in hand, or not seen in person
+		if(OUTPOST_CRIME_RESIST, OUTPOST_CRIME_SLIP_CUFFS, OUTPOST_CRIME_ABET, OUTPOST_CRIME_ACCOMPLICE, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_ASSAULT_OFFICER, OUTPOST_CRIME_KILL_OFFICER)
+			return null
+		else
+			var/datum/outpost_police_case/case = cases[offender.mind]
+			if(case && !QDELETED(case))
+				return null
+			var/heat = life_officer_heat(officer, offender.mind)
+			switch(stars_of(heat_after(heat, crime)))
+				if(0)
+					line = POLICE_LINE_KNOCK
+				if(1)
+					line = POLICE_LINE_WARN
+				else
+					return null
+	if(!officer.buckled)
+		officer.face_atom(offender)
+	return officer.police_say(line)
+
+#undef POLICE_SHOUT_RANGE
+
+/// Up to `count` officers answer the desk, nearest `where` first, a moment apart
+/datum/outpost_police/proc/life_acknowledge(count, turf/where, mob/living/except)
+	var/list/answered = list()
+	for(var/i in 1 to count)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer
+		var/best_distance = INFINITY
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/candidate in officers)
+			if(candidate == except || (candidate in answered) || !candidate.police_can_speak(radio_only = TRUE))
+				continue
+			var/turf/cand_turf = get_turf(candidate)
+			var/distance = where ? ((cand_turf && cand_turf.z == where.z) ? get_dist(cand_turf, where) : 1000) : rand(1, 20)
+			if(distance < best_distance)
+				officer = candidate
+				best_distance = distance
+		if(!officer)
+			break
+		answered += officer
+		// Spaced past POLICE_SAY_GAP, or every answer after the first is refused as a chorus
+		addtimer(CALLBACK(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_say), POLICE_LINE_RADIO_ACK, null, TRUE), (2.5 SECONDS) + ((i - 1) * (POLICE_SAY_GAP + 0.5 SECONDS)), TIMER_DELETE_ME)
+
+/// A beat officer reporting in over the radio, and the desk answering; not too often, and never "all quiet" while
+/// someone actively wanted (outside custody) is at the outpost or a case is open
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_check_in()
+	var/datum/outpost_police_voice/voice = police?.life_voice()
+	if(!voice || voice.next_check_in_at > world.time || !police_can_speak(radio_only = TRUE))
+		return
+	if(length(police.cases) || length(police.dispatch_active_suspects()))
+		return
+	// The gap starts with the attempt, as before: an officer who can't get the words out doesn't try at every stop
+	voice.next_check_in_at = world.time + POLICE_CHECK_IN_GAP
+	if(!police_say("check_in", null, TRUE))
+		return
+	police.life_schedule_desk_reply(src, 2 SECONDS)
+
+// ----- what they say when someone talks to them -----
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/talked_to(mob/living/user)
+	if(case || npc_exit || dispatch_riding || dispatch_responding())
+		return
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
+	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
+		return
+	if(isliving(user) && police && ((user.mind && police.get_stars(user.mind) >= 1) || police.force_level(user, src) != POLICE_FORCE_NONE))
+		return
+	if(!talk_ready(user))
+		return
+	if(!buckled)
+		face_atom(user)
+	var/datum/outpost_warrant/record = user.mind ? police?.get_warrant(user.mind) : null
+	var/has_prior = record && (record.heat > 0 || police.current_prior(record) > 0 || record.barred_until > world.time)
+	speak_context(has_prior ? "talk_prior" : AMBIENT_LINE_TALK, user, force = TRUE)
+
+// ----- an officer falls -----
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/Initialize(mapload, datum/human_npc_order/order)
+	. = ..()
+	RegisterSignal(src, COMSIG_LIVING_DEATH, PROC_REF(life_on_death))
+	// Whatever headset their outfit gave them listens to the police
+	life_headset()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_on_death(datum/source, gibbed)
+	SIGNAL_HANDLER
+	if(held_item)
+		put_drink_down(null)
+	police?.life_call_officer_down(src)
+
+/// "Officer down!" from whoever sees it, and every order runs a level harder for a while
+/datum/outpost_police/proc/life_call_officer_down(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(QDELETED(officer))
+		return
+	var/datum/outpost_police_voice/voice = life_voice()
+	if(outpost_police_weakref_seen(voice.called_down, officer))
+		return
+	outpost_police_weakref_note(voice.called_down, officer, 24)
+	voice.harder_until = world.time + POLICE_HARDER_TIME
+	// Only an officer who sees it go down calls it; the others find the body (stealth_check_bodies())
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/witness in officers)
+		if(witness != officer && witness.police_can_speak() && perception.sees(witness, officer))
+			if(witness.police_say(POLICE_LINE_OFFICER_DOWN, null, TRUE))
+				return
+
+// ----- the sergeant overhears a prisoner -----
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/Initialize(mapload, datum/human_npc_order/order)
+	. = ..()
+	RegisterSignal(src, COMSIG_MOVABLE_HEAR, PROC_REF(life_on_overheard))
+	become_hearing_sensitive(AMBIENT_NPC_TRAIT)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/life_on_overheard(datum/source, list/hearing_args)
+	SIGNAL_HANDLER
+	var/atom/movable/speaker = hearing_args[HEARING_SPEAKER]
+	if(!ismob(speaker) || speaker == src || hearing_args[HEARING_RADIO_FREQ] || !police_can_speak() || case || npc_exit || dispatch_riding)
+		return
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
+	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
+		return
+	var/mob/prisoner = speaker
+	if(prisoner.z != z || get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind) || !reaction_ready("cell reply", 20 SECONDS))
+		return
+	addtimer(CALLBACK(src, PROC_REF(life_answer_cell), WEAKREF(prisoner)), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/life_answer_cell(datum/weakref/prisoner_ref)
+	var/mob/prisoner = prisoner_ref?.resolve()
+	if(QDELETED(prisoner) || !police_can_speak() || case || prisoner.z != z || get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind))
+		return
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
+	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
+		return
+	if(!buckled)
+		face_atom(prisoner)
+	speak_context("cell_reply", prisoner, force = TRUE)
+
+// =========================================================================
+// DISPATCH CHATTER (the tick)
+// =========================================================================
+
+/// Once a second (police_core.dm tick()): the desk calls each change of active level, officers answer, all clear
+/datum/outpost_police/proc/tick_life()
+	var/datum/outpost_police_voice/voice = life_voice()
+	var/level = dispatch_active_level()
+	if(level > voice.called_level)
+		var/old_level = voice.called_level
+		voice.called_level = level
+		life_call_level(level, old_level)
+	else if(level < voice.called_level)
+		if(level > 0)
+			voice.called_level = level
+		else if(!length(cases) || voice.context_free_at[POLICE_LINE_CLEAR] > world.time)
+			voice.called_level = 0
+			life_call_clear()
+	if(level >= 5 && !voice.marshal_spoke)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+			if(officer.unit_kind == POLICE_UNIT_MARSHAL && officer.police_can_speak())
+				voice.marshal_spoke = !!officer.police_say(POLICE_LINE_MARSHAL, null, TRUE)
+				break
+	else if(level < 5)
+		voice.marshal_spoke = FALSE
+
+/// The level rose from `old_level` to `level`: the desk calls it, officers answer, and the louder calls follow
+/datum/outpost_police/proc/life_call_level(level, old_level)
+	var/list/values = life_suspect_values()
+	var/datum/outpost_warrant/top = life_top_warrant()
+	var/turf/where = get_turf(top?.mind?.current)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/dispatcher = life_dispatcher()
+	if(dispatcher?.police_say(level >= 3 ? "radio_call_hot" : POLICE_LINE_RADIO_CALL, values, TRUE))
+		life_acknowledge(level >= 3 ? 2 : 1, where, dispatcher)
+	if(level >= 3 && old_level < 3)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/shouter = where ? life_nearest_officer(where, 20) : null
+		shouter ||= dispatcher
+		shouter?.police_say(POLICE_LINE_SHOTS, null, TRUE)
+	if(level >= 4 && old_level < 4)
+		addtimer(CALLBACK(src, PROC_REF(say_dispatch), POLICE_LINE_ALL_UNITS), 3 SECONDS, TIMER_DELETE_ME)
+
+/// Nobody is actively wanted any more: a field unit reports clear and the desk answers
+/datum/outpost_police/proc/life_call_clear()
+	var/datum/outpost_police_voice/voice = life_voice()
+	// A response unit standing down may have called it this same tick (dispatch runs first): the desk still copies it
+	var/just_called = voice.context_free_at[POLICE_LINE_CLEAR] > world.time
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/reporter = just_called ? voice.last_clear_speaker?.resolve() : null
+	if(!just_called)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+			if(officer.police_can_speak(radio_only = TRUE) && officer.unit_kind != POLICE_UNIT_SERGEANT)
+				reporter = officer
+				if(officer.case || officer.force != POLICE_FORCE_NONE)
+					break
+		if(!reporter?.police_say(POLICE_LINE_CLEAR, null, TRUE))
+			return
+	// The desk copies it ("check_in_reply"); radio_ack is an officer on their way
+	life_schedule_desk_reply(reporter, 2 SECONDS)
+
+/// The active warrant at the outpost (not already in custody) with the most stars, or null
+/datum/outpost_police/proc/life_top_warrant()
+	var/datum/outpost_warrant/best
+	var/best_stars = 0
+	for(var/datum/outpost_warrant/warrant as anything in dispatch_active_suspects())
+		var/stars = get_stars(warrant.mind)
+		if(stars > best_stars)
+			best = warrant
+			best_stars = stars
+	return best
+
+/// "look" (what the top suspect wears, by the type's own name) and "place" (the nearest shop's catalog name), for the radio
+/datum/outpost_police/proc/life_suspect_values()
+	var/mob/living/suspect = life_top_warrant()?.mind?.current
+	if(!istype(suspect))
+		return list()
+	var/list/values = list()
+	var/look = outpost_police_look(suspect)
+	if(look)
+		values["look"] = look
+	var/place_name = life_nearest_shop_name(get_turf(suspect))
+	if(place_name)
+		values["place"] = place_name
+	return values
+
+/// What `suspect` wears, named by the type of their outer clothing or jumpsuit and never the item's own name (M15)
+/proc/outpost_police_look(mob/living/suspect)
+	var/obj/item/worn = suspect.get_item_by_slot(ITEM_SLOT_OCLOTHING) || suspect.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+	if(!worn)
+		return null
+	var/obj/item/worn_type = worn.type
+	return initial(worn_type.name)
+
+/// The catalog name of the shop nearest `where` within 15 tiles (never the checkpoint), or null
+/datum/outpost_police/proc/life_nearest_shop_name(turf/where)
+	if(!where || !outpost)
+		return null
+	var/best_shop
+	var/best_distance = 16
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in outpost.traders)
+		if(QDELETED(trader) || trader.z != where.z)
+			continue
+		var/shop_type = ambient_trader_shop(trader)
+		if(!ispath(shop_type, /datum/outpost_shop) || ispath(shop_type, /datum/outpost_shop/vendor/checkpoint))
+			continue
+		var/distance = get_dist(trader, where)
+		if(distance < best_distance)
+			best_shop = shop_type
+			best_distance = distance
+	if(!best_shop)
+		return null
+	var/datum/outpost_shop/shop_name_type = best_shop
+	return initial(shop_name_type.outpost_name)
+
+// =========================================================================
+// ROLES: who is on duty
+// =========================================================================
+
+/**
+ * The police roles: they apply only where the map has a police station, wait a short while between arrivals,
+ * and come off a police lift (arrive()) or are found at their post (settle()). They are not part of the crowd
+ * the cap counts (see the header), so wanted() is how many are missing, not how many there should be.
+ */
+/datum/ambient_outpost_role/police_beat
+	name = "police beat"
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat
+	max_count = 3
+	weight = 2
+	gap_low = 20 SECONDS
+	gap_high = 40 SECONDS
+
+/datum/ambient_outpost_role/police_beat/applies_to(obj/structure/overmap/trader_outpost/outpost)
+	return ..() && !!outpost?.police?.life_has_station()
+
+/datum/ambient_outpost_role/police_beat/wanted(datum/ambient_place/outpost/place)
+	return outpost_police_missing(place, POLICE_UNIT_BEAT, place?.outpost()?.police?.profile?.beat_count || 2)
+
+/// A beat officer is found on the first stop of a route nobody walks; with no free route, somewhere on the floor
+/datum/ambient_outpost_role/police_beat/settle(datum/ambient_place/outpost/place)
+	var/turf/start = istype(place) ? place.outpost()?.police?.free_route_start() : null
+	if(start && !(locate(/mob/living) in start))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = outpost_police_make(src, place, start)
+		// It claims the route now (stealth_setup(): the stop it stands on), so the next one made takes another
+		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer?.ai_controller
+		if(istype(brain))
+			brain.stealth_setup()
+		return officer
+	return outpost_police_settle(src, place, istype(place) ? place.settle_turf() : null)
+
+/datum/ambient_outpost_role/police_beat/arrive(datum/ambient_place/outpost/place, turf/where)
+	return outpost_police_arrive(src, place, where)
+
+/datum/ambient_outpost_role/police_sergeant
+	name = "police sergeant"
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant
+	max_count = 1
+	weight = 2
+	gap_low = 20 SECONDS
+	gap_high = 40 SECONDS
+
+/datum/ambient_outpost_role/police_sergeant/applies_to(obj/structure/overmap/trader_outpost/outpost)
+	return ..() && !!outpost?.police?.desk_turf
+
+/datum/ambient_outpost_role/police_sergeant/wanted(datum/ambient_place/outpost/place)
+	return place?.outpost()?.police?.desk_turf ? outpost_police_missing(place, POLICE_UNIT_SERGEANT, 1) : 0
+
+/datum/ambient_outpost_role/police_sergeant/settle(datum/ambient_place/outpost/place)
+	var/turf/desk = istype(place) ? place.outpost()?.police?.desk_turf : null
+	if(!desk || (locate(/mob/living) in desk))
+		return null
+	return outpost_police_settle(src, place, desk)
+
+/datum/ambient_outpost_role/police_sergeant/arrive(datum/ambient_place/outpost/place, turf/where)
+	return outpost_police_arrive(src, place, where)
+
+/// Whether `role` brings officers
+/proc/is_outpost_police_role(datum/ambient_outpost_role/role)
+	return istype(role, /datum/ambient_outpost_role/police_beat) || istype(role, /datum/ambient_outpost_role/police_sergeant)
+
+/// How many of `unit_kind` the outpost is short of, with `posts` wanted: 0 where the map has no police station
+/proc/outpost_police_missing(datum/ambient_place/outpost/place, unit_kind, posts)
+	var/datum/outpost_police/police = place?.outpost()?.police
+	if(!police?.life_has_station())
+		return 0
+	return max(0, posts - police.life_standing(unit_kind))
+
+/// One of `role`'s officers made at `where`, in `place` and on the roster; null if there is nowhere to put them
+/proc/outpost_police_make(datum/ambient_outpost_role/role, datum/ambient_place/outpost/place, turf/where)
+	var/datum/outpost_police/police = place?.outpost()?.police
+	if(!police || !role.npc_type || !where)
+		return null
+	var/officer_type = role.npc_type
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = new officer_type(where)
+	officer.role = role.type
+	officer.set_place(place)
+	police.add_officer(officer)
+	return officer
+
+/// An officer found at their post `start` while nobody is about, going about their routine part-way in
+/proc/outpost_police_settle(datum/ambient_outpost_role/role, datum/ambient_place/outpost/place, turf/start)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = outpost_police_make(role, place, start)
+	officer?.settle_in()
+	return officer
+
+/// A replacement stepping off a police lift. Where the map has police lifts and none is free, nobody comes (never off the public lift).
+/proc/outpost_police_arrive(datum/ambient_outpost_role/role, datum/ambient_place/outpost/place, turf/where)
+	var/datum/outpost_police/police = place?.outpost()?.police
+	if(!police)
+		return null
+	var/turf/lift = police.life_free_lift_turf()
+	if(!lift)
+		if(length(police.lift_turfs))
+			return null
+		lift = where
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = outpost_police_make(role, place, lift)
+	officer?.fade_in()
+	return officer
+
+// ----- the crowd and the cap -----
+
+// The crowd is the civilians: the cap, the ducking, the convoy and the shootout leave officers out (see the header)
+/datum/ambient_place/outpost/living_npcs()
+	. = list()
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in ..())
+		if(!istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+			. += npc
+
+// ...but they take up room like anyone, so nobody settles on top of one
+/datum/ambient_place/outpost/crowd_count(turf/tile, mob/living/carbon/human/npc/ambient_npc/asker, atom/ignore)
+	. = ..()
+	if(. == INFINITY || !tile)
+		return
+	var/datum/outpost_police/police = outpost()?.police
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police?.officers)
+		if(QDELETED(officer) || officer == asker || officer == ignore || officer.stat == DEAD || officer.fading)
+			continue
+		var/datum/ambient_activity/current = officer.activity
+		var/turf/at = (current && current.spot && !current.at_spot()) ? current.spot : get_turf(officer)
+		if(!at || at.z != tile.z)
+			continue
+		if(at == tile)
+			return INFINITY
+		if(get_dist(at, tile) <= AMBIENT_CROWD_RADIUS)
+			.++
+
+/**
+ * Makes the officers this place is short of, at their posts, up to `budget` of them: the desk first, then the
+ * beat. Run by settle_outpost() before the crowd, while nobody is on the concourse. Returns how many were made.
+ */
+/datum/ambient_place/outpost/proc/settle_police(budget)
+	. = 0
+	var/obj/structure/overmap/trader_outpost/outpost = outpost()
+	if(!outpost?.police?.life_has_station())
+		return
+	for(var/role_type in list(/datum/ambient_outpost_role/police_sergeant, /datum/ambient_outpost_role/police_beat))
+		var/datum/ambient_outpost_role/role = SSambient_npcs.get_outpost_role(role_type)
+		if(!role?.npc_type || !role.applies_to(outpost))
+			continue
+		var/missing = open_slots(role)
+		while(missing > 0 && . < budget)
+			if(!role.settle(src))
+				break
+			.++
+			missing--
+
+/// The shared instance of outpost role `role_type`, or null
+/datum/controller/subsystem/ambient_npcs/proc/get_outpost_role(role_type)
+	for(var/datum/ambient_outpost_role/role as anything in get_outpost_roles())
+		if(role.type == role_type)
+			return role
+	return null
+
+/**
+ * Officers are settled in their own pass, and the crowd's pass is given only the crowd's roles: the subsystem's
+ * running count in settle_outpost() would otherwise take an officer for one of the crowd and stop short (or
+ * stop the officers short) when the concourse is full. Tests that hand over their own `roles` are untouched.
+ */
+/datum/controller/subsystem/ambient_npcs/settle_outpost(datum/ambient_place/outpost/place, list/roles, budget = AMBIENT_OUTPOST_SETTLE_PER_FIRE)
+	if(roles || budget <= 0 || !place?.needs_settling || place.occupied)
+		return ..()
+	var/made = place.settle_police(budget)
+	if(made >= budget)
+		return made
+	var/list/crowd = list()
+	for(var/datum/ambient_outpost_role/role as anything in get_outpost_roles())
+		if(!is_outpost_police_role(role))
+			crowd += role
+	if(!length(crowd))
+		return made
+	return made + ..(place, crowd, budget - made)
+
+// =========================================================================
+// ROUTINES
+// =========================================================================
+
+/// The coffee machine they use: the one nearest the desk, looked for now and then
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_coffee_machine()
+	var/obj/machinery/vending/coffee/known = coffee_ref?.resolve()
+	if(!QDELETED(known))
+		return known
+	// Looked lately and found none: not again for a while (never looked: look now, even in a round's first minutes)
+	if(coffee_looked_at && world.time < coffee_looked_at + 5 MINUTES)
+		return null
+	coffee_looked_at = world.time
+	var/turf/near = police?.desk_turf || get_turf(src)
+	var/obj/machinery/vending/coffee/best
+	var/best_distance = INFINITY
+	for(var/obj/machinery/vending/coffee/machine in range(14, near))
+		var/distance = get_dist(machine, near)
+		if(distance < best_distance && !life_keeps_off(get_turf(machine)))
+			best = machine
+			best_distance = distance
+	best ||= ambient_outpost_find(get_outpost(), /obj/machinery/vending/coffee)
+	coffee_ref = best ? WEAKREF(best) : null
+	return best
+
+/// Whether this officer keeps away from `tile` for now: the kingpin's fight is on near it (M16)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_keeps_off(turf/tile)
+	var/turf/fight = ambient_kingpin_fight_center(get_outpost())
+	return fight && tile && tile.z == fight.z && get_dist(fight, tile) <= AMBIENT_VIOLENCE_RANGE + 3
+
+/**
+ * Officers belong in the checkpoint lobby and behind police doors as well as on the concourse, and may step up to
+ * a free counter for coffee, while still keeping out of lifts, cells, scan chambers, the exit gate, doorways, back
+ * rooms, hives, the kingpin's lounge and behind shop counters.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/standable(turf/tile, list/avoid, ignore_floor = FALSE)
+	if(!isturf(tile) || LAZYACCESS(avoid, tile))
+		return FALSE
+	if(!isopenturf(tile) || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile) || istype(tile, /turf/open/water))
+		return FALSE
+	if(tile != loc && ambient_outpost_tile_blocked(tile, src))
+		return FALSE
+	if(!leash_ok(tile))
+		return FALSE
+	if((locate(/obj/machinery/door) in tile) || (locate(/obj/structure/outpost_exit_gate) in tile) || (locate(/obj/effect/landmark/outpost_checkpoint_chamber) in tile))
+		return FALSE
+	var/obj/structure/overmap/trader_outpost/keep = police?.outpost || get_outpost()
+	for(var/checkpoint_id in keep?.checkpoints)
+		var/datum/outpost_checkpoint/gate = keep.checkpoints[checkpoint_id]
+		if(tile in gate?.chamber_turfs)
+			return FALSE
+	if(police && (police.dispatch_is_lift_tile(tile) || police.life_in_cell(tile)))
+		return FALSE
+	if(ignore_floor)
+		return TRUE
+	if(keep?.recovery?.back_rooms?[tile] || ambient_in_kingpin_lounge(tile, 2) || life_keeps_off(tile))
+		return FALSE
+	for(var/turf/alcove as anything in keep?.lobby_alcove_turfs)
+		if(alcove.z == tile.z && get_dist(alcove, tile) <= 1)
+			return FALSE
+	for(var/obj/structure/beebox/hive as anything in ambient_outpost_find_all(keep, /obj/structure/beebox))
+		if(hive.z == tile.z && get_dist(hive, tile) <= 2)
+			return FALSE
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in keep?.traders)
+		if(QDELETED(trader) || trader.z != tile.z || istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard))
+			continue
+		var/dist = get_dist(trader, tile)
+		if(dist <= 1 || (dist <= 2 && ambient_counter_customer(trader)))
+			return FALSE
+	return TRUE
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/loiter_spot_ok(turf/tile, list/avoid, atom/ignore)
+	if(!standable(tile, avoid))
+		return FALSE
+	for(var/cdir in GLOB.cardinals)
+		if(locate(/obj/machinery/door/airlock) in get_step(tile, cdir))
+			return FALSE
+	return !place || !place.crowded(tile, src, ignore)
+
+/// The coffee machine the sergeant can step over to from the desk, or null (one across the room or blocked is left alone)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_desk_coffee()
+	var/turf/desk = police?.desk_turf
+	var/obj/machinery/vending/coffee/machine = desk ? life_coffee_machine() : null
+	if(!machine || machine.z != desk.z || get_dist(machine, desk) > OUTPOST_POLICE_STOP_REACH || !outpost_police_clear_line(desk, machine, OUTPOST_POLICE_STOP_REACH + 1))
+		return null
+	var/turf/stand = free_tile_beside(machine, 1)
+	if(!stand || stand.z != desk.z || get_dist(stand, desk) > OUTPOST_POLICE_STOP_REACH + 2 || get_dist(stand, src) > OUTPOST_POLICE_STOP_REACH)
+		return null
+	return machine
+
+// The coffee break is taken at the machine by the desk
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/pick_activity()
+	return pick_anchored(routine, life_coffee_machine(), list(/datum/ambient_activity/police_coffee))
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/shift_times(delay)
+	. = ..()
+	next_desk_coffee = ambient_shifted(next_desk_coffee, delay)
+	coffee_looked_at = ambient_shifted(coffee_looked_at, delay)
+
+// Officer mugs are locked like the rest of their kit (abuse M8) and never set down loose on counters
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/take_drink(reagent_type = /datum/reagent/consumable/coffee)
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = ..(reagent_type)
+	if(istype(glass) && !QDELETED(glass))
+		npc_lock_item(glass)
+	return glass
+
+// Never beer on duty: a counter stop refills with coffee; anywhere else an empty cup is put away
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sip()
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = held_item
+	if(!istype(glass) || QDELETED(glass) || !is_holding(glass))
+		return FALSE
+	if(!glass.reagents?.total_volume)
+		if(istype(activity, /datum/ambient_activity/drink))
+			var/datum/ambient_activity/drink/coffee_stop = activity
+			glass.reagents.add_reagent(coffee_stop.reagent_type || /datum/reagent/consumable/coffee, AMBIENT_DRINK_POUR)
+			return TRUE
+		put_drink_down(null)
+		return FALSE
+	return ..()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/put_drink_down(obj/structure/table/table)
+	return ..(null)
+
+/// The sergeant is found at the desk
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/settle_in()
+	if(start_activity(new /datum/ambient_activity/police_desk(src)) && settle_here())
+		return TRUE
+	end_activity()
+	return ..()
+
+/// A sip of the coffee in hand; an empty or undrinkable cup is put away
+/proc/outpost_police_sip(mob/living/carbon/human/npc/ambient_npc/officer)
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = officer.held_item
+	if(!istype(glass) || QDELETED(glass))
+		return
+	if(!glass.reagents?.total_volume || !officer.sip())
+		officer.put_drink_down(null)
+
+/**
+ * At a shop front stop: faces the counter, a word to the trader, who answers (not every time), and a sip of the
+ * coffee if they carry one. Stands until the stop's wait is over (the stop subtree ends it).
+ */
+/datum/ambient_activity/police_shopfront
+	name = "watching a shop front"
+	accepts_company = TRUE
+	/// The trader of the counter they watch
+	var/datum/weakref/trader_ref
+	var/next_sip = 0
+	var/spoke = FALSE
+
+/// Whether `trader` is awake, unheld, able to talk, and free to exchange small talk with an officer
+/proc/outpost_police_trader_available(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
+	if(QDELETED(trader) || trader.stat != CONSCIOUS || trader.fading || trader.client || trader.mind)
+		return FALSE
+	if(HAS_TRAIT(trader, TRAIT_AI_PAUSED) || trader.has_status_effect(/datum/status_effect/grouped/heldup) || !human_npc_can_talk(trader))
+		return FALSE
+	return TRUE
+
+/// Schedules `trader` to answer `speaker` if `trader` is still conscious, able to talk and not held up when the reply fires
+/proc/outpost_police_trader_reply(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, atom/movable/speaker, section, context, max_distance)
+	if(!outpost_police_trader_available(trader) || QDELETED(speaker))
+		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_police_trader_answer), WEAKREF(trader), WEAKREF(speaker), section, context, max_distance), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
+
+/proc/outpost_police_trader_answer(datum/weakref/trader_ref, datum/weakref/speaker_ref, section, context, max_distance)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
+	var/atom/movable/speaker = speaker_ref?.resolve()
+	if(!outpost_police_trader_available(trader) || QDELETED(speaker) || trader.z != speaker.z)
+		return FALSE
+	return ambient_trader_answer(trader_ref, speaker_ref, AMBIENT_STRINGS_POLICE, section, context, max_distance)
+
+/datum/ambient_activity/police_shopfront/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/best
+	var/best_distance = INFINITY
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in range(7, doer))
+		if(istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard) || !outpost_police_trader_available(trader) || !outpost_police_clear_line(doer, trader, 8))
+			continue
+		var/distance = get_dist(trader, doer)
+		if(distance < best_distance)
+			best = trader
+			best_distance = distance
+	trader_ref = best ? WEAKREF(best) : null
+	next_sip = world.time + rand(4 SECONDS, 10 SECONDS)
+	return TRUE
+
+/datum/ambient_activity/police_shopfront/Destroy()
+	trader_ref = null
+	return ..()
+
+/datum/ambient_activity/police_shopfront/arrive()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
+	if(!outpost_police_trader_available(trader) || trader.z != doer.z || !outpost_police_clear_line(doer, trader, 8))
+		return
+	if(!doer.buckled)
+		doer.face_atom(trader)
+	if(prob(60) && doer.speak_context("beat", trader, force = TRUE))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+		outpost_police_trader_reply(trader, doer, officer.life_voice_section(), "trader_reply", 6)
+
+/datum/ambient_activity/police_shopfront/act(seconds)
+	if(doer.held_item && world.time >= next_sip)
+		next_sip = world.time + rand(10 SECONDS, 20 SECONDS)
+		outpost_police_sip(doer)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_shopfront/shift_times(delay)
+	. = ..()
+	next_sip = ambient_shifted(next_sip, delay)
+
+/**
+ * At the cells stop: a look in at whoever is held, and a word to them now and then. Stands until the stop's
+ * wait is over.
+ */
+/datum/ambient_activity/police_cells
+	name = "looking in on the cells"
+	accepts_company = TRUE
+	var/next_look = 0
+
+/datum/ambient_activity/police_cells/setup()
+	next_look = world.time
+	return TRUE
+
+/datum/ambient_activity/police_cells/act(seconds)
+	if(world.time < next_look)
+		return AMBIENT_STEP_CONTINUE
+	next_look = world.time + rand(5 SECONDS, 9 SECONDS)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/datum/outpost_police_cell/cell = officer.police?.life_occupied_cell()
+	if(!cell)
+		return AMBIENT_STEP_CONTINUE
+	var/atom/cell_view = cell.door || (length(cell.tiles) ? cell.tiles[1] : null)
+	if(cell_view && !doer.buckled)
+		doer.face_atom(cell_view)
+	chatter("cell_check", 15 SECONDS, 30 SECONDS)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_cells/shift_times(delay)
+	. = ..()
+	next_look = ambient_shifted(next_look, delay)
+
+/**
+ * A coffee from the machine by the desk, drunk life_standing beside it; most take it along on the beat, in a real
+ * mug with real coffee.
+ */
+/datum/ambient_activity/police_coffee
+	name = "getting a coffee"
+	accepts_company = TRUE
+	duration_low = 20 SECONDS
+	duration_high = 45 SECONDS
+	/// They take the mug with them when they go
+	var/carry_on = FALSE
+	var/next_sip = 0
+	/// world.time they got it
+	var/took_at = 0
+
+/datum/ambient_activity/police_coffee/setup()
+	var/obj/machinery/vending/coffee/machine = anchor()
+	if(!istype(machine))
+		return FALSE
+	var/turf/stand = doer.free_tile_beside(machine, 1, failed_spots)
+	if(!stand)
+		return FALSE
+	go_to(stand)
+	set_duration()
+	// The sergeant takes it back to the desk
+	carry_on = istype(doer, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant) || prob(70)
+	return TRUE
+
+/datum/ambient_activity/police_coffee/arrive()
+	var/obj/machinery/vending/coffee/machine = anchor()
+	if(machine && !doer.buckled)
+		doer.face_atom(machine)
+	if(machine)
+		playsound(machine, 'sound/machines/machine_vend.ogg', 40, TRUE, -3)
+		if(machine.icon_vend)
+			flick(machine.icon_vend, machine)
+	doer.take_drink(/datum/reagent/consumable/coffee)
+	took_at = world.time
+	next_sip = world.time + rand(5 SECONDS, 9 SECONDS)
+
+/datum/ambient_activity/police_coffee/act(seconds)
+	if(carry_on && world.time >= took_at + 6 SECONDS)
+		return AMBIENT_STEP_DONE
+	if(world.time >= next_sip)
+		next_sip = world.time + rand(8 SECONDS, 15 SECONDS)
+		outpost_police_sip(doer)
+	if(!doer.held_item)
+		return AMBIENT_STEP_DONE
+	chatter()
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_coffee/finish()
+	// The mug goes along on the beat: the next thing they do puts it down
+	if(carry_on && !QDELETED(doer) && doer.held_item)
+		doer.stand_up()
+		return
+	return ..()
+
+/datum/ambient_activity/police_coffee/shift_times(delay)
+	. = ..()
+	next_sip = ambient_shifted(next_sip, delay)
+	took_at = ambient_shifted(took_at, delay)
+
+/**
+ * The sergeant at the desk: sits if there is a chair, a clipboard in hand, writes now and then, looks in on the
+ * cell when someone is in it, and has a word with the checkpoint guard.
+ */
+/datum/ambient_activity/police_desk
+	name = "at the desk"
+	accepts_company = TRUE
+	duration_low = 60 SECONDS
+	duration_high = 150 SECONDS
+	var/datum/weakref/chair_ref
+	var/next_write = 0
+	var/next_cell_look = 0
+	var/next_guard_word = 0
+	var/next_sip = 0
+
+/datum/ambient_activity/police_desk/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/turf/desk = istype(officer) ? officer.police?.desk_turf : null
+	if(!desk)
+		return FALSE
+	go_to(desk)
+	set_duration()
+	var/obj/structure/chair/chair = locate() in desk
+	chair_ref = chair ? WEAKREF(chair) : null
+	next_write = world.time + rand(3 SECONDS, 8 SECONDS)
+	next_cell_look = world.time + rand(20 SECONDS, 40 SECONDS)
+	next_guard_word = world.time + rand(60 SECONDS, 120 SECONDS)
+	next_sip = world.time + rand(6 SECONDS, 12 SECONDS)
+	return TRUE
+
+/datum/ambient_activity/police_desk/Destroy()
+	chair_ref = null
+	return ..()
+
+/datum/ambient_activity/police_desk/arrive()
+	var/obj/structure/chair/chair = chair_ref?.resolve()
+	if(chair && !doer.sit_on(chair))
+		chair_ref = null
+	doer.set_held(/obj/item/clipboard)
+
+/datum/ambient_activity/police_desk/act(seconds)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	if(world.time >= next_write)
+		next_write = world.time + rand(8 SECONDS, 16 SECONDS)
+		playsound(doer, pick('sound/effects/writing_pen/writing_pen1.ogg', 'sound/effects/writing_pen/writing_pen2.ogg', 'sound/effects/writing_pen/writing_pen3.ogg'), 15, TRUE, -5)
+	// The coffee they brought back from the machine
+	if(doer.held_item && world.time >= next_sip)
+		next_sip = world.time + rand(12 SECONDS, 25 SECONDS)
+		outpost_police_sip(doer)
+	if(world.time >= next_cell_look)
+		next_cell_look = world.time + rand(25 SECONDS, 45 SECONDS)
+		var/datum/outpost_police_cell/cell = officer.police?.life_occupied_cell()
+		var/atom/cell_view = cell?.door || (length(cell?.tiles) ? cell.tiles[1] : null)
+		if(cell_view)
+			if(!doer.buckled)
+				doer.face_atom(cell_view)
+			doer.speak_context("cell_check", null, force = TRUE)
+	if(world.time >= next_guard_word)
+		next_guard_word = world.time + rand(90 SECONDS, 180 SECONDS)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/found in range(9, doer))
+			if(outpost_police_trader_available(found) && outpost_police_clear_line(doer, found, 10))
+				guard = found
+				break
+		if(guard)
+			if(!doer.buckled)
+				doer.face_atom(guard)
+			if(doer.speak_context("guard", guard, force = TRUE))
+				outpost_police_trader_reply(guard, doer, officer.life_voice_section(), "guard_reply", 9)
+	chatter(AMBIENT_LINE_WORK, 40 SECONDS, 80 SECONDS)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_desk/finish()
+	if(!QDELETED(doer))
+		doer.set_held(null)
+	return ..()
+
+/datum/ambient_activity/police_desk/shift_times(delay)
+	. = ..()
+	next_write = ambient_shifted(next_write, delay)
+	next_cell_look = ambient_shifted(next_cell_look, delay)
+	next_guard_word = ambient_shifted(next_guard_word, delay)
+	next_sip = ambient_shifted(next_sip, delay)
+
+/// Whether `candidate` is someone asleep on the public floor (not in crit, buckled, held, in a cell or a back room)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_is_sleeper(mob/living/carbon/human/candidate)
+	if(!istype(candidate) || candidate == src || candidate.stat == DEAD)
+		return FALSE
+	if((istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/police) || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery)) && !candidate.mind && !candidate.client)
+		return FALSE
+	if((candidate.stat != UNCONSCIOUS && !candidate.IsSleeping()) || HAS_TRAIT(candidate, TRAIT_CRITICAL_CONDITION))
+		return FALSE
+	if(!isturf(candidate.loc) || candidate.buckled || candidate.pulledby)
+		return FALSE
+	var/turf/tile = candidate.loc
+	if(police?.life_in_cell(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile))
+		return FALSE
+	if(police && (police.in_custody(candidate) || (candidate.mind && police.cases[candidate.mind])))
+		return FALSE
+	return TRUE
+
+/// Someone asleep or out cold in sight within `reach` they have not looked in on lately, or null
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_sleeper_near(reach = POLICE_CHECK_RANGE)
+	for(var/mob/living/carbon/human/candidate in range(reach, src))
+		if(!life_is_sleeper(candidate))
+			continue
+		if(LAZYACCESS(reaction_cooldowns, "check [REF(candidate)]") > world.time)
+			continue
+		if(!police?.perception?.sees(src, candidate))
+			continue
+		return candidate
+	return null
+
+/**
+ * Looking in on someone asleep where they should not be: walks over, looks, tells them to move along. Only
+ * words; nobody is shaken awake, moved or searched. Each sleeper is left alone for a good while after.
+ */
+/datum/ambient_activity/police_check
+	name = "checking on a sleeper"
+	duration_low = 10 SECONDS
+	duration_high = 16 SECONDS
+	var/datum/weakref/target_ref
+
+/datum/ambient_activity/police_check/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	if(!istype(officer))
+		return FALSE
+	// The one given (anchor: a patrol stop's pick), else the first they see
+	var/mob/living/carbon/human/sleeper = anchor_ref?.resolve() || officer.life_sleeper_near()
+	if(!officer.life_is_sleeper(sleeper))
+		return FALSE
+	var/turf/stand = doer.free_tile_beside(sleeper, 1, failed_spots, TRUE)
+	if(!stand)
+		return FALSE
+	target_ref = WEAKREF(sleeper)
+	LAZYSET(doer.reaction_cooldowns, "check [REF(sleeper)]", world.time + 5 MINUTES)
+	go_to(stand)
+	set_duration()
+	return TRUE
+
+/datum/ambient_activity/police_check/arrive()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/mob/living/carbon/human/target = target_ref?.resolve()
+	if(!istype(officer) || !officer.life_is_sleeper(target))
+		ends_at = world.time
+		return
+	if(!doer.buckled)
+		doer.face_atom(target)
+	officer.police_say(POLICE_LINE_MOVE_ALONG)
+
+/datum/ambient_activity/police_check/act(seconds)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/mob/living/carbon/human/target = target_ref?.resolve()
+	if(!istype(officer) || !officer.life_is_sleeper(target) || target.z != doer.z || get_dist(doer, target) > 3)
+		return AMBIENT_STEP_DONE
+	if(!doer.buckled)
+		doer.face_atom(target)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_check/Destroy()
+	target_ref = null
+	return ..()
+
+/// How far off an officer at a stop sees a body on the floor
+#define POLICE_BODY_RANGE 7
+
+/// Whether `body` is an uncalled civilian corpse lying loose on the public floor
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_is_uncalled_body(mob/living/carbon/human/body)
+	var/datum/outpost_police_voice/voice = police?.life_voice()
+	if(!voice || !istype(body) || body.stat != DEAD || !isturf(body.loc) || body.buckled || body.pulledby)
+		return FALSE
+	if((istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !body.mind && !body.client) || outpost_police_weakref_seen(voice.bodies_called, body))
+		return FALSE
+	var/turf/tile = body.loc
+	if(police.life_in_cell(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile))
+		return FALSE
+	return TRUE
+
+/// A dead body lying in sight within `reach` that no officer has called in yet, or null. Officers are stealth's
+/// to find (a fallen colleague); a body bagged, on a bed, in a tray or being carried is in hand already.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/life_body_near(reach = POLICE_BODY_RANGE)
+	if(!police || !police_can_speak(TRUE))
+		return null
+	for(var/mob/living/carbon/human/body in range(reach, src))
+		if(!life_is_uncalled_body(body) || !police.perception?.sees(src, body))
+			continue
+		return body
+	return null
+
+/**
+ * A body on the floor near a stop: the officer looks over at it and calls it in to the desk, who copies. Only
+ * words: the morgue crew is the recovery's to send. Each body is called in once, by whoever sees it first.
+ */
+/datum/ambient_activity/police_body
+	name = "calling in a body"
+	duration_low = 6 SECONDS
+	duration_high = 10 SECONDS
+	var/datum/weakref/body_ref
+
+/datum/ambient_activity/police_body/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	if(!istype(officer) || !officer.police_can_speak(TRUE))
+		return FALSE
+	var/mob/living/carbon/human/body = anchor_ref?.resolve() || officer.life_body_near()
+	if(!officer.life_is_uncalled_body(body))
+		return FALSE
+	body_ref = WEAKREF(body)
+	set_duration()
+	return TRUE
+
+/datum/ambient_activity/police_body/arrive()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = doer
+	var/mob/living/carbon/human/body = body_ref?.resolve()
+	var/datum/outpost_police_voice/voice = istype(officer) ? officer.police?.life_voice() : null
+	if(!voice || !officer.life_is_uncalled_body(body))
+		ends_at = world.time
+		return
+	if(!doer.buckled)
+		doer.face_atom(body)
+	if(!officer.police_say(POLICE_LINE_BODY, list("place" = officer.police?.life_nearest_shop_name(get_turf(body))), TRUE))
+		ends_at = world.time
+		return
+	outpost_police_weakref_note(voice.bodies_called, body, 40)
+	officer.police?.life_schedule_desk_reply(officer, 2.5 SECONDS)
+
+/datum/ambient_activity/police_body/act(seconds)
+	var/mob/living/body = body_ref?.resolve()
+	if(QDELETED(body) || body.stat != DEAD || !isturf(body.loc) || body.z != doer.z || get_dist(doer, body) > POLICE_BODY_RANGE + 2)
+		return AMBIENT_STEP_DONE
+	if(!doer.buckled)
+		doer.face_atom(body)
+	return AMBIENT_STEP_CONTINUE
+
+/datum/ambient_activity/police_body/Destroy()
+	body_ref = null
+	return ..()
+
+#undef POLICE_BODY_RANGE
+#undef POLICE_CHECK_RANGE

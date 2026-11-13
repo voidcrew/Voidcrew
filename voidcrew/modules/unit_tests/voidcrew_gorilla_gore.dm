@@ -200,7 +200,7 @@
 /datum/outpost_pvp_enforcement/gorilla_spy/New()
 	return
 
-/datum/outpost_pvp_enforcement/gorilla_spy/register_pvp_aggression(mob/living/victim, mob/living/offender)
+/datum/outpost_pvp_enforcement/gorilla_spy/register_pvp_aggression(mob/living/victim, mob/living/offender, crime = "armed", obj/item/source) // crime defaults to OUTPOST_CRIME_ASSAULT_ARMED, as the parent's does
 	hits += victim
 
 /// Three piston hits on one arm snap it (four from Brawler myomers); heavy armour or the Atlas frame stops it.

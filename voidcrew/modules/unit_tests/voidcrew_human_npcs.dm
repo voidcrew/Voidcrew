@@ -327,6 +327,14 @@
 	npc.npc_died_at = world.time - npc.npc_corpse_lifetime - 1
 	TEST_ASSERT(npc.npc_corpse_expired(), "An old corpse nobody is near can't be cleaned up")
 
+	// A body a player was put into (brain transplant) is a person's corpse, even after they log off
+	var/datum/mind/played = new("corpse_sweep_test_key")
+	npc.last_mind = played
+	TEST_ASSERT(!npc.npc_corpse_expired(), "The corpse sweep would delete a body a player was in")
+	npc.last_mind = null
+	qdel(played)
+	TEST_ASSERT(npc.npc_corpse_expired(), "Test fixture: clearing last_mind did not free the corpse")
+
 	var/mob/living/carbon/human/consistent/dragger = allocate(/mob/living/carbon/human/consistent)
 	dragger.start_pulling(npc)
 	TEST_ASSERT(!npc.npc_corpse_expired(), "A corpse being dragged can be cleaned up")
@@ -431,3 +439,41 @@
 	ware.forceMove(elsewhere)
 	TEST_ASSERT(human_npc_wait_deleted(ware), "Chrome taken out of a living NPC stayed working")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/burnt_chrome) in elsewhere, "Chrome taken out of a living NPC left no scrap")
+
+/// A gunner holds fire with an ally anywhere on the bullet's path, including beside the target where a
+/// diagonal shot clips the corner of their turf (owner playtest: a gunner shot the knife guard beside its target).
+/datum/unit_test/voidcrew_human_npc_ally_in_line
+
+/datum/unit_test/voidcrew_human_npc_ally_in_line/Run()
+	var/turf/corner = run_loc_floor_bottom_left
+	TEST_ASSERT(run_loc_floor_top_right.x - corner.x >= 3 && run_loc_floor_top_right.y - corner.y >= 4, "Test fixture: the test room is too small")
+	var/mob/living/carbon/human/npc/sample/gunner/shooter = allocate(/mob/living/carbon/human/npc/sample/gunner, locate(corner.x, corner.y + 4, corner.z))
+	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, locate(corner.x + 3, corner.y, corner.z))
+	var/mob/living/carbon/human/consistent/ally = allocate(/mob/living/carbon/human/consistent, locate(corner.x + 3, corner.y + 1, corner.z))
+	ally.faction = shooter.faction.Copy()
+	TEST_ASSERT(!(ally.loc in get_line(shooter, target)), "Test fixture: the ally is on get_line(), so this doesn't test the clipped corner")
+	TEST_ASSERT(human_npc_ally_in_line(shooter, target), "A gunner fired past an ally standing beside its target")
+	// Straight down a corridor.
+	ally.forceMove(locate(corner.x + 2, corner.y + 2, corner.z))
+	TEST_ASSERT(human_npc_ally_in_line(shooter, target), "A gunner fired through an ally between it and its target")
+	// Lying down: shots pass over.
+	ally.set_body_position(LYING_DOWN)
+	TEST_ASSERT(!human_npc_ally_in_line(shooter, target), "A gunner held fire for an ally lying down")
+	ally.set_body_position(STANDING_UP)
+	// Well off the path.
+	ally.forceMove(locate(corner.x + 3, corner.y + 4, corner.z))
+	TEST_ASSERT(!human_npc_ally_in_line(shooter, target), "A gunner held fire for an ally nowhere near the path")
+	// A stranger on the path is not an ally.
+	ally.faction = list("ally_in_line_stranger")
+	ally.forceMove(locate(corner.x + 2, corner.y + 2, corner.z))
+	TEST_ASSERT(!human_npc_ally_in_line(shooter, target), "A gunner held fire for someone not on its side")
+
+/// An ally's stray shot doesn't turn a human NPC on them.
+/datum/unit_test/voidcrew_human_npc_ally_stray_hit
+
+/datum/unit_test/voidcrew_human_npc_ally_stray_hit/Run()
+	var/mob/living/carbon/human/npc/sample/gunner/npc = allocate(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/consistent/ally = allocate(/mob/living/carbon/human/consistent, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	ally.faction = npc.faction.Copy()
+	SEND_SIGNAL(npc, COMSIG_ATOM_WAS_ATTACKED, ally, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT_NULL(npc.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "An ally's stray shot made the NPC target them")

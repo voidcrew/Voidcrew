@@ -1,0 +1,102 @@
+{
+	"_owner": "R7 (trader stick-up and gate emag, spec-rehydrate.md 9-10). Keys: ROBBERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm. hands_up, hand_over and empty are the held-up trader's; alarm is the desk reading the shop's alarm out on the police radio (%PLACE% and %LOOK% fill only there); gate_down is the checkpoint guard's.",
+	"halcyon": {
+		"hands_up": [
+			"Easy. Easy.",
+			"Okay. Okay, no trouble.",
+			"Whoa. Slowly, please.",
+			"Please. I don't want any trouble."
+		],
+		"hand_over": [
+			"That's the till. Go.",
+			"Here. Take it and go.",
+			"It's all there. Please, just go.",
+			"Here. All of it. Please."
+		],
+		"empty": [
+			"That's all there is.",
+			"There's nothing left. Honestly.",
+			"The till's empty. You've had it all.",
+			"That's everything. I promise."
+		],
+		"alarm": [
+			"Robbery at %PLACE%. Suspect in %LOOK%, gone toward the lifts.",
+			"Alarm from %PLACE%. They've cleaned out the till.",
+			"Robbery on the concourse. Suspect in %LOOK%. Armed.",
+			"Robbery on the concourse. Armed. They're running.",
+			"Desk to all units. A shop's been robbed. Respond."
+		],
+		"gate_down": [
+			"Hey! HEY! Gate's down! Gate's down!",
+			"The gate! Somebody's gone at the gate!",
+			"Gate's out! Somebody stop them!",
+			"Somebody's at the gate! Help!"
+		]
+	},
+	"quartermain": {
+		"hands_up": [
+			"Easy. There's nothing here worth it.",
+			"All right, all right. My hands are empty.",
+			"Steady on. Steady.",
+			"Okay. Okay. Don't shoot."
+		],
+		"hand_over": [
+			"Till's yours. Now clear out.",
+			"There. That's the float. Go.",
+			"Take it. Don't come back.",
+			"Take it. It's insured."
+		],
+		"empty": [
+			"That's everything.",
+			"Nothing left. You got the lot.",
+			"Till's bare. Look for yourself.",
+			"Bare. That's all of it."
+		],
+		"alarm": [
+			"Robbery at %PLACE%. Subject in %LOOK%, heading for the lifts.",
+			"Alarm at %PLACE%. Till's been cleaned out.",
+			"Robbery. Subject in %LOOK%. Armed.",
+			"Robbery on the concourse. Armed. On the move.",
+			"Desk to all. Shop robbery. Respond."
+		],
+		"gate_down": [
+			"Hey! Somebody's at the gate! Gate!",
+			"Somebody's cracked the gate! Hey!",
+			"Gate's down! Gate's down!",
+			"Gate breach! Gate!"
+		]
+	},
+	"undertow": {
+		"hands_up": [
+			"Don't. Please. Don't.",
+			"Okay. You've got my attention.",
+			"Slow. Nobody needs to get hurt.",
+			"Fine. Fine. Don't shoot."
+		],
+		"hand_over": [
+			"Here. Take it. Just take it.",
+			"That's all of it. Now go.",
+			"It's yours. Please go.",
+			"Take it. You'll get yours."
+		],
+		"empty": [
+			"There's nothing else. Nothing.",
+			"That's all I have. I swear.",
+			"Empty. Look. It's empty.",
+			"You've had it all. Go."
+		],
+		"alarm": [
+			"Robbery at %PLACE%. %LOOK%, headed for the lifts.",
+			"Alarm from %PLACE%. They took the till.",
+			"Robbery. %LOOK%. Armed.",
+			"Robbery. Armed. Somebody get down here.",
+			"Desk to all. Shop got hit. Move."
+		],
+		"gate_down": [
+			"The gate! They've got the gate!",
+			"Hey! Gate's down! Somebody get over here!",
+			"Somebody's broken into the gate! Hey!",
+			"Gate's busted! Get them!"
+		]
+	}
+}

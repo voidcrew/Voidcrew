@@ -38,7 +38,7 @@
 #define AMBIENT_PAUSED_TRAIT "ambient_paused"
 /**
  * A killed outpost NPC's place in their role stays empty this long, made in place or off the lift.
- * Longer than the outpost's mark on the killer (OUTPOST_AGGRESSION_MARK_DURATION, 15 minutes) and
+ * Longer than the outpost police's bar on a killer (OUTPOST_POLICE_BAR_TIME, 15 minutes) and
  * well past any one visit (a customer stays 4 to 8), so killing never brings anyone sooner than
  * leaving would: at most three refills of one place an hour, whatever the killer does.
  */

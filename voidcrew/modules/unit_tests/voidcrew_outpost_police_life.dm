@@ -1,0 +1,875 @@
+/**
+ * Outpost police tests: police_life.dm (voidcrew/modules/outpost_police/). Owner: P3.
+ * Helpers are in voidcrew_outpost_police_helpers.dm. Fork defines are included after the tests: use
+ * literal values with a comment naming the define.
+ *
+ * The test room is the ambient tests' (ambient_test_outpost(), pa_tile(), pa_place(), pa_trader(), pa_npc()
+ * in voidcrew_ambient_core.dm and voidcrew_ambient_outposts.dm): a 5 by 5 concourse whose hangar lift is its top
+ * right corner. Its outposts have no police station until a test gives them a desk and a lift tile.
+ */
+
+/// An officer of `officer_type` at `where` in `outpost`'s place, on its roster and awake (nobody is on the concourse, so it starts held still)
+/datum/unit_test/proc/police_awake_officer(obj/structure/overmap/trader_outpost/outpost, officer_type, turf/where)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, officer_type, where)
+	officer.resume_routine()
+	return officer
+
+/// A headset on `officer`'s ears, which their radio lines go through: an officer's own (their kit locks it on), or a new one
+/datum/unit_test/proc/police_headset_on(mob/living/carbon/human/officer)
+	if(istype(officer.ears, /obj/item/radio/headset))
+		return officer.ears
+	var/obj/item/radio/headset/headset = allocate(/obj/item/radio/headset)
+	TEST_ASSERT(officer.equip_to_slot_if_possible(headset, ITEM_SLOT_EARS), "A headset would not go on [officer]")
+	return headset
+
+// =========================================================================
+// THE FILE
+// =========================================================================
+
+/// Every line kind has lines in every zone's voice; none can be taken for a radio key; only the radio calls carry tokens
+/datum/unit_test/voidcrew_outpost_police_lines
+
+/datum/unit_test/voidcrew_outpost_police_lines/Run()
+	var/list/line_kinds = list(
+		"warn", "order", "chase", "stun", "shots", "all_units", "marshal", "lost", "cuff", "walk", "make_way", "book",
+		"release", "medic", "officer_down", "clear", "knock", "cell_alarm", "move_along", "radio_call", "radio_ack",
+		"search", "evidence", "strip", "bail", "fine_paid", "locker_thief", "body", // POLICE_LINE_*
+		"idle", "talk", "chat", "reply", "work", // AMBIENT_LINE_*
+		"radio_call_hot", "check_in", "check_in_reply", "beat", "trader_reply", "guard", "guard_reply", "cell_check", "cell_reply", "talk_prior", // P3's own
+		"stealth_suspicious", "stealth_give_up", "stealth_search", "stealth_hit_unseen", "stealth_body", "stealth_chatter",
+		"stealth_target_downed", "stealth_closet_open", "stealth_closet_give_up", "stealth_heard", "stealth_heard_again",
+		"stealth_gunfire", "stealth_hold", "stealth_help", "stealth_missing", "stealth_radio_report", "stealth_radio_alarm",
+		"stealth_radio_missing", "stealth_copy", "stealth_radio_dead", // stealth's barks (police_stealth.dm)
+	)
+	// Kinds whose lines may carry a token: the desk's calls (%PLACE%, %LOOK%), a body called in (%PLACE%) and stealth's calls (%PLACE%, %NAME%)
+	var/list/token_kinds = list("radio_call", "radio_call_hot", "body", "stealth_missing", "stealth_radio_report", "stealth_radio_alarm", "stealth_radio_missing")
+	for(var/section in list("halcyon", "quartermain", "undertow"))
+		for(var/kind in line_kinds)
+			var/list/lines = ambient_dialogue_lines("outpost_police.json", section, kind) // AMBIENT_STRINGS_POLICE
+			TEST_ASSERT(length(lines) >= 4, "[section] has [length(lines)] lines for [kind], not 4 or more")
+			var/plain = 0
+			for(var/line in lines)
+				TEST_ASSERT(istext(line) && length(line), "[section] has an empty line for [kind]")
+				// A leading . : ; # or * would be read as a radio or channel key
+				TEST_ASSERT(!(copytext(line, 1, 2) in list(".", ":", ";", "#", "*", "%")), "[section] [kind]: '[line]' starts like a radio key")
+				TEST_ASSERT(!findtext(line, "<") && !findtext(line, "{"), "[section] [kind]: '[line]' carries markup")
+				if(findtext(line, "%"))
+					TEST_ASSERT(kind in token_kinds, "[section] [kind]: '[line]' has a token outside the radio calls")
+				else
+					plain++
+			TEST_ASSERT(plain >= 3, "[section] has fewer than 3 plain lines for [kind]")
+		var/list/entry = ambient_dialogue_section("outpost_police.json", section)
+		TEST_ASSERT(length(entry["conversations"]) >= 4, "[section] has fewer than 4 conversations")
+
+/// Tokens fill from clean values; a line that needs a token the caller lacks is never picked
+/datum/unit_test/voidcrew_outpost_police_tokens
+
+/datum/unit_test/voidcrew_outpost_police_tokens/Run()
+	var/list/values = outpost_police_values(list("look" = "grey jumpsuit", "%PLACE%" = "\improper The Chowder Pot", "bad" = list(1)))
+	TEST_ASSERT_EQUAL(values["look"], "grey jumpsuit", "A look value was changed")
+	TEST_ASSERT_EQUAL(values["place"], "The Chowder Pot", "A place value kept its markup or its percent signs")
+	TEST_ASSERT_EQUAL(length(values), 2, "A value that is not text was kept")
+	TEST_ASSERT_EQUAL(outpost_police_pick_line(list("%LOOK% by %PLACE%"), values), "grey jumpsuit by The Chowder Pot", "Tokens were not filled")
+	TEST_ASSERT_NULL(outpost_police_pick_line(list("%LOOK% by %PLACE%"), list("look" = "grey jumpsuit")), "A line was picked that needs a place nobody gave")
+	TEST_ASSERT_EQUAL(outpost_police_pick_line(list("%LOOK% by %PLACE%", "Quiet."), list()), "Quiet.", "A plain line was not picked when tokens were lacking")
+	var/list/dirty = outpost_police_values(list("look" = "<b>loud</b> 100% jumpsuit and a very very very very long description of it"))
+	TEST_ASSERT(!findtext(dirty["look"], "<") && !findtext(dirty["look"], ">") && !findtext(dirty["look"], "%"), "Markup or a percent sign survived in a value")
+	TEST_ASSERT(length(dirty["look"]) <= 40, "A value was not bounded") // 40 characters
+
+	// What a suspect wears is named by the type, never the item's own (renamed) name
+	var/mob/living/carbon/human/suspect = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/clothing/under/color/grey/jumpsuit = allocate(/obj/item/clothing/under/color/grey)
+	jumpsuit.name = "Mr. Rude's best jumpsuit"
+	TEST_ASSERT(suspect.equip_to_slot_if_possible(jumpsuit, ITEM_SLOT_ICLOTHING), "A jumpsuit would not go on")
+	var/obj/item/clothing/under/color/grey/jumpsuit_type = /obj/item/clothing/under/color/grey
+	TEST_ASSERT_EQUAL(outpost_police_look(suspect), initial(jumpsuit_type.name), "A suspect was described by a renamed item")
+
+	// An officer's fall makes orders a level harder, in voice
+	TEST_ASSERT_EQUAL(outpost_police_harder("knock"), "warn", "Knock is not one level below warn") // POLICE_LINE_KNOCK, _WARN
+	TEST_ASSERT_EQUAL(outpost_police_harder("stun"), "shots", "Stun is not one level below shots") // POLICE_LINE_STUN, _SHOTS
+	TEST_ASSERT_EQUAL(outpost_police_harder("cuff"), "cuff", "A line with no harder form changed") // POLICE_LINE_CUFF
+
+// =========================================================================
+// SPEECH AND THE RADIO
+// =========================================================================
+
+/// An officer speaks a line of the zone's voice; nobody says a line of one kind together or the same words twice; a fall makes orders harder
+/datum/unit_test/voidcrew_outpost_police_say
+
+/datum/unit_test/voidcrew_outpost_police_say/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/first = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/second = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(2, 0))
+	TEST_ASSERT_EQUAL(first.life_voice_section(), "halcyon", "An officer of the base profile has no voice section")
+
+	var/said = first.police_say("knock") // POLICE_LINE_KNOCK
+	TEST_ASSERT(istext(said) && (said in first.get_lines("knock")), "An officer said '[said]', not a line of kind knock")
+	TEST_ASSERT_NULL(second.police_say("knock"), "Two officers said a line of one kind together") // POLICE_LINE_KNOCK
+	TEST_ASSERT(istext(second.police_say("cuff")), "A different kind of line was refused") // POLICE_LINE_CUFF
+
+	// The zone's voice: the Undertow's officers speak the Undertow's lines
+	police.profile.voice_section = "undertow"
+	TEST_ASSERT(("Quiet. I hate quiet." in first.get_lines("idle")), "An Undertow officer does not speak the Undertow's voice")
+	police.profile.voice_section = "halcyon"
+
+	// A paused officer, a dead one and one who cannot speak say nothing
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/held = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 2))
+	TEST_ASSERT(held.paused_at, "An officer at an empty outpost is not held still")
+	TEST_ASSERT_NULL(held.police_say("search"), "A held officer spoke") // POLICE_LINE_SEARCH
+
+	// After a fall, orders run a level harder: knock is said as warn
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	voice.harder_until = world.time + 1 MINUTES
+	var/harder = second.police_say("knock") // POLICE_LINE_KNOCK
+	TEST_ASSERT(istext(harder) && (harder in second.get_lines("warn")), "After an officer fell, knock was not said as warn")
+	TEST_ASSERT_NULL(first.police_say("knock"), "A line of the harder kind was said twice together") // POLICE_LINE_KNOCK -> _WARN
+
+/// A radio line goes out on the police frequency and the other officer's headset hears it
+/datum/unit_test/voidcrew_outpost_police_radio
+	/// Messages the listener's headset heard
+	var/heard = 0
+
+/datum/unit_test/voidcrew_outpost_police_radio/proc/on_radio(datum/source, list/data)
+	SIGNAL_HANDLER
+	heard++
+
+/datum/unit_test/voidcrew_outpost_police_radio/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/speaker = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/listener = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(3, 0))
+	var/obj/item/radio/headset/speaker_set = police_headset_on(speaker)
+	var/obj/item/radio/headset/listener_set = police_headset_on(listener)
+	RegisterSignal(listener_set, COMSIG_RADIO_RECEIVE_MESSAGE, PROC_REF(on_radio))
+
+	var/said = speaker.police_say("radio_ack", null, TRUE) // POLICE_LINE_RADIO_ACK
+	TEST_ASSERT(istext(said), "The sergeant said nothing on the radio")
+	TEST_ASSERT_EQUAL(speaker_set.frequency, 1473, "The speaker's headset was not tuned to the police frequency") // OUTPOST_POLICE_RADIO_FREQ
+	TEST_ASSERT_EQUAL(listener_set.frequency, 1473, "The listener's headset was not tuned to the police frequency") // OUTPOST_POLICE_RADIO_FREQ
+	sleep(2 SECONDS)
+	TEST_ASSERT(heard > 0, "A radio call was not heard at the other officer's headset")
+
+	// Not on the radio: nothing goes out
+	var/before = heard
+	speaker.police_say("walk") // POLICE_LINE_WALK
+	sleep(2 SECONDS)
+	TEST_ASSERT_EQUAL(heard, before, "A spoken line went out on the radio")
+
+	// The desk: say_dispatch is the sergeant's voice
+	outpost.police.life_voice().context_free_at.Cut()
+	outpost.police.life_voice().text_free_at.Cut()
+	TEST_ASSERT(istext(outpost.police.say_dispatch("check_in")), "The desk could not call the radio")
+
+	// Everyday lines: nobody says the same one twice running
+	var/first_idle = speaker.get_lines("idle")[1]
+	speaker.say_line(first_idle)
+	TEST_ASSERT(!(first_idle in speaker.get_lines("idle")), "An officer can say the same everyday line twice running")
+	TEST_ASSERT(length(speaker.get_lines("idle")) >= 3, "Leaving out the last line left too few")
+	TEST_ASSERT_EQUAL(outpost.police.life_dispatcher(), speaker, "The sergeant is not the one on the radio")
+
+/// A change of level is called by the desk, an officer falls and is called down, the outpost goes quiet and reports clear
+/datum/unit_test/voidcrew_outpost_police_dispatch_chatter
+
+/datum/unit_test/voidcrew_outpost_police_dispatch_chatter/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/desk = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/beat = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(2, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/watcher = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(3, 2))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+
+	// The level rises: the desk calls it
+	police.life_call_level(1, 0)
+	TEST_ASSERT(voice.context_free_at["radio_call"] > world.time, "The desk did not call a level rising") // POLICE_LINE_RADIO_CALL
+	voice.context_free_at.Cut()
+	police.life_call_level(3, 1)
+	TEST_ASSERT(voice.context_free_at["radio_call_hot"] > world.time, "The desk did not call a hot level") // radio_call_hot
+	TEST_ASSERT(voice.context_free_at["shots"] > world.time, "Nobody called shots fired when the level reached three") // POLICE_LINE_SHOTS
+
+	// An officer falls: someone nearby calls it, and orders run harder for a while
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	beat.death()
+	TEST_ASSERT(voice.harder_until > world.time, "An officer's fall did not make orders harder")
+	TEST_ASSERT(voice.context_free_at["officer_down"] > world.time, "Nobody called an officer down") // POLICE_LINE_OFFICER_DOWN
+	TEST_ASSERT_EQUAL(length(voice.called_down), 1, "An officer down was not remembered")
+	police.life_call_officer_down(beat)
+	TEST_ASSERT_EQUAL(length(voice.called_down), 1, "The same officer was called down twice")
+
+	// The all clear: one of the others reports it, and the desk answers
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police.life_call_clear()
+	TEST_ASSERT(voice.context_free_at["clear"] > world.time, "Nobody reported clear") // POLICE_LINE_CLEAR
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(voice.context_free_at["check_in_reply"] > world.time, "The desk did not copy the all clear")
+	TEST_ASSERT(!voice.context_free_at["radio_ack"], "The desk answered the all clear as if it were on its way") // POLICE_LINE_RADIO_ACK
+
+	// A unit standing down called clear first (dispatch ticks before the chatter): the desk still copies it
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	watcher.police_say("clear", null, TRUE) // POLICE_LINE_CLEAR
+	police.life_call_clear()
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(voice.context_free_at["check_in_reply"] > world.time, "The desk did not copy a clear a standing-down unit had called")
+
+	// Two officers answer a hot call: the second is not refused as a chorus of the first
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/acks = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+		if(officer.stat == CONSCIOUS)
+			acks++
+	police.life_acknowledge(2, get_turf(desk))
+	sleep(8 SECONDS)
+	var/list/ack_lines = ambient_dialogue_lines("outpost_police.json", desk.life_voice_section(), "radio_ack") // AMBIENT_STRINGS_POLICE
+	var/answered = 0
+	for(var/said_text in voice.text_free_at)
+		if(said_text in ack_lines)
+			answered++
+	TEST_ASSERT_EQUAL(answered, min(acks, 2), "[answered] officers answered the desk, not [min(acks, 2)]")
+	TEST_ASSERT(desk.stat == CONSCIOUS && watcher.stat == CONSCIOUS, "The test has no officers left to report")
+
+	// The tick with nothing going on says nothing and does not runtime
+	voice.context_free_at.Cut()
+	police.tick_life()
+	TEST_ASSERT_EQUAL(length(voice.context_free_at), 0, "A tick with no level change spoke")
+
+/// Talking to an officer gets an answer from their voice; the sergeant answers a prisoner
+/datum/unit_test/voidcrew_outpost_police_talk
+
+/datum/unit_test/voidcrew_outpost_police_talk/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 1))
+	var/mob/living/carbon/human/visitor = allocate(/mob/living/carbon/human/consistent, pa_tile(1, 2))
+	officer.next_line_at = 0
+	officer.talked_to(visitor)
+	TEST_ASSERT(officer.next_line_at > 0, "An officer did not answer someone who talked to them")
+	// Someone with a record gets the other answer
+	TEST_ASSERT(length(officer.get_lines("talk_prior")) >= 3, "An officer has no answers for someone with a record")
+
+// =========================================================================
+// ROLES AND THE CAP
+// =========================================================================
+
+/// Officers apply only where the map has a police station, are counted apart from the crowd and are settled at their posts even when the concourse is full
+/datum/unit_test/voidcrew_outpost_police_roles
+
+/datum/unit_test/voidcrew_outpost_police_roles/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	var/datum/ambient_outpost_role/police_beat/beat_role = allocate(/datum/ambient_outpost_role/police_beat)
+	var/datum/ambient_outpost_role/police_sergeant/desk_role = allocate(/datum/ambient_outpost_role/police_sergeant)
+
+	// No station, no officers: the ambient roles test sums only roles that apply
+	TEST_ASSERT(!beat_role.applies_to(outpost), "The beat applies to an outpost with no police station")
+	TEST_ASSERT(!desk_role.applies_to(outpost), "The desk applies to an outpost with no police station")
+	TEST_ASSERT_EQUAL(beat_role.wanted(place), 0, "The beat wants officers at an outpost with no police station")
+	TEST_ASSERT(ispath(beat_role.npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat), "The beat brings the wrong officer")
+	TEST_ASSERT(ispath(desk_role.npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant), "The desk brings the wrong officer")
+
+	// A station: a desk and a lift
+	var/turf/desk = pa_tile(1, 1)
+	var/turf/lift = pa_tile(0, 4)
+	police.desk_turf = desk
+	police.lift_turfs = list(lift)
+	police.profile.beat_count = 3
+	TEST_ASSERT(beat_role.applies_to(outpost) && desk_role.applies_to(outpost), "The roles do not apply to an outpost with a police station")
+	TEST_ASSERT_EQUAL(beat_role.wanted(place), 3, "The beat is not short of the profile's three")
+	TEST_ASSERT_EQUAL(desk_role.wanted(place), 1, "The desk is not short of its one")
+
+	// A full concourse: eight of the crowd, and the officers are still settled and the crowd's count stays eight
+	var/list/crowd = list()
+	for(var/i in 0 to 7)
+		crowd += pa_npc(/mob/living/carbon/human/npc/ambient_npc/core_test, pa_tile(i % 5, i < 5 ? 0 : 3), place)
+	TEST_ASSERT_EQUAL(length(place.living_npcs()), 8, "The crowd is not eight") // AMBIENT_OUTPOST_TRANSIENT_CAP
+	var/made = SSambient_npcs.settle_outpost(place, null, 10)
+	TEST_ASSERT_EQUAL(made, 4, "[made] officers were settled, not the desk and three of the beat")
+	TEST_ASSERT_EQUAL(length(police.officers), 4, "The roster has [length(police.officers)] officers, not four")
+	TEST_ASSERT_EQUAL(length(place.living_npcs()), 8, "Officers were counted in the crowd")
+	TEST_ASSERT_EQUAL(length(place.npcs), 12, "The place does not hold the crowd and the officers")
+	TEST_ASSERT_EQUAL(police.life_standing("sergeant"), 1, "The desk is not manned") // POLICE_UNIT_SERGEANT
+	TEST_ASSERT_EQUAL(police.life_standing("beat"), 3, "The beat is not out") // POLICE_UNIT_BEAT
+	TEST_ASSERT_EQUAL(beat_role.wanted(place), 0, "The beat is still short once it is out")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/sergeant = locate() in police.officers
+	TEST_ASSERT_NOTNULL(sergeant, "No sergeant was made")
+	TEST_ASSERT_EQUAL(get_turf(sergeant), desk, "The sergeant was not found on the desk tile")
+	TEST_ASSERT(istype(sergeant.activity, /datum/ambient_activity/police_desk), "The sergeant is not at the desk")
+	TEST_ASSERT_EQUAL(sergeant.role, /datum/ambient_outpost_role/police_sergeant, "The sergeant does not know their role")
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/patrol in police.officers)
+		TEST_ASSERT(patrol.place == place, "A beat officer is not in the place")
+		TEST_ASSERT_EQUAL(patrol.role, /datum/ambient_outpost_role/police_beat, "A beat officer does not know their role")
+	// Settling again makes nobody more
+	place.needs_settling = TRUE
+	TEST_ASSERT_EQUAL(SSambient_npcs.settle_outpost(place, null, 10), 0, "Officers were made when none were short")
+
+	// Roles handed over by a test are not touched by the wrapper
+	TEST_ASSERT_EQUAL(SSambient_npcs.settle_outpost(place, list(allocate(/datum/ambient_outpost_role/core_test)), 10), 0, "A pass with its own roles made someone")
+
+	// A replacement steps off a police lift, never the public one; with the lift blocked nobody comes
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/gone = locate() in police.officers
+	qdel(gone)
+	TEST_ASSERT_EQUAL(beat_role.wanted(place), 1, "The beat is not short of the one who left")
+	var/mob/living/carbon/human/blocker = allocate(/mob/living/carbon/human/consistent, lift)
+	TEST_ASSERT_NULL(beat_role.arrive(place, pa_tile(4, 4)), "A replacement came off the public lift while a police lift was blocked")
+	qdel(blocker)
+	// Anyone the recovery already sent up (RESTAFF, recovery_staff.dm) would walk off; nobody walks at an empty outpost
+	for(var/mob/living/standing in lift)
+		standing.forceMove(pa_tile(1, 1))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/replacement = beat_role.arrive(place, pa_tile(4, 4))
+	TEST_ASSERT_NOTNULL(replacement, "A replacement did not come off the police lift (on the lift: [english_list(lift.contents)], blocked [lift.is_blocked_turf(exclude_mobs = FALSE)])")
+	TEST_ASSERT_EQUAL(get_turf(replacement), lift, "A replacement did not step off the police lift")
+	TEST_ASSERT(replacement in police.officers, "A replacement is not on the roster")
+	qdel(replacement)
+
+/// The stop activities: coffee is a real mug carried on, the desk sits with a clipboard, a sleeper is looked in on
+/datum/unit_test/voidcrew_outpost_police_routines
+
+/datum/unit_test/voidcrew_outpost_police_routines/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/ambient_place/outpost/place = pa_place(outpost)
+	police.desk_turf = pa_tile(1, 1)
+	pa_trader(outpost, pa_tile(2, 4), pa_tile(2, 3), /datum/outpost_shop/vendor/bait_shop)
+
+	// The beat itself is a stealth route (voidcrew_outpost_police_stealth.dm); here, what is done at its stops
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/patrol = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+
+	// Coffee: a real mug of real coffee, carried on by one who takes it along, put away by the next thing they do
+	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, pa_tile(3, 1))
+	TEST_ASSERT_EQUAL(patrol.life_coffee_machine(), machine, "An officer did not find the coffee machine")
+	var/datum/ambient_activity/police_coffee/coffee = patrol.start_activity(new /datum/ambient_activity/police_coffee(patrol, machine))
+	TEST_ASSERT_NOTNULL(coffee, "An officer could not go for a coffee")
+	TEST_ASSERT(get_dist(coffee.spot, machine) <= 1, "An officer's coffee spot is not beside the machine")
+	coffee.carry_on = TRUE
+	patrol.forceMove(coffee.spot)
+	patrol.activity_step(1)
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/mug = patrol.held_item
+	TEST_ASSERT(istype(mug) && mug.reagents.has_reagent(/datum/reagent/consumable/coffee), "An officer at the coffee machine holds no coffee")
+	patrol.end_activity()
+	TEST_ASSERT(!QDELETED(mug) && patrol.held_item == mug, "An officer who took their coffee along put it down at once")
+	patrol.start_activity(new /datum/ambient_activity/idle(patrol))
+	patrol.end_activity()
+	TEST_ASSERT(isnull(patrol.held_item) && QDELETED(mug), "The mug was not put away by the next thing they did")
+
+	// The desk: sits on the chair, a clipboard in hand
+	allocate(/obj/structure/chair, police.desk_turf)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/sergeant = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(3, 0))
+	var/datum/ambient_activity/police_desk/at_desk = sergeant.start_activity(new /datum/ambient_activity/police_desk(sergeant))
+	TEST_ASSERT_NOTNULL(at_desk, "The sergeant could not take the desk")
+	TEST_ASSERT_EQUAL(at_desk.spot, police.desk_turf, "The desk activity is not at the desk tile")
+	sergeant.forceMove(police.desk_turf)
+	sergeant.activity_step(1)
+	TEST_ASSERT_NOTNULL(sergeant.buckled, "The sergeant did not sit")
+	TEST_ASSERT(istype(sergeant.held_prop, /obj/item/clipboard), "The sergeant holds no clipboard")
+	sergeant.end_activity()
+	TEST_ASSERT_NULL(sergeant.held_prop, "The sergeant kept the clipboard after leaving the desk")
+
+	// A sleeper is looked in on: words only
+	// Clear of the bait shop's counter: nobody without business there stands within its reach (ambient_outpost_tile_avoided())
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human/consistent, pa_tile(0, 0))
+	sleeper.Sleeping(5 MINUTES)
+	var/datum/ambient_activity/police_check/check = patrol.start_activity(new /datum/ambient_activity/police_check(patrol))
+	TEST_ASSERT_NOTNULL(check, "An officer did not notice someone asleep (sleeper seen: [patrol.life_sleeper_near() || "nobody"], asleep [sleeper.IsSleeping()], stat [sleeper.stat], [get_dist(patrol, sleeper)] tiles, line [can_see(patrol, sleeper, 8)], doing [patrol.activity?.type || "nothing"], beside: [police_spot_report(patrol, sleeper)])")
+	TEST_ASSERT_EQUAL(check.target_ref.resolve(), sleeper, "An officer is checking on the wrong person")
+	var/health_before = sleeper.health
+	patrol.forceMove(check.spot)
+	patrol.activity_step(1)
+	TEST_ASSERT(sleeper.IsSleeping() && sleeper.health == health_before, "Checking on a sleeper did something to them")
+	patrol.end_activity()
+	TEST_ASSERT_NULL(patrol.start_activity(new /datum/ambient_activity/police_check(patrol)), "An officer nagged the same sleeper again at once")
+	TEST_ASSERT_NOTNULL(place, "The place went missing")
+
+// =========================================================================
+// WHAT THEY SHOUT AT PEOPLE (knock, warn, locker_thief, make_way, strip)
+// =========================================================================
+
+/// A person with a mind at `where`
+/datum/unit_test/proc/police_line_person(turf/where)
+	var/mob/living/carbon/human/someone = allocate(/mob/living/carbon/human/consistent, where)
+	someone.mind_initialize()
+	allocated += someone.mind
+	return someone
+
+/// An officer who sees a scuffle that stays under one star tells them to knock it off; two stars is not his to shout
+/datum/unit_test/voidcrew_outpost_police_line_knock
+
+/datum/unit_test/voidcrew_outpost_police_line_knock/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/brawler = police_line_person(pa_tile(2, 0))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	TEST_ASSERT(police.witness_shout(officer, brawler, "unarmed"), "An officer said nothing to someone throwing a punch") // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT(voice.context_free_at["knock"] > world.time, "A punch under one star did not get a knock-it-off") // POLICE_LINE_KNOCK
+	TEST_ASSERT(!voice.context_free_at["warn"], "A punch under one star got the one-star warning")
+
+	// Two stars is the arrest's to voice, not a shout from the witness
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police_pin_warrant(police, brawler.mind, 30)
+	TEST_ASSERT_NULL(police.witness_shout(officer, brawler, "unarmed"), "An officer shouted at a two-star suspect as if it were a scuffle")
+	TEST_ASSERT_EQUAL(length(voice.context_free_at), 0, "A two-star crime got a witness shout")
+
+/// A crime that makes it one star gets the warning, from an officer and nobody else
+/datum/unit_test/voidcrew_outpost_police_line_warn
+
+/datum/unit_test/voidcrew_outpost_police_line_warn/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/brawler = police_line_person(pa_tile(2, 0))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	police_pin_warrant(police, brawler.mind, 5)
+	TEST_ASSERT(police.witness_shout(officer, brawler, "unarmed"), "An officer said nothing to a punch that makes one star") // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT(voice.context_free_at["warn"] > world.time, "A one-star crime did not get the warning") // POLICE_LINE_WARN
+	TEST_ASSERT_EQUAL(officer.dir, EAST, "The officer did not turn to the one he warned")
+
+	// Seen by someone who is not an officer: no shout
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(1, 2))
+	TEST_ASSERT_NULL(police.witness_shout(bystander, brawler, "unarmed"), "A bystander's sighting made an officer shout")
+
+/// Someone seen taking from a property locker is shouted at, at any stars
+/datum/unit_test/voidcrew_outpost_police_line_locker_thief
+
+/datum/unit_test/voidcrew_outpost_police_line_locker_thief/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/thief = police_line_person(pa_tile(2, 1))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	police_pin_warrant(police, thief.mind, 30)
+	TEST_ASSERT(police.witness_shout(officer, thief, "locker_theft"), "An officer said nothing to a locker thief") // OUTPOST_CRIME_LOCKER_THEFT
+	TEST_ASSERT(voice.context_free_at["locker_thief"] > world.time, "A locker thief was not shouted at") // POLICE_LINE_LOCKER_THIEF
+
+/// Walking a suspect in, someone in the way is told to make way; the suspect and other officers are not
+/datum/unit_test/voidcrew_outpost_police_line_make_way
+
+/datum/unit_test/voidcrew_outpost_police_line_make_way/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 2))
+	var/mob/living/carbon/human/suspect = police_line_person(pa_tile(0, 1))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	var/datum/outpost_police_case/case = allocate(/datum/outpost_police_case, police, null)
+
+	// Nobody ahead: nothing said
+	officer.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "An officer called make way with nobody ahead")
+	// The suspect ahead is his to walk, and a partner steps aside on his own
+	suspect.forceMove(pa_tile(1, 2))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/partner = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(2, 2))
+	officer.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "An officer told his own suspect or a partner to make way")
+	TEST_ASSERT_EQUAL(length(voice.context_free_at), 0, "Something was said with only the suspect and a partner ahead")
+
+	// A bystander two tiles ahead
+	partner.forceMove(pa_tile(4, 0))
+	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(2, 2))
+	officer.setDir(EAST)
+	TEST_ASSERT(case.make_way(officer, suspect), "An officer walking a suspect said nothing to someone in the way")
+	TEST_ASSERT(voice.context_free_at["make_way"] > world.time, "Make way was not said") // POLICE_LINE_MAKE_WAY
+	TEST_ASSERT_NOTNULL(bystander, "The bystander went missing")
+
+/// The jail strip starts with the officer telling the prisoner to empty out
+/datum/unit_test/voidcrew_outpost_police_line_strip
+	var/saved_scale
+
+/datum/unit_test/voidcrew_outpost_police_line_strip/Destroy()
+	if(!isnull(saved_scale))
+		GLOB.outpost_police_property_time_scale = saved_scale
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_line_strip/Run()
+	saved_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/list/lockers = list()
+	for(var/index in 0 to 3)
+		lockers += allocate(/obj/structure/closet/secure_closet/personal/outpost_police, pa_tile(index, 4))
+	var/obj/structure/closet/secure_closet/outpost_evidence/evidence = allocate(/obj/structure/closet/secure_closet/outpost_evidence, pa_tile(4, 3))
+	police.lockers += lockers
+	police.evidence_locker = evidence
+	police.build_property(police.lockers, evidence)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 1))
+	var/mob/living/carbon/human/prisoner = police_line_person(pa_tile(2, 1))
+	prisoner.equip_to_slot_if_possible(allocate(/obj/item/clothing/under/color/grey), ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	TEST_ASSERT(police.store_property(prisoner, officer), "The strip failed with free lockers")
+	TEST_ASSERT(voice.context_free_at["strip"] > world.time, "The officer said nothing at the jail strip") // POLICE_LINE_STRIP
+
+/// A bang on a shut cell door makes the noise, and the nearest officer who can see the door says to knock it off
+/datum/unit_test/voidcrew_outpost_police_line_cell_knock
+
+/datum/unit_test/voidcrew_outpost_police_line_cell_knock/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = allocate(/obj/machinery/door/airlock/outpost/glass/police_cell, pa_tile(2, 3))
+	var/datum/outpost_police_cell/cell = allocate(/datum/outpost_police_cell, police, "test")
+	cell.door = door
+	door.holding_cell = cell
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/mob/living/carbon/human/knocker = police_line_person(pa_tile(2, 2))
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	TEST_ASSERT(door.density, "Setup: the cell door is open")
+	door.try_to_activate_door(knocker)
+	TEST_ASSERT(door.density, "Banging on a cell door opened it")
+	TEST_ASSERT(voice.context_free_at["knock"] > world.time, "Nobody told the knocker to knock it off") // POLICE_LINE_KNOCK
+	TEST_ASSERT_NOTNULL(officer, "The officer went missing")
+	cell.retire()
+
+/// Line picking handles null values, strips \proper, skips cooling-down lines before picking, and avoids immediate repeats
+/datum/unit_test/voidcrew_outpost_police_line_picking
+
+/datum/unit_test/voidcrew_outpost_police_line_picking/Run()
+	TEST_ASSERT_EQUAL(outpost_police_pick_line(list("Quiet."), null), "Quiet.", "Null values broke plain line picking")
+	var/list/proper_values = outpost_police_values(list("place" = "\proper St. Jude's"))
+	TEST_ASSERT_EQUAL(proper_values["place"], "St. Jude's", "\proper survived in a place value")
+
+	var/list/busy = list("First." = world.time + 1 MINUTES, "Second." = world.time + 1 MINUTES, "Third." = world.time + 1 MINUTES)
+	TEST_ASSERT_EQUAL(outpost_police_pick_line(list("First.", "Second.", "Third.", "Free."), null, busy), "Free.", "Line picker did not choose the one line off cooldown")
+
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police_voice/voice = outpost.police.life_voice()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
+	var/first_said = officer.police_say("knock") // POLICE_LINE_KNOCK
+	TEST_ASSERT(istext(first_said) && (first_said in officer.get_lines("knock")), "get_lines() dropped the just-spoken police_say line")
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/second_said = officer.police_say("knock") // POLICE_LINE_KNOCK
+	TEST_ASSERT(istext(second_said) && second_said != first_said, "The same officer repeated the exact police_say line back to back")
+
+	var/list/first_conv = officer.pick_conversation()
+	var/list/second_conv = officer.pick_conversation()
+	TEST_ASSERT(islist(first_conv) && islist(second_conv) && first_conv[1] != second_conv[1], "An officer picked the same conversation opener twice running")
+
+/// Radio-only calls require a working headset and never let a lone dispatcher acknowledge themselves
+/datum/unit_test/voidcrew_outpost_police_radio_discipline
+
+/datum/unit_test/voidcrew_outpost_police_radio_discipline/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/desk = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(0, 0))
+	var/obj/item/radio/headset/headset = police_headset_on(desk)
+	headset.set_on(FALSE)
+	TEST_ASSERT_NULL(police.life_dispatcher(), "An officer with a switched-off headset remained the radio dispatcher")
+	TEST_ASSERT_NULL(desk.police_say("check_in", null, TRUE), "A radio-only check-in went out with a dead headset")
+	TEST_ASSERT(istext(desk.police_say("officer_down", null, TRUE)), "A dead headset silenced a local officer-down shout") // POLICE_LINE_OFFICER_DOWN
+
+	headset.set_on(TRUE)
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police.life_call_level(1, 0)
+	sleep(5 SECONDS)
+	TEST_ASSERT(!voice.context_free_at["radio_ack"], "A lone dispatcher acknowledged their own radio call") // POLICE_LINE_RADIO_ACK
+
+/// Prisoners already locked in cells do not mute check-ins, hold off the all-clear, or mask new concourse warrants
+/datum/unit_test/voidcrew_outpost_police_custody_chatter
+
+/datum/unit_test/voidcrew_outpost_police_custody_chatter/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/desk = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/beat = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(2, 0))
+	police_headset_on(desk)
+	police_headset_on(beat)
+
+	var/datum/outpost_police_cell/cell = allocate(/datum/outpost_police_cell, police, "test")
+	cell.tiles = list(pa_tile(4, 4))
+	police.cells += cell
+	var/mob/living/carbon/human/jailed = police_line_person(pa_tile(4, 4))
+	police_pin_warrant(police, jailed.mind, 30)
+	cell.prisoners[jailed.mind] = list(world.time + 5 MINUTES, 2)
+
+	voice.next_check_in_at = world.time
+	beat.life_check_in()
+	TEST_ASSERT(voice.context_free_at["check_in"] > world.time, "A prisoner in a cell silenced beat check-ins")
+
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	voice.called_level = 2
+	police.tick_life()
+	TEST_ASSERT_EQUAL(voice.called_level, 0, "A prisoner serving time kept called_level above zero")
+	TEST_ASSERT(voice.context_free_at["clear"] > world.time, "Securing the only suspect in a cell did not report clear") // POLICE_LINE_CLEAR
+
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/mob/living/carbon/human/troublemaker = police_line_person(pa_tile(2, 2))
+	police_pin_warrant(police, troublemaker.mind, 12)
+	police.tick_life()
+	TEST_ASSERT_EQUAL(voice.called_level, 1, "A jailed two-star prisoner masked a new one-star offender")
+	TEST_ASSERT(voice.context_free_at["radio_call"] > world.time, "The desk did not call the new concourse offender") // POLICE_LINE_RADIO_CALL
+	police.cells -= cell
+	cell.retire()
+
+/// Officer coffee glasses are locked gear, never set down loose on tables, never refill with beer, and go away on alert
+/datum/unit_test/voidcrew_outpost_police_coffee_safety
+
+/datum/unit_test/voidcrew_outpost_police_coffee_safety/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 1))
+	var/obj/structure/table/counter = allocate(/obj/structure/table, pa_tile(2, 1))
+
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/mug = officer.take_drink()
+	TEST_ASSERT(human_npc_gear_locked(mug), "An officer's coffee glass was not gear-locked")
+	officer.put_drink_down(counter)
+	TEST_ASSERT(QDELETED(mug) && !(locate(/obj/item/reagent_containers/cup/glass) in counter.loc), "An officer left a loose glass on a counter")
+
+	var/datum/ambient_activity/drink/police/bar_coffee = officer.start_activity(new /datum/ambient_activity/drink/police(officer, counter))
+	TEST_ASSERT_NOTNULL(bar_coffee, "An officer could not start a counter coffee break")
+	officer.forceMove(bar_coffee.spot)
+	officer.activity_step(1)
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/refilled = officer.held_item
+	refilled.reagents.clear_reagents()
+	TEST_ASSERT(officer.sip(), "Refilling an empty coffee cup at the counter failed")
+	TEST_ASSERT(refilled.reagents.has_reagent(/datum/reagent/consumable/coffee) && !refilled.reagents.has_reagent(/datum/reagent/consumable/ethanol/beer), "An officer's counter refill poured beer instead of coffee")
+	officer.end_activity()
+
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/carried = officer.take_drink()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_set_state("alert") // STEALTH_ALERT
+	TEST_ASSERT(isnull(officer.held_item) && QDELETED(carried), "An officer kept a coffee mug in hand when going alert")
+
+/// Sleepers, corpses, witness shouts, casual talk, make_way and cell knocks respect context
+/datum/unit_test/voidcrew_outpost_police_context_checks
+
+/datum/unit_test/voidcrew_outpost_police_context_checks/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 1))
+	police_headset_on(officer)
+
+	// Crit patients, buckled sitters and cell prisoners are not sleepers to move along
+	var/mob/living/carbon/human/dying = police_line_person(pa_tile(2, 1))
+	dying.Sleeping(5 MINUTES)
+	ADD_TRAIT(dying, TRAIT_CRITICAL_CONDITION, "unit_test")
+	TEST_ASSERT_NULL(officer.life_sleeper_near(), "An officer treated someone in crit as a concourse sleeper")
+	qdel(dying)
+
+	var/obj/structure/chair/bench = allocate(/obj/structure/chair, pa_tile(2, 1))
+	var/mob/living/carbon/human/dozing = police_line_person(pa_tile(2, 1))
+	dozing.Sleeping(5 MINUTES)
+	bench.buckle_mob(dozing, force = TRUE)
+	TEST_ASSERT_NULL(officer.life_sleeper_near(), "An officer treated someone buckled on a seat as a floor sleeper")
+	bench.unbuckle_mob(dozing, force = TRUE)
+	qdel(dozing)
+	qdel(bench)
+
+	var/datum/outpost_police_cell/cell = allocate(/datum/outpost_police_cell, police, "test")
+	cell.tiles = list(pa_tile(4, 4))
+	police.cells += cell
+	var/mob/living/carbon/human/cell_sleeper = police_line_person(pa_tile(4, 4))
+	cell_sleeper.Sleeping(5 MINUTES)
+	TEST_ASSERT_NULL(officer.life_sleeper_near(), "An officer treated a prisoner sleeping in a cell as a concourse sleeper")
+	qdel(cell_sleeper)
+
+	// Bodies in back rooms are ignored, and a throttled body call does not burn its one-shot entry
+	var/datum/outpost_recovery/recovery = outpost.ensure_recovery()
+	recovery.back_rooms[pa_tile(4, 3)] = TRUE
+	var/mob/living/carbon/human/morgue_body = police_line_person(pa_tile(4, 3))
+	morgue_body.death()
+	TEST_ASSERT_NULL(officer.life_body_near(), "An officer called in a corpse already inside a recovery back room")
+	qdel(morgue_body)
+
+	var/mob/living/carbon/human/floor_body = police_line_person(pa_tile(2, 1))
+	floor_body.death()
+	voice.context_free_at["body"] = world.time + 1 MINUTES // POLICE_LINE_BODY
+	var/datum/ambient_activity/police_body/body_call = officer.start_activity(new /datum/ambient_activity/police_body(officer, floor_body))
+	TEST_ASSERT_NOTNULL(body_call, "An officer could not look at an uncalled concourse corpse")
+	officer.activity_step(1)
+	officer.end_activity()
+	TEST_ASSERT_EQUAL(length(voice.bodies_called), 0, "A throttled body call marked the corpse as already called in")
+	voice.context_free_at.Cut()
+	TEST_ASSERT_EQUAL(officer.life_body_near(), floor_body, "A corpse whose call was throttled could not be called in later")
+	qdel(floor_body)
+
+	// A crime seen by both a trader and an officer gets the officer's shout, and pending officer heat escalates the next one
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader = pa_trader(outpost, pa_tile(0, 3), pa_tile(0, 2), /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/brawler = police_line_person(pa_tile(1, 2))
+	var/mob/living/carbon/human/victim = police_line_person(pa_tile(2, 2))
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police.report_crime(brawler, "unarmed", victim) // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT(voice.context_free_at["knock"] > world.time, "The watching officer did not shout at a punch") // POLICE_LINE_KNOCK
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police.recent_reports.Cut()
+	police.report_crime(brawler, "unarmed", victim) // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT(voice.context_free_at["warn"] > world.time, "A second punch before the officer's radio call landed did not escalate to warn") // POLICE_LINE_WARN
+
+	// Casual talk ignores wanted suspects and uses decayed current_prior()
+	officer.next_line_at = 0
+	police_pin_warrant(police, brawler.mind, 12)
+	officer.talked_to(brawler)
+	TEST_ASSERT_EQUAL(officer.next_line_at, 0, "An officer chatted casually with a wanted suspect")
+	var/datum/outpost_warrant/old_record = police_pin_warrant(police, victim.mind, 0)
+	old_record.prior = 20
+	old_record.prior_set_at = world.time - 120 MINUTES
+	officer.talked_to(victim)
+	TEST_ASSERT(officer.last_line in ambient_dialogue_lines("outpost_police.json", officer.life_voice_section(), "talk"), "An expired prior still got talk_prior")
+	officer.talk_cooldowns = null
+	old_record.prior_set_at = world.time
+	officer.talked_to(victim)
+	TEST_ASSERT(officer.last_line in ambient_dialogue_lines("outpost_police.json", officer.life_voice_section(), "talk_prior"), "An active prior did not get talk_prior")
+
+	// Make way stops at counters and ignores non-dense mobs
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/datum/outpost_police_case/case = allocate(/datum/outpost_police_case, police, null)
+	var/obj/structure/table/shop_counter = allocate(/obj/structure/table, pa_tile(2, 1))
+	var/mob/living/carbon/human/behind_counter = police_line_person(pa_tile(3, 1))
+	officer.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, brawler), "An officer told someone behind a counter to make way")
+	qdel(shop_counter)
+	qdel(behind_counter)
+
+	// Cell knock skips a muted closer officer to reach one who can speak, without spinning a buckled sergeant
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = allocate(/obj/machinery/door/airlock/outpost/glass/police_cell, pa_tile(3, 3))
+	cell.door = door
+	door.holding_cell = cell
+	ADD_TRAIT(officer, TRAIT_MUTE, "unit_test")
+	officer.forceMove(pa_tile(3, 2))
+	var/obj/structure/chair/desk_chair = allocate(/obj/structure/chair, pa_tile(1, 3))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/desk = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(1, 3))
+	desk.setDir(SOUTH)
+	desk_chair.buckle_mob(desk, force = TRUE)
+	var/mob/living/carbon/human/knocker = police_line_person(pa_tile(3, 4))
+	TEST_ASSERT(istext(cell.answer_knock(knocker)), "A muted closer officer blocked a speaking officer from answering a cell knock")
+	TEST_ASSERT_EQUAL(desk.dir, SOUTH, "Answering a cell knock spun a buckled sergeant")
+	desk_chair.unbuckle_mob(desk, force = TRUE)
+	TEST_ASSERT_NOTNULL(trader, "The trader went missing")
+	police.cells -= cell
+	cell.retire()
+
+/// On a real outpost map, the sergeant at the checkpoint desk can reach and take coffee from the station's coffee machine
+/datum/unit_test/voidcrew_outpost_police_station_coffee
+
+/datum/unit_test/voidcrew_outpost_police_station_coffee/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT_NOTNULL(police.desk_turf, "The loaded outpost has no police desk")
+	TEST_ASSERT(istype(police.desk_turf.loc, /area/voidcrew/trader_outpost/checkpoint), "The police desk is not in the checkpoint area")
+	for(var/mob/living/occupant in police.desk_turf)
+		occupant.forceMove(police_floor(outpost))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/sergeant = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+	sergeant.next_desk_coffee = 0
+	var/obj/machinery/vending/coffee/machine = sergeant.life_desk_coffee()
+	TEST_ASSERT_NOTNULL(machine, "The sergeant at the real checkpoint desk could not reach the station's coffee machine")
+	var/datum/ambient_activity/police_coffee/coffee = sergeant.start_activity(police.stop_activity_for(sergeant, "desk"))
+	TEST_ASSERT(istype(coffee), "The sergeant at the real checkpoint desk could not start a coffee run ([sergeant.activity?.type || "nothing"])")
+	sergeant.end_activity()
+
+/// Counter sleepers, shopfront targets, mind-bearing officer bodies, case hand cleanup, make_way barriers and stand-down radio calls
+/datum/unit_test/voidcrew_outpost_police_life_and_way_edges
+
+/datum/unit_test/voidcrew_outpost_police_life_and_way_edges/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_voice/voice = police.life_voice()
+	pa_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/awake_trader = pa_trader(outpost, pa_tile(2, 4), pa_tile(2, 3), /datum/outpost_shop/vendor/bait_shop)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(1, 2))
+	police_headset_on(officer)
+
+	// 1. A sleeper passed out right in front of a shop counter is still checked on
+	var/mob/living/carbon/human/sleeper = police_line_person(pa_tile(2, 2))
+	sleeper.Sleeping(5 MINUTES)
+	var/datum/ambient_activity/police_check/check = officer.start_activity(new /datum/ambient_activity/police_check(officer, sleeper))
+	TEST_ASSERT(istype(check), "An officer could not check a sleeper lying in front of a counter ([police_spot_report(officer, sleeper)])")
+	officer.end_activity()
+	qdel(sleeper)
+
+	// 2. Shopfront skips checkpoint guards and unconscious keepers to watch an awake shop keeper in sight
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/gate_guard = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard, pa_tile(0, 2))
+	gate_guard.outpost = outpost
+	outpost.traders += gate_guard
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ko_trader = pa_trader(outpost, pa_tile(0, 3), null, /datum/outpost_shop/vendor/diner)
+	ko_trader.Unconscious(20 SECONDS)
+	TEST_ASSERT_EQUAL(ko_trader.stat, UNCONSCIOUS, "Fixture: ko_trader is not unconscious")
+	var/datum/ambient_activity/police_shopfront/shopfront = officer.start_activity(new /datum/ambient_activity/police_shopfront(officer))
+	TEST_ASSERT(istype(shopfront) && shopfront.trader_ref?.resolve() == awake_trader, "Shopfront picked [shopfront?.trader_ref?.resolve() || "nobody"] instead of the awake shop keeper")
+	officer.end_activity()
+	qdel(gate_guard)
+	qdel(ko_trader)
+
+	// 3. A mind-bearing officer body (disconnected transplanted player) does not speak AI lines, and its corpse off the roster is called in
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/played = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(3, 2))
+	played.mind_initialize()
+	allocated += played.mind
+	TEST_ASSERT(!played.police_can_speak(), "A mind-bearing officer body was allowed to speak AI police lines")
+	police.remove_officer(played)
+	played.death()
+	TEST_ASSERT(officer.life_is_uncalled_body(played), "A dead player in a former officer body off the roster was ignored as an NPC officer corpse")
+	qdel(played)
+
+	// 4. police_put_away() and take_officer() clear a carried coffee glass
+	officer.take_drink()
+	TEST_ASSERT(officer.police_put_away(officer.held_item) && isnull(officer.held_item), "police_put_away() did not clear a held coffee glass")
+	officer.take_drink()
+	var/datum/outpost_police_case/case = allocate(/datum/outpost_police_case, police, null)
+	case.take_officer(officer)
+	TEST_ASSERT_NULL(officer.held_item, "Drafting an officer onto a case left a coffee mug in hand")
+	case.drop_officer(officer)
+	officer.resume_routine()
+
+	// 5. make_way() stops at closed doors and directional border windows, and step_aside leaves posted traders and paused/minded NPCs alone
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	var/mob/living/carbon/human/suspect = police_line_person(pa_tile(0, 1))
+	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(3, 1))
+	officer.forceMove(pa_tile(1, 1))
+	officer.setDir(EAST)
+	officer.ai_controller.set_blackboard_key("outpost_police_case_goal", bystander) // BB_OUTPOST_POLICE_CASE_GOAL
+	var/obj/machinery/door/airlock/closed_door = allocate(/obj/machinery/door/airlock, pa_tile(2, 1))
+	TEST_ASSERT(closed_door.density, "Fixture: airlock is not closed")
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "make_way shouted across a closed airlock")
+	qdel(closed_door)
+	bystander.forceMove(pa_tile(2, 1))
+	var/obj/structure/window/pane = allocate(/obj/structure/window, pa_tile(1, 1))
+	pane.setDir(EAST)
+	TEST_ASSERT_NULL(case.make_way(officer, suspect), "make_way shouted through a directional border window")
+	qdel(pane)
+	officer.ai_controller.clear_blackboard_key("outpost_police_case_goal") // BB_OUTPOST_POLICE_CASE_GOAL
+	TEST_ASSERT(!outpost_npc_step_aside(awake_trader, officer, null) && get_turf(awake_trader) == awake_trader.home, "step_aside shoved a shop keeper off its counter post")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/patron = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, pa_tile(2, 0))
+	ADD_TRAIT(patron, TRAIT_AI_PAUSED, "unit_test")
+	TEST_ASSERT(!outpost_npc_step_aside(patron, officer, null), "step_aside moved a paused NPC")
+	REMOVE_TRAIT(patron, TRAIT_AI_PAUSED, "unit_test")
+	patron.mind_initialize()
+	allocated += patron.mind
+	TEST_ASSERT(!outpost_npc_step_aside(patron, officer, null), "step_aside moved a mind-bearing NPC")
+	qdel(patron)
+
+	// 6. Standing down surplus response units only calls all-clear when keep == 0 and no cases remain open
+	voice.context_free_at.Cut()
+	voice.text_free_at.Cut()
+	police.lift_turfs = list(pa_tile(0, 4))
+	// The test room is no sector an officer walks out of, so the responder already stands in the lift
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/responder = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, pa_tile(0, 4))
+	police_headset_on(responder)
+	police.cases[suspect.mind] = case
+	police.dispatch_stand_down(0, null)
+	TEST_ASSERT_EQUAL(responder.npc_exit, pa_tile(0, 4), "Surplus response officer did not start walking out")
+	TEST_ASSERT(!voice.context_free_at["clear"], "A departing responder called all-clear while an arrest case was still open") // POLICE_LINE_CLEAR
+	police.cases -= suspect.mind
+	responder.npc_stop_leaving()
+	police.dispatch_stand_down(0, null)
+	TEST_ASSERT(voice.context_free_at["clear"] > world.time, "A departing responder did not call all-clear once no cases or suspects remained") // POLICE_LINE_CLEAR
+	qdel(responder)
+	qdel(suspect)
+	qdel(bystander)

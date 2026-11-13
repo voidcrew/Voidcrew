@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -122,6 +122,13 @@ const duration = (seconds: number) =>
     : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
 
 const wrapping = { whiteSpace: 'normal', overflowWrap: 'anywhere' } as const;
+
+// One line, cut with a mark: the full text is on hover
+const cut = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+} as const;
 
 export const OvermapManagement = () => {
   const { act, data } = useBackend<Data>();
@@ -698,11 +705,28 @@ const ContactDetails = ({ contact }: { contact: Details }) => {
   );
 };
 
+// A label and a field. The field may shrink, so a long name is cut with a mark and never pushes past the window.
+const FormRow = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) => (
+  <Stack align="center" mb={1}>
+    <Stack.Item shrink={0} basis="64px" color="label">
+      {label}:
+    </Stack.Item>
+    <Stack.Item grow style={{ minWidth: 0 }}>
+      {children}
+    </Stack.Item>
+  </Stack>
+);
+
 const BAN_KINDS = {
   trader: [
     { value: 'embargo', displayText: 'Trade embargo (ship)' },
-    { value: 'aggressor', displayText: 'Marked for violence (person)' },
-    { value: 'trespass', displayText: 'Refused service (person)' },
+    { value: 'wanted', displayText: 'Warrant (person)' },
   ],
   player: [{ value: 'ship_ban', displayText: 'Denied docking (ship)' }],
 };
@@ -717,6 +741,7 @@ const OutpostBans = ({ bans }: { bans: Bans }) => {
   const [kind, setKind] = useState<string | null>(null);
   const [targetRef, setTargetRef] = useState<string | null>(null);
   const [minutes, setMinutes] = useState(15);
+  const [stars, setStars] = useState(3);
 
   const query = search.trim().toLowerCase();
   const entries = bans.entries
@@ -729,7 +754,8 @@ const OutpostBans = ({ bans }: { bans: Bans }) => {
     )
     .sort(
       (a, b) =>
-        a.outpost.localeCompare(b.outpost) || a.name.localeCompare(b.name),
+        (a.outpost || '').localeCompare(b.outpost || '') ||
+        (a.name || '').localeCompare(b.name || ''),
     );
   const outposts = [...bans.outposts].sort((a, b) =>
     a.name.localeCompare(b.name),
@@ -787,7 +813,7 @@ const OutpostBans = ({ bans }: { bans: Bans }) => {
             </Stack.Item>
           </Stack>
         </Stack.Item>
-        <Stack.Item grow style={{ overflowY: 'auto', minHeight: 0 }}>
+        <Stack.Item grow mb={1} style={{ overflowY: 'auto', minHeight: 0 }}>
           {entries.length === 0 && (
             <NoticeBox info>
               {bans.entries.length > 0 ? 'No matching bans.' : 'Nobody is banned.'}
@@ -797,14 +823,17 @@ const OutpostBans = ({ bans }: { bans: Bans }) => {
             <Box key={entry.id} mb={1}>
               <Stack align="center">
                 <Stack.Item grow style={{ minWidth: 0 }}>
-                  <Box bold style={wrapping}>
-                    {entry.name}
+                  <Box bold style={cut} title={entry.name}>
+                    {entry.name || 'Unknown'}
                   </Box>
-                  <Box color="label" style={wrapping}>
-                    {entry.label} · {entry.outpost}
-                    {entry.seconds !== null
+                  <Box color="label" style={cut} title={entry.outpost}>
+                    {entry.label || 'Restricted'} ·{' '}
+                    {entry.outpost || 'Unknown outpost'}
+                    {entry.seconds !== null && entry.seconds !== undefined
                       ? ` · ${duration(entry.seconds)} left`
-                      : ' · Until lifted'}
+                      : entry.kind === 'wanted'
+                        ? ' · At large'
+                        : ' · Until lifted'}
                   </Box>
                 </Stack.Item>
                 <Stack.Item>
@@ -827,65 +856,75 @@ const OutpostBans = ({ bans }: { bans: Bans }) => {
         </Stack.Item>
         <Stack.Item>
           <Section title="Add a ban">
-            <LabeledList>
-              <LabeledList.Item label="Outpost">
-                <Dropdown
-                  width="100%"
-                  selected={outpostRef}
-                  displayText={outpost?.name}
-                  placeholder="Choose an outpost"
-                  options={outposts.map((option) => ({
-                    value: option.ref,
-                    displayText: option.name,
-                  }))}
-                  onSelected={(value) => {
-                    setOutpostRef(value);
-                    setKind(null);
-                    setTargetRef(null);
-                  }}
+            <FormRow label="Outpost">
+              <Dropdown
+                width="100%"
+                selected={outpostRef}
+                displayText={outpost?.name}
+                placeholder="Choose an outpost"
+                options={outposts.map((option) => ({
+                  value: option.ref,
+                  displayText: option.name,
+                }))}
+                onSelected={(value) => {
+                  setOutpostRef(value);
+                  setKind(null);
+                  setTargetRef(null);
+                }}
+              />
+            </FormRow>
+            <FormRow label="Ban">
+              <Dropdown
+                width="100%"
+                disabled={!outpost}
+                selected={kind}
+                displayText={kindOption?.displayText}
+                placeholder="Choose a ban"
+                options={kinds}
+                onSelected={(value) => {
+                  setKind(value);
+                  setTargetRef(null);
+                  setMinutes(15);
+                  setStars(3);
+                }}
+              />
+            </FormRow>
+            <FormRow label={shipTarget ? 'Ship' : 'Person'}>
+              <Dropdown
+                width="100%"
+                disabled={!kind}
+                selected={targetRef}
+                displayText={target?.displayText}
+                placeholder={shipTarget ? 'Choose a ship' : 'Choose a person'}
+                options={targets}
+                onSelected={setTargetRef}
+              />
+            </FormRow>
+            {kind === 'embargo' && (
+              <FormRow label="Minutes">
+                <NumberInput
+                  width="60px"
+                  minValue={1}
+                  maxValue={bans.max_minutes}
+                  step={1}
+                  value={minutes}
+                  onChange={setMinutes}
                 />
-              </LabeledList.Item>
-              <LabeledList.Item label="Ban">
-                <Dropdown
-                  width="100%"
-                  disabled={!outpost}
-                  selected={kind}
-                  displayText={kindOption?.displayText}
-                  placeholder="Choose a ban"
-                  options={kinds}
-                  onSelected={(value) => {
-                    setKind(value);
-                    setTargetRef(null);
-                    setMinutes(value === 'trespass' ? 30 : 15);
-                  }}
+              </FormRow>
+            )}
+            {kind === 'wanted' && (
+              <FormRow label="Stars">
+                <NumberInput
+                  width="60px"
+                  minValue={1}
+                  maxValue={5}
+                  step={1}
+                  value={stars}
+                  onChange={setStars}
                 />
-              </LabeledList.Item>
-              <LabeledList.Item label={shipTarget ? 'Ship' : 'Person'}>
-                <Dropdown
-                  width="100%"
-                  disabled={!kind}
-                  selected={targetRef}
-                  displayText={target?.displayText}
-                  placeholder={shipTarget ? 'Choose a ship' : 'Choose a person'}
-                  options={targets}
-                  onSelected={setTargetRef}
-                />
-              </LabeledList.Item>
-              {!!kind && kind !== 'ship_ban' && (
-                <LabeledList.Item label="Minutes">
-                  <NumberInput
-                    width="60px"
-                    minValue={1}
-                    maxValue={bans.max_minutes}
-                    step={1}
-                    value={minutes}
-                    onChange={setMinutes}
-                  />
-                </LabeledList.Item>
-              )}
-            </LabeledList>
+              </FormRow>
+            )}
             <Button
-              mt={1}
               icon="ban"
               color="bad"
               disabled={!outpost || !kind || !target}
@@ -895,6 +934,7 @@ const OutpostBans = ({ bans }: { bans: Bans }) => {
                   kind,
                   target: targetRef,
                   minutes,
+                  stars,
                 })
               }
             >

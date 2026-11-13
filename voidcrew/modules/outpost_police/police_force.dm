@@ -1,0 +1,580 @@
+/**
+ * # Outpost police: force
+ *
+ * Owner: P4. Who officers fight and how hard: the targeting strategy, the weapon mode for the current target,
+ * hold-fire and body-block rules, and looking for a suspect who got away. Spec 8. Every "does this officer
+ * see that suspect" test outside the targeting strategy goes through police.perception.sees().
+ *
+ * - Targeting (/datum/targeting_strategy/basic/human_npc/outpost_police): a person is a target at ARREST, STUN or
+ *   LETHAL force by their warrant, or by what this officer saw and has not yet got out on the radio
+ *   (force_level(target, officer)), and never in police custody; a stunned person is left for the cuffs. The
+ *   stealth scan judges only those (spec-stealth 1.3), so a clean visitor is never noticed. A creature by the old
+ *   turret rule: xenos always, otherwise not on the outpost's side, not TRAIT_OUTPOST_RESIDENT, and
+ *   is_hostile_creature(). A mech when anyone aboard is a target.
+ * - Force (outpost_police_force subtree, set_force()): the baton at ARREST, the energy gun on disable at STUN
+ *   and on kill at LETHAL or for a creature, switched with the gun's own select_fire(). At ARREST an officer
+ *   with no case on that person stands and watches them: the arrest is the case's job. The officer shoots
+ *   through the human NPC base's shot (the real gun), but holds fire while anyone they would not shoot stands
+ *   in the line (abuse M10), stepping aside instead.
+ * - Body-blocking (M11): a person who stands in the line within 2 tiles of an officer firing to kill for
+ *   OUTPOST_POLICE_BLOCK_TIME, or pulls an officer (police_dispatch.dm), resists, again every 5 seconds.
+ * - Looking for someone is stealth's searching state (stealth_ai.dm); dispatch sends officers to search
+ *   (police_dispatch.dm) and the lift is taken inside the walk (police_stealth.dm, stealth_walk()).
+ */
+
+// =========================================================================
+// TARGETING
+// =========================================================================
+
+/// Whom an officer fights. Policy in police_will_fight(); range, sight and the downed rule from the base.
+/datum/targeting_strategy/basic/human_npc/outpost_police
+
+/datum/targeting_strategy/basic/human_npc/outpost_police/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = living_mob
+	if(!istype(officer) || !officer.police_will_fight(the_target))
+		return FALSE
+	return ..()
+
+// A person shares no side with the police: their warrant decides (players' default faction is the officers' own)
+/datum/targeting_strategy/basic/human_npc/outpost_police/faction_check(datum/ai_controller/controller, mob/living/living_mob, mob/living/the_target)
+	if(the_target.mind || the_target.client)
+		return FALSE
+	return ..()
+
+/**
+ * Whether this officer would fight `target`, sight and range aside: a person by their warrant (STUN or LETHAL,
+ * not in custody, not already stunned at STUN), a creature by the old turret rule, a mech by who is aboard.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_will_fight(atom/target)
+	if(!police || QDELETED(target))
+		return FALSE
+	if(ismecha(target))
+		var/obj/vehicle/sealed/mecha/mech = target
+		for(var/mob/living/occupant in mech.occupants)
+			if(police_will_fight(occupant))
+				return TRUE
+		return FALSE
+	if(!isliving(target))
+		return FALSE
+	var/mob/living/living_target = target
+	if(living_target == src || living_target.stat == DEAD)
+		return FALSE
+	if(istype(living_target, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !living_target.mind && !living_target.client)
+		return FALSE
+	if(living_target.mind || living_target.client)
+		if(police.in_custody(living_target))
+			return FALSE
+		// Down (crit, stamina crit, stunned): the cuffs are the arrest's job at every star, never a fight
+		// (owner decision 37). Nobody goes back on alert over someone lying there; they are fought again once up.
+		// Except where the zone finishes the downed at three stars and up (owner decision 39)
+		if(police_suspect_down(living_target) && !police.finishes_downed(living_target, src))
+			return FALSE
+		var/level = force_for(living_target)
+		if(level >= POLICE_FORCE_LETHAL)
+			return TRUE
+		if(level == POLICE_FORCE_STUN)
+			return !HAS_TRAIT(living_target, TRAIT_RESTRAINED) || !police.arrest_on(living_target)
+		// One star: noticed, watched and arrested, never fought (the force subtree holds)
+		return level == POLICE_FORCE_ARREST && (!HAS_TRAIT(living_target, TRAIT_RESTRAINED) || !police.arrest_on(living_target))
+	// Wildlife, by the rule the outpost turrets had
+	if(isalien(living_target) || istype(living_target, /mob/living/basic/alien))
+		return TRUE
+	if(faction_check_atom(living_target))
+		return FALSE
+	if(HAS_TRAIT(living_target, TRAIT_OUTPOST_RESIDENT))
+		return FALSE
+	return is_hostile_creature(living_target)
+
+/// How hard they go at `target`: a person or mech by warrant (a stun officer never past STUN), anything else to kill
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/force_for(atom/target)
+	if(ismecha(target))
+		var/obj/vehicle/sealed/mecha/mech = target
+		var/best = POLICE_FORCE_NONE
+		for(var/mob/living/occupant in mech.occupants)
+			if(police_will_fight(occupant))
+				best = max(best, force_for(occupant))
+		return best
+	var/mob/living/living_target = target
+	if(isliving(living_target) && (living_target.mind || living_target.client))
+		var/level = police?.force_level(living_target, src) || POLICE_FORCE_NONE
+		if(level >= POLICE_FORCE_LETHAL && police.role_of(src) == POLICE_ROLE_STUN)
+			return POLICE_FORCE_STUN
+		return level
+	return POLICE_FORCE_LETHAL
+
+/// Who aboard `target` this officer is fighting (highest force, then pilot), or `target` itself when not a mech
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_mech_suspect(atom/target)
+	if(!ismecha(target))
+		return target
+	var/obj/vehicle/sealed/mecha/mech = target
+	var/mob/living/best
+	var/best_force = POLICE_FORCE_NONE
+	for(var/mob/living/occupant in mech.occupants)
+		if(!police_will_fight(occupant))
+			continue
+		var/level = force_for(occupant)
+		if(isnull(best) || level > best_force)
+			best = occupant
+			best_force = level
+	return best || bounty_ai_pilot_of(mech)
+
+/// Whether `person` is down: in crit, or stunned or in stamina crit. Lying down by choice is not down.
+/proc/police_suspect_down(mob/living/person)
+	return person.stat != CONSCIOUS || HAS_TRAIT(person, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(person, TRAIT_INCAPACITATED)
+
+/**
+ * Owner decision 39: in a zone whose officers finish the downed (its profile's spares_downed is off: the red zone),
+ * someone at lethal force (three stars and up, as `officer` knows it) who goes down is shot until dead, never
+ * cuffed. Someone already in custody is not (force_level() is NONE for them). Everywhere else, and below three
+ * stars, the downed are cuffed (decision 37).
+ */
+/datum/outpost_police/proc/finishes_downed(mob/living/target, mob/living/officer)
+	if(!profile || profile.spares_downed || !isliving(target))
+		return FALSE
+	return force_level(target, officer) >= POLICE_FORCE_LETHAL
+
+// =========================================================================
+// ROLES (owner decision 37)
+// =========================================================================
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police
+	/// At three stars and up: POLICE_ROLE_STUN (baton and disabler, takes the suspect alive) or POLICE_ROLE_LETHAL. Null
+	/// below three stars, where everyone works by the warrant. Kept until the outpost's alert drops below three.
+	var/police_role
+
+/**
+ * `officer`'s role, given on first need: the squad gets one stun officer in OUTPOST_POLICE_STUN_SHARE of its
+ * members at the outpost's stars (at least one in a squad of two or more; a lone officer is lethal), counted over
+ * the officers given a role.
+ * A long gun is a lethal officer's.
+ */
+/datum/outpost_police/proc/role_of(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(officer.police_role)
+		return officer.police_role
+	// A zone that finishes the downed sends no stun officers: everyone is lethal (owner decision 39)
+	if(profile && !profile.spares_downed)
+		officer.police_role = POLICE_ROLE_LETHAL
+		return officer.police_role
+	var/squad = 1
+	var/stun = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other in officers)
+		if(other == officer || !other.police_role || other.stat == DEAD || other.npc_exit)
+			continue
+		squad++
+		if(other.police_role == POLICE_ROLE_STUN)
+			stun++
+	var/list/shares = OUTPOST_POLICE_STUN_SHARE
+	var/stars = clamp(dispatch_active_level(), 3, 5)
+	// A lone officer is a lethal one; from two up, at least one of them takes the suspect alive
+	var/wanted = squad >= 2 ? max(1, floor(squad / shares[stars - 2] + 0.5)) : 0
+	if(stun < wanted && !officer.get_longgun())
+		officer.police_role = POLICE_ROLE_STUN
+	else
+		officer.police_role = POLICE_ROLE_LETHAL
+	return officer.police_role
+
+/// Everyone's role goes: the outpost is below three stars
+/datum/outpost_police/proc/clear_roles()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		officer.police_role = null
+
+// =========================================================================
+// FIRE DISCIPLINE
+// =========================================================================
+
+/// The tiles a shot from `start_turf` at `end_turf` crosses: the human NPC base's own line (human_npc_ai.dm)
+/proc/outpost_police_shot_line(turf/start_turf, turf/end_turf)
+	return human_npc_shot_path(start_turf, end_turf)
+
+/// Whether this officer firing at `shot_force` would shoot `other` too, rather than hold fire for them
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_would_shoot(atom/other, shot_force)
+	if(ismecha(other))
+		var/obj/vehicle/sealed/mecha/mech = other
+		var/any_alive = FALSE
+		for(var/mob/living/occupant in mech.occupants)
+			if(occupant.stat == DEAD)
+				continue
+			any_alive = TRUE
+			if(!police_would_shoot(occupant, shot_force))
+				return FALSE
+		return any_alive
+	if(!police_will_fight(other))
+		return FALSE
+	var/other_force = force_for(other)
+	if(other_force < POLICE_FORCE_STUN)
+		return FALSE
+	var/mob/living/person = other
+	if(isliving(person) && police?.order_pending(person))
+		return FALSE
+	if(shot_force >= POLICE_FORCE_LETHAL && other_force < POLICE_FORCE_LETHAL)
+		return FALSE
+	return TRUE
+
+/**
+ * Whoever stands in this officer's line of fire at `target` and is not someone they would shoot: anyone up
+ * and living (shots pass over the lying), or aboard a mech in the way. `within` > 0 looks only that many tiles out.
+ * Null if clear.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/bystander_in_line(atom/target, within = 0)
+	var/turf/from = get_turf(src)
+	var/turf/end_turf = get_turf(target)
+	if(!from || !end_turf)
+		return null
+	var/shot_force = max(force, force_for(target))
+	for(var/turf/line_turf as anything in outpost_police_shot_line(from, end_turf))
+		if(line_turf == from || line_turf == end_turf)
+			continue
+		if(within && get_dist(from, line_turf) > within)
+			continue
+		for(var/mob/living/other in line_turf)
+			if(other == target || other.stat == DEAD || other.body_position == LYING_DOWN)
+				continue
+			if(police_would_shoot(other, shot_force))
+				continue
+			return other
+		for(var/obj/vehicle/sealed/mecha/mech in line_turf)
+			if(mech == target || police_would_shoot(mech, shot_force))
+				continue
+			for(var/mob/living/occupant in mech.occupants)
+				if(occupant != target && occupant.stat != DEAD && !police_would_shoot(occupant, shot_force))
+					return occupant
+	return null
+
+/**
+ * Abuse M11, once a second from dispatch: a person in the line of fire within 2 tiles of an officer firing to
+ * kill, for OUTPOST_POLICE_BLOCK_TIME, resists; again each OUTPOST_POLICE_BLOCK_TIME they stay. Someone who cannot
+ * move away (stunned, tied up, dragged, carried, logged off) never does (abuse SF2).
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/check_body_block()
+	var/mob/living/blocker
+	var/atom/target = ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(force == POLICE_FORCE_LETHAL && stat == CONSCIOUS && !QDELETED(target))
+		blocker = bystander_in_line(target, 2)
+		if(blocker && !blocker.mind)
+			blocker = null
+		// Abuse SF2: only someone who chose to stand there resists, never the stunned, the tied up, the dragged or the logged off
+		if(blocker && (blocker.incapacitated || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || blocker.pulledby || blocker.buckled || (blocker.mind.key && !blocker.client)))
+			blocker = null
+	if(!blocker)
+		dispatch_block_ref = null
+		dispatch_block_since = 0
+		return
+	if(dispatch_block_ref?.resolve() != blocker)
+		dispatch_block_ref = WEAKREF(blocker)
+		dispatch_block_since = world.time
+		return
+	if(world.time - dispatch_block_since >= OUTPOST_POLICE_BLOCK_TIME)
+		dispatch_block_since = world.time
+		police?.report_crime(blocker, OUTPOST_CRIME_RESIST, src)
+
+// =========================================================================
+// FORCE
+// =========================================================================
+
+/**
+ * The weapon mode for the current target, then the shot with fire discipline. With nothing to fight the weapons go
+ * away. A person of one star is the arrest's job: an officer with no case on them, baton out, stands and watches
+ * (spec-stealth 1.3). With no loaded gun it leaves the target to the base's arm and melee subtrees (the baton).
+ */
+/datum/ai_planning_subtree/outpost_police_force
+
+/datum/ai_planning_subtree/outpost_police_force/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
+	if(!istype(officer) || !officer.police)
+		return
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!isnull(target) && !officer.police_will_fight(target))
+		controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		target = null
+	if(isnull(target))
+		if(officer.force != POLICE_FORCE_NONE && !officer.case && !officer.dispatch_responding())
+			officer.set_force(POLICE_FORCE_NONE)
+		return
+	var/level = officer.force_for(target)
+	officer.sync_force(level)
+	if(level == POLICE_FORCE_ARREST && !officer.case)
+		if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters))
+			officer.face_atom(target)
+		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	// An arrest has just given them the order: everyone holds fire and watches while they make up their mind
+	var/mob/living/person = officer.police_mech_suspect(target)
+	if(level == POLICE_FORCE_STUN && !officer.case && isliving(person) && officer.police.order_pending(person))
+		if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters))
+			officer.face_atom(target)
+		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(level < POLICE_FORCE_STUN || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || LAZYLEN(officer.do_afters))
+		return SUBTREE_RETURN_FINISH_PLANNING
+	// Shut in a locker, crate or bag: stealth_closet opens one it saw them enter and holds fire on any other
+	if(isliving(target) && stealth_closet_of(target))
+		return
+	var/obj/item/gun/ready_gun = officer.police_loaded_gun_for(level)
+	if(isnull(ready_gun))
+		// At stun force never fall through to human_npc_arm, which would draw a stowed lethal long gun
+		if(level == POLICE_FORCE_STUN)
+			controller.queue_behavior(/datum/ai_behavior/basic_melee_attack/human_npc, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		return
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
+	var/fire_range = controller.blackboard[BB_HUMAN_NPC_FIRE_RANGE] || 7
+	if(get_dist(officer, target) <= fire_range && strategy?.can_attack(officer, target, fire_range))
+		var/keep_away = controller.blackboard[BB_HUMAN_NPC_KEEP_AWAY]
+		if(keep_away && get_dist(officer, target) < keep_away)
+			controller.queue_behavior(/datum/ai_behavior/step_away, BB_BASIC_MOB_CURRENT_TARGET)
+		controller.queue_behavior(/datum/ai_behavior/human_npc_shoot/outpost_police, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+	else
+		controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_BASIC_MOB_CURRENT_TARGET, fire_range)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/// The base's shot, held while a bystander is in the line (abuse M10): a step aside instead
+/datum/ai_behavior/human_npc_shoot/outpost_police
+
+/datum/ai_behavior/human_npc_shoot/outpost_police/perform(seconds_per_tick, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
+	var/atom/target = controller.blackboard[target_key]
+	if(!istype(officer) || QDELETED(target))
+		return ..()
+	if(isliving(target) && stealth_closet_of(target))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	var/obj/item/gun/wanted_gun = officer.police_loaded_gun_for(officer.force)
+	if(isnull(wanted_gun))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	if(officer.bystander_in_line(target))
+		human_npc_sidestep(officer, target)
+		return AI_BEHAVIOR_DELAY
+	if(human_npc_loaded_gun(officer) != wanted_gun)
+		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
+		if(!strategy?.can_attack(officer, target))
+			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+		if(world.time < controller.blackboard[BB_HUMAN_NPC_NEXT_SHOT])
+			return AI_BEHAVIOR_DELAY
+		if(!human_npc_ready_item(officer, wanted_gun))
+			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+		officer.zone_selected = human_npc_pick_aim_zone()
+		controller.ai_interact(target = target, combat_mode = TRUE)
+		controller.set_blackboard_key(BB_HUMAN_NPC_NEXT_SHOT, world.time + (controller.blackboard[BB_HUMAN_NPC_SHOT_DELAY] || 3 SECONDS))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return ..()
+
+/// Whether this officer has the working hands `gun` requires (two intact hands for WEAPON_HEAVY)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_can_handle_gun(obj/item/gun/gun)
+	if(QDELETED(gun))
+		return FALSE
+	var/working = 0
+	for(var/i in 1 to length(held_items))
+		if(has_hand_for_held_index(i))
+			working++
+	return working >= (gun.weapon_weight == WEAPON_HEAVY ? 2 : 1)
+
+/// Whether `baton` can deliver a stun blow right now (a flat or EMP'd security stun baton would club with lethal brute)
+/proc/outpost_police_baton_usable(obj/item/baton)
+	if(QDELETED(baton))
+		return FALSE
+	var/obj/item/melee/baton/security/sec_baton = baton
+	if(istype(sec_baton))
+		return sec_baton.active || sec_baton.cell?.charge >= sec_baton.cell_hit_cost
+	return TRUE
+
+/// A held gun that may fire at `level` right now: stun energy mode at STUN, any killing gun at LETHAL, none below STUN
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_loaded_gun_for(level)
+	if(level < POLICE_FORCE_STUN)
+		return null
+	if(level == POLICE_FORCE_STUN)
+		for(var/obj/item/gun/energy/energy_gun in held_items)
+			if(!outpost_police_mode_lethal(energy_gun) && police_can_handle_gun(energy_gun) && energy_gun.can_shoot())
+				return energy_gun
+		return null
+	var/obj/item/gun/longgun = get_longgun()
+	if(longgun && is_holding(longgun) && police_can_handle_gun(longgun) && (longgun.weapon_weight != WEAPON_HEAVY || get_num_held_items() == 1) && longgun.can_shoot())
+		return longgun
+	for(var/obj/item/gun/energy/energy_gun in held_items)
+		if(outpost_police_mode_lethal(energy_gun) && police_can_handle_gun(energy_gun) && energy_gun.can_shoot())
+			return energy_gun
+	for(var/obj/item/gun/held_gun in held_items)
+		if(!istype(held_gun, /obj/item/gun/energy) && police_can_handle_gun(held_gun) && (held_gun.weapon_weight != WEAPON_HEAVY || get_num_held_items() == 1) && held_gun.can_shoot())
+			return held_gun
+	return null
+
+/// Keeps held weapons in line with `level`, falling back when a gun runs dry or stowing a rifle below LETHAL
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/sync_force(level)
+	if(level != force)
+		set_force(level)
+		return
+	if(HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) || LAZYLEN(do_afters))
+		return
+	var/obj/item/baton = get_baton()
+	var/obj/item/gun/energy/gun = get_sidearm()
+	var/obj/item/gun/longgun = get_longgun()
+	if(level < POLICE_FORCE_LETHAL && longgun && is_holding(longgun))
+		police_put_away(longgun)
+	switch(level)
+		if(POLICE_FORCE_ARREST)
+			if(baton && is_holding(baton))
+				if(outpost_police_baton_usable(baton))
+					human_npc_ready_weapon(src, baton)
+				else
+					police_put_away(baton)
+			else if(outpost_police_baton_usable(baton))
+				set_force(level)
+		if(POLICE_FORCE_STUN)
+			if(isnull(police_loaded_gun_for(level)))
+				if(gun)
+					outpost_police_set_gun_mode(gun, lethal = FALSE)
+				if(gun && !outpost_police_mode_lethal(gun) && gun.can_shoot() && police_can_handle_gun(gun))
+					set_force(level)
+				else if(baton && is_holding(baton))
+					if(outpost_police_baton_usable(baton))
+						human_npc_ready_weapon(src, baton)
+					else
+						police_put_away(baton)
+				else if(outpost_police_baton_usable(baton))
+					set_force(level)
+		if(POLICE_FORCE_LETHAL)
+			if(isnull(police_loaded_gun_for(level)))
+				var/retry_ok = world.time >= ai_controller?.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT]
+				var/reloading_longgun = longgun && is_holding(longgun) && !longgun.can_shoot() && police_can_handle_gun(longgun) && human_npc_can_reload(src, longgun) && retry_ok
+				if(reloading_longgun)
+					return
+				if(longgun && police_can_handle_gun(longgun) && (longgun.can_shoot() || (human_npc_can_reload(src, longgun) && retry_ok)))
+					set_force(level)
+					return
+				if(gun)
+					outpost_police_set_gun_mode(gun, lethal = TRUE)
+				if(gun && outpost_police_mode_lethal(gun) && gun.can_shoot() && police_can_handle_gun(gun))
+					set_force(level)
+				else
+					if(gun && is_holding(gun))
+						police_put_away(gun)
+					if(baton && !is_holding(baton))
+						set_force(level)
+
+/// Baton out at ARREST, gun on disable at STUN, gun on kill at LETHAL (POLICE_FORCE_*); all put away at NONE
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/set_force(level)
+	force = level
+	var/obj/item/baton = get_baton()
+	var/obj/item/gun/energy/gun = get_sidearm()
+	// The tactical officer's and the marshal's ballistic long gun (police_units.dm): theirs to kill with
+	var/obj/item/gun/longgun = get_longgun()
+	switch(level)
+		if(POLICE_FORCE_ARREST)
+			for(var/obj/item/firearm in list(longgun, gun))
+				if(firearm && is_holding(firearm))
+					police_put_away(firearm)
+			if(outpost_police_baton_usable(baton) && police_draw(baton, longgun || gun))
+				human_npc_ready_weapon(src, baton)
+				var/obj/item/melee/baton/security/sec_baton = baton
+				if(istype(sec_baton) && !sec_baton.active)
+					police_put_away(sec_baton)
+			else if(baton && is_holding(baton))
+				police_put_away(baton)
+		if(POLICE_FORCE_STUN)
+			if(longgun && is_holding(longgun))
+				police_put_away(longgun)
+			if(gun)
+				outpost_police_set_gun_mode(gun, lethal = FALSE)
+			if(gun && !outpost_police_mode_lethal(gun) && gun.can_shoot() && police_can_handle_gun(gun))
+				police_draw(gun, baton || longgun)
+				if(baton && is_holding(baton))
+					police_put_away(baton)
+			else
+				if(gun && is_holding(gun))
+					police_put_away(gun)
+				if(outpost_police_baton_usable(baton) && police_draw(baton, gun || longgun))
+					human_npc_ready_weapon(src, baton)
+					var/obj/item/melee/baton/security/sec_baton = baton
+					if(istype(sec_baton) && !sec_baton.active)
+						police_put_away(sec_baton)
+				else if(baton && is_holding(baton))
+					police_put_away(baton)
+		if(POLICE_FORCE_LETHAL)
+			var/retry_ok = world.time >= ai_controller?.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT]
+			if(longgun && police_can_handle_gun(longgun) && (longgun.can_shoot() || (human_npc_can_reload(src, longgun) && retry_ok)))
+				police_draw(longgun, gun || baton)
+				for(var/obj/item/sidearm in list(gun, baton))
+					if(sidearm && is_holding(sidearm))
+						police_put_away(sidearm)
+				if(longgun.weapon_weight == WEAPON_HEAVY && get_num_held_items() > 1)
+					put_away_prop()
+					for(var/obj/item/other in held_items)
+						if(other == longgun)
+							continue
+						if(HAS_TRAIT(other, TRAIT_AMBIENT_PROP))
+							qdel(other)
+						else if(!police_put_away(other) && (istype(other, /obj/item/ammo_box) || isammocasing(other)))
+							dropItemToGround(other, force = TRUE)
+			else
+				if(longgun && is_holding(longgun))
+					police_put_away(longgun)
+				if(gun)
+					outpost_police_set_gun_mode(gun, lethal = TRUE)
+				if(gun && outpost_police_mode_lethal(gun) && gun.can_shoot() && police_can_handle_gun(gun))
+					police_draw(gun, baton || longgun)
+					if(baton && is_holding(baton))
+						police_put_away(baton)
+				else
+					if(gun && is_holding(gun))
+						police_put_away(gun)
+					if(baton && police_draw(baton, gun || longgun) && outpost_police_baton_usable(baton))
+						human_npc_ready_weapon(src, baton)
+		else
+			for(var/obj/item/weapon in list(longgun, gun, baton))
+				if(weapon && is_holding(weapon))
+					police_put_away(weapon)
+
+/**
+ * Takes `weapon` in hand, making room first: a routine's prop goes, then `stow` (the other weapon) goes back on
+ * the belt. Returns TRUE if it is in hand.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_draw(obj/item/weapon, obj/item/stow)
+	if(QDELETED(weapon))
+		return FALSE
+	if(is_holding(weapon))
+		return TRUE
+	if(!police_empty_hand())
+		put_away_prop()
+	if(!police_empty_hand() && stow && is_holding(stow))
+		police_put_away(stow)
+	if(!police_empty_hand())
+		for(var/obj/item/held in held_items)
+			if(held == weapon || held == stow)
+				continue
+			if(HAS_TRAIT(held, TRAIT_AMBIENT_PROP))
+				qdel(held)
+			else
+				police_put_away(held)
+			break
+	var/hand = police_empty_hand()
+	if(!hand)
+		return FALSE
+	swap_hand(hand, silent = TRUE)
+	return human_npc_take_in_hand(src, weapon)
+
+/// Switches `gun` with its own select_fire() to its first disabling (`lethal` FALSE) or killing mode
+/proc/outpost_police_set_gun_mode(obj/item/gun/energy/gun, lethal)
+	if(!istype(gun) || length(gun.ammo_type) < 2)
+		return
+	for(var/i in 1 to length(gun.ammo_type))
+		if(outpost_police_mode_lethal(gun) == lethal)
+			return
+		gun.select_fire(null)
+
+/// Whether `gun`'s selected mode kills (brute or burn) rather than disables (stamina)
+/proc/outpost_police_mode_lethal(obj/item/gun/energy/gun)
+	var/obj/item/ammo_casing/energy/shot = gun.ammo_type[gun.select]
+	var/obj/projectile/projectile_type = ispath(shot) ? initial(shot.projectile_type) : shot.projectile_type
+	if(!ispath(projectile_type, /obj/projectile))
+		return FALSE
+	return initial(projectile_type.damage_type) != STAMINA && initial(projectile_type.damage) > 0
+
+/// Stands and keeps its eyes on its target: a one-star suspect it has no case on
+/datum/ai_behavior/outpost_police_watch
+	action_cooldown = 1 SECONDS
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/outpost_police_watch/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/officer = controller.pawn
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(target) && officer.stat == CONSCIOUS && isturf(officer.loc) && !HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED))
+		officer.face_atom(target)
+	return AI_BEHAVIOR_DELAY

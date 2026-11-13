@@ -203,7 +203,7 @@
 			return TRUE
 	// The counters are for doing business at, and a player at one has the room round it to themselves
 	if(outpost)
-		for(var/mob/living/basic/outpost_trader/trader in outpost.traders)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in outpost.traders)
 			if(trader.z != tile.z || get_dist(trader, tile) > PATRON_COUNTER_RANGE)
 				continue
 			if(!counter_business || ambient_counter_customer(trader))
@@ -231,23 +231,23 @@
 	var/obj/structure/overmap/trader_outpost/outpost = istype(place) ? place.outpost() : null
 	if(!outpost)
 		return
-	for(var/mob/living/basic/outpost_trader/trader in outpost.traders)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in outpost.traders)
 		if(!QDELETED(trader) && isturf(trader.loc) && trader.stat != DEAD)
 			. += trader
 
 /// The trader at `place` who runs `shop_type`, or null
 /proc/ambient_outpost_trader_of(datum/ambient_place/outpost/place, shop_type)
-	for(var/mob/living/basic/outpost_trader/trader as anything in ambient_outpost_traders(place))
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in ambient_outpost_traders(place))
 		if(ambient_trader_shop(trader) == shop_type)
 			return trader
 	return null
 
 /// The shop `trader` runs, as a /datum/outpost_shop type: a stall's own, or the outpost's main shop
-/proc/ambient_trader_shop(mob/living/basic/outpost_trader/trader)
+/proc/ambient_trader_shop(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	return trader?.shop_type || trader?.shop?.type || trader?.outpost?.shop_type
 
 /// `trader`'s section of AMBIENT_STRINGS_PATRONS (their customers' lines and their answers), or null
-/proc/ambient_trader_section(mob/living/basic/outpost_trader/trader)
+/proc/ambient_trader_section(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	var/static/list/sections = list(
 		/datum/outpost_shop/general = "barnaby",
 		/datum/outpost_shop/outfitter = "sarge",
@@ -268,18 +268,18 @@
  * Whoever is being served at `trader`'s counter: a player, or anyone else who is not one of the
  * outpost's NPCs, within reach of the trader. Null when the counter is free.
  */
-/proc/ambient_counter_customer(mob/living/basic/outpost_trader/trader)
+/proc/ambient_counter_customer(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	if(!trader)
 		return null
 	for(var/mob/living/customer in range(PATRON_COUNTER_RANGE, trader))
-		if(customer.stat == DEAD || istype(customer, /mob/living/carbon/human/npc/ambient_npc) || istype(customer, /mob/living/basic/outpost_trader))
+		if(customer.stat == DEAD || istype(customer, /mob/living/carbon/human/npc/ambient_npc) || istype(customer, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 			continue
 		if(customer.client || ishuman(customer))
 			return customer
 	return null
 
 /// How many ambient NPCs stand or sit within reach of `trader`, not counting `exclude`
-/proc/ambient_counter_crowd(mob/living/basic/outpost_trader/trader, mob/living/exclude)
+/proc/ambient_counter_crowd(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, mob/living/exclude)
 	. = 0
 	for(var/mob/living/carbon/human/npc/ambient_npc/npc in range(PATRON_COUNTER_RANGE, trader))
 		if(npc != exclude && npc.stat != DEAD && !npc.fading)
@@ -290,7 +290,7 @@
  * tiles out with the counter (a table) in between, so never on the trader's own side. A trader with
  * no counter at all is served from anywhere within reach.
  */
-/proc/ambient_counter_spots(mob/living/carbon/human/npc/ambient_npc/npc, mob/living/basic/outpost_trader/trader, list/avoid)
+/proc/ambient_counter_spots(mob/living/carbon/human/npc/ambient_npc/npc, mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, list/avoid)
 	. = list()
 	var/turf/center = get_turf(trader)
 	if(!center || !npc)
@@ -342,8 +342,13 @@
 	if(!middle || !npc)
 		return null
 	var/list/options = list()
+	// can_see() looks through a door: never a spot in the morgue or the closet behind one (recovery_core.dm)
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(middle)
+	var/list/back_rooms = outpost?.recovery?.back_rooms
 	for(var/turf/tile as anything in RANGE_TURFS(high, middle))
 		if(get_dist(tile, middle) < low || !npc.standable(tile, avoid))
+			continue
+		if(back_rooms?[tile])
 			continue
 		if(!can_see(middle, tile, high + 1))
 			continue
@@ -369,7 +374,7 @@
  * `trader` answers `speaker` a moment from now with a line for `context` from `section` of dialogue
  * `file`, in the trader's own voice (their own say(), so their own barks), if both are still there.
  */
-/proc/ambient_trader_reply(mob/living/basic/outpost_trader/trader, atom/movable/speaker, file, section, context = "trader_reply", max_distance = 4)
+/proc/ambient_trader_reply(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, atom/movable/speaker, file, section, context = "trader_reply", max_distance = 4)
 	if(!trader || !speaker)
 		return
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ambient_trader_answer), WEAKREF(trader), WEAKREF(speaker), file, section, context, max_distance), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH))
@@ -380,7 +385,7 @@
  * TRUE if they spoke.
  */
 /proc/ambient_trader_answer(datum/weakref/trader_ref, datum/weakref/speaker_ref, file, section, context, max_distance = 4)
-	var/mob/living/basic/outpost_trader/trader = trader_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
 	var/atom/movable/speaker = speaker_ref?.resolve()
 	if(QDELETED(trader) || QDELETED(speaker) || trader.stat == DEAD || get_dist(trader, speaker) > max_distance)
 		return FALSE
@@ -434,6 +439,9 @@
 	if(length(bounds) < 5)
 		return null
 	for(var/turf/tile as anything in block(locate(bounds[1], bounds[2], bounds[5]), locate(bounds[3], bounds[4], bounds[5])))
+		// The checkpoint (lobby, security office, cells) is not the concourse: its coffee machine is the guards'
+		if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+			continue
 		thing = locate(find_type) in tile
 		if(thing)
 			notes[found_key] = WEAKREF(thing)
@@ -459,10 +467,10 @@
 		var/obj/machinery/vending/coffee/machine = ambient_outpost_find(outpost, /obj/machinery/vending/coffee)
 		return machine ? list(machine, null, PATRON_BAR_CREW_ROOM) : null
 	if(istype(outpost, /obj/structure/overmap/trader_outpost/black_market))
-		var/mob/living/basic/outpost_trader/dram = ambient_outpost_trader_of(place, /datum/outpost_shop/vendor/dregs_bar)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/dram = ambient_outpost_trader_of(place, /datum/outpost_shop/vendor/dregs_bar)
 		return dram ? list(dram, dram, PATRON_BAR_DREGS) : null
 	if(istype(outpost, /obj/structure/overmap/trader_outpost/general))
-		var/mob/living/basic/outpost_trader/roux = ambient_outpost_trader_of(place, /datum/outpost_shop/vendor/diner)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/roux = ambient_outpost_trader_of(place, /datum/outpost_shop/vendor/diner)
 		return roux ? list(roux, roux, PATRON_BAR_CHOWDER) : null
 	return null
 
@@ -478,7 +486,7 @@
 
 /// Whether `seat` is within reach of a trader whose counter already has its share of ambient NPCs, `asker` aside
 /proc/ambient_seat_crowds_counter(obj/structure/chair/seat, datum/ambient_place/outpost/place, mob/living/asker)
-	for(var/mob/living/basic/outpost_trader/trader as anything in ambient_outpost_traders(place))
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in ambient_outpost_traders(place))
 		if(get_dist(trader, seat) > PATRON_COUNTER_RANGE)
 			continue
 		if(ambient_counter_crowd(trader, asker) >= PATRON_COUNTER_CROWD_MAX)
@@ -659,7 +667,7 @@
 	leave_at = ambient_shifted(leave_at, delay)
 
 /// Whether they already bought from `trader` this visit
-/mob/living/carbon/human/npc/ambient_npc/outpost/customer/proc/has_visited(mob/living/basic/outpost_trader/trader)
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/proc/has_visited(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	for(var/datum/weakref/ref as anything in visited)
 		if(ref.resolve() == trader)
 			return TRUE
@@ -697,7 +705,7 @@
 	return ..()
 
 /datum/ambient_activity/shop_visit/setup()
-	var/mob/living/basic/outpost_trader/trader = anchor()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = anchor()
 	if(!istype(trader))
 		trader = pick_trader()
 	if(!trader || !ambient_trader_section(trader))
@@ -709,7 +717,7 @@
 /datum/ambient_activity/shop_visit/proc/pick_trader()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/shopper = doer
 	var/list/options = list()
-	for(var/mob/living/basic/outpost_trader/trader as anything in ambient_outpost_traders(doer.place))
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in ambient_outpost_traders(doer.place))
 		if(!ambient_trader_section(trader))
 			continue
 		if(istype(shopper) && shopper.has_visited(trader))
@@ -721,11 +729,11 @@
 
 /// The trader, if still there
 /datum/ambient_activity/shop_visit/proc/trader()
-	var/mob/living/basic/outpost_trader/trader = trader_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader_ref?.resolve()
 	return QDELETED(trader) ? null : trader
 
 /// Heads for the counter, or for a place to wait if someone is being served. FALSE when there is nowhere.
-/datum/ambient_activity/shop_visit/proc/approach(mob/living/basic/outpost_trader/trader)
+/datum/ambient_activity/shop_visit/proc/approach(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	if(ambient_counter_customer(trader))
 		return wait_in_line(trader)
 	var/turf/spot = ambient_nearest_tile(doer, ambient_counter_spots(doer, trader, failed_spots))
@@ -736,7 +744,7 @@
 	return TRUE
 
 /// Steps back out of the counter's reach to wait for whoever is being served. FALSE when there is nowhere.
-/datum/ambient_activity/shop_visit/proc/wait_in_line(mob/living/basic/outpost_trader/trader)
+/datum/ambient_activity/shop_visit/proc/wait_in_line(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	var/turf/spot = ambient_waiting_spot(doer, trader, PATRON_COUNTER_RANGE + 1, PATRON_COUNTER_RANGE + 3, failed_spots)
 	if(!spot)
 		return FALSE
@@ -747,7 +755,7 @@
 	return TRUE
 
 /datum/ambient_activity/shop_visit/arrive()
-	var/mob/living/basic/outpost_trader/trader = trader()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader()
 	if(trader && !doer.buckled)
 		doer.face_atom(trader)
 	if(stage == VISIT_WALKING)
@@ -755,7 +763,7 @@
 		order_at = world.time + rand(1 SECONDS, 3 SECONDS)
 
 /datum/ambient_activity/shop_visit/act(seconds)
-	var/mob/living/basic/outpost_trader/trader = trader()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader()
 	if(!trader || given_up)
 		return AMBIENT_STEP_DONE
 	var/mob/living/customer = ambient_counter_customer(trader)
@@ -786,7 +794,7 @@
 	return AMBIENT_STEP_CONTINUE
 
 /// Says what they came for; the trader answers
-/datum/ambient_activity/shop_visit/proc/order(mob/living/basic/outpost_trader/trader)
+/datum/ambient_activity/shop_visit/proc/order(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	ordered = TRUE
 	done_at = world.time + rand(PATRON_SERVE_LOW, PATRON_SERVE_HIGH)
 	var/section = ambient_trader_section(trader)
@@ -797,7 +805,7 @@
 	ambient_trader_reply(trader, doer, AMBIENT_STRINGS_PATRONS, section)
 
 /// Served: off with a paper bag
-/datum/ambient_activity/shop_visit/proc/served(mob/living/basic/outpost_trader/trader)
+/datum/ambient_activity/shop_visit/proc/served(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader)
 	doer.set_held(/obj/item/storage/box/papersack)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/shopper = doer
 	if(istype(shopper))
@@ -805,7 +813,7 @@
 
 /datum/ambient_activity/shop_visit/spot_unreachable()
 	. = ..()
-	var/mob/living/basic/outpost_trader/trader = trader()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = trader()
 	if(!trader || !approach(trader))
 		given_up = TRUE
 
@@ -869,7 +877,7 @@
 	return TRUE
 
 /// Sets their bar: `where` it is, its `barkeep` (or null), its `section` (PATRON_BAR_*)
-/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/set_bar(atom/where, mob/living/basic/outpost_trader/barkeep, section)
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/set_bar(atom/where, mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep, section)
 	bar_ref = where ? WEAKREF(where) : null
 	barkeep_ref = barkeep ? WEAKREF(barkeep) : null
 	bar_section = section
@@ -881,7 +889,7 @@
 
 /// Their barkeep, if still at the bar
 /mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/get_barkeep()
-	var/mob/living/basic/outpost_trader/barkeep = barkeep_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = barkeep_ref?.resolve()
 	return QDELETED(barkeep) ? null : barkeep
 
 /// What is poured for them at their bar
@@ -982,7 +990,7 @@
 	if(cut_off)
 		return
 	cut_off = TRUE
-	var/mob/living/basic/outpost_trader/barkeep = get_barkeep()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = get_barkeep()
 	if(barkeep)
 		ambient_trader_reply(barkeep, src, AMBIENT_STRINGS_PATRONS, bar_section, "cutoff", 10)
 
@@ -1128,7 +1136,7 @@
 	if(!istype(drinker) || !bar)
 		return FALSE
 	var/turf/spot
-	var/mob/living/basic/outpost_trader/barkeep = bar
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = bar
 	if(istype(barkeep))
 		// Someone's being served: they skip the counter and sit down
 		if(ambient_counter_customer(barkeep) || ambient_counter_crowd(barkeep, doer) >= PATRON_COUNTER_CROWD_MAX)
@@ -1156,7 +1164,7 @@
 	if(!ordered)
 		ordered = TRUE
 		drinker.say_from(drinker.bar_section, "order", bar)
-		var/mob/living/basic/outpost_trader/barkeep = bar
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = bar
 		if(istype(barkeep))
 			ambient_trader_reply(barkeep, doer, AMBIENT_STRINGS_PATRONS, drinker.bar_section, "barkeep_reply")
 		else
