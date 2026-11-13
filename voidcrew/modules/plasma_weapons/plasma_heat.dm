@@ -34,7 +34,7 @@
 	var/taken = take_mol(mol)
 	if(taken <= 0)
 		return 0
-	var/gas_temp = T20C + barrel_heat * PLASMA_VENT_TEMP_PER_HEAT
+	var/gas_temp = min(T20C + barrel_heat * PLASMA_VENT_TEMP_PER_HEAT, PLASMA_VENT_TEMP_MAX)
 	where.atmos_spawn_air("[GAS_PLASMA]=[taken];[TURF_TEMPERATURE(gas_temp)]")
 	plasma_vent_puff(where)
 	return taken

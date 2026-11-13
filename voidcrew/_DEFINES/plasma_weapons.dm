@@ -76,6 +76,8 @@
 #define PLASMA_VENT_LOCK (1 SECONDS)
 /// Vented gas leaves at T20C + heat * this, in kelvin
 #define PLASMA_VENT_TEMP_PER_HEAT 4
+/// Vented or boiled gas never leaves hotter than this, so it can't light itself and the shooter
+#define PLASMA_VENT_TEMP_MAX (PLASMA_MINIMUM_BURN_TEMPERATURE - 10)
 
 /// Heat lost per second, always
 #define PLASMA_COOL_BASE 2.5
