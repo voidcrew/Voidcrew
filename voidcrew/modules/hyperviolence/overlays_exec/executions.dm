@@ -114,11 +114,16 @@
 	var/burns = chambered.loaded_projectile.damage_type == BURN
 	hv_execution_head_damage = 0
 	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(hv_execution_hit))
+	// The barrel is on the head, so tg's zone roll for the shot can't send the round elsewhere.
+	var/obj/item/ammo_casing/execution_casing = chambered
+	RegisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE, PROC_REF(hv_execution_round_ready))
 	var/normal_multiplier = projectile_damage_multiplier
 	projectile_damage_multiplier *= HV_EXECUTION_POINT_BLANK_MULT
 	// Only the first round of a burst is held to the head; the rest are ordinary shots.
 	var/fired = process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
 	projectile_damage_multiplier = normal_multiplier
+	if(!QDELETED(execution_casing))
+		UnregisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE)
 	if(!QDELETED(target))
 		UnregisterSignal(target, COMSIG_MOB_APPLY_DAMAGE)
 	if(!fired)
@@ -128,6 +133,14 @@
 		target.hv_take_execution(hv_execution_head_damage, shot_dir, was_dead, burns)
 		hv_execution_witnesses(user, target)
 	return TRUE
+
+/// Each round (or pellet) the execution casing readies loses its accuracy falloff, so tg's zone roll on
+/// impact (projectile.dm, the one TRAIT_DESIGNATED_TARGET also skips) keeps it on the aimed head. Its
+/// damage, armour and everything after are tg's as usual.
+/obj/item/gun/proc/hv_execution_round_ready(obj/item/ammo_casing/source, atom/target, mob/living/user, quiet, zone_override, atom/fired_from)
+	SIGNAL_HANDLER
+	if(fired_from == src && source.loaded_projectile)
+		source.loaded_projectile.accuracy_falloff = 0
 
 /// Adds up what this gun's rounds do to the victim's head while an execution round is fired.
 /obj/item/gun/proc/hv_execution_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/attacking_item)

@@ -303,7 +303,10 @@
 	wire.wound_bonus += extra_wound_bonus
 	wire.garrote_blow = TRUE
 	wire.garrote_no_cleave = TRUE
+	victim.hv_struck_where_aimed = TRUE
 	wire.melee_attack_chain(user, victim)
+	if(!QDELETED(victim))
+		victim.hv_struck_where_aimed = FALSE
 	if(!QDELETED(wire))
 		wire.garrote_blow = FALSE
 		wire.garrote_no_cleave = FALSE
