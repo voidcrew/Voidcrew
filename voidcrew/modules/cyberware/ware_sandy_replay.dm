@@ -791,13 +791,16 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!track && (sandy_rig_picture(target) || istype(target, /obj/effect/temp_visual)) && near_centre(target))
 		notice(target) // made this tick (a shot's muzzle flash, a drop of blood): its first pose is this call
 		track = tracks[target]
-	var/thrown_gib = istype(target, /obj/effect/decal/cleanable/blood/gibs)
+	// Gore a move puts on the floor and then moves itself: a burst head's gib, the Gorilla's thrown arm and the blood
+	// drops that show as it lands (gorilla_finisher.dm)
+	var/thrown_gib = istype(target, /obj/effect/decal/cleanable/blood) || istype(target, /obj/item/bodypart)
 	if(!track || !(sandy_rig_picture(target) || isliving(target) || track.oneshot || thrown_gib))
 		return
 	if(thrown_gib)
 		// A burst head's gib (flying_gore.dm): tg has already stepped it off the head's tile, and its arc starts back at
 		// the head from there. Its first frame is taken again where it is now, so the arc is drawn from the head to its
-		// landing in the replay too, not as a gib lying on the floor from the blow on.
+		// landing in the replay too, not as a gib lying on the floor from the blow on. The thrown arm starts where the
+		// hauled one was, and a drop that shows later starts unseen, the same way.
 		var/list/frames = track.frames
 		if(length(frames) && frames[length(frames) - SANDY_FRAME_SIZE + SANDY_FRAME_INDEX] >= frame_now())
 			track.last_raw = null
