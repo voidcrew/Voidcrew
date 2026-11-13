@@ -28,6 +28,8 @@
 
 /obj/item/plasma_cartridge/update_icon_state()
 	icon_state = "cartridge_[fill_step()]"
+	inhand_icon_state = icon_state
+	update_inhand_icon()
 	return ..()
 
 /obj/item/plasma_cartridge/examine(mob/user)
