@@ -15,17 +15,22 @@
 	var/obj/item/bodypart/limb = isbodypart(def_zone) ? def_zone : source.get_bodypart(check_zone(def_zone))
 	if(!limb || limb.owner != source || limb.body_zone != ash_zone)
 		return
-	plasma_sear_cuts(limb)
-	if(!(limb.body_zone in GLOB.limb_zones))
-		return
-	if(!limb.can_dismember() || (limb.bodypart_flags & BODYPART_UNREMOVABLE))
-		return
-	var/burned_through = ash_critical_burns && ash_prior_critical
-	var/worn_through = ash_prior_damage >= PLASMA_ASH_PRIOR_DAMAGE && limb.get_damage() >= limb.max_damage - ash_margin
-	if(!burned_through && !worn_through)
-		return
-	if(!plasma_melt_limb(limb, attack_direction)) // tg's WOUND_BURN loss, plus the melt picture (plasma_melt.dm)
+	if(!plasma_check_melt(limb, attack_direction))
+		// A limb that stays on gets its cuts seared; a melted one is gone, cuts and all
+		plasma_sear_cuts(limb)
 		return
 	// A melt is a burn-through: the burst on this hit plays C
 	var/obj/effect/temp_visual/plasma_burst/burst = burst_ref?.resolve()
 	burst?.limb_melted()
+
+/// Melts `limb` if this bolt finished it. TRUE if it melted.
+/obj/projectile/energy/plasma_bolt/proc/plasma_check_melt(obj/item/bodypart/limb, attack_direction)
+	if(!(limb.body_zone in GLOB.limb_zones))
+		return FALSE
+	if(!limb.can_dismember() || (limb.bodypart_flags & BODYPART_UNREMOVABLE))
+		return FALSE
+	var/burned_through = ash_critical_burns && ash_prior_critical
+	var/worn_through = ash_prior_damage >= PLASMA_ASH_PRIOR_DAMAGE && limb.get_damage() >= limb.max_damage - ash_margin
+	if(!burned_through && !worn_through)
+		return FALSE
+	return plasma_melt_limb(limb, attack_direction) // tg's WOUND_BURN loss, plus the melt picture (plasma_melt.dm)

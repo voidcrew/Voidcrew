@@ -69,10 +69,13 @@ GLOBAL_LIST_EMPTY(plasma_wall_glows_by_z)
 			burst_ref = WEAKREF(new /obj/effect/temp_visual/plasma_burst(target_turf, victim, src, side))
 			return
 		plasma_take_back_block_star(target_turf)
-		// A held shield takes it on its own pixels: the bolt bursts on it, coats it and drips off as slag
-		var/obj/item/shield/shield = locate() in victim.held_items
-		if(shield)
-			var/key = plasma_shield_key(victim, shield, side)
+		// A held shield takes it on its own pixels: the bolt bursts on it, coats it and drips off as slag.
+		// Only the shield that blocked it, which the bolt noted as it blocked; one the block broke still splashes, with no coat
+		if(blocking_shield_look)
+			var/obj/item/shield/shield = blocking_shield_ref?.resolve()
+			if(shield && !(shield in victim.held_items))
+				shield = null
+			var/key = "[blocking_shield_look]_[blocking_shield_hand][plasma_burst_dir_letter(victim.dir)][plasma_burst_dir_letter(side)]"
 			var/list/anchor = GLOB.plasma_shield_anchors[key]
 			var/under = anchor[3] || !!victim.lying_angle
 			impact_point = list(anchor[1] - ICON_SIZE_X / 2 + victim.pixel_x, anchor[2] - ICON_SIZE_Y / 2 + victim.pixel_y)

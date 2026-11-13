@@ -78,7 +78,7 @@
 	)
 	steps = list(
 		/datum/surgery_step/excise_slag,
-		/datum/surgery_step/dress,
+		/datum/surgery_step/dress/plasma,
 	)
 
 /datum/surgery/excise_slag/can_start(mob/living/user, mob/living/carbon/target)
@@ -114,12 +114,6 @@
 	var/datum/wound/burn/flesh/plasma/plasma_burn = get_plasma_burn(surgery)
 	if(!plasma_burn)
 		user.visible_message(span_notice("[user] looks for [target]'s [target.parse_zone_with_bodypart(user.zone_selected)]."), span_notice("You look for [target]'s [target.parse_zone_with_bodypart(user.zone_selected)]..."))
-		return SURGERY_STEP_FAIL
-	if(plasma_burn.slag <= 0)
-		// Someone got it all out already: go straight on to the dressing
-		to_chat(user, span_notice("[target]'s [target.parse_zone_with_bodypart(user.zone_selected)] has no slag left to remove!"))
-		surgery.status++
-		repeatable = FALSE
 		return SURGERY_STEP_FAIL
 	display_results(
 		user,
@@ -163,11 +157,26 @@
 	target.apply_damage(rand(4, 8), BRUTE, surgery.operated_bodypart, sharpness = SHARP_EDGED, attacking_item = tool)
 
 /datum/surgery_step/excise_slag/initiate(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery, try_to_fail = FALSE)
+	var/datum/wound/burn/flesh/plasma/plasma_burn = get_plasma_burn(surgery)
+	if(plasma_burn && plasma_burn.slag <= 0)
+		// Someone got it all out already: go straight on to the dressing, with no failed step
+		to_chat(user, span_notice("[target]'s [target.parse_zone_with_bodypart(target_zone)] has no slag left to remove!"))
+		surgery.status++
+		return FALSE
 	if(!..())
 		return
 	while(get_plasma_burn(surgery)?.slag > 0)
 		if(!..())
 			break
+
+/// The dressing after an excision. It won't go on over slag, so a dressing tool can't skip the excision.
+/datum/surgery_step/dress/plasma
+
+/datum/surgery_step/dress/plasma/try_op(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, try_to_fail = FALSE)
+	var/datum/wound/burn/flesh/plasma/plasma_burn = surgery.operated_wound
+	if(istype(plasma_burn) && !QDELETED(plasma_burn) && plasma_burn.slag > 0)
+		return FALSE
+	return ..()
 
 /// What comes out of a plasma burn. Worth nothing: no materials, no reagents, no export.
 /obj/item/plasma_slag

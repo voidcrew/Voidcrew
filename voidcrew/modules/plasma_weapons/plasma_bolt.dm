@@ -55,6 +55,12 @@
 	var/shield_block_sound = PLASMA_SOUND_SHIELD_BLOCK
 	/// Played when armour stops all of it; null plays nothing
 	var/armour_block_sound = PLASMA_SOUND_ARMOUR_BLOCK
+	/// The held shield that blocked this bolt, taken as it blocks: the block can break and delete it before the impact
+	var/datum/weakref/blocking_shield_ref
+	/// That shield's baked look ("riot", "buckler", "eshield"), kept for when the block broke it
+	var/blocking_shield_look
+	/// The hand that shield was in, "L" or "R"
+	var/blocking_shield_hand
 	/// Volume of hitsound on a person
 	var/hit_volume = PLASMA_HIT_VOLUME_PISTOL
 
@@ -182,9 +188,15 @@
 
 /// A held shield that stops a bolt plays the bolt's shield sound instead of its own, when it has one
 /obj/projectile/energy/plasma_bolt/blocked_sound_for(obj/item/blocker)
-	if(istype(blocker, /obj/item/shield))
-		return shield_block_sound
-	return null
+	if(!istype(blocker, /obj/item/shield))
+		return null
+	// Remember which shield stopped it, for the splash: it runs after the block, which may break the shield
+	var/mob/living/holder = blocker.loc
+	if(istype(holder) && (blocker in holder.held_items))
+		blocking_shield_ref = WEAKREF(blocker)
+		blocking_shield_look = plasma_shield_look(blocker)
+		blocking_shield_hand = IS_LEFT_INDEX(holder.get_held_index_of_item(blocker)) ? "L" : "R"
+	return shield_block_sound
 
 /// Plasma breaks structures and doors faster; mechs, turrets and other machines take normal damage.
 /obj/projectile/energy/plasma_bolt/get_demolition_modifier(obj/target)
@@ -227,5 +239,11 @@
 		// A cut that closed is deleted; one that dropped a tier was replaced and left the limb
 		if(QDELETED(cut) || !(cut in limb.wounds))
 			seared = TRUE
-	if(seared)
-		victim.visible_message(span_warning("The cuts on [victim]'s [limb.plaintext_zone] sear shut!"), span_warning("The cuts on your [limb.plaintext_zone] sear shut!"))
+	if(!seared || QDELETED(limb) || limb.owner != victim)
+		return
+	// Shut only if nothing on the limb still bleeds; a cut that only dropped a tier still does
+	for(var/datum/wound/left as anything in limb.wounds)
+		if(left.blood_flow > 0)
+			victim.visible_message(span_warning("The cuts on [victim]'s [limb.plaintext_zone] sizzle."), span_warning("The cuts on your [limb.plaintext_zone] sizzle."))
+			return
+	victim.visible_message(span_warning("The cuts on [victim]'s [limb.plaintext_zone] sear shut!"), span_warning("The cuts on your [limb.plaintext_zone] sear shut!"))

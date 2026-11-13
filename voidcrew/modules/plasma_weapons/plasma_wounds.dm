@@ -103,6 +103,8 @@
 	var/drops_bead = FALSE
 	/// Set when this wound replaced a slagged one because of a non-plasma burn: it keeps the old slag and heat instead of fresh ones
 	var/carried_over = FALSE
+	/// Set once the burn has landed; re-attaching a severed limb applies it again and must not heat it up or dose the blood
+	var/landed = FALSE
 	/// tg's burn of the same tier; its short treatment text is used once the slag is out
 	var/datum/wound/burn/flesh/tg_tier_path = /datum/wound/burn/flesh/moderate
 
@@ -288,9 +290,16 @@
 
 /// How fast the slag cools where the victim is: 0 in a fire, faster in the cold.
 /datum/wound/burn/flesh/plasma/proc/cooling_factor()
-	if(victim.on_fire || victim.bodytemperature > BODYTEMP_HEAT_DAMAGE_LIMIT)
+	// The species' own limits, so a body that runs hot (ethereals) or cold still cools at its normal temperature
+	var/heat_limit = BODYTEMP_HEAT_DAMAGE_LIMIT
+	var/cold_limit = BODYTEMP_COLD_DAMAGE_LIMIT
+	var/datum/species/species = ishuman(victim) ? victim.dna?.species : null
+	if(species)
+		heat_limit = species.bodytemp_heat_damage_limit
+		cold_limit = species.bodytemp_cold_damage_limit
+	if(victim.on_fire || victim.bodytemperature > heat_limit)
 		return 0
-	if(victim.bodytemperature < BODYTEMP_COLD_DAMAGE_LIMIT)
+	if(victim.bodytemperature < cold_limit)
 		return PLASMA_WOUND_COLD_BODY_FACTOR
 	var/datum/gas_mixture/air = victim.loc?.return_air()
 	if(air && air.return_temperature() < T0C && air.return_pressure() >= PLASMA_WOUND_COLD_AIR_PRESSURE)
@@ -329,6 +338,13 @@
 
 /datum/wound/burn/flesh/plasma/wound_injury(datum/wound/old_wound = null, attack_direction = null)
 	. = ..()
+	if(landed && !old_wound)
+		// The limb this burn is on was put back on: it keeps its slag and heat as they were
+		if(limb)
+			update_inefficiencies()
+		plasma_state_changed()
+		return
+	landed = TRUE
 	var/datum/wound/burn/flesh/plasma/old_plasma = istype(old_wound, /datum/wound/burn/flesh/plasma) ? old_wound : null
 	if(carried_over && old_plasma)
 		// A fire or laser burn replaced slagged plasma: keep what was there, add nothing.
@@ -459,7 +475,10 @@
 		else
 			examine_desc = examine_raw
 	if(disabling && strikes_to_lose_limb <= 0)
-		return // tg's sepsis text stands
+		// tg's sepsis text, except cryo can't clear it while slag is in
+		if(slag > 0)
+			treat_text_short = "Amputate or augment limb immediately, or excise the slag and place the patient into cryogenics."
+		return
 	if(slag > 0)
 		treat_text_short = slag_treat_text_short
 	else
@@ -470,6 +489,8 @@
 	. = ..()
 	if(slag <= 0)
 		return
+	// Cryo can't clear sepsis while slag is in
+	. = replacetext(., "or place the patient in a cryotube.", "or excise the slag and place the patient in a cryotube.")
 	var/foreign = "Foreign matter: plasma slag, [heat > 0 ? "molten" : "set"].\n"
 	var/div_open = "<div class='ml-3'>"
 	var/div_at = findtext(., div_open)
