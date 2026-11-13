@@ -90,6 +90,10 @@
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	/// The bearer's balloons as the window opens and as the crash lands, and what they call the part in chat.
+	var/online_balloon = "cascade online"
+	var/crash_balloon = "cascade crash!"
+	var/part_word = "lattice"
 	/// How long the window lasts when it slows the world (no other player near, ware_sandy_timestop.dm). A plain
 	/// surge, or one that a player cuts short, lasts window_duration.
 	var/slowmo_duration = 13 SECONDS
@@ -120,7 +124,7 @@
 	var/datum/status_effect/cyberware_cascade_window/window = owner.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	if(!window)
 		return
-	to_chat(owner, span_userdanger("The pulse rips through the lattice mid-cascade, everything slams back to real time!"))
+	to_chat(owner, span_userdanger("The pulse rips through the [part_word] mid-surge, everything slams back to real time!"))
 	owner.remove_status_effect(/datum/status_effect/cyberware_cascade_window) // on_remove applies the crash
 	for(var/datum/action/cooldown/cyberware/cascade_surge/surge in actions)
 		surge.StartCooldown()
@@ -161,7 +165,8 @@
 			qdel(window)
 		return TRUE
 	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
-		surger.balloon_alert(surger, "lattice still cycling!")
+		var/obj/item/organ/cyberimp/cyberware/cascade/lattice = organ
+		surger.balloon_alert(surger, "[istype(lattice) ? lattice.part_word : "lattice"] still cycling!")
 		return FALSE
 	StartCooldown()
 	// The lattice hands the window its numbers (an organ-less call falls back to the T4 defaults).
@@ -198,6 +203,7 @@
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	var/online_balloon = "cascade online"
 	/// The crash this window rolls into.
 	var/crash_duration = CYBERWARE_CASCADE_CRASH
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
@@ -205,6 +211,9 @@
 	var/steps_taken = 0
 	/// Whether the surge's own speed, quicker blows, crit and dodge are on now (refresh_perks()).
 	var/perks_on = FALSE
+	/// Quicker blows stay on while a slow-mo carries the surger, apart from the other perks (decisions 22, 2026-11-12):
+	/// melee, unarmed and chrome strikes come at the window's own rate. Gun fire delay is not a click cooldown.
+	var/slowmo_quick_blows = TRUE
 
 /// Optional second argument: the lattice whose numbers this window runs on.
 /datum/status_effect/cyberware_cascade_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/cascade/lattice)
@@ -219,6 +228,7 @@
 		afterimage_interval = lattice.afterimage_interval
 		afterimage_alpha = lattice.afterimage_alpha
 		online_message = lattice.online_message
+		online_balloon = lattice.online_balloon
 		crash_duration = lattice.crash_duration
 		crash_stamina = lattice.crash_stamina
 		dilation_scale = lattice.dilation_scale
@@ -238,7 +248,7 @@
 		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
 		span_boldnotice(online_message),
 	)
-	owner.balloon_alert(owner, "cascade online")
+	owner.balloon_alert(owner, online_balloon)
 	cyberware_cascade_window_fx(owner)
 	try_time_stop() // ware_sandy_timestop.dm
 	refresh_perks()
@@ -265,12 +275,12 @@
 
 /// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()
-	return perks_on ? melee_mult : 1
+	return (perks_on || slowmo_quick_blows) ? melee_mult : 1
 
 /**
- * The surge's own edge (speed, quicker blows, crit, dodge) is off while a slow-mo carries the surger: its own
- * (ware_sandy_timestop.dm), or someone else's that runs it at its relative rate. There it moves and swings at
- * normal speed and only the world around it is slowed. Call whenever either changes.
+ * The surge's own edge (speed, crit, dodge) is off while a slow-mo carries the surger: its own
+ * (ware_sandy_timestop.dm), or someone else's that runs it at its relative rate. There it moves at normal speed
+ * and only the world around it is slowed; its quicker blows stay (slowmo_quick_blows). Call whenever either changes.
  */
 /datum/status_effect/cyberware_cascade_window/proc/refresh_perks()
 	set_perks(!time_stop && !cyberware_surge_in_field(owner))
@@ -365,12 +375,14 @@
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
 	owner.adjustStaminaLoss(crash_stamina)
+	var/mob/living/carbon/carbon_owner = owner
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = iscarbon(owner) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_owner.organs) : null
 	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 	owner.visible_message(
 		span_warning("[owner] staggers, every movement suddenly leaden."),
-		span_userdanger("The lattice dumps its heat. Your whole body seizes up and everything slows to a crawl."),
+		span_userdanger("The [lattice?.part_word || "lattice"] dumps its heat. Your whole body seizes up and everything slows to a crawl."),
 	)
-	owner.balloon_alert(owner, "cascade crash!")
+	owner.balloon_alert(owner, lattice?.crash_balloon || "cascade crash!")
 	cyberware_cascade_crash_fx(owner)
 	return TRUE
 

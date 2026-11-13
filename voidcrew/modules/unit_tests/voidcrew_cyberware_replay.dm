@@ -35,6 +35,22 @@
 /datum/unit_test/voidcrew_cyberware_timestop/replay/proc/held(mob/living/body)
 	return HAS_TRAIT_FROM(body, TRAIT_AI_PAUSED, "sandy_replay") || HAS_TRAIT_FROM(body, TRAIT_IMMOBILIZED, "sandy_replay") || HAS_TRAIT_FROM(body, TRAIT_INCAPACITATED, "sandy_replay")
 
+/// `thing`'s own look while its replay waits to start: without the replay's hide (sandy_replay_pending_hide), which is
+/// the replay's, not the thing's
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/real_look(atom/movable/thing)
+	if(!thing.filter_data?["sandy_replay_pending_hide"])
+		return thing.appearance
+	var/mutable_appearance/look = new(thing)
+	look.filters = null
+	for(var/name in thing.filter_data)
+		if(name == "sandy_replay_pending_hide")
+			continue
+		var/list/arguments = thing.filter_data[name]
+		arguments = arguments.Copy()
+		arguments -= "priority"
+		look.filters += filter(arglist(arguments))
+	return look.appearance
+
 /// Names what differs between `thing`'s look now and the appearance `was`
 /datum/unit_test/voidcrew_cyberware_timestop/replay/proc/look_difference(atom/movable/thing, was)
 	var/mutable_appearance/now = new(thing)
@@ -52,7 +68,13 @@
 	if(length(now.underlays) != length(before.underlays))
 		found += "underlays [length(before.underlays)] -> [length(now.underlays)]"
 	if(length(now.filters) != length(before.filters))
-		found += "filters [length(before.filters)] -> [length(now.filters)]"
+		var/list/had = list()
+		for(var/dm_filter/filter as anything in before.filters)
+			had += "[filter.type]"
+		var/list/has = list()
+		for(var/dm_filter/filter as anything in now.filters)
+			has += "[filter.type]"
+		found += "filters [length(before.filters)] ([had.Join("/")]) -> [length(now.filters)] ([has.Join("/")]), filter names now: [jointext(assoc_to_keys(thing.filter_data), "/")]"
 	return length(found) ? found.Join(", ") : "nothing in the vars compared"
 
 /// A slow-mo the user ends replays from frame 0 on the real things, without moving them, and every one of them
@@ -104,7 +126,7 @@
 	var/list/real_spot = list()
 	var/list/real_dir = list()
 	for(var/atom/movable/thing as anything in things)
-		real[thing] = thing.appearance
+		real[thing] = real_look(thing)
 		real_spot[thing] = thing.loc
 		real_dir[thing] = thing.dir
 	var/raider_overlays = length(raider.overlays)
@@ -221,7 +243,7 @@
 	raider.forceMove(spot(3, 0))
 	sleep(0.5 SECONDS)
 	press_again(user)
-	var/real = raider.appearance
+	var/real = real_look(raider)
 	replay.begin()
 	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
 	TEST_ASSERT_EQUAL(raider.pixel_w, -32, "The NPC isn't replayed")
@@ -229,7 +251,7 @@
 	stranger.key = "sandyreplaystranger"
 	replay.play_frame()
 	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay went on with another player near")
-	TEST_ASSERT(raider.appearance == real, "The NPC didn't snap back to its real look")
+	TEST_ASSERT(raider.appearance == real, "The NPC didn't snap back to its real look: [look_difference(raider, real)]")
 	TEST_ASSERT(!held(user) && !held(raider), "Someone is still held after a player ended the replay")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when a player ended the replay")
 
@@ -511,7 +533,7 @@
 	TEST_ASSERT(user.filter_data?["chrome_rig_hide"], "Test fixture: the rig didn't hide the user")
 	TEST_ASSERT(sandy_replay_mid_move(user), "A rigged body isn't seen as mid-move")
 	var/side = rig.near_side()
-	var/obj/effect/abstract/chrome_puppet/arm = rig.puppet(side)
+	var/obj/effect/abstract/chrome_puppet/arm = rig.puppet("arm_[side]") // the rig keys its arms "arm_l" and "arm_r" (rig_arms())
 	TEST_ASSERT_NOTNULL(arm, "Test fixture: the rig has no arm")
 	TEST_ASSERT(replay.tracks[arm], "The rig's picture isn't recorded")
 	TEST_ASSERT(locate(/obj/effect/abstract/sandy_rig_glow) in arm.vis_contents, "The user's rig picture has no edge glow in the slow-mo")

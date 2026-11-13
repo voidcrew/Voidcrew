@@ -307,20 +307,22 @@
 	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
 
-	// The NPC's clock runs at 20% from the start; the user's doesn't slow.
+	// The NPC's clock runs at the model's pace from the start; the user's doesn't slow.
+	var/scale = field.time_scale
+	TEST_ASSERT(scale > 0 && scale < 1, "Test fixture: the field's pace is [scale]")
 	var/lost = cyberware_time_lost(raider, 10)
-	TEST_ASSERT(lost > 7.9 && lost < 8.1, "A slowed NPC's clock didn't run at 20% (lost [lost] of 10)")
+	TEST_ASSERT(abs(lost - 10 * (1 - scale)) < 0.1, "A slowed NPC's clock didn't run at [scale * 100]% (lost [lost] of 10)")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(user, 10), 0, "The user's clock slowed")
 	TEST_ASSERT_EQUAL(cyberware_dilated_time(user, 10), 10, "The user's animations would be slowed")
 	TEST_ASSERT_NULL(cyberware_time_field(user_gun), "Something the user holds would be slowed")
 	var/gore = cyberware_dilated_time(raider, 1)
-	TEST_ASSERT(gore > 4.9 && gore < 5.1, "A slowed NPC's gore doesn't play at 20% ([gore] for 1)")
+	TEST_ASSERT(abs(gore - 1 / scale) < 0.1, "A slowed NPC's gore doesn't play at [scale * 100]% ([gore] for 1)")
 	TEST_ASSERT_NOTNULL(cyberware_time_field(pool), "Blood on the floor in the field isn't slowed")
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/pool_field = GLOB.cyberware_time_dilated[pool]
 	TEST_ASSERT(pool_field?.tinted[pool], "Blood in the field isn't tinted with the world")
-	var/list/steps = cyberware_dilated_steps(raider, list(2, 2))
-	var/both = cyberware_dilated_time(raider, 4) // the second step may run past the window's end, back at full speed
-	TEST_ASSERT(length(steps) == 2 && abs(steps[1] - 10) < 0.1 && abs(steps[1] + steps[2] - both) < 0.1, "A slowed NPC's flinch doesn't play at 20% from its first step ([jointext(steps, ",")], [both] in all)")
+	var/list/steps = cyberware_dilated_steps(raider, list(1, 1))
+	var/both = cyberware_dilated_time(raider, 2) // the second step may run past the window's end, back at full speed
+	TEST_ASSERT(length(steps) == 2 && abs(steps[1] - 1 / scale) < 0.1 && abs(steps[1] + steps[2] - both) < 0.1, "A slowed NPC's flinch doesn't play at [scale * 100]% from its first step ([jointext(steps, ",")], [both] in all)")
 
 	// Bursts queued in the slow-mo wait longer.
 	raider_gun.cyberware_burst_start = cyberware_burst_clock(raider)
@@ -353,7 +355,7 @@
 	TEST_ASSERT(length(strand.elements) == 2, "Test fixture: the strand isn't two segments ([length(strand.elements)])")
 	for(var/obj/effect/ebeam/segment as anything in strand.elements)
 		TEST_ASSERT(islist(segment.color), "A gut strand segment drawn in the slow-mo kept its colour ([segment.color], own icon: [isicon(segment.icon)])")
-	// 0.5 s at 20% is 1 decisecond of the NPC's own time: a 2 decisecond gap is still waiting, at full speed it's long gone
+	// 0.5 s at 20% or less is at most 1 decisecond of the NPC's own time: a 2 decisecond gap is still waiting, at full speed it's long gone
 	TEST_ASSERT(cyberware_burst_wait(raider, raider_gun.cyberware_burst_start, 2, 1) > 0, "A queued burst shot fired at full speed")
 	TEST_ASSERT(raider_gun.cyberware_burst_start > gun_start, "The NPC's burst clock wasn't pushed back")
 	TEST_ASSERT(rat_gun.cyberware_burst_start > rat_start, "A basic mob's burst clock wasn't pushed back")
@@ -362,7 +364,10 @@
 	TEST_ASSERT(!mech.completely_disabled, "The dilation shut a mech down")
 	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A grenade's fuse burned through at full speed")
 
-	sleep(1.8 SECONDS) // past the window
+	// Just past the window: the replay of a 2 s slow-mo is over in a few tenths at the deeper slow-mos, so look as it starts
+	var/window_until = world.time + 2 SECONDS
+	while(!QDELETED(window) && window.time_stop && world.time < window_until)
+		sleep(world.tick_lag)
 	TEST_ASSERT_NULL(window.time_stop, "The slow-mo outlived the window")
 	TEST_ASSERT_EQUAL(cyberware_time_lost(raider, 10), 0, "The NPC's clock stayed slow after the dilation")
 	TEST_ASSERT_NULL(cyberware_time_field(pool), "Blood stayed slowed after the dilation")
@@ -408,7 +413,8 @@
 	TEST_ASSERT(lattice.Insert(raider, special = TRUE), "Test fixture: the lattice wouldn't go in the NPC")
 	return raider
 
-/// No reflex dodge, speed, quicker blows or crit edge while the user's own world is slowed; they come back if the slow-mo ends before the window does
+/// No reflex dodge, speed or crit edge while the user's own world is slowed, but the quicker blows stay (decisions 22);
+/// all of it is there as before if the slow-mo ends before the window does
 /datum/unit_test/voidcrew_cyberware_timestop/no_dodge_while_slowed
 
 /datum/unit_test/voidcrew_cyberware_timestop/no_dodge_while_slowed/Run()
@@ -424,7 +430,14 @@
 	TEST_ASSERT(cyberware_time_stopping(user), "The user isn't marked as slowing time")
 	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), FAILED_BLOCK, "The user dodged a blow in slow-mo")
 	TEST_ASSERT(!user.has_movespeed_modifier(window.speed_type), "The user kept the surge's speed in slow-mo")
-	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 1, "The user kept the surge's quicker blows in slow-mo")
+	TEST_ASSERT(!LAZYACCESS(user.hv_crit_attacker_bonuses, window.id), "The user kept the surge's crit edge in slow-mo")
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
+	TEST_ASSERT_NOTNULL(lattice, "Test fixture: the user has no lattice")
+	TEST_ASSERT(lattice.window_melee_mult < 1, "Test fixture: the lattice gives no quicker blows")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), lattice.window_melee_mult, "The user lost the surge's quicker blows in slow-mo")
+	user.changeNext_move(CLICK_CD_MELEE)
+	TEST_ASSERT(abs(user.next_move - world.time - CLICK_CD_MELEE * lattice.window_melee_mult) < 0.01, "A blow in slow-mo didn't come at the surge's rate ([user.next_move - world.time] for [CLICK_CD_MELEE])")
+	user.next_move = world.time
 	sleep(1.2 SECONDS)
 	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), FAILED_BLOCK, "The user dodged a blow later in slow-mo")
 	qdel(window.time_stop) // as when a player comes in range
@@ -432,7 +445,8 @@
 	TEST_ASSERT(!cyberware_time_stopping(user), "The user still counts as slowing time")
 	TEST_ASSERT_EQUAL(arbiter.on_check_block(user, knife, 10, "the knife", MELEE_ATTACK), SUCCESSFUL_BLOCK, "The dodge didn't come back after the slow-mo ended")
 	TEST_ASSERT(user.has_movespeed_modifier(window.speed_type), "The surge's speed didn't come back after the slow-mo ended")
-	TEST_ASSERT_EQUAL(window.nextmove_modifier(), window.melee_mult, "The surge's quicker blows didn't come back after the slow-mo ended")
+	TEST_ASSERT_EQUAL(LAZYACCESS(user.hv_crit_attacker_bonuses, window.id), window.crit_bonus, "The surge's crit edge didn't come back after the slow-mo ended")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), lattice.window_melee_mult, "The surge's quicker blows changed after the slow-mo ended")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
