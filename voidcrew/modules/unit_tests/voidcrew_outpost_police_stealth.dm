@@ -502,4 +502,109 @@
 	TEST_ASSERT(mug.reagents.total_volume < before, "The sergeant never drank the coffee at the desk")
 	sergeant.end_activity()
 
+/// Armed alert officers open lockers they saw a suspect climb into, and hold fire on lockers entered unseen
+/datum/unit_test/voidcrew_stealth_live/police/closet_pursuit
+
+/datum/unit_test/voidcrew_stealth_live/police/closet_pursuit/Run()
+	TEST_ASSERT(police_room(14, 7), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(4, 3, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	var/mob/living/carbon/human/suspect = visitor_at(6, 3)
+	police_pin_warrant(police, suspect.mind, 30) // two stars (POLICE_FORCE_STUN)
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, at(6, 3))
+	locker.open()
+
+	// Seen on open ground, then shut inside the locker in front of the officer
+	brain.stealth_go_alert(suspect)
+	locker.close()
+	TEST_ASSERT_EQUAL(suspect.loc, locker, "Fixture: the suspect was not shut inside the locker")
+	TEST_ASSERT(brain.stealth_closet_track(suspect), "The officer did not track the suspect into the locker")
+	TEST_ASSERT_EQUAL(brain.shut_in, locker, "The officer did not claim the locker it saw shut")
+
+	var/datum/ai_planning_subtree/outpost_police_force/force_tree = locate() in brain.planning_subtrees
+	var/datum/ai_planning_subtree/stealth_closet/closet_tree = locate() in brain.planning_subtrees
+	brain.planned_behaviors.Cut()
+	var/force_res = force_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT_NULL(force_res, "The force subtree ended planning instead of yielding to stealth_closet")
+	TEST_ASSERT(!(locate(/datum/ai_behavior/human_npc_shoot) in brain.planned_behaviors), "The force subtree planned a shot at a closed locker")
+	closet_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT(length(brain.planned_behaviors) > 0, "stealth_closet planned nothing for the claimed locker")
+	officer.forceMove(at(5, 3))
+	brain.stealth_try_closet()
+	TEST_ASSERT(locker.opened, "The officer beside the locker did not open it")
+
+	// Entered unseen: holds fire and stands watch, never shoots the container
+	locker.close()
+	brain.stealth_drop_closet()
+	brain.target_free_seen_at = -10 MINUTES
+	brain.planned_behaviors.Cut()
+	TEST_ASSERT_NULL(force_tree.SelectBehaviors(brain, 1), "The force subtree did not yield on an unseen locker")
+	closet_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT(!!(locate(/datum/ai_behavior/stealth_stand) in brain.planned_behaviors), "An officer did not hold fire on a locker entered unseen")
+	brain.planned_behaviors.Cut()
+	police_pin_warrant(police, suspect.mind, 0)
+
+/// Response units never claim beat routes, and a second beat officer made beside a taken route claims the free one
+/datum/unit_test/voidcrew_stealth_live/police/route_guards
+
+/datum/unit_test/voidcrew_stealth_live/police/route_guards/Run()
+	TEST_ASSERT(police_room(20, 7), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	police_stop(2, 2, "a", 1, 5 SECONDS, null)
+	police_stop(8, 2, "a", 2, 5 SECONDS, null)
+	police_stop(16, 2, "b", 1, 5 SECONDS, null)
+
+	// A response officer stepping off a lift beside stop 1 of route "a" leaves the beat route free
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/responder = officer_at(2, 2, EAST, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/resp_brain = responder.ai_controller
+	resp_brain.stealth_setup()
+	TEST_ASSERT_NULL(resp_brain.route_id, "A response officer claimed beat route [resp_brain.route_id]")
+	TEST_ASSERT_EQUAL(police.free_route(resp_brain.group), "a", "A response officer blocked beat route a")
+
+	// Beat #1 takes route "a"; Beat #2 spawning within claim range of route "a" takes free route "b" instead of doubling up
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat_one = officer_at(2, 2, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain_one = beat_one.ai_controller
+	brain_one.stealth_setup()
+	TEST_ASSERT_EQUAL(brain_one.route_id, "a", "The first beat officer did not claim route a")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat_two = officer_at(3, 2, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain_two = beat_two.ai_controller
+	brain_two.stealth_setup()
+	TEST_ASSERT_EQUAL(brain_two.route_id, "b", "A replacement beat officer beside a taken route got [brain_two.route_id || "none"] instead of free route b")
+
+/// Container bumps, passive crowd pulls and peaceful non-player NPCs do not make concourse officers suspicious
+/datum/unit_test/voidcrew_stealth_live/police/public_crowd
+
+/datum/unit_test/voidcrew_stealth_live/police/public_crowd/Run()
+	TEST_ASSERT(police_room(14, 7), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	police_stop(6, 3, "a", 1, 10 MINUTES, null)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(6, 3, EAST)
+	officer.resume_routine()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = wake(officer)
+	brain.stealth_setup()
+
+	var/mob/living/carbon/human/visitor = visitor_at(4, 3)
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, at(5, 3))
+	crate.open()
+	visitor.forceMove(crate)
+	crate.close()
+	brain.on_bumped(officer, crate)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "A crate holding a clean visitor bumping an officer put it in [brain.stealth_state()]")
+	crate.open()
+	visitor.forceMove(at(5, 3))
+
+	visitor.start_pulling(officer, supress_message = TRUE)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "A clean visitor passively pulling an officer put it in [brain.stealth_state()]")
+	visitor.stop_pulling()
+
+	// Peaceful NPC with no mind (e.g. a blending-in fugitive or neutral bystander) makes no footstep or voice suspicion
+	var/mob/living/carbon/human/bystander_npc = person_at(4, 4, FALSE)
+	TEST_ASSERT(!officer.police_has_business(bystander_npc), "An officer had business with a peaceful non-player human")
+	TEST_ASSERT_EQUAL(stealth_noise(get_turf(bystander_npc), "voice", null, bystander_npc), 0, "An officer heard a peaceful NPC's everyday voice")
+	bystander_npc.forceMove(at(5, 4))
+	stealth_scans(officer, 1)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "A peaceful NPC's footsteps put an officer in [brain.stealth_state()]")
+
 #undef POLICE_STEALTH_BEAT

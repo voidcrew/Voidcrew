@@ -34,6 +34,11 @@
 	/// What an officer does at this stop (see above), or null to stand and look about
 	var/police_activity
 
+/obj/effect/landmark/stealth_patrol/police/Initialize(mapload)
+	if(!facing && mapload)
+		facing = dir
+	return ..()
+
 // =========================================================================
 // THE BRAIN
 // =========================================================================
@@ -86,6 +91,29 @@
 		return where
 	return ..()
 
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_walk_arrived(turf/dest)
+	if(goto_dest == dest && goto_result == "arrived" && police_cross_sector_lift_walk(dest))
+		return FALSE
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_walk_over(turf/dest)
+	if(goto_dest == dest && goto_result == "arrived" && police_cross_sector_lift_walk(dest))
+		return FALSE
+	return ..()
+
+/// Whether walking from where the pawn stands to `dest` still needs a lift ride between sectors
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_cross_sector_lift_walk(turf/dest)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/datum/outpost_police/police = istype(officer) ? officer.police : null
+	var/turf/here = get_turf(officer)
+	if(!police || !dest || !here || here == dest)
+		return FALSE
+	var/from_sector = police.sector_of(here)
+	var/to_sector = police.sector_of(dest)
+	if(from_sector == to_sector || from_sector == POLICE_SECTOR_OUTSIDE || to_sector == POLICE_SECTOR_OUTSIDE)
+		return FALSE
+	return length(police.dispatch_lift_tiles(from_sector)) > 0 && length(police.dispatch_lift_tiles(to_sector)) > 0
+
 /**
  * A walk into another sector goes on foot between concourse and lobby (exit gate one way, checkpoint the other)
  * and by the hangar elevator between the lobby and a hangar berth. A beat officer is never taken to a hangar
@@ -109,7 +137,20 @@
 			stealth_drop_walk()
 			goto_dest = dest
 		goto_purpose = purpose
-		goto_result = "failed"
+		if(goto_result != "failed")
+			goto_result = "failed"
+			stealth_walk_failed()
+		return
+	if(!length(police.dispatch_lift_tiles(from_sector)) || !length(police.dispatch_lift_tiles(to_sector)))
+		if(here.z == dest.z && !istype(from_sector, /datum/outpost_berth) && !istype(to_sector, /datum/outpost_berth))
+			return ..()
+		if(goto_dest != dest)
+			stealth_drop_walk()
+			goto_dest = dest
+		goto_purpose = purpose
+		if(goto_result != "failed")
+			goto_result = "failed"
+			stealth_walk_failed()
 		return
 	if(officer.dispatch_riding)
 		return
@@ -131,7 +172,10 @@
 	if(!lift)
 		return ..()
 	if(here != lift)
-		return ..(lift, purpose)
+		if(isnull(goto_turf) || (police.dispatch_is_lift_tile(goto_turf) && goto_turf != lift))
+			goto_turf = stealth_next_leg(lift)
+		queue_behavior(/datum/ai_behavior/stealth_goto)
+		return
 	if(world.time < police_ride_retry_at)
 		return
 	police_ride_retry_at = world.time + 3 SECONDS
@@ -180,15 +224,20 @@
 	if(!istype(officer))
 		return
 	officer.home_police()?.add_officer(officer)
-	// The sergeant's post is the desk wherever they came in (a replacement steps off a lift), and never a beat
-	// route: one held the lift tile as its post and stood there all round, keeping a beat officer off that route
+	// Only beat officers walk beat routes: the sergeant's post is the desk, and response units never hold a beat stop
 	var/turf/desk = officer.police?.desk_turf
 	var/turf/here = get_turf(officer)
-	if(officer.unit_kind == POLICE_UNIT_SERGEANT && desk && here && desk.z == here.z)
+	if(officer.unit_kind != POLICE_UNIT_BEAT)
 		route_id = null
 		at_stop = FALSE
 		home_retry_at = 0
-		home_turf = desk
+		home_turf = (officer.unit_kind == POLICE_UNIT_SERGEANT && desk && here && desk.z == here.z) ? desk : here
+	else if(route_id && group && outpost_police_route_taken(group, route_id, officer))
+		route_id = null
+		at_stop = FALSE
+		home_retry_at = 0
+		home_turf = here
+		officer.police_claim_route()
 
 // Its own seat (the desk chair, a bench at a stop) is not being held: it still looks about and can report
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_captive()
@@ -211,6 +260,40 @@
 	var/mob/living/person = ismecha(target) ? bounty_ai_pilot_of(target) : target
 	if(isliving(person) && person.mind)
 		police_hunt = WEAKREF(person.mind)
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_target_set(datum/source)
+	SIGNAL_HANDLER
+	..()
+	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/mob/living/person = ismecha(target) ? bounty_ai_pilot_of(target) : target
+	if(isliving(person) && person.mind)
+		police_hunt = WEAKREF(person.mind)
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_try_closet()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/obj/structure/closet/box = shut_in
+	if(!istype(officer) || QDELETED(box))
+		return ..()
+	if(officer.force < POLICE_FORCE_LETHAL)
+		closet_stuck = FALSE
+		if(!officer.Adjacent(box) || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || officer.incapacitated)
+			return
+		var/mob/living/who = shut_who?.resolve()
+		officer.face_atom(box)
+		if(box.open(officer))
+			stealth_drop_closet()
+			stealth_bark(STEALTH_BARK_CLOSET_OPEN)
+			if(isliving(who) && !QDELETED(who))
+				if(isturf(who.loc))
+					target_free_seen_at = world.time
+					lost_since = 0
+				else
+					stealth_closet_alerted(who)
+		return
+	if(!officer.Adjacent(box) && officer.bystander_in_line(box))
+		human_npc_sidestep(officer, box)
+		return
+	return ..()
 
 /**
  * Stealth's lines are police lines: the same kind, as a context of AMBIENT_STRINGS_POLICE (outpost_police_stealth_line()),
@@ -275,11 +358,29 @@
 				heard_map[key] = get_turf(walker)
 	return ..()
 
-// Someone it has nothing on walking into it is no stranger in the dark: it's a crowd
+// Someone it has nothing on walking into it, or riding/pushing something into it, is no stranger in the dark: it's a crowd
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_bumped(atom/source, atom/movable/bumper)
 	SIGNAL_HANDLER
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
-	if(isliving(bumper) && istype(officer) && !officer.police_has_business(bumper))
+	if(!istype(officer))
+		return ..()
+	if(isliving(bumper))
+		if(!officer.police_has_business(bumper))
+			return
+		return ..()
+	if(!ismovable(bumper))
+		return
+	for(var/mob/living/inside in bumper.get_all_contents())
+		if(officer.police_has_business(inside))
+			stealth_touched(inside)
+			return
+
+// A brief passive pull in a crowd is no ambush (dispatch_check_pull() charges prolonged pulling); an aggressive grab still is
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_pulled(mob/living/source, atom/movable/puller)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/mob/living/living_puller = puller
+	if(istype(officer) && isliving(living_puller) && living_puller.grab_state <= GRAB_PASSIVE && !officer.police_has_business(living_puller))
 		return
 	return ..()
 
@@ -313,10 +414,24 @@
 	)
 	return everyday[kind]
 
+/// Whether `police` has any business with `actor` for group-wide everyday noise checks
+/proc/outpost_police_group_has_business(datum/outpost_police/police, mob/living/actor)
+	if(!isliving(actor) || !police)
+		return FALSE
+	if(actor.mind || actor.client)
+		return police.force_level(actor) != POLICE_FORCE_NONE
+	if(istype(actor, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+		return FALSE
+	if(isalien(actor) || istype(actor, /mob/living/basic/alien))
+		return TRUE
+	if(HAS_TRAIT(actor, TRAIT_OUTPOST_RESIDENT) || (FACTION_TURRET in actor.faction))
+		return FALSE
+	return is_hostile_creature(actor)
+
 /datum/stealth_group/hear(turf/where, kind, reach, level, flags, mob/living/actor, door = FALSE)
 	if(!(flags & STEALTH_NOISE_GROUP_ONLY) && outpost_police_everyday_noise(kind))
 		var/datum/outpost_police/police = outpost_police()
-		if(police && (isnull(actor) || ((actor.mind || actor.client) && police.force_level(actor) == POLICE_FORCE_NONE)))
+		if(police && (isnull(actor) || !outpost_police_group_has_business(police, actor)))
 			return 0
 	return ..()
 
@@ -326,12 +441,14 @@
 
 /**
  * Whether this officer has any business with `who`: a person by their warrant or by a crime it saw itself; anyone
- * else (a creature, a resident) by stealth's own rules. A visitor with a clean record is none of its business.
+ * else (a creature, a resident) by whether the officer would fight them. A clean visitor or peaceful NPC is none of its business.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_has_business(mob/living/who)
-	if(!isliving(who) || !police || !(who.mind || who.client))
+	if(!isliving(who) || !police)
 		return TRUE
-	return police.force_level(who, src) != POLICE_FORCE_NONE
+	if(who.mind || who.client)
+		return police.force_level(who, src) != POLICE_FORCE_NONE
+	return police_will_fight(who)
 
 /**
  * This officer saw `offender` commit a crime whose report waits on its call (police_wanted.dm queue_report()): it
@@ -339,7 +456,7 @@
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_witness_saw(mob/living/offender)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
-	if(!istype(brain) || QDELETED(offender) || stat != CONSCIOUS || client)
+	if(!istype(brain) || !police || QDELETED(offender) || stat != CONSCIOUS || client)
 		return
 	brain.stealth_setup()
 	var/atom/fighting = brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
@@ -349,7 +466,8 @@
 			brain.stealth_remember(offender)
 	else if(!police_suspect_down(offender) || police.finishes_downed(offender, src))
 		brain.stealth_go_alert(offender)
-	brain.police_hunt = WEAKREF(offender.mind)
+	if(offender.mind)
+		brain.police_hunt = WEAKREF(offender.mind)
 	if(stealth_radio_ready())
 		brain.stealth_start_call(STEALTH_CALL_ALARM, get_turf(offender))
 
@@ -635,7 +753,7 @@
 	var/datum/mind/assigned = officer.dispatch_mind?.resolve()
 	// Someone down or in custody is the arrest's: nobody goes looking for them (owner decision 37)
 	var/mob/living/assigned_body = assigned?.current
-	if(isliving(assigned_body) && ((police_suspect_down(assigned_body) && !finishes_downed(assigned_body)) || in_custody(assigned_body)))
+	if(isliving(assigned_body) && ((police_suspect_down(assigned_body) && !finishes_downed(assigned_body, officer)) || in_custody(assigned_body)))
 		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)
