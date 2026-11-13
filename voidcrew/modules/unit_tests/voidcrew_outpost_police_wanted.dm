@@ -998,3 +998,55 @@
 	TEST_ASSERT_EQUAL(outpost.embargoed_ships[active_ship], world.time + 20 MINUTES, "Killing an officer did not extend the active ship embargo")
 	TEST_ASSERT(!outpost.is_ship_embargoed(expired_ship), "Killing an officer resurrected an already-expired ship embargo")
 	wanted_cleanup(list(active_ship, expired_ship))
+
+/// Admin lift and admin star adjustments purge queued pending reports, clear arrest holds, and cleanly downgrade peak, bar, fine cache, and crew incidents
+/datum/unit_test/voidcrew_outpost_police_admin_lift_and_downgrade
+
+/datum/unit_test/voidcrew_outpost_police_admin_lift_and_downgrade/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_police_perception/test_delayed/slow = new(police)
+	qdel(police.perception)
+	police.perception = slow
+
+	var/mob/living/carbon/human/suspect = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/victim = wanted_person(wanted_spot(1, 0))
+	var/obj/structure/overmap/ship/first_ship = wanted_ship(suspect)
+	var/datum/voidcrew_crew_record/crew = suspect.mind.get_reputation_crew()
+
+	// Delayed report queued, then admin lifts before the radio call completes: report never lands afterwards
+	TEST_ASSERT_NULL(police.report_crime(suspect, "shot", victim), "Setup: delayed report counted immediately")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "Setup: pending report was not queued")
+	LAZYSET(police.case_holds, WEAKREF(suspect.mind), world.time + 2 MINUTES)
+	police.admin_lift(suspect.mind)
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "admin_lift() left a pending crime report queued")
+	TEST_ASSERT_NULL(LAZYACCESS(police.case_holds, WEAKREF(suspect.mind)), "admin_lift() left a case hold on the lifted mind")
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_stars(suspect.mind), 0, "A pending report re-added stars after admin_lift()")
+
+	// Admin sets 4 stars, caches a 2-star fine_level, then downgrades to 1 star: peak, bar, fine_level, case_holds, and crew incident all adjust
+	LAZYSET(police.case_holds, WEAKREF(suspect.mind), world.time + 2 MINUTES)
+	police.admin_set_stars(suspect.mind, 4)
+	TEST_ASSERT_NULL(LAZYACCESS(police.case_holds, WEAKREF(suspect.mind)), "admin_set_stars() left a case hold blocking arrest")
+	TEST_ASSERT_NOTNULL(police.incidents[crew], "Four admin stars did not start a crew incident")
+	var/datum/outpost_warrant/warrant = police.warrants[suspect.mind]
+	warrant.fine_level = 2
+	police.admin_set_stars(suspect.mind, 1)
+	TEST_ASSERT_EQUAL(police.get_stars(suspect.mind), 1, "Admin downgrade did not set one star")
+	TEST_ASSERT_EQUAL(warrant.peak, 10, "Admin downgrade from 4 stars to 1 star kept the 4-star peak") // OUTPOST_POLICE_STAR_HEAT[1]
+	TEST_ASSERT_EQUAL(warrant.fine_level, 0, "Admin star change did not reset cached fine_level")
+	TEST_ASSERT_EQUAL(warrant.barred_until, 0, "Admin downgrade below three stars kept the three-star bar")
+	TEST_ASSERT_NULL(police.incidents[crew], "Admin downgrade below four stars left an active crew incident")
+	// Existing ship embargo stands until explicitly lifted, while newly joined ships are no longer auto-embargoed
+	TEST_ASSERT(outpost.is_ship_embargoed(first_ship), "Ending the crew incident silently removed the existing ship embargo")
+	var/obj/structure/overmap/ship/later_ship = wanted_ship(null, 0, crew)
+	police.tick_warrants()
+	TEST_ASSERT(!outpost.is_ship_embargoed(later_ship), "A downgraded incident still auto-embargoed a newly acquired ship")
+
+	// Admin lift on a 4-star warrant also ends the crew incident when no other crewmate has 4+ stars
+	police.admin_set_stars(suspect.mind, 4)
+	TEST_ASSERT_NOTNULL(police.incidents[crew], "Setup: four stars did not recreate the crew incident")
+	police.admin_lift(suspect.mind)
+	TEST_ASSERT_NULL(police.incidents[crew], "admin_lift() on the sole four-star crewmate left the crew incident active")
+	wanted_cleanup(list(first_ship, later_ship))
+

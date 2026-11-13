@@ -776,14 +776,48 @@
 		update_hud(who)
 	wake()
 
+/// Drops any unconfirmed pending reports, fold state and arrest hold queued against `who`
+/datum/outpost_police/proc/clear_pending_reports(datum/mind/who)
+	if(!who)
+		return
+	var/datum/weakref/who_ref = WEAKREF(who)
+	if(who_ref)
+		recent_reports -= who_ref
+		LAZYREMOVE(case_holds, who_ref)
+	for(var/datum/outpost_pending_report/report as anything in pending_reports.Copy())
+		var/mob/living/offender = report.offender?.resolve()
+		if(offender?.mind == who)
+			pending_reports -= report
+			qdel(report)
+
+/// Ends `crew`'s active incident once none of its members hold four or more stars here (existing ship embargoes stand)
+/datum/outpost_police/proc/prune_crew_incident(datum/voidcrew_crew_record/crew)
+	if(QDELETED(crew))
+		return
+	var/datum/outpost_incident/incident = incidents[crew]
+	if(!incident)
+		return
+	for(var/datum/mind/mate as anything in crew.minds)
+		if(get_stars(mate) >= 4)
+			return
+	end_incident(incident)
+
 /// An admin lifts `who`'s record here: warrant, prior and bar. A prisoner's cell lets them out on its next tick.
 /datum/outpost_police/proc/admin_lift(datum/mind/who)
-	var/datum/outpost_warrant/warrant = warrants[who]
-	if(!warrant)
+	if(!who)
 		return
-	if(warrant.peak > 0)
-		warrant_ended(warrant, "closed")
-	remove_warrant(warrant)
+	clear_pending_reports(who)
+	var/datum/voidcrew_crew_record/crew = who.get_reputation_crew()
+	var/datum/outpost_warrant/warrant = warrants[who]
+	if(warrant)
+		if(warrant.crew && !crew)
+			crew = warrant.crew
+		if(warrant.peak > 0)
+			warrant_ended(warrant, "closed")
+		remove_warrant(warrant)
+	prune_crew_incident(crew)
+	if(cases[who] || cell_holding(who))
+		wake()
 
 /**
  * An admin puts `who` on the wanted list here at `stars` (1-5): the heat that earns exactly those stars, seen
@@ -792,11 +826,14 @@
 /datum/outpost_police/proc/admin_set_stars(datum/mind/who, stars)
 	if(!who)
 		return
+	clear_pending_reports(who)
 	var/list/star_heat = OUTPOST_POLICE_STAR_HEAT
 	var/datum/outpost_warrant/warrant = ensure_warrant(who)
 	var/old_stars = stars_of(warrant.heat)
 	warrant.heat = star_heat[clamp(stars, 1, 5)]
-	warrant.peak = max(warrant.peak, warrant.heat)
+	var/new_stars = stars_of(warrant.heat)
+	warrant.peak = new_stars < old_stars ? warrant.heat : max(warrant.peak, warrant.heat)
+	warrant.fine_level = 0
 	warrant.last_crime_at = world.time
 	warrant.last_seen_at = world.time
 	warrant.unseen_since = 0
@@ -804,9 +841,12 @@
 	var/mob/body = who.current
 	if(body)
 		warrant.last_seen_turf = get_turf(body)
-	var/new_stars = stars_of(warrant.heat)
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
+	else if(old_stars >= 3)
+		warrant.barred_until = 0
+	if(new_stars < 4 && old_stars >= 4)
+		prune_crew_incident(current_warrant_crew(warrant))
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
 	else

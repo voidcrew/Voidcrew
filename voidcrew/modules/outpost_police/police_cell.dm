@@ -172,7 +172,7 @@
 
 /// Whether `prisoner` is still held with `body` alive and about (a booking checks this between its steps)
 /datum/outpost_police_cell/proc/holds(datum/mind/prisoner, mob/living/body)
-	return !QDELETED(src) && !QDELETED(body) && (prisoner in prisoners)
+	return !QDELETED(src) && !QDELETED(body) && body.mind == prisoner && (prisoner in prisoners)
 
 // ----- the prisoner list -----
 
@@ -215,7 +215,7 @@
 /// The prisoner whose body `body` is, or null
 /datum/outpost_police_cell/proc/prisoner_of(mob/living/body)
 	for(var/datum/mind/held in bodies)
-		if(body_of(held) == body)
+		if(body_of(held) == body && body.mind == held)
 			return held
 	return null
 
@@ -512,6 +512,15 @@
 		var/mob/living/body = body_of(prisoner)
 		if(!body)
 			forget_prisoner(prisoner)
+			police.close_warrant(prisoner, TRUE)
+			police.mark_locker_released(prisoner)
+			continue
+		if(body.mind != prisoner)
+			var/was_booking = !isnull(booking[prisoner])
+			forget_prisoner(prisoner)
+			if(!was_booking)
+				outpost_police_drop_used_cuffs(body)
+			police.mark_locker_released(prisoner)
 			continue
 		if(body.stat == DEAD)
 			down_prisoner(prisoner, body)
@@ -744,9 +753,9 @@
 		if(!QDELETED(src) && !QDELETED(officer) && !QDELETED(suspect) && officer.stat != DEAD && !(get_turf(officer) in tiles))
 			cell_clear_step(officer, entry_tile)
 			var/mob/living/entry_blocker = cell_standing_on(entry_tile, suspect, officer)
-			if(entry_blocker)
-				var/turf/aside = cell_open_neighbor(entry_tile, suspect, officer)
-				if(aside == get_step(entry_tile, get_dir(door_turf, entry_tile)) && ishuman(officer) && ishuman(entry_blocker))
+			if(entry_blocker && ishuman(officer) && ishuman(entry_blocker))
+				var/turf/shove_tile = get_step(entry_tile, get_dir(door_turf, entry_tile))
+				if(shove_tile && ((shove_tile in tiles) || shove_tile.density))
 					var/mob/living/carbon/human/cop = officer
 					cop.disarm(entry_blocker)
 			if(!cell_standing_on(entry_tile, suspect, officer))

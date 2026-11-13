@@ -1464,5 +1464,22 @@
 		post.state = old_state
 		qdel(jam)
 
+	// Uncuffed 3-star suspect with stale `cuffed = TRUE` never qualifies for `hold_for_cell()`, and `resist_reports` stores weakrefs
+	police_pin_warrant(police, suspect.mind, 55) // three stars (OUTPOST_POLICE_STAR_HEAT 50)
+	suspect.uncuff()
+	case.cuffed = TRUE
+	TEST_ASSERT(!case.hold_for_cell(), "hold_for_cell() accepted a suspect whose handcuffs were already off")
+	case.cuffed = FALSE
+
+	var/mob/living/carbon/human/meddler = wanted_person(get_turf(suspect))
+	var/datum/mind/meddler_mind = meddler.mind
+	case.order_at = world.time
+	suspect.pulledby = meddler
+	case.check_interference(suspect)
+	suspect.pulledby = null
+	for(var/key as anything in case.resist_reports)
+		TEST_ASSERT(istype(key, /datum/weakref), "resist_reports stored a hard reference ([key]) instead of a weakref")
+	police_pin_warrant(police, meddler_mind, 0)
+
 	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)

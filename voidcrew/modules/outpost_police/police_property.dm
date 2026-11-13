@@ -476,14 +476,18 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	else
 		log_mapping("OUTPOST POLICE: [outpost] has no evidence locker.")
 
+/// Marks any property locker owned by `who` as released from now so locker recycling orders it accurately
+/datum/outpost_police/proc/mark_locker_released(datum/mind/who)
+	if(!who)
+		return
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
+		if(!QDELETED(locker) && locker.owner() == who)
+			locker.released_at = world.time
+
 /// `suspect` was let out of the cells: their locker's owner has been released from now
 /datum/outpost_police/proc/property_on_released(datum/source, mob/living/suspect)
 	SIGNAL_HANDLER
-	if(!suspect?.mind)
-		return
-	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
-		if(!QDELETED(locker) && locker.owner() == suspect.mind)
-			locker.released_at = world.time
+	mark_locker_released(suspect?.mind)
 
 /// For a later theft system: `thing` was stolen by `thief`. Unused in this build.
 /datum/outpost_police/proc/mark_stolen(obj/item/thing, datum/mind/thief)

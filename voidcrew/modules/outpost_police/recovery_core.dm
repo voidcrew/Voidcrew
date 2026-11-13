@@ -334,7 +334,7 @@
 	var/list/still_away = list()
 	for(var/datum/outpost_warrant/warrant as anything in police.suspects_at_outpost())
 		var/mob/living/holder = warrant.mind?.current
-		if(!isliving(holder) || holder.stat == DEAD)
+		if(!isliving(holder) || holder.stat == DEAD || police.in_custody(holder))
 			continue
 		var/turf/where = get_turf(holder)
 		if(where && police.dispatch_in_box(where) && (holder.client || !warrant.mind.key))

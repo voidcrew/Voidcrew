@@ -66,6 +66,16 @@
 			return cell
 	return null
 
+/// Any prisoner held in `police`'s cells matching `target_ref`, or null
+/datum/overmap_management/proc/ban_held_mind(datum/outpost_police/police, target_ref)
+	if(!police || !target_ref)
+		return null
+	for(var/datum/outpost_police_cell/cell in police.cells)
+		var/datum/mind/held = locate(target_ref) in cell.prisoners
+		if(held)
+			return held
+	return null
+
 /// One row for everyone `trader`'s police have a warrant of a star or more on, or have barred
 /datum/overmap_management/proc/ban_wanted_entries(obj/structure/overmap/trader_outpost/trader)
 	var/list/rows = list()
@@ -161,7 +171,7 @@
 				ship.ship_notify("[trader.admin_name()] has lifted the trade embargo on your vessel.", "TRADE EMBARGO", SHIP_NOTIFY_NOTICE)
 		if("wanted")
 			var/datum/outpost_police/police = trader?.police
-			var/datum/mind/suspect = police && (locate(target_ref) in police.warrants)
+			var/datum/mind/suspect = police && ((locate(target_ref) in police.warrants) || ban_held_mind(police, target_ref))
 			if(suspect)
 				target_name = outpost_ban_mind_label(suspect)
 				ban_lift_warrant(police, suspect)
@@ -200,11 +210,12 @@
 					home.deny_dock_request(ship)
 		if("wanted")
 			var/datum/mind/suspect = locate(target_ref) in ban_candidate_minds()
-			if(!suspect || !trader?.police)
+			var/datum/outpost_police/police = trader?.ensure_police()
+			if(!suspect || !police)
 				error = "Choose a person and a trader outpost."
 				return
 			target_name = outpost_ban_mind_label(suspect)
-			trader.police.admin_set_stars(suspect, stars)
+			police.admin_set_stars(suspect, stars)
 		else
 			error = "Unknown restriction."
 			return

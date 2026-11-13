@@ -828,10 +828,13 @@
 		return
 	if(!order_at && !cuffed)
 		return
-	var/last = LAZYACCESS(resist_reports, puller.mind)
+	var/datum/weakref/puller_ref = WEAKREF(puller.mind)
+	if(!puller_ref)
+		return
+	var/last = LAZYACCESS(resist_reports, puller_ref)
 	if(last && world.time - last < OUTPOST_POLICE_BLOCK_TIME)
 		return
-	LAZYSET(resist_reports, puller.mind, world.time)
+	LAZYSET(resist_reports, puller_ref, world.time)
 	report(puller, OUTPOST_CRIME_RESIST, arresting() || suspect)
 
 /**
@@ -1609,7 +1612,7 @@
 /// Whether a booking that cannot be done now holds the suspect instead (three stars and up, in real cuffs)
 /datum/outpost_police_case/proc/hold_for_cell()
 	var/mob/living/carbon/suspect = get_suspect()
-	if(!suspect || !cuffed || grip_held || suspect_lost || !warrant?.mind || suspect.stat == DEAD)
+	if(!suspect || !cuffed || !suspect.handcuffed || grip_held || suspect_lost || !warrant?.mind || suspect.stat == DEAD)
 		return FALSE
 	return police.get_stars(warrant.mind) >= 3
 

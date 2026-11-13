@@ -141,6 +141,15 @@
 	offender.mind.key = null
 	TEST_ASSERT(recovery.stars_present(), "A wanted person back at the keys does not hold TROUBLE")
 	TEST_ASSERT(!(offender.mind in recovery.stars_away), "A wanted person back at the keys is still counted as away")
+
+	// Locked in police custody (cuffed in an arrest or held in a cell): trouble is contained so recovery can proceed
+	var/datum/outpost_police_case/case = new(outpost.police, outpost.police.warrants[offender.mind])
+	outpost.police.cases[offender.mind] = case
+	case.cuffed = TRUE
+	TEST_ASSERT(outpost.police.in_custody(offender), "Setup: offender is not in custody")
+	TEST_ASSERT(!recovery.stars_present(), "A suspect locked in police custody still held TROUBLE open")
+	outpost.police.close_case(offender.mind)
+	TEST_ASSERT(recovery.stars_present(), "A suspect who escaped custody did not hold TROUBLE again")
 	outpost.police.warrants -= offender.mind
 
 /// CLEANUP is over fifteen minutes after quiet at the latest, body or no body

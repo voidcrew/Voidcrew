@@ -1011,4 +1011,88 @@
 	TEST_ASSERT_EQUAL(crime?[2], "jailbreak", "A player mind in an officer body pulling a prisoner out reported [crime?[2]], not jailbreak") // OUTPOST_CRIME_JAILBREAK
 	cell_a.forget_prisoner(prisoner.mind)
 
+/// Crowded 2x2 cell entry shove, gibbed prisoner warrant/locker cleanup, and mind-swapped prisoner body handling
+/datum/unit_test/voidcrew_outpost_police_cell_crowded_entry_and_lifecycle
+
+/datum/unit_test/voidcrew_outpost_police_cell_crowded_entry_and_lifecycle/Run()
+	var/old_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.01
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell_a = police_cell_named(police, "a")
+	var/datum/outpost_police_cell/cell_b = police_cell_named(police, "b")
+	var/turf/park = run_loc_floor_top_right
+
+	// 1. Crowded 2x2 cell with a standing prisoner right on entry_tile (tiles[2]): book() shoves them deeper inside and books cleanly
+	for(var/idx in list(1, 2))
+		var/mob/living/carbon/human/b_inmate = police_cell_person(cell_b.tiles[idx])
+		police_pin_warrant(police, b_inmate.mind, 55)
+		cell_b.admit(b_inmate, world.time + 10 MINUTES)
+	var/mob/living/carbon/human/entry_inmate = police_cell_person(cell_a.tiles[2])
+	police_pin_warrant(police, entry_inmate.mind, 55)
+	cell_a.admit(entry_inmate, world.time + 10 MINUTES)
+	TEST_ASSERT_EQUAL(police.cell_best(), cell_a, "Setup: cell_a should be the emptier cell")
+
+	police.pinned_stars = 3
+	var/mob/living/carbon/human/newcomer = police_cell_person(cell_a.outside_turf)
+	var/mob/living/carbon/human/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, get_step(cell_a.outside_turf, NORTH))
+	police_pin_warrant(police, newcomer.mind, 55)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(newcomer, officer), "Setup: newcomer did not get cuffed")
+	var/crimes_before = length(police.crimes)
+	TEST_ASSERT(police.book(newcomer, officer), "book() failed when a 2x2 cell had an inmate standing on its entry tile")
+	TEST_ASSERT(get_turf(entry_inmate) in cell_a.tiles, "Shoving the entry-tile inmate pushed them out of cell_a")
+	TEST_ASSERT(get_turf(newcomer) in cell_a.tiles, "The newly booked prisoner did not end up inside cell_a")
+	TEST_ASSERT(!(get_turf(officer) in cell_a.tiles), "The booking officer remained shut inside cell_a")
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before, "Shoving an entry-tile inmate deeper into the cell reported a crime")
+	cell_a.forget_prisoner(entry_inmate.mind)
+	cell_a.forget_prisoner(newcomer.mind)
+	entry_inmate.forceMove(park)
+	newcomer.forceMove(park)
+	officer.forceMove(park)
+
+	// 2. Gibbed/deleted prisoner body in a cell: tick_cells() closes the warrant as served and marks their property locker released
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = allocate(/obj/structure/closet/secure_closet/personal/outpost_police, get_step(park, WEST))
+	police.lockers += locker
+	var/mob/living/carbon/human/doomed = allocate(/mob/living/carbon/human/consistent, cell_a.tiles[1])
+	doomed.mind_initialize()
+	var/datum/mind/doomed_mind = doomed.mind
+	allocated += doomed_mind
+	locker.owner_mind = WEAKREF(doomed_mind)
+	police_pin_warrant(police, doomed_mind, 55)
+	cell_a.admit(doomed, world.time + 10 MINUTES, TRUE)
+	var/closed_before = length(police.closed)
+	qdel(doomed)
+	police.tick_cells()
+	TEST_ASSERT(!(doomed_mind in cell_a.prisoners), "A deleted prisoner body remained held in the cell")
+	TEST_ASSERT_EQUAL(length(police.closed), closed_before + 1, "A gibbed/deleted cell prisoner did not close their warrant")
+	TEST_ASSERT_EQUAL(police.closed[length(police.closed)][1], doomed_mind, "The wrong mind's warrant was closed")
+	TEST_ASSERT_EQUAL(police.closed[length(police.closed)][2], TRUE, "A gibbed/deleted cell prisoner's warrant did not close as served")
+	TEST_ASSERT_EQUAL(locker.released_at, world.time, "A gibbed/deleted cell prisoner's property locker kept released_at = 0")
+
+	// 3. Mind swap out of a jailed body: active warrant stays on the prisoner's mind, while an innocent swapped mind is freed without a jailbreak charge
+	var/mob/living/carbon/human/jailed_body = police_cell_person(cell_a.tiles[1])
+	var/mob/living/carbon/human/innocent_body = police_cell_person(cell_a.outside_turf)
+	var/datum/mind/convict_mind = jailed_body.mind
+	var/datum/mind/innocent_mind = innocent_body.mind
+	allocated += convict_mind
+	allocated += innocent_mind
+	police_pin_warrant(police, convict_mind, 55)
+	cell_a.admit(jailed_body, world.time + 10 MINUTES, TRUE)
+	cell_a.door.close(BYPASS_DOOR_CHECKS)
+	convict_mind.transfer_to(innocent_body)
+	innocent_mind.transfer_to(jailed_body)
+	TEST_ASSERT(!cell_a.holds(convict_mind, jailed_body), "holds() still matched a body after another mind transferred into it")
+	TEST_ASSERT_NULL(cell_a.prisoner_of(jailed_body), "prisoner_of() blamed the jailed body on convict_mind after an innocent mind entered it")
+	closed_before = length(police.closed)
+	crimes_before = length(police.crimes)
+	police.tick_cells()
+	TEST_ASSERT(!(convict_mind in cell_a.prisoners), "convict_mind stayed in cell_a.prisoners after mind-transferring out")
+	TEST_ASSERT_EQUAL(length(police.closed), closed_before, "Mind-transferring out of a jailed body closed convict_mind's active warrant for free")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell_a.door.density, "The empty cell stayed shut on the innocent mind swapped into the old body")
+	jailed_body.forceMove(cell_a.outside_turf)
+	police.tick_cells()
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_before, "An innocent mind walking out in the old body was charged with jailbreak")
+	GLOB.outpost_police_property_time_scale = old_scale
+
+
 
