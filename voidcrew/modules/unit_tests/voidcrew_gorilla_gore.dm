@@ -996,8 +996,10 @@
 				// The blood pools under that shoulder: the head end of the body, past its middle
 				var/list/pool = finisher.pool_spot()
 				var/list/back = finisher.grab_pull_back()
-				var/pool_x = pool[1] - (victim.pixel_x + victim.pixel_w + back[1] / 2)
-				var/pool_y = pool[2] - (victim.pixel_y + victim.pixel_z + back[2] / 2)
+				// (from the middle of the body as it lies when the pool is laid: where it lay, seen from the front or back)
+				var/share = finisher.side_view() ? 0.5 : 1
+				var/pool_x = pool[1] - (victim.pixel_x + victim.pixel_w + back[1] * share)
+				var/pool_y = pool[2] - (victim.pixel_y + victim.pixel_z + back[2] * share)
 				TEST_ASSERT(pool_x * head_x + pool_y * head_y > 0, "The torn shoulder bleeds at the feet end: [combo]")
 				// Seen from the front or the back, his fists take the wrist on the shoulder's side of his middle
 				if(!finisher.side_view())

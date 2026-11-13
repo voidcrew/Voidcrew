@@ -875,15 +875,15 @@
 				// The body stays where it lay (tg's grab draws it pulled in at once): he steps in to it as far, and drags it
 				// in by the arm as he hauls
 				body_shift = grab_pull_back()
-				if(!side_view())
-					// From the front or the back the body lies across his way: he hauls back off it, and steps in only
-					// until his boots meet it, as far whichever way he faces (it lies a few pixels low on its tile)
-					lean_out[2] = toward[2] > 0 ? GORILLA_RIP_STEP_BACK : -GORILLA_RIP_STEP_BACK
 				lean = list(lean_out[1] + body_shift[1], lean_out[2] + body_shift[2])
 				if(!side_view())
+					// From the front or the back the body lies across his way: he steps in only until his boots meet it,
+					// as far whichever way he faces (it lies a few pixels low on its tile), and hauls back off it. The
+					// body stays where it lay (haul() doesn't drag it in), so the blood is under its stump at the tear
 					var/list/lay = lying_offsets || list(0, 0)
 					var/room = max(0, abs(body_origin()[2] - lay[2]) - GORILLA_RIP_STEP_GAP)
 					lean[2] = clamp(lean[2], -room, room)
+					lean_out = list(lean[1], lean[2] + (toward[2] > 0 ? GORILLA_RIP_STEP_BACK : -GORILLA_RIP_STEP_BACK))
 				for(var/key_name in victim_rig.puppets)
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.puppets[key_name]
 					part.pixel_x += body_shift[1]
@@ -1100,7 +1100,9 @@
 		// Sine in and out, the same for every part
 		var/progress = (1 - cos(180 * i / GORILLA_RIP_HAUL_STEPS)) / 2
 		lean = list(round(lean_from[1] + (lean_out[1] - lean_from[1]) * progress, 1), round(lean_from[2] + (lean_out[2] - lean_from[2]) * progress, 1))
-		body_shift = list(round(shift_from[1] * (1 - progress), 1), round(shift_from[2] * (1 - progress), 1))
+		// Seen from the side it is dragged in by the arm; from the front or back it stays where it lay
+		if(side_view())
+			body_shift = list(round(shift_from[1] * (1 - progress), 1), round(shift_from[2] * (1 - progress), 1))
 		victim_rig.base_transform = chrome_rig_turn_about_feet(flat, raised * progress)
 		leans += list(lean)
 		shifts += list(body_shift)
@@ -1259,6 +1261,9 @@
 			joint[1] += out_x / out * GORILLA_RIP_POOL_OUT
 			joint[2] += out_y / out * GORILLA_RIP_POOL_OUT
 	var/list/back = grab_pull_back()
+	if(!side_view())
+		// Seen from the front or back the body was never dragged in: the pool goes where the stump is, all along
+		return list(clamp(round(joint[1] + back[1]), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH), clamp(round(joint[2] + back[2]), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH))
 	return list(clamp(round(joint[1] + back[1] / 2), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH), clamp(round(joint[2] + back[2] / 2), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH))
 
 /**
