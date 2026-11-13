@@ -87,6 +87,7 @@
 	var/gained = plasma_heat_test_plasma(air) - turf_before
 	TEST_ASSERT_EQUAL(gained, lost, "A vent put [gained] mol on the turf but took [lost] mol from the chamber")
 	TEST_ASSERT(lost == PLASMA_VENT_MOL, "A vent from a full chamber took [lost] mol")
+	TEST_ASSERT(air.return_temperature() < PLASMA_MINIMUM_BURN_TEMPERATURE, "A vent from a hot barrel left gas at [air.return_temperature()] K, hot enough to light")
 	if(lost)
 		TEST_ASSERT_EQUAL(gun.barrel_heat, 80 - PLASMA_VENT_COOL, "A vent did not cool the barrel by [PLASMA_VENT_COOL]")
 		TEST_ASSERT(!gun.can_fire_heat(), "The Furnace can fire straight after a vent")
