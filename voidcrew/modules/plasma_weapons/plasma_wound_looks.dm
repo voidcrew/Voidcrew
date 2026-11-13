@@ -99,17 +99,19 @@
 	var/left = clamp(heat, 0, hot_time)
 	var/done = 1 - left / hot_time
 
-	// The glow cools from white-hot through pale pink and #F17FFF to a deep, dim purple, fading the whole way.
+	// The glow flashes pink-white, drops fast to a deep violet and cools through dark plum, fading the whole way.
 	// Keys are fractions of the hot time, each a colour matrix over the purple sprite and an alpha.
-	var/static/list/ramp_at = list(0, 0.3, 0.55, 0.85, 1)
+	// The colours named are what the sprite's brightest pixels come out as.
+	var/static/list/ramp_at = list(0, 0.1, 0.22, 0.55, 0.85, 1)
 	var/static/list/ramp = list(
 		PLASMA_WOUND_GLOW_MATRIX(0.25, 0, 0, 0, 0.75, 0.75, 0.75), // white-hot
-		PLASMA_WOUND_GLOW_MATRIX(0.55, 0, 0, 0, 0.41, 0.31, 0.42), // pale pink
-		PLASMA_WOUND_GLOW_MATRIX(0, 0.946, 0.499, 1, 0, 0, 0), // #F17FFF
-		PLASMA_WOUND_GLOW_MATRIX(0, 0.462, 0.15, 0.5, 0, 0, 0), // deep purple
-		PLASMA_WOUND_GLOW_MATRIX(0, 0.462, 0.15, 0.5, 0, 0, 0),
+		PLASMA_WOUND_GLOW_MATRIX(0.4, 0, 0, 0, 0.6, 0.5, 0.6), // pink-white
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.541, 0.122, 0.749, 0, 0, 0), // #8A1FBF
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.416, 0.086, 0.627, 0, 0, 0), // #6A16A0
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.243, 0.059, 0.361, 0, 0, 0), // #3E0F5C
+		PLASMA_WOUND_GLOW_MATRIX(0, 0.243, 0.059, 0.361, 0, 0, 0),
 	)
-	var/static/list/ramp_alpha = list(255, 215, 165, 90, 0)
+	var/static/list/ramp_alpha = list(255, 242, 226, 165, 90, 0)
 	var/key = 1
 	while(key < length(ramp_at) && ramp_at[key + 1] <= done)
 		key++
