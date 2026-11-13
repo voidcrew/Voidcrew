@@ -2,13 +2,14 @@ Mojave Sun (https://github.com/Mojave-Sun/mojave-sun-13), commit 1302c0c1f01, li
 States are renamed from the originals listed below.
 
 guns.dmi
-	kestrel, kestrel_empty - mojave/icons/objects/guns/guns_world.dmi stanlas_pistol, stanlas_pistol_empty
-	hornet, hornet_empty - mojave/icons/objects/guns/guns_world.dmi rcw, rcw_empty
-	cinder - mojave/icons/objects/guns/guns_world.dmi plasmapistol, modified (recoloured)
-	cinder_empty - mojave/icons/objects/guns/guns_world.dmi plasmapistol_empty, modified (plasma glass darkened, recoloured)
-	furnace, furnace_empty - mojave/icons/objects/guns/guns_world.dmi enclaveplasma, enclaveplasma_empty, modified (recoloured)
-	old_furnace, old_furnace_empty - mojave/icons/objects/guns/guns_world.dmi enclaveplasma, enclaveplasma_empty, modified (recoloured)
-	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/objects/guns/guns_world.dmi enclaveplasma, modified (recoloured)
+	kestrel, kestrel_empty - mojave/icons/objects/guns/guns_inventory.dmi stanlas_pistol, stanlas_pistol_empty, modified (recentred)
+	hornet, hornet_empty - mojave/icons/objects/guns/guns_inventory.dmi rcw, rcw_empty, modified (recentred)
+	cinder, cinder_empty - mojave/icons/objects/guns/guns_inventory.dmi plasmapistol, plasmapistol_empty, modified (recentred, recoloured)
+
+guns_wide.dmi
+	furnace, furnace_empty - mojave/icons/objects/guns/guns_inventory.dmi enclaveplasma, enclaveplasma_empty, modified (recentred, recoloured)
+	old_furnace, old_furnace_empty - mojave/icons/objects/guns/guns_inventory.dmi enclaveplasma, enclaveplasma_empty, modified (recentred, recoloured)
+	furnace_glow_1, furnace_glow_2, furnace_glow_3 - masks traced from mojave/icons/objects/guns/guns_inventory.dmi enclaveplasma, modified (recoloured)
 
 guns_lefthand.dmi, guns_righthand.dmi
 	kestrel - mojave/icons/mob/inhands/weapons/guns_inhand_{left,right}.dmi stanlas_pistol

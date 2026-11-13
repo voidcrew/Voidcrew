@@ -81,6 +81,7 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 /obj/item/gun/energy/plasma_weapon/rifle
 	name = "\improper Furnace plasma rifle"
 	desc = "A heavy plasma rifle. Its coils tick as they cool."
+	icon = 'voidcrew/modules/plasma_weapons/icons/guns_wide.dmi'
 	icon_state = "furnace"
 	inhand_icon_state = "furnace_wielded"
 	worn_icon = 'voidcrew/modules/plasma_weapons/icons/guns_back.dmi'
@@ -88,6 +89,7 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma_bolt/heavy)
 	uses_heat = TRUE
 	heat_per_shot = PLASMA_HEAT_PER_SHOT
+	SET_BASE_PIXEL(-8, 0)
 
 /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
 	name = "\improper Old Furnace"
