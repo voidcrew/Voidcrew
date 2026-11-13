@@ -878,3 +878,43 @@
 	TEST_ASSERT_EQUAL(length(blank_track.frames), 0, "A shot spent before it flew is drawn")
 	press_again(user)
 	wait_over(user)
+
+/// A shooter's muzzle flash and bullet are recorded on the tile it stands on for real: a replayed step onto that tile is
+/// over by the frame its shot is drawn in, so the flash is drawn at the gun, not ahead of a body still gliding there.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/step_lands_before_shot
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/step_lands_before_shot/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaystepshot")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/datum/sandy_replay_track/user_track = replay.tracks[user]
+	TEST_ASSERT_NOTNULL(user_track, "The user isn't recorded")
+	var/obj/effect/temp_visual/dir_setting/firing_effect/flash = new(user, EAST)
+	var/datum/sandy_replay_track/flash_track = replay.tracks[flash]
+	TEST_ASSERT_NOTNULL(flash_track, "The muzzle flash wasn't recorded")
+	TEST_ASSERT_EQUAL(length(user_track.shot_frames), 1, "The muzzle flash isn't recorded as the user's shot")
+	var/list/shot = user_track.shot_frames[1]
+	TEST_ASSERT_EQUAL(shot[1], flash_track.first, "The user's shot isn't at the frame its flash is drawn in")
+	TEST_ASSERT_EQUAL(shot[2], user.x, "The user's shot isn't on the tile it was fired from (x)")
+	TEST_ASSERT_EQUAL(shot[3], user.y, "The user's shot isn't on the tile it was fired from (y)")
+	// Played back: two tiles east in frame 10, a shot from there in frame 11, the next step not until frame 20.
+	var/look = user.appearance
+	var/datum/sandy_replay_track/walker = new
+	walker.frames = list(0, look, user.x - 2, user.y, user.z, EAST, 10, look, user.x, user.y, user.z, EAST, 20, look, user.x - 2, user.y, user.z, WEST)
+	walker.cursor = 0
+	TEST_ASSERT(replay.advance(walker, 10), "The step wasn't played")
+	TEST_ASSERT(walker.glide_time > world.tick_lag, "Without a shot the step doesn't glide on toward the next, as a walk does")
+	walker.shot_frames = list(list(11, user.x, user.y))
+	walker.cursor = 0
+	walker.glide_until = 0
+	TEST_ASSERT(replay.advance(walker, 10), "The step wasn't played")
+	TEST_ASSERT(walker.glide_until - world.time <= world.tick_lag, "The step is still gliding when the shot fired from its tile is drawn")
+	// A shot fired from the tile it stepped off, in the frame of the step, doesn't hurry the step.
+	walker.shot_frames = list(list(10, user.x - 2, user.y))
+	walker.cursor = 0
+	walker.glide_until = 0
+	TEST_ASSERT(replay.advance(walker, 10), "The step wasn't played")
+	TEST_ASSERT(walker.glide_time > world.tick_lag, "A shot fired before the step cuts the step's glide short")
+	press_again(user)
+	wait_over(user)
