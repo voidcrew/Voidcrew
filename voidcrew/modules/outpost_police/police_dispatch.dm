@@ -20,6 +20,8 @@
 
 /// Trait source that holds a wave behind its door until it leaves together
 #define POLICE_WAVE_TRAIT "outpost_police_wave"
+/// Trait source that holds a rider still in the hangar elevator alcove while the car travels
+#define POLICE_RIDE_TRAIT "outpost_police_ride"
 /// A wave forms up behind its door this long before it may leave
 #define POLICE_WAVE_FORM_UP (3 SECONDS)
 /// A wave leaves without members still waiting to be built after this long
@@ -82,11 +84,18 @@
 	var/datum/weakref/dispatch_block_ref
 	/// world.time since when they have stood there, or since they were last charged for it
 	var/dispatch_block_since = 0
+	/// world.time a watched departing officer reached their lift exit tile, or 0
+	var/dispatch_exit_arrived_at = 0
+	/// world.time they may next ask a lobby checkpoint door to cycle
+	var/dispatch_checkpoint_ask_at = 0
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/Destroy()
+	REMOVE_TRAIT(src, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
+	REMOVE_TRAIT(src, TRAIT_AI_PAUSED, POLICE_RIDE_TRAIT)
 	if(dispatch_wave)
 		dispatch_wave.members -= WEAKREF(src)
 		dispatch_wave = null
+	police?.clear_checkpoint_crossing(src)
 	police?.dispatch_strays -= src
 	dispatch_mind = null
 	dispatch_block_ref = null
@@ -115,8 +124,9 @@
 
 /datum/outpost_police_wave/Destroy()
 	orders.Cut()
-	// Built members still pointing here would keep it from going
+	// Built members still pointing here would keep it from going, or stay frozen behind the door if the wave was dropped early
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in living_members())
+		REMOVE_TRAIT(member, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
 		if(member.dispatch_wave == src)
 			member.dispatch_wave = null
 	members.Cut()
@@ -210,44 +220,111 @@
 	return FALSE
 
 /**
- * `officer` rides the lift from the lift point they stand on to a point of `sector`, with whoever they pull.
- * The car takes OUTPOST_ELEVATOR_TRAVEL_TIME, as the outpost's own lift does; they must still be awake and on
- * the tile when it arrives. Sleeps the ride. TRUE on arrival.
+ * `officer` rides the hangar elevator from the elevator alcove they stand in (`lobby` or a hangar berth) to the
+ * alcove of `sector`, moving the alcove tile-for-tile with whoever they pull, the same way `/obj/machinery/outpost_elevator`
+ * moves players. Concourse police closets (`lift_turfs`) never teleport anyone between sectors; concourse <-> lobby
+ * goes on foot through the exit gate or checkpoint. Sleeps `OUTPOST_ELEVATOR_TRAVEL_TIME`. TRUE on arrival.
  */
 /datum/outpost_police/proc/ride(mob/living/officer, sector)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/rider = officer
 	if(QDELETED(officer) || officer.stat != CONSCIOUS || (istype(rider) && rider.dispatch_riding))
 		return FALSE
 	var/turf/start = get_turf(officer)
-	if(!start || !dispatch_is_lift_tile(start))
+	if(!start)
 		return FALSE
-	var/turf/destination = lift_point(sector)
-	if(!destination || destination == start)
+	var/from_sector = sector_of(start)
+	var/list/turf/from_alcove = dispatch_elevator_tiles(from_sector)
+	var/list/turf/to_alcove = dispatch_elevator_tiles(sector)
+	if(!length(from_alcove) || !length(to_alcove) || from_sector == sector || !(start in from_alcove))
 		return FALSE
+	if(elevator_busy(from_sector))
+		return FALSE
+	// Pull whoever they have in tow into the 3x3 elevator alcove before sending the car, as a player does
+	var/atom/movable/pulled = officer.pulling
+	var/saved_grab = officer.grab_state
+	if(pulled && !QDELETED(pulled))
+		var/mob/pulled_mob = pulled
+		if(!pulled.anchored && get_dist(pulled, start) <= 1 && !(ismob(pulled) && pulled_mob.buckled) && !(get_turf(pulled) in from_alcove))
+			var/turf/pull_spot
+			for(var/turf/tile as anything in from_alcove)
+				if(tile != start && get_dist(tile, start) <= 1 && isopenturf(tile) && !tile.is_blocked_turf(exclude_mobs = FALSE, source_atom = pulled))
+					pull_spot = tile
+					break
+			pulled.forceMove(pull_spot || start)
+			officer.start_pulling(pulled, state = saved_grab, supress_message = TRUE)
 	if(istype(rider))
 		rider.dispatch_riding = TRUE
+		ADD_TRAIT(rider, TRAIT_AI_PAUSED, POLICE_RIDE_TRAIT)
+	set_elevator_moving(from_sector, TRUE)
 	playsound(start, 'sound/machines/chime.ogg', 50, TRUE)
 	sleep(OUTPOST_ELEVATOR_TRAVEL_TIME)
+	set_elevator_moving(from_sector, FALSE)
 	if(istype(rider) && !QDELETED(rider))
 		rider.dispatch_riding = FALSE
-	if(QDELETED(src) || QDELETED(officer) || officer.stat != CONSCIOUS || get_turf(officer) != start)
+		REMOVE_TRAIT(rider, TRAIT_AI_PAUSED, POLICE_RIDE_TRAIT)
+	if(QDELETED(src) || QDELETED(officer) || officer.stat != CONSCIOUS)
 		return FALSE
-	// The far end may have gone during the ride (a berth torn down)
-	if(!(destination in dispatch_lift_tiles(sector)))
-		destination = lift_point(sector)
-		if(!destination || destination == start)
-			return FALSE
-	var/atom/movable/pulled = officer.pulling
-	if(pulled)
-		var/mob/pulled_mob = pulled
-		if(pulled.anchored || get_dist(pulled, start) > 1 || (ismob(pulled) && pulled_mob.buckled))
-			pulled = null
-	officer.forceMove(destination)
-	if(pulled && !QDELETED(pulled))
-		pulled.forceMove(destination)
-		officer.start_pulling(pulled, supress_message = TRUE)
-	playsound(destination, 'sound/machines/ding.ogg', 50, TRUE)
-	return TRUE
+	// Re-validate both alcoves after the travel delay (a berth can be torn down mid-ride)
+	from_alcove = dispatch_elevator_tiles(from_sector)
+	to_alcove = dispatch_elevator_tiles(sector)
+	if(!length(from_alcove) || !length(to_alcove) || !(get_turf(officer) in from_alcove))
+		return FALSE
+	var/list/pulls = list()
+	for(var/turf/source_turf as anything in from_alcove)
+		for(var/mob/living/puller in source_turf)
+			var/atom/movable/held_pull = puller.pulling
+			if(held_pull && (get_turf(held_pull) in from_alcove))
+				pulls[puller] = list(held_pull, puller.grab_state)
+	for(var/i in 1 to length(from_alcove))
+		var/turf/source_turf = from_alcove[i]
+		var/turf/target_turf = to_alcove[min(i, length(to_alcove))]
+		for(var/atom/movable/passenger as anything in source_turf.contents.Copy())
+			if(passenger.anchored || isobserver(passenger))
+				continue
+			if(ismob(passenger))
+				var/mob/mob_passenger = passenger
+				if(mob_passenger.buckled)
+					continue
+			else if(istype(passenger, /obj/effect))
+				continue
+			passenger.forceMove(target_turf)
+	for(var/mob/living/puller as anything in pulls)
+		if(QDELETED(puller))
+			continue
+		var/list/info = pulls[puller]
+		var/atom/movable/held_pull = info[1]
+		var/old_grab = info[2]
+		if(!QDELETED(held_pull) && get_dist(puller, held_pull) <= 1)
+			puller.start_pulling(held_pull, state = old_grab, supress_message = TRUE)
+	playsound(to_alcove[1], 'sound/machines/ding.ogg', 50, TRUE)
+	return get_turf(officer) in to_alcove
+
+/// Stubs filled in `outpost_checkpoint_npcs.dm` (`trade/` compiles after `outpost_police/`): checkpoint crossing and elevator panel UI state
+/datum/outpost_police/proc/checkpoint_step_to_concourse(mob/living/walker)
+	return null
+
+/datum/outpost_police/proc/clear_checkpoint_crossing(mob/living/walker)
+	return
+
+/datum/outpost_police/proc/elevator_busy(sector)
+	return FALSE
+
+/datum/outpost_police/proc/set_elevator_moving(sector, is_moving)
+	return
+
+/// The sector `ride()` travels to next when going from `from_sector` to `to_sector`, or null when walking on foot
+/datum/outpost_police/proc/next_elevator_sector(from_sector, to_sector)
+	if(from_sector == to_sector || from_sector == POLICE_SECTOR_OUTSIDE || to_sector == POLICE_SECTOR_OUTSIDE)
+		return null
+	if((from_sector == POLICE_SECTOR_CONCOURSE && to_sector == POLICE_SECTOR_LOBBY) || (from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE))
+		return null
+	if(istype(from_sector, /datum/outpost_berth) && to_sector == POLICE_SECTOR_CONCOURSE)
+		return POLICE_SECTOR_LOBBY
+	return to_sector
+
+/// Which sector's elevator alcove a walker in `from_sector` walks into to board `next_elevator_sector()`
+/datum/outpost_police/proc/elevator_board_sector(from_sector)
+	return from_sector == POLICE_SECTOR_CONCOURSE ? POLICE_SECTOR_LOBBY : from_sector
 
 /// Queues one unit of `unit_kind` (POLICE_UNIT_*) for `sector`. Returns the spawn order, or null.
 /datum/outpost_police/proc/order_unit(unit_kind, sector)
@@ -381,12 +458,14 @@
 	dispatch_skipped[wave.point] = world.time + OUTPOST_POLICE_LIFT_SKIP
 	log_game("OUTPOST POLICE: [outpost] lift point [AREACOORD(wave.point)] is blocked; skipped for a while.")
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in stuck)
+		if(human_npc_watched(member))
+			continue
 		var/turf/other = lift_point(wave.sector)
-		if(other && other != get_turf(member) && dispatch_is_lift_tile(get_turf(member)))
-			INVOKE_ASYNC(src, PROC_REF(ride), member, wave.sector)
+		if(other && other != get_turf(member) && !dispatch_tile_watched(other))
+			member.forceMove(other)
 			continue
 		var/turf/hidden = dispatch_unseen_tile(wave.sector)
-		if(hidden && !human_npc_watched(member))
+		if(hidden)
 			member.forceMove(hidden)
 
 /**
@@ -406,7 +485,15 @@
 			if(body.timeofdeath < oldest.timeofdeath)
 				oldest = body
 		bodies -= oldest
+		oldest.npc_drop_not_gear()
+		var/obj/structure/closet/body_bag/bag = oldest.loc
+		var/turf/bag_turf = get_turf(bag)
 		qdel(oldest)
+		if(istype(bag, /obj/structure/closet/body_bag/outpost_morgue) && !QDELETED(bag) && !(locate(/mob/living) in bag))
+			for(var/atom/movable/leftover as anything in bag.contents.Copy())
+				if(bag_turf)
+					leftover.forceMove(bag_turf)
+			qdel(bag)
 
 /// Nobody at the outpost for POLICE_EMPTY_RECALL: response units go, unseen (spec 5.4). TRUE while nobody is there.
 /datum/outpost_police/proc/dispatch_recall_when_empty()
@@ -465,22 +552,33 @@
 		if(nearest.mind != mind)
 			officer.dispatch_mind = WEAKREF(nearest.mind)
 		on_scene += officer
-	// Beat officers first, nearest first; then response units already here
+	// Beat officers first, nearest first; then idle response units; then stood-down response units walking to the lift
 	if(length(on_scene) < wanted)
-		var/list/idle = list()
-		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-			if((officer in on_scene) || !dispatch_can_respond(officer) || officer.unit_kind == POLICE_UNIT_SERGEANT)
-				continue
-			idle += officer
-		while(length(on_scene) < wanted && length(idle))
-			var/mob/living/carbon/human/npc/ambient_npc/outpost/police/pick = dispatch_closest_to_suspects(idle, suspects)
-			idle -= pick
-			var/datum/outpost_warrant/nearest = dispatch_nearest_suspect(pick, suspects)
-			if(!nearest)
-				continue
-			pick.dispatch_mind = WEAKREF(nearest.mind)
-			pick.dispatch_no_lift_since = 0
-			on_scene += pick
+		for(var/pass in 1 to 3)
+			if(length(on_scene) >= wanted)
+				break
+			var/list/pool = list()
+			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+				if((officer in on_scene) || officer.unit_kind == POLICE_UNIT_SERGEANT)
+					continue
+				if(pass == 1 && (!dispatch_can_respond(officer) || dispatch_is_response_unit(officer)))
+					continue
+				if(pass == 2 && (!dispatch_can_respond(officer) || !dispatch_is_response_unit(officer)))
+					continue
+				if(pass == 3 && !dispatch_can_recall(officer))
+					continue
+				pool += officer
+			while(length(on_scene) < wanted && length(pool))
+				var/mob/living/carbon/human/npc/ambient_npc/outpost/police/pick = dispatch_closest_to_suspects(pool, suspects)
+				pool -= pick
+				var/datum/outpost_warrant/nearest = dispatch_nearest_suspect(pick, suspects)
+				if(!nearest)
+					continue
+				if(pick.npc_exit)
+					pick.npc_stop_leaving()
+				pick.dispatch_mind = WEAKREF(nearest.mind)
+				pick.dispatch_no_lift_since = 0
+				on_scene += pick
 	// New units by lift
 	var/short = wanted - length(on_scene) - length(dispatch_orders)
 	if(short > 0 && world.time >= dispatch_next_wave)
@@ -539,6 +637,10 @@
  * (null: everyone responding). Officers on an arrest are never stood down here.
  */
 /datum/outpost_police/proc/dispatch_stand_down(keep, list/on_scene)
+	if(keep <= 0)
+		for(var/datum/human_npc_order/order as anything in dispatch_orders.Copy())
+			qdel(order)
+		dispatch_orders.Cut()
 	if(isnull(on_scene))
 		on_scene = list()
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
@@ -610,16 +712,8 @@
  * A suspect who is down (any stars, alive) is cuffed where they lie (owner decision 37).
  */
 /datum/outpost_police/proc/dispatch_open_cases()
-	var/available = 0
-	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-		if(dispatch_can_respond(officer) && officer.unit_kind != POLICE_UNIT_SERGEANT)
-			available++
-	var/allowed = round((available + 1) / 2)
-	if(length(cases) >= allowed)
-		return
+	var/list/datum/outpost_warrant/needing_case = list()
 	for(var/datum/outpost_warrant/warrant as anything in suspects_at_outpost())
-		if(length(cases) >= allowed)
-			return
 		var/stars = get_stars(warrant.mind)
 		if(stars < 1 || cases[warrant.mind])
 			continue
@@ -629,7 +723,30 @@
 		var/down = police_suspect_down(suspect)
 		if(stars > 2 && !down)
 			continue
-		open_case(warrant, down)
+		needing_case += warrant
+	if(!length(needing_case))
+		return
+	var/available = 0
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(dispatch_can_respond(officer) && officer.unit_kind != POLICE_UNIT_SERGEANT)
+			available++
+	// Recall a departing response unit if every non-leaving officer is unavailable while a suspect needs cuffing
+	if(!available)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+			if(dispatch_can_recall(officer) && officer.unit_kind != POLICE_UNIT_SERGEANT)
+				officer.npc_stop_leaving()
+				available++
+				break
+	var/allowed = round((available + 1) / 2)
+	if(length(cases) >= allowed)
+		return
+	for(var/datum/outpost_warrant/warrant as anything in needing_case)
+		if(length(cases) >= allowed)
+			return
+		var/mob/living/suspect = warrant.mind?.current
+		if(!isliving(suspect) || suspect.stat == DEAD || in_custody(suspect) || cases[warrant.mind])
+			continue
+		open_case(warrant, police_suspect_down(suspect))
 
 /**
  * Where officers hold a docked ship at three stars and up (spec 8: they follow through open doors and never
@@ -737,6 +854,33 @@
 			best_distance = distance
 	return best
 
+/// The hangar elevator alcove tiles of `sector` (`lobby` or a hangar berth; never concourse closets)
+/datum/outpost_police/proc/dispatch_elevator_tiles(sector)
+	if(sector == POLICE_SECTOR_LOBBY)
+		return outpost?.lobby_alcove_turfs || list()
+	var/datum/outpost_berth/berth = sector
+	if(istype(berth) && (berth in outpost?.berths))
+		return berth.alcove_turfs || list()
+	return list()
+
+/// An unblocked, unskipped tile in `sector`'s hangar elevator alcove nearest `from`, or null
+/datum/outpost_police/proc/dispatch_nearest_elevator_point(sector, atom/from, mob/living/rider)
+	var/turf/from_turf = get_turf(from)
+	if(!from_turf)
+		return null
+	var/turf/best
+	var/best_distance = INFINITY
+	for(var/turf/point as anything in dispatch_elevator_tiles(sector))
+		if(!point || point.z != from_turf.z || dispatch_skipped[point] > world.time)
+			continue
+		if(rider && lift_point_blocked(point, rider))
+			continue
+		var/distance = get_dist(from_turf, point)
+		if(distance < best_distance)
+			best = point
+			best_distance = distance
+	return best
+
 /// Living suspects at the outpost
 /datum/outpost_police/proc/dispatch_suspect_mobs()
 	. = list()
@@ -758,6 +902,12 @@
 		return FALSE
 	// Held still by the ambient pause (nobody on the concourse): they would never come
 	if(officer.paused_at)
+		return FALSE
+	return !human_npc_out_of_fight(officer)
+
+/// Whether a stood-down `officer` walking to the lift can be called back to respond
+/datum/outpost_police/proc/dispatch_can_recall(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(QDELETED(officer) || officer.stat != CONSCIOUS || !officer.npc_exit || officer.fading || officer.paused_at)
 		return FALSE
 	return !human_npc_out_of_fight(officer)
 
@@ -949,7 +1099,36 @@
 		dispatch_pull_since = world.time
 		police?.report_crime(puller, OUTPOST_CRIME_RESIST, src)
 
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_stop_leaving()
+	dispatch_exit_arrived_at = 0
+	return ..()
+
+/// Unwatched departing officers vanish along their walk; watched ones at an open lift alcove call the car and wait its travel delay
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_may_vanish()
+	if(!..())
+		dispatch_exit_arrived_at = 0
+		return FALSE
+	if(!human_npc_watched(src))
+		return TRUE
+	if(get_turf(src) != npc_exit)
+		dispatch_exit_arrived_at = 0
+		return FALSE
+	if(!dispatch_exit_arrived_at)
+		dispatch_exit_arrived_at = world.time
+		playsound(npc_exit, 'sound/machines/chime.ogg', 50, TRUE)
+		return FALSE
+	return world.time - dispatch_exit_arrived_at >= OUTPOST_ELEVATOR_TRAVEL_TIME
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_vanish()
+	var/turf/exit_turf = get_turf(src)
+	var/arrived_watched = dispatch_exit_arrived_at > 0 && exit_turf == npc_exit
+	dispatch_exit_arrived_at = 0
+	if(arrived_watched && exit_turf)
+		playsound(exit_turf, 'sound/machines/ding.ogg', 50, TRUE)
+	return ..()
+
 #undef POLICE_WAVE_TRAIT
+#undef POLICE_RIDE_TRAIT
 #undef POLICE_WAVE_FORM_UP
 #undef POLICE_WAVE_WAIT_MAX
 #undef POLICE_EMPTY_RECALL

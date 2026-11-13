@@ -271,7 +271,7 @@
 						refused[thing] = CHECKPOINT_LINE_BARRED
 				else if(outpost_checkpoint_weapon(content) && !refused[thing])
 					var/mob/living/carrier = outpost_weapon_carrier(content)
-					if(!carrier || !outpost?.has_weapons_permit(carrier))
+					if(!carrier || (!outpost?.has_weapons_permit(carrier) && !istype(carrier, /mob/living/carbon/human/npc/ambient_npc/outpost/police)))
 						refused[thing] = CHECKPOINT_LINE_ARMED
 	return refused
 
@@ -1101,15 +1101,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 /obj/structure/outpost_exit_gate/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	if(REVERSE_DIR(to_dir) != dir)
 		return FALSE
-	// The outpost's own people go out through it only when they are leaving for good
+	// Police and recovery staff cross to the lobby on duty; townspeople go out through it only when leaving for good
 	var/mob/living/carbon/human/npc/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
-	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave))
+	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave) && !istype(townsperson, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !istype(townsperson, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery))
 		return FALSE
 	return TRUE
 
 /obj/structure/outpost_exit_gate/proc/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	SIGNAL_HANDLER
-	if(isliving(arrived) || istype(arrived, /obj/vehicle))
+	if(isliving(arrived) || istype(arrived, /obj/vehicle) || arrived.pulledby)
 		addtimer(CALLBACK(src, PROC_REF(carry_through), arrived), 1, TIMER_DELETE_ME)
 
 /obj/structure/outpost_exit_gate/proc/carry_through(atom/movable/passer)
@@ -1118,8 +1118,13 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
 	var/turf/out = get_step(src, dir)
 	if(!out)
 		return
+	var/mob/living/puller = isliving(passer.pulledby) ? passer.pulledby : null
+	var/saved_grab = puller ? puller.grab_state : GRAB_PASSIVE
 	if(!step(passer, dir) && passer.loc == loc)
-		passer.forceMove(out)
+		if(!step(passer, turn(dir, 45)) && !step(passer, turn(dir, -45)) && passer.loc == loc)
+			passer.forceMove(out)
+	if(puller && !QDELETED(puller) && puller.pulling != passer && get_dist(puller, passer) <= 1)
+		puller.start_pulling(passer, state = saved_grab, supress_message = TRUE)
 
 // =========================================================================
 // THE LOCKERS

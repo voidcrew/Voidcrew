@@ -492,3 +492,58 @@
 		sleep(2)
 		TEST_ASSERT(QDELETED(card), "[outpost_type]'s dead guard's card survived being taken off the body")
 		qdel(outpost)
+
+// =========================================================================
+// POCKETS AND HOLSTERING (owner bug 2)
+// =========================================================================
+
+/// Officers never carry or stow gear in a pocket, and locked NPC pocket items never show an untakeable strip-menu bulge
+/datum/unit_test/voidcrew_outpost_police_units_pockets_and_holster
+
+/datum/unit_test/voidcrew_outpost_police_units_pockets_and_holster/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_units_room_outpost(/obj/structure/overmap/trader_outpost/general)
+	var/list/types = police_units_types()
+	var/datum/strippable_item/mob_item_slot/pocket/left/left_slot = new
+	var/datum/strippable_item/mob_item_slot/pocket/right/right_slot = new
+	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	for(var/kind in types)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = allocate(types[kind], run_loc_floor_bottom_left)
+		var/label = "[kind] officer"
+		TEST_ASSERT_NULL(officer.l_store, "[label] spawned with [officer.l_store] in left pocket")
+		TEST_ASSERT_NULL(officer.r_store, "[label] spawned with [officer.r_store] in right pocket")
+		TEST_ASSERT(locate(/obj/item/gun/energy/e_gun/mini) in officer.belt?.contents, "[label] does not carry their mini energy gun in their belt")
+		TEST_ASSERT_EQUAL(left_slot.get_obscuring(officer), STRIPPABLE_OBSCURING_NONE, "[label] shows a left pocket bulge with empty pockets")
+		TEST_ASSERT_EQUAL(right_slot.get_obscuring(officer), STRIPPABLE_OBSCURING_NONE, "[label] shows a right pocket bulge with empty pockets")
+
+		// Draw and holster across every force level and explicit put-away: pockets must stay empty
+		for(var/level in list(1, 2, 3, 0)) // POLICE_FORCE_ARREST, _STUN, _LETHAL, _NONE
+			officer.set_force(level)
+			TEST_ASSERT_NULL(officer.l_store, "[label] put [officer.l_store] in left pocket at force [level]")
+			TEST_ASSERT_NULL(officer.r_store, "[label] put [officer.r_store] in right pocket at force [level]")
+		for(var/obj/item/tool as anything in list(officer.get_cuffs(), officer.get_baton(), officer.get_sidearm()))
+			if(!tool)
+				continue
+			if(human_npc_take_in_hand(officer, tool))
+				TEST_ASSERT(officer.police_put_away(tool), "[label] could not put [tool] away without pockets")
+			TEST_ASSERT_NULL(officer.l_store, "[label] stowed [officer.l_store] into left pocket")
+			TEST_ASSERT_NULL(officer.r_store, "[label] stowed [officer.r_store] into right pocket")
+		qdel(officer)
+
+	// Even if locked NPC gear is placed in a pocket, players see no pocket bulge and cannot start pickpocketing it,
+	// whereas ordinary unlocked items still behave like normal tg pocket items
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/tester = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, run_loc_floor_bottom_left)
+	var/obj/item/pen/locked_pen = allocate(/obj/item/pen)
+	ADD_TRAIT(locked_pen, TRAIT_NO_STRIP, "outpost_police_test")
+	tester.equip_to_slot_if_possible(locked_pen, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(tester.l_store, locked_pen, "Test fixture: locked pen was not placed in left pocket")
+	TEST_ASSERT_EQUAL(left_slot.get_obscuring(tester), STRIPPABLE_OBSCURING_NONE, "A TRAIT_NO_STRIP item in left pocket still shows an untakeable bulge")
+	TEST_ASSERT(!left_slot.start_unequip(tester, player), "A TRAIT_NO_STRIP item in left pocket started pickpocketing")
+	tester.dropItemToGround(locked_pen, force = TRUE)
+
+	var/obj/item/pen/normal_pen = allocate(/obj/item/pen)
+	player.equip_to_slot_if_possible(normal_pen, ITEM_SLOT_LPOCKET, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(left_slot.get_obscuring(player), STRIPPABLE_OBSCURING_HIDDEN, "An ordinary unlocked pocket item no longer obscures the pocket")
+	qdel(left_slot)
+	qdel(right_slot)
+	qdel(tester)
+	qdel(outpost)
