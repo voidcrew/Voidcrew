@@ -218,6 +218,10 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 		// The molten coat rides the holder; it drops off if the shield or the holder moves out of that pose
 		if(holder && shield && !QDELETED(holder) && !QDELETED(shield) && (shield in holder.held_items) && !holder.lying_angle)
 			new /obj/effect/temp_visual/plasma_shield_coat(null, holder, shield, "c_[key]")
+		else
+			// The block broke the shield: after the spatter (the first 0.4 s) this layer only drips off the shield's
+			// rim, and there is no rim left to drip from
+			QDEL_IN(high, 0.45 SECONDS)
 
 	var/obj/effect/temp_visual/plasma_burst_light/shield/glow = new(where)
 	glow.pixel_w = anchor_x - ICON_SIZE_X / 2
@@ -251,6 +255,8 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	var/mob/living/carbon/human/holder
 	/// The shield it coats
 	var/obj/item/shield/coated
+	/// Items held in later hands, drawn again over the coat (cover_with_later_hands())
+	var/list/later_items
 
 /obj/effect/temp_visual/plasma_shield_coat/Initialize(mapload, mob/living/carbon/human/new_holder, obj/item/shield/shield, state)
 	. = ..()
@@ -262,6 +268,9 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	// Over the shield in hand, which draws on the holder's own layer
 	layer = holder.layer + 0.01
 	add_overlay(emissive_appearance(icon, "[state]_e", holder))
+	// The coat's states have one direction each; facing as the holder does turns the in-hand looks below that way too
+	setDir(holder.dir)
+	cover_with_later_hands()
 	holder.vis_contents += src
 	RegisterSignals(holder, list(COMSIG_QDELETING, COMSIG_ATOM_DIR_CHANGE, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(on_pose_changed))
 	RegisterSignals(coated, list(COMSIG_QDELETING, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED), PROC_REF(on_pose_changed))
@@ -274,7 +283,31 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 	if(coated)
 		UnregisterSignal(coated, list(COMSIG_QDELETING, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED))
 		coated = null
+	for(var/obj/item/later as anything in later_items)
+		UnregisterSignal(later, list(COMSIG_QDELETING, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED))
+	later_items = null
 	return ..()
+
+/// tg draws held items in hand order, each over the one before (get_held_overlays()). The coat sits above the whole
+/// body, so an item in a later hand (a sword held across the shield) would vanish under it: the coat draws that
+/// item's in-hand look again over itself, where tg draws it, and goes if the item leaves the hand.
+/obj/effect/temp_visual/plasma_shield_coat/proc/cover_with_later_hands()
+	var/shield_index = holder.get_held_index_of_item(coated)
+	if(!shield_index)
+		return
+	for(var/index in shield_index + 1 to length(holder.held_items))
+		var/obj/item/later = holder.held_items[index]
+		if(!later)
+			continue
+		var/icon_file = IS_RIGHT_INDEX(index) ? later.righthand_file : later.lefthand_file
+		var/mutable_appearance/look = later.build_worn_icon(default_layer = HANDS_LAYER, default_icon_file = icon_file, isinhands = TRUE)
+		var/obj/item/bodypart/arm/hand = holder.hand_bodyparts[index]
+		hand?.held_hand_offset?.apply_offset(look)
+		look.layer = FLOAT_LAYER
+		look.plane = FLOAT_PLANE
+		add_overlay(look)
+		LAZYADD(later_items, later)
+		RegisterSignals(later, list(COMSIG_QDELETING, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED), PROC_REF(on_pose_changed))
 
 /// The coat is drawn for one pose of the shield in hand; once the holder turns, lies down or lets go of it, it is gone
 /obj/effect/temp_visual/plasma_shield_coat/proc/on_pose_changed(datum/source, old_dir, new_dir)

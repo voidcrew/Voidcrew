@@ -170,6 +170,43 @@
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_splash) in victim_turf, "a shield that broke blocking the bolt made the armour splash")
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/plasma_shield_splash) in victim_turf, "a shield that broke blocking the bolt left no slag")
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/plasma_shield_coat) in victim.vis_contents, "a broken shield left a molten coat on the holder")
+	// The layer over the holder drips off the shield's rim after its spatter; with no shield left it goes early
+	var/obj/effect/temp_visual/plasma_shield_splash/high
+	for(var/obj/effect/temp_visual/plasma_shield_splash/part in victim_turf)
+		if(findtext(part.icon_state, "h_") == 1)
+			high = part
+	TEST_ASSERT_NOTNULL(high, "a shield that broke blocking a bolt in view threw no spatter")
+	sleep(0.6 SECONDS)
+	TEST_ASSERT(QDELETED(high), "a broken shield's rim kept dripping slag")
+
+/// The other hand's item, where tg draws it over the shield, draws over the shield's molten coat too.
+/datum/unit_test/voidcrew_plasma_bolt/shield_coat_other_hand
+
+/datum/unit_test/voidcrew_plasma_bolt/shield_coat_other_hand/Run()
+	var/mob/living/carbon/human/consistent/holder = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+	var/obj/item/shield/riot/shield = allocate(/obj/item/shield/riot)
+	holder.put_in_l_hand(shield)
+	holder.setDir(EAST)
+	var/obj/effect/temp_visual/plasma_shield_coat/bare = new(null, holder, shield, "c_riot_LEE")
+	TEST_ASSERT(!LAZYLEN(bare.later_items), "a coat drew an item over itself with the other hand empty")
+	qdel(bare)
+	var/obj/item/melee/baton/telescopic/baton = allocate(/obj/item/melee/baton/telescopic)
+	holder.put_in_r_hand(baton)
+	var/obj/effect/temp_visual/plasma_shield_coat/coat = new(null, holder, shield, "c_riot_LEE")
+	TEST_ASSERT(baton in coat.later_items, "a coat drew over the item held in the later hand")
+	TEST_ASSERT_EQUAL(coat.dir, EAST, "the item drawn over the coat faces away from the holder")
+	// The look drawn over the coat goes once the item leaves the hand
+	holder.dropItemToGround(baton)
+	TEST_ASSERT(QDELETED(coat), "a coat kept drawing an item its holder let go of")
+	holder.put_in_r_hand(baton)
+	// The right hand draws last: a shield there covers the left hand's item and its coat is whole
+	holder.dropItemToGround(shield)
+	holder.dropItemToGround(baton)
+	holder.put_in_r_hand(shield)
+	holder.put_in_l_hand(baton)
+	var/obj/effect/temp_visual/plasma_shield_coat/front = new(null, holder, shield, "c_riot_REE")
+	TEST_ASSERT(!LAZYLEN(front.later_items), "a coat on the last hand's shield drew the other item over itself")
+	qdel(front)
 
 /// Ordinary person hits alternate the splatter and the flash; a killing hit burns through.
 /datum/unit_test/voidcrew_plasma_bolt/burst_pick
