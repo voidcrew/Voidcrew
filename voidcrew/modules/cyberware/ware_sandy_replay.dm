@@ -253,6 +253,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/eye_pixel_y = 0
 	/// The user's crit and knocked-out screens were taken off their view for the replay (clear_view()).
 	var/view_cleared = FALSE
+	/// The same for the other members of a shared slow-mo watching this replay, to TRUE.
+	var/list/members_cleared = list()
 	/// The crash waiting for the replay to end: list(length, stamina).
 	var/list/crash
 	var/finished = FALSE
@@ -661,7 +663,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	if(!replays)
 		finish()
 		return
-	if(user?.client)
+	if(user?.client || sandy_session_watched(src)) // or a crewmate's, in a shared slow-mo (ware_sandy_timestop_shared.dm)
 		// The cut into the replay is one frame: the slow-mo's last frame, then the replay's first, in this same tick,
 		// so no frame of the world as it really is now (the dead where they fell, the gore at its landing spots) goes
 		// out between them. What ends the slow-mo after this (the outline coming off, the release flash) lands on the
@@ -696,7 +698,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	open_event = null
 	var/datum/sandy_replay_track/track = ismovable(target) ? tracks[target] : null
-	if(!track && (sandy_rig_picture(target) || istype(target, /obj/effect/temp_visual)) && user && get_dist(user, target) <= SANDY_REPLAY_HOLD_RANGE)
+	if(!track && (sandy_rig_picture(target) || istype(target, /obj/effect/temp_visual)) && near_centre(target))
 		notice(target) // made this tick (a shot's muzzle flash, a drop of blood): its first pose is this call
 		track = tracks[target]
 	if(!track || !(sandy_rig_picture(target) || isliving(target) || track.oneshot))
@@ -1037,14 +1039,33 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /// from the last blow, anything made since) isn't in the past being shown: it is hidden, by a filter (looks only),
 /// until the replay ends.
 /datum/sandy_replay/proc/hide_unborn()
+	for(var/turf/here as anything in centres())
+		for(var/atom/movable/thing in range(SANDY_REPLAY_HOLD_RANGE, here))
+			if(tracks[thing] || unborn[thing] || thing == user || !recordable(thing))
+				continue
+			unborn[thing] = TRUE
+			thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+
+/// Where the replay is watched from: the user, and in a shared slow-mo every other member (ware_sandy_timestop_shared.dm).
+/datum/sandy_replay/proc/centres()
+	. = list()
 	var/turf/here = get_turf(user)
-	if(!here)
-		return
-	for(var/atom/movable/thing in range(SANDY_REPLAY_HOLD_RANGE, here))
-		if(tracks[thing] || unborn[thing] || thing == user || !recordable(thing))
-			continue
-		unborn[thing] = TRUE
-		thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+	if(here)
+		. += here
+	for(var/mob/living/member as anything in sandy_session_others(src, FALSE))
+		var/turf/there = get_turf(member)
+		if(there)
+			. |= there
+
+/// Whether `target` is within SANDY_REPLAY_HOLD_RANGE of the user or another member of its shared slow-mo.
+/datum/sandy_replay/proc/near_centre(atom/target)
+	var/turf/spot = get_turf(target)
+	if(!spot)
+		return FALSE
+	for(var/turf/here as anything in centres())
+		if(spot.z == here.z && get_dist(spot, here) <= SANDY_REPLAY_HOLD_RANGE)
+			return TRUE
+	return FALSE
 
 /**
  * The slow-mo is over and the replay starts next tick. For that tick the world would show as it really is, in its own
@@ -1068,8 +1089,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// Whether `spot` is close enough to the user for the replay to hide a bar on it.
 /datum/sandy_replay/proc/bar_reach(turf/spot)
-	var/turf/here = get_turf(user)
-	return spot && here && spot.z == here.z && get_dist(spot, here) <= SANDY_REPLAY_HOLD_RANGE
+	return spot && near_centre(spot)
 
 /// Shows again the bars the replay hid that still exist.
 /datum/sandy_replay/proc/show_progress_bars()
@@ -1107,9 +1127,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	// The cut to the replay is the change of scene: the slow-mo's pale release flash would only wash out its first frames.
 	// It is already fading on its own (out of user.screens), so it is taken off the client's screen directly.
-	user.clear_fullscreen(SANDY_REPLAY_RELEASE_FLASH, FALSE)
-	for(var/atom/movable/screen/fullscreen/flash/sandy_release/flash in user.client?.screen)
-		user.client.screen -= flash
+	for(var/mob/living/viewer as anything in list(user) + sandy_session_others(src)) // every member of a shared slow-mo
+		viewer.clear_fullscreen(SANDY_REPLAY_RELEASE_FLASH, FALSE)
+		for(var/atom/movable/screen/fullscreen/flash/sandy_release/flash in viewer.client?.screen)
+			viewer.client.screen -= flash
 	play_started = world.time
 	sandy_member_views() // each member of a shared slow-mo watches its own replayed self (ware_sandy_timestop_shared.dm)
 	// The surge coming on, as the replay's user did at its first frame.
@@ -1167,37 +1188,53 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /**
  * A user who went down in the slow-mo watches their replay like anyone else: their health and knocked-out screens
  * come off their client's view (not off the mob, so tg keeps updating them) and go back in finish(). Called at the
- * start and every frame, as Life() can put one back.
+ * start and every frame, as Life() can put one back. In a shared slow-mo every other member with a client too.
  */
 /datum/sandy_replay/proc/clear_view()
-	var/client/viewer = user?.client
-	if(!eye || !viewer)
-		return
+	if(eye && sandy_replay_clear_view_of(user))
+		view_cleared = TRUE
+	for(var/mob/living/member as anything in sandy_session_others(src))
+		if(sandy_replay_clear_view_of(member))
+			members_cleared[member] = TRUE
+
+/// Takes `body`'s health and knocked-out screens off its client's view. TRUE if any came off.
+/proc/sandy_replay_clear_view_of(mob/living/body)
+	var/client/viewer = body?.client
+	if(!viewer)
+		return FALSE
 	for(var/category in SANDY_REPLAY_CRIT_SCREENS)
-		var/atom/movable/screen/fullscreen/screen = user.screens[category]
+		var/atom/movable/screen/fullscreen/screen = body.screens[category]
 		if(screen && (screen in viewer.screen))
 			viewer.screen -= screen
-			view_cleared = TRUE
-	var/datum/status_effect/grouped/blindness/blind = user.has_status_effect(/datum/status_effect/grouped/blindness)
+			. = TRUE
+	var/datum/status_effect/grouped/blindness/blind = body.has_status_effect(/datum/status_effect/grouped/blindness)
 	if(!blind || length(blind.sources) != 1 || !(UNCONSCIOUS_TRAIT in blind.sources))
 		return
-	var/atom/movable/screen/fullscreen/dark = user.screens[blind.id]
+	var/atom/movable/screen/fullscreen/dark = body.screens[blind.id]
 	if(dark && (dark in viewer.screen))
 		viewer.screen -= dark
-		view_cleared = TRUE
-	if(user.remove_client_colour(REF(blind)))
-		view_cleared = TRUE
+		. = TRUE
+	if(body.remove_client_colour(REF(blind)))
+		. = TRUE
 
-/// Puts back what clear_view() took off, as the user's real state now has it.
+/// Puts back what clear_view() took off, as each viewer's real state now has it.
 /datum/sandy_replay/proc/restore_view()
-	if(!view_cleared || QDELETED(user))
+	for(var/mob/living/member as anything in members_cleared)
+		sandy_replay_restore_view_of(member)
+	members_cleared.Cut()
+	if(!view_cleared)
 		return
 	view_cleared = FALSE
-	// Worked out again from the user's state now (Life() ran on through the replay), then shown.
-	user.update_damage_hud()
-	var/datum/status_effect/grouped/blindness/blind = user.has_status_effect(/datum/status_effect/grouped/blindness)
+	sandy_replay_restore_view_of(user)
+
+/proc/sandy_replay_restore_view_of(mob/living/body)
+	if(QDELETED(body))
+		return
+	// Worked out again from the body's state now (Life() ran on through the replay), then shown.
+	body.update_damage_hud()
+	var/datum/status_effect/grouped/blindness/blind = body.has_status_effect(/datum/status_effect/grouped/blindness)
 	blind?.update_blindness()
-	user.reload_fullscreen()
+	body.reload_fullscreen()
 
 #undef SANDY_REPLAY_CRIT_SCREENS
 
@@ -1715,10 +1752,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 				animate(viewer, pixel_x = eye_pixel_x, pixel_y = eye_pixel_y, time = 0, flags = ANIMATION_END_NOW)
 				if(viewer.eye == eye)
 					user.reset_perspective()
-		try
-			restore_view()
-		catch(var/exception/error)
-			LAZYADD(problems, "[error] ([error.file]:[error.line])")
+	try
+		restore_view()
+	catch(var/exception/error)
+		LAZYADD(problems, "[error] ([error.file]:[error.line])")
 	QDEL_NULL(eye)
 	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1, "events_played" = events_played, "chains_resumed" = chains_resumed, "event_log" = event_log.Copy())
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
@@ -1921,7 +1958,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// Whether a replay is showing on (or about to show for) `user`.
 /proc/sandy_replay_showing(mob/living/user)
-	var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+	var/datum/sandy_replay/replay = GLOB.sandy_replays[user] || sandy_session_replay_of(user) // or a shared slow-mo's (ware_sandy_timestop_shared.dm)
 	return !!replay && !replay.finished && (replay.state == SANDY_REPLAY_PENDING || replay.state == SANDY_REPLAY_PLAYING)
 
 // =========================================================================

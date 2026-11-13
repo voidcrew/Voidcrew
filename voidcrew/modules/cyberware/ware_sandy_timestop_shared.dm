@@ -14,6 +14,8 @@
  * - When the last active member's time is out every field ends at once, and the one recording (the oldest field's)
  *   plays back once. Each member's view follows its own replayed self. Every crash lands after it.
  * - A player from another crew near any member's field ends it for everyone, with no replay.
+ * - It lasts at most SANDY_SHARED_MAX_LENGTH from the first press: then it ends as if the last member's time ran out.
+ * - The release flash only shows to a member when no replay follows (the cut to the replay is the change of scene).
  *
  * Each member is paced by its own field only: the other members' fields leave it alone (sandy_session_shares()).
  */
@@ -22,6 +24,8 @@
 #define SANDY_SHARED_TOUCH 19
 /// Relative rates this close to 1 count as the same speed (SANDY_STOP_SAME_RATE in ware_sandy_timestop.dm).
 #define SANDY_SHARED_SAME_RATE 0.01
+/// A shared slow-mo ends this long after its first member's press, however many crewmates join and extend it.
+#define SANDY_SHARED_MAX_LENGTH (30 SECONDS)
 /// Copies of ware_sandy_replay.dm's and ware_sandy_timestop.dm's defines, which those files undefine at their end.
 #define SANDY_SHARED_RECORDING 1
 #define SANDY_SHARED_PUPPET 1
@@ -55,6 +59,11 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	var/world_mult = 1
 	/// For tests and recordings: what happened when.
 	var/list/log = list()
+	/// world.time of the first member's press, and how long after it the slow-mo ends at the latest.
+	var/started = 0
+	var/max_length = SANDY_SHARED_MAX_LENGTH
+	/// The cap is ending every member's time at once: no "spent" cue for each.
+	var/capping = FALSE
 
 /datum/sandy_session/Destroy()
 	disband()
@@ -124,6 +133,10 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 /proc/sandy_session_check_touch(datum/proximity_monitor/advanced/timestop/sandevistan/field, datum/status_effect/cyberware_cascade_window/hint)
 	if(QDELETED(field))
 		return
+	var/datum/sandy_session/capped = GLOB.sandy_session_of[field.host]
+	if(capped && !capped.ending && world.time >= capped.started + capped.max_length)
+		capped.cap()
+		return
 	if(length(GLOB.cyberware_time_fields) < 2 || !sandy_session_joinable(field, hint))
 		return
 	var/datum/sandy_session/mine = GLOB.sandy_session_of[field.host]
@@ -154,6 +167,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		return null
 	var/datum/sandy_session/session = new
 	session.replay = field.replay
+	session.started = field.replay.started
 	session.add_member(host, window)
 	session.world_scale = field.time_scale
 	session.world_mult = field.user_multiplier
@@ -175,6 +189,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
  */
 /datum/sandy_session/proc/absorb(datum/sandy_session/other)
 	var/fresh = other.replay ? world.time - other.replay.started <= world.tick_lag : FALSE
+	started = min(started, other.started)
 	if(other.replay && other.replay != replay)
 		var/datum/sandy_replay/dropped = other.replay
 		other.replay = null
@@ -228,6 +243,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	for(var/mob/living/member as anything in active)
 		var/datum/status_effect/cyberware_cascade_window/window = active[member]
 		ends = max(ends, window.hold_until || window.natural_end)
+	ends = min(ends, started + max_length)
 	for(var/mob/living/member as anything in members)
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = sandy_session_field(members[member])
 		if(!field)
@@ -273,8 +289,9 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	member.remove_filter(SANDY_SHARED_OUTLINE)
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = sandy_session_field(effect)
 	if(member.stat != DEAD)
-		member.balloon_alert(member, "[sandy_part_balloon_word(member)] spent")
-		member.playsound_local(get_turf(member), 'sound/effects/magic/timeparadox2.ogg', 35, FALSE, -1) // the surge's sound, backwards
+		if(!capping)
+			member.balloon_alert(member, "[sandy_part_balloon_word(member)] spent")
+			member.playsound_local(get_turf(member), 'sound/effects/magic/timeparadox2.ogg', 35, FALSE, -1) // the surge's sound, backwards
 		field?.sandy_host_joins_world()
 	note("[member] out of time")
 	repace()
@@ -287,11 +304,29 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		last.UnregisterSignal(last.time_stop, COMSIG_QDELETING)
 	last.time_stop = null
 	note("ends; replay [replay ? "plays" : "none"]")
-	end_fields(TRUE)
+	var/list/everyone = members.Copy()
+	end_fields(FALSE)
 	if(replay)
-		replay.field_over()
-	else
+		replay.field_over() // with nothing still moving, the replay is cut to in this same tick
+	// The release flash only where no replay is showing: the cut to it is the change of scene (sandy_replay_showing()).
+	for(var/mob/living/member as anything in everyone)
+		if(!QDELETED(member) && member.stat != DEAD && !sandy_replay_showing(member))
+			sandy_release_flash(member)
+	if(!replay && !QDELETED(src))
 		disband()
+
+/// The slow-mo has run SANDY_SHARED_MAX_LENGTH: every member still on its own time is out now, and it ends as when the
+/// last one's time runs out (the one replay, then the crashes).
+/datum/sandy_session/proc/cap()
+	note("capped")
+	capping = TRUE
+	var/list/windows = list()
+	for(var/mob/living/member as anything in active)
+		windows += active[member]
+	for(var/datum/status_effect/cyberware_cascade_window/window as anything in windows)
+		if(!QDELETED(window))
+			qdel(window) // on_remove() -> end_time_stop() -> sandy_session_window_ends(): the last one ends it all
+	capping = FALSE
 
 /// Ends every member's field. With `flash` each member's screen gets the release flash as the world speeds up.
 /datum/sandy_session/proc/end_fields(flash)
@@ -324,7 +359,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	var/datum/sandy_replay/recording = replay
 	replay = null
 	recording?.cancel()
-	end_fields(FALSE)
+	end_fields(TRUE) // no replay follows: the members already out of time see the world speed up too
 	disband()
 
 /// Called from a field's tick() when it would end itself (a player came near, or its host is gone). TRUE when the
@@ -501,6 +536,31 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	clock_time = world.time - (exact - clock_frame) / clock_rate
 	interval = world.tick_lag / scale
 
+/// The session `replay` is the one recording of, if any.
+/proc/sandy_session_of_replay(datum/sandy_replay/replay)
+	var/datum/sandy_session/session = replay?.user && GLOB.sandy_session_of[replay.user]
+	return session?.replay == replay ? session : null
+
+/// The shared slow-mo's replay `body` watches, if it is a member of one.
+/proc/sandy_session_replay_of(mob/living/body)
+	var/datum/sandy_session/session = GLOB.sandy_session_of[body]
+	return session?.replay
+
+/// The members of `replay`'s shared slow-mo other than its own user, still here; with `watching` only those with a
+/// client (they watch it too).
+/proc/sandy_session_others(datum/sandy_replay/replay, watching = TRUE)
+	. = list()
+	var/datum/sandy_session/session = sandy_session_of_replay(replay)
+	if(!session)
+		return
+	for(var/mob/living/member as anything in session.members)
+		if(member != replay.user && !QDELETED(member) && (!watching || member.client))
+			. += member
+
+/// Whether a member of `replay`'s shared slow-mo other than its user has a client watching.
+/proc/sandy_session_watched(datum/sandy_replay/replay)
+	return length(sandy_session_others(replay)) > 0
+
 /// Called from hear(): a sound outside the recording's own field may be inside another member's.
 /proc/sandy_session_hears(datum/sandy_replay/replay, turf/source)
 	var/datum/sandy_session/session = GLOB.sandy_session_of[replay.user]
@@ -604,6 +664,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 
 #undef SANDY_SHARED_TOUCH
 #undef SANDY_SHARED_SAME_RATE
+#undef SANDY_SHARED_MAX_LENGTH
 #undef SANDY_SHARED_RECORDING
 #undef SANDY_SHARED_PUPPET
 #undef SANDY_SHARED_HOLD_RANGE
