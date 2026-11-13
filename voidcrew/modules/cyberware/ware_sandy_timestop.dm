@@ -794,6 +794,14 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /// Pushes every timing deadline `victim` has that hasn't passed yet back by `push` deciseconds (forward, if negative).
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/push_deadlines(mob/living/victim, push)
+	cyberware_push_deadlines(victim, push)
+
+/**
+ * Pushes every timing deadline `victim` has that hasn't passed yet back by `push` deciseconds (forward, if negative).
+ * The one list of a mob's clocks: the slow-mo field slows them with it, and the replay's hold (ware_sandy_replay.dm)
+ * stops them with it, so a clock added here is covered by both.
+ */
+/proc/cyberware_push_deadlines(mob/living/victim, push)
 	var/now = world.time
 	if(victim.next_move > now)
 		victim.next_move += push
@@ -905,14 +913,27 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /// Pushes back the clocks of held machines and grenades by `push` deciseconds.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/push_machine_deadlines(push)
-	var/now = world.time
 	for(var/obj/vehicle/sealed/mecha/mech as anything in held_mechs)
+		cyberware_push_machine_deadlines(mech, push)
+	for(var/obj/machinery/porta_turret/turret as anything in held_turrets)
+		cyberware_push_machine_deadlines(turret, push)
+	for(var/obj/item/grenade/bomb as anything in held_grenades)
+		cyberware_push_machine_deadlines(bomb, push)
+
+/// Pushes the clock of a held machine or grenade `thing` back by `push` deciseconds, if it hasn't run out. Shared by the
+/// field and the replay's hold (ware_sandy_replay.dm), like cyberware_push_deadlines().
+/proc/cyberware_push_machine_deadlines(atom/thing, push)
+	var/now = world.time
+	if(ismecha(thing))
+		var/obj/vehicle/sealed/mecha/mech = thing
 		if(mech.cooldown_vehicle_move > now)
 			mech.cooldown_vehicle_move += push
-	for(var/obj/machinery/porta_turret/turret as anything in held_turrets)
+	else if(istype(thing, /obj/machinery/porta_turret))
+		var/obj/machinery/porta_turret/turret = thing
 		if(turret.last_fired + turret.shot_delay > now)
 			turret.last_fired += push
-	for(var/obj/item/grenade/bomb as anything in held_grenades)
+	else if(istype(thing, /obj/item/grenade))
+		var/obj/item/grenade/bomb = thing
 		if(bomb.cyberware_fuse_at > now)
 			bomb.cyberware_fuse_at += push
 

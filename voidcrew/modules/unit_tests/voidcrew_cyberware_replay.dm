@@ -918,3 +918,65 @@
 	TEST_ASSERT(walker.glide_time > world.tick_lag, "A shot fired before the step cuts the step's glide short")
 	press_again(user)
 	wait_over(user)
+
+/// The replay's hold is a pause: an NPC's clocks (its next click, a blackboard deadline, its shot cooldown) and a held
+/// mech's have as long left when the replay ends as when it began, instead of all running out during it.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_clocks
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_clocks/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayclocks")
+	set_window(user, 3 SECONDS)
+	var/mob/living/carbon/human/npc/gunner = allocate(/mob/living/carbon/human/npc, spot(5, 0))
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, spot(2, 3))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.6 SECONDS)
+	gunner.forceMove(spot(5, 1))
+	sleep(0.6 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
+	TEST_ASSERT_NOTNULL(gunner.ai_controller, "The NPC has no AI")
+	gunner.next_move = world.time + 8
+	gunner.ai_controller.set_blackboard_key("human_npc_next_shot", world.time + 12) // BB_HUMAN_NPC_NEXT_SHOT
+	mech.cooldown_vehicle_move = world.time + 10
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	replay.hold_mech(mech)
+	var/began = world.time
+	wait_over(user)
+	var/held_for = world.time - began
+	TEST_ASSERT(held_for >= 3 * world.tick_lag, "The replay was over too fast to test anything ([held_for] ds)")
+	// At most one tick has run since the replay let go (wait_over()'s poll).
+	var/move_left = gunner.next_move - world.time
+	var/shot_left = gunner.ai_controller.blackboard["human_npc_next_shot"] - world.time
+	var/mech_left = mech.cooldown_vehicle_move - world.time
+	log_test("replay/hold_pauses_clocks: held [held_for] ds; left after: next_move [move_left], next shot [shot_left], mech move [mech_left]")
+	TEST_ASSERT(move_left <= 8 && move_left >= 8 - world.tick_lag - 0.01, "The NPC's next click had 8 ds left when the replay began and [move_left] when it ended")
+	TEST_ASSERT(shot_left <= 12 && shot_left >= 12 - world.tick_lag - 0.01, "The NPC's next shot had 12 ds left when the replay began and [shot_left] when it ended")
+	TEST_ASSERT(mech_left <= 10 && mech_left >= 10 - world.tick_lag - 0.01, "The mech's move cooldown had 10 ds left when the replay began and [mech_left] when it ended")
+	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[gunner] && !GLOB.sandy_replay_stopped_clocks[mech], "The replay left a stopped clock behind")
+
+/// Two replays holding one NPC at once push its clocks once, by the time from the first hold to the last release, and
+/// a player's clocks are never stopped.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/overlapping_holds_push_once
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/overlapping_holds_push_once/Run()
+	var/mob/living/carbon/human/npc/npc = allocate(/mob/living/carbon/human/npc, spot(0, 0))
+	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human/consistent, spot(2, 0))
+	player.key = "sandyreplayplayerclock"
+	ADD_TRAIT(npc, TRAIT_AI_PAUSED, TRAIT_SOURCE_UNIT_TESTS) // it would go for the player
+	var/began = world.time
+	npc.next_move = began + 20
+	player.next_move = began + 20
+	sandy_replay_clock_stop(npc)
+	sandy_replay_clock_stop(player)
+	sleep(0.3 SECONDS)
+	sandy_replay_clock_stop(npc) // a second replay takes it
+	sleep(0.3 SECONDS)
+	sandy_replay_clock_start(npc) // the first lets go: the second still holds it
+	TEST_ASSERT_EQUAL(npc.next_move, began + 20, "An NPC's clock moved while another replay still held it")
+	sleep(0.3 SECONDS)
+	sandy_replay_clock_start(npc)
+	sandy_replay_clock_start(player)
+	TEST_ASSERT_EQUAL(npc.next_move - world.time, 20, "An NPC held by two replays at once didn't get exactly its held time back")
+	TEST_ASSERT_EQUAL(player.next_move, began + 20, "A player's clock was pushed by the replay's hold")
+	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[npc] && !GLOB.sandy_replay_stopped_clocks[player], "A stopped clock was left behind")

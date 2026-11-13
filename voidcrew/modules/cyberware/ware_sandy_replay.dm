@@ -1463,12 +1463,51 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		return
 	mechs[mech] = mech.completely_disabled
 	mech.completely_disabled = TRUE
+	sandy_replay_clock_stop(mech)
+
+/// Things whose clocks a replay's hold has stopped, to list(world.time the first hold began, holds on it now).
+GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
+
+/**
+ * The replay's hold is a pause for an NPC or a machine: when it ends, every clock the slow-mo slows
+ * (cyberware_push_deadlines(), cyberware_push_machine_deadlines()) is pushed back by the time it was held, so it picks
+ * up where it was instead of finding every cooldown run out at once. Two replays holding the same thing at once push it
+ * once, by the time from the first hold to the last release. Players' clocks are left alone.
+ */
+/proc/sandy_replay_clock_stop(atom/movable/thing)
+	if(ismob(thing))
+		var/mob/body = thing
+		if(body.ckey)
+			return
+	var/list/stop = GLOB.sandy_replay_stopped_clocks[thing]
+	if(stop)
+		stop[2] += 1
+	else
+		GLOB.sandy_replay_stopped_clocks[thing] = list(world.time, 1)
+
+/// A replay let `thing` go: if no other replay still holds it, its clocks move back by the time it was held.
+/proc/sandy_replay_clock_start(atom/movable/thing)
+	var/list/stop = GLOB.sandy_replay_stopped_clocks[thing]
+	if(!stop)
+		return
+	stop[2] -= 1
+	if(stop[2] > 0)
+		return
+	GLOB.sandy_replay_stopped_clocks -= thing
+	var/held = world.time - stop[1]
+	if(held <= 0 || QDELETED(thing))
+		return
+	if(isliving(thing))
+		cyberware_push_deadlines(thing, held)
+	else
+		cyberware_push_machine_deadlines(thing, held)
 
 /// Pauses `body`'s AI and locks its player's input. No stun: decisions and input only.
 /datum/sandy_replay/proc/lock(mob/living/body)
 	if(locked[body] || QDELETED(body))
 		return
 	locked[body] = TRUE
+	sandy_replay_clock_stop(body)
 	hide_body_bars(body)
 	if(body.ckey && body.stat != DEAD)
 		body.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED), SANDY_REPLAY_TRAIT)
@@ -1481,6 +1520,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /datum/sandy_replay/proc/unlock(mob/living/body)
 	var/was = locked[body]
+	sandy_replay_clock_start(body) // its clocks pick up where they were
 	if(QDELETED(body))
 		return
 	body.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED, TRAIT_AI_PAUSED), SANDY_REPLAY_TRAIT)
@@ -1955,6 +1995,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			LAZYADD(problems, "[error] ([error.file]:[error.line])")
 	locked.Cut()
 	for(var/obj/vehicle/sealed/mecha/mech as anything in mechs)
+		sandy_replay_clock_start(mech)
 		if(!QDELETED(mech))
 			mech.completely_disabled = mechs[mech]
 	mechs.Cut()
