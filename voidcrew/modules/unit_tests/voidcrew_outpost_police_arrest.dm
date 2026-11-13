@@ -1226,3 +1226,226 @@
 
 	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)
+
+/// Lifting a warrant on a cuffed suspect clears the deleted warrant ref, staffs the nearest officer to take the cuffs off, and removes the case from `police.cases`
+/datum/unit_test/voidcrew_outpost_police_arrest_warrant_lift_release
+
+/datum/unit_test/voidcrew_outpost_police_arrest_warrant_lift_release/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.cuffs_on(suspect)
+
+	// Put a distant free officer and a free officer right beside the suspect, with no prior officers kept on the case
+	for(var/datum/weakref/ref as anything in case.officers.Copy())
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/assigned = ref?.resolve()
+		if(assigned)
+			case.drop_officer(assigned)
+			police.remove_officer(assigned)
+	case.officers.Cut()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other in police.officers.Copy())
+		if(get_dist(other, suspect) <= 1)
+			police.remove_officer(other)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/far_officer = police_officer(outpost, where = police_floor(outpost))
+	police_arrest_kit(far_officer)
+	var/turf/near_spot = police_arrest_beside(suspect)
+	TEST_ASSERT_NOTNULL(near_spot, "No floor beside the suspect for the nearby officer")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/near_officer = police_officer(outpost, where = near_spot)
+	police_arrest_kit(near_officer)
+
+	// Admin lifts the warrant: warrant is qdeleted, the case enters release with no dangling warrant ref, and the nearby officer takes it
+	police.admin_lift(suspect.mind)
+	case.process_case()
+	TEST_ASSERT(!QDELETED(case), "Lifting a warrant closed the case without taking police cuffs off")
+	TEST_ASSERT_EQUAL(case.step, "release", "Lifting a warrant on a cuffed suspect did not enter release") // CASE_STEP_RELEASE
+	TEST_ASSERT_NULL(case.warrant, "Release held onto a deleted warrant reference")
+	if(get_dist(far_officer, suspect) > get_dist(near_officer, suspect))
+		TEST_ASSERT_EQUAL(case.arresting(), near_officer, "Release did not pick the officer standing beside the cuffed suspect")
+
+	for(var/i in 1 to 4)
+		if(QDELETED(case))
+			break
+		case.process_case()
+		police_arrest_wait(case)
+	TEST_ASSERT_NULL(suspect.handcuffed, "Police cuffs were left on after the warrant was lifted")
+	TEST_ASSERT(QDELETED(case), "Release did not close the case once the cuffs were off")
+	TEST_ASSERT_NULL(police.cases[suspect.mind], "A closed lifted-warrant case remained in police.cases")
+
+/// Blocking cell entry never pardons a broke suspect for free, and a cuffed three-star suspect timing out before the desk enters `hold` rather than `release`
+/datum/unit_test/voidcrew_outpost_police_arrest_blocked_cell_and_high_timeout
+
+/datum/unit_test/voidcrew_outpost_police_arrest_blocked_cell_and_high_timeout/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost, 12) // one star (OUTPOST_POLICE_STAR_HEAT 10)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+	var/list/ships = list(wanted_ship(suspect, 0))
+
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.searched = TRUE
+	case.cuffs_on(suspect)
+	case.disposed_at = world.time
+
+	var/datum/outpost_police_cell/cell = police.cell_best(officer)
+	TEST_ASSERT_NOTNULL(cell, "Loaded outpost has no cell")
+	police_jail_carry(officer, suspect, cell.outside_turf)
+	var/list/blockers = list()
+	for(var/turf/tile as anything in cell.tiles)
+		blockers += allocate(/obj/structure/table, tile)
+
+	case.set_step("book")
+	case.act_book(officer, suspect)
+	for(var/obj/blocker as anything in blockers)
+		qdel(blocker)
+
+	TEST_ASSERT(!QDELETED(case), "A blocked cell walk-in closed the arrest")
+	TEST_ASSERT_EQUAL(case.step, "desk", "A blocked cell walk-in did not step back to desk to retry") // CASE_STEP_DESK
+	TEST_ASSERT_EQUAL(suspect.handcuffed, cuffs, "A blocked cell walk-in uncuffed a broke suspect")
+	TEST_ASSERT(police.get_stars(suspect.mind) >= 1, "A blocked cell walk-in pardoned a broke suspect's warrant")
+
+	// Three stars in real cuffs timing out three times before `disposed_at`: held in cuffs, never uncuffed and let go
+	police_pin_warrant(police, suspect.mind, 55) // three stars (OUTPOST_POLICE_STAR_HEAT 50)
+	case.disposed_at = 0
+	case.resets = 2
+	case.set_step("escort")
+	case.step_started_at = world.time - 61 SECONDS // OUTPOST_POLICE_STEP_TIMEOUT is 60 s
+	case.process_case()
+	TEST_ASSERT(!QDELETED(case), "A three-star cuffed suspect's case closed on timeouts")
+	TEST_ASSERT_EQUAL(case.step, "hold", "A three-star cuffed suspect timed out into [case.step], not hold") // CASE_STEP_HOLD
+	TEST_ASSERT_EQUAL(suspect.handcuffed, cuffs, "A three-star cuffed suspect lost their cuffs on timeout")
+
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
+	wanted_cleanup(ships)
+
+/// `route_to(..., 1)` across a directional window does not treat the officer as arrived through the glass, and picks an open `Adjacent` approach tile
+/datum/unit_test/voidcrew_outpost_police_arrest_window_approach
+
+/datum/unit_test/voidcrew_outpost_police_arrest_window_approach/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	var/obj/structure/window/pane = allocate(/obj/structure/window, get_turf(suspect))
+	pane.setDir(get_dir(suspect, officer))
+	TEST_ASSERT_EQUAL(get_dist(officer, suspect), 1, "Setup: officer and suspect are not one tile apart")
+	TEST_ASSERT(!officer.Adjacent(suspect), "Setup: directional window did not block adjacency")
+
+	var/arrived = case.route_to(officer, suspect, 1)
+	TEST_ASSERT(!arrived, "route_to(..., 1) treated an officer across a window as arrived")
+	var/turf/approach = case.goal
+	TEST_ASSERT(isturf(approach), "route_to(..., 1) across a window did not pick an approach turf ([case.goal])")
+	if(isturf(approach))
+		TEST_ASSERT(approach.Adjacent(suspect, target = suspect, mover = officer), "The chosen approach turf is not Adjacent to the suspect")
+		TEST_ASSERT_EQUAL(case.goal_distance, 0, "Approach turf goal_distance should be 0")
+
+	qdel(pane)
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)
+
+/// A one-armed (`grip_held`) suspect who breaks the officer's grab is no longer in custody, goes to subdue if fighting, and closes at three stars
+/datum/unit_test/voidcrew_outpost_police_arrest_grip_custody_escape
+
+/datum/unit_test/voidcrew_outpost_police_arrest_grip_custody_escape/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	qdel(suspect.get_bodypart(BODY_ZONE_L_ARM))
+	TEST_ASSERT(!suspect.canBeHandcuffed(), "Setup: one-armed suspect can still be handcuffed")
+
+	case.order_at = world.time
+	case.set_step("cuff")
+	case.step_cuff()
+	TEST_ASSERT(case.grip_held && case.cuffed, "One-armed suspect was not taken in the aggressive grip")
+	TEST_ASSERT(police.in_custody(suspect), "Held one-armed suspect is not in custody")
+
+	// Breaks the grab and fights back: no longer in custody, and the case goes back to subdue them
+	officer.stop_pulling()
+	TEST_ASSERT(!police.in_custody(suspect), "One-armed suspect who broke the grab is still counted in custody")
+	suspect.set_combat_mode(TRUE)
+	case.process_case()
+	TEST_ASSERT(!case.cuffed && !case.grip_held, "Fighting escapee from grip is still marked held")
+	TEST_ASSERT_EQUAL(case.step, "subdue", "Fighting escapee from grip did not go to subdue") // CASE_STEP_SUBDUE
+
+	// Taken in grip again, then escalates to three stars and breaks free: arrest closes so the squad takes over
+	suspect.set_combat_mode(FALSE)
+	case.set_step("cuff")
+	case.step_cuff()
+	TEST_ASSERT(case.grip_held && police.in_custody(suspect), "One-armed suspect was not gripped a second time")
+	police_pin_warrant(police, suspect.mind, 55) // three stars (OUTPOST_POLICE_STAR_HEAT 50)
+	officer.stop_pulling()
+	case.process_case()
+	TEST_ASSERT(QDELETED(case), "A three-star one-armed suspect who broke free kept an open arrest blocking lethal response")
+	police_pin_warrant(police, suspect.mind, 0)
+
+/// A drained stun baton is stowed instead of clubbing with lethal force, and blocked or missing hands cannot cuff or staff an arrest
+/datum/unit_test/voidcrew_outpost_police_arrest_flat_baton_and_hands
+
+/datum/unit_test/voidcrew_outpost_police_arrest_flat_baton_and_hands/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	var/obj/item/melee/baton/security/baton = officer.get_baton()
+	TEST_ASSERT(istype(baton) && baton.cell, "Setup: officer has no stun baton with a cell")
+	human_npc_take_in_hand(officer, baton)
+	baton.cell.charge = 0
+	baton.turn_off()
+	case.strike(officer, suspect)
+	TEST_ASSERT(!baton.active, "A drained stun baton turned on with zero charge")
+	TEST_ASSERT(!officer.is_holding(baton), "Officer kept a drained stun baton in hand to club with instead of stowing it")
+	TEST_ASSERT(suspect.getBruteLoss() < baton.force, "Officer clubbed the suspect for full inactive baton brute damage")
+
+	// Blocked hands cannot cuff hands-free from the belt
+	ADD_TRAIT(officer, TRAIT_HANDS_BLOCKED, "outpost_police_test_hands")
+	case.act_cuff(officer, suspect)
+	REMOVE_TRAIT(officer, TRAIT_HANDS_BLOCKED, "outpost_police_test_hands")
+	TEST_ASSERT_NULL(suspect.handcuffed, "An officer with blocked hands handcuffed a suspect anyway")
+
+	// An officer with no usable hands is not fit to work an arrest
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/armless = police_officer(outpost)
+	qdel(armless.get_bodypart(BODY_ZONE_L_ARM))
+	qdel(armless.get_bodypart(BODY_ZONE_R_ARM))
+	TEST_ASSERT_EQUAL(armless.usable_hands, 0, "Setup: dismembered officer still has usable hands")
+	TEST_ASSERT(!case.officer_fit(armless), "An officer with no hands was counted fit for an arrest")
+
+	police.close_case(suspect.mind)
+	police_pin_warrant(police, suspect.mind, 0)

@@ -50,6 +50,7 @@
 	QDEL_LIST(pending_reports)
 	QDEL_LIST_ASSOC_VAL(incidents)
 	recent_reports.Cut()
+	case_holds = null
 	return ..()
 
 /**
@@ -534,6 +535,8 @@
 
 /datum/outpost_police/proc/on_warrant_mind_deleted(datum/mind/mind)
 	SIGNAL_HANDLER
+	LAZYREMOVE(case_holds, WEAKREF(mind))
+	close_case(mind)
 	var/datum/outpost_warrant/warrant = warrants[mind]
 	warrants -= mind
 	if(warrant)

@@ -1024,7 +1024,8 @@
 	if(!who?.mind)
 		return FALSE
 	var/datum/outpost_police_case/case = cases[who.mind]
-	if(case && !QDELETED(case) && case.cuffed && case.get_suspect() == who)
+	var/mob/living/carbon/carbon_who = who
+	if(istype(carbon_who) && case && !QDELETED(case) && case.get_suspect() == carbon_who && case.suspect_restrained(carbon_who))
 		return TRUE
 	return !!cell_holding(who.mind)
 
