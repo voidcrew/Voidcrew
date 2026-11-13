@@ -238,6 +238,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/list/locked = list()
 	/// Things that turned up after the recording ended (gore still landing from the last blow), hidden until the end.
 	var/list/unborn = list()
+	/// Live rig pictures hidden for the replay (by invisibility, see hide_rig_picture()), to their own invisibility.
+	var/list/rig_hidden = list()
 	/// Things hidden in the tick between the slow-mo's end and the replay's start (hide_pending()).
 	var/list/pending_hidden = list()
 	/// Progress bars hidden for the replay (hide_progress_bars()), shown again at the end if still there.
@@ -493,6 +495,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	else if(track.surger && !track.trail_every)
 		read_trail(track)
 	var/look = clean_look(thing)
+	if(iscarbon(thing))
+		look = unfolded_look(thing, look)
 	if(wet)
 		look = wet_look(wet, look)
 	if(track.flier)
@@ -537,6 +541,41 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			var/list/arguments = data.Copy()
 			arguments -= "priority"
 			copy.filters += filter(arglist(arguments))
+	return copy.appearance
+
+/**
+ * `look` (`body`'s) with its arm blades drawn in its hands while they swing out of their housings. The swing is a picture
+ * in the body's vis_contents, which no look carries, and the held blade isn't drawn under it
+ * (/obj/item/melee/energy/blade/hardlight/cyberware_mantis/build_worn_icon()): recorded as it is, the replay would open on
+ * bare arms for the frames the swing plays. The swing ends on the held blade, so that is what is drawn.
+ */
+/datum/sandy_replay/proc/unfolded_look(mob/living/carbon/body, look)
+	var/unfolding = FALSE
+	for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/housing in body.organs)
+		var/obj/effect/abstract/cyberware_anim/swing = housing.blade_anim()
+		if(swing && swing.icon_state == housing.blade_anim_state("unfold"))
+			unfolding = TRUE
+			break
+	if(!unfolding)
+		return look
+	var/hidden = FALSE
+	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade in body.held_items)
+		if(world.time < blade.inhand_hidden_until)
+			hidden = TRUE
+			break
+	var/list/hands = body.overlays_standing[HANDS_LAYER]
+	if(hands && !islist(hands))
+		hands = list(hands)
+	if(!hidden || !length(hands))
+		return look
+	var/mutable_appearance/copy = new(look)
+	for(var/mutable_appearance/held as anything in hands)
+		if(held.alpha)
+			continue
+		copy.overlays -= held
+		var/mutable_appearance/shown = new(held)
+		shown.alpha = 255
+		copy.overlays += shown
 	return copy.appearance
 
 /// The colour [/atom/proc/update_atom_colour] would give `thing` without the field's tint.
@@ -609,6 +648,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	pending_hidden -= thing
 	held_shots -= thing
 	unborn -= thing
+	rig_hidden -= thing
 	if(!track)
 		return
 	if(GLOB.sandy_replay_masked[thing] == track)
@@ -1041,10 +1081,25 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 /datum/sandy_replay/proc/hide_unborn()
 	for(var/turf/here as anything in centres())
 		for(var/atom/movable/thing in range(SANDY_REPLAY_HOLD_RANGE, here))
-			if(tracks[thing] || unborn[thing] || thing == user || !recordable(thing))
+			if(tracks[thing] || unborn[thing] || rig_hidden[thing] || thing == user || !recordable(thing))
+				continue
+			if(sandy_rig_picture(thing))
+				hide_rig_picture(thing)
 				continue
 			unborn[thing] = TRUE
 			thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+
+/**
+ * Hides a live rig picture (a pose a finisher left on a body, held past the slow-mo) for the replay, which draws it on
+ * a stand-in. Not by a filter: the backbreaker's broken back carried a hiding filter all through its replay and was still
+ * drawn, the live pose on the floor while the replayed body was lifted (its pictures had a colour filter animated on them
+ * by the hit flash). Invisible, it isn't sent to anyone; shown again as the replay ends, it is drawn as it is by then.
+ */
+/datum/sandy_replay/proc/hide_rig_picture(atom/movable/thing)
+	if(!isnull(rig_hidden[thing]))
+		return
+	rig_hidden[thing] = thing.invisibility
+	thing.invisibility = INVISIBILITY_ABSTRACT
 
 /// Where the replay is watched from: the user, and in a shared slow-mo every other member (ware_sandy_timestop_shared.dm).
 /datum/sandy_replay/proc/centres()
@@ -1153,10 +1208,9 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 			continue // it never changed: nothing to show
 		if(sandy_rig_picture(thing))
 			// A rig picture still showing (fading out as the move hands the body back, or holding the body in a pose
-			// past the slow-mo): drawn on a stand-in, and the real one is hidden for the replay by a filter, not its
-			// alpha. Its own animations run on underneath and finish() shows it again as it really is by then.
-			unborn[thing] = TRUE
-			thing.add_filter(SANDY_REPLAY_UNBORN, 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+			// past the slow-mo): drawn on a stand-in, and the real one is hidden for the replay (hide_rig_picture()).
+			// finish() shows it again as it really is by then.
+			hide_rig_picture(thing)
 			track.mode = SANDY_TRACK_STANDIN
 			standins += track
 		else if(isturf(thing.loc))
@@ -1734,6 +1788,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		if(!QDELETED(thing))
 			thing.remove_filter(SANDY_REPLAY_UNBORN)
 	unborn.Cut()
+	for(var/atom/movable/thing as anything in rig_hidden)
+		if(!QDELETED(thing))
+			thing.invisibility = rig_hidden[thing]
+	rig_hidden.Cut()
 	for(var/mob/living/body as anything in locked)
 		try
 			unlock(body)
@@ -1945,9 +2003,28 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		list(list("alpha" = max_alpha, "time" = duration * 0.6, "flags" = ANIMATION_PARALLEL), list("alpha" = 0, "time" = duration * 0.4)),
 	))
 
+/obj/effect/temp_visual/cyberware_impact_cracks
+	/// The alpha it was made with, before its fade (sandy_replay_intro()). Null if no replay took it.
+	var/sandy_peak_alpha
+
 /// Called before its fade starts: the alpha it has now is the one it starts with.
 /obj/effect/temp_visual/cyberware_impact_cracks/sandy_replay_intro()
+	sandy_peak_alpha = alpha
 	return list(list("alpha" = alpha), list(list(list("alpha" = alpha, "time" = duration - 2 SECONDS), list("alpha" = 0, "time" = 2 SECONDS))))
+
+/// Its alpha var already holds the end of its fade (0): handed back as it was, the cracks would vanish as the replay
+/// ends. They are drawn as the real ones are by now instead, and fade out on their own clock.
+/obj/effect/temp_visual/cyberware_impact_cracks/sandy_replay_resume()
+	var/left = timerid ? timeleft(timerid) : 0
+	if(isnull(sandy_peak_alpha) || !left)
+		return
+	if(left > 2 SECONDS)
+		alpha = sandy_peak_alpha
+		animate(src, alpha = sandy_peak_alpha, time = left - 2 SECONDS)
+		animate(alpha = 0, time = 2 SECONDS)
+	else
+		alpha = round(sandy_peak_alpha * left / (2 SECONDS))
+		animate(src, alpha = 0, time = left)
 
 /// The slow-mo's release flash isn't put on the screen of a user whose replay is starting: the cut to the replay is the
 /// change of scene (begin()).

@@ -758,3 +758,40 @@
 	TEST_ASSERT(QDELETED(shot) || get_turf(shot) != held_at, "The shot didn't fly on after the replay")
 	if(!QDELETED(shot))
 		qdel(shot)
+
+/**
+ * A finisher leaves a pose on a body past the slow-mo (the backbreaker's broken back) and cracks in the floor. While
+ * the replay plays, the pose left on the floor isn't drawn (the replay draws the move from its start), and as it ends
+ * the pose and the cracks are there again as they really are: the cracks still at their full strength.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/pose_left_and_cracks
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/pose_left_and_cracks/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaypose")
+	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	sleep(0.4 SECONDS)
+	var/datum/chrome_rig/rig = new(victim, SOUTH)
+	TEST_ASSERT(rig.snapshot(), "Test fixture: the rig couldn't picture the victim")
+	var/obj/effect/abstract/chrome_puppet/pose = rig.add_puppet("pose", rig.cut_without_arms())
+	rig.conceal()
+	TEST_ASSERT(replay.tracks[pose], "The rig's picture isn't recorded")
+	// Handed over as the backbreaker does: a pose that lasts, not a move the slow-mo waits for
+	victim.AddComponent(/datum/component/gorilla_fold, rig, 1)
+	var/turf/open/floor/cracked = spot(1, 1)
+	TEST_ASSERT(isfloorturf(cracked), "Test fixture: no floor to crack")
+	var/obj/effect/temp_visual/cyberware_impact_cracks/cracks = new(cracked, "damaged1", 255)
+	TEST_ASSERT(!QDELETED(cracks) && replay.tracks[cracks], "The cracks aren't recorded")
+	sleep(0.3 SECONDS)
+	window.slowmo_time_up()
+	TEST_ASSERT_EQUAL(replay.state, 2, "A pose left on a body held the slow-mo")
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(pose.invisibility >= INVISIBILITY_ABSTRACT, "The pose left on the body is drawn while the replay plays the move again")
+	wait_over(user)
+	TEST_ASSERT(!QDELETED(pose) && pose.invisibility == 0, "The pose left on the body isn't drawn again after the replay")
+	TEST_ASSERT(!QDELETED(cracks), "Test fixture: the cracks ran out before the replay ended")
+	TEST_ASSERT_EQUAL(cracks.alpha, 255, "The cracks aren't at full strength after the replay")
+	qdel(victim.GetComponent(/datum/component/gorilla_fold))
