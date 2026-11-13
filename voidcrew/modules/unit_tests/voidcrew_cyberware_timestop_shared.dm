@@ -264,3 +264,48 @@ GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
 	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	third.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// A member's own shot taken first by a crewmate's field (made where both reach) is paced by the shooter's field only,
+/// and flies at its own speed again once the shared slow-mo is over. The shared replay draws a member without the edge
+/// glow every member wears.
+/datum/unit_test/voidcrew_cyberware_timestop/shared/shots_full_speed_after
+
+/datum/unit_test/voidcrew_cyberware_timestop/shared/shots_full_speed_after/Run()
+	var/mob/living/carbon/human/first = make_user(spot(0, 0), "sandyone[type]")
+	var/mob/living/carbon/human/second = make_user(spot(3, 0), "sandytwo[type]")
+	make_crew(list(first, second))
+	set_window(first, 2 SECONDS)
+	set_window(second, 2 SECONDS)
+	var/datum/status_effect/cyberware_cascade_window/one = surge(first)
+	sleep(0.2 SECONDS)
+	var/datum/status_effect/cyberware_cascade_window/two = surge(second)
+	sleep(0.1 SECONDS)
+	var/datum/sandy_session/session = session_of(first)
+	TEST_ASSERT_NOTNULL(session, "Test fixture: the two slow-mos didn't join")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field_one = one.time_stop?.chronofield
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field_two = two.time_stop?.chronofield
+	TEST_ASSERT(field_one && field_two, "Test fixture: a member has no field")
+
+	TEST_ASSERT(second.get_filter("sandy_time_stop_outline"), "Test fixture: the second member has no edge glow")
+	var/mutable_appearance/recorded = new(session.replay.clean_look(second))
+	TEST_ASSERT(length(recorded.filters) < length(second.filters), "The shared replay records a member with the slow-mo's edge glow")
+
+	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet, spot(3, 1))
+	var/shot_speed = initial(shot.speed)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[shot]
+	TEST_ASSERT(holder == field_one || holder == field_two, "Test fixture: no member's field took the shot")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/shooter = holder == field_one ? field_two : field_one
+	shot.firer = shooter.host
+	shooter.take_user_shot(shot) // its own field watches it leave the barrel
+	TEST_ASSERT_EQUAL(GLOB.cyberware_time_dilated[shot], shooter, "The shooter's field doesn't pace its own shot")
+	TEST_ASSERT_NULL(holder.held_shots[shot], "Two members' fields hold one shot")
+	TEST_ASSERT(abs(shot.speed - shot_speed * shooter.scale_for(shot)) < 0.001, "The member's shot isn't at its field's pace ([shot.speed] vs [shot_speed * shooter.scale_for(shot)])")
+
+	qdel(one)
+	qdel(two)
+	sleep(0.1 SECONDS)
+	wait_replay(first)
+	TEST_ASSERT(!QDELETED(shot), "Test fixture: the unfired shot is gone")
+	TEST_ASSERT_EQUAL(shot.speed, shot_speed, "A member's shot is still slowed after the shared slow-mo")
+	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
