@@ -60,7 +60,17 @@
 	var/mob/living/shield = source.gunfu_shield_body()
 	if(isnull(shield) || shot.firer == shield)
 		return NONE
-	if(abs(closer_angle_difference(dir2angle(source.dir), REVERSE_ANGLE(shot.angle))) > GUNFU_SHIELD_ARC)
+	// Where the shot comes from. A point-blank shot (tg's fire(), from the next tile) hits before it has an angle, so
+	// that one is taken from where the bullet is.
+	var/from_angle
+	if(isnum(shot.angle))
+		from_angle = REVERSE_ANGLE(shot.angle)
+	else
+		var/turf/shot_turf = get_turf(shot)
+		if(isnull(shot_turf) || shot_turf == get_turf(source))
+			return NONE
+		from_angle = get_angle(source, shot_turf)
+	if(abs(closer_angle_difference(dir2angle(source.dir), from_angle)) > GUNFU_SHIELD_ARC)
 		return NONE
 	if(!shot.can_hit_target(shield, FALSE, TRUE))
 		return NONE

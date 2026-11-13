@@ -141,7 +141,8 @@
 		stealth_bark(STEALTH_BARK_HOSTAGE_BACK, always = TRUE)
 		log_combat(guard, source, "backed off from a hostage holder")
 
-/// Drops what it holds in its hands, through tg's own drop.
+/// Drops what it holds in its hands, through tg's own drop. Gear locked to its body (human_npc_gear.dm, decision D3)
+/// can't leave it, so that goes away onto its belt, back or suit instead: empty hands either way, and no loot.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_drop()
 	var/mob/living/carbon/human/guard = pawn
 	if(QDELETED(guard) || standoff_dropped)
@@ -149,7 +150,7 @@
 	standoff_dropped = TRUE
 	var/dropped = FALSE
 	for(var/obj/item/held in guard.held_items)
-		if(guard.dropItemToGround(held))
+		if(guard.dropItemToGround(held) || guard.equip_to_appropriate_slot(held))
 			dropped = TRUE
 	if(dropped)
 		stealth_bark(STEALTH_BARK_HOSTAGE_DROP, always = TRUE)
@@ -217,7 +218,7 @@
 	lines[STEALTH_BARK_HOSTAGE_EXECUTED] = list("You son of a-", "Take them down!", "No more talking!")
 	lines[STEALTH_BARK_HOSTAGE_RELEASED] = list("Now!", "Take them!", "Get clear!")
 	emotes[STEALTH_BARK_HOSTAGE] = list("raises a hand slowly.", "keeps their gun low.")
-	emotes[STEALTH_BARK_HOSTAGE_DROP] = list("lets their weapon fall.")
+	emotes[STEALTH_BARK_HOSTAGE_DROP] = list("puts their weapon down.")
 
 // ---------------------------------------------------------------------------------------------
 // Held at gunpoint, held upright (decision 62)

@@ -31,6 +31,7 @@
 	other.set_combat_mode(TRUE)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/alert_ai = stealth_ai(alert)
 	alert_ai.stealth_go_alert(other)
+	alert_ai.stealth_rewind(1) // alerted before this blow, not by it
 	TEST_ASSERT_EQUAL(stealth_takedown_refusal(other, alert, "choke"), "front", "An alert guard can be choked from behind")
 	// A person (no awareness) from behind can (decision 22), from the front can't.
 	var/mob/living/carbon/human/victim = stealth_person(block, 4, 5)
