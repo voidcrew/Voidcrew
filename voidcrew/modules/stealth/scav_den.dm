@@ -5,7 +5,8 @@
  * it never seeds by itself, and the only road to it is a rumor chart bought from an outpost trader and revealed from
  * the helm (rumor_charts.dm), like every other named tip. One den is on the overmap at a time: while one is out there
  * the tip is off the shelf and a sealed chart can't be revealed (it stays sealed and can be revealed once that den is
- * cleaned out).
+ * cleaned out). A den nobody docks at within an hour of its reveal leaves the overmap, so an unvisited one can't hold
+ * the slot all round.
  *
  * The den's guards are the stealth guards of scav_guards.dm with names of their own, so their friends can call them
  * by name on the radio and over a body. Their skill comes from the den's zone (decision 38): a den revealed in the
@@ -56,7 +57,18 @@
 /datum/rumor_chart/scav_den/reveal(obj/structure/overmap/ship/ship)
 	if(scav_den_on_map())
 		return null
-	return ..()
+	. = ..()
+	if(.)
+		// A den nobody ever flies to would hold the one-den slot for the round: the scavs move on.
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(scav_den_move_on), WEAKREF(.)), 60 MINUTES)
+
+/// Takes a revealed den off the overmap if nobody has docked at it (its interior was never built) in the hour since.
+/proc/scav_den_move_on(datum/weakref/den_ref)
+	var/obj/structure/overmap/space_ruin/den = den_ref?.resolve()
+	if(QDELETED(den) || den.mapzone || den.loading || den.loaded)
+		return
+	log_mapping("Scav den '[den.name]' at ([den.x], [den.y]) was never visited and moved on.")
+	qdel(den)
 
 // ===== Guards with names =====
 

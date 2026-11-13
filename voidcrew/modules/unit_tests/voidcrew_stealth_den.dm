@@ -67,6 +67,10 @@
 	chart.spawn_zone = 2
 	TEST_ASSERT_NULL(chart.reveal(null), "A second den opened while one was out there")
 	TEST_ASSERT(!chart.revealed, "A refused den chart was used up")
+	// Nobody docked within the hour: it leaves and frees the slot.
+	scav_den_move_on(WEAKREF(den))
+	TEST_ASSERT(QDELETED(den), "An unvisited den stayed on the overmap")
+	TEST_ASSERT_NULL(scav_den_on_map(), "A den that moved on still holds the slot")
 
 /// The camera sees a person in its cone in light, not in the dark, not out of its cone, not through a wall, and lets a
 /// scav disguise by; held on someone long enough it sounds the alarm, and the den's guard goes to look.
