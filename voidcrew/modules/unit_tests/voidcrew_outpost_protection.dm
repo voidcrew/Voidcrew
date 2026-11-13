@@ -259,6 +259,33 @@
 	pipebomb.attack_self(visitor)
 	TEST_ASSERT_EQUAL(outpost_bomber_of(pipebomb), visitor, "A pipe bomb was not blamed on whoever started it")
 	qdel(pipebomb)
+	// A syndicate bomb's payload goes off, blamed on whoever activated the bomb; a failed defusal on a boom wire keeps that blame, and defusal clears it
+	var/obj/machinery/syndicatebomb/syn_bomb = allocate(/obj/machinery/syndicatebomb, get_turf(bomber))
+	var/datum/wires/syndicatebomb/syn_wires = syn_bomb.wires
+	syn_wires.on_pulse(WIRE_ACTIVATE, bomber)
+	TEST_ASSERT(syn_bomb.active, "Setup: pulsing WIRE_ACTIVATE did not arm the syndicate bomb")
+	TEST_ASSERT_EQUAL(outpost_bomber_of(syn_bomb.payload), bomber, "A syndicate bomb's payload was not blamed on whoever armed it")
+	syn_wires.on_pulse("[WIRE_BOOM] 1", visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(syn_bomb.payload), bomber, "A failed defusal on a boom wire shifted blame off the armer")
+	syn_bomb.explode_now = FALSE
+	syn_bomb.defuse()
+	TEST_ASSERT_NULL(outpost_bomber_of(syn_bomb.payload), "A defused syndicate bomb still carried blame")
+	qdel(syn_bomb)
+
+	// A non-item bomb (or rocket) catching an officer is ASSAULT_OFFICER (3 stars), never bare-handed RESIST, and records a rocket's launcher
+	var/obj/item/crowbar/launcher_standin = allocate(/obj/item/crowbar)
+	rocket.fired_from = launcher_standin
+	var/datum/outpost_police/police = outpost.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, epicenter)
+	police.add_officer(officer)
+	police.perception.test_plain = TRUE
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(rocket, list(officer))
+	TEST_ASSERT_EQUAL(police.get_stars(bomber.mind), 3, "A rocket blast on an officer gave [police.get_stars(bomber.mind)] stars instead of three")
+	TEST_ASSERT(WEAKREF(launcher_standin) in police.get_warrant(bomber.mind)?.evidence, "A rocket blast did not record its launcher on the warrant")
+	police.admin_lift(bomber.mind)
+	police.recent_reports.Cut()
+	rocket.fired_from = null
+	qdel(officer)
 
 	explosion(epicenter, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE, explosion_cause = rocket)
 	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[visitor.mind], bomber.mind), "A bombing at the outpost did not count as an attack on the visitor")

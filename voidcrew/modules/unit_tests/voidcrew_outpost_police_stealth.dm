@@ -502,4 +502,62 @@
 	TEST_ASSERT(mug.reagents.total_volume < before, "The sergeant never drank the coffee at the desk")
 	sergeant.end_activity()
 
+/// A pilot in a mech is seen all round while a closed locker hides; a blind viewer never convicts; multiple witnesses must all be silenced
+/datum/unit_test/voidcrew_stealth_live/police/mech_blind_and_witnesses
+
+/datum/unit_test/voidcrew_stealth_live/police/mech_blind_and_witnesses/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	var/datum/outpost_police_perception/stealth/perception = police.perception
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(8, 4, EAST)
+	var/mob/living/carbon/human/pilot = visitor_at(4, 4)
+
+	// Behind the officer's back on foot: unseen. Inside a mech on the same tile: seen all round, and suspect_seen() holds.
+	TEST_ASSERT(!perception.sees(officer, pilot), "Setup: an unaware officer saw someone on foot behind its back")
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, at(4, 4))
+	pilot.forceMove(mech)
+	TEST_ASSERT(perception.sees(officer, pilot), "An officer did not see an offender piloting a mech")
+	TEST_ASSERT(police.suspect_seen(pilot), "suspect_seen() missed a suspect inside a mech")
+	pilot.forceMove(at(11, 4))
+
+	// Inside a closed locker in front of the officer: hidden
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, at(11, 4))
+	locker.opened = FALSE
+	pilot.forceMove(locker)
+	TEST_ASSERT(!perception.sees(officer, pilot), "An officer saw someone shut inside a closed locker")
+	pilot.forceMove(at(11, 4))
+
+	// A blinded officer sees nobody, even in front or when struck
+	officer.become_blind(TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(!perception.sees(officer, pilot), "A blind officer saw someone in front of it")
+	TEST_ASSERT(!perception.struck_sees(officer, pilot), "A blind officer saw whoever struck it")
+	officer.cure_blind(TRAIT_SOURCE_UNIT_TESTS)
+
+	// A restrained trader cannot trigger an instant shop report
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = pa_trader(outpost, at(2, 2), at(2, 3), /datum/outpost_shop/vendor/bait_shop)
+	ADD_TRAIT(trader, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
+	var/mob/living/carbon/human/brawler = visitor_at(3, 2)
+	var/mob/living/carbon/human/dummy = person_at(4, 2, FALSE)
+	officer.forceMove(at(18, 8))
+	officer.setDir(EAST)
+	TEST_ASSERT_NULL(police.report_crime(brawler, "unarmed", dummy), "A restrained trader reported a crime")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 0, "A restrained trader with nobody else watching queued a report")
+	REMOVE_TRAIT(trader, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
+	qdel(trader)
+
+	// Two ambient townspeople witness a crime: restraining only the first does not silence the second
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/first_local = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, at(3, 1))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/second_local = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, at(4, 1))
+	first_local.set_place(place)
+	second_local.set_place(place)
+	police.recent_reports.Cut()
+	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", dummy), "A townsperson's report counted without waiting")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The townspeople's report was not queued")
+	ADD_TRAIT(first_local, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
+	var/datum/outpost_pending_report/local_report = police.pending_reports[1]
+	local_report.due = world.time
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "Restraining one of two witnessing townspeople silenced the other")
+	REMOVE_TRAIT(first_local, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
+
 #undef POLICE_STEALTH_BEAT
