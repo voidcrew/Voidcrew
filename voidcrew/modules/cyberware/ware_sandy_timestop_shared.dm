@@ -199,6 +199,10 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	other.active.Cut()
 	other.crashes.Cut()
 	qdel(other)
+	// What another member's field already tints stays tinted: the newcomer's ring only rolls over what is new to the
+	// slow-mo (its ring took the tint off everything it hadn't reached yet, the floor under the first bubble included).
+	for(var/mob/living/member as anything in members)
+		sandy_session_field(members[member])?.sandy_keep_shared_tint(src)
 	// Members only ever run in their own field.
 	for(var/mob/living/member as anything in members)
 		for(var/mob/living/each as anything in members)
@@ -392,6 +396,22 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		surging -= member
 		UnregisterSignal(member, COMSIG_QDELETING)
 		cyberware_surge_refresh_perks(member)
+
+/// Puts the tint straight back on whatever this field's rolling ring took it off that another field of `session`
+/// already tints.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/sandy_keep_shared_tint(datum/sandy_session/session)
+	if(!length(tint_timers))
+		return
+	for(var/atom/thing as anything in tint_timers.Copy())
+		for(var/mob/living/member as anything in session.members)
+			var/datum/proximity_monitor/advanced/timestop/sandevistan/other = sandy_session_field(session.members[member])
+			if(!other || other == src || !other.tinted[thing] || other.tint_timers[thing])
+				continue
+			deltimer(tint_timers[thing])
+			tint_timers -= thing
+			if(!QDELETED(thing) && tinted[thing])
+				cyberware_time_tint_on(thing)
+			break
 
 /// Runs this field at the world's new pace: everything it holds, every surger in it at its rate over it.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/sandy_set_world_rate(scale, multiplier)
