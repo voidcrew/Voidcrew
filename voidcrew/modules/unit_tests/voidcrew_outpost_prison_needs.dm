@@ -1,7 +1,7 @@
 /**
  * Outpost prison needs: hunger, uniforms and the serving hatch, eating, mess, blood and first aid,
  * the routine and dialogue, and what needs do to mood; arrivals, food by quality, sport, the
- * hatch as the only stockpile, the Sustenance Vendor, and the prisoners' small routines (binning,
+ * hatch as the only stockpile, and the prisoners' small routines (binning,
  * tidying, shared meals, sick calls, basketball with staff, the cycling thought bubble).
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with
@@ -757,8 +757,8 @@
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 	prisoner.set_uniform_grime(0)
 
-	// Food by quality: the prison ration and the Sustenance Vendor's tofu and candy corn, cooked food, snacks and junk food,
-	// and poor food, the vendor's moldy bread among it.
+	// Food by quality: the prison ration and brig tofu and candy corn, cooked food, snacks and junk food,
+	// and poor food, moldy bread among it.
 	var/list/tiers = list(
 		/obj/item/food/prison_ration = "ration",
 		/obj/item/food/tofu/prison = "ration",
@@ -1007,75 +1007,6 @@
 	TEST_ASSERT_EQUAL(prison.fill_hatches(), 0, "Filling full hatches added more")
 	clear_hatch(hatch)
 	clear_hatch(east_hatch)
-	settle_prison_air(home)
-
-// ===== THE SUSTENANCE VENDOR =====
-
-/datum/unit_test/voidcrew_outpost_prison_vendor
-	parent_type = /datum/unit_test/voidcrew_outpost_management
-
-/// Buys one of `record` as `buyer` the way the vendor's window does. Returns what ended up in their hands, dropped and deleted.
-/datum/unit_test/voidcrew_outpost_prison_vendor/proc/buy(obj/machinery/vending/sustenance/outpost_prison/vendor, mob/living/carbon/human/buyer, datum/data/vending_product/record)
-	buyer.drop_all_held_items()
-	world.push_usr(buyer, CALLBACK(vendor, TYPE_PROC_REF(/obj/machinery/vending, vend), list("ref" = REF(record))))
-	// is_holding_item_of_type() answers FALSE, not null, when nothing was handed over
-	var/obj/item/bought = buyer.is_holding_item_of_type(record.product_path)
-	if(!bought)
-		return null
-	. = bought.type
-	qdel(bought)
-
-/datum/unit_test/voidcrew_outpost_prison_vendor/Run()
-	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("vendorowner")
-	TEST_ASSERT_NOTNULL(home, "The vendor test prison did not load")
-	// The fixture map has no vendor of its own: one stands in the office where the old map put it.
-	var/obj/machinery/vending/sustenance/outpost_prison/vendor = allocate(/obj/machinery/vending/sustenance/outpost_prison, prison_spot(home, 4, 5))
-	TEST_ASSERT(vendor.resistance_flags & INDESTRUCTIBLE, "The prison's vendor is not outpost property") // /datum/element/outpost_property
-	TEST_ASSERT(!length(vendor.hidden_records), "The prison's vendor has contraband to hack out")
-	vendor.set_machine_stat(vendor.machine_stat & ~NOPOWER)
-	var/datum/data/vending_product/tofu
-	for(var/datum/data/vending_product/record as anything in vendor.product_records)
-		if(record.product_path == /obj/item/food/tofu/prison)
-			tofu = record
-	TEST_ASSERT_NOTNULL(tofu, "The vendor does not stock soggy tofu")
-	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 4, 4), "vendorowner")
-	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 3, 4), "vendorvisitor")
-
-	// Staff take: the tofu comes out into their hand.
-	var/stocked = tofu.amount
-	TEST_ASSERT_EQUAL(buy(vendor, owner, tofu), /obj/item/food/tofu/prison, "Staff could not take soggy tofu")
-	TEST_ASSERT_EQUAL(tofu.amount, stocked - 1, "The vendor's tofu went from [stocked] to [tofu.amount]")
-	// Tofu feeds a prisoner like a ration.
-	var/obj/item/food/tofu/prison/sample = allocate(__IMPLIED_TYPE__, prison_spot(home, 5, 9))
-	TEST_ASSERT_EQUAL(outpost_prisoner_food_tier(sample), "ration", "Soggy tofu does not count as a ration")
-	qdel(sample)
-
-	// Anyone else is refused, and nothing leaves the shelf.
-	TEST_ASSERT(!vendor.may_vend(visitor), "A visitor may use the prison's vendor")
-	TEST_ASSERT(!vendor.allowed(visitor), "The vendor allows a visitor in")
-	TEST_ASSERT(vendor.allowed(owner), "The vendor keeps staff out")
-	stocked = tofu.amount
-	TEST_ASSERT_NULL(buy(vendor, visitor, tofu), "A visitor took tofu")
-	TEST_ASSERT_EQUAL(tofu.amount, stocked, "A visitor's try took tofu off the shelf")
-
-	// It restocks itself: one item a minute while powered (OUTPOST_PRISON_VENDOR_RESTOCK_TIME), nothing when full or unpowered.
-	for(var/datum/data/vending_product/record as anything in vendor.product_records)
-		record.amount = record.max_amount
-	tofu.amount = tofu.max_amount - 2
-	vendor.restock_progress = 0
-	vendor.process(30)
-	TEST_ASSERT_EQUAL(tofu.amount, tofu.max_amount - 2, "Half a minute restocked the vendor")
-	vendor.process(30)
-	TEST_ASSERT_EQUAL(tofu.amount, tofu.max_amount - 1, "A minute did not restock one tofu")
-	vendor.set_machine_stat(vendor.machine_stat | NOPOWER)
-	vendor.process(60)
-	TEST_ASSERT_EQUAL(tofu.amount, tofu.max_amount - 1, "An unpowered vendor restocked")
-	vendor.set_machine_stat(vendor.machine_stat & ~NOPOWER)
-	vendor.process(60)
-	TEST_ASSERT_EQUAL(tofu.amount, tofu.max_amount, "The vendor did not restock its last tofu")
-	vendor.process(120)
-	TEST_ASSERT_EQUAL(tofu.amount, tofu.max_amount, "A full vendor went over its stock")
-	TEST_ASSERT_EQUAL(vendor.restock_progress, 0, "A full vendor saved up restocking time")
 	settle_prison_air(home)
 
 // ===== THE PRISONERS' SMALL ROUTINES =====

@@ -218,6 +218,11 @@
 		if(trader_at_desk(trader) && can_report(trader) && sees(trader, offender))
 			last_witness = trader
 			return POLICE_WITNESS_SAW
+	// OUTPOST PRISON seam: on-duty corrections guards wear headsets and report offences inside the lockup
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in police.outpost.prison?.guard_mobs)
+		if(guard.on_duty() && is_ai_outpost_prison_guard(guard) && can_report(guard) && sees(guard, offender))
+			last_witness = guard
+			return POLICE_WITNESS_SAW
 	var/datum/voidcrew_crew_record/own_crew = offender.mind?.get_reputation_crew()
 	var/mob/living/watching_victim = isliving(victim) ? victim : null
 	if(watching_victim?.mind && !is_officer(watching_victim) && watching_victim != offender && !on_crew(watching_victim, own_crew) && sees(watching_victim, offender))

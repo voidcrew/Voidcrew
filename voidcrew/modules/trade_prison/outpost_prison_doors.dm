@@ -271,6 +271,7 @@
 	prison?.refresh_reach()
 	if(!prison?.holds_anyone())
 		return
+	record_lockup_break_in(prison, door, culprit)
 	playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	if(culprit)
 		prison.outpost?.police?.report_crime(culprit, OUTPOST_CRIME_JAILBREAK, null, QDELETED(tool) ? null : tool)

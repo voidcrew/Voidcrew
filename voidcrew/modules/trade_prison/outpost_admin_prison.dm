@@ -1,8 +1,8 @@
 /**
- * The Outpost Manipulator's Prison section: everything about a lockup an admin needs to test it
- * without waiting, from spawning prisoners to breaking the lights. R_ADMIN only, through the
- * manipulator's own authorization, and every action is logged. The tools act on a prison handed to
- * them (manage_prison()); the manipulator's own panel does not pick one yet.
+ * The Outpost Manipulator's Prison section: everything about a trader lockup an admin needs to
+ * inspect or test it without waiting, from spawning NPC prisoners and booking player inmates to
+ * breaking the lights. R_ADMIN only, through the manipulator's own authorization, and every action
+ * is logged.
  */
 
 /// Longest prison_subdue and prison_outage, in seconds
@@ -53,6 +53,9 @@ GLOBAL_LIST_INIT(outpost_admin_prison_actions, list(
 	"prison_bounty_make", // {tier}: a test record of that tier joins the pool, reserved for this wing
 	"prison_bounty_intake", // {setting: all|no_most_wanted|none}
 	"prison_bounty_clear", // {}: every record in the pool is closed
+	// Player inmates (outpost_prison_inmates.dm)
+	"prison_book_player", // {ckey|ref, seconds}: books a player (or prompts the admin to choose one) into the lockup
+	"prison_release_inmate", // {ref}: releases a held player inmate early
 ))
 
 /// prison_audience modes and the audience_override each sets
@@ -64,7 +67,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 
 /// Logs an admin's action on a lockup, as record() does for an outpost
 /datum/outpost_manipulator/proc/record_prison(mob/user, datum/outpost_prison/prison, operation)
-	var/place = format_text(prison?.outpost?.name) || "a lockup"
+	var/place = prison?.outpost_log_name() || format_text(prison?.outpost?.name) || "a lockup"
 	log_admin("[key_name(user)] used Outpost Manipulator to [operation] at the lockup of '[place]' ([REF(prison)]).")
 	message_admins("[key_name_admin(user)] used Outpost Manipulator to [operation] at the lockup of '[place]'.")
 
@@ -99,6 +102,67 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 				error = "No free cell."
 				return
 			record_prison(user, prison, "fill [count] prison cell\s")
+		if("prison_book_player")
+			var/mob/living/carbon/human/target
+			if(istext(params["ref"]) && length(params["ref"]))
+				var/datum/located = locate(params["ref"])
+				if(istype(located, /mob/living/carbon/human))
+					target = located
+				else if(istype(located, /datum/mind))
+					var/datum/mind/target_mind = located
+					if(ishuman(target_mind.current))
+						target = target_mind.current
+			else if(istext(params["ckey"]) && length(params["ckey"]))
+				var/wanted_ckey = ckey(params["ckey"])
+				for(var/mob/living/carbon/human/candidate in GLOB.mob_living_list)
+					var/candidate_ckey = candidate.ckey || (candidate.mind?.key ? ckey(candidate.mind.key) : null)
+					if(candidate_ckey == wanted_ckey && candidate.mind && candidate.stat != DEAD)
+						target = candidate
+						break
+			else if(user.client)
+				var/mob/living/picked = voidcrew_admin_pick_player(user.client, "Book Player Into Lockup")
+				if(!authorized(user) || QDELETED(prison) || !(prison in GLOB.outpost_prisons) || !picked)
+					return
+				if(!ishuman(picked))
+					error = "Only human player bodies can be booked into a lockup."
+					return
+				target = picked
+			if(QDELETED(target) || !target.mind || target.stat == DEAD)
+				error = "No living player with a mind selected."
+				return
+			var/seconds = admin_number(params["seconds"])
+			if(isnull(seconds) && user.client)
+				seconds = tgui_input_number(user, "Sentence in seconds", "Book Player Into Lockup", 180, max_value = OUTPOST_ADMIN_PRISON_MAX_SECONDS, min_value = 5)
+				if(!authorized(user) || QDELETED(prison) || !(prison in GLOB.outpost_prisons) || QDELETED(target) || !target.mind || target.stat == DEAD || isnull(seconds))
+					return
+			if(isnull(seconds) || seconds < 1)
+				error = "Invalid sentence duration."
+				return
+			seconds = clamp(round(seconds), 1, OUTPOST_ADMIN_PRISON_MAX_SECONDS)
+			if(!prison.admin_book_player(target, seconds))
+				error = "Could not book [target.real_name] into this lockup."
+				return
+			record_prison(user, prison, "book player [key_name(target)] for [seconds] s")
+		if("prison_release_inmate")
+			var/wanted_ref = params["ref"]
+			var/datum/mind/found_mind
+			if(istext(wanted_ref) && length(wanted_ref))
+				for(var/datum/mind/who as anything in prison.sentences)
+					if(!prison.holds(who))
+						continue
+					var/datum/prison_sentence/sentence = prison.sentences[who]
+					var/mob/living/body = sentence?.body_ref?.resolve()
+					if(REF(who) == wanted_ref || (body && REF(body) == wanted_ref))
+						found_mind = who
+						break
+			if(!found_mind)
+				error = "That inmate is no longer held here."
+				return
+			var/inmate_label = key_name(found_mind)
+			if(!prison.release_inmate(found_mind, TRUE))
+				error = "Could not release that inmate."
+				return
+			record_prison(user, prison, "release inmate [inmate_label] early")
 		if("prison_release", "prison_kill", "prison_remove", "prison_set", "prison_fight", "prison_breakout", "prison_wreck")
 			var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = locate(params["ref"]) in prison.prisoners
 			if(QDELETED(prisoner))
@@ -342,6 +406,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 		"conditions" = conditions_payload(),
 		"cells" = cell_rows,
 		"prisoners" = prisoner_rows,
+		"inmates" = admin_inmates_payload(),
 		"audience" = !!has_audience(),
 		"audience_mode" = isnull(audience_override) ? "auto" : (audience_override ? "on" : "off"),
 		"riot_active" = riot_active,

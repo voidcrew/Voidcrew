@@ -1264,7 +1264,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	if(QDELETED(prisoner))
 		return refuse(user, "[prison_name(prison)] took nobody: no cell there has room for an arrival.")
 	log_action(user, "admit bounty record [record.name] ([record_kind(record)]) into cell [prisoner.cell?.number] of [prison_name(prison)]")
-	tell(user, span_notice("[record.name] is beaming into cell [prisoner.cell?.number] of [prison_name(prison)]."))
+	tell(user, span_notice("[record.name] is entering cell [prisoner.cell?.number] of [prison_name(prison)].")) // OUTPOST PRISON seam: arrivals walk through Processing
 	return prisoner
 
 /// Takes `record` out of the pool and closes it (P7's bounty_pool_remove()). Returns TRUE if dropped.

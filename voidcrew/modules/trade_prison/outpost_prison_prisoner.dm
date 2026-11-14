@@ -835,9 +835,9 @@
 // ===== FOOD =====
 
 /**
- * How good a piece of food is: "ration" (the prison's own, and the Sustenance Vendor's tofu and
+ * How good a piece of food is: "ration" (the prison's own ration bar, prison tofu and prison
  * candy corn), "cooked" (anything from a real recipe), "snack" (simple food and junk food) or
- * "poor" (raw, rotten, poisonous or plain produce, and the vendor's moldy bread).
+ * "poor" (raw, rotten, poisonous or plain produce, and moldy bread).
  */
 /proc/outpost_prisoner_food_tier(obj/item/food/meal)
 	var/static/list/ration_types = typecacheof(list(

@@ -21,7 +21,7 @@ All three broadcast their positions constantly, so they show up on your helm's c
 
 Fly to the outpost and dock like anywhere else. Every ship that arrives gets its own private **hangar berth**, up to six at once; if all six are taken, traffic control tells you to come back later. Very large hulls are refused outright.
 
-Your berth is not the shop. To get to the market you use the **hangar elevator**: step into the marked alcove beside it, use the wall panel, and pick a floor. Floor 0 is the concourse; floors 1 through 6 are the berths, and the panel marks which one your own ship is parked in. The ride takes a few seconds and moves everything standing in the alcove, so crates and dragged bodies come along. Going up, the lift stops in the outpost's arrivals lobby, outside the weapons checkpoint (see below); the panel there takes you back down.
+Your berth is not the shop. To get to the market you use the **hangar elevator**: step into the marked alcove beside it, use the wall panel, and pick a floor. Floor 0 is the concourse; **Lockup** is the outpost's [prison block](prison-wing.md) (open to visitors and bounty hunters); floors 1 through 6 are the berths, and the panel marks which one your own ship is parked in. The ride takes a few seconds and moves everything standing in the alcove, so crates and dragged bodies come along. Going up to the concourse, the lift stops in the outpost's arrivals lobby, outside the weapons checkpoint (see below); the panel there takes you back down or over to the Lockup.
 
 A berth is locked to its own crew. Only your crew can send the elevator down to your berth, and anyone standing in the alcove with you rides along as your guest. If the crew member who pressed the button steps out before the car leaves, it stays put. Anyone can ride back up to the concourse, and once a ship is abandoned its berth is open to everyone.
 
@@ -165,7 +165,7 @@ A dead trader leaves an empty counter and a sign reading CLOSED. Nothing at that
 
 The first trader behind each counter may drop one item from their shelf when they die, and the outpost only has so much to give in a round. Replacement traders drop nothing. A trader who dies, is knocked out or is dragged off the counter does not run the shop; a revived one goes back to work.
 
-Killing a trader or a checkpoint guard that someone sees is at least 4 stars. The outpost bars your whole crew, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
+Killing a trader, a checkpoint guard, the lockup warden or a prison guard where someone sees it is at least 4 stars. The outpost bars your whole crew, so it costs far more than the shelf ever pays. A checkpoint guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down. Killing the lockup warden shuts live [bounty hand-ins](bounty-hunting.md#turning-in-a-catch) at that outpost until a replacement arrives.
 
 ### Holding up a trader
 
@@ -206,7 +206,7 @@ Crimes pile up against the person who did them, shown as **stars** on a wanted a
 | Attacking an officer with a weapon or a stun, or trying to cuff one | At least 3 |
 | Killing a shopper or regular | Up to 4 |
 | Killing a visitor or an officer | At least 3, and a lot more besides |
-| Killing a trader or a checkpoint guard | At least 4 |
+| Killing a trader, a checkpoint guard, the lockup warden or a prison guard | At least 4 |
 
 Fighting back against someone who attacked you first is not a crime. Hunters going after a bounty fugitive are left alone for it.
 
@@ -248,13 +248,13 @@ If you go down before the cuffs are on, you are cuffed where you lie and held th
 
 - **What they take.** Every weapon or tool you used in a crime goes into the **evidence locker** at the security desk. Implants, cyberware, ship keys and mission items are never taken. Anything you stole from a prisoner's locker goes back to that locker.
 - **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
-- **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
-- **If it is not.** You go to jail, three minutes at 1 star and six at 2. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
-- **At 3 stars and up.** There is no fine and no paying your way out. You go straight to jail: 10 minutes at 3 stars, 15 at 4 and 20 at 5.
+- **If it is paid.** You wait in a station cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
+- **If it is not.** The officer takes you by lift to the [outpost lockup](prison-wing.md), three minutes at 1 star and six at 2. The fine is tried again every half minute against your crew's ship accounts, and paying it ends the term. There is no debt afterwards.
+- **At 3 stars and up.** There is no fine and no paying your way out. Taken alive at Halcyon or Quartermain, you go straight to the [lockup](prison-wing.md): 10 minutes at 3 stars, 15 at 4 and 20 at 5. (At the Undertow, 3 stars and up is lethal.)
 
-In jail your gear comes off and goes into a **property locker** outside the cells, and you get an orange jumpsuit and shoes. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag.
+In a station cell or the lockup, your gear comes off and goes into a **property locker** outside (four at the security station and four in the lockup's front room), and you get an orange jumpsuit and shoes. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag.
 
-If you go down in a cell, the door opens for a medic and your time stops. Once you can walk again you have 20 seconds to get back in, or it counts as a breakout. Dying ends the term.
+In the lockup you share a yard and six-cell block with NPC prisoners and two guards, and you can knock up to a third off your time with yard work (mopping, laundry, delivering mail, dressing wounds, turning in contraband). Your lockup clock keeps running even in critical condition, asleep or offline, and a guard stabilizes critical inmates with first aid; if you die in custody, a guard brings your body out to the front room for your crew. In the short-stay station cell, going down opens the door for a medic and pauses your clock, with 20 seconds to step back in once you can walk. Dying ends the term.
 
 ### Your things
 
@@ -270,7 +270,7 @@ Emagging a property locker or the evidence locker, or taking anything out of one
 
 ### Breaking out
 
-The cell doors open for nothing but the cell, and an emag does nothing to them. You can force one with a crowbar or jaws from either side. It takes about twelve seconds, sets off an alarm, and is 3 stars. So is walking out of a cell before your time is up, or carrying a prisoner out. Taking police cuffs off someone is a crime too.
+Station cell doors open for nothing but the cell, and a plain emag does nothing to either station cells or [lockup](prison-wing.md) doors. Station cells can be forced with a crowbar or jaws in about twelve seconds; lockup cell doors, staff airlocks and serving hatches can be hacked or pried with tools or an airlock override card, and mend themselves after three minutes. Breaking a door, walking out before your time is up, or pulling or carrying a prisoner out sets off an alarm and is at least 3 stars (an inmate carried out by someone else gets 20 seconds to walk back in). Taking police cuffs off someone is a crime too.
 
 ### Accomplices
 

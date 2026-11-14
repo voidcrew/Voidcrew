@@ -226,6 +226,7 @@
 	processing_who_ref = null
 	processing_entry_ref = null
 	processing_seconds = 0
+	claim_clear()
 
 /// Advances Processing by `seconds`
 /datum/outpost_prison/proc/processing_tick(seconds)
@@ -246,6 +247,8 @@
 			processing_cross_tick(seconds)
 		if(OUTPOST_PROCESSING_RELEASE)
 			processing_release_tick(seconds)
+		if(OUTPOST_PROCESSING_CLAIM)
+			processing_claim_tick(seconds)
 		if(OUTPOST_PROCESSING_BOOK)
 			processing_seconds += seconds
 			if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT)
@@ -788,6 +791,7 @@
 	processing_inner_ref = null
 	processing_outer_ref = null
 	processing_leavers.Cut()
+	claim_clear()
 
 // ===== THE PRISONER'S SIDE =====
 

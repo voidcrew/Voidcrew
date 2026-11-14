@@ -2647,7 +2647,10 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 		return refusal
 	return ..()
 
-// A ship that works for him can't turn him in, at any pad
+// A ship that works for him can't turn him in, at any pad or lockup desk
+/datum/criminal_bounty/kingpin/lockup_bound_refusal(obj/structure/overmap/ship/ship, mob/user) // OUTPOST PRISON seam
+	return SSbounty_kingpin.kingpin_bound_refusal(ship, user)
+
 /datum/criminal_bounty/kingpin/turn_in(obj/machinery/mission_pad/pad, obj/structure/overmap/ship/ship, mob/user)
 	if(is_open())
 		var/refusal = SSbounty_kingpin.kingpin_bound_refusal(ship, user)

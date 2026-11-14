@@ -13,10 +13,10 @@ Dock at the signal like you would at a ruin. The outpost is completely dark: no 
 
 ## What's inside
 
-Something moved in after the crew left. Each derelict has one kind of trouble: a xeno nest, a cult, the restless dead, or things from somewhere else. Once they are dead they stay dead. Every derelict has a prison wing.
+Something moved in after the crew left. Each derelict has one kind of trouble: a xeno nest, a cult, the restless dead, or things from somewhere else. Once they are dead they stay dead.
 
 ## Taking it over
 
 The power bay has a P.A.C.M.A.N. generator with no fuel and a drained SMES. Plasma was left elsewhere in the outpost, or bring your own. Wrench the generator down, load it and turn it on, and the outpost's APCs charge back up like any station's. Once the management console has power, claim the outpost there. You do not have to clear it first, but whatever is still inside stays with you. You can own it alongside outposts you already have.
 
-After that it is an ordinary [player outpost](player-outposts.md) with a [prison wing](prison-wing.md). The mess, the runes, the webs and the resin are ordinary clutter you can clean up.
+After that it is an ordinary [player outpost](player-outposts.md). The mess, the runes, the webs and the resin are ordinary clutter you can clean up.

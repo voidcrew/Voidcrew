@@ -1401,10 +1401,6 @@
 			break
 	TEST_ASSERT(warden.getBruteLoss() > brute_before, "The prisoner's blows did no harm")
 	TEST_ASSERT(prisoner.retaliating(), "One blow ended the prisoner hitting back")
-	// Turrets answer it as a swing at staff.
-	var/obj/machinery/porta_turret/prison_test_probe/probe = allocate(/obj/machinery/porta_turret/prison_test_probe, prison_spot(home, 11, 10))
-	TEST_ASSERT(prisoner.turret_trouble(), "A turret does not count hitting back as trouble")
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(prisoner, probe), 2, "A turret's verdict spares a prisoner hitting back") // OUTPOST_PRISON_TURRET_SHOOT
 	// The trouble tick keeps it going while the player is in reach.
 	prison.tick(1)
 	TEST_ASSERT(prisoner.retaliating(), "The prisoner stopped hitting back with the player beside them")

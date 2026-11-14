@@ -65,6 +65,8 @@
 	var/died_in_custody_at = 0
 	/// Whether OUTPOST_CRIME_MURDER has already been reported for this death in custody
 	var/murder_reported = FALSE
+	/// Set when an admin booked this sentence directly with a fixed duration
+	var/admin_booked = FALSE
 
 /datum/prison_sentence/Destroy()
 	mind = null
@@ -151,6 +153,38 @@
 		if(holds(who))
 			return TRUE
 	return FALSE
+
+/// How many player inmates are actively serving time in this wing
+/datum/outpost_prison/proc/active_inmate_count()
+	var/count = 0
+	for(var/datum/mind/who as anything in sentences)
+		if(holds(who))
+			count++
+	return count
+
+/// Rows for active player inmates in the Outpost Manipulator's Prison panel
+/datum/outpost_prison/proc/admin_inmates_payload()
+	var/list/rows = list()
+	for(var/datum/mind/who as anything in sentences)
+		if(!holds(who))
+			continue
+		var/datum/prison_sentence/sentence = sentences[who]
+		var/mob/living/body = sentence?.body_ref?.resolve()
+		if(QDELETED(body))
+			continue
+		rows += list(list(
+			"ref" = REF(who),
+			"body_ref" = REF(body),
+			"name" = body.real_name || who.name || "Inmate",
+			"ckey" = body.ckey || (who.key ? ckey(who.key) : null),
+			"stars" = sentence.stars_at_booking,
+			"remaining" = round(sentence.remaining_seconds()),
+			"served" = round(sentence.seconds_served),
+			"worked_off" = round(sentence.effective_worked_off()),
+			"total" = round(sentence.total_seconds),
+			"admin_booked" = !!sentence.admin_booked,
+		))
+	return rows
 
 /// Active sentence for `person` when they are a held inmate here, or null
 /datum/outpost_prison/proc/sentence_for(mob/living/person)
@@ -877,7 +911,7 @@
 	return !QDELETED(officer) && officer.stat != DEAD && get_turf(officer) == outside_turf
 
 /// Records `suspect` as a held inmate with a fresh term for `stars`, hooks traits/signals, notifies their crew and updates boards
-/datum/outpost_prison/proc/admit_inmate_sentence(mob/living/carbon/suspect, datum/outpost_warrant/warrant, stars)
+/datum/outpost_prison/proc/admit_inmate_sentence(mob/living/carbon/suspect, datum/outpost_warrant/warrant, stars, custom_seconds = null, admin_booked = FALSE)
 	var/datum/mind/mind = suspect.mind
 	var/datum/prison_sentence/sentence = sentences[mind]
 	if(!sentence)
@@ -889,7 +923,8 @@
 	sentence.mind = mind
 	sentence.body_ref = WEAKREF(suspect)
 	sentence.stars_at_booking = clamped_stars
-	sentence.total_seconds = round(OUTPOST_POLICE_JAIL[clamped_stars] / (1 SECONDS))
+	sentence.admin_booked = !!admin_booked
+	sentence.total_seconds = (!isnull(custom_seconds) && custom_seconds > 0) ? round(custom_seconds) : round(OUTPOST_POLICE_JAIL[clamped_stars] / (1 SECONDS))
 	sentence.seconds_served = 0
 	sentence.seconds_worked_off = 0
 	sentence.bail_elapsed = 0
@@ -922,8 +957,53 @@
 		for(var/obj/structure/overmap/ship/ship as anything in police.crew_ship_list(crew))
 			ship.ship_notify("[outpost_log_name()] Security: [suspect.real_name] is in the lockup.", "LOCKUP NOTICE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	update_lockup_boards()
-	add_log("[suspect.real_name] was booked in ([clamped_stars] star\s, [round(sentence.total_seconds / 60)] min).")
+	add_log("[suspect.real_name] was booked in ([clamped_stars] star\s, [max(1, round(sentence.total_seconds / 60))] min).")
+	record_lockup_booking(src, suspect, clamped_stars, sentence.total_seconds, sentence.admin_booked)
 	return sentence
+
+/// Picks an open yard floor turf inside `cell_block` for an admin booking
+/datum/outpost_prison/proc/admin_yard_turf()
+	var/turf/fallback
+	for(var/turf/open/tile in cell_block)
+		if(tile.density || (locate(/obj/machinery/door) in tile))
+			continue
+		fallback ||= tile
+		if(!cell_at(tile) && prisoner_can_stand(tile))
+			return tile
+	return fallback
+
+/// Admin Manipulator hook: books `suspect` into this lockup for `seconds` (stripping to a wing locker when available)
+/datum/outpost_prison/proc/admin_book_player(mob/living/carbon/human/suspect, seconds)
+	if(QDELETED(src) || !istype(suspect) || QDELETED(suspect) || suspect.stat == DEAD || !suspect.mind || !isnum(seconds) || seconds < 1)
+		return FALSE
+	suspect.pulledby?.stop_pulling()
+	suspect.stop_pulling()
+	if(suspect.buckled)
+		suspect.buckled.unbuckle_mob(suspect, force = TRUE)
+	var/datum/outpost_police/police = outpost?.police
+	if(police)
+		police.store_property(suspect, null, wing)
+		if(QDELETED(src) || QDELETED(suspect) || suspect.stat == DEAD || !suspect.mind)
+			return FALSE
+		booking_uncuff_prisoner(suspect, null, police)
+	else
+		suspect.uncuff()
+	if(!suspect.w_uniform)
+		suspect.equip_to_slot_or_del(new /obj/item/clothing/under/rank/prisoner(suspect), ITEM_SLOT_ICLOTHING, indirect_action = TRUE)
+	if(!suspect.shoes)
+		suspect.equip_to_slot_or_del(new /obj/item/clothing/shoes/sneakers/orange(suspect), ITEM_SLOT_FEET, indirect_action = TRUE)
+	if(!in_inmate_bounds(suspect))
+		var/turf/yard_spot = admin_yard_turf()
+		if(!yard_spot)
+			return FALSE
+		suspect.forceMove(yard_spot)
+	if(!in_inmate_bounds(suspect))
+		return FALSE
+	var/datum/outpost_warrant/warrant = police?.get_warrant(suspect.mind)
+	var/stars = max(1, police ? police.get_stars(suspect.mind) : 1)
+	admit_inmate_sentence(suspect, warrant, stars, custom_seconds = round(seconds), admin_booked = TRUE)
+	greet_new_inmate(suspect)
+	return TRUE
 
 /// Has a conscious yard prisoner greet a newly arrived inmate ("Fresh one.")
 /datum/outpost_prison/proc/greet_new_inmate(mob/living/suspect)
@@ -1186,15 +1266,16 @@
 		sync_inmate_container_watch(sentence, body)
 
 		var/datum/outpost_warrant/warrant = police?.get_warrant(who)
-		if(police && (!warrant || warrant.heat <= 0))
+		if(police && !sentence.admin_booked && (!warrant || warrant.heat <= 0))
 			release_inmate(who, TRUE)
 			continue
 		var/current_stars = sentence.stars_at_booking
-		if(police && warrant)
+		if(police && warrant && warrant.heat > 0)
 			current_stars = clamp(police.get_stars(who), 1, length(OUTPOST_POLICE_JAIL))
-			var/star_total = round(OUTPOST_POLICE_JAIL[current_stars] / (1 SECONDS))
-			if(star_total > sentence.total_seconds)
-				sentence.total_seconds = star_total
+			if(!sentence.admin_booked || current_stars > sentence.stars_at_booking)
+				var/star_total = round(OUTPOST_POLICE_JAIL[current_stars] / (1 SECONDS))
+				if(star_total > sentence.total_seconds)
+					sentence.total_seconds = star_total
 
 		var/inside = in_inmate_bounds(body)
 		if(sentence.return_left > 0)
@@ -1226,11 +1307,12 @@
 			continue
 
 		sentence.seconds_served += seconds
+		tally_lockup_served(src, body, seconds)
 		if(sentence.remaining_seconds() <= 0)
 			release_inmate(who, TRUE)
 			continue
 
-		if(police && warrant && current_stars <= 2)
+		if(police && warrant && warrant.heat > 0 && !sentence.admin_booked && current_stars <= 2)
 			sentence.bail_elapsed += seconds
 			var/retry_seconds = max(1, round(OUTPOST_POLICE_BAIL_RETRY / (1 SECONDS)))
 			if(sentence.bail_elapsed >= retry_seconds)
@@ -1301,6 +1383,7 @@
 		police.wake()
 	if(body)
 		add_log("[body.real_name] broke out of the lockup.")
+	record_lockup_escape(src, body, "inmate")
 	update_lockup_boards()
 	return TRUE
 

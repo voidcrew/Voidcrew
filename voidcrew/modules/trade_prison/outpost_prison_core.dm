@@ -137,6 +137,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 
 /datum/outpost_prison/Destroy()
 	STOP_PROCESSING(SSprocessing, src)
+	warden_destroy()
 	inmates_destroy()
 	processing_destroy()
 	extras_destroy()
@@ -865,6 +866,7 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
  * tick proc; keep this order as it is.
  */
 /datum/outpost_prison/proc/tick(seconds)
+	ensure_warden()
 	presence_tick(seconds)
 	conditions_tick(seconds)
 	containment_tick(seconds)

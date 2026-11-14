@@ -2,10 +2,10 @@
 title: Bounty Hunting
 category: Economy
 order: 2.5
-blurb: Hunt wanted criminals from your mission board, bring them to your mission pad alive for full pay, and send them on to outpost prisons.
+blurb: Hunt wanted criminals from your mission board, walk live catches into a trader outpost's lockup for full pay, or turn bodies and trophies in on your pad.
 ---
 
-Wanted criminals hide out on planets, in ruins, aboard pirate ships and among the patrons of trader outposts. Take a bounty from your ship's mission board, find the criminal, subdue them and bring them to your ship's mission pad. They pay the most when they arrive stunned or cuffed. Pay works like [missions](missions.md): credits go to the ship account and vouchers appear on the pad. A criminal caught alive goes on to serve time in a player outpost's [prison wing](prison-wing.md).
+Wanted criminals hide out on planets, in ruins, aboard pirate ships and among the patrons of trader outposts. Take a bounty from your ship's mission board, find the criminal, subdue them and bring live catches to the **lockup** at any [trader outpost](trader-outposts.md) (see [Outpost Lockup](prison-wing.md)). Dead targets, evidence tags and kill-only trophies go on your ship's mission pad instead. Criminals pay the most when brought in stunned or cuffed: credits go to your ship account and vouchers drop at the desk or pad. A criminal handed in alive goes on to serve time in an outpost lockup.
 
 ## The bounty board
 
@@ -23,7 +23,7 @@ Each card is a wanted poster:
 - the mugshot, name, species, sex and alias. "Old photo" under the mugshot means it shows how they used to look (a trader-outpost fugitive);
 - how they're wanted and what for: **Wanted alive**, **Wanted dead or alive** (the kingpin) or **Wanted dead** (lairs and the lich);
 - where they were last seen, who they were seen with ("with two friends, one armed"), and the zone;
-- the reward: the full pay, in credits and vouchers. The card doesn't show what a catch in critical condition or dead pays; see [the pad and turning in](#the-pad-and-turning-in);
+- the reward: the full pay, in credits and vouchers. The card doesn't show what a catch in critical condition or dead pays; see [turning in a catch](#turning-in-a-catch);
 - the time left.
 
 The card doesn't say what kind of criminal it is, or how they fight. [The three kinds of criminal](#the-three-kinds-of-criminal) below does. A private offer shows no mugshot until you accept it.
@@ -55,7 +55,7 @@ Press **Hunt** on a public bounty, or **Accept Offer** on a private offer. This 
 
 - Your ship can hunt **one** public bounty at a time. The kingpin and kill-only bounties count as that one. Private offers don't.
 - **Abandon** frees your hunt, but your ship can never hunt that bounty again. **Drop Offer** closes a private offer.
-- Any crew that gets a public bounty's criminal onto its own pad gets paid, whether it was hunting or not. A private offer only pays the ship it was offered to.
+- Any crew that walks a public bounty's live criminal into a lockup, or puts their dead body or tag on its own ship's pad, gets paid, whether it was hunting or not. A private offer only pays the ship it was offered to.
 - **Warrant** prints a warrant on your mission pad: the mugshot, the listing, the reward, and all but one of their distinguishing features. The printer needs 30 seconds between warrants, and each ship gets three per bounty.
 
 ## Finding them
@@ -130,7 +130,7 @@ Every Most Wanted criminal is a mini-boss with one of six kits. The board's **Ot
 | Cyberpsycho (rare) | A twitching criminal in shorts, chrome on its arms, chest and legs | Fights with a blade from its forearm. Lunges down a lit line, leaps onto you under a red mark, and throws a piston punch. Its chrome fist breaks windows. Hurt, or hit with a stun weapon, it roars and shrugs off stuns for a while, then collapses. Gets up once after it goes down. | Get off the line and out from under the mark. Back off while it roars, and cuff it when it collapses. An EMP makes its chrome spark and shuts it down for a while, and then it tires like the others. |
 
 !!! warning "Worn out means switch to stuns"
-    A mini-boss in critical condition only pays 60% on the pad. Once it's worn out, stun it and cuff it, or patch it up before you turn it in.
+    A mini-boss in critical condition only pays 60% at the lockup. Once it's worn out, stun it and cuff it, or patch it up before you walk it into Processing.
 
 ## Taking them alive
 
@@ -149,26 +149,41 @@ Criminals are people. They bleed, break bones, fall into critical condition and 
 !!! tip "Bring cuffs and a stun"
     A stun only lasts a little while. Have the cuffs in hand before you stun them.
 
-## The pad and turning in
+## Turning in a catch
 
-- Put the criminal, or their evidence tag or trophy, on the mission pad's own tile. Not in a locker or a bag, and not next to the pad.
-- The pad must be bolted down and aboard your ship.
-- The pad says who is on it and what state they're in ("On the pad: Tess Harlow, restrained."), and why it won't take them if it won't. It never says what they'll pay.
-- Press **Turn In** on their card. If it's greyed out, its tooltip says why.
-- The pad beams them away over 3 seconds. Credits go to the ship account. Vouchers appear on the pad, and so does everything of yours you put on them: cuffs, a suit, a tank. Your ship's notice says what state they were in and what was paid.
+Live catches and dead targets go to two different places:
 
-Pay follows the state they're in **on the pad** when you press Turn In:
+- **Alive (stunned, cuffed or in critical condition):** hand them in at any trader outpost's [lockup](prison-wing.md). Your ship's mission pad refuses living catches ("Alive. The lockup takes those.").
+- **Dead, an evidence tag, or a kill-only trophy:** turn them in on your ship's mission pad. The lockup warden refuses corpses ("We don't take bodies.") and kill-only targets.
 
-| State | Pays |
-|---|---|
-| Stunned, given up or cuffed | The full reward, with vouchers |
-| In critical condition | 60% |
-| Dead, or their evidence tag | 25% |
-| Standing and free | Refused |
+### Live catches at a lockup
 
-What happened before doesn't count: a criminal you put in critical condition, patched up and cuffed pays in full. Below full pay you get no vouchers. Instead, each voucher counts as 1,200 cr before the percentage is taken, and it's all paid in credits. For example, a Wanted criminal worth 1,400 cr and a voucher pays 1,560 cr in critical condition and 650 cr dead.
+Dock at any trader outpost, ride the hangar elevator to the **Lockup** floor with your catch, and pull them up to **Processing's outer door** while the warden is at the front desk:
 
-A dead criminal can be revived like anyone, and then pays for the state they're in. If the body is destroyed (gibbed, dusted, or lost in lava or a chasm), an **evidence tag** turns up nearby. It pays the dead share. If nothing at all is left, the bounty lists again somewhere else 5 minutes later. A bounty pays once.
+- Bump or click the outer door while pulling the cuffed, stunned or critical criminal. The outer door opens while the inner door stays shut.
+- Pull them inside Processing, let go, and step back out into the front room. If you linger inside for 10 seconds, the warden tells you to step out and waits. If the criminal breaks free before the door shuts, the hand-in aborts and the door opens again.
+- Once the outer door shuts with the catch alone inside, the bounty closes and pays out. Credits go to your crew's ship account (preferring a crew ship berthed at that outpost, or dropping a holochip at the desk if you have no ship). Trade vouchers, a **CAPTURED** poster on full-pay Wanted and Most Wanted catches, and your cuffs, space suit or tank appear by the front desk.
+
+### Dead targets, evidence tags and trophies on your ship's pad
+
+- Put the corpse, evidence tag or kill-only trophy on your ship's bolted mission pad tile (not inside a locker or bag) and press **Turn In** on the card.
+- If **Turn In** is greyed out, its tooltip says why.
+- The pad beams the body or tag away over 3 seconds, credits your ship account, and leaves any vouchers and your own gear on the pad.
+
+### Payout shares
+
+Pay follows the criminal's condition at the moment Processing's outer door shuts (or when you press **Turn In** on the pad):
+
+| State | Where | Pays |
+|---|---|---|
+| Stunned, given up or cuffed | Trader outpost lockup | The full reward, with vouchers |
+| In critical condition | Trader outpost lockup | 60% |
+| Dead, or their evidence tag | Your ship's mission pad | 25% |
+| Standing and free | Anywhere | Refused |
+
+What happened before doesn't count: a criminal you put in critical condition, patched up and cuffed pays in full at the lockup. Below full pay you get no vouchers. Instead, each voucher counts as 1,200 cr before the percentage is taken, and it's all paid in credits. For example, a Wanted criminal worth 1,400 cr and a voucher pays 1,560 cr in critical condition at a lockup and 650 cr dead on your pad.
+
+A dead criminal can be revived like anyone, and then brought to a lockup alive. If the body is destroyed (gibbed, dusted, or lost in lava or a chasm), an **evidence tag** turns up nearby for your pad. If nothing at all is left, the bounty lists again somewhere else 5 minutes later. A bounty pays once.
 
 ## Trader outposts
 
@@ -200,7 +215,7 @@ A crime boss holds court in the lounge at the Undertow Exchange from the start o
 
 **Talking.** Click him with an empty hand from across the table. You can say "We're here for you.", "Got any work?" or "Walk away."
 
-**Work.** Ask him for work and he offers your crew a [Drug Run](missions.md#street-chemistry). Say "I'll take it." within 3 minutes to sign on. Only one crew can run it at a time, and he won't hire drifters or anyone whose crew has shot at his people. Once your crew works for him, nobody on your crew, and nobody aboard your ship at the time, can hunt him or turn him in for the rest of the round, at any pad. His goons treat you as guests.
+**Work.** Ask him for work and he offers your crew a [Drug Run](missions.md#street-chemistry). Say "I'll take it." within 3 minutes to sign on. Only one crew can run it at a time, and he won't hire drifters or anyone whose crew has shot at his people. Once your crew works for him, nobody on your crew, and nobody aboard your ship at the time, can hunt him or turn him in for the rest of the round, at any lockup or pad. His goons treat you as guests.
 
 **Wanted.** Later in the round he goes on the board, **wanted dead or alive**, and every crew is told.
 
@@ -218,7 +233,7 @@ A crime boss holds court in the lounge at the Undertow Exchange from the start o
 - When he falls, half the goons left run for it.
 - Officers stay out of it. Fighting his crew is not a crime, but hitting other players still is.
 
-Once he's down or cuffed, unbuckle him from the sofa and drag him to your ship's pad in the Undertow's hangar.
+Once he's down or cuffed, unbuckle him from the sofa and ride the hangar lift down to the **Lockup** floor to hand him in alive (or take his body to your ship's pad in the hangar if you killed him).
 
 ## Lairs and kill-only bounties
 
@@ -241,46 +256,45 @@ A mob nightclub run by Arkady Sokolov, placed in the Contested or Lawless Zone f
 
 When Ilthuun's lair surfaces (see [Hostile Fauna & Elites](threats-and-elites.md)), a kill-only bounty goes up on him. His card recommends a crew of 4 or more. He pays 7,650–9,690 cr and 2 vouchers in the Contested Zone, or 11,700–14,820 cr and 3 vouchers in the Lawless Zone. His clock doesn't run while he's alive. When he dies, a **cracked crown shard** drops by his body, and you have 45 minutes to get it to a pad.
 
-## After the catch: prison wings
+## After the catch: the lockup
 
-A criminal turned in alive joins the **prisoner transfer pool**, and player outposts' [prison wings](prison-wing.md) take them from there. The pad pays whether or not anyone has a prison.
+A criminal handed in alive joins the **prisoner transfer pool**, and the trader outposts' [lockups](prison-wing.md) admit them from there through Processing. You are paid at hand-in even if every cell is full.
 
-- If your crew runs an outpost with a working prison wing, it gets first claim for 10 minutes. The turn-in notice tells you.
-- A prisoner no wing takes within 45 minutes is sent somewhere else.
-- They keep their name and crime and arrive in a plain prison jumpsuit with no gear. They're as hurt as when they were caught, but never below half health.
+- The lockup where you handed them in holds first claim on them for up to 10 minutes, or for 3 minutes if all six of its cells stay full, before another outpost's lockup can take them.
+- A prisoner no lockup has room for within 45 minutes moves on out of the sector.
+- They keep their name and crime, step out of Processing in a plain prison jumpsuit with no gear, and have something to say if they spot the crew that brought them in through the glass. They arrive as hurt as when they were caught, but never below half health.
 
-Bounty prisoners earn the outpost more than ordinary prisoners, and they're harder to keep:
+Bounty prisoners are tougher and rowdier in the yard than ordinary prisoners:
 
-| Tier | Earns | Health | Punches | Shiv blows |
-|---|---|---|---|---|
-| Petty | ×1.5 | 100 | Normal | Normal |
-| Wanted | ×2 | 120 | ×1.25 | ×1.15 |
-| Most Wanted | ×2.5 | 150 | ×1.5 | ×1.3 |
+| Tier | Toughness | Punches | Shiv blows |
+|---|---|---|---|
+| Petty | Normal | Normal | Normal |
+| Wanted | Takes ~17% less damage | ×1.25 | ×1.15 |
+| Most Wanted | Takes ~33% less damage | ×1.5 | ×1.3 |
 
-- Wanted and Most Wanted prisoners get unhappy faster, join riots sooner, and break through the wing's exits faster in a riot. Those who weren't meek hit back more often.
+- Wanted and Most Wanted prisoners get unhappy faster, join riots sooner, and batter through lockup doors and hatches faster in a riot. Those who weren't meek hit back more often, and mini-bosses keep their signature moves in a brawl.
 - A Most Wanted prisoner awake and uncuffed in the yard stirs up the others, and is first to shout when a riot starts.
-- Meek bounty prisoners are twice as likely to back off when hit. They also go over open serving hatches sooner and faster, hang around the staff door to slip through it when it opens, and run faster when loose.
-- Kessler won't take a bounty prisoner for his experiments.
-- Bounty prisoners fill at most half of a wing's cells. A wing takes one Most Wanted at a time, plus one more for each cell block extension.
-
-The warden's console has a **Bounty prisoners** setting: **All**, **No Most Wanted** or **None**. Only managers can change it. The console names the next bounty arrival beside the intake switch shortly before they beam in, and a Most Wanted transfer is announced to the crew.
+- Meek bounty prisoners are twice as likely to back off when hit. They also climb open serving hatches sooner and faster, hang around staff doors to dart through when one opens, and run faster when loose.
+- Bounty prisoners fill at most half of a lockup's six cells, with at most one Most Wanted prisoner in a wing at a time.
 
 ## Rules between crews
 
-- Nobody owns a catch. Whoever gets the criminal onto their own ship's pad and presses Turn In is paid. Cuffing them first gives no claim, and anyone can take the cuffs off with an empty hand.
+- Nobody owns a catch. Whoever shuts a live criminal into a lockup's Processing room (or presses Turn In on their own ship's pad with a corpse or trophy) gets paid. Cuffing them first gives no claim, and anyone can take the cuffs off with an empty hand.
 - When a bounty is turned in, every other crew hunting it is told who claimed it.
 - Normal PvP rules apply. At trader outposts, [outpost security](trader-outposts.md#outpost-security) works as usual.
 
 ## FAQ
 
-**Why is Turn In greyed out?** The criminal has to be on the pad's own tile, not in a locker or bag. The pad has to be bolted down and aboard your ship. A criminal standing free is refused.
+**Why is Turn In greyed out on our ship's pad?** Live criminals aren't turned in on the pad ("Alive. The lockup takes those.") — walk them into a trader outpost's [lockup](prison-wing.md) instead. For a dead body, evidence tag or trophy, make sure it lies directly on your bolted ship pad's tile, not in a locker or bag.
 
-**Why did we only get 60%?** They were in critical condition on the pad. Treat them first: a criminal patched up and cuffed pays in full.
+**Why didn't Processing's door open at the lockup?** You need to be pulling a cuffed, stunned or critical bounty criminal whose poster is still open, and the lockup warden has to be alive and standing at the front desk. Corpses, kill-only targets, look-alikes and another ship's private offer are refused.
 
-**They got out of the cuffs and ran off.** Criminals work at their cuffs when nobody's dragging them. Keep hold of them on the way to the pad.
+**Why did we only get 60%?** They were in critical condition when Processing shut. Treat them first: a criminal patched up and cuffed pays in full.
+
+**They got out of the cuffs and ran off.** Criminals work at their cuffs when nobody's dragging them. Keep hold of them on the way to the lockup, and don't leave them uncuffed in Processing.
 
 **They vanished when we left the planet.** The site unloaded. They'll be back, unhurt, the next time it loads.
 
-**We abandoned a bounty. Can we still turn them in?** Yes, if it's still up and you bring them to your pad. You just can't hunt it again.
+**We abandoned a bounty. Can we still turn them in?** Yes, if it's still up and you bring them to a lockup alive (or their body to your pad). You just can't hunt it again.
 
 **Can we use a transporter, a fulton or a player bounty to move them?** No. Criminals can't be teleported, and player bounty offers won't take living cargo. Carry them.

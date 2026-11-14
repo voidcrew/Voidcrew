@@ -94,6 +94,17 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/last_line
 	/// Killed rather than downed
 	var/died_on_duty = FALSE
+	/// world.time we died, so a lethal blow's synchronous on_attacked() still counts
+	var/died_at = -1
+	/// Set once OUTPOST_CRIME_KILL_STAFF has been counted or queued for this death
+	var/kill_reported = FALSE
+	/// Last player who dealt a damaging blow to us, when, and whether someone saw it
+	var/datum/weakref/last_player_attacker_ref
+	var/last_player_attack_at = 0
+	var/last_player_attack_seen = FALSE
+	/// Last thrown item that struck us, and the tick it landed
+	var/datum/weakref/struck_source_ref
+	var/struck_source_at = -1
 	/// Off shift: seconds left to walk to the staff closet before they may go from wherever they are
 	var/dismiss_left = 0
 	/// Off shift: where they walk to, a tile of the staff closet
@@ -111,9 +122,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	COOLDOWN_DECLARE(warned_cooldown)
 
 /mob/living/carbon/human/npc/outpost_prison_guard/Initialize(mapload)
+	RegisterSignal(src, COMSIG_ATOM_PREHITBY, PROC_REF(note_thrown_at))
 	. = ..(mapload)
 	AddElement(/datum/element/relay_attackers)
 	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
+	RegisterSignal(src, COMSIG_LIVING_GET_PULLED, PROC_REF(on_pulled))
 	// Nothing moves a guard but their own feet.
 	RegisterSignal(src, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport))
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
@@ -136,6 +149,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	prison?.guard_mobs -= src
 	prison = null
 	leave_spot = null
+	last_player_attacker_ref = null
+	struck_source_ref = null
 	return ..()
 
 /// Takes on the name, rank, face and personality of the guard on the payroll. The first one sent sets the record's face.
@@ -253,8 +268,12 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /mob/living/carbon/human/npc/outpost_prison_guard/death(gibbed)
 	var/was_alive = stat != DEAD
+	if(was_alive)
+		died_at = world.time
+		kill_reported = FALSE
 	. = ..()
 	if(!was_alive || stat != DEAD)
+		died_at = -1
 		return
 	died_on_duty = TRUE
 	set_guard_upright(FALSE)
@@ -285,12 +304,78 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	prison?.add_log("[real_name] went down.")
 	return TRUE
 
+/// Records an outsider's aggression against staff and tracks damaging player blows for seen guard-kill charges
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/record_guard_hit(mob/living/hitter, obj/item/weapon, damaging = FALSE)
+	if(!isliving(hitter) || hitter == src || is_outpost_prisoner(hitter) || is_ai_outpost_prison_guard(hitter))
+		return
+	if(stat == DEAD && died_at != world.time)
+		return
+	if(damaging && hitter.mind)
+		last_player_attacker_ref = WEAKREF(hitter)
+		last_player_attack_at = world.time
+		last_player_attack_seen = !!prison?.prisoner_violence_seen(hitter, src)
+	var/inmate_in_block = !!prison && prison.is_inmate(hitter) && prison.in_cell_block(hitter)
+	if(!inmate_in_block && is_ai_outpost_prison_guard(src) && prison?.outpost)
+		prison.outpost.register_aggression(hitter, OUTPOST_CRIME_ASSAULT_STAFF, src, weapon)
+	if(damaging && stat == DEAD && died_at == world.time && !kill_reported)
+		prison?.report_guard_killed(src)
+
+/mob/living/carbon/human/npc/outpost_prison_guard/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE, blocked = 0)
+	if(stat != DEAD && hitting_projectile.is_hostile_projectile())
+		var/mob/living/shooter
+		if(isliving(hitting_projectile.firer))
+			shooter = hitting_projectile.firer
+		else if(ismecha(hitting_projectile.firer))
+			var/obj/vehicle/sealed/mecha/mech = hitting_projectile.firer
+			for(var/mob/living/pilot in mech.return_drivers())
+				shooter = pilot
+				break
+		if(shooter)
+			var/obj/item/fired_from = hitting_projectile.fired_from
+			record_guard_hit(shooter, isitem(fired_from) ? fired_from : null, damaging = TRUE)
+	return ..()
+
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/note_thrown_at(datum/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	if(!isitem(hit_atom))
+		return
+	var/obj/item/hit_item = hit_atom
+	struck_source_ref = WEAKREF(hit_item)
+	struck_source_at = world.time
+	if(hit_item.throwforce && stat != DEAD)
+		var/mob/living/thrower = throwingdatum?.get_thrower()
+		if(isliving(thrower))
+			record_guard_hit(thrower, hit_item, damaging = TRUE)
+
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/on_pulled(datum/source, mob/living/puller)
+	SIGNAL_HANDLER
+	if(!on_duty() || !isliving(puller) || puller == src || prison?.is_staff(puller))
+		return
+	record_guard_hit(puller, null, damaging = FALSE)
+
 /// Someone took a swing at them. Prisoners and cell-block inmates are the dispatcher's business; anyone else gets a warning and some room.
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))
 		return
-	if(is_outpost_prisoner(attacker) || !on_duty())
+	if(is_outpost_prisoner(attacker))
+		return
+	var/mob/living/hitter
+	if(isliving(attacker))
+		hitter = attacker
+	else if(ismecha(attacker))
+		var/obj/vehicle/sealed/mecha/mech = attacker
+		for(var/mob/living/pilot in mech.return_drivers())
+			hitter = pilot
+			break
+	if(hitter && hitter != src)
+		var/obj/item/weapon = (struck_source_at == world.time) ? struck_source_ref?.resolve() : null
+		if(!weapon && !(attack_flags & ATTACKER_SHOVING))
+			var/obj/item/held = hitter.get_active_held_item()
+			if(held && (held.force > 0 || (attack_flags & ATTACKER_STAMINA_ATTACK)))
+				weapon = held
+		record_guard_hit(hitter, weapon, damaging = !!(attack_flags & ATTACKER_DAMAGING_ATTACK))
+	if(!on_duty())
 		return
 	if(isliving(attacker) && prison?.is_inmate(attacker) && prison.in_cell_block(attacker) && (attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
 		prison.note_inmate_attack(attacker, src, attack_flags)
@@ -448,8 +533,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return FALSE
 	if(prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT || prisoner.can_be_dragged() || !Adjacent(prisoner))
 		return FALSE
-	// A rioter who gave up at a turret's warning is on their way back to their cell (outpost_prison_security.dm)
-	if((prisoner.is_rioting() && !prisoner.surrendered_to_turret()) || prisoner.trouble == PRISONER_TROUBLE_LOOSE || prisoner.climb_ref || prisoner.swing_ref)
+	if(prisoner.is_rioting() || prisoner.trouble == PRISONER_TROUBLE_LOOSE || prisoner.climb_ref || prisoner.swing_ref)
 		return TRUE
 	if(prisoner.trouble == PRISONER_TROUBLE_FIGHT && prisoner.fight?.fighting)
 		return TRUE
@@ -1340,7 +1424,31 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/mob/killer = guard.lastattacker ? get_mob_by_ckey(guard.lastattackerckey) : null
 	add_log("[guard.real_name] was killed on duty.")
 	log_game("OUTPOST LOCKUP: '[outpost_log_name()]': guard [guard.real_name] was killed[killer ? " (last hit by [key_name(killer)])" : ""]")
+	report_guard_killed(guard)
 	guard_slot_vacated(guard)
+
+/// Reports OUTPOST_CRIME_KILL_STAFF (and raises a held inmate's sentence) when a player's seen blows kill an AI prison guard
+/datum/outpost_prison/proc/report_guard_killed(mob/living/carbon/human/npc/outpost_prison_guard/victim)
+	if(!victim || victim.kill_reported || !is_ai_outpost_prison_guard(victim) || !victim.last_player_attack_at)
+		return FALSE
+	if(world.time - victim.last_player_attack_at > OUTPOST_POLICE_KILL_WINDOW)
+		return FALSE
+	var/mob/living/killer = victim.last_player_attacker_ref?.resolve()
+	if(QDELETED(killer) || !killer.mind || !outpost?.police)
+		return FALSE
+	if(!victim.last_player_attack_seen && !prisoner_violence_seen(killer, victim))
+		return FALSE
+	victim.kill_reported = TRUE
+	victim.last_player_attack_at = 0
+	outpost.police.count_crime(killer, OUTPOST_CRIME_KILL_STAFF, victim)
+	if(holds(killer.mind))
+		var/datum/prison_sentence/sentence = sentences[killer.mind]
+		var/stars = outpost.police.get_stars(killer.mind)
+		if(sentence && stars >= 1)
+			var/clamped_stars = clamp(stars, 1, length(OUTPOST_POLICE_JAIL))
+			sentence.total_seconds = max(sentence.total_seconds, round(OUTPOST_POLICE_JAIL[clamped_stars] / (1 SECONDS)))
+			update_lockup_boards()
+	return TRUE
 
 // ===== THE CLEANBOT =====
 

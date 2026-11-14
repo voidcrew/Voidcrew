@@ -504,7 +504,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in view(BOUNTY_OUTPOST_REACT_RANGE, fugitive))
-		if(trader.stat != CONSCIOUS)
+		if(trader.stat != CONSCIOUS || istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden)) // OUTPOST PRISON seam: lockup warden is not a concourse shopkeeper
 			continue
 		var/distance = get_dist(trader, fugitive)
 		if(distance < nearest_distance)
@@ -1107,6 +1107,8 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * (a claimant) asks.
  */
 /proc/bounty_outpost_ask_posting(mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader, mob/living/user)
+	if(istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden)) // OUTPOST PRISON seam: lockup warden does not give concourse clues
+		return null
 	var/obj/structure/overmap/trader_outpost/outpost = trader?.outpost
 	var/obj/structure/overmap/ship/ship = outpost ? get_crew_ship(user) : null
 	if(!ship)
@@ -1274,7 +1276,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		if(alcove.z == spot.z && get_dist(alcove, spot) <= 4)
 			return "near the docks"
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader as anything in outpost.traders)
-		if(!QDELETED(trader) && trader.z == spot.z && get_dist(trader, spot) <= 3)
+		if(!QDELETED(trader) && !istype(trader, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden) && trader.z == spot.z && get_dist(trader, spot) <= 3) // OUTPOST PRISON seam: skip lockup warden behind the wall
 			return "near [trader.name]'s counter"
 	if(locate(/turf/open/water/outpost_pond) in range(2, spot))
 		return "by the pond"

@@ -110,7 +110,7 @@ The available jobs depend on the planets, ruins, and targets in the sector, and 
 
 The board mixes missions with **wanted criminals**, **pirate bounties**, and **jobs posted by other crews**. Accepted work appears under **Active**.
 
-Wanted posters state who to find, where they were last seen, and whether they are wanted alive or dead. Bring them to your pad under the poster's terms. See [Bounty Hunting](bounty-hunting.md).
+Wanted posters state who to find, where they were last seen, and whether they are wanted alive or dead. Bring live catches to a trader outpost's [lockup](prison-wing.md), and dead targets or trophies to your pad, under the poster's terms. See [Bounty Hunting](bounty-hunting.md).
 
 Pirate bounties are competitive. Several crews can hunt the same captain; the reward goes to the crew that turns in the pirate's **ship key**. Paid tracking marks the target on your chart, and the displayed reward reflects that charge.
 

@@ -1,11 +1,13 @@
 /// Per-window admin controls; no player management permissions are granted to the viewer.
-ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and manage player outposts.", ADMIN_CATEGORY_SHUTTLE)
+ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and manage player outposts and trader lockups.", ADMIN_CATEGORY_SHUTTLE)
 	var/datum/outpost_manipulator/panel = new(user.mob)
 	panel.ui_interact(user.mob)
 
 /datum/outpost_manipulator
 	var/mob/admin
 	var/obj/structure/overmap/dynamic/player_outpost/selected
+	/// Selected trader-outpost lockup (/datum/outpost_prison), mutually exclusive with `selected` (OUTPOST PRISON seam)
+	var/datum/outpost_prison/selected_lockup
 	var/busy = FALSE
 	var/error
 
@@ -16,6 +18,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	SStgui.close_uis(src)
 	admin = null
 	selected = null
+	selected_lockup = null
 	return ..()
 
 /datum/outpost_manipulator/ui_close(mob/user)
@@ -43,7 +46,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		ui.open()
 
 /datum/outpost_manipulator/ui_data(mob/user)
-	var/list/data = list("busy" = busy, "error" = error, "outposts" = list(), "selected" = null)
+	var/list/data = list("busy" = busy, "error" = error, "outposts" = list(), "selected" = null, "lockups" = list(), "selected_lockup" = null)
 	if(!authorized(user))
 		return data
 	var/list/outposts = data["outposts"]
@@ -52,6 +55,29 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 			continue
 		// OUTPOST FLOORS seam: a floor has no overmap position, and its own name does not say where it is
 		outposts += list(list("ref" = REF(home), "name" = outpost_place_name(home), "owner" = home.founder_ckey || "Unowned", "coords" = site_position(home), "loaded" = home.loaded))
+	// OUTPOST PRISON seam: list every trader-outpost lockup and expose the selected one's Prison tools
+	var/list/lockups = data["lockups"]
+	for(var/datum/outpost_prison/prison as anything in GLOB.outpost_prisons)
+		if(QDELETED(prison))
+			continue
+		lockups += list(list(
+			"ref" = REF(prison),
+			"name" = prison.outpost_log_name(),
+			"coords" = lockup_position(prison),
+			"prisoners" = length(prison.prisoners),
+			"cells" = length(prison.cells),
+			"inmates" = prison.active_inmate_count(),
+			"stage" = prison.stage,
+		))
+	if(QDELETED(selected_lockup) || !(selected_lockup in GLOB.outpost_prisons))
+		selected_lockup = null
+	if(selected_lockup)
+		data["selected_lockup"] = list(
+			"ref" = REF(selected_lockup),
+			"name" = selected_lockup.outpost_log_name(),
+			"coords" = lockup_position(selected_lockup),
+			"prison" = prison_admin_data(selected_lockup),
+		)
 	if(QDELETED(selected) || !(selected in GLOB.player_outposts))
 		selected = null
 		return data
@@ -88,15 +114,56 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	error = null
 	if(action == "select")
 		selected = locate(params["ref"]) in GLOB.player_outposts
+		selected_lockup = null
+		return TRUE
+	// OUTPOST PRISON seam: selecting and driving a trader-outpost lockup directly
+	if(action == "select_lockup")
+		selected_lockup = locate(params["ref"]) in GLOB.outpost_prisons
+		selected = null
 		return TRUE
 	busy = TRUE
 	if(action == "create")
+		selected_lockup = null
 		create_outpost(usr)
+	else if(selected_lockup && !QDELETED(selected_lockup) && (selected_lockup in GLOB.outpost_prisons))
+		if(action == "lockup_jump")
+			var/turf/destination = lockup_jump_turf(selected_lockup)
+			if(destination)
+				usr.forceMove(destination)
+			else
+				error = "No lockup arrival point is available."
+		else if(action == "lockup_vv")
+			usr.client?.debug_variables(selected_lockup)
+		else if(action in GLOB.outpost_admin_prison_actions)
+			manage_prison(selected_lockup, usr, action, params)
 	else if(valid_selection(selected, usr))
 		manage_outpost(selected, usr, action, params)
 	if(!QDELETED(src))
 		busy = FALSE
 	return TRUE
+
+/// Overmap coordinates label for a trader-outpost lockup (OUTPOST PRISON seam)
+/datum/outpost_manipulator/proc/lockup_position(datum/outpost_prison/prison)
+	var/obj/structure/overmap/trader_outpost/building = prison?.outpost
+	if(!QDELETED(building))
+		var/list/coords = building.get_relative_overmap_coords()
+		if(length(coords) >= 2)
+			return "[coords[1]], [coords[2]]"
+	return "Trader outpost"
+
+/// Admin jump tile inside `prison`: front desk, Processing claim spot, warden alcove or yard (OUTPOST PRISON seam)
+/datum/outpost_manipulator/proc/lockup_jump_turf(datum/outpost_prison/prison)
+	if(QDELETED(prison))
+		return null
+	if(prison.desk_turf)
+		return prison.desk_turf
+	if(prison.claim_turf)
+		return prison.claim_turf
+	if(length(prison.alcove_turfs))
+		return prison.alcove_turfs[1]
+	if(length(prison.cell_block))
+		return prison.cell_block[1]
+	return null
 
 /// Also called after every modal prompt, before using its result.
 /datum/outpost_manipulator/proc/valid_selection(obj/structure/overmap/dynamic/player_outpost/home, mob/user)

@@ -16,7 +16,6 @@
  * Contexts other prison files say by name, spoken by prisoners. Most are from the balance spec's
  * dialogue package; hatch_empty, subdued, fight_argue_none (a fight with no cause) and
  * threat_backed_down (a threat called off by a talk) are spares for the same systems.
- * turret_backs_off, turret_gives_up and turret_defies answer a turret's warning (outpost_prison_security.dm).
  * riot_break_door is a rioter hammering at a way out of the cell block (outpost_prison_breakout.dm).
  */
 /datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/prisoner_contexts()
@@ -27,7 +26,6 @@
 		"riot_bystander", "rat", "no_air", "lights_flicker", "arrival_stained", "arrival_hurt",
 		"hatch_empty", "subdued", "fight_argue_none", "threat_backed_down",
 		"cuffed", "cuffs_off", "lockdown", "lockdown_over",
-		"turret_backs_off", "turret_gives_up", "turret_defies",
 		// Hit by a player (outpost_prison_trouble.dm)
 		"retaliate", "cower_hit",
 		// A rioter hammering at a door or window out (outpost_prison_breakout.dm)
@@ -69,8 +67,8 @@
 	var/list/personalities = outpost_prisoner_dialogue("personalities")
 	var/list/conversations = outpost_prisoner_dialogue("conversations")
 	TEST_ASSERT(length(lines), "The dialogue file has no lines")
-	for(var/dead_context in list("hulk", "fly", "nightmare_fear", "absorbed"))
-		TEST_ASSERT(!(dead_context in lines), "Deleted Kessler context [dead_context] is still in the dialogue file")
+	for(var/dead_context in list("hulk", "fly", "nightmare_fear", "absorbed", "turret_backs_off", "turret_gives_up", "turret_defies"))
+		TEST_ASSERT(!(dead_context in lines), "Deleted context [dead_context] is still in the dialogue file")
 
 	// Every context the other files say by name is there, with at least 8 shared lines. Prisoner
 	// contexts have lines for at least two personalities. The visitors' lines are one plain

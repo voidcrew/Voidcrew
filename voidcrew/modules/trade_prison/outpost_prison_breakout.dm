@@ -162,16 +162,12 @@
 // ===== CHOOSING =====
 
 /**
- * A new target for a rioter. Built turrets first (outpost_prison_security.dm); then a way out
- * (choose_exit()), now and then with a fixture on the way first (riot_detour_chance); with every way
- * out crowded, a fixture near the one they want while they wait their turn; with none they can get
- * at, the wing's fixtures. Breaking out, they go for the ways out, crowded or not, and never stop
- * for a fixture on the way.
+ * A new target for a rioter: a way out (choose_exit()), now and then with a fixture on the way
+ * first (riot_detour_chance); with every way out crowded, a fixture near the one they want while
+ * they wait their turn; with none they can get at, the wing's fixtures. Breaking out, they go for
+ * the ways out, crowded or not, and never stop for a fixture on the way.
  */
 /datum/outpost_prison/proc/pick_smash_target(mob/living/carbon/human/npc/outpost_prisoner/rioter)
-	var/atom/priority = priority_smash_target(rioter)
-	if(priority)
-		return priority
 	var/breakout = rioter.trouble == PRISONER_TROUBLE_BREAKOUT
 	var/list/exits = exit_tiles(rioter)
 	var/turf/exit = choose_exit(rioter, exits, crowded_ok = breakout)

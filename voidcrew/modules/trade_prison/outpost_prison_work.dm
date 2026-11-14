@@ -117,6 +117,7 @@
 	var/added = sentence.effective_worked_off() - before
 	if(added <= 0)
 		return 0
+	tally_lockup_worked_off(src, inmate, kind, added)
 	remark_on_work(inmate)
 	update_lockup_boards()
 	if(sentence.remaining_seconds() <= 0)

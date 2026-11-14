@@ -120,7 +120,7 @@
 		return FALSE
 	if(!in_cell_block(prisoner) || !isturf(prisoner.loc) || !prisoner.ai_running())
 		return FALSE
-	if(prisoner.is_down() || prisoner.pulledby || prisoner.climb_ref || prisoner.is_beaten() || prisoner.surrendered_to_turret() || world.time < prisoner.baton_stop_until)
+	if(prisoner.is_down() || prisoner.pulledby || prisoner.climb_ref || prisoner.is_beaten() || world.time < prisoner.baton_stop_until)
 		return FALSE
 	return cuffed ? !!prisoner.handcuffed : !prisoner.handcuffed
 

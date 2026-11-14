@@ -200,7 +200,8 @@ GLOBAL_LIST_EMPTY(outpost_takings_police)
 /datum/outpost_shop/proc/held_up(mob/living/trader, mob/living/robber, obj/item/gun/weapon)
 	if(QDELETED(src) || QDELETED(trader) || QDELETED(robber) || !robber.mind || !outpost?.police || !outpost_holdup_gun(weapon))
 		return
-	if(istype(src, /datum/outpost_shop/vendor/checkpoint) || trader.client || trader.mind)
+	// OUTPOST PRISON seam: neither a checkpoint booth nor a lockup warden's desk has a till
+	if(istype(src, /datum/outpost_shop/vendor/checkpoint) || istype(src, /datum/outpost_shop/lockup_warden) || trader.client || trader.mind)
 		return
 	var/turf/trader_turf = get_turf(trader)
 	var/turf/counter = holdup_counter(trader)

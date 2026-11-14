@@ -72,6 +72,9 @@
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = person
 	if(istype(guard))
 		return guard.prison == src
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/warden = person
+	if(istype(warden))
+		return !QDELETED(outpost) && warden.outpost == outpost
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = person
 	return istype(officer) && !QDELETED(outpost) && officer.police?.outpost == outpost
 

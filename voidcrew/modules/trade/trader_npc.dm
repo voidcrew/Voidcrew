@@ -199,8 +199,8 @@
 	. = ..()
 	if(stat == DEAD)
 		return
-	// A checkpoint guard keeps a desk, not a counter (their desc says so)
-	if(shop && !istype(src, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard))
+	// Checkpoint guards and lockup wardens keep a desk, not a shop counter (their desc says so)
+	if(shop && !istype(src, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard) && !istype(src, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden)) // OUTPOST PRISON seam
 		. += span_notice("[name] runs the counter at [shop.outpost_name].")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")

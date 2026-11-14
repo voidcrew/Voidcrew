@@ -704,9 +704,9 @@
 /mob/living/carbon/human/npc/outpost_prisoner/proc/riot_at_large()
 	return phase == PRISONER_PRESENT && stat != DEAD && is_rioting() && !is_confined()
 
-/// A rioter at large and free to act: on their feet, uncuffed, and not given up at a turret's warning (outpost_prison_security.dm)
+/// A rioter at large and free to act: on their feet and uncuffed
 /mob/living/carbon/human/npc/outpost_prisoner/proc/riot_free()
-	return riot_at_large() && stat == CONSCIOUS && !can_be_dragged() && !surrendered_to_turret()
+	return riot_at_large() && stat == CONSCIOUS && !can_be_dragged()
 
 /**
  * Whether the riot counts them dealt with: shut in a cell, dead, calmed or loose (not rioting),
@@ -796,6 +796,7 @@
 	send_bystanders_home(joining)
 	add_log("Riot in the yard: [length(joining)] prisoner\s.")
 	log_game("OUTPOST LOCKUP: riot at '[outpost_log_name()]' ([reason])")
+	record_lockup_riot(src, reason, length(joining))
 	play_alarm()
 	announce("Riot in the prison wing!", SHIP_NOTIFY_DANGER)
 	update_riot_lights()
@@ -807,7 +808,6 @@
 	end_activity()
 	stand_up()
 	trouble = PRISONER_TROUBLE_RIOT
-	clear_turret_reaction()
 	riot_target_ref = null
 	riot_target_hits = 0
 	riot_victim_ref = null
@@ -909,8 +909,7 @@
 /datum/outpost_prison/proc/begin_breakout()
 	breaking_out = TRUE
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
-		// Rioters who gave up at a turret's warning stay where they are (outpost_prison_security.dm)
-		if(prisoner.trouble != PRISONER_TROUBLE_RIOT || prisoner.surrendered_to_turret())
+		if(prisoner.trouble != PRISONER_TROUBLE_RIOT)
 			continue
 		prisoner.trouble = PRISONER_TROUBLE_BREAKOUT
 		prisoner.riot_target_ref = null
@@ -980,28 +979,23 @@
 	return null
 
 /**
- * What a rioter goes for: nothing during the wind-up, once they gave up at a turret's warning, while
- * shut in a cell (or they would smash the cell's own window and walk out), or once out of the cell
- * block (they have escaped; check_escapes() sees to it). Then a turret they defied, staff they can
- * get to (unless two rioters are on them already), an open hatch to climb, a gap out of the cell
- * block to walk through (escape_spot()), the way out they were already breaking, the fixture they
- * were smashing for a few more blows, or a new target (pick_smash_target(),
- * outpost_prison_breakout.dm). Turret warnings are in outpost_prison_security.dm.
+ * What a rioter goes for: nothing during the wind-up, while shut in a cell (or they would smash
+ * the cell's own window and walk out), or once out of the cell block (they have escaped;
+ * check_escapes() sees to it). Then staff they can get to (unless two rioters are on them already),
+ * an open hatch to climb, a gap out of the cell block to walk through (escape_spot()), the way out
+ * they were already breaking, the fixture they were smashing for a few more blows, or a new target
+ * (pick_smash_target(), outpost_prison_breakout.dm).
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/riot_target()
 	if(!prison)
 		return null
-	if(prison.riot_windup_left > 0 || surrendered_to_turret() || is_confined())
+	if(prison.riot_windup_left > 0 || is_confined())
 		riot_victim_ref = null
 		return null
 	if(length(prison.cell_block) && !prison.in_cell_block(src))
 		return null
 	if(!reachable)
 		prison.refresh_prisoner_reach(src)
-	var/obj/machinery/porta_turret/defied = defied_turret()
-	if(defied)
-		riot_victim_ref = null
-		return defied
 	var/mob/living/person = staff_in_reach()
 	riot_victim_ref = person ? WEAKREF(person) : null
 	if(person)
@@ -1065,9 +1059,6 @@
 	if(istype(target, /obj/machinery/door) || istype(target, /obj/structure/window) || istype(target, /obj/structure/grille))
 		var/obj/blocking = target
 		return blocking.density
-	if(istype(target, /obj/machinery/porta_turret))
-		var/obj/machinery/porta_turret/turret = target
-		return !(turret.machine_stat & BROKEN)
 	return TRUE
 
 /// Whether a door is one of the wing's cell doors, or stands where one did
@@ -1413,6 +1404,7 @@
 /datum/outpost_prison/proc/escaped_for_good(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	close_bounty_record(prisoner, BOUNTY_RECORD_ESCAPED)
 	note_prisoner_lost(prisoner, "escaped")
+	record_lockup_escape(src, prisoner, "prisoner")
 	add_log("[prisoner.real_name] got away.")
 	if(prisoner.has_shiv())
 		qdel(prisoner.held_item)
@@ -1428,8 +1420,7 @@
 /**
  * The hull defense turret's and outpost police's rule (is_hostile_creature()): prisoners in the cell
  * block are left alone, rioting or not, and a loose prisoner (trouble == PRISONER_TROUBLE_LOOSE) is
- * fair game until down or cuffed, whether still in the lockup's front room or outside. Turrets players
- * build follow outpost_prison_security.dm.
+ * fair game until down or cuffed, whether still in the lockup's front room or outside.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/turret_target()
 	return stat != DEAD && trouble == PRISONER_TROUBLE_LOOSE && phase == PRISONER_PRESENT && !can_be_dragged()

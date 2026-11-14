@@ -28,6 +28,8 @@
 #define METRIC_DEATH "death"
 /// Outpost floors: sales, lettings, settings, supplies and the rest (trade_floors/floor_metrics.dm lists the events).
 #define METRIC_FLOOR "floor"
+/// Trader-outpost lockups: player bookings, time served/worked off, escapes, break-ins, riots and bounty claims (trade_prison/outpost_prison_metrics.dm).
+#define METRIC_LOCKUP "lockup"
 
 /// Rows held in memory while they can't be written. Past this the oldest are dropped.
 #define METRIC_MAX_PENDING 20000

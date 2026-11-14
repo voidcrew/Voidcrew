@@ -35,8 +35,6 @@
 #define OUTPOST_PRISON_GRADE_FLOOR 70
 /// Care percent from which a prisoner is kept as well as can be
 #define OUTPOST_PRISON_GRADE_FULL 95
-/// The office vendor puts one item back on its shelves this often while powered
-#define OUTPOST_PRISON_VENDOR_RESTOCK_TIME (1 MINUTES)
 /// How long the count of lost prisoners (escaped or moved on) looks back
 #define OUTPOST_PRISON_LOST_WINDOW (30 MINUTES)
 /// Seconds confined to a cell before a prisoner counts as badly kept

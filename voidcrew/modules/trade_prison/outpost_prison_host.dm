@@ -152,13 +152,32 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 /// The front room side
 /obj/machinery/door/airlock/security/prison_staff/processing/outer
 
+/obj/machinery/door/airlock/security/prison_staff/processing/outer/lets_prisoner(atom/movable/mover)
+	if(..())
+		return TRUE
+	var/datum/outpost_prison/prison = get_outpost_prison(src)
+	return !!prison && prison.claim_lets_enter(mover)
+
 /obj/machinery/door/airlock/security/prison_staff/processing/outer/Bumped(atom/movable/AM)
-	. = ..()
 	var/mob/living/mover = AM
 	if(istype(mover) && density)
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
-		if(prison && prison.in_processing(mover) && (WEAKREF(mover) in prison.processing_release_refs))
-			prison.try_start_processing_release(mover)
+		if(prison)
+			if(prison.in_processing(mover) && (WEAKREF(mover) in prison.processing_release_refs))
+				prison.try_start_processing_release(mover)
+				return
+			var/mob/living/deliverer = isliving(mover.pulling) ? mover : (isliving(mover.pulledby) && mover.pulledby.pulling == mover ? mover.pulledby : null)
+			if(deliverer && prison.in_front_room(deliverer) && prison.try_start_processing_claim(deliverer))
+				return
+	return ..()
+
+/obj/machinery/door/airlock/security/prison_staff/processing/outer/try_to_activate_door(mob/living/user, access_bypass = FALSE)
+	if(isliving(user) && density && !access_bypass)
+		var/datum/outpost_prison/prison = get_outpost_prison(src)
+		if(prison && prison.in_front_room(user) && isliving(user.pulling) && prison.try_start_processing_claim(user))
+			add_fingerprint(user)
+			return
+	return ..()
 
 /// The yard side
 /obj/machinery/door/airlock/security/prison_staff/processing/inner

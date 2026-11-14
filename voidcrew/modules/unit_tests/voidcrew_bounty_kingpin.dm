@@ -205,10 +205,12 @@
 	TEST_ASSERT_EQUAL(posting.board_terms(), "Wanted dead or alive", "The card doesn't say dead or alive")
 	posting.close("admin")
 
-	// Through the pad, his real condition read at the press: in crit, cuffed, stunned and dead, each on its own posting
+	// Real condition read on turn-in: live states at a lockup (refused on the ship pad), dead at the pad
 	var/turf/pad_turf = kingpin_test_spot(4, 4)
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
+	var/datum/outpost_prison/prison = board_test_lockup(pad_turf)
 	var/obj/structure/overmap/ship/ship = kingpin_test_ship()
+	var/mob/living/carbon/human/hunter = kingpin_test_person(pad_turf, ship)
 	var/list/cases = list(
 		list("downed", 1000, 2),
 		list("restrained", 1000, 2),
@@ -230,18 +232,25 @@
 			if("dead")
 				kingpin.death()
 		var/state = kingpin.capture_state()
-		TEST_ASSERT_EQUAL(state, pay_case[1], "The kingpin reads [state] at the pad, not [pay_case[1]]")
+		TEST_ASSERT_EQUAL(state, pay_case[1], "The kingpin reads [state], not [pay_case[1]]")
 		var/balance_before = ship.ship_account.account_balance
 		var/vouchers_before = kingpin_test_vouchers(pad_turf)
-		var/list/paid = case_posting.board_claim(ship, pad, kingpin, state)
-		TEST_ASSERT(islist(paid), "A [pay_case[1]] kingpin was refused at the pad: [paid]")
+		var/list/paid
+		if(pay_case[1] == "dead")
+			paid = case_posting.board_claim(ship, pad, kingpin, state)
+		else
+			TEST_ASSERT_EQUAL(case_posting.board_claim(ship, pad, kingpin, state), "Alive. The lockup takes those.", "The ship pad accepted a [pay_case[1]] kingpin")
+			paid = case_posting.lockup_claim(prison, kingpin, hunter)
+		TEST_ASSERT(islist(paid), "A [pay_case[1]] kingpin was refused: [paid]")
 		TEST_ASSERT_EQUAL(paid[1], pay_case[2], "A [pay_case[1]] kingpin paid the wrong credits")
 		TEST_ASSERT_EQUAL(paid[2], pay_case[3], "A [pay_case[1]] kingpin paid the wrong vouchers")
 		TEST_ASSERT_EQUAL(ship.ship_account.account_balance - balance_before, pay_case[2], "The ship's account didn't get the credits")
-		TEST_ASSERT_EQUAL(kingpin_test_vouchers(pad_turf) - vouchers_before, pay_case[3], "The pad didn't get the vouchers")
+		TEST_ASSERT_EQUAL(kingpin_test_vouchers(pad_turf) - vouchers_before, pay_case[3], "The payout spot didn't get the vouchers")
 		TEST_ASSERT(QDELETED(case_posting), "A claimed kingpin's posting stayed up")
-		// Claimed at a pad, he is gone for the round
-		TEST_ASSERT(SSbounty_kingpin.kingpin_gone, "A [pay_case[1]] kingpin claimed at the pad isn't gone for the round")
+		// Claimed live or dead, he is gone for the round
+		TEST_ASSERT(SSbounty_kingpin.kingpin_gone, "A [pay_case[1]] kingpin claimed isn't gone for the round")
+		for(var/datum/bounty_record/pooled as anything in GLOB.bounty_prisoner_pool.Copy())
+			bounty_pool_remove(pooled)
 		SSbounty_kingpin.kingpin_reset()
 		kingpin_test_clear_lounge()
 
@@ -313,6 +322,8 @@
 	var/obj/structure/overmap/ship/other = kingpin_test_ship()
 	TEST_ASSERT_EQUAL(posting.turn_in(pad, other, taker), "you work for him", "Someone who works for him turned him in for another ship")
 	TEST_ASSERT(posting.turn_in(pad, other, null) != "your crew works for him", "An unbound ship was refused for someone else's job")
+	var/datum/outpost_prison/lockup = board_test_lockup(pad_turf)
+	TEST_ASSERT_EQUAL(posting.lockup_claim(lockup, kingpin, taker), "your crew works for him", "The lockup took the kingpin from a crew that works for him")
 
 // ===== WHO GETS HIS WORK =====
 

@@ -25,6 +25,29 @@ type OutpostSummary = {
   loaded: BooleanLike;
 };
 
+type LockupSummary = {
+  ref: string;
+  name: string;
+  coords: string;
+  prisoners: number;
+  cells: number;
+  inmates: number;
+  stage: PrisonStage;
+};
+
+type PrisonAdminInmate = {
+  ref: string;
+  body_ref?: string;
+  name: string;
+  ckey: string | null;
+  stars: number;
+  remaining: number;
+  served: number;
+  worked_off: number;
+  total: number;
+  admin_booked: BooleanLike;
+};
+
 type Resident = {
   ref: string;
   name: string;
@@ -131,6 +154,7 @@ type PrisonAdminData = {
   conditions: { clean: number; lit: number; powered: number; score: number };
   cells: { number: number; occupant_ref: string | null }[];
   prisoners: PrisonAdminPrisoner[];
+  inmates?: PrisonAdminInmate[];
   /** 0-100 */
   tension: number;
   stage: PrisonStage;
@@ -317,9 +341,18 @@ type SelectedOutpost = {
   prison?: PrisonAdminData | null;
 };
 
+export type SelectedLockup = {
+  ref: string;
+  name: string;
+  coords: string;
+  prison: PrisonAdminData | null;
+};
+
 export type Data = {
   outposts: OutpostSummary[];
   selected: SelectedOutpost | null;
+  lockups?: LockupSummary[];
+  selected_lockup?: SelectedLockup | null;
   busy: BooleanLike;
   error: string | null;
 };
@@ -364,67 +397,179 @@ export const OutpostManipulatorPanel = ({
   data,
   act,
 }: OutpostManipulatorPanelProps) => {
-  const { outposts, selected, busy, error } = data;
+  const { outposts, selected, lockups = [], selected_lockup, busy, error } =
+    data;
   const isBusy = !!busy;
 
   return (
     <Stack fill>
       <Stack.Item width="31%">
-        <Section title="Player Outposts" fill scrollable>
-          <Button
-            fluid
-            icon="plus"
-            color="good"
-            disabled={isBusy}
-            onClick={() => act('create')}
-          >
-            Create Outpost
-          </Button>
-          <Box mt={1}>
-            {outposts.length ? (
-              <Stack vertical>
-                {outposts.map((outpost) => (
-                  <Stack.Item key={outpost.ref}>
-                    <Button
-                      fluid
-                      selected={outpost.ref === selected?.ref}
-                      disabled={isBusy}
-                      onClick={() => act('select', { ref: outpost.ref })}
-                    >
-                      <Stack align="center">
-                        <Stack.Item grow>
-                          <Box bold>{outpost.name}</Box>
-                          <Box color="label" fontSize="11px">
-                            {outpost.owner || 'Unclaimed'}
-                          </Box>
-                        </Stack.Item>
-                        <Stack.Item>
-                          <Icon
-                            name={outpost.loaded ? 'circle-check' : 'circle'}
-                            color={outpost.loaded ? 'good' : 'label'}
-                          />
-                        </Stack.Item>
-                      </Stack>
-                    </Button>
-                  </Stack.Item>
-                ))}
-              </Stack>
-            ) : (
-              <NoticeBox info>No player outposts found.</NoticeBox>
-            )}
-          </Box>
-        </Section>
+        <Stack vertical fill>
+          <Stack.Item>
+            <Section title="Trader Lockups">
+              {lockups.length > 0 ? (
+                <Stack vertical>
+                  {lockups.map((lockup) => {
+                    const stageInfo = PRISON_STAGES[lockup.stage] || {
+                      label: lockup.stage || '?',
+                      color: 'label',
+                    };
+                    return (
+                      <Stack.Item key={lockup.ref}>
+                        <Button
+                          fluid
+                          selected={lockup.ref === selected_lockup?.ref}
+                          disabled={isBusy}
+                          onClick={() =>
+                            act('select_lockup', { ref: lockup.ref })
+                          }
+                        >
+                          <Stack align="center">
+                            <Stack.Item grow>
+                              <Box bold>{lockup.name}</Box>
+                              <Box color="label" fontSize="11px">
+                                {`${lockup.prisoners}/${lockup.cells} cells${
+                                  lockup.inmates > 0
+                                    ? `, ${lockup.inmates} inmate${
+                                        lockup.inmates === 1 ? '' : 's'
+                                      }`
+                                    : ''
+                                }`}
+                              </Box>
+                            </Stack.Item>
+                            <Stack.Item>
+                              <Box color={stageInfo.color} fontSize="11px" bold>
+                                {stageInfo.label}
+                              </Box>
+                            </Stack.Item>
+                          </Stack>
+                        </Button>
+                      </Stack.Item>
+                    );
+                  })}
+                </Stack>
+              ) : (
+                <NoticeBox info>No trader lockups loaded.</NoticeBox>
+              )}
+            </Section>
+          </Stack.Item>
+          <Stack.Item grow>
+            <Section title="Player Outposts" fill scrollable>
+              <Button
+                fluid
+                icon="plus"
+                color="good"
+                disabled={isBusy}
+                onClick={() => act('create')}
+              >
+                Create Outpost
+              </Button>
+              <Box mt={1}>
+                {outposts.length > 0 ? (
+                  <Stack vertical>
+                    {outposts.map((outpost) => (
+                      <Stack.Item key={outpost.ref}>
+                        <Button
+                          fluid
+                          selected={outpost.ref === selected?.ref}
+                          disabled={isBusy}
+                          onClick={() => act('select', { ref: outpost.ref })}
+                        >
+                          <Stack align="center">
+                            <Stack.Item grow>
+                              <Box bold>{outpost.name}</Box>
+                              <Box color="label" fontSize="11px">
+                                {outpost.owner || 'Unclaimed'}
+                              </Box>
+                            </Stack.Item>
+                            <Stack.Item>
+                              <Icon
+                                name={
+                                  outpost.loaded ? 'circle-check' : 'circle'
+                                }
+                                color={outpost.loaded ? 'good' : 'label'}
+                              />
+                            </Stack.Item>
+                          </Stack>
+                        </Button>
+                      </Stack.Item>
+                    ))}
+                  </Stack>
+                ) : (
+                  <NoticeBox info>No player outposts found.</NoticeBox>
+                )}
+              </Box>
+            </Section>
+          </Stack.Item>
+        </Stack>
       </Stack.Item>
 
       <Stack.Item grow overflowY="auto">
         {error ? <NoticeBox danger>{error}</NoticeBox> : null}
-        {selected ? (
+        {selected_lockup ? (
+          <LockupDetails selected={selected_lockup} busy={isBusy} act={act} />
+        ) : selected ? (
           <OutpostDetails selected={selected} busy={isBusy} act={act} />
         ) : (
           <Section title="Registry" fill>
             <NoticeBox info>
-              Select an outpost to inspect or manipulate it.
+              Select a trader lockup or player outpost to inspect or manipulate
+              it.
             </NoticeBox>
+          </Section>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+type LockupDetailsProps = {
+  selected: SelectedLockup;
+  busy: boolean;
+  act: (action: string, params?: unknown) => void;
+};
+
+const LockupDetails = ({ selected, busy, act }: LockupDetailsProps) => {
+  const mutate = (action: string, params?: unknown) => {
+    if (!busy) {
+      act(action, params);
+    }
+  };
+
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Section title={`${selected.name} Lockup`}>
+          <LabeledList>
+            <LabeledList.Item label="Outpost">{selected.name}</LabeledList.Item>
+            <LabeledList.Item label="Coordinates">
+              {selected.coords}
+            </LabeledList.Item>
+          </LabeledList>
+          <Stack wrap mt={1}>
+            <Button
+              icon="location-crosshairs"
+              disabled={busy}
+              onClick={() => mutate('lockup_jump')}
+            >
+              Jump to Lockup
+            </Button>
+            <Button
+              icon="code"
+              disabled={busy}
+              onClick={() => mutate('lockup_vv')}
+            >
+              View Variables
+            </Button>
+          </Stack>
+        </Section>
+      </Stack.Item>
+      <Stack.Item>
+        {selected.prison ? (
+          <PrisonTools data={selected.prison} busy={busy} act={mutate} />
+        ) : (
+          <Section title="Prison">
+            <Box color="label">Lockup unavailable</Box>
           </Section>
         )}
       </Stack.Item>
@@ -555,15 +700,11 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
         </Stack.Item>
       )}
 
-      <Stack.Item>
-        {selected.prison ? (
+      {selected.prison ? (
+        <Stack.Item>
           <PrisonTools data={selected.prison} busy={busy} act={mutate} />
-        ) : (
-          <Section title="Prison">
-            <Box color="label">No prison</Box>
-          </Section>
-        )}
-      </Stack.Item>
+        </Stack.Item>
+      ) : null}
 
       <Stack.Item>
         <Section title="Services">
@@ -1121,6 +1262,14 @@ const CONFINED_PRESETS = [0, 120, 360];
 /** PRISON_SUBDUED_TIME */
 const SUBDUE_SECONDS = 360;
 
+/** Preset durations in seconds for admin player bookings */
+const INMATE_BOOK_PRESETS: [number, string][] = [
+  [60, '1m'],
+  [180, '3m'],
+  [300, '5m'],
+  [600, '10m'],
+];
+
 /** prison_incident kinds */
 const INCIDENT_KINDS = [
   ['stab', 'Stabbing', 'skull-crossbones'],
@@ -1252,6 +1401,7 @@ const PrisonIncidentTools = ({ data, busy, act }: PrisonProps) => {
 };
 
 const PrisonTools = ({ data, busy, act }: PrisonProps) => {
+  const [bookSeconds, setBookSeconds] = useState(180);
   const open = !!data.intake_open;
   const powered = !!data.powered;
   const conditions = data.conditions || {
@@ -1261,6 +1411,9 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
     score: 0,
   };
   const prisoners = [...(data.prisoners || [])].sort((a, b) => a.cell - b.cell);
+  const inmates = Array.isArray(data.inmates)
+    ? data.inmates.filter(Boolean)
+    : [];
   const names: Record<string, string> = {};
   for (const prisoner of prisoners) {
     names[prisoner.ref] = prisoner.name;
@@ -1444,6 +1597,85 @@ const PrisonTools = ({ data, busy, act }: PrisonProps) => {
       <PrisonIncidentTools data={data} busy={busy} act={act} />
 
       <LabeledList>
+        <LabeledList.Item label="Player inmates">
+          <Stack align="center" wrap>
+            <NumberInput
+              value={bookSeconds}
+              minValue={5}
+              maxValue={3600}
+              step={15}
+              stepPixelSize={3}
+              width="54px"
+              format={clock}
+              disabled={busy}
+              onChange={(next) =>
+                setBookSeconds(Math.max(5, Math.min(3600, Math.round(next))))
+              }
+            />
+            {INMATE_BOOK_PRESETS.map(([preset, label]) => (
+              <Button
+                key={preset}
+                compact
+                selected={bookSeconds === preset}
+                disabled={busy}
+                onClick={() => setBookSeconds(preset)}
+              >
+                {label}
+              </Button>
+            ))}
+            <Button
+              compact
+              icon="user-lock"
+              color="good"
+              disabled={busy}
+              tooltip="Pick a player and book them into this lockup"
+              onClick={() => act('prison_book_player', { seconds: bookSeconds })}
+            >
+              Book Player
+            </Button>
+          </Stack>
+          {inmates.length > 0 ? (
+            inmates.map((inmate) => (
+              <Box
+                key={inmate.ref}
+                className="OutpostPrisonAdmin__inmate"
+                mt={0.5}
+              >
+                <Box inline bold mr={1}>
+                  {inmate.name}
+                </Box>
+                <Box inline color="label" mr={1}>
+                  {[
+                    inmate.ckey ? `(${inmate.ckey})` : null,
+                    `${inmate.stars}★`,
+                    `${clock(inmate.remaining)} left`,
+                    inmate.worked_off > 0
+                      ? `${clock(inmate.worked_off)} worked off`
+                      : null,
+                    inmate.admin_booked ? 'admin' : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' / ')}
+                </Box>
+                <Button
+                  compact
+                  icon="door-open"
+                  color="good"
+                  disabled={busy}
+                  onClick={() =>
+                    act('prison_release_inmate', { ref: inmate.ref })
+                  }
+                >
+                  Release
+                </Button>
+              </Box>
+            ))
+          ) : (
+            <Box color="label" mt={0.5}>
+              None held
+            </Box>
+          )}
+        </LabeledList.Item>
         <LabeledList.Item label="Arrivals">
           {!open
             ? 'Intake closed'
@@ -2328,7 +2560,7 @@ const PrisonBountyTools = ({ bounty, busy, act }: BountyToolsProps) => {
               compact
               icon="right-to-bracket"
               disabled={busy}
-              tooltip="Beam them in now, into the first free cell"
+              tooltip="Admit them now, into the first free cell"
               onClick={() => act('prison_bounty_admit', { id: record.id })}
             >
               Admit

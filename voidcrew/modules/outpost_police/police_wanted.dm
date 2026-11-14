@@ -1052,13 +1052,14 @@
 			return
 		if(dead.mind)
 			crime = OUTPOST_CRIME_MURDER
-		else if(istype(dead, OUTPOST_TRADER_MOB)) // a trader or checkpoint guard (spec-rehydrate 1.4)
+		else if(istype(dead, OUTPOST_TRADER_MOB) || is_ai_outpost_prison_guard(dead)) // OUTPOST PRISON seam: traders, gate guards, lockup wardens and prison guards
 			crime = OUTPOST_CRIME_KILL_STAFF
 		else if(istype(dead, /mob/living/carbon/human/npc/ambient_npc))
 			crime = OUTPOST_CRIME_KILL_CIVILIAN
 		else
 			return
 	var/datum/weakref/dead_ref = WEAKREF(dead)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/dead_guard = is_ai_outpost_prison_guard(dead) ? dead : null
 	var/mob/living/killer
 	// Minds whose counted hit made this killing theirs now: a pending report of theirs does not count it again
 	var/list/datum/mind/counted = list()
@@ -1073,6 +1074,8 @@
 			continue
 		counted += mind
 		count_crime(offender, crime, dead, derived = TRUE)
+		if(dead_guard)
+			dead_guard.kill_reported = TRUE
 		if(is_ours)
 			killer = offender
 			warrant.officers_killed++
@@ -1090,6 +1093,8 @@
 				already = TRUE
 		if(!already)
 			LAZYADD(report.followups, list(list(crime, dead_ref)))
+			if(dead_guard)
+				dead_guard.kill_reported = TRUE
 	if(is_ours)
 		SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_OFFICER_DOWN, dead, killer)
 

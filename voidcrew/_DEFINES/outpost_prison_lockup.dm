@@ -29,6 +29,10 @@
 #define OUTPOST_PROCESSING_BOOK "booking"
 /// Processing is cycling a released player inmate out to the front room
 #define OUTPOST_PROCESSING_RELEASE "releasing"
+/// Processing is taking a live bounty hand-in at the outer door
+#define OUTPOST_PROCESSING_CLAIM "claiming"
+/// Seconds a hunter may stand inside Processing with a live catch before the warden tells them to step out
+#define OUTPOST_PROCESSING_CLAIM_PROMPT 10
 
 /// Trait source for awake-inmate containment resistance
 #define OUTPOST_PRISON_INMATE_TRAIT "outpost_prison_inmate"

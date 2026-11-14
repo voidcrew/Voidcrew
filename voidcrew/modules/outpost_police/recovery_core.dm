@@ -411,7 +411,12 @@
 	if(QDELETED(src) || QDELETED(outpost) || !istype(dead))
 		return
 	var/turf/where = get_turf(dead)
-	if(!where || get_trader_outpost_for_turf(where) != outpost || outpost.prison?.contains_turf(where)) // OUTPOST PRISON seam: a death inside a lockup is the prison's own
+	if(!where || get_trader_outpost_for_turf(where) != outpost)
+		return
+	if(outpost.prison?.contains_turf(where)) // OUTPOST PRISON seam: lockup bodies stay the prison's, except waking RESTAFF when the warden dies
+		if(istype(dead, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden) && morgue_npc_body(dead))
+			last_death_at = world.time
+			begin_trouble()
 		return
 	var/in_box = !!outpost.police?.dispatch_in_box(where)
 	// A player in an NPC body (a brain transplant) is a person: never on the NPC list, never collected (abuse SF3)

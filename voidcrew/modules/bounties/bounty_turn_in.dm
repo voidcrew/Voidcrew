@@ -141,6 +141,8 @@
 		state = criminal.capture_state()
 		if(!bounty_state_share(state))
 			return "they're standing free"
+		if(state != BOUNTY_STATE_DEAD && criminal.stat != DEAD) // OUTPOST PRISON seam: live catches go to a lockup desk
+			return "Alive. The lockup takes those."
 	found["target"] = target
 	found["state"] = state
 	return null
@@ -165,6 +167,8 @@
 		return "nothing on the pad for this bounty"
 	if(proof)
 		state = BOUNTY_STATE_DEAD
+	else if(criminal && (state != BOUNTY_STATE_DEAD || criminal.stat != DEAD)) // OUTPOST PRISON seam: live catches go to a lockup desk
+		return "Alive. The lockup takes those."
 	var/share = board_share_for(state)
 	if(!share)
 		return "they're standing free"
@@ -208,6 +212,7 @@
 	bounty_pay_ship(ship, pad, pay[1], pay[2])
 	if(poster_text)
 		bounty_print_captured_poster(get_turf(pad), poster_text, wanted_name)
+	record_lockup_bounty_claim(src, live, user, ship, pad, pay[1], pay[2]) // OUTPOST PRISON seam: round metrics row for pad bounty claims
 
 	var/list/paid = list("[pay[1]] credits")
 	if(pay[2] > 0)
@@ -333,7 +338,10 @@
 		line = "On the pad: [wanted_name], [state == BOUNTY_STATE_FREE ? "standing free" : bounty_state_words(state)]."
 		if(state == BOUNTY_STATE_FREE)
 			return line
-	return refusal ? "[line] [capitalize(refusal)]." : line
+	if(!refusal)
+		return line
+	var/tail = copytext(refusal, -1)
+	return (tail in list(".", "!", "?")) ? "[line] [capitalize(refusal)]" : "[line] [capitalize(refusal)]."
 
 // ===== THE BEAM =====
 

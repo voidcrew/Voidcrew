@@ -588,7 +588,8 @@ SUBSYSTEM_DEF(criminal_bounties)
 				balloon_alert(user, "[result[1]] credits awarded!")
 				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
 			else
-				balloon_alert(user, "[result]!")
+				var/tail = istext(result) ? copytext(result, -1) : ""
+				balloon_alert(user, (tail in list(".", "!", "?")) ? "[result]" : "[result]!")
 				playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE)
 	return TRUE
 

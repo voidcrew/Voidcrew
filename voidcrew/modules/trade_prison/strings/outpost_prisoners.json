@@ -117,7 +117,7 @@
 				"Hey, anyone here from the trade lanes?"
 			],
 			"grumpy": [
-				"Four cells. That's it? Cheap outfit.",
+				"Six cells. That's it? Cheap outfit.",
 				"Whoever booked me here owes me an apology.",
 				"Don't talk to me. I've had a long flight.",
 				"This jumpsuit doesn't even fit.",
@@ -152,14 +152,14 @@
 				"Transfer shuttle had no showers.",
 				"Somebody wore this before me. Lots of somebodies.",
 				"I know. I stink. Not my fault.",
-				"A clean suit would be nice, crew.",
+				"A clean suit would be nice, guards.",
 				"Transferred in a dirty suit. Great start."
 			],
 			"chatty": [
 				"Hi, everyone! Don't mind the smell. Long trip.",
 				"Before anyone says anything, it's the suit, not me.",
 				"They lost my bag on the transfer and gave me this rag.",
-				"Hey, crew! Any chance of a suit that doesn't smell like a cargo hold?"
+				"Hey, guards! Any chance of a suit that doesn't smell like a cargo hold?"
 			],
 			"grumpy": [
 				"Who issued this rag? I want a new one.",
@@ -193,7 +193,7 @@
 				"Can somebody look at my arm?",
 				"Bit banged up. I'll live.",
 				"Somebody's boot and my face got acquainted.",
-				"Hey, crew, I could use a medic."
+				"Hey, guards, I could use a medic."
 			],
 			"chatty": [
 				"You should see the other guy. No, really, he's fine.",
@@ -267,14 +267,14 @@
 				"Hope I never see this place again.",
 				"Finally. Real food.",
 				"Somebody open the door, I'm free.",
-				"Tell the crew thanks. Sort of.",
+				"Tell the warden thanks. Sort of.",
 				"Well, that's that.",
 				"Don't wait up."
 			],
 			"chatty": [
 				"Bye, everyone! Keep the hoop warm for me!",
 				"It's been real. Mostly. Look me up sometime.",
-				"Tell the crew I said thanks for the soup.",
+				"Tell the galley I said thanks for the soup.",
 				"Right, I'm off. Don't let them skimp on the rations."
 			],
 			"grumpy": [
@@ -291,7 +291,7 @@
 			],
 			"cheerful": [
 				"Freedom! Smells like engine grease.",
-				"Thanks, crew! Best cell I've had.",
+				"Thanks, warden! Best cell I've had.",
 				"See you never, bunk!",
 				"Alright, back to work. Honest work, probably."
 			],
@@ -307,7 +307,7 @@
 				"When's food coming?",
 				"My stomach's making noises.",
 				"Anybody got a ration bar?",
-				"Hey, crew! Any chance of food?",
+				"Hey, guards! Any chance of food?",
 				"Pretty sure I skipped a meal.",
 				"I'd eat anything right now.",
 				"Is it dinnertime yet?",
@@ -334,7 +334,7 @@
 			"cheerful": [
 				"Somebody say lunch? No? Oh well.",
 				"I could really go for a hot meal.",
-				"Food would be great whenever, crew!",
+				"Food would be great whenever, galley!",
 				"Stomach's rumbling like a busted thruster."
 			],
 			"quiet": [
@@ -373,7 +373,7 @@
 				"Okay, I'm officially not okay.",
 				"I'd hug whoever brings food.",
 				"Hungry enough to eat the book.",
-				"Crew? Buddies? Pals? Food, please?"
+				"Guards? Buddies? Pals? Food, please?"
 			]
 		},
 		"filthy": {
@@ -388,7 +388,7 @@
 				"When's laundry day?"
 			],
 			"chatty": [
-				"Hey, crew! Anyone got a clean jumpsuit? Asking for me.",
+				"Hey, guards! Anyone got a clean jumpsuit? Asking for me.",
 				"I've smelled cargo holds cleaner than this suit.",
 				"Seriously, sniff test. No, don't.",
 				"I'm starting to smell like a salvage yard."
@@ -407,7 +407,7 @@
 			],
 			"cheerful": [
 				"I'm fragrant today. Very fragrant.",
-				"A fresh jumpsuit would be lovely, crew!",
+				"A fresh jumpsuit would be lovely, guards!",
 				"Laundry day would make my week.",
 				"Okay, even I can smell me now."
 			],
@@ -423,7 +423,7 @@
 				"Ow. Something's not right.",
 				"Can someone look at this?",
 				"I think I need a medic.",
-				"Hey, crew! I'm hurt in here.",
+				"Hey, guards! I'm hurt in here.",
 				"That's gonna bruise.",
 				"Got a bandage anywhere?",
 				"It hurts when I move my arm.",
@@ -450,7 +450,7 @@
 			"cheerful": [
 				"Just a scratch. A big scratch.",
 				"Ow! Okay, walked that one off. Mostly.",
-				"Could use a patch-up when you're free, crew!",
+				"Could use a patch-up when you're free, doc!",
 				"I've had worse. Not much worse."
 			],
 			"quiet": [
@@ -491,7 +491,7 @@
 				"What is that on the floor?",
 				"Don't step there. Just don't.",
 				"Is that blood? Whose blood?",
-				"Crew could clean this place once in a while.",
+				"Guards could clean this place once in a while.",
 				"Smells like old rations in here.",
 				"My boots are sticking to the floor.",
 				"Hey, you! Grab a mop sometime."
@@ -512,7 +512,7 @@
 				"Great. Blackout.",
 				"Somebody check the APC out there.",
 				"Doors won't work without power, right? Right?",
-				"Crew forgot to pay the power bill."
+				"Warden forgot to pay the power bill."
 			],
 			"grumpy": [
 				"Can't even keep the power on.",
@@ -537,11 +537,11 @@
 				"Rats. Of course there are rats.",
 				"It's in the corner! The rat!",
 				"That's what happens when nobody cleans.",
-				"Hey, crew! We've got rats in here!"
+				"Hey, guards! We've got rats in here!"
 			],
 			"chatty": [
 				"I knew it! I told you I heard squeaking!",
-				"Hey, crew! You've got a rat problem!",
+				"Hey, guards! You've got a rat problem!",
 				"Anybody want to name it? I'm calling it Captain."
 			],
 			"grumpy": [
@@ -569,14 +569,14 @@
 				"I can't catch my breath.",
 				"Air's bad in here.",
 				"Is anyone else feeling this?",
-				"Hey, crew! Check the air!",
+				"Hey, guards! Check the air!",
 				"My head's pounding. It's the air.",
 				"Who messed with the vents?",
 				"Feels wrong in here. Hard to breathe.",
 				"I'm getting dizzy."
 			],
 			"chatty": [
-				"Hey! Crew! The air's gone weird in here!",
+				"Hey! Guards! The air's gone weird in here!",
 				"Anybody got a spare tank? Asking for everyone.",
 				"I've worked on ships with better air than this."
 			],
@@ -591,7 +591,7 @@
 				"My chest hurts. Is that the air?"
 			],
 			"cheerful": [
-				"Air's a bit off today, crew! Little help?",
+				"Air's a bit off today, guards! Little help?",
 				"Anyone else lightheaded? Just me?"
 			],
 			"quiet": [
@@ -608,12 +608,12 @@
 				"Did anyone else see that?",
 				"Power's going, I think.",
 				"Uh oh. The lights.",
-				"Hey, crew! The lights are flickering.",
+				"Hey, guards! The lights are flickering.",
 				"That doesn't look good.",
 				"Somebody check the power."
 			],
 			"chatty": [
-				"Hey, crew, your lights are blinking! Just so you know.",
+				"Hey, guards, your lights are blinking! Just so you know.",
 				"Anybody else see that? The flicker?",
 				"My old ship did that right before the power died."
 			],
@@ -648,7 +648,7 @@
 				"Hey! Over here."
 			],
 			"chatty": [
-				"Hey, crew! How's the outpost doing?",
+				"Hey, guard! How's the outpost doing?",
 				"You look busy. Want to hear a story?",
 				"Nice work on this place. The hoop's great.",
 				"What's the news out there? Anything happening?",
@@ -669,7 +669,7 @@
 			"cheerful": [
 				"Hey! Good to see a friendly face.",
 				"Hi there! Nice outpost you've got.",
-				"Crew's here! Everybody look busy.",
+				"Guard's here! Everybody look busy.",
 				"Thanks for keeping the lights on."
 			],
 			"quiet": [
@@ -686,7 +686,7 @@
 				"Oh, that smells good.",
 				"You're a lifesaver.",
 				"Much appreciated.",
-				"Thanks, crew.",
+				"Thanks, pal.",
 				"Real food. Wow.",
 				"About time. Thanks, though."
 			],
@@ -709,7 +709,7 @@
 				"Thanks. I was getting worried."
 			],
 			"cheerful": [
-				"Dinner's served! Thanks, crew!",
+				"Dinner's served! Thanks, chef!",
 				"You're the best. Seriously.",
 				"Oh, nice! This made my day.",
 				"Thanks! Compliments to whoever made it."
@@ -730,7 +730,7 @@
 				"Fresh jumpsuit. Nice.",
 				"Thanks for the new suit.",
 				"Smells like soap. I love it.",
-				"Much better. Thanks, crew."
+				"Much better. Thanks, pal."
 			],
 			"chatty": [
 				"Look at me! Practically a new person.",
@@ -799,8 +799,8 @@
 				"They didn't forget us. Food's here."
 			],
 			"cheerful": [
-				"Food's up! Great timing, crew!",
-				"Chow's here! Thanks, crew!",
+				"Food's up! Great timing, galley!",
+				"Chow's here! Thanks, galley!",
 				"Hey hey, food's up!",
 				"Food! Best news all day."
 			],
@@ -842,7 +842,7 @@
 				"Clean suits! Smells like soap already.",
 				"Laundry's here! Happy day.",
 				"Fresh jumpsuits, everybody! Line up!",
-				"Clean suits! Thanks, crew!"
+				"Clean suits! Thanks, guards!"
 			],
 			"quiet": [
 				"Suits.",
@@ -856,14 +856,14 @@
 				"Nothing on the hatch.",
 				"Empty. Again.",
 				"No food on the hatch. Great.",
-				"Hey, crew! The hatch is empty!",
+				"Hey, guards! The hatch is empty!",
 				"Who took the last one?",
 				"Anybody out there? Hatch is bare.",
 				"They forgot to restock.",
 				"Nothing here but crumbs."
 			],
 			"chatty": [
-				"Hey, crew! Hatch is empty! Just so you know!",
+				"Hey, guards! Hatch is empty! Just so you know!",
 				"Empty hatch. Did everyone else eat without me?",
 				"Anyone want to guess when they'll restock? I say never."
 			],
@@ -875,7 +875,7 @@
 			"nervous": [
 				"It's empty. What if nobody comes?",
 				"There's nothing left. Did I miss it?",
-				"Um, crew? The hatch is empty."
+				"Um, guards? The hatch is empty."
 			],
 			"cheerful": [
 				"Empty hatch! Guess I'm waiting.",
@@ -944,7 +944,7 @@
 				"Who sent this? Tell them it needs cooking.",
 				"I've had better food out of a salvage bin.",
 				"{other}, don't eat that. Trust me.",
-				"Somebody tell the crew raw isn't a flavor."
+				"Somebody tell the galley raw isn't a flavor."
 			],
 			"grumpy": [
 				"This is garbage. Actual garbage.",
@@ -960,7 +960,7 @@
 			"cheerful": [
 				"Well, it's food. Technically.",
 				"Crunchy! Not supposed to be crunchy, but crunchy.",
-				"Bold choice, crew. Very bold."
+				"Bold choice, chef. Very bold."
 			],
 			"quiet": [
 				"Raw.",
@@ -1078,7 +1078,7 @@
 			"nervous": [
 				"I'll just get that. It's fine.",
 				"Don't want anyone slipping.",
-				"Don't want the crew thinking it was me."
+				"Don't want the guards thinking it was me."
 			],
 			"cheerful": [
 				"Two points!",
@@ -1102,10 +1102,10 @@
 				"Guess this goes on the table, then.",
 				"Nobody's emptied this in ages.",
 				"Full. Of course it's full.",
-				"Hey, crew! The bin's full."
+				"Hey, guards! The bin's full."
 			],
 			"chatty": [
-				"Hey, crew! Bin's full! Just so you know!",
+				"Hey, guards! Bin's full! Just so you know!",
 				"I'd bin this, but somebody has to empty it first.",
 				"Bin's stuffed. Who's on trash duty? Not me."
 			],
@@ -1208,7 +1208,7 @@
 				"Woo! Somebody write that down!",
 				"I'm on fire today!",
 				"Did everyone see that? Please say yes.",
-				"That one's for the crew!"
+				"That one's for the yard!"
 			]
 		},
 		"basketball_miss": {
@@ -1351,7 +1351,7 @@
 				"Anyone out there?",
 				"Hello? Hatch is empty.",
 				"Waiting on the hatch again.",
-				"Hey, crew! We're waiting here.",
+				"Hey, guards! We're waiting here.",
 				"I heard something. Was that the hatch?",
 				"Any time now.",
 				"Is the hatch even working?",
@@ -1384,7 +1384,7 @@
 				"That's it. I'm kicking this door till it opens."
 			],
 			"chatty": [
-				"Hey, crew! Funny joke. Now open the door.",
+				"Hey, guards! Funny joke. Now open the door.",
 				"Come on, let me out. I'll tell you a story.",
 				"Shitcurity! I'm telling every crew about this place!",
 				"Seriously, how long? Somebody give me a number."
@@ -1403,7 +1403,7 @@
 			],
 			"cheerful": [
 				"Okay, joke's over! Open up, please!",
-				"Hey, crew? Door's stuck. Stuck on purpose, I bet.",
+				"Hey, guards? Door's stuck. Stuck on purpose, I bet.",
 				"Shitcurity! Ha. No, but seriously, open it.",
 				"I'm being patient! Mostly! Open up!"
 			],
@@ -1442,7 +1442,7 @@
 				"Thanks. I didn't like that at all."
 			],
 			"cheerful": [
-				"Door's open! Thanks, crew!",
+				"Door's open! Thanks, guards!",
 				"Ah, room to stretch. Lovely."
 			],
 			"quiet": [
@@ -1465,7 +1465,7 @@
 				"Hear that? That's your door!"
 			],
 			"chatty": [
-				"Hey, crew! Hope you like redecorating!",
+				"Hey, guards! Hope you like redecorating!",
 				"I told you what would happen! I told you!",
 				"Everybody hear that? That's me! Wrecking stuff!"
 			],
@@ -1495,7 +1495,7 @@
 				"Nobody cares about us in here.",
 				"Food's late, lights are out. What's next?",
 				"I'm sick of this.",
-				"Crew doesn't give a damn about us.",
+				"Warden doesn't give a damn about us.",
 				"Same gray slop every day.",
 				"Somebody should do something about this.",
 				"If this keeps up, people are gonna snap.",
@@ -1520,7 +1520,7 @@
 			"cheerful": [
 				"Okay, even I'm getting annoyed now.",
 				"Hard to stay positive in here today.",
-				"Come on, crew. Throw us a bone."
+				"Come on, guards. Throw us a bone."
 			],
 			"quiet": [
 				"Not good.",
@@ -1534,7 +1534,7 @@
 				"Somebody's gonna get hurt in here.",
 				"They think we'll just sit here and take it?",
 				"Everybody up. We're not taking this.",
-				"Next crew member through that door gets it.",
+				"Next guard through that door gets it.",
 				"I'm not asking nicely anymore.",
 				"You hear me out there? We're done!",
 				"Enough. Enough!",
@@ -1557,7 +1557,7 @@
 			],
 			"cheerful": [
 				"Even I'm fed up now. That's saying something.",
-				"Come on, crew. Don't make us do this.",
+				"Come on, guards. Don't make us do this.",
 				"Okay. No more nice prisoner."
 			],
 			"quiet": [
@@ -1678,76 +1678,6 @@
 				"Okay."
 			]
 		},
-		"turret_backs_off": {
-			"any": [
-				"Alright, alright. I'm going.",
-				"Okay, okay. I'm backing off.",
-				"Fine. Not worth getting shot over.",
-				"Easy. I'm done.",
-				"Okay! Stopping. Stopping.",
-				"Alright. You win, tin can.",
-				"Nobody shoot. I'm walking away.",
-				"Fine. Fine. I'm moving.",
-				"Point that thing somewhere else. I'm going."
-			],
-			"nervous": [
-				"Don't shoot! I'm going, I'm going!",
-				"Okay! Okay! Please don't shoot me."
-			],
-			"cheerful": [
-				"Heh. Worth a try.",
-				"Okay, okay. No harm done, right?"
-			]
-		},
-		"turret_gives_up": {
-			"any": [
-				"Okay! Okay! I give up!",
-				"Alright, I'm done. I'm going back to my cell.",
-				"Don't shoot! I'm going back in!",
-				"Fine. I give up. The riot's over for me.",
-				"Hands up, see? I'm going.",
-				"Okay, you win. I'm going back to my bunk.",
-				"Enough. I'm out of this. Going to my cell.",
-				"Not worth it. I'm going back in.",
-				"Alright, alright. Shiv's down. I'm going."
-			],
-			"nervous": [
-				"Please don't shoot! I'm going back, I swear!",
-				"I give up! I give up! Don't shoot!"
-			],
-			"grumpy": [
-				"Fine. I'm going back. This riot was stupid anyway.",
-				"Whatever. I'm done. Happy now?"
-			],
-			"chatty": [
-				"Okay, okay, I know when I'm beat. Back to the cell I go."
-			],
-			"quiet": [
-				"I'm done.",
-				"Going."
-			]
-		},
-		"turret_defies": {
-			"any": [
-				"Go on then. Shoot.",
-				"I'm not scared of a toaster.",
-				"You think that thing stops me?",
-				"Try it.",
-				"Shoot me, then. See if I care.",
-				"That thing doesn't scare me.",
-				"Do your worst.",
-				"Not today, tin can.",
-				"I've been shot before."
-			],
-			"grumpy": [
-				"Stupid machine. Come on then.",
-				"I've wanted to break one of those all week."
-			],
-			"quiet": [
-				"No.",
-				"Do it."
-			]
-		},
 		"calm_talk": {
 			"any": [
 				"Yeah. Okay. Thanks for asking.",
@@ -1830,7 +1760,7 @@
 		"riot": {
 			"any": [
 				"Tear it down!",
-				"Get the crew!",
+				"Get the guards!",
 				"Break the doors!",
 				"Nobody's locking us up now!",
 				"Take the hatch!",
@@ -1872,7 +1802,7 @@
 				"Everybody up. It's happening.",
 				"Get ready. We go on my word.",
 				"Grab something heavy.",
-				"Last chance, crew! Fix it or else!",
+				"Last chance, warden! Fix it or else!",
 				"Get to the door. All of you.",
 				"They're not listening. So we make them.",
 				"Stick together. Nobody backs out.",
@@ -1882,7 +1812,7 @@
 			"chatty": [
 				"Listen up! When it starts, go for the hatch!",
 				"Come on, everybody, it's now or never.",
-				"Last chance, crew! You hearing this?"
+				"Last chance, guards! You hearing this?"
 			],
 			"grumpy": [
 				"I'm done waiting. Who's with me?",
@@ -1896,7 +1826,7 @@
 			],
 			"cheerful": [
 				"Well, it was nice while it lasted.",
-				"Sorry, crew. You had your chance."
+				"Sorry, guards. You had your chance."
 			],
 			"quiet": [
 				"Get ready.",
@@ -1917,7 +1847,7 @@
 				"Wake me when it's over."
 			],
 			"chatty": [
-				"Hey, crew, for the record, I'm in my cell!",
+				"Hey, guards, for the record, I'm in my cell!",
 				"Somebody write down that I stayed put."
 			],
 			"grumpy": [
@@ -1927,7 +1857,7 @@
 			"nervous": [
 				"Please don't hurt me. I'm not in this.",
 				"I'm staying right here. Right here.",
-				"Crew, I'm not with them! I'm in my cell!"
+				"Guards, I'm not with them! I'm in my cell!"
 			],
 			"cheerful": [
 				"Nope. I'm sitting this one out.",
@@ -2306,7 +2236,7 @@
 				"Don't stop, keep moving!",
 				"Nobody saw that, right?",
 				"Free! Now what?",
-				"Quick, before the crew notices.",
+				"Quick, before the guards notice.",
 				"Ha! So much for security.",
 				"Shitcurity strikes again!"
 			]
@@ -2314,7 +2244,7 @@
 		"breakout": {
 			"any": [
 				"Catch me if you can!",
-				"Too slow, crew!",
+				"Too slow, guards!",
 				"Nice outpost! Mind if I look around?",
 				"Where's your hangar? Asking for a friend.",
 				"Can't catch me!",
@@ -2404,7 +2334,7 @@
 			],
 			"cheerful": [
 				"Ah, freedom! Well, some of it.",
-				"Thanks, crew!"
+				"Thanks, pal!"
 			],
 			"quiet": [
 				"Better.",
@@ -2638,12 +2568,12 @@
 				"Hey! The light just went!",
 				"Great. Now it's dark in here.",
 				"Did everyone hear that pop?",
-				"Somebody tell the crew the lights are going.",
+				"Somebody tell the guards the lights are going.",
 				"Watch your feet, there's glass.",
 				"Wonderful. Can't see a thing.",
 				"That's another bulb gone.",
 				"Lights out again. Of course.",
-				"Hey, crew! We need a new bulb!"
+				"Hey, guards! We need a new bulb!"
 			],
 			"grumpy": [
 				"Cheap bulbs in this dump.",
@@ -2671,7 +2601,7 @@
 				"I'm going to be sick.",
 				"Don't step in it. Don't step in it!",
 				"What's coming out of the floor?",
-				"Crew! The scrubber's backing up!",
+				"Guards! The scrubber's backing up!",
 				"Why is the foam brown?",
 				"I just ate. Why now?"
 			],
@@ -2701,7 +2631,7 @@
 				"The toilet's overflowing!",
 				"Water everywhere! Get a mop!",
 				"My socks are soaked.",
-				"Crew! The toilet's gone again!",
+				"Guards! The toilet's gone again!",
 				"Don't slip, it's all wet.",
 				"Who clogged it? Who?",
 				"Great. Now the floor's a pond.",

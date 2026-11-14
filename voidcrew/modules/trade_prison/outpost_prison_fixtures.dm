@@ -2,7 +2,7 @@
  * # Prison wing fixtures
  *
  * The pieces the prison wing's map places: uniforms that get dirty, the serving hatches, the
- * Sustenance Vendor, the wing's first aid kit, bookcases, and a quieter basketball hoop and ball.
+ * wing's first aid kit, bookcases, and a quieter basketball hoop and ball.
  * The machines have no circuit boards or designs and are protected outpost property, so they only
  * exist in a placed prison wing and never end up on a ship. The wing's doors and bolt buttons are
  * in outpost_prison_doors.dm.
@@ -211,76 +211,6 @@
 	tastes = list("cardboard" = 1)
 	foodtypes = GRAIN
 	w_class = WEIGHT_CLASS_SMALL
-
-// ===== SUSTENANCE VENDOR =====
-
-/**
- * A lockup food vendor: tg's Sustenance Vendor with its usual stock (soggy tofu, moldy
- * bread, ice cups, candy corn, plastic spoons) and no contraband. No lockup maps one: the galley
- * stocks the hatches (outpost_prison_core.dm). It serves the wing's staff, not
- * prisoner IDs, and charges nothing. No refill canisters reach an outpost, so it restocks itself
- * while powered: one item every OUTPOST_PRISON_VENDOR_RESTOCK_TIME, most likely whatever it is
- * shortest of. The tofu and candy corn feed a prisoner like a ration (outpost_prisoner_food_tier()).
- */
-/obj/machinery/vending/sustenance/outpost_prison
-	desc = "The lockup's food vendor. Staff only."
-	contraband = list()
-	refill_canister = null
-	all_products_free = TRUE
-	allow_custom = FALSE
-	tiltable = FALSE
-	// tg's sustenance interact() refuses anyone without a prisoner ID unless req_access is set and
-	// allowed() passes; allowed() below lets the wing's staff through.
-	req_access = list(ACCESS_BRIG)
-	/// Powered time toward the next restocked item, in deciseconds
-	var/restock_progress = 0
-
-/obj/machinery/vending/sustenance/outpost_prison/Initialize(mapload)
-	. = ..()
-	AddElement(/datum/element/outpost_property)
-	// Restocked by itself, never by the crew's restock tracker
-	GLOB.vending_machines_to_restock -= src
-
-/// Whether `user` may take from it: the staff of the wing it stands in
-/obj/machinery/vending/sustenance/outpost_prison/proc/may_vend(mob/user)
-	if(!ismob(user) || is_outpost_prisoner(user))
-		return FALSE
-	if(isAdminGhostAI(user))
-		return TRUE
-	var/datum/outpost_prison/prison = get_outpost_prison(src)
-	return !!prison?.is_staff(user)
-
-/obj/machinery/vending/sustenance/outpost_prison/interact(mob/user)
-	if(isliving(user) && !HAS_AI_ACCESS(user) && !may_vend(user))
-		balloon_alert(user, "staff only")
-		return
-	return ..()
-
-/obj/machinery/vending/sustenance/outpost_prison/allowed(mob/accessor)
-	return may_vend(accessor)
-
-/obj/machinery/vending/sustenance/outpost_prison/process(seconds_per_tick)
-	. = ..()
-	if(. == PROCESS_KILL)
-		return
-	restock_progress += seconds_per_tick * (1 SECONDS)
-	while(restock_progress >= OUTPOST_PRISON_VENDOR_RESTOCK_TIME)
-		restock_progress -= OUTPOST_PRISON_VENDOR_RESTOCK_TIME
-		if(!restock_one())
-			restock_progress = 0
-			break
-
-/// Puts one item back on a shelf that is short, the shortest most likely. Returns its record, or null when full.
-/obj/machinery/vending/sustenance/outpost_prison/proc/restock_one()
-	var/list/short = list()
-	for(var/datum/data/vending_product/record as anything in product_records)
-		if(record.amount < record.max_amount)
-			short[record] = record.max_amount - record.amount
-	if(!length(short))
-		return null
-	var/datum/data/vending_product/picked = pick_weight(short)
-	picked.amount++
-	return picked
 
 // ===== FIRST AID =====
 

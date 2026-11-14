@@ -203,8 +203,19 @@ GLOBAL_VAR(bounty_pool_timer)
 		return FALSE
 	return !QDELETED(prison.outpost)
 
-/// The wing a ship's catch goes to first. No crew has one of its own, so none: a record is open to every wing.
+/// The wing a ship's catch goes to first: the lockup at the trader outpost the ship is berthed at, if one is running.
 /proc/bounty_captor_prison(obj/structure/overmap/ship/ship)
+	if(QDELETED(ship))
+		return null
+	var/obj/structure/overmap/trader_outpost/outpost = ship.docked
+	if(istype(outpost) && bounty_prison_running(outpost.prison))
+		return outpost.prison
+	for(var/obj/structure/overmap/trader_outpost/candidate as anything in GLOB.trader_outposts)
+		if(!bounty_prison_running(candidate?.prison))
+			continue
+		for(var/datum/outpost_berth/berth as anything in candidate.berths)
+			if(berth?.ship == ship)
+				return candidate.prison
 	return null
 
 /// Which record leaves a full pool: the oldest open one (reserved for nobody and named to no wing), else the oldest named to no wing, else the oldest; never `keep`

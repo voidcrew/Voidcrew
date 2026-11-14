@@ -709,7 +709,7 @@
  * built, never built here), name, crime, a CAPTURED line and who brought them in. Read before the
  * posting closes, since closing lets go of the record.
  */
-/datum/criminal_bounty/proc/board_poster_text(obj/structure/overmap/ship/ship)
+/datum/criminal_bounty/proc/board_poster_text(obj/structure/overmap/ship/ship, mob/living/deliverer)
 	var/list/lines = list()
 	lines += "<center><h2>CAPTURED</h2><b>[bounty_tier_name(record?.tier)]</b></center>"
 	if(record?.mugshot)
@@ -717,5 +717,10 @@
 	lines += "<center><h3>[record?.name || "Unknown"]</h3></center>"
 	if(record?.crime)
 		lines += "<center>Wanted for [record.crime].</center>"
-	lines += "<center>Brought in alive by the crew of the [ship?.name || "unknown ship"].</center>"
+	if(ship)
+		lines += "<center>Brought in alive by the crew of the [html_encode(ship.name)].</center>"
+	else if(deliverer?.real_name)
+		lines += "<center>Brought in alive by [html_encode(deliverer.real_name)].</center>"
+	else
+		lines += "<center>Brought in alive.</center>"
 	return lines.Join("\n")

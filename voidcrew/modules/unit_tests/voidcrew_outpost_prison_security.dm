@@ -1,7 +1,7 @@
 /**
- * The yard's feel (outpost_prison_ambience.dm) and its strings file: heads turning at a member
- * coming in, moods read on examine, sulking and humming, the hush, the chant and the roar. Built
- * turrets are tested in voidcrew_outpost_prison_built_turrets.dm.
+ * The yard's feel (outpost_prison_ambience.dm), its strings file, and turret control locks
+ * (outpost_prison_security.dm): heads turning at an inmate coming in, moods read on examine,
+ * sulking and humming, the hush, the chant, the roar, and who may work an outpost's turrets.
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with the
  * define named beside them. Prisons are driven by calling their procs with their own processing
@@ -23,9 +23,9 @@
 	TEST_ASSERT(islist(contents["lines"]), "outpost_prison_security.json has no lines block")
 	TEST_ASSERT(islist(contents["examine"]), "outpost_prison_security.json has no examine block")
 
-	// Every context the yard says, turrets included (the X0 dialogue test holds the lines to the house rules)
+	// Every context the yard says (the X0 dialogue test holds the lines to the house rules)
 	var/list/lines = contents["lines"]
-	for(var/context in list("turret_hit", "turret_smash", "greet_staff", "staff_enters_restless", "huddle", "riot_chant", "riot_roar"))
+	for(var/context in list("greet_staff", "staff_enters_restless", "huddle", "riot_chant", "riot_roar"))
 		TEST_ASSERT(islist(lines[context]), "outpost_prison_security.json has no lines for [context]")
 
 	// The examine moods: every band has shared lines and lines for every personality, never a number,
@@ -189,4 +189,69 @@
 	prison.riot_active = FALSE
 	rioter.trouble = null
 	prison.stage = "calm" // PRISON_STAGE_CALM
+	settle_prison_air(home)
+
+// ===== WHO WORKS A TURRET ON AN OUTPOST =====
+
+/datum/unit_test/voidcrew_outpost_prison_built_turret_controls
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+
+/datum/unit_test/voidcrew_outpost_prison_built_turret_controls/Run()
+	var/obj/structure/overmap/trader_outpost/prison_test_host/home = prison_test_claim("btcontrolstaff")
+	TEST_ASSERT_NOTNULL(home, "The turret controls test outpost did not load")
+	var/mob/living/carbon/human/staff = make_player(prison_spot(home, 3, 5), "btcontrolstaff")
+	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 2, 5), "btcontrolstranger")
+	// Placed in the warden's office, switched on and unlocked as a finished frame leaves it, and
+	// looking for nobody, so the machine clock never has it fire at the two of them
+	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret, prison_spot(home, 4, 4))
+	turret.locked = FALSE
+	turret.turret_flags = NONE
+	TEST_ASSERT_EQUAL(get_outpost_prison(turret), test_prison(home), "The test turret is not in the wing")
+	TEST_ASSERT(turret.on && turret.anchored, "The test turret did not start switched on and bolted")
+	TEST_ASSERT(turret.outpost_controls_allowed(staff), "Staff may not work the wing's turret")
+	TEST_ASSERT(!turret.outpost_controls_allowed(stranger), "A stranger may work an outpost's turret")
+
+	// The panel: a stranger's buttons do nothing, staff's work
+	var/datum/tgui/stranger_ui = allocate(/datum/tgui, stranger, turret, "PortableTurret")
+	turret.ui_act("power", list(), stranger_ui, GLOB.always_state)
+	TEST_ASSERT(turret.on, "A stranger switched an outpost's turret off")
+	turret.ui_act("shootall", list(), stranger_ui, GLOB.always_state)
+	TEST_ASSERT_EQUAL(turret.turret_flags, NONE, "A stranger changed an outpost turret's targets")
+	var/datum/tgui/staff_ui = allocate(/datum/tgui, staff, turret, "PortableTurret")
+	turret.ui_act("power", list(), staff_ui, GLOB.always_state)
+	TEST_ASSERT(!turret.on, "Staff could not switch the turret off")
+
+	// Tools: the wrench (it is off now), an ID swipe, the multitool
+	var/obj/item/wrench/wrench = allocate(/obj/item/wrench)
+	turret.attackby(wrench, stranger)
+	TEST_ASSERT(turret.anchored, "A stranger unbolted an outpost's switched-off turret")
+	var/obj/item/card/id/advanced/card = allocate(/obj/item/card/id/advanced)
+	turret.attackby(card, stranger)
+	TEST_ASSERT(!turret.locked, "A stranger's ID swipe locked an outpost's turret")
+	var/obj/item/multitool/multitool = allocate(/obj/item/multitool)
+	turret.multitool_act(stranger, multitool)
+	TEST_ASSERT_NULL(multitool.buffer, "A stranger saved an outpost's turret to a multitool")
+	turret.multitool_act(staff, multitool)
+	TEST_ASSERT_EQUAL(multitool.buffer, turret, "Staff could not save the turret to a multitool")
+	turret.attackby(wrench, staff)
+	TEST_ASSERT(!turret.anchored, "Staff could not unbolt the switched-off turret")
+	turret.attackby(wrench, staff)
+	TEST_ASSERT(turret.anchored, "Staff could not bolt the turret back down")
+
+	// A turret control panel in the lockup answers to the same people
+	var/obj/machinery/turretid/panel = allocate(/obj/machinery/turretid, prison_spot(home, 6, 4))
+	panel.locked = FALSE
+	var/obj/item/multitool/strangers_tool = allocate(/obj/item/multitool)
+	strangers_tool.set_buffer(turret)
+	panel.multitool_act(stranger, strangers_tool)
+	TEST_ASSERT(!length(panel.turrets), "A stranger linked a turret to a lockup's control panel")
+	panel.multitool_act(staff, multitool)
+	TEST_ASSERT_EQUAL(length(panel.turrets), 1, "Staff could not link the turret to the panel")
+	var/was_lethal = panel.lethal
+	panel.toggle_lethal(stranger)
+	TEST_ASSERT_EQUAL(panel.lethal, was_lethal, "A stranger switched a lockup's turrets to lethal")
+	panel.toggle_lethal(staff)
+	TEST_ASSERT(panel.lethal != was_lethal, "Staff could not switch the turrets' mode")
+	panel.toggle_lethal(staff)
+
 	settle_prison_air(home)

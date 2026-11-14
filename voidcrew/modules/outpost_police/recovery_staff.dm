@@ -27,6 +27,7 @@
 /// The kinds of post (recovery_staff.dm)
 #define RECOVERY_POST_COUNTER "counter"
 #define RECOVERY_POST_GUARD "guard"
+#define RECOVERY_POST_WARDEN "warden"
 #define RECOVERY_POST_POLICE "police"
 
 /// A counter, a desk or a police post that someone keeps. Counters and desks are stored in `recovery.posts` by shop;
@@ -89,6 +90,8 @@
 		// A permit desk is a guard's: his replacement keeps the same checkpoint (his type carries it)
 		if(istype(shop, /datum/outpost_shop/vendor/checkpoint))
 			post.kind = RECOVERY_POST_GUARD
+		else if(istype(shop, /datum/outpost_shop/lockup_warden)) // OUTPOST PRISON seam
+			post.kind = RECOVERY_POST_WARDEN
 		posts[shop] = post
 
 /// Whether `who` is up as an NPC keeper: there, not dead, not a player, and not already leaving
@@ -189,9 +192,13 @@
 /datum/outpost_recovery/proc/send_keeper(datum/outpost_recovery_post/post)
 	if(!ispath(post.keeper_type, /mob/living) || !post.spot)
 		return
-	var/turf/arrival = keeper_arrival_turf()
-	if(!arrival && post.kind == RECOVERY_POST_GUARD && !post.spot.is_blocked_turf(exclude_mobs = FALSE) && !human_npc_watched(post.spot))
-		arrival = post.spot
+	var/turf/arrival
+	if(post.kind == RECOVERY_POST_WARDEN) // OUTPOST PRISON seam: replacement wardens come on shift in the lockup, not the concourse lift
+		arrival = outpost?.prison?.warden_arrival_spot(post.spot)
+	else
+		arrival = keeper_arrival_turf()
+		if(!arrival && post.kind == RECOVERY_POST_GUARD && !post.spot.is_blocked_turf(exclude_mobs = FALSE) && !human_npc_watched(post.spot))
+			arrival = post.spot
 	if(!arrival)
 		return
 	var/mob/living/replacement = new post.keeper_type(arrival)
@@ -202,7 +209,7 @@
 	var/mob/living/carbon/human/npc/ambient_npc/walker = replacement
 	if(istype(walker))
 		walker.fade_in()
-		if(post.kind != RECOVERY_POST_GUARD)
+		if(post.kind != RECOVERY_POST_GUARD && post.kind != RECOVERY_POST_WARDEN)
 			ambient_cross_checkpoint_on_arrival(walker, outpost)
 
 /**
@@ -328,4 +335,5 @@
 #undef RECOVERY_CREW_GRACE
 #undef RECOVERY_POST_COUNTER
 #undef RECOVERY_POST_GUARD
+#undef RECOVERY_POST_WARDEN
 #undef RECOVERY_POST_POLICE

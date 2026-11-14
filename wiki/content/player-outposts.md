@@ -47,7 +47,7 @@ Load eligible goods onto the ferry and dispatch it to export them. Payment goes 
 
 ## Upgrades
 
-The **Rooms** tab of the management console sells prefabricated rooms: the free **cargo dock**, a **prison wing** where the outpost is paid to hold prisoners, **cell block extensions** for the wing (see [Prison Wing](prison-wing.md)), and the service rooms your outpost can sell to visiting crews, such as the cloning bay, medical lab, shop, storage and teleporter. Every room comes in your outpost's style: a run-down outpost gets run-down rooms, a clean one gets clean rooms. The layout can differ between styles, but the room does the same job either way. Buying one needs management and treasury permission and is paid from the outpost bank. Until the room is placed, **Cancel purchase** refunds the full price.
+The **Rooms** tab of the management console sells prefabricated rooms: the free **cargo dock** and the service rooms your outpost can sell to visiting crews, such as the cloning bay, medical lab, shop, storage and teleporter. Every room comes in your outpost's style: a run-down outpost gets run-down rooms, a clean one gets clean rooms. The layout can differ between styles, but the room does the same job either way. Buying one needs management and treasury permission and is paid from the outpost bank. Until the room is placed, **Cancel purchase** refunds the full price.
 
 Press **Place** to open the placement map, a plan of the ground around the outpost:
 
@@ -56,7 +56,6 @@ Press **Place** to open the placement map, a plan of the ground around the outpo
 - Grey is floor, light grey is wall, blue is window, amber is door and brown is something in the way. Dark red ground can never be built on: docking berths, the hangar elevator, the arrival point, other rooms and ground outside the claim.
 - The room follows the cursor, green where it fits and red where it does not, with the blocked tiles marked. Click to bring up **Build** and **Rotate**. A greyed-out Build says why in its tooltip.
 - Lattice and loose items do not block a room. They are cleared out of its way when it is built. People do: nobody can be standing on the spot when you build.
-- A cell block extension only joins a free side wall of the prison wing. The map outlines each free spot, already turned the right way, and yellow squares show where the wall opens into the wing.
 - **Rescan** surveys the ground again, for example after you clear something away.
 
 Placement is permanent. A built room cannot be moved or refunded.
@@ -156,7 +155,7 @@ Ship docking has separate controls:
 
 Banning a ship overrides docking clearance. The outpost has four **standard berths**, each sized to fit the ship docking into it; if none is free, an arriving ship is told parking is unavailable. Visitor berths work as they do at [trader outposts](trader-outposts.md): only the visiting ship's crew can take the hangar elevator down to one. The owner gets no exception.
 
-A hull defense turret bolted to the outpost answers only to its owner, stewards, treasurers, residents and builders. Visitors cannot switch it off, change its targeting, unbolt it or scrap it. The same goes for turrets built on the outpost and for turret control panels. A cleanbot can pass a prison wing's staff doors, so one built in the office can clean the yard.
+A hull defense turret bolted to the outpost answers only to its owner, stewards, treasurers, residents and builders. Visitors cannot switch it off, change its targeting, unbolt it or scrap it. The same goes for turrets built on the outpost and for turret control panels.
 
 ## Ship Bay
 
