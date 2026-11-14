@@ -360,8 +360,10 @@
 	if(!sentence)
 		return FALSE
 	if(way_out)
+		if(!isobj(way_out) || isitem(way_out) || istype(way_out, /obj/machinery/door/window/outpost_prison_yard))
+			return FALSE
 		var/turf/way_turf = get_turf(way_out)
-		var/is_exit = is_exit_blocker(way_out) || istype(way_out, /obj/structure/table/reinforced/prison_hatch) || istype(way_out, /obj/machinery/door/airlock/security/prison_staff) || istype(way_out, /obj/machinery/door/window/brigdoor/outpost_prison_staff) || (way_turf && is_exit_tile(way_turf))
+		var/is_exit = istype(way_out, /obj/machinery/door/airlock/security/prison_staff) || istype(way_out, /obj/machinery/door/window/brigdoor/outpost_prison_staff) || is_exit_blocker(way_out) || ((istype(way_out, /obj/structure/window) || istype(way_out, /obj/structure/grille)) && way_turf && is_exit_tile(way_turf))
 		if(!is_exit)
 			return FALSE
 	sentence.baton_until = max(sentence.baton_until, world.time + OUTPOST_PRISON_INMATE_BATON_WINDOW)
@@ -436,9 +438,11 @@
 	SIGNAL_HANDLER
 	if(!proximity || !source.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK) || !in_cell_block(source))
 		return NONE
-	if(isliving(target) && target != source && !is_ai_outpost_prison_guard(target))
-		note_inmate_attack(source, target, ATTACKER_DAMAGING_ATTACK)
-	else if(!isliving(target))
+	if(isliving(target))
+		var/mob/living/living_target = target
+		if(living_target != source && living_target.stat != DEAD && !is_ai_outpost_prison_guard(living_target))
+			note_inmate_attack(source, living_target, ATTACKER_DAMAGING_ATTACK)
+	else if(HAS_TRAIT(source, TRAIT_HULK) || isalien(source))
 		note_inmate_breakout(source, target)
 	return NONE
 
@@ -908,7 +912,8 @@
 	var/obj/machinery/door/airlock/security/prison_staff/outer
 	if(use_processing)
 		var/wait_pause = max(1, round(0.5 SECONDS * GLOB.outpost_police_property_time_scale))
-		for(var/wait_step in 1 to 12)
+		var/max_waits = max(12, round((6 SECONDS) / wait_pause))
+		for(var/wait_step in 1 to max_waits)
 			if(QDELETED(src) || processing_state == OUTPOST_PROCESSING_IDLE || processing_state == OUTPOST_PROCESSING_BOOK)
 				break
 			sleep(wait_pause)

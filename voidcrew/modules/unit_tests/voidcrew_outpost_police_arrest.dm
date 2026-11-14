@@ -735,7 +735,7 @@
  * police_jail_carry(); every other step is the police's own code, stepped by hand. Returns the cell they were
  * booked into, or null (and the test has failed).
  */
-/datum/unit_test/proc/police_jail_run(obj/structure/overmap/trader_outpost/outpost, mob/living/carbon/human/suspect, mob/living/carbon/human/victim, list/attack)
+/datum/unit_test/proc/police_jail_run(obj/structure/overmap/trader_outpost/outpost, mob/living/carbon/human/suspect, mob/living/carbon/human/victim, list/attack, expect_lockup = FALSE)
 	var/datum/outpost_police/police = outpost.police
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/witness = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, police_arrest_beside(suspect))
 	police_arrest_kit(witness)
@@ -801,6 +801,22 @@
 	police_arrest_wait(case)
 	TEST_ASSERT(case.disposed_at, "[outpost.type]: the desk did not deal with the evidence")
 
+	if(expect_lockup)
+		var/datum/outpost_prison/prison = outpost.prison
+		TEST_ASSERT_NOTNULL(prison, "[outpost.type] has no lockup to book into")
+		if(!prison)
+			return null
+		case.step_desk()
+		TEST_ASSERT_EQUAL(case.step, "lockup", "[outpost.type]: an unpaid arrest at the desk is on [case.step], not lockup")
+		police_jail_carry(officer, suspect, prison.booking_door_turf())
+		case.step_lockup()
+		police_arrest_wait(case, 40 SECONDS)
+		TEST_ASSERT(QDELETED(case), "[outpost.type]: the arrest did not end at the lockup")
+		TEST_ASSERT(prison.holds(suspect.mind), "[outpost.type]: the suspect is not held in the lockup")
+		TEST_ASSERT(prison.in_cell_block(suspect), "[outpost.type]: the suspect is not inside the lockup")
+		TEST_ASSERT_NULL(suspect.handcuffed, "[outpost.type]: the prisoner is still cuffed in the lockup")
+		return prison
+
 	// The walk to the cell door
 	var/datum/outpost_police_cell/cell = police.cell_best()
 	TEST_ASSERT_NOTNULL(cell, "[outpost.type] has no cell to book into")
@@ -842,6 +858,11 @@
 		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
 		if(!outpost)
 			continue
+		if(outpost.prison)
+			STOP_PROCESSING(SSprocessing, outpost.prison)
+			outpost.prison.intake_open = FALSE
+			if(outpost.prison.processing_state != "idle") // OUTPOST_PROCESSING_IDLE
+				outpost.prison.processing_done()
 		var/datum/outpost_police/police = outpost.police
 
 		// Fined: the money comes off the ship and they keep their clothes
@@ -872,13 +893,14 @@
 		var/obj/structure/overmap/ship/empty = wanted_ship(broke, 0)
 		ships += empty
 		var/mob/living/carbon/human/second_victim = police_arrest_person(police_arrest_beside(broke))
-		cell = police_jail_run(outpost, broke, second_victim, list(PROC_REF(police_jail_punch), null))
-		if(!cell)
+		var/datum/outpost_prison/booked_lockup = police_jail_run(outpost, broke, second_victim, list(PROC_REF(police_jail_punch), null), expect_lockup = TRUE)
+		if(!booked_lockup)
 			continue
-		TEST_ASSERT(cell.jailed[broke.mind], "[outpost_type]: a prisoner whose ship could not pay was not jailed")
+		TEST_ASSERT(booked_lockup.holds(broke.mind), "[outpost_type]: a prisoner whose ship could not pay was not held in the lockup")
 		TEST_ASSERT(istype(broke.w_uniform, /obj/item/clothing/under/rank/prisoner/outpost_police), "[outpost_type]: a jailed prisoner wears [broke.w_uniform?.type || "nothing"], not the prison jumpsuit")
 		var/obj/structure/closet/secure_closet/personal/outpost_police/locker = police.property_locker_for(broke)
 		TEST_ASSERT_NOTNULL(locker, "[outpost_type]: a jailed prisoner has no property locker")
+		TEST_ASSERT_EQUAL(get_area(locker), booked_lockup.wing, "[outpost_type]: a lockup inmate's property locker is in [get_area(locker)?.type], not the lockup")
 		TEST_ASSERT(broke_suit in locker.contents, "[outpost_type]: the prisoner's own jumpsuit is not in their locker")
 		TEST_ASSERT(pocketed in locker.contents, "[outpost_type]: what was in the prisoner's pocket is not in their locker")
 		TEST_ASSERT(locker.locked, "[outpost_type]: a property locker was left open")
@@ -940,10 +962,14 @@
 /datum/unit_test/voidcrew_outpost_police_arrest_hold_for_cell
 	var/datum/outpost_police/saved_police
 	var/list/saved_cells
+	var/obj/structure/overmap/trader_outpost/saved_outpost
+	var/datum/outpost_prison/saved_prison
 
 /datum/unit_test/voidcrew_outpost_police_arrest_hold_for_cell/Destroy()
 	if(saved_police && saved_cells)
 		saved_police.cells = saved_cells
+	if(saved_outpost && saved_prison)
+		saved_outpost.prison = saved_prison
 	return ..()
 
 /datum/unit_test/voidcrew_outpost_police_arrest_hold_for_cell/Run()
@@ -966,7 +992,10 @@
 	officer.start_pulling(suspect)
 	saved_police = police
 	saved_cells = police.cells
+	saved_outpost = outpost
+	saved_prison = outpost.prison
 	police.cells = list()
+	outpost.prison = null
 
 	case.act_book(officer, suspect)
 	TEST_ASSERT(!QDELETED(case), "A three-star arrest with no cell was closed")

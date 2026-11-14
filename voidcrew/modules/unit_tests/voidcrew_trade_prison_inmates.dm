@@ -387,6 +387,54 @@
 	inmate.dropItemToGround(knife)
 	qdel(knife)
 
+	var/obj/structure/table/reinforced/prison_hatch/hatch
+	var/obj/machinery/door/window/outpost_prison_yard/yard_windoor
+	var/obj/machinery/door/airlock/security/prison_staff/staff_door
+	for(var/turf/tile as anything in prison.cell_block)
+		if(!hatch)
+			hatch = locate() in tile
+			if(hatch)
+				yard_windoor = locate() in tile
+		if(!staff_door)
+			staff_door = locate() in tile
+	TEST_ASSERT_NOTNULL(hatch, "No serving hatch found on the cell-block perimeter")
+	TEST_ASSERT_NOTNULL(yard_windoor, "No yard hatch window found on the serving hatch")
+	TEST_ASSERT_NOTNULL(staff_door, "No staff airlock found on the cell-block perimeter")
+	var/turf/hatch_approach
+	for(var/direction in GLOB.cardinals)
+		var/turf/candidate = get_step(get_turf(hatch), direction)
+		if(candidate && prison.in_cell_block(candidate) && isopenturf(candidate) && !candidate.is_blocked_turf())
+			hatch_approach = candidate
+			break
+	var/turf/door_approach
+	for(var/direction in GLOB.cardinals)
+		var/turf/candidate = get_step(get_turf(staff_door), direction)
+		if(candidate && prison.in_cell_block(candidate) && isopenturf(candidate) && !candidate.is_blocked_turf())
+			door_approach = candidate
+			break
+	TEST_ASSERT_NOTNULL(hatch_approach, "No open yard approach tile beside the serving hatch")
+	TEST_ASSERT_NOTNULL(door_approach, "No open yard approach tile beside the staff airlock")
+
+	var/obj/item/food/prison_ration/ration = allocate(/obj/item/food/prison_ration, get_turf(hatch))
+	inmate.forceMove(hatch_approach)
+	inmate.set_combat_mode(TRUE)
+	TEST_ASSERT(!prison.note_inmate_breakout(inmate, ration), "A ration bar on a serving hatch counted as a breakout target")
+	TEST_ASSERT(!prison.note_inmate_breakout(inmate, yard_windoor), "The yard hatch window counted as a breakout target")
+	inmate.UnarmedAttack(ration, TRUE)
+	TEST_ASSERT(!prison.inmate_baton_warranted(inmate), "Picking up food off a serving hatch in combat mode warranted the guard's baton")
+	inmate.dropItemToGround(ration)
+	qdel(ration)
+	inmate.UnarmedAttack(yard_windoor, TRUE)
+	TEST_ASSERT(!prison.inmate_baton_warranted(inmate), "Opening the yard hatch window in combat mode warranted the guard's baton")
+	inmate.forceMove(door_approach)
+	inmate.UnarmedAttack(staff_door, TRUE)
+	TEST_ASSERT(!prison.inmate_baton_warranted(inmate), "Bare-hand clicking a staff airlock in combat mode warranted the guard's baton")
+	TEST_ASSERT(prison.note_inmate_breakout(inmate, staff_door), "Hacking or battering a staff airlock did not flag the inmate for the baton")
+	TEST_ASSERT(prison.inmate_baton_warranted(inmate), "inmate_baton_warranted() stayed false after flagging a staff-door breakout")
+	sentence.baton_until = 0
+	inmate.set_combat_mode(FALSE)
+	inmate.forceMove(yard_tile)
+
 	prison.note_inmate_provoked(inmate, rioter)
 	TEST_ASSERT(!prison.note_inmate_attack(inmate, rioter, ATTACKER_DAMAGING_ATTACK), "Hitting back within the 10 s self-defense window warranted the guard's baton")
 	TEST_ASSERT(!prison.inmate_baton_warranted(inmate), "Self-defense left inmate_baton_warranted() true")
