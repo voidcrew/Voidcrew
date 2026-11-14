@@ -116,6 +116,8 @@
 /// Cuffed: the AI packages hear who did it (whoever last reached for its wrists, if it was lately)
 /mob/living/carbon/human/npc/bounty_criminal/proc/body_on_restrained(datum/source)
 	SIGNAL_HANDLER
+	if(!QDELING(src))
+		REMOVE_TRAIT(src, TRAIT_NOMOBSWAP, BOUNTY_BODY_TRAIT) // OUTPOST PRISON seam: let a puller swap past a cuffed catch in 1-wide pockets
 	if(stat == DEAD || QDELING(src))
 		return
 	var/mob/living/user = body_cuffer_ref?.resolve()
@@ -129,6 +131,8 @@
 /// Out of its cuffs: the AI packages hear whether it got itself out (null) or someone took them off (src: who isn't known)
 /mob/living/carbon/human/npc/bounty_criminal/proc/body_on_unrestrained(datum/source)
 	SIGNAL_HANDLER
+	if(!QDELING(src) && !HAS_TRAIT(src, TRAIT_RESTRAINED))
+		ADD_TRAIT(src, TRAIT_NOMOBSWAP, BOUNTY_BODY_TRAIT) // OUTPOST PRISON seam: restore body-blocking once out of restraints
 	if(stat == DEAD || QDELING(src))
 		return
 	var/self_freed = body_working_cuffs_at && world.time <= body_working_cuffs_at + BOUNTY_SELF_FREED_WINDOW

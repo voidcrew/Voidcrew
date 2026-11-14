@@ -618,7 +618,7 @@
 		return FALSE
 	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
-	if(!inner || !outer || processing_outsider_inside(who) || processing_inmate_inside(who))
+	if(!inner || !outer || (!in_processing(who) && processing_outsider_inside(who)) || processing_inmate_inside(who))
 		return FALSE
 	if(in_processing(who))
 		processing_state = OUTPOST_PROCESSING_RELEASE

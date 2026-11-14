@@ -166,7 +166,13 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			if(prison.in_processing(mover) && (WEAKREF(mover) in prison.processing_release_refs))
 				prison.try_start_processing_release(mover)
 				return
-			var/mob/living/deliverer = isliving(mover.pulling) ? mover : (isliving(mover.pulledby) && mover.pulledby.pulling == mover ? mover.pulledby : null)
+			var/mob/living/deliverer
+			if(prison.claim_held_catch(mover))
+				deliverer = mover
+			else if(isliving(mover.pulledby) && mover.pulledby.pulling == mover)
+				deliverer = mover.pulledby
+			else if(isliving(mover.buckled))
+				deliverer = mover.buckled
 			if(deliverer && prison.in_front_room(deliverer) && prison.try_start_processing_claim(deliverer))
 				return
 	return ..()
@@ -174,7 +180,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 /obj/machinery/door/airlock/security/prison_staff/processing/outer/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	if(isliving(user) && density && !access_bypass)
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
-		if(prison && prison.in_front_room(user) && isliving(user.pulling) && prison.try_start_processing_claim(user))
+		if(prison && prison.in_front_room(user) && prison.claim_held_catch(user) && prison.try_start_processing_claim(user))
 			add_fingerprint(user)
 			return
 	return ..()

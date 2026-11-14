@@ -718,9 +718,9 @@
 	if(record?.crime)
 		lines += "<center>Wanted for [record.crime].</center>"
 	if(ship)
-		lines += "<center>Brought in alive by the crew of the [html_encode(ship.name)].</center>"
+		lines += "<center>Brought in alive by the crew of the [html_encode(format_text(ship.name))].</center>" // OUTPOST PRISON seam: strip \improper on ship names
 	else if(deliverer?.real_name)
-		lines += "<center>Brought in alive by [html_encode(deliverer.real_name)].</center>"
+		lines += "<center>Brought in alive by [html_encode(format_text(deliverer.real_name))].</center>"
 	else
 		lines += "<center>Brought in alive.</center>"
 	return lines.Join("\n")

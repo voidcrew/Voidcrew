@@ -27,6 +27,9 @@
 
 /// Clears transient hand-in state when Processing finishes or the wing is deleted
 /datum/outpost_prison/proc/claim_clear()
+	var/mob/living/previous = claim_criminal_ref?.resolve()
+	if(!QDELETED(previous))
+		UnregisterSignal(previous, COMSIG_LIVING_PRE_MOB_BUMP)
 	claim_deliverer_ref = null
 	claim_criminal_ref = null
 	claim_prompted = FALSE
@@ -34,9 +37,59 @@
 
 /// Whether `mover` may step into `processing/outer` from the front room as part of the active bounty hand-in
 /datum/outpost_prison/proc/claim_lets_enter(atom/movable/mover)
-	if(processing_state != OUTPOST_PROCESSING_CLAIM || claim_aborting || !mover)
+	if(processing_state != OUTPOST_PROCESSING_CLAIM || !mover)
 		return FALSE
+	if(claim_aborting)
+		return claim_deliverer_ref?.resolve() == mover
 	return claim_deliverer_ref?.resolve() == mover || claim_criminal_ref?.resolve() == mover
+
+/// Returns the person `mover` is pulling or fireman-carrying, or null
+/datum/outpost_prison/proc/claim_held_catch(mob/living/mover)
+	if(QDELETED(mover))
+		return null
+	if(isliving(mover.pulling))
+		return mover.pulling
+	if(mover.has_buckled_mobs())
+		for(var/mob/living/carried as anything in mover.buckled_mobs)
+			if(isliving(carried) && !QDELETED(carried))
+				return carried
+	return null
+
+/// Lets a person inside 1x2 Processing swap past the standing claim target on cardinal bump regardless of combat mode
+/datum/outpost_prison/proc/on_claim_criminal_bumped(mob/living/criminal, mob/living/bumper)
+	SIGNAL_HANDLER
+	if(processing_state != OUTPOST_PROCESSING_CLAIM || claim_criminal_ref?.resolve() != criminal)
+		return NONE
+	if(!isliving(bumper) || bumper == criminal || bumper.stat != CONSCIOUS || bumper.now_pushing || bumper.moving_diagonally)
+		return NONE
+	if(bumper.buckled || bumper.has_buckled_mobs() || criminal.buckled || criminal.has_buckled_mobs())
+		return NONE
+	if(istype(bumper, /mob/living/carbon/human/npc/bounty_criminal) || is_outpost_prisoner(bumper) || is_inmate(bumper))
+		return NONE
+	if(criminal.pulledby && criminal.pulledby != bumper && HAS_TRAIT(criminal, TRAIT_RESTRAINED))
+		return NONE
+	var/turf/bumper_turf = get_turf(bumper)
+	var/turf/criminal_turf = get_turf(criminal)
+	if(!bumper_turf || !criminal_turf || !in_processing(bumper_turf) || !in_processing(criminal_turf) || !bumper_turf.Adjacent(criminal_turf))
+		return NONE
+	if(criminal.move_resist > bumper.move_force)
+		return NONE
+	bumper.now_pushing = TRUE
+	var/criminal_passmob = (criminal.pass_flags & PASSMOB)
+	var/bumper_passmob = (bumper.pass_flags & PASSMOB)
+	criminal.pass_flags |= PASSMOB
+	bumper.pass_flags |= PASSMOB
+	var/move_failed = FALSE
+	if(!criminal.Move(bumper_turf, get_dir(criminal_turf, bumper_turf)) || !bumper.Move(criminal_turf, get_dir(bumper_turf, criminal_turf)))
+		criminal.forceMove(criminal_turf)
+		bumper.forceMove(bumper_turf)
+		move_failed = TRUE
+	if(!bumper_passmob)
+		bumper.pass_flags &= ~PASSMOB
+	if(!criminal_passmob)
+		criminal.pass_flags &= ~PASSMOB
+	bumper.now_pushing = FALSE
+	return move_failed ? NONE : COMPONENT_LIVING_BLOCK_PRE_MOB_BUMP
 
 /// Whether `ship` is berthed at `outpost` (docked directly or occupying one of its hangar berths)
 /proc/is_ship_berthed_at_outpost(obj/structure/overmap/ship/ship, obj/structure/overmap/trader_outpost/outpost)
@@ -85,14 +138,14 @@
 	return !!(mover.client || mover.mind || ishuman(mover))
 
 /**
- * Checks whether `mover` (a player in the front room pulling `mover.pulling` to Processing's outer door) can start a
- * live bounty hand-in. Speaks the warden's refusal when someone brings a corpse or an unwanted person; stays silent
- * for a lone player or when the warden is down/away or Processing is busy. Opens `processing/outer` on success.
+ * Checks whether `mover` (a player in the front room pulling or carrying a catch to Processing's outer door or desk)
+ * can start a live bounty hand-in. Speaks the warden's refusal when someone brings a corpse or an unwanted person;
+ * stays silent for a lone player or when the warden is down/away or Processing is busy. Opens `processing/outer` on success.
  */
 /datum/outpost_prison/proc/try_start_processing_claim(mob/living/mover)
 	if(!can_hunter_deliver(mover))
 		return FALSE
-	var/mob/living/pulled = mover.pulling
+	var/mob/living/pulled = claim_held_catch(mover)
 	if(!isliving(pulled) || QDELETED(pulled) || (!in_front_room(pulled) && !in_processing(pulled)))
 		return FALSE
 	if(!warden_at_desk())
@@ -102,7 +155,8 @@
 		if(existing_outer?.density && processing_shut(processing_door(TRUE)))
 			processing_work_door(existing_outer, TRUE)
 		return TRUE
-	if(!processing_free())
+	var/resuming_aborted = processing_state == OUTPOST_PROCESSING_CLAIM && claim_aborting && claim_criminal_ref?.resolve() == pulled
+	if(!processing_free() && !resuming_aborted)
 		return FALSE
 
 	if(pulled.client || pulled.mind)
@@ -138,6 +192,10 @@
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
 	if(!outer || !processing_shut(processing_door(TRUE)))
 		return FALSE
+	var/mob/living/previous = claim_criminal_ref?.resolve()
+	if(!QDELETED(previous) && previous != criminal)
+		UnregisterSignal(previous, COMSIG_LIVING_PRE_MOB_BUMP)
+	RegisterSignal(criminal, COMSIG_LIVING_PRE_MOB_BUMP, PROC_REF(on_claim_criminal_bumped), override = TRUE)
 	processing_state = OUTPOST_PROCESSING_CLAIM
 	claim_deliverer_ref = WEAKREF(mover)
 	claim_criminal_ref = WEAKREF(criminal)
@@ -146,6 +204,21 @@
 	processing_seconds = 0
 	processing_work_door(outer, TRUE)
 	return TRUE
+
+/// Whether an aborted hand-in's catch inside Processing is once again live, subdued and eligible to settle
+/datum/outpost_prison/proc/claim_can_resume_inside(mob/living/carbon/human/npc/bounty_criminal/criminal, mob/living/deliverer)
+	if(QDELETED(criminal) || !in_processing(criminal) || !warden_at_desk())
+		return FALSE
+	if(criminal.stat == DEAD || criminal.client || criminal.mind || criminal.npc_ever_played())
+		return FALSE
+	var/datum/criminal_bounty/posting = criminal.posting()
+	if(!posting || !posting.is_open() || posting.criminal() != criminal || istype(posting, /datum/criminal_bounty/kill_only))
+		return FALSE
+	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, src)
+	if((posting.private_to && (!ship || posting.offered_to() != ship)) || posting.lockup_bound_refusal(ship, deliverer))
+		return FALSE
+	var/state = criminal.capture_state()
+	return state != BOUNTY_STATE_DEAD && state != BOUNTY_STATE_FREE && !!posting.board_share_for(state)
 
 /// Whether any live person other than `criminal` (or an AI cleanbot) is inside Processing
 /datum/outpost_prison/proc/processing_claim_other_inside(mob/living/criminal)
@@ -184,15 +257,26 @@
 
 	var/mob/living/carbon/human/npc/bounty_criminal/criminal = claim_criminal_ref?.resolve()
 	if(claim_aborting)
-		processing_seconds += seconds
-		var/still_occupied = (!QDELETED(criminal) && in_processing(criminal)) || processing_claim_other_inside(criminal)
-		if(!still_occupied || processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT)
-			processing_done()
-			processing_idle_tick()
+		if(claim_can_resume_inside(criminal, claim_deliverer_ref?.resolve()))
+			claim_aborting = FALSE
+			claim_prompted = FALSE
+			processing_seconds = 0
+		else
+			processing_seconds += seconds
+			var/doorway_live = FALSE
+			for(var/mob/living/door_mob in get_turf(outer))
+				if(!QDELETED(door_mob) && door_mob.stat != DEAD)
+					doorway_live = TRUE
+					break
+			var/live_occupied = doorway_live || (!QDELETED(criminal) && criminal.stat != DEAD && in_processing(criminal)) || processing_claim_other_inside(criminal)
+			var/still_occupied = live_occupied || (!QDELETED(criminal) && in_processing(criminal))
+			if(!still_occupied || (!live_occupied && processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT))
+				processing_done()
+				processing_idle_tick()
+				return
+			if(outer.density)
+				processing_work_door(outer, TRUE)
 			return
-		if(outer.density)
-			processing_work_door(outer, TRUE)
-		return
 
 	if(QDELETED(criminal))
 		if(processing_claim_other_inside(null))
@@ -319,6 +403,7 @@
 		return bound_refusal
 
 	var/list/pay = board_payout(share)
+	var/ship_name = ship ? format_text(ship.name) : null
 	var/datum/bounty_record/claimed = record
 	var/wanted_name = claimed?.name || "the fugitive"
 	var/most_wanted = claimed?.tier == BOUNTY_TIER_MOST_WANTED && !private_to
@@ -328,7 +413,7 @@
 
 	board_detach_criminal()
 	if(claimed)
-		claimed.captor_name = ship ? ship.name : (deliverer?.real_name || null)
+		claimed.captor_name = ship_name
 		claimed.captor_ship = ship ? WEAKREF(ship) : null
 		claimed.hurt_fraction = clamp(1 - criminal.health / max(criminal.maxHealth, 1), 0, 1)
 		claimed.preferred_prison = WEAKREF(prison)
@@ -375,9 +460,9 @@
 	if(!paid_to_ship)
 		prison.warden_say("No ship on file. Take the chip.", forced = TRUE)
 	else if(state == BOUNTY_STATE_DOWNED)
-		prison.warden_say("Barely breathing. Paid to the [ship.name].", forced = TRUE)
+		prison.warden_say("Barely breathing. Paid to the [ship_name].", forced = TRUE)
 	else
-		prison.warden_say("Cuffed and breathing. Paid to the [ship.name].", forced = TRUE)
+		prison.warden_say("Cuffed and breathing. Paid to the [ship_name].", forced = TRUE)
 
 	if(ship)
 		var/list/paid = list("[pay[1]] credits")
@@ -386,8 +471,8 @@
 		var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
 		ship.ship_notify("BOUNTY: [wanted_name] turned in, [bounty_state_words(state)]. Paid [english_list(paid)].[reputation_text]", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	if(most_wanted)
-		var/who_brought = ship ? "the crew of the [ship.name]" : "a bounty hunter"
+		var/who_brought = ship_name ? "the crew of the [ship_name]" : "a bounty hunter"
 		var/list/skip_ships = ship ? (already_told + ship) : already_told
 		SScriminal_bounties.board_announce("BOUNTY: [who_brought] brought in [wanted_name], Most Wanted.", skip_ships)
-	log_game("BOUNTY: [ship ? ship.name : (deliverer ? key_name(deliverer) : "no ship")] turned in [wanted_name] ([state], [share]%) at '[prison.outpost_log_name()]' lockup for [pay[1]] cr and [pay[2]] voucher(s)[deliverer ? ", delivered by [key_name(deliverer)]" : ""]")
+	log_game("BOUNTY: [ship_name || (deliverer ? key_name(deliverer) : "no ship")] turned in [wanted_name] ([state], [share]%) at '[prison.outpost_log_name()]' lockup for [pay[1]] cr and [pay[2]] voucher(s)[deliverer ? ", delivered by [key_name(deliverer)]" : ""]")
 	return pay

@@ -357,6 +357,24 @@
 	prison.processing_done()
 	TEST_ASSERT(work_until(prison, outer, FALSE) && work_until(prison, inner, FALSE), "Processing did not return to shut doors after the guard check")
 
+	// Two released inmates already inside shut Processing do not block each other from opening outer to step out
+	var/mob/living/carbon/human/released_a = make_player(prison.processing_turfs[1], "lockuprelpaira")
+	var/mob/living/carbon/human/released_b = make_player(prison.processing_turfs[2], "lockuprelpairb")
+	prison.processing_release_refs |= list(WEAKREF(released_a), WEAKREF(released_b))
+	TEST_ASSERT(prison.try_start_processing_release(released_a), "Two released inmates inside shut Processing deadlocked try_start_processing_release()")
+	TEST_ASSERT_EQUAL(prison.processing_state, "releasing", "try_start_processing_release() inside Processing did not enter releasing") // OUTPOST_PROCESSING_RELEASE
+	TEST_ASSERT(work_until(prison, outer, TRUE), "Processing did not open outer for two released inmates inside")
+	TEST_ASSERT(door_is_shut(inner), "Processing opened inner while letting released inmates out")
+	released_a.forceMove(prison.alcove_turfs[1])
+	released_b.forceMove(prison.alcove_turfs[1])
+	prison.processing_release_refs.Cut()
+	prison.processing_done()
+	TEST_ASSERT(work_until(prison, outer, FALSE), "Processing did not shut outer after the paired release check")
+	released_a.key = null
+	qdel(released_a)
+	released_b.key = null
+	qdel(released_b)
+
 	// With nobody at the outpost an arrival is simply in their cell, and Processing is not used
 	prison.audience_override = FALSE
 	var/mob/living/carbon/human/npc/outpost_prisoner/quiet = prison.admit_next(TRUE)

@@ -367,7 +367,7 @@
 /// Whether a guard, another awake prisoner or a third-party outpost witness can see `attacker` or `victim`
 /datum/outpost_prison/proc/prisoner_violence_seen(mob/living/attacker, mob/living/victim)
 	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
-		if(!QDELETED(guard) && guard.on_duty() && ((attacker && (attacker in view(7, guard))) || (victim && (victim in view(7, guard)))))
+		if(guard != victim && !QDELETED(guard) && guard.on_duty() && ((attacker && (attacker in view(7, guard))) || (victim && (victim in view(7, guard)))))
 			return TRUE
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(other == victim || QDELETED(other) || other.phase != PRISONER_PRESENT || other.stat != CONSCIOUS || other.activity?.sleeping)

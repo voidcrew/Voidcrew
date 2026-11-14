@@ -90,8 +90,19 @@
 	outsider_killer.key = null
 	qdel(outsider_killer)
 
-	// Killing a prison guard as a booked cell-block inmate in sight of a second guard charges kill_staff (4+ stars)
+	// Killing a lone prison guard inside an isolated cell with no witness files no outside warrant; a witnessed guard kill charges kill_staff (4+ stars)
 	var/turf/yard_tile = inmate_test_yard_tile(prison)
+	var/turf/isolated_cell_tile = prison.cells[1].arrival_turf()
+	var/mob/living/carbon/human/inmate_killer = make_player(isolated_cell_tile, "lockupinmatekiller")
+	TEST_ASSERT(prison.admin_book_player(inmate_killer, 180), "Could not book inmate_killer for cell-block guard-kill check")
+	inmate_killer.forceMove(isolated_cell_tile)
+	var/datum/outpost_guard_record/lone_guard_rec = prison.add_guard_record(TRUE)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/lone_guard = lone_guard_rec.guard
+	lone_guard.forceMove(isolated_cell_tile)
+	lone_guard.record_guard_hit(inmate_killer, null, damaging = TRUE)
+	lone_guard.death()
+	TEST_ASSERT_EQUAL(police.get_stars(inmate_killer.mind), 0, "An unwitnessed lone prison-guard kill inside an isolated cell filed a warrant")
+
 	var/datum/outpost_guard_record/guard_rec_two = prison.add_guard_record(TRUE)
 	var/mob/living/carbon/human/npc/outpost_prison_guard/yard_guard = guard_rec_two.guard
 	var/mob/living/carbon/human/npc/outpost_prison_guard/witness_guard = allocate(/mob/living/carbon/human/npc/outpost_prison_guard, yard_tile)
@@ -99,8 +110,6 @@
 	prison.guard_mobs |= witness_guard
 	witness_guard.arrive()
 	yard_guard.forceMove(yard_tile)
-	var/mob/living/carbon/human/inmate_killer = make_player(yard_tile, "lockupinmatekiller")
-	TEST_ASSERT(prison.admin_book_player(inmate_killer, 180), "Could not book inmate_killer for cell-block guard-kill check")
 	inmate_killer.forceMove(yard_tile)
 	yard_guard.record_guard_hit(inmate_killer, null, damaging = TRUE)
 	TEST_ASSERT_EQUAL(police.get_stars(inmate_killer.mind), 0, "A non-lethal inmate blow inside the cell block filed an outside warrant before death")
@@ -209,7 +218,17 @@
 	TEST_ASSERT(!prison.try_start_processing_claim(hunter), "Processing opened for a dead bounty criminal")
 	TEST_ASSERT(warden_ears.heard("We don't take bodies."), "Warden did not say 'We don't take bodies.' for a corpse: [warden_ears.lines.Join(" | ")]")
 	TEST_ASSERT(outer.density && !outer.operating, "Processing's outer door moved on a refused corpse")
+	var/turf/desk_front = get_step(prison.claim_turf, SOUTH)
+	hunter.forceMove(desk_front)
+	dead_catch.forceMove(desk_front)
+	hunter.start_pulling(dead_catch)
+	warden_ears.lines.Cut()
+	COOLDOWN_RESET(warden, speak_cooldown)
+	warden.open_trader_menu(hunter)
+	TEST_ASSERT_EQUAL(length(warden_ears.lines), 1, "Clicking the warden while pulling a corpse spoke [length(warden_ears.lines)] lines instead of just the refusal")
+	TEST_ASSERT(warden_ears.heard("We don't take bodies."), "Clicking the warden while pulling a corpse did not speak 'We don't take bodies.'")
 	hunter.stop_pulling()
+	hunter.forceMove(outer_wait)
 	dead_posting.close("expired")
 
 	var/mob/living/carbon/human/player_body = make_player(outer_wait, "lockupnotabounty")
@@ -319,9 +338,17 @@
 	bystander.key = null
 	qdel(bystander)
 
+	var/turf/door_processing_tile = get_dist(prison.processing_turfs[1], outer) == 1 ? prison.processing_turfs[1] : prison.processing_turfs[2]
+	var/turf/back_processing_tile = door_processing_tile == prison.processing_turfs[1] ? prison.processing_turfs[2] : prison.processing_turfs[1]
 	hunter.stop_pulling()
-	live_catch.forceMove(prison.processing_turfs[1])
-	hunter.forceMove(prison.processing_turfs[2])
+	live_catch.forceMove(door_processing_tile)
+	hunter.forceMove(back_processing_tile)
+	live_catch.set_combat_mode(TRUE)
+	hunter.set_combat_mode(TRUE)
+	hunter.Move(door_processing_tile, get_dir(back_processing_tile, door_processing_tile))
+	TEST_ASSERT_EQUAL(get_turf(hunter), door_processing_tile, "A hunter in combat mode was trapped in Processing's dead-end tile behind a standing cuffed catch")
+	TEST_ASSERT_EQUAL(get_turf(live_catch), back_processing_tile, "Swapping past the cuffed catch inside Processing did not move the catch to the back tile")
+	hunter.set_combat_mode(FALSE)
 	warden_ears.lines.Cut()
 	COOLDOWN_RESET(warden, speak_cooldown)
 	prison.processing_tick(9)
@@ -335,8 +362,9 @@
 	TEST_ASSERT_EQUAL(length(warden_ears.lines), step_out_count, "Warden repeated 'Step out.' on subsequent ticks")
 	TEST_ASSERT(!QDELETED(live_catch) && live_posting.is_open(), "Claim completed while the hunter lingered past 10 seconds")
 
-	// Hunter steps out into the front room: outer shuts, posting closes, berthed ship gets 1000 cr, claim_turf gets voucher + poster + cuffs, record is reserved for this prison
-	hunter.forceMove(outer_wait)
+	// Hunter steps out into the front room via real Move(): outer shuts, posting closes, berthed ship gets 1000 cr, claim_turf gets voucher + poster + cuffs, record is reserved for this prison
+	TEST_ASSERT(hunter.Move(get_turf(outer), get_dir(door_processing_tile, outer)), "Hunter could not step onto the open Processing doorway")
+	TEST_ASSERT(hunter.Move(outer_wait, get_dir(outer, outer_wait)), "Hunter could not step out of Processing into the front room")
 	warden_ears.lines.Cut()
 	var/vouchers_before = board_test_vouchers(prison.claim_turf)
 	TEST_ASSERT(claim_wait_door(prison, outer, FALSE), "Processing's outer door did not shut once the hunter stepped out")
@@ -370,12 +398,17 @@
 	qdel(re_cuffs)
 	admitted_inmate.forceMove(admitted_inmate.cell.arrival_turf())
 
-	// Reservation fallback: if the preferred wing has had no ready cell for 3 minutes, another wing may take the record
+	// Reservation fallback + \improper ship-name stripping: if the preferred wing has had no ready cell for 3 minutes, another wing may take the record
 	var/datum/criminal_bounty/fallback_posting = board_test_posting(2, null, 1000, 0)
 	var/datum/bounty_record/fallback_record = fallback_posting.record
 	var/mob/living/carbon/human/npc/bounty_criminal/fallback_catch = board_test_criminal(fallback_posting, outer_wait)
 	board_test_cuff(fallback_catch)
+	berthed_ship.name = "\improper ISS Berthed"
+	warden_ears.lines.Cut()
 	TEST_ASSERT(islist(fallback_posting.lockup_claim(prison, fallback_catch, hunter)), "Fallback setup lockup_claim() failed")
+	TEST_ASSERT_EQUAL(fallback_record.captor_name, "ISS Berthed", "lockup_claim() leaked \\improper into captor_name")
+	TEST_ASSERT(warden_ears.heard("Cuffed and breathing. Paid to the ISS Berthed."), "Warden payout line leaked \\improper on ship name: [warden_ears.lines.Join(" | ")]")
+	berthed_ship.name = "ISS Berthed"
 	TEST_ASSERT_EQUAL(bounty_record_reserved_for(fallback_record), prison, "Fallback record did not start reserved for prison")
 	prison.prison_bounty_no_cell_since = world.time - 3 MINUTES // BOUNTY_RECORD_RESERVE_NO_CELL
 	TEST_ASSERT_NULL(bounty_record_reserved_for(fallback_record), "Reservation did not release after 3 minutes with no ready cell")
@@ -399,14 +432,20 @@
 	TEST_ASSERT_NULL(locate(/obj/item/paper/bounty_captured) in prison.claim_turf, "Downed catch printed a CAPTURED poster")
 	TEST_ASSERT(warden_ears.heard("Barely breathing. Paid to the [berthed_ship.name]."), "Warden did not speak the downed payout line")
 
-	// Free inside Processing before outer shuts: aborts, pays nothing, keeps posting open, and returns Processing to idle once emptied
+	// Fireman-carried catch at the desk + free inside Processing before outer shuts: aborts without entombing live occupants, lets hunter step back in to re-cuff, and returns Processing to idle once emptied
 	var/datum/criminal_bounty/escape_posting = board_test_posting(2, null, 1000, 1)
-	var/mob/living/carbon/human/npc/bounty_criminal/escape_catch = board_test_criminal(escape_posting, outer_wait)
+	var/mob/living/carbon/human/npc/bounty_criminal/escape_catch = board_test_criminal(escape_posting, desk_front)
 	var/obj/item/restraints/handcuffs/escape_cuffs = board_test_cuff(escape_catch)
-	hunter.start_pulling(escape_catch)
-	TEST_ASSERT(prison.try_start_processing_claim(hunter), "Could not start Processing claim for escape-in-Processing check")
+	hunter.forceMove(desk_front)
+	TEST_ASSERT(hunter.buckle_mob(escape_catch, force = TRUE, check_loc = FALSE), "Could not fireman-carry escape_catch for desk hand-in check")
+	warden_ears.lines.Cut()
+	COOLDOWN_RESET(warden, speak_cooldown)
+	warden.open_trader_menu(hunter)
+	TEST_ASSERT_EQUAL(prison.processing_state, "claiming", "Clicking the warden while fireman-carrying a cuffed catch did not open Processing")
+	TEST_ASSERT(warden_ears.heard("In you go."), "Warden did not say 'In you go.' when opening Processing at the desk")
 	TEST_ASSERT(claim_wait_door(prison, outer, TRUE), "Outer door did not open for escape-in-Processing check")
-	hunter.stop_pulling()
+	hunter.unbuckle_mob(escape_catch, force = TRUE)
+	hunter.forceMove(outer_wait)
 	escape_catch.forceMove(prison.processing_turfs[1])
 	escape_catch.set_handcuffed(null)
 	qdel(escape_cuffs)
@@ -414,6 +453,16 @@
 	var/balance_before_escape = berthed_ship.ship_account.account_balance
 	prison.processing_tick(1)
 	TEST_ASSERT(prison.claim_aborting, "A criminal breaking free inside Processing did not abort the claim")
+	TEST_ASSERT(outer.lets_prisoner(hunter), "An aborting claim locked the hunter out from retrieving or re-cuffing their catch")
+	prison.processing_tick(65)
+	TEST_ASSERT(prison.claim_aborting && !outer.density, "An aborting claim slammed outer shut on a live occupant after 60 seconds")
+	var/obj/item/restraints/handcuffs/recuffs = board_test_cuff(escape_catch)
+	prison.processing_tick(1)
+	TEST_ASSERT(!prison.claim_aborting, "Re-cuffing an escaped catch inside Processing did not resume the claim")
+	escape_catch.set_handcuffed(null)
+	qdel(recuffs)
+	prison.processing_tick(1)
+	TEST_ASSERT(prison.claim_aborting, "Removing cuffs again did not re-enter claim_aborting")
 	TEST_ASSERT(escape_posting.is_open() && !QDELETED(escape_catch), "Aborting a claim closed the posting or deleted the criminal")
 	TEST_ASSERT_EQUAL(berthed_ship.ship_account.account_balance, balance_before_escape, "An aborted claim paid credits")
 	escape_catch.forceMove(outer_wait)
@@ -422,17 +471,20 @@
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing did not return to idle after aborting a claim")
 	escape_posting.close("expired")
 
-	// Drifter with no ship: holochip + trade voucher drop on claim_turf and warden speaks 'No ship on file. Take the chip.'
+	// Drifter with no ship: holochip + trade voucher drop on claim_turf, ship-only captor_name stays null, and warden speaks 'No ship on file. Take the chip.'
 	for(var/obj/item/holochip/old_chip in prison.claim_turf)
 		qdel(old_chip)
 	var/mob/living/carbon/human/drifter = make_player(outer_wait, "lockupclaimdrifter")
 	var/datum/criminal_bounty/drifter_posting = board_test_posting(2, null, 1000, 1)
+	var/datum/bounty_record/drifter_record = drifter_posting.record
 	var/mob/living/carbon/human/npc/bounty_criminal/drifter_catch = board_test_criminal(drifter_posting, outer_wait)
 	board_test_cuff(drifter_catch)
 	warden_ears.lines.Cut()
 	vouchers_before = board_test_vouchers(prison.claim_turf)
 	var/list/drifter_paid = drifter_posting.lockup_claim(prison, drifter_catch, drifter)
 	TEST_ASSERT_EQUAL(drifter_paid, list(1000, 1), "Drifter lockup_claim() did not pay full credits and voucher")
+	TEST_ASSERT_NULL(drifter_record.captor_name, "A shipless drifter stamped their personal name into ship-only captor_name")
+	bounty_pool_remove(drifter_record, "closed")
 	var/obj/item/holochip/chip = locate() in prison.claim_turf
 	TEST_ASSERT_NOTNULL(chip, "Drifter lockup_claim() did not drop a holochip on claim_turf")
 	TEST_ASSERT_EQUAL(chip.credits, 1000, "Drifter holochip held [chip.credits] cr instead of 1000")

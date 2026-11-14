@@ -195,8 +195,9 @@
 		qdel(proof)
 
 	// The record: a live catch goes on to the lockups (the pool, open to every wing), a dead one ends here
+	var/ship_name = format_text(ship.name) // OUTPOST PRISON seam: strip \improper before stamping captor_name and board news
 	if(claimed)
-		claimed.captor_name = ship.name
+		claimed.captor_name = ship_name
 		claimed.captor_ship = WEAKREF(ship)
 		if(live)
 			claimed.hurt_fraction = clamp(1 - criminal.health / max(criminal.maxHealth, 1), 0, 1)
@@ -222,9 +223,9 @@
 	ship.ship_notify("BOUNTY: [wanted_name] turned in, [how]. Paid [english_list(paid)].[reputation_text]", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	// A Most Wanted catch is news for every other crew (the hunters already heard from close())
 	if(most_wanted)
-		var/news = live ? "BOUNTY: the crew of the [ship.name] brought in [wanted_name], Most Wanted." : "BOUNTY: the crew of the [ship.name] took down [wanted_name], Most Wanted."
+		var/news = live ? "BOUNTY: the crew of the [ship_name] brought in [wanted_name], Most Wanted." : "BOUNTY: the crew of the [ship_name] took down [wanted_name], Most Wanted."
 		SScriminal_bounties.board_announce(news, already_told + ship)
-	log_game("BOUNTY: [ship.name] turned in [wanted_name] ([proof ? "proof" : state], [share]%) at [AREACOORD(pad)] for [pay[1]] cr and [pay[2]] voucher(s)[user ? ", pressed by [key_name(user)]" : ""]")
+	log_game("BOUNTY: [ship_name] turned in [wanted_name] ([proof ? "proof" : state], [share]%) at [AREACOORD(pad)] for [pay[1]] cr and [pay[2]] voucher(s)[user ? ", pressed by [key_name(user)]" : ""]")
 	return pay
 
 /// How the notice describes a capture state

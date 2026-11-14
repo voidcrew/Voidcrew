@@ -44,10 +44,20 @@
 	if(outpost?.prison)
 		outpost.prison.warden_ref = WEAKREF(src)
 
-// Clicking the warden speaks a short line and opens no radial or shop window
+// Clicking the warden speaks a short line and opens no radial or shop window; holding a catch at the desk starts or refuses hand-in
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/open_trader_menu(mob/living/user)
 	if(!shop || !is_serving() || IS_DEAD_OR_INCAP(user) || !customer_in_reach(user))
 		return
+	var/datum/outpost_prison/prison = outpost?.prison
+	if(prison && prison.in_front_room(user) && prison.claim_held_catch(user))
+		var/was_claiming = prison.processing_state == OUTPOST_PROCESSING_CLAIM && !prison.claim_aborting
+		var/prev_cooldown = speak_cooldown
+		if(prison.try_start_processing_claim(user))
+			if(!was_claiming && speak_cooldown == prev_cooldown)
+				prison.warden_say("In you go.")
+			return
+		if(speak_cooldown != prev_cooldown || !COOLDOWN_FINISHED(src, speak_cooldown))
+			return
 	if(outpost?.is_user_barred(user))
 		speak_line(TRADER_LINE_REFUSAL)
 		return
