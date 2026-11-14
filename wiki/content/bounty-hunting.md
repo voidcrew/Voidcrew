@@ -158,10 +158,10 @@ Live catches and dead targets go to two different places:
 
 ### Live catches at a lockup
 
-Dock at any trader outpost, ride the hangar elevator to the **Lockup** floor with your catch, and pull them up to **Processing's outer door** while the warden is at the front desk:
+Dock at any trader outpost, ride the hangar elevator to the **Lockup** floor with your catch, and bring them up to **Processing's outer door** (or the front desk) while the warden is standing there:
 
-- Bump or click the outer door while pulling the cuffed, stunned or critical criminal. The outer door opens while the inner door stays shut.
-- Pull them inside Processing, let go, and step back out into the front room. If you linger inside for 10 seconds, the warden tells you to step out and waits. If the criminal breaks free before the door shuts, the hand-in aborts and the door opens again.
+- Bump or click the outer door — or click the warden at the desk — while pulling or fireman-carrying the cuffed, stunned or critical criminal. The outer door opens while the inner door stays shut.
+- Put them inside Processing, let go, and step back out into the front room. If you linger inside or in the doorway for 10 seconds, the warden tells you to step out and waits. If the criminal breaks free before the door shuts, the hand-in aborts and the door opens again.
 - Once the outer door shuts with the catch alone inside, the bounty closes and pays out. Credits go to your crew's ship account (preferring a crew ship berthed at that outpost, or dropping a holochip at the desk if you have no ship). Trade vouchers, a **CAPTURED** poster on full-pay Wanted and Most Wanted catches, and your cuffs, space suit or tank appear by the front desk.
 
 ### Dead targets, evidence tags and trophies on your ship's pad
@@ -287,7 +287,7 @@ Bounty prisoners are tougher and rowdier in the yard than ordinary prisoners:
 
 **Why is Turn In greyed out on our ship's pad?** Live criminals aren't turned in on the pad ("Alive. The lockup takes those.") — walk them into a trader outpost's [lockup](prison-wing.md) instead. For a dead body, evidence tag or trophy, make sure it lies directly on your bolted ship pad's tile, not in a locker or bag.
 
-**Why didn't Processing's door open at the lockup?** You need to be pulling a cuffed, stunned or critical bounty criminal whose poster is still open, and the lockup warden has to be alive and standing at the front desk. Corpses, kill-only targets, look-alikes and another ship's private offer are refused.
+**Why didn't Processing's door open at the lockup?** You need to be pulling or fireman-carrying a cuffed, stunned or critical bounty criminal whose poster is still open, and the lockup warden has to be alive and standing at the front desk. Corpses, kill-only targets, look-alikes and another ship's private offer are refused.
 
 **Why did we only get 60%?** They were in critical condition when Processing shut. Treat them first: a criminal patched up and cuffed pays in full.
 

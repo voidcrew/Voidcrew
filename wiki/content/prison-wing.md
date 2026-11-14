@@ -80,8 +80,8 @@ Crewmates can ride up to the Lockup floor at any time to talk to an inmate throu
 
 To **hand in a live criminal bounty**, bring the wanted target up the elevator to the front room while they are cuffed, stunned or in critical condition, and while the warden is standing at the front desk:
 
-1. Pull the catch up to **Processing's outer door** and bump or click it. The outer door opens while the inner door stays shut.
-2. Pull or walk the catch inside Processing, leave them on the floor, and **step back out** into the front room. Only you and your catch can step through the open outer door, and the warden waits until every player has stepped clear.
+1. Pull or fireman-carry the catch up to **Processing's outer door** and bump or click it (or click the warden at the front desk). The outer door opens while the inner door stays shut.
+2. Set the catch inside Processing and **step back out** into the front room. Only you and your catch can step through the open outer door, and the warden waits until every player has stepped clear.
 3. The outer door shuts, the bounty closes, and the warden calls out the payout.
 
 Credits go straight to your crew's ship account (preferring a crew ship berthed at that outpost, or dropping a **holochip** at the desk if you have no ship). Trade vouchers, a **CAPTURED** poster on full-pay Wanted and Most Wanted catches, and any cuffs, space suit or other gear of yours on the criminal are set down on the counter spot in front of the desk.

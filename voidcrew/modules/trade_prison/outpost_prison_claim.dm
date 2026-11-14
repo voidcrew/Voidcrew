@@ -252,6 +252,19 @@
 		return TRUE
 	return FALSE
 
+/// Whether any live person (or dense creature) occupies `door`'s tile, ignoring corpses and mind-less non-dense vermin
+/datum/outpost_prison/proc/processing_claim_doorway_occupied(obj/machinery/door/airlock/door)
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf)
+		return FALSE
+	for(var/mob/living/door_mob as anything in door_turf.get_all_contents_type(/mob/living))
+		if(QDELETED(door_mob) || door_mob.stat == DEAD)
+			continue
+		if(!ishuman(door_mob) && isnull(door_mob.client) && isnull(door_mob.mind) && !door_mob.density)
+			continue
+		return TRUE
+	return FALSE
+
 /// Begins aborting the active hand-in by opening `outer` (with `inner` shut) until Processing clears
 /datum/outpost_prison/proc/abort_processing_claim()
 	claim_aborting = TRUE
@@ -283,11 +296,7 @@
 			processing_seconds = 0
 		else
 			processing_seconds += seconds
-			var/doorway_live = FALSE
-			for(var/mob/living/door_mob in get_turf(outer))
-				if(!QDELETED(door_mob) && door_mob.stat != DEAD)
-					doorway_live = TRUE
-					break
+			var/doorway_live = processing_claim_doorway_occupied(outer)
 			var/live_occupied = doorway_live || (!QDELETED(criminal) && criminal.stat != DEAD && in_processing(criminal)) || processing_claim_other_inside(criminal)
 			var/still_occupied = live_occupied || (!QDELETED(criminal) && in_processing(criminal))
 			if(!still_occupied || (!live_occupied && processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT))
@@ -338,15 +347,14 @@
 		return
 
 	// The catch is inside Processing: if a player or another person is still inside (or standing in the outer doorway), keep outer open.
-	var/doorway_occupied = !!(locate(/mob/living) in get_turf(outer))
+	var/doorway_occupied = processing_claim_doorway_occupied(outer)
 	if(processing_claim_other_inside(criminal) || doorway_occupied)
 		if(outer.density)
 			processing_work_door(outer, TRUE)
-		if(processing_claim_other_inside(criminal))
-			processing_seconds += seconds
-			if(!claim_prompted && processing_seconds >= OUTPOST_PROCESSING_CLAIM_PROMPT)
-				claim_prompted = TRUE
-				warden_say("Step out.")
+		processing_seconds += seconds
+		if(!claim_prompted && processing_seconds >= OUTPOST_PROCESSING_CLAIM_PROMPT)
+			claim_prompted = TRUE
+			warden_say("Step out.")
 		return
 
 	// Catch is alone inside Processing: validate before shutting, then shut outer and settle the claim once shut.
