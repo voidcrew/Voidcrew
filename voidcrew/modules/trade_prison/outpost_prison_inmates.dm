@@ -53,6 +53,18 @@
 	var/list/provoked_by
 	/// world.time until which guards baton this inmate for an unprovoked hit or breakout act in the cell block
 	var/baton_until = 0
+	/// Weakref to the last held inmate who landed a damaging cell-block blow on this inmate
+	var/datum/weakref/last_inmate_attacker_ref
+	/// world.time of that last damaging cell-block blow
+	var/last_inmate_attack_at = 0
+	/// Whether that blow fell inside the attacker's self-defense window against this inmate
+	var/last_inmate_attack_justified = FALSE
+	/// Whether a witness saw that blow when it landed
+	var/last_inmate_attack_seen = FALSE
+	/// world.time when this sentence ended by death in custody
+	var/died_in_custody_at = 0
+	/// Whether OUTPOST_CRIME_MURDER has already been reported for this death in custody
+	var/murder_reported = FALSE
 
 /datum/prison_sentence/Destroy()
 	mind = null
@@ -61,6 +73,7 @@
 	shoved_by_ref = null
 	watched_container_ref = null
 	provoked_by = null
+	last_inmate_attacker_ref = null
 	return ..()
 
 /// Effective seconds worked off, capped at a third of total_seconds
@@ -403,6 +416,60 @@
 		return FALSE
 	return sentence.baton_until > world.time || inmate_holds_weapon(inmate)
 
+/// Active sentence for `person`, or the sentence on `person` that just ended by death in custody this tick
+/datum/outpost_prison/proc/cell_block_inmate_sentence(mob/living/person)
+	var/datum/prison_sentence/active = sentence_for(person)
+	if(active)
+		return active
+	if(!istype(person))
+		return null
+	for(var/datum/mind/candidate as anything in sentences)
+		var/datum/prison_sentence/check = sentences[candidate]
+		if(check?.body_ref?.resolve() == person && check.died_in_custody_at == world.time)
+			return check
+	return null
+
+/// Records a damaging cell-block blow by held inmate `attacker` against cell-block inmate `victim` so a seen kill reports OUTPOST_CRIME_MURDER
+/datum/outpost_prison/proc/note_inmate_cell_damage(mob/living/attacker, mob/living/victim)
+	if(!istype(attacker) || !istype(victim) || attacker == victim || !in_cell_block(attacker) || !in_cell_block(victim))
+		return
+	var/datum/prison_sentence/attacker_sentence = sentence_for(attacker)
+	var/datum/prison_sentence/victim_sentence = cell_block_inmate_sentence(victim)
+	if(!attacker_sentence || !victim_sentence || victim_sentence.murder_reported)
+		return
+	victim_sentence.last_inmate_attacker_ref = WEAKREF(attacker)
+	victim_sentence.last_inmate_attack_at = world.time
+	victim_sentence.last_inmate_attack_justified = inmate_defending_against(attacker_sentence, victim)
+	victim_sentence.last_inmate_attack_seen = prisoner_violence_seen(attacker, victim)
+	if(victim.stat == DEAD && victim_sentence.died_in_custody_at == world.time && !victim_sentence.last_inmate_attack_justified)
+		report_inmate_murdered(victim_sentence, victim)
+
+/// Reports OUTPOST_CRIME_MURDER when a held inmate's unprovoked cell-block attack kills another inmate and someone saw the attack or death
+/datum/outpost_prison/proc/report_inmate_murdered(datum/prison_sentence/victim_sentence, mob/living/victim)
+	if(!victim_sentence || victim_sentence.murder_reported || victim_sentence.last_inmate_attack_justified || !victim_sentence.last_inmate_attack_at)
+		return FALSE
+	if(world.time - victim_sentence.last_inmate_attack_at > OUTPOST_POLICE_KILL_WINDOW)
+		return FALSE
+	var/mob/living/killer = victim_sentence.last_inmate_attacker_ref?.resolve()
+	if(QDELETED(killer) || !killer.mind || killer == victim || !outpost?.police)
+		return FALSE
+	if(!victim_sentence.last_inmate_attack_seen && !prisoner_violence_seen(killer, victim))
+		return FALSE
+	victim_sentence.murder_reported = TRUE
+	victim_sentence.last_inmate_attack_at = 0
+	outpost.police.count_crime(killer, OUTPOST_CRIME_MURDER, victim)
+	var/datum/outpost_warrant/killer_warrant = outpost.police.get_warrant(killer.mind)
+	if(killer_warrant?.recent_victims)
+		killer_warrant.recent_victims -= WEAKREF(victim)
+	if(holds(killer.mind))
+		var/datum/prison_sentence/killer_sentence = sentences[killer.mind]
+		var/stars = outpost.police.get_stars(killer.mind)
+		if(killer_sentence && stars >= 1)
+			var/clamped_stars = clamp(stars, 1, length(OUTPOST_POLICE_JAIL))
+			killer_sentence.total_seconds = max(killer_sentence.total_seconds, round(OUTPOST_POLICE_JAIL[clamped_stars] / (1 SECONDS)))
+			update_lockup_boards()
+	return TRUE
+
 /datum/outpost_prison/proc/on_inmate_was_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	var/mob/living/victim = source
@@ -410,6 +477,8 @@
 		return
 	if(isliving(attacker) && attacker != victim)
 		note_inmate_attack(attacker, victim, attack_flags)
+		if(attack_flags & ATTACKER_DAMAGING_ATTACK)
+			note_inmate_cell_damage(attacker, victim)
 		if(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING))
 			note_inmate_provoked(victim, attacker)
 
@@ -832,6 +901,12 @@
 	sentence.tip_given = FALSE
 	sentence.provoked_by = null
 	sentence.baton_until = 0
+	sentence.last_inmate_attacker_ref = null
+	sentence.last_inmate_attack_at = 0
+	sentence.last_inmate_attack_justified = FALSE
+	sentence.last_inmate_attack_seen = FALSE
+	sentence.died_in_custody_at = 0
+	sentence.murder_reported = FALSE
 	processing_release_refs -= WEAKREF(suspect)
 	hook_inmate(sentence, suspect)
 	var/datum/outpost_police/police = outpost?.police
@@ -1242,8 +1317,10 @@
 		return FALSE
 	sentence.released = TRUE
 	sentence.return_left = 0
+	sentence.died_in_custody_at = world.time
 	unhook_inmate(sentence)
 	outpost_police_drop_used_cuffs(body)
+	report_inmate_murdered(sentence, body)
 	var/datum/outpost_police/police = outpost?.police
 	if(police && who)
 		var/datum/outpost_warrant/warrant = police.get_warrant(who)

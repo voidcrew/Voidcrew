@@ -943,6 +943,16 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			if(suture.amount > 0 && prison?.crit_limb_for_stack(patient, src, suture) && take_one_crit_supply(suture))
 				break
 
+/// Places `item` into an empty hand without dropping it onto the floor when no hand can take it
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/put_supply_in_free_hand(obj/item/item)
+	if(QDELETED(item))
+		return FALSE
+	var/list/empty_hands = get_empty_held_indexes()
+	for(var/hand_index as anything in empty_hands)
+		if(put_in_hand(item, hand_index))
+			return TRUE
+	return FALSE
+
 /// Pulls `item` (splitting off up to 2 charges for medical stacks) from its medkit into hands or left pocket and locks it as consumable NPC gear
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/take_one_crit_supply(obj/item/item)
 	if(!length(get_empty_held_indexes()) && get_item_by_slot(ITEM_SLOT_LPOCKET))
@@ -953,7 +963,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			var/obj/item/stack/medical/taken = stack.split_stack(2)
 			if(!taken)
 				return FALSE
-			if(!put_in_hands(taken, merge_stacks = FALSE) && !equip_to_slot_if_possible(taken, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
+			if(!put_supply_in_free_hand(taken) && !equip_to_slot_if_possible(taken, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
 				if(!QDELETED(stack))
 					taken.merge(stack)
 				if(!QDELETED(taken))
@@ -961,7 +971,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				return FALSE
 			npc_lock_item(taken)
 			return TRUE
-	if(!put_in_hands(item, merge_stacks = FALSE) && !equip_to_slot_if_possible(item, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
+	if(!put_supply_in_free_hand(item) && !equip_to_slot_if_possible(item, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
 		return FALSE
 	npc_lock_item(item)
 	return TRUE

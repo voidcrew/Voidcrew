@@ -473,6 +473,23 @@
 	TEST_ASSERT(murder_warrant.heat > 55, "Killing an NPC prisoner in view of another prisoner did not add murder heat") // OUTPOST_CRIME_KILL_CIVILIAN
 	TEST_ASSERT(sentence.total_seconds > 600, "Climbing stars from a witnessed yard kill did not lengthen the sentence ([sentence.total_seconds] s)")
 
+	// Witnessed unprovoked inmate-on-inmate murder inside the cell block reports OUTPOST_CRIME_MURDER and upgrades sentence, while non-lethal brawls stay lockup-only
+	var/mob/living/carbon/human/cellmate = make_player(yard_tile, "lockupcellmate")
+	var/datum/outpost_warrant/cellmate_warrant = police_pin_warrant(police, cellmate.mind, 12)
+	prison.admit_inmate_sentence(cellmate, cellmate_warrant, 1)
+	murder_warrant.heat = 12
+	sentence.total_seconds = 180
+	inmate.set_combat_mode(TRUE)
+	inmate.UnarmedAttack(cellmate, TRUE)
+	inmate.set_combat_mode(FALSE)
+	TEST_ASSERT_EQUAL(murder_warrant.heat, 12, "A non-lethal yard punch between inmates added police heat instead of staying a lockup baton matter")
+	cellmate.death()
+	TEST_ASSERT(murder_warrant.heat >= 50, "Killing another held inmate in view of a yard witness did not report murder heat ([murder_warrant.heat])") // OUTPOST_CRIME_MURDER -> >= 3 stars
+	TEST_ASSERT(sentence.total_seconds >= 600, "Witnessed inmate-on-inmate murder did not lengthen the killer's sentence ([sentence.total_seconds] s)")
+	sentence.baton_until = 0
+	prison.dead_inmate_bodies -= WEAKREF(cellmate)
+	qdel(cellmate)
+
 	// Guard baton: mop in hand stays peaceful, knife in hand or unprovoked blow warrants the baton, 10 s self-defense does not, knockdown stops it
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, yard_tile)
 	TEST_ASSERT_NOTNULL(guard, "No lockup guard spawned for the baton and crit tests")
@@ -602,6 +619,15 @@
 	guard.stow_crit_supplies()
 	sleep(1)
 	TEST_ASSERT(!QDELETED(kit_pen) && kit_pen.loc == kit, "Stowing a locked medipen back into the office medkit deleted it on settle")
+	var/obj/item/pocket_blocker = allocate(/obj/item/paper)
+	guard.equip_to_slot_or_del(pocket_blocker, ITEM_SLOT_LPOCKET, initial = TRUE)
+	var/old_mobility = guard.mobility_flags
+	guard.mobility_flags = 0
+	TEST_ASSERT(!guard.take_one_crit_supply(kit_pen) && kit_pen.loc == kit, "Failed take_one_crit_supply() dropped the medipen out of the office medkit")
+	guard.mobility_flags = old_mobility
+	if(!QDELETED(pocket_blocker))
+		guard.dropItemToGround(pocket_blocker, force = TRUE)
+		qdel(pocket_blocker)
 	guard.adjustBruteLoss(-25)
 	guard.forceMove(old_guard_turf)
 	inmate.adjustOxyLoss(120)

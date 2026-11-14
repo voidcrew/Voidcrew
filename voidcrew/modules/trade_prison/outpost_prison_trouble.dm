@@ -372,8 +372,8 @@
 	if(stat == DEAD && died_at == world.time && !last_player_attack_justified)
 		prison?.report_prisoner_killed(src)
 
-/// Whether a guard, another awake prisoner or police perception can see `attacker` or `victim`
-/datum/outpost_prison/proc/prisoner_violence_seen(mob/living/attacker, mob/living/carbon/human/npc/outpost_prisoner/victim)
+/// Whether a guard, another awake prisoner or a third-party outpost witness can see `attacker` or `victim`
+/datum/outpost_prison/proc/prisoner_violence_seen(mob/living/attacker, mob/living/victim)
 	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
 		if(!QDELETED(guard) && guard.on_duty() && ((attacker && (attacker in view(7, guard))) || (victim && (victim in view(7, guard)))))
 			return TRUE
@@ -382,7 +382,28 @@
 			continue
 		if((attacker && (attacker in view(7, other))) || (victim && (victim in view(7, other))))
 			return TRUE
-	return !!(attacker && outpost?.police?.perception?.witness_of(attacker, OUTPOST_CRIME_KILL_CIVILIAN, victim))
+	var/datum/outpost_police_perception/perception = outpost?.police?.perception
+	if(!attacker || !perception)
+		return FALSE
+	var/crime = is_outpost_prisoner(victim) ? OUTPOST_CRIME_KILL_CIVILIAN : OUTPOST_CRIME_MURDER
+	if(!victim?.mind || victim.stat == DEAD)
+		return !!perception.witness_of(attacker, crime, victim)
+	var/witness_kind = perception.witness_of(attacker, crime, victim)
+	if(witness_kind && perception.last_witness != victim)
+		return TRUE
+	var/datum/voidcrew_crew_record/own_crew = attacker.mind?.get_reputation_crew()
+	for(var/mob/living/player in GLOB.alive_player_list)
+		if(player == attacker || player == victim || perception.on_crew(player, own_crew))
+			continue
+		if(perception.sees(player, attacker) && get_trader_outpost_for_turf(get_turf(player)) == outpost)
+			return TRUE
+	for(var/atom/camera as anything in perception.cameras())
+		if(perception.sees(camera, attacker))
+			return TRUE
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in outpost.police?.officers)
+		if(perception.sees(officer, attacker))
+			return TRUE
+	return FALSE
 
 /// Reports OUTPOST_CRIME_KILL_CIVILIAN when a player's unprovoked blows kill an NPC prisoner and someone saw the attack or death
 /datum/outpost_prison/proc/report_prisoner_killed(mob/living/carbon/human/npc/outpost_prisoner/victim)

@@ -830,7 +830,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 			taken = stack.split_stack(1)
 			if(!taken)
 				continue
-		if(!put_in_hands(taken, merge_stacks = FALSE))
+		if(!put_supply_in_free_hand(taken))
 			if(taken != stack)
 				if(!QDELETED(stack))
 					taken.merge(stack)

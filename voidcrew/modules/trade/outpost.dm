@@ -472,13 +472,16 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/proc/register_pvp_aggression(mob/living/victim, mob/living/offender, crime = OUTPOST_CRIME_ASSAULT_ARMED, obj/item/source)
 	if(!victim?.mind || !offender?.mind || victim.mind == offender.mind)
 		return
-	// OUTPOST PRISON seam: inmates fighting inside the cell block are a lockup matter (guards baton), not a police crime
+	// OUTPOST PRISON seam: inmates fighting inside the cell block are a lockup matter (guards baton), not a police crime, unless someone is killed
 	if(prison?.in_cell_block(offender) && prison.in_cell_block(victim))
+		var/victim_inmate = prison.is_inmate(victim) || !!prison.cell_block_inmate_sentence(victim)
 		if(prison.is_inmate(offender))
 			prison.note_inmate_attack(offender, victim, ATTACKER_DAMAGING_ATTACK)
+			if(victim_inmate)
+				prison.note_inmate_cell_damage(offender, victim)
 		if(prison.is_inmate(victim))
 			prison.note_inmate_provoked(victim, offender)
-		if(prison.is_inmate(offender) && prison.is_inmate(victim))
+		if(prison.is_inmate(offender) && victim_inmate)
 			return
 	var/list/allowed_targets = self_defense_targets[offender.mind]
 	var/defense_until = LAZYACCESS(allowed_targets, victim.mind)
