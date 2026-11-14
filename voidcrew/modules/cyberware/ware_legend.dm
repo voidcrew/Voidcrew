@@ -26,12 +26,19 @@
 #define CYBERWARE_CASCADE_CRIT_BONUS 18
 /// Stamina dumped by the crash.
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
-/// Degrees the afterimage hue moves per step of the trail.
+/// Degrees the afterimage hue moves per tile of the trail.
 #define CYBERWARE_CASCADE_HUE_STEP 25
 /// Melee-cooldown multiplier during the window (lower is faster).
 #define CYBERWARE_CASCADE_MELEE_MULT 0.5
-/// Starting opacity of a trail afterimage.
-#define CYBERWARE_CASCADE_AFTERIMAGE_ALPHA 200
+// The trail. Not undefined at the end of this file: the replay draws the same trail (ware_sandy_replay.dm).
+/// Starting opacity of a trail afterimage (the newest); each older one is fainter, down to nothing at the tail.
+#define CYBERWARE_CASCADE_AFTERIMAGE_ALPHA 230
+/// Afterimages on screen at once behind a Cascade bearer who keeps moving.
+#define CYBERWARE_CASCADE_TRAIL_LENGTH 20
+/// Afterimages the Cascade leaves per tile walked: one on the tile left, the rest spread along the step.
+#define CYBERWARE_CASCADE_TRAIL_PER_TILE 2
+/// The longest one step counts for in a trail's life (the first step, or one after a pause).
+#define CYBERWARE_CASCADE_TRAIL_STEP_MAX (0.4 SECONDS)
 
 /**
  * # Cascade Lattice (T4, chest, OS slot, load 12)
@@ -82,8 +89,10 @@
 	var/window_melee_mult = CYBERWARE_CASCADE_MELEE_MULT
 	/// The bearer's screen tint during the window.
 	var/datum/client_colour/window_colour = /datum/client_colour/cyberware_cascade
-	/// A trail afterimage is left on every Nth step.
-	var/afterimage_interval = 1
+	/// Afterimages on screen at once behind a bearer who keeps moving.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	/// Afterimages left per tile walked.
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
 	/// Starting opacity of a trail afterimage.
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
 	/// The status alert shown while the window runs.
@@ -205,18 +214,19 @@
 	var/melee_mult = CYBERWARE_CASCADE_MELEE_MULT
 	/// The bearer's screen tint.
 	var/datum/client_colour/colour_type = /datum/client_colour/cyberware_cascade
-	/// A trail afterimage is left on every Nth step.
-	var/afterimage_interval = 1
+	/// Afterimages on screen at once behind a bearer who keeps moving, and how many a tile walked leaves.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
 	/// Starting opacity of a trail afterimage.
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// world.time of the bearer's last step, to time the next one: the trail's life is counted in steps.
+	var/last_step_at = 0
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
 	var/online_balloon = "cascade online"
 	/// The crash this window rolls into.
 	var/crash_duration = CYBERWARE_CASCADE_CRASH
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
-	/// Steps taken so far, for the afterimage cadence.
-	var/steps_taken = 0
 	/// Whether the surge's own speed, quicker blows, crit and dodge are on now (refresh_perks()).
 	var/perks_on = FALSE
 	/// Quicker blows stay on while a slow-mo carries the surger, apart from the other perks (decisions 22, 2026-11-12):
@@ -233,7 +243,8 @@
 		speed_type = lattice.window_speed
 		melee_mult = lattice.window_melee_mult
 		colour_type = lattice.window_colour
-		afterimage_interval = lattice.afterimage_interval
+		trail_length = lattice.trail_length
+		trail_per_tile = lattice.trail_per_tile
 		afterimage_alpha = lattice.afterimage_alpha
 		online_message = lattice.online_message
 		online_balloon = lattice.online_balloon
@@ -310,31 +321,64 @@
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
 	return perks_on ? dodge_chance : 0
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
-/// telegraph everyone in the fight can read. Each step shifts the hue, so the
-/// trail reads as one rolling colour gradient.
+/**
+ * Signal proc for [COMSIG_MOVABLE_MOVED]: the trail, the telegraph everyone in the fight can read. Each step lays
+ * trail_per_tile afterimages along the way it came (the tile left, then evenly toward the tile reached), and each fades
+ * out over the time the bearer takes to walk trail_length of them, measured on his last step. So a bearer who keeps
+ * moving drags trail_length afterimages, newest strongest, at any speed; when he stops, the trail fades out behind him
+ * in that time. The hue rolls along it, so the trail reads as one colour gradient. Green while his own slow-mo runs.
+ */
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
 	if(!isturf(old_loc))
 		return
-	steps_taken++
-	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
-		return
-	if(time_stop) // green while the world is slowed
-		stopped_afterimage(old_loc)
-		return
-	trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
-	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
-	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
+	var/turf/here = get_turf(owner)
+	var/step_time = world.time - last_step_at
+	last_step_at = world.time
+	if(step_time > CYBERWARE_CASCADE_TRAIL_STEP_MAX) // the first step, or one after a pause: as long as a step takes him now
+		step_time = owner.cached_multiplicative_slowdown
+	step_time = clamp(step_time, world.tick_lag, CYBERWARE_CASCADE_TRAIL_STEP_MAX)
+	var/per_tile = max(1, trail_per_tile)
+	var/life = step_time * max(1, trail_length) / per_tile
+	if(time_stop) // the slow-mo's trail is gone when it is: the replay draws its own
+		life = min(life, max(duration - world.time, world.tick_lag))
+	// Spread along the step only for a plain step; a jump or a z change leaves the one on the tile left.
+	var/along = here && here.z == old_loc.z && get_dist(here, old_loc) == 1
+	var/count = along ? per_tile : 1
+	for(var/i in 0 to count - 1)
+		var/fraction = i / per_tile
+		var/left = life - (1 - fraction) * step_time // it was passed this long ago
+		if(left <= 0)
+			continue
+		var/start_alpha = afterimage_alpha * left / life
+		var/obj/effect/temp_visual/decoy/fading/cascade/image
+		if(time_stop) // green while the world is slowed (ware_sandy_timestop.dm)
+			image = new /obj/effect/temp_visual/decoy/fading/cascade/stopped(old_loc, owner, cyberware_time_stop_green(), start_alpha, left)
+			image.filters = null
+		else
+			trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
+			image = new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, start_alpha, left)
+			trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP / per_tile) % 360
+		if(along && fraction)
+			image.pixel_w += round((here.x - old_loc.x) * fraction * ICON_SIZE_X)
+			image.pixel_z += round((here.y - old_loc.y) * fraction * ICON_SIZE_Y)
 
-/// One afterimage in the Cascade trail, washed in a single hue.
+/**
+ * One afterimage in the Cascade trail, washed in a single hue (or `hue` a colour matrix), fading from `start_alpha`
+ * over `life`. Drawn on the floor, under everyone standing: a trail lies behind its bearer, never over him (on the
+ * game plane one a row nearer the camera would sort over him).
+ */
 /obj/effect/temp_visual/decoy/fading/cascade
 	duration = 8
 
-/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA)
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life)
+	if(life)
+		duration = life // before the parent's timer and fade read it
 	. = ..()
 	alpha = start_alpha
-	color = cascade_tint_matrix(hue)
+	color = islist(hue) ? hue : cascade_tint_matrix(hue)
+	SET_PLANE_EXPLICIT(src, FLOOR_PLANE, src)
+	layer = CLEANABLE_FLOOR_OBJECT_LAYER
 	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
 
 /// Colour matrix that flattens the copy to luminance and paints it one hue,

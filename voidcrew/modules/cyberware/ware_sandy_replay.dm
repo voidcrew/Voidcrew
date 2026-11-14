@@ -97,8 +97,6 @@
 /// The shortest a one-shot effect's animation plays in the replay: two frames. Compressed ten times a muzzle flash or an
 /// impact ring would be over between two frames and never drawn.
 #define SANDY_REPLAY_ONESHOT_MIN (world.tick_lag * 2)
-/// How long a surger's afterimage lasts in real time: the live trail's (/obj/effect/temp_visual/decoy/fading/cascade).
-#define SANDY_REPLAY_TRAIL_LIFE 8
 
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
@@ -135,12 +133,15 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/last_raw
 	/// It was on a surge during the window: the user, or a mob on its own surge in the field.
 	var/surger = FALSE
-	/// Surger: its surge's trail. An afterimage every this many steps (0 until its window is found), starting at this alpha.
-	var/trail_every = 0
+	/// Surger: its surge's trail (ware_legend.dm): afterimages behind it while it moves, per tile, and the newest one's alpha.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
 	var/trail_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
-	/// Surger: the next afterimage's hue, and steps taken in the replay.
+	/// Surger: the next afterimage's hue, and whether the trail's numbers were read from its window yet.
 	var/trail_hue = 0
-	var/trail_steps = 0
+	var/trail_read = FALSE
+	/// Surger: how many frames its last step took, for a step after a pause.
+	var/trail_step_frames = 0
 	/// Playback: a turn (transform change) being tweened: from, to, how long it takes and when it ends.
 	var/turn_from
 	var/turn_to
@@ -512,7 +513,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	track.last_raw = raw
 	if(!track.surger && (thing == user || field?.surging[thing]))
 		become_surger(track)
-	else if(track.surger && !track.trail_every)
+	else if(track.surger && !track.trail_read)
 		read_trail(track)
 	var/look = clean_look(thing)
 	if(iscarbon(thing))
@@ -642,8 +643,10 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/mob/living/body = track.thing
 	var/datum/status_effect/cyberware_cascade_window/window = body.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	if(window)
-		track.trail_every = max(1, window.afterimage_interval)
+		track.trail_length = max(1, window.trail_length)
+		track.trail_per_tile = max(1, window.trail_per_tile)
 		track.trail_alpha = window.afterimage_alpha
+		track.trail_read = TRUE
 
 /// `look` (wet `blood`'s appearance) as the blood is drawn on screen right now, not where its tweens end.
 /datum/sandy_replay/proc/wet_look(obj/effect/decal/cleanable/blood/blood, look)
@@ -1855,20 +1858,36 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/turf/reached = locate(frames[dest + SANDY_FRAME_X], frames[dest + SANDY_FRAME_Y], frames[dest + SANDY_FRAME_Z])
 	if(!left || !reached || get_dist(left, reached) > SANDY_REPLAY_GLIDE_MAX / ICON_SIZE_X)
 		return // a jump, not steps
-	// Two steps can fall between two samples: each tile it crossed gets its afterimage, as each step would.
+	// Two steps can fall between two samples: each tile it crossed gets its afterimages, as each step would.
 	var/list/crossed = get_line(left, reached)
-	crossed -= reached
-	// The trail is on the replay's clock too: an afterimage fades as many times faster as the walk is, so the trail is as
-	// long as a live one behind a walk that fast, and it is gone a frame after the replay is.
-	var/life = SANDY_REPLAY_TRAIL_LIFE * world.tick_lag * clock_rate
-	life = clamp(life, world.tick_lag, max(total + 2 - frames[dest + SANDY_FRAME_INDEX], 1) * world.tick_lag)
-	for(var/turf/step_from as anything in crossed)
-		track.trail_steps++
-		if(track.trail_steps % max(1, track.trail_every))
-			continue
-		new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha, life)
-		afterimages++
-		track.trail_hue = (track.trail_hue + SANDY_REPLAY_HUE_STEP) % 360
+	var/steps = length(crossed) - 1
+	// The trail is laid as the live one is (cyberware_cascade_window/on_move()), on the replay's clock: a step takes as
+	// many frames as it took in the recording, and an afterimage lives trail_length / trail_per_tile steps, so a walk at
+	// any speed drags the trail's length behind it. It is gone a frame after the replay is.
+	var/step_frames = (frames[dest + SANDY_FRAME_INDEX] - frames[from + SANDY_FRAME_INDEX]) / steps
+	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * clock_rate
+	if(step_frames > step_max) // the first step, or one after a pause: as long as its last step took
+		step_frames = track.trail_step_frames || step_max
+	track.trail_step_frames = step_frames
+	var/per_tile = max(1, track.trail_per_tile)
+	var/life_frames = step_frames * max(1, track.trail_length) / per_tile
+	var/frames_left = max(total + 2 - frames[dest + SANDY_FRAME_INDEX], 1)
+	var/hue_step = SANDY_REPLAY_HUE_STEP / per_tile
+	for(var/k in 1 to steps)
+		var/turf/step_from = crossed[k]
+		var/turf/step_to = crossed[k + 1]
+		for(var/i in 0 to per_tile - 1)
+			var/fraction = i / per_tile
+			var/left_frames = life_frames - (steps - k + 1 - fraction) * step_frames // it was passed this long ago
+			if(left_frames <= 0)
+				continue
+			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
+			var/obj/effect/temp_visual/decoy/fading/cascade/replay/image = new(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha * left_frames / life_frames, life)
+			if(fraction)
+				image.pixel_w += round((step_to.x - step_from.x) * fraction * ICON_SIZE_X)
+				image.pixel_z += round((step_to.y - step_from.y) * fraction * ICON_SIZE_Y)
+			afterimages++
+			track.trail_hue = (track.trail_hue + hue_step) % 360
 
 /// Plays the recorded sounds due by `frame`.
 /datum/sandy_replay/proc/play_sounds(frame)
@@ -2415,7 +2434,6 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_REACH
 #undef SANDY_REPLAY_MAX_SHOTS
 #undef SANDY_REPLAY_ONESHOT_MIN
-#undef SANDY_REPLAY_TRAIL_LIFE
 #undef SANDY_REPLAY_GLIDE_MAX
 #undef SANDY_REPLAY_WATCHDOG
 #undef SANDY_REPLAY_TURN_TIME

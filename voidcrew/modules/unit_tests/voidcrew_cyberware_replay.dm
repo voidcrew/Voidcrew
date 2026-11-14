@@ -1030,3 +1030,28 @@
 	TEST_ASSERT_EQUAL(npc.next_move - world.time, 20, "An NPC held by two replays at once didn't get exactly its held time back")
 	TEST_ASSERT_EQUAL(player.next_move, began + 20, "A player's clock was pushed by the replay's hold")
 	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[npc] && !GLOB.sandy_replay_stopped_clocks[player], "A stopped clock was left behind")
+
+/// The replay drags the user's whole trail behind his walk at the replay's speed, and none of it outlives the replay
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaytrail")
+	set_window(user, 2.5 SECONDS)
+	start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	var/length = window.trail_length
+	window.last_step_at = world.time // already walking: no first step's guessed pace
+	walk_trail(user, 16)
+	var/peak = 0
+	var/until = world.time + 8 SECONDS
+	while(world.time < until && (GLOB.sandy_replays[user] || window_of(user)))
+		peak = max(peak, count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay))
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	log_test("replay/trail: [GLOB.sandy_replay_last["afterimages"]] afterimages laid, at most [peak] at once (trail [length])")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= length, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a 16-tile walk")
+	TEST_ASSERT(peak >= length / 2, "At most [peak] afterimages at once behind the replayed walk, not about [length]")
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

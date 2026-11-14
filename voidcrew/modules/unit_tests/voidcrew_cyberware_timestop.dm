@@ -195,7 +195,7 @@
 	var/turf/start = get_turf(user)
 	user.Move(spot(0, 1), NORTH)
 	TEST_ASSERT(get_turf(user) != start, "Test fixture: the user couldn't step")
-	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/decoy/fading/cascade/stopped) in spot(0, 1), "The green trail outlived the slow-mo")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/decoy/fading/cascade/stopped) in spot(0, 0), "The green trail outlived the slow-mo")
 	end_surge(user)
 
 /// Another player near: the plain surge, no dilation
@@ -801,6 +801,65 @@
 	TEST_ASSERT(tinted(raider), "Test fixture: the slow-mo's tint never reached the NPC")
 	raider.hv_vis_flash()
 	TEST_ASSERT_NULL(raider.get_filter("hv_vis_flash"), "A tinted body's flash didn't play through its tint")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	wait_replay(user)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// Walks `user` `steps` tiles back and forth along the bottom row, `pace` a step, as a surger who keeps moving
+/datum/unit_test/voidcrew_cyberware_timestop/proc/walk_trail(mob/living/user, steps, pace = 0.1 SECONDS)
+	var/west_end = run_loc_floor_bottom_left.x
+	var/east_end = min(west_end + 4, run_loc_floor_top_right.x)
+	var/heading = EAST
+	for(var/i in 1 to steps)
+		var/turf/next = get_step(user, heading)
+		if(next.x > east_end || next.x < west_end)
+			heading = REVERSE_DIR(heading)
+			next = get_step(user, heading)
+		TEST_ASSERT(user.Move(next, heading), "Test fixture: the surger couldn't step")
+		sleep(pace)
+
+/// The live afterimages of `type` around `user`
+/datum/unit_test/voidcrew_cyberware_timestop/proc/count_trail(mob/living/user, type)
+	. = 0
+	for(var/obj/effect/temp_visual/decoy/fading/cascade/image in range(7, user))
+		if(istype(image, type))
+			.++
+
+/// A plain surge: a surger who keeps moving drags the trail's length of afterimages, all under bodies, and they are
+/// gone a trail's life after he stops
+/datum/unit_test/voidcrew_cyberware_timestop/trail_plain
+
+/datum/unit_test/voidcrew_cyberware_timestop/trail_plain/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytrailuser")
+	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human/consistent, spot(3, 3))
+	other.key = "sandytrailother" // a player near: a plain surge, no slow-mo
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NULL(window.time_stop, "Test fixture: time slowed with another player near")
+	window.last_step_at = world.time // already walking: no first step's guessed pace
+	walk_trail(user, 16)
+	var/live = count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade)
+	TEST_ASSERT(abs(live - window.trail_length) <= 2, "[live] afterimages behind a surger who keeps moving, not about [window.trail_length]")
+	for(var/obj/effect/temp_visual/decoy/fading/cascade/image in range(7, user))
+		TEST_ASSERT(PLANE_TO_TRUE(image.plane) == FLOOR_PLANE, "An afterimage is drawn over bodies (plane [image.plane])")
+	sleep(0.1 SECONDS * window.trail_length / window.trail_per_tile + 0.2 SECONDS)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "The trail lingered after the surger stopped")
+	end_surge(user)
+
+/// The slow-mo: the same trail, green, behind a user walking at normal speed
+/datum/unit_test/voidcrew_cyberware_timestop/trail_slowmo
+
+/datum/unit_test/voidcrew_cyberware_timestop/trail_slowmo/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytrailuser")
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Test fixture: time didn't slow with nobody else near")
+	window.last_step_at = world.time // already walking: no first step's guessed pace
+	walk_trail(user, 16)
+	var/live = count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/stopped)
+	TEST_ASSERT(abs(live - window.trail_length) <= 2, "[live] afterimages behind a user walking in the slow-mo, not about [window.trail_length]")
+	sleep(0.1 SECONDS * window.trail_length / window.trail_per_tile + 0.2 SECONDS)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "The slow-mo's trail lingered after the user stopped")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	wait_replay(user)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
