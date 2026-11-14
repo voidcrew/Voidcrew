@@ -36,7 +36,7 @@
  *
  * It looks and sounds like a surge: the surge-on sound plays at the start, the sounds made in the field play again
  * at normal pitch (playsound() hands them over), and every surger in it (the user, or a mob on its own surge) leaves
- * the surge's rolling-hue afterimage trail. A turn of a body (a fall) is tweened, as tg's lying turn is.
+ * the surge's afterimage trail, coloured by age. A turn of a body (a fall) is tweened, as tg's lying turn is.
  *
  * A finisher rig hides a body and draws it as posed pictures (chrome_puppet_rig.dm, mantis_rig.dm). Those pictures are
  * recorded like anything else, and the animate() chains that pose them are journaled (sandy_replay_animate(), routed
@@ -76,8 +76,6 @@
 #define SANDY_REPLAY_WATCHDOG (1 SECONDS)
 /// How long a recorded turn of a body (a fall, getting up) takes in the replay: tg's own lying turn.
 #define SANDY_REPLAY_TURN_TIME 2
-/// Degrees the replay trail's hue moves per step (CYBERWARE_CASCADE_HUE_STEP in ware_legend.dm).
-#define SANDY_REPLAY_HUE_STEP 25
 /// The most times a replay plays a surger's external cue as he bursts off (surger_frame()).
 #define SANDY_REPLAY_BURST_CUES_MAX 6
 /// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
@@ -155,8 +153,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
 	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
 	var/trail_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
-	/// Surger: the next afterimage's hue, and whether the trail's numbers were read from its window yet.
-	var/trail_hue = 0
+	/// Surger: whether the trail's numbers were read from its window yet.
 	var/trail_read = FALSE
 	/// Surger: how many frames its last step took, for a step after a pause.
 	var/trail_step_frames = 0
@@ -656,7 +653,6 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 /// `track`'s thing is on a surge: the replay gives it its surge's trail.
 /datum/sandy_replay/proc/become_surger(datum/sandy_replay_track/track)
 	track.surger = TRUE
-	track.trail_hue = rand(0, 359)
 	read_trail(track)
 
 /// Takes the trail's cadence and strength from the surger's window. The user's own window isn't listed on them yet
@@ -1888,7 +1884,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
  * A surger's puppet (the user's, or a surging NPC's) just moved on to a new frame. The place where the surge's
  * own look and sound join the replay: `track.came_from` and `track.cursor` are the frames it went from and to
  * (offsets in `track.frames`; came_from is below 0 on its first), so a step is the two frames standing on
- * different turfs. Each step leaves the surge's own rolling-hue afterimage on the tile it left, as a surge does
+ * different turfs. Each step leaves the surge's own afterimage on the tile it left, as a surge does
  * outside a slow-mo (cyberware_cascade_window/on_move()).
  */
 /datum/sandy_replay/proc/surger_frame(datum/sandy_replay_track/track)
@@ -1918,7 +1914,6 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/per_tile = max(1, track.trail_per_tile)
 	var/life_frames = step_frames * max(1, track.trail_length) / per_tile
 	var/frames_left = max(total + 2 - frames[dest + SANDY_FRAME_INDEX], 1)
-	var/hue_step = SANDY_REPLAY_HUE_STEP / per_tile
 	for(var/k in 1 to steps)
 		var/turf/step_from = crossed[k]
 		var/turf/step_to = crossed[k + 1]
@@ -1930,9 +1925,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
 			var/shift_x = round((step_to.x - step_from.x) * fraction * ICON_SIZE_X)
 			var/shift_y = round((step_to.y - step_from.y) * fraction * ICON_SIZE_Y)
-			new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y)
+			new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag)
 			afterimages++
-			track.trail_hue = (track.trail_hue + hue_step) % 360
 
 /// A surger's replayed self bursts off from `from` after a pause: its viewers hear the snap anyone near heard
 /// (ware_sandy_sound.dm), at most every SANDEVISTAN_BURST_GAP as the replay plays (the outside view's time) and a few
@@ -2059,23 +2053,23 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			return null
 	return heard
 
-/// One afterimage of a surger's trail in the replay: a recorded look, washed in one hue like the live trail.
+/// One afterimage of a surger's trail in the replay: a recorded look, coloured by age like the live trail.
 /obj/effect/temp_visual/decoy/fading/cascade/replay
 
-/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0)
+/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time)
 	if(life)
 		duration = life // before the parent's timer and fade read it
-	. = ..(mapload, null, hue, start_alpha)
+	. = ..(mapload, null, age, start_alpha)
 	// The whole look goes on in one assignment, then the fade starts on it. Set piece by piece under the parent's fade,
 	// the client tweened the hue in from full colour: the first afterimage read as a copy of the user beside them.
 	var/mutable_appearance/copy = new(look || src)
 	copy.name = ""
 	copy.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	copy.alpha = start_alpha
-	copy.color = cascade_tint_matrix(hue)
+	copy.color = cyberware_cascade_tint_at(age)
 	copy.pixel_w += shift_x // along the step, toward the tile reached
 	copy.pixel_z += shift_y
-	copy.appearance_flags |= KEEP_TOGETHER // a recorded look need not draw as one piece; the hue must reach all of it
+	copy.appearance_flags |= KEEP_TOGETHER // a recorded look need not draw as one piece; the colour must reach all of it
 	// Drawn on the floor, under everyone standing: a trail lies behind its surger, never over them (on the game plane a
 	// copy a row nearer the camera would sort over the surger).
 	SET_PLANE_EXPLICIT(copy, FLOOR_PLANE, src)
@@ -2085,6 +2079,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	dir = facing
 	opacity = FALSE
 	animate(src, alpha = 0, time = duration)
+	age_colours(age, age_time || duration)
 
 /// The playback timer: one frame a tick.
 /datum/sandy_replay/proc/play_frame()
@@ -2603,7 +2598,6 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_GLIDE_MAX
 #undef SANDY_REPLAY_WATCHDOG
 #undef SANDY_REPLAY_TURN_TIME
-#undef SANDY_REPLAY_HUE_STEP
 #undef SANDY_REPLAY_BURST_CUES_MAX
 #undef SANDY_REPLAY_MAX_SOUNDS
 #undef SANDY_REPLAY_MAX_OWN_SOUNDS

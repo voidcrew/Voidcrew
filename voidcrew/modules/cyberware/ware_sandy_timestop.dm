@@ -170,15 +170,6 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(field && !field.surging[body])
 		field.into_the_negative_zone(body)
 
-/// The next hue for a surging `bearer`'s rainbow trail: inside someone's field it skips the greens, which read as the field's own tint.
-/proc/cyberware_time_trail_hue(mob/living/bearer, hue)
-	if(hue < 70 || hue > 170)
-		return hue
-	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
-		if(field.surging[bearer])
-			return 170
-	return hue
-
 /// How long, in real time, `time` deciseconds of `thing`'s own time take from now. Exact through the slow-mo
 /// and the end of the effect, as the field stands now.
 /proc/cyberware_dilated_time(atom/thing, time)
@@ -1380,7 +1371,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	color = "#E1FFEB"
 	alpha = 140
 
-/// The afterimage left while time is dilated: green, laid like the rest of the trail (cyberware_cascade_window/on_move()).
+/// The afterimage left while time is dilated, laid and coloured like the rest of the trail (cyberware_cascade_window/on_move()).
+/// Its colour matrix keeps it out of the world's tint.
 /obj/effect/temp_visual/decoy/fading/cascade/stopped
 
 // =========================================================================

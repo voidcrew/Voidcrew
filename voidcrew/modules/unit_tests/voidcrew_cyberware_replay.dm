@@ -1116,14 +1116,17 @@
 	// forth folded into one.
 	walk_trail(user, 16, 0.3 SECONDS)
 	var/peak = 0
+	var/list/off = list()
 	var/until = world.time + 8 SECONDS
 	while(world.time < until && (GLOB.sandy_replays[user] || window_of(user)))
 		peak = max(peak, count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay))
+		off += off_colour_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay)
 		sleep(world.tick_lag)
 	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
 	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
 	log_test("replay/trail: [GLOB.sandy_replay_last["afterimages"]] afterimages laid, at most [peak] at once (trail [length])")
 	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= length, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a 16-tile walk")
+	TEST_ASSERT(!length(off), "Replayed afterimages not coloured by age: [jointext(off.Copy(1, min(length(off), 4) + 1), "; ")]")
 	TEST_ASSERT(peak >= length / 2, "At most [peak] afterimages at once behind the replayed walk, not about [length]")
 	sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
