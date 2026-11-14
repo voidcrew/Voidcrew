@@ -34,13 +34,6 @@
 		if(entry[1] == listener && (cue.status & SOUND_UPDATE) && cue.channel == channel)
 			. += cue
 
-/// The old time-stop sounds sent to `listener`: played forward, or `reversed`
-/datum/unit_test/voidcrew_cyberware_timestop/proc/timestops(mob/listener, reversed = FALSE)
-	. = 0
-	for(var/sound/cue as anything in cues(listener, 'sound/effects/magic/timeparadox2.ogg'))
-		if((cue.frequency < 0) == reversed)
-			.++
-
 /// The stops sent to `listener` on `channel`
 /datum/unit_test/voidcrew_cyberware_timestop/proc/stops(mob/listener, channel)
 	. = 0
@@ -72,8 +65,6 @@
 	TEST_ASSERT_EQUAL(length(cues(bystander, "external")), 1, "A bystander didn't hear the snap")
 	TEST_ASSERT_EQUAL(length(cues(bystander, 'voidcrew/sound/cyberware/sandevistan_activation.ogg')), 0, "A bystander heard the user's own surge")
 	TEST_ASSERT_EQUAL(length(cues(bystander, 'voidcrew/sound/cyberware/sandevistan_loop.ogg')), 0, "A bystander heard the user's loop")
-	TEST_ASSERT_EQUAL(timestops(user), 1, "The user didn't hear the time-stop sound as his slow-mo came up")
-	TEST_ASSERT_EQUAL(length(cues(bystander, 'sound/effects/magic/timeparadox2.ogg')), 0, "A bystander heard the user's time-stop sound")
 	var/sound/snap = cues(bystander, "external")[1]
 	TEST_ASSERT(snap.x == -3 && snap.z == 0, "The snap wasn't placed at the surger's tile ([snap.x], [snap.z])")
 	TEST_ASSERT(snap.frequency >= 0.94 && snap.frequency <= 1.06, "The snap's pitch ([snap.frequency]) went past its spread")
@@ -84,8 +75,6 @@
 		TEST_ASSERT(!findtext("[heard[3]]", "sandevistan"), "A Sandevistan cue ([heard[3]]) was recorded for the replay")
 	press_again(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop wasn't stopped when the slow-mo ended")
-	TEST_ASSERT_EQUAL(timestops(user, reversed = TRUE), 1, "The user didn't hear the time-stop sound reversed as his slow-mo ended")
-	TEST_ASSERT_EQUAL(length(cues(bystander, 'sound/effects/magic/timeparadox2.ogg')), 0, "A bystander heard the user's time-stop sound")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
 
@@ -131,7 +120,6 @@
 	var/channel = loop_channel(user)
 	user.death()
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop wasn't stopped when the user died")
-	TEST_ASSERT_EQUAL(timestops(user, reversed = TRUE), 0, "A dead user heard his slow-mo end")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
 
@@ -215,8 +203,8 @@
 	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
-/// The loop and the step climb in pitch as the slow-mo runs toward its end, to about 1.4 near it; the slow-mo's end
-/// plays the time-stop sound reversed to the user alone, and nothing reaches him after it
+/// The loop and the step climb in pitch as the slow-mo runs toward its end, to about 1.4 near it, and nothing reaches
+/// the user on the loop's channel after it
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_climbs
 
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_climbs/Run()
@@ -246,8 +234,6 @@
 	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_loop.ogg')), 1, "The loop was restarted to change its pitch")
 	TEST_ASSERT_EQUAL(length(updates(bystander, channel)), 0, "A bystander was sent the loop's pitch")
 	press_again(user)
-	TEST_ASSERT_EQUAL(timestops(user, reversed = TRUE), 1, "The user didn't hear the time-stop sound reversed as his slow-mo ended")
-	TEST_ASSERT_EQUAL(length(cues(bystander, 'sound/effects/magic/timeparadox2.ogg')), 0, "A bystander heard the user's time-stop sound")
 	var/sent = length(GLOB.sandy_cues_sent)
 	sleep(1.2 SECONDS)
 	for(var/i in sent + 1 to length(GLOB.sandy_cues_sent))

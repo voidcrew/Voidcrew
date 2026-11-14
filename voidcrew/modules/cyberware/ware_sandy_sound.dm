@@ -2,8 +2,8 @@
  * # What a Sandevistan sounds like
  *
  * The user hears his own surge come on, a hum for as long as his slow-mo runs, a rush when he bursts into movement
- * from standing inside it, and the slow-mo ending. The old time-stop sound plays as his slow-mo comes up and reversed as
- * it ends, and the hum and the rush climb in pitch as it runs toward its end (sandy_slowmo_progress()).
+ * from standing inside it, and the slow-mo ending. The hum and the rush climb in pitch as it runs toward its end
+ * (sandy_slowmo_progress()).
  * Those go to him alone, straight to his client: never slowed by his own
  * slow-mo (ware_sandy_senses.dm slows sounds in playsound_local) and never recorded for its replay (ware_sandy_replay.dm
  * records playsound()), which is the outside view. An NPC surger has no client and gets none of them.
@@ -142,9 +142,6 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 		loop_ckey = owner.ckey
 		pitch_progress = 0
 		pitch_progress_at = world.time
-#ifdef SANDEVISTAN_TIMESTOP_SOUND
-		sandy_cue_send(owner, sandy_cue(SANDEVISTAN_TIMESTOP_SOUND, SANDEVISTAN_TIMESTOP_VOLUME))
-#endif
 		RegisterSignal(owner, COMSIG_MOB_LOGOUT, PROC_REF(sandy_sound_logout))
 		loop_channel = SSsounds.reserve_sound_channel(src)
 		if(!loop_channel)
@@ -173,12 +170,6 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 #ifdef SANDEVISTAN_DEACTIVATE_SOUND
 	if(!quiet && listener == owner && owner.stat != DEAD)
 		sandy_cue_send(owner, sandy_cue(SANDEVISTAN_DEACTIVATE_SOUND, SANDY_SOUND_DEACTIVATE_VOLUME))
-#endif
-#ifdef SANDEVISTAN_TIMESTOP_END_SOUND
-	if(!quiet && listener == owner && !QDELETED(owner) && owner.stat != DEAD)
-		var/sound/reversed = sandy_cue(SANDEVISTAN_TIMESTOP_END_SOUND, SANDEVISTAN_TIMESTOP_VOLUME)
-		reversed.frequency = -1 // played backwards, as tg's time stop ends
-		sandy_cue_send(owner, reversed)
 #endif
 
 /// Whoever has the client the loop went to, wherever it is now.

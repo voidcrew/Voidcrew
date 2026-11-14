@@ -265,12 +265,6 @@
 #define SANDEVISTAN_STEP_SOUND 'voidcrew/sound/cyberware/sandevistan_step.ogg'
 /// The user's slow-mo ending. No sound yet: uncomment with a file and it plays (ware_sandy_sound.dm).
 // #define SANDEVISTAN_DEACTIVATE_SOUND 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg'
-/// The old time-stop sound, to the user as his slow-mo comes up. Comment out and it doesn't play.
-#define SANDEVISTAN_TIMESTOP_SOUND 'sound/effects/magic/timeparadox2.ogg'
-/// The same sound reversed, to the user as his slow-mo ends. Comment out and it doesn't play.
-#define SANDEVISTAN_TIMESTOP_END_SOUND 'sound/effects/magic/timeparadox2.ogg'
-/// The time-stop sound's volume, both ways.
-#define SANDEVISTAN_TIMESTOP_VOLUME 50
 /// The loop and the step climb in pitch as the slow-mo runs out: this frequency multiplier at its end, 1 at its start,
 /// most of the climb in the last third (1 + (END - 1) * progress squared).
 #define SANDEVISTAN_PITCH_END 1.4
