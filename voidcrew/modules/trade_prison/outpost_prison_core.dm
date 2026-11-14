@@ -612,13 +612,13 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 			. += meal
 
 /**
- * Staff or the galley put something on a serving hatch. Prisoners who want it leave whatever they
- * were idling at to go and get it, one prisoner who can see it and wants it calls it out ("Food's up!", "Clean
- * suits!"), and someone already waiting at that hatch for it thanks them. Returns the prisoner who
- * called it out, or null.
+ * Staff, a held inmate or the galley put something on a serving hatch. Prisoners who want it leave
+ * whatever they were idling at to go and get it, one prisoner who can see it and wants it calls it out
+ * ("Food's up!", "Clean suits!"), and someone already waiting at that hatch for it thanks them.
+ * Returns the prisoner who called it out, or null.
  */
 /datum/outpost_prison/proc/on_hatch_stocked(obj/structure/table/reinforced/prison_hatch/hatch, list/stocked, mob/user)
-	if(!hatch || !length(stocked) || (user && !is_staff(user)))
+	if(!hatch || !length(stocked) || (user && !is_staff(user) && !is_inmate(user)))
 		return null
 	// A birthday cake or a letter is the extras' business (outpost_prison_extras.dm).
 	if(extras_hatch_stocked(hatch, stocked, user))

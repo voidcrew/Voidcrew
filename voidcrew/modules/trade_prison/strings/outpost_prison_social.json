@@ -3,10 +3,10 @@
 		"greet_stranger": {
 			"any": [
 				"Don't think I know you.",
-				"New face. You work here?",
+				"New face. What did they get you for?",
 				"Who are you, then?",
-				"Hey. You with the crew?",
-				"You lost, or do you work here?",
+				"Hey. Just get booked in?",
+				"First stretch in here, or are you a regular?",
 				"You're new. {staff}, is it?"
 			],
 			"chatty": [
@@ -41,7 +41,7 @@
 			],
 			"chatty": [
 				"{staff}! Got a minute? I've got news.",
-				"Hey {staff}, how's the outpost doing?"
+				"Hey {staff}, how's your stretch going?"
 			],
 			"grumpy": [
 				"{staff}.",
@@ -78,7 +78,7 @@
 			],
 			"nervous": [
 				"Oh, {staff}. Good. I feel better when you're around.",
-				"Hi, {staff}. Glad it's you on shift."
+				"Hi, {staff}. Glad you're out in the yard."
 			],
 			"cheerful": [
 				"{staff}! Best part of my day.",
@@ -120,7 +120,7 @@
 		},
 		"greet_brute": {
 			"any": [
-				"Oh, it's you. Keep that baton away from me.",
+				"Oh, it's you. Keep your hands off me.",
 				"Everyone stay back. {staff}'s here.",
 				"{staff}. Don't come near me.",
 				"Great. {staff}. Who are you hitting today?",
@@ -177,10 +177,10 @@
 		},
 		"wing_word_fair": {
 			"any": [
-				"Heard {staff} runs a fair wing. That true?",
+				"Heard {staff} looks out for people in here. True?",
 				"Somebody told me to ask for {staff}.",
 				"They say {staff}'s alright. We'll see.",
-				"Word is {staff} actually feeds people here."
+				"Word is {staff} shares food when the hatch's bare."
 			],
 			"chatty": [
 				"The guys on the transport said {staff} is decent. Who's {staff}?",
@@ -206,7 +206,7 @@
 			"any": [
 				"They warned me about {staff}.",
 				"Which one's {staff}? I want to know who to avoid.",
-				"Heard {staff} likes the baton a bit much.",
+				"Heard {staff} swings first and asks never.",
 				"Word on the transport was to stay clear of {staff}."
 			],
 			"chatty": [
@@ -219,7 +219,7 @@
 			],
 			"nervous": [
 				"Is {staff} here? They said {staff} hits people.",
-				"Please tell me {staff} isn't on shift."
+				"Please tell me {staff} isn't in this block."
 			],
 			"cheerful": [
 				"Heard {staff} can be rough. I'll keep smiling.",
@@ -239,7 +239,7 @@
 				"Save it, {staff}."
 			],
 			"chatty": [
-				"Oh, now you want to talk? After the baton? No.",
+				"Oh, now you want to talk? After swinging at people? No.",
 				"You hit people, {staff}. Find someone else to chat with."
 			],
 			"grumpy": [
@@ -402,49 +402,49 @@
 		"ask_how_locked": {
 			"any": [
 				"How do you think? I've been shut in here for ages.",
-				"Let me out of this cell for a bit.",
+				"Guard bolted me in and walked off.",
 				"I'm going stir crazy in here.",
 				"Locked in all day. That's how I'm doing."
 			],
 			"chatty": [
-				"I've counted every bolt on this door twice. Can I come out?",
-				"Talking to the wall's getting old. Let me out?"
+				"I've counted every bolt on this door twice. Still stuck.",
+				"Talking to the wall's getting old in here."
 			],
 			"grumpy": [
-				"Open the door and I'll tell you.",
+				"Bolted in this box all day. Ask the guard.",
 				"Locked up in a box. Great, thanks."
 			],
 			"nervous": [
 				"Why am I still locked in? Did I do something?",
-				"Please, can I come out for a bit?"
+				"Do you know when they're unbolting this?"
 			],
 			"cheerful": [
-				"Getting a bit cramped in here! Can I stretch my legs?",
+				"Getting a bit cramped in here! Wish they'd unbolt it.",
 				"I'm fine, but I'd be finer out there."
 			],
 			"quiet": [
-				"Let me out.",
+				"Still bolted in.",
 				"Door."
 			]
 		},
 		"ask_how_dark_cell": {
 			"any": [
-				"My cell's pitch black. Can you fix the light?",
+				"My cell's pitch black. Bulb's been dead for ages.",
 				"Can't see a thing in my cell.",
 				"The light in my cell's out.",
 				"It's dark as a cave in my cell."
 			],
 			"chatty": [
 				"My light's dead. I keep walking into the toilet.",
-				"Can someone fix my light? I can't even read."
+				"Wish they'd fix my light. I can't even read."
 			],
 			"grumpy": [
-				"My light's been out forever. Fix it.",
+				"My light's been out forever. Guards don't care.",
 				"Dark in my cell. Again."
 			],
 			"nervous": [
 				"It's so dark in my cell. I don't like it.",
-				"My light's out. Can you fix it? Please?"
+				"My light's out and nobody's come to fix it."
 			],
 			"cheerful": [
 				"Fine! Could use a light in my cell, though.",
@@ -458,7 +458,7 @@
 		"ask_how_dark": {
 			"any": [
 				"It's too dark in here.",
-				"Can someone fix the lights?",
+				"Half the tubes in here are dead.",
 				"Half the lights are out.",
 				"Hard to see anything in this place."
 			],
@@ -467,12 +467,12 @@
 				"It's like living in a cupboard in here."
 			],
 			"grumpy": [
-				"It's dark. Fix the lights.",
-				"Who turned the lights off? Turn them back on."
+				"It's dark. Guards haven't changed a bulb all week.",
+				"Who let all the lights burn out in here?"
 			],
 			"nervous": [
 				"I don't like how dark it's getting.",
-				"Can we get the lights fixed? Please?"
+				"Why haven't they fixed the lights yet?"
 			],
 			"cheerful": [
 				"Fine! Bit gloomy, though.",
@@ -492,7 +492,7 @@
 			],
 			"chatty": [
 				"Have you seen the floor? I stepped in something this morning.",
-				"I'd clean it myself if you gave me a mop."
+				"There's a mop by the sinks and nobody touches it."
 			],
 			"grumpy": [
 				"Floor's filthy. Get a mop.",
@@ -500,7 +500,7 @@
 			],
 			"nervous": [
 				"It's so dirty in here. Is that safe?",
-				"Can someone clean up? There's stuff everywhere."
+				"Nobody cleans up in here. There's filth everywhere."
 			],
 			"cheerful": [
 				"Good! The floor's seen better days, though.",
@@ -523,8 +523,8 @@
 				"Even the water cooler gave up. Power's out."
 			],
 			"grumpy": [
-				"No power. Great place you run.",
-				"Power's out. Fix it."
+				"No power. What a dump this place is.",
+				"Power's out and the guards aren't lifting a finger."
 			],
 			"nervous": [
 				"Why's the power off? Is something wrong?",

@@ -62,11 +62,11 @@
 				"Hi, {staff}.",
 				"Oh, hey. Good to see you.",
 				"Hi there.",
-				"Hey. How's it going out there?"
+				"Hey. Back in the yard?"
 			],
 			"chatty": [
 				"{staff}! Come here, I've got a story for you.",
-				"Hey, {staff}, what's new out there?",
+				"Hey, {staff}, how much time have you got left?",
 				"Oh good, company."
 			],
 			"cheerful": [
@@ -89,11 +89,11 @@
 		},
 		"staff_enters_restless": {
 			"any": [
-				"Look who finally showed up.",
-				"Oh, now you come in.",
+				"Watch your step in here today.",
+				"Bad mood in the yard right now.",
 				"About time, {staff}.",
 				"We've got things to talk about.",
-				"Here's the boss. Great."
+				"Everybody's on edge in here."
 			],
 			"grumpy": [
 				"You've got some nerve walking in here.",
@@ -108,7 +108,7 @@
 				"Finally. Listen, things aren't good in here."
 			],
 			"cheerful": [
-				"Not a great day to visit, {staff}.",
+				"Rough time to be in the yard, {staff}.",
 				"Heads up, folks are pretty sore."
 			],
 			"quiet": [

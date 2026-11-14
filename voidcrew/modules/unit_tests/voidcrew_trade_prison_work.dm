@@ -289,3 +289,98 @@
 	prison.release_inmate(inmate.mind, TRUE)
 	prison.release_inmate(second_inmate.mind, TRUE)
 	TEST_ASSERT_EQUAL(board.message1, "", "Lockup board stayed '[board.message1]' instead of blank after all inmates were released")
+
+// =========================================================================
+// 3. YARD LIFE FOR INMATES & BYSTANDERS: MAPPED MESS, HATCH, MEDIC, WINDOWS
+// =========================================================================
+
+/datum/unit_test/voidcrew_trade_prison_work_yard_life
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+
+/datum/unit_test/voidcrew_trade_prison_work_yard_life/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = lockup_test_outpost()
+	TEST_ASSERT_NOTNULL(outpost, "Quartermain Depot's interior did not load")
+	var/datum/outpost_prison/prison = outpost.prison
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT_NOTNULL(prison, "Quartermain Depot has no lockup")
+	TEST_ASSERT_NOTNULL(police, "Quartermain Depot has no police")
+
+	var/turf/yard_tile = work_test_clean_yard_tile(prison)
+	TEST_ASSERT_NOTNULL(yard_tile, "No open clean yard floor tile found")
+
+	// Pre-mapped yard dirt decals start marked by work_setup() and credit 10 s when cleaned by an inmate
+	var/list/obj/effect/decal/cleanable/dirt/mapped_dirts = list()
+	for(var/turf/tile as anything in prison.cell_block)
+		if(!isopenturf(tile))
+			continue
+		for(var/obj/effect/decal/cleanable/dirt/decal in tile)
+			mapped_dirts += decal
+	TEST_ASSERT(length(mapped_dirts) >= 4, "Quartermain Depot's lockup had [length(mapped_dirts)] mapped yard dirt decals, fewer than 4")
+	for(var/obj/effect/decal/cleanable/dirt/decal as anything in mapped_dirts)
+		TEST_ASSERT(prison.is_wing_mess(decal), "Pre-mapped yard dirt decal was not marked by work_setup()")
+
+	var/mob/living/carbon/human/inmate = make_player(yard_tile, "lockupyardlifeinmate")
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, inmate.mind, 55) // 3 stars -> 600 s
+	var/datum/prison_sentence/sentence = prison.admit_inmate_sentence(inmate, warrant, 3)
+	var/mob/living/carbon/human/visitor = make_player(yard_tile, "lockupyardlifevisitor")
+
+	var/obj/item/soap/soap = allocate(/obj/item/soap)
+	var/datum/component/cleaner/cleaner = soap.GetComponent(/datum/component/cleaner)
+	cleaner.base_cleaning_duration = 0
+	var/obj/effect/decal/cleanable/dirt/first_mapped = mapped_dirts[1]
+	cleaner.clean(soap, get_turf(first_mapped), inmate)
+	TEST_ASSERT(QDELETED(first_mapped), "Cleaner did not remove the pre-mapped yard dirt decal")
+	TEST_ASSERT_EQUAL(sentence.effective_worked_off(), 10, "Cleaning pre-mapped yard dirt credited [sentence.effective_worked_off()] s, not 10 s") // OUTPOST_PRISON_WORK_MOP_SECONDS
+
+	// Serving hatch stocking accepts held inmates (reputation + prisoner call-out) and ignores non-inmate visitors
+	var/list/hatches = prison.fixtures_of("hatch")
+	TEST_ASSERT(length(hatches) >= 1, "Quartermain Depot's lockup registered no serving hatches")
+	var/obj/structure/table/reinforced/prison_hatch/hatch = hatches[1]
+	var/turf/hatch_spot = hatch.yard_side_turf()
+	TEST_ASSERT_NOTNULL(hatch_spot, "Serving hatch had no yard-side floor tile")
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, hatch_spot)
+	prisoner.set_uniform_grime(60) // >= 40 (PRISONER_GRIME_DIRTY)
+	prison.refresh_prisoner_reach(prisoner)
+
+	var/obj/item/clothing/under/rank/prisoner/outpost/stocked_suit = allocate(/obj/item/clothing/under/rank/prisoner/outpost, get_turf(hatch))
+	TEST_ASSERT_NULL(prison.on_hatch_stocked(hatch, list(stocked_suit), visitor), "on_hatch_stocked() accepted a non-inmate visitor")
+	TEST_ASSERT_NULL(prison.rep_record_for(visitor), "on_hatch_stocked() created a yard reputation record for a visitor")
+
+	var/mob/living/carbon/human/npc/outpost_prisoner/crier = prison.on_hatch_stocked(hatch, list(stocked_suit), inmate)
+	TEST_ASSERT_EQUAL(crier, prisoner, "on_hatch_stocked() did not let a dirty prisoner call out a suit stocked by an inmate")
+	var/datum/prison_staff_record/inmate_rep = prison.rep_record_for(inmate)
+	TEST_ASSERT_NOTNULL(inmate_rep, "on_hatch_stocked() did not record yard reputation for a held inmate")
+	TEST_ASSERT(!isnull(inmate_rep.stocked_at) && inmate_rep.score > 0, "on_hatch_stocked() did not apply PRISON_REP_STOCK to the inmate's record")
+	qdel(stocked_suit)
+
+	// Hurt prisoners recognize a held inmate with medical dressings as a medic, never an unbooked visitor
+	prisoner.forceMove(yard_tile)
+	prison.refresh_prisoner_reach(prisoner)
+	prisoner.adjustBruteLoss(35) // health 65/100 < 0.85 (PRISONER_INJURED_BELOW)
+	var/obj/item/stack/medical/gauze/outpost_prison/visitor_gauze = allocate(/obj/item/stack/medical/gauze/outpost_prison)
+	var/obj/item/stack/medical/gauze/outpost_prison/inmate_gauze = allocate(/obj/item/stack/medical/gauze/outpost_prison)
+	visitor.put_in_active_hand(visitor_gauze)
+	inmate.put_in_active_hand(inmate_gauze)
+	TEST_ASSERT(!prisoner.is_medic(visitor), "is_medic() accepted an unbooked visitor holding dressings")
+	TEST_ASSERT(prisoner.is_medic(inmate), "is_medic() refused a held inmate holding dressings in the cell block")
+	var/datum/prisoner_activity/sick_call/sick = new(prisoner)
+	TEST_ASSERT(sick.setup(), "sick_call/setup() did not approach a held inmate holding dressings")
+	TEST_ASSERT_EQUAL(sick.medic_ref?.resolve(), inmate, "sick_call targeted [sick.medic_ref?.resolve()] instead of the held inmate")
+	qdel(sick)
+	visitor.drop_all_held_items()
+	inmate.drop_all_held_items()
+
+	// Gallery and front-room opsglass register as window fixtures so prisoners walk up and face viewers outside
+	var/list/windows = prison.fixtures_of("window")
+	TEST_ASSERT(length(windows) >= 17, "Quartermain Depot's lockup registered [length(windows)] window fixtures, fewer than 17 opsglass tiles")
+	var/datum/prisoner_activity/window/gaze = new(prisoner)
+	TEST_ASSERT(gaze.setup(), "window/setup() failed on Quartermain Depot's lockup")
+	var/atom/gaze_window = gaze.window_ref?.resolve()
+	TEST_ASSERT(istype(gaze_window, /turf/closed/indestructible/opsglass), "window/setup() picked [gaze_window?.type] instead of lockup opsglass")
+	TEST_ASSERT_NOTNULL(gaze.spot, "window/setup() set no standing spot beside the glass")
+	prisoner.forceMove(gaze.spot)
+	TEST_ASSERT(gaze.arrive(), "window/arrive() failed at the glass spot")
+	TEST_ASSERT_EQUAL(prisoner.dir, get_dir(prisoner, gaze_window), "window/begin() left prisoner facing [prisoner.dir] instead of [get_dir(prisoner, gaze_window)]")
+	qdel(gaze)
+
+	prison.release_inmate(inmate.mind, TRUE)

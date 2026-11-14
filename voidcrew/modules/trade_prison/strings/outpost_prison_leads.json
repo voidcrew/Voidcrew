@@ -28,7 +28,7 @@
 		},
 		"lead_none": {
 			"any": [
-				"Nothing worth your time, boss.",
+				"Nothing worth flying out for, pal.",
 				"Don't know anything. Sorry.",
 				"I've got nothing for you.",
 				"Can't help you there."
@@ -72,7 +72,7 @@
 		"lead_refuse": {
 			"any": [
 				"Why would I tell you anything?",
-				"After how you've kept us? No.",
+				"In the mood I'm in? No.",
 				"Ask me when this place stops being a dump.",
 				"I'm not helping you."
 			],
@@ -81,7 +81,7 @@
 			],
 			"grumpy": [
 				"Get lost. You get nothing from me.",
-				"Treat us right first. Then maybe."
+				"Catch me on a better day. Maybe."
 			],
 			"nervous": [
 				"I don't want to talk about it. Not here.",
@@ -265,7 +265,7 @@
 		},
 		"lead_lie_caught": {
 			"any": [
-				"Worth a shot, boss.",
+				"Worth a shot, pal.",
 				"Nothing there? Huh. Must have moved.",
 				"Can't blame a guy for trying."
 			],

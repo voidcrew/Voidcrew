@@ -1762,7 +1762,7 @@
 			],
 			"chatty": [
 				"Finally, someone to talk to! Okay, so here's the thing.",
-				"Thanks for listening. Most crews just yell.",
+				"Thanks for listening. Most people in here just yell.",
 				"You're alright, you know that?",
 				"Okay, yeah. Feels good to get that off my chest."
 			],
@@ -1805,7 +1805,7 @@
 			"chatty": [
 				"Oh, now you want to talk? Now?",
 				"Nope. I've got nothing to say to you.",
-				"Should've talked before you let this place rot."
+				"Whole wing's miserable and you want a chat? Pass."
 			],
 			"grumpy": [
 				"Get lost.",
@@ -2733,11 +2733,11 @@
 		},
 		{
 			"opener": "This food is terrible.",
-			"replies": ["You gonna finish it, then?", "Beats ration paste.", "I've had worse on a salvage run.", "Tell the crew, not me."]
+			"replies": ["You gonna finish it, then?", "Beats ration paste.", "I've had worse on a salvage run.", "Tell the guards, not me."]
 		},
 		{
-			"opener": "You think the crew's any good at this?",
-			"replies": ["They feed us. That's something.", "They're new at it. You can tell.", "Better than the last lot I had.", "Ask me after lunch."]
+			"opener": "You think the guards here are any good?",
+			"replies": ["They leave us be. That's something.", "Half asleep most shifts.", "Better than the last lockup I had.", "Ask me after lunch."]
 		},
 		{
 			"opener": "Bet you can't hit a shot from the door.",
@@ -2788,8 +2788,8 @@
 			"replies": ["They got me for {crime}.", "Ha. Amateur.", "Worse. Don't ask.", "Keep your voice down about it."]
 		},
 		{
-			"opener": "Who do you think owns this outpost?",
-			"replies": ["Some crew with too many credits.", "Whoever took the prison contract.", "Doesn't matter. They feed us.", "Somebody who likes basketball, apparently."]
+			"opener": "How long do you think this lockup's been here?",
+			"replies": ["Longer than the paint.", "Old enough that the bunks squeak.", "Doesn't matter. Same gray walls.", "Built by somebody who likes basketball, apparently."]
 		},
 		{
 			"opener": "Is it me, or is the bread stale?",
@@ -2804,8 +2804,8 @@
 			"replies": ["Used to. Lost my license.", "Crashed one once. Barely walked away.", "Nah. I work the cargo bay.", "Only for a few hours. It wasn't mine."]
 		},
 		{
-			"opener": "Do you trust the crew here?",
-			"replies": ["Trust them? No. Like them? Sure.", "They haven't shot us yet.", "Enough to eat the food.", "Ask me later."]
+			"opener": "Do you trust the guards here?",
+			"replies": ["Trust them? No. Behave around them? Sure.", "They haven't stunned me yet.", "Long as I keep my head down.", "Ask me later."]
 		},
 		{
 			"opener": "My old captain would've paid my bail.",
@@ -2829,7 +2829,7 @@
 		},
 		{
 			"opener": "These jumpsuits are awful.",
-			"replies": ["Mine's two sizes too big.", "Mine smells like whoever wore it last.", "Better than my work coveralls.", "Complain to the crew. They love that."]
+			"replies": ["Mine's two sizes too big.", "Mine smells like whoever wore it last.", "Better than my work coveralls.", "Throw it in the washer, then."]
 		},
 		{
 			"opener": "{other}, you cheat at cards.",
@@ -2840,8 +2840,8 @@
 			"replies": ["A pilot who gets lost. Again.", "Mining. Very long. Very dull.", "Not sure. I keep falling asleep.", "A murder on a freighter. It's good."]
 		},
 		{
-			"opener": "Crew's late with food again.",
-			"replies": ["They're busy. Ships to fix, probably.", "Every day, same thing.", "Knock on the hatch. Loud.", "Complain and I'll eat your share."]
+			"opener": "Galley's late with food again.",
+			"replies": ["Shift change, probably.", "Every day, same thing.", "Knock on the hatch. Loud.", "Complain and I'll eat your share."]
 		},
 		{
 			"opener": "You think they'll ever fix the lights?",
@@ -2869,7 +2869,7 @@
 		},
 		{
 			"opener": "Tell me a joke.",
-			"replies": ["Your jump shot.", "The food here.", "I don't know any clean ones.", "The crew's cooking."]
+			"replies": ["Your jump shot.", "The food here.", "I don't know any clean ones.", "The galley's cooking."]
 		},
 		{
 			"opener": "Why is the soup always gray?",
@@ -2885,7 +2885,7 @@
 		},
 		{
 			"opener": "Somebody left a mess at the table.",
-			"replies": ["Wasn't me.", "Crew'll clean it. Eventually.", "Yeah, you did.", "Just eat around it."]
+			"replies": ["Wasn't me.", "Bot'll clean it. Eventually.", "Yeah, you did.", "Just eat around it."]
 		},
 		{
 			"opener": "Did you see that ship dock earlier?",
@@ -2928,8 +2928,8 @@
 			"replies": ["No engines. It's weird.", "Give it a minute.", "I like quiet.", "Quiet's the worst part."]
 		},
 		{
-			"opener": "The crew here's alright, you know.",
-			"replies": ["They're fine when they show up.", "Don't let them hear you say that.", "Better than a pirate brig.", "Sure. Until lunch is late."]
+			"opener": "The guards here aren't the worst, you know.",
+			"replies": ["Long as you don't start anything.", "Don't let them hear you say that.", "Better than a pirate brig.", "Sure. Until someone acts up."]
 		},
 		{
 			"opener": "Somebody locked me in yesterday. Real shitcurity.",

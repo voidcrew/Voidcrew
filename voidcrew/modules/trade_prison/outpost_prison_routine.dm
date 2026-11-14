@@ -188,11 +188,11 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 			return fixture
 	return pick(options)
 
-/// Whether `person` is the wing's staff, awake in the cell block, close by, holding dressings
+/// Whether `person` is staff or a held inmate, awake in the cell block, close by, holding dressings
 /mob/living/carbon/human/npc/outpost_prisoner/proc/is_medic(mob/living/person)
 	if(!istype(person) || QDELETED(person) || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 		return FALSE
-	if(get_dist(src, person) > PRISONER_SICK_CALL_RANGE || !prison?.in_cell_block(person) || !prison.is_staff(person))
+	if(get_dist(src, person) > PRISONER_SICK_CALL_RANGE || !prison?.in_cell_block(person) || (!prison.is_staff(person) && !prison.is_inmate(person)))
 		return FALSE
 	return !!person.is_holding_item_of_type(/obj/item/stack/medical)
 
@@ -745,7 +745,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 	var/datum/weakref/window_ref
 
 /datum/prisoner_activity/window/setup()
-	var/obj/structure/window/window = prisoner.find_fixture("window")
+	var/atom/window = prisoner.find_fixture("window")
 	if(!window || !claim(window))
 		return FALSE
 	window_ref = WEAKREF(window)
@@ -754,7 +754,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_leisure, outpost_prisoner_leisure_types())
 
 /datum/prisoner_activity/window/begin()
 	. = ..()
-	var/obj/structure/window/window = window_ref?.resolve()
+	var/atom/window = window_ref?.resolve()
 	if(window)
 		prisoner.face_atom(window)
 

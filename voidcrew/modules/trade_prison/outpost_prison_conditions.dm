@@ -213,6 +213,8 @@ GLOBAL_LIST_INIT(outpost_prison_furniture_types, zebra_typecacheof(list(
 	)
 	var/list/lights = list()
 	for(var/turf/tile as anything in wing_turfs())
+		if(istype(tile, /turf/closed/indestructible/opsglass) && cell_block[tile] && (on_wing_edge(tile) || leads_out_of_cell_block(tile)))
+			found["window"] += tile
 		for(var/obj/structure/thing in tile)
 			var/category = categories[thing.type]
 			if(!category || (category == "window" && !on_wing_edge(tile)))

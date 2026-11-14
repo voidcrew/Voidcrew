@@ -33,7 +33,13 @@
 // =========================================================================
 
 /datum/outpost_prison/proc/work_setup()
-	return
+	var/list/weights = GLOB.outpost_prison_mess_weights
+	for(var/turf/tile as anything in cell_block)
+		if(!isopenturf(tile))
+			continue
+		for(var/obj/effect/decal/cleanable/decal in tile)
+			if(weights[decal.type] > 0)
+				mark_wing_mess(decal)
 
 /datum/outpost_prison/proc/work_destroy()
 	for(var/key in marked_mess_refs)

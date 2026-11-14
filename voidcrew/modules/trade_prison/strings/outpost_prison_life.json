@@ -202,10 +202,10 @@
 		"release_thanks": {
 			"any": [
 				"Thanks for everything. I mean it.",
-				"You ran a decent place. Thanks.",
+				"Good sharing the yard with you. Thanks.",
 				"Thanks, {staff}. Wasn't so bad in here.",
-				"You treated us right. Thanks.",
-				"Thanks for looking after us.",
+				"You made this stretch bearable. Thanks.",
+				"Thanks for looking out for us in here.",
 				"Wasn't the worst stretch I've done. Thanks.",
 				"Cheers, {staff}. Take care."
 			],
@@ -226,7 +226,7 @@
 				"Thanks, {staff}."
 			],
 			"nervous": [
-				"Thanks for keeping it calm in here.",
+				"Thanks for keeping things steady in here.",
 				"Thank you. Really."
 			]
 		},
@@ -234,14 +234,14 @@
 			"any": [
 				"Finally. I'm out of this dump.",
 				"Worst stretch I've ever done.",
-				"Hope you're proud of this place.",
+				"Hope I never see these walls again.",
 				"Nobody should be kept like that.",
 				"I'm telling everyone what this place is like.",
 				"Don't expect a thank you.",
 				"Good riddance."
 			],
 			"grumpy": [
-				"Starved and filthy the whole time. Great job.",
+				"Starved and filthy the whole time. What a hole.",
 				"I've seen cleaner cargo holds."
 			],
 			"chatty": [
@@ -339,7 +339,7 @@
 			],
 			"chatty": [
 				"Okay, okay, best of five.",
-				"Staff shouldn't be allowed to win, {staff}. House rules."
+				"New arrivals shouldn't win that fast, {staff}. House rules."
 			],
 			"cheerful": [
 				"Good one! Next one's mine.",
@@ -691,8 +691,8 @@
 				"Yes! Thanks for playing, {staff}!"
 			],
 			"grumpy": [
-				"Told you. Staff can't play.",
-				"Game. Now go do some work."
+				"Told you. Yard rules this court.",
+				"Game. Sit down and catch your breath."
 			],
 			"quiet": [
 				"Game.",
@@ -706,11 +706,11 @@
 				"Rematch. Tomorrow.",
 				"Okay, okay, you win.",
 				"We let you win, {staff}.",
-				"That's five. Staff wins. Ugh.",
+				"That's five. You lot take it. Ugh.",
 				"Good game. Don't gloat."
 			],
 			"grumpy": [
-				"Staff always win. Rigged.",
+				"Beginners always get the bounce. Rigged.",
 				"Don't let it go to your head, {staff}."
 			],
 			"chatty": [

@@ -47,6 +47,13 @@
 		line = replacetext(line, placeholder, "")
 	return line
 
+/// A line from an extra dialogue file with both core and extra placeholders taken out
+/datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/without_extra_placeholders(line)
+	line = without_placeholders(line)
+	for(var/placeholder in GLOB.outpost_prisoner_extra_placeholders)
+		line = replacetext(line, placeholder, "")
+	return line
+
 /// Checks one line of the file: plain ASCII, at most 20 words, only known placeholders, and filled completely
 /datum/unit_test/voidcrew_outpost_prison_dialogue_contexts/proc/check_line(line, where, mob/living/carbon/human/npc/outpost_prisoner/talker, mob/living/carbon/human/npc/outpost_prisoner/listener)
 	TEST_ASSERT(istext(line) && length(line), "[where] has an empty or non-text line")
@@ -112,6 +119,47 @@
 				TEST_ASSERT(alone && !findtext(alone, "{"), "A [personality] prisoner had no usable [context] line alone ([alone])")
 				var/together = talker.pick_line(context, listener)
 				TEST_ASSERT(together && !findtext(together, "{"), "A [personality] prisoner had no usable [context] line with company ([together])")
+
+	// Extra dialogue files: plain ASCII, at most 20 words, and only known core or extra placeholders.
+	for(var/extra_file in GLOB.outpost_prisoner_extra_dialogue)
+		var/list/extra_lines = outpost_prisoner_extra_dialogue(extra_file, "lines")
+		TEST_ASSERT(length(extra_lines), "[extra_file] has no lines")
+		for(var/context in extra_lines)
+			var/list/entry = extra_lines[context]
+			for(var/pool in entry)
+				for(var/line in entry[pool])
+					TEST_ASSERT(istext(line) && length(line), "[extra_file]:[context]/[pool] has an empty line")
+					TEST_ASSERT_EQUAL(length(line), length_char(line), "[extra_file]:[context]/[pool] is not plain ASCII: [line]")
+					TEST_ASSERT(length(splittext(line, " ")) <= 20, "[extra_file]:[context]/[pool] is over 20 words: [line]")
+					var/bare = without_extra_placeholders(line)
+					TEST_ASSERT(!findtext(bare, "{") && !findtext(bare, "}"), "[extra_file]:[context]/[pool] has an unknown placeholder: [line]")
+
+	// Inmate-addressed yard contexts and prisoner conversations must not address fellow inmates as staff/boss or reference player-owned prison contracts.
+	var/list/inmate_contexts = list(
+		"greet_stranger", "greet_regular", "greet_fair", "greet_brute",
+		"wing_word_fair", "wing_word_brute", "talk_refuse_brute", "talk_refuse", "calm_talk",
+		"ask_how_locked", "ask_how_dark_cell", "ask_how_dark", "ask_how_dirty_floor", "ask_how_no_power",
+		"release_thanks", "release_bitter", "cards_lose", "game_won", "game_lost",
+		"greet_staff", "staff_enters_restless", "lead_none", "lead_refuse", "lead_lie_caught",
+	)
+	var/list/stale_warden_phrases = list(
+		"work here", "on shift", "baton", "great place you run",
+		"staff wins", "staff always win", "staff can't play", "staff shouldn't", ", boss", "most crews just yell",
+	)
+	for(var/context in inmate_contexts)
+		var/list/entry = outpost_prisoner_context_lines(context)
+		TEST_ASSERT(islist(entry), "Missing inmate-addressed dialogue context [context]")
+		for(var/pool in entry)
+			for(var/line in entry[pool])
+				var/lowered = lowertext(line)
+				for(var/phrase in stale_warden_phrases)
+					TEST_ASSERT(!findtext(lowered, phrase), "[context]/[pool] still addresses an inmate as prison staff ('[phrase]'): [line]")
+	var/list/stale_owner_phrases = list("prison contract", "owns this outpost", "ships to fix", "the crew's cooking")
+	for(var/list/conversation as anything in conversations)
+		for(var/line in list(conversation["opener"]) + conversation["replies"])
+			var/lowered = lowertext(line)
+			for(var/phrase in stale_owner_phrases)
+				TEST_ASSERT(!findtext(lowered, phrase), "Prisoner conversation still speaks of a player-owned prison ('[phrase]'): [line]")
 
 // ===== COMPLAINTS =====
 
