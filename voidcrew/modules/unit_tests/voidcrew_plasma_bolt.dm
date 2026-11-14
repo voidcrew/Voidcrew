@@ -26,8 +26,10 @@
 		TEST_ASSERT(!(initial(bolt_type.pass_flags) & (PASSGLASS|PASSGRILLE)), "[bolt_type] passes through glass or grilles")
 		TEST_ASSERT_EQUAL(initial(bolt_type.dismemberment), 0, "[bolt_type] dismembers through the brute projectile path")
 		TEST_ASSERT_EQUAL(initial(bolt_type.light_system), OVERLAY_LIGHT, "[bolt_type] does not carry an overlay light")
-	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt::damage, 32, "pistol bolt damage changed")
-	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt/heavy::damage, 45, "rifle bolt damage changed")
+	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt::damage, 22, "pistol bolt damage changed")
+	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt/heavy::damage, 30, "rifle bolt damage changed")
+	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt::armour_penetration, 10, "pistol bolt armour piercing changed")
+	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt/heavy::armour_penetration, 15, "rifle bolt armour piercing changed")
 	TEST_ASSERT(/obj/projectile/energy/plasma_bolt/heavy::wound_bonus > /obj/projectile/energy/plasma_bolt::wound_bonus, "the rifle bolt should wound more readily than the pistol bolt")
 	TEST_ASSERT(/obj/projectile/energy/plasma_bolt::wound_bonus > 0, "the pistol bolt has no wound bonus")
 	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt::demolition_mod, PLASMA_DEMOLITION_PISTOL, "pistol bolt structure damage changed")
@@ -112,6 +114,19 @@
 	TEST_ASSERT_NOTNULL(arm, "one rifle bolt melted an unhurt arm")
 	TEST_ASSERT_NOTNULL(arm?.get_wound_type(/datum/wound/burn/flesh), "a rifle bolt on a bare arm left no burn wound")
 
+/// Two rifle bolts melt a bare, unhurt arm; one never does. Two pistol bolts do the same.
+/datum/unit_test/voidcrew_plasma_bolt/bare_arm_hits
+
+/datum/unit_test/voidcrew_plasma_bolt/bare_arm_hits/Run()
+	for(var/bolt_type in list(/obj/projectile/energy/plasma_bolt/heavy, /obj/projectile/energy/plasma_bolt))
+		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
+		victim.bullet_act(make_bolt(bolt_type, turf_at(1, 1), BODY_ZONE_R_ARM), BODY_ZONE_R_ARM)
+		TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_R_ARM), "one [bolt_type] melted a bare arm")
+		victim.bullet_act(make_bolt(bolt_type, turf_at(1, 1), BODY_ZONE_R_ARM), BODY_ZONE_R_ARM)
+		TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_R_ARM), "two [bolt_type] hits left a bare arm attached")
+	for(var/obj/effect/decal/cleanable/leftover in range(4, turf_at(2, 1)))
+		qdel(leftover)
+
 /// A rifle bolt burns away an arm already at 40/50, without a blood spray, and leaves no ash (the melt leaves slag).
 /datum/unit_test/voidcrew_plasma_bolt/ash_arm
 
@@ -153,12 +168,12 @@
 	light.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, from, BODY_ZONE_R_ARM), BODY_ZONE_R_ARM)
 	TEST_ASSERT_NOTNULL(light.get_bodypart(BODY_ZONE_R_ARM), "a rifle bolt melted an arm that was barely hurt")
 
-	// Pistol: 15 before + 32 = 47, inside its margin (40). 5 before + 32 = 37 stays.
+	// Pistol: 20 before + 22 = 42, inside its margin (40). 5 before + 22 = 27 stays.
 	var/mob/living/carbon/human/consistent/hurt = allocate(/mob/living/carbon/human/consistent, turf_at(2, 1))
 	var/obj/item/bodypart/hurt_arm = hurt.get_bodypart(BODY_ZONE_L_ARM)
-	hurt_arm.receive_damage(brute = 15, wound_bonus = CANT_WOUND)
+	hurt_arm.receive_damage(brute = 20, wound_bonus = CANT_WOUND)
 	hurt.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, from, BODY_ZONE_L_ARM), BODY_ZONE_L_ARM)
-	TEST_ASSERT_NULL(hurt.get_bodypart(BODY_ZONE_L_ARM), "a pistol bolt left a hurt arm at 47/50 attached")
+	TEST_ASSERT_NULL(hurt.get_bodypart(BODY_ZONE_L_ARM), "a pistol bolt left a hurt arm at 42/50 attached")
 	var/obj/item/bodypart/hurt_leg = hurt.get_bodypart(BODY_ZONE_L_LEG)
 	hurt_leg.receive_damage(brute = 5, wound_bonus = CANT_WOUND)
 	hurt.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, from, BODY_ZONE_L_LEG), BODY_ZONE_L_LEG)

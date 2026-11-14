@@ -1,23 +1,36 @@
 // Package: P3 heat. Unit tests for voidcrew/modules/plasma_weapons/.
-// Shots are simulated with add_heat(heat_per_shot) and 0.7 s of process() between them, the pace the
-// balance sim fires at. A boil shows as lost integrity, so these pass with or without P2's take_mol.
+// Shots are simulated with add_heat(heat_per_shot) and `gap` seconds of process() between them: 0.7 s is the
+// rifle's fire delay, 1 s a steady clicking pace. A boil shows as lost integrity, so these pass with or without
+// P2's take_mol.
 
-/// Fires `shots` simulated rifle shots, cooling 0.7 s after each. Returns the shot number of the first boil, or 0.
-/proc/plasma_heat_test_burst(obj/item/gun/energy/plasma_weapon/gun, shots)
+/// Fires `shots` simulated rifle shots, cooling `gap` seconds after each. Returns the shot number of the first boil, or 0.
+/proc/plasma_heat_test_burst(obj/item/gun/energy/plasma_weapon/gun, shots, gap = 0.7)
 	for(var/shot in 1 to shots)
 		var/integrity_before = gun.get_integrity()
 		gun.add_heat(gun.heat_per_shot)
 		if(gun.get_integrity() < integrity_before)
 			return shot
-		gun.process(0.7)
+		gun.process(gap)
 	return 0
+
+/// Fires `shots` simulated rifle shots, cooling `gap` seconds after each. Returns how many boiled.
+/proc/plasma_heat_test_boils(obj/item/gun/energy/plasma_weapon/gun, shots, gap)
+	var/boils = 0
+	for(var/shot in 1 to shots)
+		var/integrity_before = gun.get_integrity()
+		gun.add_heat(gun.heat_per_shot)
+		if(gun.get_integrity() < integrity_before)
+			boils++
+		gun.process(gap)
+	return boils
 
 /// Plasma mol in `air`
 /proc/plasma_heat_test_plasma(datum/gas_mixture/air)
 	var/list/plasma = air.gases[/datum/gas/plasma]
 	return plasma ? plasma[MOLES] : 0
 
-/// A full cartridge fired flat out in room air never boils.
+/// Room air cools a Furnace about 3 heat a second. Flat out it first boils on the 9th shot; at a steady 1 s pace
+/// on the 10th, and a full 12-shot cartridge at that pace boils just once.
 /datum/unit_test/voidcrew_plasma_heat_air
 
 /datum/unit_test/voidcrew_plasma_heat_air/Run()
@@ -25,11 +38,22 @@
 	var/datum/gas_mixture/air = spot.return_air()
 	TEST_ASSERT(air.return_pressure() > 90, "The test floor has no room air ([air.return_pressure()] kPa)")
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 0, "A Furnace boiled within 12 shots in room air")
-	TEST_ASSERT(gun.barrel_heat > 0 && gun.barrel_heat < PLASMA_HEAT_BOIL, "A Furnace ended 12 shots at heat [gun.barrel_heat]")
-	TEST_ASSERT_EQUAL(gun.heat_step, 2, "A Furnace at heat [gun.barrel_heat] shows coil step [gun.heat_step]")
+	var/rate = gun.heat_cool_rate()
+	TEST_ASSERT(rate > 2.5 && rate < 3.5, "Room air cools a Furnace [rate] a second, not about 3")
+	gun.cell.charge = 0 // a boil with plasma would leave gas on the tile and change the cooling
+	// 13.5 + 11.4 per shot after the first: 93.3 after the 8th, 104.7 after the 9th
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 9, "A Furnace fired flat out in room air did not first boil on the 9th shot")
 
-/// In vacuum the rifle only cools by its base rate and boils on the 9th shot.
+	var/obj/item/gun/energy/plasma_weapon/rifle/steady = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
+	steady.cell.charge = 0
+	// 13.5 + 10.5 per shot after the first: 97.5 after the 9th, 108 after the 10th, then 73 and up to 94 by the 12th
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(steady, 12, 1), 10, "A Furnace fired every second in room air did not first boil on the 10th shot")
+	var/obj/item/gun/energy/plasma_weapon/rifle/cartridge = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
+	cartridge.cell.charge = 0
+	TEST_ASSERT_EQUAL(plasma_heat_test_boils(cartridge, 12, 1), 1, "A cartridge fired every second in room air did not boil exactly once")
+	TEST_ASSERT_EQUAL(cartridge.heat_step, 3, "A Furnace at heat [cartridge.barrel_heat] after a cartridge shows coil step [cartridge.heat_step]")
+
+/// In vacuum the rifle only cools by its base rate and boils on the 8th shot.
 /datum/unit_test/voidcrew_plasma_heat_vacuum
 	var/turf/open/spot
 	var/datum/gas_mixture/saved_air
@@ -42,12 +66,12 @@
 	TEST_ASSERT(air.return_pressure() < 1, "Emptying the test floor's air left [air.return_pressure()] kPa")
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
 	gun.cell.charge = 0 // a boil with plasma would leave hot gas on the tile and change the cooling
-	// 13.5 + 11.75 per shot after the first: 95.75 after the 8th, 107.5 after the 9th
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 9, "A Furnace in vacuum did not first boil on the 9th shot")
+	// 13.5 + 12.8 per shot after the first: 90.3 after the 7th, 103.1 after the 8th
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 8, "A Furnace in vacuum did not first boil on the 8th shot")
 	TEST_ASSERT_EQUAL(gun.get_integrity(), gun.max_integrity - PLASMA_BOIL_INTEGRITY, "One boil did not cost [PLASMA_BOIL_INTEGRITY] integrity")
 	TEST_ASSERT(gun.barrel_heat < PLASMA_HEAT_BOIL, "A boil left the Furnace at heat [gun.barrel_heat]")
 
-	// The Old Furnace runs cooler: 10 + 8.25 per shot after the first, so 10 shots stay under the boil.
+	// The Old Furnace runs cooler: 10 + 9.3 per shot after the first, so 10 shots stay under the boil.
 	air.remove_ratio(1)
 	var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
 	old.cell.charge = 0
