@@ -1101,3 +1101,30 @@
 	wait_over(user)
 	TEST_ASSERT_EQUAL(length(heard_by(user, 'sound/items/weapons/genhit1.ogg')), 1, "Four starts of one sound in the same moment weren't heard as one")
 	TEST_ASSERT_EQUAL(length(heard_by(user, 'sound/items/weapons/genhit2.ogg')), 1, "A different sound in the same moment was thinned out")
+
+/// The replay drags the user's trail behind his walk at the replay's speed, and none of it outlives the replay
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaytrail")
+	set_window(user, 6 SECONDS)
+	start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	var/length = window.trail_length
+	window.last_step_at = world.time // already walking: no first step's guessed pace
+	// A step or two a recorded frame (one frame is 0.5 s of the slow-mo): the replay sees each step, not a back and
+	// forth folded into one.
+	walk_trail(user, 16, 0.3 SECONDS)
+	var/peak = 0
+	var/until = world.time + 8 SECONDS
+	while(world.time < until && (GLOB.sandy_replays[user] || window_of(user)))
+		peak = max(peak, count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay))
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	log_test("replay/trail: [GLOB.sandy_replay_last["afterimages"]] afterimages laid, at most [peak] at once (trail [length])")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= length, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a 16-tile walk")
+	TEST_ASSERT(peak >= length / 2, "At most [peak] afterimages at once behind the replayed walk, not about [length]")
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

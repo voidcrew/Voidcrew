@@ -1377,22 +1377,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	color = "#E1FFEB"
 	alpha = 140
 
-/// One afterimage while time is dilated: green, gone in 0.4 s. It sits on the user's own tile, shifted back to
-/// where they were, so it sorts on their row and draws behind them in every facing.
-/datum/status_effect/cyberware_cascade_window/proc/stopped_afterimage(turf/old_loc)
-	var/turf/here = get_turf(owner)
-	if(!here)
-		return
-	var/obj/effect/temp_visual/decoy/fading/cascade/stopped/image = new(here, owner, 0, afterimage_alpha)
-	image.color = cyberware_time_stop_green()
-	image.filters = null
-	image.pixel_w = owner.pixel_w + (old_loc.x - here.x) * ICON_SIZE_X
-	image.pixel_z = owner.pixel_z + (old_loc.y - here.y) * ICON_SIZE_Y
-	image.layer = owner.layer - 0.01
-
-/// The afterimage left while time is dilated.
+/// The afterimage left while time is dilated: green, laid like the rest of the trail (cyberware_cascade_window/on_move()).
 /obj/effect/temp_visual/decoy/fading/cascade/stopped
-	duration = 4
 
 // =========================================================================
 // CLOCKS THAT RUN SLOW

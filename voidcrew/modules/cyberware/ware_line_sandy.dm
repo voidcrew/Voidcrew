@@ -28,6 +28,15 @@
  * behind the advanced step.
  */
 
+// The trails (ware_legend.dm has the Cascade's): afterimages on screen at once behind a bearer who keeps moving,
+// afterimages per tile walked, and the newest one's opacity.
+#define CYBERWARE_STREET_TRAIL_LENGTH 6
+#define CYBERWARE_STREET_TRAIL_PER_TILE 1
+#define CYBERWARE_STREET_AFTERIMAGE_ALPHA 140
+#define CYBERWARE_SERVICE_TRAIL_LENGTH 12
+#define CYBERWARE_SERVICE_TRAIL_PER_TILE 2
+#define CYBERWARE_SERVICE_AFTERIMAGE_ALPHA 180
+
 // =========================================================================
 // STREET MODEL (T2)
 // =========================================================================
@@ -48,8 +57,9 @@
 	window_speed = /datum/movespeed_modifier/cyberware_cascade/street
 	window_melee_mult = 0.75
 	window_colour = /datum/client_colour/cyberware_cascade/street
-	afterimage_interval = 3
-	afterimage_alpha = 120
+	trail_length = CYBERWARE_STREET_TRAIL_LENGTH
+	trail_per_tile = CYBERWARE_STREET_TRAIL_PER_TILE
+	afterimage_alpha = CYBERWARE_STREET_AFTERIMAGE_ALPHA
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "REFLEX RIG ONLINE."
 	online_balloon = "rig online"
@@ -92,8 +102,9 @@
 	window_speed = /datum/movespeed_modifier/cyberware_cascade/milspec
 	window_melee_mult = 0.6
 	window_colour = /datum/client_colour/cyberware_cascade/milspec
-	afterimage_interval = 2
-	afterimage_alpha = 160
+	trail_length = CYBERWARE_SERVICE_TRAIL_LENGTH
+	trail_per_tile = CYBERWARE_SERVICE_TRAIL_PER_TILE
+	afterimage_alpha = CYBERWARE_SERVICE_AFTERIMAGE_ALPHA
 	window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	online_message = "LATTICE ONLINE."
 	online_balloon = "lattice online"
@@ -143,3 +154,10 @@
 	pay_credits = 1800
 	demand_min = 1
 	demand_max = 2
+
+#undef CYBERWARE_STREET_TRAIL_LENGTH
+#undef CYBERWARE_STREET_TRAIL_PER_TILE
+#undef CYBERWARE_STREET_AFTERIMAGE_ALPHA
+#undef CYBERWARE_SERVICE_TRAIL_LENGTH
+#undef CYBERWARE_SERVICE_TRAIL_PER_TILE
+#undef CYBERWARE_SERVICE_AFTERIMAGE_ALPHA
