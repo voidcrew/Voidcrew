@@ -103,13 +103,15 @@
 		return FALSE
 	return TRUE
 
-/// Whether `who` is up and in the outpost's own box (concourse, lobby, closets): not carried off into a hangar or a docked ship
+/// Whether `who` is up and in the outpost's own box (concourse, lobby, closets, lockup): not carried off into a hangar or a docked ship
 /datum/outpost_recovery/proc/keeper_on_post(mob/living/who)
 	if(!keeper_alive(who))
 		return FALSE
 	var/turf/where = get_turf(who)
 	if(!where)
 		return FALSE
+	if(outpost?.prison?.contains_turf(where)) // OUTPOST PRISON seam
+		return TRUE
 	if(outpost?.police)
 		return outpost.police.dispatch_in_box(where)
 	return get_trader_outpost_for_turf(where) == outpost

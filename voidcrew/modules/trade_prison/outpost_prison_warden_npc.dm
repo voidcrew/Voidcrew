@@ -207,6 +207,7 @@
 		return existing
 	var/warden_type = warden_type_for_outpost()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/warden = new warden_type(desk_turf)
+	warden_ref = WEAKREF(warden)
 	var/datum/outpost_shop/desk_shop = outpost.get_shop(warden.shop_type)
 	desk_shop.counter_turf = desk_turf
 	desk_shop.set_keeper(warden)

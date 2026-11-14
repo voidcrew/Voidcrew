@@ -72,6 +72,7 @@
 	var/datum/outpost_recovery_post/warden_post = recovery.posts[warden.shop]
 	TEST_ASSERT_NOTNULL(warden_post, "Outpost recovery did not learn the warden's desk post")
 	TEST_ASSERT_EQUAL(warden_post.keeper_type, warden.type, "The warden's recovery post recorded [warden_post.keeper_type] instead of [warden.type]")
+	TEST_ASSERT(recovery.keeper_on_post(warden), "The lockup warden at desk_turf did not count as keeper_on_post()")
 	TEST_ASSERT(!(warden_post in recovery.vacant_posts()), "A staffed warden post appeared vacant")
 
 	// Killing a prison guard as an outsider in view of the warden/camera charges kill_staff (4+ stars)
@@ -582,6 +583,12 @@
 	var/turf/yard_tile = prison_spot(unit_test_host, 9, 9)
 	var/turf/desk_spot = prison_spot(unit_test_host, 8, 4)
 	prison.desk_turf = desk_spot
+	unit_test_host.prison = prison
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/host_warden = prison.ensure_warden()
+	TEST_ASSERT_NOTNULL(host_warden, "Fixture lockup did not spawn a warden at desk_spot")
+	TEST_ASSERT(unit_test_host.ensure_recovery().keeper_on_post(host_warden), "The lockup warden on an un-templated host with police did not count as keeper_on_post()")
+	unit_test_host.recovery?.sleep_tick()
+	prison.warden_destroy()
 	var/mob/living/carbon/human/operator = make_player(yard_tile, "lockupadminop")
 	var/mob/living/carbon/human/subject = make_player(yard_tile, "lockupadminsubj")
 
