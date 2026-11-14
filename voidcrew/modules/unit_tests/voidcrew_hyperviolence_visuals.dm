@@ -277,6 +277,7 @@
 	victim.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim is not in soft crit")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/hv_downed), "Soft crit did not bring the pleading lean")
+	victim.set_lying_angle(LYING_ANGLE_EAST)
 	var/list/rest = rest_of(victim)
 	victim.Move(spot(2, 1), EAST)
 	victim.hv_vis_plead(null)

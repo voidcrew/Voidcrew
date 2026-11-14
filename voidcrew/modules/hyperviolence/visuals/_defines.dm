@@ -202,3 +202,4 @@
 /// Side views: the attacker is drawn a hair under the victim he holds, his far arm a hair under himself.
 #define HV_VIS_KNIFE_ATTACKER_LAYER 3.99
 #define HV_VIS_KNIFE_FAR_LAYER 3.985
+#define HV_VIS_KNIFE_FAR_BLADE_LAYER 3.987

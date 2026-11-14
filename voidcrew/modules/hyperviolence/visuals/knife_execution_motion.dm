@@ -52,15 +52,6 @@
 	/// TRUE while its holder leans in for the plain version (no hold from behind).
 	var/hv_vis_pressing = FALSE
 
-// feature/stealth's knife_executions.dm (decision 45's one backstab) sets hv_knife_exec_spray itself and drops the
-// cover defines. Until this branch is merged there, the same number is worked out here; this block and the one in
-// hv_finish_knife_execution() below compile out once the defines are gone.
-#ifdef HV_KNIFE_EXECUTION_LOW_COVER
-/obj/item/knife
-	/// How far the last execution's throat blood sprays (0-2 tiles), by the worst cut it left on the head.
-	var/hv_knife_exec_spray = 0
-#endif
-
 /obj/item/knife/Destroy()
 	hv_vis_drop_exec()
 	return ..()
@@ -174,18 +165,6 @@
 				victim.update_damage_overlays()
 	if(!.)
 		return
-#ifdef HV_KNIFE_EXECUTION_LOW_COVER
-	hv_knife_exec_spray = 0
-	if(!QDELETED(victim))
-		var/worst = 0
-		var/obj/item/bodypart/head/cut_head = victim.get_bodypart(BODY_ZONE_HEAD)
-		for(var/datum/wound/slash/slash in cut_head?.wounds)
-			worst = max(worst, slash.severity)
-		if(worst >= WOUND_SEVERITY_CRITICAL)
-			hv_knife_exec_spray = 2
-		else if(worst >= WOUND_SEVERITY_MODERATE)
-			hv_knife_exec_spray = 1
-#endif
 
 	hv_vis_cut_landed = TRUE
 	hv_vis_play_knife_cut(user, victim, was_standing, pre_pixel_y, pre_base)
@@ -561,6 +540,8 @@
 	var/blade_slide = 0
 	/// The layer the blade drops to as the hand lets go, if any.
 	var/blade_release_layer
+	/// Side view with the knife in the attacker's far hand, reaching behind both bodies to the chin.
+	var/far_cut = FALSE
 	/// The throat, pixels of the victim's icon: where the blood starts.
 	var/list/throat = list(15.5, 21.5)
 	/// Filters and cover overlays on each body, to take off again.
@@ -587,6 +568,8 @@
 	// Nothing outlives the move, whatever happens to it.
 	QDEL_IN(src, HV_KNIFE_EXECUTION_WINDUP + 5 SECONDS)
 	play(windup_keys())
+	if(far_cut && blade)
+		addtimer(CALLBACK(src, PROC_REF(show_far_blade)), 3.3, TIMER_DELETE_ME)
 
 /datum/hv_knife_exec_vis/Destroy(force)
 	end_attacker(at_once = TRUE)
@@ -633,6 +616,12 @@
 /datum/hv_knife_exec_vis/proc/on_knife_gone(datum/source)
 	SIGNAL_HANDLER
 	qdel(src)
+
+/// Brings the far-hand blade in front of the victim's neck once the hand has come round under his chin.
+/datum/hv_knife_exec_vis/proc/show_far_blade()
+	if(aborting || attacker_done || cut_time >= 0 || QDELETED(blade))
+		return
+	blade.layer = HV_VIS_KNIFE_OVER_LAYER + HV_VIS_KNIFE_BLADE_OFFSET
 
 // ---- Setting up ----
 
@@ -786,16 +775,17 @@
 		else
 			// His far arm goes round the far side of the neck, out of sight behind both of them; the hand comes
 			// round under the chin and the blade lies back along the throat. His near hand takes the shoulder.
+			far_cut = TRUE
 			var/datum/hv_knife_exec_arm/knife_arm = add_arm("k", near_strip, vic_turf, HV_VIS_KNIFE_FAR_LAYER, vic_turf, HV_VIS_KNIFE_FAR_LAYER)
 			knife_arm.shoulder = list(mirror(18.5, way), 19)
 			knife_arm.hang = list(mirror(19.5, way), 12.5)
 			knife_arm.hint_x = -way * 0.3
-			add_blade(knife_file, knife_state, knife_arm, vic_turf, HV_VIS_KNIFE_OVER_LAYER + HV_VIS_KNIFE_BLADE_OFFSET)
+			add_blade(knife_file, knife_state, knife_arm, vic_turf, HV_VIS_KNIFE_FAR_BLADE_LAYER)
 			blade_hold_angle = east ? 176 : 4
 			blade_after_angle = blade_hold_angle
 			blade_after_squeeze = 0.15
 			blade_slide = 1.3
-			blade_release_layer = HV_VIS_KNIFE_FAR_LAYER + HV_VIS_KNIFE_BLADE_OFFSET
+			blade_release_layer = HV_VIS_KNIFE_FAR_BLADE_LAYER
 			knife_arm.hold = list(mirror(21.4, way), 21.4)
 			knife_arm.after = knife_arm.hold
 			add_mask(attacker, att_filters, "hv_knife_far", east ? 'voidcrew/modules/hyperviolence/overlays_exec/icons/knife_exec_mask_far_e.dmi' : 'voidcrew/modules/hyperviolence/overlays_exec/icons/knife_exec_mask_far_w.dmi')
@@ -808,7 +798,8 @@
 				free.after = free.hold
 				add_patch(attacker, att_flat, east, FALSE)
 
-		// The victim's own near arm.
+		// The victim's own near arm, or his far arm if the near hand is full.
+		var/far_zone = east ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM
 		if(victim.get_bodypart(near_zone) && !victim.get_item_for_held_index(near_zone == BODY_ZONE_L_ARM ? 1 : 2))
 			var/datum/hv_knife_exec_arm/own = add_victim_arm(hv_ke_arm_strip(vic_flat, east ? 13 : 17))
 			own.shoulder = list(mirror(14, way), 19)
@@ -816,6 +807,14 @@
 			own.hold = list(mirror(18.5, way), 19.6)
 			own.after = list(mirror(18.6, way), 21)
 			add_patch(victim, vic_flat, east, TRUE)
+		else if(victim.get_bodypart(far_zone) && !victim.get_item_for_held_index(far_zone == BODY_ZONE_L_ARM ? 1 : 2))
+			var/datum/hv_knife_exec_arm/own = add_arm("v", hv_ke_arm_strip(vic_flat, east ? 13 : 17), get_turf(victim), HV_VIS_KNIFE_FAR_LAYER, get_turf(victim), HV_VIS_KNIFE_FAR_LAYER)
+			own.on_victim = TRUE
+			own.shoulder = list(mirror(18.5, way), 19)
+			own.hang = list(mirror(19.5, way), 12.5)
+			own.hold = list(mirror(19.8, way), 19.8)
+			own.after = list(mirror(20, way), 21)
+			add_mask(victim, vic_filters, "hv_knife_far", east ? 'voidcrew/modules/hyperviolence/overlays_exec/icons/knife_exec_mask_far_e.dmi' : 'voidcrew/modules/hyperviolence/overlays_exec/icons/knife_exec_mask_far_w.dmi')
 
 	// Everything starts as it hangs.
 	var/list/rest = snapshot(0, -1)
@@ -968,7 +967,8 @@
 	snap["V"] = vic_matrix
 	var/let_go = HV_VIS_KNIFE_CUT_TIME + HV_VIS_KNIFE_CUT_HOLD
 	var/through = 0
-	var/held = hv_ke_smooth((since - HV_VIS_KNIFE_REACH_START) / HV_VIS_KNIFE_REACH_TIME)
+	var/held_in = hv_ke_smooth((since - HV_VIS_KNIFE_REACH_START) / HV_VIS_KNIFE_REACH_TIME)
+	var/held = held_in
 	if(after >= 0)
 		through = hv_ke_smooth(after / HV_VIS_KNIFE_CUT_TIME)
 		held *= 1 - hv_ke_smooth((after - let_go) / HV_VIS_KNIFE_RELEASE_TIME)
@@ -987,23 +987,60 @@
 			var/list/own_fist = hv_ke_body_point(vic_origin, vic_matrix, hv_ke_mix(arm.hang, goal, up))
 			place_arm(arm, snap, hv_ke_body_point(vic_origin, vic_matrix, arm.shoulder), own_fist, null)
 			continue
+		var/arm_held = (far_cut && id == "k" && after >= 0) ? held_in * (1 - hv_ke_smooth((after - let_go) / (HV_VIS_KNIFE_RELEASE_TIME * 0.5))) : held
+		var/swing = 4 * arm_held * (1 - arm_held)
 		var/list/shoulder = hv_ke_body_point(att_origin, att_matrix, arm.shoulder)
 		var/list/hang = hv_ke_body_point(att_origin, att_matrix, arm.hang)
 		var/list/target = hv_ke_body_point(vic_origin, vic_matrix, hv_ke_mix(arm.hold, arm.after, through))
+		var/list/goal_fist = hv_ke_mix(hang, target, arm_held)
+		if(facing == SOUTH)
+			if(id == "k")
+				goal_fist[1] += arm.hint_x * 4 * swing
+				goal_fist[2] += 5 * swing
+			else
+				goal_fist[1] += arm.hint_x * 2.5 * swing
+				goal_fist[2] += 3.5 * swing
+		else if(!far_cut && id == "k" && after >= let_go && facing != NORTH)
+			goal_fist[2] -= 2.2 * swing
 		var/list/wrist
 		if(arm.wrist_hold)
 			var/list/wrist_target = hv_ke_body_point(vic_origin, vic_matrix, hv_ke_mix(arm.wrist_hold, arm.wrist_after, through))
-			wrist = hv_ke_mix(list(hang[1], hang[2] + 0.5), wrist_target, held)
-		var/list/fist = place_arm(arm, snap, shoulder, hv_ke_mix(hang, target, held), wrist)
+			wrist = hv_ke_mix(list(hang[1], hang[2] + 0.5), wrist_target, arm_held)
+		var/list/fist = place_arm(arm, snap, shoulder, goal_fist, wrist)
 		if(id == "k" && blade)
 			// As he holds it at his side, turning with his hand to lie on the throat.
 			var/from_angle = blade.native_angle - att_pose[3]
 			var/to_angle = blade_hold_angle + (blade_after_angle - blade_hold_angle) * through - vic_pose[3]
-			var/angle = from_angle + hv_ke_turn(from_angle, to_angle) * held
-			var/squeeze = 1 + (blade_hold_squeeze + (blade_after_squeeze - blade_hold_squeeze) * through - 1) * held
+			var/angle
+			var/squeeze
+			if(far_cut)
+				if(after < 0)
+					if(arm_held <= 0.45)
+						angle = from_angle
+						squeeze = 1 - 0.85 * hv_ke_smooth(arm_held / 0.35)
+					else
+						angle = to_angle
+						squeeze = 0.15 + (blade_hold_squeeze - 0.15) * hv_ke_smooth((arm_held - 0.65) / 0.35)
+				else if(after < let_go)
+					angle = to_angle
+					squeeze = blade_hold_squeeze + (blade_after_squeeze - blade_hold_squeeze) * through
+				else if(arm_held > 0.45)
+					angle = to_angle
+					squeeze = blade_after_squeeze
+				else
+					angle = from_angle
+					squeeze = 1 - (1 - blade_after_squeeze) * hv_ke_smooth(arm_held / 0.35)
+			else
+				var/turn_t = arm_held
+				if(facing == SOUTH)
+					turn_t = hv_ke_smooth((arm_held - 0.55) / 0.45)
+				else if(facing != NORTH && after >= let_go)
+					turn_t = hv_ke_smooth((arm_held - 0.4) / 0.6)
+				angle = from_angle + hv_ke_turn(from_angle, to_angle) * turn_t
+				squeeze = 1 + (blade_hold_squeeze + (blade_after_squeeze - blade_hold_squeeze) * through - 1) * arm_held
 			var/list/held_at = fist
 			if(blade_slide)
-				held_at = list(fist[1] - blade_slide * held * cos(angle), fist[2] - blade_slide * held * sin(angle))
+				held_at = list(fist[1] - blade_slide * arm_held * cos(angle), fist[2] - blade_slide * arm_held * sin(angle))
 			snap["blade"] = blade.hold(held_at, angle - blade.native_angle, squeeze)
 	return snap
 
@@ -1140,8 +1177,8 @@
 		victim_done = TRUE
 
 	var/list/attacker_moments = list(0, 0.5, 1, 1.5, 2, 2.5, let_go)
-	for(var/i in 1 to 6)
-		attacker_moments += let_go + i * HV_VIS_KNIFE_RELEASE_TIME / 6
+	for(var/i in 1 to 8)
+		attacker_moments += let_go + i * HV_VIS_KNIFE_RELEASE_TIME / 8
 	play(keys_at(attacker_moments, TRUE), TRUE, FALSE)
 	addtimer(CALLBACK(src, PROC_REF(end_attacker)), let_go + HV_VIS_KNIFE_RELEASE_TIME, TIMER_DELETE_ME)
 	if(blade && !isnull(blade_release_layer))
@@ -1174,7 +1211,16 @@
 	else if(victim.dir != facing || get_turf(victim) != vic_turf)
 		// His own stand-in arm was drawn for the way he faced, where he stood.
 		end_victim_arm()
-	var/list/keys = list(list(0, since, -1), list(HV_VIS_KNIFE_ABORT_TIME, 0, -1))
+	if(!isnull(blade_release_layer) && blade)
+		blade.layer = blade_release_layer
+	var/step_time = HV_VIS_KNIFE_ABORT_TIME / 4
+	var/list/keys = list(
+		list(0, since, -1),
+		list(step_time, since * 0.7, -1),
+		list(step_time, since * 0.4, -1),
+		list(step_time, since * 0.15, -1),
+		list(step_time, 0, -1),
+	)
 	play(keys)
 	QDEL_IN(src, HV_VIS_KNIFE_ABORT_TIME)
 
@@ -1238,25 +1284,36 @@
 /obj/effect/temp_visual/hv_throat_spurt
 	name = "arterial spray"
 	icon = HV_BLOOD_SPRAY_ICON
-	icon_state = "squirt_greyscale"
+	icon_state = "splatter_greyscale"
 	plane = GAME_PLANE
-	layer = ABOVE_MOB_LAYER
+	layer = HV_VIS_KNIFE_VICTIM_ARM_LAYER + 0.01
+	appearance_flags = PIXEL_SCALE
 	randomdir = FALSE
 	duration = 4
 
 /obj/effect/temp_visual/hv_throat_spurt/Initialize(mapload, throat_w = 0, throat_z = 0, spray_dir = SOUTH, blood_color = BLOOD_COLOR_RED, strength = 2)
 	. = ..()
 	setDir(spray_dir || SOUTH)
+	if(dir == NORTH)
+		layer = HV_VIS_KNIFE_UNDER_LAYER
 	color = blood_color
 	var/dx = HV_VIS_DX(dir)
 	var/dy = HV_VIS_DY(dir)
-	var/start_reach = 2
-	var/end_reach = (dir & SOUTH) ? (2 + strength) : (3 + strength)
+	var/start_reach = 9
+	var/mid_reach = strength >= 2 ? 22 : 18
+	var/end_reach = strength >= 2 ? 30 : 24
+	var/start_scale = strength >= 2 ? 0.40 : 0.32
+	var/mid_scale = strength >= 2 ? 0.66 : 0.50
+	var/end_scale = strength >= 2 ? 0.74 : 0.56
 	var/matrix/start = matrix()
-	start.Scale(0.14, 0.14)
+	start.Scale(start_scale, start_scale)
 	start.Translate(throat_w + dx * start_reach, throat_z + dy * start_reach)
 	transform = start
+	var/matrix/mid_mat = matrix()
+	mid_mat.Scale(mid_scale, mid_scale)
+	mid_mat.Translate(throat_w + dx * mid_reach, throat_z + dy * mid_reach)
 	var/matrix/end_mat = matrix()
-	end_mat.Scale(0.18 + strength * 0.03, 0.18 + strength * 0.03)
+	end_mat.Scale(end_scale, end_scale)
 	end_mat.Translate(throat_w + dx * end_reach, throat_z + dy * end_reach)
-	animate(src, transform = end_mat, alpha = 0, time = duration, easing = QUAD_EASING|EASE_OUT)
+	animate(src, transform = mid_mat, time = 2.2, easing = QUAD_EASING|EASE_OUT)
+	animate(transform = end_mat, alpha = 0, time = 1.8, easing = LINEAR_EASING)

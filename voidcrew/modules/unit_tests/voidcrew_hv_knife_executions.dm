@@ -102,7 +102,18 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/neck_slice), "Stepping away did not break the wind-up")
 
-/// A helmet, and dermal plating under the skin, weaken the result.
+/// How many of the `tiles` floor turfs ahead of `victim` in `dir` have blood on them.
+/proc/hv_knife_exec_floor_blood_ahead(mob/living/victim, dir = EAST, tiles = 3)
+	. = 0
+	var/turf/step_turf = get_turf(victim)
+	for(var/i in 1 to tiles)
+		step_turf = get_step(step_turf, dir)
+		if(!step_turf)
+			break
+		if(locate(/obj/effect/decal/cleanable/blood) in step_turf)
+			.++
+
+/// A helmet, and dermal plating under the skin, weaken the wound and the floor blood it throws.
 /datum/unit_test/hv_knife_execution_armour
 
 /datum/unit_test/hv_knife_execution_armour/Run()
@@ -112,17 +123,28 @@
 	bare.setDir(EAST)
 	TEST_ASSERT(knife.hv_finish_knife_execution(attacker, bare, list(), list()), "The bare execution did not land")
 	var/bare_brute = bare.get_bodypart(BODY_ZONE_HEAD).brute_dam
+	var/bare_spray = knife.hv_knife_exec_spray
 
+	var/turf/top_left = locate(run_loc_floor_bottom_left.x, run_loc_floor_top_right.y, run_loc_floor_bottom_left.z)
 	var/mob/living/carbon/human/consistent/helmeted = allocate(/mob/living/carbon/human/consistent)
 	helmeted.equip_to_slot_or_del(allocate(/obj/item/clothing/head/helmet/sec), ITEM_SLOT_HEAD)
-	bare.forceMove(run_loc_floor_top_right)
+	attacker.forceMove(top_left)
+	attacker.setDir(EAST)
 	helmeted.forceMove(get_step(attacker, EAST))
 	helmeted.setDir(EAST)
 	TEST_ASSERT(knife.hv_finish_knife_execution(attacker, helmeted, list(), list()), "The helmeted execution did not land")
 	var/helmet_brute = helmeted.get_bodypart(BODY_ZONE_HEAD).brute_dam
+	var/helmet_spray = knife.hv_knife_exec_spray
 	TEST_ASSERT(helmet_brute < bare_brute, "A helmet did not weaken the stab ([helmet_brute] vs [bare_brute])")
 	TEST_ASSERT(!helmeted.has_status_effect(/datum/status_effect/neck_slice), "A helmet did not keep the neck from being sliced")
-	TEST_ASSERT_NULL(hv_knife_exec_test_slash(helmeted, WOUND_SEVERITY_CRITICAL), "A helmet did not soften the throat slash")
+	TEST_ASSERT_NULL(hv_knife_exec_test_slash(helmeted, WOUND_SEVERITY_SEVERE), "A security helmet did not downgrade the throat slash below severe")
+	TEST_ASSERT_NOTNULL(hv_knife_exec_test_slash(helmeted, WOUND_SEVERITY_MODERATE), "A light security helmet stopped the slash completely")
+	TEST_ASSERT(helmet_spray < bare_spray, "A helmet did not shorten the execution blood spray ([helmet_spray] vs [bare_spray])")
+
+	sleep(0.5 SECONDS)
+	var/bare_blood_tiles = hv_knife_exec_floor_blood_ahead(bare, EAST, 3)
+	var/helmet_blood_tiles = hv_knife_exec_floor_blood_ahead(helmeted, EAST, 3)
+	TEST_ASSERT(helmet_blood_tiles < bare_blood_tiles, "A helmet did not visibly reduce floor blood tiles ahead ([helmet_blood_tiles] vs [bare_blood_tiles])")
 
 	var/mob/living/carbon/human/consistent/plated = allocate(/mob/living/carbon/human/consistent)
 	plated.physiology.armor = plated.physiology.armor.generate_new_with_modifiers(list(MELEE = 30))
@@ -133,6 +155,17 @@
 	var/plated_brute = plated.get_bodypart(BODY_ZONE_HEAD).brute_dam
 	TEST_ASSERT(plated_brute < bare_brute, "Plating under the skin did not weaken the stab ([plated_brute] vs [bare_brute])")
 	TEST_ASSERT(!plated.has_status_effect(/datum/status_effect/neck_slice), "Plating under the skin did not keep the neck from being sliced")
+	TEST_ASSERT_NULL(hv_knife_exec_test_slash(plated, WOUND_SEVERITY_CRITICAL), "Plating under the skin did not soften the throat slash")
+	TEST_ASSERT_NOTNULL(hv_knife_exec_test_slash(plated, WOUND_SEVERITY_SEVERE), "Light melee plating stopped a severe slash")
+
+	var/mob/living/carbon/human/consistent/heavily_armoured = allocate(/mob/living/carbon/human/consistent)
+	heavily_armoured.physiology.armor = heavily_armoured.physiology.armor.generate_new_with_modifiers(list(MELEE = 70, WOUND = 20))
+	plated.forceMove(run_loc_floor_top_right)
+	heavily_armoured.forceMove(get_step(attacker, EAST))
+	heavily_armoured.setDir(EAST)
+	TEST_ASSERT(knife.hv_finish_knife_execution(attacker, heavily_armoured, list(), list()), "The heavily armoured execution did not land")
+	TEST_ASSERT_NULL(hv_knife_exec_test_slash(heavily_armoured, WOUND_SEVERITY_MODERATE), "Heavy melee and wound armour did not stop the slash wound")
+	TEST_ASSERT_EQUAL(knife.hv_knife_exec_spray, 0, "A stopped cut still threw a throat blood spray")
 
 /// Human NPCs below boss rank never execute; bosses and players do.
 /datum/unit_test/hv_knife_execution_npc_rank
@@ -201,3 +234,31 @@
 	TEST_ASSERT_NULL(knife.hv_vis_exec, "The execution's pictures never ended")
 	TEST_ASSERT_EQUAL(hv_knife_exec_test_pieces(), 0, "The execution left stand-in arm pieces behind")
 	TEST_ASSERT_EQUAL(length(victim.filters), victim_filters, "The victim kept a mask")
+
+	// Far-hand side view with the victim's near hand full: blade starts behind the attacker, rises at the chin, and
+	// the victim's far arm still comes up.
+	var/mob/living/carbon/human/consistent/west_victim = allocate(/mob/living/carbon/human/consistent)
+	west_victim.forceMove(get_step(attacker, WEST))
+	west_victim.setDir(WEST)
+	attacker.setDir(WEST)
+	attacker.dropItemToGround(knife, force = TRUE)
+	attacker.swap_hand(2)
+	attacker.put_in_active_hand(knife, forced = TRUE)
+	var/obj/item/universal_scanner/held_tool = allocate(/obj/item/universal_scanner)
+	west_victim.put_in_l_hand(held_tool)
+	var/west_vic_filters = length(west_victim.filters)
+	sleep(1.1 SECONDS) // clear the 1 s visual cooldown
+	knife.melee_attack_chain(attacker, west_victim, list())
+	sleep(0.1 SECONDS)
+	var/datum/hv_knife_exec_vis/west_vis = knife.hv_vis_exec
+	TEST_ASSERT_NOTNULL(west_vis, "The west far-hand hold drew nothing")
+	TEST_ASSERT(west_vis.far_cut, "West right-hand hold was not marked far_cut")
+	TEST_ASSERT(west_vis.blade.layer < attacker.layer, "Far-hand blade started over the attacker ([west_vis.blade.layer] vs [attacker.layer])")
+	TEST_ASSERT(west_vis.blade_release_layer < attacker.layer, "Far-hand blade release layer is over the attacker")
+	TEST_ASSERT_NOTNULL(west_vis.arms["v"], "Victim's far arm did not come up when his near hand held a tool")
+	sleep(0.35 SECONDS)
+	TEST_ASSERT(west_vis.blade.layer > MOB_LAYER, "Far-hand blade did not come in front of the neck at the chin")
+	west_victim.setDir(EAST)
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(hv_knife_exec_test_pieces(), 0, "Broken west hold left stand-in pieces behind")
+	TEST_ASSERT_EQUAL(length(west_victim.filters), west_vic_filters, "Broken west hold left a mask on the victim")
