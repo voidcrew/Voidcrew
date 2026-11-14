@@ -138,7 +138,8 @@
 	TEST_ASSERT(gun.load_cartridge(spare, null), "The spare cartridge wouldn't go in")
 	TEST_ASSERT(gun.can_shoot(), "A changed cartridge didn't load the Cinder")
 
-/// A hot Furnace in air: it holds fire and backs off until the coils cool, and never vents. In vacuum it vents.
+/// A white-hot Furnace: it vents with the vent key and never times it, so it always gets the vent left to run out.
+/// Overheated, it backs off until the lockout ends. Nothing it does can leave it stuck.
 /datum/unit_test/voidcrew_plasma_pirates/heat
 
 /datum/unit_test/voidcrew_plasma_pirates/heat/Run()
@@ -149,34 +150,54 @@
 	var/datum/ai_controller/controller = gunner.ai_controller
 	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, mark)
 	var/datum/ai_planning_subtree/arm = GLOB.ai_subtrees[/datum/ai_planning_subtree/human_npc_arm/pirate_crew]
-	TEST_ASSERT(!pirate_plasma_safe_to_vent(get_turf(gunner)), "Plasma vented in a room's air would be safe")
-	var/mol = gun.chamber_mol()
-	gun.barrel_heat = 85
-	controller.planned_behaviors = list()
-	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A gunner with a hot Furnace kept firing")
-	TEST_ASSERT(controller.blackboard["pirate_plasma_cooling"], "A gunner with a hot Furnace isn't waiting for it to cool")
-	TEST_ASSERT(!controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_vent)], "A gunner vented its Furnace indoors")
-	TEST_ASSERT_EQUAL(gun.chamber_mol(), mol, "Plasma left the Furnace indoors")
-	gun.barrel_heat = 60
-	controller.planned_behaviors = list()
-	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A gunner went back to firing before its Furnace cooled")
-	gun.barrel_heat = 35
+
+	// Warm but not white-hot: it keeps fighting
+	gun.barrel_heat = PLASMA_HEAT_STEP_2
+	gun.heat_updated_at = world.time
 	controller.planned_behaviors = list()
 	arm.SelectBehaviors(controller, 1)
-	TEST_ASSERT(!controller.blackboard["pirate_plasma_cooling"], "A gunner kept waiting on a cool Furnace")
+	TEST_ASSERT(!controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_vent)], "A gunner vented a Furnace that wasn't white-hot")
 
-	// Where there is next to no air it vents by hand
-	var/turf/airless = spot(1, 3)
-	changed_turfs |= airless
-	airless.ChangeTurf(/turf/open/floor/iron/airless)
-	gunner.forceMove(airless)
-	TEST_ASSERT(pirate_plasma_safe_to_vent(airless), "Plasma vented on an airless floor would catch")
-	gun.barrel_heat = 70
-	gun.next_vent_at = 0
+	// White-hot: it vents, and the vent is the player's own
+	var/mol = gun.chamber_mol()
+	gun.barrel_heat = PLASMA_HEAT_STEP_3 + 5
+	gun.heat_updated_at = world.time
 	controller.planned_behaviors = list()
-	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A gunner with a warm Furnace in vacuum did nothing")
-	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_vent)], "A gunner in vacuum didn't vent its warm Furnace")
+	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A gunner with a white-hot Furnace kept firing")
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_vent)], "A gunner didn't vent its white-hot Furnace")
 	var/datum/ai_behavior/pirate_plasma_vent/vent = GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_vent)
 	vent.perform(1, controller)
-	TEST_ASSERT(gun.barrel_heat < 70, "Venting didn't cool the Furnace")
-	TEST_ASSERT(gun.chamber_mol() < mol, "Venting released no plasma")
+	TEST_ASSERT(gun.vent_started_at, "The vent behaviour didn't start a vent")
+	TEST_ASSERT(!gun.can_shoot(), "A venting Furnace can fire")
+	// It holds while the vent runs and never taps it
+	controller.planned_behaviors = list()
+	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A venting gunner tried to fire")
+	TEST_ASSERT(!controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/pirate_plasma_vent)], "A venting gunner pressed the vent key again")
+	// The sweep runs out on its own deadline even if its timer is lost
+	gun.vent_started_at = world.time - PLASMA_VENT_SWEEP
+	gun.heat_updated_at = world.time
+	controller.planned_behaviors = list()
+	arm.SelectBehaviors(controller, 1)
+	TEST_ASSERT(!gun.vent_started_at, "A gunner's vent outlived its sweep")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_STEP_3 + 5 - PLASMA_VENT_COOL, "A gunner's vent left heat [gun.barrel_heat], not a vent left to run out")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), mol, "A gunner's vent spat plasma")
+	TEST_ASSERT(!gun.gold_until, "A gunner got a gold vent")
+	gun.vent_lock_until = world.time
+	TEST_ASSERT(gun.can_shoot(), "A gunner's Furnace stayed locked after its vent")
+
+	// Overheated: it backs off from a close target and can't fire until the lockout ends
+	gun.barrel_heat = PLASMA_HEAT_MAX - 1
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT(gun.is_shut_down(), "Test fixture: the Furnace didn't overheat")
+	controller.planned_behaviors = list()
+	TEST_ASSERT_EQUAL(arm.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "An overheated gunner kept firing")
+	TEST_ASSERT(controller.blackboard["pirate_plasma_cooling"], "An overheated gunner isn't waiting out the lockout")
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/step_away)], "An overheated gunner didn't back off from a close target")
+	TEST_ASSERT(!gun.can_shoot(), "An overheated Furnace can fire")
+	// The lockout ends on its own deadline
+	gun.shutdown_until = world.time
+	controller.planned_behaviors = list()
+	arm.SelectBehaviors(controller, 1)
+	TEST_ASSERT(!controller.blackboard["pirate_plasma_cooling"], "A gunner kept waiting after the lockout ended")
+	TEST_ASSERT(gun.can_shoot(), "A gunner's Furnace stayed locked past its 10 s")

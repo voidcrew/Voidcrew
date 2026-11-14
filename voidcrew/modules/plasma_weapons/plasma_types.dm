@@ -64,10 +64,24 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	var/heat_per_shot = 0
 	/// Whether this gun runs the heat model (the rifles do, the pistol doesn't)
 	var/uses_heat = FALSE
-	/// world.time of the next allowed manual vent
-	var/next_vent_at = 0
-	/// world.time until which a vent blocks firing
+	/// world.time cooling was last applied up to
+	var/heat_updated_at = 0
+	/// world.time until which a finished vent still blocks firing
 	var/vent_lock_until = 0
+	/// world.time the running vent's sweep started, or 0 with no vent running
+	var/vent_started_at = 0
+	/// Who is venting, while a vent runs
+	var/mob/living/vent_user
+	/// The running vent's sweep-end timer
+	var/vent_timer
+	/// The vent bar and its marker, shown to vent_client
+	var/atom/movable/screen/plasma_vent_bar/vent_bar
+	var/atom/movable/screen/plasma_vent_marker/vent_marker
+	var/client/vent_client
+	/// world.time until which an overheated gun is shut down
+	var/shutdown_until = 0
+	/// world.time until which shots add half heat after a gold vent
+	var/gold_until = 0
 	/// Coil overlay step shown, 0 to 3
 	var/heat_step = 0
 	/// Sound distant listeners hear when this fires

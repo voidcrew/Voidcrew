@@ -46,13 +46,13 @@
 // ===== Heat and venting (Furnace and Old Furnace) =====
 
 /// Heat a Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT 13.5
+#define PLASMA_HEAT_PER_SHOT 20
 /// Heat an Old Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT_UNIQUE 10
-/// After a shot at this heat or more, the gun boils
-#define PLASMA_HEAT_BOIL 100
-/// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before the boil, and the
-/// coil ticks as it reaches it (PLASMA_SOUND_FURNACE_WARN).
+#define PLASMA_HEAT_PER_SHOT_UNIQUE 18
+/// A shot that brings the barrel to this heat or more overheats the gun
+#define PLASMA_HEAT_MAX 100
+/// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before an overheat, and the
+/// coil ticks as it reaches it (PLASMA_SOUND_FURNACE_WARN). A vent can only start from step 1.
 #define PLASMA_HEAT_STEP_1 30
 #define PLASMA_HEAT_STEP_2 55
 #define PLASMA_HEAT_STEP_3 80
@@ -60,34 +60,50 @@
 #define PLASMA_HEAT_GAIN_MAX 10
 #define PLASMA_HEAT_GAIN_SPAN 50
 
-/// Mol a boil takes from the chamber and releases on the holder's turf
-#define PLASMA_BOIL_MOL 5
-/// Heat a boil removes. A cartridge fired at a steady 1 s pace in room air boils once.
-#define PLASMA_BOIL_COOL 35
-/// Integrity a boil costs the gun
-#define PLASMA_BOIL_INTEGRITY 10
+/// An overheated gun can't fire or vent for this long
+#define PLASMA_OVERHEAT_SHUTDOWN (10 SECONDS)
+/// Heat an overheated gun comes back at, below the first coil step
+#define PLASMA_OVERHEAT_END_HEAT 20
 
-/// Mol a manual vent releases
+/// The vent bar's marker takes this long to cross the bar
+#define PLASMA_VENT_SWEEP (1.5 SECONDS)
+/// The bar's units, left to right: fail, grace, gold, grace, fail. ----yyyyxxxyyyy----
+#define PLASMA_VENT_UNITS 19
+/// Units from the left where each zone ends
+#define PLASMA_VENT_FAIL_END 4
+#define PLASMA_VENT_GRACE_END 8
+#define PLASMA_VENT_GOLD_END 11
+#define PLASMA_VENT_GRACE2_END 15
+/// Vent results
+#define PLASMA_VENT_RESULT_FAIL "fail"
+#define PLASMA_VENT_RESULT_GRACE "grace"
+#define PLASMA_VENT_RESULT_GOLD "gold"
+#define PLASMA_VENT_RESULT_NONE "none"
+/// Heat a grace, missed or failed vent removes
+#define PLASMA_VENT_COOL 60
+/// After a gold vent, shots add half heat for this long
+#define PLASMA_VENT_GOLD_WINDOW (4 SECONDS)
+/// Heat a shot adds during the gold window, as a fraction
+#define PLASMA_VENT_GOLD_HEAT_MULT 0.5
+/// A vent left to run out keeps venting this long after the sweep, and the gun can't fire
+#define PLASMA_VENT_NONE_LOCK (1 SECONDS)
+/// A failed vent blocks firing this long
+#define PLASMA_VENT_FAIL_LOCK (1.5 SECONDS)
+/// Mol a failed vent releases
 #define PLASMA_VENT_MOL 5
-/// Heat a manual vent removes
-#define PLASMA_VENT_COOL 50
-/// Time between manual vents
-#define PLASMA_VENT_COOLDOWN (4 SECONDS)
-/// A vent blocks firing for this long
-#define PLASMA_VENT_LOCK (1 SECONDS)
 /// Vented gas leaves at T20C + heat * this, in kelvin
 #define PLASMA_VENT_TEMP_PER_HEAT 4
-/// Vented or boiled gas never leaves hotter than this, so it can't light itself and the shooter
+/// Vented gas never leaves hotter than this, so it can't light itself and the shooter
 #define PLASMA_VENT_TEMP_MAX (PLASMA_MINIMUM_BURN_TEMPERATURE - 10)
 
-// Cooling, with PLASMA_HEAT_PER_SHOT 13.5 and PLASMA_HEAT_BOIL 100. Room air (101 kPa, 293 K) cools 3 a second,
-// vacuum 1. First boil, by shot: room air 9th at 0.7 s between shots, 10th at 1 s; vacuum 8th at either.
-// After that first boil a full 12-shot cartridge boils once more at 0.7 s in room air, never at 1 s,
-// and once more at either pace in vacuum.
+// Cooling, with PLASMA_HEAT_PER_SHOT 20 and PLASMA_HEAT_MAX 100. Room air (101 kPa, 293 K) cools 11.5 a second,
+// vacuum 6. Furnace overheats on shot: room air 8th at 0.7 s between shots, 11th at 1 s, never in a 12-shot
+// cartridge at 1.2 s (88 after the 12th); vacuum 7th at 0.7 s, 7th at 1 s, 8th at 1.2 s.
+// Old Furnace (18 a shot): room air 10th at 0.7 s, never at 1 s or 1.2 s; vacuum 7th, 8th and 9th.
 /// Heat lost per second, always
-#define PLASMA_COOL_BASE 1
+#define PLASMA_COOL_BASE 6
 /// Heat lost per second to the turf air, times the pressure and temperature factors below
-#define PLASMA_COOL_CONVECT 2
+#define PLASMA_COOL_CONVECT 5.5
 /// Pressure factor: min(kPa / PLASMA_COOL_PRESSURE_REF, PLASMA_COOL_PRESSURE_CAP)
 #define PLASMA_COOL_PRESSURE_REF 101.3
 #define PLASMA_COOL_PRESSURE_CAP 1.5
@@ -95,6 +111,9 @@
 #define PLASMA_COOL_HOT_TEMP 573
 #define PLASMA_COOL_TEMP_SPAN 280
 #define PLASMA_COOL_TEMP_CAP 1.6
+
+/// Keybinding signal: vent the held Furnace, or time the vent already running
+#define COMSIG_KB_LIVING_PLASMA_VENT_DOWN "keybinding_living_plasma_vent_down"
 
 // ===== Effects =====
 
@@ -122,11 +141,19 @@
 #define PLASMA_SOUND_IMPACT_GLASS 'sound/effects/glass/glasshit.ogg'
 /// A held shield stopping a bolt. null plays the shield's own block sound.
 #define PLASMA_SOUND_SHIELD_BLOCK null
-/// The Furnace venting its heat
-#define PLASMA_SOUND_FURNACE_VENT 'sound/machines/hiss.ogg'
-/// The Furnace boiling its chamber over
-#define PLASMA_SOUND_FURNACE_BOIL 'sound/effects/gas_hissing.ogg'
-/// The Furnace's coil reaching its last glow step before the boil
+/// The Furnace starting a vent
+#define PLASMA_SOUND_VENT_START 'sound/machines/click.ogg'
+/// A vent timed right on the gold
+#define PLASMA_SOUND_VENT_GOLD 'sound/machines/steam_hiss.ogg'
+/// A vent timed in the grace, or left to run out
+#define PLASMA_SOUND_VENT_GRACE 'sound/machines/hiss.ogg'
+/// A fumbled vent spitting plasma
+#define PLASMA_SOUND_VENT_FAIL 'sound/effects/gas_hissing.ogg'
+/// The Furnace's coils locking up from an overheat
+#define PLASMA_SOUND_FURNACE_OVERHEAT 'sound/effects/gas_hissing.ogg'
+/// The Furnace coming back after an overheat
+#define PLASMA_SOUND_FURNACE_RECOVER 'sound/machines/click.ogg'
+/// The Furnace's coil reaching its last glow step before an overheat
 #define PLASMA_SOUND_FURNACE_WARN 'sound/effects/clock_tick.ogg'
 /// A limb with no flesh (robotic, bone, stone) melting off
 #define PLASMA_SOUND_METAL_MELT 'sound/items/tools/welder2.ogg'

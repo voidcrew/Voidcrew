@@ -93,13 +93,21 @@ Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle
 
 ## Heat and venting (Furnace only)
 
-The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next few shots will overheat it. They cool by themselves, slowly: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
+The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next shot or two will overheat it. They cool by themselves between shots: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
 
-- A full cartridge fired at a steady pace in ship air overheats a Furnace about once. Fired as fast as it goes, or in vacuum, it overheats sooner and more often.
-- An overheated rifle **hisses and spits gas**: it dumps some plasma onto your tile and the gun takes damage. A rifle that keeps overheating eventually breaks.
-- **Vent:** use the rifle in your hand to dump some plasma and cool it quickly. You can't fire for a moment afterwards, and you have to wait a few seconds between vents. A rifle whose coils aren't glowing yet, or with no plasma left, has nothing to vent.
+- Fire a full cartridge at a steady, unhurried pace in ship air and the Furnace never overheats. Fire as fast as it goes, or in vacuum, and it will.
+- An overheated rifle **locks up**: its coils stay white-hot and it won't fire or vent for ten seconds. It clicks when it's ready again.
+
+**Venting:** with a glowing Furnace in your hand, press **V** (Vent held gun, in your keybindings). A bar appears above your hands and a marker sweeps across it. Press **V** again as the marker passes the middle:
+
+- On the bright gold centre, the coils go cold at once, and the next few shots heat them less.
+- On the amber either side of it, the rifle vents most of its heat.
+- Don't press at all and it vents most of its heat when the marker reaches the end, and takes a moment longer before it fires.
+- On the dark ends, the vent fumbles: the rifle spits plasma onto your tile and you can't fire for a moment.
+
+You can't fire while the bar is up. Dropping the rifle or swapping hands stops the vent.
 
 !!! warning "Vented gas is fuel"
-    Vented and spat plasma doesn't light itself, but a spark, a flame or another plasma bolt can set it off in breathable air. Vent in vacuum when you can.
+    Spat plasma doesn't light itself, but a spark, a flame or another plasma bolt can set it off in breathable air.
 
 The Cinder does not heat up.

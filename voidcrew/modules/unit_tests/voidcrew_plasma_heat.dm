@@ -1,36 +1,28 @@
 // Package: P3 heat. Unit tests for voidcrew/modules/plasma_weapons/.
-// Shots are simulated with add_heat(heat_per_shot) and `gap` seconds of process() between them: 0.7 s is the
-// rifle's fire delay, 1 s a steady clicking pace. A boil shows as lost integrity, so these pass with or without
-// P2's take_mol.
+// Shots are simulated with add_heat(heat_per_shot) and cool(gap) between them: 0.7 s is the rifle's fire delay,
+// 1 s a steady pace and 1.2 s a careful one. heat_updated_at is pinned to now before each shot so a tick passing
+// mid-test adds no cooling of its own.
 
-/// Fires `shots` simulated rifle shots, cooling `gap` seconds after each. Returns the shot number of the first boil, or 0.
-/proc/plasma_heat_test_burst(obj/item/gun/energy/plasma_weapon/gun, shots, gap = 0.7)
+/// Fires `shots` simulated shots, cooling `gap` seconds after each. Returns the shot number that overheated, or 0.
+/proc/plasma_heat_test_burst(obj/item/gun/energy/plasma_weapon/gun, shots, gap)
 	for(var/shot in 1 to shots)
-		var/integrity_before = gun.get_integrity()
+		gun.heat_updated_at = world.time
 		gun.add_heat(gun.heat_per_shot)
-		if(gun.get_integrity() < integrity_before)
+		if(gun.shutdown_until)
 			return shot
-		gun.process(gap)
+		gun.cool(gap)
 	return 0
-
-/// Fires `shots` simulated rifle shots, cooling `gap` seconds after each. Returns how many boiled.
-/proc/plasma_heat_test_boils(obj/item/gun/energy/plasma_weapon/gun, shots, gap)
-	var/boils = 0
-	for(var/shot in 1 to shots)
-		var/integrity_before = gun.get_integrity()
-		gun.add_heat(gun.heat_per_shot)
-		if(gun.get_integrity() < integrity_before)
-			boils++
-		gun.process(gap)
-	return boils
 
 /// Plasma mol in `air`
 /proc/plasma_heat_test_plasma(datum/gas_mixture/air)
 	var/list/plasma = air.gases[/datum/gas/plasma]
 	return plasma ? plasma[MOLES] : 0
 
-/// Room air cools a Furnace about 3 heat a second. Flat out it first boils on the 9th shot; at a steady 1 s pace
-/// on the 10th, and a full 12-shot cartridge at that pace boils just once.
+/// Deciseconds into a vent's sweep at the middle of bar unit `unit` (0 to PLASMA_VENT_UNITS - 1)
+/proc/plasma_heat_test_unit_time(unit)
+	return (unit + 0.5) * PLASMA_VENT_SWEEP / PLASMA_VENT_UNITS
+
+/// Room air: a careful 1.2 s pace never overheats a cartridge; 1 s overheats on the 11th; flat out on the 8th.
 /datum/unit_test/voidcrew_plasma_heat_air
 
 /datum/unit_test/voidcrew_plasma_heat_air/Run()
@@ -39,21 +31,20 @@
 	TEST_ASSERT(air.return_pressure() > 90, "The test floor has no room air ([air.return_pressure()] kPa)")
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
 	var/rate = gun.heat_cool_rate()
-	TEST_ASSERT(rate > 2.5 && rate < 3.5, "Room air cools a Furnace [rate] a second, not about 3")
-	gun.cell.charge = 0 // a boil with plasma would leave gas on the tile and change the cooling
-	// 13.5 + 11.4 per shot after the first: 93.3 after the 8th, 104.7 after the 9th
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 9, "A Furnace fired flat out in room air did not first boil on the 9th shot")
-
+	TEST_ASSERT(rate > 11 && rate < 12, "Room air cools a Furnace [rate] a second, not about 11.5")
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12, 0.7), 8, "A Furnace fired flat out in room air did not overheat on the 8th shot")
 	var/obj/item/gun/energy/plasma_weapon/rifle/steady = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	steady.cell.charge = 0
-	// 13.5 + 10.5 per shot after the first: 97.5 after the 9th, 108 after the 10th, then 73 and up to 94 by the 12th
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(steady, 12, 1), 10, "A Furnace fired every second in room air did not first boil on the 10th shot")
-	var/obj/item/gun/energy/plasma_weapon/rifle/cartridge = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	cartridge.cell.charge = 0
-	TEST_ASSERT_EQUAL(plasma_heat_test_boils(cartridge, 12, 1), 1, "A cartridge fired every second in room air did not boil exactly once")
-	TEST_ASSERT_EQUAL(cartridge.heat_step, 3, "A Furnace at heat [cartridge.barrel_heat] after a cartridge shows coil step [cartridge.heat_step]")
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(steady, 12, 1), 11, "A Furnace fired every second in room air did not overheat on the 11th shot")
+	var/obj/item/gun/energy/plasma_weapon/rifle/careful = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(careful, 12, 1.2), 0, "A Furnace fired every 1.2 s in room air overheated within a cartridge")
+	TEST_ASSERT(careful.heat_step >= 2, "A Furnace at heat [careful.barrel_heat] after a careful cartridge shows coil step [careful.heat_step]")
 
-/// In vacuum the rifle only cools by its base rate and boils on the 8th shot.
+	var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(old, 12, 0.7), 10, "The Old Furnace fired flat out in room air did not overheat on the 10th shot")
+	var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old_steady = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(old_steady, 12, 1), 0, "The Old Furnace fired every second in room air overheated within a cartridge")
+
+/// Vacuum only cools at the base rate: the 7th shot flat out or at 1 s, the 8th at 1.2 s.
 /datum/unit_test/voidcrew_plasma_heat_vacuum
 	var/turf/open/spot
 	var/datum/gas_mixture/saved_air
@@ -64,22 +55,18 @@
 	saved_air = air.copy()
 	air.remove_ratio(1)
 	TEST_ASSERT(air.return_pressure() < 1, "Emptying the test floor's air left [air.return_pressure()] kPa")
-	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	gun.cell.charge = 0 // a boil with plasma would leave hot gas on the tile and change the cooling
-	// 13.5 + 12.8 per shot after the first: 90.3 after the 7th, 103.1 after the 8th
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12), 8, "A Furnace in vacuum did not first boil on the 8th shot")
-	TEST_ASSERT_EQUAL(gun.get_integrity(), gun.max_integrity - PLASMA_BOIL_INTEGRITY, "One boil did not cost [PLASMA_BOIL_INTEGRITY] integrity")
-	TEST_ASSERT(gun.barrel_heat < PLASMA_HEAT_BOIL, "A boil left the Furnace at heat [gun.barrel_heat]")
-
-	// The Old Furnace runs cooler: 10 + 9.3 per shot after the first, so 10 shots stay under the boil.
-	air.remove_ratio(1)
+	var/list/gaps = list(0.7, 1, 1.2)
+	var/list/expected = list(7, 7, 8)
+	for(var/i in 1 to length(gaps))
+		var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
+		var/shot = plasma_heat_test_burst(gun, 12, gaps[i])
+		TEST_ASSERT_EQUAL(shot, expected[i], "A Furnace in vacuum every [gaps[i]] s overheated on shot [shot]")
 	var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
-	old.cell.charge = 0
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(old, 10), 0, "The Old Furnace boiled within 10 shots in vacuum")
+	TEST_ASSERT_EQUAL(plasma_heat_test_burst(old, 12, 1.2), 9, "The Old Furnace in vacuum every 1.2 s did not overheat on the 9th shot")
 
 	// The pistol has no heat at all.
 	var/obj/item/gun/energy/plasma_weapon/pistol/pistol = allocate(/obj/item/gun/energy/plasma_weapon/pistol, spot)
-	pistol.add_heat(PLASMA_HEAT_BOIL * 2)
+	pistol.add_heat(PLASMA_HEAT_MAX * 2)
 	TEST_ASSERT_EQUAL(pistol.barrel_heat, 0, "The Cinder gained heat")
 	TEST_ASSERT(!(pistol.datum_flags & DF_ISPROCESSING), "The Cinder started processing")
 
@@ -88,150 +75,182 @@
 		spot.return_air().copy_from(saved_air)
 	return ..()
 
-/// Every mole a vent puts on the turf left the chamber, a vent locks firing, and the cooldown holds.
+/// An overheat shuts the gun down for 10 s: no firing, no venting, no heat, no damage and no gas. Then it comes back low.
+/datum/unit_test/voidcrew_plasma_heat_shutdown
+
+/datum/unit_test/voidcrew_plasma_heat_shutdown/Run()
+	var/turf/open/spot = run_loc_floor_bottom_left
+	var/datum/gas_mixture/air = spot.return_air()
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	user.put_in_active_hand(gun, forced = TRUE)
+	var/chamber_before = gun.chamber_mol()
+	var/plasma_before = plasma_heat_test_plasma(air)
+	gun.barrel_heat = PLASMA_HEAT_MAX - 1
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT_EQUAL(gun.shutdown_until, world.time + PLASMA_OVERHEAT_SHUTDOWN, "An overheat didn't shut the Furnace down for 10 s")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_MAX, "An overheated Furnace sits at heat [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.heat_step, 3, "An overheated Furnace's coils show step [gun.heat_step], not full glow")
+	TEST_ASSERT_EQUAL(gun.get_integrity(), gun.max_integrity, "An overheat damaged the Furnace")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before, "An overheat took plasma from the chamber")
+	TEST_ASSERT_EQUAL(plasma_heat_test_plasma(air), plasma_before, "An overheat put plasma on the turf")
+	TEST_ASSERT(!gun.can_fire_heat(), "A shut-down Furnace can fire")
+	TEST_ASSERT(!gun.can_shoot(), "can_shoot ignores the shutdown")
+	TEST_ASSERT(!gun.vent_key(user), "A shut-down Furnace started a vent")
+	TEST_ASSERT(!gun.vent_started_at, "A shut-down Furnace is venting")
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_MAX, "A shut-down Furnace's heat moved")
+	gun.cool(30)
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_MAX, "A shut-down Furnace cooled")
+	// Ten seconds on: the deadline passes and the gun comes back on its own
+	gun.shutdown_until = world.time
+	TEST_ASSERT(gun.can_fire_heat(), "The Furnace was still shut down after its 10 s")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_OVERHEAT_END_HEAT, "A Furnace came back from an overheat at heat [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.heat_step, 0, "A Furnace back from an overheat still glows at step [gun.heat_step]")
+
+/// The bar's zones, the vent's start rules and the heat each result leaves
 /datum/unit_test/voidcrew_plasma_heat_vent
 	var/turf/open/spot
 	var/datum/gas_mixture/saved_air
 
 /datum/unit_test/voidcrew_plasma_heat_vent/Run()
+	// The zones: ----yyyyxxxyyyy----
+	var/zones = ""
+	for(var/unit in 0 to PLASMA_VENT_UNITS - 1)
+		switch(plasma_vent_zone(plasma_heat_test_unit_time(unit)))
+			if(PLASMA_VENT_RESULT_GOLD)
+				zones += "x"
+			if(PLASMA_VENT_RESULT_GRACE)
+				zones += "y"
+			if(PLASMA_VENT_RESULT_FAIL)
+				zones += "-"
+			else
+				zones += "?"
+	TEST_ASSERT_EQUAL(zones, "----yyyyxxxyyyy----", "The vent bar's zones are wrong")
+	TEST_ASSERT_EQUAL(plasma_vent_zone(PLASMA_VENT_SWEEP), PLASMA_VENT_RESULT_NONE, "A tap at the sweep's end still counts")
+
 	spot = run_loc_floor_bottom_left
 	var/datum/gas_mixture/air = spot.return_air()
 	saved_air = air.copy()
-	air.remove_ratio(1) // vacuum, so the hot puff can't burn and eat the plasma we count
+	air.remove_ratio(1) // vacuum, so the vented plasma can't burn
 	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
-	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	user.put_in_active_hand(gun, forced = TRUE)
 
-	// A full chamber
-	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
-	gun.barrel_heat = 80
-	var/chamber_before = gun.chamber_mol()
-	var/turf_before = plasma_heat_test_plasma(air)
-	gun.attack_self(user)
-	var/lost = chamber_before - gun.chamber_mol()
-	var/gained = plasma_heat_test_plasma(air) - turf_before
-	TEST_ASSERT_EQUAL(gained, lost, "A vent put [gained] mol on the turf but took [lost] mol from the chamber")
-	TEST_ASSERT(lost == PLASMA_VENT_MOL, "A vent from a full chamber took [lost] mol")
-	TEST_ASSERT(air.return_temperature() < PLASMA_MINIMUM_BURN_TEMPERATURE, "A vent from a hot barrel left gas at [air.return_temperature()] K, hot enough to light")
-	if(lost)
-		TEST_ASSERT_EQUAL(gun.barrel_heat, 80 - PLASMA_VENT_COOL, "A vent did not cool the barrel by [PLASMA_VENT_COOL]")
-		TEST_ASSERT(!gun.can_fire_heat(), "The Furnace can fire straight after a vent")
-		TEST_ASSERT(!gun.can_shoot(), "can_shoot ignores the vent lock")
-		var/chamber_mid = gun.chamber_mol()
-		gun.attack_self(user)
-		TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_mid, "A second vent inside the cooldown took plasma")
-		gun.vent_lock_until = world.time
-		TEST_ASSERT(gun.can_fire_heat(), "The vent lock outlived vent_lock_until")
-
-	// A chamber short of a full vent gives up what it has, no more, and the turf gets exactly that.
-	// It also cools in proportion to what it vented.
-	gun.next_vent_at = 0
-	gun.cell.charge = 3
-	gun.barrel_heat = 80
-	chamber_before = gun.chamber_mol()
-	turf_before = plasma_heat_test_plasma(air)
-	gun.attack_self(user)
-	lost = chamber_before - gun.chamber_mol()
-	gained = plasma_heat_test_plasma(air) - turf_before
-	TEST_ASSERT_EQUAL(gained, lost, "A short vent put [gained] mol on the turf but took [lost] mol from the chamber")
-	TEST_ASSERT_EQUAL(lost, 3, "A vent from a 3 mol chamber took [lost] mol")
-	TEST_ASSERT_EQUAL(gun.barrel_heat, 80 - PLASMA_VENT_COOL * 3 / PLASMA_VENT_MOL, "A 3 mol vent cooled the barrel to [gun.barrel_heat]")
-
-	// A barrel too cool to glow doesn't vent at all.
-	gun.next_vent_at = 0
-	gun.vent_lock_until = 0
-	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
+	// Too cool to glow: nothing happens
 	gun.barrel_heat = PLASMA_HEAT_STEP_1 - 1
-	gun.attack_self(user)
-	TEST_ASSERT_EQUAL(gun.chamber_mol(), PLASMA_CARTRIDGE_CAPACITY, "A cool Furnace vented plasma")
-	TEST_ASSERT(gun.can_fire_heat(), "Venting a cool Furnace locked its trigger")
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(!gun.vent_key(user), "A Furnace too cool to glow started a vent")
 
-	// A boil conserves the same way.
-	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
-	chamber_before = gun.chamber_mol()
-	turf_before = plasma_heat_test_plasma(air)
-	gun.barrel_heat = PLASMA_HEAT_BOIL
-	gun.add_heat(0)
-	lost = chamber_before - gun.chamber_mol()
-	gained = plasma_heat_test_plasma(air) - turf_before
-	TEST_ASSERT_EQUAL(gained, lost, "A boil put [gained] mol on the turf but took [lost] mol from the chamber")
-	TEST_ASSERT(lost == PLASMA_BOIL_MOL, "A boil from a full chamber took [lost] mol")
+	// A vent blocks firing until it ends
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A glowing Furnace in the active hand didn't start a vent")
+	TEST_ASSERT(!gun.can_fire_heat(), "A venting Furnace can fire")
+	TEST_ASSERT_NOTNULL(gun.vent_bar, "A vent made no bar")
+
+	// Gold: all the heat off, and the next shots add half heat for a while
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.heat_updated_at = world.time
+	gun.vent_key(user)
+	TEST_ASSERT(!gun.vent_started_at, "A gold tap didn't end the vent")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A gold vent left heat [gun.barrel_heat]")
+	TEST_ASSERT(gun.can_fire_heat(), "A gold vent locked the trigger")
+	TEST_ASSERT_NULL(gun.vent_bar, "A gold vent left its bar")
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT_EQUAL(gun.barrel_heat, gun.heat_per_shot * PLASMA_VENT_GOLD_HEAT_MULT, "A shot after a gold vent added [gun.barrel_heat] heat, not half")
+	gun.gold_until = world.time
+	gun.barrel_heat = 0
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT_EQUAL(gun.barrel_heat, gun.heat_per_shot, "A shot after the gold window still added half heat")
+
+	// Grace, early and late: a large fixed cut, and the trigger free at once
+	for(var/unit in list(6, 13))
+		gun.barrel_heat = 90
+		gun.heat_updated_at = world.time
+		gun.vent_lock_until = 0
+		TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the grace test")
+		gun.vent_started_at = world.time - plasma_heat_test_unit_time(unit)
+		gun.heat_updated_at = world.time
+		gun.vent_key(user)
+		TEST_ASSERT_EQUAL(gun.barrel_heat, 90 - PLASMA_VENT_COOL, "A grace tap at unit [unit] left heat [gun.barrel_heat]")
+		TEST_ASSERT(gun.can_fire_heat(), "A grace vent locked the trigger")
+
+	// No tap: the same cut when the sweep ends, then a moment more of venting with the trigger locked
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the no-tap test")
+	gun.vent_started_at = world.time - PLASMA_VENT_SWEEP
+	gun.vent_key(user) // a tap past the end changes nothing
+	TEST_ASSERT(gun.vent_started_at, "A tap past the sweep's end settled the vent")
+	gun.heat_updated_at = world.time
+	gun.finish_vent_sweep()
+	TEST_ASSERT(!gun.vent_started_at, "The sweep's end didn't end the vent")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 90 - PLASMA_VENT_COOL, "A vent left to run out left heat [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.vent_lock_until, world.time + PLASMA_VENT_NONE_LOCK, "A vent left to run out didn't lock the trigger for a moment")
+	TEST_ASSERT(!gun.can_fire_heat(), "A Furnace fires while it finishes venting")
+	TEST_ASSERT(!gun.vent_key(user), "A new vent started while the last one finished")
+
+	// Fail, early and late: the old plasma vent, below ignition, plus the cut and a lock
+	for(var/unit in list(1, 17))
+		gun.vent_lock_until = 0
+		gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
+		gun.chamber_changed()
+		gun.barrel_heat = 99
+		gun.heat_updated_at = world.time
+		TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the fail test")
+		var/chamber_before = gun.chamber_mol()
+		var/turf_before = plasma_heat_test_plasma(air)
+		gun.vent_started_at = world.time - plasma_heat_test_unit_time(unit)
+		gun.heat_updated_at = world.time
+		gun.vent_key(user)
+		var/lost = chamber_before - gun.chamber_mol()
+		var/gained = plasma_heat_test_plasma(air) - turf_before
+		TEST_ASSERT_EQUAL(lost, PLASMA_VENT_MOL, "A fail tap at unit [unit] took [lost] mol from a full chamber")
+		TEST_ASSERT_EQUAL(gained, lost, "A fail vent put [gained] mol on the turf but took [lost] mol from the chamber")
+		TEST_ASSERT(air.return_temperature() < PLASMA_MINIMUM_BURN_TEMPERATURE, "A fail vent from a hot barrel left gas at [air.return_temperature()] K, hot enough to light")
+		TEST_ASSERT_EQUAL(gun.barrel_heat, 99 - PLASMA_VENT_COOL, "A fail vent left heat [gun.barrel_heat]")
+		TEST_ASSERT_EQUAL(gun.vent_lock_until, world.time + PLASMA_VENT_FAIL_LOCK, "A fail vent didn't lock the trigger")
+		air.remove_ratio(1)
 
 /datum/unit_test/voidcrew_plasma_heat_vent/Destroy()
 	if(spot && saved_air)
 		spot.return_air().copy_from(saved_air)
 	return ..()
 
-/// A hot gun processes on SSobj and stops once it has cooled.
-/datum/unit_test/voidcrew_plasma_heat_processing
+/// The vent bar goes away when the gun leaves the hand, the hands swap, or the gun is deleted
+/datum/unit_test/voidcrew_plasma_heat_vent_cleanup
 
-/datum/unit_test/voidcrew_plasma_heat_processing/Run()
-	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, run_loc_floor_bottom_left)
-	TEST_ASSERT(!(gun.datum_flags & DF_ISPROCESSING), "A cold Furnace is processing")
-	gun.add_heat(gun.heat_per_shot)
-	TEST_ASSERT(gun.datum_flags & DF_ISPROCESSING, "A hot Furnace did not start processing")
-	gun.process(100)
-	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A Furnace did not cool in 100 s of room air")
-	TEST_ASSERT(!(gun.datum_flags & DF_ISPROCESSING), "A cooled Furnace kept processing")
-	TEST_ASSERT_EQUAL(gun.heat_step, 0, "A cooled Furnace still shows coil step [gun.heat_step]")
-
-/// Twenty boils break the gun, chamber empty or not.
-/datum/unit_test/voidcrew_plasma_heat_breaks
-
-/datum/unit_test/voidcrew_plasma_heat_breaks/Run()
-	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, run_loc_floor_bottom_left)
-	gun.cell.charge = 0 // nothing to vent, so no hot plasma lights the test room
-	var/boils = gun.max_integrity / PLASMA_BOIL_INTEGRITY
-	TEST_ASSERT_EQUAL(boils, 20, "A Furnace takes [boils] boils to break, not 20")
-	for(var/boil in 1 to boils - 1)
-		gun.barrel_heat = PLASMA_HEAT_BOIL
-		gun.add_heat(0)
-	TEST_ASSERT(!QDELETED(gun), "A Furnace broke before its 20th boil")
-	TEST_ASSERT_EQUAL(gun.get_integrity(), PLASMA_BOIL_INTEGRITY, "19 boils left the Furnace at [gun.get_integrity()] integrity")
-	gun.barrel_heat = PLASMA_HEAT_BOIL
-	gun.add_heat(0)
-	TEST_ASSERT(QDELETED(gun), "A Furnace survived 20 boils")
-
-/// A real shot that boils the Furnace still costs its plasma, and the boil vents on top of it.
-/// The boil re-chambers the gun, so a shot charged after it would be free.
-/datum/unit_test/voidcrew_plasma_heat_live_boil
-	var/turf/open/spot
-	var/datum/gas_mixture/saved_air
-
-/datum/unit_test/voidcrew_plasma_heat_live_boil/Run()
-	spot = run_loc_floor_bottom_left
-	var/datum/gas_mixture/air = spot.return_air()
-	saved_air = air.copy()
-	air.remove_ratio(1) // vacuum, so the hot vented plasma can't burn
-	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent, spot)
+/datum/unit_test/voidcrew_plasma_heat_vent_cleanup/Run()
+	var/turf/open/spot = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
-	shooter.put_in_active_hand(gun, forced = TRUE)
-	var/obj/item/ammo_casing/energy/shot = gun.ammo_type[gun.select]
-	var/turf/target = run_loc_floor_top_right
+	user.put_in_active_hand(gun, forced = TRUE)
 
-	// An ordinary shot costs one bolt
-	var/chamber_before = gun.chamber_mol()
-	TEST_ASSERT(gun.process_fire(target, shooter, FALSE), "the Furnace didn't fire")
-	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before - shot.e_cost, "an ordinary shot cost [chamber_before - gun.chamber_mol()] mol")
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the drop test")
+	var/atom/movable/screen/bar = gun.vent_bar
+	var/atom/movable/screen/marker = gun.vent_marker
+	user.dropItemToGround(gun)
+	TEST_ASSERT(!gun.vent_started_at, "Dropping the Furnace didn't end its vent")
+	TEST_ASSERT(QDELETED(bar) && QDELETED(marker), "Dropping the Furnace left its vent bar")
+	TEST_ASSERT_NULL(gun.vent_user, "Dropping the Furnace kept its venter")
+	TEST_ASSERT(gun.can_fire_heat(), "A vent ended by a drop locked the trigger")
 
-	// A shot that boils costs one bolt plus the boil's vent
-	gun.fire_cd = FALSE
-	gun.barrel_heat = PLASMA_HEAT_BOIL
-	chamber_before = gun.chamber_mol()
-	var/integrity_before = gun.get_integrity()
-	TEST_ASSERT(gun.process_fire(target, shooter, FALSE), "the hot Furnace didn't fire")
-	TEST_ASSERT(gun.get_integrity() < integrity_before, "the shot didn't boil the Furnace")
-	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before - shot.e_cost - PLASMA_BOIL_MOL, "a boiling shot cost [chamber_before - gun.chamber_mol()] mol, not a bolt and a boil")
+	user.put_in_active_hand(gun, forced = TRUE)
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the swap test")
+	bar = gun.vent_bar
+	user.swap_hand()
+	TEST_ASSERT(!gun.vent_started_at, "Swapping hands didn't end the vent")
+	TEST_ASSERT(QDELETED(bar), "Swapping hands left the vent bar")
+	user.swap_hand()
 
-	// A shot that breaks the gun on its 20th boil fires, drops the cartridge and doesn't runtime
-	gun.fire_cd = FALSE
-	gun.update_integrity(PLASMA_BOIL_INTEGRITY)
-	gun.barrel_heat = PLASMA_HEAT_BOIL
-	var/obj/item/plasma_cartridge/cartridge = gun.cartridge
-	gun.process_fire(target, shooter, FALSE)
-	TEST_ASSERT(QDELETED(gun), "a Furnace on its last boil survived the shot")
-	TEST_ASSERT(!QDELETED(cartridge) && isturf(cartridge.loc), "a Furnace that broke mid-shot lost its cartridge")
-
-/datum/unit_test/voidcrew_plasma_heat_live_boil/Destroy()
-	if(spot && saved_air)
-		spot.return_air().copy_from(saved_air)
-	return ..()
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the delete test")
+	bar = gun.vent_bar
+	marker = gun.vent_marker
+	qdel(gun)
+	TEST_ASSERT(QDELETED(bar) && QDELETED(marker), "Deleting the Furnace left its vent bar")

@@ -75,6 +75,7 @@
 	return rand(1, max_shots) * shot.e_cost
 
 /obj/item/gun/energy/plasma_weapon/Destroy()
+	cancel_vent()
 	// Drop the cartridge with the chamber's plasma written back (Exited does the write-back)
 	if(cartridge)
 		var/atom/drop_at = drop_location()
@@ -229,11 +230,7 @@
 		plasma_pinch(user, pbtarget)
 	if(!uses_heat)
 		return
-	// Charge this shot before the heat step: a boil vents and re-chambers, and tg only charges a shot still
-	// sitting spent in the chamber. handle_chamber() runs again after us and finds nothing spent to charge.
-	handle_chamber()
 	add_heat(heat_per_shot)
-	// A boil can break the gun; tg skips process_chamber() on a deleted gun
 
 /obj/item/gun/energy/plasma_weapon/can_shoot()
 	if(!can_fire_heat())

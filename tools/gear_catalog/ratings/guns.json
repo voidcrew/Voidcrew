@@ -1767,7 +1767,7 @@
    "hash": "",
    "name": "Furnace plasma rifle",
    "rank": 5,
-   "reason": "Plasma rifle, 30 burn a bolt that pierces some armour. Overheats within a cartridge and has to be vented. Loads single-use plasma cartridges.",
+   "reason": "Plasma rifle, 30 burn a bolt that pierces some armour. Overheats when fired flat out and has to be vented or locks up. Loads single-use plasma cartridges.",
    "score": 113,
    "score_inputs": {
     "cell_fed": {
