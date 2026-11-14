@@ -8,6 +8,19 @@
 /datum/unit_test/voidcrew_trade_prison_police
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
+/// Ticks Processing until `door` reaches `open` (TRUE = open, FALSE = shut), asserting the two doors are never open together
+/datum/unit_test/voidcrew_trade_prison_police/proc/cross_wait_door(datum/outpost_prison/prison, obj/machinery/door/airlock/door, open, seconds = 12)
+	var/obj/machinery/door/airlock/inner = prison.processing_door(TRUE)
+	var/obj/machinery/door/airlock/outer = prison.processing_door(FALSE)
+	for(var/i in 1 to seconds * 2)
+		TEST_ASSERT(inner.density || outer.density, "Both of Processing's doors were open at once")
+		if(!door.operating && (open ? !door.density : door.density))
+			return TRUE
+		if(i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	return FALSE
+
 /datum/unit_test/voidcrew_trade_prison_police/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = lockup_test_outpost()
 	TEST_ASSERT_NOTNULL(outpost, "Quartermain Depot's interior did not load")
@@ -85,6 +98,59 @@
 	quiet.forceMove(yard_tile)
 	quiet.back_in_custody()
 	TEST_ASSERT(!is_hostile_creature(quiet) && !officer.police_will_fight(quiet), "A recaptured prisoner in the yard stayed hostile to police")
+
+	// Response officer in the front room is kept, directed searching for a loose prisoner inside the wing, and cycled through Processing one door at a time
+	var/turf/office_tile = prison.guard_office_spot()
+	TEST_ASSERT_NOTNULL(office_tile, "No open office tile found in the lockup")
+	runner.forceMove(office_tile)
+	officer.dispatch_wave = wave
+	TEST_ASSERT(police.lockup_keeps_officer(officer), "A response officer in the lockup was not kept while a prisoner was loose")
+	TEST_ASSERT(police.lockup_direct_officer(officer), "An idle response officer in the front room was not sent searching for a loose prisoner")
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "Directing the response officer did not put them into searching") // STEALTH_SEARCHING
+	var/datum/ai_planning_subtree/outpost_police_lockup_cross/cross_tree = locate() in brain.planning_subtrees
+	TEST_ASSERT_NOTNULL(cross_tree, "An officer's brain has no lockup-crossing subtree")
+	brain.planned_behaviors.Cut()
+	cross_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT((locate(/datum/ai_behavior/outpost_police_lockup_step) in brain.planned_behaviors) || (locate(/datum/ai_behavior/stealth_stand) in brain.planned_behaviors), "The lockup-crossing subtree did not plan a step toward Processing")
+	brain.planned_behaviors.Cut()
+
+	ADD_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
+	var/obj/machinery/door/airlock/security/prison_staff/inner = prison.processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/outer = prison.processing_door(FALSE)
+	var/turf/outer_wait = prison.processing_outside_turf(outer)
+	var/turf/inner_wait = prison.processing_outside_turf(inner)
+	TEST_ASSERT_NOTNULL(outer_wait, "Processing's outer door has no front-room approach tile")
+	TEST_ASSERT_NOTNULL(inner_wait, "Processing's inner door has no yard-side approach tile")
+	officer.forceMove(outer_wait)
+	TEST_ASSERT_EQUAL(prison.processing_step_through(officer, TRUE), outer_wait, "An officer outside Processing did not wait at the outer door while it opened")
+	TEST_ASSERT_EQUAL(prison.processing_state, "crossing", "Processing did not enter crossing state for the officer") // OUTPOST_PROCESSING_CROSS
+	TEST_ASSERT(cross_wait_door(prison, outer, TRUE), "Processing's outer door did not open for the crossing officer")
+	var/turf/inside_step = prison.processing_step_through(officer, TRUE)
+	TEST_ASSERT(prison.in_processing(inside_step), "Processing did not step the officer into the sally port once the outer door opened")
+	officer.forceMove(inside_step)
+	TEST_ASSERT(cross_wait_door(prison, outer, FALSE), "Processing's outer door did not shut behind the crossing officer")
+	TEST_ASSERT(cross_wait_door(prison, inner, TRUE), "Processing's inner door did not open once the outer door shut")
+	TEST_ASSERT_EQUAL(prison.processing_step_through(officer, TRUE), inner_wait, "Processing did not step the officer out into the yard")
+	officer.forceMove(inner_wait)
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing did not return to idle once the officer reached the yard") // OUTPOST_PROCESSING_IDLE
+	TEST_ASSERT(cross_wait_door(prison, inner, FALSE), "Processing's inner door did not shut after the officer entered the yard")
+
+	// Once the last loose prisoner is back in custody, the response officer is no longer kept and crosses back to the front room
+	runner.forceMove(yard_tile)
+	runner.back_in_custody()
+	TEST_ASSERT(!police.lockup_keeps_officer(officer), "A response officer stayed kept in the lockup with no loose prisoners left")
+	TEST_ASSERT_EQUAL(prison.processing_step_through(officer, FALSE), inner_wait, "An officer leaving the yard did not wait at Processing's inner door")
+	TEST_ASSERT(cross_wait_door(prison, inner, TRUE), "Processing's inner door did not open for the officer leaving the yard")
+	officer.forceMove(prison.processing_step_through(officer, FALSE))
+	TEST_ASSERT(cross_wait_door(prison, inner, FALSE), "Processing's inner door did not shut behind the leaving officer")
+	TEST_ASSERT(cross_wait_door(prison, outer, TRUE), "Processing's outer door did not open for the leaving officer")
+	TEST_ASSERT_EQUAL(prison.processing_step_through(officer, FALSE), outer_wait, "Processing did not step the leaving officer into the front room")
+	officer.forceMove(outer_wait)
+	prison.processing_tick(1)
+	TEST_ASSERT(prison.in_front_room(outer_wait) && cross_wait_door(prison, outer, FALSE), "Processing did not return the officer to the front room with both doors shut")
+	REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
 
 	// Recovery skips bodies, the downed and mess inside the lockup
 	var/datum/outpost_recovery/recovery = outpost.ensure_recovery()

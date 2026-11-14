@@ -127,6 +127,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	var/turf/claim_turf
 	/// The lift panel in the front room
 	var/obj/machinery/outpost_elevator/lockup/lift_panel
+	/// Cached front-room floor turfs (turf = TRUE), flooded from alcove_turfs without crossing doors or tables
+	var/list/front_room_cache
 
 /// Lets go of the mapped places and the lift panel (Destroy())
 /datum/outpost_prison/proc/host_destroy()
@@ -138,8 +140,38 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	staff_closet_turfs = list()
 	desk_turf = null
 	claim_turf = null
+	front_room_cache = null
 	if(outpost?.prison == src)
 		outpost.prison = null
+
+/// Open ground of the front room (turf = TRUE), flooded from the lift alcove without crossing doors or the front desk
+/datum/outpost_prison/proc/front_room_ground()
+	if(!isnull(front_room_cache))
+		return front_room_cache
+	var/list/found = list()
+	var/list/queue = list()
+	for(var/turf/start as anything in alcove_turfs)
+		if(isturf(start) && contains_turf(start) && !isclosedturf(start) && !found[start])
+			found[start] = TRUE
+			queue += start
+	var/head = 1
+	while(head <= length(queue))
+		var/turf/here = queue[head++]
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(here, direction)
+			if(!next || found[next] || !contains_turf(next) || isclosedturf(next))
+				continue
+			if((locate(/obj/machinery/door) in next) || (locate(/obj/structure/table) in next))
+				continue
+			found[next] = TRUE
+			queue += next
+	front_room_cache = found
+	return found
+
+/// Whether `thing` stands in the wing's front room (outside Processing, the office and the cell block)
+/datum/outpost_prison/proc/in_front_room(atom/thing)
+	var/turf/spot = get_turf(thing)
+	return !!spot && !!front_room_ground()[spot]
 
 // ===== THE OUTPOST'S SIDE =====
 

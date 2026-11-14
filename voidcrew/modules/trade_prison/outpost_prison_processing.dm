@@ -18,7 +18,7 @@
  */
 
 /datum/outpost_prison
-	/// OUTPOST_PROCESSING_IDLE, _IN or _OUT
+	/// OUTPOST_PROCESSING_IDLE, _IN, _OUT or _CROSS
 	var/processing_state = OUTPOST_PROCESSING_IDLE
 	/// Who the room is working for
 	var/datum/weakref/processing_who_ref
@@ -193,8 +193,136 @@
 			processing_in_tick(seconds)
 		if(OUTPOST_PROCESSING_OUT)
 			processing_out_tick(seconds)
+		if(OUTPOST_PROCESSING_CROSS)
+			processing_cross_tick(seconds)
 		else
 			processing_idle_tick()
+
+/// The open floor tile just outside `door` (in the yard for the inner door, in the front room for the outer), or null
+/datum/outpost_prison/proc/processing_outside_turf(obj/machinery/door/airlock/door)
+	var/turf/door_turf = get_turf(door)
+	if(!door_turf)
+		return null
+	for(var/direction in GLOB.cardinals)
+		var/turf/step_tile = get_step(door_turf, direction)
+		if(!step_tile || !contains_turf(step_tile) || isclosedturf(step_tile) || (step_tile in processing_turfs))
+			continue
+		if((locate(/obj/machinery/door) in step_tile) || (locate(/obj/structure/table) in step_tile))
+			continue
+		return step_tile
+	return null
+
+/// Whether `spot` lies on the yard/office side of Processing (inside the wing, past Processing and the front room)
+/datum/outpost_prison/proc/processing_on_yard_side(turf/spot)
+	if(!spot || !contains_turf(spot) || in_front_room(spot) || in_processing(spot))
+		return FALSE
+	return spot != get_turf(processing_door(TRUE)) && spot != get_turf(processing_door(FALSE))
+
+/// Whether `door` is shut (or jammed open by a breach that Processing cannot close until it mends)
+/datum/outpost_prison/proc/processing_cross_other_ready(obj/machinery/door/airlock/security/prison_staff/door)
+	return processing_shut(door) || (istype(door) && door.lockup_breached() && !door.operating)
+
+/**
+ * Claims Processing to pass a conscious member of staff (`who`) from the front room into the yard (`into_yard` TRUE)
+ * or back out into the front room (`into_yard` FALSE), one door at a time. Returns TRUE when Processing is working
+ * for `who`.
+ */
+/datum/outpost_prison/proc/processing_request_cross(mob/living/who, into_yard)
+	if(QDELETED(who) || !isliving(who) || who.stat != CONSCIOUS || !is_staff(who) || !has_processing())
+		return FALSE
+	var/turf/here = get_turf(who)
+	if(!contains_turf(here))
+		return FALSE
+	var/obj/machinery/door/airlock/security/prison_staff/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/outer = processing_door(FALSE)
+	var/obj/machinery/door/airlock/security/prison_staff/entry = into_yard ? outer : inner
+	if(processing_state == OUTPOST_PROCESSING_CROSS && processing_who() == who)
+		processing_entry_ref = WEAKREF(entry)
+		return TRUE
+	if(processing_state != OUTPOST_PROCESSING_IDLE)
+		return FALSE
+	if(!in_processing(here) && (!processing_cross_other_ready(inner) || !processing_cross_other_ready(outer)))
+		return FALSE
+	processing_state = OUTPOST_PROCESSING_CROSS
+	processing_who_ref = WEAKREF(who)
+	processing_entry_ref = WEAKREF(entry)
+	processing_seconds = 0
+	return TRUE
+
+/// Passes a staff member through Processing: entry door opens with exit shut, shuts behind them, then exit opens
+/datum/outpost_prison/proc/processing_cross_tick(seconds)
+	var/mob/living/who = processing_who()
+	var/turf/here = get_turf(who)
+	if(QDELETED(who) || who.stat != CONSCIOUS || !is_staff(who) || !contains_turf(here) || !has_processing())
+		processing_done()
+		return
+	var/obj/machinery/door/airlock/security/prison_staff/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/outer = processing_door(FALSE)
+	var/obj/machinery/door/airlock/security/prison_staff/entry = processing_entry_ref?.resolve()
+	if(entry != inner && entry != outer)
+		entry = outer
+	var/obj/machinery/door/airlock/security/prison_staff/exit_door = (entry == inner) ? outer : inner
+	var/into_yard = (exit_door == inner)
+	if(into_yard ? processing_on_yard_side(here) : in_front_room(here))
+		processing_done()
+		processing_idle_tick()
+		return
+	if(in_processing(here) || here == get_turf(exit_door))
+		if(!processing_cross_other_ready(entry))
+			processing_work_door(entry, FALSE)
+			return
+		if(exit_door.density)
+			processing_work_door(exit_door, TRUE)
+		return
+	processing_seconds += seconds
+	if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT)
+		processing_done()
+		return
+	if(!processing_cross_other_ready(exit_door))
+		processing_work_door(exit_door, FALSE)
+		return
+	if(entry.density)
+		processing_work_door(entry, TRUE)
+
+/**
+ * Returns the next turf `who` (a staff member) should walk to in order to cross Processing (`into_yard` TRUE for
+ * front room -> yard/office, FALSE for yard/office -> front room), `get_turf(who)` when they should stand at the
+ * door waiting for Processing to cycle, or null when they are already on the destination side (or both doors are
+ * breached open so normal pathing crosses directly).
+ */
+/datum/outpost_prison/proc/processing_step_through(mob/living/who, into_yard)
+	var/turf/here = get_turf(who)
+	if(QDELETED(who) || !isliving(who) || who.stat != CONSCIOUS || !is_staff(who) || !contains_turf(here) || !has_processing())
+		return null
+	if(into_yard ? processing_on_yard_side(here) : in_front_room(here))
+		if(processing_state == OUTPOST_PROCESSING_CROSS && processing_who() == who)
+			processing_done()
+		return null
+	var/obj/machinery/door/airlock/security/prison_staff/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/outer = processing_door(FALSE)
+	if(!inner.density && inner.lockup_breached() && !outer.density && outer.lockup_breached())
+		return null
+	var/obj/machinery/door/airlock/security/prison_staff/entry = into_yard ? outer : inner
+	var/obj/machinery/door/airlock/security/prison_staff/exit_door = into_yard ? inner : outer
+	var/turf/beyond = processing_outside_turf(exit_door)
+	if(here == get_turf(exit_door))
+		return beyond || here
+	if(in_processing(here))
+		processing_request_cross(who, into_yard)
+		var/exit_passable = !exit_door.density && !exit_door.operating && (exit_door.lockup_breached() || processing_who() == who)
+		return (exit_passable && beyond) ? beyond : here
+	var/turf/inside = processing_spot(who) || processing_turfs[1]
+	if(here == get_turf(entry))
+		processing_request_cross(who, into_yard)
+		return inside
+	var/turf/wait_turf = processing_outside_turf(entry)
+	if(wait_turf && here != wait_turf)
+		return wait_turf
+	if(!wait_turf && get_dist(here, entry) > 1)
+		return null
+	processing_request_cross(who, into_yard)
+	var/entry_passable = !entry.density && !entry.operating && (entry.lockup_breached() || processing_who() == who)
+	return entry_passable ? inside : here
 
 /// Nothing on: both doors are shut, unseen dead bodies inside are cleared, and the next one waiting to leave gets the room
 /datum/outpost_prison/proc/processing_idle_tick()

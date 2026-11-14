@@ -117,3 +117,166 @@
 	if(istype(prisoner) && prisoner.turret_target())
 		return FALSE
 	return ..()
+
+// =========================================================================
+// CROSSING PROCESSING AND YARD PARTITIONS
+// =========================================================================
+
+#define BB_LOCKUP_STEP_TURF "BB_lockup_step_turf"
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police
+	/// Set when this controller switched to JPS pathfinding to cross Processing or an interior lockup door under alert
+	var/lockup_paths = FALSE
+
+/// Restores alert chase movement once no lockup door crossing needs JPS pathfinding
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/lockup_give_back_paths()
+	clear_blackboard_key(BB_LOCKUP_STEP_TURF)
+	if(!lockup_paths)
+		return
+	lockup_paths = FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(stealth_state() == STEALTH_ALERT && !breach_paths && !(istype(officer) && officer.case))
+		human_npc_set_ai_movement(src, /datum/ai_movement/basic_avoidance/stealth)
+
+/// Ensures JPS movement while stepping through a lockup door
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/lockup_use_paths()
+	if(!istype(ai_movement, /datum/ai_movement/jps))
+		lockup_paths = TRUE
+		human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
+
+/// The destination turf `pawn` is currently trying to reach inside or out of `lockup`, or null
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/lockup_cross_dest(datum/outpost_prison/lockup)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/turf/here = get_turf(officer)
+	if(blackboard_key_exists(BB_HUMAN_NPC_EXIT))
+		return get_turf(blackboard[BB_HUMAN_NPC_EXIT])
+	if(blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return get_turf(blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+	switch(stealth_state())
+		if(STEALTH_SEARCHING)
+			if(calm_until)
+				return null
+			var/center_yard = lockup.processing_on_yard_side(search_center)
+			var/here_yard = lockup.processing_on_yard_side(here)
+			if(search_center && center_yard == here_yard && !lockup.in_processing(here))
+				while(length(search_queue) && lockup.processing_on_yard_side(search_queue[1]) != here_yard)
+					search_queue.Cut(1, 2)
+			return length(search_queue) ? search_queue[1] : search_center
+		if(STEALTH_SUSPICIOUS)
+			if(!investigated && world.time >= blackboard[BB_STEALTH_STATE_SINCE] + stealth_skill().reaction_delay)
+				return investigate_turf
+	if(lockup.in_processing(here))
+		var/mob/living/runner = officer.police?.lockup_loose_target(officer)
+		if(runner)
+			return get_turf(runner)
+		return length(lockup.alcove_turfs) ? lockup.alcove_turfs[1] : null
+	return null
+
+/// Whether at least one staff door between the office and yard can open for an officer
+/proc/outpost_lockup_office_door_usable(datum/outpost_prison/lockup)
+	for(var/turf/door_tile as anything in lockup.guard_yard_doors())
+		var/obj/machinery/door/airlock/door = locate() in door_tile
+		if(!door)
+			return TRUE
+		if(!door.welded && (!door.density || (!door.locked && door.hasPower())))
+			return TRUE
+	return FALSE
+
+/// Whether a glass wall, hatch or closed door blocks shots between `from` and `to_turf`
+/proc/outpost_lockup_shot_blocked(turf/from, turf/to_turf)
+	if(!from || !to_turf || from == to_turf)
+		return FALSE
+	for(var/turf/line_turf as anything in outpost_police_shot_line(from, to_turf))
+		if(line_turf == from || line_turf == to_turf)
+			continue
+		if(isclosedturf(line_turf))
+			return TRUE
+		for(var/obj/machinery/door/blocker in line_turf)
+			if(blocker.density)
+				return TRUE
+	return FALSE
+
+/**
+ * Steps an officer inside a lockup through Processing (one door at a time) when its goal lies on the other side, and
+ * paths an alert officer through the office staff door rather than firing into a serving hatch or glass wall.
+ */
+/datum/ai_planning_subtree/outpost_police_lockup_cross
+
+/datum/ai_planning_subtree/outpost_police_lockup_cross/SelectBehaviors(datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/controller, seconds_per_tick)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
+	if(!istype(controller) || !istype(officer))
+		return
+	var/datum/outpost_prison/lockup = officer.police?.outpost?.prison
+	var/turf/here = get_turf(officer)
+	if(officer.stat != CONSCIOUS || officer.client || officer.pulledby || officer.dispatch_riding || officer.case || LAZYLEN(officer.do_afters) || !lockup?.contains_turf(here) || !lockup.has_processing())
+		controller.lockup_give_back_paths()
+		return
+	var/turf/dest = controller.lockup_cross_dest(lockup)
+	if(!dest || dest == here)
+		controller.lockup_give_back_paths()
+		return
+	var/turf/step_turf
+	if(lockup.in_processing(dest))
+		if(!lockup.in_processing(here))
+			var/obj/machinery/door/airlock/security/prison_staff/inner = lockup.processing_door(TRUE)
+			var/obj/machinery/door/airlock/security/prison_staff/outer = lockup.processing_door(FALSE)
+			var/from_front = lockup.in_front_room(here) || here == get_turf(outer)
+			if(from_front || !(inner && inner.lockup_breached() && !inner.density))
+				step_turf = lockup.processing_step_through(officer, from_front)
+	else
+		var/dest_in_front = !lockup.contains_turf(dest) || lockup.in_front_room(dest)
+		step_turf = lockup.processing_step_through(officer, !dest_in_front)
+	if(!step_turf && controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		var/mob/living/person = officer.police_mech_suspect(target)
+		if(officer.force_for(target) >= POLICE_FORCE_STUN && !(isliving(person) && officer.police?.order_pending(person)))
+			if(lockup.in_cell_block(here) != lockup.in_cell_block(dest) && outpost_lockup_shot_blocked(here, dest) && outpost_lockup_office_door_usable(lockup))
+				step_turf = dest
+	if(!step_turf)
+		controller.lockup_give_back_paths()
+		return
+	controller.stealth_drop_walk()
+	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		if(officer.force_for(target) >= POLICE_FORCE_STUN)
+			officer.sync_force(officer.force_for(target))
+		if(controller.lost_since)
+			controller.lost_since = world.time
+	if(step_turf == here)
+		if(controller.ai_movement?.moving_controllers[controller])
+			controller.ai_movement.stop_moving_towards(controller)
+		controller.clear_blackboard_key(BB_LOCKUP_STEP_TURF)
+		var/obj/machinery/door/airlock/face_door = lockup.in_processing(here) ? (lockup.processing_entry_ref?.resolve() == lockup.processing_door(TRUE) ? lockup.processing_door(FALSE) : lockup.processing_door(TRUE)) : (lockup.in_front_room(here) ? lockup.processing_door(FALSE) : lockup.processing_door(TRUE))
+		if(face_door && get_turf(face_door) != here)
+			controller.stand_dir = stealth_dir_to(officer, face_door)
+			officer.setDir(controller.stand_dir)
+		controller.queue_behavior(/datum/ai_behavior/stealth_stand)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	controller.lockup_use_paths()
+	controller.set_blackboard_key(BB_LOCKUP_STEP_TURF, step_turf)
+	controller.queue_behavior(/datum/ai_behavior/outpost_police_lockup_step)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/// Walks to `BB_LOCKUP_STEP_TURF` with JPS pathfinding while crossing Processing or an interior lockup door
+/datum/ai_behavior/outpost_police_lockup_step
+	required_distance = 0
+	action_cooldown = 0.5 SECONDS
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/outpost_police_lockup_step/setup(datum/ai_controller/controller)
+	. = ..()
+	var/turf/goal = controller.blackboard[BB_LOCKUP_STEP_TURF]
+	if(!isturf(goal))
+		return FALSE
+	set_movement_target(controller, goal)
+	return TRUE
+
+/datum/ai_behavior/outpost_police_lockup_step/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/turf/goal = controller.blackboard[BB_LOCKUP_STEP_TURF]
+	if(!isturf(goal))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(get_turf(controller.pawn) == goal)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY
+
+#undef BB_LOCKUP_STEP_TURF

@@ -59,6 +59,7 @@
 		/datum/ai_planning_subtree/stealth_perception,
 		/datum/ai_planning_subtree/human_npc_soft_crit,
 		/datum/ai_planning_subtree/ambient_escape,
+		/datum/ai_planning_subtree/outpost_police_lockup_cross, // OUTPOST PRISON seam (trade_prison/outpost_prison_police.dm): steps officers through Processing
 		/datum/ai_planning_subtree/human_npc_walk_out,
 		/datum/ai_planning_subtree/outpost_police_case,
 		// OUTPOST FLOORS seam (trade_floors/police_breach.dm): plans nothing off a floor under warrant. Ahead of stealth's

@@ -334,6 +334,7 @@
 			cell.set_inside(inside)
 	refresh_cell_block()
 	office_cache = null
+	front_room_cache = null
 	refresh_reach()
 
 /**

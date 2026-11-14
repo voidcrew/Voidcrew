@@ -23,3 +23,5 @@
 #define OUTPOST_PROCESSING_IN "going_in"
 /// Processing is taking someone out of the wing
 #define OUTPOST_PROCESSING_OUT "going_out"
+/// Processing is cycling a member of staff between the front room and the yard
+#define OUTPOST_PROCESSING_CROSS "crossing"
