@@ -237,11 +237,6 @@ def extra_catalog(dm,rows):
         items=dm.val(offer,'set_items')
         if not items: continue
         add('Mining voucher redeemer',dm.val(offer,'name'),dm.loc(offer),sku_type=offer,shelf='vendor machine',outpost='Mining and golem equipment consoles',other_currency={'item_path':'/obj/item/mining_voucher','amount':1},item_path=items,item_name=dm.val(offer,'name'),stock='one set per voucher',notes='set_items='+scalar(items)+'; redemption at mining console; distinct from trade vouchers')
-    prison='/obj/machinery/vending/sustenance/outpost_prison'
-    for entry in dm.val(prison,'products') or []:
-        path,count=entry if isinstance(entry,tuple) else (entry,1)
-        add('Prison sustenance vendor',item_name(dm,path),dm.loc(prison),dm.eval('OUTPOST_PRISON_RATION_COST'),shop_type=prison,sku_type=prison+'#'+path,shelf='vendor machine',item_path=path,stock=count,stock_max=count,outpost='Player outpost prison wing',restock_rule='one unit per powered minute, weighted by shortage',notes='Explicit vend override charges treasury even though ordinary vending is free. Returned products free; shared resident limit 8 purchases/10 minutes; managers/treasurers exempt from resident limit',field_sources=f_sources(dm,prison,['products','default_price']))
-    add('Prison guard hiring','hire prison guard',dm.cite('voidcrew/modules/player_outposts/outpost_prison_guards.dm','/datum/outpost_prison/proc/hire_guard'),dm.eval('OUTPOST_GUARD_HIRE_COST'),outpost='Player outpost prison wing',stock='up to '+str(dm.eval('OUTPOST_GUARD_MAX'))+' guards',notes='Treasury also pays '+str(dm.eval('OUTPOST_GUARD_WAGE'))+' credits per guard per staffed minute, debited at wage intervals')
     for offer in dm.paths('/datum/market_item'):
         path=dm.val(offer,'item'); chance=dm.val(offer,'availability_prob')
         if not path or not chance: continue
