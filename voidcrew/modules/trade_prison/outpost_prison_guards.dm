@@ -285,16 +285,26 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	prison?.add_log("[real_name] went down.")
 	return TRUE
 
-/// Someone took a swing at them. Prisoners are the dispatcher's business; anyone else gets a warning and some room.
+/// Someone took a swing at them. Prisoners and cell-block inmates are the dispatcher's business; anyone else gets a warning and some room.
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))
 		return
 	if(is_outpost_prisoner(attacker) || !on_duty())
 		return
+	if(isliving(attacker) && prison?.is_inmate(attacker) && prison.in_cell_block(attacker) && (attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
+		prison.note_inmate_attack(attacker, src, attack_flags)
+		return
 	INVOKE_ASYNC(src, PROC_REF(warn_off), attacker)
 
-/// "Hey. Don't." and a step back. Guards never strike players.
+/mob/living/carbon/human/npc/outpost_prison_guard/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!user.combat_mode && on_duty() && prison?.is_inmate(user) && outpost_prison_is_contraband(tool))
+		if(prison.hand_in_contraband(user, tool, src))
+			return ITEM_INTERACT_SUCCESS
+		return ITEM_INTERACT_BLOCKING
+	return ..()
+
+/// "Hey. Don't." and a step back when someone outside cell-block inmate discipline takes a swing.
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/warn_off(atom/attacker)
 	if(!on_duty() || QDELETED(attacker))
 		return FALSE
@@ -482,14 +492,42 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	prison.add_log("[real_name]'s baton went flat. [p_They()] went to swap shifts.")
 	return go_off(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
 
-/// Strikes a rioter beside them. Returns TRUE if they struck.
+/// Strikes a rioter or violent inmate beside them. Returns TRUE if they struck.
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/strike_adjacent_rioter()
 	if(!COOLDOWN_FINISHED(src, baton_cooldown))
 		return FALSE
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter in orange(1, src))
 		if(rioter.is_rioting() && strike(rioter))
 			return TRUE
+	for(var/mob/living/inmate in orange(1, src))
+		if(prison?.inmate_baton_warranted(inmate) && strike_inmate(inmate))
+			return TRUE
 	return FALSE
+
+/// Whether they may baton `inmate` now: a held inmate of their wing beside them in the cell block who attacked unprovoked, holds a weapon or joined a breakout
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/may_strike_inmate(mob/living/inmate)
+	return on_duty() && !!prison && Adjacent(inmate) && prison.inmate_baton_warranted(inmate)
+
+/// One real stun baton strike on `inmate`, stopping once down or stopped; no cuffs, no cell drag, no added time
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/strike_inmate(mob/living/inmate)
+	if(!COOLDOWN_FINISHED(src, baton_cooldown) || !may_strike_inmate(inmate))
+		return FALSE
+	var/obj/item/melee/baton/security/baton = get_baton()
+	if(!baton || !baton.cell || baton.cell.charge < baton.cell_hit_cost)
+		baton_flat()
+		return FALSE
+	set_baton(TRUE)
+	if(!is_holding(baton) || !baton.active || !COOLDOWN_FINISHED(baton, cooldown_check))
+		return FALSE
+	COOLDOWN_START(src, baton_cooldown, OUTPOST_GUARD_BATON_COOLDOWN)
+	if(!outpost_prison_npc_hit(src, inmate, baton))
+		return FALSE
+	prison.guard_strike_seen(inmate, src)
+	if(prison.inmate_down_for_guard(inmate))
+		var/datum/prison_sentence/sentence = prison.sentence_for(inmate)
+		if(sentence)
+			sentence.baton_until = 0
+	return TRUE
 
 // ===== RESPONSES =====
 
@@ -500,7 +538,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	response = new(kind, key, priority, target, spot)
 	response.expires_at = world.time + OUTPOST_GUARD_RESPONSE_TIMEOUT
 	set_prison_pace(hurry = TRUE)
-	set_baton(TRUE)
+	set_baton(kind != "crit" && kind != "corpse" && kind != "leash")
 	ai_controller?.CancelActions()
 	return response
 
@@ -508,8 +546,13 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/end_response(cancel_ai = TRUE)
 	if(!response)
 		return
+	var/old_kind = response.kind
 	QDEL_NULL(response)
 	if(!QDELETED(src))
+		if(old_kind == "corpse" && pulling)
+			stop_pulling()
+		if(old_kind == "crit")
+			stow_crit_supplies()
 		set_prison_pace(hurry = FALSE)
 		set_baton(FALSE)
 	if(cancel_ai)
@@ -539,6 +582,12 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			done = threat_response(job)
 		if("climb")
 			done = climb_response(job)
+		if("inmate")
+			done = inmate_response(job)
+		if("crit")
+			done = crit_response(job)
+		if("corpse")
+			done = corpse_response(job)
 		if("riot")
 			done = riot_response(job)
 		if("leash")
@@ -715,7 +764,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /// Wandered out of the wing: back to the office
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/leash_response(datum/outpost_guard_response/job)
-	if(get_area(src) == prison.wing)
+	if(get_area(src) == prison.wing && (!prison.has_processing() || prison.processing_on_yard_side(get_turf(src))))
 		outside_seconds = 0
 		return TRUE
 	if(!job.spot)
@@ -723,6 +772,200 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!job.spot)
 		return TRUE
 	job.set_goal(loc != job.spot ? job.spot : null)
+	return FALSE
+
+/// A player inmate in the cell block who landed an unprovoked hit, holds a weapon or joined a breakout: "Hands off!" and stun baton blows until down or stopped
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/inmate_response(datum/outpost_guard_response/job)
+	var/mob/living/inmate = job.target()
+	if(!isliving(inmate) || !prison.inmate_baton_warranted(inmate))
+		if(isliving(inmate) && prison.inmate_down_for_guard(inmate))
+			var/datum/prison_sentence/done = prison.sentence_for(inmate)
+			if(done)
+				done.baton_until = 0
+		return TRUE
+	if(!Adjacent(inmate))
+		job.set_goal(inmate)
+		return FALSE
+	job.set_goal(null)
+	job.reached = TRUE
+	face_atom(inmate)
+	if(!job.said)
+		job.said = TRUE
+		last_line = "Hands off!"
+		say("Hands off!")
+	strike_inmate(inmate)
+	return !prison.inmate_baton_warranted(inmate)
+
+/// Anyone in the wing in crit (inmate, prisoner or guard): fetch the office medkit and apply 1 epinephrine pen, gauze and sutures until out of crit
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/crit_response(datum/outpost_guard_response/job)
+	var/mob/living/carbon/patient = job.target()
+	if(!iscarbon(patient) || patient == src || !prison.guard_in_crit(patient))
+		return TRUE
+	if(treating)
+		job.set_goal(null)
+		return FALSE
+	set_baton(FALSE)
+	var/obj/item/aid = carried_crit_item(patient, job.talked)
+	if(!aid)
+		var/obj/item/storage/medkit/kit = prison.guard_crit_kit_for(patient, src, job.talked)
+		if(!kit)
+			LAZYSET(prison.crit_aid_cooldowns, WEAKREF(patient), world.time + 20 SECONDS)
+			return TRUE
+		if(get_dist(src, kit) > 1)
+			var/turf/kit_spot = (isturf(kit.loc) && prison.guard_office_tile(kit.loc)) ? kit.loc : (prison.guard_spot_beside(kit, src) || get_turf(kit))
+			job.set_goal(kit_spot)
+			return FALSE
+		take_crit_supplies_from(kit, patient, job.talked)
+		aid = carried_crit_item(patient, job.talked)
+		if(!aid)
+			LAZYSET(prison.crit_aid_cooldowns, WEAKREF(patient), world.time + 20 SECONDS)
+			return TRUE
+	if(!Adjacent(patient))
+		job.set_goal(patient)
+		return FALSE
+	job.set_goal(null)
+	job.reached = TRUE
+	face_atom(patient)
+	INVOKE_ASYNC(src, PROC_REF(apply_crit_item), job, patient, aid)
+	return FALSE
+
+/// Carries a dead inmate's body through Processing to the front room and leaves it by the desk
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/corpse_response(datum/outpost_guard_response/job)
+	var/mob/living/body = job.target()
+	if(QDELETED(body) || body.stat != DEAD || !prison.contains_turf(get_turf(body)))
+		if(pulling == body)
+			stop_pulling()
+		prison.prune_dead_inmate_bodies()
+		return TRUE
+	if(prison.in_front_room(body))
+		if(pulling == body)
+			stop_pulling()
+		prison.prune_dead_inmate_bodies()
+		return TRUE
+	set_baton(FALSE)
+	if(pulling != body)
+		if(!Adjacent(body))
+			job.set_goal(body)
+			return FALSE
+		stow_crit_supplies()
+		start_pulling(body)
+		if(pulling != body)
+			return TRUE
+	job.reached = TRUE
+	if(!job.spot)
+		job.spot = prison.corpse_drop_spot()
+	if(!job.spot)
+		stop_pulling()
+		return TRUE
+	if(loc != job.spot)
+		job.set_goal(job.spot)
+		return FALSE
+	job.set_goal(null)
+	if(!prison.in_front_room(body) && Adjacent(body))
+		for(var/turf/open/tile in orange(1, src))
+			if(prison.front_room_ground()[tile] && !tile.is_blocked_turf(exclude_mobs = TRUE))
+				body.Move(tile, get_dir(body, tile))
+				break
+	stop_pulling()
+	prison.prune_dead_inmate_bodies()
+	return TRUE
+
+/// Stows any medical consumables in hand into pockets or the office medkit when adjacent
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/stow_crit_supplies()
+	var/obj/item/storage/medkit/kit = prison?.guard_first_aid_kit()
+	for(var/obj/item/held as anything in held_items)
+		if(!held || (!istype(held, /obj/item/stack/medical) && !istype(held, /obj/item/reagent_containers/hypospray/medipen)))
+			continue
+		if(kit && get_dist(src, kit) <= 1 && kit.atom_storage?.can_insert(held, src, messages = FALSE))
+			kit.atom_storage.attempt_insert(held, src, override = TRUE, messages = FALSE)
+			continue
+		held.equip_to_best_slot(src)
+
+/// Medical item already on `src` that can treat `patient`'s crit right now (medipen first, then gauze, then suture)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/carried_crit_item(mob/living/carbon/patient, epi_used = FALSE)
+	if(!epi_used && !patient.reagents?.has_reagent(/datum/reagent/medicine/epinephrine))
+		for(var/obj/item/reagent_containers/hypospray/medipen/pen in get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen))
+			if(!QDELETED(pen) && pen.reagents?.total_volume > 0)
+				return pen
+	for(var/obj/item/stack/medical/gauze/gauze in get_all_contents_type(/obj/item/stack/medical/gauze))
+		if(!QDELETED(gauze) && gauze.amount > 0 && prison?.crit_limb_for_stack(patient, src, gauze))
+			return gauze
+	for(var/obj/item/stack/medical/suture/suture in get_all_contents_type(/obj/item/stack/medical/suture))
+		if(!QDELETED(suture) && suture.amount > 0 && prison?.crit_limb_for_stack(patient, src, suture))
+			return suture
+	return null
+
+/// Takes needed crit supplies (1 epinephrine pen, gauze, sutures) out of `kit` into free hands or pocket
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/take_crit_supplies_from(obj/item/storage/medkit/kit, mob/living/carbon/patient, epi_used = FALSE)
+	if(QDELETED(kit))
+		return
+	if(!epi_used && !patient.reagents?.has_reagent(/datum/reagent/medicine/epinephrine))
+		var/has_pen = FALSE
+		for(var/obj/item/reagent_containers/hypospray/medipen/existing in get_all_contents_type(/obj/item/reagent_containers/hypospray/medipen))
+			if(existing.reagents?.total_volume > 0)
+				has_pen = TRUE
+				break
+		if(!has_pen)
+			for(var/obj/item/reagent_containers/hypospray/medipen/pen in kit)
+				if(pen.reagents?.total_volume > 0 && take_one_crit_supply(pen))
+					break
+	var/has_gauze = FALSE
+	for(var/obj/item/stack/medical/gauze/existing_gauze in get_all_contents_type(/obj/item/stack/medical/gauze))
+		if(existing_gauze.amount > 0)
+			has_gauze = TRUE
+			break
+	if(!has_gauze)
+		for(var/obj/item/stack/medical/gauze/gauze in kit)
+			if(gauze.amount > 0 && prison?.crit_limb_for_stack(patient, src, gauze) && take_one_crit_supply(gauze))
+				break
+	var/has_suture = FALSE
+	for(var/obj/item/stack/medical/suture/existing_suture in get_all_contents_type(/obj/item/stack/medical/suture))
+		if(existing_suture.amount > 0)
+			has_suture = TRUE
+			break
+	if(!has_suture)
+		for(var/obj/item/stack/medical/suture/suture in kit)
+			if(suture.amount > 0 && prison?.crit_limb_for_stack(patient, src, suture) && take_one_crit_supply(suture))
+				break
+
+/// Pulls `item` from its medkit into hands or left pocket and locks it as consumable NPC gear
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/take_one_crit_supply(obj/item/item)
+	if(!put_in_hands(item) && !equip_to_slot_if_possible(item, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
+		return FALSE
+	npc_lock_item(item)
+	return TRUE
+
+/// Applies one medipen, gauze wrap or suture to `patient` through the item's own procs. Sleeps on dressings.
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/apply_crit_item(datum/outpost_guard_response/job, mob/living/carbon/patient, obj/item/aid)
+	if(treating || QDELETED(src) || stat != CONSCIOUS || QDELETED(patient) || QDELETED(aid) || !Adjacent(patient) || !prison?.guard_in_crit(patient))
+		return FALSE
+	set_baton(FALSE)
+	if(!is_holding(aid) && !human_npc_take_in_hand(src, aid))
+		return FALSE
+	if(!human_npc_ready_item(src, aid))
+		return FALSE
+	if(istype(aid, /obj/item/reagent_containers/hypospray/medipen))
+		var/obj/item/reagent_containers/hypospray/medipen/pen = aid
+		treating = TRUE
+		var/injected = pen.inject(patient, src)
+		treating = FALSE
+		if(injected && !QDELETED(job))
+			job.talked = TRUE
+		if(!QDELETED(pen) && !pen.reagents?.total_volume)
+			qdel(pen)
+		return injected
+	if(istype(aid, /obj/item/stack/medical))
+		var/obj/item/stack/medical/stack = aid
+		var/obj/item/bodypart/limb = prison.crit_limb_for_stack(patient, src, stack)
+		if(!limb)
+			return FALSE
+		zone_selected = limb.body_zone
+		treating = TRUE
+		stack.try_heal(patient, src, limb.body_zone, FALSE, FALSE)
+		treating = FALSE
+		if(!QDELETED(stack) && is_holding(stack) && (!prison?.guard_in_crit(patient) || !prison.crit_limb_for_stack(patient, src, stack)))
+			stow_crit_supplies()
+		return TRUE
 	return FALSE
 
 // ===== THE PRISONER'S SIDE =====
@@ -838,6 +1081,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/cleanbot_clock = 0
 	/// The office: staff_ground a guard can walk to from the yard's staff doors without passing another door (office_ground())
 	var/list/office_cache
+	/// Weakref(patient) -> world.time before guards retry first aid after running out of applicable supplies
+	var/list/crit_aid_cooldowns
 
 /// Guards on the wing's roster
 /datum/outpost_prison/proc/guard_max()
@@ -1182,7 +1427,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		if(z && here.z != z)
 			guard.recall()
 			continue
-		if(get_area(guard) == wing && (!has_processing() || processing_on_yard_side(here)))
+		if(get_area(guard) == wing && (!has_processing() || processing_on_yard_side(here) || guard.response?.kind == "corpse" || guard.response?.kind == "crit"))
 			guard.outside_seconds = 0
 			continue
 		guard.outside_seconds += OUTPOST_GUARD_CHECK_SECONDS
@@ -1225,12 +1470,75 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 		guard.perform_response()
 
+/// Whether `patient` is an inmate, prisoner or guard in the wing currently in critical condition
+/datum/outpost_prison/proc/guard_in_crit(mob/living/carbon/patient)
+	if(!iscarbon(patient) || QDELETED(patient) || patient.stat == DEAD || !contains_turf(get_turf(patient)))
+		return FALSE
+	if(!is_inmate(patient) && !is_outpost_prisoner(patient) && !is_outpost_prison_guard(patient))
+		return FALSE
+	return patient.stat == SOFT_CRIT || patient.stat == HARD_CRIT || patient.health <= patient.crit_threshold || HAS_TRAIT(patient, TRAIT_CRITICAL_CONDITION)
+
+/// First limb on `patient` that `stack` can treat through its own checks, or null
+/datum/outpost_prison/proc/crit_limb_for_stack(mob/living/carbon/patient, mob/living/healer, obj/item/stack/medical/stack)
+	if(!iscarbon(patient) || QDELETED(stack) || stack.amount <= 0)
+		return null
+	for(var/obj/item/bodypart/limb as anything in patient.bodyparts)
+		if(stack.try_heal_checks(patient, healer, limb.body_zone, silent = TRUE))
+			return limb
+	return null
+
+/// Office medkit carrying at least one supply (`medipen`, `gauze` or `suture`) that can treat `patient`'s crit right now
+/datum/outpost_prison/proc/guard_crit_kit_for(mob/living/carbon/patient, mob/living/healer, epi_used = FALSE)
+	for(var/turf/tile as anything in office_ground())
+		if(tile.loc != wing)
+			continue
+		for(var/obj/item/storage/medkit/kit in tile)
+			if(!epi_used && !patient.reagents?.has_reagent(/datum/reagent/medicine/epinephrine))
+				for(var/obj/item/reagent_containers/hypospray/medipen/pen in kit)
+					if(pen.reagents?.total_volume > 0)
+						return kit
+			for(var/obj/item/stack/medical/gauze/gauze in kit)
+				if(crit_limb_for_stack(patient, healer, gauze))
+					return kit
+			for(var/obj/item/stack/medical/suture/suture in kit)
+				if(crit_limb_for_stack(patient, healer, suture))
+					return kit
+	return null
+
+/// Picks at most one crit patient across the wing that an on-duty guard can treat with carried or office medkit supplies
+/datum/outpost_prison/proc/guard_pick_crit_patient(list/on_duty)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
+		if(guard.response?.kind == "crit")
+			var/mob/living/carbon/current = guard.response.target()
+			if(guard_in_crit(current))
+				return current
+	var/list/candidates = list()
+	for(var/datum/mind/who as anything in sentences)
+		if(holds(who))
+			var/datum/prison_sentence/sentence = sentences[who]
+			var/mob/living/carbon/inmate = sentence?.body_ref?.resolve()
+			if(iscarbon(inmate))
+				candidates |= inmate
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
+		candidates |= prisoner
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/down_guard in guard_mobs)
+		candidates |= down_guard
+	for(var/mob/living/carbon/patient as anything in candidates)
+		if(!guard_in_crit(patient) || LAZYACCESS(crit_aid_cooldowns, WEAKREF(patient)) > world.time)
+			continue
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/healer as anything in on_duty)
+			if(healer == patient)
+				continue
+			if(healer.carried_crit_item(patient, FALSE) || guard_crit_kit_for(patient, healer, FALSE))
+				return patient
+	return null
+
 /**
- * The wing's incidents that want a guard, most urgent first: list(key, kind, priority, prisoner).
- * Hatch climbs, fights with blows, arguments, then prisoners squaring up to someone, swinging, or
- * who just struck someone.
+ * The wing's incidents that want a guard, most urgent first: list(key, kind, priority, target).
+ * Hatch climbs, fights with blows and violent inmates, arguments, threats, one crit patient at a
+ * time, and dead inmate carry-out to the front room.
  */
-/datum/outpost_prison/proc/guard_incidents()
+/datum/outpost_prison/proc/guard_incidents(list/on_duty)
 	var/list/found = list()
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS || prisoner.can_be_dragged())
@@ -1243,6 +1551,21 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		if(QDELETED(brawl) || QDELETED(brawl.first))
 			continue
 		found += list(list("fight:[REF(brawl)]", "fight", brawl.fighting ? OUTPOST_GUARD_PRIORITY_FIGHT : OUTPOST_GUARD_PRIORITY_ARGUE, brawl.first))
+	for(var/datum/mind/who as anything in sentences)
+		if(!holds(who))
+			continue
+		var/datum/prison_sentence/sentence = sentences[who]
+		var/mob/living/inmate = sentence?.body_ref?.resolve()
+		if(inmate && inmate_baton_warranted(inmate))
+			found += list(list("inmate:[REF(inmate)]", "inmate", OUTPOST_GUARD_PRIORITY_FIGHT, inmate))
+	if(length(on_duty))
+		var/mob/living/carbon/crit_patient = guard_pick_crit_patient(on_duty)
+		if(crit_patient)
+			found += list(list("crit:[REF(crit_patient)]", "crit", OUTPOST_GUARD_PRIORITY_CRIT, crit_patient))
+	if(has_able_corpse_guard())
+		var/mob/living/dead_body = next_dead_inmate_body()
+		if(dead_body)
+			found += list(list("corpse:[REF(dead_body)]", "corpse", OUTPOST_GUARD_PRIORITY_CORPSE, dead_body))
 	// Most urgent first
 	var/list/sorted = list()
 	while(length(found))
@@ -1256,7 +1579,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /// Gives each incident nobody is on to the nearest guard who is free, or busy with something less urgent
 /datum/outpost_prison/proc/assign_guard_incidents(list/on_duty)
-	for(var/list/incident as anything in guard_incidents())
+	for(var/list/incident as anything in guard_incidents(on_duty))
 		var/key = incident[1]
 		var/handled = FALSE
 		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
@@ -1267,22 +1590,27 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				break
 		if(handled)
 			continue
-		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = incident[4]
-		var/atom/where = prisoner
+		var/mob/living/subject = incident[4]
+		var/atom/where = subject
 		var/turf/spot
 		if(incident[2] == "climb")
-			var/obj/structure/table/reinforced/prison_hatch/hatch = prisoner.climb_ref?.resolve()
+			var/mob/living/carbon/human/npc/outpost_prisoner/climber = subject
+			var/obj/structure/table/reinforced/prison_hatch/hatch = istype(climber) ? climber.climb_ref?.resolve() : null
 			spot = hatch?.staff_side_turf()
-			where = spot || prisoner
+			where = spot || subject
 		var/mob/living/carbon/human/npc/outpost_prison_guard/best
 		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
+			if(guard == subject)
+				continue
+			if(incident[2] == "corpse" && (guard.usable_hands <= 0 || HAS_TRAIT(guard, TRAIT_HANDS_BLOCKED)))
+				continue
 			if(guard.response && guard.response.priority >= incident[3])
 				continue
 			if(guard.skipping(key))
 				continue
 			if(!best || get_dist(guard, where) < get_dist(best, where))
 				best = guard
-		best?.give_response(incident[2], incident[3], key, prisoner, spot)
+		best?.give_response(incident[2], incident[3], key, subject, spot)
 
 /// A spat in sight of a free guard: "Knock it off, you two", and it is over
 /datum/outpost_prison/proc/guard_stop_spat(list/on_duty)
@@ -1364,7 +1692,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return TRUE
 
 /// Every prisoner who sees a baton strike loses OUTPOST_GUARD_ONLOOKER_MOOD, at most once per OUTPOST_GUARD_ONLOOKER_GAP each; one may say so
-/datum/outpost_prison/proc/guard_strike_seen(mob/living/carbon/human/npc/outpost_prisoner/struck, mob/living/carbon/human/npc/outpost_prison_guard/guard)
+/datum/outpost_prison/proc/guard_strike_seen(mob/living/struck, mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	var/list/watchers = list()
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/onlooker in view(OUTPOST_GUARD_ONLOOKER_RANGE, struck))
 		if(onlooker == struck || onlooker.prison != src || onlooker.stat != CONSCIOUS || onlooker.phase != PRISONER_PRESENT)
@@ -1743,6 +2071,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!QDELETED(bot))
 		qdel(bot)
 	office_cache = null
+	crit_aid_cooldowns = null
 
 // ===== LOOK =====
 

@@ -237,12 +237,16 @@
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
 		return
+	prison?.note_inmate_attack(attacker, src, attack_flags)
+	if(attack_flags & ATTACKER_DAMAGING_ATTACK)
+		note_player_damage_hit(attacker)
 	hit_by_staff(attacker)
 	react_to_hit(attacker, stamina_only = !(attack_flags & ATTACKER_DAMAGING_ATTACK))
 
 /// A baton hit: noted like any other, and whatever blows they were throwing stop at once
 /mob/living/carbon/human/npc/outpost_prisoner/proc/on_batoned(datum/source, mob/living/user, obj/item/melee/baton/baton)
 	SIGNAL_HANDLER
+	prison?.note_inmate_attack(user, src, ATTACKER_STAMINA_ATTACK)
 	hit_by_staff(user)
 	stop_blows()
 	// Still on their feet once the knockdown would have landed, they may hit back.
@@ -269,9 +273,9 @@
 		prison?.note_turret_hit(src)
 	hit_by_staff(shot.firer)
 
-/// Whether an attacker counts as staff: people, borgs, anyone with a mind, and mechs
+/// Whether an attacker counts as staff (or an inmate picking a fight in the yard): people, borgs, anyone with a mind, and mechs
 /mob/living/carbon/human/npc/outpost_prisoner/proc/is_staff_attacker(atom/attacker)
-	return ismecha(attacker) || is_outpost_prison_staff(attacker)
+	return ismecha(attacker) || is_outpost_prison_staff(attacker) || !!prison?.is_inmate(attacker)
 
 /**
  * Whether staff hitting them now is deserved: they are fighting, rioting, breaking out, loose,
@@ -350,6 +354,57 @@
 	/// The player who hit them while they were calm, and the world.time until which that player's blows stay unprovoked (hit_justified())
 	var/datum/weakref/provoker_ref
 	var/provoker_until = 0
+	/// Last player who landed damaging blows on this prisoner, when, whether justified, and whether a witness saw it
+	var/datum/weakref/last_player_attacker_ref
+	var/last_player_attack_at = 0
+	var/last_player_attack_justified = FALSE
+	var/last_player_attack_seen = FALSE
+
+/// Records a damaging player blow so a witnessed kill of this prisoner counts as murder
+/mob/living/carbon/human/npc/outpost_prisoner/proc/note_player_damage_hit(atom/attacker)
+	var/mob/living/player = attacker
+	if(!istype(player) || !player.mind || is_outpost_prisoner(player) || is_ai_outpost_prison_guard(player))
+		return
+	last_player_attacker_ref = WEAKREF(player)
+	last_player_attack_at = world.time
+	last_player_attack_justified = hit_justified(player)
+	last_player_attack_seen = !!prison?.prisoner_violence_seen(player, src)
+	if(stat == DEAD && died_at == world.time && !last_player_attack_justified)
+		prison?.report_prisoner_killed(src)
+
+/// Whether a guard, another awake prisoner or police perception can see `attacker` or `victim`
+/datum/outpost_prison/proc/prisoner_violence_seen(mob/living/attacker, mob/living/carbon/human/npc/outpost_prisoner/victim)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
+		if(!QDELETED(guard) && guard.on_duty() && ((attacker && (attacker in view(7, guard))) || (victim && (victim in view(7, guard)))))
+			return TRUE
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
+		if(other == victim || QDELETED(other) || other.phase != PRISONER_PRESENT || other.stat != CONSCIOUS || other.activity?.sleeping)
+			continue
+		if((attacker && (attacker in view(7, other))) || (victim && (victim in view(7, other))))
+			return TRUE
+	return !!(attacker && outpost?.police?.perception?.witness_of(attacker, OUTPOST_CRIME_KILL_CIVILIAN, victim))
+
+/// Reports OUTPOST_CRIME_KILL_CIVILIAN when a player's unprovoked blows kill an NPC prisoner and someone saw the attack or death
+/datum/outpost_prison/proc/report_prisoner_killed(mob/living/carbon/human/npc/outpost_prisoner/victim)
+	if(!victim || victim.last_player_attack_justified || !victim.last_player_attack_at)
+		return FALSE
+	if(world.time - victim.last_player_attack_at > OUTPOST_POLICE_KILL_WINDOW)
+		return FALSE
+	var/mob/living/killer = victim.last_player_attacker_ref?.resolve()
+	if(QDELETED(killer) || !killer.mind || !outpost?.police)
+		return FALSE
+	if(!victim.last_player_attack_seen && !prisoner_violence_seen(killer, victim))
+		return FALSE
+	victim.last_player_attack_at = 0
+	outpost.police.count_crime(killer, OUTPOST_CRIME_KILL_CIVILIAN, victim)
+	if(holds(killer.mind))
+		var/datum/prison_sentence/sentence = sentences[killer.mind]
+		var/stars = outpost.police.get_stars(killer.mind)
+		if(sentence && stars >= 1)
+			var/clamped_stars = clamp(stars, 1, length(OUTPOST_POLICE_JAIL))
+			sentence.total_seconds = max(sentence.total_seconds, round(OUTPOST_POLICE_JAIL[clamped_stars] / (1 SECONDS)))
+			update_lockup_boards()
+	return TRUE
 
 /datum/outpost_prison
 	/// For tests: what a blow makes a calm prisoner do (PRISONER_HIT_FIGHT or _COWER) instead of rolling for it
@@ -383,7 +438,7 @@
 		return FALSE
 	if(!isliving(attacker) || is_ai_outpost_prison_guard(attacker))
 		return FALSE
-	return is_outpost_prison_staff(attacker)
+	return is_outpost_prison_staff(attacker) || prison.is_inmate(attacker)
 
 /**
  * A player's blow landed. After a stamina-only hit (a baton, a disabler) they react only if still
@@ -423,7 +478,7 @@
 		start_retaliation(attacker, quiet = TRUE)
 		return PRISONER_HIT_FIGHT
 	// Hit while calm and for nothing: that player started it, whatever the prisoner does next.
-	if(!last_hit_justified)
+	if(!hit_justified(attacker))
 		provoker_ref = WEAKREF(attacker)
 		provoker_until = world.time + PRISONER_RETALIATE_TIME SECONDS + PRISONER_PROVOKED_TIME
 	// Meek bounty prisoners back off more, Wanted and Most Wanted hit back more (outpost_prison_bounty.dm).
@@ -881,6 +936,10 @@
  */
 /proc/is_outpost_prison_staff(mob/living/person)
 	if(!istype(person) || is_outpost_prisoner(person) || person.stat != CONSCIOUS)
+		return FALSE
+	// Player inmates serving time in the wing are prisoners to trouble and riot code, not staff or outsiders.
+	var/datum/outpost_prison/prison = get_outpost_prison(person)
+	if(prison && prison.is_inmate(person) && !prison.is_staff(person))
 		return FALSE
 	// A guard that is down, arriving or leaving is nobody's staff; a player in a guard's body counts as a player.
 	if(is_ai_outpost_prison_guard(person))

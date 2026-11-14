@@ -50,6 +50,8 @@
 /// Three stars and up with no cell to be had (none, or none that can be got to): held in cuffs by the desk, and the
 /// booking tried again every CASE_HOLD_RETRY. Never a fine (owner decision 37, lead decision L-A2).
 #define CASE_STEP_HOLD "hold"
+/// OUTPOST PRISON seam: routing the suspect to the outpost lockup's Processing door and booking them there
+#define CASE_STEP_LOCKUP "lockup"
 
 // ===== ACTIONS (`case.acting`) =====
 
@@ -60,6 +62,7 @@
 #define CASE_ACT_BOOKING "booking"
 #define CASE_ACT_RECOVERING "recovering"
 #define CASE_ACT_RELEASING "releasing"
+#define CASE_ACT_LOCKUP_BOOKING "lockup_booking" // OUTPOST PRISON seam
 
 /// Blackboard key: where the officer's case sends them
 #define BB_OUTPOST_POLICE_CASE_GOAL "outpost_police_case_goal"
@@ -302,6 +305,8 @@
 	var/release_handoffs = 0
 	/// Failed cell walk-in attempts this step before giving up on that walk
 	var/book_tries = 0
+	/// OUTPOST PRISON seam: set when a lockup walk or booking failed this try so the case falls back to today's path
+	var/lockup_skipped = FALSE
 
 /datum/outpost_police_case/New(datum/outpost_police/new_police, datum/outpost_warrant/new_warrant)
 	. = ..()
@@ -431,6 +436,7 @@
 /// The case goes back to the start (a step timed out). The third time it closes and the warrant is left to fade.
 /datum/outpost_police_case/proc/reset_case()
 	book_tries = 0
+	lockup_skipped = FALSE // OUTPOST PRISON seam
 	resets++
 	if(resets >= 3)
 		if(hold_for_cell())
@@ -678,6 +684,14 @@
 		step_started_at = world.time
 		return
 	if(step != CASE_STEP_DOWNED && step != CASE_STEP_HOLD && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
+		// OUTPOST PRISON seam: a lockup route that times out falls back to today's station cell or desk hold
+		if(step == CASE_STEP_LOCKUP)
+			lockup_skipped = TRUE
+			if(hold_for_cell() && !police.cell_best(officer))
+				start_hold()
+			else
+				set_step(CASE_STEP_DESK)
+			return
 		// Three stars and up, in cuffs with the evidence handed in, and the cell can't be got to: held, not let go
 		if((step == CASE_STEP_DESK || step == CASE_STEP_BOOK) && hold_for_cell())
 			start_hold()
@@ -755,6 +769,8 @@
 			step_release()
 		if(CASE_STEP_HOLD)
 			step_hold()
+		if(CASE_STEP_LOCKUP) // OUTPOST PRISON seam
+			step_lockup()
 
 /**
  * Whether the case is over, and closes it if so: the warrant gone, no stars, three or more stars on someone
@@ -797,7 +813,7 @@
 
 /// Out of the cuffs before the cell: their own doing is SLIP_CUFFS, someone else's ABET. Back to respond.
 /datum/outpost_police_case/proc/check_escape(mob/living/carbon/suspect)
-	if(!cuffed || step == CASE_STEP_BOOK || suspect.handcuffed)
+	if(!cuffed || step == CASE_STEP_BOOK || (step == CASE_STEP_LOCKUP && acting == CASE_ACT_LOCKUP_BOOKING) || suspect.handcuffed) // OUTPOST PRISON seam
 		return
 	// Held by the grip, not cuffs: getting loose unarmed is caught by keep_pulling()'s chase; fighting or arming up
 	// sends the arrest back to subdue them first
@@ -972,7 +988,7 @@
 			progress_dist = dist
 			step_started_at = world.time
 	// Someone in hand out through the exit gate: square up to it and go straight through (police_movement.dm)
-	if(from_sector == POLICE_SECTOR_CONCOURSE && to_sector == POLICE_SECTOR_LOBBY && isliving(officer.pulling))
+	if(from_sector == POLICE_SECTOR_CONCOURSE && to_sector != POLICE_SECTOR_CONCOURSE && isliving(officer.pulling)) // OUTPOST PRISON seam: includes routing to the lockup via the lobby lift
 		var/obj/structure/outpost_exit_gate/exit_gate = police.escort_exit_gate(here)
 		var/turf/line_up = exit_gate ? outpost_police_gate_lineup(officer, exit_gate) : null
 		if(line_up)
@@ -1569,9 +1585,48 @@
 	if(!suspect || !keep_pulling(officer, suspect))
 		return
 	make_way(officer, suspect)
+	// OUTPOST PRISON seam: unpaid 1-2 star fines and 3+ star arrests go to the lockup when it can take them
+	if(wants_lockup(suspect))
+		set_step(CASE_STEP_LOCKUP)
+		step_lockup()
+		return
 	var/turf/door = police.cell_door_turf(officer)
 	if(!door || route_to(officer, door, 1))
 		set_step(CASE_STEP_BOOK)
+
+/// OUTPOST PRISON seam: whether this arrest routes to the outpost's lockup instead of a station cell
+/datum/outpost_police_case/proc/wants_lockup(mob/living/carbon/suspect)
+	if(lockup_skipped || !suspect || !warrant?.mind || !police?.outpost?.prison)
+		return FALSE
+	var/stars = police.get_stars(warrant.mind)
+	if(stars < 1 || (stars <= 2 && police.fine_affordable(warrant)))
+		return FALSE
+	return police.outpost.prison.can_book(suspect)
+
+/// OUTPOST PRISON seam: walks the suspect to the lockup's Processing door and books them into the wing
+/datum/outpost_police_case/proc/step_lockup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
+	var/mob/living/carbon/suspect = get_suspect()
+	if(!officer || !suspect || booked_at)
+		return
+	if(!disposed_at)
+		set_step(CASE_STEP_DESK)
+		return
+	if(!wants_lockup(suspect))
+		lockup_skipped = TRUE
+		set_step(CASE_STEP_DESK)
+		return
+	if(!keep_pulling(officer, suspect))
+		return
+	make_way(officer, suspect)
+	var/turf/door = police.outpost.prison.booking_door_turf()
+	if(!door)
+		lockup_skipped = TRUE
+		set_step(CASE_STEP_DESK)
+		return
+	if(route_to(officer, door, 1))
+		set_goal(null)
+		begin_action(CASE_ACT_LOCKUP_BOOKING)
 
 /// Book: the cell (P6). Whatever comes of it, the case is done.
 /datum/outpost_police_case/proc/step_book()
@@ -1635,7 +1690,8 @@
 		return
 	if(world.time >= hold_retry_at)
 		hold_retry_at = world.time + CASE_HOLD_RETRY
-		if(police.cell_best(officer))
+		lockup_skipped = FALSE // OUTPOST PRISON seam: try the lockup again too
+		if(police.cell_best(officer) || wants_lockup(suspect))
 			set_step(CASE_STEP_DESK)
 			return
 	if(police.desk_turf)
@@ -1652,6 +1708,7 @@
 /datum/outpost_police_case/proc/start_hold()
 	booked_at = 0
 	book_tries = 0
+	lockup_skipped = FALSE // OUTPOST PRISON seam
 	lift_goal = null
 	set_step(CASE_STEP_HOLD)
 	hold_retry_at = world.time + CASE_HOLD_RETRY
@@ -1707,6 +1764,8 @@
 				act_recover(officer)
 			if(CASE_ACT_RELEASING)
 				act_release(officer, suspect_ref?.resolve())
+			if(CASE_ACT_LOCKUP_BOOKING) // OUTPOST PRISON seam
+				act_lockup_book(officer, suspect)
 	if(!QDELETED(src) && acting == action)
 		acting = null
 
@@ -1835,6 +1894,26 @@
 		start_hold()
 		return
 	reset_case()
+
+/// OUTPOST PRISON seam: books `suspect` into the outpost's lockup; falls back to today's path if anything refuses
+/datum/outpost_police_case/proc/act_lockup_book(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	if(booked_at || !suspect)
+		return
+	booked_at = world.time
+	var/booked = police.outpost?.prison?.book_player(suspect, officer, warrant)
+	if(QDELETED(src))
+		return
+	if(booked || (warrant?.mind && police.cell_holding(warrant.mind)))
+		close()
+		return
+	booked_at = 0
+	if(!get_suspect() || suspect_downed(suspect) || !warrant?.mind || police.get_warrant(warrant.mind) != warrant)
+		return
+	lockup_skipped = TRUE
+	if(!police.cell_best(officer) && hold_for_cell())
+		start_hold()
+		return
+	set_step(CASE_STEP_DESK)
 
 /// Takes the evidence case off the floor, or off a fallen officer the way stripping them would
 /datum/outpost_police_case/proc/act_recover(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
@@ -2021,6 +2100,7 @@
 #undef CASE_STEP_DOWNED
 #undef CASE_STEP_RELEASE
 #undef CASE_STEP_HOLD
+#undef CASE_STEP_LOCKUP
 #undef CASE_HOLD_RETRY
 #undef CASE_RELEASE_HANDOFFS
 #undef CASE_RELEASE_LIMIT
@@ -2031,6 +2111,7 @@
 #undef CASE_ACT_BOOKING
 #undef CASE_ACT_RECOVERING
 #undef CASE_ACT_RELEASING
+#undef CASE_ACT_LOCKUP_BOOKING
 #undef BB_OUTPOST_POLICE_CASE_GOAL
 #undef CASE_ACTION_STUCK
 #undef CASE_RECOVER_TRIES

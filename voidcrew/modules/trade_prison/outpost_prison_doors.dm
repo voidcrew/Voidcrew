@@ -89,6 +89,8 @@
 			last_hack_tool = WEAKREF(tool)
 		else if(!same_hacker || !last_hack_tool?.resolve())
 			last_hack_tool = null
+		if(istype(door, /obj/machinery/door/airlock/security/prison_staff))
+			get_outpost_prison(door)?.note_inmate_breakout(who, door)
 	if(is_mend_pending())
 		return
 	set_mend_state(TRUE, world.time + OUTPOST_CHECKPOINT_EMAG_TIME)
@@ -298,6 +300,8 @@
 			span_notice("You start forcing [door]."),
 		)
 	var/datum/outpost_prison/prison = get_outpost_prison(door)
+	if(istype(door, /obj/machinery/door/airlock/security/prison_staff))
+		prison?.note_inmate_breakout(user, door)
 	if(prison?.holds_anyone())
 		playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	log_game("OUTPOST LOCKUP: [key_name(user)] started forcing [door] at [AREACOORD(door)] with [tool].")

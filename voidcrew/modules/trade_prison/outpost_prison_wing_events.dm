@@ -342,7 +342,7 @@ GLOBAL_LIST_INIT(outpost_prison_overflow_reagents, list(
 	for(var/i in 1 to rand(PRISON_TOILET_GRIME_MIN, PRISON_TOILET_GRIME_MAX))
 		if(!length(dirty))
 			break
-		new /obj/effect/decal/cleanable/dirt(pick_n_take(dirty))
+		spawn_wing_mess(/obj/effect/decal/cleanable/dirt, pick_n_take(dirty))
 	playsound(toilet, 'sound/effects/splash.ogg', 50, TRUE)
 	toilet.visible_message(span_warning("[toilet] overflows and floods the cell!"))
 	add_log(cell ? "The toilet in cell [cell.number] overflowed." : "A toilet in the wing overflowed.")
@@ -437,7 +437,8 @@ GLOBAL_LIST_INIT(outpost_prison_overflow_reagents, list(
 	if(!istype(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
 		return null
 	var/filth_type = pick_weight(GLOB.outpost_prison_vent_filth)
-	return new filth_type(tile)
+	var/datum/outpost_prison/prison = get_outpost_prison(tile)
+	return prison ? prison.spawn_wing_mess(filth_type, tile) : new filth_type(tile)
 
 /// tg's foam spread (effects_foam.dm), only onto tiles of the same prison's cell block, and checked from this tile to the next
 /obj/effect/particle_effect/fluid/foam/short_life/outpost_prison/spread(seconds_per_tick = 0.2 SECONDS)

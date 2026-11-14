@@ -220,6 +220,7 @@
 	prisoner.died_at = world.time
 	prisoner.body_unseen = 0
 	prisoner.clear_trouble()
+	report_prisoner_killed(prisoner)
 	if(prisoner.staff_to_blame())
 		blame_death(prisoner)
 	if(!loose_count() && !riot_active)

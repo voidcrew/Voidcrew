@@ -75,14 +75,6 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = person
 	return istype(officer) && !QDELETED(outpost) && officer.police?.outpost == outpost
 
-/// Whether `person` is a player serving time in this wing. Nobody is yet: players are not booked in here.
-/datum/outpost_prison/proc/is_inmate(mob/person)
-	return FALSE
-
-/// Whether any player is serving time in this wing. Nobody is yet (wave 4).
-/datum/outpost_prison/proc/has_inmates()
-	return FALSE
-
 /// Whether anyone is held in this wing right now (a live prisoner on the roster, or a player inmate)
 /datum/outpost_prison/proc/holds_anyone()
 	if(has_inmates())

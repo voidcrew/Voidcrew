@@ -181,7 +181,7 @@
 #define OUTPOST_POLICE_STRIP_TIME (8 SECONDS)
 /// Crime tools a warrant remembers
 #define OUTPOST_POLICE_EVIDENCE_MAX 8
-/// Property lockers per station
+/// Minimum property lockers per station (OUTPOST PRISON seam: lockup front rooms add theirs)
 #define OUTPOST_POLICE_LOCKERS 4
 /// A cell door held open for a prisoner in crit or dead, at most
 #define OUTPOST_POLICE_CELL_MEDIC_OPEN (2 MINUTES)

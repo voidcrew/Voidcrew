@@ -1160,6 +1160,27 @@
 	var/list/fines = OUTPOST_POLICE_FINES
 	return round(fines[warrant.fine_level] * profile.fine_multiplier)
 
+/// OUTPOST PRISON seam: read-only check of whether `warrant`'s crew can currently cover its 1-2 star fine (never moves credits or fixes `fine_level`)
+/datum/outpost_police/proc/fine_affordable(datum/outpost_warrant/warrant)
+	SHOULD_NOT_SLEEP(TRUE)
+	var/datum/voidcrew_crew_record/crew = warrant?.mind?.get_reputation_crew()
+	if(!warrant || QDELETED(crew))
+		return FALSE
+	var/level = warrant.fine_level || clamp(stars_of(warrant.heat), 1, 2)
+	var/list/fines = OUTPOST_POLICE_FINES
+	var/amount = round(fines[level] * profile.fine_multiplier)
+	if(amount <= 0)
+		return TRUE
+	var/list/datum/bank_account/accounts = list()
+	var/pool = 0
+	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(crew))
+		var/datum/bank_account/account = ship.ship_account
+		if(!account || (account in accounts) || account.account_balance <= 0 || !account.has_money(account.account_balance))
+			continue
+		accounts += account
+		pool += account.account_balance
+	return pool >= amount
+
 /**
  * The fine for `warrant`'s stars and the zone, from the ship accounts of the crew its holder is on now (abuse MF6),
  * pooled, richest first, all or nothing. TRUE with the money gone, or FALSE with nothing taken. Never sleeps; no

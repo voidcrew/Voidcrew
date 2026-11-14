@@ -313,13 +313,19 @@
 	TEST_ASSERT(prisoner.blood_volume > 0, "A prisoner has no blood")
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 
-	// The wing's first aid kit holds dressings and a scanner, nothing that goes in a mouth or vein.
+	// The wing's first aid kit holds dressings, one epinephrine medipen for crit emergencies, and a scanner.
 	var/obj/item/storage/medkit/brute/outpost_prison/kit = locate() in prison_spot(home, 16, 2)
 	TEST_ASSERT_NOTNULL(kit, "The prison first aid kit is not on the office table")
 	TEST_ASSERT(locate(/obj/item/stack/medical/bruise_pack) in kit, "The prison kit has no bruise packs")
-	TEST_ASSERT(locate(/obj/item/stack/medical/suture) in kit, "The prison kit has no sutures")
+	TEST_ASSERT(locate(/obj/item/stack/medical/suture/outpost_prison) in kit, "The prison kit has no stocked sutures")
+	TEST_ASSERT(locate(/obj/item/stack/medical/gauze/outpost_prison) in kit, "The prison kit has no stocked gauze")
+	var/medipens = 0
 	for(var/obj/item/thing in kit)
-		TEST_ASSERT(!istype(thing, /obj/item/reagent_containers) && !thing.reagents, "The prison kit holds [thing], which carries chemicals")
+		if(istype(thing, /obj/item/reagent_containers/hypospray/medipen))
+			medipens++
+			continue
+		TEST_ASSERT(!istype(thing, /obj/item/reagent_containers) && !thing.reagents, "The prison kit holds [thing], an unexpected chemical item")
+	TEST_ASSERT_EQUAL(medipens, 1, "The prison kit holds [medipens] epinephrine medipens, not 1")
 	settle_prison_air(home)
 
 // ===== ROUTINE AND DIALOGUE =====

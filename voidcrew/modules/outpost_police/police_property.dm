@@ -469,8 +469,9 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		// Not yet initialised (a pre-loaded interior): the type already starts shut, locked and nobody's
 		if(locker.flags_1 & INITIALIZED_1)
 			locker.free_up()
-	if(length(locker_list) != OUTPOST_POLICE_LOCKERS)
-		log_mapping("OUTPOST POLICE: [outpost] has [length(locker_list)] property lockers, not [OUTPOST_POLICE_LOCKERS].")
+	// OUTPOST PRISON seam: the lockup front room adds its own property lockers above the station minimum
+	if(length(locker_list) < OUTPOST_POLICE_LOCKERS)
+		log_mapping("OUTPOST POLICE: [outpost] has [length(locker_list)] property lockers, fewer than [OUTPOST_POLICE_LOCKERS].")
 	if(locker_for_evidence)
 		locker_for_evidence.police_ref = WEAKREF(src)
 	else
@@ -504,29 +505,52 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 			return locker
 	return null
 
-/// The locker for `prisoner`'s gear: one that is theirs already, a free one, or the one whose owner was let out
-/// longest ago (emptied onto the floor in front). Null when all of them belong to people still in the cells.
-/datum/outpost_police/proc/property_locker_for(mob/living/prisoner, must_shut = FALSE)
-	var/datum/mind/mind = prisoner.mind
+/// The locker for `prisoner`'s gear: one that is theirs already, a free one (nearest `near` when given), or the one
+/// whose owner was let out longest ago (emptied onto the floor in front when `evict_oldest` is TRUE). `in_area`
+/// restricts the choice to lockers inside that area (OUTPOST PRISON seam). Null when none is available.
+/datum/outpost_police/proc/property_locker_for(mob/living/prisoner, must_shut = FALSE, atom/near = null, area/in_area = null, evict_oldest = TRUE)
+	var/datum/mind/mind = prisoner?.mind
+	if(!mind)
+		return null
+	var/turf/near_turf = near ? get_turf(near) : null
+	var/area/near_area = near_turf ? get_area(near_turf) : null
+	// OUTPOST PRISON seam: stripping inside a lockup only uses that wing's own lockers
+	if(!in_area && istype(near_area, /area/voidcrew/outpost_lockup))
+		in_area = near_area
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
-		if(!QDELETED(locker) && !locker.assigning && locker.owner() == mind && (!must_shut || locker.can_shut()))
+		if(QDELETED(locker) || (in_area && get_area(locker) != in_area))
+			continue
+		if(!locker.assigning && locker.owner() == mind && (!must_shut || locker.can_shut()))
 			return locker
+	var/obj/structure/closet/secure_closet/personal/outpost_police/best_free
+	var/best_score = INFINITY
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
-		if(!QDELETED(locker) && locker.is_free())
+		if(QDELETED(locker) || (in_area && get_area(locker) != in_area) || !locker.is_free())
+			continue
+		if(!near_turf)
 			return locker
+		var/score = (get_area(locker) == near_area ? 0 : 1000) + (locker.z == near_turf.z ? get_dist(near_turf, locker) : 1000)
+		if(!best_free || score < best_score)
+			best_free = locker
+			best_score = score
+	if(best_free)
+		return best_free
 	var/obj/structure/closet/secure_closet/personal/outpost_police/oldest
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in lockers)
-		if(QDELETED(locker) || locker.assigning || (must_shut && !locker.can_shut()))
+		if(QDELETED(locker) || (in_area && get_area(locker) != in_area) || locker.assigning || (must_shut && !locker.can_shut()))
 			continue
 		var/datum/mind/owning = locker.owner()
 		if(owning && property_held_in_cells(owning))
 			continue
 		// An owner who left without a release signal counts from now
-		if(!locker.released_at)
+		if(!locker.released_at && evict_oldest)
 			locker.released_at = world.time
-		if(!oldest || locker.released_at < oldest.released_at)
+		var/locker_released = locker.released_at || world.time
+		var/oldest_released = oldest ? (oldest.released_at || world.time) : INFINITY
+		if(!oldest || locker_released < oldest_released || (locker_released == oldest_released && near_area && get_area(locker) == near_area && get_area(oldest) != near_area))
 			oldest = locker
-	oldest?.evict()
+	if(evict_oldest)
+		oldest?.evict()
 	return oldest
 
 /// The lobby tile outside the door of the cell `prisoner` is in (the cell's own outside_turf), or the officer's own tile when there is none
@@ -560,11 +584,12 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
  * locker was free (or the strip was interrupted). Everything comes off through tg's own unequip straight into
  * the locker, so nothing ever lies in the cell; the ID card, the cuffs, and what must never be taken stay on.
  */
-/datum/outpost_police/proc/store_property(mob/living/carbon/prisoner, mob/living/officer)
+/datum/outpost_police/proc/store_property(mob/living/carbon/prisoner, mob/living/officer, area/in_area = null)
 	if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
 		return FALSE
 	var/mob/living/carbon/human/person = prisoner
-	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner, must_shut = TRUE)
+	// OUTPOST PRISON seam: prefer the free locker nearest the officer, and restrict to `in_area` when given
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner, must_shut = TRUE, near = officer || prisoner, in_area = in_area)
 	if(!locker || !locker.reserve_for(prisoner))
 		return FALSE
 	var/delay = max(1, round(OUTPOST_POLICE_STRIP_TIME * GLOB.outpost_police_property_time_scale))
@@ -740,7 +765,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	return thing
 
 /// Stores a non-disposable restraint removed right after `store_property()` so it never stays loose on the cell floor
-/datum/outpost_police/proc/store_extra_property(mob/living/carbon/prisoner, obj/item/thing)
+/datum/outpost_police/proc/store_extra_property(mob/living/carbon/prisoner, obj/item/thing, area/in_area = null)
 	if(QDELETED(prisoner) || !prisoner.mind || QDELETED(thing) || outpost_police_untouchable(thing))
 		return FALSE
 	var/obj/structure/closet/secure_closet/personal/outpost_police/victim = property_locker_holding(thing)
@@ -750,9 +775,9 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		if(thing.loc != victim)
 			victim.give_back(thing)
 		return TRUE
-	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner)
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner, in_area = in_area)
 	if(locker && !locker.owner() && !locker.can_shut())
-		locker = property_locker_for(prisoner, must_shut = TRUE)
+		locker = property_locker_for(prisoner, must_shut = TRUE, in_area = in_area)
 	if(!locker)
 		return FALSE
 	var/fresh_assignment = !locker.owner()

@@ -246,6 +246,7 @@
 	if(!cell || QDELETED(toilet) || contraband_pruno(cell) || !contraband_cistern_room(toilet, outpost_prison_pruno_weight()))
 		return null
 	var/obj/item/reagent_containers/cup/glass/bottle/pruno/outpost_prison/bag = new(null)
+	mark_wing_contraband(bag)
 	bag.forceMove(toilet)
 	LAZYADD(toilet.cistern_items, bag)
 	toilet.w_items += bag.w_class
@@ -392,6 +393,7 @@
 	if(cell.stash_shiv)
 		cell.stash_shiv = FALSE
 		var/obj/item/knife/shiv/shiv = new(get_turf(user))
+		mark_wing_contraband(shiv)
 		user.put_in_hands(shiv)
 		to_chat(user, span_notice("There's a shiv under the mattress."))
 		add_log("[user.name] found a shiv in cell [cell.number].")
@@ -652,6 +654,7 @@
 	prisoner.drop_held_item()
 	// The stash comes out into their hand, a real shiv like any other.
 	var/obj/item/knife/shiv/shiv = new(prisoner.drop_location())
+	mark_wing_contraband(shiv)
 	if(!prisoner.take_item(shiv))
 		return FALSE
 	prisoner.manual_emote("pulls out a shiv [prisoner.p_they()] had been saving.")

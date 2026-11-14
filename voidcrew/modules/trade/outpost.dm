@@ -264,10 +264,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			police_landmarks += police_mark
 		for(var/obj/effect/landmark/outpost_police_cell/police_mark in interior_turf)
 			police_landmarks += police_mark
-		// OUTPOST PRISON seam: the lockup's front room has property lockers of its own; they are not the station's
-		if(!istype(interior_turf.loc, /area/voidcrew/outpost_lockup))
-			for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
-				police_lockers += locker
+		// OUTPOST PRISON seam: both station and lockup front-room property lockers link on police.lockers
+		for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker in interior_turf)
+			police_lockers += locker
 		police_evidence ||= locate(/obj/structure/closet/secure_closet/outpost_evidence) in interior_turf
 		for(var/obj/effect/landmark/outpost_morgue/recovery_mark in interior_turf)
 			recovery_landmarks += recovery_mark
@@ -473,6 +472,14 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/proc/register_pvp_aggression(mob/living/victim, mob/living/offender, crime = OUTPOST_CRIME_ASSAULT_ARMED, obj/item/source)
 	if(!victim?.mind || !offender?.mind || victim.mind == offender.mind)
 		return
+	// OUTPOST PRISON seam: inmates fighting inside the cell block are a lockup matter (guards baton), not a police crime
+	if(prison?.in_cell_block(offender) && prison.in_cell_block(victim))
+		if(prison.is_inmate(offender))
+			prison.note_inmate_attack(offender, victim, ATTACKER_DAMAGING_ATTACK)
+		if(prison.is_inmate(victim))
+			prison.note_inmate_provoked(victim, offender)
+		if(prison.is_inmate(offender) && prison.is_inmate(victim))
+			return
 	var/list/allowed_targets = self_defense_targets[offender.mind]
 	var/defense_until = LAZYACCESS(allowed_targets, victim.mind)
 	if(defense_until > world.time)

@@ -362,8 +362,8 @@
 		return null
 	var/list/greetable = list()
 	for(var/mob/living/person in view(PRISON_REP_GREET_RANGE, prisoner))
-		// The wing's own guards have their own lines (outpost_prison_guards.dm).
-		if(!is_outpost_prison_staff(person) || is_outpost_prison_guard(person))
+		// The wing's own guards have their own lines (outpost_prison_guards.dm); inmates and non-guard staff/visitors get greeted.
+		if((!is_inmate(person) && !is_outpost_prison_staff(person)) || is_outpost_prison_guard(person))
 			continue
 		var/key = rep_key(person)
 		if(!key)

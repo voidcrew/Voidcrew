@@ -908,7 +908,10 @@
 	SIGNAL_HANDLER
 	var/tier = eat_food(food)
 	if(isturf(loc) && prob(50))
-		new /obj/effect/decal/cleanable/food/crumbs(loc)
+		if(prison)
+			prison.spawn_wing_mess(/obj/effect/decal/cleanable/food/crumbs, loc)
+		else
+			new /obj/effect/decal/cleanable/food/crumbs(loc)
 	if(feeder)
 		note_carer(feeder)
 	INVOKE_ASYNC(src, PROC_REF(react_to_food), tier, feeder)
@@ -939,7 +942,10 @@
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/leave_meal_mess(obj/item/food/meal, turf/floor, turf/table_turf)
 	if(isopenturf(floor) && (!table_turf || prob(PRISONER_TABLE_CRUMB_CHANCE)))
-		new /obj/effect/decal/cleanable/food/crumbs(floor)
+		if(prison)
+			prison.spawn_wing_mess(/obj/effect/decal/cleanable/food/crumbs, floor)
+		else
+			new /obj/effect/decal/cleanable/food/crumbs(floor)
 	var/trash_type
 	if(meal?.trash_type && prob(75))
 		trash_type = meal.trash_type
@@ -1120,7 +1126,10 @@
 	if(!istype(floor))
 		return
 	if(prob(75))
-		new /obj/effect/decal/cleanable/dirt(floor)
+		if(prison)
+			prison.spawn_wing_mess(/obj/effect/decal/cleanable/dirt, floor)
+		else
+			new /obj/effect/decal/cleanable/dirt(floor)
 	else
 		var/trash_type = pick(/obj/item/trash/candy, /obj/item/trash/chips, /obj/item/trash/raisins)
 		new trash_type(floor)

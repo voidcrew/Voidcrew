@@ -144,7 +144,10 @@
 	var/list/choices = own_choices.Copy()
 	if(!will_listen())
 		choices -= PRISON_TALK_CALM
-	if(handcuffed)
+	if(!prison?.is_staff(user))
+		choices -= PRISON_TALK_CELL
+		choices -= PRISON_TALK_UNCUFF
+	else if(handcuffed)
 		choices -= PRISON_TALK_CELL
 	else
 		choices -= PRISON_TALK_UNCUFF
@@ -292,6 +295,8 @@
  * PRISON_TALK_ORDER_SPAM_MOOD and is refused. Returns TRUE if they went.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_order(mob/living/user)
+	if(!prison?.is_staff(user))
+		return FALSE
 	// Cuffed while the menu was open: they can't walk anywhere.
 	if(handcuffed)
 		balloon_alert(user, "cuffed")

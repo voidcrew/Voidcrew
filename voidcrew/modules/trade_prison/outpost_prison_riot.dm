@@ -154,6 +154,8 @@
 
 /// Whether a player is awake and playing inside the host outpost's own map
 /datum/outpost_prison/proc/find_audience()
+	if(has_inmates())
+		return TRUE
 	for(var/mob/living/person in wing_clients())
 		if(QDELETED(person) || person.stat != CONSCIOUS || is_outpost_prisoner(person))
 			continue
@@ -1025,7 +1027,7 @@
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/person in view(7, src))
-		if(!is_outpost_prison_staff(person) || !reachable?[get_turf(person)])
+		if(!is_outpost_prison_staff(person) || (prison && prison.is_inmate(person) && !prison.is_staff(person)) || !reachable?[get_turf(person)])
 			continue
 		if(prison && prison.attackers_on(person, src) >= PRISON_RIOT_MAX_ATTACKERS)
 			continue
@@ -1120,7 +1122,7 @@
 			floor.MakeSlippery(TURF_WET_WATER, min_wet_time = 20 SECONDS, wet_time_to_add = 10 SECONDS)
 	var/turf/open/standing_on = get_turf(prisoner)
 	if(istype(standing_on))
-		new /obj/effect/decal/cleanable/dirt(standing_on)
+		spawn_wing_mess(/obj/effect/decal/cleanable/dirt, standing_on)
 	prisoner.visible_message(span_danger("[prisoner] starts wrecking the cell!"))
 	prisoner.say_context_or("wreck", "locked_in")
 	prisoner.update_bubble()

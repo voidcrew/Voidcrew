@@ -843,6 +843,7 @@
 	context = "dice"
 	weight = 3
 	personality_weights = list("chatty" = 1.3, "grumpy" = 1.2, "quiet" = 0.7)
+	deals_in_members = TRUE
 	max_joiners = 1
 	seat_type = /datum/prisoner_activity/dice/join
 	/// The die in play, out of the bag
@@ -863,6 +864,8 @@
 	var/datum/weakref/last_winner_ref
 	/// Tries at putting the die away
 	var/tidy_tries = 0
+	/// REF() of the members given credit for rolling, once a game each
+	var/list/credited = list()
 
 /// Rolling against someone else's dice
 /datum/prisoner_activity/dice/join
@@ -902,6 +905,11 @@
 	var/mob/living/holder = die.loc
 	return istype(holder) && get_dist(prisoner, holder) <= 3
 
+/datum/prisoner_activity/dice/invite()
+	if(length(seated_members()) >= max_joiners)
+		return 0
+	return ..()
+
 /datum/prisoner_activity/dice/start_play()
 	var/list/seats = players()
 	partner_ref = length(seats) >= 2 ? WEAKREF(seats[2][1]) : null
@@ -910,10 +918,10 @@
 	rolls = list(0, 0)
 	roll_wait = 1
 
-/// The prisoner rolling against the host, while they still sit at the table
+/// Whoever is rolling against the host, while they still sit at the table
 /datum/prisoner_activity/dice/proc/partner()
-	var/mob/living/carbon/human/npc/outpost_prisoner/other = partner_ref?.resolve()
-	return (other && front_of(other)) ? other : null
+	var/mob/living/other = partner_ref?.resolve()
+	return (other && other.stat == CONSCIOUS && front_of(other)) ? other : null
 
 /datum/prisoner_activity/dice/play_step()
 	if(in_flight)
@@ -923,7 +931,7 @@
 		return ACTIVITY_CONTINUE
 	if(--roll_wait > 0)
 		return ACTIVITY_CONTINUE
-	var/mob/living/carbon/human/npc/outpost_prisoner/roller = turn == 1 ? prisoner : partner()
+	var/mob/living/roller = turn == 1 ? prisoner : partner()
 	if(rounds_left <= 0 || !roller || !roll_die(roller))
 		stage = "tidy"
 		steps = 0
@@ -931,8 +939,8 @@
 	return ACTIVITY_CONTINUE
 
 /// Where `roller` rolls to: the table in front of the other player, else the table two tiles off
-/datum/prisoner_activity/dice/proc/roll_target(mob/living/carbon/human/npc/outpost_prisoner/roller)
-	var/mob/living/carbon/human/npc/outpost_prisoner/other = roller == prisoner ? partner() : prisoner
+/datum/prisoner_activity/dice/proc/roll_target(mob/living/roller)
+	var/mob/living/other = roller == prisoner ? partner() : prisoner
 	var/turf/front = front_of(other)
 	if(front && front != get_turf(roller))
 		return front
@@ -942,19 +950,31 @@
 	return front_of(roller)
 
 /// `roller` picks up the die and rolls it across the table. TRUE if it is rolling.
-/datum/prisoner_activity/dice/proc/roll_die(mob/living/carbon/human/npc/outpost_prisoner/roller)
+/datum/prisoner_activity/dice/proc/roll_die(mob/living/roller)
 	var/obj/item/dice/die = die_ref?.resolve()
-	if(QDELETED(die))
+	if(QDELETED(die) || QDELETED(roller) || roller.stat != CONSCIOUS)
 		return FALSE
-	if(roller.held_item != die)
-		if(roller.held_item || roller.try_reach(die) != PRISONER_REACH_OK || !roller.take_item(die))
-			return FALSE
 	var/turf/target = roll_target(roller)
 	if(!target)
 		return FALSE
-	if(prob(35))
-		roller.say_context("dice", roller == prisoner ? partner() : prisoner)
-	roller.drop_held_item(roller.loc)
+	var/mob/living/other = roller == prisoner ? partner() : prisoner
+	if(is_outpost_prisoner(roller))
+		var/mob/living/carbon/human/npc/outpost_prisoner/npc_roller = roller
+		if(npc_roller.held_item != die)
+			if(npc_roller.held_item || npc_roller.try_reach(die) != PRISONER_REACH_OK || !npc_roller.take_item(die))
+				return FALSE
+		if(prob(35))
+			if(!other || is_outpost_prisoner(other))
+				npc_roller.say_context("dice", other)
+			else
+				npc_roller.say_to_staff("dice", other)
+		npc_roller.drop_held_item(npc_roller.loc)
+	else
+		if(!roller.is_holding(die))
+			if(!isturf(die.loc) || get_dist(roller, die) > 1 || !roller.put_in_hands(die))
+				return FALSE
+		if(!roller.transferItemToLoc(die, roller.drop_location(), force = TRUE))
+			return FALSE
 	in_flight = TRUE
 	flight_steps = 0
 	die.throw_at(target, 3, 1, roller, TRUE, FALSE, CALLBACK(src, PROC_REF(die_landed), WEAKREF(roller)))
@@ -980,15 +1000,27 @@
 /// Both have rolled: the higher roll wins and usually says so. Returns the winner, or null for a draw.
 /datum/prisoner_activity/dice/proc/settle_round()
 	last_winner_ref = null
-	var/mob/living/carbon/human/npc/outpost_prisoner/other = partner_ref?.resolve()
-	if(!other || rolls[1] == rolls[2])
+	var/mob/living/other = partner_ref?.resolve()
+	if(!other)
 		return null
-	var/mob/living/carbon/human/npc/outpost_prisoner/winner = rolls[1] > rolls[2] ? prisoner : other
-	var/mob/living/carbon/human/npc/outpost_prisoner/loser = winner == prisoner ? other : prisoner
+	if(!is_outpost_prisoner(other))
+		var/key = REF(other)
+		if(!(key in credited))
+			credited += key
+			prisoner.prison?.note_staff_kindness(other, PRISON_CARDS_KINDNESS)
+	if(rolls[1] == rolls[2])
+		return null
+	var/mob/living/winner = rolls[1] > rolls[2] ? prisoner : other
+	var/mob/living/loser = winner == prisoner ? other : prisoner
 	last_winner_ref = WEAKREF(winner)
-	if(prob(70) && winner.stat == CONSCIOUS)
-		winner.face_atom(loser)
-		winner.say_context("dice_win", loser)
+	if(is_outpost_prisoner(winner))
+		var/mob/living/carbon/human/npc/outpost_prisoner/npc_winner = winner
+		if(prob(70) && npc_winner.stat == CONSCIOUS)
+			npc_winner.face_atom(loser)
+			if(is_outpost_prisoner(loser))
+				npc_winner.say_context("dice_win", loser)
+			else
+				npc_winner.say_to_staff("dice_win", loser)
 	return winner
 
 /datum/prisoner_activity/dice/tidy_step()
@@ -1232,7 +1264,7 @@
 			qdel(slice)
 			continue
 		party_diners += list(list(WEAKREF(diner), WEAKREF(slice)))
-	new /obj/effect/decal/cleanable/food/crumbs(center)
+	spawn_wing_mess(/obj/effect/decal/cleanable/food/crumbs, center)
 	playsound(center, 'sound/items/eatfood.ogg', 30, TRUE)
 
 /// Everyone eats their slice; the host thanks whoever brought the cake, and has had their party

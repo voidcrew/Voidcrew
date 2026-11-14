@@ -44,9 +44,12 @@
 	else
 		. += span_notice("It looks clean.")
 
-/obj/item/clothing/under/rank/prisoner/outpost/machine_wash(obj/machinery/washing_machine/washer)
-	. = ..()
+/obj/item/clothing/under/rank/prisoner/outpost/machine_wash(obj/machinery/washing_machine/washer, mob/user)
+	var/was_dirty = grime >= PRISONER_GRIME_DIRTY
+	. = ..(washer)
 	set_grime(0)
+	if(was_dirty)
+		get_outpost_prison(washer || src)?.on_uniform_washed(user, src, washer)
 
 // ===== SERVING HATCH =====
 
@@ -281,18 +284,19 @@
 
 // ===== FIRST AID =====
 
-/// The wing's first aid kit: dressings only. Prisoners are treated without chemicals.
+/// The wing's first aid kit: stocked dressings and one epinephrine medipen for emergencies.
 /obj/item/storage/medkit/brute/outpost_prison
 	name = "prison first aid kit"
-	desc = "Bruise packs, sutures and gauze for the prison wing."
+	desc = "Bruise packs, sutures, gauze and an epinephrine medipen for the prison wing."
 
 /obj/item/storage/medkit/brute/outpost_prison/PopulateContents()
 	if(empty)
 		return
 	var/static/items_inside = list(
 		/obj/item/stack/medical/bruise_pack = 2,
-		/obj/item/stack/medical/suture = 2,
-		/obj/item/stack/medical/gauze = 1,
+		/obj/item/stack/medical/suture/outpost_prison = 2,
+		/obj/item/stack/medical/gauze/outpost_prison = 1,
+		/obj/item/reagent_containers/hypospray/medipen = 1,
 		/obj/item/healthanalyzer/simple = 1,
 	)
 	generate_items_inside(items_inside, src)

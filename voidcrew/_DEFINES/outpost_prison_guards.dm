@@ -69,9 +69,11 @@
 /// Off shift (dismissed, recalled, swapping): walking to the staff closet to go
 #define OUTPOST_GUARD_DISMISSED "dismissed"
 
-// Response priorities, most urgent highest. One guard per incident on the ladder (threat, argument, fight,
-// climb); a riot, an experiment and the leash take every guard they apply to. Spats and loose prisoners
-// need no walk and are handled on the spot.
+// Response priorities, most urgent highest. One guard per incident on the ladder (corpse, crit, threat,
+// argument, fight, climb); a riot, an experiment and the leash take every guard they apply to. Spats and
+// loose prisoners need no walk and are handled on the spot.
+#define OUTPOST_GUARD_PRIORITY_CORPSE 1
+#define OUTPOST_GUARD_PRIORITY_CRIT 2
 #define OUTPOST_GUARD_PRIORITY_THREAT 3
 #define OUTPOST_GUARD_PRIORITY_ARGUE 4
 #define OUTPOST_GUARD_PRIORITY_FIGHT 5

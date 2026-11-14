@@ -203,11 +203,12 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	prisoner.face_atom(user)
 	return TRUE
 
-/// "Heard anything?": the checks and the talk, then give_lead() for the asker's ship
+/// "Heard anything?": the checks and the talk, then give_lead() for the asker's ship (or folded note when an inmate has none)
 /datum/outpost_prison/proc/lead_ask(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(!lead_can_ask(prisoner, user))
 		return FALSE
-	if(!get_crew_ship(user))
+	var/datum/prison_sentence/sentence = sentence_for(user)
+	if(!sentence && !get_crew_ship(user))
 		prisoner.face_atom(user)
 		prisoner.say_context("lead_no_ship")
 		return FALSE
@@ -217,9 +218,10 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	if(!lead_face_to_face(prisoner, user, "You ask [prisoner] what they know."))
 		return FALSE
 	COOLDOWN_START(prisoner, lead_ask_cooldown, OUTPOST_PRISON_LEAD_ASK_COOLDOWN)
-	// Looked up again: the ship could have gone in those seconds.
+	// Looked up again: the ship or sentence could have changed in those seconds.
+	sentence = sentence_for(user)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
-	if(!ship)
+	if(!sentence && !ship)
 		prisoner.say_context("lead_no_ship")
 		return FALSE
 	give_lead(prisoner, ship, user)
@@ -275,8 +277,14 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 /datum/outpost_prison/proc/give_lead(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/structure/overmap/ship/ship, mob/living/asker, force_lie = null)
 	if(QDELETED(prisoner) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 		return "invalid"
-	if(QDELETED(ship) || QDELETED(asker))
+	if(QDELETED(asker))
 		return "invalid"
+	var/datum/prison_sentence/sentence = sentence_for(asker)
+	var/has_ship = !isnull(ship) && !QDELETED(ship)
+	if(!has_ship && !sentence)
+		return "invalid"
+	if(!has_ship)
+		ship = null
 	prisoner.face_atom(asker)
 	if(lead_hit_by(prisoner, asker))
 		prisoner.say_context("lead_refuse_hit")
@@ -285,7 +293,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	if(prisoner.mood < OUTPOST_PRISON_LEAD_REFUSE_MOOD)
 		prisoner.say_context("lead_refuse")
 		return "refuse"
-	if(!prisoner.carries_lead || !lead_ready())
+	if(sentence?.tip_given || !prisoner.carries_lead || !lead_ready())
 		prisoner.say_context("lead_none")
 		return "none"
 	var/list/candidates = lead_candidates(ship)
@@ -316,15 +324,18 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 		lead.place = ruin.true_name || ruin.name
 		lead.waypoint_key = "prison_lead_[REF(ruin)]"
 	lead.band_name = outpost_lead_band_name(band)
-	// Tracked to the ruin when true, as a bought tip is; the helm draws both the same
-	ship.add_waypoint(lead.waypoint_key, "[prisoner.real_name]'s tip: [lead.place] ([lead.band_name])", lead.target_x, lead.target_y, "Rumors", ruin)
+	// Tracked to the ruin when true, as a bought tip is; an inmate without a crew ship gets a folded paper note instead
+	if(ship)
+		ship.add_waypoint(lead.waypoint_key, "[prisoner.real_name]'s tip: [lead.place] ([lead.band_name])", lead.target_x, lead.target_y, "Rumors", ruin)
+		lead.ship_ref = WEAKREF(ship)
+		lead.ship_name = ship.name
+	else
+		lead.ship_name = "folded note"
 	lead.teller_ref = WEAKREF(prisoner)
 	lead.teller_name = prisoner.real_name
 	lead.teller_first_name = prisoner.speech_name()
 	lead.asker_ref = WEAKREF(asker)
 	lead.asker_name = asker.name
-	lead.ship_ref = WEAKREF(ship)
-	lead.ship_name = ship.name
 	lead.given_at = world.time
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(other != prisoner && other.phase == PRISONER_PRESENT)
@@ -333,11 +344,21 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	// The same words and the same mark either way; only the tell and the yard give a lie away here.
 	var/band_phrase = outpost_lead_band_phrase(band)
 	prisoner.say_context_with("lead_tell", list("{place}" = lead.place, "{band}" = band_phrase))
-	to_chat(asker, span_notice("A new mark lands on [ship.name]'s helm: [lead.place] at ([lead.target_x], [lead.target_y]), in [band_phrase]."))
+	if(ship)
+		to_chat(asker, span_notice("A new mark lands on [ship.name]'s helm: [lead.place] at ([lead.target_x], [lead.target_y]), in [band_phrase]."))
+	else
+		var/obj/item/paper/note = new(asker.drop_location())
+		note.name = "folded note"
+		note.add_raw_text("[lead.place]<br>([lead.target_x], [lead.target_y]) - [band_phrase]")
+		note.update_appearance()
+		asker.put_in_hands(note)
+		to_chat(asker, span_notice("[prisoner] slips a folded note into your hand."))
 	if(lead_roll(lead.lie ? OUTPOST_PRISON_LEAD_TELL_LIE : OUTPOST_PRISON_LEAD_TELL_TRUTH))
 		lead_tell_emote(prisoner)
 
 	prisoner.carries_lead = FALSE
+	if(sentence)
+		sentence.tip_given = TRUE
 	lead_ready_at = world.time + OUTPOST_PRISON_LEAD_GAP
 	add_log("[prisoner.real_name] gave [asker.name] a tip.")
 	open_leads += lead
@@ -369,9 +390,9 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
  */
 /datum/outpost_prison/proc/lead_candidates(obj/structure/overmap/ship/ship)
 	var/list/candidates = list()
-	if(QDELETED(ship))
+	if(!isnull(ship) && QDELETED(ship))
 		return candidates
-	var/list/ship_position = outpost_lead_ship_position(ship)
+	var/list/ship_position = ship ? outpost_lead_ship_position(ship) : null
 	for(var/obj/structure/overmap/space_ruin/ruin in GLOB.space_ruin_signals)
 		if(lead_is_candidate(ruin, ship, ship_position))
 			candidates += ruin
@@ -385,12 +406,13 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	if(!istype(get_turf(ruin), /turf/open/overmap))
 		return FALSE
 	var/key = REF(ruin)
-	if(ship.get_waypoint(key) || ship.get_waypoint("rumor_[key]") || ship.get_waypoint("prison_lead_[key]"))
-		return FALSE
-	if(LAZYACCESS(ship.discovered_contacts, key))
-		return FALSE
+	if(ship)
+		if(ship.get_waypoint(key) || ship.get_waypoint("rumor_[key]") || ship.get_waypoint("prison_lead_[key]"))
+			return FALSE
+		if(LAZYACCESS(ship.discovered_contacts, key))
+			return FALSE
 	var/list/coords = ruin.get_relative_overmap_coords()
-	if(!outpost_lead_coords_valid(coords) || ship.is_tile_surveyed(coords[1], coords[2]))
+	if(!outpost_lead_coords_valid(coords) || (ship && ship.is_tile_surveyed(coords[1], coords[2])))
 		return FALSE
 	if(ship_position && in_view_ring(ship_position, coords))
 		return FALSE
@@ -402,7 +424,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
  * than the truth to send a crew into the deep; bands with no clear tile are left out of the draw.
  */
 /datum/outpost_prison/proc/lead_lie_spot(obj/structure/overmap/ship/ship, list/candidates)
-	var/list/spots_by_band = lead_lie_spots(outpost_lead_ship_position(ship))
+	var/list/spots_by_band = lead_lie_spots(ship ? outpost_lead_ship_position(ship) : null)
 	var/list/band_weights = list()
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in candidates)
 		var/band_key = "[outpost_lead_band(get_turf(ruin))]"
@@ -527,10 +549,10 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	lead_check_clock = 0
 	for(var/datum/outpost_prison_lead/lead as anything in open_leads.Copy())
 		var/obj/structure/overmap/ship/ship = lead.ship_ref?.resolve()
-		if(QDELETED(ship) || world.time - lead.given_at > OUTPOST_PRISON_LEAD_TRACK_TIME)
+		if((lead.ship_ref && QDELETED(ship)) || world.time - lead.given_at > OUTPOST_PRISON_LEAD_TRACK_TIME)
 			open_leads -= lead
 			continue
-		if(lead.lie && !lead.exposed)
+		if(ship && lead.lie && !lead.exposed)
 			lead_check_exposed(lead, ship)
 		if(lead.exposed && !lead.caught_said)
 			lead_caught_line(lead)

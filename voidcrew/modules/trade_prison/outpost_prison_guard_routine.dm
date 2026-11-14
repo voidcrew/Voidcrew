@@ -100,10 +100,12 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	if(goal && prison?.has_processing())
 		var/turf/here = get_turf(src)
 		var/turf/goal_turf = get_turf(goal)
-		if(prison.contains_turf(here) && goal_turf && prison.processing_on_yard_side(goal_turf) && !prison.processing_on_yard_side(here))
-			var/turf/cross_step = prison.processing_step_through(src, TRUE)
-			if(cross_step)
-				return cross_step
+		if(prison.contains_turf(here) && goal_turf && prison.contains_turf(goal_turf))
+			var/want_yard = prison.processing_on_yard_side(goal_turf)
+			if(want_yard != prison.processing_on_yard_side(here))
+				var/turf/cross_step = prison.processing_step_through(src, want_yard)
+				if(cross_step)
+					return cross_step
 	return goal
 
 /// A walk to `goal` failed: a response gets another try until it expires; an activity gets one more, then a rest
@@ -857,7 +859,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 		if(tile.loc != wing)
 			continue
 		for(var/obj/item/storage/medkit/kit in tile)
-			if(locate(/obj/item/stack/medical) in kit)
+			if((locate(/obj/item/stack/medical) in kit) || (locate(/obj/item/reagent_containers/hypospray/medipen) in kit))
 				return kit
 	return null
 

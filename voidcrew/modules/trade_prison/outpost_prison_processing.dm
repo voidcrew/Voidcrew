@@ -221,6 +221,13 @@
 /// Advances Processing by `seconds`
 /datum/outpost_prison/proc/processing_tick(seconds)
 	processing_leavers_tick(seconds)
+	if(corpse_doors_open() && has_processing())
+		if(processing_state != OUTPOST_PROCESSING_BOOK)
+			if(processing_state != OUTPOST_PROCESSING_IDLE)
+				processing_done()
+			processing_work_door(processing_door(TRUE), TRUE)
+			processing_work_door(processing_door(FALSE), TRUE)
+			return
 	switch(processing_state)
 		if(OUTPOST_PROCESSING_IN)
 			processing_in_tick(seconds)
@@ -228,6 +235,13 @@
 			processing_out_tick(seconds)
 		if(OUTPOST_PROCESSING_CROSS)
 			processing_cross_tick(seconds)
+		if(OUTPOST_PROCESSING_RELEASE)
+			processing_release_tick(seconds)
+		if(OUTPOST_PROCESSING_BOOK)
+			processing_seconds += seconds
+			if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT)
+				booking_mover_ref = null
+				processing_done()
 		else
 			processing_idle_tick()
 
@@ -453,6 +467,8 @@
 	processing_work_door(outer, FALSE)
 	if(processing_shut(inner) && processing_shut(outer) && !processing_player_inside())
 		processing_clear_dead()
+	if(processing_check_releases())
+		return
 	if(!length(processing_leavers))
 		return
 	var/room_free = processing_free()
@@ -474,6 +490,8 @@
 			continue
 		var/mob/living/carbon/human/npc/npc = body
 		if(istype(npc) && npc.npc_ever_played())
+			continue
+		if(ishuman(body) && !istype(npc))
 			continue
 		if(outpost_prison_body_held(body) || seen_by_client(body))
 			continue
@@ -529,11 +547,99 @@
 		processing_work_door(inner, TRUE)
 	else if(prisoner && !prisoner.processing_goal)
 		prisoner.processing_goal = prisoner.cell?.arrival_turf() || get_step(inner, get_dir(here, inner))
+	else if(!prisoner && !inner.operating && !who.client && !who.mind?.key && who.stat == CONSCIOUS && who.body_position != LYING_DOWN && !HAS_TRAIT(who, TRAIT_INCAPACITATED))
+		var/turf/yard_step = processing_outside_turf(inner)
+		if(here == get_turf(inner) && yard_step)
+			who.Move(yard_step, get_dir(who, yard_step))
+		else
+			step_towards(who, get_turf(inner))
 	if(prisoner && processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT && !seen_by_client(prisoner))
 		var/turf/home = prisoner.cell?.arrival_turf()
 		if(home)
 			prisoner.forceMove(home)
 			prisoner.processing_goal = null
+
+/// Prunes `processing_release_refs` and starts `OUTPOST_PROCESSING_RELEASE` for the first released inmate ready at the inner door
+/datum/outpost_prison/proc/processing_check_releases()
+	if(!length(processing_release_refs) || !has_processing())
+		return FALSE
+	for(var/datum/weakref/ref as anything in processing_release_refs.Copy())
+		var/mob/living/who = ref?.resolve()
+		if(QDELETED(who) || who.stat == DEAD || holds(who.mind) || !contains_turf(get_turf(who)) || in_front_room(who))
+			processing_release_refs -= ref
+			continue
+		if(try_start_processing_release(who))
+			return TRUE
+	return FALSE
+
+/// Claims Processing to pass a released player inmate (`who`) out to the front room once they arrive at the inner door
+/datum/outpost_prison/proc/try_start_processing_release(mob/living/who)
+	if(QDELETED(who) || who.stat != CONSCIOUS || who.body_position == LYING_DOWN || HAS_TRAIT(who, TRAIT_INCAPACITATED))
+		return FALSE
+	if((who.mind?.key && !who.client) || holds(who.mind) || !has_processing() || processing_state != OUTPOST_PROCESSING_IDLE)
+		return FALSE
+	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
+	if(!inner || !outer || processing_outsider_inside())
+		return FALSE
+	if(in_processing(who))
+		processing_state = OUTPOST_PROCESSING_RELEASE
+		processing_who_ref = WEAKREF(who)
+		processing_entry_ref = WEAKREF(inner)
+		processing_seconds = 0
+		processing_release_tick(0)
+		return TRUE
+	if(!processing_on_yard_side(get_turf(who)) || get_dist(who, inner) > 2)
+		return FALSE
+	if(!processing_shut(outer) || !processing_shut(inner))
+		return FALSE
+	processing_state = OUTPOST_PROCESSING_RELEASE
+	processing_who_ref = WEAKREF(who)
+	processing_entry_ref = WEAKREF(inner)
+	processing_seconds = 0
+	processing_work_door(inner, TRUE)
+	return TRUE
+
+/// Cycles a released inmate out through Processing: inner opens when they arrive, shuts once inside, then outer opens
+/datum/outpost_prison/proc/processing_release_tick(seconds)
+	var/mob/living/who = processing_who()
+	if(QDELETED(who) || who.stat == DEAD || holds(who.mind) || !contains_turf(get_turf(who)) || in_front_room(who) || !has_processing())
+		if(who)
+			processing_release_refs -= WEAKREF(who)
+		processing_done()
+		processing_idle_tick()
+		return
+	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
+	var/turf/here = get_turf(who)
+	if(in_processing(who) || here == get_turf(outer))
+		if(!processing_shut(inner))
+			processing_work_door(inner, FALSE)
+			return
+		if(outer.density)
+			processing_work_door(outer, TRUE)
+			return
+		if(!outer.operating && !who.client && !who.mind?.key && who.stat == CONSCIOUS && who.body_position != LYING_DOWN && !HAS_TRAIT(who, TRAIT_INCAPACITATED))
+			var/turf/front_step = processing_outside_turf(outer)
+			if(here == get_turf(outer) && front_step)
+				who.Move(front_step, get_dir(who, front_step))
+			else
+				step_towards(who, get_turf(outer))
+		return
+	processing_seconds += seconds
+	if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT || who.stat != CONSCIOUS || who.body_position == LYING_DOWN)
+		processing_done()
+		return
+	if(!processing_shut(outer))
+		processing_work_door(outer, FALSE)
+		return
+	if(inner.density)
+		processing_work_door(inner, TRUE)
+		return
+	if(!inner.operating && !who.client && !who.mind?.key && !HAS_TRAIT(who, TRAIT_INCAPACITATED))
+		var/turf/spot = processing_spot(who)
+		if(spot)
+			step_towards(who, spot)
 
 /**
  * Someone leaving: the door on their side opens with the other shut, they walk in, it shuts, and they are gone.

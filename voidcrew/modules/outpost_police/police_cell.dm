@@ -1059,6 +1059,9 @@
 	for(var/datum/outpost_police_cell/cell in cells)
 		if(who in cell.prisoners)
 			return cell
+	// OUTPOST PRISON seam: an inmate serving time in the lockup is in custody too
+	if(outpost?.prison?.holds(who))
+		return outpost.prison
 	return null
 
 /**

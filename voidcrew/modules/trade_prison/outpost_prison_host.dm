@@ -57,10 +57,30 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator/lockup, 32)
 /obj/machinery/outpost_elevator/lockup/get_own_alcove()
 	return length(prison?.alcove_turfs) ? prison.alcove_turfs : null
 
-/// The board in the front room and the one in the yard. Blank for now.
+/// The board in the front room and the one in the yard: shows the soonest inmate release (M:SS), or blank
 /obj/machinery/status_display/outpost_berth/lockup
 	name = "lockup board"
 	desc = "The lockup's board."
+	/// The wing this board reports on
+	var/datum/outpost_prison/prison
+
+/obj/machinery/status_display/outpost_berth/lockup/Initialize(mapload, ndir, building)
+	. = ..()
+	var/datum/outpost_prison/found = prison || get_outpost_prison(src)
+	found?.register_lockup_board(src)
+
+/obj/machinery/status_display/outpost_berth/lockup/Destroy()
+	if(prison)
+		prison.boards -= src
+		prison = null
+	return ..()
+
+/obj/machinery/status_display/outpost_berth/lockup/examine(mob/user)
+	. = ..()
+	var/datum/outpost_prison/holder = prison || get_outpost_prison(src)
+	var/own_time = holder?.inmate_remaining_text(user)
+	if(own_time)
+		. += span_notice("Your name is on the board. [own_time].")
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 32)
 
@@ -86,7 +106,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	if(..())
 		return TRUE
 	var/datum/outpost_prison/prison = get_outpost_prison(src)
-	return !!prison && prison.processing_who() == mover
+	if(!prison)
+		return FALSE
+	if(prison.processing_who() == mover)
+		return TRUE
+	return prison.processing_state == OUTPOST_PROCESSING_BOOK && prison.booking_mover_ref?.resolve() == mover
 
 /obj/machinery/door/airlock/security/prison_staff/processing/CanAllowThrough(atom/movable/mover, border_dir)
 	if(istype(mover, /mob/living/basic/bot/cleanbot))
@@ -95,7 +119,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			var/datum/outpost_prison/prison = get_outpost_prison(src)
 			if(prison && !prison.in_processing(bot) && get_turf(bot) != loc)
 				return FALSE
-	if(lockup_breached() && !density)
+	if((lockup_breached() || get_outpost_prison(src)?.corpse_doors_open()) && !density)
 		return ..()
 	if(isliving(mover) && !lets_prisoner(mover))
 		var/mob/living/living_mover = mover
@@ -120,14 +144,32 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			return TRUE
 		if(isliving(requester) && !is_outpost_prisoner(requester))
 			var/datum/outpost_prison/prison = get_outpost_prison(src)
+			if(prison?.corpse_doors_open())
+				return TRUE
 			return !!prison && (prison.in_processing(requester) || get_turf(requester) == loc)
 	return FALSE
 
 /// The front room side
 /obj/machinery/door/airlock/security/prison_staff/processing/outer
 
+/obj/machinery/door/airlock/security/prison_staff/processing/outer/Bumped(atom/movable/AM)
+	. = ..()
+	var/mob/living/mover = AM
+	if(istype(mover) && density)
+		var/datum/outpost_prison/prison = get_outpost_prison(src)
+		if(prison && prison.in_processing(mover) && (WEAKREF(mover) in prison.processing_release_refs))
+			prison.try_start_processing_release(mover)
+
 /// The yard side
 /obj/machinery/door/airlock/security/prison_staff/processing/inner
+
+/obj/machinery/door/airlock/security/prison_staff/processing/inner/Bumped(atom/movable/AM)
+	. = ..()
+	var/mob/living/mover = AM
+	if(istype(mover) && density)
+		var/datum/outpost_prison/prison = get_outpost_prison(src)
+		if(prison && (WEAKREF(mover) in prison.processing_release_refs))
+			prison.try_start_processing_release(mover)
 
 // ===== THE PRISON'S SIDE =====
 

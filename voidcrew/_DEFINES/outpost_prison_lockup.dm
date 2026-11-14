@@ -25,3 +25,29 @@
 #define OUTPOST_PROCESSING_OUT "going_out"
 /// Processing is cycling a member of staff between the front room and the yard
 #define OUTPOST_PROCESSING_CROSS "crossing"
+/// Processing is walking a newly booked player inmate in from the front room
+#define OUTPOST_PROCESSING_BOOK "booking"
+/// Processing is cycling a released player inmate out to the front room
+#define OUTPOST_PROCESSING_RELEASE "releasing"
+
+/// Trait source for awake-inmate containment resistance
+#define OUTPOST_PRISON_INMATE_TRAIT "outpost_prison_inmate"
+/// Self-defense window after an inmate is hit first in the cell block
+#define OUTPOST_PRISON_INMATE_DEFENSE_WINDOW (10 SECONDS)
+/// How long an unprovoked blow or breakout act keeps an inmate flagged for the guard's baton
+#define OUTPOST_PRISON_INMATE_BATON_WINDOW (15 SECONDS)
+/// Minimum gap between guards remarking on inmate work ("That's time off.")
+#define OUTPOST_PRISON_WORK_SAY_GAP (20 SECONDS)
+
+// Inmate work kinds and seconds knocked off sentence (capped at a third of total_seconds)
+#define OUTPOST_PRISON_WORK_MOP "mop"
+#define OUTPOST_PRISON_WORK_WASH "wash"
+#define OUTPOST_PRISON_WORK_LETTER "letter"
+#define OUTPOST_PRISON_WORK_WOUND "wound"
+#define OUTPOST_PRISON_WORK_CONTRABAND "contraband"
+
+#define OUTPOST_PRISON_WORK_MOP_SECONDS 10
+#define OUTPOST_PRISON_WORK_WASH_SECONDS 30
+#define OUTPOST_PRISON_WORK_LETTER_SECONDS 20
+#define OUTPOST_PRISON_WORK_WOUND_SECONDS 30
+#define OUTPOST_PRISON_WORK_CONTRABAND_SECONDS 60

@@ -1,0 +1,449 @@
+/**
+ * Player inmates in the outpost lockup (outpost_prison_inmates.dm, police_arrest.dm, police_wanted.dm,
+ * police_property.dm, police_cell.dm, outpost_prison_guards.dm, outpost_prison_trouble.dm).
+ *
+ * Voidcrew defines are included after the unit tests, so literal values appear with a comment naming the define.
+ */
+
+/// Open yard floor tile in `prison` outside any cell
+/datum/unit_test/voidcrew_outpost_management/proc/inmate_test_yard_tile(datum/outpost_prison/prison)
+	for(var/turf/tile as anything in prison.cell_block)
+		if(!prison.cell_at(tile) && isopenturf(tile) && !tile.is_blocked_turf())
+			return tile
+	return null
+
+/// Open front-room floor tile in `prison` outside the lift alcove and desk counter
+/datum/unit_test/voidcrew_outpost_management/proc/inmate_test_front_tile(datum/outpost_prison/prison)
+	for(var/turf/tile as anything in lockup_flood(prison.alcove_turfs[1], doors_open = FALSE))
+		if(!(tile in prison.alcove_turfs) && tile != prison.claim_turf && !tile.is_blocked_turf())
+			return tile
+	return null
+
+// =========================================================================
+// 1. POLICE SEAMS: FINE CHECK, CAN_BOOK, AND DESK ROUTING
+// =========================================================================
+
+/datum/unit_test/voidcrew_trade_prison_inmates_police_seam
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+	var/list/test_ships = list()
+
+/datum/unit_test/voidcrew_trade_prison_inmates_police_seam/Destroy()
+	wanted_cleanup(test_ships)
+	test_ships.Cut()
+	return ..()
+
+/datum/unit_test/voidcrew_trade_prison_inmates_police_seam/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = lockup_test_outpost()
+	TEST_ASSERT_NOTNULL(outpost, "Quartermain Depot's interior did not load")
+	var/datum/outpost_prison/prison = outpost.prison
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT_NOTNULL(prison, "Quartermain Depot has no lockup")
+	TEST_ASSERT_NOTNULL(police, "Quartermain Depot has no police")
+
+	var/turf/front_tile = inmate_test_front_tile(prison)
+	TEST_ASSERT_NOTNULL(front_tile, "No open front-room floor tile found in the lockup")
+
+	var/list/obj/structure/closet/secure_closet/personal/outpost_police/wing_lockers = list()
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in police.lockers)
+		if(get_area(locker) == prison.wing)
+			wing_lockers += locker
+	TEST_ASSERT(length(wing_lockers) >= 4, "The lockup's front room registered [length(wing_lockers)] property lockers, fewer than 4")
+
+	// fine_affordable() checks the same crew accounts as charge_fine() without moving a credit
+	var/mob/living/carbon/human/broke = police_arrest_person(front_tile)
+	var/obj/structure/overmap/ship/broke_ship = wanted_ship(broke, 0)
+	test_ships += broke_ship
+	var/datum/outpost_warrant/broke_warrant = police_pin_warrant(police, broke.mind, 30) // 2 stars (OUTPOST_POLICE_STAR_HEAT: 25)
+	TEST_ASSERT(!police.fine_affordable(broke_warrant), "fine_affordable() accepted a broke crew for a two-star fine")
+	TEST_ASSERT(!police.charge_fine(broke_warrant), "charge_fine() succeeded on a broke crew")
+	TEST_ASSERT_EQUAL(broke_ship.ship_account.account_balance, 0, "Failed fine checks altered a broke crew's balance")
+
+	var/mob/living/carbon/human/solvent = police_arrest_person(front_tile)
+	var/obj/structure/overmap/ship/solvent_ship = wanted_ship(solvent, 5000)
+	test_ships += solvent_ship
+	var/datum/outpost_warrant/solvent_warrant = police_pin_warrant(police, solvent.mind, 30) // 2 stars
+	TEST_ASSERT(police.fine_affordable(solvent_warrant), "fine_affordable() refused a solvent crew for a two-star fine")
+	TEST_ASSERT_EQUAL(solvent_ship.ship_account.account_balance, 5000, "fine_affordable() moved money instead of only checking")
+
+	// can_book() requires a wing locker that can shut and a living, non-crit suspect
+	TEST_ASSERT(prison.can_book(broke), "can_book() refused a healthy suspect on a ready lockup")
+	ADD_TRAIT(broke, TRAIT_CRITICAL_CONDITION, REF(src))
+	TEST_ASSERT(!prison.can_book(broke), "can_book() accepted a suspect in critical condition")
+	REMOVE_TRAIT(broke, TRAIT_CRITICAL_CONDITION, REF(src))
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in wing_lockers)
+		locker.assigning = TRUE
+	TEST_ASSERT(!prison.can_book(broke), "can_book() accepted a booking when every wing locker was unavailable")
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in wing_lockers)
+		locker.assigning = FALSE
+	TEST_ASSERT(prison.can_book(broke), "can_book() stayed false after the wing lockers were freed")
+
+	// Arrest routing at step_desk(): 1-2 star solvent stays on the station path; 1-2 star broke and 3+ stars route to the lockup
+	dispatch_clear(police)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, front_tile)
+	police_arrest_kit(officer)
+	ADD_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
+
+	var/datum/outpost_police_case/solvent_case = police.open_case(solvent_warrant)
+	police.sleep_tick()
+	TEST_ASSERT_NOTNULL(solvent_case, "No case opened for the two-star solvent suspect")
+	TEST_ASSERT(!solvent_case.wants_lockup(solvent), "A two-star suspect who can pay their fine was routed to the lockup")
+	solvent_case.close()
+
+	var/datum/outpost_police_case/broke_case = police.open_case(broke_warrant)
+	police.sleep_tick()
+	TEST_ASSERT_NOTNULL(broke_case, "No case opened for the two-star broke suspect")
+	TEST_ASSERT(broke_case.wants_lockup(broke), "A two-star suspect who cannot pay their fine was not routed to the lockup")
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in wing_lockers)
+		locker.assigning = TRUE
+	TEST_ASSERT(!broke_case.wants_lockup(broke), "wants_lockup() stayed true when the lockup had no usable wing locker")
+	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in wing_lockers)
+		locker.assigning = FALSE
+	var/obj/item/restraints/handcuffs/outpost_police/used/broke_cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	broke.set_handcuffed(broke_cuffs)
+	broke_case.cuffed = TRUE
+	broke_case.searched = TRUE
+	broke_case.disposed_at = world.time
+	officer.start_pulling(broke)
+	broke_case.step_desk()
+	TEST_ASSERT_EQUAL(broke_case.step, "lockup", "step_desk() put a two-star insolvent suspect on [broke_case.step], not lockup") // CASE_STEP_LOCKUP
+	officer.stop_pulling()
+	broke_case.close()
+	broke.set_handcuffed(null)
+	qdel(broke_cuffs)
+
+	solvent_warrant.heat = 55 // 3 stars (OUTPOST_POLICE_STAR_HEAT: 50)
+	var/datum/outpost_police_case/major_case = police.open_case(solvent_warrant)
+	police.sleep_tick()
+	TEST_ASSERT_NOTNULL(major_case, "No case opened for the three-star suspect")
+	TEST_ASSERT(major_case.wants_lockup(solvent), "A three-star suspect with money in the bank was not routed to the lockup")
+	major_case.close()
+	REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
+
+// =========================================================================
+// 2. BOOKING WALK, SENTENCE CLOCK, WARRANT HOLD, BAIL RETRY, AND RELEASE
+// =========================================================================
+
+/datum/unit_test/voidcrew_trade_prison_inmates_booking_and_clock
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+	var/old_time_scale = 1
+	var/forced_moves = 0
+	var/list/test_ships = list()
+
+/datum/unit_test/voidcrew_trade_prison_inmates_booking_and_clock/New()
+	. = ..()
+	old_time_scale = GLOB.outpost_police_property_time_scale
+	GLOB.outpost_police_property_time_scale = 0.02
+
+/datum/unit_test/voidcrew_trade_prison_inmates_booking_and_clock/Destroy()
+	GLOB.outpost_police_property_time_scale = old_time_scale
+	wanted_cleanup(test_ships)
+	test_ships.Cut()
+	return ..()
+
+/datum/unit_test/voidcrew_trade_prison_inmates_booking_and_clock/proc/note_move(atom/movable/source, atom/old_loc, movement_dir, forced)
+	SIGNAL_HANDLER
+	if(forced)
+		forced_moves++
+
+/datum/unit_test/voidcrew_trade_prison_inmates_booking_and_clock/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = lockup_test_outpost()
+	TEST_ASSERT_NOTNULL(outpost, "Quartermain Depot's interior did not load")
+	var/datum/outpost_prison/prison = outpost.prison
+	var/datum/outpost_police/police = outpost.police
+
+	var/obj/machinery/door/airlock/security/prison_staff/inner = prison.processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/outer = prison.processing_door(FALSE)
+	var/turf/outer_wait = prison.booking_door_turf()
+	var/turf/front_clear = prison.processing_clear_turf(outer)
+	var/turf/inner_wait = prison.processing_outside_turf(inner)
+	TEST_ASSERT_NOTNULL(outer_wait, "The lockup has no booking door approach tile")
+	TEST_ASSERT_NOTNULL(front_clear, "Processing's outer door has no clear front-room tile")
+	TEST_ASSERT_NOTNULL(inner_wait, "Processing's inner door has no yard approach tile")
+
+	var/mob/living/carbon/human/npc/outpost_prisoner/greeter = trouble_prisoner(prison, prison.processing_clear_turf(inner) || inner_wait)
+
+	dispatch_clear(police)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, outer_wait)
+	police.sleep_tick()
+	ADD_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
+	police_arrest_kit(officer)
+
+	var/mob/living/carbon/human/suspect = make_player(front_clear, "lockupinmate1")
+	suspect.equip_to_slot_or_del(allocate(/obj/item/clothing/under/rank/cargo/tech), ITEM_SLOT_ICLOTHING, initial = TRUE)
+	suspect.equip_to_slot_or_del(allocate(/obj/item/clothing/shoes/sneakers/black), ITEM_SLOT_FEET, initial = TRUE)
+	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
+	suspect.equip_to_slot_or_del(id_card, ITEM_SLOT_ID, initial = TRUE)
+	var/obj/item/storage/backpack/pack = allocate(/obj/item/storage/backpack)
+	var/obj/item/crowbar/tool = allocate(/obj/item/crowbar, pack)
+	suspect.equip_to_slot_or_del(pack, ITEM_SLOT_BACK, initial = TRUE)
+	var/obj/item/restraints/handcuffs/outpost_police/used/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.set_handcuffed(cuffs)
+	officer.start_pulling(suspect)
+
+	var/obj/structure/overmap/ship/ship = wanted_ship(suspect, 5000)
+	test_ships += ship
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 55) // 3 stars -> 600 s (OUTPOST_POLICE_JAIL[3])
+
+	RegisterSignal(suspect, COMSIG_MOVABLE_MOVED, PROC_REF(note_move))
+	RegisterSignal(officer, COMSIG_MOVABLE_MOVED, PROC_REF(note_move))
+	TEST_ASSERT(prison.book_player(suspect, officer, warrant), "book_player() did not book the three-star suspect into the lockup")
+	UnregisterSignal(suspect, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(officer, COMSIG_MOVABLE_MOVED)
+
+	TEST_ASSERT_EQUAL(forced_moves, 0, "book_player() used forceMove [forced_moves] time(s) on the suspect or officer")
+	TEST_ASSERT_NULL(suspect.handcuffed, "The booked inmate was left in handcuffs")
+	TEST_ASSERT(istype(suspect.w_uniform, /obj/item/clothing/under/rank/prisoner/outpost_police), "The booked inmate is not wearing a prison jumpsuit ([suspect.w_uniform?.type])")
+	TEST_ASSERT(istype(suspect.shoes, /obj/item/clothing/shoes/sneakers/orange/outpost_police), "The booked inmate is not wearing prison sneakers ([suspect.shoes?.type])")
+	TEST_ASSERT_EQUAL(suspect.wear_id, id_card, "Stripping removed the inmate's ID card")
+	var/obj/structure/closet/secure_closet/personal/outpost_police/wing_locker = pack.loc
+	TEST_ASSERT(istype(wing_locker) && get_area(wing_locker) == prison.wing, "The inmate's backpack was not stored in a front-room lockup locker ([pack.loc])")
+	TEST_ASSERT_EQUAL(tool.loc, pack, "Items inside the inmate's backpack were lost during property storage")
+	TEST_ASSERT(prison.in_cell_block(suspect), "The booked inmate did not step out into the cell block")
+	TEST_ASSERT(prison.in_front_room(officer), "The booking officer did not step back out into the front room")
+	TEST_ASSERT(inner.density && !inner.operating && outer.density && !outer.operating, "Processing's doors were not both shut after booking")
+	TEST_ASSERT(prison.holds(suspect.mind) && prison.is_inmate(suspect) && prison.has_inmates(), "The wing does not record the booked suspect as a held inmate")
+	TEST_ASSERT_EQUAL(police.cell_holding(suspect.mind), prison, "police.cell_holding() did not return the lockup holding the inmate")
+	TEST_ASSERT(police.in_custody(suspect), "A held lockup inmate is not in police custody")
+	TEST_ASSERT_EQUAL(greeter.last_line, "Fresh one.", "Yard prisoner did not greet the new inmate")
+
+	var/datum/prison_sentence/sentence = prison.sentence_for(suspect)
+	TEST_ASSERT_NOTNULL(sentence, "No /datum/prison_sentence was created for the booked inmate")
+	TEST_ASSERT_EQUAL(sentence.total_seconds, 600, "Three-star sentence is [sentence.total_seconds] s, not 600 s") // OUTPOST_POLICE_JAIL[3]
+
+	// Held in custody: warrant heat never decays on tick_warrants()
+	warrant.last_crime_at = world.time - 10 MINUTES
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(warrant.heat, 55, "A held lockup inmate's warrant decayed from 55 to [warrant.heat]")
+
+	// Sentence clock ticks while clientless, asleep, and in critical condition
+	TEST_ASSERT_NULL(suspect.client, "Setup: test player unexpectedly has a live client")
+	prison.inmate_tick(20)
+	TEST_ASSERT_EQUAL(sentence.seconds_served, 20, "Sentence did not tick while logged out ([sentence.seconds_served] s)")
+	suspect.Sleeping(20 SECONDS)
+	prison.inmate_tick(20)
+	suspect.SetSleeping(0)
+	TEST_ASSERT_EQUAL(sentence.seconds_served, 40, "Sentence did not tick while asleep ([sentence.seconds_served] s)")
+	ADD_TRAIT(suspect, TRAIT_CRITICAL_CONDITION, REF(src))
+	prison.inmate_tick(20)
+	REMOVE_TRAIT(suspect, TRAIT_CRITICAL_CONDITION, REF(src))
+	TEST_ASSERT_EQUAL(sentence.seconds_served, 60, "Sentence did not tick while in crit ([sentence.seconds_served] s)")
+
+	// Climbing stars inside raises total_seconds while keeping seconds_served; dropping heat never shrinks total_seconds
+	warrant.heat = 100 // 4 stars -> 900 s (OUTPOST_POLICE_JAIL[4])
+	prison.inmate_tick(1)
+	TEST_ASSERT_EQUAL(sentence.total_seconds, 900, "Raising warrant to four stars left total_seconds at [sentence.total_seconds], not 900")
+	TEST_ASSERT_EQUAL(sentence.seconds_served, 61, "Raising total_seconds lost seconds_served ([sentence.seconds_served])")
+	warrant.heat = 55
+	prison.inmate_tick(1)
+	TEST_ASSERT_EQUAL(sentence.total_seconds, 900, "Lowering warrant heat shrank total_seconds from 900 to [sentence.total_seconds]")
+
+	// 3+ stars cannot bail out even with a solvent crew account; serving the remaining time releases the inmate
+	prison.inmate_tick(35)
+	TEST_ASSERT(prison.holds(suspect.mind), "A three-star inmate was bailed out before serving their term")
+	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, 5000, "Bail retry charged a three-star inmate's crew")
+
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, get_turf(suspect))
+	prison.inmate_tick(900)
+	TEST_ASSERT(!prison.holds(suspect.mind) && !prison.is_inmate(suspect), "An inmate who served their full sentence is still held")
+	TEST_ASSERT_NULL(police.cell_holding(suspect.mind), "cell_holding() still returned the lockup after release")
+	TEST_ASSERT(!police.in_custody(suspect), "A released inmate remained in custody")
+	TEST_ASSERT_NULL(police.get_warrant(suspect.mind), "Release did not close the inmate's warrant as served")
+	TEST_ASSERT(WEAKREF(suspect) in prison.processing_release_refs, "Release did not queue the inmate for Processing's exit cycle")
+	TEST_ASSERT(wing_locker.released_at > 0, "Release did not start the wing property locker's abandonment clock")
+	if(guard)
+		TEST_ASSERT(findtext(guard.last_line, "You're out."), "On-duty guard did not announce the inmate's release ([guard.last_line])")
+
+	// 1-2 star bail retry every 30 s (OUTPOST_POLICE_BAIL_RETRY): pays fine and releases as soon as the crew account can cover it
+	var/turf/yard_tile = inmate_test_yard_tile(prison)
+	var/mob/living/carbon/human/bail_inmate = make_player(yard_tile, "lockupbail1")
+	var/obj/structure/overmap/ship/bail_ship = wanted_ship(bail_inmate, 0)
+	test_ships += bail_ship
+	var/datum/outpost_warrant/bail_warrant = police_pin_warrant(police, bail_inmate.mind, 12) // 1 star -> 180 s
+	prison.admit_inmate_sentence(bail_inmate, bail_warrant, 1)
+	prison.inmate_tick(30)
+	TEST_ASSERT(prison.holds(bail_inmate.mind), "A broke one-star inmate was bailed out without funds")
+	bail_ship.ship_account.account_balance = 2000
+	prison.inmate_tick(29)
+	TEST_ASSERT(prison.holds(bail_inmate.mind), "Bail retry fired before 30 seconds elapsed") // OUTPOST_POLICE_BAIL_RETRY
+	prison.inmate_tick(1)
+	TEST_ASSERT(!prison.holds(bail_inmate.mind), "Bail retry did not release a funded one-star inmate at 30 seconds")
+	TEST_ASSERT_NULL(police.get_warrant(bail_inmate.mind), "Bail release did not close the one-star warrant")
+	TEST_ASSERT(bail_ship.ship_account.account_balance < 2000, "Bail release did not deduct the fine from the crew account")
+	REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
+
+// =========================================================================
+// 3. CONTAINMENT, ESCAPE/CARRY-OUT, RIOTS, GUARD BATON & CRIT AID, DEATH, QDEL
+// =========================================================================
+
+/datum/unit_test/voidcrew_trade_prison_inmates_containment_escape_riot_death
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+
+/datum/unit_test/voidcrew_trade_prison_inmates_containment_escape_riot_death/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = lockup_test_outpost()
+	TEST_ASSERT_NOTNULL(outpost, "Quartermain Depot's interior did not load")
+	var/datum/outpost_prison/prison = outpost.prison
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	police.sleep_tick()
+
+	var/turf/yard_tile = inmate_test_yard_tile(prison)
+	var/turf/front_tile = inmate_test_front_tile(prison)
+	TEST_ASSERT_NOTNULL(yard_tile, "No open yard floor tile found")
+	TEST_ASSERT_NOTNULL(front_tile, "No open front-room floor tile found")
+
+	var/mob/living/carbon/human/inmate = make_player(yard_tile, "lockupinmate2")
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, inmate.mind, 55) // 3 stars
+	var/datum/prison_sentence/sentence = prison.admit_inmate_sentence(inmate, warrant, 3)
+
+	// Awake upright inmate blocks crates, bags and bluespace teleports; knocked down allows containment while still blocking teleports
+	var/obj/structure/closet/crate/box = allocate(/obj/structure/closet/crate, yard_tile)
+	box.open()
+	TEST_ASSERT(HAS_TRAIT(inmate, "no_containment"), "Awake upright inmate lacks no_containment") // TRAIT_NO_CONTAINMENT
+	TEST_ASSERT(HAS_TRAIT(inmate, TRAIT_NO_STORAGE_INSERT), "Awake upright inmate lacks TRAIT_NO_STORAGE_INSERT")
+	TEST_ASSERT(!box.insertion_allowed(inmate), "An open crate accepted an awake upright inmate")
+	TEST_ASSERT(!do_teleport(inmate, front_tile, channel = TELEPORT_CHANNEL_BLUESPACE, no_effects = TRUE), "do_teleport() moved a held lockup inmate")
+	TEST_ASSERT_EQUAL(get_turf(inmate), yard_tile, "Refused teleport still moved the inmate")
+
+	inmate.Knockdown(10 SECONDS)
+	TEST_ASSERT(!HAS_TRAIT(inmate, "no_containment"), "Knocked-down inmate kept no_containment") // TRAIT_NO_CONTAINMENT
+	TEST_ASSERT(box.insertion_allowed(inmate), "A crate refused an incapacitated inmate")
+	TEST_ASSERT(!do_teleport(inmate, front_tile, channel = TELEPORT_CHANNEL_BLUESPACE, no_effects = TRUE), "do_teleport() moved a knocked-down held inmate")
+	inmate.SetKnockdown(0)
+	inmate.set_resting(FALSE)
+	inmate.set_body_position(STANDING_UP)
+	TEST_ASSERT(HAS_TRAIT(inmate, "no_containment"), "Standing back up did not restore no_containment") // TRAIT_NO_CONTAINMENT
+	qdel(box)
+
+	// Friend pulling a downed inmate out gets the jailbreak charge; inmate keeps their hold and return_left waits until they can walk
+	var/mob/living/carbon/human/friend = make_player(front_tile, "lockupfriend")
+	inmate.Knockdown(10 SECONDS)
+	inmate.pulledby = friend
+	inmate.forceMove(front_tile)
+	prison.inmate_tick(1)
+	TEST_ASSERT(police.get_stars(friend.mind) >= 3, "Friend who pulled a downed inmate out did not get at least 3 stars ([police.get_stars(friend.mind)])") // OUTPOST_CRIME_JAILBREAK
+	TEST_ASSERT(prison.holds(inmate.mind), "An inmate pulled out while down lost their sentence hold")
+	TEST_ASSERT_EQUAL(sentence.return_left, 20, "Pulled-out inmate did not get 20 s to walk back ([sentence.return_left])") // OUTPOST_POLICE_CELL_RETURN
+	prison.inmate_tick(25)
+	TEST_ASSERT(prison.holds(inmate.mind) && sentence.return_left == 20, "return_left ticked down while the inmate was still knocked down and pulled")
+	inmate.pulledby = null
+	inmate.SetKnockdown(0)
+	inmate.set_resting(FALSE)
+	inmate.set_body_position(STANDING_UP)
+	inmate.forceMove(yard_tile)
+	prison.inmate_tick(1)
+	TEST_ASSERT_EQUAL(sentence.return_left, 0, "Returning inside the cell block did not clear return_left")
+
+	// Walking out on their own feet is a jailbreak; rebooking resets served and worked-off time to 0
+	sentence.seconds_served = 120
+	sentence.seconds_worked_off = 50
+	SEND_SIGNAL(inmate, COMSIG_MOB_CLIENT_PRE_MOVE, list())
+	inmate.forceMove(front_tile)
+	prison.inmate_tick(1)
+	TEST_ASSERT(sentence.escaped, "Stepping out of the cell block on own feet did not mark the sentence escaped")
+	TEST_ASSERT(!prison.holds(inmate.mind) && !police.in_custody(inmate), "An escaped inmate stayed held in custody")
+	TEST_ASSERT(!HAS_TRAIT(inmate, "no_containment"), "An escaped inmate kept no_containment") // TRAIT_NO_CONTAINMENT
+	TEST_ASSERT(police.get_warrant(inmate.mind)?.heat >= 55, "Escaping did not keep the old warrant live with jailbreak heat")
+
+	inmate.forceMove(yard_tile)
+	sentence = prison.admit_inmate_sentence(inmate, police.get_warrant(inmate.mind), 3)
+	TEST_ASSERT_EQUAL(sentence.seconds_served, 0, "Rebooking an escaped inmate kept seconds_served ([sentence.seconds_served])")
+	TEST_ASSERT_EQUAL(sentence.seconds_worked_off, 0, "Rebooking an escaped inmate kept seconds_worked_off ([sentence.seconds_worked_off])")
+	TEST_ASSERT(!sentence.escaped && prison.holds(inmate.mind), "Rebooking an escaped inmate did not restore an active hold")
+
+	// Rioters ignore held inmates unless provoked, while still targeting non-inmate intruders in the cell block
+	var/mob/living/carbon/human/visitor = make_player(yard_tile, "lockupvisitor")
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, yard_tile)
+	var/mob/living/carbon/human/npc/outpost_prisoner/witness_prisoner = trouble_awake_prisoner(prison, yard_tile)
+	prison.trouble_enabled = TRUE
+	TEST_ASSERT(breakout_riot(prison), "Riot did not start")
+	var/list/riot_targets = prison.staff_in_reach(rioter)
+	TEST_ASSERT(!(inmate in riot_targets), "A rioter targeted an unprovoking held player inmate")
+	TEST_ASSERT(visitor in riot_targets, "A rioter ignored a non-inmate intruder standing in the yard")
+	prison.end_riot()
+
+	// Witnessed player kill of an NPC prisoner reports OUTPOST_CRIME_KILL_CIVILIAN and raises sentence if stars climb
+	var/datum/outpost_warrant/murder_warrant = police.get_warrant(inmate.mind)
+	murder_warrant.heat = 55
+	sentence.total_seconds = 600
+	var/mob/living/carbon/human/npc/outpost_prisoner/slain = trouble_awake_prisoner(prison, yard_tile)
+	TEST_ASSERT(witness_prisoner.stat == CONSCIOUS, "Setup: witness prisoner is not conscious")
+	slain.note_player_damage_hit(inmate)
+	slain.death()
+	TEST_ASSERT(murder_warrant.heat > 55, "Killing an NPC prisoner in view of another prisoner did not add murder heat") // OUTPOST_CRIME_KILL_CIVILIAN
+	TEST_ASSERT(sentence.total_seconds > 600, "Climbing stars from a witnessed yard kill did not lengthen the sentence ([sentence.total_seconds] s)")
+
+	// Guard baton: mop in hand stays peaceful, knife in hand or unprovoked blow warrants the baton, 10 s self-defense does not, knockdown stops it
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, yard_tile)
+	TEST_ASSERT_NOTNULL(guard, "No lockup guard spawned for the baton and crit tests")
+	var/obj/item/mop/mop = allocate(/obj/item/mop)
+	inmate.put_in_active_hand(mop)
+	TEST_ASSERT(!prison.inmate_holds_weapon(inmate) && !prison.inmate_baton_warranted(inmate), "Holding a mop warranted the guard's baton")
+	inmate.dropItemToGround(mop)
+	qdel(mop)
+
+	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
+	inmate.put_in_active_hand(knife)
+	TEST_ASSERT(prison.inmate_holds_weapon(inmate) && prison.inmate_baton_warranted(inmate), "Holding a kitchen knife in the yard did not warrant the guard's baton")
+	inmate.dropItemToGround(knife)
+	qdel(knife)
+
+	prison.note_inmate_provoked(inmate, rioter)
+	TEST_ASSERT(!prison.note_inmate_attack(inmate, rioter, ATTACKER_DAMAGING_ATTACK), "Hitting back within the 10 s self-defense window warranted the guard's baton")
+	TEST_ASSERT(!prison.inmate_baton_warranted(inmate), "Self-defense left inmate_baton_warranted() true")
+
+	TEST_ASSERT(prison.note_inmate_attack(inmate, witness_prisoner, ATTACKER_DAMAGING_ATTACK), "An unprovoked hit in the yard did not flag the inmate for the baton")
+	TEST_ASSERT(prison.inmate_baton_warranted(inmate), "inmate_baton_warranted() was false after an unprovoked hit")
+	prison.dispatch_guards()
+	TEST_ASSERT_EQUAL(guard.last_line, "Hands off!", "Guard did not call 'Hands off!' on first baton response ([guard.last_line])")
+	TEST_ASSERT(inmate.getStaminaLoss() > 0, "Guard's stun baton blow dealt no real stamina damage")
+	inmate.Knockdown(10 SECONDS)
+	TEST_ASSERT(!prison.inmate_baton_warranted(inmate), "Guard kept batoning an inmate who was already knocked down")
+	prison.dispatch_guards()
+	TEST_ASSERT_NULL(guard.response, "Guard kept their inmate baton response after the inmate went down")
+	inmate.SetKnockdown(0)
+	inmate.setStaminaLoss(0)
+	inmate.set_resting(FALSE)
+	inmate.set_body_position(STANDING_UP)
+	sentence.baton_until = 0
+
+	// Guard crit first aid: picks a crit patient in the wing, takes the office medkit's epinephrine pen and injects real epinephrine
+	var/obj/item/storage/medkit/kit = prison.guard_first_aid_kit()
+	TEST_ASSERT_NOTNULL(kit, "Quartermain Depot's lockup office has no stocked first-aid kit")
+	inmate.adjustOxyLoss(120)
+	inmate.updatehealth()
+	TEST_ASSERT(prison.guard_in_crit(inmate), "Inmate at [inmate.health] health did not register as in crit")
+	TEST_ASSERT_EQUAL(prison.guard_pick_crit_patient(list(guard)), inmate, "guard_pick_crit_patient() did not select the inmate in crit")
+	var/datum/outpost_guard_response/crit_job = guard.give_response("crit", 5, "crit:[REF(inmate)]", inmate) // OUTPOST_GUARD_PRIORITY_CRIT
+	guard.take_crit_supplies_from(kit, inmate, FALSE)
+	var/obj/item/aid = guard.carried_crit_item(inmate, FALSE)
+	TEST_ASSERT(istype(aid, /obj/item/reagent_containers/hypospray/medipen), "Guard did not pull the epinephrine medipen first ([aid?.type])")
+	TEST_ASSERT(guard.apply_crit_item(crit_job, inmate, aid), "Guard failed to inject the epinephrine medipen into the crit inmate")
+	TEST_ASSERT(inmate.reagents.has_reagent(/datum/reagent/medicine/epinephrine), "Crit inmate received no epinephrine from the guard's medipen")
+	guard.end_response(cancel_ai = FALSE)
+	inmate.setOxyLoss(0)
+	inmate.updatehealth()
+
+	// Death in custody: ends sentence, closes warrant as served, leaves body intact with ID, queues carry-out, and opens Processing doors when no guard can carry
+	var/obj/item/card/id/advanced/inmate_id = allocate(/obj/item/card/id/advanced)
+	inmate.equip_to_slot_or_del(inmate_id, ITEM_SLOT_ID, initial = TRUE)
+	inmate.death()
+	TEST_ASSERT(!QDELETED(inmate), "Dying in the lockup deleted the player's body")
+	TEST_ASSERT_EQUAL(inmate.wear_id, inmate_id, "Dying in the lockup stripped the player's ID")
+	TEST_ASSERT(!prison.holds(inmate.mind) && sentence.released, "Death in custody did not end the inmate's sentence")
+	TEST_ASSERT_NULL(police.get_warrant(inmate.mind), "Death in custody did not close the inmate's warrant as served")
+	TEST_ASSERT_EQUAL(prison.next_dead_inmate_body(), inmate, "Dead inmate in the yard was not queued for front-room carry-out")
+	TEST_ASSERT(prison.has_able_corpse_guard() && !prison.corpse_doors_open(), "Processing fallback opened with an able on-duty guard present")
+	guard.death()
+	TEST_ASSERT(!prison.has_able_corpse_guard() && prison.corpse_doors_open(), "corpse_doors_open() did not engage when no guard could carry the body out")
+
+	// Wing deletion drops active holds and traits without closing live warrants (design 14 #28)
+	var/mob/living/carbon/human/survivor = make_player(yard_tile, "lockupsurvivor")
+	var/datum/outpost_warrant/live_warrant = police_pin_warrant(police, survivor.mind, 55)
+	prison.admit_inmate_sentence(survivor, live_warrant, 3)
+	TEST_ASSERT(police.cell_holding(survivor.mind) == prison, "Setup: survivor is not held by the lockup")
+	qdel(prison)
+	TEST_ASSERT_NULL(outpost.prison, "Deleting the lockup left outpost.prison set")
+	TEST_ASSERT_NULL(police.cell_holding(survivor.mind), "Deleting the lockup left cell_holding() pointing at it")
+	TEST_ASSERT(!HAS_TRAIT(survivor, "no_containment"), "Deleting the lockup left no_containment on the former inmate") // TRAIT_NO_CONTAINMENT
+	TEST_ASSERT_EQUAL(police.get_warrant(survivor.mind), live_warrant, "Deleting the lockup closed a live warrant instead of only dropping the hold")
+	TEST_ASSERT_EQUAL(live_warrant.heat, 55, "Deleting the lockup altered the live warrant's heat")

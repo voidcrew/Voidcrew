@@ -356,7 +356,8 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 		letter.letter_contraband = TRUE
 		if(!ispath(enclosure_type, /obj/item))
 			enclosure_type = contraband_roll(OUTPOST_MAIL_RAZOR_CHANCE) ? /obj/item/outpost_prison_contraband/razor_blade : /obj/item/outpost_prison_contraband/yeast
-		new enclosure_type(envelope)
+		var/obj/item/enclosure = new enclosure_type(envelope)
+		mark_wing_contraband(enclosure)
 		envelope.hard_tell = contraband_roll(OUTPOST_MAIL_HARD_TELL)
 	prisoner.mail_had_letter = TRUE
 	return letter
@@ -489,6 +490,8 @@ GLOBAL_LIST_INIT(outpost_prison_mail_kinds, list(
 	user.visible_message(span_notice("[user] hands [prisoner] [thing]."), span_notice("You hand [prisoner] [thing]."))
 	if(is_inmate(user))
 		note_staff_event(user, prisoner, "mail_delivered")
+		if(letter.letter_prison_ref?.resolve() == src)
+			note_work(user, OUTPOST_PRISON_WORK_LETTER, letter)
 	INVOKE_ASYNC(src, PROC_REF(mail_read), prisoner, thing)
 	return ITEM_INTERACT_SUCCESS
 
