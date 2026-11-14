@@ -490,6 +490,30 @@
 	prison.dead_inmate_bodies -= WEAKREF(cellmate)
 	qdel(cellmate)
 
+	// First-blow lethal cell-block kill after a recent outside hit counts OUTPOST_CRIME_MURDER once (3 stars / 600 s, not double-counted to 4 stars)
+	var/mob/living/carbon/human/prior_rival = make_player(yard_tile, "lockuppriorrival")
+	var/datum/outpost_warrant/rival_warrant = police_pin_warrant(police, prior_rival.mind, 12)
+	prison.admit_inmate_sentence(prior_rival, rival_warrant, 1)
+	murder_warrant.heat = 12
+	murder_warrant.peak = 12
+	murder_warrant.last_crime_at = world.time - (5 SECONDS)
+	LAZYSET(murder_warrant.recent_victims, WEAKREF(prior_rival), world.time - (5 SECONDS))
+	sentence.total_seconds = 180
+	prior_rival.adjustBruteLoss(195)
+	var/obj/item/knife/kitchen/lethal_shiv = allocate(/obj/item/knife/kitchen)
+	inmate.put_in_active_hand(lethal_shiv)
+	inmate.set_combat_mode(TRUE)
+	lethal_shiv.melee_attack_chain(inmate, prior_rival)
+	inmate.set_combat_mode(FALSE)
+	inmate.dropItemToGround(lethal_shiv)
+	qdel(lethal_shiv)
+	TEST_ASSERT_EQUAL(prior_rival.stat, DEAD, "Lethal kitchen-knife swing did not kill the wounded cellmate")
+	TEST_ASSERT(murder_warrant.heat >= 50 && murder_warrant.heat < 95, "First-blow cell-block kill with prior recent_victims produced [murder_warrant.heat] heat instead of one murder count")
+	TEST_ASSERT_EQUAL(sentence.total_seconds, 600, "First-blow cell-block murder set killer total_seconds to [sentence.total_seconds] s, not 600 s")
+	sentence.baton_until = 0
+	prison.dead_inmate_bodies -= WEAKREF(prior_rival)
+	qdel(prior_rival)
+
 	// Guard baton: mop in hand stays peaceful, knife in hand or unprovoked blow warrants the baton, 10 s self-defense does not, knockdown stops it
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, yard_tile)
 	TEST_ASSERT_NOTNULL(guard, "No lockup guard spawned for the baton and crit tests")

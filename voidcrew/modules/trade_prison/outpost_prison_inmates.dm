@@ -457,10 +457,14 @@
 		return FALSE
 	victim_sentence.murder_reported = TRUE
 	victim_sentence.last_inmate_attack_at = 0
-	outpost.police.count_crime(killer, OUTPOST_CRIME_MURDER, victim)
+	var/datum/weakref/victim_ref = WEAKREF(victim)
 	var/datum/outpost_warrant/killer_warrant = outpost.police.get_warrant(killer.mind)
+	var/already_counted_on_death = killer_warrant?.last_crime_at == world.time && killer_warrant.recent_victims?[victim_ref] == world.time
+	if(!already_counted_on_death)
+		outpost.police.count_crime(killer, OUTPOST_CRIME_MURDER, victim)
+		killer_warrant = outpost.police.get_warrant(killer.mind)
 	if(killer_warrant?.recent_victims)
-		killer_warrant.recent_victims -= WEAKREF(victim)
+		killer_warrant.recent_victims -= victim_ref
 	if(holds(killer.mind))
 		var/datum/prison_sentence/killer_sentence = sentences[killer.mind]
 		var/stars = outpost.police.get_stars(killer.mind)
