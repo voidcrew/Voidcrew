@@ -818,16 +818,28 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 			return stack
 	return null
 
-/// Takes a pack out of the wing's first-aid kit into a free hand, as anyone would
+/// Takes one dressing out of the wing's first-aid kit into a free hand, as anyone would
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/take_treatment_from(obj/item/storage/medkit/kit)
+	if(!length(get_empty_held_indexes()))
+		return null
 	for(var/obj/item/stack/medical/stack in kit)
 		if(!stack.amount || !((stack.heal_brute && getBruteLoss()) || (stack.heal_burn && getFireLoss())))
 			continue
-		if(!put_in_hands(stack))
+		var/obj/item/stack/medical/taken = stack
+		if(stack.amount > 1)
+			taken = stack.split_stack(1)
+			if(!taken)
+				continue
+		if(!put_in_hands(taken, merge_stacks = FALSE))
+			if(taken != stack)
+				if(!QDELETED(stack))
+					taken.merge(stack)
+				if(!QDELETED(taken))
+					qdel(taken)
 			return null
 		// Used up on them, never loot (human_npc_gear.dm)
-		npc_lock_item(stack)
-		return stack
+		npc_lock_item(taken)
+		return taken
 	return null
 
 /**
@@ -850,7 +862,7 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	stack.interact_with_atom(src, src)
 	treating = FALSE
 	if(!QDELETED(stack) && is_holding(stack))
-		stack.equip_to_best_slot(src)
+		stow_crit_supplies()
 	return TRUE
 
 /// The wing's first-aid kit in the office with something in it, if there is one

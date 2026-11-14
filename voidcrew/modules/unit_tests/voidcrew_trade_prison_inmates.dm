@@ -76,6 +76,9 @@
 	for(var/obj/structure/closet/secure_closet/personal/outpost_police/locker as anything in wing_lockers)
 		locker.assigning = FALSE
 	TEST_ASSERT(prison.can_book(broke), "can_book() stayed false after the wing lockers were freed")
+	prison.processing_state = "booking" // OUTPOST_PROCESSING_BOOK
+	TEST_ASSERT(prison.can_book(broke), "can_book() rejected a second suspect while another booking held Processing with free wing lockers")
+	prison.processing_state = "idle" // OUTPOST_PROCESSING_IDLE
 
 	// Arrest routing at step_desk(): 1-2 star solvent stays on the station path; 1-2 star broke and 3+ stars route to the lockup
 	dispatch_clear(police)
@@ -116,6 +119,9 @@
 	police.sleep_tick()
 	TEST_ASSERT_NOTNULL(major_case, "No case opened for the three-star suspect")
 	TEST_ASSERT(major_case.wants_lockup(solvent), "A three-star suspect with money in the bank was not routed to the lockup")
+	prison.processing_state = "booking" // OUTPOST_PROCESSING_BOOK
+	TEST_ASSERT(major_case.wants_lockup(solvent), "wants_lockup() diverted a three-star arrest away from the lockup while another booking held Processing")
+	prison.processing_state = "idle" // OUTPOST_PROCESSING_IDLE
 	major_case.close()
 	REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
 
@@ -268,7 +274,67 @@
 	prison.inmate_tick(1)
 	TEST_ASSERT(!prison.holds(bail_inmate.mind), "Bail retry did not release a funded one-star inmate at 30 seconds")
 	TEST_ASSERT_NULL(police.get_warrant(bail_inmate.mind), "Bail release did not close the one-star warrant")
-	TEST_ASSERT(bail_ship.ship_account.account_balance < 2000, "Bail release did not deduct the fine from the crew account")
+	TEST_ASSERT(!bail_ship.ship_account.account_balance || bail_ship.ship_account.account_balance < 2000, "Bail release did not deduct the fine from the crew account")
+
+	// Processing softlock recovery: an incapacitated inmate in OUTPOST_PROCESSING_IN times out cleanly and re-opens inner on bump;
+	// a released person stalling inside Processing times out cleanly, is not blocked by processing_outsider_inside() on outer bump,
+	// and never opens outer while a held inmate is inside Processing.
+	var/mob/living/carbon/human/stalled_inmate = police_arrest_person(prison.processing_turfs[1])
+	var/datum/outpost_warrant/stalled_warrant = police_pin_warrant(police, stalled_inmate.mind, 55)
+	prison.admit_inmate_sentence(stalled_inmate, stalled_warrant, 3)
+	stalled_inmate.Sleeping(20 SECONDS)
+	prison.processing_state = "coming_in" // OUTPOST_PROCESSING_IN
+	prison.processing_who_ref = WEAKREF(stalled_inmate)
+	prison.processing_seconds = 0
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "OUTPOST_PROCESSING_IN stayed wedged on an unconscious player inmate") // OUTPOST_PROCESSING_IDLE
+	stalled_inmate.SetSleeping(0)
+	stalled_inmate.Knockdown(20 SECONDS)
+	prison.processing_state = "coming_in" // OUTPOST_PROCESSING_IN
+	prison.processing_who_ref = WEAKREF(stalled_inmate)
+	prison.processing_seconds = 0
+	prison.processing_tick(15) // OUTPOST_PRISON_PROCESSING_WAIT
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "OUTPOST_PROCESSING_IN never timed out on a conscious downed player inmate") // OUTPOST_PROCESSING_IDLE
+	stalled_inmate.SetKnockdown(0)
+	stalled_inmate.set_resting(FALSE)
+	stalled_inmate.set_body_position(STANDING_UP)
+	var/inner_shut_deadline = world.time + 4 SECONDS
+	while((!inner.density || inner.operating) && world.time < inner_shut_deadline)
+		prison.processing_work_door(inner, FALSE)
+		sleep(1)
+	TEST_ASSERT(inner.density && outer.density, "Setup: Processing doors were not shut before inner bump recovery")
+	inner.Bumped(stalled_inmate)
+	TEST_ASSERT_EQUAL(prison.processing_state, "coming_in", "Bumping the inner Processing door did not start OUTPOST_PROCESSING_IN for a recovered held inmate") // OUTPOST_PROCESSING_IN
+	var/mob/living/carbon/human/released_walker = police_arrest_person(prison.processing_turfs[2])
+	prison.processing_release_refs |= WEAKREF(released_walker)
+	prison.processing_done()
+	var/deadline = world.time + 4 SECONDS
+	while((!inner.density || inner.operating) && world.time < deadline)
+		prison.processing_work_door(inner, FALSE)
+		sleep(1)
+	TEST_ASSERT(!prison.try_start_processing_release(released_walker), "Processing started a release cycle to the front room while a held inmate stood inside Processing")
+	stalled_inmate.forceMove(yard_tile)
+	prison.release_inmate(stalled_inmate.mind, TRUE)
+	prison.processing_release_refs -= WEAKREF(stalled_inmate)
+	TEST_ASSERT(!prison.processing_outsider_inside(released_walker), "processing_outsider_inside(except) counted the released person inside Processing against themselves")
+	outer.Bumped(released_walker)
+	TEST_ASSERT_EQUAL(prison.processing_state, "releasing", "Bumping the shut outer Processing door did not start OUTPOST_PROCESSING_RELEASE for a released inmate inside") // OUTPOST_PROCESSING_RELEASE
+	prison.processing_tick(15) // OUTPOST_PRISON_PROCESSING_WAIT
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "OUTPOST_PROCESSING_RELEASE never timed out when a released player stalled inside Processing") // OUTPOST_PROCESSING_IDLE
+	TEST_ASSERT(WEAKREF(released_walker) in prison.processing_release_refs, "Timing out OUTPOST_PROCESSING_RELEASE dropped the released player from processing_release_refs before they reached the front room")
+	deadline = world.time + 4 SECONDS
+	while((!outer.density || outer.operating) && world.time < deadline)
+		prison.processing_work_door(outer, FALSE)
+		sleep(1)
+	outer.Bumped(released_walker)
+	TEST_ASSERT_EQUAL(prison.processing_state, "releasing", "Bumping the shut outer door after a timeout did not re-open OUTPOST_PROCESSING_RELEASE") // OUTPOST_PROCESSING_RELEASE
+	released_walker.forceMove(front_clear)
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing stayed in OUTPOST_PROCESSING_RELEASE after the released inmate entered the front room") // OUTPOST_PROCESSING_IDLE
+	deadline = world.time + 4 SECONDS
+	while((!outer.density || outer.operating) && world.time < deadline)
+		prison.processing_work_door(outer, FALSE)
+		sleep(1)
 	REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
 
 // =========================================================================
@@ -332,6 +398,41 @@
 	inmate.forceMove(yard_tile)
 	prison.inmate_tick(1)
 	TEST_ASSERT_EQUAL(sentence.return_left, 0, "Returning inside the cell block did not clear return_left")
+
+	// Voluntary resting or hiding in an unlocked closet outside the wing still ticks return_left; brief flooring pauses without inflating return_left back to 20 s
+	var/mob/living/carbon/human/active_inmate = police_arrest_person(yard_tile)
+	var/datum/outpost_warrant/active_warrant = police_pin_warrant(police, active_inmate.mind, 55)
+	var/datum/prison_sentence/active_sentence = prison.admit_inmate_sentence(active_inmate, active_warrant, 3)
+	active_inmate.Knockdown(10 SECONDS)
+	active_inmate.pulledby = friend
+	active_inmate.forceMove(front_tile)
+	prison.inmate_tick(1)
+	TEST_ASSERT_EQUAL(active_sentence.return_left, 20, "Setup: active_inmate did not start at 20 s return_left") // OUTPOST_POLICE_CELL_RETURN
+	active_inmate.pulledby = null
+	active_inmate.SetKnockdown(0)
+	active_inmate.set_resting(TRUE)
+	active_inmate.set_body_position(LYING_DOWN)
+	TEST_ASSERT(prison.inmate_can_walk_back(active_inmate, active_inmate.mind), "Voluntary resting outside the wing fooled inmate_can_walk_back() into pausing return_left")
+	prison.inmate_tick(5)
+	TEST_ASSERT_EQUAL(active_sentence.return_left, 15, "Voluntary resting kept return_left at [active_sentence.return_left] instead of ticking to 15")
+	active_inmate.set_resting(FALSE)
+	active_inmate.Knockdown(10 SECONDS)
+	prison.inmate_tick(5)
+	TEST_ASSERT_EQUAL(active_sentence.return_left, 15, "Genuine knockdown while outside inflated or ticked return_left ([active_sentence.return_left], expected 15)")
+	active_inmate.SetKnockdown(0)
+	active_inmate.set_body_position(STANDING_UP)
+	var/obj/structure/closet/outside_closet = allocate(/obj/structure/closet, front_tile)
+	active_inmate.forceMove(outside_closet)
+	TEST_ASSERT(prison.inmate_can_walk_back(active_inmate, active_inmate.mind), "Hiding in an unlocked closet outside the wing paused return_left")
+	prison.inmate_tick(5)
+	TEST_ASSERT_EQUAL(active_sentence.return_left, 10, "Unlocked closet outside the wing did not tick return_left down to 10 ([active_sentence.return_left])")
+	outside_closet.welded = TRUE
+	TEST_ASSERT(!prison.inmate_can_walk_back(active_inmate, active_inmate.mind), "Being welded inside a closet outside the wing still counted as able to walk back")
+	outside_closet.welded = FALSE
+	active_inmate.forceMove(front_tile)
+	qdel(outside_closet)
+	prison.inmate_tick(10)
+	TEST_ASSERT(active_sentence.escaped && !prison.holds(active_inmate.mind), "Expiring return_left while resting/uncontained outside did not mark the inmate escaped")
 
 	// Walking out on their own feet is a jailbreak; rebooking resets served and worked-off time to 0
 	sentence.seconds_served = 120
@@ -454,9 +555,55 @@
 	inmate.set_body_position(STANDING_UP)
 	sentence.baton_until = 0
 
-	// Guard crit first aid: picks a crit patient in the wing, takes the office medkit's epinephrine pen and injects real epinephrine
+	// Guard crit first aid & medkit supply splitting/stow: splits stacks instead of draining the office medkit and never deletes stowed stacks on settle
 	var/obj/item/storage/medkit/kit = prison.guard_first_aid_kit()
 	TEST_ASSERT_NOTNULL(kit, "Quartermain Depot's lockup office has no stocked first-aid kit")
+	var/sutures_before = 0
+	var/obj/item/stack/medical/suture/kit_suture
+	for(var/obj/item/stack/medical/suture/suture in kit)
+		sutures_before += suture.amount
+		if(!kit_suture && suture.amount > 2)
+			kit_suture = suture
+	TEST_ASSERT_NOTNULL(kit_suture, "Office medkit had no suture stack with more than 2 charges")
+	var/turf/old_guard_turf = get_turf(guard)
+	var/turf/kit_spot = prison.guard_spot_beside(kit) || get_turf(kit)
+	guard.forceMove(kit_spot)
+	TEST_ASSERT(guard.take_one_crit_supply(kit_suture), "take_one_crit_supply() failed to split sutures from the office medkit")
+	TEST_ASSERT_EQUAL(kit_suture.loc, kit, "take_one_crit_supply() pulled the entire suture stack out of the office medkit instead of splitting")
+	var/obj/item/stack/medical/suture/guard_suture = locate() in guard.get_all_contents_type(/obj/item/stack/medical/suture)
+	TEST_ASSERT_NOTNULL(guard_suture, "Guard had no split suture stack after take_one_crit_supply()")
+	TEST_ASSERT_EQUAL(guard_suture.amount, 2, "take_one_crit_supply() took [guard_suture.amount] sutures instead of 2")
+	if(!guard.is_holding(guard_suture))
+		human_npc_take_in_hand(guard, guard_suture)
+	guard.stow_crit_supplies()
+	sleep(1)
+	var/sutures_after = 0
+	for(var/obj/item/stack/medical/suture/suture in kit)
+		sutures_after += suture.amount
+	TEST_ASSERT_EQUAL(sutures_after, sutures_before, "Stowing unused sutures back into the office medkit lost charges ([sutures_after] vs [sutures_before])")
+	var/bruise_before = 0
+	for(var/obj/item/stack/medical/bruise_pack/pack in kit)
+		bruise_before += pack.amount
+	guard.adjustBruteLoss(25)
+	var/obj/item/stack/medical/taken_bruise = guard.take_treatment_from(kit)
+	TEST_ASSERT_NOTNULL(taken_bruise, "take_treatment_from() failed to pull a dressing for an injured guard")
+	TEST_ASSERT_EQUAL(taken_bruise.amount, 1, "take_treatment_from() took [taken_bruise.amount] charges instead of splitting 1")
+	guard.stow_crit_supplies()
+	sleep(1)
+	var/bruise_after = 0
+	for(var/obj/item/stack/medical/bruise_pack/pack in kit)
+		bruise_after += pack.amount
+	TEST_ASSERT_EQUAL(bruise_after, bruise_before, "Stowing a split bruise pack back into the office medkit deleted it on settle ([bruise_after] vs [bruise_before])")
+	var/obj/item/reagent_containers/hypospray/medipen/kit_pen = locate() in kit
+	TEST_ASSERT_NOTNULL(kit_pen, "Office medkit has no epinephrine medipen")
+	TEST_ASSERT(guard.take_one_crit_supply(kit_pen), "take_one_crit_supply() failed to take the medipen")
+	if(!guard.is_holding(kit_pen))
+		human_npc_take_in_hand(guard, kit_pen)
+	guard.stow_crit_supplies()
+	sleep(1)
+	TEST_ASSERT(!QDELETED(kit_pen) && kit_pen.loc == kit, "Stowing a locked medipen back into the office medkit deleted it on settle")
+	guard.adjustBruteLoss(-25)
+	guard.forceMove(old_guard_turf)
 	inmate.adjustOxyLoss(120)
 	inmate.updatehealth()
 	TEST_ASSERT(prison.guard_in_crit(inmate), "Inmate at [inmate.health] health did not register as in crit")
@@ -483,6 +630,10 @@
 	TEST_ASSERT(prison.has_able_corpse_guard() && !prison.corpse_doors_open(), "Processing fallback opened with an able on-duty guard present")
 	guard.death()
 	TEST_ASSERT(!prison.has_able_corpse_guard() && prison.corpse_doors_open(), "corpse_doors_open() did not engage when no guard could carry the body out")
+	inmate.set_stat(CONSCIOUS)
+	prison.prune_dead_inmate_bodies()
+	TEST_ASSERT(!(WEAKREF(inmate) in prison.dead_inmate_bodies), "Reviving a dead inmate in the yard left them in dead_inmate_bodies")
+	TEST_ASSERT(WEAKREF(inmate) in prison.processing_release_refs, "Reviving a former inmate in the yard did not queue them in processing_release_refs to exit Processing")
 
 	// Wing deletion drops active holds and traits without closing live warrants (design 14 #28)
 	var/mob/living/carbon/human/survivor = make_player(yard_tile, "lockupsurvivor")

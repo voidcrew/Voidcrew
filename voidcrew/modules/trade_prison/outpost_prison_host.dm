@@ -168,8 +168,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	var/mob/living/mover = AM
 	if(istype(mover) && density)
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
-		if(prison && (WEAKREF(mover) in prison.processing_release_refs))
+		if(!prison)
+			return
+		if(WEAKREF(mover) in prison.processing_release_refs)
 			prison.try_start_processing_release(mover)
+		else if(prison.is_inmate(mover) && prison.in_processing(mover))
+			prison.try_start_processing_inmate_in(mover)
 
 // ===== THE PRISON'S SIDE =====
 

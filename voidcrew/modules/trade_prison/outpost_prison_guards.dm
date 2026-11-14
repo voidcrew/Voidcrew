@@ -876,9 +876,24 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	for(var/obj/item/held as anything in held_items)
 		if(!held || (!istype(held, /obj/item/stack/medical) && !istype(held, /obj/item/reagent_containers/hypospray/medipen)))
 			continue
-		if(kit && get_dist(src, kit) <= 1 && kit.atom_storage?.can_insert(held, src, messages = FALSE))
-			kit.atom_storage.attempt_insert(held, src, override = TRUE, messages = FALSE)
-			continue
+		if(kit && get_dist(src, kit) <= 1)
+			if(istype(held, /obj/item/stack/medical))
+				var/obj/item/stack/medical/held_stack = held
+				for(var/obj/item/stack/medical/existing in kit)
+					if(!QDELETED(held_stack) && held_stack.can_merge(existing, inhand = TRUE))
+						held_stack.merge(existing)
+				if(QDELETED(held_stack))
+					continue
+			if(kit.atom_storage?.can_insert(held, src, messages = FALSE))
+				var/datum/component/consumable_lock = held.GetComponent(/datum/component/human_npc_consumable)
+				var/was_locked = !!consumable_lock
+				if(consumable_lock)
+					qdel(consumable_lock)
+				kit.atom_storage.attempt_insert(held, src, override = TRUE, messages = FALSE)
+				if(held.loc == kit)
+					continue
+				if(was_locked)
+					npc_lock_item(held)
 		held.equip_to_best_slot(src)
 
 /// Medical item already on `src` that can treat `patient`'s crit right now (medipen first, then gauze, then suture)
@@ -928,9 +943,25 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			if(suture.amount > 0 && prison?.crit_limb_for_stack(patient, src, suture) && take_one_crit_supply(suture))
 				break
 
-/// Pulls `item` from its medkit into hands or left pocket and locks it as consumable NPC gear
+/// Pulls `item` (splitting off up to 2 charges for medical stacks) from its medkit into hands or left pocket and locks it as consumable NPC gear
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/take_one_crit_supply(obj/item/item)
-	if(!put_in_hands(item) && !equip_to_slot_if_possible(item, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
+	if(!length(get_empty_held_indexes()) && get_item_by_slot(ITEM_SLOT_LPOCKET))
+		return FALSE
+	if(istype(item, /obj/item/stack/medical))
+		var/obj/item/stack/medical/stack = item
+		if(stack.amount > 2)
+			var/obj/item/stack/medical/taken = stack.split_stack(2)
+			if(!taken)
+				return FALSE
+			if(!put_in_hands(taken, merge_stacks = FALSE) && !equip_to_slot_if_possible(taken, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
+				if(!QDELETED(stack))
+					taken.merge(stack)
+				if(!QDELETED(taken))
+					qdel(taken)
+				return FALSE
+			npc_lock_item(taken)
+			return TRUE
+	if(!put_in_hands(item, merge_stacks = FALSE) && !equip_to_slot_if_possible(item, ITEM_SLOT_LPOCKET, qdel_on_fail = FALSE, disable_warning = TRUE))
 		return FALSE
 	npc_lock_item(item)
 	return TRUE

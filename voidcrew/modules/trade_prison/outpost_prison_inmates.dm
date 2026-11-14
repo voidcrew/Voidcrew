@@ -540,10 +540,21 @@
 
 /// Whether `body` outside the wing can walk back into it on its own feet right now
 /datum/outpost_prison/proc/inmate_can_walk_back(mob/living/body, datum/mind/who)
-	if(body.stat != CONSCIOUS || body.body_position == LYING_DOWN || body.incapacitated || HAS_TRAIT(body, TRAIT_RESTRAINED))
+	if(body.stat != CONSCIOUS || body.incapacitated || HAS_TRAIT(body, TRAIT_FLOORED) || HAS_TRAIT(body, TRAIT_IMMOBILIZED) || HAS_TRAIT(body, TRAIT_RESTRAINED))
 		return FALSE
-	if(!isturf(body.loc) || body.pulledby || body.buckled || body.throwing)
+	if(body.pulledby || body.buckled || body.throwing)
 		return FALSE
+	if(!isturf(body.loc))
+		if(istype(body.loc, /obj/structure/closet))
+			var/obj/structure/closet/closet = body.loc
+			if(closet.welded || closet.locked || closet.strong_grab || closet.pulledby || !isturf(closet.loc))
+				return FALSE
+		else if(istype(body.loc, /obj/vehicle))
+			var/obj/vehicle/vehicle = body.loc
+			if(vehicle.pulledby || !isturf(vehicle.loc))
+				return FALSE
+		else
+			return FALSE
 	if((body.mind?.key || who?.key) && !body.client)
 		return FALSE
 	return TRUE
@@ -587,7 +598,7 @@
 			return FALSE
 		if(outer.locked || outer.welded || !outer.hasPower() || outer.lockup_breached())
 			return FALSE
-		if(processing_outsider_inside() || processing_state == OUTPOST_PROCESSING_BOOK)
+		if(processing_outsider_inside())
 			return FALSE
 		if(!booking_door_turf())
 			return FALSE
@@ -907,21 +918,36 @@
 	if(!warrant || warrant.heat <= 0 || stars < 1)
 		return FALSE
 
+	var/stripped = booking_strip_prisoner(suspect, officer, police)
+	if(!stripped || QDELETED(src) || QDELETED(suspect) || suspect.mind != mind || suspect.stat == DEAD || HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION))
+		if(stripped && !police.cell_holding(mind))
+			police.mark_locker_released(mind)
+		return FALSE
+
 	var/use_processing = has_processing()
 	var/obj/machinery/door/airlock/security/prison_staff/inner
 	var/obj/machinery/door/airlock/security/prison_staff/outer
 	if(use_processing)
 		var/wait_pause = max(1, round(0.5 SECONDS * GLOB.outpost_police_property_time_scale))
-		var/max_waits = max(12, round((6 SECONDS) / wait_pause))
+		var/max_waits = max(30, round((15 SECONDS) / wait_pause))
 		for(var/wait_step in 1 to max_waits)
-			if(QDELETED(src) || processing_state == OUTPOST_PROCESSING_IDLE || processing_state == OUTPOST_PROCESSING_BOOK)
+			if(QDELETED(src) || QDELETED(suspect))
+				break
+			var/obj/machinery/door/airlock/inner_check = processing_door(TRUE)
+			if(processing_state == OUTPOST_PROCESSING_IDLE && inner_check && !processing_shut(inner_check))
+				processing_work_door(inner_check, FALSE)
+			if(processing_state == OUTPOST_PROCESSING_IDLE && processing_shut(inner_check) && !processing_outsider_inside() && !processing_inmate_inside())
 				break
 			sleep(wait_pause)
-		if(QDELETED(src) || QDELETED(suspect) || !can_book(suspect) || processing_state != OUTPOST_PROCESSING_IDLE)
+		if(QDELETED(src) || QDELETED(suspect) || suspect.mind != mind || !can_book(suspect) || processing_state != OUTPOST_PROCESSING_IDLE || processing_inmate_inside())
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
 		inner = processing_door(TRUE)
 		outer = processing_door(FALSE)
-		if(!booking_wait_door_shut(inner) || processing_outsider_inside())
+		if(!booking_wait_door_shut(inner) || processing_outsider_inside() || processing_inmate_inside())
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
 		processing_state = OUTPOST_PROCESSING_BOOK
 		processing_who_ref = WEAKREF(suspect)
@@ -929,27 +955,26 @@
 		processing_entry_ref = WEAKREF(outer)
 		processing_seconds = 0
 
-	var/stripped = booking_strip_prisoner(suspect, officer, police)
-	if(!stripped || QDELETED(src) || QDELETED(suspect) || suspect.mind != mind || suspect.stat == DEAD || HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION))
-		booking_mover_ref = null
-		if(use_processing && processing_state == OUTPOST_PROCESSING_BOOK && processing_who() == suspect)
-			processing_done()
-		return FALSE
-
-	if(use_processing)
 		var/turf/outside_turf = processing_outside_turf(outer)
 		if(!outside_turf || !booking_wait_door_shut(inner) || !booking_wait_door_open(outer))
 			booking_mover_ref = null
 			processing_done()
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
+		processing_seconds = 0
 		if(!booking_walk_pair_in(suspect, officer, outer, processing_turfs))
 			officer?.stop_pulling()
 			if(officer)
 				booking_walk_officer_out(officer, outer, outside_turf, processing_turfs)
 			booking_mover_ref = null
 			processing_done()
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
+		processing_seconds = 0
 		booking_uncuff_prisoner(suspect, officer, police, outside_turf)
+		processing_seconds = 0
 		if(officer)
 			if(!QDELETED(officer) && officer.stat == CONSCIOUS)
 				officer.say("In you go.")
@@ -957,10 +982,15 @@
 		booking_mover_ref = null
 		if(QDELETED(src) || QDELETED(suspect) || suspect.mind != mind || suspect.stat == DEAD || !in_processing(suspect))
 			processing_done()
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
+		processing_seconds = 0
 		booking_wait_door_shut(outer)
 		if(QDELETED(src) || QDELETED(suspect) || suspect.mind != mind || suspect.stat == DEAD || !in_processing(suspect))
 			processing_done()
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
 
 		admit_inmate_sentence(suspect, warrant, max(stars, police.get_stars(mind)))
@@ -1004,6 +1034,8 @@
 			if(staff_door)
 				break
 		if(!staff_door || !booking_wait_door_open(staff_door))
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
 		var/list/yard_tiles = list()
 		for(var/turf/tile as anything in cell_block)
@@ -1014,6 +1046,8 @@
 			if(officer && outside_turf)
 				booking_walk_officer_out(officer, staff_door, outside_turf, yard_tiles)
 			booking_wait_door_shut(staff_door)
+			if(!police.cell_holding(mind))
+				police.mark_locker_released(mind)
 			return FALSE
 		booking_uncuff_prisoner(suspect, officer, police, outside_turf)
 		if(officer)
@@ -1028,6 +1062,8 @@
 			officer.say("In you go.")
 
 	if(QDELETED(src) || QDELETED(suspect) || suspect.mind != mind || suspect.stat == DEAD || !in_inmate_bounds(suspect))
+		if(!police.cell_holding(mind))
+			police.mark_locker_released(mind)
 		return FALSE
 	admit_inmate_sentence(suspect, warrant, max(stars, police.get_stars(mind)))
 	greet_new_inmate(suspect)
@@ -1061,6 +1097,8 @@
 			unhook_inmate(sentence)
 			outpost_police_drop_used_cuffs(body)
 			police?.mark_locker_released(who)
+			police?.update_hud(who)
+			police?.wake()
 			continue
 		if(body.stat == DEAD)
 			on_inmate_death(body)
@@ -1092,9 +1130,7 @@
 					if(late_mover && late_mover != body && late_mover.mind && !is_staff(late_mover))
 						sentence.carry_reported = TRUE
 						police?.report_crime(late_mover, OUTPOST_CRIME_JAILBREAK)
-				if(!inmate_can_walk_back(body, who))
-					sentence.return_left = max(sentence.return_left, round(OUTPOST_POLICE_CELL_RETURN / (1 SECONDS)))
-				else
+				if(inmate_can_walk_back(body, who))
 					sentence.return_left -= seconds
 					if(sentence.return_left <= 0)
 						inmate_escaped(who, body)
@@ -1224,11 +1260,16 @@
 	update_lockup_boards()
 	return TRUE
 
-/// Prunes dead inmate bodies that have been carried into the front room, removed from the wing or revived
+/// Prunes dead inmate bodies that have been carried into the front room, removed from the wing or revived (queuing revived bodies for Processing exit)
 /datum/outpost_prison/proc/prune_dead_inmate_bodies()
 	for(var/datum/weakref/ref as anything in dead_inmate_bodies.Copy())
 		var/mob/living/body = ref?.resolve()
-		if(QDELETED(body) || body.stat != DEAD || !contains_turf(get_turf(body)) || in_front_room(body))
+		if(!QDELETED(body) && body.stat != DEAD)
+			dead_inmate_bodies -= ref
+			if(!holds(body.mind) && has_processing() && contains_turf(get_turf(body)) && !in_front_room(body))
+				processing_release_refs |= WEAKREF(body)
+			continue
+		if(QDELETED(body) || !contains_turf(get_turf(body)) || in_front_room(body))
 			dead_inmate_bodies -= ref
 
 /// Next dead inmate body inside the wing waiting to be carried to the front room, or null

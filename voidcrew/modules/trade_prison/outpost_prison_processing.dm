@@ -89,13 +89,22 @@
 	return FALSE
 
 /// Whether any living outsider (not staff, not a cleanbot, not a wing prisoner or inmate) is in the room
-/datum/outpost_prison/proc/processing_outsider_inside()
+/datum/outpost_prison/proc/processing_outsider_inside(mob/living/except = null)
 	for(var/mob/living/person as anything in processing_occupants())
-		if(QDELETED(person) || person.stat == DEAD || istype(person, /mob/living/basic/bot/cleanbot))
+		if(person == except || QDELETED(person) || person.stat == DEAD || istype(person, /mob/living/basic/bot/cleanbot))
 			continue
 		if(is_staff(person) || is_inmate(person) || (person in prisoners))
 			continue
 		return TRUE
+	return FALSE
+
+/// Whether any living held player inmate is inside Processing
+/datum/outpost_prison/proc/processing_inmate_inside(mob/living/except = null)
+	for(var/mob/living/person as anything in processing_occupants())
+		if(person == except || QDELETED(person) || person.stat == DEAD)
+			continue
+		if(is_inmate(person))
+			return TRUE
 	return FALSE
 
 /// Whether a live AI cleanbot is in the room with no other live non-cleanbot occupant
@@ -467,6 +476,10 @@
 	processing_work_door(outer, FALSE)
 	if(processing_shut(inner) && processing_shut(outer) && !processing_player_inside())
 		processing_clear_dead()
+	if(processing_shut(inner) && processing_shut(outer))
+		for(var/mob/living/occupant as anything in processing_occupants())
+			if(!occupant.client && !occupant.mind?.key && is_inmate(occupant) && try_start_processing_inmate_in(occupant))
+				return
 	if(processing_check_releases())
 		return
 	if(!length(processing_leavers))
@@ -540,6 +553,9 @@
 		processing_done()
 		return
 	processing_seconds += seconds
+	if(!prisoner && (processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT || who.stat != CONSCIOUS))
+		processing_done()
+		return
 	if(!processing_shut(outer))
 		processing_work_door(outer, FALSE)
 		return
@@ -558,6 +574,25 @@
 		if(home)
 			prisoner.forceMove(home)
 			prisoner.processing_goal = null
+
+/// Claims Processing to let a held inmate already inside Processing step out into the yard once the outer door is shut
+/datum/outpost_prison/proc/try_start_processing_inmate_in(mob/living/who)
+	if(QDELETED(who) || !is_inmate(who) || !in_processing(who) || !has_processing())
+		return FALSE
+	if(who.stat != CONSCIOUS || who.body_position == LYING_DOWN || HAS_TRAIT(who, TRAIT_INCAPACITATED))
+		return FALSE
+	if((who.mind?.key && !who.client) || processing_state != OUTPOST_PROCESSING_IDLE)
+		return FALSE
+	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
+	if(!inner || !outer || !processing_shut(outer) || processing_outsider_inside())
+		return FALSE
+	processing_state = OUTPOST_PROCESSING_IN
+	processing_who_ref = WEAKREF(who)
+	processing_entry_ref = null
+	processing_seconds = 0
+	processing_work_door(inner, TRUE)
+	return TRUE
 
 /// Prunes `processing_release_refs` and starts `OUTPOST_PROCESSING_RELEASE` for the first released inmate ready at the inner door
 /datum/outpost_prison/proc/processing_check_releases()
@@ -580,7 +615,7 @@
 		return FALSE
 	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
-	if(!inner || !outer || processing_outsider_inside())
+	if(!inner || !outer || processing_outsider_inside(who) || processing_inmate_inside(who))
 		return FALSE
 	if(in_processing(who))
 		processing_state = OUTPOST_PROCESSING_RELEASE
@@ -613,6 +648,10 @@
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
 	var/turf/here = get_turf(who)
 	if(in_processing(who) || here == get_turf(outer))
+		processing_seconds += seconds
+		if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT || who.stat != CONSCIOUS || processing_inmate_inside(who))
+			processing_done()
+			return
 		if(!processing_shut(inner))
 			processing_work_door(inner, FALSE)
 			return
