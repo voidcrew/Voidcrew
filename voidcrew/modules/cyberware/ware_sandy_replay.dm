@@ -1343,7 +1343,7 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	sandy_member_views() // each member of a shared slow-mo watches its own replayed self (ware_sandy_timestop_shared.dm)
 	// The surge coming on, as the replay's user did at its first frame.
 	var/turf/first = user_track ? locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) : null
-	playsound(first || user, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
+	playsound(first || user, SANDEVISTAN_BURST_SOUND, 100, TRUE)
 	play_timer = addtimer(CALLBACK(src, PROC_REF(play_frame)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	play_frame()
 

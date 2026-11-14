@@ -251,7 +251,7 @@
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
 	owner.add_client_colour(colour_type, id)
-	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
+	playsound(owner, SANDEVISTAN_BURST_SHORT_SOUND, 80, TRUE)
 	owner.visible_message(
 		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
 		span_boldnotice(online_message),

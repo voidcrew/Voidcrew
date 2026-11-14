@@ -254,3 +254,8 @@
 /// frame (ware_military_body.dm) and the Strut frame (ware_models_b.dm); the
 /// gate itself is in ware_military_body.dm.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
+
+/// The burst everyone nearby hears when a Sandevistan surges (ware_legend.dm).
+#define SANDEVISTAN_BURST_SHORT_SOUND 'voidcrew/sound/cyberware/sandevistan_burst_short.ogg'
+/// The dash whoosh played at the start of a Sandevistan replay (ware_sandy_replay.dm).
+#define SANDEVISTAN_BURST_SOUND 'voidcrew/sound/cyberware/sandevistan_burst.ogg'
