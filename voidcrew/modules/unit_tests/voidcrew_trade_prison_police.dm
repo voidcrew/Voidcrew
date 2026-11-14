@@ -53,6 +53,8 @@
 	TEST_ASSERT_EQUAL(police.dispatch_lift_tiles(prison), prison.alcove_turfs, "The lockup sector's lift tiles are not its alcove")
 	TEST_ASSERT(police.dispatch_is_lift_tile(alcove_tile), "A lockup alcove tile is not a police lift tile")
 	TEST_ASSERT(!police.dispatch_is_lift_tile(front_tile), "A front room tile outside the alcove counted as a lift tile")
+	TEST_ASSERT(police.dispatch_nearest_lift_point(prison, front_tile) in prison.alcove_turfs, "Lockup-sector nearest lift lookup did not pick the lockup alcove")
+	TEST_ASSERT(!(police.dispatch_nearest_lift_point(null, front_tile) in prison.alcove_turfs), "Outside/null-sector nearest lift lookup picked a sealed lockup alcove tile")
 	TEST_ASSERT_EQUAL(police.dispatch_elevator_floor(prison), 90, "The lockup sector's elevator floor is not 90") // OUTPOST_LIFT_LOCKUP
 	TEST_ASSERT(prison.lift_panel in police.cameras(), "The lockup's lift panel is not a police witness camera")
 

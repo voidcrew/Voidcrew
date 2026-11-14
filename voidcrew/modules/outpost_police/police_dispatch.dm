@@ -990,7 +990,6 @@
 	if(isnull(sector))
 		points = lift_turfs.Copy()
 		points |= outpost?.lobby_alcove_turfs
-		points |= outpost?.prison?.alcove_turfs // OUTPOST PRISON seam
 		for(var/datum/outpost_berth/berth as anything in outpost?.berths)
 			if(berth)
 				points |= berth.alcove_turfs
