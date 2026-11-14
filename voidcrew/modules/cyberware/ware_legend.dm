@@ -501,7 +501,7 @@
 	owner.adjustStaminaLoss(crash_stamina)
 	var/mob/living/carbon/carbon_owner = owner
 	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = iscarbon(owner) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_owner.organs) : null
-	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
+	playsound(owner, 'sound/machines/defib/defib_failed.ogg', 75, FALSE)
 	owner.visible_message(
 		span_warning("[owner] staggers, every movement suddenly leaden."),
 		span_userdanger("The [lattice?.part_word || "lattice"] dumps its heat. Your whole body seizes up and everything slows to a crawl."),
