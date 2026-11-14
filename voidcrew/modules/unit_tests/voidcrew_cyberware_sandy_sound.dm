@@ -23,8 +23,23 @@
 	. = list()
 	for(var/list/entry as anything in GLOB.sandy_cues_sent)
 		var/sound/cue = entry[2]
-		if(entry[1] == listener && cue.file && is_file(cue, file))
+		if(entry[1] == listener && cue.file && !(cue.status & SOUND_UPDATE) && is_file(cue, file))
 			. += cue
+
+/// The pitch updates sent to `listener` for what plays on `channel`, as /sound datums
+/datum/unit_test/voidcrew_cyberware_timestop/proc/updates(mob/listener, channel)
+	. = list()
+	for(var/list/entry as anything in GLOB.sandy_cues_sent)
+		var/sound/cue = entry[2]
+		if(entry[1] == listener && (cue.status & SOUND_UPDATE) && cue.channel == channel)
+			. += cue
+
+/// The old time-stop sounds sent to `listener`: played forward, or `reversed`
+/datum/unit_test/voidcrew_cyberware_timestop/proc/timestops(mob/listener, reversed = FALSE)
+	. = 0
+	for(var/sound/cue as anything in cues(listener, 'sound/effects/magic/timeparadox2.ogg'))
+		if((cue.frequency < 0) == reversed)
+			.++
 
 /// The stops sent to `listener` on `channel`
 /datum/unit_test/voidcrew_cyberware_timestop/proc/stops(mob/listener, channel)
@@ -57,6 +72,8 @@
 	TEST_ASSERT_EQUAL(length(cues(bystander, "external")), 1, "A bystander didn't hear the snap")
 	TEST_ASSERT_EQUAL(length(cues(bystander, 'voidcrew/sound/cyberware/sandevistan_activation.ogg')), 0, "A bystander heard the user's own surge")
 	TEST_ASSERT_EQUAL(length(cues(bystander, 'voidcrew/sound/cyberware/sandevistan_loop.ogg')), 0, "A bystander heard the user's loop")
+	TEST_ASSERT_EQUAL(timestops(user), 1, "The user didn't hear the time-stop sound as his slow-mo came up")
+	TEST_ASSERT_EQUAL(length(cues(bystander, 'sound/effects/magic/timeparadox2.ogg')), 0, "A bystander heard the user's time-stop sound")
 	var/sound/snap = cues(bystander, "external")[1]
 	TEST_ASSERT(snap.x == -3 && snap.z == 0, "The snap wasn't placed at the surger's tile ([snap.x], [snap.z])")
 	TEST_ASSERT(snap.frequency >= 0.94 && snap.frequency <= 1.06, "The snap's pitch ([snap.frequency]) went past its spread")
@@ -67,6 +84,8 @@
 		TEST_ASSERT(!findtext("[heard[3]]", "sandevistan"), "A Sandevistan cue ([heard[3]]) was recorded for the replay")
 	press_again(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop wasn't stopped when the slow-mo ended")
+	TEST_ASSERT_EQUAL(timestops(user, reversed = TRUE), 1, "The user didn't hear the time-stop sound reversed as his slow-mo ended")
+	TEST_ASSERT_EQUAL(length(cues(bystander, 'sound/effects/magic/timeparadox2.ogg')), 0, "A bystander heard the user's time-stop sound")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
 
@@ -112,6 +131,7 @@
 	var/channel = loop_channel(user)
 	user.death()
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop wasn't stopped when the user died")
+	TEST_ASSERT_EQUAL(timestops(user, reversed = TRUE), 0, "A dead user heard his slow-mo end")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
 
@@ -194,3 +214,71 @@
 	TEST_ASSERT_EQUAL(stops(second, channel), 1, "The loop was stopped twice")
 	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// The loop and the step climb in pitch as the slow-mo runs toward its end, to about 1.4 near it; the slow-mo's end
+/// plays the time-stop sound reversed to the user alone, and nothing reaches him after it
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_climbs
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_climbs/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandysoundpitch")
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human/consistent, spot(0, 3))
+	set_window(user, 3 SECONDS)
+	GLOB.sandy_cues_sent.Cut()
+	start_recording(user)
+	var/channel = loop_channel(user)
+	sleep(0.4 SECONDS)
+	TEST_ASSERT(user.Move(spot(1, 0), EAST), "Test fixture: the user couldn't step")
+	sleep(2.2 SECONDS)
+	TEST_ASSERT(user.Move(spot(2, 0), EAST), "Test fixture: the user couldn't step")
+	var/list/steps = cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')
+	TEST_ASSERT_EQUAL(length(steps), 2, "Test fixture: the two steps didn't both cue")
+	var/sound/early = steps[1]
+	var/sound/late = steps[2]
+	TEST_ASSERT(late.frequency > early.frequency, "A step late in the slow-mo ([late.frequency]) wasn't higher than one at its start ([early.frequency])")
+	var/list/climb = updates(user, channel)
+	TEST_ASSERT(length(climb) >= 4, "The loop's pitch was updated [length(climb)] times in 2.7 s")
+	var/last = 0
+	for(var/sound/update as anything in climb)
+		TEST_ASSERT(update.file == 'voidcrew/sound/cyberware/sandevistan_loop.ogg', "A pitch update went out for another sound")
+		TEST_ASSERT(update.frequency >= last, "The loop's pitch went down ([last] to [update.frequency])")
+		last = update.frequency
+	TEST_ASSERT(last >= 1.25 && last <= 1.4, "The loop's pitch near the end was [last], not about 1.4")
+	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_loop.ogg')), 1, "The loop was restarted to change its pitch")
+	TEST_ASSERT_EQUAL(length(updates(bystander, channel)), 0, "A bystander was sent the loop's pitch")
+	press_again(user)
+	TEST_ASSERT_EQUAL(timestops(user, reversed = TRUE), 1, "The user didn't hear the time-stop sound reversed as his slow-mo ended")
+	TEST_ASSERT_EQUAL(length(cues(bystander, 'sound/effects/magic/timeparadox2.ogg')), 0, "A bystander heard the user's time-stop sound")
+	var/sent = length(GLOB.sandy_cues_sent)
+	sleep(1.2 SECONDS)
+	for(var/i in sent + 1 to length(GLOB.sandy_cues_sent))
+		var/list/entry = GLOB.sandy_cues_sent[i]
+		var/sound/cue = entry[2]
+		TEST_ASSERT(!(entry[1] == user && cue.channel == channel), "The loop's channel was sent [cue.file] after the slow-mo ended")
+		TEST_ASSERT(!(entry[1] == user && is_file(cue, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), "A step cued after the slow-mo ended")
+	wait_over(user)
+
+/// When the slow-mo's end moves later (a hold, a shared slow-mo), the pitch never drops and never passes the top
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_end_moves
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_end_moves/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandysoundpitchmove")
+	set_window(user, 3 SECONDS)
+	start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = user.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop?.chronofield
+	TEST_ASSERT_NOTNULL(field, "Test fixture: no slow-mo field")
+	sleep(2 SECONDS)
+	var/before = window.sandy_slowmo_progress()
+	TEST_ASSERT(before > 0.5 && before < 1, "Test fixture: the slow-mo was [before] of the way through at 2 s of 3")
+	field.ends_at += 10 SECONDS
+	var/after = window.sandy_slowmo_progress()
+	TEST_ASSERT(after >= before, "The slow-mo's progress went from [before] to [after] when its end moved later")
+	sleep(0.5 SECONDS)
+	var/later = window.sandy_slowmo_progress()
+	TEST_ASSERT(later >= after && later < 1, "The progress ([later]) didn't keep climbing slowly toward the later end")
+	field.ends_at = world.time - 1
+	TEST_ASSERT(window.sandy_slowmo_progress() <= 1, "The progress went past the end")
+	TEST_ASSERT(sandy_pitch_for(window.sandy_slowmo_progress()) <= 1.4, "The pitch went past the top")
+	TEST_ASSERT(sandy_pitch_for(2) <= 1.4, "The pitch went past the top")
+	press_again(user)
+	wait_over(user)

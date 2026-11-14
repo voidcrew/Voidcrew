@@ -2,7 +2,9 @@
  * # What a Sandevistan sounds like
  *
  * The user hears his own surge come on, a hum for as long as his slow-mo runs, a rush when he bursts into movement
- * from standing inside it, and (once it has a sound) the slow-mo ending. Those go to him alone, straight to his client: never slowed by his own
+ * from standing inside it, and the slow-mo ending. The old time-stop sound plays as his slow-mo comes up and reversed as
+ * it ends, and the hum and the rush climb in pitch as it runs toward its end (sandy_slowmo_progress()).
+ * Those go to him alone, straight to his client: never slowed by his own
  * slow-mo (ware_sandy_senses.dm slows sounds in playsound_local) and never recorded for its replay (ware_sandy_replay.dm
  * records playsound()), which is the outside view. An NPC surger has no client and gets none of them.
  *
@@ -40,6 +42,12 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 	var/last_burst_cue = 0
 	/// world.time of the last step cue.
 	var/last_step_cue = 0
+	/// How far the slow-mo has run toward its end, 0 to 1, as last read (sandy_slowmo_progress()).
+	var/pitch_progress = 0
+	/// world.time pitch_progress was last read.
+	var/pitch_progress_at = 0
+	/// The timer that updates the playing loop's pitch.
+	var/pitch_timer
 
 /datum/sound_effect/sandevistan_external
 	key = SANDEVISTAN_EXTERNAL_SOUND
@@ -58,6 +66,11 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 	if(spread)
 		cue.frequency = rand(100 - spread, 100 + spread) / 100
 	return cue
+
+/// The frequency multiplier for a slow-mo `progress` (0 to 1) of the way to its end.
+/proc/sandy_pitch_for(progress)
+	progress = clamp(progress, 0, 1)
+	return 1 + (SANDEVISTAN_PITCH_END - 1) * progress * progress
 
 /// Sends `cue` to `listener` alone.
 /proc/sandy_cue_send(mob/listener, sound/cue)
@@ -110,7 +123,9 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 		return
 	if(slowmo_sounding && step_time >= SANDY_SOUND_STEP_STILL && (!last_step_cue || world.time - last_step_cue >= SANDY_SOUND_STEP_GAP))
 		last_step_cue = world.time
-		sandy_cue_send(owner, sandy_cue(SANDEVISTAN_STEP_SOUND, SANDY_SOUND_STEP_VOLUME, SANDY_SOUND_STEP_SPREAD))
+		var/sound/step = sandy_cue(SANDEVISTAN_STEP_SOUND, SANDY_SOUND_STEP_VOLUME, SANDY_SOUND_STEP_SPREAD)
+		step.frequency = (step.frequency || 1) * sandy_pitch_for(sandy_slowmo_progress())
+		sandy_cue_send(owner, step)
 	if(world.time - last_burst_cue < SANDEVISTAN_BURST_GAP)
 		return
 	last_burst_cue = world.time
@@ -125,24 +140,29 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 	if(on && !slowmo_sounding)
 		slowmo_sounding = TRUE
 		loop_ckey = owner.ckey
+		pitch_progress = 0
+		pitch_progress_at = world.time
+#ifdef SANDEVISTAN_TIMESTOP_SOUND
+		sandy_cue_send(owner, sandy_cue(SANDEVISTAN_TIMESTOP_SOUND, SANDEVISTAN_TIMESTOP_VOLUME))
+#endif
+		RegisterSignal(owner, COMSIG_MOB_LOGOUT, PROC_REF(sandy_sound_logout))
 		loop_channel = SSsounds.reserve_sound_channel(src)
 		if(!loop_channel)
 			return // no channel to stop it on: no loop
 		var/sound/loop = sandy_cue(SANDEVISTAN_LOOP_SOUND, SANDY_SOUND_LOOP_VOLUME, channel = loop_channel)
 		loop.repeat = TRUE
+		loop.frequency = sandy_pitch_for(sandy_slowmo_progress())
 		sandy_cue_send(owner, loop)
-		RegisterSignal(owner, COMSIG_MOB_LOGOUT, PROC_REF(sandy_sound_logout))
+		pitch_timer = addtimer(CALLBACK(src, PROC_REF(sandy_pitch_update)), SANDEVISTAN_PITCH_UPDATE, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 		return
 	if(on || !slowmo_sounding)
 		return
 	slowmo_sounding = FALSE
+	deltimer(pitch_timer)
+	pitch_timer = null
 	if(!QDELETED(owner))
 		UnregisterSignal(owner, COMSIG_MOB_LOGOUT)
-	var/client/heard_by = GLOB.directory[loop_ckey]
-	var/mob/listener = heard_by?.mob
-#ifdef UNIT_TESTS
-	listener ||= owner // test bodies have keys but no clients
-#endif
+	var/mob/listener = sandy_loop_listener()
 	if(loop_channel)
 		var/sound/stop = sound(null)
 		stop.channel = loop_channel
@@ -154,6 +174,51 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 	if(!quiet && listener == owner && owner.stat != DEAD)
 		sandy_cue_send(owner, sandy_cue(SANDEVISTAN_DEACTIVATE_SOUND, SANDY_SOUND_DEACTIVATE_VOLUME))
 #endif
+#ifdef SANDEVISTAN_TIMESTOP_END_SOUND
+	if(!quiet && listener == owner && !QDELETED(owner) && owner.stat != DEAD)
+		var/sound/reversed = sandy_cue(SANDEVISTAN_TIMESTOP_END_SOUND, SANDEVISTAN_TIMESTOP_VOLUME)
+		reversed.frequency = -1 // played backwards, as tg's time stop ends
+		sandy_cue_send(owner, reversed)
+#endif
+
+/// Whoever has the client the loop went to, wherever it is now.
+/datum/status_effect/cyberware_cascade_window/proc/sandy_loop_listener()
+	var/client/heard_by = GLOB.directory[loop_ckey]
+	. = heard_by?.mob
+#ifdef UNIT_TESTS
+	. ||= owner // test bodies have keys but no clients
+#endif
+
+/**
+ * How far the slow-mo has run toward its end, 0 at its start and 1 at its end, read against its end as it stands now
+ * (the field's ends_at: a hold or a shared slow-mo can move it later). It never goes down: when the end moves, what is
+ * left climbs from where it stood to 1 at the new end.
+ */
+/datum/status_effect/cyberware_cascade_window/proc/sandy_slowmo_progress()
+	var/ends = natural_end
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop?.chronofield
+	if(field && field.ends_at != INFINITY)
+		ends = field.ends_at
+	var/now = world.time
+	if(now <= pitch_progress_at)
+		return pitch_progress
+	if(ends <= now)
+		pitch_progress = 1
+	else
+		pitch_progress = min(1, pitch_progress + (1 - pitch_progress) * (now - pitch_progress_at) / (ends - pitch_progress_at))
+	pitch_progress_at = now
+	return pitch_progress
+
+/// Every SANDEVISTAN_PITCH_UPDATE while the loop plays: its pitch follows the slow-mo toward its end, without restarting.
+/datum/status_effect/cyberware_cascade_window/proc/sandy_pitch_update()
+	if(!slowmo_sounding || !loop_channel)
+		deltimer(pitch_timer)
+		pitch_timer = null
+		return
+	var/sound/update = sound(SANDEVISTAN_LOOP_SOUND, TRUE, 0, loop_channel, SANDY_SOUND_LOOP_VOLUME)
+	update.frequency = sandy_pitch_for(sandy_slowmo_progress())
+	update.status = SOUND_UPDATE
+	sandy_cue_send(sandy_loop_listener(), update)
 
 /// Signal proc for [COMSIG_MOB_LOGOUT]: the loop stops with him, wherever his client goes.
 /datum/status_effect/cyberware_cascade_window/proc/sandy_sound_logout(datum/source)
