@@ -423,10 +423,9 @@
 	// The worn housing sprite carries the folded blade, so it hides while the blade is out.
 	hide_worn_while_deployed = TRUE
 	items_to_create = list(/obj/item/melee/energy/blade/hardlight/cyberware_mantis)
-	// A blade sliding out of a forearm housing and snapping back into it, the
-	// cursed katana's pair (mining_loot/cursed_katana.dm), not a baton's ratchet.
-	extend_sound = 'sound/items/unsheath.ogg'
-	retract_sound = 'sound/items/sheath.ogg'
+	// The housing opening and the blade sliding out, and the blade locking back into it.
+	extend_sound = 'voidcrew/sound/cyberware/mantis_draw.ogg'
+	retract_sound = 'voidcrew/sound/cyberware/mantis_sheathe.ogg'
 	actions_types = list(
 		/datum/action/item_action/organ_action/toggle/toolkit,
 		/datum/action/cooldown/cyberware/mantis_lunge,
