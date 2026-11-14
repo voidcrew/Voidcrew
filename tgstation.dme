@@ -7487,6 +7487,7 @@
 #include "voidcrew\modules\plasma_weapons\plasma_press.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_shop.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_types.dm"
+#include "voidcrew\modules\plasma_weapons\plasma_vent.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_wound_care.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_wound_looks.dm"
 #include "voidcrew\modules\plasma_weapons\plasma_wounds.dm"
