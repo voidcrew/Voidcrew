@@ -528,6 +528,12 @@
 	if(stealth_radio_ready())
 		brain.stealth_start_call(STEALTH_CALL_ALARM, get_turf(offender))
 
+/// Ensures an officer joining an arrest case uses JPS pathfinding even if already in STEALTH_ALERT
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_case_paths()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
+	if(istype(brain) && !client && !istype(brain.ai_movement, /datum/ai_movement/jps))
+		human_npc_set_ai_movement(brain, /datum/ai_movement/jps/stealth)
+
 /// An arrest puts this officer on `suspect` (spec-stealth P5): alert on them, unless it is on them already
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_alert_on(mob/living/suspect)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller

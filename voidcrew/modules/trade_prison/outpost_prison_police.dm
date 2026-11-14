@@ -57,7 +57,7 @@
 		return list()
 	return list(panel)
 
-/// A loose prisoner of this outpost's lockup who is still on their feet (turret_target()), nearest `from` when given, or null
+/// A loose prisoner of this outpost's lockup who is still conscious, out of crit and unrestrained (police_runner_target()), nearest `from` when given, or null
 /datum/outpost_police/proc/lockup_loose_target(atom/from)
 	var/datum/outpost_prison/lockup = outpost?.prison
 	if(!lockup)
@@ -66,7 +66,7 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/best
 	var/best_distance = INFINITY
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in lockup.prisoners)
-		if(QDELETED(prisoner) || !prisoner.turret_target())
+		if(QDELETED(prisoner) || !prisoner.police_runner_target())
 			continue
 		if(!from_turf)
 			return prisoner
@@ -144,6 +144,24 @@
 		lockup_paths = TRUE
 		human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
 
+/// Next step turf inside the lockup when an arresting `officer` must cross Processing to reach `dest` (null when leaving the lockup sector), or null
+/datum/outpost_police/proc/lockup_case_step(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, turf/dest)
+	var/datum/outpost_prison/lockup = outpost?.prison
+	var/turf/here = get_turf(officer)
+	if(QDELETED(officer) || officer.stat != CONSCIOUS || !lockup?.contains_turf(here) || !lockup.has_processing())
+		return null
+	if(dest && lockup.in_processing(dest))
+		if(lockup.in_processing(here))
+			return null
+		var/obj/machinery/door/airlock/security/prison_staff/inner = lockup.processing_door(TRUE)
+		var/obj/machinery/door/airlock/security/prison_staff/outer = lockup.processing_door(FALSE)
+		var/from_front = lockup.in_front_room(here) || here == get_turf(outer)
+		if(!from_front && inner && inner.lockup_breached() && !inner.density)
+			return null
+		return lockup.processing_step_through(officer, from_front)
+	var/dest_in_front = !dest || !lockup.contains_turf(dest) || lockup.in_front_room(dest)
+	return lockup.processing_step_through(officer, !dest_in_front)
+
 /// The destination turf `pawn` is currently trying to reach inside or out of `lockup`, or null
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/lockup_cross_dest(datum/outpost_prison/lockup)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
@@ -152,6 +170,8 @@
 		return get_turf(blackboard[BB_HUMAN_NPC_EXIT])
 	if(blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
 		return get_turf(blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+	if(officer.case && officer.case.arresting() != officer)
+		return get_turf(officer.case.arresting() || officer.case.get_suspect())
 	switch(stealth_state())
 		if(STEALTH_SEARCHING)
 			if(calm_until)
@@ -208,7 +228,7 @@
 		return
 	var/datum/outpost_prison/lockup = officer.police?.outpost?.prison
 	var/turf/here = get_turf(officer)
-	if(officer.stat != CONSCIOUS || officer.client || officer.pulledby || officer.dispatch_riding || officer.case || LAZYLEN(officer.do_afters) || !lockup?.contains_turf(here) || !lockup.has_processing())
+	if(officer.stat != CONSCIOUS || officer.client || officer.pulledby || officer.dispatch_riding || (officer.case && officer.case.arresting() == officer) || LAZYLEN(officer.do_afters) || !lockup?.contains_turf(here) || !lockup.has_processing())
 		controller.lockup_give_back_paths()
 		return
 	var/turf/dest = controller.lockup_cross_dest(lockup)

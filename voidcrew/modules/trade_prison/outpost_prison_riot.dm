@@ -1427,6 +1427,10 @@
 /mob/living/carbon/human/npc/outpost_prisoner/proc/turret_target()
 	return stat != DEAD && trouble == PRISONER_TROUBLE_LOOSE && phase == PRISONER_PRESENT && !can_be_dragged()
 
+/// Whether this loose prisoner is still conscious, out of crit and unrestrained, keeping a police response active across a brief knockdown
+/mob/living/carbon/human/npc/outpost_prisoner/proc/police_runner_target()
+	return stat == CONSCIOUS && trouble == PRISONER_TROUBLE_LOOSE && phase == PRISONER_PRESENT && !HAS_TRAIT(src, TRAIT_CRITICAL_CONDITION) && !HAS_TRAIT(src, TRAIT_RESTRAINED)
+
 /proc/is_loose_outpost_prisoner(mob/living/creature)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = creature
 	return istype(prisoner) && prisoner.turret_target()

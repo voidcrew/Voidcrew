@@ -78,7 +78,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 /obj/machinery/door/airlock/security/prison_staff/processing/allowed(mob/accessor)
 	return isAdminGhostAI(accessor)
 
-// Whoever Processing is working for walks through; nobody else steps or paths into the room from outside unless the door is breached.
+/obj/machinery/door/airlock/security/prison_staff/processing/lets_leaving_prisoner(atom/movable/mover)
+	return FALSE
+
+// Whoever Processing is working for walks through (and anyone a crossing staff member pulls in hand); nobody else steps or paths into the room from outside unless the door is breached.
 /obj/machinery/door/airlock/security/prison_staff/processing/lets_prisoner(atom/movable/mover)
 	if(..())
 		return TRUE
@@ -89,8 +92,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	if(lockup_breached() && !density)
 		return ..()
 	if(isliving(mover) && !lets_prisoner(mover))
+		var/mob/living/living_mover = mover
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
-		if(prison && !prison.in_processing(mover) && get_turf(mover) != loc)
+		var/mob/living/who = prison?.processing_who()
+		var/towed_by_who = prison?.processing_state == OUTPOST_PROCESSING_CROSS && isliving(who) && who.pulling == living_mover && living_mover.pulledby == who && (living_mover.moving_from_pull == who || HAS_TRAIT(living_mover, TRAIT_RESTRAINED) || living_mover.stat != CONSCIOUS || living_mover.body_position == LYING_DOWN)
+		if(prison && !towed_by_who && !prison.in_processing(living_mover) && get_turf(living_mover) != loc)
 			return FALSE
 	return ..()
 

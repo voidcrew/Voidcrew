@@ -234,6 +234,10 @@
 	var/turf/gate_goal
 	/// Nearest the officer has got to `gate_goal`
 	var/gate_best = INFINITY
+	/// Current lockup Processing step turf for `route_to()` (OUTPOST PRISON seam)
+	var/turf/lockup_goal
+	/// Nearest the officer has got to `lockup_goal`
+	var/lockup_best = INFINITY
 	/// world.time the order was given, or 0
 	var/order_at = 0
 	/// The suspect took a step of their own after the order
@@ -342,6 +346,7 @@
 	approach_goal = null
 	approach_target_turf = null
 	gate_goal = null
+	lockup_goal = null
 	warrant = null
 	police = null
 	suspect_ref = null
@@ -370,6 +375,8 @@
 	approach_target_turf = null
 	gate_goal = null
 	gate_best = INFINITY
+	lockup_goal = null
+	lockup_best = INFINITY
 	goal = null
 
 /// Sends the arresting officer to `where`, stopping `distance` from it (null: stand)
@@ -544,6 +551,7 @@
 	if(officer.held_visual || officer.held_prop)
 		officer.set_held(null)
 	officer.ai_controller?.CancelActions()
+	officer.police_case_paths()
 	var/mob/living/carbon/suspect = get_suspect()
 	// On their feet and in view: on them. Someone down is only walked up to and cuffed.
 	if(suspect && !cuffed && officer.police_will_fight(suspect) && police?.perception?.sees(officer, suspect))
@@ -930,6 +938,8 @@
 	var/turf/there = get_turf(target)
 	if(!here || !there)
 		police?.clear_checkpoint_crossing(officer)
+		lockup_goal = null
+		lockup_best = INFINITY
 		approach_goal = null
 		approach_target_turf = null
 		set_goal(null)
@@ -946,6 +956,8 @@
 			reached = get_dist(here, there) <= distance && (from_sector == to_sector || here == there || here.Adjacent(there))
 	if(reached)
 		police.clear_checkpoint_crossing(officer)
+		lockup_goal = null
+		lockup_best = INFINITY
 		approach_goal = null
 		approach_target_turf = null
 		set_goal(null)
@@ -997,6 +1009,24 @@
 		gate_goal = null
 		gate_best = INFINITY
 		police.clear_checkpoint_crossing(officer)
+	// OUTPOST PRISON seam (trade_prison/outpost_prison_police.dm): Processing sally port one door at a time
+	var/turf/lockup_step = police.lockup_case_step(officer, to_sector == from_sector ? there : null)
+	if(lockup_step)
+		lift_goal = null
+		approach_goal = null
+		approach_target_turf = null
+		var/lockup_dist = here.z == lockup_step.z ? get_dist(here, lockup_step) : INFINITY
+		if(lockup_step != lockup_goal)
+			lockup_goal = lockup_step
+			lockup_best = lockup_dist
+			step_started_at = world.time
+		else if(lockup_dist < lockup_best)
+			lockup_best = lockup_dist
+			step_started_at = world.time
+		set_goal(lockup_step == here ? null : lockup_step, 0)
+		return FALSE
+	lockup_goal = null
+	lockup_best = INFINITY
 	var/next_ride_sector = (world.time < ride_failed_until) ? null : police.next_elevator_sector(from_sector, to_sector)
 	if(!next_ride_sector)
 		lift_goal = null

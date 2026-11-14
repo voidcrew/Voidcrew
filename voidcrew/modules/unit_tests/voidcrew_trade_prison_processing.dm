@@ -244,6 +244,57 @@
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "An arrival dropped from the roster left Processing stuck in [prison.processing_state]")
 	TEST_ASSERT(is_qdeleted_ref(orphan_ref), "An unwatched arrival dropped from the roster was not cleared")
 
+	// A prisoner leaving from the office can exit the staff door to the yard and Processing opens its inner door (never the front room's outer door); one whose escape ends in the front room uses the outer door
+	var/obj/machinery/door/airlock/security/prison_staff/office_door = locate() in prison.guard_yard_doors()[1]
+	TEST_ASSERT_NOTNULL(office_door, "No office staff airlock found on guard_yard_doors()")
+	var/mob/living/carbon/human/npc/outpost_prisoner/office_leaver = prison.admit_next(TRUE)
+	TEST_ASSERT_NOTNULL(office_leaver, "No prisoner arrived for the office-side leaving check")
+	office_leaver.forceMove(office_leaver.cell.arrival_turf())
+	prison.processing_tick(1)
+	TEST_ASSERT(work_until(prison, inner, FALSE), "Processing's inner door did not shut after admitting office_leaver")
+	var/datum/weakref/office_leaver_ref = WEAKREF(office_leaver)
+	office_leaver.forceMove(prison.guard_office_spot())
+	office_leaver.leave()
+	TEST_ASSERT(office_door.allowed(office_leaver), "The office staff door refused to open for a leaving prisoner inside the office")
+	TEST_ASSERT(office_door.lets_prisoner(office_leaver), "The office staff door would not let a leaving prisoner step out of the office")
+	TEST_ASSERT(office_door.CanAllowThrough(office_leaver, SOUTH), "The office staff door blocked a leaving prisoner stepping out of the office")
+	TEST_ASSERT(office_door.CanAStarPass(SOUTH, new /datum/can_pass_info(office_leaver)), "The office staff door refused JPS pathing out of the office to a leaving prisoner")
+	office_leaver.forceMove(prison.processing_outside_turf(inner))
+	TEST_ASSERT(!office_door.allowed(office_leaver) && !office_door.lets_prisoner(office_leaver), "The office staff door let a leaving prisoner already in the yard enter the office")
+	office_leaver.forceMove(prison.guard_office_spot())
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "going_out", "Processing did not start for a leaving prisoner in the office") // OUTPOST_PROCESSING_OUT
+	TEST_ASSERT(work_until(prison, inner, TRUE), "Processing did not open its inner yard door for a prisoner leaving from the office")
+	TEST_ASSERT(door_is_shut(outer), "Processing opened its front-room outer door for a prisoner still behind the office")
+	prison.processing_tick(1)
+	office_leaver.forceMove(office_leaver.processing_goal)
+	prison.processing_tick(1)
+	TEST_ASSERT(work_until(prison, inner, FALSE), "Processing's inner door did not shut behind the office leaver")
+	prison.processing_tick(1)
+	TEST_ASSERT(is_qdeleted_ref(office_leaver_ref), "The office leaver shut in Processing was not cleared")
+	office_leaver = null
+	TEST_ASSERT(prison.processing_free(), "Processing was not free after clearing the office leaver")
+
+	var/mob/living/carbon/human/npc/outpost_prisoner/front_leaver = prison.admit_next(TRUE)
+	TEST_ASSERT_NOTNULL(front_leaver, "No prisoner arrived for the front-room leaving check")
+	front_leaver.forceMove(front_leaver.cell.arrival_turf())
+	prison.processing_tick(1)
+	TEST_ASSERT(work_until(prison, inner, FALSE), "Processing's inner door did not shut after admitting front_leaver")
+	var/datum/weakref/front_leaver_ref = WEAKREF(front_leaver)
+	front_leaver.forceMove(prison.processing_outside_turf(outer))
+	front_leaver.leave()
+	prison.processing_tick(1)
+	TEST_ASSERT(work_until(prison, outer, TRUE), "Processing did not open its outer door for a prisoner leaving from the front room")
+	TEST_ASSERT(door_is_shut(inner), "Processing opened its inner door for a prisoner leaving from the front room")
+	prison.processing_tick(1)
+	front_leaver.forceMove(front_leaver.processing_goal)
+	prison.processing_tick(1)
+	TEST_ASSERT(work_until(prison, outer, FALSE), "Processing's outer door did not shut behind the front-room leaver")
+	prison.processing_tick(1)
+	TEST_ASSERT(is_qdeleted_ref(front_leaver_ref), "The front-room leaver shut in Processing was not cleared")
+	front_leaver = null
+	TEST_ASSERT(prison.processing_free(), "Processing was not free after clearing the front-room leaver")
+
 	// With nobody at the outpost an arrival is simply in their cell, and Processing is not used
 	prison.audience_override = FALSE
 	var/mob/living/carbon/human/npc/outpost_prisoner/quiet = prison.admit_next(TRUE)

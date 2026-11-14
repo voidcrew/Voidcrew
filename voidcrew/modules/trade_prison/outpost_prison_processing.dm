@@ -212,6 +212,63 @@
 		return step_tile
 	return null
 
+/// One open step beyond `processing_outside_turf(door)` so a puller draws a towed person clear of `door`'s threshold
+/datum/outpost_prison/proc/processing_clear_turf(obj/machinery/door/airlock/door)
+	var/turf/door_turf = get_turf(door)
+	var/turf/beyond = processing_outside_turf(door)
+	if(!door_turf || !beyond)
+		return null
+	var/list/directions = list(get_dir(door_turf, beyond))
+	for(var/direction in GLOB.cardinals)
+		directions |= direction
+	for(var/direction in directions)
+		var/turf/step_tile = get_step(beyond, direction)
+		if(!step_tile || step_tile == door_turf || !contains_turf(step_tile) || isclosedturf(step_tile) || (step_tile in processing_turfs))
+			continue
+		if((locate(/obj/machinery/door) in step_tile) || (locate(/obj/structure/table) in step_tile) || step_tile.is_blocked_turf(TRUE))
+			continue
+		return step_tile
+	return null
+
+/// Processing tile for `who` to step onto from `entry`: deep in the pocket when pulling someone so they clear `entry`
+/datum/outpost_prison/proc/processing_cross_spot(mob/living/who, obj/machinery/door/airlock/entry)
+	var/mob/living/towed = isliving(who?.pulling) ? who.pulling : null
+	var/turf/entry_turf = get_turf(entry)
+	if(towed && entry_turf)
+		var/turf/fallback_deep
+		for(var/turf/tile as anything in processing_turfs)
+			if(tile.is_blocked_turf(TRUE) || (abs(tile.x - entry_turf.x) + abs(tile.y - entry_turf.y)) <= 1)
+				continue
+			fallback_deep ||= tile
+			var/taken = FALSE
+			for(var/mob/living/person as anything in tile.get_all_contents_type(/mob/living))
+				if(person != who && person != towed && person.density)
+					taken = TRUE
+					break
+			if(!taken)
+				return tile
+		if(fallback_deep)
+			return fallback_deep
+	return processing_spot(who) || processing_turfs[1]
+
+/// Whether `who` is pulling someone who has not yet stepped through `entry` into Processing
+/datum/outpost_prison/proc/processing_tow_entering(mob/living/who, obj/machinery/door/airlock/security/prison_staff/entry, into_yard)
+	var/mob/living/towed = isliving(who?.pulling) ? who.pulling : null
+	if(!towed || !entry || entry.lockup_breached())
+		return FALSE
+	var/turf/tow_turf = get_turf(towed)
+	var/obj/machinery/door/airlock/exit_door = (entry == processing_door(TRUE)) ? processing_door(FALSE) : processing_door(TRUE)
+	if(!tow_turf || in_processing(tow_turf) || tow_turf == get_turf(exit_door))
+		return FALSE
+	return !(into_yard ? processing_on_yard_side(tow_turf) : in_front_room(tow_turf))
+
+/// Whether `who` is pulling someone still inside Processing or standing in `exit_door`
+/datum/outpost_prison/proc/processing_tow_exiting(mob/living/who, obj/machinery/door/airlock/exit_door)
+	var/mob/living/towed = isliving(who?.pulling) ? who.pulling : null
+	if(!towed)
+		return FALSE
+	return in_processing(towed) || (!!exit_door && get_turf(towed) == get_turf(exit_door))
+
 /// Whether `spot` lies on the yard/office side of Processing (inside the wing, past Processing and the front room)
 /datum/outpost_prison/proc/processing_on_yard_side(turf/spot)
 	if(!spot || !contains_turf(spot) || in_front_room(spot) || in_processing(spot))
@@ -264,10 +321,16 @@
 	var/obj/machinery/door/airlock/security/prison_staff/exit_door = (entry == inner) ? outer : inner
 	var/into_yard = (exit_door == inner)
 	if(into_yard ? processing_on_yard_side(here) : in_front_room(here))
+		if(processing_tow_exiting(who, exit_door))
+			processing_seconds += seconds
+			if(processing_seconds < OUTPOST_PRISON_PROCESSING_WAIT)
+				if(processing_cross_other_ready(entry) && exit_door.density)
+					processing_work_door(exit_door, TRUE)
+				return
 		processing_done()
 		processing_idle_tick()
 		return
-	if(in_processing(here) || here == get_turf(exit_door))
+	if((in_processing(here) && !processing_tow_entering(who, entry, into_yard)) || here == get_turf(exit_door))
 		if(!processing_cross_other_ready(entry))
 			processing_work_door(entry, FALSE)
 			return
@@ -294,24 +357,36 @@
 	var/turf/here = get_turf(who)
 	if(QDELETED(who) || !isliving(who) || who.stat != CONSCIOUS || !is_staff(who) || !contains_turf(here) || !has_processing())
 		return null
-	if(into_yard ? processing_on_yard_side(here) : in_front_room(here))
-		if(processing_state == OUTPOST_PROCESSING_CROSS && processing_who() == who)
-			processing_done()
-		return null
 	var/obj/machinery/door/airlock/security/prison_staff/inner = processing_door(TRUE)
 	var/obj/machinery/door/airlock/security/prison_staff/outer = processing_door(FALSE)
-	if(!inner.density && inner.lockup_breached() && !outer.density && outer.lockup_breached())
-		return null
 	var/obj/machinery/door/airlock/security/prison_staff/entry = into_yard ? outer : inner
 	var/obj/machinery/door/airlock/security/prison_staff/exit_door = into_yard ? inner : outer
 	var/turf/beyond = processing_outside_turf(exit_door)
+	if(into_yard ? processing_on_yard_side(here) : in_front_room(here))
+		if(processing_tow_exiting(who, exit_door))
+			return (here == beyond) ? (processing_clear_turf(exit_door) || null) : null
+		if(processing_state == OUTPOST_PROCESSING_CROSS && processing_who() == who)
+			processing_done()
+		return null
+	if(!inner.density && inner.lockup_breached() && !outer.density && outer.lockup_breached())
+		return null
 	if(here == get_turf(exit_door))
 		return beyond || here
+	var/turf/inside = processing_cross_spot(who, entry)
 	if(in_processing(here))
 		processing_request_cross(who, into_yard)
+		if(processing_tow_entering(who, entry, into_yard))
+			return (inside && here != inside) ? inside : here
 		var/exit_passable = !exit_door.density && !exit_door.operating && (exit_door.lockup_breached() || processing_who() == who)
-		return (exit_passable && beyond) ? beyond : here
-	var/turf/inside = processing_spot(who) || processing_turfs[1]
+		if(exit_passable && beyond)
+			var/mob/living/towed = isliving(who.pulling) ? who.pulling : null
+			var/turf/tow_turf = get_turf(towed)
+			var/turf/exit_turf = get_turf(exit_door)
+			if(towed && towed.density && in_processing(tow_turf) && exit_turf && here.Adjacent(tow_turf) && !who.moving_diagonally)
+				if((abs(tow_turf.x - exit_turf.x) + abs(tow_turf.y - exit_turf.y)) < (abs(here.x - exit_turf.x) + abs(here.y - exit_turf.y)))
+					pirate_crew_swap_places(who, towed)
+			return beyond
+		return here
 	if(here == get_turf(entry))
 		processing_request_cross(who, into_yard)
 		return inside
@@ -341,7 +416,7 @@
 			continue
 		processing_state = OUTPOST_PROCESSING_OUT
 		processing_who_ref = WEAKREF(leaver)
-		processing_entry_ref = WEAKREF(in_cell_block(leaver) ? inner : outer)
+		processing_entry_ref = WEAKREF(processing_on_yard_side(get_turf(leaver)) ? inner : outer)
 		processing_seconds = 0
 		return
 

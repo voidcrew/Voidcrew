@@ -401,9 +401,18 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 	return new /datum/wires/airlock/security/outpost_lockup(src)
 
 /obj/machinery/door/airlock/security/prison_staff/allowed(mob/accessor)
-	if(!may_use_outpost_prison_staff_door(src, accessor))
+	if(!may_use_outpost_prison_staff_door(src, accessor) && !lets_leaving_prisoner(accessor))
 		return FALSE
 	return ..()
+
+/// Whether `mover` is a departing prisoner on the staff side who must pass this door to reach Processing's yard door
+/obj/machinery/door/airlock/security/prison_staff/proc/lets_leaving_prisoner(atom/movable/mover)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = mover
+	if(!istype(prisoner) || prisoner.phase != PRISONER_LEAVING)
+		return FALSE
+	var/datum/outpost_prison/prison = get_outpost_prison(src)
+	var/turf/here = get_turf(prisoner)
+	return !!prison && prisoner.prison == prison && prison.processing_on_yard_side(here) && (!prison.in_cell_block(here) || here == loc)
 
 /// Whether this door has been opened by a hack, override card, crowbar or rioter blows and has not yet mended
 /obj/machinery/door/airlock/security/prison_staff/proc/lockup_breached()
@@ -582,14 +591,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 		return FALSE
 	return ..()
 
-/// Whether this door lets a prisoner in custody walk through on their own: when breached, or for Processing's subject.
+/// Whether this door lets a prisoner in custody walk through on their own: when breached, leaving from the staff side, or for Processing's subject.
 /obj/machinery/door/airlock/security/prison_staff/proc/lets_prisoner(atom/movable/mover)
-	return lockup_breached() && (!density || rioter_broken)
+	return (lockup_breached() && (!density || rioter_broken)) || lets_leaving_prisoner(mover)
 
 // Their own AI never paths through, dragged or not, until they are loose or the door lets them through.
 /obj/machinery/door/airlock/security/prison_staff/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	var/atom/requester = pass_info?.requester_ref?.resolve()
 	if(is_outpost_prisoner(requester) && !outpost_prisoner_loose(requester))
+		if(lets_leaving_prisoner(requester))
+			return ..()
 		return (!density || rioter_broken) && lets_prisoner(requester)
 	if(density && !may_use_outpost_prison_staff_door(src, requester))
 		return FALSE
