@@ -1284,6 +1284,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	owner.add_filter(SANDY_STOP_OUTLINE, 2, outline_filter(1, "#5AFF96D2"))
 	if(field)
 		sandy_session_check_touch(field, src) // a crewmate's slow-mo this touches becomes one with it (ware_sandy_timestop_shared.dm)
+	sandy_sound_sync() // ware_sandy_sound.dm
 	return TRUE
 
 /**
@@ -1336,6 +1337,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /datum/status_effect/cyberware_cascade_window/proc/time_stop_over(datum/source)
 	SIGNAL_HANDLER
 	time_stop = null
+	sandy_sound_sync() // ware_sandy_sound.dm
 	if(QDELETED(owner))
 		return
 	stop_hold()
@@ -1364,6 +1366,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		return
 	UnregisterSignal(time_stop, COMSIG_QDELETING)
 	QDEL_NULL(time_stop)
+	sandy_sound_sync() // ware_sandy_sound.dm
 	if(!QDELETED(owner))
 		owner.remove_filter(SANDY_STOP_OUTLINE)
 		sandy_release_flash(owner)

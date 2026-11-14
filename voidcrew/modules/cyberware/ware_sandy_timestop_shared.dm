@@ -288,12 +288,12 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		deltimer(effect.end_timer) // the session ends it now
 		effect.end_timer = null
 	window.time_stop = null
+	window.sandy_sound_sync() // his slow-mo is over for him (ware_sandy_sound.dm)
 	member.remove_filter(SANDY_SHARED_OUTLINE)
 	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = sandy_session_field(effect)
 	if(member.stat != DEAD)
 		if(!capping)
 			member.balloon_alert(member, "[sandy_part_balloon_word(member)] spent")
-			member.playsound_local(get_turf(member), 'sound/effects/magic/timeparadox2.ogg', 35, FALSE, -1) // the surge's sound, backwards
 		field?.sandy_host_joins_world()
 	note("[member] out of time")
 	repace()
@@ -330,6 +330,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	if(last.time_stop)
 		last.UnregisterSignal(last.time_stop, COMSIG_QDELETING)
 	last.time_stop = null
+	last.sandy_sound_sync() // ware_sandy_sound.dm
 	note("ends; replay [replay ? "plays" : "none"]")
 	var/list/everyone = members.Copy()
 	end_fields(FALSE)

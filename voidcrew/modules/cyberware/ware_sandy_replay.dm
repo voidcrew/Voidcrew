@@ -78,6 +78,8 @@
 #define SANDY_REPLAY_TURN_TIME 2
 /// Degrees the replay trail's hue moves per step (CYBERWARE_CASCADE_HUE_STEP in ware_legend.dm).
 #define SANDY_REPLAY_HUE_STEP 25
+/// The most times a replay plays a surger's external cue as he bursts off (surger_frame()).
+#define SANDY_REPLAY_BURST_CUES_MAX 6
 /// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
 /// any other player this close is crew, or there would be no replay).
 #define SANDY_REPLAY_HOLD_RANGE 11
@@ -158,6 +160,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/trail_read = FALSE
 	/// Surger: how many frames its last step took, for a step after a pause.
 	var/trail_step_frames = 0
+	/// Playback, surger: world.time its last external cue played.
+	var/burst_cue_at = 0
 	/// Playback: a turn (transform change) being tweened: from, to, how long it takes and when it ends.
 	var/turn_from
 	var/turn_to
@@ -296,6 +300,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/sound_at = 1
 	/// Afterimages the replay's surgers left.
 	var/afterimages = 0
+	/// External cues played as its surgers burst off (SANDY_REPLAY_BURST_CUES_MAX).
+	var/burst_cues = 0
 	/// The slow-mo is over but a move in it is still going (moves_running()): recording goes on, on the same clock, from
 	/// this world.time, until it ends.
 	var/wait_started = 0
@@ -1382,9 +1388,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	GLOB.sandy_replay_routing = src
 	GLOB.sandy_replay_routing_time = world.time
 	sandy_member_views() // each member of a shared slow-mo watches its own replayed self (ware_sandy_timestop_shared.dm)
-	// The surge coming on, as the replay's user did at its first frame.
+	// The surge coming on, as anyone near heard the replay's user at its first frame (ware_sandy_sound.dm).
 	var/turf/first = user_track ? locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) : null
-	playsound(first || user, SANDEVISTAN_BURST_SOUND, 100, TRUE)
+	play_to_viewers(first || get_turf(user), SANDEVISTAN_EXTERNAL_SOUND, 100, TRUE, 0, SOUND_FALLOFF_EXPONENT, rand(100 - SANDEVISTAN_EXTERNAL_SPREAD, 100 + SANDEVISTAN_EXTERNAL_SPREAD) / 100, TRUE, TRUE, SOUND_DEFAULT_FALLOFF_DISTANCE, TRUE)
 	play_timer = addtimer(CALLBACK(src, PROC_REF(play_frame)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	play_frame()
 	GLOB.sandy_replay_routing = null
@@ -1907,6 +1913,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * clock_rate
 	if(step_frames > step_max) // the first step, or one after a pause: as long as its last step took
 		step_frames = track.trail_step_frames || step_max
+		sandy_burst_cue(track, left)
 	track.trail_step_frames = step_frames
 	var/per_tile = max(1, track.trail_per_tile)
 	var/life_frames = step_frames * max(1, track.trail_length) / per_tile
@@ -1926,6 +1933,17 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y)
 			afterimages++
 			track.trail_hue = (track.trail_hue + hue_step) % 360
+
+/// A surger's replayed self bursts off from `from` after a pause: its viewers hear the snap anyone near heard
+/// (ware_sandy_sound.dm), at most every SANDEVISTAN_BURST_GAP as the replay plays (the outside view's time) and a few
+/// times a replay.
+/datum/sandy_replay/proc/sandy_burst_cue(datum/sandy_replay_track/track, turf/from)
+	if(burst_cues >= SANDY_REPLAY_BURST_CUES_MAX || (track.burst_cue_at && world.time - track.burst_cue_at < SANDEVISTAN_BURST_GAP))
+		return
+	burst_cues++
+	track.burst_cue_at = world.time
+	var/frequency = rand(100 - SANDEVISTAN_EXTERNAL_SPREAD, 100 + SANDEVISTAN_EXTERNAL_SPREAD) / 100
+	play_to_viewers(from, SANDEVISTAN_EXTERNAL_SOUND, SANDEVISTAN_EXTERNAL_VOLUME, TRUE, 0, SOUND_FALLOFF_EXPONENT, frequency, TRUE, TRUE, SOUND_DEFAULT_FALLOFF_DISTANCE, TRUE)
 
 /// Plays the recorded sounds due by `frame`.
 /datum/sandy_replay/proc/play_sounds(frame)
@@ -2586,6 +2604,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_WATCHDOG
 #undef SANDY_REPLAY_TURN_TIME
 #undef SANDY_REPLAY_HUE_STEP
+#undef SANDY_REPLAY_BURST_CUES_MAX
 #undef SANDY_REPLAY_MAX_SOUNDS
 #undef SANDY_REPLAY_MAX_OWN_SOUNDS
 #undef SANDY_REPLAY_SOUND_VOLUME

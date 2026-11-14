@@ -262,7 +262,7 @@
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
 	owner.add_client_colour(colour_type, id)
-	playsound(owner, SANDEVISTAN_BURST_SHORT_SOUND, 80, TRUE)
+	sandy_surge_sounds() // ware_sandy_sound.dm
 	owner.visible_message(
 		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
 		span_boldnotice(online_message),
@@ -275,6 +275,7 @@
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
 	end_time_stop()
+	sandy_sound_sync(off = TRUE, quiet = QDELETED(owner) || owner.stat == DEAD) // ware_sandy_sound.dm
 	set_perks(FALSE)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
@@ -335,6 +336,7 @@
 	var/turf/here = get_turf(owner)
 	var/step_time = world.time - last_step_at
 	last_step_at = world.time
+	sandy_step_sounds(step_time, forced) // ware_sandy_sound.dm
 	if(step_time > CYBERWARE_CASCADE_TRAIL_STEP_MAX) // the first step, or one after a pause: as long as a step takes him now
 		step_time = owner.cached_multiplicative_slowdown
 	step_time = clamp(step_time, world.tick_lag, CYBERWARE_CASCADE_TRAIL_STEP_MAX)

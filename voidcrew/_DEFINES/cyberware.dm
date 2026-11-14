@@ -255,7 +255,22 @@
 /// gate itself is in ware_military_body.dm.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
 
-/// The burst everyone nearby hears when a Sandevistan surges (ware_legend.dm).
-#define SANDEVISTAN_BURST_SHORT_SOUND 'voidcrew/sound/cyberware/sandevistan_burst_short.ogg'
-/// The dash whoosh played at the start of a Sandevistan replay (ware_sandy_replay.dm).
-#define SANDEVISTAN_BURST_SOUND 'voidcrew/sound/cyberware/sandevistan_burst.ogg'
+// A Sandevistan's own sounds (ware_sandy_sound.dm). The user's play to him alone and are never slowed or recorded; the
+// external one is what everyone else near hears.
+/// The user's surge coming on.
+#define SANDEVISTAN_ACTIVATION_SOUND 'voidcrew/sound/cyberware/sandevistan_activation.ogg'
+/// Loops to the user for as long as his slow-mo runs.
+#define SANDEVISTAN_LOOP_SOUND 'voidcrew/sound/cyberware/sandevistan_loop.ogg'
+/// The user bursting into movement from standing inside his slow-mo.
+#define SANDEVISTAN_STEP_SOUND 'voidcrew/sound/cyberware/sandevistan_step.ogg'
+/// The user's slow-mo ending. No sound yet: uncomment with a file and it plays (ware_sandy_sound.dm).
+// #define SANDEVISTAN_DEACTIVATE_SOUND 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg'
+/// What everyone else near hears, from the surger's tile, as he surges and bursts off, and the replay's viewers: a sound
+/// effect key, one of its files picked each time (/datum/sound_effect/sandevistan_external).
+#define SANDEVISTAN_EXTERNAL_SOUND "sandevistan_external"
+/// The external cue's volume, live and in the replay.
+#define SANDEVISTAN_EXTERNAL_VOLUME 75
+/// Its pitch spread, in hundredths either way.
+#define SANDEVISTAN_EXTERNAL_SPREAD 6
+/// While a surger keeps moving, his burst cues come at most this often (live, and on the replay's clock).
+#define SANDEVISTAN_BURST_GAP (0.4 SECONDS)
