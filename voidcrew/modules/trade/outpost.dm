@@ -579,6 +579,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		for(var/datum/outpost_floor/floor in outpost.floors)
 			if((floor.public_ground || floor.warrant_in_force) && floor.contains_turf(T))
 				return outpost
+		// OUTPOST PRISON seam (voidcrew/modules/trade_prison): a lockup wing is part of its outpost's jurisdiction.
+		if(outpost.prison?.contains_turf(T))
+			return outpost
 	return null
 
 // ===== ZONE VARIANTS =====

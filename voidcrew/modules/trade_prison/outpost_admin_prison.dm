@@ -127,8 +127,8 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 					error = "Only human player bodies can be booked into a lockup."
 					return
 				target = picked
-			if(QDELETED(target) || !target.mind || target.stat == DEAD)
-				error = "No living player with a mind selected."
+			if(QDELETED(target) || !target.mind || target.stat == DEAD || ishumannpc(target))
+				error = ishumannpc(target) ? "Only human player bodies can be booked into a lockup." : "No living player with a mind selected."
 				return
 			var/seconds = admin_number(params["seconds"])
 			if(isnull(seconds) && user.client)
@@ -275,6 +275,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_audience_modes, list("auto" = null, "on" =
 				error = "Invalid audience setting."
 				return
 			prison.audience_override = GLOB.outpost_admin_prison_audience_modes[mode]
+			prison.reconcile_ai_status()
 			record_prison(user, prison, "set the lockup's audience to [mode]")
 		if("prison_transfer")
 			if(!prison.riot_active)

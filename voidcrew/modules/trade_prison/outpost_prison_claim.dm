@@ -102,11 +102,13 @@
 			return TRUE
 	return FALSE
 
-/// Picks which ship a lockup hand-in pays for `deliverer`: of their crew ships, one berthed at `prison.outpost`, else the first
-/proc/resolve_lockup_claim_ship(mob/living/deliverer, datum/outpost_prison/prison)
+/// Picks which ship a lockup hand-in pays for `deliverer`: a matching private-offer hull on their crew, else one berthed at `prison.outpost`, else the first
+/proc/resolve_lockup_claim_ship(mob/living/deliverer, datum/outpost_prison/prison, datum/criminal_bounty/posting = null)
 	if(QDELETED(deliverer))
 		return null
+	var/obj/structure/overmap/ship/offered_ship = posting?.private_to ? posting.offered_to() : null
 	var/obj/structure/overmap/trader_outpost/outpost = prison?.outpost
+	var/obj/structure/overmap/ship/berthed_ship
 	var/obj/structure/overmap/ship/first_ship
 	var/list/datum/team/voidcrew/teams = list()
 	for(var/datum/team/voidcrew/own_team as anything in deliverer.mind?.ship_teams)
@@ -118,16 +120,34 @@
 		var/obj/structure/overmap/ship/candidate = team?.ship
 		if(QDELETED(candidate) || candidate.abandoned)
 			continue
+		if(offered_ship && candidate == offered_ship)
+			return candidate
 		if(!first_ship)
 			first_ship = candidate
-		if(outpost && is_ship_berthed_at_outpost(candidate, outpost))
-			return candidate
-	if(first_ship)
-		return first_ship
+		if(!berthed_ship && outpost && is_ship_berthed_at_outpost(candidate, outpost))
+			berthed_ship = candidate
 	var/obj/structure/overmap/ship/fallback = get_crew_ship(deliverer)
-	if(!QDELETED(fallback) && !fallback.abandoned)
+	if(QDELETED(fallback) || fallback.abandoned)
+		fallback = null
+	if(offered_ship && fallback == offered_ship)
 		return fallback
-	return null
+	return berthed_ship || first_ship || fallback
+
+/// Whether Processing is idle with `inner` shut, `outer` shut (or breached open awaiting mend), and no blocking occupant
+/datum/outpost_prison/proc/processing_claim_room_ready(mob/living/target)
+	if(processing_state != OUTPOST_PROCESSING_IDLE || !has_processing())
+		return FALSE
+	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/outer = processing_door(FALSE)
+	if(!processing_shut(inner) || (!processing_shut(outer) && !(istype(outer) && outer.lockup_breached() && !outer.operating)))
+		return FALSE
+	for(var/mob/living/person as anything in processing_occupants())
+		if(person == target || QDELETED(person))
+			continue
+		if(!ishuman(person) && isnull(person.client) && isnull(person.mind) && !istype(person, /mob/living/basic/bot/cleanbot))
+			continue
+		return FALSE
+	return TRUE
 
 /// Whether `mover` is an eligible hunter (not staff, not a held inmate, not an NPC) standing in the front room
 /datum/outpost_prison/proc/can_hunter_deliver(mob/living/mover)
@@ -156,7 +176,7 @@
 			processing_work_door(existing_outer, TRUE)
 		return TRUE
 	var/resuming_aborted = processing_state == OUTPOST_PROCESSING_CLAIM && claim_aborting && claim_criminal_ref?.resolve() == pulled
-	if(!processing_free() && !resuming_aborted)
+	if(!processing_claim_room_ready(pulled) && !resuming_aborted)
 		return FALSE
 
 	if(pulled.client || pulled.mind)
@@ -174,7 +194,7 @@
 		return FALSE
 
 	var/datum/criminal_bounty/posting = criminal.posting()
-	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(mover, src)
+	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(mover, src, posting)
 	if(!posting || !posting.is_open() || posting.criminal() != criminal || istype(posting, /datum/criminal_bounty/kill_only))
 		warden_say("Nobody's asking for that one.")
 		return FALSE
@@ -214,20 +234,20 @@
 	var/datum/criminal_bounty/posting = criminal.posting()
 	if(!posting || !posting.is_open() || posting.criminal() != criminal || istype(posting, /datum/criminal_bounty/kill_only))
 		return FALSE
-	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, src)
+	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, src, posting)
 	if((posting.private_to && (!ship || posting.offered_to() != ship)) || posting.lockup_bound_refusal(ship, deliverer))
 		return FALSE
 	var/state = criminal.capture_state()
 	return state != BOUNTY_STATE_DEAD && state != BOUNTY_STATE_FREE && !!posting.board_share_for(state)
 
-/// Whether any live person other than `criminal` (or an AI cleanbot) is inside Processing
+/// Whether any live person other than `criminal` (or a mind-less non-human such as an AI cleanbot or rat) is inside Processing
 /datum/outpost_prison/proc/processing_claim_other_inside(mob/living/criminal)
 	if(processing_player_inside())
 		return TRUE
 	for(var/mob/living/person as anything in processing_occupants())
 		if(person == criminal || QDELETED(person) || person.stat == DEAD)
 			continue
-		if(istype(person, /mob/living/basic/bot/cleanbot) && isnull(person.client) && isnull(person.mind))
+		if(!ishuman(person) && isnull(person.client) && isnull(person.mind))
 			continue
 		return TRUE
 	return FALSE
@@ -331,8 +351,8 @@
 
 	// Catch is alone inside Processing: validate before shutting, then shut outer and settle the claim once shut.
 	var/mob/living/deliverer = claim_deliverer_ref?.resolve()
-	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, src)
 	var/datum/criminal_bounty/posting = criminal.posting()
+	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, src, posting)
 	var/state = criminal.capture_state()
 	if(!warden_at_desk() || criminal.client || criminal.mind || criminal.npc_ever_played() || !posting?.is_open() || posting.criminal() != criminal)
 		abort_processing_claim()
@@ -395,7 +415,7 @@
 	if(!share)
 		return "they're standing free"
 
-	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, prison)
+	var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, prison, src)
 	if(private_to && (!ship || offered_to() != ship))
 		return "that offer is for another crew"
 	var/bound_refusal = lockup_bound_refusal(ship, deliverer)

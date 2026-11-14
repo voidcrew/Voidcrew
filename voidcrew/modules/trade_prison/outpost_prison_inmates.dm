@@ -974,17 +974,38 @@
 
 /// Admin Manipulator hook: books `suspect` into this lockup for `seconds` (stripping to a wing locker when available)
 /datum/outpost_prison/proc/admin_book_player(mob/living/carbon/human/suspect, seconds)
-	if(QDELETED(src) || !istype(suspect) || QDELETED(suspect) || suspect.stat == DEAD || !suspect.mind || !isnum(seconds) || seconds < 1)
+	if(QDELETED(src) || !istype(suspect) || QDELETED(suspect) || ishumannpc(suspect) || suspect.stat == DEAD || !suspect.mind || !isnum(seconds) || seconds < 1)
 		return FALSE
+	var/already_held = holds(suspect.mind)
+	for(var/datum/outpost_prison/other as anything in GLOB.outpost_prisons)
+		if(other && other != src && other.holds(suspect.mind))
+			var/datum/prison_sentence/other_sentence = other.sentences[suspect.mind]
+			if(other_sentence)
+				other_sentence.released = TRUE
+				other_sentence.return_left = 0
+				other.unhook_inmate(other_sentence)
+			other.processing_release_refs -= WEAKREF(suspect)
+			other.update_lockup_boards()
+			if(other.outpost != outpost)
+				other.outpost?.police?.mark_locker_released(suspect.mind)
+				other.outpost?.police?.update_hud(suspect.mind)
+	for(var/obj/structure/overmap/trader_outpost/other_outpost as anything in GLOB.trader_outposts)
+		for(var/datum/outpost_police_cell/cell as anything in other_outpost?.police?.cells)
+			if(cell?.holds(suspect.mind, suspect))
+				cell.forget_prisoner(suspect.mind)
+				if(other_outpost != outpost)
+					other_outpost?.police?.mark_locker_released(suspect.mind)
+					other_outpost?.police?.update_hud(suspect.mind)
 	suspect.pulledby?.stop_pulling()
 	suspect.stop_pulling()
 	if(suspect.buckled)
 		suspect.buckled.unbuckle_mob(suspect, force = TRUE)
 	var/datum/outpost_police/police = outpost?.police
 	if(police)
-		police.store_property(suspect, null, wing)
-		if(QDELETED(src) || QDELETED(suspect) || suspect.stat == DEAD || !suspect.mind)
-			return FALSE
+		if(!already_held)
+			police.store_property(suspect, null, wing)
+			if(QDELETED(src) || QDELETED(suspect) || suspect.stat == DEAD || !suspect.mind)
+				return FALSE
 		booking_uncuff_prisoner(suspect, null, police)
 	else
 		suspect.uncuff()
@@ -1002,7 +1023,8 @@
 	var/datum/outpost_warrant/warrant = police?.get_warrant(suspect.mind)
 	var/stars = max(1, police ? police.get_stars(suspect.mind) : 1)
 	admit_inmate_sentence(suspect, warrant, stars, custom_seconds = round(seconds), admin_booked = TRUE)
-	greet_new_inmate(suspect)
+	if(!already_held)
+		greet_new_inmate(suspect)
 	return TRUE
 
 /// Has a conscious yard prisoner greet a newly arrived inmate ("Fresh one.")

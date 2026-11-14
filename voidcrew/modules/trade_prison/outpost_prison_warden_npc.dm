@@ -86,6 +86,13 @@
 	rare_picks_max = 0
 	chart_picks = 0
 
+/datum/outpost_shop/lockup_warden/hold_up_without_till(mob/living/trader, mob/living/robber, obj/item/gun/weapon)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/warden = trader
+	if(istype(warden))
+		warden.speak_line(TRADER_LINE_AGGRESSION)
+	outpost?.register_aggression(robber, OUTPOST_CRIME_ASSAULT_STAFF, trader, weapon)
+	return TRUE
+
 /// Vance keeps Halcyon's lockup desk: formal blue shirt and armored warden's jacket, face uncovered
 /datum/outfit/lockup_warden_halcyon
 	name = "Halcyon lockup warden"
@@ -233,7 +240,7 @@
 		return null
 	if(HAS_TRAIT(warden, TRAIT_INCAPACITATED) || HAS_TRAIT(warden, TRAIT_RESTRAINED) || HAS_TRAIT(warden, TRAIT_CRITICAL_CONDITION))
 		return null
-	if(warden.fading || istype(warden.activity, /datum/ambient_activity/leave) || warden.has_status_effect(/datum/status_effect/grouped/heldup))
+	if(warden.fading || istype(warden.activity, /datum/ambient_activity/leave))
 		return null
 	var/turf/standing = get_turf(warden)
 	if(!standing || standing.z != desk_turf.z || get_dist(standing, desk_turf) > 1)

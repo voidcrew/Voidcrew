@@ -93,6 +93,12 @@ GLOBAL_LIST_EMPTY(outpost_takings_police)
 /datum/outpost_holdup_watcher/proc/watch(mob/living/trader)
 	ADD_TRAIT(trader, TRAIT_OUTPOST_HOLDUP_TARGET, REF(src))
 	RegisterSignal(trader, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempted), override = TRUE)
+	RegisterSignal(trader, COMSIG_LIVING_STATUS_REMOVED, PROC_REF(on_watched_status_removed), override = TRUE)
+
+/datum/outpost_holdup_watcher/proc/on_watched_status_removed(mob/living/source, datum/status_effect/effect)
+	SIGNAL_HANDLER
+	if(istype(effect, /datum/status_effect/grouped/heldup))
+		REMOVE_TRAIT(source, TRAIT_AI_PAUSED, REF(src))
 
 /datum/status_effect/grouped/heldup/source_added(source, ...)
 	..()
@@ -129,6 +135,8 @@ GLOBAL_LIST_EMPTY(outpost_takings_police)
 	addtimer(CALLBACK(src, PROC_REF(resolve_hold), WEAKREF(trader), WEAKREF(effect), source_key), 1, TIMER_DELETE_ME)
 
 /datum/outpost_holdup_watcher/proc/on_source_removed(mob/living/trader, datum/status_effect/grouped/heldup/effect, source_key, removing)
+	if(removing)
+		REMOVE_TRAIT(trader, TRAIT_AI_PAUSED, REF(src))
 	var/datum/outpost_shop/shop = outpost_holdup_shop(trader)
 	var/datum/outpost_holdup/current = shop?.holdup
 	if(current && (removing || REF(current.robber_ref?.resolve()) == source_key))
@@ -162,6 +170,8 @@ GLOBAL_LIST_EMPTY(outpost_takings_police)
 			fallback_weapon = hold.weapon
 	if(fallback)
 		shop.held_up(trader, fallback, fallback_weapon)
+	else
+		REMOVE_TRAIT(trader, TRAIT_AI_PAUSED, REF(src))
 
 /// A crime counted against `robber` is the robbery of one of the stick-ups in progress: the trader's alarm need not count it again
 /datum/outpost_holdup_watcher/proc/note_counted(mob/living/robber)
@@ -192,6 +202,10 @@ GLOBAL_LIST_EMPTY(outpost_takings_police)
 
 // ----- the shop's side -----
 
+/// Hook for a till-less shop counter (such as a lockup warden's desk) when someone aims a real gun at its keeper
+/datum/outpost_shop/proc/hold_up_without_till(mob/living/trader, mob/living/robber, obj/item/gun/weapon)
+	return FALSE
+
 /**
  * `trader`, keeping this shop, is held up by `robber` with `weapon`: hands up, then the hand-over when the hold steadies.
  * Only a trader at its counter (the keeper, awake) with a till pays: not a gate guard (he has permits and nothing
@@ -200,12 +214,15 @@ GLOBAL_LIST_EMPTY(outpost_takings_police)
 /datum/outpost_shop/proc/held_up(mob/living/trader, mob/living/robber, obj/item/gun/weapon)
 	if(QDELETED(src) || QDELETED(trader) || QDELETED(robber) || !robber.mind || !outpost?.police || !outpost_holdup_gun(weapon))
 		return
-	// OUTPOST PRISON seam: neither a checkpoint booth nor a lockup warden's desk has a till
-	if(istype(src, /datum/outpost_shop/vendor/checkpoint) || istype(src, /datum/outpost_shop/lockup_warden) || trader.client || trader.mind)
+	if(istype(src, /datum/outpost_shop/vendor/checkpoint) || trader.client || trader.mind)
 		return
 	var/turf/trader_turf = get_turf(trader)
 	var/turf/counter = holdup_counter(trader)
 	if(trader.stat != CONSCIOUS || keeper?.resolve() != trader || !trader_turf || !counter || trader_turf.z != counter.z || get_dist(trader_turf, counter) > 1)
+		return
+	// OUTPOST PRISON seam: a lockup warden has no till, holds still against gunpoint, and reports staff assault
+	if(hold_up_without_till(trader, robber, weapon))
+		ADD_TRAIT(trader, TRAIT_AI_PAUSED, REF(GLOB.outpost_holdups))
 		return
 	if(holdup)
 		// The same robber pointing again while the alarm is still out: another hand-over (an empty till gives less)

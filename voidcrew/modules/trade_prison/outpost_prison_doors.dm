@@ -144,7 +144,17 @@
 	if(QDELETED(door) || door.density || !istype(door, /obj/machinery/door/airlock/security/prison_staff/processing/outer))
 		return FALSE
 	var/datum/outpost_prison/prison = get_outpost_prison(door)
-	return !!prison?.processing_outsider_inside()
+	if(!prison)
+		return FALSE
+	var/mob/living/claiming = (prison.processing_state == OUTPOST_PROCESSING_CLAIM && !prison.claim_aborting) ? prison.claim_criminal_ref?.resolve() : null
+	for(var/mob/living/person as anything in prison.processing_occupants())
+		if(person == claiming || QDELETED(person) || person.stat == DEAD)
+			continue
+		if(prison.is_staff(person) || prison.is_inmate(person) || (person in prison.prisoners))
+			continue
+		if(person.client || person.mind || ishuman(person))
+			return TRUE
+	return FALSE
 
 /// Whether anyone (standing or lying) or anything bulky is in the doorway
 /datum/lockup_door_state/proc/doorway_occupied()

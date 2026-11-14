@@ -283,17 +283,17 @@
 	var/datum/outpost_warrant/stalled_warrant = police_pin_warrant(police, stalled_inmate.mind, 55)
 	prison.admit_inmate_sentence(stalled_inmate, stalled_warrant, 3)
 	stalled_inmate.Sleeping(20 SECONDS)
-	prison.processing_state = "coming_in" // OUTPOST_PROCESSING_IN
+	prison.processing_state = "going_in" // OUTPOST_PROCESSING_IN
 	prison.processing_who_ref = WEAKREF(stalled_inmate)
 	prison.processing_seconds = 0
 	prison.processing_tick(1)
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "OUTPOST_PROCESSING_IN stayed wedged on an unconscious player inmate") // OUTPOST_PROCESSING_IDLE
 	stalled_inmate.SetSleeping(0)
 	stalled_inmate.Knockdown(20 SECONDS)
-	prison.processing_state = "coming_in" // OUTPOST_PROCESSING_IN
+	prison.processing_state = "going_in" // OUTPOST_PROCESSING_IN
 	prison.processing_who_ref = WEAKREF(stalled_inmate)
 	prison.processing_seconds = 0
-	prison.processing_tick(15) // OUTPOST_PRISON_PROCESSING_WAIT
+	prison.processing_tick(60) // OUTPOST_PRISON_PROCESSING_WAIT
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "OUTPOST_PROCESSING_IN never timed out on a conscious downed player inmate") // OUTPOST_PROCESSING_IDLE
 	stalled_inmate.SetKnockdown(0)
 	stalled_inmate.set_resting(FALSE)
@@ -304,7 +304,7 @@
 		sleep(1)
 	TEST_ASSERT(inner.density && outer.density, "Setup: Processing doors were not shut before inner bump recovery")
 	inner.Bumped(stalled_inmate)
-	TEST_ASSERT_EQUAL(prison.processing_state, "coming_in", "Bumping the inner Processing door did not start OUTPOST_PROCESSING_IN for a recovered held inmate") // OUTPOST_PROCESSING_IN
+	TEST_ASSERT_EQUAL(prison.processing_state, "going_in", "Bumping the inner Processing door did not start OUTPOST_PROCESSING_IN for a recovered held inmate") // OUTPOST_PROCESSING_IN
 	var/mob/living/carbon/human/released_walker = police_arrest_person(prison.processing_turfs[2])
 	prison.processing_release_refs |= WEAKREF(released_walker)
 	prison.processing_done()
@@ -319,7 +319,7 @@
 	TEST_ASSERT(!prison.processing_outsider_inside(released_walker), "processing_outsider_inside(except) counted the released person inside Processing against themselves")
 	outer.Bumped(released_walker)
 	TEST_ASSERT_EQUAL(prison.processing_state, "releasing", "Bumping the shut outer Processing door did not start OUTPOST_PROCESSING_RELEASE for a released inmate inside") // OUTPOST_PROCESSING_RELEASE
-	prison.processing_tick(15) // OUTPOST_PRISON_PROCESSING_WAIT
+	prison.processing_tick(60) // OUTPOST_PRISON_PROCESSING_WAIT
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "OUTPOST_PROCESSING_RELEASE never timed out when a released player stalled inside Processing") // OUTPOST_PROCESSING_IDLE
 	TEST_ASSERT(WEAKREF(released_walker) in prison.processing_release_refs, "Timing out OUTPOST_PROCESSING_RELEASE dropped the released player from processing_release_refs before they reached the front room")
 	deadline = world.time + 4 SECONDS

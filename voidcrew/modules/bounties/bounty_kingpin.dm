@@ -3055,13 +3055,31 @@ SUBSYSTEM_DEF(bounty_kingpin)
 /datum/controller/subsystem/bounty_kingpin/proc/kingpin_bound_refusal(obj/structure/overmap/ship/ship, mob/user)
 	if(kingpin_ship_bound(ship))
 		return "your crew works for him"
+	var/datum/voidcrew_crew_record/ship_crew = ship?.ship_team?.crew_record
+	if(length(kingpin_bound_ships))
+		for(var/datum/team/voidcrew/crew_team as anything in ship_crew?.teams)
+			if(crew_team?.ship && kingpin_ship_bound(crew_team.ship))
+				return "your crew works for him"
 	if(kingpin_person_bound(user))
 		return "you work for him"
-	if(!ship || (!length(kingpin_bound_minds) && !length(kingpin_aboard_minds) && !length(kingpin_bound_keys) && !length(kingpin_aboard_keys)))
+	var/datum/voidcrew_crew_record/user_crew = user?.mind?.get_reputation_crew()
+	if(!ship && length(kingpin_bound_ships))
+		for(var/datum/team/voidcrew/crew_team as anything in user_crew?.teams)
+			if(crew_team?.ship && kingpin_ship_bound(crew_team.ship))
+				return "your crew works for him"
+	if(!length(kingpin_bound_minds) && !length(kingpin_aboard_minds) && !length(kingpin_bound_keys) && !length(kingpin_aboard_keys))
 		return null
-	for(var/datum/mind/member as anything in ship.ship_team?.members)
+	for(var/datum/mind/member as anything in ship?.ship_team?.members)
 		if(kingpin_crew_bound(member))
 			return "someone on your crew works for him"
+	for(var/datum/mind/crew_member as anything in ship_crew?.minds)
+		if(kingpin_crew_bound(crew_member))
+			return "someone on your crew works for him"
+	for(var/datum/mind/crew_member as anything in user_crew?.minds)
+		if(kingpin_crew_bound(crew_member))
+			return "someone on your crew works for him"
+	if(!ship)
+		return null
 	for(var/datum/weakref/ref as anything in kingpin_bound_minds | kingpin_aboard_minds)
 		var/datum/mind/bound = ref?.resolve()
 		var/mob/living/body = bound?.current
@@ -3088,6 +3106,16 @@ SUBSYSTEM_DEF(bounty_kingpin)
 		for(var/datum/mind/member as anything in ship.ship_team?.members)
 			if(member)
 				crew_minds |= member
+		var/datum/voidcrew_crew_record/bound_crew = ship.ship_team?.crew_record
+		for(var/datum/team/voidcrew/crew_team as anything in bound_crew?.teams)
+			if(crew_team?.ship)
+				kingpin_bound_ships |= WEAKREF(crew_team.ship)
+			for(var/datum/mind/team_member as anything in crew_team?.members)
+				if(team_member)
+					crew_minds |= team_member
+		for(var/datum/mind/crew_member as anything in bound_crew?.minds)
+			if(crew_member)
+				crew_minds |= crew_member
 		for(var/mob/living/aboard as anything in GLOB.alive_player_list)
 			if(aboard.mind && get_ship_from_atom(aboard) == ship && !(aboard.mind in crew_minds))
 				aboard_minds |= aboard.mind

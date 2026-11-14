@@ -123,11 +123,46 @@
 	inmate_killer.key = null
 	qdel(inmate_killer)
 
+	// Gunpoint at the desk: a harmless toy gun does not take the warden off desk duty or pause his AI;
+	// a real gun pauses his AI without starting a till stick-up, files staff assault with weapon evidence, and unpauses when lowered
+	var/turf/desk_stand = get_step(prison.claim_turf, SOUTH)
+	visitor.forceMove(desk_stand)
+	var/obj/item/gun/energy/laser/redtag/toy_gun = allocate(/obj/item/gun/energy/laser/redtag, visitor)
+	TEST_ASSERT(visitor.put_in_hands(toy_gun), "Could not put laser-tag gun in visitor's hand")
+	visitor.AddComponent(/datum/component/gunpoint, warden, toy_gun)
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(warden.has_status_effect(/datum/status_effect/grouped/heldup), "Toy gunpoint did not apply heldup status effect")
+	TEST_ASSERT_EQUAL(prison.warden_at_desk(), warden, "Aiming a harmless toy gun at the warden took him off desk duty")
+	TEST_ASSERT(!HAS_TRAIT_FROM(warden, TRAIT_AI_PAUSED, REF(GLOB.outpost_holdups)), "A toy gun paused the warden's AI")
+	TEST_ASSERT_NULL(police.get_warrant(visitor.mind), "Aiming a toy gun at the warden filed a warrant")
+	qdel(visitor.GetComponent(/datum/component/gunpoint))
+	visitor.dropItemToGround(toy_gun)
+	qdel(toy_gun)
+
+	var/obj/item/gun/energy/disabler/real_gun = allocate(/obj/item/gun/energy/disabler, visitor)
+	TEST_ASSERT(visitor.put_in_hands(real_gun), "Could not put disabler in visitor's hand")
+	warden_ears.lines.Cut()
+	COOLDOWN_RESET(warden, speak_cooldown)
+	visitor.AddComponent(/datum/component/gunpoint, warden, real_gun)
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_NULL(warden.shop.holdup, "Aiming a real gun at the lockup warden started a till stick-up")
+	TEST_ASSERT(HAS_TRAIT_FROM(warden, TRAIT_AI_PAUSED, REF(GLOB.outpost_holdups)), "The lockup warden did not pause AI while held at gunpoint with a real gun")
+	var/datum/outpost_warrant/gunpoint_warrant = police.get_warrant(visitor.mind)
+	TEST_ASSERT(gunpoint_warrant?.heat >= 8, "Holding the lockup warden at gunpoint did not report staff assault (8 heat)") // OUTPOST_CRIME_ASSAULT_STAFF
+	TEST_ASSERT(WEAKREF(real_gun) in gunpoint_warrant?.evidence, "Warden gunpoint assault did not record the gun as evidence")
+	TEST_ASSERT(length(warden_ears.lines) >= 1, "Warden stayed silent when held at gunpoint with a real gun")
+	qdel(visitor.GetComponent(/datum/component/gunpoint))
+	TEST_ASSERT(!HAS_TRAIT_FROM(warden, TRAIT_AI_PAUSED, REF(GLOB.outpost_holdups)), "Warden stayed AI-paused after gunpoint ended")
+	police.admin_lift(visitor.mind)
+	visitor.dropItemToGround(real_gun)
+	qdel(real_gun)
+	visitor.forceMove(front_tile)
+
 	// Killing the warden charges kill_staff (4+ stars), vacates his post, and recovery.send_staff() spawns the replacement inside the lockup
 	var/mob/living/carbon/human/warden_killer = make_player(prison.claim_turf, "lockupwardenkiller")
 	var/obj/item/knife/combat/warden_knife = allocate(/obj/item/knife/combat, warden_killer)
 	warden_killer.put_in_hands(warden_knife)
-	outpost.register_aggression(warden_killer, "assault_staff", warden, warden_knife) // OUTPOST_CRIME_ASSAULT_STAFF
+	outpost.register_aggression(warden_killer, "staff", warden, warden_knife) // OUTPOST_CRIME_ASSAULT_STAFF
 	warden.death()
 	TEST_ASSERT(police.get_stars(warden_killer.mind) >= 4, "Killing the lockup warden earned [police.get_stars(warden_killer.mind)] stars, expected 4+ (kill_staff)")
 	TEST_ASSERT_NULL(prison.warden_at_desk(), "A dead warden still counted as warden_at_desk()")
@@ -287,7 +322,19 @@
 	hunter.stop_pulling()
 	rival_offer.close("expired")
 
-	// Kingpin bound-crew refusal (abuse 22 / decision 21)
+	// Multi-ship crew private offer: a posting offered to `away_ship` still resolves and pays `away_ship` even when `berthed_ship` is docked here
+	var/datum/criminal_bounty/away_offer = board_test_posting(2, away_ship, 800, 0)
+	var/datum/bounty_record/away_offer_record = away_offer.record
+	var/mob/living/carbon/human/npc/bounty_criminal/away_catch = board_test_criminal(away_offer, outer_wait)
+	board_test_cuff(away_catch)
+	TEST_ASSERT_EQUAL(resolve_lockup_claim_ship(hunter, prison, away_offer), away_ship, "resolve_lockup_claim_ship() did not pick the crew hull named on a private offer")
+	TEST_ASSERT_EQUAL(away_offer.lockup_claim(prison, away_catch, hunter), list(800, 0), "lockup_claim() refused a multi-ship crew's own private offer")
+	TEST_ASSERT_EQUAL(away_ship.ship_account.account_balance, 800, "A private offer did not pay the crew hull it was offered to")
+	TEST_ASSERT_EQUAL(berthed_ship.ship_account.account_balance, 0, "A private offer for away_ship paid berthed_ship instead")
+	away_ship.ship_account.adjust_money(-800)
+	bounty_pool_remove(away_offer_record, "closed")
+
+	// Kingpin bound-crew refusal across all crew hulls (abuse 22 / decision 21)
 	var/datum/criminal_bounty/kingpin/kp_posting = bounty_kingpin_new_posting(null)
 	kp_posting.value = 1000
 	kp_posting.expires_at = world.time + 60 MINUTES
@@ -296,14 +343,17 @@
 	kp_mob.body_setup(kp_posting.record, kp_posting)
 	kp_posting.board_adopt_criminal(kp_mob, null, null, null)
 	board_test_cuff(kp_mob)
-	SSbounty_kingpin.kingpin_bound_ships |= WEAKREF(berthed_ship)
+	SSbounty_kingpin.kingpin_bound_ships |= WEAKREF(away_ship)
 	hunter.start_pulling(kp_mob)
 	warden_ears.lines.Cut()
 	COOLDOWN_RESET(warden, speak_cooldown)
-	TEST_ASSERT(!prison.try_start_processing_claim(hunter), "Processing opened for a kingpin pulled by his own bound crew")
-	TEST_ASSERT(warden_ears.heard("Nobody's asking for that one."), "Warden did not refuse a bound crew's kingpin hand-in")
-	TEST_ASSERT_EQUAL(kp_posting.lockup_claim(prison, kp_mob, hunter), "your crew works for him", "lockup_claim() let a bound crew turn in the kingpin")
-	SSbounty_kingpin.kingpin_bound_ships -= WEAKREF(berthed_ship)
+	TEST_ASSERT(!prison.try_start_processing_claim(hunter), "Processing opened for a kingpin pulled by a bound crew's second hull")
+	TEST_ASSERT(warden_ears.heard("Nobody's asking for that one."), "Warden did not refuse a bound multi-hull crew's kingpin hand-in")
+	TEST_ASSERT_EQUAL(kp_posting.lockup_claim(prison, kp_mob, hunter), "your crew works for him", "lockup_claim() let a bound crew's second hull turn in the kingpin")
+	SSbounty_kingpin.kingpin_bound_ships -= WEAKREF(away_ship)
+	SSbounty_kingpin.kingpin_bind(away_ship, null)
+	TEST_ASSERT((WEAKREF(berthed_ship) in SSbounty_kingpin.kingpin_bound_ships) && (WEAKREF(hunter.mind) in SSbounty_kingpin.kingpin_bound_minds), "kingpin_bind() did not bind every hull and mind of the crew")
+	TEST_ASSERT_EQUAL(kp_posting.lockup_claim(prison, kp_mob, hunter), "your crew works for him", "lockup_claim() let a kingpin_bind()-bound crew turn in the kingpin")
 	hunter.stop_pulling()
 	kp_posting.close("expired")
 	SSbounty_kingpin.kingpin_reset()
@@ -491,6 +541,34 @@
 	TEST_ASSERT_EQUAL(board_test_vouchers(prison.claim_turf) - vouchers_before, 1, "Drifter lockup_claim() did not drop its voucher on claim_turf")
 	TEST_ASSERT(warden_ears.heard("No ship on file. Take the chip."), "Warden did not speak the drifter holochip line")
 
+	// Breached-open outer door + ambient mouse in Processing: claim can still start, mend_hack() shuts outer once the hunter steps out, and the claim settles
+	var/mob/living/basic/mouse/proc_mouse = allocate(/mob/living/basic/mouse, prison.processing_turfs[2])
+	proc_mouse.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/obj/item/card/emag/doorjack/claim_jack = allocate(/obj/item/card/emag/doorjack, drifter)
+	TEST_ASSERT(outer.emag_act(drifter, claim_jack), "Could not doorjack Processing's outer door for breached-claim check")
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(!outer.density && (outer.obj_flags & EMAGGED), "Processing's outer door did not open from the doorjack")
+	outpost.police?.admin_lift(drifter.mind)
+	dispatch_clear(outpost.police)
+	var/datum/criminal_bounty/breach_posting = board_test_posting(2, null, 900, 0)
+	var/datum/bounty_record/breach_record = breach_posting.record
+	var/mob/living/carbon/human/npc/bounty_criminal/breach_catch = board_test_criminal(breach_posting, outer_wait)
+	board_test_cuff(breach_catch)
+	hunter.start_pulling(breach_catch)
+	TEST_ASSERT(prison.try_start_processing_claim(hunter), "Processing refused to start a claim while outer was doorjacked open or a mouse was inside")
+	hunter.stop_pulling()
+	breach_catch.forceMove(prison.processing_turfs[1])
+	hunter.forceMove(outer_wait)
+	TEST_ASSERT(!outer.lockup_hack.processing_exit_blocked(), "Active non-aborting bounty catch or mouse blocked outer.mend_hack()")
+	outer.mend_hack()
+	TEST_ASSERT(claim_wait_door(prison, outer, FALSE), "Mended outer Processing door did not shut on a cuffed catch and a mouse")
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Processing did not finish a claim after outer mended shut")
+	TEST_ASSERT(QDELETED(breach_posting) && QDELETED(breach_catch), "Claim after outer mended shut did not settle the posting and criminal")
+	bounty_pool_remove(breach_record, "closed")
+	qdel(proc_mouse)
+	qdel(claim_jack)
+
 	// Dead warden at the desk: Processing outer door refuses to open for a cuffed catch
 	var/datum/criminal_bounty/no_warden_posting = board_test_posting(2, null, 1000, 1)
 	var/mob/living/carbon/human/npc/bounty_criminal/no_warden_catch = board_test_criminal(no_warden_posting, outer_wait)
@@ -636,6 +714,7 @@
 	var/turf/desk_spot = prison_spot(unit_test_host, 8, 4)
 	prison.desk_turf = desk_spot
 	unit_test_host.prison = prison
+	TEST_ASSERT_EQUAL(get_trader_outpost_for_turf(desk_spot), unit_test_host, "get_trader_outpost_for_turf() did not find an un-templated host through outpost.prison")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/host_warden = prison.ensure_warden()
 	TEST_ASSERT_NOTNULL(host_warden, "Fixture lockup did not spawn a warden at desk_spot")
 	TEST_ASSERT(unit_test_host.ensure_recovery().keeper_on_post(host_warden), "The lockup warden on an un-templated host with police did not count as keeper_on_post()")
@@ -663,8 +742,29 @@
 	TEST_ASSERT_EQUAL(get_turf(operator), desk_spot, "lockup_jump did not move the admin to desk_turf")
 	operator.forceMove(yard_tile)
 
+	var/mob/living/carbon/human/npc/bounty_criminal/minded_npc = allocate(/mob/living/carbon/human/npc/bounty_criminal, yard_tile)
+	minded_npc.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	minded_npc.mind_initialize()
+	allocated += minded_npc.mind
+	TEST_ASSERT(!prison.admin_book_player(minded_npc, 60), "admin_book_player() accepted a human NPC")
+	lockup_panel_act(panel, operator, "prison_book_player", list("ref" = REF(minded_npc), "seconds" = 60))
+	TEST_ASSERT(!prison.is_inmate(minded_npc), "prison_book_player panel action booked a human NPC")
+	qdel(minded_npc)
+
+	var/obj/structure/overmap/trader_outpost/other_outpost = lockup_test_outpost()
+	var/datum/outpost_prison/other_prison = other_outpost.prison
+	var/datum/outpost_police/other_police = other_outpost.police
+	TEST_ASSERT(other_prison.admin_book_player(subject, 120), "Could not book subject into Quartermain's lockup for transfer check")
+	var/obj/item/uniform_before_rebook = subject.w_uniform
+	TEST_ASSERT_NOTNULL(uniform_before_rebook, "Booked inmate had no prison uniform")
+	TEST_ASSERT(other_prison.admin_book_player(subject, 240), "Could not re-book an already-held inmate")
+	TEST_ASSERT_EQUAL(subject.w_uniform, uniform_before_rebook, "Re-booking an already-held inmate stripped their prison uniform into a locker")
+
 	lockup_panel_act(panel, operator, "prison_book_player", list("ref" = REF(subject), "seconds" = 180))
 	TEST_ASSERT(prison.is_inmate(subject), "prison_book_player did not book the target player")
+	TEST_ASSERT(!other_prison.holds(subject.mind), "Transferring an inmate via prison_book_player left custody active on the old lockup")
+	other_prison.inmate_tick(1)
+	TEST_ASSERT_EQUAL(other_police.get_stars(subject.mind), 0, "Transferring an inmate to another lockup filed false jailbreak stars at the old lockup")
 	var/datum/prison_sentence/sentence = prison.sentences[subject.mind]
 	TEST_ASSERT(sentence?.admin_booked && sentence.remaining_seconds() == 180, "Admin-booked sentence did not set admin_booked or 180s duration")
 	prison.inmate_tick(10)
@@ -675,12 +775,17 @@
 	lockup_panel_act(panel, operator, "prison_release_inmate", list("ref" = REF(subject.mind)))
 	TEST_ASSERT(!prison.is_inmate(subject), "prison_release_inmate did not release the booked inmate")
 
+	prison.trouble_enabled = TRUE
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter_a = trouble_prisoner(prison, yard_tile)
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter_b = trouble_prisoner(prison, yard_tile)
 	lockup_panel_act(panel, operator, "prison_audience", list("mode" = "off"))
 	TEST_ASSERT_EQUAL(prison.audience_override, FALSE, "prison_audience 'off' did not set audience_override = FALSE")
+	TEST_ASSERT_EQUAL(rioter_a.ai_controller.ai_status, AI_STATUS_OFF, "prison_audience 'off' did not immediately reconcile prisoner AI off")
 	lockup_panel_act(panel, operator, "prison_audience", list("mode" = "auto"))
 	TEST_ASSERT_NULL(prison.audience_override, "prison_audience 'auto' did not reset audience_override = null")
 	lockup_panel_act(panel, operator, "prison_audience", list("mode" = "on"))
 	TEST_ASSERT_EQUAL(prison.audience_override, TRUE, "prison_audience 'on' did not set audience_override = TRUE")
+	TEST_ASSERT_EQUAL(rioter_a.ai_controller.ai_status, AI_STATUS_ON, "prison_audience 'on' did not immediately reconcile prisoner AI on")
 
 	// Remaining lockup metrics: served, escape, break_in, riot, bounty_claimed_live, bounty_claimed_dead
 	TEST_ASSERT(prison.admin_book_player(subject, 5), "Could not re-book subject for lockup_served metric check")
@@ -693,9 +798,6 @@
 	TEST_ASSERT_NOTNULL(cell_door, "Cell 1 has no cell airlock")
 	record_lockup_break_in(prison, cell_door, operator)
 
-	prison.trouble_enabled = TRUE
-	var/mob/living/carbon/human/npc/outpost_prisoner/rioter_a = trouble_prisoner(prison, yard_tile)
-	var/mob/living/carbon/human/npc/outpost_prisoner/rioter_b = trouble_prisoner(prison, yard_tile)
 	rioter_a.set_mood(0)
 	rioter_b.set_mood(0)
 	TEST_ASSERT(prison.start_riot(), "start_riot() did not start a riot for metric verification")
