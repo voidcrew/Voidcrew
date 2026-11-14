@@ -261,7 +261,7 @@
 #define SANDEVISTAN_ACTIVATION_SOUND 'voidcrew/sound/cyberware/sandevistan_activation.ogg'
 /// Loops to the user for as long as his slow-mo runs.
 #define SANDEVISTAN_LOOP_SOUND 'voidcrew/sound/cyberware/sandevistan_loop.ogg'
-/// The user bursting into movement from standing inside his slow-mo.
+/// The user moving inside his slow-mo.
 #define SANDEVISTAN_STEP_SOUND 'voidcrew/sound/cyberware/sandevistan_step.ogg'
 /// The user's slow-mo ending. No sound yet: uncomment with a file and it plays (ware_sandy_sound.dm).
 // #define SANDEVISTAN_DEACTIVATE_SOUND 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg'

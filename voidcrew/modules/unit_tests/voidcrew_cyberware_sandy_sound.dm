@@ -2,7 +2,7 @@
  * # What a Sandevistan sounds like
  *
  * voidcrew/modules/cyberware/ware_sandy_sound.dm. The user hears his surge come on, a loop for as long as his slow-mo
- * runs and a rush as he bursts into movement from standing in it, all to him alone and none of it recorded for the
+ * runs and a rush as he moves in it, all to him alone and none of it recorded for the
  * replay. Everyone else near hears a short snap from his tile as he surges and bursts off, and the replay's viewers
  * hear it as the replay starts and as his replayed self bursts off after a pause.
  *
@@ -78,7 +78,7 @@
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
 
-/// In his slow-mo the user hears the step when he bursts off from standing, never again within 1.5 s of it; others
+/// In his slow-mo the user hears the step as he moves, never again within 1.5 s of it; others
 /// hear the snap at most every 0.4 s
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/steps
 

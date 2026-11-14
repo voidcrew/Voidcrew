@@ -1,8 +1,8 @@
 /**
  * # What a Sandevistan sounds like
  *
- * The user hears his own surge come on, a hum for as long as his slow-mo runs, a rush when he bursts into movement
- * from standing inside it, and the slow-mo ending. The hum and the rush climb in pitch as it runs toward its end
+ * The user hears his own surge come on, a hum for as long as his slow-mo runs, a rush that pulses while he
+ * moves inside it, and the slow-mo ending. The hum and the rush climb in pitch as it runs toward its end
  * (sandy_slowmo_progress()).
  * Those go to him alone, straight to his client: never slowed by his own
  * slow-mo (ware_sandy_senses.dm slows sounds in playsound_local) and never recorded for its replay (ware_sandy_replay.dm
@@ -19,9 +19,7 @@
 #define SANDY_SOUND_LOOP_VOLUME 25
 #define SANDY_SOUND_STEP_VOLUME 60
 #define SANDY_SOUND_DEACTIVATE_VOLUME 60
-/// The step cues only for a step this long after the last one (he burst off from standing)...
-#define SANDY_SOUND_STEP_STILL (0.3 SECONDS)
-/// ...and never sooner than this after it last started, so it never stacks on itself.
+/// The step cues again on a step this long after it last started, so it pulses while he moves and never stacks on itself.
 #define SANDY_SOUND_STEP_GAP (1.5 SECONDS)
 /// Pitch spread of the step, in hundredths either way.
 #define SANDY_SOUND_STEP_SPREAD 8
@@ -114,14 +112,13 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 /**
  * A step, `step_time` after the last one. A forced move (thrown, pulled, carried) is never a burst.
  * - Everyone else hears the snap on the first step after standing still, and then every SANDEVISTAN_BURST_GAP while he
- *   keeps moving (a step from standing comes at least that long after the last cue, unless the surge itself just cued).
- * - In his slow-mo he hears the step when he bursts off from standing (SANDY_SOUND_STEP_STILL), never sooner than
- *   SANDY_SOUND_STEP_GAP after it last started.
+ *   keeps moving).
+ * - In his slow-mo he hears the step as he moves, again every SANDY_SOUND_STEP_GAP while he keeps moving.
  */
 /datum/status_effect/cyberware_cascade_window/proc/sandy_step_sounds(step_time, forced)
 	if(forced)
 		return
-	if(slowmo_sounding && step_time >= SANDY_SOUND_STEP_STILL && (!last_step_cue || world.time - last_step_cue >= SANDY_SOUND_STEP_GAP))
+	if(slowmo_sounding && (!last_step_cue || world.time - last_step_cue >= SANDY_SOUND_STEP_GAP))
 		last_step_cue = world.time
 		var/sound/step = sandy_cue(SANDEVISTAN_STEP_SOUND, SANDY_SOUND_STEP_VOLUME, SANDY_SOUND_STEP_SPREAD)
 		step.frequency = (step.frequency || 1) * sandy_pitch_for(sandy_slowmo_progress())
@@ -221,5 +218,4 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 #undef SANDY_SOUND_STEP_VOLUME
 #undef SANDY_SOUND_DEACTIVATE_VOLUME
 #undef SANDY_SOUND_STEP_SPREAD
-#undef SANDY_SOUND_STEP_STILL
 #undef SANDY_SOUND_STEP_GAP
