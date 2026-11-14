@@ -195,7 +195,7 @@
 	var/turf/start = get_turf(user)
 	user.Move(spot(0, 1), NORTH)
 	TEST_ASSERT(get_turf(user) != start, "Test fixture: the user couldn't step")
-	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/decoy/fading/cascade/stopped) in spot(0, 0), "The green trail outlived the slow-mo")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/decoy/fading/cascade/stopped) in spot(0, 0), "The slow-mo trail outlived the slow-mo")
 	end_surge(user)
 
 /// Another player near: the plain surge, no dilation
@@ -825,6 +825,41 @@
 		if(istype(image, type))
 			.++
 
+/// The afterimages of `type` around `user` that don't age to the trail's oldest colour, or don't start on the colour
+/// for their age: a description of each, empty if none
+/datum/unit_test/voidcrew_cyberware_timestop/proc/off_colour_trail(mob/living/user, type)
+	. = list()
+	var/oldest = json_encode(cyberware_cascade_trail_tints()[4])
+	for(var/obj/effect/temp_visual/decoy/fading/cascade/image in range(7, user))
+		if(!istype(image, type))
+			continue
+		var/list/through = image.aged_through
+		if(!length(through) || !islist(image.color) || json_encode(through[length(through)]) != oldest)
+			. += "[image.type] aged through [json_encode(through)]"
+
+/// A fresh afterimage is laid in the trail's newest colour (green) and aged through blue and purple to the oldest (pink)
+/datum/unit_test/voidcrew_cyberware_timestop/trail_colours
+
+/datum/unit_test/voidcrew_cyberware_timestop/trail_colours/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, spot(0, 0))
+	var/list/tints = cyberware_cascade_trail_tints()
+	TEST_ASSERT_EQUAL(length(tints), 4, "The trail doesn't have four colours")
+	var/obj/effect/temp_visual/decoy/fading/cascade/fresh = new(spot(1, 0), user, 0, 230, 2 SECONDS)
+	TEST_ASSERT_EQUAL(json_encode(fresh.aged_through), json_encode(tints), "A fresh afterimage wasn't laid green and aged through blue and purple to pink")
+	TEST_ASSERT(islist(fresh.color), "A fresh afterimage has no colour matrix")
+	TEST_ASSERT_EQUAL(PLANE_TO_TRUE(fresh.plane), FLOOR_PLANE, "A fresh afterimage is drawn over bodies")
+	// Half way through its life: laid between blue and purple, aged on to purple and pink
+	var/obj/effect/temp_visual/decoy/fading/cascade/stopped/aged = new(spot(2, 0), user, 0.5, 115, 1 SECONDS)
+	TEST_ASSERT_EQUAL(length(aged.aged_through), 3, "A half-aged afterimage didn't age through purple to pink: [json_encode(aged.aged_through)]")
+	TEST_ASSERT_EQUAL(json_encode(aged.aged_through[1]), json_encode(cyberware_cascade_tint_at(0.5)), "A half-aged afterimage wasn't laid in its age's colour")
+	TEST_ASSERT_EQUAL(json_encode(aged.aged_through[3]), json_encode(tints[4]), "A half-aged afterimage didn't age to pink")
+	var/list/half = cyberware_cascade_tint_at(0.5)
+	var/list/blue = tints[2]
+	var/list/purple = tints[3]
+	TEST_ASSERT(half[10] > min(blue[10], purple[10]) && half[10] < max(blue[10], purple[10]), "Half way isn't between blue and purple")
+	qdel(fresh)
+	qdel(aged)
+
 /// A plain surge: a surger who keeps moving drags the trail's length of afterimages, all under bodies, and they are
 /// gone a trail's life after he stops
 /datum/unit_test/voidcrew_cyberware_timestop/trail_plain
@@ -842,11 +877,13 @@
 	TEST_ASSERT(abs(live - window.trail_length) <= 2, "[live] afterimages behind a surger who keeps moving, not about [window.trail_length]")
 	for(var/obj/effect/temp_visual/decoy/fading/cascade/image in range(7, user))
 		TEST_ASSERT(PLANE_TO_TRUE(image.plane) == FLOOR_PLANE, "An afterimage is drawn over bodies (plane [image.plane])")
+	var/list/off = off_colour_trail(user, /obj/effect/temp_visual/decoy/fading/cascade)
+	TEST_ASSERT(!length(off), "Afterimages not coloured by age: [off.Join("; ")]")
 	sleep(0.1 SECONDS * window.trail_length / window.trail_per_tile + 0.2 SECONDS)
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "The trail lingered after the surger stopped")
 	end_surge(user)
 
-/// The slow-mo: the same trail, green, behind a user walking at normal speed
+/// The slow-mo: the same trail, coloured by age as a plain surge's, behind a user walking at normal speed
 /datum/unit_test/voidcrew_cyberware_timestop/trail_slowmo
 
 /datum/unit_test/voidcrew_cyberware_timestop/trail_slowmo/Run()
@@ -858,6 +895,11 @@
 	walk_trail(user, 16)
 	var/live = count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/stopped)
 	TEST_ASSERT(abs(live - window.trail_length) <= 2, "[live] afterimages behind a user walking in the slow-mo, not about [window.trail_length]")
+	var/list/off = off_colour_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/stopped)
+	TEST_ASSERT(!length(off), "Slow-mo afterimages not coloured by age: [off.Join("; ")]")
+	var/green = json_encode(cyberware_time_stop_green())
+	for(var/obj/effect/temp_visual/decoy/fading/cascade/stopped/image in range(7, user))
+		TEST_ASSERT(json_encode(image.aged_through[1]) != green, "A slow-mo afterimage is the plain green kind")
 	sleep(0.1 SECONDS * window.trail_length / window.trail_per_tile + 0.2 SECONDS)
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "The slow-mo's trail lingered after the user stopped")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
