@@ -47,13 +47,14 @@
 	hide_vent_bar()
 	vent_bar = new
 	vent_marker = new
-	vent_marker.pixel_x = -PLASMA_VENT_MARKER_REACH
+	// The marker slides by transform; an animated pixel_x left it still in a live client
+	vent_marker.transform = matrix(1, 0, -PLASMA_VENT_MARKER_REACH, 0, 1, 0)
 	vent_client = user.client
 	if(!vent_client)
 		return
 	vent_client.screen += vent_bar
 	vent_client.screen += vent_marker
-	animate(vent_marker, pixel_x = PLASMA_VENT_MARKER_REACH, time = PLASMA_VENT_SWEEP, easing = LINEAR_EASING)
+	animate(vent_marker, transform = matrix(1, 0, PLASMA_VENT_MARKER_REACH, 0, 1, 0), time = PLASMA_VENT_SWEEP, easing = LINEAR_EASING)
 
 /// Takes the bar off the screen it was shown on and deletes it
 /obj/item/gun/energy/plasma_weapon/proc/hide_vent_bar()
