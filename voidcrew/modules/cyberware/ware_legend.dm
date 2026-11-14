@@ -354,7 +354,6 @@
 		var/obj/effect/temp_visual/decoy/fading/cascade/image
 		if(time_stop) // green while the world is slowed (ware_sandy_timestop.dm)
 			image = new /obj/effect/temp_visual/decoy/fading/cascade/stopped(old_loc, owner, cyberware_time_stop_green(), start_alpha, left)
-			image.filters = null
 		else
 			trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
 			image = new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, start_alpha, left)
@@ -375,11 +374,17 @@
 	if(life)
 		duration = life // before the parent's timer and fade read it
 	. = ..()
-	alpha = start_alpha
-	color = islist(hue) ? hue : cascade_tint_matrix(hue)
-	SET_PLANE_EXPLICIT(src, FLOOR_PLANE, src)
-	layer = CLEANABLE_FLOOR_OBJECT_LAYER
-	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
+	// The whole look goes on in one assignment, then the fade starts on it (as the replay's afterimage does).
+	var/mutable_appearance/copy = new(src)
+	copy.alpha = start_alpha
+	copy.color = islist(hue) ? hue : cascade_tint_matrix(hue)
+	copy.filters = null // the bearer's outline and tints are his, not the trail's
+	copy.appearance_flags |= KEEP_TOGETHER // the hue must reach every overlay
+	SET_PLANE_EXPLICIT(copy, FLOOR_PLANE, src)
+	copy.layer = CLEANABLE_FLOOR_OBJECT_LAYER
+	animate(src)
+	appearance = copy.appearance
+	animate(src, alpha = 0, time = duration)
 
 /// Colour matrix that flattens the copy to luminance and paints it one hue,
 /// with a lift so dark clothes still glow instead of going black.

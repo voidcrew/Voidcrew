@@ -1031,17 +1031,19 @@
 	TEST_ASSERT_EQUAL(player.next_move, began + 20, "A player's clock was pushed by the replay's hold")
 	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[npc] && !GLOB.sandy_replay_stopped_clocks[player], "A stopped clock was left behind")
 
-/// The replay drags the user's whole trail behind his walk at the replay's speed, and none of it outlives the replay
+/// The replay drags the user's trail behind his walk at the replay's speed, and none of it outlives the replay
 /datum/unit_test/voidcrew_cyberware_timestop/replay/trail
 
 /datum/unit_test/voidcrew_cyberware_timestop/replay/trail/Run()
 	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaytrail")
-	set_window(user, 2.5 SECONDS)
+	set_window(user, 6 SECONDS)
 	start_recording(user)
 	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
 	var/length = window.trail_length
 	window.last_step_at = world.time // already walking: no first step's guessed pace
-	walk_trail(user, 16)
+	// A step or two a recorded frame (one frame is 0.5 s of the slow-mo): the replay sees each step, not a back and
+	// forth folded into one.
+	walk_trail(user, 16, 0.3 SECONDS)
 	var/peak = 0
 	var/until = world.time + 8 SECONDS
 	while(world.time < until && (GLOB.sandy_replays[user] || window_of(user)))
