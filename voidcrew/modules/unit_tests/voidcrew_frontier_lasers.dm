@@ -54,3 +54,17 @@
 		TEST_ASSERT(gun.cell.charge > 0, "The recharger did not charge [gun_type]")
 		gun.forceMove(run_loc_floor_bottom_left)
 		TEST_ASSERT_NULL(charger.charging, "The recharger still holds [gun_type] after it left")
+
+/// A hitscan beam that hits a body lying down ends its tracer on that body, wherever the click was.
+/datum/unit_test/voidcrew_hitscan_lying_impact/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	victim.set_resting(TRUE, silent = TRUE, instant = TRUE)
+	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "The victim did not lie down")
+	var/obj/projectile/beam/laser/frontier_smg/beam = allocate(/obj/projectile/beam/laser/frontier_smg, run_loc_floor_bottom_left)
+	beam.original = victim
+	beam.p_x = 16
+	beam.p_y = 31 // the head of an upright body: half a tile above a lying one
+	beam.def_zone = BODY_ZONE_CHEST
+	TEST_ASSERT_EQUAL(beam.on_hit(victim), BULLET_ACT_HIT, "The beam did not hit the lying body")
+	TEST_ASSERT(abs(beam.impact_y - victim.pixel_y) <= 3, "A beam on a lying body ends at y [beam.impact_y], off the body at [victim.pixel_y]")
+	TEST_ASSERT(abs(beam.impact_x - victim.pixel_x) <= 12, "A beam on a lying body ends at x [beam.impact_x], off the body")
