@@ -267,6 +267,8 @@
 	var/list/notes = ambient_outpost_notes(outpost)
 	notes["decor marked"] = TRUE
 	for(var/turf/tile as anything in block(bottom_left, top_right))
+		if(outpost.prison?.contains_turf(tile)) // OUTPOST PRISON seam
+			continue
 		for(var/obj/effect/decal/cleanable/decal in tile)
 			ADD_TRAIT(decal, "ambient_outpost_decor", "ambient_outpost")
 		for(var/obj/item/thing in tile)
@@ -357,7 +359,7 @@
 	. = list()
 	for(var/datum/weakref/ref as anything in npc_dead)
 		var/mob/living/carbon/human/npc/body = ref.resolve()
-		if(!QDELETED(body) && body.stat == DEAD && morgue_npc_body(body))
+		if(!QDELETED(body) && body.stat == DEAD && morgue_npc_body(body) && !outpost?.prison?.contains_turf(get_turf(body))) // OUTPOST PRISON seam
 			. += body
 
 /// The bodies of minds that died here and still lie here, not yet in a tray or left bagged in the morgue room
@@ -366,7 +368,8 @@
 	. = list()
 	for(var/datum/weakref/ref as anything in player_dead)
 		var/mob/living/body = ref.resolve()
-		if(!QDELETED(body) && body.stat == DEAD && !morgue_body_done(body) && get_trader_outpost_for_turf(get_turf(body)) == outpost)
+		var/turf/where = get_turf(body)
+		if(!QDELETED(body) && body.stat == DEAD && !morgue_body_done(body) && get_trader_outpost_for_turf(where) == outpost && !outpost.prison?.contains_turf(where)) // OUTPOST PRISON seam
 			. += body
 
 /// Player bodies a morgue worker can collect right now (or already holds), so a guarded corpse never holds CLEANUP open
@@ -408,7 +411,7 @@
 	if(QDELETED(src) || QDELETED(outpost) || !istype(dead))
 		return
 	var/turf/where = get_turf(dead)
-	if(!where || get_trader_outpost_for_turf(where) != outpost)
+	if(!where || get_trader_outpost_for_turf(where) != outpost || outpost.prison?.contains_turf(where)) // OUTPOST PRISON seam: a death inside a lockup is the prison's own
 		return
 	var/in_box = !!outpost.police?.dispatch_in_box(where)
 	// A player in an NPC body (a brain transplant) is a person: never on the NPC list, never collected (abuse SF3)

@@ -1,14 +1,14 @@
 /**
  * Rioters breaking out (outpost_prison_breakout.dm): they go for the ways out of the cell block from
- * the start and spread over them, smash fixtures only on the side, break staff doors, hatch window
- * doors and windows with real damage while the crew is home, are announced once per way out, and
- * walk out through the gap, going loose.
+ * the start and spread over them, smash fixtures only on the side, batter staff doors open on their
+ * own damage counter and smash hatch window doors while the crew is home, leave windows and grilles
+ * alone, are announced once per way out, and walk out through the gap, going loose.
  *
  * Voidcrew defines are not visible from test files, so tuning values appear as literals with the
  * define named beside them. Prisons are driven with tick() with their own processing stopped;
  * nobody is on the level, so the AI sleeps and the tests call the blows (confront()) themselves.
- * The stock wing's ways out are along row 6: hatches at (5,6) and (13,6), windows at (7,6), (8,6),
- * (10,6) and (11,6), and the staff door at (9,6). Fixtures are in voidcrew_outpost_prison_helpers.dm.
+ * The stock wing's ways out are along row 6: hatches at (5,6) and (13,6) and the staff door at
+ * (9,6). Fixtures are in voidcrew_outpost_prison_helpers.dm.
  */
 
 /// How many of the prison's log lines contain `text`
@@ -110,7 +110,7 @@
 	prison.admin_calm()
 	settle_prison_air(home)
 
-// ===== DOORS AND WINDOWS =====
+// ===== STAFF DOORS AND YARD WINDOWS =====
 
 /datum/unit_test/voidcrew_outpost_prison_breakout_doors
 	parent_type = /datum/unit_test/voidcrew_outpost_management
@@ -119,47 +119,74 @@
 	var/obj/structure/overmap/trader_outpost/prison_test_host/home = trouble_test_claim("breakoutdoors")
 	TEST_ASSERT_NOTNULL(home, "The breakout door test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	// Out of the rioters' reach even once the door is down
+	// Out of the rioters' reach even once the door gives way
 	var/mob/living/carbon/human/warden = make_player(run_loc_floor_bottom_left, "breakoutdoors")
 	var/turf/doorway = prison_spot(home, 9, 6)
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in doorway
 	TEST_ASSERT_NOTNULL(staff_door, "The staff door is not where the map puts it")
+	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
+	TEST_ASSERT_NOTNULL(hatch, "The serving hatch is not where the map puts it")
 	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 9, 7))
-	var/mob/living/carbon/human/npc/outpost_prisoner/glazier = trouble_prisoner(prison, prison_spot(home, 7, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/hatch_rioter = trouble_prisoner(prison, prison_spot(home, 5, 7))
 	TEST_ASSERT(breakout_riot(prison), "The riot did not start")
 	TEST_ASSERT_EQUAL(rioter.riot_target(), staff_door, "A rioter beside the staff door went for [rioter.riot_target()]")
 
-	// With nobody home a blow only booms: no damage, and nothing to announce.
-	var/full = staff_door.get_integrity()
-	TEST_ASSERT_EQUAL(full, 400, "The glass staff door has [full] integrity, not 400")
+	// Windows and grilles between the yard and office are neither ways out nor fixtures.
+	var/turf/window_tile = prison_spot(home, 7, 6)
+	var/obj/structure/window/pane = locate() in window_tile
+	var/obj/structure/grille/grille = locate() in window_tile
+	TEST_ASSERT(pane && grille, "The yard window is not where the map puts it")
+	TEST_ASSERT(!prison.is_exit_blocker(pane) && !prison.is_exit_blocker(grille), "A window or grille on the yard wall counted as a way out")
+	TEST_ASSERT_NULL(prison.exit_blocker(window_tile), "The yard window tile had an exit blocker")
+	TEST_ASSERT(!prison.is_riot_fixture(pane, window_tile) && !prison.is_riot_fixture(grille, window_tile), "A window or grille between the yard and office counted as a fixture")
+
+	// With nobody home a blow only booms: no rioter damage, and nothing to announce.
+	var/full = staff_door.max_integrity
+	TEST_ASSERT_EQUAL(full, 400, "The glass staff door has [full] max integrity, not 400")
+	TEST_ASSERT_EQUAL(staff_door.rioter_damage, 0, "The staff door starts with rioter damage")
 	prison.audience_override = FALSE
 	TEST_ASSERT(rioter.confront(staff_door), "A rioter could not bang on the staff door")
-	TEST_ASSERT_EQUAL(staff_door.get_integrity(), full, "A rioter damaged the staff door with nobody home")
+	TEST_ASSERT_EQUAL(staff_door.rioter_damage, 0, "A rioter damaged the staff door with nobody home")
 	TEST_ASSERT(!length(prison.exit_alert_queue), "A door nobody damaged was queued for an alert")
 
-	// With the crew home, 10 a blow (PRISON_RIOT_DOOR_DAMAGE), and the damage shows.
+	// With the crew home, 10 a blow on its own counter (PRISON_RIOT_DOOR_DAMAGE), and the damage shows.
 	prison.audience_override = TRUE
 	rioter.confront(staff_door)
-	TEST_ASSERT_EQUAL(staff_door.get_integrity(), full - 10, "A rioter's blow left the staff door at [staff_door.get_integrity()], not [full - 10]")
+	TEST_ASSERT_EQUAL(staff_door.rioter_damage, 10, "A rioter's blow put [staff_door.rioter_damage] damage on the staff door, not 10")
+	TEST_ASSERT_EQUAL(staff_door.get_integrity(), full, "A rioter's blow touched the staff door's own integrity")
 	TEST_ASSERT(findtext(jointext(staff_door.examine(warden), " "), "damaged"), "Examining the damaged staff door does not show it")
 
-	// The alert: once, whatever the blows after.
+	// The alert: once per way out, with at least 15 seconds between alerts (PRISON_EXIT_ALERT_GAP).
 	TEST_ASSERT_EQUAL(length(prison.exit_alert_queue), 1, "The first blow queued [length(prison.exit_alert_queue)] alerts")
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(breakout_log_count(prison, "breaking at the staff door"), 1, "The first blow at the staff door was not announced once")
 	TEST_ASSERT(!length(prison.exit_alert_queue), "The alert stayed queued after it went out")
+	TEST_ASSERT_EQUAL(prison.exit_alert_wait, 15, "The next alert may go out in [prison.exit_alert_wait] s, not 15")
+	hatch_rioter.confront(hatch)
+	TEST_ASSERT_EQUAL(length(prison.exit_alert_queue), 1, "Starting on a serving hatch did not queue an alert")
+	prison.tick(1)
+	TEST_ASSERT_EQUAL(breakout_log_count(prison, "breaking at a serving hatch"), 0, "A second exit alert went out inside the 15 s gap")
+	prison.tick(14)
+	TEST_ASSERT_EQUAL(breakout_log_count(prison, "breaking at a serving hatch"), 1, "The queued serving hatch alert was not sent once the gap passed")
+
 	// Damaging blows 2 to 39 (the one with nobody home did nothing)
 	for(var/blow in 2 to 39)
 		rioter.confront(staff_door)
 	prison.tick(20)
 	TEST_ASSERT_EQUAL(breakout_log_count(prison, "breaking at the staff door"), 1, "The staff door was announced again in the same riot")
-	TEST_ASSERT(!QDELETED(staff_door), "The staff door broke before 40 blows")
+	TEST_ASSERT(!QDELETED(staff_door) && !staff_door.rioter_broken && staff_door.density, "The staff door gave way before 40 blows")
 
-	// 40 blows: broken down, nothing left standing in the doorway.
+	// 40 blows: battered open in place, no assembly left, mend timer running.
 	rioter.confront(staff_door)
-	TEST_ASSERT(QDELETED(staff_door), "Forty blows did not break the staff door (integrity [staff_door?.get_integrity()])") // 400 / PRISON_RIOT_DOOR_DAMAGE
-	TEST_ASSERT_NULL(prison.exit_blocker(doorway), "Something still blocks the broken doorway")
-	TEST_ASSERT_EQUAL(breakout_log_count(prison, "broke through the staff door"), 1, "Breaking the staff door was not logged")
+	TEST_ASSERT(!QDELETED(staff_door), "Forty blows deleted the staff door")
+	TEST_ASSERT(staff_door.rioter_broken, "Forty blows did not batter the staff door open (damage [staff_door.rioter_damage])") // 400 / PRISON_RIOT_DOOR_DAMAGE
+	TEST_ASSERT(staff_door.mend_pending, "Battering the staff door open did not start its mend timer")
+	TEST_ASSERT_NULL(locate(/obj/structure/door_assembly) in doorway, "Battering the staff door left a frame in the doorway")
+	TEST_ASSERT_NULL(prison.exit_blocker(doorway), "Something still blocks the battered doorway")
+	TEST_ASSERT_EQUAL(breakout_log_count(prison, "broke through the staff door"), 1, "Breaking through the staff door was not logged")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!staff_door.density, "The battered staff door did not swing open")
+	TEST_ASSERT(!staff_door.close(), "The battered staff door shut again before mending")
 
 	// With nobody home, nobody walks out through the gap.
 	prison.audience_override = FALSE
@@ -170,33 +197,18 @@
 	// With the crew home they go through, and out of the cell block they are loose.
 	rioter.riot_target_ref = null
 	var/turf/way_out = rioter.riot_target()
-	TEST_ASSERT(isturf(way_out) && !prison.in_cell_block(way_out), "A rioter at the broken door did not make for the office ([way_out])")
+	TEST_ASSERT(isturf(way_out) && !prison.in_cell_block(way_out), "A rioter at the battered door did not make for the office ([way_out])")
 	rioter.forceMove(way_out)
 	prison.tick(1)
-	TEST_ASSERT_EQUAL(rioter.trouble, "loose", "A rioter through the broken door is [rioter.trouble], not loose") // PRISONER_TROUBLE_LOOSE
-	TEST_ASSERT(rioter.loose_left > 0, "A rioter through the broken door has no loose clock")
-	TEST_ASSERT(prison.broke_out, "A rioter through the broken door did not count as breaking out")
+	TEST_ASSERT_EQUAL(rioter.trouble, "loose", "A rioter through the battered door is [rioter.trouble], not loose") // PRISONER_TROUBLE_LOOSE
+	TEST_ASSERT(rioter.loose_left > 0, "A rioter through the battered door has no loose clock")
+	TEST_ASSERT(prison.broke_out, "A rioter through the battered door did not count as breaking out")
 
-	// A window: the pane, 7 a blow (PRISON_RIOT_WINDOW_DAMAGE, 150 integrity), then its grille (50, broken at 20).
-	var/turf/window_tile = prison_spot(home, 7, 6)
-	var/obj/structure/window/pane = locate() in window_tile
-	var/obj/structure/grille/grille = locate() in window_tile
-	TEST_ASSERT(pane && grille, "The yard window is not where the map puts it")
-	TEST_ASSERT(prison.is_exit_blocker(pane), "The yard window does not count as a way out")
-	for(var/blow in 1 to 21)
-		glazier.confront(pane)
-	TEST_ASSERT(!QDELETED(pane), "The window broke before 22 blows")
-	glazier.confront(pane)
-	TEST_ASSERT(QDELETED(pane), "Twenty-two blows did not break the window")
-	TEST_ASSERT_EQUAL(prison.exit_blocker(window_tile), grille, "The grille does not stand in the way once the pane is gone")
-	for(var/blow in 1 to 5)
-		glazier.confront(grille)
-	TEST_ASSERT(!grille.density, "Five blows did not break the grille")
-	TEST_ASSERT_NULL(prison.exit_blocker(window_tile), "Something still blocks the broken window")
-	// Its own alert, once; a new one goes out at most every 15 seconds (PRISON_EXIT_ALERT_GAP).
-	prison.tick(1)
-	TEST_ASSERT_EQUAL(breakout_log_count(prison, "breaking at a window"), 1, "The window was not announced once")
-	TEST_ASSERT_EQUAL(prison.exit_alert_wait, 15, "The next alert may go out in [prison.exit_alert_wait] s, not 15")
+	// Mending clears the rioter damage and shuts the door again.
+	staff_door.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(!staff_door.rioter_broken && staff_door.rioter_damage == 0 && !staff_door.mend_pending, "Mending the battered staff door left rioter damage behind")
+	TEST_ASSERT(staff_door.density, "Mending the battered staff door did not shut it again")
 	prison.admin_calm()
 	settle_prison_air(home)
 

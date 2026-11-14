@@ -7943,6 +7943,7 @@
 #include "voidcrew\modules\trade_prison\outpost_prison_mail.dm"
 #include "voidcrew\modules\trade_prison\outpost_prison_npc_bodies.dm"
 #include "voidcrew\modules\trade_prison\outpost_prison_pastimes.dm"
+#include "voidcrew\modules\trade_prison\outpost_prison_police.dm"
 #include "voidcrew\modules\trade_prison\outpost_prison_prisoner.dm"
 #include "voidcrew\modules\trade_prison\outpost_prison_processing.dm"
 #include "voidcrew\modules\trade_prison\outpost_prison_riot.dm"

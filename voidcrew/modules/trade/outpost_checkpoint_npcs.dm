@@ -219,6 +219,9 @@
 		return null
 	if(sector == POLICE_SECTOR_LOBBY)
 		return length(outpost.lobby_panels) ? outpost.lobby_panels[1] : null
+	if(istype(sector, /datum/outpost_prison)) // OUTPOST PRISON seam
+		var/datum/outpost_prison/lockup = sector
+		return lockup.lift_panel
 	var/datum/outpost_berth/berth = sector
 	if(istype(berth))
 		return berth.panel

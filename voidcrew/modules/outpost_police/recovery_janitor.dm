@@ -196,14 +196,15 @@
 /// The look itself: a body of a human on the floor, a mess, or litter, in sight within the stop range
 /datum/outpost_recovery/proc/stop_has_work(turf/stop)
 	var/range_limit = OUTPOST_RECOVERY_STOP_RANGE
+	var/datum/outpost_prison/lockup = outpost?.prison // OUTPOST PRISON seam
 	for(var/mob/living/carbon/human/body in range(range_limit, stop))
-		if(body.stat == DEAD && isturf(body.loc) && can_see(stop, body, range_limit))
+		if(body.stat == DEAD && isturf(body.loc) && !lockup?.contains_turf(body.loc) && can_see(stop, body, range_limit))
 			return TRUE
 	for(var/obj/effect/decal/cleanable/decal in range(range_limit, stop))
-		if(recovery_is_mess(decal) && can_see(stop, decal, range_limit))
+		if(!lockup?.contains_turf(decal.loc) && recovery_is_mess(decal) && can_see(stop, decal, range_limit))
 			return TRUE
 	for(var/obj/item/thing in range(range_limit, stop))
-		if(recovery_is_litter(thing) && can_see(stop, thing, range_limit))
+		if(!lockup?.contains_turf(thing.loc) && recovery_is_litter(thing) && can_see(stop, thing, range_limit))
 			return TRUE
 	return FALSE
 
@@ -501,11 +502,12 @@
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/proc/tiles_with_work(turf/center, range, sight = TRUE, take_litter = TRUE)
 	var/list/found = list()
+	var/datum/outpost_prison/lockup = (my_recovery()?.outpost || get_outpost())?.prison // OUTPOST PRISON seam
 	for(var/obj/effect/decal/cleanable/decal in range(range, center))
 		if(!recovery_is_mess(decal))
 			continue
 		var/turf/tile = decal.loc
-		if(sight && !can_see(center, tile, range))
+		if(lockup?.contains_turf(tile) || (sight && !can_see(center, tile, range)))
 			continue
 		found[tile] |= RECOVERY_WORK_MESS
 	if(take_litter)
@@ -513,7 +515,7 @@
 			if(!recovery_is_litter(thing))
 				continue
 			var/turf/tile = thing.loc
-			if(sight && !can_see(center, tile, range))
+			if(lockup?.contains_turf(tile) || (sight && !can_see(center, tile, range)))
 				continue
 			found[tile] |= RECOVERY_WORK_LITTER
 	return found

@@ -79,6 +79,19 @@
 /datum/outpost_prison/proc/is_inmate(mob/person)
 	return FALSE
 
+/// Whether any player is serving time in this wing. Nobody is yet (wave 4).
+/datum/outpost_prison/proc/has_inmates()
+	return FALSE
+
+/// Whether anyone is held in this wing right now (a live prisoner on the roster, or a player inmate)
+/datum/outpost_prison/proc/holds_anyone()
+	if(has_inmates())
+		return TRUE
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
+		if(!QDELETED(prisoner) && prisoner.stat != DEAD && prisoner.phase != PRISONER_LEAVING)
+			return TRUE
+	return FALSE
+
 /**
  * Whether `accessor` may open a staff door or the office side of a hatch: the wing's staff. A
  * cleanbot nobody is driving may always go through, or one in the office would bump the door
@@ -126,14 +139,17 @@
 
 /**
  * Whether a prisoner could stand on this tile. Cell doors open for them unless bolted, welded or
- * unpowered; staff doors never do.
+ * unpowered; staff doors never do unless breached.
  */
 /datum/outpost_prison/proc/prisoner_can_stand(turf/tile)
 	if(isclosedturf(tile))
 		return FALSE
 	for(var/atom/movable/thing as anything in tile)
 		if(istype(thing, /obj/machinery/door/airlock/security/prison_staff))
-			return FALSE
+			var/obj/machinery/door/airlock/security/prison_staff/staff_door = thing
+			if(!staff_door.rioter_broken && !(staff_door.lockup_breached() && !staff_door.density))
+				return FALSE
+			continue
 		if(istype(thing, /obj/machinery/door/airlock))
 			var/obj/machinery/door/airlock/airlock = thing
 			if(airlock.density && (airlock.locked || airlock.welded || !airlock.hasPower()))

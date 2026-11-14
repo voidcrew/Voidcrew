@@ -940,6 +940,8 @@
 			return FALSE
 	if(police && (police.dispatch_is_lift_tile(tile) || police.life_in_cell(tile)))
 		return FALSE
+	if(keep?.prison?.contains_turf(tile)) // OUTPOST PRISON seam: officers never choose spots inside a lockup
+		return FALSE
 	if(ignore_floor)
 		return TRUE
 	if(keep?.recovery?.back_rooms?[tile] || ambient_in_kingpin_lounge(tile, 2) || life_keeps_off(tile))
@@ -1285,7 +1287,7 @@
 	if(!isturf(candidate.loc) || candidate.buckled || candidate.pulledby)
 		return FALSE
 	var/turf/tile = candidate.loc
-	if(police?.life_in_cell(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile))
+	if(police?.life_in_cell(tile) || get_outpost()?.prison?.contains_turf(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile)) // OUTPOST PRISON seam
 		return FALSE
 	if(police && (police.in_custody(candidate) || (candidate.mind && police.cases[candidate.mind])))
 		return FALSE
@@ -1364,7 +1366,7 @@
 	if((istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !body.mind && !body.client) || outpost_police_weakref_seen(voice.bodies_called, body))
 		return FALSE
 	var/turf/tile = body.loc
-	if(police.life_in_cell(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile))
+	if(police.life_in_cell(tile) || get_outpost()?.prison?.contains_turf(tile) || get_outpost()?.recovery?.back_rooms?[tile] || life_keeps_off(tile)) // OUTPOST PRISON seam
 		return FALSE
 	return TRUE
 

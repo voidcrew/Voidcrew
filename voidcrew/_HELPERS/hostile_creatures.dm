@@ -65,8 +65,8 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
  * GLOB.ai_subtrees, so this is a handful of list lookups.
  */
 /proc/is_hostile_creature(mob/living/creature)
-	// Outpost prisoners (outpost_prison_*.dm): left alone inside their wing, rioting or not;
-	// once loose outside it they are fair game. Turrets players build use outpost_prison_security.dm instead.
+	// Outpost prisoners (outpost_prison_*.dm): left alone in the cell block, rioting or not;
+	// once loose (outpost_prison_riot.dm) they are fair game until down or cuffed. Turrets players build use outpost_prison_security.dm instead.
 	if(istype(creature, /mob/living/carbon/human/npc/outpost_prisoner))
 		return is_loose_outpost_prisoner(creature)
 	// Bounty criminals, decoys and companions (voidcrew/modules/bounties/bounty_criminal.dm), real human bodies:

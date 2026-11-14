@@ -16,7 +16,7 @@
  * In a riot the wing's lights strobe red (outpost_prison_conditions.dm, not the fire alarm, so no
  * firelocks drop), an alarm sounds and the outpost is told. Rioters pull shivs and shout for a few
  * seconds before the first blow, then go for staff (two at most on one person) and try to break out:
- * they hammer at the staff doors, serving hatches and windows out of the cell block, smashing the
+ * they hammer at the staff doors and serving hatches out of the cell block, smashing the
  * wing's fixtures on the side (outpost_prison_breakout.dm). Once through, out they go, and escape.
  * Prisoners who don't join sit it out in their cells. A rioter
  * who is stunned, beaten or cuffed drops the shiv, but riots on once up and free again. Shut in a
@@ -776,6 +776,7 @@
 		return FALSE
 	for(var/datum/outpost_prison_fight/brawl as anything in fights.Copy())
 		end_fight(brawl)
+	clear_riot_police_call()
 	riot_active = TRUE
 	breaking_out = FALSE
 	riot_elapsed = 0
@@ -859,7 +860,7 @@
 		if(riot_absent >= PRISON_RIOT_TRANSFER_TIME)
 			transfer_rioters()
 			return
-	// Rioters starting on a door or window (outpost_prison_breakout.dm)
+	// Rioters starting on a door or serving hatch (outpost_prison_breakout.dm)
 	exit_alert_tick(seconds)
 	alarm_left -= seconds
 	if(alarm_left <= 0)
@@ -891,6 +892,7 @@
 		add_log("The rioters are out of the cell block.")
 	else
 		add_log("The riot is over.")
+	clear_riot_police_call()
 	update_riot_lights()
 
 /// Puts the wing in the quiet that follows a riot for `seconds`, or ends it with 0. The admin panel's hook.
@@ -1054,9 +1056,10 @@
 	if(istype(target, /obj/structure/table/reinforced/prison_hatch))
 		var/obj/structure/table/reinforced/prison_hatch/hatch = target
 		return !hatch.both_sides_open()
-	// Open or shut, a prisoner never walks through a staff door on their own.
+	// Open or shut, a prisoner never walks through a staff door on their own unless it has been breached.
 	if(istype(target, /obj/machinery/door/airlock/security/prison_staff))
-		return TRUE
+		var/obj/machinery/door/airlock/security/prison_staff/staff_door = target
+		return !staff_door.rioter_broken && !(staff_door.lockup_breached() && !staff_door.density)
 	if(istype(target, /obj/machinery/door) || istype(target, /obj/structure/window) || istype(target, /obj/structure/grille))
 		var/obj/blocking = target
 		return blocking.density
@@ -1333,7 +1336,9 @@
 		broke_out = TRUE
 	// Caught again, a runner from a riot (or from their lockdown) owes lockdown (outpost_prison_capture.dm).
 	prisoner.escaped_rioting = from_riot || prisoner.lockdown_left > 0
+	clear_riot_police_call()
 	prisoner.go_loose()
+	maybe_call_riot_police()
 	add_log("[prisoner.real_name] escaped the cell block.")
 	prisoner.say_context(from_riot ? "breakout" : "escape")
 	if(COOLDOWN_FINISHED(src, escape_announce_cooldown))
@@ -1377,6 +1382,7 @@
 		start_lockdown(prisoner, quiet = TRUE)
 	if(!loose_count() && !riot_active)
 		broke_out = FALSE
+	clear_riot_police_call()
 	update_riot_lights()
 	return TRUE
 
@@ -1406,20 +1412,20 @@
 	prisoner.leave()
 	if(!loose_count() && !riot_active)
 		broke_out = FALSE
+	clear_riot_police_call()
 	update_riot_lights()
 	return TRUE
 
 // ===== TURRETS =====
 
 /**
- * The hull defense turret's rule (is_hostile_creature()): it leaves prisoners in their wing alone,
- * rioting or not, and treats a loose prisoner outside the wing as fair game until they are down, so
- * a runner is stopped rather than killed. Turrets players build follow outpost_prison_security.dm.
+ * The hull defense turret's and outpost police's rule (is_hostile_creature()): prisoners in the cell
+ * block are left alone, rioting or not, and a loose prisoner (trouble == PRISONER_TROUBLE_LOOSE) is
+ * fair game until down or cuffed, whether still in the lockup's front room or outside. Turrets players
+ * build follow outpost_prison_security.dm.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/turret_target()
-	if(stat == DEAD || trouble != PRISONER_TROUBLE_LOOSE || phase != PRISONER_PRESENT || can_be_dragged())
-		return FALSE
-	return !prison || get_area(src) != prison.wing
+	return stat != DEAD && trouble == PRISONER_TROUBLE_LOOSE && phase == PRISONER_PRESENT && !can_be_dragged()
 
 /proc/is_loose_outpost_prisoner(mob/living/creature)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = creature

@@ -334,7 +334,7 @@
 	if(!isturf(patient.loc) || patient.pulledby || patient.buckled)
 		return FALSE
 	var/turf/where = patient.loc
-	if(get_trader_outpost_for_turf(where) != outpost || !outpost.police?.dispatch_in_box(where))
+	if(get_trader_outpost_for_turf(where) != outpost || !outpost.police?.dispatch_in_box(where) || outpost.prison?.contains_turf(where)) // OUTPOST PRISON seam
 		return FALSE
 	return !get_ship_from_atom(where)
 

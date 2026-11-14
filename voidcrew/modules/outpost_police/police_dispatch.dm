@@ -167,6 +167,10 @@
 		return POLICE_SECTOR_OUTSIDE
 	if(outpost.is_secured_turf(where))
 		return POLICE_SECTOR_CONCOURSE
+	// OUTPOST PRISON seam: the lockup wing is a sector of its own inside the outpost box (trade_prison/outpost_prison_police.dm)
+	var/datum/outpost_prison/lockup = lockup_sector_of(where)
+	if(lockup)
+		return lockup
 	if(dispatch_in_box(where))
 		if(istype(where.loc, /area/voidcrew/trader_outpost/checkpoint))
 			return POLICE_SECTOR_LOBBY
@@ -253,15 +257,19 @@
 			if(!QDELETED(panel))
 				return panel
 		return null
+	if(outpost.prison && (start in outpost.prison.alcove_turfs) && !QDELETED(outpost.prison.lift_panel)) // OUTPOST PRISON seam
+		return outpost.prison.lift_panel
 	for(var/datum/outpost_berth/berth as anything in outpost.berths)
 		if(berth && (start in berth.alcove_turfs) && !QDELETED(berth.panel))
 			return berth.panel
 	return null
 
-/// The hangar elevator floor id for `sector` (0 for the lobby, berth_number for a berth), or null
+/// The hangar elevator floor id for `sector` (0 for the lobby, berth_number for a berth, OUTPOST_LIFT_LOCKUP for the lockup), or null
 /datum/outpost_police/proc/dispatch_elevator_floor(sector)
 	if(sector == POLICE_SECTOR_LOBBY)
 		return 0
+	if(istype(sector, /datum/outpost_prison) && sector == outpost?.prison) // OUTPOST PRISON seam
+		return OUTPOST_LIFT_LOCKUP
 	var/datum/outpost_berth/berth = sector
 	if(istype(berth))
 		return berth.berth_number
@@ -363,7 +371,7 @@
 		return null
 	if((from_sector == POLICE_SECTOR_CONCOURSE && to_sector == POLICE_SECTOR_LOBBY) || (from_sector == POLICE_SECTOR_LOBBY && to_sector == POLICE_SECTOR_CONCOURSE))
 		return null
-	if(istype(from_sector, /datum/outpost_berth) && to_sector == POLICE_SECTOR_CONCOURSE)
+	if((istype(from_sector, /datum/outpost_berth) || istype(from_sector, /datum/outpost_prison)) && to_sector == POLICE_SECTOR_CONCOURSE) // OUTPOST PRISON seam
 		return POLICE_SECTOR_LOBBY
 	return to_sector
 
@@ -480,7 +488,8 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in wave.living_members())
 		REMOVE_TRAIT(member, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
 		// They come out of the lift doors already hunting (spec-stealth 1.4)
-		member.police_search_for(member.dispatch_mind?.resolve())
+		if(!member.police_search_for(member.dispatch_mind?.resolve()))
+			lockup_direct_officer(member) // OUTPOST PRISON seam
 
 /**
  * Abuse M2. Members still on their lift point a while after leaving, with a suspect to go to, could not get
@@ -690,8 +699,10 @@
 /datum/outpost_police/proc/dispatch_stand_down(keep, list/on_scene)
 	if(keep <= 0)
 		for(var/datum/human_npc_order/order as anything in dispatch_orders.Copy())
+			if(lockup_keeps_order(order)) // OUTPOST PRISON seam
+				continue
 			qdel(order)
-		dispatch_orders.Cut()
+			dispatch_orders -= order
 	if(isnull(on_scene))
 		on_scene = list()
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
@@ -699,7 +710,7 @@
 				on_scene += officer
 	var/list/candidates = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in on_scene)
-		if(!officer.case && !officer.dispatch_riding)
+		if(!officer.case && !officer.dispatch_riding && !lockup_keeps_officer(officer)) // OUTPOST PRISON seam
 			candidates += officer
 	var/list/datum/outpost_warrant/suspects = dispatch_active_suspects()
 	var/surplus = length(on_scene) - keep
@@ -762,6 +773,8 @@
 		return list(POLICE_SECTOR_LOBBY)
 	if(istype(from_sector, /datum/outpost_berth) && (from_sector in outpost?.berths))
 		return list(from_sector)
+	if(istype(from_sector, /datum/outpost_prison) && from_sector == outpost?.prison) // OUTPOST PRISON seam
+		return list(from_sector)
 	return list()
 
 /**
@@ -818,7 +831,7 @@
 				if(other && other != exit)
 					officer.npc_walk_out(other)
 			continue
-		if(!dispatch_can_respond(officer) || officer.dispatch_responding() || (on_scene && (officer in on_scene)))
+		if(!dispatch_can_respond(officer) || officer.dispatch_responding() || lockup_keeps_officer(officer) || (on_scene && (officer in on_scene))) // OUTPOST PRISON seam
 			continue
 		// Still forming up behind the lift door with their wave
 		if(officer.dispatch_wave && !officer.dispatch_wave.released_at)
@@ -953,6 +966,8 @@
 	var/datum/outpost_berth/berth = sector
 	if(istype(berth) && (berth in outpost?.berths))
 		return berth.alcove_turfs
+	if(istype(sector, /datum/outpost_prison)) // OUTPOST PRISON seam
+		return lockup_lift_tiles(sector)
 	return floor_lift_tiles(sector) // OUTPOST FLOORS seam
 
 /// Whether `where` is any lift tile of this outpost
@@ -962,6 +977,8 @@
 	for(var/datum/outpost_berth/berth as anything in outpost?.berths)
 		if(berth && (where in berth.alcove_turfs))
 			return TRUE
+	if(lockup_is_lift_tile(where)) // OUTPOST PRISON seam
+		return TRUE
 	return floor_is_lift_tile(where) // OUTPOST FLOORS seam
 
 /// The lift point of `sector` nearest `from` (of any sector for null); skipped points left out, free ones preferred when `rider` is given
@@ -973,6 +990,7 @@
 	if(isnull(sector))
 		points = lift_turfs.Copy()
 		points |= outpost?.lobby_alcove_turfs
+		points |= outpost?.prison?.alcove_turfs // OUTPOST PRISON seam
 		for(var/datum/outpost_berth/berth as anything in outpost?.berths)
 			if(berth)
 				points |= berth.alcove_turfs
@@ -994,10 +1012,12 @@
 			best_free_distance = distance
 	return best_free || best_any
 
-/// The hangar elevator alcove tiles of `sector` (`lobby` or a hangar berth; never concourse closets)
+/// The hangar elevator alcove tiles of `sector` (`lobby`, a hangar berth or the lockup; never concourse closets)
 /datum/outpost_police/proc/dispatch_elevator_tiles(sector)
 	if(sector == POLICE_SECTOR_LOBBY)
 		return outpost?.lobby_alcove_turfs || list()
+	if(istype(sector, /datum/outpost_prison) && sector == outpost?.prison) // OUTPOST PRISON seam
+		return outpost.prison.alcove_turfs || list()
 	var/datum/outpost_berth/berth = sector
 	if(istype(berth) && (berth in outpost?.berths))
 		return berth.alcove_turfs || list()
@@ -1195,6 +1215,9 @@
 	var/datum/outpost_berth/berth = sector
 	if(istype(berth))
 		pool = shuffle(berth.get_block())
+	else if(istype(sector, /datum/outpost_prison) && sector == outpost?.prison) // OUTPOST PRISON seam
+		var/datum/outpost_prison/lockup = sector
+		pool = shuffle(lockup.wing_turfs())
 	else if(sector == POLICE_SECTOR_LOBBY && length(outpost?.lobby_alcove_turfs))
 		pool = shuffle(RANGE_TURFS(12, pick(outpost.lobby_alcove_turfs)))
 	else if(sector == POLICE_SECTOR_CONCOURSE && outpost?.template_bottom_left && outpost.outpost_template)

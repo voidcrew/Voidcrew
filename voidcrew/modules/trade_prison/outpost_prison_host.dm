@@ -78,12 +78,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 /obj/machinery/door/airlock/security/prison_staff/processing/allowed(mob/accessor)
 	return isAdminGhostAI(accessor)
 
-// Whoever Processing is working for walks through; nobody else steps or paths into the room from outside.
+// Whoever Processing is working for walks through; nobody else steps or paths into the room from outside unless the door is breached.
 /obj/machinery/door/airlock/security/prison_staff/processing/lets_prisoner(atom/movable/mover)
+	if(..())
+		return TRUE
 	var/datum/outpost_prison/prison = get_outpost_prison(src)
 	return !!prison && prison.processing_who() == mover
 
 /obj/machinery/door/airlock/security/prison_staff/processing/CanAllowThrough(atom/movable/mover, border_dir)
+	if(lockup_breached() && !density)
+		return ..()
 	if(isliving(mover) && !lets_prisoner(mover))
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
 		if(prison && !prison.in_processing(mover) && get_turf(mover) != loc)
@@ -91,6 +95,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	return ..()
 
 /obj/machinery/door/airlock/security/prison_staff/processing/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	if(lockup_breached() && (!density || rioter_broken))
+		return TRUE
 	var/atom/requester = pass_info?.requester_ref?.resolve()
 	if(!density)
 		if(lets_prisoner(requester))

@@ -5,7 +5,11 @@
  */
 
 /// The trader outposts whose map has a lockup
-#define LOCKUP_TEST_OUTPOSTS list(/obj/structure/overmap/trader_outpost/outfitter)
+#define LOCKUP_TEST_OUTPOSTS list( \
+	/obj/structure/overmap/trader_outpost/general, \
+	/obj/structure/overmap/trader_outpost/outfitter, \
+	/obj/structure/overmap/trader_outpost/black_market, \
+)
 
 /**
  * A trader outpost with its interior loaded and its lockup's own clock stopped, so a test drives the wing with

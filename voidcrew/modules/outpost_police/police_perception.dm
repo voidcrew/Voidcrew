@@ -167,6 +167,7 @@
 		if(berth?.panel)
 			. += berth.panel
 	. += police.floor_cameras() // OUTPOST FLOORS seam: the panels of floors that are public ground or under warrant
+	. += police.lockup_cameras() // OUTPOST PRISON seam: the lockup's lift panel
 
 /// How long `witness` takes to report `crime`; 0 is at once
 /datum/outpost_police_perception/proc/report_delay(atom/witness, crime)

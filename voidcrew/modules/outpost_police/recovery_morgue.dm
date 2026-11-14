@@ -412,7 +412,7 @@
 	if(QDELETED(body) || !isliving(body) || body.stat != DEAD || !outpost)
 		return FALSE
 	var/turf/where = get_turf(body)
-	if(!where || get_trader_outpost_for_turf(where) != outpost)
+	if(!where || get_trader_outpost_for_turf(where) != outpost || outpost.prison?.contains_turf(where)) // OUTPOST PRISON seam
 		return FALSE
 	if(body.pulledby || body.buckled || body.has_buckled_mobs())
 		return FALSE

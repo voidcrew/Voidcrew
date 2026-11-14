@@ -1,22 +1,22 @@
 /**
  * # Prison riots: breaking out
  *
- * From the first blow of a riot, a rioter's main goal is a way out of the cell block: a staff door,
- * a serving hatch, or a window or grille between the cell block and the rest of the wing (never a
- * cell door, and never anything in the wing's outer wall). Each rioter picks the nearest one they can
- * get at, counting the rioters already at each as PRISON_RIOT_EXIT_SPREAD tiles farther so they
- * spread out, and at most PRISON_RIOT_EXIT_CROWD work at one door or window (one at a hatch). They
+ * From the first blow of a riot, a rioter's main goal is a way out of the cell block: a staff door
+ * or a serving hatch between the cell block and the rest of the wing (never a cell door, never a
+ * window or grille, and never anything in the wing's outer wall). Each rioter picks the nearest one
+ * they can get at, counting the rioters already at each as PRISON_RIOT_EXIT_SPREAD tiles farther so
+ * they spread out, and at most PRISON_RIOT_EXIT_CROWD work at one door (one at a hatch). They
  * hammer at it with their shivs until it gives:
- * - a staff airlock takes PRISON_RIOT_DOOR_DAMAGE a blow. Broken down it leaves nothing in the
- *   doorway (outpost_prison_doors.dm); an airlock built there becomes a staff door again.
+ * - a staff or Processing airlock takes PRISON_RIOT_DOOR_DAMAGE a blow on its own counter, opens
+ *   and stays open at its break threshold without being deleted or leaving a frame in the doorway,
+ *   and mends on the O8 timer (outpost_prison_doors.dm).
  * - at a serving hatch the office side's window door takes PRISON_RIOT_WINDOOR_DAMAGE a blow,
  *   although it is outpost property that nothing else can damage. When it shatters the hatch is
  *   forced open and climbed. A window door built on the hatch facing either side becomes the
  *   hatch's own again (restore_hatch_windoor()).
- * - a window and then its grille take PRISON_RIOT_WINDOW_DAMAGE a blow.
  * The blows do real damage only while the crew is home (has_audience()). With nobody home they only
  * boom, and nobody walks out through a gap: the clocks that decide how bad a riot gets wait for the
- * crew. Broken doors and windows stay broken until the crew repairs or replaces them.
+ * crew.
  *
  * Once a way is open, rioters go through it (escape_spot()), and anyone outside the cell block on
  * their own feet has escaped, as any escape (outpost_prison_riot.dm): the loose clock and recapture.
@@ -30,7 +30,7 @@
 /datum/outpost_prison
 	/// Exit tiles rioters have started on this riot (turf = TRUE): each is announced once
 	var/list/riot_exits_alerted = list()
-	/// Ways out waiting to be announced, as "the staff door", "a serving hatch", "a window"
+	/// Ways out waiting to be announced, as "the staff door" or "a serving hatch"
 	var/list/exit_alert_queue = list()
 	/// Seconds before another such alert may go out
 	var/exit_alert_wait = 0
@@ -44,9 +44,9 @@
 	return tile && cell_block[tile] && !on_wing_edge(tile) && leads_out_of_cell_block(tile)
 
 /**
- * What stands in the way on an exit tile, the thing a rioter hits: the serving hatch, a window, then
- * its grille, then a door they cannot get through or the wreck of one. Never a cell door. Null once
- * the way is open.
+ * What stands in the way on an exit tile, the thing a rioter hits: the serving hatch, or a door
+ * they cannot get through or the wreck of one. Never a cell door or a window. Null once the way is
+ * open.
  */
 /datum/outpost_prison/proc/exit_blocker(turf/tile)
 	if(!tile)
@@ -54,17 +54,15 @@
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in tile
 	if(hatch)
 		return hatch
-	for(var/obj/structure/window/pane in tile)
-		if(pane.density)
-			return pane
-	for(var/obj/structure/grille/grille in tile)
-		if(grille.density)
-			return grille
 	for(var/obj/machinery/door/airlock/door in tile)
 		if(is_cell_door(door))
 			return null
-		// Open or shut, a prisoner never walks through a staff door on their own.
-		if(istype(door, /obj/machinery/door/airlock/security/prison_staff) || door.density)
+		if(istype(door, /obj/machinery/door/airlock/security/prison_staff))
+			var/obj/machinery/door/airlock/security/prison_staff/staff_door = door
+			if(staff_door.rioter_broken || (staff_door.lockup_breached() && !staff_door.density))
+				continue
+			return staff_door
+		if(door.density)
 			return door
 	var/obj/structure/door_assembly/frame = locate() in tile
 	return frame
@@ -108,9 +106,8 @@
 
 /**
  * The way out a rioter goes for, from `exits` (exit_tiles()): the nearest, counting each rioter
- * already at one as PRISON_RIOT_EXIT_SPREAD tiles farther and a window as PRISON_RIOT_WINDOW_BIAS
- * farther than a door. One with no room left (exit_room()) is passed over unless `crowded_ok`.
- * Null if none will do.
+ * already at one as PRISON_RIOT_EXIT_SPREAD tiles farther. One with no room left (exit_room()) is
+ * passed over unless `crowded_ok`. Null if none will do.
  */
 /datum/outpost_prison/proc/choose_exit(mob/living/carbon/human/npc/outpost_prisoner/rioter, list/exits, crowded_ok = FALSE)
 	var/turf/best
@@ -121,8 +118,6 @@
 		if(!crowded_ok && others >= exit_room(blocker))
 			continue
 		var/score = get_dist(rioter, tile) + others * PRISON_RIOT_EXIT_SPREAD
-		if(istype(blocker, /obj/structure/window) || istype(blocker, /obj/structure/grille))
-			score += PRISON_RIOT_WINDOW_BIAS
 		if(score < best_score)
 			best = tile
 			best_score = score
@@ -220,12 +215,10 @@
 
 // ===== BREAKING THROUGH =====
 
-/// What the crew is told a way out is: "the staff door", "a serving hatch" or "a window"
+/// What the crew is told a way out is: "the staff door" or "a serving hatch"
 /datum/outpost_prison/proc/exit_label(atom/blocker)
 	if(istype(blocker, /obj/structure/table/reinforced/prison_hatch))
 		return "a serving hatch"
-	if(istype(blocker, /obj/structure/window) || istype(blocker, /obj/structure/grille))
-		return "a window"
 	return "the staff door"
 
 /**
@@ -244,15 +237,17 @@
 	note_exit_attacked(tile, label)
 	var/broke = FALSE
 	var/obj/structure/table/reinforced/prison_hatch/hatch = target
+	var/obj/machinery/door/airlock/security/prison_staff/staff_door = target
 	if(istype(hatch))
 		broke = hatch.take_rioter_blow(rioter)
+	else if(istype(staff_door))
+		staff_door.Shake(1, 1, 0.3 SECONDS)
+		broke = staff_door.take_rioter_damage(PRISON_RIOT_DOOR_DAMAGE * rioter.bounty_breakout_mult(), get_dir(staff_door, rioter))
 	else
 		var/damage = PRISON_SMASH_DAMAGE
 		if(istype(target, /obj/machinery/door))
 			damage = PRISON_RIOT_DOOR_DAMAGE
 			target.Shake(1, 1, 0.3 SECONDS)
-		else if(istype(target, /obj/structure/window) || istype(target, /obj/structure/grille))
-			damage = PRISON_RIOT_WINDOW_DAMAGE
 		target.take_damage(damage * rioter.bounty_breakout_mult(), BRUTE, "", TRUE, get_dir(target, rioter))
 		broke = !exit_blocker(tile)
 	if(broke)

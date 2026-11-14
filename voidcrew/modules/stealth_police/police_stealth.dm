@@ -159,7 +159,7 @@
 	if(from_sector == to_sector || from_sector == POLICE_SECTOR_OUTSIDE || to_sector == POLICE_SECTOR_OUTSIDE)
 		police.clear_checkpoint_crossing(officer)
 		return ..()
-	if(istype(to_sector, /datum/outpost_berth) && !police.dispatch_is_response_unit(officer))
+	if((istype(to_sector, /datum/outpost_berth) || istype(to_sector, /datum/outpost_prison)) && !police.dispatch_is_response_unit(officer)) // OUTPOST PRISON seam
 		police.clear_checkpoint_crossing(officer)
 		if(goto_dest != dest)
 			stealth_drop_walk()
@@ -920,6 +920,8 @@
 		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)
+	else if(!assigned) // OUTPOST PRISON seam: a response unit sent to a breakout searches the wing for loose prisoners
+		lockup_direct_officer(officer)
 	// OUTPOST FLOORS seam (trade_floors/police_breach.dm): one walking a floor has a beat to come back to
 	if(officer.unit_kind == POLICE_UNIT_BEAT && !assigned && isnull(brain.route_id) && brain.stealth_state() == STEALTH_UNAWARE && isnull(brain.breach_walk_ref))
 		officer.police_claim_route()

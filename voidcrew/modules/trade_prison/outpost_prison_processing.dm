@@ -110,9 +110,12 @@
 			return tile
 	return null
 
-/// Asks a door to open or shut the way anything asks an airlock to: it may refuse (bolts, a weld, no power)
+/// Asks a door to open or shut the way anything asks an airlock to: it may refuse (bolts, a weld, no power), and a breached one stays open until it mends
 /datum/outpost_prison/proc/processing_work_door(obj/machinery/door/airlock/door, open)
 	if(QDELETED(door) || door.operating || door.density != !!open)
+		return
+	var/obj/machinery/door/airlock/security/prison_staff/staff_door = door
+	if(!open && istype(staff_door) && staff_door.lockup_breached())
 		return
 	if(open)
 		INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))

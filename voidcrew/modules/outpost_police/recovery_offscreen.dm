@@ -270,6 +270,8 @@
 			for(var/turf/tile as anything in block(locate(bounds[1], bounds[2], bounds[5]), locate(bounds[3], bounds[4], bounds[5])))
 				tiles[tile] = TRUE
 	for(var/turf/tile as anything in tiles)
+		if(outpost.prison?.contains_turf(tile)) // OUTPOST PRISON seam
+			continue
 		if(length(recovery_mess_on(tile)))
 			tile.wash(CLEAN_SCRUB)
 		for(var/obj/item/litter as anything in recovery_litter_on(tile))
