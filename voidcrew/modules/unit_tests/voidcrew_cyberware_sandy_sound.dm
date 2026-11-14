@@ -2,7 +2,7 @@
  * # What a Sandevistan sounds like
  *
  * voidcrew/modules/cyberware/ware_sandy_sound.dm. The user hears his surge come on, a loop for as long as his slow-mo
- * runs and a rush as he moves in it, all to him alone and none of it recorded for the
+ * runs and its ending, all to him alone and none of it recorded for the
  * replay. Everyone else near hears a short snap from his tile as he surges and bursts off, and the replay's viewers
  * hear it as the replay starts and as his replayed self bursts off after a pause.
  *
@@ -51,7 +51,7 @@
 	return loop.channel
 
 /// On a surge the user hears it come on and the slow-mo's loop, a bystander the snap; neither hears the other's, and
-/// none of it is recorded. A second press stops the loop.
+/// none of it is recorded. A second press stops the loop and he hears the slow-mo end.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/surge
 
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/surge/Run()
@@ -75,11 +75,13 @@
 		TEST_ASSERT(!findtext("[heard[3]]", "sandevistan"), "A Sandevistan cue ([heard[3]]) was recorded for the replay")
 	press_again(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop wasn't stopped when the slow-mo ended")
+	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg')), 1, "The user didn't hear his slow-mo end")
+	TEST_ASSERT_EQUAL(length(cues(bystander, 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg')), 0, "A bystander heard the user's slow-mo end")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
+	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg')), 1, "The user heard his slow-mo end twice")
 
-/// In his slow-mo the user hears the step as he moves, never again within 1.5 s of it; others
-/// hear the snap at most every 0.4 s
+/// As the user moves in his slow-mo, others hear the snap at most every 0.4 s, and never for a forced move
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/steps
 
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/steps/Run()
@@ -91,21 +93,13 @@
 	sleep(0.4 SECONDS)
 	for(var/dx in 1 to 3)
 		TEST_ASSERT(user.Move(spot(dx, 0), EAST), "Test fixture: the user couldn't step")
-	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), 1, "Bursting off from standing didn't cue the step once")
 	TEST_ASSERT_EQUAL(length(cues(bystander, "external")), 1, "Bursting off from standing didn't cue the snap once")
-	TEST_ASSERT_EQUAL(length(cues(bystander, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), 0, "A bystander heard the user's step")
-	var/sound/step = cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')[1]
-	TEST_ASSERT(step.frequency >= 0.92 && step.frequency <= 1.08, "The step's pitch ([step.frequency]) went past its spread")
 	sleep(0.5 SECONDS)
 	TEST_ASSERT(user.Move(spot(4, 0), EAST), "Test fixture: the user couldn't step")
-	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), 1, "The step cued again within 1.5 s of the last")
 	TEST_ASSERT_EQUAL(length(cues(bystander, "external")), 2, "A burst off past 0.4 s didn't cue the snap again")
 	sleep(1.1 SECONDS)
 	user.forceMove(spot(5, 0))
-	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), 1, "A forced move cued a step")
-	sleep(0.4 SECONDS)
-	TEST_ASSERT(user.Move(spot(6, 0), EAST), "Test fixture: the user couldn't step")
-	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), 2, "Bursting off from standing 1.5 s after the last step didn't cue it again")
+	TEST_ASSERT_EQUAL(length(cues(bystander, "external")), 2, "A forced move cued the snap")
 	press_again(user)
 	wait_over(user)
 
@@ -120,6 +114,7 @@
 	var/channel = loop_channel(user)
 	user.death()
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop wasn't stopped when the user died")
+	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg')), 0, "A dead user heard his slow-mo end")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
 
@@ -137,6 +132,7 @@
 	press_again(user)
 	wait_over(user)
 	TEST_ASSERT_EQUAL(stops(user, channel), 1, "The loop was stopped twice")
+	TEST_ASSERT_EQUAL(length(cues(user, 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg')), 0, "A user who logged out was sent his slow-mo's end")
 
 /// The replay plays the snap to its viewers as it starts, where the user began, and where the replayed user bursts off
 /// after a pause, placed from their view and not from his real body, and not again for every step after it
@@ -203,8 +199,8 @@
 	first.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
-/// The loop and the step climb in pitch as the slow-mo runs toward its end, to about 1.4 near it, and nothing reaches
-/// the user on the loop's channel after it
+/// The loop climbs in pitch as the slow-mo runs toward its end, to about 1.4 near it, and nothing reaches the user on
+/// the loop's channel after it
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_climbs
 
 /datum/unit_test/voidcrew_cyberware_timestop/replay/sandy_sound/pitch_climbs/Run()
@@ -214,15 +210,7 @@
 	GLOB.sandy_cues_sent.Cut()
 	start_recording(user)
 	var/channel = loop_channel(user)
-	sleep(0.4 SECONDS)
-	TEST_ASSERT(user.Move(spot(1, 0), EAST), "Test fixture: the user couldn't step")
-	sleep(2.2 SECONDS)
-	TEST_ASSERT(user.Move(spot(2, 0), EAST), "Test fixture: the user couldn't step")
-	var/list/steps = cues(user, 'voidcrew/sound/cyberware/sandevistan_step.ogg')
-	TEST_ASSERT_EQUAL(length(steps), 2, "Test fixture: the two steps didn't both cue")
-	var/sound/early = steps[1]
-	var/sound/late = steps[2]
-	TEST_ASSERT(late.frequency > early.frequency, "A step late in the slow-mo ([late.frequency]) wasn't higher than one at its start ([early.frequency])")
+	sleep(2.6 SECONDS)
 	var/list/climb = updates(user, channel)
 	TEST_ASSERT(length(climb) >= 4, "The loop's pitch was updated [length(climb)] times in 2.7 s")
 	var/last = 0
@@ -240,7 +228,6 @@
 		var/list/entry = GLOB.sandy_cues_sent[i]
 		var/sound/cue = entry[2]
 		TEST_ASSERT(!(entry[1] == user && cue.channel == channel), "The loop's channel was sent [cue.file] after the slow-mo ended")
-		TEST_ASSERT(!(entry[1] == user && is_file(cue, 'voidcrew/sound/cyberware/sandevistan_step.ogg')), "A step cued after the slow-mo ended")
 	wait_over(user)
 
 /// When the slow-mo's end moves later (a hold, a shared slow-mo), the pitch never drops and never passes the top

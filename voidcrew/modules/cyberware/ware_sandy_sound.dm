@@ -1,9 +1,8 @@
 /**
  * # What a Sandevistan sounds like
  *
- * The user hears his own surge come on, a hum for as long as his slow-mo runs, a rush that pulses while he
- * moves inside it, and the slow-mo ending. The hum and the rush climb in pitch as it runs toward its end
- * (sandy_slowmo_progress()).
+ * The user hears his own surge come on, a loop for as long as his slow-mo runs, and the slow-mo ending. The
+ * loop climbs in pitch as the slow-mo runs toward its end (sandy_slowmo_progress()).
  * Those go to him alone, straight to his client: never slowed by his own
  * slow-mo (ware_sandy_senses.dm slows sounds in playsound_local) and never recorded for its replay (ware_sandy_replay.dm
  * records playsound()), which is the outside view. An NPC surger has no client and gets none of them.
@@ -16,13 +15,8 @@
 
 /// The user's own cues.
 #define SANDY_SOUND_ACTIVATION_VOLUME 70
-#define SANDY_SOUND_LOOP_VOLUME 25
-#define SANDY_SOUND_STEP_VOLUME 60
+#define SANDY_SOUND_LOOP_VOLUME 50
 #define SANDY_SOUND_DEACTIVATE_VOLUME 60
-/// The step cues again on a step this long after it last started, so it pulses while he moves and never stacks on itself.
-#define SANDY_SOUND_STEP_GAP (1.5 SECONDS)
-/// Pitch spread of the step, in hundredths either way.
-#define SANDY_SOUND_STEP_SPREAD 8
 
 #ifdef UNIT_TESTS
 /// Every Sandevistan cue sent, as list(mob, /sound), whether or not the mob has a client.
@@ -38,8 +32,6 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 	var/loop_ckey
 	/// world.time of the last external cue.
 	var/last_burst_cue = 0
-	/// world.time of the last step cue.
-	var/last_step_cue = 0
 	/// How far the slow-mo has run toward its end, 0 to 1, as last read (sandy_slowmo_progress()).
 	var/pitch_progress = 0
 	/// world.time pitch_progress was last read.
@@ -110,19 +102,12 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 	sandy_external_cue(owner)
 
 /**
- * A step, `step_time` after the last one. A forced move (thrown, pulled, carried) is never a burst.
- * - Everyone else hears the snap on the first step after standing still, and then every SANDEVISTAN_BURST_GAP while he
- *   keeps moving).
- * - In his slow-mo he hears the step as he moves, again every SANDY_SOUND_STEP_GAP while he keeps moving.
+ * A step, `step_time` after the last one. A forced move (thrown, pulled, carried) is never a burst. Everyone else
+ * hears the snap on the first step after standing still, and then every SANDEVISTAN_BURST_GAP while he keeps moving.
  */
 /datum/status_effect/cyberware_cascade_window/proc/sandy_step_sounds(step_time, forced)
 	if(forced)
 		return
-	if(slowmo_sounding && (!last_step_cue || world.time - last_step_cue >= SANDY_SOUND_STEP_GAP))
-		last_step_cue = world.time
-		var/sound/step = sandy_cue(SANDEVISTAN_STEP_SOUND, SANDY_SOUND_STEP_VOLUME, SANDY_SOUND_STEP_SPREAD)
-		step.frequency = (step.frequency || 1) * sandy_pitch_for(sandy_slowmo_progress())
-		sandy_cue_send(owner, step)
 	if(world.time - last_burst_cue < SANDEVISTAN_BURST_GAP)
 		return
 	last_burst_cue = world.time
@@ -164,10 +149,8 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 		SSsounds.free_sound_channel(loop_channel)
 		loop_channel = null
 	loop_ckey = null
-#ifdef SANDEVISTAN_DEACTIVATE_SOUND
-	if(!quiet && listener == owner && owner.stat != DEAD)
+	if(!quiet && !QDELETED(owner) && listener == owner && owner.stat != DEAD)
 		sandy_cue_send(owner, sandy_cue(SANDEVISTAN_DEACTIVATE_SOUND, SANDY_SOUND_DEACTIVATE_VOLUME))
-#endif
 
 /// Whoever has the client the loop went to, wherever it is now.
 /datum/status_effect/cyberware_cascade_window/proc/sandy_loop_listener()
@@ -215,7 +198,4 @@ GLOBAL_LIST_EMPTY(sandy_cues_sent)
 
 #undef SANDY_SOUND_ACTIVATION_VOLUME
 #undef SANDY_SOUND_LOOP_VOLUME
-#undef SANDY_SOUND_STEP_VOLUME
 #undef SANDY_SOUND_DEACTIVATE_VOLUME
-#undef SANDY_SOUND_STEP_SPREAD
-#undef SANDY_SOUND_STEP_GAP

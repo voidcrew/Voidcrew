@@ -261,11 +261,9 @@
 #define SANDEVISTAN_ACTIVATION_SOUND 'voidcrew/sound/cyberware/sandevistan_activation.ogg'
 /// Loops to the user for as long as his slow-mo runs.
 #define SANDEVISTAN_LOOP_SOUND 'voidcrew/sound/cyberware/sandevistan_loop.ogg'
-/// The user moving inside his slow-mo.
-#define SANDEVISTAN_STEP_SOUND 'voidcrew/sound/cyberware/sandevistan_step.ogg'
-/// The user's slow-mo ending. No sound yet: uncomment with a file and it plays (ware_sandy_sound.dm).
-// #define SANDEVISTAN_DEACTIVATE_SOUND 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg'
-/// The loop and the step climb in pitch as the slow-mo runs out: this frequency multiplier at its end, 1 at its start,
+/// The user's slow-mo ending.
+#define SANDEVISTAN_DEACTIVATE_SOUND 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg'
+/// The loop climbs in pitch as the slow-mo runs out: this frequency multiplier at its end, 1 at its start,
 /// most of the climb in the last third (1 + (END - 1) * progress squared).
 #define SANDEVISTAN_PITCH_END 1.4
 /// How often the playing loop's pitch is updated.
