@@ -12,11 +12,11 @@ Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are or
 | Gun | Kind | Ammunition | Shots |
 |---|---|---|---|
 | Kestrel laser pistol | Light laser pistol, fits a belt | Recharger | 20 |
-| Hornet laser SMG | Fully automatic laser, worn on the back | Recharger | 20 |
+| Hornet laser SMG | Fully automatic laser, worn on the back | Recharger | 40 |
 | Cinder plasma pistol | Plasma sidearm, fits a belt | Plasma cartridge | 15 a cartridge |
 | Furnace plasma rifle | Heavy plasma rifle, worn on the back, needs both hands | Plasma cartridge | 12 a cartridge |
 
-The Kestrel hits lighter than a standard laser gun. The Hornet fires the standard laser beam for as long as you hold the trigger.
+The Kestrel hits lighter than a standard laser gun. The Hornet sprays light laser beams for as long as you hold the trigger: each one hits for less than half of a standard laser, and they scatter wide.
 
 The **Old Furnace** is a Furnace with a hand-wound coil. It runs cooler and shoots straighter. Nobody sells it.
 
@@ -93,13 +93,13 @@ Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle
 
 ## Heat and venting (Furnace only)
 
-The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do. They cool by themselves, fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
+The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next few shots will overheat it. They cool by themselves, slowly: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
 
-- A full cartridge fired as fast as you can in ship air will not overheat a Furnace. In vacuum it will.
+- A full cartridge fired at a steady pace in ship air overheats a Furnace about once. Fired as fast as it goes, or in vacuum, it overheats sooner and more often.
 - An overheated rifle **hisses and spits gas**: it dumps some plasma onto your tile and the gun takes damage. A rifle that keeps overheating eventually breaks.
 - **Vent:** use the rifle in your hand to dump some plasma and cool it quickly. You can't fire for a moment afterwards, and you have to wait a few seconds between vents. A rifle whose coils aren't glowing yet, or with no plasma left, has nothing to vent.
 
-!!! warning "Vented gas is hot"
-    Vented and spat plasma comes out hot, and hot plasma can catch fire in breathable air. Vent in vacuum when you can.
+!!! warning "Vented gas is fuel"
+    Vented and spat plasma doesn't light itself, but a spark, a flame or another plasma bolt can set it off in breathable air. Vent in vacuum when you can.
 
 The Cinder does not heat up.

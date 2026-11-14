@@ -43,7 +43,7 @@
 /obj/item/gun/energy/plasma_weapon/proc/can_fire_heat()
 	return world.time >= vent_lock_until
 
-/// Updates the coil overlay step and the inhand
+/// Updates the coil overlay step and the inhand. The coil ticks as it reaches the last step before the boil.
 /obj/item/gun/energy/plasma_weapon/proc/update_heat_step()
 	var/new_step = 0
 	if(barrel_heat >= PLASMA_HEAT_STEP_3)
@@ -54,6 +54,8 @@
 		new_step = 1
 	if(new_step == heat_step)
 		return
+	if(new_step == 3 && heat_step < 3)
+		playsound(src, PLASMA_SOUND_FURNACE_WARN, 40, TRUE, -2)
 	heat_step = new_step
 	update_appearance(UPDATE_OVERLAYS)
 	update_inhand_icon()

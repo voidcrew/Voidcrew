@@ -541,12 +541,12 @@
 	fire_burned.bullet_act(bolt, BODY_ZONE_R_LEG)
 	TEST_ASSERT_NOTNULL(fire_burned.get_bodypart(BODY_ZONE_R_LEG), "a rifle bolt melted a leg with only a tg critical burn")
 
-	// Worn through: 15 before + 32 = 47 of 50, inside the pistol's margin.
+	// Worn through: 20 before + 22 = 42 of 50, inside the pistol's margin.
 	var/mob/living/carbon/human/consistent/hurt = allocate(/mob/living/carbon/human/consistent, turf_at(3, 1))
 	var/obj/item/bodypart/hurt_arm = hurt.get_bodypart(BODY_ZONE_L_ARM)
-	hurt_arm.receive_damage(brute = 15, wound_bonus = CANT_WOUND)
+	hurt_arm.receive_damage(brute = 20, wound_bonus = CANT_WOUND)
 	hurt.bullet_act(make_bolt(/obj/projectile/energy/plasma_bolt, from, BODY_ZONE_L_ARM), BODY_ZONE_L_ARM)
-	TEST_ASSERT_NULL(hurt.get_bodypart(BODY_ZONE_L_ARM), "a pistol bolt left a hurt arm at 47/50 attached")
+	TEST_ASSERT_NULL(hurt.get_bodypart(BODY_ZONE_L_ARM), "a pistol bolt left a hurt arm at 42/50 attached")
 	var/obj/effect/temp_visual/plasma_burst/worn_burst = locate() in get_turf(hurt)
 	TEST_ASSERT_EQUAL(worn_burst?.look, "C", "the hit that melted a worn-through arm did not play the burn-through")
 	clean_up(from)

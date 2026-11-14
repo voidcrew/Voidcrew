@@ -1864,7 +1864,7 @@
   "/obj/item/ammo_casing/energy/lasergun/frontier_smg": {
    "confidence": "high",
    "group": "energy lenses built into a gun",
-   "hash": "dcd0be31b16f80ed",
+   "hash": "",
    "name": "energy weapon lens",
    "rank": 18,
    "reason": "Built into the Hornet, never on its own. Rated with the gun.",
@@ -1913,7 +1913,7 @@
   "/obj/item/ammo_casing/energy/plasma_bolt": {
    "confidence": "high",
    "group": "energy lenses built into a gun",
-   "hash": "e0406267eef6d9d0",
+   "hash": "",
    "name": "energy weapon lens",
    "rank": 15,
    "reason": "Built into the Cinder, never on its own. Rated with the gun.",
@@ -1922,7 +1922,7 @@
   "/obj/item/ammo_casing/energy/plasma_bolt/heavy": {
    "confidence": "high",
    "group": "energy lenses built into a gun",
-   "hash": "f460264afa2157aa",
+   "hash": "",
    "name": "energy weapon lens",
    "rank": 9,
    "reason": "Built into the Furnace and Old Furnace, never on its own. Rated with the gun.",

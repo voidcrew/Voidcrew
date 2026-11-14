@@ -3,7 +3,7 @@
 // person alight (design decision 6); its burns come through tg's own burn wounds.
 
 /obj/projectile/energy/plasma_bolt
-	damage = 32
+	damage = 22
 	damage_type = BURN
 	armor_flag = ENERGY
 	armour_penetration = 10
@@ -26,10 +26,10 @@
 	light_color = PLASMA_LIGHT_COLOR
 
 /obj/projectile/energy/plasma_bolt/heavy
-	damage = 45
+	damage = 30
 	hitsound = 'voidcrew/modules/plasma_weapons/sound/plasma_hit_rifle.ogg'
 	hit_volume = PLASMA_HIT_VOLUME_RIFLE
-	armour_penetration = 20
+	armour_penetration = 15
 	wound_bonus = 20
 	exposed_wound_bonus = 30
 	demolition_mod = PLASMA_DEMOLITION_RIFLE

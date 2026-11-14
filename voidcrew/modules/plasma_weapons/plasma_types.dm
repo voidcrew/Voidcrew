@@ -41,9 +41,11 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	projectile_type = /obj/projectile/beam/laser/frontier_pistol
 
 /obj/item/ammo_casing/energy/lasergun/frontier_smg
-	projectile_type = /obj/projectile/beam/laser
+	projectile_type = /obj/projectile/beam/laser/frontier_smg
 
 /obj/projectile/beam/laser/frontier_pistol
+
+/obj/projectile/beam/laser/frontier_smg
 
 // ===== Plasma guns (S2, S3, S6) =====
 

@@ -2,7 +2,8 @@
 // Kestrel's projectile.
 //
 // Both are plain cell lasers that take a recharger. Neither subtypes /obj/item/gun/energy/laser, so the
-// laser export and the laser slapcraft skip them. The Hornet fires the stock /obj/projectile/beam/laser.
+// laser export and the laser slapcraft skip them. The Hornet sprays a light laser of its own, about half the
+// stock /obj/projectile/beam/laser.
 
 /obj/item/gun/energy/frontier_laser
 	vary_fire_sound = FALSE
@@ -59,6 +60,10 @@
 /obj/projectile/beam/laser/frontier_pistol
 	damage = 20
 
+/// The Hornet's beam: the stock laser's look and wounds at about half its damage
+/obj/projectile/beam/laser/frontier_smg
+	damage = 10
+
 // ===== Hornet laser SMG =====
 
 /obj/item/gun/energy/frontier_laser/smg
@@ -66,16 +71,17 @@
 	slot_flags = ITEM_SLOT_BACK
 	weapon_weight = WEAPON_MEDIUM
 	force = 12
-	spread = 8
+	spread = 20
 	recoil = 0
 	fire_sound_volume = 45
 	far_fire_sound = 'voidcrew/modules/plasma_weapons/sound/hornet_far.ogg'
 
 /obj/item/gun/energy/frontier_laser/smg/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/automatic_fire, 0.35 SECONDS, allow_akimbo = FALSE)
+	AddComponent(/datum/component/automatic_fire, 0.15 SECONDS, allow_akimbo = FALSE)
 
-/// Fires the stock laser (owner decision 3); only the cost and sound differ from the laser gun's casing.
+/// 40 light beams a cell. Energy guns take fire_delay from the casing's delay, which stays 0 so the
+/// automatic fire's 0.15 s sets the pace.
 /obj/item/ammo_casing/energy/lasergun/frontier_smg
-	e_cost = LASER_SHOTS(20, STANDARD_CELL_CHARGE)
+	e_cost = LASER_SHOTS(40, STANDARD_CELL_CHARGE)
 	fire_sound = 'voidcrew/modules/plasma_weapons/sound/hornet_fire.ogg'

@@ -51,18 +51,19 @@
 #define PLASMA_HEAT_PER_SHOT_UNIQUE 10
 /// After a shot at this heat or more, the gun boils
 #define PLASMA_HEAT_BOIL 100
-/// Heat at which the coil overlay reaches step 1, 2 and 3
-#define PLASMA_HEAT_STEP_1 34
-#define PLASMA_HEAT_STEP_2 67
-#define PLASMA_HEAT_STEP_3 100
+/// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before the boil, and the
+/// coil ticks as it reaches it (PLASMA_SOUND_FURNACE_WARN).
+#define PLASMA_HEAT_STEP_1 30
+#define PLASMA_HEAT_STEP_2 55
+#define PLASMA_HEAT_STEP_3 80
 /// Hot surroundings: heat gained per second is min(GAIN_MAX, (K - PLASMA_COOL_HOT_TEMP) / GAIN_SPAN)
 #define PLASMA_HEAT_GAIN_MAX 10
 #define PLASMA_HEAT_GAIN_SPAN 50
 
 /// Mol a boil takes from the chamber and releases on the holder's turf
 #define PLASMA_BOIL_MOL 5
-/// Heat a boil removes
-#define PLASMA_BOIL_COOL 15
+/// Heat a boil removes. A cartridge fired at a steady 1 s pace in room air boils once.
+#define PLASMA_BOIL_COOL 35
 /// Integrity a boil costs the gun
 #define PLASMA_BOIL_INTEGRITY 10
 
@@ -79,10 +80,14 @@
 /// Vented or boiled gas never leaves hotter than this, so it can't light itself and the shooter
 #define PLASMA_VENT_TEMP_MAX (PLASMA_MINIMUM_BURN_TEMPERATURE - 10)
 
+// Cooling, with PLASMA_HEAT_PER_SHOT 13.5 and PLASMA_HEAT_BOIL 100. Room air (101 kPa, 293 K) cools 3 a second,
+// vacuum 1. First boil, by shot: room air 9th at 0.7 s between shots, 10th at 1 s; vacuum 8th at either.
+// After that first boil a full 12-shot cartridge boils once more at 0.7 s in room air, never at 1 s,
+// and once more at either pace in vacuum.
 /// Heat lost per second, always
-#define PLASMA_COOL_BASE 2.5
+#define PLASMA_COOL_BASE 1
 /// Heat lost per second to the turf air, times the pressure and temperature factors below
-#define PLASMA_COOL_CONVECT 8.5
+#define PLASMA_COOL_CONVECT 2
 /// Pressure factor: min(kPa / PLASMA_COOL_PRESSURE_REF, PLASMA_COOL_PRESSURE_CAP)
 #define PLASMA_COOL_PRESSURE_REF 101.3
 #define PLASMA_COOL_PRESSURE_CAP 1.5
@@ -121,6 +126,8 @@
 #define PLASMA_SOUND_FURNACE_VENT 'sound/machines/hiss.ogg'
 /// The Furnace boiling its chamber over
 #define PLASMA_SOUND_FURNACE_BOIL 'sound/effects/gas_hissing.ogg'
+/// The Furnace's coil reaching its last glow step before the boil
+#define PLASMA_SOUND_FURNACE_WARN 'sound/effects/clock_tick.ogg'
 /// A limb with no flesh (robotic, bone, stone) melting off
 #define PLASMA_SOUND_METAL_MELT 'sound/items/tools/welder2.ogg'
 /// A cartridge pressed by hand
