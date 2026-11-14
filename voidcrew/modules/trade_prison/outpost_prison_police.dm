@@ -24,8 +24,21 @@
 /datum/outpost_prison/proc/maybe_call_riot_police()
 	if(riot_police_called || !has_audience() || !outpost?.police)
 		return null
-	riot_police_called = TRUE
-	return outpost.police.order_unit(POLICE_UNIT_OFFICER, src)
+	var/datum/human_npc_order/order = outpost.police.order_unit(POLICE_UNIT_OFFICER, src)
+	if(order)
+		riot_police_called = TRUE
+	return order
+
+/// Open tiles of this lockup where an unseen response unit may appear or unstick: front room and office only, never cells, yard, Processing or the staff closet
+/datum/outpost_prison/proc/police_unseen_turfs()
+	var/list/turf/safe = list()
+	for(var/turf/tile as anything in front_room_ground())
+		if(!(tile in processing_turfs) && !(tile in staff_closet_turfs))
+			safe |= tile
+	for(var/turf/tile as anything in office_ground())
+		if(!in_cell_block(tile) && !(tile in processing_turfs) && !(tile in staff_closet_turfs))
+			safe |= tile
+	return safe
 
 // =========================================================================
 // SECTORS, CAMERAS AND BREAKOUT RESPONSE

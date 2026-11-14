@@ -88,6 +88,39 @@
 			return TRUE
 	return FALSE
 
+/// Whether any living outsider (not staff, not a cleanbot, not a wing prisoner or inmate) is in the room
+/datum/outpost_prison/proc/processing_outsider_inside()
+	for(var/mob/living/person as anything in processing_occupants())
+		if(QDELETED(person) || person.stat == DEAD || istype(person, /mob/living/basic/bot/cleanbot))
+			continue
+		if(is_staff(person) || is_inmate(person) || (person in prisoners))
+			continue
+		return TRUE
+	return FALSE
+
+/// Whether a live AI cleanbot is in the room with no other live non-cleanbot occupant
+/datum/outpost_prison/proc/processing_cleanbot_only()
+	var/found_bot = FALSE
+	for(var/mob/living/person as anything in processing_occupants())
+		if(QDELETED(person) || person.stat == DEAD)
+			continue
+		if(istype(person, /mob/living/basic/bot/cleanbot) && isnull(person.client) && isnull(person.mind))
+			found_bot = TRUE
+			continue
+		return FALSE
+	return found_bot
+
+/// Whether `leaver` is already inside Processing with both doors shut and no other live occupant or player
+/datum/outpost_prison/proc/processing_leaver_ready_inside(mob/living/leaver)
+	if(!in_processing(leaver) || processing_player_inside())
+		return FALSE
+	if(!processing_shut(processing_door(TRUE)) || !processing_shut(processing_door(FALSE)))
+		return FALSE
+	for(var/mob/living/person as anything in processing_occupants())
+		if(person != leaver && !QDELETED(person) && person.stat != DEAD)
+			return FALSE
+	return TRUE
+
 /// Whether the room can start on someone: it exists, it is idle, both doors are shut and nobody is inside
 /datum/outpost_prison/proc/processing_free()
 	if(processing_state != OUTPOST_PROCESSING_IDLE || !has_processing())
@@ -405,14 +438,28 @@
 		return
 	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
+	if(processing_cleanbot_only())
+		processing_work_door(outer, FALSE)
+		if(processing_shut(outer))
+			processing_work_door(inner, TRUE)
+			if(!inner.density && !inner.operating)
+				var/turf/yard_step = processing_outside_turf(inner)
+				if(yard_step)
+					for(var/mob/living/basic/bot/cleanbot/outpost_lockup/bot in processing_occupants())
+						if(bot.stat != DEAD && !bot.client && bot.mode == BOT_IDLE)
+							bot.send_to_mess(yard_step)
+		return
 	processing_work_door(inner, FALSE)
 	processing_work_door(outer, FALSE)
 	if(processing_shut(inner) && processing_shut(outer) && !processing_player_inside())
 		processing_clear_dead()
-	if(!length(processing_leavers) || !processing_free())
+	if(!length(processing_leavers))
 		return
+	var/room_free = processing_free()
 	for(var/mob/living/leaver in processing_leavers)
 		if(leaver.stat != CONSCIOUS || get_area(leaver) != wing)
+			continue
+		if(!room_free && !processing_leaver_ready_inside(leaver))
 			continue
 		processing_state = OUTPOST_PROCESSING_OUT
 		processing_who_ref = WEAKREF(leaver)
@@ -510,7 +557,10 @@
 		if(!processing_shut(entry))
 			processing_work_door(entry, FALSE)
 			return
-		if(!processing_shut(other) || processing_player_inside())
+		if(!processing_shut(other))
+			processing_work_door(other, FALSE)
+			return
+		if(processing_player_inside())
 			return
 		processing_remove(who)
 		processing_done()

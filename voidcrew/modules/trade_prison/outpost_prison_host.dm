@@ -89,6 +89,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	return !!prison && prison.processing_who() == mover
 
 /obj/machinery/door/airlock/security/prison_staff/processing/CanAllowThrough(atom/movable/mover, border_dir)
+	if(istype(mover, /mob/living/basic/bot/cleanbot))
+		var/mob/living/basic/bot/cleanbot/bot = mover
+		if(isnull(bot.client) && isnull(bot.mind) && !bot.moving_from_pull)
+			var/datum/outpost_prison/prison = get_outpost_prison(src)
+			if(prison && !prison.in_processing(bot) && get_turf(bot) != loc)
+				return FALSE
 	if(lockup_breached() && !density)
 		return ..()
 	if(isliving(mover) && !lets_prisoner(mover))
@@ -101,9 +107,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	return ..()
 
 /obj/machinery/door/airlock/security/prison_staff/processing/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	var/atom/requester = pass_info?.requester_ref?.resolve()
+	if(istype(requester, /mob/living/basic/bot/cleanbot))
+		var/mob/living/basic/bot/cleanbot/bot = requester
+		if(isnull(bot.client) && isnull(bot.mind))
+			var/datum/outpost_prison/prison = get_outpost_prison(src)
+			return !density && !!prison && (prison.in_processing(bot) || get_turf(bot) == loc)
 	if(lockup_breached() && (!density || rioter_broken))
 		return TRUE
-	var/atom/requester = pass_info?.requester_ref?.resolve()
 	if(!density)
 		if(lets_prisoner(requester))
 			return TRUE

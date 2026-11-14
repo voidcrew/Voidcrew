@@ -1217,7 +1217,7 @@
 		pool = shuffle(berth.get_block())
 	else if(istype(sector, /datum/outpost_prison) && sector == outpost?.prison) // OUTPOST PRISON seam
 		var/datum/outpost_prison/lockup = sector
-		pool = shuffle(lockup.wing_turfs())
+		pool = shuffle(lockup.police_unseen_turfs())
 	else if(sector == POLICE_SECTOR_LOBBY && length(outpost?.lobby_alcove_turfs))
 		pool = shuffle(RANGE_TURFS(12, pick(outpost.lobby_alcove_turfs)))
 	else if(sector == POLICE_SECTOR_CONCOURSE && outpost?.template_bottom_left && outpost.outpost_template)

@@ -295,6 +295,68 @@
 	front_leaver = null
 	TEST_ASSERT(prison.processing_free(), "Processing was not free after clearing the front-room leaver")
 
+	// Breached outer Processing door defers mending shut while an outsider stands inside, while inner mends to seal the cell block
+	inner.lockup_hack.breached_open = TRUE
+	outer.lockup_hack.breached_open = TRUE
+	INVOKE_ASYNC(inner, TYPE_PROC_REF(/obj/machinery/door/airlock, open), FORCING_DOOR_CHECKS)
+	INVOKE_ASYNC(outer, TYPE_PROC_REF(/obj/machinery/door/airlock, open), FORCING_DOOR_CHECKS)
+	sleep(2 SECONDS)
+	TEST_ASSERT(!inner.density && !outer.density, "Setup: breached Processing doors did not open")
+	squatter.forceMove(prison.processing_turfs[2])
+	inner.mend_hack()
+	outer.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(door_is_shut(inner), "Processing's breached inner door did not mend shut to seal the cell block")
+	TEST_ASSERT(!outer.density, "Processing's breached outer door mended shut and entombed an outsider inside")
+	squatter.forceMove(prison.alcove_turfs[1])
+	outer.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(door_is_shut(outer), "Processing's outer door did not mend shut once the outsider stepped out")
+
+	// Cleanbot never enters breached Processing on its own, and if dropped inside while idle, Processing opens inner (with outer shut) to let it out
+	var/turf/inner_outside = prison.processing_outside_turf(inner)
+	test_bot.forceMove(inner_outside)
+	inner.lockup_hack.breached_open = TRUE
+	INVOKE_ASYNC(inner, TYPE_PROC_REF(/obj/machinery/door/airlock, open), FORCING_DOOR_CHECKS)
+	sleep(2 SECONDS)
+	TEST_ASSERT(!inner.CanAllowThrough(test_bot, get_dir(test_bot, inner)), "Breached Processing inner door allowed an unpulled cleanbot to enter from outside")
+	TEST_ASSERT(!inner.CanAStarPass(get_dir(test_bot, inner), new /datum/can_pass_info(test_bot)), "Breached Processing inner door allowed cleanbot JPS pathing from outside")
+	inner.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(door_is_shut(inner), "Processing's inner door did not mend shut after the cleanbot check")
+	test_bot.forceMove(prison.processing_turfs[2])
+	TEST_ASSERT(work_until(prison, inner, TRUE), "Processing did not open its inner door to clear an abandoned cleanbot")
+	TEST_ASSERT(door_is_shut(outer), "Processing opened its outer door while clearing an abandoned cleanbot")
+	test_bot.forceMove(prison.guard_office_spot())
+	TEST_ASSERT(work_until(prison, inner, FALSE), "Processing's inner door did not shut once the cleanbot cleared out")
+
+	// An orphaned leaver already inside Processing while a player stood inside is cleared once the player leaves
+	var/mob/living/carbon/human/npc/outpost_prisoner/trapped_orphan = prison.admit_next(TRUE)
+	TEST_ASSERT_NOTNULL(trapped_orphan, "No prisoner arrived for the trapped orphan check")
+	var/datum/weakref/trapped_orphan_ref = WEAKREF(trapped_orphan)
+	squatter.forceMove(prison.processing_spot(trapped_orphan))
+	prison.forget(trapped_orphan)
+	trapped_orphan = null
+	prison.processing_tick(1)
+	TEST_ASSERT(!is_qdeleted_ref(trapped_orphan_ref) && prison.processing_state == "idle", "An orphaned arrival was removed while a player stood in Processing") // OUTPOST_PROCESSING_IDLE
+	squatter.forceMove(prison.alcove_turfs[1])
+	prison.processing_tick(1)
+	prison.processing_tick(1)
+	TEST_ASSERT(is_qdeleted_ref(trapped_orphan_ref) && prison.processing_free(), "An orphaned leaver left inside Processing jammed it after the player left")
+
+	// A prison guard pushed into the front room claims Processing through walk_goal() to return to their post
+	test_guard.forceMove(prison.processing_outside_turf(outer))
+	test_guard.prison = prison
+	test_guard.phase = "present" // OUTPOST_GUARD_PRESENT
+	test_guard.give_response("leash", 1, "leash", null, prison.guard_office_spot(test_guard)) // OUTPOST_GUARD_PRIORITY_LEASH
+	TEST_ASSERT_EQUAL(test_guard.walk_goal(), get_turf(test_guard), "A guard in the front room did not claim Processing through walk_goal()")
+	TEST_ASSERT_EQUAL(prison.processing_state, "crossing", "A guard's walk_goal() in the front room did not start a Processing crossing") // OUTPOST_PROCESSING_CROSS
+	test_guard.end_response(cancel_ai = FALSE)
+	test_guard.prison = null
+	test_guard.forceMove(prison.guard_office_spot())
+	prison.processing_done()
+	TEST_ASSERT(work_until(prison, outer, FALSE) && work_until(prison, inner, FALSE), "Processing did not return to shut doors after the guard check")
+
 	// With nobody at the outpost an arrival is simply in their cell, and Processing is not used
 	prison.audience_override = FALSE
 	var/mob/living/carbon/human/npc/outpost_prisoner/quiet = prison.admit_next(TRUE)

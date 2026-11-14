@@ -334,19 +334,41 @@ GLOBAL_LIST_EMPTY(outpost_prisons)
 	var/obj/machinery/door/airlock/door = cell?.door()
 	if(!door)
 		return FALSE
+	var/obj/machinery/door/airlock/security/glass/outpost_prison_cell/cell_door = door
+	if(!istype(cell_door))
+		cell_door = null
 	if(door.locked)
+		if(cell_door)
+			cell_door.staff_bolted = FALSE
 		door.unbolt()
 	else if(door.density)
+		if(cell_door)
+			cell_door.staff_bolted = TRUE
+			if(cell_door.lockup_hack)
+				cell_door.lockup_hack.bolt_hacked = FALSE
+				cell_door.lockup_hack.bolt_hacker = null
+				cell_door.lockup_hack.bolt_hack_tool = null
 		door.bolt()
 	else
+		if(cell_door)
+			cell_door.staff_bolted = TRUE
 		INVOKE_ASYNC(src, PROC_REF(close_and_bolt), door)
 	log_game("OUTPOST LOCKUP: [key_name(user)] toggled the bolts of cell [number] at '[outpost_log_name()]'")
 	refresh_reach()
 	return TRUE
 
 /datum/outpost_prison/proc/close_and_bolt(obj/machinery/door/airlock/door)
+	var/obj/machinery/door/airlock/security/glass/outpost_prison_cell/cell_door = door
+	if(!istype(cell_door))
+		cell_door = null
 	if(!door.close())
+		if(cell_door)
+			cell_door.staff_bolted = door.locked
 		return
+	if(cell_door?.lockup_hack)
+		cell_door.lockup_hack.bolt_hacked = FALSE
+		cell_door.lockup_hack.bolt_hacker = null
+		cell_door.lockup_hack.bolt_hack_tool = null
 	door.bolt()
 	refresh_reach()
 

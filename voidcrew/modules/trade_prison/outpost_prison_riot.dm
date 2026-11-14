@@ -1299,6 +1299,7 @@
 /datum/outpost_prison/proc/loose_tick(seconds)
 	var/list/still_loose = list()
 	var/list/nearly_away = list()
+	var/has_runner = FALSE
 	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD || prisoner.loose_left <= 0)
 			continue
@@ -1312,10 +1313,14 @@
 		if(prisoner.loose_left <= 0)
 			escaped_for_good(prisoner)
 			continue
+		if(prisoner.police_runner_target())
+			has_runner = TRUE
 		if(before > PRISON_LOOSE_PING_2 && prisoner.loose_left <= PRISON_LOOSE_PING_2)
 			nearly_away += prisoner
 		else if(before > PRISON_LOOSE_PING_1 && prisoner.loose_left <= PRISON_LOOSE_PING_1)
 			still_loose += "[prisoner.real_name] ([get_area_name(prisoner)])"
+	if(has_runner && !riot_police_called)
+		maybe_call_riot_police()
 	if(length(still_loose))
 		announce("Prison wing: [english_list(still_loose)] still loose.", SHIP_NOTIFY_DANGER)
 	call_out_nearly_away(nearly_away)

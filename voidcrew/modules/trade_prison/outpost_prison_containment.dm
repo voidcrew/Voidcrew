@@ -309,8 +309,9 @@
 	for(var/datum/outpost_prison_cell/cell as anything in cells)
 		watch_door_turf(cell.door_turf)
 	for(var/turf/tile as anything in wing_turfs())
-		if(locate(/obj/machinery/door/airlock/security/prison_staff) in tile)
-			staff_door_turfs[tile] = TRUE
+		var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in tile
+		if(staff_door)
+			staff_door_turfs[tile] = staff_door.type
 			watch_door_turf(tile)
 	// A window door fitted to a serving hatch (outpost_prison_breakout.dm)
 	watch_hatch_turfs()
@@ -382,7 +383,8 @@
 		cell_door.name = "Cell [cell.number]"
 		restored = cell_door
 	else
-		var/staff_type = built.glass ? /obj/machinery/door/airlock/security/prison_staff/glass : /obj/machinery/door/airlock/security/prison_staff
+		var/saved_type = staff_door_turfs[tile]
+		var/staff_type = ispath(saved_type, /obj/machinery/door/airlock/security/prison_staff/processing) ? saved_type : (built.glass ? /obj/machinery/door/airlock/security/prison_staff/glass : /obj/machinery/door/airlock/security/prison_staff)
 		restored = new staff_type(tile)
 	restored.setDir(built.dir)
 	if(built.electronics)

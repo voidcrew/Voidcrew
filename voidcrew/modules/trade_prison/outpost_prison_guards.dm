@@ -1182,7 +1182,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		if(z && here.z != z)
 			guard.recall()
 			continue
-		if(get_area(guard) == wing)
+		if(get_area(guard) == wing && (!has_processing() || processing_on_yard_side(here)))
 			guard.outside_seconds = 0
 			continue
 		guard.outside_seconds += OUTPOST_GUARD_CHECK_SECONDS

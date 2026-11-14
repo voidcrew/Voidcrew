@@ -220,6 +220,75 @@
 	cell_door.mend_hack()
 	hacker.drop_all_held_items()
 
+	// Thrown items, silicon click-control, pAI cables, janitor key rings, and plain emags on windoors/bolt buttons are all refused
+	staff_door.Bumped(crowbar)
+	proc_door.Bumped(crowbar)
+	TEST_ASSERT(staff_door.density && proc_door.density, "A thrown item opened a lockup staff or Processing door")
+	TEST_ASSERT(!cell_door.canAIControl(hacker) && !cell_door.canAIHack() && !staff_door.canAIControl(hacker) && !staff_door.canAIHack() && !proc_door.canAIControl(hacker) && !proc_door.canAIHack(), "A lockup airlock allowed silicon remote control or AI hacking")
+	var/obj/item/pai_cable/pai_cord = allocate(/obj/item/pai_cable)
+	var/obj/item/access_key/key_ring = allocate(/obj/item/access_key)
+	key_ring.department_access = REGION_SECURITY
+	hacker.forceMove(beside_door(staff_door))
+	hacker.put_in_active_hand(pai_cord)
+	pai_cord.melee_attack_chain(hacker, staff_door)
+	TEST_ASSERT_NULL(pai_cord.hacking_machine, "A pAI cable plugged into a lockup airlock")
+	hacker.drop_all_held_items()
+	hacker.put_in_active_hand(key_ring)
+	key_ring.melee_attack_chain(hacker, staff_door)
+	TEST_ASSERT(staff_door.density, "A janitor access key ring opened a lockup staff door")
+	hacker.drop_all_held_items()
+	var/obj/machinery/door/window/outpost_prison_yard/yard_hatch
+	var/obj/machinery/door/window/brigdoor/outpost_prison_staff/staff_hatch
+	var/obj/machinery/button/outpost_prison_bolt/bolt_btn
+	for(var/turf/tile as anything in prison.wing_turfs())
+		yard_hatch ||= locate() in tile
+		staff_hatch ||= locate() in tile
+		bolt_btn ||= locate() in tile
+	TEST_ASSERT_NOTNULL(yard_hatch, "No yard-side serving hatch windoor found in the lockup")
+	TEST_ASSERT_NOTNULL(staff_hatch, "No office-side serving hatch windoor found in the lockup")
+	TEST_ASSERT_NOTNULL(bolt_btn, "No cell bolt button found in the lockup")
+	TEST_ASSERT(!yard_hatch.emag_act(hacker, plain_emag) && !(yard_hatch.obj_flags & EMAGGED), "A plain emag broke a yard hatch windoor")
+	TEST_ASSERT(!staff_hatch.emag_act(hacker, plain_emag) && !(staff_hatch.obj_flags & EMAGGED), "A plain emag broke a staff hatch windoor")
+	TEST_ASSERT(!bolt_btn.emag_act(hacker, plain_emag) && !(bolt_btn.obj_flags & EMAGGED), "A plain emag broke a cell bolt button")
+
+	// Staff-bolted cell doors keep their bolts on mend, and delayed opens (>10s) after WIRE_BOLTS still report jailbreak
+	TEST_ASSERT(prison.toggle_cell_bolts(cell.number, hacker) && cell_door.locked && cell_door.staff_bolted, "toggle_cell_bolts() did not bolt the cell door")
+	hacker.forceMove(beside_door(cell_door))
+	hacker.put_in_active_hand(screwdriver)
+	screwdriver.melee_attack_chain(hacker, cell_door)
+	cell_door.mend_hack()
+	TEST_ASSERT(cell_door.locked && !cell_door.panel_open, "Mending a screwdriver-tapped staff-bolted cell door lifted its bolts")
+	doorjack.charges = 3
+	TEST_ASSERT(cell_door.emag_act(hacker, doorjack), "An override card failed on a staff-bolted cell door")
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(!cell_door.density, "An override card did not open a staff-bolted cell door")
+	cell_door.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(cell_door.density && cell_door.locked && cell_door.staff_bolted, "Mending a breached staff-bolted cell door did not re-bolt it")
+
+	var/crimes_delayed = length(police.crimes)
+	hacker.drop_all_held_items()
+	hacker.put_in_active_hand(screwdriver)
+	screwdriver.melee_attack_chain(hacker, cell_door)
+	hacker.drop_all_held_items()
+	hacker.put_in_active_hand(multitool)
+	cell_door.wires.pulse(WIRE_BOLTS, hacker)
+	TEST_ASSERT(!cell_door.locked, "WIRE_BOLTS did not lift the staff-bolted cell door's bolts")
+	cell_door.lockup_hack.last_hack_at -= 20 SECONDS
+	hacker.drop_all_held_items()
+	cell_door.open()
+	sleep(2 SECONDS)
+	TEST_ASSERT(!cell_door.density, "Opening the unbolted cell door failed")
+	TEST_ASSERT_EQUAL(length(police.crimes), crimes_delayed + 1, "Opening a cell door >10s after pulsing WIRE_BOLTS evaded jailbreak reporting")
+	var/list/delayed_crime = police_last_crime(police)
+	TEST_ASSERT_EQUAL(delayed_crime[1], hacker, "Delayed WIRE_BOLTS open blamed [delayed_crime[1]], not the bolt hacker")
+	TEST_ASSERT_EQUAL(delayed_crime[2], "jailbreak", "Delayed WIRE_BOLTS open reported [delayed_crime[2]], not jailbreak") // OUTPOST_CRIME_JAILBREAK
+	TEST_ASSERT_EQUAL(delayed_crime[3], multitool, "Delayed WIRE_BOLTS open lost the multitool evidence")
+	cell_door.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(prison.toggle_cell_bolts(cell.number, hacker) && !cell_door.locked && !cell_door.staff_bolted, "toggle_cell_bolts() did not lift the cell door's bolts again")
+	hacker.forceMove(park_turf)
+
 	// With nobody held in the wing, opening a lockup door reports no jailbreak
 	qdel(held)
 	TEST_ASSERT(!prison.holds_anyone(), "An empty lockup still claims to hold someone")
@@ -258,6 +327,16 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(!staff_door.rioter_broken && staff_door.rioter_damage == 0 && !staff_door.mend_pending, "Mending left rioter state on the staff door")
 	TEST_ASSERT(staff_door.density && staff_door.hasPower() && !staff_door.locked, "The battered staff door was not shut, powered and unbolted after mending")
+
+	// Rebuilding a deleted Processing door restores its exact Processing subtype so has_processing() stays intact
+	var/turf/proc_turf = get_turf(proc_door)
+	var/proc_dir = proc_door.dir
+	qdel(proc_door)
+	var/obj/machinery/door/airlock/plain_built = new /obj/machinery/door/airlock(proc_turf)
+	plain_built.setDir(proc_dir)
+	sleep(0.5 SECONDS)
+	proc_door = prison.processing_door(FALSE)
+	TEST_ASSERT(istype(proc_door, /obj/machinery/door/airlock/security/prison_staff/processing/outer) && prison.has_processing(), "Rebuilding Processing's outer door lost its Processing subtype")
 
 	prison.admin_calm()
 	outpost.police = real_police

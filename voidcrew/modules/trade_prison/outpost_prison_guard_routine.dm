@@ -87,15 +87,24 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /// Where their AI should walk them now, or null to stay put
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/walk_goal()
+	var/atom/goal
 	if(phase == OUTPOST_GUARD_DISMISSED)
-		return (leave_spot && loc != leave_spot) ? leave_spot : null
-	if(phase != OUTPOST_GUARD_PRESENT)
-		return null
-	if(response)
-		var/atom/goal = response.goal()
-		return (goal && !at_goal(goal)) ? goal : null
-	var/atom/goal = activity?.goal()
-	return (goal && !at_goal(goal)) ? goal : null
+		goal = (leave_spot && loc != leave_spot) ? leave_spot : null
+	else if(phase == OUTPOST_GUARD_PRESENT)
+		if(response)
+			var/atom/response_goal = response.goal()
+			goal = (response_goal && !at_goal(response_goal)) ? response_goal : null
+		else
+			var/atom/activity_goal = activity?.goal()
+			goal = (activity_goal && !at_goal(activity_goal)) ? activity_goal : null
+	if(goal && prison?.has_processing())
+		var/turf/here = get_turf(src)
+		var/turf/goal_turf = get_turf(goal)
+		if(prison.contains_turf(here) && goal_turf && prison.processing_on_yard_side(goal_turf) && !prison.processing_on_yard_side(here))
+			var/turf/cross_step = prison.processing_step_through(src, TRUE)
+			if(cross_step)
+				return cross_step
+	return goal
 
 /// A walk to `goal` failed: a response gets another try until it expires; an activity gets one more, then a rest
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/walk_failed(atom/goal)
@@ -251,6 +260,8 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 
 /// Queues the walk to `goal`: onto a tile, or up beside a mob
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/queue_walk(datum/ai_controller/controller, atom/goal)
+	if(isturf(goal) && goal == loc)
+		return
 	controller.set_blackboard_key(BB_OUTPOST_GUARD_GOAL, goal)
 	controller.queue_behavior(isturf(goal) ? /datum/ai_behavior/outpost_prison_guard_travel : /datum/ai_behavior/outpost_prison_guard_travel/approach, BB_OUTPOST_GUARD_GOAL)
 

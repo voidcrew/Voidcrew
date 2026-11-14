@@ -40,6 +40,10 @@
 	var/datum/weakref/last_hack_tool
 	/// world.time they last worked it
 	var/last_hack_at = 0
+	/// Who pulsed WIRE_BOLTS to lift the bolts, kept until the door opens, re-bolts or mends
+	var/datum/weakref/bolt_hacker
+	/// Tool or assembly used when WIRE_BOLTS lifted the bolts
+	var/datum/weakref/bolt_hack_tool
 
 /datum/lockup_door_state/New(obj/machinery/door/airlock/owner)
 	. = ..()
@@ -49,6 +53,8 @@
 	door = null
 	last_hacker = null
 	last_hack_tool = null
+	bolt_hacker = null
+	bolt_hack_tool = null
 	return ..()
 
 /// Syncs `mend_pending` and `mend_due` on the airlock itself
@@ -102,6 +108,42 @@
 	var/obj/item/tool = last_hack_tool?.resolve()
 	return isitem(tool) && !QDELETED(tool) ? tool : null
 
+/// Culprit for a hacked open: whoever worked the door just now, or whoever lifted its bolts with WIRE_BOLTS
+/datum/lockup_door_state/proc/open_culprit()
+	var/mob/living/culprit = hack_culprit()
+	if(culprit)
+		return culprit
+	if(bolt_hacked)
+		culprit = bolt_hacker?.resolve()
+		if(isliving(culprit))
+			return culprit
+	return null
+
+/// Tool for a hacked open: the recent hack tool, or the tool/assembly that lifted its bolts
+/datum/lockup_door_state/proc/open_tool()
+	var/obj/item/tool = hack_tool()
+	if(tool)
+		return tool
+	if(bolt_hacked)
+		tool = bolt_hack_tool?.resolve()
+		if(isitem(tool) && !QDELETED(tool))
+			return tool
+	return null
+
+/// Whether this door's steady-state bolts are down (a cell bolted from its wall button)
+/datum/lockup_door_state/proc/wanted_bolts()
+	if(istype(door, /obj/machinery/door/airlock/security/glass/outpost_prison_cell))
+		var/obj/machinery/door/airlock/security/glass/outpost_prison_cell/cell_door = door
+		return !!cell_door.staff_bolted
+	return FALSE
+
+/// Whether an open outer Processing door must wait for an outsider inside Processing to step out before mending shut
+/datum/lockup_door_state/proc/processing_exit_blocked()
+	if(QDELETED(door) || door.density || !istype(door, /obj/machinery/door/airlock/security/prison_staff/processing/outer))
+		return FALSE
+	var/datum/outpost_prison/prison = get_outpost_prison(door)
+	return !!prison?.processing_outsider_inside()
+
 /// Whether anyone (standing or lying) or anything bulky is in the doorway
 /datum/lockup_door_state/proc/doorway_occupied()
 	if(QDELETED(door))
@@ -132,7 +174,7 @@
 		var/obj/machinery/door/airlock/security/prison_staff/staff_door = door
 		if(staff_door.rioter_broken || staff_door.rioter_damage > 0)
 			return TRUE
-	return door.panel_open || (door.obj_flags & EMAGGED) || length(door.wires?.cut_wires) || length(door.wires?.assemblies) || breached_open || bolt_hacked || door.locked || !door.hasPower() || door.isElectrified() || !door.lights || !door.safe || !door.normalspeed || door.emergency || door.autoclose != initial(door.autoclose) || door.aiControlDisabled != initial(door.aiControlDisabled) || door.security_level != initial(door.security_level)
+	return door.panel_open || (door.obj_flags & EMAGGED) || length(door.wires?.cut_wires) || length(door.wires?.assemblies) || breached_open || bolt_hacked || (door.locked != wanted_bolts()) || !door.hasPower() || door.isElectrified() || !door.lights || !door.safe || !door.normalspeed || door.emergency || door.autoclose != initial(door.autoclose) || door.aiControlDisabled != initial(door.aiControlDisabled) || door.aiDisabledIdScanner != initial(door.aiDisabledIdScanner) || door.security_level != initial(door.security_level)
 
 /// Mends the door once nobody stands in the doorway: panel shut, wires whole, power and bolts back, and closed
 /datum/lockup_door_state/proc/mend_hack()
@@ -141,7 +183,7 @@
 	if(!still_hacked() && door.density)
 		set_mend_state(FALSE, 0)
 		return
-	if(door.operating || doorway_occupied())
+	if(door.operating || doorway_occupied() || processing_exit_blocked())
 		addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	set_mend_state(FALSE, 0)
@@ -165,13 +207,23 @@
 	door.autoclose = initial(door.autoclose)
 	door.emergency = FALSE
 	door.aiControlDisabled = initial(door.aiControlDisabled)
+	door.aiDisabledIdScanner = initial(door.aiDisabledIdScanner)
 	if(istype(door, /obj/machinery/door/airlock/security/prison_staff))
 		var/obj/machinery/door/airlock/security/prison_staff/staff_door = door
 		staff_door.rioter_broken = FALSE
 		staff_door.rioter_damage = 0
 	breached_open = FALSE
 	bolt_hacked = FALSE
-	door.unbolt()
+	bolt_hacker = null
+	bolt_hack_tool = null
+	if(door.density)
+		if(wanted_bolts())
+			if(!door.locked)
+				door.bolt()
+		else if(door.locked)
+			door.unbolt()
+	else if(door.locked)
+		door.unbolt()
 	mending = FALSE
 	last_hacker = null
 	last_hack_tool = null
@@ -179,8 +231,27 @@
 	do_sparks(2, TRUE, door)
 	door.visible_message(span_notice("[door] sparks, and its lights come back on."))
 	door.update_appearance()
+	if(!door.density)
+		INVOKE_ASYNC(src, PROC_REF(finish_mend_close))
+	else
+		get_outpost_prison(door)?.refresh_reach()
+
+/// Closes an open mended airlock; re-schedules mending if someone blocked the swing, or restores staff bolts once shut
+/datum/lockup_door_state/proc/finish_mend_close()
+	if(QDELETED(door))
+		return
 	if(!door.density && !door.operating)
-		INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/airlock, close))
+		door.close()
+	if(QDELETED(src) || QDELETED(door))
+		return
+	if(!door.density)
+		breached_open = TRUE
+		set_mend_state(TRUE, world.time + 3 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
+		get_outpost_prison(door)?.refresh_reach()
+		return
+	if(wanted_bolts() && !door.locked)
+		door.bolt()
 	get_outpost_prison(door)?.refresh_reach()
 
 /// The door was opened by a hack, override card, pry or crowbar force
@@ -189,6 +260,8 @@
 		return
 	breached_open = TRUE
 	bolt_hacked = FALSE
+	bolt_hacker = null
+	bolt_hack_tool = null
 	door.autoclose = FALSE
 	note_hack(culprit, tool)
 	log_game("OUTPOST LOCKUP: [culprit ? key_name(culprit) : "nobody known"] hacked [door] open at [AREACOORD(door)].")
@@ -290,11 +363,19 @@
 	var/obj/machinery/door/airlock/door = holder
 	if(wire == WIRE_OPEN && istype(door, /obj/machinery/door/airlock/security/prison_staff) && door.requiresID())
 		return
+	var/datum/lockup_door_state/state = lockup_door_state_of(door)
 	var/unbolting = wire == WIRE_BOLTS && istype(door) && door.locked && door.hasPower()
 	if(unbolting)
-		var/datum/lockup_door_state/state = lockup_door_state_of(door)
 		if(state && !state.mending)
 			state.bolt_hacked = TRUE
+			var/mob/living/culprit = state.hack_culprit()
+			var/obj/item/tool = state.hack_tool()
+			state.bolt_hacker = culprit ? WEAKREF(culprit) : null
+			state.bolt_hack_tool = tool ? WEAKREF(tool) : null
+	else if(wire == WIRE_BOLTS && istype(door) && !door.locked && state)
+		state.bolt_hacked = FALSE
+		state.bolt_hacker = null
+		state.bolt_hack_tool = null
 	. = ..()
 	if(unbolting && !QDELETED(door) && !door.locked)
 		get_outpost_prison(door)?.refresh_reach()
@@ -334,6 +415,9 @@
 	. = ..()
 	AddElement(/datum/element/outpost_property)
 
+/obj/machinery/door/window/outpost_prison_yard/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
+
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/outpost_prison_yard, 0)
 
 /// The office side of a serving hatch. It opens for members of the wing, never for prisoners; no ID needed.
@@ -344,6 +428,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/outpost_prison_yard, 0)
 /obj/machinery/door/window/brigdoor/outpost_prison_staff/Initialize(mapload, set_dir, unres_sides)
 	. = ..()
 	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/door/window/brigdoor/outpost_prison_staff/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
 
 /obj/machinery/door/window/brigdoor/outpost_prison_staff/allowed(mob/accessor)
 	if(!may_use_outpost_prison_staff_door(src, accessor))
@@ -377,6 +464,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 /obj/machinery/door/airlock/security/prison_staff
 	name = "prison staff airlock"
 	security_level = 0 // AIRLOCK_SECURITY_NONE (airlock.dm undefines it)
+	hackProof = TRUE
+	aiControlDisabled = AI_WIRE_DISABLED
 	/// Shared hacking, forcing and self-repair state
 	var/datum/lockup_door_state/lockup_hack
 	/// Whether a self-repair timer is running
@@ -400,10 +489,19 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 /obj/machinery/door/airlock/security/prison_staff/get_wires()
 	return new /datum/wires/airlock/security/outpost_lockup(src)
 
+/obj/machinery/door/airlock/security/prison_staff/canAIControl(mob/user)
+	return FALSE
+
+/obj/machinery/door/airlock/security/prison_staff/canAIHack()
+	return FALSE
+
+/obj/machinery/door/airlock/security/prison_staff/check_access(obj/item/I)
+	return FALSE
+
 /obj/machinery/door/airlock/security/prison_staff/allowed(mob/accessor)
-	if(!may_use_outpost_prison_staff_door(src, accessor) && !lets_leaving_prisoner(accessor))
-		return FALSE
-	return ..()
+	if(emergency)
+		return TRUE
+	return may_use_outpost_prison_staff_door(src, accessor) || lets_leaving_prisoner(accessor)
 
 /// Whether `mover` is a departing prisoner on the staff side who must pass this door to reach Processing's yard door
 /obj/machinery/door/airlock/security/prison_staff/proc/lets_leaving_prisoner(atom/movable/mover)
@@ -493,8 +591,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 	if(!density)
 		return TRUE
 	var/hacked = !rioter_broken && !!lockup_hack?.should_open_as_hack(forced)
-	var/mob/living/culprit = hacked ? lockup_hack.hack_culprit() : null
-	var/obj/item/tool = culprit ? lockup_hack.hack_tool() : null
+	var/mob/living/culprit = hacked ? lockup_hack.open_culprit() : null
+	var/obj/item/tool = culprit ? lockup_hack.open_tool() : null
 	var/old_autoclose = autoclose
 	var/old_breached = lockup_hack?.breached_open
 	if(hacked || rioter_broken)
@@ -622,6 +720,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 /obj/machinery/door/airlock/security/glass/outpost_prison_cell
 	name = "cell door"
 	security_level = 0 // AIRLOCK_SECURITY_NONE (airlock.dm undefines it)
+	hackProof = TRUE
+	aiControlDisabled = AI_WIRE_DISABLED
 	/// Which cell this door closes, set on the map
 	var/cell_number = 0
 	/// Shared hacking, forcing and self-repair state
@@ -630,6 +730,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 	var/mend_pending = FALSE
 	/// world.time the first scheduled mend is due, or 0
 	var/mend_due = 0
+	/// Set while bolted from the cell's bolt button, so self-repair keeps lockdown bolts down
+	var/staff_bolted = FALSE
 
 /obj/machinery/door/airlock/security/glass/outpost_prison_cell/Initialize(mapload)
 	lockup_hack = new(src)
@@ -644,6 +746,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 
 /obj/machinery/door/airlock/security/glass/outpost_prison_cell/get_wires()
 	return new /datum/wires/airlock/security/outpost_lockup(src)
+
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell/canAIControl(mob/user)
+	return FALSE
+
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell/canAIHack()
+	return FALSE
 
 /obj/machinery/door/airlock/security/glass/outpost_prison_cell/proc/lockup_breached()
 	return !!lockup_hack?.breached_open
@@ -722,8 +830,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 	if(!density)
 		return TRUE
 	var/hacked = !!lockup_hack?.should_open_as_hack(forced)
-	var/mob/living/culprit = hacked ? lockup_hack.hack_culprit() : null
-	var/obj/item/tool = culprit ? lockup_hack.hack_tool() : null
+	var/mob/living/culprit = hacked ? lockup_hack.open_culprit() : null
+	var/obj/item/tool = culprit ? lockup_hack.open_tool() : null
 	var/old_autoclose = autoclose
 	var/old_breached = lockup_hack?.breached_open
 	if(hacked)
@@ -770,6 +878,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/button/outpost_prison_bolt, 24)
 	AddElement(/datum/element/outpost_property)
 	if(cell_number)
 		name = "cell [cell_number] bolt button"
+
+/obj/machinery/button/outpost_prison_bolt/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
 
 // Members of the wing only, whether or not visitors are let in.
 /obj/machinery/button/outpost_prison_bolt/allowed(mob/accessor)

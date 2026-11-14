@@ -217,6 +217,28 @@
 	qdel(suspect)
 	REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, REF(src))
 
+	// Unseen police spawn/unstick tiles in the lockup stay in the front room and office, never in cells, yard, Processing or the staff closet
+	var/list/turf/unseen_pool = prison.police_unseen_turfs()
+	TEST_ASSERT(length(unseen_pool) > 0, "The lockup offered no unseen police spawn tiles")
+	for(var/turf/tile as anything in unseen_pool)
+		TEST_ASSERT(!prison.in_cell_block(tile) && !prison.in_processing(tile) && !(tile in prison.staff_closet_turfs), "police_unseen_turfs() included a cell, yard, Processing or staff-closet tile")
+	var/turf/unseen_pick = police.dispatch_unseen_tile(prison)
+	TEST_ASSERT(unseen_pick && !prison.in_cell_block(unseen_pick) && !prison.in_processing(unseen_pick) && !(unseen_pick in prison.staff_closet_turfs), "dispatch_unseen_tile() picked a forbidden lockup tile")
+
+	// Going loose without an audience does not latch riot_police_called, and loose_tick() calls police once an audience arrives
+	dispatch_clear(police)
+	prison.riot_police_called = FALSE
+	prison.audience_override = FALSE
+	runner.forceMove(front_tile)
+	prison.prisoner_escaped(runner, TRUE)
+	TEST_ASSERT(!prison.riot_police_called && length(police.dispatch_orders) == 0, "Escaping without an audience ordered police or latched riot_police_called")
+	prison.audience_override = TRUE
+	prison.loose_tick(1)
+	TEST_ASSERT(prison.riot_police_called && length(police.dispatch_orders) == 1, "loose_tick() did not call riot police once an audience was present")
+	runner.forceMove(yard_tile)
+	runner.back_in_custody()
+	dispatch_clear(police)
+
 	// Recovery skips bodies, the downed and mess inside the lockup
 	var/datum/outpost_recovery/recovery = outpost.ensure_recovery()
 	var/mob/living/wing_body = morgue_dead_npc(yard_tile)
