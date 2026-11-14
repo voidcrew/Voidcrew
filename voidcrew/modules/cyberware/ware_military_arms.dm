@@ -361,8 +361,17 @@
  * guard while nothing else is going on. update_icon_state() only consults it
  * when sword_color_icon is set, which it never is here.
  */
+/datum/sound_effect/cyberware_mantis_slash
+	key = CYBERWARE_MANTIS_SLASH_SOUND
+	file_paths = list(
+		'voidcrew/sound/cyberware/mantis_slash_1.ogg',
+		'voidcrew/sound/cyberware/mantis_slash_2.ogg',
+		'voidcrew/sound/cyberware/mantis_slash_3.ogg',
+	)
+
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	name = "mantis blade"
+	hitsound = CYBERWARE_MANTIS_SLASH_SOUND
 	desc = "A forearm's length of hardlight ground to a monomolecular edge. It comes out of the housing already swinging."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "mantis"
@@ -729,7 +738,7 @@
 			span_userdanger("[lunger] flickers across the gap. The blade is already in you, and the floor comes up fast!"),
 		)
 	log_combat(lunger, victim, charged ? "mantis-leapt" : "mantis-lunged", "mantis blades ([blades] landed)")
-	playsound(victim, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
+	playsound(victim, CYBERWARE_MANTIS_SLASH_SOUND, 70, TRUE)
 
 // =========================================================================
 // WIDOWLINE MONOWIRE

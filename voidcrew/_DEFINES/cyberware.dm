@@ -255,6 +255,9 @@
 /// gate itself is in ware_military_body.dm.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
 
+/// A Mantis Blade cutting: a sound effect key, one of its files picked each time (ware_military_arms.dm).
+#define CYBERWARE_MANTIS_SLASH_SOUND "cyberware_mantis_slash"
+
 // A Sandevistan's own sounds (ware_sandy_sound.dm). The user's play to him alone and are never slowed or recorded; the
 // external one is what everyone else near hears.
 /// The user's surge coming on.
