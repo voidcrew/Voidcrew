@@ -1030,3 +1030,74 @@
 	TEST_ASSERT_EQUAL(npc.next_move - world.time, 20, "An NPC held by two replays at once didn't get exactly its held time back")
 	TEST_ASSERT_EQUAL(player.next_move, began + 20, "A player's clock was pushed by the replay's hold")
 	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[npc] && !GLOB.sandy_replay_stopped_clocks[player], "A stopped clock was left behind")
+
+/// The sounds the replay played to `listener` of `file`, as /sound datums
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/heard_by(mob/listener, file)
+	. = list()
+	for(var/list/entry as anything in GLOB.sandy_replay_heard)
+		var/sound/heard = entry[2]
+		if(entry[1] == listener && heard.file == file)
+			. += heard
+
+/// A user who ends the slow-mo away from where a sound was made hears it in the replay from where their view is (their
+/// replayed self), not from where their body stands
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_from_view
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_from_view/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysoundview")
+	set_window(user, 2 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	GLOB.sandy_replay_heard.Cut()
+	playsound(spot(0, 1), 'sound/items/weapons/genhit1.ogg', 80, FALSE)
+	sleep(0.3 SECONDS)
+	user.forceMove(spot(2, 0))
+	user.forceMove(spot(4, 0))
+	user.forceMove(spot(5, 0))
+	sleep(0.3 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "The replay isn't about to play")
+	// What follow() does for a user with a client: the view stands on the replayed self, here still where it started.
+	replay.eye = new /obj/effect/abstract/sandy_replay_eye(spot(0, 0))
+	wait_over(user)
+	var/list/heard = heard_by(user, 'sound/items/weapons/genhit1.ogg')
+	TEST_ASSERT_EQUAL(length(heard), 1, "The user wasn't played the recorded sound once")
+	var/sound/sound = heard[1]
+	TEST_ASSERT(sound.x == 0 && sound.z == 1, "The sound was placed from the real body ([sound.x], [sound.z]), not from the view (0, 1)")
+	TEST_ASSERT(abs(sound.volume - 48) < 0.5, "The sound played at [sound.volume], not at its recorded volume under the surge (48)")
+
+/// A busy room filling the recording doesn't crowd out the user's own sounds
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_cap_keeps_own
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_cap_keeps_own/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysoundcap")
+	set_window(user, 2 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	for(var/i in 1 to 200)
+		replay.sounds += list(list(0, spot(4, 4), 'sound/items/weapons/genhit.ogg', 50, FALSE, 0, 6, 0, TRUE, TRUE, 1, TRUE, null))
+	playsound(spot(4, 3), 'sound/items/weapons/genhit1.ogg', 50, FALSE)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 200, "The world's sounds went past their cap")
+	playsound(spot(1, 0), 'sound/items/weapons/genhit2.ogg', 50, FALSE)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 201, "A blow on the user's next tile wasn't kept past the world's cap")
+	replay.hear(spot(4, 2), list('sound/items/weapons/genhit3.ogg', 50, FALSE, 0, 6, 0, TRUE, TRUE, 1, TRUE, null), user)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 202, "A sound the user set off wasn't kept past the world's cap")
+	replay.sounds.Cut()
+	press_again(user)
+	wait_over(user)
+
+/// The same sound starting many times at once in the replay is heard once; a different one still plays
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_pileup_thinned
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_pileup_thinned/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysoundpile")
+	set_window(user, 2 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	GLOB.sandy_replay_heard.Cut()
+	for(var/dx in 1 to 4)
+		playsound(spot(dx, 1), 'sound/items/weapons/genhit1.ogg', 50, FALSE)
+	playsound(spot(0, 0), 'sound/items/weapons/genhit2.ogg', 50, FALSE)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 5, "The sounds weren't all recorded")
+	sleep(0.3 SECONDS)
+	press_again(user)
+	wait_over(user)
+	TEST_ASSERT_EQUAL(length(heard_by(user, 'sound/items/weapons/genhit1.ogg')), 1, "Four starts of one sound in the same moment weren't heard as one")
+	TEST_ASSERT_EQUAL(length(heard_by(user, 'sound/items/weapons/genhit2.ogg')), 1, "A different sound in the same moment was thinned out")

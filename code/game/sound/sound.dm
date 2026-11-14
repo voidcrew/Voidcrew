@@ -31,9 +31,11 @@
 	var/turf/turf_source = get_turf(source)
 	if (!turf_source)
 		return
-	// VOIDCREW EDIT ADDITION START - cyberware: a Sandevistan slow-mo keeps its sounds for its replay (voidcrew/modules/cyberware/ware_sandy_replay.dm)
+	// VOIDCREW EDIT ADDITION START - cyberware: a Sandevistan slow-mo keeps its sounds for its replay, and a replay's start sound goes to its viewers from their views (voidcrew/modules/cyberware/ware_sandy_replay.dm)
 	if(length(GLOB.sandy_replays))
-		sandy_replay_hear(turf_source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
+		var/list/sandy_heard = sandy_replay_hear(turf_source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
+		if(sandy_heard)
+			return sandy_heard
 	// VOIDCREW EDIT ADDITION END
 
 	//allocate a channel if necessary now so its the same for everyone

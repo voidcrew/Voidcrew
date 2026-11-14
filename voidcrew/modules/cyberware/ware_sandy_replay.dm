@@ -81,8 +81,16 @@
 /// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
 /// any other player this close is crew, or there would be no replay).
 #define SANDY_REPLAY_HOLD_RANGE 11
-/// The most sounds one recording keeps.
+/// The most sounds one recording keeps of the world around the user (footsteps, casings, NPCs' guns).
 #define SANDY_REPLAY_MAX_SOUNDS 200
+/// The most it keeps in all: past SANDY_REPLAY_MAX_SOUNDS only the user's and its crewmates' own sounds go in (their
+/// blows, shots and steps, and anything on the user's own or next tile), so a busy room can't crowd out the fight.
+#define SANDY_REPLAY_MAX_OWN_SOUNDS 500
+/// Recorded sounds play this loud in the replay: under the surge's own sound, which leads it.
+#define SANDY_REPLAY_SOUND_VOLUME 0.6
+/// One sound file starting again this soon in the replay is skipped: thirteen seconds of fight squeezed into one
+/// would otherwise pile the same shot or step on itself.
+#define SANDY_REPLAY_SOUND_GAP (2 * world.tick_lag)
 /// The longest the replay waits, after the slow-mo, for an execution or finisher in it to end. A move still going
 /// then gets no replay rather than being cut short by the replay's hold.
 #define SANDY_REPLAY_WAIT_MAX (8 SECONDS)
@@ -119,6 +127,14 @@ GLOBAL_REAL_VAR(sandy_replay_masks)
 GLOBAL_LIST_EMPTY(sandy_replay_last)
 /// A replay is playing a recorded sound: nobody records it again.
 GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
+/// A replay starting: a playsound() in its begin() goes to its viewers, from their views (sandy_replay_hear()).
+GLOBAL_DATUM(sandy_replay_routing, /datum/sandy_replay)
+/// The world.time that was set, so a start that failed partway can't route later sounds.
+GLOBAL_VAR_INIT(sandy_replay_routing_time, -1)
+#ifdef UNIT_TESTS
+/// For tests: every sound the replay played to someone, as list(listener, /sound).
+GLOBAL_LIST_EMPTY(sandy_replay_heard)
+#endif
 
 /// One recorded thing.
 /datum/sandy_replay_track
@@ -256,6 +272,8 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 	var/datum/sandy_replay_track/user_track
 	/// What the user's view follows.
 	var/obj/effect/abstract/sandy_replay_eye/eye
+	/// Sound files played in the replay, to the world.time each last started (play_sounds()).
+	var/list/sound_started = list()
 	/// The user's client pixel offsets before the replay.
 	var/eye_pixel_x = 0
 	var/eye_pixel_y = 0
@@ -661,15 +679,32 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 
 /// A sound was played on `source`, in the field: kept, to play again in the replay. `arguments` are the rest of
 /// playsound()'s, from soundin on, without the channel.
-/datum/sandy_replay/proc/hear(turf/source, list/arguments)
-	if(state != SANDY_REPLAY_RECORDING || (!field && !wait_started) || length(sounds) >= SANDY_REPLAY_MAX_SOUNDS)
+/datum/sandy_replay/proc/hear(turf/source, list/arguments, mob/actor)
+	if(state != SANDY_REPLAY_RECORDING || (!field && !wait_started) || length(sounds) >= SANDY_REPLAY_MAX_OWN_SOUNDS)
 		return
 	// Waiting out a move after the slow-mo: the sounds around the user, as the hold's reach.
 	var/turf/centre = get_turf(field ? field.host : user)
 	if(!centre || centre.z != source.z || get_dist(centre, source) > (field ? field.current_range : SANDY_REPLAY_HOLD_RANGE))
 		if(!sandy_session_hears(src, source)) // or in a crewmate's field of a shared slow-mo (ware_sandy_timestop_shared.dm)
 			return
-	sounds += list(list(frame_exact(), source) + arguments)
+	if(length(sounds) >= SANDY_REPLAY_MAX_SOUNDS && !own_sound(source, actor))
+		return
+	var/now = frame_exact()
+	// The same sound on the same tile in the same frame (a burst's echoes, a crowd's steps) is kept once.
+	for(var/index in length(sounds) to 1 step -1)
+		var/list/kept = sounds[index]
+		if(floor(kept[1]) != floor(now))
+			break
+		if(kept[2] == source && kept[3] == arguments[1])
+			return
+	sounds += list(list(now, source) + arguments)
+
+/// Whether a sound set off by `actor` on `source` is the user's or a crewmate's own: kept past the cap on the world's.
+/datum/sandy_replay/proc/own_sound(turf/source, mob/actor)
+	if(actor && (actor == user || (actor in sandy_session_others(src, FALSE))))
+		return TRUE
+	var/turf/here = get_turf(user)
+	return here && here.z == source.z && get_dist(here, source) <= 1
 
 /// Signal proc for [COMSIG_QDELETING] on anything recorded.
 /datum/sandy_replay/proc/on_thing_deleted(atom/movable/thing)
@@ -1340,12 +1375,16 @@ GLOBAL_VAR_INIT(sandy_replay_echoing, FALSE)
 		for(var/atom/movable/screen/fullscreen/flash/sandy_release/flash in viewer.client?.screen)
 			viewer.client.screen -= flash
 	play_started = world.time
+	// The surge sound below goes to the replay's viewers from where each watches, not from their real bodies.
+	GLOB.sandy_replay_routing = src
+	GLOB.sandy_replay_routing_time = world.time
 	sandy_member_views() // each member of a shared slow-mo watches its own replayed self (ware_sandy_timestop_shared.dm)
 	// The surge coming on, as the replay's user did at its first frame.
 	var/turf/first = user_track ? locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) : null
 	playsound(first || user, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
 	play_timer = addtimer(CALLBACK(src, PROC_REF(play_frame)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	play_frame()
+	GLOB.sandy_replay_routing = null
 
 /datum/sandy_replay/proc/setup_playback()
 	lock(user)
@@ -1880,9 +1919,109 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		var/turf/source = heard[2]
 		if(QDELETED(source))
 			continue
-		GLOB.sandy_replay_echoing = TRUE
-		playsound(source, heard[3], heard[4], heard[5], heard[6], falloff_exponent = heard[7], frequency = heard[8], pressure_affected = heard[9], ignore_walls = heard[10], falloff_distance = heard[11], use_reverb = heard[12], volume_preference = heard[13])
-		GLOB.sandy_replay_echoing = FALSE
+		var/key = "[heard[3]]"
+		if(world.time - (sound_started[key] || -INFINITY) < SANDY_REPLAY_SOUND_GAP)
+			continue // the same sound just started: one is heard
+		sound_started[key] = world.time
+		var/volume = heard[4] * SANDY_REPLAY_SOUND_VOLUME
+		if(volume < SOUND_AUDIBLE_VOLUME_MIN)
+			continue
+		play_to_viewers(source, heard[3], volume, heard[5], heard[6], heard[7], heard[8], heard[9], heard[10], heard[11], heard[12], heard[13])
+
+/**
+ * Who hears the replay, to the turf each hears it from: the user from where their view is (the replayed self it
+ * follows, not the real body standing where the fight ended), every other member of a shared slow-mo from its own
+ * view, and everyone else the replay holds from where they stand (their view is their own). Nobody else hears it.
+ */
+/datum/sandy_replay/proc/sound_viewers()
+	. = list()
+	var/turf/user_view = get_turf(eye || user)
+	if(eye && user_track && user_track.cursor < 0) // the view hasn't been taken to the first frame yet: it's going there
+		user_view = locate(user_track.frames[SANDY_FRAME_X], user_track.frames[SANDY_FRAME_Y], user_track.frames[SANDY_FRAME_Z]) || user_view
+	if(user_view)
+		.[user] = user_view
+	var/datum/sandy_session/session = sandy_session_of_replay(src)
+	for(var/mob/living/member as anything in sandy_session_others(src, FALSE))
+		var/datum/sandy_session_view/view = session?.views[member]
+		var/turf/member_view = get_turf(view?.eye || member)
+		if(member_view)
+			.[member] = member_view
+	for(var/mob/living/body as anything in locked)
+		if(.[body] || QDELETED(body))
+			continue
+		var/turf/there = get_turf(body)
+		if(there)
+			.[body] = there
+
+/// Plays a sound on `source` to each of sound_viewers(), placed and faded as from where that viewer is watching.
+/// The arguments from `soundin` on are playsound()'s. Returns who it went to.
+/datum/sandy_replay/proc/play_to_viewers(turf/source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
+	. = list()
+	if(vary && !frequency)
+		frequency = get_rand_frequency() // the same pitch for everyone, as playsound() does
+	var/list/viewers = sound_viewers()
+	for(var/mob/listener as anything in viewers)
+		var/sound/heard = sandy_replay_sound_for(listener, viewers[listener], source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
+		if(!heard)
+			continue
+#ifdef UNIT_TESTS
+		GLOB.sandy_replay_heard += list(list(listener, heard))
+#endif
+		if(listener.client && listener.can_hear())
+			SEND_SOUND(listener, heard)
+			. += listener
+
+/**
+ * The sound `listener` hears of `soundin` on `source` when listening from `hear_from`, or null if it doesn't reach
+ * them: playsound()'s reach and playsound_local()'s fade, pan, air and room, measured from `hear_from` in place of the
+ * body. Never slowed: the slow-mo is over.
+ */
+/proc/sandy_replay_sound_for(mob/listener, turf/hear_from, turf/source, soundin, vol, vary, extrarange, falloff_exponent = SOUND_FALLOFF_EXPONENT, frequency, pressure_affected = TRUE, ignore_walls = TRUE, falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, use_reverb = TRUE, volume_preference)
+	if(!hear_from || !source || hear_from.z != source.z || vol < SOUND_AUDIBLE_VOLUME_MIN)
+		return null
+	var/max_distance = SOUND_RANGE + extrarange
+	var/distance = get_dist(hear_from, source)
+	if(distance > CALCULATE_MAX_SOUND_AUDIBLE_DISTANCE(vol, max_distance, falloff_distance, falloff_exponent))
+		return null
+	if(!ignore_walls && !(hear_from in view(distance, source)))
+		return null
+	var/sound/heard = sound(get_sfx(soundin))
+	heard.wait = 0
+	heard.channel = SSsounds.random_available_channel()
+	heard.volume = vol
+	if(vary)
+		heard.frequency = frequency || get_rand_frequency()
+	heard.volume -= CALCULATE_SOUND_VOLUME(vol, distance, max_distance, falloff_distance, falloff_exponent)
+	if(pressure_affected)
+		var/pressure_factor = 0
+		var/datum/gas_mixture/hearer_env = hear_from.return_air_readonly()
+		var/datum/gas_mixture/source_env = source.return_air_readonly()
+		if(hearer_env && source_env)
+			var/pressure = min(hearer_env.return_pressure(), source_env.return_pressure())
+			pressure_factor = pressure < ONE_ATMOSPHERE ? max((pressure - SOUND_MINIMUM_PRESSURE) / (ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE), 0) : 1
+		if(distance <= 1)
+			pressure_factor = max(pressure_factor, 0.15)
+		heard.volume *= pressure_factor
+	if(heard.volume < SOUND_AUDIBLE_VOLUME_MIN)
+		return null
+	heard.x = source.x - hear_from.x
+	heard.z = source.y - hear_from.y
+	heard.y = 0
+	heard.falloff = max_distance || 1
+	if(listener.sound_environment_override != SOUND_ENVIRONMENT_NONE)
+		heard.environment = listener.sound_environment_override
+	else
+		var/area/room = get_area(hear_from)
+		heard.environment = room.sound_environment
+	if(!use_reverb || heard.environment == SOUND_ENVIRONMENT_NONE)
+		heard.echo ||= new /list(18)
+		heard.echo[3] = -10000
+		heard.echo[4] = -10000
+	if(ispath(volume_preference) && listener.client?.prefs)
+		heard.volume *= listener.client.prefs.read_preference(volume_preference) / 100
+		if(heard.volume < SOUND_AUDIBLE_VOLUME_MIN)
+			return null
+	return heard
 
 /// One afterimage of a surger's trail in the replay: a recorded look, washed in one hue like the live trail.
 /obj/effect/temp_visual/decoy/fading/cascade/replay
@@ -2175,14 +2314,22 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			return TRUE
 	return FALSE
 
-/// Called from playsound(): a sound played in a slow-mo is recorded for its replay. A /sound datum is a looping
-/// sound's next segment (machines, weather), which plays on live and isn't recorded.
+/**
+ * Called from playsound(): a sound played in a slow-mo is recorded for its replay. A /sound datum is a looping
+ * sound's next segment (machines, weather), which plays on live and isn't recorded. A sound played while a replay
+ * starts (its surge sound in begin()) goes to that replay's viewers from where each is watching: the list of who
+ * heard it is returned, and playsound() plays it to nobody else.
+ */
 /proc/sandy_replay_hear(turf/source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
 	if(GLOB.sandy_replay_echoing || isdatum(soundin))
-		return
+		return null
 	for(var/user in GLOB.sandy_replays)
 		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-		replay.hear(source, list(soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference))
+		replay.hear(source, list(soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference), usr)
+	var/datum/sandy_replay/starting = GLOB.sandy_replay_routing
+	if(!starting || GLOB.sandy_replay_routing_time != world.time || starting.state != SANDY_REPLAY_PLAYING || starting.finished)
+		return null
+	return starting.play_to_viewers(source, soundin, vol, vary, extrarange, falloff_exponent, frequency, pressure_affected, ignore_walls, falloff_distance, use_reverb, volume_preference)
 
 #define SANDY_ANIM_UNSET "\[sandy_replay_unset]"
 /**
@@ -2421,6 +2568,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_TURN_TIME
 #undef SANDY_REPLAY_HUE_STEP
 #undef SANDY_REPLAY_MAX_SOUNDS
+#undef SANDY_REPLAY_MAX_OWN_SOUNDS
+#undef SANDY_REPLAY_SOUND_VOLUME
+#undef SANDY_REPLAY_SOUND_GAP
 #undef SANDY_REPLAY_HOLD_RANGE
 #undef SANDY_REPLAY_WAIT_MAX
 #undef SANDY_REPLAY_RIG_HIDES
