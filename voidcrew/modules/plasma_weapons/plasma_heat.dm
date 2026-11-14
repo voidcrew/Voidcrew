@@ -101,9 +101,11 @@
 
 /// FALSE while a vent or an overheat blocks firing
 /obj/item/gun/energy/plasma_weapon/proc/can_fire_heat()
-	// A shutdown whose timer was lost still ends on time
+	// A shutdown or a sweep whose timer was lost still ends on time
 	if(shutdown_until && !is_shut_down())
 		end_shutdown()
+	if(vent_started_at && world.time >= vent_started_at + PLASMA_VENT_SWEEP)
+		finish_vent_sweep()
 	return !vent_started_at && !is_shut_down() && world.time >= vent_lock_until
 
 /// Takes up to `mol` from the chamber and releases it on the turf at the barrel's temperature. Returns mol released.
@@ -242,8 +244,7 @@
 /obj/item/gun/energy/plasma_weapon/process(seconds_per_tick)
 	if(!uses_heat)
 		return PROCESS_KILL
-	if(shutdown_until && !is_shut_down())
-		end_shutdown()
+	can_fire_heat() // ends a shutdown or a sweep that has run its time
 	cool_to_now()
 	update_heat_step()
 	if(barrel_heat <= 0 && !shutdown_until && !vent_started_at)
