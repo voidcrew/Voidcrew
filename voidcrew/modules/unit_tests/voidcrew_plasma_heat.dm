@@ -248,6 +248,16 @@
 	TEST_ASSERT(QDELETED(bar), "Swapping hands left the vent bar")
 	user.swap_hand()
 
+	// A sweep whose timer was lost still ends the next time the gun is asked to fire
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the lost-timer test")
+	gun.vent_started_at = world.time - PLASMA_VENT_SWEEP
+	gun.can_fire_heat()
+	TEST_ASSERT(!gun.vent_started_at, "A vent past the end of its sweep kept running")
+	gun.vent_lock_until = 0
+
+	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the delete test")
 	bar = gun.vent_bar
