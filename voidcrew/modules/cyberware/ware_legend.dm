@@ -351,31 +351,32 @@
 		if(left <= 0)
 			continue
 		var/start_alpha = afterimage_alpha * left / life
-		var/obj/effect/temp_visual/decoy/fading/cascade/image
+		var/shift_x = along ? round((here.x - old_loc.x) * fraction * ICON_SIZE_X) : 0
+		var/shift_y = along ? round((here.y - old_loc.y) * fraction * ICON_SIZE_Y) : 0
 		if(time_stop) // green while the world is slowed (ware_sandy_timestop.dm)
-			image = new /obj/effect/temp_visual/decoy/fading/cascade/stopped(old_loc, owner, cyberware_time_stop_green(), start_alpha, left)
-		else
-			trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
-			image = new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, start_alpha, left)
-			trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP / per_tile) % 360
-		if(along && fraction)
-			image.pixel_w += round((here.x - old_loc.x) * fraction * ICON_SIZE_X)
-			image.pixel_z += round((here.y - old_loc.y) * fraction * ICON_SIZE_Y)
+			new /obj/effect/temp_visual/decoy/fading/cascade/stopped(old_loc, owner, cyberware_time_stop_green(), start_alpha, left, shift_x, shift_y)
+			continue
+		trail_hue = cyberware_time_trail_hue(owner, trail_hue) // ware_sandy_timestop.dm
+		new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, start_alpha, left, shift_x, shift_y)
+		trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP / per_tile) % 360
 
 /**
  * One afterimage in the Cascade trail, washed in a single hue (or `hue` a colour matrix), fading from `start_alpha`
- * over `life`. Drawn on the floor, under everyone standing: a trail lies behind its bearer, never over him (on the
+ * over `life`, shifted `shift_x`, `shift_y` pixels. Drawn on the floor, under everyone standing: a trail lies behind its bearer, never over him (on the
  * game plane one a row nearer the camera would sort over him).
  */
 /obj/effect/temp_visual/decoy/fading/cascade
 	duration = 8
 
-/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life)
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0)
 	if(life)
 		duration = life // before the parent's timer and fade read it
 	. = ..()
-	// The whole look goes on in one assignment, then the fade starts on it (as the replay's afterimage does).
+	// The whole look goes on in one assignment, then the fade starts on it (as the replay's afterimage does): a var set
+	// under a running fade is not drawn until the fade ends.
 	var/mutable_appearance/copy = new(src)
+	copy.pixel_w += shift_x // along the step, toward the tile reached
+	copy.pixel_z += shift_y
 	copy.alpha = start_alpha
 	copy.color = islist(hue) ? hue : cascade_tint_matrix(hue)
 	copy.filters = null // the bearer's outline and tints are his, not the trail's

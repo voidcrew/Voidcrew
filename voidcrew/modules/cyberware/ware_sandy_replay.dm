@@ -1882,10 +1882,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			if(left_frames <= 0)
 				continue
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
-			var/obj/effect/temp_visual/decoy/fading/cascade/replay/image = new(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha * left_frames / life_frames, life)
-			if(fraction)
-				image.pixel_w += round((step_to.x - step_from.x) * fraction * ICON_SIZE_X)
-				image.pixel_z += round((step_to.y - step_from.y) * fraction * ICON_SIZE_Y)
+			var/shift_x = round((step_to.x - step_from.x) * fraction * ICON_SIZE_X)
+			var/shift_y = round((step_to.y - step_from.y) * fraction * ICON_SIZE_Y)
+			new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], track.trail_hue, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y)
 			afterimages++
 			track.trail_hue = (track.trail_hue + hue_step) % 360
 
@@ -1906,7 +1905,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 /// One afterimage of a surger's trail in the replay: a recorded look, washed in one hue like the live trail.
 /obj/effect/temp_visual/decoy/fading/cascade/replay
 
-/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life)
+/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0)
 	if(life)
 		duration = life // before the parent's timer and fade read it
 	. = ..(mapload, null, hue, start_alpha)
@@ -1917,6 +1916,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	copy.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	copy.alpha = start_alpha
 	copy.color = cascade_tint_matrix(hue)
+	copy.pixel_w += shift_x // along the step, toward the tile reached
+	copy.pixel_z += shift_y
 	copy.appearance_flags |= KEEP_TOGETHER // a recorded look need not draw as one piece; the hue must reach all of it
 	// Drawn on the floor, under everyone standing: a trail lies behind its surger, never over them (on the game plane a
 	// copy a row nearer the camera would sort over the surger).
