@@ -22,20 +22,20 @@
  * - Purely a drawing. It goes when the execution does: fired (after the recoil), called off, the shooter moved or
  *   knocked down, the gun out of his hand, either of them deleted.
  *
- * A shooter the rig can't draw (not human, lying down, cloaked, already in a finisher's rig, a picture that isn't one
- * tile) leans in as before (hv_vis_press_in()).
+ * A shooter the rig can't draw (not human, lying down, cloaked, shrunk or grown, already in a finisher's rig, a picture
+ * that isn't one tile) leans in as before (hv_vis_press_in()).
  */
 
-/// How far short of the middle of the head the barrel's end stops: the head is about four pixels in radius.
-#define HV_AIM_GAP 5
+/// How far short of the middle of the head the barrel's end stops: on the skull, the head being some four pixels in radius.
+#define HV_AIM_GAP 4
 /// How big the gun is drawn, of its item icon.
 #define HV_AIM_GUN_SCALE 0.6
 /// The least and the most the shooter leans toward the victim, in pixels.
-#define HV_AIM_LEAN_MIN 4
+#define HV_AIM_LEAN_MIN 6
 #define HV_AIM_LEAN_MAX 17
 /// The bend of the body seen side-on, in degrees: for a head at his feet, and what a head a tile further adds.
-#define HV_AIM_BEND 8
-#define HV_AIM_BEND_FAR 10
+#define HV_AIM_BEND 12
+#define HV_AIM_BEND_FAR 6
 /// How long the lift from the hip to the head takes, the kick of the shot, how long the kick is held, and the way back down.
 #define HV_AIM_RAISE (0.3 SECONDS)
 #define HV_AIM_KICK (0.05 SECONDS)
@@ -110,6 +110,8 @@
 			gun.hv_aim = null
 	if(shooter)
 		UnregisterSignal(shooter, COMSIG_QDELETING)
+	if(target)
+		UnregisterSignal(target, COMSIG_LIVING_POST_UPDATE_TRANSFORM)
 	QDEL_NULL(rig)
 	take_from_hand(FALSE)
 	gun = null
@@ -134,9 +136,22 @@
  * nothing left behind.
  */
 /datum/hv_exec_aim/proc/raise()
+	if(!stand_up())
+		return FALSE
+	// The gun out of his hand, or either of them gone: the drawing comes down at once. A victim laid down, got up or
+	// turned over: the gun goes to where the head is now.
+	RegisterSignals(gun, list(COMSIG_ITEM_DROPPED, COMSIG_QDELETING), PROC_REF(on_lost))
+	RegisterSignal(shooter, COMSIG_QDELETING, PROC_REF(on_lost))
+	RegisterSignal(target, COMSIG_LIVING_POST_UPDATE_TRANSFORM, PROC_REF(on_target_turned))
+	return TRUE
+
+/// Builds the rig for where the head is drawn now and plays the lift from the hip. Returns FALSE, with no rig, if it can't.
+/datum/hv_exec_aim/proc/stand_up()
 	if(!ishuman(shooter) || QDELETED(target) || QDELETED(gun) || !isturf(shooter.loc) || !isturf(target.loc))
 		return FALSE
 	if(shooter.body_position == LYING_DOWN || shooter.alpha < 255 || shooter.invisibility || sandy_rig_hidden(shooter))
+		return FALSE
+	if(shooter.current_size != RESIZE_DEFAULT_SIZE) // the rig's pictures are of a body its usual size
 		return FALSE
 	var/held_index = shooter.get_held_index_of_item(gun)
 	if(!held_index)
@@ -148,12 +163,9 @@
 	if(gun_picture.Width() != ICON_SIZE_X || gun_picture.Height() != ICON_SIZE_Y)
 		gun_picture.Scale(ICON_SIZE_X, ICON_SIZE_Y)
 	shape = hv_gun_shape(gun, gun_picture)
-	// Where the head is drawn, from where the shooter is drawn
-	var/turf/shooter_turf = shooter.loc
-	var/turf/target_turf = target.loc
-	var/list/head_at = target.hv_vis_head_offset()
-	head_x = (target_turf.x - shooter_turf.x) * ICON_SIZE_X + head_at[1] - (shooter.pixel_x + shooter.pixel_w)
-	head_y = (target_turf.y - shooter_turf.y) * ICON_SIZE_Y + head_at[2] - (shooter.pixel_y + shooter.pixel_z)
+	var/list/head = head_now()
+	head_x = head[1]
+	head_y = head[2]
 	facing = abs(head_x) >= abs(head_y) ? (head_x >= 0 ? EAST : WEST) : (head_y >= 0 ? NORTH : SOUTH)
 	if(shooter.dir != facing)
 		shooter.setDir(facing)
@@ -166,6 +178,8 @@
 		return FALSE
 	// What is drawn over what. On one row the gun arm and the gun are over both bodies; seen from behind they are
 	// under his own. A far arm, in a side view, is under his body with its gun.
+	var/turf/shooter_turf = shooter.loc
+	var/turf/target_turf = target.loc
 	var/far_arm = rig.behind_body(side)
 	// A body lying a row nearer the viewer is drawn over everything on his row: the arm and the gun stand on its row.
 	var/on_their_row = target.body_position == LYING_DOWN && target_turf.y < shooter_turf.y
@@ -187,16 +201,41 @@
 			puppet.pixel_z += ICON_SIZE_Y
 	rig.conceal()
 	take_from_hand(FALSE)
-	// Moved or knocked down, the gun out of his hand, or gone: the drawing comes down at once
+	// Moved or knocked down: the drawing comes down at once
 	rig.watch_body(CALLBACK(src, PROC_REF(drop)))
-	RegisterSignals(gun, list(COMSIG_ITEM_DROPPED, COMSIG_QDELETING), PROC_REF(on_lost))
-	RegisterSignal(shooter, COMSIG_QDELETING, PROC_REF(on_lost))
 
 	solve()
 	var/list/rest = rest_pose()
 	set_pose(rest)
 	play(through(rest, aimed, 3), HV_AIM_RAISE)
 	return TRUE
+
+/// Where the middle of the victim's head is drawn now, from where the shooter is drawn: list(x, y).
+/datum/hv_exec_aim/proc/head_now()
+	var/turf/shooter_turf = get_turf(shooter)
+	var/turf/target_turf = get_turf(target)
+	var/list/head_at = target.hv_vis_head_offset()
+	return list(
+		(target_turf.x - shooter_turf.x) * ICON_SIZE_X + head_at[1] - (shooter.pixel_x + shooter.pixel_w),
+		(target_turf.y - shooter_turf.y) * ICON_SIZE_Y + head_at[2] - (shooter.pixel_y + shooter.pixel_z),
+	)
+
+/datum/hv_exec_aim/proc/on_target_turned(datum/source)
+	SIGNAL_HANDLER
+	// Once tg has finished laying the body down or standing it up
+	addtimer(CALLBACK(src, PROC_REF(follow_head)), world.tick_lag, TIMER_UNIQUE|TIMER_DELETE_ME)
+
+/// The victim's head is somewhere else (laid down, got up, turned over): the pose is taken again, on the head.
+/datum/hv_exec_aim/proc/follow_head()
+	if(!is_up() || down_timer || QDELETED(target) || QDELETED(shooter) || !isturf(target.loc) || !isturf(shooter.loc))
+		return
+	var/list/head = head_now()
+	if(abs(head[1] - head_x) < 1 && abs(head[2] - head_y) < 1)
+		return
+	QDEL_NULL(rig)
+	aimed = null
+	if(!stand_up())
+		drop()
 
 /datum/hv_exec_aim/proc/on_lost(datum/source)
 	SIGNAL_HANDLER
@@ -224,7 +263,7 @@
 	way_y /= way_length
 	// What his arm and the gun span when the arm is easy: the lean covers the rest
 	var/list/hand = rig.hand_offset(side)
-	var/arm_ease = side_view ? 1.25 : (facing == SOUTH ? 1.1 : 0.7)
+	var/arm_ease = side_view ? 1 : (facing == SOUTH ? 1.1 : 0.7)
 	var/span = HV_AIM_GAP + (shape[3] - shape[1]) * HV_AIM_GUN_SCALE + sqrt(hand[1] * hand[1] + hand[2] * hand[2]) * arm_ease
 	var/along = to_x * way_x + to_y * way_y
 	var/aside = to_x * to_x + to_y * to_y - along * along

@@ -88,7 +88,8 @@
 			var/off_x = head_x - aim.muzzle[1]
 			var/off_y = head_y - aim.muzzle[2]
 			var/off = sqrt(off_x * off_x + off_y * off_y)
-			TEST_ASSERT(off >= 3 && off <= 7, "The barrel ends [off] pixels from the middle of the head [what]: [aim.muzzle[1]],[aim.muzzle[2]] against [head_x],[head_y]")
+			// On the skull: HV_AIM_GAP (4) short of its middle, a little more where the arm is at its longest
+			TEST_ASSERT(off >= 2.5 && off <= 6.5, "The barrel ends [off] pixels from the middle of the head [what]: [aim.muzzle[1]],[aim.muzzle[2]] against [head_x],[head_y]")
 			// The other end of the body: its boots
 			var/boots_x = (victim.x - shooter.x) * ICON_SIZE_X - head_at[1] * 1.5
 			TEST_ASSERT(abs(aim.muzzle[1] - boots_x) > 12, "The barrel ends at the boots [what]")
@@ -157,3 +158,78 @@
 			qdel(gun)
 		if(!QDELETED(shooter))
 			qdel(shooter)
+
+/**
+ * The shot's flash is at the end of the barrel as the aimed pose draws it, from every side, and the flashes tg and gun
+ * feel draw at the hip are not made for it. The next shot has its own again.
+ */
+/datum/unit_test/voidcrew_hv_exec_aim/flash_at_the_barrel
+
+/datum/unit_test/voidcrew_hv_exec_aim/flash_at_the_barrel/Run()
+	for(var/way in GLOB.cardinals)
+		var/mob/living/carbon/human/shooter = make_shooter()
+		var/obj/item/gun/gun = shooter.get_active_held_item()
+		var/mob/living/carbon/human/victim = make_victim(way, 90)
+		var/turf/victim_turf = get_turf(victim)
+		var/what = "from the [dir2text(REVERSE_DIR(way))]"
+		INVOKE_ASYNC(gun, TYPE_PROC_REF(/obj/item/gun, hv_start_execution), shooter, victim, null)
+		sleep(1.4 SECONDS)
+		var/datum/hv_exec_aim/aim = gun.hv_aim
+		TEST_ASSERT(aim?.is_up(), "No aimed pose at the end of the hold [what]")
+		var/list/barrel_end = aim.muzzle_from(victim_turf)
+		var/list/head_at = victim.hv_vis_head_offset()
+		// The 1.5 s hold ends: the shot. Its flash lasts 0.4 s.
+		var/obj/effect/temp_visual/hv_muzzle_flash/flash
+		var/until = world.time + 0.5 SECONDS
+		while(!flash && world.time < until)
+			sleep(world.tick_lag)
+			flash = locate() in victim_turf
+		TEST_ASSERT_NOTNULL(flash, "The execution made no flash [what]")
+		// The flash art's bright end is HV_VIS_FLASH_CORE (9) pixels off its middle, the way it faces
+		var/core_x = flash.pixel_w + ((flash.dir & EAST) ? 9 : ((flash.dir & WEST) ? -9 : 0))
+		var/core_y = flash.pixel_z + ((flash.dir & NORTH) ? 9 : ((flash.dir & SOUTH) ? -9 : 0))
+		TEST_ASSERT(abs(core_x - barrel_end[1]) <= 1 && abs(core_y - barrel_end[2]) <= 1, "The flash is at [core_x],[core_y], the barrel's end at [barrel_end[1]],[barrel_end[2]], [what]")
+		var/to_head = sqrt((core_x - head_at[1]) ** 2 + (core_y - head_at[2]) ** 2)
+		TEST_ASSERT(to_head <= 7.5, "The flash is [to_head] pixels from the head [what]")
+		TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/gun_feel_muzzle_flash) in shooter, "The execution made gun feel's flash at the hip [what]")
+		TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/dir_setting/firing_effect) in shooter, "The execution made tg's flash at the hip [what]")
+		TEST_ASSERT(!gun.hv_firing_execution, "The gun still counts as firing an execution round [what]")
+		sleep(1 SECONDS)
+		check_nothing_left(shooter, gun, "fired [what]")
+		// A plain shot after it has its flash at the hip as ever
+		var/obj/item/ammo_casing/next_round = gun.chambered
+		TEST_ASSERT_NOTNULL(next_round, "Test fixture: no round chambered after the execution")
+		TEST_ASSERT_EQUAL(next_round.firing_effect_type, initial(next_round.firing_effect_type), "The next round lost its flash [what]")
+		qdel(victim)
+		qdel(gun)
+		qdel(shooter)
+
+/// A cuffed victim on his feet, held off the middle of his tile as a grab holds him: the barrel is on the head where it
+/// is drawn. He lies down during the hold: the barrel follows the head to the floor.
+/datum/unit_test/voidcrew_hv_exec_aim/follows_the_head
+
+/datum/unit_test/voidcrew_hv_exec_aim/follows_the_head/Run()
+	var/mob/living/carbon/human/shooter = make_shooter()
+	var/obj/item/gun/gun = shooter.get_active_held_item()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, get_step(spot(2, 2), EAST))
+	ADD_TRAIT(victim, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
+	victim.add_offsets(TRAIT_SOURCE_UNIT_TESTS, x_add = -12, animate = FALSE) // an aggressive grab's
+	var/datum/hv_exec_aim/aim = new(gun, shooter, victim)
+	TEST_ASSERT(aim.raise(), "The shooter couldn't be drawn aiming at a victim on his feet")
+	gun.hv_aim = aim
+	var/list/head_at = victim.hv_vis_head_offset()
+	TEST_ASSERT_EQUAL(head_at[1], -12, "A head held off the middle of its tile isn't found where it is drawn")
+	var/off = sqrt((ICON_SIZE_X + head_at[1] - aim.muzzle[1]) ** 2 + (head_at[2] - aim.muzzle[2]) ** 2)
+	TEST_ASSERT(off <= 6.5, "The barrel ends [off] pixels from the head of a victim on his feet")
+	victim.remove_offsets(TRAIT_SOURCE_UNIT_TESTS, animate = FALSE)
+	victim.Knockdown(60 SECONDS)
+	victim.set_lying_angle(90)
+	sleep(world.tick_lag * 4)
+	TEST_ASSERT(aim.is_up(), "The aimed pose went when the victim lay down")
+	head_at = victim.hv_vis_head_offset()
+	TEST_ASSERT_EQUAL(head_at[1], 9, "Test fixture: the victim's head isn't at the far end")
+	off = sqrt((ICON_SIZE_X + head_at[1] - aim.muzzle[1]) ** 2 + (head_at[2] - aim.muzzle[2]) ** 2)
+	TEST_ASSERT(off <= 6.5, "The barrel stayed [off] pixels from the head after the victim lay down")
+	TEST_ASSERT_EQUAL(pictures_up(), 3, "The aimed pose has [pictures_up()] pictures up after following the head, not three")
+	qdel(aim)
+	check_nothing_left(shooter, gun, "followed the head down")

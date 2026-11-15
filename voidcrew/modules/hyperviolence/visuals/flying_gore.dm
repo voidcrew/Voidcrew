@@ -510,6 +510,8 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			. = list(-y, x)
 		else
 			. = list(x, y)
+	// Where tg has moved the body off the middle of its tile: lying down, or held in a grab
+	.[1] += pixel_x - base_pixel_x
 	.[2] += pixel_y - base_pixel_y
 
 /// How far this body is drawn turned from upright as it lies now, in degrees clockwise, the short way round

@@ -26,6 +26,9 @@
 /obj/item/gun
 	/// While an execution round is being fired: the damage it has dealt to the victim's head
 	var/hv_execution_head_damage = 0
+	/// TRUE while an execution round is being fired: the barrel is on the head, so the shot's flash is drawn there
+	/// (visuals/execution_motion.dm) and not at the hip
+	var/hv_firing_execution = FALSE
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
@@ -119,10 +122,17 @@
 	RegisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE, PROC_REF(hv_execution_round_ready))
 	var/normal_multiplier = projectile_damage_multiplier
 	projectile_damage_multiplier *= HV_EXECUTION_POINT_BLANK_MULT
+	// The flashes tg and gun feel draw for a shot are at the hip, out toward the victim's tile: on the boots of a
+	// body lying with its head at the far end. The execution draws its own, at the barrel.
+	var/hip_flash = execution_casing.firing_effect_type
+	execution_casing.firing_effect_type = null
+	hv_firing_execution = TRUE
 	// Only the first round of a burst is held to the head; the rest are ordinary shots.
 	var/fired = process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
+	hv_firing_execution = FALSE
 	projectile_damage_multiplier = normal_multiplier
 	if(!QDELETED(execution_casing))
+		execution_casing.firing_effect_type = hip_flash
 		UnregisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE)
 	if(!QDELETED(target))
 		UnregisterSignal(target, COMSIG_MOB_APPLY_DAMAGE)
