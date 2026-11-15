@@ -646,6 +646,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	var/exact = frame_exact()
 	clock_frame = round(exact)
 	clock_rate = scale / world.tick_lag
+	clock_rates += list(list(clock_frame, clock_rate))
 	clock_time = world.time - (exact - clock_frame) / clock_rate
 	interval = world.tick_lag / scale
 

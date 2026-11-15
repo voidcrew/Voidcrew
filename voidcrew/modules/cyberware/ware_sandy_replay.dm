@@ -336,6 +336,10 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/clock_frame = 0
 	var/clock_time = 0
 	var/clock_rate = 1
+	/// The clock's rate through the recording: list(the frame it began at, the rate), in order. A shared slow-mo changes
+	/// pace as its members' time runs out (sandy_rebase()), and what the replay scales by the rate (a trail's step, a
+	/// body's turn) takes the rate its frame was recorded at (rate_at()).
+	var/list/clock_rates
 	/// The last frame the sample timer took.
 	var/last_sampled = -1
 	/// Recording: the animation being journaled now (sandy_replay_journal()), to add its next steps to.
@@ -379,6 +383,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	interval = world.tick_lag / field.time_scale
 	clock_time = started
 	clock_rate = 1 / interval
+	clock_rates = list(list(0, clock_rate))
 	var/datum/sandy_replay/old = GLOB.sandy_replays[user]
 	if(old)
 		qdel(old) // a replay still showing ends here
@@ -722,6 +727,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		if(length(entry[ATOM_COLOR_VALUE_INDEX]))
 			return entry[ATOM_COLOR_VALUE_INDEX]
 	return null
+
+/// How many frames a decisecond the recording's clock ran at `frame`.
+/datum/sandy_replay/proc/rate_at(frame)
+	. = clock_rate
+	for(var/list/stretch as anything in clock_rates)
+		if(stretch[1] > frame)
+			break
+		. = stretch[2]
 
 /// `track`'s thing is on a surge: the replay gives it its surge's trail.
 /datum/sandy_replay/proc/become_surger(datum/sandy_replay_track/track)
@@ -1973,7 +1986,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		track.turn_to = matrix(now.transform)
 		// On the replay's clock, as everything else: compressed ten times a fall is a fifth of a frame. A rig's own
 		// snap (a body brought upright onto the blades) is then upright the frame it was, not turning through the move.
-		track.turn_time = SANDY_REPLAY_TURN_TIME * world.tick_lag * clock_rate
+		track.turn_time = SANDY_REPLAY_TURN_TIME * world.tick_lag * rate_at(frames[at + SANDY_FRAME_INDEX])
 		track.turn_until = world.time + track.turn_time
 		// A half turn (a body flipped from lying one way to the other, as a rig move leaves it) blends through a
 		// matrix of no size halfway: the body would vanish for the tween. It flips at once instead.
@@ -2147,7 +2160,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	// many frames as it took in the recording, and an afterimage lives trail_length / trail_per_tile steps, so a walk at
 	// any speed drags the trail's length behind it. It is gone a frame after the replay is.
 	var/step_frames = (frames[dest + SANDY_FRAME_INDEX] - frames[from + SANDY_FRAME_INDEX]) / steps
-	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * clock_rate
+	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * rate_at(frames[dest + SANDY_FRAME_INDEX])
 	if(step_frames > step_max) // the first step, or one after a pause: as long as its last step took
 		step_frames = track.trail_step_frames || step_max
 		sandy_burst_cue(track, left)
