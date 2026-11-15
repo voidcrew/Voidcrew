@@ -365,6 +365,10 @@
 	TEST_ASSERT(length(strand.elements) == 2, "Test fixture: the strand isn't two segments ([length(strand.elements)])")
 	for(var/obj/effect/ebeam/segment as anything in strand.elements)
 		TEST_ASSERT(islist(segment.color), "A gut strand segment drawn in the slow-mo kept its colour ([segment.color], own icon: [isicon(segment.icon)])")
+	// A blood splash's art is white, coloured by its `color`: the tint goes over its blood colour, never in place of it
+	var/obj/effect/temp_visual/dir_setting/bloodsplatter/splash = new(spot(2, 2), EAST, BLOOD_COLOR_RED)
+	TEST_ASSERT(islist(splash.color) && compare_list(splash.color, cyberware_time_tint_of(BLOOD_COLOR_RED)), "A blood splash made in the slow-mo is drawn pale, its white art under the bare tint ([json_encode(splash.color)])")
+	TEST_ASSERT(tinted(splash), "A blood splash made in the slow-mo isn't counted as tinted")
 	// 0.5 s at 20% or less is at most 1 decisecond of the NPC's own time: a 2 decisecond gap is still waiting, at full speed it's long gone
 	TEST_ASSERT(cyberware_burst_wait(raider, raider_gun.cyberware_burst_start, 2, 1) > 0, "A queued burst shot fired at full speed")
 	TEST_ASSERT(raider_gun.cyberware_burst_start > gun_start, "The NPC's burst clock wasn't pushed back")
