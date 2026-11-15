@@ -820,6 +820,29 @@
 	press_again(user)
 	wait_over(user)
 
+/// The plume a powder gun throws along the shot (made inside the shooter, turned to the shot's own angle) is recorded
+/// too, turned as it was: a replayed diagonal shot keeps it.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_plume_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_plume_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayplume")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/temp_visual/gun_feel_muzzle_flash/plume = new(user, 135)
+	var/datum/sandy_replay_track/track = replay.tracks[plume]
+	TEST_ASSERT_NOTNULL(track, "The plume of a shot wasn't recorded")
+	var/list/frames = track.frames
+	TEST_ASSERT(length(frames) >= 6, "The plume has no frame")
+	TEST_ASSERT_EQUAL(frames[3], user.x, "The plume isn't drawn on the shooter's tile (x)")
+	TEST_ASSERT_EQUAL(frames[4], user.y, "The plume isn't drawn on the shooter's tile (y)")
+	var/mutable_appearance/look = new(frames[2])
+	var/matrix/turned = matrix()
+	turned.Turn(135)
+	TEST_ASSERT(gun_feel_same_matrix(look.transform, turned), "The recorded plume isn't turned along a south-east shot")
+	press_again(user)
+	wait_over(user)
+
 /// A one-shot effect that only fades (a muzzle flash), compressed past two frames, is held whole for a frame by a step
 /// that changes nothing and then faded: never by a `delay`, through which the client draws it already faded out.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held
