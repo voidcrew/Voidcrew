@@ -56,7 +56,7 @@
 	TEST_ASSERT(police.dispatch_nearest_lift_point(prison, front_tile) in prison.alcove_turfs, "Lockup-sector nearest lift lookup did not pick the lockup alcove")
 	TEST_ASSERT(!(police.dispatch_nearest_lift_point(null, front_tile) in prison.alcove_turfs), "Outside/null-sector nearest lift lookup picked a sealed lockup alcove tile")
 	TEST_ASSERT_EQUAL(police.dispatch_elevator_floor(prison), 90, "The lockup sector's elevator floor is not 90") // OUTPOST_LIFT_LOCKUP
-	TEST_ASSERT(prison.lift_panel in police.cameras(), "The lockup's lift panel is not a police witness camera")
+	TEST_ASSERT(prison.lift_panel in police.perception.cameras(), "The lockup's lift panel is not a police witness camera")
 
 	// Beat and idle ground never picks inside the lockup; a quiet yard prisoner is not hostile to an officer
 	dispatch_clear(police)

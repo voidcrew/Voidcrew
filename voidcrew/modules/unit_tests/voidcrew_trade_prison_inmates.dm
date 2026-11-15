@@ -452,14 +452,14 @@
 	TEST_ASSERT(!sentence.escaped && prison.holds(inmate.mind), "Rebooking an escaped inmate did not restore an active hold")
 
 	// Rioters ignore held inmates unless provoked, while still targeting non-inmate intruders in the cell block
-	var/mob/living/carbon/human/visitor = make_player(yard_tile, "lockupvisitor")
 	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, yard_tile)
 	var/mob/living/carbon/human/npc/outpost_prisoner/witness_prisoner = trouble_awake_prisoner(prison, yard_tile)
 	prison.trouble_enabled = TRUE
 	TEST_ASSERT(breakout_riot(prison), "Riot did not start")
-	var/list/riot_targets = prison.staff_in_reach(rioter)
-	TEST_ASSERT(!(inmate in riot_targets), "A rioter targeted an unprovoking held player inmate")
-	TEST_ASSERT(visitor in riot_targets, "A rioter ignored a non-inmate intruder standing in the yard")
+	prison.refresh_prisoner_reach(rioter)
+	TEST_ASSERT_NULL(rioter.staff_in_reach(), "A rioter targeted an unprovoking held player inmate")
+	var/mob/living/carbon/human/visitor = make_player(yard_tile, "lockupvisitor")
+	TEST_ASSERT_EQUAL(rioter.staff_in_reach(), visitor, "A rioter ignored a non-inmate intruder standing in the yard")
 	prison.end_riot()
 
 	// Witnessed player kill of an NPC prisoner reports OUTPOST_CRIME_KILL_CIVILIAN and raises sentence if stars climb

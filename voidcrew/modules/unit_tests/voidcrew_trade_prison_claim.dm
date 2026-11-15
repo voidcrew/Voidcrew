@@ -173,7 +173,6 @@
 	visitor.key = null
 	qdel(visitor)
 
-	warden_post.vacant_since = world.time - 10 MINUTES
 	recovery.send_staff()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/lockup_warden/replacement = prison.warden_ref?.resolve()
 	TEST_ASSERT_NOTNULL(replacement, "recovery.send_staff() did not spawn and link a replacement lockup warden")

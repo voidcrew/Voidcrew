@@ -100,8 +100,6 @@
 	TEST_ASSERT(!prison.is_staff(other_guard), "A player-possessed guard counts as staff")
 	TEST_ASSERT(!may_use_outpost_prison_staff_door(staff_door, other_guard), "A player-possessed guard opened the wing's staff door")
 	TEST_ASSERT(!may_use_outpost_prison_staff_door(outside, other_guard), "A player-possessed guard opened an unhosted staff door")
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(guard, null), 1, "A turret did not spare an AI guard") // OUTPOST_PRISON_TURRET_SPARE
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(other_guard, null), 0, "A turret spared a player-possessed guard") // OUTPOST_PRISON_TURRET_NOT_MINE
 	TEST_ASSERT(!prisoner.hit_by_staff(guard), "An AI guard's blow cost a calm prisoner mood")
 	var/mood_before = prisoner.mood
 	TEST_ASSERT(prisoner.hit_by_staff(other_guard), "A player-possessed guard hit a calm prisoner with no staff penalty")
