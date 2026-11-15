@@ -1,10 +1,16 @@
 // Package: P3 heat. The vent key and the vent bar a venting player sees.
-// The bar is two screen objects shown only to the venting player's client, above the hands. The marker's sweep
-// is animated on the client; the tap is judged on the server against vent_started_at (plasma_heat.dm), so the
+// The bar is two images on the venting player's mob, shown only to their client, over their head like a do_after
+// bar. The marker's sweep is animated on the client; the tap is judged on the server against vent_started_at (plasma_heat.dm), so the
 // grace zones are the latency slack.
 
 /// Pixels from the marker's resting x (the bar's middle) to the bar's left and right inner edges
 #define PLASMA_VENT_MARKER_REACH 38
+/// Bar strip pixel_z over a standing body: the art's bottom row (4 px up the strip) sits at the top of the tile, like a do_after bar
+#define PLASMA_VENT_BAR_HEAD 28
+/// Rise per do_after bar shown on the venter, so the vent bar sits over them
+#define PLASMA_VENT_BAR_STACK 8
+/// Drop when the venter lies down, on top of the body's own lying offset
+#define PLASMA_VENT_BAR_LYING_DROP 4
 
 /datum/keybinding/living/plasma_vent
 	hotkey_keys = list("V")
@@ -23,46 +29,80 @@
 		return FALSE
 	return gun.vent_key(owner)
 
-/atom/movable/screen/plasma_vent_bar
-	name = "vent"
-	icon = 'voidcrew/modules/plasma_weapons/icons/vent_bar.dmi'
-	icon_state = "bar"
-	// Above the swap-hand buttons, centred on the hands
-	screen_loc = "CENTER-1,SOUTH+2:4"
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	// show_hud() clears the screen on every lie-down; the bar stays until its vent ends
-	clear_with_screen = FALSE
-
-/atom/movable/screen/plasma_vent_marker
-	name = "vent"
-	icon = 'voidcrew/modules/plasma_weapons/icons/vent_bar.dmi'
-	icon_state = "marker"
-	screen_loc = "CENTER-1,SOUTH+2:4"
-	plane = ABOVE_HUD_PLANE
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	clear_with_screen = FALSE
-
-/// Makes the bar and, if `user` has a client, shows it and starts the marker's sweep
+/// Makes the bar and, if `user` has a client, shows it over their head and starts the marker's sweep
 /obj/item/gun/energy/plasma_weapon/proc/show_vent_bar(mob/living/user)
 	hide_vent_bar()
-	vent_bar = new
-	vent_marker = new
+	vent_bar = make_vent_bar_image(user, "bar", 1)
+	vent_marker = make_vent_bar_image(user, "marker", 2)
 	// The marker slides by transform; an animated pixel_x left it still in a live client
 	vent_marker.transform = matrix(1, 0, -PLASMA_VENT_MARKER_REACH, 0, 1, 0)
+	place_vent_bar(user)
+	RegisterSignals(user, list(COMSIG_DO_AFTER_BEGAN, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(on_vent_bar_moved))
+	RegisterSignal(user, COMSIG_DO_AFTER_ENDED, PROC_REF(on_vent_user_do_after_ended))
 	vent_client = user.client
 	if(!vent_client)
 		return
-	vent_client.screen += vent_bar
-	vent_client.screen += vent_marker
+	vent_client.images += vent_bar
+	vent_client.images += vent_marker
 	animate(vent_marker, transform = matrix(1, 0, PLASMA_VENT_MARKER_REACH, 0, 1, 0), time = PLASMA_VENT_SWEEP, easing = LINEAR_EASING)
 
-/// Takes the bar off the screen it was shown on and deletes it
+/// One part of the bar, drawn on `user` like a do_after bar: it walks with them and ignores their turn when they lie down
+/obj/item/gun/energy/plasma_weapon/proc/make_vent_bar_image(mob/living/user, state, part_layer)
+	var/image/part = image('voidcrew/modules/plasma_weapons/icons/vent_bar.dmi', user, state)
+	SET_PLANE_EXPLICIT(part, ABOVE_HUD_PLANE, user)
+	part.layer = part_layer
+	part.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | RESET_TRANSFORM | KEEP_APART
+	part.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	// The 96 px strip centred on the 32 px body
+	part.pixel_x = -32 + user.get_oversized_icon_offsets()["x"]
+	return part
+
+/// Pixels above `user`'s base where the bar's strip goes: over the head, and over any do_after bars on them
+/obj/item/gun/energy/plasma_weapon/proc/vent_bar_height(mob/living/user)
+	var/height = PLASMA_VENT_BAR_HEAD + user.get_oversized_icon_offsets()["y"]
+	var/list/own_bars = LAZYACCESS(user.progressbars, user)
+	height += PLASMA_VENT_BAR_STACK * LAZYLEN(own_bars)
+	if(user.body_position == LYING_DOWN)
+		height -= PLASMA_VENT_BAR_LYING_DROP
+	return height
+
+/// Moves the bar to its height. The marker's slide keeps running.
+/obj/item/gun/energy/plasma_weapon/proc/place_vent_bar(mob/living/user, time = 0)
+	if(!vent_bar || QDELETED(user))
+		return
+	var/height = vent_bar_height(user)
+	if(!time)
+		vent_bar.pixel_z = height
+		vent_marker.pixel_z = height
+		return
+	animate(vent_bar, pixel_z = height, time = time, easing = SINE_EASING)
+	animate(vent_marker, pixel_z = height, time = time, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+
+/obj/item/gun/energy/plasma_weapon/proc/on_vent_bar_moved(mob/living/source)
+	SIGNAL_HANDLER
+	place_vent_bar(source, 2)
+
+/// A do_after bar fades out for a moment after its do_after ends, so the vent bar drops once it has gone
+/obj/item/gun/energy/plasma_weapon/proc/on_vent_user_do_after_ended(mob/living/source)
+	SIGNAL_HANDLER
+	addtimer(CALLBACK(src, PROC_REF(place_vent_bar_for_venter)), 0.6 SECONDS, TIMER_DELETE_ME)
+
+/obj/item/gun/energy/plasma_weapon/proc/place_vent_bar_for_venter()
+	if(vent_user)
+		place_vent_bar(vent_user, 2)
+
+/// Takes the bar off the client it was shown to and drops it
 /obj/item/gun/energy/plasma_weapon/proc/hide_vent_bar()
 	if(vent_client)
-		vent_client.screen -= vent_bar
-		vent_client.screen -= vent_marker
+		vent_client.images -= vent_bar
+		vent_client.images -= vent_marker
 		vent_client = null
-	QDEL_NULL(vent_bar)
-	QDEL_NULL(vent_marker)
+	if(vent_bar?.loc)
+		UnregisterSignal(vent_bar.loc, list(COMSIG_DO_AFTER_BEGAN, COMSIG_DO_AFTER_ENDED, COMSIG_LIVING_SET_BODY_POSITION))
+	vent_bar = null
+	vent_marker = null
 
 #undef PLASMA_VENT_MARKER_REACH
+#undef PLASMA_VENT_BAR_HEAD
+#undef PLASMA_VENT_BAR_STACK
+#undef PLASMA_VENT_BAR_LYING_DROP

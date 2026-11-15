@@ -74,9 +74,9 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	var/mob/living/vent_user
 	/// The running vent's sweep-end timer
 	var/vent_timer
-	/// The vent bar and its marker, shown to vent_client
-	var/atom/movable/screen/plasma_vent_bar/vent_bar
-	var/atom/movable/screen/plasma_vent_marker/vent_marker
+	/// The vent bar and its marker, images on vent_user shown to vent_client
+	var/image/vent_bar
+	var/image/vent_marker
 	var/client/vent_client
 	/// world.time until which an overheated gun is shut down
 	var/shutdown_until = 0

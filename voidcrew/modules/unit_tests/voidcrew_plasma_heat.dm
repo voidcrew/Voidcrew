@@ -149,6 +149,9 @@
 	TEST_ASSERT(gun.vent_key(user), "A glowing Furnace in the active hand didn't start a vent")
 	TEST_ASSERT(!gun.can_fire_heat(), "A venting Furnace can fire")
 	TEST_ASSERT_NOTNULL(gun.vent_bar, "A vent made no bar")
+	TEST_ASSERT_EQUAL(gun.vent_bar.loc, user, "The vent bar isn't drawn on the venter")
+	TEST_ASSERT(gun.vent_marker.appearance_flags & RESET_TRANSFORM, "The vent marker turns with the venter's body")
+	TEST_ASSERT(gun.vent_bar.pixel_z >= ICON_SIZE_Y - 4, "The vent bar sits at [gun.vent_bar.pixel_z], inside the venter's body")
 
 	// Gold: all the heat off, and the next shots add half heat for a while
 	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
@@ -231,22 +234,35 @@
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the drop test")
-	var/atom/movable/screen/bar = gun.vent_bar
-	var/atom/movable/screen/marker = gun.vent_marker
+	var/standing_height = gun.vent_bar.pixel_z
 	user.dropItemToGround(gun)
 	TEST_ASSERT(!gun.vent_started_at, "Dropping the Furnace didn't end its vent")
-	TEST_ASSERT(QDELETED(bar) && QDELETED(marker), "Dropping the Furnace left its vent bar")
+	TEST_ASSERT(isnull(gun.vent_bar) && isnull(gun.vent_marker), "Dropping the Furnace left its vent bar")
 	TEST_ASSERT_NULL(gun.vent_user, "Dropping the Furnace kept its venter")
 	TEST_ASSERT(gun.can_fire_heat(), "A vent ended by a drop locked the trigger")
 
 	user.put_in_active_hand(gun, forced = TRUE)
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the swap test")
-	bar = gun.vent_bar
 	user.swap_hand()
 	TEST_ASSERT(!gun.vent_started_at, "Swapping hands didn't end the vent")
-	TEST_ASSERT(QDELETED(bar), "Swapping hands left the vent bar")
+	TEST_ASSERT_NULL(gun.vent_bar, "Swapping hands left the vent bar")
 	user.swap_hand()
+
+	// A do_after bar on the venter pushes the vent bar up over it, and lying down brings it back to the body
+	var/datum/progressbar/self_bar = new(user, 10, user)
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the stacking test")
+	TEST_ASSERT(gun.vent_bar.pixel_z > standing_height, "The vent bar at [gun.vent_bar.pixel_z] overlaps a do_after bar")
+	qdel(self_bar)
+	user.set_body_position(LYING_DOWN)
+	TEST_ASSERT(gun.vent_started_at, "Lying down ended the vent")
+	TEST_ASSERT(gun.vent_marker.pixel_z < standing_height, "The vent bar didn't drop when its venter lay down")
+	user.set_body_position(STANDING_UP)
+	gun.cancel_vent()
+	TEST_ASSERT_NULL(gun.vent_bar, "Cancelling the vent left its bar")
+	gun.vent_lock_until = 0
 
 	// A sweep whose timer was lost still ends the next time the gun is asked to fire
 	gun.barrel_heat = 90
@@ -260,10 +276,8 @@
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the delete test")
-	bar = gun.vent_bar
-	marker = gun.vent_marker
 	qdel(gun)
-	TEST_ASSERT(QDELETED(bar) && QDELETED(marker), "Deleting the Furnace left its vent bar")
+	TEST_ASSERT(isnull(gun.vent_bar) && isnull(gun.vent_marker), "Deleting the Furnace left its vent bar")
 
 /// A Furnace pirate runs the same heat: it vents near the top and never times it, and every block runs out
 /datum/unit_test/voidcrew_plasma_heat_npc
