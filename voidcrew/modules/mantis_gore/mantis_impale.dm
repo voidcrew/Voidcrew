@@ -134,8 +134,10 @@
 	// reach them as it lands (begin_rig()).
 	prior_dir = victim.dir
 	victim.setDir(mantis_face_dir(victim, bearer))
-	hoist()
-	place_victim(0, 0)
+	// Swung up as the lunging body comes in, and on as the points go in, rather than stood up in one frame.
+	var/hoist_time = max(glide_time, MANTIS_IMPALE_HOIST)
+	hoist(hoist_time)
+	place_victim(0, 0, hoist_time)
 	mantis_pose_blades(housings, MANTIS_POSE_LUNGE)
 	put_up_rig()
 	if(rig)
@@ -367,15 +369,28 @@
  * picture turns: tg still has them lying down, with everything that goes with it. Skipped for a resized
  * body, whose lying turn carries a shift that wouldn't come back out cleanly.
  */
-/datum/mantis_impale/proc/hoist()
+/datum/mantis_impale/proc/hoist(time = 0)
 	if(hoist_angle || victim.body_position != LYING_DOWN || !victim.rotate_on_lying || !victim.lying_angle)
 		return
 	if(victim.current_size != RESIZE_DEFAULT_SIZE)
 		return
 	hoist_angle = victim.lying_angle
-	var/matrix/upright = matrix(victim.transform)
+	var/matrix/lying = matrix(victim.transform)
+	var/matrix/upright = matrix(lying)
 	upright.Turn(-hoist_angle)
-	victim.transform = upright
+	if(!time)
+		victim.transform = upright
+		return
+	// Swung up off the floor on the blades, in a few steps so the body keeps its size on the way (one straight
+	// tween of a quarter turn shrinks it). It starts from how tg drew them, so the replay plays it from there too.
+	var/swing = hoist_angle > 180 ? hoist_angle - 360 : hoist_angle
+	animate(victim, transform = lying, time = 0, flags = ANIMATION_PARALLEL)
+	for(var/i in 1 to MANTIS_IMPALE_HOIST_STEPS)
+		var/matrix/step = matrix(lying)
+		step.Turn(-swing * sin(90 * i / MANTIS_IMPALE_HOIST_STEPS))
+		if(i == MANTIS_IMPALE_HOIST_STEPS)
+			step = upright
+		animate(transform = step, time = time / MANTIS_IMPALE_HOIST_STEPS)
 
 /// Gives back tg's lying turn. [fall] drops them into it instead of snapping.
 /datum/mantis_impale/proc/unhoist(fall = FALSE)

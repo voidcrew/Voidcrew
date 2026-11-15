@@ -1095,6 +1095,16 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	if(!istype(now))
 		return
 	var/size = abs(now.a * now.e - now.b * now.d)
+	// A chain that ends on the frame's own turn is drawing that turn (a body hauled round end for end, step by step:
+	// mantis_turn_head_toward()), not holding an old one: it plays as it was recorded.
+	var/matrix/last_turn
+	for(var/list/arguments as anything in chain)
+		if(istype(arguments["transform"], /matrix))
+			last_turn = arguments["transform"]
+	if(last_turn)
+		var/matrix/ending = matrix(now).Interpolate(last_turn, 0.5)
+		if(abs(ending.a * ending.e - ending.b * ending.d) >= size * 0.9)
+			return
 	for(var/list/arguments as anything in chain)
 		var/matrix/target = arguments["transform"]
 		if(!istype(target))
