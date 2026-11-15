@@ -7336,6 +7336,7 @@
 #include "voidcrew\modules\hyperviolence\visuals\_motion_core.dm"
 #include "voidcrew\modules\hyperviolence\visuals\blood_motion.dm"
 #include "voidcrew\modules\hyperviolence\visuals\death_falls.dm"
+#include "voidcrew\modules\hyperviolence\visuals\execution_aim.dm"
 #include "voidcrew\modules\hyperviolence\visuals\execution_motion.dm"
 #include "voidcrew\modules\hyperviolence\visuals\finisher_motion.dm"
 #include "voidcrew\modules\hyperviolence\visuals\flying_gore.dm"
