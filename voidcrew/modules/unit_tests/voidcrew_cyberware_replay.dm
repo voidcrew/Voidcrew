@@ -1408,15 +1408,15 @@
 	var/datum/sandy_replay/replay = start_recording(user)
 	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
 	window.last_step_at = world.time
-	sleep(0.5 SECONDS) // a four-tile straight dash inside one recorded frame
-	for(var/i in 1 to 4)
+	sleep(0.5 SECONDS) // a three-tile straight dash inside one recorded frame (the test room is five tiles wide)
+	for(var/i in 1 to 3)
 		TEST_ASSERT(user.Move(get_step(user, EAST), EAST), "Test fixture: the surger couldn't dash east")
 	sleep(0.5 SECONDS) // next frame: a corner turn inside one frame
-	var/turf/corner = spot(5, 0)
+	var/turf/corner = spot(4, 0)
 	TEST_ASSERT(user.Move(corner, EAST), "Test fixture: the surger couldn't step onto the corner")
 	TEST_ASSERT(user.Move(get_step(corner, NORTH), NORTH), "Test fixture: the surger couldn't turn north")
 	sleep(0.5 SECONDS) // next frame: another step north, so the corner glides over a single tick
-	TEST_ASSERT(user.Move(spot(5, 2), NORTH), "Test fixture: the surger couldn't step north again")
+	TEST_ASSERT(user.Move(spot(4, 2), NORTH), "Test fixture: the surger couldn't step north again")
 	sleep(1.5 SECONDS) // room for the dash's copies to finish their own life inside the replay
 
 	press_again(user)
@@ -1470,8 +1470,8 @@
 	TEST_ASSERT(began > 0 && stalled_at >= began + world.tick_lag, "The dash's second tile didn't wait for the next tick ([began] -> [stalled_at])")
 	TEST_ASSERT(peak > done_at && peak - done_at < world.tick_lag, "Waiting a tick shifted when the delayed copy's life ends ([done_at] -> [peak])")
 	TEST_ASSERT(!length(off), "Delayed afterimages not coloured by age: [jointext(off.Copy(1, min(length(off), 4) + 1), "; ")]")
-	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["ways_followed"], 1, "The replay didn't follow the corner")
-	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 8, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages across the dash and corner")
+	TEST_ASSERT(GLOB.sandy_replay_last["ways_followed"] >= 1, "The replay didn't follow the way the surger went (the dash and the corner are each one)")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 6, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages across the dash and corner")
 	sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

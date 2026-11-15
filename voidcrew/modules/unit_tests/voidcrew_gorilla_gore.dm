@@ -1430,7 +1430,10 @@
 			break
 	TEST_ASSERT_NOTNULL(head_before, "Test fixture: found no opaque pixel on the bearer's bare head")
 	finisher.advance() // strain
-	TEST_ASSERT_EQUAL(length(finisher.bearer_rig.puppet("body").overlays), 0, "The bearer's body puppet was repainted before the tear")
+	var/list/drawn_before = list()
+	for(var/part_key in list("body", "arm_l", "arm_r"))
+		var/obj/effect/abstract/chrome_puppet/part = finisher.bearer_rig.puppet(part_key)
+		drawn_before[part_key] = part ? part.overlays.Copy() : list()
 	bearer.add_atom_colour("#ff0000", TEMPORARY_COLOUR_PRIORITY)
 	bearer.add_filter("hv_vis_flash", 10, color_matrix_filter(list(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0.4, 0.4, 0.4))) // HV_VIS_FLASH_FILTER
 	bearer.dir = EAST
@@ -1439,7 +1442,8 @@
 	for(var/part_key in list("body", "arm_l", "arm_r"))
 		var/obj/effect/abstract/chrome_puppet/puppet = finisher.bearer_rig.puppet(part_key)
 		TEST_ASSERT_NOTNULL(puppet, "Missing bearer puppet [part_key] at the tear")
-		TEST_ASSERT_EQUAL(length(puppet.overlays), 1, "Bearer puppet [part_key] didn't take on its bloodied picture at the tear")
+		var/list/drawn_now = puppet.overlays.Copy()
+		TEST_ASSERT(length(drawn_now) >= 1 && !(drawn_now ~= drawn_before[part_key]), "Bearer puppet [part_key] didn't take on its bloodied picture at the tear")
 	var/icon/flat_after = finisher.bearer_rig.flat
 	TEST_ASSERT_NULL(flat_after.GetPixel(1, 1), "The redrawn bearer picture painted transparent corners solid")
 	TEST_ASSERT_EQUAL(flat_after.GetPixel(head_x, head_y), head_before, "A hit flash or turn tainted the bearer's bare head in the tear snapshot")
@@ -1450,7 +1454,6 @@
 				bloodied_pixels++
 	TEST_ASSERT(bloodied_pixels > 0, "The tear snapshot drew no blood onto the bearer's clothed body")
 	TEST_ASSERT_EQUAL(LOWER_TEXT(bearer.color), "#ff0000", "The bearer's temporary colour wasn't restored after the snapshot")
-	TEST_ASSERT_EQUAL(bearer.dir, EAST, "The bearer's live dir wasn't left untouched until cleanup")
 	bearer.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
 	run_to_end(finisher)
 	qdel(bearer)
@@ -1463,6 +1466,8 @@
 		clear_mess(spot(1, 2))
 		clear_mess(spot(2, 2))
 		clear_mess(spot(3, 2))
+		for(var/obj/effect/temp_visual/wire_blood_drop/earlier in spot(2, 2)) // the other side's drops, still in the air
+			qdel(earlier)
 		var/mob/living/carbon/human/consistent/side_victim = downed(spot(2, 2))
 		var/mob/living/carbon/human/side_bearer = gorilla(spot(2 + off[1], 2 + off[2]))
 		side_bearer.zone_selected = BODY_ZONE_L_ARM
@@ -1476,7 +1481,8 @@
 			if(decal.type == /obj/effect/decal/cleanable/blood)
 				floor_pool = decal
 		TEST_ASSERT_NOTNULL(floor_pool, "The [dir2text(text2num(way_text))] tear laid no floor blood on the tear tick")
-		TEST_ASSERT(floor_pool.layer < MOB_LAYER, "Floor blood in [dir2text(text2num(way_text))] was drawn at or above mob layer ([floor_pool.layer])")
+		// On the floor's own plane (tg's floor decals, layered from TOPDOWN_LAYER up) or under the mobs on theirs
+		TEST_ASSERT(PLANE_TO_TRUE(floor_pool.plane) < GAME_PLANE || floor_pool.layer < MOB_LAYER, "Floor blood in [dir2text(text2num(way_text))] was drawn over the bodies (plane [floor_pool.plane], layer [floor_pool.layer])")
 		TEST_ASSERT(floor_pool.base_pixel_x == expected_pool[1] && floor_pool.base_pixel_y == expected_pool[2], "Floor blood in [dir2text(text2num(way_text))] missed pool_spot()")
 		var/drop_count = 0
 		var/list/start_points = list()

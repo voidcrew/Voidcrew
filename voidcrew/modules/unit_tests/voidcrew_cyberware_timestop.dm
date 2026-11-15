@@ -1024,11 +1024,14 @@
 	var/obj/item/wrench/plain_item = allocate(/obj/item/wrench, spot(0, 1))
 	TEST_ASSERT(plain_body.throw_at(spot(4, 0), 4, 1, user), "Test fixture: plain body throw didn't start")
 	TEST_ASSERT(plain_item.throw_at(spot(4, 1), 4, 1, user), "Test fixture: plain item throw didn't start")
-	sleep(0.5 SECONDS)
+	var/plain_from = world.time
+	while((plain_body.throwing || plain_item.throwing) && world.time < plain_from + 2 SECONDS)
+		sleep(world.tick_lag)
+	var/plain_time = max(world.time - plain_from, 0.5 SECONDS) // how long a plain four-tile throw takes here
 	var/plain_body_dist = plain_body.x - spot(0, 0).x
 	var/plain_item_dist = plain_item.x - spot(0, 1).x
-	TEST_ASSERT_EQUAL(plain_body_dist, 4, "Test fixture: an un-slowed body didn't cross 4 tiles in 0.5 s ([plain_body_dist])")
-	TEST_ASSERT_EQUAL(plain_item_dist, 4, "Test fixture: an un-slowed item didn't cross 4 tiles in 0.5 s ([plain_item_dist])")
+	TEST_ASSERT_EQUAL(plain_body_dist, 4, "Test fixture: an un-slowed body didn't cross 4 tiles in 2 s ([plain_body_dist])")
+	TEST_ASSERT_EQUAL(plain_item_dist, 4, "Test fixture: an un-slowed item didn't cross 4 tiles in 2 s ([plain_item_dist])")
 	qdel(plain_body)
 	qdel(plain_item)
 
@@ -1060,11 +1063,11 @@
 	TEST_ASSERT(abs(slow_item.throwing.speed - field.time_scale) < 0.001, "A thrown floor item's speed is [slow_item.throwing.speed], not [field.time_scale]")
 	TEST_ASSERT(tinted(slow_item), "A floor item thrown in slow-mo wasn't tinted while flying")
 
-	sleep(0.5 SECONDS)
+	sleep(plain_time) // as long as the plain throws took to land
 	var/slow_body_dist = slow_body.x - spot(0, 2).x
 	var/slow_item_dist = slow_item.x - spot(0, 3).x
-	TEST_ASSERT(slow_body_dist < plain_body_dist && !isnull(slow_body.throwing), "A held body flew [slow_body_dist] tiles in 0.5 s vs [plain_body_dist] outside slow-mo")
-	TEST_ASSERT(slow_item_dist < plain_item_dist && !isnull(slow_item.throwing), "A floor item flew [slow_item_dist] tiles in 0.5 s vs [plain_item_dist] outside slow-mo")
+	TEST_ASSERT(slow_body_dist < plain_body_dist && !isnull(slow_body.throwing), "A held body flew [slow_body_dist] tiles in the time [plain_body_dist] take outside slow-mo")
+	TEST_ASSERT(slow_item_dist < plain_item_dist && !isnull(slow_item.throwing), "A floor item flew [slow_item_dist] tiles in the time [plain_item_dist] take outside slow-mo")
 	TEST_ASSERT(isnull(short_body.throwing) && short_body.x == spot(3, 0).x, "Test fixture: the 1-tile body throw didn't land inside the slow-mo")
 	TEST_ASSERT(field.held_mobs[short_body] && tinted(short_body), "A held body whose throw landed inside the slow-mo was let go")
 	TEST_ASSERT(isnull(short_item.throwing) && short_item.x == spot(3, 1).x, "Test fixture: the 1-tile item throw didn't land inside the slow-mo")
