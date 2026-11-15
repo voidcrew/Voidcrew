@@ -334,6 +334,7 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		if(!capping)
 			member.balloon_alert(member, "[sandy_part_balloon_word(member)] spent")
 		field?.sandy_host_joins_world()
+	replay?.surge_over(member) // the replay leaves no trail behind him from here (ware_sandy_replay.dm)
 	note("[member] out of time")
 	repace()
 

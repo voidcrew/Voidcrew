@@ -163,6 +163,10 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/last_raw
 	/// It was on a surge during the window: the user, or a mob on its own surge in the field.
 	var/surger = FALSE
+	/// Surger: the frames its own surge ran between. A crewmate walks in before he surges, and goes on slowed after his
+	/// own time is out while the shared slow-mo runs: those steps leave no trail (surger_frame()).
+	var/surge_from = 0
+	var/surge_until = INFINITY
 	/// Surger: its surge's trail (ware_legend.dm): afterimages behind it while it moves, per tile, and the newest one's alpha.
 	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
 	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
@@ -714,7 +718,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 /// `track`'s thing is on a surge: the replay gives it its surge's trail.
 /datum/sandy_replay/proc/become_surger(datum/sandy_replay_track/track)
 	track.surger = TRUE
+	track.surge_from = frame_now()
 	read_trail(track)
+
+/// `body`'s own surge is over while the recording goes on (a shared slow-mo's member out of time): no trail from here.
+/datum/sandy_replay/proc/surge_over(mob/living/body)
+	var/datum/sandy_replay_track/track = tracks[body]
+	if(track?.surger && track.surge_until == INFINITY && state == SANDY_REPLAY_RECORDING)
+		track.surge_until = frame_now()
 
 /// Takes the trail's cadence and strength from the surger's window. The user's own window isn't listed on them yet
 /// while it opens the slow-mo, so this is tried again on later samples.
@@ -2060,6 +2071,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return
 	if(frames[from + SANDY_FRAME_X] == frames[dest + SANDY_FRAME_X] && frames[from + SANDY_FRAME_Y] == frames[dest + SANDY_FRAME_Y])
 		return
+	if(frames[dest + SANDY_FRAME_INDEX] < track.surge_from || frames[dest + SANDY_FRAME_INDEX] > track.surge_until)
+		return // a step taken before its surge came on, or after it ran out
 	var/turf/left = locate(frames[from + SANDY_FRAME_X], frames[from + SANDY_FRAME_Y], frames[from + SANDY_FRAME_Z])
 	var/turf/reached = locate(frames[dest + SANDY_FRAME_X], frames[dest + SANDY_FRAME_Y], frames[dest + SANDY_FRAME_Z])
 	if(!left || !reached || get_dist(left, reached) > SANDY_REPLAY_GLIDE_MAX / ICON_SIZE_X)
