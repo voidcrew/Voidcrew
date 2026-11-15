@@ -2296,9 +2296,21 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
 			var/shift_x = before ? round((before.x - step_from.x) * fraction * ICON_SIZE_X) : 0
 			var/shift_y = before ? round((before.y - step_from.y) * fraction * ICON_SIZE_Y) : 0
-			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag, wait)
+			var/age_time = left_frames * world.tick_lag
+			if(wait >= world.tick_lag) // laid as he passes, and gone when it would have been
+				addtimer(CALLBACK(src, PROC_REF(lay_copy), step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, max(life - wait, world.tick_lag), shift_x, shift_y, max(age_time - wait, world.tick_lag)), wait, TIMER_DELETE_ME)
+			else
+				lay_copy(step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, age_time)
 			afterimages++
 	track.trail_prev = crossed[steps]
+
+/// One afterimage of a surger's replayed trail on `spot` (surger_frame()). Every copy is laid the one way: one that
+/// waited inside its own animation for the puppet to pass came out translucent and fading where the rest stay solid
+/// and change colour, and a trail's newer leg read as fading before its older one.
+/datum/sandy_replay/proc/lay_copy(turf/spot, look, facing, age, start_alpha, life, shift_x, shift_y, age_time)
+	if(finished || QDELETED(spot))
+		return
+	trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(spot, look, facing, age, start_alpha, life, shift_x, shift_y, age_time)
 
 /// The tiles `track`'s surger crossed from `left` to `reached` (both included) as it stepped them in the recording, or
 /// null when they weren't kept or don't join the two up a step at a time (it was moved by something other than walking).
@@ -2447,7 +2459,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 /// One afterimage of a surger's trail in the replay: a recorded look, coloured by age like the live trail.
 /obj/effect/temp_visual/decoy/fading/cascade/replay
 
-/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time, wait = 0)
+/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time)
 	if(life)
 		duration = life // before the parent's timer and fade read it
 	. = ..(mapload, null, age, start_alpha)
@@ -2456,7 +2468,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/mutable_appearance/copy = new(look || src)
 	copy.name = ""
 	copy.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	copy.alpha = wait > 0 ? 0 : start_alpha
+	copy.alpha = start_alpha
 	copy.color = cyberware_cascade_tint_at(age)
 	copy.pixel_w += shift_x // along the step, toward the tile reached
 	copy.pixel_z += shift_y
@@ -2469,12 +2481,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	appearance = copy.appearance
 	dir = facing
 	opacity = FALSE
-	if(wait > 0) // its surger has not glided past this tile yet: it shows as he leaves it
-		animate(src, alpha = 0, time = wait)
-		animate(alpha = start_alpha, time = 0)
-		animate(alpha = 0, time = max(duration - wait, world.tick_lag))
-	else
-		animate(src, alpha = 0, time = duration)
+	animate(src, alpha = 0, time = duration)
 	age_colours(age, age_time || duration)
 
 /// The playback timer: one frame a tick.
