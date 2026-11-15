@@ -1225,6 +1225,34 @@
 	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 4, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a four-tile dash")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
+/// A corner turned inside one recorded moment is replayed round the corner: the trail is laid on the tile he turned
+/// on, not along the diagonal between the two samples.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_corner
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_corner/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycorner")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	sleep(0.6 SECONDS) // a recorded moment standing still
+	var/turf/corner = spot(1, 0)
+	TEST_ASSERT(user.Move(corner, EAST), "Test fixture: the surger couldn't step east")
+	TEST_ASSERT(user.Move(get_step(corner, NORTH), NORTH), "Test fixture: the surger couldn't step north")
+	sleep(0.6 SECONDS)
+	var/datum/sandy_replay_track/track = replay.tracks[user]
+	TEST_ASSERT_NOTNULL(track, "Test fixture: the surger isn't recorded")
+	TEST_ASSERT_EQUAL(length(track.ways), 1, "The two steps taken inside one recorded moment weren't kept")
+	var/list/kept = track.ways[track.ways[1]]
+	TEST_ASSERT_EQUAL(length(kept), 4, "The steps kept for the corner aren't two tiles")
+	TEST_ASSERT(kept[1] == corner.x && kept[2] == corner.y, "The corner tile isn't the first step kept")
+	press_again(user)
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["ways_followed"], 1, "The replay didn't lay the trail round the corner the surger turned")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 2, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for two steps round a corner")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
 /// The replay's hold hands an AI back as it took it: one that was running by hand where tg would have it off (or the
 /// other way round) isn't left in the status tg works out afresh when the pause lifts.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status

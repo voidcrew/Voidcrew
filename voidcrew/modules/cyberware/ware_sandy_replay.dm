@@ -75,6 +75,8 @@
 /// The same for a surger. One frame is half a second of a Cascade's slow-mo: at a run he crosses three or four tiles in
 /// it, and a lunge on top of that is more. Counted as a jump, he blinked across the room in the replay with no trail.
 #define SANDY_REPLAY_SURGE_GLIDE_MAX 256
+/// The most steps kept for a surger between two frames. More than that and the trail is laid in a straight line.
+#define SANDY_REPLAY_PATH_MAX 16
 /// Extra time the watchdog gives the replay before it ends it.
 #define SANDY_REPLAY_WATCHDOG (1 SECONDS)
 /// How long a recorded turn of a body (a fall, getting up) takes in the replay: tg's own lying turn.
@@ -180,6 +182,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/trail_step_frames = 0
 	/// Surger: the tile its last replayed step left, for the afterimages spread back along that step (surger_frame()).
 	var/turf/trail_prev
+	/// Recorder, surger: the tiles it stepped onto since its last frame, as flat x, y pairs (on_surger_stepped()).
+	var/list/path
+	/// Surger: the steps it took to reach a frame where it took more than one, by that frame's index as text. A corner
+	/// turned between two samples is two frames a diagonal apart: the trail goes round it as he did (surger_frame()).
+	var/list/ways
 	/// Playback, surger: world.time its last external cue played.
 	var/burst_cue_at = 0
 	/// Playback: a turn (transform change) being tweened: from, to, how long it takes and when it ends.
@@ -327,6 +334,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/sound_at = 1
 	/// Afterimages the replay's surgers left.
 	var/afterimages = 0
+	/// How many replayed steps laid their trail along the way the surger really went (surger_way()).
+	var/ways_followed = 0
 	/// External cues played as its surgers burst off (SANDY_REPLAY_BURST_CUES_MAX).
 	var/burst_cues = 0
 	/// The slow-mo is over but a move in it is still going (moves_running()): recording goes on, on the same clock, from
@@ -586,6 +595,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/obj/effect/decal/cleanable/blood/wet = istype(thing, /obj/effect/decal/cleanable/blood) ? thing : null
 	if(wet && !wet.sandy_replay_wet())
 		wet = null
+	if(track.path && at >= 0 && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z)
+		track.path = null // back where its last frame has it: nothing to go round
 	if(!wet && at >= 0 && raw == track.last_raw && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 		return
 	track.last_raw = raw
@@ -606,12 +617,23 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		if(frames[at + SANDY_FRAME_LOOK] == look && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 			return
 		if(frames[at + SANDY_FRAME_INDEX] >= frame) // sampled twice in one frame: the later look stands
+			if(track.path) // it stepped on since the first take: those steps follow the ones that led to it
+				var/key = "[frames[at + SANDY_FRAME_INDEX]]"
+				var/list/way = (LAZYACCESS(track.ways, key) || list(frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y])) + track.path
+				if(length(way) <= SANDY_REPLAY_PATH_MAX * 2)
+					LAZYSET(track.ways, key, way)
+				else
+					LAZYREMOVE(track.ways, key)
+				track.path = null
 			frames[at + SANDY_FRAME_LOOK] = look
 			frames[at + SANDY_FRAME_X] = x
 			frames[at + SANDY_FRAME_Y] = y
 			frames[at + SANDY_FRAME_Z] = z
 			frames[at + SANDY_FRAME_DIR] = facing
 			return
+	if(length(track.path) > 2) // more than one step since its last frame
+		LAZYSET(track.ways, "[frame]", track.path)
+	track.path = null
 	frames += list(frame, look, x, y, z, facing)
 
 /**
@@ -744,6 +766,27 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	track.surger = TRUE
 	track.surge_from = frame_now()
 	read_trail(track)
+	if(state == SANDY_REPLAY_RECORDING && track.thing)
+		RegisterSignal(track.thing, COMSIG_MOVABLE_MOVED, PROC_REF(on_surger_stepped))
+
+/// Signal proc for [COMSIG_MOVABLE_MOVED] on a surger while it is recorded: the tile it stepped onto is kept, so the
+/// replay's trail follows the way it really went between two frames.
+/datum/sandy_replay/proc/on_surger_stepped(atom/movable/source, atom/old_loc, dir, forced)
+	SIGNAL_HANDLER
+	var/datum/sandy_replay_track/track = tracks[source]
+	if(!track || state != SANDY_REPLAY_RECORDING || length(track.path) >= SANDY_REPLAY_PATH_MAX * 2)
+		return
+	var/turf/here = source.loc
+	LAZYADD(track.path, isturf(here) ? here.x : 0)
+	track.path += isturf(here) ? here.y : 0
+
+/// The recording is over: the surgers' steps aren't followed any more (their puppets take the signal from here, mask()).
+/datum/sandy_replay/proc/stop_paths()
+	for(var/atom/movable/thing as anything in tracks)
+		var/datum/sandy_replay_track/track = tracks[thing]
+		if(track.surger)
+			UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
+			track.path = null
 
 /// `body`'s own surge is over while the recording goes on (a shared slow-mo's member out of time): no trail from here.
 /datum/sandy_replay/proc/surge_over(mob/living/body)
@@ -863,6 +906,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		return
 	total = max(frame_now(), 1)
 	waited = wait_started ? world.time - wait_started : 0
+	stop_paths()
 	state = SANDY_REPLAY_PENDING
 	if(replays)
 		hide_progress_bars()
@@ -2157,8 +2201,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/turf/reached = locate(frames[dest + SANDY_FRAME_X], frames[dest + SANDY_FRAME_Y], frames[dest + SANDY_FRAME_Z])
 	if(!left || !reached || get_dist(left, reached) > SANDY_REPLAY_SURGE_GLIDE_MAX / ICON_SIZE_X)
 		return // a jump, not steps
-	// Two steps can fall between two samples: each tile it crossed gets its afterimages, as each step would.
-	var/list/crossed = get_line(left, reached)
+	// Several steps can fall between two samples: each tile it crossed gets its afterimages, as each step would. The
+	// way it really went where that was kept (a corner), a straight line where it wasn't.
+	var/list/crossed = surger_way(track, left, reached) || get_line(left, reached)
 	var/steps = length(crossed) - 1
 	// The trail is laid as the live one is (cyberware_cascade_window/on_move()), on the replay's clock: a step takes as
 	// many frames as it took in the recording, and an afterimage lives trail_length / trail_per_tile steps, so a walk at
@@ -2192,6 +2237,25 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag, wait)
 			afterimages++
 	track.trail_prev = crossed[steps]
+
+/// The tiles `track`'s surger crossed from `left` to `reached` (both included) as it stepped them in the recording, or
+/// null when they weren't kept or don't join the two up a step at a time (it was moved by something other than walking).
+/datum/sandy_replay/proc/surger_way(datum/sandy_replay_track/track, turf/left, turf/reached)
+	var/list/kept = LAZYACCESS(track.ways, "[track.frames[track.cursor + SANDY_FRAME_INDEX]]")
+	if(!kept)
+		return null
+	var/list/way = list(left)
+	var/turf/last = left
+	for(var/i in 1 to length(kept) step 2)
+		var/turf/next = locate(kept[i], kept[i + 1], left.z)
+		if(!next || get_dist(last, next) != 1)
+			return null
+		way += next
+		last = next
+	if(last != reached)
+		return null
+	ways_followed++
+	return way
 
 /// A surger's replayed self bursts off from `from` after a pause: its viewers hear the snap anyone near heard
 /// (ware_sandy_sound.dm), at most every SANDEVISTAN_BURST_GAP as the replay plays (the outside view's time) and a few
@@ -2442,6 +2506,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return
 	finished = TRUE
 	var/was_playing = state == SANDY_REPLAY_PLAYING
+	if(state == SANDY_REPLAY_RECORDING)
+		stop_paths()
 	state = SANDY_REPLAY_DONE
 	deltimer(play_timer)
 	deltimer(watchdog)
@@ -2506,7 +2572,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	catch(var/exception/error)
 		LAZYADD(problems, "[error] ([error.file]:[error.line])")
 	QDEL_NULL(eye)
-	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "sounds" = length(sounds), "sounds_played" = sound_at - 1, "events_played" = events_played, "chains_resumed" = chains_resumed, "event_log" = event_log.Copy())
+	GLOB.sandy_replay_last = list("played" = was_playing, "frames" = total, "puppets" = length(puppets), "standins" = length(standins), "unhooked" = unhooked, "folded" = folded.Copy(), "unmasks" = unmasks, "afterimages" = afterimages, "ways_followed" = ways_followed, "sounds" = length(sounds), "sounds_played" = sound_at - 1, "events_played" = events_played, "chains_resumed" = chains_resumed, "event_log" = event_log.Copy())
 	if(crash && !QDELETED(user) && user.stat != DEAD && cyberware_bearer_lattice(user))
 		user.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash[1], crash[2])
 	crash = null
