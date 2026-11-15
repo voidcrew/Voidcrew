@@ -22,6 +22,8 @@
 	user.hv_vis_hit_time = world.time
 	user.hv_vis_hit_dir = EAST
 	user.hv_vis_hit_damage = 60
+	var/frames_before = replay.frame_now()
+	var/died_at = world.time
 	user.death() // ends the slow-mo there and then
 	TEST_ASSERT(user.hv_vis_slide_due, "Test fixture: the death queued no slide across a tile")
 	TEST_ASSERT_EQUAL(replay.state, 1, "The recording stopped before the dead user's body slid")
@@ -31,6 +33,10 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT(!QDELETED(replay) && replay.state >= 2, "The recording never ended after the body slid, or nothing replays")
 	TEST_ASSERT_EQUAL(user.loc, spot(2, 1), "Test fixture: the body didn't slide a tile east")
+	// The world ran at its normal pace while the body slid: a frame a tick, or the slide replays too fast
+	var/waited_ticks = (replay.ended_at - died_at) / world.tick_lag
+	TEST_ASSERT(waited_ticks >= 2, "Test fixture: the recording waited [waited_ticks] ticks for the slide")
+	TEST_ASSERT(replay.total - frames_before >= waited_ticks - 2, "The wait for the slide recorded [replay.total - frames_before] frames over [waited_ticks] ticks")
 	var/datum/sandy_replay_track/track = replay.tracks[user]
 	var/list/frames = track.frames
 	var/at = length(frames) - 6

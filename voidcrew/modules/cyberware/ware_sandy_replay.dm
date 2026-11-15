@@ -1014,6 +1014,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	// An execution or finisher in the field is still going. The replay's hold would cut it short (its checks fail on a
 	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done. A body
 	// killed as the slow-mo ended (its user, shot dead) is waited for the same way until it has slid where it lies.
+	// The clock goes to the world's normal pace first: left at the slow-mo's, the wait would be a frame every half
+	// second and replay ten times too fast.
+	sandy_rebase(1)
 	wait_started = world.time
 
 /**
