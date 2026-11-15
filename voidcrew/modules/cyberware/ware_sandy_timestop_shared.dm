@@ -120,6 +120,36 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 		return FALSE
 	return !!field.replay && field.replay.state == SANDY_SHARED_RECORDING && !field.replay.wait_started
 
+/**
+ * Whether `body` may not open a slow-mo of its own right now: a replay holds it or is showing on it, or a crewmate's
+ * slow-mo that it could not join reaches it (one in its last hold, or whose replay is about to play or playing). A
+ * second field there would run on through that replay, with its ring, its tint and its user's edge glow in it.
+ */
+/proc/sandy_session_bars(mob/living/body)
+	if(HAS_TRAIT_FROM(body, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(body))
+		return TRUE
+	var/turf/here = get_turf(body)
+	var/datum/team/crew = cyberware_crew_team(body)
+	if(!here || !crew)
+		return FALSE
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/other as anything in GLOB.cyberware_time_fields)
+		var/mob/living/host = other.host
+		if(!isliving(host) || host == body || !host.ckey || cyberware_crew_team(host) != crew || sandy_session_joinable(other))
+			continue
+		var/turf/there = get_turf(host)
+		if(there && there.z == here.z && get_dist(here, there) <= SANDY_SHARED_TOUCH)
+			return TRUE
+	for(var/mob/living/other_user as anything in GLOB.sandy_replays)
+		var/datum/sandy_replay/replay = GLOB.sandy_replays[other_user]
+		if(!replay || replay.finished || other_user == body || cyberware_crew_team(other_user) != crew)
+			continue
+		if(replay.state == SANDY_SHARED_RECORDING && !replay.wait_started)
+			continue // still recording: joinable, or far enough to be its own
+		var/turf/there = get_turf(other_user)
+		if(there && there.z == here.z && get_dist(here, there) <= SANDY_SHARED_TOUCH)
+			return TRUE
+	return FALSE
+
 /// `field` and `other` are two crewmates' slow-mos that touch.
 /proc/sandy_session_touching(datum/proximity_monitor/advanced/timestop/sandevistan/field, datum/proximity_monitor/advanced/timestop/sandevistan/other)
 	var/turf/here = get_turf(field.host)
@@ -195,6 +225,15 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	started = min(started, other.started)
 	if(other.replay && other.replay != replay)
 		var/datum/sandy_replay/dropped = other.replay
+		// What the dropped recording had seen and this one hasn't (the gore of the newcomer's kills before they joined)
+		if(replay?.state == SANDY_SHARED_RECORDING)
+			for(var/atom/movable/thing as anything in dropped.tracks)
+				var/datum/sandy_replay_track/seen = dropped.tracks[thing]
+				if(QDELETED(thing) || replay.tracks[thing])
+					continue
+				replay.covering = fresh && !seen.first
+				replay.notice(thing)
+			replay.covering = FALSE
 		other.replay = null
 		dropped.field = null
 		dropped.cancel()

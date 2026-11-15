@@ -171,6 +171,9 @@
 
 /// The cooldown starts as the window opens, so pressing again to end the window early looks past it.
 /datum/action/cooldown/cyberware/cascade_surge/IsAvailable(feedback = FALSE)
+	// Not while a replay holds him: a surge fired under it would run through it
+	if(isliving(owner) && (HAS_TRAIT_FROM(owner, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(owner)))
+		return FALSE
 	if(!can_cut_short())
 		return ..()
 	var/cooldown_end = next_use_time
@@ -182,6 +185,8 @@
 	if(!isliving(owner))
 		return FALSE
 	var/mob/living/surger = owner
+	if(HAS_TRAIT_FROM(surger, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(surger))
+		return FALSE
 	if(can_cut_short()) // the second press: back to real time, and the crash
 		var/datum/status_effect/cyberware_cascade_window/window = surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 		if(window.time_stop)

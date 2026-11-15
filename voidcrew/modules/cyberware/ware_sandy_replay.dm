@@ -81,6 +81,9 @@
 /// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
 /// any other player this close is crew, or there would be no replay).
 #define SANDY_REPLAY_HOLD_RANGE 11
+/// How far from a surger a recording takes what calls sandy_replay_made(): a slowed room reaches 16 tiles from him
+/// (SANDY_COVER_ROOM_REACH), and a blow throws blood five tiles on.
+#define SANDY_REPLAY_MADE_REACH 21
 /// The longest the replay stays on its last frame while gore from a kill in its last moments lands (land()).
 #define SANDY_REPLAY_LANDING_MAX (1.5 SECONDS)
 /// The longest of that it waits for its own animations of that gore to play out, before the real gore flies on.
@@ -1455,13 +1458,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		if(there)
 			. |= there
 
-/// Whether `target` is within SANDY_REPLAY_HOLD_RANGE of the user or another member of its shared slow-mo.
-/datum/sandy_replay/proc/near_centre(atom/target)
+/// Whether `target` is within `reach` (SANDY_REPLAY_HOLD_RANGE unless given) of the user or another member of its
+/// shared slow-mo.
+/datum/sandy_replay/proc/near_centre(atom/target, reach = SANDY_REPLAY_HOLD_RANGE)
 	var/turf/spot = get_turf(target)
 	if(!spot)
 		return FALSE
 	for(var/turf/here as anything in centres())
-		if(spot.z == here.z && get_dist(spot, here) <= SANDY_REPLAY_HOLD_RANGE)
+		if(spot.z == here.z && get_dist(spot, here) <= reach)
 			return TRUE
 	return FALSE
 
@@ -1577,6 +1581,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		for(var/obj/effect/temp_visual/decoy/fading/cascade/left_over in range(SANDY_REPLAY_HOLD_RANGE, here))
 			if(!istype(left_over, /obj/effect/temp_visual/decoy/fading/cascade/replay))
 				qdel(left_over)
+		// A surge's ring still spreading is the slow-mo's own look too
+		for(var/obj/effect/temp_visual/cyberware_time_ring/ring in range(SANDY_REPLAY_HOLD_RANGE, here))
+			qdel(ring)
 	hold_nearby()
 	RegisterSignal(user, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(on_user_z_changed))
 	if(user.client && user.stat != DEAD && isturf(user.loc) && user_track?.mode == SANDY_TRACK_PUPPET)
@@ -2592,7 +2599,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return
 	for(var/user in GLOB.sandy_replays)
 		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && replay.near_centre(where))
+		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && replay.near_centre(where, SANDY_REPLAY_MADE_REACH))
 			replay.notice(thing)
 
 /// tg's muzzle flash is made inside the shooter and shown in their vis_contents, where no field sees it: every
@@ -2600,6 +2607,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 /obj/effect/temp_visual/dir_setting/firing_effect/Initialize(mapload, set_dir)
 	. = ..()
 	sandy_replay_made(src)
+
+/// Blood is laid wherever a blow throws it, and a slowed room is wider than the field that hands new things to the
+/// recording (a shared slow-mo slows a whole hall): the recording takes it here as it is made. Missed, it lay on the
+/// floor from the replay's first frame, before the replay had reached the blow that spilled it.
+/obj/effect/decal/cleanable/blood/Initialize(mapload, list/datum/disease/diseases, list/blood_or_dna = get_default_blood_type())
+	. = ..()
+	if(!mapload && . != INITIALIZE_HINT_QDEL && length(GLOB.sandy_replays) && isturf(loc))
+		sandy_replay_made(src)
 
 /// tg's blood splash is put on the floor, where the field hands it over at once, and only then (Initialize()) turns the
 /// way the blow went, takes its colour and flies off fading. The recording took it bare: it is looked at again here,
@@ -2812,6 +2827,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_SOUND_VOLUME
 #undef SANDY_REPLAY_SOUND_GAP
 #undef SANDY_REPLAY_HOLD_RANGE
+#undef SANDY_REPLAY_MADE_REACH
 #undef SANDY_REPLAY_LANDING_MAX
 #undef SANDY_REPLAY_LANDING_TWEENS
 #undef SANDY_REPLAY_LANDING_FRAMES

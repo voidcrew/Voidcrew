@@ -87,6 +87,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			pixel_y = base_pixel_y + HV_VIS_DY(fling_dir) * 7 + rand(-3, 3)
 	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from, starts_over, starts_turned)
 	tumble.launch()
+	sandy_replay_made(src) // a Sandevistan's recording takes it wherever in the slowed room it comes off (ware_sandy_replay.dm)
 	return TRUE
 
 /// The tiles a part flung from `start` along `fling_dir` crosses, nearest first, up to `distance` of them.

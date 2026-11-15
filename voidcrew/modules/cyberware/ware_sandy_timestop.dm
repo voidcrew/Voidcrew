@@ -1253,6 +1253,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		return FALSE
 	if(cyberware_time_stop_witnessed(owner))
 		return FALSE
+	if(sandy_session_bars(owner)) // under a replay, or beside a crewmate's slow-mo too far gone to join (ware_sandy_timestop_shared.dm)
+		return FALSE
 	var/turf/here = get_turf(owner)
 	if(!here)
 		return FALSE
