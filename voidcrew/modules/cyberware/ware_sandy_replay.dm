@@ -283,6 +283,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/list/standins = list()
 	/// Mobs with their AI paused or input locked, to their simple-animal AI status (or TRUE).
 	var/list/locked = list()
+	/// Held mobs with an AI controller, to list(the status it had, the status tg would have given it) as the hold began.
+	var/list/ai_before = list()
 	/// Things that turned up after the recording ended (gore still landing from the last blow), hidden until the end.
 	var/list/unborn = list()
 	/// Live rig pictures hidden for the replay (by invisibility, see hide_rig_picture()), to their own invisibility.
@@ -355,7 +357,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/shots_capped = 0
 	/// Shots still flying when the recording ended, held where they are until the replay is over (hold_shots()).
 	var/list/held_shots = list()
-	/// Gore in flight held for the replay (hold_gore()): move loops, and tumbles to the time left to their next step.
+	/// Gore in flight held for the replay (hold_gore()): move loops, tumbles to the time left to their next step, and
+	/// throws to list(world.time they were held at, the delay they had counted).
 	var/list/held_gore = list()
 	/// The recording has run out and the replay is staying on its last frame while gore lands (land()): 2 once the real
 	/// gore flies on. world.time it began, and the gore flying on.
@@ -1279,11 +1282,19 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 /**
  * Gore still flying when the recording ends (a gib sliding off on tg's streak, a torn-off part or organ on its
  * tumble) holds where it is until the replay is over, as the shots do. Left to fly on, it lands while the replay plays
- * and pops to its landing spot, with the blood it left on the way, the moment the replay hands back.
+ * and pops to its landing spot, with the blood it left on the way, the moment the replay hands back. A body or a thing
+ * knocked flying in the recording's last moments (tg's throw) holds in the air the same way: left to fly on under the
+ * replay, a corpse or a dropped gun is drawn where the recording last saw it and jumps to where it landed at the cut.
  */
 /datum/sandy_replay/proc/hold_gore()
 	for(var/atom/movable/thing as anything in tracks)
-		if(QDELETED(thing) || isliving(thing) || track_is_shot(thing))
+		if(QDELETED(thing) || track_is_shot(thing))
+			continue
+		var/datum/thrownthing/flight = thing.throwing
+		if(flight && !flight.paused)
+			flight.paused = TRUE
+			held_gore[flight] = list(world.time, flight.delayed_time)
+		if(isliving(thing))
 			continue
 		var/datum/move_loop/loop = thing.move_packet?.running_loop
 		if(loop && (loop.status & MOVELOOP_STATUS_RUNNING) && !(loop.status & MOVELOOP_STATUS_PAUSED))
@@ -1321,6 +1332,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 				thing = tumble.parent
 				// The time it had left to its next step was counted in the slow-mo, many times too long for now
 				held_gore[held] = world.tick_lag
+			else if(istype(held, /datum/thrownthing))
+				var/datum/thrownthing/flight = held
+				thing = flight.thrownthing
 			if(QDELETED(thing))
 				continue
 			landing |= thing // waited for whether this recording draws it or not
@@ -1360,7 +1374,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			continue
 		var/datum/move_loop/loop = thing.move_packet?.running_loop
 		var/datum/component/hv_tumble/tumble = thing.GetComponent(/datum/component/hv_tumble)
-		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer)
+		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer && !thing.throwing)
 			landing -= thing
 			landing_settle = world.time + 0.15 SECONDS
 	return length(landing) > 0 || world.time < landing_settle || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && (gore_playing() || oneshots_playing()))
@@ -1404,6 +1418,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			var/datum/component/hv_tumble/tumble = held
 			if(!tumble.step_timer)
 				tumble.step_timer = addtimer(CALLBACK(tumble, TYPE_PROC_REF(/datum/component/hv_tumble, take_step)), held_gore[held], TIMER_STOPPABLE|TIMER_DELETE_ME)
+		else if(istype(held, /datum/thrownthing))
+			// It flies on from where it hung: its clock starts again as if the hold never was
+			var/datum/thrownthing/flight = held
+			var/list/hung = held_gore[held]
+			flight.start_time += world.time - hung[1]
+			flight.delayed_time = hung[2]
+			flight.paused = FALSE
 	held_gore.Cut()
 
 /// A shot drawn on itself was deleted mid-replay (it hit something in the recording's last tick): a stand-in flies
@@ -1776,6 +1797,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	if(body.ckey && body.stat != DEAD)
 		body.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED), SANDY_REPLAY_TRAIT)
 	if(body.ai_controller)
+		// Taken before the pause: lifting it makes tg work the status out afresh (update_able_to_run())
+		ai_before[body] = list(body.ai_controller.ai_status, body.ai_controller.get_expected_ai_status())
 		ADD_TRAIT(body, TRAIT_AI_PAUSED, SANDY_REPLAY_TRAIT)
 	if(isanimal(body))
 		var/mob/living/simple_animal/animal = body
@@ -1788,6 +1811,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	if(QDELETED(body))
 		return
 	body.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED, TRAIT_AI_PAUSED), SANDY_REPLAY_TRAIT)
+	// The hold is a pause: an AI goes on as it was. Lifting the pause has tg set the status it expects, which undoes a
+	// status something set on purpose (a captive's AI switched off, one switched on by hand). With nothing else changed
+	// since the hold began (tg expects what it expected then), the AI gets back the status it was taken with.
+	var/list/before = ai_before[body]
+	var/datum/ai_controller/brain = body.ai_controller
+	if(before && brain?.able_to_run && before[1] != before[2] && brain.ai_status != before[1] && brain.get_expected_ai_status() == before[2])
+		brain.set_ai_status(before[1])
 	// A knockdown or crit that ended mid-replay tried to stand them up then (get_up()'s do_after), and the lock's
 	// TRAIT_INCAPACITATED failed it: nothing would try again, so they'd lie there. tg's own end-of-floored step.
 	if(body.stat != DEAD && body.body_position == LYING_DOWN && !HAS_TRAIT(body, TRAIT_FLOORED))
@@ -1825,6 +1855,24 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	thing.appearance = track.saved_look
 	thing.dir = track.saved_dir
 	pin(track)
+
+/**
+ * The replay is over: `track`'s thing gets its real look back. With `turns`, a body that really got up or went down
+ * while the replay played (a knockdown running out under the hold) turns from the way it was last drawn to the way it
+ * really lies, as tg turns a body, instead of snapping upright at the cut.
+ */
+/datum/sandy_replay/proc/hand_back(datum/sandy_replay_track/track, turns)
+	var/atom/movable/thing = track.thing
+	var/matrix/drawn = (turns && isliving(thing) && track.cursor >= 0 && thing.alpha) ? matrix(thing.transform) : null
+	wear_real(track)
+	if(!drawn || (drawn ~= thing.transform))
+		return
+	var/matrix/real = matrix(thing.transform)
+	var/matrix/halfway = drawn.Interpolate(real, 0.5)
+	if(abs(halfway.a * halfway.e - halfway.b * halfway.d) < 0.25) // a half turn blends through nothing: it flips at once
+		return
+	thing.transform = drawn
+	animate(thing, transform = real, time = SANDY_REPLAY_TURN_TIME, easing = SINE_EASING)
 
 /// Appearance assignment copies opacity and luminosity: keep the real ones.
 /datum/sandy_replay/proc/pin(datum/sandy_replay_track/track)
@@ -2375,7 +2423,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 					GLOB.sandy_replay_masked -= thing
 				UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_ATOM_DIR_CHANGE))
 				if(!QDELETED(thing) && !track.unmasked)
-					wear_real(track)
+					hand_back(track, was_playing)
 					thing.sandy_replay_resume()
 			track.unmasked = FALSE
 		catch(var/exception/error)
@@ -2401,6 +2449,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		catch(var/exception/error)
 			LAZYADD(problems, "[error] ([error.file]:[error.line])")
 	locked.Cut()
+	ai_before.Cut()
 	for(var/obj/vehicle/sealed/mecha/mech as anything in mechs)
 		sandy_replay_clock_start(mech)
 		if(!QDELETED(mech))
