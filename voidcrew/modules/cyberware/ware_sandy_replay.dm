@@ -350,6 +350,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/landing_stage = 0
 	var/landing_started = 0
 	var/list/landing = list()
+	/// The afterimages the replay has left behind its surgers: gone with it, however long it stayed on its last frame.
+	var/list/trail_copies = list()
 	/// world.time the last of it to land has left its last drops by: the replay stays that long.
 	var/landing_settle = 0
 	/// The longest one frame's sample of everything recorded took, in milliseconds, for tests and recordings.
@@ -1279,7 +1281,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
  */
 /datum/sandy_replay/proc/land()
 	if(!landing_stage)
-		if(!length(held_gore) && !gore_playing())
+		if(!length(held_gore) && !gore_playing() && !oneshots_playing())
 			return FALSE
 		landing_stage = 2
 		landing_started = world.time
@@ -1314,7 +1316,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer)
 			landing -= thing
 			landing_settle = world.time + 0.15 SECONDS
-	return length(landing) > 0 || world.time < landing_settle || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && gore_playing())
+	return length(landing) > 0 || world.time < landing_settle || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && (gore_playing() || oneshots_playing()))
 
 /// Whether the replay is still playing its own animation of gore thrown in the recording's last moments (a gib's arc
 /// from a head that burst as the slow-mo ended).
@@ -1328,6 +1330,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			continue
 		var/list/last_event = track.events[length(track.events)]
 		if(last_event[1] >= total - SANDY_REPLAY_LANDING_FRAMES)
+			return TRUE
+	return FALSE
+
+/// Whether a one-shot effect is still playing out in the replay (the splash of a hit in the recording's last moments).
+/datum/sandy_replay/proc/oneshots_playing()
+	for(var/datum/sandy_replay_track/track as anything in standins)
+		if(track.oneshot && track.standin && track.anim_until > world.time)
 			return TRUE
 	return FALSE
 
@@ -1535,6 +1544,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		standins += track
 	gone.Cut()
 	user_track = tracks[user]
+	// What is left of the trail the surge itself drew stands where the slow-mo ended: the replay draws its own
+	for(var/turf/here as anything in centres())
+		for(var/obj/effect/temp_visual/decoy/fading/cascade/left_over in range(SANDY_REPLAY_HOLD_RANGE, here))
+			if(!istype(left_over, /obj/effect/temp_visual/decoy/fading/cascade/replay))
+				qdel(left_over)
 	hold_nearby()
 	RegisterSignal(user, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(on_user_z_changed))
 	if(user.client && user.stat != DEAD && isturf(user.loc) && user_track?.mode == SANDY_TRACK_PUPPET)
@@ -2041,7 +2055,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
 			var/shift_x = round((step_to.x - step_from.x) * fraction * ICON_SIZE_X)
 			var/shift_y = round((step_to.y - step_from.y) * fraction * ICON_SIZE_Y)
-			new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag)
+			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag)
 			afterimages++
 
 /// A surger's replayed self bursts off from `from` after a pause: its viewers hear the snap anyone near heard
@@ -2209,7 +2223,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		if(frame > total + 1 && !land()) // the last frame's tween has played out, and nothing is left in the air
 			finish()
 			return
-		frame = min(frame, total)
+		frame = min(frame, landing_stage ? total + 1 : total) // while it lands, what was only drawn to the last frame goes
 		hold_nearby()
 		sandy_replay_clocks_tick() // the held stay paused
 		if(landing_stage < 2) // what gore flying on for real leaves behind it is seen as it is left
@@ -2311,6 +2325,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	sandy_replay_masks = length(GLOB.sandy_replay_masked)
 	for(var/datum/sandy_replay_track/track as anything in standins)
 		QDEL_NULL(track.standin)
+	QDEL_LIST(trail_copies)
 	release_shots()
 	show_progress_bars()
 	show_pending()
