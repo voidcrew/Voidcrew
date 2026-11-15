@@ -84,7 +84,7 @@
 /// The longest the replay stays on its last frame while gore from a kill in its last moments lands (land()).
 #define SANDY_REPLAY_LANDING_MAX (1.5 SECONDS)
 /// The longest of that it waits for its own animations of that gore to play out, before the real gore flies on.
-#define SANDY_REPLAY_LANDING_TWEENS (0.6 SECONDS)
+#define SANDY_REPLAY_LANDING_TWEENS (0.5 SECONDS)
 /// A kill this close to the recording's end, in its frames, has its gore landed for it.
 #define SANDY_REPLAY_LANDING_FRAMES 10
 /// How long a slash over someone hit stays in the replay once shown: the length of its own frames.
@@ -345,8 +345,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/list/held_shots = list()
 	/// Gore in flight held for the replay (hold_gore()): move loops, and tumbles to the time left to their next step.
 	var/list/held_gore = list()
-	/// The recording has run out and the replay is staying on its last frame while gore lands (land()): 1 while its own
-	/// animations of it play out, 2 while the real gore flies on. world.time it began, and the gore flying on.
+	/// The recording has run out and the replay is staying on its last frame while gore lands (land()): 2 once the real
+	/// gore flies on. world.time it began, and the gore flying on.
 	var/landing_stage = 0
 	var/landing_started = 0
 	var/list/landing = list()
@@ -1271,24 +1271,18 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
  * The recording has run out. A kill in its last moments leaves its gore in the air: the replay would stop on the burst's
  * first frames, and the real gore, held since the slow-mo ended, would jump to wherever it had got to and then finish
  * its flight in the present, the same burst a second time. So the replay stays on its last frame while the gore lands:
- * first its own animations of it play out (a gib's arc), then the held gore is handed back and flies on for real under
- * the replay, and only then does the replay hand everything back, with the gore at rest. Never longer than
+ * its own animations of it play out (a gib's arc) while the held gore is handed back and flies on for real under the
+ * replay, and only then does the replay hand everything back, with the gore at rest. Never longer than
  * SANDY_REPLAY_LANDING_MAX. Returns whether it is still landing.
  */
 /datum/sandy_replay/proc/land()
 	if(!landing_stage)
 		if(!length(held_gore) && !gore_playing())
 			return FALSE
-		landing_stage = 1
+		landing_stage = 2
 		landing_started = world.time
 		deltimer(watchdog)
 		watchdog = addtimer(CALLBACK(src, PROC_REF(finish)), SANDY_REPLAY_LANDING_MAX + SANDY_REPLAY_WATCHDOG, TIMER_STOPPABLE | TIMER_DELETE_ME)
-	if(world.time - landing_started >= SANDY_REPLAY_LANDING_MAX)
-		return FALSE
-	if(landing_stage == 1)
-		if(gore_playing() && world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS)
-			return TRUE
-		landing_stage = 2
 		for(var/datum/held as anything in held_gore)
 			var/atom/movable/thing
 			if(istype(held, /datum/move_loop))
@@ -1297,6 +1291,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			else if(istype(held, /datum/component))
 				var/datum/component/tumble = held
 				thing = tumble.parent
+				// The time it had left to its next step was counted in the slow-mo, many times too long for now
+				held_gore[held] = world.tick_lag
 			var/datum/sandy_replay_track/track = QDELETED(thing) ? null : tracks[thing]
 			if(!track || track.landing || !(track in puppets))
 				continue
@@ -1305,7 +1301,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			thing.sandy_replay_resume()
 			landing += thing
 		release_gore()
-		return length(landing) > 0
+	if(world.time - landing_started >= SANDY_REPLAY_LANDING_MAX)
+		return FALSE
 	for(var/atom/movable/thing as anything in landing)
 		if(QDELETED(thing))
 			landing -= thing
@@ -1314,7 +1311,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		var/datum/component/hv_tumble/tumble = thing.GetComponent(/datum/component/hv_tumble)
 		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer)
 			landing -= thing
-	return length(landing) > 0
+	return length(landing) > 0 || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && gore_playing())
 
 /// Whether the replay is still playing its own animation of gore thrown in the recording's last moments (a gib's arc
 /// from a head that burst as the slow-mo ended).
@@ -1323,7 +1320,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		if(track.anim_until <= world.time || !length(track.events))
 			continue
 		var/atom/movable/thing = track.thing
-		if(QDELETED(thing) || !(istype(thing, /obj/effect/decal/cleanable/blood) || istype(thing, /obj/item/bodypart) || istype(thing, /obj/item/organ)))
+		// Not a pool: one creeps wider for seconds, and nobody waits for that
+		if(QDELETED(thing) || !(istype(thing, /obj/effect/decal/cleanable/blood/gibs) || istype(thing, /obj/item/bodypart) || istype(thing, /obj/item/organ)))
 			continue
 		var/list/last_event = track.events[length(track.events)]
 		if(last_event[1] >= total - SANDY_REPLAY_LANDING_FRAMES)
