@@ -31,17 +31,27 @@
 	active_song_sound.environment = juke_area?.sound_environment || SOUND_ENVIRONMENT_NONE
 	active_song_sound.repeat = sound_loops
 
-/// Whether any player is close enough to hear this jukebox.
-/datum/jukebox/proc/player_in_range()
+/**
+ * Whether a living player in the jukebox's area is within range.
+ * Ghosts and players in neighbouring areas (a ship docked alongside) don't count.
+ *
+ * Arguments
+ * * range - tiles in each direction. Defaults to the full hearing range.
+ */
+/datum/jukebox/proc/player_in_range(range)
 	var/turf/sound_turf = get_turf(parent)
 	if(isnull(sound_turf))
 		return FALSE
-	for(var/mob/player as anything in GLOB.player_list)
-		if(isnewplayer(player))
-			continue
+	var/area/sound_area = get_area(sound_turf)
+	var/x_range = range || x_cutoff
+	var/y_range = range || z_cutoff
+	for(var/mob/living/player in GLOB.player_list)
 		var/turf/player_turf = get_turf(player)
 		if(player_turf?.z != sound_turf.z)
 			continue
-		if(abs(player_turf.x - sound_turf.x) <= x_cutoff && abs(player_turf.y - sound_turf.y) <= z_cutoff)
-			return TRUE
+		if(abs(player_turf.x - sound_turf.x) > x_range || abs(player_turf.y - sound_turf.y) > y_range)
+			continue
+		if(get_area(player_turf) != sound_area)
+			continue
+		return TRUE
 	return FALSE

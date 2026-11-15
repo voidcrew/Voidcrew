@@ -13,7 +13,7 @@
 	..()
 
 /**
- * Only players on the dance floor dance.
+ * Only players on the dance floor dance, and not while fighting, cuffed or held.
  *
  * Upstream makes every listener in earshot dance, about twelve tiles out. That
  * spins and floors anyone shopping near a dance machine that's playing.
@@ -25,6 +25,9 @@
 		if(get_dist(dancer, src) > DANCE_FLOOR_RANGE)
 			continue
 		if(!(dancer.mobility_flags & MOBILITY_MOVE))
+			continue
+		// Nobody dances mid-fight, in cuffs, or while being dragged or held.
+		if(dancer.combat_mode || HAS_TRAIT(dancer, TRAIT_RESTRAINED) || dancer.pulledby || dancer.buckled)
 			continue
 		if(HAS_TRAIT(dancer, TRAIT_DISCO_DANCER))
 			continue
