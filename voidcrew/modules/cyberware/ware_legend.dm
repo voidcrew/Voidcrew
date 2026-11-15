@@ -355,7 +355,8 @@
 		step_time = owner.cached_multiplicative_slowdown
 	step_time = clamp(step_time, world.tick_lag, CYBERWARE_CASCADE_TRAIL_STEP_MAX)
 	var/per_tile = max(1, trail_per_tile)
-	var/life = step_time * max(1, trail_length) / per_tile
+	// One step longer than trail_length of them take to walk: each is laid a step behind him, on ground already crossed
+	var/life = step_time * (max(1, trail_length) / per_tile + 1)
 	var/cap = life
 	if(time_stop) // the slow-mo's trail is gone when it is: the replay draws its own
 		cap = max(duration - world.time, world.tick_lag)

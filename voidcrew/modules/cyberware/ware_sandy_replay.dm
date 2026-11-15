@@ -2092,11 +2092,10 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * clock_rate
 	if(step_frames > step_max) // the first step, or one after a pause: as long as its last step took
 		step_frames = track.trail_step_frames || step_max
-		track.trail_prev = null
 		sandy_burst_cue(track, left)
 	track.trail_step_frames = step_frames
 	var/per_tile = max(1, track.trail_per_tile)
-	var/life_frames = step_frames * max(1, track.trail_length) / per_tile
+	var/life_frames = step_frames * (max(1, track.trail_length) / per_tile + 1)
 	var/frames_left = max(total + 2 - frames[dest + SANDY_FRAME_INDEX], 1)
 	for(var/k in 1 to steps)
 		var/turf/step_from = crossed[k]
