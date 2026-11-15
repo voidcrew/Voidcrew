@@ -436,6 +436,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	GLOB.sandy_replays[user] = src
 	sample_timer = addtimer(CALLBACK(src, PROC_REF(sample)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	notice(user)
+	last_sampled = 0
 
 /datum/sandy_replay/Destroy()
 	finish()
@@ -628,17 +629,19 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/datum/sandy_replay_track/track = tracks[thing]
 	if(track && state == SANDY_REPLAY_RECORDING)
 		track.last_raw = null
-		sample_track(track, frame_now())
+		sample_track(track, covering ? track.first : round(frame_due()))
 
 /// The sample timer, every tick: one frame of everything recorded, when the clock is on a new one.
 /datum/sandy_replay/proc/sample()
 	if(state != SANDY_REPLAY_RECORDING)
 		return
+	for(var/atom/movable/thing as anything in tracks)
+		var/datum/sandy_replay_track/track = tracks[thing]
+		if(track.surger && !track.trail_read)
+			read_trail(track)
 	var/list/moving = moves_running()
 	var/frame = frame_now()
-	// The first frame is taken again every tick of its span, the last take standing: it is what the replay opens on, and
-	// the surge's own first tick (the user mid-activation) is no picture to open on.
-	if(frame <= last_sampled && frame != 0)
+	if(frame <= last_sampled)
 		return
 	last_sampled = frame
 	if(wait_started)
@@ -671,6 +674,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		x = here.x
 		y = here.y
 		z = here.z
+	// The Cascade's spine nodes light one by one over the first frame's span (cyberware_anim.dm): frame 0 opens with
+	// them lit, as the rest of the surge has them, without touching the live boot.
+	var/mob/living/carbon/carbon_bearer = iscarbon(thing) ? thing : null
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = carbon_bearer ? cyberware_bearer_lattice(carbon_bearer) : null
+	var/old = (lattice && findtext(lattice.node_look, "boot") == 1) ? lattice.node_look : null
+	if(old)
+		lattice.node_look = "lit"
+		carbon_bearer.update_body_parts()
 	var/raw = thing.appearance
 	var/facing = thing.dir
 	var/obj/effect/abstract/cyberware_anim/picture = sandy_bearer_picture(thing) ? thing : null
@@ -685,6 +696,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	if(track.path && at >= 0 && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z)
 		track.path = null // back where its last frame has it: nothing to go round
 	if(!wet && at >= 0 && raw == track.last_raw && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
+		if(old)
+			lattice.node_look = old
+			carbon_bearer.update_body_parts()
 		return
 	track.last_raw = raw
 	if(!track.surger && (thing == user || field?.surging[thing]))
@@ -692,8 +706,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	else if(track.surger && !track.trail_read)
 		read_trail(track)
 	var/look = clean_look(thing)
-	if(iscarbon(thing))
-		look = unfolded_look(thing, look)
+	if(carbon_bearer)
+		look = unfolded_look(carbon_bearer, look)
+	if(old)
+		lattice.node_look = old
+		carbon_bearer.update_body_parts()
 	if(wet)
 		look = wet_look(wet, look)
 	if(track.flier)
@@ -883,7 +900,6 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		var/datum/sandy_replay_track/track = tracks[thing]
 		if(track.surger)
 			UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
-			track.path = null
 
 /// `body`'s own surge is over while the recording goes on (a shared slow-mo's member out of time): no trail from here.
 /datum/sandy_replay/proc/surge_over(mob/living/body)
@@ -2471,7 +2487,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	if(step_frames > step_max) // the first step, or one after a pause: as long as a step takes him, as the live trail has it
 		var/stride_frames = track.stride * rate_at(frames[dest + SANDY_FRAME_INDEX])
 		step_frames = stride_frames > 0 ? min(stride_frames, step_max) : (track.trail_step_frames || step_max)
-		sandy_burst_cue(track, left)
+		// Within SANDEVISTAN_BURST_GAP of the surge itself, the opening cue just played (ware_sandy_sound.dm).
+		if((stepped || frames[dest + SANDY_FRAME_INDEX]) - track.surge_from >= SANDEVISTAN_BURST_GAP * rate_at(frames[dest + SANDY_FRAME_INDEX]))
+			sandy_burst_cue(track, left)
 	track.trail_step_frames = step_frames
 	var/per_tile = max(1, track.trail_per_tile)
 	var/life_frames = step_frames * (max(1, track.trail_length) / per_tile + 1)
@@ -2482,22 +2500,24 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		var/turf/before = k > 1 ? crossed[k - 1] : track.trail_prev
 		if(before && (before.z != step_from.z || get_dist(before, step_from) != 1))
 			before = null
-		// Several tiles between two frames: the puppet is still gliding over them, and a copy laid now on a tile further
-		// on stood ahead of him. Each shows as he passes it.
+		// Several tiles between two frames: the puppet is still gliding over them, and a copy laid before the tick after he
+		// leaves its tile stands ahead of him. It waits to that tick, and starts at the age and life it has left by then.
 		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * (k - 1) / steps : 0
+		var/ticks = wait > 0 ? max(ROUND_UP(wait / world.tick_lag - 0.001), 1) : 0
+		var/delay = ticks * world.tick_lag
 		// Each copy faces the way he was going as he left its tile: only the last step's facing is in the frame
 		var/facing = steps > 1 ? get_dir(step_from, crossed[k + 1]) : frames[dest + SANDY_FRAME_DIR]
 		for(var/i in 0 to (before ? per_tile - 1 : 0))
 			var/fraction = i / per_tile
-			var/left_frames = life_frames - (steps - k + 1 + fraction) * step_frames // it was passed this long ago
+			var/left_frames = life_frames - (steps - k + 1 + fraction) * step_frames - ticks // left when it is laid
 			if(left_frames <= 0)
 				continue
-			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
+			var/life = clamp(left_frames + ticks, 1, frames_left) * world.tick_lag
 			var/shift_x = before ? round((before.x - step_from.x) * fraction * ICON_SIZE_X) : 0
 			var/shift_y = before ? round((before.y - step_from.y) * fraction * ICON_SIZE_Y) : 0
 			var/age_time = left_frames * world.tick_lag
-			if(wait >= world.tick_lag) // laid as he passes, and gone when it would have been
-				addtimer(CALLBACK(src, PROC_REF(lay_copy), step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, max(life - wait, world.tick_lag), shift_x, shift_y, max(age_time - wait, world.tick_lag)), wait, TIMER_DELETE_ME)
+			if(delay)
+				addtimer(CALLBACK(src, PROC_REF(lay_copy), step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life > delay ? life - delay : world.tick_lag, shift_x, shift_y, age_time), delay, TIMER_DELETE_ME)
 			else
 				lay_copy(step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, age_time)
 			afterimages++

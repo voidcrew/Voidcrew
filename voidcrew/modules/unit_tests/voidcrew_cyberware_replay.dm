@@ -1333,3 +1333,145 @@
 	TEST_ASSERT_NULL(victim.throwing, "The body never landed after the replay")
 	TEST_ASSERT(get_turf(victim) != hung, "The body didn't fly on once the replay let it go")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// What happens inside the first frame's half-second span (steps, a drawn weapon, a wound, spilled blood) isn't
+/// folded into frame 0: the replay opens where the user stood when the slow-mo began, with the Cascade's spine already
+/// lit, and replays those first steps with their trail.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/first
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/first/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayfirst")
+	set_window(user, 3 SECONDS)
+	var/mob/living/carbon/human/npc/victim = allocate(/mob/living/carbon/human/npc, spot(2, 1))
+	var/obj/item/crowbar/still = allocate(/obj/item/crowbar, spot(0, 2))
+	var/obj/item/wrench/wrench = allocate(/obj/item/wrench, spot(3, 3))
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
+	var/datum/sandy_replay_track/user_track = replay.tracks[user]
+	TEST_ASSERT_NOTNULL(user_track, "Test fixture: the user isn't recorded")
+	TEST_ASSERT(findtext(lattice.node_look, "boot") == 1, "Test fixture: the Cascade's spine isn't still booting ([lattice.node_look])")
+	TEST_ASSERT(user_track.frames[2] != replay.clean_look(user), "Frame 0 kept the Cascade's half-lit boot spine")
+	var/old = lattice.node_look
+	lattice.node_look = "lit"
+	user.update_body_parts()
+	TEST_ASSERT_EQUAL(user_track.frames[2], replay.clean_look(user), "Frame 0 didn't open with the Cascade's lit spine")
+	lattice.node_look = old
+	user.update_body_parts()
+
+	// Still inside frame 0's span: step round a corner, take a weapon in hand, wound a body and spill blood.
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	TEST_ASSERT(user.Move(spot(1, 0), EAST), "Test fixture: the surger couldn't step east")
+	TEST_ASSERT(user.Move(spot(1, 1), NORTH), "Test fixture: the surger couldn't step north")
+	TEST_ASSERT(user.put_in_active_hand(wrench), "Test fixture: the weapon wouldn't go in the user's hand")
+	victim.cause_wound_of_type_and_severity(WOUND_SLASH, victim.get_bodypart(BODY_ZONE_CHEST), WOUND_SEVERITY_SEVERE)
+	var/obj/effect/decal/cleanable/blood/blood = allocate(/obj/effect/decal/cleanable/blood, spot(2, 0))
+	TEST_ASSERT_EQUAL(replay.frame_now(), 0, "Test fixture: the first frame's span was already over")
+
+	sleep(0.6 SECONDS)
+	var/datum/sandy_replay_track/track = replay.tracks[blood]
+	TEST_ASSERT_NOTNULL(track, "Blood spilled in the first half second wasn't recorded")
+	TEST_ASSERT(track.first >= 1, "Blood spilled in the first half second was given frame 0 ([track.first])")
+	TEST_ASSERT(user_track.frames[3] == spot(0, 0).x && user_track.frames[4] == spot(0, 0).y, "Frame 0 moved off the tile the slow-mo began on")
+	TEST_ASSERT_EQUAL(length(user_track.ways), 1, "The corner turned in the first half second wasn't kept")
+
+	press_again(user)
+	deltimer(replay.begin_timer)
+	var/real = real_look(user)
+	var/was = real_look(victim)
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(!GLOB.sandy_replay_masked[still], "An untouched prop was replayed")
+	TEST_ASSERT(user.pixel_w == -32 && user.pixel_z == -32, "Frame 0 doesn't draw the user back on the tile the slow-mo began on ([user.pixel_w],[user.pixel_z])")
+	var/mutable_appearance/now = new(user)
+	var/mutable_appearance/before = new(real)
+	TEST_ASSERT(length(now.overlays) < length(before.overlays), "Frame 0 already shows what the user put in their hand in the first half second")
+	TEST_ASSERT(victim.appearance != was, "A body hurt in the first half second opens the replay already hurt")
+	TEST_ASSERT_EQUAL(blood.alpha, 0, "Blood spilled in the first half second shows at frame 0")
+
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["ways_followed"], 1, "The replay didn't follow the corner turned in the first half second")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 2, "The first half second's steps left [GLOB.sandy_replay_last["afterimages"]] afterimages")
+	TEST_ASSERT(victim.appearance == was, "The hurt body didn't end the replay as it really was")
+	TEST_ASSERT_EQUAL(blood.alpha, 255, "Blood spilled in the first half second stayed hidden after the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// No trail afterimage is ever laid on a tile the replayed user has not left yet, on a straight dash or round a corner,
+/// and waiting for the tick he leaves it keeps each copy's colour age and life ending when they would have.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/ahead
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/ahead/Run()
+	var/turf/start = spot(0, 0)
+	var/mob/living/carbon/human/user = make_user(start, "sandyreplayahead")
+	set_window(user, 5 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	sleep(0.5 SECONDS) // a four-tile straight dash inside one recorded frame
+	for(var/i in 1 to 4)
+		TEST_ASSERT(user.Move(get_step(user, EAST), EAST), "Test fixture: the surger couldn't dash east")
+	sleep(0.5 SECONDS) // next frame: a corner turn inside one frame
+	var/turf/corner = spot(5, 0)
+	TEST_ASSERT(user.Move(corner, EAST), "Test fixture: the surger couldn't step onto the corner")
+	TEST_ASSERT(user.Move(get_step(corner, NORTH), NORTH), "Test fixture: the surger couldn't turn north")
+	sleep(0.5 SECONDS) // next frame: another step north, so the corner glides over a single tick
+	TEST_ASSERT(user.Move(spot(5, 2), NORTH), "Test fixture: the surger couldn't step north again")
+	sleep(1.5 SECONDS) // room for the dash's copies to finish their own life inside the replay
+
+	press_again(user)
+	var/until = world.time + 2 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	var/datum/sandy_replay_track/user_track = replay.tracks[user]
+	var/list/frames = user_track.frames
+	var/drawn = 0
+	var/began = 0
+	var/done_at = 0
+	var/stalled_at = 0
+	var/peak = 0
+	var/list/ahead = list()
+	var/list/off = list()
+	until = world.time + 5 SECONDS
+	while(!QDELETED(replay) && replay.state == 3 && world.time < until)
+		for(var/waited in 1 to 2)
+			if(QDELETED(replay) || replay.state != 3)
+				break
+			var/at = user_track.cursor
+			if(at >= 0)
+				var/left = user_track.glide_until - world.time
+				var/list/still = (left > 0 && user_track.glide_time > 0) ? replay.glide_at(user_track, left) : list(0, 0)
+				var/now_spot = (frames[at + 3] - start.x) * 32 + still[1] + (frames[at + 4] - start.y) * 32 + still[2]
+				if(left > 0 && user_track.glide_way)
+					var/list/steps = replay.glide_legs(user_track, left)
+					if(left == user_track.glide_time && length(steps) != 2)
+						ahead += "corner glide had [length(steps)] legs"
+					drawn++
+				for(var/obj/effect/temp_visual/decoy/fading/cascade/replay/image as anything in replay.trail_copies)
+					if(QDELETED(image) || !isturf(image.loc))
+						continue
+					var/real_spot = (image.x - start.x) * 32 + (image.y - start.y) * 32
+					if(real_spot > now_spot + 0.01)
+						ahead += "tile ([image.x - start.x],[image.y - start.y]) at [real_spot] px while puppet is at [now_spot] px"
+					if(!began && image.x == start.x && image.y == start.y && !image.pixel_w && !image.pixel_z)
+						began = world.time
+						done_at = world.time + image.duration
+					if(!stalled_at && image.x == start.x + 1 && image.y == start.y && !image.pixel_w && !image.pixel_z)
+						stalled_at = world.time
+						peak = world.time + image.duration
+				off += off_colour_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay)
+			if(waited == 1)
+				sleep(0)
+		sleep(world.tick_lag)
+	wait_over(user)
+	TEST_ASSERT(!length(ahead), "Afterimages showed ahead of the puppet: [jointext(ahead.Copy(1, min(length(ahead), 4) + 1), "; ")]")
+	TEST_ASSERT(drawn >= 1, "The corner's glide never played")
+	TEST_ASSERT(began > 0 && stalled_at >= began + world.tick_lag, "The dash's second tile didn't wait for the next tick ([began] -> [stalled_at])")
+	TEST_ASSERT(peak > done_at && peak - done_at < world.tick_lag, "Waiting a tick shifted when the delayed copy's life ends ([done_at] -> [peak])")
+	TEST_ASSERT(!length(off), "Delayed afterimages not coloured by age: [jointext(off.Copy(1, min(length(off), 4) + 1), "; ")]")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["ways_followed"], 1, "The replay didn't follow the corner")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 8, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages across the dash and corner")
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
