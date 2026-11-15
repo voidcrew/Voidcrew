@@ -87,11 +87,15 @@ GLOBAL_VAR(hv_vis_spray_origin)
 			return (1 - cos(progress * 180)) / 2
 	return progress
 
-/// tg has just stopped every animation on the decal: carry on with its paint.
+/// tg has just stopped every animation on the decal: carry on with its paint. A decal a Sandevistan replay is drawing
+/// as it was (cyberware/ware_sandy_replay.dm) takes the colour and the paint on its real look, not on the recorded one.
 /obj/effect/decal/cleanable/blood/update_blood_color()
+	var/datum/sandy_replay_track/replayed = sandy_replay_masks ? sandy_replay_unmask(src) : null
 	. = ..()
 	if(hv_vis_painting)
 		hv_vis_paint_on()
+	if(replayed)
+		sandy_replay_remask(replayed)
 
 /mob/living/hv_blood_throw(spray_dir, strength = 3)
 	var/turf/previous_origin = GLOB.hv_vis_spray_origin
