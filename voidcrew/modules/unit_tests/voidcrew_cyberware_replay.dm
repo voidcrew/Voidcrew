@@ -1253,6 +1253,29 @@
 	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 2, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for two steps round a corner")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
+/// Blood still painting in when the recording ended carries on, when the replay hands it back, from where the replay's
+/// last frame had it: its keyframes move on by the time the replay took.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/paint_carries_on
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/paint_carries_on/Run()
+	var/obj/effect/decal/cleanable/blood/hv_spray/spray = allocate(/obj/effect/decal/cleanable/blood/hv_spray, spot(1, 1))
+	var/matrix/full = matrix(spray.transform)
+	spray.hv_vis_paint(list(list(matrix(full), 0, 0, LINEAR_EASING), list(full, 255, 2 SECONDS, LINEAR_EASING)))
+	TEST_ASSERT_EQUAL(length(spray.hv_vis_painting), 2, "Test fixture: the spray isn't painting in")
+	var/list/last = spray.hv_vis_painting[2]
+	var/done_at = last[3]
+	sleep(0.5 SECONDS) // the replay plays: the paint runs on unseen
+	var/list/ahead = spray.sandy_replay_paint_now()
+	TEST_ASSERT(ahead && ahead[2] > 40, "Test fixture: the paint didn't run on (alpha [ahead ? ahead[2] : "none"])")
+	spray.sandy_replay_resume(0.5 SECONDS)
+	last = spray.hv_vis_painting[2]
+	TEST_ASSERT_EQUAL(last[3], done_at + 0.5 SECONDS, "The paint's keyframes didn't move on by the time the replay took")
+	var/list/shown = spray.sandy_replay_paint_now()
+	TEST_ASSERT(shown && shown[2] < 10, "The paint didn't carry on from where the recording ended (alpha [shown ? shown[2] : "none"])")
+	spray.sandy_replay_resume()
+	last = spray.hv_vis_painting[2]
+	TEST_ASSERT_EQUAL(last[3], done_at + 0.5 SECONDS, "A hand-back with no replay behind it moved the paint")
+
 /// The replay's hold hands an AI back as it took it: one that was running by hand where tg would have it off (or the
 /// other way round) isn't left in the status tg works out afresh when the pause lifts.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status

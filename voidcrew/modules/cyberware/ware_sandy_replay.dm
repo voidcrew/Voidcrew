@@ -385,6 +385,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/list/trail_copies = list()
 	/// world.time the last of it to land has left its last drops by: the replay stays that long.
 	var/landing_settle = 0
+	/// world.time the recording ended at. What was mid-tween then (a spray painting in) carries on from there when it is
+	/// handed back, as if the replay took no time.
+	var/ended_at = 0
+	/// world.time the sprays still painting in when the recording ended are done by, once land() lets them carry on.
+	var/paint_until = 0
 	/// The longest one frame's sample of everything recorded took, in milliseconds, for tests and recordings.
 	var/sample_cost = 0
 
@@ -907,6 +912,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	total = max(frame_now(), 1)
 	waited = wait_started ? world.time - wait_started : 0
 	stop_paths()
+	ended_at = world.time
 	state = SANDY_REPLAY_PENDING
 	if(replays)
 		hide_progress_bars()
@@ -1386,7 +1392,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
  */
 /datum/sandy_replay/proc/land()
 	if(!landing_stage)
-		if(!length(held_gore) && !gore_playing() && !oneshots_playing())
+		var/list/painting = paints_left()
+		if(!length(held_gore) && !gore_playing() && !oneshots_playing() && !length(painting))
 			return FALSE
 		landing_stage = 2
 		landing_started = world.time
@@ -1413,8 +1420,16 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 				continue
 			unmask(track)
 			track.landing = TRUE
-			thing.sandy_replay_resume()
+			thing.sandy_replay_resume(world.time - ended_at)
 		release_gore()
+		// A spray laid in the slow-mo's last moments was still painting in, slowed, when the recording ended, and the
+		// last frame has it half there. Its real paint ran on under the replay: handed back at the end as it is, it
+		// jumped to full at the cut. It carries on here from where the last frame has it, and the replay waits for it.
+		for(var/datum/sandy_replay_track/track as anything in painting)
+			paint_until = max(paint_until, painting[track])
+			unmask(track)
+			track.landing = TRUE
+			track.thing.sandy_replay_resume(world.time - ended_at)
 		// The surger's own last shot, held in the air at his gun, would hang there too: it flies on. Anyone else's
 		// stays held until everyone can move again.
 		for(var/obj/projectile/shot as anything in held_shots)
@@ -1447,7 +1462,26 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer && !thing.throwing)
 			landing -= thing
 			landing_settle = world.time + 0.15 SECONDS
-	return length(landing) > 0 || world.time < landing_settle || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && (gore_playing() || oneshots_playing()))
+	return length(landing) > 0 || world.time < landing_settle || world.time < paint_until || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && (gore_playing() || oneshots_playing()))
+
+/// The sprays the replay draws that were still painting in when the recording ended (hv_vis_paint(), slowed like the
+/// rest): each track with the world.time its paint is done by once it carries on from where the last frame has it.
+/// Not a smear running down a wall or a pool creeping wider: those take seconds, and nobody waits for them.
+/datum/sandy_replay/proc/paints_left()
+	. = list()
+	if(!ended_at)
+		return
+	var/held_for = world.time - ended_at
+	for(var/datum/sandy_replay_track/track as anything in puppets)
+		var/obj/effect/decal/cleanable/blood/hv_spray/spray = track.thing
+		if(track.landing || track.unmasked || QDELETED(spray) || !istype(spray) || istype(spray, /obj/effect/decal/cleanable/blood/hv_spray/wall))
+			continue
+		var/list/keys = spray.hv_vis_painting
+		if(length(keys) < 2)
+			continue
+		var/list/last = keys[length(keys)]
+		if(last[3] + held_for > world.time)
+			.[track] = last[3] + held_for
 
 /// Whether the replay is still playing its own animation of gore thrown in the recording's last moments (a gib's arc
 /// from a head that burst as the slow-mo ended).
@@ -2525,7 +2559,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 				UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_ATOM_DIR_CHANGE))
 				if(!QDELETED(thing) && !track.unmasked)
 					hand_back(track, was_playing)
-					thing.sandy_replay_resume()
+					thing.sandy_replay_resume((was_playing && ended_at) ? world.time - ended_at : 0)
 			track.unmasked = FALSE
 		catch(var/exception/error)
 			LAZYADD(problems, "[error] ([error.file]:[error.line])")
@@ -2584,9 +2618,10 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 
 /**
  * `src` just got its real look back after the replay. A look's vars hold where its animate()s end, so anything that
- * was mid-tween when it became a puppet starts its tween again here from where it has got to by now.
+ * was mid-tween when it became a puppet starts its tween again here from where it has got to by now. `held_for` is how
+ * long ago the recording ended: what the replay's last frame shows partway through is that much behind by now.
  */
-/atom/movable/proc/sandy_replay_resume()
+/atom/movable/proc/sandy_replay_resume(held_for = 0)
 	return
 
 /// Whether the decal is in the middle of drying or spreading, which happen on the client.
@@ -2641,7 +2676,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 
 /// Wet blood dries (and spreads) by animate(): without this it jumps to its dried look as the replay ends.
 /// update_blood_color() works out how far it has got and plays the rest (hv_vis_paint_on() for the spread).
-/obj/effect/decal/cleanable/blood/sandy_replay_resume()
+/// A paint still going when the recording ended (a spray growing in, a pool creeping wider) ran on unseen under the
+/// replay, whose last frame has it where it was then: its keyframes move on by the time the replay took, so it carries
+/// on from what was last shown instead of jumping ahead.
+/obj/effect/decal/cleanable/blood/sandy_replay_resume(held_for = 0)
+	if(held_for > 0 && length(hv_vis_painting) >= 2)
+		for(var/list/key as anything in hv_vis_painting)
+			key[3] += held_for
 	if(!dried || length(hv_vis_painting))
 		update_atom_colour()
 
@@ -2837,7 +2878,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 
 /// Its alpha var already holds the end of its fade (0): handed back as it was, the cracks would vanish as the replay
 /// ends. They are drawn as the real ones are by now instead, and fade out on their own clock.
-/obj/effect/temp_visual/cyberware_impact_cracks/sandy_replay_resume()
+/obj/effect/temp_visual/cyberware_impact_cracks/sandy_replay_resume(held_for = 0)
 	var/left = timerid ? timeleft(timerid) : 0
 	if(isnull(sandy_peak_alpha) || !left)
 		return
