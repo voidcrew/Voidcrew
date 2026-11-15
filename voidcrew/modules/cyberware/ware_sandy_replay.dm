@@ -1476,12 +1476,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		var/obj/effect/decal/cleanable/blood/hv_spray/spray = track.thing
 		if(track.landing || track.unmasked || QDELETED(spray) || !istype(spray) || istype(spray, /obj/effect/decal/cleanable/blood/hv_spray/wall))
 			continue
-		var/list/keys = spray.hv_vis_painting
-		if(length(keys) < 2)
-			continue
-		var/list/last = keys[length(keys)]
-		if(last[3] + held_for > world.time)
-			.[track] = last[3] + held_for
+		var/left = spray.sandy_replay_paint_carry(held_for, FALSE)
+		if(left > 0)
+			.[track] = world.time + left
 
 /// Whether the replay is still playing its own animation of gore thrown in the recording's last moments (a gib's arc
 /// from a head that burst as the slow-mo ended).
@@ -2677,14 +2674,51 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 /// Wet blood dries (and spreads) by animate(): without this it jumps to its dried look as the replay ends.
 /// update_blood_color() works out how far it has got and plays the rest (hv_vis_paint_on() for the spread).
 /// A paint still going when the recording ended (a spray growing in, a pool creeping wider) ran on unseen under the
-/// replay, whose last frame has it where it was then: its keyframes move on by the time the replay took, so it carries
-/// on from what was last shown instead of jumping ahead.
+/// replay, whose last frame has it where it was then: it carries on from what was last shown instead of jumping ahead.
 /obj/effect/decal/cleanable/blood/sandy_replay_resume(held_for = 0)
-	if(held_for > 0 && length(hv_vis_painting) >= 2)
-		for(var/list/key as anything in hv_vis_painting)
-			key[3] += held_for
+	if(held_for > 0)
+		sandy_replay_paint_carry(held_for)
 	if(!dried || length(hv_vis_painting))
 		update_atom_colour()
+
+/**
+ * Moves the paint's keyframes (hv_vis_painting) so it carries on now from where it was `held_for` ago, and returns how
+ * long it has left. What is left takes its own time, not the slow-mo's stretch of it: the keyframes were timed when the
+ * blood landed, for a slow-mo meant to run on, and one that a held finisher kept open ends sooner than that. Without
+ * [apply] nothing is moved.
+ */
+/obj/effect/decal/cleanable/blood/proc/sandy_replay_paint_carry(held_for, apply = TRUE)
+	var/list/keys = hv_vis_painting
+	var/count = length(keys)
+	if(count < 2)
+		return 0
+	var/then = world.time - held_for
+	var/heading = 0
+	var/list/times = list()
+	for(var/i in 1 to count)
+		var/list/key = keys[i]
+		times += key[3]
+		if(!heading && i >= 2 && then < key[3])
+			heading = i
+	if(!heading)
+		return 0
+	var/list/ahead = keys[heading]
+	var/span = times[heading] - times[heading - 1]
+	var/done = span > 0 ? clamp((then - times[heading - 1]) / span, 0, 1) : 1
+	var/own = length(ahead) >= 5 ? ahead[5] : span
+	var/reached = world.time + (1 - done) * own
+	var/back = world.time - done * own - times[heading - 1]
+	if(apply)
+		for(var/i in 1 to heading - 1)
+			var/list/key = keys[i]
+			key[3] = times[i] + back
+		ahead[3] = reached
+	for(var/i in heading + 1 to count)
+		var/list/key = keys[i]
+		reached += length(key) >= 5 ? key[5] : times[i] - times[i - 1]
+		if(apply)
+			key[3] = reached
+	return reached - world.time
 
 /// The surge window is closing on `user`: if their replay is about to play or playing, the crash waits for it.
 /// Returns TRUE if it took the crash.

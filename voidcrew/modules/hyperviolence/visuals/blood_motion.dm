@@ -17,7 +17,8 @@ GLOBAL_VAR(hv_vis_spray_origin)
 
 /obj/effect/decal/cleanable/blood
 	/// Hyperviolence visuals: the paint-in, drip or creep this decal is in the middle of. Keyframes, each
-	/// list(transform, alpha, the world.time it is reached, easing); the first is where it starts.
+	/// list(transform, alpha, the world.time it is reached, easing, how long the step takes at normal speed); the
+	/// first is where it starts.
 	var/list/hv_vis_painting
 
 /**
@@ -36,7 +37,7 @@ GLOBAL_VAR(hv_vis_spray_origin)
 	for(var/i in 1 to length(keys))
 		var/list/key = keys[i]
 		reached += real ? real[i] : key[3]
-		timed += list(list(key[1], key[2], reached, key[4]))
+		timed += list(list(key[1], key[2], reached, key[4], key[3]))
 	hv_vis_painting = timed
 	hv_vis_paint_on()
 

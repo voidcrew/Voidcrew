@@ -1275,6 +1275,13 @@
 	spray.sandy_replay_resume()
 	last = spray.hv_vis_painting[2]
 	TEST_ASSERT_EQUAL(last[3], done_at + 0.5 SECONDS, "A hand-back with no replay behind it moved the paint")
+	// Timed for a slow-mo that then ended sooner: what is left takes its own time, not ten times it
+	var/list/first = spray.hv_vis_painting[1]
+	last[3] = first[3] + 20 SECONDS
+	var/left = spray.sandy_replay_paint_carry(0.1 SECONDS)
+	TEST_ASSERT(left > 1.5 SECONDS && left <= 2 SECONDS, "A paint stretched by the slow-mo has [left] ds left once it is over, not what is left of its own 2 seconds")
+	last = spray.hv_vis_painting[2]
+	TEST_ASSERT(abs(last[3] - (world.time + left)) < 0.01, "The stretched paint's last keyframe isn't where it now ends")
 
 /// The replay's hold hands an AI back as it took it: one that was running by hand where tg would have it off (or the
 /// other way round) isn't left in the status tg works out afresh when the pause lifts.
