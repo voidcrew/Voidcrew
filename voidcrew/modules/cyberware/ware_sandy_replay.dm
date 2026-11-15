@@ -42,7 +42,7 @@
  * recorded like anything else, and the animate() chains that pose them are journaled (sandy_replay_animate(), routed
  * there by a macro in the rig and finisher files) and played again on their stand-ins: the replay shows the move.
  *
- * Not replayed (they show as they really are): lights, fire, smoke and particles, turf changes, attack lunges,
+ * Not replayed (they show as they really are): lights other than flashes lit on the floor (note_light()), fire, smoke and particles, turf changes, attack lunges,
  * flick()s, tweens on bodies other than steps and turns (flinches, a gun execution's lean, the spin and arc of flying
  * gore, blood drying and spreading), anything in vis_contents, runechat, camera shakes, and looping sounds.
  */
@@ -111,6 +111,8 @@
 /// The longest the replay waits, after the slow-mo, for an execution or finisher in it to end. A move still going
 /// then gets no replay rather than being cut short by the replay's hold.
 #define SANDY_REPLAY_WAIT_MAX (8 SECONDS)
+/// How long past its due time a corpse's slide is still waited for (sandy_replay_falling()).
+#define SANDY_REPLAY_FALL_SLACK (1 SECONDS)
 /// The filters the finisher rigs hide a body under while its posed pictures stand in for it (CHROME_RIG_HIDE_FILTER in
 /// chrome_puppet_rig.dm, MANTIS_RIG_HIDE_FILTER in mantis_rig.dm). A body wearing one is in the middle of a move.
 #define SANDY_REPLAY_RIG_HIDES list("chrome_rig_hide", "mantis_rig_hide")
@@ -223,6 +225,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/saved_dir
 	var/saved_opacity
 	var/saved_luminosity
+	/// Puppet: its own animate_movement, while it is set to jump because the game moved it under the replay
+	/// (on_puppet_moved()). Null when untouched.
+	var/saved_movement
 	/// Puppet: the appearance it was last drawn with, to notice changes made by anything else.
 	var/expect
 	/// Puppet: wearing its real look right now, while a wrapped proc changes it.
@@ -384,6 +389,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/shots_live = 0
 	/// Shots left out because SANDY_REPLAY_MAX_SHOTS were already in the air.
 	var/shots_capped = 0
+	/// Flashes of light made on the field's floor (an execution's shot): list(first frame, frame it went out at (INFINITY
+	/// while lit), x, y, z, range, power, colour) each, in the order they were lit (note_light()).
+	var/list/lights = list()
+	/// Recording: each light still lit, to its entry in `lights`.
+	var/list/lit = list()
+	/// Playback: the next light to light, and the lights the replay lit (weak references), put out at its end.
+	var/light_at = 1
+	var/list/shown_lights = list()
 	/// Shots still flying when the recording ended, held where they are until the replay is over (hold_shots()).
 	var/list/held_shots = list()
 	/// Gore in flight held for the replay (hold_gore()): move loops, tumbles to the time left to their next step, and
@@ -482,7 +495,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		/obj/effect/temp_visual/cyberware_time_ring,
 		/obj/effect/hotspot,
 		/obj/effect/particle_effect,
-		/obj/effect/dummy/lighting_obj, // a flash of light (a gunshot's): its light is an underlay, drawn whole on a stand-in
+		/obj/effect/dummy/lighting_obj, // a flash of light (a gunshot's): its light is an underlay, drawn whole on a stand-in. It is lit again as a light (note_light())
 		/obj/effect/landmark,
 		/atom/movable/screen,
 	))
@@ -502,7 +515,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 
 /// The field saw `thing`: start recording it.
 /datum/sandy_replay/proc/notice(atom/movable/thing)
-	if(state != SANDY_REPLAY_RECORDING || tracks[thing] || !recordable(thing))
+	if(state != SANDY_REPLAY_RECORDING || tracks[thing])
+		return
+	if(istype(thing, /obj/effect/dummy/lighting_obj))
+		note_light(thing)
+		return
+	if(!recordable(thing))
 		return
 	if(isprojectile(thing) && !shot_room())
 		return
@@ -540,6 +558,50 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	if(sandy_rig_picture(thing) || track.oneshot || track.flier)
 		var/matrix/turned = thing.transform
 		event_log += "notice [thing.type] f[frame_exact()] first=[track.first] on=[shown_on(thing) ? "map" : "off"] dir=[thing.dir] T=[turned.a],[turned.b],[turned.d],[turned.e]"
+
+/**
+ * A flash of light lit on the floor in the field (an execution's shot lights the room around the gun). It isn't drawn
+ * (recordable()): the replay lights its own at the same spot, as bright, from the frame it was lit until the frame it
+ * went out (play_lights()). A light carried by a mob isn't on the floor, and isn't taken.
+ */
+/datum/sandy_replay/proc/note_light(obj/effect/dummy/lighting_obj/glow)
+	if(lit[glow] || QDELETED(glow) || !isturf(glow.loc) || glow.light_range <= 0 || glow.light_power <= 0)
+		return
+	if(length(lights) >= SANDY_REPLAY_MAX_SHOTS)
+		return
+	var/turf/spot = glow.loc
+	var/list/light = list(round(frame_due()), INFINITY, spot.x, spot.y, spot.z, glow.light_range, glow.light_power, glow.light_color)
+	lights += list(light)
+	lit[glow] = light
+	RegisterSignal(glow, COMSIG_QDELETING, PROC_REF(on_light_gone))
+
+/// Signal proc for [COMSIG_QDELETING] on a light the recording took: it went out.
+/datum/sandy_replay/proc/on_light_gone(obj/effect/dummy/lighting_obj/glow)
+	SIGNAL_HANDLER
+	var/list/light = lit[glow]
+	lit -= glow
+	if(light && state == SANDY_REPLAY_RECORDING)
+		light[2] = max(round(frame_due()), light[1] + 1)
+
+/// Stops following the lights still lit: the recording is over, and whatever is still lit stays lit to its end.
+/datum/sandy_replay/proc/forget_lights()
+	for(var/obj/effect/dummy/lighting_obj/glow as anything in lit)
+		UnregisterSignal(glow, COMSIG_QDELETING)
+	lit.Cut()
+
+/// Lights the replay's flashes of light due by `frame`, each for as many frames as it was lit, and never for less than a
+/// one-shot effect is drawn (SANDY_REPLAY_ONESHOT_MIN): compressed ten times, a short flash would be out before it is seen.
+/datum/sandy_replay/proc/play_lights(frame)
+	while(light_at <= length(lights))
+		var/list/light = lights[light_at]
+		if(light[1] > frame)
+			return
+		light_at++
+		var/turf/spot = locate(light[3], light[4], light[5])
+		if(!spot)
+			continue
+		var/span = max((min(light[2], total + 1) - light[1]) * world.tick_lag, SANDY_REPLAY_ONESHOT_MIN)
+		shown_lights += WEAKREF(new /obj/effect/dummy/lighting_obj(spot, light[6], light[7], light[8], span)) // it puts itself out
 
 /**
  * A temp visual that animates itself in its own Initialize() (tg's ring) is first seen with its vars already at the
@@ -925,11 +987,17 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	if(state != SANDY_REPLAY_RECORDING || wait_started)
 		return
 	field = null
+	// A surger killed in it is a body from here on: its fall and anything that knocks it about leave no trail.
+	for(var/atom/movable/thing as anything in tracks)
+		var/mob/living/body = thing
+		if(isliving(body) && body.stat == DEAD)
+			surge_over(body)
 	if(!length(moves_running()))
 		end_wait(TRUE)
 		return
 	// An execution or finisher in the field is still going. The replay's hold would cut it short (its checks fail on a
-	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done.
+	// held body), so the world goes on at normal speed and the recording with it, a frame a tick, until it's done. A body
+	// killed as the slow-mo ended (its user, shot dead) is waited for the same way until it has slid where it lies.
 	wait_started = world.time
 
 /**
@@ -942,6 +1010,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	total = max(frame_now(), 1)
 	waited = wait_started ? world.time - wait_started : 0
 	stop_paths()
+	forget_lights()
 	ended_at = world.time
 	state = SANDY_REPLAY_PENDING
 	if(replays)
@@ -980,11 +1049,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 				return TRUE
 	return FALSE
 
-/// The bodies in the recording in the middle of an execution or finisher, either side of it.
+/// The bodies in the recording in the middle of an execution or finisher, either side of it, or still falling from a
+/// death (sandy_replay_falling()).
 /datum/sandy_replay/proc/moves_running()
 	. = list()
 	for(var/atom/movable/thing as anything in tracks)
-		if(isliving(thing) && sandy_replay_mid_move(thing))
+		if(isliving(thing) && (sandy_replay_mid_move(thing) || sandy_replay_falling(thing)))
 			. += thing
 
 // =========================================================================
@@ -2005,6 +2075,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/atom/movable/thing = track.thing
 	var/matrix/drawn = (turns && isliving(thing) && track.cursor >= 0 && thing.alpha) ? matrix(thing.transform) : null
 	wear_real(track)
+	// A body's pose the replay was still playing (a corpse slid or slumped and held so, a twitch) carries on from where
+	// the last frame has it, on its real tile: wearing its real look ended its own copy of it, and it would snap back.
+	if(turns && isliving(thing) && chain_ends_real(track))
+		resume_chain(track, 0, 0)
+		return
 	if(!drawn || (drawn ~= thing.transform))
 		return
 	var/matrix/real = matrix(thing.transform)
@@ -2013,6 +2088,26 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return
 	thing.transform = drawn
 	animate(thing, transform = real, time = SANDY_REPLAY_TURN_TIME, easing = SINE_EASING)
+
+/**
+ * Whether the chain playing on `track`'s puppet is still going and ends where the real look is: its last pixel_w,
+ * pixel_z and transform, less the shift it was played with, are the thing's own now. A chain that ends anywhere else (the
+ * body stood up or was turned for real under the replay) would carry an old pose over the real one, and isn't resumed.
+ */
+/datum/sandy_replay/proc/chain_ends_real(datum/sandy_replay_track/track)
+	var/list/chain = track.chain
+	if(!length(chain) || track.anim_until <= world.time || !track.chain_shift)
+		return FALSE
+	var/atom/movable/thing = track.thing
+	var/list/last = chain[length(chain)]
+	if(!isnull(last["pixel_w"]) && last["pixel_w"] - track.chain_shift[1] != thing.pixel_w)
+		return FALSE
+	if(!isnull(last["pixel_z"]) && last["pixel_z"] - track.chain_shift[2] != thing.pixel_z)
+		return FALSE
+	var/matrix/turned = last["transform"]
+	if(istype(turned) && !(turned ~= thing.transform))
+		return FALSE
+	return TRUE
 
 /// Appearance assignment copies opacity and luminosity: keep the real ones.
 /datum/sandy_replay/proc/pin(datum/sandy_replay_track/track)
@@ -2610,6 +2705,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			hide_unborn()
 		clear_view()
 		play_sounds(frame)
+		play_lights(frame)
 		for(var/datum/sandy_replay_track/track as anything in puppets)
 			var/atom/movable/thing = track.thing
 			if(QDELETED(thing))
@@ -2658,8 +2754,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		finish()
 		return
 	var/datum/sandy_replay_track/track = GLOB.sandy_replay_masked[thing]
-	if(track && !track.unmasked)
-		show(track)
+	if(!track || track.unmasked)
+		return
+	show(track)
+	// show() moved its offset to the new tile at once, while a client glides a one-tile move from the old tile: the
+	// puppet would slide a tile off its recorded spot and back. It jumps instead, so it stays where its frame has it.
+	if(isnull(track.saved_movement))
+		track.saved_movement = thing.animate_movement
+	thing.animate_movement = NO_STEPS
 
 /// Signal proc for [COMSIG_ATOM_DIR_CHANGE] on a puppet: the game turned it for real.
 /datum/sandy_replay/proc/on_puppet_turned(atom/movable/thing, old_dir, new_dir)
@@ -2702,6 +2804,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 				if(!QDELETED(thing) && !track.unmasked)
 					hand_back(track, was_playing)
 					thing.sandy_replay_resume((was_playing && ended_at) ? world.time - ended_at : 0)
+				if(!QDELETED(thing) && !isnull(track.saved_movement))
+					thing.animate_movement = track.saved_movement // it glides its own moves again
+			track.saved_movement = null
 			track.unmasked = FALSE
 		catch(var/exception/error)
 			LAZYADD(problems, "[error] ([error.file]:[error.line])")
@@ -2709,6 +2814,10 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	for(var/datum/sandy_replay_track/track as anything in standins)
 		QDEL_NULL(track.standin)
 	QDEL_LIST(trail_copies)
+	forget_lights()
+	for(var/datum/weakref/glow_ref as anything in shown_lights)
+		qdel(glow_ref.resolve()) // a light still lit goes out with the replay
+	shown_lights.Cut()
 	release_shots()
 	show_progress_bars()
 	show_pending()
@@ -2893,6 +3002,18 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	if(body.GetComponent(/datum/component/gorilla_fold))
 		return FALSE // a broken back left drawn bent (gorilla_finisher.dm): a pose that lasts, not a move
 	return sandy_rig_hidden(body)
+
+/**
+ * Whether `body` died and its fall isn't over: a heavy blow slides a corpse a whole tile a moment after the death
+ * (hv_vis_death_hit(), hyperviolence/visuals/death_falls.dm). A death that ends the slow-mo (its user's own) comes before
+ * that slide, so the recording goes on until the body has slid, or the replay draws it where it fell and the cut moves it.
+ * A slide that never came by SANDY_REPLAY_FALL_SLACK after it was due isn't waited for.
+ */
+/proc/sandy_replay_falling(mob/living/body)
+	if(!iscarbon(body) || QDELETED(body) || body.stat != DEAD)
+		return FALSE
+	var/mob/living/carbon/corpse = body
+	return corpse.hv_vis_slide_due && world.time <= corpse.hv_vis_slide_due + SANDY_REPLAY_FALL_SLACK
 
 /// Whether a finisher rig hides `body` behind its puppets.
 /proc/sandy_rig_hidden(atom/body)
@@ -3222,6 +3343,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_ONESHOT_FRAMES
 #undef SANDY_REPLAY_PICTURE_TIME
 #undef SANDY_REPLAY_WAIT_MAX
+#undef SANDY_REPLAY_FALL_SLACK
 #undef SANDY_REPLAY_RIG_HIDES
 #undef SANDY_FRAME_SIZE
 #undef SANDY_FRAME_INDEX
