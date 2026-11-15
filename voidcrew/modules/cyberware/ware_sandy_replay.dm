@@ -628,6 +628,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 /datum/sandy_replay/proc/picture_look(obj/effect/abstract/cyberware_anim/picture, look)
 	var/mutable_appearance/copy = new(look)
 	var/atom/movable/worn_by = picture.bearer
+	if(worn_by) // on the body it is drawn wherever the body is drawn: held in a grab, lying off its tile
+		copy.pixel_x += worn_by.pixel_x
+		copy.pixel_y += worn_by.pixel_y
+		copy.pixel_w += worn_by.pixel_w
+		copy.pixel_z += worn_by.pixel_z
 	copy.plane = worn_by ? worn_by.plane : GAME_PLANE
 	copy.layer = ABOVE_MOB_LAYER
 	copy.filters = null

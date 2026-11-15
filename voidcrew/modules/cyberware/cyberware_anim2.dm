@@ -74,10 +74,12 @@
 		particles.spawning = 0
 
 /// Grey dust kicked up by a landing or a take-off.
-/proc/cyberware_grey_dust(turf/where)
+/proc/cyberware_grey_dust(turf/where, shift_w = 0, shift_z = 0)
 	if(isnull(where))
 		return null
 	var/obj/effect/temp_visual/mook_dust/dust = new(where)
+	dust.pixel_w += shift_w
+	dust.pixel_z += shift_z
 	dust.color = list(0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.2, 0.2, 0.2, 0.33, 0.33, 0.35)
 	return dust
 
@@ -708,8 +710,11 @@
 	duration = 0.4 SECONDS
 	layer = BELOW_MOB_LAYER
 
-/obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2)
+/// `shift_w`, `shift_z`: pixels from the middle of its tile (a blow on a body drawn off its tile).
+/obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2, shift_w = 0, shift_z = 0)
 	amount_to_scale = reach + 0.5
+	pixel_w += shift_w
+	pixel_z += shift_z
 	. = ..()
 	sandy_replay_made(src) // a Sandevistan replay plays the ring again (ware_sandy_replay.dm)
 
@@ -728,7 +733,9 @@
 	randomdir = FALSE
 	duration = 8 SECONDS
 
-/obj/effect/temp_visual/cyberware_impact_cracks/Initialize(mapload, state = "damaged1", peak_alpha = 255)
+/obj/effect/temp_visual/cyberware_impact_cracks/Initialize(mapload, state = "damaged1", peak_alpha = 255, shift_w = 0, shift_z = 0)
+	pixel_w += shift_w
+	pixel_z += shift_z
 	. = ..()
 	var/turf/here = loc
 	// Nothing to crack in space, open air or a chasm.

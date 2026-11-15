@@ -219,13 +219,27 @@
 	if(sparks)
 		sparks.pixel_z += spark_z
 		sparks.pixel_w += spark_w
-	var/turf/spot = get_turf(where)
+	// Where the blow is drawn, which is not the tile the body stands on when it is held off it (over his knee)
+	var/list/at = gorilla_drawn_spot(where, spark_w, spark_z)
+	var/turf/spot = at?[1]
 	if(spot)
 		// On the floor: on the game plane the ring was drawn over bodies standing further up the screen
-		new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, heavy ? 1 : 0.6)
+		new /obj/effect/temp_visual/circle_wave/cyberware_slam/floor(spot, heavy ? 1 : 0.6, at[2], at[3])
 	for(var/mob/living/viewer in range(4, spot))
 		if(viewer.client)
 			shake_camera(viewer, heavy ? 3 : 2, heavy ? 2 : 1)
+	return at
+
+/// The tile [where] is drawn on, [off_w], [off_z] pixels from its own middle, and how far from that tile's middle:
+/// list(turf, pixels across, pixels up), or null when it is nowhere.
+/proc/gorilla_drawn_spot(atom/movable/where, off_w = 0, off_z = 0)
+	var/turf/from = get_turf(where)
+	if(isnull(from))
+		return null
+	var/total_w = where.pixel_x + where.pixel_w + off_w
+	var/total_z = where.pixel_y + where.pixel_z + off_z
+	var/turf/spot = locate(clamp(from.x + round(total_w / ICON_SIZE_X, 1), 1, world.maxx), clamp(from.y + round(total_z / ICON_SIZE_Y, 1), 1, world.maxy), from.z) || from
+	return list(spot, round(total_w - (spot.x - from.x) * ICON_SIZE_X), round(total_z - (spot.y - from.y) * ICON_SIZE_Y))
 
 // ---- The stages: each one hands its key to the finisher ----
 
@@ -1872,13 +1886,15 @@
 /datum/hv_finisher/chrome/gorilla/backbreaker/beat(key)
 	if(key != "slam" || QDELETED(victim))
 		return
-	hit_stop(victim_rig?.puppet("upper") || victim, TRUE)
+	// The ring, the cracks and the dust go where the back is drawn breaking: on the body's waist, over his knee
+	var/obj/effect/abstract/chrome_puppet/held_half = victim_rig?.puppet("upper")
+	var/list/break_at = held_half ? list(0, BACK_WAIST_PIVOT_Y) : gorilla_zone_point(victim, BODY_ZONE_CHEST)
+	var/list/at = hit_stop(held_half || victim, TRUE, round(break_at[2]), round(break_at[1]))
 	gorilla_backbreaker_sound(victim)
 	playsound(victim, 'sound/effects/meteorimpact.ogg', 50, TRUE)
-	var/turf/knee = get_turf(user)
-	if(knee)
-		new /obj/effect/temp_visual/cyberware_impact_cracks(knee, "damaged1", 255)
-		cyberware_grey_dust(knee)
+	if(at)
+		new /obj/effect/temp_visual/cyberware_impact_cracks(at[1], "damaged1", 255, at[2], at[3])
+		cyberware_grey_dust(at[1], at[2], at[3])
 	var/outcome = gorilla_backbreak(victim, user, fist())
 	broke = outcome == "broken"
 	// What the blow did to the body (the snapped bone, tg's wounds) is drawn on the hidden one: the halves take it on
