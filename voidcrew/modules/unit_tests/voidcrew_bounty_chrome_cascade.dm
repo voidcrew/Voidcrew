@@ -193,7 +193,13 @@
 	var/mob/living/carbon/human/npc/bounty_companion/buddy = buddies[1]
 	buddy.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	buddy.forceMove(spot(1, 2))
-	TEST_ASSERT("cascade" in bounty_chrome_install_now(buddy, list("cascade")), "The companion's lattice didn't go in")
+	// A companion can spawn with chrome of its own, and some of it leaves no room for a lattice
+	var/list/came_with = list()
+	for(var/obj/item/organ/organ in buddy.organs)
+		if(organ.GetComponent(/datum/component/cyberware))
+			came_with += organ.type
+			qdel(organ)
+	TEST_ASSERT("cascade" in bounty_chrome_install_now(buddy, list("cascade")), "The companion's lattice didn't go in (it spawned with [english_list(came_with, "no chrome")])")
 	var/datum/component/bounty_chrome/buddy_chrome = buddy.GetComponent(/datum/component/bounty_chrome)
 	var/datum/bounty_chrome_move/cascade/buddy_move = buddy_chrome?.move_of(/datum/bounty_chrome_move/cascade)
 	TEST_ASSERT_NOTNULL(buddy_move, "The companion's lattice has no move")
