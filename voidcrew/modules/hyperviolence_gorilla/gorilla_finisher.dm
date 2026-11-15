@@ -913,10 +913,6 @@
 			else
 				arms_to(side_view() ? 25 : 15, GORILLA_RIP_HAUL_TIME, 1)
 				addtimer(CALLBACK(bearer_rig, TYPE_PROC_REF(/datum/chrome_rig, tremble), GORILLA_RIP_STRAIN_TIME), GORILLA_RIP_HAUL_TIME - GORILLA_RIP_STRAIN_TIME, TIMER_DELETE_ME)
-		if("tear")
-			// The arm gives: he comes upright and both arms swing on with it, flinging it away: back past him seen
-			// from the side, out wide from the front or back
-			bearer_rig?.bend_and_swing(0, side_view() ? -GORILLA_RIP_THROW_SWING : GORILLA_RIP_THROW_SWING, 0.15 SECONDS, GORILLA_RIP_THROW_REACH)
 		if("recover")
 			// Down the way they point: not back up over his head the way they came
 			bearer_rig?.unwind_arms()
@@ -1233,12 +1229,61 @@
 /datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bodies(torn)
 	// His own new pictures (the blood that ran back over him) wait until his arms have swung through the throw: a
 	// picture made now holds his puppets on the client until it lands, and he would stand frozen as the arm flies off
+	if(torn)
+		bloody_bearer()
 	addtimer(CALLBACK(src, PROC_REF(redraw_bearer)), GORILLA_RIP_THROW_TIME, TIMER_DELETE_ME)
 	if(QDELETED(victim) || !victim_rig?.snapshot())
 		return
 	victim_rig.repaint("body", torn ? victim_rig.flat : victim_rig.cut_without_arms(side))
 	if(!torn)
 		victim_rig.repaint("arm_[side]", victim_rig.arm_picture(side))
+
+/// Draws the blood just splashed onto the bearer across his puppets from compiled states, before his throw swing starts.
+/datum/hv_finisher/chrome/gorilla/rip/proc/bloody_bearer()
+	var/mob/living/carbon/human/bearer = user
+	if(!ishuman(bearer) || !bearer_rig)
+		return
+	var/torso_state
+	var/torso_color
+	if(bearer.wear_suit && !(bearer.wear_suit.clothing_flags & LARGE_WORN_ICON) && GET_ATOM_BLOOD_DECAL_LENGTH(bearer.wear_suit))
+		torso_state = "suitblood"
+		torso_color = bearer.wear_suit.get_blood_dna_color()
+	else if(bearer.w_uniform && !(bearer.w_uniform.clothing_flags & LARGE_WORN_ICON) && GET_ATOM_BLOOD_DECAL_LENGTH(bearer.w_uniform))
+		torso_state = "uniformblood"
+		torso_color = bearer.w_uniform.get_blood_dna_color()
+	var/glove_color = (bearer.gloves && !(bearer.gloves.clothing_flags & LARGE_WORN_ICON) && GET_ATOM_BLOOD_DECAL_LENGTH(bearer.gloves)) ? bearer.gloves.get_blood_dna_color() : null
+	var/hand_color = (!glove_color && bearer.blood_in_hands && GET_ATOM_BLOOD_DECAL_LENGTH(bearer)) ? bearer.get_blood_dna_color() : null
+	var/obj/effect/abstract/chrome_puppet/body_puppet = bearer_rig.puppet("body")
+	if(body_puppet && torso_state)
+		body_puppet.appearance_flags |= KEEP_TOGETHER
+		var/mutable_appearance/coat = mutable_appearance('icons/effects/blood.dmi', torso_state, appearance_flags = RESET_COLOR)
+		coat.dir = bearer_rig.facing
+		coat.blend_mode = BLEND_INSET_OVERLAY
+		coat.color = torso_color
+		body_puppet.add_overlay(coat)
+	for(var/arm_side in list("l", "r"))
+		var/obj/effect/abstract/chrome_puppet/arm_puppet = bearer_rig.puppet("arm_[arm_side]")
+		if(!arm_puppet)
+			continue
+		var/far = bearer_rig.behind_body(arm_side)
+		var/shift_x = far ? (bearer_rig.facing == EAST ? -1 : 1) : 0
+		var/shown_side = far ? bearer_rig.near_side() : arm_side
+		if(torso_state)
+			arm_puppet.appearance_flags |= KEEP_TOGETHER
+			var/mutable_appearance/sleeve = mutable_appearance('icons/effects/blood.dmi', torso_state, appearance_flags = RESET_COLOR)
+			sleeve.dir = bearer_rig.facing
+			sleeve.blend_mode = BLEND_INSET_OVERLAY
+			sleeve.color = torso_color
+			sleeve.pixel_x = shift_x
+			arm_puppet.add_overlay(sleeve)
+		if(glove_color || hand_color)
+			arm_puppet.appearance_flags |= KEEP_TOGETHER
+			var/mutable_appearance/fist_blood = mutable_appearance('icons/effects/blood.dmi', glove_color ? "gloveblood" : "bloodyhands_[shown_side == "l" ? "left" : "right"]", appearance_flags = RESET_COLOR)
+			fist_blood.dir = bearer_rig.facing
+			fist_blood.blend_mode = BLEND_INSET_OVERLAY
+			fist_blood.color = glove_color || hand_color
+			fist_blood.pixel_x = shift_x
+			arm_puppet.add_overlay(fist_blood)
 
 /// The bearer's stand-ins take on how he looks now.
 /datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bearer()
@@ -1412,6 +1457,9 @@
 			// Both bodies are hidden behind their stand-ins, and so is what this just did to them (the stump, the blood
 			// that ran back over him): the stand-ins take it on now, or it would only show when they come down
 			redraw_bodies(outcome == "torn")
+			// The arm gives: he comes upright and both arms swing on with it, flinging it away: back past him seen
+			// from the side, out wide from the front or back
+			bearer_rig?.bend_and_swing(0, side_view() ? -GORILLA_RIP_THROW_SWING : GORILLA_RIP_THROW_SWING, 0.15 SECONDS, GORILLA_RIP_THROW_REACH)
 			if(outcome == "torn")
 				var/obj/item/bodypart/torn = gorilla_last_torn_limb(victim, target_zone)
 				if(torn?.can_bleed())
