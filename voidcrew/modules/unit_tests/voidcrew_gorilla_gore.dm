@@ -1383,3 +1383,111 @@
 	TEST_ASSERT(refused & COMPONENT_CANCEL_ATTACK_CHAIN, "The Brawler pry didn't take the outpost door click")
 	sleep(0.5 SECONDS)
 	TEST_ASSERT(outpost_door.density, "The Brawler pair pried an outpost airlock")
+
+/// The limb rip's north-facing bar starts low, the bearer's puppets take on blood at the tear without baking in a hit
+/// flash, and side views keep floor blood under the body while every airborne shoulder drop flies above it.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_rip_visuals
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_rip_visuals/Run()
+	// Facing north: the bar starts under the bearer's feet instead of sliding down across him
+	var/mob/living/carbon/human/north_bearer = gorilla(spot(1, 0))
+	north_bearer.zone_selected = BODY_ZONE_L_ARM
+	var/mob/living/carbon/human/consistent/north_victim = downed(spot(1, 1))
+	TEST_ASSERT(gorilla_try_finisher(north_bearer, north_victim), "The north-facing limb rip didn't start")
+	var/datum/hv_finisher/chrome/gorilla/rip/north_rip = north_bearer.chrome_finisher
+	TEST_ASSERT(istype(north_rip) && north_rip.facing == NORTH, "The north-facing rip didn't face north")
+	TEST_ASSERT_NOTNULL(north_rip.exec_bar, "The north-facing rip put up no bar")
+	TEST_ASSERT_EQUAL(north_rip.exec_bar.rest_z, -14, "The north-facing rip's bar doesn't rest under his feet") // GORILLA_RIP_BAR_LOW
+	TEST_ASSERT_EQUAL(north_rip.exec_bar.pixel_z, -14, "The north-facing rip's bar didn't start at its low rest height") // GORILLA_RIP_BAR_LOW
+	north_rip.stop(2) // HV_FINISHER_TIMED_OUT
+	qdel(north_bearer)
+	qdel(north_victim)
+
+	// At the tear, the bearer's puppets take on the blood on his clothes at once, without baking in a hit flash or turn
+	clear_mess(spot(1, 2))
+	clear_mess(spot(1, 3))
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 3))
+	if(!bearer.w_uniform)
+		bearer.equip_to_slot_or_del(new /obj/item/clothing/under/color/grey(bearer), ITEM_SLOT_ICLOTHING)
+	bearer.zone_selected = BODY_ZONE_L_ARM
+	var/mob/living/carbon/human/consistent/victim = downed(spot(1, 2))
+	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The south-facing limb rip didn't start")
+	var/datum/hv_finisher/chrome/gorilla/rip/finisher = bearer.chrome_finisher
+	TEST_ASSERT_NOTNULL(finisher.bearer_rig, "The south-facing rip built no bearer rig")
+	var/icon/flat_before = icon(finisher.bearer_rig.flat)
+	var/head_x = 0
+	var/head_y = 0
+	var/head_before
+	for(var/check_y in 24 to 28) // above CHROME_RIG_NECK_Y (23): bare head skin
+		for(var/check_x in 14 to 18)
+			var/px = flat_before.GetPixel(check_x, check_y)
+			if(px)
+				head_x = check_x
+				head_y = check_y
+				head_before = px
+				break
+		if(head_before)
+			break
+	TEST_ASSERT_NOTNULL(head_before, "Test fixture: found no opaque pixel on the bearer's bare head")
+	finisher.advance() // strain
+	TEST_ASSERT_EQUAL(length(finisher.bearer_rig.puppet("body").overlays), 0, "The bearer's body puppet was repainted before the tear")
+	bearer.add_atom_colour("#ff0000", TEMPORARY_COLOUR_PRIORITY)
+	bearer.add_filter("hv_vis_flash", 10, color_matrix_filter(list(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0.4, 0.4, 0.4))) // HV_VIS_FLASH_FILTER
+	bearer.dir = EAST
+	finisher.advance() // tear
+	TEST_ASSERT(finisher.running, "Test fixture: the rip ended on the tear beat")
+	for(var/part_key in list("body", "arm_l", "arm_r"))
+		var/obj/effect/abstract/chrome_puppet/puppet = finisher.bearer_rig.puppet(part_key)
+		TEST_ASSERT_NOTNULL(puppet, "Missing bearer puppet [part_key] at the tear")
+		TEST_ASSERT_EQUAL(length(puppet.overlays), 1, "Bearer puppet [part_key] didn't take on its bloodied picture at the tear")
+	var/icon/flat_after = finisher.bearer_rig.flat
+	TEST_ASSERT_NULL(flat_after.GetPixel(1, 1), "The redrawn bearer picture painted transparent corners solid")
+	TEST_ASSERT_EQUAL(flat_after.GetPixel(head_x, head_y), head_before, "A hit flash or turn tainted the bearer's bare head in the tear snapshot")
+	var/bloodied_pixels = 0
+	for(var/check_y in 1 to 22) // below CHROME_RIG_NECK_Y (23): clothed torso, arms and legs
+		for(var/check_x in 1 to 32)
+			if(flat_after.GetPixel(check_x, check_y) != flat_before.GetPixel(check_x, check_y))
+				bloodied_pixels++
+	TEST_ASSERT(bloodied_pixels > 0, "The tear snapshot drew no blood onto the bearer's clothed body")
+	TEST_ASSERT_EQUAL(LOWER_TEXT(bearer.color), "#ff0000", "The bearer's temporary colour wasn't restored after the snapshot")
+	TEST_ASSERT_EQUAL(bearer.dir, EAST, "The bearer's live dir wasn't left untouched until cleanup")
+	bearer.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
+	run_to_end(finisher)
+	qdel(bearer)
+	qdel(victim)
+
+	// Side views (east and west): floor blood stays under bodies, and every airborne drop flies above them from the socket rim
+	var/list/side_offsets = list("[EAST]" = list(-1, 0), "[WEST]" = list(1, 0))
+	for(var/way_text in side_offsets)
+		var/list/off = side_offsets[way_text]
+		clear_mess(spot(1, 2))
+		clear_mess(spot(2, 2))
+		clear_mess(spot(3, 2))
+		var/mob/living/carbon/human/consistent/side_victim = downed(spot(2, 2))
+		var/mob/living/carbon/human/side_bearer = gorilla(spot(2 + off[1], 2 + off[2]))
+		side_bearer.zone_selected = BODY_ZONE_L_ARM
+		TEST_ASSERT(gorilla_try_finisher(side_bearer, side_victim), "The [dir2text(text2num(way_text))] rip didn't start")
+		var/datum/hv_finisher/chrome/gorilla/rip/side_rip = side_bearer.chrome_finisher
+		var/list/expected_pool = side_rip.pool_spot()
+		side_rip.advance() // strain
+		side_rip.advance() // tear
+		var/obj/effect/decal/cleanable/blood/floor_pool
+		for(var/obj/effect/decal/cleanable/blood/decal in get_turf(side_victim))
+			if(decal.type == /obj/effect/decal/cleanable/blood)
+				floor_pool = decal
+		TEST_ASSERT_NOTNULL(floor_pool, "The [dir2text(text2num(way_text))] tear laid no floor blood on the tear tick")
+		TEST_ASSERT(floor_pool.layer < MOB_LAYER, "Floor blood in [dir2text(text2num(way_text))] was drawn at or above mob layer ([floor_pool.layer])")
+		TEST_ASSERT(floor_pool.base_pixel_x == expected_pool[1] && floor_pool.base_pixel_y == expected_pool[2], "Floor blood in [dir2text(text2num(way_text))] missed pool_spot()")
+		var/drop_count = 0
+		var/list/start_points = list()
+		for(var/obj/effect/temp_visual/wire_blood_drop/drop in get_turf(side_victim))
+			drop_count++
+			TEST_ASSERT_EQUAL(drop.layer, ABOVE_MOB_LAYER, "An airborne shoulder drop in [dir2text(text2num(way_text))] was hidden under the bodies ([drop.layer])")
+			TEST_ASSERT_EQUAL(drop.alpha, 255, "An airborne shoulder drop in [dir2text(text2num(way_text))] started invisible")
+			start_points["[drop.pixel_x],[drop.pixel_y]"] = TRUE
+		TEST_ASSERT_EQUAL(drop_count, 12, "The [dir2text(text2num(way_text))] tear threw [drop_count] drops instead of 12") // GORILLA_RIP_BURST_DROPS
+		TEST_ASSERT(length(start_points) > 1, "All airborne drops in [dir2text(text2num(way_text))] started stacked on one pixel")
+		run_to_end(side_rip)
+		qdel(side_bearer)
+		qdel(side_victim)
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The visual rip tests left puppets behind")

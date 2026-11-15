@@ -56,8 +56,9 @@ GLOBAL_LIST_EMPTY(hv_exec_bars)
 	// Above any do_after bars the executioner already has over themselves
 	var/list/own_bars = LAZYACCESS(executioner.progressbars, executioner)
 	rest_z = executioner.base_pixel_y + icon_size["height"] + HV_EXEC_BAR_HEIGHT * length(own_bars)
+	pixel_z = rest_z
 	alpha = 0
-	animate(src, pixel_z = rest_z, alpha = 255, time = HV_EXEC_BAR_FADE, easing = SINE_EASING)
+	animate(src, alpha = 255, time = HV_EXEC_BAR_FADE, easing = SINE_EASING)
 	RegisterSignal(owner, COMSIG_QDELETING, PROC_REF(on_owner_deleted))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
 	tick()
