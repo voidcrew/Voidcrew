@@ -81,6 +81,12 @@
 /// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
 /// any other player this close is crew, or there would be no replay).
 #define SANDY_REPLAY_HOLD_RANGE 11
+/// The longest the replay stays on its last frame while gore from a kill in its last moments lands (land()).
+#define SANDY_REPLAY_LANDING_MAX (1.5 SECONDS)
+/// The longest of that it waits for its own animations of that gore to play out, before the real gore flies on.
+#define SANDY_REPLAY_LANDING_TWEENS (0.6 SECONDS)
+/// A kill this close to the recording's end, in its frames, has its gore landed for it.
+#define SANDY_REPLAY_LANDING_FRAMES 10
 /// How long a slash over someone hit stays in the replay once shown: the length of its own frames.
 #define SANDY_REPLAY_PICTURE_TIME (0.4 SECONDS)
 /// The most sounds one recording keeps of the world around the user (footsteps, casings, NPCs' guns).
@@ -206,6 +212,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	/// A one-shot effect (a temp visual: a muzzle flash, an impact ring, cracks): its animations play for at least
 	/// SANDY_REPLAY_ONESHOT_MIN, so a compressed one is drawn at all, and its stand-in stays until they are done.
 	var/oneshot = FALSE
+	/// Gore handed back early, flying on for real under the replay's last frame (land()): the replay leaves it be.
+	var/landing = FALSE
 	/// A one-shot whose animation is its icon's own frames (a slash over someone hit): how long its stand-in stays once
 	/// shown, so the frames play through at their own pace instead of ending with the one replay frame it lasted.
 	var/plays_out = 0
@@ -337,6 +345,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/list/held_shots = list()
 	/// Gore in flight held for the replay (hold_gore()): move loops, and tumbles to the time left to their next step.
 	var/list/held_gore = list()
+	/// The recording has run out and the replay is staying on its last frame while gore lands (land()): 1 while its own
+	/// animations of it play out, 2 while the real gore flies on. world.time it began, and the gore flying on.
+	var/landing_stage = 0
+	var/landing_started = 0
+	var/list/landing = list()
 	/// The longest one frame's sample of everything recorded took, in milliseconds, for tests and recordings.
 	var/sample_cost = 0
 
@@ -1254,6 +1267,69 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			deltimer(tumble.step_timer)
 			tumble.step_timer = null
 
+/**
+ * The recording has run out. A kill in its last moments leaves its gore in the air: the replay would stop on the burst's
+ * first frames, and the real gore, held since the slow-mo ended, would jump to wherever it had got to and then finish
+ * its flight in the present, the same burst a second time. So the replay stays on its last frame while the gore lands:
+ * first its own animations of it play out (a gib's arc), then the held gore is handed back and flies on for real under
+ * the replay, and only then does the replay hand everything back, with the gore at rest. Never longer than
+ * SANDY_REPLAY_LANDING_MAX. Returns whether it is still landing.
+ */
+/datum/sandy_replay/proc/land()
+	if(!landing_stage)
+		if(!length(held_gore) && !gore_playing())
+			return FALSE
+		landing_stage = 1
+		landing_started = world.time
+		deltimer(watchdog)
+		watchdog = addtimer(CALLBACK(src, PROC_REF(finish)), SANDY_REPLAY_LANDING_MAX + SANDY_REPLAY_WATCHDOG, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	if(world.time - landing_started >= SANDY_REPLAY_LANDING_MAX)
+		return FALSE
+	if(landing_stage == 1)
+		if(gore_playing() && world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS)
+			return TRUE
+		landing_stage = 2
+		for(var/datum/held as anything in held_gore)
+			var/atom/movable/thing
+			if(istype(held, /datum/move_loop))
+				var/datum/move_loop/loop = held
+				thing = loop.moving
+			else if(istype(held, /datum/component))
+				var/datum/component/tumble = held
+				thing = tumble.parent
+			var/datum/sandy_replay_track/track = QDELETED(thing) ? null : tracks[thing]
+			if(!track || track.landing || !(track in puppets))
+				continue
+			unmask(track)
+			track.landing = TRUE
+			thing.sandy_replay_resume()
+			landing += thing
+		release_gore()
+		return length(landing) > 0
+	for(var/atom/movable/thing as anything in landing)
+		if(QDELETED(thing))
+			landing -= thing
+			continue
+		var/datum/move_loop/loop = thing.move_packet?.running_loop
+		var/datum/component/hv_tumble/tumble = thing.GetComponent(/datum/component/hv_tumble)
+		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer)
+			landing -= thing
+	return length(landing) > 0
+
+/// Whether the replay is still playing its own animation of gore thrown in the recording's last moments (a gib's arc
+/// from a head that burst as the slow-mo ended).
+/datum/sandy_replay/proc/gore_playing()
+	for(var/datum/sandy_replay_track/track as anything in puppets)
+		if(track.anim_until <= world.time || !length(track.events))
+			continue
+		var/atom/movable/thing = track.thing
+		if(QDELETED(thing) || !(istype(thing, /obj/effect/decal/cleanable/blood) || istype(thing, /obj/item/bodypart) || istype(thing, /obj/item/organ)))
+			continue
+		var/list/last_event = track.events[length(track.events)]
+		if(last_event[1] >= total - SANDY_REPLAY_LANDING_FRAMES)
+			return TRUE
+	return FALSE
+
 /// Whether `thing` is a shot (held by hold_shots()).
 /datum/sandy_replay/proc/track_is_shot(atom/movable/thing)
 	var/datum/sandy_replay_track/track = tracks[thing]
@@ -2129,13 +2205,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			finish()
 			return
 		var/frame = round((world.time - play_started) / world.tick_lag)
-		if(frame > total + 1) // the last frame's tween has played out
+		if(frame > total + 1 && !land()) // the last frame's tween has played out, and nothing is left in the air
 			finish()
 			return
 		frame = min(frame, total)
 		hold_nearby()
 		sandy_replay_clocks_tick() // the held stay paused
-		hide_unborn()
+		if(landing_stage < 2) // what gore flying on for real leaves behind it is seen as it is left
+			hide_unborn()
 		clear_view()
 		play_sounds(frame)
 		for(var/datum/sandy_replay_track/track as anything in puppets)
@@ -2143,6 +2220,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			if(QDELETED(thing))
 				continue
 			var/redraw = FALSE
+			if(track.landing)
+				continue
 			if(track.unmasked) // a wrapped proc never came back
 				track.unmasked = FALSE
 				keep_real(track)
@@ -2683,6 +2762,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_SOUND_VOLUME
 #undef SANDY_REPLAY_SOUND_GAP
 #undef SANDY_REPLAY_HOLD_RANGE
+#undef SANDY_REPLAY_LANDING_MAX
+#undef SANDY_REPLAY_LANDING_TWEENS
+#undef SANDY_REPLAY_LANDING_FRAMES
 #undef SANDY_REPLAY_PICTURE_TIME
 #undef SANDY_REPLAY_WAIT_MAX
 #undef SANDY_REPLAY_RIG_HIDES
