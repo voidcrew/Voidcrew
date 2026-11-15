@@ -215,6 +215,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/glide_y = 0
 	var/glide_time = 0
 	var/glide_until = 0
+	/// Playback, surger: the tween's way when it isn't a straight line (a corner turned between two frames): flat x, y
+	/// pixel offsets from where it ends, the first where it starts and the last 0, 0, each leg taking the same time.
+	var/list/glide_way
 	/// Puppet: the thing's real look, dir, opacity and luminosity.
 	var/saved_look
 	var/saved_dir
@@ -2065,9 +2068,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/carry_x = 0
 	var/carry_y = 0
 	if(left > 0 && track.glide_time > 0)
-		carry_x = track.glide_x * left / track.glide_time
-		carry_y = track.glide_y * left / track.glide_time
+		var/list/still = glide_at(track, left)
+		carry_x = still[1]
+		carry_y = still[2]
 	track.glide_until = 0
+	track.glide_way = null
 	if(old < 0 || !frames[old + SANDY_FRAME_Z] || frames[old + SANDY_FRAME_Z] != frames[at + SANDY_FRAME_Z])
 		track.turn_until = 0
 		return TRUE
@@ -2129,7 +2134,70 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	track.glide_step = stepped || (left > 0 && track.glide_step) // what is left of a step glides on with this one
 	track.glide_time = time
 	track.glide_until = world.time + time
+	if(track.surger && stepped)
+		track.glide_way = glide_corners(track, old, at, move_x, move_y)
 	return TRUE
+
+/**
+ * The way a surger glides from frame `old` to frame `at` when it turned a corner between them (kept_way()): flat x, y
+ * pixel offsets from where it ends, from `move_x`, `move_y` (where it starts) through each tile it stepped on to 0, 0.
+ * Null for a straight run, which glides as everything else does. Gliding straight across a corner, the puppet was
+ * never on the tiles its trail is laid on.
+ */
+/datum/sandy_replay/proc/glide_corners(datum/sandy_replay_track/track, old, at, move_x, move_y)
+	var/list/frames = track.frames
+	var/turf/left = locate(frames[old + SANDY_FRAME_X], frames[old + SANDY_FRAME_Y], frames[old + SANDY_FRAME_Z])
+	var/turf/reached = locate(frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y], frames[at + SANDY_FRAME_Z])
+	if(!left || !reached)
+		return null
+	var/list/way = kept_way(track, left, reached)
+	if(!way || way_is_straight(way, left, reached))
+		return null
+	. = list(move_x, move_y)
+	for(var/i in 2 to length(way) - 1)
+		var/turf/corner = way[i]
+		. += (corner.x - reached.x) * ICON_SIZE_X
+		. += (corner.y - reached.y) * ICON_SIZE_Y
+	. += 0
+	. += 0
+
+/// Whether `way` (tiles from `left` to `reached`) is the straight line between them.
+/datum/sandy_replay/proc/way_is_straight(list/way, turf/left, turf/reached)
+	var/list/straight = get_line(left, reached)
+	if(length(way) != length(straight))
+		return FALSE
+	for(var/i in 1 to length(way))
+		if(way[i] != straight[i])
+			return FALSE
+	return TRUE
+
+/// Where a track's tween is with `left` of its time to go: list(x, y) pixels from where it ends.
+/datum/sandy_replay/proc/glide_at(datum/sandy_replay_track/track, left)
+	var/list/way = track.glide_way
+	if(!way)
+		return list(track.glide_x * left / track.glide_time, track.glide_y * left / track.glide_time)
+	var/legs = length(way) / 2 - 1
+	var/along = clamp(1 - left / track.glide_time, 0, 1) * legs
+	var/leg = min(round(along), legs - 1) // the leg it is on, from 0
+	var/part = along - leg
+	return list(way[leg * 2 + 1] + (way[leg * 2 + 3] - way[leg * 2 + 1]) * part, way[leg * 2 + 2] + (way[leg * 2 + 4] - way[leg * 2 + 2]) * part)
+
+/**
+ * The legs a track's tween has still to cover with `left` of its time to go, for an animate() chain: a list of
+ * list(x, y, time), each the pixels from where it ends that a leg stops at and how long the leg takes. One leg for a
+ * straight tween.
+ */
+/datum/sandy_replay/proc/glide_legs(datum/sandy_replay_track/track, left)
+	var/list/way = track.glide_way
+	if(!way)
+		return list(list(0, 0, left))
+	. = list()
+	var/legs = length(way) / 2 - 1
+	var/leg_time = track.glide_time / legs
+	var/along = clamp(1 - left / track.glide_time, 0, 1) * legs
+	var/leg = min(round(along), legs - 1)
+	for(var/i in leg to legs - 1)
+		. += list(list(way[i * 2 + 3], way[i * 2 + 4], i == leg ? (1 - (along - leg)) * leg_time : leg_time))
 
 /// Draws `track`'s current frame on its thing or its stand-in.
 /datum/sandy_replay/proc/show(datum/sandy_replay_track/track)
@@ -2204,9 +2272,16 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		body.transform = from.Interpolate(track.turn_to, 1 - turn_left / track.turn_time)
 	var/left = track.glide_until - world.time
 	if(left > 0 && track.glide_time > 0)
-		body.pixel_w = to_w + track.glide_x * left / track.glide_time
-		body.pixel_z = to_z + track.glide_y * left / track.glide_time
-		animate(body, pixel_w = to_w, pixel_z = to_z, time = left, flags = ANIMATION_END_NOW)
+		var/list/still = glide_at(track, left)
+		body.pixel_w = to_w + still[1]
+		body.pixel_z = to_z + still[2]
+		var/first = TRUE
+		for(var/list/leg as anything in glide_legs(track, left))
+			if(first)
+				animate(body, pixel_w = to_w + leg[1], pixel_z = to_z + leg[2], time = leg[3], flags = ANIMATION_END_NOW)
+				first = FALSE
+			else
+				animate(pixel_w = to_w + leg[1], pixel_z = to_z + leg[2], time = leg[3])
 	else
 		animate(body, pixel_w = to_w, pixel_z = to_z, time = 0, flags = ANIMATION_END_NOW)
 	if(turning)
@@ -2225,9 +2300,16 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	eye.loc = spot
 	var/left = user_track.glide_until - world.time
 	if(left > 0 && user_track.glide_time > 0)
-		viewer.pixel_x = eye_pixel_x + user_track.glide_x * left / user_track.glide_time
-		viewer.pixel_y = eye_pixel_y + user_track.glide_y * left / user_track.glide_time
-		animate(viewer, pixel_x = eye_pixel_x, pixel_y = eye_pixel_y, time = left, flags = ANIMATION_END_NOW)
+		var/list/still = glide_at(user_track, left)
+		viewer.pixel_x = eye_pixel_x + still[1]
+		viewer.pixel_y = eye_pixel_y + still[2]
+		var/first = TRUE
+		for(var/list/leg as anything in glide_legs(user_track, left))
+			if(first)
+				animate(viewer, pixel_x = eye_pixel_x + leg[1], pixel_y = eye_pixel_y + leg[2], time = leg[3], flags = ANIMATION_END_NOW)
+				first = FALSE
+			else
+				animate(pixel_x = eye_pixel_x + leg[1], pixel_y = eye_pixel_y + leg[2], time = leg[3])
 	else
 		animate(viewer, pixel_x = eye_pixel_x, pixel_y = eye_pixel_y, time = 0, flags = ANIMATION_END_NOW)
 
@@ -2254,14 +2336,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return // a jump, not steps
 	// Several steps can fall between two samples: each tile it crossed gets its afterimages, as each step would. The
 	// way it really went where that was kept (a corner), a straight line where it wasn't.
-	var/list/straight = get_line(left, reached)
-	var/list/crossed = surger_way(track, left, reached) || straight
-	var/turned = length(crossed) != length(straight) // round a corner: the puppet glides straight across it, off the tiles he stepped on
-	if(!turned)
-		for(var/i in 1 to length(crossed))
-			if(crossed[i] != straight[i])
-				turned = TRUE
-				break
+	var/list/crossed = surger_way(track, left, reached) || get_line(left, reached)
 	var/steps = length(crossed) - 1
 	// The trail is laid as the live one is (cyberware_cascade_window/on_move()), on the replay's clock: a step takes as
 	// many frames as it took in the recording, and an afterimage lives trail_length / trail_per_tile steps, so a walk at
@@ -2292,9 +2367,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			before = null
 		// Several tiles between two frames: the puppet is still gliding over them, and a copy laid now on a tile further
 		// on stood ahead of him. Each shows as he passes it.
-		// Round a corner he glides straight across, a copy on the corner would stand ahead of him the whole way: those
-		// show once he is there.
-		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * ((turned && k > 1) ? 1 : (k - 1) / steps) : 0
+		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * (k - 1) / steps : 0
 		// Each copy faces the way he was going as he left its tile: only the last step's facing is in the frame
 		var/facing = steps > 1 ? get_dir(step_from, crossed[k + 1]) : frames[dest + SANDY_FRAME_DIR]
 		for(var/i in 0 to (before ? per_tile - 1 : 0))
@@ -2321,9 +2394,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return
 	trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(spot, look, facing, age, start_alpha, life, shift_x, shift_y, age_time)
 
-/// The tiles `track`'s surger crossed from `left` to `reached` (both included) as it stepped them in the recording, or
-/// null when they weren't kept or don't join the two up a step at a time (it was moved by something other than walking).
-/datum/sandy_replay/proc/surger_way(datum/sandy_replay_track/track, turf/left, turf/reached)
+/// The tiles a surger crossed from `left` to `reached` (both included) as it stepped them in the recording, or null
+/// when they weren't kept or don't join the two up a step at a time (it was moved by something other than walking).
+/datum/sandy_replay/proc/kept_way(datum/sandy_replay_track/track, turf/left, turf/reached)
 	var/list/kept = LAZYACCESS(track.ways, "[track.frames[track.cursor + SANDY_FRAME_INDEX]]")
 	if(!kept)
 		return null
@@ -2335,10 +2408,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			return null
 		way += next
 		last = next
-	if(last != reached)
-		return null
-	ways_followed++
-	return way
+	return last == reached ? way : null
+
+/// kept_way() for the trail, counted (ways_followed).
+/datum/sandy_replay/proc/surger_way(datum/sandy_replay_track/track, turf/left, turf/reached)
+	. = kept_way(track, left, reached)
+	if(.)
+		ways_followed++
 
 /// A surger's replayed self bursts off from `from` after a pause: its viewers hear the snap anyone near heard
 /// (ware_sandy_sound.dm), at most every SANDEVISTAN_BURST_GAP as the replay plays (the outside view's time) and a few
