@@ -916,6 +916,11 @@
 	TEST_ASSERT(!length(off), "Afterimages not coloured by age: [off.Join("; ")]")
 	sleep(0.1 SECONDS * window.trail_length / window.trail_per_tile + 0.2 SECONDS)
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "The trail lingered after the surger stopped")
+	// A body knocked across the floor is not surging: no afterimages behind a corpse
+	user.death()
+	user.forceMove(get_step(user, EAST))
+	user.forceMove(get_step(user, EAST))
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "A dead surger's body left afterimages as it was moved")
 	end_surge(user)
 
 /// The slow-mo: the same trail, coloured by age as a plain surge's, behind a user walking at normal speed

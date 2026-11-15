@@ -344,7 +344,7 @@
  */
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
-	if(!isturf(old_loc))
+	if(!isturf(old_loc) || owner.stat == DEAD) // a body knocked across the floor is not surging
 		return
 	var/turf/here = get_turf(owner)
 	var/step_time = world.time - last_step_at
