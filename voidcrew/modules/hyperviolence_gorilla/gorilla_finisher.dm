@@ -1075,7 +1075,8 @@
 	// come up with them: an arm rising on its own before he has it would look lifted by nothing
 	var/list/hand = victim_rig.hand_point(side)
 	var/list/body_at = body_origin()
-	var/list/reach_to = list(body_at[1] + hand[1], body_at[2] + hand[2])
+	var/list/hand_at = list(body_at[1] + hand[1], body_at[2] + hand[2])
+	var/list/reach_to = hand_at
 	var/list/fist_from = bearer_shoulder_at(grip_side, bent)
 	var/to_hand = sqrt((reach_to[1] - fist_from[1]) ** 2 + (reach_to[2] - fist_from[2]) ** 2)
 	var/to_grip = sqrt((grip[1] - fist_from[1]) ** 2 + (grip[2] - fist_from[2]) ** 2)
@@ -1083,15 +1084,25 @@
 		reach_to = list(fist_from[1] + (reach_to[1] - fist_from[1]) * to_grip / to_hand, fist_from[2] + (reach_to[2] - fist_from[2]) * to_grip / to_hand)
 	var/list/on_hand = poses_on(reach_to, now, bent)
 	on_hand["body"] = start["body"]
+	var/body_turn = now["body"]
 	var/list/phases = list(list(start, on_hand, time * GORILLA_RIP_REACH_SHARE), list(on_hand, there, time * (1 - GORILLA_RIP_REACH_SHARE)))
 	for(var/list/phase as anything in phases)
 		var/list/from_poses = phase[1]
 		var/list/to_poses = phase[2]
+		var/lifting = (to_poses == there)
 		for(var/i in 1 to steps)
 			var/progress = (1 - cos(180 * i / steps)) / 2
 			var/matrix/bent_now = bearer_rig.bend_matrix(bend * progress)
 			var/list/poses = list()
 			for(var/key_name in there)
+				if(lifting && key_name == "body")
+					var/keep = 1 - progress
+					var/wrist_x = keep * keep * hand_at[1] + 2 * keep * progress * reach_to[1] + progress * progress * grip[1]
+					var/wrist_y = keep * keep * hand_at[2] + 2 * keep * progress * reach_to[2] + progress * progress * grip[2]
+					var/list/body_pose = victim_rig.pose_reaching(side, wrist_x - body_at[1], wrist_y - body_at[2], body_turn)
+					body_turn = body_pose[1]
+					poses[key_name] = list(body_pose[1], body_pose[2], null)
+					continue
 				var/list/pose = to_poses[key_name]
 				var/list/was = from_poses[key_name]
 				poses[key_name] = list(was[1] + (pose[1] - was[1]) * progress, was[2] + (pose[2] - was[2]) * progress, key_name == "body" ? null : bent_now)
@@ -1486,13 +1497,15 @@
 	var/matrix/base = matrix(torn.transform)
 	// Drawn where the hauled arm was before it is put on its tile, so its first frame is there; over him, but for seen
 	// from behind, where his body hid the arm in his fists
+	var/matrix/start_spun = hv_vis_turned(base, start_turn, spin_about[2], spin_about[1])
 	torn.pixel_x = from[1] - dx
 	torn.pixel_y = from[2] - dy
 	torn.pixel_w = 0
 	torn.pixel_z = 0
-	torn.transform = hv_vis_turned(base, start_turn, spin_about[2], spin_about[1])
+	torn.transform = start_spun
 	torn.layer = facing == NORTH ? user.layer - 0.01 : user.layer + 0.03
 	torn.forceMove(land)
+	animate(torn, pixel_x = from[1] - dx, pixel_y = from[2] - dy, pixel_z = 0, transform = start_spun, time = 0)
 	var/steps = GORILLA_RIP_THROW_STEPS
 	for(var/i in 1 to steps)
 		var/progress = i / steps
@@ -1500,10 +1513,7 @@
 		var/height = round(GORILLA_RIP_THROW_ARC * 4 * progress * (1 - progress))
 		var/to_x = round(from[1] - dx + (rest_x - from[1] + dx) * progress)
 		var/to_y = round(from[2] - dy + (rest_y - from[2] + dy) * progress)
-		if(i == 1)
-			animate(torn, pixel_x = to_x, pixel_y = to_y, pixel_z = height, transform = spun, time = GORILLA_RIP_THROW_TIME / steps)
-		else
-			animate(pixel_x = to_x, pixel_y = to_y, pixel_z = height, transform = spun, time = GORILLA_RIP_THROW_TIME / steps)
+		animate(pixel_x = to_x, pixel_y = to_y, pixel_z = height, transform = spun, time = GORILLA_RIP_THROW_TIME / steps)
 	if(length(blood_dna))
 		// A drop half way and one under it where it lands, each showing as it gets there by the client's own clock
 		var/turf/half_way = best > 1 ? get_step(start, get_dir(start, land)) : null
@@ -1566,7 +1576,7 @@
 		if(hv_crit_apply_wound(limb, /datum/wound/blunt/bone/moderate, toward_bearer, fist))
 			victim.hv_add_hit_line("[victim]'s shoulder wrenches out of its socket!", HV_LINE_BOLD, "Your shoulder wrenches out of its socket!")
 		victim.hv_flush_hit()
-		do_sparks(2, TRUE, victim)
+		// No do_sparks() here: the wrench has its own spark at the shoulder, and tg's sparks wander off across the floor
 		log_combat(user, victim, "dislocated the arm of", "gorilla arms")
 		return "dislocated"
 	// The spray runs back at the bearer: the last hit on the body came from them.
