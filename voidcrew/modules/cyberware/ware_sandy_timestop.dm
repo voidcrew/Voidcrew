@@ -299,9 +299,29 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	// colour, so it is red again (not white) when the tint comes off.
 	if((istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/effect/ebeam)) && istext(thing.color) && !LAZYACCESS(thing.atom_colours, FIXED_COLOUR_PRIORITY))
 		thing.add_atom_colour(thing.color, FIXED_COLOUR_PRIORITY)
-	thing.add_atom_colour(cyberware_time_stop_tint(), TEMPORARY_COLOUR_PRIORITY)
+	thing.add_atom_colour(cyberware_time_tint_for(thing), TEMPORARY_COLOUR_PRIORITY)
 	if(istype(thing, /obj/effect/decal/cleanable/blood/gibs)) // its meat is a RESET_COLOR overlay: see its update_overlays()
 		thing.update_appearance(UPDATE_OVERLAYS)
+
+/**
+ * The tint `thing` wears in `color`. The tint replaces its colour, so a sprite drawn white and coloured by its `color` (a
+ * blood splash, a bead, a gut strand: greyscale art) would show its white art through the wash, near white. A temp
+ * visual or beam whose own colour is kept at FIXED_COLOUR_PRIORITY (cyberware_time_tint_on()) wears the wash over that
+ * colour instead. A blood decal works its own out in update_blood_color().
+ */
+/proc/cyberware_time_tint_for(atom/thing)
+	if(!istype(thing, /obj/effect/temp_visual) && !istype(thing, /obj/effect/ebeam))
+		return cyberware_time_stop_tint()
+	var/list/own = LAZYACCESS(thing.atom_colours, FIXED_COLOUR_PRIORITY)
+	if(!own || own[ATOM_COLOR_TYPE_INDEX] == ATOM_COLOR_TYPE_FILTER || !istext(own[ATOM_COLOR_VALUE_INDEX]))
+		return cyberware_time_stop_tint()
+	return cyberware_time_tint_of(own[ATOM_COLOR_VALUE_INDEX])
+
+/// tg gave `thing` (tinted in `color`) a colour of its own over the tint: kept as its own colour, and the tint put back over it.
+/proc/cyberware_time_recolour_tinted(atom/thing)
+	if(istext(thing.color))
+		thing.add_atom_colour(thing.color, FIXED_COLOUR_PRIORITY)
+	thing.add_atom_colour(cyberware_time_tint_for(thing), TEMPORARY_COLOUR_PRIORITY)
 
 /// `first` then the slow-mo's tint, as one colour matrix (both 12-number RGB matrices).
 /proc/cyberware_time_tint_after(list/first)
@@ -346,7 +366,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /proc/cyberware_time_has_tint(atom/thing)
 	if(cyberware_time_tints_by_filter(thing))
 		return !!thing.filter_data?[SANDY_STOP_TINT]
-	return LAZYACCESS(thing.atom_colours, TEMPORARY_COLOUR_PRIORITY) && compare_list(thing.atom_colours[TEMPORARY_COLOUR_PRIORITY][ATOM_COLOR_VALUE_INDEX], cyberware_time_stop_tint())
+	var/list/entry = LAZYACCESS(thing.atom_colours, TEMPORARY_COLOUR_PRIORITY)
+	if(!entry || !islist(entry[ATOM_COLOR_VALUE_INDEX]))
+		return FALSE
+	var/list/worn = entry[ATOM_COLOR_VALUE_INDEX]
+	return compare_list(worn, cyberware_time_stop_tint()) || compare_list(worn, cyberware_time_tint_for(thing))
 
 /// Blood and loose gore the field tints like the world around it (it is only looked at, never held): nothing about
 /// gore is in colour in the slow-mo. Severed parts and spilled intestines are items, which otherwise keep their colour
@@ -370,8 +394,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// white, coloured by that `color`. With the slow-mo's tint matrix in `color` it would be drawn white and its drying
 /// colour lost, so while tinted it wears the tint mixed with its own colour, held where it was. It works its colour
 /// out again when the tint comes off (update_atom_colour() calls this). A colour filter didn't draw on decals.
+/// Blood made in the slow-mo wears it from its first picture: tg starts its drying animation (from its own colour, a
+/// text colour) as it is made, before the field tints it, and the client drew that blood white, its art with no colour,
+/// until the decal's next animation ended.
 /obj/effect/decal/cleanable/blood/update_blood_color()
-	if(!sandy_time_tinted())
+	if(!sandy_time_tinted() && !sandy_time_tint_due())
 		return ..()
 	animate(src)
 	var/own = sandy_replay_colour() // ware_sandy_replay.dm
@@ -384,12 +411,19 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /obj/effect/decal/cleanable/blood/proc/sandy_time_tinted()
 	return islist(color) && LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) && GLOB.cyberware_time_dilated[src]
 
+/// Whether this blood is being made on a slow-mo's ground that the field will tint it on this tick (once it is made).
+/obj/effect/decal/cleanable/blood/proc/sandy_time_tint_due()
+	if(!length(GLOB.cyberware_time_fields) || GLOB.cyberware_time_dilated[src] || !isturf(loc))
+		return FALSE
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_time_field(src)
+	return istype(field) && field.ring_wait(src) <= 0
+
 /// tg's create_splatter() sets the splash's colour after making it, over the slow-mo's tint: the tint goes back on.
 /mob/living/create_splatter(splatter_dir = pick(GLOB.cardinals))
 	. = ..()
 	for(var/obj/effect/temp_visual/dir_setting/bloodsplatter/splatter in get_turf(src))
-		if(GLOB.cyberware_time_dilated[splatter])
-			splatter.update_atom_colour()
+		if(GLOB.cyberware_time_dilated[splatter] && cyberware_time_has_tint(splatter))
+			cyberware_time_recolour_tinted(splatter)
 
 /// tg's Draw() gives a beam's last, cut-short segment the beam's colour right after making it, over the tint the
 /// field put on it as it was made (a gut strand's end showed raw in the slow-mo): the tint goes back on, and a
@@ -401,7 +435,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			continue
 		if(istext(segment.color) && !LAZYACCESS(segment.atom_colours, FIXED_COLOUR_PRIORITY))
 			segment.add_atom_colour(segment.color, FIXED_COLOUR_PRIORITY) // its own colour again once the tint comes off
-		segment.update_atom_colour()
+		segment.add_atom_colour(cyberware_time_tint_for(segment), TEMPORARY_COLOUR_PRIORITY) // the wash over that colour
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = GLOB.cyberware_time_dilated[segment]
 		if(istype(field))
 			field.tint_blood_bits(segment)
