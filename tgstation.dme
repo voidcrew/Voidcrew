@@ -7711,6 +7711,7 @@
 #include "voidcrew\modules\trade\outpost_checkpoint_guard.dm"
 #include "voidcrew\modules\trade\outpost_checkpoint_npcs.dm"
 #include "voidcrew\modules\trade\outpost_elevator.dm"
+#include "voidcrew\modules\trade\outpost_ghost_teleport.dm"
 #include "voidcrew\modules\trade\outpost_hangar.dm"
 #include "voidcrew\modules\trade\outpost_missions.dm"
 #include "voidcrew\modules\trade\outpost_quests.dm"
