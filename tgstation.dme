@@ -6804,6 +6804,7 @@
 #include "voidcrew\datums\ruins\space.dm"
 #include "voidcrew\datums\ruins\wasteland.dm"
 #include "voidcrew\datums\votes\transfer_vote.dm"
+#include "voidcrew\edits\area_ambience.dm"
 #include "voidcrew\edits\config.dm"
 #include "voidcrew\edits\gps.dm"
 #include "voidcrew\edits\hyperspace_overboard.dm"
