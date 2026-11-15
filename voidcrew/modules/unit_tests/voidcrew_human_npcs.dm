@@ -362,6 +362,8 @@
 	TEST_ASSERT(weathered, "Weather doesn't reach an awake human NPC")
 	TEST_ASSERT(!human_npc_weathered(person), "human_npc_weathered() took in a person")
 
+	TEST_ASSERT(pirate_crew_can_enlist(npc), "A pirate crew can't take on a human NPC")
+
 /// D3's exceptions: a ship key isn't gear and drops when the NPC dies; a grenade is a consumable the NPC
 /// can drop and throw, that no player can keep, and that goes when its NPC does.
 /datum/unit_test/voidcrew_human_npc_gear_exceptions

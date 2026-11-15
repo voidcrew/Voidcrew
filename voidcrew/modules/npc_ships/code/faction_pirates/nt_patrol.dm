@@ -61,11 +61,11 @@
 	// Crew configuration - NT customs enforcement detail
 	crew_min = 3
 	crew_max = 5
-	captain_type = /mob/living/basic/trooper/nanotrasen/ranged/assault/customs
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/nt_customs/sergeant
 	crew_types = list(
-		/mob/living/basic/trooper/nanotrasen/customs,
-		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
-		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
+		/mob/living/carbon/human/npc/faction_pirate/nt_customs/officer,
+		/mob/living/carbon/human/npc/faction_pirate/nt_customs/inspector,
+		/mob/living/carbon/human/npc/faction_pirate/nt_customs/inspector,
 	)
 
 	// Negotiation - the "fine". Dispatch overwrites both bounds with the exact
@@ -88,8 +88,8 @@
 	boarding_pods_max = 2
 	boarding_pod_cooldown_time = 30 SECONDS
 	boarding_pod_mob_types = list(
-		/mob/living/basic/trooper/nanotrasen/customs,
-		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
+		/mob/living/carbon/human/npc/faction_pirate/nt_customs/officer,
+		/mob/living/carbon/human/npc/faction_pirate/nt_customs/inspector,
 	)
 
 	// Phased combat - compliance action waves, then the Director
@@ -99,7 +99,7 @@
 		list(3, 4),  // Wave 2
 		list(3, 5),  // Wave 3
 	)
-	boss_type = /mob/living/basic/trooper/pirate/faction/boss/nt_patrol
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/nt_customs/director
 	wave_taunts = list(
 		list(  // Wave 1 -> 2 cooldown
 			"Compliance teams are inbound. This is a billable action.",
@@ -185,10 +185,11 @@
 // faction_pirate_equipment.dm, but keyed to the NT crew's faction so they
 // don't gun down their own officers.
 //
-// req_access is deliberately an access nobody aboard carries. The crew are
-// basic mobs with no ID cards, so the swipe lock only ever gates boarders -
-// and the inherited ACCESS_SYNDICATE gated it the wrong way round, since
-// voidcrew's syndicate job outfits hand players that access at roundstart.
+// req_access is CentCom access. The crew carry CentCom ID cards, but those are
+// locked to their bodies (human NPC gear lock, voidcrew/modules/human_npcs/) and
+// the crew never work a turret's panel, so the swipe lock only ever gates
+// boarders - and the inherited ACCESS_SYNDICATE gated it the wrong way round,
+// since voidcrew's syndicate job outfits hand players that access at roundstart.
 // The counterplay is the turretid console, which ship_nt_patrol.dmm maps
 // unlocked on purpose.
 
@@ -204,100 +205,177 @@
 	faction = list(ROLE_DEATHSQUAD)
 	req_access = list(ACCESS_CENT_GENERAL)
 
-// ==================== CREW MOBS ====================
-// Space-capable customs variants of the upstream NT troopers
-// (code/modules/mob/living/basic/trooper/nanotrasen.dm). Mirrors what
-// /mob/living/basic/trooper/pirate/faction does for pirate crews: atmos
-// immunity + TRAIT_SPACEWALK so ship interiors and boarding actions work.
+// ==================== THE CREW ====================
+// Customs officers, inspectors, their sergeant and the Compliance Director as human NPCs
+// (voidcrew/modules/human_npcs/), crewing the corvette and boarding by pod the way the pirate factions do
+// (faction_pirate_humans.dm, whose crew AI, boarding, captain's key and boss hooks they share). They look
+// like tg's Nanotrasen troopers (the corpse spawners' species, hair and clothes) and hold the guns those
+// troopers fired, by the zone ladder the basic customs mobs used (voidcrew/edits/mobs/weapon_drops.dm):
+// inspectors and the sergeant carry an M1911 outside the red zone. Their CentCom ID cards are locked gear
+// like the rest of their kit, so a dead officer's card opens nothing for anyone. Boarders wear a sealed suit
+// and carry air. They drop nothing (a customs vessel is no prize); the Director drops his e-gun, his baton
+// and 2,000 credits of collected fines, as the basic boss did.
 
-/// Customs guard - melee escort with a stun baton
-/mob/living/basic/trooper/nanotrasen/customs
-	name = "\improper Nanotrasen Customs Officer"
-	desc = "A Nanotrasen customs officer, here to search your ship. The baton is standard issue."
-	maxHealth = 110
-	health = 110
-	melee_damage_lower = 12
-	melee_damage_upper = 18
-	attack_verb_continuous = "batons"
-	attack_verb_simple = "baton"
-	attack_sound = 'sound/items/weapons/genhit1.ogg'
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	minimum_survivable_temperature = 0
-	r_hand = /obj/item/melee/baton/security
-
-/mob/living/basic/trooper/nanotrasen/customs/Initialize(mapload)
-	. = ..()
-	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
-
-/// Customs inspector - SMG-armed ranged officer
-/mob/living/basic/trooper/nanotrasen/ranged/smg/customs
-	name = "\improper Nanotrasen Customs Inspector"
-	desc = "A Nanotrasen customs inspector. Authorized to conduct searches, seizures, and suppressive fire."
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	minimum_survivable_temperature = 0
-
-/mob/living/basic/trooper/nanotrasen/ranged/smg/customs/Initialize(mapload)
-	. = ..()
-	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
-
-/// Customs sergeant - assault-rifle captain of the patrol (carries the ship key)
-/mob/living/basic/trooper/nanotrasen/ranged/assault/customs
-	name = "\improper Nanotrasen Customs Sergeant"
-	desc = "The ranking customs officer aboard. Personally responsible for this quarter's seizure figures."
-	maxHealth = 120
-	health = 120
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	minimum_survivable_temperature = 0
-
-/mob/living/basic/trooper/nanotrasen/ranged/assault/customs/Initialize(mapload)
-	. = ..()
-	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
-
-// ==================== THE BOSS ====================
-// Subtypes /mob/living/basic/trooper/pirate/faction/boss because
-// create_boss_boarding_pod() (boarding_pod.dm) writes boss.parent_ship and the
-// boss death hook lives on that type - an upstream NT trooper would runtime.
-// Flavor and loadout are pure Nanotrasen.
-
-/mob/living/basic/trooper/pirate/faction/boss/nt_patrol
-	name = "NT Compliance Director"
-	desc = "A senior Nanotrasen compliance executive in body armor, sent out when the paperwork stops working."
-	maxHealth = 350
-	health = 350
-	melee_damage_lower = 20
-	melee_damage_upper = 25
-	armour_penetration = 25
-	attack_verb_continuous = "restructures"
-	attack_verb_simple = "restructure"
-	attack_sound = 'sound/items/weapons/genhit1.ogg'
-	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	faction = list(ROLE_DEATHSQUAD)
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/nanotrasenelitesoldier
-	corpse = /obj/effect/mob_spawn/corpse/human/nanotrasenelitesoldier
-	r_hand = /obj/item/gun/energy/e_gun
-	loot_pool = list(/obj/item/gun/energy/e_gun, /obj/item/melee/baton/security/loaded)
-	plunder_credits = 2000
-	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
-	var/projectiletype = /obj/projectile/beam/laser
-	var/projectilesound = 'sound/items/weapons/laser.ogg'
-	var/burst_shots = 3
-	var/ranged_cooldown = 5 SECONDS
-
-/mob/living/basic/trooper/pirate/faction/boss/nt_patrol/Initialize(mapload)
-	. = ..()
-	AddComponent(\
-		/datum/component/ranged_attacks,\
-		projectile_type = projectiletype,\
-		projectile_sound = projectilesound,\
-		cooldown_time = ranged_cooldown,\
-		burst_shots = burst_shots,\
+/// What customs says when things happen to its body (human_npc_barks.dm)
+/datum/human_npc_voice/nt_customs
+	lines = list(
+		PIRATE_BARK_SPOT = list("Customs! Stay where you are!", "There. Detain them.", "Contact. Compliance action authorised."),
+		HUMAN_NPC_BARK_DOWNED = list("Officer down!", "I need a medic. Bill them for it."),
+		HUMAN_NPC_BARK_PLEAD = list("Assaulting an officer... is a crime...", "This is going on your file..."),
+		HUMAN_NPC_BARK_RECOVER = list("Back on duty.", "Where was I."),
+		HUMAN_NPC_BARK_CUFFED = list("You're cuffing a customs officer. That's on file.", "This is obstruction."),
+		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
+		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off, citizen!"),
 	)
+	emotes = list(
+		HUMAN_NPC_BARK_DOWNED = list("collapses."),
+		"stimulant" = list("jabs a needle into their neck."),
+	)
+	chances = list(PIRATE_BARK_SPOT = 60)
+
+/mob/living/carbon/human/npc/faction_pirate/nt_customs
+	name = "customs officer"
+	npc_name = "Nanotrasen Customs Officer"
+	crew_desc = "A Nanotrasen customs officer, here to search your ship."
+	// The corvette's turrets and doors are keyed to it (above); never counted as a pirate
+	faction = list(ROLE_DEATHSQUAD)
+	npc_look = /obj/effect/mob_spawn/corpse/human/nanotrasensoldier
+	npc_outfit_table = /datum/human_npc_outfit_table/pirate/nt_customs
+	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/nt_customs/boarding
+	npc_voice = /datum/human_npc_voice/nt_customs
+	// Always aboard their corvette or with its boarders: the crew decides, as for pirates
+	npc_surrender = null
+	crew_alert_lines = list(
+		"Unauthorised boarders. Detain them.",
+		"Intruders on a customs vessel. Weapons free.",
+		"All officers, we have a breach.",
+	)
+	crew_spot_lines = list(
+		"Customs! Stay where you are!",
+		"There. Detain them.",
+		"Contact. Compliance action authorised.",
+	)
+	// A customs vessel is no prize: the crew drop nothing
+	random_loot = null
+	random_loot_2 = null
+
+// Corporate staff, not natives of any planet
+/mob/living/carbon/human/npc/faction_pirate/nt_customs/should_inherit_planetary_faction()
+	return FALSE
+
+// The corpse look's own CentCom ID (tg's trooper corpses) already names its rank; keep it and put the
+// NPC's own name on it, so a masked officer isn't "Unknown".
+/mob/living/carbon/human/npc/faction_pirate/nt_customs/crew_issue_id()
+	var/obj/item/card/id/card = wear_id
+	if(!istype(card))
+		return ..()
+	card.registered_name = real_name
+	card.update_label()
+
+/// Customs guard: a stun baton and cuffs' worth of authority
+/mob/living/carbon/human/npc/faction_pirate/nt_customs/officer
+	npc_name = "Nanotrasen Customs Officer"
+	crew_desc = "A Nanotrasen customs officer, here to search your ship. The baton is standard issue."
+	crew_role = SHIP_CREW_ROLE_MELEE
+
+/// Customs inspector: an M1911, or a WT-550 in the red zone
+/mob/living/carbon/human/npc/faction_pirate/nt_customs/inspector
+	npc_name = "Nanotrasen Customs Inspector"
+	crew_desc = "A Nanotrasen customs inspector. Authorised to conduct searches, seizures, and suppressive fire."
+	crew_role = SHIP_CREW_ROLE_GUNNER
+
+/// Customs sergeant: the corvette's captain, who carries its key
+/mob/living/carbon/human/npc/faction_pirate/nt_customs/sergeant
+	npc_name = "Nanotrasen Customs Sergeant"
+	crew_desc = "The ranking customs officer aboard. Personally responsible for this quarter's seizure figures."
+	npc_look = /obj/effect/mob_spawn/corpse/human/nanotrasenassaultsoldier
+	npc_rank = HUMAN_NPC_RANK_ELITE
+
+/// The Compliance Director: the boss the corvette sends last. Killing or taking him disables it.
+/mob/living/carbon/human/npc/faction_pirate/nt_customs/director
+	npc_name = "NT Compliance Director"
+	crew_desc = "A senior Nanotrasen compliance executive in body armour, sent out when the paperwork stops working."
+	npc_look = /obj/effect/mob_spawn/corpse/human/nanotrasenelitesoldier
+	npc_rank = HUMAN_NPC_RANK_BOSS
+	npc_always_site = HUMAN_NPC_SITE_BAD_AIR
+	stimulant_type = /obj/item/reagent_containers/hypospray/medipen/stimulants
+	loot_pool = list(/obj/item/gun/energy/e_gun, /obj/item/melee/baton/security/loaded)
+	npc_death_cash = 2000
+
+// ===== Outfits: tg's trooper corpse outfits, with the real weapons the basic mobs fired =====
+
+/// Rank and file by role and zone; the sergeant and the Director wear their own.
+/datum/human_npc_outfit_table/pirate/nt_customs
+	vacuum_layer = /datum/human_npc_layer/eva/nt_customs
+	melee = list(/datum/outfit/nanotrasensoldiercorpse/nt_customs_officer = 1)
+	gunners = list(/datum/outfit/nanotrasensoldiercorpse/nt_customs_inspector = 1)
+	elite = list(/datum/outfit/nanotrasenassaultsoldiercorpse/nt_customs_sergeant = 1)
+	boss = list(/datum/outfit/nt_customs_director = 1)
+	/// In the red zone the gunners and the sergeant carry the guns the basic mobs fired there
+	var/list/red_gunners = list(/datum/outfit/nanotrasensoldiercorpse/nt_customs_inspector/smg = 1)
+	var/list/red_elite = list(/datum/outfit/nanotrasenassaultsoldiercorpse/nt_customs_sergeant/rifle = 1)
+
+/datum/human_npc_outfit_table/pirate/nt_customs/outfits_for(mob/living/carbon/human/npc/npc, zone)
+	if(zone == ZONE_RED)
+		var/mob/living/carbon/human/npc/faction_pirate/crewman = npc
+		if(npc?.npc_rank == HUMAN_NPC_RANK_ELITE)
+			return red_elite
+		if(istype(crewman) && crewman.npc_rank == HUMAN_NPC_RANK_REGULAR && crewman.crew_role == SHIP_CREW_ROLE_GUNNER)
+			return red_gunners
+	return ..()
+
+// Boarders cross space: a sealed suit and air
+/datum/human_npc_outfit_table/pirate/nt_customs/boarding
+	always_site = HUMAN_NPC_SITE_VACUUM
+
+/datum/human_npc_layer/eva/nt_customs
+	suit = /obj/item/clothing/suit/space/syndicate/black/blue
+	head = /obj/item/clothing/head/helmet/space/syndicate/black/blue
+
+/datum/outfit/nanotrasensoldiercorpse/nt_customs_officer
+	name = "Human NPC: NT Customs Officer"
+	r_hand = /obj/item/melee/baton/security/loaded
+	l_pocket = /obj/item/crowbar
+
+/datum/outfit/nanotrasensoldiercorpse/nt_customs_inspector
+	name = "Human NPC: NT Customs Inspector"
+	r_hand = /obj/item/gun/ballistic/automatic/pistol/m1911
+	l_pocket = /obj/item/ammo_box/magazine/m45
+	r_pocket = /obj/item/ammo_box/magazine/m45
+
+/datum/outfit/nanotrasensoldiercorpse/nt_customs_inspector/smg
+	name = "Human NPC: NT Customs Inspector (WT-550)"
+	r_hand = /obj/item/gun/ballistic/automatic/wt550
+	l_pocket = /obj/item/ammo_box/magazine/wt550m9
+	r_pocket = /obj/item/ammo_box/magazine/wt550m9
+
+/datum/outfit/nanotrasenassaultsoldiercorpse/nt_customs_sergeant
+	name = "Human NPC: NT Customs Sergeant"
+	r_hand = /obj/item/gun/ballistic/automatic/pistol/m1911
+	l_pocket = /obj/item/ammo_box/magazine/m45
+	r_pocket = /obj/item/ammo_box/magazine/m45
+
+/datum/outfit/nanotrasenassaultsoldiercorpse/nt_customs_sergeant/rifle
+	name = "Human NPC: NT Customs Sergeant (rifle)"
+	r_hand = /obj/item/gun/ballistic/automatic/ar
+	l_pocket = /obj/item/ammo_box/magazine/m223
+	r_pocket = /obj/item/ammo_box/magazine/m223
+
+/// The Director: tg's elite trooper in body armour instead of the modsuit, a lethal e-gun and a baton
+/datum/outfit/nt_customs_director
+	name = "Human NPC: NT Compliance Director"
+	uniform = /obj/item/clothing/under/rank/centcom/military
+	suit = /obj/item/clothing/suit/armor/bulletproof
+	shoes = /obj/item/clothing/shoes/combat
+	gloves = /obj/item/clothing/gloves/combat
+	mask = /obj/item/clothing/mask/gas/sechailer/swat
+	head = /obj/item/clothing/head/helmet/swat/nanotrasen
+	back = /obj/item/storage/backpack/security
+	belt = /obj/item/melee/baton/security/loaded
+	id = /obj/item/card/id/advanced/centcom
+	id_trim = /datum/id_trim/centcom/ert/security
+	r_hand = /obj/item/gun/energy/e_gun/lethal
+	l_pocket = /obj/item/knife/combat/survival
 
 // ==================== NEGOTIATION DIALOG ====================
 

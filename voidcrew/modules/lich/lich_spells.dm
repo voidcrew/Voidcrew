@@ -332,7 +332,7 @@
 		mend_the_dead(victim)
 		return
 
-	victim.adjustToxLoss(VERDIGRIS_BOLT_ROT, forced = TRUE)
+	victim.adjustToxLoss(VERDIGRIS_BOLT_ROT)
 	victim.visible_message(
 		span_danger("The green soaks into [victim] and starts to rot [victim.p_them()]."),
 		span_userdanger("Something green gets under your skin and starts rotting you."),
@@ -636,7 +636,8 @@
 		return
 
 	stung = TRUE
-	attacker.adjustBruteLoss(npc_zone_damage(VERDIGRIS_MIRAGE_STING, src))
+	// Through the arm that struck it, as the message says (a body without arms takes it anywhere).
+	attacker.apply_damage(npc_zone_damage(VERDIGRIS_MIRAGE_STING, src), BRUTE, attacker.get_active_hand() || null)
 	to_chat(attacker, span_userdanger("The mirage bursts, spraying green light through your arm!"))
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	QDEL_IN(src, 0)
@@ -701,7 +702,7 @@
 /obj/item/book/granter/action/spell/verdigris_bolt/recoil(mob/living/user)
 	. = ..()
 	user.visible_message(span_warning("[src] coughs out a wash of green, and the air around [user] starts to smell like wet soil."))
-	user.adjustToxLoss(15, forced = TRUE)
+	user.adjustToxLoss(15)
 
 /obj/item/book/granter/action/spell/grave_mirage
 	name = "codex of the fourth corpse"

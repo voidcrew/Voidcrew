@@ -279,6 +279,31 @@
 	qdel(waiting)
 	qdel(unresolved)
 
+	// Every pirate table, every outfit in it worn once.
+	var/list/outfits_seen = list()
+	for(var/table_type in subtypesof(/datum/human_npc_outfit_table/pirate))
+		var/datum/human_npc_outfit_table/pirate/table = human_npc_singleton(table_type)
+		for(var/zone in 1 to 3)
+			TEST_ASSERT(length(table.outfits_for(null, zone)), "[table_type] dresses nobody in zone [zone]")
+		TEST_ASSERT(length(table.elite), "[table_type] has no captain")
+		TEST_ASSERT(length(table.boss), "[table_type] has no boss")
+		if(table.gunners_only)
+			for(var/outfit_type in table.green)
+				TEST_ASSERT(!(outfit_type in table.melee), "[table_type] hands out a melee outfit")
+		for(var/list/choices in list(table.green, table.elite, table.boss))
+			for(var/outfit_type in choices)
+				outfits_seen |= outfit_type
+	for(var/outfit_type in outfits_seen)
+		TEST_ASSERT(ispath(outfit_type, /datum/outfit), "A pirate table lists [outfit_type], which is not an outfit")
+		var/datum/human_npc_order/dressed = spawn_human_npc(/mob/living/carbon/human/npc/sample, run_loc_floor_bottom_left, outfit = outfit_type, immediate = TRUE)
+		var/mob/living/carbon/human/npc/pirate = dressed.spawned_ref?.resolve()
+		TEST_ASSERT_NOTNULL(pirate, "[outfit_type] built nobody")
+		var/obj/item/gun/gun = human_npc_held_gun(pirate)
+		TEST_ASSERT(gun || human_npc_held_melee_weapon(pirate), "[outfit_type] holds no weapon")
+		if(istype(gun, /obj/item/gun/ballistic))
+			TEST_ASSERT_NOTNULL(human_npc_find_ammo(pirate, gun), "[outfit_type] carries no spare ammunition for its [gun]")
+		qdel(pirate)
+
 /// N7: where the air can't keep a person alive the NPC gets a sealed suit and a tank; in the cold it gets
 /// cold-weather wear; a species that needs neither is left alone. It minds its valve like a person: open
 /// while the air would hurt it, shut while the air is fine (so the tank doesn't run dry in a good room).

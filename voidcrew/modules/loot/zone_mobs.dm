@@ -107,7 +107,7 @@
 			continue
 		var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
 		var/datum/npc_spawn_context/context = new(src, zone_type, npc_role)
-		spawn_npc_in_zone(mob_path, spot, context)
+		spawn_npc_in_zone_or_queue(mob_path, spot, context)
 
 /**
  * Open, unblocked turfs around the marker the pack can scatter onto.
