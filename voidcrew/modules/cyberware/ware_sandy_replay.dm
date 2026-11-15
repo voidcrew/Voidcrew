@@ -2254,7 +2254,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return // a jump, not steps
 	// Several steps can fall between two samples: each tile it crossed gets its afterimages, as each step would. The
 	// way it really went where that was kept (a corner), a straight line where it wasn't.
-	var/list/crossed = surger_way(track, left, reached) || get_line(left, reached)
+	var/list/straight = get_line(left, reached)
+	var/list/crossed = surger_way(track, left, reached) || straight
+	var/turned = length(crossed) != length(straight) // round a corner: the puppet glides straight across it, off the tiles he stepped on
+	if(!turned)
+		for(var/i in 1 to length(crossed))
+			if(crossed[i] != straight[i])
+				turned = TRUE
+				break
 	var/steps = length(crossed) - 1
 	// The trail is laid as the live one is (cyberware_cascade_window/on_move()), on the replay's clock: a step takes as
 	// many frames as it took in the recording, and an afterimage lives trail_length / trail_per_tile steps, so a walk at
@@ -2285,7 +2292,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			before = null
 		// Several tiles between two frames: the puppet is still gliding over them, and a copy laid now on a tile further
 		// on stood ahead of him. Each shows as he passes it.
-		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * (k - 1) / steps : 0
+		// Round a corner he glides straight across, a copy on the corner would stand ahead of him the whole way: those
+		// show once he is there.
+		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * ((turned && k > 1) ? 1 : (k - 1) / steps) : 0
 		// Each copy faces the way he was going as he left its tile: only the last step's facing is in the frame
 		var/facing = steps > 1 ? get_dir(step_from, crossed[k + 1]) : frames[dest + SANDY_FRAME_DIR]
 		for(var/i in 0 to (before ? per_tile - 1 : 0))
