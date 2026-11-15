@@ -111,11 +111,11 @@
 /// left out of the replay and the recording says so (shots_capped, and once in the game log).
 #define SANDY_REPLAY_MAX_SHOTS 64
 
-/// The shortest a one-shot effect's animation plays in the replay: four frames. Compressed ten times a muzzle flash or an
-/// impact ring would be over between two frames and never drawn, and at two frames it is there and gone unseen.
-#define SANDY_REPLAY_ONESHOT_MIN (world.tick_lag * 4)
+/// The shortest a one-shot effect's animation plays in the replay: two frames. Compressed ten times a muzzle flash or an
+/// impact ring would be over between two frames and never drawn. Longer and it hangs behind the action it belongs to.
+#define SANDY_REPLAY_ONESHOT_MIN (world.tick_lag * 2)
 /// The fewest frames a one-shot effect that only plays its icon's own frames (a muzzle flash) is drawn for.
-#define SANDY_REPLAY_ONESHOT_FRAMES 3
+#define SANDY_REPLAY_ONESHOT_FRAMES 2
 
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
@@ -168,6 +168,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/trail_read = FALSE
 	/// Surger: how many frames its last step took, for a step after a pause.
 	var/trail_step_frames = 0
+	/// Surger: the tile its last replayed step left, for the afterimages spread back along that step (surger_frame()).
+	var/turf/trail_prev
 	/// Playback, surger: world.time its last external cue played.
 	var/burst_cue_at = 0
 	/// Playback: a turn (transform change) being tweened: from, to, how long it takes and when it ends.
@@ -1300,13 +1302,15 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 				thing = tumble.parent
 				// The time it had left to its next step was counted in the slow-mo, many times too long for now
 				held_gore[held] = world.tick_lag
-			var/datum/sandy_replay_track/track = QDELETED(thing) ? null : tracks[thing]
+			if(QDELETED(thing))
+				continue
+			landing |= thing // waited for whether this recording draws it or not
+			var/datum/sandy_replay_track/track = tracks[thing]
 			if(!track || track.landing || !(track in puppets))
 				continue
 			unmask(track)
 			track.landing = TRUE
 			thing.sandy_replay_resume()
-			landing += thing
 		release_gore()
 		// A flash still lit when the recording ended (the slow-mo stretched it) would hang there for as long as this
 		// takes: it goes out
@@ -2052,6 +2056,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * clock_rate
 	if(step_frames > step_max) // the first step, or one after a pause: as long as its last step took
 		step_frames = track.trail_step_frames || step_max
+		track.trail_prev = null
 		sandy_burst_cue(track, left)
 	track.trail_step_frames = step_frames
 	var/per_tile = max(1, track.trail_per_tile)
@@ -2059,17 +2064,21 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/frames_left = max(total + 2 - frames[dest + SANDY_FRAME_INDEX], 1)
 	for(var/k in 1 to steps)
 		var/turf/step_from = crossed[k]
-		var/turf/step_to = crossed[k + 1]
-		for(var/i in 0 to per_tile - 1)
+		// As the live trail: one on the tile left, the rest back along the step before, never ahead of the puppet
+		var/turf/before = k > 1 ? crossed[k - 1] : track.trail_prev
+		if(before && (before.z != step_from.z || get_dist(before, step_from) != 1))
+			before = null
+		for(var/i in 0 to (before ? per_tile - 1 : 0))
 			var/fraction = i / per_tile
-			var/left_frames = life_frames - (steps - k + 1 - fraction) * step_frames // it was passed this long ago
+			var/left_frames = life_frames - (steps - k + 1 + fraction) * step_frames // it was passed this long ago
 			if(left_frames <= 0)
 				continue
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
-			var/shift_x = round((step_to.x - step_from.x) * fraction * ICON_SIZE_X)
-			var/shift_y = round((step_to.y - step_from.y) * fraction * ICON_SIZE_Y)
+			var/shift_x = before ? round((before.x - step_from.x) * fraction * ICON_SIZE_X) : 0
+			var/shift_y = before ? round((before.y - step_from.y) * fraction * ICON_SIZE_Y) : 0
 			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag)
 			afterimages++
+	track.trail_prev = crossed[steps]
 
 /// A surger's replayed self bursts off from `from` after a pause: its viewers hear the snap anyone near heard
 /// (ware_sandy_sound.dm), at most every SANDEVISTAN_BURST_GAP as the replay plays (the outside view's time) and a few

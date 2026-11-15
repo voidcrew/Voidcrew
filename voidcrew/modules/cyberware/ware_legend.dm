@@ -223,6 +223,8 @@
 	/// Afterimages on screen at once behind a bearer who keeps moving, and how many a tile walked leaves.
 	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
 	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
+	/// The tile his last step left, for the afterimages spread back along that step (on_move()).
+	var/turf/trail_prev
 	/// Starting opacity of a trail afterimage.
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
 	/// world.time of the bearer's last step, to time the next one: the trail's life is counted in steps.
@@ -343,7 +345,8 @@
 	var/step_time = world.time - last_step_at
 	last_step_at = world.time
 	sandy_step_sounds(step_time, forced) // ware_sandy_sound.dm
-	if(step_time > CYBERWARE_CASCADE_TRAIL_STEP_MAX) // the first step, or one after a pause: as long as a step takes him now
+	var/paused = step_time > CYBERWARE_CASCADE_TRAIL_STEP_MAX
+	if(paused) // the first step, or one after a pause: as long as a step takes him now
 		step_time = owner.cached_multiplicative_slowdown
 	step_time = clamp(step_time, world.tick_lag, CYBERWARE_CASCADE_TRAIL_STEP_MAX)
 	var/per_tile = max(1, trail_per_tile)
@@ -351,17 +354,21 @@
 	var/cap = life
 	if(time_stop) // the slow-mo's trail is gone when it is: the replay draws its own
 		cap = max(duration - world.time, world.tick_lag)
-	// Spread along the step only for a plain step; a jump or a z change leaves the one on the tile left.
+	// One on the tile he leaves, and the rest spread back along the step he took before this one. Never along the step
+	// he is taking now: he is still gliding off the tile, and they stood ahead of him. A jump, a z change or the first
+	// step after a pause leaves the one.
 	var/along = here && here.z == old_loc.z && get_dist(here, old_loc) == 1
-	var/count = along ? per_tile : 1
+	var/turf/before = (along && !paused && trail_prev && trail_prev.z == old_loc.z && get_dist(trail_prev, old_loc) == 1) ? trail_prev : null
+	trail_prev = along ? old_loc : null
+	var/count = before ? per_tile : 1
 	for(var/i in 0 to count - 1)
 		var/fraction = i / per_tile
-		var/left = life - (1 - fraction) * step_time // it was passed this long ago
+		var/left = life - (1 + fraction) * step_time // it was passed this long ago
 		if(left <= 0)
 			continue
 		var/start_alpha = afterimage_alpha * left / life
-		var/shift_x = along ? round((here.x - old_loc.x) * fraction * ICON_SIZE_X) : 0
-		var/shift_y = along ? round((here.y - old_loc.y) * fraction * ICON_SIZE_Y) : 0
+		var/shift_x = before ? round((before.x - old_loc.x) * fraction * ICON_SIZE_X) : 0
+		var/shift_y = before ? round((before.y - old_loc.y) * fraction * ICON_SIZE_Y) : 0
 		var/age = 1 - left / life
 		// The slow-mo's own kind keeps its colours while the world is tinted (ware_sandy_timestop.dm)
 		var/kind = time_stop ? /obj/effect/temp_visual/decoy/fading/cascade/stopped : /obj/effect/temp_visual/decoy/fading/cascade
