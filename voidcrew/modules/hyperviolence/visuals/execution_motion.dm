@@ -12,16 +12,30 @@
 /obj/item/gun/hv_start_execution(mob/living/user, mob/living/target, params)
 	// The same checks that stop the wind-up before it starts.
 	var/pressing = !fire_cd && !firing_burst && !HAS_TRAIT(user, TRAIT_PACIFISM) && isturf(user.loc) && isturf(target.loc)
+	var/datum/hv_exec_aim/aim
 	if(pressing)
 		user.face_atom(target)
-		user.hv_vis_press_in(target, HV_EXECUTION_WINDUP)
+		// He is drawn with the gun on the head (execution_aim.dm); one who can't be only leans in.
+		QDEL_NULL(hv_aim)
+		aim = new(src, user, target)
+		if(aim.raise())
+			hv_aim = aim
+		else
+			QDEL_NULL(aim)
+			user.hv_vis_press_in(target, HV_EXECUTION_WINDUP)
 		target.hv_vis_tremble(HV_EXECUTION_WINDUP - HV_VIS_PRESS_PAUSE, 1)
 	. = ..()
 	if(!pressing)
 		return
 	// Called off, the shooter straightens up at once. Having fired he holds the lean through the flash and the burst:
 	// straightening on the shot's own tick, he stood idle while the head went off beside him.
-	if(!QDELETED(user))
+	if(aim)
+		if(!QDELETED(aim))
+			if(.)
+				addtimer(CALLBACK(aim, TYPE_PROC_REF(/datum/hv_exec_aim, lower)), 0.4 SECONDS)
+			else
+				aim.lower()
+	else if(!QDELETED(user))
 		if(.)
 			addtimer(CALLBACK(user, TYPE_PROC_REF(/atom, hv_vis_release), HV_VIS_TAG_PRESS, 1.5), 0.4 SECONDS)
 		else
