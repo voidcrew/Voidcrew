@@ -208,8 +208,10 @@
 		playsound(src, fire_sound, fire_sound_volume, vary_fire_sound)
 
 /obj/item/gun/proc/shoot_live_shot(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = TRUE)
-	if(recoil && !tk_firing(user))
-		shake_camera(user, recoil + 1, recoil)
+	// VOIDCREW EDIT REMOVAL START - gun_feel: voidcrew/modules/gun_feel kicks the camera away from the shot instead of shaking it at random
+	// if(recoil && !tk_firing(user))
+	// 	shake_camera(user, recoil + 1, recoil)
+	// VOIDCREW EDIT REMOVAL END
 	fire_sounds()
 	if(suppressed || !message)
 		return FALSE
@@ -245,7 +247,7 @@
 	else if(!tk_firing(user))
 		user.visible_message(
 			span_danger("[user] fires [src]!"),
-			span_danger("You fire [src]!"),
+			null, // VOIDCREW EDIT CHANGE - gun_feel: no chat line to the shooter on every shot (voidcrew/modules/gun_feel). ORIGINAL: span_danger("You fire [src]!"),
 			span_hear("You hear a gunshot!"),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 			ignored_mobs = user,

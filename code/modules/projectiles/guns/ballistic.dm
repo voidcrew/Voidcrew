@@ -175,11 +175,11 @@
 	if(suppressed)
 		playsound(src, suppressed_sound, suppressed_volume, vary_fire_sound, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
 		if(play_click && click_on_low_ammo)
-			playsound(src, 'sound/items/weapons/gun/general/ballistic_click.ogg', suppressed_volume, vary_fire_sound, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0, frequency = click_frequency_to_use)
+			playsound(src, 'sound/items/weapons/gun/general/ballistic_click.ogg', suppressed_volume, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0, frequency = click_frequency_to_use) // VOIDCREW EDIT CHANGE - gun_feel: powder guns no longer vary their shot (voidcrew/modules/gun_feel/sounds.dm), but the low-ammo click keeps its rising pitch. ORIGINAL vary arg: vary_fire_sound
 	else
 		playsound(src, fire_sound, fire_sound_volume, vary_fire_sound)
 		if(play_click && click_on_low_ammo)
-			playsound(src, 'sound/items/weapons/gun/general/ballistic_click.ogg', fire_sound_volume, vary_fire_sound, frequency = click_frequency_to_use)
+			playsound(src, 'sound/items/weapons/gun/general/ballistic_click.ogg', fire_sound_volume, TRUE, frequency = click_frequency_to_use) // VOIDCREW EDIT CHANGE - gun_feel: powder guns no longer vary their shot (voidcrew/modules/gun_feel/sounds.dm), but the low-ammo click keeps its rising pitch. ORIGINAL vary arg: vary_fire_sound
 
 
 /**
