@@ -570,6 +570,8 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 			slow_mob(victim)
 	for(var/obj/projectile/shot as anything in held_shots)
 		shot.speed = held_shots[shot] * scale_for(shot)
+	for(var/atom/movable/flier as anything in held_throws)
+		pace_throw(flier, held_throws[flier] * time_scale)
 	senses?.update()
 
 /// The field's own host, still on its own time, at its multiplier over the world's: left alone at the same rate,

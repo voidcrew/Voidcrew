@@ -945,3 +945,145 @@
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	wait_replay(user)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// A slowed gunman's muzzle flashes and spent casings take the grey-green tint from their first frame, while the
+/// user's and a surging NPC's keep their colours without the user's edge glow wrapping their flash.
+/datum/unit_test/voidcrew_cyberware_timestop/muzzle_and_casings_tinted
+
+/datum/unit_test/voidcrew_cyberware_timestop/muzzle_and_casings_tinted/Run()
+	var/mob/living/carbon/human/user = make_user(spot(1, 2), "sandymuzzleuser")
+	var/mob/living/carbon/human/npc/gunman = allocate(/mob/living/carbon/human/npc, spot(1, 0))
+	var/mob/living/carbon/human/npc/surger = make_surger(spot(1, 4))
+	TEST_ASSERT_NOTNULL(surge(surger), "Test fixture: the surging NPC's window didn't open")
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Test fixture: time didn't slow with nobody else near")
+	for(var/waited in 1 to 20)
+		if(tinted(gunman))
+			break
+		sleep(0.1 SECONDS)
+	TEST_ASSERT(tinted(gunman), "Test fixture: the slow-mo's tint never reached the gunman")
+	TEST_ASSERT(!tinted(user), "Test fixture: the user was tinted")
+	TEST_ASSERT(!tinted(surger), "Test fixture: the surging NPC was tinted")
+
+	var/obj/item/gun/ballistic/automatic/pistol/gunman_gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	gunman.put_in_hands(gunman_gun)
+	var/obj/item/ammo_casing/gunman_casing = gunman_gun.chambered
+	TEST_ASSERT_NOTNULL(gunman_casing, "Test fixture: the gunman's pistol isn't chambered")
+	TEST_ASSERT(gunman_gun.try_fire_gun(spot(4, 0), gunman), "Test fixture: the slowed gunman didn't fire")
+	var/obj/effect/temp_visual/dir_setting/firing_effect/gunman_flash = locate() in gunman
+	var/obj/effect/temp_visual/gun_feel_muzzle_flash/gunman_plume = locate() in gunman
+	TEST_ASSERT(gunman_flash && (gunman_flash in gunman.vis_contents), "Test fixture: the gunman got no firing_effect")
+	TEST_ASSERT(gunman_plume && (gunman_plume in gunman.vis_contents), "Test fixture: the gunman got no muzzle plume")
+	TEST_ASSERT(tinted(gunman_flash), "A slowed gunman's firing_effect wasn't tinted on its first frame")
+	TEST_ASSERT(gunman_flash.appearance_flags & KEEP_APART, "A slowed gunman's firing_effect wasn't kept apart from its filter")
+	TEST_ASSERT(tinted(gunman_plume), "A slowed gunman's muzzle plume wasn't tinted on its first frame")
+	TEST_ASSERT(gunman_plume.appearance_flags & KEEP_APART, "A slowed gunman's muzzle plume wasn't kept apart from its filter")
+	TEST_ASSERT(isturf(gunman_casing.loc), "Test fixture: the gunman's spent casing wasn't ejected onto the floor")
+	TEST_ASSERT(tinted(gunman_casing), "A slowed gunman's spent casing wasn't tinted on its first frame")
+
+	var/obj/item/gun/ballistic/automatic/pistol/user_gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	user.put_in_hands(user_gun)
+	var/obj/item/ammo_casing/user_casing = user_gun.chambered
+	TEST_ASSERT(user_gun.try_fire_gun(spot(4, 2), user), "Test fixture: the user didn't fire")
+	var/obj/effect/temp_visual/dir_setting/firing_effect/user_flash = locate() in user
+	var/obj/effect/temp_visual/gun_feel_muzzle_flash/user_plume = locate() in user
+	TEST_ASSERT(user_flash && user_plume, "Test fixture: the user got no muzzle flashes")
+	TEST_ASSERT(!tinted(user_flash), "The user's own firing_effect was tinted")
+	TEST_ASSERT(!tinted(user_plume), "The user's own muzzle plume was tinted")
+	TEST_ASSERT((user_flash.appearance_flags & KEEP_APART) && (user_plume.appearance_flags & KEEP_APART), "The user's muzzle flash wasn't kept apart from their edge glow")
+	TEST_ASSERT(isturf(user_casing.loc) && !tinted(user_casing), "The user's own spent casing was tinted")
+
+	var/obj/item/gun/ballistic/automatic/pistol/surger_gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	surger.put_in_hands(surger_gun)
+	var/obj/item/ammo_casing/surger_casing = surger_gun.chambered
+	TEST_ASSERT(surger_gun.try_fire_gun(spot(4, 4), surger), "Test fixture: the surging NPC didn't fire")
+	var/obj/effect/temp_visual/dir_setting/firing_effect/surger_flash = locate() in surger
+	var/obj/effect/temp_visual/gun_feel_muzzle_flash/surger_plume = locate() in surger
+	TEST_ASSERT(surger_flash && surger_plume, "Test fixture: the surging NPC got no muzzle flashes")
+	TEST_ASSERT(!tinted(surger_flash) && !tinted(surger_plume), "A surging NPC's muzzle flash was tinted")
+	TEST_ASSERT(isturf(surger_casing.loc) && !tinted(surger_casing), "A surging NPC's spent casing was tinted")
+
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(tinted(gunman_casing), "A slowed gunman's spent casing lost its tint while the slow-mo ran")
+	TEST_ASSERT(!tinted(user_casing) && !tinted(surger_casing), "An untinted shooter's casing picked up the slow-mo's tint")
+
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT(!tinted(gunman_casing), "A spent casing kept the slow-mo's tint after the slow-mo ended")
+	wait_replay(user)
+	end_surge(user)
+	end_surge(surger)
+
+/// Throws started inside a slow-mo — whether of a body already in held_mobs or an item already on the floor, and whoever
+/// started them — fly at the field's pace, pause for the replay, and carry on at normal speed when let go.
+/datum/unit_test/voidcrew_cyberware_timestop/throws_at_field_pace
+
+/datum/unit_test/voidcrew_cyberware_timestop/throws_at_field_pace/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 4), "sandythrowuser")
+	var/mob/living/carbon/human/plain_body = allocate(/mob/living/carbon/human/consistent, spot(0, 0))
+	var/obj/item/wrench/plain_item = allocate(/obj/item/wrench, spot(0, 1))
+	TEST_ASSERT(plain_body.throw_at(spot(4, 0), 4, 1, user), "Test fixture: plain body throw didn't start")
+	TEST_ASSERT(plain_item.throw_at(spot(4, 1), 4, 1, user), "Test fixture: plain item throw didn't start")
+	sleep(0.5 SECONDS)
+	var/plain_body_dist = plain_body.x - spot(0, 0).x
+	var/plain_item_dist = plain_item.x - spot(0, 1).x
+	TEST_ASSERT_EQUAL(plain_body_dist, 4, "Test fixture: an un-slowed body didn't cross 4 tiles in 0.5 s ([plain_body_dist])")
+	TEST_ASSERT_EQUAL(plain_item_dist, 4, "Test fixture: an un-slowed item didn't cross 4 tiles in 0.5 s ([plain_item_dist])")
+	qdel(plain_body)
+	qdel(plain_item)
+
+	var/mob/living/carbon/human/slow_body = allocate(/mob/living/carbon/human/consistent, spot(0, 2))
+	var/obj/item/wrench/slow_item = allocate(/obj/item/wrench, spot(0, 3))
+	var/mob/living/carbon/human/short_body = allocate(/mob/living/carbon/human/consistent, spot(2, 0))
+	var/obj/item/wrench/short_item = allocate(/obj/item/wrench, spot(2, 1))
+
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Test fixture: time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	for(var/waited in 1 to 20)
+		if(tinted(short_body))
+			break
+		sleep(0.1 SECONDS)
+	TEST_ASSERT(field.held_mobs[slow_body] && tinted(slow_body), "Test fixture: the body isn't held and tinted before the throw")
+	TEST_ASSERT(!GLOB.cyberware_time_dilated[slow_item] && !tinted(slow_item), "Test fixture: a floor item is held or tinted before being thrown")
+
+	TEST_ASSERT(slow_body.throw_at(spot(4, 2), 4, 1, user), "The held body wouldn't throw inside the slow-mo")
+	TEST_ASSERT(slow_item.throw_at(spot(4, 3), 4, 1, user), "The floor item wouldn't throw inside the slow-mo")
+	TEST_ASSERT(short_body.throw_at(spot(3, 0), 1, 4), "The short body throw didn't start")
+	TEST_ASSERT(short_item.throw_at(spot(3, 1), 1, 4), "The short item throw didn't start")
+
+	TEST_ASSERT_EQUAL(slow_body.x, spot(0, 2).x, "A throw in slow-mo took an immediate full-speed quickstart step")
+	TEST_ASSERT_EQUAL(field.held_throws[slow_body], 1, "A held body thrown in slow-mo didn't enter held_throws")
+	TEST_ASSERT_EQUAL(field.held_throws[slow_item], 1, "A floor item thrown in slow-mo didn't enter held_throws")
+	TEST_ASSERT(abs(slow_body.throwing.speed - field.time_scale) < 0.001, "A thrown held body's speed is [slow_body.throwing.speed], not [field.time_scale]")
+	TEST_ASSERT(abs(slow_item.throwing.speed - field.time_scale) < 0.001, "A thrown floor item's speed is [slow_item.throwing.speed], not [field.time_scale]")
+	TEST_ASSERT(tinted(slow_item), "A floor item thrown in slow-mo wasn't tinted while flying")
+
+	sleep(0.5 SECONDS)
+	var/slow_body_dist = slow_body.x - spot(0, 2).x
+	var/slow_item_dist = slow_item.x - spot(0, 3).x
+	TEST_ASSERT(slow_body_dist < plain_body_dist && !isnull(slow_body.throwing), "A held body flew [slow_body_dist] tiles in 0.5 s vs [plain_body_dist] outside slow-mo")
+	TEST_ASSERT(slow_item_dist < plain_item_dist && !isnull(slow_item.throwing), "A floor item flew [slow_item_dist] tiles in 0.5 s vs [plain_item_dist] outside slow-mo")
+	TEST_ASSERT(isnull(short_body.throwing) && short_body.x == spot(3, 0).x, "Test fixture: the 1-tile body throw didn't land inside the slow-mo")
+	TEST_ASSERT(field.held_mobs[short_body] && tinted(short_body), "A held body whose throw landed inside the slow-mo was let go")
+	TEST_ASSERT(isnull(short_item.throwing) && short_item.x == spot(3, 1).x, "Test fixture: the 1-tile item throw didn't land inside the slow-mo")
+	TEST_ASSERT(!tinted(short_item) && !GLOB.cyberware_time_dilated[short_item], "A floor item stayed tinted or held after landing inside the slow-mo")
+
+	// the user is on their own time: thrown, their own body takes tg's immediate first step and is never paced
+	TEST_ASSERT(user.throw_at(spot(1, 4), 1, 1), "The user wouldn't throw inside their own slow-mo")
+	TEST_ASSERT_EQUAL(user.x, spot(1, 4).x, "The user's own body didn't fly at its own speed when thrown in their slow-mo")
+	TEST_ASSERT(!field.held_throws[user], "The user's own thrown body was taken by their field")
+
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_EQUAL(slow_body.throwing.speed, 1, "A thrown body didn't get its normal speed back when the slow-mo ended")
+	TEST_ASSERT_EQUAL(slow_item.throwing.speed, 1, "A thrown item didn't get its normal speed back when the slow-mo ended")
+	TEST_ASSERT(slow_body.throwing.paused && slow_item.throwing.paused, "The replay didn't hold the flying throws when the slow-mo ended")
+	wait_replay(user)
+	var/land_until = world.time + 0.5 SECONDS
+	while((slow_body.throwing || slow_item.throwing) && world.time < land_until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(isnull(slow_body.throwing) && slow_body.x == spot(4, 2).x, "A thrown body didn't finish its flight at normal speed after the slow-mo ([slow_body.x] vs [spot(4, 2).x])")
+	TEST_ASSERT(isnull(slow_item.throwing) && slow_item.x == spot(4, 3).x, "A thrown item didn't finish its flight at normal speed after the slow-mo ([slow_item.x] vs [spot(4, 3).x])")
+	TEST_ASSERT(!tinted(slow_body) && !tinted(slow_item), "A thrown body or item kept the slow-mo's tint after landing")
+	end_surge(user)

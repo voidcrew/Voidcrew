@@ -49,10 +49,10 @@
  * job. It comes back if the slow-mo ends before the window does.
  *
  * Look: affected things get a grey-green tint instead of tg's inversion, and so does blood (decals, sprays,
- * splatters); a tinted decal's drying colour waits for the tint to come off. Floor items and the user are never
- * touched, so they keep their colour, and so do the user's own shots. Every bullet in the field
- * flies at the field's pace, whoever fired it: the user's and a surging mob's crawl in the slow-mo like the rest
- * (a faster surger fires sooner, but its bullets still crawl), untinted. A shot leaving the field gets its speed back.
+ * splatters), spent casings and shooter effects; a tinted decal's drying colour waits for the tint to come off. Floor
+ * items and the user keep their colour, and so do the shots, flashes and casings of the user and any surging mob.
+ * Every bullet and every throw in the field flies at the field's pace, whoever started it, and gets its speed back
+ * when let go; a body on its own time (the user, a surging mob) that is itself thrown flies at its own speed.
  */
 
 /// Another player within this many tiles of the user means no dilation.
@@ -92,6 +92,88 @@ GLOBAL_LIST_EMPTY(cyberware_time_dilated)
 
 /// Every dilation field running now.
 GLOBAL_LIST_EMPTY(cyberware_time_fields)
+/// world.time and nesting depth while an untinted shooter spawns turf effects that carry no firer ref of their own.
+GLOBAL_VAR_INIT(cyberware_untinted_fx_at, -1)
+GLOBAL_VAR_INIT(cyberware_untinted_fx_depth, 0)
+
+/// Whether an untinted shooter is spawning turf effects right now on this tick.
+/proc/cyberware_untinted_fx_active()
+	if(GLOB.cyberware_untinted_fx_at != world.time)
+		GLOB.cyberware_untinted_fx_depth = 0
+		return FALSE
+	return GLOB.cyberware_untinted_fx_depth > 0
+
+/// Unwraps a held, chambered or mounted item to whatever carries it.
+/proc/cyberware_actor_root(atom/actor)
+	while(isitem(actor) && ismovable(actor.loc))
+		actor = actor.loc
+	return actor
+
+/// Whether `actor` keeps its own colours in a running slow-mo (the user, their ride, a surging mob, a freed boss).
+/proc/cyberware_untinted_actor(atom/actor)
+	actor = cyberware_actor_root(actor)
+	if(isnull(actor) || !length(GLOB.cyberware_time_fields))
+		return FALSE
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[actor]
+	if(istype(holder))
+		return !!(holder.surging[actor] || holder.immune[actor] || holder.released[actor] || holder.own_ride(actor))
+	if(cyberware_own_surge(actor))
+		return TRUE
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(field.immune[actor] || field.surging[actor] || field.released[actor] || field.own_ride(actor))
+			return TRUE
+		if(ismob(actor))
+			var/mob/person = actor
+			if(person.can_block_magic(field.antimagic_flags))
+				return TRUE
+	return FALSE
+
+/// The field that tints small effects or casings made by `maker` at `where`, or null when `maker` keeps its colours.
+/proc/cyberware_maker_field(atom/maker, atom/where)
+	maker = cyberware_actor_root(maker)
+	if(!length(GLOB.cyberware_time_fields))
+		return null
+	if(maker)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[maker]
+		if(istype(holder))
+			if(holder.surging[maker] || holder.immune[maker] || holder.released[maker] || holder.own_ride(maker))
+				return null
+			return holder
+		if(cyberware_untinted_actor(maker))
+			return null
+	var/turf/spot = get_turf(where || maker)
+	if(!spot)
+		return null
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(maker && (sandy_session_shares(field, maker) || field.cover_outsider(maker)))
+			continue
+		if(field.tinted[spot])
+			return field
+		var/turf/centre = get_turf(field.host)
+		if(centre && centre.z == spot.z && get_dist(centre, spot) <= field.current_range)
+			return field
+	return null
+
+/// The field that slows a throw of `thing` starting or flying here, if any. A body on its own time (own_time()) flies
+/// at its own speed.
+/proc/cyberware_throw_field(atom/movable/thing)
+	if(isnull(thing) || !length(GLOB.cyberware_time_fields))
+		return null
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/held = GLOB.cyberware_time_dilated[thing]
+	if(istype(held))
+		return held.own_time(thing) ? null : held
+	var/turf/spot = get_turf(thing)
+	if(!spot)
+		return null
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+		if(field.cover_outsider(thing) || field.own_time(thing))
+			continue
+		if(field.tinted[spot])
+			return field
+		var/turf/centre = get_turf(field.host)
+		if(centre && centre.z == spot.z && get_dist(centre, spot) <= field.current_range)
+			return field
+	return null
 
 /**
  * The field `thing` runs slow in: the one holding it, or one it stands inside (blood, gibs, a grenade on the
@@ -295,9 +377,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		thing.add_filter(SANDY_STOP_TINT, 20, color_matrix_filter(cyberware_time_stop_tint()))
 		ADD_KEEP_TOGETHER(thing, SANDY_STOP_TINT)
 		return
-	// A blood splash, bead or strand carries its colour in `color` alone, which the tint replaces: kept as its own
-	// colour, so it is red again (not white) when the tint comes off.
-	if((istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/effect/ebeam)) && istext(thing.color) && !LAZYACCESS(thing.atom_colours, FIXED_COLOUR_PRIORITY))
+	// A blood splash, bead, strand or hitscan beam carries its colour in `color` alone, which the tint replaces: kept as
+	// its own colour, so it gets that colour back (not white) when the tint comes off.
+	if((istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/effect/ebeam) || istype(thing, /obj/effect/projectile)) && istext(thing.color) && !LAZYACCESS(thing.atom_colours, FIXED_COLOUR_PRIORITY))
 		thing.add_atom_colour(thing.color, FIXED_COLOUR_PRIORITY)
 	thing.add_atom_colour(cyberware_time_tint_for(thing), TEMPORARY_COLOUR_PRIORITY)
 	if(istype(thing, /obj/effect/decal/cleanable/blood/gibs)) // its meat is a RESET_COLOR overlay: see its update_overlays()
@@ -305,12 +387,12 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 
 /**
  * The tint `thing` wears in `color`. The tint replaces its colour, so a sprite drawn white and coloured by its `color` (a
- * blood splash, a bead, a gut strand: greyscale art) would show its white art through the wash, near white. A temp
- * visual or beam whose own colour is kept at FIXED_COLOUR_PRIORITY (cyberware_time_tint_on()) wears the wash over that
- * colour instead. A blood decal works its own out in update_blood_color().
+ * blood splash, a bead, a gut strand, a hitscan beam: greyscale art) would show its white art through the wash, near white.
+ * A temp visual, beam or hitscan piece whose own colour is kept at FIXED_COLOUR_PRIORITY (cyberware_time_tint_on()) wears
+ * the wash over that colour instead. A blood decal works its own out in update_blood_color().
  */
 /proc/cyberware_time_tint_for(atom/thing)
-	if(!istype(thing, /obj/effect/temp_visual) && !istype(thing, /obj/effect/ebeam))
+	if(!istype(thing, /obj/effect/temp_visual) && !istype(thing, /obj/effect/ebeam) && !istype(thing, /obj/effect/projectile))
 		return cyberware_time_stop_tint()
 	var/list/own = LAZYACCESS(thing.atom_colours, FIXED_COLOUR_PRIORITY)
 	if(!own || own[ATOM_COLOR_TYPE_INDEX] == ATOM_COLOR_TYPE_FILTER || !istext(own[ATOM_COLOR_VALUE_INDEX]))
@@ -389,6 +471,32 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	if(!blood[thing.type])
 		return FALSE
 	return isturf(thing.loc) // a part or organ still in a body, a hand or a bag is not loose gore
+
+/obj/item/ammo_casing
+	/// Weakref to the untinted actor who fired or ejected this casing while a slow-mo ran, so it keeps its colour.
+	var/datum/weakref/sandy_untinted_by
+
+/// Whether `casing` was dropped or fired by someone who acts in their own colours in the current slow-mo.
+/proc/cyberware_casing_keeps_colour(obj/item/ammo_casing/casing)
+	var/atom/actor = casing.sandy_untinted_by?.resolve()
+	return actor && cyberware_untinted_actor(actor)
+
+/// Whether `shot` belongs to a shooter whose shots and hit effects stay in colour.
+/proc/cyberware_shot_untinted(obj/projectile/shot)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[shot]
+	if(istype(holder) && holder.user_shots[shot])
+		return TRUE
+	return shot.firer && cyberware_untinted_actor(shot.firer)
+
+/// Spent casings and turf shot effects the field tints like the floor, unless an untinted shooter made them.
+/proc/cyberware_time_tinted_shot_trash(atom/thing)
+	if(!isturf(thing.loc))
+		return FALSE
+	if(istype(thing, /obj/item/ammo_casing))
+		return !cyberware_casing_keeps_colour(thing)
+	if(istype(thing, /obj/effect/projectile) || istype(thing, /obj/effect/temp_visual/dir_setting/firing_effect) || istype(thing, /obj/effect/temp_visual/impact_effect))
+		return !cyberware_untinted_fx_active()
+	return FALSE
 
 /// tg works a blood decal's drying colour out of its `color` (blending it toward the dried colour), and its sprite is
 /// white, coloured by that `color`. With the slow-mo's tint matrix in `color` it would be drawn white and its drying
@@ -483,15 +591,173 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	return TRUE
 
 /**
- * tg's muzzle flash is drawn in the shooter's vis_contents, as part of him: the edge glow a slow-mo's user wears went
- * round it too, and as the flash faded the glow stayed, a green flash at the gun. On a glowing shooter it is drawn apart
- * from him.
+ * Short effects made inside a shooter (tg's firing_effect, gun_feel's muzzle flash) are drawn in their vis_contents,
+ * where no field turf ever sees them. On a glowing user they are drawn apart so the user's edge glow doesn't wrap the
+ * flash; on a slowed shooter the field tints them from their first frame, also drawn apart so the shooter's tint filter
+ * doesn't wash over them a second time.
  */
-/obj/effect/temp_visual/dir_setting/firing_effect/Initialize(mapload, set_dir)
+/obj/effect/temp_visual/Initialize(mapload)
 	. = ..()
+	if(mapload || . == INITIALIZE_HINT_QDEL || !length(GLOB.cyberware_time_fields) || !ismovable(loc))
+		return
 	var/atom/movable/shooter = loc
-	if(ismovable(shooter) && shooter.get_filter(SANDY_STOP_OUTLINE))
+	if(shooter.get_filter(SANDY_STOP_OUTLINE))
 		appearance_flags |= KEEP_APART
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_maker_field(shooter, shooter)
+	if(field)
+		appearance_flags |= KEEP_APART
+		field.take_looks(src)
+
+/// Marks casings ejected by an untinted shooter before they hit the ground, and hands a slowed shooter's casing to
+/// their field even in the outer reaches of a covered room.
+/obj/item/gun/ballistic/handle_chamber(empty_chamber = TRUE, from_firing = TRUE, chamber_next_round = TRUE)
+	var/obj/item/ammo_casing/casing = chambered
+	var/atom/holder = cyberware_actor_root(src)
+	if(istype(casing) && length(GLOB.cyberware_time_fields))
+		casing.sandy_untinted_by = cyberware_untinted_actor(holder) ? WEAKREF(holder) : null
+	. = ..()
+	if(istype(casing) && !QDELETED(casing) && length(GLOB.cyberware_time_fields) && isturf(casing.loc) && !GLOB.cyberware_time_dilated[casing] && !cyberware_casing_keeps_colour(casing))
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_maker_field(holder, casing)
+		field?.freeze_atom(casing)
+
+/// Keeps casings and turf flashes fired without a ballistic gun (basic mobs' ranged_attacks, turrets) in step with
+/// whoever fired them.
+/obj/item/ammo_casing/throw_proj(atom/target, turf/targloc, mob/living/user, params, spread, atom/fired_from)
+	if(!length(GLOB.cyberware_time_fields))
+		return ..()
+	var/atom/actor = cyberware_actor_root(user || fired_from)
+	var/untinted = cyberware_untinted_actor(actor)
+	sandy_untinted_by = untinted ? WEAKREF(actor) : null
+	if(untinted)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[src]
+		if(istype(holder) && !throwing)
+			holder.unfreeze_atom(src)
+		GLOB.cyberware_untinted_fx_at = world.time
+		GLOB.cyberware_untinted_fx_depth++
+	. = ..()
+	if(untinted)
+		GLOB.cyberware_untinted_fx_depth = max(GLOB.cyberware_untinted_fx_depth - 1, 0)
+		return
+	if(!QDELETED(src) && isturf(loc) && !GLOB.cyberware_time_dilated[src])
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_maker_field(actor, src)
+		field?.freeze_atom(src)
+	if(!user && firing_effect_type)
+		var/turf/flash_spot = get_turf(src)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = flash_spot ? cyberware_maker_field(actor, flash_spot) : null
+		if(field)
+			for(var/obj/effect/temp_visual/fx in flash_spot)
+				if(istype(fx, firing_effect_type) && !GLOB.cyberware_time_dilated[fx])
+					field.freeze_atom(fx)
+
+/// Casings tipped out of a cylinder, box or hand take or skip the tint by whoever dropped them; picked up off the
+/// floor, they drop the field's tint.
+/obj/item/ammo_casing/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	var/on_floor = isturf(loc)
+	if(on_floor == isturf(old_loc))
+		return
+	if(!on_floor)
+		sandy_untinted_by = null
+		if(!throwing)
+			var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[src]
+			holder?.unfreeze_atom(src)
+		return
+	if(!length(GLOB.cyberware_time_fields) || !old_loc)
+		return
+	var/atom/actor = cyberware_actor_root(old_loc)
+	if(cyberware_untinted_actor(actor))
+		sandy_untinted_by = WEAKREF(actor)
+		if(!throwing)
+			var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[src]
+			holder?.unfreeze_atom(src)
+	else if(!cyberware_casing_keeps_colour(src) && !GLOB.cyberware_time_dilated[src])
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_maker_field(actor, src)
+		field?.freeze_atom(src)
+
+/// Impact puffs stay untinted for an untinted shooter's round and take the tint for a slowed one's.
+/obj/projectile/on_hit(atom/target, blocked = 0, pierce_hit)
+	if(!length(GLOB.cyberware_time_fields))
+		return ..()
+	if(cyberware_shot_untinted(src))
+		GLOB.cyberware_untinted_fx_at = world.time
+		GLOB.cyberware_untinted_fx_depth++
+		. = ..()
+		GLOB.cyberware_untinted_fx_depth = max(GLOB.cyberware_untinted_fx_depth - 1, 0)
+		return
+	. = ..()
+	if(impact_effect_type && !hitscan)
+		var/turf/spot = get_turf(target)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = spot ? cyberware_maker_field(firer || fired_from, spot) : null
+		if(field)
+			for(var/obj/effect/temp_visual/fx in spot)
+				if(istype(fx, impact_effect_type) && !GLOB.cyberware_time_dilated[fx])
+					field.freeze_atom(fx)
+
+/// tg's hitscan sets its muzzle, tracer and impact colours after making them, over any tint the turf put on them:
+/// put the wash back over a slowed shooter's beam, and leave an untinted shooter's beam in its own colour.
+/obj/projectile/generate_hitscan_tracers(impact_point = TRUE, impact_visual = TRUE)
+	if(!length(GLOB.cyberware_time_fields))
+		return ..()
+	if(cyberware_shot_untinted(src))
+		GLOB.cyberware_untinted_fx_at = world.time
+		GLOB.cyberware_untinted_fx_depth++
+		. = ..()
+		GLOB.cyberware_untinted_fx_depth = max(GLOB.cyberware_untinted_fx_depth - 1, 0)
+		return
+	. = ..()
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/maker_field = cyberware_maker_field(firer || fired_from, src)
+	var/list/spots = list()
+	if(isturf(loc))
+		spots[loc] = TRUE
+	if(last_point)
+		var/turf/end_turf = last_point.return_turf()
+		if(end_turf)
+			spots[end_turf] = TRUE
+	for(var/datum/point/pt as anything in beam_points)
+		var/turf/pt_turf = pt.return_turf()
+		if(pt_turf)
+			spots[pt_turf] = TRUE
+		var/datum/point/next_pt = beam_points[pt]
+		var/turf/next_turf = next_pt?.return_turf()
+		if(pt_turf && next_turf)
+			for(var/turf/line_turf as anything in get_line(pt_turf, next_turf))
+				spots[line_turf] = TRUE
+	for(var/turf/spot as anything in spots)
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = maker_field || cyberware_maker_field(null, spot)
+		for(var/obj/effect/projectile/beam_fx in spot)
+			if(!GLOB.cyberware_time_dilated[beam_fx] && field)
+				field.freeze_atom(beam_fx)
+			var/datum/proximity_monitor/advanced/timestop/sandevistan/holder = GLOB.cyberware_time_dilated[beam_fx]
+			if(istype(holder) && holder.tinted[beam_fx] && istext(beam_fx.color))
+				cyberware_time_recolour_tinted(beam_fx)
+				holder.replay?.resample(beam_fx)
+
+/// Every throw started inside a dilation field skips tg's immediate full-speed first step and flies at the field's pace,
+/// even for bodies already held in `held_mobs` or items already lying on the floor.
+/atom/movable/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force = MOVE_FORCE_STRONG, gentle = FALSE, quickstart = TRUE, throw_datum_typepath = /datum/thrownthing)
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = length(GLOB.cyberware_time_fields) ? cyberware_throw_field(src) : null
+	if(field)
+		quickstart = FALSE
+	var/datum/thrownthing/previous = throwing
+	. = ..()
+	if(!. || !throwing || throwing == previous)
+		return
+	if(previous)
+		for(var/datum/proximity_monitor/advanced/timestop/sandevistan/holder as anything in GLOB.cyberware_time_fields)
+			if(holder.held_throws[src])
+				holder.held_throws -= src
+	field = field || (length(GLOB.cyberware_time_fields) ? cyberware_throw_field(src) : null)
+	field?.take_throw(src)
+
+/// Restores a slowed throw's real speed as it lands, before `finalize()` works out impact damage and zero-g drift.
+/datum/thrownthing/finalize(hit = FALSE, target = null)
+	set waitfor = FALSE
+	if(thrownthing && length(GLOB.cyberware_time_fields))
+		for(var/datum/proximity_monitor/advanced/timestop/sandevistan/field as anything in GLOB.cyberware_time_fields)
+			if(field.held_throws[thrownthing])
+				field.finish_throw(thrownthing, src)
+				break
+	return ..()
 
 /obj/effect/decal/cleanable/blood/gibs/streak(list/directions, mapload = FALSE)
 	. = ..()
@@ -643,7 +909,7 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	var/list/held_mobs = list()
 	/// Projectiles in hand, to their own speed.
 	var/list/held_shots = list()
-	/// Thrown things in hand.
+	/// Thrown things in hand, to their own speed.
 	var/list/held_throws = list()
 	/// The user's own shots: never tinted. A surging mob's held shots aren't tinted either.
 	var/list/user_shots = list()
@@ -762,7 +1028,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	replay?.notice(A) // everything on, entering or made on a field turf comes through here
 	if(sandy_session_shares(src, A)) // another member of a shared slow-mo runs in its own field (ware_sandy_timestop_shared.dm)
 		return FALSE
-	if(!istype(A) || GLOB.cyberware_time_dilated[A] || global_frozen_atoms[A] || released[A] || immune[A] || surging[A])
+	if(!istype(A) || global_frozen_atoms[A])
+		return FALSE
+	if(GLOB.cyberware_time_dilated[A] || released[A] || immune[A] || surging[A])
+		if(A.throwing)
+			take_throw(A) // a body already held, thrown across the field
 		return FALSE
 	if(cyberware_own_surge(A))
 		take_surger(A, cyberware_surge_multiplier(A))
@@ -791,15 +1061,17 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	else if(istype(A, /obj/machinery/porta_turret))
 		frozen_structures += A
 		held_turrets[A] = TRUE
-	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A) || cyberware_time_tinted_blood(A))
+	else if((ismachinery(A) && !istype(A, /obj/machinery/light)) || isstructure(A) || cyberware_time_tinted_blood(A) || cyberware_time_tinted_shot_trash(A))
 		frozen_structures += A // looks only
 	else if(cyberware_lit_grenade(A))
 		held_grenades[A] = TRUE
 		tint = !!A.throwing // floor items keep their colour
 	else if(!A.throwing)
 		return FALSE
+	else if(istype(A, /obj/item/ammo_casing) && cyberware_casing_keeps_colour(A))
+		tint = FALSE
 	if(A.throwing)
-		held_throws[A] = TRUE
+		hold_throw(A)
 	GLOB.cyberware_time_dilated[A] = src
 	frozen_things[A] = TRUE
 	RegisterSignal(A, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
@@ -819,6 +1091,10 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /datum/proximity_monitor/advanced/timestop/sandevistan/unfreeze_all()
 	for(var/obj/effect/picture as anything in rig_glows)
 		drop_rig_glow(picture)
+	for(var/atom/movable/flier as anything in held_throws.Copy())
+		let_go_throw(flier)
+		if(!frozen_things[flier] && !surging[flier])
+			UnregisterSignal(flier, COMSIG_QDELETING)
 	for(var/atom/movable/thing as anything in frozen_things)
 		unfreeze_atom(thing)
 	for(var/turf/ground as anything in frozen_turfs)
@@ -830,7 +1106,8 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		let_go_mob(A)
 	if(held_shots[A])
 		let_go_shot(A)
-	held_throws -= A
+	if(held_throws[A])
+		let_go_throw(A)
 	held_mechs -= A
 	held_turrets -= A
 	held_grenades -= A
@@ -1066,6 +1343,71 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	frozen_things[shot] = TRUE
 	RegisterSignal(shot, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
 
+// ----- throws -----
+
+/// Whether `thing` is a body on its own time here: the user, their ride, a surging mob, a freed boss, a crewmate in the
+/// shared slow-mo, anyone the field can't touch. Thrown, it flies at its own speed.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/own_time(atom/movable/thing)
+	return !!(thing == host || immune[thing] || surging[thing] || released[thing] || own_ride(thing) || sandy_session_shares(src, thing))
+
+/// Takes a throw started or arriving in the field: held bodies and floor items alike fly at the field's pace.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/take_throw(atom/movable/thing)
+	if(QDELETED(thing) || !thing.throwing || cover_outsider(thing) || own_time(thing))
+		return
+	for(var/datum/proximity_monitor/advanced/timestop/sandevistan/holder as anything in GLOB.cyberware_time_fields)
+		if(holder.held_throws[thing])
+			return
+	if(!GLOB.cyberware_time_dilated[thing] && freeze_atom(thing))
+		return
+	replay?.notice(thing)
+	hold_throw(thing)
+	if(held_grenades[thing] && !tinted[thing])
+		into_the_negative_zone(thing)
+	else if(!frozen_things[thing] && !surging[thing])
+		RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+
+/// Records `thing`'s own throw speed and slows its flight to the field's pace.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/hold_throw(atom/movable/thing)
+	var/datum/thrownthing/flight = thing.throwing
+	if(!flight)
+		return
+	if(!held_throws[thing])
+		held_throws[thing] = flight.speed
+	pace_throw(thing, held_throws[thing] * time_scale, flight)
+
+/// Sets `thing`'s `flight` to `new_speed`, keeping its progress along the current tile.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/pace_throw(atom/movable/thing, new_speed, datum/thrownthing/flight = thing.throwing)
+	if(!flight || new_speed <= 0 || flight.speed == new_speed)
+		return
+	var/elapsed = max(world.time - flight.start_time + flight.delayed_time, 0)
+	flight.start_time = world.time + flight.delayed_time - elapsed * (flight.speed / new_speed)
+	flight.speed = new_speed
+
+/// Restores `thing`'s throw to its own speed from where it has got to.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/let_go_throw(atom/movable/thing)
+	var/orig_speed = held_throws[thing]
+	held_throws -= thing
+	if(orig_speed && thing.throwing)
+		pace_throw(thing, orig_speed)
+
+/// `thing`'s throw is landing inside the slow-mo: put its real speed back for impact, and let a plain floor item go.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/finish_throw(atom/movable/thing, datum/thrownthing/flight)
+	var/orig_speed = held_throws[thing]
+	if(!orig_speed)
+		return
+	held_throws -= thing
+	if(flight)
+		pace_throw(thing, orig_speed, flight)
+	if(!frozen_things[thing])
+		if(!surging[thing])
+			UnregisterSignal(thing, COMSIG_QDELETING)
+		return
+	if(held_grenades[thing])
+		escape_the_negative_zone(thing)
+		return
+	if(!held_mobs[thing] && !held_shots[thing] && !held_mechs[thing] && !held_turrets[thing] && !(thing in frozen_structures))
+		unfreeze_atom(thing)
+
 /// Forgets a held thing that got deleted.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/held_gone(atom/movable/thing)
 	SIGNAL_HANDLER
@@ -1114,10 +1456,6 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 			push_deadlines(victim, lost)
 	var/push = elapsed * (1 - time_scale)
 	if(push > 0)
-		for(var/atom/movable/thing as anything in held_throws)
-			var/datum/thrownthing/throw_datum = thing.throwing
-			if(throw_datum)
-				throw_datum.start_time += push
 		push_machine_deadlines(push)
 	check_surgers()
 	let_go_own_ride()
@@ -1267,15 +1605,19 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 	SIGNAL_HANDLER
 	drop_rig_glow(picture)
 
+/// Tints `thing` (a rig picture, a muzzle flash in vis_contents) as looks-only, let go when the field ends.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/take_looks(atom/movable/thing)
+	if(frozen_things[thing] || QDELETED(thing))
+		return
+	GLOB.cyberware_time_dilated[thing] = src
+	frozen_things[thing] = TRUE
+	frozen_structures += thing // looks only
+	RegisterSignal(thing, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
+	into_the_negative_zone(thing)
+
 /// A rig picture of a body the field tints: tinted like it, and let go with the field.
 /datum/proximity_monitor/advanced/timestop/sandevistan/proc/take_rig_picture(obj/effect/picture)
-	if(frozen_things[picture])
-		return
-	GLOB.cyberware_time_dilated[picture] = src
-	frozen_things[picture] = TRUE
-	frozen_structures += picture // looks only
-	RegisterSignal(picture, COMSIG_QDELETING, PROC_REF(held_gone), override = TRUE)
-	into_the_negative_zone(picture)
+	take_looks(picture)
 
 /// The solid copy under one of the user's rig pictures. It takes the picture's icon, facing and turn.
 /obj/effect/abstract/sandy_rig_glow
