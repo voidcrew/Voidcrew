@@ -443,41 +443,64 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /obj/effect/decal/cleanable/blood/gibs
 	/// Set while sandy_untinted_overlays() builds the overlays as they are without the slow-mo's tint.
 	var/sandy_skip_tint = FALSE
-	/// The pace tg throws it across the floor at (the delay of streak()'s move loop), kept while a field stretches it.
-	var/sandy_streak_delay
+
+/obj/effect/decal/cleanable/blood
+	/// The pace tg sends it across the floor at (the delay of its move loop), kept while a field stretches it.
+	var/sandy_flight_delay
 
 /**
- * tg sends a gib across the floor on a move loop of its own, a tile every couple of deciseconds. Nothing slowed that:
- * in a field it shot off at full speed while its tumble (hyperviolence/visuals/flying_gore.dm) crawled, and the replay
- * showed the flight as many times too fast. Each step takes the field's time, worked out a step at a time, so a gib
- * still on its way when the slow-mo ends goes on at its own pace.
+ * tg sends a gib across the floor (streak()), and the blood knocked out of a body by a hit (the hitsplatter's
+ * fly_towards()), on move loops of their own, a tile every couple of deciseconds. Nothing slowed those: in a field a gib
+ * shot off at full speed while its tumble (hyperviolence/visuals/flying_gore.dm) crawled, a hit's blood crossed three
+ * tiles before the bullet that drew it had crossed one, and the replay showed both as many times too fast. Each step
+ * takes the field's time, worked out a step at a time, so one still on its way when the slow-mo ends goes on at its own
+ * pace. Call it once the loop is running.
  */
-/obj/effect/decal/cleanable/blood/gibs/streak(list/directions, mapload = FALSE)
-	. = ..()
-	if(mapload || QDELETED(src) || !length(GLOB.cyberware_time_fields))
+/obj/effect/decal/cleanable/blood/proc/sandy_slow_flight()
+	if(QDELETED(src) || !length(GLOB.cyberware_time_fields))
 		return
 	var/datum/move_loop/loop = move_packet?.running_loop
 	if(QDELETED(loop))
 		return
-	sandy_streak_delay = loop.delay
-	RegisterSignal(src, COMSIG_MOVABLE_MOVED_FROM_LOOP, PROC_REF(sandy_streak_stepped))
-	if(sandy_streak_pace(loop))
+	sandy_flight_delay = loop.delay
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED_FROM_LOOP, PROC_REF(sandy_flight_stepped), override = TRUE)
+	if(sandy_flight_pace(loop))
 		loop.pause_for(loop.delay) // its first step was due at tg's pace
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED_FROM_LOOP]: the step after this one takes what the field it is in now makes of it.
-/obj/effect/decal/cleanable/blood/gibs/proc/sandy_streak_stepped(atom/movable/source, datum/move_loop/loop)
+/obj/effect/decal/cleanable/blood/proc/sandy_flight_stepped(atom/movable/source, datum/move_loop/loop)
 	SIGNAL_HANDLER
 	if(!QDELETED(loop))
-		sandy_streak_pace(loop)
+		sandy_flight_pace(loop)
 
-/// Sets `loop` (streak()'s) to the field's pace, keeping the steps it has left. Returns TRUE if that changed it.
-/obj/effect/decal/cleanable/blood/gibs/proc/sandy_streak_pace(datum/move_loop/loop)
-	var/pace = max(cyberware_dilated_time(src, sandy_streak_delay), world.tick_lag)
+/// Sets `loop` (the flight's) to the field's pace, keeping the steps it has left. Returns TRUE if that changed it.
+/obj/effect/decal/cleanable/blood/proc/sandy_flight_pace(datum/move_loop/loop)
+	var/pace = max(cyberware_dilated_time(src, sandy_flight_delay), world.tick_lag)
 	if(pace == loop.delay)
 		return FALSE
 	loop.lifetime *= pace / loop.delay // counted down by the delay a step: the same steps left
 	loop.set_delay(pace)
 	return TRUE
+
+/**
+ * tg's muzzle flash is drawn in the shooter's vis_contents, as part of him: the edge glow a slow-mo's user wears went
+ * round it too, and as the flash faded the glow stayed, a green flash at the gun. On a glowing shooter it is drawn apart
+ * from him.
+ */
+/obj/effect/temp_visual/dir_setting/firing_effect/Initialize(mapload, set_dir)
+	. = ..()
+	var/atom/movable/shooter = loc
+	if(ismovable(shooter) && shooter.get_filter(SANDY_STOP_OUTLINE))
+		appearance_flags |= KEEP_APART
+
+/obj/effect/decal/cleanable/blood/gibs/streak(list/directions, mapload = FALSE)
+	. = ..()
+	if(!mapload)
+		sandy_slow_flight()
+
+/obj/effect/decal/cleanable/blood/hitsplatter/fly_towards(turf/target_turf, range)
+	. = ..()
+	sandy_slow_flight()
 
 /// A gib's meat and bone are a KEEP_APART, RESET_COLOR overlay that the tint in `color` skips: tinted, it wears the
 /// wash over its own colour too, and gets its colour back when the tint comes off (cyberware_time_tint_off()).

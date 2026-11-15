@@ -302,11 +302,17 @@
 	TEST_ASSERT_NOTNULL(cyberware_time_field(chunk), "Test fixture: the gib isn't in the field")
 	var/datum/move_loop/loop = GLOB.move_manager.move_to(chunk, spot(5, 2), delay = 2, timeout = 6)
 	TEST_ASSERT_NOTNULL(loop, "Test fixture: the gib has no move loop")
-	chunk.sandy_streak_delay = loop.delay
-	TEST_ASSERT(chunk.sandy_streak_pace(loop), "A gib's flight across the floor wasn't slowed in the field")
+	chunk.sandy_flight_delay = loop.delay
+	TEST_ASSERT(chunk.sandy_flight_pace(loop), "A gib's flight across the floor wasn't slowed in the field")
 	TEST_ASSERT(abs(loop.delay - 2 / scale) < 0.5, "A slowed gib takes [loop.delay] a tile at [scale * 100]%, not [2 / scale]")
 	TEST_ASSERT(abs(loop.lifetime / loop.delay - 3) < 0.01, "A slowed gib has [loop.lifetime / loop.delay] steps left of the 3 it was thrown")
 	qdel(loop)
+	// The blood a hit knocks out of a body flies the same way
+	var/obj/effect/decal/cleanable/blood/hitsplatter/splash = allocate(/obj/effect/decal/cleanable/blood/hitsplatter, spot(1, 3))
+	splash.fly_towards(spot(4, 3), 3)
+	var/datum/move_loop/flight = splash.move_packet?.running_loop
+	TEST_ASSERT_NOTNULL(flight, "Test fixture: the hit's blood has no move loop")
+	TEST_ASSERT(abs(flight.delay - splash.sandy_flight_delay / scale) < 0.5, "A hit's blood crosses a tile in [flight.delay] at [scale * 100]%, not [splash.sandy_flight_delay / scale]")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
