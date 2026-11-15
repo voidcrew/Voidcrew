@@ -23,7 +23,7 @@
 	// straightening on the shot's own tick, he stood idle while the head went off beside him.
 	if(!QDELETED(user))
 		if(.)
-			addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, hv_vis_release), HV_VIS_TAG_PRESS, 1.5), 0.4 SECONDS)
+			addtimer(CALLBACK(user, TYPE_PROC_REF(/atom, hv_vis_release), HV_VIS_TAG_PRESS, 1.5), 0.4 SECONDS)
 		else
 			user.hv_vis_release(HV_VIS_TAG_PRESS, 1.5)
 	if(!QDELETED(target) && target.stat != DEAD)
