@@ -55,6 +55,7 @@
 	TEST_ASSERT_EQUAL(gun.ammo, full - 2, "A plasma pistol pair didn't use two shots")
 
 /// Green-zone pirates never roll plasma; yellow adds the pistol; red adds both. The faction's own list is untouched.
+/// With PLASMA_NPC_GUNS off, no zone adds either.
 /datum/unit_test/voidcrew_plasma_pirates/zone_weights
 
 /datum/unit_test/voidcrew_plasma_pirates/zone_weights/Run()
@@ -64,6 +65,8 @@
 		list(/datum/pirate_gun_loadout/plasma_pistol),
 		list(/datum/pirate_gun_loadout/plasma_pistol, /datum/pirate_gun_loadout/plasma_rifle),
 	)
+	if(!PLASMA_NPC_GUNS)
+		expected = list(list(), list(), list())
 	var/list/plasma_types = list(/datum/pirate_gun_loadout/plasma_pistol, /datum/pirate_gun_loadout/plasma_rifle)
 	for(var/zone in 1 to 3)
 		var/mob/living/basic/trooper/pirate/faction/irs/ranged/gunner = spawn_in_zone(/mob/living/basic/trooper/pirate/faction/irs/ranged, zone, spot(0, zone))
@@ -77,12 +80,13 @@
 		TEST_ASSERT_NULL(gunner.crew_gun_weights[/datum/pirate_gun_loadout/plasma_pistol], "Plasma weights were written into the IRS faction's own list")
 		var/mob/living/basic/trooper/pirate/ranged/generic = spawn_in_zone(/mob/living/basic/trooper/pirate/ranged, zone, spot(1, zone))
 		var/list/generic_weights = pirate_gun_weights_for(generic)
-		TEST_ASSERT_EQUAL(!!generic_weights[/datum/pirate_gun_loadout/plasma_pistol], zone != 1, "A plain zone [zone] pirate's plasma pistol weight is wrong")
+		TEST_ASSERT_EQUAL(!!generic_weights[/datum/pirate_gun_loadout/plasma_pistol], PLASMA_NPC_GUNS && zone != 1, "A plain zone [zone] pirate's plasma pistol weight is wrong")
 	TEST_ASSERT_NULL(GLOB.pirate_gun_default_weights[/datum/pirate_gun_loadout/plasma_pistol], "Plasma weights were written into the default list")
 	var/mob/living/basic/trooper/pirate/faction/medieval/ranged/archer = spawn_in_zone(/mob/living/basic/trooper/pirate/faction/medieval/ranged, 3, spot(2, 1))
 	TEST_ASSERT_NULL(pirate_gun_weights_for(archer), "A red-zone crossbowman would trade his crossbow for a gun")
 
 /// The red-zone Director Prime and Chief Auditor carry a Furnace; elsewhere they keep their stock shot. Both can drop the Old Furnace.
+/// With PLASMA_NPC_GUNS off, they keep their stock shot everywhere.
 /datum/unit_test/voidcrew_plasma_pirates/bosses
 
 /datum/unit_test/voidcrew_plasma_pirates/bosses/Run()
@@ -93,7 +97,7 @@
 			var/mob/living/basic/trooper/pirate/faction/boss/boss = spawn_in_zone(boss_type, zone, spot(row, zone))
 			var/datum/component/pirate_gun/gun = pirate_gun_of(boss)
 			TEST_ASSERT(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in boss.rare_loot_pool, "[boss_type] can't drop the Old Furnace")
-			if(zone == 3)
+			if(zone == 3 && PLASMA_NPC_GUNS)
 				TEST_ASSERT_NOTNULL(gun, "A red-zone [boss_type] carries no Furnace")
 				TEST_ASSERT_EQUAL(gun.loadout.type, /datum/pirate_gun_loadout/plasma_rifle, "A red-zone [boss_type] carries [gun.loadout.type]")
 				TEST_ASSERT_NULL(boss.GetComponent(/datum/component/ranged_attacks), "A red-zone [boss_type] kept its stock shot as well as its Furnace")
@@ -101,7 +105,8 @@
 				boss.apply_npc_weapon_ladder()
 				TEST_ASSERT_EQUAL(pirate_gun_of(boss), gun, "A red-zone [boss_type] was armed twice")
 			else
-				TEST_ASSERT(!(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in boss.rolled_rare_loot), "A zone [zone] [boss_type] kept an Old Furnace roll")
+				if(zone != 3)
+					TEST_ASSERT(!(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace in boss.rolled_rare_loot), "A zone [zone] [boss_type] kept an Old Furnace roll")
 				TEST_ASSERT_NULL(gun, "A zone [zone] [boss_type] carries a pirate gun")
 				TEST_ASSERT_NOTNULL(boss.GetComponent(/datum/component/ranged_attacks), "A zone [zone] [boss_type] lost its stock shot")
 		row++

@@ -7,6 +7,8 @@
 // the same heat a shot, the same cooling where it stands, the same overheat shutdown. When its coils are white-hot
 // it vents and never times it, so it always gets the vent left to run out. Every block is a world.time deadline
 // checked when it next tries to fire, so nothing can leave it stuck.
+//
+// Both ways an NPC gets one are off while PLASMA_NPC_GUNS is 0; the heat code stays for when they come back.
 
 /datum/pirate_gun_loadout/plasma_pistol
 	energy_shots = 15
@@ -34,6 +36,8 @@
 
 /// `weights` with the plasma loadouts added for a gunner from a yellow or red zone. Never changes `weights`.
 /proc/plasma_pirate_gun_weights(mob/living/gunner, list/weights)
+	if(!PLASMA_NPC_GUNS)
+		return weights
 	var/zone = plasma_pirate_zone(gunner)
 	if(zone != ZONE_YELLOW && zone != ZONE_RED)
 		return weights
@@ -45,7 +49,7 @@
 
 /// Hands a red-zone boss a Furnace in place of its stock shot. Returns the loadout, or null.
 /mob/living/basic/trooper/pirate/faction/boss/proc/arm_plasma_rifle()
-	if(plasma_pirate_zone(src) != ZONE_RED)
+	if(!PLASMA_NPC_GUNS || plasma_pirate_zone(src) != ZONE_RED)
 		return null
 	. = pirate_crew_arm(src, /datum/pirate_gun_loadout/plasma_rifle)
 	if(!. || !l_hand)
