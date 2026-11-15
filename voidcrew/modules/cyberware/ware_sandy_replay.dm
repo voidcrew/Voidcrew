@@ -1312,6 +1312,17 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			track.landing = TRUE
 			thing.sandy_replay_resume()
 		release_gore()
+		// The surger's own last shot, held in the air at his gun, would hang there too: it flies on. Anyone else's
+		// stays held until everyone can move again.
+		for(var/obj/projectile/shot as anything in held_shots)
+			if(QDELETED(shot) || !(shot.firer == user || sandy_session_member(src, shot.firer)))
+				continue
+			var/datum/sandy_replay_track/shot_track = tracks[shot]
+			if(shot_track && !shot_track.landing && (shot_track in puppets))
+				unmask(shot_track)
+				shot_track.landing = TRUE
+			shot.paused = FALSE
+			held_shots -= shot
 		// A flash still lit when the recording ended (the slow-mo stretched it) would hang there for as long as this
 		// takes: it goes out
 		for(var/datum/sandy_replay_track/track as anything in puppets + standins)
