@@ -2161,6 +2161,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		var/turf/before = k > 1 ? crossed[k - 1] : track.trail_prev
 		if(before && (before.z != step_from.z || get_dist(before, step_from) != 1))
 			before = null
+		// Several tiles between two frames: the puppet is still gliding over them, and a copy laid now on a tile further
+		// on stood ahead of him. Each shows as he passes it.
+		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * (k - 1) / steps : 0
 		for(var/i in 0 to (before ? per_tile - 1 : 0))
 			var/fraction = i / per_tile
 			var/left_frames = life_frames - (steps - k + 1 + fraction) * step_frames // it was passed this long ago
@@ -2169,7 +2172,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
 			var/shift_x = before ? round((before.x - step_from.x) * fraction * ICON_SIZE_X) : 0
 			var/shift_y = before ? round((before.y - step_from.y) * fraction * ICON_SIZE_Y) : 0
-			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag)
+			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag, wait)
 			afterimages++
 	track.trail_prev = crossed[steps]
 
@@ -2301,7 +2304,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 /// One afterimage of a surger's trail in the replay: a recorded look, coloured by age like the live trail.
 /obj/effect/temp_visual/decoy/fading/cascade/replay
 
-/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time)
+/obj/effect/temp_visual/decoy/fading/cascade/replay/Initialize(mapload, look, facing, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time, wait = 0)
 	if(life)
 		duration = life // before the parent's timer and fade read it
 	. = ..(mapload, null, age, start_alpha)
@@ -2310,7 +2313,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/mutable_appearance/copy = new(look || src)
 	copy.name = ""
 	copy.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	copy.alpha = start_alpha
+	copy.alpha = wait > 0 ? 0 : start_alpha
 	copy.color = cyberware_cascade_tint_at(age)
 	copy.pixel_w += shift_x // along the step, toward the tile reached
 	copy.pixel_z += shift_y
@@ -2323,7 +2326,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	appearance = copy.appearance
 	dir = facing
 	opacity = FALSE
-	animate(src, alpha = 0, time = duration)
+	if(wait > 0) // its surger has not glided past this tile yet: it shows as he leaves it
+		animate(src, alpha = 0, time = wait)
+		animate(alpha = start_alpha, time = 0)
+		animate(alpha = 0, time = max(duration - wait, world.tick_lag))
+	else
+		animate(src, alpha = 0, time = duration)
 	age_colours(age, age_time || duration)
 
 /// The playback timer: one frame a tick.
