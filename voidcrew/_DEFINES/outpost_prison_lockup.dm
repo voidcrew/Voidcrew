@@ -29,6 +29,10 @@
 #define OUTPOST_PROCESSING_BOOK "booking"
 /// Processing is cycling a released player inmate out to the front room
 #define OUTPOST_PROCESSING_RELEASE "releasing"
+/// Processing is cycling a carried-out player inmate back in from the front room
+#define OUTPOST_PROCESSING_RETURN "returning"
+/// Processing is cycling a visitor in or out one door at a time to recover a dead inmate
+#define OUTPOST_PROCESSING_CORPSE "corpse"
 /// Processing is taking a live bounty hand-in at the outer door
 #define OUTPOST_PROCESSING_CLAIM "claiming"
 /// Seconds a hunter may stand inside Processing with a live catch before the warden tells them to step out

@@ -338,5 +338,41 @@
 	proc_door = prison.processing_door(FALSE)
 	TEST_ASSERT(istype(proc_door, /obj/machinery/door/airlock/security/prison_staff/processing/outer) && prison.has_processing(), "Rebuilding Processing's outer door lost its Processing subtype")
 
+	// Pre-warming a panel with a screwdriver cannot shorten a later breach's 3-minute mend, and tapping an already-open door cannot postpone mend forever
+	hacker.forceMove(beside_door(cell_door))
+	hacker.drop_all_held_items()
+	hacker.put_in_active_hand(screwdriver)
+	screwdriver.melee_attack_chain(hacker, cell_door)
+	TEST_ASSERT(cell_door.panel_open && cell_door.mend_pending, "Screwdriver did not schedule the initial panel mend")
+	cell_door.mend_due = world.time + 5 SECONDS
+	doorjack.charges = 3
+	TEST_ASSERT(cell_door.emag_act(hacker, doorjack), "Override card failed after pre-opening the cell door's panel")
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(!cell_door.density, "Cell door did not breach open after panel pre-warm")
+	TEST_ASSERT(cell_door.mend_due >= world.time + (2.5 MINUTES), "Breaching a pre-warmed door kept the stale screwdriver mend timer instead of resetting to 3 minutes") // OUTPOST_CHECKPOINT_EMAG_TIME
+	cell_door.mend_due -= 60 SECONDS
+	var/due_before_tap = cell_door.mend_due
+	screwdriver.melee_attack_chain(hacker, cell_door)
+	TEST_ASSERT_EQUAL(cell_door.mend_due, due_before_tap, "Screwdriver-tapping an already-breached open door pushed mend_due forward")
+	cell_door.mend_hack()
+	sleep(2 SECONDS)
+	TEST_ASSERT(cell_door.density && !cell_door.mend_pending && !cell_door.panel_open, "Cell door did not mend cleanly after the timer-reset check")
+	hacker.drop_all_held_items()
+	hacker.forceMove(park_turf)
+
+	// Shattered serving-hatch windoors schedule a 3-minute mend and rebuild their exact windoor subtype, integrity and autoclose
+	var/obj/structure/table/reinforced/prison_hatch/hatch_table = locate() in get_turf(staff_hatch)
+	TEST_ASSERT_NOTNULL(hatch_table, "No prison_hatch table found under staff_hatch")
+	staff_hatch.take_rioter_damage(staff_hatch.max_integrity, NORTH)
+	hatch_table.force_open()
+	TEST_ASSERT(QDELETED(staff_hatch) && hatch_table.mend_pending, "Shattering the office hatch windoor did not schedule a hatch mend")
+	hatch_table.mend_hatch()
+	sleep(2 SECONDS)
+	var/obj/machinery/door/window/brigdoor/outpost_prison_staff/rebuilt_hatch = hatch_table.staff_windoor()
+	var/obj/machinery/door/window/outpost_prison_yard/yard_after_mend = hatch_table.yard_windoor()
+	TEST_ASSERT(!hatch_table.mend_pending && !isnull(rebuilt_hatch), "mend_hatch() did not replace the shattered office hatch windoor")
+	TEST_ASSERT(rebuilt_hatch.density && rebuilt_hatch.atom_integrity == rebuilt_hatch.max_integrity && rebuilt_hatch.autoclose == initial(rebuilt_hatch.autoclose), "Rebuilt office hatch windoor was not shut at full integrity with autoclose restored")
+	TEST_ASSERT(!isnull(yard_after_mend) && yard_after_mend.autoclose == initial(yard_after_mend.autoclose), "mend_hatch() did not restore autoclose on the surviving yard hatch windoor")
+
 	prison.admin_calm()
 	outpost.police = real_police

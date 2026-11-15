@@ -258,12 +258,15 @@
 	baton_stop_until = world.time + PRISONER_BATON_STOP
 	changeNext_move(PRISONER_BATON_STOP)
 
-/// Shots from machines (outpost turrets) put a death down to staff, but never cost mood. Every shot lands as it would on anyone.
+/// Shots from machines (outpost turrets) put a death down to staff without costing mood; mecha gunfire counts like handheld fire (relay_attackers).
 /mob/living/carbon/human/npc/outpost_prisoner/proc/on_shot(datum/source, obj/projectile/shot)
 	SIGNAL_HANDLER
-	if(!shot.is_hostile_projectile() || !ismachinery(shot.firer))
+	if(!shot.is_hostile_projectile())
 		return
-	hit_by_staff(shot.firer)
+	if(ismachinery(shot.firer))
+		hit_by_staff(shot.firer)
+	else if(ismecha(shot.firer))
+		on_attacked(src, shot.firer, shot.damage_type == STAMINA ? ATTACKER_STAMINA_ATTACK : ATTACKER_DAMAGING_ATTACK)
 
 /// Whether an attacker counts as staff (or an inmate picking a fight in the yard): people, borgs, anyone with a mind, and mechs
 /mob/living/carbon/human/npc/outpost_prisoner/proc/is_staff_attacker(atom/attacker)
@@ -354,7 +357,7 @@
 
 /// Records a damaging player blow so a witnessed kill of this prisoner counts as murder
 /mob/living/carbon/human/npc/outpost_prisoner/proc/note_player_damage_hit(atom/attacker)
-	var/mob/living/player = attacker
+	var/mob/living/player = outpost_living_attacker(attacker)
 	if(!istype(player) || !player.mind || is_outpost_prisoner(player) || is_ai_outpost_prison_guard(player))
 		return
 	last_player_attacker_ref = WEAKREF(player)

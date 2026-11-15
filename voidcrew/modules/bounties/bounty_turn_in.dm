@@ -541,7 +541,14 @@
 /proc/bounty_blocks_bag_fold(obj/structure/closet/body_bag/bag, mob/living/folder)
 	if(!bag)
 		return FALSE
-	for(var/mob/living/carbon/human/npc/bounty_criminal/criminal in bag.get_all_contents())
+	for(var/mob/living/captive in bag.get_all_contents())
+		if(outpost_lockup_body_bound(captive))
+			if(folder)
+				to_chat(folder, span_warning("[bag] won't fold with someone alive inside."))
+			return TRUE
+		if(!istype(captive, /mob/living/carbon/human/npc/bounty_criminal))
+			continue
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = captive
 		if(!bounty_body_bound(criminal) || criminal.is_downed())
 			continue
 		if(folder)
@@ -551,12 +558,12 @@
 
 /**
  * Called from a player bounty's approve_offer() with the items on the sender's pad: why they can't
- * be sent (one of them holds a living bounty criminal, decoy or companion), or null if they can
+ * be sent (one of them holds a living bounty criminal, decoy, companion or lockup captive), or null if they can
  * (AR-H1). Brains in MMIs, positronic brains, pAIs and held pets go through as they always did.
  */
 /proc/bounty_offer_refusal(list/items)
 	for(var/obj/item/item in items)
-		if(bounty_holds_living_criminal(item))
+		if(bounty_holds_living_criminal(item) || outpost_lockup_holds_bound(item))
 			return "living cargo can't be sent this way"
 	return null
 
@@ -591,5 +598,5 @@
 	if(QDELETED(thing))
 		return FALSE
 	if(ismob(thing))
-		return bounty_body_bound(thing)
-	return bounty_holds_living_criminal(thing)
+		return bounty_body_bound(thing) || outpost_lockup_body_bound(thing)
+	return bounty_holds_living_criminal(thing) || outpost_lockup_holds_bound(thing)

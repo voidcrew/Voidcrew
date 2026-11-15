@@ -327,16 +327,23 @@
 
 /**
  * A rioter's blow. A serving hatch's window doors are outpost property that nothing else can
- * damage; a rioter's blows wear them down all the same, and at nothing they shatter.
+ * damage; a rioter's blows wear them down all the same, at nothing they shatter, and the hatch
+ * schedules self-repair after OUTPOST_CHECKPOINT_EMAG_TIME.
  */
 /obj/machinery/door/window/proc/take_rioter_damage(damage, attack_dir)
+	var/obj/structure/table/reinforced/prison_hatch/hatch = (is_outpost_prison_windoor(src) && isturf(loc)) ? (locate(/obj/structure/table/reinforced/prison_hatch) in loc) : null
+	if(hatch)
+		hatch.yard_windoor()
+		hatch.staff_windoor()
 	if(!(resistance_flags & INDESTRUCTIBLE))
 		take_damage(damage, BRUTE, "", TRUE, attack_dir)
-		return
-	play_attack_sound(damage)
-	update_integrity(get_integrity() - damage)
-	if(get_integrity() <= 0)
-		deconstruct(FALSE)
+	else
+		play_attack_sound(damage)
+		update_integrity(get_integrity() - damage)
+		if(get_integrity() <= 0)
+			deconstruct(FALSE)
+	if(hatch && !QDELETED(hatch))
+		hatch.schedule_mend(OUTPOST_CHECKPOINT_EMAG_TIME, restart = QDELETED(src))
 
 /// "It looks slightly damaged." and so on, as for any machine, for fixtures whose outpost property hides it
 /proc/outpost_prison_damage_examine(obj/thing)

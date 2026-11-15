@@ -49,11 +49,12 @@
 	if(!shop || !is_serving() || IS_DEAD_OR_INCAP(user) || !customer_in_reach(user))
 		return
 	var/datum/outpost_prison/prison = outpost?.prison
-	if(prison && prison.in_front_room(user) && prison.claim_held_catch(user))
+	if(prison && prison.in_front_room(user) && (prison.claim_held_catch(user) || prison.claim_waiting_inside(user)))
 		var/was_claiming = prison.processing_state == OUTPOST_PROCESSING_CLAIM && !prison.claim_aborting
+		var/had_held_catch = !!prison.claim_held_catch(user)
 		var/prev_cooldown = speak_cooldown
 		if(prison.try_start_processing_claim(user))
-			if(!was_claiming && speak_cooldown == prev_cooldown)
+			if(!was_claiming && had_held_catch && speak_cooldown == prev_cooldown)
 				prison.warden_say("In you go.")
 			return
 		if(speak_cooldown != prev_cooldown || !COOLDOWN_FINISHED(src, speak_cooldown))

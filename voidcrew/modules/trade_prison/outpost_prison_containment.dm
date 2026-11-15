@@ -411,17 +411,86 @@
 
 // ===== THE PRISONER =====
 
+/// Whether `body` is a living lockup inmate, prisoner or guard that cannot be folded into pocket storage or beamed onto a ship pad
+/proc/outpost_lockup_body_bound(mob/living/body)
+	if(!isliving(body) || QDELETED(body) || body.stat == DEAD)
+		return FALSE
+	if(istype(body, /mob/living/carbon/human/npc/outpost_prisoner))
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = body
+		return !!prisoner.prison
+	if(istype(body, /mob/living/carbon/human/npc/outpost_prison_guard))
+		var/mob/living/carbon/human/npc/outpost_prison_guard/guard = body
+		return !!guard.prison
+	for(var/datum/outpost_prison/prison as anything in GLOB.outpost_prisons)
+		if(prison?.is_inmate(body))
+			return TRUE
+	return FALSE
+
+/// Whether `thing` holds a living lockup inmate, prisoner or guard anywhere inside it
+/proc/outpost_lockup_holds_bound(atom/movable/thing)
+	if(QDELETED(thing))
+		return FALSE
+	for(var/mob/living/passenger in thing.get_all_contents())
+		if(passenger != thing && outpost_lockup_body_bound(passenger))
+			return TRUE
+	return FALSE
+
+/mob/living/carbon/human/npc/outpost_prisoner
+	/// Weakref to an outermost movable container watched while shut inside one, so container teleports fail too
+	var/datum/weakref/watched_container_ref
+
 /**
  * Hooks up what keeps a prisoner contained; called from Initialize(). Teleports fail, forced ones
- * included (drop pods, quantum pads); polymorph and type changes fail. A dead prisoner can be brought
- * back like anyone (on_revived()). TRAIT_NO_TRANSFORM would stop polymorph too, but it also stops their
- * AI moving them.
+ * included (drop pods, quantum pads, and containers holding them); polymorph and type changes fail.
+ * A dead prisoner can be brought back like anyone (on_revived()). TRAIT_NO_TRANSFORM would stop
+ * polymorph too, but it also stops their AI moving them.
  */
 /mob/living/carbon/human/npc/outpost_prisoner/proc/setup_containment()
 	RegisterSignal(src, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport))
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(on_containment_moved))
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
 	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
 	RegisterSignal(src, COMSIG_LIVING_REVIVE, PROC_REF(on_revived))
+	sync_container_watch()
+
+/mob/living/carbon/human/npc/outpost_prisoner/proc/clear_containment()
+	var/atom/movable/watched = watched_container_ref?.resolve()
+	if(watched)
+		UnregisterSignal(watched, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
+	watched_container_ref = null
+
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sync_container_watch()
+	var/atom/movable/prev = watched_container_ref?.resolve()
+	var/atom/movable/outermost
+	if(!QDELETED(src) && !isturf(loc))
+		var/atom/cursor = loc
+		while(ismovable(cursor) && !isturf(cursor))
+			outermost = cursor
+			cursor = cursor.loc
+	if(prev == outermost)
+		return
+	if(prev)
+		UnregisterSignal(prev, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
+	watched_container_ref = outermost ? WEAKREF(outermost) : null
+	if(outermost)
+		RegisterSignal(outermost, COMSIG_MOVABLE_MOVED, PROC_REF(on_container_moved), override = TRUE)
+		RegisterSignal(outermost, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_container_teleport), override = TRUE)
+
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_containment_moved(datum/source, atom/old_loc, movement_dir, forced, list/old_locs)
+	SIGNAL_HANDLER
+	sync_container_watch()
+
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_container_moved(atom/movable/container, atom/old_loc, movement_dir, forced, list/old_locs)
+	SIGNAL_HANDLER
+	sync_container_watch()
+
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_container_teleport(atom/movable/container, atom/destination, channel)
+	SIGNAL_HANDLER
+	if(QDELETED(src) || QDELETED(container) || stat == DEAD || !(src in container.get_all_contents()))
+		return NONE
+	if(isturf(container.loc))
+		container.visible_message(span_notice("[container] flickers for a moment, but stays where [container.p_they()] [container.p_are()]."))
+	return TRUE
 
 /mob/living/carbon/human/npc/outpost_prisoner/proc/refuse_teleport(datum/source, atom/destination, channel)
 	SIGNAL_HANDLER

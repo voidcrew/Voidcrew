@@ -71,6 +71,12 @@
 /obj/structure/table/reinforced/prison_hatch
 	/// Whether the galley's next round here is a meal, not a clean uniform (/datum/outpost_prison/proc/galley_serve())
 	var/galley_meal_next = TRUE
+	/// Whether a self-repair timer is running for cracked or shattered window doors
+	var/mend_pending = FALSE
+	/// world.time the scheduled hatch window mend is due, or 0
+	var/mend_due = 0
+	/// Stoppable timer handle for `mend_hatch()`
+	var/mend_timer_id
 
 /obj/structure/table/reinforced/prison_hatch/Initialize(mapload)
 	. = ..()
@@ -82,6 +88,12 @@
 		COMSIG_ATOM_ENTERED = PROC_REF(on_counter_entered),
 	)
 	AddElement(/datum/element/connect_loc, loc_connections)
+
+/obj/structure/table/reinforced/prison_hatch/Destroy()
+	if(mend_timer_id)
+		deltimer(mend_timer_id)
+		mend_timer_id = null
+	return ..()
 
 /obj/structure/table/reinforced/prison_hatch/examine(mob/user)
 	. = ..()
@@ -197,6 +209,84 @@
 		// Opens, then shuts itself a few seconds later.
 		INVOKE_ASYNC(yard_door, TYPE_PROC_REF(/obj/machinery/door/window, open_and_close))
 	return FALSE
+
+/// Schedules self-repair for cracked or shattered hatch window doors (O6, O8)
+/obj/structure/table/reinforced/prison_hatch/proc/schedule_mend(delay = OUTPOST_CHECKPOINT_EMAG_TIME, restart = FALSE)
+	if(QDELETED(src))
+		return
+	yard_windoor()
+	staff_windoor()
+	if(mend_pending && !restart)
+		return
+	if(mend_timer_id)
+		deltimer(mend_timer_id)
+		mend_timer_id = null
+	mend_pending = TRUE
+	mend_due = world.time + delay
+	mend_timer_id = addtimer(CALLBACK(src, PROC_REF(mend_hatch)), delay, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// Whether either hatch window door is missing, cracked, emagged or propped open
+/obj/structure/table/reinforced/prison_hatch/proc/hatch_needs_mend()
+	var/obj/machinery/door/window/yard_door = yard_windoor()
+	var/obj/machinery/door/window/staff_door = staff_windoor()
+	if(!yard_door || !staff_door || !staff_door.density)
+		return TRUE
+	for(var/obj/machinery/door/window/windoor in list(yard_door, staff_door))
+		if(windoor.get_integrity() < windoor.max_integrity || (windoor.obj_flags & EMAGGED) || windoor.autoclose != initial(windoor.autoclose))
+			return TRUE
+	return FALSE
+
+/// Whether someone is on or climbing the counter, or an existing window door is mid-swing
+/obj/structure/table/reinforced/prison_hatch/proc/hatch_busy()
+	if(!isturf(loc))
+		return FALSE
+	for(var/mob/living/person in loc)
+		if(!QDELETED(person))
+			return TRUE
+	for(var/obj/machinery/door/window/windoor in loc)
+		if(windoor.operating)
+			return TRUE
+	var/datum/outpost_prison/prison = get_outpost_prison(src)
+	if(prison)
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
+			if(prisoner.climb_ref?.resolve() == src)
+				return TRUE
+	return FALSE
+
+/// Replaces shattered hatch window doors, restores cracked glass and shuts propped panels once clear
+/obj/structure/table/reinforced/prison_hatch/proc/mend_hatch()
+	mend_timer_id = null
+	if(QDELETED(src) || !isturf(loc) || !yard_dir)
+		mend_pending = FALSE
+		mend_due = 0
+		return
+	if(!hatch_needs_mend())
+		mend_pending = FALSE
+		mend_due = 0
+		return
+	if(hatch_busy())
+		schedule_mend(3 SECONDS, restart = TRUE)
+		return
+	mend_pending = FALSE
+	mend_due = 0
+	if(!yard_windoor())
+		new /obj/machinery/door/window/outpost_prison_yard(loc, yard_dir)
+	if(!staff_windoor())
+		new /obj/machinery/door/window/brigdoor/outpost_prison_staff(loc, REVERSE_DIR(yard_dir))
+	for(var/obj/machinery/door/window/windoor in loc)
+		if(!is_outpost_prison_windoor(windoor))
+			continue
+		windoor.obj_flags &= ~EMAGGED
+		windoor.autoclose = initial(windoor.autoclose)
+		if(windoor.get_integrity() < windoor.max_integrity)
+			windoor.update_integrity(windoor.max_integrity)
+		if(!windoor.density && !windoor.operating)
+			INVOKE_ASYNC(windoor, TYPE_PROC_REF(/obj/machinery/door/window, close))
+	do_sparks(2, TRUE, src)
+	visible_message(span_notice("Fresh glass locks into [src]'s frame."))
+	var/datum/outpost_prison/prison = get_outpost_prison(src)
+	prison?.add_log("A serving hatch's window doors were repaired.")
+	prison?.refresh_reach()
 
 // ===== RATIONS =====
 

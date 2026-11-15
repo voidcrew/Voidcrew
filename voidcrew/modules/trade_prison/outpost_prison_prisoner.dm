@@ -188,6 +188,7 @@
 /mob/living/carbon/human/npc/outpost_prisoner/Destroy()
 	end_activity(cancel_ai = FALSE)
 	clear_trouble()
+	clear_containment()
 	QDEL_NULL(boss_move)
 	contraband_clear_carried()
 	prison?.processing_leavers -= src

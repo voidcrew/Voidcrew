@@ -595,6 +595,62 @@
 	qdel(proc_mouse)
 	qdel(claim_jack)
 
+	// Lingering inside Processing during a live claim times out after 60s ('Clear the room.') without paying early, lets the hunter exit one door at a time, and resumes cleanly once outside
+	var/datum/criminal_bounty/linger_posting = board_test_posting(2, null, 950, 0)
+	var/datum/bounty_record/linger_record = linger_posting.record
+	var/mob/living/carbon/human/npc/bounty_criminal/linger_catch = board_test_criminal(linger_posting, outer_wait)
+	board_test_cuff(linger_catch)
+	hunter.start_pulling(linger_catch)
+	TEST_ASSERT(prison.try_start_processing_claim(hunter), "Processing did not open for linger-timeout check")
+	TEST_ASSERT(claim_wait_door(prison, outer, TRUE), "Outer door did not open for linger-timeout check")
+	hunter.stop_pulling()
+	linger_catch.forceMove(prison.processing_turfs[1])
+	hunter.forceMove(prison.processing_turfs[2])
+	warden_ears.lines.Cut()
+	COOLDOWN_RESET(warden, speak_cooldown)
+	prison.processing_tick(60) // OUTPOST_PRISON_PROCESSING_WAIT
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "A hunter lingering inside Processing for 60s did not release Processing back to idle") // OUTPOST_PROCESSING_IDLE
+	TEST_ASSERT(warden_ears.heard("Clear the room."), "Warden did not say 'Clear the room.' on claim linger timeout")
+	TEST_ASSERT(linger_posting.is_open() && !QDELETED(linger_catch), "Timing out a lingered claim closed the posting or deleted the catch")
+	TEST_ASSERT(claim_wait_door(prison, outer, FALSE), "Outer door did not shut after Processing returned to idle")
+	outer.Bumped(hunter)
+	TEST_ASSERT(claim_wait_door(prison, outer, TRUE), "Outer door did not reopen for the hunter exiting Processing")
+	hunter.forceMove(outer_wait)
+	TEST_ASSERT(claim_wait_door(prison, outer, FALSE), "Outer door did not shut after the hunter stepped out of Processing")
+	TEST_ASSERT_EQUAL(prison.claim_waiting_inside(hunter), linger_catch, "claim_waiting_inside() did not locate the cuffed catch left inside Processing")
+	TEST_ASSERT(prison.try_start_processing_claim(hunter), "try_start_processing_claim() did not resume the cuffed catch left inside Processing")
+	prison.processing_tick(1)
+	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Resumed waiting-inside claim did not finish cleanly")
+	TEST_ASSERT(QDELETED(linger_posting) && QDELETED(linger_catch), "Resumed waiting-inside claim did not settle the posting and criminal")
+	bounty_pool_remove(linger_record, "closed")
+
+	// Bombing lockup guards and calm prisoners reports assault_staff and assault_civilian with bomb evidence
+	var/datum/outpost_police/real_claim_police = outpost.police
+	var/datum/outpost_police/cell_test/bomb_police = allocate(/datum/outpost_police/cell_test, outpost)
+	outpost.police = bomb_police
+	var/turf/bomb_spot = prison.cells[1].arrival_turf()
+	var/mob/living/carbon/human/npc/outpost_prison_guard/bomb_guard = guard_test_spawn(prison, bomb_spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/bomb_prisoner = test_prisoner(prison, bomb_spot)
+	var/obj/item/grenade/bomb_item = allocate(/obj/item/grenade)
+	outpost_note_armed(bomb_item, drifter)
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(bomb_item, list(bomb_guard, bomb_prisoner))
+	var/saw_guard_bomb = FALSE
+	var/saw_prisoner_bomb = FALSE
+	for(var/list/entry as anything in bomb_police.crimes)
+		if(entry[1] != drifter || entry[3] != bomb_item)
+			continue
+		if(entry[2] == "assault_staff") // OUTPOST_CRIME_ASSAULT_STAFF
+			saw_guard_bomb = TRUE
+		if(entry[2] == "assault_civilian") // OUTPOST_CRIME_ASSAULT_CIVILIAN
+			saw_prisoner_bomb = TRUE
+	TEST_ASSERT(saw_guard_bomb, "Bombing an on-duty lockup guard did not report assault_staff with the bomb as evidence")
+	TEST_ASSERT(saw_prisoner_bomb, "Bombing a calm lockup prisoner did not report assault_civilian with the bomb as evidence")
+	TEST_ASSERT_EQUAL(bomb_guard.last_player_attacker_ref?.resolve(), drifter, "Bombing a lockup guard did not credit the bomber on last_player_attacker_ref")
+	qdel(bomb_guard)
+	qdel(bomb_prisoner)
+	qdel(bomb_item)
+	outpost.police = real_claim_police
+
 	// Dead warden at the desk: Processing outer door refuses to open for a cuffed catch
 	var/datum/criminal_bounty/no_warden_posting = board_test_posting(2, null, 1000, 1)
 	var/mob/living/carbon/human/npc/bounty_criminal/no_warden_catch = board_test_criminal(no_warden_posting, outer_wait)

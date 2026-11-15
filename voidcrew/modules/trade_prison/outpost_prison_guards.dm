@@ -202,6 +202,41 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!equip_to_slot_if_possible(baton, ITEM_SLOT_BELT, disable_warning = TRUE))
 		baton.equip_to_best_slot(src)
 
+/mob/living/carbon/human/npc/outpost_prison_guard/npc_update_internals()
+	if(!npc_internals || HAS_TRAIT(src, TRAIT_NOBREATH))
+		return
+	if(stat > SOFT_CRIT || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))
+		return
+	var/obj/item/organ/lungs/lungs = get_organ_slot(ORGAN_SLOT_LUNGS)
+	if(lungs && (lungs.safe_plasma_min > 0 || lungs.safe_nitro_min > 0))
+		return
+	var/turf/spot = get_turf(src)
+	var/air_bad = outpost_prison_unsafe_air(spot?.return_air()) || (lungs && human_npc_air_hurts(spot, lungs, margin = internal ? HUMAN_NPC_AIR_MARGIN : 0))
+	var/obj/item/clothing/mask/breath/breath_mask = wear_mask
+	if(air_bad)
+		if(stat == CONSCIOUS && istype(breath_mask) && breath_mask.up)
+			breath_mask.adjust_visor(src)
+		if(!internal)
+			npc_open_internals()
+		return
+	if(internal && !external)
+		close_internals()
+	if(stat == CONSCIOUS && !internal && istype(breath_mask) && !breath_mask.up)
+		breath_mask.adjust_visor(src)
+
+/// Whether this guard is breathing from a pressurized tank through a working mask
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/has_working_internals()
+	return !!internal && can_breathe_internals() && internal.air_contents?.return_pressure() > TANK_DEFAULT_RELEASE_PRESSURE
+
+/// Whether `air` has pressure or temperature extremes that an unsealed vest and breath mask cannot keep out
+/proc/outpost_guard_unsuited_air(datum/gas_mixture/air)
+	if(!air)
+		return TRUE
+	var/pressure = air.return_pressure()
+	if(pressure < HAZARD_LOW_PRESSURE || pressure > HAZARD_HIGH_PRESSURE)
+		return TRUE
+	return air.temperature < PRISON_AIR_TEMP_MIN || air.temperature > BODYTEMP_HEAT_DAMAGE_LIMIT
+
 // ===== REFUSALS =====
 
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/refuse_teleport(datum/source, atom/destination, channel)
@@ -622,7 +657,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	response = new(kind, key, priority, target, spot)
 	response.expires_at = world.time + OUTPOST_GUARD_RESPONSE_TIMEOUT
 	set_prison_pace(hurry = TRUE)
-	set_baton(kind != "crit" && kind != "corpse" && kind != "leash")
+	set_baton(kind != "crit" && kind != "corpse" && kind != "leash" && kind != "bad_air")
 	ai_controller?.CancelActions()
 	return response
 
@@ -676,6 +711,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			done = riot_response(job)
 		if("leash")
 			done = leash_response(job)
+		if("bad_air")
+			done = bad_air_response(job)
 		else
 			done = TRUE
 	if(done)
@@ -853,6 +890,17 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return TRUE
 	if(!job.spot)
 		job.spot = prison.guard_office_spot(src)
+	if(!job.spot)
+		return TRUE
+	job.set_goal(loc != job.spot ? job.spot : null)
+	return FALSE
+
+/// Bad air where they stand: steps back to a breathable office tile
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/bad_air_response(datum/outpost_guard_response/job)
+	if(!outpost_prison_unsafe_air(loc?.return_air()))
+		return TRUE
+	if(!job.spot || outpost_prison_unsafe_air(job.spot.return_air()))
+		job.spot = prison.guard_safe_office_spot(src)
 	if(!job.spot)
 		return TRUE
 	job.set_goal(loc != job.spot ? job.spot : null)
@@ -1299,12 +1347,23 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				guard.shake_off_pull()
 				if(guard.fresh_on_shift && !(get_turf(guard) in staff_closet_turfs))
 					guard.announce_arrival()
-				// Bad air in the wing (a breach, a fire): guards carry no air of their own, so they go off shift
-				// until the wing is fit to stand in again (spawn_guard()).
+				guard.npc_update_internals()
+				// Bad air in the wing: guards flip their breath mask down and open their oxygen tank, step back to
+				// safe office ground when idle or unsuited (vacuum, fire, freeze), and go off shift only when the
+				// air beats their kit and no watched safe retreat remains.
 				if(guard.stat == CONSCIOUS && outpost_prison_unsafe_air(guard.loc?.return_air()))
-					guard.say_guard("recalled")
-					add_log("[guard.real_name] was called off the wing: bad air.")
-					guard.go_off(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
+					var/protected = guard.has_working_internals() && !outpost_guard_unsuited_air(guard.loc?.return_air())
+					var/turf/safe_spot = guard_safe_office_spot(guard)
+					if(!protected)
+						if(safe_spot && guard.ai_running())
+							if(guard.response?.kind != "bad_air" || guard.response.priority < OUTPOST_GUARD_PRIORITY_LEASH)
+								guard.give_response("bad_air", OUTPOST_GUARD_PRIORITY_LEASH, "bad_air", null, safe_spot)
+						else
+							guard.say_guard("recalled")
+							add_log("[guard.real_name] was called off the wing: bad air.")
+							guard.go_off(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
+					else if(!guard.response && safe_spot && guard.ai_running())
+						guard.give_response("bad_air", 0, "bad_air", null, safe_spot)
 	guard_rounds_tick(seconds)
 	guard_check_clock += seconds
 	if(guard_check_clock >= OUTPOST_GUARD_CHECK_SECONDS)
@@ -1608,7 +1667,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return
 	if(riot_active)
 		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
-			if(guard.response?.kind == "riot")
+			if(guard.response?.kind == "riot" || (guard.response?.kind == "bad_air" && guard.response.priority >= OUTPOST_GUARD_PRIORITY_LEASH))
 				continue
 			guard.give_response("riot", OUTPOST_GUARD_PRIORITY_RIOT, "riot", null, null)
 			guard.say_guard("riot_call")
@@ -2132,6 +2191,25 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			best_distance = distance
 	return best
 
+/// Nearest breathable office tile to `except`, preferring a tile no other guard has claimed
+/datum/outpost_prison/proc/guard_safe_office_spot(mob/living/except)
+	var/turf/best
+	var/best_distance = INFINITY
+	var/turf/fallback
+	var/fallback_distance = INFINITY
+	for(var/turf/tile as anything in office_ground())
+		if(!guard_office_tile(tile) || outpost_prison_unsafe_air(tile.return_air()))
+			continue
+		var/distance = except ? get_dist(except, tile) : 0
+		if(!guard_spot_taken(tile, except))
+			if(distance < best_distance)
+				best = tile
+				best_distance = distance
+		else if(distance < fallback_distance)
+			fallback = tile
+			fallback_distance = distance
+	return best || fallback
+
 
 /// The office tile farthest from the staff doors into the cell block, for a hurt guard to fall back to
 /datum/outpost_prison/proc/guard_fallback_spot(mob/living/except)
@@ -2226,15 +2304,18 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /**
  * A corrections officer: pale blue shirt and tie over navy trousers, a blue-trimmed vest and helmet,
- * black gloves and combat boots, and an earpiece. No red, no orange (that's the inmates). The stun
- * baton rides on the belt and is drawn only when they use it (set_baton()); a bruise pack in a pocket
- * for their own scrapes. Locked to them (D3): none of it is ever loot.
+ * a breath mask pushed up until the air turns bad with an oxygen tank on their back, black gloves and
+ * combat boots, and an earpiece. No red, no orange (that's the inmates). The stun baton rides on the
+ * belt and is drawn only when they use it (set_baton()); a bruise pack in a pocket for their own
+ * scrapes. Locked to them (D3): none of it is ever loot.
  */
 /datum/outfit/outpost_prison_guard
 	name = "Outpost prison guard"
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt
 	suit = /obj/item/clothing/suit/armor/vest/blueshirt
 	head = /obj/item/clothing/head/helmet/blueshirt
+	mask = /obj/item/clothing/mask/breath
+	back = /obj/item/tank/internals/oxygen
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
 	ears = /obj/item/radio/headset

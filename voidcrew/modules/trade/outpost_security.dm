@@ -445,6 +445,15 @@ GLOBAL_DATUM(outpost_cluster_armer, /datum/weakref)
 		if(istype(local, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 			var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/staff = local
 			staff.outpost?.register_aggression(bomber, OUTPOST_CRIME_ASSAULT_STAFF, staff, bomb)
+		else if(is_ai_outpost_prison_guard(local))
+			var/mob/living/carbon/human/npc/outpost_prison_guard/guard = local
+			guard.struck_source_ref = bomb ? WEAKREF(bomb) : null
+			guard.struck_source_at = world.time
+		else if(is_outpost_prisoner(local))
+			var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = local
+			var/inmate_in_block = !!prisoner.prison && prisoner.prison.is_inmate(bomber) && prisoner.prison.in_cell_block(bomber)
+			if(!inmate_in_block && !outpost_prisoner_loose(prisoner) && prisoner.prison?.outpost)
+				prisoner.prison.outpost.register_aggression(bomber, OUTPOST_CRIME_ASSAULT_CIVILIAN, prisoner, bomb)
 		else if(istype(local, /mob/living/carbon/human/npc/ambient_npc))
 			var/mob/living/carbon/human/npc/ambient_npc/townsperson = local
 			if(istype(townsperson.place, /datum/ambient_place/outpost))
@@ -453,6 +462,9 @@ GLOBAL_DATUM(outpost_cluster_armer, /datum/weakref)
 		SEND_SIGNAL(local, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
 	for(var/mob/living/visitor as anything in visitors)
 		register_pvp_aggression(visitor, bomber, OUTPOST_CRIME_ASSAULT_ARMED, bomb)
+		var/datum/outpost_prison/visitor_prison = get_outpost_prison(visitor)
+		if(visitor_prison?.is_inmate(visitor))
+			SEND_SIGNAL(visitor, COMSIG_ATOM_WAS_ATTACKED, bomber, ATTACKER_DAMAGING_ATTACK)
 
 /**
  * # Outpost Airlock

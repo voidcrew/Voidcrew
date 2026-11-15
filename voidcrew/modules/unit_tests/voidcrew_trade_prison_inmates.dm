@@ -378,7 +378,43 @@
 	inmate.set_resting(FALSE)
 	inmate.set_body_position(STANDING_UP)
 	TEST_ASSERT(HAS_TRAIT(inmate, "no_containment"), "Standing back up did not restore no_containment") // TRAIT_NO_CONTAINMENT
+
+	// Voluntary resting keeps containment refusal and never fools inmate_down_for_guard(); containers holding a downed inmate or prisoner refuse bluespace folding, teleports, pads and offers
+	inmate.set_resting(TRUE)
+	inmate.set_body_position(LYING_DOWN)
+	TEST_ASSERT(HAS_TRAIT(inmate, "no_containment") && !box.insertion_allowed(inmate), "Voluntary resting let a conscious inmate slip into a crate") // TRAIT_NO_CONTAINMENT
+	TEST_ASSERT(!prison.inmate_down_for_guard(inmate), "Voluntary resting fooled inmate_down_for_guard()")
+	inmate.set_resting(FALSE)
+	inmate.set_body_position(STANDING_UP)
 	qdel(box)
+
+	var/mob/living/carbon/human/bag_helper = make_player(yard_tile, "lockupbaghelper")
+	var/obj/structure/closet/body_bag/bluespace/bbag = allocate(/obj/structure/closet/body_bag/bluespace, yard_tile)
+	bbag.open()
+	inmate.Knockdown(10 SECONDS)
+	inmate.forceMove(bbag)
+	bbag.close()
+	TEST_ASSERT(!bbag.attempt_fold(bag_helper), "Bluespace body bag folded with a living held inmate inside")
+	TEST_ASSERT(!do_teleport(bbag, front_tile, channel = TELEPORT_CHANNEL_BLUESPACE, no_effects = TRUE) && get_turf(bbag) == yard_tile, "do_teleport() moved a container holding a held inmate")
+	TEST_ASSERT(bounty_blocks_transport(bbag), "bounty_blocks_transport() allowed a container holding a held inmate")
+	TEST_ASSERT(!isnull(bounty_offer_refusal(list(bbag))), "bounty_offer_refusal() allowed a container holding a held inmate")
+	bbag.open()
+	inmate.forceMove(yard_tile)
+	inmate.SetKnockdown(0)
+	inmate.set_body_position(STANDING_UP)
+	var/mob/living/carbon/human/npc/outpost_prisoner/bagged_prisoner = test_prisoner(prison, yard_tile)
+	bagged_prisoner.Knockdown(10 SECONDS)
+	bagged_prisoner.forceMove(bbag)
+	bbag.close()
+	TEST_ASSERT(!bbag.attempt_fold(bag_helper), "Bluespace body bag folded with a living lockup prisoner inside")
+	TEST_ASSERT(!do_teleport(bbag, front_tile, channel = TELEPORT_CHANNEL_BLUESPACE, no_effects = TRUE) && get_turf(bbag) == yard_tile, "do_teleport() moved a container holding a living lockup prisoner")
+	TEST_ASSERT(bounty_blocks_transport(bbag), "bounty_blocks_transport() allowed a container holding a living lockup prisoner")
+	bbag.open()
+	bagged_prisoner.forceMove(yard_tile)
+	qdel(bagged_prisoner)
+	qdel(bbag)
+	bag_helper.key = null
+	qdel(bag_helper)
 
 	// Friend pulling a downed inmate out gets the jailbreak charge; inmate keeps their hold and return_left waits until they can walk
 	var/mob/living/carbon/human/friend = make_player(front_tile, "lockupfriend")
@@ -398,6 +434,49 @@
 	inmate.forceMove(yard_tile)
 	prison.inmate_tick(1)
 	TEST_ASSERT_EQUAL(sentence.return_left, 0, "Returning inside the cell block did not clear return_left")
+
+	// Carried-out inmate within their 20 s return grace can walk back through Processing one door at a time, clearing return_left on entry
+	var/obj/machinery/door/airlock/security/prison_staff/processing/proc_inner = prison.processing_door(TRUE)
+	var/obj/machinery/door/airlock/security/prison_staff/processing/proc_outer = prison.processing_door(FALSE)
+	var/turf/proc_outer_wait = prison.processing_outside_turf(proc_outer)
+	var/turf/proc_inner_wait = prison.processing_outside_turf(proc_inner)
+	inmate.Knockdown(10 SECONDS)
+	inmate.pulledby = friend
+	inmate.forceMove(proc_outer_wait)
+	prison.inmate_tick(1)
+	TEST_ASSERT_EQUAL(sentence.return_left, 20, "Carried-out inmate at Processing did not get 20 s to return") // OUTPOST_POLICE_CELL_RETURN
+	inmate.pulledby = null
+	inmate.SetKnockdown(0)
+	inmate.set_body_position(STANDING_UP)
+	proc_outer.Bumped(inmate)
+	TEST_ASSERT_EQUAL(prison.processing_state, "returning", "Bumping Processing's outer door during return grace did not start returning") // OUTPOST_PROCESSING_RETURN
+	for(var/step_i in 1 to 20)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once during inmate return")
+		if(!proc_outer.operating && !proc_outer.density)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(!proc_outer.density && proc_inner.density, "Outer Processing door did not open with inner shut for returning inmate")
+	inmate.forceMove(prison.processing_turfs[1])
+	TEST_ASSERT_EQUAL(sentence.return_left, 0, "Stepping into Processing did not immediately clear return_left")
+	for(var/step_i in 1 to 30)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while cycling returning inmate inward")
+		if(!proc_inner.operating && !proc_inner.density)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(!proc_inner.density && proc_outer.density, "Inner Processing door did not open with outer shut for returning inmate")
+	inmate.forceMove(yard_tile)
+	for(var/step_i in 1 to 20)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while closing behind returning inmate")
+		if(prison.processing_state == "idle" && proc_inner.density && !proc_inner.operating)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(prison.processing_state == "idle" && proc_inner.density && proc_outer.density && prison.holds(inmate.mind), "Returning inmate cycle did not settle Processing cleanly with custody intact") // OUTPOST_PROCESSING_IDLE
 
 	// Voluntary resting or hiding in an unlocked closet outside the wing still ticks return_left; brief flooring pauses without inflating return_left back to 20 s
 	var/mob/living/carbon/human/active_inmate = police_arrest_person(yard_tile)
@@ -668,7 +747,67 @@
 	inmate.setOxyLoss(0)
 	inmate.updatehealth()
 
-	// Death in custody: ends sentence, closes warrant as served, leaves body intact with ID, queues carry-out, and opens Processing doors when no guard can carry
+	// Guard internals in bad air: breath mask starts flipped up, flips down with oxygen tank open in plasma without vanishing off shift, and stows when air clears
+	var/obj/item/clothing/mask/breath/guard_mask = guard.wear_mask
+	TEST_ASSERT(istype(guard_mask) && guard_mask.up && istype(guard.back, /obj/item/tank/internals/oxygen) && isnull(guard.internal), "Guard did not spawn with an oxygen tank and flipped-up breath mask")
+	var/datum/gas_mixture/yard_air = yard_tile.return_air()
+	var/old_plasma = yard_air.gases[/datum/gas/plasma] ? yard_air.gases[/datum/gas/plasma][MOLES] : 0
+	yard_air.assert_gas(/datum/gas/plasma)
+	yard_air.gases[/datum/gas/plasma][MOLES] = 5
+	prison.guards_tick(1)
+	TEST_ASSERT_EQUAL(guard.phase, "present", "Guard vanished off shift on 1 tick of plasma instead of opening internals") // OUTPOST_GUARD_PRESENT
+	TEST_ASSERT(!guard_mask.up && !isnull(guard.internal), "Guard did not flip their breath mask down and open their oxygen tank in plasma")
+	yard_air.gases[/datum/gas/plasma][MOLES] = old_plasma
+	yard_air.garbage_collect()
+	prison.guards_tick(1)
+	guard.end_response(cancel_ai = FALSE)
+	TEST_ASSERT(isnull(guard.internal) && guard_mask.up, "Guard did not close internals and push their breath mask back up once air cleared")
+
+	// Projectile and mecha-pilot attacker attribution on prisoners and inmates
+	var/obj/projectile/bullet/test_shot = allocate(/obj/projectile/bullet, yard_tile)
+	test_shot.firer = visitor
+	witness_prisoner.bullet_act(test_shot, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(witness_prisoner.last_player_attacker_ref?.resolve(), visitor, "Handheld projectile hit on a prisoner did not record the shooter on last_player_attacker_ref")
+	qdel(test_shot)
+	witness_prisoner.last_player_attacker_ref = null
+	var/obj/vehicle/sealed/mecha/ripley/test_mech = allocate(/obj/vehicle/sealed/mecha/ripley, yard_tile)
+	test_mech.mob_enter(visitor, silent = TRUE)
+	var/obj/projectile/bullet/mech_shot = allocate(/obj/projectile/bullet, yard_tile)
+	mech_shot.firer = test_mech
+	witness_prisoner.bullet_act(mech_shot, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(witness_prisoner.last_player_attacker_ref?.resolve(), visitor, "Mecha gunfire on a prisoner did not unwrap the pilot onto last_player_attacker_ref")
+	qdel(mech_shot)
+	test_mech.mob_exit(visitor, silent = TRUE)
+	test_mech.mob_enter(inmate, silent = TRUE)
+	TEST_ASSERT(prison.note_inmate_attack(test_mech, witness_prisoner, ATTACKER_DAMAGING_ATTACK) && prison.inmate_baton_warranted(inmate), "An inmate attacking from inside a mecha did not unwrap the pilot for baton enforcement")
+	sentence.baton_until = 0
+	test_mech.mob_exit(inmate, silent = TRUE)
+	qdel(test_mech)
+
+	// Polymorph & type-change refusal, mind-transfer escape, and non-death qdel warrant preservation
+	var/mob/living/carbon/human/morph_inmate = make_player(yard_tile, "lockupmorph")
+	var/datum/mind/morph_mind = morph_inmate.mind
+	var/datum/outpost_warrant/morph_warrant = police_pin_warrant(police, morph_mind, 55) // 3 stars
+	prison.admit_inmate_sentence(morph_inmate, morph_warrant, 3)
+	TEST_ASSERT_NULL(morph_inmate.wabbajack(), "wabbajack() polymorphed a held lockup inmate")
+	TEST_ASSERT_NULL(morph_inmate.change_mob_type(/mob/living/basic/mouse, null, null, TRUE), "change_mob_type() converted and deleted a held lockup inmate")
+	TEST_ASSERT(!QDELETED(morph_inmate) && prison.holds(morph_mind), "Blocked polymorph or type change dropped the inmate's hold")
+	var/mob/living/carbon/human/swap_body = allocate(/mob/living/carbon/human, front_tile)
+	morph_mind.transfer_to(swap_body, TRUE)
+	prison.inmate_tick(1)
+	TEST_ASSERT(!prison.holds(morph_mind) && police.get_warrant(morph_mind) == morph_warrant && police.get_stars(morph_mind) >= 3, "Mind-swapping out of the cell block dropped the inmate's warrant instead of reporting an escape")
+	swap_body.forceMove(yard_tile)
+	prison.admit_inmate_sentence(swap_body, morph_warrant, 3)
+	TEST_ASSERT(prison.holds(morph_mind), "Setup: re-booked swap_body is not held")
+	swap_body.key = null
+	qdel(swap_body)
+	prison.inmate_tick(1)
+	TEST_ASSERT(!prison.holds(morph_mind), "Deleting a live inmate body left an orphaned sentence hold")
+	TEST_ASSERT_EQUAL(police.get_warrant(morph_mind), morph_warrant, "Deleting a live inmate body without death closed their 3-star warrant as served")
+	morph_inmate.key = null
+	qdel(morph_inmate)
+
+	// Death in custody: ends sentence, closes warrant as served, leaves body intact with ID, queues carry-out, and cycles Processing one door at a time when no guard can carry
 	var/obj/item/card/id/advanced/inmate_id = allocate(/obj/item/card/id/advanced)
 	inmate.equip_to_slot_or_del(inmate_id, ITEM_SLOT_ID, initial = TRUE)
 	inmate.death()
@@ -680,6 +819,72 @@
 	TEST_ASSERT(prison.has_able_corpse_guard() && !prison.corpse_doors_open(), "Processing fallback opened with an able on-duty guard present")
 	guard.death()
 	TEST_ASSERT(!prison.has_able_corpse_guard() && prison.corpse_doors_open(), "corpse_doors_open() did not engage when no guard could carry the body out")
+	prison.processing_tick(1)
+	TEST_ASSERT(proc_inner.density && proc_outer.density, "corpse_doors_open() swung Processing's doors open while idle instead of cycling one door at a time")
+	friend.forceMove(proc_outer_wait)
+	proc_outer.Bumped(friend)
+	TEST_ASSERT_EQUAL(prison.processing_state, "corpse", "Visitor bumping outer during corpse fallback did not start corpse cycling") // OUTPOST_PROCESSING_CORPSE
+	for(var/step_i in 1 to 20)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while letting corpse-recovery visitor in")
+		if(!proc_outer.operating && !proc_outer.density)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(!proc_outer.density && proc_inner.density, "Outer door did not open with inner shut for corpse-recovery visitor")
+	friend.forceMove(prison.processing_turfs[1])
+	for(var/step_i in 1 to 30)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while cycling corpse-recovery visitor to yard")
+		if(!proc_inner.operating && !proc_inner.density)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(!proc_inner.density && proc_outer.density, "Inner door did not open with outer shut for corpse-recovery visitor")
+	friend.forceMove(proc_inner_wait)
+	for(var/step_i in 1 to 20)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while closing behind visitor in yard")
+		if(prison.processing_state == "idle" && proc_inner.density && !proc_inner.operating)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	inmate.forceMove(proc_inner_wait)
+	TEST_ASSERT(friend.start_pulling(inmate), "Visitor could not pull dead inmate for corpse carry-out")
+	proc_inner.Bumped(friend)
+	TEST_ASSERT_EQUAL(prison.processing_state, "corpse", "Visitor pulling dead inmate at inner door did not start corpse exit cycle") // OUTPOST_PROCESSING_CORPSE
+	for(var/step_i in 1 to 20)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while opening inner for corpse exit")
+		if(!proc_inner.operating && !proc_inner.density)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	friend.stop_pulling()
+	inmate.forceMove(prison.processing_turfs[1])
+	friend.forceMove(prison.processing_turfs[2])
+	friend.start_pulling(inmate)
+	for(var/step_i in 1 to 30)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while cycling dead inmate out to front room")
+		if(!proc_outer.operating && !proc_outer.density)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(proc_inner.density && !proc_outer.density, "Outer door did not open with inner shut for corpse exit")
+	friend.stop_pulling()
+	inmate.forceMove(front_tile)
+	friend.forceMove(front_tile)
+	for(var/step_i in 1 to 20)
+		TEST_ASSERT(proc_inner.density || proc_outer.density, "Both Processing doors opened at once while closing after corpse exit")
+		if(prison.processing_state == "idle" && proc_outer.density && !proc_outer.operating)
+			break
+		if(step_i % 2)
+			prison.processing_tick(1)
+		sleep(0.5 SECONDS)
+	TEST_ASSERT_NULL(prison.next_dead_inmate_body(), "Dead inmate carried into the front room stayed queued in dead_inmate_bodies")
+	inmate.forceMove(yard_tile)
+	prison.dead_inmate_bodies |= WEAKREF(inmate)
 	inmate.set_stat(CONSCIOUS)
 	prison.prune_dead_inmate_bodies()
 	TEST_ASSERT(!(WEAKREF(inmate) in prison.dead_inmate_bodies), "Reviving a dead inmate in the yard left them in dead_inmate_bodies")

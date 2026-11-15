@@ -44,12 +44,17 @@
 	var/datum/weakref/bolt_hacker
 	/// Tool or assembly used when WIRE_BOLTS lifted the bolts
 	var/datum/weakref/bolt_hack_tool
+	/// Stoppable timer handle for `mend_hack()`
+	var/mend_timer_id
 
 /datum/lockup_door_state/New(obj/machinery/door/airlock/owner)
 	. = ..()
 	door = owner
 
 /datum/lockup_door_state/Destroy()
+	if(mend_timer_id)
+		deltimer(mend_timer_id)
+		mend_timer_id = null
 	door = null
 	last_hacker = null
 	last_hack_tool = null
@@ -77,8 +82,8 @@
 		return cell_door.mend_pending
 	return FALSE
 
-/// `who` worked on `door` with `tool`: they answer for what it does next, and the mend timer starts
-/datum/lockup_door_state/proc/note_hack(mob/living/who, obj/item/tool = null)
+/// `who` worked on `door` with `tool`: they answer for what it does next, and the mend timer starts (or restarts on breach)
+/datum/lockup_door_state/proc/note_hack(mob/living/who, obj/item/tool = null, restart = FALSE)
 	if(mending || QDELETED(door))
 		return
 	if(isliving(who))
@@ -91,10 +96,13 @@
 			last_hack_tool = null
 		if(istype(door, /obj/machinery/door/airlock/security/prison_staff))
 			get_outpost_prison(door)?.note_inmate_breakout(who, door)
-	if(is_mend_pending())
+	if(is_mend_pending() && !restart)
 		return
+	if(mend_timer_id)
+		deltimer(mend_timer_id)
+		mend_timer_id = null
 	set_mend_state(TRUE, world.time + OUTPOST_CHECKPOINT_EMAG_TIME)
-	addtimer(CALLBACK(src, PROC_REF(mend_hack)), OUTPOST_CHECKPOINT_EMAG_TIME, TIMER_DELETE_ME)
+	mend_timer_id = addtimer(CALLBACK(src, PROC_REF(mend_hack)), OUTPOST_CHECKPOINT_EMAG_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /// Whoever worked the door in the last few seconds, or null
 /datum/lockup_door_state/proc/hack_culprit()
@@ -190,13 +198,14 @@
 
 /// Mends the door once nobody stands in the doorway: panel shut, wires whole, power and bolts back, and closed
 /datum/lockup_door_state/proc/mend_hack()
+	mend_timer_id = null
 	if(QDELETED(door))
 		return
 	if(!still_hacked() && door.density)
 		set_mend_state(FALSE, 0)
 		return
 	if(door.operating || doorway_occupied() || processing_exit_blocked())
-		addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
+		mend_timer_id = addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_STOPPABLE | TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	set_mend_state(FALSE, 0)
 	mending = TRUE
@@ -259,7 +268,7 @@
 	if(!door.density)
 		breached_open = TRUE
 		set_mend_state(TRUE, world.time + 3 SECONDS)
-		addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
+		mend_timer_id = addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_STOPPABLE | TIMER_UNIQUE | TIMER_DELETE_ME)
 		get_outpost_prison(door)?.refresh_reach()
 		return
 	if(wanted_bolts() && !door.locked)
@@ -275,7 +284,7 @@
 	bolt_hacker = null
 	bolt_hack_tool = null
 	door.autoclose = FALSE
-	note_hack(culprit, tool)
+	note_hack(culprit, tool, TRUE)
 	log_game("OUTPOST LOCKUP: [culprit ? key_name(culprit) : "nobody known"] hacked [door] open at [AREACOORD(door)].")
 	var/datum/outpost_prison/prison = get_outpost_prison(door)
 	prison?.refresh_reach()
@@ -531,8 +540,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 /obj/machinery/door/airlock/security/prison_staff/proc/lockup_breached()
 	return rioter_broken || !!lockup_hack?.breached_open
 
-/obj/machinery/door/airlock/security/prison_staff/proc/note_hack(mob/living/who, obj/item/tool = null)
-	lockup_hack?.note_hack(who, tool)
+/obj/machinery/door/airlock/security/prison_staff/proc/note_hack(mob/living/who, obj/item/tool = null, restart = FALSE)
+	lockup_hack?.note_hack(who, tool, restart)
 
 /obj/machinery/door/airlock/security/prison_staff/proc/door_hacked_open(mob/living/culprit, obj/item/tool = null)
 	lockup_hack?.door_hacked_open(culprit, tool)
@@ -656,7 +665,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 		if(lockup_hack)
 			lockup_hack.breached_open = TRUE
 		visible_message(span_danger("[src] gives way!"))
-		note_hack(null)
+		note_hack(null, null, TRUE)
 		INVOKE_ASYNC(src, PROC_REF(open_battered))
 		return TRUE
 	return FALSE
@@ -771,8 +780,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 /obj/machinery/door/airlock/security/glass/outpost_prison_cell/proc/lockup_breached()
 	return !!lockup_hack?.breached_open
 
-/obj/machinery/door/airlock/security/glass/outpost_prison_cell/proc/note_hack(mob/living/who, obj/item/tool = null)
-	lockup_hack?.note_hack(who, tool)
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell/proc/note_hack(mob/living/who, obj/item/tool = null, restart = FALSE)
+	lockup_hack?.note_hack(who, tool, restart)
 
 /obj/machinery/door/airlock/security/glass/outpost_prison_cell/proc/door_hacked_open(mob/living/culprit, obj/item/tool = null)
 	lockup_hack?.door_hacked_open(culprit, tool)

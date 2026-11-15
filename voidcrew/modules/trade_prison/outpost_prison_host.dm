@@ -119,13 +119,17 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			var/datum/outpost_prison/prison = get_outpost_prison(src)
 			if(prison && !prison.in_processing(bot) && get_turf(bot) != loc)
 				return FALSE
-	if((lockup_breached() || get_outpost_prison(src)?.corpse_doors_open()) && !density)
+	if(lockup_breached() && !density)
 		return ..()
 	if(isliving(mover) && !lets_prisoner(mover))
 		var/mob/living/living_mover = mover
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
 		var/mob/living/who = prison?.processing_who()
-		var/towed_by_who = prison?.processing_state == OUTPOST_PROCESSING_CROSS && isliving(who) && who.pulling == living_mover && living_mover.pulledby == who && (living_mover.moving_from_pull == who || HAS_TRAIT(living_mover, TRAIT_RESTRAINED) || living_mover.stat != CONSCIOUS || living_mover.body_position == LYING_DOWN)
+		var/towed_by_who = FALSE
+		if(prison?.processing_state == OUTPOST_PROCESSING_CROSS && isliving(who))
+			towed_by_who = who.pulling == living_mover && living_mover.pulledby == who && (living_mover.moving_from_pull == who || HAS_TRAIT(living_mover, TRAIT_RESTRAINED) || living_mover.stat != CONSCIOUS || living_mover.body_position == LYING_DOWN)
+		else if(prison?.processing_state == OUTPOST_PROCESSING_CORPSE && isliving(who))
+			towed_by_who = living_mover.stat == DEAD && !prison.is_inmate(living_mover) && ((who.pulling == living_mover && living_mover.pulledby == who) || living_mover.buckled == who)
 		if(prison && !towed_by_who && !prison.in_processing(living_mover) && get_turf(living_mover) != loc)
 			return FALSE
 	return ..()
@@ -144,8 +148,6 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			return TRUE
 		if(isliving(requester) && !is_outpost_prisoner(requester))
 			var/datum/outpost_prison/prison = get_outpost_prison(src)
-			if(prison?.corpse_doors_open())
-				return TRUE
 			return !!prison && (prison.in_processing(requester) || get_turf(requester) == loc)
 	return FALSE
 
@@ -159,30 +161,51 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 	return !!prison && prison.claim_lets_enter(mover)
 
 /obj/machinery/door/airlock/security/prison_staff/processing/outer/Bumped(atom/movable/AM)
-	var/mob/living/mover = AM
-	if(istype(mover) && density)
+	var/mob/living/mover = isliving(AM) ? AM : null
+	var/mob/living/puller = (!mover && isliving(AM?.pulledby) && AM.pulledby.pulling == AM) ? AM.pulledby : null
+	if((mover || puller) && density)
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
 		if(prison)
-			if(prison.in_processing(mover) && (WEAKREF(mover) in prison.processing_release_refs))
+			if(mover && prison.in_processing(mover) && (WEAKREF(mover) in prison.processing_release_refs))
 				prison.try_start_processing_release(mover)
 				return
 			var/mob/living/deliverer
-			if(prison.claim_held_catch(mover))
+			if(mover && (prison.claim_held_catch(mover) || prison.claim_waiting_inside(mover)))
 				deliverer = mover
-			else if(isliving(mover.pulledby) && mover.pulledby.pulling == mover)
+			else if(mover && isliving(mover.pulledby) && mover.pulledby.pulling == mover)
 				deliverer = mover.pulledby
-			else if(isliving(mover.buckled))
+			else if(mover && isliving(mover.buckled))
 				deliverer = mover.buckled
 			if(deliverer && prison.in_front_room(deliverer) && prison.try_start_processing_claim(deliverer))
+				return
+			if(mover && prison.is_inmate(mover) && prison.in_front_room(mover) && prison.try_start_processing_inmate_return(mover))
+				return
+			var/mob/living/actor = mover || puller
+			if(actor && prison.in_processing(actor) && prison.try_start_processing_corpse(actor, FALSE))
+				return
+			if(actor && prison.in_front_room(actor) && prison.try_start_processing_corpse(actor, TRUE))
 				return
 	return ..()
 
 /obj/machinery/door/airlock/security/prison_staff/processing/outer/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	if(isliving(user) && density && !access_bypass)
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
-		if(prison && prison.in_front_room(user) && prison.claim_held_catch(user) && prison.try_start_processing_claim(user))
-			add_fingerprint(user)
-			return
+		if(prison)
+			if(prison.in_processing(user) && (WEAKREF(user) in prison.processing_release_refs) && prison.try_start_processing_release(user))
+				add_fingerprint(user)
+				return
+			if(prison.in_front_room(user) && (prison.claim_held_catch(user) || prison.claim_waiting_inside(user)) && prison.try_start_processing_claim(user))
+				add_fingerprint(user)
+				return
+			if(prison.is_inmate(user) && prison.in_front_room(user) && prison.try_start_processing_inmate_return(user))
+				add_fingerprint(user)
+				return
+			if(prison.in_processing(user) && prison.try_start_processing_corpse(user, FALSE))
+				add_fingerprint(user)
+				return
+			if(prison.in_front_room(user) && prison.try_start_processing_corpse(user, TRUE))
+				add_fingerprint(user)
+				return
 	return ..()
 
 /// The yard side
@@ -190,15 +213,40 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 
 /obj/machinery/door/airlock/security/prison_staff/processing/inner/Bumped(atom/movable/AM)
 	. = ..()
-	var/mob/living/mover = AM
-	if(istype(mover) && density)
+	var/mob/living/mover = isliving(AM) ? AM : null
+	var/mob/living/puller = (!mover && isliving(AM?.pulledby) && AM.pulledby.pulling == AM) ? AM.pulledby : null
+	if((mover || puller) && density)
 		var/datum/outpost_prison/prison = get_outpost_prison(src)
 		if(!prison)
 			return
-		if(WEAKREF(mover) in prison.processing_release_refs)
+		if(mover && (WEAKREF(mover) in prison.processing_release_refs))
 			prison.try_start_processing_release(mover)
-		else if(prison.is_inmate(mover) && prison.in_processing(mover))
+		else if(mover && prison.is_inmate(mover) && prison.in_processing(mover))
 			prison.try_start_processing_inmate_in(mover)
+		else
+			var/mob/living/actor = mover || puller
+			if(actor && prison.in_processing(actor) && prison.corpse_doors_open() && (WEAKREF(actor) in prison.corpse_visitor_refs))
+				prison.try_start_processing_corpse(actor, TRUE)
+			else if(actor && prison.processing_on_yard_side(get_turf(actor)))
+				prison.try_start_processing_corpse(actor, FALSE)
+
+/obj/machinery/door/airlock/security/prison_staff/processing/inner/try_to_activate_door(mob/living/user, access_bypass = FALSE)
+	if(isliving(user) && density && !access_bypass)
+		var/datum/outpost_prison/prison = get_outpost_prison(src)
+		if(prison)
+			if((WEAKREF(user) in prison.processing_release_refs) && prison.try_start_processing_release(user))
+				add_fingerprint(user)
+				return
+			if(prison.is_inmate(user) && prison.in_processing(user) && prison.try_start_processing_inmate_in(user))
+				add_fingerprint(user)
+				return
+			if(prison.in_processing(user) && prison.corpse_doors_open() && (WEAKREF(user) in prison.corpse_visitor_refs) && prison.try_start_processing_corpse(user, TRUE))
+				add_fingerprint(user)
+				return
+			if(prison.processing_on_yard_side(get_turf(user)) && prison.try_start_processing_corpse(user, FALSE))
+				add_fingerprint(user)
+				return
+	return ..()
 
 // ===== THE PRISON'S SIDE =====
 

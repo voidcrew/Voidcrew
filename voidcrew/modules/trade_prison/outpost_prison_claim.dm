@@ -157,22 +157,44 @@
 		return FALSE
 	return !!(mover.client || mover.mind || ishuman(mover))
 
+/// Returns an eligible subdued bounty catch already standing inside Processing that `deliverer` can resume claiming, or null
+/datum/outpost_prison/proc/claim_waiting_inside(mob/living/deliverer)
+	if(QDELETED(deliverer) || !has_processing())
+		return null
+	for(var/mob/living/carbon/human/npc/bounty_criminal/criminal in processing_occupants())
+		if(QDELETED(criminal) || istype(criminal, /mob/living/carbon/human/npc/bounty_criminal/decoy))
+			continue
+		if(criminal.stat == DEAD || criminal.client || criminal.mind || criminal.npc_ever_played())
+			continue
+		var/datum/criminal_bounty/posting = criminal.posting()
+		if(!posting || !posting.is_open() || posting.criminal() != criminal || istype(posting, /datum/criminal_bounty/kill_only))
+			continue
+		var/obj/structure/overmap/ship/ship = resolve_lockup_claim_ship(deliverer, src, posting)
+		if((posting.private_to && (!ship || posting.offered_to() != ship)) || posting.lockup_bound_refusal(ship, deliverer))
+			continue
+		var/state = criminal.capture_state()
+		if(state != BOUNTY_STATE_DEAD && state != BOUNTY_STATE_FREE && posting.board_share_for(state))
+			return criminal
+	return null
+
 /**
- * Checks whether `mover` (a player in the front room pulling or carrying a catch to Processing's outer door or desk)
- * can start a live bounty hand-in. Speaks the warden's refusal when someone brings a corpse or an unwanted person;
- * stays silent for a lone player or when the warden is down/away or Processing is busy. Opens `processing/outer` on success.
+ * Checks whether `mover` (a player in the front room pulling or carrying a catch to Processing's outer door or desk,
+ * or resuming a subdued catch already left inside Processing) can start a live bounty hand-in. Speaks the warden's
+ * refusal when someone brings a corpse or an unwanted person; stays silent for a lone player or when the warden is
+ * down/away or Processing is busy. Opens `processing/outer` on success when the catch is outside Processing.
  */
 /datum/outpost_prison/proc/try_start_processing_claim(mob/living/mover)
 	if(!can_hunter_deliver(mover))
 		return FALSE
-	var/mob/living/pulled = claim_held_catch(mover)
+	var/mob/living/held = claim_held_catch(mover)
+	var/mob/living/pulled = held || claim_waiting_inside(mover)
 	if(!isliving(pulled) || QDELETED(pulled) || (!in_front_room(pulled) && !in_processing(pulled)))
 		return FALSE
 	if(!warden_at_desk())
 		return FALSE
 	if(processing_state == OUTPOST_PROCESSING_CLAIM && !claim_aborting && claim_criminal_ref?.resolve() == pulled)
 		var/obj/machinery/door/airlock/existing_outer = processing_door(FALSE)
-		if(existing_outer?.density && processing_shut(processing_door(TRUE)))
+		if(!in_processing(pulled) && existing_outer?.density && processing_shut(processing_door(TRUE)))
 			processing_work_door(existing_outer, TRUE)
 		return TRUE
 	var/resuming_aborted = processing_state == OUTPOST_PROCESSING_CLAIM && claim_aborting && claim_criminal_ref?.resolve() == pulled
@@ -222,12 +244,17 @@
 	claim_prompted = FALSE
 	claim_aborting = FALSE
 	processing_seconds = 0
-	processing_work_door(outer, TRUE)
+	if(in_processing(criminal) && !held)
+		processing_claim_tick(0)
+	else
+		processing_work_door(outer, TRUE)
 	return TRUE
 
-/// Whether an aborted hand-in's catch inside Processing is once again live, subdued and eligible to settle
+/// Whether an aborted hand-in's catch inside Processing is once again live, subdued, alone and eligible to settle
 /datum/outpost_prison/proc/claim_can_resume_inside(mob/living/carbon/human/npc/bounty_criminal/criminal, mob/living/deliverer)
 	if(QDELETED(criminal) || !in_processing(criminal) || !warden_at_desk())
+		return FALSE
+	if(processing_claim_other_inside(criminal) || processing_claim_doorway_occupied(processing_door(FALSE)))
 		return FALSE
 	if(criminal.stat == DEAD || criminal.client || criminal.mind || criminal.npc_ever_played())
 		return FALSE
@@ -296,10 +323,9 @@
 			processing_seconds = 0
 		else
 			processing_seconds += seconds
-			var/doorway_live = processing_claim_doorway_occupied(outer)
-			var/live_occupied = doorway_live || (!QDELETED(criminal) && criminal.stat != DEAD && in_processing(criminal)) || processing_claim_other_inside(criminal)
-			var/still_occupied = live_occupied || (!QDELETED(criminal) && in_processing(criminal))
-			if(!still_occupied || (!live_occupied && processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT))
+			var/uncuffed_catch_inside = !QDELETED(criminal) && criminal.stat != DEAD && in_processing(criminal) && criminal.capture_state() == BOUNTY_STATE_FREE
+			var/inside_occupied = (!QDELETED(criminal) && in_processing(criminal)) || processing_claim_other_inside(criminal)
+			if(!inside_occupied || (!uncuffed_catch_inside && processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT))
 				processing_done()
 				processing_idle_tick()
 				return
@@ -346,12 +372,17 @@
 			processing_work_door(outer, TRUE)
 		return
 
-	// The catch is inside Processing: if a player or another person is still inside (or standing in the outer doorway), keep outer open.
+	// The catch is inside Processing: if a player or another person is still inside (or standing in the outer doorway), keep outer open up to OUTPOST_PRISON_PROCESSING_WAIT.
 	var/doorway_occupied = processing_claim_doorway_occupied(outer)
 	if(processing_claim_other_inside(criminal) || doorway_occupied)
+		processing_seconds += seconds
+		if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT)
+			warden_say("Clear the room.")
+			processing_done()
+			processing_idle_tick()
+			return
 		if(outer.density)
 			processing_work_door(outer, TRUE)
-		processing_seconds += seconds
 		if(!claim_prompted && processing_seconds >= OUTPOST_PROCESSING_CLAIM_PROMPT)
 			claim_prompted = TRUE
 			warden_say("Step out.")

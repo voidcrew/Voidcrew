@@ -93,6 +93,8 @@
 	var/list/boards = list()
 	/// Weakrefs to dead inmate bodies inside the wing awaiting carry-out to the front room
 	var/list/dead_inmate_bodies = list()
+	/// Weakrefs to visitors who entered Processing to recover a dead inmate when no guard could
+	var/list/datum/weakref/corpse_visitor_refs = list()
 	/// Weakrefs to released inmate bodies waiting to cycle out through Processing
 	var/list/processing_release_refs = list()
 	/// Weakref to the officer walking a newly booked inmate through Processing
@@ -249,11 +251,11 @@
 // CONTAINMENT TRAITS AND MOVEMENT TRACKING
 // =========================================================================
 
-/// Keeps awake, standing inmates out of bags and lockers; down or unconscious inmates can be carried like anyone
+/// Keeps awake, unfloored inmates out of bags and lockers; floored or unconscious inmates can be carried like anyone
 /datum/outpost_prison/proc/sync_inmate_traits(mob/living/body)
 	if(QDELETED(body))
 		return
-	var/awake_upright = is_inmate(body) && body.stat == CONSCIOUS && body.body_position != LYING_DOWN && !HAS_TRAIT(body, TRAIT_INCAPACITATED) && !HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)
+	var/awake_upright = is_inmate(body) && body.stat == CONSCIOUS && !HAS_TRAIT(body, TRAIT_FLOORED) && !HAS_TRAIT(body, TRAIT_INCAPACITATED) && !HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)
 	if(awake_upright)
 		ADD_TRAIT(body, TRAIT_NO_CONTAINMENT, OUTPOST_PRISON_INMATE_TRAIT)
 		ADD_TRAIT(body, TRAIT_NO_STORAGE_INSERT, OUTPOST_PRISON_INMATE_TRAIT)
@@ -261,7 +263,7 @@
 		REMOVE_TRAIT(body, TRAIT_NO_CONTAINMENT, OUTPOST_PRISON_INMATE_TRAIT)
 		REMOVE_TRAIT(body, TRAIT_NO_STORAGE_INSERT, OUTPOST_PRISON_INMATE_TRAIT)
 
-/// Watches the outermost movable container holding `body` so pulling a locker or bodybag out records the puller
+/// Watches the outermost movable container holding `body` so pulling or teleporting a locker or bodybag is caught
 /datum/outpost_prison/proc/sync_inmate_container_watch(datum/prison_sentence/sentence, mob/living/body)
 	var/atom/movable/prev = sentence.watched_container_ref?.resolve()
 	var/atom/movable/outermost
@@ -273,10 +275,11 @@
 	if(prev == outermost)
 		return
 	if(prev)
-		UnregisterSignal(prev, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(prev, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
 	sentence.watched_container_ref = outermost ? WEAKREF(outermost) : null
 	if(outermost)
 		RegisterSignal(outermost, COMSIG_MOVABLE_MOVED, PROC_REF(on_inmate_container_moved), override = TRUE)
+		RegisterSignal(outermost, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_inmate_container_teleport), override = TRUE)
 
 /// Attaches containment, movement and death signals to `body` for `sentence`
 /datum/outpost_prison/proc/hook_inmate(datum/prison_sentence/sentence, mob/living/body)
@@ -284,6 +287,8 @@
 		return
 	body.AddElement(/datum/element/relay_attackers)
 	RegisterSignal(body, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_inmate_teleport), override = TRUE)
+	RegisterSignal(body, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(on_inmate_pre_wabbajack), override = TRUE)
+	RegisterSignal(body, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(on_inmate_pre_change_type), override = TRUE)
 	RegisterSignal(body, COMSIG_MOVABLE_MOVED, PROC_REF(on_inmate_moved), override = TRUE)
 	RegisterSignal(body, COMSIG_MOB_CLIENT_PRE_MOVE, PROC_REF(on_inmate_client_step), override = TRUE)
 	RegisterSignal(body, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_inmate_shoved), override = TRUE)
@@ -293,6 +298,8 @@
 	RegisterSignal(body, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_inmate_unarmed_attack), override = TRUE)
 	RegisterSignal(body, COMSIG_MOB_STATCHANGE, PROC_REF(on_inmate_state_changed), override = TRUE)
 	RegisterSignal(body, COMSIG_LIVING_SET_BODY_POSITION, PROC_REF(on_inmate_state_changed), override = TRUE)
+	RegisterSignal(body, SIGNAL_ADDTRAIT(TRAIT_FLOORED), PROC_REF(on_inmate_state_changed), override = TRUE)
+	RegisterSignal(body, SIGNAL_REMOVETRAIT(TRAIT_FLOORED), PROC_REF(on_inmate_state_changed), override = TRUE)
 	RegisterSignal(body, SIGNAL_ADDTRAIT(TRAIT_INCAPACITATED), PROC_REF(on_inmate_state_changed), override = TRUE)
 	RegisterSignal(body, SIGNAL_REMOVETRAIT(TRAIT_INCAPACITATED), PROC_REF(on_inmate_state_changed), override = TRUE)
 	RegisterSignal(body, SIGNAL_ADDTRAIT(TRAIT_CRITICAL_CONDITION), PROC_REF(on_inmate_state_changed), override = TRUE)
@@ -308,7 +315,7 @@
 		return
 	var/atom/movable/watched = sentence.watched_container_ref?.resolve()
 	if(watched)
-		UnregisterSignal(watched, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(watched, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
 	sentence.watched_container_ref = null
 	var/mob/living/body = sentence.body_ref?.resolve()
 	if(QDELETED(body))
@@ -317,6 +324,8 @@
 	REMOVE_TRAIT(body, TRAIT_NO_STORAGE_INSERT, OUTPOST_PRISON_INMATE_TRAIT)
 	UnregisterSignal(body, list(
 		COMSIG_MOVABLE_TELEPORTING,
+		COMSIG_LIVING_PRE_WABBAJACKED,
+		COMSIG_PRE_MOB_CHANGED_TYPE,
 		COMSIG_MOVABLE_MOVED,
 		COMSIG_MOB_CLIENT_PRE_MOVE,
 		COMSIG_LIVING_DISARM_HIT,
@@ -326,6 +335,8 @@
 		COMSIG_LIVING_UNARMED_ATTACK,
 		COMSIG_MOB_STATCHANGE,
 		COMSIG_LIVING_SET_BODY_POSITION,
+		SIGNAL_ADDTRAIT(TRAIT_FLOORED),
+		SIGNAL_REMOVETRAIT(TRAIT_FLOORED),
 		SIGNAL_ADDTRAIT(TRAIT_INCAPACITATED),
 		SIGNAL_REMOVETRAIT(TRAIT_INCAPACITATED),
 		SIGNAL_ADDTRAIT(TRAIT_CRITICAL_CONDITION),
@@ -341,6 +352,35 @@
 	if(isturf(source.loc))
 		source.visible_message(span_notice("[source] flickers for a moment, but stays where [source.p_they()] [source.p_are()]."))
 	return TRUE
+
+/datum/outpost_prison/proc/on_inmate_pre_wabbajack(mob/living/source, what_to_randomize)
+	SIGNAL_HANDLER
+	if(!is_inmate(source))
+		return NONE
+	source.visible_message(span_notice("[source] shimmers for a moment, then looks the same as before."))
+	return STOP_WABBAJACK
+
+/datum/outpost_prison/proc/on_inmate_pre_change_type(mob/living/source)
+	SIGNAL_HANDLER
+	if(!is_inmate(source))
+		return NONE
+	return COMPONENT_BLOCK_MOB_CHANGE
+
+/datum/outpost_prison/proc/on_inmate_container_teleport(atom/movable/container, atom/destination, channel)
+	SIGNAL_HANDLER
+	if(QDELETED(src) || QDELETED(container))
+		return NONE
+	var/list/inside = container.get_all_contents()
+	for(var/datum/mind/who as anything in sentences)
+		if(!holds(who))
+			continue
+		var/datum/prison_sentence/sentence = sentences[who]
+		var/mob/living/body = sentence?.body_ref?.resolve()
+		if(body && body.stat != DEAD && (body in inside))
+			if(isturf(container.loc))
+				container.visible_message(span_notice("[container] flickers for a moment, but stays where [container.p_they()] [container.p_are()]."))
+			return TRUE
+	return NONE
 
 /datum/outpost_prison/proc/on_inmate_state_changed(datum/source)
 	SIGNAL_HANDLER
@@ -388,7 +428,7 @@
 
 /// Records an attack by `attacker` inside the cell block; flags held inmates for the guard baton unless defending themselves
 /datum/outpost_prison/proc/note_inmate_attack(atom/attacker, atom/victim, attack_flags = ATTACKER_DAMAGING_ATTACK)
-	var/mob/living/inmate = attacker
+	var/mob/living/inmate = outpost_living_attacker(attacker)
 	if(!istype(inmate) || inmate == victim || !in_cell_block(inmate))
 		return FALSE
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
@@ -437,11 +477,11 @@
 			return TRUE
 	return FALSE
 
-/// Whether `inmate` is Down/incapacitated enough for a guard to stop batoning them
+/// Whether `inmate` is floored, unconscious or incapacitated enough for a guard to stop batoning them
 /datum/outpost_prison/proc/inmate_down_for_guard(mob/living/inmate)
 	if(QDELETED(inmate) || inmate.stat != CONSCIOUS)
 		return TRUE
-	return inmate.body_position == LYING_DOWN || HAS_TRAIT(inmate, TRAIT_INCAPACITATED) || HAS_TRAIT(inmate, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(inmate, TRAIT_FLOORED)
+	return HAS_TRAIT(inmate, TRAIT_INCAPACITATED) || HAS_TRAIT(inmate, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(inmate, TRAIT_FLOORED)
 
 /// Whether guards in the cell block should baton `inmate` right now
 /datum/outpost_prison/proc/inmate_baton_warranted(mob/living/inmate)
@@ -513,12 +553,13 @@
 	var/mob/living/victim = source
 	if(!istype(victim))
 		return
-	if(isliving(attacker) && attacker != victim)
-		note_inmate_attack(attacker, victim, attack_flags)
+	var/mob/living/living_attacker = outpost_living_attacker(attacker)
+	if(isliving(living_attacker) && living_attacker != victim)
+		note_inmate_attack(living_attacker, victim, attack_flags)
 		if(attack_flags & ATTACKER_DAMAGING_ATTACK)
-			note_inmate_cell_damage(attacker, victim)
+			note_inmate_cell_damage(living_attacker, victim)
 		if(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING))
-			note_inmate_provoked(victim, attacker)
+			note_inmate_provoked(victim, living_attacker)
 
 /datum/outpost_prison/proc/on_inmate_item_attack(mob/living/source, mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
@@ -601,7 +642,15 @@
 	if(!sentence)
 		return
 	sync_inmate_container_watch(sentence, source)
-	if(in_inmate_bounds(source) || sentence.carried_by_ref || sentence.walked_out)
+	if(in_inmate_bounds(source))
+		if(sentence.return_left > 0)
+			sentence.return_left = 0
+			sentence.walked_out = FALSE
+			sentence.carried_by_ref = null
+			sentence.carry_reported = FALSE
+			update_lockup_boards()
+		return
+	if(sentence.return_left > 0 || sentence.carried_by_ref || sentence.walked_out)
 		return
 	var/mob/living/mover = inmate_mover_now(source) || inmate_pusher_of(source, source, old_loc, sentence)
 	if(mover && mover != source)
@@ -620,7 +669,18 @@
 		if(sentence.watched_container_ref?.resolve() != container)
 			continue
 		var/mob/living/body = sentence.body_ref?.resolve()
-		if(!body || in_inmate_bounds(body) || sentence.carried_by_ref)
+		if(!body)
+			continue
+		sync_inmate_container_watch(sentence, body)
+		if(in_inmate_bounds(body))
+			if(sentence.return_left > 0)
+				sentence.return_left = 0
+				sentence.walked_out = FALSE
+				sentence.carried_by_ref = null
+				sentence.carry_reported = FALSE
+				update_lockup_boards()
+			continue
+		if(sentence.carried_by_ref)
 			continue
 		var/mob/living/mover = inmate_mover_now(body) || inmate_pusher_of(container, body, old_loc, sentence)
 		if(mover && mover != body)
@@ -631,6 +691,36 @@
 	if(!QDELETED(src))
 		on_inmate_death(source)
 
+/// Resolves a booked inmate body that was deleted without dying or lost its mind: rebinds a live mind swap (or flags escape outside bounds) and never pardons warrants
+/datum/outpost_prison/proc/resolve_missing_inmate_body(datum/mind/who, datum/prison_sentence/sentence, mob/living/old_body)
+	if(!sentence || sentence.released || sentence.escaped)
+		return
+	if(!QDELETED(old_body) && old_body.stat == DEAD)
+		on_inmate_death(old_body)
+		return
+	var/mob/living/new_body = isliving(who?.current) ? who.current : null
+	if(new_body && !QDELETED(new_body) && new_body != old_body && new_body.stat != DEAD)
+		unhook_inmate(sentence)
+		if(!QDELETED(old_body))
+			outpost_police_drop_used_cuffs(old_body)
+		sentence.body_ref = WEAKREF(new_body)
+		hook_inmate(sentence, new_body)
+		if(!in_inmate_bounds(new_body))
+			inmate_escaped(who, new_body)
+		else
+			update_lockup_boards()
+		return
+	sentence.released = TRUE
+	sentence.return_left = 0
+	unhook_inmate(sentence)
+	if(!QDELETED(old_body))
+		outpost_police_drop_used_cuffs(old_body)
+	var/datum/outpost_police/police = outpost?.police
+	police?.mark_locker_released(who)
+	police?.update_hud(who)
+	police?.wake()
+	update_lockup_boards()
+
 /datum/outpost_prison/proc/on_inmate_body_qdel(mob/living/source)
 	SIGNAL_HANDLER
 	if(QDELETED(src))
@@ -639,10 +729,7 @@
 		var/datum/prison_sentence/sentence = sentences[who]
 		if(!sentence || sentence.body_ref?.resolve() != source || sentence.released || sentence.escaped)
 			continue
-		sentence.released = TRUE
-		unhook_inmate(sentence)
-		outpost?.police?.close_warrant(who, TRUE)
-		outpost?.police?.mark_locker_released(who)
+		resolve_missing_inmate_body(who, sentence, source)
 	update_lockup_boards()
 
 /// Whether `body` outside the wing can walk back into it on its own feet right now
@@ -1267,19 +1354,8 @@
 		if(!sentence || sentence.released || sentence.escaped)
 			continue
 		var/mob/living/body = sentence.body_ref?.resolve()
-		if(QDELETED(body))
-			sentence.released = TRUE
-			unhook_inmate(sentence)
-			police?.close_warrant(who, TRUE)
-			police?.mark_locker_released(who)
-			continue
-		if(body.mind != who)
-			sentence.released = TRUE
-			unhook_inmate(sentence)
-			outpost_police_drop_used_cuffs(body)
-			police?.mark_locker_released(who)
-			police?.update_hud(who)
-			police?.wake()
+		if(QDELETED(body) || body.mind != who)
+			resolve_missing_inmate_body(who, sentence, body)
 			continue
 		if(body.stat == DEAD)
 			on_inmate_death(body)
@@ -1312,7 +1388,8 @@
 					if(late_mover && late_mover != body && late_mover.mind && !is_staff(late_mover))
 						sentence.carry_reported = TRUE
 						police?.report_crime(late_mover, OUTPOST_CRIME_JAILBREAK)
-				if(inmate_can_walk_back(body, who))
+				var/waiting_return_door = processing_state == OUTPOST_PROCESSING_RETURN && processing_who() == body && get_dist(body, processing_door(FALSE)) <= 1
+				if(!waiting_return_door && inmate_can_walk_back(body, who))
 					sentence.return_left -= seconds
 					if(sentence.return_left <= 0)
 						inmate_escaped(who, body)
@@ -1508,6 +1585,7 @@
 	work_destroy()
 	booking_mover_ref = null
 	dead_inmate_bodies.Cut()
+	corpse_visitor_refs.Cut()
 	processing_release_refs.Cut()
 	for(var/obj/machinery/status_display/outpost_berth/lockup/board as anything in boards)
 		if(board?.prison == src)
