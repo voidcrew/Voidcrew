@@ -311,7 +311,8 @@ GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
 	second.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
 /// The last member's time runs out while a member who already dropped out is mid-move: the shared slow-mo holds, as a
-/// solo one does, until the move is over. The world never runs live between the slow-mo and its replay: the fields end
+/// solo one does, until the move is over, and that member finishes the move at its own speed with its edge glow on.
+/// The world never runs live between the slow-mo and its replay: the fields end
 /// and the replay starts without waiting, and nobody gets the release flash.
 /datum/unit_test/voidcrew_cyberware_timestop/shared/holds_for_member_move
 
@@ -340,7 +341,10 @@ GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
 	TEST_ASSERT(!QDELETED(one) && one.hold_until, "The shared slow-mo didn't hold for the other member's move")
 	TEST_ASSERT_EQUAL(length(GLOB.cyberware_time_fields), 2, "A field ended while the slow-mo holds")
 	TEST_ASSERT(abs(cyberware_time_scale(raider) - 0.1) < 0.01, "The world isn't slowed while the slow-mo holds ([cyberware_time_scale(raider)])")
-	TEST_ASSERT(abs(cyberware_time_scale(second) - 0.1) < 0.01, "The member mid-move isn't slowed with the world ([cyberware_time_scale(second)])")
+	TEST_ASSERT(abs(cyberware_time_scale(second) - 1) < 0.01, "The member the slow-mo holds for isn't at its own speed ([cyberware_time_scale(second)])")
+	TEST_ASSERT(!second.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_dilation), "The member the slow-mo holds for still walks slowed")
+	TEST_ASSERT(second.get_filter("sandy_time_stop_outline"), "The member the slow-mo holds for has no edge glow")
+	TEST_ASSERT(!tinted(second), "The member the slow-mo holds for is still tinted")
 	TEST_ASSERT_EQUAL(recording.state, 1, "The recording stopped while the slow-mo holds")
 	TEST_ASSERT(!recording.wait_started, "The replay is waiting with the world running")
 	TEST_ASSERT(!sandy_session_joinable(sandy_session_field(one.time_stop)), "A crewmate could join a holding slow-mo")
@@ -352,6 +356,7 @@ GLOBAL_LIST_EMPTY(sandy_shared_test_ships)
 	while(length(GLOB.cyberware_time_fields) && world.time < until)
 		sleep(world.tick_lag)
 	TEST_ASSERT(!length(GLOB.cyberware_time_fields), "The slow-mo never ended after the move")
+	TEST_ASSERT(!second.get_filter("sandy_time_stop_outline"), "The edge glow outlived the slow-mo")
 	TEST_ASSERT(QDELETED(one), "The window outlived the slow-mo it held")
 	// The tick the fields end: the recording is over without a wait. (With a member's client watching, begin() runs in
 	// this same tick; with none, end_wait() starts it next tick.)

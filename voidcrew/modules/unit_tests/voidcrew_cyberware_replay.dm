@@ -1204,3 +1204,54 @@
 	sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// The replay's hold hands an AI back as it took it: one that was running by hand where tg would have it off (or the
+/// other way round) isn't left in the status tg works out afresh when the pause lifts.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayaistatus")
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(3, 0))
+	var/datum/ai_controller/brain = raider.ai_controller
+	TEST_ASSERT_NOTNULL(brain, "Test fixture: the NPC has no AI controller")
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(brain.get_expected_ai_status() != AI_STATUS_ON, "Test fixture: tg already expects this AI on")
+	brain.set_ai_status(AI_STATUS_ON) // by hand: nobody is on the level, so tg itself would keep it off
+	press_again(user)
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(held(raider), "Test fixture: the replay doesn't hold the NPC")
+	var/list/before = replay.ai_before[raider]
+	TEST_ASSERT_EQUAL(before?[1], AI_STATUS_ON, "Test fixture: the AI wasn't on any more when the hold began")
+	wait_over(user)
+	TEST_ASSERT(!held(raider), "The NPC is still held after the replay")
+	TEST_ASSERT_EQUAL(brain.ai_status, AI_STATUS_ON, "An AI that was running when the replay's hold began was left switched off after it")
+	brain.set_ai_status(AI_STATUS_OFF)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// A body knocked flying as the slow-mo ends hangs in the air for the replay and flies on after it: it is never drawn
+/// where the recording last saw it while it really lands somewhere else.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/thrown_body_held
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/thrown_body_held/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaythrown")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(1 SECONDS)
+	TEST_ASSERT_NOTNULL(replay.tracks[victim], "Test fixture: the body isn't recorded")
+	victim.throw_at(spot(5, 2), 4, 1)
+	sleep(world.tick_lag)
+	var/datum/thrownthing/flight = victim.throwing
+	TEST_ASSERT_NOTNULL(flight, "Test fixture: the body isn't in flight")
+	press_again(user)
+	TEST_ASSERT(flight.paused, "A body in flight as the slow-mo ended wasn't held for the replay")
+	var/turf/hung = get_turf(victim)
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(get_turf(victim), hung, "A body in flight flew on under the replay")
+	wait_over(user)
+	var/until = world.time + 3 SECONDS
+	while(victim.throwing && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(victim.throwing, "The body never landed after the replay")
+	TEST_ASSERT(get_turf(victim) != hung, "The body didn't fly on once the replay let it go")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
