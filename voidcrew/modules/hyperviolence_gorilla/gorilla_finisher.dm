@@ -924,6 +924,13 @@
 					animate(pixel_x = part.pixel_x + lean[1], pixel_y = part.pixel_y + lean[2], time = GORILLA_RIP_GRAB_TIME, easing = SINE_EASING | EASE_OUT)
 				else
 					animate(part, pixel_x = part.pixel_x + lean[1], pixel_y = part.pixel_y + lean[2], time = GORILLA_RIP_GRAB_TIME, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+			// His bar goes with him: left over his tile, it hung half a tile behind the man leaning in on the body
+			if(bearer_rig && !QDELETED(exec_bar) && !exec_bar.ending)
+				if(victim_rig)
+					animate(exec_bar, pixel_x = 0, pixel_y = 0, time = GORILLA_RIP_START_HOLD, flags = ANIMATION_PARALLEL)
+					animate(pixel_x = lean[1], pixel_y = lean[2], time = GORILLA_RIP_GRAB_TIME, easing = SINE_EASING | EASE_OUT)
+				else
+					animate(exec_bar, pixel_x = lean[1], pixel_y = lean[2], time = GORILLA_RIP_GRAB_TIME, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 		if("strain")
 			if(victim_rig && grip)
 				haul(GORILLA_RIP_HAUL_TIME)
@@ -1176,6 +1183,13 @@
 	bearer_rig.base_transform = bearer_rig.bend_matrix(lean_back)
 	// After the swings and turns, which would cut these short: he steps back and the body comes with him
 	gorilla_offsets_through(bearer_rig.puppets, leans, user.pixel_x, user.pixel_y, step_time)
+	if(!QDELETED(exec_bar) && !exec_bar.ending) // and his bar steps back with him
+		for(var/i in 1 to length(leans))
+			var/list/point = leans[i]
+			if(i == 1)
+				animate(exec_bar, pixel_x = point[1], pixel_y = point[2], time = step_time, flags = ANIMATION_PARALLEL)
+			else
+				animate(pixel_x = point[1], pixel_y = point[2], time = step_time)
 	gorilla_offsets_through(victim_rig.puppets, shifts, victim.pixel_x, victim.pixel_y, step_time)
 	// One pull, no shaking until the end of it, where the arm holds in its socket a moment before it gives
 	addtimer(CALLBACK(src, PROC_REF(strain_shake)), max(0, time - GORILLA_RIP_STRAIN_TIME), TIMER_DELETE_ME)
@@ -1460,8 +1474,9 @@
 /**
  * The torn arm leaves his fists and flies GORILLA_RIP_THROW_TILES out to his side, spinning, and lies where it lands. It
  * is the real arm from the first frame: put on the tile it lands on at once, and drawn from where the hauled one was,
- * so where its flight ends is where it lies. To his left if that way is open, else his right, else behind him; with
- * nowhere open it drops at his feet.
+ * so where its flight ends is where it lies. Out to the side it was hauled to if that way is open, else the other side,
+ * else behind him; with nowhere open it drops at his feet. A way that takes it across him is a tile shorter, so it flies
+ * about as far from his fists whichever way it goes.
  */
 /datum/hv_finisher/chrome/gorilla/rip/proc/throw_torn_arm(obj/item/bodypart/torn)
 	if(QDELETED(torn))
@@ -1487,14 +1502,20 @@
 	else
 		var/list/shoulder_at = gorilla_shoulder_at(victim, side)
 		from = list(round((victim.x - start.x) * ICON_SIZE_X + shoulder_at[1]), round((victim.y - start.y) * ICON_SIZE_Y + shoulder_at[2]))
-	// Out to his side, clear of both bodies: the furthest open way of these, the first of them on a tie
+	// Out to his side, clear of both bodies: the furthest open way of these, the first of them on a tie. The side the
+	// arm is already on comes first; thrown the other way it would cross him and fly a tile further than it reads.
 	var/toward = get_dir(user, victim) || user.dir
+	var/list/ways = list(turn(toward, 90), turn(toward, -90), REVERSE_DIR(toward))
+	if(gorilla_throw_same_side(from, ways[2]) && !gorilla_throw_same_side(from, ways[1]))
+		ways.Swap(1, 2)
 	var/turf/land = start
 	var/best = 0
-	for(var/heading in list(turn(toward, 90), turn(toward, -90), REVERSE_DIR(toward)))
-		var/list/turf/path = hv_vis_fling_path(start, heading, GORILLA_RIP_THROW_TILES)
-		if(length(path) > best)
-			best = length(path)
+	for(var/heading in ways)
+		var/same_side = gorilla_throw_same_side(from, heading)
+		var/list/turf/path = hv_vis_fling_path(start, heading, same_side ? GORILLA_RIP_THROW_TILES : max(1, GORILLA_RIP_THROW_TILES - 1))
+		var/reach = length(path) + ((!same_side && length(path)) ? 1 : 0) // it started a tile's worth on the far side
+		if(reach > best)
+			best = reach
 			land = path[length(path)]
 	var/list/blood_dna = torn.can_bleed() ? torn.blood_dna_info : null
 	var/dx = (land.x - start.x) * ICON_SIZE_X
@@ -1523,29 +1544,38 @@
 	var/steps = GORILLA_RIP_THROW_STEPS
 	for(var/i in 1 to steps)
 		var/progress = i / steps
-		var/matrix/spun = hv_vis_turned(base, start_turn + (end_turn - start_turn) * progress, spin_about[2], spin_about[1])
+		// Whole turns: it lands lying exactly as it will lie
+		var/matrix/spun = i == steps ? matrix(base) : hv_vis_turned(base, start_turn + (end_turn - start_turn) * progress, spin_about[2], spin_about[1])
 		var/height = round(GORILLA_RIP_THROW_ARC * 4 * progress * (1 - progress))
 		var/to_x = round(from[1] - dx + (rest_x - from[1] + dx) * progress)
 		var/to_y = round(from[2] - dy + (rest_y - from[2] + dy) * progress)
 		animate(pixel_x = to_x, pixel_y = to_y, pixel_z = height, transform = spun, time = GORILLA_RIP_THROW_TIME / steps)
 	if(length(blood_dna))
-		// A drop half way and one under it where it lands, each showing as it gets there by the client's own clock
-		var/turf/half_way = best > 1 ? get_step(start, get_dir(start, land)) : null
+		// A drop half way and one beside it where it lands (under it, the arm hid the drop), each as it gets there
+		var/turf/half_way = get_dist(start, land) > 1 ? get_step(start, get_dir(start, land)) : null
 		if(half_way)
 			gorilla_drop_in_time(half_way, blood_dna, round((from[1] - dx + rest_x) / 2 + (start.x - half_way.x) * ICON_SIZE_X + dx), round((from[2] - dy + rest_y) / 2 + (start.y - half_way.y) * ICON_SIZE_Y + dy), GORILLA_RIP_THROW_TIME / 2)
-		gorilla_drop_in_time(land, blood_dna, rest_x, rest_y, GORILLA_RIP_THROW_TIME)
+		gorilla_drop_in_time(land, blood_dna, rest_x + (dx < 0 ? -6 : 6), rest_y - 3, GORILLA_RIP_THROW_TIME)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(gorilla_torn_arm_landed), torn, land, initial(torn.layer)), GORILLA_RIP_THROW_TIME, TIMER_DELETE_ME)
 
-/// A drop of blood laid on [spot] at [x], [y] pixels from its middle that shows only [delay] from now.
+/// Whether a throw heading [heading] goes off on the side the arm is already drawn on ([from]: pixels from the thrower).
+/proc/gorilla_throw_same_side(list/from, heading)
+	var/across = ((heading & EAST) ? 1 : 0) - ((heading & WEST) ? 1 : 0)
+	var/up = ((heading & NORTH) ? 1 : 0) - ((heading & SOUTH) ? 1 : 0)
+	return from[1] * across + from[2] * up >= 0
+
+/// A drop of blood laid on [spot] at [x], [y] pixels from its middle, [delay] from now. It is made when it lands: made
+/// at once and hidden until then, it pooled with any drop already on the tile and was gone.
 /proc/gorilla_drop_in_time(turf/spot, list/blood_dna, x, y, delay)
-	var/obj/effect/decal/cleanable/blood/drip/drop = new(spot, null, blood_dna)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(gorilla_lay_drop), spot, blood_dna, x, y), delay, TIMER_DELETE_ME)
+
+/proc/gorilla_lay_drop(turf/spot, list/blood_dna, x, y)
+	if(!isturf(spot) || isgroundlessturf(spot) || !spot.has_gravity())
+		return
+	var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(spot, null, blood_dna)
 	if(QDELETED(drop))
 		return
-	gorilla_place_blood(drop, x, y)
-	var/shown = drop.alpha
-	drop.alpha = 0
-	animate(drop, alpha = 0, time = delay)
-	animate(alpha = shown, time = 0)
+	drop.wire_place(x, y)
 
 /// The thrown arm has come down on [land]: a wet slap, and it lies with everything else on the floor.
 /proc/gorilla_torn_arm_landed(obj/item/bodypart/torn, turf/land, rest_layer)
@@ -1629,21 +1659,29 @@
 	LAZYSET(victim.body_zone_dismembered_by, limb.body_zone, WOUND_BLUNT)
 	var/bleeds = limb.can_bleed()
 	var/turf/spot = get_turf(victim)
-	var/list/old_blood = list()
-	if(blood_at && isturf(spot))
+	// tg lays the blood on the middle of the tile, which a body held in a grab is drawn well off. The splatter the tear
+	// bleeds into is put under the stump before the bleed turns it into a pool: moved after, with the pool's spread
+	// already animating, it was drawn on the middle of the tile until the spread was done.
+	var/obj/effect/decal/cleanable/blood/under_stump
+	var/laid_here = FALSE
+	if(bleeds && blood_at && isturf(spot) && !isgroundlessturf(spot) && spot.has_gravity() && victim.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER)
 		for(var/obj/effect/decal/cleanable/blood/there in spot)
-			old_blood += there
+			if(there.type == /obj/effect/decal/cleanable/blood && !there.dried && !QDELETED(there))
+				under_stump = there
+				break
+		if(!under_stump)
+			under_stump = new(spot, null, victim.get_blood_dna_list())
+			laid_here = !QDELETED(under_stump)
+		if(QDELETED(under_stump))
+			under_stump = null
+		else if(!under_stump.hv_pool_tier) // a pool already spread there stays where it is
+			gorilla_place_blood(under_stump, blood_at[1], blood_at[2])
 	if(bleeds)
 		victim.bleed(rand(20, 40))
 	limb.drop_limb(FALSE, TRUE)
 	victim.update_equipment_speed_mods()
-	if(bleeds && isturf(spot))
+	if(bleeds && isturf(spot) && !laid_here) // the splatter laid here stands in for this one
 		victim.add_splatter_floor(spot)
-		if(blood_at)
-			// tg lays it on the middle of the tile, which a body held in a grab is drawn well off
-			for(var/obj/effect/decal/cleanable/blood/pool in spot)
-				if(pool.type == /obj/effect/decal/cleanable/blood && !(pool in old_blood) && !QDELETED(pool))
-					gorilla_place_blood(pool, blood_at[1], blood_at[2])
 	if(QDELETED(limb))
 		return null
 	if(keep_out)
