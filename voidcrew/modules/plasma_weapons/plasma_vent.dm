@@ -3,8 +3,9 @@
 // bar. The marker's sweep is animated on the client; the tap is judged on the server against vent_started_at (plasma_heat.dm), so the
 // grace zones are the latency slack.
 
-/// Pixels from the marker's resting x (the bar's middle) to the bar's left and right inner edges
-#define PLASMA_VENT_MARKER_REACH 38
+/// Pixels the marker slides each way from its resting column (the gold's middle) to the bar's end columns.
+/// The bar is 19 px inside, one per unit, so the marker is within half a pixel of the unit the tap is judged in.
+#define PLASMA_VENT_MARKER_REACH 9
 /// Bar strip pixel_z over a standing body: the art's bottom row (4 px up the strip) sits at the top of the tile, like a do_after bar
 #define PLASMA_VENT_BAR_HEAD 28
 /// Rise per do_after bar shown on the venter, so the vent bar sits over them
@@ -51,10 +52,11 @@
 	var/image/part = image('voidcrew/modules/plasma_weapons/icons/vent_bar.dmi', user, state)
 	SET_PLANE_EXPLICIT(part, ABOVE_HUD_PLANE, user)
 	part.layer = part_layer
-	part.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | RESET_TRANSFORM | KEEP_APART
+	// PIXEL_SCALE keeps the one-pixel marker sharp while it slides between whole pixels
+	part.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
 	part.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	// The 96 px strip centred on the 32 px body
-	part.pixel_x = -32 + user.get_oversized_icon_offsets()["x"]
+	// The 32 px strip lines up with the 32 px body
+	part.pixel_x = user.get_oversized_icon_offsets()["x"]
 	return part
 
 /// Pixels above `user`'s base where the bar's strip goes: over the head, and over any do_after bars on them
