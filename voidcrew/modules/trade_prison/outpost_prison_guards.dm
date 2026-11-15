@@ -961,10 +961,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	INVOKE_ASYNC(src, PROC_REF(apply_crit_item), job, patient, aid)
 	return FALSE
 
-/// Carries a dead inmate's body through Processing to the front room and leaves it by the desk
+/// Carries a dead inmate's body (or an abandoned bounty catch left inside Processing) to the front room and leaves it by the desk
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/corpse_response(datum/outpost_guard_response/job)
 	var/mob/living/body = job.target()
-	if(QDELETED(body) || body.stat != DEAD || !prison.contains_turf(get_turf(body)))
+	var/abandoned_catch = prison.is_abandoned_claim_catch(body, allow_doorway = (pulling == body))
+	if(QDELETED(body) || (body.stat != DEAD && !abandoned_catch) || !prison.contains_turf(get_turf(body)))
 		if(pulling == body)
 			stop_pulling()
 		prison.prune_dead_inmate_bodies()
@@ -972,6 +973,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(prison.in_front_room(body))
 		if(pulling == body)
 			stop_pulling()
+		prison.claim_idle_seconds = 0
 		prison.prune_dead_inmate_bodies()
 		return TRUE
 	set_baton(FALSE)
@@ -999,6 +1001,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				body.Move(tile, get_dir(body, tile))
 				break
 	stop_pulling()
+	if(prison.in_front_room(body))
+		prison.claim_idle_seconds = 0
 	prison.prune_dead_inmate_bodies()
 	return TRUE
 
@@ -1771,7 +1775,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		if(crit_patient)
 			found += list(list("crit:[REF(crit_patient)]", "crit", OUTPOST_GUARD_PRIORITY_CRIT, crit_patient))
 	if(has_able_corpse_guard())
-		var/mob/living/dead_body = next_dead_inmate_body()
+		var/mob/living/dead_body = next_dead_inmate_body() || next_abandoned_claim_catch()
 		if(dead_body)
 			found += list(list("corpse:[REF(dead_body)]", "corpse", OUTPOST_GUARD_PRIORITY_CORPSE, dead_body))
 	// Most urgent first

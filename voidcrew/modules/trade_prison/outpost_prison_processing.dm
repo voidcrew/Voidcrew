@@ -252,7 +252,7 @@
 				booking_mover_ref = null
 				processing_done()
 		else
-			processing_idle_tick()
+			processing_idle_tick(seconds)
 
 /// The open floor tile just outside `door` (in the yard for the inner door, in the front room for the outer), or null
 /datum/outpost_prison/proc/processing_outside_turf(obj/machinery/door/airlock/door)
@@ -456,7 +456,7 @@
 	return entry_passable ? inside : here
 
 /// Nothing on: both doors are shut, unseen dead bodies inside are cleared, and the next one waiting to leave gets the room
-/datum/outpost_prison/proc/processing_idle_tick()
+/datum/outpost_prison/proc/processing_idle_tick(seconds = 0)
 	if(!has_processing())
 		return
 	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
@@ -471,6 +471,8 @@
 					for(var/mob/living/basic/bot/cleanbot/outpost_lockup/bot in processing_occupants())
 						if(bot.stat != DEAD && !bot.client && bot.mode == BOT_IDLE)
 							bot.send_to_mess(yard_step)
+		return
+	if(claim_idle_tick(seconds))
 		return
 	processing_work_door(inner, FALSE)
 	processing_work_door(outer, FALSE)
@@ -692,6 +694,9 @@
 	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
 	if(!inner || !outer)
 		return FALSE
+	var/datum/prison_sentence/sentence = sentence_for(who)
+	if(sentence?.return_left > 0 && get_dist(who, outer) <= 1)
+		sentence.wants_return = TRUE
 	if(processing_state == OUTPOST_PROCESSING_RETURN && processing_who() == who)
 		processing_return_tick(0)
 		return TRUE

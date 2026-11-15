@@ -436,8 +436,8 @@
 	return FALSE
 
 /mob/living/carbon/human/npc/outpost_prisoner
-	/// Weakref to an outermost movable container watched while shut inside one, so container teleports fail too
-	var/datum/weakref/watched_container_ref
+	/// Weakrefs to every movable container enclosing them, so nested and unnested container teleports fail too
+	var/list/datum/weakref/watched_container_refs
 
 /**
  * Hooks up what keeps a prisoner contained; called from Initialize(). Teleports fail, forced ones
@@ -454,27 +454,40 @@
 	sync_container_watch()
 
 /mob/living/carbon/human/npc/outpost_prisoner/proc/clear_containment()
-	var/atom/movable/watched = watched_container_ref?.resolve()
-	if(watched)
-		UnregisterSignal(watched, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
-	watched_container_ref = null
+	var/list/datum/weakref/old_refs = watched_container_refs
+	watched_container_refs = null
+	for(var/datum/weakref/ref as anything in old_refs)
+		var/atom/movable/watched = ref?.resolve()
+		if(watched)
+			UnregisterSignal(watched, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
 
 /mob/living/carbon/human/npc/outpost_prisoner/proc/sync_container_watch()
-	var/atom/movable/prev = watched_container_ref?.resolve()
-	var/atom/movable/outermost
+	var/list/atom/movable/chain = list()
 	if(!QDELETED(src) && !isturf(loc))
 		var/atom/cursor = loc
 		while(ismovable(cursor) && !isturf(cursor))
-			outermost = cursor
+			chain += cursor
 			cursor = cursor.loc
-	if(prev == outermost)
-		return
-	if(prev)
-		UnregisterSignal(prev, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
-	watched_container_ref = outermost ? WEAKREF(outermost) : null
-	if(outermost)
-		RegisterSignal(outermost, COMSIG_MOVABLE_MOVED, PROC_REF(on_container_moved), override = TRUE)
-		RegisterSignal(outermost, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_container_teleport), override = TRUE)
+	var/list/datum/weakref/old_refs = watched_container_refs
+	if(length(chain) == length(old_refs))
+		var/unchanged = TRUE
+		for(var/idx in 1 to length(chain))
+			if(old_refs[idx]?.resolve() != chain[idx])
+				unchanged = FALSE
+				break
+		if(unchanged)
+			return
+	var/list/datum/weakref/new_refs = length(chain) ? list() : null
+	for(var/atom/movable/item as anything in chain)
+		new_refs += WEAKREF(item)
+	watched_container_refs = new_refs
+	for(var/datum/weakref/old_ref as anything in old_refs)
+		var/atom/movable/old_cont = old_ref?.resolve()
+		if(old_cont && !(old_cont in chain))
+			UnregisterSignal(old_cont, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
+	for(var/atom/movable/cont as anything in chain)
+		RegisterSignal(cont, COMSIG_MOVABLE_MOVED, PROC_REF(on_container_moved), override = TRUE)
+		RegisterSignal(cont, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_container_teleport), override = TRUE)
 
 /mob/living/carbon/human/npc/outpost_prisoner/proc/on_containment_moved(datum/source, atom/old_loc, movement_dir, forced, list/old_locs)
 	SIGNAL_HANDLER

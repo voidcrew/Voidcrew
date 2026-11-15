@@ -130,7 +130,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth/lockup, 
 			towed_by_who = who.pulling == living_mover && living_mover.pulledby == who && (living_mover.moving_from_pull == who || HAS_TRAIT(living_mover, TRAIT_RESTRAINED) || living_mover.stat != CONSCIOUS || living_mover.body_position == LYING_DOWN)
 		else if(prison?.processing_state == OUTPOST_PROCESSING_CORPSE && isliving(who))
 			towed_by_who = living_mover.stat == DEAD && !prison.is_inmate(living_mover) && ((who.pulling == living_mover && living_mover.pulledby == who) || living_mover.buckled == who)
-		if(prison && !towed_by_who && !prison.in_processing(living_mover) && get_turf(living_mover) != loc)
+		var/captive_mover = living_mover.stat != DEAD && (is_outpost_prisoner(living_mover) || prison?.is_inmate(living_mover))
+		if(prison && !towed_by_who && get_turf(living_mover) != loc && (captive_mover || !prison.in_processing(living_mover)))
 			return FALSE
 	return ..()
 

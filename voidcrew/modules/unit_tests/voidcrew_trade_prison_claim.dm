@@ -595,7 +595,7 @@
 	qdel(proc_mouse)
 	qdel(claim_jack)
 
-	// Lingering inside Processing during a live claim times out after 60s ('Clear the room.') without paying early, lets the hunter exit one door at a time, and resumes cleanly once outside
+	// Lingering inside Processing during a live claim times out after 60s ('Step out.') without paying early, lets the hunter exit one door at a time, resumes cleanly, and clears abandoned catches
 	var/datum/criminal_bounty/linger_posting = board_test_posting(2, null, 950, 0)
 	var/datum/bounty_record/linger_record = linger_posting.record
 	var/mob/living/carbon/human/npc/bounty_criminal/linger_catch = board_test_criminal(linger_posting, outer_wait)
@@ -610,7 +610,7 @@
 	COOLDOWN_RESET(warden, speak_cooldown)
 	prison.processing_tick(60) // OUTPOST_PRISON_PROCESSING_WAIT
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "A hunter lingering inside Processing for 60s did not release Processing back to idle") // OUTPOST_PROCESSING_IDLE
-	TEST_ASSERT(warden_ears.heard("Clear the room."), "Warden did not say 'Clear the room.' on claim linger timeout")
+	TEST_ASSERT(warden_ears.heard("Step out."), "Warden did not say 'Step out.' on claim linger timeout")
 	TEST_ASSERT(linger_posting.is_open() && !QDELETED(linger_catch), "Timing out a lingered claim closed the posting or deleted the catch")
 	TEST_ASSERT(claim_wait_door(prison, outer, FALSE), "Outer door did not shut after Processing returned to idle")
 	outer.Bumped(hunter)
@@ -618,6 +618,12 @@
 	hunter.forceMove(outer_wait)
 	TEST_ASSERT(claim_wait_door(prison, outer, FALSE), "Outer door did not shut after the hunter stepped out of Processing")
 	TEST_ASSERT_EQUAL(prison.claim_waiting_inside(hunter), linger_catch, "claim_waiting_inside() did not locate the cuffed catch left inside Processing")
+	prison.claim_idle_seconds = 60 // OUTPOST_PRISON_PROCESSING_WAIT
+	TEST_ASSERT_EQUAL(prison.next_abandoned_claim_catch(), linger_catch, "An unclaimed catch sitting idle for 60s was not flagged as abandoned for guard carry-out")
+	prison.processing_tick(1)
+	TEST_ASSERT(prison.in_front_room(linger_catch) && !prison.processing_outsider_inside(), "Abandoned catch left inside Processing stayed wedged instead of clearing to the front room")
+	linger_catch.forceMove(prison.processing_turfs[1])
+	prison.claim_idle_seconds = 0
 	TEST_ASSERT(prison.try_start_processing_claim(hunter), "try_start_processing_claim() did not resume the cuffed catch left inside Processing")
 	prison.processing_tick(1)
 	TEST_ASSERT_EQUAL(prison.processing_state, "idle", "Resumed waiting-inside claim did not finish cleanly")

@@ -30,6 +30,8 @@
 	var/bail_elapsed = 0
 	/// Seconds left to walk back in after someone else moved the inmate out (0 while inside)
 	var/return_left = 0
+	/// Set once a carried-out inmate bumps or clicks Processing's outer door to walk back in
+	var/wants_return = FALSE
 	/// Set when the inmate crossed out on a step of their own
 	var/walked_out = FALSE
 	/// world.time of the inmate's last client move step
@@ -47,8 +49,8 @@
 	var/released = FALSE
 	/// Whether a prisoner has given this inmate a tip during this stay (one per sentence)
 	var/tip_given = FALSE
-	/// Weakref to an outermost movable container watched while the inmate is shut inside one
-	var/datum/weakref/watched_container_ref
+	/// Weakrefs to every movable container currently enclosing the inmate's body (inner to outer)
+	var/list/datum/weakref/watched_container_refs
 	/// Weakref of a living attacker -> world.time they last hit this inmate in the cell block (10 s self-defense window)
 	var/list/provoked_by
 	/// world.time until which guards baton this inmate for an unprovoked hit or breakout act in the cell block
@@ -73,7 +75,7 @@
 	body_ref = null
 	carried_by_ref = null
 	shoved_by_ref = null
-	watched_container_ref = null
+	watched_container_refs = null
 	provoked_by = null
 	last_inmate_attacker_ref = null
 	return ..()
@@ -263,29 +265,67 @@
 		REMOVE_TRAIT(body, TRAIT_NO_CONTAINMENT, OUTPOST_PRISON_INMATE_TRAIT)
 		REMOVE_TRAIT(body, TRAIT_NO_STORAGE_INSERT, OUTPOST_PRISON_INMATE_TRAIT)
 
-/// Watches the outermost movable container holding `body` so pulling or teleporting a locker or bodybag is caught
+/// Whether another active sentence on this wing still watches `container`
+/datum/outpost_prison/proc/container_watched_by_other_sentence(atom/movable/container, datum/prison_sentence/ignore)
+	if(QDELETED(container))
+		return FALSE
+	for(var/datum/mind/who as anything in sentences)
+		var/datum/prison_sentence/other = sentences[who]
+		if(!other || other == ignore || other.released || other.escaped || !length(other.watched_container_refs))
+			continue
+		if(WEAKREF(container) in other.watched_container_refs)
+			return TRUE
+	return FALSE
+
+/// Drops container signals for `sentence` without unhooking containers shared with another inmate
+/datum/outpost_prison/proc/clear_inmate_container_watch(datum/prison_sentence/sentence)
+	if(!sentence)
+		return
+	var/list/datum/weakref/old_refs = sentence.watched_container_refs
+	sentence.watched_container_refs = null
+	for(var/datum/weakref/ref as anything in old_refs)
+		var/atom/movable/watched = ref?.resolve()
+		if(watched && !container_watched_by_other_sentence(watched, sentence))
+			UnregisterSignal(watched, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
+
+/// Watches every movable container enclosing `body` so pulling, unnesting or teleporting a locker or bodybag is caught
 /datum/outpost_prison/proc/sync_inmate_container_watch(datum/prison_sentence/sentence, mob/living/body)
-	var/atom/movable/prev = sentence.watched_container_ref?.resolve()
-	var/atom/movable/outermost
+	if(!sentence)
+		return
+	var/list/atom/movable/chain = list()
 	if(!QDELETED(body) && !isturf(body.loc))
 		var/atom/cursor = body.loc
 		while(ismovable(cursor) && !isturf(cursor))
-			outermost = cursor
+			chain += cursor
 			cursor = cursor.loc
-	if(prev == outermost)
-		return
-	if(prev)
-		UnregisterSignal(prev, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
-	sentence.watched_container_ref = outermost ? WEAKREF(outermost) : null
-	if(outermost)
-		RegisterSignal(outermost, COMSIG_MOVABLE_MOVED, PROC_REF(on_inmate_container_moved), override = TRUE)
-		RegisterSignal(outermost, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_inmate_container_teleport), override = TRUE)
+	var/list/datum/weakref/old_refs = sentence.watched_container_refs
+	if(length(chain) == length(old_refs))
+		var/unchanged = TRUE
+		for(var/idx in 1 to length(chain))
+			if(old_refs[idx]?.resolve() != chain[idx])
+				unchanged = FALSE
+				break
+		if(unchanged)
+			return
+	var/list/datum/weakref/new_refs = length(chain) ? list() : null
+	for(var/atom/movable/item as anything in chain)
+		new_refs += WEAKREF(item)
+	sentence.watched_container_refs = new_refs
+	for(var/datum/weakref/old_ref as anything in old_refs)
+		var/atom/movable/old_cont = old_ref?.resolve()
+		if(old_cont && !(old_cont in chain) && !container_watched_by_other_sentence(old_cont, sentence))
+			UnregisterSignal(old_cont, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
+	for(var/atom/movable/cont as anything in chain)
+		RegisterSignal(cont, COMSIG_MOVABLE_MOVED, PROC_REF(on_inmate_container_moved), override = TRUE)
+		RegisterSignal(cont, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_inmate_container_teleport), override = TRUE)
 
 /// Attaches containment, movement and death signals to `body` for `sentence`
 /datum/outpost_prison/proc/hook_inmate(datum/prison_sentence/sentence, mob/living/body)
 	if(QDELETED(body))
 		return
 	body.AddElement(/datum/element/relay_attackers)
+	if(sentence?.mind)
+		RegisterSignal(sentence.mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_inmate_mind_transferred), override = TRUE)
 	RegisterSignal(body, COMSIG_MOVABLE_TELEPORTING, PROC_REF(on_inmate_teleport), override = TRUE)
 	RegisterSignal(body, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(on_inmate_pre_wabbajack), override = TRUE)
 	RegisterSignal(body, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(on_inmate_pre_change_type), override = TRUE)
@@ -313,10 +353,9 @@
 /datum/outpost_prison/proc/unhook_inmate(datum/prison_sentence/sentence)
 	if(!sentence)
 		return
-	var/atom/movable/watched = sentence.watched_container_ref?.resolve()
-	if(watched)
-		UnregisterSignal(watched, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_TELEPORTING))
-	sentence.watched_container_ref = null
+	clear_inmate_container_watch(sentence)
+	if(sentence.mind)
+		UnregisterSignal(sentence.mind, COMSIG_MIND_TRANSFERRED)
 	var/mob/living/body = sentence.body_ref?.resolve()
 	if(QDELETED(body))
 		return
@@ -645,6 +684,7 @@
 	if(in_inmate_bounds(source))
 		if(sentence.return_left > 0)
 			sentence.return_left = 0
+			sentence.wants_return = FALSE
 			sentence.walked_out = FALSE
 			sentence.carried_by_ref = null
 			sentence.carry_reported = FALSE
@@ -660,13 +700,14 @@
 
 /datum/outpost_prison/proc/on_inmate_container_moved(atom/movable/container, atom/old_loc, movement_dir, forced, list/old_locs)
 	SIGNAL_HANDLER
-	if(QDELETED(src))
+	if(QDELETED(src) || QDELETED(container))
 		return
+	var/datum/weakref/container_ref = WEAKREF(container)
 	for(var/datum/mind/who as anything in sentences)
 		if(!holds(who))
 			continue
 		var/datum/prison_sentence/sentence = sentences[who]
-		if(sentence.watched_container_ref?.resolve() != container)
+		if(!sentence || !length(sentence.watched_container_refs) || !(container_ref in sentence.watched_container_refs))
 			continue
 		var/mob/living/body = sentence.body_ref?.resolve()
 		if(!body)
@@ -675,6 +716,7 @@
 		if(in_inmate_bounds(body))
 			if(sentence.return_left > 0)
 				sentence.return_left = 0
+				sentence.wants_return = FALSE
 				sentence.walked_out = FALSE
 				sentence.carried_by_ref = null
 				sentence.carry_reported = FALSE
@@ -691,12 +733,19 @@
 	if(!QDELETED(src))
 		on_inmate_death(source)
 
+/datum/outpost_prison/proc/on_inmate_mind_transferred(datum/mind/source, mob/previous_body)
+	SIGNAL_HANDLER
+	if(QDELETED(src) || !source)
+		return
+	var/datum/prison_sentence/sentence = sentences[source]
+	if(!sentence || sentence.released || sentence.escaped)
+		return
+	var/mob/living/old_body = isliving(previous_body) ? previous_body : sentence.body_ref?.resolve()
+	resolve_missing_inmate_body(source, sentence, old_body)
+
 /// Resolves a booked inmate body that was deleted without dying or lost its mind: rebinds a live mind swap (or flags escape outside bounds) and never pardons warrants
 /datum/outpost_prison/proc/resolve_missing_inmate_body(datum/mind/who, datum/prison_sentence/sentence, mob/living/old_body)
 	if(!sentence || sentence.released || sentence.escaped)
-		return
-	if(!QDELETED(old_body) && old_body.stat == DEAD)
-		on_inmate_death(old_body)
 		return
 	var/mob/living/new_body = isliving(who?.current) ? who.current : null
 	if(new_body && !QDELETED(new_body) && new_body != old_body && new_body.stat != DEAD)
@@ -710,8 +759,12 @@
 		else
 			update_lockup_boards()
 		return
+	if(!QDELETED(old_body) && old_body.stat == DEAD && (!old_body.mind || old_body.mind == who))
+		on_inmate_death(old_body)
+		return
 	sentence.released = TRUE
 	sentence.return_left = 0
+	sentence.wants_return = FALSE
 	unhook_inmate(sentence)
 	if(!QDELETED(old_body))
 		outpost_police_drop_used_cuffs(old_body)
@@ -1016,6 +1069,7 @@
 	sentence.seconds_worked_off = 0
 	sentence.bail_elapsed = 0
 	sentence.return_left = 0
+	sentence.wants_return = FALSE
 	sentence.walked_out = FALSE
 	sentence.stepped_at = 0
 	sentence.carried_by_ref = null
@@ -1070,6 +1124,7 @@
 			if(other_sentence)
 				other_sentence.released = TRUE
 				other_sentence.return_left = 0
+				other_sentence.wants_return = FALSE
 				other.unhook_inmate(other_sentence)
 			other.processing_release_refs -= WEAKREF(suspect)
 			other.update_lockup_boards()
@@ -1204,6 +1259,8 @@
 			var/obj/machinery/door/airlock/inner_check = processing_door(TRUE)
 			if(processing_state == OUTPOST_PROCESSING_IDLE && inner_check && !processing_shut(inner_check))
 				processing_work_door(inner_check, FALSE)
+			if(processing_state == OUTPOST_PROCESSING_IDLE && unclaimed_catch_in_processing())
+				claim_idle_seconds = max(claim_idle_seconds, OUTPOST_PRISON_PROCESSING_WAIT)
 			if(processing_state == OUTPOST_PROCESSING_IDLE && processing_shut(inner_check) && !processing_outsider_inside() && !processing_inmate_inside())
 				break
 			sleep(wait_pause)
@@ -1379,6 +1436,7 @@
 		if(sentence.return_left > 0)
 			if(inside)
 				sentence.return_left = 0
+				sentence.wants_return = FALSE
 				sentence.walked_out = FALSE
 				sentence.carried_by_ref = null
 				sentence.carry_reported = FALSE
@@ -1388,7 +1446,14 @@
 					if(late_mover && late_mover != body && late_mover.mind && !is_staff(late_mover))
 						sentence.carry_reported = TRUE
 						police?.report_crime(late_mover, OUTPOST_CRIME_JAILBREAK)
-				var/waiting_return_door = processing_state == OUTPOST_PROCESSING_RETURN && processing_who() == body && get_dist(body, processing_door(FALSE)) <= 1
+				var/obj/machinery/door/airlock/outer = has_processing() ? processing_door(FALSE) : null
+				var/at_return_door = outer && in_front_room(body) && get_dist(body, outer) <= 1 && inmate_can_walk_back(body, who)
+				if(!at_return_door)
+					sentence.wants_return = FALSE
+				else if(sentence.wants_return && processing_state == OUTPOST_PROCESSING_IDLE)
+					try_start_processing_inmate_return(body)
+				var/door_not_open = outer && (outer.density || outer.operating)
+				var/waiting_return_door = at_return_door && door_not_open && ((processing_state == OUTPOST_PROCESSING_RETURN && processing_who() == body) || (sentence.wants_return && processing_state != OUTPOST_PROCESSING_IDLE))
 				if(!waiting_return_door && inmate_can_walk_back(body, who))
 					sentence.return_left -= seconds
 					if(sentence.return_left <= 0)
@@ -1429,6 +1494,7 @@
 	var/mob/living/body = sentence.body_ref?.resolve()
 	sentence.released = TRUE
 	sentence.return_left = 0
+	sentence.wants_return = FALSE
 	unhook_inmate(sentence)
 	if(body)
 		outpost_police_drop_used_cuffs(body)
@@ -1473,6 +1539,7 @@
 	body ||= sentence.body_ref?.resolve()
 	sentence.escaped = TRUE
 	sentence.return_left = 0
+	sentence.wants_return = FALSE
 	unhook_inmate(sentence)
 	var/datum/outpost_police/police = outpost?.police
 	if(police)
@@ -1501,8 +1568,13 @@
 				break
 	if(!sentence || sentence.released || sentence.escaped)
 		return FALSE
+	var/mob/living/current_body = isliving(who?.current) ? who.current : null
+	if((body.mind && body.mind != who) || (current_body && !QDELETED(current_body) && current_body != body && current_body.stat != DEAD))
+		resolve_missing_inmate_body(who, sentence, body)
+		return FALSE
 	sentence.released = TRUE
 	sentence.return_left = 0
+	sentence.wants_return = FALSE
 	sentence.died_in_custody_at = world.time
 	unhook_inmate(sentence)
 	outpost_police_drop_used_cuffs(body)

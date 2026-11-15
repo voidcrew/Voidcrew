@@ -258,14 +258,14 @@
 	baton_stop_until = world.time + PRISONER_BATON_STOP
 	changeNext_move(PRISONER_BATON_STOP)
 
-/// Shots from machines (outpost turrets) put a death down to staff without costing mood; mecha gunfire counts like handheld fire (relay_attackers).
+/// Shots from machines (outpost turrets) put a death down to staff without costing mood; living and mecha gunfire route through on_attacked() for direct bullet_act() hits too.
 /mob/living/carbon/human/npc/outpost_prisoner/proc/on_shot(datum/source, obj/projectile/shot)
 	SIGNAL_HANDLER
 	if(!shot.is_hostile_projectile())
 		return
 	if(ismachinery(shot.firer))
 		hit_by_staff(shot.firer)
-	else if(ismecha(shot.firer))
+	else if(isliving(shot.firer) || ismecha(shot.firer))
 		on_attacked(src, shot.firer, shot.damage_type == STAMINA ? ATTACKER_STAMINA_ATTACK : ATTACKER_DAMAGING_ATTACK)
 
 /// Whether an attacker counts as staff (or an inmate picking a fight in the yard): people, borgs, anyone with a mind, and mechs

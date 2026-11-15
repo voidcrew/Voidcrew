@@ -24,6 +24,8 @@
 	var/claim_prompted = FALSE
 	/// Whether the current hand-in was aborted (catch stood free, died, or lost its posting) and is letting everyone out
 	var/claim_aborting = FALSE
+	/// Seconds an unclaimed bounty catch has sat inside Processing while Processing is idle
+	var/claim_idle_seconds = 0
 
 /// Clears transient hand-in state when Processing finishes or the wing is deleted
 /datum/outpost_prison/proc/claim_clear()
@@ -34,6 +36,7 @@
 	claim_criminal_ref = null
 	claim_prompted = FALSE
 	claim_aborting = FALSE
+	claim_idle_seconds = 0
 
 /// Whether `mover` may step into `processing/outer` from the front room as part of the active bounty hand-in
 /datum/outpost_prison/proc/claim_lets_enter(atom/movable/mover)
@@ -157,6 +160,74 @@
 		return FALSE
 	return !!(mover.client || mover.mind || ishuman(mover))
 
+/// First live, unplayed bounty catch currently inside Processing while idle, or null
+/datum/outpost_prison/proc/unclaimed_catch_in_processing()
+	if(!has_processing())
+		return null
+	for(var/mob/living/carbon/human/npc/bounty_criminal/criminal in processing_occupants())
+		if(QDELETED(criminal) || istype(criminal, /mob/living/carbon/human/npc/bounty_criminal/decoy))
+			continue
+		if(criminal.stat == DEAD || criminal.client || criminal.mind || criminal.npc_ever_played())
+			continue
+		return criminal
+	return null
+
+/// Whether `criminal` still has an open live-claim posting and is currently subdued enough to pay out
+/datum/outpost_prison/proc/catch_claimable_by_any_hunter(mob/living/carbon/human/npc/bounty_criminal/criminal)
+	if(!istype(criminal) || QDELETED(criminal) || istype(criminal, /mob/living/carbon/human/npc/bounty_criminal/decoy))
+		return FALSE
+	if(criminal.stat == DEAD || criminal.client || criminal.mind || criminal.npc_ever_played())
+		return FALSE
+	var/datum/criminal_bounty/posting = criminal.posting()
+	if(!posting || !posting.is_open() || posting.criminal() != criminal || istype(posting, /datum/criminal_bounty/kill_only))
+		return FALSE
+	var/state = criminal.capture_state()
+	return state != BOUNTY_STATE_DEAD && state != BOUNTY_STATE_FREE && !!posting.board_share_for(state)
+
+/// Whether `body` is an abandoned or unclaimable bounty catch inside Processing ready to be moved back to the front room
+/datum/outpost_prison/proc/is_abandoned_claim_catch(mob/living/body, allow_doorway = FALSE)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = body
+	if(!istype(criminal) || QDELETED(criminal) || istype(criminal, /mob/living/carbon/human/npc/bounty_criminal/decoy))
+		return FALSE
+	if(processing_state == OUTPOST_PROCESSING_CLAIM || criminal.stat == DEAD || criminal.client || criminal.mind || criminal.npc_ever_played())
+		return FALSE
+	var/in_room = in_processing(criminal) || (allow_doorway && get_turf(criminal) == get_turf(processing_door(FALSE)))
+	if(!in_room)
+		return FALSE
+	return !catch_claimable_by_any_hunter(criminal) || claim_idle_seconds >= OUTPOST_PRISON_PROCESSING_WAIT || length(processing_release_refs) > 0
+
+/// Next abandoned or unclaimable bounty catch inside Processing for an on-duty guard to pull out to the front room, or null
+/datum/outpost_prison/proc/next_abandoned_claim_catch()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = unclaimed_catch_in_processing()
+	return is_abandoned_claim_catch(criminal) ? criminal : null
+
+/// Advances idle cleanup for any bounty catch left inside Processing so an abandoned catch never wedges releases or bookings
+/datum/outpost_prison/proc/claim_idle_tick(seconds)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = unclaimed_catch_in_processing()
+	if(!criminal)
+		claim_idle_seconds = 0
+		return FALSE
+	claim_idle_seconds += seconds
+	var/obj/machinery/door/airlock/inner = processing_door(TRUE)
+	var/obj/machinery/door/airlock/outer = processing_door(FALSE)
+	if(criminal.stat == CONSCIOUS && criminal.capture_state() == BOUNTY_STATE_FREE && !processing_player_inside())
+		processing_work_door(inner, FALSE)
+		if(processing_shut(inner))
+			processing_work_door(outer, TRUE)
+			if(!outer.density && !outer.operating)
+				var/turf/front_step = processing_outside_turf(outer)
+				if(get_turf(criminal) == get_turf(outer) && front_step)
+					criminal.Move(front_step, get_dir(criminal, front_step))
+				else if(outer)
+					step_towards(criminal, get_turf(outer))
+		return TRUE
+	if(is_abandoned_claim_catch(criminal) && !has_audience() && processing_shut(inner) && !processing_player_inside() && !seen_by_client(criminal))
+		var/turf/drop_spot = corpse_drop_spot()
+		if(drop_spot)
+			criminal.forceMove(drop_spot)
+			claim_idle_seconds = 0
+	return FALSE
+
 /// Returns an eligible subdued bounty catch already standing inside Processing that `deliverer` can resume claiming, or null
 /datum/outpost_prison/proc/claim_waiting_inside(mob/living/deliverer)
 	if(QDELETED(deliverer) || !has_processing())
@@ -243,6 +314,7 @@
 	claim_criminal_ref = WEAKREF(criminal)
 	claim_prompted = FALSE
 	claim_aborting = FALSE
+	claim_idle_seconds = 0
 	processing_seconds = 0
 	if(in_processing(criminal) && !held)
 		processing_claim_tick(0)
@@ -377,7 +449,7 @@
 	if(processing_claim_other_inside(criminal) || doorway_occupied)
 		processing_seconds += seconds
 		if(processing_seconds >= OUTPOST_PRISON_PROCESSING_WAIT)
-			warden_say("Clear the room.")
+			warden_say("Step out.")
 			processing_done()
 			processing_idle_tick()
 			return
