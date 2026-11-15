@@ -394,8 +394,11 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// white, coloured by that `color`. With the slow-mo's tint matrix in `color` it would be drawn white and its drying
 /// colour lost, so while tinted it wears the tint mixed with its own colour, held where it was. It works its colour
 /// out again when the tint comes off (update_atom_colour() calls this). A colour filter didn't draw on decals.
+/// Blood made in the slow-mo wears it from its first picture: tg starts its drying animation (from its own colour, a
+/// text colour) as it is made, before the field tints it, and the client drew that blood white, its art with no colour,
+/// until the decal's next animation ended.
 /obj/effect/decal/cleanable/blood/update_blood_color()
-	if(!sandy_time_tinted())
+	if(!sandy_time_tinted() && !sandy_time_tint_due())
 		return ..()
 	animate(src)
 	var/own = sandy_replay_colour() // ware_sandy_replay.dm
@@ -407,6 +410,13 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 /// Whether the slow-mo's tint is on this blood right now.
 /obj/effect/decal/cleanable/blood/proc/sandy_time_tinted()
 	return islist(color) && LAZYACCESS(atom_colours, TEMPORARY_COLOUR_PRIORITY) && GLOB.cyberware_time_dilated[src]
+
+/// Whether this blood is being made on a slow-mo's ground that the field will tint it on this tick (once it is made).
+/obj/effect/decal/cleanable/blood/proc/sandy_time_tint_due()
+	if(!length(GLOB.cyberware_time_fields) || GLOB.cyberware_time_dilated[src] || !isturf(loc))
+		return FALSE
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = cyberware_time_field(src)
+	return istype(field) && field.ring_wait(src) <= 0
 
 /// tg's create_splatter() sets the splash's colour after making it, over the slow-mo's tint: the tint goes back on.
 /mob/living/create_splatter(splatter_dir = pick(GLOB.cardinals))
