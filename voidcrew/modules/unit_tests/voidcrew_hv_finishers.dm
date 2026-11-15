@@ -299,3 +299,20 @@
 	again.interrupt(3) // HV_FINISHER_DAMAGED
 	TEST_ASSERT(second_bar.ending, "the bar outlived the interrupt")
 	TEST_ASSERT(findtext(second_bar.icon_state, "_fail"), "an interrupted bar doesn't look failed")
+
+/// A bar stands over a body a move has leaned off its tile, goes with the lean, and comes back when the lean ends.
+/datum/unit_test/voidcrew_hv_finisher/bar_follows_lean
+
+/datum/unit_test/voidcrew_hv_finisher/bar_follows_lean/Run()
+	var/mob/living/carbon/human/killer = allocate(/mob/living/carbon/human/consistent, spot(0, 0))
+	var/obj/effect/abstract/hv_exec_bar/bar = hv_exec_bar_start(killer, 2 SECONDS)
+	TEST_ASSERT_NOTNULL(bar, "Test fixture: no bar")
+	hv_exec_bar_lean(killer, 12, -3)
+	TEST_ASSERT(bar.pixel_x == 12 && bar.pixel_y == -3, "A bar didn't go with its body's lean ([bar.pixel_x], [bar.pixel_y])")
+	var/obj/effect/abstract/hv_exec_bar/second = hv_exec_bar_start(killer, 2 SECONDS)
+	TEST_ASSERT(second.pixel_x == 12 && second.pixel_y == -3, "A bar started over a leaning body stands over the tile ([second.pixel_x], [second.pixel_y])")
+	hv_exec_bar_lean(killer)
+	TEST_ASSERT(bar.pixel_x == 0 && bar.pixel_y == 0, "A bar stayed off the tile after the lean ended")
+	TEST_ASSERT_NULL(killer.hv_exec_lean, "The lean was kept on the body after it ended")
+	qdel(bar)
+	qdel(second)

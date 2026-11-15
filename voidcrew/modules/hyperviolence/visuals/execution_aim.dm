@@ -30,6 +30,8 @@
 #define HV_AIM_GAP 4
 /// How big the gun is drawn, of its item icon.
 #define HV_AIM_GUN_SCALE 0.6
+/// How high over his feet the shooter's head is, in pixels: how far a bend from the feet carries it forward.
+#define HV_AIM_HEAD_HEIGHT 26
 /// The least and the most the shooter leans toward the victim, in pixels.
 #define HV_AIM_LEAN_MIN 6
 #define HV_AIM_LEAN_MAX 17
@@ -101,6 +103,7 @@
 	src.target = target
 
 /datum/hv_exec_aim/Destroy()
+	hv_exec_bar_lean(shooter)
 	if(down_timer)
 		deltimer(down_timer)
 		down_timer = null
@@ -391,6 +394,9 @@
 	. = 0
 	for(var/time in real)
 		. += time
+	// His bar goes where his head goes: the lean, and what the bend from the feet adds to it
+	var/forward = facing == EAST ? 1 : (facing == WEST ? -1 : 0)
+	hv_exec_bar_lean(shooter, round(held[2] + forward * HV_AIM_HEAD_HEIGHT * sin(held[1])), round(held[3]), .)
 
 /// The shot: the gun kicks back and up, he rocks back with it and holds there through the flash, then lowers the gun
 /// and straightens up, and the rig comes down.
@@ -465,6 +471,7 @@
 
 #undef HV_AIM_GAP
 #undef HV_AIM_GUN_SCALE
+#undef HV_AIM_HEAD_HEIGHT
 #undef HV_AIM_LEAN_MIN
 #undef HV_AIM_LEAN_MAX
 #undef HV_AIM_BEND

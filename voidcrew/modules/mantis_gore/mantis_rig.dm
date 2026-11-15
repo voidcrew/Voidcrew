@@ -256,6 +256,7 @@
 
 /datum/mantis_rig/Destroy()
 	reveal()
+	hv_exec_bar_lean(bearer)
 	for(var/key in puppets)
 		qdel(puppets[key])
 	puppets = null
@@ -444,6 +445,7 @@
 	dress()
 	lean_w = spec[MANTIS_RIG_BEARER_W] + extra_w
 	lean_z = spec[MANTIS_RIG_BEARER_Z] + extra_z
+	hv_exec_bar_lean(bearer, lean_w, lean_z, time) // the bar over them goes with the lunge (hyperviolence/finishers/finisher_bar.dm)
 	for(var/key in puppets)
 		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
 		var/to_w = base_w + lean_w + picture.shift_w
