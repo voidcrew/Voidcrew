@@ -843,6 +843,33 @@
 	press_again(user)
 	wait_over(user)
 
+/// The slash a chrome weapon draws over someone hit lives only in that body's vis_contents: it is recorded on the
+/// body's tile, as a stand-in on the floor can draw it, and stays long enough in the replay to play through.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hit_picture_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hit_picture_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayslash")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/abstract/cyberware_anim/slash = cyberware_play_impact(user, victim, "impact_mantis")
+	TEST_ASSERT_NOTNULL(slash, "Test fixture: no slash was drawn over the victim")
+	sleep(0.2 SECONDS)
+	var/datum/sandy_replay_track/track = replay.tracks[slash] || replay.gone[slash]
+	TEST_ASSERT_NOTNULL(track, "The slash over someone hit wasn't recorded")
+	TEST_ASSERT(track.oneshot, "The slash wasn't recorded as a one-shot effect")
+	TEST_ASSERT(track.plays_out > 0, "The slash over someone hit isn't left to play through")
+	var/list/frames = track.frames
+	TEST_ASSERT(length(frames) >= 6, "The slash has no frame")
+	TEST_ASSERT_EQUAL(frames[length(frames) - 3], victim.x, "The slash isn't drawn on the tile of the one hit (x)")
+	TEST_ASSERT_EQUAL(frames[length(frames) - 2], victim.y, "The slash isn't drawn on the tile of the one hit (y)")
+	var/mutable_appearance/look = new(frames[length(frames) - 4])
+	TEST_ASSERT_EQUAL(look.plane, victim.plane, "The recorded slash isn't on the plane of the one hit")
+	TEST_ASSERT_EQUAL(look.layer, ABOVE_MOB_LAYER, "The recorded slash would sort under the body")
+	press_again(user)
+	wait_over(user)
+
 /// A one-shot effect that only fades (a muzzle flash), compressed past two frames, is held whole for a frame by a step
 /// that changes nothing and then faded: never by a `delay`, through which the client draws it already faded out.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held

@@ -106,6 +106,9 @@
 	holder.RegisterSignal(bearer, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))
 	bearer.vis_contents += holder
 	QDEL_IN(holder, lifetime)
+	// A Sandevistan replay plays it again (ware_sandy_replay.dm). A tick on, once the caller has placed and turned it.
+	if(length(GLOB.sandy_replays))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sandy_replay_made), holder), world.tick_lag)
 	return holder
 
 // =========================================================================

@@ -81,6 +81,8 @@
 /// Everyone and everything within this many tiles of the user holds still for the replay (the slow-mo's witness range:
 /// any other player this close is crew, or there would be no replay).
 #define SANDY_REPLAY_HOLD_RANGE 11
+/// How long a slash over someone hit stays in the replay once shown: the length of its own frames.
+#define SANDY_REPLAY_PICTURE_TIME (0.4 SECONDS)
 /// The most sounds one recording keeps of the world around the user (footsteps, casings, NPCs' guns).
 #define SANDY_REPLAY_MAX_SOUNDS 200
 /// The most it keeps in all: past SANDY_REPLAY_MAX_SOUNDS only the user's and its crewmates' own sounds go in (their
@@ -204,6 +206,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	/// A one-shot effect (a temp visual: a muzzle flash, an impact ring, cracks): its animations play for at least
 	/// SANDY_REPLAY_ONESHOT_MIN, so a compressed one is drawn at all, and its stand-in stays until they are done.
 	var/oneshot = FALSE
+	/// A one-shot whose animation is its icon's own frames (a slash over someone hit): how long its stand-in stays once
+	/// shown, so the frames play through at their own pace instead of ending with the one replay frame it lasted.
+	var/plays_out = 0
 	/// Playback: the glide playing now is a step to another tile, not a pose's own shift on the spot.
 	var/glide_step = FALSE
 	/// Each shot it fired: list(the frame it is first drawn in, x, y of the real tile it was fired from), where its
@@ -417,6 +422,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		return FALSE
 	if(sandy_rig_picture(thing)) // a finisher rig's posed piece of a body: the move is replayed with it
 		return TRUE
+	if(sandy_bearer_picture(thing)) // a swing or a slash a chrome weapon plays on a body
+		return TRUE
 	if(isprojectile(thing))
 		var/obj/projectile/shot = thing
 		if(shot.hitscan) // crosses the room in a tick: its tracer, muzzle and impact effects are what is seen, and recorded
@@ -446,6 +453,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		intro(track)
 		if(ismovable(thing.loc) && shown_on(thing)) // a muzzle flash, drawn on the shooter's tile
 			shot_from(thing.loc, track.first)
+	else if(sandy_bearer_picture(thing))
+		track.oneshot = TRUE
+		// On someone hit it plays through where they are. On the surger it would be left behind as he moves on: it
+		// lasts its own replay frame there.
+		var/obj/effect/abstract/cyberware_anim/picture = thing
+		if(picture.bearer != user && !sandy_session_member(src, picture.bearer))
+			track.plays_out = SANDY_REPLAY_PICTURE_TIME
 	else if(track.flier && shot_fired(thing))
 		var/obj/projectile/shot = thing
 		shot_from(shot.firer, track.first)
@@ -523,6 +537,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		z = here.z
 	var/raw = thing.appearance
 	var/facing = thing.dir
+	var/obj/effect/abstract/cyberware_anim/picture = sandy_bearer_picture(thing) ? thing : null
+	if(picture?.bearer)
+		facing = picture.bearer.dir // drawn the way its bearer faces (VIS_INHERIT_DIR)
 	var/list/frames = track.frames
 	var/at = length(frames) - SANDY_FRAME_SIZE
 	// Wet blood dries and spreads on the client (animate()): its vars already hold the end, so it is looked at every sample.
@@ -543,6 +560,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		look = wet_look(wet, look)
 	if(track.flier)
 		look = shot_look(thing, look)
+	if(picture)
+		look = picture_look(picture, look)
 	if(at >= 0)
 		if(frames[at + SANDY_FRAME_LOOK] == look && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 			return
@@ -563,10 +582,27 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/atom/here = thing.loc
 	if(isturf(here))
 		return here
+	if(sandy_bearer_picture(thing)) // in nothing: only in the vis_contents of the body it plays on
+		var/obj/effect/abstract/cyberware_anim/picture = thing
+		var/atom/movable/worn_by = picture.bearer
+		return (worn_by && isturf(worn_by.loc) && (thing in worn_by.vis_contents)) ? worn_by.loc : null
 	if(!istype(thing, /obj/effect/temp_visual) || !ismovable(here) || !isturf(here.loc))
 		return null
 	var/atom/movable/holder = here
 	return (thing in holder.vis_contents) ? holder.loc : null
+
+/**
+ * `look` (a picture a chrome weapon plays on a body) as a stand-in on the floor can draw it. On the body it takes the
+ * body's plane and sorts among the body's overlays by a float layer, and the far arm's is cut around what the near hand
+ * holds by a mask of that item: a stand-in has none of those, so it goes on the body's plane just over mobs, uncut.
+ */
+/datum/sandy_replay/proc/picture_look(obj/effect/abstract/cyberware_anim/picture, look)
+	var/mutable_appearance/copy = new(look)
+	var/atom/movable/worn_by = picture.bearer
+	copy.plane = worn_by ? worn_by.plane : GAME_PLANE
+	copy.layer = ABOVE_MOB_LAYER
+	copy.filters = null
+	return copy.appearance
 
 /// `thing`'s appearance without the slow-mo's own look: the field's tint and the user's edge glow.
 /datum/sandy_replay/proc/clean_look(atom/movable/thing)
@@ -1808,6 +1844,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		standin.opacity = FALSE
 		standin.luminosity = 0
 		settle(track, standin, 0, 0)
+		if(track.plays_out)
+			track.anim_until = world.time + track.plays_out
+			track.plays_out = 0
 		return
 	var/atom/movable/thing = track.thing
 	if(QDELETED(thing) || track.unmasked)
@@ -2405,15 +2444,26 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 /proc/sandy_rig_picture(atom/thing)
 	return istype(thing, /obj/effect/abstract/chrome_puppet) || istype(thing, /obj/effect/abstract/mantis_puppet) || istype(thing, /obj/effect/abstract/mantis_rig_fx) || istype(thing, /obj/effect/temp_visual/hv_muzzle_flash)
 
+/// A short picture a chrome weapon plays on a body (a Mantis swing on its bearer, a slash over someone hit): it is in
+/// nothing, only in that body's vis_contents, so no field ever sees it (cyberware_anim.dm).
+/proc/sandy_bearer_picture(atom/thing)
+	return istype(thing, /obj/effect/abstract/cyberware_anim)
+
 /// A one-shot effect was just made: every recording near it takes it now, from this frame. Called by effects whose
 /// animation isn't journaled (it is in their Initialize()), and by those a move makes after its slow-mo has ended, when no
 /// field hands new things over.
 /proc/sandy_replay_made(atom/movable/thing)
 	if(!length(GLOB.sandy_replays))
 		return
+	var/turf/where = get_turf(thing)
+	if(!where && sandy_bearer_picture(thing))
+		var/obj/effect/abstract/cyberware_anim/picture = thing
+		where = get_turf(picture.bearer)
+	if(!where)
+		return
 	for(var/user in GLOB.sandy_replays)
 		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
-		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && get_dist(replay.user, get_turf(thing)) <= SANDY_REPLAY_HOLD_RANGE)
+		if(replay.state == SANDY_REPLAY_RECORDING && replay.user && replay.near_centre(where))
 			replay.notice(thing)
 
 /// tg's muzzle flash is made inside the shooter and shown in their vis_contents, where no field sees it: every
@@ -2604,6 +2654,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_SOUND_VOLUME
 #undef SANDY_REPLAY_SOUND_GAP
 #undef SANDY_REPLAY_HOLD_RANGE
+#undef SANDY_REPLAY_PICTURE_TIME
 #undef SANDY_REPLAY_WAIT_MAX
 #undef SANDY_REPLAY_RIG_HIDES
 #undef SANDY_FRAME_SIZE
