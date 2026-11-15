@@ -163,6 +163,19 @@
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "A head-aimed point-blank shot at a downed target was not an execution ([head.brute_dam] head damage from a [round_damage] round)")
 	TEST_ASSERT(head.hv_skull_wound >= 1, "A head-aimed light execution left no skull wound for its damage") // light: 40 head brute
 
+/// A human NPC is helpless only in tg's states (stunned, cuffed, held, down), never because of its health.
+/datum/unit_test/hv_npc_executable_states
+
+/datum/unit_test/hv_npc_executable_states/Run()
+	var/mob/living/carbon/human/npc/npc = allocate(/mob/living/carbon/human/npc)
+	QDEL_NULL(npc.ai_controller)
+	TEST_ASSERT(!npc.hv_can_be_executed(), "An NPC at full health could be executed")
+	npc.apply_damage(85, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(npc.stat == CONSCIOUS, "The test NPC fell over at 15 health")
+	TEST_ASSERT(!npc.hv_can_be_executed(), "An NPC on its feet at 15 health could be executed")
+	npc.Paralyze(30 SECONDS)
+	TEST_ASSERT(npc.hv_can_be_executed(), "A paralysed NPC could not be executed")
+
 /// The death throes, given by every human NPC that dies (human_npc_barks.dm), end where they began: the
 /// body's real transform and offsets are untouched, so tg's lying pose stays right.
 /datum/unit_test/hv_death_throes_end_where_they_began

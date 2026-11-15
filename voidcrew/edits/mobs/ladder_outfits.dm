@@ -20,6 +20,11 @@
 	. = ..()
 	ladder_add_survival_knife()
 
+// The combat-ready kit fills its bag already: equip() below hands the knife over instead.
+/datum/outfit/job/miner/equipped/combat/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
+	. = ..()
+	backpack_contents -= /obj/item/knife/combat/survival
+
 /datum/outfit/job/security/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	ladder_add_survival_knife()
@@ -59,10 +64,11 @@
 // Corpse and ghost-role outfits are also fixed starting placements.
 // Appearance dummies are left alone: get_dynamic_human_appearance() dresses one through the
 // spawner to draw an NPC's look (a gunner holding its gun) and deletes it straight after, so
-// nothing on it can ever be picked up.
+// nothing on it can ever be picked up. Human NPCs (voidcrew/modules/human_npcs/) are left alone
+// too: their kit is locked to the body and never becomes loot, and it's what they fight with.
 /obj/effect/mob_spawn/equip(mob/living/spawned_mob)
 	. = ..()
-	if(ishuman(spawned_mob) && !istype(spawned_mob, /mob/living/carbon/human/dummy))
+	if(ishuman(spawned_mob) && !istype(spawned_mob, /mob/living/carbon/human/dummy) && !ishumannpc(spawned_mob))
 		remove_ladder_starting_weapons(spawned_mob, list())
 
 /datum/voucher_set/mining/crusher_kit
