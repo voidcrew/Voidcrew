@@ -13,14 +13,19 @@
 	// The same checks that stop the wind-up before it starts.
 	var/pressing = !fire_cd && !firing_burst && !HAS_TRAIT(user, TRAIT_PACIFISM) && isturf(user.loc) && isturf(target.loc)
 	if(pressing)
+		user.face_atom(target)
 		user.hv_vis_press_in(target, HV_EXECUTION_WINDUP)
 		target.hv_vis_tremble(HV_EXECUTION_WINDUP - HV_VIS_PRESS_PAUSE, 1)
 	. = ..()
 	if(!pressing)
 		return
-	// Shot or called off, the shooter straightens up.
+	// Called off, the shooter straightens up at once. Having fired he holds the lean through the flash and the burst:
+	// straightening on the shot's own tick, he stood idle while the head went off beside him.
 	if(!QDELETED(user))
-		user.hv_vis_release(HV_VIS_TAG_PRESS, 1.5)
+		if(.)
+			addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, hv_vis_release), HV_VIS_TAG_PRESS, 1.5), 0.4 SECONDS)
+		else
+			user.hv_vis_release(HV_VIS_TAG_PRESS, 1.5)
 	if(!QDELETED(target) && target.stat != DEAD)
 		target.hv_vis_release(HV_VIS_TAG_TREMBLE, 1)
 

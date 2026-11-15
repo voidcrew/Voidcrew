@@ -380,7 +380,7 @@
 
 	// VOIDCREW EDIT ADDITION START: a point-blank head shot at someone helpless is an execution (voidcrew/modules/hyperviolence/overlays_exec/executions.dm)
 	if(flag && hv_try_head_execution(user, target, params))
-		return
+		return TRUE // handled: without this the click fell through to a gun-bash on the body once the execution was over
 	// VOIDCREW EDIT ADDITION END
 
 	if(!can_shoot()) //Just because you can pull the trigger doesn't mean it can shoot.

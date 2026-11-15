@@ -88,7 +88,7 @@
 		bar.finish(held && !QDELETED(src) && !QDELETED(user) && !QDELETED(target))
 	if(!held || QDELETED(src) || QDELETED(user) || QDELETED(target))
 		return
-	hv_fire_execution(user, target, params)
+	return hv_fire_execution(user, target, params)
 
 /// do_after check: the shooter still holds the gun to the head of someone who still can't fight back.
 /obj/item/gun/proc/hv_execution_holds(mob/living/user, mob/living/target)
