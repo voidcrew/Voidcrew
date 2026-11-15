@@ -187,6 +187,16 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	/// Surger: the steps it took to reach a frame where it took more than one, by that frame's index as text. A corner
 	/// turned between two samples is two frames a diagonal apart: the trail goes round it as he did (surger_frame()).
 	var/list/ways
+	/// Recorder, surger: the recording's clock (frame_exact()) at its last step.
+	var/stepped_at = 0
+	/// Surger: the clock at the last step it took to reach a frame, by that frame's index as text. Steps are paced by
+	/// when they were really taken: two fall in one frame and three in the next at one steady run (surger_frame()).
+	var/list/step_clock
+	/// Playback, surger: the clock of the last step replayed.
+	var/trail_stepped_at = 0
+	/// Surger: how long a step takes it (its movement delay, in deciseconds), as of its last recorded step. The live
+	/// trail gives the first step after a pause that long (cyberware_cascade_window/on_move()), and so does the replay's.
+	var/stride = 0
 	/// Playback, surger: world.time its last external cue played.
 	var/burst_cue_at = 0
 	/// Playback: a turn (transform change) being tweened: from, to, how long it takes and when it ends.
@@ -630,6 +640,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 				else
 					LAZYREMOVE(track.ways, key)
 				track.path = null
+			if(track.stepped_at)
+				LAZYSET(track.step_clock, "[frames[at + SANDY_FRAME_INDEX]]", track.stepped_at)
 			frames[at + SANDY_FRAME_LOOK] = look
 			frames[at + SANDY_FRAME_X] = x
 			frames[at + SANDY_FRAME_Y] = y
@@ -639,6 +651,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	if(length(track.path) > 2) // more than one step since its last frame
 		LAZYSET(track.ways, "[frame]", track.path)
 	track.path = null
+	if(track.stepped_at)
+		LAZYSET(track.step_clock, "[frame]", track.stepped_at)
 	frames += list(frame, look, x, y, z, facing)
 
 /**
@@ -779,7 +793,13 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 /datum/sandy_replay/proc/on_surger_stepped(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
 	var/datum/sandy_replay_track/track = tracks[source]
-	if(!track || state != SANDY_REPLAY_RECORDING || length(track.path) >= SANDY_REPLAY_PATH_MAX * 2)
+	if(!track || state != SANDY_REPLAY_RECORDING)
+		return
+	track.stepped_at = frame_exact()
+	if(isliving(source))
+		var/mob/living/walker = source
+		track.stride = walker.cached_multiplicative_slowdown
+	if(length(track.path) >= SANDY_REPLAY_PATH_MAX * 2)
 		return
 	var/turf/here = source.loc
 	LAZYADD(track.path, isturf(here) ? here.x : 0)
@@ -2239,10 +2259,19 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	// The trail is laid as the live one is (cyberware_cascade_window/on_move()), on the replay's clock: a step takes as
 	// many frames as it took in the recording, and an afterimage lives trail_length / trail_per_tile steps, so a walk at
 	// any speed drags the trail's length behind it. It is gone a frame after the replay is.
-	var/step_frames = (frames[dest + SANDY_FRAME_INDEX] - frames[from + SANDY_FRAME_INDEX]) / steps
+	// The steps were taken between the last one replayed and the last one of this frame, where that was kept: counted
+	// by the frame, a steady run's pace wobbles with how many of its steps each frame happens to hold, and a leg laid
+	// in a fuller frame faded before an older one.
+	var/span = frames[dest + SANDY_FRAME_INDEX] - frames[from + SANDY_FRAME_INDEX]
+	var/stepped = LAZYACCESS(track.step_clock, "[frames[dest + SANDY_FRAME_INDEX]]")
+	if(stepped && track.trail_stepped_at && stepped > track.trail_stepped_at)
+		span = stepped - track.trail_stepped_at
+	track.trail_stepped_at = stepped || frames[dest + SANDY_FRAME_INDEX]
+	var/step_frames = span / steps
 	var/step_max = CYBERWARE_CASCADE_TRAIL_STEP_MAX * rate_at(frames[dest + SANDY_FRAME_INDEX])
-	if(step_frames > step_max) // the first step, or one after a pause: as long as its last step took
-		step_frames = track.trail_step_frames || step_max
+	if(step_frames > step_max) // the first step, or one after a pause: as long as a step takes him, as the live trail has it
+		var/stride_frames = track.stride * rate_at(frames[dest + SANDY_FRAME_INDEX])
+		step_frames = stride_frames > 0 ? min(stride_frames, step_max) : (track.trail_step_frames || step_max)
 		sandy_burst_cue(track, left)
 	track.trail_step_frames = step_frames
 	var/per_tile = max(1, track.trail_per_tile)
@@ -2257,6 +2286,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		// Several tiles between two frames: the puppet is still gliding over them, and a copy laid now on a tile further
 		// on stood ahead of him. Each shows as he passes it.
 		var/wait = track.glide_until > world.time ? (track.glide_until - world.time) * (k - 1) / steps : 0
+		// Each copy faces the way he was going as he left its tile: only the last step's facing is in the frame
+		var/facing = steps > 1 ? get_dir(step_from, crossed[k + 1]) : frames[dest + SANDY_FRAME_DIR]
 		for(var/i in 0 to (before ? per_tile - 1 : 0))
 			var/fraction = i / per_tile
 			var/left_frames = life_frames - (steps - k + 1 + fraction) * step_frames // it was passed this long ago
@@ -2265,7 +2296,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			var/life = clamp(left_frames, 1, frames_left) * world.tick_lag
 			var/shift_x = before ? round((before.x - step_from.x) * fraction * ICON_SIZE_X) : 0
 			var/shift_y = before ? round((before.y - step_from.y) * fraction * ICON_SIZE_Y) : 0
-			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], frames[dest + SANDY_FRAME_DIR], 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag, wait)
+			trail_copies += new /obj/effect/temp_visual/decoy/fading/cascade/replay(step_from, frames[dest + SANDY_FRAME_LOOK], facing, 1 - left_frames / life_frames, track.trail_alpha * left_frames / life_frames, life, shift_x, shift_y, left_frames * world.tick_lag, wait)
 			afterimages++
 	track.trail_prev = crossed[steps]
 
