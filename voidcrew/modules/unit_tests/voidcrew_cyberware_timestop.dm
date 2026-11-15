@@ -286,6 +286,30 @@
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
+/// A gib thrown across the floor in the slow-mo crosses it at the field's pace, and as many tiles as it would have.
+/datum/unit_test/voidcrew_cyberware_timestop/gibs_fly_slowed
+
+/datum/unit_test/voidcrew_cyberware_timestop/gibs_fly_slowed/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandytimestopgibs")
+	set_window(user, 3 SECONDS)
+	var/datum/status_effect/cyberware_cascade_window/window = surge(user)
+	TEST_ASSERT_NOTNULL(window, "The lattice's window didn't open")
+	sleep(0.1 SECONDS)
+	TEST_ASSERT_NOTNULL(window.time_stop, "Time didn't slow with nobody else near")
+	var/datum/proximity_monitor/advanced/timestop/sandevistan/field = window.time_stop.chronofield
+	var/scale = field.time_scale
+	var/obj/effect/decal/cleanable/blood/gibs/chunk = allocate(/obj/effect/decal/cleanable/blood/gibs, spot(1, 2))
+	TEST_ASSERT_NOTNULL(cyberware_time_field(chunk), "Test fixture: the gib isn't in the field")
+	var/datum/move_loop/loop = GLOB.move_manager.move_to(chunk, spot(5, 2), delay = 2, timeout = 6)
+	TEST_ASSERT_NOTNULL(loop, "Test fixture: the gib has no move loop")
+	chunk.sandy_streak_delay = loop.delay
+	TEST_ASSERT(chunk.sandy_streak_pace(loop), "A gib's flight across the floor wasn't slowed in the field")
+	TEST_ASSERT(abs(loop.delay - 2 / scale) < 0.5, "A slowed gib takes [loop.delay] a tile at [scale * 100]%, not [2 / scale]")
+	TEST_ASSERT(abs(loop.lifetime / loop.delay - 3) < 0.01, "A slowed gib has [loop.lifetime / loop.delay] steps left of the 3 it was thrown")
+	qdel(loop)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
 /// Everything in the field runs on its own slowed clock: gore timing, do_after, bursts, mechs, turrets, fuses
 /datum/unit_test/voidcrew_cyberware_timestop/slow_everything
 
