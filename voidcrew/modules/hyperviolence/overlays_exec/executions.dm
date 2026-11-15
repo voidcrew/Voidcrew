@@ -146,11 +146,14 @@
 
 /// Each round (or pellet) the execution casing readies loses its accuracy falloff, so tg's zone roll on
 /// impact (projectile.dm, the one TRAIT_DESIGNATED_TARGET also skips) keeps it on the aimed head. Its
-/// damage, armour and everything after are tg's as usual.
+/// damage, armour and everything after are tg's as usual. It is never drawn: fired with the barrel on the
+/// head it lands the tick it is made, and a Sandevistan replay, which draws every round it saw, showed it as
+/// a tracer lying across the shooter (cyberware/ware_sandy_replay.dm records nothing it can't see).
 /obj/item/gun/proc/hv_execution_round_ready(obj/item/ammo_casing/source, atom/target, mob/living/user, quiet, zone_override, atom/fired_from)
 	SIGNAL_HANDLER
 	if(fired_from == src && source.loaded_projectile)
 		source.loaded_projectile.accuracy_falloff = 0
+		source.loaded_projectile.invisibility = INVISIBILITY_ABSTRACT
 
 /// Adds up what this gun's rounds do to the victim's head while an execution round is fired.
 /obj/item/gun/proc/hv_execution_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/attacking_item)
