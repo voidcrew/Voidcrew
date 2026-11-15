@@ -350,6 +350,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/landing_stage = 0
 	var/landing_started = 0
 	var/list/landing = list()
+	/// world.time the last of it to land has left its last drops by: the replay stays that long.
+	var/landing_settle = 0
 	/// The longest one frame's sample of everything recorded took, in milliseconds, for tests and recordings.
 	var/sample_cost = 0
 
@@ -884,7 +886,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		track = tracks[target]
 	// Gore a move puts on the floor and then moves itself: a burst head's gib, the Gorilla's thrown arm and the blood
 	// drops that show as it lands (gorilla_finisher.dm)
-	var/thrown_gib = istype(target, /obj/effect/decal/cleanable/blood) || istype(target, /obj/item/bodypart)
+	var/thrown_gib = istype(target, /obj/effect/decal/cleanable/blood) || istype(target, /obj/item/bodypart) || istype(target, /obj/item/organ)
 	if(!track || !(sandy_rig_picture(target) || isliving(target) || track.oneshot || thrown_gib))
 		return
 	if(thrown_gib)
@@ -1311,7 +1313,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		var/datum/component/hv_tumble/tumble = thing.GetComponent(/datum/component/hv_tumble)
 		if(!(loop && (loop.status & MOVELOOP_STATUS_RUNNING)) && !tumble?.step_timer)
 			landing -= thing
-	return length(landing) > 0 || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && gore_playing())
+			landing_settle = world.time + 0.15 SECONDS
+	return length(landing) > 0 || world.time < landing_settle || (world.time - landing_started < SANDY_REPLAY_LANDING_TWEENS && gore_playing())
 
 /// Whether the replay is still playing its own animation of gore thrown in the recording's last moments (a gib's arc
 /// from a head that burst as the slow-mo ended).

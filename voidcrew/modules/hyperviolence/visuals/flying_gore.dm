@@ -326,6 +326,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	if(!isturf(crossed) || isgroundlessturf(crossed) || crossed.has_gravity() <= 0)
 		return
 	streaks++
+	// Over wet spray already there it leaves nothing new: its few drops would thin the gout out (the spray is one decal
+	// a tile, and takes the last look it is given).
+	for(var/obj/effect/decal/cleanable/blood/hv_spray/there in crossed)
+		if(!istype(there, /obj/effect/decal/cleanable/blood/hv_spray/wall) && !there.dried && !QDELETED(there))
+			there.add_blood_DNA(blood_dna)
+			return
 	// A few drops under it as it passes, not a line.
 	var/obj/effect/decal/cleanable/blood/hv_spray/streak/trail = hv_blood_lay_spray(crossed, /obj/effect/decal/cleanable/blood/hv_spray/streak/drops, fling_dir, blood_dna)
 	if(istype(trail))

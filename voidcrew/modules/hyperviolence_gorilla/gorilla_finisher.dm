@@ -142,6 +142,9 @@
 
 /// Takes every puppet down and shows both bodies.
 /datum/hv_finisher/chrome/gorilla/proc/cleanup_rigs()
+	// Hidden behind his stand-ins he may have been turned (a click, a blocked step): he comes back facing the way they did
+	if(bearer_rig && facing && !QDELETED(user))
+		user.setDir(facing)
 	QDEL_NULL(bearer_rig)
 	QDEL_NULL(victim_rig)
 
