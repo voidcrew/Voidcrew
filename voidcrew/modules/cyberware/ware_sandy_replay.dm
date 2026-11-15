@@ -398,6 +398,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	var/list/trail_copies = list()
 	/// world.time the last of it to land has left its last drops by: the replay stays that long.
 	var/landing_settle = 0
+	/// Where and when a finisher's posed pictures were first drawn (sandy_rig_picture()): list(frame, x, y) each. A
+	/// surger gliding onto that tile is there by then (advance()).
+	var/list/rig_frames = list()
 	/// world.time the recording ended at. What was mid-tween then (a spray painting in) carries on from there when it is
 	/// handed back, as if the replay took no time.
 	var/ended_at = 0
@@ -530,6 +533,10 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	else if(track.flier && shot_fired(thing))
 		var/obj/projectile/shot = thing
 		shot_from(shot.firer, track.first)
+	if(sandy_rig_picture(thing) && length(rig_frames) < SANDY_REPLAY_MAX_SHOTS * 4)
+		var/turf/posed_on = shown_on(thing)
+		if(posed_on)
+			rig_frames += list(list(track.first, posed_on.x, posed_on.y))
 	if(sandy_rig_picture(thing) || track.oneshot || track.flier)
 		var/matrix/turned = thing.transform
 		event_log += "notice [thing.type] f[frame_exact()] first=[track.first] on=[shown_on(thing) ? "map" : "off"] dir=[thing.dir] T=[turned.a],[turned.b],[turned.d],[turned.e]"
@@ -1303,6 +1310,14 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	for(var/list/shot as anything in track.shot_frames)
 		if(shot[1] >= from && shot[2] == x && shot[3] == y && (!next || shot[1] < next))
 			next = shot[1]
+	return next
+
+/// The first frame at or after `from` that a finisher's posed pictures are drawn on tile `x`, `y`, or 0.
+/datum/sandy_replay/proc/posed_at(from, x, y)
+	var/next = 0
+	for(var/list/posed as anything in rig_frames)
+		if(posed[1] >= from && posed[2] == x && posed[3] == y && (!next || posed[1] < next))
+			next = posed[1]
 	return next
 
 /// Whether one more shot in the air can be recorded. Logs it, once a recording, when one can't.
@@ -2127,6 +2142,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		var/shot_frame = shooting_at(track, frames[at + SANDY_FRAME_INDEX], frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y])
 		if(shot_frame)
 			time = min(time, max((shot_frame - frame) * world.tick_lag, 0))
+		// A surger who starts a finisher as he lands (a dash straight into an execution): the move's pictures, his blades
+		// and the slashes are drawn on that tile from their first frame, and he was still gliding in under them.
+		if(track.surger)
+			var/posed_frame = posed_at(frames[at + SANDY_FRAME_INDEX], frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y])
+			if(posed_frame)
+				time = min(time, max((posed_frame - frame) * world.tick_lag, world.tick_lag / 2))
 	else if(left > 0)
 		time = left
 	track.glide_x = move_x
