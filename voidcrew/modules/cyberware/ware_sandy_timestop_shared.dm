@@ -18,7 +18,8 @@
  * - The release flash only shows to a member when no replay follows (the cut to the replay is the change of scene).
  * - When the last active member's time is up while any member is mid-move, the slow-mo holds for it as a solo one does
  *   (sandy_session_mid_move()), so the replay never waits with the world running. A hold may run past
- *   SANDY_SHARED_MAX_LENGTH by its own cap; nobody joins while it holds.
+ *   SANDY_SHARED_MAX_LENGTH by its own cap; nobody joins while it holds. A member whose own time was out and who is
+ *   the one mid-move runs at its own speed again for the hold, with its edge glow (hold_for_moves()).
  *
  * Each member is paced by its own field only: the other members' fields leave it alone (sandy_session_shares()).
  */
@@ -363,6 +364,22 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 			return TRUE
 	return FALSE
 
+/**
+ * The slow-mo holds for a move in progress (slowmo_time_up()). A member whose own time was out and who is in the middle
+ * of that move runs at its own speed for the hold, with its edge glow, as the member holding does: held for at the
+ * world's pace, it crawled through the move in a tinted room where nothing else happened, for up to the hold's cap.
+ */
+/datum/sandy_session/proc/hold_for_moves()
+	for(var/mob/living/member as anything in members)
+		if(active[member] || QDELETED(member) || member.stat == DEAD || !sandy_replay_mid_move(member))
+			continue
+		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = sandy_session_field(members[member])
+		if(!field)
+			continue
+		field.sandy_host_leaves_world()
+		member.add_filter(SANDY_SHARED_OUTLINE, 2, outline_filter(1, "#5AFF96D2")) // the edge glow try_time_stop() gives
+		note("[member] finishes its move")
+
 /// The last active member's time is out: every field ends now and the recording plays once.
 /datum/sandy_session/proc/finish_all(datum/status_effect/cyberware_cascade_window/last)
 	ending = TRUE
@@ -582,6 +599,25 @@ GLOBAL_LIST_EMPTY(sandy_session_of)
 	stopper?.immune -= body
 	UnregisterSignal(body, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
 	freeze_atom(body)
+
+/// The host's own time was out and the slow-mo now holds for its move (sandy_session/proc/hold_for_moves()): until the
+/// fields end it runs at its own speed again, out of the tint, and its shots are its own.
+/datum/proximity_monitor/advanced/timestop/sandevistan/proc/sandy_host_leaves_world()
+	var/mob/living/body = host
+	if(!istype(body) || immune[body])
+		return
+	if(GLOB.cyberware_time_dilated[body] == src)
+		var/lag = cyberware_time_lag(body)
+		if(lag > 0)
+			push_deadlines(body, lag)
+		var/list/tags = slowed_tags[body]
+		unfreeze_atom(body)
+		for(var/tag in tags)
+			body.hv_vis_release(tag, 1)
+	immune[body] = TRUE
+	if(stopper)
+		stopper.immune[body] = TRUE
+	RegisterSignal(body, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_user_fire), override = TRUE)
 
 // =========================================================================
 // THE RECORDING

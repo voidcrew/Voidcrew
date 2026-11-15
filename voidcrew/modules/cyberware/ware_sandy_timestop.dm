@@ -1295,7 +1295,9 @@ GLOBAL_LIST_EMPTY(cyberware_time_fields)
 		var/datum/proximity_monitor/advanced/timestop/sandevistan/field = time_stop.chronofield
 		if(field)
 			field.ends_at = hold_until
-		GLOB.sandy_session_of[owner]?.repace() // every member's field holds with it
+		var/datum/sandy_session/session = GLOB.sandy_session_of[owner]
+		session?.repace() // every member's field holds with it
+		session?.hold_for_moves() // and a member out of time who is the one mid-move finishes it at its own speed
 		hold_timer = addtimer(CALLBACK(src, PROC_REF(hold_check)), world.tick_lag, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 		return
 	qdel(src)
