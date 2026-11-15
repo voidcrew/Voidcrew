@@ -1,6 +1,13 @@
 // Plasma and frontier laser weapons (voidcrew/modules/plasma_weapons/).
 // Package: P0 seams. Values are final; packages read them and never redefine them.
 
+// ===== NPCs =====
+
+/// 1 lets pirate gunners roll the Cinder and Furnace and arms red-zone Director Prime and Chief Auditor with a
+/// Furnace (plasma_pirates.dm). 0 (on hold for now): no NPC is handed a plasma gun and bosses keep their stock
+/// weapon. The Old Furnace stays in red-zone boss loot either way.
+#define PLASMA_NPC_GUNS 0
+
 // ===== Cartridge and chamber =====
 
 /// Mol one plasma sheet gives (a sheet grinds to 20 u, 1 u boils to 1 mol)

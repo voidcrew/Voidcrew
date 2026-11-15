@@ -42,6 +42,7 @@
 		TEST_ASSERT_EQUAL(handling.type, expected[gun_type], "[gun_type] is handled as [handling.type]")
 
 /// Green-zone pirates never carry plasma; yellow adds the Cinder; red adds both. The faction's own lists are untouched.
+/// With PLASMA_NPC_GUNS off, no zone adds either.
 /datum/unit_test/voidcrew_plasma_pirates/zone_outfits
 
 /datum/unit_test/voidcrew_plasma_pirates/zone_outfits/Run()
@@ -52,8 +53,8 @@
 		var/list/green_before = table.green.Copy()
 		for(var/zone in 1 to 3)
 			var/list/choices = table.outfits_for(null, zone)
-			TEST_ASSERT_EQUAL(!!choices[table.plasma_pistol_outfit], zone >= 2, "A zone [zone] [faction] crew's Cinder gunner is wrong")
-			TEST_ASSERT_EQUAL(!!choices[table.plasma_rifle_outfit], zone == 3, "A zone [zone] [faction] crew's Furnace gunner is wrong")
+			TEST_ASSERT_EQUAL(!!choices[table.plasma_pistol_outfit], PLASMA_NPC_GUNS && zone >= 2, "A zone [zone] [faction] crew's Cinder gunner is wrong")
+			TEST_ASSERT_EQUAL(!!choices[table.plasma_rifle_outfit], PLASMA_NPC_GUNS && zone == 3, "A zone [zone] [faction] crew's Furnace gunner is wrong")
 			for(var/outfit_type in green_before)
 				TEST_ASSERT_EQUAL(choices[outfit_type], green_before[outfit_type], "A zone [zone] [faction] crew's weight for [outfit_type] changed")
 		TEST_ASSERT_EQUAL(length(table.green), length(green_before), "Plasma gunners were written into [faction]'s own list")
@@ -85,7 +86,7 @@
 		qdel(pirate)
 
 /// The red-zone Director Prime and Chief Auditor carry a Furnace, elsewhere their laser; both can drop the
-/// Old Furnace, but only in a red zone.
+/// Old Furnace, but only in a red zone. With PLASMA_NPC_GUNS off, they carry their laser everywhere.
 /datum/unit_test/voidcrew_plasma_pirates/bosses
 
 /datum/unit_test/voidcrew_plasma_pirates/bosses/Run()
@@ -106,7 +107,8 @@
 				var/datum/outfit/outfit = outfit_type
 				if(ispath(initial(outfit.r_hand), /obj/item/gun/energy/plasma_weapon/rifle))
 					carries_furnace = TRUE
-			TEST_ASSERT_EQUAL(carries_furnace, zone == 3, "A zone [zone] [boss_type] [zone == 3 ? "carries no" : "carries a"] Furnace")
+			var/wants_furnace = PLASMA_NPC_GUNS && zone == 3
+			TEST_ASSERT_EQUAL(carries_furnace, wants_furnace, "A zone [zone] [boss_type] [wants_furnace ? "carries no" : "carries a"] Furnace")
 			boss.rolled_rare_loot = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
 			boss.npc_dressed_zone = zone
 			var/list/drops = boss.npc_roll_death_loot()

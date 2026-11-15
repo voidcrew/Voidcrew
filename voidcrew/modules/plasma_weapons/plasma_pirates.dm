@@ -13,6 +13,8 @@
 //   to run out: no gold, no fumbled gas. If it overheats anyway it waits out the lockout like a player, backing
 //   off from whoever is close. Both end on the gun's own deadlines, so nothing can leave it stuck.
 // NPC gear is locked to the body (human_npc_gear.dm), so none of this becomes loot.
+//
+// No pirate is dressed with a plasma gun while PLASMA_NPC_GUNS is 0; the handling and heat code stays for when they come back.
 
 /// Coil heat at which a pirate vents its Furnace: white-hot, the last glow before an overheat
 #define PIRATE_PLASMA_VENT_HEAT PLASMA_HEAT_STEP_3
@@ -185,7 +187,7 @@
 // Yellow and red: a regular gunner may be a plasma gunner, and a red-zone boss may carry its Furnace.
 /datum/human_npc_outfit_table/pirate/outfits_for(mob/living/carbon/human/npc/npc, zone)
 	. = ..()
-	if(zone != ZONE_YELLOW && zone != ZONE_RED)
+	if(!PLASMA_NPC_GUNS || (zone != ZONE_YELLOW && zone != ZONE_RED))
 		return
 	var/rank = npc?.npc_rank || HUMAN_NPC_RANK_REGULAR
 	if(rank >= HUMAN_NPC_RANK_BOSS)
