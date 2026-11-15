@@ -2472,6 +2472,35 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	. = ..()
 	sandy_replay_made(src)
 
+/// tg's blood splash is put on the floor, where the field hands it over at once, and only then (Initialize()) turns the
+/// way the blow went, takes its colour and flies off fading. The recording took it bare: it is looked at again here,
+/// with its flight, or a replayed hit has no splash.
+/obj/effect/temp_visual/dir_setting/bloodsplatter/Initialize(mapload, set_dir, set_color = BLOOD_COLOR_RED)
+	. = ..()
+	if(!length(GLOB.sandy_replays))
+		return
+	for(var/user in GLOB.sandy_replays)
+		var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+		replay.retake(src)
+
+/obj/effect/temp_visual/dir_setting/bloodsplatter/sandy_replay_intro()
+	if(alpha) // not flying yet: once it is, its vars hold where the flight ends
+		return null
+	return list(list("pixel_x" = 0, "pixel_y" = 0, "alpha" = initial(alpha)), list(
+		list(list("pixel_x" = pixel_x, "pixel_y" = pixel_y, "alpha" = 0, "time" = duration, "easing" = CUBIC_EASING | EASE_OUT)),
+	))
+
+/// A one-shot the recording took as it was put down has since been set up (turned, coloured, set flying): its first
+/// frame is taken again, and its own animation goes in its track.
+/datum/sandy_replay/proc/retake(obj/effect/temp_visual/effect)
+	var/datum/sandy_replay_track/track = tracks[effect]
+	if(!track || state != SANDY_REPLAY_RECORDING)
+		return
+	track.last_raw = null
+	sample_track(track, track.first)
+	track.events = null
+	intro(track)
+
 /**
  * What a temp visual that animates itself in Initialize() looks like before its animation, and the animation: list(the
  * vars it starts with, as animate() arguments; list(chains: each a list of animate() argument lists, the first without

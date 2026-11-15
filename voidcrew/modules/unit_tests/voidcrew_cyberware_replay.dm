@@ -870,6 +870,29 @@
 	press_again(user)
 	wait_over(user)
 
+/// tg's blood splash is handed to the recording as it is put down, before it has turned the way the blow went and set
+/// off: it is taken again once it has, turned and with its flight, so a replayed hit has its splash.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/blood_splash_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/blood_splash_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysplash")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/temp_visual/dir_setting/bloodsplatter/splash = new(spot(1, 0), EAST)
+	var/datum/sandy_replay_track/track = replay.tracks[splash]
+	TEST_ASSERT_NOTNULL(track, "Test fixture: the field didn't hand the blood splash to the recording")
+	var/list/frames = track.frames
+	TEST_ASSERT_EQUAL(frames[6], EAST, "The recorded splash isn't turned the way the blow went")
+	TEST_ASSERT(length(track.events) >= 2, "The recorded splash has no flight: it would replay as nothing")
+	var/list/flight = track.events[2]
+	var/list/steps = flight[4]
+	var/list/step = steps[1]
+	TEST_ASSERT_EQUAL(step["pixel_x"], 16, "The recorded splash doesn't fly the way the blow went")
+	TEST_ASSERT_EQUAL(step["alpha"], 0, "The recorded splash doesn't fade as it flies")
+	press_again(user)
+	wait_over(user)
+
 /// A one-shot effect that only fades (a muzzle flash), compressed past two frames, is held whole for a frame by a step
 /// that changes nothing and then faded: never by a `delay`, through which the client draws it already faded out.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held
