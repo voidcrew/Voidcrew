@@ -6870,6 +6870,7 @@
 #include "voidcrew\edits\game\turfs\open\water.dm"
 #include "voidcrew\edits\machinery\camera.dm"
 #include "voidcrew\edits\machinery\crew_monitor.dm"
+#include "voidcrew\edits\machinery\dance_machine.dm"
 #include "voidcrew\edits\machinery\firedoor_shuttle.dm"
 #include "voidcrew\edits\machinery\light_switch.dm"
 #include "voidcrew\edits\machinery\materials_market.dm"

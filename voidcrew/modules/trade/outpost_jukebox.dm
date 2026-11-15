@@ -30,6 +30,8 @@
 	var/autoplay_empty_checks = 0
 	/// Set while autoplay itself stops the music, so it isn't taken for a player stopping it.
 	var/autoplay_stopping = FALSE
+	/// The current song was started by autoplay. The dance machine skips its light spin-up for these.
+	var/autoplay_song = FALSE
 
 /obj/machinery/jukebox/Initialize(mapload)
 	. = ..()
@@ -49,6 +51,7 @@
 /obj/machinery/jukebox/stop_music()
 	var/finished = world.time >= song_ends_at - 1
 	. = ..()
+	autoplay_song = FALSE
 	if(!autoplay || QDELING(src) || autoplay_stopping)
 		return
 	autoplay_wait_until = world.time + (finished ? JUKEBOX_AUTOPLAY_GAP : JUKEBOX_AUTOPLAY_PAUSE)
@@ -91,7 +94,9 @@
 
 	music_player.selection = next_song
 	music_player.sound_loops = FALSE
-	activate_music()
+	autoplay_song = TRUE
+	if(!activate_music())
+		autoplay_song = FALSE
 
 #undef JUKEBOX_AUTOPLAY_CHECK
 #undef JUKEBOX_AUTOPLAY_GAP
