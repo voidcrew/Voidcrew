@@ -9,6 +9,11 @@
 // Every pose is held by the animation itself and let go by /datum/component/hv_motion_hold the moment
 // the body is moved, stands up or is revived.
 
+/mob/living/carbon
+	/// world.time the corpse's slide across a whole tile is due at (hv_vis_death_hit()), 0 when none is waiting. A
+	/// Sandevistan replay keeps recording until it has slid (ware_sandy_replay.dm).
+	var/hv_vis_slide_due = 0
+
 /// Falls point away from the hit that dropped the body, when one just landed from the side.
 /mob/living/carbon/set_lying_angle(new_lying)
 	var/falling = !lying_angle && new_lying
@@ -125,7 +130,9 @@
 		hv_vis_play_over(hv_vis_hold_then_fall_steps(HV_VIS_HITSTOP_TIME, 2))
 	if(hv_vis_hit_damage >= HV_VIS_FULL_SLIDE_DAMAGE && hv_vis_can_slide_tile(hit_dir))
 		// Next tick: the blow that killed it may still be resolving (a shotgun's other pellets).
-		addtimer(CALLBACK(src, PROC_REF(hv_vis_slide_tile), hit_dir), cyberware_dilated_time(src, 1), TIMER_DELETE_ME) // slower in a Sandevistan field
+		var/slide_in = cyberware_dilated_time(src, 1) // slower in a Sandevistan field
+		hv_vis_slide_due = world.time + slide_in
+		addtimer(CALLBACK(src, PROC_REF(hv_vis_slide_tile), hit_dir), slide_in, TIMER_DELETE_ME)
 		return
 	hv_vis_slide_in_tile(hit_dir, hv_vis_hit_damage, big ? HV_VIS_HITSTOP_TIME : 0)
 	hv_vis_twitches(rand(3, 5), big ? 6 : 4)
@@ -174,6 +181,7 @@
 
 /// Slides the corpse a whole tile along the killing blow, a real move with a slow glide.
 /mob/living/carbon/proc/hv_vis_slide_tile(slide_dir)
+	hv_vis_slide_due = 0
 	if(QDELETED(src) || stat != DEAD)
 		return
 	if(hv_vis_can_slide_tile(slide_dir) && Move(get_step(loc, slide_dir), slide_dir, DELAY_TO_GLIDE_SIZE(cyberware_dilated_time(src, HV_VIS_SLIDE_TIME))))
