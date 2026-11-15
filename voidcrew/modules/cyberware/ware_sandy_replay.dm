@@ -1312,11 +1312,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			next = shot[1]
 	return next
 
-/// The first frame at or after `from` that a finisher's posed pictures are drawn on tile `x`, `y`, or 0.
+/// The first frame from `from` on that a finisher's posed pictures are drawn on tile `x`, `y`, or 0. One frame before
+/// counts too: a picture made as he lands is drawn from the frame it was made in, and his step is sampled in the next.
 /datum/sandy_replay/proc/posed_at(from, x, y)
 	var/next = 0
 	for(var/list/posed as anything in rig_frames)
-		if(posed[1] >= from && posed[2] == x && posed[3] == y && (!next || posed[1] < next))
+		if(posed[1] >= from - 1 && posed[2] == x && posed[3] == y && (!next || posed[1] < next))
 			next = posed[1]
 	return next
 
