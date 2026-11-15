@@ -1205,6 +1205,26 @@
 	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
 	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
+/// A surger who crosses more tiles between two recorded moments than a walk does (a sprint into a lunge) has not
+/// teleported: the replay lays his trail over them
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_dash
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_dash/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaydash")
+	set_window(user, 3 SECONDS)
+	start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	sleep(0.6 SECONDS) // a recorded moment standing still
+	for(var/i in 1 to 4) // four tiles inside one recorded moment (half a second of the slow-mo)
+		TEST_ASSERT(user.Move(get_step(user, EAST), EAST), "Test fixture: the surger couldn't step")
+	sleep(0.6 SECONDS)
+	press_again(user)
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 4, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a four-tile dash")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
 /// The replay's hold hands an AI back as it took it: one that was running by hand where tg would have it off (or the
 /// other way round) isn't left in the status tg works out afresh when the pause lifts.
 /datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status

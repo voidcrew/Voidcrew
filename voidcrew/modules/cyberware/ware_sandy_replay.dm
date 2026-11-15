@@ -72,6 +72,9 @@
 #define SANDY_REPLAY_REACH 24
 /// The longest move between two frames that is tweened, in pixels. Longer ones are jumps.
 #define SANDY_REPLAY_GLIDE_MAX 96
+/// The same for a surger. One frame is half a second of a Cascade's slow-mo: at a run he crosses three or four tiles in
+/// it, and a lunge on top of that is more. Counted as a jump, he blinked across the room in the replay with no trail.
+#define SANDY_REPLAY_SURGE_GLIDE_MAX 256
 /// Extra time the watchdog gives the replay before it ends it.
 #define SANDY_REPLAY_WATCHDOG (1 SECONDS)
 /// How long a recorded turn of a body (a fall, getting up) takes in the replay: tg's own lying turn.
@@ -1999,7 +2002,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	var/move_y = (frames[old + SANDY_FRAME_Y] - frames[at + SANDY_FRAME_Y]) * ICON_SIZE_Y + (was.pixel_y + was.pixel_z) - (now.pixel_y + now.pixel_z) + carry_y
 	if(track.flier)
 		return fly(track, move_x, move_y, frames[at + SANDY_FRAME_INDEX] - frames[old + SANDY_FRAME_INDEX])
-	if((!move_x && !move_y) || abs(move_x) > SANDY_REPLAY_GLIDE_MAX || abs(move_y) > SANDY_REPLAY_GLIDE_MAX)
+	var/glide_max = track.surger ? SANDY_REPLAY_SURGE_GLIDE_MAX : SANDY_REPLAY_GLIDE_MAX
+	if((!move_x && !move_y) || abs(move_x) > glide_max || abs(move_y) > glide_max)
 		return TRUE
 	var/time = world.tick_lag
 	if(stepped)
@@ -2151,7 +2155,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		return // a step taken before its surge came on, or after it ran out
 	var/turf/left = locate(frames[from + SANDY_FRAME_X], frames[from + SANDY_FRAME_Y], frames[from + SANDY_FRAME_Z])
 	var/turf/reached = locate(frames[dest + SANDY_FRAME_X], frames[dest + SANDY_FRAME_Y], frames[dest + SANDY_FRAME_Z])
-	if(!left || !reached || get_dist(left, reached) > SANDY_REPLAY_GLIDE_MAX / ICON_SIZE_X)
+	if(!left || !reached || get_dist(left, reached) > SANDY_REPLAY_SURGE_GLIDE_MAX / ICON_SIZE_X)
 		return // a jump, not steps
 	// Two steps can fall between two samples: each tile it crossed gets its afterimages, as each step would.
 	var/list/crossed = get_line(left, reached)
@@ -2916,6 +2920,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_MAX_SHOTS
 #undef SANDY_REPLAY_ONESHOT_MIN
 #undef SANDY_REPLAY_GLIDE_MAX
+#undef SANDY_REPLAY_SURGE_GLIDE_MAX
 #undef SANDY_REPLAY_WATCHDOG
 #undef SANDY_REPLAY_TURN_TIME
 #undef SANDY_REPLAY_BURST_CUES_MAX
