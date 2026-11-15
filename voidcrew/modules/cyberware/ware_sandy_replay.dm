@@ -87,8 +87,9 @@
 #define SANDY_REPLAY_LANDING_TWEENS (0.5 SECONDS)
 /// A kill this close to the recording's end, in its frames, has its gore landed for it.
 #define SANDY_REPLAY_LANDING_FRAMES 10
-/// How long a slash over someone hit stays in the replay once shown: the length of its own frames.
-#define SANDY_REPLAY_PICTURE_TIME (0.4 SECONDS)
+/// How long a slash over someone hit stays in the replay once shown: through its strike frames. Its whole length
+/// (0.4 s) left it hanging on the body well after the replayed attacker had gone, and read as a slash from nowhere.
+#define SANDY_REPLAY_PICTURE_TIME (0.2 SECONDS)
 /// The most sounds one recording keeps of the world around the user (footsteps, casings, NPCs' guns).
 #define SANDY_REPLAY_MAX_SOUNDS 200
 /// The most it keeps in all: past SANDY_REPLAY_MAX_SOUNDS only the user's and its crewmates' own sounds go in (their
