@@ -42,6 +42,10 @@
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/prospector,
 		/datum/shop_sku/ripperdoc/hopper,
+		/datum/shop_sku/ripperdoc/frostline,
+		/datum/shop_sku/ripperdoc/hopper_street,
+		/datum/shop_sku/ripperdoc/rockjaw_deepcore,
+		/datum/shop_sku/ripperdoc/hopper_milspec,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/hooded/explorer = 10,
@@ -57,6 +61,8 @@
 		/obj/item/organ/cyberimp/cyberware/shock_coils = 4,
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/geladikinesis = 3,
+		// a cold lining for the ice worlds, and cheap eyes that see a long way
+		/obj/item/organ/cyberimp/cyberware/frostline = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
@@ -76,6 +82,10 @@
 		/obj/item/dnainjector/loot/olfaction = 3,
 		/obj/item/dnainjector/loot/farsight = 2,
 		/obj/item/dnainjector/loot/cold_adaptation = 2,
+		// claim chrome a step up: calf springs, the heavy drill fist and long
+		// optics
+		/obj/item/organ/cyberimp/cyberware/hopper/street = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore = 3,
 	)
 	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,
@@ -91,6 +101,8 @@
 		/obj/item/organ/cyberimp/cyberware/hopper = 2,
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/pressure_adaptation = 1,
+		// the survey team's jump pistons
+		/obj/item/organ/cyberimp/cyberware/hopper/milspec = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

@@ -68,7 +68,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis
 	name = "\improper Chromatic Dermis ink suite"
-	desc = "Programmable tattoo ink and the spider-legged injector that lays it under the skin. The traces light up whenever the rest of your chrome does something: a punch landing, a tool folding out, the air bladder kicking in. Colour and pattern are set at a Chrome Cradle."
+	desc = "Programmable tattoo ink and the spider-legged injector that lays it under the skin. The traces light up whenever the rest of your chrome gets to work."
 	icon_state = "chromatic_dermis"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_INK
@@ -276,7 +276,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/eyes/robotic/cyberware/nightshade
 	name = "\improper Nightshade optics"
-	desc = "Matte black eyes that render a dark room in green. Living bodies in range pick up a soft glow only you can see, so an unlit corridor isn't cover any more. They aren't thermals, so a flashbang hits you no harder than it would normal eyes. The diagnostic bus is the stock one: it counts how much chrome someone is carrying, but can't name any of it."
+	desc = "Matte black eyes that render a dark room in green. Living bodies pick up a soft glow only you can see."
 	icon_state = "nightshade"
 	eye_color_left = "#1d3b2a"
 	eye_color_right = "#1d3b2a"
@@ -409,7 +409,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/scrapper
 	name = "\improper Scrapper's Knuckles"
-	desc = "Milled knuckle caps grafted along the metacarpals, right-arm fit. Your punches land harder, and against plating and machine housings they land about twice as hard again."
+	desc = "Milled knuckle caps grafted along the metacarpals, right-arm fit. Hinges and housings come off worse."
 	icon_state = "scrapper"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_RIGHT_ARM_AUG
@@ -423,7 +423,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	aug_overlay = "scrapper_right"
 
 /obj/item/organ/cyberimp/cyberware/scrapper/left
-	desc = "Milled knuckle caps grafted along the metacarpals, left-arm fit. Your punches land harder, and against plating and machine housings they land about twice as hard again."
+	desc = "Milled knuckle caps grafted along the metacarpals, left-arm fit. Hinges and housings come off worse."
 	zone = BODY_ZONE_L_ARM
 	slot = ORGAN_SLOT_LEFT_ARM_AUG
 	aug_overlay = "scrapper_left"
@@ -457,6 +457,9 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 		return NONE
 	var/is_structure_target = ismachinery(target) || isstructure(target)
 	if(!isliving(target) && !is_structure_target)
+		return NONE
+	// A pacifist's punch at a living thing is the ordinary punch, which refuses it.
+	if(isliving(target) && HAS_TRAIT(source, TRAIT_PACIFISM))
 		return NONE
 	// Past the last "not our punch" guard: this swing is ours from here on, so
 	// stand Redline's bypass top-up down before we take the chain away. The
@@ -517,7 +520,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 
 /obj/item/storage/case/cyberware/scrapper
 	name = "\improper Scrapper's Knuckles case"
-	desc = "A foam-lined chrome case holding a matched pair of Scrapper's Knuckles, one per arm. Each side installs separately, though the rig will do both in one sitting."
+	desc = "A foam-lined chrome case holding a matched pair of Scrapper's Knuckles, one per arm."
 
 /obj/item/storage/case/cyberware/scrapper/PopulateContents()
 	new /obj/item/organ/cyberimp/cyberware/scrapper(src)
@@ -535,7 +538,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/shock_coils
 	name = "\improper Shock Coil calf pistons"
-	desc = "Spring-loaded pistons sistered along the calf bones. You get back on your feet much faster after a knockdown, keep your footing on wet decking, and walk away from drops that would break an ankle."
+	desc = "Spring-loaded pistons sistered along the calf bones, so the floor gets less say in things."
 	icon_state = "shock_coils"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -622,7 +625,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/gastro
 	name = "\improper Gastro Reactor"
-	desc = "A ceramic-lined digester where your stomach used to be. Rot, floor scrapings, whatever was in the back of the fridge. It all burns the same, faster than a real gut and without the food poisoning."
+	desc = "A ceramic-lined digester where your stomach used to be. Rot, floor scrapings, whatever was in the back of the fridge: it all burns the same."
 	icon_state = "gastro"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_GUT
@@ -668,7 +671,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/cargo_cavity
 	name = "\improper Cargo Cavity"
-	desc = "A shielded compartment plumbed into the ribcage, sized for one small item. Scanners read straight past it and a pat-down won't find it."
+	desc = "A shielded compartment plumbed into the ribcage, sized for one small item."
 	icon_state = "cargo_cavity"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_STASH
@@ -745,7 +748,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/dermal_mesh
 	name = "\improper Dermal Mesh weave"
-	desc = "A subdermal lattice of impact polymer. It won't stop anything serious, but knives and small arms hurt noticeably less and the skin over it doesn't tear so easily."
+	desc = "A subdermal lattice of impact polymer. It won't stop anything serious, but it takes the edge off."
 	icon_state = "dermal_mesh"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_DERMAL
@@ -753,6 +756,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
 	aug_overlay = "dermal_mesh"
+	worn_under_clothes = TRUE
 	/// Armor mixed into the bearer's physiology while installed and running.
 	var/datum/armor/mesh_armor = /datum/armor/cyberware_dermal_mesh
 	/// TRUE while mesh_armor is mixed in; guards against double add/subtract.
@@ -807,7 +811,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  */
 /obj/item/organ/cyberimp/cyberware/gecko
 	name = "\improper Gecko Grip palm pads"
-	desc = "Setae pads laminated into the palms, running the same trick geckos do. Your hands clamp shut on whatever you're holding when you go down, so nobody strips your gun off you, and you can cross tables like flat ground and catch a ledge on the way into a chasm. Cuffs still work fine."
+	desc = "Setae pads laminated into the palms, running the same trick geckos do. Whatever you're holding stays held."
 	icon_state = "gecko"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_CYBERWARE_HANDS
@@ -832,19 +836,32 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	RegisterSignal(organ_owner, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_item_equipped))
 	RegisterSignal(organ_owner, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_item_unequipped))
 	RegisterSignal(organ_owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	passtable_on(organ_owner, REF(src))
 	// Whatever they were already holding when the pads went in.
 	for(var/obj/item/held in organ_owner.held_items)
 		guard_item(held)
-	if(catch_ready)
-		ADD_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
 
 /obj/item/organ/cyberimp/cyberware/gecko/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	drop_guards()
 	UnregisterSignal(organ_owner, list(COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM, COMSIG_MOVABLE_MOVED))
-	passtable_off(organ_owner, REF(src))
-	REMOVE_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
+
+// Tables as flat ground and the chasm catch ride the failing-gated passive layer: dark pads
+// (EMP, brownout, damage) do neither. The catch used to stay armed through a pulse, and a
+// bearer whose pads were dark could cross a chasm because the arming trait was never spent.
+/obj/item/organ/cyberimp/cyberware/gecko/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	if(isnull(bearer))
+		return
+	passtable_on(bearer, REF(src))
+	if(catch_ready)
+		ADD_TRAIT(bearer, TRAIT_CHASM_STOPPER, REF(src))
+
+/obj/item/organ/cyberimp/cyberware/gecko/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(isnull(bearer))
+		return
+	passtable_off(bearer, REF(src))
+	REMOVE_TRAIT(bearer, TRAIT_CHASM_STOPPER, REF(src))
 
 /obj/item/organ/cyberimp/cyberware/gecko/Destroy()
 	drop_guards()
@@ -968,7 +985,9 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 
 /obj/item/organ/cyberimp/cyberware/gecko/proc/rearm_catch()
 	catch_ready = TRUE
-	if(owner)
+	// Dark pads re-arm too, the trait goes back on with the passive layer.
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(owner && chrome?.passives_online)
 		ADD_TRAIT(owner, TRAIT_CHASM_STOPPER, REF(src))
 		owner.balloon_alert(owner, "grips re-set")
 

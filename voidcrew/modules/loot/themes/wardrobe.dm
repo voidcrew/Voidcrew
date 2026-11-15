@@ -51,6 +51,7 @@
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/glowy = 3,
 		/obj/item/dnainjector/loot/gigantism = 2,
+		// cheap zoom eyes, bought for the look as much as the view
 	)
 	loot_uncommon = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 10,

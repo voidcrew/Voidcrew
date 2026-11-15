@@ -94,8 +94,6 @@
 
 /obj/machinery/chrome_cradle/examine(mob/user)
 	. = ..()
-	. += span_notice("Drag yourself (or a patient) onto the slab to lie back on it. Whoever's on the slab runs their own install; the rig won't take orders from anyone else.")
-	. += span_notice("Tune-ups run [CYBERWARE_TUNEUP_FEE] cr: EMP-scrambled and damaged chrome comes back to spec. Load cash into the slab or pay by ID.")
 	if(loaded_credits)
 		. += span_notice("The slab's cash slot holds <b>[loaded_credits] cr</b>.")
 	if(length(tray))
@@ -261,6 +259,8 @@
 /// on the marked stage a spark shower plus Splice's mid-line.
 /obj/machinery/chrome_cradle/proc/run_sequence_stage(mid_stage = FALSE)
 	playsound(src, 'sound/effects/servostep.ogg', 60, TRUE)
+	// The rig's arms move on the beat (cyberware_anim2.dm).
+	rig_beat(mid_stage)
 	var/mob/living/patient = occupant
 	if(istype(patient))
 		patient.do_jitter_animation(60)
@@ -317,6 +317,7 @@
 		SStgui.update_uis(src)
 		return
 	do_sparks(3, FALSE, src)
+	rig_boot_fx(patient)
 	patient.flash_act(visual = 1)
 	if(chrome.tier >= CYBERWARE_TIER_4)
 		visible_message(span_notice("The parlor's neon stutters as the rig pulls the current it needs."))
@@ -370,6 +371,7 @@
 	for(var/timer in stage_timers)
 		deltimer(timer)
 	stage_timers.Cut()
+	rig_stop()
 	busy = FALSE
 	busy_action = null
 	busy_ware = null
@@ -408,7 +410,7 @@
 	if(any_repairable)
 		return null
 	if(only_brownout && length(installed))
-		return "That chrome is browned out, not broken. Shed some load instead."
+		return "That chrome is browned out, not broken."
 	return "Nothing needs a tune-up."
 
 /obj/machinery/chrome_cradle/proc/try_tune_up(mob/living/carbon/patient)
@@ -806,6 +808,13 @@
 			return TRUE
 
 	return TRUE
+
+// ---- Ship saves ---------------------------------------------------------
+
+// A cradle belongs to a parlor. A saved hull must never rebuild one (an admin test kit can
+// drop one on a ship), or every load would hand that ship a free operating slab.
+/obj/machinery/chrome_cradle/checkpoint_type()
+	return null
 
 // ---- Outpost aggression ------------------------------------------------
 

@@ -504,11 +504,12 @@
 	TEST_ASSERT_EQUAL(spawned, 1, "Contraband did not pay exactly one green melee weapon")
 	for(var/marker_path in list(/obj/effect/zone_mobs/syndicate, /obj/effect/zone_mobs/syndicate/boss))
 		var/obj/effect/zone_mobs/marker = new marker_path()
+		// Human NPC operatives (voidcrew/modules/human_npcs/ruins/); their tables also hold SMGs and shotguns back to the red zone.
 		TEST_ASSERT_EQUAL(length(marker.mobs_green), 1, "Green syndicate pool still includes sword guards")
-		TEST_ASSERT(marker.mobs_green[/mob/living/basic/trooper/syndicate/melee], "Green syndicate guards lost their knives")
+		TEST_ASSERT(marker.mobs_green[/mob/living/carbon/human/npc/ruin/trooper/syndicate], "Green syndicate guards lost their knives")
 		for(var/entry in marker.mobs_yellow)
-			TEST_ASSERT(!ispath(entry, /mob/living/basic/trooper/syndicate/ranged/smg) && !ispath(entry, /mob/living/basic/trooper/syndicate/ranged/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
-		TEST_ASSERT(marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg] || marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper], "Red syndicate pool lost its SMG guards")
+			TEST_ASSERT(!ispath(entry, /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg) && !ispath(entry, /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
+		TEST_ASSERT(marker.mobs_red[/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg] || marker.mobs_red[/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper], "Red syndicate pool lost its SMG guards")
 		qdel(marker)
 
 /**
@@ -740,6 +741,8 @@
 			/obj/item/claymore/cutlass/old,
 			/obj/item/claymore/weak,
 			/obj/item/crowbar/large/twenty_force,
+			/obj/item/cyberware_pair_case/gorilla_arms/street,
+			/obj/item/cyberware_pair_case/mantis_street,
 			/obj/item/fireaxe/boardingaxe,
 			/obj/item/fireaxe/boneaxe,
 			/obj/item/gun/ballistic/automatic/ar,
@@ -807,6 +810,7 @@
 			/obj/item/nullrod/vibro,
 			/obj/item/nullrod/vibro/spellblade,
 			/obj/item/nullrod/vibro/talking,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout,
 			/obj/item/pen/edagger,
 			/obj/item/shield/buckler,
 			/obj/item/shield/buckler/parmula,
@@ -828,6 +832,7 @@
 			/obj/item/cursed_katana,
 			/obj/item/cyberware_pair_case/gorilla_arms,
 			/obj/item/cyberware_pair_case/mantis_blades,
+			/obj/item/cyberware_pair_case/mantis_scorch,
 			/obj/item/energy_katana,
 			/obj/item/gun/ballistic/automatic/heater/scorcher,
 			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
@@ -861,6 +866,7 @@
 			/obj/item/mjollnir,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
 			/obj/item/shield/energy,
 			/obj/item/singularityhammer,
@@ -893,3 +899,23 @@
 				TEST_ASSERT(entry != /obj/item/his_grace, "His Grace remains in ordinary cache loot")
 	for(var/entry in all_weapons)
 		TEST_ASSERT(entry in seen, "Retained weapon [entry] lost its guarded cache source")
+
+/// Everything the street doc sells can also turn up in a zone cache (owner: low-tier chrome rides the loot pools too).
+/datum/unit_test/voidcrew_street_chrome_in_loot
+
+/datum/unit_test/voidcrew_street_chrome_in_loot/Run()
+	var/list/lootable = list()
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		for(var/table_name in list("loot_common", "loot_uncommon", "loot_prime", "loot_uniques"))
+			for(var/entry in theme.vars[table_name])
+				lootable[entry] = TRUE
+		for(var/extras_name in list("gun_extras", "melee_extras"))
+			var/list/extras = theme.vars[extras_name]
+			for(var/weapon_class in extras)
+				for(var/entry in extras[weapon_class])
+					lootable[entry] = TRUE
+	var/datum/outpost_shop/vendor/street_doc/shop = allocate(/datum/outpost_shop/vendor/street_doc)
+	TEST_ASSERT(length(shop.skus), "The street doc has nothing on his shelf")
+	for(var/datum/shop_sku/sku as anything in shop.skus)
+		TEST_ASSERT(lootable[sku.item_path], "[sku.item_path], sold by the street doc, is in no loot theme")
