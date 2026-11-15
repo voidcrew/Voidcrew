@@ -98,7 +98,7 @@ The Furnace and the Old Furnace heat up as they fire, and their coils glow brigh
 - Fire a full cartridge at a steady, unhurried pace in ship air and the Furnace never overheats. Fire as fast as it goes, or in vacuum, and it will.
 - An overheated rifle **locks up**: its coils stay white-hot and it won't fire or vent for ten seconds. It clicks when it's ready again.
 
-**Venting:** with a glowing Furnace in your hand, press **V** (Vent held gun, in your keybindings). A bar appears above your hands and a marker sweeps across it. Press **V** again as the marker passes the middle:
+**Venting:** with a glowing Furnace in your hand, press **V** (Vent held gun, in your keybindings). A small bar appears above your head and a marker sweeps across it. Press **V** again as the marker passes the middle:
 
 - On the bright gold centre, the coils go cold at once, and the next few shots heat them less.
 - On the amber either side of it, the rifle vents most of its heat.
