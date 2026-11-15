@@ -455,34 +455,39 @@ GLOBAL_LIST_EMPTY(overmap_planets)
  */
 /area/overmap_encounter/planetoid/lava
 	name = "\improper Volcanic Planetoid"
-	ambientsounds = list('voidcrew/sound/ambience/planet_lava.ogg', 'voidcrew/sound/ambience/planet_lava_2.ogg')
+	ambientsounds = MINING
+	added_ambience = list('voidcrew/sound/ambience/planet_lava.ogg', 'voidcrew/sound/ambience/planet_lava_2.ogg')
 	planet_type = /datum/planet/lava
 	// was /turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_CAVE
-	ambientsounds = list('voidcrew/sound/ambience/planet_snow.ogg', 'voidcrew/sound/ambience/planet_snow_2.ogg', 'voidcrew/sound/ambience/planet_snow_3.ogg')
+	ambientsounds = SPOOKY
+	added_ambience = list('voidcrew/sound/ambience/planet_snow.ogg', 'voidcrew/sound/ambience/planet_snow_2.ogg', 'voidcrew/sound/ambience/planet_snow_3.ogg')
 	planet_type = /datum/planet/snow
 	// snow was lit colourless; only the frozen lakes were cyan, and they are a minority
 
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = list('voidcrew/sound/ambience/planet_beach.ogg', 'voidcrew/sound/ambience/planet_beach_2.ogg', 'voidcrew/sound/ambience/planet_beach_3.ogg')
+	ambientsounds = BEACH
+	added_ambience = list('voidcrew/sound/ambience/planet_beach.ogg', 'voidcrew/sound/ambience/planet_beach_2.ogg', 'voidcrew/sound/ambience/planet_beach_3.ogg')
 	planet_type = /datum/planet/beach
 	// was /turf/open/misc/asteroid/sand/beach/lit, the bulk of a beach planet's ground
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = list('voidcrew/sound/ambience/planet_jungle.ogg', 'voidcrew/sound/ambience/planet_jungle_2.ogg')
+	ambientsounds = AWAY_MISSION
+	added_ambience = list('voidcrew/sound/ambience/planet_jungle.ogg', 'voidcrew/sound/ambience/planet_jungle_2.ogg')
 	planet_type = /datum/planet/jungle
 
 /area/overmap_encounter/planetoid/wasteland
 	name = "\improper Apocalyptic Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
-	ambientsounds = list('voidcrew/sound/ambience/planet_wasteland.ogg')
+	ambientsounds = MINING
+	added_ambience = list('voidcrew/sound/ambience/planet_wasteland.ogg')
 	planet_type = /datum/planet/wasteland
 	// the fallout zone keeps its own green ground light on top of this - see
 	// /datum/biome/nuclear. Those turfs are the one kind of surface ground that still

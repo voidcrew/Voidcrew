@@ -18,3 +18,12 @@ GLOBAL_LIST_INIT(voidcrew_space_ruin_ambience, list(
 	if(isnull(ambientsounds) && ambience_index == AMBIENCE_RUINS)
 		ambientsounds = GLOB.ruins_ambience + GLOB.voidcrew_space_ruin_ambience
 	return ..()
+
+/area/overmap_encounter/planetoid
+	/// Voidcrew tracks played alongside this planet's ambientsounds.
+	var/list/added_ambience
+
+/area/overmap_encounter/planetoid/Initialize(mapload)
+	if(length(added_ambience))
+		ambientsounds = ambientsounds + added_ambience
+	return ..()
