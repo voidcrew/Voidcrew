@@ -110,9 +110,11 @@
 /// left out of the replay and the recording says so (shots_capped, and once in the game log).
 #define SANDY_REPLAY_MAX_SHOTS 64
 
-/// The shortest a one-shot effect's animation plays in the replay: two frames. Compressed ten times a muzzle flash or an
-/// impact ring would be over between two frames and never drawn.
-#define SANDY_REPLAY_ONESHOT_MIN (world.tick_lag * 2)
+/// The shortest a one-shot effect's animation plays in the replay: four frames. Compressed ten times a muzzle flash or an
+/// impact ring would be over between two frames and never drawn, and at two frames it is there and gone unseen.
+#define SANDY_REPLAY_ONESHOT_MIN (world.tick_lag * 4)
+/// The fewest frames a one-shot effect that only plays its icon's own frames (a muzzle flash) is drawn for.
+#define SANDY_REPLAY_ONESHOT_FRAMES 3
 
 // A track's frames are a flat list, this many entries a frame.
 #define SANDY_FRAME_SIZE 6
@@ -786,7 +788,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	if(state == SANDY_REPLAY_RECORDING || state == SANDY_REPLAY_PENDING)
 		// Drawn up to the frame the recording next sampled without it: a rig picture goes in the frame its body's
 		// own look comes back, not one before (the body would be gone for a frame).
-		track.last = max(last_sampled + 1, track.first + 1, ended)
+		track.last = max(last_sampled + 1, track.first + ((track.oneshot && !track.flier) ? SANDY_REPLAY_ONESHOT_FRAMES : 1), ended)
 		gone += track
 		return
 	puppets -= track
@@ -1305,6 +1307,16 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 			thing.sandy_replay_resume()
 			landing += thing
 		release_gore()
+		// A flash still lit when the recording ended (the slow-mo stretched it) would hang there for as long as this
+		// takes: it goes out
+		for(var/datum/sandy_replay_track/track as anything in puppets + standins)
+			if(!track.oneshot || track.landing || track.anim_until > world.time || track.last <= total + 1)
+				continue
+			var/atom/movable/drawn = track.mode == SANDY_TRACK_STANDIN ? track.standin : track.thing
+			if(QDELETED(drawn))
+				continue
+			track.landing = TRUE
+			animate(drawn, alpha = 0, time = 0.1 SECONDS)
 	if(world.time - landing_started >= SANDY_REPLAY_LANDING_MAX)
 		return FALSE
 	for(var/atom/movable/thing as anything in landing)
@@ -2223,7 +2235,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		if(frame > total + 1 && !land()) // the last frame's tween has played out, and nothing is left in the air
 			finish()
 			return
-		frame = min(frame, landing_stage ? total + 1 : total) // while it lands, what was only drawn to the last frame goes
+		frame = min(frame, total)
 		hold_nearby()
 		sandy_replay_clocks_tick() // the held stay paused
 		if(landing_stage < 2) // what gore flying on for real leaves behind it is seen as it is left
@@ -2254,7 +2266,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 			if(track.events)
 				play_events(track, frame)
 		for(var/datum/sandy_replay_track/track as anything in standins.Copy())
-			if(frame >= track.last && !(track.oneshot && track.anim_until > world.time)) // a one-shot plays out its animation
+			// A one-shot plays out its animation. While gore lands, what was only drawn to the last frame goes.
+			if((frame >= track.last || (landing_stage && track.last <= total + 1)) && !(track.oneshot && track.anim_until > world.time))
 				QDEL_NULL(track.standin)
 				standins -= track
 				continue
@@ -2781,6 +2794,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_LANDING_MAX
 #undef SANDY_REPLAY_LANDING_TWEENS
 #undef SANDY_REPLAY_LANDING_FRAMES
+#undef SANDY_REPLAY_ONESHOT_FRAMES
 #undef SANDY_REPLAY_PICTURE_TIME
 #undef SANDY_REPLAY_WAIT_MAX
 #undef SANDY_REPLAY_RIG_HIDES
