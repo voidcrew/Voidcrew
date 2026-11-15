@@ -363,7 +363,7 @@
 #define GORILLA_RIP_THROW_STEPS 8
 #define GORILLA_RIP_THROW_SPINS 2
 #define GORILLA_RIP_THROW_ARC 10
-#define GORILLA_RIP_THROW_SHORT 6
+#define GORILLA_RIP_THROW_SHORT 0
 /// Pixels toward the viewer a backbroken body lies on the bearer's tile, so he doesn't hide it, and the offset's source.
 #define GORILLA_BACK_IN_FRONT 10
 #define GORILLA_LAID_IN_FRONT_OFFSET "gorilla_laid_in_front"
