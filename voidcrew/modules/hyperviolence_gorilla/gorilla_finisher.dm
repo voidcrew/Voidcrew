@@ -868,6 +868,7 @@
 			if(facing == NORTH && !QDELETED(exec_bar))
 				// Facing away, the bar over his head would sit on the body and the arm he hauls up off it: under his feet
 				exec_bar.rest_z = GORILLA_RIP_BAR_LOW
+				exec_bar.pixel_z = GORILLA_RIP_BAR_LOW
 				animate(exec_bar, pixel_z = GORILLA_RIP_BAR_LOW, alpha = 255, time = 0.5 SECONDS, easing = SINE_EASING)
 			lean_out =list(-round(toward[1] / ICON_SIZE_X * GORILLA_RIP_LEAN), -round(toward[2] / ICON_SIZE_Y * GORILLA_RIP_LEAN))
 			lean = lean_out.Copy()
@@ -937,10 +938,6 @@
 			else
 				arms_to(side_view() ? 25 : 15, GORILLA_RIP_HAUL_TIME, 1)
 				addtimer(CALLBACK(bearer_rig, TYPE_PROC_REF(/datum/chrome_rig, tremble), GORILLA_RIP_STRAIN_TIME), GORILLA_RIP_HAUL_TIME - GORILLA_RIP_STRAIN_TIME, TIMER_DELETE_ME)
-		if("tear")
-			// The arm gives: he comes upright and both arms swing on with it, flinging it away: back past him seen
-			// from the side, out wide from the front or back
-			bearer_rig?.bend_and_swing(0, side_view() ? -GORILLA_RIP_THROW_SWING : GORILLA_RIP_THROW_SWING, 0.15 SECONDS, GORILLA_RIP_THROW_REACH)
 		if("recover")
 			// Down the way they point: not back up over his head the way they came
 			bearer_rig?.unwind_arms()
@@ -1273,19 +1270,45 @@
  * stump and all; else the arm is still its own piece.
  */
 /datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bodies(torn)
-	// His own new pictures (the blood that ran back over him) wait until his arms have swung through the throw: a
-	// picture made now holds his puppets on the client until it lands, and he would stand frozen as the arm flies off
-	addtimer(CALLBACK(src, PROC_REF(redraw_bearer)), GORILLA_RIP_THROW_TIME, TIMER_DELETE_ME)
+	if(torn)
+		redraw_bearer()
 	if(QDELETED(victim) || !victim_rig?.snapshot())
 		return
 	victim_rig.repaint("body", torn ? victim_rig.flat : victim_rig.cut_without_arms(side))
 	if(!torn)
 		victim_rig.repaint("arm_[side]", victim_rig.arm_picture(side))
 
-/// The bearer's stand-ins take on how he looks now.
+/// The bearer's stand-ins take on how he looks now, without any passing hit flash or turn made while hidden.
 /datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bearer()
-	if(running)
-		bearer_rig?.redraw_arms()
+	if(!running || QDELETED(user) || !bearer_rig)
+		return
+	user.remove_filter(HV_VIS_FLASH_FILTER)
+	var/real_dir = user.dir
+	var/saved_color = user.color
+	var/had_temp_color = !isnull(LAZYACCESS(user.atom_colours, TEMPORARY_COLOUR_PRIORITY))
+	if(had_temp_color)
+		var/resting_color
+		for(var/priority in 1 to length(user.atom_colours))
+			if(priority == TEMPORARY_COLOUR_PRIORITY)
+				continue
+			var/list/entry = user.atom_colours[priority]
+			if(!entry)
+				continue
+			if(entry[ATOM_COLOR_TYPE_INDEX] == ATOM_COLOR_TYPE_FILTER)
+				break
+			if(length(entry[ATOM_COLOR_VALUE_INDEX]))
+				resting_color = entry[ATOM_COLOR_VALUE_INDEX]
+				break
+		user.color = resting_color
+	if(facing)
+		user.dir = facing
+	var/redrawn = bearer_rig.redraw_arms()
+	user.dir = real_dir
+	if(had_temp_color)
+		user.color = saved_color
+	if(redrawn)
+		for(var/key_name in bearer_rig.puppets)
+			cyberware_time_rig_picture(bearer_rig.puppets[key_name], user)
 
 /// Blood bursts every way from the socket the arm just left, where the shoulder is drawn at that moment.
 /datum/hv_finisher/chrome/gorilla/rip/proc/shoulder_burst()
@@ -1352,10 +1375,14 @@
 	for(var/i in 1 to count)
 		var/angle = start + i * (360 / count) + rand(-14, 14)
 		var/distance = pick(reach) + rand(-2, 2)
+		var/rim = min(4, max(0, distance - 1))
+		var/start_x = from_x + round(sin(angle) * rim)
+		var/start_y = from_y + round(cos(angle) * rim)
 		var/land_x = from_x + round(sin(angle) * distance)
 		var/land_y = from_y + round(cos(angle) * distance)
-		// list(start x, start y, land x, land y, arc height, flight time, wait): the monowire's drop, which lands as a drip
-		new /obj/effect/temp_visual/wire_blood_drop(origin, list(from_x, from_y, land_x, land_y, 3 + rand(0, 5), round(1.5 + distance / 14, 0.5), 0), blood_color, blood_dna, viruses)
+		// list(start x, start y, land x, land y, arc height, flight time, wait, behind): leaves an elevated shoulder in front
+		// of the body, never under it, and lands as a floor drip
+		new /obj/effect/temp_visual/wire_blood_drop(origin, list(start_x, start_y, land_x, land_y, 3 + rand(0, 5), round(1.5 + distance / 14, 0.5), 0, FALSE), blood_color, blood_dna, viruses)
 
 /**
  * Moves [pool] (blood just laid on the floor) so its middle is [x], [y] pixels from the middle of its tile, and keeps it
@@ -1452,8 +1479,11 @@
 			// from it now, they would stay pale until he lets go
 			victim.remove_filter(HV_VIS_FLASH_FILTER)
 			// Both bodies are hidden behind their stand-ins, and so is what this just did to them (the stump, the blood
-			// that ran back over him): the stand-ins take it on now, or it would only show when they come down
+			// that ran back over him): the stand-ins take it on now, before his swing starts, or it would only show later
 			redraw_bodies(outcome == "torn")
+			// The arm gives: he comes upright and both arms swing on with it, flinging it away: back past him seen
+			// from the side, out wide from the front or back
+			bearer_rig?.bend_and_swing(0, side_view() ? -GORILLA_RIP_THROW_SWING : GORILLA_RIP_THROW_SWING, 0.15 SECONDS, GORILLA_RIP_THROW_REACH)
 			if(outcome == "torn")
 				var/obj/item/bodypart/torn = gorilla_last_torn_limb(victim, target_zone)
 				if(torn?.can_bleed())
@@ -1629,6 +1659,8 @@
 	// One straight line back at the bearer, who takes it; no fan past him
 	if(limb.can_bleed())
 		gorilla_short_spray(victim, toward_bearer, 2)
+		if(!QDELETED(user) && victim.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER)
+			user.hv_blood_drench(victim.get_blood_dna_list(), victim.get_static_viruses())
 	var/obj/item/bodypart/torn = gorilla_tear_limb(victim, limb, toward_bearer, TRUE, blood_at)
 	victim.hv_flush_hit()
 	if(isnull(torn))
