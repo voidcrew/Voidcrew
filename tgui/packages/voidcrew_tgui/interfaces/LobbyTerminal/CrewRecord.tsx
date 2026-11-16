@@ -62,8 +62,8 @@ const FIELD_W = 22;
 const BERTH_PITCH = 1.75;
 const BERTH_H = 1.5;
 /** The widest pitch berth rows stretch to when they all fit, and the row height from which
- * a row takes the larger title and a 2-row key. */
-const BERTH_PITCH_MAX = 3.5;
+ * a row may take the larger title and count. */
+const BERTH_PITCH_MAX = 4;
 const BERTH_TALL = 2.25;
 /** ABOARD: columns 45 to 61. */
 const ABOARD_X = 45;
@@ -151,6 +151,7 @@ export function CrewRecord(props: Props) {
   const [claimJob, setClaimJob] = useState<string | null>(null);
   /** The berth last pressed, lit while the join is under way. */
   const [pressed, setPressed] = useState<string | null>(null);
+  const lastWheel = useRef(0);
   useBack(onClose);
 
   const pingWait = useCountdown(c.ping_wait || 0);
@@ -355,7 +356,8 @@ export function CrewRecord(props: Props) {
       ? Math.max(1, Math.floor((A - 1) / BERTH_PITCH))
       : jobs.length;
     // When every berth fits on one page, the rows share the column: a pitch up to
-    // BERTH_PITCH_MAX in quarter rows, as the CREWS list's blocks stretch to fill their box.
+    // BERTH_PITCH_MAX in quarter rows, with the CREWS list's row rule (a half-row gap once the
+    // pitch reaches 3).
     const pitch = paged
       ? BERTH_PITCH
       : Math.max(
@@ -365,7 +367,8 @@ export function CrewRecord(props: Props) {
             Math.floor(((A + 0.25) / Math.max(1, jobs.length)) * 4) / 4,
           ),
         );
-    const rowH = pitch - 0.25;
+    const gap = pitch >= 3 ? 0.5 : 0.25;
+    const rowH = pitch - gap;
     const tall = rowH >= BERTH_TALL;
     const pages = Math.max(1, Math.ceil(jobs.length / per));
     const pg = Math.min(pages, Math.max(1, berthPage));
@@ -389,22 +392,30 @@ export function CrewRecord(props: Props) {
     if (firstLive) {
       firstFocus = 'sign';
     }
+    // The berth rows go in their own layer so the mouse wheel over them turns their page.
+    const rowsOut: ReactNode[] = [];
     shown.forEach((job, i) => {
       const yy = by + i * pitch;
       const live = canSign(job);
       const lit = joining && pressed === job.ref;
       const titleCls = locked ? 'faint' : job.ok ? '' : 'dim';
       const claim = claimJob ? claimJob === job.ref : job === firstLive;
-      // The title stops two cells short of the open count as the count is drawn (1.25x on a
-      // tall row; a quarter cell of slack keeps 22 cells beside one big digit).
+      // The title stops two cells short of the open count as the count is drawn. On a tall row
+      // the two go 1.25x together when the whole title fits that large; a title that does not
+      // keeps both at normal size, so a long title never runs up to a big count.
       const openN = String(Math.min(99, Math.max(0, job.open || 0)));
+      const fullTitle = safe(job.title).toUpperCase();
+      const big =
+        tall &&
+        fullTitle.length * 1.25 <= Math.floor(28 - openN.length * 1.25 - 4.75);
       const titleW = Math.min(
         TITLE_W,
-        Math.floor(28 - openN.length * (tall ? 1.25 : 1) - 4.75),
+        Math.floor(28 - openN.length * (big ? 1.25 : 1) - 4.75),
       );
-      const title = cut(safe(job.title).toUpperCase(), titleW);
-      const keyH = tall ? 2 : BERTH_H;
-      out.push(
+      const title = cut(fullTitle, titleW);
+      // The key fills the row, however far the rows stretch.
+      const keyH = rowH;
+      rowsOut.push(
         <Slab
           key={`r${job.ref}`}
           x={1}
@@ -414,7 +425,7 @@ export function CrewRecord(props: Props) {
           variant="row"
           dead={locked}
         />,
-        tall ? (
+        big ? (
           <NameLine
             key={`t${job.ref}`}
             x={3}
@@ -433,9 +444,9 @@ export function CrewRecord(props: Props) {
             {title}
           </Put>
         ),
-        // The open count stays in accent on every row, a locked crew's too. On a tall row it
-        // matches the 1.25x title, still ending at column 28.
-        tall ? (
+        // The open count stays in accent on every row, a locked crew's too. Beside a 1.25x title
+        // it is 1.25x too, still ending at column 28.
+        big ? (
           <Big
             key={`n${job.ref}`}
             x={25}
@@ -484,7 +495,7 @@ export function CrewRecord(props: Props) {
         />,
       );
       if (lights > 0) {
-        out.push(
+        rowsOut.push(
           <Light
             key={`lit${lights}-${job.ref}`}
             y={yy}
@@ -494,6 +505,25 @@ export function CrewRecord(props: Props) {
         );
       }
     });
+    out.push(
+      <div
+        key="brows"
+        className="lt-wheel"
+        onWheel={(e) => {
+          if (!paged || !e.deltaY) {
+            return;
+          }
+          const now = Date.now();
+          if (now - lastWheel.current < 150) {
+            return;
+          }
+          lastWheel.current = now;
+          turn(pg + (e.deltaY > 0 ? 1 : -1));
+        }}
+      >
+        {rowsOut}
+      </div>,
+    );
     // A page of berths turning wipes the rows only.
     out.push(
       <WipeAt
@@ -501,7 +531,7 @@ export function CrewRecord(props: Props) {
         x={1}
         y={by}
         w={41}
-        h={shown.length * pitch - 0.25}
+        h={shown.length * pitch - gap}
         k={pg}
       />,
     );
@@ -519,7 +549,7 @@ export function CrewRecord(props: Props) {
       );
       t0 = by + per * BERTH_PITCH + 1;
     } else {
-      t0 = by + shown.length * pitch - 0.25;
+      t0 = by + shown.length * pitch - gap;
     }
   }
 

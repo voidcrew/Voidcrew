@@ -54,6 +54,7 @@ const YOUR_CREW = ' YOUR CREW ';
 /** Block text columns 3 to 49; compact line 2 columns 3 to 60. */
 const BLOCK_TEXT_W = 47;
 const ROW_TEXT_W = 58;
+/** Compact line 1: the name to 46, and always two columns clear of the count and word. */
 const ROW_NAME_W = 46;
 
 function openSlots(c: Crew): number {
@@ -466,7 +467,7 @@ function CrewRow(props: {
       onFocus={(on) => on && onFocus()}
     >
       <Put x={3} y={y0 + 0.125} cls="wht">
-        {cut(name, ROW_NAME_W)}
+        {cut(name, Math.min(ROW_NAME_W, 56 - right.length))}
       </Put>
       <RPut
         x={61}
