@@ -1,12 +1,12 @@
 /**
  * The side menu (side mode) and the key bar with its MENU list (bar mode).
  *
- * Side menu, rows of the menu region: the symbol, the wordmark, READY/JOIN, OBSERVE, CHARACTER
- * with the character's name under it, a rule, the five utility items, START for a local admin,
- * and the station name at the foot. Its box ends level with the main box.
+ * Side menu, rows of the menu region: the symbol, the wordmark, READY (or IN LINE), OBSERVE,
+ * CHARACTER with the character's name under it, a rule, the five utility items, START for a
+ * local admin, and the credit line at the foot. Its box ends level with the main box.
  *
- * Bar mode keeps READY/JOIN, OBSERVE, CHARACTER and START as keys along the bottom and folds
- * the utility items into MENU. The symbol, wordmark, station name and character name are cut.
+ * Bar mode keeps READY (or IN LINE), OBSERVE, CHARACTER and START as keys along the bottom and
+ * folds the utility items into MENU. The symbol, wordmark, credit and character name are cut.
  */
 import { useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
@@ -17,7 +17,6 @@ import { FocusScope, useBack } from './nav';
 import {
   Box,
   type Cls,
-  cut,
   HRule,
   Key,
   type KeyKind,
@@ -35,7 +34,17 @@ import type { LobbyData } from './types';
 const READY_ON_MS = 180;
 const READY_OFF_MS = 120;
 
-/** READY before the round, JOIN once it runs. */
+/**
+ * The top key shows before the round (READY) and, once it runs, only while the player is in
+ * the popcap line. Joining itself is SIGN ON, COMMISSION or MOVE IN on the tabs.
+ */
+const hasTop = (data: LobbyData) =>
+  data.phase === 'loading' ||
+  data.phase === 'pregame' ||
+  data.phase === 'setup' ||
+  (data.phase === 'playing' && (data.queue > 0 || !!data.queue_go));
+
+/** READY before the round; IN LINE / YOUR TURN while waiting for a place. */
 function topKey(data: LobbyData, sweep: 'on' | 'off' | null, now: boolean) {
   const { phase } = data;
   const ready = !!data.ready;
@@ -50,15 +59,10 @@ function topKey(data: LobbyData, sweep: 'on' | 'off' | null, now: boolean) {
       action: 'ready',
     };
   }
-  let right = '';
-  if (phase === 'playing' && data.queue_go) {
-    right = 'NOW';
-  } else if (phase === 'playing' && data.queue > 0) {
-    right = `LINE ${Math.min(999, data.queue)}`;
-  }
+  const go = !!data.queue_go;
   return {
-    label: 'JOIN',
-    right,
+    label: go ? 'YOUR TURN' : 'IN LINE',
+    right: go ? '' : String(Math.min(999, data.queue)),
     rightCls: 'amb' as Cls,
     // First in line with a place free: the key takes the accent fill every other half second.
     state: (phase !== 'playing' ? 'dead' : now ? 'on' : 'idle') as KeyState,
@@ -156,6 +160,9 @@ const canStart = (data: LobbyData) =>
   !!data.localhost_admin &&
   (data.phase === 'loading' || data.phase === 'pregame');
 
+/** The credit line at the foot of the side menu. */
+const CREDIT = 'AN ORIGINAL SERVER MADE BY JACKRIP';
+
 const beforeRound = (data: LobbyData) =>
   data.phase === 'loading' || data.phase === 'pregame';
 
@@ -175,15 +182,22 @@ export function SideMenu(props: MenuProps) {
   // The box ends level with the main box (one row above the region's foot).
   const boxH = rows - 1;
   const k = Math.max(1, Math.floor((15 * cw) / 64));
-  const name = cut(safe(data.char_name).toUpperCase(), 15);
-  const port = wrapMax(safe(data.port).toUpperCase(), 17, 2);
+  const fullName = safe(data.char_name).toUpperCase();
+  // Up to two lines under CHARACTER; a second line pushes the rule and the list down a row.
+  const name = fullName ? wrapMax(fullName, 15, 2) : [];
+  // The foot of the menu carries the server's credit line, not the station name.
+  const port = wrapMax(CREDIT, 17, 3);
   // The last line sits half a row above the box's foot; one-line names sit on the lower line.
   const portY = boxH - 0.5 - port.length;
+  // Without the top key, everything under it moves up into its place.
+  const top = hasTop(data);
+  const dy = top ? 0 : -2.25;
+  const ruleY = 15 + dy + Math.max(0, name.length - 1);
   // Utility rows: 1.25 rows each when the menu has room (as in the approved stills), else 1.
   // Two station-name lines and half a row are always kept free above the foot.
   const start = canStart(data);
   const items = utilities(data).length + (start ? 1 : 0);
-  const room = boxH - 2.5 - 0.5 - 15.5;
+  const room = boxH - (port.length + 0.5) - 0.5 - (ruleY + 0.5);
   const step = room >= items * 1.25 ? 1.25 : 1;
   return (
     <>
@@ -202,10 +216,10 @@ export function SideMenu(props: MenuProps) {
       <Put x={2} y={6.75} cls="wht lt-wordmark">
         V O I D C R E W
       </Put>
-      <TopKey x={1} y={8.25} w={17} h={2} kind="big" />
+      {!!top && <TopKey x={1} y={8.25} w={17} h={2} kind="big" />}
       <Key
         x={1}
-        y={10.5}
+        y={10.5 + dy}
         w={17}
         kind="box"
         label="OBSERVE"
@@ -215,7 +229,7 @@ export function SideMenu(props: MenuProps) {
       />
       <Key
         x={1}
-        y={12.25}
+        y={12.25 + dy}
         w={17}
         kind="box"
         label="CHARACTER"
@@ -223,17 +237,17 @@ export function SideMenu(props: MenuProps) {
         zone="menu"
         onClick={onCharacter}
       />
-      {!!name && (
-        <RPut x={17} y={14} cls="dim">
-          {name}
+      {name.map((line, i) => (
+        <RPut key={i} x={17} y={14 + dy + i} cls="dim" title={fullName}>
+          {line}
         </RPut>
-      )}
-      <HRule x={1} y={15} w={17} />
+      ))}
+      <HRule x={1} y={ruleY} w={17} />
       {utilities(data).map((u, i) => (
         <Key
           key={u.label}
           x={1}
-          y={15.5 + i * step}
+          y={ruleY + 0.5 + i * step}
           w={17}
           h={step}
           kind="plain"
@@ -248,7 +262,7 @@ export function SideMenu(props: MenuProps) {
       {!!start && (
         <Key
           x={1}
-          y={15.5 + (items - 1) * step}
+          y={ruleY + 0.5 + (items - 1) * step}
           w={17}
           h={step}
           kind="plain"
@@ -278,11 +292,14 @@ export function KeyBar(
 ) {
   const { charOpen, onCharacter, onObserve, menuOpen, onMenu } = props;
   const { data, act } = useBackend<LobbyData>();
+  // Without the top key the others move left into its place.
+  const top = hasTop(data);
+  const dx = top ? 0 : -16;
   return (
     <>
-      <TopKey x={0} y={0} w={15} kind="box" />
+      {!!top && <TopKey x={0} y={0} w={15} kind="box" />}
       <Key
-        x={16}
+        x={16 + dx}
         y={0}
         w={9}
         kind="box"
@@ -292,7 +309,7 @@ export function KeyBar(
         onClick={onObserve}
       />
       <Key
-        x={26}
+        x={26 + dx}
         y={0}
         w={11}
         kind="box"
@@ -303,7 +320,7 @@ export function KeyBar(
       />
       {!!canStart(data) && (
         <Key
-          x={38}
+          x={38 + dx}
           y={0}
           w={7}
           kind="box"

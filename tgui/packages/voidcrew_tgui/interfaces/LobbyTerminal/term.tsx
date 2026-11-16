@@ -799,9 +799,17 @@ function FieldInput(
     cls: string;
     /** Inner padding left and right, px. */
     pad?: number;
+    /** Columns the text has inside the padding. */
+    cells: number;
   },
 ) {
   const { value, max, disabled, secret, onChange, onEnter } = props;
+  // Text longer than the field shrinks to fit it (down to 0.7x), so a long name stays whole.
+  const size = props.big ? 1.25 : 1;
+  const fit = Math.max(
+    0.7,
+    Math.min(size, (props.cells - 0.5) / Math.max(1, value.length)),
+  );
   const input = useRef<HTMLInputElement | null>(null);
   const focus = useFocusable<HTMLInputElement>(!disabled, {
     activate: () => input.current?.focus(),
@@ -848,7 +856,7 @@ function FieldInput(
               boxSizing: 'border-box' as const,
             }
           : {}),
-        ...(props.big ? { fontSize: '1.25em' } : {}),
+        ...(fit !== 1 ? { fontSize: `${fit}em` } : {}),
       }}
     />
   );
@@ -882,6 +890,7 @@ export function Field(props: FieldProps) {
         width={box.width}
         height={box.height}
         pad={px(cw)}
+        cells={w - 2}
       />
     </>
   );
@@ -906,6 +915,7 @@ export function LegacyField(props: FieldProps) {
         top={px(y * ch)}
         width={px(w * cw)}
         height={ch}
+        cells={w}
       />
     </>
   );
