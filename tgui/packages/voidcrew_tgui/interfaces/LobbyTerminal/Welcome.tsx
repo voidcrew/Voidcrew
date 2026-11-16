@@ -5,7 +5,7 @@
 import { useBackend } from 'tgui/backend';
 
 import { quietDialogClose } from './motion';
-import { useBack } from './nav';
+import { Back } from './nav';
 import { BODY_Y, Big, Btn, Dialog, Put, RPut, Slab, useGrid } from './term';
 import type { LobbyData } from './types';
 
@@ -21,7 +21,6 @@ export function Welcome(props: { onLater: () => void; onClose: () => void }) {
   const { onLater, onClose } = props;
   const { act } = useBackend<LobbyData>();
   const { cols } = useGrid();
-  useBack(onLater);
   const x = Math.floor((cols - W) / 2);
   const y = BODY_Y + 2;
   const pick = (mode: string) => {
@@ -40,6 +39,7 @@ export function Welcome(props: { onLater: () => void; onClose: () => void }) {
         }}
       />
       <Dialog w={W} h={H} caption="WELCOME">
+        <Back fn={onLater} />
         <Put x={x + 2} y={y + 1} cls="wht">
           FIRST TIME IN PORT. HOW DO YOU FIGHT?
         </Put>

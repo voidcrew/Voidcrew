@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { foundingSent, sfx, useScreen } from './motion';
-import { useBack } from './nav';
+import { Back } from './nav';
 import {
   Band,
   BODY_Y,
@@ -51,7 +51,6 @@ export function Confirmed() {
   const { cols } = useGrid();
   const notice = data.notice;
   const dismiss = () => act('dismiss', notice ? { at: notice.at } : {});
-  useBack(notice ? dismiss : null);
   // The box has its own wipe and sound; the screen that comes back after it wipes as a step back.
   useScreen('confirmed', 9, '', 0, true);
   const at = notice?.at;
@@ -76,6 +75,7 @@ export function Confirmed() {
     <>
       <EmptyBox />
       <Dialog w={45} h={6 + n} caption="CONFIRMED" sound={null}>
+        <Back fn={dismiss} />
         {lines.map((line, i) => (
           <Put key={i} x={x} y={y + 1 + i} cls="wht">
             {line}

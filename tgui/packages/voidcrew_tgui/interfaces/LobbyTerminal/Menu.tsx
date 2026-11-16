@@ -13,7 +13,7 @@ import { useBackend } from 'tgui/backend';
 
 import { Emblem } from './Emblem';
 import { sfx, useBlink, useChanged, useChangedNow } from './motion';
-import { FocusScope, useBack } from './nav';
+import { Back, FocusScope } from './nav';
 import {
   Box,
   type Cls,
@@ -132,7 +132,6 @@ type Util = {
   label: string;
   action: string;
   state: KeyState;
-  right?: string;
   /** Instead of sending `action`: SETTINGS opens the terminal's own screen. */
   onClick?: () => void;
 };
@@ -198,14 +197,15 @@ export function SideMenu(props: MenuProps) {
   const name = fullName ? wrapMax(fullName, 15, 2) : [];
   // The foot of the menu carries the server's credit line, not the station name.
   const port = wrapMax(CREDIT, 17, 3);
-  // The last line sits half a row above the box's foot; one-line names sit on the lower line.
+  // The credit's last line sits half a row above the box's foot.
   const portY = boxH - 0.5 - port.length;
   // Without the top key, everything under it moves up into its place.
   const top = hasTop(data);
   const dy = top ? 0 : -2.25;
-  const ruleY = 15 + dy + Math.max(0, name.length - 1);
+  // The rule sits a quarter row under the name, as the name sits a quarter row under CHARACTER.
+  const ruleY = 15.25 + dy + Math.max(0, name.length - 1);
   // Utility rows: 1.25 rows each when the menu has room (as in the approved stills), else 1.
-  // Two station-name lines and half a row are always kept free above the foot.
+  // The credit and half a row are always kept free above the foot.
   const start = canStart(data);
   const utils = utilities(data, props);
   const items = utils.length + (start ? 1 : 0);
@@ -250,7 +250,13 @@ export function SideMenu(props: MenuProps) {
         onClick={onCharacter}
       />
       {name.map((line, i) => (
-        <Put key={i} x={2} y={14 + dy + i} cls="dim" title={fullName}>
+        <Put
+          key={i}
+          x={2}
+          y={14 + dy + i}
+          cls={prefs ? 'dim' : 'faint'}
+          title={fullName}
+        >
           {line}
         </Put>
       ))}
@@ -264,8 +270,6 @@ export function SideMenu(props: MenuProps) {
           h={step}
           kind="plain"
           label={u.label}
-          right={u.right}
-          rightCls="amb"
           state={u.state}
           zone="menu"
           onClick={u.onClick || (() => act(u.action))}
@@ -365,7 +369,6 @@ export function MenuPopup(
   const { onClose } = props;
   const { data, act } = useBackend<LobbyData>();
   const { rows } = useGrid();
-  useBack(onClose);
   const y = rows - 6;
   const items = utilities(data, props);
   const first = items.findIndex((u) => u.state !== 'dead');
@@ -382,6 +385,7 @@ export function MenuPopup(
         <Box x={44} y={y} w={19} h={6} tone="bg" bright />
         <WipeAt x={44} y={y} w={19} h={6} k={0} kind="screen" first z={9} />
         <FocusScope>
+          <Back fn={onClose} />
           {items.map((u, i) => (
             <Key
               key={u.label}
@@ -390,8 +394,6 @@ export function MenuPopup(
               w={17}
               kind="plain"
               label={u.label}
-              right={u.right}
-              rightCls="amb"
               state={u.state}
               auto={i === first ? 9 : undefined}
               zone="menu"

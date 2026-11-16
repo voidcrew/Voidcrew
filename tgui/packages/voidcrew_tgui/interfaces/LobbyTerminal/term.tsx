@@ -97,7 +97,10 @@ const cx = (cls?: string) => (cls ? cls : undefined);
 const px = (v: number) => Math.round(v);
 
 /** Keyboard focus options a clickable item can pass on (see nav.tsx). */
-export type NavProps = Pick<FocusOpts, 'auto' | 'edge' | 'tab' | 'mouseOnly'>;
+export type NavProps = Pick<
+  FocusOpts,
+  'auto' | 'edge' | 'tab' | 'mouseOnly' | 'entry'
+>;
 
 // ---------------------------------------------------------------------------
 // Regions and text
@@ -1203,6 +1206,8 @@ export function Hit(
     activate: onClick,
     auto: props.auto,
     edge: props.edge,
+    tab: props.tab,
+    entry: props.entry,
   });
   const was = useRef(false);
   useEffect(() => {

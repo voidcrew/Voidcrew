@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { sfx, useChanged } from './motion';
-import { Band, cut, HRule, Put, RPut, useGrid } from './term';
+import { Band, cut, Hit, HRule, Put, RPut, useGrid } from './term';
 import type { LobbyData, TabId } from './types';
 
 /**
@@ -149,6 +149,8 @@ export function TabRow(props: {
 }) {
   const { tab, setTab, claim } = props;
   const { cols } = useGrid();
+  /** The tab under the focus, drawn in the body colour. */
+  const [lit, setLit] = useState<TabId | null>(null);
   return (
     <>
       {TABS.map(([id, label]) => {
@@ -161,17 +163,23 @@ export function TabRow(props: {
         return (
           <Fragment key={id}>
             {!!open && <Band x={bx} y={0} w={bw} h={1.5} tone="accent" />}
-            <Put
-              x={bx + 1}
-              y={0.25}
-              cls={open ? 'ink' : 'dim'}
-              hoverCls={open ? 'ink' : ''}
-              onClick={() => setTab(id)}
-              auto={open ? claim : undefined}
-              tab
-            >
+            <Put x={bx + 1} y={0.25} cls={open ? 'ink' : lit === id ? '' : 'dim'}>
               {label}
             </Put>
+            {/* The whole block is the click target, and the focus ring frames the block. */}
+            <Hit
+              x={bx}
+              y={0}
+              w={bw}
+              h={1.5}
+              onClick={() => setTab(id)}
+              onHover={(over) =>
+                setLit((was) => (over ? id : was === id ? null : was))
+              }
+              auto={open ? claim : undefined}
+              entry={open}
+              tab
+            />
           </Fragment>
         );
       })}
