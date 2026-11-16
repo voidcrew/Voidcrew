@@ -101,7 +101,9 @@ export function ListPicker(props: PickerProps) {
   // Two columns when at most one name in ten is longer than 17 (the full list decides, so
   // typing in FIND never reflows the page).
   const long17 = choices.filter((v) => shown(v).length > 17).length;
-  const ncol = wide && long17 * 10 <= choices.length ? 2 : 1;
+  // A list that fits one column whole stays in one column.
+  const short = choices.length * 1.25 <= M - 6.5;
+  const ncol = wide && !short && long17 * 10 <= choices.length ? 2 : 1;
   const colW = ncol === 2 ? 19 : w;
   const palette = !!hexOf;
   const nameW = (ncol === 2 ? 17 : w - 3) - (palette ? 3 : 0);
@@ -110,12 +112,19 @@ export function ListPicker(props: PickerProps) {
 
   const fitAll = Math.floor((M - 6.5) / baseH);
   const paged = fitAll * ncol < list.length;
-  // A short list that fits on one page: its rows grow (to 2.25) so the column fills.
+  // A short list that fits on one page: its rows grow (to 2.25) so the column fills. When
+  // there is room they stand apart as slabs a quarter row apart (as BODY's rows and the
+  // species list do), so a list that ends early reads as whole, not cut.
   const rowsUsed = Math.max(1, Math.ceil(choices.length / ncol));
+  const gapped =
+    short && !paged && !two && rowsUsed * 1.5 - 0.25 <= M - 6.5 + 1e-6;
   const rowH =
     paged || two
       ? baseH
-      : Math.max(baseH, Math.min(2.25, q((M - 6.5) / rowsUsed)));
+      : gapped
+        ? Math.max(baseH, Math.min(2.25, q((M - 6.25) / rowsUsed - 0.25)))
+        : Math.max(baseH, Math.min(2.25, q((M - 6.5) / rowsUsed)));
+  const pitch = gapped ? rowH + 0.25 : rowH;
   // One page: the columns share the list evenly, so the second is never left empty.
   const perCol = Math.max(
     1,
@@ -203,7 +212,7 @@ export function ListPicker(props: PickerProps) {
         const col = Math.floor(i / perCol);
         const r = i % perCol;
         const cx = x + col * (colW + 1);
-        const cy = 5.25 + r * rowH;
+        const cy = 5.25 + r * pitch;
         const on = v === value;
         const hex = hexOf?.(v);
         const nx = cx + 2 + (palette ? 3 : 0);
@@ -218,7 +227,7 @@ export function ListPicker(props: PickerProps) {
             w={colW}
             h={rowH}
             variant="row"
-            alt={r % 2 === 1}
+            alt={!gapped && r % 2 === 1}
             on={on}
             auto={on ? 5 : undefined}
             onClick={() => onPick(v)}
