@@ -22,7 +22,6 @@ import {
   type KeyKind,
   type KeyState,
   Put,
-  RPut,
   safe,
   useGrid,
   WipeAt,
@@ -238,9 +237,9 @@ export function SideMenu(props: MenuProps) {
         onClick={onCharacter}
       />
       {name.map((line, i) => (
-        <RPut key={i} x={17} y={14 + dy + i} cls="dim" title={fullName}>
+        <Put key={i} x={2} y={14 + dy + i} cls="dim" title={fullName}>
           {line}
-        </RPut>
+        </Put>
       ))}
       <HRule x={1} y={ruleY} w={17} />
       {utilities(data).map((u, i) => (

@@ -1685,7 +1685,7 @@ export const TERM_CSS = `
   box-shadow: 0 0 0 1px var(--lt-bg), 0 0 6px rgba(190,140,255,.8); }
 .lt-tui .lt-bar.is-grab .lt-bar-thumb { background: #fff; }
 .lt-tui .lt-hit { position: absolute; z-index: 4; cursor: pointer; }
-.lt-tui .lt-k { position: absolute; box-sizing: border-box; z-index: 4; cursor: pointer; border-style: solid;
+.lt-tui .lt-k { position: absolute; box-sizing: border-box; z-index: 5; cursor: pointer; border-style: solid;
   border-color: var(--lt-edge); }
 .lt-tui .lt-k span { z-index: auto; }
 .lt-tui .lt-k-box { background: var(--lt-key); }

@@ -156,6 +156,8 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		if("char_voice_play")
 			var/datum/preference_middleware/bark/bark = locate() in prefs.middleware
 			if(bark)
+				// Picking a voice plays it at once, so a new pick never waits out the last one's cooldown.
+				COOLDOWN_RESET(bark, bark_cooldown)
 				INVOKE_ASYNC(bark, TYPE_PROC_REF(/datum/preference_middleware/bark, play_bark), list(), user)
 			return TRUE
 		if("char_role")

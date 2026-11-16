@@ -281,11 +281,22 @@ export function BodyListPick(props: { k: string }) {
       value={String(prefs[k] ?? '')}
       nameOf={(v) => nameOf(cat, k, v)}
       hexOf={palette ? (v) => namedHex(cat, k, v) : undefined}
-      onPick={(v) => act('char_set', { key: k, value: v })}
+      onPick={(v) => {
+        if (v !== String(prefs[k] ?? '')) {
+          act('char_set', { key: k, value: v });
+        }
+        // A voice plays as it is picked (picking the current one plays it again).
+        if (k === VOICE_KEY) {
+          act('char_voice_play');
+        }
+      }}
       onClose={closeSub}
     />
   );
 }
+
+/** The voice pack preference: picking or stepping it plays the voice. */
+const VOICE_KEY = 'voice_pack';
 
 /** The colour panel on a BODY colour key. */
 export function BodyColour(props: { k: string }) {
@@ -684,14 +695,6 @@ export function BodyEditor(props: {
   // First focus: NAME when BODY opens; a row coming back from its picker; nothing on a group switch.
   const [fresh, setFresh] = useState(true);
   const [page, setPage] = useState(0);
-  const [playWait, setPlayWait] = useState(false);
-  useEffect(() => {
-    if (!playWait) {
-      return;
-    }
-    const t = window.setTimeout(() => setPlayWait(false), 2000);
-    return () => window.clearTimeout(t);
-  }, [playWait]);
 
   const set = (key: string, value: unknown) => act('char_set', { key, value });
   // The species changed, with or without the dialog.
@@ -866,32 +869,20 @@ export function BodyEditor(props: {
             key={k}
             {...common}
             onPress={() => sub(<BodyListPick k={k} />, label, k)}
-            onStep={step}
+            onStep={(by) => {
+              step(by);
+              act('char_voice_play');
+            }}
             value={(ty, by) => (
-              <>
-                <ValueText
-                  x={36}
-                  w={10}
-                  h={h}
-                  ty={ty}
-                  by={by}
-                  text={safe(voiceShort(nameOf(cat, k, value)))}
-                  big={big}
-                />
-                <Key
-                  x={47}
-                  y={y}
-                  w={8}
-                  h={h}
-                  kind="cap"
-                  label="[ PLAY ]"
-                  state={playWait ? 'dead' : 'idle'}
-                  onClick={() => {
-                    setPlayWait(true);
-                    act('char_voice_play');
-                  }}
-                />
-              </>
+              <ValueText
+                x={36}
+                w={19}
+                h={h}
+                ty={ty}
+                by={by}
+                text={safe(voiceShort(nameOf(cat, k, value)))}
+                big={big}
+              />
             )}
           />
         );
