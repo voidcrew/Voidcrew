@@ -50,6 +50,8 @@ export type FocusOpts = {
   edge?: Partial<Record<Dir, () => boolean>>;
   /** A tab: keeps the focus while the screen under it changes, and switches on arrow focus. */
   tab?: boolean;
+  /** The open tab: an arrow move into the tab row from outside it lands here, not on the nearest tab. */
+  entry?: boolean;
   /** Lit by the mouse only; the arrow keys pass it by (a cycler's < and >, which Left/Right drive). */
   mouseOnly?: boolean;
   /** A text field: Enter starts typing in it. */
@@ -444,6 +446,16 @@ export function NavProvider(props: ProviderProps) {
             if (boxOf(items.get(last))) {
               best = last;
             }
+          }
+        }
+        // Into the tab row from outside it: the open tab, so a move up never switches screens.
+        const into = items.get(best)?.opts.current;
+        if (into?.tab && !item.opts.current.tab && !into.entry) {
+          const open = live().find(
+            (id) => items.get(id)?.opts.current.entry && boxOf(items.get(id)),
+          );
+          if (open) {
+            best = open;
           }
         }
         nav.focus(best, 'key');
