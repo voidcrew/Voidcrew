@@ -13,7 +13,16 @@ import { useBackend } from 'tgui/backend';
 
 import { ColorEntry, parseHex } from './ColorEntry';
 import { useBack } from './nav';
-import { Btn, Cycler, Field, Panel, Put, pad, Swatch, wrap } from './term';
+import {
+  Btn,
+  Cycler,
+  LegacyField as Field,
+  Panel,
+  Put,
+  pad,
+  Swatch,
+  wrap,
+} from './term';
 import {
   AGE_MAX,
   AGE_MIN,

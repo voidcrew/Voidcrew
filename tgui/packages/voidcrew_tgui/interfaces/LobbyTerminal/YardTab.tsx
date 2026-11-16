@@ -13,7 +13,15 @@ import { Fit } from './Fit';
 import { Hulls } from './Hulls';
 import { useBack } from './nav';
 import { SaveSlots } from './SaveSlots';
-import { Frame, type NavProps, Put, RPut, TOP, useGrid } from './term';
+import {
+  Frame,
+  type NavProps,
+  Put,
+  RPut,
+  LEGACY_TOP as TOP,
+  useGrid,
+  LEGACY_NARROW,
+} from './term';
 import type {
   CrewLine,
   Finish,
@@ -444,7 +452,8 @@ function Crumbs(props: { ctx: YardCtx; screen: YardScreen }) {
 function Home(props: { ctx: YardCtx }) {
   const { ctx } = props;
   const { data, act } = useBackend<LobbyData>();
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   const bottom = rows - 1;
   const req = !!data.can_requisition;
   const account = data.account || {};

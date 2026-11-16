@@ -12,15 +12,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
-import { BEZEL_EXTRA_CSS, Bezel } from './Bezel';
+import { Bezel } from './Bezel';
 import { CharacterTab } from './CharacterTab';
 import { CrewsTab } from './CrewsTab';
-import { Header, TABS } from './Header';
+import { HeaderBand, TABS, TabRow } from './Header';
 import { HousingTab } from './HousingTab';
-import { computeLayout, START_KEY_W } from './layout';
+import { computeLayout, regions } from './layout';
 import { Confirmed, NoticeLine } from './Notice';
 import { NAV_CSS, NavProvider } from './nav';
-import { type Grid, GridContext, TERM_CSS } from './term';
+import { Box, type Grid, GridContext, Region, STARS, TERM_CSS } from './term';
 import type { LobbyData, TabId } from './types';
 import { YardTab } from './YardTab';
 
@@ -106,19 +106,9 @@ export function LobbyTerminal() {
   const { data, act } = useBackend<LobbyData>();
   const pane = usePaneSize();
   const advance = useTerminalFont();
-  const startKey =
-    !!data.localhost_admin &&
-    (data.phase === 'loading' || data.phase === 'pregame');
   const layout = useMemo(
-    () =>
-      computeLayout(
-        pane.w,
-        pane.h,
-        pane.dpr,
-        advance,
-        startKey ? START_KEY_W : 0,
-      ),
-    [pane.w, pane.h, pane.dpr, advance, startKey],
+    () => computeLayout(pane.w, pane.h, pane.dpr, advance),
+    [pane.w, pane.h, pane.dpr, advance],
   );
   const grid: Grid = useMemo(
     () => ({
@@ -127,10 +117,12 @@ export function LobbyTerminal() {
       cw: layout.cw,
       ch: layout.ch,
       s: layout.s,
-      narrow: layout.narrow,
+      lw: layout.lw,
+      mode: layout.mode,
     }),
     [layout],
   );
+  const reg = regions(layout.mode, layout.rows);
 
   const [tab, setTab] = useState<TabId>('crews');
   /** Bumped when SHIPYARD is pressed while already on it. */
@@ -177,13 +169,12 @@ export function LobbyTerminal() {
     }
   };
   const { s } = layout;
-  const scan = Math.max(2, Math.round(s));
 
   let body;
   if (confirmed) {
     body = <Confirmed />;
   } else if (tab === 'crews') {
-    body = <CrewsTab />;
+    body = <CrewsTab setTab={switchTab} />;
   } else if (tab === 'shipyard') {
     body = <YardTab home={yardHome} />;
   } else if (tab === 'character') {
@@ -198,11 +189,10 @@ export function LobbyTerminal() {
         position: 'fixed',
         inset: 0,
         overflow: 'hidden',
-        background: '#0b0b0e',
-        ['--lt-bg' as string]: '#07130d',
+        background: '#0b0a0e',
       }}
     >
-      <style>{TERM_CSS + NAV_CSS + BEZEL_EXTRA_CSS}</style>
+      <style>{TERM_CSS + NAV_CSS}</style>
       <NavProvider
         onTabNumber={(n) => {
           const next = TABS[n - 1];
@@ -216,12 +206,23 @@ export function LobbyTerminal() {
           switchTab(next[0]);
         }}
       >
-        <Bezel
-          s={s}
-          characterLit={tab === 'character' && !confirmed}
-          onCharacter={() => switchTab('character')}
-        >
+        <Bezel s={s}>
           <div className="lt-crt">
+            <div className="lt-nebula" />
+            <div className="lt-stars">
+              {STARS.map(([left, top, opacity], i) => (
+                <i
+                  key={i}
+                  style={{
+                    left: `${left}%`,
+                    top: `${top}%`,
+                    opacity,
+                    width: s,
+                    height: s,
+                  }}
+                />
+              ))}
+            </div>
             <div
               className="lt-tui"
               style={{
@@ -234,18 +235,30 @@ export function LobbyTerminal() {
               }}
             >
               <GridContext.Provider value={grid}>
-                <Header tab={tab} setTab={switchTab} />
-                {body}
-                <NoticeLine />
+                <Region {...reg.header}>
+                  <HeaderBand />
+                </Region>
+                {!!reg.menu && (
+                  <Region {...reg.menu}>
+                    <Box
+                      x={0}
+                      y={0}
+                      w={reg.menu.w}
+                      h={reg.menu.h}
+                      tone="menu"
+                    />
+                  </Region>
+                )}
+                <Region {...reg.main}>
+                  <TabRow tab={tab} setTab={switchTab} />
+                  {body}
+                  <NoticeLine />
+                </Region>
+                {!!reg.bar && <Region {...reg.bar} />}
               </GridContext.Provider>
             </div>
-            <div
-              className="lt-scan"
-              style={{
-                background: `repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${scan - 1}px, rgba(0,0,0,.32) ${scan - 1}px, rgba(0,0,0,.32) ${scan}px)`,
-              }}
-            />
-            <div className="lt-glass" />
+            <div className="lt-scan" />
+            <div className="lt-vign" />
           </div>
         </Bezel>
       </NavProvider>

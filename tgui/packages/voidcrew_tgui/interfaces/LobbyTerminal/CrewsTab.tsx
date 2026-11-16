@@ -1,254 +1,450 @@
 /**
- * CREWS tab: one line per crew, and the record of the selected one beside it (or in its
- * place on a narrow screen). Package P2. Draws only with the term.tsx primitives; content
- * lives between rows TOP and rows - 2 (rows - 1 is the shell's notice line).
+ * CREWS: every crew signing on, as full blocks when they all fit the box and as two-line
+ * compact rows otherwise (paged when they overflow). Opening a ship shows its record in place
+ * of the list.
+ *
+ * Main-region rows: box from BOX_Y, body from BODY_Y (columns 1 to 61, bodyRows(M) rows),
+ * the shell's notice row at M - 1.
  */
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { CrewRecordPane, isLocked } from './CrewRecord';
-import { useBack } from './nav';
-import { Frame, Hit, lpad, Put, pad, TOP, useGrid } from './term';
-import type { Crew, LobbyData } from './types';
+import {
+  BODY_Y,
+  BOX_Y,
+  Big,
+  Box,
+  bodyRows,
+  cut,
+  Key,
+  LEGACY_TOP,
+  NameLine,
+  Pager,
+  Put,
+  RPut,
+  SEP,
+  Slab,
+  safe,
+  useGrid,
+  wrapMax,
+} from './term';
+import type { Crew, LobbyData, TabId } from './types';
+
+type Status = 'OPEN' | 'LOCKED' | 'APPLIED' | 'FULL';
+
+const STATUS_CLS: Record<Status, string> = {
+  OPEN: '',
+  LOCKED: 'amb',
+  APPLIED: 'amb',
+  FULL: 'dim',
+};
+
+/** Order groups: own crew, then open, then locked or applied, then full. */
+const STATUS_RANK: Record<Status, number> = {
+  OPEN: 1,
+  LOCKED: 2,
+  APPLIED: 2,
+  FULL: 3,
+};
+
+const YOUR_CREW = ' YOUR CREW ';
+/** Block text columns 3 to 49; compact line 2 columns 3 to 60. */
+const BLOCK_TEXT_W = 47;
+const ROW_TEXT_W = 58;
+const ROW_NAME_W = 46;
 
 function openSlots(c: Crew): number {
-  return c.jobs.reduce((sum, job) => sum + job.open, 0);
+  return (c.jobs || []).reduce((sum, job) => sum + (job.open || 0), 0);
 }
 
-/** Status word and its colour, as in the mockup. Open crews show nothing. */
-function status(c: Crew): [string, string] | null {
-  if (!c.jobs.length) {
-    return ['FULL', 'red'];
-  }
-  if (c.applied) {
-    return ['APPLIED', 'amb'];
+function statusOf(c: Crew): Status {
+  if (openSlots(c) <= 0) {
+    return 'FULL';
   }
   if (isLocked(c)) {
-    return ['LOCKED', 'amb'];
+    return c.applied ? 'APPLIED' : 'LOCKED';
   }
-  return null;
+  return 'OPEN';
 }
 
-export function CrewsTab() {
+const count = (n: number) => String(Math.min(999, Math.max(0, n)));
+
+/** `<Class> • <n> aboard`; the class drops out when the name already starts with it. */
+function classLine(c: Crew, name: string): string {
+  const cls = safe(c.cls).trim();
+  const aboard = `${Math.max(0, c.crew || 0)} aboard`;
+  if (!cls || name.toUpperCase().startsWith(cls.toUpperCase())) {
+    return aboard;
+  }
+  return `${cls} ${SEP} ${aboard}`;
+}
+
+type Shown = {
+  c: Crew;
+  name: string;
+  status: Status;
+  open: number;
+  mine: boolean;
+};
+
+export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
+  const { setTab } = props;
   const { data } = useBackend<LobbyData>();
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
   const crews = data.crews || [];
   const [selRef, setSelRef] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  /** Which row of a new page takes the focus: the last when paging up with the arrow keys. */
-  const [enterLast, setEnterLast] = useState(false);
+  /** The ship that last held the focus; the page follows it when it changes group. */
+  const [focRef, setFocRef] = useState<string | null>(null);
+  /** The ship whose slab takes the focus when it mounts (paging, following). */
+  const [claimRef, setClaimRef] = useState<string | null>(null);
+  const lastWheel = useRef(0);
+
+  const sorted: Shown[] = useMemo(() => {
+    const list = crews.map((c, i) => {
+      const status = statusOf(c);
+      const mine = !!c.mine;
+      return {
+        c,
+        i,
+        name: safe(c.name).toUpperCase(),
+        status,
+        open: openSlots(c),
+        mine,
+        rank: mine ? 0 : STATUS_RANK[status],
+      };
+    });
+    list.sort((a, b) => a.rank - b.rank || a.i - b.i);
+    return list;
+  }, [crews]);
 
   const selected = crews.find((c) => c.ref === selRef) || null;
-  const h = rows - 1 - TOP;
-  // The record's own BACK (CrewRecord) wins while it is open; this only covers a stale selection.
-  useBack(selected ? () => setSelRef(null) : null);
 
-  if (selected && narrow) {
+  const n = sorted.length;
+  const B = bodyRows(rows);
+  const fullFit = Math.floor((B + 0.25) / 4.75);
+  const rowFit = Math.floor((B + 0.25) / 2.5);
+  const form: 'block' | 'row' = n <= fullFit ? 'block' : 'row';
+  const per =
+    form === 'block'
+      ? Math.max(1, n)
+      : n <= rowFit
+        ? rowFit
+        : Math.max(1, Math.floor((B - 1) / 2.5));
+  const pages = Math.max(1, Math.ceil(n / per));
+  const pg = Math.min(pages, Math.max(1, page));
+  const first = (pg - 1) * per;
+  const shown = sorted.slice(first, first + per);
+
+  // The page follows the focused ship when the order moves it to another page.
+  const focIdx = focRef ? sorted.findIndex((x) => x.c.ref === focRef) : -1;
+  const lastIdx = useRef(focIdx);
+  useEffect(() => {
+    if (focIdx !== lastIdx.current) {
+      lastIdx.current = focIdx;
+      if (focIdx >= 0) {
+        const want = Math.floor(focIdx / per) + 1;
+        if (want !== pg) {
+          setClaimRef(focRef);
+          setPage(want);
+        }
+      }
+    }
+  }, [focIdx, per]);
+
+  const turn = (to: number, last = false) => {
+    if (to < 1 || to > pages || to === pg) {
+      return false;
+    }
+    const at = (to - 1) * per;
+    const target = last ? sorted[Math.min(n - 1, at + per - 1)] : sorted[at];
+    setClaimRef(target ? target.c.ref : null);
+    setPage(to);
+    return true;
+  };
+
+  // PageDown and PageUp turn the page from anywhere in the list.
+  const turnRef = useRef(turn);
+  turnRef.current = turn;
+  const pgRef = useRef(pg);
+  pgRef.current = pg;
+  const listOpen = !selected && pages > 1;
+  useEffect(() => {
+    if (!listOpen) {
+      return;
+    }
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
+        return;
+      }
+      if (e.key === 'PageDown' || e.key === 'PageUp') {
+        e.preventDefault();
+        turnRef.current(pgRef.current + (e.key === 'PageDown' ? 1 : -1));
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [listOpen]);
+
+  if (selected) {
     return (
       <CrewRecordPane
         crew={selected}
         x={0}
         w={cols}
-        h={h}
+        h={rows - 1 - LEGACY_TOP}
         narrow
         onClose={() => setSelRef(null)}
       />
     );
   }
 
-  const split = !!selected;
-  // The mockup splits 64 | 46 at 110 columns.
-  const lw = split ? Math.round((cols * 64) / 110) : cols;
-  const showMemo = !split && !narrow;
-  // Fixed-width columns are placed from the right; the class column takes a share of the rest.
-  // With the memo column it starts at the mockup's share of the width (column 70 of 126).
-  const memo = Math.round((cols * 70) / 126);
-  const st = showMemo ? memo - 10 : lw - 11;
-  const open = st - (showMemo ? 7 : 6);
-  const crewCol = open - (showMemo ? 7 : 6);
-  const name = 3;
-  const cls = name + Math.min(26, Math.round((crewCol - name) * 0.58));
-
-  const hy = TOP + 1;
-  const fit = Math.max(1, h - 3);
-  const pages = Math.max(1, Math.ceil(crews.length / fit));
-  const pg = Math.min(pages, Math.max(1, page));
-  const shown = crews.slice((pg - 1) * fit, pg * fit);
+  // First focus in a running round: the first open ship the player can take a berth on.
+  const firstPick =
+    data.phase === 'playing'
+      ? sorted.find(
+          (x) =>
+            x.status === 'OPEN' &&
+            !x.c.rejoin_wait &&
+            (x.c.jobs || []).some((j) => !!j.ok),
+        ) || sorted[0]
+      : sorted[0];
+  const claim = claimRef ?? (firstPick ? firstPick.c.ref : null);
 
   const out: ReactNode[] = [];
-  out.push(
-    <Put key="hn" x={name} y={hy} cls="dim">
-      SHIP
-    </Put>,
-    <Put key="hc" x={cls} y={hy} cls="dim">
-      CLASS
-    </Put>,
-    <Put key="hr" x={crewCol} y={hy} cls="dim">
-      CREW
-    </Put>,
-    <Put key="ho" x={open} y={hy} cls="dim">
-      OPEN
-    </Put>,
+  const box = (
+    <Box
+      key="box"
+      x={0}
+      y={BOX_Y}
+      w={cols}
+      h={rows - 3.5}
+      caption={`CREWS  ${n}`}
+    />
   );
-  if (showMemo) {
-    out.push(
-      <Put key="hm" x={memo} y={hy} cls="dim">
-        MEMO
-      </Put>,
-    );
-  }
 
-  if (!crews.length) {
-    out.push(
-      <Put key="none" x={3} y={hy + 2} cls="dim">
-        {data.phase === 'playing'
-          ? 'NO CREWS ARE SIGNING ON.'
-          : 'CREWS SIGN ON ONCE THE PORT OPENS.'}
-      </Put>,
+  if (!n) {
+    out.push(<EmptyState key="empty" phase={data.phase} setTab={setTab} />);
+  } else if (form === 'block') {
+    // Blocks stretch to share the body; any rows left over go between them.
+    const h = Math.max(
+      4.75,
+      Math.floor(Math.min(7, (B - 0.25 * (n - 1)) / n) * 4) / 4,
     );
-  }
-
-  shown.forEach((c, i) => {
-    const y = hy + 1 + i;
-    const isSel = c.ref === selRef;
-    const k = isSel ? 'inv' : '';
-    const slots = openSlots(c);
-    const stat = status(c);
-    if (isSel) {
+    const gap =
+      n > 1 ? Math.max(0.25, Math.min(0.5, (B - n * h) / (n - 1))) : 0;
+    shown.forEach((x, i) => {
       out.push(
-        <Put key={`bar${c.ref}`} x={1} y={y} cls="inv">
-          {' '.repeat(Math.max(0, lw - 3))}
-        </Put>,
+        <CrewBlock
+          key={x.c.ref}
+          x={x}
+          y0={BODY_Y + i * (h + gap)}
+          h={h}
+          auto={x.c.ref === claim ? 1 : undefined}
+          onOpen={() => setSelRef(x.c.ref)}
+          onFocus={() => setFocRef(x.c.ref)}
+        />,
       );
-    }
+    });
+  } else {
+    shown.forEach((x, i) => {
+      const firstRow = i === 0;
+      const lastRow = i === shown.length - 1;
+      out.push(
+        <CrewRow
+          key={x.c.ref}
+          x={x}
+          y0={BODY_Y + i * 2.5}
+          alt={(first + i) % 2 === 1}
+          auto={x.c.ref === claim ? 1 : undefined}
+          onOpen={() => setSelRef(x.c.ref)}
+          onFocus={() => setFocRef(x.c.ref)}
+          edge={{
+            down: lastRow ? () => turn(pg + 1) : undefined,
+            up: firstRow ? () => turn(pg - 1, true) : undefined,
+          }}
+        />,
+      );
+    });
     out.push(
-      <Put key={`p${c.ref}`} x={1} y={y} cls={k}>
-        {isSel ? '>' : ' '}
-      </Put>,
-      <Put key={`n${c.ref}`} x={name} y={y} cls={k}>
-        {pad(c.name.toUpperCase(), cls - name - 1)}
-      </Put>,
-      <Put key={`c${c.ref}`} x={cls} y={y} cls={isSel ? 'inv' : 'dim'}>
-        {pad(c.cls, crewCol - cls - 1)}
-      </Put>,
-      <Put key={`r${c.ref}`} x={crewCol} y={y} cls={k}>
-        {lpad(c.crew, 3)}
-      </Put>,
-      <Put
-        key={`o${c.ref}`}
-        x={open}
-        y={y}
-        cls={isSel ? 'inv' : slots ? '' : 'faint'}
-      >
-        {lpad(slots || '-', 3)}
-      </Put>,
-    );
-    if (stat) {
-      out.push(
-        <Put key={`s${c.ref}`} x={st} y={y} cls={isSel ? 'inv' : stat[1]}>
-          {stat[0]}
-        </Put>,
-      );
-    }
-    if (showMemo) {
-      out.push(
-        <Put key={`m${c.ref}`} x={memo} y={y} cls={isSel ? 'inv' : 'dim'}>
-          {pad(c.memo, cols - memo - 2)}
-        </Put>,
-      );
-    }
-    const firstRow = i === 0;
-    const lastRow = i === shown.length - 1;
-    out.push(
-      <Hit
-        key={`h${pg}-${c.ref}`}
-        x={1}
-        y={y}
-        w={lw - 3}
-        h={1}
-        onClick={() => setSelRef(isSel ? null : c.ref)}
-        auto={(enterLast ? lastRow : firstRow) ? 1 : undefined}
-        edge={{
-          down:
-            lastRow && pg < pages
-              ? () => {
-                  setEnterLast(false);
-                  setPage(pg + 1);
-                  return true;
-                }
-              : undefined,
-          up:
-            firstRow && pg > 1
-              ? () => {
-                  setEnterLast(true);
-                  setPage(pg - 1);
-                  return true;
-                }
-              : undefined,
-        }}
+      <Pager
+        key="pager"
+        x={61}
+        y={rows - 2.25}
+        page={pg}
+        pages={pages}
+        right
+        onPage={(to) => turn(to)}
       />,
-    );
-  });
-
-  if (pages > 1) {
-    const py = TOP + h - 1;
-    const label = ` ${pg}/${pages} `;
-    out.push(
-      <Put
-        key="prev"
-        x={lw - 14}
-        y={py}
-        cls={pg > 1 ? 'inv' : 'faint'}
-        bg={pg <= 1}
-        onClick={
-          pg > 1
-            ? () => {
-                setEnterLast(false);
-                setPage(pg - 1);
-              }
-            : undefined
-        }
-      >
-        {' < '}
-      </Put>,
-      <Put key="pg" x={lw - 11} y={py} bg>
-        {label}
-      </Put>,
-      <Put
-        key="next"
-        x={lw - 11 + label.length}
-        y={py}
-        cls={pg < pages ? 'inv' : 'faint'}
-        bg={pg >= pages}
-        onClick={
-          pg < pages
-            ? () => {
-                setEnterLast(false);
-                setPage(pg + 1);
-              }
-            : undefined
-        }
-      >
-        {' > '}
-      </Put>,
     );
   }
 
   return (
-    <>
-      <Frame x={0} y={TOP} w={lw} h={h} title={`CREWS  ${crews.length}`}>
-        {out}
-      </Frame>
-      {!!selected && (
-        <CrewRecordPane
-          crew={selected}
-          x={lw + 1}
-          w={cols - lw - 1}
-          h={h}
-          narrow={false}
-          onClose={() => setSelRef(null)}
+    <div
+      className="lt-wheel"
+      onWheel={(e) => {
+        if (pages <= 1 || !e.deltaY) {
+          return;
+        }
+        const now = Date.now();
+        if (now - lastWheel.current < 150) {
+          return;
+        }
+        lastWheel.current = now;
+        turn(pg + (e.deltaY > 0 ? 1 : -1));
+      }}
+    >
+      {box}
+      {out}
+    </div>
+  );
+}
+
+function CrewBlock(props: {
+  x: Shown;
+  y0: number;
+  h: number;
+  auto?: number;
+  onOpen: () => void;
+  onFocus: () => void;
+}) {
+  const { x, y0, h, auto, onOpen, onFocus } = props;
+  const { c, name, status, open, mine } = x;
+  const p = h >= 4.75 ? 0.25 : 0.125;
+  const line = classLine(c, name);
+  const lines = Math.max(2, Math.min(4, Math.floor(h - 2.25 - 2 * p)));
+  const memo = wrapMax(safe(c.memo).trim(), BLOCK_TEXT_W, lines);
+  const tag = mine ? YOUR_CREW.length + 2 : 0;
+  const shownLine = cut(line, BLOCK_TEXT_W - tag);
+  return (
+    <Slab
+      x={1}
+      y={y0}
+      w={61}
+      h={h}
+      variant="block"
+      auto={auto}
+      onClick={onOpen}
+      onFocus={(on) => on && onFocus()}
+    >
+      <NameLine x={3} y={y0 + p} w={BLOCK_TEXT_W} text={name} />
+      <Put x={3} y={y0 + p + 1.25} cls="dim">
+        {shownLine}
+      </Put>
+      {!!mine && (
+        <Put x={3 + shownLine.length + 2} y={y0 + p + 1.25} cls="inv">
+          {YOUR_CREW}
+        </Put>
+      )}
+      {memo.map((text, i) => (
+        <Put key={i} x={3} y={y0 + p + 2.25 + i}>
+          {text}
+        </Put>
+      ))}
+      {status === 'FULL' ? (
+        <Big
+          x={52}
+          w={9}
+          align="center"
+          y={y0 + (h - 1.25) / 2}
+          scale={1.25}
+          cls="dim"
+        >
+          FULL
+        </Big>
+      ) : (
+        <>
+          <Big x={52} w={9} align="center" y={y0 + p} scale={2.25} cls="acc">
+            {count(open)}
+          </Big>
+          <Put
+            x={52 + Math.floor((9 - status.length) / 2)}
+            y={y0 + p + 2.25}
+            cls={STATUS_CLS[status]}
+          >
+            {status}
+          </Put>
+        </>
+      )}
+    </Slab>
+  );
+}
+
+function CrewRow(props: {
+  x: Shown;
+  y0: number;
+  alt: boolean;
+  auto?: number;
+  onOpen: () => void;
+  onFocus: () => void;
+  edge: { down?: () => boolean; up?: () => boolean };
+}) {
+  const { x, y0, alt, auto, onOpen, onFocus, edge } = props;
+  const { c, name, status, open, mine } = x;
+  const right = status === 'FULL' ? 'FULL' : `${count(open)} ${status}`;
+  const memo = safe(c.memo).replace(/\s+/g, ' ').trim();
+  const tail = [classLine(c, name), memo].filter(Boolean).join(` ${SEP} `);
+  const tag = mine ? YOUR_CREW.length + 2 : 0;
+  return (
+    <Slab
+      x={1}
+      y={y0}
+      w={61}
+      h={2.25}
+      variant="row"
+      alt={alt}
+      auto={auto}
+      edge={edge}
+      onClick={onOpen}
+      onFocus={(on) => on && onFocus()}
+    >
+      <Put x={3} y={y0 + 0.125} cls="wht">
+        {cut(name, ROW_NAME_W)}
+      </Put>
+      <RPut
+        x={61}
+        y={y0 + 0.125}
+        cls={status === 'OPEN' ? 'acc' : STATUS_CLS[status]}
+      >
+        {right}
+      </RPut>
+      {!!mine && (
+        <Put x={3} y={y0 + 1.125} cls="inv">
+          {YOUR_CREW}
+        </Put>
+      )}
+      <Put x={3 + tag} y={y0 + 1.125} cls="dim">
+        {cut(tail, ROW_TEXT_W - tag)}
+      </Put>
+    </Slab>
+  );
+}
+
+const EMPTY_LINE: Record<string, string> = {
+  playing: 'NO CREWS ARE SIGNING ON.',
+  ended: 'PORT CLOSED.',
+};
+
+function EmptyState(props: { phase: string; setTab?: (tab: TabId) => void }) {
+  const { phase, setTab } = props;
+  const y0 = BODY_Y;
+  const line = EMPTY_LINE[phase] || 'CREWS SIGN ON ONCE THE PORT OPENS.';
+  return (
+    <Slab x={1} y={y0} w={61} h={4.75} variant="block" dead>
+      <NameLine x={3} y={y0 + 0.25} w={57} text={line} cls="dim" />
+      {phase === 'playing' && !!setTab && (
+        <Key
+          x={3}
+          y={y0 + 2.5}
+          w={12}
+          kind="box"
+          label="SHIPYARD"
+          auto={1}
+          onClick={() => setTab('shipyard')}
         />
       )}
-    </>
+    </Slab>
   );
 }

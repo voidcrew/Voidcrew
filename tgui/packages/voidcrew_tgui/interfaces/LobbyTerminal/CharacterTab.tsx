@@ -25,9 +25,10 @@ import {
   RPut,
   Rule,
   Swatch,
-  TOP,
+  LEGACY_TOP as TOP,
   useGrid,
   wrap,
+  LEGACY_NARROW,
 } from './term';
 import type {
   CellBox,
@@ -90,7 +91,8 @@ function topRole(char: CharData, stat?: CharStatic) {
 export function CharacterTab(props: { home: number }) {
   const { home } = props;
   const { act, data } = useBackend<LobbyData>();
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   const cat = usePrefsCatalog();
   const [section, setSection] = useState<CharSection | null>(null);
   useBack(section ? () => setSection(null) : null);

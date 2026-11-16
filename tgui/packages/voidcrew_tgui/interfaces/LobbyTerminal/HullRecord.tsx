@@ -5,7 +5,15 @@
 import type { ReactNode } from 'react';
 
 import { ShipPic } from './ShipPic';
-import { cut, Frame, Put, TOP, useGrid, wrapMax } from './term';
+import {
+  cut,
+  Frame,
+  Put,
+  LEGACY_TOP as TOP,
+  useGrid,
+  wrapMax,
+  LEGACY_NARROW,
+} from './term';
 import type { Hull } from './types';
 import {
   costOf,
@@ -24,7 +32,8 @@ export function HullRecord(props: {
   w: number;
 }) {
   const { ctx, hull, x, w } = props;
-  const { rows, narrow } = useGrid();
+  const { rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   usePreview(hull.id);
   const h = rows - 1 - TOP;
   const fit = stockFit(hull);

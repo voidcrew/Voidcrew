@@ -19,13 +19,13 @@ import { fileColors } from './TraitsEditor';
 import {
   Btn,
   Cycler,
-  Field,
+  LegacyField as Field,
   Frame,
   Hit,
   Put,
   pad,
   Swatch,
-  useGrid,
+  LEGACY_NARROW,
 } from './term';
 import {
   type CellBox,
@@ -84,7 +84,7 @@ type Line =
 export function KitEditor(props: CellBox) {
   const { x, y, w, h } = props;
   const { act, data } = useBackend<LobbyData>();
-  const { narrow } = useGrid();
+  const narrow = LEGACY_NARROW;
   const catalog = usePrefsCatalog();
   const char = data.char;
   const kitColors = data.char_static?.kit_colors || {};

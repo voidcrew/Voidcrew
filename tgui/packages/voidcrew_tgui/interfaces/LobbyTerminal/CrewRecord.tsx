@@ -8,13 +8,13 @@ import { useBack } from './nav';
 import {
   Blocks,
   Btn,
-  Field,
+  LegacyField as Field,
   Frame,
   Put,
   pad,
   RPut,
   Rule,
-  TOP,
+  LEGACY_TOP as TOP,
   wrapMax,
 } from './term';
 import type { Crew, LobbyData } from './types';

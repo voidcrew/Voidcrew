@@ -15,9 +15,10 @@ import {
   pad,
   RPut,
   Rule,
-  TOP,
+  LEGACY_TOP as TOP,
   useGrid,
   wrap,
+  LEGACY_NARROW,
 } from './term';
 import type { CrewLine, Finish, Hull, Module } from './types';
 import {
@@ -77,7 +78,8 @@ function stepsOf(fit: ShipFit): Step[] {
 export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   const { ctx, hull } = props;
   const { view, set, own } = ctx;
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   usePreview(hull.id);
   const h = rows - 1 - TOP;
   const fit = fitOf(hull, view.finish, view.picks);

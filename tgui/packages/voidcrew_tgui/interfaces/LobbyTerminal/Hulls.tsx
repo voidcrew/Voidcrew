@@ -5,7 +5,16 @@
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { HullRecord } from './HullRecord';
-import { Frame, Hit, lpad, Put, pad, TOP, useGrid } from './term';
+import {
+  Frame,
+  Hit,
+  lpad,
+  Put,
+  pad,
+  LEGACY_TOP as TOP,
+  useGrid,
+  LEGACY_NARROW,
+} from './term';
 import {
   crewCount,
   hullOwned,
@@ -17,7 +26,8 @@ import {
 export function Hulls(props: { ctx: YardCtx }) {
   const { ctx } = props;
   const { catalog, hull, own } = ctx;
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   const h = rows - 1 - TOP;
   const crews = useMemo(
     () => catalog.map((hl) => crewCount(stockFit(hl))),

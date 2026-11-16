@@ -11,7 +11,16 @@
 import { type PointerEvent as ReactPointerEvent, useState } from 'react';
 
 import { useBack } from './nav';
-import { Btn, Field, lpad, Panel, Put, Swatch, TOP, useGrid } from './term';
+import {
+  Btn,
+  LegacyField as Field,
+  lpad,
+  Panel,
+  Put,
+  Swatch,
+  LEGACY_TOP as TOP,
+  useGrid,
+} from './term';
 
 export type ColorEntryProps = {
   /** Column and row of the label. */

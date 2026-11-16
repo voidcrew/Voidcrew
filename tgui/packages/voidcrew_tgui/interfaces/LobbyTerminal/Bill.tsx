@@ -9,7 +9,18 @@
 import type { ReactNode } from 'react';
 
 import { ShipPic } from './ShipPic';
-import { cut, Frame, lpad, Put, pad, RPut, Rule, TOP, useGrid } from './term';
+import {
+  cut,
+  Frame,
+  lpad,
+  Put,
+  pad,
+  RPut,
+  Rule,
+  LEGACY_TOP as TOP,
+  useGrid,
+  LEGACY_NARROW,
+} from './term';
 import type { Hull, LobbyActions } from './types';
 import {
   billOf,
@@ -30,7 +41,8 @@ export function Bill(props: {
 }) {
   const { ctx, hull, onCommission } = props;
   const { view, set, own } = ctx;
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   usePreview(hull.id);
   const h = rows - 1 - TOP;
   const fit = fitOf(hull, view.finish, view.picks);

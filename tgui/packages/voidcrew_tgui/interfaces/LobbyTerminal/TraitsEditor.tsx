@@ -22,8 +22,8 @@ import {
   pad,
   RPut,
   Rule,
-  useGrid,
   wrap,
+  LEGACY_NARROW,
 } from './term';
 import type { CellBox, LobbyData } from './types';
 import { usePrefsCatalog } from './usePrefsCatalog';
@@ -72,7 +72,7 @@ export function fileColors(
 export function TraitsEditor(props: CellBox) {
   const { x, y, w, h } = props;
   const { act, data } = useBackend<LobbyData>();
-  const { narrow } = useGrid();
+  const narrow = LEGACY_NARROW;
   const catalog = usePrefsCatalog();
   const char = data.char;
   const [filter, setFilter] = useState<Filter>('good');

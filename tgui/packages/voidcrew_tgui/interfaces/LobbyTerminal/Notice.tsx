@@ -1,7 +1,15 @@
 import { useBackend } from 'tgui/backend';
 
 import { useBack } from './nav';
-import { Btn, Frame, Put, pad, TOP, useGrid, wrapMax } from './term';
+import {
+  Btn,
+  Frame,
+  Put,
+  pad,
+  LEGACY_TOP as TOP,
+  useGrid,
+  wrapMax,
+} from './term';
 import type { LobbyData } from './types';
 
 /** The CONFIRMED box (kind "ok"), drawn instead of the tab content. */

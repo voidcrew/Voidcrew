@@ -546,11 +546,11 @@ export function useBack(fn: (() => void) | null) {
 /** The lit-focus look added to whatever is focused (an outline glow in the item's colour). */
 export const NAV_CSS = `
 .lt-tui .lt-foc { outline: 2px solid currentColor; outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(126,255,191,.55); }
-.lt-tui .lt-foc.inv, .lt-tui .lt-foc.inva { outline-color: var(--lt-ph); }
+  box-shadow: 0 0 10px rgba(190,140,255,.55); }
+.lt-tui .lt-foc.inv, .lt-tui .lt-foc.invx, .lt-tui .lt-foc.inva { outline-color: var(--lt-fg); }
 .lt-tui .lt-foc.inva { outline-color: var(--lt-amb); }
-.lt-tui .lt-hitfoc { outline: 2px solid var(--lt-ph); outline-offset: -1px;
-  box-shadow: 0 0 10px rgba(126,255,191,.45), inset 0 0 8px rgba(126,255,191,.25); }
-.lt-tui .lt-fieldfoc { outline: 2px solid var(--lt-amb); outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(255,196,31,.45); }
+.lt-tui .lt-hitfoc { outline: 2px solid var(--lt-fg); outline-offset: -1px;
+  box-shadow: 0 0 10px rgba(190,140,255,.45), inset 0 0 8px rgba(190,140,255,.25); }
+.lt-tui .lt-fieldfoc { outline: 2px solid var(--lt-fg); outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(190,140,255,.55); }
 `;

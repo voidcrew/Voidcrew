@@ -95,6 +95,8 @@ export type Crew = {
   jobs: CrewJob[];
   /** Who is aboard: [name, job title, captain], the captain first. Capped server-side. */
   aboard?: [string, string, BooleanLike][];
+  /** The player's own crew. Not sent yet; read as 0 when missing. */
+  mine?: BooleanLike;
 };
 
 export type CrewsData = {

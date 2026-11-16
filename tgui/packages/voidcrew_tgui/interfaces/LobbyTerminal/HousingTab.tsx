@@ -9,12 +9,13 @@ import {
   Blocks,
   Btn,
   type Cls,
-  Field,
+  LegacyField as Field,
   Frame,
   Put,
   Rule,
-  TOP,
+  LEGACY_TOP as TOP,
   useGrid,
+  LEGACY_NARROW,
 } from './term';
 import type { LobbyData, Outpost, OutpostMode } from './types';
 
@@ -38,7 +39,8 @@ const KEYS_W = 5 + FIELD + 3 + MOVE_IN.length;
 
 export function HousingTab() {
   const { act, data } = useBackend<LobbyData>();
-  const { cols, rows, narrow } = useGrid();
+  const { cols, rows } = useGrid();
+  const narrow = LEGACY_NARROW;
   const [codes, setCodes] = useState<Record<string, string>>({});
   const [page, setPage] = useState(0);
   const outposts = data.outposts || [];

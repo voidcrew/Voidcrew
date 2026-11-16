@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { cut, Put, pad, RPut, Rule, useGrid } from './term';
+import { Band, cut, HRule, Put, RPut, useGrid } from './term';
 import type { LobbyData, TabId } from './types';
 
 export const TABS: [TabId, string][] = [
@@ -56,65 +56,80 @@ function clockText(data: LobbyData, elapsed: number): string {
   }
 }
 
-/** Title bar (row 0), tab bar (row 2) and its rule (row 3). */
-export function Header(props: { tab: TabId; setTab: (tab: TabId) => void }) {
-  const { tab, setTab } = props;
+/**
+ * Header band (its own region, 1.5 rows): BERTH OFFICE at column 2, the counts and the clock
+ * ending at column cols - 3. The clock and the admin counts always draw; the title gives way
+ * whole, then the online count.
+ */
+export function HeaderBand() {
   const { data } = useBackend<LobbyData>();
-  const { cols, narrow } = useGrid();
+  const { cols } = useGrid();
   const elapsed = useElapsed(data.clock);
-
-  const title = data.port
-    ? ` ${data.port.toUpperCase()}  :  BERTH OFFICE`
-    : ' BERTH OFFICE';
-  let right = clockText(data, elapsed);
-  if (data.phase !== 'playing' || !narrow) {
-    right = `${data.online} ONLINE   ${right}`;
+  const clock = clockText(data, elapsed);
+  const admin = data.admin_ready
+    ? `${data.admin_ready[0]} READY  ${data.admin_ready[1]}/${data.admin_ready[2]} ADM`
+    : '';
+  const online = `${data.online} ONLINE`;
+  const room = cols - 4;
+  const join = (parts: string[]) => parts.filter(Boolean).join('   ');
+  let right = join([admin, online, clock]);
+  let title = 'BERTH OFFICE';
+  if (title.length + 3 + right.length > room) {
+    title = '';
   }
-  if (data.admin_ready) {
-    const [ready, admins, adminTotal] = data.admin_ready;
-    right = `${ready} READY  ${admins}/${adminTotal} ADM   ${right}`;
+  if (right.length > room) {
+    right = join([admin, clock]);
   }
-
-  if (right.length > cols - 2) {
-    right = right.slice(right.length - Math.max(0, cols - 2));
-  }
-  // The port name gives way to the clock: cut it, never run it under the right-hand text.
-  const titleText = cut(title, Math.max(0, cols - right.length - 3));
-
-  let x = 1;
-  const tabs = TABS.map(([id, label]) => {
-    const text = ` ${label} `;
-    const at = x;
-    x += text.length + 3;
-    return (
-      <Put
-        key={id}
-        x={at}
-        y={2}
-        cls={id === tab ? 'inv' : 'dim'}
-        hoverCls={id === tab ? 'inv' : ''}
-        onClick={() => setTab(id)}
-        tab
-      >
-        {text}
-      </Put>
-    );
-  });
-
   return (
     <>
-      {/* One lit bar in three pieces that meet but never overlap: title, clock, end cell. */}
-      <Put x={0} y={0} cls="inv">
-        {pad(titleText, Math.max(0, cols - 1 - right.length))}
-      </Put>
-      <RPut x={cols - 1} y={0} cls="inv" bg={false}>
-        {right}
+      <Band x={0} y={0} w={cols} h={1.5} tone="bar" />
+      {!!title && (
+        <Put x={2} y={0.25} cls="wht nog">
+          {title}
+        </Put>
+      )}
+      <RPut x={cols - 2} y={0.25} cls="wht nog">
+        {cut(right, room)}
       </RPut>
-      <Put x={cols - 1} y={0} cls="inv">
-        {' '}
-      </Put>
-      {tabs}
-      <Rule x={0} y={3} w={cols} />
+    </>
+  );
+}
+
+/** Tab blocks in main-region columns: [first column, width]. */
+const TAB_BLOCKS: Record<TabId, [number, number]> = {
+  crews: [0, 7],
+  shipyard: [8, 10],
+  housing: [19, 9],
+  // Until the side menu's CHARACTER key exists, CHARACTER stays reachable here.
+  character: [30, 11],
+};
+
+/** Tab row at the top of the main region (rows 0 to 1.5) and the rule under it. */
+export function TabRow(props: { tab: TabId; setTab: (tab: TabId) => void }) {
+  const { tab, setTab } = props;
+  const { cols } = useGrid();
+  return (
+    <>
+      {TABS.map(([id, label]) => {
+        const [bx, bw] = TAB_BLOCKS[id];
+        const open = id === tab;
+        return (
+          <Fragment key={id}>
+            {!!open && <Band x={bx} y={0} w={bw} h={1.5} tone="accent" />}
+            <Put
+              x={bx + 1}
+              y={0.25}
+              cls={open ? 'ink' : 'dim'}
+              hoverCls={open ? 'ink' : ''}
+              onClick={() => setTab(id)}
+              tab
+            >
+              {label}
+            </Put>
+          </Fragment>
+        );
+      })}
+      <HRule x={0} y={1.75} w={cols} />
     </>
   );
 }
