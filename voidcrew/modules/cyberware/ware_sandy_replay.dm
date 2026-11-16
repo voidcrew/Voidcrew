@@ -113,6 +113,8 @@
 #define SANDY_REPLAY_WAIT_MAX (8 SECONDS)
 /// How long past its due time a corpse's slide is still waited for (sandy_replay_falling()).
 #define SANDY_REPLAY_FALL_SLACK (1 SECONDS)
+/// The most replay ticks a corpse's own glide is played over (track.glides).
+#define SANDY_REPLAY_CORPSE_GLIDE_MAX 12
 /// The filters the finisher rigs hide a body under while its posed pictures stand in for it (CHROME_RIG_HIDE_FILTER in
 /// chrome_puppet_rig.dm, MANTIS_RIG_HIDE_FILTER in mantis_rig.dm). A body wearing one is in the middle of a move.
 #define SANDY_REPLAY_RIG_HIDES list("chrome_rig_hide", "mantis_rig_hide")
@@ -189,6 +191,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 	/// Surger: the steps it took to reach a frame where it took more than one, by that frame's index as text. A corner
 	/// turned between two samples is two frames a diagonal apart: the trail goes round it as he did (surger_frame()).
 	var/list/ways
+	/// A dead body's steps: the frame it is drawn moved in, to the replay ticks the game's own glide took (sample_track()).
+	var/list/glides
 	/// Recorder, surger: the recording's clock (frame_exact()) at its last step.
 	var/stepped_at = 0
 	/// Surger: the clock at the last step it took to reach a frame, by that frame's index as text. Steps are paced by
@@ -717,6 +721,12 @@ GLOBAL_LIST_EMPTY(sandy_replay_heard)
 		look = shot_look(thing, look)
 	if(picture)
 		look = picture_look(picture, look)
+	// A corpse the game slides or throws is glided as slowly as the game glided it (a heavy killing blow slides it a
+	// tile over most of half a second), where the living glide until their next step.
+	if(at >= 0 && isliving(thing) && (frames[at + SANDY_FRAME_X] != x || frames[at + SANDY_FRAME_Y] != y))
+		var/mob/living/body = thing
+		if(body.stat == DEAD && body.glide_size > 0)
+			LAZYSET(track.glides, "[frame]", clamp(round(ICON_SIZE_X / body.glide_size * clock_rate * world.tick_lag), 1, SANDY_REPLAY_CORPSE_GLIDE_MAX))
 	if(at >= 0)
 		if(frames[at + SANDY_FRAME_LOOK] == look && frames[at + SANDY_FRAME_X] == x && frames[at + SANDY_FRAME_Y] == y && frames[at + SANDY_FRAME_Z] == z && frames[at + SANDY_FRAME_DIR] == facing)
 			return
@@ -2246,6 +2256,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 				ticks = frames[next + SANDY_FRAME_INDEX] - frames[at + SANDY_FRAME_INDEX]
 				break
 		time = clamp(ticks, 1, 5) * world.tick_lag
+		var/own_glide = LAZYACCESS(track.glides, "[frames[at + SANDY_FRAME_INDEX]]")
+		if(own_glide) // a corpse sliding: as long as the game took over it
+			time = own_glide * world.tick_lag
 		// A move's first pose due sooner (an execution started as the step landed): the glide is done by then.
 		if(track.events && track.event_at <= length(track.events))
 			var/list/next_event = track.events[track.event_at]
@@ -3036,6 +3049,8 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 	if(!iscarbon(body) || QDELETED(body) || body.stat != DEAD)
 		return FALSE
 	var/mob/living/carbon/corpse = body
+	if(corpse.hv_vis_slide_ends > world.time)
+		return TRUE // sliding now: waited for until it lies still
 	return corpse.hv_vis_slide_due && world.time <= corpse.hv_vis_slide_due + SANDY_REPLAY_FALL_SLACK
 
 /// Whether a finisher rig hides `body` behind its puppets.
@@ -3367,6 +3382,7 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 #undef SANDY_REPLAY_PICTURE_TIME
 #undef SANDY_REPLAY_WAIT_MAX
 #undef SANDY_REPLAY_FALL_SLACK
+#undef SANDY_REPLAY_CORPSE_GLIDE_MAX
 #undef SANDY_REPLAY_RIG_HIDES
 #undef SANDY_FRAME_SIZE
 #undef SANDY_FRAME_INDEX

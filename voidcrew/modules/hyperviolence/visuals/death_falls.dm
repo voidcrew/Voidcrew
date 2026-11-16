@@ -13,6 +13,8 @@
 	/// world.time the corpse's slide across a whole tile is due at (hv_vis_death_hit()), 0 when none is waiting. A
 	/// Sandevistan replay keeps recording until it has slid (ware_sandy_replay.dm).
 	var/hv_vis_slide_due = 0
+	/// world.time the corpse's slide across a tile is over at (hv_vis_slide_tile()), 0 when it never slid.
+	var/hv_vis_slide_ends = 0
 
 /// Falls point away from the hit that dropped the body, when one just landed from the side.
 /mob/living/carbon/set_lying_angle(new_lying)
@@ -185,6 +187,7 @@
 	if(QDELETED(src) || stat != DEAD)
 		return
 	if(hv_vis_can_slide_tile(slide_dir) && Move(get_step(loc, slide_dir), slide_dir, DELAY_TO_GLIDE_SIZE(cyberware_dilated_time(src, HV_VIS_SLIDE_TIME))))
+		hv_vis_slide_ends = world.time + cyberware_dilated_time(src, HV_VIS_SLIDE_TIME)
 		// Thrown back as it falls: a little lift over the slide.
 		var/matrix/base = matrix(transform)
 		hv_vis_play(HV_VIS_TAG_FALL, list(

@@ -42,6 +42,10 @@
 	var/at = length(frames) - 6
 	TEST_ASSERT(frames[at + 3] == user.x && frames[at + 4] == user.y, "The replay's last frame doesn't have the body where it slid to")
 	TEST_ASSERT(frames[at + 1] > track.surge_until, "The body's slide counts as a surging step and leaves a trail")
+	// The slide is replayed as slowly as it went (HV_VIS_SLIDE_TIME, 0.4 s: eight ticks), not snapped in a tick or two
+	var/slide_ticks = length(track.glides) ? track.glides[track.glides[1]] : 0
+	TEST_ASSERT(slide_ticks >= 6, "The corpse's slide replays over [slide_ticks] ticks")
+	TEST_ASSERT(replay.ended_at >= died_at + 0.4 SECONDS, "The recording ended [replay.ended_at - died_at] ds after the death, before the slide was over")
 	wait_over(user)
 	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The death didn't replay")
 	TEST_ASSERT_EQUAL(user.loc, spot(2, 1), "The body isn't where it slid to after the replay")
