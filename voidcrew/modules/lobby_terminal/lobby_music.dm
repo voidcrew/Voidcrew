@@ -2,18 +2,14 @@
  * Title music and the start-up screen.
  *
  * A player whose terminal still has its start-up screen to play hears that screen's own sounds
- * first: the title music waits and starts when they press LOGIN. It starts at once when the
- * screen is not shown (a return to the lobby mid-round, an interview), and anyway when LOGIN
- * never comes: the terminal did not load and the classic lobby came back, or
- * LOBBY_MUSIC_HOLD_MAX passed.
+ * first: the title music waits, however long they sit there, and starts when they press LOGIN.
+ * It starts at once when the screen is not shown (a return to the lobby mid-round, an
+ * interview), or when the terminal did not load and the classic lobby came back.
  *
  * Everything that starts the title music goes through /client/proc/playtitlemusic()
  * (code/game/sound/sound.dm), so that is the one place overridden. The parent still reads the
  * player's own lobby music volume when the music does start.
  */
-
-/// The longest the title music waits for LOGIN.
-#define LOBBY_MUSIC_HOLD_MAX (20 SECONDS)
 
 /// TRUE once this connection's title music no longer waits for the start-up screen.
 /client/var/lobby_music_free = FALSE
@@ -22,8 +18,6 @@
 
 /client/playtitlemusic(volume_multiplier = 1)
 	if(lobby_music_waits())
-		if(isnull(lobby_music_held))
-			addtimer(CALLBACK(src, PROC_REF(lobby_music_release)), LOBBY_MUSIC_HOLD_MAX)
 		lobby_music_held = volume_multiplier
 		return
 	return ..()
@@ -50,5 +44,3 @@
 	if(isnull(held) || !isnewplayer(mob))
 		return
 	playtitlemusic(held)
-
-#undef LOBBY_MUSIC_HOLD_MAX
