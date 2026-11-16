@@ -699,8 +699,9 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	if(!isopenturf(start_turf))
 		return
 	pool = new(start_turf)
-	pool.pixel_x = pool_x
-	pool.pixel_y = pool_y
+	// clamped as the slag is, so the slag sets exactly where the pool lay
+	pool.pixel_x = clamp(pool_x, -16, 16)
+	pool.pixel_y = clamp(pool_y, -16, 16)
 
 /datum/plasma_melt/proc/grow_pool(grow_to)
 	if(victim && !at_start())
@@ -720,7 +721,7 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 /datum/plasma_melt/proc/pool_cool()
 	pool?.start_cooling()
 
-/// 4.5 s: the pool sets into a lasting slag decal (one per turf, capped)
+/// 4.5 s: the pool sets into a lasting slag decal of its own where it lay (a few per turf, capped)
 /datum/plasma_melt/proc/pool_set()
 	if(QDELETED(pool))
 		pool = null
@@ -757,18 +758,26 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 			return PLASMA_MELT_HEAT_END + tick * 0.05 SECONDS
 	return PLASMA_MELT_GONE
 
-/// Slag on `where`: keeps slag already there, otherwise makes new slag, dropping the oldest over `cap`
-/proc/plasma_slag_at(turf/open/where, px = 0, py = 0, cap = PLASMA_SLAG_GLOBAL_CAP)
+/// New slag on `where` at the given pixel offsets. Over `turf_cap` on that tile the tile's oldest slag goes, and
+/// over `cap` in the world the world's oldest goes, so the newest melt always leaves its remains.
+/proc/plasma_slag_at(turf/open/where, px = 0, py = 0, cap = PLASMA_SLAG_GLOBAL_CAP, turf_cap = PLASMA_SLAG_TURF_CAP)
 	if(!isopenturf(where))
 		return null
-	var/obj/effect/decal/cleanable/plasma_slag/slag = locate() in where
-	if(slag)
-		return slag
+	// the global list is oldest first, so this is the tile's slag oldest first
+	var/list/on_turf = list()
+	for(var/obj/effect/decal/cleanable/plasma_slag/old as anything in GLOB.plasma_slag_decals)
+		if(old.loc == where)
+			on_turf += old
+	while(length(on_turf) >= max(turf_cap, 1))
+		var/obj/effect/decal/cleanable/plasma_slag/oldest = on_turf[1]
+		on_turf -= oldest
+		GLOB.plasma_slag_decals -= oldest
+		qdel(oldest)
 	while(length(GLOB.plasma_slag_decals) >= max(cap, 1))
 		var/obj/effect/decal/cleanable/plasma_slag/oldest = GLOB.plasma_slag_decals[1]
 		GLOB.plasma_slag_decals -= oldest
 		qdel(oldest)
-	slag = new(where)
+	var/obj/effect/decal/cleanable/plasma_slag/slag = new(where)
 	if(QDELETED(slag))
 		return null
 	slag.pixel_x = clamp(px, -16, 16)
@@ -850,16 +859,23 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	set_light_power(0.2 + 0.3 * grow_to / PLASMA_MELT_POOL_STEPS)
 	set_light_on(TRUE)
 
+/// The crust spreads over 2.1 s (slag_cool) and ends on the slag sprite. The glow fades out with the light by then,
+/// so the slag that replaces the pool at PLASMA_MELT_COOLED looks the same, lit or dark. The glow is masked with the
+/// still "slag" state, which has the same shape as every slag_cool frame, so a fade step never restarts an animation.
 /obj/effect/plasma_melt_pool/proc/start_cooling()
 	icon_state = "slag_cool"
-	glow()
+	glow(255, "slag")
 	set_light_power(0.25)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_power), 0.12), 0.8 SECONDS)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_on), FALSE), 1.4 SECONDS)
+	var/list/fade = list(200, 150, 100, 60, 30, 0)
+	for(var/step in 1 to length(fade))
+		addtimer(CALLBACK(src, PROC_REF(glow), fade[step], "slag"), (0.6 + 0.25 * step) SECONDS)
 
-/obj/effect/plasma_melt_pool/proc/glow()
+/obj/effect/plasma_melt_pool/proc/glow(alpha = 255, mask_state = icon_state)
 	cut_overlays()
-	add_overlay(emissive_appearance(icon, icon_state, src))
+	if(alpha > 0)
+		add_overlay(emissive_appearance(icon, mask_state, src, alpha = alpha))
 
 /// The pool of a limb with no flesh (plasma_melt_limb_dry()): the metal or bone runs out at once, crusts and sets into slag
 /proc/plasma_dry_pool(turf/open/where, px, py)
@@ -920,6 +936,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	icon = PLASMA_MELT_ICON
 	icon_state = "slag"
 	beauty = -50
+	// each melt leaves its own slag: tg's cleanable merge would delete a second one on the tile
+	mergeable_decal = FALSE
 
 /obj/effect/decal/cleanable/plasma_slag/Initialize(mapload, list/datum/disease/diseases)
 	. = ..()
@@ -929,6 +947,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 
 /obj/effect/decal/cleanable/plasma_slag/Destroy()
 	GLOB.plasma_slag_decals -= src
+	return ..()
+
+/// Cleanbots go after slag as they do any other mess on the floor (tg's list is static and shared; setting it again is harmless)
+/mob/living/basic/bot/cleanbot/generate_ai_keys()
+	cleanable_decals[/obj/effect/decal/cleanable/plasma_slag] = TRUE
 	return ..()
 
 #undef PLASMA_MELT_ICON

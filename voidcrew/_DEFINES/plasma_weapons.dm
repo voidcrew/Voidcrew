@@ -128,6 +128,8 @@
 #define PLASMA_GLOW_CAP_PER_Z 40
 /// Soot decals allowed in the world; the oldest goes when a new one is made over the cap
 #define PLASMA_SOOT_GLOBAL_CAP 300
+/// Slag decals one tile keeps from separate melts; a new melt over this replaces the oldest slag on that tile
+#define PLASMA_SLAG_TURF_CAP 3
 /// How long a wall glow (or a soot decal's glow) takes to cool to nothing
 #define PLASMA_GLOW_DURATION (8 SECONDS)
 
