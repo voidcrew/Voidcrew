@@ -544,7 +544,7 @@
 			//new you new stuff
 			SSquirks.randomise_quirks(owner)
 			owner.reagents.remove_all(1000)
-			owner.mob_mood.remove_temp_moods() //New you, new moods.
+			owner.mob_mood?.remove_temp_moods() //New you, new moods. // VOIDCREW EDIT CHANGE: human NPCs have no mood datum (voidcrew/modules/human_npcs)
 			var/mob/living/carbon/human/human_mob = owner
 			owner.add_mood_event("Eigentrip", /datum/mood_event/eigentrip)
 			if(QDELETED(human_mob))
