@@ -1,6 +1,6 @@
 // Package: P3 heat. The vent controls and the vent bar a venting player sees.
 // A vent starts by using the Furnace in hand, or by itself when the Furnace overheats in a player's hand. The tap is
-// the next fire attempt or use in hand (plasma_heat.dm).
+// the next use in hand or the keybinding; a fire attempt while the bar is up does nothing (plasma_heat.dm).
 // The keybinding has no default key ("V" is the cyberware wheel); players can bind it to start and tap.
 // The bar is two images on the venting player's mob, shown only to their client, over their head like a do_after
 // bar. The marker's sweep is animated on the client; the tap is judged on the server against vent_started_at (plasma_heat.dm), so the

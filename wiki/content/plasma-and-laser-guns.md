@@ -99,7 +99,7 @@ The Furnace and the Old Furnace heat up as they fire, and their coils glow brigh
 - A locked rifle's cartridge is stuck in place: you can't take it out or swap in a new one until the lock ends.
 - When it locks up in your hands, the vent bar comes up at once. Hit the gold and the lock ends there and then, with the coils cold. Hit the amber and it vents most of its heat and is ready again in about two seconds. Miss, or hit the dark ends, and you wait out the whole lock; the dark ends also spit plasma onto your tile.
 
-**Venting:** use a glowing Furnace in your hand. A bar appears above your head and a marker sweeps across it. Fire as the marker passes the middle, or use the rifle in your hand again. That trigger pull vents the rifle instead of shooting. You can also bind a key to Vent held gun in your keybindings.
+**Venting:** use a glowing Furnace in your hand. A bar appears above your head and a marker sweeps across it. Use the rifle in your hand again as the marker passes the middle. Pulling the trigger does nothing while the bar is up. You can also bind a key to Vent held gun in your keybindings, and it works the same way.
 
 - On the bright gold centre, the coils go cold at once, and the next few shots heat them less.
 - On the amber either side of it, the rifle vents most of its heat.

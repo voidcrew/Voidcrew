@@ -149,17 +149,16 @@
 	if(uses_heat && vent_key(user))
 		return TRUE
 
-/// While the bar is up, a fire attempt is the vent tap instead, judged at this click's server time. It never fires.
-/// Clicks that would never reach the trigger (an adjacent object, something in the user's own contents) are left alone.
+/// While the bar is up, a fire attempt does nothing: no shot and no tap. Only using the rifle in hand (or the vent
+/// keybinding) taps. Clicks that would never reach the trigger (an adjacent object, something in the user's own
+/// contents) are left alone.
 /obj/item/gun/energy/plasma_weapon/fire_gun(atom/target, mob/living/user, flag, params)
 	if(!vent_started_at || QDELETED(target))
 		return ..()
 	if(flag && ((target in user.contents) || !ismob(target)))
 		return ..()
-	if(user == vent_user)
-		vent_tap()
-	// A tap past the end changes nothing; a sweep whose timer was lost settles here
-	if(vent_started_at && world.time >= vent_started_at + PLASMA_VENT_SWEEP)
+	// A sweep whose timer was lost settles here
+	if(world.time >= vent_started_at + PLASMA_VENT_SWEEP)
 		finish_vent_sweep()
 	return TRUE
 

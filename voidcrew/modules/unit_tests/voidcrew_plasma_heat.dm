@@ -371,13 +371,21 @@
 	TEST_ASSERT(gun.vent_started_at, "Using a glowing Furnace in hand didn't start a vent")
 	TEST_ASSERT_NOTNULL(gun.vent_bar, "A vent started in hand made no bar")
 
-	// A fire attempt on the gold is the tap: all the heat off, and nothing fired
+	// A fire attempt while the bar is up does nothing: no shot and no tap, even on the gold
 	var/chamber_before = gun.chamber_mol()
 	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
 	gun.heat_updated_at = world.time
-	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt during a vent wasn't taken as the tap")
-	TEST_ASSERT(!gun.vent_started_at, "A fire attempt on the gold didn't end the vent")
-	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A fire attempt on the gold left heat [gun.barrel_heat]")
+	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt during a vent wasn't held back")
+	TEST_ASSERT(gun.vent_started_at, "A fire attempt on the gold tapped the vent")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 90, "A fire attempt during a vent changed the heat to [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before, "A fire attempt during a vent fired a shot")
+	TEST_ASSERT_NULL(locate(/obj/projectile) in range(4, spot), "A fire attempt during a vent fired a projectile")
+
+	// Using it in hand on the gold is the tap: all the heat off, and nothing fired
+	gun.heat_updated_at = world.time
+	gun.attack_self(user)
+	TEST_ASSERT(!gun.vent_started_at, "An in-hand tap on the gold didn't end the vent")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "An in-hand tap on the gold left heat [gun.barrel_heat]")
 	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before, "The tap fired a shot")
 	TEST_ASSERT_NULL(locate(/obj/projectile) in range(4, spot), "The tap fired a projectile")
 
@@ -387,7 +395,7 @@
 	TEST_ASSERT(gun.chamber_mol() < chamber_before, "A Furnace with no vent running didn't fire")
 	chamber_before = gun.chamber_mol()
 
-	// A fire attempt on the dark end is a fumble, still without a shot
+	// An in-hand tap on the dark end is a fumble, still without a shot
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	gun.attack_self(user)
@@ -397,8 +405,8 @@
 	var/projectiles_before = 0
 	for(var/obj/projectile/bolt in range(4, spot))
 		projectiles_before++
-	gun.try_fire_gun(far, user, "")
-	TEST_ASSERT_EQUAL(gun.vent_lock_until, world.time + PLASMA_VENT_FAIL_LOCK, "A fire attempt on the dark end didn't fumble the vent")
+	gun.attack_self(user)
+	TEST_ASSERT_EQUAL(gun.vent_lock_until, world.time + PLASMA_VENT_FAIL_LOCK, "An in-hand tap on the dark end didn't fumble the vent")
 	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before - PLASMA_VENT_MOL, "A fumbled tap took [chamber_before - gun.chamber_mol()] mol, not the vent's spit")
 	var/projectiles_after = 0
 	for(var/obj/projectile/bolt in range(4, spot))
@@ -471,11 +479,17 @@
 	gun.barrel_heat = 90
 	TEST_ASSERT(!gun.start_overheat_vent(user), "The overheat bar came up on a Furnace that isn't locked")
 
-	// Gold: the lockout ends at once, the coils go cold, and the next shots add half heat. Nothing fires.
+	// A fire attempt on the overheat bar does nothing, even on the gold
 	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the gold test")
 	var/chamber_before = gun.chamber_mol()
 	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
-	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt on the overheat bar wasn't taken as the tap")
+	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt on the overheat bar wasn't held back")
+	TEST_ASSERT(gun.vent_started_at, "A fire attempt on the overheat bar tapped it")
+	TEST_ASSERT(gun.is_shut_down(), "A fire attempt on the overheat bar ended the lockout")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before, "A fire attempt on the overheat bar fired a shot")
+
+	// Gold: the lockout ends at once, the coils go cold, and the next shots add half heat. Nothing fires.
+	gun.attack_self(user)
 	TEST_ASSERT(!gun.vent_started_at, "A gold tap didn't end the overheat bar")
 	TEST_ASSERT_NULL(gun.vent_bar, "A gold tap left the overheat bar")
 	TEST_ASSERT(!gun.is_shut_down(), "A gold tap on the overheat bar left the lockout")
@@ -513,7 +527,7 @@
 	chamber_before = gun.chamber_mol()
 	var/turf_before = plasma_heat_test_plasma(air)
 	gun.vent_started_at = world.time - plasma_heat_test_unit_time(1)
-	gun.try_fire_gun(far, user, "")
+	gun.attack_self(user)
 	var/lost = chamber_before - gun.chamber_mol()
 	var/gained = plasma_heat_test_plasma(air) - turf_before
 	TEST_ASSERT(!gun.vent_started_at, "A fumbled tap didn't end the overheat bar")
