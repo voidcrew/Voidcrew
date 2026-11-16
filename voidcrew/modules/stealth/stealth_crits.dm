@@ -11,7 +11,7 @@
  *   suspicious, a smaller one; searching or alert, none. Searching gets none so that peek, shoot, hide and wait out
  *   the search can't farm it.
  * - Head: aimed at the head, eyes or mouth, the bonus goes up again.
- * - The matte knife from behind cuts the throat instead (stealth_knife.dm).
+ * - A sharp knife from behind cuts the throat instead (knife_executions.dm).
  *
  * The head shot (decision 45) is not a roll. A bullet aimed at the head of a guard caught off guard does what the
  * round can do against how well his head is protected (stealth_head_shot()), all through tg's own systems:

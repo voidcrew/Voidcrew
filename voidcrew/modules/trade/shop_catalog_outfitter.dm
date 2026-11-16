@@ -146,7 +146,6 @@
 		/datum/shop_sku/ruin_chart/survey,
 		/datum/shop_sku/ruin_chart/blacksite,
 		/datum/shop_sku/ruin_chart/bitrunner_den,
-		/datum/shop_sku/ruin_chart/scav_den,
 	)
 	chart_picks = 3
 	rotating_pool = list(

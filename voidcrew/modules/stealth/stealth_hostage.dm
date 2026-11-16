@@ -2,9 +2,9 @@
  * # Hostages (stealth step 5, decisions 47+)
  *
  * Holding one of the guards' own people at gunpoint: tg's neck grab (they are on your tile, held in front of you)
- * with a gun in hand. Anyone can do it; the gun kata chip only adds the human shield's bullet catching
- * (stealth_gunfu.dm). Everything stays tg's: the grab, the hostage's own struggling (tg's resist, through
- * escape_captivity), and a shot into them is a real shot.
+ * with a gun in hand. Anyone can do it, and the hold is drawn as such (stealth_hostage_pose.dm). Everything stays
+ * tg's: the grab, the hostage's own struggling (tg's resist, through escape_captivity), and a shot into them is a
+ * real shot.
  *
  * A stealth guard alert on whoever holds a friend of his (same faction) goes into a standoff instead of fighting:
  * - he holds fire and keeps his distance (never closer than STEALTH_HOSTAGE_HOLD_RANGE), facing the holder, and
@@ -17,8 +17,8 @@
  * - out of sight of the holder, he chases as usual and stands off again when he sees them.
  *
  * Only for their own people. Someone they don't count as one of theirs (a player, a stranger) held up in front is
- * no reason to hold fire: they shoot, and the human shield, if the holder has the chip, catches what comes from the
- * front. Never a fake state on anyone: the hostage is only held, and the guards only choose not to shoot.
+ * no reason to hold fire: they shoot. Never a fake state on anyone: the hostage is only held, and the guards only
+ * choose not to shoot.
  */
 
 /datum/ai_controller/basic_controller/human_npc/stealth
@@ -226,14 +226,10 @@
 /**
  * tg's neck grab floors the held body (TRAIT_FLOORED from CHOKEHOLD_TRAIT). Held at gunpoint as a hostage, it is held
  * up on its feet instead: still tg's chokehold (immobilized, hands blocked), only not floored, so it stands in front of
- * its holder and takes the shots that come at them (tg's projectiles skip a floored, pinned body). Settled every time
- * tg places a held body (the grab, each step, each turn); tg's own release clears the chokehold either way.
+ * its holder and takes the shots that come at them (tg's projectiles skip a floored, pinned body). Called every time
+ * tg places a held body (the grab, each step, each turn: set_pull_offsets() in stealth_hostage_pose.dm); tg's own
+ * release clears the chokehold either way. Puts tg's chokehold floor back when it is no longer held at gunpoint.
  */
-/mob/living/set_pull_offsets(mob/living/mob_to_set, grab_state = GRAB_PASSIVE, animate = TRUE)
-	stealth_hold_upright(mob_to_set)
-	return ..()
-
-/// Lifts `held` off the floor while this mob holds it at gunpoint, and puts tg's chokehold floor back when it doesn't.
 /mob/living/proc/stealth_hold_upright(mob/living/held)
 	if(!isliving(held) || pulling != held)
 		return

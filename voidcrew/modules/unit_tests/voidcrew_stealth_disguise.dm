@@ -275,7 +275,7 @@
 	// what they hold => whether it blows the whole set at 6 tiles
 	var/list/cases = list(
 		/obj/item/gun/ballistic/automatic/pistol = TRUE,
-		/obj/item/knife/combat/matte = TRUE,
+		/obj/item/knife/combat = TRUE,
 		/obj/item/melee/baton/security = TRUE,
 		/obj/item/storage/toolbox/mechanical = FALSE,
 		/obj/item/flashlight/seclite = FALSE,

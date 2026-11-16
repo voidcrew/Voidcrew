@@ -156,7 +156,7 @@
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
 	var/mob/living/carbon/human/npc/guard = d45_bare_guard(block, 4, 1)
 	var/mob/living/carbon/human/person = stealth_person(block, 3, 1)
-	var/obj/item/knife/combat/matte/knife = allocate(/obj/item/knife/combat/matte)
+	var/obj/item/knife/combat/knife = allocate(/obj/item/knife/combat)
 	person.put_in_active_hand(knife, forced = TRUE)
 	person.set_combat_mode(TRUE)
 	person.zone_selected = BODY_ZONE_CHEST
@@ -206,7 +206,7 @@
 	var/mob/living/carbon/human/npc/helmeted = d45_bare_guard(block, 4, 5)
 	d45_helmet(helmeted, /obj/item/clothing/head/helmet/swat)
 	var/mob/living/carbon/human/third = stealth_person(block, 3, 5)
-	var/obj/item/knife/combat/matte/other_knife = allocate(/obj/item/knife/combat/matte)
+	var/obj/item/knife/combat/other_knife = allocate(/obj/item/knife/combat)
 	third.put_in_active_hand(other_knife, forced = TRUE)
 	third.set_combat_mode(TRUE)
 	TEST_ASSERT(!other_knife.slit_gets_through(helmeted, helmeted.get_bodypart(BODY_ZONE_HEAD)), "A slit got through a SWAT helmet")
