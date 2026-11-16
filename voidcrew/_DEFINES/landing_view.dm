@@ -52,8 +52,6 @@
 /// The size of the planet under a ship that is flying over it, and the size it comes up from and falls away to
 #define LANDING_HOVER_SIZE 1.5
 #define LANDING_HOVER_FAR 0.08
-/// The sizes of the far cloud sheet between which each closer-up one takes over
-#define LANDING_CLOUD_DETAIL list(list(3, 3.6), list(6, 7.2))
 
 // Which part of the ground around a berth a call to bake_ground() draws
 #define LANDING_GROUND_ALL 0

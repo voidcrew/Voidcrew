@@ -10,7 +10,7 @@
  * | L       | the ground falls away under the hull, dust blowing out from under it                  |
  * | L+1s    | the ground starts to slide off sternward as the ship gathers way, haze thickening     |
  * | L+3.3s  | into the cloud: everything white                                                      |
- * | L+3.9s  | out of its top: the deck of cloud drops away below, the sky darkens                   |
+ * | L+4.1s  | out of its top: the white thins into the sky's colour, and the sky darkens             |
  * | L+4.8s  | the planet, whole, falling away under the ship until it is the size it has from orbit |
  *
  * Made while the engines wind up, so the country around the berth is already drawn when the hull lifts; only
@@ -150,10 +150,15 @@
 	light.slide_x = ground.slide_x
 	light.slide_y = ground.slide_y
 	light.alpha.mark(liftoff, 255)
-	light.alpha.mark(liftoff + 2.6 SECONDS, 255)
-	light.alpha.mark(liftoff + 3.6 SECONDS, 0, LANDING_CURVE_IN)
+	light.alpha.mark(liftoff + 3.7 SECONDS, 255)
+	light.alpha.mark(liftoff + 3.8 SECONDS, 0)
 	light.drop_at = liftoff + 3.9 SECONDS
 	show(light)
+	// and the open sky's light closes over it with the haze and the cloud
+	var/datum/landing_track/cloud_light = new
+	cloud_light.mark(liftoff + 2.2 SECONDS, 0)
+	cloud_light.mark(liftoff + 3.5 SECONDS, 255, LANDING_CURVE_IN)
+	add_daylight(cloud_light)
 
 	shadow.parts = list(list(landing_view_shadow_look(berth_turfs, ground_x, ground_y), 0, 0, 1))
 	shadow.scale.mark(liftoff, 1)
@@ -175,7 +180,7 @@
 	haze.alpha.mark(liftoff + 3.9 SECONDS, 0)
 	show(haze)
 
-/// Through the cloud and out of its top, the deck dropping away below
+/// Through the cloud and out of its top
 /datum/landing_view/ascent/proc/add_clouds()
 	var/datum/landing_view_piece/sky = add_sky(LANDING_VIEW_LAYER_SKY, fill = palette.sky)
 	sky.alpha.mark(liftoff + 2.8 SECONDS, 0)
@@ -202,21 +207,6 @@
 	mist.alpha.mark(liftoff + 4.2 SECONDS, 120)
 	mist.alpha.mark(liftoff + 4.8 SECONDS, 0)
 	show(mist)
-
-	var/list/datum/landing_view_piece/deck = new_clouds()
-	var/datum/landing_track/size = deck[1].scale
-	size.mark(liftoff + 3.9 SECONDS, 11)
-	size.mark(liftoff + 6.8 SECONDS, 1.8, LANDING_CURVE_OUT)
-	deck[1].slide_x.mark(liftoff + 3.9 SECONDS, 0)
-	deck[1].slide_x.mark(liftoff + 6.8 SECONDS, screen_bow_x * 300)
-	deck[1].slide_y.mark(liftoff + 3.9 SECONDS, 0)
-	deck[1].slide_y.mark(liftoff + 6.8 SECONDS, screen_bow_y * 300)
-	var/datum/landing_track/opacity = new
-	opacity.mark(liftoff + 3.9 SECONDS, 0)
-	opacity.mark(liftoff + 4.3 SECONDS, 235)
-	opacity.mark(liftoff + 5.6 SECONDS, 235)
-	opacity.mark(liftoff + 6.8 SECONDS, 0)
-	chain_detail(deck, size, opacity, LANDING_CLOUD_DETAIL)
 
 /// The planet whole, falling away under the ship until it is as big as it is from orbit
 /datum/landing_view/ascent/proc/add_planet()

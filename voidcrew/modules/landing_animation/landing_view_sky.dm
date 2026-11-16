@@ -120,23 +120,6 @@
 	return list(grains, shade)
 
 /**
- * A deck of cloud seen from above, in the planet's cloud colour. Returns three pieces showing the same clouds,
- * each at twice the grain of the one before. Give them to chain_detail() with the size track of the first.
- */
-/datum/landing_view/proc/new_clouds()
-	var/list/pieces = list()
-	for(var/grain in list("clouds_far", "clouds_mid", "clouds_near"))
-		var/datum/landing_view_piece/clouds = add_sky(LANDING_VIEW_LAYER_CLOUD + length(pieces) * 0.01, LANDING_VIEW_ICON, grain, LANDING_VIEW_ICON_SIZE)
-		clouds.sky.color = palette.cloud
-		if(length(pieces))
-			clouds.scale = pieces[1].scale
-			clouds.slide_x = pieces[1].slide_x
-			clouds.slide_y = pieces[1].slide_y
-			clouds.scale_factor = 0.5 ** length(pieces)
-		pieces += clouds
-	return pieces
-
-/**
  * Sets the opacity of [pieces], which show one thing at finer and finer grain, so that as it grows each closer-up
  * texture fades in over the one before, which is then dropped; and the other way about as it shrinks. A texture
  * is never stretched far, and the picture never thins in the changeover, because the one underneath stays whole

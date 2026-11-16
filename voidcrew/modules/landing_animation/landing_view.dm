@@ -607,6 +607,18 @@
 	pieces += piece
 	return piece
 
+/**
+ * A sheet of full light over the ground's own light (see bake_light()), as opaque as [alpha] says: for the white
+ * of a cloud, which is lit by the open sky whatever the ground under it is. Without it a cave turns the cloud
+ * black and warm daylight turns it tan, a moment before either is seen.
+ */
+/datum/landing_view/proc/add_daylight(datum/landing_track/alpha)
+	var/datum/landing_view_piece/daylight = add_sky(5, fill = COLOR_WHITE)
+	daylight.sky.plane = LANDING_VIEW_LIGHT_PLANE
+	daylight.alpha = alpha
+	show(daylight)
+	return daylight
+
 /// A new world picture. Set its parts, then show() it.
 /datum/landing_view/proc/add_picture()
 	var/datum/landing_view_piece/piece = new

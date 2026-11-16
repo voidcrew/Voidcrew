@@ -8,9 +8,9 @@
  * | start    | the planet under the ship, swelling until its rim has left the screen                   |
  * | T-9.2s   | heat: the hull's edge glows and sheds sparks, streaks fly out past it                    |
  * | T-8.4s   | the planet thins into the colour of its own sky                                          |
- * | T-7.4s   | a deck of cloud comes up from below, then the ship is in it: everything white           |
+ * | T-6.2s   | into the planet's cloud: everything white, mist streaming past                           |
  * | T-5.2s   | out of the cloud's underside over the real ground, small and hazy, rushing up            |
- * | T-4.8s   | the ground's own light takes over from the light of open space: a cave is dark from here |
+ * | T-4.6s   | as the cloud thins the ground's own light takes over from the open sky's: a cave is dark |
  * | T-2.7s   | the light on the hull's edge turns from the stars' to the ground's                       |
  * | T-1.4s   | the thrusters reach the ground: dust blows out from under the hull                       |
  * | T-0.3s   | the ground is at full size; the ship hangs on its thrusters until the hull really moves |
@@ -107,22 +107,10 @@
 		show(streaks)
 	heat_hull(touchdown - 9.2 SECONDS, touchdown - 5.6 SECONDS)
 
-/// A deck of cloud coming up from below, the white of being inside it, and the haze under it
+/// The one layer of cloud: the planet's own, seen from afar on the planet itself, and from inside as white
 /datum/landing_view/descent/proc/add_clouds()
-	// always bigger than the screen: small and sharp far below, huge as the ship reaches it
-	var/list/datum/landing_view_piece/deck = new_clouds()
-	var/datum/landing_track/size = deck[1].scale
-	size.mark(touchdown - 7.4 SECONDS, 1.8)
-	size.mark(touchdown - 4.6 SECONDS, 11, LANDING_CURVE_IN)
-	var/datum/landing_track/opacity = new
-	opacity.mark(touchdown - 7.4 SECONDS, 0)
-	opacity.mark(touchdown - 6.4 SECONDS, 235)
-	opacity.mark(touchdown - 5 SECONDS, 235)
-	opacity.mark(touchdown - 4.4 SECONDS, 0)
-	chain_detail(deck, size, opacity, LANDING_CLOUD_DETAIL)
-
 	var/datum/landing_view_piece/inside = add_sky(LANDING_VIEW_LAYER_CLOUD + 1, fill = palette.cloud)
-	inside.alpha.mark(touchdown - 5.8 SECONDS, 0)
+	inside.alpha.mark(touchdown - 6.2 SECONDS, 0)
 	inside.alpha.mark(touchdown - 5 SECONDS, 250, LANDING_CURVE_IN)
 	inside.alpha.mark(touchdown - 4.6 SECONDS, 250)
 	inside.alpha.mark(touchdown - 3.8 SECONDS, 0, LANDING_CURVE_OUT)
@@ -132,9 +120,9 @@
 	var/datum/landing_view_piece/mist = add_sky(LANDING_VIEW_LAYER_CLOUD + 1.5, LANDING_VIEW_ICON, "wisps", LANDING_VIEW_ICON_SIZE)
 	mist.sky.color = palette.sky
 	mist.turn = 73
-	mist.scale.mark(touchdown - 5.6 SECONDS, 2.2)
+	mist.scale.mark(touchdown - 6 SECONDS, 2.2)
 	mist.scale.mark(touchdown - 4 SECONDS, 6.5)
-	mist.alpha.mark(touchdown - 5.6 SECONDS, 0)
+	mist.alpha.mark(touchdown - 6 SECONDS, 0)
 	mist.alpha.mark(touchdown - 5 SECONDS, 120)
 	mist.alpha.mark(touchdown - 4.5 SECONDS, 120)
 	mist.alpha.mark(touchdown - 4 SECONDS, 0)
@@ -166,9 +154,12 @@
 	// and the light on it: the white of the cloud gives way to the ground as it is lit, dark if it is dark
 	light = add_picture()
 	light.scale = ground.scale
-	light.alpha.mark(touchdown - 4.8 SECONDS, 0)
-	light.alpha.mark(touchdown - 4.3 SECONDS, 255)
 	light.held_back = TRUE
+	// under the cloud's own light until the cloud thins: the white stays white, and the ground comes out of it lit as it is lit
+	var/datum/landing_track/cloud_light = new
+	cloud_light.mark(touchdown - 4.6 SECONDS, 255)
+	cloud_light.mark(touchdown - 3.8 SECONDS, 0, LANDING_CURVE_OUT)
+	add_daylight(cloud_light)
 	addtimer(CALLBACK(src, PROC_REF(bake_light), light, CALLBACK(src, PROC_REF(show), light)), max(0, touchdown - 6.6 SECONDS - world.time), TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(reveal), light), max(0, touchdown - 5 SECONDS - world.time), TIMER_DELETE_ME)
 
