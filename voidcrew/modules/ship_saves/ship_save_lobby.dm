@@ -36,8 +36,9 @@
  * ship has loaded, which also retires the hull it was saved from, if that is still about, and moves its
  * balance across. Sleeps at the read and in the shipyard's queue, and the player can leave during either:
  * this runs here rather than on their mob, which a logout deletes, so nothing stops it before the spend.
+ * preset_form_new: the crew-leave answer already given (the dock terminal asks before it calls this); null asks here.
  */
-/datum/ship_saves/proc/launch(mob/dead/new_player/player, slot)
+/datum/ship_saves/proc/launch(mob/dead/new_player/player, slot, preset_form_new = null)
 	if(QDELETED(player) || !player.ckey)
 		return
 	if(!SSticker?.IsRoundInProgress())
@@ -79,7 +80,7 @@
 	var/restoring_crew = saved_crew && (commander?.recover_reputation_crew() || GLOB.voidcrew_crew_roster[player_ckey]) == saved_crew
 	var/form_new = FALSE
 	if(!restoring_crew)
-		form_new = choose_new_reputation_crew(player)
+		form_new = isnull(preset_form_new) ? choose_new_reputation_crew(player) : preset_form_new
 		if(isnull(form_new) || QDELETED(player))
 			qdel(snapshot)
 			cancel_retrieval(player_ckey, slot)

@@ -427,11 +427,18 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	SHOULD_NOT_SLEEP(TRUE)
 	return
 
-/// Saved ships hook (feature/ship-saving overrides it): list of save cards (null entries for empty slots), or null to hide the box.
+/**
+ * Saved ships hook (ship_saves/ship_save_lobby_terminal.dm overrides it): one save card a slot in slot
+ * order (null for an empty slot), or null while the player's saves aren't read yet. Runs in ui_data.
+ */
 /datum/lobby_terminal/proc/saved_ships_data()
 	return null
 
-/// Saved ships hook: loads the save in that slot. form_new is the crew-leave answer.
+/// Saved ships hook: the save card for one slot, or null when the slot is empty. Only reads caches.
+/datum/lobby_terminal/proc/saved_ship_card(slot)
+	return null
+
+/// Saved ships hook: loads the save in that slot. form_new is the crew-leave answer. Runs under the join lock and may sleep.
 /datum/lobby_terminal/proc/load_saved_ship(slot, form_new)
 	set_notice("Shipyard records are offline.", "warn")
 	return FALSE

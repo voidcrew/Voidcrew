@@ -228,7 +228,7 @@ export type YardStatic = {
 };
 
 // ---------------------------------------------------------------------------
-// HOUSING (2.4). Owner: P5.
+// HOUSING (design 02, section 4).
 // ---------------------------------------------------------------------------
 
 export type OutpostMode = 'open' | 'password' | 'approved' | 'closed';
@@ -239,8 +239,10 @@ export type Outpost = {
   mode: OutpostMode;
   residents: number;
   cleared: BooleanLike;
-  /** Short in-character reason MOVE IN is refused, or null. */
-  denial: string | null;
+  /** MOVE IN would be refused now (for any reason, said or not). */
+  blocked: BooleanLike;
+  /** The refusal to draw on the block, or null when the word or the round already says it. 45 at most. */
+  why: string | null;
   /** Seconds left on a wrong-code lockout. */
   code_wait?: number;
   /** INVITE outposts: the player may ask to move in. */

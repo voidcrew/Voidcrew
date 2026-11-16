@@ -14,6 +14,7 @@
 #include "lobby_crews_payload.dm"
 #include "lobby_shell.dm"
 #include "lobby_terminal_bill.dm"
+#include "lobby_terminal_housing.dm"
 #include "map_parser_attributes.dm"
 #include "mod_night_vision.dm"
 #include "operating_table_movement.dm"
