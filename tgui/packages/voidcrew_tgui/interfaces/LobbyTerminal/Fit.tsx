@@ -1,470 +1,663 @@
 /**
- * FIT: the finish, then each module slot. Wide: the step list with the running total and
- * crew on the left, the viewscreen and this step's options on the right. Narrow: the
- * viewscreen above the options, PREV/NEXT between steps.
+ * FIT (spec 02, 3.5): one step a page. FINISH when the hull has finishes, then one step a room
+ * the taken finish offers. Each page: the picture with the current room marked and the steps
+ * column beside it, this step's options as slab rows, the shown option's description, the
+ * total strip in the class columns, PREV and NEXT.
+ *
+ * Shown is not taken. Each step has one option TAKEN (in the store: `[#]`, the slab `on`). The
+ * option SHOWN is the focused one while the focus is on an option row, else the taken one; it
+ * is local here. The picture and the description read the shown option; the total, the `[#]`
+ * and the commission read the taken one (ctx.fit and ctx.bill). Enter or a click takes an
+ * option; on the option already taken it goes to the next step (the bill after the last).
+ *
+ * Three regimes by body height B = M - 4.25: normal (B >= 18), small (14.75 <= B < 18, a 6-row
+ * picture) and tight (B < 14.75, no picture, the steps in two columns). The layout is worked out
+ * once a hull from its largest step and longest text, so nothing moves between steps.
  */
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ShipPic } from './ShipPic';
 import {
-  Btn,
+  bodyRows,
+  BODY_Y,
+  Box,
+  BOX_Y,
+  ClassFigures,
+  ClassHeads,
   cut,
-  Frame,
-  Hit,
-  type NavProps,
-  lpad,
+  Key,
+  Pager,
   Put,
-  pad,
   RPut,
-  Rule,
-  LEGACY_TOP as TOP,
+  Slab,
+  safe,
   useGrid,
   wrap,
-  LEGACY_NARROW,
+  wrapMax,
 } from './term';
-import type { CrewLine, Finish, Hull, Module } from './types';
+import type { Hull, Parts } from './types';
 import {
   billOf,
-  costOf,
-  crewOf,
+  crewCount,
+  crewText,
   finishOwned,
   fitOf,
   moduleOwned,
+  PART_ORDER,
   partsOf,
+  priceText,
   type ShipFit,
+  slotOptions,
+  stockFit,
   usePreview,
   type YardCtx,
 } from './YardTab';
 
-/** Compatibility: the old text key, until the fit's redesign replaces it. */
-function Key(
-  props: NavProps & {
-    x: number;
-    y: number;
-    label: string;
-    cls?: string;
-    right?: boolean;
-    disabled?: boolean;
-    bg?: boolean;
-    onClick?: () => void;
-  },
-) {
-  const { cls, bg, ...rest } = props;
-  return <Btn {...rest} lit={cls === 'inv'} />;
-}
+/** Rounds down to a quarter row. */
+const f4 = (v: number) => Math.floor(v * 4) / 4;
+const clamp = (v: number, lo: number, hi: number) =>
+  Math.max(lo, Math.min(hi, v));
+
+/** Body columns 1 to 61. */
+const W = 61;
+/** An option's name: columns 7 to 32. */
+const NAME_W = 26;
+/** An option's tag ends on column 60; at most 26 cells. */
+const TAG_END = 61;
+const TAG_W = 26;
+
+type Opt = {
+  id: string;
+  name: string;
+  desc: string;
+  tag: string;
+  tagCls: 'dim' | 'amb';
+};
 
 type Step = {
   label: string;
-  /** Finish step, or the slot key. */
+  /** The room's slot key, or null for FINISH. */
   slot: string | null;
-  opts: (Finish | Module)[];
-  pick: number;
+  opts: Opt[];
+  /** The option taken on this step. */
+  taken: string | null;
 };
 
-function jobsText(jobs: CrewLine[]): string {
-  return jobs.map(([t, n]) => (n > 1 ? `${t} x${n}` : t)).join(', ');
+/** `STOCK`, `OWNED` (dim) or the price (amber), as the option row shows it. */
+function tagOf(
+  stock: boolean,
+  owned: boolean,
+  cost: Parts | null | undefined,
+): [string, 'dim' | 'amb'] {
+  if (stock || !partsOf(cost)) {
+    return ['STOCK', 'dim'];
+  }
+  if (owned) {
+    return ['OWNED', 'dim'];
+  }
+  return [priceText(cost, TAG_W), 'amb'];
 }
 
-function stepsOf(fit: ShipFit): Step[] {
+function stepsOfFit(ctx: YardCtx, hull: Hull, taken: ShipFit): Step[] {
   const steps: Step[] = [];
-  const { hull, finish } = fit;
   if (hull.finishes.length) {
     steps.push({
       label: 'FINISH',
       slot: null,
-      opts: hull.finishes,
-      pick: Math.max(
-        0,
-        hull.finishes.findIndex((f) => f.id === finish?.id),
-      ),
+      taken: taken.finish?.id ?? null,
+      opts: hull.finishes.map((f) => {
+        const [tag, tagCls] = tagOf(
+          !!f.def,
+          finishOwned(ctx.own, hull, f),
+          f.cost,
+        );
+        return {
+          id: f.id,
+          name: safe(f.name),
+          desc: safe(f.desc),
+          tag,
+          tagCls,
+        };
+      }),
     });
   }
-  for (const s of fit.slots) {
+  for (const sl of taken.slots) {
     steps.push({
-      label: s.label,
-      slot: s.key,
-      opts: s.options,
-      pick: Math.max(
-        0,
-        s.options.findIndex((m) => m.id === s.pick?.id),
-      ),
+      label: safe(sl.label),
+      slot: sl.key,
+      taken: sl.pick?.id ?? null,
+      opts: sl.options.map((m) => {
+        const [tag, tagCls] = tagOf(
+          !!m.def,
+          moduleOwned(ctx.own, hull, m),
+          m.cost,
+        );
+        return {
+          id: m.id,
+          name: safe(m.name),
+          desc: safe(m.desc),
+          tag,
+          tagCls,
+        };
+      }),
     });
   }
   return steps;
 }
 
+/** `<n> BERTHS` in white, two spaces, the jobs dim, wrapped to at most `max` lines of 61. */
+function crewLines(fit: ShipFit, max: number) {
+  const head = `${crewCount(fit)} BERTHS`;
+  const jobs = safe(crewText(fit));
+  // A stand-in word as wide as the head plus one, so the first line keeps two spaces after it.
+  const lead = 'x'.repeat(head.length + 1);
+  const text = jobs ? `${lead} ${jobs}` : lead;
+  return {
+    head,
+    lead,
+    need: wrap(text, W).length,
+    lines: max > 0 ? wrapMax(text, W, max) : [],
+  };
+}
+
+/** The most options on any step of a hull, every finish counted, and the longest text. */
+function measure(hull: Hull) {
+  let nOpt = hull.finishes.length;
+  let lines = 0;
+  const finishes = hull.finishes.length ? hull.finishes : [null];
+  for (const f of finishes) {
+    const keys = f ? f.slots : hull.slots.map((s) => s.key);
+    for (const key of keys) {
+      nOpt = Math.max(nOpt, slotOptions(hull, key, f).length);
+    }
+  }
+  for (const m of hull.modules) {
+    lines = Math.max(lines, wrap(safe(m.desc), W).length);
+  }
+  for (const f of hull.finishes) {
+    const crew = crewLines(fitOf(hull, f.id, {}), 2).need;
+    lines = Math.max(
+      lines,
+      wrap(safe(f.desc), W).length + Math.min(2, crew),
+    );
+  }
+  return { nOpt: Math.max(1, nOpt), Dwant: Math.min(8, lines) };
+}
+
+type Regime = {
+  kind: 'normal' | 'small' | 'tight';
+  /** Picture rows (0 when tight). */
+  T: number;
+  /** Steps rows when tight. */
+  S: number;
+  /** Option pitch. */
+  po: number;
+  /** Option rows on a page. */
+  rowsO: number;
+  /** The options page (a Pager row under them). */
+  paged: boolean;
+  /** Description lines. */
+  D: number;
+};
+
+function regimeOf(
+  B: number,
+  nOpt: number,
+  Dwant: number,
+  steps: number,
+): Regime {
+  if (B >= 18) {
+    let po = 1.75;
+    let D = Dwant;
+    let T = B - 3 - nOpt * po - D;
+    let rowsO = nOpt;
+    let paged = false;
+    if (T < 8.5) {
+      po = 1;
+      T = B - 3 - nOpt - D;
+    }
+    if (T < 8.5) {
+      D = Math.max(2, D - Math.ceil(8.5 - T));
+      T = B - 3 - nOpt - D;
+    }
+    if (T < 8.5) {
+      T = 8.5;
+      rowsO = Math.floor(B - 12.5 - D);
+      paged = true;
+    }
+    return { kind: 'normal', T: f4(T), S: 0, po, rowsO, paged, D };
+  }
+  let kind: Regime['kind'];
+  let T = 0;
+  let S = 0;
+  let rowsO: number;
+  let D: number;
+  if (B >= 14.75) {
+    kind = 'small';
+    T = 6;
+    rowsO = Math.min(nOpt, Math.floor(B - 10.75));
+    D = Math.floor(B - 8.75 - rowsO);
+  } else {
+    kind = 'tight';
+    S = Math.ceil(steps / 2);
+    rowsO = Math.min(nOpt, Math.floor(B - 3.75 - S));
+    D = Math.floor(B - 2.75 - S - rowsO);
+  }
+  const paged = nOpt > rowsO;
+  if (paged) {
+    // The pager takes one of the description's rows; keep two lines of description.
+    D -= 1;
+    if (D < 2) {
+      rowsO = Math.max(1, rowsO - (2 - D));
+      D = 2;
+    }
+  }
+  return { kind, T, S, po: 1, rowsO, paged, D };
+}
+
 export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   const { ctx, hull } = props;
-  const { view, set, own } = ctx;
-  const { cols, rows } = useGrid();
-  const narrow = LEGACY_NARROW;
+  const { rows } = useGrid();
   usePreview(hull.id);
-  const h = rows - 1 - TOP;
-  const fit = fitOf(hull, view.finish, view.picks);
-  const steps = stepsOf(fit);
-  /** First option row shown when a step has more options than rows, and the row to focus. */
-  const [win, setWin] = useState<{ st: number; top: number; want: number }>({
-    st: -1,
-    top: 0,
-    want: -1,
-  });
-  // Nothing to fit (no finishes, no rooms): show the bill instead of a blank screen.
-  useEffect(() => {
-    if (!steps.length) {
-      set({ screen: 'bill' });
-    }
-  }, [steps.length]);
-  if (!steps.length) {
-    return null;
-  }
-  const st = Math.min(steps.length - 1, Math.max(0, view.step));
-  const S = steps[st];
-  const bill = billOf(own, fit, ctx.account);
-  const crew = crewOf(fit);
-  const crewN = crew.reduce((a, l) => a + l[1], 0);
-  const out: ReactNode[] = [];
+  const M = rows;
+  const B = bodyRows(M);
 
-  const ownedOpt = (o: Finish | Module) =>
-    S.slot === null
-      ? finishOwned(own, hull, o as Finish)
-      : moduleOwned(own, hull, o as Module);
-  const choose = (j: number) => {
-    const o = S.opts[j];
-    if (S.slot === null) {
-      set({ finish: o.id });
-    } else {
-      set({ picks: { ...view.picks, [S.slot]: o.id } });
+  // Taken: the store's fit of this hull.
+  const taken: ShipFit =
+    ctx.fit && ctx.fit.hull.id === hull.id ? ctx.fit : stockFit(hull);
+  const bill =
+    ctx.bill && ctx.fit && ctx.fit.hull.id === hull.id
+      ? ctx.bill
+      : billOf(ctx.own, taken, ctx.account);
+  const steps = stepsOfFit(ctx, hull, taken);
+  const n = steps.length;
+  const at = clamp(ctx.view.step, 0, Math.max(0, n - 1));
+  const step: Step | undefined = steps[at];
+  const last = at >= n - 1;
+
+  const { nOpt, Dwant } = useMemo(() => measure(hull), [hull]);
+  const rg = regimeOf(B, nOpt, Dwant, n);
+
+  // Local: the option focused (shown), the options page, and focus claims. Reset a step.
+  const stepKey = `${hull.id}:${at}`;
+  const [loc, setLoc] = useState({
+    key: stepKey,
+    focus: null as string | null,
+    page: 0,
+    claim: null as string | null,
+    toSteps: 0,
+    toNext: 0,
+  });
+  let cur = loc;
+  if (loc.key !== stepKey) {
+    cur = {
+      key: stepKey,
+      focus: null,
+      page: 0,
+      claim: null,
+      toSteps: 0,
+      toNext: 0,
+    };
+    setLoc(cur);
+  }
+
+  const opts = step ? step.opts : [];
+  const per = Math.max(1, rg.rowsO);
+  const pages = Math.max(1, Math.ceil(opts.length / per));
+  const takenAt = Math.max(
+    0,
+    opts.findIndex((o) => o.id === step?.taken),
+  );
+  // Entering a step: the page holding the option taken.
+  const page = clamp(cur.page || Math.floor(takenAt / per) + 1, 1, pages);
+  const pageOpts = opts.slice((page - 1) * per, page * per);
+  const claim = cur.claim ?? step?.taken ?? null;
+
+  const shownId =
+    cur.focus && opts.some((o) => o.id === cur.focus)
+      ? cur.focus
+      : step?.taken ?? null;
+  const shownOpt = opts.find((o) => o.id === shownId) || null;
+  const takenFinish = taken.finish?.id ?? null;
+  const picks: Record<string, string> = {};
+  for (const sl of taken.slots) {
+    if (sl.pick) {
+      picks[sl.key] = sl.pick.id;
+    }
+  }
+  let shownFit: ShipFit = taken;
+  if (step && shownId && shownId !== step.taken) {
+    shownFit =
+      step.slot === null
+        ? fitOf(hull, shownId, picks)
+        : fitOf(hull, takenFinish, { ...picks, [step.slot]: shownId });
+  }
+
+  const goStep = (i: number) => {
+    if (i >= n) {
+      ctx.go.bill();
+    } else if (i >= 0) {
+      ctx.go.fit(i);
     }
   };
-  const last = st === steps.length - 1;
-  const next = () => (last ? set({ screen: 'bill' }) : set({ step: st + 1 }));
-
-  const x = narrow
-    ? 0
-    : Math.min(48, Math.max(34, Math.floor(cols * 0.36))) + 1;
-  const w = cols - x;
-  const lw = x - 1;
-
-  // The viewscreen takes what the busiest step's options leave, so it doesn't jump.
-  const descRows = (o: Finish | Module) =>
-    Math.min(2, wrap(o.desc, w - 6).length);
-  const need =
-    Math.max(
-      ...steps.map((s) => {
-        let n = s.opts.length + Math.max(0, ...s.opts.map(descRows));
-        if (s.slot === null) {
-          n += Math.max(
-            0,
-            ...s.opts.map(
-              (o) =>
-                Math.min(2, wrap(jobsText((o as Finish).jobs), w - 12).length) +
-                1,
-            ),
-          );
-        }
-        return n;
-      }),
-    ) + (narrow ? 7 : 6);
-  const ph = Math.max(narrow ? 6 : 9, Math.min(Math.floor(h * 0.62), h - need));
-
-  if (!narrow) {
-    // Step list, total and crew.
-    out.push(
-      <Frame
-        key="steps"
-        x={0}
-        y={TOP}
-        w={lw}
-        h={h}
-        title={`FIT  ${hull.short.toUpperCase()}`}
-      />,
-    );
-    // Two rows a step when there is room, one when not; past that, a window round this step.
-    const pitch = TOP + 2 + steps.length * 2 + 8 <= TOP + h ? 2 : 1;
-    const stepRoom = Math.max(1, Math.floor((h - 10) / pitch));
-    const from = Math.max(
-      0,
-      Math.min(steps.length - stepRoom, st - Math.floor(stepRoom / 2)),
-    );
-    let y = TOP + 2;
-    steps.slice(from, from + stepRoom).forEach((s, n) => {
-      const i = from + n;
-      const o = s.opts[s.pick];
-      const cur = i === st;
-      const paid =
-        !!o &&
-        !(s.slot === null
-          ? finishOwned(own, hull, o as Finish)
-          : moduleOwned(own, hull, o as Module));
-      if (cur) {
-        out.push(
-          <Put key={`sb${i}`} x={1} y={y} cls="inv">
-            {' '.repeat(lw - 3)}
-          </Put>,
-        );
-      }
-      out.push(
-        <Put key={`sm${i}`} x={1} y={y} cls={cur ? 'inv' : ''}>
-          {cur ? '>' : ' '}
-        </Put>,
-        <Put key={`sl${i}`} x={3} y={y} cls={cur ? 'inv' : 'dim'}>
-          {pad(s.label, 14)}
-        </Put>,
-        <Put key={`sn${i}`} x={18} y={y} cls={cur ? 'inv' : paid ? 'amb' : ''}>
-          {pad(o ? o.name : '-', lw - 21)}
-        </Put>,
-        <Hit
-          key={`sh${i}`}
-          x={1}
-          y={y}
-          w={lw - 3}
-          h={1}
-          onClick={() => set({ step: i })}
-        />,
-      );
-      y += pitch;
-    });
-    if (pitch === 1) {
-      y++;
+  const take = (o: Opt) => {
+    if (!step) {
+      return;
     }
-    out.push(<Rule key="rule" x={1} y={y - 1} w={lw - 2} />);
-    const tot = costOf(bill.total) || 'NOTHING DUE';
-    const totLines = wrap(tot, lw - 13);
-    const short = Object.keys(bill.short).length > 0;
-    out.push(
-      <Put key="tl" x={3} y={y + 1} cls="dim">
-        TOTAL
-      </Put>,
-    );
-    totLines.forEach((l, i) => {
-      out.push(
-        <Put
-          key={`tv${i}`}
-          x={10}
-          y={y + 1 + i}
-          cls={partsOf(bill.total) ? (short ? 'red' : 'amb') : 'dim'}
-        >
-          {l}
-        </Put>,
-      );
-    });
-    let cy = y + 3 + Math.max(0, totLines.length - 1);
-    const stop = TOP + h - 4;
-    if (cy + 2 < stop) {
-      out.push(
-        <Put key="cl" x={3} y={cy} cls="dim">
-          CREW
-        </Put>,
-        <Put key="cv" x={10} y={cy}>
-          {String(crewN)}
-        </Put>,
-      );
-      cy += 2;
-      if (cy + crew.length <= stop) {
-        crew.forEach(([job, n], i) => {
-          out.push(
-            <Put key={`cj${i}`} x={3} y={cy}>
-              {pad(job, lw - 10)}
-            </Put>,
-            <Put key={`cn${i}`} x={lw - 6} y={cy++} cls="dim">
-              {lpad(n, 2)}
-            </Put>,
-          );
-        });
-      }
+    if (o.id === step.taken) {
+      goStep(at + 1);
+      return;
     }
-    out.push(
-      <Key
-        key="bill"
-        x={3}
-        y={TOP + h - 3}
-        label="BILL"
-        cls="inv"
-        onClick={() => set({ screen: 'bill' })}
-      />,
-    );
-  }
+    const slot = step.slot;
+    ctx.set((v) => {
+      const mine = v.fitHull === hull.id;
+      const base = mine ? v.picks : {};
+      return slot === null
+        ? { fitHull: hull.id, finish: o.id, picks: base }
+        : {
+            fitHull: hull.id,
+            finish: mine ? v.finish : takenFinish,
+            picks: { ...base, [slot]: o.id },
+          };
+    });
+  };
+  const turn = (to: number, claimId: string | null) => {
+    setLoc((l) => ({ ...l, page: to, claim: claimId }));
+    return true;
+  };
 
-  // Viewscreen.
+  // PageDown / PageUp: NEXT / PREV.
+  const keys = useRef<(d: number) => void>(() => {});
+  keys.current = (d: number) => {
+    if (!ctx.view.leave) {
+      goStep(d > 0 ? at + 1 : at > 0 ? at - 1 : -1);
+    }
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
+        return;
+      }
+      if (e.key === 'PageDown' || e.key === 'PageUp') {
+        e.preventDefault();
+        keys.current(e.key === 'PageDown' ? 1 : -1);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
+
+  const out: ReactNode[] = [];
   out.push(
-    <Frame
-      key="pf"
-      x={x}
-      y={TOP}
-      w={w}
-      h={ph}
-      title={(fit.finish?.name || hull.short).toUpperCase()}
-    />,
-    <ShipPic
-      key="pic"
-      x={x + 2}
-      y={TOP + 1.5}
-      w={w - 4}
-      h={ph - 2.5}
-      fit={fit}
-      hiSlot={S.slot}
+    <Box
+      key="box"
+      x={0}
+      y={BOX_Y}
+      w={63}
+      h={M - 3.5}
+      caption={safe(hull.name).toUpperCase()}
     />,
   );
 
-  // This step's options.
-  const oy = TOP + ph;
-  const oh = h - ph;
-  const title = narrow ? `${S.label}  ${st + 1}/${steps.length}` : S.label;
-  out.push(<Frame key="of" x={x} y={oy} w={w} h={oh} title={title} />);
-  let y = oy + 2;
-  const tagW = 18;
-  const by = oy + oh - 2;
-  // Options get the rows above the keys less two for the description; more scroll.
-  const optRows = Math.max(1, by - (narrow ? 2 : 1) - y - 2);
-  const many = S.opts.length > optRows;
-  let top = 0;
-  if (many) {
-    top =
-      win.st === st
-        ? win.top
-        : Math.max(0, Math.min(S.pick, S.opts.length - optRows));
-    top = Math.max(0, Math.min(S.opts.length - optRows, top));
-    out.push(
-      <RPut key="orange" x={x + w - 3} y={oy} cls="dim" bg>
-        {` ${top + 1}-${top + optRows}/${S.opts.length} `}
-      </RPut>,
-    );
-  }
-  const scroll = (to: number, want: number) => {
-    setWin({ st, top: to, want });
-    return true;
-  };
-  const shownOpts = S.opts.slice(top, top + optRows);
-  shownOpts.forEach((o, n) => {
-    const j = top + n;
-    const sel = j === S.pick;
-    const firstRow = n === 0;
-    const lastRow = n === shownOpts.length - 1;
-    const focusHere = win.st === st && win.want >= 0 ? win.want === j : sel;
-    const owned = ownedOpt(o);
-    if (sel) {
-      out.push(
-        <Put key={`ob${j}`} x={x + 1} y={y} cls="inv">
-          {' '.repeat(w - 3)}
-        </Put>,
-      );
-    }
-    const tag = cut(o.def ? 'STOCK' : owned ? 'OWNED' : costOf(o.cost), tagW);
-    out.push(
-      <Put key={`om${j}`} x={x + 1} y={y} cls={sel ? 'inv' : ''}>
-        {sel ? '>' : ' '}
-      </Put>,
-      <Put key={`on${j}`} x={x + 3} y={y} cls={sel ? 'inv' : ''}>
-        {pad(o.name, w - 6 - Math.min(tagW, tag.length + 2))}
-      </Put>,
-      <RPut
-        key={`ot${j}`}
-        x={x + w - 3}
+  // A step: a focus target (not a tab item); Enter or a click opens it.
+  const stepRow = (
+    s: Step,
+    i: number,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    alt: boolean,
+  ) => {
+    const on = i === at;
+    return (
+      <Slab
+        key={`st-${i}-${on ? cur.toSteps : 0}`}
+        variant="row"
+        x={x}
         y={y}
-        cls={sel ? 'inv' : owned ? 'dim' : 'amb'}
+        w={w}
+        h={h}
+        alt={alt}
+        on={on}
+        auto={on && cur.toSteps > 0 ? 3 : undefined}
+        onClick={() => goStep(i)}
       >
-        {tag}
-      </RPut>,
-      <Hit
-        key={`oh${st}-${j}`}
-        x={x + 1}
-        y={y}
-        w={w - 3}
-        h={1}
-        onClick={() => choose(j)}
-        auto={focusHere ? 1 : undefined}
-        edge={{
-          down:
-            lastRow && j < S.opts.length - 1
-              ? () => scroll(top + 1, j + 1)
-              : undefined,
-          up: firstRow && j > 0 ? () => scroll(top - 1, j - 1) : undefined,
-        }}
+        <Put x={x + 2} y={y + (h - 1) / 2} cls={on ? 'wht' : 'dim'}>
+          {cut(s.label.toUpperCase(), w - 3)}
+        </Put>
+      </Slab>
+    );
+  };
+
+  // The picture and the steps.
+  if (rg.kind !== 'tight') {
+    out.push(
+      <ShipPic
+        key="pic"
+        x={1}
+        y={BODY_Y}
+        w={38}
+        h={rg.T}
+        fit={shownFit}
+        hiSlot={step?.slot ?? null}
       />,
     );
-    y++;
-  });
-  y++;
-  const o = S.opts[S.pick];
-  if (o) {
-    const jl =
-      S.slot === null ? wrap(jobsText((o as Finish).jobs), w - 12) : [];
-    const rowsFree =
-      by - (narrow ? 2 : 1) - y - (jl.length ? jl.length + 1 : 0);
-    wrap(o.desc, w - 6)
-      .slice(0, Math.max(1, rowsFree))
-      .forEach((l, i) => {
-        out.push(
-          <Put key={`od${i}`} x={x + 3} y={y++} cls="dim">
-            {l}
-          </Put>,
-        );
-      });
-    if (jl.length) {
-      y++;
+    // Spec 3.5 caps the pitch at 1.75; a tall picture left the column half empty, so it
+    // runs to 2.25 (the slab 2 rows, its label centred).
+    const ps = rg.kind === 'small' ? 1 : clamp(f4(rg.T / n), 1, 2.25);
+    const sh = ps < 1.25 ? 1 : ps - 0.25;
+    const vis = Math.min(n, Math.max(1, Math.floor((rg.T + 0.25) / ps)));
+    const first = clamp(at - Math.floor(vis / 2), 0, n - vis);
+    for (let j = 0; j < vis; j++) {
+      const i = first + j;
       out.push(
-        <Put key="ocl" x={x + 3} y={y} cls="dim">
-          CREW
-        </Put>,
+        stepRow(
+          steps[i],
+          i,
+          40,
+          BODY_Y + j * ps,
+          22,
+          sh,
+          ps < 1.25 && j % 2 === 1,
+        ),
       );
-      jl.slice(0, Math.max(1, by - (narrow ? 2 : 1) - y)).forEach((l, i) => {
-        out.push(
-          <Put key={`oc${i}`} x={x + 9} y={y++}>
-            {l}
-          </Put>,
-        );
-      });
+    }
+  } else {
+    for (let i = 0; i < n; i++) {
+      const col = i < rg.S ? 0 : 1;
+      const row = col ? i - rg.S : i;
+      out.push(
+        stepRow(
+          steps[i],
+          i,
+          col ? 32 : 1,
+          BODY_Y + row,
+          30,
+          1,
+          row % 2 === 1,
+        ),
+      );
     }
   }
-  if (narrow) {
-    const tot = costOf(bill.total);
-    const short = Object.keys(bill.short).length > 0;
+
+  // The options.
+  const yO = BODY_Y + 0.25 + (rg.kind === 'tight' ? rg.S : rg.T);
+  const oh = rg.po === 1.75 ? 1.5 : 1;
+  pageOpts.forEach((o, j) => {
+    const y = yO + j * rg.po;
+    const isTaken = o.id === step?.taken;
+    const first = j === 0;
+    const lastRow = j === pageOpts.length - 1;
+    const ty = y + (oh - 1) / 2;
     out.push(
-      <Put key="ntl" x={x + 3} y={by - 1} cls="dim">
-        {`CREW ${crewN}`}
-      </Put>,
+      <Slab
+        key={`o-${stepKey}-${page}-${o.id}`}
+        variant="row"
+        x={1}
+        y={y}
+        w={W}
+        h={oh}
+        alt={rg.po === 1 && j % 2 === 1}
+        on={isTaken}
+        auto={o.id === claim ? 2 : undefined}
+        onClick={() => take(o)}
+        onFocus={(f) =>
+          setLoc((l) =>
+            f
+              ? { ...l, focus: o.id }
+              : l.focus === o.id
+                ? { ...l, focus: null }
+                : l,
+          )
+        }
+        edge={{
+          up: () =>
+            first && page > 1
+              ? turn(page - 1, opts[(page - 1) * per - 1].id)
+              : false,
+          down: () => {
+            if (!lastRow) {
+              return false;
+            }
+            if (page < pages) {
+              return turn(page + 1, opts[page * per].id);
+            }
+            setLoc((l) => ({ ...l, toNext: l.toNext + 1 }));
+            return true;
+          },
+          right: () => {
+            setLoc((l) => ({ ...l, toSteps: l.toSteps + 1 }));
+            return true;
+          },
+        }}
+      >
+        <Put x={3} y={ty} cls={isTaken ? 'acc' : 'dim'}>
+          {isTaken ? '[#]' : '[ ]'}
+        </Put>
+        <Put x={7} y={ty} cls={isTaken ? 'wht' : ''}>
+          {cut(o.name, NAME_W)}
+        </Put>
+        <RPut x={TAG_END} y={ty} cls={o.tagCls}>
+          {cut(o.tag, TAG_W)}
+        </RPut>
+      </Slab>,
     );
-    if (tot) {
+  });
+  let yD = yO + rg.rowsO * rg.po + 0.25;
+  if (rg.paged) {
+    if (pages > 1) {
       out.push(
-        <Put key="ntv" x={x + 12} y={by - 1} cls={short ? 'red' : 'amb'}>
-          {tot.slice(0, w - 15)}
-        </Put>,
-      );
-    }
-    if (!last) {
-      out.push(
-        <Key
-          key="nbill"
-          x={x + 3}
-          y={by}
-          label="BILL"
-          cls="dim"
-          onClick={() => set({ screen: 'bill' })}
+        <Pager
+          key="opg"
+          x={TAG_END}
+          y={yO + rg.rowsO * rg.po}
+          right
+          page={page}
+          pages={pages}
+          onPage={(p) => turn(p, opts[(p - 1) * per].id)}
         />,
       );
     }
+    yD += 1;
   }
-  if (st > 0) {
+
+  // The description of the shown option; on FINISH, the crew it brings under it.
+  if (shownOpt) {
+    let lines: string[] = [];
+    let crew: ReturnType<typeof crewLines> | null = null;
+    if (step?.slot === null) {
+      const need = crewLines(shownFit, 2).need;
+      const c = Math.max(0, Math.min(2, need, rg.D - 1));
+      crew = crewLines(shownFit, c);
+      lines = shownOpt.desc ? wrapMax(shownOpt.desc, W, rg.D - c) : [];
+    } else {
+      lines = shownOpt.desc ? wrapMax(shownOpt.desc, W, rg.D) : [];
+    }
+    let y = yD;
+    lines.forEach((line, i) => {
+      out.push(
+        <Put key={`d${i}`} x={1} y={y}>
+          {line}
+        </Put>,
+      );
+      y += 1;
+    });
+    if (crew) {
+      crew.lines.forEach((line, i) => {
+        if (i === 0) {
+          out.push(
+            <Put key="ch" x={1} y={y} cls="wht">
+              {crew.head}
+            </Put>,
+            <Put key="c0" x={1 + crew.lead.length} y={y} cls="dim">
+              {line.slice(crew.lead.length).trimStart()}
+            </Put>,
+          );
+        } else {
+          out.push(
+            <Put key={`c${i}`} x={1} y={y} cls="dim">
+              {line}
+            </Put>,
+          );
+        }
+        y += 1;
+      });
+    }
+  }
+
+  // The total strip: what the fit as taken costs now, in set F.
+  const yK = M - 3.25;
+  const due = partsOf(bill.total) > 0;
+  if (due) {
+    const short = ctx.ledger === 'ok' ? bill.short : {};
+    const cls: Record<string, string> = {};
+    for (const k of PART_ORDER) {
+      cls[k] = (short[k] || 0) > 0 ? 'inva' : 'amb';
+    }
     out.push(
-      <Key
-        key="prev"
-        x={x + w - 26}
-        y={by}
-        label="PREV"
-        cls="dim"
-        bg
-        onClick={() => set({ step: st - 1 })}
+      <Put key="tt" x={1} y={yK} cls="dim">
+        TOTAL
+      </Put>,
+      <ClassHeads key="th" y={yK} set="F" />,
+      <ClassFigures
+        key="tf"
+        y={yK + 1}
+        set="F"
+        values={bill.total}
+        cls={cls}
       />,
+    );
+  } else {
+    out.push(
+      <Put key="nd" x={1} y={yK + 1} cls="dim">
+        NOTHING DUE
+      </Put>,
     );
   }
   out.push(
     <Key
-      key="next"
-      x={x + w - 15}
-      y={by}
+      key="prev"
+      kind="box"
+      x={39}
+      y={yK + 0.5}
+      w={8}
+      h={1.5}
+      label="PREV"
+      state={at > 0 ? 'idle' : 'dead'}
+      onClick={() => goStep(at - 1)}
+    />,
+    <Key
+      key={`next-${cur.toNext}`}
+      kind="big"
+      x={48}
+      y={yK}
+      w={14}
+      h={2}
       label={last ? 'BILL' : 'NEXT'}
-      cls="inv"
-      onClick={next}
+      auto={cur.toNext > 0 ? 3 : undefined}
+      onClick={() => goStep(at + 1)}
     />,
   );
 
