@@ -97,3 +97,10 @@
 	/obj/effect/zone_mobs/undead = 3,\
 	/obj/effect/zone_mobs/bug = 3,\
 )
+
+/// zone_mobs wave arrivals: a drop pod lands the mob
+#define ZONE_MOBS_ARRIVE_POD "pod"
+/// zone_mobs wave arrivals: the mob digs up out of the ground
+#define ZONE_MOBS_ARRIVE_EMERGE "emerge"
+/// How far a wave's arrivals scatter from the spot that called them
+#define ZONE_MOBS_WAVE_SCATTER 4
