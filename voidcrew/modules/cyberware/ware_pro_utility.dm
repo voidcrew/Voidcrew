@@ -444,6 +444,8 @@
 		/datum/action/cooldown/cyberware/prospector_pulse,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
 	/// How far the resonance pulse reaches, through rock, in tiles.
 	var/pulse_range = CYBERWARE_PROSPECTOR_RANGE
 	/// Whether the pulse also flags zone loot caches.

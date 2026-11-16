@@ -419,7 +419,8 @@
 	var/list/housings = list()
 	if(!owner)
 		return housings
-	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in owner.actions)
+	// Chrome abilities have no button and so never join mob.actions (chrome_hud.dm).
+	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in get_chrome_wheel_actions(owner))
 		var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = lunge_action.organ
 		if(istype(housing) && housing.blade_extended())
 			housings += housing
@@ -457,7 +458,7 @@
 	cyberware_camo_drop(lunger)
 	// One lunge clock across both housings: start every mantis_lunge button
 	// this owner has, ours included.
-	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in lunger.actions)
+	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in get_chrome_wheel_actions(lunger))
 		lunge_action.StartCooldown()
 	// The telegraph: readable wind-up before the dash lands.
 	lunger.face_atom(victim)

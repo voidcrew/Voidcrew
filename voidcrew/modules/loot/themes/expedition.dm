@@ -43,8 +43,11 @@
 		/datum/shop_sku/ripperdoc/prospector,
 		/datum/shop_sku/ripperdoc/hopper,
 		/datum/shop_sku/ripperdoc/frostline,
+		/datum/shop_sku/ripperdoc/spyglass,
+		/datum/shop_sku/ripperdoc/assay_optics,
 		/datum/shop_sku/ripperdoc/hopper_street,
 		/datum/shop_sku/ripperdoc/rockjaw_deepcore,
+		/datum/shop_sku/ripperdoc/longsight,
 		/datum/shop_sku/ripperdoc/hopper_milspec,
 	)
 	loot_common = list(
@@ -63,6 +66,8 @@
 		/obj/item/dnainjector/loot/geladikinesis = 3,
 		// a cold lining for the ice worlds, and cheap eyes that see a long way
 		/obj/item/organ/cyberimp/cyberware/frostline = 3,
+		/obj/item/organ/eyes/robotic/cyberware/spyglass = 3,
+		/obj/item/organ/eyes/robotic/cyberware/prospector/street = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
@@ -86,6 +91,7 @@
 		// optics
 		/obj/item/organ/cyberimp/cyberware/hopper/street = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore = 3,
+		/obj/item/organ/eyes/robotic/cyberware/longsight = 2,
 	)
 	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,

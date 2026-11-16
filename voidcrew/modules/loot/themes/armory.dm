@@ -149,6 +149,8 @@
 		/datum/shop_sku/ripperdoc/cuffer_wrists,
 		/datum/shop_sku/ripperdoc/muffler_ear,
 		/datum/shop_sku/ripperdoc/hardweave,
+		/datum/shop_sku/ripperdoc/deadeye_milspec,
+		/datum/shop_sku/ripperdoc/lookout,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/armor/vest = 10,
@@ -200,6 +202,8 @@
 		/obj/item/organ/cyberimp/cyberware/governor_delete/milspec = 2,
 		/obj/item/organ/cyberimp/cyberware/redline/milspec = 2,
 		// the service optics
+		/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec = 2,
+		/obj/item/organ/eyes/robotic/cyberware/lookout = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

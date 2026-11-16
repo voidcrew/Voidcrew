@@ -45,6 +45,7 @@ GLOBAL_LIST_INIT(chrome_test_loadouts, list(
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/street/left,
 		/obj/item/organ/cyberimp/cyberware/ghostskin/street,
 		/obj/item/organ/cyberimp/cyberware/hopper/street,
+		/obj/item/organ/eyes/robotic/cyberware/spyglass,
 		/obj/item/organ/cyberimp/cyberware/clotter_node,
 		/obj/item/organ/cyberimp/cyberware/medic_palms,
 		/obj/item/organ/cyberimp/cyberware/subvocal_mic,
