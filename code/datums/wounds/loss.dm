@@ -40,9 +40,10 @@
 	else
 		occur_text = dismembered_part.get_dismember_message(wounding_type, outright)
 
-	var/msg = span_bolddanger("[victim]'s [dismembered_part.plaintext_zone] [occur_text]")
-
-	victim.visible_message(msg, span_userdanger("Your [dismembered_part.plaintext_zone] [self_msg ? self_msg : occur_text]"))
+	// VOIDCREW EDIT CHANGE START: the severed-limb line joins the message of the hit that caused it (voidcrew/modules/hyperviolence/hitlines)
+	// original: victim.visible_message(span_bolddanger("[victim]'s [zone] [occur_text]"), span_userdanger("Your [zone] [self_msg ? self_msg : occur_text]")) at the default message range
+	victim.hv_add_hit_line("[victim]'s [dismembered_part.plaintext_zone] [occur_text]", HV_LINE_HUGE, "Your [dismembered_part.plaintext_zone] [self_msg ? self_msg : occur_text]", DEFAULT_MESSAGE_RANGE)
+	// VOIDCREW EDIT CHANGE END
 
 	loss_wounding_type = wounding_type
 

@@ -134,6 +134,15 @@
    "reason": "Uniforms and a coat for one job. Nothing here helps a fight.",
    "tier": "none"
   },
+  "/obj/item/storage/bag/harpoon_quiver": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "",
+   "name": "harpoon quiver",
+   "rank": 6,
+   "reason": "Forty harpoons for the harpoon gun. Rated with the ammo it carries.",
+   "tier": "yellow"
+  },
   "/obj/item/storage/bag/mail": {
    "confidence": "high",
    "group": "work bags",
@@ -598,7 +607,7 @@
    "group": "field and syndicate kits",
    "hash": "9e9840567ff3fcc0",
    "name": "box of standard firing pins",
-   "rank": 9,
+   "rank": 10,
    "reason": "Five spare firing pins, for guns found without one. Sold singly for 250 credits.",
    "tier": "green"
   },
@@ -607,7 +616,7 @@
    "group": "field and syndicate kits",
    "hash": "713a9f86445310bf",
    "name": "box of syndicate firing pins",
-   "rank": 10,
+   "rank": 11,
    "reason": "Five pins that only fire for someone with a firearms implant only one ruin has. Mostly a way to ruin a gun.",
    "tier": "none"
   },
@@ -670,7 +679,7 @@
    "group": "field and syndicate kits",
    "hash": "8d5f14f14f1a4229",
    "name": "floor tile camo box",
-   "rank": 7,
+   "rank": 8,
    "reason": "Floor-tile camouflage with combat gloves, boots and balaclava. The gloves are the useful part.",
    "tier": "green"
   },
@@ -751,7 +760,7 @@
    "group": "field and syndicate kits",
    "hash": "2f42fea1a3c77160",
    "name": "Followers of the Chaplain Kit",
-   "rank": 12,
+   "rank": 13,
    "reason": "Chaplain hoodies for a small cult. Clothes.",
    "tier": "none"
   },
@@ -931,7 +940,7 @@
    "group": "field and syndicate kits",
    "hash": "be444c6cc9f90033",
    "name": "boxed tracking implant kit",
-   "rank": 6,
+   "rank": 7,
    "reason": "Two tracking implants, two beacon implants and a locator, for keeping tabs on a crewmate or a captive. Costs mining points.",
    "tier": "green"
   },
@@ -1732,7 +1741,7 @@
    "group": "field and syndicate kits",
    "hash": "b8e1d69b73958aa5",
    "name": "lockbox",
-   "rank": 13,
+   "rank": 14,
    "reason": "An empty lockbox.",
    "tier": "none"
   },
@@ -1741,7 +1750,7 @@
    "group": "field and syndicate kits",
    "hash": "072f8dd47e6d407a",
    "name": "lockbox of mindshield implants",
-   "rank": 11,
+   "rank": 12,
    "reason": "Three mindshield implants. With no antagonists there is nothing for them to stop.",
    "tier": "none"
   },
@@ -1957,7 +1966,7 @@
    "group": "field and syndicate kits",
    "hash": "50d9821f50f1e319",
    "name": "emergency space suits",
-   "rank": 8,
+   "rank": 9,
    "reason": "Two orange space suits, masks, oxygen, pickaxes and a shelter capsule in a wall cabinet. Two ruins have one.",
    "tier": "green"
   },
@@ -1966,7 +1975,7 @@
    "group": "field and syndicate kits",
    "hash": "50d9821f50f1e319",
    "name": "emergency space suits",
-   "rank": 8,
+   "rank": 9,
    "reason": "Two orange space suits, masks, oxygen, pickaxes and a shelter capsule in a wall cabinet. Two ruins have one.",
    "tier": "green"
   },
@@ -2023,7 +2032,6 @@
   "/obj/item/storage/bag/garment": "no route",
   "/obj/item/storage/bag/garment/engineering_chief": "no route",
   "/obj/item/storage/bag/garment/warden": "no route",
-  "/obj/item/storage/bag/harpoon_quiver": "no route",
   "/obj/item/storage/bag/ore/cyborg": "no route",
   "/obj/item/storage/bag/plants/cyborg": "no route",
   "/obj/item/storage/bag/quiver": "no route",

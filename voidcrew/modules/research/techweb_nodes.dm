@@ -418,10 +418,14 @@
 	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
 	design_ids = list(
 		"vc_mag_m9mm_aps",
+		"vc_mag_m9mm_rattlesnake",
 		"vc_mag_smgm9mm",
 		"vc_shotgun_dragonsbreath",
 		"vc_ammo_uzi",
 		"vc_strilka310_clip",
+		"vc_ammo_harpoon",
+		"vc_ammo_a8x50r_clip",
+		"vc_ammo_a762x40_clip",
 		"suppressor",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
@@ -436,6 +440,9 @@
 		"vc_ammo_m9mm_ap",
 		"vc_ammo_m9mm_hp",
 		"vc_ammo_m9mm_fire",
+		"vc_ammo_m10mm_ap",
+		"vc_ammo_m10mm_hp",
+		"vc_ammo_m10mm_fire",
 		"vc_ammo_aps_ap",
 		"vc_ammo_aps_hp",
 		"vc_ammo_aps_fire",
@@ -657,6 +664,8 @@
 		"transporter_pad",
 		"transporter_console",
 		"transporter_transponder",
+		"teleport_blocker",
+		"field_pass",
 	)
 	required_surveyed_objects = list(planets = 3)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)

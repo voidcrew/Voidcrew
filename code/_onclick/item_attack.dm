@@ -498,11 +498,13 @@
 		attack_message_victim = "[user] [message_verb_continuous] you[message_hit_area] with [weapon]!"
 	if(user == src)
 		attack_message_victim = "You [message_verb_simple] yourself[message_hit_area] with [weapon]."
-	visible_message(span_danger("[attack_message_spectator]"),\
-		span_userdanger("[attack_message_victim]"), null, COMBAT_MESSAGE_RANGE, user)
+	// VOIDCREW EDIT CHANGE START: hold the attack line so the wound lines of this hit join it (voidcrew/modules/hyperviolence/hitlines)
+	// original: visible_message(span_danger(spectator line), span_userdanger(victim line), null, COMBAT_MESSAGE_RANGE, user)
+	// original: to_chat(user, span_danger(attacker line))
+	hv_hold_attack_message(attack_message_spectator, attack_message_victim, attack_message_attacker, user)
 	if(is_blind())
 		to_chat(src, span_danger("Someone hits you[message_hit_area]!"))
-	to_chat(user, span_danger("[attack_message_attacker]"))
+	// VOIDCREW EDIT CHANGE END
 	return 1
 
 /// Overridable proc so subtypes can have unique targetted strike zone messages, return a string.

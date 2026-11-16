@@ -130,4 +130,14 @@
 	basic_brute_heal.success(user, naked_patient, BODY_ZONE_CHEST)
 	basic_brute_heal.success(user, clothed_patient, BODY_ZONE_CHEST)
 
-	TEST_ASSERT(naked_patient.getBruteLoss() < clothed_patient.getBruteLoss(), "Naked patient did not heal more from wounds tending than a clothed patient")
+	// VOIDCREW EDIT CHANGE START: Voidcrew's tend wounds works through clothing (VOIDCREW EDIT REMOVAL in
+	// code/modules/surgery/healing.dm), so both heal alike. Compared as raw limb damage: the tended limb is
+	// picked at random, and limbs count less towards getBruteLoss() than the head and chest.
+	var/naked_brute = 0
+	for(var/obj/item/bodypart/part as anything in naked_patient.bodyparts)
+		naked_brute += part.brute_dam
+	var/clothed_brute = 0
+	for(var/obj/item/bodypart/part as anything in clothed_patient.bodyparts)
+		clothed_brute += part.brute_dam
+	TEST_ASSERT(abs(naked_brute - clothed_brute) < 0.5, "Tending wounds healed a clothed patient differently from a naked one ([naked_brute] vs [clothed_brute] brute left)")
+	// VOIDCREW EDIT CHANGE END

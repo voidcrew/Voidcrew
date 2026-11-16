@@ -40,7 +40,7 @@
 			hitting_projectile.armor_flag,
 			FALSE,
 			REVERSE_DIR(hitting_projectile.dir),
-			hitting_projectile.armour_penetration,
+			hitting_projectile.get_object_armour_penetration(src), // VOIDCREW EDIT CHANGE - plasma_weapons: plasma burns through structure and door armour - ORIGINAL: hitting_projectile.armour_penetration,
 		)
 	if(hitting_projectile.suppressed != SUPPRESSED_VERY)
 		visible_message(

@@ -1,4 +1,5 @@
-// Faction-specific pirate NPC mobs for Voidcrew NPC ships
+// Faction-specific pirate NPC basic mobs. NPC ship crews and their boarders are human NPCs now
+// (faction_pirate_humans.dm); these stay for ruins, planets and missions until those move (phase C).
 // Each faction has melee, ranged, and captain variants
 // All are space-capable (no atmos damage, spacewalk trait)
 
@@ -21,6 +22,10 @@
 	var/credits_dropped = FALSE
 	/// A named mission target keeps this even after replacement or mission expiry.
 	var/datum/weakref/mission_payout_ref
+	/// What this faction shouts when its ship's crew goes on alert (pirate_crew.dm). Null uses the generic lines.
+	var/list/crew_alert_lines
+	/// What it shouts when it spots someone. Null uses the generic lines.
+	var/list/crew_spot_lines
 	/// Random combat loot - one item is picked at random and added to death drops.
 	var/list/random_loot = list(\
 		/obj/item/knife/combat/survival,\
@@ -75,6 +80,10 @@
 		AddElement(/datum/element/death_drops, string_list(death_loot))
 
 /mob/living/basic/trooper/pirate/faction/proc/roll_ladder_weapon(zone, roll = rand(1, 100))
+	return pirate_roll_ladder_weapon(zone, roll)
+
+/// The weapon a faction pirate drops by the zone it fought in, basic or human (faction_pirate_humans.dm).
+/proc/pirate_roll_ladder_weapon(zone, roll = rand(1, 100))
 	switch(zone)
 		if(ZONE_YELLOW)
 			return roll <= 5 ? /obj/item/gun/energy/laser : pick(npc_ladder_yellow_melee())
@@ -170,7 +179,7 @@
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand = /obj/item/melee/sabre
 	random_loot = null
 	plunder_credits = 1000
 
@@ -181,6 +190,16 @@
 	desc = "Yarr! An undead scourge of the space lanes."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton
+	crew_alert_lines = list(
+		"All hands! Boarders!",
+		"Fresh crew coming aboard!",
+		"They'll fit right in. Eventually.",
+	)
+	crew_spot_lines = list(
+		"There ye are!",
+		"I see ye!",
+		"Over here, lads!",
+	)
 
 /mob/living/basic/trooper/pirate/faction/skeleton/melee
 	name = "Skeleton Swashbuckler"
@@ -236,7 +255,7 @@
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand = /obj/item/claymore/cutlass
 	loot_pool = list(/obj/item/gun/energy/laser)
 	random_loot = null
 	plunder_credits = 1000
@@ -249,6 +268,16 @@
 	speak_emote = list("greytides")
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey
+	crew_alert_lines = list(
+		"Someone's on the ship!",
+		"Who let them in?",
+		"They're after our stuff!",
+	)
+	crew_spot_lines = list(
+		"Get 'em!",
+		"That one, there!",
+		"Over here!",
+	)
 
 /mob/living/basic/trooper/pirate/faction/grey/melee
 	name = "Grey Tider"
@@ -443,6 +472,16 @@
 	faction = list(FACTION_PIRATE, FACTION_IRS)
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
+	crew_alert_lines = list(
+		"Unscheduled visitors. Begin the audit.",
+		"Everyone aboard is now under review.",
+		"Intruders on deck. Find them.",
+	)
+	crew_spot_lines = list(
+		"There's the taxpayer!",
+		"Stop right there.",
+		"You're overdue.",
+	)
 
 /mob/living/basic/trooper/pirate/faction/irs/melee
 	name = "IRS Enforcer"
@@ -515,6 +554,16 @@
 	desc = "A space-faring knight who somehow operates a starship."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval
+	crew_alert_lines = list(
+		"To arms! Intruders!",
+		"Who dares board us?",
+		"Defend the ship!",
+	)
+	crew_spot_lines = list(
+		"Have at thee!",
+		"There, the coward!",
+		"Halt!",
+	)
 
 /mob/living/basic/trooper/pirate/faction/medieval/melee
 	name = "Medieval Footsoldier"

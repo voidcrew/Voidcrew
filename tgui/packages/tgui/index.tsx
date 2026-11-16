@@ -14,6 +14,7 @@ import { setupHotReloading } from 'tgui-dev-server/link/client';
 
 import { App } from './App';
 import { setGlobalStore } from './backend';
+import { setupUiHarness } from 'voidcrew_tgui/utils/harness'; // VOIDCREW EDIT ADDITION - ui_harness dev test harness
 import { captureExternalLinks } from './links';
 import { render } from './renderer';
 import { configureStore } from './store';
@@ -45,6 +46,8 @@ function setupApp() {
 
   // Dispatch incoming messages as store actions
   Byond.subscribe((type, payload) => store.dispatch({ type, payload }));
+  // VOIDCREW EDIT ADDITION - lets -DUI_HARNESS dev builds drive this window (voidcrew/modules/ui_harness)
+  setupUiHarness(store);
 
   // Enable hot module reloading
   if (import.meta.webpackHot) {

@@ -101,6 +101,11 @@
 /// Used when we finalize a scar from a healing cut
 /datum/scar/proc/lazy_attach(obj/item/bodypart/BP, datum/wound/W)
 	LAZYADD(BP.scars, src)
+	// VOIDCREW EDIT ADDITION START: a slash wound's scar is made when the wound starts, holding the body it was on.
+	// Finalised on a severed limb, it must let go of that body, or the limb on the floor keeps a deleted
+	// mob from being garbage collected (hard deletes of human NPCs, voidcrew/modules/human_npcs)
+	victim = null
+	// VOIDCREW EDIT ADDITION END
 	if(BP.owner)
 		victim = BP.owner
 		LAZYADD(victim.all_scars, src)

@@ -148,7 +148,7 @@
 	TEST_ASSERT(prison.cell_block[new_yard], "The extension's yard is not in the cell block")
 	TEST_ASSERT(!prison.cell_block[new_office] && prison.staff_ground[new_office], "The extension's office is not on the staff side")
 	TEST_ASSERT(prison.staff_ground[prison_spot(home, 17, 3)], "The office opening is not on the staff side")
-	var/mob/living/basic/outpost_prisoner/walker = test_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/walker = test_prisoner(prison, prison_spot(home, 12, 8))
 	prison.refresh_prisoner_reach(walker)
 	TEST_ASSERT(walker.walkable[new_yard], "A prisoner in the wing's yard cannot walk into the extension's yard")
 	TEST_ASSERT(!walker.walkable[new_office], "A prisoner in the wing's yard can walk into the extension's office")
@@ -265,7 +265,7 @@
 	TEST_ASSERT_EQUAL(prison.arrival_countdown, soonest - 1, "The console does not count down to the soonest lane")
 	prison.set_intake(FALSE)
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The arrivals never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	settle_prison_air(home)
 
@@ -322,7 +322,7 @@
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 4, "A lane brought a second prisoner before its gap was up")
 	prison.set_intake(FALSE)
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The arrivals never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	settle_prison_air(home)
 
@@ -388,7 +388,7 @@
 	TEST_ASSERT_EQUAL(prison.last_crew_home_at, world.time, "The crew being home was not noted")
 	prison.set_intake(FALSE)
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The arrivals never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	settle_prison_air(home)
 
@@ -417,7 +417,7 @@
 	// Empty, the extension's floor counts for nothing; one cell of three taken, a third of it.
 	TEST_ASSERT(abs(prison.mess_floor_size_now() - wing_floor) < 0.01, "With the extension empty the mess is spread over [prison.mess_floor_size_now()] tiles, not the wing's [wing_floor]")
 	var/datum/outpost_prison_cell/fifth = prison.cells[5]
-	var/mob/living/basic/outpost_prisoner/lodger = new(fifth.arrival_turf())
+	var/mob/living/carbon/human/npc/outpost_prisoner/lodger = new(fifth.arrival_turf())
 	prison.admit(lodger, fifth)
 	ADD_TRAIT(lodger, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	var/expected = wing_floor + extension_floor / 3
@@ -509,7 +509,7 @@
 	prison.breaking_out = TRUE
 	TEST_ASSERT_EQUAL(home.place_outpost_upgrade(blueprint, corner, 0, owner), "Not during a riot.", "An extension was placed during a breakout")
 	prison.breaking_out = FALSE
-	var/mob/living/basic/outpost_prisoner/runner = test_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = test_prisoner(prison, prison_spot(home, 12, 8))
 	runner.trouble = "loose" // PRISONER_TROUBLE_LOOSE
 	TEST_ASSERT_EQUAL(home.place_outpost_upgrade(blueprint, corner, 0, owner), "Not while prisoners are loose.", "An extension was placed with a prisoner loose")
 	runner.trouble = null

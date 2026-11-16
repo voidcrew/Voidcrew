@@ -41,15 +41,21 @@
 
 /obj/item/organ/cyberimp/cyberware/second_wind
 	name = "\improper Second Wind bladder"
-	desc = "A vacuum-cured polymer bladder plumbed around the lungs. When the air runs out it kicks in with a hiss and gives you about three minutes to do something about it, then refills off every breath you take normally. You'll know when it's running: the mask-breathing is loud and the indicator is hard to miss."
+	desc = "A vacuum-cured polymer bladder plumbed around the lungs. When the air runs out it takes over with a hiss."
 	icon_state = "second_wind"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SEAL
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1
-	/// Breathable reserve remaining, in deciseconds of breathing covered.
+	/// Breathable reserve remaining, in deciseconds of breathing covered. A
+	/// model with a bigger bladder sets this to its max_reserve too, a var
+	/// initialiser can't read another var.
 	var/reserve = CYBERWARE_SECOND_WIND_RESERVE
+	/// The most reserve the bladder holds.
+	var/max_reserve = CYBERWARE_SECOND_WIND_RESERVE
+	/// Reserve regained per normal breath in breathable air.
+	var/refill_rate = CYBERWARE_SECOND_WIND_REFILL
 	/// TRUE while feeding the owner from reserve, for the engage/disengage beats.
 	var/engaged = FALSE
 	/// Whether the low-reserve warning has already fired this engagement, so
@@ -65,7 +71,7 @@
 /obj/item/organ/cyberimp/cyberware/second_wind/examine(mob/user)
 	. = ..()
 	var/seconds_left = round(reserve / (1 SECONDS))
-	. += span_notice("The reserve gauge reads <b>[seconds_left]</b> seconds of air[reserve < CYBERWARE_SECOND_WIND_RESERVE ? ", refilling while its bearer breathes normally" : " (full)"].")
+	. += span_notice("The reserve gauge reads <b>[seconds_left]</b> seconds of air.")
 
 /obj/item/organ/cyberimp/cyberware/second_wind/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -116,15 +122,15 @@
 	if(environment_is_breathable(source))
 		if(engaged)
 			set_engaged(source, FALSE)
-		if(reserve < CYBERWARE_SECOND_WIND_RESERVE)
-			reserve = min(reserve + CYBERWARE_SECOND_WIND_REFILL, CYBERWARE_SECOND_WIND_RESERVE)
+		if(reserve < max_reserve)
+			reserve = min(reserve + refill_rate, max_reserve)
 			low_warned = FALSE
 		return NONE
 	if(reserve <= 0)
 		if(engaged)
 			set_engaged(source, FALSE)
 			source.balloon_alert(source, "air reserve empty!")
-			to_chat(source, span_userdanger("Your Second Wind bladder collapses empty. You are breathing vacuum."))
+			to_chat(source, span_userdanger("Your [format_text(name)] collapses empty. You are breathing vacuum."))
 			playsound(source, 'sound/machines/buzz/buzz-sigh.ogg', 40, TRUE)
 		return NONE
 	if(!engaged)
@@ -133,7 +139,7 @@
 	update_alert(source)
 	if(!low_warned && reserve <= CYBERWARE_SECOND_WIND_LOW)
 		low_warned = TRUE
-		to_chat(source, span_warning("Your bladder gauge drops into the red, <b>[round(reserve / (1 SECONDS))]</b> seconds of air left."))
+		to_chat(source, span_warning("Your bladder gauge drops into the red."))
 		playsound(source, 'sound/machines/buzz/buzz-two.ogg', 30, TRUE)
 	// This IS a successful breath as far as the body is concerned.
 	source.failed_last_breath = FALSE
@@ -148,10 +154,10 @@
 	engaged = new_state
 	if(engaged)
 		INVOKE_ASYNC(source, TYPE_PROC_REF(/mob, emote), "gasp")
-		source.balloon_alert(source, "second wind engages")
+		source.balloon_alert(source, "[LOWER_TEXT(format_text(name))] engages")
 		source.visible_message(
 			span_notice("[source] takes a sharp breath, and something under [source.p_their()] ribs starts working."),
-			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you. You have [round(reserve / (1 SECONDS))] seconds of air."),
+			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you."),
 			span_hear("You hear a pneumatic hiss and the rhythm of mask breathing."),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 		)
@@ -160,7 +166,7 @@
 		breath_loop?.start(source)
 		update_alert(source)
 		return
-	source.balloon_alert(source, "second wind disengages")
+	source.balloon_alert(source, "[LOWER_TEXT(format_text(name))] disengages")
 	to_chat(source, span_notice("<b>SEAL RELEASED.</b> You are breathing the room again."))
 	cyberware_ink_pulse(source, CYBERWARE_INK_SOFT)
 	breath_loop?.stop()
@@ -182,7 +188,9 @@
 	var/seconds_left = round(reserve / (1 SECONDS))
 	var/running_low = reserve <= CYBERWARE_SECOND_WIND_LOW
 	indicator.color = running_low ? "#ffb347" : "#4dd8e6"
-	indicator.desc = "Your Second Wind bladder is doing your breathing for you. [seconds_left] second\s of reserve air left[running_low ? ". Find air." : "."]"
+	// Named for the bladder actually fitted, so a Deep-lung never reads as a Second Wind.
+	indicator.name = "[format_text(name)] engaged"
+	indicator.desc = "Your [format_text(name)] is doing your breathing for you. The gauge reads [seconds_left] second\s."
 
 /**
  * Whether the mob's surroundings hold enough oxygen to breathe unassisted:

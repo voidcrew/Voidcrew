@@ -80,7 +80,7 @@
  * The ways out a rioter can get at, exit tile = its blocker: tiles on the cell block's edge beside
  * ground they can walk, whose blocker they have not given up on for now.
  */
-/datum/outpost_prison/proc/exit_tiles(mob/living/basic/outpost_prisoner/rioter)
+/datum/outpost_prison/proc/exit_tiles(mob/living/carbon/human/npc/outpost_prisoner/rioter)
 	var/list/exits = list()
 	for(var/turf/tile as anything in rioter.reachable)
 		if(rioter.walkable?[tile] || !is_exit_tile(tile))
@@ -96,9 +96,9 @@
 	return istype(blocker, /obj/structure/table/reinforced/prison_hatch) ? 1 : PRISON_RIOT_EXIT_CROWD
 
 /// How many rioters other than `except`, on their feet, are working at the way out on `tile`
-/datum/outpost_prison/proc/rioters_at_exit(turf/tile, mob/living/basic/outpost_prisoner/except)
+/datum/outpost_prison/proc/rioters_at_exit(turf/tile, mob/living/carbon/human/npc/outpost_prisoner/except)
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/other in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(other == except || !other.is_rioting() || !other.trouble_can_act())
 			continue
 		var/atom/target = other.riot_target_ref?.resolve()
@@ -112,7 +112,7 @@
  * farther than a door. One with no room left (exit_room()) is passed over unless `crowded_ok`.
  * Null if none will do.
  */
-/datum/outpost_prison/proc/choose_exit(mob/living/basic/outpost_prisoner/rioter, list/exits, crowded_ok = FALSE)
+/datum/outpost_prison/proc/choose_exit(mob/living/carbon/human/npc/outpost_prisoner/rioter, list/exits, crowded_ok = FALSE)
 	var/turf/best
 	var/best_score = INFINITY
 	for(var/turf/tile as anything in exits)
@@ -148,7 +148,7 @@
  * A fixture for a rioter to smash: one within PRISON_RIOT_DETOUR_RANGE tiles of `near` if there is
  * one, else any they can reach, or null with `near_only`.
  */
-/datum/outpost_prison/proc/pick_fixture(mob/living/basic/outpost_prisoner/rioter, turf/near, near_only = FALSE)
+/datum/outpost_prison/proc/pick_fixture(mob/living/carbon/human/npc/outpost_prisoner/rioter, turf/near, near_only = FALSE)
 	var/list/found = list()
 	var/list/close = list()
 	for(var/turf/tile as anything in rioter.reachable)
@@ -173,7 +173,7 @@
  * at, the wing's fixtures. Breaking out, they go for the ways out, crowded or not, and never stop
  * for a fixture on the way.
  */
-/datum/outpost_prison/proc/pick_smash_target(mob/living/basic/outpost_prisoner/rioter)
+/datum/outpost_prison/proc/pick_smash_target(mob/living/carbon/human/npc/outpost_prisoner/rioter)
 	var/atom/priority = priority_smash_target(rioter)
 	if(priority)
 		return priority
@@ -192,7 +192,7 @@
 	return pick_fixture(rioter)
 
 /// Whether a rioter can make for `tile` to get out: walkable for them, in the wing, outside the cell block, and not given up on
-/datum/outpost_prison/proc/escape_spot_ok(turf/tile, mob/living/basic/outpost_prisoner/rioter)
+/datum/outpost_prison/proc/escape_spot_ok(turf/tile, mob/living/carbon/human/npc/outpost_prisoner/rioter)
 	return isturf(tile) && tile.loc == wing && !cell_block[tile] && rioter.walkable?[tile] && LAZYACCESS(rioter.riot_skips, REF(tile)) <= world.time
 
 /**
@@ -200,7 +200,7 @@
  * can walk to, keeping the one they chose while it still works, and preferring one nobody stands on.
  * Null with nobody home, so the rioters stay in the yard, and in a wing with no cells.
  */
-/datum/outpost_prison/proc/escape_spot(mob/living/basic/outpost_prisoner/rioter)
+/datum/outpost_prison/proc/escape_spot(mob/living/carbon/human/npc/outpost_prisoner/rioter)
 	if(!length(cell_block) || !length(rioter.walkable) || !crew_home())
 		return null
 	var/turf/chosen = rioter.riot_target_ref?.resolve()
@@ -233,7 +233,7 @@
  * each way out this riot is announced; with nobody home it only booms. When the way gives, everyone's
  * reach is worked out again so the rioters see the gap. Returns TRUE.
  */
-/datum/outpost_prison/proc/hit_exit(mob/living/basic/outpost_prisoner/rioter, obj/target)
+/datum/outpost_prison/proc/hit_exit(mob/living/carbon/human/npc/outpost_prisoner/rioter, obj/target)
 	var/turf/tile = get_turf(target)
 	rioter.trouble_line("riot_break_door", fallback = "riot")
 	if(!crew_home())
@@ -300,7 +300,7 @@
  * hatch is forced open (force_open()). With the office side already open or gone, the yard side opens
  * for them, or takes the blow if it cannot open. Returns TRUE if the office side gave.
  */
-/obj/structure/table/reinforced/prison_hatch/proc/take_rioter_blow(mob/living/basic/outpost_prisoner/rioter)
+/obj/structure/table/reinforced/prison_hatch/proc/take_rioter_blow(mob/living/carbon/human/npc/outpost_prisoner/rioter)
 	playsound(src, 'sound/effects/glass/glassbash.ogg', 50, TRUE)
 	var/obj/machinery/door/window/staff_door = staff_windoor()
 	if(staff_door?.density)

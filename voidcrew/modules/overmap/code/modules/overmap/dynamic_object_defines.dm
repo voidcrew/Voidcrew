@@ -455,34 +455,34 @@ GLOBAL_LIST_EMPTY(overmap_planets)
  */
 /area/overmap_encounter/planetoid/lava
 	name = "\improper Volcanic Planetoid"
-	ambientsounds = MINING
+	ambientsounds = PLANET_LAVA_AMBIENCE
 	planet_type = /datum/planet/lava
 	// was /turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_CAVE
-	ambientsounds = SPOOKY
+	ambientsounds = PLANET_ICE_AMBIENCE
 	planet_type = /datum/planet/snow
 	// snow was lit colourless; only the frozen lakes were cyan, and they are a minority
 
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = BEACH
+	ambientsounds = PLANET_BEACH_AMBIENCE
 	planet_type = /datum/planet/beach
 	// was /turf/open/misc/asteroid/sand/beach/lit, the bulk of a beach planet's ground
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = AWAY_MISSION
+	ambientsounds = PLANET_JUNGLE_AMBIENCE
 	planet_type = /datum/planet/jungle
 
 /area/overmap_encounter/planetoid/wasteland
 	name = "\improper Apocalyptic Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
-	ambientsounds = MINING
+	ambientsounds = PLANET_WASTELAND_AMBIENCE
 	planet_type = /datum/planet/wasteland
 	// the fallout zone keeps its own green ground light on top of this - see
 	// /datum/biome/nuclear. Those turfs are the one kind of surface ground that still

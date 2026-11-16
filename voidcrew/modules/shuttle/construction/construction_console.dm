@@ -277,12 +277,20 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /// Standard RCD salvage is capped at the cheapest rebuild, including RCD memory discounts.
 /obj/item/construction/rcd/internal/ship/proc/get_deconstruction_materials(atom/target)
 	if(iswallturf(target))
+		// A wall that comes apart into iron (a retrieved saved ship) refunds as one, whatever its type.
+		var/turf/closed/wall/target_wall = target
+		if(target_wall.sheet_type == /obj/item/stack/sheet/iron)
+			return wall_types["Iron Wall"]["materials"].Copy()
 		// Check the specific mineral types before the base iron wall.
 		for(var/wall_name in list("Plastitanium Wall", "Titanium Wall", "Iron Wall"))
 			var/list/wall_info = wall_types[wall_name]
 			if(istype(target, wall_info["path"]))
 				return wall_info["materials"].Copy()
 	if(isfloorturf(target))
+		// The same for a floor that gives iron tiles.
+		var/turf/open/floor/target_floor = target
+		if(target_floor.floor_tile == /obj/item/stack/tile/iron)
+			return list(/datum/material/iron = SHIP_RTD_TILE_IRON)
 		for(var/floor_name in list("Plastitanium Floor", "Titanium Floor"))
 			var/list/floor_info = floor_types[floor_name]
 			if(istype(target, floor_info["path"]))
@@ -2138,6 +2146,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	data["theme"] = theme
 	data += construction_controls_data(user)
 	data += repair_controls_data()
+	// Tutorial checklist focus (voidcrew/modules/tutorials), only on the viewer's own ship's console.
+	var/tutorial_focus = tutorial_ui_focus(user, "construction")
+	data["tutorial_focus"] = (tutorial_focus && tutorial_repair_is_crew_console(user, src)) ? tutorial_focus : null
 
 	return data
 

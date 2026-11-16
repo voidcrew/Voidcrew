@@ -11,6 +11,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { type SavedShip, SlotCard } from './SavedShipCards';
 
 type ActiveShip = {
   ref: string;
@@ -42,11 +43,13 @@ type ShipJoinMenuData = {
   }[];
   can_requisition: BooleanLike;
   wiki_url: string | null;
+  saved_ships: SavedShip[];
 };
 
 export const ShipJoinMenu = () => {
   const { act, data } = useBackend<ShipJoinMenuData>();
   const { player_name, ships, can_requisition, wiki_url } = data;
+  const savedShips = data.saved_ships || [];
 
   return (
     <Window
@@ -70,6 +73,13 @@ export const ShipJoinMenu = () => {
           <Stack.Item>
             <PurchaseShipSection />
           </Stack.Item>
+
+          {/* Saved Ships Section */}
+          {savedShips.length > 0 && (
+            <Stack.Item>
+              <SavedShipsSection saves={savedShips} />
+            </Stack.Item>
+          )}
 
           {/* Free Hull Section */}
           <Stack.Item>
@@ -147,6 +157,51 @@ const PurchaseShipSection = () => {
           </Button>
         </Stack.Item>
       </Stack>
+    </Section>
+  );
+};
+
+const SavedShipsSection = (props: { saves: SavedShip[] }) => {
+  const { act } = useBackend<ShipJoinMenuData>();
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="anchor" mr={1} />
+          Saved Ships
+        </Box>
+      }
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '8px',
+        }}
+      >
+        {props.saves.map((save) => (
+          <SlotCard
+            key={save.slot}
+            slot={save.slot}
+            save={save}
+            planHeight={76}
+            footer={
+              <Button
+                fluid
+                color={save.denial ? undefined : 'good'}
+                textAlign="center"
+                style={{ margin: 0 }}
+                disabled={!!save.denial}
+                tooltip={save.denial}
+                onClick={() => act('launch_saved_ship', { slot: save.slot })}
+              >
+                Launch
+              </Button>
+            }
+          />
+        ))}
+      </div>
     </Section>
   );
 };

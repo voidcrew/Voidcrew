@@ -5,7 +5,7 @@ order: 2.5
 blurb: Hunt wanted criminals from your mission board, bring them to your mission pad alive for full pay, and send them on to outpost prisons.
 ---
 
-Wanted criminals hide out on planets, in ruins, aboard pirate ships and among the patrons of trader outposts. Take a bounty from your ship's mission board, find the criminal, subdue them and bring them to your ship's mission pad. They pay the most when they arrive stunned or cuffed and were never downed. Pay works like [missions](missions.md): credits go to the ship account and vouchers appear on the pad. A criminal caught alive goes on to serve time in a player outpost's [prison wing](prison-wing.md).
+Wanted criminals hide out on planets, in ruins, aboard pirate ships and among the patrons of trader outposts. Take a bounty from your ship's mission board, find the criminal, subdue them and bring them to your ship's mission pad. They pay the most when they arrive stunned or cuffed. Pay works like [missions](missions.md): credits go to the ship account and vouchers appear on the pad. A criminal caught alive goes on to serve time in a player outpost's [prison wing](prison-wing.md).
 
 ## The bounty board
 
@@ -22,8 +22,8 @@ Each card is a wanted poster:
 - **WANTED** or **MOST WANTED**, and **Private offer** on one made to your ship alone;
 - the mugshot, name, species, sex and alias. "Old photo" under the mugshot means it shows how they used to look (a trader-outpost fugitive);
 - how they're wanted and what for: **Wanted alive**, **Wanted dead or alive** (the kingpin) or **Wanted dead** (lairs and the lich);
-- where they were last seen, and the zone;
-- the reward: the full pay, in credits and vouchers. The card doesn't show what a downed or dead catch pays; see [the pad and turning in](#the-pad-and-turning-in);
+- where they were last seen, who they were seen with ("with two friends, one armed"), and the zone;
+- the reward: the full pay, in credits and vouchers. The card doesn't show what a catch in critical condition or dead pays; see [the pad and turning in](#the-pad-and-turning-in);
 - the time left.
 
 The card doesn't say what kind of criminal it is, or how they fight. [The three kinds of criminal](#the-three-kinds-of-criminal) below does. A private offer shows no mugshot until you accept it.
@@ -47,7 +47,7 @@ The reward is fixed when the bounty is posted. It depends on the tier and the zo
 | Public bounty | 45 minutes. The clock stops while a crew hunts it, for up to 30 minutes of each crew's hunt. |
 | Private offer | 20 minutes to accept it, then 30 minutes to bring them in. |
 
-Successful paid criminal turn-ins earn [reputation](zone-reputation.md): Petty counts as easy, Wanted as medium, and Most Wanted or a boss as hard. Alive, downed and dead settlements count. The criminal's first capture or death fixes the zone; moving them to another pad does not change it. Lair and other kill-only trophies count as hard. The poster shows what it is worth to your crew, and the turn-in notice says what you got.
+Successful paid criminal turn-ins earn [reputation](zone-reputation.md): Petty counts as easy, Wanted as medium, and Most Wanted or a boss as hard. Alive, critical and dead settlements count. The criminal's first capture or death fixes the zone; moving them to another pad does not change it. Lair and other kill-only trophies count as hard. The poster shows what it is worth to your crew, and the turn-in notice says what you got.
 
 ## Taking a bounty
 
@@ -71,7 +71,7 @@ A criminal appears once their site is loaded, away from any players. What they'r
 
 Tap a handheld GPS on the mission board, or press **Link Mission Beacons** while wearing a MODsuit with a GPS module. This links the sighting beacon (tagged WANTED) of every bounty your ship hunts. The beacon moves every 2 minutes to a spot within 5 tiles of the criminal, and stays put while they are hiding. There's no beacon at trader outposts.
 
-If you leave and the site unloads, the criminal goes with it. They're back the next time it loads, fully healed and out of any cuffs. They still count as the worst state they ever reached, so one you downed never pays full afterwards.
+If you leave and the site unloads, the criminal goes with it. They're back the next time it loads, unhurt and out of any cuffs. One who was dead when the site unloaded comes back as their evidence tag.
 
 Meek and normal criminals notice anyone within 6 tiles holding a weapon, cuffs or a warrant, and a meek one also notices anyone running at them. Walk up with empty hands. Mini-bosses go for any hunter they see.
 
@@ -81,11 +81,11 @@ Meek and normal criminals notice anyone within 6 tiles holding a weapon, cuffs o
 
 About 70% of Petty criminals and 30% of Wanted ones are meek. They never start a fight.
 
-- They sprint faster than you can run, and duck about half the shots fired at them while sprinting. After about 8 seconds of sprinting they're winded and slow down.
-- They hide in a locker or crate, pose as a potted plant, or stand still on a dark tile. Opening the locker, bumping into them, examining them from the next tile, hurting them, or lighting up their dark spot finds them. They shove you back a tile and run again.
+- They run as fast as you do, faster for a while once they jab the stimpack they carry. A reflex implant makes the odd shot miss while they're moving. They tire like anyone.
+- They hide in a locker or crate, pose as a potted plant, or stand still on a dark tile. Opening the locker, bumping into them, examining them from the next tile, hurting them, or lighting up their dark spot finds them. They shove you and run again.
 - After a minute and a half in hiding they start to fidget: a rustle or a shake every 20 seconds. If nobody is around for a few minutes, they come out.
-- Cornered, they shout and aim a small pistol for half a second, then fire eight quick shots. A stamina hit during the aim makes them fumble it.
-- 120 base health before [zone scaling](threats-and-elites.md). Three disabler shots stun one.
+- Cornered, they shout, pull a small pistol out of a pocket, aim for half a second and empty it at you. A hit during the aim makes them fumble it.
+- They're as tough as anyone. Four disabler shots stun one.
 
 **Bring:** a disabler or other ranged stun, a flashlight, cuffs, and someone to block the exits.
 
@@ -97,49 +97,57 @@ About 70% of Petty criminals and 30% of Wanted ones are meek. They never start a
 About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted criminal on a pirate ship is always normal.
 
 - They notice anyone holding a weapon, cuffs or a warrant within 6 tiles. Cuffs or a warrant and they stop and watch you. A weapon out and they fight.
-- Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and empties a 15-round magazine before reloading), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat or a combat shotgun instead. Their weapons use the real item's damage, increased by the spawn zone. Their displayed weapon does not guarantee a loot drop.
-- They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
-- Below 40% health, with two hunters nearby who can see them, they may give up and put their hands up. Someone who has given up counts as stunned: cuff them for full pay. Stop hitting them, because they can still be downed.
-- Badly hurt with nobody around, they break off and retreat. They never heal.
+- Each has one fighting style, with a real weapon they carry and draw when the fight starts: fists (and shoves), a knife, a machine pistol with a spare magazine, a WT-550 with a spare magazine, a .38 revolver with a speedloader, a pump shotgun with buckshot, a baseball bat or thrown bottles. Wanted criminals carry a combat knife or a semi-automatic shotgun instead. Their guns run dry and they reload them like you do.
+- Guns stay in a holster, on the belt or slung on the back until the fight. You see one drawn, and the first shot comes a moment later; hit them while they draw and they fumble it. Gunmen open fire from about 7 tiles away and keep closing to about 5. A shotgun gets in close first.
+- Their pistols fire single shots, two a second, in strings of six with a short pause between. So do the kingpin's goons and Club Volga's gunmen. The WT-550 fires bursts of four, and a burst stops as soon as the shooter goes down or loses you.
+- Wanted criminals wear an armour vest, and Most Wanted a vest and a helmet. Nothing a criminal carries can be taken: it goes with the body.
+- Wanted criminals carry a stimpack if their pockets have room, and jab it when they tire in a fight.
+- Hit by a disabler or other stun shot, a gunner or bottle thrower ducks behind the nearest cover and looks out again a moment later. A fist, knife, bat or shotgun fighter charges whoever shot it.
+- They may have up to two companions who fight beside them, and the card says who they were seen with. At most one companion carries a gun. Companions get up and draw a moment after their criminal, and their guns fire shorter strings and bursts. Now and then a companion has a piece of chrome. Companions can be of any species and wear rough clothes for where they are. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and when they come round from a stun they may give up or run.
+- Badly hurt, with two hunters nearby who can see them, they may give up: they put their weapon away, put their hands on their head and lie down for 20 seconds. Cuff them then for full pay. If nobody does, they get up and decide again.
+- Badly hurt with nobody around, they break off, sit down and patch themselves up with what they carry.
 
 **Bring:** a partner, stun weapons, armour and cuffs.
 
 ### Mini-bosses
 
-Every Most Wanted criminal is a mini-boss with one of five kits. Bosses and their companions also use the [zone health and damage profile](threats-and-elites.md). The board's **Other crews hunting** line excludes your own active hunt.
+Every Most Wanted criminal is a mini-boss with one of six kits. The board's **Other crews hunting** line excludes your own active hunt.
 
-- Their health grows with the number of hunters who can see them when the fight starts, and with anyone who hurts them later.
-- Every ability winds up first, with a sound and a mark on the floor. Move out of the mark.
+- They wear their kit's armour and take hits better than most people.
+- Every hunter after the first brings one more of their crew, who turns up from somewhere out of sight.
+- Every ability winds up first, with a sound and a mark on the floor. Move out of the mark. Fire, blasts and blades hurt whoever is standing there, down or not.
 - They break tables, chairs, windows and grilles, and up to two interior walls or doors in a fight.
-- While fresh they ignore stuns and stamina damage completely.
-- Below 40% health they are **worn out**: "breathing hard and slowing down". They move slower, use their abilities less often, and stun weapons work on them. About five disabler shots stun one (six for the Heavy).
-- They go down at 25% health. Between 40% and 25% is your window to stun and cuff them for full pay.
-- After getting up from being downed, they shrug off stamina damage for 20 seconds.
+- When they tire they jab a stimulant: for a while they shrug off batons and get up from stuns quickly. They carry three, one of them a combat stimpack that also heals them a little.
+- Badly hurt or out of breath they're **worn out**: "breathing hard and slowing down", and they fall back for a moment. That's the time to stun and cuff them.
 
 | Kit | Looks like | What it does | How to handle it |
 |---|---|---|---|
-| Juggernaut | An armoured criminal in riot plates | Charges along a line after a roar, smashing what's in the way. Slams the floor around it when you're close. Resists damage. | Step off the charge line. If it charges into something it can't break, it reels for 2 seconds and takes extra damage. |
-| Pyromaniac | A scorched criminal in a fire suit | Sweeps a cone of fire 3 tiles long and throws molotovs that leave burning floor. Fire can't hurt it. | Stay more than 3 tiles away and off burning floor. Use lasers or bullets, not fire. |
-| Demolitionist | A criminal in a hard hat with a grenade bandolier | Keeps 4 to 6 tiles away and throws grenades with a blinking fuse. Blows holes in interior walls and doors to reach you behind cover. | Close the distance, and move off the blinking ring. |
-| Ghost | A hooded criminal with a long knife | Fast. Dashes in with cuts that bleed, cloaks into a shimmer, dodges shots while moving, and backs off after two cuts. | A flash or a hit breaks the cloak. Shoot it when it stops moving. |
-| Heavy | A heavily armed criminal with a belt-fed gun | Heavy armour, slow. Shows a laser sight and a red cone, then fires a burst into it. Drops a barricade that stops half your shots. | Get out of the red cone before it fires. Go around the barricade. |
+| Juggernaut | A giant in riot plates with a tower shield | Raises its shield when the fight starts; shots from in front stop at it. Charges along a line after a roar, smashing what's in the way. Slams the floor around it when you're close. | Hit it from the side or behind. Step off the charge line. If it charges into something it can't break, it hurts itself and falls down for a few seconds. |
+| Pyromaniac | A scorched criminal in a fire suit and gas mask, a flamethrower in one hand and a molotov in the other | Goes for whoever shoots it. Hoses a line of fire up to 3 tiles out with its flamethrower; every few sweeps the tank runs dry and it stops for a few seconds to change it, and throws molotovs that leave burning floor. Shot from further off, it throws one of its two smoke grenades halfway to you and comes through the cloud. Its fire suit keeps the flames off it and its mask keeps the smoke out. | Keep your distance and keep moving. Stay more than 3 tiles away, off its line and off burning floor. Hit it while it changes tanks. Back out of the smoke before it reaches you: without internals or a gas mask you cough and drop what you're holding. Watch the cloud from the side, or see through it with thermals. If you catch fire, stop, drop and roll, or use an extinguisher. |
+| Demolitionist | A criminal in a hard hat with a grenade bandolier | Keeps 4 to 6 tiles away and throws grenades with a blinking fuse. Blows holes in interior walls and doors to reach you behind cover. An implant gets it back up a second after you first drop it. | Close the distance, and move off the blinking ring. Put it down again and cuff it; an EMP knocks the implant out. |
+| Ghost | A hooded criminal with a combat knife | Fast. Dashes in with knife cuts that bleed, cloaks into a shimmer, and backs off after two cuts. Shot from afar, it ducks out of your line and comes back from cover. Its implants make shots miss now and then while it moves, much more often during its burst of speed. | A flash or a hit breaks the cloak, and an EMP ends the burst. Shoot it when it stops moving. Corner it; hunters on more sides leave it nowhere to hide. |
+| Heavy | A heavily armed criminal in a hooded coat, with a belt-fed gun | An ablative coat and hood turn aside about half of laser and disabler shots. Shows a laser sight and a red cone, then fires a burst into it. Throws barrier grenades that open into a barricade. | Get out of the red cone before it fires. Go around the barricade. Use bullets, or bring a lot of disablers. |
+| Cyberpsycho (rare) | A twitching criminal in shorts, chrome on its arms, chest and legs | Fights with a blade from its forearm. Lunges down a lit line, leaps onto you under a red mark, and throws a piston punch. Its chrome fist breaks windows. Hurt, or hit with a stun weapon, it roars and shrugs off stuns for a while, then collapses. Gets up once after it goes down. | Get off the line and out from under the mark. Back off while it roars, and cuff it when it collapses. An EMP makes its chrome spark and shuts it down for a while, and then it tires like the others. |
 
 !!! warning "Worn out means switch to stuns"
-    Once a mini-boss is worn out, stop using lethal weapons. A few more hits put it under 25%, and a downed criminal only pays 60%.
+    A mini-boss in critical condition only pays 60% on the pad. Once it's worn out, stun it and cuff it, or patch it up before you turn it in.
 
 ## Taking them alive
 
-- **Downed.** At 25% health a criminal collapses. A hit on one still standing can't take them past that line, so one shot never kills them. A downed criminal can still be killed.
-- **They get back up.** Meek criminals after 60 seconds, normal ones after 75, mini-bosses after 45. They groan and try to rise for the last 10 seconds. Cuffed, they stay down. A stamina hit on a downed criminal starts their clock over.
-- **Cuffs** only go on a criminal who is downed, stunned or has given up, and take 2 seconds. Reaching for a free one's wrists sets them off: a meek one runs and a normal one fights.
-- **Restraints.** Handcuffs hold for good. Cable restraints slip after 3 minutes and zipties after 5, with a visible struggle for the last 20 seconds. Mini-bosses snap them in half the time.
-- **Dragging.** You can pull a criminal who is downed, stunned, cuffed or dead. A free one pulls away.
-- **Carrying.** A criminal lying on the floor who could be dragged can also be carried over your shoulders: grab them aggressively, then drag them onto yourself. They squirm off once they come round or get up.
-- **No shortcuts.** Criminals can't be teleported. Transporters won't beam a locker, crate or bag with one inside, fultons won't attach to them, and a bluespace body bag won't fold with a live one in it. Carry them to your ship.
-- Turrets, traps, fire and wildlife on their site can't take a criminal below 40% health.
+Criminals are people. They bleed, break bones, fall into critical condition and die the way you do, and medicine, cuffs and stuns work on them the way they work on you.
 
-!!! tip "Bring cuffs"
-    A stun wears off about 10 seconds after the last stamina hit (12 for a meek criminal). Cuffing takes 2. Have the cuffs in hand before you stun them.
+- **Critical condition.** Hurt badly enough, a criminal collapses in critical condition, and stays down until someone treats them. Left alone they can bleed out or stop breathing, like anyone.
+- **Stuns.** Batons, disablers, flashes, shoves, sedatives and anything else that stuns a person stuns a criminal. Armour and stimulants make some of them harder to put down.
+- **Cuffs** are ordinary cuffs: four seconds, on anyone who stays still for them. A criminal on their feet sees you reach for their wrists and steps away, then runs or fights. Stun them first, or wait until they give up.
+- **Getting out.** A cuffed criminal works at the cuffs: about a minute for handcuffs, 45 seconds for zipties and 30 for cable restraints. Dragging them breaks their concentration.
+- **Dragging and carrying** work as on anyone. A criminal who can still move pulls free of a grab or squirms off your shoulders.
+- **No shortcuts.** Criminals can't be teleported. Transporters won't beam a locker, crate or bag with a living one inside, fultons won't attach to them, and a bluespace body bag won't fold while someone alive is struggling inside. Carry them to your ship.
+- **Patching up.** Some criminals carry bandages or medipens and use them when nobody is shooting at them.
+- **Space suits.** At space ruins, and on planets where the air would kill them, criminals and their companions arrive in space suits: soft ones for Petty criminals and companions, armoured ones for Wanted criminals, and a MODsuit for each mini-boss. A mini-boss in a MODsuit has no coat or riot plates over it. A criminal's suit can't be taken off them, like the rest of their gear. Out of a suit where the air kills, they suffocate and freeze like anyone.
+- **Suiting up a catch.** To carry a criminal across vacuum, put your own space suit and helmet on them through the strip menu once they're down, cuffed or stunned. Yours goes on in place of theirs, and can come off again. On a MODsuit, theirs comes off whole.
+
+!!! tip "Bring cuffs and a stun"
+    A stun only lasts a little while. Have the cuffs in hand before you stun them.
 
 ## The pad and turning in
 
@@ -147,20 +155,20 @@ Every Most Wanted criminal is a mini-boss with one of five kits. Bosses and thei
 - The pad must be bolted down and aboard your ship.
 - The pad says who is on it and what state they're in ("On the pad: Tess Harlow, restrained."), and why it won't take them if it won't. It never says what they'll pay.
 - Press **Turn In** on their card. If it's greyed out, its tooltip says why.
-- The pad beams them away over 3 seconds. Credits go to the ship account. Vouchers appear on the pad. Your ship's notice says what state they were in and what was paid.
+- The pad beams them away over 3 seconds. Credits go to the ship account. Vouchers appear on the pad, and so does everything of yours you put on them: cuffs, a suit, a tank. Your ship's notice says what state they were in and what was paid.
 
-Pay follows the **worst** state the criminal ever reached:
+Pay follows the state they're in **on the pad** when you press Turn In:
 
 | State | Pays |
 |---|---|
-| Stunned, given up or cuffed, and never downed | The full reward, with vouchers |
-| Downed at any point, even if cuffed or back on their feet since | 60% |
+| Stunned, given up or cuffed | The full reward, with vouchers |
+| In critical condition | 60% |
 | Dead, or their evidence tag | 25% |
 | Standing and free | Refused |
 
-Below full pay you get no vouchers. Instead, each voucher counts as 1,200 cr before the percentage is taken, and it's all paid in credits. For example, a Wanted criminal worth 1,400 cr and a voucher pays 1,560 cr downed and 650 cr dead.
+What happened before doesn't count: a criminal you put in critical condition, patched up and cuffed pays in full. Below full pay you get no vouchers. Instead, each voucher counts as 1,200 cr before the percentage is taken, and it's all paid in credits. For example, a Wanted criminal worth 1,400 cr and a voucher pays 1,560 cr in critical condition and 650 cr dead.
 
-A dead criminal can't be revived. If the body is destroyed (gibbed, dusted, or lost in lava or a chasm), an **evidence tag** turns up nearby. It pays the dead share. If nothing at all is left, the bounty lists again somewhere else 5 minutes later.
+A dead criminal can be revived like anyone, and then pays for the state they're in. If the body is destroyed (gibbed, dusted, or lost in lava or a chasm), an **evidence tag** turns up nearby. It pays the dead share. If nothing at all is left, the bounty lists again somewhere else 5 minutes later. A bounty pays once.
 
 ## Trader outposts
 
@@ -170,16 +178,17 @@ Guns, disablers included, don't get past the outpost's checkpoint unless you buy
 
 - The fugitive and three **look-alikes** wear the same clothes and go by the same name: "patron" at Waystation Halcyon, "dockhand" at Quartermain Depot and "spacer" at the Undertow Exchange. They have the same species, sex, skin and eyes.
 - The mugshot on the card is old. Their hair has changed since, and the old hair doesn't match anyone there now.
+- Nothing they carry gives them away. A fugitive here never has a shotgun, an SMG or a bat, and the look-alikes wear the same holster, pouch or bag.
 - Examine a patron to see their distinguishing features: hair, a scar, a tattoo, a scarf, a limp, glasses, a missing ear. Each look-alike shares one or two of the fugitive's features, never all of them. The warrant lists all of them but one.
 - **Ask the traders.** While your ship hunts the bounty, every trader, the barkeep included, has an **Ask about the wanted person** option. Each gives your ship one clue, and each trader a different one: where the fugitive was seen, how their hair looks now, one of their features, or one patron who isn't them.
 - **Show the warrant** to the one you think it is. The right person drops the act: a meek one runs, a normal one fights. Anyone else protests and shows you a docking pass. Your ship can show a warrant once every 30 seconds.
-- **The alert.** Showing the warrant to the wrong patron raises the alert. So does hitting a look-alike on purpose: a punch, a shove, a baton, a thrown item, a shot aimed at them, or reaching for their wrists with cuffs. Hitting a look-alike is also an outpost strike. At two alerts, the fugitive and the look-alikes walk out to the hangar and leave, and the bounty lists at a different trader outpost 5 minutes later.
+- **The alert.** Showing the warrant to the wrong patron raises the alert. So does hitting a look-alike on purpose: a punch, a shove, a baton, a thrown item, a shot aimed at them, or reaching for their wrists with cuffs. Hitting a look-alike is also an outpost strike. At two alerts, the fugitive and the look-alikes walk out to the hangar and leave, and the bounty lists at a different trader outpost 5 minutes later. Stop the fugitive before they reach the lift and they're still yours to take.
 - Hitting the right patron on purpose exposes them, the same as the warrant.
-- While they blend in, nobody can pull them, and shots aimed at someone else pass through them. The outpost's turrets leave them alone. An exposed fugitive only fights the people who came for it. If it hurts a bystander, the turrets can fire on it.
+- Shots hit whoever is in the way, look-alikes included, and hitting a look-alike is an outpost strike. The outpost's turrets leave the patrons alone. An exposed fugitive only fights the people who came for it. If it hurts a bystander, the turrets can fire on it.
 
 ## Pirate ships
 
-- Wanted and Most Wanted criminals can hide aboard a pirate ship, one per ship. They're never meek there.
+- Wanted and Most Wanted criminals can hide aboard an ordinary pirate crew's ship, one per ship, never a themed crew's. They're never meek there.
 - The card says "Somewhere aboard the" ship, and your helm waypoint follows the ship.
 - They keep away from the helm, chatting with the crew or going through lockers. The pirates treat them as one of their own.
 - This is separate from the pirate captain's own bounty (see [Pirates & NPC Ships](pirates-and-npc-ships.md)). You can collect both.
@@ -198,14 +207,14 @@ A crime boss holds court in the lounge at the Undertow Exchange from the start o
 - The first posting comes at least 45 minutes into the round, with three or more active crews. The next comes 60 to 90 minutes after the last one ends.
 - He can only be turned in while he's on the board, wherever he is when it goes up. Kill him before that and there's nothing to claim.
 - He stays on the board for 60 minutes, and the clock stops during a shootout. If time runs out while he's in his lounge, he stays there.
-- Alive, he pays 6,500–9,100 cr and 2 vouchers, and downed counts as alive. Dead, he pays 80%, all in credits.
+- Alive, he pays 6,500–9,100 cr and 2 vouchers, and critical condition counts as alive. Dead, he pays 80%, all in credits.
 - Once he's turned in or killed, he's gone for the rest of the round.
 
 **The shootout.** "We're here for you.", or any attack on him or a goon, starts it.
 
 - The goons reach for their guns for about half a second before anyone fires. No more than two of them draw on one hunter at once. Three carry pistols, two shotguns and one an SMG. They stay near the sofa, and never shoot anyone who is down.
-- He never leaves the sofa. Before each shot he aims his .357 revolver at someone with a red line for half a second. He reloads after seven shots.
-- Once his goons are down and he's below 40% health, he may give up. He goes down at 25% and gets up after 60 seconds unless cuffed. Five disabler hits in quick succession stun him.
+- He never leaves the sofa. Before each shot he aims his .357 revolver at someone with a red line for half a second, and a hit spoils his aim. He reloads with a speedloader.
+- Once his goons are down and he's badly hurt, he may give up. He wears an armoured coat, and his goons wear armour vests.
 - When he falls, half the goons left run for it.
 - The outpost's turrets stay out of it. Fighting his crew earns no outpost strikes, but hitting other players still does.
 
@@ -225,8 +234,8 @@ A mob nightclub run by Arkady Sokolov, placed in the Contested or Lawless Zone f
 - The staff room off the main floor has two rechargers, a first aid locker and no goons. The counting room's vault has a loot cache.
 - Two lieutenants hold the back office: **Tommy** with a Tommy gun, and **Brute**, whose punches can knock you down. Kill both and the garage door opens.
 - The don waits in the garage in his Mauler. Its health grows with the number of hunters. Its rocket volley marks the floor under each hunter it can see, then fires one rocket at each mark, so get behind a pillar. Its machine gun shows a red cone first. Up close it stomps, throwing you back. An EMP stalls it for 2 seconds. It comes after anyone who hurts it, so you can't pick it off from out of its sight. If nobody fights it for a minute, it goes back to full health.
-- When the mech breaks, the don climbs out and fights on foot with his gold Desert Eagle from behind the wreck. He can't be cuffed. His **gold signet ring** is the trophy.
-- Nobody in the club shoots a hunter who is down.
+- When the mech breaks, the don climbs out and fights on foot with his gold Desert Eagle from behind the wreck. He never gives up, and cuffing him pays nothing: his **gold signet ring** is the trophy.
+- Nobody in the club shoots a hunter who is down, but a rocket hits whoever stands under it.
 
 ### The lich
 
@@ -266,11 +275,11 @@ The warden's console has a **Bounty prisoners** setting: **All**, **No Most Want
 
 **Why is Turn In greyed out?** The criminal has to be on the pad's own tile, not in a locker or bag. The pad has to be bolted down and aboard your ship. A criminal standing free is refused.
 
-**Why did we only get 60%?** They were downed at some point. Pay follows the worst state they ever reached.
+**Why did we only get 60%?** They were in critical condition on the pad. Treat them first: a criminal patched up and cuffed pays in full.
 
-**They got up and ran off.** Downed criminals recover unless cuffed. Cuff them as soon as they're down, or stun them before they go down.
+**They got out of the cuffs and ran off.** Criminals work at their cuffs when nobody's dragging them. Keep hold of them on the way to the pad.
 
-**They vanished when we left the planet.** The site unloaded. They'll be back, fully healed, the next time it loads.
+**They vanished when we left the planet.** The site unloaded. They'll be back, unhurt, the next time it loads.
 
 **We abandoned a bounty. Can we still turn them in?** Yes, if it's still up and you bring them to your pad. You just can't hunt it again.
 

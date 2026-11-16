@@ -6,7 +6,9 @@
 // crews.
 // Cyberware: boarding chrome, and it reads as taken off somebody rather than
 // bought, grip pads at uncommon, and in the treasure the blade pair, the
-// folding machine-pistol and the rocket pod.
+// folding machine-pistol and the rocket pod. The cheap shiv pair is a yellow
+// melee extra, the heat-sunk blade pair a red one beside the Mantis, and the
+// holdout revolver arm a yellow gun extra.
 // TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
@@ -22,6 +24,7 @@
 			/obj/item/gun/ballistic/revolver/mateba = 1,
 			/obj/item/gun/ballistic/shotgun/musket/no_quarter = 1,
 			/obj/item/gun/magic/hook/marlinspike = 1,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout = 1,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/shotgun/automatic/combat = 1,
@@ -30,9 +33,13 @@
 		),
 	)
 	melee_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/cyberware_pair_case/mantis_street = 1,
+		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/claymore/cutlass/parley = 1,
 			/obj/item/cyberware_pair_case/mantis_blades = 1,
+			/obj/item/cyberware_pair_case/mantis_scorch = 1,
 			/obj/item/heave_ho = 1,
 		),
 	)
@@ -41,8 +48,11 @@
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/ripperdoc/gecko,
 		/datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/mantis_street,
+		/datum/shop_sku/ripperdoc/mantis_scorch,
 		/datum/shop_sku/ripperdoc/ronin,
 		/datum/shop_sku/ripperdoc/bunker_buster,
+		/datum/shop_sku/ripperdoc/ronin_holdout,
 	)
 	loot_common = list(
 		/obj/item/stack/spacecash/c100 = 10,
@@ -66,6 +76,8 @@
 		// boarder's palms: your hands clamp shut on your gun when you go
 		// down, and tables stop being furniture
 		/obj/item/organ/cyberimp/cyberware/gecko = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/tongue_spike = 3,
 	)
 	loot_prime = list(
 		/obj/item/stack/spacecash/c1000 = 9,
@@ -95,40 +107,40 @@
 /obj/effect/zone_mobs/pirate
 	name = "zone mob spawner (pirate)"
 	mobs_green = list(
-		/mob/living/basic/trooper/pirate/faction/grey/melee = 10,
-		/mob/living/basic/trooper/pirate/faction/skeleton/melee = 8,
-		/mob/living/basic/trooper/pirate/faction/silverscale/melee = 6,
+		/mob/living/carbon/human/npc/faction_pirate/grey/melee = 10,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/melee = 8,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/melee = 6,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/pirate/faction/grey/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/skeleton/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/silverscale/melee = 6,
-		/mob/living/basic/trooper/pirate/faction/lustrous/ranged = 5,
+		/mob/living/carbon/human/npc/faction_pirate/grey/ranged = 8,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/ranged = 8,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/melee = 6,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/ranged = 5,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/pirate/faction/silverscale/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/lustrous/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/interdyne/ranged = 6,
-		/mob/living/basic/trooper/pirate/faction/skeleton/captain = 4,
-		/mob/living/basic/trooper/pirate/faction/grey/captain = 4,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged = 8,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/ranged = 8,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/ranged = 6,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/captain = 4,
+		/mob/living/carbon/human/npc/faction_pirate/grey/captain = 4,
 	)
 
 /// The pirate setpiece: a captain holding the vault, a proper boss in the red.
 /obj/effect/zone_mobs/pirate/boss
 	name = "zone mob spawner (pirate boss)"
 	mobs_green = list(
-		/mob/living/basic/trooper/pirate/faction/grey/captain = 1,
-		/mob/living/basic/trooper/pirate/faction/skeleton/captain = 1,
+		/mob/living/carbon/human/npc/faction_pirate/grey/captain = 1,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/captain = 1,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/pirate/faction/silverscale/captain = 1,
-		/mob/living/basic/trooper/pirate/faction/lustrous/captain = 1,
-		/mob/living/basic/trooper/pirate/faction/interdyne/captain = 1,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/captain = 1,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/captain = 1,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/captain = 1,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/pirate/faction/boss/silverscale = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/skeleton = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/grey = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/lustrous = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/interdyne = 1,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/boss = 1,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/boss = 1,
+		/mob/living/carbon/human/npc/faction_pirate/grey/boss = 1,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/boss = 1,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/boss = 1,
 	)

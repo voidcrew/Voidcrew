@@ -11,9 +11,13 @@
 	else
 		qdel(src)
 
+/datum/nanite_rule/Destroy()
+	if(program)
+		program.rules -= src
+		program = null
+	return ..()
+
 /datum/nanite_rule/proc/remove()
-	program.rules -= src
-	program = null
 	qdel(src)
 
 /datum/nanite_rule/proc/check_rule()

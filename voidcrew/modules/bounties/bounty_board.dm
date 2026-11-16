@@ -186,7 +186,7 @@ SUBSYSTEM_DEF(criminal_bounties)
 /datum/controller/subsystem/criminal_bounties/proc/board_live_criminals()
 	var/count = 0
 	for(var/datum/criminal_bounty/posting as anything in GLOB.criminal_bounties)
-		var/mob/living/basic/bounty_criminal/criminal = posting.criminal()
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = posting.criminal()
 		if(criminal && criminal.stat != DEAD)
 			count++
 	return count

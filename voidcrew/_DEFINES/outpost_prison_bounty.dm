@@ -43,23 +43,15 @@
 
 // ===== BODY =====
 
-/// A bounty prisoner's health, by tier. The stamina pool follows it.
-#define BOUNTY_PRISONER_HEALTH_PETTY 100
-#define BOUNTY_PRISONER_HEALTH_WANTED 120
-#define BOUNTY_PRISONER_HEALTH_MOST_WANTED 150
+/// How much of a blow a bounty prisoner takes, by tier (human NPC npc_damage_taken, through physiology; defaults PR-16)
+#define BOUNTY_PRISONER_DAMAGE_TAKEN_PETTY 1
+#define BOUNTY_PRISONER_DAMAGE_TAKEN_WANTED 0.9
+#define BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED 0.8
 /// A bounty prisoner arrives hurt as they were caught, but with at least this percent of their health (spec 12.3 C11): downed deliveries otherwise crash wings.
 #define BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH 50
 
 // ===== DANGER, BY TIER =====
 
-/// Multiplier on their punches
-#define BOUNTY_PRISON_PUNCH_MULT_PETTY 1
-#define BOUNTY_PRISON_PUNCH_MULT_WANTED 1.25
-#define BOUNTY_PRISON_PUNCH_MULT_MOST_WANTED 1.5
-/// Multiplier on their shiv blows
-#define BOUNTY_PRISON_SHIV_MULT_PETTY 1
-#define BOUNTY_PRISON_SHIV_MULT_WANTED 1.15
-#define BOUNTY_PRISON_SHIV_MULT_MOST_WANTED 1.3
 /// Multiplier on their mood losses
 #define BOUNTY_PRISON_MOOD_SCALE_PETTY 1
 #define BOUNTY_PRISON_MOOD_SCALE_WANTED 1.1
@@ -76,10 +68,6 @@
 #define BOUNTY_PRISON_BREAKOUT_MULT_PETTY 1
 #define BOUNTY_PRISON_BREAKOUT_MULT_WANTED 1.25
 #define BOUNTY_PRISON_BREAKOUT_MULT_MOST_WANTED 1.5
-/// Multiplier on how long cuffing them takes
-#define BOUNTY_PRISON_CUFF_MULT_PETTY 1
-#define BOUNTY_PRISON_CUFF_MULT_WANTED 1
-#define BOUNTY_PRISON_CUFF_MULT_MOST_WANTED 1
 /// How much likelier a Wanted or Most Wanted prisoner who is not meek is to hit back when hit (like a grumpy one)
 #define BOUNTY_PRISON_HIT_BACK_MULT_WANTED 1.5
 #define BOUNTY_PRISON_HIT_BACK_MULT_MOST_WANTED 1.5
@@ -112,5 +100,3 @@
 #define BOUNTY_PRISON_MEEK_DART_STEP 2
 /// Steps a dart takes at most, waits for the door to swing open or for someone to get out of the way included, before they give up on it
 #define BOUNTY_PRISON_MEEK_DART_STEPS 10
-/// Their speed while loose (others keep their own, 2)
-#define BOUNTY_PRISON_MEEK_LOOSE_SPEED 1.6

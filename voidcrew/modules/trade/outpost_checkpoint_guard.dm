@@ -1,7 +1,7 @@
 /**
  * # Checkpoint guards and weapons permits
  *
- * Each trader outpost's lobby checkpoint has a guard in a sealed glass booth. The guard is an ordinary
+ * Each trader outpost's lobby checkpoint has a guard in a glass booth (the Undertow's sits behind an open desk). The guard is an ordinary
  * outpost trader (godmode, Trade and Talk radial, the TraderShop window) whose only stock is the
  * weapons permit, and is the checkpoint's voice (outpost_checkpoint.dm announce()).
  *
@@ -9,6 +9,9 @@
  * outpost_trespass.dm); the paper the guard hands over is a receipt and proves nothing by itself.
  * It is sold like any SKU, so barred customers (aggressors, embargoed crews, armed trespassers) are
  * refused by the shop flow before it gets this far.
+ *
+ * Like every trader, the guard is a documented invulnerable fixture (owner ruling OC-1; see the top of
+ * trader_npc.dm), not a human NPC body: the checkpoint has to be there for every crew all round.
  */
 
 /mob/living/basic/outpost_trader/checkpoint_guard
@@ -32,6 +35,7 @@
 	shop_type = /datum/outpost_shop/vendor/checkpoint/quartermain
 
 /mob/living/basic/outpost_trader/checkpoint_guard/undertow
+	desc = "Outpost security, leaning on a scuffed desk."
 	shop_type = /datum/outpost_shop/vendor/checkpoint/undertow
 
 // =========================================================================

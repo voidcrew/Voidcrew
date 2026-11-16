@@ -17,8 +17,9 @@
  *   carries them) and anomaly charts. Both sit on small weighted rotations of
  *   two slots, one unit each. A sold slot turns over to a different type at
  *   the next convoy. Both take the normal specials. The
- *   400 cr core buyback is far below any core's price, so buying to resell
- *   loses money.
+ *   core buybacks sit far below any core's price, and a core refined from a
+ *   bought raw core keeps the shop's stamp (buyback_listed.dm), so it can't
+ *   be sold back at all.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
  *   slime extracts, and raw exotics out of the ground. No circuit boards.
  *   Anything a lathe spits out is a money loop waiting to happen.
@@ -98,7 +99,18 @@
 	)
 	buyback_types = list(
 		/datum/shop_buyback/skunk/anomaly_core,
+		/datum/shop_buyback/skunk/anomaly_core/uncommon,
+		/datum/shop_buyback/skunk/anomaly_core/rare,
+		/datum/shop_buyback/skunk/anomaly_core/raw,
+		/datum/shop_buyback/skunk/anomaly_core/raw/uncommon,
+		/datum/shop_buyback/skunk/anomaly_core/raw/rare,
 		/datum/shop_buyback/skunk/slime_extract,
+		/datum/shop_buyback/skunk/slime_extract/common,
+		/datum/shop_buyback/skunk/slime_extract/rare,
+		/datum/shop_buyback/skunk/slime_extract/exotic,
+		/datum/shop_buyback/skunk/slime_extract/rainbow,
+		/datum/shop_buyback/skunk/crossbred,
+		/datum/shop_buyback/skunk/crossbred/rare,
 		/datum/shop_buyback/skunk/bluespace_crystal,
 		/datum/shop_buyback/skunk/uranium,
 	)
@@ -365,23 +377,278 @@
 // ===== BOFFIN'S SPECIMEN LEDGER (buybacks) =====
 // Nothing a lathe can print. Planet exotics and things that glow wrong.
 
+// Anomaly cores, priced the way his own shelf weights them: flux, grav,
+// hallucination and pyro turn up most; bioscrambler, ectoplasm and dimensional
+// less; bluespace and vortex rarely. "Raw" is /obj/item/raw_anomaly_core, the
+// sealed core that still needs the refinery's implosion; a refined core
+// (/obj/item/assembly/signaler/anomaly) is what drops when a crew neutralizes a
+// live anomaly. Raw cores on his shelf cost 8,000-12,000 cr, and the refinery
+// carries the shop's stamp onto the refined core, so neither can be sold back.
+
 /datum/shop_buyback/skunk/anomaly_core
-	name = "anomaly core (any)"
-	desc = "An intact core out of a collapsed anomaly. Boffin pays full rate and asks that you not shake the container. He asks this several times."
-	category = "Specimens"
+	name = "anomaly core"
+	desc = "An intact core out of a collapsed anomaly. Boffin pays well and asks that you not shake the container. He asks this several times."
+	category = "Anomalies"
 	item_path = /obj/item/assembly/signaler/anomaly
-	pay_credits = 400
+	pay_credits = 800
+	demand_min = 2
+	demand_max = 4
+	/// Exact core types this row takes
+	var/list/core_types = list(
+		/obj/item/assembly/signaler/anomaly/flux,
+		/obj/item/assembly/signaler/anomaly/grav,
+		/obj/item/assembly/signaler/anomaly/hallucination,
+		/obj/item/assembly/signaler/anomaly/pyro,
+	)
+	var/list/core_cache
+	/// Core whose sprite the ledger shows
+	var/obj/item/display_path = /obj/item/assembly/signaler/anomaly/flux
+
+/datum/shop_buyback/skunk/anomaly_core/New()
+	..()
+	core_cache = buyback_exact_cache(core_types)
+	buyback_use_display_icon(src, display_path)
+
+/datum/shop_buyback/skunk/anomaly_core/buyback_wanted_kind(obj/item/offered)
+	return core_cache?[offered.type]
+
+/datum/shop_buyback/skunk/anomaly_core/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	// Loose only: a core seated in a MOD module or a device stays where it is
+	return buyback_wanted_kind(offered) && buyback_goods_loose(offered)
+
+/datum/shop_buyback/skunk/anomaly_core/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/skunk/anomaly_core/uncommon
+	name = "uncommon anomaly core"
+	desc = "Bioscrambler, ectoplasmic or dimensional. Boffin has a shelf for each and they are all nearly empty."
+	pay_credits = 1500
 	demand_min = 2
 	demand_max = 3
+	core_types = list(
+		/obj/item/assembly/signaler/anomaly/bioscrambler,
+		/obj/item/assembly/signaler/anomaly/ectoplasm,
+		/obj/item/assembly/signaler/anomaly/dimensional,
+	)
+	display_path = /obj/item/assembly/signaler/anomaly/dimensional
+
+/datum/shop_buyback/skunk/anomaly_core/rare
+	name = "bluespace or vortex core"
+	desc = "The two he has never managed to buy twice. He'll pay in vouchers, which he hates parting with."
+	pay_credits = 0
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 2
+	core_types = list(
+		/obj/item/assembly/signaler/anomaly/bluespace,
+		/obj/item/assembly/signaler/anomaly/vortex,
+	)
+	display_path = /obj/item/assembly/signaler/anomaly/vortex
+
+/datum/shop_buyback/skunk/anomaly_core/raw
+	name = "raw anomaly core"
+	desc = "A sealed core nobody has run through a refinery yet. Boffin has a refinery. He also has a long list of complaints about it."
+	category = "Anomalies"
+	item_path = /obj/item/raw_anomaly_core
+	pay_credits = 400
+	demand_min = 1
+	demand_max = 2
+	core_types = list(
+		/obj/item/raw_anomaly_core/flux,
+		/obj/item/raw_anomaly_core/grav,
+		/obj/item/raw_anomaly_core/hallucination,
+		/obj/item/raw_anomaly_core/pyro,
+	)
+	display_path = /obj/item/raw_anomaly_core/flux
+
+/datum/shop_buyback/skunk/anomaly_core/raw/uncommon
+	name = "uncommon raw core"
+	desc = "Unrefined bioscrambler, ectoplasmic or dimensional cores."
+	pay_credits = 700
+	core_types = list(
+		/obj/item/raw_anomaly_core/bioscrambler,
+		/obj/item/raw_anomaly_core/ectoplasm,
+		/obj/item/raw_anomaly_core/dimensional,
+	)
+	display_path = /obj/item/raw_anomaly_core/dimensional
+
+/datum/shop_buyback/skunk/anomaly_core/raw/rare
+	name = "raw bluespace or vortex core"
+	desc = "Unrefined, and still the best thing anyone has brought him all week."
+	pay_credits = 1200
+	core_types = list(
+		/obj/item/raw_anomaly_core/bluespace,
+		/obj/item/raw_anomaly_core/vortex,
+	)
+	display_path = /obj/item/raw_anomaly_core/vortex
+
+// Slime extracts by colour, following the mutation ladder from grey to
+// rainbow. Only whole, unspent extracts: a cored-out one is jelly. Ship labs
+// make these, so only rainbow and the rarer crossbreeds pay vouchers, on
+// small demand that every crew shares.
 
 /datum/shop_buyback/skunk/slime_extract
-	name = "slime extract (any)"
-	desc = "Cores cut out of slimes. Every color does something different, and Boffin intends to try all of them."
-	category = "Specimens"
+	name = "grey slime extract"
+	desc = "Every lab's first extract. Boffin keeps a jar of them for when he runs out of the interesting ones."
+	category = "Slime Extracts"
 	item_path = /obj/item/slime_extract
-	pay_credits = 200
+	pay_credits = 50
+	demand_min = 4
+	demand_max = 8
+	/// Exact extract types this row takes
+	var/list/extract_types = list(/obj/item/slime_extract/grey)
+	var/list/extract_cache
+	/// Extract whose sprite the ledger shows
+	var/obj/item/display_path = /obj/item/slime_extract/grey
+
+/datum/shop_buyback/skunk/slime_extract/New()
+	..()
+	extract_cache = buyback_exact_cache(extract_types)
+	buyback_use_display_icon(src, display_path)
+
+/datum/shop_buyback/skunk/slime_extract/buyback_wanted_kind(obj/item/offered)
+	return extract_cache?[offered.type]
+
+/datum/shop_buyback/skunk/slime_extract/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	if(!buyback_wanted_kind(offered) || !buyback_goods_loose(offered))
+		return FALSE
+	var/obj/item/slime_extract/extract = offered
+	// Spent cores are jelly, and a recurring crossbreed's core belongs to it
+	return extract.extract_uses > 0 && !extract.recurring
+
+/datum/shop_buyback/skunk/slime_extract/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/skunk/slime_extract/common
+	name = "common slime extract"
+	desc = "Orange, purple, blue, metal, yellow, dark purple, dark blue or silver."
+	pay_credits = 150
+	demand_min = 3
+	demand_max = 6
+	extract_types = list(
+		/obj/item/slime_extract/orange,
+		/obj/item/slime_extract/purple,
+		/obj/item/slime_extract/blue,
+		/obj/item/slime_extract/metal,
+		/obj/item/slime_extract/yellow,
+		/obj/item/slime_extract/darkpurple,
+		/obj/item/slime_extract/darkblue,
+		/obj/item/slime_extract/silver,
+	)
+	display_path = /obj/item/slime_extract/orange
+
+/datum/shop_buyback/skunk/slime_extract/rare
+	name = "rare slime extract"
+	desc = "Bluespace, sepia, cerulean or pyrite. The ones that start doing strange things to the room."
+	pay_credits = 300
 	demand_min = 3
 	demand_max = 5
+	extract_types = list(
+		/obj/item/slime_extract/bluespace,
+		/obj/item/slime_extract/sepia,
+		/obj/item/slime_extract/cerulean,
+		/obj/item/slime_extract/pyrite,
+	)
+	display_path = /obj/item/slime_extract/bluespace
+
+/datum/shop_buyback/skunk/slime_extract/exotic
+	name = "exotic slime extract"
+	desc = "Red, green, pink, gold, oil, black, light pink or adamantine. Boffin has a waiting list for most of them."
+	pay_credits = 550
+	demand_min = 2
+	demand_max = 4
+	extract_types = list(
+		/obj/item/slime_extract/red,
+		/obj/item/slime_extract/green,
+		/obj/item/slime_extract/pink,
+		/obj/item/slime_extract/gold,
+		/obj/item/slime_extract/oil,
+		/obj/item/slime_extract/black,
+		/obj/item/slime_extract/lightpink,
+		/obj/item/slime_extract/adamantine,
+	)
+	display_path = /obj/item/slime_extract/adamantine
+
+/datum/shop_buyback/skunk/slime_extract/rainbow
+	name = "rainbow slime extract"
+	desc = "The end of the ladder. Boffin has seen two in his life and wants a third."
+	pay_credits = 0
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+	extract_types = list(/obj/item/slime_extract/rainbow)
+	display_path = /obj/item/slime_extract/rainbow
+
+/// Crossbreeds, priced by the colour of the slime that made them. Self-sustaining
+/// ones split on the spot and are never offered whole, so they're left out.
+/datum/shop_buyback/skunk/crossbred
+	name = "crossbred extract"
+	desc = "Any crossbreed off a common slime. Ten extracts went into each, which is the part Boffin respects."
+	category = "Slime Extracts"
+	item_path = /obj/item/slimecross
+	pay_credits = 450
+	demand_min = 2
+	demand_max = 3
+	/// Slime colours (SLIME_TYPE_*) this row takes
+	var/list/colours = list(
+		SLIME_TYPE_GREY,
+		SLIME_TYPE_ORANGE,
+		SLIME_TYPE_PURPLE,
+		SLIME_TYPE_BLUE,
+		SLIME_TYPE_METAL,
+		SLIME_TYPE_YELLOW,
+		SLIME_TYPE_DARK_PURPLE,
+		SLIME_TYPE_DARK_BLUE,
+		SLIME_TYPE_SILVER,
+	)
+	/// Crossbreed whose sprite the ledger shows
+	var/obj/item/display_path = /obj/item/slimecross/stabilized/grey
+
+/datum/shop_buyback/skunk/crossbred/New()
+	..()
+	buyback_use_display_icon(src, display_path)
+
+/datum/shop_buyback/skunk/crossbred/buyback_wanted_kind(obj/item/offered)
+	if(!istype(offered, /obj/item/slimecross) || istype(offered, /obj/item/slimecross/selfsustaining))
+		return FALSE
+	var/obj/item/slimecross/cross = offered
+	return cross.colour in colours
+
+/datum/shop_buyback/skunk/crossbred/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return buyback_wanted_kind(offered) && buyback_goods_loose(offered)
+
+/datum/shop_buyback/skunk/crossbred/get_denial_reason(mob/living/user)
+	return buyback_listed_denial(src, user)
+
+/datum/shop_buyback/skunk/crossbred/rare
+	name = "rare crossbred extract"
+	desc = "A crossbreed off a rare slime, up to rainbow. Stabilized ones especially; he wears three."
+	pay_credits = 0
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 3
+	colours = list(
+		SLIME_TYPE_BLUESPACE,
+		SLIME_TYPE_SEPIA,
+		SLIME_TYPE_CERULEAN,
+		SLIME_TYPE_PYRITE,
+		SLIME_TYPE_RED,
+		SLIME_TYPE_GREEN,
+		SLIME_TYPE_PINK,
+		SLIME_TYPE_GOLD,
+		SLIME_TYPE_OIL,
+		SLIME_TYPE_BLACK,
+		SLIME_TYPE_LIGHT_PINK,
+		SLIME_TYPE_ADAMANTINE,
+		SLIME_TYPE_RAINBOW,
+	)
+	display_path = /obj/item/slimecross/stabilized/rainbow
 
 /datum/shop_buyback/skunk/bluespace_crystal
 	name = "bluespace crystals"

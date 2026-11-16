@@ -12,6 +12,7 @@ import {
 import { type BooleanLike, classes } from 'tgui-core/react';
 import { capitalize } from 'tgui-core/string';
 
+import { TutorialFocus } from '../../voidcrew_tgui/components/TutorialFocus'; // VOIDCREW EDIT ADDITION
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 import { DesignBrowser } from './Fabrication/DesignBrowser';
@@ -221,7 +222,8 @@ const AutolatheRecipe = (props: AutolatheRecipeProps) => {
   maxmult = Math.min(Math.floor(maxmult), 50);
   const canPrint = maxmult > 0;
 
-  return (
+  // VOIDCREW EDIT CHANGE: was `return (`, wrapped below
+  const recipe = (
     <div className="FabricatorRecipe">
       <Tooltip content={design.desc} position="right">
         <div
@@ -299,4 +301,7 @@ const AutolatheRecipe = (props: AutolatheRecipeProps) => {
       </div>
     </div>
   );
+
+  // VOIDCREW EDIT ADDITION: the tutorial checklist outlines the design it points at.
+  return <TutorialFocus id={`autolathe_${design.id}`}>{recipe}</TutorialFocus>;
 };

@@ -20,7 +20,7 @@
  *
  * make sure you add an update to the schema_version stable in the db changelog
  */
-#define DB_MINOR_VERSION 34 // VOIDCREW EDIT - 34 adds round_metric (voidcrew/modules/metrics)
+#define DB_MINOR_VERSION 35 // VOIDCREW EDIT - 34 adds round_metric (voidcrew/modules/metrics), 35 adds player_ship_saves (voidcrew/modules/ship_saves)
 
 
 //! ## Timing subsystem

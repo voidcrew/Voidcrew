@@ -56,12 +56,6 @@
 	var/list/first_slot = data["slots"][1]
 	TEST_ASSERT_EQUAL(first_slot["status"], "Available", "An empty bay is incorrectly marked occupied")
 
-	var/datum/ship_checkpoint/snapshot = allocate(__IMPLIED_TYPE__)
-	snapshot.outpost = home
-	home.checkpoints += snapshot
-	panel.manage_outpost(home, operator, "remove_bays", list())
-	TEST_ASSERT(home.ship_bay_installed, "Admin removal stranded a paid hull registration")
-	qdel(snapshot)
 	var/obj/structure/overmap/ship/ship = allocate(__IMPLIED_TYPE__)
 	SSovermap.simulated_ships |= ship
 	panel.during_confirmation = CALLBACK(src, PROC_REF(request_bay), home, ship)

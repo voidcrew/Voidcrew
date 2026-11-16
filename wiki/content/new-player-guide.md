@@ -17,7 +17,13 @@ Each hull is rolled at random: a hull class, one of that class's themes, and a r
 
 Your job comes from the ship category preferences in your character setup, Command, Security, Engineering, Medical, Science, Cargo, Service and Assistant, each set to high, medium or low. Each hull picks its captain first, contested between the players who set Command highest, with ties broken at random; if nobody wants Command, someone is drafted and told so. Everyone else is matched to an open job in a category they asked for, working down from high to low, then to any open job. Job titles vary by hull and theme, so the captain might be called Captain, Team Leader or something stranger.
 
-If you join after the round has started, you get a ship menu instead. You can join any existing crew that has an open slot and has left joining enabled, or launch a ship of your own from the shipyard. The two Pill-class hulls are free; everything else costs ship parts you have banked from previous rounds.
+If you join after the round has started, press **JOIN** on the dock terminal. The terminal has three tabs:
+
+- **CREWS** lists every crew that is taking people. Pick one to see its ship, its memo and its open jobs, then press **SIGN ON** next to the job you want. A crew with a code needs the code typed into its **CODE** field first; if you don't have it, **APPLY** with a short note and the captain decides. A full crew can be pinged so its captain knows someone is waiting.
+- **SHIPYARD** builds you a ship of your own. See [Buying & Upgrading Ships](ship-upgrades.md). The two Pill-class hulls are free; everything else costs ship parts you have banked from previous rounds.
+- **HOUSING** lists [player outposts](player-outposts.md) taking residents. Press **MOVE IN** to wake up in one of the outpost's cryopods. An outpost marked **CODE** needs its code typed in first. One marked **INVITE** takes only people its management has invited; press **REQUEST** to let the residents on shift know you want in.
+
+The keys along the bottom of the terminal open your character setup, the game settings, the crew manifest, polls, the changelog and this wiki. **OBSERVE** lets you watch as a ghost instead.
 
 ## What is already on your ship
 

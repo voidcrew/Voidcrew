@@ -55,7 +55,7 @@
 /obj/item/outpost_experiment/serum/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isliving(interacting_with))
 		return NONE
-	var/mob/living/basic/outpost_prisoner/subject = interacting_with
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = interacting_with
 	var/error = dose_error(user, subject)
 	if(error)
 		balloon_alert(user, error)
@@ -79,7 +79,7 @@
 	return ITEM_INTERACT_SUCCESS
 
 /// Why the serum cannot go into `subject` now, or null
-/obj/item/outpost_experiment/serum/proc/dose_error(mob/living/user, mob/living/basic/outpost_prisoner/subject)
+/obj/item/outpost_experiment/serum/proc/dose_error(mob/living/user, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	var/error = user_error(user)
 	if(error)
 		return error
@@ -207,7 +207,7 @@
  */
 /datum/component/outpost_experiment_item/proc/eaten_by(mob/living/eater)
 	var/datum/outpost_prison/prison = prison()
-	var/mob/living/basic/outpost_prisoner/host = eater
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = eater
 	if(istype(host) && prison && host.prison == prison && prison.start_experiment("changeling", host))
 		log_game("PLAYER OUTPOST PRISON: [host.real_name] ate food with a Kessler specimen in it at '[prison.outpost?.name]'")
 		qdel(src)
@@ -250,7 +250,7 @@
 	qdel(parent)
 
 /// A prisoner eats: food with the specimen in it takes them as its host
-/mob/living/basic/outpost_prisoner/eat_food(obj/item/food/meal)
+/mob/living/carbon/human/npc/outpost_prisoner/eat_food(obj/item/food/meal)
 	var/datum/component/outpost_experiment_item/specimen = meal?.GetComponent(/datum/component/outpost_experiment_item)
 	. = ..()
 	if(specimen && !QDELETED(specimen))

@@ -23,7 +23,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 
 // ===== THE PRISONER =====
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Picks their examine line within a mood band, so looking twice reads the same
 	var/ambience_examine_seed = 0
 	/// Running after they turned to look at staff coming in, after humming, and after a whisper in a huddle
@@ -32,14 +32,14 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	COOLDOWN_DECLARE(ambience_huddle_cooldown)
 
 /// Hooks up the prisoner's side of the ambience; called from setup_extras(). Nothing needs hooking: the prison drives it from its tick, and examine is the override below.
-/mob/living/basic/outpost_prisoner/proc/setup_ambience()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_ambience()
 	return
 
 /**
  * Their mood in words, by band and personality, and one line on how they are kept when something
  * shows (hurt, a dirty jumpsuit, shut in, due out), then every package's own lines. Never a number.
  */
-/mob/living/basic/outpost_prisoner/examine(mob/user)
+/mob/living/carbon/human/npc/outpost_prisoner/examine(mob/user)
 	. = ..()
 	if(stat == DEAD || phase != PRISONER_PRESENT)
 		return
@@ -54,7 +54,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 			. += span_notice(line)
 
 /// A closer look: what they are in for, their cell, roughly how long they have left, and their birthday until the yard has had the cake
-/mob/living/basic/outpost_prisoner/examine_more(mob/user)
+/mob/living/carbon/human/npc/outpost_prisoner/examine_more(mob/user)
 	. = ..()
 	if(stat == DEAD || !prison)
 		return
@@ -69,14 +69,14 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 		. += span_notice("It's [p_their()] birthday today.")
 
 /// "a few minutes" or "about 25 minutes": their sentence left, rounded to OUTPOST_PRISONER_EXAMINE_ROUND_MINUTES
-/mob/living/basic/outpost_prisoner/proc/sentence_examine_text()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sentence_examine_text()
 	var/minutes = sentence_left / 60
 	if(minutes < OUTPOST_PRISONER_EXAMINE_ROUND_MINUTES)
 		return "a few minutes"
 	return "about [round(minutes, OUTPOST_PRISONER_EXAMINE_ROUND_MINUTES)] minutes"
 
 /// The "examine" key for their mood: the bands match the angry, threat, climb and tidy lines
-/mob/living/basic/outpost_prisoner/proc/mood_examine_band()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/mood_examine_band()
 	if(mood < PRISONER_THREAT_ANGRY_MOOD)
 		return "mood_0"
 	if(mood < PRISONER_THREAT_MOOD)
@@ -88,7 +88,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	return "mood_75"
 
 /// A line on their mood, filled in, or null. Their own personality's lines come up more often than the shared ones.
-/mob/living/basic/outpost_prisoner/proc/mood_examine_line()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/mood_examine_line()
 	var/list/bands = outpost_prisoner_extra_dialogue("outpost_prison_security.json", "examine")
 	var/list/band = bands[mood_examine_band()]
 	if(!islist(band))
@@ -105,7 +105,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	return fill_examine_line(pool[(ambience_examine_seed % length(pool)) + 1])
 
 /// Fills an examine line's pronouns ({They}, {their}, ...) and verb endings ({s}, {es}) for them
-/mob/living/basic/outpost_prisoner/proc/fill_examine_line(line)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/fill_examine_line(line)
 	if(!istext(line))
 		return null
 	line = replacetextEx(line, "{They}", p_They())
@@ -118,7 +118,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	return line
 
 /// One line on how they are kept, the most pressing first, or null when nothing shows
-/mob/living/basic/outpost_prisoner/proc/state_examine_line()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/state_examine_line()
 	var/health_percent = health_factor()
 	if(health_percent < PRISONER_BLEED_BELOW)
 		return "[p_They()] look[p_s()] badly hurt."
@@ -190,7 +190,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 
 /// Whether another prisoner is too close to `tile` to sulk there
 /datum/prisoner_activity/sulk/proc/sulk_company_near(turf/tile)
-	for(var/mob/living/basic/outpost_prisoner/other in prisoner.prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoner.prison.prisoners)
 		if(other != prisoner && get_dist(other, tile) <= OUTPOST_PRISONER_SULK_ALONE_RANGE)
 			return TRUE
 	return FALSE
@@ -242,7 +242,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
  * wing); TRUE drops it. Small talk, remarks to staff, conversations and chatter about what they
  * are doing go quiet; complaints and threats about the wing still get said.
  */
-/datum/outpost_prison/proc/speech_hushed(mob/living/basic/outpost_prisoner/speaker, context)
+/datum/outpost_prison/proc/speech_hushed(mob/living/carbon/human/npc/outpost_prisoner/speaker, context)
 	if(stage != PRISON_STAGE_RESTLESS)
 		return FALSE
 	var/static/list/always_hushed = list("idle", "staff_near", "conversation")
@@ -289,7 +289,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	var/spoken = FALSE
 	var/emotes = 0
 	var/reacted = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in shuffle(prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in shuffle(prisoners))
 		if(!prisoner.ai_running() || !prisoner.routine_allowed() || prisoner.activity?.sleeping)
 			continue
 		if(!COOLDOWN_FINISHED(prisoner, ambience_notice_cooldown))
@@ -322,12 +322,12 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	return reacted
 
 /// A chat they are in waits a moment while they look over
-/datum/outpost_prison/proc/pause_chat_for_notice(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/pause_chat_for_notice(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/prisoner_activity/chat/talk = prisoner.activity
 	if(!istype(talk))
 		return
 	if(istype(talk, /datum/prisoner_activity/chat/listen))
-		var/mob/living/basic/outpost_prisoner/talker = talk.chat_partner()
+		var/mob/living/carbon/human/npc/outpost_prisoner/talker = talk.chat_partner()
 		talk = talker?.activity
 		if(!istype(talk) || istype(talk, /datum/prisoner_activity/chat/listen))
 			return
@@ -338,7 +338,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 /// Content prisoners now and then hum; while the wing is restless, the ones gathered in the yard whisper among themselves
 /datum/outpost_prison/proc/yard_sounds_tick(seconds)
 	var/huddling = stage == PRISON_STAGE_RESTLESS && !riot_imminent && !riot_active
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS || !prisoner.ai_running())
 			continue
 		if(huddling && istype(prisoner.activity, /datum/prisoner_activity/gather))
@@ -352,7 +352,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
  * A content cheerful, chatty or quiet prisoner, awake and free, hums to themself, at most once per
  * OUTPOST_PRISONER_HUM_COOLDOWN. Returns TRUE if they did.
  */
-/datum/outpost_prison/proc/try_hum(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/try_hum(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/static/list/hummers = list("cheerful", "chatty", "quiet")
 	if(prisoner.mood < OUTPOST_PRISONER_HUM_MOOD || !(prisoner.personality in hummers))
 		return FALSE
@@ -364,7 +364,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	return TRUE
 
 /// A gathered prisoner whispers a huddle line, at most once per OUTPOST_PRISONER_HUDDLE_GAP. Returns TRUE if they did.
-/datum/outpost_prison/proc/try_huddle(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/try_huddle(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!COOLDOWN_FINISHED(prisoner, ambience_huddle_cooldown))
 		return FALSE
 	var/line = prisoner.pick_line("huddle")
@@ -404,7 +404,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	ambience_chant_beats++
 	var/list/gathered = list()
 	var/list/slammers = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in shuffle(prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in shuffle(prisoners))
 		var/datum/prisoner_activity/gather/gathering = prisoner.activity
 		if(!istype(gathering) || !gathering.started || gathering.spot || !prisoner.ai_running() || !prisoner.routine_allowed())
 			continue
@@ -421,12 +421,12 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 	if(!(ambience_chant_beats % OUTPOST_PRISON_CHANT_LINE_EVERY))
 		var/list/voices = length(slammers) ? slammers : gathered
 		if(length(voices))
-			var/mob/living/basic/outpost_prisoner/voice = pick(voices)
+			var/mob/living/carbon/human/npc/outpost_prisoner/voice = pick(voices)
 			voice.say_context("riot_chant")
 	return slammers
 
 /// A mess table or a door beside `prisoner` to slam on, or null
-/datum/outpost_prison/proc/chant_surface(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/chant_surface(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/turf/here = get_turf(prisoner)
 	for(var/direction in GLOB.cardinals)
 		var/turf/beside = get_step(here, direction)
@@ -450,7 +450,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_examine_placeholders, list("{They}", "{they}",
 		return 0
 	ambience_roared = TRUE
 	var/roared = 0
-	for(var/mob/living/basic/outpost_prisoner/rioter in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter in prisoners)
 		if(!rioter.is_rioting() || rioter.stat != CONSCIOUS || rioter.phase != PRISONER_PRESENT || !rioter.ai_running())
 			continue
 		if(rioter.say_context("riot_roar"))
