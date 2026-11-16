@@ -10,6 +10,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { CrewRecord, classLine, isLocked } from './CrewRecord';
+import { useScreen } from './motion';
 import { usePager } from './nav';
 import {
   Big,
@@ -27,6 +28,7 @@ import {
   Slab,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { Crew, LobbyData, TabId } from './types';
@@ -110,6 +112,16 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
   }, [crews]);
 
   const selected = crews.find((c) => c.ref === selRef) || null;
+  // The record opens with the wipe and closes with it run back; the ship stepper turns a page.
+  const selAt = selected
+    ? sorted.findIndex((x) => x.c.ref === selected.ref)
+    : -1;
+  useScreen(
+    selected ? 'crews/record' : 'crews',
+    selected ? 1 : 0,
+    selected ? selected.ref : '',
+    selAt,
+  );
 
   // The server sends the roster only for the open record: tell it which one, and when it closes.
   const openSent = useRef<string | null>(null);
@@ -299,6 +311,15 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
         right
         onPage={(to) => turn(to)}
       />,
+      // A page turn wipes the rows only.
+      <WipeAt
+        key="turn"
+        x={1}
+        y={BODY_Y}
+        w={61}
+        h={bottom - BODY_Y}
+        k={pg}
+      />,
     );
   }
 
@@ -377,7 +398,15 @@ function CrewBlock(props: {
         </Big>
       ) : (
         <>
-          <Big x={52} w={9} align="center" y={y0 + p} scale={2.25} cls="acc">
+          <Big
+            x={52}
+            w={9}
+            align="center"
+            y={y0 + p}
+            scale={2.25}
+            cls="acc"
+            pulse={open}
+          >
             {count(open)}
           </Big>
           <Put
@@ -428,6 +457,7 @@ function CrewRow(props: {
         x={61}
         y={y0 + 0.125}
         cls={status === 'OPEN' ? 'acc' : STATUS_CLS[status]}
+        pulse={open}
       >
         {right}
       </RPut>

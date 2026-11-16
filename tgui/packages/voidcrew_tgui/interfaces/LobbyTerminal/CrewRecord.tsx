@@ -10,6 +10,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
+import { sfx, useChanged } from './motion';
 import { useBack, usePager } from './nav';
 import {
   Band,
@@ -21,6 +22,7 @@ import {
   bodyRows,
   cut,
   Field,
+  FlashAt,
   HRule,
   Key,
   NameLine,
@@ -30,8 +32,10 @@ import {
   SEP,
   Slab,
   safe,
+  useCellRect,
   useGrid,
   VRule,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { Crew, CrewJob, LobbyData } from './types';
@@ -112,6 +116,20 @@ function useCountdown(value: number): number {
   return Math.max(0, base.current.value - gone);
 }
 
+/** A berth row coming alive after the code was accepted: its dead look lifts `delay` ms in. */
+function Light(props: { y: number; h: number; delay: number }) {
+  const style = useCellRect(1, props.y, 41, props.h);
+  return (
+    <div
+      className="lt-light"
+      style={{ ...style, animationDelay: `${props.delay}ms` }}
+    />
+  );
+}
+
+/** Berth rows light this far apart, top to bottom, when a code is accepted. */
+const LIGHT_GAP = 40;
+
 type Props = {
   crew: Crew;
   /** 1-based place of this ship in the list order, and the list's length. */
@@ -152,6 +170,34 @@ export function CrewRecord(props: Props) {
   const joining = !!data.joining;
   const locked = isLocked(c);
   const applied = locked && !!c.applied;
+
+  // The code was accepted: the berth rows light top to bottom.
+  const [lights, setLights] = useState(0);
+  useChanged(locked, (was, now) => {
+    if (was && !now && !!c.cleared) {
+      setLights((n) => n + 1);
+      sfx('ok', { own: true });
+    }
+  });
+  useEffect(() => {
+    if (!lights) {
+      return;
+    }
+    const id = setTimeout(() => setLights(0), 1500);
+    return () => clearTimeout(id);
+  }, [lights]);
+  // An application or a ping went through: its row flashes once.
+  useChanged(applied, (_, now) => {
+    if (now) {
+      sfx('ok', { own: true });
+    }
+  });
+  const pinged = (c.ping_wait || 0) > 0;
+  useChanged(pinged, (_, now) => {
+    if (now) {
+      sfx('ok', { own: true });
+    }
+  });
   const jobs = c.jobs || [];
   const full = !jobs.length;
   const end = BODY_Y + bodyRows(rows);
@@ -299,6 +345,7 @@ export function CrewRecord(props: Props) {
     } else if (!locked) {
       firstFocus = 'ping';
     }
+    out.push(<FlashAt key="pingf" x={1} y={by + 2} w={41} h={1.5} k={pinged} />);
     t0 = by + 3.5;
   } else {
     const A = end - by - tail;
@@ -390,11 +437,18 @@ export function CrewRecord(props: Props) {
             align="right"
             scale={1.25}
             cls="acc"
+            pulse={job.open}
           >
             {String(Math.min(99, Math.max(0, job.open || 0)))}
           </Big>
         ) : (
-          <RPut key={`n${job.ref}`} x={28} y={yy + (rowH - 1) / 2} cls="acc">
+          <RPut
+            key={`n${job.ref}`}
+            x={28}
+            y={yy + (rowH - 1) / 2}
+            cls="acc"
+            pulse={job.open}
+          >
             {String(Math.min(99, Math.max(0, job.open || 0)))}
           </RPut>
         ),
@@ -408,6 +462,8 @@ export function CrewRecord(props: Props) {
           kind="cap"
           label="[ SIGN ON ]"
           state={lit ? 'lit' : live ? 'idle' : 'dead'}
+          // On its way: the label blinks at the STAND BY cadence until the answer comes.
+          busy={lit}
           auto={live && claim ? 2 : undefined}
           edge={{
             down:
@@ -420,7 +476,28 @@ export function CrewRecord(props: Props) {
           }}
         />,
       );
+      if (lights > 0) {
+        out.push(
+          <Light
+            key={`lit${lights}-${job.ref}`}
+            y={yy}
+            h={rowH}
+            delay={i * LIGHT_GAP}
+          />,
+        );
+      }
     });
+    // A page of berths turning wipes the rows only.
+    out.push(
+      <WipeAt
+        key="bturn"
+        x={1}
+        y={by}
+        w={41}
+        h={shown.length * pitch - 0.25}
+        k={pg}
+      />,
+    );
     if (paged) {
       out.push(
         <Pager
@@ -494,6 +571,7 @@ export function CrewRecord(props: Props) {
       />,
     );
     const ny = cy + 1.75;
+    out.push(<FlashAt key="appf" x={1} y={ny} w={41} h={1.5} k={applied} />);
     if (applied) {
       out.push(
         <Put key="sent" x={1} y={ny} cls="amb">
