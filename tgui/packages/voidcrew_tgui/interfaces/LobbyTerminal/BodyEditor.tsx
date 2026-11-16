@@ -516,9 +516,11 @@ function ValueText(props: {
   by: number;
   text: string;
   cls?: string;
+  /** The page's value size (BodyEditor `big`); else the row decides alone. */
+  big?: boolean;
 }) {
-  const { x, w, h, ty, by, text, cls = '' } = props;
-  if (h >= 2.25 && text.length <= 15 && text.length * 1.25 <= w) {
+  const { x, w, h, ty, by, text, cls = '', big } = props;
+  if ((big ?? h >= 2.25) && text.length <= 15 && text.length * 1.25 <= w) {
     return (
       <Big x={x} y={by} scale={1.25} cls={cls}>
         {text}
@@ -538,9 +540,10 @@ function NumberField(props: {
   y: number;
   h: number;
   value: number;
+  big?: boolean;
   onSet: (v: number) => void;
 }) {
-  const { k, y, h, value, onSet } = props;
+  const { k, y, h, value, big, onSet } = props;
   const spec = NUMBERS[k];
   const shown = k === 'age' ? String(Math.round(value)) : value.toFixed(1);
   const [text, setText] = useState(shown);
@@ -555,6 +558,7 @@ function NumberField(props: {
         h={fh}
         value={text}
         max={4}
+        big={big}
         onChange={(v) => {
           const clean = v.replace(/[^0-9.]/g, '');
           const dot = clean.indexOf('.');
@@ -732,6 +736,26 @@ export function BodyEditor(props: {
   const pg = Math.min(page, Math.max(0, pages - 1));
   const shownKeys = keys.slice(pg * per, pg * per + per);
   const y0 = BODY_Y + fixed;
+  // One value size for the page: 1.25x when the rows are tall and every value fits it whole,
+  // else every value at normal size.
+  const fits = (s: string, w: number) => s.length <= 15 && s.length * 1.25 <= w;
+  const big =
+    h >= 2.25 &&
+    shownKeys.every((k) => {
+      const v = prefs[k];
+      switch (kindOf(cat, k, v)) {
+        case 'number':
+        case 'build':
+        case 'colour':
+          return true;
+        case 'voice':
+          return fits(safe(voiceShort(nameOf(cat, k, v))), 10);
+        case 'palette':
+          return fits(safe(nameOf(cat, k, v)), 16);
+        default:
+          return fits(safe(nameOf(cat, k, v)), 19);
+      }
+    });
 
   const rows = shownKeys.map((k, i) => {
     const y = y0 + i * pitch;
@@ -756,7 +780,7 @@ export function BodyEditor(props: {
       auto,
     };
     const text = (s: string) => (ty: number, by: number) => (
-      <ValueText x={36} w={19} h={h} ty={ty} by={by} text={safe(s)} />
+      <ValueText x={36} w={19} h={h} ty={ty} by={by} text={safe(s)} big={big} />
     );
     switch (kind) {
       case 'number': {
@@ -783,6 +807,7 @@ export function BodyEditor(props: {
                 y={y}
                 h={h}
                 value={v}
+                big={big}
                 onSet={(nv) => set(k, nv)}
               />
             )}
@@ -819,11 +844,17 @@ export function BodyEditor(props: {
             {...common}
             onPress={() => sub(<BodyListPick k={k} />, label, k)}
             onStep={step}
-            value={(ty) => (
+            value={(ty, by) => (
               <>
-                <Put x={36} y={ty}>
-                  {cut(safe(voiceShort(nameOf(cat, k, value))), 10)}
-                </Put>
+                <ValueText
+                  x={36}
+                  w={10}
+                  h={h}
+                  ty={ty}
+                  by={by}
+                  text={safe(voiceShort(nameOf(cat, k, value)))}
+                  big={big}
+                />
                 <Key
                   x={47}
                   y={y}
@@ -856,12 +887,18 @@ export function BodyEditor(props: {
                 set(k, sorted[(((at < 0 ? 0 : at + by) % nn) + nn) % nn]);
               }
             }}
-            value={(ty) => (
+            value={(ty, by) => (
               <>
                 <Swatch x={36} y={ty} w={2} hex={hex} />
-                <Put x={39} y={ty}>
-                  {cut(safe(nameOf(cat, k, value)), 16)}
-                </Put>
+                <ValueText
+                  x={39}
+                  w={16}
+                  h={h}
+                  ty={ty}
+                  by={by}
+                  text={safe(nameOf(cat, k, value))}
+                  big={big}
+                />
               </>
             )}
           />
@@ -874,12 +911,19 @@ export function BodyEditor(props: {
             key={k}
             {...common}
             onPress={() => sub(<BodyColour k={k} />, labelOf(k), k)}
-            value={(ty) => (
+            value={(ty, by) => (
               <>
                 <Swatch x={36} y={ty} w={4} hex={hex} />
-                <Put x={41} y={ty} cls="dim">
-                  {hex.toUpperCase()}
-                </Put>
+                <ValueText
+                  x={41}
+                  w={14}
+                  h={h}
+                  ty={ty}
+                  by={by}
+                  text={hex.toUpperCase()}
+                  cls="dim"
+                  big={big}
+                />
               </>
             )}
           />
