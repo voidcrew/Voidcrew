@@ -27,6 +27,16 @@
 #define LANDING_VIEW_SYNC (0.5 SECONDS)
 /// How long the view takes to fade away when its manoeuvre is called off
 #define LANDING_VIEW_FADE (1.2 SECONDS)
+/// How many steps the light on the hull's edge is changed in
+#define LANDING_VIEW_LIGHT_STEPS 8
+/// How many chunks of a picture that cannot be seen yet a viewer is handed in one tick
+#define LANDING_VIEW_HANDOVER 5
+/// How far ahead a viewer's chunks are picked for
+#define LANDING_VIEW_AHEAD (1.5 SECONDS)
+/// Tiles past the edge of a viewer's screen their chunks cover: a shaking camera, a step half made
+#define LANDING_VIEW_MARGIN 1.5
+/// And how much further off than that a chunk has to be before it is taken back
+#define LANDING_VIEW_KEEP 3
 
 /**
  * One value over time: keys of (world.time, value), each reached along a curve from the key before.
@@ -94,14 +104,24 @@
 	/// Sky: the screen object
 	var/atom/movable/screen/landing_view_sky/sky
 	/**
-	 * World picture: its parts, each a list(look, offset w, offset z, opacity 0-1): what it shows, and where its
-	 * middle lies from the hull's middle in pixels. An overlay's offset is not scaled with its parent, so a big
-	 * picture cannot be one scaled appearance; every part is scaled and moved on its own to the same effect.
-	 * Null until it is ready.
+	 * World picture: its parts, each a list(look, offset w, offset z, opacity 0-1, reach): what it shows, where
+	 * its middle lies from the hull's middle in pixels, and how far it reaches from that middle in tiles (0: no
+	 * telling, everyone holds it). An overlay's offset is not scaled with its parent, so a big picture cannot be
+	 * one scaled appearance; every part is scaled and moved on its own to the same effect. Null until it is ready.
 	 */
 	var/list/parts
 	/// World picture: TRUE while viewers hold it
 	var/shown = FALSE
+	/// World picture: TRUE once its taking back is booked
+	var/dropping = FALSE
+	/**
+	 * World picture: the smallest size it is ever seen at, if its parts are only handed to the viewers whose
+	 * screen they are on. A picture of real tiles costs a client its frame rate by the tile, seen or not.
+	 * 0: every viewer holds every part.
+	 */
+	var/cull_from = 0
+	/// World picture: TRUE while it is handed out ahead of its motion being known: clear, and still
+	var/held_back = FALSE
 	/// World picture: world.time before which it is not handed to viewers, and after which it is taken back.
 	/// A picture nobody can see yet still costs every viewer its drawing.
 	var/give_at = 0
@@ -189,7 +209,10 @@
 	var/mob/followed
 	/// The turf the images stand on
 	var/turf/anchor
-	/// world picture -> list of images, one per part
+	/// Tiles they see each way from it, with a margin
+	var/half_w = 11
+	var/half_h = 9
+	/// world picture -> the images of its parts they hold, by the part's number in the picture as text
 	var/list/images = list()
 
 /**
@@ -250,13 +273,20 @@
 	var/list/datum/landing_view_piece/pieces = list()
 	/// The planet's colours
 	var/datum/landing_view_palette/palette
-	/// The ground around the berth from afar, the same ground close up, and the hull's shadow on it
+	/// The ground around the berth from afar, the same ground close up, the light on it, and the hull's shadow on it
 	var/datum/landing_view_piece/ground
 	var/datum/landing_view_piece/close
+	var/datum/landing_view_piece/light
 	var/datum/landing_view_piece/shadow
+	/// Areas carrying the overlay that marks transit space outside the hull
+	var/list/area/marked_outside = list()
 	var/atom/movable/screen/landing_view_home/home
 	/// Things standing in transit space for the view (heat on the hull's edge, dust): deleted with it
 	var/list/props = list()
+	/// The timer that keeps the viewers up to date
+	var/sync_timer
+	/// The transit turfs around the hull whose light this has changed, and their planet twins (see fade_light())
+	var/list/light_twins
 	/// TRUE once nothing more should be shown
 	var/ended = FALSE
 
@@ -269,7 +299,14 @@
 	. = ..()
 	src.shuttle = shuttle
 	home = new
-	if(!set_ground(berth_turfs) || (hull_turfs && !attach(hull_turfs, rotation)))
+	if(berth_turfs && !set_ground(berth_turfs))
+		ended = TRUE
+	else if(hull_turfs)
+		if(!attach(hull_turfs, rotation))
+			ended = TRUE
+	else if(berth_turfs)
+		stand_on_berth()
+	else
 		ended = TRUE
 
 /// The berth the hull will stand on, or stood on. FALSE if there is none.
@@ -294,11 +331,29 @@
 	return TRUE
 
 /**
+ * The hull is still on its berth: the people aboard are found there, so they can be handed what they will need
+ * before it lifts. Nothing can be seen until attach().
+ */
+/datum/landing_view/proc/stand_on_berth()
+	transit_z = ground_z
+	pivot_x = ground_x
+	pivot_y = ground_y
+	low_x = ground_x - ground_half_w + 0.5
+	low_y = ground_y - ground_half_h + 0.5
+	high_x = ground_x + ground_half_w - 0.5
+	high_y = ground_y + ground_half_h - 0.5
+	start_sync()
+
+/datum/landing_view/proc/start_sync()
+	if(!sync_timer)
+		sync_timer = addtimer(CALLBACK(src, PROC_REF(sync_viewers)), LANDING_VIEW_SYNC, TIMER_DELETE_ME | TIMER_LOOP | TIMER_STOPPABLE)
+
+/**
  * The hull in transit, which everything is drawn around: from here on there are viewers. FALSE if [hull_turfs]
  * do not pair with the berth's.
  */
 /datum/landing_view/proc/attach(list/hull_turfs, rotation)
-	if(!length(hull_turfs) || length(hull_turfs) != length(berth_turfs))
+	if(!length(hull_turfs) || (berth_turfs && length(hull_turfs) != length(berth_turfs)))
 		return FALSE
 	src.hull_turfs = hull_turfs
 	src.rotation = rotation
@@ -325,7 +380,7 @@
 		if(!piece.sky)
 			piece.turn = -rotation
 	mask_areas()
-	addtimer(CALLBACK(src, PROC_REF(sync_viewers)), LANDING_VIEW_SYNC, TIMER_DELETE_ME | TIMER_LOOP)
+	start_sync()
 	return TRUE
 
 /datum/landing_view/Destroy(force)
@@ -334,10 +389,15 @@
 		drop_viewer(watcher)
 	viewers = null
 	unmask_areas()
+	if(light_twins)
+		// left as they were found
+		landing_view_restore_light(light_twins)
+		light_twins = null
 	QDEL_LIST(props)
 	QDEL_LIST(pieces)
 	ground = null
 	close = null
+	light = null
 	shadow = null
 	palette = null
 	QDEL_NULL(home)
@@ -361,13 +421,114 @@
 	for(var/client/watcher as anything in viewers)
 		var/datum/landing_view_viewer/viewer = viewers[watcher]
 		for(var/piece in viewer?.images)
-			for(var/image/shown as anything in viewer.images[piece])
-				animate(shown, alpha = 0, time = LANDING_VIEW_FADE)
+			var/list/held = viewer.images[piece]
+			for(var/slot in held)
+				animate(held[slot], alpha = 0, time = LANDING_VIEW_FADE)
 	for(var/atom/movable/prop as anything in props)
 		if(!QDELETED(prop))
 			animate(prop, alpha = 0, time = LANDING_VIEW_FADE)
 	// a hard reference: by now nothing else holds us
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LANDING_VIEW_FADE)
+
+/**
+ * In transit the stars light the hull's outer edge; on the ground, the ground beside it does (warm daylight off
+ * grass, blue off water). Left alone the hull changes colour the instant it lands or lifts. So for the last of
+ * a descent the space around the hull casts, tile for tile, the light the ground around the berth will, and
+ * after a takeoff it goes on casting it and lets it go slowly.
+ * * start, finish - how far from the stars' light to the ground's, 0-1
+ */
+/datum/landing_view/proc/fade_light(start, finish, time, stage = 0)
+	if(QDELETED(src) || ended || !hull_turfs || !berth_turfs)
+		return
+	light_twins ||= landing_view_light_twins(hull_turfs, berth_turfs, rotation)
+	landing_view_blend_light(light_twins, start + (finish - start) * stage / LANDING_VIEW_LIGHT_STEPS)
+	if(stage < LANDING_VIEW_LIGHT_STEPS)
+		addtimer(CALLBACK(src, PROC_REF(fade_light), start, finish, time, stage + 1), time / LANDING_VIEW_LIGHT_STEPS, TIMER_DELETE_ME)
+
+/**
+ * The transit turfs around a hull, each with the planet turf that lies in its place beside the berth:
+ * transit turf -> list(planet turf, TRUE if the stars light the hull from there).
+ * * rotation - clockwise degrees from the hull's heading in transit to its heading on the berth
+ */
+/proc/landing_view_light_twins(list/hull_turfs, list/berth_turfs, rotation)
+	. = list()
+	var/list/hull_set = list()
+	var/list/berth_set = list()
+	for(var/turf/hull_turf as anything in hull_turfs)
+		hull_set[hull_turf] = TRUE
+	for(var/turf/berth_turf as anything in berth_turfs)
+		berth_set[berth_turf] = TRUE
+	var/turned_cos = round(cos(rotation), 1)
+	var/turned_sin = round(sin(rotation), 1)
+	for(var/i in 1 to min(length(hull_turfs), length(berth_turfs)))
+		var/turf/hull_turf = hull_turfs[i]
+		var/turf/berth_turf = berth_turfs[i]
+		for(var/off_x in -2 to 2)
+			for(var/off_y in -2 to 2)
+				var/turf/planet_side = locate(berth_turf.x + off_x, berth_turf.y + off_y, berth_turf.z)
+				if(!planet_side || berth_set[planet_side])
+					continue
+				// the same step from the same hull tile, turned as the hull lies in transit
+				var/turf/transit_side = locate(hull_turf.x + off_x * turned_cos - off_y * turned_sin, hull_turf.y + off_x * turned_sin + off_y * turned_cos, hull_turf.z)
+				if(!transit_side || hull_set[transit_side] || !isspaceturf(transit_side))
+					continue
+				var/beside = abs(off_x) <= 1 && abs(off_y) <= 1
+				var/list/twin = .[transit_side]
+				if(!twin)
+					.[transit_side] = list(planet_side, beside)
+				else if(beside)
+					twin[2] = TRUE
+
+/// Sets the light each transit turf of [twins] casts: [share] of the way from the stars' to its planet twin's
+/proc/landing_view_blend_light(list/twins, share)
+	var/star_range = GLOB.starlight_range
+	var/star_power = GLOB.starlight_power
+	var/star_color = GLOB.starlight_color
+	for(var/turf/transit_side as anything in twins)
+		if(!isspaceturf(transit_side))
+			continue
+		var/list/twin = twins[transit_side]
+		var/stars = twin[2] ? star_power : 0
+		var/list/ground = landing_view_ground_light(twin[1], twin[2])
+		if(!stars && !ground)
+			continue
+		var/from_reach = stars ? star_range : ground[1]
+		var/to_reach = ground ? ground[1] : star_range
+		var/to_power = ground ? ground[2] : 0
+		var/tone = star_color
+		if(ground && (!stars || share >= 1))
+			tone = ground[3] || COLOR_WHITE
+		else if(ground && share > 0)
+			// never asked for the far end itself: the gradient loops, and gives the near end back for it
+			tone = BlendRGB(star_color, ground[3] || COLOR_WHITE, share)
+		// kept on even at no power: a turf whose light is off has the stars' put back by its neighbours
+		transit_side.set_light(l_range = from_reach + (to_reach - from_reach) * share, l_power = max(stars + (to_power - stars) * share, 0), l_color = tone, l_on = TRUE)
+
+/**
+ * The light [planet_side] casts on a hull standing beside it, as list(range, power, colour), or null for none.
+ * Daylit ground only lights what stands against it while something does (see voidcrew/edits/lighting.dm), so
+ * for ground with nothing on it yet this is the light it will cast, not the light it has.
+ * * beside - TRUE if the hull stands right against it
+ */
+/proc/landing_view_ground_light(turf/planet_side, beside)
+	// ground that lights itself: lava, glowing water
+	if(planet_side.light_range && planet_side.light_range != AMBIENT_BLEED_RANGE)
+		if(!planet_side.light_on || planet_side.light_power <= 0)
+			return null
+		return list(planet_side.light_range, planet_side.light_power, planet_side.light_color)
+	if(!beside)
+		return null
+	var/area/daylit = planet_side.ambient_bleed_area()
+	if(!daylit)
+		return null
+	return list(AMBIENT_BLEED_RANGE, (daylit.base_lighting_alpha / 255) / AMBIENT_BLEED_OVERLAP_FACTOR, daylit.base_lighting_color == COLOR_STARLIGHT ? GLOB.starlight_color : daylit.base_lighting_color)
+
+/// Gives the transit turfs of [twins] back the light they have by rights: the stars', beside a hull, or none
+/proc/landing_view_restore_light(list/twins)
+	for(var/turf/open/space/transit_side in twins)
+		GLOB.starlight -= transit_side
+		transit_side.set_light(l_on = FALSE)
+		transit_side.update_starlight()
 
 /// The mask tile every turf of a landing ship carries, through its area
 /proc/landing_view_mask_tile()
@@ -377,10 +538,20 @@
 		tile.plane = LANDING_VIEW_MASK_PLANE
 	return tile
 
+/// The tile every turf of transit space around a landing ship carries, through its area: where the ground's light may fall
+/proc/landing_view_outside_tile()
+	var/static/mutable_appearance/tile
+	if(!tile)
+		tile = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM)
+		tile.plane = LANDING_VIEW_OUTSIDE_PLANE
+	return tile
+
 /datum/landing_view/proc/mask_areas()
 	var/list/area/wanted = list()
+	var/list/area/outside_areas = list()
 	if(shuttle.assigned_transit?.assigned_area)
 		wanted += shuttle.assigned_transit.assigned_area
+		outside_areas += shuttle.assigned_transit.assigned_area
 	for(var/area/hull_area as anything in shuttle.shuttle_areas)
 		wanted |= hull_area
 	for(var/turf/hull_turf as anything in hull_turfs)
@@ -389,15 +560,23 @@
 	var/turf/outside = locate(low_x, low_y, transit_z)
 	if(outside)
 		wanted |= outside.loc
+		outside_areas |= outside.loc
 	for(var/area/to_mask as anything in wanted)
 		to_mask.add_overlay(landing_view_mask_tile())
 		masked += to_mask
+	for(var/area/to_mark as anything in outside_areas)
+		to_mark.add_overlay(landing_view_outside_tile())
+		marked_outside += to_mark
 
 /datum/landing_view/proc/unmask_areas()
 	for(var/area/was_masked as anything in masked)
 		if(!QDELETED(was_masked))
 			was_masked.cut_overlay(landing_view_mask_tile())
 	masked = list()
+	for(var/area/was_marked as anything in marked_outside)
+		if(!QDELETED(was_marked))
+			was_marked.cut_overlay(landing_view_outside_tile())
+	marked_outside = list()
 
 /**
  * A new piece of sky in the shared home, its middle on the middle of the screen. With no icon it is a flat
@@ -453,7 +632,8 @@
 		if(piece.give_at < INFINITY)
 			addtimer(CALLBACK(src, PROC_REF(show), piece, replay), piece.give_at - world.time, TIMER_DELETE_ME | TIMER_UNIQUE | TIMER_OVERRIDE)
 		return
-	if(!piece.shown && piece.drop_at < INFINITY)
+	if(!piece.dropping && piece.drop_at < INFINITY)
+		piece.dropping = TRUE
 		addtimer(CALLBACK(src, PROC_REF(take_back), piece), piece.drop_at - world.time, TIMER_DELETE_ME)
 	piece.shown = TRUE
 	for(var/client/watcher as anything in viewers)
@@ -461,6 +641,13 @@
 		if(!viewer || !watcher)
 			continue
 		give_picture(viewer, piece, replay)
+
+/// A picture handed out ahead of time (see held_back) starts to move, for everyone who holds it
+/datum/landing_view/proc/reveal(datum/landing_view_piece/piece)
+	if(ended || !piece.held_back)
+		return
+	piece.held_back = FALSE
+	show(piece)
 
 /// [piece] is out of sight for good: nobody holds its images any more
 /datum/landing_view/proc/take_back(datum/landing_view_piece/piece)
@@ -472,29 +659,103 @@
 		var/list/held = viewer?.images[piece]
 		if(!held)
 			continue
-		watcher?.images -= held
+		for(var/slot in held)
+			watcher?.images -= held[slot]
 		viewer.images -= piece
 
+/**
+ * Brings what [viewer] holds of [piece] up to date: the parts their screen can show, or all of them for a
+ * picture that is not picked over. Parts gone out of their sight are taken back.
+ * * replay - FALSE to leave alone what they already hold
+ */
 /datum/landing_view/proc/give_picture(datum/landing_view_viewer/viewer, datum/landing_view_piece/piece, replay = TRUE)
-	var/list/image/shown = viewer.images[piece]
+	var/client/watcher = viewer.client
+	if(!watcher)
+		return
+	var/list/shown = viewer.images[piece]
 	if(!shown)
 		shown = list()
 		viewer.images[piece] = shown
+	var/list/sight = piece.cull_from ? sight_of(viewer, piece) : null
+	// a picture already in sight has to be whole at once; one that is still clear can come a few parts a tick
+	var/budget = (sight && (piece.held_back || piece.state_at(world.time)[2] <= 0)) ? LANDING_VIEW_HANDOVER : INFINITY
+	var/more = FALSE
 	var/list/image/added = list()
 	for(var/i in 1 to length(piece.parts))
 		var/list/part = piece.parts[i]
-		if(i <= length(shown))
-			if(replay)
-				piece.play_on(shown[i], part[2], part[3], part[4])
+		var/slot = "[i]"
+		var/image/part_image = shown[slot]
+		// how far out of their sight it lies, in tiles
+		var/out = 0
+		if(sight && length(part) > 4 && part[5])
+			out = max(abs(part[2] - sight[1]) - sight[3], abs(part[3] - sight[2]) - sight[4]) / ICON_SIZE_X - part[5]
+		if(part_image)
+			if(out > LANDING_VIEW_KEEP)
+				watcher.images -= part_image
+				shown -= slot
+			else if(replay)
+				play_part(piece, part_image, part)
 			continue
-		var/image/part_image = image(loc = viewer.anchor)
+		if(out > 0)
+			continue
+		if(budget <= 0)
+			more = TRUE
+			continue
+		budget--
+		part_image = image(loc = viewer.anchor)
 		part_image.appearance = part[1]
 		part_image.loc = viewer.anchor
 		place_image(part_image, viewer.anchor)
-		piece.play_on(part_image, part[2], part[3], part[4])
-		shown += part_image
+		play_part(piece, part_image, part)
+		shown[slot] = part_image
 		added += part_image
-	viewer.client.images += added
+	watcher.images += added
+	if(more)
+		addtimer(CALLBACK(src, PROC_REF(give_more), viewer, piece), world.tick_lag, TIMER_DELETE_ME)
+
+/// The rest of a picture that is being handed over a few parts a tick
+/datum/landing_view/proc/give_more(datum/landing_view_viewer/viewer, datum/landing_view_piece/piece)
+	if(ended || QDELETED(piece) || !piece.shown || !viewer.client || viewers[viewer.client] != viewer)
+		return
+	give_picture(viewer, piece, FALSE)
+
+/datum/landing_view/proc/play_part(datum/landing_view_piece/piece, image/part_image, list/part)
+	if(piece.held_back)
+		animate(part_image, alpha = 0, time = 0)
+		part_image.alpha = 0
+		return
+	piece.play_on(part_image, part[2], part[3], part[4])
+
+/**
+ * The part of [piece] that [viewer]'s screen shows from now until a little later, in the picture's own pixels
+ * from its middle: list(middle w, middle z, half width, half height).
+ */
+/datum/landing_view/proc/sight_of(datum/landing_view_viewer/viewer, datum/landing_view_piece/piece)
+	var/now = world.time
+	// their eye from the hull's middle, turned into the picture's frame
+	var/eye_w = (viewer.anchor.x - pivot_x) * ICON_SIZE_X
+	var/eye_z = (viewer.anchor.y - pivot_y) * ICON_SIZE_Y
+	var/turned = piece.turn
+	var/in_w = eye_w * cos(turned) - eye_z * sin(turned)
+	var/in_z = eye_w * sin(turned) + eye_z * cos(turned)
+	var/sideways = abs(round(turned / 90)) % 2
+	var/half_w = (sideways ? viewer.half_h : viewer.half_w) * ICON_SIZE_X
+	var/half_z = (sideways ? viewer.half_w : viewer.half_h) * ICON_SIZE_Y
+	var/low_w = INFINITY
+	var/low_z = INFINITY
+	var/high_w = -INFINITY
+	var/high_z = -INFINITY
+	for(var/when in list(now, now + LANDING_VIEW_AHEAD))
+		var/list/state = piece.state_at(when)
+		var/size = piece.held_back ? piece.cull_from : max(piece.cull_from, state[1])
+		// it is drawn slid and then scaled, so a point of the screen is that far into it
+		var/mid_w = in_w / size + state[3] * ICON_SIZE_X
+		var/mid_z = in_z / size + state[4] * ICON_SIZE_Y
+		low_w = min(low_w, mid_w - half_w / size)
+		high_w = max(high_w, mid_w + half_w / size)
+		low_z = min(low_z, mid_z - half_z / size)
+		high_z = max(high_z, mid_z + half_z / size)
+	return list((low_w + high_w) / 2, (low_z + high_z) / 2, (high_w - low_w) / 2, (high_z - low_z) / 2)
 
 /// Shifts an image standing on [anchor] so its middle is the hull's middle
 /datum/landing_view/proc/place_image(image/shown, turf/anchor)
@@ -512,7 +773,7 @@
 
 /// Brings the viewers up to date: everyone whose eye is on or around the hull, living or not
 /datum/landing_view/proc/sync_viewers()
-	if(ended || !hull_turfs)
+	if(ended || !transit_z)
 		return
 	for(var/client/watcher as anything in viewers)
 		if(!watcher || !eye_turf_of(watcher))
@@ -530,8 +791,19 @@
 			continue
 		if(viewer.followed != watcher.mob)
 			follow(viewer, watcher.mob)
+		size_up(viewer)
 		if(viewer.anchor != eye_turf)
 			move_viewer(viewer, eye_turf)
+		else
+			for(var/datum/landing_view_piece/piece as anything in pieces)
+				if(piece.shown && piece.cull_from)
+					give_picture(viewer, piece, FALSE)
+
+/// How much [viewer] sees each way
+/datum/landing_view/proc/size_up(datum/landing_view_viewer/viewer)
+	var/list/view_size = getviewsize(viewer.client?.view)
+	viewer.half_w = view_size[1] / 2 + LANDING_VIEW_MARGIN
+	viewer.half_h = view_size[2] / 2 + LANDING_VIEW_MARGIN
 
 /datum/landing_view/proc/add_viewer(client/watcher, turf/eye_turf)
 	var/datum/landing_view_viewer/viewer = new
@@ -539,6 +811,7 @@
 	viewer.anchor = eye_turf
 	viewers[watcher] = viewer
 	follow(viewer, watcher.mob)
+	size_up(viewer)
 	watcher.screen += home
 	for(var/datum/landing_view_piece/piece as anything in pieces)
 		if(piece.shown)
@@ -558,7 +831,9 @@
 	if(watcher)
 		watcher.screen -= home
 		for(var/piece in viewer.images)
-			watcher.images -= viewer.images[piece]
+			var/list/held = viewer.images[piece]
+			for(var/slot in held)
+				watcher.images -= held[slot]
 	viewer.images = null
 	viewer.client = null
 
@@ -582,11 +857,20 @@
 /// The viewer's eye is over a new turf: their images go with it, and stay where they were on the world
 /datum/landing_view/proc/move_viewer(datum/landing_view_viewer/viewer, turf/eye_turf)
 	viewer.anchor = eye_turf
-	for(var/piece in viewer.images)
-		for(var/image/shown as anything in viewer.images[piece])
+	for(var/datum/landing_view_piece/piece as anything in viewer.images)
+		var/list/held = viewer.images[piece]
+		for(var/slot in held)
+			var/image/shown = held[slot]
 			shown.loc = eye_turf
 			place_image(shown, eye_turf)
+		if(piece.shown && piece.cull_from)
+			give_picture(viewer, piece, FALSE)
 
 #undef LANDING_VIEW_STEP
 #undef LANDING_VIEW_SYNC
 #undef LANDING_VIEW_FADE
+#undef LANDING_VIEW_HANDOVER
+#undef LANDING_VIEW_LIGHT_STEPS
+#undef LANDING_VIEW_AHEAD
+#undef LANDING_VIEW_MARGIN
+#undef LANDING_VIEW_KEEP

@@ -64,10 +64,14 @@
 	ship.forceMove(get_turf(site))
 	ship.state = "flying" // OVERMAP_SHIP_FLYING
 	ship.docked = null
+	// Flying over the planet with nothing under way, the people aboard see it below
+	ship.update_hover_view()
+	TEST_ASSERT_NOTNULL(ship.hover_view, "A ship flying over a planet does not show it under the hull ([label])")
 	site.adjust_dock_to_shuttle(primary, ship.shuttle)
 	ship.dock(site, primary)
 	var/datum/landing_animation/descent = ship.landing_animation
 	TEST_ASSERT_NOTNULL(descent, "A planet dock warmup did not start the descent ([label])")
+	TEST_ASSERT_NULL(ship.hover_view, "The view of the planet from above carried on under a descent ([label])")
 	// Skip the wait for the shadow and the ship; the timers would fire the same procs a few seconds in
 	descent.show_shadow()
 	descent.show_proxies()
@@ -142,6 +146,8 @@
 	TEST_ASSERT(view.ended, "A cancelled dock kept showing the planet to the people aboard")
 	sleep(2 SECONDS)
 	TEST_ASSERT(QDELETED(view), "A cancelled dock kept its view from aboard")
+	TEST_ASSERT_NOTNULL(ship.hover_view, "The planet did not come back under a ship whose landing was called off")
+	QDEL_NULL(ship.hover_view)
 	TEST_ASSERT_EQUAL(length(view_leftovers(hull_turfs, masked)), 0, "A cancelled dock left the view's glow, dust or mask behind")
 
 	// Landing: the hull's move removes everything in the same tick
@@ -177,10 +183,21 @@
 	TEST_ASSERT(length(climb.close.parts) > 0, "The ground is not there under the hull the moment it lifts")
 	masked = climb.masked.Copy()
 	hull_turfs = climb.hull_turfs.Copy()
+	ship.state = "flying" // OVERMAP_SHIP_FLYING
 	sleep(6 SECONDS)
 	TEST_ASSERT_EQUAL(length(effects_on(berth_turfs)), 0, "The takeoff picture or shadow stayed behind")
 	sleep(5 SECONDS)
 	TEST_ASSERT(QDELETED(climb), "The climb's view from aboard never ended")
 	TEST_ASSERT_NULL(ship.launch_view, "The ship still points at its finished climb")
+	// The climb ends on the planet as it looks from above, and that stays under the ship
+	var/datum/landing_view/hover/below = ship.hover_view
+	TEST_ASSERT_NOTNULL(below, "The climb did not leave the planet under the ship")
+	TEST_ASSERT(length(below.pieces) >= 4, "The planet under the ship is missing pieces")
+	// Until the ship flies on: then it falls away
+	ship.forceMove(get_step(get_turf(site), EAST) || get_step(get_turf(site), WEST))
+	TEST_ASSERT(below.leaving, "The planet stayed under a ship that had flown on")
+	sleep(3 SECONDS)
+	TEST_ASSERT(QDELETED(below), "The planet a ship left behind never went")
+	TEST_ASSERT_NULL(ship.hover_view, "The ship still points at the planet it left behind")
 	TEST_ASSERT_EQUAL(length(view_leftovers(hull_turfs, masked)), 0, "The climb left its dust or mask behind in transit")
 	ship.state = "flying" // OVERMAP_SHIP_FLYING

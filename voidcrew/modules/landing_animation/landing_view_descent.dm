@@ -5,11 +5,12 @@
  *
  * | from     | what                                                                                    |
  * |----------|-----------------------------------------------------------------------------------------|
- * | start    | the planet, whole, swelling under the ship until its rim has left the screen            |
+ * | start    | the planet under the ship, swelling until its rim has left the screen                   |
  * | T-9.2s   | heat: the hull's edge glows and sheds sparks, streaks fly out past it                    |
  * | T-8.4s   | the planet thins into the colour of its own sky                                          |
  * | T-7.4s   | a deck of cloud comes up from below, then the ship is in it: everything white           |
  * | T-5.2s   | out of the cloud's underside over the real ground, small and hazy, rushing up            |
+ * | T-2.7s   | the light on the hull's edge turns from the stars' to the ground's                       |
  * | T-1.4s   | the thrusters reach the ground: dust blows out from under the hull                       |
  * | T-0.3s   | the ground is at full size; the ship hangs on its thrusters until the hull really moves |
  *
@@ -26,45 +27,58 @@
 	/// world.time the hull is expected to move
 	var/touchdown
 
-/datum/landing_view/descent/New(obj/docking_port/mobile/shuttle, list/hull_turfs, list/berth_turfs, rotation, obj/structure/overmap/site, touchdown)
+/**
+ * * touchdown - world.time the hull is expected to move
+ * * planet_size - the size the planet already has under the ship (see /datum/landing_view/hover); null if it
+ *   is not there yet and has to come up from afar
+ */
+/datum/landing_view/descent/New(obj/docking_port/mobile/shuttle, list/hull_turfs, list/berth_turfs, rotation, obj/structure/overmap/site, touchdown, planet_size)
 	. = ..()
 	if(ended)
 		return
 	src.touchdown = touchdown
 	palette = landing_view_palette_for(site)
-	add_planet()
+	add_planet(planet_size)
 	add_heat()
 	add_clouds()
 	add_ground()
 	sync_viewers()
+	addtimer(CALLBACK(src, PROC_REF(fade_light), 0, 1, 2.2 SECONDS), max(0, touchdown - 2.7 SECONDS - world.time), TIMER_DELETE_ME)
 	cue_at(touchdown - 9.2 SECONDS, 'voidcrew/sound/effects/landing/entry.ogg', 55, 3.6 SECONDS, 0.08)
 	cue_at(touchdown - 6.6 SECONDS, 'voidcrew/sound/effects/landing/clouds.ogg', 45, 1.4 SECONDS, 0.05)
 	cue_at(touchdown - 4.6 SECONDS, 'voidcrew/sound/effects/landing/thrusters.ogg', 50)
 
 /// The planet whole, growing under the ship, then thinning into its own sky
-/datum/landing_view/descent/proc/add_planet()
+/datum/landing_view/descent/proc/add_planet(planet_size)
 	var/now = world.time
 	var/list/planet = new_planet()
 	var/list/grains = planet[1]
 	var/datum/landing_view_piece/whole = grains[1][1]
 	var/datum/landing_track/size = whole.scale
-	size.mark(now, 0.3)
+	size.mark(now, planet_size || LANDING_HOVER_FAR)
 	size.mark(touchdown - 6.2 SECONDS, 6.4, LANDING_CURVE_IN)
 	var/datum/landing_track/opacity = new
-	opacity.mark(now, 0)
-	opacity.mark(now + 0.6 SECONDS, 255)
-	opacity.mark(touchdown - 7.6 SECONDS, 255)
-	opacity.mark(touchdown - 6.2 SECONDS, 0)
+	if(planet_size)
+		opacity.mark(now, 255)
+	else
+		opacity.mark(now, 0)
+		opacity.mark(now + 0.6 SECONDS, 255)
+	// solid until the sky has closed over it: a planet that fades lets the stars show through it
+	opacity.mark(touchdown - 6.2 SECONDS, 255)
+	opacity.mark(touchdown - 6.1 SECONDS, 0)
 	chain_detail(grains, size, opacity, LANDING_PLANET_DETAIL)
 	var/datum/landing_view_piece/shade = planet[2]
 	shade.alpha = opacity
 	show(shade)
 
 	var/datum/landing_view_piece/air = new_air(whole)
-	air.alpha.mark(now, 0)
-	air.alpha.mark(now + 0.6 SECONDS, 235)
-	air.alpha.mark(touchdown - 8 SECONDS, 235)
-	air.alpha.mark(touchdown - 6.6 SECONDS, 0)
+	if(planet_size)
+		air.alpha.mark(now, 235)
+	else
+		air.alpha.mark(now, 0)
+		air.alpha.mark(now + 0.6 SECONDS, 235)
+	air.alpha.mark(touchdown - 6.2 SECONDS, 235)
+	air.alpha.mark(touchdown - 6.1 SECONDS, 0)
 	show(air)
 
 	// inside its air: the sky's own colour over everything, until the ground shows under it
@@ -113,6 +127,18 @@
 	inside.alpha.mark(touchdown - 3.8 SECONDS, 0, LANDING_CURVE_OUT)
 	show(inside)
 
+	// mist streaming past while the ship is inside it, so the white is never still
+	var/datum/landing_view_piece/mist = add_sky(LANDING_VIEW_LAYER_CLOUD + 1.5, LANDING_VIEW_ICON, "wisps", LANDING_VIEW_ICON_SIZE)
+	mist.sky.color = palette.sky
+	mist.turn = 73
+	mist.scale.mark(touchdown - 5.6 SECONDS, 2.2)
+	mist.scale.mark(touchdown - 4 SECONDS, 6.5)
+	mist.alpha.mark(touchdown - 5.6 SECONDS, 0)
+	mist.alpha.mark(touchdown - 5 SECONDS, 120)
+	mist.alpha.mark(touchdown - 4.5 SECONDS, 120)
+	mist.alpha.mark(touchdown - 4 SECONDS, 0)
+	show(mist)
+
 	// the underside of the deck, torn into wisps, flying up and out past the ship
 	var/datum/landing_view_piece/wisps = add_sky(LANDING_VIEW_LAYER_CLOUD + 0.5, LANDING_VIEW_ICON, "wisps", LANDING_VIEW_ICON_SIZE)
 	wisps.sky.color = palette.cloud
@@ -135,13 +161,25 @@
 	ground = add_picture()
 	ground.scale.mark(touchdown - 5.2 SECONDS, DESCENT_GROUND_START)
 	ground.scale.mark(touchdown - 0.3 SECONDS, 1, LANDING_CURVE_OUT)
-	// nobody is handed it until the sky has covered everything
-	ground.give_at = touchdown - 5.4 SECONDS
+	// handed over as soon as it is made, clear and still, so that whatever a client has to fetch for it has
+	// come long before it is needed; seen once the sky has covered everything
+	ground.held_back = TRUE
 	bake_far(ground, CALLBACK(src, PROC_REF(show), ground))
+	addtimer(CALLBACK(src, PROC_REF(reveal), ground), max(0, touchdown - 5.4 SECONDS - world.time), TIMER_DELETE_ME)
 	// and the same ground close up, once it is near enough to tell the difference
 	close = add_picture()
 	chain_ground(ground, close)
-	bake_near(close, detail_reach(), CALLBACK(src, PROC_REF(show), close))
+	// drawn as late as will do: weather comes and goes, and what it shows should be how the ground is as the hull lands
+	addtimer(CALLBACK(src, PROC_REF(bake_near), close, detail_reach(), CALLBACK(src, PROC_REF(show), close)), max(0, touchdown - 5.4 SECONDS - world.time), TIMER_DELETE_ME)
+
+	// and the light on it: the white of the cloud gives way to the ground as it is lit, dark if it is dark
+	light = add_picture()
+	light.scale = ground.scale
+	light.alpha.mark(touchdown - 4.6 SECONDS, 0)
+	light.alpha.mark(touchdown - 3.8 SECONDS, 255, LANDING_CURVE_OUT)
+	light.held_back = TRUE
+	addtimer(CALLBACK(src, PROC_REF(bake_light), light, CALLBACK(src, PROC_REF(show), light)), max(0, touchdown - 6.6 SECONDS - world.time), TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(reveal), light), max(0, touchdown - 4.8 SECONDS - world.time), TIMER_DELETE_ME)
 
 	// the same shadow the people on the ground see spreading over the berth (see /datum/landing_animation)
 	shadow = add_picture()

@@ -35,3 +35,37 @@
 /atom/movable/screen/plane_master/landing_view/Initialize(mapload, datum/hud/hud_owner, datum/plane_master_group/home, offset)
 	. = ..()
 	add_filter("landing_view_mask", 1, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(LANDING_VIEW_MASK_RENDER_TARGET, offset)))
+
+/atom/movable/screen/plane_master/landing_view_outside
+	name = "Landing view outside mask"
+	documentation = "Holds a white tile for every turf of transit space around a landing ship the viewer can see, and none for its hull.\
+		<br>Never drawn itself: it is the alpha mask of the landing view light plane, so the ground's light never falls on the ship."
+	plane = LANDING_VIEW_OUTSIDE_PLANE
+	appearance_flags = PLANE_MASTER|NO_CLIENT_COLOR
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	render_target = LANDING_VIEW_OUTSIDE_RENDER_TARGET
+	render_relay_planes = list()
+	offsetting_flags = BLOCKS_PLANE_OFFSETTING
+	multiz_scaled = FALSE
+
+/atom/movable/screen/plane_master/landing_view_outside/Initialize(mapload, datum/hud/hud_owner, datum/plane_master_group/home, offset)
+	. = ..()
+	// space draws itself as something that glows, which cuts it out of the lighting altogether: no light of
+	// ours could darken it. Around a landing hull it is ground that is seen there, so there it is blocked
+	add_relay_to(GET_NEW_PLANE(RENDER_PLANE_EMISSIVE, offset), relay_layer = EMISSIVE_SPACE_LAYER + 0.5, relay_color = GLOB.em_block_color)
+
+/atom/movable/screen/plane_master/landing_view_light
+	name = "Landing view light"
+	documentation = "The light on the ground a landing ship's crew see under them: a picture of it, drawn over the lighting of the transit space around the hull.\
+		<br>The landing view is lit like everything else, by the lighting plate; in transit that is full light everywhere. This puts the ground's own light there instead,\
+		so the ground shows as the game's lighting will show it once the hull is down, to every kind of eye."
+	plane = LANDING_VIEW_LIGHT_PLANE
+	appearance_flags = PLANE_MASTER|NO_CLIENT_COLOR
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	render_relay_planes = list(RENDER_PLANE_LIGHTING)
+	offsetting_flags = BLOCKS_PLANE_OFFSETTING
+	multiz_scaled = FALSE
+
+/atom/movable/screen/plane_master/landing_view_light/Initialize(mapload, datum/hud/hud_owner, datum/plane_master_group/home, offset)
+	. = ..()
+	add_filter("landing_view_outside", 1, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(LANDING_VIEW_OUTSIDE_RENDER_TARGET, offset)))

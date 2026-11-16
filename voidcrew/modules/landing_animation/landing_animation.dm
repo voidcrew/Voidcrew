@@ -169,6 +169,7 @@
 /obj/structure/overmap/ship/Destroy()
 	QDEL_NULL(landing_animation)
 	QDEL_NULL(launch_view)
+	QDEL_NULL(hover_view)
 	return ..()
 
 /**
@@ -235,6 +236,17 @@
 			planet_turfs += from_turf
 			transit_turfs += to_turf
 	. = ..()
+	if(descent)
+		// the ripples that warned the ground a hull was coming are under it now. Left for the end of the docking,
+		// several ticks away, they show on top of its decks until then
+		remove_ripples()
+	var/list/light_twins
+	if(launch)
+		// in transit the stars light the hull's edge, where the ground beside it did a moment ago: for now the
+		// space around it casts the ground's light, and the view of the climb lets it go slowly
+		// (see /datum/landing_view/proc/fade_light)
+		light_twins = landing_view_light_twins(transit_turfs, planet_turfs, SIMPLIFY_DEGREES(-rotation))
+		landing_view_blend_light(light_twins, 1)
 	if(launch || descent)
 		// the hull's lights have moved with it: lit again before anyone sees it dark
 		landing_settle_lighting()
@@ -248,6 +260,11 @@
 			ship.launch_view = view
 		// this move turns the hull [rotation] degrees from its berth; the view wants the way back
 		view?.lift_off(transit_turfs, planet_turfs, SIMPLIFY_DEGREES(-rotation))
+		if(QDELETED(view) || view.ended)
+			// nobody to bring the stars back slowly: they come back at once
+			landing_view_restore_light(light_twins)
+		else
+			view.light_twins = light_twins
 		launch.lift_off(transit_turfs, planet_turfs, view)
 	if(descent && !QDELETED(descent))
 		descent.landed()
@@ -577,8 +594,8 @@
 	var/obj/effect/abstract/landing_shadow/shadow
 	/// The falling hull
 	var/obj/effect/abstract/landing_proxy/proxy
-	/// client -> the image that hides the picture from them: the crew aboard, who would otherwise see a still
-	/// copy of their ship, themselves included, over the real one for a moment after landing
+	/// client -> the images that hide the picture and the shadow from them: the crew aboard, who would otherwise
+	/// see a still copy of their ship, themselves included, and its shadow over the real one for a moment after landing
 	var/list/hidden_from = list()
 	/// TRUE once the move has started and the picture is on the ground
 	var/frozen = FALSE
@@ -595,7 +612,8 @@
 	rotation = landing_rotation(ship.shuttle, dock)
 	touchdown_time = world.time + until_touchdown
 	give_up_time = touchdown_time + 60 SECONDS
-	inside_view = new(ship.shuttle, hull_turfs, berth_turfs, rotation, site, touchdown_time)
+	// the planet may already be under the ship: the descent starts from there
+	inside_view = new(ship.shuttle, hull_turfs, berth_turfs, rotation, site, touchdown_time, ship.take_hover())
 	addtimer(CALLBACK(src, PROC_REF(show_shadow)), max(0, until_touchdown - LANDING_SHADOW_LEAD), TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(show_proxies)), max(0, until_touchdown - LANDING_PROXY_LEAD), TIMER_DELETE_ME)
 	for(var/lead in list(1.4 SECONDS, 0.9 SECONDS, 0.4 SECONDS))
@@ -625,6 +643,9 @@
 		// the people aboard see the planet fade back into space rather than vanish
 		inside_view?.fade_away()
 		inside_view = null
+		if(!QDELETED(ship))
+			// and if the ship is still over it, it comes back up under them
+			addtimer(CALLBACK(ship, TYPE_PROC_REF(/obj/structure/overmap/ship, update_hover_view)), 1.3 SECONDS)
 		qdel(src)
 
 /// The hull has started to move onto the berth: the picture is on the ground now, and stays put.
@@ -633,23 +654,31 @@
 		return
 	frozen = TRUE
 	inside_view?.touchdown()
+	var/list/aboard = list()
+	for(var/turf/hull_turf as anything in hull_turfs)
+		aboard[hull_turf] = TRUE
+	// every player aboard, ghosts included (they are not in SSmobs.clients_by_zlevel)
+	var/list/client/crew_clients = list()
+	for(var/mob/crew as anything in GLOB.player_list)
+		if(crew.client && aboard[get_turf(crew)])
+			crew_clients += crew.client
+	// what the people on the ground are shown lies on the berth, and the hull is about to stand on it: the
+	// people aboard would see it laid over their own decks
+	var/list/atom/movable/cover = list()
 	if(shadow) // under the hull now; let its blurred rim go gently
 		animate(shadow, alpha = 0, time = 0.4 SECONDS)
 		QDEL_IN(shadow, 0.4 SECONDS)
+		cover += shadow
 		shadow = null
 	if(proxy)
 		animate(proxy, pixel_z = 0, time = 0.2 SECONDS, easing = QUAD_EASING | EASE_IN)
-		var/list/aboard = list()
-		for(var/turf/hull_turf as anything in hull_turfs)
-			aboard[hull_turf] = TRUE
-		// every player aboard, ghosts included (they are not in SSmobs.clients_by_zlevel)
-		for(var/mob/crew as anything in GLOB.player_list)
-			if(!crew.client || !aboard[get_turf(crew)])
-				continue
-			var/image/hide = image(loc = proxy)
+		cover += proxy
+	for(var/atom/movable/covering as anything in cover)
+		for(var/client/crew_client as anything in crew_clients)
+			var/image/hide = image(loc = covering)
 			hide.override = TRUE
-			crew.client.images += hide
-			hidden_from[crew.client] = hide
+			crew_client.images += hide
+			LAZYADD(hidden_from[crew_client], hide)
 
 /// The hull is down. The picture covers it a moment longer while its lighting is rebuilt, then goes.
 /datum/landing_animation/proc/landed()

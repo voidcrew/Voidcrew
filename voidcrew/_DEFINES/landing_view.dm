@@ -7,6 +7,11 @@
 /// Draws nothing itself. Whatever is on it becomes the mask LANDING_VIEW_PLANE is cut to.
 #define LANDING_VIEW_MASK_PLANE -44
 #define LANDING_VIEW_MASK_RENDER_TARGET "*LANDING_VIEW_MASK"
+/// A white tile on every turf of transit space around a landing hull, and none on the hull: what the ground's light is cut to
+#define LANDING_VIEW_OUTSIDE_PLANE -43
+#define LANDING_VIEW_OUTSIDE_RENDER_TARGET "*LANDING_VIEW_OUTSIDE"
+/// The light on the ground in the landing view, laid over the lighting of the transit space around the hull
+#define LANDING_VIEW_LIGHT_PLANE 18
 
 /// The sky's textures, and their size in pixels
 #define LANDING_VIEW_ICON 'voidcrew/icons/effects/landing_view.dmi'
@@ -44,6 +49,9 @@
 
 /// The sizes of the whole planet between which its closer-up texture takes over (see chain_detail())
 #define LANDING_PLANET_DETAIL list(list(2.6, 3))
+/// The size of the planet under a ship that is flying over it, and the size it comes up from and falls away to
+#define LANDING_HOVER_SIZE 1.5
+#define LANDING_HOVER_FAR 0.08
 /// The sizes of the far cloud sheet between which each closer-up one takes over
 #define LANDING_CLOUD_DETAIL list(list(3, 3.6), list(6, 7.2))
 

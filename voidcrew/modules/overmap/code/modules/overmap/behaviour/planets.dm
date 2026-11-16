@@ -70,7 +70,7 @@
 	color = COLOR_ORANGE
 
 	planet_template = /datum/planet/lava
-	parallax_theme = PARALLAX_THEME_PLANET
+	// no parallax_theme: a ship over a terrain planet sees the planet itself under it (voidcrew/modules/landing_animation)
 	chart_variant = "lava"
 
 /datum/overmap/planet/ice
@@ -79,7 +79,6 @@
 	color = COLOR_BLUE_LIGHT
 
 	planet_template = /datum/planet/snow
-	parallax_theme = PARALLAX_THEME_ICEMOON
 	chart_variant = "ice"
 
 /datum/overmap/planet/beach

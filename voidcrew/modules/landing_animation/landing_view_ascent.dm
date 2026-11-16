@@ -11,10 +11,11 @@
  * | L+1s    | the ground starts to slide off sternward as the ship gathers way, haze thickening     |
  * | L+3.3s  | into the cloud: everything white                                                      |
  * | L+3.9s  | out of its top: the deck of cloud drops away below, the sky darkens                   |
- * | L+4.8s  | the planet, whole, shrinking astern until it is lost among the stars                  |
+ * | L+4.8s  | the planet, whole, falling away under the ship until it is the size it has from orbit |
  *
  * Made while the engines wind up, so the country around the berth is already drawn when the hull lifts; only
- * the ground the hull itself stood on has to wait for it to be gone. Deletes itself when it is done.
+ * the ground the hull itself stood on has to wait for it to be gone. When it is done the view of the planet
+ * from above takes over (see /datum/landing_view/hover), or it fades out if the ship is already somewhere else.
  */
 
 #define ASCENT_LENGTH (9 SECONDS)
@@ -52,9 +53,12 @@
 	bow_y = (bow_dir & NORTH) ? 1 : ((bow_dir & SOUTH) ? -1 : 0)
 	ground = add_picture()
 	close = add_picture()
+	light = add_picture()
 	shadow = add_picture()
+	hold_ground(ground, close, light)
 	// all the country around the berth; the ground under the hull is drawn once the hull is off it
 	bake_far(ground, CALLBACK(src, PROC_REF(country_drawn)))
+	bake_light(light, CALLBACK(src, PROC_REF(country_drawn)))
 	bake_near(close, detail_reach(), CALLBACK(src, PROC_REF(country_drawn)), LANDING_GROUND_AROUND)
 	if(hull_turfs)
 		lift_off(hull_turfs, berth_turfs, rotation)
@@ -72,11 +76,11 @@
 	if(!liftoff)
 		qdel(src)
 
-/// The country around the berth is drawn; if the hull has already lifted, the people aboard get it now
+/// The country around the berth is drawn: the people aboard get it now, to hold until the hull lifts if it has not
 /datum/landing_view/ascent/proc/country_drawn()
-	if(liftoff)
-		show(ground, FALSE)
-		show(close, FALSE)
+	show(ground, FALSE)
+	show(close, FALSE)
+	show(light, FALSE)
 
 /**
  * The hull has just left its berth for transit.
@@ -91,6 +95,13 @@
 		qdel(src)
 		return
 	liftoff = world.time
+	// the people aboard went with the hull: what they hold goes with them
+	sync_viewers()
+	ground.held_back = FALSE
+	close.held_back = FALSE
+	light.held_back = FALSE
+	// the ground's light is still on the hull's edge (see takeoff()): it gives way to the stars' as it climbs
+	fade_light(1, 0, 2.6 SECONDS)
 	var/screen_bow = rotation ? turn(bow_dir, rotation) : bow_dir
 	screen_bow_x = (screen_bow & EAST) ? 1 : ((screen_bow & WEST) ? -1 : 0)
 	screen_bow_y = (screen_bow & NORTH) ? 1 : ((screen_bow & SOUTH) ? -1 : 0)
@@ -101,8 +112,20 @@
 	add_planet()
 	sync_viewers()
 	cue('voidcrew/sound/effects/landing/launch.ogg', 60, 3 SECONDS, 0.06)
-	// a hard reference: nothing else is sure to hold us for this long
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), ASCENT_LENGTH)
+	addtimer(CALLBACK(src, PROC_REF(finish)), ASCENT_LENGTH)
+
+/// The climb is over. The planet is left where it is, under a ship still over it, for the view from orbit to take up.
+/datum/landing_view/ascent/proc/finish()
+	if(ended)
+		return
+	var/obj/structure/overmap/ship/our_ship = ship
+	if(our_ship?.launch_view == src)
+		our_ship.launch_view = null
+		if(our_ship.hover_site())
+			qdel(src)
+			our_ship.update_hover_view(FALSE)
+			return
+	fade_away()
 
 /// The ground it stood on, falling away and sliding off astern, and its shadow left behind on it
 /datum/landing_view/ascent/proc/add_ground()
@@ -121,6 +144,15 @@
 	chain_ground(ground, close)
 	show(ground)
 	show(close)
+	// the light on it goes with it, and lets go as the haze closes over it
+	light.scale = ground.scale
+	light.slide_x = ground.slide_x
+	light.slide_y = ground.slide_y
+	light.alpha.mark(liftoff, 255)
+	light.alpha.mark(liftoff + 2.6 SECONDS, 255)
+	light.alpha.mark(liftoff + 3.6 SECONDS, 0, LANDING_CURVE_IN)
+	light.drop_at = liftoff + 3.9 SECONDS
+	show(light)
 
 	shadow.parts = list(list(landing_view_shadow_look(berth_turfs, ground_x, ground_y), 0, 0, 1))
 	shadow.scale.mark(liftoff, 1)
@@ -158,6 +190,18 @@
 	inside.alpha.mark(liftoff + 4.8 SECONDS, 0, LANDING_CURVE_OUT)
 	show(inside)
 
+	// mist streaming past while the ship is inside it, so the white is never still
+	var/datum/landing_view_piece/mist = add_sky(LANDING_VIEW_LAYER_CLOUD + 1.5, LANDING_VIEW_ICON, "wisps", LANDING_VIEW_ICON_SIZE)
+	mist.sky.color = palette.sky
+	mist.turn = 73
+	mist.scale.mark(liftoff + 3.2 SECONDS, 6.5)
+	mist.scale.mark(liftoff + 4.8 SECONDS, 2.2)
+	mist.alpha.mark(liftoff + 3.2 SECONDS, 0)
+	mist.alpha.mark(liftoff + 3.7 SECONDS, 120)
+	mist.alpha.mark(liftoff + 4.2 SECONDS, 120)
+	mist.alpha.mark(liftoff + 4.8 SECONDS, 0)
+	show(mist)
+
 	var/list/datum/landing_view_piece/deck = new_clouds()
 	var/datum/landing_track/size = deck[1].scale
 	size.mark(liftoff + 3.9 SECONDS, 11)
@@ -173,33 +217,26 @@
 	opacity.mark(liftoff + 6.8 SECONDS, 0)
 	chain_detail(deck, size, opacity, LANDING_CLOUD_DETAIL)
 
-/// The planet whole, shrinking astern
+/// The planet whole, falling away under the ship until it is as big as it is from orbit
 /datum/landing_view/ascent/proc/add_planet()
 	var/list/planet = new_planet()
 	var/list/grains = planet[1]
 	var/datum/landing_view_piece/whole = grains[1][1]
 	var/datum/landing_track/size = whole.scale
 	size.mark(liftoff + 4.6 SECONDS, 6.4)
-	size.mark(liftoff + 8.6 SECONDS, 0.7, LANDING_CURVE_OUT)
-	whole.slide_x.mark(liftoff + 4.6 SECONDS, 0)
-	whole.slide_x.mark(liftoff + 8.6 SECONDS, screen_bow_x * 240)
-	whole.slide_y.mark(liftoff + 4.6 SECONDS, 0)
-	whole.slide_y.mark(liftoff + 8.6 SECONDS, screen_bow_y * 240)
+	size.mark(liftoff + 8.6 SECONDS, LANDING_HOVER_SIZE, LANDING_CURVE_OUT)
+	// there, solid, under the sky before the sky thins: a planet that fades in lets the stars show through it
 	var/datum/landing_track/opacity = new
-	opacity.mark(liftoff + 4.8 SECONDS, 0)
-	opacity.mark(liftoff + 5.8 SECONDS, 255)
-	opacity.mark(liftoff + 7.6 SECONDS, 255)
-	opacity.mark(liftoff + 8.8 SECONDS, 0)
+	opacity.mark(liftoff + 4.6 SECONDS, 0)
+	opacity.mark(liftoff + 4.7 SECONDS, 255)
 	chain_detail(grains, size, opacity, LANDING_PLANET_DETAIL)
 	var/datum/landing_view_piece/shade = planet[2]
 	shade.alpha = opacity
 	show(shade)
 
 	var/datum/landing_view_piece/air = new_air(whole)
-	air.alpha.mark(liftoff + 5 SECONDS, 0)
-	air.alpha.mark(liftoff + 6 SECONDS, 235)
-	air.alpha.mark(liftoff + 7.6 SECONDS, 235)
-	air.alpha.mark(liftoff + 8.8 SECONDS, 0)
+	air.alpha.mark(liftoff + 4.6 SECONDS, 0)
+	air.alpha.mark(liftoff + 4.7 SECONDS, 235)
 	show(air)
 
 #undef ASCENT_LENGTH
