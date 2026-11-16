@@ -4,7 +4,6 @@
 /area/template_noop)
 "aJU" = (
 /obj/structure/table/wood,
-/obj/item/storage/toolbox/mechanical/old,
 /obj/item/storage/box/rndboards/all,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
@@ -32,7 +31,8 @@
 /obj/machinery/airalarm/directional/north,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/light/red/dim/directional/south,
+/obj/machinery/light/directional/south,
+/obj/effect/mapping_helpers/airalarm/all_access,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "flw" = (
@@ -76,16 +76,16 @@
 /area/template_noop)
 "iUO" = (
 /obj/structure/rack,
-/obj/item/storage/medkit/fire,
-/obj/item/storage/medkit/o2{
-	pixel_y = 5
+/obj/item/storage/medkit/toxin{
+	pixel_y = 15
 	},
 /obj/item/storage/medkit/brute{
 	pixel_y = 10
 	},
-/obj/item/storage/medkit/toxin{
-	pixel_y = 15
+/obj/item/storage/medkit/o2{
+	pixel_y = 5
 	},
+/obj/item/storage/medkit/fire,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "kfn" = (
@@ -102,6 +102,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
+/obj/item/storage/toolbox/mechanical/old,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "kDU" = (
@@ -136,7 +137,17 @@
 /area/template_noop)
 "odl" = (
 /obj/structure/table/wood,
-/obj/item/binoculars,
+/obj/item/toy/plush/lizard_plushie/greyscale{
+	greyscale_colors = "#CC0000#FFD700";
+	name = "Xiao Long";
+	desc = "It is a bright red plush Chinese dragon gifted by Chinese comrades to Soviet cosmonauts as a symbol of friendship and a faithful zero-gravity mascot.";
+	pixel_y = 4;
+	pixel_x = 7
+	},
+/obj/item/binoculars{
+	pixel_y = 6;
+	pixel_x = -2
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "owV" = (
@@ -153,6 +164,10 @@
 /obj/structure/window/reinforced/spawner/directional/south,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
+	},
+/obj/item/stack/sticky_tape/duct{
+	color = "70A0FF";
+	name = "Electrical insulating tape"
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
@@ -177,7 +192,7 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/light/red/dim/directional/south,
+/obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "wqC" = (
@@ -248,7 +263,7 @@ uOW
 knE
 kQf
 iuB
-mkc
+voP
 wqC
 aWn
 arT
@@ -257,7 +272,7 @@ arT
 owV
 nTh
 igB
-voP
+mkc
 wqC
 hbK
 owV

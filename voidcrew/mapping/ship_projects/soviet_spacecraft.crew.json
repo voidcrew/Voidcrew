@@ -1,97 +1,25 @@
 {
   "Rosters": {
-    "theme/proton": [
-      {
-        "ID": "job_4",
-        "Name": "Commander",
-        "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_4",
-        "BaseOutfit": "/datum/outfit/job/assistant",
-        "Category": "Command",
-        "Slots": 1,
-        "Officer": false,
-        "Equipment": {
-          "belt": "/obj/item/modular_computer/pda/heads/captain",
-          "box": "",
-          "ears": "/obj/item/radio/headset/headset_com",
-          "glasses": "/obj/item/clothing/glasses/sunglasses",
-          "gloves": "/obj/item/clothing/gloves/color/grey/protects_cold",
-          "head": "/obj/item/clothing/head/helmet/rus_ushanka",
-          "id": "/obj/item/card/id/advanced/gold",
-          "l_hand": "/obj/item/clipboard",
-          "l_pocket": "/obj/item/reagent_containers/hypospray/medipen/survival",
-          "mask": "",
-          "r_pocket": "/obj/item/reagent_containers/hypospray/medipen/salbutamol",
-          "shoes": "/obj/item/clothing/shoes/russian",
-          "suit": "",
-          "uniform": "/obj/item/clothing/under/costume/russian_officer"
-        },
-        "Backpack": {
-          "/obj/item/ammo_box/magazine/m9mm": 2,
-          "/obj/item/gun/ballistic/automatic/pistol/no_mag": 1
-        },
-        "Belt": null,
-        "Extra": null
-      },
-      {
-        "ID": "job_5",
-        "Name": "Flight Engineer",
-        "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_5",
-        "BaseOutfit": "/datum/outfit/job/assistant",
-        "Category": "Engineering",
-        "Slots": 2,
-        "Officer": false,
-        "Equipment": {
-          "uniform": "/obj/item/clothing/under/color/green"
-        },
-        "Backpack": null,
-        "Belt": null,
-        "Extra": null
-      },
-      {
-        "ID": "job_6",
-        "Name": "Spaceflight Participant",
-        "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_6",
-        "BaseOutfit": "/datum/outfit/job/assistant",
-        "Category": "Assistant",
-        "Slots": 3,
-        "Officer": false,
-        "Equipment": {
-          "uniform": "/obj/item/clothing/under/color/brown"
-        },
-        "Backpack": null,
-        "Belt": null,
-        "Extra": null
-      }
-    ],
     "theme/standard": [
       {
         "ID": "job_1",
         "Name": "Commander",
         "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_1",
-        "BaseOutfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "/datum/outfit/job/captain",
         "Category": "Command",
         "Slots": 1,
         "Officer": false,
         "Equipment": {
-          "belt": "/obj/item/modular_computer/pda/heads/captain",
-          "box": "",
-          "ears": "/obj/item/radio/headset/headset_com",
-          "glasses": "/obj/item/clothing/glasses/sunglasses",
-          "gloves": "/obj/item/clothing/gloves/color/grey/protects_cold",
+          "gloves": "/obj/item/clothing/gloves/combat",
           "head": "/obj/item/clothing/head/helmet/rus_ushanka",
-          "id": "/obj/item/card/id/advanced/gold",
-          "l_hand": "/obj/item/clipboard",
-          "l_pocket": "/obj/item/reagent_containers/hypospray/medipen/survival",
-          "mask": "",
-          "r_pocket": "/obj/item/reagent_containers/hypospray/medipen/salbutamol",
+          "l_pocket": "/obj/item/reagent_containers/hypospray/medipen/salbutamol",
+          "r_hand": "/obj/item/clipboard",
+          "r_pocket": "/obj/item/reagent_containers/hypospray/medipen/penacid",
           "shoes": "/obj/item/clothing/shoes/russian",
           "suit": "",
           "uniform": "/obj/item/clothing/under/costume/russian_officer"
         },
-        "Backpack": {
-          "/obj/item/ammo_box/magazine/m9mm": 2,
-          "/obj/item/gun/ballistic/automatic/pistol/no_mag": 1
-        },
+        "Backpack": null,
         "Belt": null,
         "Extra": null
       },
@@ -99,14 +27,18 @@
         "ID": "job_2",
         "Name": "Flight Engineer",
         "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_2",
-        "BaseOutfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "/datum/outfit/job/engineer",
         "Category": "Engineering",
         "Slots": 2,
         "Officer": false,
         "Equipment": {
-          "uniform": "/obj/item/clothing/under/color/green"
+          "head": "/obj/item/clothing/head/costume/ushanka",
+          "uniform": "/obj/item/clothing/under/rank/centcom/military/eng"
         },
-        "Backpack": null,
+        "Backpack": {
+          "/obj/item/construction/rcd/loaded": 1,
+          "/obj/item/reagent_containers/cup/glass/bottle/vodka": 1
+        },
         "Belt": null,
         "Extra": null
       },
@@ -116,9 +48,13 @@
         "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_3",
         "BaseOutfit": "/datum/outfit/job/assistant",
         "Category": "Assistant",
-        "Slots": 3,
+        "Slots": 2,
         "Officer": false,
         "Equipment": {
+          "head": "/obj/item/clothing/head/beanie/black/dboy",
+          "l_hand": "/obj/item/crowbar",
+          "l_pocket": "/obj/item/food/grown/citrus/lemon",
+          "r_pocket": "/obj/item/food/grown/citrus/lime",
           "uniform": "/obj/item/clothing/under/color/brown"
         },
         "Backpack": null,

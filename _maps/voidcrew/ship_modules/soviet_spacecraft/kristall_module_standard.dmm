@@ -27,12 +27,16 @@
 /obj/structure/ore_box,
 /turf/open/floor/mineral/titanium/white,
 /area/template_noop)
+"bQB" = (
+/obj/machinery/mineral/ore_redemption,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
 "cEu" = (
 /turf/open/floor/mineral/titanium/white,
 /area/template_noop)
 "cOU" = (
 /obj/structure/reagent_dispensers/watertank,
-/turf/template_noop,
+/turf/open/floor/mineral/titanium/tiled,
 /area/template_noop)
 "dtl" = (
 /obj/machinery/suit_storage_unit/mining/eva,
@@ -53,11 +57,10 @@
 "kJc" = (
 /obj/machinery/light/directional/south,
 /obj/structure/reagent_dispensers/fueltank/large,
-/turf/template_noop,
+/turf/open/floor/mineral/titanium/tiled,
 /area/template_noop)
 "kXy" = (
 /obj/machinery/light/directional/north,
-/obj/machinery/mineral/ore_redemption,
 /turf/open/floor/mineral/titanium/white,
 /area/template_noop)
 "lTm" = (
@@ -72,8 +75,12 @@
 /turf/template_noop,
 /area/template_noop)
 "qCc" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/table/reinforced,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/button/door/directional/south{
+	id = "shutters_mining"
+	},
 /turf/open/floor/mineral/titanium/white,
 /area/template_noop)
 "rpf" = (
@@ -82,15 +89,25 @@
 /obj/item/t_scanner/adv_mining_scanner/lesser,
 /turf/open/floor/mineral/titanium/tiled,
 /area/template_noop)
+"rsi" = (
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"sgC" = (
+/obj/item/shovel,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
 "tRV" = (
-/obj/machinery/door/poddoor/shutters/window,
+/obj/machinery/door/poddoor/shutters/window{
+	id = "shutters_mining"
+	},
 /turf/open/floor/mineral/titanium/tiled,
 /area/template_noop)
 "vzp" = (
 /obj/machinery/airalarm/directional/east,
 /obj/machinery/power/apc/auto_name/directional/south,
-/obj/structure/table/reinforced,
 /obj/structure/cable,
+/obj/effect/mapping_helpers/airalarm/all_access,
 /turf/open/floor/mineral/titanium/white,
 /area/template_noop)
 "wAz" = (
@@ -104,15 +121,15 @@
 lTm
 lTm
 lTm
-wAz
+qCc
 lTm
 lTm
 pqv
 "}
 (2,1,1) = {"
 lTm
-hMX
 blI
+cEu
 wAz
 tRV
 fxl
@@ -128,7 +145,7 @@ rpf
 kJc
 "}
 (4,1,1) = {"
-cEu
+rsi
 cEu
 cEu
 wAz
@@ -137,18 +154,18 @@ amK
 cOU
 "}
 (5,1,1) = {"
-cEu
+dtl
 cEu
 cEu
 wAz
 gUy
 gUy
-qCc
+gUy
 "}
 (6,1,1) = {"
+dtl
 cEu
-cEu
-cEu
+sgC
 awk
 nFG
 nFG
@@ -156,7 +173,7 @@ vzp
 "}
 (7,1,1) = {"
 lTm
-cEu
+bcb
 cEu
 baY
 cEu
@@ -166,9 +183,9 @@ lTm
 (8,1,1) = {"
 lTm
 lTm
-dtl
-dtl
-bcb
+bQB
+cEu
+hMX
 lTm
 lTm
 "}

@@ -10,8 +10,11 @@
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "ccG" = (
-/obj/structure/closet/secure_closet/chemical/heisenberg,
 /obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/table/reinforced,
+/obj/item/storage/bag/ore,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/pickaxe/rusted,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "cOp" = (
@@ -21,18 +24,12 @@
 /turf/open/floor/pod,
 /area/template_noop)
 "dYv" = (
-/obj/structure/table/reinforced,
-/obj/structure/microscope,
-/obj/item/reagent_containers/cup/beaker/large{
-	pixel_y = 2;
-	pixel_x = -5
-	},
-/obj/item/reagent_containers/cup/beaker/large,
+/obj/machinery/suit_storage_unit/void_old/jetpack,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "iSq" = (
 /obj/machinery/light/directional/south,
-/obj/structure/frame/machine/secured,
+/obj/structure/frame/machine,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "jNr" = (
@@ -43,7 +40,7 @@
 /area/template_noop)
 "kMP" = (
 /obj/machinery/light/directional/north,
-/obj/structure/tank_dispenser/oxygen,
+/obj/machinery/chem_master,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "lIo" = (
@@ -62,12 +59,8 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
-"oER" = (
-/obj/machinery/chem_master,
-/turf/open/floor/oldshuttle,
-/area/template_noop)
 "peI" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "qFh" = (
@@ -76,12 +69,12 @@
 /area/template_noop)
 "qXu" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/bag/ore,
-/obj/item/t_scanner/adv_mining_scanner/lesser,
-/obj/item/pickaxe/rusted,
-/turf/open/floor/oldshuttle,
-/area/template_noop)
-"rxY" = (
+/obj/item/reagent_containers/cup/beaker/large,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_y = 2;
+	pixel_x = -5
+	},
+/obj/structure/microscope,
 /obj/item/reagent_containers/dropper,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
@@ -91,24 +84,19 @@
 /area/template_noop)
 "rOq" = (
 /obj/machinery/light/directional/north,
-/obj/machinery/suit_storage_unit/void_old/jetpack,
+/obj/structure/closet/secure_closet/chemical/heisenberg,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "tfy" = (
 /obj/structure/cable,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
-"uvT" = (
-/obj/structure/window/reinforced/spawner/directional/south,
-/turf/open/floor/oldshuttle,
-/area/template_noop)
 "uzE" = (
-/obj/structure/closet/crate/science,
+/obj/structure/closet/crate/science/robo,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "vqv" = (
-/obj/structure/closet/crate/science/robo,
-/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/closet/crate/science,
 /turf/open/floor/oldshuttle,
 /area/template_noop)
 "vFy" = (
@@ -141,8 +129,8 @@ bAu
 jNr
 tfy
 cOp
-uvT
-uzE
+bRy
+qFh
 bAu
 "}
 (3,1,1) = {"
@@ -155,28 +143,28 @@ bRy
 iSq
 "}
 (4,1,1) = {"
-mjb
-mjb
-mjb
+lIo
+bRy
+bRy
 vFy
 bRy
 bRy
-qFh
+vqv
 "}
 (5,1,1) = {"
 qXu
 bRy
 bRy
-peI
+vFy
 bRy
 bRy
-rFF
+uzE
 "}
 (6,1,1) = {"
 rOq
 bRy
 bRy
-peI
+vFy
 xjB
 bRy
 ofD
@@ -185,16 +173,16 @@ ofD
 bAu
 ccG
 bRy
+mjb
 bRy
-rxY
-vqv
+rFF
 bAu
 "}
 (8,1,1) = {"
 bAu
 bAu
-lIo
-oER
+peI
+mjb
 dYv
 bAu
 bAu

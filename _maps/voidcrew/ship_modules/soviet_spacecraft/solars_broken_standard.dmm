@@ -1,4 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"asA" = (
+/obj/effect/spawner/random/structure/closet_maintenance,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
 "aGQ" = (
 /obj/effect/spawner/random/trash/grime,
 /turf/open/floor/iron/solarpanel/airless,
@@ -11,11 +15,20 @@
 /obj/item/stack/cable_coil/cut,
 /turf/open/floor/catwalk_floor/airless,
 /area/template_noop)
+"dld" = (
+/obj/item/stack/cable_coil/cut,
+/obj/item/pickaxe/rusted,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"dlk" = (
+/turf/closed/mineral/uranium/volcanic,
+/area/template_noop)
 "evi" = (
 /turf/open/floor/iron/solarpanel/airless,
 /area/template_noop)
 "eHd" = (
 /obj/item/stack/cable_coil/cut,
+/obj/item/electronics/tracker,
 /turf/template_noop,
 /area/template_noop)
 "eLH" = (
@@ -74,7 +87,9 @@
 /turf/open/floor/catwalk_floor/airless,
 /area/template_noop)
 "kGL" = (
-/obj/machinery/power/solar_control,
+/obj/machinery/power/solar_control{
+	dir = 1
+	},
 /obj/structure/cable,
 /obj/effect/mapping_helpers/broken_machine,
 /turf/template_noop,
@@ -99,8 +114,14 @@
 /obj/effect/spawner/random/medical,
 /turf/open/floor/iron/solarpanel/airless,
 /area/template_noop)
+"oqv" = (
+/turf/closed/mineral/silver/volcanic,
+/area/template_noop)
 "pLh" = (
 /turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"rdu" = (
+/turf/closed/mineral/gold/volcanic,
 /area/template_noop)
 "rgB" = (
 /obj/structure/cable,
@@ -110,6 +131,9 @@
 /obj/structure/cable,
 /obj/effect/spawner/random/trash/grime,
 /turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"sAt" = (
+/turf/closed/mineral/gibtonite,
 /area/template_noop)
 "sOX" = (
 /turf/closed/mineral/telecrystal/volcanic,
@@ -129,6 +153,11 @@
 /obj/structure/cable,
 /obj/item/shard,
 /turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"tGv" = (
+/obj/structure/cable,
+/obj/item/electronics/tracker,
+/turf/open/floor/catwalk_floor/airless,
 /area/template_noop)
 "ufq" = (
 /obj/structure/cable,
@@ -211,7 +240,7 @@ evi
 evi
 evi
 evi
-evi
+asA
 eYo
 "}
 (2,1,1) = {"
@@ -304,7 +333,7 @@ rRH
 iHb
 iHb
 wHs
-dfc
+dld
 dfc
 lKt
 eHd
@@ -320,7 +349,7 @@ wXL
 iHb
 iHb
 iHb
-iHb
+tGv
 iOg
 iOg
 iHb
@@ -328,11 +357,11 @@ iHb
 wQo
 wQo
 wQo
-ilE
+oqv
 ilE
 "}
 (5,1,1) = {"
-wQo
+sAt
 sOX
 yhM
 yhM
@@ -371,7 +400,7 @@ ilE
 ilE
 "}
 (6,1,1) = {"
-ilE
+dlk
 wQo
 wQo
 ndZ
@@ -402,7 +431,7 @@ gmd
 gmd
 yhM
 yhM
-ilE
+rdu
 ilE
 ilE
 ilE
@@ -413,7 +442,7 @@ ilE
 ilE
 ilE
 ilE
-ilE
+dlk
 wQo
 evi
 aGQ

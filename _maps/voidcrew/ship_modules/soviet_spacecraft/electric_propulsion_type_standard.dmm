@@ -20,6 +20,11 @@
 	},
 /turf/template_noop,
 /area/template_noop)
+"bsI" = (
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
 "bIe" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -31,13 +36,43 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/template_noop,
 /area/template_noop)
+"czG" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/rack,
+/obj/item/stock_parts/power_store/cell/lead{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/item/stock_parts/power_store/cell/lead{
+	pixel_x = 8;
+	pixel_y = -4
+	},
+/obj/item/stock_parts/power_store/cell/lead{
+	pixel_y = 5
+	},
+/turf/open/floor/plating,
+/area/template_noop)
 "cJp" = (
-/obj/machinery/atmospherics/components/tank/air/layer4,
+/obj/machinery/atmospherics/components/tank/air/layer4{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"dUt" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/item/stack/cable_coil/thirty,
 /turf/template_noop,
 /area/template_noop)
 "ehc" = (
 /obj/machinery/door/airlock/engineering/glass/critical,
 /turf/open/floor/engine,
+/area/template_noop)
+"eMY" = (
+/obj/machinery/atmospherics/components/binary/pump/on/supply/visible/layer4{
+	dir = 4
+	},
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/template_noop,
 /area/template_noop)
 "fcM" = (
 /obj/machinery/power/terminal{
@@ -96,7 +131,18 @@
 "hTQ" = (
 /obj/structure/cable,
 /obj/structure/sign/poster/contraband/power/directional/north,
-/obj/machinery/light/dim/directional/north,
+/obj/machinery/light/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"hZL" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"iDc" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/template_noop)
 "iPV" = (
@@ -105,7 +151,15 @@
 /turf/template_noop,
 /area/template_noop)
 "iTv" = (
-/obj/machinery/light/dim/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"jkQ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 4
+	},
 /turf/template_noop,
 /area/template_noop)
 "joI" = (
@@ -116,7 +170,14 @@
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/door/window/brigdoor,
-/obj/machinery/power/supermatter_crystal/shard/engine,
+/obj/machinery/power/supermatter_crystal/shard,
+/turf/template_noop,
+/area/template_noop)
+"lcO" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/template_noop)
 "mrY" = (
@@ -129,7 +190,11 @@
 /obj/machinery/power/emitter/welded{
 	dir = 1
 	},
-/obj/machinery/light/dim/directional/east,
+/obj/machinery/light/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"mOq" = (
+/obj/item/borg/sight/meson,
 /turf/template_noop,
 /area/template_noop)
 "nBi" = (
@@ -140,8 +205,32 @@
 /obj/structure/window/reinforced/spawner/directional/west,
 /turf/template_noop,
 /area/template_noop)
+"oKK" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/item/circuitboard/machine/engine/electric,
+/obj/item/circuitboard/machine/engine/electric{
+	pixel_y = 5
+	},
+/obj/item/circuitboard/machine/engine/electric{
+	pixel_y = 9
+	},
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/circuitboard/machine/smes,
+/obj/item/circuitboard/machine/smes,
+/obj/item/circuitboard/machine/smes,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
 "oUe" = (
 /obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"puC" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/item/storage/toolbox/mechanical/old,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
 /turf/template_noop,
 /area/template_noop)
 "pET" = (
@@ -150,6 +239,11 @@
 	dir = 4
 	},
 /obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"pWI" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/template_noop)
 "qqg" = (
@@ -167,6 +261,11 @@
 "rIo" = (
 /obj/machinery/power/emitter/welded,
 /obj/effect/mapping_helpers/broken_machine,
+/turf/template_noop,
+/area/template_noop)
+"sdA" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/template_noop)
 "sGS" = (
@@ -187,6 +286,11 @@
 /area/template_noop)
 "uaA" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"udZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/template_noop)
 "uie" = (
@@ -216,9 +320,6 @@
 /turf/template_noop,
 /area/template_noop)
 "xeH" = (
-/obj/machinery/power/shuttle_engine/ship/electric{
-	dir = 4
-	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/template_noop)
@@ -232,47 +333,47 @@
 
 (1,1,1) = {"
 ahL
-ahL
-ahL
+hZL
+nBi
 xeH
 xeH
 xeH
-ahL
+jkQ
 ahL
 pET
 "}
 (2,1,1) = {"
 gnt
-gnt
-gnt
-gxb
+oue
 oue
 gxb
-gnt
-gnt
+oue
+czG
+oKK
+pWI
 gnt
 "}
 (3,1,1) = {"
 fcM
-fcM
-fcM
 nBi
 nBi
 nBi
-fcM
-fcM
+nBi
+nBi
+nBi
+sdA
 fcM
 "}
 (4,1,1) = {"
 vVg
-wyO
+mOq
 nBi
 oUe
 wyO
 fyw
 nBi
-wyO
-wyO
+iDc
+bsI
 "}
 (5,1,1) = {"
 jrx
@@ -282,8 +383,8 @@ joI
 ehc
 joI
 mrY
-gNW
-wyO
+lcO
+cJp
 "}
 (6,1,1) = {"
 fuV
@@ -293,8 +394,8 @@ tyg
 tLo
 fKC
 aoQ
-hzE
-cJp
+udZ
+eMY
 "}
 (7,1,1) = {"
 hTQ
@@ -304,7 +405,7 @@ tyg
 tLo
 fKC
 uie
-hzE
+udZ
 iTv
 "}
 (8,1,1) = {"
@@ -315,18 +416,18 @@ tyg
 tLo
 fKC
 hMV
-hzE
+udZ
 wyO
 "}
 (9,1,1) = {"
 wyO
 aCX
-uaA
+dUt
 uaA
 fBt
 uaA
-uaA
-aCX
+puC
+udZ
 wyO
 "}
 (10,1,1) = {"
@@ -358,7 +459,7 @@ qqg
 rIo
 xee
 wyO
-qqg
 mvu
+qqg
 wyO
 "}

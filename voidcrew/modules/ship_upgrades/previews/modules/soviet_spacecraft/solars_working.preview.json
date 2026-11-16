@@ -8,16 +8,6 @@
    ],
    "height": 37,
    "themes": {
-    "proton": {
-     "connector": [
-      1,
-      1
-     ],
-     "height": 37,
-     "png": "soviet_spacecraft_solars_working_proton.png",
-     "src_md5": "b77de6f60968a869512af51e90ad82f8",
-     "width": 8
-    },
     "standard": {
      "connector": [
       1,
@@ -25,7 +15,7 @@
      ],
      "height": 37,
      "png": "soviet_spacecraft_solars_working_standard.png",
-     "src_md5": "3e152b1e909904a584b78d190bb1918b",
+     "src_md5": "b8bb0f8e2517e0fe9bfbf6ba8bc87972",
      "width": 8
     }
    },

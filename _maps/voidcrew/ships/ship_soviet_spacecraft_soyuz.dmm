@@ -15,7 +15,7 @@
 /area/shuttle/voidcrew/soviet_spacecraft/engine_module)
 "dsN" = (
 /obj/machinery/computer/cryopod,
-/turf/closed/wall/mineral/titanium,
+/turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/soviet_spacecraft/living_module)
 "eIO" = (
 /obj/machinery/cryopod,
@@ -29,9 +29,12 @@
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/soviet_spacecraft/living_module)
 "hOz" = (
-/obj/machinery/door/airlock/titanium/glass,
-/obj/docking_port/mobile/voidcrew/soviet_spacecraft,
 /obj/structure/fans/tiny,
+/obj/machinery/door/airlock/titanium/glass,
+/obj/docking_port/mobile/voidcrew/soviet_spacecraft{
+	dir = 8;
+	port_direction = 4
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/soviet_spacecraft/docking_module)
 "hZp" = (
@@ -39,7 +42,7 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/soviet_spacecraft/living_module)
 "jJF" = (
 /obj/modular_map_root/ship_upgrade{
@@ -58,10 +61,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/soviet_spacecraft/living_module)
-"lmB" = (
-/obj/machinery/light/floor,
-/turf/open/floor/catwalk_floor/airless,
-/area/shuttle/voidcrew/soviet_spacecraft/docking_module)
 "lPm" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
@@ -99,12 +98,6 @@
 "uEZ" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/soviet_spacecraft/living_module)
-"uGj" = (
-/turf/open/floor/catwalk_floor/airless,
-/area/shuttle/voidcrew/soviet_spacecraft/engine_module)
-"uMs" = (
-/turf/open/floor/catwalk_floor/airless,
-/area/shuttle/voidcrew/soviet_spacecraft/docking_module)
 "vWn" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/soviet_spacecraft/engine_module)
@@ -990,7 +983,7 @@ kYH
 kYH
 kYH
 uEZ
-uEZ
+agg
 azR
 azR
 azR
@@ -1223,7 +1216,7 @@ kYH
 kYH
 kYH
 kYH
-hOz
+lPm
 whp
 whp
 whp
@@ -1420,11 +1413,11 @@ kYH
 kYH
 kYH
 kYH
+mba
 oPn
+hOz
 oPn
-oPn
-oPn
-oPn
+mba
 kYH
 kYH
 kYH
@@ -1460,9 +1453,9 @@ kYH
 kYH
 kYH
 kYH
-uGj
-uMs
-uMs
+kYH
+kYH
+kYH
 kYH
 kYH
 kYH
@@ -1500,7 +1493,7 @@ kYH
 kYH
 kYH
 kYH
-lmB
+kYH
 kYH
 kYH
 kYH

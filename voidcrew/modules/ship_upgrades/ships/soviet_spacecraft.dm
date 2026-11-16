@@ -1,6 +1,6 @@
 
 /datum/ship_theme/soviet_spacecraft_standard
-	job_slots = list(list(name = "Commander", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_1, category = "Command", slots = 1), list(name = "Flight Engineer", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_2, category = "Engineering", slots = 2), list(name = "Spaceflight Participant", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_3, category = "Assistant", slots = 3))
+	job_slots = list(list(name = "Commander", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_1, category = "Command", slots = 1), list(name = "Flight Engineer", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_2, category = "Engineering", slots = 2), list(name = "Spaceflight Participant", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_3, category = "Assistant", slots = 2))
 	id = "standard"
 	name = "Soyuz"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
@@ -8,22 +8,12 @@
 	is_default = TRUE
 	upgrade_slot_ids = list("solars", "docking_module", "living_module", "engineering_module")
 
-/datum/ship_theme/soviet_spacecraft_proton
-	part_cost = list()
-	job_slots = list(list(name = "Commander", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_4, category = "Command", slots = 1), list(name = "Flight Engineer", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_5, category = "Engineering", slots = 2), list(name = "Spaceflight Participant", officer = FALSE, outfit = /datum/outfit/job/workshop_soviet_spacecraft_job_6, category = "Assistant", slots = 3))
-	id = "proton"
-	name = "Progress"
-	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	template_suffix = "soviet_spacecraft_progress"
-	is_default = FALSE
-	upgrade_slot_ids = list("solars", "docking_module", "living_module", "engineering_module")
-
 /datum/ship_upgrade_module/soviet_spacecraft_solars_basic
 	id = "solars_basic"
 	name = "No Solars"
 	slot = "solars"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/no_solars.dmm"
 	is_default = FALSE
 	desc = "The panels have been replaced by battery arrays with an emergency power source. Standard Progress spacecraft configuration."
@@ -34,7 +24,7 @@
 	name = "Solars Broken"
 	slot = "solars"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/solars_broken.dmm"
 	is_default = FALSE
 	desc = "Solar panel modules damaged by space debris and small asteroids."
@@ -45,18 +35,18 @@
 	name = "Solars Working"
 	slot = "solars"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/solars_working.dmm"
 	is_default = TRUE
 	desc = "Standard solar panels for the Soyuz spacecraft series"
 
 /datum/ship_upgrade_module/soviet_spacecraft_docking_module_basic
 	id = "docking_module_basic"
-	name = "Mining module"
+	name = "Kristall module"
 	slot = "docking_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
-	map_file = "soviet_spacecraft/mining_module.dmm"
+	for_theme = list("standard")
+	map_file = "soviet_spacecraft/kristall_module.dmm"
 	is_default = TRUE
 	desc = "Module for the crew to conduct geological research on a planetoid"
 
@@ -65,7 +55,7 @@
 	name = "Dvushka"
 	slot = "living_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/dvushka.dmm"
 	is_default = TRUE
 	desc = "A two-room module for two, or at a stretch, three people."
@@ -75,7 +65,7 @@
 	name = "Liquid-propellant type"
 	slot = "engineering_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/liquid_propellant_type.dmm"
 	is_default = TRUE
 	desc = "Basic engines used on Soyuz rockets"
@@ -86,7 +76,7 @@
 	name = "Nachalnik office"
 	slot = "living_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/nachalnik_office.dmm"
 	is_default = FALSE
 	desc = "A module for one big, fat ass"
@@ -97,7 +87,7 @@
 	name = "Priroda module"
 	slot = "docking_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/priroda_module.dmm"
 	is_default = FALSE
 	desc = "A module containing living organisms for conducting zero-gravity experiments"
@@ -108,7 +98,7 @@
 	name = "Electric propulsion type"
 	slot = "engineering_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/electric_propulsion_type.dmm"
 	is_default = FALSE
 	desc = "They gonna blow it again..."
@@ -119,7 +109,7 @@
 	name = "Spektr module"
 	slot = "docking_module"
 	for_ship = /datum/map_template/shuttle/voidcrew/soviet_spacecraft
-	for_theme = list("standard", "proton")
+	for_theme = list("standard")
 	map_file = "soviet_spacecraft/spektr_module.dmm"
 	is_default = FALSE
 	desc = "Laboratory equipment module"

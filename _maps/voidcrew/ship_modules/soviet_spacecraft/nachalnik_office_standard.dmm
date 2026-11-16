@@ -19,10 +19,13 @@
 /obj/effect/spawner/random/clothing,
 /obj/effect/spawner/random/contraband/plus,
 /obj/effect/spawner/random/exotic,
+/obj/item/vending_refill/sovietsoda,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "dmv" = (
-/obj/machinery/door/poddoor/shutters/window,
+/obj/machinery/door/poddoor/shutters/window{
+	id = "sklad_zanachka"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "eQk" = (
@@ -117,6 +120,10 @@
 	pixel_x = 9;
 	pixel_y = 9
 	},
+/obj/item/food/grown/cucumber{
+	pixel_y = -6;
+	pixel_x = 8
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "puZ" = (
@@ -163,6 +170,9 @@
 /area/template_noop)
 "tKn" = (
 /obj/effect/decal/cleanable/blood/gibs/xeno,
+/obj/machinery/button/door/directional/west{
+	id = "sklad_zanachka"
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "tXM" = (
@@ -175,7 +185,6 @@
 /obj/structure/closet/crate/freezer/food,
 /obj/item/reagent_containers/condiment/milk,
 /obj/item/food/energybar,
-/obj/item/food/grown/cucumber,
 /obj/item/food/takoyaki/russian,
 /obj/effect/spawner/random/medical/memeorgans,
 /turf/open/floor/mineral/plastitanium,
@@ -186,8 +195,28 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
+"vyZ" = (
+/obj/item/stack/sticky_tape/duct{
+	color = "70A0FF";
+	name = "Electrical insulating tape";
+	pixel_y = -7;
+	pixel_x = 11
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"wRo" = (
+/obj/item/multitool,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "wSp" = (
 /obj/structure/chair/sofa/right,
+/obj/item/toy/plush/lizard_plushie/greyscale{
+	greyscale_colors = "#CC0000#FFD700";
+	name = "Xiao Long";
+	desc = "It is a bright red plush Chinese dragon gifted by Chinese comrades to Soviet cosmonauts as a symbol of friendship and a faithful zero-gravity mascot.";
+	pixel_y = 4;
+	pixel_x = 7
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "wTZ" = (
@@ -213,7 +242,7 @@ uIy
 "}
 (2,1,1) = {"
 eUZ
-eUZ
+wRo
 eUZ
 nEn
 xDh
@@ -252,7 +281,7 @@ jVI
 rqO
 tXM
 nEn
-eUZ
+vyZ
 sLe
 eUZ
 "}
