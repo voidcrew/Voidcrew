@@ -10,10 +10,13 @@
  * one sale-unit per click or in bulk. Credits land on the selected ship's account,
  * falling back to the ID account; voucher payouts materialize in hand.
  *
- * Balance rule: entries that pay VOUCHERS must only ever buy loot that can't
- * be manufactured aboard a ship (planet minerals, fauna harvests, ruin finds).
- * Vouchers are the currency that can't be farmed safely, and a lathe-printable
- * buyback would break that in one shift.
+ * Balance rule: entries that pay VOUCHERS buy loot a ship can't manufacture
+ * (planet minerals, fauna harvests, ruin finds) at whatever demand suits it.
+ * Ship-made goods (drinks, cooked food, plants, slime extracts, farmed fish)
+ * may pay vouchers only for their rare top tier: 1-3 vouchers a sale, with
+ * demand 1-3. Demand is per round and shared by every crew, so that roll is
+ * the whole round's supply for everyone. Commons pay credits. Anything a
+ * lathe, cargo pack or vendor turns out cheaply never pays vouchers.
  */
 /datum/shop_buyback
 	/// Display name of what the trader wants (defaults to the item's name)
