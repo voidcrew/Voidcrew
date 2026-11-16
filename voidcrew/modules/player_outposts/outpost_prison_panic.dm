@@ -41,7 +41,7 @@
 
 // ===== THE PRISONER =====
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Seconds of fright left: full while a creature frightens them, counting down once none does. 0 when calm.
 	var/creature_panic_left = 0
 	/// The creature that frightened them last
@@ -61,11 +61,11 @@
 	var/running_scared = FALSE
 
 /// Whether a creature has them frightened
-/mob/living/basic/outpost_prisoner/proc/is_panicking()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_panicking()
 	return creature_panic_left > 0
 
 /// The creature that frightened them last, while it lives
-/mob/living/basic/outpost_prisoner/proc/panic_threat()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/panic_threat()
 	var/mob/living/threat = panic_threat_ref?.resolve()
 	if(QDELETED(threat) || threat.stat == DEAD)
 		return null
@@ -76,13 +76,13 @@
  * (outpost_prison_changeling.dm): they asked for it, so the lock-in clock waits, and so does the
  * pay it stops (update_locked_in(), confined_unpaid()).
  */
-/mob/living/basic/outpost_prisoner/proc/sheltering_from_creature()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sheltering_from_creature()
 	if(!is_panicking() && !istype(activity, /datum/prisoner_activity/flee_creature))
 		return FALSE
 	return !!cell?.contains(src) && is_confined()
 
 /// The creature they are going for, while they still are: a menace still, close, and not given up on
-/mob/living/basic/outpost_prisoner/proc/creature_foe()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/creature_foe()
 	if(!creature_foe_ref)
 		return null
 	var/mob/living/foe = creature_foe_ref.resolve()
@@ -92,19 +92,19 @@
 	return foe
 
 /// They run while running from a creature, and walk otherwise
-/mob/living/basic/outpost_prisoner/proc/update_flee_speed()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/update_flee_speed()
 	var/wanted = stat != DEAD && (istype(activity, /datum/prisoner_activity/creature_panic) || (!!creature_retreat_spot && world.time < creature_retreat_until))
 	if(wanted == running_scared)
 		return
 	running_scared = wanted
 	// A loose meek bounty prisoner keeps their pace (outpost_prison_bounty.dm).
-	set_varspeed(wanted ? OUTPOST_PANIC_FLEE_SPEED : bounty_base_speed())
+	set_prison_pace(hurry = wanted || bounty_base_speed())
 
 /**
  * A rioter running from a creature, planned from the trouble subtree: TRUE while they are on the
  * way. At the spot, out of time or no longer rioting, they stop and riot on.
  */
-/mob/living/basic/outpost_prisoner/proc/plan_creature_retreat(datum/ai_controller/controller)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/plan_creature_retreat(datum/ai_controller/controller)
 	if(!creature_retreat_spot)
 		return FALSE
 	if(loc == creature_retreat_spot || world.time >= creature_retreat_until || !is_rioting())
@@ -115,7 +115,7 @@
 	controller.queue_behavior(/datum/ai_behavior/outpost_prisoner_creature_retreat)
 	return TRUE
 
-/mob/living/basic/outpost_prisoner/proc/finish_creature_retreat()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/finish_creature_retreat()
 	creature_retreat_spot = null
 	creature_retreat_until = 0
 	update_flee_speed()
@@ -127,7 +127,7 @@
 	action_cooldown = 0.5 SECONDS
 
 /datum/ai_behavior/outpost_prisoner_creature_retreat/setup(datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	var/turf/spot = prisoner?.creature_retreat_spot
 	if(!spot)
 		return FALSE
@@ -136,7 +136,7 @@
 	return TRUE
 
 /datum/ai_behavior/outpost_prisoner_creature_retreat/perform(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 	if(!prisoner?.creature_retreat_spot || prisoner.loc != prisoner.creature_retreat_spot)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	prisoner.finish_creature_retreat()
@@ -146,7 +146,7 @@
 	. = ..()
 	if(!succeeded)
 		// No way through: they riot on from where they are.
-		var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
 		prisoner?.finish_creature_retreat()
 
 /**
@@ -249,7 +249,7 @@
  * everyone; otherwise it has to be within OUTPOST_PANIC_SIGHT_RANGE and in their sight, or within
  * OUTPOST_PANIC_DOWNED_RANGE for one that only frightens up close.
  */
-/datum/outpost_prison/proc/frightens(mob/living/basic/outpost_prisoner/prisoner, mob/living/creature, menace, loose)
+/datum/outpost_prison/proc/frightens(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/creature, menace, loose)
 	var/turf/here = get_turf(prisoner)
 	var/turf/there = get_turf(creature)
 	if(!here || !there || here.z != there.z)
@@ -261,7 +261,7 @@
 	return get_dist(here, there) <= OUTPOST_PANIC_SIGHT_RANGE && can_see(here, there, OUTPOST_PANIC_SIGHT_RANGE)
 
 /// The nearest of `threats` (creature = menace) that frightens `prisoner`, or null. `loose` marks those loose in the cell block.
-/datum/outpost_prison/proc/frightening_creature(mob/living/basic/outpost_prisoner/prisoner, list/threats, list/loose)
+/datum/outpost_prison/proc/frightening_creature(mob/living/carbon/human/npc/outpost_prisoner/prisoner, list/threats, list/loose)
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/creature as anything in threats)
@@ -276,7 +276,7 @@
 // ===== THE PRISON'S TICK =====
 
 /// Whether a creature can frighten `prisoner` now: present and awake in the wing's custody, not loose, and not the experiment's subject
-/datum/outpost_prison/proc/can_panic(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/can_panic(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.prison == src && prisoner.phase == PRISONER_PRESENT && prisoner.stat == CONSCIOUS && !prisoner.experiment_subject && prisoner.trouble != PRISONER_TROUBLE_LOOSE
 
 /**
@@ -289,7 +289,7 @@
 	for(var/mob/living/creature as anything in threats)
 		loose[creature] = threats[creature] == CREATURE_MENACE_FULL && in_cell_block(creature) && !creature_shut_in(creature)
 	var/shouts = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner))
 			continue
 		if(!can_panic(prisoner))
@@ -317,7 +317,7 @@
  * drops what they were doing (a wreck, squaring up to staff) and runs (start_panic()), or, already
  * running, rethinks the way (the panic's reconsider()). Returns TRUE if they shouted.
  */
-/datum/outpost_prison/proc/react_to_creature(mob/living/basic/outpost_prisoner/prisoner, mob/living/threat, seconds, may_shout)
+/datum/outpost_prison/proc/react_to_creature(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/threat, seconds, may_shout)
 	if(prisoner.can_be_dragged() || prisoner.pulledby)
 		// Down, they neither run nor fight.
 		prisoner.creature_foe_ref = null
@@ -343,7 +343,7 @@
  * `prisoner` breaks and runs (/datum/prisoner_activity/creature_panic), if their routine is free to.
  * `shout` has them say so. Returns TRUE if they shouted.
  */
-/datum/outpost_prison/proc/start_panic(mob/living/basic/outpost_prisoner/prisoner, shout = FALSE)
+/datum/outpost_prison/proc/start_panic(mob/living/carbon/human/npc/outpost_prisoner/prisoner, shout = FALSE)
 	if(prisoner.prison != src || prisoner.experiment_subject || !prisoner.routine_allowed())
 		return FALSE
 	if(istype(prisoner.activity, /datum/prisoner_activity/creature_panic))
@@ -357,17 +357,17 @@
 	if(!shout || !prisoner.ai_running())
 		return FALSE
 	prisoner.next_panic_line = world.time + OUTPOST_EXPERIMENT_PANIC_GAP * rand(4, 6) / 10 SECONDS
-	INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "creature_flee")
+	INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "creature_flee")
 	return TRUE
 
 /// Still frightened with nothing in sight: they stay where they ran to, and go back to it if something else took them away
-/datum/outpost_prison/proc/keep_hiding(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/keep_hiding(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(istype(prisoner.activity, /datum/prisoner_activity/creature_panic) || istype(prisoner.activity, /datum/prisoner_activity/flee_creature))
 		return
 	start_panic(prisoner)
 
 /// Cuffed, down or held: nowhere to go, so they cower and shout now and then. Returns TRUE if they shouted.
-/datum/outpost_prison/proc/cower_in_fright(mob/living/basic/outpost_prisoner/prisoner, may_shout)
+/datum/outpost_prison/proc/cower_in_fright(mob/living/carbon/human/npc/outpost_prisoner/prisoner, may_shout)
 	if(!may_shout && world.time < prisoner.next_panic_line)
 		return FALSE
 	prisoner.next_panic_line = world.time + OUTPOST_EXPERIMENT_PANIC_GAP * rand(8, 12) / 10 SECONDS
@@ -377,11 +377,11 @@
 	if(!may_shout && !wing_can_speak())
 		return FALSE
 	note_speech()
-	INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "creature_panic")
+	INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "creature_panic")
 	return TRUE
 
 /// Nothing has frightened them for OUTPOST_PANIC_CALM_TIME, or they can no longer be frightened: back to their day
-/datum/outpost_prison/proc/calm_from_panic(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/calm_from_panic(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	prisoner.creature_panic_left = 0
 	prisoner.panic_threat_ref = null
 	prisoner.creature_reaction = null
@@ -399,7 +399,7 @@
  * mood and personality (outpost_prisoner_creature_fight_chance()). The roll holds for
  * OUTPOST_PANIC_ROLL_HOLD. Returns what they did.
  */
-/datum/outpost_prison/proc/creature_roll(mob/living/basic/outpost_prisoner/prisoner, mob/living/threat)
+/datum/outpost_prison/proc/creature_roll(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/threat)
 	if(prisoner.creature_reaction && world.time < prisoner.creature_reaction_until)
 		return prisoner.creature_reaction
 	var/reaction = forced_creature_reaction
@@ -414,7 +414,7 @@
 	return reaction
 
 /// Goes at the creature, with their shiv if they have one. A fight they were in is forgotten.
-/datum/outpost_prison/proc/stand_against_creature(mob/living/basic/outpost_prisoner/prisoner, mob/living/threat)
+/datum/outpost_prison/proc/stand_against_creature(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/threat)
 	if(prisoner.fight)
 		end_fight(prisoner.fight)
 	prisoner.cancel_threat()
@@ -431,7 +431,7 @@
  * (flee_spot()) and riot on from there, or back off where they stand with nowhere to go. Returns
  * TRUE if a rioter ran.
  */
-/datum/outpost_prison/proc/run_from_creature(mob/living/basic/outpost_prisoner/prisoner, mob/living/threat)
+/datum/outpost_prison/proc/run_from_creature(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/threat)
 	prisoner.creature_foe_ref = null
 	if(!prisoner.is_rioting())
 		if(prisoner.fight)
@@ -449,7 +449,7 @@
 	prisoner.creature_retreat_until = world.time + OUTPOST_PANIC_RETREAT_TIME
 	prisoner.update_flee_speed()
 	if(prisoner.ai_running() && prob(50))
-		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "creature_flee")
+		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "creature_flee")
 	return TRUE
 
 // ===== WHERE TO RUN =====
@@ -478,7 +478,7 @@
 	return steps
 
 /// Where they hide at home: their own cell's chair or bed (home_seat()), or failing that any free tile of their own cell they can walk to, or null
-/datum/outpost_prison/proc/panic_home_spot(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/panic_home_spot(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/outpost_prison_cell/home = prisoner.cell
 	if(!home || !prisoner.walkable)
 		return null
@@ -496,7 +496,7 @@
  * passes within OUTPOST_PANIC_PATH_MARGIN of it and no farther from it than they stand now. Once they
  * are inside the cell, only it coming in makes home unsafe.
  */
-/datum/outpost_prison/proc/home_is_safe(mob/living/basic/outpost_prisoner/prisoner, turf/home, mob/living/threat)
+/datum/outpost_prison/proc/home_is_safe(mob/living/carbon/human/npc/outpost_prisoner/prisoner, turf/home, mob/living/threat)
 	var/datum/outpost_prison_cell/own = prisoner.cell
 	if(!own || !home)
 		return FALSE
@@ -533,7 +533,7 @@
  * passing beside it that is farthest from it, out of its sight if any is, and not within
  * OUTPOST_PANIC_SPOT_MARGIN of it. Null when there is nowhere: they are cornered.
  */
-/datum/outpost_prison/proc/flee_spot(mob/living/basic/outpost_prisoner/prisoner, mob/living/threat)
+/datum/outpost_prison/proc/flee_spot(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/threat)
 	var/turf/here = get_turf(prisoner)
 	var/turf/danger = get_turf(threat)
 	if(!here || !danger || !length(prisoner.walkable))
@@ -718,7 +718,7 @@
 /// What they shout: to be bolted in, on the way home or in it; to run, otherwise; about the dark, now and then, with a nightmare about
 /datum/prisoner_activity/creature_panic/proc/panic_line()
 	var/mob/living/threat = prisoner.panic_threat()
-	var/nightmare = istype(threat, /mob/living/basic/outpost_experiment/nightmare) || (!threat && prisoner.prison?.experiment?.form == "nightmare")
+	var/nightmare = outpost_experiment_form_name(threat) == "nightmare" || (!threat && prisoner.prison?.experiment?.form == "nightmare")
 	if(nightmare && prob(50))
 		return "nightmare_fear"
 	return plan == "home" ? "creature_panic" : "creature_flee"

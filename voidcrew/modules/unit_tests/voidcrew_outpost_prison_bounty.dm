@@ -70,7 +70,7 @@
 
 /// A prisoner made from `record` and booked in by hand at `spot`, standing still, fed, clean and unhurt
 /datum/unit_test/voidcrew_outpost_prison_bounty_kit/proc/bounty_prisoner(datum/outpost_prison/prison, turf/spot, datum/bounty_record/record)
-	var/mob/living/basic/outpost_prisoner/prisoner = new(spot, record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot, record)
 	prison.admit(prisoner)
 	prisoner.sentence_left = 3600
 	prisoner.set_hunger(100)
@@ -100,7 +100,7 @@
 /// Living prisoners on the roster built from a record
 /datum/unit_test/voidcrew_outpost_prison_bounty_kit/proc/bounty_built(datum/outpost_prison/prison)
 	. = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		if(prisoner.bounty_record && prisoner.stat != DEAD)
 			. += prisoner
 
@@ -218,7 +218,7 @@
 	TEST_ASSERT(!prison.set_bounty_intake("some"), "An unknown setting was taken")
 
 	// Half the cells: two living bounty prisoners fill a four-cell wing's share. One Most Wanted a lane.
-	var/mob/living/basic/outpost_prisoner/held_one = bounty_prisoner(prison, prison_spot(home, 3, 8), make_record(3, "boss"))
+	var/mob/living/carbon/human/npc/outpost_prisoner/held_one = bounty_prisoner(prison, prison_spot(home, 3, 8), make_record(3, "boss"))
 	TEST_ASSERT_EQUAL(prison.bounty_prisoner_count(), 1, "The wing counts [prison.bounty_prisoner_count()] bounty prisoners, not 1")
 	TEST_ASSERT(!prison.bounty_accepts(most_wanted), "A one-lane wing with a Most Wanted would take another")
 	TEST_ASSERT(prison.bounty_accepts(wanted), "A Most Wanted in the wing kept out a Wanted")
@@ -226,7 +226,7 @@
 	var/datum/bounty_record/ours_full = make_record()
 	pool(ours_full, prison, 0)
 	TEST_ASSERT_EQUAL(bounty_record_reserved_for(ours_full), prison, "The wing's own catch was not reserved for it")
-	var/mob/living/basic/outpost_prisoner/held_two = bounty_prisoner(prison, prison_spot(home, 12, 8), make_record(1, "meek"))
+	var/mob/living/carbon/human/npc/outpost_prisoner/held_two = bounty_prisoner(prison, prison_spot(home, 12, 8), make_record(1, "meek"))
 	TEST_ASSERT(!prison.bounty_accepts(wanted), "A wing with half its cells in bounty prisoners would take another")
 	TEST_ASSERT_NULL(bounty_pool_pick(prison), "A wing at its bounty share picked a record")
 	// A wing that can't take its own catch holds no place for it (L1).
@@ -236,7 +236,7 @@
 	TEST_ASSERT(prison.bounty_accepts(wanted), "A dead bounty prisoner still counted against the wing's share")
 	held_one.death()
 	TEST_ASSERT(prison.bounty_accepts(most_wanted), "A dead Most Wanted still held the lane")
-	for(var/mob/living/basic/outpost_prisoner/body as anything in list(held_one, held_two))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/body as anything in list(held_one, held_two))
 		prison.forget(body)
 		qdel(body)
 
@@ -290,7 +290,7 @@
 	TEST_ASSERT_EQUAL(next_block["in"], 20, "Once the notice has run the console counts [next_block["in"]] s, not the 20 s to the arrival")
 	for(var/key in list("tier", "level", "after_next"))
 		TEST_ASSERT(!(key in next_block), "The console's next bounty arrival still sends [key]")
-	var/mob/living/basic/outpost_prisoner/arrival = prison.admit_next(FALSE, 1)
+	var/mob/living/carbon/human/npc/outpost_prisoner/arrival = prison.admit_next(FALSE, 1)
 	TEST_ASSERT_NOTNULL(arrival, "Nobody arrived into a ready cell")
 	TEST_ASSERT_EQUAL(arrival.bounty_record, due, "The named record's prisoner did not arrive")
 	TEST_ASSERT_EQUAL(arrival.real_name, "Dana Notice", "The arrival is [arrival.real_name], not the named record")
@@ -344,8 +344,8 @@
 	TEST_ASSERT(istext(result), "The forced admission failed: [islist(result) ? result["error"] : result]")
 	TEST_ASSERT(!(chosen in GLOB.bounty_prisoner_pool), "The admitted record stayed in the pool")
 	TEST_ASSERT_EQUAL(length(GLOB.bounty_prisoner_pool), 19, "A forced admission took [20 - length(GLOB.bounty_prisoner_pool)] records")
-	var/mob/living/basic/outpost_prisoner/admitted
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	var/mob/living/carbon/human/npc/outpost_prisoner/admitted
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		if(prisoner.bounty_record == chosen)
 			admitted = prisoner
 	TEST_ASSERT_NOTNULL(admitted, "The chosen record's prisoner is not on the roster")
@@ -370,7 +370,7 @@
 	bounty_pool_start_tick()
 	TEST_ASSERT_NULL(GLOB.bounty_pool_timer, "The pool's clock started with nobody waiting")
 	wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS)
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		ADD_TRAIT(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	settle_prison_air(home)
 	settle_prison_air(rival_home)
@@ -379,7 +379,7 @@
 
 /**
  * A prisoner rebuilt from a record keeps their name, gender and crime, takes a personality from
- * their archetype and health from their tier, arrives as hurt as they were caught but never below
+ * their archetype and toughness from their tier, arrives as hurt as they were caught but never below
  * half their health, earns x1.5 / x2 / x2.5 on the rate and the release bonus, carries their
  * tier's danger, shows on the roster and on examine, and Kessler won't touch them. Every way out
  * closes their record, the first close winning, and none puts it back in the pool.
@@ -401,15 +401,16 @@
 	wanted_record.hurt_fraction = 0.3
 	// The ship's own name, as the board records it (ship.name)
 	wanted_record.captor_name = "Meridian"
-	var/mob/living/basic/outpost_prisoner/wanted = new(prison_spot(home, 3, 8), wanted_record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/wanted = new(prison_spot(home, 3, 8), wanted_record)
 	TEST_ASSERT_EQUAL(wanted.real_name, "Vesna Kade", "A bounty prisoner is called [wanted.real_name]")
 	TEST_ASSERT_EQUAL(wanted.name, "Vesna Kade", "A bounty prisoner shows as [wanted.name]")
 	TEST_ASSERT_EQUAL(wanted.gender, MALE, "A bounty prisoner's gender did not carry over")
 	TEST_ASSERT_EQUAL(wanted.crime, "arson", "A bounty prisoner is in for [wanted.crime], not their plain crime")
 	TEST_ASSERT(wanted.personality in list("grumpy", "chatty"), "A normal criminal came in [wanted.personality]")
-	TEST_ASSERT_EQUAL(wanted.maxHealth, 120, "A Wanted prisoner has [wanted.maxHealth] health") // BOUNTY_PRISONER_HEALTH_WANTED
-	TEST_ASSERT_EQUAL(wanted.health, 120, "A Wanted prisoner starts at [wanted.health] health")
-	TEST_ASSERT_EQUAL(wanted.arrival_brute, 36, "Caught 30% hurt, they carry [wanted.arrival_brute] brute into the beam")
+	TEST_ASSERT_EQUAL(wanted.npc_damage_taken, 0.9, "A Wanted prisoner takes [wanted.npc_damage_taken] of a blow, not 0.9") // BOUNTY_PRISONER_DAMAGE_TAKEN_WANTED
+	// A person's health, whatever the tier (PR-16): toughness is how much of a blow they take, above
+	TEST_ASSERT_EQUAL(wanted.health, 100, "A Wanted prisoner starts at [wanted.health] health, not a person's")
+	TEST_ASSERT_EQUAL(wanted.arrival_brute, 30, "Caught 30% hurt, they come in [wanted.arrival_brute] health down, not 30")
 	TEST_ASSERT_EQUAL(wanted.outfit_path, /datum/outfit/outpost_prisoner, "A bounty prisoner is not in the plain jumpsuit")
 	TEST_ASSERT_NULL(wanted.held_item, "A bounty prisoner came in holding [wanted.held_item]")
 	TEST_ASSERT_EQUAL(wanted_record.status, "imprisoned", "A bounty prisoner's record is [wanted_record.status]") // BOUNTY_RECORD_IMPRISONED
@@ -421,26 +422,26 @@
 	ADD_TRAIT(wanted, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 
 	var/datum/bounty_record/boss_record = make_record(3, "boss", "Oren Vask")
-	var/mob/living/basic/outpost_prisoner/boss = bounty_prisoner(prison, prison_spot(home, 12, 8), boss_record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/boss = bounty_prisoner(prison, prison_spot(home, 12, 8), boss_record)
 	TEST_ASSERT_EQUAL(boss.personality, "grumpy", "A mini-boss came in [boss.personality]")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 150, "A Most Wanted prisoner has [boss.maxHealth] health") // BOUNTY_PRISONER_HEALTH_MOST_WANTED
+	TEST_ASSERT_EQUAL(boss.npc_damage_taken, 0.8, "A Most Wanted prisoner takes [boss.npc_damage_taken] of a blow, not 0.8") // BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.gender, FEMALE, "A bounty prisoner's gender did not carry over")
 	// A Most Wanted's crime is no line to toss off in the yard (BUG-12); the console and examine keep it
 	TEST_ASSERT_EQUAL(boss.crime, "a lot of things", "A Most Wanted prisoner tells the yard they're in for [boss.crime]") // BOUNTY_PRISON_MOST_WANTED_YARD_CRIME
 	TEST_ASSERT_EQUAL(prison.bounty_roster_badge(boss)?["wanted_for"], "wanted for smuggling", "A Most Wanted prisoner's badge reads [prison.bounty_roster_badge(boss)?["wanted_for"]]")
 	// The kingpin: a calm, quiet or grumpy prisoner, in the plain jumpsuit like everyone else
 	var/datum/bounty_record/kingpin_record = make_record(3, "kingpin", "Aurelio Stann") // BOUNTY_ARCHETYPE_KINGPIN
-	var/mob/living/basic/outpost_prisoner/kingpin = new(prison_spot(home, 7, 11), kingpin_record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/kingpin = new(prison_spot(home, 7, 11), kingpin_record)
 	TEST_ASSERT(kingpin.personality in list("quiet", "grumpy"), "The kingpin came in [kingpin.personality]")
 	TEST_ASSERT_EQUAL(kingpin.outfit_path, /datum/outfit/outpost_prisoner, "The kingpin is not in the plain jumpsuit")
 	TEST_ASSERT_EQUAL(kingpin.crime, "a lot of things", "The kingpin tells the yard he's in for [kingpin.crime]")
 	qdel(kingpin)
 	var/datum/bounty_record/meek_record = make_record(1, "meek", "Pim Sallow")
-	var/mob/living/basic/outpost_prisoner/meek = bounty_prisoner(prison, prison_spot(home, 3, 11), meek_record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/meek = bounty_prisoner(prison, prison_spot(home, 3, 11), meek_record)
 	TEST_ASSERT(meek.personality in list("nervous", "quiet"), "A meek criminal came in [meek.personality]")
-	TEST_ASSERT_EQUAL(meek.maxHealth, 100, "A Petty prisoner has [meek.maxHealth] health") // BOUNTY_PRISONER_HEALTH_PETTY
+	TEST_ASSERT_EQUAL(meek.maxHealth, 100, "A Petty prisoner has [meek.maxHealth] health, not a person's") // human NPC
 	TEST_ASSERT_EQUAL(meek.arrival_brute, 0, "Caught unhurt, they came in hurt")
-	var/mob/living/basic/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 12, 11))
+	var/mob/living/carbon/human/npc/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 12, 11))
 
 	// The roster badge and examine.
 	var/list/roster = prison.ui_payload(null)["prisoners"]
@@ -487,7 +488,7 @@
 	var/ordinary_rate = prison.prisoner_pay_rate(ordinary)
 	TEST_ASSERT(ordinary_rate > 0, "A well-kept ordinary prisoner earns nothing")
 	TEST_ASSERT(abs(prison.prisoner_pay_rate(wanted) - 2 * ordinary_rate) < 0.001, "A Wanted prisoner earns [prison.prisoner_pay_rate(wanted)] a minute, not twice [ordinary_rate]")
-	for(var/mob/living/basic/outpost_prisoner/bounty_payer as anything in list(meek, wanted, boss))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/bounty_payer as anything in list(meek, wanted, boss))
 		TEST_ASSERT(prison.pay_factor(bounty_payer) <= 1, "[bounty_payer]'s share of full pay went past all of it: [prison.pay_factor(bounty_payer)]")
 	wanted.served_seconds = 100
 	wanted.kept_seconds = 50
@@ -500,30 +501,23 @@
 	TEST_ASSERT_EQUAL(wanted_record.status, "released", "A later close replaced the release") // the first close wins
 	TEST_ASSERT(!pool(wanted_record), "A released record went back into the pool")
 
-	// Danger, by tier; Petty is the ordinary baseline.
-	TEST_ASSERT_EQUAL(meek.bounty_damage_mult(), 1, "A Petty prisoner's punches are scaled") // BOUNTY_PRISON_PUNCH_MULT_PETTY
-	TEST_ASSERT_EQUAL(boss.bounty_damage_mult(), 1.5, "A Most Wanted prisoner's punches are x[boss.bounty_damage_mult()]") // BOUNTY_PRISON_PUNCH_MULT_MOST_WANTED
-	boss.update_melee()
-	TEST_ASSERT_EQUAL(boss.melee_damage_upper, 12, "A Most Wanted prisoner's punch tops out at [boss.melee_damage_upper]") // PRISONER_PUNCH_MAX x 1.5
-	boss.draw_shiv()
-	TEST_ASSERT_EQUAL(boss.bounty_damage_mult(), 1.3, "A Most Wanted prisoner's shiv is x[boss.bounty_damage_mult()]") // BOUNTY_PRISON_SHIV_MULT_MOST_WANTED
-	TEST_ASSERT(abs(boss.melee_damage_upper - 19.5) < 0.001, "A Most Wanted prisoner's shiv tops out at [boss.melee_damage_upper]") // PRISONER_SHIV_MAX x 1.3
-	qdel(boss.drop_shiv())
+	// Danger, by tier; Petty is the ordinary baseline. Their blows are a person's (PR-16); a tougher
+	// criminal takes less from one, through physiology (npc_damage_taken), never more health.
+	TEST_ASSERT_EQUAL(meek.npc_damage_taken, 1, "A Petty prisoner takes [meek.npc_damage_taken] of a blow, not all of it") // BOUNTY_PRISONER_DAMAGE_TAKEN_PETTY
+	TEST_ASSERT_EQUAL(boss.npc_damage_taken, 0.8, "A Most Wanted prisoner takes [boss.npc_damage_taken] of a blow, not 0.8") // BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED
+	TEST_ASSERT_EQUAL(boss.maxHealth, meek.maxHealth, "A Most Wanted prisoner has more health than a Petty one")
 	TEST_ASSERT_EQUAL(meek.bounty_mood_scale(), 1, "A Petty prisoner's mood losses are scaled")
 	TEST_ASSERT_EQUAL(boss.bounty_mood_scale(), 1.2, "A Most Wanted prisoner's mood losses are x[boss.bounty_mood_scale()]") // BOUNTY_PRISON_MOOD_SCALE_MOST_WANTED
 	TEST_ASSERT(abs(boss.mood_scale() - 1.4 * 1.2) < 0.001, "A grumpy Most Wanted prisoner's mood scale is [boss.mood_scale()]") // grumpy 1.4
 	TEST_ASSERT_EQUAL(meek.bounty_riot_bonus(), 0, "A Petty prisoner's riot line moved")
 	TEST_ASSERT_EQUAL(prison.riot_join_bonus(boss), 10, "A Most Wanted prisoner's riot line moved [prison.riot_join_bonus(boss)]") // BOUNTY_PRISON_RIOT_BONUS_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.bounty_breakout_mult(), 1.5, "A Most Wanted prisoner hits the doors x[boss.bounty_breakout_mult()]") // BOUNTY_PRISON_BREAKOUT_MULT_MOST_WANTED
-	TEST_ASSERT_EQUAL(boss.bounty_cuff_mult(), 1, "Cuffing a Most Wanted prisoner takes longer") // BOUNTY_PRISON_CUFF_MULT_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.bounty_threat_bonus(), 0, "A Most Wanted prisoner's threat line moved") // BOUNTY_PRISON_THREAT_BONUS_MOST_WANTED
 	TEST_ASSERT_EQUAL(prison.threat_mood_ceiling(boss), prison.threat_mood_ceiling(), "The threat ceiling moved for a Most Wanted prisoner")
 	TEST_ASSERT_EQUAL(boss.bounty_hit_back_mult(), 1.5, "A Most Wanted prisoner hits back x[boss.bounty_hit_back_mult()]") // BOUNTY_PRISON_HIT_BACK_MULT_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.bounty_snap_weight_mult(), 2, "A Most Wanted ringleader's snap weight is x[boss.bounty_snap_weight_mult()]") // BOUNTY_PRISON_RINGLEADER_SNAP_MULT
 	TEST_ASSERT_EQUAL(meek.bounty_back_off_mult(), 2, "A meek prisoner backs off x[meek.bounty_back_off_mult()]") // BOUNTY_PRISON_MEEK_BACK_OFF_MULT
 	TEST_ASSERT_EQUAL(meek.bounty_hit_back_mult(), 1, "A meek prisoner hits back harder")
-	TEST_ASSERT_EQUAL(meek.bounty_loose_speed(), 1.6, "A meek prisoner runs loose at [meek.bounty_loose_speed()]") // BOUNTY_PRISON_MEEK_LOOSE_SPEED
-	TEST_ASSERT_NULL(boss.bounty_loose_speed(), "A Most Wanted prisoner runs loose faster")
 	TEST_ASSERT_EQUAL(ordinary.bounty_back_off_mult(), 1, "An ordinary prisoner backs off more")
 
 	// Hitting back or backing off when a player hits them (hit_reaction()), at mood 50 for a quiet prisoner.
@@ -541,7 +535,7 @@
 	TEST_ASSERT(length(shouting_order) == 3 && shouting_order[1] == boss, "The Most Wanted does not shout first")
 
 	// The ringleader: an awake Most Wanted in the yard adds tension, and the log says who.
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		prisoner.set_mood(100)
 	prison.tension_spike = 0
 	TEST_ASSERT_EQUAL(prison.bounty_tension(), 5, "A Most Wanted in the yard adds [prison.bounty_tension()] tension") // BOUNTY_PRISON_RINGLEADER_TENSION
@@ -573,7 +567,7 @@
 	TEST_ASSERT_EQUAL(meek_record.status, "escaped", "An escaped bounty prisoner's record is [meek_record.status]") // BOUNTY_RECORD_ESCAPED
 	TEST_ASSERT(!pool(meek_record), "An escaped prisoner's record went back into the pool")
 	var/datum/bounty_record/forgotten_record = make_record(2, "normal")
-	var/mob/living/basic/outpost_prisoner/forgotten = bounty_prisoner(prison, prison_spot(home, 7, 8), forgotten_record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/forgotten = bounty_prisoner(prison, prison_spot(home, 7, 8), forgotten_record)
 	prison.forget(forgotten)
 	TEST_ASSERT_EQUAL(forgotten_record.status, "closed", "A bounty prisoner dropped from the roster left the record [forgotten_record.status]") // BOUNTY_RECORD_CLOSED
 	qdel(forgotten)
@@ -582,11 +576,11 @@
 	// Delivered downed, they arrive hurt, but with at least half their health (BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH).
 	var/datum/bounty_record/downed_record = make_record(2, "normal", "Tomas Reed")
 	downed_record.hurt_fraction = 0.9
-	var/mob/living/basic/outpost_prisoner/downed = new(prison_spot(home, 7, 8), downed_record)
-	TEST_ASSERT_EQUAL(downed.arrival_brute, 60, "Caught nearly dead, they carry [downed.arrival_brute] brute, not half their 120 health")
+	var/mob/living/carbon/human/npc/outpost_prisoner/downed = new(prison_spot(home, 7, 8), downed_record)
+	TEST_ASSERT_EQUAL(downed.arrival_brute, 50, "Caught nearly dead, they come in [downed.arrival_brute] health down, not half their 100")
 	prison.admit(downed)
 	downed.beam_in()
-	TEST_ASSERT_EQUAL(downed.health, 60, "A downed delivery arrived at [downed.health] health, not half")
+	TEST_ASSERT_EQUAL(downed.health, 50, "A downed delivery arrived at [downed.health] health, not half")
 	TEST_ASSERT(downed.health_factor() >= 50, "A bounty prisoner arrived below half health")
 	TEST_ASSERT(downed.arrived_hurt, "A downed delivery did not arrive hurt")
 	wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS)
@@ -616,8 +610,8 @@
 	staff_door.autoclose = FALSE
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
 	TEST_ASSERT_NOTNULL(hatch, "The serving hatch is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/meek = bounty_prisoner(prison, prison_spot(home, 9, 9), make_record(1, "meek", "Pim Sallow"))
-	var/mob/living/basic/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/meek = bounty_prisoner(prison, prison_spot(home, 9, 9), make_record(1, "meek", "Pim Sallow"))
+	var/mob/living/carbon/human/npc/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 7, 8))
 
 	// The hatch: below mood 65 (BOUNTY_PRISON_MEEK_CLIMB_MOOD) for them, and only with it open both ways.
 	var/datum/prisoner_activity/climb_hatch/bounty_meek/climb = new(meek)
@@ -722,10 +716,9 @@
 	TEST_ASSERT(meek.loc != get_turf(staff_door), "The dart left them standing in the doorway")
 	TEST_ASSERT_EQUAL(meek.trouble, "loose", "A prisoner who slipped out of the cell block is [meek.trouble || "not in trouble"]") // PRISONER_TROUBLE_LOOSE
 	TEST_ASSERT(meek.activity != watch, "The watch went on after they got out")
-	TEST_ASSERT_EQUAL(meek.speed, 1.6, "A loose meek prisoner runs at [meek.speed]") // BOUNTY_PRISON_MEEK_LOOSE_SPEED
-	TEST_ASSERT_EQUAL(meek.obj_damage, 25, "A loose Petty prisoner does [meek.obj_damage] damage to things") // PRISONER_LOOSE_OBJ_DAMAGE x 1
+	TEST_ASSERT_EQUAL(meek.move_intent, MOVE_INTENT_RUN, "A loose prisoner is not running")
 	prison.recapture(meek)
-	TEST_ASSERT_EQUAL(meek.speed, 2, "A recaptured meek prisoner still runs at [meek.speed]") // their own speed
+	TEST_ASSERT_EQUAL(meek.move_intent, MOVE_INTENT_WALK, "A recaptured prisoner is still running")
 	staff_door.close()
 	prison.prison_bounty_forced_dart = null
 	prison.crew_home_override = null
@@ -733,7 +726,7 @@
 	settle_prison_air(home)
 
 /// Puts `meek` watching `door` from `spot`, started, with its chance still to come
-/datum/unit_test/voidcrew_outpost_prison_bounty_meek/proc/start_watch(mob/living/basic/outpost_prisoner/meek, obj/machinery/door/airlock/door, turf/spot)
+/datum/unit_test/voidcrew_outpost_prison_bounty_meek/proc/start_watch(mob/living/carbon/human/npc/outpost_prisoner/meek, obj/machinery/door/airlock/door, turf/spot)
 	var/datum/prisoner_activity/bounty_door_watch/watch = new(meek)
 	watch.door_ref = WEAKREF(door)
 	meek.start_activity(watch)
@@ -782,7 +775,7 @@
 	var/datum/bounty_record/record = make_record(2, "normal", "Dario Venn")
 	record.captor_name = ship.name
 	record.captor_ship = WEAKREF(ship)
-	var/mob/living/basic/outpost_prisoner/caught = bounty_prisoner(prison, prison_spot(home, 8, 8), record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/caught = bounty_prisoner(prison, prison_spot(home, 8, 8), record)
 	RegisterSignal(caught, COMSIG_MOB_SAY, PROC_REF(on_say))
 	TEST_ASSERT_EQUAL(caught.bounty_captor_values()?["{place}"], "Meridian", "The prisoner doesn't know the ship that caught them")
 
@@ -822,10 +815,10 @@
 	team.ship = ship
 
 	// An ordinary prisoner, or a record with no captor: no such line on arrival or in the yard.
-	var/mob/living/basic/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 8, 11))
+	var/mob/living/carbon/human/npc/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 8, 11))
 	TEST_ASSERT(!ordinary.bounty_arrival_speech(), "An ordinary prisoner named a ship on arrival")
 	TEST_ASSERT_NULL(prison.bounty_extra_speech(ordinary, 100), "An ordinary prisoner called out a crew")
-	var/mob/living/basic/outpost_prisoner/unknown = bounty_prisoner(prison, prison_spot(home, 3, 8), make_record(1, "meek"))
+	var/mob/living/carbon/human/npc/outpost_prisoner/unknown = bounty_prisoner(prison, prison_spot(home, 3, 8), make_record(1, "meek"))
 	TEST_ASSERT(!unknown.bounty_arrival_speech(), "A prisoner with no captor on record named a ship on arrival")
 	TEST_ASSERT_NULL(prison.bounty_extra_speech(unknown, 100), "A prisoner with no captor on record called out a crew")
 	team.ship = null
@@ -855,7 +848,7 @@
 /datum/unit_test/voidcrew_outpost_prison_boss_moves_kit/proc/boss_prisoner(datum/outpost_prison/prison, turf/spot, kit, archetype = "boss", name) // BOUNTY_ARCHETYPE_BOSS
 	var/datum/bounty_record/record = make_record(3, archetype, name) // BOUNTY_TIER_MOST_WANTED
 	record.kit = kit
-	var/mob/living/basic/outpost_prisoner/prisoner = new /mob/living/basic/outpost_prisoner/awake_for_test(spot, record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new /mob/living/carbon/human/npc/outpost_prisoner/awake_for_test(spot, record)
 	prison.admit(prisoner)
 	prisoner.sentence_left = 3600
 	prisoner.set_hunger(100)
@@ -903,7 +896,7 @@
 	TEST_ASSERT_NOTNULL(home, "The shoulder charge test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/start = prison_spot(home, 3, 11)
-	var/mob/living/basic/outpost_prisoner/juggernaut = boss_prisoner(prison, start, "juggernaut", name = "Vasily Orlov") // BOUNTY_KIT_JUGGERNAUT
+	var/mob/living/carbon/human/npc/outpost_prisoner/juggernaut = boss_prisoner(prison, start, "juggernaut", name = "Vasily Orlov") // BOUNTY_KIT_JUGGERNAUT
 	var/datum/prison_boss_move/charge/move = juggernaut.boss_move_datum()
 	TEST_ASSERT(istype(move), "A juggernaut in prison has no shoulder charge ([move?.type])")
 	var/mob/living/carbon/human/consistent/warden = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 6, 11))
@@ -953,7 +946,7 @@
 	prison.begin_breakout()
 	TEST_ASSERT_EQUAL(juggernaut.trouble, "breakout", "The juggernaut is [juggernaut.trouble] in the breakout") // PRISONER_TROUBLE_BREAKOUT
 	TEST_ASSERT(move.try_start(), "The juggernaut did not charge in the breakout once the cooldown was over")
-	var/mob/living/basic/outpost_prisoner/bystander = kept_prisoner(prison, prison_spot(home, 4, 11))
+	var/mob/living/carbon/human/npc/outpost_prisoner/bystander = kept_prisoner(prison, prison_spot(home, 4, 11))
 	var/bystander_health = bystander.health
 	TEST_ASSERT(move.finish_windup(move.pending_serial), "The charge did not start with someone in the way")
 	TEST_ASSERT(charge_over(move), "The charge ran on through a prisoner")
@@ -1008,7 +1001,7 @@
 	cell_door.open(BYPASS_DOOR_CHECKS)
 	var/obj/structure/bed/bunk = locate() in prison_spot(home, 2, 15)
 	TEST_ASSERT_NOTNULL(bunk, "Cell 1's bunk is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/pyromaniac = boss_prisoner(prison, prison_spot(home, 3, 13), "pyromaniac", name = "Dana Kettle") // BOUNTY_KIT_PYROMANIAC
+	var/mob/living/carbon/human/npc/outpost_prisoner/pyromaniac = boss_prisoner(prison, prison_spot(home, 3, 13), "pyromaniac", name = "Dana Kettle") // BOUNTY_KIT_PYROMANIAC
 	var/datum/prison_boss_move/bed_fire/move = pyromaniac.boss_move_datum()
 	TEST_ASSERT(istype(move), "A pyromaniac in prison has no fire ([move?.type])")
 	var/mob/living/carbon/human/consistent/warden = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 3, 15))
@@ -1035,7 +1028,7 @@
 	TEST_ASSERT(!warden.on_fire, "The warden was alight before the match was thrown")
 
 	// A prisoner in the patch too: it goes up, the warden burns, the prisoner doesn't.
-	var/mob/living/basic/outpost_prisoner/cellmate = kept_prisoner(prison, prison_spot(home, 2, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/cellmate = kept_prisoner(prison, prison_spot(home, 2, 14))
 	var/cellmate_health = cellmate.health
 	TEST_ASSERT(move.finish_windup(move.pending_serial), "The bunk did not go up")
 	var/obj/effect/bounty_boss_fire_pool/prison_bed/fire = move.fire_ref?.resolve()
@@ -1079,13 +1072,13 @@
 	var/turf/doorway = prison_spot(home, 9, 6)
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in doorway
 	TEST_ASSERT_NOTNULL(staff_door, "The staff door is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/demolitionist = boss_prisoner(prison, prison_spot(home, 9, 7), "demolitionist", name = "Rory Blake") // BOUNTY_KIT_DEMOLITIONIST
+	var/mob/living/carbon/human/npc/outpost_prisoner/demolitionist = boss_prisoner(prison, prison_spot(home, 9, 7), "demolitionist", name = "Rory Blake") // BOUNTY_KIT_DEMOLITIONIST
 	var/datum/prison_boss_move/rigged_charge/move = demolitionist.boss_move_datum()
 	TEST_ASSERT(istype(move), "A demolitionist in prison has no rigged charge ([move?.type])")
 	var/mob/living/carbon/human/consistent/warden = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 9, 5))
 	prison.refresh_reach()
 	TEST_ASSERT(boss_riot(prison), "The riot did not start")
-	var/mob/living/basic/outpost_prisoner/bystander = kept_prisoner(prison, prison_spot(home, 8, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/bystander = kept_prisoner(prison, prison_spot(home, 8, 7))
 
 	// Not on a door the riot hasn't been at, and never on anything but a way out.
 	demolitionist.riot_target_ref = WEAKREF(staff_door)
@@ -1155,7 +1148,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("bossslipowner")
 	TEST_ASSERT_NOTNULL(home, "The slipped cuffs test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/ghost = boss_prisoner(prison, prison_spot(home, 8, 9), "ghost", name = "Mira Voss") // BOUNTY_KIT_GHOST
+	var/mob/living/carbon/human/npc/outpost_prisoner/ghost = boss_prisoner(prison, prison_spot(home, 8, 9), "ghost", name = "Mira Voss") // BOUNTY_KIT_GHOST
 	var/datum/prison_boss_move/slip_cuffs/move = ghost.boss_move_datum()
 	TEST_ASSERT(istype(move), "A ghost in prison has no way out of cuffs ([move?.type])")
 	var/mob/living/carbon/human/consistent/warden = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 10, 9))
@@ -1165,7 +1158,7 @@
 	// Uncuffed there is nothing to slip; just cuffed, not yet.
 	TEST_ASSERT(!move.try_start(), "An uncuffed ghost slipped out of cuffs")
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
-	TEST_ASSERT(ghost.apply_cuffs(cuffs), "The ghost could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(ghost, cuffs), "The ghost could not be cuffed")
 	move.observe(ghost)
 	TEST_ASSERT(!move.try_start(), "The ghost started on the cuffs the moment they went on")
 	move.cuffed_at = world.time - 10 SECONDS
@@ -1178,12 +1171,14 @@
 
 	// Working at them first; a knockdown stops it, the cuffs still on.
 	TEST_ASSERT(move.try_start(), "A cuffed rioting ghost did not work at the cuffs")
-	TEST_ASSERT_EQUAL(ghost.cuffs, cuffs, "The cuffs came off before the ghost finished working at them")
+	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "The cuffs came off before the ghost finished working at them")
 	ghost.Knockdown(2 SECONDS)
 	TEST_ASSERT(!move.watch_windup(move.pending_serial), "Knocking the ghost down did not stop the work on the cuffs")
 	TEST_ASSERT(!move.pending_serial, "The work on the cuffs went on after a knockdown")
-	TEST_ASSERT_EQUAL(ghost.cuffs, cuffs, "A knocked-down ghost got out of the cuffs")
+	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "A knocked-down ghost got out of the cuffs")
 	ghost.SetKnockdown(0)
+	// Getting up takes a second, as it does anyone (tg's get_up())
+	TEST_ASSERT(wait_until_up(ghost), "The ghost never got up after the knockdown")
 
 	// Being dragged stops it too.
 	move.ready_at = 0
@@ -1192,31 +1187,40 @@
 	warden.start_pulling(ghost)
 	TEST_ASSERT(ghost.pulledby == warden, "The warden could not drag the cuffed ghost")
 	TEST_ASSERT(!move.watch_windup(move.pending_serial), "Dragging the ghost did not stop the work on the cuffs")
-	TEST_ASSERT_EQUAL(ghost.cuffs, cuffs, "A dragged ghost got out of the cuffs")
+	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "A dragged ghost got out of the cuffs")
 	warden.stop_pulling()
 	warden.forceMove(prison_spot(home, 10, 9))
 
-	// Out: the same cuffs on the floor, none lost or doubled, and a shimmer.
+	// Out: tg's own breakout (the cuffs' breakout time; fake cuffs here, a second, so the test needn't wait a
+	// minute), the same cuffs on the floor, none lost or doubled, and a shimmer.
+	ghost.remove_cuffs()
+	// The pair taken off drops at their feet; set it aside, so the count below is of the slipped pair
+	cuffs.forceMove(get_turf(warden))
+	var/obj/item/restraints/handcuffs/fake/quick = allocate(/obj/item/restraints/handcuffs/fake)
+	TEST_ASSERT(outpost_prison_test_cuff(ghost, quick), "The ghost could not be cuffed with the quick cuffs")
+	move.observe(ghost)
+	move.cuffed_at = world.time - 10 SECONDS
 	move.ready_at = 0
 	TEST_ASSERT(move.try_start(), "The ghost did not try the cuffs a third time")
-	TEST_ASSERT(move.finish_windup(move.pending_serial), "The ghost never got out of the cuffs")
-	TEST_ASSERT_NULL(ghost.cuffs, "The ghost is still cuffed")
-	TEST_ASSERT(!QDELETED(cuffs) && cuffs.loc == ghost.loc, "The cuffs are not on the floor at the ghost's feet ([cuffs?.loc])")
+	TEST_ASSERT(move.finish_windup(move.pending_serial), "The ghost never started on the cuffs")
+	var/deadline = world.time + 5 SECONDS
+	UNTIL(!ghost.handcuffed || world.time > deadline)
+	TEST_ASSERT_NULL(ghost.handcuffed, "The ghost is still cuffed")
+	TEST_ASSERT(!QDELETED(quick) && quick.loc == ghost.loc, "The cuffs are not on the floor at the ghost's feet ([quick?.loc])")
 	var/cuffs_there = 0
 	for(var/obj/item/restraints/handcuffs/pair in ghost.loc)
 		cuffs_there++
 	TEST_ASSERT_EQUAL(cuffs_there, 1, "[cuffs_there] pairs of cuffs lie at the ghost's feet, not 1")
 	TEST_ASSERT(ghost.has_status_effect(/datum/status_effect/prison_boss_shimmer), "The ghost did not shimmer after slipping the cuffs")
-	var/missed = 0
-	for(var/i in 1 to 60)
-		if(ghost.check_block(warden, 10, "the test blow", MELEE_ATTACK) & SUCCESSFUL_BLOCK)
-			missed++
-	TEST_ASSERT(missed > 10 && missed < 50, "[missed] of 60 blows missed the shimmer, not about half") // PRISON_BOSS_SHIMMER_MISS
+	// The shimmer is a look; the Ghost's dodging is real chrome (OC-6), a Slipwire shunt.
+	var/obj/item/organ/slipwire = locate(/obj/item/organ/cyberimp/cyberware/slipwire) in ghost.organs
+	TEST_ASSERT_NOTNULL(slipwire, "A Ghost in prison has no Slipwire to dodge with")
 	ghost.apply_damage(5, BRUTE)
 	TEST_ASSERT(!ghost.has_status_effect(/datum/status_effect/prison_boss_shimmer), "A hit that landed did not break the shimmer")
+	qdel(quick)
 
 	// Once a riot.
-	TEST_ASSERT(ghost.apply_cuffs(cuffs), "The ghost could not be cuffed again")
+	TEST_ASSERT(outpost_prison_test_cuff(ghost, cuffs), "The ghost could not be cuffed again")
 	move.observe(ghost)
 	move.cuffed_at = world.time - 10 SECONDS
 	move.ready_at = 0
@@ -1244,7 +1248,7 @@
 	var/obj/structure/table/table = locate() in table_spot
 	TEST_ASSERT(table && table.can_flip, "The mess table is not where the map puts it, or can't be flipped")
 	var/table_integrity = table.get_integrity()
-	var/mob/living/basic/outpost_prisoner/heavy = boss_prisoner(prison, prison_spot(home, 7, 9), "heavy", name = "Bruno Hask") // BOUNTY_KIT_HEAVY
+	var/mob/living/carbon/human/npc/outpost_prisoner/heavy = boss_prisoner(prison, prison_spot(home, 7, 9), "heavy", name = "Bruno Hask") // BOUNTY_KIT_HEAVY
 	var/datum/prison_boss_move/barricade/move = heavy.boss_move_datum()
 	TEST_ASSERT(istype(move), "A heavy in prison has no barricade ([move?.type])")
 	var/mob/living/carbon/human/consistent/warden = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 10, 9))
@@ -1303,10 +1307,10 @@
 	TEST_ASSERT_NOTNULL(home, "The kingpin test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/kingpin = boss_prisoner(prison, prison_spot(home, 4, 11), null, "kingpin", "Aurelio Stann") // BOUNTY_ARCHETYPE_KINGPIN
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 6, 8), "chatty")
-	var/mob/living/basic/outpost_prisoner/fence = trouble_prisoner(prison, prison_spot(home, 8, 8), "chatty")
-	var/mob/living/basic/outpost_prisoner/content = trouble_prisoner(prison, prison_spot(home, 10, 8), "chatty")
+	var/mob/living/carbon/human/npc/outpost_prisoner/kingpin = boss_prisoner(prison, prison_spot(home, 4, 11), null, "kingpin", "Aurelio Stann") // BOUNTY_ARCHETYPE_KINGPIN
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 6, 8), "chatty")
+	var/mob/living/carbon/human/npc/outpost_prisoner/fence = trouble_prisoner(prison, prison_spot(home, 8, 8), "chatty")
+	var/mob/living/carbon/human/npc/outpost_prisoner/content = trouble_prisoner(prison, prison_spot(home, 10, 8), "chatty")
 	prison.refresh_reach()
 
 	// The word: the fence-sitter at 55 joins (chatty line 50, PRISON_RIOT_JOIN_CHATTY, + 15); 80 doesn't.
@@ -1321,7 +1325,7 @@
 	prison.admin_calm()
 	prison.set_subdued(0)
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
-	TEST_ASSERT(kingpin.apply_cuffs(cuffs), "The kingpin could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(kingpin, cuffs), "The kingpin could not be cuffed")
 	set_word_moods(kingpin, rioter, fence, content)
 	TEST_ASSERT(prison.start_riot("test"), "The riot with the kingpin cuffed did not start")
 	TEST_ASSERT_NULL(fence.trouble, "A prisoner on the fence joined with the kingpin cuffed")
@@ -1339,7 +1343,7 @@
 	// Another Most Wanted gives no word.
 	prison.admin_calm()
 	prison.set_subdued(0)
-	var/mob/living/basic/outpost_prisoner/juggernaut = boss_prisoner(prison, prison_spot(home, 12, 11), "juggernaut", name = "Vasily Orlov") // BOUNTY_KIT_JUGGERNAUT
+	var/mob/living/carbon/human/npc/outpost_prisoner/juggernaut = boss_prisoner(prison, prison_spot(home, 12, 11), "juggernaut", name = "Vasily Orlov") // BOUNTY_KIT_JUGGERNAUT
 	var/datum/outpost_prison_cell/kingpin_cell = kingpin.cell
 	kingpin.forceMove(kingpin_cell.arrival_turf())
 	capture_bolt(prison, kingpin_cell)
@@ -1370,7 +1374,7 @@
 	warden.forceMove(run_loc_floor_bottom_left)
 
 	// The look first, the guard still on duty; then they stand back.
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 8, 11))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 8, 11))
 	TEST_ASSERT(guard?.on_duty(), "The test guard is not on duty")
 	TEST_ASSERT(move.try_start(), "The kingpin did not try to pay off a guard in sight")
 	TEST_ASSERT(guard.on_duty() && is_outpost_prison_staff(guard), "The guard stood back before the kingpin's look was over")
@@ -1385,7 +1389,7 @@
 	TEST_ASSERT(rioter.staff_in_reach() != guard, "A rioter went for the paid-off guard")
 
 	// Once a riot.
-	var/mob/living/basic/outpost_prison_guard/second_guard = guard_test_spawn(prison, prison_spot(home, 6, 11))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/second_guard = guard_test_spawn(prison, prison_spot(home, 6, 11))
 	move.ready_at = 0
 	TEST_ASSERT(!move.try_start(), "The kingpin paid off a second guard in one riot")
 	TEST_ASSERT(second_guard.on_duty(), "The second guard went off duty")
@@ -1400,7 +1404,7 @@
 	settle_prison_air(home)
 
 /// The moods for the word: the kingpin and one other riot on their own (10 and 30), one sits on the fence (55), one is content (80)
-/datum/unit_test/voidcrew_outpost_prison_boss_kingpin/proc/set_word_moods(mob/living/basic/outpost_prisoner/kingpin, mob/living/basic/outpost_prisoner/rioter, mob/living/basic/outpost_prisoner/fence, mob/living/basic/outpost_prisoner/content)
+/datum/unit_test/voidcrew_outpost_prison_boss_kingpin/proc/set_word_moods(mob/living/carbon/human/npc/outpost_prisoner/kingpin, mob/living/carbon/human/npc/outpost_prisoner/rioter, mob/living/carbon/human/npc/outpost_prisoner/fence, mob/living/carbon/human/npc/outpost_prisoner/content)
 	kingpin.set_mood(10)
 	rioter.set_mood(30)
 	fence.set_mood(55)
@@ -1445,7 +1449,7 @@
 	var/mob/living/carbon/human/consistent/warden = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 8, 8))
 	prison.refresh_reach()
 	TEST_ASSERT(boss_riot(prison), "The riot did not start")
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in nobodies)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in nobodies)
 		TEST_ASSERT_NULL(prisoner.boss_move_datum(), "[prisoner] ([prisoner.bounty_record?.archetype || "ordinary"]) has a riot move")
 		TEST_ASSERT(!prisoner.boss_move_busy(), "[prisoner] holds still for a riot move they don't have")
 	prison.boss_moves_tick(1)
