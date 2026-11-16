@@ -54,6 +54,23 @@
 	TEST_ASSERT(!housing.fold_hide_until && !housing.fold_timer, "Pulling the housing left the folded housing waiting")
 	TEST_ASSERT(!blade.inhand_hidden_until, "A pulled housing's blade stays hidden in its next hand")
 
+/// Mantis: a pose taken while the blade is still unfolding (the charge's crouch) stops the unfold, so its
+/// guard never draws over the new pose, and the held blade shows at once in it.
+/datum/unit_test/voidcrew_cyberware_anim_unfold_handoff
+
+/datum/unit_test/voidcrew_cyberware_anim_unfold_handoff/Run()
+	var/mob/living/carbon/human/bearer = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis)
+	TEST_ASSERT(housing.Insert(bearer, special = TRUE), "Test fixture: Mantis housing insert refused")
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade = housing.contents[1]
+	housing.Extend(blade)
+	var/obj/effect/abstract/cyberware_anim/unfold = housing.blade_anim()
+	TEST_ASSERT(unfold, "Test fixture: the unfold never played")
+
+	blade.set_mantis_pose("coil")
+	TEST_ASSERT(QDELETED(unfold), "The unfold kept drawing its guard over the coiled blade")
+	TEST_ASSERT(!blade.inhand_hidden_until, "The coiled blade stayed hidden after the unfold stopped")
+
 /// Ghostskin: the field flickers in to plain field alpha with nothing else on
 /// the bearer, and every way out (run out, switched off, knocked down, pulled,
 /// dead) ends at full view, back where the body started, with nothing left on it.
