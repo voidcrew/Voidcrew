@@ -1,272 +1,411 @@
 /**
- * The record pane of one crew: memo, berths with SIGN ON, CODE / NOTE + APPLY for locked
- * crews, PING CREW when every berth is taken. Package P2.
+ * The record of one crew, in place of the CREWS list: class and aboard, the memo, BERTHS
+ * (one row a job with its SIGN ON key, paged) beside ABOARD (names, captains marked), and
+ * under the berths the CODE and NOTE rows of a locked crew or PING CREW for a full one.
+ * `[ BACK ]` and the ship stepper sit in the tab row's right zone.
+ *
+ * Main-region rows: box from BOX_Y, body from BODY_Y to rows - 1.25, the notice row at
+ * rows - 1. Columns: BERTHS 1 to 41, a rule in 43, ABOARD 45 to 61.
  */
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
+
 import { useBack } from './nav';
 import {
-  Blocks,
+  Band,
+  BODY_Y,
+  BOX_Y,
+  Box,
   Btn,
-  LegacyField as Field,
-  Frame,
+  bodyRows,
+  cut,
+  Field,
+  HRule,
+  Key,
+  Pager,
   Put,
-  pad,
   RPut,
-  Rule,
-  LEGACY_TOP as TOP,
+  SEP,
+  Slab,
+  safe,
+  useGrid,
+  VRule,
   wrapMax,
 } from './term';
-import type { Crew, LobbyData } from './types';
+import type { Crew, CrewJob, LobbyData } from './types';
 
 /** SHIP_JOIN_PASSWORD_MAX_LEN and SHIP_APPLICATION_MESSAGE_MAX_LEN (voidcrew/_DEFINES/overmap.dm). */
 const CODE_MAX = 24;
 const NOTE_MAX = 200;
 
+const YOUR_CREW = ' YOUR CREW ';
+const DOORS = 'DOORS  CREW ONLY';
+/** Line 1's left part. */
+const LINE1_W = 43;
+/** Memo width: columns 1 to 61. */
+const MEMO_W = 61;
+/**
+ * Berth rows: title columns 3 to 24, count ending at 27, key 29 to 41 (13 wide, so the
+ * 11-character label has a column clear of the key's edge on each side, as in the stills).
+ */
+const TITLE_W = 22;
+const KEY_X = 29;
+const KEY_W = 13;
+/** CODE and NOTE fields: columns 6 to 27. */
+const FIELD_W = 22;
+const BERTH_PITCH = 1.75;
+const BERTH_H = 1.5;
+/** ABOARD: columns 45 to 61. */
+const ABOARD_X = 45;
+const NAME_W = 17;
+const CAPT_NAME_W = 12;
+
 /** Seconds as m:ss. */
 export function clock(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
+  const t = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(t / 60);
+  const s = t % 60;
   return `${m}:${s < 10 ? '0' : ''}${s}`;
-}
-
-/** Cuts to n characters without padding; a cut ends in '.'. */
-export function cut(str: string, n: number): string {
-  return str.length > n ? `${str.slice(0, Math.max(0, n - 1))}.` : str;
 }
 
 /** Locked and not yet cleared to board. */
 export const isLocked = (c: Crew) => !!c.locked && !c.cleared;
 
+/** `<Class> • <n> aboard`; the class drops out when the name already starts with it. */
+export function classLine(c: Crew, name: string): string {
+  const cls = safe(c.cls).trim();
+  const aboard = `${Math.min(999, Math.max(0, c.crew || 0))} aboard`;
+  if (!cls || name.toUpperCase().startsWith(cls.toUpperCase())) {
+    return aboard;
+  }
+  return `${cls} ${SEP} ${aboard}`;
+}
+
+/**
+ * A server countdown in seconds, ticking down once a second in the page from the last value
+ * the server sent.
+ */
+function useCountdown(value: number): number {
+  const base = useRef({ value, at: Date.now() });
+  if (base.current.value !== value) {
+    base.current = { value, at: Date.now() };
+  }
+  const [, tick] = useState(0);
+  const live = value > 0;
+  useEffect(() => {
+    if (!live) {
+      return;
+    }
+    const id = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [live]);
+  if (!live) {
+    return 0;
+  }
+  const gone = Math.floor((Date.now() - base.current.at) / 1000);
+  return Math.max(0, base.current.value - gone);
+}
+
 type Props = {
   crew: Crew;
-  x: number;
-  w: number;
-  h: number;
-  /** Narrow layout: the record has the whole screen and closes with BACK. */
-  narrow: boolean;
+  /** 1-based place of this ship in the list order, and the list's length. */
+  index: number;
+  total: number;
+  /** Open the ship at this 1-based place in the list order. */
+  onStep: (to: number) => void;
   onClose: () => void;
 };
 
 export function CrewRecord(props: Props) {
-  const { crew: c, x, w, h, narrow, onClose } = props;
-  const { act } = useBackend<LobbyData>();
+  const { crew: c, index, total, onStep, onClose } = props;
+  const { data, act } = useBackend<LobbyData>();
+  const { rows } = useGrid();
   const [code, setCode] = useState('');
   const [note, setNote] = useState('');
-  const bottom = TOP + h - 1;
-  const out: ReactNode[] = [];
-  let y = TOP + 2;
+  const [berthPage, setBerthPage] = useState(1);
+  /** The job whose SIGN ON takes the focus when it mounts (paging). */
+  const [claimJob, setClaimJob] = useState<string | null>(null);
+  /** The berth last pressed, lit while the join is under way. */
+  const [pressed, setPressed] = useState<string | null>(null);
   useBack(onClose);
 
-  const closeLabel = narrow ? ' BACK ' : ' X ';
-  out.push(
-    <Put
-      key="close"
-      x={x + w - 3 - closeLabel.length}
-      y={TOP}
-      cls="dim"
-      hoverCls="inv"
-      bg
-      onClick={onClose}
-      auto={1}
-    >
-      {closeLabel}
-    </Put>,
-  );
+  const pingWait = useCountdown(c.ping_wait || 0);
+  const rejoinWait = useCountdown(c.rejoin_wait || 0);
+  const codeWait = useCountdown(c.code_wait || 0);
 
+  // PageUp and PageDown step to the previous and next ship.
+  const stepRef = useRef({ index, total, onStep });
+  stepRef.current = { index, total, onStep };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
+        return;
+      }
+      if (e.key !== 'PageDown' && e.key !== 'PageUp') {
+        return;
+      }
+      e.preventDefault();
+      const s = stepRef.current;
+      const to = s.index + (e.key === 'PageDown' ? 1 : -1);
+      if (to >= 1 && to <= s.total) {
+        s.onStep(to);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
+
+  const name = safe(c.name).toUpperCase();
+  const playing = data.phase === 'playing';
+  const joining = !!data.joining;
+  const locked = isLocked(c);
+  const applied = locked && !!c.applied;
+  const jobs = c.jobs || [];
+  const full = !jobs.length;
+  const end = BODY_Y + bodyRows(rows);
+  const out: ReactNode[] = [];
+
+  // Tab row, right zone: [ BACK ], three spaces, the stepper; right-aligned to column 62.
+  const stepText =
+    total > 1 ? `< ${Math.min(99, index)}/${Math.min(99, total)} >` : '';
+  const backEnd = 63 - (stepText ? stepText.length + 3 : 0);
+  let firstFocus: 'sign' | 'code' | 'ping' | 'back' = 'back';
+
+  // Line 1: class and aboard, YOUR CREW, DOORS CREW ONLY. Half a row under the caption, as
+  // in the stills; flush under it the line crowds the ship's name.
+  let y = BODY_Y + 0.5;
+  const tag = c.mine ? YOUR_CREW.length + 2 : 0;
+  const line1 = cut(classLine(c, name), LINE1_W - tag);
   out.push(
-    <Put key="cls" x={x + 3} y={y} cls="dim">
-      {pad(c.cls.toUpperCase(), Math.max(1, w - 9 - `${c.crew} ABOARD`.length))}
+    <Put key="l1" x={1} y={y} cls="dim">
+      {line1}
     </Put>,
-    <RPut key="aboard" x={x + w - 3} y={y} cls="dim">
-      {`${c.crew} ABOARD`}
-    </RPut>,
   );
-  y += 1;
-  if (c.doors) {
+  if (c.mine) {
     out.push(
-      <Put key="doors" x={x + 3} y={y} cls="dim">
-        DOORS
-      </Put>,
-      <Put key="doors2" x={x + 10} y={y} cls="amb">
-        CREW ONLY
+      <Put key="mine" x={1 + line1.length + 2} y={y} cls="inv">
+        {YOUR_CREW}
       </Put>,
     );
   }
-  y += 2;
+  if (c.doors) {
+    out.push(
+      <RPut key="doors" x={62} y={y} cls="amb">
+        {DOORS}
+      </RPut>,
+    );
+  }
+  y += 1.5;
 
-  const locked = isLocked(c) && !c.applied;
-  // Rows the lower block needs: the code and note rows for a locked crew, one row otherwise.
-  const tail = locked ? 7 : c.applied ? 3 : 1;
-
-  if (c.memo) {
-    const room = Math.max(1, bottom - y - tail - 6);
-    const lines = wrapMax(`"${c.memo}"`, w - 6, Math.min(4, room));
-    for (const line of lines) {
+  // The memo, in quotes.
+  const memo = safe(c.memo).replace(/\s+/g, ' ').trim();
+  if (memo) {
+    const lines = wrapMax(`"${memo}"`, MEMO_W, bodyRows(rows) >= 20 ? 4 : 2);
+    lines.forEach((text, i) => {
       out.push(
-        <Put key={`memo${y}`} x={x + 3} y={y}>
-          {line}
+        <Put key={`m${i}`} x={1} y={y + i}>
+          {text}
         </Put>,
       );
-      y++;
-    }
-    y += 1;
+    });
+    y += lines.length + 0.5;
   }
-  // Who is aboard, the captain first, in what room the berths below leave.
-  const aboard = c.aboard || [];
-  if (aboard.length) {
-    const below =
-      1 +
-      (c.jobs.length ? Math.min(2, c.jobs.length) * 2 : 4) +
-      tail +
-      (c.rejoin_wait > 0 && !locked ? 3 : 0);
-    const room = Math.min(6, bottom - y - below - 1);
-    if (room >= 1) {
-      const shown = aboard.length > room ? room - 1 : aboard.length;
-      const more = Math.max(c.crew, aboard.length) - shown;
-      const jobW = Math.min(
-        16,
-        Math.max(6, ...aboard.map(([, job]) => job.length)),
+
+  // Divider, heads, and the rule between the columns.
+  const ruleY = y + 0.25;
+  out.push(
+    <HRule key="div" x={1} y={ruleY} w={61} />,
+    <VRule key="vr" x={43} y={ruleY} h={rows - 1 - ruleY} />,
+  );
+  y += 0.75;
+  out.push(
+    <Put key="hb" x={1} y={y} cls="dim">
+      BERTHS
+    </Put>,
+    <Put key="ha" x={ABOARD_X} y={y} cls="dim">
+      ABOARD
+    </Put>,
+  );
+  y += 1.25;
+  const colTop = y;
+
+  // ABOARD: names only, captains first and marked.
+  const roster = data.roster && data.roster.ref === c.ref ? data.roster : null;
+  if (roster) {
+    const names = roster.names || [];
+    const room = Math.max(1, Math.floor(end - colTop));
+    const known = names.length + Math.max(0, roster.more || 0);
+    const crewN = Math.max(known, c.crew || 0);
+    const shown =
+      crewN > names.length || names.length > room
+        ? Math.min(names.length, room - 1)
+        : names.length;
+    names.slice(0, shown).forEach(([who, capt], i) => {
+      const text = safe(who).toUpperCase();
+      out.push(
+        <Put key={`a${i}`} x={ABOARD_X} y={colTop + i}>
+          {cut(text, capt ? CAPT_NAME_W : NAME_W)}
+        </Put>,
       );
-      const nameX = x + 8;
-      const nameW = Math.max(4, x + w - 3 - jobW - 2 - nameX);
-      aboard.slice(0, shown).forEach(([name, job, capt], i) => {
+      if (capt) {
         out.push(
-          <Put key={`ab${i}`} x={nameX} y={y} cls={capt ? 'amb' : ''}>
-            {pad(name.toUpperCase(), nameW)}
-          </Put>,
-          <RPut key={`aj${i}`} x={x + w - 3} y={y} cls="dim">
-            {cut(job.toUpperCase(), jobW)}
+          <RPut key={`c${i}`} x={62} y={colTop + i} cls="acc">
+            CAPT
           </RPut>,
         );
-        if (capt) {
-          out.push(
-            <Put key={`ac${i}`} x={x + 3} y={y} cls="amb">
-              CAPT
-            </Put>,
-          );
-        }
-        y++;
-      });
-      if (more > 0) {
-        out.push(
-          <Put key="abm" x={nameX} y={y} cls="faint">
-            {`+${more} MORE`}
-          </Put>,
-        );
-        y++;
       }
-      y += 1;
+    });
+    if (crewN > shown) {
+      out.push(
+        <Put key="amore" x={ABOARD_X} y={colTop + shown} cls="dim">
+          {`+${Math.min(999, crewN - shown)} MORE`}
+        </Put>,
+      );
     }
   }
-  out.push(<Rule key="rule1" x={x + 1} y={y} w={w - 2} />);
-  y += 1;
 
-  if (!c.jobs.length) {
+  // BERTHS.
+  let by = colTop;
+  if (rejoinWait > 0 && !locked && !full) {
     out.push(
-      <Put key="full" x={x + 3} y={y + 1} cls="red">
+      <Put key="rejoin" x={1} y={by} cls="amb">
+        {`BACK ABOARD IN ${clock(rejoinWait)}`}
+      </Put>,
+    );
+    by += 1.25;
+  }
+  const tail = !locked ? 0 : applied ? 3 : 3.5;
+  let t0 = by;
+
+  if (full) {
+    out.push(
+      <Slab key="nob" x={1} y={by} w={41} h={BERTH_H} variant="row" dead />,
+      <Put key="nobt" x={3} y={by + 0.25} cls="dim">
         NO BERTHS OPEN
       </Put>,
     );
-    y += 3;
-    if (c.ping_wait > 0) {
-      out.push(
-        <Put key="ping" x={x + 3} y={y} cls="faint">
-          [ PING CREW ]
-        </Put>,
-        <Put key="pingw" x={x + 17} y={y} cls="faint">
-          {clock(c.ping_wait)}
-        </Put>,
-      );
-    } else {
-      out.push(
-        <Btn
-          key="ping"
-          x={x + 3}
-          y={y}
-          label="PING CREW"
-          lit
-          auto={2}
-          onClick={() => act('crew_ping', { ship: c.ref })}
-        />,
-      );
-    }
-    return <>{out}</>;
-  }
-
-  if (c.rejoin_wait > 0 && !locked) {
-    y += 1;
+    const pingLive = pingWait <= 0;
     out.push(
-      <Put key="rejoin" x={x + 3} y={y} cls="amb">
-        {`BACK ABOARD IN ${clock(c.rejoin_wait)}`}
-      </Put>,
-    );
-    y += 2;
-  }
-
-  const grey = locked || !!c.applied;
-  const sign = '[ SIGN ON ]';
-  // The job name gets the whole width up to SIGN ON; the open berths sit on the line under it.
-  const nameW = Math.max(8, w - 3 - sign.length - 5);
-  const maxBlocks = Math.max(1, Math.floor((nameW - 1) / 2));
-  // Name, berths and a spacer per job; drop the spacer when that would not fit.
-  const step = y + c.jobs.length * 3 + tail <= bottom ? 3 : 2;
-  let jobRoom = Math.max(1, Math.floor((bottom - y - tail) / step));
-  // Berths that don't fit leave a row saying how many more there are.
-  const jobsCut = c.jobs.length > jobRoom;
-  if (jobsCut) {
-    jobRoom = Math.max(1, Math.floor((bottom - y - tail - 1) / step));
-  }
-  let autoGiven = false;
-  for (const job of c.jobs.slice(0, jobRoom)) {
-    const usable = !grey && !!job.ok && c.rejoin_wait <= 0;
-    const first = usable && !autoGiven;
-    autoGiven = autoGiven || usable;
-    out.push(
-      <Put key={`j${job.ref}`} x={x + 3} y={y} cls={grey ? 'dim' : ''}>
-        {pad(job.title.toUpperCase(), nameW)}
-      </Put>,
-    );
-    const shown = Math.min(job.open, maxBlocks);
-    for (let i = 0; i < shown; i++) {
-      out.push(
-        <Blocks
-          key={`b${job.ref}-${i}`}
-          x={x + 3 + i * 2}
-          y={y + 1}
-          n={1}
-          cls={grey ? 'dim' : ''}
-          frac={0.5}
-        />,
-      );
-    }
-    out.push(
-      <Btn
-        key={`s${job.ref}`}
-        x={x + w - 3}
-        y={y}
-        right
-        label="SIGN ON"
-        disabled={!usable}
-        auto={first ? 2 : undefined}
-        onClick={() => act('crew_sign_on', { ship: c.ref, job: job.ref })}
+      <Key
+        key="ping"
+        x={1}
+        y={by + 2}
+        w={13}
+        kind="box"
+        label="PING CREW"
+        state={pingLive ? 'idle' : 'dead'}
+        auto={pingLive && !locked ? 2 : undefined}
+        onClick={() => act('crew_ping', { ship: c.ref })}
       />,
     );
-    y += step;
-  }
-  if (jobsCut) {
-    out.push(
-      <Put key="jmore" x={x + 3} y={y} cls="faint">
-        {`+${c.jobs.length - jobRoom} MORE`}
-      </Put>,
-    );
-    y += 1;
+    if (!pingLive) {
+      out.push(
+        <Put key="pingw" x={16} y={by + 2.25} cls="amb">
+          {clock(pingWait)}
+        </Put>,
+      );
+    } else if (!locked) {
+      firstFocus = 'ping';
+    }
+    t0 = by + 3.5;
+  } else {
+    const A = end - by - tail;
+    const fit = Math.max(1, Math.floor((A + 0.25) / BERTH_PITCH));
+    const paged = jobs.length > fit;
+    const per = paged
+      ? Math.max(1, Math.floor((A - 1) / BERTH_PITCH))
+      : jobs.length;
+    const pages = Math.max(1, Math.ceil(jobs.length / per));
+    const pg = Math.min(pages, Math.max(1, berthPage));
+    const first = (pg - 1) * per;
+    const shown = jobs.slice(first, first + per);
+    const turn = (to: number, last = false) => {
+      if (to < 1 || to > pages || to === pg) {
+        return false;
+      }
+      const at = (to - 1) * per;
+      const target = last
+        ? jobs[Math.min(jobs.length - 1, at + per - 1)]
+        : jobs[at];
+      setClaimJob(target ? target.ref : null);
+      setBerthPage(to);
+      return true;
+    };
+    const canSign = (job: CrewJob) =>
+      playing && !locked && !!job.ok && rejoinWait <= 0 && !joining;
+    const firstLive = shown.find(canSign);
+    if (firstLive) {
+      firstFocus = 'sign';
+    }
+    shown.forEach((job, i) => {
+      const yy = by + i * BERTH_PITCH;
+      const live = canSign(job);
+      const lit = joining && pressed === job.ref;
+      const titleCls = locked ? 'faint' : job.ok ? '' : 'dim';
+      const countCls = locked ? 'faint' : 'acc';
+      const claim = claimJob ? claimJob === job.ref : job === firstLive;
+      out.push(
+        <Slab
+          key={`r${job.ref}`}
+          x={1}
+          y={yy}
+          w={41}
+          h={BERTH_H}
+          variant="row"
+          dead={locked}
+        />,
+        <Put key={`t${job.ref}`} x={3} y={yy + 0.25} cls={titleCls}>
+          {cut(safe(job.title).toUpperCase(), TITLE_W)}
+        </Put>,
+        <RPut key={`n${job.ref}`} x={28} y={yy + 0.25} cls={countCls}>
+          {String(Math.min(99, Math.max(0, job.open || 0)))}
+        </RPut>,
+        <Key
+          // Remount when the key comes alive, so a code accepted moves the focus onto it.
+          key={`k${job.ref}-${live ? 1 : 0}`}
+          x={KEY_X}
+          y={yy}
+          w={KEY_W}
+          h={BERTH_H}
+          kind="cap"
+          label="[ SIGN ON ]"
+          state={lit ? 'lit' : live ? 'idle' : 'dead'}
+          auto={live && claim ? 2 : undefined}
+          edge={{
+            down:
+              i === shown.length - 1 && paged ? () => turn(pg + 1) : undefined,
+            up: i === 0 && paged ? () => turn(pg - 1, true) : undefined,
+          }}
+          onClick={() => {
+            setPressed(job.ref);
+            act('crew_sign_on', { ship: c.ref, job: job.ref });
+          }}
+        />,
+      );
+    });
+    if (paged) {
+      out.push(
+        <Pager
+          key="bpg"
+          x={42}
+          y={by + per * BERTH_PITCH}
+          page={pg}
+          pages={pages}
+          right
+          onPage={(to) => turn(to)}
+        />,
+      );
+      t0 = by + per * BERTH_PITCH + 1;
+    } else {
+      t0 = by + shown.length * BERTH_PITCH - 0.25;
+    }
   }
 
+  // Locked: CODE (and NOTE, or APPLICATION SENT).
   if (locked) {
-    out.push(<Rule key="rule2" x={x + 1} y={y} w={w - 2} />);
-    y += 2;
-    const waiting = c.code_wait > 0;
+    const cy = t0 + 0.25;
+    const waiting = codeWait > 0;
     const sendCode = () => {
       if (!code.trim() || waiting) {
         return;
@@ -275,96 +414,106 @@ export function CrewRecord(props: Props) {
       setCode('');
     };
     out.push(
-      <Put key="codel" x={x + 3} y={y} cls="amb">
+      <Put key="codel" x={1} y={cy + 0.25}>
         CODE
       </Put>,
-      <Field
-        key="codef"
-        x={x + 9}
-        y={y}
-        w={10}
-        value={code}
-        max={CODE_MAX}
-        disabled={waiting}
-        secret
-        auto={2}
-        onChange={setCode}
-        onEnter={sendCode}
-      />,
-      <Btn
-        key="codeb"
-        x={x + 22}
-        y={y}
-        label="ENTER"
-        amber
-        disabled={waiting}
+    );
+    if (waiting) {
+      out.push(
+        <Band key="codeb" x={6} y={cy} w={FIELD_W} h={1.5} tone="field" />,
+        <Put key="codew" x={7} y={cy + 0.25} cls="amb">
+          {`WAIT ${clock(codeWait)}`}
+        </Put>,
+      );
+    } else {
+      out.push(
+        <Field
+          key="codef"
+          x={6}
+          y={cy}
+          w={FIELD_W}
+          value={code}
+          max={CODE_MAX}
+          secret
+          auto={firstFocus === 'back' ? 2 : undefined}
+          onChange={setCode}
+          onEnter={sendCode}
+        />,
+      );
+      if (firstFocus === 'back') {
+        firstFocus = 'code';
+      }
+    }
+    out.push(
+      <Key
+        key="codek"
+        x={KEY_X}
+        y={cy}
+        w={KEY_W}
+        kind="cap"
+        label="[ ENTER ]"
+        state={waiting ? 'dead' : 'idle'}
         onClick={sendCode}
       />,
     );
-    if (waiting && w >= 42) {
+    const ny = cy + 1.75;
+    if (applied) {
       out.push(
-        <Put key="codew" x={x + 34} y={y} cls="faint">
-          {clock(c.code_wait)}
+        <Put key="sent" x={1} y={ny} cls="amb">
+          APPLICATION SENT
         </Put>,
       );
+    } else {
+      const sendNote = () => act('crew_apply', { ship: c.ref, note });
+      out.push(
+        <Put key="notel" x={1} y={ny + 0.25}>
+          NOTE
+        </Put>,
+        <Field
+          key="notef"
+          x={6}
+          y={ny}
+          w={FIELD_W}
+          value={note}
+          max={NOTE_MAX}
+          onChange={setNote}
+          onEnter={sendNote}
+        />,
+        <Key
+          key="notek"
+          x={KEY_X}
+          y={ny}
+          w={KEY_W}
+          kind="cap"
+          label="[ APPLY ]"
+          onClick={sendNote}
+        />,
+      );
     }
-    y += 2;
-    const sendNote = () => {
-      act('crew_apply', { ship: c.ref, note });
-      setNote('');
-    };
-    out.push(
-      <Put key="notel" x={x + 3} y={y} cls="amb">
-        NOTE
-      </Put>,
-      <Field
-        key="notef"
-        x={x + 9}
-        y={y}
-        w={Math.max(8, w - 14)}
-        value={note}
-        max={NOTE_MAX}
-        onChange={setNote}
-        onEnter={sendNote}
-      />,
-    );
-    y += 2;
-    out.push(
-      <Btn
-        key="apply"
-        x={x + 3}
-        y={y}
-        label="APPLY"
-        lit
-        amber
-        onClick={sendNote}
-      />,
-    );
-  } else if (c.applied) {
-    out.push(<Rule key="rule2" x={x + 1} y={y} w={w - 2} />);
-    y += 2;
-    out.push(
-      <Put key="applied" x={x + 3} y={y} cls="faint">
-        [ APPLIED ]
-      </Put>,
-    );
   }
 
-  return <>{out}</>;
-}
-
-/** The record pane with its frame. */
-export function CrewRecordPane(props: Props) {
-  const { crew, x, w, h } = props;
   return (
-    <Frame
-      x={x}
-      y={TOP}
-      w={w}
-      h={h}
-      title={cut(crew.name.toUpperCase(), w - 14)}
-    >
-      <CrewRecord key={crew.ref} {...props} />
-    </Frame>
+    <>
+      <Btn
+        x={backEnd}
+        y={0.25}
+        right
+        label="BACK"
+        auto={firstFocus === 'back' ? 1 : undefined}
+        onClick={onClose}
+      />
+      {!!stepText && (
+        <Pager
+          x={63}
+          y={0.25}
+          page={index}
+          pages={total}
+          right
+          onPage={onStep}
+        />
+      )}
+      <Box x={0} y={BOX_Y} w={63} h={rows - 3.5} caption={cut(name, 57)} />
+      {out}
+    </>
   );
 }
