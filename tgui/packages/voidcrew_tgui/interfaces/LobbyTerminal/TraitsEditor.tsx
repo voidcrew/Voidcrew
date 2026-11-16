@@ -13,7 +13,13 @@ import { useBackend } from 'tgui/backend';
 import type { Quirk } from 'tgui/interfaces/PreferencesMenu/types';
 
 import { fileColours } from './BodyEditor';
-import { clamp, useChar, useLatePager, useWheel } from './CharFrame';
+import {
+  clamp,
+  StepKeys,
+  useChar,
+  useLatePager,
+  useWheel,
+} from './CharFrame';
 import { ColourPanel, ListPicker } from './CharPickers';
 import { parseHex } from './ColorEntry';
 import { sfx, sfxInstead, useChanged } from './motion';
@@ -380,11 +386,21 @@ export function TraitsEditor() {
       const list = choicesOf(cat, key) || [];
       let onPress: (() => void) | undefined;
       let shownValue: ReactNode = null;
+      /** `<` `>` on a value with two or more choices (as BODY's rows have them). */
+      let onStep: ((by: number) => void) | null = null;
       if (kind === 'pick') {
         onPress = () => sub(<TraitPick k={key} label={label} />, label, key);
+        onStep = (by) => {
+          const at = list.indexOf(String(value));
+          const n = list.length;
+          act('char_set', {
+            key,
+            value: list[(((at < 0 ? 0 : at + by) % n) + n) % n],
+          });
+        };
         shownValue = (
           <Put x={15} y={oy + 0.125} pulse={String(value)}>
-            {cut(safe(nameOf(cat, key, value)), 16)}
+            {cut(safe(nameOf(cat, key, value)), 10)}
           </Put>
         );
       } else if (kind === 'flip') {
@@ -398,10 +414,11 @@ export function TraitsEditor() {
             act('char_set', { key, value: value ? 0 : 1 });
           }
         };
+        onStep = onPress;
         shownValue = (
           <Put x={15} y={oy + 0.125} pulse={String(value)}>
             {list.length === 2
-              ? cut(safe(nameOf(cat, key, value)), 16)
+              ? cut(safe(nameOf(cat, key, value)), 10)
               : value
                 ? 'YES'
                 : 'NO'}
@@ -447,6 +464,7 @@ export function TraitsEditor() {
             {label}
           </Put>
           {shownValue}
+          {!!onStep && <StepKeys x={26} y={oy} h={1.25} onStep={onStep} />}
         </Slab>,
       );
     });

@@ -24,6 +24,7 @@ import {
   perPage,
   planId,
   q,
+  StepKeys,
   useChar,
   useLatePager,
   useWheel,
@@ -40,7 +41,6 @@ import {
   Check,
   cut,
   Field,
-  Key,
   NameLine,
   Pager,
   Put,
@@ -590,10 +590,7 @@ export function KitEditor() {
                 {cut(safe(cur?.name || ''), 14)}
               </Put>
               {skins.length > 1 && (
-                <>
-                  <Key x={56} y={oy} w={3} h={oh} kind="cap" label="<" mouseOnly onClick={() => step(-1)} />
-                  <Key x={59} y={oy} w={3} h={oh} kind="cap" label=">" mouseOnly onClick={() => step(1)} />
-                </>
+                <StepKeys x={56} y={oy} h={oh} onStep={step} />
               )}
             </>
           );
@@ -606,11 +603,15 @@ export function KitEditor() {
         case 'worn': {
           label = 'WORN';
           const over = entry.layer === 1 || (entry.layer as unknown) === true;
-          onPress = () => act('char_kit_layer', { path: item.path });
+          const flip = () => act('char_kit_layer', { path: item.path });
+          onPress = flip;
           value = (
-            <Put x={41} y={ty2} pulse={over}>
-              {over ? 'OVER SUIT' : 'UNDER SUIT'}
-            </Put>
+            <>
+              <Put x={41} y={ty2} pulse={over}>
+                {over ? 'OVER SUIT' : 'UNDER SUIT'}
+              </Put>
+              <StepKeys x={56} y={oy} h={oh} onStep={flip} />
+            </>
           );
           break;
         }
@@ -619,15 +620,20 @@ export function KitEditor() {
           const curLip: Lip = (LIPS as readonly string[]).includes(String(entry.layer))
             ? (entry.layer as Lip)
             : 'Middle';
-          onPress = () =>
+          const lip = (by: number) =>
             act('char_kit_lip', {
               path: item.path,
-              style: LIPS[(LIPS.indexOf(curLip) + 1) % LIPS.length],
+              style:
+                LIPS[(LIPS.indexOf(curLip) + by + LIPS.length) % LIPS.length],
             });
+          onPress = () => lip(1);
           value = (
-            <Put x={41} y={ty2} pulse={curLip}>
-              {curLip.toUpperCase()}
-            </Put>
+            <>
+              <Put x={41} y={ty2} pulse={curLip}>
+                {curLip.toUpperCase()}
+              </Put>
+              <StepKeys x={56} y={oy} h={oh} onStep={lip} />
+            </>
           );
           break;
         }
