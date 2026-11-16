@@ -5,7 +5,7 @@
  *
  * Owner decision D2: recruiters are flavour only. Pamphlets and talk; nothing is recorded, no pin,
  * no stored choice, no sign-up. PD builds here (spec 3.5): the two recruiters as
- * /mob/living/basic/ambient_npc subtypes with their /datum/ambient_outpost_role subtypes (which
+ * /mob/living/carbon/human/npc/ambient_npc subtypes with their /datum/ambient_outpost_role subtypes (which
  * outposts), their pamphlets and posters (capped per outpost), their barbs at Quartermain, and
  * their lines in strings/faction_recruiters.json (AMBIENT_STRINGS_RECRUITERS).
  *
@@ -42,7 +42,7 @@
  * and trades barbs with the rival recruiter when one is nearby. Talking to them gets a pitch and,
  * once per ten minutes, a pamphlet. Nothing about a player is kept afterwards (D2).
  */
-/mob/living/basic/ambient_npc/recruiter
+/mob/living/carbon/human/npc/ambient_npc/recruiter
 	name = "recruiter"
 	desc = "Someone working the crowd with a clipboard and a smile."
 	dialogue_file = AMBIENT_STRINGS_RECRUITERS
@@ -64,12 +64,12 @@
 	/// REF of a player -> world.time they may have another pamphlet
 	var/list/pamphlet_cooldowns
 
-/mob/living/basic/ambient_npc/recruiter/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/recruiter/Destroy()
 	pamphlet_cooldowns = null
 	return ..()
 
 /// Already at their post when players come: a few steps from the lift lobby, working the crowd
-/mob/living/basic/ambient_npc/recruiter/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/recruiter/settle_in()
 	var/datum/ambient_place/outpost/outpost_place = place
 	var/obj/structure/overmap/trader_outpost/outpost = istype(outpost_place) ? outpost_place.outpost() : null
 	var/turf/post = length(outpost?.lobby_alcove_turfs) ? ambient_waiting_spot(src, pick(outpost.lobby_alcove_turfs), 3, 6) : null
@@ -81,7 +81,7 @@
 	return !!start_activity(new /datum/ambient_activity/idle(src)) && settle_here()
 
 // An empty hand gets a pitch, and a pamphlet once every ten minutes
-/mob/living/basic/ambient_npc/recruiter/talked_to(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/talked_to(mob/living/user)
 	if(!talk_ready(user))
 		return
 	if(!buckled)
@@ -91,7 +91,7 @@
 		addtimer(CALLBACK(src, PROC_REF(offer_pamphlet), WEAKREF(user)), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
 
 /// Whether `user` may have another pamphlet yet, and starts their wait if so
-/mob/living/basic/ambient_npc/recruiter/proc/pamphlet_ready(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/proc/pamphlet_ready(mob/living/user)
 	var/key = REF(user)
 	if(LAZYACCESS(pamphlet_cooldowns, key) > world.time)
 		return FALSE
@@ -101,7 +101,7 @@
 		pamphlet_cooldowns.Cut(1, 2)
 	return TRUE
 
-/mob/living/basic/ambient_npc/recruiter/proc/offer_pamphlet(datum/weakref/user_ref)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/proc/offer_pamphlet(datum/weakref/user_ref)
 	var/mob/living/user = user_ref?.resolve()
 	if(QDELETED(user) || stat != CONSCIOUS || fading || get_dist(src, user) > 3)
 		return
@@ -110,7 +110,7 @@
 	user.put_in_hands(leaflet)
 
 /// A random two-line barb from their section's "barbs": opener said by this side, reply in the rival's voice
-/mob/living/basic/ambient_npc/recruiter/proc/pick_barb()
+/mob/living/carbon/human/npc/ambient_npc/recruiter/proc/pick_barb()
 	var/list/entry = ambient_dialogue_section(dialogue_file, dialogue_section)
 	var/list/barbs = entry?["barbs"]
 	if(!length(barbs))
@@ -122,11 +122,11 @@
 	return list(barb["opener"], length(replies) ? pick(replies) : null)
 
 // The supply convoy arrived: a comment, not a reaction
-/mob/living/basic/ambient_npc/recruiter/react_convoy(obj/structure/overmap/trader_outpost/outpost)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/react_convoy(obj/structure/overmap/trader_outpost/outpost)
 	speak_context("convoy", outpost, force = TRUE)
 
 /// The nearest poster of `types` within `range`, or null
-/mob/living/basic/ambient_npc/recruiter/proc/find_poster(list/types, range = AMBIENT_ACTIVITY_RANGE)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/proc/find_poster(list/types, range = AMBIENT_ACTIVITY_RANGE)
 	if(!length(types))
 		return null
 	var/turf/here = get_turf(src)
@@ -138,7 +138,7 @@
 	return null
 
 /// How many of this side's posters are already up within `range`
-/mob/living/basic/ambient_npc/recruiter/proc/count_own_posters(range = AMBIENT_ACTIVITY_RANGE)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/proc/count_own_posters(range = AMBIENT_ACTIVITY_RANGE)
 	. = 0
 	if(!length(poster_types))
 		return
@@ -150,7 +150,7 @@
 			.++
 
 /// A bare wall within `range` with room for a poster and a floor tile to stand beside it, or null
-/mob/living/basic/ambient_npc/recruiter/proc/find_bare_wall(range = AMBIENT_ACTIVITY_RANGE)
+/mob/living/carbon/human/npc/ambient_npc/recruiter/proc/find_bare_wall(range = AMBIENT_ACTIVITY_RANGE)
 	var/turf/here = get_turf(src)
 	if(!here)
 		return null
@@ -183,7 +183,7 @@
 	var/datum/weakref/target_ref
 
 /datum/ambient_activity/recruit_poster/setup()
-	var/mob/living/basic/ambient_npc/recruiter/recruiter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/recruiter = doer
 	if(!istype(recruiter))
 		return FALSE
 	var/obj/structure/sign/poster/rival = recruiter.find_poster(recruiter.rival_poster_types)
@@ -211,7 +211,7 @@
 	return TRUE
 
 /datum/ambient_activity/recruit_poster/arrive()
-	var/mob/living/basic/ambient_npc/recruiter/recruiter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/recruiter = doer
 	var/atom/target = target_ref?.resolve()
 	if(QDELETED(target))
 		return
@@ -236,10 +236,10 @@
 	var/datum/weakref/rival_ref
 
 /datum/ambient_activity/recruit_barb/setup()
-	var/mob/living/basic/ambient_npc/recruiter/recruiter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/recruiter = doer
 	if(!istype(recruiter) || !recruiter.rival_type)
 		return FALSE
-	var/mob/living/basic/ambient_npc/recruiter/rival = find_rival(recruiter)
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/rival = find_rival(recruiter)
 	if(!rival)
 		return FALSE
 	rival_ref = WEAKREF(rival)
@@ -250,11 +250,11 @@
 	set_duration()
 	return TRUE
 
-/datum/ambient_activity/recruit_barb/proc/find_rival(mob/living/basic/ambient_npc/recruiter/recruiter)
+/datum/ambient_activity/recruit_barb/proc/find_rival(mob/living/carbon/human/npc/ambient_npc/recruiter/recruiter)
 	var/turf/here = get_turf(recruiter)
 	if(!here)
 		return null
-	for(var/mob/living/basic/ambient_npc/recruiter/other in range(AMBIENT_ACTIVITY_RANGE, here))
+	for(var/mob/living/carbon/human/npc/ambient_npc/recruiter/other in range(AMBIENT_ACTIVITY_RANGE, here))
 		if(other == recruiter || other.place != recruiter.place || !istype(other, recruiter.rival_type))
 			continue
 		if(other.stat != CONSCIOUS || istype(other.activity, /datum/ambient_activity/leave))
@@ -263,8 +263,8 @@
 	return null
 
 /datum/ambient_activity/recruit_barb/arrive()
-	var/mob/living/basic/ambient_npc/recruiter/recruiter = doer
-	var/mob/living/basic/ambient_npc/recruiter/rival = rival_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/recruiter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/recruiter/rival = rival_ref?.resolve()
 	if(QDELETED(rival))
 		return
 	if(!doer.buckled)
@@ -279,13 +279,13 @@
 // OUTFITS (plain clothes, nothing worth stripping)
 // =========================================================================
 
-/datum/outfit/ambient/recruiter_nanotrasen
+/datum/outfit/ambient_recruiter_nanotrasen
 	name = "Nanotrasen recruiter"
 	uniform = /obj/item/clothing/under/rank/civilian/head_of_personnel/suit
 	neck = /obj/item/clothing/neck/tie/blue
 	shoes = /obj/item/clothing/shoes/laceup
 
-/datum/outfit/ambient/recruiter_syndicate
+/datum/outfit/ambient_recruiter_syndicate
 	name = "Syndicate recruiter"
 	uniform = /obj/item/clothing/under/rank/civilian/lawyer/black
 	neck = /obj/item/clothing/neck/tie/black/tied
@@ -296,10 +296,10 @@
 // NANOTRASEN
 // =========================================================================
 
-/mob/living/basic/ambient_npc/recruiter/nanotrasen
+/mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen
 	name = "Nanotrasen recruiter"
 	desc = "A neatly pressed suit and a stack of pamphlets."
-	outfit = /datum/outfit/ambient/recruiter_nanotrasen
+	outfit = /datum/outfit/ambient_recruiter_nanotrasen
 	dialogue_section = "nanotrasen"
 	pamphlet_type = /obj/item/paper/pamphlet/nanotrasen
 	poster_types = list(
@@ -311,11 +311,11 @@
 		/obj/structure/sign/poster/contraband/syndicate_recruitment,
 		/obj/structure/sign/poster/contraband/gorlex_recruitment,
 	)
-	rival_type = /mob/living/basic/ambient_npc/recruiter/syndicate
+	rival_type = /mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate
 
 /datum/ambient_outpost_role/recruiter/nanotrasen
 	name = "Nanotrasen recruiter"
-	npc_type = /mob/living/basic/ambient_npc/recruiter/nanotrasen
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen
 	outpost_types = list(
 		/obj/structure/overmap/trader_outpost/general,
 		/obj/structure/overmap/trader_outpost/outfitter,
@@ -326,10 +326,10 @@
 // SYNDICATE
 // =========================================================================
 
-/mob/living/basic/ambient_npc/recruiter/syndicate
+/mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate
 	name = "sharp-dressed stranger"
 	desc = "A dark suit, dark glasses, and a way of not quite looking at the cameras."
-	outfit = /datum/outfit/ambient/recruiter_syndicate
+	outfit = /datum/outfit/ambient_recruiter_syndicate
 	dialogue_section = "syndicate"
 	pamphlet_type = /obj/item/paper/pamphlet/syndicate
 	poster_types = list(
@@ -341,11 +341,11 @@
 		/obj/structure/sign/poster/official/enlist,
 		/obj/structure/sign/poster/official/nanotrasen_logo,
 	)
-	rival_type = /mob/living/basic/ambient_npc/recruiter/nanotrasen
+	rival_type = /mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen
 
 /datum/ambient_outpost_role/recruiter/syndicate
 	name = "Syndicate recruiter"
-	npc_type = /mob/living/basic/ambient_npc/recruiter/syndicate
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate
 	outpost_types = list(
 		/obj/structure/overmap/trader_outpost/outfitter,
 		/obj/structure/overmap/trader_outpost/black_market,

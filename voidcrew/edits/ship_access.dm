@@ -161,8 +161,8 @@ GLOBAL_LIST_EMPTY(crew_locked_ships)
 /obj/structure/overmap/ship/proc/is_npc_ship_crew(mob/living/npc)
 	if(is_ship_crew(npc))
 		return TRUE
-	if(istype(npc, /mob/living/basic/ambient_npc/stray))
-		var/mob/living/basic/ambient_npc/stray/stray = npc
+	if(istype(npc, /mob/living/carbon/human/npc/ambient_npc/stray))
+		var/mob/living/carbon/human/npc/ambient_npc/stray/stray = npc
 		return !stray.is_wild() && stray.get_ship() == src
 	var/list/friends = npc.ai_controller?.blackboard[BB_FRIENDS_LIST]
 	for(var/mob/friend as anything in friends)
