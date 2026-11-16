@@ -2,49 +2,49 @@
  * Admin verbs for NPC pirate mob spawning
  */
 
-/// Mapping of faction names to their mob types
+/// Mapping of faction names to their mob types: the human NPC ship crews (faction_pirate_humans.dm)
 GLOBAL_LIST_INIT(npc_pirate_factions, list(
 	"Silverscale" = list(
-		"Melee (Duelist)" = /mob/living/basic/trooper/pirate/faction/silverscale/melee,
-		"Ranged (Marksman)" = /mob/living/basic/trooper/pirate/faction/silverscale/ranged,
-		"Captain (Noble)" = /mob/living/basic/trooper/pirate/faction/silverscale/captain,
-		"Boss (Highlord)" = /mob/living/basic/trooper/pirate/faction/boss/silverscale,
+		"Melee (Duelist)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/melee,
+		"Ranged (Marksman)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/ranged,
+		"Captain (Noble)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/captain,
+		"Boss (Highlord)" = /mob/living/carbon/human/npc/faction_pirate/silverscale/boss,
 	),
 	"Skeleton" = list(
-		"Melee (Swashbuckler)" = /mob/living/basic/trooper/pirate/faction/skeleton/melee,
-		"Ranged (Gunner)" = /mob/living/basic/trooper/pirate/faction/skeleton/ranged,
-		"Captain" = /mob/living/basic/trooper/pirate/faction/skeleton/captain,
-		"Boss (Davy Jones)" = /mob/living/basic/trooper/pirate/faction/boss/skeleton,
+		"Melee (Swashbuckler)" = /mob/living/carbon/human/npc/faction_pirate/skeleton/melee,
+		"Ranged (Gunner)" = /mob/living/carbon/human/npc/faction_pirate/skeleton/ranged,
+		"Captain" = /mob/living/carbon/human/npc/faction_pirate/skeleton/captain,
+		"Boss (Davy Jones)" = /mob/living/carbon/human/npc/faction_pirate/skeleton/boss,
 	),
 	"Grey Tide" = list(
-		"Melee (Grey Tider)" = /mob/living/basic/trooper/pirate/faction/grey/melee,
-		"Ranged (Gunner)" = /mob/living/basic/trooper/pirate/faction/grey/ranged,
-		"Captain (Tidemaster)" = /mob/living/basic/trooper/pirate/faction/grey/captain,
-		"Boss (The Robust One)" = /mob/living/basic/trooper/pirate/faction/boss/grey,
+		"Melee (Grey Tider)" = /mob/living/carbon/human/npc/faction_pirate/grey/melee,
+		"Ranged (Gunner)" = /mob/living/carbon/human/npc/faction_pirate/grey/ranged,
+		"Captain (Tidemaster)" = /mob/living/carbon/human/npc/faction_pirate/grey/captain,
+		"Boss (The Robust One)" = /mob/living/carbon/human/npc/faction_pirate/grey/boss,
 	),
 	"Lustrous" = list(
-		"Melee (Scintillant)" = /mob/living/basic/trooper/pirate/faction/lustrous/melee,
-		"Ranged (Coruscant)" = /mob/living/basic/trooper/pirate/faction/lustrous/ranged,
-		"Captain (Radiant)" = /mob/living/basic/trooper/pirate/faction/lustrous/captain,
-		"Boss (The Radiant One)" = /mob/living/basic/trooper/pirate/faction/boss/lustrous,
+		"Melee (Scintillant)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/melee,
+		"Ranged (Coruscant)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/ranged,
+		"Captain (Radiant)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/captain,
+		"Boss (The Radiant One)" = /mob/living/carbon/human/npc/faction_pirate/lustrous/boss,
 	),
 	"Interdyne" = list(
-		"Melee (Enforcer)" = /mob/living/basic/trooper/pirate/faction/interdyne/melee,
-		"Ranged (Pharmacist)" = /mob/living/basic/trooper/pirate/faction/interdyne/ranged,
-		"Captain (Director)" = /mob/living/basic/trooper/pirate/faction/interdyne/captain,
-		"Boss (Director Prime)" = /mob/living/basic/trooper/pirate/faction/boss/interdyne,
+		"Melee (Enforcer)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/melee,
+		"Ranged (Pharmacist)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/ranged,
+		"Captain (Director)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/captain,
+		"Boss (Director Prime)" = /mob/living/carbon/human/npc/faction_pirate/interdyne/boss,
 	),
 	"IRS" = list(
-		"Melee (Enforcer)" = /mob/living/basic/trooper/pirate/faction/irs/melee,
-		"Ranged (Agent)" = /mob/living/basic/trooper/pirate/faction/irs/ranged,
-		"Captain (Head Auditor)" = /mob/living/basic/trooper/pirate/faction/irs/captain,
-		"Boss (Chief Auditor)" = /mob/living/basic/trooper/pirate/faction/boss/irs,
+		"Melee (Enforcer)" = /mob/living/carbon/human/npc/faction_pirate/irs/melee,
+		"Ranged (Agent)" = /mob/living/carbon/human/npc/faction_pirate/irs/ranged,
+		"Captain (Head Auditor)" = /mob/living/carbon/human/npc/faction_pirate/irs/captain,
+		"Boss (Chief Auditor)" = /mob/living/carbon/human/npc/faction_pirate/irs/boss,
 	),
 	"Medieval" = list(
-		"Melee (Footsoldier)" = /mob/living/basic/trooper/pirate/faction/medieval/melee,
-		"Ranged (Crossbowman)" = /mob/living/basic/trooper/pirate/faction/medieval/ranged,
-		"Captain (Warlord)" = /mob/living/basic/trooper/pirate/faction/medieval/captain,
-		"Boss (The Black Knight)" = /mob/living/basic/trooper/pirate/faction/boss/medieval,
+		"Melee (Footsoldier)" = /mob/living/carbon/human/npc/faction_pirate/medieval/melee,
+		"Ranged (Crossbowman)" = /mob/living/carbon/human/npc/faction_pirate/medieval/ranged,
+		"Captain (Warlord)" = /mob/living/carbon/human/npc/faction_pirate/medieval/captain,
+		"Boss (The Black Knight)" = /mob/living/carbon/human/npc/faction_pirate/medieval/boss,
 	),
 ))
 
@@ -90,9 +90,16 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 	// Step 3: Ask whether it boards the ship we're standing on
 	var/setup_raid = tgui_alert(user, "Send it after the crew of the ship you're standing on, as a boarder?", "Boarder AI", list("Yes", "No"))
 
-	// Spawn the pirate
+	// Spawn the pirate: a human NPC is built at once, dressed as a boarder if it is boarding
 	var/datum/npc_spawn_context/context = new(spawn_turf, null, "ordinary")
-	var/mob/living/basic/trooper/pirate/spawned_pirate = spawn_npc_in_zone(mob_path, spawn_turf, context, FALSE)
+	var/mob/living/spawned_pirate
+	if(ispath(mob_path, /mob/living/carbon/human/npc))
+		var/datum/human_npc_order/order = spawn_human_npc(mob_path, spawn_turf, outfit = (setup_raid == "Yes" ? boarding_outfit_for(mob_path) : null), context = context, immediate = TRUE)
+		spawned_pirate = order?.spawned_ref?.resolve()
+		if(spawned_pirate)
+			spawned_pirate.flags_1 |= ADMIN_SPAWNED_1
+	else
+		spawned_pirate = spawn_npc_in_zone(mob_path, spawn_turf, context, FALSE)
 	if(!spawned_pirate)
 		to_chat(user, span_warning("Failed to spawn pirate."))
 		return
@@ -118,7 +125,8 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 	else
 		to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) with its own AI."))
 
-	context.finalize()
+	if(!ispath(mob_path, /mob/living/carbon/human/npc))
+		context.finalize()
 	message_admins("[key_name_admin(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	log_admin("[key_name(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	BLACKBOX_LOG_ADMIN_VERB("Spawn NPC Pirate")

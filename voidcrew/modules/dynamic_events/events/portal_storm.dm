@@ -179,11 +179,23 @@
 		if(!spawn_turf || !target_ship.is_aboard(spawn_turf))
 			continue
 		var/datum/npc_spawn_context/context = new(target_ship, npc_spawn_zone, role, source_turf = npc_source_turf)
+		// People (human NPCs) are queued and step out of the portal as they are built, a body a tick.
+		if(ispath(mob_type, /mob/living/carbon/human/npc))
+			spawn_human_npc(mob_type, spawn_turf, CALLBACK(src, PROC_REF(human_stepped_out)), context = context)
+			spawned_mobs++
+			continue
 		var/mob/living/new_hostile = spawn_npc_in_zone(mob_type, spawn_turf, context)
 		if(QDELETED(new_hostile))
 			continue
 		spawned_mobs++
 		spawn_effects(spawn_turf)
+
+/// A queued boarder is built: the portal flashes where it steps out, if it is still aboard.
+/datum/round_event/voidcrew/portal_storm/proc/human_stepped_out(mob/living/carbon/human/npc/boarder)
+	var/turf/spot = get_turf(boarder)
+	if(!spot || !target_valid() || !target_ship.is_aboard(spot))
+		return
+	spawn_effects(spot)
 
 /// Plays TG's portal flash and sound without allowing the shifted visual off-ship.
 /datum/round_event/voidcrew/portal_storm/proc/spawn_effects(turf/spawn_turf)
@@ -194,16 +206,17 @@
 	if(!target_ship.is_aboard(effect_turf))
 		effect_turf = spawn_turf
 	var/appearance_index = GET_TURF_PLANE_OFFSET(effect_turf) + 1
-	if(appearance_index <= length(storm_appearances))
+	if(appearance_index <= length(storm_appearances) && storm_appearances[appearance_index])
 		effect_turf.flick_overlay_static(storm_appearances[appearance_index], 15)
 	playsound(effect_turf, 'sound/effects/magic/lightningbolt.ogg', rand(80, 100), TRUE)
 
-/// Syndicate commandos, with a stormtrooper occupying the optional boss slot.
+/// Syndicate commandos, with a stormtrooper occupying the optional boss slot: people in sealed suits
+/// (human NPCs, voidcrew/modules/human_npcs/ruins/ruin_npc_troopers.dm), armed for the zone they board in.
 /datum/round_event/voidcrew/portal_storm/syndicate_shocktroop
-	boss_types = list(/mob/living/basic/trooper/syndicate/melee/space/stormtrooper = 2)
+	boss_types = list(/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper/sword = 2)
 	hostile_types = list(
-		/mob/living/basic/trooper/syndicate/melee/space = 8,
-		/mob/living/basic/trooper/syndicate/ranged/space = 2,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/commando = 8,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/commando/gunner = 2,
 	)
 
 /// Hostile cult constructs using the same pulse and population limits.

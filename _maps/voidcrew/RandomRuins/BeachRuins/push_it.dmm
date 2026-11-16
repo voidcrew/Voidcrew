@@ -157,7 +157,7 @@
 /area/overmap_encounter/planetoid/beach)
 "dG" = (
 /obj/structure/chair,
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
 	},
@@ -244,7 +244,7 @@
 /obj/structure/chair{
 	dir = 4
 	},
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "ia" = (
@@ -338,7 +338,7 @@
 /turf/template_noop,
 /area/template_noop)
 "mf" = (
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/carpet/neon/simple/violet/nodots,
 /area/ruin/powered)
 "ms" = (
@@ -365,7 +365,7 @@
 /turf/open/floor/carpet/neon/simple/violet,
 /area/ruin/powered)
 "mK" = (
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
 	},
@@ -532,7 +532,7 @@
 /area/ruin/powered)
 "sv" = (
 /obj/structure/chair/stool/directional/north,
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/carpet/neon/simple/violet/nodots,
 /area/ruin/powered)
 "sP" = (
@@ -602,7 +602,7 @@
 /area/ruin/powered)
 "ve" = (
 /obj/structure/toilet,
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/powered)
@@ -738,7 +738,7 @@
 /obj/structure/chair/sofa/corp/right{
 	dir = 1
 	},
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /turf/open/floor/carpet/neon/simple/violet,
 /area/ruin/powered)
 "Cz" = (
@@ -817,7 +817,7 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
 	},
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/powered)
 "Fw" = (
@@ -1065,7 +1065,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Pl" = (
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /turf/open/floor/light/colour_cycle/dancefloor_a,
 /area/ruin/powered)
 "Pq" = (
@@ -1085,7 +1085,7 @@
 /area/template_noop)
 "Qw" = (
 /obj/structure/chair/sofa/corp/corner,
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/carpet/neon/simple/violet,
 /area/ruin/powered)
 "QN" = (
@@ -1169,7 +1169,7 @@
 "SV" = (
 /obj/structure/mirror/directional/north,
 /obj/structure/sink/directional/south,
-/mob/living/basic/trooper/russian/ranged,
+/obj/effect/spawner/human_npc/ruin/russian/gunner,
 /obj/machinery/light/blacklight/directional/west,
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/powered)
@@ -1218,7 +1218,7 @@
 /turf/open/floor/carpet/neon/simple/violet,
 /area/ruin/powered)
 "Ux" = (
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/light/colour_cycle/dancefloor_a,
 /area/ruin/powered)
 "UU" = (
@@ -1257,7 +1257,7 @@
 /obj/structure/chair/sofa/corp/corner{
 	dir = 8
 	},
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/powered)
 "VX" = (
@@ -1292,7 +1292,7 @@
 /obj/structure/chair{
 	dir = 1
 	},
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
 	},

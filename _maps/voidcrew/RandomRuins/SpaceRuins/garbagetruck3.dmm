@@ -708,7 +708,7 @@
 "JR" = (
 /obj/effect/decal/cleanable/ash,
 /obj/effect/decal/cleanable/blood/splatter/oil,
-/mob/living/basic/trooper/russian,
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/squat)
 "JW" = (

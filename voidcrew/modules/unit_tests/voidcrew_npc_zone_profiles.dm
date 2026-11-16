@@ -780,7 +780,6 @@
 		/mob/living/basic/mining/wolf/random = /mob/living/basic/mining/wolf/alpha,
 		/mob/living/basic/mining/wolf/wasteland/random = /mob/living/basic/mining/wolf/alpha/wasteland,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/random = /mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random = /mob/living/simple_animal/hostile/asteroid/hermit/ranged,
 	)
 	for(var/spawn_type in replacement_types)
 		var/found_replacement = FALSE
@@ -940,8 +939,16 @@
 	for(var/loan_type in list(/datum/voidcrew_shuttle_loan/syndiehijacking, /datum/voidcrew_shuttle_loan/lots_of_bees, /datum/voidcrew_shuttle_loan/russian_party, /datum/voidcrew_shuttle_loan/spider_gift))
 		token.current_zone = red
 		var/datum/voidcrew_shuttle_loan/loan = allocate(loan_type)
+		var/list/queued_before = SShuman_npcs.queue.Copy()
 		loan.spawn_items(cargo)
 		var/hostiles = 0
+		// People (human NPCs) are queued, a body a tick: their orders carry the same delivery context.
+		for(var/datum/human_npc_order/order as anything in SShuman_npcs.queue - queued_before)
+			hostiles++
+			TEST_ASSERT_EQUAL(order.context?.zone_type, 3, "[loan_type] queued a person against the cargo bay")
+			TEST_ASSERT_EQUAL(order.context?.source_id, REF(cargo), "[loan_type] queued a person without its delivery identity")
+			TEST_ASSERT_EQUAL(order.context?.role, "ordinary", "[loan_type] queued a person without its encounter role")
+			qdel(order)
 		for(var/turf/tile as anything in cargo.test_turfs)
 			for(var/mob/living/body in tile)
 				if(!isbasicmob(body) && !isanimal(body))
@@ -1316,8 +1323,6 @@
 		/mob/living/basic/trooper/nanotrasen/ranged/smg,
 		/mob/living/basic/trooper/nanotrasen/ranged/assault,
 		/mob/living/basic/trooper/nanotrasen/ranged/elite,
-		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
-		/mob/living/basic/trooper/nanotrasen/ranged/assault/customs,
 		/mob/living/basic/trooper/syndicate/ranged/smg,
 		/mob/living/basic/trooper/syndicate/ranged/shotgun,
 		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper,
@@ -1325,8 +1330,8 @@
 	for(var/mob_type in shooters)
 		for(var/zone in 1 to 3)
 			var/is_nt = ispath(mob_type, /mob/living/basic/trooper/nanotrasen)
-			var/is_customs = mob_type == /mob/living/basic/trooper/nanotrasen/ranged/smg/customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/assault/customs
-			var/replaced = zone == 1 || (zone == 2 && (!is_nt || is_customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
+			// NT customs are human NPCs now; their ladder is tested in voidcrew_human_npcs_nt_customs.dm
+			var/replaced = zone == 1 || (zone == 2 && (!is_nt || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
 			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
 			var/mob/living/basic/trooper/body = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
 			var/datum/component/ranged_attacks/ranged = body.GetComponent(/datum/component/ranged_attacks)
