@@ -736,7 +736,7 @@
 	if(victim.stat != CONSCIOUS)
 		return TRUE
 	if(is_outpost_prisoner(victim))
-		var/mob/living/basic/outpost_prisoner/prisoner = victim
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = victim
 		return prisoner.can_be_dragged()
 	return HAS_TRAIT_FROM(victim, TRAIT_INCAPACITATED, STAMINA)
 
@@ -785,8 +785,8 @@
 		if(watcher.client)
 			shake_camera(watcher, 3, 1)
 	if(is_outpost_prisoner(victim))
-		var/mob/living/basic/outpost_prisoner/prisoner = victim
-		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "absorbed")
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = victim
+		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "absorbed")
 	addtimer(CALLBACK(src, PROC_REF(absorb_proboscis), serial), OUTPOST_HORROR_ABSORB_PROBOSCIS, TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(absorb_drained), serial), OUTPOST_HORROR_ABSORB_TIME, TIMER_DELETE_ME)
 	return TRUE
@@ -836,16 +836,20 @@
 	set_busy("digest", OUTPOST_HORROR_DIGEST_TIME)
 	return victim
 
-/// Husked and dead
+/// Dead and husked the way tg's changeling absorb leaves its victims: death, then tg's Drain() on a body
 /mob/living/basic/outpost_experiment/horror/proc/husk(mob/living/victim)
 	victim.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
-	victim.become_husk(CHANGELING_DRAIN)
-	if(!ishuman(victim))
-		// A basic mob has no husk sprite: grey and dried out
-		victim.add_atom_colour(list(0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0,0,0,1, -0.05,-0.05,-0.05,0), FIXED_COLOUR_PRIORITY)
-	victim.blood_volume = 0
 	if(victim.stat != DEAD)
+		victim.investigate_log("has died from being absorbed by an outpost prison horror.", INVESTIGATE_DEATHS)
 		victim.death()
+	if(iscarbon(victim))
+		var/mob/living/carbon/body = victim
+		body.Drain()
+		return
+	// A basic mob has no husk sprite: grey and dried out
+	victim.become_husk(CHANGELING_DRAIN)
+	victim.add_atom_colour(list(0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0,0,0,1, -0.05,-0.05,-0.05,0), FIXED_COLOUR_PRIORITY)
+	victim.blood_volume = 0
 
 /// Admins hear about every non-member it absorbs; the game log gets every absorb
 /mob/living/basic/outpost_experiment/horror/proc/log_absorb(mob/living/victim)
@@ -1049,7 +1053,7 @@
 
 /// Whether a prisoner is shut in a bolted cell, which it leaves for last
 /mob/living/basic/outpost_experiment/horror/proc/bolted_away(mob/living/target)
-	var/mob/living/basic/outpost_prisoner/prisoner = target
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = target
 	return istype(prisoner) && prisoner.in_bolted_cell()
 
 /**
@@ -1133,7 +1137,7 @@
 				best_distance = distance
 	if(best)
 		return best
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in event?.prison?.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in event?.prison?.prisoners)
 		if(!valid_quarry(prisoner) || bolted_away(prisoner))
 			continue
 		var/distance = get_dist(src, prisoner)
