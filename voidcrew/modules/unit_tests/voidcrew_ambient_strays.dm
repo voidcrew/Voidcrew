@@ -14,9 +14,14 @@
 /datum/ambient_place/ship/strays_test
 	/// What counts as aboard, list(min x, min y, max x, max y, z)
 	var/list/test_bounds
+	/// Stands in for the trader outpost the ship is docked at
+	var/test_outpost
 
 /datum/ambient_place/ship/strays_test/aboard(turf/tile)
 	return ambient_in_bounds(get_turf(tile), test_bounds)
+
+/datum/ambient_place/ship/strays_test/docked_outpost()
+	return test_outpost
 
 /// A convict hideout kind that always has room. No planet types, so the shared instance never rolls.
 /datum/ambient_site_kind/convict/strays_test
@@ -103,6 +108,7 @@
 
 	// Aboard: a deckhand, kept aboard, living by the deckhand routine
 	TEST_ASSERT(stray.board(ship), "A stray did not come aboard")
+	TEST_ASSERT_EQUAL(stray.gifts_given, 1, "A rescued stray gave [stray.gifts_given] gifts on coming aboard")
 	TEST_ASSERT(stray.is_deckhand(), "A stray aboard is not a deckhand")
 	TEST_ASSERT_EQUAL(stray.place, deck, "A deckhand does not belong to their ship")
 	TEST_ASSERT_EQUAL(deck.taken, 1, "The ship did not count the stray it took")
@@ -256,12 +262,41 @@
 
 	// Taken aboard: the site is spent, and nobody comes back
 	var/obj/structure/overmap/ship/ship = strays_test_ship(ambient_test_room_bounds())
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
 	TEST_ASSERT(again?.accept_offer(leader, ship), "A stranded survivor refused a ship with room")
+	again.rescue_zone = 3 // ZONE_RED: found in the red zone (the test room is on no overmap tile)
+	leader.forceMove(get_step(again, NORTH) || get_turf(again))
 	TEST_ASSERT(again?.board(ship), "A stranded survivor did not come aboard")
 	TEST_ASSERT_EQUAL(site.state, "spent", "A site whose survivor was taken aboard is not spent") // AMBIENT_SITE_SPENT
 	TEST_ASSERT(!kind.realize(site), "A pod whose survivor was taken aboard brought someone out")
 	allocated += again
+
+	// Rescued: a ship part for whoever brought them in, and another later
+	var/obj/item/ship_parts/thanks = leader.is_holding_item_of_type(/obj/item/ship_parts)
+	TEST_ASSERT_NOTNULL(thanks, "A rescued survivor gave the crew member who brought them in no ship part")
+	TEST_ASSERT_EQUAL(again.gifts_given, 1, "A rescued survivor gave [again.gifts_given] gifts on coming aboard")
+	TEST_ASSERT(again.next_gift_at >= world.time + 75 MINUTES, "A rescued survivor's next gift is due too soon") // AMBIENT_STRAY_GIFT_LOW
+	qdel(thanks)
+	var/obj/item/ship_parts/later = again.give_gift(leader)
+	TEST_ASSERT(istype(later) && leader.is_holding(later), "A deckhand's later gift did not reach the crew member")
+	TEST_ASSERT_EQUAL(again.gifts_given, 2, "A deckhand's later gift was not counted")
+	qdel(later)
+
+	// Let go at an outpost: the crew that rescued them gets red-zone reputation, once
+	var/datum/ambient_place/ship/strays_test/deck = again.place
+	TEST_ASSERT(istype(deck), "A rescued deckhand does not live on the ship")
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 0, "A rescued survivor paid out away from any outpost")
+	deck.test_outpost = TRUE
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 3, "A survivor rescued in the red zone did not pay 3 reputation") // REPUTATION_GAIN_HARD
+	TEST_ASSERT_EQUAL(crew.reputation, 3, "The rescuing crew's reputation is [crew.reputation]")
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 0, "A rescued survivor paid out twice")
+	TEST_ASSERT_EQUAL(crew.reputation, 3, "A second drop-off changed the crew's reputation")
+	deck.test_outpost = null
+	team.ship = null
 
 	for(var/datum/weakref/ref as anything in site.props)
 		qdel(ref?.resolve())
@@ -546,10 +581,12 @@
 		for(var/context in list("talk", "accepted", "aboard", "lost"))
 			TEST_ASSERT(length(ambient_dialogue_lines("strays.json", section, context)), "Strays: [section] has no [context] lines") // AMBIENT_STRINGS_STRAYS
 	for(var/section in list("stranded", "lifeboat"))
-		for(var/context in list("greet", "refused"))
+		for(var/context in list("greet", "refused", "rescued", "delivered"))
 			TEST_ASSERT(length(ambient_dialogue_lines("strays.json", section, context)), "Strays: [section] has no [context] lines")
 	for(var/context in list("sighted", "plea", "refused", "camp", "cornered", "cuffed"))
 		TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "convict", context)), "Strays: the convict has no [context] lines")
-	for(var/context in list("idle", "talk", "crew", "follow", "wait", "dismissed"))
+	for(var/context in list("idle", "talk", "crew", "gift", "follow", "wait", "dismissed"))
 		TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "deckhand", context)), "Strays: deckhands have no [context] lines")
 	TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "lifeboat", "mayday")), "The lifeboat has no mayday")
+	var/mob/living/carbon/human/npc/ambient_npc/stray/plain_type = /mob/living/carbon/human/npc/ambient_npc/stray
+	TEST_ASSERT(!initial(plain_type.gives_gifts), "A stray who was never stranded thanks the crew with ship parts")

@@ -20,7 +20,9 @@
  * AMBIENT_RECRUITS_PER_SHIP_ROUND taken aboard in a round. A stray taken aboard spends the site they
  * came from, so it never brings them back.
  *
- * Nothing here pays anything, and a deckhand drops nothing when killed.
+ * A stray rescued from being stranded (`gives_gifts`: the crashed pod and lifeboat survivors)
+ * hands whoever brought them aboard a random ship part, then every AMBIENT_STRAY_GIFT_LOW to _HIGH
+ * walks up to someone of the crew with another, up to AMBIENT_STRAY_GIFTS_MAX. Nothing else here pays anything, and a deckhand drops nothing when killed.
  */
 
 /// Where they were found, open to an offer
@@ -215,6 +217,12 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 	/// Tries left to walk back aboard, and when the next may start
 	var/rehome_tries = 0
 	var/rehome_at = 0
+	/// Rescued from being stranded: they thank the crew with ship parts
+	var/gives_gifts = FALSE
+	/// Gifts handed over since they came aboard, the first one included
+	var/gifts_given = 0
+	/// world.time their next gift is due
+	var/next_gift_at = 0
 	/// What they do aboard as a deckhand
 	var/list/deckhand_routine = list(
 		/datum/ambient_activity/idle = 2,
@@ -282,6 +290,10 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 				lose_leader()
 			else if(deck.aboard(get_turf(src)))
 				board(ship)
+		if(STRAY_DECKHAND)
+			if(gives_gifts && gifts_given <= AMBIENT_STRAY_GIFTS_MAX && world.time >= next_gift_at)
+				next_gift_at = world.time + AMBIENT_STRAY_GIFT_RETRY
+				start_activity(new /datum/ambient_activity/stray_crew/gift(src))
 		if(STRAY_WILD)
 			if(recruit_open && world.time >= next_look)
 				next_look = world.time + STRAY_LOOK_INTERVAL
@@ -406,6 +418,7 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 		ready_for_space(FALSE)
 		return FALSE
 	exempt_npc_zone()
+	note_rescue_zone()
 	on_joined(ship)
 	speak_context("accepted", leader, force = TRUE)
 	log_game("AMBIENT: [src] agreed to join the [ship.name], asked by [key_name(leader)] at [AREACOORD(src)]")
@@ -434,6 +447,7 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 	stray_state = STRAY_DECKHAND
 	ready_for_space(FALSE)
 	ship_ref = WEAKREF(ship)
+	var/mob/living/leader = get_leader()
 	leader_ref = null
 	end_activity()
 	set_place(deck)
@@ -441,10 +455,16 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 	leash_bounds = null
 	routine = deckhand_routine.Copy()
 	dialogue_section = "deckhand"
-	var/list/lines = ambient_dialogue_lines(dialogue_file, origin_section, "aboard")
-	if(length(lines))
-		say_line(fill_line(pick(lines)))
 	log_game("AMBIENT: [src] came aboard the [ship.name] as a deckhand")
+	note_rescuers(ship)
+	// Rescued: a thank-you for whoever brought them in, and more now and then
+	var/context = "aboard"
+	if(gives_gifts && !gifts_given)
+		give_gift(leader)
+		context = "rescued"
+	var/list/lines = ambient_dialogue_lines(dialogue_file, origin_section, context)
+	if(length(lines))
+		say_line(fill_line(pick(lines), leader))
 	return TRUE
 
 /// Their jet harness on for the crossing to a ship, or off again, if they wear one (as a person works their own)
@@ -456,6 +476,28 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 		harness.turn_on(src)
 	else
 		harness.turn_off(src)
+
+/**
+ * Hands `receiver` a random ship part, or sets it down if they are out of reach or their hands are
+ * full, and schedules the next one. Returns the part.
+ */
+/mob/living/carbon/human/npc/ambient_npc/stray/proc/give_gift(mob/living/receiver)
+	var/static/list/part_types = list(
+		/obj/item/ship_parts/combat,
+		/obj/item/ship_parts/science,
+		/obj/item/ship_parts/trade,
+		/obj/item/ship_parts/misc,
+	)
+	var/part_type = pick(part_types)
+	var/obj/item/ship_parts/part = new part_type(drop_location())
+	gifts_given++
+	next_gift_at = world.time + rand(AMBIENT_STRAY_GIFT_LOW, AMBIENT_STRAY_GIFT_HIGH)
+	if(!QDELETED(receiver) && get_dist(src, receiver) <= 2 && receiver.put_in_hands(part))
+		manual_emote("hands [receiver] [part].")
+	else
+		manual_emote("sets down [part].")
+	log_game("AMBIENT: [src] gave [part] ([gifts_given] given) to [receiver ? key_name(receiver) : "nobody"] at [AREACOORD(src)]")
+	return part
 
 /// They follow `leader` from now on. Returns the activity, or null.
 /mob/living/carbon/human/npc/ambient_npc/stray/proc/start_follow(mob/living/leader)
@@ -487,7 +529,12 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 
 /// Let go at a trader outpost by `user`: a goodbye, and they are off
 /mob/living/carbon/human/npc/ambient_npc/stray/proc/dismiss(mob/living/user)
-	speak_context("dismissed", user, force = TRUE)
+	// Rescued and brought somewhere safe: their crew is owed for it (rescue_reputation.dm)
+	var/list/lines = claim_rescue(user) ? ambient_dialogue_lines(dialogue_file, origin_section, "delivered") : null
+	if(length(lines))
+		say_line(fill_line(pick(lines), user))
+	else
+		speak_context("dismissed", user, force = TRUE)
 	var/obj/structure/overmap/ship/ship = get_ship()
 	log_game("AMBIENT: [src] left the [ship?.name || "ship"], let go by [key_name(user)]")
 	start_activity(new /datum/ambient_activity/leave(src, null, 3 SECONDS))
@@ -819,6 +866,26 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 	if(!spoke)
 		spoke = TRUE
 		doer.speak_context("crew", person, force = TRUE)
+		ends_at = min(ends_at, world.time + 6 SECONDS)
+	return AMBIENT_STEP_CONTINUE
+
+/// Walking up to someone of the crew with a ship part for them
+/datum/ambient_activity/stray_crew/gift
+	name = "bringing the crew something"
+	duration_low = 40 SECONDS
+	duration_high = 40 SECONDS
+
+/datum/ambient_activity/stray_crew/gift/act(seconds)
+	var/mob/living/person = anchor()
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stray = doer
+	if(!istype(stray) || !person || person.stat != CONSCIOUS || get_dist(doer, person) > 1)
+		return AMBIENT_STEP_DONE
+	if(!doer.buckled)
+		doer.face_atom(person)
+	if(!spoke)
+		spoke = TRUE
+		stray.give_gift(person)
+		doer.speak_context("gift", person, force = TRUE)
 		ends_at = min(ends_at, world.time + 6 SECONDS)
 	return AMBIENT_STEP_CONTINUE
 
