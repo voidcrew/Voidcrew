@@ -41,7 +41,7 @@ import {
   WORK_W,
   WORK_X,
 } from './SettingsFrame';
-import { cut, Field, Put, Swatch, safe } from './term';
+import { Check, cut, Field, Put, Slide, Swatch, safe } from './term';
 import type { LobbyData, SettingRow } from './types';
 import { choicesOf, nameOf, usePrefsCatalog } from './usePrefsCatalog';
 
@@ -50,6 +50,9 @@ const HANDFUL = 6;
 /** The value's text: from VALUE_X + 2, this many cells (the `>` sits in the last one). */
 const VALUE_TEXT_X = VALUE_X + 2;
 const VALUE_TEXT_W = 14;
+/** A slider's track: after the `<`, with the number in the four cells after it. */
+const SLIDE_X = VALUE_X + 2;
+const SLIDE_W = 10;
 /** The category tg's window puts last here. */
 const LAST_CAT = 'ADMIN';
 
@@ -306,6 +309,16 @@ export function SettingsOptions() {
   /** The row being typed in, and the row that gets the focus back after. */
   const [typing, setTyping] = useState<string | null>(null);
   const [back, setBack] = useState<string | null>(null);
+  /** A slider being dragged, or let go and waiting for the server's value. */
+  const [drag, setDrag] = useState<{
+    key: string;
+    v: number;
+    held: boolean;
+  } | null>(null);
+  const rev = data.settings?.rev;
+  useEffect(() => {
+    setDrag((d) => (d && !d.held ? null : d));
+  }, [rev]);
   const rows = data.settings?.rows || [];
 
   const items = rows.map((row) => ({ row, ...featureOf(row.key) }));
@@ -378,11 +391,7 @@ export function SettingsOptions() {
           return {
             ...base,
             onPress: () => set(key, row.value ? 0 : 1),
-            value: (ty: number) => (
-              <Put x={VALUE_TEXT_X} y={ty} cls={on ? 'wht' : 'dim'} pulse={on}>
-                {on ? '[#]' : '[ ]'}
-              </Put>
-            ),
+            value: (ty: number) => <Check x={VALUE_TEXT_X} y={ty} on={on} />,
           };
         }
         case 'choice':
@@ -452,6 +461,62 @@ export function SettingsOptions() {
               set(key, next);
             }
           };
+          // tg draws these as sliders (the volumes): a track the mouse drags, coarse key steps.
+          if (features[key]?.component === FeatureSliderInput && hi > lo) {
+            const span = hi - lo;
+            const snap = (share: number) =>
+              clamp(
+                Math.round((lo + Math.round((share * span) / st) * st) * 100) /
+                  100,
+                lo,
+                hi,
+              );
+            const coarse = Math.max(1, Math.round(span / 20 / st));
+            const held = drag?.key === key ? drag.v : null;
+            const now = held ?? v;
+            return {
+              ...base,
+              onStep: (by: number) => step(by * coarse),
+              onPress: () => setTyping(key),
+              value:
+                typing === key
+                  ? typeIn(numberText(row, v), 6, true, send)
+                  : (ty: number, focused: boolean) => {
+                      const text = numberText(row, now);
+                      return (
+                        <>
+                          <Arrows ty={ty} onStep={(by) => step(by * coarse)} />
+                          <Slide
+                            x={SLIDE_X}
+                            y={ty}
+                            w={SLIDE_W}
+                            value={(now - lo) / span}
+                            lit={focused}
+                            onChange={(share) =>
+                              setDrag({ key, v: snap(share), held: true })
+                            }
+                            onRelease={(share) => {
+                              const next = snap(share);
+                              setDrag({ key, v: next, held: false });
+                              if (next !== v) {
+                                set(key, next);
+                              } else {
+                                setDrag(null);
+                              }
+                            }}
+                          />
+                          <Put
+                            x={SLIDE_X + SLIDE_W + 4 - Math.min(4, text.length)}
+                            y={ty}
+                            cls={focused ? 'wht' : ''}
+                          >
+                            {text.slice(0, 4)}
+                          </Put>
+                        </>
+                      );
+                    },
+            };
+          }
           return {
             ...base,
             onStep: step,

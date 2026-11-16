@@ -36,6 +36,7 @@ import {
   FlashAt,
   BODY_Y,
   bodyRows,
+  Check,
   cut,
   Field,
   Key,
@@ -513,9 +514,7 @@ export function KitEditor() {
             {l}
           </Put>
         ))}
-        <Put x={58} y={iy + (ih - 1) / 2} cls={packed ? 'acc' : 'dim'}>
-          {packed ? '[#]' : '[ ]'}
-        </Put>
+        <Check x={58.5} y={iy + (ih - 1) / 2} on={packed} acc />
       </Slab>,
       // The row flashes when it is packed, unpacked, or gives its place to another item.
       <FlashAt

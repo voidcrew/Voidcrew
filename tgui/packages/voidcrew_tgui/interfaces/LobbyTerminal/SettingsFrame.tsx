@@ -6,8 +6,10 @@
 import {
   createContext,
   type ReactNode,
+  type WheelEvent as ReactWheelEvent,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -124,6 +126,22 @@ export function GroupSwitch(props: {
   );
 }
 
+/** The mouse wheel turns a paged list's pages, one page a notch (as CREWS does). */
+function useWheelPages(page: number, pages: number, set: (p: number) => void) {
+  const last = useRef(0);
+  return (e: ReactWheelEvent) => {
+    if (pages <= 1 || !e.deltaY) {
+      return;
+    }
+    const now = Date.now();
+    if (now - last.current < 150) {
+      return;
+    }
+    last.current = now;
+    set(clamp(page + (e.deltaY > 0 ? 1 : -1), 0, pages - 1));
+  };
+}
+
 /** The categories under the group switch, paged when they don't fit. */
 function CategoryList(props: {
   cats: SettingsCat[];
@@ -149,8 +167,9 @@ function CategoryList(props: {
   }, [cat, per]);
   const pg = clamp(page, 0, pages - 1);
   const shown = cats.slice(pg * per, pg * per + per);
+  const onWheel = useWheelPages(pg, pages, setPage);
   return (
-    <>
+    <div onWheel={onWheel}>
       {shown.map((c, i) => {
         const y = LIST_Y + i * SLAB_PITCH;
         const on = c.id === cat;
@@ -191,7 +210,7 @@ function CategoryList(props: {
           k={pg}
         />
       )}
-    </>
+    </div>
   );
 }
 
@@ -325,6 +344,7 @@ export function SettingsColumns(props: {
   }, [focusKey]);
   const pg = clamp(page, 0, pages.length - 1);
   useListPager(pg, subOpen ? 1 : pages.length, setPage);
+  const onWheel = useWheelPages(pg, pages.length, setPage);
 
   const onCatPress = (id: string) => {
     if (subOpen) {
@@ -373,7 +393,7 @@ export function SettingsColumns(props: {
   return (
     <>
       {list}
-      {drawn}
+      <div onWheel={onWheel}>{drawn}</div>
       {!rows.length && !!empty && (
         <NameLine
           x={NAME_X}

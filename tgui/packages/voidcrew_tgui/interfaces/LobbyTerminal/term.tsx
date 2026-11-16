@@ -1277,6 +1277,112 @@ export function Swatch(
 }
 
 /**
+ * A drawn checkbox at x, y, two cells wide: an empty frame, or the frame with a filled centre.
+ * Not a focus stop and not a click target: the row it sits in is.
+ */
+export function Check(props: {
+  x: number;
+  y: number;
+  on: boolean;
+  /** The accent colour when on (packed, taken), else white. */
+  acc?: boolean;
+}) {
+  const { x, y, on, acc } = props;
+  const { cw, ch, lw } = useGrid();
+  const side = Math.max(8, Math.round(Math.min(2 * cw, ch) * 0.86));
+  const gap = Math.max(1, Math.round(side * 0.18));
+  return (
+    <div
+      className={`lt-check${on ? ' is-on' : ''}${acc ? ' is-acc' : ''}`}
+      style={{
+        left: Math.round(x * cw),
+        top: Math.round(y * ch + (ch - side) / 2),
+        width: side,
+        height: side,
+        borderWidth: Math.max(1, lw),
+      }}
+    >
+      {!!on && <i style={{ inset: gap }} />}
+    </div>
+  );
+}
+
+/**
+ * A slider's track in a row, w cells wide, with its fill and thumb at value (0 to 1). Mouse
+ * only: dragging or clicking calls onChange, letting go calls onRelease. Not a focus stop: the
+ * row steps the value with Left and Right.
+ */
+export function Slide(props: {
+  x: number;
+  y: number;
+  w: number;
+  value: number;
+  /** The row has the focus: the fill brightens. */
+  lit?: boolean;
+  onChange: (value: number) => void;
+  onRelease: (value: number) => void;
+}) {
+  const { x, y, w, value, lit, onChange, onRelease } = props;
+  const { cw, ch, lw } = useGrid();
+  const last = useRef(value);
+  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+  const box = rect(x, y, w, 1, cw, ch);
+  const th = Math.max(3, Math.round(ch * 0.3));
+  const knobH = Math.max(th + 4, Math.round(ch * 0.7));
+  const knobW = Math.max(3, lw * 2);
+  const at = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const v = clamp((e.clientX - r.left) / Math.max(1, r.width));
+    last.current = v;
+    onChange(v);
+  };
+  const shown = `${(clamp(value) * 100).toFixed(2)}%`;
+  return (
+    <div
+      className={lit ? 'lt-slide is-lit' : 'lt-slide'}
+      style={box}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        at(e);
+      }}
+      onPointerMove={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          at(e);
+        }
+      }}
+      onPointerUp={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+          onRelease(last.current);
+        }
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        className="lt-slide-track"
+        style={{
+          top: Math.round((box.height - th) / 2),
+          height: th,
+          borderWidth: Math.max(1, Math.floor(lw / 2)),
+        }}
+      >
+        <div className="lt-slide-fill" style={{ width: shown }} />
+      </div>
+      <div
+        className="lt-slide-thumb"
+        style={{
+          left: `calc(${shown} - ${knobW / 2}px)`,
+          top: Math.round((box.height - knobH) / 2),
+          width: knobW,
+          height: knobH,
+        }}
+      />
+    </div>
+  );
+}
+
+/**
  * A filled strip w cells wide with an lw-wide fg thumb at value (0 to 1). Dragging calls
  * onChange; letting go calls onRelease. One focus stop: Enter grabs it, Left and Right then
  * move it one step, Enter or Escape lets go (and calls onRelease).
@@ -1684,6 +1790,19 @@ export const TERM_CSS = `
 .lt-tui .lt-bar-thumb { position: absolute; top: -3px; bottom: -3px; background: var(--lt-fg);
   box-shadow: 0 0 0 1px var(--lt-bg), 0 0 6px rgba(190,140,255,.8); }
 .lt-tui .lt-bar.is-grab .lt-bar-thumb { background: #fff; }
+.lt-tui .lt-check { position: absolute; box-sizing: border-box; z-index: 2; border-style: solid;
+  border-color: var(--lt-dim); pointer-events: none; }
+.lt-tui .lt-check.is-on { border-color: var(--lt-wht); box-shadow: 0 0 5px rgba(160,112,255,.7); }
+.lt-tui .lt-check i { position: absolute; background: var(--lt-wht); }
+.lt-tui .lt-check.is-acc.is-on { border-color: var(--lt-acc); box-shadow: 0 0 6px rgba(255,102,214,.6); }
+.lt-tui .lt-check.is-acc i { background: var(--lt-acc); }
+.lt-tui .lt-slide { position: absolute; z-index: 5; cursor: pointer; touch-action: none; }
+.lt-tui .lt-slide-track { position: absolute; left: 0; right: 0; box-sizing: border-box; overflow: hidden;
+  border-style: solid; border-color: var(--lt-edge); background: var(--lt-field); }
+.lt-tui .lt-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--lt-dim); }
+.lt-tui .lt-slide.is-lit .lt-slide-fill { background: var(--lt-fg); }
+.lt-tui .lt-slide-thumb { position: absolute; background: var(--lt-wht);
+  box-shadow: 0 0 0 1px var(--lt-bg), 0 0 6px rgba(190,140,255,.8); }
 .lt-tui .lt-hit { position: absolute; z-index: 4; cursor: pointer; }
 .lt-tui .lt-k { position: absolute; box-sizing: border-box; z-index: 5; cursor: pointer; border-style: solid;
   border-color: var(--lt-edge); }
