@@ -697,9 +697,10 @@
 		else
 			blade_hold_angle = arctan(-knife_side * 0.95, 0.3)
 			blade_after_angle = blade_hold_angle
-			// It points on round his neck, away from us: seen end on, and all of it behind his head.
+			// It points on round his neck, away from us: seen end on, and all of it behind his head. Drawn shorter
+			// still on the stroke, where the hand comes out to the side of his head and a longer blade shows past it.
 			blade_hold_squeeze = 0.5
-			blade_after_squeeze = 0.5
+			blade_after_squeeze = 0.2
 			knife_arm.hold = list(15.5 + knife_side * 0.8, 23.5)
 			knife_arm.after = list(15.5 + knife_side * 6, 22.5)
 			knife_arm.wrist_hold = list(15.5 + knife_side * 5.3, 21.3)
