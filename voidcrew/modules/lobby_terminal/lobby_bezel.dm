@@ -83,6 +83,15 @@
 	data["tab_request"] = tab_request ? list("tab" = tab_request, "serial" = tab_request_serial) : null
 	// The start-up screen: 0 already seen this connection, 1 still to play, 2 play now (the terminal is on screen).
 	data["boot"] = boot_done ? 0 : (visible ? 2 : 1)
+	// The first-time WELCOME box (first_time_notice.dm): not while its native popup is open, nor after LATER.
+	data["welcome"] = (!welcome_later && !(user.ckey in GLOB.first_time_notice_pending) && first_time_notice_due(welcome_prefs(user))) ? 1 : 0
+
+/// TRUE once the player chose LATER on the WELCOME box: it stays closed for this connection.
+/datum/lobby_terminal/var/welcome_later = FALSE
+
+/// The preferences the WELCOME box answers for.
+/datum/lobby_terminal/proc/welcome_prefs(mob/user)
+	return user?.client?.prefs
 
 /// world.time the client's display metrics were last logged.
 /datum/lobby_terminal/var/metrics_logged_at = -1 MINUTES
@@ -162,6 +171,17 @@
 			if(!(sound_state in list("running", "suspended", "none")))
 				sound_state = "unknown"
 			log_tgui(user, "Lobby start-up screen: sound [sound_state], [clamp(text2num(params["clips"]) || 0, 0, 99)] sounds loaded, dark for [clamp(text2num(params["wait"]) || 0, 0, 999999)] ms[params["failed"] ? ", stepped aside on an error" : ""]", window = window)
+			return TRUE
+		if("welcome_pick")
+			// The first-time WELCOME box: the melee controls, saved for good (first_time_notice.dm).
+			var/mode = params["mode"]
+			if(mode != "combat" && mode != "intents")
+				return FALSE
+			return first_time_notice_answer(welcome_prefs(user), mode == "intents")
+		if("welcome_later")
+			if(welcome_later)
+				return FALSE
+			welcome_later = TRUE
 			return TRUE
 		if("metrics")
 			// Display metrics from the client (Windows scaling, pane size), logged once per load for tuning.

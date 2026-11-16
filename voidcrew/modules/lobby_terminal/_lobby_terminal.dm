@@ -214,6 +214,9 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	// No LOGIN to wait for: the classic lobby gets its title music now (lobby_music.dm).
 	owner.lobby_music_release()
 	to_chat(owner, span_warning("The dock terminal didn't load. <a href='byond://?src=[REF(src)];lobby_reload=1'>Try again</a>."))
+	// Nor its WELCOME box: a first-timer gets the native popup instead (first_time_notice.dm).
+	if(!welcome_later)
+		show_first_time_notice(owner.ckey)
 
 /datum/lobby_terminal/Topic(href, list/href_list)
 	. = ..()
