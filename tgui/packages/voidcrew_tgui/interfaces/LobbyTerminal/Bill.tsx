@@ -10,6 +10,7 @@
 import { type ReactNode, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
+import { useLatePager, useWheel } from './CharFrame';
 import { ShipPic } from './ShipPic';
 import {
   Band,
@@ -74,6 +75,9 @@ export function Bill(props: { ctx: YardCtx }) {
   const { data } = useBackend<LobbyData>();
   const { rows } = useGrid();
   const [page, setPage] = useState(1);
+  // PageUp, PageDown and the mouse wheel turn the lines' pages when they page.
+  const pager = useLatePager();
+  const wheel = useWheel();
   const hull = ctx.hull;
   usePreview(hull?.id || null);
   const fit = ctx.fit;
@@ -110,6 +114,11 @@ export function Bill(props: { ctx: YardCtx }) {
   const pages = Math.max(1, Math.ceil(n / per));
   const pg = clamp(page, 1, pages);
   const shown = bill.lines.slice((pg - 1) * per, pg * per);
+  const turn =
+    pages > 1
+      ? (step: number) => setPage(clamp(pg + step, 1, pages))
+      : null;
+  pager.current = turn;
   // Tight form: pitch 1, stretched to 1.5 when rows are spare so none sit empty.
   const pitch =
     pages > 1 ? 1 : clamp(f4(avail / n), 1, tight ? 1.5 : 2.25);
@@ -358,5 +367,5 @@ export function Bill(props: { ctx: YardCtx }) {
     />,
   );
 
-  return <>{out}</>;
+  return <div onWheel={wheel(turn)}>{out}</div>;
 }
