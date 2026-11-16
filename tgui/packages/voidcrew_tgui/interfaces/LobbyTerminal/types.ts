@@ -258,6 +258,8 @@ export type CharKitItem = {
   name?: string;
   /** Reskin option key. */
   reskin?: string;
+  /** INFO_LAYER: 1 = an accessory worn over the suit; the lipstick's place. */
+  layer?: 0 | 1 | 'Upper' | 'Middle' | 'Lower';
 };
 
 /** A species change waiting on CHANGE / CANCEL because taken quirks don't fit it. */
@@ -296,6 +298,8 @@ export type CharData = {
   /** Job category the preview wears. */
   dress: string;
   confirm: CharConfirm | null;
+  /** The look the character has now (char_appearance_key()); the preview is pending until it holds this key. */
+  look: string;
 };
 
 export type CharStatic = {
@@ -317,18 +321,24 @@ export type CharacterData = {
   char_preview?: CharPreview;
 };
 
-/**
- * BODY rows, top to bottom. A row shows only when its savefile key is in CharData.prefs.
- * Species feature keys not listed here still show, as generic rows after the species ones.
- * underwear, undershirt, socks and hair_gradient(+_color) are the owner's extra rows (Q1).
- */
-export const BODY_KEYS = [
+/** BODY, IDENTITY group, top to bottom. A row shows only when its key is in CharData.prefs. */
+export const IDENTITY_KEYS = [
   'real_name',
   'age',
   'species',
   'body_type',
   'gender',
   'background',
+  'voice_pack',
+  'bark_speech_pitch',
+  'bark_speech_speed',
+] as const;
+
+/**
+ * BODY, LOOKS group, top to bottom. '@features' is where species feature keys not named here
+ * go (by key). underwear, undershirt, socks and the hair gradient are the owner's extra rows.
+ */
+export const LOOKS_KEYS = [
   'skin_tone',
   'hairstyle_name',
   'hair_color',
@@ -336,15 +346,26 @@ export const BODY_KEYS = [
   'hair_gradient_color',
   'facial_style_name',
   'facial_hair_color',
+  'feature_human_ears',
+  'feature_human_tail',
   'feature_mcolor',
+  'feature_lizard_snout',
+  'feature_lizard_horns',
+  'feature_lizard_frills',
+  'feature_lizard_spines',
+  'feature_lizard_body_markings',
+  'feature_lizard_legs',
+  'feature_lizard_tail',
+  'feature_moth_wings',
+  'feature_moth_antennae',
+  'feature_moth_markings',
   'feature_ethcolor',
+  '@features',
   'eye_color',
-  'voice_pack',
-  'bark_speech_pitch',
-  'bark_speech_speed',
   'backpack',
   'jumpsuit_style',
   'underwear',
+  'underwear_color',
   'undershirt',
   'socks',
 ] as const;
@@ -422,8 +443,9 @@ export type LobbyActions = {
   yard_load: { slot: number; leave_crew: 0 | 1 };
   home_move_in: { outpost: string; code?: string };
   home_request: { outpost: string };
-  /** Sends char, char_static and preferences.json; queues the preview. */
-  char_open: Record<string, never>;
+  /** Sends char, char_static and preferences.json; queues the preview. auto 1: the shell's
+   * pre-round open, which renders the south facing only until the player does something. */
+  char_open: { auto?: 0 | 1 };
   /** Saves, then switches to that slot (1-based). There is no delete (Q5). */
   char_slot: { slot: number };
   /** One PREFERENCE_CHARACTER preference. confirm is only set by the server's own re-run. */

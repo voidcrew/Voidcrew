@@ -1,33 +1,51 @@
 /**
- * BODY (CHARACTER-PLAN 2.3/2.4): data-driven rows from CharData.prefs in BODY_KEYS order, char_set, the species confirm line, ColorEntry for free colours.
- * Owner: C3. The props are fixed.
+ * BODY (design 03 section 4): two groups, IDENTITY and LOOKS, in the ID column under the
+ * viewscreen; the open group's rows in the work column. Rows come from CharData.prefs (the
+ * server's accessibility rules pick them), in IDENTITY_KEYS / LOOKS_KEYS order. A row opens
+ * its list picker or colour panel in the work column (level 2), flips a two-way choice, or
+ * types a number. `<` and `>` on a row are mouse targets; the arrows always move the focus.
  *
- * A row shows only when the server sent its key (its accessibility rules pick the rows);
- * species feature keys are also checked against the species' enabled_features in the
- * catalog. Rows flow down one column, into a second when the box is too short, and onto
- * pages when even that is not enough. Choice lists longer than PICK_OVER open a paged list
- * when their value is clicked.
+ * Every change is a char_set and waits for the push; only typed text and a dragged colour are
+ * held on the page.
  */
 import { type ReactNode, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
+import type { ServerData } from 'tgui/interfaces/PreferencesMenu/types';
 
-import { ColorEntry, parseHex } from './ColorEntry';
-import { useBack } from './nav';
 import {
-  Btn,
-  Cycler,
-  LegacyField as Field,
-  Panel,
+  clamp,
+  ID_W,
+  ID_X,
+  IdColumn,
+  planId,
+  q,
+  useChar,
+  WORK_W,
+  WORK_X,
+} from './CharFrame';
+import { ColourPanel, ListPicker } from './CharPickers';
+import { parseHex } from './ColorEntry';
+import {
+  Big,
+  BODY_Y,
+  bodyRows,
+  cut,
+  Field,
+  HRule,
+  Key,
+  Pager,
   Put,
-  pad,
+  Slab,
   Swatch,
-  wrap,
+  safe,
+  useGrid,
+  wrapMax,
 } from './term';
 import {
   AGE_MAX,
   AGE_MIN,
-  BODY_KEYS,
-  type CellBox,
+  IDENTITY_KEYS,
+  LOOKS_KEYS,
   type LobbyData,
   NAME_MAX,
   NATIVE_COLOR_KEYS,
@@ -36,30 +54,28 @@ import {
   choicesOf,
   namedHex,
   nameOf,
-  stepChoice,
   usePrefsCatalog,
+  voiceShort,
 } from './usePrefsCatalog';
 
+export type BodyGroup = 'identity' | 'looks';
+
 const LABELS: Record<string, string> = {
-  real_name: 'NAME',
   age: 'AGE',
   species: 'SPECIES',
-  body_type: 'BODY',
+  body_type: 'BUILD',
   gender: 'PRONOUNS',
   background: 'BACKGROUND',
-  skin_tone: 'SKIN',
-  hairstyle_name: 'HAIR',
-  hair_color: 'HAIR',
-  hair_gradient: 'GRADIENT',
-  hair_gradient_color: 'GRADIENT',
-  facial_style_name: 'FACIAL HAIR',
-  facial_hair_color: 'FACIAL HAIR',
-  feature_mcolor: 'SCALES',
-  feature_ethcolor: 'GLOW',
-  eye_color: 'EYES',
   voice_pack: 'VOICE',
   bark_speech_pitch: 'PITCH',
   bark_speech_speed: 'SPEED',
+  skin_tone: 'SKIN',
+  hairstyle_name: 'HAIR',
+  hair_gradient: 'GRADIENT',
+  facial_style_name: 'FACIAL',
+  feature_mcolor: 'SCALES',
+  feature_ethcolor: 'GLOW',
+  eye_color: 'EYES',
   backpack: 'BAG',
   jumpsuit_style: 'UNIFORM',
   underwear: 'UNDERWEAR',
@@ -79,85 +95,97 @@ const LABELS: Record<string, string> = {
   feature_moth_markings: 'MARKINGS',
 };
 
-/** Species feature rows, in this order after SCALES; unknown ones follow, by key. */
-const FEATURE_ORDER = [
-  'feature_human_ears',
-  'feature_human_tail',
-  'feature_lizard_snout',
-  'feature_lizard_horns',
-  'feature_lizard_frills',
-  'feature_lizard_spines',
-  'feature_lizard_body_markings',
-  'feature_lizard_legs',
-  'feature_lizard_tail',
-  'feature_moth_wings',
-  'feature_moth_antennae',
-  'feature_moth_markings',
-];
+/** Colour rows that sit under their style (labelled COLOUR, indented). */
+const PAIRED = new Set([
+  'hair_color',
+  'hair_gradient_color',
+  'facial_hair_color',
+  'underwear_color',
+]);
 
-/** Colours drawn on their style's row. */
-const PAIRED: Record<string, string> = {
-  hairstyle_name: 'hair_color',
-  hair_gradient: 'hair_gradient_color',
-  facial_style_name: 'facial_hair_color',
-  underwear: 'underwear_color',
+/** The colour panel's head (and crumb) for each body colour. */
+const COLOUR_LABELS: Record<string, string> = {
+  hair_color: 'HAIR COLOUR',
+  hair_gradient_color: 'GRADIENT COLOUR',
+  facial_hair_color: 'FACIAL COLOUR',
+  underwear_color: 'UNDERWEAR COLOUR',
+  eye_color: 'EYES',
+  feature_mcolor: 'SCALES',
 };
 
-/** Named lists that show a swatch per choice. */
+/** Named-colour lists that show a chip per choice. */
 const PALETTES = new Set(['skin_tone', 'feature_ethcolor']);
 
-/** Numeric rows and the amount one click moves them. */
-const NUMERIC_STEPS: Record<string, number> = {
-  bark_speech_pitch: 0.1,
-  bark_speech_speed: 0.5,
+/** Typed numbers: range and the step of `<` `>`. */
+const NUMBERS: Record<string, { lo: number; hi: number; step: number }> = {
+  age: { lo: AGE_MIN, hi: AGE_MAX, step: 1 },
+  bark_speech_pitch: { lo: 0.4, hi: 2, step: 0.1 },
+  bark_speech_speed: { lo: 4, hi: 16, step: 0.5 },
 };
 
-/** Lists longer than this open the paged list when the value is clicked. */
-const PICK_OVER = 12;
-/** Label column width. */
-const LW = 12;
-
-const labelOf = (key: string) =>
+export const labelOf = (key: string) =>
   LABELS[key] ||
-  key
-    .replace(/^feature_/, '')
-    .replace(/_/g, ' ')
-    .toUpperCase();
+  COLOUR_LABELS[key] ||
+  cut(
+    key
+      .replace(/^feature_/, '')
+      .replace(/_/g, ' ')
+      .toUpperCase(),
+    10,
+  );
 
-type Row = {
-  key: string;
-  h: number;
-  draw: (L: number, V: number, y: number, end: number) => ReactNode;
-};
+type Kind =
+  | 'name'
+  | 'number'
+  | 'species'
+  | 'build'
+  | 'voice'
+  | 'palette'
+  | 'colour'
+  | 'list'
+  | 'flip'
+  | 'fixed';
 
-export function BodyEditor(props: CellBox) {
-  const { x, y, w, h } = props;
-  const { act, data } = useBackend<LobbyData>();
-  const cat = usePrefsCatalog();
-  const char = data.char;
-  const prefs = char?.prefs || {};
-  const [name, setName] = useState(String(prefs.real_name ?? ''));
-  const [page, setPage] = useState(0);
-  const [picker, setPicker] = useState<string | null>(null);
-
-  useEffect(() => {
-    setName(String(prefs.real_name ?? ''));
-  }, [prefs.real_name, char?.slot]);
-
-  if (!char) {
-    return null;
+/** How a row behaves, from its key and the catalog. Null: no row. */
+function kindOf(
+  cat: ServerData | null,
+  key: string,
+  value: unknown,
+): Kind | null {
+  if (key === 'real_name') {
+    return 'name';
   }
-
-  const set = (key: string, value: unknown) => act('char_set', { key, value });
-  const commitName = () => {
-    const next = name.trim();
-    if (next && next !== prefs.real_name) {
-      set('real_name', next);
-    } else {
-      setName(String(prefs.real_name ?? ''));
+  if (key in NUMBERS) {
+    return 'number';
+  }
+  if (key === 'species') {
+    return 'species';
+  }
+  if (key === 'body_type') {
+    return 'build';
+  }
+  if (key === 'voice_pack') {
+    return 'voice';
+  }
+  const list = choicesOf(cat, key);
+  if (list) {
+    if (PALETTES.has(key)) {
+      return 'palette';
     }
-  };
+    return list.length >= 3 ? 'list' : list.length === 2 ? 'flip' : 'fixed';
+  }
+  if (parseHex(String(value ?? ''))) {
+    return 'colour';
+  }
+  return cat ? null : 'fixed';
+}
 
+/** The keys of a group that show for this character, in order. */
+export function groupKeys(
+  cat: ServerData | null,
+  prefs: Record<string, any>,
+  group: BodyGroup,
+): string[] {
   const species = String(prefs.species ?? '');
   const enabled = cat?.species?.[species]?.enabled_features;
   const shown = (k: string) =>
@@ -165,575 +193,719 @@ export function BodyEditor(props: CellBox) {
     (!k.startsWith('feature_') ||
       !Array.isArray(enabled) ||
       enabled.includes(k));
-  const isColour = (k: string) =>
-    !choicesOf(cat, k) && !!parseHex(String(prefs[k] ?? ''));
+  const named = new Set<string>([...IDENTITY_KEYS, ...LOOKS_KEYS]);
+  const extra = Object.keys(prefs)
+    .filter((k) => k.startsWith('feature_') && !named.has(k))
+    .sort();
+  const order: string[] =
+    group === 'identity'
+      ? [...IDENTITY_KEYS]
+      : LOOKS_KEYS.flatMap((k) => (k === '@features' ? extra : [k]));
+  const bald = prefs.hairstyle_name === 'Bald';
+  const hidden = (k: string) =>
+    (bald &&
+      (k === 'hair_color' ||
+        k === 'hair_gradient' ||
+        k === 'hair_gradient_color')) ||
+    (k === 'hair_gradient_color' && prefs.hair_gradient === 'None') ||
+    (k === 'facial_hair_color' && prefs.facial_style_name === 'Shaved') ||
+    (k === 'underwear_color' && prefs.underwear === 'Nude');
+  return order.filter(
+    (k) => shown(k) && !hidden(k) && kindOf(cat, k, prefs[k]) !== null,
+  );
+}
 
-  // Every colour on this file, offered in the colour panel's recent row.
-  const fileColours = [
-    ...Object.values(prefs),
+/** Every colour on this file (body and kit), for the colour panel's recent chips. */
+export function fileColours(char: LobbyData['char']): string[] {
+  if (!char) {
+    return [];
+  }
+  return [
+    ...Object.values(char.prefs),
     ...Object.values(char.kit || {}).flatMap((it) =>
       String(it.greyscale || '').split('#'),
     ),
   ]
     .map((c) => parseHex(String(c)))
     .filter((c): c is string => !!c);
+}
 
-  const colour = (key: string, cx: number, cy: number, end: number) => (
-    <ColorEntry
-      key={`${key}-c`}
-      x={cx}
-      y={cy}
-      w={end - cx}
-      label=""
-      value={String(prefs[key] ?? '')}
-      recent={fileColours}
-      native={(NATIVE_COLOR_KEYS as readonly string[]).includes(key)}
-      onSet={(hex) => set(key, hex)}
-      onPicker={() => act('char_color_pick', { key })}
+/** Skin tones light to dark; other palettes in the server's order. */
+function sortPalette(cat: ServerData | null, key: string, list: string[]) {
+  if (key !== 'skin_tone') {
+    return list;
+  }
+  const luma = (c: string) => {
+    const n = parseInt((namedHex(cat, key, c) || '#000000').slice(1), 16);
+    return 0.3 * (n >> 16) + 0.59 * ((n >> 8) & 255) + 0.11 * (n & 255);
+  };
+  return [...list].sort((a, b) => luma(b) - luma(a));
+}
+
+/** What BUILD shows: "Use gender" resolves to the build it gives. */
+function buildFem(prefs: Record<string, any>) {
+  const v = prefs.body_type;
+  return v === 'female' || (v !== 'male' && prefs.gender === 'female');
+}
+
+// ---------------------------------------------------------------------------
+// Level 2 screens. Each reads live data, so the frame can keep the element as it was opened.
+
+/** A list picker on a BODY key. Closes when its row goes away (species changed in tg's window). */
+export function BodyListPick(props: { k: string }) {
+  const { k } = props;
+  const { act, data } = useBackend<LobbyData>();
+  const cat = usePrefsCatalog();
+  const { closeSub } = useChar();
+  const prefs = data.char?.prefs || {};
+  const gone = !(k in prefs);
+  useEffect(() => {
+    if (gone) {
+      closeSub();
+    }
+  }, [gone]);
+  const list = choicesOf(cat, k) || [];
+  const palette = PALETTES.has(k);
+  return (
+    <ListPicker
+      x={WORK_X}
+      w={WORK_W}
+      label={labelOf(k)}
+      choices={palette ? sortPalette(cat, k, list) : list}
+      value={String(prefs[k] ?? '')}
+      nameOf={(v) => nameOf(cat, k, v)}
+      hexOf={palette ? (v) => namedHex(cat, k, v) : undefined}
+      onPick={(v) => act('char_set', { key: k, value: v })}
+      onClose={closeSub}
     />
   );
+}
 
-  /** Cycler width for a row whose controls start at V and must end by end. */
-  const widthFor = (V: number, end: number, extra: number) =>
-    Math.max(6, Math.min(20, end - V - 4 - extra));
-
-  const choiceRow = (key: string): Row => {
-    const list = choicesOf(cat, key);
-    const value = prefs[key];
-    const pair = PAIRED[key] && shown(PAIRED[key]) ? PAIRED[key] : null;
-    const palette = PALETTES.has(key) && list ? sortPalette(key, list) : null;
-    let shownValue = nameOf(cat, key, value);
-    if (key === 'voice_pack') {
-      // "Group: Name" in the list; the row shows the name.
-      shownValue = shownValue.split(': ').pop() || shownValue;
+/** The colour panel on a BODY colour key. */
+export function BodyColour(props: { k: string }) {
+  const { k } = props;
+  const { act, data } = useBackend<LobbyData>();
+  const { closeSub } = useChar();
+  const char = data.char;
+  const prefs = char?.prefs || {};
+  const gone = !(k in prefs);
+  useEffect(() => {
+    if (gone) {
+      closeSub();
     }
-    let prev = () => list && set(key, stepChoice(list, value, -1));
-    let next = () => list && set(key, stepChoice(list, value, 1));
-    if (key === 'body_type') {
-      const fem =
-        value === 'female' || (value !== 'male' && prefs.gender === 'female');
-      shownValue = fem ? 'Feminine' : 'Masculine';
-      prev = () => set(key, fem ? 'male' : 'female');
-      next = prev;
-    }
-    const long = !!list && list.length > PICK_OVER;
-    return {
-      key,
-      // A palette that can't sit beside the cycler gets more rows (heightOf).
-      h: 1,
-      draw: (L, V, ry, end) => {
-        let VW = widthFor(V, end, pair ? 11 : key === 'voice_pack' ? 9 : 0);
-        if (pair && VW < 12) {
-          VW = widthFor(V, end, 3);
-        }
-        const after = V + VW + 5;
-        const out: ReactNode[] = [
-          <Put key={`${key}-l`} x={L} y={ry} cls="dim">
-            {labelOf(key)}
-          </Put>,
-          <Cycler
-            key={`${key}-v`}
-            x={V}
-            y={ry}
-            w={VW}
-            value={shownValue}
-            disabled={!list && key !== 'body_type'}
-            onPrev={prev}
-            onNext={next}
-            onValue={long ? () => setPicker(key) : undefined}
-          />,
-        ];
-        if (pair) {
-          out.push(colour(pair, after, ry, end));
-        }
-        if (key === 'voice_pack' && after + 8 <= end) {
-          out.push(
-            <Btn
-              key="play"
-              x={after}
-              y={ry}
-              label="PLAY"
-              onClick={() => act('char_voice_play')}
-            />,
-          );
-        }
-        if (palette) {
-          out.push(...paletteChips(key, palette, after, ry, end, V));
-        }
-        return out;
-      },
-    };
-  };
-
-  /** Skin tones light to dark; other palettes in the server's order. */
-  const sortPalette = (key: string, list: string[]) => {
-    if (key !== 'skin_tone') {
-      return list;
-    }
-    const luma = (c: string) => {
-      const n = parseInt((namedHex(cat, key, c) || '#000000').slice(1), 16);
-      return 0.3 * (n >> 16) + 0.59 * ((n >> 8) & 255) + 0.11 * (n & 255);
-    };
-    return [...list].sort((a, b) => luma(b) - luma(a));
-  };
-
-  /** Swatches for a named-colour list: beside the cycler when they fit, else one more row. */
-  const paletteChips = (
-    key: string,
-    list: string[],
-    after: number,
-    ry: number,
-    end: number,
-    V: number,
-  ) => {
-    const beside = after + list.length * 2 <= end;
-    const per = Math.max(1, Math.floor((end - V) / 2));
-    return list.map((c, i) => {
-      const hex = namedHex(cat, key, c) || '#000000';
-      const sx = beside ? after + i * 2 : V + (i % per) * 2;
-      const sy = beside ? ry : ry + 1 + Math.floor(i / per);
-      return (
-        <Swatch
-          key={`${key}-${c}`}
-          x={sx}
-          y={sy}
-          hex={hex}
-          sel={c === prefs[key]}
-          onClick={() => set(key, c)}
-        />
-      );
-    });
-  };
-
-  /** A numeric preference (bark pitch, speed): steps within the catalog's range. */
-  const numberRow = (key: string): Row => {
-    const spec = (cat?.[key] || {}) as { minimum?: number; maximum?: number };
-    const step = NUMERIC_STEPS[key];
-    const lo = spec.minimum ?? 0;
-    const hi = spec.maximum ?? lo + step * 20;
-    const value = Number(prefs[key]) || lo;
-    const to = (v: number) =>
-      set(key, Math.round(Math.min(hi, Math.max(lo, v)) * 100) / 100);
-    const text = value.toFixed(1);
-    return {
-      key,
-      h: 1,
-      draw: (L, V, ry) => [
-        <Put key={`${key}-l`} x={L} y={ry} cls="dim">
-          {labelOf(key)}
-        </Put>,
-        <Cycler
-          key={`${key}-v`}
-          x={V}
-          y={ry}
-          w={text.length}
-          value={text}
-          onPrev={() => value > lo && to(value - step)}
-          onNext={() => value < hi && to(value + step)}
-        />,
-      ],
-    };
-  };
-
-  const colourRow = (key: string): Row => ({
-    key,
-    h: 1,
-    draw: (L, V, ry, end) => [
-      <Put key={`${key}-l`} x={L} y={ry} cls="dim">
-        {labelOf(key)}
-      </Put>,
-      colour(key, V, ry, end),
-    ],
-  });
-
-  // ---- the rows, top to bottom
-  const extraFeatures = Object.keys(prefs)
-    .filter(
-      (k) =>
-        k.startsWith('feature_') &&
-        !(BODY_KEYS as readonly string[]).includes(k),
-    )
-    .sort((a, b) => {
-      const ia = FEATURE_ORDER.indexOf(a);
-      const ib = FEATURE_ORDER.indexOf(b);
-      if (ia < 0 && ib < 0) {
-        return a < b ? -1 : 1;
-      }
-      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
-    });
-  const order: string[] = [];
-  for (const k of BODY_KEYS) {
-    if (k === 'real_name') {
-      continue;
-    }
-    if (k === 'voice_pack' && species === 'plasmaman') {
-      order.push('@suit');
-    }
-    order.push(k);
-    if (k === 'feature_mcolor') {
-      order.push(...extraFeatures);
-    }
-  }
-  const pairedShown = new Set(
-    Object.entries(PAIRED)
-      .filter(([style]) => shown(style))
-      .map(([, c]) => c),
-  );
-
-  const rows: Row[] = [];
-  for (const k of order) {
-    if (k === '@suit') {
-      rows.push({
-        key: k,
-        h: 1,
-        draw: (L, V, ry) => [
-          <Put key="suit-l" x={L} y={ry} cls="dim">
-            {'SUIT'}
-          </Put>,
-          <Put key="suit-v" x={V + 2} y={ry} cls="dim">
-            {'ENVIROSUIT'}
-          </Put>,
-        ],
-      });
-      continue;
-    }
-    if (!shown(k) || pairedShown.has(k)) {
-      continue;
-    }
-    if (k === 'age') {
-      const age = Number(prefs.age) || AGE_MIN;
-      rows.push({
-        key: k,
-        h: 1,
-        draw: (L, V, ry) => [
-          <Put key="age-l" x={L} y={ry} cls="dim">
-            {'AGE'}
-          </Put>,
-          <Cycler
-            key="age-v"
-            x={V}
-            y={ry}
-            w={String(age).length}
-            value={String(age)}
-            onPrev={() => age > AGE_MIN && set('age', age - 1)}
-            onNext={() => age < AGE_MAX && set('age', age + 1)}
-          />,
-        ],
-      });
-      continue;
-    }
-    if (k in NUMERIC_STEPS) {
-      rows.push(numberRow(k));
-      continue;
-    }
-    const row = isColour(k) ? colourRow(k) : choiceRow(k);
-    rows.push(row);
-    if (k === 'species' && char.confirm) {
-      rows.push(confirmRow());
-    }
-  }
-
-  function confirmRow(): Row {
-    const c = char!.confirm!;
-    const text = `${nameOf(cat, 'species', c.value)} can't keep: ${c.quirks.join(', ')}`;
-    return {
-      key: '@confirm',
-      h: 0, // set when laid out (depends on the column width)
-      draw: (L, _V, ry, end) => {
-        const lines = wrap(text.toUpperCase(), Math.max(10, end - L));
-        return [
-          ...lines.map((l, i) => (
-            <Put key={`cf${i}`} x={L} y={ry + i} cls="amb">
-              {l}
-            </Put>
-          )),
-          <Btn
-            key="cf-ok"
-            x={L}
-            y={ry + lines.length}
-            label="CHANGE"
-            amber
-            onClick={() => act('char_confirm', { ok: 1 })}
-          />,
-          <Btn
-            key="cf-no"
-            x={L + 12}
-            y={ry + lines.length}
-            label="CANCEL"
-            onClick={() => act('char_confirm', { ok: 0 })}
-          />,
-        ];
-      },
-    };
-  }
-
-  // ---- layout: one column, two, or pages
-  const nameY = y + 1;
-  const flowTop = nameY + (h >= 20 ? 2 : 1);
-  const last = y + h - 2;
-  const L0 = x + 3;
-
-  const heightOf = (r: Row, colEnd: number, L: number, V: number) => {
-    if (r.key === '@confirm') {
-      return (
-        wrap(
-          `${nameOf(cat, 'species', char.confirm?.value)} can't keep: ${char.confirm?.quirks.join(', ')}`,
-          Math.max(10, colEnd - L),
-        ).length + 1
-      );
-    }
-    if (PALETTES.has(r.key)) {
-      const list = choicesOf(cat, r.key);
-      if (list) {
-        const VW = widthFor(V, colEnd, 0);
-        const after = V + VW + 5;
-        if (after + list.length * 2 > colEnd) {
-          const per = Math.max(1, Math.floor((colEnd - V) / 2));
-          return 1 + Math.ceil(list.length / per);
-        }
-      }
-    }
-    return r.h;
-  };
-
-  type Placed = { row: Row; L: number; V: number; y: number; end: number };
-  const layout = (ncol: number, cap: number): Placed[][] => {
-    const colW = Math.floor((w - 2) / ncol);
-    const pages: Placed[][] = [[]];
-    let col = 0;
-    let yy = flowTop;
-    for (const r of rows) {
-      const L = L0 + col * colW;
-      const end = x + (col + 1) * colW - 1;
-      const rh = heightOf(r, end, L, L + LW);
-      if (yy + rh - 1 > flowTop + cap - 1 && yy > flowTop) {
-        col++;
-        yy = flowTop;
-        if (col >= ncol) {
-          col = 0;
-          pages.push([]);
-        }
-      }
-      const L2 = L0 + col * colW;
-      const end2 = x + (col + 1) * colW - 1;
-      pages[pages.length - 1].push({
-        row: r,
-        L: L2,
-        V: L2 + LW,
-        y: yy,
-        end: end2,
-      });
-      yy += rh;
-    }
-    return pages;
-  };
-  const cap = last - flowTop + 1;
-  let pages = layout(1, cap);
-  if (pages.length > 1 && w >= 64) {
-    pages = layout(2, cap);
-  }
-  if (pages.length > 1) {
-    pages = layout(w >= 64 ? 2 : 1, cap - 1);
-  }
-  const pg = Math.min(page, pages.length - 1);
-
-  // ---- NAME, across the top
-  const V0 = L0 + LW;
-  const fw = Math.max(8, Math.min(24, x + w - V0 - 16));
-  const nameRow = (
-    <div onBlur={commitName}>
-      <Put x={L0} y={nameY} cls="dim">
-        {'NAME'}
-      </Put>
-      <Field
-        x={V0}
-        y={nameY}
-        w={fw}
-        value={name}
-        max={NAME_MAX}
-        onChange={setName}
-        onEnter={commitName}
-      />
-      <Btn
-        x={V0 + fw + 3}
-        y={nameY}
-        label="RANDOM"
-        onClick={() => act('char_random_name')}
-      />
-    </div>
-  );
-
+  }, [gone]);
   return (
-    <>
-      {nameRow}
-      {pages[pg].map((p) => (
-        <span key={p.row.key}>{p.row.draw(p.L, p.V, p.y, p.end)}</span>
-      ))}
-      {pages.length > 1 && (
-        <Pager
-          x={x + w - 3}
-          y={last}
-          page={pg}
-          pages={pages.length}
-          onPage={setPage}
-        />
-      )}
-      {!!picker && (
-        <ListPicker
-          box={props}
-          title={labelOf(picker)}
-          list={choicesOf(cat, picker) || []}
-          value={String(prefs[picker] ?? '')}
-          nameOf={(v) => nameOf(cat, picker, v)}
-          onPick={(v) => {
-            setPicker(null);
-            if (v !== prefs[picker]) {
-              set(picker, v);
-            }
-          }}
-          onClose={() => setPicker(null)}
-        />
-      )}
-    </>
+    <ColourPanel
+      x={WORK_X}
+      w={WORK_W}
+      label={labelOf(k)}
+      value={String(prefs[k] ?? '#000000')}
+      recent={fileColours(char)}
+      native={(NATIVE_COLOR_KEYS as readonly string[]).includes(k)}
+      onApply={(hex) => act('char_set', { key: k, value: hex })}
+      onPicker={() => act('char_color_pick', { key: k })}
+      onClose={closeSub}
+    />
   );
 }
 
-/** ` < ` n/m ` > `, ending just before column x. */
-function Pager(props: {
-  x: number;
-  y: number;
-  page: number;
-  pages: number;
-  onPage: (p: number) => void;
-}) {
-  const { x, y, page, pages, onPage } = props;
-  const label = `${page + 1}/${pages}`;
-  const px = x - 8 - label.length;
-  return (
-    <>
-      {page > 0 ? (
-        <Put x={px} y={y} cls="inv" onClick={() => onPage(page - 1)}>
-          {' < '}
-        </Put>
-      ) : (
-        <Put x={px} y={y} cls="faint">
-          {' < '}
-        </Put>
-      )}
-      <Put x={px + 4} y={y} cls="dim">
-        {label}
-      </Put>
-      {page < pages - 1 ? (
-        <Put
-          x={px + 5 + label.length}
-          y={y}
-          cls="inv"
-          onClick={() => onPage(page + 1)}
-        >
-          {' > '}
-        </Put>
-      ) : (
-        <Put x={px + 5 + label.length} y={y} cls="faint">
-          {' > '}
-        </Put>
-      )}
-    </>
+/** The species picker (design 03 section 4.6): one column, the focused species' description. */
+export function SpeciesPick() {
+  const { act, data } = useBackend<LobbyData>();
+  const cat = usePrefsCatalog();
+  const { closeSub } = useChar();
+  const { rows: M } = useGrid();
+  const value = String(data.char?.prefs.species ?? '');
+  const list = choicesOf(cat, 'species') || [];
+  const [over, setOver] = useState(value);
+  const B = bodyRows(M);
+  const h = B < 20 ? 1.25 : 1.5;
+  const pitch = B < 20 ? 1.25 : 1.75;
+  // Rows that leave at least two lines of description under them.
+  const room = Math.floor((M - 1.25 - 2 - 0.75 - 5.25 + (pitch - h)) / pitch);
+  const fits = list.length <= room;
+  const per = Math.max(
+    1,
+    fits
+      ? list.length
+      : Math.floor((M - 1.25 - 2 - 0.75 - 5.25 - 1.25 + (pitch - h)) / pitch),
   );
-}
-
-/**
- * The long-list picker (hairstyles and the like): a panel over the editor with a FIND field,
- * the choices in columns, paged, the current one lit. Click picks; Escape or CANCEL closes.
- */
-function ListPicker(props: {
-  box: CellBox;
-  title: string;
-  list: string[];
-  value: string;
-  nameOf: (v: string) => string;
-  onPick: (v: string) => void;
-  onClose: () => void;
-}) {
-  const { box, title, list, value, nameOf: show, onPick, onClose } = props;
-  const px = box.x + 2;
-  const py = box.y;
-  const pw = Math.max(20, box.w - 4);
-  const ph = Math.max(8, box.h - 1);
-  const colW = Math.min(28, pw - 6);
-  const ncol = Math.max(1, Math.floor((pw - 4) / (colW + 2)));
-  const listTop = py + 4;
-  const listRows = Math.max(1, py + ph - 3 - listTop);
-  const per = listRows * ncol;
-
-  const [find, setFind] = useState('');
+  const pages = Math.max(1, Math.ceil(list.length / per));
   const [page, setPage] = useState(() =>
     Math.max(0, Math.floor(list.indexOf(value) / per)),
   );
-
-  useBack(onClose);
-
-  const needle = find.trim().toLowerCase();
-  const shown = needle
-    ? list.filter((v) => show(v).toLowerCase().includes(needle))
-    : list;
-  const pages = Math.max(1, Math.ceil(shown.length / per));
   const pg = Math.min(page, pages - 1);
-  const slice = shown.slice(pg * per, (pg + 1) * per);
-
+  const slice = list.slice(pg * per, pg * per + per);
+  const step = (by: number) => {
+    const n = list.length;
+    const at = list.indexOf(value);
+    if (n) {
+      act('char_set', {
+        key: 'species',
+        value: list[(((at < 0 ? 0 : at + by) % n) + n) % n],
+      });
+    }
+  };
+  const descY = 5.25 + slice.length * pitch - (pitch - h) + 0.75;
+  const descRows = Math.floor(M - 1.25 - descY - (pages > 1 ? 1.25 : 0));
+  const desc = safe(String(cat?.species?.[over]?.desc ?? ''));
   return (
-    <Panel x={px} y={py} w={pw} h={ph} title={title}>
-      <Put x={px + 3} y={py + 2} cls="dim">
-        {'FIND'}
-      </Put>
-      <Field
-        x={px + 8}
-        y={py + 2}
-        w={Math.min(24, pw - 12)}
-        value={find}
-        max={32}
-        onChange={(v) => {
-          setFind(v);
-          setPage(0);
-        }}
-        onEnter={() => slice.length === 1 && onPick(slice[0])}
+    <>
+      <Big x={WORK_X} y={3.125} scale={1.25} cls="wht lt-name">
+        {'SPECIES'}
+      </Big>
+      <Key
+        x={WORK_X + WORK_W - 6}
+        y={BODY_Y}
+        w={3}
+        kind="cap"
+        label="<"
+        onClick={() => step(-1)}
       />
-      {slice.map((v, i) => {
-        const cx = px + 3 + Math.floor(i / listRows) * (colW + 2);
-        const cy = listTop + (i % listRows);
-        const cur = v === value;
+      <Key
+        x={WORK_X + WORK_W - 3}
+        y={BODY_Y}
+        w={3}
+        kind="cap"
+        label=">"
+        onClick={() => step(1)}
+      />
+      <HRule x={WORK_X} y={4.75} w={WORK_W} />
+      {slice.map((id, i) => {
+        const y = 5.25 + i * pitch;
+        const on = id === value;
         return (
-          <Put
-            key={v}
-            x={cx}
-            y={cy}
-            cls={cur ? 'inv' : ''}
-            hoverCls="inv"
-            onClick={() => onPick(v)}
-            auto={cur ? 1 : undefined}
+          <Slab
+            key={id}
+            x={WORK_X}
+            y={y}
+            w={WORK_W}
+            h={h}
+            variant="row"
+            alt={pitch === h && i % 2 === 1}
+            on={on}
+            auto={on ? 5 : undefined}
+            onFocus={(f) => f && setOver(id)}
+            onClick={() => act('char_set', { key: 'species', value: id })}
           >
-            {pad(show(v).toUpperCase(), colW)}
-          </Put>
+            <Put x={WORK_X + 2} y={y + (h - 1) / 2} cls={on ? 'wht' : ''}>
+              {cut(safe(nameOf(cat, 'species', id)).toUpperCase(), 36)}
+            </Put>
+          </Slab>
         );
       })}
-      {!slice.length && (
-        <Put x={px + 3} y={listTop} cls="faint">
+      {wrapMax(desc, WORK_W, Math.max(0, descRows)).map((line, i) => (
+        <Put key={i} x={WORK_X} y={descY + i}>
+          {line}
+        </Put>
+      ))}
+      <Pager
+        x={WORK_X + WORK_W}
+        y={M - 2.25}
+        page={pg + 1}
+        pages={pages}
+        onPage={(p) => setPage(p - 1)}
+        right
+      />
+      {!list.length && (
+        <Put x={WORK_X} y={5.375} cls="dim">
           {'NO MATCH'}
         </Put>
       )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Rows
+
+/** One BODY row: the slab, its label, the value and the mouse-only `<` `>`. */
+function Row(props: {
+  y: number;
+  h: number;
+  alt: boolean;
+  label: string;
+  paired?: boolean;
+  /** Enter or a click on the row; null: the row is not a focus stop (a typed number). */
+  onPress: (() => void) | null;
+  onStep?: (by: number) => void;
+  auto?: number;
+  /** Draws the value; ty = the text row (centred), by = the 1.25 Big row. */
+  value: (ty: number, by: number, focused: boolean) => ReactNode;
+}) {
+  const { y, h, alt, label, paired, onPress, onStep, auto, value } = props;
+  const [focused, setFocused] = useState(false);
+  const ty = y + (h - 1) / 2;
+  const by = y + (h - 1.25) / 2;
+  return (
+    <Slab
+      x={WORK_X}
+      y={y}
+      w={WORK_W}
+      h={h}
+      variant="row"
+      alt={alt}
+      auto={auto}
+      onFocus={setFocused}
+      onClick={onPress || undefined}
+    >
+      <Put x={paired ? 27 : 25} y={ty} cls={focused ? 'wht' : 'dim'}>
+        {cut(label, paired ? 8 : 10)}
+      </Put>
+      {value(ty, by, focused)}
+      {!!onStep && (
+        <>
+          <Key
+            x={56}
+            y={y}
+            w={3}
+            h={h}
+            kind="cap"
+            label="<"
+            mouseOnly
+            onClick={() => onStep(-1)}
+          />
+          <Key
+            x={59}
+            y={y}
+            w={3}
+            h={h}
+            kind="cap"
+            label=">"
+            mouseOnly
+            onClick={() => onStep(1)}
+          />
+        </>
+      )}
+    </Slab>
+  );
+}
+
+/** A row's value as text: Big when the row is tall and the text short. */
+function ValueText(props: {
+  x: number;
+  w: number;
+  h: number;
+  ty: number;
+  by: number;
+  text: string;
+  cls?: string;
+}) {
+  const { x, w, h, ty, by, text, cls = '' } = props;
+  if (h >= 2.25 && text.length <= 15 && text.length * 1.25 <= w) {
+    return (
+      <Big x={x} y={by} scale={1.25} cls={cls}>
+        {text}
+      </Big>
+    );
+  }
+  return (
+    <Put x={x} y={ty} cls={cls}>
+      {cut(text, w)}
+    </Put>
+  );
+}
+
+/** A typed number (AGE, PITCH, SPEED): digits and one dot; Enter submits, leaving restores. */
+function NumberField(props: {
+  k: string;
+  y: number;
+  h: number;
+  value: number;
+  onSet: (v: number) => void;
+}) {
+  const { k, y, h, value, onSet } = props;
+  const spec = NUMBERS[k];
+  const shown = k === 'age' ? String(Math.round(value)) : value.toFixed(1);
+  const [text, setText] = useState(shown);
+  useEffect(() => setText(shown), [shown]);
+  const fh = Math.min(1.5, h);
+  return (
+    <div onBlur={() => setText(shown)}>
+      <Field
+        x={36}
+        y={y + (h - fh) / 2}
+        w={8}
+        h={fh}
+        value={text}
+        max={4}
+        onChange={(v) => {
+          const clean = v.replace(/[^0-9.]/g, '');
+          const dot = clean.indexOf('.');
+          setText(
+            dot < 0
+              ? clean
+              : clean.slice(0, dot + 1) +
+                  clean.slice(dot + 1).replace(/\./g, ''),
+          );
+        }}
+        onEnter={() => {
+          const n = Number(text);
+          if (!text || !Number.isFinite(n)) {
+            setText(shown);
+            return;
+          }
+          const stepped = Math.round(n / spec.step) * spec.step;
+          const v = clamp(Math.round(stepped * 100) / 100, spec.lo, spec.hi);
+          setText(k === 'age' ? String(v) : v.toFixed(1));
+          if (v !== value) {
+            onSet(v);
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+/** The NAME row: a 3-row slab with [ RANDOM ] and the name field. */
+function NameRow(props: { auto?: number }) {
+  const { act, data } = useBackend<LobbyData>();
+  const real = String(data.char?.prefs.real_name ?? '');
+  const slot = data.char?.slot;
+  const [text, setText] = useState(real);
+  const [typing, setTyping] = useState(false);
+  // A push sets the field unless the player is typing in it; a slot change always does.
+  useEffect(() => {
+    if (!typing) {
+      setText(real);
+    }
+  }, [real]);
+  useEffect(() => {
+    setText(real);
+  }, [slot]);
+  const commit = () => {
+    const next = text.trim();
+    if (next && next !== real) {
+      act('char_set', { key: 'real_name', value: next });
+    } else {
+      setText(real);
+    }
+  };
+  const y = BODY_Y;
+  return (
+    <>
+      <Slab x={WORK_X} y={y} w={WORK_W} h={3} variant="row" />
+      <Put x={25} y={y + 0.25} cls="dim">
+        {'NAME'}
+      </Put>
+      <Key
+        x={50}
+        y={y}
+        w={12}
+        kind="cap"
+        label="[ RANDOM ]"
+        onClick={() => act('char_random_name')}
+      />
+      <div
+        onFocus={() => setTyping(true)}
+        onBlur={() => {
+          setTyping(false);
+          commit();
+        }}
+      >
+        <Field
+          x={25}
+          y={y + 1.5}
+          w={36}
+          h={1.5}
+          value={text}
+          max={NAME_MAX}
+          auto={props.auto}
+          onChange={setText}
+          onEnter={commit}
+        />
+      </div>
+    </>
+  );
+}
+
+export function BodyEditor(props: {
+  group: BodyGroup;
+  setGroup: (g: BodyGroup) => void;
+}) {
+  const { group, setGroup } = props;
+  const { act, data } = useBackend<LobbyData>();
+  const cat = usePrefsCatalog();
+  const { sub, subOpen, from, quiet } = useChar();
+  const { rows: M } = useGrid();
+  const char = data.char!;
+  const prefs = char.prefs;
+  // First focus: NAME when BODY opens; a row coming back from its picker; nothing on a group switch.
+  const [fresh, setFresh] = useState(true);
+  const [page, setPage] = useState(0);
+  const [playWait, setPlayWait] = useState(false);
+  useEffect(() => {
+    if (!playWait) {
+      return;
+    }
+    const t = window.setTimeout(() => setPlayWait(false), 2000);
+    return () => window.clearTimeout(t);
+  }, [playWait]);
+
+  const set = (key: string, value: unknown) => act('char_set', { key, value });
+
+  // ---- ID column: the two group slabs
+  let gh = 1.25;
+  const plan = planId(M, 2.75, (la) => {
+    gh = clamp(q((la + 0.25) / 2 - 0.25), 1.25, 4.5);
+    return 2 * gh + 0.25;
+  });
+  const groups: [BodyGroup, string][] = [
+    ['identity', 'IDENTITY'],
+    ['looks', 'LOOKS'],
+  ];
+  const idList = groups.map(([g, label], i) => {
+    const y = plan.top + i * (gh + 0.25);
+    return (
+      <Slab
+        key={g}
+        x={ID_X}
+        y={y}
+        w={ID_W}
+        h={gh}
+        variant="block"
+        on={g === group}
+        onClick={() => {
+          if (g !== group) {
+            setFresh(false);
+            setPage(0);
+            setGroup(g);
+          }
+        }}
+      >
+        <Big x={3} y={y + (gh - 1.25) / 2} scale={1.25} cls="wht">
+          {label}
+        </Big>
+      </Slab>
+    );
+  });
+
+  if (subOpen) {
+    return <IdColumn pv={plan.pv}>{idList}</IdColumn>;
+  }
+
+  // ---- work column: the rows
+  const B = bodyRows(M);
+  const keys = groupKeys(cat, prefs, group).filter((k) => k !== 'real_name');
+  const fixed = group === 'identity' ? 3.25 : 0;
+  const room = B - fixed;
+  const n = Math.max(1, keys.length);
+  let h = clamp(q((room + 0.25) / n - 0.25), 1.25, 4.5);
+  let pitch = h + 0.25;
+  let alt = false;
+  if (n * pitch - 0.25 > room + 1e-6) {
+    h = 1.25;
+    pitch = 1.25;
+    alt = true;
+  }
+  let per = n;
+  if (n * 1.25 > room + 1e-6) {
+    per = Math.max(1, Math.floor((room - 1.25) / 1.25));
+  }
+  const pages = Math.ceil(keys.length / per);
+  const pg = Math.min(page, Math.max(0, pages - 1));
+  const shownKeys = keys.slice(pg * per, pg * per + per);
+  const y0 = BODY_Y + fixed;
+
+  const rows = shownKeys.map((k, i) => {
+    const y = y0 + i * pitch;
+    const value = prefs[k];
+    const kind = kindOf(cat, k, value)!;
+    const label = PAIRED.has(k) ? 'COLOUR' : labelOf(k);
+    const list = choicesOf(cat, k) || [];
+    const step = (by: number) => {
+      if (list.length) {
+        const at = list.indexOf(String(value));
+        const nn = list.length;
+        set(k, list[(((at < 0 ? 0 : at + by) % nn) + nn) % nn]);
+      }
+    };
+    const auto = !quiet && from === k ? 5 : undefined;
+    const common = {
+      y,
+      h,
+      alt: alt && i % 2 === 1,
+      label,
+      paired: PAIRED.has(k),
+      auto,
+    };
+    const text = (s: string) => (ty: number, by: number) => (
+      <ValueText x={36} w={19} h={h} ty={ty} by={by} text={safe(s)} />
+    );
+    switch (kind) {
+      case 'number': {
+        const spec = NUMBERS[k];
+        const v = Number(value) || spec.lo;
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={null}
+            onStep={(by) => {
+              const next = clamp(
+                Math.round((v + by * spec.step) * 100) / 100,
+                spec.lo,
+                spec.hi,
+              );
+              if (next !== v) {
+                set(k, next);
+              }
+            }}
+            value={() => (
+              <NumberField
+                k={k}
+                y={y}
+                h={h}
+                value={v}
+                onSet={(nv) => set(k, nv)}
+              />
+            )}
+          />
+        );
+      }
+      case 'species':
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={() => sub(<SpeciesPick />, 'SPECIES', k)}
+            onStep={step}
+            value={text(nameOf(cat, k, value))}
+          />
+        );
+      case 'build': {
+        const fem = buildFem(prefs);
+        const flip = () => set(k, fem ? 'male' : 'female');
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={flip}
+            onStep={flip}
+            value={text(fem ? 'Feminine' : 'Masculine')}
+          />
+        );
+      }
+      case 'voice':
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={() => sub(<BodyListPick k={k} />, label, k)}
+            onStep={step}
+            value={(ty) => (
+              <>
+                <Put x={36} y={ty}>
+                  {cut(safe(voiceShort(nameOf(cat, k, value))), 10)}
+                </Put>
+                <Key
+                  x={47}
+                  y={y}
+                  w={8}
+                  h={h}
+                  kind="cap"
+                  label="[ PLAY ]"
+                  state={playWait ? 'dead' : 'idle'}
+                  onClick={() => {
+                    setPlayWait(true);
+                    act('char_voice_play');
+                  }}
+                />
+              </>
+            )}
+          />
+        );
+      case 'palette': {
+        const hex = namedHex(cat, k, value) || '#000000';
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={() => sub(<BodyListPick k={k} />, label, k)}
+            onStep={(by) => {
+              const sorted = sortPalette(cat, k, list);
+              const at = sorted.indexOf(String(value));
+              const nn = sorted.length;
+              if (nn) {
+                set(k, sorted[(((at < 0 ? 0 : at + by) % nn) + nn) % nn]);
+              }
+            }}
+            value={(ty) => (
+              <>
+                <Swatch x={36} y={ty} w={2} hex={hex} />
+                <Put x={39} y={ty}>
+                  {cut(safe(nameOf(cat, k, value)), 16)}
+                </Put>
+              </>
+            )}
+          />
+        );
+      }
+      case 'colour': {
+        const hex = parseHex(String(value)) || '#000000';
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={() => sub(<BodyColour k={k} />, labelOf(k), k)}
+            value={(ty) => (
+              <>
+                <Swatch x={36} y={ty} w={4} hex={hex} />
+                <Put x={41} y={ty} cls="dim">
+                  {hex.toUpperCase()}
+                </Put>
+              </>
+            )}
+          />
+        );
+      }
+      case 'list':
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={() => sub(<BodyListPick k={k} />, label, k)}
+            onStep={step}
+            value={text(nameOf(cat, k, value))}
+          />
+        );
+      case 'flip':
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={() => step(1)}
+            onStep={step}
+            value={text(nameOf(cat, k, value))}
+          />
+        );
+      default:
+        return (
+          <Row
+            key={k}
+            {...common}
+            onPress={null}
+            value={text(nameOf(cat, k, value))}
+          />
+        );
+    }
+  });
+
+  return (
+    <>
+      <IdColumn pv={plan.pv}>{idList}</IdColumn>
+      {group === 'identity' && (
+        <NameRow auto={!quiet && fresh && !from ? 5 : undefined} />
+      )}
+      {rows}
       <Pager
-        x={px + pw - 14}
-        y={py + ph - 2}
-        page={pg}
+        x={62}
+        y={M - 2.25}
+        page={pg + 1}
         pages={pages}
-        onPage={setPage}
-      />
-      <Btn
-        x={px + pw - 2}
-        y={py + ph - 2}
-        label="CANCEL"
+        onPage={(p) => setPage(p - 1)}
         right
-        onClick={onClose}
       />
-    </Panel>
+    </>
   );
 }

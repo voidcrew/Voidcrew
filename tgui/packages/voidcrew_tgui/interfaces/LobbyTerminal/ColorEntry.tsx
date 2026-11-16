@@ -44,7 +44,7 @@ export type ColorEntryProps = {
 // ---------------------------------------------------------------------------
 // Colour maths
 
-type HSV = { h: number; s: number; v: number };
+export type HSV = { h: number; s: number; v: number };
 
 /** "#rrggbb", "rrggbb", "#rgb" or "rgb" to "#rrggbb" (lower case), else null. */
 export function parseHex(text: string): string | null {
@@ -63,7 +63,7 @@ export function parseHex(text: string): string | null {
   return /^[0-9a-f]{6}$/.test(t) ? `#${t}` : null;
 }
 
-function hexToHsv(hex: string): HSV {
+export function hexToHsv(hex: string): HSV {
   const n = parseInt(hex.slice(1), 16);
   const r = ((n >> 16) & 255) / 255;
   const g = ((n >> 8) & 255) / 255;
@@ -87,7 +87,7 @@ function hexToHsv(hex: string): HSV {
   return { h, s: max ? d / max : 0, v: max };
 }
 
-function hsvToHex({ h, s, v }: HSV): string {
+export function hsvToHex({ h, s, v }: HSV): string {
   const f = (k: number) => {
     const t = (k + h / 60) % 6;
     return v - v * s * Math.max(0, Math.min(t, 4 - t, 1));
@@ -105,7 +105,7 @@ function hsvToHex({ h, s, v }: HSV): string {
 const STORE = 'lt-recent-colours';
 const KEEP = 8;
 
-function readStored(): string[] {
+export function readStored(): string[] {
   try {
     const raw = JSON.parse(window.localStorage.getItem(STORE) || '[]');
     return Array.isArray(raw)
@@ -116,7 +116,7 @@ function readStored(): string[] {
   }
 }
 
-function remember(hex: string) {
+export function remember(hex: string) {
   try {
     const next = [hex, ...readStored().filter((c) => c !== hex)].slice(0, KEEP);
     window.localStorage.setItem(STORE, JSON.stringify(next));
@@ -137,7 +137,7 @@ const CHANNELS: ['h' | 's' | 'v', string, number][] = [
 ];
 
 /** The CSS gradient a bar shows: its channel swept with the other two held. */
-function barGradient(ch: 'h' | 's' | 'v', hsv: HSV): string {
+export function barGradient(ch: 'h' | 's' | 'v', hsv: HSV): string {
   const stops: string[] = [];
   for (let i = 0; i <= 12; i++) {
     const t = i / 12;
