@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 1, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(3, 6, 5), "syndicate" = list(2, 4, 4), "plunder" = list(5, 6, 4), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -504,11 +504,12 @@
 	TEST_ASSERT_EQUAL(spawned, 1, "Contraband did not pay exactly one green melee weapon")
 	for(var/marker_path in list(/obj/effect/zone_mobs/syndicate, /obj/effect/zone_mobs/syndicate/boss))
 		var/obj/effect/zone_mobs/marker = new marker_path()
+		// Human NPC operatives (voidcrew/modules/human_npcs/ruins/); their tables also hold SMGs and shotguns back to the red zone.
 		TEST_ASSERT_EQUAL(length(marker.mobs_green), 1, "Green syndicate pool still includes sword guards")
-		TEST_ASSERT(marker.mobs_green[/mob/living/basic/trooper/syndicate/melee], "Green syndicate guards lost their knives")
+		TEST_ASSERT(marker.mobs_green[/mob/living/carbon/human/npc/ruin/trooper/syndicate], "Green syndicate guards lost their knives")
 		for(var/entry in marker.mobs_yellow)
-			TEST_ASSERT(!ispath(entry, /mob/living/basic/trooper/syndicate/ranged/smg) && !ispath(entry, /mob/living/basic/trooper/syndicate/ranged/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
-		TEST_ASSERT(marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg] || marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper], "Red syndicate pool lost its SMG guards")
+			TEST_ASSERT(!ispath(entry, /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg) && !ispath(entry, /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
+		TEST_ASSERT(marker.mobs_red[/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg] || marker.mobs_red[/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper], "Red syndicate pool lost its SMG guards")
 		qdel(marker)
 
 /**
@@ -690,11 +691,14 @@
 			/obj/item/bambostaff,
 			/obj/item/claymore/shortsword,
 			/obj/item/fireaxe,
+			/obj/item/gun/ballistic/automatic/battle_rifle,
 			/obj/item/gun/ballistic/automatic/pistol,
 			/obj/item/gun/ballistic/automatic/pistol/m1911,
 			/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
 			/obj/item/gun/ballistic/automatic/pistol/no_mag,
 			/obj/item/gun/ballistic/automatic/pistol/toy,
+			/obj/item/gun/ballistic/automatic/pistol/zashch,
+			/obj/item/gun/ballistic/automatic/rapier,
 			/obj/item/gun/ballistic/automatic/toy,
 			/obj/item/gun/ballistic/bow,
 			/obj/item/gun/ballistic/revolver/c38,
@@ -705,9 +709,12 @@
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun,
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
 			/obj/item/gun/ballistic/rifle/boltaction/surplus,
+			/obj/item/gun/ballistic/rifle/nt_m96,
+			/obj/item/gun/ballistic/shotgun/brimstone,
 			/obj/item/gun/ballistic/shotgun/doublebarrel,
 			/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug,
 			/obj/item/gun/ballistic/shotgun/doublebarrel/slugs,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow,
 			/obj/item/gun/ballistic/shotgun/musket,
 			/obj/item/gun/ballistic/shotgun/toy,
 			/obj/item/gun/ballistic/shotgun/toy/crossbow,
@@ -734,17 +741,25 @@
 			/obj/item/claymore/cutlass/old,
 			/obj/item/claymore/weak,
 			/obj/item/crowbar/large/twenty_force,
+			/obj/item/cyberware_pair_case/gorilla_arms/street,
+			/obj/item/cyberware_pair_case/mantis_street,
 			/obj/item/fireaxe/boardingaxe,
 			/obj/item/fireaxe/boneaxe,
 			/obj/item/gun/ballistic/automatic/ar,
 			/obj/item/gun/ballistic/automatic/c20r/unrestricted,
+			/obj/item/gun/ballistic/automatic/heater,
 			/obj/item/gun/ballistic/automatic/mini_uzi,
 			/obj/item/gun/ballistic/automatic/pistol/aps,
+			/obj/item/gun/ballistic/automatic/pistol/clandestine,
+			/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher,
 			/obj/item/gun/ballistic/automatic/pistol/deagle,
 			/obj/item/gun/ballistic/automatic/pistol/deagle/camo,
 			/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
 			/obj/item/gun/ballistic/automatic/proto/unrestricted,
+			/obj/item/gun/ballistic/automatic/resolution,
+			/obj/item/gun/ballistic/automatic/skm,
 			/obj/item/gun/ballistic/automatic/smartgun,
+			/obj/item/gun/ballistic/automatic/woodsman,
 			/obj/item/gun/ballistic/automatic/wt550,
 			/obj/item/gun/ballistic/revolver,
 			/obj/item/gun/ballistic/revolver/c38/housecall,
@@ -752,12 +767,17 @@
 			/obj/item/gun/ballistic/revolver/mateba,
 			/obj/item/gun/ballistic/rifle/boltaction,
 			/obj/item/gun/ballistic/rifle/boltaction/donkrifle,
+			/obj/item/gun/ballistic/rifle/boltaction/harpoon,
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun/prime,
 			/obj/item/gun/ballistic/rifle/boltaction/prime,
 			/obj/item/gun/ballistic/rifle/rebarxbow/forced,
 			/obj/item/gun/ballistic/shotgun,
+			/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 			/obj/item/gun/ballistic/shotgun/lethal,
 			/obj/item/gun/ballistic/shotgun/musket/no_quarter,
+			/obj/item/gun/ballistic/shotgun/slammer,
 			/obj/item/gun/ballistic/shotgun/riot,
 			/obj/item/gun/energy/e_gun,
 			/obj/item/gun/energy/e_gun/dragnet,
@@ -790,6 +810,7 @@
 			/obj/item/nullrod/vibro,
 			/obj/item/nullrod/vibro/spellblade,
 			/obj/item/nullrod/vibro/talking,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout,
 			/obj/item/pen/edagger,
 			/obj/item/shield/buckler,
 			/obj/item/shield/buckler/parmula,
@@ -811,11 +832,15 @@
 			/obj/item/cursed_katana,
 			/obj/item/cyberware_pair_case/gorilla_arms,
 			/obj/item/cyberware_pair_case/mantis_blades,
+			/obj/item/cyberware_pair_case/mantis_scorch,
 			/obj/item/energy_katana,
+			/obj/item/gun/ballistic/automatic/heater/scorcher,
 			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
 			/obj/item/gun/ballistic/automatic/m90/unrestricted,
+			/obj/item/gun/ballistic/automatic/pistol/rattlesnake,
 			/obj/item/gun/ballistic/automatic/tommygun,
 			/obj/item/gun/ballistic/rifle/sniper_rifle,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted,
 			/obj/item/gun/ballistic/shotgun/automatic/combat,
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
 			/obj/item/gun/energy/e_gun/hos,
@@ -841,6 +866,7 @@
 			/obj/item/mjollnir,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
 			/obj/item/shield/energy,
 			/obj/item/singularityhammer,
@@ -873,3 +899,23 @@
 				TEST_ASSERT(entry != /obj/item/his_grace, "His Grace remains in ordinary cache loot")
 	for(var/entry in all_weapons)
 		TEST_ASSERT(entry in seen, "Retained weapon [entry] lost its guarded cache source")
+
+/// Everything the street doc sells can also turn up in a zone cache (owner: low-tier chrome rides the loot pools too).
+/datum/unit_test/voidcrew_street_chrome_in_loot
+
+/datum/unit_test/voidcrew_street_chrome_in_loot/Run()
+	var/list/lootable = list()
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		for(var/table_name in list("loot_common", "loot_uncommon", "loot_prime", "loot_uniques"))
+			for(var/entry in theme.vars[table_name])
+				lootable[entry] = TRUE
+		for(var/extras_name in list("gun_extras", "melee_extras"))
+			var/list/extras = theme.vars[extras_name]
+			for(var/weapon_class in extras)
+				for(var/entry in extras[weapon_class])
+					lootable[entry] = TRUE
+	var/datum/outpost_shop/vendor/street_doc/shop = allocate(/datum/outpost_shop/vendor/street_doc)
+	TEST_ASSERT(length(shop.skus), "The street doc has nothing on his shelf")
+	for(var/datum/shop_sku/sku as anything in shop.skus)
+		TEST_ASSERT(lootable[sku.item_path], "[sku.item_path], sold by the street doc, is in no loot theme")

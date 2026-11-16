@@ -56,6 +56,11 @@
 	var/datum/scar/highest_scar
 
 /datum/wound/slash/flesh/Destroy()
+	// VOIDCREW EDIT ADDITION START: a scar that was never put on the limb (this wound was replaced by a worse one)
+	// is deleted, not left registered on the limb holding the body it came from (voidcrew/modules/human_npcs)
+	if(highest_scar && !LAZYFIND(highest_scar.limb?.scars, highest_scar))
+		qdel(highest_scar)
+	// VOIDCREW EDIT ADDITION END
 	highest_scar = null
 
 	return ..()

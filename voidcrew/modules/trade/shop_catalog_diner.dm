@@ -23,8 +23,9 @@
  *   and both the buyback ledger and the Kitchen Order contracts accept only
  *   HAS_TRAIT_NOT_FROM that source: Roux never buys her own plates back, and
  *   contracts can't be settled off her own counter.
- * - Every ledger payout sits below the cheapest plated SKU, so buy-to-sell-back
- *   loses money even before the source gate.
+ * - Every order-wheel payout sits below the cheapest plated SKU, so
+ *   buy-to-sell-back loses money even before the source gate. The specials pay
+ *   more, but Roux plates none of them.
  * - Nothing here prints on a stock ship autolathe; dishes need a real kitchen.
  */
 
@@ -109,7 +110,18 @@
 		/datum/shop_sku/diner/plated/rare/birthday_cake,
 		/datum/shop_sku/diner/plated/rare/berry_clafoutis,
 	)
+	// Specials sit ahead of the catch-alls so a counter quote prices them right
 	buyback_types = list(
+		/datum/shop_buyback/diner/special/stuffed_legion,
+		/datum/shop_buyback/diner/special/energy_cake,
+		/datum/shop_buyback/diner/special/royal_cheese,
+		/datum/shop_buyback/diner/special/gondola_pocket,
+		/datum/shop_buyback/diner/special/mimana_bread,
+		/datum/shop_buyback/diner/special/ghost_burger,
+		/datum/shop_buyback/diner/special/chaos_donut,
+		/datum/shop_buyback/diner/special/xenoburger,
+		/datum/shop_buyback/diner/special/spell_burger,
+		/datum/shop_buyback/diner/special/notasandwich,
 		/datum/shop_buyback/diner/home_cooking,
 		/datum/shop_buyback/diner/pie_case,
 		/datum/shop_buyback/diner/whole_cake,
@@ -457,6 +469,8 @@
 	// Cooked by an actual person, and not by this kitchen
 	if(!HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
 		return FALSE
+	if(claimed_by_buyback_family(offered, /datum/shop_buyback/diner/special))
+		return FALSE
 	var/obj/item/food/dish = offered
 	return dish.crafting_complexity >= min_complexity
 
@@ -486,6 +500,8 @@
 /datum/shop_buyback/diner/whole_cake/matches(obj/item/offered)
 	if(!..())
 		return FALSE
+	if(claimed_by_buyback_family(offered, /datum/shop_buyback/diner/special))
+		return FALSE
 	return HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
 
 // The scavenger's rung: no chef gate, pocket change. Donk Co. pays a standing
@@ -498,3 +514,108 @@
 	pay_credits = 20
 	demand_min = 6
 	demand_max = 12
+
+// The gondola pocket has its own row
+/datum/shop_buyback/diner/donk_recall/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return !claimed_by_buyback_family(offered, /datum/shop_buyback/diner/special)
+
+// ===== ROUX'S SPECIALS =====
+// Dishes that need an ingredient a galley can't just order. Same chef gate as
+// the order wheel: cooked by a person, and not on Roux's own pass. Loot-spawned
+// plates carry no chef trait and don't count.
+//
+// Voucher rows each burn something that is itself worth a fight: a legion core
+// (the black market pays a voucher for one on its own, so the dish pays two),
+// an energy sword (4 vouchers on the black market shelf, so the cake can't
+// launder a bought one into profit), strange reagent plus a crown, or gondola
+// toxin, which only comes off a gondola. Credit rows use ingredients a ship
+// can get with some effort: ectoplasm off a ghost-eaten meal, a mime banana
+// mutation, frost oil from ice peppers, xeno meat (a cargo meat crate can roll
+// it), a costume wizard hat or a fake moustache from the autodrobe.
+// Bread cat and bread dog are mobs, not plates, so they aren't listed.
+
+/datum/shop_buyback/diner/special
+	category = "Chef's Specials"
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/diner/special/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
+
+/datum/shop_buyback/diner/special/stuffed_legion
+	name = "stuffed legion"
+	desc = "Goliath steak wrapped round a legion core. Roux plates it under a cloche and charges whatever she likes."
+	item_path = /obj/item/food/stuffedlegion
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/diner/special/energy_cake
+	name = "energy cake"
+	desc = "A birthday cake with an energy sword baked in. Roux cuts it with oven mitts on."
+	item_path = /obj/item/food/cake/birthday/energy
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 1
+
+/datum/shop_buyback/diner/special/royal_cheese
+	name = "royal cheese"
+	desc = "A cheese wheel that wears a crown. Roux bows to it. Nobody laughs."
+	item_path = /obj/item/food/cheese/royal
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/diner/special/gondola_pocket
+	name = "gondola pocket"
+	desc = "A pocket pastry with gondola in it. Roux serves it to people she trusts, and only once."
+	item_path = /obj/item/food/donkpocket/gondola
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+
+// The microwaved one is a sibling type, not a subtype
+/datum/shop_buyback/diner/special/gondola_pocket/matches(obj/item/offered)
+	if(istype(offered, /obj/item/food/donkpocket/warm/gondola) && !is_trader_good(offered) 		&& !(offered.item_flags & ABSTRACT) && !(offered.flags_1 & HOLOGRAM_1))
+		return HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
+	return ..()
+
+/datum/shop_buyback/diner/special/mimana_bread
+	name = "mimana bread (whole loaf)"
+	desc = "Bread made with a mime's banana. It makes no sound when you cut it."
+	item_path = /obj/item/food/bread/mimana
+	pay_credits = 300
+
+/datum/shop_buyback/diner/special/ghost_burger
+	name = "ghost burger"
+	desc = "A burger with ectoplasm in it. It's cold all the way through and always will be."
+	item_path = /obj/item/food/burger/ghost
+	pay_credits = 200
+
+/datum/shop_buyback/diner/special/chaos_donut
+	name = "chaos donut"
+	desc = "Frost oil and capsaicin in one donut. Roux sells them on a dare."
+	item_path = /obj/item/food/donut/chaos
+	pay_credits = 150
+
+/datum/shop_buyback/diner/special/xenoburger
+	name = "xenoburger"
+	desc = "A burger made from xeno meat. Roux doesn't say where hers comes from."
+	item_path = /obj/item/food/burger/xeno
+	pay_credits = 150
+
+/datum/shop_buyback/diner/special/spell_burger
+	name = "spell burger"
+	desc = "A burger with a wizard hat cooked into it. Customers swear it talks."
+	item_path = /obj/item/food/burger/spell
+	pay_credits = 100
+
+/datum/shop_buyback/diner/special/notasandwich
+	name = "not-a-sandwich"
+	desc = "Two slices of bread wearing a fake moustache. It's not a sandwich. Roux has stopped arguing."
+	item_path = /obj/item/food/sandwich/notasandwich
+	pay_credits = 80

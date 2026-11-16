@@ -106,9 +106,13 @@ SUBSYSTEM_DEF(ticker)
 					continue
 				music += S
 
-	var/old_login_music = trim(file2text("data/last_round_lobby_music.txt"))
+	// VOIDCREW EDIT CHANGE START - the file holds a full path (and old files hold several lines), but music holds bare filenames
+	var/list/old_login_lines = splittext(trim(file2text("data/last_round_lobby_music.txt")), "\n")
+	var/old_login_music = trim(old_login_lines[length(old_login_lines)])
+	var/list/old_login_parts = splittext(old_login_music, "/")
 	if(length(music) > 1)
-		music -= old_login_music
+		music -= old_login_parts[length(old_login_parts)]
+	// VOIDCREW EDIT CHANGE END
 
 	for(var/S in music)
 		var/list/L = splittext(S,".")
@@ -160,7 +164,7 @@ SUBSYSTEM_DEF(ticker)
 				start_at = world.time + (CONFIG_GET(number/lobby_countdown) * 10)
 			for(var/client/C in GLOB.clients)
 				window_flash(C, ignorepref = TRUE) //let them know lobby has opened up.
-			to_chat(world, span_notice("<b>Welcome to [station_name()]!</b>"))
+			// VOIDCREW EDIT REMOVAL: no "Welcome to [station_name()]" lobby line; Voidcrew has no station.
 			// VOIDCREW EDIT START: Include the configured Discord round-alert role (voidcrew/controllers/configuration/new_round_alert.dm).
 			var/new_round_alert_role = CONFIG_GET(string/new_round_alert_role_id)
 			var/new_round_message = "[new_round_alert_role ? "<@&[new_round_alert_role]> " : ""]New round starting on [SSmapping.current_map.map_name]!"
@@ -289,8 +293,7 @@ SUBSYSTEM_DEF(ticker)
 	log_world("Game start took [(world.timeofday - init_start)/10]s")
 	INVOKE_ASYNC(SSdbcore, TYPE_PROC_REF(/datum/controller/subsystem/dbcore,SetRoundStart))
 
-	to_chat(world, span_notice(span_bold("Welcome to [station_name()], enjoy your stay!")))
-	SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
+	// VOIDCREW EDIT REMOVAL: no station welcome line or welcome sound at roundstart; Voidcrew has no station.
 
 	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
@@ -867,6 +870,7 @@ SUBSYSTEM_DEF(ticker)
 		if(pref_volume > 0)
 			SEND_SOUND(M.client, sound(round_end_sound, volume = pref_volume))
 
+	fdel("data/last_round_lobby_music.txt") // VOIDCREW EDIT ADDITION - text2file appends; keep only this round's song
 	text2file(login_music, "data/last_round_lobby_music.txt")
 
 /datum/controller/subsystem/ticker/proc/choose_round_end_song()

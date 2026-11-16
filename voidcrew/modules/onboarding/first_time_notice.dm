@@ -15,7 +15,8 @@
  * Shown once per ckey, ever: a pick writes a flag into the player's preferences savefile.
  * LATER, or closing the popup without answering, leaves the flag unset, so their next visit asks
  * again. Guests have no savefile path, so they are asked every visit. This is distinct from the
- * orientation briefing in orientation.dm, which is per-round and only fires after a spawn.
+ * tutorial checklist (voidcrew/modules/tutorials), which only opens after a spawn - a player who
+ * bounces off the lobby never reaches it.
  */
 
 /// Preferences-savefile key marking that this player has answered the notice.

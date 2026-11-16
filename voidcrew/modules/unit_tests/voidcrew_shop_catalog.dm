@@ -341,11 +341,31 @@
 			list(/datum/shop_sku/black_market/rare/energy_sword, /obj/item/melee/energy/sword/saber, 1, 4000, 4),
 			list(/datum/shop_sku/black_market/c20r, /obj/item/gun/ballistic/automatic/c20r/unrestricted, 1, 3600, 2),
 			list(/datum/shop_sku/black_market/wt550, /obj/item/gun/ballistic/automatic/wt550, 1, 4200, 2),
+			list(/datum/shop_sku/black_market/rapier, /obj/item/gun/ballistic/automatic/rapier, 1, 2400, 0),
+			list(/datum/shop_sku/black_market/zashch, /obj/item/gun/ballistic/automatic/pistol/zashch, 1, 1200, 0),
+			list(/datum/shop_sku/black_market/nt_m96, /obj/item/gun/ballistic/rifle/nt_m96, 1, 1800, 0),
+			list(/datum/shop_sku/black_market/battle_rifle, /obj/item/gun/ballistic/automatic/battle_rifle, 1, 2200, 0),
+			list(/datum/shop_sku/black_market/ansem, /obj/item/gun/ballistic/automatic/pistol/clandestine, 1, 2000, 1),
+			list(/datum/shop_sku/black_market/ansem_sc, /obj/item/gun/ballistic/automatic/pistol/clandestine/fisher, 1, 2800, 1),
+			list(/datum/shop_sku/black_market/lethal_cycler, /obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly, 1, 2400, 1),
+			list(/datum/shop_sku/black_market/rattlesnake, /obj/item/gun/ballistic/automatic/pistol/rattlesnake, 1, 4800, 3),
+			list(/datum/shop_sku/black_market/resolution, /obj/item/gun/ballistic/automatic/resolution, 1, 4200, 2),
+			list(/datum/shop_sku/black_market/heater, /obj/item/gun/ballistic/automatic/heater, 1, 3000, 2),
+			list(/datum/shop_sku/black_market/scorcher, /obj/item/gun/ballistic/automatic/heater/scorcher, 1, 4000, 3),
+			list(/datum/shop_sku/black_market/woodsman, /obj/item/gun/ballistic/automatic/woodsman, 1, 2600, 1),
+			list(/datum/shop_sku/black_market/skm, /obj/item/gun/ballistic/automatic/skm, 1, 3600, 2),
+			list(/datum/shop_sku/black_market/brimstone, /obj/item/gun/ballistic/shotgun/brimstone, 1, 900, 0),
+			list(/datum/shop_sku/black_market/flaming_arrow, /obj/item/gun/ballistic/shotgun/flaming_arrow, 1, 1200, 0),
+			list(/datum/shop_sku/black_market/slammer, /obj/item/gun/ballistic/shotgun/slammer, 1, 2400, 1),
+			list(/datum/shop_sku/black_market/absolution, /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution, 1, 2600, 1),
+			list(/datum/shop_sku/black_market/conflagration, /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration, 1, 2200, 1),
 			list(/datum/shop_sku/black_market/rotating/mateba, /obj/item/gun/ballistic/revolver/mateba, 1, 3000, 1),
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
 			list(/datum/shop_sku/ripperdoc/monowire, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire, 1, 0, 3),
+			list(/datum/shop_sku/ripperdoc/monowire_live, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live, 1, 0, 5),
 			list(/datum/shop_sku/ripperdoc/mantis, /obj/item/cyberware_pair_case/mantis_blades, 1, 0, 4),
+			list(/datum/shop_sku/ripperdoc/mantis_scorch, /obj/item/cyberware_pair_case/mantis_scorch, 1, 0, 4),
 			list(/datum/shop_sku/ripperdoc/gorilla, /obj/item/cyberware_pair_case/gorilla_arms, 1, 0, 3),
 		),
 	)
@@ -391,6 +411,24 @@
 		/obj/item/gun/ballistic/shotgun/riot,
 		/obj/item/gun/ballistic/automatic/c20r/unrestricted,
 		/obj/item/gun/ballistic/automatic/wt550,
+		/obj/item/gun/ballistic/automatic/rapier,
+		/obj/item/gun/ballistic/automatic/pistol/zashch,
+		/obj/item/gun/ballistic/rifle/nt_m96,
+		/obj/item/gun/ballistic/automatic/battle_rifle,
+		/obj/item/gun/ballistic/automatic/pistol/clandestine,
+		/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher,
+		/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
+		/obj/item/gun/ballistic/automatic/pistol/rattlesnake,
+		/obj/item/gun/ballistic/automatic/resolution,
+		/obj/item/gun/ballistic/automatic/heater,
+		/obj/item/gun/ballistic/automatic/heater/scorcher,
+		/obj/item/gun/ballistic/automatic/woodsman,
+		/obj/item/gun/ballistic/automatic/skm,
+		/obj/item/gun/ballistic/shotgun/brimstone,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow,
+		/obj/item/gun/ballistic/shotgun/slammer,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 		/obj/item/gun/ballistic/revolver/mateba,
 	)
 	var/list/printed_gear = list(
@@ -403,14 +441,18 @@
 		/obj/item/cultivator, /obj/item/shovel/spade, /obj/item/hatchet, /obj/item/secateurs,
 		/obj/item/reagent_containers/cup/watering_can, /obj/item/plant_analyzer, /obj/item/fishing_rod/tech,
 	)
-	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market, /datum/outpost_shop/vendor/potting_shed, /datum/outpost_shop/vendor/bait_shop, /datum/outpost_shop/vendor/ripperdoc))
+	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market, /datum/outpost_shop/vendor/potting_shed, /datum/outpost_shop/vendor/bait_shop, /datum/outpost_shop/vendor/ripperdoc, /datum/outpost_shop/vendor/street_doc))
 		var/datum/outpost_shop/shop = allocate(shop_type)
 		for(var/datum/shop_sku/sku_type as anything in shop.sku_types + shop.rotating_pool + shop.rare_pool + shop.favor_sku_types)
 			var/item_path = initial(sku_type.item_path)
 			TEST_ASSERT(!(item_path in printed_gear), "[shop_type] still sells printable gear [item_path]")
 			if(ispath(item_path, /obj/item/gun))
 				TEST_ASSERT(item_path in allowed_guns, "[shop_type] bypasses the ladder with [item_path]")
-			TEST_ASSERT(item_path != /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin && item_path != /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster, "Splice still sells a gun arm")
+			// The heavy gun arms (the Ronin SMG and the Bunker Buster pod, and any
+			// model of them) stay loot-only. The Holdout's .38 is the one gun arm
+			// that is shelf stock, on purpose.
+			if(ispath(item_path, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin) || ispath(item_path, /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster))
+				TEST_ASSERT(item_path == /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, "[shop_type] sells the heavy gun arm [item_path]; only the Holdout housing is shelf stock")
 
 /// Convoys and rotations cannot accelerate deliveries or revive finite stock.
 /datum/unit_test/voidcrew_ladder_restock/Run()
@@ -467,7 +509,7 @@
 				TEST_ASSERT_EQUAL(finite.stock, 0, "A rotation refilled restricted stock")
 
 	// Arm chrome takes one unit every few convoys, and a full shelf banks nothing toward the next.
-	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/gorilla))
+	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/gorilla))
 		var/datum/outpost_shop/chrome_shop = allocate(/datum/outpost_shop)
 		chrome_shop.add_sku(sku_type, "core")
 		var/datum/shop_sku/chrome = chrome_shop.skus[1]
@@ -507,8 +549,15 @@
 		/datum/shop_sku/general/surplus_rifle, /datum/shop_sku/outfitter/disabler,
 		/datum/shop_sku/outfitter/laser_gun, /datum/shop_sku/outfitter/energy_gun, /datum/shop_sku/outfitter/riot_shotgun,
 		/datum/shop_sku/black_market/c20r, /datum/shop_sku/black_market/wt550, /datum/shop_sku/black_market/rotating/mateba,
+		/datum/shop_sku/black_market/rapier, /datum/shop_sku/black_market/zashch, /datum/shop_sku/black_market/nt_m96,
+		/datum/shop_sku/black_market/battle_rifle, /datum/shop_sku/black_market/ansem, /datum/shop_sku/black_market/ansem_sc,
+		/datum/shop_sku/black_market/lethal_cycler, /datum/shop_sku/black_market/rattlesnake, /datum/shop_sku/black_market/resolution,
+		/datum/shop_sku/black_market/heater, /datum/shop_sku/black_market/scorcher,
+		/datum/shop_sku/black_market/woodsman, /datum/shop_sku/black_market/skm,
+		/datum/shop_sku/black_market/brimstone, /datum/shop_sku/black_market/flaming_arrow, /datum/shop_sku/black_market/slammer, /datum/shop_sku/black_market/absolution, /datum/shop_sku/black_market/conflagration,
 		/datum/shop_sku/black_market/cutlass, /datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/mantis_street,
 		/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare,
 	)
 	for(var/sku_type in restricted)
@@ -653,7 +702,10 @@
 					var/ammo_path = GLOB.loot_gun_spare_ammo[gun.type]
 					TEST_ASSERT(locate(ammo_path) in cache, "A freight gun arrived without its spare reload")
 			TEST_ASSERT(contents_count - spare_count >= 2 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate lost ordinary draws")
-			TEST_ASSERT(contents_count - spare_count <= 3 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate added unbudgeted draws")
+			var/list/packed = list()
+			for(var/atom/movable/inside as anything in cache.contents)
+				packed += "[inside.type]"
+			TEST_ASSERT(contents_count - spare_count <= 3 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate added unbudgeted draws (zone [zone], [row[1]]): [packed.Join(", ")]")
 			cache.PopulateContents()
 			TEST_ASSERT_EQUAL(length(cache.contents), contents_count, "Reopening bought cargo paid twice")
 			TEST_ASSERT(deep_compare_list(list(theme.loot_common, theme.loot_uncommon, theme.loot_prime, theme.loot_uniques), original_pools), "Bought cargo mutated the shared theme")

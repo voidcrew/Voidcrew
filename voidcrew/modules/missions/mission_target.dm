@@ -62,7 +62,8 @@
 /datum/mission_target/proc/notify_when_loaded()
 	return
 
-/// A random open turf inside the loaded interior for objective spawns
+/// A random open turf inside the loaded interior for objective spawns, out of
+/// every living player's sight when there is one (see spawn_cover.dm)
 /datum/mission_target/proc/get_spawn_turf()
 	return null
 
@@ -222,7 +223,7 @@
 	mission?.on_target_interior_loaded()
 
 /datum/mission_target/space_ruin/get_spawn_turf()
-	return ruin?.get_random_interior_turf() || ruin?.ruin_bottom_left
+	return ruin?.get_random_interior_turf(unwatched = TRUE) || ruin?.ruin_bottom_left
 
 /datum/mission_target/space_ruin/contains_turf(turf/T)
 	if(!ruin || !T)
@@ -405,16 +406,23 @@
 		min_y = max(min_y, above_docks)
 	if(min_x > max_x || min_y > max_y)
 		return null
+	// A crew already on the surface must not watch the objective appear. Every
+	// sample that passes is kept as a fallback, farthest from them wins.
+	var/datum/spawn_cover/cover = new(site_z)
 	for(var/_ in 1 to 40)
 		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), site_z)
 		if(!candidate || !isopenturf(candidate) || isspaceturf(candidate))
+			continue
+		// Lava burns the objective and a chasm swallows it before anyone arrives
+		if(islava(candidate) || ischasm(candidate))
 			continue
 		if(istype(get_area(candidate), /area/shuttle))
 			continue
 		if(candidate.is_blocked_turf(exclude_mobs = TRUE))
 			continue
-		return candidate
-	return null
+		if(cover.is_hidden(candidate))
+			return candidate
+	return cover.fallback
 
 /**
  * "Is the player at the site" - the primitive the pylon scatter and the hunting

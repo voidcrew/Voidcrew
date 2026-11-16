@@ -704,18 +704,20 @@
 	return AI_BEHAVIOR_DELAY
 
 /**
- * Count hostile mobs (pirate troopers) currently on a target ship.
- * Used to enforce the max boarder cap during ship combat.
+ * Count the boarders on a target ship still in the fight: the raid's members aboard it (pirate_crew.dm),
+ * human or basic, whatever their faction. Used to enforce the max boarder cap during ship combat.
  */
 /datum/ai_behavior/npc_ship/fire_boarding_pods/proc/count_hostile_mobs_on_ship(obj/structure/overmap/ship/target)
-	if(!target?.shuttle?.shuttle_areas)
+	var/list/shuttle_areas = target?.shuttle?.shuttle_areas
+	var/datum/pirate_crew/raid = pirate_crew_of(target, TRUE)
+	if(!length(shuttle_areas) || !raid)
 		return 0
-
 	var/count = 0
-	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
-		for(var/mob/living/basic/trooper/pirate/boarder in shuttle_area)
-			if(boarder.stat != DEAD)
-				count++
+	for(var/mob/living/boarder as anything in raid.members)
+		if(human_npc_out_of_fight(boarder))
+			continue
+		if(shuttle_areas[get_area(boarder)])
+			count++
 	return count
 
 // ========== USE INTERDICTOR ==========

@@ -59,8 +59,7 @@
 	if(istype(src, /mob/living/basic/trooper/nanotrasen/ranged))
 		if((zone == ZONE_GREEN && (istype(src, /mob/living/basic/trooper/nanotrasen/ranged/smg) || istype(src, /mob/living/basic/trooper/nanotrasen/ranged/assault))) || (zone != ZONE_RED && istype(src, /mob/living/basic/trooper/nanotrasen/ranged/elite)))
 			pistol_type = /mob/living/basic/trooper/nanotrasen/ranged
-		if(zone != ZONE_RED && (istype(src, /mob/living/basic/trooper/nanotrasen/ranged/smg/customs) || istype(src, /mob/living/basic/trooper/nanotrasen/ranged/assault/customs)))
-			pistol_type = /mob/living/basic/trooper/nanotrasen/ranged
+		// NT customs are human NPCs now: their ladder pistol is in their outfit table (faction_pirates/nt_patrol.dm)
 	else if(istype(src, /mob/living/basic/trooper/syndicate/ranged))
 		if(zone != ZONE_RED && (istype(src, /mob/living/basic/trooper/syndicate/ranged/smg) || istype(src, /mob/living/basic/trooper/syndicate/ranged/shotgun) || (zone == ZONE_GREEN && istype(src, /mob/living/basic/trooper/syndicate/ranged/space/stormtrooper))))
 			pistol_type = /mob/living/basic/trooper/syndicate/ranged
@@ -76,8 +75,7 @@
 		r_hand = /obj/item/knife/combat/survival
 		l_hand = null
 		set_light(0)
-		if(use_dynamic_appearance)
-			apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand)
+		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand)
 	return TRUE
 
 /mob/living/basic/trooper/proc/use_ladder_pistol(mob/living/basic/trooper/profile)
@@ -102,8 +100,7 @@
 		QDEL_NULL(ai_controller)
 	ai_controller = new /datum/ai_controller/basic_controller/trooper/ranged(src)
 	r_hand = initial(profile.r_hand)
-	if(use_dynamic_appearance)
-		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand)
+	apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand)
 
 // Copy both lists before trimming them: crusher kills must use the very same
 // construction-time roll, and must keep trophies and the mining accelerator.

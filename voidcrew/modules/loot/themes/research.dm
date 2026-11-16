@@ -36,6 +36,9 @@
 	theme_skus = list(
 		/datum/shop_sku/ripperdoc/doppler,
 		/datum/shop_sku/ripperdoc/rigger,
+		/datum/shop_sku/ripperdoc/doppler_street,
+		/datum/shop_sku/ripperdoc/longsight,
+		/datum/shop_sku/ripperdoc/lookout,
 	)
 	loot_common = list(
 		/obj/item/storage/box/beakers = 10,
@@ -64,6 +67,9 @@
 		// lab hardware worn instead of carried: a sonar transceiver socketed
 		// into the bone behind the ear, reading movement through walls
 		/obj/item/organ/cyberimp/cyberware/doppler = 3,
+		// a cheaper sonar ear, and survey optics off the long-range bench
+		/obj/item/organ/cyberimp/cyberware/doppler/street = 3,
+		/obj/item/organ/eyes/robotic/cyberware/longsight = 2,
 	)
 	loot_prime = list(
 		/obj/item/stack/ore/bluespace_crystal/refined = 10,
@@ -87,6 +93,8 @@
 		// the annex's own interface work: a skull jack that flies a ship from
 		// anywhere aboard it, as long as the hull still has a helm console
 		/obj/item/organ/cyberimp/cyberware/rigger = 2,
+		// the observation post's eyes
+		/obj/item/organ/eyes/robotic/cyberware/lookout = 2,
 		// gene injector loot (gene_injectors.dm)
 		/obj/item/dnainjector/loot/thermal_vision = 3,
 		/obj/item/dnainjector/loot/cryokinesis = 2,
@@ -120,6 +128,7 @@
 /// Infested nests: giant spiders. Webs sold separately.
 /obj/effect/zone_mobs/bug
 	name = "zone mob spawner (bug)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/spider/giant/nurse = 8,
 		/mob/living/basic/spider/giant = 6,
