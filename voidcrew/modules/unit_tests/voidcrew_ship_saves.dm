@@ -1694,7 +1694,7 @@
 	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, 0, "The old hull kept its balance")
 	TEST_ASSERT_EQUAL(job.held_balance, 500, "The build isn't holding the old hull's balance")
 	TEST_ASSERT_NULL(GLOB.ship_saves.live_sources[GLOB.ship_saves.slot_key("savecaptain", 1)], "A spent save kept its source")
-	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "The original hull has already been replaced.", "A second save of a replaced hull was offered")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "The original hull has been replaced.", "A second save of a replaced hull was offered")
 	job.fast_forward()
 	TEST_ASSERT(QDELETED(job), "The build did not finish")
 	var/obj/structure/overmap/ship/rebuilt = bay.ship
@@ -1706,7 +1706,7 @@
 	var/obj/docking_port/mobile/old_port = test_ship.detach_shuttle()
 	old_port.jumpToNullSpace()
 	TEST_ASSERT(!QDELETED(test_ship) && !test_ship.shuttle, "The fixture still has a hull")
-	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "The original hull has already been replaced.", "A retired hull-less record was bypassed")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "The original hull has been replaced.", "A retired hull-less record was bypassed")
 	test_ship.retired_by_checkpoint = FALSE
 	TEST_ASSERT_NULL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "A hull-less record blocks its save")
 
@@ -1731,6 +1731,7 @@
 	TEST_ASSERT_NOTNULL(store.saved["savelobby|1"], "A refused launch spent the save")
 	TEST_ASSERT(!lobby_source.checkpoint_rebuilding, "A refused launch locked the hull")
 	TEST_ASSERT(!lobby.spawning_ship, "A refused launch left the player stuck preparing a ship")
+	check_dock_terminal(lobby)
 
 	lobby_source.abandon_ship(crash = FALSE)
 	GLOB.ship_saves.launch(lobby, 1)
@@ -1743,6 +1744,56 @@
 	TEST_ASSERT_EQUAL(launched.ship_account.account_balance, 300, "The new ship did not get the old hull's balance")
 	TEST_ASSERT_NULL(store.saved["savelobby|1"], "The lobby did not spend the save")
 	TEST_ASSERT_NULL(GLOB.ship_saves.live_sources[GLOB.ship_saves.slot_key("savelobby", 1)], "A spent save kept its source")
+
+/// The dock terminal's SHIPYARD, with the hull this save came from still in service.
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/same_round/proc/check_dock_terminal(mob/dead/new_player/ship_save_test/lobby)
+	var/datum/lobby_terminal/ship_save_test/dock = new
+	var/list/cards = dock.saved_ships_data("savelobby")
+	TEST_ASSERT_EQUAL(length(cards), SHIP_SAVE_TEST_SLOTS, "The terminal did not draw one card a slot")
+	TEST_ASSERT_NULL(cards[2], "The terminal drew an empty slot as a ship")
+	var/list/card = cards[1]
+	TEST_ASSERT(islist(card), "The terminal did not draw the save")
+	for(var/key in list("slot", "name", "class", "crew", "carries", "denial", "locked", "restores"))
+		TEST_ASSERT(key in card, "The save card has no [key]")
+	TEST_ASSERT_EQUAL(length(card), 8, "The save card carries more than the page draws")
+	TEST_ASSERT_EQUAL(card["slot"], 1, "The save card has the wrong slot")
+	TEST_ASSERT(islist(card["carries"]) && length(card["carries"]) <= 12, "The save card's carries are not a short list")
+	TEST_ASSERT_EQUAL(card["denial"], "The original hull is still in service.", "The terminal offered a save whose hull is in service")
+	TEST_ASSERT(!card["restores"], "A save offered to a player in no crew claimed to restore one")
+
+	// A save made by the crew the player is in now restores it.
+	var/key = GLOB.ship_saves.slot_key("savelobby", 1)
+	var/datum/weakref/old_crew = GLOB.ship_saves.live_crews[key]
+	var/datum/voidcrew_crew_record/crew = new
+	GLOB.ship_saves.live_crews[key] = WEAKREF(crew)
+	GLOB.voidcrew_crew_roster["savelobby"] = crew
+	card = dock.saved_ship_card(1, "savelobby")
+	TEST_ASSERT(card["restores"], "A save of the player's own crew did not restore it")
+	GLOB.voidcrew_crew_roster -= "savelobby"
+	if(old_crew)
+		GLOB.ship_saves.live_crews[key] = old_crew
+	else
+		GLOB.ship_saves.live_crews -= key
+	qdel(crew)
+
+	// No slot past the last, and a refused load takes no lock and leaves no CONFIRMED box.
+	TEST_ASSERT(!dock.yard_load(lobby, list("slot" = "[SHIP_SAVE_TEST_SLOTS + 1]")), "The terminal took a slot past the last")
+	dock.notice = null
+	dock.yard_load(lobby, list("slot" = "1"))
+	TEST_ASSERT_EQUAL(dock.notice?["kind"], "warn", "A refused LOAD said nothing")
+	TEST_ASSERT_NULL(GLOB.lobby_join_locks["savelobby"], "A refused LOAD kept the join lock")
+	dock.notice = null
+	TEST_ASSERT(!dock.load_saved_ship(1, FALSE, lobby), "The terminal reported a refused load as a success")
+	TEST_ASSERT_EQUAL(dock.notice?["kind"], "bad", "A refused load left the CONFIRMED box up")
+	TEST_ASSERT_EQUAL(dock.notice?["text"], "The original hull is still in service.", "A refused load gave the wrong reason")
+	TEST_ASSERT_NULL(lobby.seated_on, "The terminal loaded a save while its hull is in service")
+	TEST_ASSERT(!lobby.spawning_ship, "A refused terminal load left the player stuck preparing a ship")
+	TEST_ASSERT_NOTNULL(store.saved["savelobby|1"], "A refused terminal load spent the save")
+	qdel(dock)
+
+/// A terminal with no client or window.
+/datum/lobby_terminal/ship_save_test/New()
+	return
 
 /**
  * The real table, through the real store and the game's database connection. Skipped with no database.
