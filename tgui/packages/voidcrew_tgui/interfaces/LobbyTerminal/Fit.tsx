@@ -531,7 +531,11 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
           {isTaken ? '[#]' : '[ ]'}
         </Put>
         <Put x={7} y={ty} cls={isTaken ? 'wht' : ''}>
-          {cut(o.name, NAME_W)}
+          {cut(
+            o.name,
+            // The row's free width: up to two cells before the tag.
+            Math.max(NAME_W, TAG_END - Math.min(TAG_W, o.tag.length) - 9),
+          )}
         </Put>
         <RPut x={TAG_END} y={ty} cls={o.tagCls}>
           {cut(o.tag, TAG_W)}

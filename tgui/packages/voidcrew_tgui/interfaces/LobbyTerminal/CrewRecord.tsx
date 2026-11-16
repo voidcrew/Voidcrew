@@ -395,7 +395,14 @@ export function CrewRecord(props: Props) {
       const lit = joining && pressed === job.ref;
       const titleCls = locked ? 'faint' : job.ok ? '' : 'dim';
       const claim = claimJob ? claimJob === job.ref : job === firstLive;
-      const title = cut(safe(job.title).toUpperCase(), TITLE_W);
+      // The title stops two cells short of the open count as the count is drawn (1.25x on a
+      // tall row; a quarter cell of slack keeps 22 cells beside one big digit).
+      const openN = String(Math.min(99, Math.max(0, job.open || 0)));
+      const titleW = Math.min(
+        TITLE_W,
+        Math.floor(28 - openN.length * (tall ? 1.25 : 1) - 4.75),
+      );
+      const title = cut(safe(job.title).toUpperCase(), titleW);
       const keyH = tall ? 2 : BERTH_H;
       out.push(
         <Slab
@@ -412,7 +419,7 @@ export function CrewRecord(props: Props) {
             key={`t${job.ref}`}
             x={3}
             y={yy + (rowH - 1.25) / 2}
-            w={TITLE_W}
+            w={titleW}
             text={title}
             cls={titleCls}
           />

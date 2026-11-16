@@ -224,7 +224,7 @@ export function SideMenu(props: MenuProps) {
         onClick={onCharacter}
       />
       {!!name && (
-        <RPut x={17} y={13.75} cls="dim">
+        <RPut x={17} y={14} cls="dim">
           {name}
         </RPut>
       )}

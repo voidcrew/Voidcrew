@@ -240,6 +240,7 @@ export function SpeciesConfirm() {
   const confirm = data.char?.confirm;
   const open = !!confirm;
   useBack(open ? () => act('char_confirm', { ok: 0 }) : null);
+  const { cols, rows, cw, ch } = useGrid();
   if (!confirm) {
     return null;
   }
@@ -251,6 +252,20 @@ export function SpeciesConfirm() {
   const y = BODY_Y + 2;
   const by = y + 2 + lines.length + 0.5;
   return (
+    <>
+      {/* The screen under the dialog dimmed, as LEAVE CREW does. Clicks stop here. */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: Math.round(cols * cw),
+          height: Math.round(rows * ch),
+          background: 'rgba(15,6,32,.65)',
+          zIndex: 7,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
     <Dialog w={w} h={6 + lines.length} caption="SPECIES" sound="warn">
       <Put x={x + 2} y={y + 1} cls="wht">
         {cut(`${species} CAN'T KEEP:`, 41)}
@@ -280,6 +295,7 @@ export function SpeciesConfirm() {
         }}
       />
     </Dialog>
+    </>
   );
 }
 
