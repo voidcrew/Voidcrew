@@ -19,6 +19,7 @@ import {
 } from 'tgui-core/components';
 import { Experiment } from '../../tgui/interfaces/ExperimentConfigure';
 import { NtosWindow, Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 
 // Data reshaping / ingestion (thanks stylemistake for the help, very cool!)
 // This is primarily necessary due to measures that are taken to reduce the size
@@ -261,6 +262,26 @@ const TechwebOverview = (props) => {
     );
   }
 
+  // Tutorial checklist (rd_node_<id>): list the node it points at first, and pulse the
+  // Available tab while that node is available but another tab is open.
+  const tutorialFocus = data.tutorial_focus || '';
+  const focusNodeId = tutorialFocus.startsWith('rd_node_')
+    ? tutorialFocus.slice('rd_node_'.length)
+    : '';
+  const focusNode = focusNodeId
+    ? displayedNodes.find((x) => x.id === focusNodeId)
+    : undefined;
+  if (focusNode) {
+    displayedNodes = [
+      focusNode,
+      ...displayedNodes.filter((x) => x !== focusNode),
+    ];
+  }
+  const focusAvailable =
+    !!focusNodeId &&
+    (searching || tabIndex !== 1) &&
+    nodes.some((x) => x.id === focusNodeId && x.tier === 1);
+
   const switchTab = (tab) => {
     setTabIndex(tab);
     setSearchText(null);
@@ -281,12 +302,14 @@ const TechwebOverview = (props) => {
               >
                 Researched
               </Tabs.Tab>
-              <Tabs.Tab
-                selected={!searching && tabIndex === 1}
-                onClick={() => switchTab(1)}
-              >
-                Available
-              </Tabs.Tab>
+              <TutorialFocus id={focusAvailable ? tutorialFocus : ''}>
+                <Tabs.Tab
+                  selected={!searching && tabIndex === 1}
+                  onClick={() => switchTab(1)}
+                >
+                  Available
+                </Tabs.Tab>
+              </TutorialFocus>
               <Tabs.Tab
                 selected={!searching && tabIndex === 2}
                 onClick={() => switchTab(2)}
@@ -578,7 +601,12 @@ const TechNode = (props) => {
 
   return (
     <Section
-      className="Techweb__NodeContainer"
+      className={
+        // The tutorial checklist outlines the node it points at (TutorialFocus, rd_node_<id>).
+        data.tutorial_focus === `rd_node_${id}`
+          ? 'Techweb__NodeContainer TutorialFocus'
+          : 'Techweb__NodeContainer'
+      }
       title={name}
       buttons={
         !nocontrols && (

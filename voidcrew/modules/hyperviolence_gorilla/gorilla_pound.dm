@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # Ground pound
  *
@@ -243,3 +246,5 @@
 		carrier.remove_item_action(old)
 	else
 		qdel(old)
+
+#undef animate

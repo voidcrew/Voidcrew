@@ -26,6 +26,9 @@
 /obj/item/gun
 	/// While an execution round is being fired: the damage it has dealt to the victim's head
 	var/hv_execution_head_damage = 0
+	/// TRUE while an execution round is being fired: the barrel is on the head, so the shot's flash is drawn there
+	/// (visuals/execution_motion.dm) and not at the hip
+	var/hv_firing_execution = FALSE
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
@@ -88,7 +91,7 @@
 		bar.finish(held && !QDELETED(src) && !QDELETED(user) && !QDELETED(target))
 	if(!held || QDELETED(src) || QDELETED(user) || QDELETED(target))
 		return
-	hv_fire_execution(user, target, params)
+	return hv_fire_execution(user, target, params)
 
 /// do_after check: the shooter still holds the gun to the head of someone who still can't fight back.
 /obj/item/gun/proc/hv_execution_holds(mob/living/user, mob/living/target)
@@ -114,11 +117,23 @@
 	var/burns = chambered.loaded_projectile.damage_type == BURN
 	hv_execution_head_damage = 0
 	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(hv_execution_hit))
+	// The barrel is on the head, so tg's zone roll for the shot can't send the round elsewhere.
+	var/obj/item/ammo_casing/execution_casing = chambered
+	RegisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE, PROC_REF(hv_execution_round_ready))
 	var/normal_multiplier = projectile_damage_multiplier
 	projectile_damage_multiplier *= HV_EXECUTION_POINT_BLANK_MULT
+	// The flashes tg and gun feel draw for a shot are at the hip, out toward the victim's tile: on the boots of a
+	// body lying with its head at the far end. The execution draws its own, at the barrel.
+	var/hip_flash = execution_casing.firing_effect_type
+	execution_casing.firing_effect_type = null
+	hv_firing_execution = TRUE
 	// Only the first round of a burst is held to the head; the rest are ordinary shots.
 	var/fired = process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
+	hv_firing_execution = FALSE
 	projectile_damage_multiplier = normal_multiplier
+	if(!QDELETED(execution_casing))
+		execution_casing.firing_effect_type = hip_flash
+		UnregisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE)
 	if(!QDELETED(target))
 		UnregisterSignal(target, COMSIG_MOB_APPLY_DAMAGE)
 	if(!fired)
@@ -128,6 +143,17 @@
 		target.hv_take_execution(hv_execution_head_damage, shot_dir, was_dead, burns)
 		hv_execution_witnesses(user, target)
 	return TRUE
+
+/// Each round (or pellet) the execution casing readies loses its accuracy falloff, so tg's zone roll on
+/// impact (projectile.dm, the one TRAIT_DESIGNATED_TARGET also skips) keeps it on the aimed head. Its
+/// damage, armour and everything after are tg's as usual. It is never drawn: fired with the barrel on the
+/// head it lands the tick it is made, and a Sandevistan replay, which draws every round it saw, showed it as
+/// a tracer lying across the shooter (cyberware/ware_sandy_replay.dm records nothing it can't see).
+/obj/item/gun/proc/hv_execution_round_ready(obj/item/ammo_casing/source, atom/target, mob/living/user, quiet, zone_override, atom/fired_from)
+	SIGNAL_HANDLER
+	if(fired_from == src && source.loaded_projectile)
+		source.loaded_projectile.accuracy_falloff = 0
+		source.loaded_projectile.invisibility = INVISIBILITY_ABSTRACT
 
 /// Adds up what this gun's rounds do to the victim's head while an execution round is fired.
 /obj/item/gun/proc/hv_execution_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/attacking_item)

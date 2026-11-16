@@ -752,6 +752,8 @@
 	data["projection"] = build_projection(patient, selected_ware ? available[selected_ware] : null)
 	data["ink"] = build_ink_data(patient)
 	data["tray_count"] = length(tray)
+	// Tutorial checklist: the Get it installed step pulses the part to pick, then Install.
+	data["tutorial_focus"] = tutorial_ui_focus(user, "cradle")
 	return data
 
 /obj/machinery/chrome_cradle/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)

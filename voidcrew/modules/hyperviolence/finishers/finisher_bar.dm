@@ -15,6 +15,9 @@
 /// Matches tg's PROGRESSBAR_ANIMATION_TIME: the fade in and out
 #define HV_EXEC_BAR_FADE 5
 
+/// Every execution bar in the world (the Sandevistan replay hides them while it plays).
+GLOBAL_LIST_EMPTY(hv_exec_bars)
+
 /obj/effect/abstract/hv_exec_bar
 	name = "progress"
 	icon = 'icons/effects/progressbar.dmi'
@@ -46,16 +49,25 @@
 	// Centred over the top of their sprite, however big it is (a 64px boss is drawn up from its tile, shifted left by half the extra width)
 	var/list/icon_size = executioner.icon ? get_icon_dimensions(executioner.icon) : list("width" = ICON_SIZE_X, "height" = ICON_SIZE_Y)
 	pixel_w = executioner.base_pixel_x + (icon_size["width"] - ICON_SIZE_X) / 2
+	// Over the body, where a move is drawing it off its tile (hv_exec_bar_lean())
+	if(executioner.hv_exec_lean)
+		pixel_x = executioner.hv_exec_lean[1]
+		pixel_y = executioner.hv_exec_lean[2]
 	// Above any do_after bars the executioner already has over themselves
 	var/list/own_bars = LAZYACCESS(executioner.progressbars, executioner)
 	rest_z = executioner.base_pixel_y + icon_size["height"] + HV_EXEC_BAR_HEIGHT * length(own_bars)
+	pixel_z = rest_z
 	alpha = 0
-	animate(src, pixel_z = rest_z, alpha = 255, time = HV_EXEC_BAR_FADE, easing = SINE_EASING)
+	animate(src, alpha = 255, time = HV_EXEC_BAR_FADE, easing = SINE_EASING)
 	RegisterSignal(owner, COMSIG_QDELETING, PROC_REF(on_owner_deleted))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
 	tick()
+	GLOB.hv_exec_bars += src
+	if(sandy_replay_hides_bars_at(get_turf(src))) // cyberware/ware_sandy_replay.dm: no bar shows in a replay
+		invisibility = INVISIBILITY_ABSTRACT
 
 /obj/effect/abstract/hv_exec_bar/Destroy()
+	GLOB.hv_exec_bars -= src
 	if(update_timer)
 		deltimer(update_timer)
 		update_timer = null
@@ -98,6 +110,24 @@
 		abstract_move(owner.loc)
 	else
 		finish(FALSE)
+
+/mob/living
+	/// How far a move's pose draws this body off its tile right now, list(x, y) in pixels: its execution bars stand
+	/// over the body, not over the tile it has leaned off (hv_exec_bar_lean()).
+	var/list/hv_exec_lean
+
+/**
+ * A move draws [executioner]'s body [x], [y] pixels off their tile from here on (a lean over a victim, a lunge): their
+ * execution bars go there with it over [time], and one started while it holds starts there. Without it a bar stood
+ * beside a body bent half a tile over its victim. 0, 0 puts them back over the tile.
+ */
+/proc/hv_exec_bar_lean(mob/living/executioner, x = 0, y = 0, time = 0, easing = SINE_EASING)
+	if(QDELETED(executioner))
+		return
+	executioner.hv_exec_lean = (x || y) ? list(x, y) : null
+	for(var/obj/effect/abstract/hv_exec_bar/bar as anything in GLOB.hv_exec_bars)
+		if(bar.owner == executioner && !bar.ending)
+			animate(bar, pixel_x = x, pixel_y = y, time = time, easing = easing, flags = ANIMATION_PARALLEL)
 
 /**
  * Puts a bar over [executioner] that fills over [total] deciseconds, seen by everyone who can see them.

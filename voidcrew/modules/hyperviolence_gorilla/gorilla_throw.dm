@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # Gorilla throws and wall impacts
  *
@@ -511,3 +514,5 @@
 	name = "blood smear"
 	icon_state = "impact_edge"
 	alpha = 220
+
+#undef animate
