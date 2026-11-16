@@ -34,6 +34,11 @@
 	for(var/name in sounds)
 		if(fexists(sounds[name]))
 			assets[name] = sounds[name]
+	// The start-up screen's sounds (Boot.tsx), played by the page the same way.
+	var/sound_dir = "voidcrew/modules/lobby_terminal/sound/"
+	for(var/name in list("lt_boot_power.ogg", "lt_boot_seq.ogg", "lt_boot_key.ogg", "lt_boot_tick.ogg", "lt_boot_done.ogg", "lt_boot_login.ogg"))
+		if(fexists("[sound_dir][name]"))
+			assets[name] = "[sound_dir][name]"
 	parents = list()
 	if(fexists("[art_dir]lobby_terminal.css"))
 		parents["lobby_terminal.css"] = "[art_dir]lobby_terminal.css"

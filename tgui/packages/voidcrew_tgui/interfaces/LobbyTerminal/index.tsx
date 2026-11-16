@@ -13,6 +13,7 @@ import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
 import { BEZEL_EXTRA_CSS, Bezel } from './Bezel';
+import { Boot } from './Boot';
 import { CharacterTab } from './CharacterTab';
 import { CrewsTab } from './CrewsTab';
 import { Header, TABS } from './Header';
@@ -179,6 +180,19 @@ export function LobbyTerminal() {
   const { s } = layout;
   const scan = Math.max(2, Math.round(s));
 
+  /** The tube's scanlines and glass. Drawn over the terminal, and again over the start-up screen that covers it. */
+  const tube = (
+    <>
+      <div
+        className="lt-scan"
+        style={{
+          background: `repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${scan - 1}px, rgba(0,0,0,.32) ${scan - 1}px, rgba(0,0,0,.32) ${scan}px)`,
+        }}
+      />
+      <div className="lt-glass" />
+    </>
+  );
+
   let body;
   if (confirmed) {
     body = <Confirmed />;
@@ -239,13 +253,14 @@ export function LobbyTerminal() {
                 <NoticeLine />
               </GridContext.Provider>
             </div>
-            <div
-              className="lt-scan"
-              style={{
-                background: `repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${scan - 1}px, rgba(0,0,0,.32) ${scan - 1}px, rgba(0,0,0,.32) ${scan}px)`,
-              }}
-            />
-            <div className="lt-glass" />
+            {tube}
+            <Boot
+              glassW={layout.screen.w}
+              glassH={layout.screen.h}
+              dpr={layout.dpr}
+            >
+              {tube}
+            </Boot>
           </div>
         </Bezel>
       </NavProvider>

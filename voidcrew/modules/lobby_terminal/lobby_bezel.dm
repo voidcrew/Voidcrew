@@ -78,6 +78,8 @@
 	data["admin_ready"] = (user.client?.holder && phase != "playing") ? list(SSticker.totalPlayersReady, SSticker.total_admins_ready, length(GLOB.admins)) : null
 	data["notice"] = notice
 	data["tab_request"] = tab_request ? list("tab" = tab_request, "serial" = tab_request_serial) : null
+	// The start-up screen: 0 already seen this connection, 1 still to play, 2 play now (the terminal is on screen).
+	data["boot"] = boot_done ? 0 : (visible ? 2 : 1)
 
 /// world.time the client's display metrics were last logged.
 /datum/lobby_terminal/var/metrics_logged_at = -1 MINUTES
@@ -131,6 +133,16 @@
 			return TRUE
 		if("dismiss")
 			notice = null
+			return TRUE
+		if("boot_done")
+			// LOGIN on the start-up screen. Logged once per connection, to tell whether clients get its sound.
+			if(boot_done)
+				return FALSE
+			boot_done = TRUE
+			var/sound_state = params["sound"]
+			if(!(sound_state in list("running", "suspended", "none")))
+				sound_state = "unknown"
+			log_tgui(user, "Lobby start-up screen: sound [sound_state], [clamp(text2num(params["clips"]) || 0, 0, 99)] sounds loaded, dark for [clamp(text2num(params["wait"]) || 0, 0, 999999)] ms[params["failed"] ? ", stepped aside on an error" : ""]", window = window)
 			return TRUE
 		if("metrics")
 			// Display metrics from the client (Windows scaling, pane size), logged once per load for tuning.
