@@ -3,8 +3,8 @@
  *
  * Owns /datum/preferences/var/lobby_char_writes, the flag-gated /datum/preference/is_accessible()
  * override that lets the terminal write character prefs whatever tg's window last showed,
- * the /datum/preferences/ui_act() override that tells the terminal when tg's window changed
- * something, lobby_compile_char() and the null-safe slot switch.
+ * the /datum/preferences/ui_act() and update_preference() overrides that tell the terminal when
+ * tg's window changed something, lobby_compile_char() and the null-safe slot switch.
  */
 
 /datum/preferences
@@ -33,7 +33,22 @@
 /datum/preferences/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
-		parent?.lobby_terminal?.char_changed()
+		lobby_terminal_of()?.char_changed()
+
+/**
+ * Writes made outside ui_act reach the terminal too: tg's recolour menu writes the loadout from a
+ * callback, and its own ui_act never sees it. The terminal's own writes hold lobby_char_writes and
+ * do their own bookkeeping (char_edited()).
+ */
+/datum/preferences/update_preference(datum/preference/preference, preference_value)
+	. = ..()
+	if(. && !lobby_char_writes)
+		lobby_terminal_of()?.char_changed()
+
+/// The dock terminal of the client these prefs belong to, or null (no client, or a unit test's mock client).
+/datum/preferences/proc/lobby_terminal_of()
+	var/client/owner = parent
+	return istype(owner) ? owner.lobby_terminal : null
 
 /// update_preference() with the terminal flag held, so the current_window trap can't refuse it.
 /datum/preferences/proc/lobby_update_preference(datum/preference/preference, value)

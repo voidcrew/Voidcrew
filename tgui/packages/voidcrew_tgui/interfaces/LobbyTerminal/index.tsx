@@ -21,7 +21,7 @@ import { HousingTab } from './HousingTab';
 import { computeLayout, regions } from './layout';
 import { KeyBar, MenuPopup, SideMenu } from './Menu';
 import { Confirmed, NoticeLine } from './Notice';
-import { NAV_CSS, NavProvider, useBack } from './nav';
+import { NAV_CSS, NavProvider } from './nav';
 import { ObserveConfirm } from './ObserveConfirm';
 import { type Grid, GridContext, Region, STARS, TERM_CSS } from './term';
 import type { LobbyData, TabId } from './types';
@@ -247,7 +247,15 @@ export function LobbyTerminal() {
   } else if (tab === 'shipyard') {
     body = <YardTab home={yardHome} />;
   } else if (tab === 'character') {
-    body = <CharacterTab home={charHome} auto={autoChar} />;
+    // The tab sends char_open (with auto: 1 for the shell's pre-round open) once, on mount, and
+    // handles Escape at every level; at the file view it calls onLeave.
+    body = (
+      <CharacterTab
+        home={charHome}
+        auto={autoChar}
+        onLeave={() => switchTab(prevTab)}
+      />
+    );
   } else {
     body = <HousingTab />;
   }
@@ -339,9 +347,6 @@ export function LobbyTerminal() {
                     setTab={switchTab}
                     claim={tabClaim}
                   />
-                  {tab === 'character' && !confirmed && (
-                    <BackTo onBack={() => switchTab(prevTab)} />
-                  )}
                   <Fragment key={tab === 'character' ? 'char' : bootKey}>
                     {body}
                   </Fragment>
@@ -381,10 +386,4 @@ export function LobbyTerminal() {
       </NavProvider>
     </div>
   );
-}
-
-/** Escape at the CHARACTER file view: back to the tab that was open before it. */
-function BackTo(props: { onBack: () => void }) {
-  useBack(props.onBack);
-  return null;
 }

@@ -1,95 +1,196 @@
 /**
- * TRAITS (CHARACTER-PLAN 2.7): GOOD/BAD/OTHER quirk list with values, the hovered or selected
- * quirk's first sentence, the TAKEN box with POINTS and the positive count, char_quirk.
- * Options of a taken quirk (customization_options) show under its description as ordinary
- * char_set rows. Owner: C4.
+ * TRAITS (design 03b section 2): full width, no preview. The list on the left (columns 1 to
+ * 31): the filters TAKEN, GOOD, BAD and OTHER, paged trait rows, and under a taken trait one
+ * row an option. The panel on the right (33 to 61): points, the focused trait's name, its
+ * effect on the points, the reason a press would be refused, and its whole description.
  *
- * Box: x and w are the editor frame's outer columns, y the row under its top line,
- * y + h - 1 its bottom line. Points and caps are worked out here for display only, with
- * tg's own rules (QuirksPage.tsx); the server decides.
+ * Whether a press would go through is worked out with tg's own rules (QuirksPage.tsx: the
+ * species list, the cap on good traits, the points, the clash groups) for display only; the
+ * server decides and the page redraws on the push. Options are ordinary char_set keys.
  */
-import { type ReactNode, useState } from 'react';
+import { Fragment, type ReactNode, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import type { Quirk } from 'tgui/interfaces/PreferencesMenu/types';
 
-import { ColorEntry } from './ColorEntry';
+import { fileColours } from './BodyEditor';
+import { clamp, useChar, useLatePager } from './CharFrame';
+import { ColourPanel, ListPicker } from './CharPickers';
+import { parseHex } from './ColorEntry';
 import {
-  Cycler,
-  Frame,
-  Hit,
-  lpad,
+  Band,
+  Big,
+  BODY_Y,
+  bodyRows,
+  cut,
+  HRule,
+  NameLine,
+  Pager,
   Put,
-  pad,
   RPut,
-  Rule,
-  wrap,
-  LEGACY_NARROW,
+  Slab,
+  Swatch,
+  safe,
+  useGrid,
+  wrapMax,
 } from './term';
-import type { CellBox, LobbyData } from './types';
-import { usePrefsCatalog } from './usePrefsCatalog';
+import type { LobbyData } from './types';
+import { choicesOf, nameOf, usePrefsCatalog } from './usePrefsCatalog';
 
-type Filter = 'good' | 'bad' | 'other';
-const FILTERS: [Filter, string][] = [
-  ['good', 'GOOD'],
-  ['bad', 'BAD'],
-  ['other', 'OTHER'],
+type Filter = 'taken' | 'good' | 'bad' | 'other';
+/** Filter, label, text column, block column, block width. */
+const FILTERS: [Filter, string, number, number, number][] = [
+  ['taken', 'TAKEN', 2, 1, 7],
+  ['good', 'GOOD', 10, 9, 6],
+  ['bad', 'BAD', 17, 16, 5],
+  ['other', 'OTHER', 23, 22, 7],
 ];
 
-const HEX = /^#?[0-9a-f]{6}$/i;
+/** The list column. */
+const LX = 1;
+const LW = 31;
+/** The panel. */
+const PX = 33;
+const PW = 29;
 
-/** The first sentence of a description. */
-export function firstSentence(text: string): string {
-  const flat = (text || '').replace(/\s+/g, ' ').trim();
-  const m = flat.match(/^(.+?[.!?])(\s|$)/);
-  return m ? m[1] : flat;
+/** Option labels (03b section 2.2). */
+const LABELS: Record<string, string> = {
+  language: 'LANGUAGE',
+  language_speakable: 'SPEAKS IT',
+  language_skill: 'FLUENCY',
+  csl_strength: 'FLUENCY',
+  chipped: 'CHIP',
+  paint_color: 'PAINT',
+  alcoholic: 'DRINK',
+  blindfold_color: 'BLINDFOLD',
+  food_allergy: 'ALLERGY',
+  hemiplegic: 'SIDE',
+  junkie: 'HABIT',
+  glasses: 'GLASSES',
+  paraplegic: 'LEGS',
+  prosthetic: 'LIMB',
+  prosthetic_organ: 'ORGAN',
+  rds_limit: 'UNLIMITED',
+  scarred_eye: 'EYE',
+  smoker: 'SMOKES',
+  phobia: 'FEAR',
+  trans_prosthetic: 'PART',
+  heterochromatic: 'ODD EYE',
+};
+
+export const optionLabel = (key: string) =>
+  LABELS[key] || key.replace(/_/g, ' ').toUpperCase().slice(0, 9);
+
+/** A trait's option keys that this file has (plus Heterochromatic's second eye colour). */
+function optionsOf(k: string, q: Quirk, prefs: Record<string, any>) {
+  const keys = [...(q.customization_options || [])];
+  if (k === 'Heterochromatic' && !keys.includes('heterochromatic')) {
+    keys.push('heterochromatic');
+  }
+  return keys.filter((key) => key in prefs);
 }
 
-/** A savefile key as a row label: "prosthetic_organ" -> "PROSTHETIC ORGAN". */
-function keyLabel(key: string): string {
-  return key.replace(/_/g, ' ').toUpperCase();
+type OptKind = 'pick' | 'flip' | 'colour' | 'none';
+
+function kindOf(cat: ReturnType<typeof usePrefsCatalog>, key: string, value: unknown): OptKind {
+  const list = choicesOf(cat, key);
+  if (list && list.length >= 3) {
+    return 'pick';
+  }
+  if (list && list.length === 2) {
+    return 'flip';
+  }
+  if (typeof value === 'string' && parseHex(value)) {
+    return 'colour';
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return 'flip';
+  }
+  return 'none';
 }
 
-/** Every "#rrggbb" already on the file, for the colour entry's recent row. */
-export function fileColors(
-  prefs: Record<string, any>,
-  extra: string[] = [],
-): string[] {
-  const out: string[] = [];
-  const add = (v: unknown) => {
-    if (typeof v !== 'string' || !HEX.test(v)) {
-      return;
-    }
-    const hex = (v[0] === '#' ? v : `#${v}`).toLowerCase();
-    if (!out.includes(hex)) {
-      out.push(hex);
-    }
-  };
-  extra.forEach(add);
-  Object.values(prefs || {}).forEach(add);
-  return out.slice(0, 8);
-}
-
-export function TraitsEditor(props: CellBox) {
-  const { x, y, w, h } = props;
+/** The list picker on a trait option (level 2, in the list column). */
+function TraitPick(props: { k: string; label: string }) {
+  const { k, label } = props;
   const { act, data } = useBackend<LobbyData>();
-  const narrow = LEGACY_NARROW;
-  const catalog = usePrefsCatalog();
-  const char = data.char;
-  const [filter, setFilter] = useState<Filter>('good');
-  const [page, setPage] = useState(1);
-  const [sel, setSel] = useState<string | null>(null);
-  const [hover, setHover] = useState<string | null>(null);
+  const cat = usePrefsCatalog();
+  const { closeSub } = useChar();
+  const prefs = data.char?.prefs || {};
+  const gone = !(k in prefs);
+  useEffect(() => {
+    if (gone) {
+      closeSub();
+    }
+  }, [gone]);
+  return (
+    <ListPicker
+      x={LX}
+      w={LW}
+      label={label}
+      choices={choicesOf(cat, k) || []}
+      value={String(prefs[k] ?? '')}
+      nameOf={(v) => nameOf(cat, k, v)}
+      onPick={(v) => act('char_set', { key: k, value: v })}
+      onClose={closeSub}
+    />
+  );
+}
 
-  if (!char || !catalog) {
+/** The colour panel on a trait option (level 2, in the list column, no native picker). */
+function TraitColour(props: { k: string; label: string }) {
+  const { k, label } = props;
+  const { act, data } = useBackend<LobbyData>();
+  const { closeSub } = useChar();
+  const char = data.char;
+  const prefs = char?.prefs || {};
+  const gone = !(k in prefs);
+  useEffect(() => {
+    if (gone) {
+      closeSub();
+    }
+  }, [gone]);
+  return (
+    <ColourPanel
+      x={LX}
+      w={LW}
+      label={label}
+      value={parseHex(String(prefs[k] ?? '')) || '#000000'}
+      recent={fileColours(char)}
+      onApply={(hex) => act('char_set', { key: k, value: hex })}
+      onClose={closeSub}
+    />
+  );
+}
+
+/** One drawn block of the list: a trait and its option rows. */
+type Block = { k: string; opts: string[] };
+
+export function TraitsEditor() {
+  const { act, data } = useBackend<LobbyData>();
+  const cat = usePrefsCatalog();
+  const { sub, subOpen, from, quiet } = useChar();
+  const { rows: M } = useGrid();
+  const char = data.char;
+  const takenAtOpen = (char?.quirks || []).length > 0;
+  const [filter, setFilter] = useState<Filter>(takenAtOpen ? 'taken' : 'good');
+  const [page, setPage] = useState(0);
+  const [shown, setShown] = useState<string | null>(null);
+  const [fresh, setFresh] = useState(true);
+  const pager = useLatePager();
+
+  if (!char || !cat?.quirks) {
+    pager.current = null;
     return null;
   }
+  const prefs = char.prefs || {};
   const {
     quirk_info: info,
     max_positive_quirks: maxGood,
     quirk_blacklist: blacklist,
-    points_enabled: pointsOn,
-  } = catalog.quirks;
+    points_enabled: pointsOnRaw,
+  } = cat.quirks;
+  const pointsOn = !!pointsOnRaw;
 
+  // char.quirks are quirk_info keys (sanitize_css_class_name), in the order taken.
   const taken = (char.quirks || []).filter((k) => !!info[k]);
   let balance = 0;
   let good = 0;
@@ -102,491 +203,347 @@ export function TraitsEditor(props: CellBox) {
   const points = -balance;
   const takenNames = taken.map((k) => info[k].name);
   const blocked = char.quirks_blocked || [];
+  const species = safe(nameOf(cat, 'species', prefs.species)).toUpperCase();
 
-  const canAdd = (k: string) => {
+  /** Why a press on this trait would be refused, or null. */
+  const reasonOf = (k: string): string | null => {
     const q = info[k];
-    if (blocked.includes(k) || blocked.includes(q.name)) {
-      return false;
+    if (taken.includes(k)) {
+      return pointsOn && balance - q.value > 0 ? 'ITS POINTS ARE SPENT' : null;
     }
-    if (q.value > 0) {
-      if (maxGood !== -1 && good >= maxGood) {
-        return false;
-      }
-      if (pointsOn && balance + q.value > 0) {
-        return false;
-      }
+    if (blocked.includes(k) || blocked.includes(q.name)) {
+      return `${species || 'YOUR SPECIES'} CAN'T TAKE IT`;
+    }
+    if (q.value > 0 && maxGood !== -1 && good >= maxGood) {
+      return `${maxGood} GOOD TRAITS ALREADY`;
+    }
+    if (q.value > 0 && pointsOn && balance + q.value > 0) {
+      return 'NOT ENOUGH POINTS';
     }
     for (const group of blacklist || []) {
       if (!group.includes(q.name)) {
         continue;
       }
-      if (group.some((n) => n !== q.name && takenNames.includes(n))) {
-        return false;
+      const other = group.find((n) => n !== q.name && takenNames.includes(n));
+      if (other) {
+        return `CLASHES WITH ${safe(other).toUpperCase()}`;
       }
     }
-    return true;
+    return null;
   };
-  const canRemove = (k: string) => !(pointsOn && balance - info[k].value > 0);
 
-  const toggle = (k: string) => {
-    const on = !taken.includes(k);
-    if (on ? !canAdd(k) : !canRemove(k)) {
+  const press = (k: string) => {
+    setShown(k);
+    if (reasonOf(k)) {
       return;
     }
-    act('char_quirk', { quirk: k, on: on ? 1 : 0 });
+    act('char_quirk', { quirk: k, on: taken.includes(k) ? 0 : 1 });
   };
 
-  const split = !narrow && w >= 80;
-  const takenW = split ? Math.floor(w * 0.42) : w;
-  const ax = x;
-  const aw = split ? w - takenW : w;
-
-  // ---- TAKEN ----
-  const tx = split ? x + aw : x;
-  const TW = split ? takenW - 2 : w;
-  const takenRows: ReactNode[] = [];
-  let ty = y + (split ? 2 : 1);
-  takenRows.push(
-    <TakenHead
-      key="head"
-      x={tx}
-      y={ty}
-      w={TW}
-      points={pointsOn ? points : null}
-      good={good}
-      maxGood={maxGood}
-    />,
-  );
-  ty += 2;
-  const takenMax = split
-    ? y + h - 4 - ty
-    : Math.max(2, Math.min(taken.length, Math.floor((h - 12) / 2)));
-  const shownTaken = taken.slice(0, Math.max(0, takenMax));
-  for (const k of shownTaken) {
-    const q = info[k];
-    const can = canRemove(k);
-    takenRows.push(
-      <TakenRow
-        key={k}
-        x={tx}
-        y={ty}
-        w={TW}
-        quirk={q}
-        sel={k === sel}
-        canRemove={can}
-        onSelect={() => setSel(k)}
-        onRemove={() => toggle(k)}
-      />,
-    );
-    ty++;
+  // ---- the list
+  let keys: string[];
+  if (filter === 'taken') {
+    keys = taken;
+  } else {
+    keys = Object.keys(info).filter((k) => {
+      const v = info[k].value;
+      return filter === 'good' ? v > 0 : filter === 'bad' ? v < 0 : v === 0;
+    });
+    keys.sort((a, b) => {
+      const va = Math.abs(info[a].value);
+      const vb = Math.abs(info[b].value);
+      if (va !== vb) {
+        return vb - va;
+      }
+      return info[a].name < info[b].name ? -1 : 1;
+    });
   }
-  if (taken.length > shownTaken.length) {
-    takenRows.push(
-      <Put key="more" x={tx + 3} y={ty} cls="faint">
-        {`+${taken.length - shownTaken.length}`}
-      </Put>,
-    );
-    ty++;
-  }
+  const blocks: Block[] = keys.map((k) => ({
+    k,
+    opts: taken.includes(k) ? optionsOf(k, info[k], prefs) : [],
+  }));
 
-  // ---- list ----
-  let yy = split ? y + 1 : ty + 1;
-  const ruleY = yy - 0.5;
-  if (!split) {
-    yy += 1;
-  }
-  const filterY = yy;
-  yy += 2;
-
-  const options =
-    sel && info[sel] && taken.includes(sel) && (!hover || hover === sel)
-      ? (info[sel].customization_options || []).filter(
-          (key) => key in (char.prefs || {}),
-        )
-      : [];
-  const descH = 3 + options.length;
-
-  const list = Object.keys(info).filter((k) => {
-    const v = info[k].value;
-    return filter === 'good' ? v > 0 : filter === 'bad' ? v < 0 : v === 0;
-  });
-  list.sort((a, b) => {
-    const va = Math.abs(info[a].value);
-    const vb = Math.abs(info[b].value);
-    if (va !== vb) {
-      return vb - va;
+  const B = bodyRows(M);
+  const roomy = B >= 20;
+  const pitch = roomy ? 1.5 : 1.25;
+  const gap = pitch - 1.25;
+  const sizeOf = (b: Block) => (1 + b.opts.length) * 1.25 + gap;
+  const fill = (room: number) => {
+    const pages: Block[][] = [[]];
+    let used = 0;
+    for (const b of blocks) {
+      const s = sizeOf(b);
+      if (used + s > room + 1e-6 && pages[pages.length - 1].length) {
+        pages.push([]);
+        used = 0;
+      }
+      pages[pages.length - 1].push(b);
+      used += s;
     }
-    return info[a].name < info[b].name ? -1 : 1;
+    return pages;
+  };
+  const listTop = 5.25;
+  let pages = fill(M - 1.25 - listTop + gap);
+  if (pages.length > 1) {
+    pages = fill(M - 2.25 - 0.25 - listTop + gap);
+  }
+  const pg = Math.min(page, pages.length - 1);
+  const onPage = pages[pg] || [];
+  pager.current =
+    pages.length > 1 && !subOpen
+      ? (step) => {
+          setFresh(false);
+          setPage(clamp(pg + step, 0, pages.length - 1));
+        }
+      : null;
+
+  // The panel shows the focused row; on entry the first row.
+  const panelKey =
+    shown && info[shown] ? shown : onPage[0]?.k || keys[0] || null;
+
+  const rows: ReactNode[] = [];
+  let y = listTop;
+  onPage.forEach((b, i) => {
+    const q = info[b.k];
+    const isTaken = taken.includes(b.k);
+    const reason = reasonOf(b.k);
+    const alt = !roomy && i % 2 === 1;
+    const v = q.value;
+    const blockY = y;
+    rows.push(
+      <Slab
+        key={b.k}
+        x={LX}
+        y={blockY}
+        w={LW}
+        h={1.25}
+        variant="row"
+        alt={alt}
+        on={isTaken}
+        muted={!isTaken && !!reason}
+        auto={!quiet && fresh && !from && i === 0 && pg === 0 ? 5 : undefined}
+        onFocus={(f) => {
+          if (f) {
+            setShown(b.k);
+          }
+        }}
+        onClick={() => press(b.k)}
+      >
+        <Put
+          x={3}
+          y={blockY + 0.125}
+          cls={isTaken ? 'wht' : reason ? 'dim' : ''}
+        >
+          {cut(safe(q.name), 24)}
+        </Put>
+        {!!pointsOn && v !== 0 && (
+          <RPut
+            x={31}
+            y={blockY + 0.125}
+            cls={reason && !isTaken ? 'dim' : v > 0 ? 'amb' : ''}
+          >
+            {v > 0 ? `-${v}` : `+${-v}`}
+          </RPut>
+        )}
+      </Slab>,
+    );
+    b.opts.forEach((key, j) => {
+      const oy = blockY + 1.25 * (j + 1);
+      const value = prefs[key];
+      const kind = kindOf(cat, key, value);
+      const label = optionLabel(key);
+      const list = choicesOf(cat, key) || [];
+      let onPress: (() => void) | undefined;
+      let shownValue: ReactNode = null;
+      if (kind === 'pick') {
+        onPress = () => sub(<TraitPick k={key} label={label} />, label, key);
+        shownValue = (
+          <Put x={15} y={oy + 0.125}>
+            {cut(safe(nameOf(cat, key, value)), 16)}
+          </Put>
+        );
+      } else if (kind === 'flip') {
+        onPress = () => {
+          if (list.length === 2) {
+            act('char_set', {
+              key,
+              value: list[list.indexOf(String(value)) === 0 ? 1 : 0],
+            });
+          } else {
+            act('char_set', { key, value: value ? 0 : 1 });
+          }
+        };
+        shownValue = (
+          <Put x={15} y={oy + 0.125}>
+            {list.length === 2
+              ? cut(safe(nameOf(cat, key, value)), 16)
+              : value
+                ? 'YES'
+                : 'NO'}
+          </Put>
+        );
+      } else if (kind === 'colour') {
+        const hex = parseHex(String(value)) || '#000000';
+        onPress = () => sub(<TraitColour k={key} label={label} />, label, key);
+        shownValue = (
+          <>
+            <Swatch x={15} y={oy + 0.125} w={4} hex={hex} />
+            <Put x={20} y={oy + 0.125} cls="dim">
+              {hex.toUpperCase()}
+            </Put>
+          </>
+        );
+      } else {
+        shownValue = (
+          <Put x={15} y={oy + 0.125} cls="dim">
+            {cut(safe(String(value ?? '')), 16)}
+          </Put>
+        );
+      }
+      rows.push(
+        <Slab
+          key={`${b.k}-${key}`}
+          x={LX}
+          y={oy}
+          w={LW}
+          h={1.25}
+          variant="row"
+          alt={alt}
+          on={isTaken}
+          auto={!quiet && from === key ? 5 : undefined}
+          onFocus={(f) => {
+            if (f) {
+              setShown(b.k);
+            }
+          }}
+          onClick={onPress}
+        >
+          <Put x={5} y={oy + 0.125} cls="dim">
+            {label}
+          </Put>
+          {shownValue}
+        </Slab>,
+      );
+    });
+    y += sizeOf(b);
   });
-  const room = Math.max(3, Math.floor(y + h - 2 - descH - yy));
-  const pages = Math.max(1, Math.ceil(list.length / room));
-  const pg = Math.min(pages, page);
-  const rows = list.slice((pg - 1) * room, pg * room);
-  // The selected row, else the first one on the page, so the description is never blank.
-  const current = sel && info[sel] ? sel : rows[0] || null;
-  // The quirk whose words show at the bottom: the hovered row, else the current one.
-  const shown = hover && info[hover] ? hover : current;
-  const descLines = shown
-    ? wrap(firstSentence(info[shown].description), aw - 6).slice(
-        0,
-        options.length ? 1 : 2,
+
+  // ---- the panel
+  const capped = maxGood !== -1 && good >= maxGood;
+  const goodText =
+    maxGood === 0 ? '' : maxGood === -1 ? `GOOD ${good}` : `GOOD ${good}/${maxGood}`;
+  const pq = panelKey ? info[panelKey] : null;
+  const pv = pq?.value || 0;
+  const panelReason = panelKey ? reasonOf(panelKey) : null;
+  const descLines = pq
+    ? wrapMax(
+        safe(pq.description).replace(/\s+/g, ' ').trim(),
+        PW,
+        Math.max(1, Math.floor(M - 11)),
       )
     : [];
-  const py = y + h - 2 - descH;
-  const descY = y + h - 1 - descH;
-  const recent = fileColors(char.prefs);
-
-  return (
+  const panel = (
     <>
-      {!!split && <Frame x={tx} y={y} w={TW} h={h - 2} title="TAKEN" dim />}
-      {takenRows}
-      {!split && <Rule x={x + 1} y={ruleY} w={w - 2} />}
-      <FilterKeys
-        x={ax + 3}
-        y={filterY}
-        filter={filter}
-        onFilter={(f) => {
-          setFilter(f);
-          setPage(1);
-          setHover(null);
-        }}
-      />
-      {rows.map((k, i) => {
-        const isTaken = taken.includes(k);
-        return (
-          <QuirkRow
-            key={k}
-            x={ax}
-            y={yy + i}
-            w={aw}
-            quirk={info[k]}
-            taken={isTaken}
-            cant={!isTaken && !canAdd(k)}
-            locked={isTaken && !canRemove(k)}
-            sel={k === current}
-            onClick={() => {
-              setSel(k);
-              toggle(k);
-            }}
-            onHover={(over) => setHover((h) => (over ? k : h === k ? null : h))}
-          />
-        );
-      })}
-      {pages > 1 && (
-        <Pager
-          x={ax + aw - 15}
-          y={py}
-          page={pg}
-          pages={pages}
-          onPage={(p) => {
-            setPage(p);
-            setHover(null);
-          }}
-        />
-      )}
-      {descLines.map((line, i) => (
-        <Put key={`d${i}`} x={ax + 3} y={descY + i} cls="dim">
-          {line}
-        </Put>
-      ))}
-      {options.map((key, i) => (
-        <QuirkOption
-          key={key}
-          x={ax + 3}
-          y={descY + descLines.length + i}
-          w={aw - 6}
-          prefKey={key}
-          value={char.prefs[key]}
-          serverData={catalog[key] as any}
-          recent={recent}
-          onSet={(value) => act('char_set', { key, value })}
-        />
-      ))}
-    </>
-  );
-}
-
-function TakenHead(props: {
-  x: number;
-  y: number;
-  w: number;
-  points: number | null;
-  good: number;
-  maxGood: number;
-}) {
-  const { x, y, w, points, good, maxGood } = props;
-  const capped = maxGood !== -1 && good >= maxGood;
-  return (
-    <>
-      {points !== null && (
+      {!!pointsOn && (
         <>
-          <Put x={x + 3} y={y} cls="dim">
+          <Big x={PX} y={3} scale={2.25} cls={points > 0 ? 'acc' : 'dim'}>
+            {String(Math.min(999, points))}
+          </Big>
+          <Put x={41} y={3.25} cls="dim">
             {'POINTS'}
-          </Put>
-          <Put
-            x={x + 10}
-            y={y}
-            cls={points < 0 ? 'red' : points > 0 ? 'amb' : ''}
-          >
-            {lpad(points, 3)}
           </Put>
         </>
       )}
-      {maxGood !== 0 && (
-        <RPut x={x + w - 3} y={y} cls={capped ? 'amb' : 'dim'}>
-          {maxGood === -1 ? `GOOD ${good}` : `GOOD ${good}/${maxGood}`}
-        </RPut>
+      {!!goodText && (
+        <Put x={pointsOn ? 41 : PX} y={pointsOn ? 4.25 : 3.25} cls={capped ? 'amb' : 'dim'}>
+          {goodText}
+        </Put>
+      )}
+      <HRule x={PX} y={5.5} w={PW} />
+      {!!pq && (
+        <>
+          <NameLine x={PX} y={6} w={PW} text={safe(pq.name).toUpperCase()} />
+          {!!pointsOn && pv !== 0 && (
+            <Put x={PX} y={7.5} cls={pv > 0 ? 'amb' : ''}>
+              {pv > 0 ? `-${pv} POINTS` : `+${-pv} POINTS`}
+            </Put>
+          )}
+          {!!taken.includes(panelKey!) && (
+            <RPut x={62} y={7.5} cls="inv">
+              {' TAKEN '}
+            </RPut>
+          )}
+          {!!panelReason && (
+            <Put x={PX} y={8.5} cls="amb">
+              {cut(panelReason, PW)}
+            </Put>
+          )}
+          {descLines.map((line, i) => (
+            <Put key={i} x={PX} y={9.75 + i}>
+              {line}
+            </Put>
+          ))}
+        </>
       )}
     </>
   );
-}
 
-function TakenRow(props: {
-  x: number;
-  y: number;
-  w: number;
-  quirk: Quirk;
-  sel: boolean;
-  canRemove: boolean;
-  onSelect: () => void;
-  onRemove: () => void;
-}) {
-  const { x, y, w, quirk, sel, canRemove, onSelect, onRemove } = props;
-  const v = quirk.value;
+  if (subOpen) {
+    return panel;
+  }
+
   return (
     <>
-      <Put
-        x={x + 3}
-        y={y}
-        cls={sel ? 'inv' : ''}
-        hoverCls="inv"
-        onClick={onSelect}
-      >
-        {pad(quirk.name, w - 13)}
-      </Put>
-      <Put x={x + w - 9} y={y} cls={v > 0 ? 'amb' : v < 0 ? 'dim' : 'faint'}>
-        {lpad(v, 3)}
-      </Put>
-      {canRemove ? (
-        <Put x={x + w - 5} y={y} cls="dim" hoverCls="inv" onClick={onRemove}>
-          {'[X]'}
-        </Put>
-      ) : (
-        <Put x={x + w - 5} y={y} cls="faint">
-          {'[X]'}
-        </Put>
-      )}
-    </>
-  );
-}
-
-function FilterKeys(props: {
-  x: number;
-  y: number;
-  filter: Filter;
-  onFilter: (f: Filter) => void;
-}) {
-  const { x, y, filter, onFilter } = props;
-  let fx = x;
-  return (
-    <>
-      {FILTERS.map(([key, label]) => {
-        const at = fx;
-        fx += label.length + 4;
+      {FILTERS.map(([f, label, tx, bx, bw]) => {
+        const open = f === filter;
         return (
-          <Put
-            key={key}
-            x={at}
-            y={y}
-            cls={key === filter ? 'inv' : 'dim'}
-            hoverCls="inv"
-            onClick={() => onFilter(key)}
-          >
-            {` ${label} `}
-          </Put>
+          <Fragment key={f}>
+            {!!open && <Band x={bx} y={BODY_Y} w={bw} h={1.5} tone="accent" />}
+            <Put
+              x={tx}
+              y={3.25}
+              cls={open ? 'ink' : 'dim'}
+              hoverCls={open ? 'ink' : 'inv'}
+              onClick={() => {
+                if (f !== filter) {
+                  setFresh(false);
+                  setFilter(f);
+                  setPage(0);
+                }
+              }}
+            >
+              {label}
+            </Put>
+          </Fragment>
         );
       })}
-    </>
-  );
-}
-
-function QuirkRow(props: {
-  x: number;
-  y: number;
-  w: number;
-  quirk: Quirk;
-  taken: boolean;
-  /** Can't be taken now: dim, and a click only selects it. */
-  cant: boolean;
-  /** Taken but can't be dropped now. */
-  locked: boolean;
-  sel: boolean;
-  onClick: () => void;
-  onHover: (over: boolean) => void;
-}) {
-  const { x, y, w, quirk, taken, cant, sel, onClick, onHover } = props;
-  const v = quirk.value;
-  const nameCls = sel ? 'inv' : taken ? 'amb' : cant ? 'faint' : '';
-  const valCls = sel ? 'inv' : cant ? 'faint' : v > 0 ? 'amb' : 'dim';
-  return (
-    <>
-      {!!sel && (
-        <Put x={x + 1} y={y} cls="inv">
-          {' '.repeat(Math.max(0, w - 2))}
-        </Put>
-      )}
-      <Put x={x + 1} y={y} cls={sel ? 'inv' : 'amb'}>
-        {taken ? '*' : ' '}
-      </Put>
-      <Put x={x + 3} y={y} cls={nameCls}>
-        {pad(quirk.name, w - 10)}
-      </Put>
-      <RPut x={x + w - 3} y={y} cls={valCls}>
-        {String(v)}
-      </RPut>
-      <Hit
-        x={x + 1}
-        y={y}
-        w={w - 2}
-        h={1}
-        onClick={onClick}
-        onHover={onHover}
-      />
-    </>
-  );
-}
-
-function Pager(props: {
-  x: number;
-  y: number;
-  page: number;
-  pages: number;
-  onPage: (page: number) => void;
-}) {
-  const { x, y, page, pages, onPage } = props;
-  return (
-    <>
-      {page > 1 ? (
-        <Put x={x} y={y} cls="inv" onClick={() => onPage(page - 1)}>
-          {' < '}
-        </Put>
+      <HRule x={LX} y={4.75} w={LW} />
+      {keys.length ? (
+        rows
       ) : (
-        <Put x={x} y={y} cls="faint">
-          {' < '}
-        </Put>
+        <>
+          <Slab x={LX} y={5.25} w={LW} h={4.75} variant="block" dead />
+          <NameLine
+            x={3}
+            y={5.25 + 1.75}
+            w={27}
+            text="NO TRAITS TAKEN."
+            cls="dim"
+          />
+        </>
       )}
-      <Put x={x + 4} y={y} cls="dim">
-        {`${page}/${pages}`}
-      </Put>
-      {page < pages ? (
-        <Put x={x + 8} y={y} cls="inv" onClick={() => onPage(page + 1)}>
-          {' > '}
-        </Put>
-      ) : (
-        <Put x={x + 8} y={y} cls="faint">
-          {' > '}
-        </Put>
-      )}
+      <Pager
+        x={32}
+        y={M - 2.25}
+        page={pg + 1}
+        pages={pages.length}
+        onPage={(p) => {
+          setFresh(false);
+          setPage(p - 1);
+        }}
+        right
+      />
+      {panel}
     </>
   );
-}
-
-type OptionServerData = {
-  choices?: string[];
-  display_names?: Record<string, string>;
-  minimum?: number;
-  maximum?: number;
-  step?: number;
-} | null;
-
-/** One quirk option row: a choice cycler, a number stepper, a yes/no, or a colour. */
-function QuirkOption(props: {
-  x: number;
-  y: number;
-  w: number;
-  prefKey: string;
-  value: any;
-  serverData: OptionServerData;
-  recent: string[];
-  onSet: (value: unknown) => void;
-}) {
-  const { x, y, w, prefKey, value, serverData, recent, onSet } = props;
-  const label = keyLabel(prefKey);
-  const lw = 18;
-  const cw = Math.max(8, Math.min(24, w - lw - 4));
-  const labelRow = (
-    <Put x={x} y={y} cls="dim">
-      {pad(label, lw - 1)}
-    </Put>
-  );
-  if (serverData?.choices?.length) {
-    const choices = serverData.choices;
-    const i = Math.max(0, choices.indexOf(value));
-    const name = (v: string) => serverData.display_names?.[v] || v;
-    const step = (d: number) =>
-      onSet(choices[(i + d + choices.length) % choices.length]);
-    return (
-      <>
-        {labelRow}
-        <Cycler
-          x={x + lw}
-          y={y}
-          w={cw}
-          value={name(choices[i])}
-          onPrev={() => step(-1)}
-          onNext={() => step(1)}
-        />
-      </>
-    );
-  }
-  if (typeof serverData?.minimum === 'number') {
-    const lo = serverData.minimum;
-    const hi = serverData.maximum ?? lo;
-    const st = serverData.step || 1;
-    const n = Number(value) || 0;
-    return (
-      <>
-        {labelRow}
-        <Cycler
-          x={x + lw}
-          y={y}
-          w={6}
-          value={String(n)}
-          onPrev={() => onSet(Math.max(lo, n - st))}
-          onNext={() => onSet(Math.min(hi, n + st))}
-        />
-      </>
-    );
-  }
-  if (typeof value === 'string' && HEX.test(value)) {
-    const hex = value[0] === '#' ? value : `#${value}`;
-    return (
-      <ColorEntry
-        x={x}
-        y={y}
-        w={w}
-        label={pad(label, lw - 1)}
-        value={hex}
-        recent={recent}
-        onSet={(c) => onSet(c)}
-      />
-    );
-  }
-  if (typeof value === 'number') {
-    const flip = () => onSet(value ? 0 : 1);
-    return (
-      <>
-        {labelRow}
-        <Cycler
-          x={x + lw}
-          y={y}
-          w={4}
-          value={value ? 'YES' : 'NO'}
-          onPrev={flip}
-          onNext={flip}
-        />
-      </>
-    );
-  }
-  return null;
 }

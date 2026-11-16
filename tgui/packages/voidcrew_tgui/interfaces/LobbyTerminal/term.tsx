@@ -17,6 +17,7 @@ import {
   type CSSProperties,
   createContext,
   type ReactNode,
+  type PointerEvent as ReactPointerEvent,
   useContext,
   useEffect,
   useRef,
@@ -24,7 +25,7 @@ import {
 } from 'react';
 
 import type { Mode } from './layout';
-import { type FocusOpts, FocusScope, useFocusable } from './nav';
+import { type FocusOpts, FocusScope, useBack, useFocusable } from './nav';
 import type { PartClass, Parts } from './types';
 
 export type Grid = {
@@ -309,16 +310,18 @@ export function Slab(
     variant: 'block' | 'row';
     alt?: boolean;
     dead?: boolean;
-    /** The current step or the option taken: the left bar in the accent colour. */
+    /** Yours or open: accent bar, first text line white (the caller draws the text). */
     on?: boolean;
+    /** Dead colours, but still focusable and pressable. */
+    muted?: boolean;
     onClick?: () => void;
     /** Told when the slab gains or loses the focus (mouse or keys). */
     onFocus?: (on: boolean) => void;
     children?: ReactNode;
   },
 ) {
-  const { x, y, w, h, variant, alt, dead, on, onClick, onFocus, children } =
-    props;
+  const { x, y, w, h, variant, alt, dead, on, muted, onClick, onFocus } = props;
+  const { children } = props;
   const { cw, ch, lw } = useGrid();
   const live = !!onClick && !dead;
   const focus = useFocusable<HTMLDivElement>(live, {
@@ -338,7 +341,7 @@ export function Slab(
     'lt-slab',
     `lt-slab-${variant}`,
     alt ? 'is-alt' : '',
-    dead ? 'is-dead' : '',
+    dead || muted ? 'is-dead' : '',
     on ? 'is-on' : '',
     focus.focused ? 'is-foc' : '',
   ]
@@ -346,7 +349,8 @@ export function Slab(
     .join(' ');
   const style: CSSProperties = {
     ...box,
-    borderWidth: variant === 'block' ? lw : 0,
+    // A focused muted row gains a whole border: its dead fill alone hides where the focus is.
+    borderWidth: variant === 'block' || (muted && focus.focused) ? lw : 0,
     borderLeftWidth: 3 * lw,
   };
   return (
@@ -392,6 +396,8 @@ export function Key(
     kind: KeyKind;
     state?: KeyState;
     onClick: () => void;
+    /** Told when the key gains or loses the focus (mouse or keys). */
+    onFocus?: (on: boolean) => void;
     /** A layout zone for the keyboard rules (nav.tsx FocusOpts.zone). */
     zone?: string;
     title?: string;
@@ -430,6 +436,13 @@ export function Key(
     mouseOnly: props.mouseOnly,
     zone,
   });
+  const was = useRef(false);
+  useEffect(() => {
+    if (was.current !== focus.focused) {
+      was.current = focus.focused;
+      props.onFocus?.(focus.focused);
+    }
+  }, [focus.focused]);
   const box = rect(x, y, w, h, cw, ch);
   // Border widths, so the label sits on the grid inside the padding box.
   const bl = kind === 'plain' ? 0 : lw;
@@ -1054,45 +1067,45 @@ export function Hit(
 }
 
 /**
- * A colour chip filling w cells (default 2) of row y. sel draws it with a lit border. hex must
- * be a CSS colour; the server sanitises every stored colour.
+ * A colour chip: a filled rect w cells (default 2) by h rows (default 1), inset 2 px, with an
+ * lw border in --lt-edge; selected or focused it is --lt-fg. hex must be a CSS colour; the
+ * server sanitises every stored colour.
  */
-export function Swatch(props: {
-  x: number;
-  y: number;
-  hex: string;
-  sel?: boolean;
-  /** Width in cells. */
-  w?: number;
-  onClick?: () => void;
-}) {
-  const { x, y, hex, sel, w = 2, onClick } = props;
-  const { cw, ch, s } = useGrid();
+export function Swatch(
+  props: Pick<NavProps, 'auto' | 'mouseOnly'> & {
+    x: number;
+    y: number;
+    hex: string;
+    sel?: boolean;
+    /** Width in cells. */
+    w?: number;
+    /** Height in rows. */
+    h?: number;
+    onClick?: () => void;
+  },
+) {
+  const { x, y, hex, sel, w = 2, h = 1, onClick } = props;
+  const { cw, ch, lw } = useGrid();
   const focus = useFocusable<HTMLDivElement>(!!onClick, {
     activate: () => onClick?.(),
-    auto: sel ? 1 : undefined,
+    auto: props.auto,
+    mouseOnly: props.mouseOnly,
   });
   const lit = sel || focus.focused;
-  const bw = lit ? Math.max(2, Math.round(s)) : Math.max(1, Math.round(s) - 1);
+  const box = rect(x, y, w, h, cw, ch);
   return (
     <div
       ref={focus.ref}
-      className={focus.focused ? 'lt-hitfoc' : undefined}
+      className={`lt-swatch${lit ? ' is-lit' : ''}${focus.focused ? ' is-foc' : ''}`}
       onMouseEnter={focus.onMouseEnter}
       style={{
-        position: 'absolute',
-        boxSizing: 'content-box',
-        left: x * cw + 1,
-        top: y * ch + ch * 0.12,
-        width: Math.max(0, w * cw - 4 - 2 * bw),
-        height: Math.max(0, ch * 0.76 - 2 * bw),
+        left: box.left + 2,
+        top: box.top + 2,
+        width: Math.max(0, box.width - 4),
+        height: Math.max(0, box.height - 4),
         background: hex,
-        border: `${bw}px solid ${lit ? 'var(--lt-fg)' : 'var(--lt-faint)'}`,
-        boxShadow: sel
-          ? '0 0 6px rgba(190,140,255,.7), inset 0 0 0 1px var(--lt-bg)'
-          : 'inset 0 0 0 1px var(--lt-bg)',
+        borderWidth: lw,
         cursor: onClick ? 'pointer' : undefined,
-        zIndex: 4,
       }}
       onClick={
         onClick
@@ -1103,6 +1116,103 @@ export function Swatch(props: {
           : undefined
       }
     />
+  );
+}
+
+/**
+ * A filled strip w cells wide with an lw-wide fg thumb at value (0 to 1). Dragging calls
+ * onChange; letting go calls onRelease. One focus stop: Enter grabs it, Left and Right then
+ * move it one step, Enter or Escape lets go (and calls onRelease).
+ */
+export function Bar(props: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  value: number;
+  /** CSS background for the strip. */
+  gradient: string;
+  /** Keyboard step, as a share of the strip. */
+  step?: number;
+  /** First-focus claim (see nav.tsx). */
+  auto?: number;
+  onChange: (value: number) => void;
+  onRelease: (value: number) => void;
+}) {
+  const { x, y, w, h, value, gradient, onChange, onRelease } = props;
+  const step = props.step ?? 1 / 32;
+  const { cw, ch, lw } = useGrid();
+  const [grabbed, setGrabbed] = useState(false);
+  const last = useRef(value);
+  last.current = value;
+  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+  const letGo = () => {
+    setGrabbed(false);
+    onRelease(last.current);
+  };
+  const nudge = (by: number) => {
+    const v = clamp(last.current + by);
+    last.current = v;
+    onChange(v);
+    return true;
+  };
+  const focus = useFocusable<HTMLDivElement>(true, {
+    activate: () => (grabbed ? letGo() : setGrabbed(true)),
+    auto: props.auto,
+    edge: grabbed
+      ? {
+          left: () => nudge(-step),
+          right: () => nudge(step),
+          up: () => true,
+          down: () => true,
+        }
+      : undefined,
+  });
+  useBack(grabbed ? letGo : null);
+  useEffect(() => {
+    if (grabbed && !focus.focused) {
+      letGo();
+    }
+  }, [focus.focused]);
+  const box = rect(x, y, w, h, cw, ch);
+  const at = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const v = clamp((e.clientX - r.left) / Math.max(1, r.width));
+    last.current = v;
+    onChange(v);
+  };
+  return (
+    <div
+      ref={focus.ref}
+      className={`lt-bar${focus.focused ? ' is-foc' : ''}${grabbed ? ' is-grab' : ''}`}
+      onMouseEnter={focus.onMouseEnter}
+      style={{ ...box, borderWidth: lw, background: gradient }}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        at(e);
+      }}
+      onPointerMove={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          at(e);
+        }
+      }}
+      onPointerUp={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+          onRelease(last.current);
+        }
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        className="lt-bar-thumb"
+        style={{
+          left: `calc(${(clamp(value) * 100).toFixed(2)}% - ${lw / 2}px)`,
+          width: lw,
+        }}
+      />
+    </div>
   );
 }
 
@@ -1403,7 +1513,19 @@ export const TERM_CSS = `
 .lt-tui .lt-slab-row.is-alt { background: var(--lt-panel-alt); }
 .lt-tui .lt-slab.is-foc { border-color: var(--lt-fg); background: var(--lt-panel-foc); box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-slab.is-dead { border-color: var(--lt-edge-dead); background: rgba(30,12,58,.36); }
+.lt-tui .lt-slab.is-dead.is-foc { border-color: var(--lt-fg); box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-slab.is-on { border-left-color: var(--lt-acc); }
+.lt-tui .lt-slab.is-on.is-foc { border-left-color: var(--lt-acc); }
+.lt-tui .lt-swatch { position: absolute; box-sizing: border-box; z-index: 4; border-style: solid;
+  border-color: var(--lt-edge); }
+.lt-tui .lt-swatch.is-lit { border-color: var(--lt-fg); }
+.lt-tui .lt-swatch.is-foc { box-shadow: var(--lt-glow-foc); }
+.lt-tui .lt-bar { position: absolute; box-sizing: border-box; z-index: 4; border-style: solid;
+  border-color: var(--lt-edge); cursor: pointer; touch-action: none; }
+.lt-tui .lt-bar.is-foc { border-color: var(--lt-fg); box-shadow: var(--lt-glow-foc); }
+.lt-tui .lt-bar-thumb { position: absolute; top: -3px; bottom: -3px; background: var(--lt-fg);
+  box-shadow: 0 0 0 1px var(--lt-bg), 0 0 6px rgba(190,140,255,.8); }
+.lt-tui .lt-bar.is-grab .lt-bar-thumb { background: #fff; }
 .lt-tui .lt-hit { position: absolute; z-index: 4; cursor: pointer; }
 .lt-tui .lt-k { position: absolute; box-sizing: border-box; z-index: 4; cursor: pointer; border-style: solid;
   border-color: var(--lt-edge); }
@@ -1450,6 +1572,10 @@ export const TERM_CSS = `
   box-shadow: 0 0 0 4px #3a2466, inset 0 0 18px rgba(0,0,0,.9), inset 0 2px 6px rgba(0,0,0,.8); }
 .lt-vscan { position: absolute; inset: 0; pointer-events: none; z-index: 3;
   background: repeating-linear-gradient(to bottom, rgba(0,0,0,.10) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,.04), transparent 45%);
+    radial-gradient(ellipse at 30% 15%, rgba(223,196,255,.04), transparent 45%);
   box-shadow: inset 0 0 14px rgba(0,0,0,.75); }
+.lt-tui .lt-vmark { z-index: 3; }
+.lt-tui .lt-vblink { display: inline-block; width: 0.586em; height: 0.75em; margin-left: 0.586em;
+  background: currentColor; vertical-align: -0.05em; animation: lt-vblink 1.06s steps(1) infinite; }
+@keyframes lt-vblink { 0% { opacity: 1; } 50% { opacity: 0; } }
 `;
