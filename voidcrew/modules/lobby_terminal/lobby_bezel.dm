@@ -118,14 +118,8 @@
 			goto_tab("character")
 			return FALSE
 		if("settings")
-			var/datum/preferences/preferences = user.client?.prefs
-			if(!preferences)
-				return FALSE
-			if(!(SSearly_assets.initialized == INITIALIZATION_INNEW_REGULAR || SSatoms.initialized == INITIALIZATION_INNEW_REGULAR))
-				return FALSE
-			preferences.current_window = PREFERENCE_TAB_GAME_PREFERENCES
-			preferences.update_static_data(user)
-			preferences.ui_interact(user)
+			// SETTINGS is the terminal's own screen (lobby_settings.dm); tg's window is no longer opened from here.
+			goto_tab("settings")
 			return FALSE
 		if("wiki")
 			if(CONFIG_GET(string/wikiurl))

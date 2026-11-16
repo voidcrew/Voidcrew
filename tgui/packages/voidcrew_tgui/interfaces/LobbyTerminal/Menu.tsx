@@ -133,10 +133,18 @@ type Util = {
   action: string;
   state: KeyState;
   right?: string;
+  /** Instead of sending `action`: SETTINGS opens the terminal's own screen. */
+  onClick?: () => void;
 };
 
-/** WIKI, POLLS, MANIFEST, SETTINGS, CHANGELOG: they open the game's own windows. */
-function utilities(data: LobbyData): Util[] {
+/**
+ * WIKI, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS screen (lit
+ * while it is open); the others open the game's own windows.
+ */
+function utilities(
+  data: LobbyData,
+  settings?: Pick<MenuProps, 'settingsOpen' | 'onSettings'>,
+): Util[] {
   return [
     { label: 'WIKI', action: 'wiki', state: data.wiki ? 'idle' : 'dead' },
     {
@@ -149,7 +157,12 @@ function utilities(data: LobbyData): Util[] {
     {
       label: 'SETTINGS',
       action: 'settings',
-      state: data.prefs_ready ? 'idle' : 'dead',
+      state: !data.prefs_ready
+        ? 'dead'
+        : settings?.settingsOpen
+          ? 'lit'
+          : 'idle',
+      onClick: settings?.onSettings,
     },
     { label: 'CHANGELOG', action: 'changelog', state: 'idle' },
   ];
@@ -169,6 +182,9 @@ type MenuProps = {
   /** The CHARACTER screen is open. */
   charOpen: boolean;
   onCharacter: () => void;
+  /** The SETTINGS screen is open. */
+  settingsOpen: boolean;
+  onSettings: () => void;
   onObserve: () => void;
 };
 
@@ -195,7 +211,8 @@ export function SideMenu(props: MenuProps) {
   // Utility rows: 1.25 rows each when the menu has room (as in the approved stills), else 1.
   // Two station-name lines and half a row are always kept free above the foot.
   const start = canStart(data);
-  const items = utilities(data).length + (start ? 1 : 0);
+  const utils = utilities(data, props);
+  const items = utils.length + (start ? 1 : 0);
   const room = boxH - (port.length + 0.5) - 0.5 - (ruleY + 0.5);
   const step = room >= items * 1.25 ? 1.25 : 1;
   return (
@@ -242,7 +259,7 @@ export function SideMenu(props: MenuProps) {
         </Put>
       ))}
       <HRule x={1} y={ruleY} w={17} />
-      {utilities(data).map((u, i) => (
+      {utils.map((u, i) => (
         <Key
           key={u.label}
           x={1}
@@ -255,7 +272,7 @@ export function SideMenu(props: MenuProps) {
           rightCls="amb"
           state={u.state}
           zone="menu"
-          onClick={() => act(u.action)}
+          onClick={u.onClick || (() => act(u.action))}
         />
       ))}
       {!!start && (
@@ -345,13 +362,17 @@ export function KeyBar(
 }
 
 /** MENU's list in bar mode, over the bottom right of the main region. */
-export function MenuPopup(props: { onClose: () => void }) {
+export function MenuPopup(
+  props: Pick<MenuProps, 'settingsOpen' | 'onSettings'> & {
+    onClose: () => void;
+  },
+) {
   const { onClose } = props;
   const { data, act } = useBackend<LobbyData>();
   const { rows } = useGrid();
   useBack(onClose);
   const y = rows - 6;
-  const items = utilities(data);
+  const items = utilities(data, props);
   const first = items.findIndex((u) => u.state !== 'dead');
   return (
     <>
@@ -381,7 +402,11 @@ export function MenuPopup(props: { onClose: () => void }) {
               zone="menu"
               onClick={() => {
                 onClose();
-                act(u.action);
+                if (u.onClick) {
+                  u.onClick();
+                } else {
+                  act(u.action);
+                }
               }}
             />
           ))}

@@ -148,4 +148,9 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 		if(!user.client?.prefs || SSearly_assets.initialized != INITIALIZATION_INNEW_REGULAR)
 			return FALSE
 		return char_act(action, params, user)
+	if(copytext(action, 1, 10) == "settings_")
+		// The same guard for game preferences (SETTINGS) and keybindings (its KEYS group).
+		if(!user.client?.prefs || SSearly_assets.initialized != INITIALIZATION_INNEW_REGULAR)
+			return FALSE
+		return settings_act(action, params, user)
 	return shell_act(action, params, user)

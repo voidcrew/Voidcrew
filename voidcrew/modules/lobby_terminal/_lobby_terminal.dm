@@ -15,8 +15,8 @@
  * Sections: the shell (this file, lobby_tgui.dm, lobby_bezel.dm) declares every section
  * proc below. Section owners override them in their own file without the `proc/` keyword:
  * lobby_crews.dm (crew_* actions), lobby_yard.dm (yard_* actions), lobby_housing.dm
- * (home_* actions) and lobby_character*.dm (char_* actions). Those files sort after this
- * one, so their overrides win.
+ * (home_* actions), lobby_character*.dm (char_* actions) and lobby_settings*.dm (settings_*
+ * actions). Those files sort after this one, so their overrides win.
  */
 
 /// How long to wait for the browser to report itself visible before offering a reload link.
@@ -80,6 +80,10 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	/// Preview renders: appearance key -> list("[dir]" = base64 png). Owned by lobby_character_preview.dm.
 	var/list/char_preview_cache
 
+	// SETTINGS section (lobby_settings*.dm).
+	/// TRUE while the SETTINGS screen is open in this window: tg's window changes are pushed to it.
+	var/settings_open = FALSE
+
 /datum/lobby_terminal/New(client/owner)
 	. = ..()
 	src.owner = owner
@@ -89,6 +93,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 
 /datum/lobby_terminal/Destroy()
 	char_save()
+	settings_save()
 	if(owner)
 		UnregisterSignal(owner, COMSIG_CLIENT_MOB_LOGIN)
 		if(owner.lobby_terminal == src)
@@ -117,6 +122,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		yard_previews_sent = list()
 		// Nor the character catalog or its first push.
 		char_open = FALSE
+		settings_open = FALSE
 	set_classic_lobby(FALSE)
 	refresh_polls(user)
 	ui_interact(user)
@@ -135,6 +141,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 /// Takes the terminal off the map and closes its UI. The classic HUD (or the game) shows again.
 /datum/lobby_terminal/proc/hide()
 	char_save()
+	settings_save()
+	settings_open = FALSE
 	crew_open_ref = null
 	visible = FALSE
 	if(load_timer)
@@ -256,7 +264,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	if(ui && !QDELETED(ui))
 		SStgui.update_uis(src)
 
-/// Asks the client to switch tabs ("crews", "shipyard", "housing", "character").
+/// Asks the client to switch tabs ("crews", "shipyard", "housing", "character", "settings").
 /datum/lobby_terminal/proc/goto_tab(tab)
 	tab_request = tab
 	tab_request_serial++
@@ -429,6 +437,22 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 
 /// CHARACTER: writes the character slot and the savefile. Also runs from hide() (inside a signal handler) and Destroy(), so it must not sleep and must be safe with no client or prefs.
 /datum/lobby_terminal/proc/char_save()
+	SHOULD_NOT_SLEEP(TRUE)
+	return
+
+/**
+ * SETTINGS actions (lobby_settings.dm): settings_open, settings_set, settings_close. The shell has
+ * already checked that the player's prefs exist and the preference assets are built.
+ */
+/datum/lobby_terminal/proc/settings_act(action, list/params, mob/user)
+	return FALSE
+
+/// SETTINGS, KEYS group (lobby_settings_keys.dm): every settings_keys_* action, routed by settings_act().
+/datum/lobby_terminal/proc/settings_keys_act(action, list/params, mob/user)
+	return FALSE
+
+/// SETTINGS: writes the game preferences to disk after edits. Runs from hide() and Destroy() too: must not sleep.
+/datum/lobby_terminal/proc/settings_save()
 	SHOULD_NOT_SLEEP(TRUE)
 	return
 

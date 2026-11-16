@@ -31,6 +31,7 @@ import {
 import { Confirmed, NoticeLine } from './Notice';
 import { NAV_CSS, NavProvider } from './nav';
 import { ObserveConfirm } from './ObserveConfirm';
+import { Settings } from './Settings';
 import {
   type Grid,
   GridContext,
@@ -153,20 +154,25 @@ export function LobbyTerminal() {
   const reg = regions(layout.mode, layout.rows);
 
   const [tab, setTab] = useState<TabId>('crews');
-  /** The tab that was open before CHARACTER, for Escape at its file view. */
+  /** The tab that was open before CHARACTER or SETTINGS, for Escape at their top level. */
   const [prevTab, setPrevTab] = useState<TabId>('crews');
   /** Bumped when SHIPYARD is pressed while already on it. */
   const [yardHome, setYardHome] = useState(0);
   /** Bumped when CHARACTER is pressed while already on it: back to the file view. */
   const [charHome, setCharHome] = useState(0);
+  /** Bumped when SETTINGS is pressed while already on it: back to its top state. */
+  const [settingsHome, setSettingsHome] = useState(0);
   const [observeOpen, setObserveOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   /** CHARACTER was opened by the shell before the round, not by the player. */
   const [autoChar, setAutoChar] = useState(false);
   const autoTried = useRef(false);
 
+  // CHARACTER and SETTINGS are screens the menu opens, not tabs: Escape at their top level goes
+  // back to the tab that was open before either.
+  const isScreen = (id: TabId) => id === 'character' || id === 'settings';
   const openScreen = (next: TabId) => {
-    if (next === 'character' && tab !== 'character') {
+    if (isScreen(next) && !isScreen(tab)) {
       setPrevTab(tab);
     }
     setTab(next);
@@ -267,6 +273,9 @@ export function LobbyTerminal() {
     if (next === tab && next === 'character') {
       setCharHome(charHome + 1);
     }
+    if (next === tab && next === 'settings') {
+      setSettingsHome(settingsHome + 1);
+    }
     openScreen(next);
     setObserveOpen(false);
     setMenuOpen(false);
@@ -299,6 +308,18 @@ export function LobbyTerminal() {
         }}
       />
     );
+  } else if (tab === 'settings') {
+    // The screen sends settings_open on mount and settings_close when it goes; Escape at its top
+    // level calls onLeave.
+    body = (
+      <Settings
+        home={settingsHome}
+        onLeave={() => {
+          backNextScreen();
+          switchTab(prevTab);
+        }}
+      />
+    );
   } else {
     body = <HousingTab />;
   }
@@ -317,6 +338,8 @@ export function LobbyTerminal() {
   const menu = {
     charOpen: tab === 'character' && !confirmed,
     onCharacter: () => switchTab('character'),
+    settingsOpen: tab === 'settings' && !confirmed,
+    onSettings: () => switchTab('settings'),
     onObserve: () => {
       setMenuOpen(false);
       setObserveOpen(true);
@@ -395,7 +418,7 @@ export function LobbyTerminal() {
                     setTab={switchTab}
                     claim={tabClaim}
                   />
-                  <Fragment key={tab === 'character' ? 'char' : bootKey}>
+                  <Fragment key={isScreen(tab) ? tab : bootKey}>
                     {body}
                   </Fragment>
                   <MainWipe />
@@ -404,7 +427,7 @@ export function LobbyTerminal() {
                     <ObserveConfirm onClose={() => setObserveOpen(false)} />
                   )}
                   {!!reg.bar && !!menuOpen && (
-                    <MenuPopup onClose={() => setMenuOpen(false)} />
+                    <MenuPopup {...menu} onClose={() => setMenuOpen(false)} />
                   )}
                   {!!welcomeOpen && (
                     <Welcome
