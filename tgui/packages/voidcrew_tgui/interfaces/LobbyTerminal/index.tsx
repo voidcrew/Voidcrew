@@ -150,6 +150,8 @@ export function LobbyTerminal() {
   const request = data.tab_request;
   useEffect(() => {
     if (request) {
+      // The server picked the screen: the CHARACTER file no longer opens by itself.
+      autoTried.current = true;
       openScreen(request.tab);
     }
   }, [request?.serial]);
