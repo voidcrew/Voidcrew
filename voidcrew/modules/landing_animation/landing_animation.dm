@@ -696,7 +696,7 @@
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LANDING_PICTURE_FADE)
 
 /datum/landing_animation/proc/show_shadow()
-	if(!length(berth_turfs) || frozen)
+	if(!length(berth_turfs) || frozen || shadow)
 		return
 	shadow = new(berth_turfs[1])
 	if(!shadow.outline(berth_turfs))
@@ -749,7 +749,7 @@
 	inside_view?.twin_dust(hull_turf, edge_dir, push, shape)
 
 /datum/landing_animation/proc/show_proxies()
-	if(!length(hull_turfs) || frozen)
+	if(!length(hull_turfs) || frozen || proxy)
 		return
 	proxy = new(berth_turfs[1])
 	if(!proxy.picture(hull_turfs, berth_turfs, rotation))
