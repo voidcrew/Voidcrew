@@ -265,7 +265,15 @@ export function Bill(props: { ctx: YardCtx }) {
       );
     } else if (ledgerOk) {
       out.push(
-        <ClassFigures key="af" y={y} set="R" values={ctx.account} pulse />,
+        // A balance: an empty class reads 0, as on the shipyard home.
+        <ClassFigures
+          key="af"
+          y={y}
+          set="R"
+          values={ctx.account}
+          zero
+          pulse
+        />,
       );
     }
     y += 1;

@@ -14,7 +14,7 @@
  * picture) and tight (B < 14.75, no picture, the steps in two columns). The layout is worked out
  * once a hull from its largest step and longest text, so nothing moves between steps.
  */
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useRef, useState } from 'react';
 
 import { sfxInstead } from './motion';
 import { usePager } from './nav';
@@ -116,7 +116,7 @@ function stepsOfFit(ctx: YardCtx, hull: Hull, taken: ShipFit): Step[] {
         );
         return {
           id: f.id,
-          name: safe(f.name),
+          name: safe(f.name).toUpperCase(),
           desc: safe(f.desc),
           tag,
           tagCls,
@@ -137,7 +137,7 @@ function stepsOfFit(ctx: YardCtx, hull: Hull, taken: ShipFit): Step[] {
         );
         return {
           id: m.id,
-          name: safe(m.name),
+          name: safe(m.name).toUpperCase(),
           desc: safe(m.desc),
           tag,
           tagCls,
@@ -203,13 +203,21 @@ type Regime = {
   D: number;
 };
 
+/**
+ * The body ends a quarter row above the other screens' (LIFT): the total strip sits that much
+ * higher, so its figure row keeps half a row clear of the box bottom. The regime is still
+ * chosen on the whole body; the quarter row comes out of the picture.
+ */
+const LIFT = 0.25;
+
 function regimeOf(
-  B: number,
+  Bfull: number,
   nOpt: number,
   Dwant: number,
   steps: number,
 ): Regime {
-  if (B >= 18) {
+  const B = Bfull - LIFT;
+  if (Bfull >= 18) {
     let po = 1.75;
     let D = Dwant;
     let T = B - 3 - nOpt * po - D;
@@ -235,11 +243,11 @@ function regimeOf(
   let S = 0;
   let rowsO: number;
   let D: number;
-  if (B >= 14.75) {
+  if (Bfull >= 14.75) {
     kind = 'small';
-    T = 6;
-    rowsO = Math.min(nOpt, Math.floor(B - 10.75));
-    D = Math.floor(B - 8.75 - rowsO);
+    T = 6 - LIFT;
+    rowsO = Math.min(nOpt, Math.floor(Bfull - 10.75));
+    D = Math.floor(Bfull - 8.75 - rowsO);
   } else {
     kind = 'tight';
     S = Math.ceil(steps / 2);
@@ -282,6 +290,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   const rg = regimeOf(B, nOpt, Dwant, n);
   /** Options taken so far on this screen: each one is shown being fitted in the picture. */
   const [took, setTook] = useState(0);
+  const lastWheel = useRef(0);
 
   // Local: the option focused (shown), the options page, and focus claims. Reset a step.
   const stepKey = `${hull.id}:${at}`;
@@ -479,13 +488,14 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   // The options.
   const yO = BODY_Y + 0.25 + (rg.kind === 'tight' ? rg.S : rg.T);
   const oh = rg.po === 1.75 ? 1.5 : 1;
+  const optRows: ReactNode[] = [];
   pageOpts.forEach((o, j) => {
     const y = yO + j * rg.po;
     const isTaken = o.id === step?.taken;
     const first = j === 0;
     const lastRow = j === pageOpts.length - 1;
     const ty = y + (oh - 1) / 2;
-    out.push(
+    optRows.push(
       <Slab
         key={`o-${stepKey}-${page}-${o.id}`}
         variant="row"
@@ -507,10 +517,18 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
           )
         }
         edge={{
-          up: () =>
-            first && page > 1
-              ? turn(page - 1, opts[(page - 1) * per - 1].id)
-              : false,
+          // Up from the first row: the page before, or on the first page the step being
+          // fitted (not whichever step row happens to sit nearest above).
+          up: () => {
+            if (!first) {
+              return false;
+            }
+            if (page > 1) {
+              return turn(page - 1, opts[(page - 1) * per - 1].id);
+            }
+            setLoc((l) => ({ ...l, toSteps: l.toSteps + 1 }));
+            return true;
+          },
           down: () => {
             if (!lastRow) {
               return false;
@@ -543,6 +561,29 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
       </Slab>,
     );
   });
+  // The mouse wheel over the options turns their page, as the pager does.
+  out.push(
+    <div
+      key="owheel"
+      className="lt-wheel"
+      onWheel={(e) => {
+        if (pages <= 1 || !e.deltaY) {
+          return;
+        }
+        const now = Date.now();
+        if (now - lastWheel.current < 150) {
+          return;
+        }
+        lastWheel.current = now;
+        const to = page + (e.deltaY > 0 ? 1 : -1);
+        if (to >= 1 && to <= pages) {
+          turn(to, opts[(to - 1) * per].id);
+        }
+      }}
+    >
+      {optRows}
+    </div>,
+  );
   let yD = yO + rg.rowsO * rg.po + 0.25;
   if (rg.paged) {
     if (pages > 1) {
@@ -621,6 +662,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   );
 
   // The total strip: what the fit as taken costs now, in set F.
+  const yT = yK - LIFT;
   const due = partsOf(bill.total) > 0;
   if (due) {
     const short = ctx.ledger === 'ok' ? bill.short : {};
@@ -629,13 +671,13 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
       cls[k] = (short[k] || 0) > 0 ? 'inva' : 'amb';
     }
     out.push(
-      <Put key="tt" x={1} y={yK} cls="dim">
+      <Put key="tt" x={1} y={yT} cls="dim">
         TOTAL
       </Put>,
-      <ClassHeads key="th" y={yK} set="F" />,
+      <ClassHeads key="th" y={yT} set="F" />,
       <ClassFigures
         key="tf"
-        y={yK + 1}
+        y={yT + 1}
         set="F"
         values={bill.total}
         cls={cls}
@@ -644,21 +686,21 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
     );
   } else {
     out.push(
-      <Put key="nd" x={1} y={yK + 1} cls="dim">
+      <Put key="nd" x={1} y={yT + 1} cls="dim">
         NOTHING DUE
       </Put>,
       // Kept mounted (empty), so the first figure due flashes as it appears.
-      <ClassFigures key="tf" y={yK + 1} set="F" values={{}} pulse />,
+      <ClassFigures key="tf" y={yT + 1} set="F" values={{}} pulse />,
     );
   }
   out.push(
     <Key
       key="prev"
-      kind="box"
+      kind="big"
       x={39}
-      y={yK + 0.5}
+      y={yK}
       w={8}
-      h={1.5}
+      h={2}
       label="PREV"
       state={at > 0 ? 'idle' : 'dead'}
       onClick={() => goStep(at - 1)}

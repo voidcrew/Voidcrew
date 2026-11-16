@@ -113,8 +113,8 @@ export function HullRecord(props: { ctx: YardCtx; hull: Hull }) {
   const priceRows = Math.max(1, priced.length);
   const need =
     3.75 +
-    (rooms.length ? rooms.length + 1.25 : 0) +
-    (finishes.length ? finishes.length + 1.25 : 0) +
+    (rooms.length ? rooms.length + 1.5 : 0) +
+    (finishes.length ? finishes.length + 1.5 : 0) +
     1 +
     priceRows +
     2.5;
@@ -162,7 +162,9 @@ export function HullRecord(props: { ctx: YardCtx; hull: Hull }) {
         );
         y += lp;
       });
-      y += 0.25;
+      // A section ends half a row past its last line, so it reads apart from the next head
+      // even when spare rows widen the line pitch.
+      y += 0.5;
     }
     if (finishes.length) {
       out.push(
@@ -179,7 +181,7 @@ export function HullRecord(props: { ctx: YardCtx; hull: Hull }) {
         );
         y += lp;
       });
-      y += 0.25;
+      y += 0.5;
     }
   } else {
     const counts: [string, number][] = [];
