@@ -51,6 +51,13 @@
 #define BB_BOUNTY_NEXT_SHOT "bb_bounty_next_shot"
 /// world.time a ranged fighter may next step back from someone too close
 #define BB_BOUNTY_BACKSTEP_AT "bb_bounty_backstep_at"
+/// Trigger pulls still to come in the burst under way (a burst is that many separate pulls, bounty_styles.dm)
+#define BB_BOUNTY_BURST_LEFT "bb_bounty_burst_left"
+/// world.time their style's gun last came out of its holster, off their back or out of a bag (the draw)
+#define BB_BOUNTY_DRAWN_AT "bb_bounty_drawn_at"
+/// Shots fired in the pistol's current string, and the magazine they came from (a new one starts the count again)
+#define BB_BOUNTY_STRING_SHOTS "bb_bounty_string_shots"
+#define BB_BOUNTY_STRING_MAGAZINE "bb_bounty_string_magazine"
 
 // ===== ACTIVITY STEPS =====
 
@@ -202,8 +209,17 @@
 /// Chance a brawler's blow is a real shove instead of a punch
 #define BOUNTY_BRAWLER_SHOVE_CHANCE 20
 
-/// Between trigger pulls (each pull of the Stechkin is its own burst)
-#define BOUNTY_PISTOL_INTERVAL (0.8 SECONDS)
+/// Getting a holstered or slung gun out at the start of a fight: the line, then at least this long before the first shot
+#define BOUNTY_DRAW_TIME (0.6 SECONDS)
+/// A burst whose next pull is this late was cut off (the AI stopped meanwhile): what is left of it never fires
+#define BOUNTY_BURST_STALE (0.5 SECONDS)
+
+/// Between trigger pulls: the Stechkin set to single shots with its own fire selector, twice a second
+#define BOUNTY_PISTOL_INTERVAL (0.5 SECONDS)
+/// Every bounty pistol (criminals, companions, the kingpin's goons, Club Volga's mobsters and the don) fires strings of this many shots...
+#define BOUNTY_PISTOL_STRING_SHOTS 6
+/// ...with this pause on top of the interval before the next string. A reload after an empty magazine is separate.
+#define BOUNTY_PISTOL_STRING_PAUSE (1.5 SECONDS)
 /// Keeps about this far away
 #define BOUNTY_PISTOL_RANGE 5
 #define BOUNTY_PISTOL_MIN_RANGE 3
@@ -211,6 +227,22 @@
 #define BOUNTY_PISTOL_WINDUP (0.2 SECONDS)
 /// Shots further apart than this start a new string
 #define BOUNTY_PISTOL_STRING_GAP (3 SECONDS)
+
+/// The WT-550 at every tier: a burst is this many trigger pulls...
+#define BOUNTY_SMG_BURST 4
+/// ...this far apart, the gun's own full-auto rate
+#define BOUNTY_SMG_BURST_GAP (0.3 SECONDS)
+/// From a burst's last round to the next burst's spin-up
+#define BOUNTY_SMG_INTERVAL (0.5 SECONDS)
+/// The gun brought up level before each burst
+#define BOUNTY_SMG_WINDUP (0.3 SECONDS)
+#define BOUNTY_SMG_MIN_RANGE 2
+
+/// A .38 revolver: one heavy shot a second, six in the cylinder, a speedloader to reload
+#define BOUNTY_REVOLVER_INTERVAL (1 SECONDS)
+#define BOUNTY_REVOLVER_MIN_RANGE 3
+/// The hammer thumbed back before the first shot of a string
+#define BOUNTY_REVOLVER_WINDUP (0.3 SECONDS)
 
 #define BOUNTY_SHOTGUN_INTERVAL (1.2 SECONDS)
 #define BOUNTY_SHOTGUN_RANGE 2

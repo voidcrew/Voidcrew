@@ -125,11 +125,11 @@
 			best += ruin
 	return board_pick_tiered(best, good, any)
 
-/// An NPC pirate ship with its crew aboard, not claimed, not abandoned, holding no other bounty
+/// A plain NPC pirate ship with its crew aboard, not claimed, not abandoned, holding no other bounty. Never a themed crew's (bounty_ship_hides_criminals()): a criminal hides among ordinary pirates.
 /datum/controller/subsystem/criminal_bounties/proc/board_pick_npc_ship(zone, obj/structure/overmap/exclude)
 	var/list/candidates = list()
 	for(var/obj/structure/overmap/ship/npc/pirate/npc_ship in SSnpc_ships?.active_ships)
-		if(QDELETED(npc_ship) || npc_ship == exclude)
+		if(QDELETED(npc_ship) || npc_ship == exclude || !bounty_ship_hides_criminals(npc_ship))
 			continue
 		if(npc_ship.player_controlled || npc_ship.abandoned || npc_ship.spawner_resolved || !npc_ship.crew_ever_spawned)
 			continue
