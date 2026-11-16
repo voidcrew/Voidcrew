@@ -44,6 +44,10 @@ export type ShellData = {
   polls: 0 | 1 | 2;
   /** Position in the popcap queue, 0 when not queued. */
   queue: number;
+  /** First in the popcap queue and a place is free: JOIN reads NOW. */
+  queue_go?: BooleanLike;
+  /** The active character's name; "" until prefs_ready. */
+  char_name?: string;
   /** Admins before the round: [players ready, admins ready, admins]. Null otherwise. */
   admin_ready: [number, number, number] | null;
   notice: Notice | null;
@@ -59,8 +63,10 @@ export type ShellData = {
 export type ShellStatic = {
   wiki: BooleanLike;
   localhost_admin: BooleanLike;
-  /** Port name for the header, or null (header reads "BERTH OFFICE"). */
+  /** Station name, shown at the foot of the side menu. */
   port: string | null;
+  /** Whether a player who observes can come back: not at all, as the same character, or as a new one. */
+  respawn?: 'none' | 'same' | 'new';
   bezel: BezelSpec | null;
 };
 
@@ -98,14 +104,26 @@ export type Crew = {
   /** Seconds left on a wrong-code lockout. */
   code_wait: number;
   jobs: CrewJob[];
-  /** Who is aboard: [name, job title, captain], the captain first. Capped server-side. */
-  aboard?: [string, string, BooleanLike][];
-  /** The player's own crew. Not sent yet; read as 0 when missing. */
-  mine?: BooleanLike;
+  /** The player's own crew (the ship's team belongs to their crew record). */
+  mine: BooleanLike;
+};
+
+/** Who is aboard the ship whose record is open. */
+export type CrewRoster = {
+  /** REF(ship) of the open record. */
+  ref: string;
+  /** [name, captain]: captains first, then at most 30 others. */
+  names: [string, BooleanLike][];
+  /** Crew aboard who are not in names. */
+  more: number;
 };
 
 export type CrewsData = {
   crews?: Crew[];
+  /** Only for the record sent with crew_open; null when none is open or that ship left. */
+  roster?: CrewRoster | null;
+  /** A join (any route) is under way: SIGN ON waits. */
+  joining?: BooleanLike;
 };
 
 // ---------------------------------------------------------------------------
@@ -210,7 +228,7 @@ export type YardStatic = {
 };
 
 // ---------------------------------------------------------------------------
-// HOUSING (2.4). Owner: P5.
+// HOUSING (design 02, section 4).
 // ---------------------------------------------------------------------------
 
 export type OutpostMode = 'open' | 'password' | 'approved' | 'closed';
@@ -221,8 +239,10 @@ export type Outpost = {
   mode: OutpostMode;
   residents: number;
   cleared: BooleanLike;
-  /** Short in-character reason MOVE IN is refused, or null. */
-  denial: string | null;
+  /** MOVE IN would be refused now (for any reason, said or not). */
+  blocked: BooleanLike;
+  /** The refusal to draw on the block, or null when the word or the round already says it. 45 at most. */
+  why: string | null;
   /** Seconds left on a wrong-code lockout. */
   code_wait?: number;
   /** INVITE outposts: the player may ask to move in. */
@@ -409,7 +429,10 @@ export type LobbyData = ShellData &
 export type LobbyActions = {
   join: Record<string, never>;
   ready: Record<string, never>;
+  /** Kept for the classic path; the page sends observe_confirm. */
   observe: Record<string, never>;
+  /** OBSERVE after the in-terminal confirm. */
+  observe_confirm: Record<string, never>;
   character: Record<string, never>;
   settings: Record<string, never>;
   wiki: Record<string, never>;
@@ -417,7 +440,8 @@ export type LobbyActions = {
   manifest: Record<string, never>;
   changelog: Record<string, never>;
   start_now: Record<string, never>;
-  dismiss: Record<string, never>;
+  /** Clears the notice; with at, only the notice set at that world.time. */
+  dismiss: { at?: number };
   /** Client display metrics, logged once per load. */
   metrics: {
     dpr: number;
@@ -426,7 +450,10 @@ export type LobbyActions = {
     s: number;
     cols: number;
     rows: number;
+    mode: 'side' | 'bar';
   };
+  crew_open: { ship: string };
+  crew_close: Record<string, never>;
   crew_sign_on: { ship: string; job: string };
   crew_code: { ship: string; code: string };
   crew_apply: { ship: string; note: string };

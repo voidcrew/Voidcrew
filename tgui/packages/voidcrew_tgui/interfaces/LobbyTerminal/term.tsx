@@ -387,17 +387,21 @@ export function Key(
     w: number;
     h?: number;
     label: string;
+    /** Colour class of the label at rest (focus, lit and on states override it). */
+    labelCls?: Cls | string;
     right?: string;
     rightCls?: Cls | string;
     kind: KeyKind;
     state?: KeyState;
     onClick: () => void;
-    /** A layout zone for the keyboard rules; carried as a data attribute. */
+    /** A layout zone for the keyboard rules (nav.tsx FocusOpts.zone). */
     zone?: string;
     title?: string;
   },
 ) {
-  const { x, y, w, label, right, rightCls, kind, onClick, zone, title } = props;
+  const { x, y, w, label, labelCls, right, rightCls, kind, onClick, zone } =
+    props;
+  const { title } = props;
   const state = props.state || 'idle';
   const h = props.h ?? (kind === 'big' ? 2 : kind === 'plain' ? 1 : 1.5);
   const { cw, ch, lw } = useGrid();
@@ -426,13 +430,19 @@ export function Key(
     edge: props.edge,
     tab: props.tab,
     mouseOnly: props.mouseOnly,
+    zone,
   });
   const box = rect(x, y, w, h, cw, ch);
   // Border widths, so the label sits on the grid inside the padding box.
   const bl = kind === 'plain' ? 0 : lw;
   const bt = kind === 'box' || kind === 'big' ? lw : 0;
   const ty = ((h - 1) / 2) * ch - bt;
-  const lx = kind === 'cap' ? Math.floor((w - label.length) / 2) * cw : cw;
+  // A cap centres its label to the half cell in the room right of its border, so an odd margin
+  // never puts the opening bracket on the border.
+  const lx =
+    kind === 'cap'
+      ? bl + Math.max(0, (w * cw - bl - label.length * cw) / 2)
+      : cw;
   const cls = [
     'lt-k',
     `lt-k-${kind}`,
@@ -459,7 +469,12 @@ export function Key(
       }
       onMouseEnter={focus.onMouseEnter}
     >
-      <span style={{ left: px(lx - bl), top: px(ty) }}>{label}</span>
+      <span
+        className={cx(state === 'dead' ? undefined : labelCls)}
+        style={{ left: px(lx - bl), top: px(ty) }}
+      >
+        {label}
+      </span>
       {!!right && (
         <span
           className={cx(rightCls)}
@@ -1389,7 +1404,8 @@ export const TERM_CSS = `
 .lt-tui .lt-k-big { background: var(--lt-key); border-color: var(--lt-fg); color: var(--lt-wht); text-shadow: 0 0 5px #a070ff; }
 .lt-tui .lt-k-plain { color: var(--lt-dim); text-shadow: 0 0 3px rgba(143,111,200,.5); }
 .lt-tui .lt-k-cap { background: var(--lt-cap); color: var(--lt-wht); text-shadow: 0 0 5px #a070ff; }
-.lt-tui .lt-k.is-foc, .lt-tui .lt-k.is-lit { background: var(--lt-fg); border-color: var(--lt-fg);
+.lt-tui .lt-k.is-lit { background: var(--lt-dim); border-color: var(--lt-dim); color: var(--lt-ink); text-shadow: none; }
+.lt-tui .lt-k.is-foc { background: var(--lt-fg); border-color: var(--lt-fg);
   color: var(--lt-ink); text-shadow: none; }
 .lt-tui .lt-k.is-foc { box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-k.is-on { background: var(--lt-acc); border-color: var(--lt-acc); color: var(--lt-ink); text-shadow: none; }
@@ -1404,6 +1420,9 @@ export const TERM_CSS = `
 .lt-tui .lt-boxs-bg { background: var(--lt-bg); }
 .lt-tui .lt-dialog { position: absolute; left: 0; top: 0; z-index: 8; }
 .lt-tui .lt-dialog-block { position: absolute; }
+.lt-tui .lt-dimsheet { position: absolute; inset: 0; z-index: 7; background: rgba(5,1,11,.65); }
+.lt-tui .lt-sheet { position: absolute; inset: 0; z-index: 7; }
+.lt-tui .lt-emblem { position: absolute; z-index: 2; }
 .lt-tui .lt-rule { background: var(--lt-edge); }
 .lt-tui .lt-pager { cursor: pointer; z-index: 5; }
 .lt-tui .lt-box { border-style: solid; border-color: var(--lt-edge); }

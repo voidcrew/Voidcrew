@@ -9,16 +9,16 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { CrewRecordPane, isLocked } from './CrewRecord';
+import { CrewRecord, classLine, isLocked } from './CrewRecord';
+import { usePager } from './nav';
 import {
+  Big,
   BODY_Y,
   BOX_Y,
-  Big,
   Box,
   bodyRows,
   cut,
   Key,
-  LEGACY_TOP,
   NameLine,
   Pager,
   Put,
@@ -70,16 +70,6 @@ function statusOf(c: Crew): Status {
 
 const count = (n: number) => String(Math.min(999, Math.max(0, n)));
 
-/** `<Class> • <n> aboard`; the class drops out when the name already starts with it. */
-function classLine(c: Crew, name: string): string {
-  const cls = safe(c.cls).trim();
-  const aboard = `${Math.max(0, c.crew || 0)} aboard`;
-  if (!cls || name.toUpperCase().startsWith(cls.toUpperCase())) {
-    return aboard;
-  }
-  return `${cls} ${SEP} ${aboard}`;
-}
-
 type Shown = {
   c: Crew;
   name: string;
@@ -90,7 +80,7 @@ type Shown = {
 
 export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
   const { setTab } = props;
-  const { data } = useBackend<LobbyData>();
+  const { data, act } = useBackend<LobbyData>();
   const { cols, rows } = useGrid();
   const crews = data.crews || [];
   const [selRef, setSelRef] = useState<string | null>(null);
@@ -120,6 +110,32 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
   }, [crews]);
 
   const selected = crews.find((c) => c.ref === selRef) || null;
+
+  // The server sends the roster only for the open record: tell it which one, and when it closes.
+  const openSent = useRef<string | null>(null);
+  useEffect(() => {
+    if (selRef && selRef !== openSent.current) {
+      act('crew_open', { ship: selRef });
+      openSent.current = selRef;
+    } else if (!selRef && openSent.current) {
+      act('crew_close');
+      openSent.current = null;
+    }
+  }, [selRef]);
+  useEffect(
+    () => () => {
+      if (openSent.current) {
+        act('crew_close');
+      }
+    },
+    [],
+  );
+  // A ship that has left closes its record.
+  useEffect(() => {
+    if (selRef && !selected) {
+      setSelRef(null);
+    }
+  }, [selRef, !!selected]);
 
   const n = sorted.length;
   const B = bodyRows(rows);
@@ -165,38 +181,32 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
   };
 
   // PageDown and PageUp turn the page from anywhere in the list.
-  const turnRef = useRef(turn);
-  turnRef.current = turn;
-  const pgRef = useRef(pg);
-  pgRef.current = pg;
   const listOpen = !selected && pages > 1;
-  useEffect(() => {
-    if (!listOpen) {
-      return;
-    }
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-        return;
-      }
-      if (e.key === 'PageDown' || e.key === 'PageUp') {
-        e.preventDefault();
-        turnRef.current(pgRef.current + (e.key === 'PageDown' ? 1 : -1));
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [listOpen]);
+  usePager(listOpen ? (step) => turn(pg + step) : null);
 
   if (selected) {
+    const at = sorted.findIndex((x) => x.c.ref === selected.ref);
+    const close = () => {
+      // Back to the list with that ship focused, on its page.
+      setClaimRef(selected.ref);
+      setFocRef(selected.ref);
+      lastIdx.current = at;
+      setPage(Math.floor(Math.max(0, at) / per) + 1);
+      setSelRef(null);
+    };
     return (
-      <CrewRecordPane
+      <CrewRecord
+        key={selected.ref}
         crew={selected}
-        x={0}
-        w={cols}
-        h={rows - 1 - LEGACY_TOP}
-        narrow
-        onClose={() => setSelRef(null)}
+        index={at + 1}
+        total={n}
+        onStep={(to) => {
+          const next = sorted[to - 1];
+          if (next) {
+            setSelRef(next.c.ref);
+          }
+        }}
+        onClose={close}
       />
     );
   }
@@ -249,6 +259,17 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
       );
     });
   } else {
+    // Spare rows go into the gaps between rows (quarter steps, 0.25 to 0.75), so the page
+    // fills down to the pager, or to the body's end on a single page.
+    const bottom = pages > 1 ? rows - 2.25 - 0.25 : BODY_Y + B;
+    const slots = Math.max(1, per - 1);
+    const gap = Math.max(
+      0.25,
+      Math.min(
+        0.75,
+        Math.floor(((bottom - BODY_Y - per * 2.25) / slots) * 4) / 4,
+      ),
+    );
     shown.forEach((x, i) => {
       const firstRow = i === 0;
       const lastRow = i === shown.length - 1;
@@ -256,7 +277,7 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
         <CrewRow
           key={x.c.ref}
           x={x}
-          y0={BODY_Y + i * 2.5}
+          y0={BODY_Y + i * (2.25 + gap)}
           alt={(first + i) % 2 === 1}
           auto={x.c.ref === claim ? 1 : undefined}
           onOpen={() => setSelRef(x.c.ref)}

@@ -612,19 +612,32 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	yard_report_failed_launch(player)
 
 /datum/lobby_terminal/proc/yard_load(mob/dead/new_player/player, list/params)
+	// A second press while a load is under way leaves its CONFIRMED box alone.
+	if(GLOB.lobby_join_locks[player.ckey] && notice?["kind"] == "ok")
+		return TRUE
 	var/denial = yard_route_denial(player)
 	if(denial)
 		set_notice(denial, "warn")
 		return TRUE
 	var/slot = text2num("[params["slot"]]")
-	if(!isnum(slot) || slot < 1 || slot != round(slot))
+	if(!isnum(slot) || slot < 1 || slot > SHIP_SAVE_SLOTS || slot != round(slot))
 		return FALSE
-	var/form_new = yard_form_new(player, params)
+	var/list/card = saved_ship_card(slot)
+	if(!card)
+		set_notice("No such record.", "warn")
+		return TRUE
+	if(card["denial"])
+		set_notice(card["denial"], "warn")
+		return TRUE
+	// A save that returns the player to their own crew leaves no crew, so nothing is asked. If that stops
+	// holding during the read, launch() binds with form_new FALSE, which never drops a crew.
+	var/form_new = card["restores"] ? FALSE : yard_form_new(player, params)
 	if(isnull(form_new))
 		return TRUE
 	if(!yard_take_lock(player))
 		set_notice("Your ship is already being prepared.", "warn")
 		return TRUE
+	set_notice("Preparing [card["name"] || "your ship"].", "ok")
 	INVOKE_ASYNC(src, PROC_REF(run_load), player.ckey, slot, form_new)
 	return TRUE
 

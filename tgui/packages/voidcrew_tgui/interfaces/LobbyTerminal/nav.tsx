@@ -45,6 +45,12 @@ export type FocusOpts = {
   mouseOnly?: boolean;
   /** A text field: Enter starts typing in it. */
   input?: RefObject<HTMLInputElement | null>;
+  /**
+   * Layout zone: 'menu' for the side menu and key bar, 'main' (the default) for the rest. An
+   * arrow move from the menu back into the main area returns to the main item that last had
+   * the focus, if it is still there.
+   */
+  zone?: string;
 };
 
 type Item = {
@@ -66,6 +72,8 @@ type Nav = {
   unregister: (id: string) => void;
   pushBack: (id: string, fn: RefObject<() => void>) => void;
   popBack: (id: string) => void;
+  pushPager: (id: string, fn: RefObject<(step: number) => void>) => void;
+  popPager: (id: string) => void;
 };
 
 const NavContext = createContext<Nav | null>(null);
@@ -208,6 +216,11 @@ export function NavProvider(props: ProviderProps) {
   const items = useRef(new Map<string, Item>()).current;
   const order = useRef<string[]>([]).current;
   const backs = useRef<[string, RefObject<() => void>][]>([]).current;
+  const pagers = useRef<[string, RefObject<(step: number) => void>][]>(
+    [],
+  ).current;
+  /** The last item focused in each zone. */
+  const lastInZone = useRef(new Map<string, string>()).current;
   const scopes = useRef<string[]>(['root']).current;
   /** Items in the newest open scope, in mount order. */
   const live = () => {
@@ -238,6 +251,9 @@ export function NavProvider(props: ProviderProps) {
       focusHow.current = how;
       setFocused(id);
       const item = id ? items.get(id) : undefined;
+      if (id && item) {
+        lastInZone.set(item.opts.current.zone || 'main', id);
+      }
       lastBox.current = boxOf(item) || lastBox.current;
       if ((how === 'key' || how === 'mouse') && id && !inputLocked) {
         playSound('move');
@@ -349,6 +365,15 @@ export function NavProvider(props: ProviderProps) {
           backs.splice(at, 1);
         }
       },
+      pushPager: (id, fn) => {
+        pagers.push([id, fn]);
+      },
+      popPager: (id) => {
+        const at = pagers.findIndex((b) => b[0] === id);
+        if (at >= 0) {
+          pagers.splice(at, 1);
+        }
+      },
     };
   }, []);
 
@@ -390,6 +415,17 @@ export function NavProvider(props: ProviderProps) {
         }
       }
       if (best) {
+        // Back from the menu into the main area: the main item that last had the focus.
+        const fromZone = item.opts.current.zone || 'main';
+        const toZone = items.get(best)?.opts.current.zone || 'main';
+        if (fromZone !== toZone && toZone === 'main') {
+          const last = lastInZone.get('main');
+          if (last && last !== best && live().includes(last)) {
+            if (boxOf(items.get(last))) {
+              best = last;
+            }
+          }
+        }
         nav.focus(best, 'key');
       }
     };
@@ -448,6 +484,15 @@ export function NavProvider(props: ProviderProps) {
         if (top) {
           playSound('press');
           top[1].current();
+        }
+        return;
+      }
+      if (e.key === 'PageUp' || e.key === 'PageDown') {
+        e.preventDefault();
+        const top = pagers[pagers.length - 1];
+        if (top) {
+          playSound('move');
+          top[1].current(e.key === 'PageUp' ? -1 : 1);
         }
         return;
       }
@@ -548,6 +593,25 @@ export function useBack(fn: (() => void) | null) {
     nav.pushBack(id, fnRef);
     return () => nav.popBack(id);
   }, [active, nav?.pushBack]);
+}
+
+/**
+ * What PageUp (-1) and PageDown (+1) do while this is mounted (the newest mounted one wins):
+ * page a list, step to the previous or next record.
+ */
+export function usePager(fn: ((step: number) => void) | null) {
+  const nav = useContext(NavContext);
+  const id = useId();
+  const fnRef = useRef<(step: number) => void>(() => undefined);
+  fnRef.current = fn || (() => undefined);
+  const active = !!fn;
+  useLayoutEffect(() => {
+    if (!active || !nav) {
+      return;
+    }
+    nav.pushPager(id, fnRef);
+    return () => nav.popPager(id);
+  }, [active, nav?.pushPager]);
 }
 
 /** The lit-focus look added to whatever is focused (an outline glow in the item's colour). */

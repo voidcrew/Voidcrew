@@ -4,6 +4,10 @@ import { useBackend } from 'tgui/backend';
 import { Band, cut, HRule, Put, RPut, useGrid } from './term';
 import type { LobbyData, TabId } from './types';
 
+/**
+ * The screens in keyboard order: 1 to 4 and Tab step through them. Only the first three are
+ * tabs; CHARACTER is opened from the menu and lights no tab.
+ */
 export const TABS: [TabId, string][] = [
   ['crews', 'CREWS'],
   ['shipyard', 'SHIPYARD'],
@@ -96,22 +100,32 @@ export function HeaderBand() {
 }
 
 /** Tab blocks in main-region columns: [first column, width]. */
-const TAB_BLOCKS: Record<TabId, [number, number]> = {
+const TAB_BLOCKS: Partial<Record<TabId, [number, number]>> = {
   crews: [0, 7],
   shipyard: [8, 10],
   housing: [19, 9],
-  // Until the side menu's CHARACTER key exists, CHARACTER stays reachable here.
-  character: [30, 11],
 };
 
-/** Tab row at the top of the main region (rows 0 to 1.5) and the rule under it. */
-export function TabRow(props: { tab: TabId; setTab: (tab: TabId) => void }) {
-  const { tab, setTab } = props;
+/**
+ * Tab row at the top of the main region (rows 0 to 1.5) and the rule under it. While the
+ * CHARACTER screen is open no tab is lit. `claim`: the open tab claims the first focus at that
+ * priority (nav.tsx FocusOpts.auto).
+ */
+export function TabRow(props: {
+  tab: TabId;
+  setTab: (tab: TabId) => void;
+  claim?: number;
+}) {
+  const { tab, setTab, claim } = props;
   const { cols } = useGrid();
   return (
     <>
       {TABS.map(([id, label]) => {
-        const [bx, bw] = TAB_BLOCKS[id];
+        const block = TAB_BLOCKS[id];
+        if (!block) {
+          return null;
+        }
+        const [bx, bw] = block;
         const open = id === tab;
         return (
           <Fragment key={id}>
@@ -122,6 +136,7 @@ export function TabRow(props: { tab: TabId; setTab: (tab: TabId) => void }) {
               cls={open ? 'ink' : 'dim'}
               hoverCls={open ? 'ink' : ''}
               onClick={() => setTab(id)}
+              auto={open ? claim : undefined}
               tab
             >
               {label}

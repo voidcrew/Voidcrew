@@ -8,7 +8,7 @@
  *
  * UI-local state (tab, selections, pages, fits) lives in React; only actions round-trip.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
@@ -19,9 +19,11 @@ import { CrewsTab } from './CrewsTab';
 import { HeaderBand, TABS, TabRow } from './Header';
 import { HousingTab } from './HousingTab';
 import { computeLayout, regions } from './layout';
+import { KeyBar, MenuPopup, SideMenu } from './Menu';
 import { Confirmed, NoticeLine } from './Notice';
-import { NAV_CSS, NavProvider } from './nav';
-import { Box, type Grid, GridContext, Region, STARS, TERM_CSS } from './term';
+import { NAV_CSS, NavProvider, useBack } from './nav';
+import { ObserveConfirm } from './ObserveConfirm';
+import { type Grid, GridContext, Region, STARS, TERM_CSS } from './term';
 import type { LobbyData, TabId } from './types';
 import { YardTab } from './YardTab';
 
@@ -126,16 +128,79 @@ export function LobbyTerminal() {
   const reg = regions(layout.mode, layout.rows);
 
   const [tab, setTab] = useState<TabId>('crews');
+  /** The tab that was open before CHARACTER, for Escape at its file view. */
+  const [prevTab, setPrevTab] = useState<TabId>('crews');
   /** Bumped when SHIPYARD is pressed while already on it. */
   const [yardHome, setYardHome] = useState(0);
-  /** Bumped when CHARACTER (tab or bezel key) is pressed while already on it: back to the file view. */
+  /** Bumped when CHARACTER is pressed while already on it: back to the file view. */
   const [charHome, setCharHome] = useState(0);
+  const [observeOpen, setObserveOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  /** CHARACTER was opened by the shell before the round, not by the player. */
+  const [autoChar, setAutoChar] = useState(false);
+  const autoTried = useRef(false);
+
+  const openScreen = (next: TabId) => {
+    if (next === 'character' && tab !== 'character') {
+      setPrevTab(tab);
+    }
+    setTab(next);
+  };
+
   const request = data.tab_request;
+  /** Counts screens the server picked; the tab row mounts again on each so its claim runs. */
+  const [served, setServed] = useState(0);
   useEffect(() => {
     if (request) {
-      setTab(request.tab);
+      // The server picked the screen: the CHARACTER file no longer opens by itself.
+      autoTried.current = true;
+      openScreen(request.tab);
+      setServed((n) => n + 1);
     }
   }, [request?.serial]);
+
+  // The player's first key press or click after LOGIN.
+  const bootRef = useRef(data.boot);
+  bootRef.current = data.boot;
+  const [acted, setActed] = useState(false);
+  useEffect(() => {
+    if (acted) {
+      return;
+    }
+    const onAct = () => {
+      if (!bootRef.current) {
+        setActed(true);
+      }
+    };
+    window.addEventListener('keydown', onAct, true);
+    window.addEventListener('click', onAct, true);
+    return () => {
+      window.removeEventListener('keydown', onAct, true);
+      window.removeEventListener('click', onAct, true);
+    };
+  }, [acted]);
+
+  // Before the round the main area opens on the CHARACTER file, once per page load, until the
+  // player does something. When the round starts and they still have not, CREWS.
+  const before = data.phase === 'loading' || data.phase === 'pregame';
+  useEffect(() => {
+    if (autoTried.current || acted || !before || !data.prefs_ready) {
+      return;
+    }
+    autoTried.current = true;
+    if (tab !== 'character') {
+      openScreen('character');
+      setAutoChar(true);
+    }
+  }, [acted, before, data.prefs_ready]);
+  useEffect(() => {
+    if (data.phase === 'playing' && autoChar && !acted && tab === 'character') {
+      setTab('crews');
+    }
+    if (data.phase === 'playing' || acted) {
+      setAutoChar(false);
+    }
+  }, [data.phase, acted]);
 
   // Report display metrics once the font settles (Windows scaling, pane size), for tuning.
   useEffect(() => {
@@ -148,6 +213,7 @@ export function LobbyTerminal() {
           s: layout.s,
           cols: layout.cols,
           rows: layout.rows,
+          mode: layout.mode,
         }),
       3000,
     );
@@ -164,9 +230,11 @@ export function LobbyTerminal() {
     if (next === tab && next === 'character') {
       setCharHome(charHome + 1);
     }
-    setTab(next);
-    if (confirmed) {
-      act('dismiss');
+    openScreen(next);
+    setObserveOpen(false);
+    setMenuOpen(false);
+    if (confirmed && notice) {
+      act('dismiss', { at: notice.at });
     }
   };
   const { s } = layout;
@@ -179,10 +247,30 @@ export function LobbyTerminal() {
   } else if (tab === 'shipyard') {
     body = <YardTab home={yardHome} />;
   } else if (tab === 'character') {
-    body = <CharacterTab home={charHome} />;
+    body = <CharacterTab home={charHome} auto={autoChar} />;
   } else {
     body = <HousingTab />;
   }
+  // When the start-up screen ends, the first-focus owners mount again so their claim runs.
+  // The CHARACTER screen is left alone: mounting it again would ask for its file again.
+  const bootKey = data.boot ? 'boot' : 'live';
+  // The open tab's first-focus claim: in setup and ended it wins (design 01 section 9); on
+  // HOUSING it is the stand-in when no key is live (design 02 section 4.4), so a live key's
+  // claim (1) and READY's (9) beat it.
+  const tabClaim =
+    data.phase === 'setup' || data.phase === 'ended'
+      ? 9
+      : tab === 'housing'
+        ? 0
+        : undefined;
+  const menu = {
+    charOpen: tab === 'character' && !confirmed,
+    onCharacter: () => switchTab('character'),
+    onObserve: () => {
+      setMenuOpen(false);
+      setObserveOpen(true);
+    },
+  };
 
   return (
     <div
@@ -241,21 +329,43 @@ export function LobbyTerminal() {
                 </Region>
                 {!!reg.menu && (
                   <Region {...reg.menu}>
-                    <Box
-                      x={0}
-                      y={0}
-                      w={reg.menu.w}
-                      h={reg.menu.h}
-                      tone="menu"
-                    />
+                    <SideMenu key={bootKey} {...menu} />
                   </Region>
                 )}
                 <Region {...reg.main}>
-                  <TabRow tab={tab} setTab={switchTab} />
-                  {body}
+                  <TabRow
+                    key={`${bootKey}-${served}`}
+                    tab={tab}
+                    setTab={switchTab}
+                    claim={tabClaim}
+                  />
+                  {tab === 'character' && !confirmed && (
+                    <BackTo onBack={() => switchTab(prevTab)} />
+                  )}
+                  <Fragment key={tab === 'character' ? 'char' : bootKey}>
+                    {body}
+                  </Fragment>
                   <NoticeLine />
+                  {!!observeOpen && !confirmed && (
+                    <ObserveConfirm onClose={() => setObserveOpen(false)} />
+                  )}
+                  {!!reg.bar && !!menuOpen && (
+                    <MenuPopup onClose={() => setMenuOpen(false)} />
+                  )}
                 </Region>
-                {!!reg.bar && <Region {...reg.bar} />}
+                {!!reg.bar && (
+                  <Region {...reg.bar}>
+                    <KeyBar
+                      key={bootKey}
+                      {...menu}
+                      menuOpen={menuOpen}
+                      onMenu={() => {
+                        setObserveOpen(false);
+                        setMenuOpen(!menuOpen);
+                      }}
+                    />
+                  </Region>
+                )}
               </GridContext.Provider>
             </div>
             {/* Glass layers, bottom to top: the canvas, the start-up screen, scanlines, vignette. */}
@@ -271,4 +381,10 @@ export function LobbyTerminal() {
       </NavProvider>
     </div>
   );
+}
+
+/** Escape at the CHARACTER file view: back to the tab that was open before it. */
+function BackTo(props: { onBack: () => void }) {
+  useBack(props.onBack);
+  return null;
 }
