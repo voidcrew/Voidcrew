@@ -1445,7 +1445,7 @@ export const TERM_CSS = `
 .lt-tui .lt-blk.ablk { background: var(--lt-amb); box-shadow: 0 0 6px rgba(255,196,31,.5); }
 .lt-tui .lt-blk.rblk { background: var(--lt-red); box-shadow: 0 0 6px rgba(255,95,111,.5); }
 .lt-tui .lt-blk.faint { background: var(--lt-faint); box-shadow: none; }
-.lt-vscreen { position: absolute; box-sizing: border-box; overflow: hidden; background: #07030d;
+.lt-vscreen { position: absolute; z-index: 2; box-sizing: border-box; overflow: hidden; background: #07030d;
   border: 1px solid #3a2466; outline: 3px solid #0c0616; outline-offset: 0;
   box-shadow: 0 0 0 4px #3a2466, inset 0 0 18px rgba(0,0,0,.9), inset 0 2px 6px rgba(0,0,0,.8); }
 .lt-vscan { position: absolute; inset: 0; pointer-events: none; z-index: 3;

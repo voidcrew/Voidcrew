@@ -14,8 +14,9 @@
  * picture) and tight (B < 14.75, no picture, the steps in two columns). The layout is worked out
  * once a hull from its largest step and longest text, so nothing moves between steps.
  */
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
+import { usePager } from './nav';
 import { ShipPic } from './ShipPic';
 import {
   bodyRows,
@@ -367,26 +368,11 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   };
 
   // PageDown / PageUp: NEXT / PREV.
-  const keys = useRef<(d: number) => void>(() => {});
-  keys.current = (d: number) => {
+  usePager((d) => {
     if (!ctx.view.leave) {
       goStep(d > 0 ? at + 1 : at > 0 ? at - 1 : -1);
     }
-  };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-        return;
-      }
-      if (e.key === 'PageDown' || e.key === 'PageUp') {
-        e.preventDefault();
-        keys.current(e.key === 'PageDown' ? 1 : -1);
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, []);
+  });
 
   const out: ReactNode[] = [];
   out.push(

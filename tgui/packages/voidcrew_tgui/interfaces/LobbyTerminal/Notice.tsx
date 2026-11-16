@@ -86,8 +86,9 @@ export function NoticeLine() {
   const lines = wrapMax(safe(notice.text).toUpperCase(), NOTICE_W, 2);
   const top = rows - lines.length;
   const clear = () => act('dismiss', { at: notice.at });
+  // Its own layer: over everything on the screen (picture wells and keys included), under dialogs.
   return (
-    <>
+    <div style={{ position: 'absolute', left: 0, top: 0, zIndex: 6 }}>
       {lines.length > 1 && (
         <Band x={0} y={top} w={63} h={lines.length} tone="bg" />
       )}
@@ -110,6 +111,6 @@ export function NoticeLine() {
           {line}
         </Put>
       ))}
-    </>
+    </div>
   );
 }

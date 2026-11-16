@@ -10,8 +10,9 @@
  * FIT OUT keeps a fit that already belongs to this hull (YardTab's go.fitOut); only another
  * hull starts from stock.
  */
-import { type ReactNode, useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 
+import { usePager } from './nav';
 import { ShipPic } from './ShipPic';
 import {
   Big,
@@ -53,41 +54,18 @@ const figure = (n: number) => (n > 9999 ? '9999+' : String(n));
 
 /** PageUp / PageDown step through the catalog while the record is open. */
 function useHullKeys(ctx: YardCtx, hull: Hull) {
-  const ref = useRef<(d: number) => void>(() => {});
-  ref.current = (d: number) => {
+  usePager((d) => {
     const { catalog } = ctx;
     const at = catalog.findIndex((h) => h.id === hull.id);
     const to = at + d;
     if (at >= 0 && to >= 0 && to < catalog.length && !ctx.view.leave) {
       ctx.go.record(catalog[to].id);
     }
-  };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-        return;
-      }
-      if (e.key === 'PageDown' || e.key === 'PageUp') {
-        e.preventDefault();
-        ref.current(e.key === 'PageDown' ? 1 : -1);
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, []);
+  });
 }
 
-/**
- * `x` and `w` are accepted for the list's old call sites; the record always takes the whole
- * main box.
- */
-export function HullRecord(props: {
-  ctx: YardCtx;
-  hull: Hull;
-  x?: number;
-  w?: number;
-}) {
+/** The record always takes the whole main box. */
+export function HullRecord(props: { ctx: YardCtx; hull: Hull }) {
   const { ctx, hull } = props;
   const { rows } = useGrid();
   usePreview(hull.id);

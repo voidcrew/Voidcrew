@@ -714,7 +714,7 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	if(isnull(form_new))
 		return TRUE
 	if(!yard_take_lock(player))
-		set_notice("Your ship is already being prepared.", "warn")
+		yard_lock_busy()
 		return TRUE
 	set_notice("Preparing [card["name"] || "your ship"].", "ok")
 	INVOKE_ASYNC(src, PROC_REF(run_load), player.ckey, slot, form_new)

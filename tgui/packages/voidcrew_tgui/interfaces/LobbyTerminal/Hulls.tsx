@@ -6,6 +6,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { HullRecord } from './HullRecord';
+import { usePager } from './nav';
 import {
   BODY_Y,
   BOX_Y,
@@ -175,31 +176,11 @@ export function Hulls(props: { ctx: YardCtx }) {
   };
 
   // PageDown and PageUp turn the page from anywhere in the list.
-  const turnRef = useRef(turn);
-  turnRef.current = turn;
-  const pgRef = useRef(pg);
-  pgRef.current = pg;
   const listOpen = !hull && pages > 1;
-  useEffect(() => {
-    if (!listOpen) {
-      return;
-    }
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-        return;
-      }
-      if (e.key === 'PageDown' || e.key === 'PageUp') {
-        e.preventDefault();
-        turnRef.current(pgRef.current + (e.key === 'PageDown' ? 1 : -1));
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [listOpen]);
+  usePager(listOpen ? (step) => turn(pg + step) : null);
 
   if (hull) {
-    return <HullRecord ctx={ctx} hull={hull} x={0} w={63} />;
+    return <HullRecord ctx={ctx} hull={hull} />;
   }
 
   const claim = claimId ?? (shown[0] ? shown[0].hull.id : null);

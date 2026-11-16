@@ -3,7 +3,7 @@
  * belongs to one (spec 02, 2.4). The focus starts on [ STAY ]; Escape is STAY. The right-hand
  * key is the only thing on the page that sends leave_crew 1.
  */
-import { useBack } from './nav';
+import { useBack, usePager } from './nav';
 import { BODY_Y, Btn, Dialog, Put, safe, useGrid, wrapMax } from './term';
 
 const W = 45;
@@ -20,6 +20,8 @@ export function LeaveCrew(props: {
   const { crew, label, onStay, onGo } = props;
   const { cols, rows, cw, ch } = useGrid();
   useBack(onStay);
+  // PageUp / PageDown do nothing while this is open (the fit underneath would change step).
+  usePager(() => undefined);
   const lines = wrapMax(`THIS LEAVES ${safe(crew).toUpperCase()}.`, TEXT_W, 3);
   const n = lines.length;
   const x = Math.floor((cols - W) / 2);

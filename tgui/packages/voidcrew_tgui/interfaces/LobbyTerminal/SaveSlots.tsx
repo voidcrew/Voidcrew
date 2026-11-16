@@ -178,25 +178,6 @@ export function SaveSlots(props: {
   return <>{out}</>;
 }
 
-/**
- * Seam workaround: `.lt-vscreen` has no z-index, so a Well inside a Slab (z-index 1) draws under
- * the slab's fill. This lifts it to the text layer without catching the mouse.
- */
-function Lift(props: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        zIndex: 2,
-        pointerEvents: 'none',
-      }}
-    >
-      {props.children}
-    </div>
-  );
-}
-
 function FullSlot(props: {
   n: number;
   card: SaveCard | null;
@@ -311,7 +292,7 @@ function FullSlot(props: {
   }
   return (
     <Slab x={1} y={ys} w={61} h={h} variant="block" dead={dead}>
-      <Lift>{well}</Lift>
+      {well}
       {body}
     </Slab>
   );
