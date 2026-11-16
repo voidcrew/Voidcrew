@@ -484,6 +484,16 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 		return locate(footprint.low_x, footprint.low_y, footprint.z_value)
 	return null
 
+/// A trader outpost's corner is open space outside the station: land where a ghost would, inside on the concourse
+/obj/structure/overmap/trader_outpost/admin_interior_turf()
+	if(is_loading() || admin_operation || concerned)
+		return null
+	if(is_loaded())
+		var/turf/inside = ghost_teleport_turf()
+		if(inside)
+			return inside
+	return ..()
+
 /// Activity describes whether the contact is in use in the world, independently of
 /// its lifecycle label. A loaded interior remains active while waiting for cleanup.
 /obj/structure/overmap/proc/admin_is_active()
