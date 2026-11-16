@@ -37,6 +37,7 @@ import {
   cut,
   Dialog,
   Hit,
+  Key,
   Put,
   safe,
   useGrid,
@@ -376,6 +377,47 @@ export function useLatePager() {
   const ref = useRef<((step: number) => void) | null>(null);
   usePager((step) => ref.current?.(step));
   return ref;
+}
+
+/**
+ * A row's `<` and `>`: two 3-cell cap keys from column x, mouse targets only (the row's own
+ * keys step it). `ends`: the value sits at its low or high end; that arrow is drawn faint and
+ * does nothing, as the pagers draw theirs. A cycling list has no ends.
+ */
+export function StepKeys(props: {
+  x: number;
+  y: number;
+  h: number;
+  onStep: (by: 1 | -1) => void;
+  ends?: [atLow: boolean, atHigh: boolean];
+}) {
+  const { x, y, h, onStep, ends } = props;
+  return (
+    <>
+      <Key
+        x={x}
+        y={y}
+        w={3}
+        h={h}
+        kind="cap"
+        label="<"
+        mouseOnly
+        state={ends?.[0] ? 'dead' : 'idle'}
+        onClick={() => onStep(-1)}
+      />
+      <Key
+        x={x + 3}
+        y={y}
+        w={3}
+        h={h}
+        kind="cap"
+        label=">"
+        mouseOnly
+        state={ends?.[1] ? 'dead' : 'idle'}
+        onClick={() => onStep(1)}
+      />
+    </>
+  );
 }
 
 /** The facing after a turn, for the router's dir state. */

@@ -19,6 +19,7 @@ import {
   IdColumn,
   planId,
   q,
+  StepKeys,
   useChar,
   useLatePager,
   useListPager,
@@ -486,11 +487,14 @@ function Row(props: {
   /** Enter or a click on the row; null: the row is not a focus stop (a typed number). */
   onPress: (() => void) | null;
   onStep?: (by: number) => void;
+  /** A number at its low or high end: that arrow is faint and inert. */
+  ends?: [boolean, boolean];
   auto?: number;
   /** Draws the value; ty = the text row (centred), by = the 1.25 Big row. */
   value: (ty: number, by: number, focused: boolean) => ReactNode;
 }) {
-  const { y, h, alt, label, paired, onPress, onStep, auto, value } = props;
+  const { y, h, alt, label, paired, onPress, onStep, ends, auto, value } =
+    props;
   const [focused, setFocused] = useState(false);
   const ty = y + (h - 1) / 2;
   const by = y + (h - 1.25) / 2;
@@ -511,28 +515,7 @@ function Row(props: {
       </Put>
       {value(ty, by, focused)}
       {!!onStep && (
-        <>
-          <Key
-            x={56}
-            y={y}
-            w={3}
-            h={h}
-            kind="cap"
-            label="<"
-            mouseOnly
-            onClick={() => onStep(-1)}
-          />
-          <Key
-            x={59}
-            y={y}
-            w={3}
-            h={h}
-            kind="cap"
-            label=">"
-            mouseOnly
-            onClick={() => onStep(1)}
-          />
-        </>
+        <StepKeys x={56} y={y} h={h} onStep={onStep} ends={ends} />
       )}
     </Slab>
   );
@@ -841,6 +824,7 @@ export function BodyEditor(props: {
             key={k}
             {...common}
             onPress={null}
+            ends={[v <= spec.lo, v >= spec.hi]}
             onStep={(by) => {
               const next = clamp(
                 Math.round((v + by * spec.step) * 100) / 100,
