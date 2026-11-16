@@ -15,7 +15,8 @@
  * - Fern stocks seeds and supplies rather than printable hand tools. Her
  *   tray board is the fabrication-gated infrastructure for adding a garden.
  * - Fern's produce and graft buybacks pay pocket change on purpose: it's the
- *   "sell your harvest at the waystation" fantasy, not an economy. Her graft
+ *   "sell your harvest at the waystation" fantasy, not an economy. Only her
+ *   prize-plant rows (mutation-chain crops over a potency bar) pay real money. Her graft
  *   ledger refuses plain repeated-harvest cuttings so a tray of wheat can't be
  *   farmed into credits; see the matches() override below.
  * - Pike never buys what his own pond stocks at meaningful prices; the
@@ -96,7 +97,15 @@
 		/datum/shop_sku/potting/rare/gaia,
 		/datum/shop_sku/potting/rare/mystery_seeds,
 	)
+	// Prize plants sit ahead of the farm stand so a counter quote prices them right
 	buyback_types = list(
+		/datum/shop_buyback/potting/prize/gatfruit,
+		/datum/shop_buyback/potting/prize/omega_weed,
+		/datum/shop_buyback/potting/prize/bluespace_tomato,
+		/datum/shop_buyback/potting/prize/holymelon,
+		/datum/shop_buyback/potting/prize/golden_apple,
+		/datum/shop_buyback/potting/prize/bluespace_banana,
+		/datum/shop_buyback/potting/prize/glowcap,
 		/datum/shop_buyback/potting/graft,
 		/datum/shop_buyback/potting/ash_flora,
 		/datum/shop_buyback/potting/produce,
@@ -363,6 +372,97 @@
 	demand_min = 5
 	demand_max = 10
 
+// A prize plant good enough for Fern's own ledger never goes on the farm stand.
+// One below her bar does, at farm-stand rates.
+/datum/shop_buyback/potting/produce/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return !claimed_by_buyback_family(offered, /datum/shop_buyback/potting/prize)
+
+// ===== FERN'S PRIZE PLANTS =====
+// Mutation-chain crops, bought one at a time. Once a crew has the seed it can
+// grow these forever, so the cap is demand (1-3, and the voucher rows never
+// refill), and the bar is seed potency: a fresh mutation comes out weak, and
+// only a few generations of real breeding clears min_potency. Anything under
+// the bar still sells on the farm stand. Seed sources checked: none of these
+// seeds is on a vendor, a cargo pack or a trader shelf. Gatfruit seeds only
+// spawn as loot; omega weed is a 1-in-5 mutation off contraband cannabis;
+// bluespace tomato is two mutations deep off a stock tomato. The credit rows
+// are one mutation off seeds anyone can buy.
+
+/datum/shop_buyback/potting/prize
+	category = "Prize Plants"
+	item_path = null
+	demand_min = 1
+	demand_max = 3
+	/// Lowest seed potency Fern will take for this entry
+	var/min_potency = 30
+
+/datum/shop_buyback/potting/prize/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	var/obj/item/food/grown/crop = offered
+	return crop.seed?.potency >= min_potency
+
+/datum/shop_buyback/potting/prize/get_denial_reason(mob/living/user)
+	. = ..()
+	if(!. || demand <= 0 || count_carried_units(user) >= 1)
+		return
+	for(var/obj/item/food/grown/crop in user.get_all_contents())
+		if(istype(crop, item_path) && !is_trader_good(crop))
+			return "Not that one. Grow me a stronger one."
+
+/datum/shop_buyback/potting/prize/gatfruit
+	name = "gatfruit"
+	desc = "Fruit that grows bullets. Fern keeps hers in a locked drawer."
+	item_path = /obj/item/food/grown/gatfruit
+	pay_vouchers = 2
+	min_potency = 50
+	demand_min = 1
+	demand_max = 1
+
+/datum/shop_buyback/potting/prize/omega_weed
+	name = "omega weed"
+	desc = "Top-shelf omega weed. Fern says it's for a study."
+	item_path = /obj/item/food/grown/cannabis/ultimate
+	pay_vouchers = 1
+	min_potency = 50
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/potting/prize/bluespace_tomato
+	name = "bluespace tomato"
+	desc = "A tomato that isn't entirely in one place. Fern wants a strong one."
+	item_path = /obj/item/food/grown/tomato/blue/bluespace
+	pay_vouchers = 1
+	min_potency = 50
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/potting/prize/holymelon
+	name = "holy melon"
+	desc = "A melon full of holy water. The chaplain on the next ring orders them by the crate."
+	item_path = /obj/item/food/grown/holymelon
+	pay_credits = 200
+
+/datum/shop_buyback/potting/prize/golden_apple
+	name = "golden apple"
+	desc = "An apple with real gold in it. Fern doesn't eat them."
+	item_path = /obj/item/food/grown/apple/gold
+	pay_credits = 200
+
+/datum/shop_buyback/potting/prize/bluespace_banana
+	name = "bluespace banana"
+	desc = "A banana that slips through space. Fern handles them with tongs."
+	item_path = /obj/item/food/grown/banana/bluespace
+	pay_credits = 150
+
+/datum/shop_buyback/potting/prize/glowcap
+	name = "glowcap"
+	desc = "A mushroom that glows and holds a charge. Halcyon's night lights run on them."
+	item_path = /obj/item/food/grown/mushroom/glowshroom/glowcap
+	pay_credits = 150
+
 // =========================================================================
 // PIKE'S BAIT & TACKLE: Pike, resident angler
 // =========================================================================
@@ -420,9 +520,17 @@
 		/datum/shop_sku/bait/rotating/stocked_aquarium,
 	)
 	buyback_types = list(
-		/datum/shop_buyback/bait/pike,
+		/datum/shop_buyback/bait/mastodon,
+		/datum/shop_buyback/bait/nessie,
+		/datum/shop_buyback/bait/moonfish,
+		/datum/shop_buyback/bait/chainsawfish,
+		/datum/shop_buyback/bait/armored_pike,
 		/datum/shop_buyback/bait/donkfish,
-		/datum/shop_buyback/bait/goldfish,
+		/datum/shop_buyback/bait/swordfish,
+		/datum/shop_buyback/bait/pike,
+		/datum/shop_buyback/bait/lavaloop,
+		/datum/shop_buyback/bait/starfish,
+		/datum/shop_buyback/bait/fritterish,
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -578,14 +686,67 @@
 	price_credits = 600
 
 // ===== PIKE'S TROPHY LEDGER (buybacks) =====
-// The weird stuff only. Barnaby handles the by-the-fin chowder trade.
+// The weird stuff only. Barnaby's chowder pot takes every other fish, and
+// steps aside for anything on this list (see fresh_catch/matches()), so the
+// two ledgers never overlap.
+//
+// Where they come from: the fishing portal (printable from roundstart) opens
+// ocean and hyperspace water after fish-scanning experiments and syndicate
+// water when emagged, so swordfish, moonfish, starfish, donk-fish,
+// chainsawfish and armored pike are all ship-farmable, and fish breed in an
+// aquarium. Those pay credits. The two voucher rows can't be pulled from a
+// portal: nessie comes out of a deep fryer about once every 22 minutes on a
+// hard catch, and the mastodon out of an oil well in a ruin, or a big-fish
+// breeding project. Rift fish (chrystarfish aside) only come out of heretic
+// influences, which Voidcrew never spawns, so they aren't listed.
 
-/datum/shop_buyback/bait/pike
-	name = "pike (the fish)"
-	desc = "He wants one for the wall. He is aware of the name situation. Do not bring up the name situation."
+/datum/shop_buyback/bait/mastodon
+	name = "unmarine mastodon"
+	desc = "The big one. Pike has cleared a whole wall for it."
 	category = "Trophy Wall"
-	item_path = /obj/item/fish/pike
-	pay_credits = 300
+	item_path = /obj/item/fish/mastodon
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 1
+
+/datum/shop_buyback/bait/nessie
+	name = "nessie-fish"
+	desc = "Pulled out of a deep fryer, they say. Pike has stopped asking how."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/fryish/nessie
+	pay_vouchers = 1
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/bait/moonfish
+	name = "zagoskian moonfish"
+	desc = "A full-grown moonfish. The dwarf ones go in the chowder."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/moonfish
+	pay_credits = 400
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/bait/moonfish/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return !istype(offered, /obj/item/fish/moonfish/dwarf)
+
+/datum/shop_buyback/bait/chainsawfish
+	name = "chainsawfish"
+	desc = "Pike mounts them with the motor still in. He has the scars to prove it."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/chainsawfish
+	pay_credits = 400
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/bait/armored_pike
+	name = "armored pike"
+	desc = "A pike with plating. Pike takes it personally, in a good way."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/pike/armored
+	pay_credits = 400
 	demand_min = 1
 	demand_max = 2
 
@@ -598,11 +759,54 @@
 	demand_min = 1
 	demand_max = 2
 
-/datum/shop_buyback/bait/goldfish
-	name = "goldfish"
-	desc = "Pity rates. Everyone's first catch deserves a buyer, and Pike remembers his."
+/datum/shop_buyback/bait/swordfish
+	name = "swordfish"
+	desc = "Deep water, long bill, bad attitude. Pike wants it for over the door."
 	category = "Trophy Wall"
-	item_path = /obj/item/fish/goldfish
-	pay_credits = 25
-	demand_min = 3
-	demand_max = 5
+	item_path = /obj/item/fish/swordfish
+	pay_credits = 300
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/bait/pike
+	name = "pike (the fish)"
+	desc = "He wants one for the wall. He is aware of the name situation. Do not bring up the name situation."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/pike
+	pay_credits = 300
+	demand_min = 1
+	demand_max = 2
+
+// The armored kind has its own row
+/datum/shop_buyback/bait/pike/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return !istype(offered, /obj/item/fish/pike/armored)
+
+/datum/shop_buyback/bait/lavaloop
+	name = "lavaloop"
+	desc = "A fish that swims in lava. Pike keeps it in a steel bucket on a hot plate."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/lavaloop
+	pay_credits = 250
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/bait/starfish
+	name = "cosmostarfish"
+	desc = "Fished out of open space. Pike checks it twice for a pulse."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/starfish
+	pay_credits = 200
+	demand_min = 1
+	demand_max = 3
+
+/datum/shop_buyback/bait/fritterish
+	name = "fritterish"
+	desc = "Grown up from a fryer catch. It still smells of oil."
+	category = "Trophy Wall"
+	item_path = /obj/item/fish/fryish/fritterish
+	pay_credits = 200
+	demand_min = 1
+	demand_max = 2
+
