@@ -9,11 +9,12 @@
  * multi-z depth) give their labels by calling the registry's component once outside React and
  * reading its Dropdown's options; it is a plain function with no hooks.
  *
- * Controls by kind: a toggle flips on Enter or a click ([#] / [ ]); a choice steps with Left and
- * Right or the mouse arrows, and Enter opens the list picker when it has more than HANDFUL
- * choices or a choice's name is too long for the value zone (the picker shows names whole; the
- * row cuts them with the mark), else steps on; a number steps the same way, and Enter or a click types it; a colour
- * opens the colour panel; a text types.
+ * Controls by kind: a toggle (a drawn checkbox) flips on Enter or a click; a choice steps with
+ * Left and Right or the mouse arrows, and Enter opens the list picker when it has more than
+ * HANDFUL choices or a choice's name is too long for the value zone (the picker shows names
+ * whole; the row cuts them with the mark), else steps on; a number steps the same way, and Enter
+ * or a click types it; a volume (tg's slider) is a track the mouse drags, with Left and Right
+ * stepping a twentieth of its range; a colour opens the colour panel; a text types.
  */
 import { useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
@@ -157,31 +158,38 @@ function numberText(row: SettingRow, v: number) {
   return String(Math.round(v * 100) / 100);
 }
 
-/** The `<` and `>` around a stepped value, mouse only (Left and Right step the focused row). */
-function Arrows(props: { ty: number; onStep: (by: number) => void }) {
-  const { ty, onStep } = props;
+/**
+ * The `<` and `>` around a stepped value, mouse only (Left and Right step the focused row). An
+ * arrow that can't move the value (a number at the end of its range) is faint and inert.
+ */
+function Arrows(props: {
+  ty: number;
+  onStep: (by: number) => void;
+  atLo?: boolean;
+  atHi?: boolean;
+}) {
+  const { ty, onStep, atLo, atHi } = props;
+  const arrow = (x: number, glyph: string, by: number, dead?: boolean) =>
+    dead ? (
+      <Put x={x} y={ty} cls="faint">
+        {glyph}
+      </Put>
+    ) : (
+      <Put
+        x={x}
+        y={ty}
+        cls="dim"
+        hoverCls="inv"
+        mouseOnly
+        onClick={() => onStep(by)}
+      >
+        {glyph}
+      </Put>
+    );
   return (
     <>
-      <Put
-        x={VALUE_X}
-        y={ty}
-        cls="dim"
-        hoverCls="inv"
-        mouseOnly
-        onClick={() => onStep(-1)}
-      >
-        {'<'}
-      </Put>
-      <Put
-        x={WORK_X + WORK_W - 1}
-        y={ty}
-        cls="dim"
-        hoverCls="inv"
-        mouseOnly
-        onClick={() => onStep(1)}
-      >
-        {'>'}
-      </Put>
+      {arrow(VALUE_X, '<', -1, atLo)}
+      {arrow(WORK_X + WORK_W - 1, '>', 1, atHi)}
     </>
   );
 }
@@ -341,9 +349,7 @@ export function SettingsOptions() {
     act('settings_set', { key, value });
 
   const specs: SettingsRowSpec[] = items
-    .filter((it) =>
-      needle ? upper(it.name).includes(needle) : it.cat === cat,
-    )
+    .filter((it) => (needle ? upper(it.name).includes(needle) : it.cat === cat))
     .sort((a, b) => byName(a.name, b.name))
     .map(({ row, name, desc }) => {
       const key = row.key;
@@ -489,7 +495,12 @@ export function SettingsOptions() {
                       const text = numberText(row, now);
                       return (
                         <>
-                          <Arrows ty={ty} onStep={(by) => step(by * coarse)} />
+                          <Arrows
+                            ty={ty}
+                            onStep={(by) => step(by * coarse)}
+                            atLo={now <= lo}
+                            atHi={now >= hi}
+                          />
                           <Slide
                             x={SLIDE_X}
                             y={ty}
@@ -530,7 +541,12 @@ export function SettingsOptions() {
                 ? typeIn(numberText(row, v), 6, true, send)
                 : (ty: number) => (
                     <>
-                      <Arrows ty={ty} onStep={step} />
+                      <Arrows
+                        ty={ty}
+                        onStep={step}
+                        atLo={v <= lo}
+                        atHi={v >= hi}
+                      />
                       <Put x={VALUE_TEXT_X} y={ty} pulse={v}>
                         {cut(numberText(row, v), VALUE_TEXT_W)}
                       </Put>
