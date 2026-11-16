@@ -75,7 +75,8 @@
 		"pyromaniac": ["Matches", "Torch", "Cinders", "Smoky", "Blaze"],
 		"demolitionist": ["Fuse", "Boomer", "Sticks", "Two-Fingers", "Detonator"],
 		"ghost": ["Shade", "Blink", "Needle", "Nobody", "Quiet"],
-		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"]
+		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"],
+		"cyberpsycho": ["Static", "Glitch", "Hardwire", "Burnout", "Scrap Saint", "Sparks"]
 	},
 	"features": {
 		"scar": [
@@ -539,6 +540,25 @@
 				"Light them up!"
 			]
 		},
+		"pyromaniac_smoke": {
+			"any": [
+				"Hold your breath.",
+				"Lights out.",
+				"Bit smoky in here.",
+				"Where'd I go?",
+				"Breathe deep.",
+				"Mind your eyes."
+			]
+		},
+		"pyromaniac_reload": {
+			"any": [
+				"Hang on, changing tanks.",
+				"Fresh tank. Don't go anywhere.",
+				"Stay right there.",
+				"Just need a top-up.",
+				"Hold that thought."
+			]
+		},
 		"pyromaniac_exhausted": {
 			"any": [
 				"Running low on fuel...",
@@ -677,6 +697,116 @@
 				"Get in line.",
 				"More targets. Fine.",
 				"Hope you all brought armor."
+			]
+		},
+		"juggernaut_cover": {
+			"any": [
+				"Hiding back there? I'll wait.",
+				"Come out and face me.",
+				"You can't stay in there forever.",
+				"Come out from behind there!",
+				"I'll be right here when you come out.",
+				"Shooting from back there? Real brave."
+			]
+		},
+		"pyromaniac_cover": {
+			"any": [
+				"Hiding? I can wait.",
+				"You'll have to come out sometime.",
+				"Come out, come out. It's warm out here.",
+				"I've got all day, and plenty of fuel.",
+				"Stay in there, then. I'll wait.",
+				"Shooting from back there? Come closer."
+			]
+		},
+		"demolitionist_cover": {
+			"any": [
+				"Come out from behind there!",
+				"Hiding? I've got time.",
+				"You can't hide in there forever.",
+				"Shoot from back there all you like. I'll wait.",
+				"I know where you are.",
+				"Sooner or later, you come out."
+			]
+		},
+		"ghost_cover": {
+			"any": [
+				"You'll come out eventually.",
+				"I'll be right here.",
+				"Hiding won't help you.",
+				"Take your time. I'm not going anywhere.",
+				"Come and find me.",
+				"I can wait all day."
+			]
+		},
+		"heavy_cover": {
+			"any": [
+				"Can't hide in there forever.",
+				"Come out from behind there!",
+				"Stay in there, then. I'll wait.",
+				"Peek out again. Go on.",
+				"I've got all day.",
+				"Shooting from back there? Cute."
+			]
+		},
+		"cyberpsycho_intro": {
+			"any": [
+				"Get out of my head!",
+				"Can you hear it humming? Can you?",
+				"More meat. Come here.",
+				"Don't look at me like that!",
+				"It won't stop. Nothing stops.",
+				"You're not real. None of you are real."
+			]
+		},
+		"cyberpsycho_ability": {
+			"any": [
+				"Hold still!",
+				"There you are.",
+				"Got you now!",
+				"Come here!",
+				"Stay right there!",
+				"Don't run, meat!"
+			]
+		},
+		"cyberpsycho_redline": {
+			"any": [
+				"Make it stop!",
+				"LOUDER!",
+				"Not now. Not now!",
+				"Everything's red.",
+				"Shut up! Shut up!",
+				"It's too loud!"
+			]
+		},
+		"cyberpsycho_exhausted": {
+			"any": [
+				"Why is it so quiet?",
+				"Something's burning. Is that me?",
+				"I can't feel my arms.",
+				"Keep running, keep running...",
+				"My hands won't stop shaking.",
+				"Just let me sit down."
+			]
+		},
+		"cyberpsycho_posse": {
+			"any": [
+				"More of you? Good. More meat.",
+				"All of you. I'll take all of you.",
+				"Bring the whole crew.",
+				"So many voices...",
+				"Line up.",
+				"Doesn't matter how many."
+			]
+		},
+		"cyberpsycho_cover": {
+			"any": [
+				"Come out! Come OUT!",
+				"I can hear you breathing.",
+				"Where'd you go? Where'd you GO?",
+				"You can't stay in there forever!",
+				"Hiding won't help. I'll find you.",
+				"Come out and play."
 			]
 		}
 	}

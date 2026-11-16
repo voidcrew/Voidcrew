@@ -29,6 +29,9 @@
 		return null
 	var/outfit = npc.bounty_build_outfit(zone || ZONE_GREEN)
 	outfit = npc.bounty_site_clothes(outfit)
+	// Chrome carriers dress light, so their worn chrome shows (C0, bounty_chrome.dm). A mini-boss wears its kit.
+	if(length(npc.npc_cyberware) && npc.bounty_dresses_to_show_chrome())
+		outfit = bounty_chrome_expose_outfit(outfit, npc.npc_cyberware)
 	return bounty_seal_outfit(npc, outfit, src)
 
 /**

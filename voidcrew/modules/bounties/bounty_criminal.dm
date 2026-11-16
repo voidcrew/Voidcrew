@@ -68,11 +68,15 @@
 		record = order.look
 	// So must where it is: at a space ruin, or on a planet with air that would hurt it, it is dressed for that wherever it stands (bounty_suits.dm)
 	npc_always_site |= bounty_site_dress_for(order?.context)
+	// Its record's chrome joins npc_cyberware, so the base installs the real implants once it is dressed (C0, bounty_chrome.dm)
+	bounty_chrome_prepare(src)
 	. = ..()
 	add_traits(list(TRAIT_NO_TELEPORT, TRAIT_NOMOBSWAP), BOUNTY_BODY_TRAIT)
 	AddComponent(/datum/component/bounty_body)
 	body_hook_cuffs()
 	body_toughness()
+	// Its chrome's moves (a mini-boss's in its ability rotation), and the EMP look (C0)
+	bounty_chrome_ready(src)
 
 /mob/living/carbon/human/npc/bounty_criminal/Destroy()
 	if(body_leaves_proof())
@@ -126,6 +130,8 @@
 					return /mob/living/carbon/human/npc/bounty_criminal/boss/ghost
 				if(BOUNTY_KIT_HEAVY)
 					return /mob/living/carbon/human/npc/bounty_criminal/boss/heavy
+				if(BOUNTY_KIT_CYBERPSYCHO)
+					return /mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho
 			return pick(
 				/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut,
 				/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac,

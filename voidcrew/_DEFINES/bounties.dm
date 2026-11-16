@@ -48,6 +48,8 @@
 #define BOUNTY_KIT_DEMOLITIONIST "demolitionist"
 #define BOUNTY_KIT_GHOST "ghost"
 #define BOUNTY_KIT_HEAVY "heavy"
+/// Its kit is its chrome (chrome/bounty_cyberpsycho.dm): the rarest
+#define BOUNTY_KIT_CYBERPSYCHO "cyberpsycho"
 
 // ===== PLACEMENT KINDS =====
 

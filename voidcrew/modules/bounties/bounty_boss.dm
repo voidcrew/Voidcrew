@@ -14,10 +14,11 @@
  * crit, stamina, stamcrit, stuns, cuffs, wounds, bleeding and death are tg's, exactly as a player's:
  * - Toughness is real armour from its kit (locked to its body, D3) and npc_damage_taken
  *   (BOUNTY_BOSS_DAMAGE_TAKEN), fixed whatever the posse (defaults 1.5, OC-8). Never health.
- * - Resistance to stuns is its armour and a real stimulant pen it carries and injects, with a visible
- *   emote, when its fight starts (defaults 1.6). A second pen is its second wind.
+ * - Resistance to stuns is its armour, its kit's own answer to a disabler (bounty_boss_kits.dm, C8) and
+ *   the real stimulant pens it carries, used the way combat sense uses them (human_npc_combat_sense.dm):
+ *   when it tires in a fight, never while one is still in its blood (/datum/npc_combat_sense/bounty/boss).
  * - "Worn out" is its AI reading real state (stamina loss over half its pool, or health under 40%): it
- *   says so, falls back, and then takes its second pen if it has one (CB-2, CR-4).
+ *   says so, takes a pen if it wants one, and falls back (CB-2, CR-4).
  * - It fights with what it holds (real knives, a real torch, a real gun, its fists) through its hands,
  *   the way a player does (controller.ai_interact()).
  * - It never surrenders. Bosses execute nobody this phase (the core's hv_can_execute(), OC-9).
@@ -25,13 +26,24 @@
  * How a fight goes:
  * - A boss waits (its activity, if P3 gives it one) until it spots a hunter, is attacked or is
  *   confronted. Then it turns hostile: every player within BOUNTY_BOSS_POSSE_RANGE who can see it
- *   joins its posse. Each hunter in the posse beyond the first brings one more companion in from out of
- *   their view, one at a time (OC-8, CB-1), up to BOUNTY_BOSS_REINFORCEMENTS_MAX.
+ *   joins its posse, and so does every crew member of a ship hunting it who is playing and at its site
+ *   (on it, on its dock strip or aboard a ship landed there), seen or not. Each hunter in the posse
+ *   beyond the first brings one more companion in from out of their view, one at a time (OC-8, CB-1),
+ *   up to BOUNTY_BOSS_REINFORCEMENTS_MAX. Never health.
  * - Its AI: soft crit and breaking free first (the human NPC base's and the core's); nothing while
- *   busy or disabled; worn out, it falls back; its stimulant; a target; its kit's gear; an ability,
- *   never the same one twice in a row; the kit's way of closing in or keeping away; its melee; patching
- *   itself up with nobody about; and with nobody in sight, the hunt for the nearest hunter still on its
- *   site. It calms down after BOUNTY_BOSS_CALM_TIME with nobody around.
+ *   busy or disabled; worn out, it falls back; a target; its combat sense (its stimulant, and the kit's
+ *   reaction to stun fire, if it has one); its kit's gear; an ability,
+ *   never the same one twice in a row; the kit's way of closing in or keeping away; up to and through
+ *   whatever is in its way, if its kit can go through it; its melee; patching itself up with nobody
+ *   about; with nobody in sight, the hunt for the nearest hunter still on its site that it can get at;
+ *   and with nobody it can get at, out of the sight of those shooting at it from where it can't. It
+ *   calms down after BOUNTY_BOSS_CALM_TIME with nobody around.
+ * - Hurt by someone it can't get at (behind glass it can't break, a shut door, a gap, or off its site),
+ *   it doesn't stand there: it stops going after them for BOUNTY_BOSS_SHUN_TIME and gets out of their
+ *   sight (boss_find_cover()), however far off they are, with a line as it goes. Someone far off with a
+ *   way to them on foot is in reach, and it goes after them. With real Gorilla Arms and an empty hand it
+ *   punches through a window, grille, table or door it can break, after a tell (boss_start_smash()); the
+ *   punches are the implant's own, and it only starts if it can break everything on the way.
  * - Every ability winds up first, where everyone can see and hear it (telegraph()), and does its
  *   harm only when the wind-up is over (effect()). Downed, restrained, stunned, knocked down or dead
  *   in between (tg's states, CB-24), and nothing happens.
@@ -45,6 +57,10 @@
 
 /// Trait source for standing still while busy with an ability
 #define BOUNTY_BOSS_BUSY_TRAIT "bounty_boss_busy"
+/// What boss_busy says while its Gorilla Arms go at a window, grille, table or door
+#define BOUNTY_BOSS_BUSY_SMASH "smash"
+/// The glow on it while they do
+#define BOUNTY_BOSS_SMASH_FILTER "bounty_boss_smash"
 
 /// Fire pools the bosses have burning (/obj/effect/bounty_boss_fire_pool), for the cap
 GLOBAL_LIST_EMPTY(bounty_boss_fire_pools)
@@ -96,6 +112,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	// Fixed toughness, whatever its tier or posse (defaults 1.5, OC-8). Its armour does the rest.
 	npc_damage_taken = BOUNTY_BOSS_DAMAGE_TAKEN
 	body_tier_toughness = FALSE
+	// Its stimulant pens, and a kit's answer to stun fire (C8). A kit with its own reaction uses a subtype.
+	npc_combat_sense = /datum/npc_combat_sense/bounty/boss
 	/// BOUNTY_KIT_*: which kit it is, and the prefix of its dialogue contexts
 	var/boss_kit
 	/// The ability types it is given
@@ -135,10 +153,22 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	/// Worn out (boss_is_worn_out(), read by its AI): said so, and falls back until boss_fallback_until
 	var/boss_worn_out = FALSE
 	var/boss_fallback_until = 0
-	/// Stimulant pens it has used: the first when its fight starts, the second for its second wind
-	var/boss_stimulants_used = 0
-	/// Its fall back is over and it is still worn out: its next plan takes the second pen
-	var/boss_second_wind_due = FALSE
+	/// Hunters who hurt it from where it couldn't get at them: weakref -> world.time of the last such hit (boss_note_reach())
+	var/list/boss_shunned = list()
+	/// The tiles it can walk to (boss_walkable()): turf -> steps, the tile it stood on then, and when that was worked out
+	var/list/boss_walk_cache
+	var/turf/boss_walk_origin
+	var/boss_walk_at = 0
+	/// world.time it may look for new cover
+	var/boss_cover_rethink_at = 0
+	/// world.time it may say a line again as it breaks for cover
+	var/boss_cover_bark_at = 0
+	/// What its Gorilla Arms are going at (boss_start_smash()), the floor mark on it, and the punches thrown so far
+	var/datum/weakref/boss_smash_target
+	var/datum/weakref/boss_smash_mark
+	var/boss_smash_blows = 0
+	/// A thrown item of its own, kept out of the world, that its throws are checked with (boss_throw_reaches())
+	var/obj/item/bounty_boss_throw_probe/boss_throw_probe
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
@@ -158,6 +188,10 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	boss_reinforcement_refs = null
 	boss_winding_ref = null
 	boss_last_attacker = null
+	boss_shunned = null
+	boss_walk_cache = null
+	boss_walk_origin = null
+	QDEL_NULL(boss_throw_probe)
 	return ..()
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/death(gibbed)
@@ -198,8 +232,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss))
 
 /**
- * Packs what every boss carries into `outfit`, an instance: BOUNTY_BOSS_STIMULANTS combat stimulants
- * and a bruise pack, in a bag on its back (one is added if it wears none). Returns the outfit.
+ * Packs what every boss carries into `outfit`, an instance: BOUNTY_BOSS_STIMULANTS stimulant pens and one
+ * combat stimpack (BOUNTY_BOSS_COMBAT_STIMULANT; its combat sense uses them when it tires, one at a time)
+ * and a bruise pack, in a bag on its back (one is added if it wears none; in vacuum its MODsuit's storage
+ * takes them, bounty_suits.dm). They are consumables: used up, never loot (human_npc_gear.dm). Returns
+ * the outfit.
  */
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_supplies(datum/outfit/outfit)
 	if(!istype(outfit))
@@ -207,6 +244,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	outfit.back ||= /obj/item/storage/backpack
 	LAZYINITLIST(outfit.backpack_contents)
 	outfit.backpack_contents[BOUNTY_BOSS_STIMULANT] = (outfit.backpack_contents[BOUNTY_BOSS_STIMULANT] || 0) + BOUNTY_BOSS_STIMULANTS
+	outfit.backpack_contents[BOUNTY_BOSS_COMBAT_STIMULANT] = (outfit.backpack_contents[BOUNTY_BOSS_COMBAT_STIMULANT] || 0) + 1
 	outfit.backpack_contents[/obj/item/stack/medical/bruise_pack] = (outfit.backpack_contents[/obj/item/stack/medical/bruise_pack] || 0) + 1
 	return outfit
 
@@ -256,18 +294,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 /// It has just worn out: it says so where the fight is, drops what it was winding up and falls back for a while
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_wear_out()
 	boss_worn_out = TRUE
-	boss_second_wind_due = FALSE
 	boss_fallback_until = world.time + BOUNTY_BOSS_FALLBACK_TIME
 	boss_interrupt()
 	visible_message(span_warning("[src] is breathing hard and slowing down. [p_They()] look[p_s()] worn out."))
 	body_alert_hunters("worn out")
 	boss_bark("exhausted")
-
-/// Whether its next plan should take a stimulant: the first when its fight starts, the second for its second wind
-/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_wants_stimulant()
-	if(!boss_hostile || boss_stimulants_used >= BOUNTY_BOSS_STIMULANTS)
-		return FALSE
-	return !boss_stimulants_used || boss_second_wind_due
 
 // ----- busy -----
 
@@ -310,6 +341,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/winding = boss_winding_ref?.resolve()
 	boss_winding_ref = null
 	winding?.cancel_windup()
+	boss_end_smash()
 	if(boss_busy)
 		boss_clear_busy()
 	boss_on_interrupted()
@@ -369,7 +401,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 /**
  * Turns hostile, with `instigator` (who attacked, confronted or was spotted) in its posse if they
  * count (boss_counts_for_posse()). The first time, everyone who counts within
- * BOUNTY_BOSS_POSSE_RANGE and can see it joins too, mech pilots included, and it says its intro line.
+ * BOUNTY_BOSS_POSSE_RANGE and can see it joins too, mech pilots included, then the rest of every
+ * hunting crew at its site (boss_engage_hunting_crews()), and it says its intro line.
  */
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_turn_hostile(mob/living/instigator)
 	if(stat == DEAD)
@@ -387,8 +420,42 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	for(var/obj/vehicle/sealed/mecha/mech in view(BOUNTY_BOSS_POSSE_RANGE, src))
 		for(var/mob/living/pilot in mech.occupants)
 			boss_engage(pilot, announce = FALSE)
+	boss_engage_hunting_crews()
 	boss_bark("intro")
 	return TRUE
+
+/**
+ * Every crew member of a ship hunting its bounty who is playing (not SSD) and at its site joins its
+ * posse, seen or not (boss_crew_at_site()), so each owes a companion like anyone in sight: one hunter
+ * can't wake it alone while the rest of the crew wait on the dock strip or aboard their landed ship
+ * (review r1). Crew on another site sharing its level, or aboard a ship anywhere else, don't count
+ * (review r2).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_engage_hunting_crews()
+	var/datum/criminal_bounty/posting = posting()
+	if(!posting || !get_turf(src))
+		return
+	for(var/obj/structure/overmap/ship/ship as anything in posting.hunter_ships())
+		for(var/datum/mind/member as anything in ship.ship_team?.members)
+			var/mob/living/body = member?.current
+			if(isliving(body) && GET_CLIENT(body) && boss_crew_at_site(body, ship))
+				boss_engage(body, announce = FALSE)
+
+/**
+ * Whether `body`, of the crew of `ship`, is at its site for its posse: on its level, and on the site
+ * itself, or anywhere in the site's rectangle, which holds its dock strip and the ships landed on it.
+ * For a site with no rectangle (a pirate ship), aboard `ship` close alongside it.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_crew_at_site(mob/living/body, obj/structure/overmap/ship/ship)
+	var/turf/here = get_turf(src)
+	var/turf/where = get_turf(body)
+	if(!here || !where || where.z != here.z)
+		return FALSE
+	if(body_on_site(where))
+		return TRUE
+	if(site_bounds)
+		return where.z == site_bounds[5] && where.x >= site_bounds[1] && where.x <= site_bounds[3] && where.y >= site_bounds[2] && where.y <= site_bounds[4]
+	return ship?.is_aboard(where) && get_dist(here, where) <= BOUNTY_BOSS_HUNT_RANGE
 
 /// With no hunter left on its site, it stops hunting and waits again. Its posse stays.
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_calm_down()
@@ -532,12 +599,19 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	return who
 
 /**
- * Whether it chooses to go after `target` (C4, H2, M2, L1): an awake hunter not on its side, or a mech
- * with one in it (a pilot is hurt through the mech); standing on its site, never in a ship, a hangar or
- * an outpost; someone it may attack from where it is (P2's may_attack()). This is its choice of target
- * only: what its fire and blasts catch is boss_effect_hits() (CB-11).
+ * Whether it chooses to go after `target`: one it may go after (boss_can_go_after()), and not one it
+ * keeps away from (boss_shuns()).
  */
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_valid_target(atom/target)
+	return boss_can_go_after(target) && !boss_shuns(target)
+
+/**
+ * Whether it may go after `target` (C4, H2, M2, L1): an awake hunter not on its side, or a mech with
+ * one in it (a pilot is hurt through the mech); standing on its site, never in a ship, a hangar or an
+ * outpost; someone it may attack from where it is (P2's may_attack()). This is its choice of target
+ * only: what its fire and blasts catch is boss_effect_hits() (CB-11).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_can_go_after(atom/target)
 	if(QDELETED(target) || target == src)
 		return FALSE
 	if(!boss_reach_ok(get_turf(target)))
@@ -623,26 +697,36 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	for(var/mob/living/hunter as anything in hunters)
 		body_add_grudge(hunter)
 		boss_turn_hostile(hunter)
+		boss_note_reach(hunter)
 	return TRUE
 
-/// The nearest hunter (or their mech) still on its site within BOUNTY_BOSS_HUNT_RANGE, for the hunt. Only players with a client count, from SSmobs' list for its level.
-/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_nearest_hunter()
+/**
+ * The nearest hunter (or their mech) still on its site within BOUNTY_BOSS_HUNT_RANGE that it can get
+ * at (boss_can_reach()), for the hunt: it never walks back out to stand in front of someone behind
+ * glass. Only players with a client count, from SSmobs' list for its level; a test passes its own
+ * `candidates`.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_nearest_hunter(list/candidates)
 	var/turf/here = get_turf(src)
-	if(!here || here.z > length(SSmobs.clients_by_zlevel))
+	if(!here)
 		return null
+	if(isnull(candidates))
+		if(here.z > length(SSmobs.clients_by_zlevel))
+			return null
+		candidates = SSmobs.clients_by_zlevel[here.z]
 	var/atom/best
 	var/best_distance = BOUNTY_BOSS_HUNT_RANGE + 1
-	for(var/mob/living/person as anything in SSmobs.clients_by_zlevel[here.z])
+	for(var/mob/living/person in candidates)
 		var/atom/target = boss_target_for(person)
-		if(!boss_valid_target(target))
-			continue
 		var/turf/spot = get_turf(target)
-		if(!spot || !leash_ok(spot))
+		if(!spot || spot.z != here.z)
 			continue
 		var/distance = get_dist(here, spot)
-		if(distance < best_distance)
-			best = target
-			best_distance = distance
+		// Nearest first: the costly checks only for someone nearer than the best so far
+		if(distance >= best_distance || !leash_ok(spot) || !boss_valid_target(target) || !boss_can_reach(target))
+			continue
+		best = target
+		best_distance = distance
 	return best
 
 // ----- where it may reach, and what it may break -----
@@ -799,6 +883,538 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(is_door && (QDELETED(object) || object.get_integrity() <= 0))
 		boss_walls_left--
 	return TRUE
+
+// ===== HURT FROM WHERE IT CAN'T REACH (review r1 F4, r2) =====
+
+/**
+ * Whether it can get at `target` (a person, or a mech) from where it stands: it may go after them
+ * there, and it is beside them, or nothing on the straight way stops it, or its kit goes through
+ * everything that does (boss_gets_through()), or it can walk round to them (boss_walks_to()).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_can_reach(atom/target)
+	if(!boss_can_go_after(target))
+		return FALSE
+	var/turf/here = get_turf(src)
+	var/turf/there = get_turf(target)
+	if(!here || !there || here.z != there.z)
+		return FALSE
+	if(Adjacent(target))
+		return TRUE
+	var/list/blockers = boss_line_blockers(here, there)
+	if(!length(blockers) || boss_gets_through(blockers))
+		return TRUE
+	return boss_walks_to(there)
+
+/**
+ * Whether it can walk to `there`, or beside it (someone up on a table or a crate), through nothing it
+ * can't open (boss_walkable()). Someone beyond BOUNTY_BOSS_REACH_RANGE is past the walk it works out:
+ * they count as reachable if that walk reaches its edge at least half its range closer to them, so a
+ * far shooter with open ground between is chased, and one across a gap or behind a wall near it is
+ * not (review r2).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_walks_to(turf/there)
+	var/turf/here = get_turf(src)
+	if(!here || !there || here.z != there.z)
+		return FALSE
+	var/list/steps = boss_walkable()
+	if(!isnull(steps[there]))
+		return TRUE
+	for(var/direction in GLOB.cardinals)
+		var/turf/beside = get_step(there, direction)
+		if(beside && !isnull(steps[beside]) && !boss_border_between(beside, there))
+			return TRUE
+	var/distance = get_dist(here, there)
+	if(distance <= BOUNTY_BOSS_REACH_RANGE)
+		return FALSE
+	var/closer_than = distance - BOUNTY_BOSS_REACH_RANGE / 2
+	for(var/turf/spot as anything in steps)
+		if(get_dist(here, spot) >= BOUNTY_BOSS_REACH_RANGE && get_dist(spot, there) <= closer_than)
+			return TRUE
+	return FALSE
+
+/**
+ * Whether its kit gets through `barrier` (from boss_line_blockers()) to someone behind it: with real
+ * Gorilla Arms and an empty hand to punch with (boss_gorilla_goes_through()). Each kit adds its own
+ * (bounty_boss_kits.dm): a charge, a grenade or a molotov thrown over, a breaching charge, rounds that
+ * chip through.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_goes_through(atom/barrier)
+	return boss_gorilla_goes_through(barrier)
+
+/// All or nothing: whether its kit goes through every one of `blockers` (boss_line_blockers()), so it never breaks a grille only to meet glass it can't
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_gets_through(list/blockers)
+	if(!length(blockers))
+		return TRUE
+	for(var/atom/blocker as anything in blockers)
+		if(!boss_goes_through(blocker))
+			return FALSE
+	return TRUE
+
+/**
+ * Whether what gets it through `barrier` is ready now, so walking up to it is worth more than going
+ * round: Gorilla Arms that aren't already at something. Each kit adds its own ability that breaks or
+ * crosses it, off cooldown. With it on cooldown, the boss goes round on foot if it can (the breach
+ * planner).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_breaks_through_now(atom/barrier)
+	return boss_busy != BOUNTY_BOSS_BUSY_SMASH && boss_gorilla_goes_through(barrier)
+
+/// Its ability of `ability_type`, if it has one off cooldown
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_ability_off_cooldown(ability_type)
+	for(var/datum/action/cooldown/mob_cooldown/bounty_boss/ability as anything in boss_abilities)
+		if(!QDELETED(ability) && istype(ability, ability_type))
+			return ability.next_use_time <= world.time ? ability : null
+	return null
+
+/// What it can open on its own feet, for working out a walk: the access its AI's pathing uses
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_pass_info()
+	return new /datum/can_pass_info(src, ai_controller ? ai_controller.get_access() : get_access())
+
+/**
+ * The first thing on the straight way from `start` to `finish` that stops it walking: a wall, a gap
+ * (space, a drop, lava, a chasm), or something solid it can't open or climb (a window, a grille, a
+ * shut door, a table). Null if the way is clear. People never count.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_barrier_between(turf/start, turf/finish)
+	var/list/blockers = boss_line_blockers(start, finish, TRUE)
+	return length(blockers) ? blockers[1] : null
+
+/**
+ * Everything on the straight way from `start` to `finish` that stops it walking, in order: walls,
+ * gaps, and every solid thing it can't open or climb on each step (a grille and the window on the
+ * same tile are both there). With `first_only`, only the first step that is blocked.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_line_blockers(turf/start, turf/finish, first_only = FALSE)
+	. = list()
+	if(!start || !finish || start.z != finish.z)
+		return
+	var/datum/can_pass_info/pass_info = boss_pass_info()
+	var/turf/previous = start
+	for(var/turf/spot as anything in get_line(start, finish))
+		if(spot == start)
+			continue
+		if(spot.density)
+			. += spot
+		else if(spot != finish && (isspaceturf(spot) || isopenspaceturf(spot) || isgroundlessturf(spot) || islava(spot) || ischasm(spot)))
+			. += spot
+		else if(previous.LinkBlockedWithAccess(spot, pass_info))
+			var/list/on_step = boss_blockers_on_step(previous, spot, pass_info)
+			if(length(on_step))
+				// A full-tile window blocks the step off its tile as well as the step onto it: once is enough
+				. |= on_step
+			else
+				. += spot
+		if(first_only && length(.))
+			return
+		previous = spot
+
+/**
+ * What stops a step from `origin` onto `destination`: windows or doors on the edge between them, a
+ * window filling `origin` (tg's pathing counts one as blocking the step off its tile too), and
+ * everything solid on `destination`. A diagonal step is checked both ways round, giving what stops the
+ * first way.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_blockers_on_step(turf/origin, turf/destination, datum/can_pass_info/pass_info)
+	. = list()
+	var/direction = get_dir(origin, destination)
+	if(origin.x != destination.x && origin.y != destination.y)
+		for(var/half in list(direction & (NORTH|SOUTH), direction & (EAST|WEST)))
+			var/turf/middle = get_step(origin, half)
+			if(!middle)
+				continue
+			if(middle.density)
+				return list(middle)
+			var/list/found = boss_blockers_on_step(origin, middle, pass_info) + boss_blockers_on_step(middle, destination, pass_info)
+			if(length(found))
+				return found
+		return
+	for(var/obj/border in origin)
+		if(border.density && ((border.flags_1 & ON_BORDER_1) || istype(border, /obj/structure/window)) && !border.CanAStarPass(direction, pass_info))
+			. += border
+	var/reverse = get_dir(destination, origin)
+	for(var/obj/thing in destination)
+		if(thing.density && !thing.CanAStarPass(reverse, pass_info))
+			. += thing
+
+/// Whether a window or door stands on the edge between two tiles side by side
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_border_between(turf/origin, turf/destination)
+	var/direction = get_dir(origin, destination)
+	for(var/obj/border in origin)
+		if(border.density && (border.flags_1 & ON_BORDER_1) && (border.dir & direction))
+			return TRUE
+	var/reverse = get_dir(destination, origin)
+	for(var/obj/border in destination)
+		if(border.density && (border.flags_1 & ON_BORDER_1) && (border.dir & reverse))
+			return TRUE
+	return FALSE
+
+// ----- what a throw gets past -----
+
+/**
+ * Something it throws, never in the world: an item with a throw of its own and the boss as its thrower,
+ * so tg's own CanPass() rules for a thrown item decide what stops it (windows, windoors, shut doors and
+ * grilles do; tables, railings and gaps don't).
+ */
+/obj/item/bounty_boss_throw_probe
+	name = "thrown thing"
+	item_flags = ABSTRACT
+
+/obj/item/bounty_boss_throw_probe/Destroy()
+	QDEL_NULL(throwing)
+	return ..()
+
+/// Its throw probe, made the first time it is needed
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_get_throw_probe()
+	if(QDELETED(boss_throw_probe))
+		boss_throw_probe = new
+	if(QDELETED(boss_throw_probe.throwing))
+		boss_throw_probe.throwing = new /datum/thrownthing(boss_throw_probe, src, SOUTH, world.maxx, 1, src)
+	return boss_throw_probe
+
+/**
+ * Whether something it throws from `start` lands on `finish`: it takes the steps tg's throw takes
+ * (throw_at() and /datum/thrownthing/tick()), and each one must be a move tg would let a thrown item
+ * make. People and mechs on the way never count.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_throw_reaches(turf/start, turf/finish)
+	start = get_turf(start)
+	finish = get_turf(finish)
+	if(!start || !finish || start.z != finish.z)
+		return FALSE
+	if(start == finish)
+		return TRUE
+	var/obj/item/probe = boss_get_throw_probe()
+	var/dist_x = abs(finish.x - start.x)
+	var/dist_y = abs(finish.y - start.y)
+	var/dx = (finish.x > start.x) ? EAST : WEST
+	var/dy = (finish.y > start.y) ? NORTH : SOUTH
+	var/pure_diagonal = dist_x == dist_y
+	if(!pure_diagonal && dist_x <= dist_y)
+		var/old_dist = dist_x
+		dist_x = dist_y
+		dist_y = old_dist
+		var/old_dir = dx
+		dx = dy
+		dy = old_dir
+	var/longest = max(dist_x, dist_y)
+	var/diagonal_error = dist_x / 2 - dist_y
+	var/turf/at = start
+	for(var/travelled in 0 to longest)
+		if(at == finish)
+			return TRUE
+		var/turf/step = get_step(at, get_dir(at, finish))
+		if(!pure_diagonal)
+			if(diagonal_error >= 0 && longest - travelled != 1)
+				step = get_step(at, dx)
+			diagonal_error += (diagonal_error < 0) ? dist_x / 2 : -dist_y
+		if(!step || !bounty_boss_throw_move(at, step, probe))
+			return FALSE
+		at = step
+	return at == finish
+
+/// Whether a thrown thing gets past `barrier` (from boss_line_blockers()), by tg's rules for a thrown item: a gap yes, a wall no
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_throw_passes(atom/barrier)
+	if(isturf(barrier))
+		return !barrier.density
+	var/border_dir = (barrier.flags_1 & ON_BORDER_1) ? barrier.dir : get_dir(barrier, src)
+	return barrier.CanPass(boss_get_throw_probe(), border_dir)
+
+/**
+ * Whether `probe`, thrown, moves from `origin` onto `destination` beside it. A diagonal goes the way
+ * tg's Move() takes one, north or south first; whatever stops that half is bumped, and a bump ends a
+ * throw (/atom/movable/Bump()), so it never gets to try east or west first.
+ */
+/proc/bounty_boss_throw_move(turf/origin, turf/destination, obj/item/probe)
+	var/direction = get_dir(origin, destination)
+	if(!(direction & (direction - 1)))
+		return bounty_boss_throw_step(origin, destination, probe)
+	var/turf/first = get_step(origin, direction & (NORTH|SOUTH))
+	return first && bounty_boss_throw_step(origin, first, probe) && bounty_boss_throw_step(first, destination, probe)
+
+/// One straight step of a thrown `probe`: nothing on the edge of `origin` it leaves by, and tg's CanPass() of `destination` and all on it but people and mechs
+/proc/bounty_boss_throw_step(turf/origin, turf/destination, obj/item/probe)
+	var/direction = get_dir(origin, destination)
+	for(var/atom/movable/border as anything in origin)
+		if(border != probe && (border.flags_1 & ON_BORDER_1) && border.density && (border.dir & direction) && !border.CanPass(probe, direction))
+			return FALSE
+	var/from_dir = get_dir(destination, origin)
+	if(!destination.CanPass(probe, from_dir))
+		return FALSE
+	for(var/atom/movable/thing as anything in destination)
+		if(thing == probe || isliving(thing) || ismecha(thing))
+			continue
+		if(!thing.CanPass(probe, from_dir))
+			return FALSE
+	return TRUE
+
+/**
+ * Every tile it could walk to from where it stands, within BOUNTY_BOSS_REACH_RANGE and on its leash,
+ * through nothing it can't open: turf -> steps, nearest first. Worked out again once it stands on
+ * another tile, or after BOUNTY_BOSS_REACH_RETHINK on the same one, so the steps and the range are
+ * always counted from where it is (review r2).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_walkable()
+	var/turf/here = get_turf(src)
+	if(!here)
+		return list()
+	if(boss_walk_cache && boss_walk_origin == here && world.time < boss_walk_at + BOUNTY_BOSS_REACH_RETHINK)
+		return boss_walk_cache
+	var/datum/can_pass_info/pass_info = boss_pass_info()
+	var/list/steps = list()
+	steps[here] = 0
+	var/list/queue = list(here)
+	var/index = 0
+	while(index < length(queue))
+		index++
+		var/turf/spot = queue[index]
+		var/next_steps = steps[spot] + 1
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(spot, direction)
+			if(!next || next.density || !isnull(steps[next]) || get_dist(here, next) > BOUNTY_BOSS_REACH_RANGE)
+				continue
+			if(spot.LinkBlockedWithAccess(next, pass_info) || !leash_ok(next))
+				continue
+			steps[next] = next_steps
+			queue += next
+	boss_walk_cache = steps
+	boss_walk_origin = here
+	boss_walk_at = world.time
+	return steps
+
+/// `hunter` just hurt it: if it can't get at them where they are, it keeps away from them for BOUNTY_BOSS_SHUN_TIME
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_note_reach(mob/living/hunter)
+	if(!boss_can_act() || boss_can_reach(boss_target_for(hunter)))
+		return FALSE
+	boss_shunned[WEAKREF(hunter)] = world.time
+	return TRUE
+
+/// Whether it keeps away from `target` (a person, or a mech): one of them hurt it lately from where it couldn't get at them, and it still can't
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_shuns(atom/target)
+	if(!length(boss_shunned))
+		return FALSE
+	for(var/mob/living/person as anything in boss_people_in(target))
+		var/last = person.weak_reference ? boss_shunned[person.weak_reference] : null
+		if(last && world.time < last + BOUNTY_BOSS_SHUN_TIME)
+			return !boss_can_reach(target)
+	return FALSE
+
+/// The hunters it shuns who are still up and still out of its reach (their mechs, for those in one): whose sight it keeps out of. Forgets those it has shunned long enough.
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_watchers()
+	. = list()
+	for(var/datum/weakref/ref as anything in boss_shunned.Copy())
+		var/mob/living/person = ref.resolve()
+		if(QDELETED(person) || world.time >= boss_shunned[ref] + BOUNTY_BOSS_SHUN_TIME)
+			boss_shunned -= ref
+			continue
+		if(person.stat != CONSCIOUS)
+			continue
+		var/atom/watcher = boss_target_for(person)
+		if(!boss_can_reach(watcher))
+			. |= watcher
+
+/**
+ * Whether any of `watchers` can see `spot`: a clear line from them on its level. Within
+ * BOUNTY_BOSS_COVER_SIGHT, and as far as the line goes past that, so a shooter further off (a scope,
+ * the dock strip) never leaves it standing in the open thinking it is hidden (review r2).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_seen_from(turf/spot, list/watchers)
+	spot = get_turf(spot)
+	if(!spot)
+		return FALSE
+	for(var/atom/watcher as anything in watchers)
+		var/turf/from = get_turf(watcher)
+		if(!from || from.z != spot.z)
+			continue
+		if(can_see(from, spot, max(BOUNTY_BOSS_COVER_SIGHT, get_dist(from, spot))))
+			return TRUE
+	return FALSE
+
+/// It breaks for cover from someone it can't get at: a line for it, at most every BOUNTY_BOSS_COVER_BARK_COOLDOWN, so it reads as biding its time, not running
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_cover_bark()
+	if(world.time < boss_cover_bark_at)
+		return FALSE
+	boss_cover_bark_at = world.time + BOUNTY_BOSS_COVER_BARK_COOLDOWN
+	boss_bark("cover")
+	return TRUE
+
+/// How far `spot` is from the nearest of `watchers`
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_distance_from(turf/spot, list/watchers)
+	. = INFINITY
+	for(var/atom/watcher as anything in watchers)
+		. = min(., get_dist(spot, watcher))
+
+/**
+ * Cover from `watchers`: the nearest tile it can walk to within BOUNTY_BOSS_COVER_RANGE steps that
+ * none of them can see. With nowhere hidden, the one farthest from the nearest of them. Null if
+ * where it stands is as good as any.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_find_cover(list/watchers)
+	var/list/steps = boss_walkable()
+	var/turf/here = get_turf(src)
+	var/turf/far = here
+	var/far_distance = boss_distance_from(here, watchers)
+	// In order of steps, nearest first
+	for(var/turf/spot as anything in steps)
+		if(steps[spot] > BOUNTY_BOSS_COVER_RANGE || (spot != here && boss_someone_on(spot)))
+			continue
+		if(!boss_seen_from(spot, watchers))
+			return spot
+		var/distance = boss_distance_from(spot, watchers)
+		if(distance > far_distance)
+			far = spot
+			far_distance = distance
+	return far == here ? null : far
+
+/// Whether someone else stands on `spot`, so it can't
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_someone_on(turf/spot)
+	for(var/mob/living/other in spot)
+		if(other != src && other.density)
+			return TRUE
+	return FALSE
+
+/// The tile it walks to, to go through `barrier` at `target`: the last one before it on the straight way, if it can walk there
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_spot_before(atom/barrier, atom/target)
+	var/turf/here = get_turf(src)
+	var/turf/barrier_turf = get_turf(barrier)
+	if(!here || !barrier_turf)
+		return null
+	var/turf/before
+	for(var/turf/spot as anything in get_line(here, barrier_turf))
+		if(spot == barrier_turf)
+			break
+		before = spot
+	if(!before || before == here)
+		return null
+	var/list/steps = boss_walkable()
+	return isnull(steps[before]) ? null : before
+
+// ===== GORILLA ARMS THROUGH GLASS =====
+
+/// Its working Gorilla Arms: the real implant, not EMP'd, browned out or failing
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_gorilla_arms()
+	. = list()
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm in organs)
+		var/datum/component/cyberware/ware = arm.GetComponent(/datum/component/cyberware)
+		if(ware?.is_running())
+			. += arm
+
+/// The hand index of `arm`'s own hand, if that hand is empty (the implant only punches with its own fist), else 0
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_gorilla_hand(obj/item/organ/cyberimp/cyberware/gorilla_arms/arm)
+	var/obj/item/bodypart/limb = get_bodypart(arm.zone)
+	if(!limb?.held_index || !isnull(get_item_for_held_index(limb.held_index)))
+		return 0
+	return limb.held_index
+
+/// Whether it has a working Gorilla Arm with an empty hand to punch with
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_has_gorilla_fist()
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in boss_gorilla_arms())
+		if(boss_gorilla_hand(arm))
+			return TRUE
+	return FALSE
+
+/// Whether its Gorilla Arms get it through `barrier`: one it may smash (boss_can_smash()), with a fist free to do it. Airlocks are left to the arms' own door forcing.
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_gorilla_goes_through(atom/barrier)
+	return boss_has_gorilla_fist() && boss_can_smash(barrier)
+
+/**
+ * Whether its Gorilla Arms may go at `barrier`: a window, a grille, a table or a door that isn't an
+ * airlock, where it may break things (boss_may_break(): its own site, indoors, never near a ship), and
+ * one the implant's punches break in at most BOUNTY_BOSS_SMASH_MOST_BLOWS through its armour.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_can_smash(atom/barrier)
+	if(!isobj(barrier) || istype(barrier, /obj/machinery/door/airlock))
+		return FALSE
+	if(!istype(barrier, /obj/structure/window) && !istype(barrier, /obj/structure/grille) && !istype(barrier, /obj/structure/table) && !istype(barrier, /obj/machinery/door))
+		return FALSE
+	var/obj/thing = barrier
+	if(!thing.uses_integrity || !boss_may_break(thing))
+		return FALSE
+	var/blow = thing.run_atom_armor(BOUNTY_BOSS_SMASH_BLOW, BRUTE, MELEE, get_dir(thing, src))
+	return blow > 0 && thing.get_integrity() <= blow * BOUNTY_BOSS_SMASH_MOST_BLOWS
+
+/**
+ * Its Gorilla Arms go at `barrier`, right beside it. The tell first, for BOUNTY_BOSS_SMASH_WINDUP:
+ * rooted, an orange glow, the barrier's tile lit and the pistons heard. Then real punches with its
+ * empty Gorilla fists (boss_smash_blow()), each the implant's own, until the barrier is down, the
+ * punches run out or something stops it. Nobody is hurt by it. Returns TRUE if it started.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_start_smash(atom/barrier)
+	if(!boss_can_use_ability() || !ai_controller || !Adjacent(barrier) || !boss_has_gorilla_fist() || !boss_can_smash(barrier))
+		return FALSE
+	var/smash_time = BOUNTY_BOSS_SMASH_WINDUP + BOUNTY_BOSS_SMASH_MOST_BLOWS * 1 SECONDS
+	var/serial = boss_set_busy(BOUNTY_BOSS_BUSY_SMASH, smash_time + 1 SECONDS)
+	boss_next_ability_at = max(boss_next_ability_at, world.time + BOUNTY_BOSS_SMASH_WINDUP + BOUNTY_BOSS_SMASH_RECOVER)
+	boss_smash_target = WEAKREF(barrier)
+	boss_smash_blows = 0
+	face_atom(barrier)
+	visible_message(span_boldwarning("[src] draws back a piston-driven fist at [barrier]!"), blind_message = span_hear("You hear pistons hiss."))
+	playsound(src, 'sound/machines/piston/piston_raise.ogg', 60, TRUE)
+	add_filter(BOUNTY_BOSS_SMASH_FILTER, 2, outline_filter(1, BOUNTY_BOSS_SMASH_COLOR))
+	boss_smash_mark = WEAKREF(new /obj/effect/temp_visual/bounty_boss_mark(get_turf(barrier), smash_time, BOUNTY_BOSS_SMASH_COLOR))
+	addtimer(CALLBACK(src, PROC_REF(boss_smash_blow), serial), BOUNTY_BOSS_SMASH_WINDUP, TIMER_DELETE_ME)
+	return TRUE
+
+/**
+ * One punch of the smash under `serial` at its barrier: the empty fist of a working Gorilla Arm whose
+ * own cooldown is over is made the active hand, and the barrier is clicked with it in combat mode, the
+ * way a player punches (controller.ai_interact()). The implant does the damage. The next punch follows
+ * when the body and an arm are ready again. Returns TRUE if it threw one.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_smash_blow(serial)
+	if(!boss_still(BOUNTY_BOSS_BUSY_SMASH, serial))
+		return FALSE
+	var/obj/barrier = boss_smash_target?.resolve()
+	if(QDELETED(barrier) || !barrier.density || !Adjacent(barrier) || boss_smash_blows >= BOUNTY_BOSS_SMASH_MOST_BLOWS || !boss_may_break(barrier) || !boss_has_gorilla_fist())
+		boss_end_smash(serial)
+		return FALSE
+	var/threw = FALSE
+	if(next_move <= world.time)
+		for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in boss_gorilla_arms())
+			var/hand = boss_gorilla_hand(arm)
+			if(!hand || !COOLDOWN_FINISHED(arm, slam_cooldown))
+				continue
+			swap_hand(hand, silent = TRUE)
+			if(get_active_held_item())
+				continue
+			var/is_door = istype(barrier, /obj/machinery/door)
+			boss_smash_blows++
+			ai_controller.ai_interact(target = barrier, combat_mode = TRUE)
+			threw = TRUE
+			// A door it punches down spends its wall budget, as one any ability breaks does
+			if(is_door && (QDELETED(barrier) || barrier.get_integrity() <= 0))
+				boss_walls_left--
+			break
+	if(QDELETED(barrier) || !barrier.density || boss_smash_blows >= BOUNTY_BOSS_SMASH_MOST_BLOWS)
+		boss_end_smash(serial)
+		return threw
+	addtimer(CALLBACK(src, PROC_REF(boss_smash_blow), serial), boss_smash_wait(), TIMER_DELETE_ME)
+	return threw
+
+/// How long until it can throw its next smash punch: its body's click and the soonest arm's own cooldown, at least a tick
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_smash_wait()
+	var/soonest = INFINITY
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in boss_gorilla_arms())
+		if(boss_gorilla_hand(arm))
+			soonest = min(soonest, arm.slam_cooldown)
+	if(soonest == INFINITY)
+		soonest = world.time
+	return max(1, next_move - world.time, soonest - world.time)
+
+/// The smash is over, or never was: the tell goes, and with `serial` (or none) it is no longer busy with it
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_end_smash(serial)
+	boss_end_smash_telegraph()
+	boss_smash_target = null
+	boss_smash_blows = 0
+	if(boss_busy == BOUNTY_BOSS_BUSY_SMASH && (!serial || serial == boss_busy_serial))
+		boss_clear_busy(serial)
+
+/// The smash's glow and floor mark go
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_end_smash_telegraph()
+	remove_filter(BOUNTY_BOSS_SMASH_FILTER)
+	var/obj/effect/mark = boss_smash_mark?.resolve()
+	boss_smash_mark = null
+	if(!QDELETED(mark))
+		qdel(mark)
 
 // ===== SIGNALS =====
 
@@ -966,6 +1582,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 /datum/action/cooldown/mob_cooldown/bounty_boss/proc/landing_ok(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
 	return istype(boss) && boss.boss_landing_ok(get_turf(target))
+
+/// Whether something it throws from where it stands would land where `target` stands, and not stop on glass or a door on the way
+/datum/action/cooldown/mob_cooldown/bounty_boss/proc/throw_reaches(atom/target)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
+	return istype(boss) && boss.boss_throw_reaches(get_turf(boss), get_turf(target))
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/Activate(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
@@ -1227,10 +1848,13 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Its planning, on a real human body (contract 2.4): soft crit and breaking free first; nothing while
- * it is busy or can't act; worn out, it falls back; its stimulant; its target; its kit's gear; drawing
- * its weapon once its fight has started; an ability; the kit's way of closing in or keeping away; its
- * melee with what it holds; patching itself up with nobody about; and with nobody in sight, the hunt
- * for the nearest hunter still on its site. Bosses never surrender.
+ * it is busy or can't act; worn out, it falls back; its target; its combat sense (a stimulant when it
+ * tires, and a kit's own reaction to stun fire); its kit's gear; drawing
+ * its weapon once its fight has started; an ability; the kit's way of closing in or keeping away; up to
+ * and through whatever is in its way; its melee with what it holds; patching itself up with nobody
+ * about; with nobody in sight, the hunt for the nearest hunter still on its site that it can get at;
+ * and with nobody it can get at, out of the sight of those shooting at it from where it can't. Bosses
+ * never surrender.
  */
 /datum/ai_controller/basic_controller/bounty_boss
 	blackboard = list(
@@ -1245,16 +1869,18 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		/datum/ai_planning_subtree/bounty_escape_captivity,
 		/datum/ai_planning_subtree/bounty_boss_busy,
 		/datum/ai_planning_subtree/bounty_boss_worn_out,
-		/datum/ai_planning_subtree/bounty_boss_stimulant,
 		/datum/ai_planning_subtree/bounty_boss_target,
 		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/bounty_boss_gear,
 		/datum/ai_planning_subtree/human_npc_arm/bounty_boss,
 		/datum/ai_planning_subtree/bounty_boss_abilities,
 		/datum/ai_planning_subtree/bounty_boss_engage,
+		/datum/ai_planning_subtree/bounty_boss_breach,
 		/datum/ai_planning_subtree/human_npc_melee,
 		/datum/ai_planning_subtree/bounty_treat_self,
 		/datum/ai_planning_subtree/bounty_boss_hunt,
+		/datum/ai_planning_subtree/bounty_boss_cover,
 	)
 
 /datum/ai_controller/basic_controller/bounty_boss/TryPossessPawn(atom/new_pawn)
@@ -1296,9 +1922,10 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Worn out (boss_is_worn_out(), its body's real state): the first time, it says so and shows it to
- * the hunters (boss_wear_out()); then it falls back from whoever it was fighting for
- * BOUNTY_BOSS_FALLBACK_TIME, and after that its second wind is due (bounty_boss_stimulant). Back above
- * the line (healed, or its stamina back), it is fresh again.
+ * the hunters (boss_wear_out()). If it wants a stimulant pen now (combat sense's own rule: winded, in a
+ * fight, none in its blood) it takes it first; then it falls back from whoever it was fighting for
+ * BOUNTY_BOSS_FALLBACK_TIME and fights on. Back above the line (healed, or its stamina back), it is fresh
+ * again.
  */
 /datum/ai_planning_subtree/bounty_boss_worn_out
 
@@ -1312,9 +1939,10 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return
 	if(!boss.boss_worn_out)
 		boss.boss_wear_out()
+	var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
+	if(sense?.rules.can_act(boss, controller) && sense.rules.plan_stim(boss, controller, sense))
+		return SUBTREE_RETURN_FINISH_PLANNING
 	if(world.time >= boss.boss_fallback_until)
-		if(boss.boss_fallback_until && boss.boss_stimulants_used < BOUNTY_BOSS_STIMULANTS)
-			boss.boss_second_wind_due = TRUE
 		boss.boss_fallback_until = 0
 		return
 	var/atom/threat = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] || boss.boss_revenge_target()
@@ -1322,38 +1950,6 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return
 	controller.set_blackboard_key(BB_BOUNTY_BOSS_FALL_BACK_FROM, threat)
 	controller.queue_behavior(/datum/ai_behavior/run_away_from_target, BB_BOUNTY_BOSS_FALL_BACK_FROM)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/**
- * Its combat stimulant (defaults 1.6, CR-4): the first pen as its fight starts, the second for its
- * second wind once a fall back is over, each a real pen it carries, used on itself the player's way
- * through the core's bounty_ai_use_injector() (a visible emote first). The second comes with its
- * "recover" line ("Round two."). While a pen is going in, it keeps at it.
- */
-/datum/ai_planning_subtree/bounty_boss_stimulant
-
-/datum/ai_planning_subtree/bounty_boss_stimulant/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = controller.pawn
-	if(!istype(boss) || !boss.boss_hostile)
-		return
-	var/obj/item/reagent_containers/hypospray/medipen/using = controller.blackboard[BB_HUMAN_NPC_TREAT_ITEM]
-	if(istype(using) && !QDELETED(using) && !using.used_up && bounty_ai_is_stimulant(using))
-		controller.queue_behavior(/datum/ai_behavior/human_npc_treat_self, BB_HUMAN_NPC_TREAT_ITEM)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(!boss.boss_wants_stimulant())
-		return
-	var/obj/item/reagent_containers/hypospray/medipen/pen = bounty_ai_find_injector(boss, BOUNTY_BOSS_STIMULANT)
-	if(isnull(pen))
-		// Nothing left to take: it fights on as it is.
-		boss.boss_stimulants_used = BOUNTY_BOSS_STIMULANTS
-		boss.boss_second_wind_due = FALSE
-		return
-	if(!bounty_ai_use_injector(controller, pen))
-		return
-	boss.boss_stimulants_used++
-	if(boss.boss_second_wind_due)
-		boss.boss_second_wind_due = FALSE
-		INVOKE_ASYNC(boss, TYPE_PROC_REF(/mob/living, bounty_say), "recover", null, TRUE)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// Drops a target it may no longer go after, and turns on whoever hurt it last when it has none
@@ -1481,6 +2077,129 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	controller.queue_behavior(/datum/ai_behavior/travel_towards/adjacent, BB_BOUNTY_BOSS_PREY)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
+/**
+ * Its target stands behind things its kit goes through, every one of them (boss_gets_through()): it
+ * walks up to the first, and with Gorilla Arms right beside it, smashes it. A kit's own ability (a
+ * charge, a grenade, a breaching charge) has had its turn already. It only does this while what breaks
+ * through is ready (boss_breaks_through_now()), or when there is no way round on foot; otherwise it
+ * leaves the walk round to the melee planner rather than wait at the glass (review r2).
+ */
+/datum/ai_planning_subtree/bounty_boss_breach
+
+/datum/ai_planning_subtree/bounty_boss_breach/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = controller.pawn
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!istype(boss) || QDELETED(target) || boss.Adjacent(target))
+		return
+	var/turf/here = get_turf(boss)
+	var/turf/there = get_turf(target)
+	var/list/blockers = boss.boss_line_blockers(here, there)
+	if(!length(blockers) || !boss.boss_gets_through(blockers))
+		return
+	var/atom/barrier = blockers[1]
+	if(!boss.boss_breaks_through_now(barrier) && boss.boss_walks_to(there))
+		return
+	if(get_dist(here, barrier) <= 1)
+		if(boss.boss_start_smash(barrier))
+			return SUBTREE_RETURN_FINISH_PLANNING
+		return
+	var/turf/spot = boss.boss_spot_before(barrier, target)
+	if(!spot)
+		return
+	if(controller.blackboard[BB_BOUNTY_BOSS_SPOT] != spot)
+		controller.CancelActions()
+		controller.set_blackboard_key(BB_BOUNTY_BOSS_SPOT, spot)
+	controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_SPOT)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/**
+ * Hurt lately by someone it can't get at (boss_shuns()), and nobody it can reach in sight or on the
+ * hunt: it gets out of their sight (boss_find_cover()) and waits there, rather than stand in the open
+ * for them, with a line as it goes (boss_cover_bark()). With nowhere hidden in reach it backs off as
+ * far from them as it can, and keeps going until it gets there. Anyone it can reach brings it out.
+ */
+/datum/ai_planning_subtree/bounty_boss_cover
+
+/datum/ai_planning_subtree/bounty_boss_cover/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = controller.pawn
+	if(!istype(boss) || !length(boss.boss_shunned) || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
+	var/list/watchers = boss.boss_watchers()
+	if(!length(watchers))
+		return
+	var/turf/here = get_turf(boss)
+	if(!boss.boss_seen_from(here, watchers))
+		controller.clear_blackboard_key(BB_BOUNTY_BOSS_COVER)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	var/turf/spot = controller.blackboard[BB_BOUNTY_BOSS_COVER]
+	// On its way: it keeps walking (every plan, or the walk it queued last time is dropped) until it
+	// gets there, unless someone took the spot, or it may look again and finds the spot in their sight.
+	if(spot && spot != here && !boss.boss_someone_on(spot) && (world.time < boss.boss_cover_rethink_at || !boss.boss_seen_from(spot, watchers)))
+		controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_COVER)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(world.time < boss.boss_cover_rethink_at)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	boss.boss_cover_rethink_at = world.time + BOUNTY_BOSS_REACH_RETHINK
+	spot = boss.boss_find_cover(watchers)
+	if(!spot)
+		controller.clear_blackboard_key(BB_BOUNTY_BOSS_COVER)
+		return
+	if(controller.blackboard[BB_BOUNTY_BOSS_COVER] != spot)
+		controller.CancelActions()
+		controller.set_blackboard_key(BB_BOUNTY_BOSS_COVER, spot)
+	boss.boss_cover_bark()
+	controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_COVER)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+// ===== COMBAT SENSE: ITS STIMULANT, AND A KIT'S ANSWER TO STUN FIRE (C8) =====
+
+/**
+ * A boss's combat sense (voidcrew/modules/human_npcs/human_npc_combat_sense.dm): the bounty family's leash
+ * and gang rules, and the stimulant pens it carries (boss_supplies()), taken when it tires in a fight and
+ * never while one is still in its blood. Nothing else injects them: its worn-out fall back asks this for
+ * the pen too (bounty_boss_worn_out). By default stun fire changes nothing else about how it fights; a
+ * kit with its own reaction sets it on a subtype (bounty_boss_kits.dm), and a ready ability always goes
+ * first, its wind-up being the kit's own answer.
+ */
+/datum/npc_combat_sense/bounty/boss
+	react_to_stun_fire = FALSE
+
+/datum/npc_combat_sense/bounty/boss/can_act(mob/living/carbon/human/npc, datum/ai_controller/controller)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	return istype(boss) && boss.boss_hostile && !boss.boss_busy && ..()
+
+/datum/npc_combat_sense/bounty/boss/in_fight(mob/living/carbon/human/npc, datum/ai_controller/controller, datum/component/npc_combat_sense/sense)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	return istype(boss) && boss.boss_hostile && (controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) || sense.under_fire())
+
+/datum/npc_combat_sense/bounty/boss/plan(mob/living/carbon/human/npc, datum/ai_controller/controller, datum/component/npc_combat_sense/sense)
+	if(!can_act(npc, controller))
+		sense.stand_down(controller)
+		return
+	var/under_fire = sense.under_fire()
+	if(!under_fire && sense.hits)
+		sense.end_exchange(controller)
+	if(plan_stim(npc, controller, sense))
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(!under_fire || !react_to_stun_fire || !may_move(npc, controller))
+		return
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(target) && boss.boss_choose_ability(target))
+		return
+	if(close_in_reach && reach(npc, controller) <= close_in_reach)
+		return plan_close_in(npc, controller, sense)
+	return plan_cover(npc, controller, sense)
+
+// The second pen of a fight comes with its "recover" line ("Round two."), as its second wind always did.
+/datum/npc_combat_sense/bounty/boss/telegraph(mob/living/carbon/human/npc, kind, atom/about, obj/item/used)
+	. = ..()
+	if(kind != HUMAN_NPC_BARK_STIMULANT)
+		return
+	var/datum/component/npc_combat_sense/sense = npc.GetComponent(/datum/component/npc_combat_sense)
+	if(sense?.stims_used)
+		INVOKE_ASYNC(npc, TYPE_PROC_REF(/mob/living, bounty_say), "recover", null, TRUE)
+
 // ===== LOOKS =====
 
 /// A mini-boss's clothes before its kit's: plain dark clothes
@@ -1491,3 +2210,5 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	gloves = /obj/item/clothing/gloves/color/black
 
 #undef BOUNTY_BOSS_BUSY_TRAIT
+#undef BOUNTY_BOSS_BUSY_SMASH
+#undef BOUNTY_BOSS_SMASH_FILTER
