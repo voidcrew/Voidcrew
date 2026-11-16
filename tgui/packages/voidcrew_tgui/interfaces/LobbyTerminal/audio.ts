@@ -50,6 +50,38 @@ const buffers = new Map<string, AudioBuffer>();
 const loads = new Map<string, Promise<boolean>>();
 const live = new Map<AudioBufferSourceNode, string>();
 
+/** One asked-for play: the clip, when (ms on the page clock, plus any delay), and how it went. */
+export type AudioPlay = {
+  id: string;
+  at: number;
+  rate: number;
+  gain: number;
+  /** played, or why not: the clip was not loaded, sound is not running, or there is none. */
+  did: 'played' | 'not loaded' | 'suspended' | 'no sound';
+};
+
+/** The last plays asked for, oldest first: nobody can hear a test client, so the page keeps a record. */
+const LOG_MAX = 120;
+const log: AudioPlay[] = [];
+
+function note(id: string, opts: PlayOpts, did: AudioPlay['did']) {
+  log.push({
+    id,
+    at: Math.round(performance.now() + (opts.when || 0) * 1000),
+    rate: Math.round((opts.rate || 1) * 1000) / 1000,
+    gain: Math.round((opts.gain ?? 1) * 1000) / 1000,
+    did,
+  });
+  if (log.length > LOG_MAX) {
+    log.shift();
+  }
+}
+
+/** The last plays asked for, and the page clock now (ms), for diagnostics. */
+export function audioLog(): { now: number; plays: AudioPlay[] } {
+  return { now: Math.round(performance.now()), plays: log.slice() };
+}
+
 const noop = () => undefined;
 
 function context(): AudioContext | null {
@@ -207,17 +239,21 @@ export function play(id: string, opts: PlayOpts = {}): boolean {
   try {
     const c = context();
     if (!c) {
+      note(id, opts, 'no sound');
       return false;
     }
     const buffer = buffers.get(id);
     if (!buffer) {
+      note(id, opts, 'not loaded');
       load(id).catch(noop);
       return false;
     }
     if (c.state === 'running') {
       start(c, id, buffer, opts);
+      note(id, opts, 'played');
       return true;
     }
+    note(id, opts, 'suspended');
     // Suspended. Scheduling on a stopped clock would play the sound whenever the clock starts,
     // so the sound is dropped, unless a key or click is starting the audio this very moment.
     const asked = Date.now();

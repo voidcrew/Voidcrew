@@ -108,6 +108,8 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 		else
 			data["respawn"] = "same"
 	data["bezel"] = lobby_terminal_bezel_spec()
+	// Sounds still played by a stand-in clip, with the rate and volume the page plays each at (lobby_assets.dm).
+	data["sfx_tune"] = lobby_terminal_sound_tune()
 	merge_section(data, yard_static(user))
 	return data
 

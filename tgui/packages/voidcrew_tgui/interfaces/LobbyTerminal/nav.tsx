@@ -10,7 +10,9 @@
  * (lobby_terminal show code). tgui-core keeps arrows, Enter, Space, Escape and Tab in the page;
  * a key handled here is preventDefault()ed so tgui-core never passes it on to BYOND either.
  *
- * Sounds play in the page from the terminal's assets, so a key press never costs a round trip.
+ * Sounds play in the page from the terminal's assets (motion.ts), so a key press never costs a
+ * round trip: a click when the focus moves, the key-press sound and an 80 ms white flash when
+ * an item is pressed, by Enter or by the mouse.
  */
 import {
   createContext,
@@ -25,7 +27,14 @@ import {
   useState,
 } from 'react';
 
-import { play, preload } from './audio';
+import {
+  muteSfx,
+  noteAction,
+  preloadSfx,
+  pressFlash,
+  pressFx,
+  sfx,
+} from './motion';
 
 export type Dir = 'up' | 'down' | 'left' | 'right';
 
@@ -80,38 +89,6 @@ const NavContext = createContext<Nav | null>(null);
 const ScopeContext = createContext('root');
 
 // ---------------------------------------------------------------------------
-// Sound
-// ---------------------------------------------------------------------------
-
-/** Keypress clicks, rotated so a held arrow sounds like typing. */
-const MOVE_SOUNDS = ['lt_key1.ogg', 'lt_key2.ogg', 'lt_key3.ogg'];
-const PRESS_SOUND = 'lt_press.ogg';
-const MOVE_VOLUME = 0.22;
-const PRESS_VOLUME = 0.3;
-/** At most one click per this many ms; a held arrow repeats faster than that. */
-const SOUND_GAP = 55;
-
-let lastSound = 0;
-let soundTurn = 0;
-
-function playSound(kind: 'move' | 'press') {
-  const now = Date.now();
-  if (kind === 'move' && now - lastSound < SOUND_GAP) {
-    return;
-  }
-  lastSound = now;
-  const name =
-    kind === 'press'
-      ? PRESS_SOUND
-      : MOVE_SOUNDS[soundTurn++ % MOVE_SOUNDS.length];
-  // Before the first key or click the browser may refuse; the next one plays.
-  play(name, {
-    gain: kind === 'press' ? PRESS_VOLUME : MOVE_VOLUME,
-    solo: true,
-  });
-}
-
-// ---------------------------------------------------------------------------
 // Input lock
 // ---------------------------------------------------------------------------
 
@@ -124,6 +101,7 @@ let inputLocked = false;
  */
 export function lockNav(locked: boolean) {
   inputLocked = locked;
+  muteSfx(locked);
 }
 
 // ---------------------------------------------------------------------------
@@ -256,7 +234,7 @@ export function NavProvider(props: ProviderProps) {
       }
       lastBox.current = boxOf(item) || lastBox.current;
       if ((how === 'key' || how === 'mouse') && id && !inputLocked) {
-        playSound('move');
+        sfx('move');
       }
       if (how === 'key' && item?.opts.current.tab) {
         item.opts.current.activate();
@@ -377,8 +355,11 @@ export function NavProvider(props: ProviderProps) {
     };
   }, []);
 
+  // The start-up screen loads its own sounds first and asks for these when it starts.
   useEffect(() => {
-    preload([...MOVE_SOUNDS, PRESS_SOUND]);
+    if (!inputLocked) {
+      preloadSfx();
+    }
   }, []);
 
   useEffect(() => {
@@ -395,7 +376,7 @@ export function NavProvider(props: ProviderProps) {
       }
       const edge = item.opts.current.edge?.[dir];
       if (edge?.()) {
-        playSound('move');
+        sfx('move');
         return;
       }
       let best: string | null = null;
@@ -432,6 +413,28 @@ export function NavProvider(props: ProviderProps) {
 
     const onAction = () => {
       lastAction.current = Date.now();
+      noteAction();
+    };
+    // A click on anything focusable is a press: the sound, and the shape flashes white.
+    const onClick = (e: MouseEvent) => {
+      onAction();
+      if (inputLocked) {
+        return;
+      }
+      const target = e.target as Node | null;
+      if (!target) {
+        return;
+      }
+      for (const item of items.values()) {
+        const el = item.el();
+        if (el?.contains(target)) {
+          if (!item.opts.current.input) {
+            pressFlash(el);
+          }
+          pressFx();
+          return;
+        }
+      }
     };
     const onKey = (e: KeyboardEvent) => {
       if (inputLocked) {
@@ -466,12 +469,13 @@ export function NavProvider(props: ProviderProps) {
         if (e.repeat || !item) {
           return;
         }
-        playSound('press');
+        pressFx();
         const input = item.opts.current.input?.current;
         if (input && !input.disabled) {
           input.focus();
           return;
         }
+        pressFlash(item.el());
         item.opts.current.activate();
         return;
       }
@@ -480,18 +484,18 @@ export function NavProvider(props: ProviderProps) {
         if (e.repeat) {
           return;
         }
+        // No key-press sound: going back has its own (the wipe played slower).
         const top = backs[backs.length - 1];
         if (top) {
-          playSound('press');
           top[1].current();
         }
         return;
       }
       if (e.key === 'PageUp' || e.key === 'PageDown') {
         e.preventDefault();
+        // No click of its own: a page that turns sounds its tick.
         const top = pagers[pagers.length - 1];
         if (top) {
-          playSound('move');
           top[1].current(e.key === 'PageUp' ? -1 : 1);
         }
         return;
@@ -507,10 +511,10 @@ export function NavProvider(props: ProviderProps) {
       }
     };
     window.addEventListener('keydown', onKey, true);
-    window.addEventListener('click', onAction, true);
+    window.addEventListener('click', onClick, true);
     return () => {
       window.removeEventListener('keydown', onKey, true);
-      window.removeEventListener('click', onAction, true);
+      window.removeEventListener('click', onClick, true);
     };
   }, []);
 

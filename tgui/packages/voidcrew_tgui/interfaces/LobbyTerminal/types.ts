@@ -68,6 +68,8 @@ export type ShellStatic = {
   /** Whether a player who observes can come back: not at all, as the same character, or as a new one. */
   respawn?: 'none' | 'same' | 'new';
   bezel: BezelSpec | null;
+  /** Sounds still played by a stand-in clip: asset name -> [playback rate, volume scale]. */
+  sfx_tune?: Record<string, [number, number]>;
 };
 
 // ---------------------------------------------------------------------------

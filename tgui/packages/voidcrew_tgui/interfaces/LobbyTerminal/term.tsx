@@ -18,6 +18,7 @@ import {
   createContext,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -25,6 +26,15 @@ import {
 } from 'react';
 
 import type { Mode } from './layout';
+import {
+  closeDialogFx,
+  Flash,
+  type SfxName,
+  sfx,
+  usePulse,
+  Wipe,
+  type WipeKind,
+} from './motion';
 import { type FocusOpts, FocusScope, useBack, useFocusable } from './nav';
 import type { PartClass, Parts } from './types';
 
@@ -131,6 +141,8 @@ type PutProps = NavProps & {
   /** Paint the terminal background behind the text (over frame lines). */
   bg?: boolean;
   title?: string;
+  /** The text flashes white for 200 ms when this value changes (a count, a figure, a value). */
+  pulse?: unknown;
 };
 
 /** Text at a cell. With onClick it is focusable: hover or the arrow keys light it. */
@@ -144,6 +156,11 @@ export function Put(props: PutProps) {
     tab: props.tab,
     mouseOnly: props.mouseOnly,
   });
+  const pulse = usePulse<HTMLSpanElement>(props.pulse);
+  const setRef = useCallback((el: HTMLSpanElement | null) => {
+    focus.ref.current = el;
+    pulse.current = el;
+  }, []);
   const style: CSSProperties = {
     left: px(x * cw),
     top: px(y * ch),
@@ -158,7 +175,7 @@ export function Put(props: PutProps) {
   const shown = focus.focused && hoverCls ? hoverCls : cls;
   return (
     <span
-      ref={focus.ref}
+      ref={setRef}
       className={cx(focus.focused ? `${shown || ''} lt-foc` : shown)}
       style={style}
       title={title}
@@ -194,14 +211,18 @@ export function Big(props: {
   w?: number;
   align?: 'left' | 'center' | 'right';
   cls?: Cls | string;
+  /** The text flashes white for 200 ms when this value changes. */
+  pulse?: unknown;
   children: string;
 }) {
   const { x, y, scale, w, align = 'left', cls, children } = props;
   const { cw, ch } = useGrid();
+  const pulse = usePulse<HTMLSpanElement>(props.pulse);
   const k = align === 'center' ? 0.5 : align === 'right' ? 1 : 0;
   const left = w === undefined ? x : x + (w - children.length * scale) * k;
   return (
     <span
+      ref={pulse}
       className={cls ? `lt-big ${cls}` : 'lt-big'}
       style={{
         left: px(left * cw),
@@ -262,8 +283,10 @@ export function Band(props: {
   w: number;
   h: number;
   tone: BandTone;
+  /** An animation class (motion.ts), e.g. the notice band drawing left to right. */
+  fx?: string;
 }) {
-  const { x, y, w, h, tone } = props;
+  const { x, y, w, h, tone, fx } = props;
   const { cw, ch, lw } = useGrid();
   const style: CSSProperties = {
     left: px(x * cw),
@@ -274,7 +297,12 @@ export function Band(props: {
   if (tone === 'warn') {
     style.borderLeftWidth = 3 * lw;
   }
-  return <div className={`lt-band lt-band-${tone}`} style={style} />;
+  return (
+    <div
+      className={`lt-band lt-band-${tone}${fx ? ` ${fx}` : ''}`}
+      style={style}
+    />
+  );
 }
 
 /** A rect in px snapped so neighbours meet without gaps. */
@@ -294,6 +322,72 @@ function rect(
     width: px((x + w) * cw) - l,
     height: px((y + h) * ch) - t,
   };
+}
+
+/** The px rect of cells (x, y, w, h) in the current region. */
+export function useCellRect(x: number, y: number, w: number, h: number) {
+  const { cw, ch } = useGrid();
+  return rect(x, y, w, h, cw, ch);
+}
+
+/**
+ * The inside of the main box, in px: what a screen change covers. From the body's first row
+ * (so the caption on the top border stays whole) to the box's bottom and side borders.
+ */
+export function useBoxInside() {
+  const { cw, ch, lw, rows } = useGrid();
+  const box = rect(0, BODY_Y, 63, rows - 1 - BODY_Y, cw, ch);
+  return {
+    left: box.left + lw,
+    top: box.top,
+    width: Math.max(0, box.width - 2 * lw),
+    height: Math.max(0, box.height - lw),
+  };
+}
+
+/**
+ * A cover over cells (x, y, w, h) that plays when `k` changes (motion.ts Wipe): a page of a
+ * list turning ('page', the default here), a screen or column opening ('screen'), a line of
+ * text being drawn ('draw').
+ */
+export function WipeAt(props: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  k: unknown;
+  n?: number;
+  kind?: WipeKind;
+  dir?: 'down' | 'up';
+  quiet?: boolean;
+  first?: boolean;
+  z?: number;
+}) {
+  const { x, y, w, h, kind = 'page', ...rest } = props;
+  const style = useCellRect(x, y, Math.max(0, w), Math.max(0, h));
+  return <Wipe {...rest} kind={kind} style={style} />;
+}
+
+/**
+ * A white bar over cells (x, y, w, h) for 200 ms when `k` changes: the row that changed.
+ * `bar`: only the slab's heavy left bar, 3 lw wide.
+ */
+export function FlashAt(props: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  k: unknown;
+  bar?: boolean;
+  z?: number;
+}) {
+  const { x, y, w, h, k, bar, z } = props;
+  const { lw } = useGrid();
+  const style = useCellRect(x, y, w, h);
+  if (bar) {
+    style.width = 3 * lw;
+  }
+  return <Flash k={k} z={z} style={style} />;
 }
 
 /**
@@ -401,33 +495,24 @@ export function Key(
     /** A layout zone for the keyboard rules (nav.tsx FocusOpts.zone). */
     zone?: string;
     title?: string;
+    /** Pressed and waiting on its answer: the label blinks at the STAND BY cadence. */
+    busy?: boolean;
+    /** The accent fill sweeping in under the label ('on') or retracting ('off'). */
+    sweep?: 'on' | 'off' | null;
+    /** The right text flashes inverse amber for 240 ms when this value changes. */
+    rightPulse?: unknown;
   },
 ) {
   const { x, y, w, label, labelCls, right, rightCls, kind, onClick, zone } =
     props;
-  const { title } = props;
+  const { title, busy, sweep } = props;
   const state = props.state || 'idle';
   const h = props.h ?? (kind === 'big' ? 2 : kind === 'plain' ? 1 : 1.5);
   const { cw, ch, lw } = useGrid();
   const dead = state === 'dead';
-  const [pressed, setPressed] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-      }
-    },
-    [],
-  );
-  const press = () => {
-    setPressed(true);
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-    timer.current = setTimeout(() => setPressed(false), 80);
-    onClick();
-  };
+  const rightRef = usePulse<HTMLSpanElement>(props.rightPulse, 'inva');
+  // The white flash and the sound of a press are the focus system's (nav.tsx), for every item.
+  const press = onClick;
   const focus = useFocusable<HTMLDivElement>(!dead, {
     activate: press,
     auto: props.auto,
@@ -459,7 +544,7 @@ export function Key(
     `lt-k-${kind}`,
     `is-${state}`,
     focus.focused ? 'is-foc' : '',
-    pressed ? 'is-press' : '',
+    busy ? 'is-busy' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -480,6 +565,7 @@ export function Key(
       }
       onMouseEnter={focus.onMouseEnter}
     >
+      {!!sweep && <i key={sweep} className={`lt-fill is-${sweep}`} />}
       <span
         className={cx(state === 'dead' ? undefined : labelCls)}
         style={{ left: px(lx - bl), top: px(ty) }}
@@ -488,6 +574,7 @@ export function Key(
       </span>
       {!!right && (
         <span
+          ref={rightRef}
           className={cx(rightCls)}
           style={{
             left: px((w - 1 - right.length) * cw - bl),
@@ -589,21 +676,50 @@ export function Dialog(props: {
   w: number;
   h: number;
   caption?: string;
+  /**
+   * The sound it opens with; the wipe by default. It always wipes in. `null`: silent, and its
+   * closing is left to the screen that follows (the CONFIRMED box).
+   */
+  sound?: SfxName | null;
   children?: ReactNode;
 }) {
   const { w, h, caption, children } = props;
-  const { cols, cw, ch } = useGrid();
+  const sound = props.sound === undefined ? 'wipe' : props.sound;
+  const { cols, cw, ch, lw } = useGrid();
   const x = Math.floor((cols - w) / 2);
   const y = BODY_Y + 2;
+  const box = rect(x, y, w, h, cw, ch);
+  // What the wipe covers: inside the border, from the first content row (the caption stays whole).
+  const head = px(0.5 * ch);
+  const inside = {
+    left: box.left + lw,
+    top: box.top + head,
+    width: Math.max(0, box.width - 2 * lw),
+    height: Math.max(0, box.height - head - lw),
+  };
+  const last = useRef({ inside, sound });
+  last.current = { inside, sound };
+  useEffect(() => {
+    if (sound) {
+      sfx(sound);
+    }
+    // Closing: the wipe runs back over where the box was (unless the next screen has its own).
+    return () => {
+      if (last.current.sound !== null) {
+        closeDialogFx(last.current.inside);
+      }
+    };
+  }, []);
   return (
     <div className="lt-dialog">
       <div
         className="lt-dialog-block"
-        style={rect(x, y, w, h, cw, ch)}
+        style={box}
         onClick={(e) => e.stopPropagation()}
       />
       <Box x={x} y={y} w={w} h={h} caption={caption} tone="bg" bright />
       <FocusScope>{children}</FocusScope>
+      <Wipe k={0} first quiet z={9} style={inside} />
     </div>
   );
 }
@@ -697,7 +813,10 @@ function FieldInput(
       disabled={disabled}
       spellCheck={false}
       autoComplete="off"
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        sfx('type');
+        onChange(e.target.value);
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -923,8 +1042,10 @@ export function ClassFigures(props: {
   cls?: Cls | string | Partial<Record<PartClass, Cls | string>>;
   big?: boolean;
   zero?: boolean;
+  /** Each figure flashes white for 200 ms when it changes (a total, the account). */
+  pulse?: boolean;
 }) {
-  const { y, set, values, cls, big, zero } = props;
+  const { y, set, values, cls, big, zero, pulse } = props;
   return (
     <>
       {PART_CLASSES.map((k, i) => {
@@ -944,13 +1065,14 @@ export function ClassFigures(props: {
               scale={1.25}
               align="right"
               cls={c}
+              pulse={pulse ? text : undefined}
             >
               {text}
             </Big>
           );
         }
         return (
-          <RPut key={k} x={edge} y={y} cls={c}>
+          <RPut key={k} x={edge} y={y} cls={c} pulse={pulse ? text : undefined}>
             {text}
           </RPut>
         );
@@ -1542,7 +1664,6 @@ export const TERM_CSS = `
 .lt-tui .lt-k.is-on.is-foc { border-color: var(--lt-fg); }
 .lt-tui .lt-k.is-foc span, .lt-tui .lt-k.is-lit span, .lt-tui .lt-k.is-on span { color: inherit; text-shadow: none; }
 .lt-tui .lt-k.is-dead { color: var(--lt-faint); border-color: var(--lt-edge-dead); text-shadow: none; cursor: default; }
-.lt-tui .lt-k.is-press { background: #fff; border-color: #fff; }
 .lt-tui .lt-boxs { border-style: solid; border-color: var(--lt-edge); }
 .lt-tui .lt-boxs.is-bright { border-color: var(--lt-fg); }
 .lt-tui .lt-boxs-box { background: var(--lt-box); }
@@ -1558,8 +1679,8 @@ export const TERM_CSS = `
 .lt-tui .lt-box { border-style: solid; border-color: var(--lt-edge); }
 .lt-tui .lt-box.dimb { border-color: var(--lt-edge-dead); }
 .lt-tui .lt-field { position: absolute; z-index: 6; padding: 0; margin: 0; border: none; outline: none;
-  background: transparent; color: var(--lt-fg); caret-color: var(--lt-fg); font: inherit; letter-spacing: 0;
-  text-shadow: inherit; user-select: text; }
+  background: transparent; color: var(--lt-fg); caret-color: var(--lt-fg); caret-shape: block; font: inherit;
+  letter-spacing: 0; text-shadow: inherit; user-select: text; }
 .lt-tui .lt-field-old { color: var(--lt-amb); caret-color: var(--lt-amb); }
 .lt-tui .lt-field.is-dead { color: var(--lt-faint); }
 .lt-tui .lt-blk { position: absolute; background: var(--lt-fg); box-shadow: 0 0 6px rgba(190,140,255,.5); }
