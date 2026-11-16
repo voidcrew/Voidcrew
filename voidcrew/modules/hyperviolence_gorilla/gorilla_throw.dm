@@ -511,11 +511,3 @@
 	name = "blood smear"
 	icon_state = "impact_edge"
 	alpha = 220
-
-/**
- * Keeps #509's heavy-hit spray and its lost-limb spray off [victim] for the blow being dealt now. A
- * finisher lays its own blood; #509's full fan from a held body reads as blood out of nowhere.
- */
-/proc/gorilla_hold_spray(mob/living/victim)
-	victim.hv_blood_spray_until = max(victim.hv_blood_spray_until, world.time + 1)
-	victim.hv_blood_spray_strength = INFINITY

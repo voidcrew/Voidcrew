@@ -275,6 +275,10 @@
 			log_combat(source, living_target, "attempted to piston-punch", "gorilla arms")
 			return COMPONENT_CANCEL_ATTACK_CHAIN
 
+	// Someone in crit or stunned, with the aimed zone picking the finisher (hyperviolence_gorilla/gorilla_finisher.dm).
+	if(gorilla_try_finisher(source, living_target))
+		return COMPONENT_CANCEL_ATTACK_CHAIN
+
 	// The one damage line, through #509, with the knockback on the safe path (hyperviolence_gorilla/gorilla_punch.dm).
 	piston_hit(source, living_target, active_hand)
 	COOLDOWN_START(src, slam_cooldown, punch_cooldown_time)

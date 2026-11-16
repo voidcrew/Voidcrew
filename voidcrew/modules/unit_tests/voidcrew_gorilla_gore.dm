@@ -82,6 +82,13 @@
 	victim.Paralyze(100 SECONDS)
 	return victim
 
+/// Runs a finisher to its end through advance(), as its timer would.
+/datum/unit_test/voidcrew_gorilla_gore/proc/run_to_end(datum/hv_finisher/finisher)
+	for(var/i in 1 to 20)
+		if(!finisher.running)
+			return
+		finisher.advance()
+
 /// Every chrome puppet left anywhere in the test room, and every body's stand-in (what shows until a client has the puppets' pictures)
 /datum/unit_test/voidcrew_gorilla_gore/proc/puppets_left()
 	. = 0
@@ -826,6 +833,292 @@
 	TEST_ASSERT(!gorilla_pry_refused(plain), "A plain airlock is refused")
 
 // =========================================================================
+// FINISHERS (owner D39)
+// =========================================================================
+
+/// Never on someone just lying there or with something in hand; Brawler myomers never clap a head.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_gates
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_gates/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
+	bearer.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/resting = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	resting.set_resting(TRUE, instant = TRUE)
+	TEST_ASSERT(!gorilla_try_finisher(bearer, resting), "A finisher started on someone just lying down")
+
+	var/mob/living/carbon/human/consistent/stunned = downed(spot(0, 1))
+	var/obj/item/wrench/tool = allocate(/obj/item/wrench)
+	bearer.put_in_hands(tool)
+	TEST_ASSERT(!gorilla_try_finisher(bearer, stunned), "A finisher started with something in hand")
+	qdel(tool)
+
+	var/mob/living/carbon/human/brawler = gorilla(spot(3, 3), street = TRUE)
+	brawler.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/brawler_victim = downed(spot(4, 3))
+	TEST_ASSERT(!gorilla_try_finisher(brawler, brawler_victim), "Brawler myomers started the head clap")
+
+	// The pistons' cooldown blocks it
+	gorilla_cooldown(bearer, "gorilla_pistons", 20 SECONDS) // COOLDOWN_GORILLA_PISTONS
+	TEST_ASSERT(!gorilla_try_finisher(bearer, stunned), "A finisher started while the pistons were spent")
+
+/// The head clap bursts the head, the brain survives, the rig comes down and the pistons are spent.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_clap
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_clap/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The head clap didn't start on someone stunned")
+	var/datum/hv_finisher/chrome/gorilla/clap/finisher = bearer.chrome_finisher
+	TEST_ASSERT(istype(finisher), "A head aim didn't pick the head clap")
+	TEST_ASSERT(puppets_left() > 0, "The head clap put up no rig")
+	run_to_end(finisher)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The head clap didn't burst the head")
+	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The burst moved the bearer (a thrown head knocks a body back)")
+	TEST_ASSERT_EQUAL(victim.loc, spot(1, 1), "The burst body didn't come down on the bearer's tile, where it was held")
+	var/obj/item/organ/brain/brain
+	for(var/turf/floor in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
+		brain ||= locate(/obj/item/organ/brain) in floor
+	TEST_ASSERT_NOTNULL(brain, "The burst head lost its brain")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The head clap left puppets behind")
+	TEST_ASSERT_NULL(bearer.get_filter("chrome_rig_hide"), "The bearer stayed hidden")
+	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "The victim stayed hidden")
+	TEST_ASSERT_NOTEQUAL(bearer.mouse_opacity, MOUSE_OPACITY_OPAQUE, "The bearer kept the hidden click area")
+	var/left = S_TIMER_COOLDOWN_TIMELEFT(bearer, "gorilla_pistons")
+	TEST_ASSERT(left > 10 SECONDS, "A finished clap didn't spend the pistons for long ([left])")
+	TEST_ASSERT_NULL(bearer.chrome_finisher, "The finished clap is still on the bearer")
+	TEST_ASSERT(QDELETED(finisher), "A finished clap outlived its end and kept hold of both bodies")
+
+/// A helmet crumples instead and the skull caves in; the Atlas frame holds.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_clap_armour
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_clap_armour/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/helmeted = downed(spot(2, 1))
+	helmeted.equip_to_slot_or_del(new /obj/item/clothing/head/helmet/swat(helmeted), ITEM_SLOT_HEAD)
+	var/datum/hv_finisher/chrome/gorilla/clap/finisher = new(bearer, helmeted)
+	TEST_ASSERT(finisher.start(), "Test fixture: the clap wouldn't start on a helmet")
+	run_to_end(finisher)
+	TEST_ASSERT_NOTNULL(helmeted.get_bodypart(BODY_ZONE_HEAD), "A helmet didn't stop the burst")
+	TEST_ASSERT_NOTNULL(helmeted.get_bodypart(BODY_ZONE_HEAD).get_wound_type(/datum/wound/blunt/bone/critical/hv_skull), "The skull didn't cave in under the helmet")
+	qdel(finisher)
+
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3))
+	second.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/framed = downed(spot(2, 3))
+	var/obj/item/organ/atlas = allocate(/obj/item/organ/cyberimp/cyberware/atlas)
+	TEST_ASSERT(atlas.Insert(framed, special = TRUE), "Test fixture: the Atlas frame wouldn't go in")
+	var/datum/hv_finisher/chrome/gorilla/clap/frame_finisher = new(second, framed)
+	TEST_ASSERT(frame_finisher.start(), "Test fixture: the clap wouldn't start on the Atlas frame")
+	run_to_end(frame_finisher)
+	TEST_ASSERT_NOTNULL(framed.get_bodypart(BODY_ZONE_HEAD), "The Atlas frame's head burst")
+	qdel(frame_finisher)
+
+/// The limb rip tears the aimed arm off and leaves it on the victim's tile.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_rip
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_rip/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_L_ARM
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	// Blood an earlier test left here would keep the tear's own where it is
+	clear_mess(spot(2, 1))
+	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The limb rip didn't start")
+	var/datum/hv_finisher/chrome/gorilla/rip/finisher = bearer.chrome_finisher
+	TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip")
+	run_to_end(finisher)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The aimed arm wasn't torn off")
+	TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_R_ARM), "The wrong arm was torn off")
+	var/obj/item/bodypart/arm/left/torn = locate() in get_turf(victim)
+	TEST_ASSERT_NOTNULL(torn, "The torn arm wasn't left on the victim's tile")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The limb rip left puppets behind")
+	// The blood is the tear's, laid under the shoulder as the arm came off: nothing fresh when the arm is dropped
+	var/obj/effect/decal/cleanable/blood/pool
+	for(var/obj/effect/decal/cleanable/blood/found in get_turf(victim))
+		if(found.type == /obj/effect/decal/cleanable/blood)
+			pool = found
+	TEST_ASSERT_NOTNULL(pool, "The torn shoulder left no blood on the floor")
+	TEST_ASSERT(pool.base_pixel_x || pool.base_pixel_y, "The torn shoulder's blood was laid on the middle of the tile, off the body held in the grab")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/splatter) in get_turf(victim), "The dropped arm laid a splash of its own after the wound")
+
+	// Armour on the arm: the shoulder comes out instead
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3))
+	second.zone_selected = BODY_ZONE_R_ARM
+	var/mob/living/carbon/human/consistent/armoured = downed(spot(2, 3))
+	armoured.physiology.armor = armoured.physiology.armor.generate_new_with_modifiers(list(MELEE = 60))
+	var/datum/hv_finisher/chrome/gorilla/rip/armoured_rip = new(second, armoured)
+	armoured_rip.aimed_zone = BODY_ZONE_R_ARM
+	TEST_ASSERT(armoured_rip.start(), "Test fixture: the rip wouldn't start on armour")
+	run_to_end(armoured_rip)
+	TEST_ASSERT_NOTNULL(armoured.get_bodypart(BODY_ZONE_R_ARM), "An armoured arm was torn off")
+	TEST_ASSERT_NOTNULL(armoured.get_bodypart(BODY_ZONE_R_ARM).get_wound_type(/datum/wound/blunt/bone/moderate), "An armoured arm didn't dislocate")
+	qdel(armoured_rip)
+
+/// The backbreaker breaks the back (they can't stand) and shoves the body onto the tile the bearer faces, or drops it
+/// at his feet if that tile is blocked; the fold comes off when the body is moved.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_backbreaker/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The backbreaker didn't start")
+	var/datum/hv_finisher/chrome/gorilla/backbreaker/finisher = bearer.chrome_finisher
+	TEST_ASSERT(istype(finisher), "A chest aim didn't pick the backbreaker")
+	// Whatever blood earlier tests left where the body is broken and where it comes down
+	clear_mess(spot(1, 1))
+	clear_mess(spot(2, 1))
+	run_to_end(finisher)
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(1, 1), "The backbreaker laid blood of its own at the knee")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in spot(2, 1), "The backbreaker laid blood of its own where the body landed")
+	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
+	var/datum/wound/spine = chest.get_wound_type(/datum/wound/blunt/bone/critical/gorilla_spine)
+	TEST_ASSERT_NOTNULL(spine, "The back didn't break")
+	TEST_ASSERT(HAS_TRAIT_FROM(victim, TRAIT_FLOORED, REF(spine)), "A broken back can still stand")
+	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The backbreaker moved the bearer")
+	TEST_ASSERT_EQUAL(victim.loc, spot(2, 1), "The body wasn't shoved off the knee onto the tile the bearer faces")
+	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_EAST, "The body lies the other way from its bent halves, so it flips when they come down")
+	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_fold), "The broken back isn't drawn bent")
+	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The bent body isn't the one shown")
+	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "A body shoved clear of the bearer is drawn off its tile")
+	victim.forceMove(spot(3, 3))
+	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_fold), "The fold stayed on a moved body")
+	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A moved body stayed hidden")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold left puppets behind")
+	var/spine_ref = REF(spine)
+	spine.remove_wound()
+	TEST_ASSERT(!HAS_TRAIT_FROM(victim, TRAIT_FLOORED, spine_ref), "A set back still can't stand")
+
+	// Something solid on the tile he faces: the body comes down at his feet, drawn in front of him
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3))
+	second.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/boxed_in = downed(spot(2, 3))
+	allocate(/obj/structure/closet/crate, spot(2, 3))
+	var/datum/hv_finisher/chrome/gorilla/backbreaker/blocked = new(second, boxed_in)
+	TEST_ASSERT(blocked.start(), "Test fixture: the backbreaker wouldn't start beside a crate")
+	run_to_end(blocked)
+	TEST_ASSERT_EQUAL(boxed_in.loc, spot(1, 3), "With the tile ahead blocked the body didn't come down at the bearer's feet")
+	TEST_ASSERT_NOTNULL(boxed_in.GetComponent(/datum/component/gorilla_laid_in_front), "The body at his feet isn't drawn in front of the bearer standing over it")
+	boxed_in.forceMove(spot(3, 3))
+	TEST_ASSERT_NULL(boxed_in.GetComponent(/datum/component/gorilla_laid_in_front), "A moved body is still drawn off its tile")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold at his feet left puppets behind")
+
+/// Damage on the bearer, the bearer moving, or the victim coming out of the stun stops it, with the
+/// shorter cooldown, and nothing is left hidden or posed.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_interrupts
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_interrupts/Run()
+	// Hit hard enough: lets go
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "Test fixture: no finisher")
+	var/datum/hv_finisher/chrome/gorilla/finisher = bearer.chrome_finisher
+	finisher.advance()
+	bearer.apply_damage(15, BRUTE, BODY_ZONE_CHEST)
+	TEST_ASSERT(!finisher.running, "Damage on the bearer didn't stop the finisher")
+	TEST_ASSERT(QDELETED(finisher), "A stopped finisher outlived its end")
+	TEST_ASSERT_EQUAL(finisher.result, 3, "Damage stopped it for the wrong reason") // HV_FINISHER_DAMAGED
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A stopped finisher left puppets")
+	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A stopped finisher left the victim hidden")
+	TEST_ASSERT_NULL(bearer.get_filter("chrome_rig_hide"), "A stopped finisher left the bearer hidden")
+	var/left = S_TIMER_COOLDOWN_TIMELEFT(bearer, "gorilla_pistons")
+	TEST_ASSERT(left > 0 && left <= 10 SECONDS, "A stopped finisher cost the wrong cooldown ([left])") // GORILLA_PISTONS_INTERRUPTED
+	TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_CHEST), "Test fixture: no chest")
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_CHEST).get_wound_type(/datum/wound/blunt/bone/critical/gorilla_spine), "A stopped backbreaker still broke the back")
+
+	// The bearer steps away: lets go
+	var/mob/living/carbon/human/walker = gorilla(spot(1, 3))
+	walker.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/walk_victim = downed(spot(2, 3))
+	TEST_ASSERT(gorilla_try_finisher(walker, walk_victim), "Test fixture: no second finisher")
+	var/datum/hv_finisher/chrome/gorilla/walk_finisher = walker.chrome_finisher
+	walker.forceMove(spot(0, 3))
+	TEST_ASSERT(!walk_finisher.running, "The bearer walked off mid-finisher")
+	TEST_ASSERT_NOTNULL(walk_victim.get_bodypart(BODY_ZONE_HEAD), "A walked-off clap still burst the head")
+
+	// The victim comes out of the stun before the kill: twists free
+	var/mob/living/carbon/human/third = gorilla(spot(3, 0))
+	third.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/waking = downed(spot(4, 0))
+	TEST_ASSERT(gorilla_try_finisher(third, waking), "Test fixture: no third finisher")
+	var/datum/hv_finisher/chrome/gorilla/wake_finisher = third.chrome_finisher
+	waking.SetAllImmobility(0)
+	wake_finisher.tick()
+	TEST_ASSERT(!wake_finisher.running, "A victim out of the stun didn't twist free")
+	TEST_ASSERT_NOTNULL(waking.get_bodypart(BODY_ZONE_HEAD), "A victim who twisted free lost the head")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "Twisting free left puppets")
+
+/// From a corner the punch is only a punch: the finisher starts square on. A body dragged onto a corner mid-move lets go.
+/datum/unit_test/voidcrew_gorilla_gore/finisher_square_on
+
+/datum/unit_test/voidcrew_gorilla_gore/finisher_square_on/Run()
+	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
+	bearer.zone_selected = BODY_ZONE_CHEST
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 2))
+	var/hurt_before = victim.getBruteLoss()
+	TEST_ASSERT_EQUAL(punch(bearer, victim), COMPONENT_CANCEL_ATTACK_CHAIN, "The Gorilla arm didn't take the corner punch")
+	TEST_ASSERT_NULL(bearer.chrome_finisher, "A finisher started on someone on a corner")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/hv_finisher_hold), "Someone on a corner was held for a finisher")
+	// The blow lands when the fist is there: 0.1 s (GORILLA_THRUST_LANDS)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() > hurt_before, "The corner punch did no damage")
+	for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_R_ARM))
+		bearer.zone_selected = zone
+		TEST_ASSERT(!gorilla_try_finisher(bearer, victim), "A [zone] finisher started on someone on a corner")
+
+	// Square on, the same punch starts it
+	victim.forceMove(spot(2, 1))
+	bearer.zone_selected = BODY_ZONE_CHEST
+	punch(bearer, victim)
+	var/datum/hv_finisher/chrome/gorilla/backbreaker/finisher = bearer.chrome_finisher
+	TEST_ASSERT(istype(finisher) && finisher.running, "The backbreaker didn't start square on")
+
+	// Dragged onto a corner before the kill: lets go
+	finisher.advance()
+	victim.forceMove(spot(2, 2))
+	TEST_ASSERT(QDELETED(finisher) || !finisher.running, "The backbreaker went on with the body on a corner")
+	TEST_ASSERT_NULL(bearer.chrome_finisher, "The bearer is still finishing a body on a corner")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "A finisher stopped on a corner left puppets")
+	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A finisher stopped on a corner left the victim hidden")
+
+/// Each new move can be started without a mouse or an aimed zone, for an AI later.
+/datum/unit_test/voidcrew_gorilla_gore/ai_entry_points
+
+/datum/unit_test/voidcrew_gorilla_gore/ai_entry_points/Run()
+	// The haymaker: the same wind-up, then the hit
+	var/mob/living/carbon/human/bearer = gorilla(spot(0, 0))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	var/hurt_before = victim.getBruteLoss()
+	TEST_ASSERT(gorilla_try_haymaker(bearer, victim, 0.8 SECONDS), "The haymaker couldn't be started without a click")
+	TEST_ASSERT_NOTNULL(bearer.has_status_effect(/datum/status_effect/gorilla_windup), "An AI haymaker skipped the wind-up")
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(victim.getBruteLoss() > hurt_before, "An AI haymaker never landed")
+	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(bearer, "gorilla_pistons"), "An AI haymaker didn't spend the pistons") // COOLDOWN_GORILLA_PISTONS
+
+	// The ground pound
+	var/mob/living/carbon/human/pounder = gorilla(spot(2, 4))
+	TEST_ASSERT(gorilla_try_pound(pounder), "The ground pound couldn't be started without the chip")
+	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(pounder, "gorilla_pound"), "An AI pound didn't start its cooldown") // COOLDOWN_GORILLA_POUND
+
+	// A finisher by zone, whatever the bearer aims at
+	var/mob/living/carbon/human/finisher_bearer = gorilla(spot(0, 2))
+	finisher_bearer.zone_selected = BODY_ZONE_HEAD
+	var/mob/living/carbon/human/consistent/downed_victim = downed(spot(1, 2))
+	TEST_ASSERT(gorilla_try_finisher(finisher_bearer, downed_victim, BODY_ZONE_CHEST), "A finisher couldn't be started by zone")
+	TEST_ASSERT(istype(finisher_bearer.chrome_finisher, /datum/hv_finisher/chrome/gorilla/backbreaker), "The zone given didn't pick the finisher")
+	run_to_end(finisher_bearer.chrome_finisher)
+
+	// The slam, clear of row 0: the haymaker above knocks its victim along it, onto the tiles used here before
+	var/mob/living/carbon/human/slammer = gorilla(spot(3, 2))
+	var/mob/living/carbon/human/consistent/held = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
+	held.grabbedby(slammer, supress_message = TRUE)
+	held.grabbedby(slammer, supress_message = TRUE)
+	slammer.swap_hand(2, silent = TRUE)
+	TEST_ASSERT(gorilla_try_slam(slammer, get_turf(held)), "The slam couldn't be started without a click")
+
+// =========================================================================
 // BRAWLER MYOMERS (owner D49): the street slam, the light pound, the rip, doors
 // =========================================================================
 
@@ -936,6 +1229,44 @@
 	left.Remove(brawler, special = TRUE)
 	sleep(0.1 SECONDS)
 	TEST_ASSERT(QDELETED(pound) || pound.owner != brawler, "The Brawler pound outlived the pair")
+
+/// The synced Brawler pair's only finisher is the limb rip, on the same terms as the Gorilla's. A mixed pair has none.
+/datum/unit_test/voidcrew_gorilla_gore/brawler_rip
+
+/datum/unit_test/voidcrew_gorilla_gore/brawler_rip/Run()
+	var/mob/living/carbon/human/brawler = gorilla(spot(1, 1), street = TRUE)
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	brawler.zone_selected = BODY_ZONE_HEAD
+	TEST_ASSERT(!gorilla_try_finisher(brawler, victim), "Brawler myomers started the head clap")
+	brawler.zone_selected = BODY_ZONE_CHEST
+	TEST_ASSERT(!gorilla_try_finisher(brawler, victim), "Brawler myomers started the backbreaker")
+	brawler.zone_selected = BODY_ZONE_L_ARM
+	TEST_ASSERT(gorilla_try_finisher(brawler, victim), "The Brawler limb rip didn't start")
+	var/datum/hv_finisher/chrome/gorilla/rip/finisher = brawler.chrome_finisher
+	TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip for a Brawler")
+	run_to_end(finisher)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The Brawler rip didn't tear the aimed arm off")
+	TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_R_ARM), "The Brawler rip tore the wrong arm off")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The Brawler rip left puppets behind")
+	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(brawler, "gorilla_pistons"), "The Brawler rip didn't spend the pistons") // COOLDOWN_GORILLA_PISTONS
+
+	// Not someone just lying there
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3), street = TRUE)
+	second.zone_selected = BODY_ZONE_R_ARM
+	var/mob/living/carbon/human/consistent/resting = allocate(/mob/living/carbon/human/consistent, spot(2, 3))
+	resting.set_resting(TRUE, instant = TRUE)
+	TEST_ASSERT(!gorilla_try_finisher(second, resting), "The Brawler rip started on someone just lying down")
+
+	// A mixed pair rips nothing
+	var/mob/living/carbon/human/consistent/mixed = allocate(/mob/living/carbon/human/consistent, spot(4, 1))
+	var/obj/item/organ/real = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms)
+	var/obj/item/organ/street = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left)
+	TEST_ASSERT(real.Insert(mixed, special = TRUE), "Test fixture: the real arm wouldn't go in")
+	TEST_ASSERT(street.Insert(mixed, special = TRUE), "Test fixture: the Brawler arm wouldn't go in")
+	mixed.set_combat_mode(TRUE)
+	mixed.zone_selected = BODY_ZONE_L_ARM
+	var/mob/living/carbon/human/consistent/mixed_victim = downed(spot(4, 2))
+	TEST_ASSERT(!gorilla_try_finisher(mixed, mixed_victim), "A mixed pair started the limb rip")
 
 /// Brawler punches dent plain and reinforced airlocks, less than the Gorilla's; the synced pair forces a
 /// powered one slower than the Gorilla; a trader outpost's door takes neither.
