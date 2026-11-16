@@ -27,7 +27,7 @@ import { useBackend } from 'tgui/backend';
 
 import { turned, Viewscreen } from './CharPreview';
 import { quietDialogClose, useChanged } from './motion';
-import { useBack, usePager } from './nav';
+import { Back, usePager } from './nav';
 import {
   Band,
   BODY_Y,
@@ -241,8 +241,6 @@ export function SpeciesConfirm() {
   const { act, data } = useBackend<LobbyData>();
   const cat = usePrefsCatalog();
   const confirm = data.char?.confirm;
-  const open = !!confirm;
-  useBack(open ? () => act('char_confirm', { ok: 0 }) : null);
   const { cols, rows, cw, ch } = useGrid();
   if (!confirm) {
     return null;
@@ -270,6 +268,7 @@ export function SpeciesConfirm() {
         onClick={(e) => e.stopPropagation()}
       />
       <Dialog w={w} h={6 + lines.length} caption="SPECIES" sound="warn">
+        <Back fn={() => act('char_confirm', { ok: 0 })} />
         <Put x={x + 2} y={y + 1} cls="wht">
           {cut(`${species} CAN'T KEEP:`, 41)}
         </Put>

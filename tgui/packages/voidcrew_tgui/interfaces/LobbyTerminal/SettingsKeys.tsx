@@ -23,7 +23,7 @@ import { fetchRetry } from 'tgui-core/http';
 import { isEscape, KEY } from 'tgui-core/keys';
 
 import { quietDialogClose, sfx, useBlink } from './motion';
-import { lockNav, useBack } from './nav';
+import { Back, lockNav } from './nav';
 import {
   byName,
   DESC_W,
@@ -382,7 +382,6 @@ function Head(props: { text: string }) {
 function ResetAllConfirm(props: { onClose: () => void; onReset: () => void }) {
   const { onClose, onReset } = props;
   const { cols } = useGrid();
-  useBack(onClose);
   const w = 39;
   const x = Math.floor((cols - w) / 2);
   const y = BODY_Y + 2;
@@ -396,6 +395,7 @@ function ResetAllConfirm(props: { onClose: () => void; onReset: () => void }) {
         }}
       />
       <Dialog w={w} h={6} caption="RESET ALL">
+        <Back fn={onClose} />
         <Put x={x + 2} y={y + 1} cls="wht">
           PUT EVERY KEY BACK TO ITS DEFAULT?
         </Put>
