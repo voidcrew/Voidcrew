@@ -157,6 +157,13 @@ function isStandardKey(event: KeyboardEvent): boolean {
 }
 
 const KEY_CODE_TO_BYOND: Record<string, string> = {
+  // The names today's browser control reports. tg's table has only the old ones, so an arrow
+  // or Delete would be stored under a name the game never matches a key press to.
+  ARROWDOWN: 'South',
+  ARROWLEFT: 'West',
+  ARROWRIGHT: 'East',
+  ARROWUP: 'North',
+  DELETE: 'Delete',
   DEL: 'Delete',
   DOWN: 'South',
   END: 'Southwest',
