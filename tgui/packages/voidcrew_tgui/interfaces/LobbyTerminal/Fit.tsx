@@ -696,11 +696,11 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   out.push(
     <Key
       key="prev"
-      kind="box"
+      kind="big"
       x={39}
-      y={yK + 0.5}
+      y={yK}
       w={8}
-      h={1.5}
+      h={2}
       label="PREV"
       state={at > 0 ? 'idle' : 'dead'}
       onClick={() => goStep(at - 1)}
