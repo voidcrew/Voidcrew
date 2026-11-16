@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { ShipPic } from './ShipPic';
 import {
+  Btn,
   cut,
   Frame,
   Put,
@@ -19,7 +20,6 @@ import {
   costOf,
   crewCount,
   hullOwned,
-  Key,
   stockFit,
   usePreview,
   type YardCtx,
@@ -99,22 +99,14 @@ export function HullRecord(props: {
     );
   }
   out.push(
-    <Key
+    <Btn
       key="fit"
       x={x + 3}
       y={by}
       label="FIT OUT"
-      cls="inv"
+      lit
       auto={1}
-      onClick={() =>
-        ctx.set({
-          // A hull with no finishes and no rooms has nothing to fit: straight to the bill.
-          screen: hull.finishes.length || hull.slots.length ? 'fit' : 'bill',
-          finish: null,
-          picks: {},
-          step: 0,
-        })
-      }
+      onClick={() => ctx.go.fitOut(hull)}
     />,
   );
   if (!narrow) {

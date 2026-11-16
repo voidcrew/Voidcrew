@@ -25,6 +25,7 @@ import {
 
 import type { Mode } from './layout';
 import { type FocusOpts, FocusScope, useFocusable } from './nav';
+import type { PartClass, Parts } from './types';
 
 export type Grid = {
   cols: number;
@@ -308,13 +309,16 @@ export function Slab(
     variant: 'block' | 'row';
     alt?: boolean;
     dead?: boolean;
+    /** The current step or the option taken: the left bar in the accent colour. */
+    on?: boolean;
     onClick?: () => void;
     /** Told when the slab gains or loses the focus (mouse or keys). */
     onFocus?: (on: boolean) => void;
     children?: ReactNode;
   },
 ) {
-  const { x, y, w, h, variant, alt, dead, onClick, onFocus, children } = props;
+  const { x, y, w, h, variant, alt, dead, on, onClick, onFocus, children } =
+    props;
   const { cw, ch, lw } = useGrid();
   const live = !!onClick && !dead;
   const focus = useFocusable<HTMLDivElement>(live, {
@@ -335,6 +339,7 @@ export function Slab(
     `lt-slab-${variant}`,
     alt ? 'is-alt' : '',
     dead ? 'is-dead' : '',
+    on ? 'is-on' : '',
     focus.focused ? 'is-foc' : '',
   ]
     .filter(Boolean)
@@ -823,6 +828,124 @@ export function Pager(props: {
   );
 }
 
+/**
+ * The recessed picture screen, sized in cells with square corners. Children are drawn inside it
+ * in px from its top-left corner (ShipPic, PlanPic). `note`: a dim line centred in an empty
+ * well. Never focusable.
+ */
+export function Well(props: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  note?: string;
+  children?: ReactNode;
+}) {
+  const { x, y, w, h, note, children } = props;
+  const { cw, ch } = useGrid();
+  const box = rect(x, y, w, h, cw, ch);
+  const text = note ? cut(note, Math.max(1, w - 2)) : '';
+  return (
+    <div className="lt-vscreen lt-well" style={box}>
+      {children}
+      {!!text && (
+        <span
+          className="dim"
+          style={{
+            left: px(Math.floor((w - text.length) / 2) * cw),
+            top: px(Math.floor((h - 1) / 2) * ch),
+          }}
+        >
+          {text}
+        </span>
+      )}
+      <div className="lt-vscan" />
+    </div>
+  );
+}
+
+/** The part classes, always in this order. */
+export const PART_CLASSES: PartClass[] = ['combat', 'science', 'trade', 'misc'];
+
+/**
+ * Class columns: the column each class's head and figure end on. R: the home and every row of
+ * the bill. F: the fit's total strip.
+ */
+export const CLASS_EDGES: Record<'R' | 'F', number[]> = {
+  R: [36, 44, 52, 60],
+  F: [14, 22, 29, 36],
+};
+
+/** A parts figure: a whole number, `9999+` above 9999, nothing for zero. */
+export function fig(n: number | null | undefined): string {
+  const v = Math.max(0, Math.floor(n || 0));
+  if (!v) {
+    return '';
+  }
+  return v > 9999 ? '9999+' : String(v);
+}
+
+/** The four class heads, dim, right-aligned to the columns of the set. */
+export function ClassHeads(props: { y: number; set: 'R' | 'F' }) {
+  const { y, set } = props;
+  return (
+    <>
+      {PART_CLASSES.map((k, i) => (
+        <RPut key={k} x={CLASS_EDGES[set][i] + 1} y={y} cls="dim">
+          {k.toUpperCase()}
+        </RPut>
+      ))}
+    </>
+  );
+}
+
+/**
+ * The four figures of a set, right-aligned under ClassHeads. Zero draws nothing (unless
+ * `zero`). `cls`: one colour class, or one per class. `big`: Big 1.25, one row band tall.
+ */
+export function ClassFigures(props: {
+  y: number;
+  set: 'R' | 'F';
+  values: Parts | null | undefined;
+  cls?: Cls | string | Partial<Record<PartClass, Cls | string>>;
+  big?: boolean;
+  zero?: boolean;
+}) {
+  const { y, set, values, cls, big, zero } = props;
+  return (
+    <>
+      {PART_CLASSES.map((k, i) => {
+        const text = fig(values?.[k]) || (zero ? '0' : '');
+        if (!text) {
+          return null;
+        }
+        const c = typeof cls === 'object' ? cls[k] : cls;
+        const edge = CLASS_EDGES[set][i] + 1;
+        if (big) {
+          return (
+            <Big
+              key={k}
+              x={edge - 8}
+              w={8}
+              y={y}
+              scale={1.25}
+              align="right"
+              cls={c}
+            >
+              {text}
+            </Big>
+          );
+        }
+        return (
+          <RPut key={k} x={edge} y={y} cls={c}>
+            {text}
+          </RPut>
+        );
+      })}
+    </>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Kept for screens not yet redesigned
 // ---------------------------------------------------------------------------
@@ -1280,6 +1403,7 @@ export const TERM_CSS = `
 .lt-tui .lt-slab-row.is-alt { background: var(--lt-panel-alt); }
 .lt-tui .lt-slab.is-foc { border-color: var(--lt-fg); background: var(--lt-panel-foc); box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-slab.is-dead { border-color: var(--lt-edge-dead); background: rgba(30,12,58,.36); }
+.lt-tui .lt-slab.is-on { border-left-color: var(--lt-acc); }
 .lt-tui .lt-hit { position: absolute; z-index: 4; cursor: pointer; }
 .lt-tui .lt-k { position: absolute; box-sizing: border-box; z-index: 4; cursor: pointer; border-style: solid;
   border-color: var(--lt-edge); }

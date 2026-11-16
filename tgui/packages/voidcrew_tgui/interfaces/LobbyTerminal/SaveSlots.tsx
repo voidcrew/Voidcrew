@@ -4,17 +4,37 @@
  * cards, it becomes a one-line-per-slot list.
  */
 import type { ReactNode } from 'react';
-import { useBackend } from 'tgui/backend';
 
 import { PlanPic } from './PlanPic';
-import { Blocks, cut, Frame, Put, pad, RPut, wrap, wrapMax } from './term';
-import type { LobbyData, SaveCard } from './types';
-import { Key, thousands, type YardCtx } from './YardTab';
+import {
+  Blocks,
+  Btn as Key,
+  cut,
+  Frame,
+  Put,
+  pad,
+  RPut,
+  wrap,
+  wrapMax,
+} from './term';
+import type { SaveCard } from './types';
+import { thousands, type YardCtx } from './YardTab';
+
+/** The old card's fields (compatibility path until the home's redesign). */
+type LegacyCard = SaveCard & {
+  mass?: number;
+  funds?: number;
+  research?: number;
+  plan?: string;
+  fit?: [string, number, string][];
+  lab?: number;
+  cargo?: number;
+};
 
 const MIN_CARD = 26;
 
 type Props = {
-  saves: (SaveCard | null)[];
+  saves: (LegacyCard | null)[];
   x: number;
   y: number;
   w: number;
@@ -22,18 +42,15 @@ type Props = {
   ctx: YardCtx;
 };
 
-/** LOAD, or CONFIRM after the first press when loading leaves a crew. */
+/** LOAD: asks LEAVE CREW first when loading leaves a crew. */
 function useLoad(ctx: YardCtx) {
-  const { act } = useBackend<LobbyData>();
-  return (sv: SaveCard) => {
-    const key = `load${sv.slot}`;
-    if (ctx.crewChange && ctx.view.confirm !== key) {
-      ctx.set({ confirm: key });
-      return;
-    }
-    ctx.set({ confirm: null });
-    act('yard_load', { slot: sv.slot, leave_crew: ctx.crewChange ? 1 : 0 });
-  };
+  return (sv: SaveCard) =>
+    ctx.found({
+      action: 'yard_load',
+      params: { slot: sv.slot },
+      label: 'LOAD',
+      restores: !!sv.restores,
+    });
 }
 
 export function SaveSlots(props: Props) {
@@ -63,7 +80,7 @@ export function SaveSlots(props: Props) {
 }
 
 function Card(props: {
-  sv: SaveCard | null;
+  sv: LegacyCard | null;
   n: number;
   x: number;
   y: number;
@@ -228,7 +245,7 @@ function Card(props: {
       </Put>,
     );
   } else {
-    const confirming = ctx.view.confirm === `load${sv.slot}`;
+    const confirming = false;
     if (ctx.crewChange && confirming) {
       out.push(
         <Put key="lv" x={ix} y={by - 1} cls="amb">
@@ -242,8 +259,8 @@ function Card(props: {
         x={ix}
         y={by}
         label={confirming ? 'CONFIRM' : 'LOAD'}
-        cls="inv"
-        disabled={!ctx.open}
+        lit
+        disabled={!ctx.open || ctx.sent}
         onClick={() => load(sv)}
       />,
     );
@@ -301,7 +318,7 @@ function SaveList(props: Props) {
         </RPut>,
       );
     } else {
-      const confirming = ctx.view.confirm === `load${sv.slot}`;
+      const confirming = false;
       out.push(
         <Put key={`c${i}`} x={x + 6} y={yy + 1} cls="dim">
           {pad(sv.class, w - 9)}
@@ -312,21 +329,14 @@ function SaveList(props: Props) {
           y={yy}
           right
           label={confirming ? 'CONFIRM' : 'LOAD'}
-          cls="inv"
-          disabled={!ctx.open}
+          lit
+          disabled={!ctx.open || ctx.sent}
           onClick={() => load(sv)}
         />,
       );
     }
     yy += 3;
   });
-  if (ctx.crewChange && ctx.view.confirm?.startsWith('load')) {
-    out.push(
-      <Put key="lv" x={x + 3} y={y + h - 2} cls="amb">
-        {pad(`LEAVES ${ctx.crewChange.toUpperCase()}`, w - 6)}
-      </Put>,
-    );
-  }
   return (
     <Frame x={x} y={y} w={w} h={h} title="SAVED SHIPS">
       {out}

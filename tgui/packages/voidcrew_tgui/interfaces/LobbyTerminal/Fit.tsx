@@ -7,9 +7,11 @@ import { type ReactNode, useEffect, useState } from 'react';
 
 import { ShipPic } from './ShipPic';
 import {
+  Btn,
   cut,
   Frame,
   Hit,
+  type NavProps,
   lpad,
   Put,
   pad,
@@ -27,13 +29,29 @@ import {
   crewOf,
   finishOwned,
   fitOf,
-  Key,
   moduleOwned,
   partsOf,
   type ShipFit,
   usePreview,
   type YardCtx,
 } from './YardTab';
+
+/** Compatibility: the old text key, until the fit's redesign replaces it. */
+function Key(
+  props: NavProps & {
+    x: number;
+    y: number;
+    label: string;
+    cls?: string;
+    right?: boolean;
+    disabled?: boolean;
+    bg?: boolean;
+    onClick?: () => void;
+  },
+) {
+  const { cls, bg, ...rest } = props;
+  return <Btn {...rest} lit={cls === 'inv'} />;
+}
 
 type Step = {
   label: string;

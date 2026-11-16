@@ -42,6 +42,11 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	var/yard_mappings_sent = FALSE
 	/// Bumped when a commission put the player aboard: the client drops its fit when it sees a new value.
 	var/yard_fit_serial = 0
+	/// The saves list (GLOB.ship_saves.saves_for()) whose plans were last pushed, and its length then.
+	var/list/yard_plans_rows
+	var/yard_plans_count = -1
+	/// REF() of the tgui window the plans went to: a new window gets them again.
+	var/yard_plans_ui
 
 // ---------------------------------------------------------------------------
 // Data
@@ -55,14 +60,60 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 /datum/lobby_terminal/yard_data(mob/user)
 	if(!yard_opened)
 		return null
+	var/ledger = "wait"
+	if(yard_refreshed_at)
+		ledger = islist(yard_account) ? "ok" : "off"
+	// Plans are large and never change while the page is open: they go out as a one-off push
+	// (yard_push_plans()) whenever the cached saves list changes, never from inside ui_data.
+	var/list/rows = GLOB.ship_saves.saves_for(owner?.ckey)
+	if(yard_plans_due(rows))
+		addtimer(CALLBACK(src, PROC_REF(yard_push_plans)), 0, TIMER_UNIQUE)
 	return list(
 		"account" = yard_account,
+		"ledger" = ledger,
 		"owned" = yard_owned,
 		"free_ships" = !!CONFIG_GET(flag/free_ships),
 		"can_requisition" = !!(SSticker?.IsRoundInProgress() && can_requisition_hull(user)),
 		"crew_change" = crew_change_name(user),
 		"fit_serial" = yard_fit_serial,
+		"saves" = yard_saves_data(),
 	)
+
+/// SAVED SHIPS: list("state" = "wait"/"off"/"ok", "slots" = the hook's cards, null for an empty slot).
+/datum/lobby_terminal/proc/yard_saves_data()
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!GLOB.ship_save_store.online())
+		return list("state" = "off", "slots" = list())
+	var/list/slots = saved_ships_data()
+	if(!islist(slots))
+		return list("state" = "wait", "slots" = list())
+	return list("state" = "ok", "slots" = slots)
+
+/// TRUE when this window hasn't been sent the plans of this saves list yet.
+/datum/lobby_terminal/proc/yard_plans_due(list/rows)
+	return rows != yard_plans_rows || length(rows) != yard_plans_count || REF(ui) != yard_plans_ui
+
+/**
+ * Sends each slot's floor plan (up to SHIP_SAVE_PLAN_MAX_LENGTH characters) as a one-off update.
+ * Only when this window doesn't have them yet, so pressing SHIPYARD over and over sends nothing.
+ */
+/datum/lobby_terminal/proc/yard_push_plans()
+	if(!yard_opened || !ui || QDELETED(ui) || !owner?.ckey)
+		return
+	var/list/rows = GLOB.ship_saves.saves_for(owner.ckey)
+	if(!yard_plans_due(rows))
+		return
+	yard_plans_rows = rows
+	yard_plans_count = length(rows)
+	yard_plans_ui = REF(ui)
+	var/list/plans = new /list(SHIP_SAVE_SLOTS)
+	for(var/slot in 1 to SHIP_SAVE_SLOTS)
+		var/list/row = GLOB.ship_saves.saved_row(owner.ckey, slot)
+		var/list/survey = row?["survey"]
+		var/plan = islist(survey) ? survey["plan"] : null
+		if(istext(plan))
+			plans[slot] = plan
+	ui.send_update(list("save_plans" = plans))
 
 /// Fetches parts and ownership from the DB (sleeps) and caches them on the terminal.
 /datum/lobby_terminal/proc/yard_refresh()
@@ -216,7 +267,7 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 		"id" = hull_id,
 		"name" = hull.name,
 		"short" = hull.short_name || hull.name,
-		"desc" = hull.catalog_desc || generate_ship_description(hull),
+		"desc" = hull.catalog_desc || "",
 		"cost" = lobby_yard_cost(hull.part_requirements),
 		"free" = !!is_ship_free(hull),
 		"finishes" = finishes,
@@ -335,7 +386,7 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
  * short line saying why not. An unlock write that fails after paying is logged and
  * reported to admins; the commission still goes ahead, since the player has paid.
  */
-/datum/lobby_terminal/proc/yard_settle(mob/user, player_ckey, datum/map_template/shuttle/voidcrew/hull, datum/ship_theme/theme, list/selections, datum/ship_economy_db/economy = GLOB.ship_economy_db)
+/datum/lobby_terminal/proc/yard_settle(mob/user, player_ckey, datum/map_template/shuttle/voidcrew/hull, datum/ship_theme/theme, list/selections, datum/ship_economy_db/economy = GLOB.ship_economy_db, list/shown_total = null)
 	if(CONFIG_GET(flag/free_ships))
 		return TRUE
 	var/hull_id = "[hull.type]"
@@ -355,6 +406,12 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	if(!economy)
 		return "The shipyard ledger is offline."
 	var/list/total = lobby_yard_bill_total(lines)
+	// The page's figure is only compared, never charged: a bill higher than the one the player
+	// saw (ownership or FREE_SHIPS changed since) is refused, and the caller refreshes the page.
+	if(islist(shown_total))
+		for(var/part_class in total)
+			if(total[part_class] > (shown_total[part_class] || 0))
+				return "The bill has changed. Check it again."
 	var/list/parts = economy.get_parts(player_ckey)
 	if(!parts)
 		return "The shipyard ledger is offline."
@@ -412,6 +469,9 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 			// Sent on every SHIPYARD open, so it may only reach the DB once a minute.
 			if(!yard_refreshed_at || world.time - yard_refreshed_at > LOBBY_YARD_REFRESH_INTERVAL)
 				yard_refresh()
+				// Nothing else reads a lobby player's saves; inside the same gate, so at most once a minute.
+				GLOB.ship_saves.refresh(player.ckey)
+			yard_push_plans()
 			return TRUE
 		if("yard_preview")
 			yard_send_preview(params["hull"])
@@ -495,6 +555,25 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	set_notice("This leaves [crew_name].", "warn")
 	return null
 
+/**
+ * The join lock is held by another route. While that route's CONFIRMED box is up (an "ok"
+ * notice), a second press leaves it alone; otherwise it says why nothing happened.
+ */
+/datum/lobby_terminal/proc/yard_lock_busy()
+	if(notice && notice["kind"] == "ok")
+		return
+	set_notice("Your ship is already being prepared.", "warn")
+
+/// The total the page showed (class -> parts), cleaned. Missing or bad classes read as zero.
+/proc/lobby_yard_shown_total(list/total)
+	var/list/out = list()
+	for(var/part_class in GLOB.ship_part_classes)
+		var/amount = islist(total) ? total[part_class] : 0
+		if(!isnum(amount))
+			amount = text2num("[amount]")
+		out[part_class] = isnum(amount) && amount > 0 ? round(amount) : 0
+	return out
+
 /datum/lobby_terminal/proc/yard_commission(mob/dead/new_player/player, list/params)
 	var/denial = yard_route_denial(player)
 	if(denial)
@@ -513,18 +592,18 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	if(isnull(form_new))
 		return TRUE
 	if(!yard_take_lock(player))
-		set_notice("Your ship is already being prepared.", "warn")
+		yard_lock_busy()
 		return TRUE
 	set_notice("Preparing your [hull.name].", "ok")
-	INVOKE_ASYNC(src, PROC_REF(run_commission), player, player.ckey, hull, fit_list[1], fit_list[2], form_new)
+	INVOKE_ASYNC(src, PROC_REF(run_commission), player, player.ckey, hull, fit_list[1], fit_list[2], form_new, GLOB.ship_economy_db, lobby_yard_shown_total(params["total"]))
 	return TRUE
 
 /**
  * Pays the bill and launches. The caller holds the join lock; this releases it on every
  * path. Sleeps on the DB and on the ship load.
  */
-/datum/lobby_terminal/proc/run_commission(mob/dead/new_player/player, player_ckey, datum/map_template/shuttle/voidcrew/hull, datum/ship_theme/theme, list/selections, form_new, datum/ship_economy_db/economy = GLOB.ship_economy_db)
-	var/paid = yard_settle(player, player_ckey, hull, theme, selections, economy)
+/datum/lobby_terminal/proc/run_commission(mob/dead/new_player/player, player_ckey, datum/map_template/shuttle/voidcrew/hull, datum/ship_theme/theme, list/selections, form_new, datum/ship_economy_db/economy = GLOB.ship_economy_db, list/shown_total = null)
+	var/paid = yard_settle(player, player_ckey, hull, theme, selections, economy, shown_total)
 	if(QDELETED(src))
 		release_join_lock(player_ckey)
 		return
@@ -569,9 +648,9 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	if(unseated)
 		set_notice("Your ship is ready, but no berth is free aboard.", "bad")
 	else if(SSmapping.at_z_level_ceiling())
-		set_notice("The shipyard is congested. What you paid for stays yours; try again shortly.", "bad")
+		set_notice("Yard congested. Your purchases stand. Try again shortly.", "bad")
 	else
-		set_notice("The shipyard could not prepare your ship. What you paid for stays yours.", "bad")
+		set_notice("The yard could not build your ship. Your purchases stand.", "bad")
 
 /datum/lobby_terminal/proc/yard_requisition(mob/dead/new_player/player, list/params)
 	var/denial = yard_route_denial(player)
@@ -585,7 +664,7 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	if(isnull(form_new))
 		return TRUE
 	if(!yard_take_lock(player))
-		set_notice("Your ship is already being prepared.", "warn")
+		yard_lock_busy()
 		return TRUE
 	set_notice("Requisitioning a hull.", "ok")
 	INVOKE_ASYNC(src, PROC_REF(run_requisition), player, player.ckey, form_new)

@@ -187,30 +187,39 @@ export type Owned = {
   modules: Record<string, string[]>;
 };
 
-/** Saved ship card (2.5). Field names follow the mockup; the ship-saving PR maps to them. */
+/** A saved ship on the home's SAVED SHIPS box (built by the ship-saves hook). */
 export type SaveCard = {
+  /** 1 to 3. */
   slot: number;
+  /** row.ship_name, 46 at most. */
   name: string;
-  /** Class line, e.g. "Goon-class Scout". */
+  /** The hull's short name, 23 at most. */
   class: string;
-  mass?: number;
-  crew?: number;
+  /** Berths. */
+  crew: number;
+  /** What the save holds, in display order, 12 entries at most ("1,850 cr", "4 Laser turret"). */
+  carries: string[];
   /** Why it can't load now, or null. */
   denial: string | null;
-  /** UNDER WAY: the original hull is still in service. */
+  /** A retrieval is under way. */
   locked: BooleanLike;
-  funds?: number;
-  research?: number;
-  /** Encoded floor plan for the line drawing. */
-  plan?: string;
-  /** [label, count, colour class] */
-  fit?: [string, number, string][];
-  lab?: number;
-  cargo?: number;
+  /** Loading it returns the player to the crew they are in now: no LEAVE CREW question. */
+  restores: BooleanLike;
 };
 
+/** wait: not read yet. ok: read. off: no database (or a guest). */
+export type LedgerState = 'wait' | 'ok' | 'off';
+
+export type YardSaves = {
+  state: 'wait' | 'off' | 'ok';
+  /** ok: exactly 3 entries in slot order, null for an empty slot. Otherwise empty. */
+  slots: (SaveCard | null)[];
+};
+
+/** Sent only once the player has opened SHIPYARD (yard_open). */
 export type YardData = {
   account?: Parts | null;
+  ledger?: LedgerState;
   owned?: Owned | null;
   free_ships?: BooleanLike;
   can_requisition?: BooleanLike;
@@ -218,8 +227,12 @@ export type YardData = {
   crew_change?: string | null;
   /** Bumped when a commission put the player aboard: drop the fit. */
   fit_serial?: number;
-  /** Saved ships, null entries for empty slots. Null hides the SAVED SHIPS box. Always sent by the shell. */
-  saves: (SaveCard | null)[] | null;
+  saves?: YardSaves;
+  /**
+   * One-off push (not every tick): each slot's encoded floor plan, or null. The page keeps the
+   * last value pushed.
+   */
+  save_plans?: (string | null)[];
 };
 
 export type YardStatic = {
@@ -443,6 +456,8 @@ export type LobbyActions = {
     hull: string;
     finish: string;
     modules: Record<string, string>;
+    /** The total the page showed; the server refuses a higher bill, never charges this. */
+    total: Parts;
     leave_crew: 0 | 1;
   };
   yard_requisition: { leave_crew: 0 | 1 };
