@@ -13,7 +13,7 @@ import { useBackend } from 'tgui/backend';
 
 import { Emblem } from './Emblem';
 import { sfx, useBlink, useChanged, useChangedNow } from './motion';
-import { FocusScope, useBack } from './nav';
+import { Back, FocusScope } from './nav';
 import {
   Box,
   type Cls,
@@ -132,7 +132,6 @@ type Util = {
   label: string;
   action: string;
   state: KeyState;
-  right?: string;
   /** Instead of sending `action`: SETTINGS opens the terminal's own screen. */
   onClick?: () => void;
 };
@@ -250,7 +249,13 @@ export function SideMenu(props: MenuProps) {
         onClick={onCharacter}
       />
       {name.map((line, i) => (
-        <Put key={i} x={2} y={14 + dy + i} cls="dim" title={fullName}>
+        <Put
+          key={i}
+          x={2}
+          y={14 + dy + i}
+          cls={prefs ? 'dim' : 'faint'}
+          title={fullName}
+        >
           {line}
         </Put>
       ))}
@@ -264,8 +269,6 @@ export function SideMenu(props: MenuProps) {
           h={step}
           kind="plain"
           label={u.label}
-          right={u.right}
-          rightCls="amb"
           state={u.state}
           zone="menu"
           onClick={u.onClick || (() => act(u.action))}
@@ -365,7 +368,6 @@ export function MenuPopup(
   const { onClose } = props;
   const { data, act } = useBackend<LobbyData>();
   const { rows } = useGrid();
-  useBack(onClose);
   const y = rows - 6;
   const items = utilities(data, props);
   const first = items.findIndex((u) => u.state !== 'dead');
@@ -382,6 +384,7 @@ export function MenuPopup(
         <Box x={44} y={y} w={19} h={6} tone="bg" bright />
         <WipeAt x={44} y={y} w={19} h={6} k={0} kind="screen" first z={9} />
         <FocusScope>
+          <Back fn={onClose} />
           {items.map((u, i) => (
             <Key
               key={u.label}
@@ -390,8 +393,6 @@ export function MenuPopup(
               w={17}
               kind="plain"
               label={u.label}
-              right={u.right}
-              rightCls="amb"
               state={u.state}
               auto={i === first ? 9 : undefined}
               zone="menu"
