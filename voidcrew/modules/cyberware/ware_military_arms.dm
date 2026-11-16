@@ -564,10 +564,12 @@
  *
  * The damage splits 3:1. The cut is brute and carries the wounding; the charge
  * running down the line is burn, flat and unwounding. Both halves ignore armor
- * and both halves cleave.
+ * and both halves carry through.
  *
- * Every landed hit cleaves through mobs adjacent to the victim with line of
- * sight, allies filtered out, for CYBERWARE_MONOWIRE_CLEAVE_MULT of both.
+ * Every landed hit carries on into one body at most: the one standing right
+ * behind the victim along the swing, allies filtered out, for
+ * CYBERWARE_MONOWIRE_CLEAVE_MULT of both, never taking a limb. The
+ * through-cut, severs and the garrote live in voidcrew/modules/hyperviolence/wire/.
  */
 /obj/item/melee/cyberware_monowire
 	name = "\improper Widowline monowire"
@@ -605,16 +607,20 @@
 	// line's two voices we are before handing off.
 	hitsound = pick('voidcrew/sound/monowire1.ogg', 'voidcrew/sound/monowire2.ogg')
 	swing_landed = FALSE
+	// The cut rides the hit: clean severs and the through-cut land
+	// while tg resolves it, so their lines join its message (hyperviolence/wire/wire_cut.dm).
+	wire_cut_begin(target, user)
 	. = ..()
 	var/landed = swing_landed
 	swing_landed = FALSE
-	// No cut landed (blocked, cancelled, pulled), so nothing burns and nothing
-	// carries through.
+	// No cut landed (blocked, cancelled, pulled), so nothing burns.
 	if(. || !landed || QDELETED(target) || !isliving(user))
+		wire_cut_end(target)
 		return
 
 	// The charge on the line, on top of the cut. Silent armor check: the parent
-	// already announced the penetration for this same swing.
+	// already announced the penetration for this same swing. Still part of the clean
+	// cut: a wound the cut just opened throws no blood when the charge lands on it.
 	var/burn_zone = target.get_random_valid_zone(user.zone_selected)
 	target.apply_damage(
 		charge_burn,
@@ -622,49 +628,22 @@
 		burn_zone,
 		target.run_armor_check(burn_zone, MELEE, armour_penetration = armour_penetration, silent = TRUE),
 	)
-
-	var/cleaved_anyone = FALSE
-	for(var/mob/living/nearby in orange(1, target))
-		if(nearby == user || nearby == target || nearby.stat == DEAD)
-			continue
-		if(!can_see(target, nearby, 1))
-			continue
-		if(cyberware_is_ally(user, nearby))
-			continue
-		// One roll for both halves: it is one pass of the same wire.
-		var/cleave_block = nearby.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
-		nearby.apply_damage(
-			force * cleave_mult,
-			BRUTE,
-			BODY_ZONE_CHEST,
-			cleave_block,
-			wound_bonus = wound_bonus,
-			sharpness = SHARP_EDGED,
-		)
-		nearby.apply_damage(
-			charge_burn * cleave_mult,
-			BURN,
-			BODY_ZONE_CHEST,
-			cleave_block,
-		)
-		to_chat(nearby, span_userdanger("[user]'s monowire carries through into you!"))
-		cleaved_anyone = TRUE
-	if(cleaved_anyone)
-		user.visible_message(
-			span_danger("The wire sings through everything beside [target]!"),
-			span_danger("The wire carries through the whole cluster."),
-		)
-		playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
+	wire_cut_end(target)
 
 /obj/item/melee/cyberware_monowire/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()
 	swing_landed = TRUE
+	if(!isliving(user) || QDELETED(target) || target == user)
+		return
+	// The wire lashes out of the hand to what it hit (hyperviolence/wire/wire_held.dm), standing in for the held wire.
+	wire_lash_at(user, target, lash_zone)
+	lash_zone = null
 
 /**
  * # Widowline Monowire (T3, one arm, aug slot, load 5)
  *
- * A single-arm spool housing deploying the wire above. Reach two, hits the
- * crowd around whatever it lands on, and armor does nothing to slow it down.
+ * A single-arm spool housing deploying the wire above. Reach two, carries on
+ * into whoever stands behind what it lands on, and armor does nothing to slow it down.
  * What it can't do is hard targets: a quarter demolition mod means walls,
  * doors and machines shrug it off. Bring it to bodies, not to bulkheads.
  */
@@ -675,7 +654,8 @@
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
 	items_to_create = list(/obj/item/melee/cyberware_monowire)
-	extend_sound = 'sound/items/weapons/batonextend.ogg'
+	extend_sound = 'voidcrew/sound/monowire_deploy.ogg'
+	retract_sound = 'voidcrew/sound/monowire_retract.ogg'
 
 // =========================================================================
 // POPUP RONIN SMG

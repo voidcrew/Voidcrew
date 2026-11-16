@@ -327,29 +327,19 @@
 	TEST_ASSERT(!length(impact.overlays), "The Shiv's steel impact glows")
 	qdel(impact)
 
-	var/obj/item/melee/cyberware_monowire/wire = allocate(/obj/item/melee/cyberware_monowire)
-	wire.animate_attack(west, east)
-	impact = locate() in east.vis_contents
-	TEST_ASSERT(impact && impact.icon_state == "impact_widowline", "A Widowline hit drew the wrong impact")
-	qdel(impact)
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "The impact stayed on its target")
+	// The wire's lash from the hand is its picture: nothing goes over the target, not even tg's flying spool.
+	for(var/wire_type in list(/obj/item/melee/cyberware_monowire, /obj/item/melee/cyberware_monowire/live))
+		var/obj/item/melee/cyberware_monowire/wire = allocate(wire_type)
+		wire.animate_attack(west, east)
+		TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "[wire_type] drew an impact over its target")
+		TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "[wire_type] drew tg's flying spool")
 
-	// The Arc's lash, crackle and burst are its picture: nothing goes on top, not even tg's flying spool.
-	wire = allocate(/obj/item/melee/cyberware_monowire/live)
-	wire.animate_attack(west, east)
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "A Widowline Arc hit drew an impact over its shock")
-	TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "A Widowline Arc hit drew tg's flying spool")
-
-	// Its shock is a crackle along the wire, never a lightning bolt from the wielder.
-	var/obj/item/melee/cyberware_monowire/live/arc = wire
+	// Its shock is a small crackle where the wire touched: never a bolt from the wielder, nor sparks thrown about.
+	var/obj/item/melee/cyberware_monowire/live/arc = allocate(/obj/item/melee/cyberware_monowire/live)
 	arc.arc_visuals(east, west)
-	var/list/drawn = list()
-	for(var/obj/effect/ebeam/segment in get_turf(west))
-		for(var/obj/effect/ebeam/look in segment.vis_contents)
-			drawn += look.icon_state
-	TEST_ASSERT(("arc_crackle" in drawn), "The Arc's shock drew no crackle along the wire")
-	for(var/state in drawn)
-		TEST_ASSERT(!findtext(state, "lightning"), "The Arc's shock drew a lightning bolt")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/cyberware_arc_crackle) in get_turf(east), "The Arc's shock drew no crackle where it touched")
+	TEST_ASSERT(!(locate(/obj/effect/ebeam) in get_turf(west)), "The Arc's shock drew a beam from the wielder")
+	TEST_ASSERT(!(locate(/obj/effect/particle_effect/sparks) in range(1, east)), "The Arc's shock threw sparks")
 
 	// A Scorch cut throws embers but draws nothing over the blade's own slash.
 	cyberware_scorch_trail_fx(west, east)
