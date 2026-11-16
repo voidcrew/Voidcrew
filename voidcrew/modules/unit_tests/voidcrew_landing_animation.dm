@@ -123,13 +123,13 @@
 	for(var/datum/landing_view_piece/piece as anything in view.pieces)
 		if(piece.sky)
 			TEST_ASSERT_EQUAL(piece.sky.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A piece of the sky catches the mouse")
-			TEST_ASSERT_EQUAL(piece.sky.plane, LANDING_VIEW_PLANE, "A piece of the sky is off the view's plane")
+			TEST_ASSERT_EQUAL(piece.sky.plane, -19, "A piece of the sky is off the view's plane") // LANDING_VIEW_PLANE
 	UNTIL((length(view.ground.parts) && length(view.close.parts)) || QDELETED(view))
 	TEST_ASSERT(length(view.ground.parts) > 1, "The picture of the ground from afar has nothing in it")
 	TEST_ASSERT(length(view.close.parts) > 1, "The close-up picture of the ground has nothing in it")
 	for(var/list/part as anything in (view.ground.parts + view.close.parts))
 		var/mutable_appearance/look = part[1]
-		TEST_ASSERT_EQUAL(look.plane, LANDING_VIEW_PLANE, "Part of the ground picture is off the view's plane")
+		TEST_ASSERT_EQUAL(look.plane, -19, "Part of the ground picture is off the view's plane") // LANDING_VIEW_PLANE
 		TEST_ASSERT_EQUAL(look.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Part of the ground picture catches the mouse")
 	view.heat_hull(world.time, world.time + 3 SECONDS)
 	TEST_ASSERT(length(view.props) > 0, "The hull's edge does not glow on the way in")

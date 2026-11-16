@@ -10,6 +10,7 @@
  * | T-8.4s   | the planet thins into the colour of its own sky                                          |
  * | T-7.4s   | a deck of cloud comes up from below, then the ship is in it: everything white           |
  * | T-5.2s   | out of the cloud's underside over the real ground, small and hazy, rushing up            |
+ * | T-4.8s   | the ground's own light takes over from the light of open space: a cave is dark from here |
  * | T-2.7s   | the light on the hull's edge turns from the stars' to the ground's                       |
  * | T-1.4s   | the thrusters reach the ground: dust blows out from under the hull                       |
  * | T-0.3s   | the ground is at full size; the ship hangs on its thrusters until the hull really moves |
@@ -175,11 +176,11 @@
 	// and the light on it: the white of the cloud gives way to the ground as it is lit, dark if it is dark
 	light = add_picture()
 	light.scale = ground.scale
-	light.alpha.mark(touchdown - 4.6 SECONDS, 0)
-	light.alpha.mark(touchdown - 3.8 SECONDS, 255, LANDING_CURVE_OUT)
+	light.alpha.mark(touchdown - 4.8 SECONDS, 0)
+	light.alpha.mark(touchdown - 4.3 SECONDS, 255)
 	light.held_back = TRUE
 	addtimer(CALLBACK(src, PROC_REF(bake_light), light, CALLBACK(src, PROC_REF(show), light)), max(0, touchdown - 6.6 SECONDS - world.time), TIMER_DELETE_ME)
-	addtimer(CALLBACK(src, PROC_REF(reveal), light), max(0, touchdown - 4.8 SECONDS - world.time), TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(reveal), light), max(0, touchdown - 5 SECONDS - world.time), TIMER_DELETE_ME)
 
 	// the same shadow the people on the ground see spreading over the berth (see /datum/landing_animation)
 	shadow = add_picture()
