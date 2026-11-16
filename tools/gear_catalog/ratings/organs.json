@@ -487,6 +487,33 @@
    "reason": "Tag a target and your next three shots curve onto it, every 25 s. Bullets stop missing for a burst, but the target gets a warning and walls stop it. Also zooms about 14 tiles out at a slight slowdown, though nobody can shoot while zoomed. Load 3, 2 vouchers at yellow reputation.",
    "tier": "yellow"
   },
+  "/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec": {
+   "confidence": "medium",
+   "group": "Eyes",
+   "hash": "",
+   "name": "marksman link",
+   "rank": 3,
+   "reason": "Tag a target and your next four shots curve onto it, every 18 s, out to 10 tiles. Also zooms the view about 19 tiles out at full speed, though nobody can shoot while zoomed. Load 4, 3 vouchers at advanced reputation.",
+   "tier": "red"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/longsight": {
+   "confidence": "medium",
+   "group": "Eyes",
+   "hash": "",
+   "name": "longsight optics",
+   "rank": 9,
+   "reason": "Zooms the view about 19 tiles out at full speed and names implants out to 9 tiles. Scouting only, no help in a fight. Load 2, 2,400 cr at yellow reputation.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/lookout": {
+   "confidence": "medium",
+   "group": "Eyes",
+   "hash": "",
+   "name": "lookout optics",
+   "rank": 6,
+   "reason": "Zooms the view about 24 tiles out at full speed, sees in the dark, and names every implant on a body out to 11 tiles every 8 s. Pure scouting: no shooting while zoomed. Load 3, 3 vouchers at advanced reputation.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/eyes/robotic/cyberware/nightshade": {
    "confidence": "high",
    "group": "Eyes",
@@ -505,6 +532,24 @@
    "rank": 10,
    "reason": "A pulse every 10 s shows ore through rock and loot caches within 9 tiles. Great for mining and ruin crews, no help in a fight. Also zooms about 14 tiles out at a slight slowdown. Load 2, 1 voucher at yellow reputation.",
    "tier": "yellow"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/prospector/street": {
+   "confidence": "high",
+   "group": "Eyes",
+   "hash": "",
+   "name": "assay optics",
+   "rank": 12,
+   "reason": "A 5-tile ore pulse through rock every 15 s with no cache marks, plus a short zoom that slows you. A cheap start for miners. Load 1, 900 cr.",
+   "tier": "green"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/spyglass": {
+   "confidence": "high",
+   "group": "Eyes",
+   "hash": "",
+   "name": "spyglass optics",
+   "rank": 13,
+   "reason": "A short zoom, about 9 tiles, that slows you while you look, and a chrome read that only counts implants. Binoculars reach further but take both hands. Load 1, 400 cr.",
+   "tier": "green"
   },
   "/obj/item/organ/eyes/robotic/flashlight": {
    "confidence": "high",

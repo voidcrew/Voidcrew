@@ -282,6 +282,8 @@
 		/datum/action/cooldown/cyberware/deadeye_tag,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
 	/// How far a tag can be planted, and how far homing keeps correcting.
 	var/tag_range = CYBERWARE_DEADEYE_TAG_RANGE
 	/// Homing shots granted per tag.

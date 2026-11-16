@@ -124,6 +124,10 @@ The newer makers fill in the gaps under the big names. Each takes the same slot 
 - **Thumper ear**: a louder, shorter-ranged sonar behind the ear.
 - Quiet pieces with no button: the **Clotter node** slows bleeding, the **Adrenal pump** kicks in when you're about to drop, **Medic's palms** and **Cuffer's wrists** do the glove's job without the glove, the **Subvocal mic** keeps your radio talk from the people next to you, and the **Muffler ear** shuts out a bang.
 
+## Optics and zoom
+
+Every pair of chrome eyes can zoom: focus on something far off and your view pulls toward it. Better eyes see further, and cheap ones make you slow while you look. Nobody shoots straight through a zoom, so you have to look up before you fire. A flash, a stun or an EMP snaps you out of it. Spyglass and assay optics are the cheap way in; the Longsight, the marksman link and the Lookout are what scouts and sharpshooters save for.
+
 ## Finding chrome in the wild
 
 Most of the roster also appears in zone loot caches. Street and utility chrome appears among themed supplies. Weapon chrome uses the cache's weapon roll; Popup Ronin and Bunker Buster housings are plunder-cache loot rather than trader stock. Higher zones improve the odds of stronger chrome. The exceptions: Legend chrome and ammunition never drop, the Skyhook drops *only* in expedition caches, and the Meteor Piledriver comes from eligible guarded mission prizes, including hunts and lair trophies.
