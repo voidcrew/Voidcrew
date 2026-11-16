@@ -108,7 +108,13 @@ export function ListPicker(props: PickerProps) {
 
   const fitAll = Math.floor((M - 6.5) / rowH);
   const paged = fitAll * ncol < list.length;
-  const perCol = Math.max(1, paged ? Math.floor((M - 7.75) / rowH) : fitAll);
+  // One page: the columns share the list evenly, so the second is never left empty.
+  const perCol = Math.max(
+    1,
+    paged
+      ? Math.floor((M - 7.75) / rowH)
+      : Math.min(fitAll, Math.ceil(list.length / ncol)),
+  );
   const per = perCol * ncol;
   const pages = Math.max(1, Math.ceil(list.length / per));
   const pageOf = (v: string) => Math.max(0, Math.floor(list.indexOf(v) / per));
@@ -237,8 +243,9 @@ export function ColourPanel(props: ColourPanelProps) {
   const { x, w, label, value, recent, native, onApply, onPicker } = props;
   const { rows: M } = useGrid();
   const B = bodyRows(M);
-  const g = B >= 20 ? 2.25 : 1.75;
-  const S = Math.min(8, Math.max(3, q(B - 5.25 - 3 * g)));
+  // Tall panes give the room to thicker bars, then a taller swatch, so the foot never sits empty.
+  const g = B >= 20 ? Math.min(3.25, Math.max(2.25, q((B - 13.25) / 3))) : 1.75;
+  const S = Math.min(10, Math.max(3, q(B - 5.25 - 3 * g)));
   const yb = 5.5 + S;
 
   const current = parseHex(value) || '#000000';

@@ -177,7 +177,10 @@ function kindOf(
   if (parseHex(String(value ?? ''))) {
     return 'colour';
   }
-  return cat ? null : 'fixed';
+  // A key the catalog doesn't describe (a new preference): its value, read only.
+  return typeof value === 'string' || typeof value === 'number'
+    ? 'fixed'
+    : null;
 }
 
 /** The keys of a group that show for this character, in order. */
@@ -313,14 +316,26 @@ export function BodyColour(props: { k: string }) {
 export function SpeciesPick() {
   const { act, data } = useBackend<LobbyData>();
   const cat = usePrefsCatalog();
-  const { closeSub } = useChar();
   const { rows: M } = useGrid();
   const value = String(data.char?.prefs.species ?? '');
   const list = choicesOf(cat, 'species') || [];
   const [over, setOver] = useState(value);
   const B = bodyRows(M);
-  const h = B < 20 ? 1.25 : 1.5;
-  const pitch = B < 20 ? 1.25 : 1.75;
+  // Rows stretch into the room the longest description leaves (at most 7 lines), so a tall
+  // pane fills instead of leaving the foot empty; short panes keep 1.25-row rows.
+  const longest = Math.max(
+    2,
+    ...list.map(
+      (id) =>
+        wrapMax(safe(String(cat?.species?.[id]?.desc ?? '')), WORK_W, 7).length,
+    ),
+  );
+  const rowsRoom = M - 1.25 - 5.25 - 0.75 - longest;
+  const h =
+    B < 20
+      ? 1.25
+      : clamp(q((rowsRoom + 0.25) / Math.max(1, list.length) - 0.25), 1.5, 3);
+  const pitch = B < 20 ? 1.25 : h + 0.25;
   // Rows that leave at least two lines of description under them.
   const room = Math.floor((M - 1.25 - 2 - 0.75 - 5.25 + (pitch - h)) / pitch);
   const fits = list.length <= room;
@@ -388,9 +403,20 @@ export function SpeciesPick() {
             onFocus={(f) => f && setOver(id)}
             onClick={() => act('char_set', { key: 'species', value: id })}
           >
-            <Put x={WORK_X + 2} y={y + (h - 1) / 2} cls={on ? 'wht' : ''}>
-              {cut(safe(nameOf(cat, 'species', id)).toUpperCase(), 36)}
-            </Put>
+            {h >= 2.25 ? (
+              <Big
+                x={WORK_X + 2}
+                y={y + (h - 1.25) / 2}
+                scale={1.25}
+                cls={on ? 'wht' : ''}
+              >
+                {cut(safe(nameOf(cat, 'species', id)).toUpperCase(), 28)}
+              </Big>
+            ) : (
+              <Put x={WORK_X + 2} y={y + (h - 1) / 2} cls={on ? 'wht' : ''}>
+                {cut(safe(nameOf(cat, 'species', id)).toUpperCase(), 36)}
+              </Put>
+            )}
           </Slab>
         );
       })}
