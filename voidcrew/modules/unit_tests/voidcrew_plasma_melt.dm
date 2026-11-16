@@ -42,7 +42,8 @@
 		if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light))
 			qdel(thing)
 
-/// Slag is one decal per tile and capped globally, oldest first; it can be cleaned away
+/// Every melt leaves its own slag where its pool lay, up to PLASMA_SLAG_TURF_CAP on a tile (the tile's oldest goes
+/// first) and capped globally, oldest first. Mops, soap, cleaner spray and cleanbots clean it away.
 /datum/unit_test/voidcrew_plasma_slag_caps
 
 /datum/unit_test/voidcrew_plasma_slag_caps/Run()
@@ -51,26 +52,82 @@
 	var/turf/open/second_turf = get_step(first_turf, EAST)
 	var/turf/open/third_turf = get_step(second_turf, EAST)
 	TEST_ASSERT(isopenturf(first_turf) && isopenturf(second_turf) && isopenturf(third_turf), "The test room has no three open floor tiles in a row")
-	var/cap = length(start_slag) + 2
+	var/big_cap = length(start_slag) + 50
 
-	var/obj/effect/decal/cleanable/plasma_slag/first = plasma_slag_at(first_turf, cap = cap)
+	// two melts on one tile leave two slag, each where its own pool lay
+	var/obj/effect/decal/cleanable/plasma_slag/first = plasma_slag_at(first_turf, -6, 2, cap = big_cap)
 	TEST_ASSERT_NOTNULL(first, "No slag was made on an open floor")
-	TEST_ASSERT_EQUAL(plasma_slag_at(first_turf, cap = cap), first, "A second melt on the same tile made a second slag decal")
+	var/obj/effect/decal/cleanable/plasma_slag/second = plasma_slag_at(first_turf, 5, -3, cap = big_cap)
+	TEST_ASSERT(second && second != first && !QDELETED(first), "A second melt on the same tile left no slag of its own")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(first_turf, /obj/effect/decal/cleanable/plasma_slag), 2, "Two melts on one tile did not leave two slag")
+	TEST_ASSERT(first.pixel_x == -6 && first.pixel_y == 2 && second.pixel_x == 5 && second.pixel_y == -3, "Slag did not set where its pool lay")
+	// tg's cleanable merge would delete a second decal of the same type on the tile
 	var/obj/effect/decal/cleanable/plasma_slag/stray = new(first_turf)
-	TEST_ASSERT(QDELETED(stray), "A second slag decal on one tile did not merge into the first")
-	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(first_turf, /obj/effect/decal/cleanable/plasma_slag), 1, "A tile holds more than one slag decal")
+	TEST_ASSERT(!QDELETED(stray), "A second slag decal on one tile merged away")
+	qdel(stray)
 
-	var/obj/effect/decal/cleanable/plasma_slag/second = plasma_slag_at(second_turf, cap = cap)
-	var/obj/effect/decal/cleanable/plasma_slag/third = plasma_slag_at(third_turf, cap = cap)
-	TEST_ASSERT(QDELETED(first), "Slag over the cap did not drop the oldest decal")
-	TEST_ASSERT(!QDELETED(second) && !QDELETED(third), "Slag over the cap dropped a newer decal")
+	// four melts on one tile leave PLASMA_SLAG_TURF_CAP slag: the newest stay, the tile's oldest went
+	var/obj/effect/decal/cleanable/plasma_slag/third = plasma_slag_at(first_turf, 0, 4, cap = big_cap)
+	var/obj/effect/decal/cleanable/plasma_slag/fourth = plasma_slag_at(first_turf, 2, 0, cap = big_cap)
+	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(first_turf, /obj/effect/decal/cleanable/plasma_slag), PLASMA_SLAG_TURF_CAP, "Four melts on one tile did not leave [PLASMA_SLAG_TURF_CAP] slag")
+	TEST_ASSERT(QDELETED(first), "A full tile kept its oldest slag")
+	TEST_ASSERT(!QDELETED(second) && !QDELETED(third) && !QDELETED(fourth), "A full tile dropped a newer slag instead of its oldest")
+	TEST_ASSERT(!(first in GLOB.plasma_slag_decals), "Replaced slag stayed in the global list")
+
+	// cleaner spray washes the whole tile (space cleaner: wash(CLEAN_WASH, TRUE)); a mop or soap scrubs it (CLEAN_SCRUB)
+	first_turf.wash(CLEAN_WASH, TRUE)
+	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(first_turf, /obj/effect/decal/cleanable/plasma_slag), 0, "Cleaner spray left slag on the tile")
+	for(var/i in 1 to 2)
+		plasma_slag_at(first_turf, i, i, cap = big_cap)
+	first_turf.wash(CLEAN_SCRUB)
+	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(first_turf, /obj/effect/decal/cleanable/plasma_slag), 0, "Mopping the tile left slag")
+	var/obj/effect/decal/cleanable/plasma_slag/scrubbed = plasma_slag_at(first_turf, cap = big_cap)
+	scrubbed.wash(CLEAN_SCRUB)
+	TEST_ASSERT(QDELETED(scrubbed), "Scrubbing the slag itself left it")
+	TEST_ASSERT_EQUAL(length(GLOB.plasma_slag_decals), length(start_slag), "Cleaned slag stayed in the global list")
+
+	// a cleanbot hunts slag
+	var/mob/living/basic/bot/cleanbot/cleanbot = allocate(/mob/living/basic/bot/cleanbot, third_turf)
+	var/list/hunted = cleanbot.ai_controller.blackboard[BB_CLEANABLE_DECALS]
+	TEST_ASSERT(hunted?[/obj/effect/decal/cleanable/plasma_slag], "A cleanbot does not go after slag")
+
+	// the global cap drops the world's oldest slag
+	var/cap = length(start_slag) + 2
+	var/obj/effect/decal/cleanable/plasma_slag/on_first = plasma_slag_at(first_turf, cap = cap)
+	var/obj/effect/decal/cleanable/plasma_slag/on_second = plasma_slag_at(second_turf, cap = cap)
+	var/obj/effect/decal/cleanable/plasma_slag/on_third = plasma_slag_at(third_turf, cap = cap)
+	TEST_ASSERT(QDELETED(on_first), "Slag over the cap did not drop the oldest decal")
+	TEST_ASSERT(!QDELETED(on_second) && !QDELETED(on_third), "Slag over the cap dropped a newer decal")
 	TEST_ASSERT_EQUAL(length(GLOB.plasma_slag_decals), cap, "The global slag list grew past its cap")
-
-	second_turf.wash(CLEAN_SCRUB)
-	TEST_ASSERT(QDELETED(second), "Scrubbing the floor left the slag")
-	TEST_ASSERT(!(second in GLOB.plasma_slag_decals), "Cleaned slag stayed in the global list")
-	qdel(third)
+	qdel(on_second)
+	qdel(on_third)
 	TEST_ASSERT_EQUAL(length(GLOB.plasma_slag_decals), length(start_slag), "The global slag list kept test decals")
+
+/// Two limbs melted off on one tile each leave their own slag when their pools set
+/datum/unit_test/voidcrew_plasma_melt_two_slag
+
+/datum/unit_test/voidcrew_plasma_melt_two_slag/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	var/turf/where = get_turf(victim)
+	var/list/start_slag = GLOB.plasma_slag_decals.Copy()
+	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+		TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(zone), SOUTH), "The [zone] did not melt off")
+		var/datum/plasma_melt/melt = victim.plasma_melts[zone]
+		melt.grow_pool(8) // a full pool (PLASMA_MELT_POOL_STEPS)
+		TEST_ASSERT_NOTNULL(melt.pool, "The [zone] grew no pool")
+		var/pool_x = melt.pool.pixel_x
+		var/pool_y = melt.pool.pixel_y
+		melt.pool_set()
+		var/obj/effect/decal/cleanable/plasma_slag/newest = GLOB.plasma_slag_decals[length(GLOB.plasma_slag_decals)]
+		TEST_ASSERT(newest && newest.loc == where && newest.pixel_x == pool_x && newest.pixel_y == pool_y, "The [zone]'s slag did not set where its pool lay")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_melt_count(where, /obj/effect/decal/cleanable/plasma_slag), 2, "Two melts on one tile did not leave two slag")
+	TEST_ASSERT_EQUAL(length(GLOB.plasma_slag_decals), length(start_slag) + 2, "The melts did not add two slag to the world")
+
+	for(var/zone in victim.plasma_melts)
+		qdel(victim.plasma_melts[zone])
+	for(var/obj/effect/thing in where)
+		if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light) || istype(thing, /obj/effect/temp_visual))
+			qdel(thing)
 
 /// A melted arm burns its jumpsuit sleeve away; a melted leg doesn't touch the uniform. Putting the arm back
 /// brings the sleeve back and takes the stump off the body.
