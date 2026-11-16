@@ -742,8 +742,13 @@
 	TEST_ASSERT_NULL(dying.get_bodypart(BODY_ZONE_HEAD), "A garrote in hard crit didn't take the head")
 	TEST_ASSERT_NOTNULL(taken, "The head wasn't left at the body")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/brain) in taken, "The head lost its brain")
-	// The garroter stands south of this one: the head drops toward their feet.
-	TEST_ASSERT(taken.transform.f + taken.pixel_y < 0, "The head didn't drop at the garroter's feet ([taken.transform.f], [taken.pixel_y])")
+	// The garroter stands south of this one: the head drops toward their feet. Measured at the head's middle (9 px up
+	// on the body, turned with the head, then its picture's own shift), since a head turned as the body lay moves its
+	// picture's corner by several pixels either way, and tg lays a body down facing either way at random.
+	var/head_mid_y = taken.transform.e * 9 + taken.transform.f + taken.px_y + taken.pixel_y
+	TEST_ASSERT(head_mid_y < 0, "The head didn't drop at the garroter's feet ([head_mid_y] px, lying at [dying.lying_angle])")
+	// Facing away, it goes back with the body as it settles: it lies against the neck, where the body came to rest.
+	TEST_ASSERT(abs(head_mid_y - dying.pixel_y) <= 4, "The head didn't settle back with the body ([head_mid_y] px, body at [dying.pixel_y])")
 	// The headset came off with it and lies on its side by it, not stood up on the body.
 	var/obj/item/radio/headset/headset = locate() in get_turf(dying)
 	TEST_ASSERT_NOTNULL(headset, "The headset didn't come off with the head")
