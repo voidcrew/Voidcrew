@@ -13,7 +13,7 @@ The mission board links to a nearby mission pad. Open **Available** to browse wo
 
 The console posts a set of **five offers every 20 minutes**, including a green-zone exploration job when one is available. Up to three slots are reserved for targeted work in the highest zone your crew's [reputation](zone-reputation.md) allows. Taking or losing a job leaves a vacancy until the next set arrives. **Refresh** becomes available when the next set is due; it does not give an early replacement. Reopening or rebuilding the console keeps the ship's offers and schedule.
 
-For a starting job, look for an **Exploration Contract** in green space. Fly to its marked coordinates, then collect the listed fee at the board.
+For a starting job, look for an **Exploration Contract** in green space. Fly to its marked coordinates and hold there while the sensors sweep the sector, then collect the listed fee at the board.
 
 Each offer shows its task, pay, and allowed time. Accepting starts its deadline and adds a helm waypoint when there is a destination. Some jobs also leave equipment on the mission pad: collect it before leaving. Tap a handheld GPS on the board to copy active mission beacons, or use **Link Mission Beacons** with a fitted MOD GPS.
 
@@ -86,13 +86,13 @@ These prizes are separate from the offer's ordinary credits, vouchers and goods.
 | Contract | What it asks |
 |---|---|
 | Delivery Contract | Bring the listed goods to the pad: spice pods, sinew, goliath hides, glacial cores, raw telecrystals, a sea crystal, or Syndicate documents. Stored goods qualify. |
-| Exploration Contract | Fly the ship to marked coordinates, then collect the fee. |
+| Exploration Contract | Fly the ship to marked coordinates, hold position for the sensor sweep, then collect the fee. The sweep sometimes turns up a nearby derelict. |
 | Survey Contract | Scan the requested celestial objects with the orbital survey console. |
 | Telemetry Contract | Gather the requested survey scans and return for credits and research notes. |
 | Recovery Contract | Retrieve a named object from inside a space ruin. |
 | Kill Contract | Hunt a named pirate captain in a ruin and bring back their identification tag. |
 | Survey Contract (pylons) | Calibrate the ruin's survey pylons, survive their defenders, and bring back the printed core. |
-| Extraction Contract | Unbolt cargo inside a ruin, deal with the defenders, and bring it home. |
+| Extraction Contract | Unbolt cargo inside a ruin with a wrench, deal with the defenders, and bring it home. |
 | Rescue Contract | Escort a survivor out of a wreck and bring them back alive. |
 | Suppression Sweep | Confirm the requested pirate kills in the required area, then collect at the board. |
 | Gas Harvest Contract | Deliver a tank containing the requested gas and amount. Gas already aboard qualifies. See [Fuel & Gas](gas-economy.md). |
@@ -100,7 +100,7 @@ These prizes are separate from the offer's ordinary credits, vouchers and goods.
 | Big Game Hunt | Deploy the supplied lure, kill the named beast, and return its trophy. |
 | Live Capture | Find the marked specimen, weaken it without killing it, and deliver it alive in the supplied capture crate. |
 | Poacher Bust | Clear a poacher camp and recover its evidence cache. |
-| Prospect Stake | Deploy a claim beacon aboard your ship at the marked coordinates, hold station through its defense, and deliver the deed. |
+| Prospect Stake | Land on the marked planet, deploy the claim beacon on open ground, stay with it through its defense, and deliver the deed. |
 | Containment Contract | Find and neutralize the named anomaly, then deliver its core. |
 | Core Sample Contract | Complete a planet's sampling work and return the sample. |
 

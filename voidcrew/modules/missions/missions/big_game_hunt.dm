@@ -16,10 +16,32 @@
  * the trophy after that. Losing any of them voids the contract (FAIL policy,
  * with exactly one planet of each type per round, a filtered retarget has
  * nowhere to go, and set_lure's one kit can't re-arm a fresh site anyway).
+ *
+ * The staked lure stays behind as an anchored rig that thumps and stinks of
+ * chum. It is scenery, not a quest atom. The beast does not appear beside it:
+ * a roar rolls in from one side, then after a short wait the beast and its
+ * entourage come into being out of every player's sight, a good way off, and
+ * walk in on the stake (AI planning subtree at the bottom of this file). The
+ * rig is trampled when the beast reaches it, or goes quiet when it dies.
  */
 
 /// How long staking the hunting lure takes
 #define LURE_STAKE_TIME (8 SECONDS)
+/// Wait between the lure going in and its quarry setting out (the walk in comes on top)
+#define LURE_ARRIVAL_MIN (9 SECONDS)
+#define LURE_ARRIVAL_MAX (16 SECONDS)
+/// How far from the stake the quarry starts out, in tiles. An AI drops a movement
+/// goal more than 14 tiles away, so the far edge stays under that.
+#define LURE_APPROACH_MIN 10
+#define LURE_APPROACH_MAX 13
+/// Nearest a player may stand to a starting tile. A screen reaches 7 tiles each way.
+#define LURE_UNSEEN_RANGE 9
+/// How long an animal keeps heading for the lure before it goes back to its own business
+#define LURE_CHARGE_TIME (45 SECONDS)
+/// The rumble before a beast climbs out of the ground (matches zone_mobs_arrival.dm)
+#define LURE_EMERGE_TIME (2.5 SECONDS)
+/// Blackboard key: world.time after which a lured animal stops heading for the lure
+#define BB_LURE_CHARGE_EXPIRES "BB_lure_charge_expires"
 
 /datum/mission/big_game_hunt
 	name = "Big Game Hunt"
@@ -208,8 +230,8 @@
  * A lure kit is dispensed at the servant's mission pad on accept (the
  * prospect-stake kit pattern) and tracked as the quest atom, burn the lure,
  * void the hunt. Staking it in open ground on the target planet records the
- * stake position for the kill step and completes; the beast's spawn devours
- * the kit. Assumes the FAIL loss policy: the one kit can't re-arm after a
+ * stake position for the kill step, stands the rig on that spot and
+ * completes. Assumes the FAIL loss policy: the one kit can't re-arm after a
  * retarget reset.
  */
 /datum/mission_objective/set_lure
@@ -217,11 +239,20 @@
 	var/obj/item/hunting_lure/kit
 	/// The kill step this lure feeds its stake position to
 	var/datum/mission_objective/field/kill_named/big_game/hunt_objective
+	/// The kit went into the ground; a rewind (the site unloaded) needs a fresh one
+	var/kit_spent = FALSE
 
 /datum/mission_objective/set_lure/Destroy()
 	kit = null // the item survives; it self-reports expiry on use
 	hunt_objective = null
 	return ..()
+
+/// Back on this step after the site unloaded with the beast in it: send a new lure
+/datum/mission_objective/set_lure/activate()
+	. = ..()
+	if(kit_spent && QDELETED(kit))
+		kit_spent = FALSE
+		dispense_kit()
 
 /// Called by the mission at start: hand the lure over at the ship's pad
 /datum/mission_objective/set_lure/proc/dispense_kit()
@@ -235,6 +266,7 @@
 		mission.fail("No mission pad to dispense the hunting lure to.")
 		return FALSE
 	kit = new(kit_turf)
+	mission_pad_delivery_effect(kit_turf)
 	kit.objective_ref = WEAKREF(src)
 	// Losing the lure voids the hunt (and points the GPS chain at it meanwhile)
 	mission.register_quest_atom(kit)
@@ -245,13 +277,14 @@
 /datum/mission_objective/set_lure/proc/on_planted(mob/living/user, turf/where)
 	if(completed || !active || !where || !mission || mission.failed || mission.completed)
 		return
-	if(hunt_objective)
-		hunt_objective.lure_turf = where
+	// The rig goes into the ground here and the kill step takes it from there
+	hunt_objective?.plant_lure(where)
 	// The staked lure stops being the tracked objective; the beast that
-	// answers takes over the slot as soon as complete() advances the chain
+	// answers takes over the slot once it has been called in
 	mission.forget_quest_atom(kit)
 	QDEL_NULL(kit)
-	notify_crew("Lure staked. Something big is moving toward it - stand ready.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+	kit_spent = TRUE
+	notify_crew("Lure staked.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 	complete()
 
 /datum/mission_objective/set_lure/get_progress_string()
@@ -266,36 +299,231 @@
 
 /**
  * kill_named pointed at the lure instead of a random stretch of surface: the
- * beast (a trophy-grade specimen of the planet's apex fauna) breaks cover
- * next to the stake the moment the lure objective completes, with its
- * entourage of lesser fauna. Death drops the mission-bound trophy.
+ * beast (a trophy-grade specimen of the planet's apex fauna) answers the
+ * stake with its entourage of lesser fauna. It is called in after a roar and a
+ * short wait, starts well out of sight and heads for the stake; a site too
+ * cramped to hide an approach gets the beast climbing out of the ground next
+ * to it instead. Death drops the mission-bound trophy.
  */
 /datum/mission_objective/field/kill_named/big_game
 	proof_type = /obj/item/mission_recovery/trophy
-	/// Where the lure was staked; the beast breaks cover next to it
+	/// Where the lure was staked; the beast comes for it
 	var/turf/lure_turf
+	/// The rig standing on lure_turf (weak: it goes with the site)
+	var/datum/weakref/lure_stake_ref
+	/// Pending arrival timer: the wait before the quarry sets out, or the rumble before it digs out
+	var/arrival_timer
+	/// Whether the beast has been called but is not out yet
+	var/arrival_pending = FALSE
+	/// Where the first roar came from; the quarry comes in from the same side
+	var/turf/approach_hint
 	/// The trophy the beast drops ("tendril-crowned skull"), set by the mission
 	var/trophy_part = "trophy"
 	/// Trophy-grade specimen: raise maxHealth/health to this on spawn (0 = leave alone).
 	/// A plain var-level scale-up, no new buff system.
 	var/health_override = 0
 
+/datum/mission_objective/field/kill_named/big_game/Destroy()
+	cancel_arrival()
+	// Never leave the rig behind for a contract that no longer exists
+	var/obj/structure/hunting_lure_stake/stake = lure_stake_ref?.resolve()
+	stake?.topple()
+	lure_stake_ref = null
+	approach_hint = null
+	lure_turf = null
+	return ..()
+
+/datum/mission_objective/field/kill_named/big_game/deactivate()
+	// Completed, failed or rewound: nothing is on its way and the rig goes quiet
+	cancel_arrival()
+	var/obj/structure/hunting_lure_stake/stake = lure_stake_ref?.resolve()
+	stake?.topple()
+	lure_stake_ref = null
+	return ..()
+
 /datum/mission_objective/field/kill_named/big_game/reset()
 	. = ..()
 	lure_turf = null
+	approach_hint = null
 
-/// The beast answers the lure, not a random spawn point
+/// Stops a call that is still waiting to be answered
+/datum/mission_objective/field/kill_named/big_game/proc/cancel_arrival()
+	if(arrival_timer)
+		deltimer(arrival_timer)
+		arrival_timer = null
+	arrival_pending = FALSE
+
+/// The kit went into the ground: remember the spot and stand the rig on it
+/datum/mission_objective/field/kill_named/big_game/proc/plant_lure(turf/where)
+	lure_turf = where
+	var/obj/structure/hunting_lure_stake/stake = new(where)
+	lure_stake_ref = WEAKREF(stake)
+
+/// The beast answers the lure, not a random spawn point, and not at once
 /datum/mission_objective/field/kill_named/big_game/do_field_spawn()
 	if(spawned)
 		return
 	if(!lure_turf)
 		return ..()
 	spawned = TRUE
-	spawn_field_objects(get_nearby_open_turf(lure_turf, 4))
+	arrival_pending = TRUE
+	// First sign of it: a roar from the side it will come in on (or from the
+	// ground itself where there is no hiding place)
+	var/list/approaches = approach_turfs()
+	approach_hint = length(approaches) ? pick(approaches) : null
+	var/turf/roar_from = approach_hint || lure_turf
+	playsound(roar_from, 'sound/mobs/non-humanoids/space_dragon/space_dragon_roar.ogg', 40, TRUE, extrarange = 20)
+	for(var/mob/living/hearer in GLOB.player_list)
+		if(hearer.z == lure_turf.z && get_dist(hearer, lure_turf) <= 14 && hearer.can_hear())
+			to_chat(hearer, span_boldwarning("Something huge bellows in the distance."))
+	arrival_timer = addtimer(CALLBACK(src, PROC_REF(answer_lure)), rand(LURE_ARRIVAL_MIN, LURE_ARRIVAL_MAX), TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/datum/mission_objective/field/kill_named/big_game/spawn_field_objects(turf/spawn_turf)
+/// The wait is over: the beast and its entourage set out for the stake
+/datum/mission_objective/field/kill_named/big_game/proc/answer_lure()
+	arrival_timer = null
+	if(!arrival_still_wanted())
+		return
+	var/datum/mission_target/site = mission.target
+	if(!lure_turf || !site?.is_valid() || !site.is_interior_loaded() || !site.contains_turf(lure_turf))
+		// The hunting ground went away during the wait; arm again the ordinary way
+		cancel_arrival()
+		spawned = FALSE
+		lure_turf = null
+		arm()
+		return
+	var/list/approaches = approach_turfs()
+	if(!length(approaches))
+		dig_out()
+		return
+	arrival_pending = FALSE
+	// Start on the side the roar came from where there is room, and where a
+	// straight run at the stake looks open
+	var/list/same_side = list()
+	for(var/turf/candidate as anything in approaches)
+		if(approach_hint && get_dist(candidate, approach_hint) <= 6)
+			same_side += candidate
+	var/list/pool = length(same_side) ? same_side : approaches
+	var/turf/lead = pick(pool)
+	for(var/_ in 1 to 12)
+		var/turf/candidate = pick(pool)
+		if(approach_is_clear(candidate))
+			lead = candidate
+			break
+	// The entourage trails in beside it, on tiles that are also out of sight
+	var/list/guard_spots = list()
+	for(var/_ in guard_types)
+		var/list/beside = list()
+		for(var/turf/candidate as anything in approaches)
+			if(get_dist(candidate, lead) <= 4)
+				beside += candidate
+		guard_spots += length(beside) ? pick(beside) : lead
+	spawn_field_objects(lead, guard_spots)
+	playsound(lead, 'sound/mobs/non-humanoids/space_dragon/space_dragon_roar.ogg', 50, TRUE, extrarange = 20)
+
+/// Whether a delayed arrival should still go ahead
+/datum/mission_objective/field/kill_named/big_game/proc/arrival_still_wanted()
+	return active && !completed && mission && !mission.failed && !mission.completed && !mission.named_kill_completed && !target_mob
+
+/**
+ * Open ground a good way from the stake that nobody is close enough to see:
+ * the quarry's starting tiles. Empty where the site is too small, too crowded
+ * or too cluttered to hide an approach.
+ */
+/datum/mission_objective/field/kill_named/big_game/proc/approach_turfs()
+	. = list()
+	var/datum/mission_target/site = mission?.target
+	if(!lure_turf || !site)
+		return
+	var/list/watchers = list()
+	for(var/mob/living/player in GLOB.player_list)
+		var/turf/watcher_turf = get_turf(player)
+		if(watcher_turf?.z == lure_turf.z && player.stat != DEAD)
+			watchers += watcher_turf
+	for(var/turf/open/candidate in RANGE_TURFS(LURE_APPROACH_MAX, lure_turf))
+		if(get_dist(candidate, lure_turf) < LURE_APPROACH_MIN)
+			continue
+		if(isspaceturf(candidate) || islava(candidate) || ischasm(candidate))
+			continue
+		// Open planet ground only: no landed ship, no ruin, nothing past the site's edge
+		if(!istype(get_area(candidate), /area/overmap_encounter/planetoid) || !site.contains_turf(candidate))
+			continue
+		// Not the docking strip: a ship coming in to land would crush whatever stands on it
+		if((candidate.turf_flags & NO_RUINS) || candidate.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		var/seen = FALSE
+		for(var/turf/watcher_turf as anything in watchers)
+			if(get_dist(watcher_turf, candidate) < LURE_UNSEEN_RANGE)
+				seen = TRUE
+				break
+		if(!seen)
+			. += candidate
+
+/// Whether a straight run from the tile to the stake is open ground
+/datum/mission_objective/field/kill_named/big_game/proc/approach_is_clear(turf/from)
+	for(var/turf/along as anything in get_line(from, lure_turf))
+		if(!isopenturf(along) || islava(along) || ischasm(along) || along.is_blocked_turf(exclude_mobs = TRUE))
+			return FALSE
+	return TRUE
+
+/**
+ * No hiding place for an approach: the ground shakes beside the lure and the
+ * pack climbs out of it, the same rumble the mission waves use.
+ */
+/datum/mission_objective/field/kill_named/big_game/proc/dig_out()
+	var/turf/lead = get_nearby_open_turf(lure_turf, 4)
+	var/list/guard_spots = list()
+	for(var/_ in guard_types)
+		guard_spots += get_nearby_open_turf(lure_turf, 4)
+	for(var/turf/spot as anything in list(lead) + guard_spots)
+		new /obj/effect/temp_visual/zone_mobs_emerge(spot)
+	playsound(lead, 'sound/effects/break_stone.ogg', 60, TRUE)
+	arrival_timer = addtimer(CALLBACK(src, PROC_REF(emerge_pack), lead, guard_spots), LURE_EMERGE_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/mission_objective/field/kill_named/big_game/proc/emerge_pack(turf/lead, list/guard_spots)
+	arrival_timer = null
+	arrival_pending = FALSE
+	if(!arrival_still_wanted())
+		return
+	spawn_field_objects(lead, guard_spots, emerge = TRUE)
+
+/// The ground gives up a body: rubble underneath, then it rises out of the dirt
+/datum/mission_objective/field/kill_named/big_game/proc/rise_from_ground(mob/living/body)
+	if(QDELETED(body))
+		return
+	var/turf/where = get_turf(body)
+	if(where)
+		new /obj/effect/decal/cleanable/rubble(where)
+		playsound(where, 'sound/effects/shovel_dig.ogg', 60, TRUE)
+	// Parallel and relative so a mob's own idle animation (floating, bobbing) survives
+	var/final_alpha = body.alpha
+	body.alpha = 0
+	body.pixel_z -= 16
+	animate(body, pixel_z = 16, time = 0.6 SECONDS, easing = QUAD_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	animate(body, alpha = final_alpha, time = 0.4 SECONDS, flags = ANIMATION_PARALLEL)
+
+/**
+ * Points a lured animal at the stake. It walks there whenever it has nothing
+ * of its own to hunt, so it goes for the first crew member it sees and
+ * otherwise comes straight in.
+ */
+/datum/mission_objective/field/kill_named/big_game/proc/send_to_lure(mob/living/body)
+	var/datum/ai_controller/brain = body?.ai_controller
+	if(QDELETED(body) || !istype(brain) || !lure_turf)
+		return
+	brain.set_blackboard_key(BB_TRAVEL_DESTINATION, lure_turf)
+	brain.set_blackboard_key(BB_LURE_CHARGE_EXPIRES, world.time + LURE_CHARGE_TIME)
+	var/list/subtrees = brain.planning_subtrees ? brain.planning_subtrees.Copy() : list()
+	subtrees += GLOB.ai_subtrees[/datum/ai_planning_subtree/travel_to_point/lure_charge]
+	brain.planning_subtrees = subtrees
+	// An animal this far from anyone would otherwise stand about until somebody wandered close
+	brain.can_idle = FALSE
+	brain.reset_ai_status()
+
+/datum/mission_objective/field/kill_named/big_game/spawn_field_objects(turf/spawn_turf, list/guard_spots, emerge = FALSE)
 	if(mission.named_kill_completed)
 		return ..()
+	// Anything that did not climb out of the ground has come a long way to get here
+	var/charging = !emerge && lure_turf
 	var/mob/living/beast = spawn_field_npc(target_mob_type, spawn_turf, finalize = FALSE)
 	beast.name = mission.objective_name
 	beast.desc += " This one is old, scarred, and much too big. The guild wants it as a wall piece."
@@ -307,11 +535,20 @@
 	// The entourage: lesser fauna drawn in by the blood on the wind. Killing
 	// them pays nothing - the contract is the name on the trophy.
 	for(var/guard_type in guard_types)
-		var/mob/living/guard = spawn_field_npc(guard_type, get_nearby_open_turf(spawn_turf), finalize = FALSE)
+		var/turf/guard_turf = length(guard_spots) ? pick_n_take(guard_spots) : get_nearby_open_turf(spawn_turf)
+		var/mob/living/guard = spawn_field_npc(guard_type, guard_turf, finalize = FALSE)
 		guard.desc += " It followed something much bigger here."
 		guard.npc_spawn_context.finalize()
-	beast.visible_message(span_boldwarning("[beast] comes crashing in and goes straight for the lure!"))
-	notify_crew("The lure's been taken. [mission.objective_name] is out in the open - good hunting.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+		if(charging)
+			send_to_lure(guard)
+		if(emerge)
+			rise_from_ground(guard)
+	if(charging)
+		send_to_lure(beast)
+	if(emerge)
+		rise_from_ground(beast)
+	var/obj/structure/hunting_lure_stake/stake = lure_stake_ref?.resolve()
+	stake?.watch(beast)
 
 /datum/mission_objective/field/kill_named/big_game/get_proof_name()
 	return "[mission.objective_name]'s [trophy_part]"
@@ -319,6 +556,8 @@
 /datum/mission_objective/field/kill_named/big_game/get_progress_string()
 	if(!spawned)
 		return "Draw [mission?.objective_name || "the beast"] out with the lure"
+	if(arrival_pending)
+		return "[mission?.objective_name || "The beast"] is coming for the lure"
 	return "Bring down [mission?.objective_name || "the beast"]"
 
 // =========================================================================
@@ -335,8 +574,8 @@
  * # Hunting Lure
  *
  * The kit handed over at accept. Stake it in hand, in open ground on the
- * contracted planet's surface; the staking channel is not subtle, and the
- * thing it calls arrives immediately.
+ * contracted planet's surface. The staking channel is not subtle; what it
+ * calls takes a little while to get there.
  */
 /obj/item/hunting_lure
 	name = "apex hunting lure"
@@ -377,6 +616,87 @@
 	return TRUE
 
 /**
+ * # Staked Hunting Lure
+ *
+ * What the kit turns into once it is in the ground: an anchored rig that
+ * thumps and stinks of chum until the beast it called tramples it or dies.
+ * Scenery only: not a quest atom, not an item, nothing to salvage, and the hunt
+ * carries on whatever happens to it.
+ */
+/obj/structure/hunting_lure_stake
+	name = "hunting lure"
+	desc = "A guild lure rig staked into the dirt. It stinks of chum and thumps like a heartbeat."
+	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
+	icon_state = "recovery_anchored"
+	anchored = TRUE
+	density = FALSE
+	move_resist = INFINITY
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	/// Weakref to the beast that was called here
+	var/datum/weakref/watched_ref
+	/// Whether it is already coming down
+	var/toppled = FALSE
+	/// Process ticks since the last thump
+	var/thump_ticks = 0
+
+/obj/structure/hunting_lure_stake/Initialize(mapload)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/structure/hunting_lure_stake/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	unwatch()
+	return ..()
+
+/obj/structure/hunting_lure_stake/process(seconds_per_tick)
+	thump_ticks++
+	if(thump_ticks < 2)
+		return
+	thump_ticks = 0
+	playsound(src, 'sound/effects/singlebeat.ogg', 40, TRUE, extrarange = 6)
+	animate(src, pixel_y = 2, time = 1)
+	animate(pixel_y = 0, time = 2)
+
+/// The beast it called is out: trample the rig when it gets here, drop it if the beast dies first
+/obj/structure/hunting_lure_stake/proc/watch(mob/living/beast)
+	if(toppled || QDELETED(beast))
+		return
+	unwatch()
+	watched_ref = WEAKREF(beast)
+	RegisterSignal(beast, COMSIG_MOVABLE_MOVED, PROC_REF(on_beast_moved))
+	RegisterSignal(beast, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_beast_gone))
+
+/obj/structure/hunting_lure_stake/proc/unwatch()
+	var/mob/living/beast = watched_ref?.resolve()
+	if(beast)
+		UnregisterSignal(beast, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH, COMSIG_QDELETING))
+	watched_ref = null
+
+/obj/structure/hunting_lure_stake/proc/on_beast_moved(mob/living/source, atom/old_loc, movement_dir, forced, list/old_locs)
+	SIGNAL_HANDLER
+	if(get_dist(source, src) <= 1)
+		topple(source)
+
+/obj/structure/hunting_lure_stake/proc/on_beast_gone(datum/source)
+	SIGNAL_HANDLER
+	topple()
+
+/// The rig comes down and goes quiet, trampled by the beast if it got here
+/obj/structure/hunting_lure_stake/proc/topple(mob/living/by)
+	if(toppled)
+		return
+	toppled = TRUE
+	STOP_PROCESSING(SSobj, src)
+	unwatch()
+	if(by)
+		visible_message(span_danger("[by] tramples [src]."))
+	else
+		visible_message(span_warning("[src] topples over and goes quiet."))
+	playsound(src, 'sound/effects/clang.ogg', 50, TRUE)
+	animate(src, transform = turn(transform, 80), pixel_y = -4, alpha = 0, time = 1 SECONDS, easing = QUAD_EASING | EASE_IN)
+	QDEL_IN(src, 1 SECONDS)
+
+/**
  * # Hunting Trophy
  *
  * The proof the guild pays on: dropped by the named beast, bound to its
@@ -388,4 +708,39 @@
 	icon_state = "recovery"
 	w_class = WEIGHT_CLASS_BULKY
 
+// =========================================================================
+// THE CHARGE, lured animals walk in on the stake
+// =========================================================================
+
+/**
+ * The last thing a lured animal plans. Everything it can hunt on its own comes
+ * first, so it goes for the first crew member it sees and otherwise heads for
+ * the stake. Gives up after LURE_CHARGE_TIME and goes back to its own business.
+ */
+/datum/ai_planning_subtree/travel_to_point/lure_charge
+	travel_behaviour = /datum/ai_behavior/travel_towards/lure_charge
+
+/datum/ai_planning_subtree/travel_to_point/lure_charge/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	if(controller.blackboard[location_key] && world.time > controller.blackboard[BB_LURE_CHARGE_EXPIRES])
+		controller.clear_blackboard_key(location_key)
+		return
+	return ..()
+
+/// Close enough to the stake counts as there; the goal is dropped once it is reached
+/datum/ai_behavior/travel_towards/lure_charge
+	required_distance = 2
+
+/datum/ai_behavior/travel_towards/lure_charge/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	. = ..()
+	if(succeeded)
+		controller.clear_blackboard_key(target_key)
+
 #undef LURE_STAKE_TIME
+#undef LURE_ARRIVAL_MIN
+#undef LURE_ARRIVAL_MAX
+#undef LURE_APPROACH_MIN
+#undef LURE_APPROACH_MAX
+#undef LURE_UNSEEN_RANGE
+#undef LURE_CHARGE_TIME
+#undef LURE_EMERGE_TIME
+#undef BB_LURE_CHARGE_EXPIRES
