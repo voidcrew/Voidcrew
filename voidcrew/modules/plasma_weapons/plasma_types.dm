@@ -58,40 +58,8 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	can_charge = FALSE
 	/// The seated cartridge, if any
 	var/obj/item/plasma_cartridge/cartridge
-	/// Barrel heat; only guns with uses_heat gain it. Named barrel_heat because /obj/item/var/heat is the ignition temperature.
-	var/barrel_heat = 0
-	/// Heat one shot adds
-	var/heat_per_shot = 0
-	/// Whether this gun runs the heat model
-	var/uses_heat = FALSE
-	/// world.time cooling was last applied up to
-	var/heat_updated_at = 0
-	/// world.time until which a finished vent still blocks firing
-	var/vent_lock_until = 0
-	/// world.time the running vent's sweep started, or 0 with no vent running
-	var/vent_started_at = 0
-	/// Who is venting, while a vent runs
-	var/mob/living/vent_user
-	/// TRUE while the running vent is the one an overheat brought up, which works on the lockout
-	var/vent_overheat = FALSE
-	/// The running vent's sweep-end timer
-	var/vent_timer
-	/// The vent bar and its marker, images on vent_user shown to vent_client
-	var/image/vent_bar
-	var/image/vent_marker
-	var/client/vent_client
-	/// world.time until which an overheated gun is shut down
-	var/shutdown_until = 0
-	/// world.time until which shots add half heat after a gold vent
-	var/gold_until = 0
-	/// How long shots add half heat after a gold vent
-	var/gold_window = PLASMA_VENT_GOLD_WINDOW
-	/// How long an overheat locks the gun
-	var/overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN
-	/// Coil overlay step shown, 0 to 3
-	var/heat_step = 0
-	/// Coil overlay states are this plus _1 to _3, in the world icon and the inhand files
-	var/heat_glow_state = "furnace_glow"
+	/// Coil overlay states are this plus _1 to _3, in the world icon and the inhand files; they show how much plasma is left
+	var/coil_glow_state = "furnace_glow"
 	/// Sound distant listeners hear when this fires
 	var/far_fire_sound
 
@@ -101,31 +69,23 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	icon_state = "cinder"
 	inhand_icon_state = "cinder"
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma_bolt)
-	uses_heat = TRUE
-	heat_per_shot = PLASMA_HEAT_PER_SHOT_PISTOL
-	overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN_PISTOL
-	heat_glow_state = "cinder_glow"
+	coil_glow_state = "cinder_glow"
 
 /obj/item/gun/energy/plasma_weapon/rifle
 	name = "\improper Furnace plasma rifle"
-	desc = "A heavy plasma rifle. Its coils tick as they cool."
+	desc = "A heavy plasma rifle with a row of glass coils along the barrel."
 	icon = 'voidcrew/modules/plasma_weapons/icons/guns_wide.dmi'
 	icon_state = "furnace"
 	inhand_icon_state = "furnace_wielded"
 	worn_icon = 'voidcrew/modules/plasma_weapons/icons/guns_back.dmi'
 	worn_icon_state = "furnace"
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma_bolt/heavy)
-	uses_heat = TRUE
-	heat_per_shot = PLASMA_HEAT_PER_SHOT
 	SET_BASE_PIXEL(-8, 0)
 
 /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
 	name = "\improper Old Furnace"
 	desc = "A Furnace rifle with a hand-wound coil and a pirate captain's tally burned into the stock."
 	icon_state = "old_furnace"
-	heat_per_shot = PLASMA_HEAT_PER_SHOT_UNIQUE
-	gold_window = PLASMA_VENT_GOLD_WINDOW_UNIQUE
-	overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN_UNIQUE
 
 // ===== Frontier lasers (S2, S7) =====
 
@@ -188,10 +148,6 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 /obj/effect/temp_visual/plasma_gutter
 	icon = 'voidcrew/modules/plasma_weapons/icons/effects.dmi'
 	icon_state = "gutter"
-
-/obj/effect/temp_visual/plasma_vent_puff
-	icon = 'voidcrew/modules/plasma_weapons/icons/effects.dmi'
-	icon_state = "vent_puff"
 
 /obj/effect/temp_visual/plasma_pinch
 	icon = 'voidcrew/modules/plasma_weapons/icons/effects.dmi'

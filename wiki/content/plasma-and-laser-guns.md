@@ -2,7 +2,7 @@
 title: Plasma & Frontier Lasers
 category: Danger
 order: 1.2
-blurb: The Kestrel and Hornet lasers, the Cinder and Furnace plasma guns, plasma cartridges, plasma burns and keeping a Furnace cool.
+blurb: The Kestrel and Hornet lasers, the Cinder and Furnace plasma guns, plasma cartridges and plasma burns.
 ---
 
 Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are ordinary laser guns that charge in a recharger. The Cinder pistol and Furnace rifle fire bolts of burning plasma, and they load plasma cartridges printed on a protolathe or bought at a counter. See [Weapons & Gear](weapons-and-gear.md) for the rest of the armoury.
@@ -14,11 +14,11 @@ Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are or
 | Kestrel laser pistol | Light laser pistol, fits a belt | Recharger | 20 |
 | Hornet laser SMG | Fully automatic laser, worn on the back | Recharger | 40 |
 | Cinder plasma pistol | Plasma sidearm, fits a belt | Plasma cartridge | 15 a cartridge |
-| Furnace plasma rifle | Heavy plasma rifle, worn on the back, needs both hands | Plasma cartridge | 20 a cartridge |
+| Furnace plasma rifle | Heavy plasma rifle, worn on the back, needs both hands | Plasma cartridge | 12 a cartridge |
 
 The Kestrel hits lighter than a standard laser gun. The Hornet sprays light laser beams for as long as you hold the trigger: each one hits for less than half of a standard laser, and they scatter wide.
 
-The **Old Furnace** is a Furnace with a hand-wound coil. It runs far cooler, shoots straighter, stays cool longer after a clean vent and comes back from an overheat sooner. Nobody sells it.
+The **Old Furnace** is a Furnace with a hand-wound coil that shoots straighter. Nobody sells it.
 
 ## Where to get them
 
@@ -44,7 +44,7 @@ A plasma gun fires from the cartridge seated behind its grip. A cartridge comes 
 - **Buy:** see the table above.
 - **Load:** use a cartridge on the gun. A seated cartridge comes out first: back to your hand if it has plasma left, onto the floor if it is spent.
 - **Unload:** Alt-click the gun to take the cartridge out. The plasma left in the gun goes back into it, and you can load it again later.
-- **Check:** examine a cartridge to see roughly how full it is.
+- **Check:** examine a cartridge to see roughly how full it is. A loaded gun's coils glow brighter the more plasma is left, and dim as it runs out.
 
 A spent cartridge is scrap iron for a lathe or recycler; no plasma comes back out of it. Sheets, ore, liquid plasma and plasma gas do nothing to a gun or a cartridge. Rechargers do not work on plasma guns, and an EMP does not drain them.
 
@@ -89,24 +89,3 @@ In surgery, **Excise plasma slag** takes the slag out of a resting patient witho
 Slag cut out of a deep burn comes out as a small bead of black glass. It's worth nothing.
 
 Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle's next bolt.
-
-## Heat and venting
-
-The Cinder, the Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next shot or two will overheat it. They cool by themselves between shots: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
-
-- A Furnace runs hot long before its cartridge runs dry. Fired as fast as it goes it overheats a few times a cartridge, so vent it as you fight. The Cinder runs cooler: emptied as fast as it fires, it overheats once a cartridge, and at a steady pace it keeps up. Slower shots, cold air and a clean vent all keep a gun going longer; in vacuum it heats up fastest.
-- An overheated gun **locks up**: its coils stay white-hot and it won't fire for ten seconds, six on the Old Furnace and four on the Cinder. It clicks when it's ready again.
-- A locked gun's cartridge is stuck in place: you can't take it out or swap in a new one until the lock ends.
-- When it locks up in your hands, the vent bar comes up at once. Hit the gold and the lock ends there and then, with the coils cold. Hit the amber and it vents most of its heat and is ready again in about two seconds. Miss, or hit the dark ends, and you wait out the whole lock; the dark ends also spit plasma onto your tile.
-
-**Venting:** use a glowing gun in your hand. A bar appears above your head and a marker sweeps across it. Use the gun in your hand again as the marker passes the middle. Pulling the trigger does nothing while the bar is up. You can also bind a key to Vent held gun in your keybindings, and it works the same way.
-
-- On the bright gold centre, the coils go cold at once, and the next few shots heat them less.
-- On the amber either side of it, the gun vents most of its heat.
-- Don't do anything and it vents most of its heat when the marker reaches the end, and takes a moment longer before it fires.
-- On the dark ends, the vent fumbles: the gun spits plasma onto your tile and you can't fire for a moment.
-
-You can't shoot while the bar is up. Dropping the gun or swapping hands stops the vent.
-
-!!! warning "Vented gas is fuel"
-    Spat plasma doesn't light itself, but a spark, a flame or another plasma bolt can set it off in breathable air.

@@ -262,7 +262,6 @@
 #include "voidcrew_plasma_bolt.dm"
 #include "voidcrew_plasma_cartridge.dm"
 #include "voidcrew_plasma_effects.dm"
-#include "voidcrew_plasma_heat.dm"
 #include "voidcrew_plasma_human_npcs.dm"
 #include "voidcrew_plasma_melt.dm"
 #include "voidcrew_plasma_pirates.dm"

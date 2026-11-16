@@ -7,21 +7,11 @@
 //   pirates never carry plasma;
 // - the red-zone Director Prime and Chief Auditor carry a Furnace; both may drop the Old Furnace, but
 //   only when met in a red zone;
-// - a plasma gunner changes cartridges for real (load_cartridge(), a do_after), carrying a spare;
-// - a Furnace runs the real heat model in its hands, so the pirate minds it: once the coils are white-hot it
-//   starts a vent with the player's vent key (start_vent()) and never times it, so it always gets the vent left
-//   to run out: no gold, no fumbled gas. If it overheats anyway it waits out the lockout like a player, backing
-//   off from whoever is close. Both end on the gun's own deadlines, so nothing can leave it stuck.
+// - a plasma gunner fires like any other pirate gunner and changes cartridges for real (load_cartridge(), a
+//   do_after), carrying a spare.
 // NPC gear is locked to the body (human_npc_gear.dm), so none of this becomes loot.
 //
-// No pirate is dressed with a plasma gun while PLASMA_NPC_GUNS is 0; the handling and heat code stays for when they come back.
-
-/// Coil heat at which a pirate vents its Furnace: white-hot, the last glow before an overheat
-#define PIRATE_PLASMA_VENT_HEAT PLASMA_HEAT_STEP_3
-/// Blackboard: TRUE while it waits out an overheat
-#define BB_PIRATE_PLASMA_COOLING "pirate_plasma_cooling"
-/// It backs away from a target closer than this while its coils cool
-#define PIRATE_PLASMA_BACK_OFF_RANGE 5
+// No pirate is dressed with a plasma gun while PLASMA_NPC_GUNS is 0; the handling code stays for when they come back.
 
 // ===== HANDLING =====
 
@@ -40,7 +30,7 @@
 	shots = 1
 	volley_gap = 4 SECONDS
 
-// ===== ARMING: cartridges and heat =====
+// ===== ARMING: cartridges =====
 
 /// A plasma gun it holds, or null
 /proc/pirate_plasma_held_gun(mob/living/carbon/npc)
@@ -64,22 +54,14 @@
 	if(length(lines) && human_npc_can_talk(npc))
 		INVOKE_ASYNC(npc, TYPE_PROC_REF(/atom/movable, say), pick(lines))
 
-// A plasma gunner minds its coils and changes its own cartridges before the base arming (draw a knife when dry)
+// A plasma gunner changes its own cartridges before the base arming (draw a knife when dry)
 /datum/ai_planning_subtree/human_npc_arm/pirate_crew/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	var/mob/living/carbon/npc = controller.pawn
 	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
 	if(isnull(gun) || HAS_TRAIT(npc, TRAIT_HANDS_BLOCKED) || LAZYLEN(npc.do_afters))
-		controller.clear_blackboard_key(BB_PIRATE_PLASMA_COOLING)
 		return ..()
-	. = pirate_plasma_mind_heat(controller, npc, gun)
-	if(.)
-		return
 	if(gun.can_shoot() || world.time < controller.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT])
 		return ..()
-	if(!gun.can_fire_heat())
-		// The second after a vent: it waits for its gun
-		controller.queue_behavior(/datum/ai_behavior/npc_combat_sense_hold)
-		return SUBTREE_RETURN_FINISH_PLANNING
 	if(isnull(pirate_plasma_spare_cartridge(npc, gun)))
 		return ..()
 	controller.queue_behavior(/datum/ai_behavior/pirate_plasma_reload)
@@ -87,47 +69,6 @@
 		var/datum/pirate_gun_handling/handling = pirate_gun_handling_for(gun)
 		pirate_plasma_shout(npc, handling.reload_lines)
 	return SUBTREE_RETURN_FINISH_PLANNING
-
-/**
- * A Furnace's heat, as its holder sees the coils glow. White-hot, it vents (and never times the vent). While the
- * gun is locked from an overheat it backs off from whoever it is fighting, or holds, until the gun comes back.
- * Returns SUBTREE_RETURN_FINISH_PLANNING while it is busy with its gun.
- */
-/datum/ai_planning_subtree/human_npc_arm/pirate_crew/proc/pirate_plasma_mind_heat(datum/ai_controller/controller, mob/living/carbon/npc, obj/item/gun/energy/plasma_weapon/gun)
-	if(!gun.uses_heat)
-		return
-	// Ends a lockout or a vent that has run its time, and brings the heat up to now
-	var/can_fire = gun.can_fire_heat()
-	gun.cool_to_now()
-	if(!gun.is_shut_down())
-		controller.clear_blackboard_key(BB_PIRATE_PLASMA_COOLING)
-		if(can_fire && gun.barrel_heat >= PIRATE_PLASMA_VENT_HEAT)
-			controller.queue_behavior(/datum/ai_behavior/pirate_plasma_vent)
-			return SUBTREE_RETURN_FINISH_PLANNING
-		return
-	if(!controller.blackboard[BB_PIRATE_PLASMA_COOLING])
-		controller.set_blackboard_key(BB_PIRATE_PLASMA_COOLING, TRUE)
-		pirate_plasma_shout(npc, list("She's cooking!", "Too hot!", "Cover me, she's cooking!"))
-	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(!QDELETED(target) && get_dist(npc, target) < PIRATE_PLASMA_BACK_OFF_RANGE)
-		controller.queue_behavior(/datum/ai_behavior/step_away, BB_BASIC_MOB_CURRENT_TARGET)
-	else
-		controller.queue_behavior(/datum/ai_behavior/npc_combat_sense_hold)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/// A player's vent: the vent key on the gun in the active hand (start_vent(), plasma_heat.dm). It never taps.
-/datum/ai_behavior/pirate_plasma_vent
-	action_cooldown = 0.5 SECONDS
-
-/datum/ai_behavior/pirate_plasma_vent/perform(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/carbon/npc = controller.pawn
-	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
-	if(isnull(gun) || !human_npc_ready_item(npc, gun))
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	if(!gun.start_vent(npc))
-		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	pirate_plasma_shout(npc, list("Venting!"))
-	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
 /**
  * A player's cartridge change, one step per action: take the spare in the free hand, click the gun with it
@@ -347,7 +288,3 @@
 	if(!weapon_loot_initialized && zone != ZONE_RED && rolled_rare_loot)
 		rolled_rare_loot -= /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
 	return ..()
-
-#undef PIRATE_PLASMA_VENT_HEAT
-#undef BB_PIRATE_PLASMA_COOLING
-#undef PIRATE_PLASMA_BACK_OFF_RANGE

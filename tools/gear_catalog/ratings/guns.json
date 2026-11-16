@@ -1727,7 +1727,7 @@
    "hash": "",
    "name": "Cinder plasma pistol",
    "rank": 10,
-   "reason": "A plasma sidearm: slow 22-burn bolts, 15 a single-use plasma cartridge. Emptied flat out it overheats once a cartridge and locks for a few seconds unless vented; a steady pace keeps it cool.",
+   "reason": "A plasma sidearm: slow 22-burn bolts, 15 a single-use plasma cartridge.",
    "score": 55,
    "score_inputs": {
     "cell_fed": {
@@ -1767,7 +1767,7 @@
    "hash": "",
    "name": "Furnace plasma rifle",
    "rank": 5,
-   "reason": "Plasma rifle, 30 burn a bolt that pierces some armour, 20 bolts a cartridge. Fired flat out it overheats around every sixth shot, so a cartridge takes two or three vents or it locks up, and a locked rifle can't change cartridges. Loads single-use plasma cartridges.",
+   "reason": "Plasma rifle, 30 burn a bolt that pierces some armour, 12 bolts a single-use plasma cartridge.",
    "score": 113,
    "score_inputs": {
     "cell_fed": {
@@ -1807,16 +1807,16 @@
    "hash": "",
    "name": "Old Furnace",
    "rank": 3,
-   "reason": "A Furnace that runs much cooler (about ten shots flat out before an overheat, against six), recovers from an overheat faster, keeps a clean vent's cooling longer and shoots straighter.",
-   "score": 123,
+   "reason": "A Furnace that shoots dead straight.",
+   "score": 118,
    "score_inputs": {
     "cell_fed": {
      "value": false,
      "why": "Loads single-use plasma cartridges, printed or bought; no recharger."
     },
     "points": {
-     "value": 85,
-     "why": "A Furnace that runs much cooler, recovers from an overheat faster, keeps a clean vent's cooling longer and shoots straighter."
+     "value": 80,
+     "why": "A Furnace with no spread."
     }
    },
    "tier": "red"

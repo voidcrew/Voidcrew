@@ -1,5 +1,5 @@
 // Package: P2 guns and cartridges. The Cinder, Furnace and Old Furnace: loading and unloading,
-// chamber access, spawn fills, EMP, sprite state, and the shot hooks into heat, sound and pinch.
+// chamber access, spawn fills, EMP, sprite state, and the shot hooks into sound and pinch.
 //
 // The chamber (`cell`) holds the seated cartridge's plasma while it is in the gun; the cartridge itself
 // reads spent until it comes out, when the chamber is written back into it. So the plasma a gun and its
@@ -75,7 +75,6 @@
 	return rand(1, max_shots) * shot.e_cost
 
 /obj/item/gun/energy/plasma_weapon/Destroy()
-	cancel_vent()
 	// Drop the cartridge with the chamber's plasma written back (Exited does the write-back)
 	if(cartridge)
 		var/atom/drop_at = drop_location()
@@ -136,8 +135,6 @@
 /obj/item/gun/energy/plasma_weapon/proc/load_cartridge(obj/item/plasma_cartridge/new_cartridge, mob/user)
 	if(QDELETED(new_cartridge) || new_cartridge == cartridge || !cell)
 		return FALSE
-	if(too_hot_to_reload(user))
-		return FALSE
 	if(new_cartridge.stored <= 0)
 		if(user)
 			balloon_alert(user, "it's spent")
@@ -146,8 +143,6 @@
 		if(!do_after(user, cartridge_load_delay, target = src))
 			return FALSE
 		if(QDELETED(new_cartridge) || new_cartridge.loc != user)
-			return FALSE
-		if(too_hot_to_reload(user))
 			return FALSE
 	var/swapped = !!cartridge
 	// The new cartridge goes in first so the hand it was in is free to take the old one
@@ -164,14 +159,6 @@
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE), PLASMA_SWAP_SOUND_GAP)
 	else
 		playsound(src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE)
-	return TRUE
-
-/// TRUE, with a balloon to `user`, while an overheat has the coils locked: the cartridge seat is locked with them
-/obj/item/gun/energy/plasma_weapon/proc/too_hot_to_reload(mob/user)
-	if(!uses_heat || !is_shut_down())
-		return FALSE
-	if(user)
-		balloon_alert(user, "too hot!")
 	return TRUE
 
 /// Writes the chamber back into the seated cartridge and hands it to `user`. Returns the cartridge.
@@ -217,15 +204,47 @@
 	SIGNAL_HANDLER
 	return
 
-/// tg's lighter trick takes a shot's charge straight off the cell; here that is plasma, so the gun re-chambers and,
-/// when it lit something, heats up as for a shot
+/// tg's lighter trick takes a shot's charge straight off the cell; here that is plasma, so the gun re-chambers
 /obj/item/gun/energy/plasma_weapon/ignition_effect(atom/A, mob/living/user)
 	. = ..()
 	if(QDELETED(src))
 		return
 	chamber_changed()
-	if(length(.) && uses_heat)
-		add_heat(heat_per_shot)
+
+/// The coil gauge: 3 with more than two thirds of a full cartridge's shots in the chamber, 2 with more than a third,
+/// 1 with any shot left, 0 (no glow) when empty or with no cartridge seated
+/obj/item/gun/energy/plasma_weapon/proc/coil_step()
+	var/obj/item/ammo_casing/energy/shot = length(ammo_type) ? ammo_type[select] : null
+	if(!cell || !istype(shot) || shot.e_cost <= 0)
+		return 0
+	var/shots = round(cell.charge / shot.e_cost)
+	var/max_shots = round(PLASMA_CARTRIDGE_CAPACITY / shot.e_cost)
+	if(shots <= 0 || max_shots <= 0)
+		return 0
+	// Whole numbers, so a step boundary never lands on a rounding error
+	if(shots * 3 > max_shots * 2)
+		return 3
+	if(shots * 3 > max_shots)
+		return 2
+	return 1
+
+/obj/item/gun/energy/plasma_weapon/update_overlays()
+	. = ..()
+	var/glow_step = coil_step()
+	if(!glow_step)
+		return
+	. += mutable_appearance(icon, "[coil_glow_state]_[glow_step]")
+	. += emissive_appearance(icon, "[coil_glow_state]_[glow_step]", src)
+
+/obj/item/gun/energy/plasma_weapon/worn_overlays(mutable_appearance/standing, isinhands = FALSE, icon_file)
+	. = ..()
+	if(!isinhands)
+		return
+	var/glow_step = coil_step()
+	if(!glow_step)
+		return
+	. += mutable_appearance(icon_file, "[coil_glow_state]_[glow_step]")
+	. += emissive_appearance(icon_file, "[coil_glow_state]_[glow_step]", src)
 
 /obj/item/gun/energy/plasma_weapon/update_icon_state()
 	var/obj/item/ammo_casing/energy/shot = length(ammo_type) ? ammo_type[select] : null
@@ -240,14 +259,6 @@
 	// Point blank, the bolt lands on the same tick, before the pinch could show, so there is none.
 	if(!pointblank)
 		plasma_pinch(user, pbtarget)
-	if(!uses_heat)
-		return
-	add_heat(heat_per_shot)
-
-/obj/item/gun/energy/plasma_weapon/can_shoot()
-	if(!can_fire_heat())
-		return FALSE
-	return ..()
 
 /obj/item/gun/energy/plasma_weapon/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(istype(tool, /obj/item/plasma_cartridge))
@@ -255,6 +266,6 @@
 	return ..()
 
 /obj/item/gun/energy/plasma_weapon/click_alt(mob/user)
-	if(!user.is_holding(src) || !cartridge || too_hot_to_reload(user))
+	if(!user.is_holding(src) || !cartridge)
 		return CLICK_ACTION_BLOCKING
 	return unload_cartridge(user) ? CLICK_ACTION_SUCCESS : CLICK_ACTION_BLOCKING

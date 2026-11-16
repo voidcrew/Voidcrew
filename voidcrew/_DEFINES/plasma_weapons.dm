@@ -23,10 +23,10 @@
 #define PLASMA_LOAD_DELAY_PISTOL (1 SECONDS)
 /// do_after to seat a cartridge in a rifle
 #define PLASMA_LOAD_DELAY_RIFLE (1.5 SECONDS)
-/// Mol a pistol bolt costs (casing e_cost)
+/// Mol a pistol bolt costs (casing e_cost): 15 shots a cartridge
 #define PLASMA_SHOT_MOL_PISTOL 4
-/// Mol a rifle bolt costs (casing e_cost): 20 shots a cartridge
-#define PLASMA_SHOT_MOL_RIFLE 3
+/// Mol a rifle bolt costs (casing e_cost): 12 shots a cartridge
+#define PLASMA_SHOT_MOL_RIFLE 5
 
 // ===== Bolt: ignition, fire and ash =====
 
@@ -47,92 +47,6 @@
 #define PLASMA_DEMOLITION_PISTOL 1.5
 /// Structure and door damage multiplier (demolition_mod) for a rifle bolt
 #define PLASMA_DEMOLITION_RIFLE 2
-
-// ===== Heat and venting (Cinder, Furnace and Old Furnace) =====
-
-/// Heat a Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT 25
-/// Heat an Old Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT_UNIQUE 18
-/// Heat a Cinder shot adds
-#define PLASMA_HEAT_PER_SHOT_PISTOL 17
-/// A shot that brings the barrel to this heat or more overheats the gun
-#define PLASMA_HEAT_MAX 100
-/// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before an overheat, and the
-/// coil ticks as it reaches it (PLASMA_SOUND_FURNACE_WARN). A vent can only start from step 1.
-#define PLASMA_HEAT_STEP_1 30
-#define PLASMA_HEAT_STEP_2 55
-#define PLASMA_HEAT_STEP_3 80
-/// Hot surroundings: heat gained per second is min(GAIN_MAX, (K - PLASMA_COOL_HOT_TEMP) / GAIN_SPAN)
-#define PLASMA_HEAT_GAIN_MAX 10
-#define PLASMA_HEAT_GAIN_SPAN 50
-
-/// An overheated gun can't fire or vent for this long
-#define PLASMA_OVERHEAT_SHUTDOWN (10 SECONDS)
-/// The Old Furnace's shorter lockout
-#define PLASMA_OVERHEAT_SHUTDOWN_UNIQUE (6 SECONDS)
-/// The Cinder's lockout
-#define PLASMA_OVERHEAT_SHUTDOWN_PISTOL (4 SECONDS)
-/// Heat an overheated gun comes back at, below the first coil step
-#define PLASMA_OVERHEAT_END_HEAT 20
-/// An amber tap on the bar an overheat brings up cuts the lockout to this long from the overheat
-#define PLASMA_OVERHEAT_GRACE_LOCK (2 SECONDS)
-
-/// The vent bar's marker takes this long to cross the bar
-#define PLASMA_VENT_SWEEP (1 SECONDS)
-/// The bar's units, one pixel each, left to right: fail 12, grace 5, gold 4, grace 5, fail 12
-#define PLASMA_VENT_UNITS 38
-/// Units from the left where each zone ends
-#define PLASMA_VENT_FAIL_END 12
-#define PLASMA_VENT_GRACE_END 17
-#define PLASMA_VENT_GOLD_END 21
-#define PLASMA_VENT_GRACE2_END 26
-/// Vent results
-#define PLASMA_VENT_RESULT_FAIL "fail"
-#define PLASMA_VENT_RESULT_GRACE "grace"
-#define PLASMA_VENT_RESULT_GOLD "gold"
-#define PLASMA_VENT_RESULT_NONE "none"
-/// Heat a grace, missed or failed vent removes
-#define PLASMA_VENT_COOL 60
-/// After a gold vent, shots add half heat for this long
-#define PLASMA_VENT_GOLD_WINDOW (4 SECONDS)
-/// The Old Furnace's longer gold window
-#define PLASMA_VENT_GOLD_WINDOW_UNIQUE (8 SECONDS)
-/// Heat a shot adds during the gold window, as a fraction
-#define PLASMA_VENT_GOLD_HEAT_MULT 0.5
-/// A vent left to run out keeps venting this long after the sweep, and the gun can't fire
-#define PLASMA_VENT_NONE_LOCK (1 SECONDS)
-/// A failed vent blocks firing this long
-#define PLASMA_VENT_FAIL_LOCK (1.5 SECONDS)
-/// Mol a failed vent releases
-#define PLASMA_VENT_MOL 5
-/// Vented gas leaves at T20C + heat * this, in kelvin
-#define PLASMA_VENT_TEMP_PER_HEAT 4
-/// Vented gas never leaves hotter than this, so it can't light itself and the shooter
-#define PLASMA_VENT_TEMP_MAX (PLASMA_MINIMUM_BURN_TEMPERATURE - 10)
-
-// Cooling, with PLASMA_HEAT_MAX 100. Room air (101 kPa, 293 K) cools 11.5 a second, vacuum 6. A cartridge is
-// 20 Furnace shots, so heat runs out well before plasma and a cartridge takes a few vents.
-// Furnace (25 a shot) overheats on shot: room air 6th at 0.7 s between shots (the fire delay), 7th at 1 s, 8th at
-// 1.2 s; vacuum 5th at 0.7 s, 5th at 1 s, 6th at 1.2 s. It only holds steady at about 2.2 s a shot in room air.
-// Old Furnace (18 a shot): room air 10th at 0.7 s, 14th at 1 s, never in a cartridge at 1.2 s (84 after the 20th);
-// vacuum 7th at 0.7 s, 8th at 1 s, 9th at 1.2 s.
-// Cinder (17 a shot, 15 a cartridge, 0.5 s fire delay): room air 9th at 0.5 s, 11th at 0.7 s, never in a cartridge at
-// 1 s (94 at the peak) or 1.2 s (62); vacuum 7th at 0.5 s, 8th at 0.7 s, 9th at 1 s, 10th at 1.2 s.
-/// Heat lost per second, always
-#define PLASMA_COOL_BASE 6
-/// Heat lost per second to the turf air, times the pressure and temperature factors below
-#define PLASMA_COOL_CONVECT 5.5
-/// Pressure factor: min(kPa / PLASMA_COOL_PRESSURE_REF, PLASMA_COOL_PRESSURE_CAP)
-#define PLASMA_COOL_PRESSURE_REF 101.3
-#define PLASMA_COOL_PRESSURE_CAP 1.5
-/// Temperature factor: clamp((PLASMA_COOL_HOT_TEMP - K) / PLASMA_COOL_TEMP_SPAN, 0, PLASMA_COOL_TEMP_CAP)
-#define PLASMA_COOL_HOT_TEMP 573
-#define PLASMA_COOL_TEMP_SPAN 280
-#define PLASMA_COOL_TEMP_CAP 1.6
-
-/// Keybinding signal: vent the held Furnace, or time the vent already running
-#define COMSIG_KB_LIVING_PLASMA_VENT_DOWN "keybinding_living_plasma_vent_down"
 
 // ===== Effects =====
 
@@ -162,20 +76,6 @@
 #define PLASMA_SOUND_IMPACT_GLASS 'sound/effects/glass/glasshit.ogg'
 /// A held shield stopping a bolt. null plays the shield's own block sound.
 #define PLASMA_SOUND_SHIELD_BLOCK null
-/// The Furnace starting a vent
-#define PLASMA_SOUND_VENT_START 'sound/machines/click.ogg'
-/// A vent timed right on the gold
-#define PLASMA_SOUND_VENT_GOLD 'sound/machines/steam_hiss.ogg'
-/// A vent timed in the grace, or left to run out
-#define PLASMA_SOUND_VENT_GRACE 'sound/machines/hiss.ogg'
-/// A fumbled vent spitting plasma
-#define PLASMA_SOUND_VENT_FAIL 'sound/effects/gas_hissing.ogg'
-/// The Furnace's coils locking up from an overheat
-#define PLASMA_SOUND_FURNACE_OVERHEAT 'sound/effects/gas_hissing.ogg'
-/// The Furnace coming back after an overheat
-#define PLASMA_SOUND_FURNACE_RECOVER 'sound/machines/click.ogg'
-/// The Furnace's coil reaching its last glow step before an overheat
-#define PLASMA_SOUND_FURNACE_WARN 'sound/effects/clock_tick.ogg'
 /// A limb with no flesh (robotic, bone, stone) melting off
 #define PLASMA_SOUND_METAL_MELT 'sound/items/tools/welder2.ogg'
 /// Hot slag in a wound quenched with water, an extinguisher or cryo

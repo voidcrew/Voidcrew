@@ -1,4 +1,4 @@
-// Package: P8 effects. Impact splash, wall glow, floor soot, gutter-out, vent puff, the near-miss
+// Package: P8 effects. Impact splash, wall glow, floor soot, gutter-out, the near-miss
 // hiss and the distant firing sound.
 //
 // Every effect here hangs off a real event (a hit, a bolt running out of range, a vent) and changes no
@@ -349,13 +349,6 @@ GLOBAL_LIST_INIT(plasma_shield_anchors, list(
 		listener.playsound_local(here, near_miss_sound, 25, TRUE)
 
 // ===== Procs called by the guns (P2, P3, P4, P6) =====
-
-/// A puff of vented plasma at `where`
-/proc/plasma_vent_puff(turf/where)
-	where = get_turf(where)
-	if(!where)
-		return
-	return new /obj/effect/temp_visual/plasma_vent_puff(where)
 
 /// Plays `far_file` to listeners too far away to hear `source`'s normal firing sound
 /proc/plasma_weapons_far_sound(atom/source, far_file)
@@ -976,20 +969,6 @@ GLOBAL_LIST_INIT(plasma_burst_hits, list(
 	icon_state = "wisp"
 	// A new animation replaces the shrink
 	animate(src, transform = matrix(), alpha = 255, time = 0)
-
-// ===== Vent puff =====
-
-/obj/effect/temp_visual/plasma_vent_puff
-	duration = 0.6 SECONDS
-	randomdir = FALSE
-
-/obj/effect/temp_visual/plasma_vent_puff/Initialize(mapload)
-	. = ..()
-	add_shared_particles(/particles/smoke/steam/mild)
-
-/obj/effect/temp_visual/plasma_vent_puff/Destroy()
-	remove_shared_particles(/particles/smoke/steam/mild)
-	return ..()
 
 #undef PLASMA_HISSBY_MIN_TRAVEL
 #undef PLASMA_SPLASH_STEAM_KEY

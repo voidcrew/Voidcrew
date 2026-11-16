@@ -216,6 +216,59 @@
 	TEST_ASSERT_EQUAL(gun.icon_state, "cinder_empty", "a Cinder short of one shot isn't shown empty")
 	TEST_ASSERT(!gun.can_shoot(), "a Cinder short of one shot can fire")
 
+/// TRUE if `overlays` holds an appearance of `state`
+/proc/plasma_test_has_overlay_state(list/overlays, state)
+	for(var/mutable_appearance/overlay as anything in overlays)
+		if(overlay.icon_state == state)
+			return TRUE
+	return FALSE
+
+/// The coils are an ammo gauge: brightest on a full cartridge, dimmer as it runs down, dark when empty or unloaded,
+/// on the world sprite and in hand alike
+/datum/unit_test/voidcrew_plasma_coil_gauge/Run()
+	for(var/gun_type in list(/obj/item/gun/energy/plasma_weapon/pistol, /obj/item/gun/energy/plasma_weapon/rifle, /obj/item/gun/energy/plasma_weapon/rifle/old_furnace))
+		var/obj/item/gun/energy/plasma_weapon/gun = allocate(gun_type)
+		var/obj/item/ammo_casing/energy/shot = gun.ammo_type[gun.select]
+		var/max_shots = round(PLASMA_CARTRIDGE_CAPACITY / shot.e_cost)
+		TEST_ASSERT_EQUAL(gun.coil_step(), 3, "A full [gun_type] isn't at the brightest glow")
+		TEST_ASSERT(plasma_test_has_overlay_state(gun.update_overlays(), "[gun.coil_glow_state]_3"), "A full [gun_type] shows no step 3 coil overlay")
+		TEST_ASSERT(plasma_test_has_overlay_state(gun.worn_overlays(mutable_appearance(gun.righthand_file, gun.inhand_icon_state), TRUE, gun.righthand_file), "[gun.coil_glow_state]_3"), "A full [gun_type] shows no step 3 coil in hand")
+		// Each shot taken as a shot is fired: the chamber loses e_cost
+		var/list/expected_by_shots = list()
+		for(var/shots_left in 0 to max_shots)
+			expected_by_shots["[shots_left]"] = shots_left * 3 > max_shots * 2 ? 3 : (shots_left * 3 > max_shots ? 2 : (shots_left > 0 ? 1 : 0))
+		var/seen_two = FALSE
+		var/seen_one = FALSE
+		for(var/shots_left = max_shots - 1, shots_left >= 0, shots_left--)
+			gun.take_mol(shot.e_cost)
+			var/glow = gun.coil_step()
+			TEST_ASSERT_EQUAL(glow, expected_by_shots["[shots_left]"], "A [gun_type] with [shots_left] of [max_shots] shots left glows at step [glow]")
+			if(glow == 2)
+				seen_two = TRUE
+			if(glow == 1)
+				seen_one = TRUE
+				TEST_ASSERT(plasma_test_has_overlay_state(gun.update_overlays(), "[gun.coil_glow_state]_1"), "A nearly spent [gun_type] shows no step 1 coil overlay")
+		TEST_ASSERT(seen_two && seen_one, "A [gun_type] fired dry skipped a glow step")
+		TEST_ASSERT_EQUAL(gun.coil_step(), 0, "An empty [gun_type] still glows")
+		var/list/empty_overlays = gun.update_overlays()
+		for(var/glow in 1 to 3)
+			TEST_ASSERT(!plasma_test_has_overlay_state(empty_overlays, "[gun.coil_glow_state]_[glow]"), "An empty [gun_type] still shows coil step [glow]")
+
+	// A part-used loot cartridge is never over half, so it never spawns at the brightest step
+	var/obj/item/gun/energy/plasma_weapon/rifle/loot/found = allocate(/obj/item/gun/energy/plasma_weapon/rifle/loot)
+	TEST_ASSERT((found.coil_step() in list(1, 2)), "A loot Furnace spawned glowing at step [found.coil_step()]")
+
+	// Unloading darkens the coils; a full cartridge back in brings them up again
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	var/obj/item/plasma_cartridge/seated = gun.unload_cartridge(null)
+	TEST_ASSERT_NOTNULL(seated, "Test fixture: the Furnace gave up no cartridge")
+	TEST_ASSERT_EQUAL(gun.coil_step(), 0, "An unloaded Furnace still glows")
+	var/list/unloaded_overlays = gun.update_overlays()
+	for(var/glow in 1 to 3)
+		TEST_ASSERT(!plasma_test_has_overlay_state(unloaded_overlays, "[gun.coil_glow_state]_[glow]"), "An unloaded Furnace still shows coil step [glow]")
+	TEST_ASSERT(gun.load_cartridge(seated, null), "Test fixture: the cartridge wouldn't go back in")
+	TEST_ASSERT_EQUAL(gun.coil_step(), 3, "A reloaded Furnace isn't at the brightest glow")
+
 /// On a swap the hand holding the new cartridge takes the old one, even with the gun in the other hand
 /datum/unit_test/voidcrew_plasma_cartridge_swap_to_hand/Run()
 	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent)
