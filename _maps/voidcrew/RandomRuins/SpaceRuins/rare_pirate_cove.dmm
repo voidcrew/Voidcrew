@@ -68,7 +68,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "ao" = (
-/mob/living/basic/trooper/pirate/melee/space,
+/obj/effect/spawner/human_npc/ruin/pirate/space,
 /turf/open/misc/asteroid,
 /area/ruin/space/has_grav/powered)
 "ap" = (
@@ -176,7 +176,7 @@
 /turf/open/misc/asteroid,
 /area/ruin/space/has_grav/powered)
 "aL" = (
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/misc/asteroid,
 /area/ruin/space/has_grav/powered)
 "aM" = (
@@ -406,7 +406,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "pn" = (
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "rS" = (
@@ -523,7 +523,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Ej" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Fd" = (
@@ -541,7 +541,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Hx" = (
-/mob/living/basic/trooper/pirate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "JH" = (
@@ -640,7 +640,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Uv" = (
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "UQ" = (

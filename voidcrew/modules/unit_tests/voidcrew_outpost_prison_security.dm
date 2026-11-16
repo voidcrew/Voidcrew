@@ -65,8 +65,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 9, 8), "xbyardowner")
 	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 10, 8), "xbyardstranger")
-	var/mob/living/basic/outpost_prisoner/content = trouble_awake_prisoner(prison, prison_spot(home, 8, 10), "cheerful")
-	var/mob/living/basic/outpost_prisoner/sour = trouble_awake_prisoner(prison, prison_spot(home, 10, 10), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/content = trouble_awake_prisoner(prison, prison_spot(home, 8, 10), "cheerful")
+	var/mob/living/carbon/human/npc/outpost_prisoner/sour = trouble_awake_prisoner(prison, prison_spot(home, 10, 10), "grumpy")
 
 	// A member walks in: the content one looks over, the sour one stares and goes quiet
 	content.set_mood(60)
@@ -145,7 +145,7 @@
 	TEST_ASSERT_EQUAL(prison.wing.sound_environment, SOUND_AREA_LARGE_ENCLOSED, "The prison wing does not echo like a large hard room")
 
 	// Beside the mess table on row 9, gathered in the yard
-	var/mob/living/basic/outpost_prisoner/gathered = trouble_awake_prisoner(prison, prison_spot(home, 4, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/gathered = trouble_awake_prisoner(prison, prison_spot(home, 4, 8))
 	var/datum/prisoner_activity/gather/huddle = new(gathered)
 	huddle.started = TRUE
 	gathered.start_activity(huddle)
@@ -177,7 +177,7 @@
 
 	// The roar: every rioter on their feet, once per riot
 	gathered.end_activity(cancel_ai = FALSE)
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.riot_active = TRUE
 	TEST_ASSERT_EQUAL(prison.roar_tick(), 1, "The rioter did not roar as the riot started")

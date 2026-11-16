@@ -8,7 +8,7 @@
  *
  * - /datum/ambient_activity/mine: dig one ore wall for real. Shared: the lava fisher
  *   (planet_fishers.dm) digs with it too. See its doc comment for the API.
- * - /mob/living/basic/ambient_npc/planet/miner: a prospector with a small camp (a folding chair, a
+ * - /mob/living/carbon/human/npc/ambient_npc/planet/miner: a prospector with a small camp (a folding chair, a
  *   lantern, a crate) who swings at a rock face for half a minute or more, digs it out, scoops the
  *   ore into a satchel, and every few walls sits down at camp with a flask. Hand them food or a
  *   drink and they trade a little ore from the satchel. Attacked, they fight with the pickaxe and run
@@ -162,7 +162,7 @@
 	. = ..()
 	if(QDELETED(doer))
 		return
-	var/mob/living/basic/ambient_npc/planet/planet_npc = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/planet_npc = doer
 	if(istype(planet_npc))
 		planet_npc.show_idle_held()
 	else
@@ -201,20 +201,39 @@
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	gloves = /obj/item/clothing/gloves/color/black
 	head = /obj/item/clothing/head/utility/hardhat/orange
+	belt = /obj/item/pickaxe
 
 /datum/outfit/ambient_miner/winter
 	name = "Ambient NPC: prospector in a coat"
 	suit = /obj/item/clothing/suit/hooded/wintercoat/miner
+
+/// Yellow: rougher ground, an explorer suit
+/datum/outfit/ambient_miner/explorer
+	name = "Ambient NPC: prospector in an explorer suit"
+	suit = /obj/item/clothing/suit/hooded/explorer
+
+/// Red: the explorer suit and its mask, and a drill
+/datum/outfit/ambient_miner/explorer/red
+	name = "Ambient NPC: prospector with a drill"
+	mask = /obj/item/clothing/mask/gas/explorer
+	belt = /obj/item/pickaxe/drill
 
 /datum/outfit/ambient_miner/void
 	name = "Ambient NPC: asteroid miner"
 	suit = /obj/item/clothing/suit/space/eva
 	head = /obj/item/clothing/head/helmet/space/eva
 
-/mob/living/basic/ambient_npc/planet/miner
+/// Miners by band (AM-1): kit, not health, makes the red zone's harder to put down
+/datum/human_npc_outfit_table/ambient_miner
+	green = list(/datum/outfit/ambient_miner = 1, /datum/outfit/ambient_miner/winter = 1)
+	yellow = list(/datum/outfit/ambient_miner/explorer = 1)
+	red = list(/datum/outfit/ambient_miner/explorer/red = 1)
+
+/mob/living/carbon/human/npc/ambient_npc/planet/miner
 	name = "miner"
 	desc = "A prospector in dusty overalls, working the rock by hand."
-	outfit_choices = list(/datum/outfit/ambient_miner, /datum/outfit/ambient_miner/winter)
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_miner
 	dialogue_section = "miner"
 	speech_pace = 1.2
 	fights_back = TRUE
@@ -231,18 +250,18 @@
 	/// The satchel the ore goes into; dropped with them
 	var/obj/item/storage/bag/ore/ore_bag
 
-/mob/living/basic/ambient_npc/planet/miner/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/Initialize(mapload)
 	. = ..()
 	ore_bag = new(src)
 	if(prob(50))
 		death_loot = death_loot + /obj/item/mining_scanner
 
-/mob/living/basic/ambient_npc/planet/miner/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/Destroy()
 	QDEL_NULL(ore_bag)
 	return ..()
 
 // The satchel with what they dug goes down with them, once
-/mob/living/basic/ambient_npc/planet/miner/drop_loot()
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/drop_loot()
 	var/first_time = !loot_dropped
 	. = ..()
 	if(!first_time || QDELETED(ore_bag))
@@ -253,7 +272,7 @@
 		ore_bag = null
 
 /// Units of ore in their satchel
-/mob/living/basic/ambient_npc/planet/miner/proc/ore_carried()
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/proc/ore_carried()
 	. = 0
 	for(var/obj/item/stack/ore/ore in ore_bag)
 		. += ore.amount
@@ -262,14 +281,14 @@
  * The barter: a bite to eat or something to drink for a little ore from the satchel. Only what they
  * dug on this rock, and only a few trades a visit for the whole camp.
  */
-/mob/living/basic/ambient_npc/planet/miner/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(user.combat_mode || !can_act() || !ambient_is_refreshment(tool))
 		return ..()
 	barter(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
 /// Trades `refreshment` from `user` for one to three ore. TRUE if the trade was made.
-/mob/living/basic/ambient_npc/planet/miner/proc/barter(mob/living/user, obj/item/refreshment)
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/proc/barter(mob/living/user, obj/item/refreshment)
 	if(!buckled)
 		face_atom(user)
 	var/datum/ambient_place/site/site = place
@@ -306,7 +325,7 @@
 	return FALSE
 
 /// Out on an asteroid, in a suit
-/mob/living/basic/ambient_npc/planet/miner/void
+/mob/living/carbon/human/npc/ambient_npc/planet/miner/void
 	desc = "A prospector in a patched suit, chipping at the asteroid."
 	outfit_choices = null
 	outfit = /datum/outfit/ambient_miner/void
@@ -346,10 +365,10 @@
 		return FALSE
 	new_visit(site)
 	build_camp(site)
-	var/miner_type = site.field_ref ? /mob/living/basic/ambient_npc/planet/miner/void : npc_type
+	var/miner_type = site.field_ref ? /mob/living/carbon/human/npc/ambient_npc/planet/miner/void : npc_type
 	for(var/i in 1 to missing)
 		var/turf/where = ambient_free_turf_near(site.center, 2) || site.center
-		var/mob/living/basic/ambient_npc/planet/miner/miner = site.spawn_npc(miner_type, where)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/miner/miner = site.spawn_npc(miner_type, where)
 		if(miner)
 			miner.leash_bounds = ambient_square_bounds(site.center, 12)
 	return TRUE

@@ -351,7 +351,7 @@ SUBSYSTEM_DEF(planet_mobs)
 			continue
 
 		var/datum/npc_spawn_context/context = new(tracker, tracker.zone_band, source_turf = candidate)
-		spawn_npc_in_zone(mob_type, candidate, context)
+		spawn_npc_in_zone_or_queue(mob_type, candidate, context)
 		spawned++
 		total_managed_mobs++
 

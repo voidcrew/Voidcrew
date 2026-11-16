@@ -14,8 +14,8 @@ ADMIN_VERB(ambient_npc_spawn, R_ADMIN|R_DEBUG, "Ambient NPCs: Spawn", "Spawn an 
 		to_chat(user, span_warning("You need a physical location to spawn at."))
 		return
 	var/list/choices = list()
-	for(var/npc_type in subtypesof(/mob/living/basic/ambient_npc) + /mob/living/basic/ambient_npc)
-		choices["NPC: [replacetext("[npc_type]", "/mob/living/basic/ambient_npc", "ambient_npc")]"] = npc_type
+	for(var/npc_type in subtypesof(/mob/living/carbon/human/npc/ambient_npc) + /mob/living/carbon/human/npc/ambient_npc)
+		choices["NPC: [replacetext("[npc_type]", "/mob/living/carbon/human/npc/ambient_npc", "ambient_npc")]"] = npc_type
 	for(var/datum/ambient_outpost_role/role as anything in SSambient_npcs.get_outpost_roles())
 		if(role.npc_type)
 			choices["Role: [role.name] ([role.type])"] = role
@@ -28,8 +28,8 @@ ADMIN_VERB(ambient_npc_spawn, R_ADMIN|R_DEBUG, "Ambient NPCs: Spawn", "Spawn an 
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(here)
 	var/datum/ambient_place/outpost/outpost_place = outpost ? SSambient_npcs.outpost_place(outpost) : null
 	var/result
-	if(ispath(picked, /mob/living/basic/ambient_npc))
-		var/mob/living/basic/ambient_npc/npc = new picked(here)
+	if(ispath(picked, /mob/living/carbon/human/npc/ambient_npc))
+		var/mob/living/carbon/human/npc/ambient_npc/npc = new picked(here)
 		npc.set_place(outpost_place)
 		result = npc
 	else if(istype(picked, /datum/ambient_outpost_role))
@@ -63,7 +63,7 @@ ADMIN_VERB(ambient_npc_list_sites, R_ADMIN|R_DEBUG, "Ambient NPCs: List Sites", 
 	for(var/outpost in SSambient_npcs.outposts)
 		var/datum/ambient_place/outpost/place = SSambient_npcs.outposts[outpost]
 		lines += "&nbsp;&nbsp;[place.describe()]"
-		for(var/mob/living/basic/ambient_npc/npc as anything in place.living_npcs())
+		for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.living_npcs())
 			lines += "&nbsp;&nbsp;&nbsp;&nbsp;[npc] ([npc.type]): [npc.activity?.name || "nothing"] [ADMIN_JMP(npc)]"
 	lines += "<b>Planets</b>"
 	for(var/key in SSambient_npcs.planets)

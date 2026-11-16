@@ -372,7 +372,7 @@
 /turf/template_noop,
 /area/template_noop)
 "qU" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /obj/structure/chair/stool/directional/west,
 /turf/open/floor/bamboo/tatami,
 /area/ruin/powered{
@@ -853,7 +853,7 @@
 /turf/open/misc/asteroid/sand/beach,
 /area/overmap_encounter/planetoid/beach)
 "Mn" = (
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /obj/structure/chair/stool/directional/east,
 /turf/open/floor/bamboo/tatami,
 /area/ruin/powered{

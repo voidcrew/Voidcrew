@@ -1,18 +1,17 @@
 /**
  * # Prison capture: cuffs and lockdown
  *
- * Cuffs. A member of the wing can put any handcuffs, cable restraints or zipties on a prisoner.
- * One who is down takes PRISONER_CUFF_TIME_DOWN; one on their feet takes PRISONER_CUFF_TIME_STANDING,
- * holding still meanwhile, and only while making no trouble: rioters, runners, fighters, anyone
- * threatening staff and anyone wrecking their cell must be put down first. Cuffed, they drop what
- * they hold and do nothing but stand or sit where they are and complain: no blows, threats,
- * fights, climbing, smashing, eating or activities, and a runner's loose clock waits. Anyone can
- * drag them, and a member can take them through the wing's staff doors (outpost_prisoner_escorted()).
- * Cuffs kept on past PRISONER_CUFFED_GRACE sour them and stop their pay like a lock-in, unless it
- * is for good reason: the wing is in protective custody, or they owe lockdown. A member takes the
- * cuffs off from the talk menu ("Uncuff"), or with an empty hand while they are down: real cuffs go
- * to the member's hand, cable and zipties are cut away.
- * The cuffs drop to the floor when the prisoner dies, beams out or is deleted.
+ * Cuffs are tg's own handcuffs, cable restraints and zipties, put on through tg's cuffing (4 seconds,
+ * its sounds and messages). Only a member of the wing may cuff a prisoner (COMSIG_CARBON_CUFF_ATTEMPTED).
+ * Anyone making trouble on their feet (a rioter, a runner, a fighter, anyone squaring up to staff or
+ * climbing out) won't hold still: they step out of the cuffer's reach, which breaks the cuffing, so
+ * they get put down first. Cuffed, they can walk, as anyone can, but they choose to stand or sit where
+ * they are and complain: no blows, threats, fights, climbing, smashing, eating or activities, and a
+ * runner's loose clock waits. Anyone can drag them, and a member can take them through the wing's staff
+ * doors (outpost_prisoner_escorted()). Cuffs kept on past PRISONER_CUFFED_GRACE sour them and stop
+ * their pay like a lock-in, unless it is for good reason: the wing is in protective custody, or they owe
+ * lockdown. A member takes the cuffs off from the talk menu ("Uncuff"), or through the strip menu like
+ * anyone's: real cuffs go to the member's hand, cable and zipties are cut away. A body keeps its cuffs.
  *
  * Lockdown. A rioter shut in a cell, and a runner caught after getting out during a riot, owes
  * PRISON_RIOT_LOCKDOWN_TIME of lockdown. It counts down only while they are shut in a cell, and
@@ -25,12 +24,7 @@
  * outpost_prison_riot.dm). Only the ones shut in a cell owe lockdown.
  */
 
-/// Trait source for the cuffs holding a prisoner still
-#define PRISONER_CUFFS_TRAIT "outpost_prisoner_cuffs"
-
-/mob/living/basic/outpost_prisoner
-	/// The cuffs on them, held in their contents
-	var/obj/item/restraints/handcuffs/cuffs
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Seconds cuffed without good reason; falls PRISONER_LOCKED_IN_RECOVERY seconds a second once uncuffed
 	var/cuffed_seconds = 0
 	/// Someone is putting cuffs on them or taking them off
@@ -46,199 +40,143 @@
 
 // ===== CUFFING =====
 
-/// Why `user` can't put `restraints` on them now, as a balloon alert, or null if they can
-/mob/living/basic/outpost_prisoner/proc/cuff_refusal(mob/living/user, obj/item/restraints/handcuffs/restraints)
+/// Why `user` can't put cuffs on them now, as a balloon alert, or null if they can
+/mob/living/carbon/human/npc/outpost_prisoner/proc/cuff_refusal(mob/living/user)
 	if(!prison || !prison.is_member(user))
 		return "members only"
 	if(stat == DEAD || phase != PRISONER_PRESENT)
 		return "can't cuff [p_them()]"
-	if(cuffs)
-		return "already cuffed"
-	if(istype(restraints, /obj/item/restraints/handcuffs/cable/zipties/used))
-		return "used up"
-	// On their feet only when they are making no trouble; rioters and runners go down first.
-	if(!is_down() && (trouble || threat_ref || swing_ref || climb_ref))
-		return "won't hold still"
 	return null
 
-/// How long cuffing them takes: quicker when they are down
-/mob/living/basic/outpost_prisoner/proc/cuff_time()
-	return (is_down() ? PRISONER_CUFF_TIME_DOWN : PRISONER_CUFF_TIME_STANDING) * bounty_cuff_mult()
+/// Making trouble on their feet: they won't stand still for the cuffs
+/mob/living/carbon/human/npc/outpost_prisoner/proc/fights_the_cuffs()
+	return !is_down() && (trouble || threat_ref || swing_ref || climb_ref)
 
-/// Cuffs used on them (from the item interaction signal): refused with a balloon alert, or put on in the background
-/mob/living/basic/outpost_prisoner/proc/on_cuffs_used(mob/living/user, obj/item/restraints/handcuffs/restraints)
-	var/refusal = cuff_refusal(user, restraints)
-	if(!refusal && cuff_work)
-		refusal = "already busy"
+/**
+ * Someone starts cuffing them with tg's cuffs. Not a member: refused. Making trouble on their feet:
+ * they pull away out of reach, which breaks tg's cuffing do_after. Otherwise they hold still, and their
+ * routine waits while the cuffs go on.
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_cuff_attempt(datum/source, mob/living/user)
+	SIGNAL_HANDLER
+	var/refusal = cuff_refusal(user)
 	if(refusal)
 		balloon_alert(user, refusal)
-		return ITEM_INTERACT_BLOCKING
-	INVOKE_ASYNC(src, PROC_REF(cuff_by), user, restraints)
-	return ITEM_INTERACT_SUCCESS
-
-/**
- * `user` puts `restraints` on them over cuff_time(), with tg's cuff sounds. They hold still
- * meanwhile (in_trouble() counts it, so their routine waits). Returns TRUE if they are cuffed. Sleeps.
- */
-/mob/living/basic/outpost_prisoner/proc/cuff_by(mob/living/user, obj/item/restraints/handcuffs/restraints)
-	if(cuff_work || cuff_refusal(user, restraints))
-		return FALSE
+		return COMSIG_CARBON_CUFF_PREVENT
+	if(fights_the_cuffs() && !HAS_TRAIT(src, TRAIT_IMMOBILIZED))
+		INVOKE_ASYNC(src, PROC_REF(pull_away_from), user)
+		return NONE
 	cuff_work = TRUE
 	ai_controller?.CancelActions()
-	user.visible_message(span_danger("[user] is trying to put [restraints] on [src]!"), span_danger("You try to put [restraints] on [src]."))
-	playsound(src, restraints.cuffsound, 30, TRUE, -2)
-	var/done = do_after(user, cuff_time(), target = src, timed_action_flags = IGNORE_SLOWDOWNS)
-	cuff_work = FALSE
-	if(QDELETED(src))
-		return FALSE
-	// A borg's cuffs are part of its module: it dispenses a pair, as tg's cuffs do for borgs.
-	var/dispense = iscyborg(user)
-	if(!done || QDELETED(restraints) || (restraints.loc != user && !dispense) || cuff_refusal(user, restraints))
-		balloon_alert(user, "failed to cuff!")
-		return FALSE
-	var/success_sound = restraints.cuffsuccesssound
-	if(!apply_cuffs(restraints, user, dispense))
-		balloon_alert(user, "failed to cuff!")
-		return FALSE
-	playsound(src, success_sound, 30, TRUE, -2)
-	user.visible_message(span_notice("[user] handcuffs [src]."), span_notice("You handcuff [src]."))
-	log_combat(user, src, "handcuffed")
-	return TRUE
+	addtimer(VARSET_CALLBACK(src, cuff_work, FALSE), PRISONER_CUFF_TIME_STANDING + 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+	return NONE
+
+/// A step out of `user`'s reach, as anyone twists away from someone with cuffs
+/mob/living/carbon/human/npc/outpost_prisoner/proc/pull_away_from(mob/living/user)
+	if(QDELETED(src) || QDELETED(user) || stat != CONSCIOUS)
+		return
+	step_away(src, user)
 
 /**
- * Puts `restraints` on them at once; zipties become their used pair, as on people. `user`, if
- * any, gives them up from their hands, unless `dispense` (a borg), which puts on a new pair of the
- * same kind instead. What they hold drops and whatever they were up to stops. Returns TRUE if they
- * are cuffed.
+ * Cuffs went on: what they were up to stops. Called once the cuffs are on (the restrained trait
+ * handler, outpost_prison_prisoner.dm); their line comes from npc_bark().
  */
-/mob/living/basic/outpost_prisoner/proc/apply_cuffs(obj/item/restraints/handcuffs/restraints, mob/living/user, dispense = FALSE)
-	if(cuffs || QDELETED(restraints) || stat == DEAD)
-		return FALSE
-	var/obj/item/restraints/handcuffs/worn = restraints
-	if(dispense)
-		var/dispensed_path = restraints.trashtype || restraints.type
-		worn = new dispensed_path(src)
-	else
-		if(user && !user.temporarilyRemoveItemFromInventory(restraints))
-			return FALSE
-		if(restraints.trashtype)
-			var/trash_path = restraints.trashtype
-			worn = new trash_path(src)
-			qdel(restraints)
-		else
-			restraints.forceMove(src)
-	if(QDELETED(worn) || worn.loc != src)
-		return FALSE
-	cuffs = worn
-	ADD_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_CUFFS_TRAIT)
-	if(has_shiv())
-		drop_shiv()
-	else
-		drop_held_item()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_cuffed()
+	cuff_work = FALSE
 	end_activity()
 	cancel_threat()
 	stop_climb(fell = TRUE)
 	// The breakout AI too: a caught runner stays put until walked home.
 	ai_controller?.CancelActions()
-	// Draggable now: whatever trouble they were in stops (on_downed()).
-	update_drag_resistance()
-	update_appearance(UPDATE_OVERLAYS)
 	update_bubble()
-	if(stat == CONSCIOUS)
-		say_context("cuffed")
-	return TRUE
 
 // ===== UNCUFFING =====
 
 /**
- * A member takes the cuffs off by hand, over PRISONER_UNCUFF_TIME. Returns TRUE if
+ * A member takes the cuffs off by hand from the talk menu, over PRISONER_UNCUFF_TIME. Returns TRUE if
  * they came off. Sleeps.
  */
-/mob/living/basic/outpost_prisoner/proc/uncuff_by(mob/living/user)
-	if(!cuffs || cuff_work)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/uncuff_by(mob/living/user)
+	var/obj/item/restraints/handcuffs/worn = handcuffed
+	if(!worn || cuff_work)
 		return FALSE
 	cuff_work = TRUE
-	user.visible_message(span_notice("[user] starts taking [cuffs] off [src]."), span_notice("You start taking [cuffs] off [src]."))
+	user.visible_message(span_notice("[user] starts taking [worn] off [src]."), span_notice("You start taking [worn] off [src]."))
 	var/done = do_after(user, PRISONER_UNCUFF_TIME, target = src)
 	cuff_work = FALSE
-	if(!done || QDELETED(src) || !cuffs || !prison?.is_member(user))
+	if(!done || QDELETED(src) || handcuffed != worn || !prison?.is_member(user))
 		return FALSE
-	var/cut = istype(cuffs, /obj/item/restraints/handcuffs/cable)
-	user.visible_message(span_notice("[user] [cut ? "cuts" : "takes"] [cuffs] off [src]."), span_notice("You [cut ? "cut" : "take"] [cuffs] off [src]."))
+	var/cut = istype(worn, /obj/item/restraints/handcuffs/cable)
+	user.visible_message(span_notice("[user] [cut ? "cuts" : "takes"] [worn] off [src]."), span_notice("You [cut ? "cut" : "take"] [worn] off [src]."))
 	remove_cuffs(user)
-	if(stat == CONSCIOUS)
-		say_context("cuffs_off")
 	return TRUE
 
 /**
- * Takes their cuffs off. With `user`, real cuffs go to their hands (or the floor) and cable
- * restraints and zipties are cut away; without, the cuffs drop where they are. Returns the cuffs
- * still about, or null.
+ * Takes their cuffs off through tg's uncuff(). With `user`, real cuffs go to their hands (or the floor)
+ * and cable restraints and zipties are cut away; without, the cuffs drop where they are. Returns the
+ * cuffs still about, or null.
  */
-/mob/living/basic/outpost_prisoner/proc/remove_cuffs(mob/living/user)
-	var/obj/item/restraints/handcuffs/worn = cuffs
+/mob/living/carbon/human/npc/outpost_prisoner/proc/remove_cuffs(mob/living/user)
+	var/obj/item/restraints/handcuffs/worn = handcuffed
 	if(!worn)
 		return null
-	// Cleared first, so Exited() leaves the rest to this proc.
-	cuffs = null
+	uncuff()
+	if(QDELETED(worn))
+		return null
 	if(user && istype(worn, /obj/item/restraints/handcuffs/cable))
 		qdel(worn)
-		worn = null
-	else
-		worn.forceMove(drop_location())
-		if(user)
-			user.put_in_hands(worn)
-	uncuffed()
+		return null
+	user?.put_in_hands(worn)
 	return worn
 
 /// The cuffs are off, however they came off
-/mob/living/basic/outpost_prisoner/proc/uncuffed()
-	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_CUFFS_TRAIT)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/uncuffed()
 	if(QDELETED(src))
 		return
-	update_drag_resistance()
-	update_appearance(UPDATE_OVERLAYS)
 	prison?.refresh_prisoner_reach(src)
+
+/// Cuffs on or off (tg's TRAIT_RESTRAINED)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_restraint_changed()
+	if(QDELETED(src))
+		return
+	if(handcuffed)
+		INVOKE_ASYNC(src, PROC_REF(on_cuffed))
+	else
+		INVOKE_ASYNC(src, PROC_REF(uncuffed))
 
 // ===== CUFFED =====
 
-// Cuffed hands throw no punches, whatever their AI wants.
-/mob/living/basic/outpost_prisoner/early_melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
-	if(cuffs)
-		return FALSE
-	return ..()
-
 /// Whether their cuffs are souring them and stopping their pay: on past PRISONER_CUFFED_GRACE, and not for good reason
-/mob/living/basic/outpost_prisoner/proc/cuffs_souring()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/cuffs_souring()
 	return cuffed_seconds > PRISONER_CUFFED_GRACE && !prison?.restraint_justified(src)
 
 /// Whether restraining a prisoner is for good reason right now, so it costs them nothing: protective custody, or lockdown they owe
-/datum/outpost_prison/proc/restraint_justified(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/restraint_justified(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.lockdown_left > 0 || protective_custody()
 
 /**
  * Advances a prisoner's cuffed clock by `seconds`: up while cuffed without good reason, and down
  * PRISONER_LOCKED_IN_RECOVERY seconds a second once the cuffs are off, like the lock-in clock.
  */
-/datum/outpost_prison/proc/update_cuffed(mob/living/basic/outpost_prisoner/prisoner, seconds)
-	if(prisoner.cuffs)
+/datum/outpost_prison/proc/update_cuffed(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds)
+	if(prisoner.handcuffed)
 		if(!restraint_justified(prisoner))
 			prisoner.cuffed_seconds += seconds
 		return
 	prisoner.cuffed_seconds = max(0, prisoner.cuffed_seconds - PRISONER_LOCKED_IN_RECOVERY * seconds)
 
-/// Cuffed, they plan nothing: no routine, no trouble, no patrol, no doors. First on both prisoner controllers.
+/// Cuffed, they choose to plan nothing: no routine, no trouble, no patrol, no doors. First on both prisoner controllers.
 /datum/ai_planning_subtree/outpost_prisoner_cuffed
 
 /datum/ai_planning_subtree/outpost_prisoner_cuffed/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/outpost_prisoner/prisoner = controller.pawn
-	if(istype(prisoner) && prisoner.cuffs)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = controller.pawn
+	if(istype(prisoner) && prisoner.handcuffed)
 		return SUBTREE_RETURN_FINISH_PLANNING
 
 // ===== LOCKDOWN =====
 
 /// They owe PRISON_RIOT_LOCKDOWN_TIME of lockdown from now. `quiet` leaves the line to the caller.
-/datum/outpost_prison/proc/start_lockdown(mob/living/basic/outpost_prisoner/prisoner, quiet = FALSE)
+/datum/outpost_prison/proc/start_lockdown(mob/living/carbon/human/npc/outpost_prisoner/prisoner, quiet = FALSE)
 	prisoner.lockdown_left = PRISON_RIOT_LOCKDOWN_TIME
 	prisoner.lockdown_out = 0
 	add_log("[prisoner.real_name] is on lockdown.")
@@ -251,7 +189,7 @@
  * out early. Down, cuffed or loose, the grace waits, and so does it while the cell they were serving
  * in is still bolted: they got out through a hole, and nobody let them out.
  */
-/datum/outpost_prison/proc/lockdown_tick(mob/living/basic/outpost_prisoner/prisoner, seconds)
+/datum/outpost_prison/proc/lockdown_tick(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds)
 	if(prisoner.lockdown_left <= 0)
 		prisoner.lockdown_out = 0
 		prisoner.lockdown_cell_ref = null
@@ -274,7 +212,7 @@
 		let_out_early(prisoner)
 
 /// Served: the warden's log notes it once, and the prisoner says so. The usual lock-in rules apply again.
-/datum/outpost_prison/proc/lockdown_served(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/lockdown_served(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	prisoner.lockdown_left = 0
 	prisoner.lockdown_out = 0
 	prisoner.lockdown_cell_ref = null
@@ -286,7 +224,7 @@
  * Let out before the lockdown was served: logged once, and they riot again, joining a riot
  * that is on or starting one whatever the quiet after the last. Returns TRUE if they are rioting.
  */
-/datum/outpost_prison/proc/let_out_early(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/let_out_early(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	prisoner.lockdown_left = 0
 	prisoner.lockdown_out = 0
 	add_log("[prisoner.real_name] was let out before their lockdown was up.")
@@ -309,12 +247,10 @@
 
 // ===== WHERE STAFF LOOK =====
 
-/mob/living/basic/outpost_prisoner/examine(mob/user)
+/mob/living/carbon/human/npc/outpost_prisoner/examine(mob/user)
 	. = ..()
 	if(stat == DEAD)
 		return
-	if(cuffs)
-		. += span_warning("[p_They()] [p_are()] handcuffed.")
 	if(lockdown_left > 0)
 		. += span_notice("On lockdown for [outpost_prison_lockdown_text(lockdown_left)].")
 
@@ -324,7 +260,7 @@
 	var/datum/outpost_prison_cell/cell = prison?.cell_by_number(cell_number)
 	if(!cell)
 		return
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
 		if(prisoner.lockdown_left <= 0 || prisoner.stat == DEAD || prisoner.phase != PRISONER_PRESENT)
 			continue
 		var/inside = cell.contains(prisoner)
@@ -335,4 +271,3 @@
 			line += " [prisoner.p_They()] [prisoner.p_are()] not in the cell."
 		. += span_notice(line)
 
-#undef PRISONER_CUFFS_TRAIT

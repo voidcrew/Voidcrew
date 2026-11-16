@@ -68,7 +68,10 @@
 	to_chat(user, "<span class='warning'>You start searching the [name] for anything useful...</span>")
 	if(do_after(user, 40, target = src))
 		if(prob(bite_chance))
-			user.adjustBruteLoss(15)
+			// The hand that reached in takes the bite, through whatever glove covers it.
+			var/obj/item/clothing/gloves/worn_gloves = user.gloves
+			var/blocked = istype(worn_gloves) ? min(worn_gloves.get_armor_rating(MELEE), 100) : 0
+			user.apply_damage(15, BRUTE, user.get_active_hand(), blocked, sharpness = SHARP_POINTY)
 			playsound(user.loc, 'sound/items/weapons/bite.ogg', 50, TRUE, -1)
 			to_chat(user, "<span class='alert'>OW! Something bit you!</span>")
 		else
@@ -94,7 +97,7 @@
 	desc = "A musty, mold-covered barrel."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "barrel"
-	mob_types = list(/mob/living/basic/trooper/pirate/melee/beach, /mob/living/basic/trooper/pirate/ranged/beach)
+	mob_types = list(/mob/living/carbon/human/npc/ruin/trooper/pirate/beach, /mob/living/carbon/human/npc/ruin/trooper/pirate/beach/gunner)
 	max_mobs = 2
 	max_integrity = 250
 	bite_chance = 0

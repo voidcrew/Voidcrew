@@ -45,7 +45,7 @@
 	var/datum/weakref/board_proof_ref
 	/// Weakrefs to GPS units (/datum/component/gps/item) its sighting beacon was uploaded to -> weakref of the ship that linked them
 	var/list/board_gps_units = list()
-	/// The worst capture state (BOUNTY_STATE_*) any body of its criminal reached. A criminal that comes back when its site loads again starts from here: once downed, never full pay; once dead, only proof (12.1).
+	/// BOUNTY_STATE_DEAD once a body of its criminal was dead when its site unloaded: the next load places its proof of death, never a living body again. Otherwise BOUNTY_STATE_FREE.
 	var/board_worst_state = BOUNTY_STATE_FREE
 	/// The sighting beacon's tag on those units
 	var/board_gps_tag
@@ -53,8 +53,6 @@
 	var/board_next_sighting = 0
 	/// "[REF(ship)]" -> warrants that ship printed for it (AR-G2)
 	var/list/board_warrants = list()
-	/// Weakrefs to every warrant printed for it, burned when it closes
-	var/list/board_printed_warrants = list()
 	/// Timer deciding, a moment after its criminal was deleted, whether anything is left to turn in
 	var/board_lost_timer
 
@@ -284,7 +282,6 @@
 	claimants.Cut()
 	board_hunt_started.Cut()
 	board_clear_gps()
-	board_burn_warrants()
 
 	// Listeners get the criminal and decoys first: P6 detaches the ones at a trader outpost and walks them out
 	SEND_SIGNAL(src, COMSIG_BOUNTY_POSTING_CLOSED, reason, winner)
@@ -351,7 +348,7 @@
  * so this never touches one being beamed out.
  */
 /datum/criminal_bounty/proc/board_remove_mobs(reason, relisting = FALSE)
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	board_detach_criminal()
 	var/list/extras = list()
 	for(var/datum/weakref/ref as anything in companions + decoys)
@@ -385,6 +382,12 @@
 	var/turf/spot = get_turf(leaving)
 	if(spot && leaving.stat != DEAD)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
+	// Its locked kit goes with it (D3); whatever on it isn't its own (papers, a key, a crew's cuffs, a suit a
+	// crew put on it) stays behind, as at the pad (bounty_return_crew_items(), bounty_suits.dm).
+	if(ishumannpc(leaving) && spot)
+		var/mob/living/carbon/human/npc/body = leaving
+		body.npc_drop_not_gear()
+		bounty_return_crew_items(body, spot)
 	qdel(leaving)
 
 // ===== RELISTING =====
@@ -486,19 +489,12 @@
 	return 0
 
 /**
- * Percent paid for a criminal in `state` at the pad that has at some point been as bad as
- * `worst_state` (12.1: once downed, at most the downed share; once dead, the dead share). 0 for a
- * free criminal, which the pad refuses.
+ * Percent paid for a criminal in `state` at the pad: its condition there, nothing it went through on the
+ * way (owner ruling 2026-11-08). 0 for a free criminal, which the pad refuses. The kingpin and kill-only
+ * postings override it.
  */
-/datum/criminal_bounty/proc/board_share_for(state, worst_state)
-	var/share = bounty_state_share(state)
-	if(!share)
-		return 0
-	if(worst_state && worst_state != BOUNTY_STATE_FREE)
-		var/worst_share = bounty_state_share(worst_state)
-		if(worst_share)
-			share = min(share, worst_share)
-	return share
+/datum/criminal_bounty/proc/board_share_for(state)
+	return bounty_state_share(state)
 
 /**
  * What a turn-in at `share` percent pays: list(credits, vouchers). Vouchers come only with the
@@ -626,16 +622,7 @@
 	warrant.name = "warrant ([record?.name || "unknown"])"
 	warrant.add_raw_text(board_warrant_text(), advanced_html = TRUE)
 	warrant.update_appearance()
-	board_printed_warrants += WEAKREF(warrant)
 	return warrant
-
-/// Burns every warrant printed for it that is still around: a closed bounty's warrant is only litter
-/datum/criminal_bounty/proc/board_burn_warrants()
-	for(var/datum/weakref/warrant_ref as anything in board_printed_warrants)
-		var/obj/item/paper/bounty_warrant/warrant = warrant_ref?.resolve()
-		if(!QDELETED(warrant))
-			warrant.burn_up()
-	board_printed_warrants.Cut()
 
 /// The reward as a poster says it: "1000 cr and 1 trade voucher"
 /datum/criminal_bounty/proc/board_reward_text()
