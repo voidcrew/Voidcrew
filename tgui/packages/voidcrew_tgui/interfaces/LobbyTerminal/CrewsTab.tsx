@@ -263,13 +263,24 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
     // fills down to the pager, or to the body's end on a single page.
     const bottom = pages > 1 ? rows - 2.25 - 0.25 : BODY_Y + B;
     const slots = Math.max(1, per - 1);
-    const gap = Math.max(
+    let gap = Math.max(
       0.25,
       Math.min(
         0.75,
         Math.floor(((bottom - BODY_Y - per * 2.25) / slots) * 4) / 4,
       ),
     );
+    let rowH = 2.25;
+    // Fewer ships than a page holds: the rows share the body, as the berth rows do, to a
+    // pitch of 4 at most (rows 3.5 tall) so a row never looks bloated.
+    if (pages === 1 && n < per) {
+      const pitch = Math.max(
+        2.5,
+        Math.min(4, Math.floor(((B + 0.25) / n) * 4) / 4),
+      );
+      gap = pitch >= 3 ? 0.5 : 0.25;
+      rowH = pitch - gap;
+    }
     shown.forEach((x, i) => {
       const firstRow = i === 0;
       const lastRow = i === shown.length - 1;
@@ -277,7 +288,8 @@ export function CrewsTab(props: { setTab?: (tab: TabId) => void }) {
         <CrewRow
           key={x.c.ref}
           x={x}
-          y0={BODY_Y + i * (2.25 + gap)}
+          h={rowH}
+          y0={BODY_Y + i * (rowH + gap)}
           alt={(first + i) % 2 === 1}
           auto={x.c.ref === claim ? 1 : undefined}
           onOpen={() => setSelRef(x.c.ref)}
@@ -396,13 +408,16 @@ function CrewBlock(props: {
 function CrewRow(props: {
   x: Shown;
   y0: number;
+  /** Row height, 2.25 unless the rows spread; the two lines stay centred. */
+  h?: number;
   alt: boolean;
   auto?: number;
   onOpen: () => void;
   onFocus: () => void;
   edge: { down?: () => boolean; up?: () => boolean };
 }) {
-  const { x, y0, alt, auto, onOpen, onFocus, edge } = props;
+  const { x, y0: top, h = 2.25, alt, auto, onOpen, onFocus, edge } = props;
+  const y0 = top + (h - 2.25) / 2;
   const { c, name, status, open, mine } = x;
   const right = status === 'FULL' ? 'FULL' : `${count(open)} ${status}`;
   const memo = safe(c.memo).replace(/\s+/g, ' ').trim();
@@ -411,9 +426,9 @@ function CrewRow(props: {
   return (
     <Slab
       x={1}
-      y={y0}
+      y={top}
       w={61}
-      h={2.25}
+      h={h}
       variant="row"
       alt={alt}
       auto={auto}
