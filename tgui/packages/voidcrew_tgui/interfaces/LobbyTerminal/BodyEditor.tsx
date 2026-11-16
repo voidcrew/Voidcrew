@@ -688,7 +688,7 @@ export function BodyEditor(props: {
   const { group, setGroup } = props;
   const { act, data } = useBackend<LobbyData>();
   const cat = usePrefsCatalog();
-  const { sub, subOpen, from, quiet } = useChar();
+  const { sub, subOpen, closeSub, from, quiet } = useChar();
   const { rows: M } = useGrid();
   const char = data.char!;
   const prefs = char.prefs;
@@ -722,6 +722,10 @@ export function BodyEditor(props: {
         variant="block"
         on={g === group}
         onClick={() => {
+          // A group press leaves an open picker or colour panel.
+          if (subOpen) {
+            closeSub();
+          }
           if (g !== group) {
             setFresh(false);
             setPage(0);

@@ -231,7 +231,7 @@ type Line =
 export function KitEditor() {
   const { act, data } = useBackend<LobbyData>();
   const catalog = usePrefsCatalog();
-  const { sub, subOpen, from, quiet } = useChar();
+  const { sub, subOpen, closeSub, from, quiet } = useChar();
   const { rows: M, ch } = useGrid();
   const char = data.char;
   const kitColors = data.char_static?.kit_colors || {};
@@ -327,6 +327,10 @@ export function KitEditor() {
           alt={k % 2 === 1}
           on={idx === open}
           onClick={() => {
+            // A category press leaves an open COLOUR, STYLE or NAME panel for that category.
+            if (subOpen) {
+              closeSub();
+            }
             if (idx !== open) {
               setFresh(false);
               setOpen(idx);

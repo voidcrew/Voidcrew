@@ -353,6 +353,8 @@ export type CharPreview = { key: string; dir: CharDir; png: string } | null;
 export type CharacterData = {
   /** Sent every tick; tells the client whether its last push is stale. */
   char_rev?: number;
+  /** Counts saves of the character to disk (one-off push); a change shows SAVED. */
+  char_saved?: number;
   /** One-off pushes: these keep their last pushed value between pushes. */
   char?: CharData;
   char_static?: CharStatic;

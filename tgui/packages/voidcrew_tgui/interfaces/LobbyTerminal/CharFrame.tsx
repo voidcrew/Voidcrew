@@ -20,11 +20,12 @@ import {
   useContext,
   useEffect,
   useRef,
+  useState,
 } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { turned, Viewscreen } from './CharPreview';
-import { quietDialogClose } from './motion';
+import { quietDialogClose, useChanged } from './motion';
 import { useBack, usePager } from './nav';
 import {
   Band,
@@ -299,10 +300,29 @@ export function SpeciesConfirm() {
   );
 }
 
-/** The box of every CHARACTER screen, with its caption. */
+/** The box of every CHARACTER screen, with its caption, and SAVED on the border after a save. */
 export function CharBox(props: { caption: string }) {
   const { rows } = useGrid();
-  return <Box x={0} y={2.5} w={63} h={rows - 3.5} caption={props.caption} />;
+  const { data } = useBackend<LobbyData>();
+  const [saved, setSaved] = useState(false);
+  useChanged(data.char_saved ?? 0, () => setSaved(true));
+  useEffect(() => {
+    if (!saved) {
+      return;
+    }
+    const t = window.setTimeout(() => setSaved(false), 2000);
+    return () => window.clearTimeout(t);
+  }, [saved, data.char_saved]);
+  return (
+    <>
+      <Box x={0} y={2.5} w={63} h={rows - 3.5} caption={props.caption} />
+      {!!saved && (
+        <Put x={53} y={2} cls="dim" bg>
+          {' SAVED '}
+        </Put>
+      )}
+    </>
+  );
 }
 
 /** Calls fn once `ms` after `when` turns true, unless it turns false first. */

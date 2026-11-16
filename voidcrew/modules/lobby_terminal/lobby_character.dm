@@ -19,7 +19,7 @@
 /// Most char_* actions one terminal takes in a second; the rest are dropped.
 #define LOBBY_CHAR_ACTS_PER_SECOND 20
 /// Edits are written to disk this long after the last one (and on slot switch, hide and Destroy).
-#define LOBBY_CHAR_SAVE_DELAY (5 SECONDS)
+#define LOBBY_CHAR_SAVE_DELAY (1 SECONDS)
 /// A native colour dialog left open longer than this no longer blocks a new one.
 #define LOBBY_CHAR_PICK_TIMEOUT (2 MINUTES)
 
@@ -31,6 +31,8 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 /datum/lobby_terminal
 	/// Edits not yet written to disk.
 	var/char_dirty = FALSE
+	/// Saves to disk so far; pushed as char_saved so the page can show SAVED.
+	var/char_saved_count = 0
 	/// char_static goes out with the next push (once per page, on char_open).
 	var/char_static_due = FALSE
 	/// Species change waiting on char_confirm: list("value", "quirks", "slot"), or null. Any other edit clears it.
@@ -670,8 +672,13 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	if(!prefs?.savefile)
 		return
 	char_dirty = FALSE
-	prefs.save_character()
+	if(!prefs.save_character())
+		return // a guest's file is never written
 	prefs.save_preferences()
+	// SAVED on the CHARACTER box for a moment.
+	char_saved_count++
+	if(char_open && ui && !QDELETED(ui))
+		ui.send_update(list("char_saved" = char_saved_count))
 
 #undef LOBBY_CHAR_ACTS_PER_SECOND
 #undef LOBBY_CHAR_SAVE_DELAY
