@@ -63,7 +63,7 @@ const BERTH_PITCH = 1.75;
 const BERTH_H = 1.5;
 /** The widest pitch berth rows stretch to when they all fit, and the row height from which
  * a row may take the larger title and count. */
-const BERTH_PITCH_MAX = 3.5;
+const BERTH_PITCH_MAX = 4;
 const BERTH_TALL = 2.25;
 /** ABOARD: columns 45 to 61. */
 const ABOARD_X = 45;
@@ -356,7 +356,8 @@ export function CrewRecord(props: Props) {
       ? Math.max(1, Math.floor((A - 1) / BERTH_PITCH))
       : jobs.length;
     // When every berth fits on one page, the rows share the column: a pitch up to
-    // BERTH_PITCH_MAX in quarter rows, as the CREWS list's blocks stretch to fill their box.
+    // BERTH_PITCH_MAX in quarter rows, with the CREWS list's row rule (a half-row gap once the
+    // pitch reaches 3).
     const pitch = paged
       ? BERTH_PITCH
       : Math.max(
@@ -366,7 +367,8 @@ export function CrewRecord(props: Props) {
             Math.floor(((A + 0.25) / Math.max(1, jobs.length)) * 4) / 4,
           ),
         );
-    const rowH = pitch - 0.25;
+    const gap = pitch >= 3 ? 0.5 : 0.25;
+    const rowH = pitch - gap;
     const tall = rowH >= BERTH_TALL;
     const pages = Math.max(1, Math.ceil(jobs.length / per));
     const pg = Math.min(pages, Math.max(1, berthPage));
@@ -529,7 +531,7 @@ export function CrewRecord(props: Props) {
         x={1}
         y={by}
         w={41}
-        h={shown.length * pitch - 0.25}
+        h={shown.length * pitch - gap}
         k={pg}
       />,
     );
@@ -547,7 +549,7 @@ export function CrewRecord(props: Props) {
       );
       t0 = by + per * BERTH_PITCH + 1;
     } else {
-      t0 = by + shown.length * pitch - 0.25;
+      t0 = by + shown.length * pitch - gap;
     }
   }
 
