@@ -2,7 +2,7 @@
  * SETTINGS, KEYS group: the keybindings. A placeholder until the KEYS package fills it in; the
  * contract it builds against is at the top of Settings.tsx.
  */
-import { SettingsColumns } from './Settings';
+import { SettingsColumns } from './SettingsFrame';
 
 export function SettingsKeys() {
   return (
