@@ -163,8 +163,8 @@ GLOBAL_LIST_EMPTY(roundend_departed_ships)
 	parts += "<table class='vc_ships'><colgroup>\
 		<col style='width: 27%'><col style='width: 12%'><col style='width: 17%'>\
 		<col style='width: 10%'><col style='width: 10%'><col style='width: 13%'><col style='width: 11%'></colgroup>"
-	parts += "<tr><th>Ship</th><th>Status</th><th class='num'>Funds</th><th class='num'>Research</th>\
-		<th class='num'>Missions</th><th class='num'>Reputation</th><th class='num'>Crew</th></tr>"
+	parts += "<tr><th>Ship</th><th>Status</th><th class='num'>Funds</th><th class='num'>Tech</th>\
+		<th class='num'>Jobs</th><th class='num'>Rep</th><th class='num'>Crew</th></tr>"
 	for(var/datum/roundend_ship_entry/entry as anything in entries)
 		var/status_text = entry.bad_status ? span_redtext(entry.status) : (entry.status == "Afloat" ? span_greentext(entry.status) : "<span class='gone'>[entry.status]</span>")
 		var/crew_text = entry.dead ? "[entry.crew] ([entry.dead] dead)" : "[entry.crew]"
