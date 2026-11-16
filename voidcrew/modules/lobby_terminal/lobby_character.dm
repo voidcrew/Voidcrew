@@ -49,7 +49,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			GLOB.lobby_char_job_pool += job
 	return GLOB.lobby_char_job_pool
 
-/// The small per-round catalog the terminal adds to preferences.json: role examples and kit colour slot counts.
+/// The small per-round catalog the terminal adds to preferences.json: each role's berth titles and kit colour slot counts.
 /proc/lobby_char_static()
 	if(length(GLOB.lobby_char_static))
 		return GLOB.lobby_char_static
@@ -60,13 +60,16 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			if(job.job_category != category || !job.title)
 				continue
 			slots_by_title[job.title] += 1
+		// A role with no berth on any starting ship (Silicon today) is left out: its level would do nothing.
+		if(!length(slots_by_title))
+			continue
 		sortTim(slots_by_title, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
-		var/list/examples = list()
+		var/list/titles = list()
 		for(var/title in slots_by_title)
-			examples += title
-			if(length(examples) >= 3)
+			titles += title
+			if(length(titles) >= 6)
 				break
-		roles += list(list(category, jointext(examples, ", ")))
+		roles += list(list(category, titles))
 	var/list/kit_colors = list()
 	for(var/path in GLOB.all_loadout_datums)
 		var/datum/loadout_item/item = GLOB.all_loadout_datums[path]
@@ -78,6 +81,9 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 
 /// Number of GAGS colour slots a recolourable loadout item has, or 0.
 /proc/lobby_char_kit_color_count(datum/loadout_item/item)
+	// The lipstick has one colour, kept in INFO_GREYSCALE by tg's own loadout action.
+	if(istype(item, /datum/loadout_item/pocket_items/lipstick))
+		return 1
 	if(!istype(item) || !item.can_be_greyscale)
 		return 0
 	var/obj/item/item_path = item.item_path
@@ -157,6 +163,10 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			return char_set_kit_name(user, prefs, params["path"], params["name"])
 		if("char_kit_skin")
 			return char_set_kit_skin(user, prefs, params["path"], params["skin"])
+		if("char_kit_layer")
+			return char_set_kit_layer(user, prefs, params["path"])
+		if("char_kit_lip")
+			return char_set_kit_lip(user, prefs, params["path"], params["style"])
 		if("char_dress")
 			return char_set_dress(user, prefs, params["category"])
 		if("char_turn")
@@ -328,6 +338,8 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 				prefs.ship_category_preferences[other] = JP_MEDIUM
 	if(!prefs.set_ship_category_preference(category, new_level))
 		return FALSE
+	// The preview goes back to wearing the top role's uniform.
+	char_dress = null
 	char_edited(user, prefs)
 	return TRUE
 
@@ -455,6 +467,9 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	else
 		// Same limits as tg's popup (tgui_input_text, MAX_NAME_LEN), stored HTML-encoded as it does.
 		if(length_char(name) > MAX_NAME_LEN || !reject_bad_text(name, MAX_NAME_LEN))
+			// Snap the page's field back to the stored name.
+			char_push(user)
+			set_notice("That name won't do.", "warn")
 			return FALSE
 		details[INFO_NAMED] = html_encode(name)
 	if(!prefs.lobby_update_preference(GLOB.preference_entries[/datum/preference/loadout], loadout))
@@ -475,6 +490,41 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	var/list/loadout = prefs.read_preference(/datum/preference/loadout)
 	var/list/details = loadout?[item.item_path]
 	if(!islist(details) || details[INFO_RESKIN] != skin)
+		return FALSE
+	char_edited(user, prefs)
+	return TRUE
+
+/// An accessory over or under the suit: tg's own set_layer action, which flips INFO_LAYER.
+/datum/lobby_terminal/proc/char_set_kit_layer(mob/user, datum/preferences/prefs, path)
+	var/datum/loadout_item/accessory/item = char_kit_item(path)
+	if(!istype(item) || !item.can_be_layer_adjusted)
+		return FALSE
+	var/datum/preference_middleware/loadout/manager = locate() in prefs.middleware
+	if(!manager || !char_kit_has(prefs, item))
+		return FALSE
+	prefs.lobby_char_writes = 1
+	var/done = item.handle_loadout_action(manager, user, "set_layer", list())
+	prefs.lobby_char_writes = 0
+	if(!done)
+		return FALSE
+	char_edited(user, prefs)
+	return TRUE
+
+/// Where the lipstick sits. tg asks with a popup; the terminal sends the style and writes it here.
+/datum/lobby_terminal/proc/char_set_kit_lip(mob/user, datum/preferences/prefs, path, style)
+	var/datum/loadout_item/item = char_kit_item(path)
+	if(!istype(item, /datum/loadout_item/pocket_items/lipstick))
+		return FALSE
+	if(!(style in list(UPPER_LIP, MIDDLE_LIP, LOWER_LIP)))
+		return FALSE
+	var/list/loadout = char_kit_copy(prefs, item)
+	if(!loadout)
+		return FALSE
+	var/list/details = loadout[item.item_path]
+	if(details[INFO_LAYER] == style)
+		return FALSE
+	details[INFO_LAYER] = style
+	if(!prefs.lobby_update_preference(GLOB.preference_entries[/datum/preference/loadout], loadout))
 		return FALSE
 	char_edited(user, prefs)
 	return TRUE
@@ -531,11 +581,15 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			var/obj/item/kit_item = item_path
 			if(initial(kit_item.greyscale_colors))
 				entry["greyscale"] = initial(kit_item.greyscale_colors)
+			else if(item_path == /obj/item/lipstick)
+				entry["greyscale"] = /obj/item/lipstick::lipstick_color
 		if(islist(details))
 			if(details[INFO_NAMED])
 				entry["name"] = details[INFO_NAMED]
 			if(details[INFO_RESKIN])
 				entry["reskin"] = details[INFO_RESKIN]
+			if(!isnull(details[INFO_LAYER]))
+				entry["layer"] = details[INFO_LAYER]
 		kit["[item_path]"] = entry
 	var/list/confirm
 	if(char_confirm_state)
