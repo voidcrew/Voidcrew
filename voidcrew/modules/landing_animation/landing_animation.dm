@@ -43,8 +43,8 @@
 /// How far the shadow slides after it, in tiles
 #define LAUNCH_SHADOW_SLIDE_TILES 10
 /// Thruster wash: most puffs per wave (three waves), the chance an engine-end tile throws one, how far they blow
-#define LAUNCH_WASH_PER_WAVE 6
-#define LAUNCH_WASH_CHANCE 60
+#define LAUNCH_WASH_PER_WAVE 9
+#define LAUNCH_WASH_CHANCE 100
 #define LAUNCH_WASH_PUSH 1.8
 /// Width of the shadow at its widest, relative to the hull
 #define LANDING_SHADOW_WIDE 1.35
@@ -68,6 +68,8 @@
 /// Chance an edge tile kicks up a puff of dust, and the most puffs one landing makes
 #define LANDING_DUST_CHANCE 20
 #define LANDING_DUST_MAX 12
+/// How hard the screen shakes for those who feel a landing or a takeoff (tiles)
+#define LANDING_SHAKE 0.4
 /// How far from the hull people on the ground feel and hear it land or leave
 #define LANDING_HEAR_RANGE 12
 
@@ -119,7 +121,7 @@
 		descent?.freeze()
 		landing_touchdown(pairs[2])
 		// the crew aboard feel it too, though they are still in transit for the moment
-		landing_jolt(pairs[1], 'sound/effects/meteorimpact.ogg', 60, shake_strength = 0.2)
+		landing_jolt(pairs[1], 'sound/effects/meteorimpact.ogg', 60, shake_strength = LANDING_SHAKE)
 	else if(ship.state == OVERMAP_SHIP_UNDOCKING && old_dock && !istype(old_dock, /obj/docking_port/stationary/transit) && istype(new_dock, /obj/docking_port/stationary/transit) && landing_animation_wanted(ship.undock_origin?.resolve()))
 		launch = new(landing_hull_pairs(src, new_dock)[1], src)
 	. = ..()
@@ -134,7 +136,7 @@
 /// Hull on the ground: dust off the edges, and a jolt for everyone aboard and nearby.
 /proc/landing_touchdown(list/hull_turfs)
 	landing_dust(hull_turfs)
-	landing_jolt(hull_turfs, 'sound/effects/meteorimpact.ogg', 60, reach = LANDING_HEAR_RANGE, shake_strength = 0.2)
+	landing_jolt(hull_turfs, 'sound/effects/meteorimpact.ogg', 60, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 
 /**
  * Shakes the camera of, and plays [sound_file] to, every player on [hull_turfs] and, with [reach], everyone within
@@ -156,12 +158,14 @@
 		max_y = max(max_y, hull_turf.y)
 	var/turf/first = hull_turfs[1]
 	var/turf/middle = locate(round((min_x + max_x) / 2), round((min_y + max_y) / 2), first.z)
+	// a packed level holds other sites a few tiles away; they neither hear nor feel it
+	var/datum/own_region = map_region_for_turf(first)
 	// ghosts too, as with explosions (SSmobs.clients_by_zlevel only holds living mobs)
 	for(var/mob/listener as anything in GLOB.player_list)
 		var/turf/where = get_turf(listener)
 		if(!where || where.z != first.z)
 			continue
-		if(!hull_set[where] && (!reach || where.x < min_x - reach || where.x > max_x + reach || where.y < min_y - reach || where.y > max_y + reach))
+		if(!hull_set[where] && (!reach || map_region_excludes_turf(own_region, where) || where.x < min_x - reach || where.x > max_x + reach || where.y < min_y - reach || where.y > max_y + reach))
 			continue
 		if(shake_strength)
 			shake_camera(listener, shake_time, shake_strength)
@@ -404,10 +408,12 @@
 	. = ..()
 	SET_PLANE_IMPLICIT(src, ABOVE_LIGHTING_PLANE)
 	var/drift = round(rand(14, 28) * push)
+	if(push > 1) // thruster wash: as much air as dust, paler so it shows on sand too
+		color = "#e4ded2"
 	var/drift_w = (push_dir & EAST) ? drift : ((push_dir & WEST) ? -drift : rand(-6, 6))
 	var/drift_z = (push_dir & NORTH) ? drift : ((push_dir & SOUTH) ? -drift : rand(-6, 6))
 	transform = matrix().Scale(0.45)
-	animate(src, alpha = rand(80, 120), transform = matrix().Scale(0.7), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
+	animate(src, alpha = push > 1 ? rand(110, 150) : rand(80, 120), transform = matrix().Scale(0.7), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
 	animate(alpha = 0, transform = matrix().Scale(1.1), pixel_w = pixel_w + drift_w, pixel_z = pixel_z + drift_z, time = duration - 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
 
 /**
@@ -603,16 +609,19 @@
 	// 3. off toward the bow, still climbing, shrinking as it goes; solid until it is gone from view
 	animate(transform = leaving, pixel_w = bow_x * fly, pixel_z = LAUNCH_GO_HEIGHT + bow_y * fly, time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
 	landing_wash(berth_turfs, bow_dir)
-	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = 0.2)
-	landing_jolt(hull_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 50, shake_strength = 0.2)
+	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
+	landing_jolt(hull_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 50, shake_strength = LANDING_SHAKE)
 	shadow = new(berth_turfs[1])
 	if(shadow.outline(berth_turfs))
 		var/slide = LAUNCH_SHADOW_SLIDE_TILES * ICON_SIZE_X
 		shadow.alpha = LANDING_SHADOW_DARK
 		// stays on the berth while the ship hangs over it, then slides after it and pales
 		animate(shadow, time = LAUNCH_LIFT_TIME)
-		animate(pixel_w = bow_x * LAUNCH_TILT_CREEP, pixel_z = bow_y * LAUNCH_TILT_CREEP, alpha = LANDING_SHADOW_DARK * 0.85, time = LAUNCH_TILT_TIME, easing = SINE_EASING)
-		animate(pixel_w = bow_x * slide, pixel_z = bow_y * slide, alpha = 0, time = LAUNCH_GO_TIME * 0.8, easing = QUAD_EASING | EASE_IN)
+		animate(pixel_w = bow_x * LAUNCH_TILT_CREEP, pixel_z = bow_y * LAUNCH_TILT_CREEP, time = LAUNCH_TILT_TIME, easing = SINE_EASING)
+		animate(pixel_w = bow_x * slide, pixel_z = bow_y * slide, time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
+		// pales on its own curve, from the moment the nose comes up, so it is gone before the ship is
+		animate(shadow, time = LAUNCH_LIFT_TIME, flags = ANIMATION_PARALLEL)
+		animate(alpha = 0, time = LAUNCH_TILT_TIME + LAUNCH_GO_TIME * 0.6, easing = SINE_EASING)
 	else
 		QDEL_NULL(shadow)
 	// a hard reference: QDEL_IN keeps only a weakref past a second, and nothing else holds this datum, so it
@@ -726,4 +735,5 @@
 #undef LANDING_PICTURE_FADE
 #undef LANDING_DUST_CHANCE
 #undef LANDING_DUST_MAX
+#undef LANDING_SHAKE
 #undef LANDING_HEAR_RANGE
