@@ -136,6 +136,8 @@
 /obj/item/gun/energy/plasma_weapon/proc/load_cartridge(obj/item/plasma_cartridge/new_cartridge, mob/user)
 	if(QDELETED(new_cartridge) || new_cartridge == cartridge || !cell)
 		return FALSE
+	if(too_hot_to_reload(user))
+		return FALSE
 	if(new_cartridge.stored <= 0)
 		if(user)
 			balloon_alert(user, "it's spent")
@@ -144,6 +146,8 @@
 		if(!do_after(user, cartridge_load_delay, target = src))
 			return FALSE
 		if(QDELETED(new_cartridge) || new_cartridge.loc != user)
+			return FALSE
+		if(too_hot_to_reload(user))
 			return FALSE
 	var/swapped = !!cartridge
 	// The new cartridge goes in first so the hand it was in is free to take the old one
@@ -160,6 +164,14 @@
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE), PLASMA_SWAP_SOUND_GAP)
 	else
 		playsound(src, 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg', 50, TRUE)
+	return TRUE
+
+/// TRUE, with a balloon to `user`, while an overheat has the coils locked: the cartridge seat is locked with them
+/obj/item/gun/energy/plasma_weapon/proc/too_hot_to_reload(mob/user)
+	if(!uses_heat || !is_shut_down())
+		return FALSE
+	if(user)
+		balloon_alert(user, "too hot!")
 	return TRUE
 
 /// Writes the chamber back into the seated cartridge and hands it to `user`. Returns the cartridge.
@@ -243,6 +255,6 @@
 	return ..()
 
 /obj/item/gun/energy/plasma_weapon/click_alt(mob/user)
-	if(!user.is_holding(src))
+	if(!user.is_holding(src) || !cartridge || too_hot_to_reload(user))
 		return CLICK_ACTION_BLOCKING
 	return unload_cartridge(user) ? CLICK_ACTION_SUCCESS : CLICK_ACTION_BLOCKING

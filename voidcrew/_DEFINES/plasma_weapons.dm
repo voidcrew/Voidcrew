@@ -25,8 +25,8 @@
 #define PLASMA_LOAD_DELAY_RIFLE (1.5 SECONDS)
 /// Mol a pistol bolt costs (casing e_cost)
 #define PLASMA_SHOT_MOL_PISTOL 4
-/// Mol a rifle bolt costs (casing e_cost)
-#define PLASMA_SHOT_MOL_RIFLE 5
+/// Mol a rifle bolt costs (casing e_cost): 20 shots a cartridge
+#define PLASMA_SHOT_MOL_RIFLE 3
 
 // ===== Bolt: ignition, fire and ash =====
 
@@ -51,9 +51,9 @@
 // ===== Heat and venting (Furnace and Old Furnace) =====
 
 /// Heat a Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT 20
+#define PLASMA_HEAT_PER_SHOT 25
 /// Heat an Old Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT_UNIQUE 14
+#define PLASMA_HEAT_PER_SHOT_UNIQUE 18
 /// A shot that brings the barrel to this heat or more overheats the gun
 #define PLASMA_HEAT_MAX 100
 /// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before an overheat, and the
@@ -107,11 +107,12 @@
 /// Vented gas never leaves hotter than this, so it can't light itself and the shooter
 #define PLASMA_VENT_TEMP_MAX (PLASMA_MINIMUM_BURN_TEMPERATURE - 10)
 
-// Cooling, with PLASMA_HEAT_PER_SHOT 20 and PLASMA_HEAT_MAX 100. Room air (101 kPa, 293 K) cools 11.5 a second,
-// vacuum 6. Furnace overheats on shot: room air 8th at 0.7 s between shots, 11th at 1 s, never in a 12-shot
-// cartridge at 1.2 s (88 after the 12th); vacuum 7th at 0.7 s, 7th at 1 s, 8th at 1.2 s.
-// Old Furnace (14 a shot): room air never in a cartridge (71 after the 12th at 0.7 s; the 16th shot flat out
-// overheats); vacuum 10th at 0.7 s, 12th at 1 s, never in a cartridge at 1.2 s (82 after the 12th).
+// Cooling, with PLASMA_HEAT_MAX 100. Room air (101 kPa, 293 K) cools 11.5 a second, vacuum 6. A cartridge is
+// 20 Furnace shots, so heat runs out well before plasma and a cartridge takes a few vents.
+// Furnace (25 a shot) overheats on shot: room air 6th at 0.7 s between shots (the fire delay), 7th at 1 s, 8th at
+// 1.2 s; vacuum 5th at 0.7 s, 5th at 1 s, 6th at 1.2 s. It only holds steady at about 2.2 s a shot in room air.
+// Old Furnace (18 a shot): room air 10th at 0.7 s, 14th at 1 s, never in a cartridge at 1.2 s (84 after the 20th);
+// vacuum 7th at 0.7 s, 8th at 1 s, 9th at 1.2 s.
 /// Heat lost per second, always
 #define PLASMA_COOL_BASE 6
 /// Heat lost per second to the turf air, times the pressure and temperature factors below

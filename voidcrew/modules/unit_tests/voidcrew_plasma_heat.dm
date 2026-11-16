@@ -22,7 +22,8 @@
 /proc/plasma_heat_test_unit_time(unit)
 	return (unit + 0.5) * PLASMA_VENT_SWEEP / PLASMA_VENT_UNITS
 
-/// Room air: a careful 1.2 s pace never overheats a cartridge; 1 s overheats on the 11th; flat out on the 8th.
+/// Room air: a Furnace fired flat out overheats on the 6th shot, every second on the 7th and every 1.2 s on the 8th,
+/// so a 20-shot cartridge takes a few vents. The Old Furnace lasts to the 10th flat out and a whole cartridge at 1.2 s.
 /datum/unit_test/voidcrew_plasma_heat_air
 
 /datum/unit_test/voidcrew_plasma_heat_air/Run()
@@ -32,18 +33,22 @@
 	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
 	var/rate = gun.heat_cool_rate()
 	TEST_ASSERT(rate > 11 && rate < 12, "Room air cools a Furnace [rate] a second, not about 11.5")
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(gun, 12, 0.7), 8, "A Furnace fired flat out in room air did not overheat on the 8th shot")
-	var/obj/item/gun/energy/plasma_weapon/rifle/steady = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(steady, 12, 1), 11, "A Furnace fired every second in room air did not overheat on the 11th shot")
-	var/obj/item/gun/energy/plasma_weapon/rifle/careful = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(careful, 12, 1.2), 0, "A Furnace fired every 1.2 s in room air overheated within a cartridge")
-	TEST_ASSERT(careful.heat_step >= 2, "A Furnace at heat [careful.barrel_heat] after a careful cartridge shows coil step [careful.heat_step]")
+	var/list/gaps = list(0.7, 1, 1.2)
+	var/list/expected = list(6, 7, 8)
+	for(var/i in 1 to length(gaps))
+		var/obj/item/gun/energy/plasma_weapon/rifle/furnace = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
+		var/shot = plasma_heat_test_burst(furnace, 20, gaps[i])
+		TEST_ASSERT_EQUAL(shot, expected[i], "A Furnace in room air every [gaps[i]] s overheated on shot [shot]")
+	var/list/old_expected = list(10, 14, 0)
+	for(var/i in 1 to length(gaps))
+		var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
+		var/shot = plasma_heat_test_burst(old, 20, gaps[i])
+		TEST_ASSERT_EQUAL(shot, old_expected[i], "The Old Furnace in room air every [gaps[i]] s overheated on shot [shot]")
+		if(!shot)
+			TEST_ASSERT(old.heat_step >= 3, "The Old Furnace at heat [old.barrel_heat] after a careful cartridge shows coil step [old.heat_step]")
 
-	var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
-	TEST_ASSERT_EQUAL(plasma_heat_test_burst(old, 12, 0.7), 0, "The Old Furnace fired flat out in room air overheated within a cartridge")
-	TEST_ASSERT(old.barrel_heat > 60 && old.barrel_heat < 80, "The Old Furnace fired flat out in room air ended a cartridge at heat [old.barrel_heat], not about 71")
-
-/// Vacuum only cools at the base rate: the 7th shot flat out or at 1 s, the 8th at 1.2 s.
+/// Vacuum only cools at the base rate: the Furnace overheats on the 5th shot flat out or at 1 s, the 6th at 1.2 s;
+/// the Old Furnace on the 7th, 8th and 9th.
 /datum/unit_test/voidcrew_plasma_heat_vacuum
 	var/turf/open/spot
 	var/datum/gas_mixture/saved_air
@@ -55,15 +60,15 @@
 	air.remove_ratio(1)
 	TEST_ASSERT(air.return_pressure() < 1, "Emptying the test floor's air left [air.return_pressure()] kPa")
 	var/list/gaps = list(0.7, 1, 1.2)
-	var/list/expected = list(7, 7, 8)
+	var/list/expected = list(5, 5, 6)
 	for(var/i in 1 to length(gaps))
 		var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-		var/shot = plasma_heat_test_burst(gun, 12, gaps[i])
+		var/shot = plasma_heat_test_burst(gun, 20, gaps[i])
 		TEST_ASSERT_EQUAL(shot, expected[i], "A Furnace in vacuum every [gaps[i]] s overheated on shot [shot]")
-	var/list/old_expected = list(10, 12, 0)
+	var/list/old_expected = list(7, 8, 9)
 	for(var/i in 1 to length(gaps))
 		var/obj/item/gun/energy/plasma_weapon/rifle/old_furnace/old = allocate(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace, spot)
-		var/shot = plasma_heat_test_burst(old, 12, gaps[i])
+		var/shot = plasma_heat_test_burst(old, 20, gaps[i])
 		TEST_ASSERT_EQUAL(shot, old_expected[i], "The Old Furnace in vacuum every [gaps[i]] s overheated on shot [shot]")
 
 	// The pistol has no heat at all.
@@ -77,7 +82,7 @@
 		spot.return_air().copy_from(saved_air)
 	return ..()
 
-/// The Old Furnace: 14 heat a shot, an 8 s gold window and a 6 s lockout, as its own vars; the Furnace keeps 20, 4 s and 10 s.
+/// The Old Furnace: 18 heat a shot, an 8 s gold window and a 6 s lockout, as its own vars; the Furnace keeps 25, 4 s and 10 s.
 /datum/unit_test/voidcrew_plasma_heat_old_furnace
 	var/turf/open/spot
 	var/datum/gas_mixture/saved_air
@@ -89,7 +94,7 @@
 	air.remove_ratio(1) // vacuum, so nothing vented can burn
 	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
 	var/obj/item/gun/energy/plasma_weapon/rifle/furnace = allocate(/obj/item/gun/energy/plasma_weapon/rifle, spot)
-	TEST_ASSERT_EQUAL(furnace.heat_per_shot, 20, "The Furnace's heat a shot changed")
+	TEST_ASSERT_EQUAL(furnace.heat_per_shot, 25, "The Furnace's heat a shot changed")
 	TEST_ASSERT_EQUAL(furnace.gold_window, 4 SECONDS, "The Furnace's gold window changed")
 	TEST_ASSERT_EQUAL(furnace.overheat_shutdown, 10 SECONDS, "The Furnace's lockout changed")
 
@@ -98,10 +103,10 @@
 	TEST_ASSERT_EQUAL(gun.spread, 0, "The Old Furnace doesn't shoot straight")
 	TEST_ASSERT_EQUAL(/obj/projectile/energy/plasma_bolt/heavy::damage, 30, "The Old Furnace's bolt damage changed")
 
-	// A shot adds 14
+	// A shot adds 18
 	gun.heat_updated_at = world.time
 	gun.add_heat(gun.heat_per_shot)
-	TEST_ASSERT_EQUAL(gun.barrel_heat, 14, "An Old Furnace shot added [gun.barrel_heat] heat, not 14")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 18, "An Old Furnace shot added [gun.barrel_heat] heat, not 18")
 
 	// A gold vent halves shot heat for 8 s
 	gun.barrel_heat = 90
@@ -112,7 +117,7 @@
 	gun.vent_key(user)
 	TEST_ASSERT_EQUAL(gun.gold_until, world.time + 8 SECONDS, "The Old Furnace's gold window isn't 8 s")
 	gun.add_heat(gun.heat_per_shot)
-	TEST_ASSERT_EQUAL(gun.barrel_heat, 7, "A shot in the Old Furnace's gold window added [gun.barrel_heat], not 7")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 9, "A shot in the Old Furnace's gold window added [gun.barrel_heat], not 9")
 
 	// An overheat locks it for 6 s, and it comes back at 6 s
 	gun.barrel_heat = PLASMA_HEAT_MAX - 1
@@ -540,3 +545,39 @@
 	if(spot && saved_air)
 		spot.return_air().copy_from(saved_air)
 	return ..()
+
+/// A Furnace locked from an overheat won't take a new cartridge or give up its own, by hand or not. A gold tap on the
+/// overheat bar ends the lockout, and the cartridges change at once.
+/datum/unit_test/voidcrew_plasma_heat_reload_lockout
+
+/datum/unit_test/voidcrew_plasma_heat_reload_lockout/Run()
+	var/turf/open/spot = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	var/obj/item/plasma_cartridge/fresh = allocate(/obj/item/plasma_cartridge)
+	user.put_in_active_hand(gun, forced = TRUE)
+	user.put_in_inactive_hand(fresh)
+	TEST_ASSERT(user.is_holding(fresh), "Test fixture: the user isn't holding the spare cartridge")
+	gun.cartridge_load_delay = 0
+	var/obj/item/plasma_cartridge/seated = gun.cartridge
+
+	gun.barrel_heat = PLASMA_HEAT_MAX - 1
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT(gun.is_shut_down(), "Test fixture: the Furnace didn't overheat")
+	TEST_ASSERT(!gun.load_cartridge(fresh, user), "A locked Furnace took a new cartridge")
+	TEST_ASSERT(!gun.load_cartridge(fresh, null), "A locked Furnace took a new cartridge with no one loading it")
+	TEST_ASSERT_EQUAL(gun.cartridge, seated, "A locked Furnace's cartridge changed")
+	TEST_ASSERT(user.is_holding(fresh), "A refused cartridge left the user's hand")
+	TEST_ASSERT_EQUAL(gun.click_alt(user), CLICK_ACTION_BLOCKING, "A locked Furnace let its cartridge out")
+	TEST_ASSERT_EQUAL(gun.cartridge, seated, "A locked Furnace's cartridge came out")
+
+	// Gold on the overheat bar: the lockout ends and the seat opens
+	TEST_ASSERT(gun.start_overheat_vent(user), "The overheat bar didn't come up")
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
+	gun.attack_self(user)
+	TEST_ASSERT(!gun.is_shut_down(), "A gold tap on the overheat bar left the lockout")
+	TEST_ASSERT_EQUAL(gun.click_alt(user), CLICK_ACTION_SUCCESS, "A Furnace after a gold tap wouldn't let its cartridge out")
+	TEST_ASSERT_NULL(gun.cartridge, "The cartridge stayed seated after unloading")
+	TEST_ASSERT(gun.load_cartridge(fresh, user), "A Furnace after a gold tap wouldn't take a new cartridge")
+	TEST_ASSERT_EQUAL(gun.cartridge, fresh, "The new cartridge isn't seated")

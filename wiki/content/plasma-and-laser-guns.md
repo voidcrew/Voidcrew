@@ -14,7 +14,7 @@ Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are or
 | Kestrel laser pistol | Light laser pistol, fits a belt | Recharger | 20 |
 | Hornet laser SMG | Fully automatic laser, worn on the back | Recharger | 40 |
 | Cinder plasma pistol | Plasma sidearm, fits a belt | Plasma cartridge | 15 a cartridge |
-| Furnace plasma rifle | Heavy plasma rifle, worn on the back, needs both hands | Plasma cartridge | 12 a cartridge |
+| Furnace plasma rifle | Heavy plasma rifle, worn on the back, needs both hands | Plasma cartridge | 20 a cartridge |
 
 The Kestrel hits lighter than a standard laser gun. The Hornet sprays light laser beams for as long as you hold the trigger: each one hits for less than half of a standard laser, and they scatter wide.
 
@@ -94,8 +94,9 @@ Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle
 
 The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next shot or two will overheat it. They cool by themselves between shots: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
 
-- Fire a full cartridge at a steady, unhurried pace in ship air and the Furnace never overheats. Fire as fast as it goes, or in vacuum, and it will.
+- A Furnace runs hot long before its cartridge runs dry. Fired as fast as it goes it overheats a few times a cartridge, so vent it as you fight. Slower shots, cold air and a clean vent all keep it going longer; in vacuum it heats up fastest.
 - An overheated rifle **locks up**: its coils stay white-hot and it won't fire for ten seconds, or six on the Old Furnace. It clicks when it's ready again.
+- A locked rifle's cartridge is stuck in place: you can't take it out or swap in a new one until the lock ends.
 - When it locks up in your hands, the vent bar comes up at once. Hit the gold and the lock ends there and then, with the coils cold. Hit the amber and it vents most of its heat and is ready again in about two seconds. Miss, or hit the dark ends, and you wait out the whole lock; the dark ends also spit plasma onto your tile.
 
 **Venting:** use a glowing Furnace in your hand. A bar appears above your head and a marker sweeps across it. Fire as the marker passes the middle, or use the rifle in your hand again. That trigger pull vents the rifle instead of shooting. You can also bind a key to Vent held gun in your keybindings.

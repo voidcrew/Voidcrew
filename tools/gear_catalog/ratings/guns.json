@@ -1767,7 +1767,7 @@
    "hash": "",
    "name": "Furnace plasma rifle",
    "rank": 5,
-   "reason": "Plasma rifle, 30 burn a bolt that pierces some armour. Overheats when fired flat out and has to be vented or locks up. Loads single-use plasma cartridges.",
+   "reason": "Plasma rifle, 30 burn a bolt that pierces some armour, 20 bolts a cartridge. Fired flat out it overheats around every sixth shot, so a cartridge takes two or three vents or it locks up, and a locked rifle can't change cartridges. Loads single-use plasma cartridges.",
    "score": 113,
    "score_inputs": {
     "cell_fed": {
@@ -1807,7 +1807,7 @@
    "hash": "",
    "name": "Old Furnace",
    "rank": 3,
-   "reason": "A Furnace that runs much cooler, recovers from an overheat faster, keeps a clean vent's cooling longer and shoots straighter.",
+   "reason": "A Furnace that runs much cooler (about ten shots flat out before an overheat, against six), recovers from an overheat faster, keeps a clean vent's cooling longer and shoots straighter.",
    "score": 123,
    "score_inputs": {
     "cell_fed": {
