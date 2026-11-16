@@ -34,6 +34,7 @@ import {
   Swatch,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 
@@ -239,6 +240,8 @@ export function ListPicker(props: PickerProps) {
         onPage={(p) => setPage(p - 1)}
         right
       />
+      {/* A page turn wipes the rows only. */}
+      <WipeAt x={x} y={5.25} w={w} h={M - 2.5 - 5.25} k={pg} />
     </>
   );
 }

@@ -26,10 +26,20 @@ import {
   WORK_X,
 } from './CharFrame';
 import { KitEditor } from './KitEditor';
+import { useScreen } from './motion';
 import { useBack } from './nav';
 import { RolesEditor } from './RolesEditor';
 import { TraitsEditor } from './TraitsEditor';
-import { BODY_Y, bodyRows, Key, NameLine, Slab, safe, useGrid } from './term';
+import {
+  BODY_Y,
+  bodyRows,
+  Key,
+  NameLine,
+  Slab,
+  safe,
+  useGrid,
+  WipeAt,
+} from './term';
 import type { CharDir, LobbyData } from './types';
 import { usePrefsCatalogState } from './usePrefsCatalog';
 
@@ -166,6 +176,10 @@ export function CharacterTab(props: {
   // Escape: up one level; at the file view, back to the tab before.
   useBack(sub ? closeSub : section ? toFile : onLeave || null);
 
+  // An editor opens with the wipe and closes with it run back. Opened by the shell before the
+  // round, CHARACTER comes up without either.
+  useScreen(`character/${section || 'file'}`, section ? 1 : 0, '', 0, !!auto);
+
   const nav: CharNav = {
     dir,
     turn: (by) => setDir((d) => nextDir(d, by)),
@@ -241,6 +255,19 @@ export function CharacterTab(props: {
       {!!section && <Crumbs crumbs={crumbs} onBack={sub ? closeSub : toFile} />}
       {screen}
       {!!sub && sub.node}
+      {/* A picker or a colour panel wipes its own column only (TRAITS: the list column). */}
+      {!!section && (
+        <WipeAt
+          key={section}
+          kind="screen"
+          x={section === 'traits' ? 1 : WORK_X}
+          y={BODY_Y}
+          w={section === 'traits' ? 31 : WORK_W}
+          h={M - 1.25 - BODY_Y}
+          k={sub ? sub.crumb : ''}
+          n={sub ? 1 : 0}
+        />
+      )}
       <SpeciesConfirm />
     </CharContext.Provider>
   );

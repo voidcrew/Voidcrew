@@ -25,12 +25,14 @@ import {
 } from './CharFrame';
 import { ColourPanel, ListPicker } from './CharPickers';
 import { parseHex } from './ColorEntry';
+import { sfx, useChanged } from './motion';
 import {
   Big,
   BODY_Y,
   bodyRows,
   cut,
   Field,
+  FlashAt,
   HRule,
   Key,
   Pager,
@@ -39,6 +41,7 @@ import {
   Swatch,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import {
@@ -433,6 +436,13 @@ export function SpeciesPick() {
         onPage={(p) => setPage(p - 1)}
         right
       />
+      <WipeAt
+        x={WORK_X}
+        y={5.25}
+        w={WORK_W}
+        h={slice.length * pitch}
+        k={pg}
+      />
       {!list.length && (
         <Put x={WORK_X} y={5.375} cls="dim">
           {'NO MATCH'}
@@ -518,15 +528,16 @@ function ValueText(props: {
   cls?: string;
 }) {
   const { x, w, h, ty, by, text, cls = '' } = props;
+  // The value flashes when it changes, whoever changed it (this page or tg's own window).
   if (h >= 2.25 && text.length <= 15 && text.length * 1.25 <= w) {
     return (
-      <Big x={x} y={by} scale={1.25} cls={cls}>
+      <Big x={x} y={by} scale={1.25} cls={cls} pulse={text}>
         {text}
       </Big>
     );
   }
   return (
-    <Put x={x} y={ty} cls={cls}>
+    <Put x={x} y={ty} cls={cls} pulse={text}>
       {cut(text, w)}
     </Put>
   );
@@ -599,6 +610,14 @@ function NameRow(props: { auto?: number }) {
   useEffect(() => {
     setText(real);
   }, [slot]);
+  // The name was accepted (typed here, RANDOM, or tg's window): the field's band flashes once.
+  const [accepted, setAccepted] = useState(0);
+  useChanged(`${slot}|${real}`, (was) => {
+    if (was.split('|')[0] === String(slot)) {
+      setAccepted((n) => n + 1);
+      sfx('ok', { own: true });
+    }
+  });
   const commit = () => {
     const next = text.trim();
     if (next && next !== real) {
@@ -641,6 +660,7 @@ function NameRow(props: { auto?: number }) {
           onEnter={commit}
         />
       </div>
+      <FlashAt x={25} y={y + 1.5} w={36} h={1.5} k={accepted} />
     </>
   );
 }
@@ -669,6 +689,8 @@ export function BodyEditor(props: {
   }, [playWait]);
 
   const set = (key: string, value: unknown) => act('char_set', { key, value });
+  // The species changed, with or without the dialog.
+  useChanged(String(prefs.species ?? ''), () => sfx('ok', { own: true }));
 
   // ---- ID column: the two group slabs
   let gh = 1.25;
@@ -821,7 +843,7 @@ export function BodyEditor(props: {
             onStep={step}
             value={(ty) => (
               <>
-                <Put x={36} y={ty}>
+                <Put x={36} y={ty} pulse={String(value)}>
                   {cut(safe(voiceShort(nameOf(cat, k, value))), 10)}
                 </Put>
                 <Key
@@ -859,7 +881,7 @@ export function BodyEditor(props: {
             value={(ty) => (
               <>
                 <Swatch x={36} y={ty} w={2} hex={hex} />
-                <Put x={39} y={ty}>
+                <Put x={39} y={ty} pulse={String(value)}>
                   {cut(safe(nameOf(cat, k, value)), 16)}
                 </Put>
               </>
@@ -877,7 +899,7 @@ export function BodyEditor(props: {
             value={(ty) => (
               <>
                 <Swatch x={36} y={ty} w={4} hex={hex} />
-                <Put x={41} y={ty} cls="dim">
+                <Put x={41} y={ty} cls="dim" pulse={hex}>
                   {hex.toUpperCase()}
                 </Put>
               </>
@@ -931,6 +953,15 @@ export function BodyEditor(props: {
         pages={pages}
         onPage={(p) => setPage(p - 1)}
         right
+      />
+      {/* The other group, or another page of rows, turns the page of the rows only. */}
+      <WipeAt
+        x={WORK_X}
+        y={y0}
+        w={WORK_W}
+        h={M - 1.25 - y0 - (pages > 1 ? 1.25 : 0)}
+        k={`${group}:${pg}`}
+        n={(group === 'looks' ? 1000 : 0) + pg}
       />
     </>
   );

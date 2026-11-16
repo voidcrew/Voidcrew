@@ -31,6 +31,7 @@ import {
   Slab,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { CharData, CharStatic, LobbyData } from './types';
@@ -224,6 +225,15 @@ export function CharFile(props: {
         onPage={(p) => setPage(p - 1)}
         right
       />,
+      // A page of files turning wipes the list only.
+      <WipeAt
+        key="turn"
+        x={ID_X}
+        y={listTop + 1.25}
+        w={ID_W}
+        h={M - 2.5 - (listTop + 1.25)}
+        k={pg}
+      />,
     );
   }
 
@@ -296,7 +306,7 @@ export function CharFile(props: {
           {title}
         </Big>
         {!!t.right && (
-          <RPut x={61} y={y + p + 0.125} cls="dim">
+          <RPut x={61} y={y + p + 0.125} cls="dim" pulse={t.right}>
             {t.right}
           </RPut>
         )}
@@ -338,6 +348,14 @@ export function CharFile(props: {
           {blocks}
         </>
       )}
+      {/* Another file opening turns the page of the work column. */}
+      <WipeAt
+        x={WORK_X}
+        y={BODY_Y}
+        w={WORK_W}
+        h={M - 1.25 - BODY_Y}
+        k={char.slot}
+      />
     </>
   );
 }

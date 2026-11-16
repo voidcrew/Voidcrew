@@ -23,7 +23,18 @@ import {
   WORK_W,
   WORK_X,
 } from './CharFrame';
-import { BODY_Y, bodyRows, cut, Key, Put, Slab, safe, useGrid } from './term';
+import { sfxInstead } from './motion';
+import {
+  BODY_Y,
+  bodyRows,
+  cut,
+  FlashAt,
+  Key,
+  Put,
+  Slab,
+  safe,
+  useGrid,
+} from './term';
 import type { LobbyData, RoleLevel } from './types';
 
 type Levels = Record<string, RoleLevel>;
@@ -114,6 +125,10 @@ export function RolesEditor() {
     } else {
       delete next[category];
     }
+    if (level === 3) {
+      // The one role set HIGH: the accepted sound, in place of the key press.
+      sfxInstead('ok');
+    }
     setLocal(next);
     act('char_role', { category, level });
   };
@@ -193,6 +208,8 @@ export function RolesEditor() {
                 onFocus={(on) => on && setFocusRow(i)}
               />
             ))}
+            {/* The row flashes when its level changes, also when another HIGH takes its place. */}
+            <FlashAt x={WORK_X} y={y} w={WORK_W} h={h} k={level} />
           </Slab>
         );
       })}

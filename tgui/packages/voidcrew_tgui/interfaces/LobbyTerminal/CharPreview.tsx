@@ -6,11 +6,16 @@
  * Keeps a page cache of char_preview pushes (look key -> dir -> png, last LOOKS looks) and
  * sends char_turn only for a facing it doesn't hold for the current look (char.look). While a
  * render is on its way the last picture stays; after PENDING_MS it dims and SCANNING shows.
+ *
+ * A turn squashes the picture sideways in two steps (60 ms), swaps the facing at its thinnest
+ * and opens it in two steps (60 ms); a facing not held yet waits thin until it lands. A new
+ * look (an edit, a uniform) is revealed by a wipe over the viewscreen, never a turn.
  */
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
+import { sfxInstead, Wipe } from './motion';
 import { useFocusable } from './nav';
 import { Put, useGrid } from './term';
 import type { CharDir, LobbyData } from './types';
@@ -27,6 +32,17 @@ const FACE_EVERY = 400;
 const PENDING_MS = 250;
 /** Rows past this only add floor below the picture: the body never jumps between screens. */
 const PIC_ROWS = 10.5;
+/** Each half of a turn: squashing, then opening (ms). */
+const TURN_HALF = 60;
+/** A turn waiting thin on a facing that never lands opens anyway after this long (ms). */
+const TURN_GIVE_UP = 3000;
+
+/** A turn under way: the picture it started from, and how far along it is. */
+type Turn = {
+  serial: number;
+  from: string | null;
+  phase: 'close' | 'hold' | 'open';
+};
 
 /** Facings in clockwise order: S, W, N, E. */
 export const TURN: CharDir[] = [2, 8, 1, 4];
@@ -151,10 +167,88 @@ export function Viewscreen(props: {
     };
   }, [look, dir, !!png]);
 
+  // Turning: the notch sound in place of the key press, a little lower going back.
+  const turnBy = (by: 1 | -1) => {
+    sfxInstead('turn', { rate: by < 0 ? 0.9 : 1 });
+    onTurn(by);
+  };
   const focus = useFocusable<HTMLDivElement>(true, {
-    activate: () => onTurn(1),
+    activate: () => turnBy(1),
     auto: props.auto,
   });
+
+  // The turn. It starts from the picture drawn last, whatever facing is asked for now.
+  const drawn = useRef<string | null>(null);
+  const lastDir = useRef(dir);
+  const [turnState, setTurn] = useState<Turn | null>(null);
+  let turn = turnState;
+  if (lastDir.current !== dir) {
+    lastDir.current = dir;
+    turn = {
+      serial: (turnState?.serial || 0) + 1,
+      from: drawn.current,
+      phase: 'close',
+    };
+    setTurn(turn);
+  }
+  const held = useRef(false);
+  held.current = !!png;
+  const turnSerial = turn?.serial;
+  const turnPhase = turn?.phase;
+  useEffect(() => {
+    if (!turnSerial || !turnPhase) {
+      return;
+    }
+    const mine = (cur: Turn | null) => !!cur && cur.serial === turnSerial;
+    let id: number;
+    if (turnPhase === 'close') {
+      // At its thinnest the facing swaps; it opens at once when the new one is held.
+      id = window.setTimeout(
+        () =>
+          setTurn((cur) =>
+            mine(cur) && cur
+              ? { ...cur, phase: held.current ? 'open' : 'hold' }
+              : cur,
+          ),
+        TURN_HALF,
+      );
+    } else if (turnPhase === 'open') {
+      id = window.setTimeout(
+        () => setTurn((cur) => (mine(cur) ? null : cur)),
+        TURN_HALF,
+      );
+    } else {
+      id = window.setTimeout(
+        () => setTurn((cur) => (mine(cur) && cur ? { ...cur, phase: 'open' } : cur)),
+        TURN_GIVE_UP,
+      );
+    }
+    return () => window.clearTimeout(id);
+  }, [turnSerial, turnPhase]);
+  // The facing it waited for has landed.
+  useEffect(() => {
+    if (turnPhase === 'hold' && png) {
+      setTurn((cur) => (cur && cur.phase === 'hold' ? { ...cur, phase: 'open' } : cur));
+    }
+  }, [turnPhase, !!png]);
+  const pic = turn && turn.phase === 'close' ? turn.from : shown;
+  drawn.current = pic;
+  const turnCls =
+    turn?.phase === 'close'
+      ? 'lt-turn-a'
+      : turn?.phase === 'hold'
+        ? 'lt-turn-hold'
+        : turn?.phase === 'open'
+          ? 'lt-turn-b'
+          : undefined;
+
+  // A new look landing (not a turn): its picture is revealed by a wipe over the viewscreen.
+  const landedLook = useRef(png ? look : '');
+  const landed = useRef(0);
+  if (png && look !== landedLook.current) {
+    landed.current += 1;
+    landedLook.current = look;
+  }
 
   const sx = Math.round(x * cw);
   const sy = Math.round(y * ch);
@@ -191,13 +285,14 @@ export function Viewscreen(props: {
         onMouseEnter={focus.onMouseEnter}
         onClick={(e) => {
           e.stopPropagation();
-          onTurn(1);
+          turnBy(1);
         }}
       >
         <div style={floor} />
-        {!!shown && (
+        {!!pic && (
           <img
-            src={`data:image/png;base64,${shown}`}
+            className={turnCls}
+            src={`data:image/png;base64,${pic}`}
             onLoad={(e) =>
               setSize([
                 e.currentTarget.naturalWidth,
@@ -217,6 +312,12 @@ export function Viewscreen(props: {
             }}
           />
         )}
+        <Wipe
+          k={landed.current}
+          quiet
+          z={2}
+          style={{ left: 0, top: 0, width: sw, height: sh }}
+        />
         <div className="lt-vscan" />
       </div>
       {pending ? (
@@ -232,7 +333,7 @@ export function Viewscreen(props: {
             cls="dim lt-vmark"
             hoverCls="inv lt-vmark"
             mouseOnly
-            onClick={() => onTurn(-1)}
+            onClick={() => turnBy(-1)}
           >
             {'«'}
           </Put>
@@ -242,7 +343,7 @@ export function Viewscreen(props: {
             cls="dim lt-vmark"
             hoverCls="inv lt-vmark"
             mouseOnly
-            onClick={() => onTurn(1)}
+            onClick={() => turnBy(1)}
           >
             {'»'}
           </Put>

@@ -31,7 +31,9 @@ import {
 } from './CharFrame';
 import { ColourPanel, ListPicker } from './CharPickers';
 import { ItemPic } from './ItemPic';
+import { sfxInstead } from './motion';
 import {
+  FlashAt,
   BODY_Y,
   bodyRows,
   cut,
@@ -46,6 +48,7 @@ import {
   safe,
   useGrid,
   wrapMax,
+  WipeAt,
 } from './term';
 import {
   type CharKitItem,
@@ -267,6 +270,8 @@ export function KitEditor() {
         delete next[same.shift() as string];
       }
       next[item.path] = {};
+      // Packed: the accepted sound, in place of the key press.
+      sfxInstead('ok');
     } else {
       delete next[item.path];
     }
@@ -333,7 +338,7 @@ export function KitEditor() {
             {cut(safe(label).toUpperCase(), 15)}
           </Put>
           {count > 0 && (
-            <RPut x={21} y={y + (gh - 1) / 2} cls="acc">
+            <RPut x={21} y={y + (gh - 1) / 2} cls="acc" pulse={count}>
               {String(count)}
             </RPut>
           )}
@@ -350,6 +355,15 @@ export function KitEditor() {
         pages={catPages}
         onPage={(p) => setCatPage(p - 1)}
         right
+      />,
+      // A page of categories turning wipes the list only.
+      <WipeAt
+        key="catturn"
+        x={ID_X}
+        y={catTop}
+        w={ID_W}
+        h={M - 2.5 - catTop}
+        k={cpg}
       />,
     );
   }
@@ -499,6 +513,15 @@ export function KitEditor() {
           {packed ? '[#]' : '[ ]'}
         </Put>
       </Slab>,
+      // The row flashes when it is packed, unpacked, or gives its place to another item.
+      <FlashAt
+        key={`f${item.path}`}
+        x={WORK_X}
+        y={iy}
+        w={WORK_W}
+        h={ih}
+        k={packed}
+      />,
     );
     firstItem = false;
     y += ih;
@@ -632,6 +655,15 @@ export function KitEditor() {
           setPage(p - 1);
         }}
         right
+      />
+      {/* Another category, or another page of items, turns the page of the items only. */}
+      <WipeAt
+        x={WORK_X}
+        y={BODY_Y}
+        w={WORK_W}
+        h={M - 1.25 - BODY_Y - (pages.length > 1 ? 1.25 : 0)}
+        k={`${open}:${pg}`}
+        n={(open + 1) * 1000 + pg}
       />
     </>
   );

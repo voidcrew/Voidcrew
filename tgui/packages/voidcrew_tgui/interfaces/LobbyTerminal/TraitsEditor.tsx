@@ -16,12 +16,14 @@ import { fileColours } from './BodyEditor';
 import { clamp, useChar, useLatePager } from './CharFrame';
 import { ColourPanel, ListPicker } from './CharPickers';
 import { parseHex } from './ColorEntry';
+import { sfx, sfxInstead, useChanged } from './motion';
 import {
   Band,
   Big,
   BODY_Y,
   bodyRows,
   cut,
+  FlashAt,
   HRule,
   NameLine,
   Pager,
@@ -31,6 +33,7 @@ import {
   Swatch,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { LobbyData } from './types';
@@ -175,7 +178,15 @@ export function TraitsEditor() {
   const [page, setPage] = useState(0);
   const [shown, setShown] = useState<string | null>(null);
   const [fresh, setFresh] = useState(true);
+  /** Presses the rules refused: each one draws the reason again. */
+  const [refused, setRefused] = useState(0);
   const pager = useLatePager();
+  // A trait was taken: the accepted sound (its row flashes below).
+  useChanged((char?.quirks || []).length, (was, now) => {
+    if (now > was) {
+      sfx('ok', { own: true });
+    }
+  });
 
   if (!char || !cat?.quirks) {
     pager.current = null;
@@ -235,6 +246,9 @@ export function TraitsEditor() {
   const press = (k: string) => {
     setShown(k);
     if (reasonOf(k)) {
+      // Refused: the reason draws itself in the panel, with the refusal sound.
+      sfxInstead('warn');
+      setRefused((n) => n + 1);
       return;
     }
     act('char_quirk', { quirk: k, on: taken.includes(k) ? 0 : 1 });
@@ -346,6 +360,15 @@ export function TraitsEditor() {
           </RPut>
         )}
       </Slab>,
+      // The row flashes when it is taken, dropped, or loses its mark to another trait.
+      <FlashAt
+        key={`f${b.k}`}
+        x={LX}
+        y={blockY}
+        w={LW}
+        h={1.25}
+        k={isTaken}
+      />,
     );
     b.opts.forEach((key, j) => {
       const oy = blockY + 1.25 * (j + 1);
@@ -446,7 +469,13 @@ export function TraitsEditor() {
     <>
       {!!pointsOn && (
         <>
-          <Big x={PX} y={3} scale={2.25} cls={points > 0 ? 'acc' : 'dim'}>
+          <Big
+            x={PX}
+            y={3}
+            scale={2.25}
+            cls={points > 0 ? 'acc' : 'dim'}
+            pulse={points}
+          >
             {String(Math.min(999, points))}
           </Big>
           <Put x={41} y={3.25} cls="dim">
@@ -455,7 +484,12 @@ export function TraitsEditor() {
         </>
       )}
       {!!goodText && (
-        <Put x={pointsOn ? 41 : PX} y={pointsOn ? 4.25 : 3.25} cls={capped ? 'amb' : 'dim'}>
+        <Put
+          x={pointsOn ? 41 : PX}
+          y={pointsOn ? 4.25 : 3.25}
+          cls={capped ? 'amb' : 'dim'}
+          pulse={good}
+        >
           {goodText}
         </Put>
       )}
@@ -478,6 +512,7 @@ export function TraitsEditor() {
               {cut(panelReason, PW)}
             </Put>
           )}
+          <WipeAt kind="draw" x={PX} y={8.5} w={PW} h={1} k={refused} />
           {descLines.map((line, i) => (
             <Put key={i} x={PX} y={9.75 + i}>
               {line}
@@ -542,6 +577,15 @@ export function TraitsEditor() {
           setPage(p - 1);
         }}
         right
+      />
+      {/* Another filter, or another page, turns the page of the rows only. */}
+      <WipeAt
+        x={LX}
+        y={listTop}
+        w={LW}
+        h={M - 2.5 - listTop}
+        k={`${filter}:${pg}`}
+        n={FILTERS.findIndex((f) => f[0] === filter) * 1000 + pg}
       />
       {panel}
     </>

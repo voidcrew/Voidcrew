@@ -24,6 +24,7 @@ import {
 import { useBackend } from 'tgui/backend';
 
 import { turned, Viewscreen } from './CharPreview';
+import { quietDialogClose } from './motion';
 import { useBack, usePager } from './nav';
 import {
   Band,
@@ -250,7 +251,7 @@ export function SpeciesConfirm() {
   const y = BODY_Y + 2;
   const by = y + 2 + lines.length + 0.5;
   return (
-    <Dialog w={w} h={6 + lines.length} caption="SPECIES">
+    <Dialog w={w} h={6 + lines.length} caption="SPECIES" sound="warn">
       <Put x={x + 2} y={y + 1} cls="wht">
         {cut(`${species} CAN'T KEEP:`, 41)}
       </Put>
@@ -272,7 +273,11 @@ export function SpeciesConfirm() {
         y={by}
         label="CHANGE"
         right
-        onClick={() => act('char_confirm', { ok: 1 })}
+        onClick={() => {
+          // Answered, not backed out of: the box goes without the back sound.
+          quietDialogClose();
+          act('char_confirm', { ok: 1 });
+        }}
       />
     </Dialog>
   );
