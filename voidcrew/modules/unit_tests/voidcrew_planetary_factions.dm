@@ -163,7 +163,7 @@
 	for(var/mob_type in prizes)
 		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
 		var/mob/living/basic/trooper/pirate/faction/pirate = spawn_npc_in_zone(mob_type, floor, context)
-		var/expected = length(pirate.rare_loot_pool) ? (prizes[mob_type] in pirate.rolled_rare_loot) : 1
+		var/expected = (prizes[mob_type] in pirate.rare_loot_pool) ? (prizes[mob_type] in pirate.rolled_rare_loot) : 1
 		var/list/before = floor.get_all_contents()
 		pirate.death(TRUE)
 		var/count = 0
@@ -288,9 +288,10 @@
 	distant_planet.enable_planetary_faction()
 
 	// This represents a mob already initialized from a preloaded ruin before the planet's
-	// footprint was enabled. The mapped override replaces its normal type factions.
-	var/mob/living/simple_animal/hostile/asteroid/hermit/survivor/mapped_hermit = allocate(
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
+	// footprint was enabled. The mapped override replaces its normal type factions. Hermits are
+	// human NPCs (voidcrew/modules/human_npcs/ruins/), natives of their planet like the fauna.
+	var/mob/living/carbon/human/npc/ruin/hermit/mapped_hermit = allocate(
+		/mob/living/carbon/human/npc/ruin/hermit,
 		run_loc_floor_bottom_left,
 	)
 	mapped_hermit.faction = list("saloon", "[REF(mapped_hermit)]")

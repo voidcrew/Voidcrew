@@ -226,6 +226,9 @@
 	// material when cable, ducts or rods are fed back into a material container.
 	if(ispath(path, /obj/item/stack)) // VOIDCREW EDIT: research preserves stack material costs to prevent recycling gain.
 		return 1
+	// VOIDCREW EDIT ADDITION: plasma_weapons - a printed plasma cartridge always takes its three sheets, so a full one always holds the same plasma.
+	else if(ispath(path, /obj/item/plasma_cartridge))
+		return 1
 	else
 		return efficiency_coeff
 

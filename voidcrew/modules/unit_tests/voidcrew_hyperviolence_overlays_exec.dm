@@ -14,6 +14,11 @@
 	for(var/prefix in prefixes)
 		for(var/part in list("blood", "bone"))
 			TEST_ASSERT(icon_exists(gore_icon, "[prefix]_[part]"), "Gore sheet is missing [prefix]_[part]")
+	// The neck the garrote cuts swaps in the wire's own stump (hyperviolence/wire/wire_seams.dm).
+	var/wire_icon = 'voidcrew/modules/hyperviolence/wire/icons/wire_gore.dmi' // WIRE_GORE_ICON
+	for(var/zone in GLOB.hv_wire_stump_zones)
+		for(var/part in list("blood", "bone"))
+			TEST_ASSERT(icon_exists(wire_icon, "stump_[zone]_wire_[part]"), "Wire sheet is missing stump_[zone]_wire_[part]")
 
 /// A torn-off limb leaves a wet stump, a clean removal a healed one, and a limb put back clears it.
 /datum/unit_test/hv_stump_overlays
@@ -47,7 +52,24 @@
 	var/obj/item/bodypart/head = dummy.get_bodypart(BODY_ZONE_HEAD)
 	TEST_ASSERT(head.dismember(), "The head would not come off")
 	TEST_ASSERT("stump_head_blood" in dummy.hv_gore_states(), "Decapitation drew no neck stump")
+	TEST_ASSERT(!LAZYACCESS(dummy.hv_stump_wire_cut, BODY_ZONE_HEAD), "A head torn off without the wire drew the wire's stump")
 
+	// A head the wire takes (the garrote) leaves the wire's clean cut, seared dark by a hot wire.
+	var/mob/living/carbon/human/consistent/garroted = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(hv_wire_take_part(garroted.get_bodypart(BODY_ZONE_HEAD)), "The wire would not take the head")
+	var/list/neck = garroted.hv_gore_states()
+	TEST_ASSERT("stump_head_wire_blood" in neck, "A head the wire took drew no wire stump: [english_list(neck)]")
+	TEST_ASSERT("stump_head_wire_bone" in neck, "A head the wire took drew no bone in its stump")
+	TEST_ASSERT(!("stump_head_blood" in neck), "A head the wire took drew the ragged stump too")
+	LAZYSET(garroted.hv_stump_burnt, BODY_ZONE_HEAD, TRUE)
+	garroted.hv_gore_key = null
+	garroted.hv_update_gore_overlays()
+	var/image/neck_blood
+	for(var/image/gore_image as anything in garroted.hv_gore_overlays)
+		if(gore_image.icon_state == "stump_head_wire_blood")
+			neck_blood = gore_image
+	TEST_ASSERT_NOTNULL(neck_blood, "A seared wire stump lost its picture")
+	TEST_ASSERT_EQUAL(neck_blood.color, "#2a1b15", "A seared wire stump wasn't charred") // WIRE_BURNT_STUMP_COLOR
 
 /// One heavy hit opens a skull wound, more damage widens it, healing closes it; small hits never open one.
 /datum/unit_test/hv_skull_wound
@@ -163,6 +185,19 @@
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "A head-aimed point-blank shot at a downed target was not an execution ([head.brute_dam] head damage from a [round_damage] round)")
 	TEST_ASSERT(head.hv_skull_wound >= 1, "A head-aimed light execution left no skull wound for its damage") // light: 40 head brute
 
+/// A human NPC is helpless only in tg's states (stunned, cuffed, held, down), never because of its health.
+/datum/unit_test/hv_npc_executable_states
+
+/datum/unit_test/hv_npc_executable_states/Run()
+	var/mob/living/carbon/human/npc/npc = allocate(/mob/living/carbon/human/npc)
+	QDEL_NULL(npc.ai_controller)
+	TEST_ASSERT(!npc.hv_can_be_executed(), "An NPC at full health could be executed")
+	npc.apply_damage(85, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(npc.stat == CONSCIOUS, "The test NPC fell over at 15 health")
+	TEST_ASSERT(!npc.hv_can_be_executed(), "An NPC on its feet at 15 health could be executed")
+	npc.Paralyze(30 SECONDS)
+	TEST_ASSERT(npc.hv_can_be_executed(), "A paralysed NPC could not be executed")
+
 /// The death throes, given by every human NPC that dies (human_npc_barks.dm), end where they began: the
 /// body's real transform and offsets are untouched, so tg's lying pose stays right.
 /datum/unit_test/hv_death_throes_end_where_they_began
@@ -176,3 +211,89 @@
 	TEST_ASSERT_EQUAL(body.pixel_w, pixel_before, "The death throes left the body [body.pixel_w - pixel_before] pixels aside")
 	var/matrix/after = body.transform
 	TEST_ASSERT(abs(after.a - lying.a) < 0.01 && abs(after.b - lying.b) < 0.01 && abs(after.d - lying.d) < 0.01 && abs(after.e - lying.e) < 0.01, "The death throes left the body turned differently from how tg laid it down")
+
+/// How many fresh victims the aimed-part tests below strike. At tg's odds a miss turns up in nearly every run.
+#define HV_AIMED_PART_TRIES 60
+
+/// An execution round from a tile away strikes the head every time: tg's zone roll for the shot never
+/// sends it to another part. No TRAIT_DESIGNATED_TARGET here, unlike the tests above (which shoot from
+/// the victim's own tile, where tg never rolls a miss).
+/datum/unit_test/hv_gun_execution_hits_head
+
+/datum/unit_test/hv_gun_execution_hits_head/Run()
+	var/mob/living/carbon/human/consistent/gunner = allocate(/mob/living/carbon/human/consistent)
+	gunner.zone_selected = BODY_ZONE_HEAD
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	var/misses = 0
+	for(var/i in 1 to HV_AIMED_PART_TRIES)
+		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, beside)
+		ADD_TRAIT(victim, TRAIT_PIERCEIMMUNE, INNATE_TRAIT) // no stray shrapnel
+		victim.Knockdown(30 SECONDS)
+		var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+		gun.can_misfire = FALSE
+		gunner.put_in_active_hand(gun, forced = TRUE)
+		gun.chambered.loaded_projectile.damage = 10 // doubled at the muzzle: 20, nowhere near the burst line
+		var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+		TEST_ASSERT(gun.hv_fire_execution(gunner, victim, null), "The execution shot did not fire")
+		if(head.brute_dam <= 0)
+			misses++
+		qdel(gun)
+		qdel(victim)
+	TEST_ASSERT_EQUAL(misses, 0, "[misses] of [HV_AIMED_PART_TRIES] execution rounds struck another part than the head")
+
+/// A finisher's real blow lands on the part it is aimed at every time, past tg's zone roll for a melee hit.
+/datum/unit_test/hv_finisher_blow_hits_aimed_part
+
+/datum/unit_test/hv_finisher_blow_hits_aimed_part/Run()
+	var/mob/living/carbon/human/consistent/attacker = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox)
+	attacker.put_in_active_hand(toolbox, forced = TRUE)
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	var/misses = 0
+	for(var/i in 1 to HV_AIMED_PART_TRIES)
+		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, beside)
+		victim.Knockdown(30 SECONDS)
+		var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+		var/datum/hv_finisher/finisher = new(attacker, victim)
+		TEST_ASSERT(finisher.real_blow(BODY_ZONE_HEAD), "The finisher's blow didn't swing")
+		if(head.brute_dam <= 0)
+			misses++
+		qdel(finisher)
+		qdel(victim)
+	TEST_ASSERT_EQUAL(misses, 0, "[misses] of [HV_AIMED_PART_TRIES] finisher blows struck another part than the head")
+
+#undef HV_AIMED_PART_TRIES
+
+/// A body that lost several limbs gets every empty sleeve cut, and no sleeve mask is drawn on screen: each one is a
+/// hidden render target ("*...") cut out through a filter on the jumpsuit or suit. A mask stacked on another mask as a
+/// plain overlay is not part of that render target and showed as a white limb.
+/datum/unit_test/hv_sleeve_masks_stay_hidden
+
+/datum/unit_test/hv_sleeve_masks_stay_hidden/Run()
+	var/mob/living/carbon/human/consistent/body = allocate(/mob/living/carbon/human/consistent)
+	body.equip_to_slot_or_del(new /obj/item/clothing/under/color/grey(body), ITEM_SLOT_ICLOTHING)
+	body.equip_to_slot_or_del(new /obj/item/clothing/suit/apron(body), ITEM_SLOT_OCLOTHING)
+	for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG))
+		var/obj/item/bodypart/limb = body.get_bodypart(zone)
+		TEST_ASSERT(limb.dismember(), "Fixture: the [zone] would not come off")
+	var/list/missing = body.hv_sleeve_mask_zones()
+	TEST_ASSERT_EQUAL(length(missing), 3, "Fixture: the body is not missing three limbs ([english_list(missing)])")
+	for(var/layer in list(UNIFORM_LAYER, SUIT_LAYER))
+		var/mutable_appearance/worn = body.overlays_standing[layer]
+		TEST_ASSERT(istype(worn), "Fixture: nothing drawn at layer [layer]")
+		var/list/sources = list()
+		for(var/i in 1 to length(worn.filters))
+			var/worn_filter = worn.filters[i]
+			if(worn_filter:render_source)
+				sources += worn_filter:render_source
+		var/list/masked_states = list()
+		for(var/child in worn.overlays)
+			if(!findtext("[child:icon]", "sleeve_masks"))
+				continue
+			var/target = child:render_target
+			TEST_ASSERT(copytext(target, 1, 2) == "*", "A sleeve mask ([child:icon_state]) at layer [layer] is drawn on screen")
+			TEST_ASSERT(target in sources, "A sleeve mask ([child:icon_state]) at layer [layer] cuts nothing")
+			TEST_ASSERT(!length(child:overlays), "A sleeve mask at layer [layer] carries [length(child:overlays)] more mask(s) as plain overlays, drawn on screen")
+			masked_states += child:icon_state
+		for(var/zone in missing)
+			TEST_ASSERT("missing_[zone]" in masked_states, "The [zone] sleeve is not cut at layer [layer] ([english_list(masked_states)])")

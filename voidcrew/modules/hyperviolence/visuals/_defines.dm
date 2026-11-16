@@ -143,7 +143,7 @@
 // ---- Executions and finishers ----
 
 /// How far the shooter leans in over the victim while the barrel is pressed to the head.
-#define HV_VIS_PRESS_LEAN 4
+#define HV_VIS_PRESS_LEAN 9
 /// The still moment at the end of the press, after the trembling stops.
 #define HV_VIS_PRESS_PAUSE (0.3 SECONDS)
 /// How far off the middle of its tile tg's muzzle flash art sits, toward the way it faces, in pixels.

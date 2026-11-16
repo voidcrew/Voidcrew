@@ -32,8 +32,7 @@
 
 /mob/living/basic/trooper/Initialize(mapload)
 	. = ..()
-	if(use_dynamic_appearance) // VOIDCREW EDIT
-		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand) // VOIDCREW EDIT: trooper appearance integration: respect static fork sprites (voidcrew/edits/modules/mob/living/basic/trooper/trooper.dm)
+	apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand) // VOIDCREW EDIT CHANGE: unconditional again; the static-sprite opt-out went with the human NPC migration (voidcrew/modules/human_npcs)
 	if(LAZYLEN(loot) || corpse)
 		LAZYOR(loot, corpse)
 		loot = string_list(loot)

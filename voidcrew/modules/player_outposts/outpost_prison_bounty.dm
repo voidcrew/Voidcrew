@@ -81,7 +81,7 @@
 	/// For tests: whether a meek prisoner watching the staff door darts when it opens (TRUE or FALSE) instead of rolling for it
 	var/prison_bounty_forced_dart
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Running after a bounty prisoner called out someone off the ship that caught them (bounty_extra_speech())
 	COOLDOWN_DECLARE(prison_captor_line_cooldown)
 
@@ -333,7 +333,7 @@ GLOBAL_VAR(bounty_pool_timer)
 /// Living bounty prisoners on the roster who are not leaving, of `tier` when given
 /datum/outpost_prison/proc/bounty_prisoner_count(tier)
 	. = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!prisoner.bounty_record || prisoner.stat == DEAD || prisoner.phase == PRISONER_LEAVING)
 			continue
 		if(tier && prisoner.bounty_record.tier != tier)
@@ -445,7 +445,7 @@ GLOBAL_VAR(bounty_pool_timer)
 			continue
 		bounty_pool_remove(record)
 		record.status = BOUNTY_RECORD_IMPRISONED
-		var/mob/living/basic/outpost_prisoner/prisoner = new(spot, record)
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot, record)
 		admit(prisoner, cell)
 		prisoner.beam_in()
 		start_arrival_gap(soonest_lane())
@@ -456,17 +456,17 @@ GLOBAL_VAR(bounty_pool_timer)
 // ===== A PRISONER FROM A RECORD =====
 
 /**
- * Before the prisoner's Initialize() calls ..(): the body their record says (gender, and health by
- * tier), so tg sizes max_stamina from the right maxHealth. A record still in the pool leaves it now,
- * before they exist.
+ * Before the prisoner's Initialize() calls ..(): a record still in the pool leaves it now, before they
+ * exist, and a tougher criminal takes less from a blow (npc_damage_taken by tier, through physiology,
+ * defaults PR-16). Their face and gender come from the record through the human NPC base.
  */
-/mob/living/basic/outpost_prisoner/proc/apply_bounty_body(datum/bounty_record/record)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/apply_bounty_body(datum/bounty_record/record)
 	if(record in GLOB.bounty_prisoner_pool)
 		bounty_pool_remove(record)
-	if(record.gender == MALE || record.gender == FEMALE)
-		gender = record.gender
-	maxHealth = bounty_by_tier(record.tier, BOUNTY_PRISONER_HEALTH_PETTY, BOUNTY_PRISONER_HEALTH_WANTED, BOUNTY_PRISONER_HEALTH_MOST_WANTED)
-	health = maxHealth
+	npc_damage_taken = bounty_by_tier(record.tier, BOUNTY_PRISONER_DAMAGE_TAKEN_PETTY, BOUNTY_PRISONER_DAMAGE_TAKEN_WANTED, BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED)
+	// The Ghost's dodging is real chrome (owner ruling OC-6): a Slipwire shunt, which burns out to scrap if they die.
+	if(record.archetype == BOUNTY_ARCHETYPE_BOSS && record.kit == BOUNTY_KIT_GHOST)
+		npc_cyberware = list(/obj/item/organ/cyberimp/cyberware/slipwire)
 
 /**
  * At the end of the prisoner's Initialize(), before their look is built: who their record says
@@ -478,12 +478,11 @@ GLOBAL_VAR(bounty_pool_timer)
  * yard hears BOUNTY_PRISON_MOST_WANTED_YARD_CRIME, as a Most Wanted criminal never names theirs in
  * its own lines (BUG-12); the console and examine still read the record's.
  */
-/mob/living/basic/outpost_prisoner/proc/apply_bounty_record(datum/bounty_record/record)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/apply_bounty_record(datum/bounty_record/record)
 	if(record.gender == MALE || record.gender == FEMALE)
 		gender = record.gender
 	if(length(record.name))
-		real_name = record.name
-		name = real_name
+		fully_replace_character_name(real_name, record.name)
 	var/plain_crime = bounty_plain_crime(record.crime)
 	if(record.tier == BOUNTY_TIER_MOST_WANTED)
 		crime = BOUNTY_PRISON_MOST_WANTED_YARD_CRIME
@@ -492,9 +491,8 @@ GLOBAL_VAR(bounty_pool_timer)
 	var/list/personalities = bounty_archetype_personalities(record.archetype)
 	if(length(personalities))
 		personality = pick(personalities)
-	// The plain jumpsuit: the glasses and beanie variants would hide their hair or fake their eyewear
-	outfit_path = /datum/outfit/outpost_prisoner
-	// As hurt as they were caught, but never below BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH percent
+	// As hurt as they were caught, but never below BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH percent: real
+	// damage spread over their limbs when they beam in (beam_in())
 	arrival_brute = round(maxHealth * clamp(record.hurt_fraction || 0, 0, 1 - BOUNTY_PRISONER_MIN_ARRIVAL_HEALTH / 100))
 	record.status = BOUNTY_RECORD_IMPRISONED
 
@@ -535,7 +533,7 @@ GLOBAL_VAR(bounty_pool_timer)
  * nothing (a release is followed by forget(), for one). A closed record never returns to the pool
  * (bounty_pool_add() refuses it). Returns TRUE if this call closed it.
  */
-/proc/close_bounty_record(mob/living/basic/outpost_prisoner/prisoner, status)
+/proc/close_bounty_record(mob/living/carbon/human/npc/outpost_prisoner/prisoner, status)
 	var/datum/bounty_record/record = prisoner?.bounty_record
 	if(!record || record.status != BOUNTY_RECORD_IMPRISONED)
 		return FALSE
@@ -544,13 +542,13 @@ GLOBAL_VAR(bounty_pool_timer)
 	return TRUE
 
 /// Why Kessler's experiments refuse `prisoner`, or null: a bounty prisoner's identity would be lost
-/proc/bounty_experiment_refusal(mob/living/basic/outpost_prisoner/prisoner)
+/proc/bounty_experiment_refusal(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner?.bounty_record ? "Kessler won't touch a bounty prisoner." : null
 
 // ===== PAY =====
 
 /// What `prisoner` earns the treasury (stipend, pay rate and release bonus) as a multiple of an ordinary prisoner's: x1.5, x2 or x2.5 by tier
-/datum/outpost_prison/proc/bounty_pay_mult(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/bounty_pay_mult(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/bounty_record/record = prisoner?.bounty_record
 	if(!record)
 		return 1
@@ -558,54 +556,40 @@ GLOBAL_VAR(bounty_pool_timer)
 
 // ===== DANGER =====
 
-/// Multiplier on their punches and shiv blows (update_melee() and strike()), by tier and by what they hit with
-/mob/living/basic/outpost_prisoner/proc/bounty_damage_mult()
-	if(!bounty_record)
-		return 1
-	if(has_shiv())
-		return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_SHIV_MULT_PETTY, BOUNTY_PRISON_SHIV_MULT_WANTED, BOUNTY_PRISON_SHIV_MULT_MOST_WANTED)
-	return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_PUNCH_MULT_PETTY, BOUNTY_PRISON_PUNCH_MULT_WANTED, BOUNTY_PRISON_PUNCH_MULT_MOST_WANTED)
-
 /// Multiplier on their mood losses (mood_scale())
-/mob/living/basic/outpost_prisoner/proc/bounty_mood_scale()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_mood_scale()
 	if(!bounty_record)
 		return 1
 	return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_MOOD_SCALE_PETTY, BOUNTY_PRISON_MOOD_SCALE_WANTED, BOUNTY_PRISON_MOOD_SCALE_MOST_WANTED)
 
 /// Mood points added to the line below which they square up to staff (threat_mood_for() and threat_mood_ceiling())
-/mob/living/basic/outpost_prisoner/proc/bounty_threat_bonus()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_threat_bonus()
 	if(!bounty_record)
 		return 0
 	return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_THREAT_BONUS_PETTY, BOUNTY_PRISON_THREAT_BONUS_WANTED, BOUNTY_PRISON_THREAT_BONUS_MOST_WANTED)
 
 /// Mood points added to the line below which they join a riot (riot_join_bonus())
-/mob/living/basic/outpost_prisoner/proc/bounty_riot_bonus()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_riot_bonus()
 	if(!bounty_record)
 		return 0
 	return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_RIOT_BONUS_PETTY, BOUNTY_PRISON_RIOT_BONUS_WANTED, BOUNTY_PRISON_RIOT_BONUS_MOST_WANTED)
 
 /// Multiplier on the damage their blows do to the wing's ways out (hit_exit())
-/mob/living/basic/outpost_prisoner/proc/bounty_breakout_mult()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_breakout_mult()
 	if(!bounty_record)
 		return 1
 	return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_BREAKOUT_MULT_PETTY, BOUNTY_PRISON_BREAKOUT_MULT_WANTED, BOUNTY_PRISON_BREAKOUT_MULT_MOST_WANTED)
 
-/// Multiplier on how long cuffing them takes (cuff_time())
-/mob/living/basic/outpost_prisoner/proc/bounty_cuff_mult()
-	if(!bounty_record)
-		return 1
-	return bounty_by_tier(bounty_record.tier, BOUNTY_PRISON_CUFF_MULT_PETTY, BOUNTY_PRISON_CUFF_MULT_WANTED, BOUNTY_PRISON_CUFF_MULT_MOST_WANTED)
-
 /// Whether they were a meek criminal: they back off, go over hatches and slip out of doors
-/mob/living/basic/outpost_prisoner/proc/bounty_is_meek()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_is_meek()
 	return bounty_record?.archetype == BOUNTY_ARCHETYPE_MEEK
 
 /// Multiplier on how likely they are to back off when a player hits them: twice as likely for a meek bounty prisoner (hit_reaction(), through bounty_hit_reaction_weights())
-/mob/living/basic/outpost_prisoner/proc/bounty_back_off_mult()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_back_off_mult()
 	return bounty_is_meek() ? BOUNTY_PRISON_MEEK_BACK_OFF_MULT : 1
 
 /// Multiplier on how likely they are to hit back when a player hits them: a Wanted or Most Wanted prisoner who is not meek hits back like a grumpy one (hit_reaction(), through bounty_hit_reaction_weights())
-/mob/living/basic/outpost_prisoner/proc/bounty_hit_back_mult()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_hit_back_mult()
 	if(!bounty_record || bounty_is_meek())
 		return 1
 	return bounty_by_tier(bounty_record.tier, 1, BOUNTY_PRISON_HIT_BACK_MULT_WANTED, BOUNTY_PRISON_HIT_BACK_MULT_MOST_WANTED)
@@ -614,38 +598,30 @@ GLOBAL_VAR(bounty_pool_timer)
  * A calm prisoner's hit-back and back-off weights (outpost_prisoner_hit_reaction_weights()'s list,
  * which is theirs to change), scaled for a bounty prisoner. Returns the same list. hit_reaction() rolls on it.
  */
-/mob/living/basic/outpost_prisoner/proc/bounty_hit_reaction_weights(list/weights)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_hit_reaction_weights(list/weights)
 	if(!bounty_record || !islist(weights))
 		return weights
 	weights[PRISONER_HIT_FIGHT] = max(1, round(weights[PRISONER_HIT_FIGHT] * bounty_hit_back_mult()))
 	weights[PRISONER_HIT_COWER] = max(1, round(weights[PRISONER_HIT_COWER] * bounty_back_off_mult()))
 	return weights
 
-/// Their speed while loose, or null for the usual: a meek bounty prisoner runs faster than the others (go_loose())
-/mob/living/basic/outpost_prisoner/proc/bounty_loose_speed()
-	return bounty_is_meek() ? BOUNTY_PRISON_MEEK_LOOSE_SPEED : null
-
-/// The speed they go back to when not running from anything: a loose meek bounty prisoner keeps their loose speed (update_flee_speed(), back_in_custody())
-/mob/living/basic/outpost_prisoner/proc/bounty_base_speed()
-	if(trouble == PRISONER_TROUBLE_LOOSE)
-		var/loose_speed = bounty_loose_speed()
-		if(loose_speed)
-			return loose_speed
-	return initial(speed)
+/// Whether they run rather than walk when not running from anything: a runner runs (go_loose(), update_flee_speed(), back_in_custody())
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_base_speed()
+	return trouble == PRISONER_TROUBLE_LOOSE
 
 /// How long going over a serving hatch takes them, or null for the usual: a meek bounty prisoner is quicker (start_climb())
-/mob/living/basic/outpost_prisoner/proc/bounty_climb_time()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_climb_time()
 	return bounty_is_meek() ? BOUNTY_PRISON_MEEK_CLIMB_TIME : null
 
 /// Multiplier on their weight as the wildcard "snap" prisoner: a Most Wanted ringleader's is doubled (pick_snapper())
-/mob/living/basic/outpost_prisoner/proc/bounty_snap_weight_mult()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_snap_weight_mult()
 	return bounty_record?.tier == BOUNTY_TIER_MOST_WANTED ? BOUNTY_PRISON_RINGLEADER_SNAP_MULT : 1
 
 /// `rioters` with any Most Wanted first, so a ringleader is among the first to shout when a riot starts (start_riot()). Returns a new list.
 /proc/bounty_ringleaders_first(list/rioters)
 	var/list/leaders = list()
 	var/list/others = list()
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		if(rioter.bounty_record?.tier == BOUNTY_TIER_MOST_WANTED)
 			leaders += rioter
 		else
@@ -654,10 +630,10 @@ GLOBAL_VAR(bounty_pool_timer)
 
 /// An awake, uncuffed Most Wanted prisoner out in the yard, not shut in a cell, who stirs the others up, or null
 /datum/outpost_prison/proc/bounty_ringleader()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.bounty_record?.tier != BOUNTY_TIER_MOST_WANTED || !counts_for_tension(prisoner))
 			continue
-		if(prisoner.stat != CONSCIOUS || prisoner.cuffs || !in_cell_block(prisoner) || prisoner.is_confined())
+		if(prisoner.stat != CONSCIOUS || prisoner.handcuffed || !in_cell_block(prisoner) || prisoner.is_confined())
 			continue
 		return prisoner
 	return null
@@ -670,7 +646,7 @@ GLOBAL_VAR(bounty_pool_timer)
 /datum/outpost_prison/proc/bounty_restless_causes()
 	if(BOUNTY_PRISON_RINGLEADER_TENSION <= 0)
 		return list()
-	var/mob/living/basic/outpost_prisoner/ringleader = bounty_ringleader()
+	var/mob/living/carbon/human/npc/outpost_prisoner/ringleader = bounty_ringleader()
 	return ringleader ? list("[ringleader.real_name] stirring them up") : list()
 
 // ===== MEEK BOUNTY PRISONERS: HATCHES AND DOORS =====
@@ -906,7 +882,7 @@ GLOBAL_VAR(bounty_pool_timer)
 	return best
 
 /// Whether they are a meek bounty prisoner in a mood to watch the staff door for their chance, with a member of the wing home (nothing new starts in an empty wing)
-/mob/living/basic/outpost_prisoner/proc/bounty_may_watch_door()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_may_watch_door()
 	return bounty_is_meek() && mood < BOUNTY_PRISON_MEEK_DART_MOOD && !!prison?.trouble_enabled && prison.crew_home()
 
 // ===== CONSOLES =====
@@ -916,7 +892,7 @@ GLOBAL_VAR(bounty_pool_timer)
  * "wanted for" line and whether they are Most Wanted, the one tier a wanted poster names. Petty and
  * Wanted show nothing more, and no pay multiplier.
  */
-/datum/outpost_prison/proc/bounty_roster_badge(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/bounty_roster_badge(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/datum/bounty_record/record = prisoner?.bounty_record
 	if(!record)
 		return null
@@ -932,7 +908,7 @@ GLOBAL_VAR(bounty_pool_timer)
  * since the yard's "In for ..." leaves it out (BUG-12): "Most Wanted, for smuggling. The crew of the
  * Meridian brought him in."
  */
-/datum/outpost_prison/proc/bounty_examine(mob/living/basic/outpost_prisoner/prisoner, mob/user)
+/datum/outpost_prison/proc/bounty_examine(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/user)
 	var/datum/bounty_record/record = prisoner?.bounty_record
 	if(!record)
 		return null
@@ -955,7 +931,7 @@ GLOBAL_VAR(bounty_pool_timer)
  * Values for their lines that name the ship that caught them, list("{place}" = "Meridian"), or null
  * for an ordinary prisoner or a record with no captor. The lines say "the {place}".
  */
-/mob/living/basic/outpost_prisoner/proc/bounty_captor_values()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_captor_values()
 	if(!length(bounty_record?.captor_name))
 		return null
 	return list("{place}" = bounty_record.captor_name)
@@ -965,12 +941,12 @@ GLOBAL_VAR(bounty_pool_timer)
  * the Meridian crew sends people."), in place of the usual hello. Returns TRUE if they said it.
  * finish_beam_in() calls it before its own arrival lines.
  */
-/mob/living/basic/outpost_prisoner/proc/bounty_arrival_speech()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_arrival_speech()
 	var/list/values = bounty_captor_values()
 	return values ? say_context_with("bounty_arrival", values) : FALSE
 
 /// Someone awake off the ship that caught them, within BOUNTY_PRISON_CAPTOR_VIEW tiles and in sight, or null
-/mob/living/basic/outpost_prisoner/proc/bounty_captor_in_view()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bounty_captor_in_view()
 	var/obj/structure/overmap/ship/captor_ship = bounty_record?.captor_ship?.resolve()
 	if(QDELETED(captor_ship))
 		return null
@@ -985,7 +961,7 @@ GLOBAL_VAR(bounty_pool_timer)
  * Rolled at `chance` percent, and at most once every BOUNTY_PRISON_CAPTOR_LINE_GAP each; the sight
  * check runs only once the roll comes up. Returns list(context, null, values), or null.
  */
-/datum/outpost_prison/proc/bounty_extra_speech(mob/living/basic/outpost_prisoner/prisoner, chance = BOUNTY_PRISON_CAPTOR_LINE_CHANCE)
+/datum/outpost_prison/proc/bounty_extra_speech(mob/living/carbon/human/npc/outpost_prisoner/prisoner, chance = BOUNTY_PRISON_CAPTOR_LINE_CHANCE)
 	var/list/values = prisoner?.bounty_captor_values()
 	if(!values || !COOLDOWN_FINISHED(prisoner, prison_captor_line_cooldown) || !prob(chance))
 		return null
@@ -1079,7 +1055,7 @@ GLOBAL_VAR(bounty_pool_timer)
 			var/datum/bounty_record/record = bounty_pool_find(params?["id"])
 			if(!record)
 				return list("error" = "That record is no longer in the pool.")
-			var/mob/living/basic/outpost_prisoner/arrival = bounty_admit_record(record)
+			var/mob/living/carbon/human/npc/outpost_prisoner/arrival = bounty_admit_record(record)
 			if(!arrival)
 				return list("error" = "No free cell.")
 			return "admit bounty prisoner [arrival.real_name] ([bounty_tier_name(record.tier)]) into cell [arrival.cell?.number]"

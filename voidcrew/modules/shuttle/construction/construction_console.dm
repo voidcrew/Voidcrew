@@ -2146,6 +2146,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	data["theme"] = theme
 	data += construction_controls_data(user)
 	data += repair_controls_data()
+	// Tutorial checklist focus (voidcrew/modules/tutorials), only on the viewer's own ship's console.
+	var/tutorial_focus = tutorial_ui_focus(user, "construction")
+	data["tutorial_focus"] = (tutorial_focus && tutorial_repair_is_crew_console(user, src)) ? tutorial_focus : null
 
 	return data
 

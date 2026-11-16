@@ -334,6 +334,8 @@
 			list(/datum/shop_sku/outfitter/laser_gun, /obj/item/gun/energy/laser, 1, 1500, 0),
 			list(/datum/shop_sku/outfitter/riot_shotgun, /obj/item/gun/ballistic/shotgun/riot, 1, 1800, 0),
 			list(/datum/shop_sku/outfitter/energy_gun, /obj/item/gun/energy/e_gun, 1, 2400, 0),
+			list(/datum/shop_sku/outfitter/kestrel, /obj/item/gun/energy/frontier_laser/pistol, 2, 900, 0),
+			list(/datum/shop_sku/outfitter/cinder, /obj/item/gun/energy/plasma_weapon/pistol, 1, 2000, 0),
 		),
 		/datum/outpost_shop/black_market = list(
 			list(/datum/shop_sku/black_market/boarding_axe, /obj/item/fireaxe/boardingaxe, 1, 2400, 0),
@@ -360,10 +362,13 @@
 			list(/datum/shop_sku/black_market/absolution, /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution, 1, 2600, 1),
 			list(/datum/shop_sku/black_market/conflagration, /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration, 1, 2200, 1),
 			list(/datum/shop_sku/black_market/rotating/mateba, /obj/item/gun/ballistic/revolver/mateba, 1, 3000, 1),
+			list(/datum/shop_sku/black_market/hornet, /obj/item/gun/energy/frontier_laser/smg, 1, 3500, 0),
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
 			list(/datum/shop_sku/ripperdoc/monowire, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire, 1, 0, 3),
+			list(/datum/shop_sku/ripperdoc/monowire_live, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live, 1, 0, 5),
 			list(/datum/shop_sku/ripperdoc/mantis, /obj/item/cyberware_pair_case/mantis_blades, 1, 0, 4),
+			list(/datum/shop_sku/ripperdoc/mantis_scorch, /obj/item/cyberware_pair_case/mantis_scorch, 1, 0, 4),
 			list(/datum/shop_sku/ripperdoc/gorilla, /obj/item/cyberware_pair_case/gorilla_arms, 1, 0, 3),
 		),
 	)
@@ -398,6 +403,14 @@
 			if(ispath(sku.item_path, /obj/item/gun) || row[5])
 				TEST_ASSERT(sku.fixed_price, "A restricted weapon can be discounted")
 				TEST_ASSERT(!sku.contract_reward, "A restricted weapon can pay a contract")
+	// The Furnace is the one gun on a rotating shelf: red, one voucher, never on the core list
+	var/datum/outpost_shop/black_market/market = allocate(/datum/outpost_shop/black_market)
+	TEST_ASSERT(/datum/shop_sku/black_market/rotating/furnace in market.rotating_pool, "The black market lost the Furnace")
+	TEST_ASSERT(!(/datum/shop_sku/black_market/rotating/furnace in market.sku_types), "The Furnace moved onto a core shelf")
+	var/datum/shop_sku/furnace = allocate(/datum/shop_sku/black_market/rotating/furnace)
+	TEST_ASSERT_EQUAL(furnace.item_path, /obj/item/gun/energy/plasma_weapon/rifle, "The Furnace shelf sells the wrong gun")
+	TEST_ASSERT_EQUAL(furnace.price_vouchers, 1, "The Furnace lost its voucher price")
+	TEST_ASSERT(furnace.fixed_price && !furnace.contract_reward, "The Furnace can be discounted or paid out")
 
 /// Check removed sources across all owned shelf families, including undealt stock.
 /datum/unit_test/voidcrew_ladder_removed_shelves/Run()
@@ -428,6 +441,10 @@
 		/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
 		/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 		/obj/item/gun/ballistic/revolver/mateba,
+		/obj/item/gun/energy/frontier_laser/pistol,
+		/obj/item/gun/energy/frontier_laser/smg,
+		/obj/item/gun/energy/plasma_weapon/pistol,
+		/obj/item/gun/energy/plasma_weapon/rifle,
 	)
 	var/list/printed_gear = list(
 		/obj/item/gps, /obj/item/storage/belt/utility/full, /obj/item/weldingtool/largetank,
@@ -439,14 +456,18 @@
 		/obj/item/cultivator, /obj/item/shovel/spade, /obj/item/hatchet, /obj/item/secateurs,
 		/obj/item/reagent_containers/cup/watering_can, /obj/item/plant_analyzer, /obj/item/fishing_rod/tech,
 	)
-	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market, /datum/outpost_shop/vendor/potting_shed, /datum/outpost_shop/vendor/bait_shop, /datum/outpost_shop/vendor/ripperdoc))
+	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market, /datum/outpost_shop/vendor/potting_shed, /datum/outpost_shop/vendor/bait_shop, /datum/outpost_shop/vendor/ripperdoc, /datum/outpost_shop/vendor/street_doc))
 		var/datum/outpost_shop/shop = allocate(shop_type)
 		for(var/datum/shop_sku/sku_type as anything in shop.sku_types + shop.rotating_pool + shop.rare_pool + shop.favor_sku_types)
 			var/item_path = initial(sku_type.item_path)
 			TEST_ASSERT(!(item_path in printed_gear), "[shop_type] still sells printable gear [item_path]")
 			if(ispath(item_path, /obj/item/gun))
 				TEST_ASSERT(item_path in allowed_guns, "[shop_type] bypasses the ladder with [item_path]")
-			TEST_ASSERT(item_path != /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin && item_path != /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster, "Splice still sells a gun arm")
+			// The heavy gun arms (the Ronin SMG and the Bunker Buster pod, and any
+			// model of them) stay loot-only. The Holdout's .38 is the one gun arm
+			// that is shelf stock, on purpose.
+			if(ispath(item_path, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin) || ispath(item_path, /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster))
+				TEST_ASSERT(item_path == /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, "[shop_type] sells the heavy gun arm [item_path]; only the Holdout housing is shelf stock")
 
 /// Convoys and rotations cannot accelerate deliveries or revive finite stock.
 /datum/unit_test/voidcrew_ladder_restock/Run()
@@ -503,7 +524,7 @@
 				TEST_ASSERT_EQUAL(finite.stock, 0, "A rotation refilled restricted stock")
 
 	// Arm chrome takes one unit every few convoys, and a full shelf banks nothing toward the next.
-	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/gorilla))
+	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/gorilla))
 		var/datum/outpost_shop/chrome_shop = allocate(/datum/outpost_shop)
 		chrome_shop.add_sku(sku_type, "core")
 		var/datum/shop_sku/chrome = chrome_shop.skus[1]
@@ -551,6 +572,7 @@
 		/datum/shop_sku/black_market/brimstone, /datum/shop_sku/black_market/flaming_arrow, /datum/shop_sku/black_market/slammer, /datum/shop_sku/black_market/absolution, /datum/shop_sku/black_market/conflagration,
 		/datum/shop_sku/black_market/cutlass, /datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/mantis_street,
 		/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare,
 	)
 	for(var/sku_type in restricted)
@@ -695,7 +717,10 @@
 					var/ammo_path = GLOB.loot_gun_spare_ammo[gun.type]
 					TEST_ASSERT(locate(ammo_path) in cache, "A freight gun arrived without its spare reload")
 			TEST_ASSERT(contents_count - spare_count >= 2 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate lost ordinary draws")
-			TEST_ASSERT(contents_count - spare_count <= 3 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate added unbudgeted draws")
+			var/list/packed = list()
+			for(var/atom/movable/inside as anything in cache.contents)
+				packed += "[inside.type]"
+			TEST_ASSERT(contents_count - spare_count <= 3 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate added unbudgeted draws (zone [zone], [row[1]]): [packed.Join(", ")]")
 			cache.PopulateContents()
 			TEST_ASSERT_EQUAL(length(cache.contents), contents_count, "Reopening bought cargo paid twice")
 			TEST_ASSERT(deep_compare_list(list(theme.loot_common, theme.loot_uncommon, theme.loot_prime, theme.loot_uniques), original_pools), "Bought cargo mutated the shared theme")

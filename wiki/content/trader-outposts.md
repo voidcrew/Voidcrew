@@ -73,6 +73,7 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 | Halcyon | The Chowder Pot | Roux | The diner. Hot meals in tiers, galley staples, buys home cooking |
 | Quartermain | The Skunkworks | Boffin | Research and fabrication gear, Strong-Arm implants, robotics and xenobiology starter packs, raw anomaly cores and anomaly charts |
 | Quartermain | The Rig Bay | Wick | Civilian through advanced MODsuits, whole exosuits, exosuit arms, ammo and fittings |
+| Quartermain | The Back Bay | Ratchet | Street chrome for credits, installed in the bay's own Chrome Cradle |
 | The Undertow | The Dregs | Dram | The cantina |
 | The Undertow | Patch-Up Clinic | Sawbones | Medical supplies, the genetics starter pack |
 | The Undertow | The Chop Shop | Splice | Cyberware implants in four tiers, installed in the parlor's own Chrome Cradle |
@@ -93,7 +94,9 @@ Wick also sells **whole exosuits**, each one hanging on chains from a gantry in 
 
 The **Exosuit Arms**, **Exosuit Ammo** and **Exosuit Fittings** tabs carry the printable mech guns (a few yellow-reputation arms at a time, one each), their ammo boxes, armor boosters, drills, clamps and repair droids. Weapons bought past the checkpoint come in a sealed case, as guns do.
 
-**The Chop Shop** at the Undertow is the galaxy's only cyberware parlor, a neon annex off the Dregs. Splice sells chrome implants off four shelves, street chrome for credits, pro chrome for credits or vouchers, military and legend chrome for vouchers only, and the **Chrome Cradle** in the middle of the room does the installing: you lie on the slab, pick a piece off the rack, and the rig does the surgery in seconds. Removals, repairs and ink re-keying run on the same console, an ammunition shelf keeps implanted weapons fed, and Splice buys back pulled street chrome at about half price. The full catalog is on [Cyberware](cyberware.md).
+**The Chop Shop** at the Undertow is the full cyberware parlor, a neon annex off the Dregs. Splice sells chrome implants off four shelves, street chrome for credits, pro chrome for credits or vouchers, military and legend chrome for vouchers only, and the **Chrome Cradle** in the middle of the room does the installing: you lie on the slab, pick a piece off the rack, and the rig does the surgery in seconds. Removals, repairs and ink re-keying run on the same console, an ammunition shelf keeps implanted weapons fed, and Splice buys back pulled street chrome at about half price. The full catalog is on [Cyberware](cyberware.md).
+
+**The Back Bay** at Quartermain is the cheap end of the trade: Ratchet works out of a storage bay off the upper landing, with a Chrome Cradle of his own. He sells street chrome only, for credits, at Splice's prices, and buys pulled street chrome back on the same terms.
 
 Vex's own shelves carry the other half of the deep-band trade: **exploit software** for ship hacking, from 500-credit lightshow cartridges to the voucher-only exotics, plus the electronic-warfare suite board itself. See [Ship Hacking](ship-hacking.md).
 
