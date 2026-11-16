@@ -25,8 +25,6 @@
 #define LANDING_VIEW_STEP (0.2 SECONDS)
 /// How often the list of viewers is brought up to date
 #define LANDING_VIEW_SYNC (0.5 SECONDS)
-/// Tiles per side of one chunk of ground picture
-#define LANDING_VIEW_CHUNK 16
 /// How long the view takes to fade away when its manoeuvre is called off
 #define LANDING_VIEW_FADE (1.2 SECONDS)
 
@@ -102,8 +100,12 @@
 	 * Null until it is ready.
 	 */
 	var/list/parts
-	/// World picture: TRUE once it is handed to viewers
+	/// World picture: TRUE while viewers hold it
 	var/shown = FALSE
+	/// World picture: world.time before which it is not handed to viewers, and after which it is taken back.
+	/// A picture nobody can see yet still costs every viewer its drawing.
+	var/give_at = 0
+	var/drop_at = INFINITY
 
 /datum/landing_view_piece/Destroy(force)
 	QDEL_NULL(sky)
@@ -248,8 +250,9 @@
 	var/list/datum/landing_view_piece/pieces = list()
 	/// The planet's colours
 	var/datum/landing_view_palette/palette
-	/// The real ground around the berth, and the hull's shadow on it
+	/// The ground around the berth from afar, the same ground close up, and the hull's shadow on it
 	var/datum/landing_view_piece/ground
+	var/datum/landing_view_piece/close
 	var/datum/landing_view_piece/shadow
 	var/atom/movable/screen/landing_view_home/home
 	/// Things standing in transit space for the view (heat on the hull's edge, dust): deleted with it
@@ -334,6 +337,7 @@
 	QDEL_LIST(props)
 	QDEL_LIST(pieces)
 	ground = null
+	close = null
 	shadow = null
 	palette = null
 	QDEL_NULL(home)
@@ -433,7 +437,8 @@
 	return piece
 
 /**
- * [piece]'s motion is set, or has changed: (re)start it for everyone watching.
+ * [piece]'s motion is set, or has changed: (re)start it for everyone watching. A world picture is handed over at
+ * its give_at and taken back at its drop_at.
  * * replay - FALSE if only new parts were added to a world picture: what is already showing is left alone
  */
 /datum/landing_view/proc/show(datum/landing_view_piece/piece, replay = TRUE)
@@ -442,14 +447,33 @@
 	if(piece.sky)
 		piece.play_on(piece.sky)
 		return
-	if(!length(piece.parts))
+	if(!length(piece.parts) || world.time >= piece.drop_at)
 		return
+	if(world.time < piece.give_at)
+		if(piece.give_at < INFINITY)
+			addtimer(CALLBACK(src, PROC_REF(show), piece, replay), piece.give_at - world.time, TIMER_DELETE_ME | TIMER_UNIQUE | TIMER_OVERRIDE)
+		return
+	if(!piece.shown && piece.drop_at < INFINITY)
+		addtimer(CALLBACK(src, PROC_REF(take_back), piece), piece.drop_at - world.time, TIMER_DELETE_ME)
 	piece.shown = TRUE
 	for(var/client/watcher as anything in viewers)
 		var/datum/landing_view_viewer/viewer = viewers[watcher]
 		if(!viewer || !watcher)
 			continue
 		give_picture(viewer, piece, replay)
+
+/// [piece] is out of sight for good: nobody holds its images any more
+/datum/landing_view/proc/take_back(datum/landing_view_piece/piece)
+	if(ended || !piece.shown)
+		return
+	piece.shown = FALSE
+	for(var/client/watcher as anything in viewers)
+		var/datum/landing_view_viewer/viewer = viewers[watcher]
+		var/list/held = viewer?.images[piece]
+		if(!held)
+			continue
+		watcher?.images -= held
+		viewer.images -= piece
 
 /datum/landing_view/proc/give_picture(datum/landing_view_viewer/viewer, datum/landing_view_piece/piece, replay = TRUE)
 	var/list/image/shown = viewer.images[piece]
@@ -563,246 +587,6 @@
 			shown.loc = eye_turf
 			place_image(shown, eye_turf)
 
-/**
- * Builds the picture of the ground around the berth and hands it to [piece] as its look. Takes a few ticks;
- * [then] is called when it is done.
- * * reach - how many tiles past the hull's box the picture goes
- * * detail_reach - how far past the hull's box things standing on the ground are drawn as well
- * * backdrop_color - under and beyond the ground, as far as anyone can see
- * * which - LANDING_GROUND_ALL, or one of the two halves a takeoff draws it in: the country around the hull
- *   before it lifts, and the ground under it once it has. Parts are added to whatever the piece already has.
- * * in_one_go - build it all now, however long it takes, instead of over a few ticks
- */
-/datum/landing_view/proc/bake_ground(datum/landing_view_piece/piece, reach, detail_reach, backdrop_color, datum/callback/then, which = LANDING_GROUND_ALL, in_one_go = FALSE)
-	set waitfor = FALSE
-	var/started = REALTIMEOFDAY
-	var/reach_x = CEILING(ground_half_w + reach, LANDING_VIEW_CHUNK)
-	var/reach_y = CEILING(ground_half_h + reach, LANDING_VIEW_CHUNK)
-	var/detail_x = ground_half_w + detail_reach
-	var/detail_y = ground_half_h + detail_reach
-	var/list/parts = list()
-	// the chunks the hull's own box touches
-	var/under_x = CEILING(ground_half_w + 1, LANDING_VIEW_CHUNK)
-	var/under_y = CEILING(ground_half_h + 1, LANDING_VIEW_CHUNK)
-	if(which != LANDING_GROUND_UNDER)
-		// under the ground: the haze it fades into at its edges
-		var/mutable_appearance/backdrop = new()
-		var/mutable_appearance/sheet = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR)
-		sheet.color = backdrop_color
-		sheet.transform = matrix().Scale(400)
-		backdrop.overlays = list(sheet)
-		parts += list(list(landing_view_world_look(backdrop, LANDING_VIEW_LAYER_GROUND), 0, 0, 1))
-	var/datum/own_region = map_region_for_turf(berth_turfs[1])
-	// area -> the weather over it, found once
-	var/list/weather_by_area = list()
-	var/middle_x = round(ground_x)
-	var/middle_y = round(ground_y)
-	for(var/chunk_x = middle_x - reach_x, chunk_x < middle_x + reach_x, chunk_x += LANDING_VIEW_CHUNK)
-		for(var/chunk_y = middle_y - reach_y, chunk_y < middle_y + reach_y, chunk_y += LANDING_VIEW_CHUNK)
-			var/centre_off_x = chunk_x + LANDING_VIEW_CHUNK / 2 - ground_x
-			var/centre_off_y = chunk_y + LANDING_VIEW_CHUNK / 2 - ground_y
-			if(which != LANDING_GROUND_ALL)
-				var/under_hull = chunk_x >= middle_x - under_x && chunk_x < middle_x + under_x && chunk_y >= middle_y - under_y && chunk_y < middle_y + under_y
-				if(under_hull != (which == LANDING_GROUND_UNDER))
-					continue
-			var/detail = abs(centre_off_x) <= detail_x + LANDING_VIEW_CHUNK / 2 && abs(centre_off_y) <= detail_y + LANDING_VIEW_CHUNK / 2
-			var/mutable_appearance/chunk = landing_view_chunk(chunk_x, chunk_y, ground_z, detail, own_region, weather_by_area)
-			if(chunk)
-				// the outermost chunks are thin, so the picture has no hard edge
-				var/rings_in = min((reach_x - abs(centre_off_x)) / LANDING_VIEW_CHUNK, (reach_y - abs(centre_off_y)) / LANDING_VIEW_CHUNK)
-				parts += list(list(landing_view_world_look(chunk, LANDING_VIEW_LAYER_GROUND + 0.1), centre_off_x * ICON_SIZE_X, centre_off_y * ICON_SIZE_Y, rings_in < 1 ? 0.5 : 1))
-			if(!in_one_go && TICK_CHECK)
-				stoplag()
-				if(QDELETED(src) || ended)
-					return
-	piece.parts = (piece.parts || list()) + parts
-	log_world("LANDING_DEBUG: ground picture of [length(parts)] parts, reach [reach_x]x[reach_y], built in [(REALTIMEOFDAY - started) / 10]s")
-	then?.Invoke()
-
-/// Readies [look] to be one part of a world picture
-/proc/landing_view_world_look(mutable_appearance/look, part_layer)
-	look.plane = LANDING_VIEW_PLANE
-	look.layer = part_layer
-	look.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	return look
-
-/**
- * One chunk of ground picture: the planet tiles from [low_x], [low_y] up, one row and column past
- * LANDING_VIEW_CHUNK so neighbouring chunks overlap and no seam opens between them when they are scaled.
- * Drawn about its own middle. Null if there is no ground there.
- * * detail - draw what stands on the ground as well
- * * own_region - the site the berth is in; ground belonging to another site is left out
- * * weather_by_area - area -> landing_view_weather() of it, filled in as areas are met
- */
-/proc/landing_view_chunk(low_x, low_y, z, detail, datum/own_region, list/weather_by_area)
-	var/centre_x = low_x + LANDING_VIEW_CHUNK / 2
-	var/centre_y = low_y + LANDING_VIEW_CHUNK / 2
-	// one group per world plane, floor first, as the world draws them (see /obj/effect/abstract/landing_proxy)
-	var/list/plane_parts = new /list(ABOVE_GAME_PLANE - FLOOR_PLANE + 1)
-	for(var/rank in 1 to length(plane_parts))
-		plane_parts[rank] = list()
-	var/found = FALSE
-	// the light every tile here shares, if they all share one: then the whole chunk is tinted once
-	var/shared_light
-	var/mixed_light = FALSE
-	var/list/tile_lights = list()
-	var/list/storm_parts = list()
-	for(var/tile_x in low_x to low_x + LANDING_VIEW_CHUNK)
-		for(var/tile_y in low_y to low_y + LANDING_VIEW_CHUNK)
-			var/turf/ground = locate(tile_x, tile_y, z)
-			if(!ground || (own_region && map_region_excludes_turf(own_region, ground)))
-				continue
-			found = TRUE
-			var/offset_w = (tile_x - centre_x) * ICON_SIZE_X
-			var/offset_z = (tile_y - centre_y) * ICON_SIZE_Y
-			var/turf_plane = clamp(PLANE_TO_TRUE(ground.plane), FLOOR_PLANE, ABOVE_GAME_PLANE)
-			plane_parts[turf_plane - FLOOR_PLANE + 1] += landing_view_part(ground, offset_w, offset_z, TRUE)
-			if(detail)
-				for(var/atom/movable/thing as anything in ground)
-					if(thing.invisibility > SEE_INVISIBLE_LIVING || !thing.icon || thing.alpha < 20)
-						continue
-					if(istype(thing, /obj/effect/abstract) || istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/docking_port))
-						continue
-					var/true_plane = PLANE_TO_TRUE(thing.plane)
-					if(true_plane < FLOOR_PLANE || true_plane > ABOVE_GAME_PLANE)
-						continue
-					plane_parts[true_plane - FLOOR_PLANE + 1] += landing_view_part(thing, offset_w, offset_z, FALSE)
-			var/list/storm = weather_by_area[ground.loc]
-			if(isnull(storm))
-				storm = landing_view_weather(ground.loc)
-				weather_by_area[ground.loc] = storm
-			for(var/mutable_appearance/falling as anything in storm)
-				var/mutable_appearance/over_tile = new(falling)
-				over_tile.pixel_w = offset_w
-				over_tile.pixel_z = offset_z
-				storm_parts += over_tile
-			var/tile_light = landing_view_light(ground)
-			tile_lights[++tile_lights.len] = list(tile_light, offset_w, offset_z)
-			if(length(tile_lights) == 1)
-				shared_light = tile_light
-			else if(tile_light != shared_light)
-				mixed_light = TRUE
-	if(!found)
-		return null
-	var/list/parts = list()
-	for(var/rank in 1 to length(plane_parts))
-		if(!length(plane_parts[rank]))
-			continue
-		var/mutable_appearance/plane_group = new()
-		plane_group.plane = FLOAT_PLANE
-		plane_group.layer = rank
-		plane_group.appearance_flags = KEEP_TOGETHER
-		plane_group.overlays = plane_parts[rank]
-		parts += plane_group
-	if(length(storm_parts))
-		// over everything standing there and under its light, as the world draws weather
-		var/mutable_appearance/storm_group = new()
-		storm_group.plane = FLOAT_PLANE
-		storm_group.layer = 50
-		storm_group.appearance_flags = KEEP_TOGETHER
-		storm_group.overlays = storm_parts
-		parts += storm_group
-	var/mutable_appearance/chunk = new()
-	chunk.plane = FLOAT_PLANE
-	chunk.appearance_flags = KEEP_TOGETHER
-	if(mixed_light || istype(shared_light, /mutable_appearance))
-		for(var/list/tile_light as anything in tile_lights)
-			var/light = tile_light[1]
-			if(isnull(light))
-				continue
-			var/mutable_appearance/quad
-			if(istext(light))
-				quad = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR)
-				quad.color = light
-			else
-				quad = new(light)
-			quad.plane = FLOAT_PLANE
-			quad.layer = 100
-			quad.blend_mode = BLEND_MULTIPLY
-			quad.pixel_w = tile_light[2]
-			quad.pixel_z = tile_light[3]
-			parts += quad
-	else if(istext(shared_light))
-		chunk.color = shared_light
-	chunk.overlays = parts
-	return chunk
-
-/// The weather falling on every tile of [ground_area] right now, as looks for a ground picture (none: an empty list)
-/proc/landing_view_weather(area/ground_area)
-	. = list()
-	for(var/mutable_appearance/over as anything in ground_area.overlays)
-		if(over.plane != WEATHER_PLANE)
-			continue
-		var/mutable_appearance/falling = new(over)
-		falling.plane = FLOAT_PLANE
-		falling.appearance_flags = NONE
-		. += falling
-
-/// A copy of [thing]'s look for a ground picture, shifted by [offset_w], [offset_z]: only what the world planes
-/// would draw of it, without its light or anything that glows on a plane of its own
-/proc/landing_view_part(atom/thing, offset_w, offset_z, is_turf)
-	var/mutable_appearance/part = new(thing)
-	part.plane = FLOAT_PLANE
-	part.pixel_w += offset_w
-	part.pixel_z += offset_z
-	part.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	if(is_turf && length(part.underlays))
-		var/list/kept = list()
-		for(var/mutable_appearance/under as anything in part.underlays)
-			if(PLANE_TO_TRUE(under.plane) != LIGHTING_PLANE)
-				kept += under
-		part.underlays = kept
-	if(length(part.overlays))
-		var/list/kept
-		for(var/mutable_appearance/over as anything in part.overlays)
-			var/keep = !(over.appearance_flags & KEEP_APART)
-			if(keep && over.plane != FLOAT_PLANE)
-				var/true_plane = PLANE_TO_TRUE(over.plane)
-				keep = (true_plane >= FLOOR_PLANE && true_plane <= ABOVE_GAME_PLANE)
-			if(keep)
-				continue
-			kept ||= part.overlays.Copy()
-			kept -= over
-		if(kept)
-			part.overlays = kept
-	return part
-
-/**
- * The light on [ground], to multiply over its tile in a picture: null for full light, a colour for a flat one
- * (daylight on open ground), or an appearance to lay over the tile (ground with a lighting object of its own).
- */
-/proc/landing_view_light(turf/ground)
-	var/area/ground_area = ground.loc
-	var/ambient
-	if(ground_area.base_lighting_alpha)
-		var/list/parts = rgb2num(ground_area.base_lighting_color == COLOR_STARLIGHT ? GLOB.starlight_color : ground_area.base_lighting_color)
-		var/strength = ground_area.base_lighting_alpha / 255
-		ambient = rgb(parts[1] * strength, parts[2] * strength, parts[3] * strength)
-	var/mutable_appearance/own = ground.lighting_object?.current_underlay
-	if(!own)
-		if(ambient)
-			return ambient == "#ffffff" ? null : ambient
-		// no light of any kind reaches it: space and the like light themselves, anything else is dark
-		return (ground_area.static_lighting && !isspaceturf(ground)) ? "#000000" : null
-	if(!ambient)
-		var/mutable_appearance/quad = new(own)
-		quad.appearance_flags = RESET_COLOR
-		return quad
-	// both: its own light with the daylight added
-	var/mutable_appearance/base = new(own)
-	base.plane = FLOAT_PLANE
-	base.layer = 1
-	base.appearance_flags = RESET_COLOR
-	var/mutable_appearance/day = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR)
-	day.color = ambient
-	day.blend_mode = BLEND_ADD
-	day.layer = 2
-	var/mutable_appearance/both = new()
-	both.appearance_flags = KEEP_TOGETHER | RESET_COLOR
-	both.overlays = list(base, day)
-	return both
-
 #undef LANDING_VIEW_STEP
 #undef LANDING_VIEW_SYNC
-#undef LANDING_VIEW_CHUNK
 #undef LANDING_VIEW_FADE

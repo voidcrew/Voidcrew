@@ -88,31 +88,36 @@
 	)
 
 /**
- * The planet seen whole: surface, cloud and shading drawn as one ball. Returns two pieces showing the same
- * ball: the whole of it, and its middle at twice the grain for when it fills the screen. Give both to
- * chain_detail() with the size track of the first.
+ * The planet seen whole. Returns list(grains, shade):
+ * - grains: two lists of pieces, each a surface and its clouds, showing the same ball: the whole of it, and its
+ *   middle at twice the grain for when it fills the screen. Give them to chain_detail() with the size track of
+ *   the very first piece.
+ * - shade: the shading of the lit ball, multiplied over both. Give it the same opacity as the whole.
+ *
+ * Separate sheets, each scaled on its own, and not one ball kept together: the client scales a kept-together
+ * group without smoothing it, and this is drawn many times its size.
  */
 /datum/landing_view/proc/new_planet()
-	var/list/pieces = list()
+	var/list/grains = list()
+	var/datum/landing_view_piece/first
 	for(var/grain in list("planet", "planet_near"))
-		var/datum/landing_view_piece/planet = add_sky(LANDING_VIEW_LAYER_PLANET + length(pieces) * 0.01, LANDING_VIEW_ICON, grain, LANDING_VIEW_ICON_SIZE)
-		var/atom/movable/screen/landing_view_sky/ball = planet.sky
-		var/mutable_appearance/surface = mutable_appearance(LANDING_VIEW_ICON, grain, appearance_flags = RESET_COLOR)
-		surface.color = palette.surface_matrix()
-		var/mutable_appearance/cloud = mutable_appearance(LANDING_VIEW_ICON, "[grain]_clouds", appearance_flags = RESET_COLOR)
-		cloud.color = palette.cloud
-		var/mutable_appearance/shade = mutable_appearance(LANDING_VIEW_ICON, "[grain]_shade", appearance_flags = RESET_COLOR)
-		shade.blend_mode = BLEND_MULTIPLY
-		ball.icon_state = "blank"
-		ball.appearance_flags |= KEEP_TOGETHER
-		ball.overlays = list(surface, cloud, shade)
-		if(length(pieces))
-			planet.scale = pieces[1].scale
-			planet.slide_x = pieces[1].slide_x
-			planet.slide_y = pieces[1].slide_y
-			planet.scale_factor = 0.5
-		pieces += planet
-	return pieces
+		var/datum/landing_view_piece/surface = add_sky(LANDING_VIEW_LAYER_PLANET + length(grains) * 0.02, LANDING_VIEW_ICON, grain, LANDING_VIEW_ICON_SIZE)
+		surface.sky.color = palette.surface_matrix()
+		var/datum/landing_view_piece/cloud = add_sky(LANDING_VIEW_LAYER_PLANET + length(grains) * 0.02 + 0.01, LANDING_VIEW_ICON, "[grain]_clouds", LANDING_VIEW_ICON_SIZE)
+		cloud.sky.color = palette.cloud
+		first ||= surface
+		for(var/datum/landing_view_piece/sheet as anything in list(surface, cloud))
+			sheet.scale = first.scale
+			sheet.slide_x = first.slide_x
+			sheet.slide_y = first.slide_y
+			sheet.scale_factor = 0.5 ** length(grains)
+		grains += list(list(surface, cloud))
+	var/datum/landing_view_piece/shade = add_sky(LANDING_VIEW_LAYER_PLANET + 0.09, LANDING_VIEW_ICON, "planet_shade", LANDING_VIEW_ICON_SIZE)
+	shade.sky.blend_mode = BLEND_MULTIPLY
+	shade.scale = first.scale
+	shade.slide_x = first.slide_x
+	shade.slide_y = first.slide_y
+	return list(grains, shade)
 
 /**
  * A deck of cloud seen from above, in the planet's cloud colour. Returns three pieces showing the same clouds,
@@ -135,12 +140,12 @@
  * Sets the opacity of [pieces], which show one thing at finer and finer grain, so that as it grows each closer-up
  * texture fades in over the one before, which is then dropped; and the other way about as it shrinks. A texture
  * is never stretched far, and the picture never thins in the changeover, because the one underneath stays whole
- * until the one on top has covered it.
+ * until the one on top has covered it. Each entry of [pieces] is one grain: a piece, or a list of them.
  * * size - the size track of the first piece
  * * opacity - how opaque the whole thing is over time (0-255)
  * * switches - one list(from, to) per changeover: the sizes of the first piece between which the next takes over
  */
-/datum/landing_view/proc/chain_detail(list/datum/landing_view_piece/pieces, datum/landing_track/size, datum/landing_track/opacity, list/switches)
+/datum/landing_view/proc/chain_detail(list/pieces, datum/landing_track/size, datum/landing_track/opacity, list/switches)
 	var/start = min(size.times[1], opacity.times[1])
 	var/finish = max(size.end_time(), opacity.end_time())
 	for(var/moment = start, moment < finish + 2, moment += 2)
@@ -156,9 +161,11 @@
 				var/list/falling = switches[i]
 				if(now_size >= falling[2])
 					share = 0
-			pieces[i].alpha.mark(when, now_opacity * share)
-	for(var/datum/landing_view_piece/piece as anything in pieces)
-		show(piece)
+			for(var/datum/landing_view_piece/piece as anything in (islist(pieces[i]) ? pieces[i] : list(pieces[i])))
+				piece.alpha.mark(when, now_opacity * share)
+	for(var/grain in pieces)
+		for(var/datum/landing_view_piece/piece as anything in (islist(grain) ? grain : list(grain)))
+			show(piece)
 
 /// The glow of air around [planet]'s rim, growing and shrinking with it
 /datum/landing_view/proc/new_air(datum/landing_view_piece/planet)

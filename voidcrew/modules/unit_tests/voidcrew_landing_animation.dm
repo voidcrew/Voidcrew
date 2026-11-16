@@ -120,9 +120,10 @@
 		if(piece.sky)
 			TEST_ASSERT_EQUAL(piece.sky.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A piece of the sky catches the mouse")
 			TEST_ASSERT_EQUAL(piece.sky.plane, LANDING_VIEW_PLANE, "A piece of the sky is off the view's plane")
-	UNTIL(length(view.ground.parts) || QDELETED(view))
-	TEST_ASSERT(length(view.ground.parts) > 1, "The ground picture has nothing in it")
-	for(var/list/part as anything in view.ground.parts)
+	UNTIL((length(view.ground.parts) && length(view.close.parts)) || QDELETED(view))
+	TEST_ASSERT(length(view.ground.parts) > 1, "The picture of the ground from afar has nothing in it")
+	TEST_ASSERT(length(view.close.parts) > 1, "The close-up picture of the ground has nothing in it")
+	for(var/list/part as anything in (view.ground.parts + view.close.parts))
 		var/mutable_appearance/look = part[1]
 		TEST_ASSERT_EQUAL(look.plane, LANDING_VIEW_PLANE, "Part of the ground picture is off the view's plane")
 		TEST_ASSERT_EQUAL(look.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Part of the ground picture catches the mouse")
@@ -173,7 +174,7 @@
 	TEST_ASSERT(length(effects_on(berth_turfs)) > 0, "Takeoff left no climbing picture")
 	var/datum/landing_view/ascent/climb = ship.launch_view
 	TEST_ASSERT_NOTNULL(climb, "Takeoff shows the people aboard nothing")
-	TEST_ASSERT(length(climb.ground.parts) > 1, "The ground is not there under the hull the moment it lifts")
+	TEST_ASSERT(length(climb.close.parts) > 0, "The ground is not there under the hull the moment it lifts")
 	masked = climb.masked.Copy()
 	hull_turfs = climb.hull_turfs.Copy()
 	sleep(6 SECONDS)

@@ -18,9 +18,6 @@
 
 /// Size of the ground when it comes out of the cloud
 #define DESCENT_GROUND_START 0.3
-/// How far past the hull's box the ground picture reaches, and how far things on it are drawn
-#define DESCENT_GROUND_REACH 44
-#define DESCENT_GROUND_DETAIL 16
 
 /// The view from aboard, for the length of this descent
 /datum/landing_animation/var/datum/landing_view/descent/inside_view
@@ -47,8 +44,10 @@
 /// The planet whole, growing under the ship, then thinning into its own sky
 /datum/landing_view/descent/proc/add_planet()
 	var/now = world.time
-	var/list/datum/landing_view_piece/planet = new_planet()
-	var/datum/landing_track/size = planet[1].scale
+	var/list/planet = new_planet()
+	var/list/grains = planet[1]
+	var/datum/landing_view_piece/whole = grains[1][1]
+	var/datum/landing_track/size = whole.scale
 	size.mark(now, 0.3)
 	size.mark(touchdown - 6.2 SECONDS, 6.4, LANDING_CURVE_IN)
 	var/datum/landing_track/opacity = new
@@ -56,9 +55,12 @@
 	opacity.mark(now + 0.6 SECONDS, 255)
 	opacity.mark(touchdown - 7.6 SECONDS, 255)
 	opacity.mark(touchdown - 6.2 SECONDS, 0)
-	chain_detail(planet, size, opacity, LANDING_PLANET_DETAIL)
+	chain_detail(grains, size, opacity, LANDING_PLANET_DETAIL)
+	var/datum/landing_view_piece/shade = planet[2]
+	shade.alpha = opacity
+	show(shade)
 
-	var/datum/landing_view_piece/air = new_air(planet[1])
+	var/datum/landing_view_piece/air = new_air(whole)
 	air.alpha.mark(now, 0)
 	air.alpha.mark(now + 0.6 SECONDS, 235)
 	air.alpha.mark(touchdown - 8 SECONDS, 235)
@@ -133,10 +135,13 @@
 	ground = add_picture()
 	ground.scale.mark(touchdown - 5.2 SECONDS, DESCENT_GROUND_START)
 	ground.scale.mark(touchdown - 0.3 SECONDS, 1, LANDING_CURVE_OUT)
-	// under the sky until the sky has covered everything
-	ground.alpha.mark(touchdown - 5.4 SECONDS, 0)
-	ground.alpha.mark(touchdown - 5.3 SECONDS, 255)
-	bake_ground(ground, DESCENT_GROUND_REACH, DESCENT_GROUND_DETAIL, palette.sky, CALLBACK(src, PROC_REF(show), ground))
+	// nobody is handed it until the sky has covered everything
+	ground.give_at = touchdown - 5.4 SECONDS
+	bake_far(ground, CALLBACK(src, PROC_REF(show), ground))
+	// and the same ground close up, once it is near enough to tell the difference
+	close = add_picture()
+	chain_ground(ground, close)
+	bake_near(close, detail_reach(), CALLBACK(src, PROC_REF(show), close))
 
 	// the same shadow the people on the ground see spreading over the berth (see /datum/landing_animation)
 	shadow = add_picture()
@@ -161,5 +166,3 @@
 	qdel(src)
 
 #undef DESCENT_GROUND_START
-#undef DESCENT_GROUND_REACH
-#undef DESCENT_GROUND_DETAIL

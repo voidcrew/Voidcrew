@@ -17,9 +17,6 @@
  * the ground the hull itself stood on has to wait for it to be gone. Deletes itself when it is done.
  */
 
-/// How far past the hull's box the ground picture reaches, and how far things on it are drawn
-#define ASCENT_GROUND_REACH 40
-#define ASCENT_GROUND_DETAIL 14
 #define ASCENT_LENGTH (9 SECONDS)
 /// How long a view made ready for a takeoff waits for the hull to lift before it gives up
 #define ASCENT_WAIT (40 SECONDS)
@@ -54,9 +51,11 @@
 	bow_x = (bow_dir & EAST) ? 1 : ((bow_dir & WEST) ? -1 : 0)
 	bow_y = (bow_dir & NORTH) ? 1 : ((bow_dir & SOUTH) ? -1 : 0)
 	ground = add_picture()
+	close = add_picture()
 	shadow = add_picture()
 	// all the country around the berth; the ground under the hull is drawn once the hull is off it
-	bake_ground(ground, ASCENT_GROUND_REACH, ASCENT_GROUND_DETAIL, palette.sky, CALLBACK(src, PROC_REF(country_drawn)), LANDING_GROUND_AROUND)
+	bake_far(ground, CALLBACK(src, PROC_REF(country_drawn)))
+	bake_near(close, detail_reach(), CALLBACK(src, PROC_REF(country_drawn)), LANDING_GROUND_AROUND)
 	if(hull_turfs)
 		lift_off(hull_turfs, berth_turfs, rotation)
 	else
@@ -77,6 +76,7 @@
 /datum/landing_view/ascent/proc/country_drawn()
 	if(liftoff)
 		show(ground, FALSE)
+		show(close, FALSE)
 
 /**
  * The hull has just left its berth for transit.
@@ -95,7 +95,7 @@
 	screen_bow_x = (screen_bow & EAST) ? 1 : ((screen_bow & WEST) ? -1 : 0)
 	screen_bow_y = (screen_bow & NORTH) ? 1 : ((screen_bow & SOUTH) ? -1 : 0)
 	// the ground the hull stood on, bare now it has gone
-	bake_ground(ground, ASCENT_GROUND_REACH, ASCENT_GROUND_DETAIL, palette.sky, null, LANDING_GROUND_UNDER, TRUE)
+	bake_near(close, detail_reach(), null, LANDING_GROUND_UNDER, TRUE)
 	add_ground()
 	add_clouds()
 	add_planet()
@@ -117,7 +117,10 @@
 	// gone once the sky has closed over it
 	ground.alpha.mark(liftoff + 3.7 SECONDS, 255)
 	ground.alpha.mark(liftoff + 3.8 SECONDS, 0)
+	ground.drop_at = liftoff + 3.9 SECONDS
+	chain_ground(ground, close)
 	show(ground)
+	show(close)
 
 	shadow.parts = list(list(landing_view_shadow_look(berth_turfs, ground_x, ground_y), 0, 0, 1))
 	shadow.scale.mark(liftoff, 1)
@@ -172,29 +175,32 @@
 
 /// The planet whole, shrinking astern
 /datum/landing_view/ascent/proc/add_planet()
-	var/list/datum/landing_view_piece/planet = new_planet()
-	var/datum/landing_track/size = planet[1].scale
+	var/list/planet = new_planet()
+	var/list/grains = planet[1]
+	var/datum/landing_view_piece/whole = grains[1][1]
+	var/datum/landing_track/size = whole.scale
 	size.mark(liftoff + 4.6 SECONDS, 6.4)
 	size.mark(liftoff + 8.6 SECONDS, 0.7, LANDING_CURVE_OUT)
-	planet[1].slide_x.mark(liftoff + 4.6 SECONDS, 0)
-	planet[1].slide_x.mark(liftoff + 8.6 SECONDS, screen_bow_x * 240)
-	planet[1].slide_y.mark(liftoff + 4.6 SECONDS, 0)
-	planet[1].slide_y.mark(liftoff + 8.6 SECONDS, screen_bow_y * 240)
+	whole.slide_x.mark(liftoff + 4.6 SECONDS, 0)
+	whole.slide_x.mark(liftoff + 8.6 SECONDS, screen_bow_x * 240)
+	whole.slide_y.mark(liftoff + 4.6 SECONDS, 0)
+	whole.slide_y.mark(liftoff + 8.6 SECONDS, screen_bow_y * 240)
 	var/datum/landing_track/opacity = new
 	opacity.mark(liftoff + 4.8 SECONDS, 0)
 	opacity.mark(liftoff + 5.8 SECONDS, 255)
 	opacity.mark(liftoff + 7.6 SECONDS, 255)
 	opacity.mark(liftoff + 8.8 SECONDS, 0)
-	chain_detail(planet, size, opacity, LANDING_PLANET_DETAIL)
+	chain_detail(grains, size, opacity, LANDING_PLANET_DETAIL)
+	var/datum/landing_view_piece/shade = planet[2]
+	shade.alpha = opacity
+	show(shade)
 
-	var/datum/landing_view_piece/air = new_air(planet[1])
+	var/datum/landing_view_piece/air = new_air(whole)
 	air.alpha.mark(liftoff + 5 SECONDS, 0)
 	air.alpha.mark(liftoff + 6 SECONDS, 235)
 	air.alpha.mark(liftoff + 7.6 SECONDS, 235)
 	air.alpha.mark(liftoff + 8.8 SECONDS, 0)
 	show(air)
 
-#undef ASCENT_GROUND_REACH
-#undef ASCENT_GROUND_DETAIL
 #undef ASCENT_LENGTH
 #undef ASCENT_WAIT

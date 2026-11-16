@@ -235,6 +235,9 @@
 			planet_turfs += from_turf
 			transit_turfs += to_turf
 	. = ..()
+	if(launch || descent)
+		// the hull's lights have moved with it: lit again before anyone sees it dark
+		landing_settle_lighting()
 	if(launch)
 		// the same climb for the people aboard, over the ground they just stood on
 		var/obj/structure/overmap/ship/ship = current_ship
