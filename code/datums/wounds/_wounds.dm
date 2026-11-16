@@ -217,14 +217,10 @@
 		return
 
 	if(!silent && !demoted)
-		var/msg = span_danger("[victim]'s [limb.plaintext_zone] [occur_text]!")
-		var/vis_dist = COMBAT_MESSAGE_RANGE
-
-		if(severity > WOUND_SEVERITY_SEVERE)
-			msg = "<b>[msg]</b>"
-			vis_dist = DEFAULT_MESSAGE_RANGE
-
-		victim.visible_message(msg, span_userdanger("Your [limb.plaintext_zone] [occur_text]!"), vision_distance = vis_dist)
+		// VOIDCREW EDIT CHANGE START: the wound line joins the message of the hit that caused it (voidcrew/modules/hyperviolence/hitlines)
+		// original: victim.visible_message(msg, span_userdanger("Your [limb.plaintext_zone] [occur_text]!"), vision_distance = vis_dist) with msg bold and vis_dist DEFAULT_MESSAGE_RANGE above a severe wound, COMBAT_MESSAGE_RANGE otherwise
+		victim.hv_add_hit_line("[victim]'s [limb.plaintext_zone] [occur_text]!", HV_LINE_BOLD, "Your [limb.plaintext_zone] [occur_text]!", severity > WOUND_SEVERITY_SEVERE ? DEFAULT_MESSAGE_RANGE : COMBAT_MESSAGE_RANGE)
+		// VOIDCREW EDIT CHANGE END
 		if(sound_effect)
 			playsound(L.owner, sound_effect, sound_volume + (20 * severity), TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2,  ignore_walls = FALSE, falloff_distance = 0)
 

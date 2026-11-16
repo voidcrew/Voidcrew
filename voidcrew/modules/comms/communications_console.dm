@@ -53,19 +53,24 @@
 	return SSsecurity_level.available_levels[SSsecurity_level.number_level_to_text(ship.comms_security_level)]
 
 /obj/machinery/computer/communications/proc/set_communications_security_level(new_level)
-	var/obj/docking_port/mobile/ship = voidcrew_communications_ship(src)
+	voidcrew_set_ship_security_level(src, new_level)
+
+/// Sets the alert level of the ship `source` stands on. Off a ship (ruin wreckage, planets) it does nothing:
+/// there is no sector-wide alert level in Voidcrew.
+/proc/voidcrew_set_ship_security_level(atom/source, new_level)
+	var/obj/docking_port/mobile/ship = voidcrew_communications_ship(source)
 	if(!ship)
-		SSsecurity_level.set_level(new_level)
-		return
+		return FALSE
 	var/datum/security_level/selected_level = SSsecurity_level.available_levels[SSsecurity_level.number_level_to_text(new_level)]
 	if(!selected_level || ship.comms_security_level == new_level)
-		return
-	level_announce(selected_level, ship.comms_security_level, get_communication_players())
+		return FALSE
+	level_announce(selected_level, ship.comms_security_level, voidcrew_announcement_players(source))
 	ship.comms_security_level = new_level
 	for(var/area/ship_area as anything in ship.shuttle_areas)
 		for(var/obj/machinery/status_display/evac/display in ship_area)
 			display.on_sec_level_change(ship, new_level)
 	SSblackbox.record_feedback("tally", "security_level_changes", 1, selected_level.name)
+	return TRUE
 
 /obj/machinery/computer/communications/proc/get_communications_emergency_access()
 	var/obj/docking_port/mobile/ship = voidcrew_communications_ship(src)

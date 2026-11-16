@@ -11,7 +11,7 @@ Three trader outposts sit permanently on the [overmap](overmap.md), one per zone
 
 | Outpost | Zone | Trader | Sells |
 |---|---|---|---|
-| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and armour, street chrome and sundries. Back-room goods also cost vouchers. |
+| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and armour, street chrome and sundries, plus walkmans, cassette tapes and a tape deck for making your own mixtapes. Back-room goods also cost vouchers. |
 | Quartermain Depot | Contested lanes (yellow) | Sarge | Armour, firearms, thruster and turret boards, ordnance, hull stock. |
 | Undertow Exchange | Lawless deep (red) | Vex | Syndicate hardware, MODsuit control units, ship shield, interdiction and electronic-warfare boards, exploit software, sealed mystery cargo. |
 

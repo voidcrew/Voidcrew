@@ -401,8 +401,9 @@
 		var/obj/machinery/door/airlock/airlock = door
 		if(airlock.seal)
 			return FALSE
-		// A docked or air-safe external airlock opens for anyone from inside (try_safety_unlock())
-		if(istype(airlock, /obj/machinery/door/airlock/external))
+		// A docked or air-safe external airlock opens for anyone from inside (try_safety_unlock()),
+		// unless its ship's crew lock refuses us (try_to_activate_door() in ship_access.dm)
+		if(istype(airlock, /obj/machinery/door/airlock/external) && !(airlock.requiresID() && airlock.refused_by_ship_crew_lock(pawn)))
 			var/obj/machinery/door/airlock/external/hatch = airlock
 			if(hatch.space_dir && (hatch.shuttledocked || hatch.cyclelinkedairlock?.shuttledocked || is_safe_turf(get_step(hatch, hatch.space_dir), TRUE, FALSE)))
 				return TRUE

@@ -385,23 +385,7 @@
 			var/obj/O = AM
 			O.take_damage(damage, BURN, LASER)
 
-	// Damage walls/turfs based on power level
-	// At low power (below 150%), minimal wall damage
-	// At high power (150%+), significant wall damage that scales with power
-	if(impact_loc.density)
-		var/wall_damage = 0
-		if(power_level >= 1.5)
-			// High power mode: walls take significant damage
-			// At 150% power: 1.5x base damage
-			// At 200% power: 3x base damage (scales quadratically for dramatic effect)
-			var/power_bonus = (power_level - 1) * 2  // 0.5 at 150%, 1.0 at 200%
-			wall_damage = damage * (1 + power_bonus)
-		else
-			// Low power: only 10% damage to walls
-			wall_damage = damage * 0.1
-
-		if(wall_damage > 0)
-			impact_loc.take_damage(wall_damage, BURN, LASER)
+	// Walls have no integrity, so ship lasers leave them alone.
 
 	// Small fire effect
 	new /obj/effect/hotspot(impact_loc)

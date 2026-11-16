@@ -107,6 +107,7 @@ GLOBAL_LIST_INIT(nanite_program_capacity_costs, list(
 
 /datum/nanite_program/Destroy()
 	extra_settings = null
+	clear_rules()
 	if(host_mob)
 		if(activated)
 			deactivate()
@@ -119,6 +120,12 @@ GLOBAL_LIST_INIT(nanite_program_capacity_costs, list(
 	nanites = null
 	host_mob = null
 	return ..()
+
+/// Deletes every rule. Rules hold their program, so they must go before it does.
+/datum/nanite_program/proc/clear_rules()
+	var/list/old_rules = rules
+	rules = list()
+	QDEL_LIST(old_rules)
 
 /datum/nanite_program/proc/capacity_cost()
 	return nanite_program_type_capacity_cost(type)
@@ -159,7 +166,7 @@ GLOBAL_LIST_INIT(nanite_program_capacity_costs, list(
 
 	target.force_disabled = force_disabled //cloud syncs copy a healthy program over this, which is what clears the error
 
-	target.rules = list()
+	target.clear_rules()
 	for(var/datum/nanite_rule/rule as anything in rules)
 		rule.copy_to(target)
 	target.all_rules_required = all_rules_required

@@ -67,6 +67,14 @@
 		/datum/shop_sku/outfitter/rifle_clip,
 		/datum/shop_sku/outfitter/smg_mag,
 		/datum/shop_sku/outfitter/wt550_mag,
+		/datum/shop_sku/outfitter/rapier_mag,
+		/datum/shop_sku/outfitter/heater_mag,
+		/datum/shop_sku/outfitter/zashch_mag,
+		/datum/shop_sku/outfitter/resolution_mag,
+		/datum/shop_sku/outfitter/woodsman_mag,
+		/datum/shop_sku/outfitter/skm_mag,
+		/datum/shop_sku/outfitter/skm_extended_mag,
+		/datum/shop_sku/outfitter/slammer_mag,
 		/datum/shop_sku/outfitter/firing_pin,
 		/datum/shop_sku/outfitter/riot_shotgun,
 		// Melee
@@ -332,6 +340,83 @@
 	desc = "A loaded 4.6x30mm magazine for a WT-550."
 	item_path = /obj/item/ammo_box/magazine/wt550m9
 	price_credits = 150
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/rapier_mag
+	category = "Firearms & Ammo"
+	name = "m-94 magazine"
+	desc = "A loaded 4.6x30mm magazine for an M-94 'Rapier'."
+	item_path = /obj/item/ammo_box/magazine/rapier
+	price_credits = 180
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/heater_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "heater magazine"
+	desc = "A loaded 5.7x39mm magazine for a Heater or Scorcher."
+	item_path = /obj/item/ammo_box/magazine/heater
+	price_credits = 200
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/zashch_mag
+	category = "Firearms & Ammo"
+	name = "zashch magazine"
+	desc = "A loaded 10mm box magazine for a 'Zashch' heavy pistol."
+	item_path = /obj/item/ammo_box/magazine/zashch
+	price_credits = 300
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/resolution_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "pd46 magazine"
+	desc = "A loaded 4.6x30mm magazine for a PD46."
+	item_path = /obj/item/ammo_box/magazine/resolution
+	price_credits = 180
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/woodsman_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "model 23 magazine"
+	desc = "A loaded 8x50mmR magazine for a Model 23 Woodsman."
+	item_path = /obj/item/ammo_box/magazine/m23
+	price_credits = 200
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/skm_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "skm magazine"
+	desc = "A loaded 20-round 7.62x40mm magazine for an SKM rifle."
+	item_path = /obj/item/ammo_box/magazine/skm
+	price_credits = 200
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/skm_extended_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "extended skm magazine"
+	desc = "A loaded 40-round 7.62x40mm magazine for an SKM rifle."
+	item_path = /obj/item/ammo_box/magazine/skm/extended
+	price_credits = 450
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/outfitter/slammer_mag
+	category = "Firearms & Ammo"
+	name = "slammer magazine"
+	desc = "A loaded six-shell box magazine for a Slammer."
+	item_path = /obj/item/ammo_box/magazine/m12g_slammer
+	price_credits = 250
 	stock_min = 10
 	stock_max = 20
 

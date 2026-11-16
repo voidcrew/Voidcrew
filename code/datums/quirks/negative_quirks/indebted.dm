@@ -12,6 +12,10 @@
 	if(!human_holder.account_id)
 		return
 	var/datum/bank_account/account = SSeconomy.bank_accounts_by_id["[human_holder.account_id]"]
+	// VOIDCREW EDIT START - ship spawns can carry an account_id that isn't registered yet
+	if(!account)
+		return
+	// VOIDCREW EDIT END
 	var/debt = PAYCHECK_CREW * rand(275, 325)
 	account.account_debt += debt
 	RegisterSignal(account, COMSIG_BANK_ACCOUNT_DEBT_PAID, PROC_REF(on_debt_paid))
