@@ -390,6 +390,9 @@
 	var/obj/effect/abstract/landing_shadow/shadow
 	/// The falling hull
 	var/obj/effect/abstract/landing_proxy/proxy
+	/// client -> the image that hides the picture from them: the crew aboard, who would otherwise see a still
+	/// copy of their ship, themselves included, over the real one for a moment after landing
+	var/list/hidden_from = list()
 	/// TRUE once the move has started and the picture is on the ground
 	var/frozen = FALSE
 	/// TRUE once the hull is down and the picture only covers it while its lighting catches up
@@ -411,6 +414,9 @@
 
 /datum/landing_animation/Destroy(force)
 	QDEL_NULL(shadow)
+	for(var/client/crew_client as anything in hidden_from)
+		crew_client?.images -= hidden_from[crew_client]
+	hidden_from = null
 	QDEL_NULL(proxy)
 	hull_turfs = null
 	berth_turfs = null
@@ -438,6 +444,17 @@
 		shadow = null
 	if(proxy)
 		animate(proxy, pixel_z = 0, time = 0.2 SECONDS, easing = QUAD_EASING | EASE_IN)
+		var/list/aboard = list()
+		for(var/turf/hull_turf as anything in hull_turfs)
+			aboard[hull_turf] = TRUE
+		var/turf/first = hull_turfs[1]
+		for(var/mob/crew as anything in SSmobs.clients_by_zlevel[first.z])
+			if(!crew.client || !aboard[get_turf(crew)])
+				continue
+			var/image/hide = image(loc = proxy)
+			hide.override = TRUE
+			crew.client.images += hide
+			hidden_from[crew.client] = hide
 
 /// The hull is down. The picture covers it a moment longer while its lighting is rebuilt, then goes.
 /datum/landing_animation/proc/landed()
