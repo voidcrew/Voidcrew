@@ -7265,6 +7265,7 @@
 #include "voidcrew\modules\lobby_terminal\lobby_character_preview.dm"
 #include "voidcrew\modules\lobby_terminal\lobby_crews.dm"
 #include "voidcrew\modules\lobby_terminal\lobby_housing.dm"
+#include "voidcrew\modules\lobby_terminal\lobby_music.dm"
 #include "voidcrew\modules\lobby_terminal\lobby_tgui.dm"
 #include "voidcrew\modules\lobby_terminal\lobby_yard.dm"
 #include "voidcrew\modules\loot\abandoned_crate.dm"

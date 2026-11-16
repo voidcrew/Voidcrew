@@ -211,6 +211,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		return
 	log_tgui(owner, "Lobby terminal did not report visible in time", window = window)
 	set_classic_lobby(TRUE)
+	// No LOGIN to wait for: the classic lobby gets its title music now (lobby_music.dm).
+	owner.lobby_music_release()
 	to_chat(owner, span_warning("The dock terminal didn't load. <a href='byond://?src=[REF(src)];lobby_reload=1'>Try again</a>."))
 
 /datum/lobby_terminal/Topic(href, list/href_list)

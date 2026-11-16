@@ -156,6 +156,8 @@
 			if(boot_done)
 				return FALSE
 			boot_done = TRUE
+			// The title music waited for this (lobby_music.dm).
+			owner?.lobby_music_release()
 			var/sound_state = params["sound"]
 			if(!(sound_state in list("running", "suspended", "none")))
 				sound_state = "unknown"

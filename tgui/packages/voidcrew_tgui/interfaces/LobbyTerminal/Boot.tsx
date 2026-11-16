@@ -3,6 +3,10 @@
  * types out, a bar fills, and a LOGIN button waits for the player. Shown once per connection
  * (data.boot, lobby_bezel.dm); LOGIN tells the server it has been seen.
  *
+ * While it waits in the dark for its sounds and its font (a first connection), one dim block
+ * cursor blinks at the top left of the glass, so the tube reads as alive; it goes the instant
+ * the power-on line appears.
+ *
  * Mount it inside the screen glass. It fills its parent and sizes itself from the glass rect
  * alone, so the frame around it can change freely. It sits at z-index 20 in the glass's
  * stacking order, above everything the terminal draws. Its children are drawn over it: pass
@@ -26,6 +30,7 @@ import { useBackend } from 'tgui/backend';
 
 import { audioState, isLoaded, play, preload, stop, unload } from './audio';
 import { renderEmblem } from './emblemDraw';
+import { preloadSfx } from './motion';
 import { lockNav } from './nav';
 import type { LobbyData } from './types';
 
@@ -165,6 +170,12 @@ export function Boot(props: Props) {
     act('boot_done', { ...report.current, failed: 1 });
     setStage('off');
   };
+  // The lobby's own sounds load once this screen has its clips, or at once when it is not shown.
+  useEffect(() => {
+    if (stage !== 'hold') {
+      preloadSfx();
+    }
+  }, [stage]);
   if (stage === 'off') {
     return null;
   }
@@ -232,6 +243,7 @@ function BootScreen(
   const blocks = useRef<HTMLDivElement | null>(null);
   const login = useRef<HTMLDivElement | null>(null);
   const shield = useRef<HTMLDivElement | null>(null);
+  const cursor = useRef<HTMLDivElement | null>(null);
   /** The callbacks change every render; the loops below read them from here. */
   const live = useRef(props);
   live.current = props;
@@ -311,6 +323,11 @@ function BootScreen(
     };
 
     const draw = (tau: number) => {
+      // The waiting cursor goes the instant the power-on line appears.
+      const cursorEl = cursor.current;
+      if (cursorEl && tau >= 0) {
+        cursorEl.style.display = 'none';
+      }
       const lineEl = line.current;
       if (lineEl) {
         lineEl.style.display = tau >= 0 && tau < LINE_END ? 'block' : 'none';
@@ -475,6 +492,7 @@ function BootScreen(
       style={{ fontSize: fontPx, ['--bp' as string]: `${px}px` }}
     >
       <style>{BOOT_CSS}</style>
+      <div ref={cursor} className="lt-boot-cursor" />
       <canvas
         ref={canvas}
         width={CANVAS}
@@ -545,6 +563,9 @@ const BOOT_CSS = `
   font-family: 'VCR', 'Consolas', monospace; line-height: 1.25; color: #dfc4ff; user-select: none;
   text-shadow: 0 0 calc(var(--bp) * 1.5) rgba(190,140,255,.55); }
 .lt-boot canvas { position: absolute; image-rendering: pixelated; }
+.lt-boot-cursor { position: absolute; left: calc(var(--bp) * 8); top: calc(var(--bp) * 8); width: .586em; height: 1em;
+  background: #6a4ea0; animation: lt-boot-cursor 1.06s steps(1) infinite; }
+@keyframes lt-boot-cursor { 50% { opacity: 0; } }
 .lt-boot-line { position: absolute; left: 0; right: 0; height: var(--bp); background: #fff;
   box-shadow: 0 0 12px #c79bff; }
 .lt-boot-word { position: absolute; left: 0; right: 0; top: 74%; text-align: center; white-space: pre;
