@@ -107,7 +107,7 @@
 		show(streaks)
 	heat_hull(touchdown - 9.2 SECONDS, touchdown - 5.6 SECONDS)
 
-/// A deck of cloud coming up from below, the white of being inside it, and the last of it rushing past
+/// A deck of cloud coming up from below, the white of being inside it, and the haze under it
 /datum/landing_view/descent/proc/add_clouds()
 	// always bigger than the screen: small and sharp far below, huge as the ship reaches it
 	var/list/datum/landing_view_piece/deck = new_clouds()
@@ -139,16 +139,6 @@
 	mist.alpha.mark(touchdown - 4.5 SECONDS, 120)
 	mist.alpha.mark(touchdown - 4 SECONDS, 0)
 	show(mist)
-
-	// the underside of the deck, torn into wisps, flying up and out past the ship
-	var/datum/landing_view_piece/wisps = add_sky(LANDING_VIEW_LAYER_CLOUD + 0.5, LANDING_VIEW_ICON, "wisps", LANDING_VIEW_ICON_SIZE)
-	wisps.sky.color = palette.cloud
-	wisps.scale.mark(touchdown - 4.8 SECONDS, 1.8)
-	wisps.scale.mark(touchdown - 3 SECONDS, 5, LANDING_CURVE_IN)
-	wisps.alpha.mark(touchdown - 4.8 SECONDS, 0)
-	wisps.alpha.mark(touchdown - 4.4 SECONDS, 210)
-	wisps.alpha.mark(touchdown - 3 SECONDS, 0)
-	show(wisps)
 
 	// haze between the ship and the ground, clearing as it comes down
 	var/datum/landing_view_piece/haze = add_sky(LANDING_VIEW_LAYER_HAZE, fill = palette.sky)
@@ -190,10 +180,10 @@
 	shadow.scale.mark(touchdown, 1, LANDING_CURVE_OUT)
 	shadow.scale_with = ground.scale
 	shadow.alpha.mark(touchdown - 5 SECONDS, 0)
-	shadow.alpha.mark(touchdown - 4.4 SECONDS, 56)
-	shadow.alpha.mark(touchdown - 3 SECONDS, 56)
-	shadow.alpha.mark(touchdown - 1 SECONDS, 80, LANDING_CURVE_BOTH)
-	shadow.alpha.mark(touchdown, 100, LANDING_CURVE_OUT)
+	shadow.alpha.mark(touchdown - 4.4 SECONDS, 70)
+	shadow.alpha.mark(touchdown - 3 SECONDS, 70)
+	shadow.alpha.mark(touchdown - 1 SECONDS, 100, LANDING_CURVE_BOTH)
+	shadow.alpha.mark(touchdown, 125, LANDING_CURVE_OUT)
 	show(shadow)
 
 /// The hull has started to move onto the berth

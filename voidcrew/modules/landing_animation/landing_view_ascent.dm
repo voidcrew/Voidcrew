@@ -105,8 +105,9 @@
 	var/screen_bow = rotation ? turn(bow_dir, rotation) : bow_dir
 	screen_bow_x = (screen_bow & EAST) ? 1 : ((screen_bow & WEST) ? -1 : 0)
 	screen_bow_y = (screen_bow & NORTH) ? 1 : ((screen_bow & SOUTH) ? -1 : 0)
-	// the ground the hull stood on, bare now it has gone
-	bake_near(close, detail_reach(), null, LANDING_GROUND_UNDER, TRUE)
+	// the ground the hull stood on, bare now it has gone. The hull still hides nearly all of it, so it is drawn
+	// over the next few ticks and not in this one, which the hull's move has already made a long one
+	bake_near(close, detail_reach(), CALLBACK(src, PROC_REF(show), close, FALSE), LANDING_GROUND_UNDER)
 	add_ground()
 	add_clouds()
 	add_planet()
