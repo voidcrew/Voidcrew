@@ -22,6 +22,7 @@ import {
   Field,
   HRule,
   Key,
+  NameLine,
   Pager,
   Put,
   RPut,
@@ -55,6 +56,10 @@ const KEY_W = 13;
 const FIELD_W = 22;
 const BERTH_PITCH = 1.75;
 const BERTH_H = 1.5;
+/** The widest pitch berth rows stretch to when they all fit, and the row height from which
+ * a row takes the larger title and a 2-row key. */
+const BERTH_PITCH_MAX = 3.5;
+const BERTH_TALL = 2.25;
 /** ABOARD: columns 45 to 61. */
 const ABOARD_X = 45;
 const NAME_W = 17;
@@ -316,6 +321,19 @@ export function CrewRecord(props: Props) {
     const per = paged
       ? Math.max(1, Math.floor((A - 1) / BERTH_PITCH))
       : jobs.length;
+    // When every berth fits on one page, the rows share the column: a pitch up to
+    // BERTH_PITCH_MAX in quarter rows, as the CREWS list's blocks stretch to fill their box.
+    const pitch = paged
+      ? BERTH_PITCH
+      : Math.max(
+          BERTH_PITCH,
+          Math.min(
+            BERTH_PITCH_MAX,
+            Math.floor(((A + 0.25) / Math.max(1, jobs.length)) * 4) / 4,
+          ),
+        );
+    const rowH = pitch - 0.25;
+    const tall = rowH >= BERTH_TALL;
     const pages = Math.max(1, Math.ceil(jobs.length / per));
     const pg = Math.min(pages, Math.max(1, berthPage));
     const first = (pg - 1) * per;
@@ -339,35 +357,53 @@ export function CrewRecord(props: Props) {
       firstFocus = 'sign';
     }
     shown.forEach((job, i) => {
-      const yy = by + i * BERTH_PITCH;
+      const yy = by + i * pitch;
       const live = canSign(job);
       const lit = joining && pressed === job.ref;
       const titleCls = locked ? 'faint' : job.ok ? '' : 'dim';
-      const countCls = locked ? 'faint' : 'acc';
       const claim = claimJob ? claimJob === job.ref : job === firstLive;
+      const title = cut(safe(job.title).toUpperCase(), TITLE_W);
+      const keyH = tall ? 2 : BERTH_H;
       out.push(
         <Slab
           key={`r${job.ref}`}
           x={1}
           y={yy}
           w={41}
-          h={BERTH_H}
+          h={rowH}
           variant="row"
           dead={locked}
         />,
-        <Put key={`t${job.ref}`} x={3} y={yy + 0.25} cls={titleCls}>
-          {cut(safe(job.title).toUpperCase(), TITLE_W)}
-        </Put>,
-        <RPut key={`n${job.ref}`} x={28} y={yy + 0.25} cls={countCls}>
+        tall ? (
+          <NameLine
+            key={`t${job.ref}`}
+            x={3}
+            y={yy + (rowH - 1.25) / 2}
+            w={TITLE_W}
+            text={title}
+            cls={titleCls}
+          />
+        ) : (
+          <Put
+            key={`t${job.ref}`}
+            x={3}
+            y={yy + (rowH - 1) / 2}
+            cls={titleCls}
+          >
+            {title}
+          </Put>
+        ),
+        // The open count stays in accent on every row, a locked crew's too.
+        <RPut key={`n${job.ref}`} x={28} y={yy + (rowH - 1) / 2} cls="acc">
           {String(Math.min(99, Math.max(0, job.open || 0)))}
         </RPut>,
         <Key
           // Remount when the key comes alive, so a code accepted moves the focus onto it.
           key={`k${job.ref}-${live ? 1 : 0}`}
           x={KEY_X}
-          y={yy}
+          y={yy + (rowH - keyH) / 2}
           w={KEY_W}
-          h={BERTH_H}
+          h={keyH}
           kind="cap"
           label="[ SIGN ON ]"
           state={lit ? 'lit' : live ? 'idle' : 'dead'}
@@ -398,7 +434,7 @@ export function CrewRecord(props: Props) {
       );
       t0 = by + per * BERTH_PITCH + 1;
     } else {
-      t0 = by + shown.length * BERTH_PITCH - 0.25;
+      t0 = by + shown.length * pitch - 0.25;
     }
   }
 
