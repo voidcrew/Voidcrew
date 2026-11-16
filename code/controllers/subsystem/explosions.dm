@@ -494,8 +494,7 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	explosion_index += 1
 
 	// VOIDCREW EDIT ADDITION START: the police hear of it like any other attack (voidcrew/modules/trade/outpost_security.dm)
-	if(outpost_blast_victims)
-		GLOB.outpost_pvp_enforcement.on_outpost_bombing(explosion_cause, outpost_blast_victims)
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(explosion_cause, outpost_blast_victims || list())
 	// VOIDCREW EDIT ADDITION END
 
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_EXPLOSION, epicenter, devastation_range, heavy_impact_range, light_impact_range, took, orig_dev_range, orig_heavy_range, orig_light_range, explosion_cause, explosion_index)

@@ -14,6 +14,7 @@
 
 #define OUTPOST_CRIME_ASSAULT_UNARMED "unarmed"
 #define OUTPOST_CRIME_ASSAULT_ARMED "armed"
+#define OUTPOST_CRIME_BOMBING "bombing"
 #define OUTPOST_CRIME_ASSAULT_SHOT "shot"
 #define OUTPOST_CRIME_MURDER "murder"
 #define OUTPOST_CRIME_VANDALISM "vandalism"

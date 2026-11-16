@@ -424,6 +424,15 @@ GLOBAL_DATUM(outpost_cluster_armer, /datum/weakref)
 	var/list/officers = list()
 	var/list/locals = list()
 	var/list/visitors = list()
+
+	// VOIDCREW EDIT ADDITION START: bombing is a crime even with no victims, if witnessed (voidcrew/_DEFINES/outpost_police.dm)
+	var/turf/epicenter = get_turf(explosion_cause)
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(epicenter)
+	if(outpost && outpost.police)
+		if(outpost.police.perception.witness_of(bomber, OUTPOST_CRIME_BOMBING, epicenter, explosion_cause) != POLICE_WITNESS_NONE)
+			outpost.police.report_crime(bomber, OUTPOST_CRIME_BOMBING, null, explosion_cause)
+	// VOIDCREW EDIT ADDITION END
+
 	for(var/mob/living/victim as anything in victims)
 		if(QDELETED(victim) || victim == bomber || victim.stat == DEAD)
 			continue
