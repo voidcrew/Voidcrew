@@ -254,6 +254,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			traders += npc
 			if(isnull(npc.shop_type)) // the main shop's trader is the outpost's face
 				trader = npc
+		// The Rig Bay's stands find Wick's shop and hang their first mechs (rig_bay/)
+		for(var/obj/structure/rig_bay_stand/stand in interior_turf)
+			stand.link_outpost(src)
 		for(var/obj/machinery/machine in interior_turf)
 			if(istype(machine, /obj/machinery/porta_turret/outpost))
 				var/obj/machinery/porta_turret/outpost/turret = machine
