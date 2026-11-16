@@ -572,3 +572,22 @@ export type LobbyActions = {
   /** Answers CharData.confirm. */
   char_confirm: { ok: 0 | 1 };
 };
+
+// ---------------------------------------------------------------------------
+// SETTINGS, KEYS group (lobby_settings_keys.dm). One-off pushes on settings_keys_open, after
+// every settings_keys_* action and when tg's own window changes a keybinding.
+
+export type SettingsKeysBlock = {
+  /** Bumped on every push. */
+  rev: number;
+  /** keybind_name -> its keys in slot order (at most three). Unbound keybindings are left out;
+   * DM sends [] when none is bound. */
+  binds: Record<string, string[]> | [];
+};
+
+export type SettingsKeysData = {
+  /** One-off push: the player's keybindings. Kept between pushes. */
+  settings_keys?: SettingsKeysBlock;
+};
+
+export type LobbyKeysData = LobbyData & SettingsKeysData;
