@@ -137,7 +137,6 @@ GLOBAL_LIST(cassette_tracks)
 		"cassette_ftl",
 		"cassette_gray",
 		"cassette_green",
-		"cassette_ice",
 		"cassette_midnight",
 		"cassette_ocean",
 		"cassette_orange",
