@@ -23,6 +23,8 @@
 	var/datum/pirate_negotiation/tribute_negotiation
 	/// The ship this pad is installed on
 	var/obj/structure/overmap/ship/linked_ship
+	/// world.time of the last teleport effect, so several things moving through in one tick make one flash
+	var/last_teleport_effect = -1
 
 /obj/machinery/mission_pad/Initialize(mapload)
 	. = ..()
@@ -160,6 +162,11 @@
  * Called when items are teleported in (rewards) or out (turn-ins).
  */
 /obj/machinery/mission_pad/proc/do_teleport_effect()
+	// A turn-in and its payout land in the same tick: one flash, one sound
+	if(last_teleport_effect == world.time)
+		return
+	last_teleport_effect = world.time
+
 	// Visual effect
 	flick("lpad-idle", src)
 
@@ -170,6 +177,14 @@
 
 	// Sound effect
 	playsound(src, 'sound/effects/magic/teleport_diss.ogg', 50, TRUE)
+
+/**
+ * Plays the pad effect for something a mission has just put on a pad's tile
+ * (kits, chips, finished batches). Does nothing where no pad stands there.
+ */
+/proc/mission_pad_delivery_effect(turf/where)
+	var/obj/machinery/mission_pad/pad = locate() in where
+	pad?.do_teleport_effect()
 
 /**
  * Handle items entering the pad's turf (via signal from connect_loc element).
