@@ -1,24 +1,9 @@
 // # Bounty hunting: criminal AI defines
 //
 // Owner: P3 AI (voidcrew/modules/bounties/bounty_ai.dm, bounty_ai_meek.dm, bounty_ai_normal.dm,
-// bounty_activities.dm, bounty_companions.dm). Only P3 edits this file. The shared enums are in
-// bounties.dm. The numbers come from balance/combat.md section 6 and spec section 12.3 (C4, C6,
-// C7); the rest are the spec's section 3 values.
-
-// ===== TRAITS =====
-
-// P2 declares these two in bounty_criminals.dm with the same values. The guarded copies here let this
-// package build on its own; once both are merged, these can go.
-#ifndef TRAIT_BOUNTY_SPRINTING
-/// A meek criminal running flat out, not winded, cornered or aiming. P2's projectile dodge reads it.
-#define TRAIT_BOUNTY_SPRINTING "bounty_sprinting"
-#endif
-#ifndef TRAIT_BOUNTY_HELD
-/// Restrained or downed (P2): the AI plans nothing
-#define TRAIT_BOUNTY_HELD "bounty_held"
-#endif
-/// Trait source for what the criminal AI puts on a mob (TRAIT_BOUNTY_SPRINTING)
-#define BOUNTY_AI_TRAIT "bounty_ai"
+// bounty_styles.dm, bounty_activities.dm, bounty_companions.dm). Only P3 edits this file. The shared
+// enums are in bounties.dm. Criminals and companions are real human bodies (voidcrew/modules/human_npcs/):
+// nothing here sets health, stamina or speed. A pace is only a walk or a run (ai_set_pace()).
 
 // ===== WHAT THEY ARE DOING =====
 
@@ -37,7 +22,7 @@
 
 /// In a locker or a crate
 #define BOUNTY_HIDE_CONTAINER "container"
-/// Passing as a potted plant
+/// Holding up a potted plant (tg's own disguise: the plant's tactical component)
 #define BOUNTY_HIDE_PLANT "plant"
 /// Standing still on a dark tile
 #define BOUNTY_HIDE_DARK "dark"
@@ -52,16 +37,18 @@
 #define BB_BOUNTY_LEADER "bb_bounty_leader"
 /// Their fighting style's key (BOUNTY_STYLE_*)
 #define BB_BOUNTY_STYLE "bb_bounty_style"
-/// The real item they fight with (a typepath: bounty_real_weapon()), or null for bare fists
-#define BB_BOUNTY_WEAPON "bb_bounty_weapon"
-/// Rounds left in the magazine
-#define BB_BOUNTY_AMMO "bb_bounty_ammo"
-/// world.time a reload ends
-#define BB_BOUNTY_RELOAD_UNTIL "bb_bounty_reload_until"
 /// world.time the current wind-up ends
 #define BB_BOUNTY_WINDUP_UNTIL "bb_bounty_windup_until"
-/// world.time of the last shot
+/// world.time the current wind-up began
+#define BB_BOUNTY_WINDUP_FROM "bb_bounty_windup_from"
+/// Their stamina loss when the wind-up began: more by the end of it and they fumble
+#define BB_BOUNTY_WINDUP_STAMINA "bb_bounty_windup_stamina"
+/// world.time they last took a hit
+#define BB_BOUNTY_HIT_AT "bb_bounty_hit_at"
+/// world.time of the last shot or throw
 #define BB_BOUNTY_LAST_SHOT "bb_bounty_last_shot"
+/// world.time they may next pull the trigger or throw
+#define BB_BOUNTY_NEXT_SHOT "bb_bounty_next_shot"
 /// world.time a ranged fighter may next step back from someone too close
 #define BB_BOUNTY_BACKSTEP_AT "bb_bounty_backstep_at"
 
@@ -76,8 +63,11 @@
 
 // ===== SHARED =====
 
-/// Speed while going about their business, and while blended in (the fugitive and every decoy move alike)
+/// The pace while going about their business, and while blended in (the fugitive and every decoy walk
+/// alike). Anything quicker than this is a run (ai_set_pace()).
 #define BOUNTY_CALM_SPEED 2.5
+/// The pace of anyone running: running, as a person runs. There is no faster sprint.
+#define BOUNTY_RUN_SPEED 1.5
 /// How often they look around for hunters
 #define BOUNTY_NOTICE_INTERVAL (0.5 SECONDS)
 /// Held items at least this strong count as a weapon drawn
@@ -96,29 +86,23 @@
 #define BOUNTY_ACTIVITY_RANGE 8
 /// How far exploring looks for things to look at
 #define BOUNTY_EXPLORE_RANGE 10
-/// Glasses a criminal leaves on tables at the bar before a finished glass just goes
+/// Glasses a criminal leaves about at the bar (on a table or the floor) before a finished glass just goes
 #define BOUNTY_BAR_GLASSES_MAX 2
+/// Drunk this much (tg's drunkenness), they nurse their drink instead of drinking it
+#define BOUNTY_BAR_SOBER_LIMIT 30
 /// Spots an activity remembers as out of reach
 #define BOUNTY_FAILED_SPOTS_MAX 8
 /// How long a trader outpost's public floor is reused between its patrons before it is worked out again
 #define BOUNTY_OUTPOST_FLOOR_CACHE (1 MINUTES)
+/// A wind-up left this long past its end is stale: the next shot telegraphs again
+#define BOUNTY_WINDUP_STALE (1 SECONDS)
+/// After a fumble, this long before they try again
+#define BOUNTY_FUMBLE_PAUSE (1 SECONDS)
 
 // ===== MEEK (combat.md 6.1, spec C6) =====
 
-/// Speed while sprinting: the tg trooper's, faster than a running person (1.5)
-#define BOUNTY_MEEK_SPRINT_SPEED 1.1
-/// A lizard sprints a little faster (spec section 2)
-#define BOUNTY_MEEK_LIZARD_SPRINT_BONUS 0.1
-/// Speed while winded: clearly slower than a runner
-#define BOUNTY_MEEK_WINDED_SPEED 2.2
-/// How long they sprint before they are winded
-#define BOUNTY_MEEK_SPRINT_TIME (8 SECONDS)
-/// Resting still, the sprint comes back in this long
-#define BOUNTY_MEEK_REST_TIME (8 SECONDS)
-/// Sprint back per second spent hidden (full in about 5 s)
-#define BOUNTY_MEEK_RECOVER_HIDDEN 1.5
-/// Sprint back per second spent unseen but not hidden
-#define BOUNTY_MEEK_RECOVER_WALKING 0.3
+/// Stamina loss at which tg's own slowdown starts (human updatehealth(): 40): they are winded
+#define BOUNTY_MEEK_WINDED_STAMINA 40
 /// Someone armed, cuffs or a warrant in hand this close is noticed
 #define BOUNTY_MEEK_NOTICE_RANGE 6
 /// Someone running straight at them this close is noticed
@@ -149,7 +133,7 @@
 #define BOUNTY_MEEK_CORNERED_TIME (0.8 SECONDS)
 /// The aim before the shots: the telegraph
 #define BOUNTY_MEEK_PISTOL_WINDUP (0.5 SECONDS)
-/// Shots in the holdout's volley, a magazine at most
+/// Trigger pulls in the holdout's volley, a magazine at most
 #define BOUNTY_MEEK_PISTOL_SHOTS 8
 /// Between them
 #define BOUNTY_MEEK_PISTOL_GAP (0.2 SECONDS)
@@ -169,9 +153,6 @@
 
 // ===== NORMAL (combat.md 6.2, spec C7) =====
 
-/// Speed in a fight, by style
-#define BOUNTY_NORMAL_SPEED_MELEE 1.25
-#define BOUNTY_NORMAL_SPEED_RANGED 1.4
 /// Noticed at this range (someone armed, cuffs or a warrant in hand)
 #define BOUNTY_NORMAL_NOTICE_RANGE 6
 /// Someone with a weapon drawn this close, while they are aware of them, starts the fight
@@ -180,22 +161,21 @@
 #define BOUNTY_NORMAL_AWARE_FORGET (15 SECONDS)
 /// Fighting, but nobody on the grudge list seen for this long: the fight is over
 #define BOUNTY_NORMAL_CALM_AFTER (30 SECONDS)
-/// Share of max health at or below which they may give up
+/// Surrender (defaults CR-10, /datum/human_npc_surrender/bounty): at or below this share of health,
 #define BOUNTY_SURRENDER_BELOW 0.4
-/// Percent chance on the hit that crosses the line
+/// a percent chance on the first roll of a fight,
 #define BOUNTY_SURRENDER_CHANCE 60
-/// Less for each companion still standing
+/// less this for each companion still standing,
 #define BOUNTY_SURRENDER_PER_COMPANION 20
-/// Percent chance on later hits
+/// then this on later rolls,
 #define BOUNTY_SURRENDER_RETRY 25
-/// At most this often
+/// at most this often,
 #define BOUNTY_SURRENDER_RETRY_GAP (5 SECONDS)
-/// Hunters needed around them
+/// with this many hunters around them,
 #define BOUNTY_SURRENDER_HUNTERS 2
-/// Within this range, in view
+/// within this range, in view
 #define BOUNTY_SURRENDER_HUNTER_RANGE 7
-/// Below this share of health with no hunter near, they break off and retreat. The spec's 25% is the
-/// downed line, so a standing criminal is never below it; the surrender line is used instead.
+/// Below this share of health with no hunter near, they break off and retreat
 #define BOUNTY_NORMAL_RETREAT_BELOW 0.4
 /// How far they try to get away when retreating
 #define BOUNTY_NORMAL_RETREAT_DISTANCE 10
@@ -204,58 +184,46 @@
 
 #define BOUNTY_COMPANIONS_MIN 0
 #define BOUNTY_COMPANIONS_MAX 2
-/// Health before the style's multiplier
-#define BOUNTY_COMPANION_HEALTH 110
 /// Below this share of health a companion may run (a BOUNTY_COMPANION_FLEE_CHANCE roll, once)
 #define BOUNTY_COMPANION_FLEE_BELOW 0.3
 #define BOUNTY_COMPANION_FLEE_CHANCE 50
+/// Up from a stamina crit with hunters around: the chance a companion gives up rather than runs
+#define BOUNTY_COMPANION_GIVE_UP_CHANCE 50
 /// How far a companion keeps from its criminal while nothing is happening
 #define BOUNTY_COMPANION_FOLLOW 2
 /// How often a companion calls the rest of the gang in (the trooper's 30 s)
 #define BOUNTY_REINFORCE_COOLDOWN (30 SECONDS)
 
-// ===== STYLES (combat.md 6.2) =====
-// Every blow and shot is the real weapon's (bounty_weapons.dm): the item in their hand is each
-// style's held_look, and a Wanted criminal carries its heavy_look where it has one.
+// ===== STYLES (combat.md 6.2, bounty_styles.dm) =====
+// Every style is a real item the fighter carries and draws: blows and shots are the item's own, through
+// the fighter's hands. These only set the timing: how often they pull the trigger or throw, the
+// telegraph, and the distance they keep.
 
-#define BOUNTY_BRAWLER_HEALTH 1.2
-#define BOUNTY_BRAWLER_STAMINA 0.8
-#define BOUNTY_BRAWLER_INTERVAL (1 SECONDS)
-/// Chance a punch shoves the target back a tile and staggers them for a second
+/// Chance a brawler's blow is a real shove instead of a punch
 #define BOUNTY_BRAWLER_SHOVE_CHANCE 20
-#define BOUNTY_BRAWLER_STAGGER (1 SECONDS)
 
-#define BOUNTY_KNIFE_HEALTH 1
-#define BOUNTY_KNIFE_INTERVAL (0.8 SECONDS)
-
-#define BOUNTY_PISTOL_HEALTH 0.9
-#define BOUNTY_PISTOL_INTERVAL (0.25 SECONDS)
+/// Between trigger pulls (each pull of the Stechkin is its own burst)
+#define BOUNTY_PISTOL_INTERVAL (0.8 SECONDS)
 /// Keeps about this far away
 #define BOUNTY_PISTOL_RANGE 5
 #define BOUNTY_PISTOL_MIN_RANGE 3
-/// The reload: the window to close in
-#define BOUNTY_PISTOL_RELOAD (2 SECONDS)
 /// Raising the gun before the first shot of a string
 #define BOUNTY_PISTOL_WINDUP (0.2 SECONDS)
 /// Shots further apart than this start a new string
 #define BOUNTY_PISTOL_STRING_GAP (3 SECONDS)
 
-#define BOUNTY_SHOTGUN_HEALTH 1
 #define BOUNTY_SHOTGUN_INTERVAL (1.2 SECONDS)
 #define BOUNTY_SHOTGUN_RANGE 2
 /// The pump before each blast
 #define BOUNTY_SHOTGUN_WINDUP (0.3 SECONDS)
-/// Loading the tube again: the window to close in
-#define BOUNTY_SHOTGUN_RELOAD (3 SECONDS)
+/// Spare shells on the bandolier
+#define BOUNTY_SHOTGUN_SHELLS 8
 
-#define BOUNTY_CLUB_HEALTH 1.1
-#define BOUNTY_CLUB_INTERVAL (1.1 SECONDS)
-
-#define BOUNTY_BOTTLE_HEALTH 0.9
 #define BOUNTY_BOTTLE_INTERVAL (1.2 SECONDS)
 #define BOUNTY_BOTTLE_RANGE 4
 #define BOUNTY_BOTTLE_MIN_RANGE 2
-/// Tiles a bottle flies
-#define BOUNTY_BOTTLE_REACH 6
 /// The throwing arc before each throw
 #define BOUNTY_BOTTLE_WINDUP (0.3 SECONDS)
+/// Bottles in the bag, by tier: Petty, and above
+#define BOUNTY_BOTTLES_PETTY 4
+#define BOUNTY_BOTTLES_WANTED 6

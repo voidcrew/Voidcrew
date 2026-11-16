@@ -58,9 +58,12 @@
 /// A second pass that keeps the goons in their rooms, once every zone_mobs marker has had time to spawn (its resolver retries for up to a minute)
 #define BOUNTY_LAIR_GOON_LEASH_DELAY (65 SECONDS)
 
-// ===== P12 =====
+/// ===== P12 =====
 // The mafia club's people (bounty_lair_mafia.dm): balance/lairs.md sections 3-5 and 10, spec section 15.
 // Unit tests can't see these; they use the literal values with the define named in a comment.
+// The goons, the lieutenants and the don are real human NPCs (voidcrew/modules/human_npcs/): their health is a
+// person's, their toughness is what they wear and npc_damage_taken, and they fire the real guns in their hands.
+// Only the don's mech is a mob of its own.
 
 /// The faction every club mob shares: goons, lieutenants, the mech and the don
 #define BOUNTY_MAFIA_FACTION "bounty_mafia"
@@ -71,8 +74,10 @@
 #define BOUNTY_MAFIA_BARK_COOLDOWN (12 SECONDS)
 /// Chance a second, per mob, that an idle goon says something while players are about
 #define BOUNTY_MAFIA_IDLE_BARK_CHANCE 1
+/// After someone starts cuffing a club member who can still move, how long before it steps away (tg's cuffing takes 4 seconds)
+#define BOUNTY_MAFIA_CUFF_REACTION (0.6 SECONDS)
 
-/// Sent on the mech as the don climbs out, before the mech's death: (mob/living/basic/bounty_lair_boss/mafia_don/don)
+/// Sent on the mech as the don climbs out, before the mech's death: (mob/living/carbon/human/npc/bounty_mafia/don/don)
 #define COMSIG_BOUNTY_MAFIA_DON_EJECTED "bounty_mafia_don_ejected"
 /// Sent on the don when his trophy drops: (obj/item/bounty_proof/trophy/mafia_don/trophy)
 #define COMSIG_BOUNTY_MAFIA_TROPHY_DROPPED "bounty_mafia_trophy_dropped"
@@ -81,30 +86,25 @@
 #define BB_BOUNTY_MAFIA_MOVE_TO "BB_bounty_mafia_move_to"
 
 // ----- mobsters -----
-// Every blow and round is the real item's in their hand (bounty_real_weapon()): its look, damage and magazine.
+// A volley is one aim (if the gun has one), then VOLLEY pulls of the trigger VOLLEY_GAP apart, then COOLDOWN before
+// the next. The gun's own burst and fire rate apply to every pull: a Stechkin pull is its three-round burst.
 
 #define BOUNTY_MOBSTER_KNIFE /obj/item/knife/kitchen
-#define BOUNTY_MOBSTER_KNIFE_HEALTH 120
-#define BOUNTY_MOBSTER_KNIFE_COOLDOWN (0.8 SECONDS)
-#define BOUNTY_MOBSTER_KNIFE_SPEED 1.2
 
 #define BOUNTY_MOBSTER_PISTOL_GUN /obj/item/gun/ballistic/automatic/pistol/aps
-#define BOUNTY_MOBSTER_PISTOL_HEALTH 120
-/// A pistol fires this many shots each time it fires, this far apart; a goon only decides to shoot every half second
-#define BOUNTY_MOBSTER_PISTOL_BURST 2
-#define BOUNTY_MOBSTER_PISTOL_BURST_GAP (0.25 SECONDS)
-#define BOUNTY_MOBSTER_PISTOL_COOLDOWN (0.5 SECONDS)
-#define BOUNTY_MOBSTER_PISTOL_RELOAD (2 SECONDS)
-#define BOUNTY_MOBSTER_PISTOL_SPEED 1.4
+#define BOUNTY_MOBSTER_PISTOL_MAGAZINE /obj/item/ammo_box/magazine/m9mm_aps
+#define BOUNTY_MOBSTER_PISTOL_VOLLEY 1
+#define BOUNTY_MOBSTER_PISTOL_VOLLEY_GAP (0.3 SECONDS)
+#define BOUNTY_MOBSTER_PISTOL_COOLDOWN (0.8 SECONDS)
 
 #define BOUNTY_MOBSTER_SMG_GUN /obj/item/gun/ballistic/automatic/mini_uzi
-#define BOUNTY_MOBSTER_SMG_HEALTH 150
-#define BOUNTY_MOBSTER_SMG_BURST 5
-#define BOUNTY_MOBSTER_SMG_BURST_GAP (0.1 SECONDS)
+#define BOUNTY_MOBSTER_SMG_MAGAZINE /obj/item/ammo_box/magazine/uzim9mm
+/// The SMG spins up before each volley ("aiming!"), and a hit then spoils it
 #define BOUNTY_MOBSTER_SMG_WINDUP (0.3 SECONDS)
+/// Each pull is the Uzi's two-round burst
+#define BOUNTY_MOBSTER_SMG_VOLLEY 3
+#define BOUNTY_MOBSTER_SMG_VOLLEY_GAP (0.3 SECONDS)
 #define BOUNTY_MOBSTER_SMG_COOLDOWN (1 SECONDS)
-#define BOUNTY_MOBSTER_SMG_RELOAD (2.5 SECONDS)
-#define BOUNTY_MOBSTER_SMG_SPEED 1.4
 
 /// The shout before a room's first shot
 #define BOUNTY_MOBSTER_ALERT (0.5 SECONDS)
@@ -125,25 +125,20 @@
 
 // ----- lieutenants -----
 
-#define BOUNTY_LIEUTENANT_TOMMY_GUN /obj/item/gun/ballistic/automatic/tommygun
-#define BOUNTY_LIEUTENANT_TOMMY_HEALTH 350
-#define BOUNTY_LIEUTENANT_TOMMY_BURST 6
-#define BOUNTY_LIEUTENANT_TOMMY_BURST_GAP (0.1 SECONDS)
-#define BOUNTY_LIEUTENANT_TOMMY_WINDUP (0.3 SECONDS)
-#define BOUNTY_LIEUTENANT_TOMMY_COOLDOWN (1 SECONDS)
-#define BOUNTY_LIEUTENANT_TOMMY_RELOAD (3 SECONDS)
-#define BOUNTY_LIEUTENANT_TOMMY_SPEED 1.4
+/// Both lieutenants take this much of any brute or burn, through their bodies (elite rank), on top of their armour
+#define BOUNTY_LIEUTENANT_DAMAGE_TAKEN 0.8
 
-/// Brute fights with his fists: a human's punch
-#define BOUNTY_LIEUTENANT_BRUTE_HEALTH 400
-#define BOUNTY_LIEUTENANT_BRUTE_COOLDOWN (1 SECONDS)
-/// Percent chance a blow knocks the hunter down
+#define BOUNTY_LIEUTENANT_TOMMY_GUN /obj/item/gun/ballistic/automatic/tommygun
+#define BOUNTY_LIEUTENANT_TOMMY_MAGAZINE /obj/item/ammo_box/magazine/tommygunm45
+#define BOUNTY_LIEUTENANT_TOMMY_WINDUP (0.3 SECONDS)
+/// Each pull is one round of the Thompson
+#define BOUNTY_LIEUTENANT_TOMMY_VOLLEY 6
+#define BOUNTY_LIEUTENANT_TOMMY_VOLLEY_GAP (0.1 SECONDS)
+#define BOUNTY_LIEUTENANT_TOMMY_COOLDOWN (1 SECONDS)
+
+/// Brute fights with his fists: a person's punch. A landed punch knocks the hunter down this often (percent), for this long.
 #define BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN_CHANCE 25
 #define BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN (1 SECONDS)
-#define BOUNTY_LIEUTENANT_BRUTE_SPEED 1.2
-
-/// Both lieutenants take this much of any brute or burn damage
-#define BOUNTY_LIEUTENANT_DAMAGE_MOD 0.8
 
 /// The lieutenants' names for the role var
 #define BOUNTY_LIEUTENANT_TOMMY "tommy"
@@ -171,10 +166,11 @@
 #define BOUNTY_MECH_STOMP_THROW 3
 #define BOUNTY_MECH_STOMP_THROW_SPEED 2
 
-/// The lock-on: a marker under each hunter it can see, then one rocket per marker
+/// The lock-on: a marker under each hunter it can see, then one rocket per marker. Each burst is tg's light blast
+/// (ex_act(EXPLODE_LIGHT)) on everyone standing on its marker, and nothing else: no explosion(), no breach.
 #define BOUNTY_MECH_ROCKET_LOCK (0.8 SECONDS)
+/// A rocket's damage to what it hits in flight in the arena (a table, a window, a door), before BOUNTY_MECH_ROCKET_DEMOLITION
 #define BOUNTY_MECH_ROCKET_DAMAGE 70
-#define BOUNTY_MECH_ROCKET_KNOCKDOWN (1 SECONDS)
 #define BOUNTY_MECH_ROCKET_COOLDOWN (9 SECONDS)
 /// Damage a rocket does to a table, window or door it hits in the arena, as a multiple of its damage
 #define BOUNTY_MECH_ROCKET_DEMOLITION 8
@@ -210,12 +206,15 @@
 
 /// His name when his posting's record gives none: the name P10's card shows for Club Volga
 #define BOUNTY_DON_NAME "Arkady Sokolov"
-/// His gold pistol: its look, its rounds and its magazine (bounty_real_weapon()); he fires strings of BOUNTY_MOBSTER_PISTOL_BURST as a goon does
+/// The don takes this much of any brute or burn, through his body (boss rank)
+#define BOUNTY_DON_DAMAGE_TAKEN 0.6
+/// His gold pistol, and the magazines he carries for it
 #define BOUNTY_DON_GUN /obj/item/gun/ballistic/automatic/pistol/deagle/gold
-#define BOUNTY_DON_HEALTH 250
-#define BOUNTY_DON_COOLDOWN (0.5 SECONDS)
-#define BOUNTY_DON_RELOAD (2 SECONDS)
-/// He raises the pistol this long before each string of shots
+#define BOUNTY_DON_MAGAZINE /obj/item/ammo_box/magazine/m50
+/// He raises the pistol this long before the first volley of each magazine
 #define BOUNTY_DON_RAISE (0.2 SECONDS)
-#define BOUNTY_DON_SPEED 1.4
+#define BOUNTY_DON_VOLLEY 2
+#define BOUNTY_DON_VOLLEY_GAP (0.25 SECONDS)
+#define BOUNTY_DON_COOLDOWN (0.5 SECONDS)
+/// Climbing out of the wreck, he takes this long to get his bearings before he acts
 #define BOUNTY_DON_EJECT_STAGGER (2 SECONDS)
