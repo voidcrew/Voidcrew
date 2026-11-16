@@ -204,6 +204,21 @@
 		return ..()
 	return 1
 
+/// Armour penetration a projectile has against an object it hits. Read by /obj/bullet_act (VOIDCREW EDIT).
+/obj/projectile/proc/get_object_armour_penetration(obj/target)
+	return armour_penetration
+
+/// Plasma melts every structure and door alike, whatever its armour: a grille or blast door takes the same hit as a
+/// window or airlock. INDESTRUCTIBLE things still take nothing (take_damage), and inside a trader outpost or the
+/// colosseum armour counts as usual, so their gates and shutters hold.
+/obj/projectile/energy/plasma_bolt/get_object_armour_penetration(obj/target)
+	if(!isstructure(target) && !istype(target, /obj/machinery/door))
+		return ..()
+	var/turf/where = get_turf(target)
+	if(get_trader_outpost_for_turf(where) || GLOB.colosseum_site?.contains_site_turf(where))
+		return ..()
+	return 100
+
 /obj/projectile/energy/plasma_bolt/on_range()
 	plasma_gutter_visual()
 	return ..()
