@@ -801,6 +801,9 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 	var/goon_fleeing = FALSE
 	/// Weakref to the chair at their post, if they sit
 	var/datum/weakref/goon_chair_ref
+	/// Pistol shots in the current string, and a weakref to the magazine they came from (a new one starts the count again)
+	var/goon_string_shots = 0
+	var/datum/weakref/goon_string_magazine
 
 /mob/living/carbon/human/npc/bounty_kingpin_goon/pistol
 
@@ -865,6 +868,17 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 	if(HAS_TRAIT(src, TRAIT_RESTRAINED) || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))
 		return FALSE
 	return !HAS_TRAIT(src, TRAIT_INCAPACITATED) && !HAS_TRAIT(src, TRAIT_FLOORED)
+
+/// Counts a pistol shot just fired from `pistol` towards his string. TRUE when it ends one with rounds still in the gun.
+/mob/living/carbon/human/npc/bounty_kingpin_goon/proc/goon_string_shot(obj/item/gun/ballistic/pistol)
+	if(!istype(pistol) || !pistol.magazine)
+		return FALSE
+	goon_string_shots = goon_string_magazine?.resolve() == pistol.magazine ? goon_string_shots + 1 : 1
+	goon_string_magazine = WEAKREF(pistol.magazine)
+	if(goon_string_shots < BOUNTY_PISTOL_STRING_SHOTS || bounty_gun_live_rounds(pistol) <= 0)
+		return FALSE
+	goon_string_shots = 0
+	return TRUE
 
 /// Drops a burst or a blast that was winding up
 /mob/living/carbon/human/npc/bounty_kingpin_goon/proc/goon_cancel_windup()
@@ -2246,8 +2260,13 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 			goon.visible_message(span_warning("[goon] pumps [goon.p_their()] shotgun."), vision_distance = COMBAT_MESSAGE_RANGE)
 			goon.goon_windup_timer = addtimer(CALLBACK(src, PROC_REF(goon_finish_windup), WEAKREF(goon), WEAKREF(target)), BOUNTY_GOON_SHOTGUN_WINDUP, TIMER_STOPPABLE | TIMER_DELETE_ME)
 		else
+			// Single shots off the Stechkin's own selector, in strings with a pause between them; an empty magazine reloads instead
+			var/obj/item/gun/ballistic/pistol = human_npc_loaded_gun(goon)
+			bounty_gun_single_fire(goon, pistol)
 			goon.goon_next_fire_at = world.time + BOUNTY_GOON_PISTOL_COOLDOWN
-			goon_fire(goon, target)
+			var/rounds = bounty_gun_live_rounds(pistol)
+			if(goon_fire(goon, target) && bounty_gun_live_rounds(pistol) < rounds && goon.goon_string_shot(pistol))
+				goon.goon_next_fire_at += BOUNTY_PISTOL_STRING_PAUSE
 	return TRUE
 
 /// The wind-up is done: the SMG's burst or the shotgun's blast, if he still can and still sees them

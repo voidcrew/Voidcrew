@@ -551,6 +551,8 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		"Knife" = BOUNTY_STYLE_KNIFE,
 		"Pistol" = BOUNTY_STYLE_PISTOL,
 		"Shotgun" = BOUNTY_STYLE_SHOTGUN,
+		"SMG" = BOUNTY_STYLE_SMG,
+		"Revolver" = BOUNTY_STYLE_REVOLVER,
 		"Club" = BOUNTY_STYLE_CLUB,
 		"Bottle thrower" = BOUNTY_STYLE_BOTTLE,
 	)
