@@ -203,13 +203,21 @@ type Regime = {
   D: number;
 };
 
+/**
+ * The body ends a quarter row above the other screens' (LIFT): the total strip sits that much
+ * higher, so its figure row keeps half a row clear of the box bottom. The regime is still
+ * chosen on the whole body; the quarter row comes out of the picture.
+ */
+const LIFT = 0.25;
+
 function regimeOf(
-  B: number,
+  Bfull: number,
   nOpt: number,
   Dwant: number,
   steps: number,
 ): Regime {
-  if (B >= 18) {
+  const B = Bfull - LIFT;
+  if (Bfull >= 18) {
     let po = 1.75;
     let D = Dwant;
     let T = B - 3 - nOpt * po - D;
@@ -235,11 +243,11 @@ function regimeOf(
   let S = 0;
   let rowsO: number;
   let D: number;
-  if (B >= 14.75) {
+  if (Bfull >= 14.75) {
     kind = 'small';
-    T = 6;
-    rowsO = Math.min(nOpt, Math.floor(B - 10.75));
-    D = Math.floor(B - 8.75 - rowsO);
+    T = 6 - LIFT;
+    rowsO = Math.min(nOpt, Math.floor(Bfull - 10.75));
+    D = Math.floor(Bfull - 8.75 - rowsO);
   } else {
     kind = 'tight';
     S = Math.ceil(steps / 2);
@@ -263,9 +271,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   const { rows } = useGrid();
   usePreview(hull.id);
   const M = rows;
-  // The total strip sits a quarter row higher than the other screens' key rows, so its figure
-  // row keeps half a row clear of the box bottom; the body gives up that quarter row.
-  const B = bodyRows(M) - 0.25;
+  const B = bodyRows(M);
 
   // Taken: the store's fit of this hull.
   const taken: ShipFit =
@@ -511,10 +517,18 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
           )
         }
         edge={{
-          up: () =>
-            first && page > 1
-              ? turn(page - 1, opts[(page - 1) * per - 1].id)
-              : false,
+          // Up from the first row: the page before, or on the first page the step being
+          // fitted (not whichever step row happens to sit nearest above).
+          up: () => {
+            if (!first) {
+              return false;
+            }
+            if (page > 1) {
+              return turn(page - 1, opts[(page - 1) * per - 1].id);
+            }
+            setLoc((l) => ({ ...l, toSteps: l.toSteps + 1 }));
+            return true;
+          },
           down: () => {
             if (!lastRow) {
               return false;
@@ -648,7 +662,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
   );
 
   // The total strip: what the fit as taken costs now, in set F.
-  const yT = yK - 0.25;
+  const yT = yK - LIFT;
   const due = partsOf(bill.total) > 0;
   if (due) {
     const short = ctx.ledger === 'ok' ? bill.short : {};
