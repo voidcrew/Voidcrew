@@ -79,12 +79,14 @@
 	TEST_ASSERT(!length(loose_chrome()), "A dead NPC left working chrome behind")
 	TEST_ASSERT_EQUAL(scrap_count(), 3, "A dead NPC didn't leave one burnt-out scrap per piece")
 
-	// The scrap is no chrome: nothing can install it, and no ledger anywhere buys it.
+	// The scrap is no chrome: nothing can install it, and only the scrap rows buy it.
 	var/obj/item/burnt_chrome/scrap = locate() in range(6, run_loc_floor_bottom_left)
 	TEST_ASSERT_NOTNULL(scrap, "Fixture: no scrap to offer")
 	TEST_ASSERT(!istype(scrap, /obj/item/organ), "Burnt-out chrome is still an organ")
 	TEST_ASSERT_NULL(scrap.GetComponent(/datum/component/cyberware), "Burnt-out chrome still counts as chrome")
 	for(var/buyback_type in subtypesof(/datum/shop_buyback))
+		if(ispath(buyback_type, /datum/shop_buyback/burnt_chrome))
+			continue
 		var/datum/shop_buyback/ledger = new buyback_type
 		if(ledger.item_path && ledger.matches(scrap))
 			TEST_FAIL("[buyback_type] buys burnt-out chrome")
