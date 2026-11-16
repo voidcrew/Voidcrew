@@ -101,7 +101,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/outpost_prison_s
 
 /// Whether `thing` is a loose prisoner: out of the cell block and on the run
 /proc/outpost_prisoner_loose(atom/thing)
-	var/mob/living/basic/outpost_prisoner/prisoner = thing
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = thing
 	return istype(prisoner) && prisoner.trouble == PRISONER_TROUBLE_LOOSE
 
 /obj/machinery/door/airlock/security/prison_staff/glass

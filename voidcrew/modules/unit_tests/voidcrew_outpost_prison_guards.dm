@@ -12,15 +12,15 @@
  */
 
 /// A guard whose AI counts as running, as if someone were on the level
-/mob/living/basic/outpost_prison_guard/awake_for_test
+/mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test
 
-/mob/living/basic/outpost_prison_guard/awake_for_test/ai_running()
+/mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test/ai_running()
 	return TRUE
 
 /// An admin's guard (no fee, no wage), beamed in and standing at `spot`, on duty
 /datum/unit_test/voidcrew_outpost_management/proc/guard_test_spawn(datum/outpost_prison/prison, turf/spot, awake = TRUE)
-	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, awake ? /mob/living/basic/outpost_prison_guard/awake_for_test : /mob/living/basic/outpost_prison_guard)
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, awake ? /mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test : /mob/living/carbon/human/npc/outpost_prison_guard)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	if(!guard)
 		return null
 	guard.finish_beam_in()
@@ -146,7 +146,7 @@
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "The owner's hire made no guard")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "Hiring a guard cost [5000 - treasury.account_balance], not 1000") // OUTPOST_GUARD_HIRE_COST
 	var/datum/outpost_guard_record/first = prison.guard_records[1]
-	var/mob/living/basic/outpost_prison_guard/officer = first.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/officer = first.guard
 	TEST_ASSERT_NOTNULL(officer, "The hired guard did not beam in")
 	TEST_ASSERT_EQUAL(first.rank, "Officer", "The first guard is not an officer")
 	TEST_ASSERT_EQUAL(officer.real_name, "Officer [first.surname]", "The guard is not named for their rank")
@@ -163,7 +163,7 @@
 	TEST_ASSERT_NOTNULL(door, "No staff door at (9,6)")
 	TEST_ASSERT(may_use_outpost_prison_staff_door(door, officer), "A staff door refused a guard")
 	TEST_ASSERT(door.allowed(officer), "A staff door would not open for a guard")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(!may_use_outpost_prison_staff_door(door, prisoner), "A staff door let a prisoner through")
 
 	// A runner about to get away: the guard on duty calls it out by name, with no clock, and the log and the crew get their words.
@@ -194,7 +194,7 @@
 	TEST_ASSERT(!("unpaid" in block), "The guards block still counts missed wages")
 
 	// Dismissal: managers only, no refund, and the guard walks out.
-	var/mob/living/basic/outpost_prison_guard/sergeant = second.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/sergeant = second.guard
 	prison.guards_act("guard_dismiss", list("ref" = REF(second)), visitor)
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "A visitor dismissed a guard")
 	prison.guards_act("guard_dismiss", list("ref" = REF(second)), owner)
@@ -261,7 +261,7 @@
 
 // ===== THE BATON =====
 
-/// Three strikes put a prisoner in stamina crit with no brute and no mood of their own; onlookers lose 2 once; calm, downed and players are never struck
+/// One strike with the real baton: tg's stamina damage, then its knockdown two seconds on, no brute and no mood of their own; onlookers lose 2 once; calm, downed and players are never struck
 /datum/unit_test/voidcrew_outpost_prison_guard_baton
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -269,11 +269,11 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("guardbatonowner")
 	TEST_ASSERT_NOTNULL(home, "The baton test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 8, 9))
-	var/mob/living/basic/outpost_prisoner/onlooker = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 8, 9))
+	var/mob/living/carbon/human/npc/outpost_prisoner/onlooker = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
 
 	// A calm prisoner beside the guard is never struck.
@@ -288,20 +288,23 @@
 	brawl.fighting = TRUE
 	onlooker.set_mood(70)
 	calm.set_mood(70)
-	for(var/i in 1 to 3)
-		guard.baton_cooldown = 0
-		TEST_ASSERT(guard.strike(first), "Baton strike [i] on a fighter did not land")
-	TEST_ASSERT(first.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Three baton strikes did not put a prisoner in stamina crit") // OUTPOST_GUARD_BATON_STAMINA
+	// One strike with the real baton off the belt: tg's stamina damage at once, its knockdown two seconds
+	// on, as on anyone, and the fight is over.
+	guard_test_ready_baton(guard)
+	TEST_ASSERT(guard.strike(first), "The baton strike on a fighter did not land")
+	TEST_ASSERT(guard.is_holding(guard.get_baton()), "The guard struck without the baton in hand")
+	TEST_ASSERT(first.getStaminaLoss() >= 40, "The baton did [first.getStaminaLoss()] stamina damage")
+	TEST_ASSERT(wait_until(CALLBACK(first, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, is_down)), 4 SECONDS), "The baton did not knock the fighter down")
 	TEST_ASSERT_EQUAL(first.getBruteLoss(), 0, "The baton did brute damage")
 	TEST_ASSERT(abs(first.mood - 30) < 0.01, "The struck prisoner's mood moved to [first.mood]: the baton counted as staff's")
-	TEST_ASSERT(QDELETED(brawl), "Stamina crit did not end the fight")
+	TEST_ASSERT(QDELETED(brawl), "The knockdown did not end the fight")
 	TEST_ASSERT(abs(onlooker.mood - 68) < 0.01, "An onlooker ended at [onlooker.mood], not 68: seeing it costs 2, once a minute") // OUTPOST_GUARD_ONLOOKER_MOOD
 	TEST_ASSERT(abs(calm.mood - 68) < 0.01, "A prisoner beside it ended at [calm.mood], not 68")
 
 	// Down, never again.
-	guard.baton_cooldown = 0
+	guard_test_ready_baton(guard)
 	var/stamina = first.getStaminaLoss()
-	TEST_ASSERT(!guard.strike(first), "A guard struck a prisoner in stamina crit")
+	TEST_ASSERT(!guard.strike(first), "A guard struck a prisoner who was down")
 	TEST_ASSERT_EQUAL(first.getStaminaLoss(), stamina, "A downed prisoner took baton damage")
 
 	// A person is never struck, whatever they do.
@@ -323,8 +326,8 @@
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 14, 3), "guardresponseowner")
 
 	// Nobody on the level: the guard's AI sleeps and the dispatcher leaves them be.
-	var/mob/living/basic/outpost_prison_guard/sleepy = guard_test_spawn(prison, prison_spot(home, 12, 8), awake = FALSE)
-	var/mob/living/basic/outpost_prisoner/sulky = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/sleepy = guard_test_spawn(prison, prison_spot(home, 12, 8), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prisoner/sulky = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
 	sulky.threat_ref = WEAKREF(warden)
 	prison.guards_tick(1)
 	TEST_ASSERT_NULL(sleepy.response, "A guard whose AI sleeps was given a response")
@@ -334,9 +337,9 @@
 	qdel(sulky)
 	prison.dismiss_guard(sleepy.record, "dismissed", TRUE)
 
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
 
 	// An argument, the talk-down forced (OUTPOST_GUARD_TALKDOWN_CHANCE is 60).
@@ -348,22 +351,30 @@
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "argue_stop"), "The guard did not warn them first: [guard.last_line]")
 	TEST_ASSERT_NULL(guard.response, "The guard kept a response for a finished argument")
 
-	// Blows: a warning, then the baton until it is over.
+	// Blows: a warning, then the baton until it is over. The baton's knockdown lands two seconds after
+	// the strike, as on anyone, so the guard's ticks run in real time here.
 	brawl = prison.start_fight(first, second)
 	TEST_ASSERT_NOTNULL(brawl, "The test fight did not start")
 	brawl.fighting = TRUE
-	for(var/i in 1 to 8)
-		if(QDELETED(brawl))
-			break
-		guard.baton_cooldown = 0
+	var/fight_deadline = world.time + 8 SECONDS
+	while(!QDELETED(brawl) && world.time < fight_deadline)
+		guard_test_ready_baton(guard)
 		prison.guards_tick(1)
+		sleep(5)
 	TEST_ASSERT(QDELETED(brawl), "A fight went on with a guard beside it")
-	TEST_ASSERT(first.has_status_effect(/datum/status_effect/incapacitating/stamcrit) || second.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The fight did not end by the baton")
+	TEST_ASSERT(first.getStaminaLoss() >= 40 || second.getStaminaLoss() >= 40, "The fight did not end by the baton")
+	TEST_ASSERT(first.is_down() || second.is_down(), "Nobody in the fight was knocked down")
 	TEST_ASSERT_EQUAL(first.getBruteLoss() + second.getBruteLoss(), 0, "The baton did brute damage")
 	guard.end_response()
+	// Back on their feet for what follows
+	first.setStaminaLoss(0)
+	second.setStaminaLoss(0)
+	first.SetKnockdown(0)
+	second.SetKnockdown(0)
+	TEST_ASSERT(wait_until_up(first) && wait_until_up(second), "The fighters never got back up")
 
 	// A threat: a word, and it is over. No baton for squaring up.
-	var/mob/living/basic/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 8, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 8, 7))
 	third.threat_ref = WEAKREF(warden)
 	third.threat_left = 4
 	prison.guards_tick(1)
@@ -375,7 +386,7 @@
 	third.threat_ref = WEAKREF(warden)
 	third.struck_ref = WEAKREF(warden)
 	third.struck_at = world.time
-	guard.baton_cooldown = 0
+	guard_test_ready_baton(guard)
 	prison.guards_tick(1)
 	TEST_ASSERT_EQUAL(third.getStaminaLoss(), 0, "A guard struck before the warning")
 	prison.guards_tick(1)
@@ -396,7 +407,7 @@
 	// A hatch climb: from the office side of the hatch, down they slide.
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
 	TEST_ASSERT_NOTNULL(hatch, "No serving hatch at (5,6)")
-	var/mob/living/basic/outpost_prisoner/climber = trouble_awake_prisoner(prison, hatch.yard_side_turf())
+	var/mob/living/carbon/human/npc/outpost_prisoner/climber = trouble_awake_prisoner(prison, hatch.yard_side_turf())
 	climber.climb_ref = WEAKREF(hatch)
 	climber.climb_left = 3
 	guard.forceMove(hatch.staff_side_turf())
@@ -406,9 +417,9 @@
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "climb_stop"), "The guard did not say a climb_stop line: [guard.last_line]")
 
 	// A loose prisoner: called out, and batoned when they come beside a guard. No chase.
-	var/mob/living/basic/outpost_prisoner/runner = trouble_awake_prisoner(prison, prison_spot(home, 5, 4))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_awake_prisoner(prison, prison_spot(home, 5, 4))
 	runner.trouble = "loose" // PRISONER_TROUBLE_LOOSE
-	guard.baton_cooldown = 0
+	guard_test_ready_baton(guard)
 	prison.guards_tick(1)
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "loose_call"), "The guard did not call out the loose prisoner: [guard.last_line]")
 	// Said aloud and logged; nothing goes out over the outpost.
@@ -434,8 +445,8 @@
 		trouble_awake_prisoner(prison, prison_spot(home, 12, 8)),
 	)
 	set_moods(rioters, 10)
-	var/mob/living/basic/outpost_prison_guard/guard_one = guard_test_spawn(prison, prison_spot(home, 12, 4))
-	var/mob/living/basic/outpost_prison_guard/guard_two = guard_test_spawn(prison, prison_spot(home, 13, 4))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard_one = guard_test_spawn(prison, prison_spot(home, 12, 4))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard_two = guard_test_spawn(prison, prison_spot(home, 13, 4))
 	TEST_ASSERT(guard_one && guard_two, "The test guards did not beam in")
 	TEST_ASSERT(prison.start_riot("guard test", everyone = TRUE), "The test riot did not start")
 
@@ -454,7 +465,7 @@
 	// Said aloud and logged as "Name: \"line\"", once; nothing goes out over the outpost.
 	var/holds_logged = 0
 	for(var/list/entry as anything in prison.entries)
-		for(var/mob/living/basic/outpost_prison_guard/holder as anything in list(guard_one, guard_two))
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/holder as anything in list(guard_one, guard_two))
 			var/prefix = "[holder.real_name]: \""
 			var/text = entry["text"]
 			if(findtext(text, prefix) == 1 && guard_test_is_line(copytext(text, length(prefix) + 1, -1), "riot_hold"))
@@ -463,7 +474,7 @@
 
 	// A rioter who comes up beside a guard holding the door gets the baton.
 	guard_one.forceMove(one_spot)
-	var/mob/living/basic/outpost_prisoner/through = rioters[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/through = rioters[1]
 	var/turf/beside = null
 	for(var/direction in GLOB.cardinals)
 		var/turf/tile = get_step(one_spot, direction)
@@ -473,12 +484,12 @@
 	TEST_ASSERT_NOTNULL(beside, "No office tile beside the hold position")
 	through.forceMove(beside)
 	prison.riot_windup_left = 0
-	guard_one.baton_cooldown = 0
+	guard_test_ready_baton(guard_one)
 	prison.guards_tick(1)
 	TEST_ASSERT(through.getStaminaLoss() >= 35, "A holding guard did not baton the rioter beside them") // OUTPOST_GUARD_BATON_STAMINA
 
 	// A guard in the yard is staff a rioter can go for.
-	var/mob/living/basic/outpost_prisoner/rioter = rioters[2]
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = rioters[2]
 	guard_two.forceMove(prison_spot(home, 11, 8))
 	prison.refresh_prisoner_reach(rioter)
 	TEST_ASSERT_EQUAL(rioter.staff_in_reach(), guard_two, "A rioter could not go for a guard in the yard")
@@ -487,7 +498,7 @@
 
 // ===== DOWN AND BACK =====
 
-/// At 30 health a guard goes down, takes no more, beams out ten seconds later and is back ten minutes after, free; the slot's wait survives a rehire
+/// A guard is a real body (OC-2): in crit they go down and are medevaced ten seconds later, killed they are collected a minute later; either way back ten minutes after, free, with the same face; the slot's wait survives a rehire
 /datum/unit_test/voidcrew_outpost_prison_guard_down
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -499,21 +510,24 @@
 	var/datum/bank_account/treasury = guard_test_fund(home, 5000)
 	prison.guards_act("guard_hire", list(), owner)
 	var/datum/outpost_guard_record/record = prison.guard_records[1]
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	var/guard_name = guard.real_name
 	guard.finish_beam_in()
 
-	// Damage stops at 30: down, and nothing more hurts them.
-	guard.adjustBruteLoss(100)
-	TEST_ASSERT_EQUAL(guard.health, 30, "A guard's health went to [guard.health], not 30") // OUTPOST_GUARD_DOWN_AT
-	TEST_ASSERT_EQUAL(guard.phase, "down", "A guard at 30 health did not go down") // OUTPOST_GUARD_DOWN
-	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_GODMODE), "A downed guard can still be hurt")
+	// Real damage into tg crit: down, and nothing protects them there.
+	TEST_ASSERT(length(record.look), "The payroll did not keep the guard's face")
+	var/face_skin = LAZYACCESS(record.look, "skin_tone")
+	var/face_hair = LAZYACCESS(record.look, "hairstyle")
+	// On the chest, which counts in full (limbs count for less of a body's health)
+	guard.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_CRITICAL_CONDITION), "110 brute did not put a guard in crit")
+	TEST_ASSERT_EQUAL(guard.phase, "down", "A guard in crit did not go down") // OUTPOST_GUARD_DOWN
+	TEST_ASSERT(!HAS_TRAIT(guard, TRAIT_GODMODE), "A downed guard is godmoded")
 	TEST_ASSERT(!is_outpost_prison_staff(guard), "A downed guard still counted as staff")
-	guard.adjustBruteLoss(50)
-	guard.adjustFireLoss(50)
-	TEST_ASSERT_EQUAL(guard.health, 30, "A downed guard took more damage")
-	guard.death()
-	TEST_ASSERT(guard.stat != DEAD, "A guard died")
+	var/health_down = guard.health
+	guard.adjustBruteLoss(5)
+	TEST_ASSERT(guard.health < health_down, "A downed guard took no more damage")
+	TEST_ASSERT_EQUAL(prison.guard_payroll(), 0, "A downed guard still draws a wage")
 
 	// Ten seconds later they beam out, and they are back ten minutes after that, at no charge.
 	prison.tick(9)
@@ -529,10 +543,33 @@
 	prison.tick(1)
 	TEST_ASSERT_NOTNULL(record.guard, "A downed guard did not come back after ten minutes")
 	TEST_ASSERT_EQUAL(record.guard.real_name, guard_name, "A different guard came back")
+	TEST_ASSERT_EQUAL(record.guard.skin_tone, face_skin, "The guard came back with someone else's face")
+	TEST_ASSERT_EQUAL(record.guard.hairstyle, face_hair, "The guard came back with someone else's hair")
+	TEST_ASSERT(record.guard.health >= record.guard.maxHealth, "The guard came back hurt")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "The return cost [4000 - treasury.account_balance] cr")
 
+	// Killed on duty: the body lies a minute, then the corrections service collects it; back ten minutes later.
+	var/mob/living/carbon/human/npc/outpost_prison_guard/victim = record.guard
+	victim.finish_beam_in()
+	victim.death()
+	TEST_ASSERT_EQUAL(victim.stat, DEAD, "A guard could not die")
+	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard is [victim.phase], not down")
+	TEST_ASSERT(locate(/obj/item/melee/baton/security) in victim.get_all_contents(), "A dead guard's baton left the body")
+	TEST_ASSERT(human_npc_gear_locked(locate(/obj/item/melee/baton/security) in victim.get_all_contents()), "A dead guard's baton is not locked to the body (D3)")
+	// Zipped into a bag out of sight, the body is still collected: the service locks on to its own staff.
+	var/stash = allocate(/obj/structure/closet/body_bag, get_turf(victim))
+	victim.forceMove(stash)
+	prison.tick(59)
+	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard's body was collected early")
+	prison.tick(1) // OUTPOST_GUARD_BODY_COLLECT_DELAY
+	TEST_ASSERT_EQUAL(victim.phase, "leaving", "A dead guard's body was not collected after a minute")
+	TEST_ASSERT(isturf(victim.loc), "A dead guard's body was left in the bag it was stashed in")
+	TEST_ASSERT_EQUAL(record.away_left, 600, "A killed guard is away for [record.away_left] s, not 600") // OUTPOST_GUARD_RETURN_TIME
+	prison.tick(600)
+	TEST_ASSERT_NOTNULL(record.guard, "A killed guard's slot was not filled again after ten minutes")
+
 	// Down again and dismissed: the next hire waits out the same slot.
-	var/mob/living/basic/outpost_prison_guard/back = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/back = record.guard
 	back.finish_beam_in()
 	var/downed = prison.guards_admin_act("prison_guard_down", list("ref" = REF(record)), null)
 	TEST_ASSERT(istext(downed), "The admin could not put a guard down")
@@ -556,7 +593,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardrefuseowner")
 	TEST_ASSERT_NOTNULL(home, "The guard refusal test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 4))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 4))
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
 	var/turf/start = guard.loc
 
@@ -567,11 +604,16 @@
 	TEST_ASSERT_NULL(guard.change_mob_type(/mob/living/basic/mouse, delete_old_mob = TRUE), "A guard was turned into another mob")
 	TEST_ASSERT(HAS_TRAIT(guard, "no_containment"), "A guard can be shut in a locker") // TRAIT_NO_CONTAINMENT
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_NO_STORAGE_INSERT), "A guard can be put in a bag")
-	TEST_ASSERT_EQUAL(guard.sentience_type, SENTIENCE_HUMANOID, "A sentience potion would work on a guard")
+	TEST_ASSERT(ishuman(guard), "A guard is not a real human body")
 
+	// A member of the wing may lead a guard by the arm; anyone else gets shaken off (tg's resist).
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 11, 4), "guardrefuseowner")
-	owner.start_pulling(guard)
-	TEST_ASSERT(owner.pulling != guard, "Someone pulled a guard")
+	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 12, 4), "guardrefusestranger")
+	stranger.start_pulling(guard)
+	TEST_ASSERT_EQUAL(stranger.pulling, guard, "tg's pulling could not take hold of a guard")
+	guard.next_move = 0
+	guard.shake_off_pull()
+	TEST_ASSERT(stranger.pulling != guard, "A guard on duty let a stranger lead them about")
 	TEST_ASSERT(SEND_SIGNAL(guard, COMSIG_MOUSEDROP_ONTO, owner, owner) & COMPONENT_CANCEL_MOUSEDROP_ONTO, "A guard could be dragged onto something")
 
 	// A punch: a word and a step back, never the baton.
@@ -593,7 +635,7 @@
 	// are called back for a minute (OUTPOST_GUARD_LEASH_SECONDS, OUTPOST_GUARD_OFF_LEVEL_AWAY).
 	var/turf/outside = get_step(prison_spot(home, 9, 1), SOUTH)
 	TEST_ASSERT(outside && get_area(outside) != prison.wing, "No tile outside the wing's entrance")
-	var/mob/living/basic/outpost_prison_guard/wanderer = guard_test_spawn(prison, outside, awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/wanderer = guard_test_spawn(prison, outside, awake = FALSE)
 	var/datum/outpost_guard_record/wanderer_record = wanderer.record
 	for(var/i in 1 to 10)
 		prison.guards_tick(5)
@@ -613,7 +655,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardreportowner")
 	TEST_ASSERT_NOTNULL(home, "The guard report test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 
 	// An empty hatch with someone waiting comes first.
 	prison.waiting_for_food = 2
@@ -630,10 +672,20 @@
 
 	// Greeted, then told, then left alone.
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 4), "guardreportowner")
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 3))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 3))
 	TEST_ASSERT(guard.greet_member(owner), "A guard did not greet the owner")
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "greet_owner"), "The guard's greeting was [guard.last_line]")
 	TEST_ASSERT(guard.greet_member(owner), "A guard did not report to the owner")
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "report_restless"), "The guard's report was [guard.last_line]")
 	TEST_ASSERT(!guard.greet_member(owner), "A guard reported twice within three minutes") // OUTPOST_GUARD_REPORT_GAP
 	settle_prison_air(home)
+
+/// Lets `guard` swing again at once in a test: their own pause, the baton's recharge, and tg's one-stun-per-hitter rule
+/proc/guard_test_ready_baton(mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	guard.baton_cooldown = 0
+	outpost_prison_test_ready_blow(guard)
+	var/obj/item/melee/baton/security/baton = guard.get_baton()
+	if(baton)
+		COOLDOWN_RESET(baton, cooldown_check)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in range(1, guard))
+		REMOVE_TRAIT(prisoner, TRAIT_IWASBATONED, REF(guard))
