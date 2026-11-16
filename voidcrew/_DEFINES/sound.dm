@@ -98,7 +98,8 @@
 	'sound/ambience/medical/ambimo1.ogg', 'sound/ambience/medical/ambimo2.ogg', \
 	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
 	'sound/ambience/misc/ambiodd.ogg', 'sound/ambience/misc/ambimystery.ogg', \
-	'voidcrew/sound/ambience/planet_snow.ogg')
+	'voidcrew/sound/ambience/planet_snow.ogg', 'voidcrew/sound/ambience/planet_snow_2.ogg', \
+	'voidcrew/sound/ambience/planet_snow_3.ogg', 'voidcrew/sound/ambience/planet_snow_4.ogg')
 #define PLANET_WASTELAND_AMBIENCE list( \
 	'sound/ambience/ruin/ambimine.ogg', 'sound/ambience/lavaland/ambicave.ogg', \
 	'sound/ambience/ruin/ambiruin.ogg', 'sound/ambience/ruin/ambiruin2.ogg', \
@@ -107,3 +108,20 @@
 	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/misc/ambidanger.ogg', \
 	'sound/ambience/misc/ambidanger2.ogg', 'sound/ambience/maintenance/ambimaint1.ogg', \
 	'voidcrew/sound/ambience/planet_wasteland.ogg')
+#define PLANET_BEACH_AMBIENCE list( \
+	'sound/ambience/beach/shore.ogg', 'sound/ambience/beach/seag1.ogg', \
+	'sound/ambience/beach/seag2.ogg', 'sound/ambience/beach/seag2.ogg', \
+	'sound/ambience/misc/ambiodd.ogg', 'sound/ambience/medical/ambinice.ogg', \
+	'voidcrew/sound/ambience/planet_beach.ogg', 'voidcrew/sound/ambience/planet_beach_2.ogg', \
+	'voidcrew/sound/ambience/planet_beach_3.ogg')
+#define PLANET_JUNGLE_AMBIENCE list( \
+	'sound/ambience/engineering/ambitech.ogg', 'sound/ambience/engineering/ambitech2.ogg', \
+	'sound/ambience/ruin/ambiruin.ogg', 'sound/ambience/ruin/ambiruin2.ogg', \
+	'sound/ambience/ruin/ambiruin3.ogg', 'sound/ambience/ruin/ambiruin4.ogg', \
+	'sound/ambience/ruin/ambiruin5.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
+	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/misc/ambidanger.ogg', \
+	'sound/ambience/misc/ambidanger2.ogg', 'sound/ambience/maintenance/ambimaint.ogg', \
+	'sound/ambience/engineering/ambiatmos.ogg', 'sound/ambience/engineering/ambiatmos2.ogg', \
+	'sound/ambience/misc/ambiodd.ogg', \
+	'voidcrew/sound/ambience/planet_jungle.ogg', 'voidcrew/sound/ambience/planet_jungle_2.ogg', \
+	'voidcrew/sound/ambience/planet_jungle_3.ogg')

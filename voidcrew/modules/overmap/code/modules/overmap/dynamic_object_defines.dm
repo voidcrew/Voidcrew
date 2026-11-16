@@ -469,14 +469,14 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = BEACH
+	ambientsounds = PLANET_BEACH_AMBIENCE
 	planet_type = /datum/planet/beach
 	// was /turf/open/misc/asteroid/sand/beach/lit, the bulk of a beach planet's ground
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = AWAY_MISSION
+	ambientsounds = PLANET_JUNGLE_AMBIENCE
 	planet_type = /datum/planet/jungle
 
 /area/overmap_encounter/planetoid/wasteland
