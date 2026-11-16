@@ -439,7 +439,8 @@ export function TraitsEditor() {
     ? wrapMax(
         safe(pq.description).replace(/\s+/g, ' ').trim(),
         PW,
-        Math.max(1, Math.floor(M - 11)),
+        // From 9.75, ending by M - 1.5 so the last line clears the box's bottom border.
+        Math.max(1, Math.floor(M - 11.25)),
       )
     : [];
   const panel = (
