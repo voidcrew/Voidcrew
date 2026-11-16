@@ -197,14 +197,15 @@ export function SideMenu(props: MenuProps) {
   const name = fullName ? wrapMax(fullName, 15, 2) : [];
   // The foot of the menu carries the server's credit line, not the station name.
   const port = wrapMax(CREDIT, 17, 3);
-  // The last line sits half a row above the box's foot; one-line names sit on the lower line.
+  // The credit's last line sits half a row above the box's foot.
   const portY = boxH - 0.5 - port.length;
   // Without the top key, everything under it moves up into its place.
   const top = hasTop(data);
   const dy = top ? 0 : -2.25;
-  const ruleY = 15 + dy + Math.max(0, name.length - 1);
+  // The rule sits a quarter row under the name, as the name sits a quarter row under CHARACTER.
+  const ruleY = 15.25 + dy + Math.max(0, name.length - 1);
   // Utility rows: 1.25 rows each when the menu has room (as in the approved stills), else 1.
-  // Two station-name lines and half a row are always kept free above the foot.
+  // The credit and half a row are always kept free above the foot.
   const start = canStart(data);
   const utils = utilities(data, props);
   const items = utils.length + (start ? 1 : 0);
