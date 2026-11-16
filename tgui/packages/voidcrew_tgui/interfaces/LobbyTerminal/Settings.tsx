@@ -3,37 +3,44 @@
  * (KEYS). Opened from the menu like CHARACTER, in the same box; the tab row stays.
  *
  * Columns of the main region: the list column is 1 to 15 (LIST_X, LIST_W) with the group switch
- * OPTIONS | KEYS on top and the categories of the open group under it; column 16 is a gap; the
- * work column is 17 to 61 (WORK_X, WORK_W): the open category's rows, the page mark and, at the
- * foot, the description strip (two dim lines about the focused or hovered row).
+ * OPTIONS | KEYS on top, the search field under it and the categories of the open group under
+ * that; column 16 is a gap; the work column is 17 to 61 (WORK_X, WORK_W): the open category's
+ * rows (or the search's), the page mark and, at the foot, the description strip (two dim lines
+ * about the focused or hovered row).
  *
  * A row: the name in 19 to 42 (NAME_X, NAME_W), wrapped to two lines in a taller row when
  * longer (rowHeight(); never more than two, the second then ends in the cut mark); the value in
  * 44 to 61 (VALUE_X, VALUE_W).
  *
- * ## The contract for KEYS (SettingsKeys.tsx, lobby_settings_keys.dm)
+ * ## How a group plugs in (SettingsOptions.tsx, SettingsKeys.tsx)
  *
  * Everything below is exported from SettingsFrame.tsx (re-exported here). Import it from
  * './SettingsFrame', not './Settings': Settings.tsx imports the two panes, so a pane importing it
  * back would read its constants before they exist.
  *
- * SettingsKeys is drawn instead of the OPTIONS pane while the group is KEYS. It owns its data
- * (its own settings_keys_* actions; settings_act() routes them to settings_keys_act()) and
- * draws the same two columns with <SettingsColumns>:
+ * Each group owns its data (OPTIONS: settings_open/set/close; KEYS: its own settings_keys_*
+ * actions, which settings_act() routes to settings_keys_act()) and draws the two columns with
+ * <SettingsColumns>:
  *   cats      its categories for the left list ({id, label}; labels at most 13 characters)
- *   cat       the open one (keep it in your own state); onCat(id) opens another
+ *   cat       the open one (kept in the group's own state); onCat(id) opens another
  *   rows      SettingsRowSpec[]: key, name (upper case), desc, value(ty, focused) drawing in the
  *             value zone, onPress (Enter or a click), onStep (Left/Right and the mouse arrows),
- *             muted; typing rows can render a <Field> from value() (see OPTIONS' number rows)
+ *             muted; typing rows render a <Field> from value() (OPTIONS' number rows)
  *   focusKey  the row that takes the focus when the rows mount (back from a level-2 screen);
  *             a row's own `claim` does the same when it turns on
- * SettingsColumns does the list, its paging, the rows' paging (PageUp/PageDown and the page
- * mark), the description strip and the page wipes, so both groups look and move the same.
+ *   find, onFind  the search text (upper case) and its setter; while it is not empty the group
+ *             passes the matching rows of all its categories (OPTIONS by setting name, KEYS by
+ *             action name) and no category is marked. A category press or Escape clears it.
+ *   empty     one dim line in place of the rows while the group's data is on its way
+ * SettingsColumns does the search field, the list, its paging, the rows' paging (PageUp/PageDown,
+ * the page mark and the mouse wheel), the description strip, Escape from a row up to the list and
+ * the page wipes, so both groups look and move the same.
  * useSettings() gives sub(node, crumb, from) for a level-2 screen in the work column (the frame
- * then draws `node` there and the crumbs SETTINGS / <category> / <crumb>, and Escape or [ BACK ]
- * closes it; `node` must read live data itself), closeSub(), subOpen, from (the row that opened
- * the last one, to give the focus back), setCrumb(label) (the open category's name for the
- * crumbs) and home (bumped when SETTINGS is pressed while open: go back to your top state).
+ * then draws `node` there and the crumbs SETTINGS / <category or SEARCH> / <crumb>, and Escape or
+ * [ BACK ] closes it; `node` must read live data itself), closeSub(), subOpen, from (the row that
+ * opened the last one, to give the focus back), setCrumb(label) (the open category's name, or
+ * SEARCH, for the crumbs) and home (bumped when SETTINGS is pressed while open: go back to the top
+ * state).
  */
 import { type ReactNode, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
