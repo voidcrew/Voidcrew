@@ -104,14 +104,26 @@ export type Crew = {
   /** Seconds left on a wrong-code lockout. */
   code_wait: number;
   jobs: CrewJob[];
-  /** Who is aboard: [name, job title, captain], the captain first. Capped server-side. */
-  aboard?: [string, string, BooleanLike][];
-  /** The player's own crew. Not sent yet; read as 0 when missing. */
-  mine?: BooleanLike;
+  /** The player's own crew (the ship's team belongs to their crew record). */
+  mine: BooleanLike;
+};
+
+/** Who is aboard the ship whose record is open. */
+export type CrewRoster = {
+  /** REF(ship) of the open record. */
+  ref: string;
+  /** [name, captain]: captains first, then at most 30 others. */
+  names: [string, BooleanLike][];
+  /** Crew aboard who are not in names. */
+  more: number;
 };
 
 export type CrewsData = {
   crews?: Crew[];
+  /** Only for the record sent with crew_open; null when none is open or that ship left. */
+  roster?: CrewRoster | null;
+  /** A join (any route) is under way: SIGN ON waits. */
+  joining?: BooleanLike;
 };
 
 // ---------------------------------------------------------------------------
@@ -417,6 +429,8 @@ export type LobbyActions = {
     rows: number;
     mode: 'side' | 'bar';
   };
+  crew_open: { ship: string };
+  crew_close: Record<string, never>;
   crew_sign_on: { ship: string; job: string };
   crew_code: { ship: string; code: string };
   crew_apply: { ship: string; note: string };

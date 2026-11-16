@@ -135,6 +135,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 /// Takes the terminal off the map and closes its UI. The classic HUD (or the game) shows again.
 /datum/lobby_terminal/proc/hide()
 	char_save()
+	crew_open_ref = null
 	visible = FALSE
 	if(load_timer)
 		deltimer(load_timer)
