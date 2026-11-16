@@ -14,9 +14,14 @@
 /datum/ambient_place/ship/strays_test
 	/// What counts as aboard, list(min x, min y, max x, max y, z)
 	var/list/test_bounds
+	/// Stands in for the trader outpost the ship is docked at
+	var/test_outpost
 
 /datum/ambient_place/ship/strays_test/aboard(turf/tile)
 	return ambient_in_bounds(get_turf(tile), test_bounds)
+
+/datum/ambient_place/ship/strays_test/docked_outpost()
+	return test_outpost
 
 /// A convict hideout kind that always has room. No planet types, so the shared instance never rolls.
 /datum/ambient_site_kind/convict/strays_test
@@ -64,11 +69,11 @@
 	var/datum/ambient_place/ship/deck = ambient_ship_place(ship, create = FALSE)
 	TEST_ASSERT(istype(deck, /datum/ambient_place/ship/strays_test), "The test ship has no deckhand place")
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
-	var/mob/living/basic/ambient_npc/stray/stranded/stray = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/stray = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 
 	// Only strays can be asked along
 	TEST_ASSERT(ambient_offer_recruit(stray), "A stray could not be opened to offers")
-	var/mob/living/basic/ambient_npc/plain = allocate(/mob/living/basic/ambient_npc, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/plain = allocate(/mob/living/carbon/human/npc/ambient_npc, corner)
 	TEST_ASSERT(!ambient_offer_recruit(plain), "An ordinary ambient NPC was opened to offers")
 	TEST_ASSERT(stray.is_wild(), "A new stray is not wild")
 	TEST_ASSERT(!HAS_TRAIT(stray, TRAIT_GODMODE), "A stray can't be hurt")
@@ -94,15 +99,16 @@
 	TEST_ASSERT(istype(stray.activity, /datum/ambient_activity/stray_follow), "A stray who agreed is not following anyone")
 	TEST_ASSERT_EQUAL(stray.get_leader(), leader, "A stray follows someone else")
 	TEST_ASSERT_EQUAL(deck.pending(), stray, "The ship does not know who is on the way")
-	TEST_ASSERT(HAS_TRAIT(stray, TRAIT_SPACEWALK), "A follower can't cross open space to the ship")
+	TEST_ASSERT(!HAS_TRAIT(stray, TRAIT_SPACEWALK), "A follower crosses open space with no kit (human NPCs use their own suit and jets)")
 	TEST_ASSERT_NULL(stray.start_activity(new /datum/ambient_activity/shelter(stray, null, 100)), "A storm stopped a stray following")
 	TEST_ASSERT(!stray.accept_offer(leader, ship), "A follower agreed a second time")
 	TEST_ASSERT(!ambient_ship_can_take(ship), "A ship took a second stray while one was on the way") // AMBIENT_RECRUITS_PENDING_PER_SHIP
-	var/mob/living/basic/ambient_npc/stray/stranded/second = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/second = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(!second.accept_offer(leader, ship), "Two strays were on their way to one ship at once")
 
 	// Aboard: a deckhand, kept aboard, living by the deckhand routine
 	TEST_ASSERT(stray.board(ship), "A stray did not come aboard")
+	TEST_ASSERT_EQUAL(stray.gifts_given, 1, "A rescued stray gave [stray.gifts_given] gifts on coming aboard")
 	TEST_ASSERT(stray.is_deckhand(), "A stray aboard is not a deckhand")
 	TEST_ASSERT_EQUAL(stray.place, deck, "A deckhand does not belong to their ship")
 	TEST_ASSERT_EQUAL(deck.taken, 1, "The ship did not count the stray it took")
@@ -120,26 +126,26 @@
 	TEST_ASSERT(second.board(ship), "The second stray did not come aboard")
 	TEST_ASSERT_EQUAL(deck.taken, 2, "The ship did not count its second stray")
 	TEST_ASSERT(!ambient_ship_can_take(ship), "A ship took more than two strays in a round") // AMBIENT_RECRUITS_PER_SHIP_ROUND
-	var/mob/living/basic/ambient_npc/stray/stranded/third = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/third = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(!third.accept_offer(leader, ship), "A third stray joined a ship in one round")
 
 	// A follower deleted on the way (the planet's sweep) frees their ship's place
 	var/obj/structure/overmap/ship/other_ship = strays_test_ship(room)
-	var/mob/living/basic/ambient_npc/stray/stranded/runaway = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/runaway = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(runaway.accept_offer(leader, other_ship), "A stray refused a second ship")
 	qdel(runaway)
 	TEST_ASSERT(ambient_ship_can_take(other_ship), "A deleted follower kept their ship's place")
 
 	// One whose leader is gone goes back to being wild and frees the place
-	var/mob/living/basic/ambient_npc/stray/stranded/lost = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/lost = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(lost.accept_offer(leader, other_ship), "A stray refused a ship with room")
 	lost.lose_leader()
 	TEST_ASSERT(lost.is_wild(), "A stray who lost their leader is not wild again")
 	TEST_ASSERT(ambient_ship_can_take(other_ship), "A lost follower kept their ship's place")
-	TEST_ASSERT(!HAS_TRAIT(lost, TRAIT_SPACEWALK), "A lost follower can still cross open space")
+	TEST_ASSERT(!HAS_TRAIT(lost, TRAIT_SPACEWALK), "A lost follower crosses open space with no kit")
 
 	// One killed on the way frees it too, and drops nothing
-	var/mob/living/basic/ambient_npc/stray/stranded/doomed = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/doomed = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(doomed.accept_offer(leader, other_ship), "A stray refused a ship with room")
 	var/objects_before = length(corner.contents)
 	doomed.death()
@@ -163,7 +169,7 @@
 	var/turf/corner = run_loc_floor_bottom_left
 	var/obj/structure/overmap/ship/ship = strays_test_ship(room)
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
-	var/mob/living/basic/ambient_npc/stray/stranded/deckhand = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/deckhand = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	deckhand.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(deckhand.accept_offer(leader, ship) && deckhand.board(ship), "The stray did not come aboard")
 
@@ -229,7 +235,7 @@
 	TEST_ASSERT(kind.realize(site), "A crashed pod brought nobody out")
 	var/list/people = site.living_npcs()
 	TEST_ASSERT_EQUAL(length(people), 1, "A crashed pod brought out [length(people)] people")
-	var/mob/living/basic/ambient_npc/stray/stranded/survivor = people[1]
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/survivor = people[1]
 	TEST_ASSERT(istype(survivor), "A crashed pod's person is not a stranded survivor")
 	TEST_ASSERT(survivor.is_wild() && survivor.recruit_open, "A stranded survivor can't be asked along")
 	TEST_ASSERT(site.get_prop(/obj/structure/bonfire) || site.get_prop(/obj/structure/bounty_camp_lamp), "A crashed pod has no fire or lantern")
@@ -247,7 +253,7 @@
 	qdel(survivor)
 	TEST_ASSERT(kind.realize(site), "A swept survivor did not come back")
 	people = site.living_npcs()
-	var/mob/living/basic/ambient_npc/stray/stranded/again = length(people) ? people[1] : null
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/again = length(people) ? people[1] : null
 	TEST_ASSERT_EQUAL(again?.real_name, survivor_name, "A different person came back to the pod")
 	var/seats_after = 0
 	for(var/obj/structure/chair/comfy/shuttle/seat in range(3, middle))
@@ -256,12 +262,41 @@
 
 	// Taken aboard: the site is spent, and nobody comes back
 	var/obj/structure/overmap/ship/ship = strays_test_ship(ambient_test_room_bounds())
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
 	TEST_ASSERT(again?.accept_offer(leader, ship), "A stranded survivor refused a ship with room")
+	again.rescue_zone = 3 // ZONE_RED: found in the red zone (the test room is on no overmap tile)
+	leader.forceMove(get_step(again, NORTH) || get_turf(again))
 	TEST_ASSERT(again?.board(ship), "A stranded survivor did not come aboard")
 	TEST_ASSERT_EQUAL(site.state, "spent", "A site whose survivor was taken aboard is not spent") // AMBIENT_SITE_SPENT
 	TEST_ASSERT(!kind.realize(site), "A pod whose survivor was taken aboard brought someone out")
 	allocated += again
+
+	// Rescued: a ship part for whoever brought them in, and another later
+	var/obj/item/ship_parts/thanks = leader.is_holding_item_of_type(/obj/item/ship_parts)
+	TEST_ASSERT_NOTNULL(thanks, "A rescued survivor gave the crew member who brought them in no ship part")
+	TEST_ASSERT_EQUAL(again.gifts_given, 1, "A rescued survivor gave [again.gifts_given] gifts on coming aboard")
+	TEST_ASSERT(again.next_gift_at >= world.time + 75 MINUTES, "A rescued survivor's next gift is due too soon") // AMBIENT_STRAY_GIFT_LOW
+	qdel(thanks)
+	var/obj/item/ship_parts/later = again.give_gift(leader)
+	TEST_ASSERT(istype(later) && leader.is_holding(later), "A deckhand's later gift did not reach the crew member")
+	TEST_ASSERT_EQUAL(again.gifts_given, 2, "A deckhand's later gift was not counted")
+	qdel(later)
+
+	// Let go at an outpost: the crew that rescued them gets red-zone reputation, once
+	var/datum/ambient_place/ship/strays_test/deck = again.place
+	TEST_ASSERT(istype(deck), "A rescued deckhand does not live on the ship")
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 0, "A rescued survivor paid out away from any outpost")
+	deck.test_outpost = TRUE
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 3, "A survivor rescued in the red zone did not pay 3 reputation") // REPUTATION_GAIN_HARD
+	TEST_ASSERT_EQUAL(crew.reputation, 3, "The rescuing crew's reputation is [crew.reputation]")
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 0, "A rescued survivor paid out twice")
+	TEST_ASSERT_EQUAL(crew.reputation, 3, "A second drop-off changed the crew's reputation")
+	deck.test_outpost = null
+	team.ship = null
 
 	for(var/datum/weakref/ref as anything in site.props)
 		qdel(ref?.resolve())
@@ -485,14 +520,22 @@
 	TEST_ASSERT_EQUAL(length(SSambient_strays.live_lifeboats()), 1, "More than one lifeboat is out")
 
 	// Its survivor: open to offers, in their softsuit, and the same person on the next load
-	var/mob/living/basic/ambient_npc/stray/lifeboat/survivor = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/survivor = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
 	allocated += survivor
 	survivor.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(survivor.is_wild() && survivor.recruit_open, "The lifeboat's survivor can't be asked along")
-	TEST_ASSERT(HAS_TRAIT(survivor, TRAIT_SPACEWALK), "The lifeboat's survivor can't cross open space")
+	// Their softsuit, helmet and jet harness of air: real kit for the crossing, no trait
+	TEST_ASSERT(!HAS_TRAIT(survivor, TRAIT_SPACEWALK), "The lifeboat's survivor crosses open space with no kit")
+	TEST_ASSERT(istype(survivor.wear_suit, /obj/item/clothing/suit/space), "The lifeboat's survivor has no softsuit")
+	TEST_ASSERT(istype(survivor.head, /obj/item/clothing/head/helmet/space), "The lifeboat's survivor has no helmet")
+	var/obj/item/tank/jetpack/harness = survivor.back
+	TEST_ASSERT(istype(harness), "The lifeboat's survivor has no jet harness")
+	survivor.ready_for_space(TRUE)
+	TEST_ASSERT(harness?.on, "The lifeboat's survivor never turns on their jets")
+	survivor.ready_for_space(FALSE)
 	var/survivor_name = survivor.real_name
 	qdel(survivor)
-	var/mob/living/basic/ambient_npc/stray/lifeboat/again = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/again = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
 	allocated += again
 	again.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT_EQUAL(again.real_name, survivor_name, "Someone else was aboard the lifeboat on the next load")
@@ -509,7 +552,7 @@
 	var/obj/structure/overmap/space_ruin/ambient_lifeboat/grim = allocate(/obj/structure/overmap/space_ruin/ambient_lifeboat)
 	grim.set_ruin_template(template)
 	grim.start_beacon()
-	var/mob/living/basic/ambient_npc/stray/lifeboat/victim = grim.spawn_survivor(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/victim = grim.spawn_survivor(run_loc_floor_bottom_left)
 	allocated += victim
 	victim.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	victim.death()
@@ -538,10 +581,12 @@
 		for(var/context in list("talk", "accepted", "aboard", "lost"))
 			TEST_ASSERT(length(ambient_dialogue_lines("strays.json", section, context)), "Strays: [section] has no [context] lines") // AMBIENT_STRINGS_STRAYS
 	for(var/section in list("stranded", "lifeboat"))
-		for(var/context in list("greet", "refused"))
+		for(var/context in list("greet", "refused", "rescued", "delivered"))
 			TEST_ASSERT(length(ambient_dialogue_lines("strays.json", section, context)), "Strays: [section] has no [context] lines")
 	for(var/context in list("sighted", "plea", "refused", "camp", "cornered", "cuffed"))
 		TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "convict", context)), "Strays: the convict has no [context] lines")
-	for(var/context in list("idle", "talk", "crew", "follow", "wait", "dismissed"))
+	for(var/context in list("idle", "talk", "crew", "gift", "follow", "wait", "dismissed"))
 		TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "deckhand", context)), "Strays: deckhands have no [context] lines")
 	TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "lifeboat", "mayday")), "The lifeboat has no mayday")
+	var/mob/living/carbon/human/npc/ambient_npc/stray/plain_type = /mob/living/carbon/human/npc/ambient_npc/stray
+	TEST_ASSERT(!initial(plain_type.gives_gifts), "A stray who was never stranded thanks the crew with ship parts")

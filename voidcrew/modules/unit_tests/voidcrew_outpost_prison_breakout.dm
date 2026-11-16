@@ -47,7 +47,7 @@
 
 	// Their first target is a way out: never a fixture, a cell door or the wing's outer wall.
 	var/list/at_exit = list()
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		var/atom/target = rioter.riot_target()
 		TEST_ASSERT(prison.is_exit_blocker(target), "[rioter] went for [target || "nothing"] before a way out")
 		var/turf/tile = get_turf(target)
@@ -59,9 +59,9 @@
 	for(var/turf/tile as anything in at_exit)
 		TEST_ASSERT(at_exit[tile] <= 2, "[at_exit[tile]] rioters went for the way out at [tile.x],[tile.y]")
 	// The nearest: a rioter at the staff door goes for it, and keeps at it.
-	var/mob/living/basic/outpost_prisoner/by_door = rioters[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/by_door = rioters[1]
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in prison_spot(home, 9, 6)
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		rioter.riot_target_ref = null
 	by_door.forceMove(prison_spot(home, 9, 7))
 	prison.refresh_reach()
@@ -70,14 +70,14 @@
 	TEST_ASSERT_EQUAL(by_door.riot_target(), staff_door, "A rioter gave up on the staff door after 20 blows") // PRISON_RIOT_TARGET_HITS is for fixtures
 
 	// Waiting their turn at a crowded way out: a fixture near it meanwhile. Only the staff door for all four.
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		rioter.riot_target_ref = null
 		for(var/turf/tile as anything in prison.exit_tiles(rioter))
 			if(tile != get_turf(staff_door))
 				LAZYSET(rioter.riot_skips, REF(prison.exit_blocker(tile)), world.time + 5 MINUTES)
-	var/mob/living/basic/outpost_prisoner/second = rioters[2]
-	var/mob/living/basic/outpost_prisoner/third = rioters[3]
-	var/mob/living/basic/outpost_prisoner/fourth = rioters[4]
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = rioters[2]
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = rioters[3]
+	var/mob/living/carbon/human/npc/outpost_prisoner/fourth = rioters[4]
 	TEST_ASSERT_EQUAL(by_door.riot_target(), staff_door, "The first rioter did not go for the only way out")
 	TEST_ASSERT_EQUAL(second.riot_target(), staff_door, "The second rioter did not go for the only way out")
 	var/atom/waiting = third.riot_target()
@@ -124,8 +124,8 @@
 	var/turf/doorway = prison_spot(home, 9, 6)
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in doorway
 	TEST_ASSERT_NOTNULL(staff_door, "The staff door is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 9, 7))
-	var/mob/living/basic/outpost_prisoner/glazier = trouble_prisoner(prison, prison_spot(home, 7, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 9, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/glazier = trouble_prisoner(prison, prison_spot(home, 7, 7))
 	TEST_ASSERT(breakout_riot(prison), "The riot did not start")
 	TEST_ASSERT_EQUAL(rioter.riot_target(), staff_door, "A rioter beside the staff door went for [rioter.riot_target()]")
 
@@ -216,9 +216,9 @@
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
 	TEST_ASSERT_NOTNULL(hatch, "The serving hatch is not where the map puts it")
 	var/obj/machinery/door/window/staff_side = hatch.staff_windoor()
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 5, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 5, 7))
 	TEST_ASSERT(breakout_riot(prison), "The riot did not start")
-	var/mob/living/basic/outpost_prisoner/calm = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	TEST_ASSERT_EQUAL(rioter.riot_target(), hatch, "A rioter in front of the hatch went for [rioter.riot_target()]")
 
 	// Outpost property: nothing else damages the window door, but a rioter's blows do, 10 each

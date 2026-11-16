@@ -10,12 +10,16 @@
  * armour on real slots, locked to the body (D3), so it protects by tg's armour rules and never drops.
  * Their weapons are carried, not held, until the fight starts, with real spare ammunition; their
  * self-treatment items are real (N6). The human NPC base adds a sealed suit and air in vacuum, a mask in
- * bad air and warm clothes in the cold, on top of whatever is picked here (human_npc_outfits.dm).
+ * bad air and warm clothes in the cold, on top of whatever is picked here (human_npc_outfits.dm). In
+ * vacuum the suit it seals up in is its own family's, in the armour class of what it wears in good air
+ * (bounty_suits.dm).
  */
 
 /**
  * The outfit table of every bounty human: it asks the NPC being dressed (bounty_build_outfit()), so
- * the choice can read its record, its tier, its style and its kit. Set as npc_outfit_table.
+ * the choice can read its record, its tier, its style and its kit. Set as npc_outfit_table. Then the
+ * clothes for its site go on (bounty_site_clothes(), companions), and its own sealed suit if it is about
+ * to be sealed up for vacuum (bounty_seal_outfit()); the plain EVA layer is only the fallback.
  */
 /datum/human_npc_outfit_table/bounty
 	vacuum_layer = /datum/human_npc_layer/eva
@@ -23,7 +27,9 @@
 /datum/human_npc_outfit_table/bounty/pick_outfit(mob/living/carbon/human/npc/npc, zone)
 	if(!ishumannpc(npc))
 		return null
-	return npc.bounty_build_outfit(zone || ZONE_GREEN)
+	var/outfit = npc.bounty_build_outfit(zone || ZONE_GREEN)
+	outfit = npc.bounty_site_clothes(outfit)
+	return bounty_seal_outfit(npc, outfit, src)
 
 /**
  * What a bounty human wears in `zone` (ZONE_*): a /datum/outfit typepath, or an instance made for it
@@ -31,6 +37,13 @@
  */
 /mob/living/carbon/human/npc/proc/bounty_build_outfit(zone)
 	return null
+
+/**
+ * `outfit` (from bounty_build_outfit()) in the clothes it wears for where it is, or as it is. Companions
+ * swap their plain clothes for rough ones picked by their criminal's site (bounty_companions.dm).
+ */
+/mob/living/carbon/human/npc/proc/bounty_site_clothes(outfit)
+	return outfit
 
 /// A fresh outfit of `base_type`, to add weapons, armour and kit to before it is worn
 /proc/bounty_outfit_instance(base_type)

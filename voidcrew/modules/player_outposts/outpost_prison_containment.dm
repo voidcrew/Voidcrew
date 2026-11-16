@@ -116,7 +116,7 @@
  * pulled by a member of the wing who may use the door. Visitors let in may use the door, but
  * never take a prisoner with them, so nobody but the wing's own people can drag one off the outpost.
  */
-/proc/outpost_prisoner_escorted(atom/door, mob/living/basic/outpost_prisoner/prisoner)
+/proc/outpost_prisoner_escorted(atom/door, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!istype(prisoner) || !prisoner.can_be_dragged())
 		return FALSE
 	var/mob/living/puller = prisoner.pulledby
@@ -165,7 +165,7 @@
 /// Refreshes where every prisoner can walk and reach. The prisoners share one look at each tile.
 /datum/outpost_prison/proc/refresh_reach()
 	var/list/standable = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		refresh_prisoner_reach(prisoner, standable)
 
 /**
@@ -174,7 +174,7 @@
  * seen through the office windows is not. `standable` (turf = whether a prisoner can stand there)
  * is shared by every prisoner in one refresh, so each tile is looked at once.
  */
-/datum/outpost_prison/proc/refresh_prisoner_reach(mob/living/basic/outpost_prisoner/prisoner, list/standable)
+/datum/outpost_prison/proc/refresh_prisoner_reach(mob/living/carbon/human/npc/outpost_prisoner/prisoner, list/standable)
 	var/list/walked = list()
 	var/list/reach = list()
 	var/turf/start = get_turf(prisoner)
@@ -244,6 +244,8 @@
 			if(!found[tile] && !isclosedturf(tile))
 				staff_ground[tile] = TRUE
 	record_layout()
+	// Masks and tanks for a breach (outpost_prison_breach.dm)
+	ensure_emergency_lockers()
 
 /**
  * Whether the cell block flood carries on through a tile. Only the wing's structure stops it:
@@ -413,49 +415,52 @@
 
 /**
  * Hooks up what keeps a prisoner contained; called from Initialize(). Teleports fail, forced ones
- * included (drop pods, quantum pads); polymorph and type changes fail; and a dead prisoner stays
- * dead: anything that tries to bring them back gets the body collected at once instead.
- * TRAIT_NO_TRANSFORM would stop polymorph too, but it also stops their AI moving them.
+ * included (drop pods, quantum pads); polymorph and type changes fail. A dead prisoner can be brought
+ * back like anyone (on_revived()). TRAIT_NO_TRANSFORM would stop polymorph too, but it also stops their
+ * AI moving them.
  */
-/mob/living/basic/outpost_prisoner/proc/setup_containment()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_containment()
 	RegisterSignal(src, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport))
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
 	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
-	RegisterSignal(src, COMSIG_LIVING_REVIVE, PROC_REF(on_revive_attempt))
+	RegisterSignal(src, COMSIG_LIVING_REVIVE, PROC_REF(on_revived))
 
-/mob/living/basic/outpost_prisoner/proc/refuse_teleport(datum/source, atom/destination, channel)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/refuse_teleport(datum/source, atom/destination, channel)
 	SIGNAL_HANDLER
 	if(isturf(loc))
 		visible_message(span_notice("[src] flickers for a moment, but stays where [p_they()] [p_are()]."))
 	return TRUE
 
-/mob/living/basic/outpost_prisoner/proc/refuse_polymorph(datum/source, what_to_randomize)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/refuse_polymorph(datum/source, what_to_randomize)
 	SIGNAL_HANDLER
 	visible_message(span_notice("[src] shimmers for a moment, then looks the same as before."))
 	return STOP_WABBAJACK
 
-/mob/living/basic/outpost_prisoner/proc/refuse_type_change(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/refuse_type_change(datum/source)
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_MOB_CHANGE
 
-/// The dead stay dead: the corrections service has already logged the death, whether or not the body is still in the cell block
-/mob/living/basic/outpost_prisoner/can_be_revived()
-	if(died_at || (prison && phase == PRISONER_PRESENT))
-		return FALSE
-	return ..()
-
-/// Someone tried to bring a dead prisoner back
-/mob/living/basic/outpost_prisoner/proc/on_revive_attempt(datum/source, full_heal_flags)
+/**
+ * Brought back (a defibrillator, strange reagent: tg's revival works on them as on anyone). Still on the
+ * roster, they are the same inmate again: the death stays on the books (its record closed, the yard's
+ * blame not taken back) and the log says so. Revived after their body left the roster, the corrections
+ * service takes them back off the outpost.
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_revived(datum/source, full_heal_flags)
 	SIGNAL_HANDLER
-	if(stat != DEAD || !prison || phase != PRISONER_PRESENT)
+	if(prison && phase == PRISONER_PRESENT)
+		if(died_at)
+			prison.add_log("[real_name] was revived. The corrections service has already logged the death.")
+		died_at = 0
 		return
-	prison.add_log("Someone tried to revive [real_name]. The corrections service has already logged the death.")
+	if(phase != PRISONER_LEAVING)
+		INVOKE_ASYNC(src, PROC_REF(beam_out))
 
 /**
  * Whether they are shut in their cell: standing in a cell with its door bolted shut, or with
  * nowhere to walk but the cell and its doorway (a welded, walled-in or unpowered door).
  */
-/mob/living/basic/outpost_prisoner/proc/is_confined()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_confined()
 	var/datum/outpost_prison_cell/holding = prison?.cell_at(get_turf(src))
 	if(!holding)
 		return FALSE

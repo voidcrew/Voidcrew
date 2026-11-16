@@ -118,17 +118,17 @@ The offer is a **serum** or, from the second visit on, sometimes a **specimen**.
 
 A dosed prisoner earns nothing and isn't released until the experiment is over, and taking them out of the cell block for a minute ruins it. The creatures:
 
-- **Hulk.** Charges, throws people and tears through walls and doors. Worn down far enough it tires, and a baton or disabler can put it down alive, which pays more.
-- **Nightmare.** Breaks the lights first, then hunts in the dark, where it heals and dodges shots. Light burns it, and a flash hurts it.
-- **Fly person.** Fast, and hard to hit while it flies. A flyswatter hits it very hard, and two baton hits drop it.
+- **Hulk.** Charges, throws people, punches through walls and forces doors, and shrugs off stuns. Beaten into crit it stops being a hulk: then batons work and cuffs hold, and taking it alive pays more.
+- **Nightmare.** Breaks the lights first, then hunts in the dark, where it heals and slips past shots. Light burns it, and a flash sears it.
+- **Fly person.** Darts about and keeps away from people, and sidesteps some shots while it moves. A flyswatter hits it very hard, batons work on it, and it eats any food it finds.
 - **Horror.** Arm blade, bone shield, shrieks that break lights, and it absorbs people who are down to heal. At 0 health it collapses but keeps moving, and gets back up 45 seconds later with half its health. To finish it, destroy the body while it is down (fire does double damage and keeps it down while it burns), gib or dust it, or drag it off the outpost into open space. A vented room on the outpost doesn't count.
 
-Kessler pays a fee when the creature first shows, and a bonus when it is put down if your crew did at least half the damage. Its team beams in to collect a creature about 10 seconds after it goes down. The fee and the bonus are paid once each per experiment. A creature that leaves the wing sets off the containment breach alarm, and one that gets off the outpost on its own, onto a docked ship say, is taken back by Kessler for a recovery fee, which becomes debt if the bank can't cover it. Prisoners who see someone die take it badly, and every prisoner a creature kills puts the yard on edge.
+The hulk, the nightmare and the fly person are the prisoner's own body, so they bleed, go into crit, can be cuffed, drugged and revived like anyone. A creature is down when it is dead, in crit, worn out, asleep or cuffed. About 10 seconds later Kessler's team beams in, darts a living one and takes it away; one that got back up by then is loose again. Kessler pays a fee when the creature first shows, and a bonus when it is put down if your crew did at least half the damage: as it dies, or for one taken alive, when Kessler has it. The fee and the bonus are paid once each per experiment. A creature that leaves the wing sets off the containment breach alarm, and one that gets off the outpost on its own, onto a docked ship say, is taken back by Kessler for a recovery fee, which becomes debt if the bank can't cover it. Prisoners who see someone die take it badly, and every prisoner a creature kills puts the yard on edge.
 
 | Creature | Fee when it shows | Bonus when put down | Recovery fee |
 |---|---|---|---|
 | Fly person | 300 cr | 700 cr | 500 cr |
-| Hulk | 600 cr | 1,900 cr, or 2,400 cr put down alive | 1,500 cr |
+| Hulk | 600 cr | 1,900 cr, or 2,400 cr taken alive and cuffed or asleep | 1,500 cr |
 | Nightmare | 600 cr | 2,400 cr | 1,500 cr |
 | Headslug | 600 cr | 900 cr | none |
 | Horror | paid with the headslug | 3,900 cr | 2,500 cr |
