@@ -3,7 +3,7 @@
  * the saved hull's plan in a well, the name, the class line, what the save carries and
  * [ LOAD ]; compact rows (short panes) carry two lines and the key. States: EMPTY, ready,
  * ready before the port opens (LOAD dead), UNDER WAY, refused (the reason in amber, the plan
- * faded). The box itself: `wait` draws three blank slabs, `off` one ghost block.
+ * faded). The box itself: `wait` and `off` draw one ghost block with the state.
  */
 import type { ReactNode } from 'react';
 
@@ -36,12 +36,9 @@ const CLASS_W = 35;
 const ROW_W = 44;
 const ROW_DENIAL_W = 58;
 
-type SlotState = 'empty' | 'blank' | 'ready' | 'under' | 'refused';
+type SlotState = 'empty' | 'ready' | 'under' | 'refused';
 
-function stateOf(card: SaveCard | null, blank: boolean): SlotState {
-  if (blank) {
-    return 'blank';
-  }
+function stateOf(card: SaveCard | null): SlotState {
   if (!card) {
     return 'empty';
   }
@@ -118,20 +115,22 @@ export function SaveSlots(props: {
 }) {
   const { ctx, state, slots, plans, form } = props;
   const { yB } = form;
-  if (state === 'off') {
+  // Offline, or not read yet: one ghost block with the state, as the other screens draw theirs.
+  if (state === 'off' || state === 'wait') {
     return (
       <Slab x={1} y={yB} w={61} h={4.75} variant="block" dead>
         <NameLine
           x={3}
           y={yB + 0.25}
           w={57}
-          text="YARD RECORDS OFFLINE."
+          text={
+            state === 'off' ? 'YARD RECORDS OFFLINE.' : 'FETCHING YARD RECORDS.'
+          }
           cls="dim"
         />
       </Slab>
     );
   }
-  const blank = state !== 'ok';
   const live = ctx.open && !ctx.sent;
   const load = (card: SaveCard) =>
     ctx.found({
@@ -142,8 +141,8 @@ export function SaveSlots(props: {
     });
   const out: ReactNode[] = [];
   for (let i = 0; i < 3; i++) {
-    const card = blank ? null : slots[i] || null;
-    const st = stateOf(card, blank);
+    const card = slots[i] || null;
+    const st = stateOf(card);
     const n = card?.slot || i + 1;
     if (form.full) {
       const h = form.slotH;
@@ -192,7 +191,7 @@ function FullSlot(props: {
   const p = h >= 4.75 ? 0.25 : 0.125;
   const wellH = h - 2 * p;
   const nC = Math.max(1, Math.min(4, Math.floor(h - 2 * p - 2.25)));
-  const dead = st === 'empty' || st === 'blank';
+  const dead = st === 'empty';
   let well: ReactNode;
   if (dead) {
     well = <Well x={3} y={ys + p} w={14} h={wellH} />;
@@ -309,7 +308,7 @@ function RowSlot(props: {
   onLoad: (card: SaveCard) => void;
 }) {
   const { n, card, st, ys, alt, live, onLoad } = props;
-  const dead = st === 'empty' || st === 'blank';
+  const dead = st === 'empty';
   const body: ReactNode[] = [];
   if (st === 'empty') {
     body.push(
