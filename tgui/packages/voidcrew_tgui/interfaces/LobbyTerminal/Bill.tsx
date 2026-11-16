@@ -106,7 +106,9 @@ export function Bill(props: { ctx: YardCtx }) {
   const pages = Math.max(1, Math.ceil(n / per));
   const pg = clamp(page, 1, pages);
   const shown = bill.lines.slice((pg - 1) * per, pg * per);
-  const pitch = tight || pages > 1 ? 1 : clamp(f4(avail / n), 1, 2.25);
+  // Tight form: pitch 1, stretched to 1.5 when rows are spare so none sit empty.
+  const pitch =
+    pages > 1 ? 1 : clamp(f4(avail / n), 1, tight ? 1.5 : 2.25);
   const spare = avail - per * pitch;
   const pic = !tight && spare >= 6 ? f4(spare - 0.5) : 0;
 
