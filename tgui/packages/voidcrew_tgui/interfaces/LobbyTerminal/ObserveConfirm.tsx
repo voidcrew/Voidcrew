@@ -5,7 +5,7 @@
 import { useBackend } from 'tgui/backend';
 
 import { quietDialogClose } from './motion';
-import { useBack } from './nav';
+import { Back } from './nav';
 import { BODY_Y, Btn, Dialog, Put, useGrid } from './term';
 import type { LobbyData } from './types';
 
@@ -21,7 +21,6 @@ export function ObserveConfirm(props: { onClose: () => void }) {
   const { onClose } = props;
   const { data, act } = useBackend<LobbyData>();
   const { cols } = useGrid();
-  useBack(onClose);
   const x = Math.floor((cols - W) / 2);
   const y = BODY_Y + 2;
   const [line, cls] = COME_BACK[data.respawn || 'same'] || COME_BACK.same;
@@ -35,6 +34,7 @@ export function ObserveConfirm(props: { onClose: () => void }) {
         }}
       />
       <Dialog w={W} h={7} caption="OBSERVE">
+        <Back fn={onClose} />
         <Put x={x + 2} y={y + 1} cls="wht">
           LEAVE THE OFFICE AND WATCH THE ROUND?
         </Put>

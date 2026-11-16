@@ -79,7 +79,7 @@ type Nav = {
   focus: (id: string, how: How) => void;
   register: (id: string, item: Item) => void;
   unregister: (id: string) => void;
-  pushBack: (id: string, fn: RefObject<() => void>) => void;
+  pushBack: (id: string, fn: RefObject<() => void>, scope: string) => void;
   popBack: (id: string) => void;
   pushPager: (id: string, fn: RefObject<(step: number) => void>) => void;
   popPager: (id: string) => void;
@@ -193,13 +193,23 @@ export function NavProvider(props: ProviderProps) {
   const { children } = props;
   const items = useRef(new Map<string, Item>()).current;
   const order = useRef<string[]>([]).current;
-  const backs = useRef<[string, RefObject<() => void>][]>([]).current;
+  /** Escape handlers, oldest first, each with the FocusScope it was mounted in. */
+  const backs = useRef<[string, RefObject<() => void>, string][]>([]).current;
   const pagers = useRef<[string, RefObject<(step: number) => void>][]>(
     [],
   ).current;
   /** The last item focused in each zone. */
   const lastInZone = useRef(new Map<string, string>()).current;
   const scopes = useRef<string[]>(['root']).current;
+  /**
+   * Per scope, the best first-focus claim made in it. A claim made while a dialog covers its
+   * scope waits here, and runs when the dialog closes if the player had not focused anything
+   * under it yet (the WELCOME box over a screen that just opened).
+   */
+  const waiting = useRef(new Map<string, { id: string; prio: number }>())
+    .current;
+  /** Per open scope: the scope under it had no focus of the player's when it opened. */
+  const coveredBare = useRef(new Map<string, boolean>()).current;
   /** Items in the newest open scope, in mount order. */
   const live = () => {
     const top = scopes[scopes.length - 1];
@@ -250,6 +260,8 @@ export function NavProvider(props: ProviderProps) {
       const currentItem = found?.scope === top ? found : undefined;
       const pending = claim.current;
       claim.current = null;
+      // The open scope's claims are settled now; only covered scopes keep theirs waiting.
+      waiting.delete(top);
       // A claim wins after a key or click (a record or screen the player opened), never because
       // a server update added a row under the focus.
       const untouched = focusHow.current === 'auto';
@@ -311,6 +323,12 @@ export function NavProvider(props: ProviderProps) {
         ) {
           claim.current = { id, prio };
         }
+        if (prio !== undefined) {
+          const best = waiting.get(item.scope);
+          if (!best || prio > best.prio || !items.has(best.id)) {
+            waiting.set(item.scope, { id, prio });
+          }
+        }
         schedule();
       },
       unregister: (id) => {
@@ -324,6 +342,13 @@ export function NavProvider(props: ProviderProps) {
         }
       },
       pushScope: (id) => {
+        const under = scopes[scopes.length - 1];
+        const current = focusRef.current;
+        const held =
+          !!current &&
+          items.get(current)?.scope === under &&
+          focusHow.current !== 'auto';
+        coveredBare.set(id, !held);
         scopes.push(id);
         schedule();
       },
@@ -332,10 +357,24 @@ export function NavProvider(props: ProviderProps) {
         if (at > 0) {
           scopes.splice(at, 1);
         }
+        const bare = coveredBare.get(id);
+        coveredBare.delete(id);
+        waiting.delete(id);
+        const top = scopes[scopes.length - 1];
+        const wait = waiting.get(top);
+        if (
+          bare &&
+          at === scopes.length &&
+          wait &&
+          items.get(wait.id)?.scope === top &&
+          (!claim.current || wait.prio > claim.current.prio)
+        ) {
+          claim.current = wait;
+        }
         schedule();
       },
-      pushBack: (id, fn) => {
-        backs.push([id, fn]);
+      pushBack: (id, fn, scope) => {
+        backs.push([id, fn, scope]);
       },
       popBack: (id) => {
         const at = backs.findIndex((b) => b[0] === id);
@@ -485,7 +524,16 @@ export function NavProvider(props: ProviderProps) {
           return;
         }
         // No key-press sound: going back has its own (the wipe played slower).
-        const top = backs[backs.length - 1];
+        // An open dialog that set its handler inside its own scope (Back) owns Escape, even when
+        // a screen under it registered one later; otherwise the newest handler wins.
+        const scope = scopes[scopes.length - 1];
+        let top = backs[backs.length - 1];
+        for (let i = backs.length - 1; i >= 0; i--) {
+          if (backs[i][2] === scope) {
+            top = backs[i];
+            break;
+          }
+        }
         if (top) {
           top[1].current();
         }
@@ -586,6 +634,7 @@ export function FocusScope(props: { children: ReactNode }) {
  */
 export function useBack(fn: (() => void) | null) {
   const nav = useContext(NavContext);
+  const scope = useContext(ScopeContext);
   const id = useId();
   const fnRef = useRef<() => void>(() => undefined);
   fnRef.current = fn || (() => undefined);
@@ -594,9 +643,19 @@ export function useBack(fn: (() => void) | null) {
     if (!active || !nav) {
       return;
     }
-    nav.pushBack(id, fnRef);
+    nav.pushBack(id, fnRef, scope);
     return () => nav.popBack(id);
-  }, [active, nav?.pushBack]);
+  }, [active, nav?.pushBack, scope]);
+}
+
+/**
+ * useBack as an element, for a dialog to place inside its own FocusScope (a Dialog's children):
+ * while the dialog is the open scope, its Escape comes before any handler of the screen under it,
+ * however late that one mounted.
+ */
+export function Back(props: { fn: (() => void) | null }) {
+  useBack(props.fn);
+  return null;
 }
 
 /**
