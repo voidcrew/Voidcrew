@@ -268,35 +268,35 @@ export function SpeciesConfirm() {
         }}
         onClick={(e) => e.stopPropagation()}
       />
-    <Dialog w={w} h={6 + lines.length} caption="SPECIES" sound="warn">
-      <Put x={x + 2} y={y + 1} cls="wht">
-        {cut(`${species} CAN'T KEEP:`, 41)}
-      </Put>
-      {lines.map((line, i) => (
-        <Put key={i} x={x + 2} y={y + 2 + i}>
-          {line}
+      <Dialog w={w} h={6 + lines.length} caption="SPECIES" sound="warn">
+        <Put x={x + 2} y={y + 1} cls="wht">
+          {cut(`${species} CAN'T KEEP:`, 41)}
         </Put>
-      ))}
-      <Btn
-        x={x + 2}
-        y={by}
-        label="CANCEL"
-        lit
-        auto={9}
-        onClick={() => act('char_confirm', { ok: 0 })}
-      />
-      <Btn
-        x={x + 43}
-        y={by}
-        label="CHANGE"
-        right
-        onClick={() => {
-          // Answered, not backed out of: the box goes without the back sound.
-          quietDialogClose();
-          act('char_confirm', { ok: 1 });
-        }}
-      />
-    </Dialog>
+        {lines.map((line, i) => (
+          <Put key={i} x={x + 2} y={y + 2 + i}>
+            {line}
+          </Put>
+        ))}
+        <Btn
+          x={x + 2}
+          y={by}
+          label="CANCEL"
+          lit
+          auto={9}
+          onClick={() => act('char_confirm', { ok: 0 })}
+        />
+        <Btn
+          x={x + 43}
+          y={by}
+          label="CHANGE"
+          right
+          onClick={() => {
+            // Answered, not backed out of: the box goes without the back sound.
+            quietDialogClose();
+            act('char_confirm', { ok: 1 });
+          }}
+        />
+      </Dialog>
     </>
   );
 }
