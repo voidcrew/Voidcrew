@@ -53,7 +53,7 @@
 /// Heat a Furnace shot adds
 #define PLASMA_HEAT_PER_SHOT 20
 /// Heat an Old Furnace shot adds
-#define PLASMA_HEAT_PER_SHOT_UNIQUE 18
+#define PLASMA_HEAT_PER_SHOT_UNIQUE 14
 /// A shot that brings the barrel to this heat or more overheats the gun
 #define PLASMA_HEAT_MAX 100
 /// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before an overheat, and the
@@ -67,6 +67,8 @@
 
 /// An overheated gun can't fire or vent for this long
 #define PLASMA_OVERHEAT_SHUTDOWN (10 SECONDS)
+/// The Old Furnace's shorter lockout
+#define PLASMA_OVERHEAT_SHUTDOWN_UNIQUE (6 SECONDS)
 /// Heat an overheated gun comes back at, below the first coil step
 #define PLASMA_OVERHEAT_END_HEAT 20
 
@@ -88,6 +90,8 @@
 #define PLASMA_VENT_COOL 60
 /// After a gold vent, shots add half heat for this long
 #define PLASMA_VENT_GOLD_WINDOW (4 SECONDS)
+/// The Old Furnace's longer gold window
+#define PLASMA_VENT_GOLD_WINDOW_UNIQUE (8 SECONDS)
 /// Heat a shot adds during the gold window, as a fraction
 #define PLASMA_VENT_GOLD_HEAT_MULT 0.5
 /// A vent left to run out keeps venting this long after the sweep, and the gun can't fire
@@ -104,7 +108,8 @@
 // Cooling, with PLASMA_HEAT_PER_SHOT 20 and PLASMA_HEAT_MAX 100. Room air (101 kPa, 293 K) cools 11.5 a second,
 // vacuum 6. Furnace overheats on shot: room air 8th at 0.7 s between shots, 11th at 1 s, never in a 12-shot
 // cartridge at 1.2 s (88 after the 12th); vacuum 7th at 0.7 s, 7th at 1 s, 8th at 1.2 s.
-// Old Furnace (18 a shot): room air 10th at 0.7 s, never at 1 s or 1.2 s; vacuum 7th, 8th and 9th.
+// Old Furnace (14 a shot): room air never in a cartridge (71 after the 12th at 0.7 s; the 16th shot flat out
+// overheats); vacuum 10th at 0.7 s, 12th at 1 s, never in a cartridge at 1.2 s (82 after the 12th).
 /// Heat lost per second, always
 #define PLASMA_COOL_BASE 6
 /// Heat lost per second to the turf air, times the pressure and temperature factors below

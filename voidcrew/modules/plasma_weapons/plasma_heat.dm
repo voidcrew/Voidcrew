@@ -82,8 +82,8 @@
 	cancel_vent()
 	barrel_heat = PLASMA_HEAT_MAX
 	gold_until = 0
-	shutdown_until = world.time + PLASMA_OVERHEAT_SHUTDOWN
-	addtimer(CALLBACK(src, PROC_REF(end_shutdown)), PLASMA_OVERHEAT_SHUTDOWN, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
+	shutdown_until = world.time + overheat_shutdown
+	addtimer(CALLBACK(src, PROC_REF(end_shutdown)), overheat_shutdown, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
 	var/turf/where = get_turf(src)
 	if(where)
 		where.visible_message(span_warning("[src]'s coils lock up!"))
@@ -197,7 +197,7 @@
 	switch(result)
 		if(PLASMA_VENT_RESULT_GOLD)
 			barrel_heat = 0
-			gold_until = world.time + PLASMA_VENT_GOLD_WINDOW
+			gold_until = world.time + gold_window
 			playsound(src, PLASMA_SOUND_VENT_GOLD, 50, TRUE)
 		if(PLASMA_VENT_RESULT_GRACE)
 			barrel_heat = max(barrel_heat - PLASMA_VENT_COOL, 0)
