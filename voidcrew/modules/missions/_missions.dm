@@ -1007,6 +1007,7 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 		var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
 		servant.ship_notify("[name] completed! Reward: [reward_text].[reputation_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		servant.active_missions -= src
+		servant.roundend_missions_done++ // round-end report, voidcrew/modules/roundend
 
 	// Remove from subsystem tracking
 	SSmissions.all_active_missions -= src

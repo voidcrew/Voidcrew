@@ -17,12 +17,14 @@
 	gun_pool = LOOT_GUN_POOL_SYNDICATE
 	gun_extras = list(
 		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher = 1,
 			/obj/item/gun/ballistic/automatic/pistol/deagle = 1,
 			/obj/item/gun/ballistic/revolver = 1,
 			/obj/item/gun/ballistic/revolver/c38/housecall = 1,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/rifle/sniper_rifle = 1,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted = 1,
 			/obj/item/gun/ballistic/shotgun/automatic/combat = 1,
 		),
 	)
