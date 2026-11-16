@@ -10,6 +10,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
+import { usePager } from './nav';
 import {
   BODY_Y,
   BOX_Y,
@@ -179,27 +180,7 @@ export function HousingTab() {
   };
 
   // PageDown and PageUp turn the page from anywhere in the list.
-  const turnRef = useRef(turn);
-  turnRef.current = turn;
-  const pgRef = useRef(pg);
-  pgRef.current = pg;
-  useEffect(() => {
-    if (pages <= 1) {
-      return;
-    }
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-        return;
-      }
-      if (e.key === 'PageDown' || e.key === 'PageUp') {
-        e.preventDefault();
-        turnRef.current(pgRef.current + (e.key === 'PageDown' ? 1 : -1));
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [pages]);
+  usePager(pages > 1 ? (step) => turn(pg + step) : null);
 
   const moveIn = (o: Outpost) => {
     act('home_move_in', { outpost: o.ref, code: codes[o.ref] || '' });

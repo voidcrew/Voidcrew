@@ -148,11 +148,14 @@ export function LobbyTerminal() {
   };
 
   const request = data.tab_request;
+  /** Counts screens the server picked; the tab row mounts again on each so its claim runs. */
+  const [served, setServed] = useState(0);
   useEffect(() => {
     if (request) {
       // The server picked the screen: the CHARACTER file no longer opens by itself.
       autoTried.current = true;
       openScreen(request.tab);
+      setServed((n) => n + 1);
     }
   }, [request?.serial]);
 
@@ -251,7 +254,15 @@ export function LobbyTerminal() {
   // When the start-up screen ends, the first-focus owners mount again so their claim runs.
   // The CHARACTER screen is left alone: mounting it again would ask for its file again.
   const bootKey = data.boot ? 'boot' : 'live';
-  const firstTab = data.phase === 'setup' || data.phase === 'ended';
+  // The open tab's first-focus claim: in setup and ended it wins (design 01 section 9); on
+  // HOUSING it is the stand-in when no key is live (design 02 section 4.4), so a live key's
+  // claim (1) and READY's (9) beat it.
+  const tabClaim =
+    data.phase === 'setup' || data.phase === 'ended'
+      ? 9
+      : tab === 'housing'
+        ? 0
+        : undefined;
   const menu = {
     charOpen: tab === 'character' && !confirmed,
     onCharacter: () => switchTab('character'),
@@ -323,10 +334,10 @@ export function LobbyTerminal() {
                 )}
                 <Region {...reg.main}>
                   <TabRow
-                    key={bootKey}
+                    key={`${bootKey}-${served}`}
                     tab={tab}
                     setTab={switchTab}
-                    first={firstTab}
+                    claim={tabClaim}
                   />
                   {tab === 'character' && !confirmed && (
                     <BackTo onBack={() => switchTab(prevTab)} />

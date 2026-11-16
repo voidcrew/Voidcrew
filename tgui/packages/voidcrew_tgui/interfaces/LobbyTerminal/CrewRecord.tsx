@@ -10,11 +10,12 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { useBack } from './nav';
+import { useBack, usePager } from './nav';
 import {
   Band,
   BODY_Y,
   BOX_Y,
+  Big,
   Box,
   Btn,
   bodyRows,
@@ -139,27 +140,12 @@ export function CrewRecord(props: Props) {
   const codeWait = useCountdown(c.code_wait || 0);
 
   // PageUp and PageDown step to the previous and next ship.
-  const stepRef = useRef({ index, total, onStep });
-  stepRef.current = { index, total, onStep };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-        return;
-      }
-      if (e.key !== 'PageDown' && e.key !== 'PageUp') {
-        return;
-      }
-      e.preventDefault();
-      const s = stepRef.current;
-      const to = s.index + (e.key === 'PageDown' ? 1 : -1);
-      if (to >= 1 && to <= s.total) {
-        s.onStep(to);
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, []);
+  usePager((step) => {
+    const to = index + step;
+    if (to >= 1 && to <= total) {
+      onStep(to);
+    }
+  });
 
   const name = safe(c.name).toUpperCase();
   const playing = data.phase === 'playing';
@@ -393,10 +379,25 @@ export function CrewRecord(props: Props) {
             {title}
           </Put>
         ),
-        // The open count stays in accent on every row, a locked crew's too.
-        <RPut key={`n${job.ref}`} x={28} y={yy + (rowH - 1) / 2} cls="acc">
-          {String(Math.min(99, Math.max(0, job.open || 0)))}
-        </RPut>,
+        // The open count stays in accent on every row, a locked crew's too. On a tall row it
+        // matches the 1.25x title, still ending at column 28.
+        tall ? (
+          <Big
+            key={`n${job.ref}`}
+            x={25}
+            y={yy + (rowH - 1.25) / 2}
+            w={3}
+            align="right"
+            scale={1.25}
+            cls="acc"
+          >
+            {String(Math.min(99, Math.max(0, job.open || 0)))}
+          </Big>
+        ) : (
+          <RPut key={`n${job.ref}`} x={28} y={yy + (rowH - 1) / 2} cls="acc">
+            {String(Math.min(99, Math.max(0, job.open || 0)))}
+          </RPut>
+        ),
         <Key
           // Remount when the key comes alive, so a code accepted moves the focus onto it.
           key={`k${job.ref}-${live ? 1 : 0}`}

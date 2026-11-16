@@ -108,14 +108,15 @@ const TAB_BLOCKS: Partial<Record<TabId, [number, number]>> = {
 
 /**
  * Tab row at the top of the main region (rows 0 to 1.5) and the rule under it. While the
- * CHARACTER screen is open no tab is lit. `first`: the open tab takes the first focus.
+ * CHARACTER screen is open no tab is lit. `claim`: the open tab claims the first focus at that
+ * priority (nav.tsx FocusOpts.auto).
  */
 export function TabRow(props: {
   tab: TabId;
   setTab: (tab: TabId) => void;
-  first?: boolean;
+  claim?: number;
 }) {
-  const { tab, setTab, first } = props;
+  const { tab, setTab, claim } = props;
   const { cols } = useGrid();
   return (
     <>
@@ -135,7 +136,7 @@ export function TabRow(props: {
               cls={open ? 'ink' : 'dim'}
               hoverCls={open ? 'ink' : ''}
               onClick={() => setTab(id)}
-              auto={open && first ? 9 : undefined}
+              auto={open ? claim : undefined}
               tab
             >
               {label}

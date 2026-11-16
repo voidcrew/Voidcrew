@@ -430,7 +430,12 @@ export function Key(
   const bl = kind === 'plain' ? 0 : lw;
   const bt = kind === 'box' || kind === 'big' ? lw : 0;
   const ty = ((h - 1) / 2) * ch - bt;
-  const lx = kind === 'cap' ? Math.floor((w - label.length) / 2) * cw : cw;
+  // A cap centres its label to the half cell in the room right of its border, so an odd margin
+  // never puts the opening bracket on the border.
+  const lx =
+    kind === 'cap'
+      ? bl + Math.max(0, (w * cw - bl - label.length * cw) / 2)
+      : cw;
   const cls = [
     'lt-k',
     `lt-k-${kind}`,
@@ -1283,7 +1288,8 @@ export const TERM_CSS = `
 .lt-tui .lt-k-big { background: var(--lt-key); border-color: var(--lt-fg); color: var(--lt-wht); text-shadow: 0 0 5px #a070ff; }
 .lt-tui .lt-k-plain { color: var(--lt-dim); text-shadow: 0 0 3px rgba(143,111,200,.5); }
 .lt-tui .lt-k-cap { background: var(--lt-cap); color: var(--lt-wht); text-shadow: 0 0 5px #a070ff; }
-.lt-tui .lt-k.is-foc, .lt-tui .lt-k.is-lit { background: var(--lt-fg); border-color: var(--lt-fg);
+.lt-tui .lt-k.is-lit { background: var(--lt-dim); border-color: var(--lt-dim); color: var(--lt-ink); text-shadow: none; }
+.lt-tui .lt-k.is-foc { background: var(--lt-fg); border-color: var(--lt-fg);
   color: var(--lt-ink); text-shadow: none; }
 .lt-tui .lt-k.is-foc { box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-k.is-on { background: var(--lt-acc); border-color: var(--lt-acc); color: var(--lt-ink); text-shadow: none; }
