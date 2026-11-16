@@ -363,7 +363,7 @@
 	var/drift_w = (push_dir & EAST) ? drift : ((push_dir & WEST) ? -drift : rand(-6, 6))
 	var/drift_z = (push_dir & NORTH) ? drift : ((push_dir & SOUTH) ? -drift : rand(-6, 6))
 	transform = matrix().Scale(0.45)
-	animate(src, alpha = rand(60, 95), transform = matrix().Scale(0.7), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
+	animate(src, alpha = rand(80, 120), transform = matrix().Scale(0.7), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
 	animate(alpha = 0, transform = matrix().Scale(1.1), pixel_w = pixel_w + drift_w, pixel_z = pixel_z + drift_z, time = duration - 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
 
 /**
@@ -539,7 +539,7 @@
 		shadow.alpha = LANDING_SHADOW_DARK
 		animate(shadow, transform = matrix().Scale(LANDING_SHADOW_WIDE), time = LAUNCH_CLIMB_TIME, easing = SINE_EASING | EASE_IN)
 		// pales steadily, so it is all but gone before it is removed
-		animate(shadow, alpha = 0, time = LAUNCH_CLIMB_TIME * 0.9, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+		animate(shadow, alpha = 0, time = LAUNCH_CLIMB_TIME * 0.7, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	else
 		QDEL_NULL(shadow)
 	QDEL_IN(src, LAUNCH_CLIMB_TIME + 0.5 SECONDS)
