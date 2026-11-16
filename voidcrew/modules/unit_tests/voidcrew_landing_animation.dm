@@ -1,9 +1,9 @@
 /**
  * # Planet landing visuals clean up after themselves
  *
- * A planet dock warmup puts a shadow and a picture of the ship over the berth
- * (voidcrew/modules/landing_animation). Both must be gone once the hull has landed, once the dock is called
- * off, and a few seconds after the hull lifts off again.
+ * A planet dock warmup puts a shadow and a picture of the ship over the berth, and shows the people aboard
+ * the planet coming up around their hull (voidcrew/modules/landing_animation). All of it must be gone once the
+ * hull has landed, once the dock is called off, and a few seconds after the hull lifts off again.
  */
 /datum/unit_test/voidcrew_landing_animation
 	var/datum/map_zone/zone
@@ -45,6 +45,19 @@
 		for(var/obj/effect/abstract/effect in place)
 			if(istype(effect, /obj/effect/abstract/landing_proxy) || istype(effect, /obj/effect/abstract/landing_shadow))
 				found += effect
+	return found
+
+/// Everything a view from aboard leaves standing around the hull in transit, and on its areas
+/datum/unit_test/voidcrew_landing_animation/proc/view_leftovers(list/hull_turfs, list/area/areas)
+	var/list/found = list()
+	var/turf/first = hull_turfs[1]
+	for(var/turf/place as anything in RANGE_TURFS(SHUTTLE_TRANSIT_BORDER + 20, first))
+		for(var/obj/effect/effect in place)
+			if(istype(effect, /obj/effect/abstract/landing_heat) || istype(effect, /obj/effect/temp_visual/landing_dust))
+				found += effect
+	for(var/area/was_masked as anything in areas)
+		if(!QDELETED(was_masked) && (landing_view_mask_tile() in was_masked.overlays))
+			found += was_masked
 	return found
 
 /datum/unit_test/voidcrew_landing_animation/proc/start_descent(label)
@@ -94,6 +107,27 @@
 	TEST_ASSERT_EQUAL(picture.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "The picture catches the mouse")
 	TEST_ASSERT(!picture.density, "The picture is dense")
 	TEST_ASSERT_NOTNULL(descent.shadow, "The descent has no shadow")
+	// And for the people aboard: the planet, its clouds, the ground, on the masked planes around the hull
+	var/datum/landing_view/descent/view = descent.inside_view
+	TEST_ASSERT_NOTNULL(view, "The descent shows the people aboard nothing")
+	TEST_ASSERT(!view.ended, "The view from aboard gave up at once")
+	TEST_ASSERT(length(view.pieces) >= 8, "The view from aboard is missing pieces: it has [length(view.pieces)]")
+	var/list/area/masked = view.masked.Copy()
+	TEST_ASSERT(length(masked) >= 2, "The view is not masked to the hull's areas and its transit space")
+	for(var/area/is_masked as anything in masked)
+		TEST_ASSERT(landing_view_mask_tile() in is_masked.overlays, "[is_masked] does not carry the view's mask")
+	for(var/datum/landing_view_piece/piece as anything in view.pieces)
+		if(piece.sky)
+			TEST_ASSERT_EQUAL(piece.sky.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A piece of the sky catches the mouse")
+			TEST_ASSERT_EQUAL(piece.sky.plane, LANDING_VIEW_PLANE, "A piece of the sky is off the view's plane")
+	UNTIL(length(view.ground.parts) || QDELETED(view))
+	TEST_ASSERT(length(view.ground.parts) > 1, "The ground picture has nothing in it")
+	for(var/list/part as anything in view.ground.parts)
+		var/mutable_appearance/look = part[1]
+		TEST_ASSERT_EQUAL(look.plane, LANDING_VIEW_PLANE, "Part of the ground picture is off the view's plane")
+		TEST_ASSERT_EQUAL(look.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Part of the ground picture catches the mouse")
+	view.heat_hull(world.time, world.time + 3 SECONDS)
+	TEST_ASSERT(length(view.props) > 0, "The hull's edge does not glow on the way in")
 
 	// Called off mid-warmup: everything goes at the next check
 	deltimer(ship.dock_warmup_timer)
@@ -104,13 +138,23 @@
 	TEST_ASSERT(QDELETED(descent), "A cancelled dock kept its descent")
 	TEST_ASSERT_NULL(ship.landing_animation, "A cancelled dock left the ship pointing at its descent")
 	TEST_ASSERT_EQUAL(length(effects_on(berth_turfs)), 0, "A cancelled dock left the ship's picture or shadow on the berth")
+	TEST_ASSERT(view.ended, "A cancelled dock kept showing the planet to the people aboard")
+	sleep(2 SECONDS)
+	TEST_ASSERT(QDELETED(view), "A cancelled dock kept its view from aboard")
+	TEST_ASSERT_EQUAL(length(view_leftovers(hull_turfs, masked)), 0, "A cancelled dock left the view's glow, dust or mask behind")
 
 	// Landing: the hull's move removes everything in the same tick
 	descent = start_descent("second approach")
+	view = descent.inside_view
+	masked = view.masked.Copy()
+	hull_turfs = descent.hull_turfs.Copy()
+	descent.thruster_wash()
 	deltimer(ship.dock_warmup_timer)
 	ship.dock_warmup_timer = null
 	TEST_ASSERT_EQUAL(ship.shuttle.initiate_docking(primary), DOCKING_SUCCESS, "The test ship could not land")
 	TEST_ASSERT_NULL(ship.landing_animation, "The landed ship still points at its descent")
+	TEST_ASSERT(QDELETED(view), "The landed ship still shows its people the view from aboard")
+	TEST_ASSERT_EQUAL(length(view_leftovers(hull_turfs, masked)), 0, "Touchdown left the view's glow, dust or mask behind in transit")
 	// For a moment the picture covers the landed hull while its lighting is rebuilt
 	picture = descent.proxy
 	TEST_ASSERT_NOTNULL(picture, "The picture went before the landed hull's lighting was rebuilt")
@@ -127,6 +171,15 @@
 	TEST_ASSERT_NOTNULL(departure, "No transit dock to leave into")
 	TEST_ASSERT_EQUAL(ship.shuttle.initiate_docking(departure), DOCKING_SUCCESS, "The test ship could not take off")
 	TEST_ASSERT(length(effects_on(berth_turfs)) > 0, "Takeoff left no climbing picture")
+	var/datum/landing_view/ascent/climb = ship.launch_view
+	TEST_ASSERT_NOTNULL(climb, "Takeoff shows the people aboard nothing")
+	TEST_ASSERT(length(climb.ground.parts) > 1, "The ground is not there under the hull the moment it lifts")
+	masked = climb.masked.Copy()
+	hull_turfs = climb.hull_turfs.Copy()
 	sleep(6 SECONDS)
 	TEST_ASSERT_EQUAL(length(effects_on(berth_turfs)), 0, "The takeoff picture or shadow stayed behind")
+	sleep(5 SECONDS)
+	TEST_ASSERT(QDELETED(climb), "The climb's view from aboard never ended")
+	TEST_ASSERT_NULL(ship.launch_view, "The ship still points at its finished climb")
+	TEST_ASSERT_EQUAL(length(view_leftovers(hull_turfs, masked)), 0, "The climb left its dust or mask behind in transit")
 	ship.state = "flying" // OVERMAP_SHIP_FLYING

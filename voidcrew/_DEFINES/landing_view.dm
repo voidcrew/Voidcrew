@@ -8,6 +8,10 @@
 #define LANDING_VIEW_MASK_PLANE -44
 #define LANDING_VIEW_MASK_RENDER_TARGET "*LANDING_VIEW_MASK"
 
+/// The sky's textures, and their size in pixels
+#define LANDING_VIEW_ICON 'voidcrew/icons/effects/landing_view.dmi'
+#define LANDING_VIEW_ICON_SIZE 480
+
 // Layers on LANDING_VIEW_PLANE, back to front. Pictures locked to the world are images; BYOND draws those
 // under every screen object on the same plane, whatever their layers.
 /// The real ground, far below
@@ -37,3 +41,15 @@
 #define LANDING_CURVE_IN 2
 /// Slow at both ends
 #define LANDING_CURVE_BOTH 3
+
+/// The sizes of the whole planet between which its closer-up texture takes over (see chain_detail())
+#define LANDING_PLANET_DETAIL list(list(2.6, 3))
+/// The sizes of the far cloud sheet between which each closer-up one takes over
+#define LANDING_CLOUD_DETAIL list(list(3, 3.6), list(6, 7.2))
+
+// Which part of the ground around a berth a call to bake_ground() draws
+#define LANDING_GROUND_ALL 0
+/// Everything but the chunks the hull's own box touches
+#define LANDING_GROUND_AROUND 1
+/// Only those
+#define LANDING_GROUND_UNDER 2

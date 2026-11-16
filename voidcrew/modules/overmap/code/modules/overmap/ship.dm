@@ -2611,6 +2611,7 @@
 	state = OVERMAP_SHIP_UNDOCKING
 	ship_notify("Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds.", "UNDOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	undock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_undock_warmup)), UNDOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	start_launch_animation(UNDOCK_WARMUP_TIME) // voidcrew/modules/landing_animation
 	return null
 
 /**

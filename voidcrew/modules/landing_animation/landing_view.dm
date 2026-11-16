@@ -27,6 +27,8 @@
 #define LANDING_VIEW_SYNC (0.5 SECONDS)
 /// Tiles per side of one chunk of ground picture
 #define LANDING_VIEW_CHUNK 16
+/// How long the view takes to fade away when its manoeuvre is called off
+#define LANDING_VIEW_FADE (1.2 SECONDS)
 
 /**
  * One value over time: keys of (world.time, value), each reached along a curve from the key before.
@@ -87,6 +89,8 @@
 	var/datum/landing_track/slide_y = new
 	/// Another piece's size track this one's size is multiplied by: a shadow lying on ground that is itself scaled
 	var/datum/landing_track/scale_with
+	/// And a plain number it is multiplied by: a closer-up texture of the same thing is drawn that much smaller
+	var/scale_factor = 1
 	/// Clockwise degrees it is turned, for a hull that lands turned
 	var/turn = 0
 	/// Sky: the screen object
@@ -111,7 +115,7 @@
 
 /// list(size, alpha, slide x, slide y) at [time]
 /datum/landing_view_piece/proc/state_at(time)
-	var/size = length(scale.times) ? scale.at(time) : 1
+	var/size = (length(scale.times) ? scale.at(time) : 1) * scale_factor
 	if(scale_with)
 		size *= scale_with.at(time)
 	return list(size, length(alpha.times) ? alpha.at(time) : 255, slide_x.at(time), slide_y.at(time))
@@ -186,11 +190,17 @@
 	/// world picture -> list of images, one per part
 	var/list/images = list()
 
-/// Holds the sky for one viewer's screen. One object for everyone watching.
+/**
+ * Holds the sky for one viewer's screen. One object for everyone watching.
+ *
+ * Anchored seven tiles down and left of the middle, as the parallax is: the sky's textures are fifteen tiles
+ * across, and a screen object whose icon reaches past the edge of the view makes the client widen the view to
+ * fit it, which pushes everything else off centre.
+ */
 /atom/movable/screen/landing_view_home
 	name = ""
 	icon = null
-	screen_loc = "CENTER"
+	screen_loc = "CENTER-7,CENTER-7"
 	plane = LANDING_VIEW_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
@@ -236,25 +246,64 @@
 	var/list/viewers = list()
 	/// Everything shown: sky and world pictures
 	var/list/datum/landing_view_piece/pieces = list()
+	/// The planet's colours
+	var/datum/landing_view_palette/palette
+	/// The real ground around the berth, and the hull's shadow on it
+	var/datum/landing_view_piece/ground
+	var/datum/landing_view_piece/shadow
 	var/atom/movable/screen/landing_view_home/home
 	/// Things standing in transit space for the view (heat on the hull's edge, dust): deleted with it
 	var/list/props = list()
 	/// TRUE once nothing more should be shown
 	var/ended = FALSE
 
+/**
+ * * hull_turfs - the hull's turfs in transit; null to attach() it later, once it is there
+ * * berth_turfs - the berth turfs they pair with, in the same order
+ * * rotation - clockwise degrees from the hull's heading in transit to its heading on the berth
+ */
 /datum/landing_view/New(obj/docking_port/mobile/shuttle, list/hull_turfs, list/berth_turfs, rotation)
 	. = ..()
 	src.shuttle = shuttle
-	src.hull_turfs = hull_turfs
-	src.berth_turfs = berth_turfs
-	src.rotation = rotation
-	if(!length(hull_turfs) || length(hull_turfs) != length(berth_turfs))
+	home = new
+	if(!set_ground(berth_turfs) || (hull_turfs && !attach(hull_turfs, rotation)))
 		ended = TRUE
-		return
+
+/// The berth the hull will stand on, or stood on. FALSE if there is none.
+/datum/landing_view/proc/set_ground(list/berth_turfs)
+	if(!length(berth_turfs))
+		return FALSE
+	src.berth_turfs = berth_turfs
 	var/min_x = INFINITY
 	var/max_x = -INFINITY
 	var/min_y = INFINITY
 	var/max_y = -INFINITY
+	for(var/turf/berth_turf as anything in berth_turfs)
+		min_x = min(min_x, berth_turf.x)
+		max_x = max(max_x, berth_turf.x)
+		min_y = min(min_y, berth_turf.y)
+		max_y = max(max_y, berth_turf.y)
+	ground_z = berth_turfs[1].z
+	ground_x = (min_x + max_x) / 2
+	ground_y = (min_y + max_y) / 2
+	ground_half_w = (max_x - min_x + 1) / 2
+	ground_half_h = (max_y - min_y + 1) / 2
+	return TRUE
+
+/**
+ * The hull in transit, which everything is drawn around: from here on there are viewers. FALSE if [hull_turfs]
+ * do not pair with the berth's.
+ */
+/datum/landing_view/proc/attach(list/hull_turfs, rotation)
+	if(!length(hull_turfs) || length(hull_turfs) != length(berth_turfs))
+		return FALSE
+	src.hull_turfs = hull_turfs
+	src.rotation = rotation
+	var/min_x = INFINITY
+	var/max_x = -INFINITY
+	var/min_y = INFINITY
+	var/max_y = -INFINITY
+	hull_set = list()
 	for(var/turf/hull_turf as anything in hull_turfs)
 		hull_set[hull_turf] = TRUE
 		min_x = min(min_x, hull_turf.x)
@@ -268,23 +317,13 @@
 	low_y = max(1, min_y - SHUTTLE_TRANSIT_BORDER)
 	high_x = min(world.maxx, max_x + SHUTTLE_TRANSIT_BORDER)
 	high_y = min(world.maxy, max_y + SHUTTLE_TRANSIT_BORDER)
-	min_x = INFINITY
-	max_x = -INFINITY
-	min_y = INFINITY
-	max_y = -INFINITY
-	for(var/turf/berth_turf as anything in berth_turfs)
-		min_x = min(min_x, berth_turf.x)
-		max_x = max(max_x, berth_turf.x)
-		min_y = min(min_y, berth_turf.y)
-		max_y = max(max_y, berth_turf.y)
-	ground_z = berth_turfs[1].z
-	ground_x = (min_x + max_x) / 2
-	ground_y = (min_y + max_y) / 2
-	ground_half_w = (max_x - min_x + 1) / 2
-	ground_half_h = (max_y - min_y + 1) / 2
-	home = new
+	// the ground reaches the hull the way round it lies when the hull is on its berth
+	for(var/datum/landing_view_piece/piece as anything in pieces)
+		if(!piece.sky)
+			piece.turn = -rotation
 	mask_areas()
 	addtimer(CALLBACK(src, PROC_REF(sync_viewers)), LANDING_VIEW_SYNC, TIMER_DELETE_ME | TIMER_LOOP)
+	return TRUE
 
 /datum/landing_view/Destroy(force)
 	ended = TRUE
@@ -294,12 +333,37 @@
 	unmask_areas()
 	QDEL_LIST(props)
 	QDEL_LIST(pieces)
+	ground = null
+	shadow = null
+	palette = null
 	QDEL_NULL(home)
 	shuttle = null
 	hull_turfs = null
 	berth_turfs = null
 	hull_set = null
 	return ..()
+
+/**
+ * The manoeuvre was called off: everything fades away, back to plain space, and then the view deletes itself.
+ * Whoever held it should let go of it now.
+ */
+/datum/landing_view/proc/fade_away()
+	if(ended)
+		return
+	ended = TRUE
+	for(var/datum/landing_view_piece/piece as anything in pieces)
+		if(piece.sky)
+			animate(piece.sky, alpha = 0, time = LANDING_VIEW_FADE)
+	for(var/client/watcher as anything in viewers)
+		var/datum/landing_view_viewer/viewer = viewers[watcher]
+		for(var/piece in viewer?.images)
+			for(var/image/shown as anything in viewer.images[piece])
+				animate(shown, alpha = 0, time = LANDING_VIEW_FADE)
+	for(var/atom/movable/prop as anything in props)
+		if(!QDELETED(prop))
+			animate(prop, alpha = 0, time = LANDING_VIEW_FADE)
+	// a hard reference: by now nothing else holds us
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LANDING_VIEW_FADE)
 
 /// The mask tile every turf of a landing ship carries, through its area
 /proc/landing_view_mask_tile()
@@ -344,11 +408,14 @@
 	if(icon_file)
 		sky.icon = icon_file
 		sky.icon_state = state
-		sky.pixel_w = -(size - ICON_SIZE_X) / 2
-		sky.pixel_z = -(size - ICON_SIZE_Y) / 2
+		// its middle on the middle of the home's fifteen tiles
+		sky.pixel_w = (LANDING_VIEW_ICON_SIZE - size) / 2
+		sky.pixel_z = (LANDING_VIEW_ICON_SIZE - size) / 2
 	else
-		// one white tile, big enough for any screen
+		// one white tile in the middle, drawn big enough for any screen
 		sky.color = fill
+		sky.pixel_w = (LANDING_VIEW_ICON_SIZE - ICON_SIZE_X) / 2
+		sky.pixel_z = (LANDING_VIEW_ICON_SIZE - ICON_SIZE_Y) / 2
 		var/mutable_appearance/sheet = mutable_appearance('icons/effects/alphacolors.dmi', "white")
 		sheet.transform = matrix().Scale(64)
 		sky.icon_state = "transparent"
@@ -365,8 +432,11 @@
 	pieces += piece
 	return piece
 
-/// [piece]'s motion is set, or has changed: (re)start it for everyone watching
-/datum/landing_view/proc/show(datum/landing_view_piece/piece)
+/**
+ * [piece]'s motion is set, or has changed: (re)start it for everyone watching.
+ * * replay - FALSE if only new parts were added to a world picture: what is already showing is left alone
+ */
+/datum/landing_view/proc/show(datum/landing_view_piece/piece, replay = TRUE)
 	if(ended)
 		return
 	if(piece.sky)
@@ -379,25 +449,28 @@
 		var/datum/landing_view_viewer/viewer = viewers[watcher]
 		if(!viewer || !watcher)
 			continue
-		give_picture(viewer, piece)
+		give_picture(viewer, piece, replay)
 
-/datum/landing_view/proc/give_picture(datum/landing_view_viewer/viewer, datum/landing_view_piece/piece)
+/datum/landing_view/proc/give_picture(datum/landing_view_viewer/viewer, datum/landing_view_piece/piece, replay = TRUE)
 	var/list/image/shown = viewer.images[piece]
-	if(shown)
-		for(var/i in 1 to length(shown))
-			var/list/part = piece.parts[i]
-			piece.play_on(shown[i], part[2], part[3], part[4])
-		return
-	shown = list()
-	viewer.images[piece] = shown
-	for(var/list/part as anything in piece.parts)
+	if(!shown)
+		shown = list()
+		viewer.images[piece] = shown
+	var/list/image/added = list()
+	for(var/i in 1 to length(piece.parts))
+		var/list/part = piece.parts[i]
+		if(i <= length(shown))
+			if(replay)
+				piece.play_on(shown[i], part[2], part[3], part[4])
+			continue
 		var/image/part_image = image(loc = viewer.anchor)
 		part_image.appearance = part[1]
 		part_image.loc = viewer.anchor
 		place_image(part_image, viewer.anchor)
 		piece.play_on(part_image, part[2], part[3], part[4])
 		shown += part_image
-	viewer.client.images += shown
+		added += part_image
+	viewer.client.images += added
 
 /// Shifts an image standing on [anchor] so its middle is the hull's middle
 /datum/landing_view/proc/place_image(image/shown, turf/anchor)
@@ -415,7 +488,7 @@
 
 /// Brings the viewers up to date: everyone whose eye is on or around the hull, living or not
 /datum/landing_view/proc/sync_viewers()
-	if(ended)
+	if(ended || !hull_turfs)
 		return
 	for(var/client/watcher as anything in viewers)
 		if(!watcher || !eye_turf_of(watcher))
@@ -496,8 +569,11 @@
  * * reach - how many tiles past the hull's box the picture goes
  * * detail_reach - how far past the hull's box things standing on the ground are drawn as well
  * * backdrop_color - under and beyond the ground, as far as anyone can see
+ * * which - LANDING_GROUND_ALL, or one of the two halves a takeoff draws it in: the country around the hull
+ *   before it lifts, and the ground under it once it has. Parts are added to whatever the piece already has.
+ * * in_one_go - build it all now, however long it takes, instead of over a few ticks
  */
-/datum/landing_view/proc/bake_ground(datum/landing_view_piece/piece, reach, detail_reach, backdrop_color, datum/callback/then)
+/datum/landing_view/proc/bake_ground(datum/landing_view_piece/piece, reach, detail_reach, backdrop_color, datum/callback/then, which = LANDING_GROUND_ALL, in_one_go = FALSE)
 	set waitfor = FALSE
 	var/started = REALTIMEOFDAY
 	var/reach_x = CEILING(ground_half_w + reach, LANDING_VIEW_CHUNK)
@@ -505,31 +581,41 @@
 	var/detail_x = ground_half_w + detail_reach
 	var/detail_y = ground_half_h + detail_reach
 	var/list/parts = list()
-	// under the ground: the haze it fades into at its edges
-	var/mutable_appearance/backdrop = new()
-	var/mutable_appearance/sheet = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR)
-	sheet.color = backdrop_color
-	sheet.transform = matrix().Scale(400)
-	backdrop.overlays = list(sheet)
-	parts += list(list(landing_view_world_look(backdrop, LANDING_VIEW_LAYER_GROUND), 0, 0, 1))
+	// the chunks the hull's own box touches
+	var/under_x = CEILING(ground_half_w + 1, LANDING_VIEW_CHUNK)
+	var/under_y = CEILING(ground_half_h + 1, LANDING_VIEW_CHUNK)
+	if(which != LANDING_GROUND_UNDER)
+		// under the ground: the haze it fades into at its edges
+		var/mutable_appearance/backdrop = new()
+		var/mutable_appearance/sheet = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR)
+		sheet.color = backdrop_color
+		sheet.transform = matrix().Scale(400)
+		backdrop.overlays = list(sheet)
+		parts += list(list(landing_view_world_look(backdrop, LANDING_VIEW_LAYER_GROUND), 0, 0, 1))
 	var/datum/own_region = map_region_for_turf(berth_turfs[1])
+	// area -> the weather over it, found once
+	var/list/weather_by_area = list()
 	var/middle_x = round(ground_x)
 	var/middle_y = round(ground_y)
 	for(var/chunk_x = middle_x - reach_x, chunk_x < middle_x + reach_x, chunk_x += LANDING_VIEW_CHUNK)
 		for(var/chunk_y = middle_y - reach_y, chunk_y < middle_y + reach_y, chunk_y += LANDING_VIEW_CHUNK)
 			var/centre_off_x = chunk_x + LANDING_VIEW_CHUNK / 2 - ground_x
 			var/centre_off_y = chunk_y + LANDING_VIEW_CHUNK / 2 - ground_y
+			if(which != LANDING_GROUND_ALL)
+				var/under_hull = chunk_x >= middle_x - under_x && chunk_x < middle_x + under_x && chunk_y >= middle_y - under_y && chunk_y < middle_y + under_y
+				if(under_hull != (which == LANDING_GROUND_UNDER))
+					continue
 			var/detail = abs(centre_off_x) <= detail_x + LANDING_VIEW_CHUNK / 2 && abs(centre_off_y) <= detail_y + LANDING_VIEW_CHUNK / 2
-			var/mutable_appearance/chunk = landing_view_chunk(chunk_x, chunk_y, ground_z, detail, own_region)
+			var/mutable_appearance/chunk = landing_view_chunk(chunk_x, chunk_y, ground_z, detail, own_region, weather_by_area)
 			if(chunk)
 				// the outermost chunks are thin, so the picture has no hard edge
 				var/rings_in = min((reach_x - abs(centre_off_x)) / LANDING_VIEW_CHUNK, (reach_y - abs(centre_off_y)) / LANDING_VIEW_CHUNK)
 				parts += list(list(landing_view_world_look(chunk, LANDING_VIEW_LAYER_GROUND + 0.1), centre_off_x * ICON_SIZE_X, centre_off_y * ICON_SIZE_Y, rings_in < 1 ? 0.5 : 1))
-			if(TICK_CHECK)
+			if(!in_one_go && TICK_CHECK)
 				stoplag()
 				if(QDELETED(src) || ended)
 					return
-	piece.parts = parts
+	piece.parts = (piece.parts || list()) + parts
 	log_world("LANDING_DEBUG: ground picture of [length(parts)] parts, reach [reach_x]x[reach_y], built in [(REALTIMEOFDAY - started) / 10]s")
 	then?.Invoke()
 
@@ -546,8 +632,9 @@
  * Drawn about its own middle. Null if there is no ground there.
  * * detail - draw what stands on the ground as well
  * * own_region - the site the berth is in; ground belonging to another site is left out
+ * * weather_by_area - area -> landing_view_weather() of it, filled in as areas are met
  */
-/proc/landing_view_chunk(low_x, low_y, z, detail, datum/own_region)
+/proc/landing_view_chunk(low_x, low_y, z, detail, datum/own_region, list/weather_by_area)
 	var/centre_x = low_x + LANDING_VIEW_CHUNK / 2
 	var/centre_y = low_y + LANDING_VIEW_CHUNK / 2
 	// one group per world plane, floor first, as the world draws them (see /obj/effect/abstract/landing_proxy)
@@ -559,6 +646,7 @@
 	var/shared_light
 	var/mixed_light = FALSE
 	var/list/tile_lights = list()
+	var/list/storm_parts = list()
 	for(var/tile_x in low_x to low_x + LANDING_VIEW_CHUNK)
 		for(var/tile_y in low_y to low_y + LANDING_VIEW_CHUNK)
 			var/turf/ground = locate(tile_x, tile_y, z)
@@ -579,6 +667,15 @@
 					if(true_plane < FLOOR_PLANE || true_plane > ABOVE_GAME_PLANE)
 						continue
 					plane_parts[true_plane - FLOOR_PLANE + 1] += landing_view_part(thing, offset_w, offset_z, FALSE)
+			var/list/storm = weather_by_area[ground.loc]
+			if(isnull(storm))
+				storm = landing_view_weather(ground.loc)
+				weather_by_area[ground.loc] = storm
+			for(var/mutable_appearance/falling as anything in storm)
+				var/mutable_appearance/over_tile = new(falling)
+				over_tile.pixel_w = offset_w
+				over_tile.pixel_z = offset_z
+				storm_parts += over_tile
 			var/tile_light = landing_view_light(ground)
 			tile_lights[++tile_lights.len] = list(tile_light, offset_w, offset_z)
 			if(length(tile_lights) == 1)
@@ -597,6 +694,14 @@
 		plane_group.appearance_flags = KEEP_TOGETHER
 		plane_group.overlays = plane_parts[rank]
 		parts += plane_group
+	if(length(storm_parts))
+		// over everything standing there and under its light, as the world draws weather
+		var/mutable_appearance/storm_group = new()
+		storm_group.plane = FLOAT_PLANE
+		storm_group.layer = 50
+		storm_group.appearance_flags = KEEP_TOGETHER
+		storm_group.overlays = storm_parts
+		parts += storm_group
 	var/mutable_appearance/chunk = new()
 	chunk.plane = FLOAT_PLANE
 	chunk.appearance_flags = KEEP_TOGETHER
@@ -621,6 +726,17 @@
 		chunk.color = shared_light
 	chunk.overlays = parts
 	return chunk
+
+/// The weather falling on every tile of [ground_area] right now, as looks for a ground picture (none: an empty list)
+/proc/landing_view_weather(area/ground_area)
+	. = list()
+	for(var/mutable_appearance/over as anything in ground_area.overlays)
+		if(over.plane != WEATHER_PLANE)
+			continue
+		var/mutable_appearance/falling = new(over)
+		falling.plane = FLOAT_PLANE
+		falling.appearance_flags = NONE
+		. += falling
 
 /// A copy of [thing]'s look for a ground picture, shifted by [offset_w], [offset_z]: only what the world planes
 /// would draw of it, without its light or anything that glows on a plane of its own
@@ -689,3 +805,4 @@
 #undef LANDING_VIEW_STEP
 #undef LANDING_VIEW_SYNC
 #undef LANDING_VIEW_CHUNK
+#undef LANDING_VIEW_FADE
