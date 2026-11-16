@@ -299,7 +299,7 @@
  */
 /datum/mission_objective/field/escort
 	/// The survivor mob type
-	var/survivor_type = /mob/living/basic/mission_survivor
+	var/survivor_type = /mob/living/carbon/human/npc/mission_survivor
 	/// The live survivor
 	var/mob/living/survivor
 	/// Health fraction at turn-in for the "still walking" pay bonus

@@ -105,7 +105,7 @@
 		quiet_timer = null
 	clear_fleet_waypoint()
 	QDEL_NULL(radio)
-	var/mob/living/basic/ambient_npc/stray/lifeboat/survivor = survivor_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/survivor = survivor_ref?.resolve()
 	if(survivor)
 		survivor.lifeboat_ref = null
 	survivor_ref = null
@@ -143,7 +143,7 @@
 
 /// Its survivor on their landmark, unless they are already out
 /obj/structure/overmap/space_ruin/ambient_lifeboat/proc/place_survivor()
-	var/mob/living/basic/ambient_npc/stray/lifeboat/survivor = survivor_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/survivor = survivor_ref?.resolve()
 	if(!QDELETED(survivor) && survivor.stat != DEAD)
 		return survivor
 	var/turf/spot = survivor_spot()
@@ -167,7 +167,9 @@
 
 /// Its survivor at `spot`: the same person as before, leashed to the lifeboat until a crew takes them
 /obj/structure/overmap/space_ruin/ambient_lifeboat/proc/spawn_survivor(turf/spot)
-	var/mob/living/basic/ambient_npc/stray/lifeboat/survivor = new(spot, survivor_identity)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/survivor = ambient_build_npc(/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat, spot, null, survivor_identity)
+	if(QDELETED(survivor))
+		return null
 	survivor_identity = survivor.stray_identity()
 	survivor.lifeboat_ref = WEAKREF(src)
 	survivor.leash_bounds = interior_bounds()
@@ -247,7 +249,7 @@
 // THE SURVIVOR
 // =========================================================================
 
-/mob/living/basic/ambient_npc/stray/lifeboat
+/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat
 	name = "lifeboat survivor"
 	desc = "Pale, thin and still in an emergency softsuit."
 	outfit = /datum/outfit/ambient_lifeboat
@@ -263,17 +265,12 @@
 	/// The lifeboat they were found on
 	var/datum/weakref/lifeboat_ref
 
-/mob/living/basic/ambient_npc/stray/lifeboat/Initialize(mapload, list/identity)
-	. = ..()
-	// Their softsuit: across open space to a ship, and about a ship's hull
-	ADD_TRAIT(src, TRAIT_SPACEWALK, AMBIENT_NPC_TRAIT)
-
-/mob/living/basic/ambient_npc/stray/lifeboat/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/Destroy()
 	lifeboat_ref = null
 	return ..()
 
 // Killed where they were found, they are not there again on the next load
-/mob/living/basic/ambient_npc/stray/lifeboat/death(gibbed)
+/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/death(gibbed)
 	var/was_alive = stat != DEAD
 	. = ..()
 	if(!was_alive || !is_wild())
@@ -282,16 +279,20 @@
 	if(!QDELETED(lifeboat))
 		lifeboat.survivor_died()
 
-/mob/living/basic/ambient_npc/stray/lifeboat/on_joined(obj/structure/overmap/ship/ship)
+/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/on_joined(obj/structure/overmap/ship/ship)
 	var/obj/structure/overmap/space_ruin/ambient_lifeboat/lifeboat = lifeboat_ref?.resolve()
 	if(!QDELETED(lifeboat))
 		lifeboat.survivor_joined()
 
-/// A freighter hand in the softsuit from the lifeboat's locker
+/// A freighter hand in the softsuit from the lifeboat's locker, with its helmet and a jet harness of air: enough to cross to a ship
 /datum/outfit/ambient_lifeboat
 	name = "Lifeboat Survivor"
 	uniform = /obj/item/clothing/under/color/grey
 	suit = /obj/item/clothing/suit/space/fragile
+	head = /obj/item/clothing/head/helmet/space/fragile
+	mask = /obj/item/clothing/mask/breath
+	back = /obj/item/tank/jetpack/oxygen/harness
+	internals_slot = ITEM_SLOT_BACK
 	shoes = /obj/item/clothing/shoes/sneakers/black
 
 /// Tapping the gauge on the air canister

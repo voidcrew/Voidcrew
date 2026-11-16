@@ -90,6 +90,24 @@
 	uniform = /obj/item/clothing/under/color/grey/ancient
 	suit = /obj/item/clothing/suit/apron/chef
 	shoes = /obj/item/clothing/shoes/sandal
+	r_hand = /obj/item/knife/butcher
+
+/// Yellow: a skull for a helmet
+/datum/outfit/ambient_cannibal/skull
+	name = "Ambient NPC: cannibal in a skull"
+	head = /obj/item/clothing/head/helmet/skull
+
+/// Red: the skull, and bone armour for the apron
+/datum/outfit/ambient_cannibal/bone
+	name = "Ambient NPC: cannibal in bone"
+	head = /obj/item/clothing/head/helmet/skull
+	suit = /obj/item/clothing/suit/armor/bone
+
+/// The cannibal by band (AM-1)
+/datum/human_npc_outfit_table/ambient_cannibal
+	green = list(/datum/outfit/ambient_cannibal = 1)
+	yellow = list(/datum/outfit/ambient_cannibal/skull = 1)
+	red = list(/datum/outfit/ambient_cannibal/bone = 1)
 
 /// Dinner: a dead stranger in rags, already carved
 /datum/outfit/ambient_victim
@@ -101,16 +119,18 @@
 	outfit = /datum/outfit/ambient_victim
 	brute_damage = 60
 
-/mob/living/basic/ambient_npc/planet/cannibal
+/mob/living/carbon/human/npc/ambient_npc/planet/cannibal
 	name = "cannibal"
 	desc = "A gaunt man in a stained apron. He smells of smoke and cooked meat."
 	random_name = FALSE
 	random_gender = FALSE
 	gender = MALE
-	outfit = /datum/outfit/ambient_cannibal
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_cannibal
 	dialogue_section = "cannibal"
 	fights_back = TRUE
 	weapon_type = /obj/item/knife/butcher
+	idle_held = /obj/item/knife/butcher
 	watches = TRUE
 	death_loot = list(/obj/item/knife/butcher, /obj/item/food/meat/steak/plain/human)
 	routine = list(
@@ -127,7 +147,7 @@
 	/// REF of a stranger -> TRUE once they were warned this time in sight
 	var/list/warned = list()
 
-/mob/living/basic/ambient_npc/planet/cannibal/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/planet/cannibal/Destroy()
 	seen = null
 	invited = null
 	warned = null
@@ -137,7 +157,7 @@
  * Strangers in sight: an invitation; a second, colder one and the cleaver after a while; then an
  * attack on anyone within two tiles or in sight for half a minute. Out of sight resets the clock.
  */
-/mob/living/basic/ambient_npc/planet/cannibal/watch(list/players)
+/mob/living/carbon/human/npc/ambient_npc/planet/cannibal/watch(list/players)
 	if(istype(activity, /datum/ambient_activity/fight))
 		return
 	players = players || ambient_players_near(src, AMBIENT_CANNIBAL_SIGHT)
@@ -223,7 +243,7 @@
 		site.data["camp_built"] = TRUE
 		build_camp(site)
 	for(var/i in 1 to missing)
-		var/mob/living/basic/ambient_npc/planet/cannibal/cannibal = site.spawn_npc(npc_type, ambient_free_turf_near(site.center, 2) || site.center)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/cannibal/cannibal = site.spawn_npc(npc_type, ambient_free_turf_near(site.center, 2) || site.center)
 		if(cannibal)
 			cannibal.leash_bounds = ambient_square_bounds(site.center, 10)
 	// Dressing a body can sleep
@@ -272,6 +292,7 @@
 	name = "Ambient NPC: hunter"
 	uniform = /obj/item/clothing/under/costume/loincloth
 	shoes = /obj/item/clothing/shoes/sandal
+	r_hand = /obj/item/spear/bamboospear
 
 /datum/outfit/ambient_tribal/bone
 	name = "Ambient NPC: hunter in bone"
@@ -282,11 +303,27 @@
 	name = "Ambient NPC: hunter in a hide cloak"
 	suit = /obj/item/clothing/suit/hooded/cloak/goliath
 
-/mob/living/basic/ambient_npc/planet/tribal
+/// Red: bone bracers too
+/datum/outfit/ambient_tribal/bone/bracers
+	name = "Ambient NPC: hunter in bone and bracers"
+	gloves = /obj/item/clothing/gloves/bracer
+
+/datum/outfit/ambient_tribal/cloak/bracers
+	name = "Ambient NPC: hunter in a hide cloak and bracers"
+	gloves = /obj/item/clothing/gloves/bracer
+
+/// Hunters by band (AM-1): bone and hide further out, never more health
+/datum/human_npc_outfit_table/ambient_tribal
+	green = list(/datum/outfit/ambient_tribal = 2, /datum/outfit/ambient_tribal/bone = 1, /datum/outfit/ambient_tribal/cloak = 1)
+	yellow = list(/datum/outfit/ambient_tribal/bone = 1, /datum/outfit/ambient_tribal/cloak = 1)
+	red = list(/datum/outfit/ambient_tribal/bone/bracers = 1, /datum/outfit/ambient_tribal/cloak/bracers = 1)
+
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal
 	name = "hunter"
 	desc = "A lean hunter in hide and bone, a bamboo spear in hand."
 	random_name = FALSE
-	outfit_choices = list(/datum/outfit/ambient_tribal, /datum/outfit/ambient_tribal/bone, /datum/outfit/ambient_tribal/cloak)
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_tribal
 	dialogue_section = "tribal"
 	speech_pace = 1.5
 	fights_back = TRUE
@@ -305,66 +342,82 @@
 		/datum/ambient_activity/chat = 2,
 		/datum/ambient_activity/wander = 1,
 	)
-	/// Their spear is in their hand (not stuck in the ground somewhere)
-	var/has_spear = TRUE
-	/// Where their thrown spear stuck, if it did
+	/// The spear they threw, while it lies where it came down
 	var/datum/weakref/thrown_spear_ref
 	/// world.time their drawn-back spear flies, while winding up a throw
 	var/throw_windup_until = 0
 
-/mob/living/basic/ambient_npc/planet/tribal/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
 	if(prob(25))
 		death_loot = death_loot + /obj/item/clothing/suit/armor/bone
 
-/mob/living/basic/ambient_npc/planet/tribal/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/Destroy()
 	drop_thrown_spear()
 	return ..()
 
-// The spear left in the ground goes too: the one they carried drops with them
-/mob/living/basic/ambient_npc/planet/tribal/death(gibbed)
+// The spear they threw goes too: nobody fetches it now
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/death(gibbed)
 	drop_thrown_spear()
 	return ..()
 
-/// Their thrown spear, if it is still stuck somewhere
-/mob/living/basic/ambient_npc/planet/tribal/proc/thrown_spear()
-	var/obj/effect/ambient_thrown_spear/stuck = thrown_spear_ref?.resolve()
-	return QDELETED(stuck) ? null : stuck
+/// Whether they have a spear on them (in hand, or slung)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/has_spear()
+	return length(get_all_contents_type(/obj/item/spear)) > 0
 
-/// Forgets and removes the spear they threw
-/mob/living/basic/ambient_npc/planet/tribal/proc/drop_thrown_spear()
-	var/obj/effect/ambient_thrown_spear/stuck = thrown_spear()
+/// The spear they threw, while it still lies loose where it came down
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/thrown_spear()
+	var/obj/item/spear/thrown = thrown_spear_ref?.resolve()
+	if(QDELETED(thrown) || !isturf(thrown.loc))
+		return null
+	return thrown
+
+/// Forgets the spear they threw, and takes it away if it still lies loose (a camp's spears are its own)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/drop_thrown_spear()
+	var/obj/item/spear/thrown = thrown_spear()
 	thrown_spear_ref = null
-	if(stuck)
-		qdel(stuck)
+	if(thrown)
+		qdel(thrown)
 
-/// A spear back in hand
-/mob/living/basic/ambient_npc/planet/tribal/proc/rearm()
-	drop_thrown_spear()
-	has_spear = TRUE
+/**
+ * A spear back in hand: the one they threw, picked up off the ground beside them, or, when it is
+ * gone, a spare off the camp's rack (`from_rack`). The camp's spears stay theirs (locked to them, the
+ * base's consumables rule: it never becomes anyone else's).
+ */
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/rearm(from_rack = FALSE)
+	var/obj/item/spear/thrown = thrown_spear()
+	thrown_spear_ref = null
+	if(thrown && get_dist(src, thrown) <= 1)
+		put_in_hands(thrown)
+	else if(from_rack && !has_spear())
+		var/obj/item/spear/bamboospear/spare = new(src)
+		if(!put_in_hands(spare))
+			qdel(spare)
+		else
+			npc_lock_item(spare)
 	idle_held = /obj/item/spear/bamboospear
-	arm(/obj/item/spear/bamboospear)
 	set_held(/obj/item/spear/bamboospear)
 
 // Without a spear the first thing they do is get it back
-/mob/living/basic/ambient_npc/planet/tribal/pick_activity()
-	if(!has_spear && start_activity(new /datum/ambient_activity/fetch_spear(src)))
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/pick_activity()
+	if(!has_spear() && start_activity(new /datum/ambient_activity/fetch_spear(src)))
 		return activity
 	return ..()
 
-/mob/living/basic/ambient_npc/planet/tribal/throw_reach()
-	return has_spear ? 6 : 0
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/throw_reach()
+	return has_spear() ? 6 : 0
 
 /**
- * A thrown spear: from three to six tiles, in plain sight, one throw at a time for the whole camp.
- * The spear is drawn back first (a wind-up anyone can see) and flies on their next beat.
+ * A thrown spear: from three to six tiles, in plain sight, one throw at a time for the whole camp,
+ * and never with one of their own camp in the way. The spear is drawn back first (a wind-up anyone
+ * can see) and flies on their next beat.
  */
-/mob/living/basic/ambient_npc/planet/tribal/try_ranged(mob/living/target)
-	if(!has_spear)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/try_ranged(mob/living/target)
+	if(!has_spear())
 		return FALSE
 	var/distance = get_dist(src, target)
 	if(throw_windup_until)
-		if(distance > 6 || !bounty_ai_can_see(src, target, 6))
+		if(distance > 6 || !bounty_ai_can_see(src, target, 6) || ambient_camp_mate_in_line(src, target))
 			throw_windup_until = 0
 			return FALSE
 		face_atom(target)
@@ -372,7 +425,7 @@
 			throw_windup_until = 0
 			throw_spear(target)
 		return TRUE
-	if(distance < 3 || distance > 6 || !bounty_ai_can_see(src, target, 6))
+	if(distance < 3 || distance > 6 || !bounty_ai_can_see(src, target, 6) || ambient_camp_mate_in_line(src, target))
 		return FALSE
 	var/list/visit = ambient_site_visit(place)
 	if(visit["next_throw"] > world.time)
@@ -383,36 +436,35 @@
 	visible_message(span_danger("[src] draws back a spear!"))
 	return TRUE
 
-/// Throws their spear at `target`: the spear's own throw, and it sticks where it lands
-/mob/living/basic/ambient_npc/planet/tribal/proc/throw_spear(mob/living/target)
-	var/turf/start = get_turf(src)
-	if(!start)
+/// Throws the spear in their hand at `target`, as anyone throws a held item (tg's throw)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/throw_spear(mob/living/target)
+	var/obj/item/spear/spear = held_weapon()
+	if(!istype(spear))
+		set_held(/obj/item/spear/bamboospear)
+		spear = held_weapon()
+	if(!istype(spear) || !isturf(loc))
 		return
-	var/obj/projectile/ambient_spear/spear = new(start)
-	var/datum/bounty_real_weapon/weapon = bounty_real_weapon(/obj/item/spear/bamboospear)
-	weapon.load_thrown(spear)
-	spear.firer = src
-	spear.fired_from = src
-	spear.aim_projectile(target, src)
-	if(QDELETED(spear))
+	if(HAS_TRAIT(spear, TRAIT_WIELDED))
+		spear.attack_self(src) // let go with one hand to throw
+	human_npc_ready_item(src, spear)
+	if(!throw_item(target))
 		return
-	has_spear = FALSE
+	if(spear.loc == src || is_holding(spear))
+		return
+	thrown_spear_ref = WEAKREF(spear)
+	held_prop = null
 	idle_held = null
-	arm(null)
-	set_held(null)
-	do_attack_animation(target)
 	playsound(src, 'sound/items/weapons/thudswoosh.ogg', 40, TRUE)
-	spear.fire()
 
 /**
  * The camp's lookout (the first of them awake) watches the ring: a warning for anyone who
  * crosses it, the whole camp on anyone who stays armed, and someone to walk up to anyone who
  * comes empty-handed.
  */
-/mob/living/basic/ambient_npc/planet/tribal/watch(list/players)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/watch(list/players)
 	// Their own spear, if they are standing by it
-	var/obj/effect/ambient_thrown_spear/stuck = thrown_spear()
-	if(!has_spear && stuck && get_dist(src, stuck) <= 1 && !istype(activity, /datum/ambient_activity/fight))
+	var/obj/item/spear/thrown = thrown_spear()
+	if(thrown && !has_spear() && get_dist(src, thrown) <= 1 && !istype(activity, /datum/ambient_activity/fight))
 		manual_emote("pulls a spear out of the ground.")
 		rearm()
 	var/datum/ambient_place/site/site = place
@@ -442,7 +494,7 @@
 		// A warning first, once a minute each
 		if(warned[key] < world.time)
 			warned[key] = world.time + 1 MINUTES
-			var/mob/living/basic/ambient_npc/planet/tribal/shouter = nearest_awake(player)
+			var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/shouter = nearest_awake(player)
 			if(shouter)
 				shouter.face_atom(player)
 				shouter.speak_context("warn", player, force = TRUE)
@@ -457,18 +509,18 @@
 			entered -= key
 
 /// The first of the camp who is awake and not already off somewhere: the one who keeps watch
-/mob/living/basic/ambient_npc/planet/tribal/proc/camp_lookout()
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter in place?.npcs)
-		if(hunter.stat == CONSCIOUS && !hunter.fading && !hunter.sleeping)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/camp_lookout()
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter in place?.npcs)
+		if(hunter.stat == CONSCIOUS && !hunter.fading && !hunter.IsSleeping())
 			return hunter
 	return null
 
 /// The hunter awake and nearest to `who`, or null
-/mob/living/basic/ambient_npc/planet/tribal/proc/nearest_awake(atom/who)
-	var/mob/living/basic/ambient_npc/planet/tribal/best
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/nearest_awake(atom/who)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/best
 	var/best_distance = INFINITY
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter in place?.living_npcs())
-		if(hunter.sleeping)
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter in place?.living_npcs())
+		if(hunter.IsSleeping())
 			continue
 		var/distance = get_dist(hunter, who)
 		if(distance < best_distance)
@@ -477,29 +529,29 @@
 	return best
 
 /// The whole camp goes for `target`, sleepers included
-/mob/living/basic/ambient_npc/planet/tribal/proc/camp_attack(mob/living/target)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/camp_attack(mob/living/target)
 	var/shouted = FALSE
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter in place?.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter in place?.living_npcs())
 		if(istype(hunter.activity, /datum/ambient_activity/fight))
 			continue
-		if(!shouted && !hunter.sleeping)
+		if(!shouted && !hunter.IsSleeping())
 			shouted = TRUE
 			hunter.speak_context("attack", target, force = TRUE)
 		hunter.engage(target)
 
 /// Someone walks up to an empty-handed visitor to trade, unless someone already is
-/mob/living/basic/ambient_npc/planet/tribal/proc/offer_trade(mob/living/visitor)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/proc/offer_trade(mob/living/visitor)
 	var/list/visit = ambient_site_visit(place)
 	if(visit["offer_until"] > world.time)
 		return
-	var/mob/living/basic/ambient_npc/planet/tribal/trader = nearest_awake(visitor)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/trader = nearest_awake(visitor)
 	if(!trader || istype(trader.activity, /datum/ambient_activity/fight) || trader.activity?.priority > AMBIENT_PRIORITY_ROUTINE)
 		return
 	if(trader.start_activity(new /datum/ambient_activity/tribal_offer(trader, visitor)))
 		visit["offer_until"] = world.time + 90 SECONDS
 
 /// A hide or meat for a bone spear, once per crew
-/mob/living/basic/ambient_npc/planet/tribal/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+/mob/living/carbon/human/npc/ambient_npc/planet/tribal/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(user.combat_mode || !can_act() || !(istype(tool, /obj/item/stack/sheet/animalhide) || istype(tool, /obj/item/food/meat/slab)))
 		return ..()
 	face_atom(user)
@@ -523,105 +575,49 @@
 		end_activity()
 	return ITEM_INTERACT_SUCCESS
 
-// ----- the thrown spear -----
-
-/// A bamboo spear in flight: the spear's own throw, never at the thrower's own camp; it sticks where it lands
-/obj/projectile/ambient_spear
-	name = "bamboo spear"
-	icon = 'icons/obj/weapons/spear.dmi'
-	icon_state = "bamboo_spear0"
-	damage_type = BRUTE
-	armor_flag = MELEE
-	speed = 0.6
-	range = 7
-	hitsound = 'sound/items/weapons/pierce.ogg'
-	/// It has stuck somewhere already
-	var/landed = FALSE
-
-/obj/projectile/ambient_spear/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE, cross_failed = FALSE)
-	. = ..()
-	if(!. || !istype(target, /mob/living/basic/ambient_npc))
-		return
-	var/mob/living/basic/ambient_npc/thrower = firer
-	var/mob/living/basic/ambient_npc/other = target
-	if(istype(thrower) && other.place == thrower.place)
-		return FALSE
-
-/obj/projectile/ambient_spear/on_hit(atom/target, blocked = 0, pierce_hit)
-	. = ..()
-	land()
-
-/obj/projectile/ambient_spear/on_range()
-	land()
-	return ..()
-
-/// Sticks in the ground where it came down, for its thrower to fetch
-/obj/projectile/ambient_spear/proc/land()
-	if(landed)
-		return
-	landed = TRUE
-	var/turf/where = get_turf(src)
-	var/mob/living/basic/ambient_npc/planet/tribal/thrower = firer
-	if(!istype(thrower) || QDELETED(thrower) || thrower.stat == DEAD || !where || !ambient_ground_ok(where))
-		return
-	thrower.drop_thrown_spear()
-	var/obj/effect/ambient_thrown_spear/stuck = new(where)
-	thrower.thrown_spear_ref = WEAKREF(stuck)
-
-/// A thrown spear stuck in the ground. Its thrower pulls it out again; nobody else can take it.
-/obj/effect/ambient_thrown_spear
-	name = "bamboo spear"
-	desc = "A bamboo spear, stuck point-first in the ground."
-	icon = 'icons/obj/weapons/spear.dmi'
-	icon_state = "bamboo_spear0"
-	anchored = TRUE
-	density = FALSE
-	layer = OBJ_LAYER
-
-/obj/effect/ambient_thrown_spear/Initialize(mapload)
-	. = ..()
-	transform = matrix().Turn(45)
-	// Nobody came back for it. Our own callback, so deleting it early takes the timer with it.
-	addtimer(CALLBACK(src, PROC_REF(rot)), 5 MINUTES, TIMER_DELETE_ME)
-
-/obj/effect/ambient_thrown_spear/proc/rot()
-	qdel(src)
-
 // ----- activities -----
 
-/// Getting their spear back: pulled out of the ground where it stuck, or a spare off the rack
+/// Getting their spear back: picked up where it came down, or a spare off the camp's rack
 /datum/ambient_activity/fetch_spear
 	name = "fetching a spear"
 
 /datum/ambient_activity/fetch_spear/setup()
-	var/mob/living/basic/ambient_npc/planet/tribal/hunter = doer
-	if(!istype(hunter) || hunter.has_spear)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = doer
+	if(!istype(hunter) || hunter.has_spear())
 		return FALSE
-	var/atom/target = hunter.thrown_spear()
+	var/atom/target = hunter.thrown_spear() || camp_rack()
 	if(!target)
-		var/datum/ambient_place/site/site = hunter.place
-		target = istype(site) ? site.get_prop(/obj/effect/ambient_camp_prop/spear_rack) : null
-	if(!target)
-		hunter.rearm()
 		return FALSE
 	go_to(get_turf(target), 1)
 	return TRUE
 
+/// Their camp's spear rack, if it has one
+/datum/ambient_activity/fetch_spear/proc/camp_rack()
+	var/datum/ambient_place/site/site = doer.place
+	return istype(site) ? site.get_prop(/obj/effect/ambient_camp_prop/spear_rack) : null
+
 /datum/ambient_activity/fetch_spear/arrive()
-	var/mob/living/basic/ambient_npc/planet/tribal/hunter = doer
-	if(!istype(hunter) || hunter.has_spear)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = doer
+	if(!istype(hunter) || hunter.has_spear())
 		return
-	hunter.manual_emote(hunter.thrown_spear() ? "pulls a spear out of the ground." : "takes a spear from the rack.")
-	hunter.rearm()
+	var/obj/item/spear/thrown = hunter.thrown_spear()
+	if(thrown && get_dist(hunter, thrown) <= 1)
+		hunter.manual_emote("pulls a spear out of the ground.")
+		hunter.rearm()
+		return
+	var/atom/rack = camp_rack()
+	if(rack && get_dist(hunter, rack) <= 1)
+		hunter.manual_emote("takes a spear from the rack.")
+		hunter.rearm(from_rack = TRUE)
 
 /datum/ambient_activity/fetch_spear/act(seconds)
 	return AMBIENT_STEP_DONE
 
 /datum/ambient_activity/fetch_spear/spot_unreachable()
-	var/mob/living/basic/ambient_npc/planet/tribal/hunter = doer
-	// It fell somewhere they cannot get to: a spare from the rack
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = doer
+	// It came down somewhere they can't get to: the rack, next time round
 	if(istype(hunter))
-		hunter.rearm()
+		hunter.thrown_spear_ref = null
 	spot = null
 	arrived = TRUE
 
@@ -632,7 +628,7 @@
 	duration_high = 60 SECONDS
 	var/datum/weakref/visitor_ref
 
-/datum/ambient_activity/tribal_offer/New(mob/living/basic/ambient_npc/new_doer, atom/visitor)
+/datum/ambient_activity/tribal_offer/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/visitor)
 	. = ..()
 	visitor_ref = WEAKREF(visitor)
 
@@ -672,7 +668,7 @@
 
 /datum/ambient_activity/tribal_offer/finish()
 	. = ..()
-	var/mob/living/basic/ambient_npc/planet/tribal/hunter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = doer
 	if(istype(hunter) && !QDELETED(hunter))
 		hunter.show_idle_held()
 
@@ -702,8 +698,8 @@
 		return FALSE
 	go_to(hide)
 	// A partner, if one is free
-	for(var/mob/living/basic/ambient_npc/planet/tribal/mate in site.living_npcs())
-		if(mate == doer || mate.sleeping || (mate.activity && !mate.activity.accepts_company))
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/mate in site.living_npcs())
+		if(mate == doer || mate.IsSleeping() || (mate.activity && !mate.activity.accepts_company))
 			continue
 		if(mate.start_activity(new /datum/ambient_activity/follow(mate, doer, 2, 3 MINUTES)))
 			break
@@ -742,7 +738,7 @@
 
 /datum/ambient_activity/tribal_hunt/finish()
 	. = ..()
-	var/mob/living/basic/ambient_npc/planet/tribal/hunter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = doer
 	if(istype(hunter) && !QDELETED(hunter))
 		hunter.show_idle_held()
 
@@ -778,8 +774,8 @@
 	var/atom/fire = prop()
 	if(!fire)
 		return
-	for(var/mob/living/basic/ambient_npc/planet/tribal/mate in doer.place?.living_npcs())
-		if(mate != doer && !mate.sleeping && get_dist(mate, fire) <= 3 && prob(50))
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/mate in doer.place?.living_npcs())
+		if(mate != doer && !mate.IsSleeping() && get_dist(mate, fire) <= 3 && prob(50))
 			mate.manual_emote("joins the chant.")
 
 // ----- the camp -----
@@ -791,7 +787,7 @@
 	new_visit(site)
 	build_camp(site)
 	for(var/i in 1 to missing)
-		var/mob/living/basic/ambient_npc/planet/tribal/hunter = site.spawn_npc(npc_type, ambient_free_turf_near(site.center, 2) || site.center)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = site.spawn_npc(npc_type, ambient_free_turf_near(site.center, 2) || site.center)
 		if(hunter)
 			hunter.leash_bounds = ambient_square_bounds(site.center, AMBIENT_TRIBAL_RING_RADIUS + AMBIENT_TRIBAL_CHASE_PAST_RING)
 	return TRUE
