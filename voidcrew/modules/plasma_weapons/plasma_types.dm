@@ -82,6 +82,10 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	var/shutdown_until = 0
 	/// world.time until which shots add half heat after a gold vent
 	var/gold_until = 0
+	/// How long shots add half heat after a gold vent
+	var/gold_window = PLASMA_VENT_GOLD_WINDOW
+	/// How long an overheat locks the gun
+	var/overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN
 	/// Coil overlay step shown, 0 to 3
 	var/heat_step = 0
 	/// Sound distant listeners hear when this fires
@@ -112,6 +116,8 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	desc = "A Furnace rifle with a hand-wound coil and a pirate captain's tally burned into the stock."
 	icon_state = "old_furnace"
 	heat_per_shot = PLASMA_HEAT_PER_SHOT_UNIQUE
+	gold_window = PLASMA_VENT_GOLD_WINDOW_UNIQUE
+	overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN_UNIQUE
 
 // ===== Frontier lasers (S2, S7) =====
 

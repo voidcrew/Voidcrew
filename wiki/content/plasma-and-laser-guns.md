@@ -18,7 +18,7 @@ Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are or
 
 The Kestrel hits lighter than a standard laser gun. The Hornet sprays light laser beams for as long as you hold the trigger: each one hits for less than half of a standard laser, and they scatter wide.
 
-The **Old Furnace** is a Furnace with a hand-wound coil. It runs cooler and shoots straighter. Nobody sells it.
+The **Old Furnace** is a Furnace with a hand-wound coil. It runs far cooler, shoots straighter, stays cool longer after a clean vent and comes back from an overheat sooner. Nobody sells it.
 
 ## Where to get them
 
@@ -95,7 +95,7 @@ Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle
 The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next shot or two will overheat it. They cool by themselves between shots: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
 
 - Fire a full cartridge at a steady, unhurried pace in ship air and the Furnace never overheats. Fire as fast as it goes, or in vacuum, and it will.
-- An overheated rifle **locks up**: its coils stay white-hot and it won't fire or vent for ten seconds. It clicks when it's ready again.
+- An overheated rifle **locks up**: its coils stay white-hot and it won't fire or vent for ten seconds, or six on the Old Furnace. It clicks when it's ready again.
 
 **Venting:** use a glowing Furnace in your hand. A small bar appears above your head and a marker sweeps across it. Fire as the marker passes the middle, or use the rifle in your hand again. That trigger pull vents the rifle instead of shooting. You can also bind a key to Vent held gun in your keybindings.
 

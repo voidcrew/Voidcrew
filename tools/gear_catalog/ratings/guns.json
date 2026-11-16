@@ -1807,7 +1807,7 @@
    "hash": "",
    "name": "Old Furnace",
    "rank": 3,
-   "reason": "A Furnace that runs cooler and shoots straighter.",
+   "reason": "A Furnace that runs much cooler, recovers from an overheat faster, keeps a clean vent's cooling longer and shoots straighter.",
    "score": 123,
    "score_inputs": {
     "cell_fed": {
@@ -1816,7 +1816,7 @@
     },
     "points": {
      "value": 85,
-     "why": "A Furnace that runs cooler and shoots straighter."
+     "why": "A Furnace that runs much cooler, recovers from an overheat faster, keeps a clean vent's cooling longer and shoots straighter."
     }
    },
    "tier": "red"
